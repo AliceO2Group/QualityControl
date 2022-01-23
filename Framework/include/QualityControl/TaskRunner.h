@@ -89,12 +89,16 @@ class TaskRunner : public framework::Task
   const framework::OutputSpec& getOutputSpec() const { return mTaskConfig.moSpec; };
   const framework::Options& getOptions() const { return mTaskConfig.options; };
 
+  /// \brief Data Processor Label to identify all Task Runners
+  static framework::DataProcessorLabel getLabel() { return { "qc-task" }; }
   /// \brief ID string for all TaskRunner devices
   static std::string createTaskRunnerIdString();
   /// \brief Unified DataOrigin for Quality Control tasks
   static header::DataOrigin createTaskDataOrigin();
   /// \brief Unified DataDescription naming scheme for all tasks
   static header::DataDescription createTaskDataDescription(const std::string& taskName);
+  /// \brief Unified DataDescription naming scheme for all timers
+  static header::DataDescription createTimerDataDescription(const std::string& taskName);
 
   /// \brief Callback for CallbackService::Id::EndOfStream
   void endOfStream(framework::EndOfStreamContext& eosContext) override;

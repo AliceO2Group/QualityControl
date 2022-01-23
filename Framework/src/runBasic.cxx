@@ -89,7 +89,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
 {
   WorkflowSpec specs;
 
-  ILOG_INST.setFacility("runBasic");
+  QcInfoLogger::setFacility("runBasic");
 
   // The producer to generate some data in the workflow
   DataProcessorSpec producer = getDataProducerSpec(1, 10000, 10);
@@ -105,7 +105,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
   DataSampling::GenerateInfrastructure(specs, dataSamplingTree);
 
   // Generation of the QC topology (one task, one checker in this case)
-  quality_control::generateStandaloneInfrastructure(specs, qcConfigurationSource);
+  quality_control::generateStandaloneInfrastructure(specs, configInterface->getRecursive());
 
   // Finally the printer
   if (hasChecks(qcConfigurationSource)) {

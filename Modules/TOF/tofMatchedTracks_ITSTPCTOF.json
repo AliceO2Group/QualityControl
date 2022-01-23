@@ -38,14 +38,14 @@
         "dataSource" : {
           "type" : "direct",
           "query_comment" : "checking every matched track",
-          "query" : "matchITSTPCTOF:TOF/MTC_ITSTPC/0;trackITSTPC:GLO/TPCITS/0;trackITSTPCABREFS:GLO/TPCITSAB_REFS/0;trackITSTPCABCLID:GLO/TPCITSAB_CLID/0;tofcluster:TOF/CLUSTERS/0"
+          "query" : "matchITSTPCTOF:TOF/MTC_ITSTPC/0;trackITSTPC:GLO/TPCITS/0;trackITSTPCABREFS:GLO/TPCITSAB_REFS/0;trackITSTPCABCLID:GLO/TPCITSAB_CLID/0;tofcluster:TOF/CLUSTERS/0;trackTPC:TPC/TRACKS/0;trackTPCClRefs:TPC/CLUSREFS/0"
         },
         "taskParameters" : {
           "GID" : "ITS-TPC,ITS-TPC-TOF",
           "verbose" : "false",
-          "minPtCut" : "0.1f",
-          "etaCut" : "1.4f",
-          "minNTPCClustersCut" : "40",
+          "minPtCut" : "0.3f",
+          "etaCut" : "0.8f",
+          "minNTPCClustersCut" : "60",
           "minDCACut" : "100.f",
           "minDCACutY" : "10.f",
           "grpFileName" : "o2sim_grp.root",
@@ -71,6 +71,5 @@
       }
     }
   },
-         "dataSamplingPolicies" : [
-         ]
+         "dataSamplingPolicies" : []
 }

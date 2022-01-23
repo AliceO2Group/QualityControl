@@ -56,6 +56,8 @@ class OutOfBunchCollTask final : public quality_control::postprocessing::PostPro
                   kInnerRing
   };
 
+  std::string mPathDigitQcTask;
+  std::string mPathBunchFilling;
   o2::quality_control::repository::DatabaseInterface* mDatabase = nullptr;
   std::string mCcdbUrl;
   o2::ccdb::CcdbApi mCcdbApi;

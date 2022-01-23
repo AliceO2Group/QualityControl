@@ -50,7 +50,9 @@ AggregatorRunner::AggregatorRunner(AggregatorRunnerConfig arc, const std::vector
   : mDeviceName(createAggregatorRunnerName()),
     mRunnerConfig(std::move(arc)),
     mAggregatorsConfigs(acs),
-    mTotalNumberObjectsReceived(0)
+    mTotalNumberObjectsReceived(0),
+    mTotalNumberAggregatorExecuted(0),
+    mTotalNumberObjectsProduced(0)
 {
   // Prepare the inputs, remove duplicates
   std::set<std::string> alreadySeen;
@@ -91,15 +93,17 @@ std::string AggregatorRunner::createAggregatorRunnerName()
 void AggregatorRunner::init(framework::InitContext& iCtx)
 {
   InfoLoggerContext* ilContext = nullptr;
+  AliceO2::InfoLogger::InfoLogger* il = nullptr;
   try {
     ilContext = &iCtx.services().get<AliceO2::InfoLogger::InfoLoggerContext>();
+    il = &iCtx.services().get<AliceO2::InfoLogger::InfoLogger>();
   } catch (const RuntimeErrorRef& err) {
-    ILOG(Error) << "Could not find the DPL InfoLogger Context." << ENDM;
+    ILOG(Error) << "Could not find the DPL InfoLogger." << ENDM;
   }
 
   try {
-    ILOG_INST.init("aggregator", mRunnerConfig.infologgerFilterDiscardDebug, mRunnerConfig.infologgerDiscardLevel, ilContext);
-    ILOG_INST.setDetector(AggregatorRunner::getDetectorName(mAggregators));
+    QcInfoLogger::init("aggregator", mRunnerConfig.infologgerFilterDiscardDebug, mRunnerConfig.infologgerDiscardLevel, il, ilContext);
+    QcInfoLogger::setDetector(AggregatorRunner::getDetectorName(mAggregators));
     initDatabase();
     initMonitoring();
     initServiceDiscovery();
@@ -212,8 +216,7 @@ void AggregatorRunner::initServiceDiscovery()
     ILOG(Warning, Ops) << "Service Discovery disabled" << ENDM;
     return;
   }
-  std::string url = ServiceDiscovery::GetDefaultUrl(ServiceDiscovery::DefaultHealthPort + 2); // we try to avoid colliding with the CheckRunner
-  mServiceDiscovery = std::make_shared<ServiceDiscovery>(consulUrl, mDeviceName, mDeviceName, url);
+  mServiceDiscovery = std::make_shared<ServiceDiscovery>(consulUrl, mDeviceName, mDeviceName);
   ILOG(Info, Devel) << "ServiceDiscovery initialized";
 }
 
@@ -312,7 +315,10 @@ void AggregatorRunner::sendPeriodicMonitoring()
 {
   if (mTimer.isTimeout()) {
     mTimer.reset(1000000); // 10 s.
-    mCollector->send({ mTotalNumberObjectsReceived, "qc_objects_received" }, DerivedMetricMode::RATE);
+    mCollector->send({ mTotalNumberObjectsReceived, "qc_aggregator_objects_received" });
+    mCollector->send({ mTotalNumberAggregatorExecuted, "qc_aggregator_executed" });
+    mCollector->send({ mTotalNumberObjectsProduced, "qc_aggregator_objects_produced" });
+    mCollector->send({ mTimerTotalDurationActivity.getTime(), "qc_aggregator_duration" });
   }
 }
 
@@ -322,9 +328,10 @@ void AggregatorRunner::start(const ServiceRegistry& services)
   mActivity.mPeriodName = computePeriodName(services, mRunnerConfig.fallbackPeriodName);
   mActivity.mPassName = computePassName(mRunnerConfig.fallbackPassName);
   mActivity.mProvenance = computeProvenance(mRunnerConfig.fallbackProvenance);
+  mTimerTotalDurationActivity.reset();
   string partitionName = computePartitionName(services);
-  ILOG_INST.setRun(mActivity.mId);
-  ILOG_INST.setPartition(partitionName);
+  QcInfoLogger::setRun(mActivity.mId);
+  QcInfoLogger::setPartition(partitionName);
   ILOG(Info, Ops) << "Starting run " << mActivity.mId << ":"
                   << "\n   - period: " << mActivity.mPeriodName << "\n   - pass type: " << mActivity.mPassName << "\n   - provenance: " << mActivity.mProvenance << ENDM;
 }

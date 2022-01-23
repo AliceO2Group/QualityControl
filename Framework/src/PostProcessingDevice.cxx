@@ -38,7 +38,7 @@ PostProcessingDevice::PostProcessingDevice(const PostProcessingRunnerConfig& run
     mDeviceName(createPostProcessingIdString() + "-" + runnerConfig.taskName),
     mRunnerConfig(runnerConfig)
 {
-  ILOG_INST.setFacility("PostProcessing");
+  core::QcInfoLogger::setFacility("PostProcessing");
 }
 
 void PostProcessingDevice::init(framework::InitContext& ctx)

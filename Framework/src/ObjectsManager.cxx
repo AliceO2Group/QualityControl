@@ -142,6 +142,13 @@ void ObjectsManager::addMetadata(const std::string& objectName, const std::strin
   ILOG(Debug, Devel) << "Added metadata on " << objectName << " : " << key << " -> " << value << ENDM;
 }
 
+void ObjectsManager::addOrUpdateMetadata(const std::string& objectName, const std::string& key, const std::string& value)
+{
+  MonitorObject* mo = getMonitorObject(objectName);
+  mo->addOrUpdateMetadata(key, value);
+  ILOG(Debug, Devel) << "Added/Modified metadata on " << objectName << " : " << key << " -> " << value << ENDM;
+}
+
 size_t ObjectsManager::getNumberPublishedObjects()
 {
   return mMonitorObjects->GetLast() + 1; // GetLast returns the index

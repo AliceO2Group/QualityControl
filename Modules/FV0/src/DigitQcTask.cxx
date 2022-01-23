@@ -46,7 +46,7 @@ void DigitQcTask::rebinFromConfig()
      "binning_Amp_channel2": "5,-10,90" ...
   */
   auto rebinHisto = [](std::string hName, std::string binning) {
-    vector<std::string> tokenizedBinning;
+    std::vector<std::string> tokenizedBinning;
     boost::split(tokenizedBinning, binning, boost::is_any_of(","));
     if (tokenizedBinning.size() == 3) { // TH1
       ILOG(Debug, Support) << "config: rebinning TH1 " << hName << " -> " << binning << ENDM;
@@ -166,6 +166,12 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
       continue;
     }
     auto moduleName = lutEntry.mModuleName;
+    if (moduleName == "TCM") {
+      if (mMapPmModuleChannels.find(moduleName) == mMapPmModuleChannels.end()) {
+        mMapPmModuleChannels.insert({ moduleName, std::vector<int>{} });
+      }
+      continue;
+    }
     if (mMapPmModuleChannels.find(moduleName) != mMapPmModuleChannels.end()) {
       mMapPmModuleChannels[moduleName].push_back(chId);
     } else {
@@ -388,6 +394,9 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
           mMapPmModuleBcOrbit[entry.first]->Fill(digit.getIntRecord().orbit % sOrbitsPerTF, digit.getIntRecord().bc);
           break;
         }
+      }
+      if (entry.first == "TCM" && isTCM && (digit.getTriggers().triggerSignals & (1 << sDataIsValidBitPos))) {
+        mMapPmModuleBcOrbit[entry.first]->Fill(digit.getIntRecord().orbit % sOrbitsPerTF, digit.getIntRecord().bc);
       }
     }
 

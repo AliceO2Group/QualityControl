@@ -61,9 +61,9 @@ BOOST_AUTO_TEST_CASE(test_check_specs)
   Check check(getCheckConfig(configFilePath, "singleCheck"));
 
   BOOST_REQUIRE_EQUAL(check.getInputs().size(), 1);
-  BOOST_CHECK_EQUAL(check.getInputs()[0], (InputSpec{ { "mo" }, "QC", "skeletonTask-mo", 0 }));
+  BOOST_CHECK_EQUAL(check.getInputs()[0], (InputSpec{ { "mo" }, "QC", "skeletonTask", 0, Lifetime::Sporadic }));
 
-  BOOST_CHECK_EQUAL(check.getOutputSpec(), (OutputSpec{ "QC", "singleCheck-chk", 0 }));
+  BOOST_CHECK_EQUAL(check.getOutputSpec(), (OutputSpec{ "QC", "singleCheck-chk", 0, Lifetime::Sporadic }));
 }
 
 /*

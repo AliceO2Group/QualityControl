@@ -34,6 +34,7 @@ import time
 import consul
 import multiprocessing as mp
 from pathlib import Path
+from datetime import datetime
 
 from Ccdb import Ccdb
 from pidfile import PIDFile, AlreadyRunningError
@@ -76,8 +77,8 @@ def parseArgs():
     parser.add_argument('--config-git', action='store_true',
                         help='Check out the config file from git (branch repo_cleaner), ignore --config.')
     parser.add_argument('--config-consul', action='store',
-                        help='Specify the consul url and port in the form of <url>:<port>, if specified'
-                             'ignore both --config and --config-git.')
+                        help='Specify the consul url (without initial `http[s]://` and port in the form of <url>:<port>,'
+                             ' if specified ignore both --config and --config-git.')
     parser.add_argument('--log-level', dest='log_level', action='store', default="20",
                         help='Log level (CRITICAL->50, ERROR->40, WARNING->30, INFO->20,DEBUG->10)')
     parser.add_argument('--dry-run', action='store_true',
@@ -106,6 +107,10 @@ def parseConfig(config_file_path):
     with open(config_file_path, 'r') as stream:
         config_content = yaml.safe_load(stream)
 
+    # also add something to the important logs file
+    message = datetime.today().strftime('%Y-%m-%d - %H:%M:%S')
+    storeCrucialLog("\n" + message + " - Start of the cleaner")
+
     rules = []
     logging.debug("Rules found in the config file:")
     for rule_yaml in config_content["Rules"]:
@@ -113,6 +118,7 @@ def parseConfig(config_file_path):
                     rule_yaml)
         rules.append(rule)
         logging.debug(f"   * {rule}")
+        storeCrucialLog(f"   * {rule}")
 
     ccdb_url = config_content["Ccdb"]["Url"]
 
@@ -144,7 +150,7 @@ def downloadConfigFromConsul(consul_url, consul_port):
 
     logging.debug("Get it from consul")
     consul_server = consul.Consul(host=consul_url, port=consul_port)
-    index, data = consul_server.kv.get(key='folder/blabla')
+    index, data = consul_server.kv.get(key='o2/components/qc/ANY/any/repoCleanerConfig.yaml')
     logging.debug(f"config file from consul : \n{data['Value']}")
     text = data["Value"].decode()
     logging.debug(f"config file from consul : \n{text}")
@@ -223,6 +229,20 @@ def storeMonitoringMetrics(success, duration):
         logging.warning(f"File {socket_file} does not exist, no monitoring metrics stored.")
 
 
+def storeCrucialLog(message):
+    """
+    Store few but very important messages to the file ~/repocleaner_logs.txt
+    :param message:
+    :return:
+    """
+    logs_filename = str(Path.home()) + "/repocleaner_logs.txt"   # very limited but important logs
+    try:
+        f = open(logs_filename, "a")
+        f.write(message+"\n")
+    except IOError as e:
+        logging.error(f"Could not write crucial log to {logs_filename} : {e}")
+
+
 def prepare_main_logger():
     logger = logging.getLogger()
     # Logging (split between stderr and stdout)
@@ -261,7 +281,6 @@ def read_config(args):
     if args.config_consul:
         items = args.config_consul.split(':')
         path = downloadConfigFromConsul(items[0], items[1])
-        exit(0)
     elif args.config_git:
         path = downloadConfigFromGit()
     config = parseConfig(path)
@@ -292,7 +311,7 @@ def run(args, ccdb_url, rules):
     ccdb = Ccdb(ccdb_url)
     paths = ccdb.getObjectsList(getTimestampLastExecution())
     if args.only_path != '':
-        paths = [item for item in paths if item.startswith(args.only_path)]
+        paths = [item for item in paths if item is not None and item.startswith(args.only_path)]
     logging.debug(paths)
     logging.debug(len(paths))
     # For each object call the first matching rule
@@ -305,8 +324,10 @@ def run(args, ccdb_url, rules):
     pool.join()
 
     logging.info(f" *** DONE *** (total deleted: {ccdb.counter_deleted}, total updated: {ccdb.counter_validity_updated})")
-    storeSavedTimestamp()
-
+    message = datetime.today().strftime('%Y-%m-%d-%H:%M:%S')
+    storeCrucialLog(message + f" - End of the cleaner (total deleted: {ccdb.counter_deleted}, total updated: {ccdb.counter_validity_updated})")
+    if not args.dry_run:
+        storeSavedTimestamp()
 
 # ****************
 # We start here !

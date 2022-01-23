@@ -22,7 +22,6 @@
 #include <TH2.h>
 #include <TProfile2D.h>
 
-#include <DataFormatsEMCAL/EMCALBlockHeader.h>
 #include <DataFormatsEMCAL/TriggerRecord.h>
 #include <DataFormatsEMCAL/Digit.h>
 #include "QualityControl/QcInfoLogger.h"
@@ -66,7 +65,7 @@ DigitsQcTask::~DigitsQcTask()
 
 void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG_INST.setDetector("EMC");
+  QcInfoLogger::setDetector("EMC");
   ILOG(Info, Support) << "initialize DigitsQcTask" << ENDM;
   //define histograms
 
@@ -178,15 +177,6 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   // check if we have payoad
   using MaskType_t = o2::emcal::BadChannelMap::MaskType_t;
 
-  if (mDoEndOfPayloadCheck) {
-    auto dataref = ctx.inputs().get("emcal-digits");
-    auto const* emcheader = o2::framework::DataRefUtils::getHeader<o2::emcal::EMCALBlockHeader*>(dataref);
-    if (!emcheader->mHasPayload) {
-      ILOG(Info, Support) << "No more digits" << ENDM;
-      return;
-    }
-  }
-
   // Handling of inputs from multiple subevents (multiple FLPs)
   // Build maps of trigger records and cells according to the subspecification
   // and combine trigger records from different maps into a single map of range
@@ -219,7 +209,7 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   auto combinedEvents = buildCombinedEvents(triggerRecordSubevents);
 
-  //  QcInfoLogger::GetInstance() << "Received " << digitcontainer.size() << " digits " << ENDM;
+  //  ILOG(Info, Support) <<"Received " << digitcontainer.size() << " digits " << ENDM;
   int eventcounter = 0;
   int eventcounterCALIB = 0;
   int eventcounterPHYS = 0;

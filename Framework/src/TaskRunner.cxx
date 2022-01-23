@@ -62,15 +62,18 @@ TaskRunner::TaskRunner(const TaskRunnerConfig& config)
 void TaskRunner::init(InitContext& iCtx)
 {
   AliceO2::InfoLogger::InfoLoggerContext* ilContext = nullptr;
+  AliceO2::InfoLogger::InfoLogger* il = nullptr;
   try {
     ilContext = &iCtx.services().get<AliceO2::InfoLogger::InfoLoggerContext>();
+    il = &iCtx.services().get<AliceO2::InfoLogger::InfoLogger>();
   } catch (const RuntimeErrorRef& err) {
-    ILOG(Error, Devel) << "Could not find the DPL InfoLogger Context." << ENDM;
+    ILOG(Error, Devel) << "Could not find the DPL InfoLogger" << ENDM;
   }
-  ILOG_INST.init("task/" + mTaskConfig.taskName,
-                 mTaskConfig.infologgerFilterDiscardDebug,
-                 mTaskConfig.infologgerDiscardLevel,
-                 ilContext);
+  QcInfoLogger::init("task/" + mTaskConfig.taskName,
+                     mTaskConfig.infologgerFilterDiscardDebug,
+                     mTaskConfig.infologgerDiscardLevel,
+                     il,
+                     ilContext);
 
   ILOG(Info, Support) << "Initializing TaskRunner" << ENDM;
   try {
@@ -180,7 +183,7 @@ CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framewor
 
 std::string TaskRunner::createTaskRunnerIdString()
 {
-  return std::string("QC-TASK-RUNNER");
+  return std::string("qc-task");
 }
 
 header::DataOrigin TaskRunner::createTaskDataOrigin()
@@ -194,7 +197,25 @@ header::DataDescription TaskRunner::createTaskDataDescription(const std::string&
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Empty taskName for task's data description"));
   }
   o2::header::DataDescription description;
-  description.runtimeInit(std::string(taskName.substr(0, header::DataDescription::size - 3) + "-mo").c_str());
+  if (taskName.length() > header::DataDescription::size) {
+    ILOG(Warning, Devel) << "Task name is longer than " << (int)header::DataDescription::size << ", it might cause name clashes in the DPL workflow" << ENDM;
+  }
+  description.runtimeInit(std::string(taskName.substr(0, header::DataDescription::size)).c_str());
+  return description;
+}
+
+header::DataDescription TaskRunner::createTimerDataDescription(const std::string& taskName)
+{
+  if (taskName.empty()) {
+    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Empty taskName for timers's data description"));
+  }
+  // hash the taskName to avoid clashing if the name is long and the beginning is identical
+  auto hashedName = std::hash<std::string>{}(taskName);
+  hashedName = hashedName % 10000000000LU; // 10 characters max
+  std::ostringstream ss;
+  ss << std::setw(10) << std::setfill('0') << hashedName; // 10 characters min
+  o2::header::DataDescription description;
+  description.runtimeInit(std::string("TIMER-" + ss.str()).substr(0, header::DataDescription::size).c_str());
   return description;
 }
 
@@ -208,9 +229,9 @@ void TaskRunner::endOfStream(framework::EndOfStreamContext& eosContext)
 void TaskRunner::start(const ServiceRegistry& services)
 {
   mRunNumber = o2::quality_control::core::computeRunNumber(services, mTaskConfig.fallbackRunNumber);
-  ILOG_INST.setRun(mRunNumber);
+  QcInfoLogger::setRun(mRunNumber);
   string partitionName = computePartitionName(services);
-  ILOG_INST.setPartition(partitionName);
+  QcInfoLogger::setPartition(partitionName);
 
   try {
     startOfActivity();
@@ -291,7 +312,7 @@ void TaskRunner::loadTaskConfig() // todo consider renaming
 {
   ILOG(Info, Support) << "Loading configuration" << ENDM;
 
-  ILOG_INST.setDetector(mTaskConfig.detectorName);
+  QcInfoLogger::setDetector(mTaskConfig.detectorName);
 
   ILOG(Info, Support) << "Configuration loaded : " << ENDM;
   ILOG(Info, Support) << ">> Task name : " << mTaskConfig.taskName << ENDM;

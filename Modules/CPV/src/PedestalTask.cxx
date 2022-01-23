@@ -131,7 +131,7 @@ void PedestalTask::monitorData(o2::framework::ProcessingContext& ctx)
   auto digitsTR = ctx.inputs().get<gsl::span<o2::cpv::TriggerRecord>>("dtrigrec");
   //mNEventsTotal += digitsTR.size();//number of events in the current input
   for (const auto& trigRecord : digitsTR) {
-    LOG(DEBUG) << " monitorData() : trigger record #" << mNEventsTotal
+    LOG(debug) << " monitorData() : trigger record #" << mNEventsTotal
                << " contains " << trigRecord.getNumberOfObjects() << " objects.";
     if (trigRecord.getNumberOfObjects() > 0) { //at least 1 digit -> pedestal event
       mNEventsTotal++;

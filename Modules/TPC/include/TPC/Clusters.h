@@ -19,11 +19,11 @@
 #define QC_MODULE_TPC_CLUSTERS_H
 
 // O2 includes
-#include "TPCQC/Clusters.h"
 #include "TPCQC/CalPadWrapper.h"
 
 // QC includes
 #include "QualityControl/TaskInterface.h"
+#include "TPC/ClustersData.h"
 
 class TCanvas;
 
@@ -54,7 +54,8 @@ class Clusters /*final*/ : public TaskInterface // todo add back the "final" whe
   void reset() override;
 
  private:
-  o2::tpc::qc::Clusters mQCClusters{};                         ///< O2 Cluster task to perform actions on cluster objects
+  bool mIsMergeable = true;
+  ClustersData mQCClusters{};                                  ///< O2 Cluster task to perform actions on cluster objects
   std::vector<o2::tpc::qc::CalPadWrapper> mWrapperVector{};    ///< vector holding CalPad objects wrapped as TObjects; published on QCG; will be non-wrapped CalPad objects in the future
   std::vector<std::unique_ptr<TCanvas>> mNClustersCanvasVec{}; ///< summary canvases of the NClusters object
   std::vector<std::unique_ptr<TCanvas>> mQMaxCanvasVec{};      ///< summary canvases of the QMax object

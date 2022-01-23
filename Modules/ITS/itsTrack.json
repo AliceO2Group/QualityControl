@@ -1,28 +1,28 @@
 {
-  "qc" : {
-    "config" : {
-      "database" : {
-        "implementation" : "CCDB",
-        "host" : "ccdb-test.cern.ch:8080",
-        "username" : "not_applicable",
-        "password" : "not_applicable",
-        "name" : "not_applicable"
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
       },
-      "Activity" : {
-        "number" : "42",
-        "type" : "2"
+      "Activity": {
+        "number": "42",
+        "type": "2"
       },
-      "monitoring" : {
-        "url" : "infologger:///debug?qc"
+      "monitoring": {
+        "url": "infologger:///debug?qc"
       },
-      "consul" : {
-        "url" : "http://consul-test.cern.ch:8500"
+      "consul": {
+        "url": ""
       },
-      "conditionDB" : {
-        "url" : "ccdb-test.cern.ch:8080"
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
       }
     },
-    "tasks" : {
+   "tasks" : {
       "ITSTrackTask" : {
         "active" : "true",
         "className" : "o2::quality_control_modules::its::ITSTrackTask",
@@ -33,11 +33,15 @@
         "dataSource_comment" : "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource" : {
           "type" : "dataSamplingPolicy",
-          "name" : "compclus"
+          "name" : "tracks"
         },
         "location" : "remote",
         "taskParameters" : {
-          "runNumberPath" : "/home/its/QC/workdir/infiles/RunNumber.dat"
+	  "vertexXYsize" : "0.1",
+	  "vertexZsize": "15",
+	  "vertexRsize": "0.1",
+	  "NtracksMAX"  : "100",
+          "doTTree": "0"
         }
 
       }
@@ -52,7 +56,7 @@
         "dataSource" : [ {
           "type" : "Task",
           "name" : "ITSTrackTask",
-          "MOs" : ["NClusters","PhiDistribution","AngularDistribution","ClusterUsage","EtaDistribution"]
+          "MOs" : ["NClusters","PhiDistribution","AngularDistribution","EtaDistribution","VertexCoordinates","VertexRvsZ","VertexZ"]
         } ]
       }
     }
@@ -60,14 +64,14 @@
 
          "dataSamplingPolicies" : [
            {
-             "id" : "compclus",
+             "id" : "tracks",
              "active" : "true",
              "machines" : [],
-             "query" : "tracks:ITS/TRACKS/0;rofs:ITS/ITSTrackROF/0;compclus:ITS/COMPCLUSTERS/0",
+             "query" : "Vertices:ITS/VERTICES/0;tracks:ITS/TRACKS/0;rofs:ITS/ITSTrackROF/0;compclus:ITS/COMPCLUSTERS/0",
              "samplingConditions" : [
                {
                  "condition" : "random",
-                 "fraction" : "1",
+                 "fraction" : "0.3",
                  "seed" : "1441"
                }
              ],

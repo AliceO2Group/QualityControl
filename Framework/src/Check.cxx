@@ -220,7 +220,7 @@ CheckConfig Check::extractConfig(const CommonSpec&, const CheckSpec& checkSpec)
 
 framework::OutputSpec Check::createOutputSpec(const std::string& checkName)
 {
-  return { "QC", createCheckDataDescription(checkName), 0 };
+  return { "QC", createCheckDataDescription(checkName), 0, framework::Lifetime::Sporadic };
 }
 
 } // namespace o2::quality_control::checker

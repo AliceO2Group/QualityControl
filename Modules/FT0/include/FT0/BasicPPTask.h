@@ -45,6 +45,7 @@ class BasicPPTask final : public quality_control::postprocessing::PostProcessing
   void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
 
  private:
+  std::string mPathDigitQcTask;
   std::string mCycleDurationMoName;
   int mNumOrbitsInTF;
 

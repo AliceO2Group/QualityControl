@@ -41,6 +41,7 @@
 #include <Mergers/MergerInfrastructureBuilder.h>
 #include <Mergers/MergerBuilder.h>
 #include <DataSampling/DataSampling.h>
+#include <boost/property_tree/ptree.hpp>
 
 #include <algorithm>
 #include <set>
@@ -71,12 +72,11 @@ struct DataSamplingPolicySpec {
   std::string remoteMachine;
 };
 
-framework::WorkflowSpec InfrastructureGenerator::generateStandaloneInfrastructure(std::string configurationSource)
+framework::WorkflowSpec InfrastructureGenerator::generateStandaloneInfrastructure(const boost::property_tree::ptree& configurationTree)
 {
   printVersion();
 
-  auto config = ConfigurationFactory::getConfiguration(configurationSource);
-  auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(config->getRecursive());
+  auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(configurationTree);
   // todo: report the number of tasks/checks/etc once all are read there.
 
   WorkflowSpec workflow;
@@ -97,18 +97,17 @@ framework::WorkflowSpec InfrastructureGenerator::generateStandaloneInfrastructur
   return workflow;
 }
 
-void InfrastructureGenerator::generateStandaloneInfrastructure(framework::WorkflowSpec& workflow, std::string configurationSource)
+void InfrastructureGenerator::generateStandaloneInfrastructure(framework::WorkflowSpec& workflow, const boost::property_tree::ptree& configurationTree)
 {
-  auto qcInfrastructure = InfrastructureGenerator::generateStandaloneInfrastructure(configurationSource);
+  auto qcInfrastructure = InfrastructureGenerator::generateStandaloneInfrastructure(configurationTree);
   workflow.insert(std::end(workflow), std::begin(qcInfrastructure), std::end(qcInfrastructure));
 }
 
-WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(std::string configurationSource, std::string targetHost)
+WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(const boost::property_tree::ptree& configurationTree, std::string targetHost)
 {
   printVersion();
 
-  auto config = ConfigurationFactory::getConfiguration(configurationSource);
-  auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(config->getRecursive());
+  auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(configurationTree);
 
   WorkflowSpec workflow;
   std::set<DataSamplingPolicySpec> samplingPoliciesForRemoteTasks;
@@ -158,7 +157,7 @@ WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(std::string co
   }
 
   if (!samplingPoliciesForRemoteTasks.empty()) {
-    auto dataSamplingTree = config->getRecursive("dataSamplingPolicies");
+    auto dataSamplingTree = configurationTree.get_child("dataSamplingPolicies");
     // Creating Data Sampling Policies proxies
     for (const auto& [policyName, control, remoteMachine] : samplingPoliciesForRemoteTasks) {
       std::string port = std::to_string(DataSampling::PortForPolicy(dataSamplingTree, policyName).value_or(defaultPolicyPort));
@@ -178,18 +177,17 @@ WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(std::string co
   return workflow;
 }
 
-void InfrastructureGenerator::generateLocalInfrastructure(framework::WorkflowSpec& workflow, std::string configurationSource, std::string host)
+void InfrastructureGenerator::generateLocalInfrastructure(framework::WorkflowSpec& workflow, const boost::property_tree::ptree& configurationTree, std::string host)
 {
-  auto qcInfrastructure = InfrastructureGenerator::generateLocalInfrastructure(configurationSource, host);
+  auto qcInfrastructure = InfrastructureGenerator::generateLocalInfrastructure(configurationTree, host);
   workflow.insert(std::end(workflow), std::begin(qcInfrastructure), std::end(qcInfrastructure));
 }
 
-o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructure(std::string configurationSource)
+o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructure(const boost::property_tree::ptree& configurationTree)
 {
   printVersion();
 
-  auto config = ConfigurationFactory::getConfiguration(configurationSource);
-  auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(config->getRecursive());
+  auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(configurationTree);
 
   WorkflowSpec workflow;
   std::set<DataSamplingPolicySpec> samplingPoliciesForRemoteTasks;
@@ -234,7 +232,7 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
   }
 
   if (!samplingPoliciesForRemoteTasks.empty()) {
-    auto dataSamplingTree = config->getRecursive("dataSamplingPolicies");
+    auto dataSamplingTree = configurationTree.get_child("dataSamplingPolicies");
     // Creating Data Sampling Policies proxies
     for (const auto& [policyName, control, remoteMachine] : samplingPoliciesForRemoteTasks) {
       (void)remoteMachine;
@@ -260,18 +258,17 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
   return workflow;
 }
 
-void InfrastructureGenerator::generateRemoteInfrastructure(framework::WorkflowSpec& workflow, std::string configurationSource)
+void InfrastructureGenerator::generateRemoteInfrastructure(framework::WorkflowSpec& workflow, const boost::property_tree::ptree& configurationTree)
 {
-  auto qcInfrastructure = InfrastructureGenerator::generateRemoteInfrastructure(configurationSource);
+  auto qcInfrastructure = InfrastructureGenerator::generateRemoteInfrastructure(configurationTree);
   workflow.insert(std::end(workflow), std::begin(qcInfrastructure), std::end(qcInfrastructure));
 }
 
-framework::WorkflowSpec InfrastructureGenerator::generateLocalBatchInfrastructure(std::string configurationSource, std::string sinkFilePath)
+framework::WorkflowSpec InfrastructureGenerator::generateLocalBatchInfrastructure(const boost::property_tree::ptree& configurationTree, std::string sinkFilePath)
 {
   printVersion();
 
-  auto config = ConfigurationFactory::getConfiguration(configurationSource);
-  auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(config->getRecursive());
+  auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(configurationTree);
   std::vector<InputSpec> fileSinkInputs;
 
   WorkflowSpec workflow;
@@ -301,18 +298,17 @@ framework::WorkflowSpec InfrastructureGenerator::generateLocalBatchInfrastructur
   return workflow;
 }
 
-void InfrastructureGenerator::generateLocalBatchInfrastructure(framework::WorkflowSpec& workflow, std::string configurationSource, std::string sinkFilePath)
+void InfrastructureGenerator::generateLocalBatchInfrastructure(framework::WorkflowSpec& workflow, const boost::property_tree::ptree& configurationTree, std::string sinkFilePath)
 {
-  auto qcInfrastructure = InfrastructureGenerator::generateLocalBatchInfrastructure(std::move(configurationSource), std::move(sinkFilePath));
+  auto qcInfrastructure = InfrastructureGenerator::generateLocalBatchInfrastructure(std::move(configurationTree), std::move(sinkFilePath));
   workflow.insert(std::end(workflow), std::begin(qcInfrastructure), std::end(qcInfrastructure));
 }
 
-framework::WorkflowSpec InfrastructureGenerator::generateRemoteBatchInfrastructure(std::string configurationSource, std::string sourceFilePath)
+framework::WorkflowSpec InfrastructureGenerator::generateRemoteBatchInfrastructure(const boost::property_tree::ptree& configurationTree, std::string sourceFilePath)
 {
   printVersion();
 
-  auto config = ConfigurationFactory::getConfiguration(configurationSource);
-  auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(config->getRecursive());
+  auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(configurationTree);
 
   WorkflowSpec workflow;
 
@@ -335,9 +331,9 @@ framework::WorkflowSpec InfrastructureGenerator::generateRemoteBatchInfrastructu
   return workflow;
 }
 
-void InfrastructureGenerator::generateRemoteBatchInfrastructure(framework::WorkflowSpec& workflow, std::string configurationSource, std::string sourceFilePath)
+void InfrastructureGenerator::generateRemoteBatchInfrastructure(framework::WorkflowSpec& workflow, const boost::property_tree::ptree& configurationTree, std::string sourceFilePath)
 {
-  auto qcInfrastructure = InfrastructureGenerator::generateRemoteBatchInfrastructure(configurationSource, sourceFilePath);
+  auto qcInfrastructure = InfrastructureGenerator::generateRemoteBatchInfrastructure(configurationTree, sourceFilePath);
   workflow.insert(std::end(workflow), std::begin(qcInfrastructure), std::end(qcInfrastructure));
 }
 
@@ -450,7 +446,7 @@ void InfrastructureGenerator::generateLocalTaskLocalProxy(framework::WorkflowSpe
 {
   std::string proxyName = taskName + "-proxy";
   std::string channelName = taskName + "-proxy";
-  InputSpec proxyInput{ channelName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName), static_cast<SubSpec>(id) };
+  InputSpec proxyInput{ channelName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName), static_cast<SubSpec>(id), Lifetime::Sporadic };
   std::string channelConfig = "name=" + channelName + ",type=pub,method=connect,address=tcp://" +
                               remoteHost + ":" + remotePort + ",rateLogging=60,transport=zeromq";
 
@@ -471,7 +467,7 @@ void InfrastructureGenerator::generateLocalTaskRemoteProxy(framework::WorkflowSp
   Outputs proxyOutputs;
   for (size_t id = 1; id <= numberOfLocalMachines; id++) {
     proxyOutputs.emplace_back(
-      OutputSpec{ { channelName }, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName), static_cast<SubSpec>(id) });
+      OutputSpec{ { channelName }, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName), static_cast<SubSpec>(id), Lifetime::Sporadic });
   }
 
   std::string channelConfig = "name=" + channelName + ",type=sub,method=bind,address=tcp://*:" + remotePort +
@@ -496,7 +492,8 @@ void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow,
       InputSpec{ { taskName + std::to_string(id) },
                  TaskRunner::createTaskDataOrigin(),
                  TaskRunner::createTaskDataDescription(taskName),
-                 static_cast<SubSpec>(id) });
+                 static_cast<SubSpec>(id),
+                 Lifetime::Sporadic });
   }
 
   MergerInfrastructureBuilder mergersBuilder;
@@ -531,14 +528,14 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
   // todo: avoid code repetition
   for (const auto& taskSpec : infrastructureSpec.tasks) {
     if (taskSpec.active) {
-      InputSpec taskOutput{ taskSpec.taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskSpec.taskName) };
+      InputSpec taskOutput{ taskSpec.taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskSpec.taskName), Lifetime::Sporadic };
       tasksOutputMap.insert({ DataSpecUtils::label(taskOutput), taskOutput });
     }
   }
 
   for (const auto& ppTaskSpec : infrastructureSpec.postProcessingTasks) {
     if (ppTaskSpec.active) {
-      InputSpec ppTaskOutput{ ppTaskSpec.taskName, PostProcessingDevice::createPostProcessingDataOrigin(), PostProcessingDevice::createPostProcessingDataDescription(ppTaskSpec.taskName) };
+      InputSpec ppTaskOutput{ ppTaskSpec.taskName, PostProcessingDevice::createPostProcessingDataOrigin(), PostProcessingDevice::createPostProcessingDataDescription(ppTaskSpec.taskName), Lifetime::Sporadic };
       tasksOutputMap.insert({ DataSpecUtils::label(ppTaskOutput), ppTaskOutput });
     }
   }
@@ -664,7 +661,7 @@ void InfrastructureGenerator::generatePostProcessing(WorkflowSpec& workflow, con
         {},
         ppTask.getOptions()
       };
-
+      dataProcessorSpec.labels.emplace_back(PostProcessingDevice::getLabel());
       dataProcessorSpec.algorithm = adaptFromTask<PostProcessingDevice>(std::move(ppTask));
 
       workflow.emplace_back(std::move(dataProcessorSpec));

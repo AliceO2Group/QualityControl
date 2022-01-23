@@ -1,0 +1,61 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "2"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": "http://consul-test.cern.ch:8500"
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      }
+    },
+    "postprocessing": {
+      "ITSqcTracks": {
+        "active": "true",
+        "className": "o2::quality_control::postprocessing::TrendingTaskITSTracks",
+        "moduleName": "QualityControl",
+        "detectorName": "ITS",
+        "dataSources": [
+          {
+            "type": "repository",
+            "paths": ["qc/ITS/MO/ITSTrackTask/NClusters"],
+            "names": ["NClusters"],
+            "reductorName": "o2::quality_control_modules::common::TH1Reductor",
+            "moduleName": "QcITS"
+          }
+        ],
+        "plots": [
+          {
+            "names": ["NClusters_mean", "NClusters_stddev"],
+            "title": ["Average NClusters trend", "Stddev NClusters trend"],
+            "varexp": ["NClusters.mean:ntreeentries", "NClusters.stddev:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "60 seconds"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      }
+    }
+  }
+}

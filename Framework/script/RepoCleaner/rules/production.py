@@ -176,6 +176,10 @@ def final_trimming(ccdb, period_btw_versions_final, run_versions, preservation_l
                 ccdb.updateValidity(last_preserved, last_preserved.validFrom, str(int(v.validFrom) - 1), metadata)
                 update_list.append(last_preserved)
                 logging.debug(f"      Extension of {last_preserved}")
+            if v == run_versions[-1]:  # last element, won't be extended
+                ccdb.updateValidity(v, v.validFrom, v.validTo, metadata)
+                update_list.append(v)
+                logging.debug(f"      Flag last element with preservation=true")
             last_preserved = v
             preservation_list.append(v)
         else:  # too close to the previous one, delete

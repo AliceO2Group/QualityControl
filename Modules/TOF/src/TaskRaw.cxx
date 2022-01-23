@@ -52,7 +52,7 @@ void RawDataDecoder::rdhHandler(const o2::header::RAWDataHeader* rdh)
   bool isValidRDH = RDHUtils::checkRDH(rdh, false);
 
   if (!isValidRDH) {
-    LOG(DEBUG) << "No valid RDH... skipped";
+    LOG(debug) << "No valid RDH... skipped";
     return;
   }
 
@@ -437,6 +437,7 @@ void TaskRaw::initialize(o2::framework::InitContext& /*ctx*/)
   mDecoderRaw.mCounterNoisyChannels.MakeHistogram(mHistoIndexEOIsNoise.get());
   getObjectsManager()->startPublishing(mHistoIndexEOIsNoise.get());
   mHistoRDHTriggers = std::make_shared<TH1F>("hRDHTriggers", "RDH Trigger Efficiency;Crate;Triggers_{served}/Triggers_{received}", RawDataDecoder::ncrates, 0, RawDataDecoder::ncrates);
+  mHistoRDHTriggers->SetBit(TH1::kIsAverage);
   mDecoderRaw.mCounterRDHTriggers[0].MakeHistogram(mHistoRDHTriggers.get());
   getObjectsManager()->startPublishing(mHistoRDHTriggers.get());
   mHistoOrbitsPerCrate = std::make_shared<TH2F>("hOrbitsPerCrate", "Orbits per Crate;Orbits;Crate;Events", 800, 0, 800., RawDataDecoder::ncrates, 0, RawDataDecoder::ncrates);

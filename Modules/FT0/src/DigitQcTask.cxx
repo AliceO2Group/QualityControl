@@ -26,6 +26,7 @@
 #include "Framework/InputRecord.h"
 
 #include <DataFormatsFT0/LookUpTable.h>
+#include <vector>
 
 namespace o2::quality_control_modules::ft0
 {
@@ -48,7 +49,7 @@ void DigitQcTask::rebinFromConfig()
      "binning_Amp_channel2": "5,-10,90" ...
   */
   auto rebinHisto = [](std::string hName, std::string binning) {
-    vector<std::string> tokenizedBinning;
+    std::vector<std::string> tokenizedBinning;
     boost::split(tokenizedBinning, binning, boost::is_any_of(","));
     if (tokenizedBinning.size() == 3) { // TH1
       ILOG(Debug) << "config: rebinning TH1 " << hName << " -> " << binning << ENDM;
@@ -103,6 +104,9 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mMapDigitTrgNames.insert({ o2::ft0::Triggers::bitVertex, "Vertex" });
   mMapDigitTrgNames.insert({ o2::ft0::Triggers::bitCen, "Central" });
   mMapDigitTrgNames.insert({ o2::ft0::Triggers::bitSCen, "SemiCentral" });
+  mMapDigitTrgNames.insert({ 5, "Laser" });
+  mMapDigitTrgNames.insert({ 6, "OutputsAreBlocked" });
+  mMapDigitTrgNames.insert({ 7, "DataIsValid" });
 
   mHistTime2Ch = std::make_unique<TH2F>("TimePerChannel", "Time vs Channel;Channel;Time", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM, 4100, -2050, 2050);
   mHistTime2Ch->SetOption("colz");
@@ -148,6 +152,12 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
       continue;
     }
     auto moduleName = lutEntry.mModuleName;
+    if (moduleName == "TCM") {
+      if (mMapPmModuleChannels.find(moduleName) == mMapPmModuleChannels.end()) {
+        mMapPmModuleChannels.insert({ moduleName, std::vector<int>{} });
+      }
+      continue;
+    }
     if (mMapPmModuleChannels.find(moduleName) != mMapPmModuleChannels.end()) {
       mMapPmModuleChannels[moduleName].push_back(chId);
     } else {
@@ -335,7 +345,7 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
     if (digit.mTriggers.amplA == -5000 && digit.mTriggers.amplC == -5000 && digit.mTriggers.timeA == -5000 && digit.mTriggers.timeC == -5000)
       isTCM = false;
-    mHistOrbit2BC->Fill(digit.getOrbit() - firstOrbit, digit.getBC());
+    mHistOrbit2BC->Fill(digit.getIntRecord().orbit % sOrbitsPerTF, digit.getIntRecord().bc);
     mHistBC->Fill(digit.getBC());
 
     if (isTCM && !digit.mTriggers.getLaserBit()) {
@@ -367,6 +377,9 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
           mMapPmModuleBcOrbit[entry.first]->Fill(digit.getIntRecord().orbit % sOrbitsPerTF, digit.getIntRecord().bc);
           break;
         }
+      }
+      if (entry.first == "TCM" && isTCM && (digit.getTriggers().triggersignals & (1 << sDataIsValidBitPos))) {
+        mMapPmModuleBcOrbit[entry.first]->Fill(digit.getIntRecord().orbit % sOrbitsPerTF, digit.getIntRecord().bc);
       }
     }
 

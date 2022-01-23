@@ -67,7 +67,7 @@ std::string CheckRunner::createCheckRunnerName(const std::vector<CheckConfig>& c
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     "abcdefghijklmnopqrstuvwxyz";
   const int NAME_LEN = 4;
-  std::string name(CheckRunner::createCheckRunnerIdString() + "-");
+  std::string name(CheckRunner::createCheckRunnerIdString() + "-" + getDetectorName(checks));
 
   if (checks.size() == 1) {
     // If single check, use the check name
@@ -99,7 +99,7 @@ std::string CheckRunner::createCheckRunnerName(const std::vector<CheckConfig>& c
 
 std::string CheckRunner::createCheckRunnerFacility(std::string deviceName)
 {
-  // it starts with "check/" and is followed by the unique part of the device name truncated to a maximum of 32 characters.f
+  // it starts with "check/" and is followed by the unique part of the device name truncated to a maximum of 32 characters.
   string facilityName = "check/" + deviceName.substr(CheckRunner::createCheckRunnerIdString().length() + 1, string::npos);
   facilityName = facilityName.substr(0, 32);
   return facilityName;
@@ -122,7 +122,8 @@ o2::framework::Outputs CheckRunner::collectOutputs(const std::vector<CheckConfig
 }
 
 CheckRunner::CheckRunner(CheckRunnerConfig checkRunnerConfig, const std::vector<CheckConfig>& checkConfigs)
-  : mDeviceName(createCheckRunnerName(checkConfigs)),
+  : mDetectorName(getDetectorName(checkConfigs)),
+    mDeviceName(createCheckRunnerName(checkConfigs)),
     mConfig(std::move(checkRunnerConfig)),
     /* All checks have the same Input */
     mInputs(checkConfigs.front().inputSpecs),
@@ -162,18 +163,21 @@ CheckRunner::~CheckRunner()
 void CheckRunner::init(framework::InitContext& iCtx)
 {
   InfoLoggerContext* ilContext = nullptr;
+  AliceO2::InfoLogger::InfoLogger* il = nullptr;
   try {
     ilContext = &iCtx.services().get<AliceO2::InfoLogger::InfoLoggerContext>();
+    il = &iCtx.services().get<AliceO2::InfoLogger::InfoLogger>();
   } catch (const RuntimeErrorRef& err) {
-    ILOG(Error) << "Could not find the DPL InfoLogger Context." << ENDM;
+    ILOG(Error) << "Could not find the DPL InfoLogger." << ENDM;
   }
 
   try {
-    ILOG_INST.init(createCheckRunnerFacility(mDeviceName),
-                   mConfig.infologgerFilterDiscardDebug,
-                   mConfig.infologgerDiscardLevel,
-                   ilContext);
-    ILOG_INST.setDetector(CheckRunner::getDetectorName(mChecks));
+    QcInfoLogger::init(createCheckRunnerFacility(mDeviceName),
+                       mConfig.infologgerFilterDiscardDebug,
+                       mConfig.infologgerDiscardLevel,
+                       il,
+                       ilContext);
+    QcInfoLogger::setDetector(mDetectorName);
     initDatabase();
     initMonitoring();
     initServiceDiscovery();
@@ -410,8 +414,7 @@ void CheckRunner::initServiceDiscovery()
     ILOG(Warning, Ops) << "Service Discovery disabled" << ENDM;
     return;
   }
-  std::string url = ServiceDiscovery::GetDefaultUrl(ServiceDiscovery::DefaultHealthPort + 1); // we try to avoid colliding with the TaskRunner
-  mServiceDiscovery = std::make_shared<ServiceDiscovery>(mConfig.consulUrl, mDeviceName, mDeviceName, url);
+  mServiceDiscovery = std::make_shared<ServiceDiscovery>(mConfig.consulUrl, mDeviceName, mDeviceName);
   ILOG(Info, Support) << "ServiceDiscovery initialized" << ENDM;
 }
 
@@ -422,8 +425,8 @@ void CheckRunner::start(const ServiceRegistry& services)
   mActivity.mPassName = computePassName(mConfig.fallbackPassName);
   mActivity.mProvenance = computeProvenance(mConfig.fallbackProvenance);
   string partitionName = computePartitionName(services);
-  ILOG_INST.setRun(mActivity.mId);
-  ILOG_INST.setPartition(partitionName);
+  QcInfoLogger::setRun(mActivity.mId);
+  QcInfoLogger::setPartition(partitionName);
   ILOG(Info, Ops) << "Starting run " << mActivity.mId << ":"
                   << "\n   - period: " << mActivity.mPeriodName << "\n   - pass type: " << mActivity.mPassName << "\n   - provenance: " << mActivity.mProvenance << ENDM;
   mTimerTotalDurationActivity.reset();
@@ -456,11 +459,11 @@ void CheckRunner::reset()
   mTotalQOSent = 0;
 }
 
-std::string CheckRunner::getDetectorName(std::vector<Check> checks)
+std::string CheckRunner::getDetectorName(const std::vector<CheckConfig> checks)
 {
   std::string detectorName;
   for (auto& check : checks) {
-    const std::string& thisDetector = check.getDetector();
+    const std::string& thisDetector = check.detectorName;
     if (detectorName.length() == 0) {
       detectorName = thisDetector;
     } else if (thisDetector != detectorName) {

@@ -16,14 +16,14 @@
                 "url": "infologger:///debug?qc"
             },
             "consul": {
-                "url": "http://consul-test.cern.ch:8500"
+                "url": ""
             },
             "conditionDB": {
                 "url": "ccdb-test.cern.ch:8080"
             }
         },
         "tasks": {
-            "ITSFEE": {
+            "ITSFee": {
                 "active": "true",
                 "className": "o2::quality_control_modules::its::ITSFeeTask",
                 "moduleName": "QcITS",
@@ -32,9 +32,12 @@
                 "maxNumberCycles": "-1",
                 "dataSource": {
                     "type": "dataSamplingPolicy",
-                    "name": "RAWDATA"
+                    "name": "feedata"
                 },
-                "location": "remote"
+                "location": "remote",
+                "taskParameters": {
+                    "NPayloadSizeBins": "4096"
+                }
             }
         },
         "checks": {
@@ -44,18 +47,23 @@
                 "moduleName": "QcITS",
                 "policy": "OnAny",
                 "detectorName": "ITS",
-                "dataSource": [{
-                    "type": "Task",
-                    "name": "ITSFEE",
-                    "MOs": ["LaneStatus/laneStatusFlagFAULT","LaneStatus/laneStatusFlagERROR","LaneStatus/laneStatusFlagWARNING"]
-                }]
+                "dataSource": [
+                    {
+                        "type": "Task",
+                        "name": "ITSFEE",
+                        "MOs": [
+                            "LaneStatus/laneStatusFlagFAULT",
+                            "LaneStatus/laneStatusFlagERROR",
+                            "LaneStatus/laneStatusFlagWARNING"
+                        ]
+                    }
+                ]
             }
         }
-
     },
     "dataSamplingPolicies": [
         {
-            "id": "RAWDATA",
+            "id": "feedata",
             "active": "true",
             "machines": [],
             "query": "filter:ITS/RAWDATA;G:FLP/DISTSUBTIMEFRAME",
@@ -70,4 +78,3 @@
         }
     ]
 }
-

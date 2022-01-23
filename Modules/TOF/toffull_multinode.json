@@ -16,7 +16,7 @@
         "url": "infologger:///debug?qc"
       },
       "consul": {
-        "url": "http://consul-test.cern.ch:8500"
+        "url": ""
       },
       "conditionDB": {
         "url": "ccdb-test.cern.ch:8080"
@@ -122,6 +122,22 @@
             "name": "TaskDigits",
             "MOs": [
               "TOFRawsMulti"
+            ]
+          }
+        ]
+      },
+      "TOFRawHitMap": {
+        "active": "true",
+        "className": "o2::quality_control_modules::tof::CheckHitMap",
+        "moduleName": "QcTOF",
+        "policy": "OnAny",
+        "detectorName": "TOF",
+        "dataSource": [
+          {
+            "type": "Task",
+            "name": "TaskDigits",
+            "MOs": [
+              "TOFRawHitMap"
             ]
           }
         ]

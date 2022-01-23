@@ -20,7 +20,6 @@
 #include <TCanvas.h>
 #include <DataFormatsParameters/GRPObject.h>
 #include <ITSMFTReconstruction/DigitPixelReader.h>
-#include <DetectorsCommonDataFormats/NameConf.h>
 #include <DataFormatsITSMFT/ROFRecord.h>
 #include <ITSMFTReconstruction/ChipMappingITS.h>
 #include <DataFormatsITSMFT/ClusterTopology.h>
@@ -77,7 +76,7 @@ ITSNoisyPixelTask::~ITSNoisyPixelTask()
 void ITSNoisyPixelTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
 
-  QcInfoLogger::GetInstance() << "initialize ITSNoisyPixelTask" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "initialize ITSNoisyPixelTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
   getJsonParameters();
   createAllHistos();
@@ -86,21 +85,21 @@ void ITSNoisyPixelTask::initialize(o2::framework::InitContext& /*ctx*/)
   std::ifstream file(mDictPath.c_str());
 
   if (file.good()) {
-    LOG(INFO) << "Running with dictionary: " << mDictPath;
+    LOG(info) << "Running with dictionary: " << mDictPath;
     mDict.readBinaryFile(mDictPath);
   } else {
-    LOG(INFO) << "Running without dictionary !";
+    LOG(info) << "Running without dictionary !";
   }
 }
 
 void ITSNoisyPixelTask::startOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 void ITSNoisyPixelTask::startOfCycle()
 {
-  QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 void ITSNoisyPixelTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -110,11 +109,10 @@ void ITSNoisyPixelTask::monitorData(o2::framework::ProcessingContext& ctx)
   int difference;
   start = std::chrono::high_resolution_clock::now();
 
-  QcInfoLogger::GetInstance() << "START DOING QC General" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "START DOING QC General" << AliceO2::InfoLogger::InfoLogger::endm;
   auto clusArr = ctx.inputs().get<gsl::span<o2::itsmft::CompClusterExt>>("compclus");
-  auto digits = ctx.inputs().get<const std::vector<o2::itsmft::Digit>>("digits");
-
   auto clusRofArr = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("clustersrof");
+
   int ROFCycle = clusRofArr.size();
 
   int lay = -1, sta, ssta, mod, chip;
@@ -138,32 +136,37 @@ void ITSNoisyPixelTask::monitorData(o2::framework::ProcessingContext& ctx)
       hOccupancyOB[iLayer - 3]->Scale(norm_factor);
   }
 
-  for (auto&& pixeldata : digits) {
-    ChipID = pixeldata.getChipIndex();
+  for (const auto& rof : clusRofArr) {
 
-    col = pixeldata.getColumn();
-    row = pixeldata.getRow();
+    auto clustersInFrame = rof.getROFData(clusArr);
 
-    label = 1024 * 512;
-    label = label * ChipID + 1024 * row + col;
+    for (auto& hit : clustersInFrame) {
 
-    hashtable[label]++;
+      ChipID = hit.getSensorID();
+      col = hit.getCol();
+      row = hit.getRow();
 
-    mGeom->getChipId(ChipID, lay, sta, ssta, mod, chip);
+      label = 1024 * 512;
+      label = label * ChipID + 1024 * row + col;
 
-    if (lay < 3) {
+      hashtable[label]++;
 
-      Double_t Addr[3] = { (double)col, (double)row, (double)chip };
-      hOccupancyIB[lay]->Fill(chip + 1, sta, 1. / ((mROFcounter + ROFCycle) * 5.24e5));
-      hNoisyPixelMapIB[lay][sta]->Fill(Addr);
+      mGeom->getChipId(ChipID, lay, sta, ssta, mod, chip);
 
-    } else {
+      if (lay < 3) {
 
-      std::vector<int> XY = MapOverHIC(col, row, chip);
-      Double_t Addr[3] = { (double)XY[0], (double)XY[1], (double)mod };
+        Double_t Addr[3] = { (double)col, (double)row, (double)chip };
+        hOccupancyIB[lay]->Fill(chip + 1, sta, 1. / ((mROFcounter + ROFCycle) * 5.24e5));
+        hNoisyPixelMapIB[lay][sta]->Fill(Addr);
 
-      hOccupancyOB[lay - 3]->Fill(mod, sta, 1. / ((mROFcounter + ROFCycle) * 5.24e5 * mNChipsPerHic[lay]));
-      hNoisyPixelMapOB[lay - 3][sta]->Fill(Addr);
+      } else {
+
+        std::vector<int> XY = MapOverHIC(col, row, chip);
+        Double_t Addr[3] = { (double)XY[0], (double)XY[1], (double)mod };
+
+        hOccupancyOB[lay - 3]->Fill(mod, sta, 1. / ((mROFcounter + ROFCycle) * 5.24e5 * mNChipsPerHic[lay]));
+        hNoisyPixelMapOB[lay - 3][sta]->Fill(Addr);
+      }
     }
   }
 
@@ -265,17 +268,17 @@ void ITSNoisyPixelTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void ITSNoisyPixelTask::endOfCycle()
 {
-  QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 void ITSNoisyPixelTask::endOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 void ITSNoisyPixelTask::reset()
 {
-  QcInfoLogger::GetInstance() << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
 
   if (mEnableOrderedHitsObject) {
     hOrderedHitsAddressIB->Reset();
@@ -385,7 +388,7 @@ void ITSNoisyPixelTask::getJsonParameters()
 
     if (mCustomParameters["layer"][ilayer] != '0') {
       mEnableLayers[ilayer] = 1;
-      LOG(INFO) << "enable layer : " << ilayer;
+      LOG(info) << "enable layer : " << ilayer;
     } else {
       mEnableLayers[ilayer] = 0;
     }
@@ -395,7 +398,7 @@ void ITSNoisyPixelTask::getJsonParameters()
 void ITSNoisyPixelTask::addObject(TObject* aObject)
 {
   if (!aObject) {
-    LOG(INFO) << " ERROR: trying to add non-existent object ";
+    LOG(info) << " ERROR: trying to add non-existent object ";
     return;
   } else
     mPublishedObjects.push_back(aObject);
@@ -436,7 +439,7 @@ void ITSNoisyPixelTask::publishHistos()
 {
   for (unsigned int iObj = 0; iObj < mPublishedObjects.size(); iObj++) {
     getObjectsManager()->startPublishing(mPublishedObjects.at(iObj));
-    LOG(INFO) << " Object will be published: " << mPublishedObjects.at(iObj)->GetName();
+    LOG(info) << " Object will be published: " << mPublishedObjects.at(iObj)->GetName();
   }
 }
 
