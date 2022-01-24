@@ -53,7 +53,7 @@ o2::framework::DataProcessorSpec TaskRunnerFactory::create(const TaskRunnerConfi
 
 TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig, const TaskSpec& taskSpec, std::optional<int> id, std::optional<int> resetAfterCycles)
 {
-  std::string deviceName{ TaskRunner::createTaskRunnerIdString() + "-" + taskSpec.taskName };
+  std::string deviceName{ TaskRunner::createTaskRunnerIdString() + "-" + InfrastructureSpecReader::validateDetectorName(taskSpec.detectorName) + "-" + taskSpec.taskName };
 
   int parallelTaskID = id.value_or(0);
 

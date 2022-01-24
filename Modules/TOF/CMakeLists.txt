@@ -15,6 +15,7 @@ target_sources(O2QcTOF
                       src/CheckRawMultiplicity.cxx
                       src/CheckRawTime.cxx
                       src/CheckRawToT.cxx
+                      src/CheckHitMap.cxx
                       # PostProcessing
                       src/PostProcessDiagnosticPerCrate.cxx
                       # Trending
@@ -58,6 +59,7 @@ add_root_dictionary(O2QcTOF
                             include/TOF/CheckRawMultiplicity.h
                             include/TOF/CheckRawTime.h
                             include/TOF/CheckRawToT.h
+                            include/TOF/CheckHitMap.h
                             # PostProcessing
                             include/TOF/PostProcessDiagnosticPerCrate.h
                             # Trending

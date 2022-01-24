@@ -71,7 +71,7 @@ std::string CheckRunner::createCheckRunnerName(const std::vector<CheckConfig>& c
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     "abcdefghijklmnopqrstuvwxyz";
   const int NAME_LEN = 4;
-  std::string name(CheckRunner::createCheckRunnerIdString() + "-");
+  std::string name(CheckRunner::createCheckRunnerIdString() + "-" + getDetectorName(checks));
 
   if (checks.size() == 1) {
     // If single check, use the check name
@@ -103,7 +103,7 @@ std::string CheckRunner::createCheckRunnerName(const std::vector<CheckConfig>& c
 
 std::string CheckRunner::createCheckRunnerFacility(std::string deviceName)
 {
-  // it starts with "check/" and is followed by the unique part of the device name truncated to a maximum of 32 characters.f
+  // it starts with "check/" and is followed by the unique part of the device name truncated to a maximum of 32 characters.
   string facilityName = "check/" + deviceName.substr(CheckRunner::createCheckRunnerIdString().length() + 1, string::npos);
   facilityName = facilityName.substr(0, 32);
   return facilityName;
@@ -126,7 +126,8 @@ o2::framework::Outputs CheckRunner::collectOutputs(const std::vector<CheckConfig
 }
 
 CheckRunner::CheckRunner(CheckRunnerConfig checkRunnerConfig, const std::vector<CheckConfig>& checkConfigs)
-  : mDeviceName(createCheckRunnerName(checkConfigs)),
+  : mDetectorName(getDetectorName(checkConfigs)),
+    mDeviceName(createCheckRunnerName(checkConfigs)),
     mConfig(std::move(checkRunnerConfig)),
     /* All checks have the same Input */
     mInputs(checkConfigs.front().inputSpecs),
@@ -185,7 +186,7 @@ void CheckRunner::refreshConfig(InitContext& iCtx)
       // TODO: Problem is that a lot of the logic is in the infrastructure generator.
       // TODO: we should probably just preserve the checks list and update their state.
 
-      QcInfoLogger::setDetector(CheckRunner::getDetectorName(mChecks));
+      mDetectorName = CheckRunner::getDetectorName(mChecks);
     }
   } catch (std::invalid_argument& error) {
     // ignore the error, we just skip the update of the config file. It can be legit, e.g. in command line mode
@@ -197,9 +198,8 @@ void CheckRunner::init(framework::InitContext& iCtx)
 {
   try {
     initInfologger(iCtx);
-
     refreshConfig(iCtx);
-
+    QcInfoLogger::setDetector(mDetectorName);
     initDatabase();
     initMonitoring();
     initServiceDiscovery();
@@ -498,11 +498,11 @@ void CheckRunner::reset()
   mTotalQOSent = 0;
 }
 
-std::string CheckRunner::getDetectorName(std::vector<Check> checks)
+std::string CheckRunner::getDetectorName(const std::vector<CheckConfig> checks)
 {
   std::string detectorName;
   for (auto& check : checks) {
-    const std::string& thisDetector = check.getDetector();
+    const std::string& thisDetector = check.detectorName;
     if (detectorName.length() == 0) {
       detectorName = thisDetector;
     } else if (thisDetector != detectorName) {
