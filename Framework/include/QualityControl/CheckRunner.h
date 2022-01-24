@@ -209,7 +209,7 @@ class CheckRunner : public framework::Task
 
   // General state
   std::string mDeviceName;
-  std::vector<Check> mChecks;
+  std::map<std::string, Check> mChecks;
   std::string mDetectorName;
   Activity mActivity;
   CheckRunnerConfig mConfig;
