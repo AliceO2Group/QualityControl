@@ -185,8 +185,7 @@ void CheckRunner::refreshConfig(InitContext& iCtx)
       // TODO: in particular, reset mChecks and update it.
       // TODO: Problem is that a lot of the logic is in the infrastructure generator.
       // TODO: we should probably just preserve the checks list and update their state.
-
-      mDetectorName = CheckRunner::getDetectorName(mChecks);
+      // TODO: also see if we should update the detector name
     }
   } catch (std::invalid_argument& error) {
     // ignore the error, we just skip the update of the config file. It can be legit, e.g. in command line mode
@@ -199,7 +198,6 @@ void CheckRunner::init(framework::InitContext& iCtx)
   try {
     initInfologger(iCtx);
     refreshConfig(iCtx);
-    QcInfoLogger::setDetector(mDetectorName);
     initDatabase();
     initMonitoring();
     initServiceDiscovery();
