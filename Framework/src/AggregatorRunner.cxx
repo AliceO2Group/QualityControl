@@ -25,12 +25,17 @@
 #include <Framework/InputRecordWalker.h>
 
 #include <utility>
+
+#include <TSystem.h>
+
 // QC
 #include "QualityControl/DatabaseFactory.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/ServiceDiscovery.h"
 #include "QualityControl/Aggregator.h"
 #include "QualityControl/runnerUtils.h"
+#include "QualityControl/InfrastructureSpecReader.h"
+#include "QualityControl/AggregatorRunnerFactory.h"
 
 using namespace AliceO2::Common;
 using namespace AliceO2::InfoLogger;
@@ -46,18 +51,64 @@ const auto current_diagnostic = boost::current_exception_diagnostic_information;
 namespace o2::quality_control::checker
 {
 
-AggregatorRunner::AggregatorRunner(AggregatorRunnerConfig arc, const std::vector<AggregatorConfig>& acs)
+AggregatorRunner::AggregatorRunner(AggregatorRunnerConfig arc, const std::vector<AggregatorConfig>& acs) //, const o2::quality_control::core::InfrastructureSpec& infrastructureSpec)
   : mDeviceName(createAggregatorRunnerName()),
     mRunnerConfig(std::move(arc)),
-    mAggregatorsConfigs(acs),
+    mAggregatorsConfig(std::move(acs)),
     mTotalNumberObjectsReceived(0),
     mTotalNumberAggregatorExecuted(0),
     mTotalNumberObjectsProduced(0)
 {
-  // Prepare the inputs, remove duplicates
+  prepareInputs();
+}
+
+AggregatorRunner::~AggregatorRunner()
+{
+  if (mServiceDiscovery != nullptr) {
+    mServiceDiscovery->deregister();
+  }
+}
+
+void AggregatorRunner::refreshConfig(InitContext& iCtx)
+{
+  try {
+    auto updatedTree = iCtx.options().get<boost::property_tree::ptree>("qcConfiguration");
+
+    if (updatedTree.empty()) {
+      ILOG(Warning, Devel) << "Templated config tree is empty, we continue with the original one" << ENDM;
+    } else {
+      if (gSystem->Getenv("O2_QC_DEBUG_CONFIG_TREE")) { // until we are sure it works, keep a backdoor
+        ILOG(Debug, Devel) << "We print the tree we got from the ECS via DPL : " << ENDM;
+        printTree(updatedTree);
+      }
+
+      // read the config, prepare spec
+      auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(updatedTree);
+
+      // replace the runner config
+      mRunnerConfig = AggregatorRunnerFactory::extractRunnerConfig(infrastructureSpec.common);
+
+      // replace the aggregators configs
+      mAggregatorsConfig.clear();
+      mAggregatorsConfig = AggregatorRunnerFactory::extractAggregatorsConfig(infrastructureSpec.common, infrastructureSpec.aggregators);
+
+      // replace the inputs
+      mInputs.clear();
+      prepareInputs();
+
+      ILOG(Debug, Devel) << "Configuration refreshed" << ENDM;
+    }
+  } catch (std::invalid_argument& error) {
+    // ignore the error, we just skip the update of the config file. It can be legit, e.g. in command line mode
+    ILOG(Warning, Devel) << "Could not get updated config tree in TaskRunner::init() - `qcConfiguration` could not be retrieved" << ENDM;
+  }
+}
+
+void AggregatorRunner::prepareInputs()
+{
   std::set<std::string> alreadySeen;
   int i = 0;
-  for (const auto& aggConfig : mAggregatorsConfigs) {
+  for (const auto& aggConfig : mAggregatorsConfig) {
     for (auto input : aggConfig.inputSpecs) {
       if (alreadySeen.count(input.binding) == 0) {
         alreadySeen.insert(input.binding);
@@ -65,13 +116,6 @@ AggregatorRunner::AggregatorRunner(AggregatorRunnerConfig arc, const std::vector
         mInputs.emplace_back(input);
       }
     }
-  }
-}
-
-AggregatorRunner::~AggregatorRunner()
-{
-  if (mServiceDiscovery != nullptr) {
-    mServiceDiscovery->deregister();
   }
 }
 
@@ -92,18 +136,12 @@ std::string AggregatorRunner::createAggregatorRunnerName()
 
 void AggregatorRunner::init(framework::InitContext& iCtx)
 {
-  InfoLoggerContext* ilContext = nullptr;
-  AliceO2::InfoLogger::InfoLogger* il = nullptr;
-  try {
-    ilContext = &iCtx.services().get<AliceO2::InfoLogger::InfoLoggerContext>();
-    il = &iCtx.services().get<AliceO2::InfoLogger::InfoLogger>();
-  } catch (const RuntimeErrorRef& err) {
-    ILOG(Error) << "Could not find the DPL InfoLogger." << ENDM;
-  }
+  initInfoLogger(iCtx);
+
+  refreshConfig(iCtx);
+  QcInfoLogger::setDetector(AggregatorRunner::getDetectorName(mAggregators));
 
   try {
-    QcInfoLogger::init("aggregator", mRunnerConfig.infologgerFilterDiscardDebug, mRunnerConfig.infologgerDiscardLevel, il, ilContext);
-    QcInfoLogger::setDetector(AggregatorRunner::getDetectorName(mAggregators));
     initDatabase();
     initMonitoring();
     initServiceDiscovery();
@@ -225,7 +263,7 @@ void AggregatorRunner::initAggregators()
   ILOG(Info, Devel) << "Initialization of the aggregators" << ENDM;
 
   // For every aggregator definition, create an Aggregator
-  for (const auto& aggregatorConfig : mAggregatorsConfigs) {
+  for (const auto& aggregatorConfig : mAggregatorsConfig) {
     ILOG(Info, Devel) << ">> Aggregator name : " << aggregatorConfig.name << ENDM;
     try {
       auto aggregator = make_shared<Aggregator>(aggregatorConfig);
@@ -245,6 +283,19 @@ void AggregatorRunner::initAggregators()
   }
 
   reorderAggregators();
+}
+
+void AggregatorRunner::initInfoLogger(InitContext& iCtx)
+{
+  InfoLoggerContext* ilContext = nullptr;
+  AliceO2::InfoLogger::InfoLogger* il = nullptr;
+  try {
+    ilContext = &iCtx.services().get<AliceO2::InfoLogger::InfoLoggerContext>();
+    il = &iCtx.services().get<AliceO2::InfoLogger::InfoLogger>();
+  } catch (const RuntimeErrorRef& err) {
+    ILOG(Error) << "Could not find the DPL InfoLogger." << ENDM;
+  }
+  QcInfoLogger::init("aggregator", mRunnerConfig.infologgerFilterDiscardDebug, mRunnerConfig.infologgerDiscardLevel, il, ilContext);
 }
 
 bool AggregatorRunner::areSourcesIn(const std::vector<AggregatorSource>& sources,
@@ -335,7 +386,6 @@ void AggregatorRunner::start(const ServiceRegistry& services)
   ILOG(Info, Ops) << "Starting run " << mActivity.mId << ":"
                   << "\n   - period: " << mActivity.mPeriodName << "\n   - pass type: " << mActivity.mPassName << "\n   - provenance: " << mActivity.mProvenance << ENDM;
 }
-
 
 void AggregatorRunner::stop()
 {

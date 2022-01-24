@@ -32,6 +32,7 @@ struct CheckRunnerConfig {
   std::string fallbackPeriodName{};
   std::string fallbackPassName{};
   std::string fallbackProvenance{};
+  framework::Options options{};
 };
 
 } // namespace o2::quality_control::checker

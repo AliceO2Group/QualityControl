@@ -24,6 +24,7 @@
 #include <FairMQDevice.h>
 #include <Framework/ConfigParamRegistry.h>
 #include <QualityControl/QcInfoLogger.h>
+#include <boost/property_tree/json_parser.hpp>
 
 namespace o2::quality_control::core
 {
@@ -119,6 +120,19 @@ inline std::string computeProvenance(const std::string& fallbackProvenance = "")
   return provenance;
 }
 
+inline std::string indentTree(int level)
+{
+  return std::string(level * 2, ' ');
+}
+
+inline void printTree(const boost::property_tree::ptree& pt, int level = 0)
+{
+  std::stringstream ss;
+  boost::property_tree::json_parser::write_json(ss, pt);
+  for (std::string line; std::getline(ss, line, '\n');)
+    ILOG(Debug, Trace) << line << ENDM;
+}
+
 } // namespace o2::quality_control::core
 
-#endif //QUALITYCONTROL_RUNNERUTILS_H
+#endif // QUALITYCONTROL_RUNNERUTILS_H
