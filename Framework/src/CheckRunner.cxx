@@ -138,8 +138,8 @@ CheckRunner::CheckRunner(CheckRunnerConfig checkRunnerConfig, const std::vector<
     mTotalNumberMOStored(0),
     mTotalQOSent(0)
 {
-  for (const auto& checkConfig : checkConfigs) {
-    mChecks[checkConfig.name] = checkConfig;
+  for (auto& checkConfig : checkConfigs) {
+    mChecks.emplace(checkConfig.name, checkConfig);
   }
 }
 
@@ -187,7 +187,7 @@ void CheckRunner::refreshConfig(InitContext& iCtx)
         // search if we have this check in this runner and replace it
         if ( mChecks.find(checkSpec.checkName) != mChecks.end() ) {
           auto checkConfig = Check::extractConfig(infrastructureSpec.common, checkSpec);
-          mChecks[checkSpec.checkName] = checkConfig;
+          mChecks.emplace(checkConfig.name, checkConfig);
           ILOG(Debug, Devel) << "Check "<< checkSpec.checkName << " has been updated" << ENDM;
         }
       }
