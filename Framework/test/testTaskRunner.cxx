@@ -22,6 +22,9 @@
 #include "QualityControl/InfrastructureSpecReader.h"
 #include "Configuration/ConfigurationFactory.h"
 #include "Configuration/ConfigurationInterface.h"
+#include <Framework/InitContext.h>
+#include <Framework/ConfigParamRegistry.h>
+#include <Framework/ConfigParamStore.h>
 
 #define BOOST_TEST_MODULE TaskRunner test
 #define BOOST_TEST_MAIN
@@ -69,7 +72,7 @@ BOOST_AUTO_TEST_CASE(test_factory)
 
   BOOST_CHECK(taskRunner.algorithm.onInit != nullptr);
 
-  BOOST_REQUIRE_EQUAL(taskRunner.options.size(), 2);
+  BOOST_REQUIRE_EQUAL(taskRunner.options.size(), 3);
   BOOST_CHECK_EQUAL(taskRunner.options[0].name, "period-timer-cycle");
 }
 
@@ -96,11 +99,23 @@ BOOST_AUTO_TEST_CASE(test_task_runner)
 
   BOOST_CHECK_EQUAL(qcTask.getOutputSpec(), (OutputSpec{ { "mo" }, "QC", "abcTask", 0, Lifetime::Sporadic }));
 
-  BOOST_REQUIRE_EQUAL(qcTask.getOptions().size(), 2);
+  BOOST_REQUIRE_EQUAL(qcTask.getOptions().size(), 3);
   BOOST_CHECK_EQUAL(qcTask.getOptions()[0].name, "period-timer-cycle");
 
   // This is maximum that we can do until we are able to test the DPL algorithms in isolation.
   // TODO: When it is possible, we should try calling run() and init()
+
+  // Attempt for init:
+  Options options{
+    { "runNumber", VariantType::String, { "Run number" } },
+    { "qcConfiguration", VariantType::Dict, emptyDict(), { "Some dictionary configuration" } }
+  };
+  std::vector<std::unique_ptr<ParamRetriever>> retr;
+  std::unique_ptr<ConfigParamStore> store = make_unique<ConfigParamStore>(move(options), move(retr));
+  ConfigParamRegistry cfReg(std::move(store));
+  ServiceRegistry sReg;
+  InitContext initContext{ cfReg, sReg };
+  qcTask.init(initContext);
 }
 
 BOOST_AUTO_TEST_CASE(test_task_wrong_detector_name)

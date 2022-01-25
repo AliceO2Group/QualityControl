@@ -135,10 +135,18 @@ class AggregatorRunner : public framework::Task
    */
   void store(core::QualityObjectsType& qualityObjects);
 
-  inline void initDatabase();
-  inline void initMonitoring();
-  inline void initServiceDiscovery();
-  inline void initAggregators();
+  void refreshConfig(framework::InitContext& iCtx);
+
+  /**
+   * Prepare the inputs, remove the duplicates
+   */
+  void prepareInputs();
+
+  void initInfoLogger(framework::InitContext& iCtx);
+  void initDatabase();
+  void initMonitoring();
+  void initServiceDiscovery();
+  void initAggregators();
 
   /**
    * Reorder the aggregators stored in mAggregators.
@@ -173,7 +181,7 @@ class AggregatorRunner : public framework::Task
   std::vector<std::shared_ptr<Aggregator>> mAggregators;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
   AggregatorRunnerConfig mRunnerConfig;
-  std::vector<AggregatorConfig> mAggregatorsConfigs;
+  std::vector<AggregatorConfig> mAggregatorsConfig;
   core::QualityObjectsMapType mQualityObjects; // where we cache the incoming quality objects and the output of the aggregators
   UpdatePolicyManager updatePolicyManager;
 
