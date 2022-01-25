@@ -30,6 +30,7 @@
 #include <Framework/runDataProcessing.h>
 #include <Framework/Task.h>
 #include <DataFormatsITSMFT/Cluster.h>
+#include <DataFormatsITSMFT/ClusterTopology.h>
 #include <DataFormatsITSMFT/CompCluster.h>
 #include <DataFormatsITSMFT/ROFRecord.h>
 
@@ -57,8 +58,9 @@ class ITSClustersRootFileReader : public o2::framework::Task
 
     // load TTree and branches
     mTree = (TTree*)mFile->Get("o2sim");
-    mTree->SetBranchAddress("ITSClusterComp", &pclusters);
     mTree->SetBranchAddress("ITSClustersROF", &profs);
+    mTree->SetBranchAddress("ITSClusterComp", &pclusters);
+    mTree->SetBranchAddress("ITSClusterPatt", &ppatterns);
 
     // check entries
     mNumberOfEntries = mTree->GetEntries();
@@ -92,9 +94,14 @@ class ITSClustersRootFileReader : public o2::framework::Task
     std::vector<o2::itsmft::CompClusterExt>* clusArr = new std::vector<o2::itsmft::CompClusterExt>();
     std::copy(clusters.begin(), clusters.end(), std::back_inserter(*clusArr));
 
+    // Prepare vector with cluster patterns for all ROFs
+    std::vector<unsigned char>* clusPatternArr = new std::vector<unsigned char>();
+    std::copy(patterns.begin(), patterns.end(), std::back_inserter(*clusPatternArr));
+
     // Output vectors
-    pc.outputs().snapshot(Output{ "ITS", "CLUSTERSROF", 0, Lifetime::Timeframe }, *clusRofArr);
+    pc.outputs().snapshot(Output{ "ITS", "CLUSTERSROF",  0, Lifetime::Timeframe }, *clusRofArr);
     pc.outputs().snapshot(Output{ "ITS", "COMPCLUSTERS", 0, Lifetime::Timeframe }, *clusArr);
+    pc.outputs().snapshot(Output{ "ITS", "PATTERNS",     0, Lifetime::Timeframe }, *clusPatternArr);
 
     // move to a new entry in TTree
     ++mCurrentEntry;
@@ -105,6 +112,7 @@ class ITSClustersRootFileReader : public o2::framework::Task
   TTree* mTree = nullptr;                                                   // TTree object inside file
   std::vector<o2::itsmft::ROFRecord> rofs, *profs = &rofs;                  // pointer to ROF branch
   std::vector<o2::itsmft::CompClusterExt> clusters, *pclusters = &clusters; // pointer to Cluster branch
+  std::vector<unsigned char> patterns, *ppatterns = &patterns;              // pointer to Pattern branch
 
   unsigned long mNumberOfEntries = 0; // number of entries from TTree
   unsigned long mCurrentEntry = 0;    // index of current entry
@@ -119,6 +127,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext&)
   std::vector<OutputSpec> outputs;
   outputs.emplace_back("ITS", "CLUSTERSROF", 0, Lifetime::Timeframe);
   outputs.emplace_back("ITS", "COMPCLUSTERS", 0, Lifetime::Timeframe);
+  outputs.emplace_back("ITS", "PATTERNS", 0, Lifetime::Timeframe);
 
   // The producer to generate data in the workflow
   DataProcessorSpec producer{
