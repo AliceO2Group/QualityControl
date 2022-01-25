@@ -99,9 +99,9 @@ class ITSClustersRootFileReader : public o2::framework::Task
     std::copy(patterns.begin(), patterns.end(), std::back_inserter(*clusPatternArr));
 
     // Output vectors
-    pc.outputs().snapshot(Output{ "ITS", "CLUSTERSROF",  0, Lifetime::Timeframe }, *clusRofArr);
+    pc.outputs().snapshot(Output{ "ITS", "CLUSTERSROF", 0, Lifetime::Timeframe }, *clusRofArr);
     pc.outputs().snapshot(Output{ "ITS", "COMPCLUSTERS", 0, Lifetime::Timeframe }, *clusArr);
-    pc.outputs().snapshot(Output{ "ITS", "PATTERNS",     0, Lifetime::Timeframe }, *clusPatternArr);
+    pc.outputs().snapshot(Output{ "ITS", "PATTERNS", 0, Lifetime::Timeframe }, *clusPatternArr);
 
     // move to a new entry in TTree
     ++mCurrentEntry;
