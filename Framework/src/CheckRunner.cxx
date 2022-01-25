@@ -212,6 +212,7 @@ void CheckRunner::init(framework::InitContext& iCtx)
     iCtx.services().get<CallbackService>().set(CallbackService::Id::Reset, [this]() { reset(); });
     iCtx.services().get<CallbackService>().set(CallbackService::Id::Stop, [this]() { stop(); });
 
+    updatePolicyManager.reset();
     for (auto& [checkName, check] : mChecks) {
       check.init();
       updatePolicyManager.addPolicy(check.getName(), check.getUpdatePolicyType(), check.getObjectsNames(), check.getAllObjectsOption(), false);
