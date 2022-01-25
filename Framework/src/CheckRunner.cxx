@@ -212,9 +212,9 @@ void CheckRunner::init(framework::InitContext& iCtx)
     iCtx.services().get<CallbackService>().set(CallbackService::Id::Reset, [this]() { reset(); });
     iCtx.services().get<CallbackService>().set(CallbackService::Id::Stop, [this]() { stop(); });
 
-    for (auto& tuple : mChecks) {
-      tuple.second.init();
-      updatePolicyManager.addPolicy(tuple.second.getName(), tuple.second.getUpdatePolicyType(), tuple.second.getObjectsNames(), tuple.second.getAllObjectsOption(), false);
+    for (auto& [checkName, check] : mChecks) {
+      check.init();
+      updatePolicyManager.addPolicy(check.getName(), check.getUpdatePolicyType(), check.getObjectsNames(), check.getAllObjectsOption(), false);
     }
   } catch (...) {
     // catch the exceptions and print it (the ultimate caller might not know how to display it)
@@ -319,18 +319,18 @@ QualityObjectsType CheckRunner::check()
                       << ENDM;
 
   QualityObjectsType allQOs;
-  for (auto& tuple : mChecks) {
-    if (updatePolicyManager.isReady(tuple.second.getName())) {
-      auto newQOs = tuple.second.check(mMonitorObjects);
+  for (auto& [checkName, check] : mChecks) {
+    if (updatePolicyManager.isReady(check.getName())) {
+      auto newQOs = check.check(mMonitorObjects);
       mTotalNumberCheckExecuted += newQOs.size();
 
       allQOs.insert(allQOs.end(), std::make_move_iterator(newQOs.begin()), std::make_move_iterator(newQOs.end()));
       newQOs.clear();
 
       // Was checked, update latest revision
-      updatePolicyManager.updateActorRevision(tuple.first);
+      updatePolicyManager.updateActorRevision(checkName);
     } else {
-      ILOG(Info, Support) << "Monitor Objects for the check '" << tuple.first << "' are not ready, ignoring" << ENDM;
+      ILOG(Info, Support) << "Monitor Objects for the check '" << checkName << "' are not ready, ignoring" << ENDM;
     }
   }
   return allQOs;
