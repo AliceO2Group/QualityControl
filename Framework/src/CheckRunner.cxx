@@ -185,10 +185,10 @@ void CheckRunner::refreshConfig(InitContext& iCtx)
       // Topology changes are ignored: New checks are ignored. Removed checks are ignored.
       for (const auto& checkSpec : infrastructureSpec.checks) {
         // search if we have this check in this runner and replace it
-        if ( mChecks.find(checkSpec.checkName) != mChecks.end() ) {
+        if (mChecks.find(checkSpec.checkName) != mChecks.end()) {
           auto checkConfig = Check::extractConfig(infrastructureSpec.common, checkSpec);
           mChecks.emplace(checkConfig.name, checkConfig);
-          ILOG(Debug, Devel) << "Check "<< checkSpec.checkName << " has been updated" << ENDM;
+          ILOG(Debug, Devel) << "Check " << checkSpec.checkName << " has been updated" << ENDM;
         }
       }
     }
