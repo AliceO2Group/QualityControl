@@ -138,14 +138,13 @@ CheckRunner::CheckRunner(CheckRunnerConfig checkRunnerConfig, const std::vector<
     mTotalNumberMOStored(0),
     mTotalQOSent(0)
 {
-  for (const auto& checkConfig : checkConfigs) {
-    mChecks.emplace_back(checkConfig);
+  for (auto& checkConfig : checkConfigs) {
+    mChecks.emplace(checkConfig.name, checkConfig);
   }
 }
 
 CheckRunner::CheckRunner(CheckRunnerConfig checkRunnerConfig, InputSpec input)
   : mDeviceName(createSinkCheckRunnerName(input)),
-    mChecks{},
     mConfig(std::move(checkRunnerConfig)),
     mInputs{ input },
     mOutputs{},
@@ -181,11 +180,18 @@ void CheckRunner::refreshConfig(InitContext& iCtx)
       // prepare the information we need
       auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(updatedTree);
 
-      // TODO: use the config to reconfigure the check runner.
-      // TODO: in particular, reset mChecks and update it.
-      // TODO: Problem is that a lot of the logic is in the infrastructure generator.
-      // TODO: we should probably just preserve the checks list and update their state.
-      // TODO: also see if we should update the detector name
+      // Use the config to reconfigure the check runner.
+      // The configs for the checks we find in the config and in our map are updated.
+      // Topology changes are ignored: New checks are ignored. Removed checks are ignored.
+      for (const auto& checkSpec : infrastructureSpec.checks) {
+        // search if we have this check in this runner and replace it
+        if (mChecks.find(checkSpec.checkName) != mChecks.end()) {
+          auto checkConfig = Check::extractConfig(infrastructureSpec.common, checkSpec);
+          mChecks.erase(checkConfig.name);
+          mChecks.emplace(checkConfig.name, checkConfig);
+          ILOG(Debug, Devel) << "Check " << checkSpec.checkName << " has been updated" << ENDM;
+        }
+      }
     }
   } catch (std::invalid_argument& error) {
     // ignore the error, we just skip the update of the config file. It can be legit, e.g. in command line mode
@@ -207,7 +213,8 @@ void CheckRunner::init(framework::InitContext& iCtx)
     iCtx.services().get<CallbackService>().set(CallbackService::Id::Reset, [this]() { reset(); });
     iCtx.services().get<CallbackService>().set(CallbackService::Id::Stop, [this]() { stop(); });
 
-    for (auto& check : mChecks) {
+    updatePolicyManager.reset();
+    for (auto& [checkName, check] : mChecks) {
       check.init();
       updatePolicyManager.addPolicy(check.getName(), check.getUpdatePolicyType(), check.getObjectsNames(), check.getAllObjectsOption(), false);
     }
@@ -314,7 +321,7 @@ QualityObjectsType CheckRunner::check()
                       << ENDM;
 
   QualityObjectsType allQOs;
-  for (auto& check : mChecks) {
+  for (auto& [checkName, check] : mChecks) {
     if (updatePolicyManager.isReady(check.getName())) {
       auto newQOs = check.check(mMonitorObjects);
       mTotalNumberCheckExecuted += newQOs.size();
@@ -323,9 +330,9 @@ QualityObjectsType CheckRunner::check()
       newQOs.clear();
 
       // Was checked, update latest revision
-      updatePolicyManager.updateActorRevision(check.getName());
+      updatePolicyManager.updateActorRevision(checkName);
     } else {
-      ILOG(Info, Support) << "Monitor Objects for the check '" << check.getName() << "' are not ready, ignoring" << ENDM;
+      ILOG(Info, Support) << "Monitor Objects for the check '" << checkName << "' are not ready, ignoring" << ENDM;
     }
   }
   return allQOs;
@@ -366,12 +373,8 @@ void CheckRunner::send(QualityObjectsType& qualityObjects, framework::DataAlloca
 
   ILOG(Info, Support) << "Sending " << qualityObjects.size() << " quality objects" << ENDM;
   for (const auto& qo : qualityObjects) {
-
-    const auto& correspondingCheck = std::find_if(mChecks.begin(), mChecks.end(), [checkName = qo->getCheckName()](const auto& check) {
-      return check.getName() == checkName;
-    });
-
-    auto outputSpec = correspondingCheck->getOutputSpec();
+    const auto& correspondingCheck = mChecks.at(qo->getCheckName());
+    auto outputSpec = correspondingCheck.getOutputSpec();
     auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(outputSpec);
     allocator.snapshot(
       framework::Output{ concreteOutput.origin, concreteOutput.description, concreteOutput.subSpec, outputSpec.lifetime }, *qo);
