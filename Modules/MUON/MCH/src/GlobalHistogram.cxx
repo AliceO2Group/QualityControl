@@ -166,18 +166,73 @@ static bool getDetectorFlipY(int deId)
   return false;
 }
 
-DetectorHistogram::DetectorHistogram(TString name, TString title, int deId) : TH2F(name, title,
-                                                                                   getDetectorHistXbins(deId), -1.0 * getDetectorHistWidth(deId) / 2, getDetectorHistWidth(deId) / 2,
-                                                                                   getDetectorHistYbins(deId), -1.0 * getDetectorHistHeight(deId) / 2, getDetectorHistHeight(deId) / 2),
-                                                                              mDeId(deId),
-                                                                              mFlipX(getDetectorFlipX(deId)),
-                                                                              mFlipY(getDetectorFlipY(deId))
+DetectorHistogram::DetectorHistogram(TString name, TString title, int deId)
+  : mName(name), mTitle(title), mDeId(deId), mFlipX(getDetectorFlipX(deId)), mFlipY(getDetectorFlipY(deId))
 {
-  SetDrawOption("colz");
+  mHist = std::make_pair(new TH2F(name, title, getNbinsX(), getXmin(), getXmax(), getNbinsY(), getYmin(), getYmax()), true);
+}
+
+DetectorHistogram::DetectorHistogram(TString name, TString title, int deId, TH2F* hist)
+  : mName(name), mTitle(title), mDeId(deId), mFlipX(getDetectorFlipX(deId)), mFlipY(getDetectorFlipY(deId))
+{
+  mHist = std::make_pair(hist, false);
+  init();
+}
+
+DetectorHistogram::~DetectorHistogram()
+{
+  if (mHist.first && mHist.second) {
+    delete mHist.first;
+  }
+}
+
+int DetectorHistogram::getNbinsX()
+{
+  return getDetectorHistXbins(mDeId);
+}
+
+int DetectorHistogram::getNbinsY()
+{
+  return getDetectorHistYbins(mDeId);
+}
+
+float DetectorHistogram::getXmin()
+{
+  return -1.0 * getDetectorHistWidth(mDeId) / 2;
+}
+
+float DetectorHistogram::getXmax()
+{
+  return getDetectorHistWidth(mDeId) / 2;
+}
+
+float DetectorHistogram::getYmin()
+{
+  return -1.0 * getDetectorHistHeight(mDeId) / 2;
+}
+
+float DetectorHistogram::getYmax()
+{
+  return getDetectorHistHeight(mDeId) / 2;
+}
+
+void DetectorHistogram::init()
+{
+  mHist.first->Reset();
+
+  mHist.first->SetNameTitle(mName, mTitle);
+
+  mHist.first->GetXaxis()->Set(getDetectorHistXbins(mDeId), -1.0 * getDetectorHistWidth(mDeId) / 2, getDetectorHistWidth(mDeId) / 2);
+  mHist.first->GetYaxis()->Set(getDetectorHistYbins(mDeId), -1.0 * getDetectorHistHeight(mDeId) / 2, getDetectorHistHeight(mDeId) / 2);
+  mHist.first->SetBinsLength();
 }
 
 void DetectorHistogram::Fill(double padX, double padY, double padSizeX, double padSizeY, double val)
 {
+  if (!mHist.first) {
+    return;
+  }
+
   if (mFlipX) {
     padX *= -1.0;
   }
@@ -185,21 +240,25 @@ void DetectorHistogram::Fill(double padX, double padY, double padSizeX, double p
     padY *= -1.0;
   }
 
-  int binx_min = GetXaxis()->FindBin(padX - padSizeX / 2 + 0.1);
-  int binx_max = GetXaxis()->FindBin(padX + padSizeX / 2 - 0.1);
-  int biny_min = GetYaxis()->FindBin(padY - padSizeY / 2 + 0.1);
-  int biny_max = GetYaxis()->FindBin(padY + padSizeY / 2 - 0.1);
+  int binx_min = mHist.first->GetXaxis()->FindBin(padX - padSizeX / 2 + 0.1);
+  int binx_max = mHist.first->GetXaxis()->FindBin(padX + padSizeX / 2 - 0.1);
+  int biny_min = mHist.first->GetYaxis()->FindBin(padY - padSizeY / 2 + 0.1);
+  int biny_max = mHist.first->GetYaxis()->FindBin(padY + padSizeY / 2 - 0.1);
   for (int by = biny_min; by <= biny_max; by++) {
-    float y = GetYaxis()->GetBinCenter(by);
+    float y = mHist.first->GetYaxis()->GetBinCenter(by);
     for (int bx = binx_min; bx <= binx_max; bx++) {
-      float x = GetXaxis()->GetBinCenter(bx);
-      TH2F::Fill(x, y, val);
+      float x = mHist.first->GetXaxis()->GetBinCenter(bx);
+      mHist.first->Fill(x, y, val);
     }
   }
 }
 
 void DetectorHistogram::Set(double padX, double padY, double padSizeX, double padSizeY, double val)
 {
+  if (!mHist.first) {
+    return;
+  }
+
   if (mFlipX) {
     padX *= -1.0;
   }
@@ -207,13 +266,13 @@ void DetectorHistogram::Set(double padX, double padY, double padSizeX, double pa
     padY *= -1.0;
   }
 
-  int binx_min = GetXaxis()->FindBin(padX - padSizeX / 2 + 0.1);
-  int binx_max = GetXaxis()->FindBin(padX + padSizeX / 2 - 0.1);
-  int biny_min = GetYaxis()->FindBin(padY - padSizeY / 2 + 0.1);
-  int biny_max = GetYaxis()->FindBin(padY + padSizeY / 2 - 0.1);
+  int binx_min = mHist.first->GetXaxis()->FindBin(padX - padSizeX / 2 + 0.1);
+  int binx_max = mHist.first->GetXaxis()->FindBin(padX + padSizeX / 2 - 0.1);
+  int biny_min = mHist.first->GetYaxis()->FindBin(padY - padSizeY / 2 + 0.1);
+  int biny_max = mHist.first->GetYaxis()->FindBin(padY + padSizeY / 2 - 0.1);
   for (int by = biny_min; by <= biny_max; by++) {
     for (int bx = binx_min; bx <= binx_max; bx++) {
-      TH2F::SetBinContent(bx, by, val);
+      mHist.first->SetBinContent(bx, by, val);
     }
   }
 }
@@ -537,14 +596,23 @@ void GlobalHistogram::set(std::map<int, DetectorHistogram*>& histB, std::map<int
     if (!hB) {
       continue;
     }
+    if (!hB->getHist()) {
+      continue;
+    }
 
     DetectorHistogram* hNB = nullptr;
     auto jh = histNB.find(de);
     if (jh != histNB.end()) {
       hNB = jh->second;
     }
+    if (!hNB) {
+      continue;
+    }
+    if (!hNB->getHist()) {
+      continue;
+    }
 
-    DetectorHistogram* hist[2] = { hB, hNB };
+    TH2F* hist[2] = { hB->getHist(), hNB->getHist() };
 
     float xB0, yB0, xNB0, yNB0;
     getDeCenter(de, xB0, yB0, xNB0, yNB0);

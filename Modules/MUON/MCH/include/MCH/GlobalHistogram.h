@@ -31,19 +31,36 @@ namespace muonchambers
 
 std::string getHistoPath(int deId);
 
-class DetectorHistogram : public TH2F
+class DetectorHistogram
 {
  public:
   DetectorHistogram(TString name, TString title, int deId);
+  DetectorHistogram(TString name, TString title, int deId, TH2F* hist);
+  ~DetectorHistogram();
 
   void Fill(double padX, double padY, double padSizeX, double padSizeY, double val = 1);
   void Set(double padX, double padY, double padSizeX, double padSizeY, double val);
 
+  int getNbinsX();
+  int getNbinsY();
+  float getXmin();
+  float getXmax();
+  float getYmin();
+  float getYmax();
+
+  TH2F* getHist() { return mHist.first; }
+
  private:
   int mDeId{ 0 };
 
+  TString mName;
+  TString mTitle;
+  std::pair<TH2F*, bool> mHist;
+
   bool mFlipX{ false };
   bool mFlipY{ false };
+
+  void init();
 };
 
 class GlobalHistogram : public TH2F

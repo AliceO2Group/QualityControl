@@ -97,21 +97,21 @@ void PedestalsTask::initialize(o2::framework::InitContext& /*ctx*/)
       DetectorHistogram* hPedXY = new DetectorHistogram(TString::Format("%sPedestals_%03d_B", getHistoPath(de).c_str(), de),
                                                         TString::Format("Pedestals (DE%03d B)", de), de);
       mHistogramPedestalsXY[0].insert(make_pair(de, hPedXY));
-      getObjectsManager()->startPublishing(hPedXY);
+      getObjectsManager()->startPublishing(hPedXY->getHist());
       DetectorHistogram* hNoiseXY = new DetectorHistogram(TString::Format("%sNoise_%03d_B", getHistoPath(de).c_str(), de),
                                                           TString::Format("Noise (DE%03d B)", de), de);
       mHistogramNoiseXY[0].insert(make_pair(de, hNoiseXY));
-      getObjectsManager()->startPublishing(hNoiseXY);
+      getObjectsManager()->startPublishing(hNoiseXY->getHist());
     }
     {
       DetectorHistogram* hPedXY = new DetectorHistogram(TString::Format("%sPedestals_%03d_NB", getHistoPath(de).c_str(), de),
                                                         TString::Format("Pedestals (DE%03d NB)", de), de);
       mHistogramPedestalsXY[1].insert(make_pair(de, hPedXY));
-      getObjectsManager()->startPublishing(hPedXY);
+      getObjectsManager()->startPublishing(hPedXY->getHist());
       DetectorHistogram* hNoiseXY = new DetectorHistogram(TString::Format("%sNoise_%03d_NB", getHistoPath(de).c_str(), de),
                                                           TString::Format("Noise (DE%03d NB)", de), de);
       mHistogramNoiseXY[1].insert(make_pair(de, hNoiseXY));
-      getObjectsManager()->startPublishing(hNoiseXY);
+      getObjectsManager()->startPublishing(hNoiseXY->getHist());
     }
   }
 
@@ -130,6 +130,9 @@ void PedestalsTask::startOfCycle()
 
 void PedestalsTask::fill_noise_distributions()
 {
+  /*
+  // This code is currently broken and needs to be fixed. It only involves expert histograms that are not
+  // part of the calibration procedure.
   for (int pi = 0; pi < 5; pi++) {
     for (int i = 0; i < 2; i++) {
       auto ih = mHistogramNoiseDistributionDE[pi][i].begin();
@@ -188,6 +191,7 @@ void PedestalsTask::fill_noise_distributions()
       }
     }
   }
+  */
 }
 
 void PedestalsTask::save_histograms()
@@ -204,14 +208,14 @@ void PedestalsTask::save_histograms()
   for (int i = 0; i < 2; i++) {
     auto ih = mHistogramPedestalsXY[i].begin();
     while (ih != mHistogramPedestalsXY[i].end()) {
-      ih->second->Write();
+      ih->second->getHist()->Write();
       ih++;
     }
   }
   for (int i = 0; i < 2; i++) {
     auto ih = mHistogramNoiseXY[i].begin();
     while (ih != mHistogramNoiseXY[i].end()) {
-      ih->second->Write();
+      ih->second->getHist()->Write();
       ih++;
     }
   }
@@ -352,8 +356,8 @@ void PedestalsTask::endOfCycle()
 {
   ILOG(Info, Support) << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 
-  mHistogramPedestalsMCH->set(mHistogramPedestalsXY[0], mHistogramPedestalsXY[1], true);
-  mHistogramNoiseMCH->set(mHistogramNoiseXY[0], mHistogramNoiseXY[1], true);
+  //mHistogramPedestalsMCH->set(mHistogramPedestalsXY[0], mHistogramPedestalsXY[1], true);
+  //mHistogramNoiseMCH->set(mHistogramNoiseXY[0], mHistogramNoiseXY[1], true);
 }
 
 void PedestalsTask::endOfActivity(Activity& /*activity*/)
