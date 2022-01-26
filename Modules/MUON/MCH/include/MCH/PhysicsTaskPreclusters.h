@@ -32,8 +32,8 @@
 #include "MCHBase/PreCluster.h"
 #include "MCH/MergeableTH2Ratio.h"
 #include "MCH/MergeableTH1PseudoEfficiencyPerDE.h"
-#include "MCH/MergeableTH1PseudoEfficiencyPerDECycle.h"
-#include "MCH/MergeableTH1MPVPerDECycle.h"
+//#include "MCH/MergeableTH1PseudoEfficiencyPerDECycle.h"
+//#include "MCH/MergeableTH1MPVPerDECycle.h"
 
 namespace o2
 {
@@ -62,38 +62,36 @@ class PhysicsTaskPreclusters /*final*/ : public o2::quality_control::core::TaskI
   void endOfActivity(o2::quality_control::core::Activity& activity) override;
   void reset() override;
 
+ private:
   bool plotPrecluster(const o2::mch::PreCluster& preCluster, gsl::span<const o2::mch::Digit> digits);
   void printPrecluster(gsl::span<const o2::mch::Digit> preClusterDigits);
   void printPreclusters(gsl::span<const o2::mch::PreCluster> preClusters, gsl::span<const o2::mch::Digit> digits);
 
   void computePseudoEfficiency();
-
- private:
-  std::vector<std::unique_ptr<mch::Digit>> digits;
+  void writeHistos();
 
   // TH1 of Mean Pseudo-efficiency on DEs
   //Since beginning of run
-  MergeableTH1PseudoEfficiencyPerDE* mMeanPseudoeffPerDE_DoesGoodNBHaveSomethingB; //Pseudoefficiency of NB (Good cluster on NB And data on B / Good cluster on NB)
-  MergeableTH1PseudoEfficiencyPerDE* mMeanPseudoeffPerDE_DoesGoodBHaveSomethingNB; //Pseudoefficiency of B (Good cluster on B And data on NB / Good cluster on B)
+  std::shared_ptr<MergeableTH1PseudoEfficiencyPerDE> mMeanPseudoeffPerDE[2]; //Pseudoefficiency of B and NB
 
   //On last cycle only
-  MergeableTH1PseudoEfficiencyPerDECycle* mMeanPseudoeffPerDE_DoesGoodNBHaveSomethingB_Cycle;
-  MergeableTH1PseudoEfficiencyPerDECycle* mMeanPseudoeffPerDE_DoesGoodBHaveSomethingNB_Cycle;
-  MergeableTH1MPVPerDECycle* mMPVCycle; //MPV of the Landau best fitted to the cluster charge distribution on each DE each cycle
+  // WARNING: the code for the efficiency on cycle is currently broken and therefore disabled
+  //MergeableTH1PseudoEfficiencyPerDECycle* mMeanPseudoeffPerDE_DoesGoodNBHaveSomethingB_Cycle;
+  //MergeableTH1PseudoEfficiencyPerDECycle* mMeanPseudoeffPerDE_DoesGoodBHaveSomethingNB_Cycle;
+  //MergeableTH1MPVPerDECycle* mMPVCycle; //MPV of the Landau best fitted to the cluster charge distribution on each DE each cycle
 
-  TH2F* mDigitChargeVsSize[4];
-  TH2F* mDigitClsizeVsCharge[2];
-  TH2F* mDigitChargeNBVsChargeB;
+  std::shared_ptr<TH2F> mDigitChargeVsSize[4];
+  std::shared_ptr<TH2F> mDigitClsizeVsCharge[2];
+  std::shared_ptr<TH2F> mDigitChargeNBVsChargeB;
 
-  std::map<int, TH2F*> mHistogramClchgDE;
-  std::map<int, TH1F*> mHistogramClchgDEOnCycle;
-  std::map<int, TH2F*> mHistogramClsizeDE;
+  std::map<int, std::shared_ptr<TH2F>> mHistogramClchgDE;
+  std::map<int, std::shared_ptr<TH1F>> mHistogramClchgDEOnCycle;
+  std::map<int, std::shared_ptr<TH2F>> mHistogramClsizeDE;
 
-  std::map<int, DetectorHistogram*> mHistogramPreclustersXY[4];
-  std::map<int, MergeableTH2Ratio*> mHistogramPseudoeffXY[2];
+  std::map<int, std::shared_ptr<DetectorHistogram>> mHistogramPreclustersXY[4];
+  std::map<int, std::shared_ptr<MergeableTH2Ratio>> mHistogramPseudoeffXY[2];
 
-  GlobalHistogram* mHistogramPseudoeff_NumsAndDens[2]; //Global histograms containing the numerators and denominators for Pseudoefficiency calculation
-  MergeableTH2Ratio* mHistogramPseudoeff;              //Mergeable histogram of Pseudoefficiency
+  std::vector<TH1*> mAllHistograms;
 };
 
 } // namespace muonchambers

@@ -46,7 +46,7 @@ class MergeableTH1PseudoEfficiencyPerDECycle : public TH1F, public o2::mergers::
   {
   }
 
-  MergeableTH1PseudoEfficiencyPerDECycle(const char* name, const char* title, std::map<int, DetectorHistogram*> histosnum, std::map<int, DetectorHistogram*> histosden)
+  MergeableTH1PseudoEfficiencyPerDECycle(const char* name, const char* title, std::map<int, TH2F*> histosnum, std::map<int, TH2F*> histosden)
     : TH1F(name, title, 1100, -0.5, 1099.5), o2::mergers::MergeInterface(), mhistosNum(histosnum), mhistosDen(histosden)
   {
     for (auto de : o2::mch::raw::deIdsForAllMCH) {
@@ -95,12 +95,12 @@ class MergeableTH1PseudoEfficiencyPerDECycle : public TH1F, public o2::mergers::
     updateAfterMerge();
   }
 
-  std::map<int, DetectorHistogram*> getNum() const
+  std::map<int, TH2F*> getNum() const
   {
     return mhistosNum;
   }
 
-  std::map<int, DetectorHistogram*> getDen() const
+  std::map<int, TH2F*> getDen() const
   {
     return mhistosDen;
   }
@@ -191,8 +191,8 @@ class MergeableTH1PseudoEfficiencyPerDECycle : public TH1F, public o2::mergers::
   }
 
  private:
-  std::map<int, DetectorHistogram*> mhistosNum;
-  std::map<int, DetectorHistogram*> mhistosDen;
+  std::map<int, TH2F*> mhistosNum;
+  std::map<int, TH2F*> mhistosDen;
   std::string mTreatMeAs = "TH1F";
   double NewMeanNumDE[1100]{ 0 };
   double NewMeanDenDE[1100]{ 0 };
