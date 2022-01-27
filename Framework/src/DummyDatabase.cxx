@@ -84,4 +84,9 @@ void* DummyDatabase::retrieveAny(const std::type_info&, const std::string&, cons
   return nullptr;
 }
 
+void DummyDatabase::setObjectMaxSize(size_t objectMaxSize)
+{
+}
+
+
 } // namespace o2::quality_control::repository

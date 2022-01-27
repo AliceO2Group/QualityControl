@@ -51,6 +51,7 @@ class DummyDatabase : public DatabaseInterface
   void prepareTaskDataContainer(std::string taskName) override;
   std::vector<std::string> getPublishedObjectNames(std::string taskName) override;
   void truncate(std::string taskName, std::string objectName) override;
+  void setObjectMaxSize(size_t objectMaxSize) override;
 
  private:
 };
