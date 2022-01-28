@@ -9,12 +9,12 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   PadCalibrationCheck2D.h
+/// \file   PadCalibrationCheck.h
 /// \author Laura Serksnyte
 ///
 
-#ifndef QC_MODULE_TPC_PadCalibrationCheck2D_H
-#define QC_MODULE_TPC_PadCalibrationCheck2D_H
+#ifndef QC_MODULE_TPC_PadCalibrationCheck_H
+#define QC_MODULE_TPC_PadCalibrationCheck_H
 
 #include "QualityControl/CheckInterface.h"
 
@@ -24,14 +24,14 @@ namespace o2::quality_control_modules::tpc
 /// \brief  Check whether the cluster number for a track is smaller than 40 or 20 in Track task.
 ///
 /// \author Laura Serksnyte
-class PadCalibrationCheck2D : public o2::quality_control::checker::CheckInterface
+class PadCalibrationCheck : public o2::quality_control::checker::CheckInterface
 {
 
  public:
   /// Default constructor
-  PadCalibrationCheck2D() = default;
+  PadCalibrationCheck() = default;
   /// Destructor
-  ~PadCalibrationCheck2D() override = default;
+  ~PadCalibrationCheck() override = default;
 
   // Override interface
   void configure(std::string name) override;
@@ -40,11 +40,14 @@ class PadCalibrationCheck2D : public o2::quality_control::checker::CheckInterfac
   std::string getAcceptedType() override;
 
  private:
-  ClassDefOverride(PadCalibrationCheck2D, 1);
-  std::vector<std::string> badSectorsName;
-  std::vector<Quality> badSectorsQuality;
+  ClassDefOverride(PadCalibrationCheck, 1);
+  std::vector<std::string> mSectorsName;
+  std::vector<Quality> mSectorsQuality;
+  std::vector<float> mNoiseMean;
+  std::vector<float> mNoiseStdDev;
+  std::vector<int> mNoiseNonZeroEntries;
 };
 
 } // namespace o2::quality_control_modules::tpc
 
-#endif // QC_MODULE_TPC_PadCalibrationCheck2D_H
+#endif // QC_MODULE_TPC_PadCalibrationCheck_H

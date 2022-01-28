@@ -171,11 +171,6 @@ void ClusterVisualizer::update(Trigger t, framework::ServiceRegistry&)
   o2::tpc::painter::makeSummaryCanvases(calDet, int(mRanges[calDet.getName()].at(0)), mRanges[calDet.getName()].at(1), mRanges[calDet.getName()].at(2), false, &vecPtr);
   calDetIter++;
 
-  calDet = clusters.getTimeBin();
-  vecPtr = toVector(mCalDetCanvasVec.at(calDetIter));
-  o2::tpc::painter::makeSummaryCanvases(calDet, int(mRanges[calDet.getName()].at(0)), mRanges[calDet.getName()].at(1), mRanges[calDet.getName()].at(2), false, &vecPtr);
-  calDetIter++;
-
   if (mIsClusters) {
     calDet = clusters.getQTot();
     vecPtr = toVector(mCalDetCanvasVec.at(calDetIter));
@@ -192,6 +187,11 @@ void ClusterVisualizer::update(Trigger t, framework::ServiceRegistry&)
     o2::tpc::painter::makeSummaryCanvases(calDet, int(mRanges[calDet.getName()].at(0)), mRanges[calDet.getName()].at(1), mRanges[calDet.getName()].at(2), false, &vecPtr);
     calDetIter++;
   }
+
+  calDet = clusters.getTimeBin();
+  vecPtr = toVector(mCalDetCanvasVec.at(calDetIter));
+  o2::tpc::painter::makeSummaryCanvases(calDet, int(mRanges[calDet.getName()].at(0)), mRanges[calDet.getName()].at(1), mRanges[calDet.getName()].at(2), false, &vecPtr);
+  calDetIter++;
 }
 
 void ClusterVisualizer::finalize(Trigger, framework::ServiceRegistry&)

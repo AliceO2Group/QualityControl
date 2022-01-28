@@ -57,76 +57,72 @@ void PhysicsTaskPreclusters::initialize(o2::framework::InitContext& /*ctx*/)
 
   for (auto de : o2::mch::raw::deIdsForAllMCH) {
 
-    TH2F* h = new TH2F(TString::Format("%sCluster_Charge_DE%03d", getHistoPath(de).c_str(), de),
-                       TString::Format("Cluster charge (DE%03d)", de), 1000, 0, 50000, 4, 0, 4);
+    auto h = std::make_shared<TH2F>(TString::Format("%sCluster_Charge_DE%03d", getHistoPath(de).c_str(), de),
+                                    TString::Format("Cluster charge (DE%03d)", de), 1000, 0, 50000, 4, 0, 4);
     h->GetYaxis()->SetBinLabel(1, "#splitline{ nB <= 1}{nNB <= 1}");
     h->GetYaxis()->SetBinLabel(2, "#splitline{ nB >= 2}{nNB <= 1}");
     h->GetYaxis()->SetBinLabel(3, "#splitline{ nB <= 1}{nNB >= 2}");
     h->GetYaxis()->SetBinLabel(4, "#splitline{ nB >= 2}{nNB >= 2}");
     mHistogramClchgDE.insert(make_pair(de, h));
-    getObjectsManager()->startPublishing(h);
-    TH1F* h1 = new TH1F(TString::Format("%sCluster_Charge_OnCycle_DE%03d", getHistoPath(de).c_str(), de),
-                        TString::Format("Cluster charge on cycle (DE%03d)", de), 1000, 0, 50000);
+    getObjectsManager()->startPublishing(h.get());
+    mAllHistograms.push_back(h.get());
+
+    auto h1 = std::make_shared<TH1F>(TString::Format("%sCluster_Charge_OnCycle_DE%03d", getHistoPath(de).c_str(), de),
+                                     TString::Format("Cluster charge on cycle (DE%03d)", de), 1000, 0, 50000);
     mHistogramClchgDEOnCycle.insert(make_pair(de, h1));
 
-    h = new TH2F(TString::Format("%sCluster_Size_DE%03d", getHistoPath(de).c_str(), de),
-                 TString::Format("Cluster size (DE%03d)", de), 10, 0, 10, 3, 0, 3);
+    h = std::make_shared<TH2F>(TString::Format("%sCluster_Size_DE%03d", getHistoPath(de).c_str(), de),
+                               TString::Format("Cluster size (DE%03d)", de), 10, 0, 10, 3, 0, 3);
     h->GetYaxis()->SetBinLabel(1, "B");
     h->GetYaxis()->SetBinLabel(2, "NB");
     h->GetYaxis()->SetBinLabel(3, "B+NB");
     mHistogramClsizeDE.insert(make_pair(de, h));
-    getObjectsManager()->startPublishing(h);
+    getObjectsManager()->startPublishing(h.get());
+    mAllHistograms.push_back(h.get());
 
     // Histograms using the XY Mapping
-
     {
-      DetectorHistogram* hXY0 = new DetectorHistogram(TString::Format("%sPreclusters_NBgood_XY_%03d", getHistoPath(de).c_str(), de),
-                                                      TString::Format("Preclusters XY (DE%03d NB, good)", de), de);
-      mHistogramPreclustersXY[0].insert(make_pair(de, hXY0));
-      DetectorHistogram* hXY1 = new DetectorHistogram(TString::Format("%sPreclusters_Bgood_XY_%03d", getHistoPath(de).c_str(), de),
-                                                      TString::Format("Preclusters XY (DE%03d B, good)", de), de);
-      mHistogramPreclustersXY[1].insert(make_pair(de, hXY1));
-      DetectorHistogram* hXY2 = new DetectorHistogram(TString::Format("%sPreclustersNBgoodAndSomethingB_XY_%03d", getHistoPath(de).c_str(), de),
-                                                      TString::Format("Preclusters XY (DE%03d B)", de), de);
-      mHistogramPreclustersXY[2].insert(make_pair(de, hXY2));
-      DetectorHistogram* hXY3 = new DetectorHistogram(TString::Format("%sPreclustersBgoodAndSomethingNB_XY_%03d", getHistoPath(de).c_str(), de),
-                                                      TString::Format("Preclusters XY (DE%03d NB)", de), de);
-      mHistogramPreclustersXY[3].insert(make_pair(de, hXY3));
-
-      MergeableTH2Ratio* hXYPseudo0 = new MergeableTH2Ratio(TString::Format("%sPseudoeff_B_XY_%03d", getHistoPath(de).c_str(), de),
-                                                            TString::Format("Pseudo-efficiency XY (DE%03d B)", de),
-                                                            hXY2, hXY0);
+      auto hXYPseudo0 = std::make_shared<MergeableTH2Ratio>(TString::Format("%sPseudoeff_B_XY_%03d", getHistoPath(de).c_str(), de),
+                                                            TString::Format("Pseudo-efficiency XY (DE%03d B)", de));
       mHistogramPseudoeffXY[0].insert(make_pair(de, hXYPseudo0));
-      getObjectsManager()->startPublishing(hXYPseudo0);
+      getObjectsManager()->startPublishing(hXYPseudo0.get());
+      mAllHistograms.push_back(hXYPseudo0.get());
 
-      MergeableTH2Ratio* hXYPseudo1 = new MergeableTH2Ratio(TString::Format("%sPseudoeff_NB_XY_%03d", getHistoPath(de).c_str(), de),
-                                                            TString::Format("Pseudo-efficiency XY (DE%03d NB)", de),
-                                                            hXY3, hXY1);
+      auto hXYPseudo1 = std::make_shared<MergeableTH2Ratio>(TString::Format("%sPseudoeff_NB_XY_%03d", getHistoPath(de).c_str(), de),
+                                                            TString::Format("Pseudo-efficiency XY (DE%03d NB)", de));
       mHistogramPseudoeffXY[1].insert(make_pair(de, hXYPseudo1));
-      getObjectsManager()->startPublishing(hXYPseudo1);
+      getObjectsManager()->startPublishing(hXYPseudo1.get());
+      mAllHistograms.push_back(hXYPseudo1.get());
+
+      auto hXY0 = std::make_shared<DetectorHistogram>(TString::Format("%sPreclusters_den_B_XY_%03d", getHistoPath(de).c_str(), de),
+                                                      TString::Format("Preclusters XY (DE%03d B, den)", de), de, hXYPseudo0->getDen());
+      mHistogramPreclustersXY[0].insert(make_pair(de, hXY0));
+      mAllHistograms.push_back(hXY0.get()->getHist());
+      auto hXY1 = std::make_shared<DetectorHistogram>(TString::Format("%sPreclusters_den_NB_XY_%03d", getHistoPath(de).c_str(), de),
+                                                      TString::Format("Preclusters XY (DE%03d NB, den)", de), de, hXYPseudo1->getDen());
+      mHistogramPreclustersXY[1].insert(make_pair(de, hXY1));
+      mAllHistograms.push_back(hXY1.get()->getHist());
+      auto hXY2 = std::make_shared<DetectorHistogram>(TString::Format("%sPreclusters_num_B_XY_%03d", getHistoPath(de).c_str(), de),
+                                                      TString::Format("Preclusters XY (DE%03d B, num)", de), de, hXYPseudo0->getNum());
+      mHistogramPreclustersXY[2].insert(make_pair(de, hXY2));
+      mAllHistograms.push_back(hXY2.get()->getHist());
+      auto hXY3 = std::make_shared<DetectorHistogram>(TString::Format("%sPreclusters_num_NB_XY_%03d", getHistoPath(de).c_str(), de),
+                                                      TString::Format("Preclusters XY (DE%03d NB, num)", de), de, hXYPseudo1->getNum());
+      mHistogramPreclustersXY[3].insert(make_pair(de, hXY3));
+      mAllHistograms.push_back(hXY3.get()->getHist());
     }
   }
 
-  mHistogramPseudoeff_NumsAndDens[0] = new GlobalHistogram("Pseudoeff_den_Mergeable", "Count - Good clusters");
-  mHistogramPseudoeff_NumsAndDens[0]->init();
-  mHistogramPseudoeff_NumsAndDens[0]->SetOption("colz");
-  getObjectsManager()->startPublishing(mHistogramPseudoeff_NumsAndDens[0]);
-  mHistogramPseudoeff_NumsAndDens[1] = new GlobalHistogram("Pseudoeff_num_Mergeable", "Count - Good clusters associated to something on the other cathode");
-  mHistogramPseudoeff_NumsAndDens[1]->init();
-  mHistogramPseudoeff_NumsAndDens[1]->SetOption("colz");
-  getObjectsManager()->startPublishing(mHistogramPseudoeff_NumsAndDens[1]);
-
-  mHistogramPseudoeff = new MergeableTH2Ratio("Pseudoeff_Mergeable", "Pseudo-efficiency - Good clusters with something on other side/Good clusters",
-                                              mHistogramPseudoeff_NumsAndDens[1], mHistogramPseudoeff_NumsAndDens[0]);
-  getObjectsManager()->startPublishing(mHistogramPseudoeff);
-  mHistogramPseudoeff->SetOption("colz");
-
   // 1D histograms for mean pseudoeff per DE (integrated or per elapsed cycle) - Used in trending
-  mMeanPseudoeffPerDE_DoesGoodNBHaveSomethingB = new MergeableTH1PseudoEfficiencyPerDE("MeanPseudoeff_Mergeable_DoesGoodNBHaveSomethingB", "Mean Pseudoeff of each DE (Good clusters on NB associated with something on B)", mHistogramPreclustersXY[3], mHistogramPreclustersXY[1]);
-  getObjectsManager()->startPublishing(mMeanPseudoeffPerDE_DoesGoodNBHaveSomethingB);
-  mMeanPseudoeffPerDE_DoesGoodBHaveSomethingNB = new MergeableTH1PseudoEfficiencyPerDE("MeanPseudoeff_Mergeable_DoesGoodBHaveSomethingNB", "Mean Pseudoeff of each DE (Good clusters on B associated with something on NB)", mHistogramPreclustersXY[2], mHistogramPreclustersXY[0]);
-  getObjectsManager()->startPublishing(mMeanPseudoeffPerDE_DoesGoodBHaveSomethingNB);
+  mMeanPseudoeffPerDE[0] = std::make_shared<MergeableTH1PseudoEfficiencyPerDE>("MeanPseudoeffPerDE_B", "Mean Pseudoeff for each DE (B)");
+  getObjectsManager()->startPublishing(mMeanPseudoeffPerDE[0].get());
+  mAllHistograms.push_back(mMeanPseudoeffPerDE[0].get());
+  mMeanPseudoeffPerDE[1] = std::make_shared<MergeableTH1PseudoEfficiencyPerDE>("MeanPseudoeffPerDE_NB", "Mean Pseudoeff for each DE (NB)");
+  getObjectsManager()->startPublishing(mMeanPseudoeffPerDE[1].get());
+  mAllHistograms.push_back(mMeanPseudoeffPerDE[1].get());
 
+  /*
+  The code for the calculation of the on-cycle values is currently broken and therefore commented
   mMeanPseudoeffPerDE_DoesGoodNBHaveSomethingB_Cycle = new MergeableTH1PseudoEfficiencyPerDECycle("MeanPseudoeffPerDE_DoesGoodNBHaveSomethingB_OnCycle", "Mean Pseudoeff of each DE during the cycle (Good clusters on NB associated with something on B)", mHistogramPreclustersXY[3], mHistogramPreclustersXY[1]);
   getObjectsManager()->startPublishing(mMeanPseudoeffPerDE_DoesGoodNBHaveSomethingB_Cycle);
   mMeanPseudoeffPerDE_DoesGoodBHaveSomethingNB_Cycle = new MergeableTH1PseudoEfficiencyPerDECycle("MeanPseudoeffPerDE_DoesGoodBHaveSomethingNB_OnCycle", "Mean Pseudoeff of each DE during the cycle (Good clusters on B associated with something on NB)", mHistogramPreclustersXY[2], mHistogramPreclustersXY[0]);
@@ -134,6 +130,7 @@ void PhysicsTaskPreclusters::initialize(o2::framework::InitContext& /*ctx*/)
 
   mMPVCycle = new MergeableTH1MPVPerDECycle("MPV_Mergeable_OnCycle", "MPV of each DE cluster charge during the cycle", mHistogramClchgDEOnCycle);
   getObjectsManager()->startPublishing(mMPVCycle);
+  */
 }
 
 void PhysicsTaskPreclusters::startOfActivity(Activity& /*activity*/)
@@ -153,7 +150,9 @@ void PhysicsTaskPreclusters::monitorData(o2::framework::ProcessingContext& ctx)
   auto preClusters = ctx.inputs().get<gsl::span<o2::mch::PreCluster>>("preclusters");
   auto digits = ctx.inputs().get<gsl::span<o2::mch::Digit>>("preclusterdigits");
 
-  bool print = false;
+  ILOG(Info, Support) << fmt::format("Received {} pre-clusters and {} digits", preClusters.size(), digits.size()) << AliceO2::InfoLogger::InfoLogger::endm;
+
+  bool print = true;
   for (auto& p : preClusters) {
     if (!plotPrecluster(p, digits)) {
       print = true;
@@ -294,7 +293,6 @@ bool PhysicsTaskPreclusters::plotPrecluster(const o2::mch::PreCluster& preCluste
   // - two or more digits
   // - at least one digit with amplitude > 50 ADC
   bool isGood[2] = { (chargeMax[0] > 50) && (isWide[0]), (chargeMax[1] > 50) && (isWide[1]) };
-  //bool isGood[2] = {isWide[0], isWide[1]};
 
   // Filling histograms to be used for Pseudo-efficiency computation
   if (isGood[1]) {
@@ -330,7 +328,6 @@ bool PhysicsTaskPreclusters::plotPrecluster(const o2::mch::PreCluster& preCluste
   //o2::mch::contour::Contour<double> envelop = o2::mch::mapping::getEnvelop(csegment);
   //std::vector<o2::mch::contour::Vertex<double>> vertices = envelop.getVertices();
   //o2::mch::contour::BBox<double> bbox = o2::mch::mapping::getBBox(csegment);
-  //std::cout<<"DE "<<de<<"  BBOX "<<bbox<<std::endl;
 
   // skip a fiducial border around the active area, so that only fully-contained clusters are considered
   //if(Xcog < (bbox.xmin() + 5)) return true;
@@ -423,33 +420,8 @@ void PhysicsTaskPreclusters::computePseudoEfficiency()
 {
   for (auto de : o2::mch::raw::deIdsForAllMCH) {
     for (int i = 0; i < 2; i++) {
-      auto ih = mHistogramPreclustersXY[i + 2].find(de);
-      if (ih == mHistogramPreclustersXY[i + 2].end()) {
-        continue;
-      }
-      // Getting the histogram with the clusters positions exists (either on B, NB, or B and NB)
-      TH2F* hB = ih->second;
-      if (!hB) {
-        continue;
-      }
-
-      // Getting the histogram with all the preclusters (denominator of pseudo-efficiency)
-      ih = mHistogramPreclustersXY[i].find(de);
-      if (ih == mHistogramPreclustersXY[i].end()) {
-        continue;
-      }
-      TH2F* hAll = ih->second;
-      if (!hAll) {
-        continue;
-      }
-
-      // Checking the Histograms where Pseudo-efficiency should be stored and resetting them
       auto ihp = mHistogramPseudoeffXY[i].find(de);
-      if (ihp == mHistogramPseudoeffXY[i].end()) {
-        continue;
-      }
-      MergeableTH2Ratio* hEff = ihp->second;
-      if (!hEff) {
+      if (ihp == mHistogramPseudoeffXY[i].end() || ihp->second == nullptr) {
         continue;
       }
 
@@ -458,19 +430,25 @@ void PhysicsTaskPreclusters::computePseudoEfficiency()
     }
   }
 
-  // Same procedure but in GlobalHistograms
-  mHistogramPseudoeff_NumsAndDens[0]->add(mHistogramPreclustersXY[0], mHistogramPreclustersXY[1]);
-  mHistogramPseudoeff_NumsAndDens[1]->add(mHistogramPreclustersXY[2], mHistogramPreclustersXY[3]);
+  mMeanPseudoeffPerDE[0]->update(mHistogramPreclustersXY[2], mHistogramPreclustersXY[0]);
+  mMeanPseudoeffPerDE[1]->update(mHistogramPreclustersXY[3], mHistogramPreclustersXY[1]);
 
-  mHistogramPseudoeff->update();
-
-  mMeanPseudoeffPerDE_DoesGoodNBHaveSomethingB->update();
-  mMeanPseudoeffPerDE_DoesGoodBHaveSomethingNB->update();
-
+  /*
   mMeanPseudoeffPerDE_DoesGoodNBHaveSomethingB_Cycle->update();
   mMeanPseudoeffPerDE_DoesGoodBHaveSomethingNB_Cycle->update();
-
   mMPVCycle->update();
+  */
+}
+
+void PhysicsTaskPreclusters::writeHistos()
+{
+#ifdef QC_MCH_SAVE_TEMP_ROOTFILE
+  TFile f("mch-qc-preclusters.root", "RECREATE");
+  for (auto h : mAllHistograms) {
+    h->Write();
+  }
+  f.Close();
+#endif
 }
 
 void PhysicsTaskPreclusters::endOfCycle()
@@ -478,79 +456,25 @@ void PhysicsTaskPreclusters::endOfCycle()
   ILOG(Info, Support) << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 
   computePseudoEfficiency();
+  writeHistos();
 }
 
 void PhysicsTaskPreclusters::endOfActivity(Activity& /*activity*/)
 {
   ILOG(Info, Support) << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 
-#ifdef QC_MCH_SAVE_TEMP_ROOTFILE
   computePseudoEfficiency();
-
-  TFile f("mch-qc-preclusters.root", "RECREATE");
-
-  {
-    auto hMean = mMeanPseudoeffPerDE_DoesGoodNBHaveSomethingB;
-    auto hMean2 = mMeanPseudoeffPerDE_DoesGoodBHaveSomethingNB;
-    auto hMeanCycle = mMeanPseudoeffPerDE_DoesGoodNBHaveSomethingB_Cycle;
-    auto hMeanCycle2 = mMeanPseudoeffPerDE_DoesGoodBHaveSomethingNB_Cycle;
-    hMean->Write();
-    hMean2->Write();
-    hMeanCycle->Write();
-    hMeanCycle2->Write();
-  }
-
-  {
-    for (int i = 0; i < 4; i++) {
-      for (auto& h2 : mHistogramPreclustersXY[i]) {
-        if (h2.second != nullptr) {
-          h2.second->Write();
-        }
-      }
-    }
-    for (int i = 0; i < 2; i++) {
-      for (auto& h2 : mHistogramPseudoeffXY[i]) {
-        if (h2.second != nullptr) {
-          h2.second->Write();
-        }
-      }
-    }
-    for (auto& h : mHistogramClchgDE) {
-      if (h.second != nullptr) {
-        h.second->Write();
-      }
-    }
-    for (auto& h : mHistogramClchgDEOnCycle) {
-      if (h.second != nullptr) {
-        h.second->Write();
-        h.second->Reset();
-      }
-    }
-    for (auto& h : mHistogramClsizeDE) {
-      if (h.second != nullptr) {
-        h.second->Write();
-        h.second->Reset();
-      }
-    }
-  }
-
-  mHistogramPseudoeff_NumsAndDens[0]->Write();
-  mHistogramPseudoeff_NumsAndDens[1]->Write();
-
-  mHistogramPseudoeff->Write();
-
-  mMPVCycle->Write();
-
-  f.Close();
-
-#endif
+  writeHistos();
 }
 
 void PhysicsTaskPreclusters::reset()
 {
   // clean all the monitor objects here
-
   ILOG(Info, Support) << "Reseting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+
+  for (auto h : mAllHistograms) {
+    h->Reset();
+  }
 }
 
 } // namespace muonchambers

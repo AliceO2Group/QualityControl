@@ -43,48 +43,53 @@ class MergeableTH1PseudoEfficiencyPerDE : public TH1F, public o2::mergers::Merge
   MergeableTH1PseudoEfficiencyPerDE() = default;
 
   MergeableTH1PseudoEfficiencyPerDE(MergeableTH1PseudoEfficiencyPerDE const& copymerge)
-    : TH1F("DefaultName", "DefaultTitle", 1100, -0.5, 1099.5), o2::mergers::MergeInterface(), mhistosNum(copymerge.getNum()), mhistosDen(copymerge.getDen())
+    : TH1F("DefaultName", "DefaultTitle", 1100, -0.5, 1099.5), o2::mergers::MergeInterface()
   {
+    Bool_t bStatus = TH1::AddDirectoryStatus();
+    TH1::AddDirectory(kFALSE);
+    mHistoNum = (TH1F*)copymerge.getNum()->Clone();
+    mHistoDen = (TH1F*)copymerge.getDen()->Clone();
+    TH1::AddDirectory(bStatus);
   }
 
-  MergeableTH1PseudoEfficiencyPerDE(const char* name, const char* title, std::map<int, DetectorHistogram*> histosnum, std::map<int, DetectorHistogram*> histosden)
-    : TH1F(name, title, 1100, -0.5, 1099.5), o2::mergers::MergeInterface(), mhistosNum(histosnum), mhistosDen(histosden)
+  MergeableTH1PseudoEfficiencyPerDE(const char* name, const char* title)
+    : TH1F(name, title, 1100, -0.5, 1099.5), o2::mergers::MergeInterface()
   {
+    Bool_t bStatus = TH1::AddDirectoryStatus();
+    TH1::AddDirectory(kFALSE);
+    mHistoNum = new TH1F("num", "num", 1100, -0.5, 1099.5);
+    mHistoDen = new TH1F("den", "den", 1100, -0.5, 1099.5);
+    TH1::AddDirectory(bStatus);
     update();
   }
 
-  ~MergeableTH1PseudoEfficiencyPerDE() override = default;
+  ~MergeableTH1PseudoEfficiencyPerDE()
+  {
+    if (mHistoNum) {
+      delete mHistoNum;
+    }
+
+    if (mHistoDen) {
+      delete mHistoDen;
+    }
+  }
 
   void merge(MergeInterface* const other) override
   {
-
-    for (auto de : o2::mch::raw::deIdsForAllMCH) {
-      auto hnumMap = dynamic_cast<const MergeableTH1PseudoEfficiencyPerDE* const>(other)->getNum();
-      auto hnum = hnumMap.find(de);
-      auto hdenMap = dynamic_cast<const MergeableTH1PseudoEfficiencyPerDE* const>(other)->getDen();
-      auto hden = hdenMap.find(de);
-      if ((hden != dynamic_cast<const MergeableTH1PseudoEfficiencyPerDE* const>(other)->getDen().end()) && (hden->second != NULL) && (hnum != dynamic_cast<const MergeableTH1PseudoEfficiencyPerDE* const>(other)->getNum().end()) && (hnum->second != NULL)) {
-
-        auto hnumfinal = mhistosNum.find(de);
-        auto hdenfinal = mhistosDen.find(de);
-        if ((hdenfinal != mhistosDen.end()) && (hdenfinal->second != NULL) && (hnumfinal != mhistosNum.end()) && (hnumfinal->second != NULL)) {
-          hnumfinal->second->Add(hnum->second);
-          hdenfinal->second->Add(hden->second);
-        }
-      }
-    }
+    mHistoNum->Add(dynamic_cast<const MergeableTH1PseudoEfficiencyPerDE* const>(other)->getNum());
+    mHistoDen->Add(dynamic_cast<const MergeableTH1PseudoEfficiencyPerDE* const>(other)->getDen());
 
     update();
   }
 
-  std::map<int, DetectorHistogram*> getNum() const
+  TH1F* getNum() const
   {
-    return mhistosNum;
+    return mHistoNum;
   }
 
-  std::map<int, DetectorHistogram*> getDen() const
+  TH1F* getDen() const
   {
-    return mhistosDen;
+    return mHistoDen;
   }
 
   void update()
@@ -92,46 +97,53 @@ class MergeableTH1PseudoEfficiencyPerDE : public TH1F, public o2::mergers::Merge
     const char* name = this->GetName();
     const char* title = this->GetTitle();
     Reset();
+    Divide(mHistoNum, mHistoDen);
+    SetNameTitle(name, title);
+  }
+
+  void update(std::map<int, std::shared_ptr<DetectorHistogram>> histosNum, std::map<int, std::shared_ptr<DetectorHistogram>> histosDen)
+  {
+    const char* name = this->GetName();
+    const char* title = this->GetTitle();
+    Reset();
     SetNameTitle(name, title);
 
-    double NewPreclNumDE[1100];
-    double NewPreclDenDE[1100];
-    double MeanPseudoeffDE;
+    double numDE[1100] = { 0 };
+    double denDE[1100] = { 0 };
 
     for (auto de : o2::mch::raw::deIdsForAllMCH) {
-      auto hnum = mhistosNum.find(de);
-      auto hden = mhistosDen.find(de);
-      if ((hden != mhistosDen.end()) && (hden->second != NULL) && (hnum != mhistosNum.end()) && (hnum->second != NULL)) {
-        NewPreclNumDE[de] = 0;
-        NewPreclDenDE[de] = 0;
-        for (int binx = 1; binx < hden->second->GetXaxis()->GetNbins() + 1; binx++) {
-          for (int biny = 1; biny < hden->second->GetYaxis()->GetNbins() + 1; biny++) {
-            NewPreclDenDE[de] += hden->second->GetBinContent(binx, biny);
+      auto hnum = histosNum.find(de);
+      auto hden = histosDen.find(de);
+      if ((hden != histosDen.end()) && (hden->second != NULL) && (hnum != histosNum.end()) && (hnum->second != NULL)) {
+        numDE[de] = 0;
+        denDE[de] = 0;
+        for (int binx = 1; binx < hnum->second->getHist()->GetXaxis()->GetNbins() + 1; binx++) {
+          for (int biny = 1; biny < hnum->second->getHist()->GetYaxis()->GetNbins() + 1; biny++) {
+            numDE[de] += hnum->second->getHist()->GetBinContent(binx, biny);
           }
         }
-        for (int binx = 1; binx < hnum->second->GetXaxis()->GetNbins() + 1; binx++) {
-          for (int biny = 1; biny < hnum->second->GetYaxis()->GetNbins() + 1; biny++) {
-            NewPreclNumDE[de] += hnum->second->GetBinContent(binx, biny);
+        for (int binx = 1; binx < hden->second->getHist()->GetXaxis()->GetNbins() + 1; binx++) {
+          for (int biny = 1; biny < hden->second->getHist()->GetYaxis()->GetNbins() + 1; biny++) {
+            denDE[de] += hden->second->getHist()->GetBinContent(binx, biny);
           }
         }
       }
     }
 
-    for (auto de : o2::mch::raw::deIdsForAllMCH) {
-      MeanPseudoeffDE = 0;
-      if (NewPreclDenDE[de] > 0) {
-        MeanPseudoeffDE = NewPreclNumDE[de] / NewPreclDenDE[de];
-      }
-      SetBinContent(de + 1, MeanPseudoeffDE);
+    for (auto i : o2::mch::raw::deIdsForAllMCH) {
+      mHistoNum->SetBinContent(i + 1, numDE[i]);
+      mHistoDen->SetBinContent(i + 1, denDE[i]);
     }
+
+    update();
   }
 
  private:
-  std::map<int, DetectorHistogram*> mhistosNum;
-  std::map<int, DetectorHistogram*> mhistosDen;
+  TH1F* mHistoNum{ nullptr };
+  TH1F* mHistoDen{ nullptr };
   std::string mTreatMeAs = "TH1F";
 
-  ClassDefOverride(MergeableTH1PseudoEfficiencyPerDE, 1);
+  ClassDefOverride(MergeableTH1PseudoEfficiencyPerDE, 2);
 };
 
 } // namespace o2::quality_control_modules::muonchambers

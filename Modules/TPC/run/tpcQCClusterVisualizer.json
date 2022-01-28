@@ -72,10 +72,8 @@
         "updateTrigger": [
           "newobject:ccdb:qc/TPC/MO/Clusters/ClusterData"
         ],
-        "stopTrigger_comment": [ "To keep the task running until it is stopped manually set the trigger on the update of a non-existing object, e.g. 'newobject:ccdb:TPC/ThisDoesNotExist'",
-                                 "There will be a end of run trigger implemented so the above workaround can be abandoned later." ],
         "stopTrigger": [
-          "newobject:ccdb:TPC/ThisDoesNotExist"
+          "userorcontrol"
         ]
       }
     }

@@ -62,12 +62,6 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
         result = result.getLevel() + 1e2;
     }
 
-    if (iter->second->getName() == "ClusterUsage") {
-      auto* h = dynamic_cast<TH1D*>(iter->second->getObject());
-      if (h->GetMaximum() < 0.1)
-        result = result.getLevel() + 1e3;
-    }
-
     if (iter->second->getName() == "EtaDistribution") {
       auto* h = dynamic_cast<TH1D*>(iter->second->getObject());
       if (abs(h->GetBinCenter(h->GetMaximumBin())) > 0.5)
@@ -174,25 +168,6 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     }
 
     auto* msg = new TLatex(positionX, positionY, Form("#bf{#splitline{%s}{%s}}", text[0].Data(), text[1].Data()));
-    msg->SetTextColor(textColor);
-    msg->SetTextSize(0.08);
-    msg->SetTextFont(43);
-    msg->SetNDC();
-    h->GetListOfFunctions()->Add(msg);
-  }
-
-  if (mo->getName() == "ClusterUsage") {
-    auto* h = dynamic_cast<TH1D*>(mo->getObject());
-    int histoQuality = getDigit(checkResult.getLevel(), 4);
-    if (histoQuality == 0) {
-      text[0] = "Quality::GOOD";
-      textColor = kGreen;
-    } else {
-      text[0] = "INFO: fraction of clusters below 0.1";
-      text[1] = "call expert";
-      textColor = kRed;
-    }
-    auto* msg = new TLatex(0.15, 0.7, Form("#bf{#splitline{%s}{%s}}", text[0].Data(), text[1].Data()));
     msg->SetTextColor(textColor);
     msg->SetTextSize(0.08);
     msg->SetTextFont(43);

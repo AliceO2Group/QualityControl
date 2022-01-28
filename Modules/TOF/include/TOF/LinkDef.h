@@ -15,6 +15,7 @@
 #pragma link C++ class o2::quality_control_modules::tof::CheckRawMultiplicity + ;
 #pragma link C++ class o2::quality_control_modules::tof::CheckRawTime + ;
 #pragma link C++ class o2::quality_control_modules::tof::CheckRawToT + ;
+#pragma link C++ class o2::quality_control_modules::tof::CheckHitMap + ;
 // PostProcessing
 #pragma link C++ class o2::quality_control_modules::tof::PostProcessDiagnosticPerCrate + ;
 // Trending
