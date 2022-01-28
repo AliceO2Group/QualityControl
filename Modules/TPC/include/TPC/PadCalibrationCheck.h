@@ -46,6 +46,8 @@ class PadCalibrationCheck : public o2::quality_control::checker::CheckInterface
   std::vector<float> mNoiseMean;
   std::vector<float> mNoiseStdDev;
   std::vector<int> mNoiseNonZeroEntries;
+  double mMediumQualityLimitNoiseMean;
+  double mBadQualityLimitNoiseMean;
 };
 
 } // namespace o2::quality_control_modules::tpc
