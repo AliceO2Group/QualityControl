@@ -159,8 +159,6 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
 {
   WorkflowSpec specs;
 
-  o2::quality_control::core::QcInfoLogger::setFacility("runQC");
-
   if (!validateArguments(config)) {
     return {};
   }
@@ -187,6 +185,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
     auto infologgerDiscardLevel = configTree.get<int>("qc.config.infologger.filterDiscardLevel", 21);
     ILOG_INST.filterDiscardDebug(infologgerFilterDiscardDebug);
     ILOG_INST.filterDiscardLevel(infologgerDiscardLevel);
+    o2::quality_control::core::QcInfoLogger::setFacility("runQC");
 
     ILOG(Info, Support) << "Using config file '" << qcConfigurationSource << "'" << ENDM;
     auto keyValuesToOverride = parseOverrideValues(config.options().get<std::string>("override-values"));
