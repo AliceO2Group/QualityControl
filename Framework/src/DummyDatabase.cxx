@@ -84,7 +84,7 @@ void* DummyDatabase::retrieveAny(const std::type_info&, const std::string&, cons
   return nullptr;
 }
 
-void DummyDatabase::setObjectMaxSize(size_t objectMaxSize)
+void DummyDatabase::setMaxObjectSize(size_t maxObjectSize)
 {
 }
 

@@ -100,8 +100,8 @@ void CcdbDatabase::connect(const std::unordered_map<std::string, std::string>& c
 {
   mUrl = config.at("host");
   init();
-  if(config.count("objectMaxSize")) {
-    mObjectMaxSize = std::stoi(config.at("objectMaxSize"));
+  if(config.count("maxObjectSize")) {
+    mMaxObjectSize = std::stoi(config.at("maxObjectSize"));
   }
 }
 
@@ -144,11 +144,11 @@ void CcdbDatabase::storeAny(const void* obj, std::type_info const& typeInfo, std
   }
 
   ILOG(Debug, Support) << "Storing object " << path << " of type " << fullMetadata["ObjectType"] << ENDM;
-  int result = ccdbApi.storeAsTFile_impl(obj, typeInfo, path, fullMetadata, from, to, mObjectMaxSize);
+  int result = ccdbApi.storeAsTFile_impl(obj, typeInfo, path, fullMetadata, from, to, mMaxObjectSize);
 
   if (result == -1 /* object bigger than maxObjectSize */) {
     static AliceO2::InfoLogger::InfoLogger::AutoMuteToken msgLimit(LogWarningSupport, 1, 600); // send it once every 10 minutes
-    string msg = "object " + path + " is bigger than the maximum allowed size (" + to_string(mObjectMaxSize) + "B) - skipped";
+    string msg = "object " + path + " is bigger than the maximum allowed size (" + to_string(mMaxObjectSize) + "B) - skipped";
     ILOG_INST.log(msgLimit, "%s", msg.c_str());
   }
 }
@@ -197,11 +197,11 @@ void CcdbDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::Moni
   }
 
   ILOG(Debug, Support) << "Storing MonitorObject " << path << ENDM;
-  int result = ccdbApi.storeAsTFileAny<TObject>(obj, path, metadata, from, to, mObjectMaxSize);
+  int result = ccdbApi.storeAsTFileAny<TObject>(obj, path, metadata, from, to, mMaxObjectSize);
 
   if (result == -1 /* object bigger than maxObjectSize */) {
     static AliceO2::InfoLogger::InfoLogger::AutoMuteToken msgLimit(LogWarningSupport, 1, 600); // send it once every 10 minutes
-    string msg = "object " + path + " is bigger than the maximum allowed size (" + to_string(mObjectMaxSize) + "B) - skipped";
+    string msg = "object " + path + " is bigger than the maximum allowed size (" + to_string(mMaxObjectSize) + "B) - skipped";
     ILOG_INST.log(msgLimit, "%s", msg.c_str());
   }
 }
@@ -239,7 +239,7 @@ void CcdbDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::Qual
 
   if (result == -1 /* object bigger than maxObjectSize */) {
     static AliceO2::InfoLogger::InfoLogger::AutoMuteToken msgLimit(LogWarningSupport, 1, 600); // send it once every 10 minutes
-    string msg = "object " + path + " is bigger than the maximum allowed size (" + to_string(mObjectMaxSize) + "B) - skipped";
+    string msg = "object " + path + " is bigger than the maximum allowed size (" + to_string(mMaxObjectSize) + "B) - skipped";
     ILOG_INST.log(msgLimit, "%s", msg.c_str());
   }
 }
@@ -511,9 +511,9 @@ void CcdbDatabase::storeStreamerInfosToFile(std::string filename)
   f.Close();
 }
 
-void CcdbDatabase::setObjectMaxSize(size_t objectMaxSize)
+void CcdbDatabase::setMaxObjectSize(size_t maxObjectSize)
 {
-  CcdbDatabase::mObjectMaxSize = objectMaxSize;
+  CcdbDatabase::mMaxObjectSize = maxObjectSize;
 }
 
 } // namespace o2::quality_control::repository

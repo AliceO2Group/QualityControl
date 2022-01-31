@@ -139,7 +139,7 @@ BOOST_AUTO_TEST_CASE(ccdb_store)
   f.backend->storeQO(qo3, 10000, 20000);
 
   // test the max size
-  f.backend->setObjectMaxSize(1);
+  f.backend->setMaxObjectSize(1);
   f.backend->storeMO(mo3, 10000, 20000); // should fail
 }
 
