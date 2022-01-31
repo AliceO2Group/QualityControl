@@ -33,9 +33,14 @@ void TH1ReductorTPC::update(TObject* obj, std::vector<SliceInfo>& reducedSource,
   // (no multipad canvas, nor slicer), and slicer axes size set to 1 (no slicing).
   TList* padList = nullptr; // List of TPads if input TCanvas.
   TH1* histo = nullptr;     // Pointer to the histogram to trend.
-  int numberPads = 1;       // Number of output objects.
-  int axisSize = 1;         // Default value for the main slicer axis.
-  int innerAxisSize = 1;    // Default value for the inner slicer axis.
+  int numberPads = 1;       // Number of input objects.
+  int numberSlices = 1;     // Default value for the inner slicer axis.
+  bool useSlicing = false;
+
+  // GANESHA add protection that axisSize == 1. But, do we allow that the json contains also y or z axis i.e. or protection would be if( (int)axis.size() < 1 )
+  if ((int)axis.size() != 1) {
+    ILOG(Error, Support) << "Error: 'axisDivision' in json not configured properly for TH1Reductor. Should contain exactly one axis." << ENDM;
+  }
 
   // Get the number of pads, and their list in case of an input canvas.
   const bool isCanvas = (obj->IsA() == TCanvas::Class());
@@ -44,10 +49,13 @@ void TH1ReductorTPC::update(TObject* obj, std::vector<SliceInfo>& reducedSource,
     padList = static_cast<TList*>(canvas->GetListOfPrimitives());
     padList->SetOwner(kTRUE);
     numberPads = padList->GetEntries();
-  } else {                    // Slicer case: number of pads = axis.size*(innerAxis.size-1).
-    if (axis[0].size() > 1) { // Ensure the slicer config is valid.
-      axisSize = (int)axis.size();
-      innerAxisSize = (int)axis[0].size() - 1;
+  } else {                                    // Non-canvas case: number of input pads always 1, i.e. only one histogram passed.
+    if (axis[0].size() > 1) {                 // Ensure the slicer config is valid, either to select a certain range, or obtain multiple slices.
+                                              // Otherwise, full range of histo will be used.
+      numberSlices = (int)axis[0].size() - 1; // axis[0].size() = number of boundaries.
+      useSlicing = true;                      // Enable the use of custom boundaries.
+    } else {
+      ILOG(Info, Support) << "Not enough axis boundaries for slicing. Will use full histogram range." << ENDM;
     }
   }
   ILOG(Info, Support) << "Number of output histograms for the trending of "
@@ -77,9 +85,12 @@ void TH1ReductorTPC::update(TObject* obj, std::vector<SliceInfo>& reducedSource,
           mySlice.stddevX = histo->GetStdDev(1);
           mySlice.errMeanX = mySlice.stddevX / (sqrt(mySlice.entries));
 
-          float StatsY[3]; // 0 Mean, 1 Stddev, 2 Error
-          GetTH1StatsY(histo, StatsY, axis[i][j], axis[i][j + 1]);
-
+        float StatsY[3]; // 0 Mean, 1 Stddev, 2 Error
+        if (useSlicing) {
+          GetTH1StatsY(histo, StatsY, axis[0][j], axis[0][j + 1]);
+        } else { // We don't slice and take the full histo as defined.
+          GetTH1StatsY(histo, StatsY, histo->GetXaxis()->GetXmin(), histo->GetXaxis()->GetXmax());
+        }
           mySlice.meanY = StatsY[0];
           mySlice.stddevY = StatsY[1];
           mySlice.errMeanY = StatsY[2];

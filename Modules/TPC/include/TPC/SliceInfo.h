@@ -74,7 +74,8 @@ struct SliceInfo {
       } else if (strcmp(VarType.data(), "errMeanY") == 0) {
         return errMeanY;
       } else {
-        ILOG(Error, Support) << "'VarType' in 'RetrieveValue' unknown. Breaking." << ENDM;
+        ILOG(Error, Support) << "TPC SliceInfo.h: 'VarType' " << VarType.data()
+                             << " in 'RetrieveValue' unknown. Breaking." << ENDM;
         exit(0);
       }
     }
