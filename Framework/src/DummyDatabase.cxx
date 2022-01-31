@@ -88,5 +88,4 @@ void DummyDatabase::setMaxObjectSize(size_t maxObjectSize)
 {
 }
 
-
 } // namespace o2::quality_control::repository

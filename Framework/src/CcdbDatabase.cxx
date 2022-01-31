@@ -100,7 +100,7 @@ void CcdbDatabase::connect(const std::unordered_map<std::string, std::string>& c
 {
   mUrl = config.at("host");
   init();
-  if(config.count("maxObjectSize")) {
+  if (config.count("maxObjectSize")) {
     mMaxObjectSize = std::stoi(config.at("maxObjectSize"));
   }
 }
