@@ -99,18 +99,18 @@ void TrendingTaskTPC::trendValues(uint64_t timestamp,
       TObject* obj = mo ? mo->getObject() : nullptr;
       if (obj) {
         mReductors[dataSource.name]->update(obj, mSources[dataSource.name],
-                                            dataSource.axisDivision);
-
-        // Number of pads depending if input canvas or single sliced histogram.
-        if (auto canvas = dynamic_cast<TCanvas*>(obj)) { // Case with input canvas.
-          mNumberPads = static_cast<TList*>(canvas->GetListOfPrimitives())->GetEntries();
-        } else if ((int)dataSource.axisDivision[0].size() > 1) { // Case with sliced single histogram.
-          int axisSize = (int)dataSource.axisDivision.size();
-          int innerAxisSize = (int)dataSource.axisDivision[0].size() - 1;
-          mNumberPads = axisSize * innerAxisSize;
-        } else {
-          mNumberPads = 1;
-        }
+                                            dataSource.axisDivision, mSubtitles[dataSource.name]);
+        /*
+                // Number of pads depending if input canvas or single sliced histogram.
+                if (auto canvas = dynamic_cast<TCanvas*>(obj)) { // Case with input canvas.
+                  mNumberPads = static_cast<TList*>(canvas->GetListOfPrimitives())->GetEntries();
+                } else if ((int)dataSource.axisDivision[0].size() > 1) { // Case with sliced single histogram.
+                  int axisSize = (int)dataSource.axisDivision.size();
+                  int innerAxisSize = (int)dataSource.axisDivision[0].size() - 1;
+                  mNumberPads = axisSize * innerAxisSize;
+                } else {
+                  mNumberPads = 1;
+                }*/
       }
 
     } else if (dataSource.type == "repository-quality") {
@@ -149,20 +149,15 @@ void TrendingTaskTPC::generatePlots()
     drawCanvas(c, plot.varexp, plot.selection, plot.option, plot.graphErrors, plot.name);
 
     // Postprocess each pad (titles, axes, flushing buffers).
-    for (int p = 1; p <= mNumberPads; p++) {
-      c->cd(p);
-      if (auto histo = dynamic_cast<TGraph*>(c->cd(p)->GetPrimitive("Graph"))) {
-        /*
-                // Set a centered, nicely formatted title.
-                ///if (auto title = static_cast<TPaveText*>(c->GetPrimitive("title"))) {
-                if (auto title = dynamic_cast<TPaveText*>(histo->GetTitle())) {
-                  title->SetBBoxCenterX(c->GetBBoxCenter().fX);
-                  title->Draw();
-                } else {
-                  ILOG(Error, Devel) << "Could not get the title 'TPaveText' of the plot '"
-                    << plot.name << "'." << ENDM;
-                }*/
-        /// LOKI
+    std::size_t posEndVar = plot.varexp.find("."); // Find the end of the dataSource.
+    std::string varName(plot.varexp.substr(0, posEndVar));
+    for (int p = 0; p < mSubtitles[varName].size(); p++) {
+      c->cd(p + 1);
+      if (auto histo = dynamic_cast<TGraph*>(c->cd(p + 1)->GetPrimitive("Graph"))) {
+
+        // Set the title of the graph in a proper way.
+        std::string thisTitle = Form("%s - %s", plot.title.data(), mSubtitles[varName][p].data());
+        histo->SetTitle(thisTitle.data());
 
         // Set the user-defined range on the y axis if needed.
         if (!plot.graphYRange.empty()) {
@@ -262,7 +257,8 @@ void TrendingTaskTPC::drawCanvas(TCanvas* thisCanvas, const std::string& var,
   for (int p = 0; p < (mNumberPads); p++) {
     thisCanvas->cd(p + 1);
     graphPad = new TGraph(nEvents, TimeStorage, DataStorage[p]);
-    graphPad->SetTitle(Form("%s Pad %d", name.c_str(), p + 1));
+    // LOKI: Need a way to know if we have something canvas or slicer
+    // graphPad->SetTitle(Form("%s Pad %d", title.data(), p + 1));
     graphPad->Draw(opt.data());
     //// LOKI: Set title of the graph here.
 

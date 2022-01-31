@@ -79,7 +79,8 @@ class TrendingTaskTPC : public PostProcessingInterface
   TrendingTaskConfigTPC mConfig;
   MetaData mMetaData;
   UInt_t mTime;
-  int mNumberPads;
+  // int mNumberPads;
+  // std::vector<std::string>> mSubtitles;  // Sliced ranges for the titles. [nb dataSources][nb Pads]
   std::unique_ptr<TTree> mTrend;
   std::map<std::string, TObject*> mPlots;
   std::unordered_map<std::string, std::unique_ptr<ReductorTPC>> mReductors;

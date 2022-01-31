@@ -33,9 +33,16 @@ void TH2ReductorTPC::update(TObject* obj, std::vector<SliceInfo>& reducedSource,
   // (no multipad canvas, nor slicer), and slicer axes size set to 1 (no slicing).
   TList* padList = nullptr; // List of TPads if input TCanvas.
   TH2* histo = nullptr;     // Pointer to the histogram to trend.
-  int numberPads = 1;       // Number of output objects.
-  int axisSize = 1;         // Default value for the main slicer axis.
-  int innerAxisSize = 1;    // Default value for the inner slicer axis.
+  int numberPads = 1;       // Number of input objects.
+  int numberSlicesX = 1;    // Default value for the X axis slicer.
+  int numberSlicesY = 1;    // Default value for the Y axis slicer.
+  bool useSlicingX = false;
+  bool useSlicingY = false;
+
+  // GANESHA add protection that number of axes == 2.
+  if ((int)axis.size() != 2) {
+    ILOG(Error, Support) << "Error: 'axisDivision' in json not configured properly for TH2Reductor. Should contain exactly two axes." << ENDM;
+  }
 
   // Get the number of pads, and their list in case of an input canvas.
   const bool isCanvas = (obj->IsA() == TCanvas::Class());
@@ -44,10 +51,21 @@ void TH2ReductorTPC::update(TObject* obj, std::vector<SliceInfo>& reducedSource,
     padList = static_cast<TList*>(canvas->GetListOfPrimitives());
     padList->SetOwner(kTRUE);
     numberPads = padList->GetEntries();
-  } else {                    // Slicer case: number of pads = axis.size*(innerAxis.size-1).
-    if (axis[0].size() > 1) { // Ensure the slicer config is valid.
-      axisSize = (int)axis.size();
-      innerAxisSize = (int)axis[0].size() - 1;
+  } else {                                     // Non-canvas case: number of input pads always 1, i.e. only one histogram passed.
+    if (axis[0].size() > 1) {                  // Ensure the slicer config X is valid, either to select a certain range, or obtain multiple slices.
+                                               // Otherwise, full range of histo will be used.
+      numberSlicesX = (int)axis[0].size() - 1; // axis[0].size() = number of boundaries.
+      useSlicingX = true;                      // Enable the use of custom boundaries.
+    } else {
+      ILOG(Info, Support) << "Not enough axis boundaries for slicing on X. Will use full histogram range along X." << ENDM;
+    }
+
+    if (axis[1].size() > 1) {                  // Ensure the slicer config Y is valid, either to select a certain range, or obtain multiple slices.
+                                               // Otherwise, full range of histo will be used.
+      numberSlicesY = (int)axis[1].size() - 1; // axis[1].size() = number of boundaries.
+      useSlicingY = true;                      // Enable the use of custom boundaries.
+    } else {
+      ILOG(Info, Support) << "Not enough axis boundaries for slicing on Y. Will use full histogram range along Y." << ENDM;
     }
   }
   ILOG(Info, Support) << "Number of output histograms for the trending of "
@@ -70,6 +88,17 @@ void TH2ReductorTPC::update(TObject* obj, std::vector<SliceInfo>& reducedSource,
           if (!isCanvas && (innerAxisSize > 1)) {
             histo->GetXaxis()->SetRangeUser(axis[i][j], axis[i][j + 1]);
           }
+        }
+
+        for (int jY = 0; jY < numberSlicesY; jY++) {
+          if (useSlicingY) {
+            histo->GetYaxis()->SetRangeUser(axis[1][jY], axis[1][jY + 1]);
+            // thisRange += Form(" and RangeY: [%.1f, %.1f]", axis[1][jY], axis[1][jY + 1]);
+          } else {
+            // thisRange += Form(" and RangeY (default): [%.1f, %.1f]", histo->GetYaxis()->GetXmin(), histo->GetYaxis()->GetXmax());
+            // thisRange += Form(" and RangeY (default): [-2., 2.]");
+          }
+          ranges.push_back(thisRange);
 
           SliceInfo mySlice;
           mySlice.entries = histo->GetEntries();
