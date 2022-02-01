@@ -65,6 +65,19 @@ class DigitsQcTask final : public TaskInterface
   TH1F* mROFSizeNB{ nullptr };
 
   TH2F* mROFTimeDiff{ nullptr };
+
+  ///////////////////////////
+  int nROF = 0;
+  TH1F* mMultHitMT11B{ nullptr };
+  TH1F* mMultHitMT11NB{ nullptr };
+  TH1F* mMultHitMT12B{ nullptr };
+  TH1F* mMultHitMT12NB{ nullptr };
+  TH1F* mMultHitMT21B{ nullptr };
+  TH1F* mMultHitMT21NB{ nullptr };
+  TH1F* mMultHitMT22B{ nullptr };
+  TH1F* mMultHitMT22NB{ nullptr };
+
+  TH2F* mLocalBoardsMap{ nullptr };
 };
 
 } // namespace o2::quality_control_modules::mid
