@@ -82,7 +82,8 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   ILOG(Info, Support) << "START DOING QC General" << ENDM;
   auto trackArr = ctx.inputs().get<gsl::span<o2::its::TrackITS>>("tracks");
-  auto rofArr = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("rofs");
+  auto trackRofArr = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("rofs");
+  auto clusRofArr = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("clustersrof");
   auto clusArr = ctx.inputs().get<gsl::span<o2::itsmft::CompClusterExt>>("compclus");
   auto vertexArr = ctx.inputs().get<gsl::span<o2::dataformats::Vertex<o2::dataformats::TimeStamp<int>>>>("Vertices");
 
@@ -94,27 +95,24 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
     hVertexContributors->Fill(vertex.getNContributors());
   }
 
-  for (const auto& ROF : rofArr) {
+  for (int iROF = 0; iROF < trackRofArr.size(); iROF++) {
 
     vMap.clear();
     vEta.clear();
     vPhi.clear();
 
-    int ntrackCnt = 0;
     int nClusterCntTrack = 0;
-    int nClusterCnt = 0;
+    int nTracks = trackRofArr[iROF].getNEntries();
 
-    for (int itrack = ROF.getFirstEntry(); itrack < ROF.getFirstEntry() + ROF.getNEntries(); itrack++) {
+    for (int itrack = 0; itrack < nTracks; itrack++) {
 
       auto& track = trackArr[itrack];
-      //if(track) ntrackCnt++;
       auto out = track.getParamOut();
       Float_t Eta = -log(tan(out.getTheta() / 2.));
       hTrackEta->Fill(Eta);
       hTrackPhi->Fill(out.getPhi());
       hAngularDistribution->Fill(Eta, out.getPhi());
       hNClusters->Fill(track.getNumberOfClusters());
-      mNClustersInTracks += track.getNumberOfClusters();
 
       vMap.emplace_back(track.getPattern());
       vEta.emplace_back(Eta);
@@ -124,13 +122,11 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
       nClusterCntTrack += track.getNumberOfClusters();
     }
 
-    auto clusters_in_frame = ROF.getROFData(clusArr);
-    nClusterCnt = clusters_in_frame.size();
-    ntrackCnt = ROF.getNEntries();
+    int nTotCls = clusRofArr[iROF].getNEntries();
 
-    float clusterRatio = nClusterCnt > 0 ? nClusterCntTrack / nClusterCnt : -1;
+    float clusterRatio = nTotCls > 0 ? (float)nClusterCntTrack / (float)nTotCls : -1;
     hAssociatedClusterFraction->Fill(clusterRatio);
-    hNtracks->Fill(ntrackCnt);
+    hNtracks->Fill(nTracks);
 
     const auto bcdata = ROF.getBCData();    
     hClusterVsBunchCrossing->Fill(bcdata.bc, nClusterCntTrack); // we count only the number of clusters, not their sizes
@@ -140,12 +136,11 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   mNTracks += trackArr.size();
   mNClusters += clusArr.size();
-  mNRofs += rofArr.size();
+  mNRofs += trackRofArr.size();
 
   if (mNRofs >= NROFOCCUPANCY) {
     mNTracks = 0;
     mNRofs = 0;
-    mNClustersInTracks = 0;
     mNClusters = 0;
   }
 }
@@ -206,7 +201,7 @@ void ITSTrackTask::createAllHistos()
   formatAxes(hAngularDistribution, "#eta", "#phi", 1, 1.10);
   hAngularDistribution->SetStats(0);
 
-  hNClusters = new TH1D("NClusters", "NClusters", 100, 0, 100);
+  hNClusters = new TH1D("NClusters", "NClusters", 20, 0, 20);
   hNClusters->SetTitle("hNClusters");
   addObject(hNClusters);
   formatAxes(hNClusters, "Number of clusters per Track", "Counts", 1, 1.10);
@@ -225,19 +220,19 @@ void ITSTrackTask::createAllHistos()
   formatAxes(hTrackPhi, "#phi", "counts", 1, 1.10);
   hTrackPhi->SetStats(0);
 
-  hVertexCoordinates = new TH2D("VertexCoordinates", "VertexCoordinates", 1000, -1. * mVertexXYsize, mVertexXYsize, 1000, -1 * mVertexXYsize, mVertexXYsize);
+  hVertexCoordinates = new TH2D("VertexCoordinates", "VertexCoordinates", (int)(mVertexXYsize * 2 / 0.01), -1. * mVertexXYsize, mVertexXYsize, (int)(mVertexXYsize * 2 / 0.01), -1 * mVertexXYsize, mVertexXYsize);
   hVertexCoordinates->SetTitle("Coordinates of track vertex");
   addObject(hVertexCoordinates);
   formatAxes(hVertexCoordinates, "X coordinate (cm)", "Y coordinate (cm)", 1, 1.10);
   hVertexCoordinates->SetStats(0);
 
-  hVertexRvsZ = new TH2D("VertexRvsZ", "VertexRvsZ", 1000, 0, mVertexRsize, 2000, -mVertexZsize, mVertexZsize);
+  hVertexRvsZ = new TH2D("VertexRvsZ", "VertexRvsZ", (int)(mVertexRsize / 0.01), 0, mVertexRsize, (int)(mVertexZsize * 2 / 0.01), -mVertexZsize, mVertexZsize);
   hVertexRvsZ->SetTitle("Distance to primary vertex vs Z");
   addObject(hVertexRvsZ);
   formatAxes(hVertexRvsZ, "R (cm) ", "Z coordinate (cm)", 1, 1.10);
   hVertexRvsZ->SetStats(0);
 
-  hVertexZ = new TH1D("VertexZ", "VertexZ", 2000, -mVertexZsize, mVertexZsize);
+  hVertexZ = new TH1D("VertexZ", "VertexZ", (int)(mVertexZsize * 2 / 0.01), -mVertexZsize, mVertexZsize);
   hVertexZ->SetTitle("Z coordinate of vertex");
   addObject(hVertexZ);
   formatAxes(hVertexZ, "Z coordinate (cm)", "counts", 1, 1.10);
@@ -250,15 +245,15 @@ void ITSTrackTask::createAllHistos()
   hVertexContributors->SetStats(0);
 
   hAssociatedClusterFraction = new TH1D("AssociatedClusterFraction", "AssociatedClusterFraction", 100, 0, 1);
-  hAssociatedClusterFraction->SetTitle("The fraction of clusters in tracking event by event");
+  hAssociatedClusterFraction->SetTitle("The fraction of clusters into tracks event by event");
   addObject(hAssociatedClusterFraction);
-  formatAxes(hAssociatedClusterFraction, "", "Clusters in track / Clusters", 1, 1.10);
+  formatAxes(hAssociatedClusterFraction, "Clusters in tracks / All clusters", "Counts", 1, 1.10);
   hAssociatedClusterFraction->SetStats(0);
 
   hNtracks = new TH1D("Ntracks", "Ntracks", (int)mNtracksMAX, 0, mNtracksMAX);
   hNtracks->SetTitle("The number of tracks event by event");
   addObject(hNtracks);
-  formatAxes(hNtracks, "", "# of tracks ", 1, 1.10);
+  formatAxes(hNtracks, "# tracks", "Counts", 1, 1.10);
   hNtracks->SetStats(0);
 
   hNClustersPerTrackEta = new TH2D("NClustersPerTrackEta", "NClustersPerTrackEta", 300, -1.5, 1.5, 13, 1.5, 14.5);

@@ -82,7 +82,6 @@ class ITSTrackTask : public TaskInterface
   Int_t mNRofs = 0;
 
   const int NROFOCCUPANCY = 100;
-  Int_t mNClustersInTracks = 0;
   Int_t mNClusters = 0;
 
   TTree* tClusterMap;

@@ -34,34 +34,77 @@ class MergeableTH2Ratio : public TH2F, public o2::mergers::MergeInterface
   MergeableTH2Ratio() = default;
 
   MergeableTH2Ratio(MergeableTH2Ratio const& copymerge)
-    : TH2F(*(copymerge.getNum())), o2::mergers::MergeInterface(), mhistoNum(copymerge.getNum()), mhistoDen(copymerge.getDen()), mlistOfFunctions(copymerge.getNum()->GetListOfFunctions()), mScalingFactor(copymerge.getScalingFactor())
+    : TH2F(copymerge.GetName(), copymerge.GetTitle(),
+           copymerge.getNum()->GetXaxis()->GetNbins(), copymerge.getNum()->GetXaxis()->GetXmin(), copymerge.getNum()->GetXaxis()->GetXmax(),
+           copymerge.getNum()->GetYaxis()->GetNbins(), copymerge.getNum()->GetYaxis()->GetXmin(), copymerge.getNum()->GetYaxis()->GetXmax()),
+      o2::mergers::MergeInterface(),
+      //mlistOfFunctions(copymerge.getNum()->GetListOfFunctions()),
+      mlistOfFunctions(nullptr),
+      mScalingFactor(copymerge.getScalingFactor())
   {
+    Bool_t bStatus = TH1::AddDirectoryStatus();
+    TH1::AddDirectory(kFALSE);
+    mHistoNum = (TH2F*)copymerge.getNum()->Clone();
+    mHistoDen = (TH2F*)copymerge.getDen()->Clone();
+    TH1::AddDirectory(bStatus);
   }
 
-  MergeableTH2Ratio(const char* name, const char* title, TH2F* histonum, TH2F* histoden, double scaling = 1.)
-    : TH2F(*histonum), o2::mergers::MergeInterface(), mhistoNum(histonum), mhistoDen(histoden), mlistOfFunctions(mhistoNum->GetListOfFunctions()), mScalingFactor(scaling)
+  MergeableTH2Ratio(const char* name, const char* title, int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax, double scaling = 1.)
+    : TH2F(name, title, nbinsx, xmin, xmax, nbinsy, ymin, ymax),
+      o2::mergers::MergeInterface(),
+      //mlistOfFunctions(mHistoNum->GetListOfFunctions()),
+      mlistOfFunctions(nullptr),
+      mScalingFactor(scaling)
   {
-    SetNameTitle(name, title);
+    Bool_t bStatus = TH1::AddDirectoryStatus();
+    TH1::AddDirectory(kFALSE);
+    mHistoNum = new TH2F("num", "num", nbinsx, xmin, xmax, nbinsy, ymin, ymax);
+    mHistoDen = new TH2F("den", "den", nbinsx, xmin, xmax, nbinsy, ymin, ymax);
+    TH1::AddDirectory(bStatus);
     update();
   }
 
-  ~MergeableTH2Ratio() override = default;
+  MergeableTH2Ratio(const char* name, const char* title, double scaling = 1.)
+    : TH2F(name, title, 10, 0, 10, 10, 0, 10),
+      o2::mergers::MergeInterface(),
+      //mlistOfFunctions(mHistoNum->GetListOfFunctions()),
+      mlistOfFunctions(nullptr),
+      mScalingFactor(scaling)
+  {
+    Bool_t bStatus = TH1::AddDirectoryStatus();
+    TH1::AddDirectory(kFALSE);
+    mHistoNum = new TH2F("num", "num", 10, 0, 10, 10, 0, 10);
+    mHistoDen = new TH2F("den", "den", 10, 0, 10, 10, 0, 10);
+    TH1::AddDirectory(bStatus);
+    update();
+  }
+
+  ~MergeableTH2Ratio()
+  {
+    if (mHistoNum) {
+      delete mHistoNum;
+    }
+
+    if (mHistoDen) {
+      delete mHistoDen;
+    }
+  }
 
   void merge(MergeInterface* const other) override
   {
-    mhistoNum->Add(dynamic_cast<const MergeableTH2Ratio* const>(other)->getNum());
-    mhistoDen->Add(dynamic_cast<const MergeableTH2Ratio* const>(other)->getDen());
+    mHistoNum->Add(dynamic_cast<const MergeableTH2Ratio* const>(other)->getNum());
+    mHistoDen->Add(dynamic_cast<const MergeableTH2Ratio* const>(other)->getDen());
     update();
   }
 
   TH2F* getNum() const
   {
-    return mhistoNum;
+    return mHistoNum;
   }
 
   TH2F* getDen() const
   {
-    return mhistoDen;
+    return mHistoDen;
   }
 
   double getScalingFactor() const
@@ -80,7 +123,10 @@ class MergeableTH2Ratio : public TH2F, public o2::mergers::MergeInterface
     //if(mlistOfFunctions->GetLast() > 0){
     //    beautify();
     //}
-    Divide(mhistoNum, mhistoDen);
+    GetXaxis()->Set(mHistoNum->GetXaxis()->GetNbins(), mHistoNum->GetXaxis()->GetXmin(), mHistoNum->GetXaxis()->GetXmax());
+    GetYaxis()->Set(mHistoNum->GetYaxis()->GetNbins(), mHistoNum->GetYaxis()->GetXmin(), mHistoNum->GetYaxis()->GetXmax());
+    SetBinsLength();
+    Divide(mHistoNum, mHistoDen);
     SetNameTitle(name, title);
     // convertion to KHz units
     if (mScalingFactor != 1.) {
@@ -91,13 +137,13 @@ class MergeableTH2Ratio : public TH2F, public o2::mergers::MergeInterface
 
   void beautify()
   {
-    GetListOfFunctions()->RemoveAll();
-    GetListOfFunctions()->AddAll(mlistOfFunctions);
+    //GetListOfFunctions()->RemoveAll();
+    //GetListOfFunctions()->AddAll(mlistOfFunctions);
   }
 
  private:
-  TH2F* mhistoNum{ nullptr };
-  TH2F* mhistoDen{ nullptr };
+  TH2F* mHistoNum{ nullptr };
+  TH2F* mHistoDen{ nullptr };
   TList* mlistOfFunctions{ nullptr };
   std::string mTreatMeAs = "TH2F";
   double mScalingFactor = 1.;

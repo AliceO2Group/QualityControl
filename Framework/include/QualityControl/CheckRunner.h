@@ -66,7 +66,7 @@ namespace o2::quality_control::checker
 /// \brief The class in charge of running the checks on a MonitorObject.
 ///
 /// A CheckRunner is in charge of loading/instantiating the proper checks for a given MonitorObject, to configure them
-/// and to run them on the MonitorObject in order to generate a quality.
+/// and to run them on the MonitorObjects in order to generate a quality.
 /// At the moment, a checker also stores quality in the repository.
 ///
 /// TODO Evaluate whether we should have a dedicated device to store in the database.
@@ -114,16 +114,16 @@ class CheckRunner : public framework::Task
   void setTaskStoreSet(std::unordered_set<std::string> storeSet) { mInputStoreSet = storeSet; }
   std::string getDeviceName() { return mDeviceName; };
 
-  static framework::DataProcessorLabel getLabel() { return { "qc-check-runner" }; }
-  static std::string createCheckRunnerIdString() { return "QC-CHECK-RUNNER"; };
+  static framework::DataProcessorLabel getCheckRunnerLabel() { return { "qc-check" }; }
+  static std::string createCheckRunnerIdString() { return "qc-check"; };
   static std::string createCheckRunnerName(const std::vector<CheckConfig>& checks);
   static std::string createSinkCheckRunnerName(o2::framework::InputSpec input);
   static std::string createCheckRunnerFacility(std::string deviceName);
 
-  /// \brief Compute the detector name to be used in the infologger for this checkrunner.
-  /// Compute the detector name to be used in the infologger for this checkrunner.
+  /// \brief Compute the detector name to be used for this checkrunner.
+  /// Compute the detector name to be used for this checkrunner.
   /// If all checks belong to the same detector we use it, otherwise we use "MANY"
-  static std::string getDetectorName(std::vector<Check> checks);
+  static std::string getDetectorName(const std::vector<CheckConfig> checks);
 
  private:
   /**
@@ -164,9 +164,10 @@ class CheckRunner : public framework::Task
    */
   static o2::framework::Outputs collectOutputs(const std::vector<CheckConfig>& checks);
 
-  inline void initDatabase();
-  inline void initMonitoring();
-  inline void initServiceDiscovery();
+  void initDatabase();
+  void initMonitoring();
+  void initServiceDiscovery();
+  void initInfologger(framework::InitContext& iCtx);
 
   /**
    * Update the list of objects this TaskRunner is sending out.
@@ -203,9 +204,13 @@ class CheckRunner : public framework::Task
   /// \brief Callback for CallbackService::Id::Reset (DPL) a.k.a. RESET DEVICE transition (FairMQ)
   void reset();
 
+  /// Refresh the configuration using the payload found in the fairmq options (if available)
+  void refreshConfig(framework::InitContext& iCtx);
+
   // General state
   std::string mDeviceName;
-  std::vector<Check> mChecks;
+  std::map<std::string, Check> mChecks;
+  std::string mDetectorName;
   Activity mActivity;
   CheckRunnerConfig mConfig;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;

@@ -22,14 +22,19 @@
 #include <Framework/DeviceSpec.h>
 #include <Framework/CompletionPolicy.h>
 #include <Headers/DataHeader.h>
+#include <Framework/ConfigParamSpec.h>
+#include <Framework/TimesliceIndex.h>
+#include <Framework/DataSpecUtils.h>
+#include <Framework/InputSpan.h>
+#include <Framework/O2ControlLabels.h>
+#include <Framework/DataProcessorLabel.h>
 
 namespace o2::quality_control::core
 {
 
 using namespace o2::framework;
 
-o2::framework::DataProcessorSpec
-  TaskRunnerFactory::create(const TaskRunnerConfig& taskConfig)
+o2::framework::DataProcessorSpec TaskRunnerFactory::create(const TaskRunnerConfig& taskConfig)
 {
   TaskRunner qcTask{ taskConfig };
 
@@ -40,14 +45,15 @@ o2::framework::DataProcessorSpec
     adaptFromTask<TaskRunner>(std::move(qcTask)),
     taskConfig.options
   };
-  newTask.labels.emplace_back(TaskRunner::getLabel());
+  newTask.labels.emplace_back(o2::framework::ecs::qcReconfigurable);
+  newTask.labels.emplace_back(TaskRunner::getTaskRunnerLabel());
 
   return newTask;
 }
 
 TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig, const TaskSpec& taskSpec, std::optional<int> id, std::optional<int> resetAfterCycles)
 {
-  std::string deviceName{ TaskRunner::createTaskRunnerIdString() + "-" + taskSpec.taskName };
+  std::string deviceName{ TaskRunner::createTaskRunnerIdString() + "-" + InfrastructureSpecReader::validateDetectorName(taskSpec.detectorName) + "-" + taskSpec.taskName };
 
   int parallelTaskID = id.value_or(0);
 
@@ -75,7 +81,8 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
 
   Options options{
     { "period-timer-cycle", framework::VariantType::Int, static_cast<int>(taskSpec.cycleDurationSeconds * 1000000), { "timer period" } },
-    { "runNumber", framework::VariantType::String, { "Run number" } }
+    { "runNumber", framework::VariantType::String, { "Run number" } },
+    { "qcConfiguration", VariantType::Dict, emptyDict(), { "Some dictionary configuration" } }
   };
 
   return {
@@ -108,13 +115,18 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
 
 void TaskRunnerFactory::customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies)
 {
-  auto matcher = [label = TaskRunner::getLabel()](framework::DeviceSpec const& device) {
+  auto matcher = [label = TaskRunner::getTaskRunnerLabel()](framework::DeviceSpec const& device) {
     return std::find(device.labels.begin(), device.labels.end(), label) != device.labels.end();
   };
   auto callback = TaskRunner::completionPolicyCallback;
 
   framework::CompletionPolicy taskRunnerCompletionPolicy{ "taskRunnerCompletionPolicy", matcher, callback };
   policies.push_back(taskRunnerCompletionPolicy);
+}
+
+bool TaskRunnerFactory::computeResetAfterCycles(const TaskSpec& taskSpec)
+{
+  return taskSpec.mergingMode == "delta" ? 1 : (int)taskSpec.resetAfterCycles;
 }
 
 } // namespace o2::quality_control::core

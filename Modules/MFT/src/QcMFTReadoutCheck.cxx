@@ -116,12 +116,12 @@ TLatex* QcMFTReadoutCheck::drawLatex(double xmin, double ymin, Color_t color, TS
   return tl;
 }
 
-void QcMFTReadoutCheck::resetVector(std::vector<int> vector)
+void QcMFTReadoutCheck::resetVector(std::vector<int>& vector)
 {
   vector.clear();
 }
 
-Quality QcMFTReadoutCheck::checkQualityStatus(TH1F* histo, std::vector<int> vector)
+Quality QcMFTReadoutCheck::checkQualityStatus(TH1F* histo, std::vector<int>& vector)
 {
   Quality result = Quality::Good;
 
@@ -135,7 +135,7 @@ Quality QcMFTReadoutCheck::checkQualityStatus(TH1F* histo, std::vector<int> vect
   return result;
 }
 
-void QcMFTReadoutCheck::writeMessages(TH1F* histo, std::vector<int> vector, Quality checkResult)
+void QcMFTReadoutCheck::writeMessages(TH1F* histo, std::vector<int>& vector, Quality checkResult)
 {
   if (checkResult == Quality::Good) {
     TLatex* tlGood;

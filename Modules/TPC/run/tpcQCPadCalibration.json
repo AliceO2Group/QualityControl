@@ -106,16 +106,16 @@
       }
     },
     "checks":{
-      "PadCalibrationCheck2D": {
+      "PadCalibrationCheck": {
         "active" : "true",
-        "className" : "o2::quality_control_modules::tpc::PadCalibrationCheck2D",
+        "className" : "o2::quality_control_modules::tpc::PadCalibrationCheck",
         "moduleName" : "QcTPC",
         "policy" : "OnEachSeparately",
         "detectorName" : "TPC",
         "dataSource" : [{
           "type" : "PostProcessing",
           "name" : "Calibration",
-          "MOs" : ["c_ROCs_Pedestal_2D"]
+          "MOs" : ["c_ROCs_Noise_1D","c_Sides_Noise","c_ROCs_Pedestal_2D"]
         }]
       }
     }

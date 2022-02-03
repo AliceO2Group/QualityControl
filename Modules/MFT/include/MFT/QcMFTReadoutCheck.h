@@ -50,9 +50,9 @@ class QcMFTReadoutCheck : public o2::quality_control::checker::CheckInterface
   std::vector<int> mVectorOfWarningBins;
 
   TLatex* drawLatex(double xmin, double ymin, Color_t color, TString text);
-  void resetVector(std::vector<int> vector);
-  Quality checkQualityStatus(TH1F* histo, std::vector<int> vector);
-  void writeMessages(TH1F* histo, std::vector<int> vector, Quality checkResult);
+  void resetVector(std::vector<int>& vector);
+  Quality checkQualityStatus(TH1F* histo, std::vector<int>& vector);
+  void writeMessages(TH1F* histo, std::vector<int>& vector, Quality checkResult);
 
   ClassDefOverride(QcMFTReadoutCheck, 1);
 };
