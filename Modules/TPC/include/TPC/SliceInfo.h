@@ -36,13 +36,13 @@ namespace o2::quality_control_modules::tpc
 /// \author Cindy Mordasini
 
 struct SliceInfo {
-  double entries;  // Number of entries in the slice/canvas.
-  double meanX;    // Standard mean for a given range in X.
-  double stddevX;  // Standard deviation for the range in X.
-  double errMeanX; // Error on the mean along X.
-  double meanY;    // Standard mean in Y.
-  double stddevY;  // Standard deviation in Y.
-  double errMeanY; // Error on the mean along Y.
+  double entries = 0.;  // Number of entries in the slice/canvas.
+  double meanX = 0.;    // Standard mean for a given range in X.
+  double stddevX = 0.;  // Standard deviation for the range in X.
+  double errMeanX = 0.; // Error on the mean along X.
+  double meanY = 0.;    // Standard mean in Y.
+  double stddevY = 0.;  // Standard deviation in Y.
+  double errMeanY = 0.; // Error on the mean along Y.
 
   /// \brief Check if the argument is a floating number or a string.
   bool isStringFloating(std::string var)
