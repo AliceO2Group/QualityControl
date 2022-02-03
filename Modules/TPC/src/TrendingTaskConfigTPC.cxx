@@ -18,9 +18,7 @@
 
 #include "TPC/TrendingTaskConfigTPC.h"
 #include <boost/property_tree/ptree.hpp>
-#include <string>
 #include <typeinfo>
-#include <vector>
 
 namespace o2::quality_control_modules::tpc
 {

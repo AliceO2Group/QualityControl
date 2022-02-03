@@ -74,7 +74,6 @@ void TrendingTaskTPC::initialize(Trigger, framework::ServiceRegistry&)
   getObjectsManager()->startPublishing(mTrend.get());
 }
 
-// TODO: see if OptimizeBaskets() indeed helps after some time.
 void TrendingTaskTPC::update(Trigger t, framework::ServiceRegistry& services)
 {
   auto& qcdb = services.get<repository::DatabaseInterface>();
@@ -100,17 +99,6 @@ void TrendingTaskTPC::trendValues(uint64_t timestamp,
       if (obj) {
         mReductors[dataSource.name]->update(obj, mSources[dataSource.name],
                                             dataSource.axisDivision, mSubtitles[dataSource.name]);
-        /*
-                // Number of pads depending if input canvas or single sliced histogram.
-                if (auto canvas = dynamic_cast<TCanvas*>(obj)) { // Case with input canvas.
-                  mNumberPads = static_cast<TList*>(canvas->GetListOfPrimitives())->GetEntries();
-                } else if ((int)dataSource.axisDivision[0].size() > 1) { // Case with sliced single histogram.
-                  int axisSize = (int)dataSource.axisDivision.size();
-                  int innerAxisSize = (int)dataSource.axisDivision[0].size() - 1;
-                  mNumberPads = axisSize * innerAxisSize;
-                } else {
-                  mNumberPads = 1;
-                }*/
       }
 
     } else if (dataSource.type == "repository-quality") {
@@ -124,7 +112,6 @@ void TrendingTaskTPC::trendValues(uint64_t timestamp,
   }
 
   mTrend->Fill();
-  ILOG(Info, Support) << "'mTrend' has been filled with the current entry." << ENDM;
 }
 
 void TrendingTaskTPC::generatePlots()
@@ -180,7 +167,7 @@ void TrendingTaskTPC::generatePlots()
         }
 
         // Manually empty the buffers before visualising the plot.
-        // histo->BufferEmpty(); // TBD: Should we keep it or not?
+        // histo->BufferEmpty(); // TBD: Should we keep it or not? Graph does not have this method.
       } else {
         ILOG(Error, Devel) << "Could not get the 'Graph' of the plot '"
                            << plot.name << "'." << ENDM;
@@ -222,54 +209,52 @@ void TrendingTaskTPC::drawCanvas(TCanvas* thisCanvas, const std::string& var,
   TTreeReaderValue<UInt_t> RetrieveTime(myReader, "time");
   TTreeReaderValue<std::vector<SliceInfo>> DataRetrieveVector(myReader, varName.data());
 
-  int iEvent = 0;
-  const int nEvents = mTrend->GetEntriesFast();
-  const int NuPa = mNumberPads;
-  double TimeStorage[nEvents];
-  double DataStorage[NuPa][nEvents];
-  double ErrorX[NuPa][nEvents];
-  double ErrorY[NuPa][nEvents];
-  ILOG(Info, Support) << "Total number of entries: " << nEvents << ENDM;
+  int iEntry = 0;
+  const int nEntries = mTrend->GetEntriesFast();
+  const int NuPa = mSubtitles[varName].size();
+  double TimeStorage[nEntries];
+  double DataStorage[NuPa][nEntries];
+  double ErrorX[NuPa][nEntries];
+  double ErrorY[NuPa][nEntries];
+  // ILOG(Info, Support) << "Total number of entries: " << nEntries << ENDM;
+  // ILOG(Info, Support) << "Total number of pads: " << NuPa << ENDM;
 
   while (myReader.Next()) {
-    if (iEvent >= nEvents) {
+    if (iEntry >= nEntries) {
       ILOG(Error, Support) << "Something went wrong, the reader is going too far." << ENDM;
       break;
     }
 
-    TimeStorage[iEvent] = (double)(*RetrieveTime);
+    TimeStorage[iEntry] = (double)(*RetrieveTime);
 
     for (int p = 0; p < NuPa; p++) {
-      DataStorage[p][iEvent] = (DataRetrieveVector->at(p)).RetrieveValue(typeName);
+      DataStorage[p][iEntry] = (DataRetrieveVector->at(p)).RetrieveValue(typeName);
 
       if (!err.empty()) {
-        ErrorX[p][iEvent] = (DataRetrieveVector->at(p)).RetrieveValue(errXName);
-        ErrorY[p][iEvent] = (DataRetrieveVector->at(p)).RetrieveValue(errYName);
+        ErrorX[p][iEntry] = (DataRetrieveVector->at(p)).RetrieveValue(errXName);
+        ErrorY[p][iEntry] = (DataRetrieveVector->at(p)).RetrieveValue(errYName);
       } else {
-        ErrorX[p][iEvent] = 0.;
-        ErrorY[p][iEvent] = 0.;
+        ErrorX[p][iEntry] = 0.;
+        ErrorY[p][iEntry] = 0.;
       }
     }
-    iEvent++;
+    iEntry++;
   }
 
   // Fill the graph(errors) to be published.
   for (int p = 0; p < (mNumberPads); p++) {
     thisCanvas->cd(p + 1);
-    graphPad = new TGraph(nEvents, TimeStorage, DataStorage[p]);
-    // LOKI: Need a way to know if we have something canvas or slicer
-    // graphPad->SetTitle(Form("%s Pad %d", title.data(), p + 1));
+    graphPad = new TGraph(nEntries, TimeStorage, DataStorage[p]);
     graphPad->Draw(opt.data());
-    //// LOKI: Set title of the graph here.
 
     // Draw errors if they are specified.
     if (!err.empty()) {
       if (plotOrder != 2) {
-        ILOG(Error, Support) << "Non empty graphErrors seen for the plot '" << name
-                             << "', which is not a graph, ignoring." << ENDM;
+        ILOG(Info, Support) << "Non empty graphErrors seen for the plot '" << name
+                            << "', which is not a graph, ignoring." << ENDM;
       } else {
         graphPad->Draw("goff");
-        graphErrors = new TGraphErrors(nEvents, TimeStorage, DataStorage[p], ErrorX[p], ErrorY[p]);
+        graphErrors = new TGraphErrors(nEntries, TimeStorage, DataStorage[p], ErrorX[p], ErrorY[p]);
 
         // We draw on the same plot as the main graph, but only error bars.
         graphErrors->Draw("SAME E");
@@ -282,7 +267,5 @@ void TrendingTaskTPC::drawCanvas(TCanvas* thisCanvas, const std::string& var,
         }
       }
     }
-
-    ILOG(Info, Support) << "Pad " << p << " has been drawn." << ENDM;
   }
 }
