@@ -30,7 +30,7 @@ using namespace std;
 namespace o2::quality_control_modules::tpc
 {
 
-void TrackClusterCheck::configure(std::string) {}
+void TrackClusterCheck::configure() {}
 
 Quality TrackClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {

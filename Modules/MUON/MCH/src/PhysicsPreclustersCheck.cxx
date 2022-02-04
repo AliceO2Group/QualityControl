@@ -45,7 +45,7 @@ PhysicsPreclustersCheck::PhysicsPreclustersCheck()
 
 PhysicsPreclustersCheck::~PhysicsPreclustersCheck() {}
 
-void PhysicsPreclustersCheck::configure(std::string)
+void PhysicsPreclustersCheck::configure()
 {
   //   if (AliRecoParam::ConvertIndex(specie) == AliRecoParam::kCosmic) {
   //     minTOFrawTime = 150.; //ns

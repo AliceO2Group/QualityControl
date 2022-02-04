@@ -36,7 +36,7 @@ class PedestalsCheck : public o2::quality_control::checker::CheckInterface
   ~PedestalsCheck() override;
 
   // Override interface
-  void configure(std::string name) override;
+  void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
@@ -50,7 +50,7 @@ class PedestalsCheck : public o2::quality_control::checker::CheckInterface
   /// Vector filled with DualSampas Ids that have been tested but sent back no data
   std::vector<int> missing;
 
-  ClassDefOverride(PedestalsCheck, 1);
+  ClassDefOverride(PedestalsCheck, 2);
 };
 
 } // namespace o2::quality_control_modules::muonchambers

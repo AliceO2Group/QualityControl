@@ -29,7 +29,7 @@ using namespace std;
 namespace o2::quality_control_modules::cpv
 {
 
-void PedestalCheck::configure(std::string)
+void PedestalCheck::configure()
 {
   for (int mod = 0; mod < 3; mod++) {
     //mMinGoodPedestalValueM

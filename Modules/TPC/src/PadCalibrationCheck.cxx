@@ -31,7 +31,7 @@
 namespace o2::quality_control_modules::tpc
 {
 //______________________________________________________________________________
-void PadCalibrationCheck::configure(std::string) {}
+void PadCalibrationCheck::configure() {}
 
 //______________________________________________________________________________
 Quality PadCalibrationCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)

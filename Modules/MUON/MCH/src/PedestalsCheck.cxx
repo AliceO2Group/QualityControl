@@ -38,7 +38,7 @@ PedestalsCheck::PedestalsCheck() : minMCHpedestal(50.f), maxMCHpedestal(100.f)
 
 PedestalsCheck::~PedestalsCheck() {}
 
-void PedestalsCheck::configure(std::string)
+void PedestalsCheck::configure()
 {
   // if (AliRecoParam::ConvertIndex(specie) == AliRecoParam::kCosmic) {
   //   minTOFrawTime = 150.; //ns

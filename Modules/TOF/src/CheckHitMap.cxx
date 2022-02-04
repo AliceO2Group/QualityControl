@@ -24,7 +24,7 @@ using namespace std;
 namespace o2::quality_control_modules::tof
 {
 
-void CheckHitMap::configure(std::string)
+void CheckHitMap::configure()
 {
   mPhosModuleMessage.configure(13.f, 38.f, 16.f, 53.f); // Values corresponding to the PHOS hole
   mPhosModuleMessage.configureEnabledFlag(mCustomParameters);

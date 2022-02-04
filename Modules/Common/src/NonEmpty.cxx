@@ -27,7 +27,7 @@ ClassImp(o2::quality_control_modules::common::NonEmpty)
   namespace o2::quality_control_modules::common
 {
 
-  void NonEmpty::configure(std::string /*name*/) {}
+  void NonEmpty::configure() {}
 
   Quality NonEmpty::check(std::map<std::string, std::shared_ptr<MonitorObject>> * moMap)
   {

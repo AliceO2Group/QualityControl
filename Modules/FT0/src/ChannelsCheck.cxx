@@ -33,7 +33,7 @@ using namespace std;
 namespace o2::quality_control_modules::ft0
 {
 
-void ChannelsCheck::configure(std::string) {}
+void ChannelsCheck::configure() {}
 
 Quality ChannelsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {

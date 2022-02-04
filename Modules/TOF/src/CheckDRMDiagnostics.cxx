@@ -26,7 +26,7 @@ using namespace std;
 namespace o2::quality_control_modules::tof
 {
 
-void CheckDRMDiagnostics::configure(std::string)
+void CheckDRMDiagnostics::configure()
 {
   mShifterMessages.configure(mCustomParameters);
 }

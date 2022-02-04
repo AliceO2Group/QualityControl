@@ -35,13 +35,13 @@ class PIDClusterCheck : public o2::quality_control::checker::CheckInterface
   ~PIDClusterCheck() override = default;
 
   // Override interface
-  void configure(std::string name) override;
+  void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
 
  private:
-  ClassDefOverride(PIDClusterCheck, 1);
+  ClassDefOverride(PIDClusterCheck, 2);
 };
 
 } // namespace o2::quality_control_modules::tpc

@@ -38,14 +38,6 @@ class CheckInterface
   /// Destructor
   virtual ~CheckInterface() = default;
 
-  /// \brief Configure the check based on its name.
-  ///
-  /// The configuration of the object can't be done in the constructor because
-  /// ROOT needs an argument-less constructor when streaming it. We use this method
-  /// to configure the object. The name might be used to ask the configuration system
-  /// for specific parameters.
-  virtual void configure(std::string name) = 0;
-
   /// \brief Returns the quality associated with these objects.
   ///
   /// @param moMap A map of the the MonitorObjects to check and their full names.
@@ -79,9 +71,12 @@ class CheckInterface
   void setCustomParameters(const std::unordered_map<std::string, std::string>& parameters);
 
  protected:
+  /// \brief Called each time mCustomParameters is updated.
+  virtual void configure() = 0;
+
   std::unordered_map<std::string, std::string> mCustomParameters;
 
-  ClassDef(CheckInterface, 2)
+  ClassDef(CheckInterface, 3)
 };
 
 } // namespace o2::quality_control::checker

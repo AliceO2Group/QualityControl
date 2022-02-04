@@ -33,17 +33,9 @@ ClassImp(o2::quality_control_modules::common::MeanIsAbove)
 namespace o2::quality_control_modules::common
 {
 
-void MeanIsAbove::configure(std::string /*name*/)
+void MeanIsAbove::configure()
 {
-  // TODO use the configuration system to set the params
-  //  try {
-  //    auto configFile = ConfigurationFactory::getConfiguration("file:../example.ini"); // not ok...
-  //  } catch (string &exception) {
-  //    ILOG(Info, Support) << "error getting config file in MeanIsAbove : " << exception << ENDM;
-  //    mThreshold = 1.0f;
-  //    return;
-  //  }
-  mThreshold = 1.0f; // std::stof(configFile.getValue<string>("Checks.checkMeanIsAbove/threshold"));
+  mThreshold = stof(mCustomParameters.at("meanThreshold"));
 }
 
 std::string MeanIsAbove::getAcceptedType() { return "TH1"; }

@@ -33,7 +33,7 @@ using namespace std;
 namespace o2::quality_control_modules::mft
 {
 
-void QcMFTReadoutCheck::configure(std::string) {}
+void QcMFTReadoutCheck::configure() {}
 
 Quality QcMFTReadoutCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {

@@ -34,7 +34,7 @@ using namespace std;
 namespace o2::quality_control_modules::emcal
 {
 
-void DigitCheck::configure(std::string) {}
+void DigitCheck::configure() {}
 
 Quality DigitCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {

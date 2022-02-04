@@ -30,7 +30,7 @@
 namespace o2::quality_control_modules::its
 {
 
-void ITSTrackCheck::configure(std::string) {}
+void ITSTrackCheck::configure() {}
 
 Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {

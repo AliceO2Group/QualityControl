@@ -32,7 +32,6 @@ BOOST_AUTO_TEST_CASE(checkable)
   MonitorObject monitorObject(&histo, "task", "testClass", "TST");
   monitorObject.setIsOwner(false);
   NonEmpty myCheck;
-  myCheck.configure("test");
 
   BOOST_CHECK_EQUAL(myCheck.getAcceptedType(), "TH1");
   BOOST_CHECK_EQUAL(myCheck.isObjectCheckable(&monitorObject), true);
@@ -47,7 +46,6 @@ BOOST_AUTO_TEST_CASE(beautify)
   auto* histo = new TH1F("testObject", "test", 100, 0, 99);
   std::shared_ptr<MonitorObject> monitorObject(new MonitorObject(histo, "task", "testClass", "TST")); // here we are the owner of the histo
   NonEmpty myCheck;
-  myCheck.configure("test");
 
   myCheck.beautify(monitorObject, Quality::Null);
   BOOST_CHECK_EQUAL(histo->GetFillColor(), kWhite);
