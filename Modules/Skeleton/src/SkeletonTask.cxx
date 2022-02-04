@@ -32,6 +32,7 @@ SkeletonTask::~SkeletonTask()
 
 void SkeletonTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
+  // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
   ILOG(Info, Support) << "initialize SkeletonTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
@@ -54,17 +55,21 @@ void SkeletonTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void SkeletonTask::startOfActivity(Activity& activity)
 {
+  // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
   ILOG(Info, Support) << "startOfActivity " << activity.mId << ENDM;
   mHistogram->Reset();
 }
 
 void SkeletonTask::startOfCycle()
 {
+  // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
   ILOG(Info, Support) << "startOfCycle" << ENDM;
 }
 
 void SkeletonTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
+  // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
+
   // In this function you can access data inputs specified in the JSON config file, for example:
   //   "query": "random:ITS/RAWDATA/0"
   // which is correspondingly <binding>:<dataOrigin>/<dataDescription>/<subSpecification
@@ -118,16 +123,20 @@ void SkeletonTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void SkeletonTask::endOfCycle()
 {
+  // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
   ILOG(Info, Support) << "endOfCycle" << ENDM;
 }
 
 void SkeletonTask::endOfActivity(Activity& /*activity*/)
 {
+  // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
   ILOG(Info, Support) << "endOfActivity" << ENDM;
 }
 
 void SkeletonTask::reset()
 {
+  // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
+
   // clean all the monitor objects here
 
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
