@@ -20,8 +20,6 @@
 #define QUALITYCONTROL_TRENDINGTASKCONFIGTPC_H
 
 #include "QualityControl/PostProcessingConfig.h"
-#include <string>
-#include <vector>
 
 namespace o2::quality_control_modules::tpc
 {

@@ -25,15 +25,13 @@
 
 namespace o2::quality_control_modules::tpc
 {
-/// \brief  Structure for the reductor quantites for a single pad of the TPC.
+/// \brief  Structure for the reductor quantities for a single pad of the TPC.
 ///
 /// Structure gathering all the reductor quantities related to the trending of
 /// the 'pads' (ROCs, sectors, slices,...) of the TPC. The reductor receives a
 /// vector of SliceInfo with one element per slice, and fills it accordingly to
 /// the json configuration.
 ///
-/// \author Marcel Lesch
-/// \author Cindy Mordasini
 
 struct SliceInfo {
   double entries = 0.;  // Number of entries in the slice/canvas.
@@ -53,7 +51,7 @@ struct SliceInfo {
     return iss.eof() && !iss.fail();
   }
 
-  /// \brief Return the struct member/the float corresponding to the argument.
+  /// \brief Return the struct member/float corresponding to the argument.
   double RetrieveValue(std::string VarType)
   {
     if (isStringFloating(VarType)) {

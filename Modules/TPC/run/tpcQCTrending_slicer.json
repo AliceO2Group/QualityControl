@@ -32,16 +32,24 @@
           {
             "type": "repository",
             "path": "qc/TPC/MO/Tracks",
-            "names": [ "hEtaRatio", "hEta" ],
+            "names": [ "hEtaRatio" ],
             "reductorName": "o2::quality_control_modules::tpc::TH1ReductorTPC",
-            "axisDivision": [ [ "-1.0", "0.0", "1.0" ] ],
+            "axisDivision": [ [ "-2.0", "-1.0", "0.0", "1.0", "2.0" ] ],
+            "moduleName": "QcTPC"
+          },
+          {
+            "type": "repository",
+            "path": "qc/TPC/MO/Tracks",
+            "names": [ "hEta" ],
+            "reductorName": "o2::quality_control_modules::tpc::TH1ReductorTPC",
+            "axisDivision": [[ "-1.0", "0.0", "1.0" ]],
             "moduleName": "QcTPC"
           }
         ],
         "plots": [
           {
             "name": "hEtaRatio_StatMean_Trend",
-            "title": "Mean of the eta ratio",
+            "title": "Mean of the #eta ratio",
             "varexp": "hEtaRatio.meanX:time",
             "selection": "",
             "option": "*L",
@@ -50,20 +58,65 @@
           },
           {
             "name": "hEtaRatio_StatMeanY_Trend",
-            "title": "Mean Y of the eta ratio",
+            "title": "Mean Y of the #eta ratio",
             "varexp": "hEtaRatio.meanY:time",
             "selection": "",
             "option": "*L",
             "graphErrors": "errMeanY:0.5", 
-            "graphYRange": "0.0:2.0"
+            "graphYRange": "-0.1:2.0"
           },
           {
             "name": "hEta_StatMean_Trend",
-            "title": "Mean of eta",
+            "title": "Mean of #eta",
             "varexp": "hEta.meanX:time",
             "selection": "",
             "option": "*L",
             "graphErrors": "errMeanX:0.5", 
+            "graphYRange": "-1.0:1.0"
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "60 seconds"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      },
+      "TestTPCTH2Slicer": {
+        "active": "true",
+        "className": "o2::quality_control_modules::tpc::TrendingTaskTPC",
+        "moduleName": "QcTPC",
+        "detectorName": "TPC",
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "qc/TPC/MO/Tracks",
+            "names": [ "h2DEtaPhi" ],
+            "reductorName": "o2::quality_control_modules::tpc::TH2ReductorTPC",
+            "axisDivision": [ [ "0.0", "3.14", "6.28" ] , [ "-2.0", "-1.0", "0.0", "1.0", "2.0" ] ],
+            "moduleName": "QcTPC"
+          }
+        ],
+        "plots": [
+          {
+            "name": "h2DEtaPhi_StatMeanX_Trend",
+            "title": "Mean of the #eta-#phi along #phi",
+            "varexp": "h2DEtaPhi.meanX:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "errMeanX:0.5", 
+            "graphYRange": "-2.0:2.0"
+          },
+          {
+            "name": "h2DEtaPhi_StatMeanY_Trend",
+            "title": "Mean of the #eta-#phi along #eta",
+            "varexp": "h2DEtaPhi.meanY:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "errMeanY:0.5", 
             "graphYRange": "-2.0:2.0"
           }
         ],

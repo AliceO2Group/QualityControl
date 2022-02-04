@@ -18,16 +18,15 @@
 
 #include "QualityControl/QcInfoLogger.h"
 #include "TPC/TH1ReductorTPC.h"
-#include <vector>
 #include <TAxis.h>
 #include <TCanvas.h>
-#include <TH1.h>
 #include <TList.h>
 
 namespace o2::quality_control_modules::tpc
 {
 void TH1ReductorTPC::update(TObject* obj, std::vector<SliceInfo>& reducedSource,
-                            std::vector<std::vector<float>>& axis)
+                            std::vector<std::vector<float>>& axis,
+                            std::vector<std::string>& ranges)
 {
   // Define the local variables in the default case: 1 single pad
   // (no multipad canvas, nor slicer), and slicer axes size set to 1 (no slicing).
@@ -58,7 +57,7 @@ void TH1ReductorTPC::update(TObject* obj, std::vector<SliceInfo>& reducedSource,
       ILOG(Info, Support) << "Not enough axis boundaries for slicing. Will use full histogram range." << ENDM;
     }
   }
-  ILOG(Info, Support) << "Number of output histograms for the trending of "
+  ILOG(Info, Support) << "Number of input histograms for the trending of "
                       << obj->GetName() << ": " << numberPads << ENDM;
 
   // Access the histograms embedded in 'obj'.
@@ -72,18 +71,29 @@ void TH1ReductorTPC::update(TObject* obj, std::vector<SliceInfo>& reducedSource,
 
     if (histo) {
       // Get the trending quantities defined in 'SlicerInfo'.
-      // The two for-loop do only one pass if we have an input canvas.
-      for (int i = 0; i < axisSize; i++) {
-        for (int j = 0; j < innerAxisSize; j++) {
-          if (!isCanvas && (innerAxisSize > 1)) {
-            histo->GetXaxis()->SetRangeUser(axis[i][j], axis[i][j + 1]);
+      for (int j = 0; j < numberSlices; j++) {
+        std::string thisRange;
+        if (useSlicing) {
+          histo->GetXaxis()->SetRangeUser(axis[0][j], axis[0][j + 1]);
+          thisRange = Form("RangeX: [%.1f, %.1f]", axis[0][j], axis[0][j + 1]);
+        } else {
+          if (isCanvas) {
+            thisRange = Form("ROC: %d", iPad);
+          } else {
+            thisRange = Form("RangeX (default): [%.1f, %.1f]", histo->GetXaxis()->GetXmin(), histo->GetXaxis()->GetXmax());
           }
+        }
+        ranges.push_back(thisRange);
 
-          SliceInfo mySlice;
-          mySlice.entries = histo->GetEntries();
-          mySlice.meanX = histo->GetMean(1);
-          mySlice.stddevX = histo->GetStdDev(1);
+        SliceInfo mySlice;
+        mySlice.entries = histo->GetEntries();
+        mySlice.meanX = histo->GetMean(1);
+        mySlice.stddevX = histo->GetStdDev(1);
+        if (mySlice.entries != 0) {
           mySlice.errMeanX = mySlice.stddevX / (sqrt(mySlice.entries));
+        } else {
+          mySlice.errMeanX = 0.;
+        }
 
         float StatsY[3]; // 0 Mean, 1 Stddev, 2 Error
         if (useSlicing) {
@@ -91,12 +101,12 @@ void TH1ReductorTPC::update(TObject* obj, std::vector<SliceInfo>& reducedSource,
         } else { // We don't slice and take the full histo as defined.
           GetTH1StatsY(histo, StatsY, histo->GetXaxis()->GetXmin(), histo->GetXaxis()->GetXmax());
         }
-          mySlice.meanY = StatsY[0];
-          mySlice.stddevY = StatsY[1];
-          mySlice.errMeanY = StatsY[2];
 
-          reducedSource.emplace_back(mySlice);
-        }
+        mySlice.meanY = StatsY[0];
+        mySlice.stddevY = StatsY[1];
+        mySlice.errMeanY = StatsY[2];
+
+        reducedSource.emplace_back(mySlice);
       }
 
     } else {
@@ -111,8 +121,8 @@ void TH1ReductorTPC::GetTH1StatsY(TH1* Hist, float Stats[3],
   const int LowerBin = Hist->FindBin(LowerBoundary);
   const int UpperBin = Hist->FindBin(UpperBoundary);
   const int NTotalBins = Hist->GetNbinsX();
-  const float IterateBins = (float)UpperBin - (float)LowerBin + 1.; // Amount of bins included in the calculation.
-                                                                    // Includes LowerBin and UpperBin.
+  const int IterateBins = UpperBin - LowerBin + 1; // Amount of bins included in the calculation.
+                                                   // Includes LowerBin and UpperBin.
 
   // Safety measures.
   if (LowerBin <= 0 || UpperBin <= 0) {
@@ -128,21 +138,28 @@ void TH1ReductorTPC::GetTH1StatsY(TH1* Hist, float Stats[3],
     exit(0);
   }
 
-  float SumY = 0.;
-  float SumY2 = 0.;
+  float MeanY = 0.;
+  float StddevY = 0.;
+  float ErrMeanY = 0.;
 
   for (int i = LowerBin; i <= UpperBin; i++) {
-    SumY += Hist->GetBinContent(i);
-    SumY2 += Hist->GetBinContent(i) * Hist->GetBinContent(i);
+    MeanY += Hist->GetBinContent(i);
   }
 
-  float MeanY = SumY / IterateBins;
-  float StddevY = (SumY2 - SumY * SumY / IterateBins) / (IterateBins - 1.);
-  float ErrMeanY = StddevY / IterateBins;
+  MeanY /= (float)IterateBins;
+
+  for (int i = LowerBin; i <= UpperBin; i++) {
+    StddevY += pow(MeanY - Hist->GetBinContent(i), 2.);
+  }
+
+  StddevY /= ((float)IterateBins - 1.);
+  ErrMeanY = StddevY / ((float)IterateBins);
+  StddevY = sqrt(StddevY);
+  ErrMeanY = sqrt(ErrMeanY);
 
   Stats[0] = MeanY;
-  Stats[1] = sqrt(StddevY);
-  Stats[2] = sqrt(ErrMeanY);
+  Stats[1] = StddevY;
+  Stats[2] = ErrMeanY;
 } // TH1ReductorTPC::GetTH1StatsY(TH1* Hist, float Stats[3], float LowerBoundary, float UpperBoundary)
 
 } // namespace o2::quality_control_modules::tpc

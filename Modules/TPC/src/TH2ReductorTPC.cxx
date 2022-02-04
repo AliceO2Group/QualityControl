@@ -18,7 +18,6 @@
 
 #include "QualityControl/QcInfoLogger.h"
 #include "TPC/TH2ReductorTPC.h"
-#include <vector>
 #include <TAxis.h>
 #include <TCanvas.h>
 #include <TH2.h>
@@ -27,7 +26,8 @@
 namespace o2::quality_control_modules::tpc
 {
 void TH2ReductorTPC::update(TObject* obj, std::vector<SliceInfo>& reducedSource,
-                            std::vector<std::vector<float>>& axis)
+                            std::vector<std::vector<float>>& axis,
+                            std::vector<std::string>& ranges)
 {
   // Define the local variables in the default case: 1 single pad
   // (no multipad canvas, nor slicer), and slicer axes size set to 1 (no slicing).
@@ -68,7 +68,8 @@ void TH2ReductorTPC::update(TObject* obj, std::vector<SliceInfo>& reducedSource,
       ILOG(Info, Support) << "Not enough axis boundaries for slicing on Y. Will use full histogram range along Y." << ENDM;
     }
   }
-  ILOG(Info, Support) << "Number of output histograms for the trending of "
+
+  ILOG(Info, Support) << "Number of input histograms for the trending of "
                       << obj->GetName() << ": " << numberPads << ENDM;
 
   // Access the histograms embedded in 'obj'.
@@ -83,10 +84,16 @@ void TH2ReductorTPC::update(TObject* obj, std::vector<SliceInfo>& reducedSource,
     if (histo) {
       // Get the trending quantities defined in 'SlicerInfo'.
       // The two for-loop do only one pass if we have an input canvas.
-      for (int i = 0; i < axisSize; i++) {
-        for (int j = 0; j < innerAxisSize; j++) {
-          if (!isCanvas && (innerAxisSize > 1)) {
-            histo->GetXaxis()->SetRangeUser(axis[i][j], axis[i][j + 1]);
+      for (int iX = 0; iX < numberSlicesX; iX++) {
+        std::string thisRange;
+        if (useSlicingX) {
+          histo->GetXaxis()->SetRangeUser(axis[0][iX], axis[0][iX + 1]);
+          thisRange = Form("RangeX: [%.1f, %.1f]", axis[0][iX], axis[0][iX + 1]);
+        } else {
+          if (isCanvas) {
+            thisRange = Form("ROC: %d", iPad);
+          } else {
+            thisRange = Form("RangeX (default): [%.1f, %.1f]", histo->GetXaxis()->GetXmin(), histo->GetXaxis()->GetXmax());
           }
         }
 
@@ -104,21 +111,21 @@ void TH2ReductorTPC::update(TObject* obj, std::vector<SliceInfo>& reducedSource,
           mySlice.entries = histo->GetEntries();
           mySlice.meanX = histo->GetMean(1);
           mySlice.stddevX = histo->GetStdDev(1);
-          mySlice.errMeanX = mySlice.stddevX / (sqrt(mySlice.entries));
+          if (mySlice.entries != 0) {
+            mySlice.errMeanX = mySlice.stddevX / (sqrt(mySlice.entries));
+          } else {
+            mySlice.errMeanX = 0.;
+          }
 
           mySlice.meanY = histo->GetMean(2);
           mySlice.stddevY = histo->GetStdDev(2);
-          mySlice.errMeanY = mySlice.stddevY / (sqrt(mySlice.entries));
-          /*
-          if (isCanvas) {
-            mySlice.meanX = histo->GetMean(1);
-            mySlice.stddevX = histo->GetStdDev(1);
-            mySlice.errMeanX = mySlice.stddevX/(sqrt(mySlice.entries));
-          }*/
+          if (mySlice.entries != 0) {
+            mySlice.errMeanY = mySlice.stddevY / (sqrt(mySlice.entries));
+          } else {
+            mySlice.errMeanY = 0.;
+          }
 
           reducedSource.emplace_back(mySlice);
-          /*ILOG(Info, Support) << "i: " << i << " Index: " << index << " Mean slice along x: "
-            << mySlice.meanX << " Mean slice along y: " << mySlice.meanY << ENDM;*/
         }
       }
 

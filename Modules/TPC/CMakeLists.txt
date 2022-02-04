@@ -124,4 +124,5 @@ install(FILES run/tpcQCPID_sampled.json
               run/tpcQCClusterVisualizer.json
               run/tpcQCRawDigitVisualizer.json
               run/tpcQCTrending_slicer.json
+              run/tpcQCTrending_canvas.json
         DESTINATION etc)

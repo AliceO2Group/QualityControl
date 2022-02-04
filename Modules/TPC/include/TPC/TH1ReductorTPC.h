@@ -20,8 +20,6 @@
 #define QUALITYCONTROL_TH1REDUCTORTPC_H
 
 #include "TPC/ReductorTPC.h"
-#include "TPC/SliceInfo.h"
-#include <vector>
 #include "TH1.h"
 
 namespace o2::quality_control_modules::tpc
@@ -32,9 +30,6 @@ namespace o2::quality_control_modules::tpc
 /// a vector of 'SliceInfo' which size corresponds to the number of slices or
 /// pads which need to be trended.
 ///
-/// \author Marcel Lesch
-/// \author Cindy Mordasini
-/// \author Based on the work from Piotr Konopka
 
 class TH1ReductorTPC : public quality_control_modules::tpc::ReductorTPC
 {
@@ -46,7 +41,7 @@ class TH1ReductorTPC : public quality_control_modules::tpc::ReductorTPC
 
   /// \brief Methods from the reductor class adapted for the needs of the TPC.
   void update(TObject* obj, std::vector<SliceInfo>& reducedSource,
-              std::vector<std::vector<float>>& axis) final;
+              std::vector<std::vector<float>>& axis, std::vector<std::string>& ranges) final;
 
  private:
   void GetTH1StatsY(TH1* Hist, float Stats[3], float LowerBoundary, float UpperBoundary);
