@@ -30,9 +30,6 @@ namespace o2::quality_control_modules::tpc
 /// A TPC-specific reductor class from which each reductor used for the trending
 /// of the TPC-related quantities inherit.
 ///
-/// \author Marcel Lesch
-/// \author Cindy Mordasini
-/// \author Based on the work from Piotr Konopka
 
 class ReductorTPC
 {
@@ -44,7 +41,8 @@ class ReductorTPC
 
   /// \brief Methods from the reductor class adapted for the needs of the TPC.
   virtual void update(TObject* obj, std::vector<SliceInfo>& reducedSource,
-                      std::vector<std::vector<float>>& axis) = 0;
+                      std::vector<std::vector<float>>& axis,
+                      std::vector<std::string>& ranges) = 0;
 };
 
 } // namespace o2::quality_control_modules::tpc

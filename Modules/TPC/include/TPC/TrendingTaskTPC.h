@@ -41,14 +41,10 @@ namespace o2::quality_control_modules::tpc
 ///
 /// A post-processing task which trends TPC related objects inside QC database (QCDB).
 /// It extracts some values of one or multiple objects using the Reductor classes,
-/// then stores them inside a TTree. The class exposes the TTree::Draw interface
-/// to the user tp generate the plots out of the TTree.
+/// then stores them inside a TTree.
 /// This class is specific to the TPC: a subrange slicer is available in the json,
 /// and input/output canvas can be dealt with alongside normal histograms.
 ///
-/// \author   Marcel Lesch
-/// \author   Cindy Mordasini
-/// \author   Based on the work from Piotr Konopka
 
 class TrendingTaskTPC : public PostProcessingInterface
 {
@@ -73,8 +69,7 @@ class TrendingTaskTPC : public PostProcessingInterface
   void trendValues(uint64_t timestamp, o2::quality_control::repository::DatabaseInterface&);
   void generatePlots();
   void drawCanvas(TCanvas* thisCanvas, const std::string& var,
-                  const std::string& sel, const std::string& opt, const std::string& err,
-                  const std::string& name);
+                  const std::string& name, const std::string& opt, const std::string& err);
 
   TrendingTaskConfigTPC mConfig;
   MetaData mMetaData;
@@ -85,6 +80,7 @@ class TrendingTaskTPC : public PostProcessingInterface
   std::map<std::string, TObject*> mPlots;
   std::unordered_map<std::string, std::unique_ptr<ReductorTPC>> mReductors;
   std::unordered_map<std::string, std::vector<SliceInfo>> mSources;
+  std::unordered_map<std::string, std::vector<std::string>> mSubtitles;
 };
 
 } // namespace o2::quality_control_modules::tpc

@@ -20,24 +20,21 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/QcInfoLogger.h"
-#include "TPC/ReductorTPC.h"
 #include "TPC/TH1ReductorTPC.h"
 #include "TPC/TH2ReductorTPC.h"
-#include "TPC/SliceInfo.h"
 #include "TPC/TrendingTaskTPC.h"
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/algorithm/string.hpp>
 #include <string>
-#include <TAxis.h>
-#include <TCanvas.h>
+//#include <TAxis.h>
 #include <TDatime.h>
-#include <TFile.h>
+//#include <TFile.h>
 #include <TGraph.h>
 #include <TGraphErrors.h>
-#include <TH1.h>
-#include <TPaveText.h>
-#include <TPoint.h>
+//#include <TH1.h>
+//#include <TPaveText.h>
+//#include <TPoint.h>
 #include <TTreeReader.h>
 #include <TTreeReaderValue.h>
 #include <TTreeReaderArray.h>
@@ -56,8 +53,7 @@ void TrendingTaskTPC::configure(std::string name,
 void TrendingTaskTPC::initialize(Trigger, framework::ServiceRegistry&)
 {
   // Prepare the data structure of the trending TTree.
-  mTrend = std::make_unique<TTree>(); // TODO: retrieve last TTree, so we
-                                      // continue trending. Maybe do it optionally?
+  mTrend = std::make_unique<TTree>();
   mTrend->SetName(PostProcessingInterface::getName().c_str());
   mTrend->Branch("meta", &mMetaData, "runNumber/I");
   mTrend->Branch("time", &mTime);
@@ -93,6 +89,7 @@ void TrendingTaskTPC::trendValues(uint64_t timestamp,
   mMetaData.runNumber = -1;
 
   for (auto& dataSource : mConfig.dataSources) {
+    mSubtitles[dataSource.name] = std::vector<std::string>();
     if (dataSource.type == "repository") {
       auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name, timestamp);
       TObject* obj = mo ? mo->getObject() : nullptr;
@@ -104,7 +101,7 @@ void TrendingTaskTPC::trendValues(uint64_t timestamp,
     } else if (dataSource.type == "repository-quality") {
       if (auto qo = qcdb.retrieveQO(dataSource.path + "/" + dataSource.name, timestamp)) {
         mReductors[dataSource.name]->update(qo.get(), mSources[dataSource.name],
-                                            dataSource.axisDivision);
+                                            dataSource.axisDivision, mSubtitles[dataSource.name]);
       }
     } else {
       ILOG(Error, Support) << "Data source '" << dataSource.type << "' unknown." << ENDM;
@@ -133,7 +130,7 @@ void TrendingTaskTPC::generatePlots()
     TCanvas* c = new TCanvas();
     c->SetName(plot.name.c_str());
     c->SetTitle(plot.title.c_str());
-    drawCanvas(c, plot.varexp, plot.selection, plot.option, plot.graphErrors, plot.name);
+    drawCanvas(c, plot.varexp, plot.name, plot.option, plot.graphErrors);
 
     // Postprocess each pad (titles, axes, flushing buffers).
     std::size_t posEndVar = plot.varexp.find("."); // Find the end of the dataSource.
@@ -180,19 +177,10 @@ void TrendingTaskTPC::generatePlots()
 }
 
 void TrendingTaskTPC::drawCanvas(TCanvas* thisCanvas, const std::string& var,
-                                 const std::string& sel, const std::string& opt, const std::string& err,
-                                 const std::string& name)
+                                 const std::string& name, const std::string& opt, const std::string& err)
 {
-  // Divide the canvas into the correct number of pads.
-  thisCanvas->DivideSquare(mNumberPads);
-
   // Determine the order of the plot (1 - histo, 2 - graph, ...)
   const size_t plotOrder = std::count(var.begin(), var.end(), ':') + 1;
-
-  // Delete the graph errors after the plot is saved.
-  // Unfortunately the canvas does not take its ownership.
-  TGraph* graphPad = nullptr;
-  TGraphErrors* graphErrors = nullptr;
 
   // Prepare the strings for the dataSource and its trending quantity.
   std::size_t posEndVar = var.find(".");  // Find the end of the dataSource.
@@ -203,6 +191,14 @@ void TrendingTaskTPC::drawCanvas(TCanvas* thisCanvas, const std::string& var,
   std::size_t posEndType_err = err.find(":"); // Find the end of the error.
   std::string errXName(err.substr(posEndType_err + 1));
   std::string errYName(err.substr(0, posEndType_err));
+
+  // Divide the canvas into the correct number of pads.
+  thisCanvas->DivideSquare(mSubtitles[varName].size());
+
+  // Delete the graph errors after the plot is saved.
+  // Unfortunately the canvas does not take its ownership.
+  TGraph* graphPad = nullptr;
+  TGraphErrors* graphErrors = nullptr;
 
   // Setup the tree reader with the needed values.
   TTreeReader myReader(mTrend.get());
@@ -242,7 +238,7 @@ void TrendingTaskTPC::drawCanvas(TCanvas* thisCanvas, const std::string& var,
   }
 
   // Fill the graph(errors) to be published.
-  for (int p = 0; p < (mNumberPads); p++) {
+  for (int p = 0; p < NuPa; p++) {
     thisCanvas->cd(p + 1);
     graphPad = new TGraph(nEntries, TimeStorage, DataStorage[p]);
     graphPad->Draw(opt.data());
