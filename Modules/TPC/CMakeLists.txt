@@ -16,7 +16,11 @@ target_sources(O2QcTPC PRIVATE src/PID.cxx
                              src/CheckOfTrendings.cxx
                              src/LaserTracks.cxx
                              src/LtrCalibReductor.cxx
-                             src/ClusterVisualizer.cxx)
+                             src/ClusterVisualizer.cxx
+                             src/TrendingTaskTPC.cxx
+                             src/TrendingTaskConfigTPC.cxx
+                             src/TH1ReductorTPC.cxx
+                             src/TH2ReductorTPC.cxx)
 
 target_include_directories(
   O2QcTPC
@@ -49,6 +53,12 @@ add_root_dictionary(O2QcTPC
                             include/TPC/LaserTracks.h
                             include/TPC/LtrCalibReductor.h
                             include/TPC/ClusterVisualizer.h
+                            include/TPC/SliceInfo.h
+                            include/TPC/TrendingTaskTPC.h
+                            include/TPC/TrendingTaskConfigTPC.h
+                            include/TPC/ReductorTPC.h
+                            include/TPC/TH1ReductorTPC.h
+                            include/TPC/TH2ReductorTPC.h
                     LINKDEF include/TPC/LinkDef.h
                     BASENAME O2QcTPC)
 
@@ -113,4 +123,6 @@ install(FILES run/tpcQCPID_sampled.json
               run/tpcQCTrending_laserCalib.json
               run/tpcQCClusterVisualizer.json
               run/tpcQCRawDigitVisualizer.json
+              run/tpcQCTrending_slicer.json
+              run/tpcQCTrending_canvas.json
         DESTINATION etc)
