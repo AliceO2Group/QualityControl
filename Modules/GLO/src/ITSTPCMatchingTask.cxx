@@ -18,10 +18,12 @@
 #include <TH1.h>
 
 #include "QualityControl/QcInfoLogger.h"
+#include "Framework/HistogramRegistry.h"
 #include "GLO/ITSTPCMatchingTask.h"
 #include <Framework/InputRecord.h>
 #include <Framework/InputRecordWalker.h>
 
+using namespace o2::framework;
 namespace o2::quality_control_modules::glo
 {
 
@@ -29,7 +31,7 @@ ITSTPCMatchingTask::~ITSTPCMatchingTask()
 {
   //  mMatchITSTPCQC.deleteHistograms();
 }
-
+HistogramRegistry histos{ "Histos", {}, OutputObjHandlingPolicy::AnalysisObject };
 void ITSTPCMatchingTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info, Support) << "initialize ITSTPCMatchingTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
@@ -71,14 +73,21 @@ void ITSTPCMatchingTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   mMatchITSTPCQC.initDataRequest();
   mMatchITSTPCQC.init();
+  mMatchITSTPCQC.getHistoPtTPC()->SetOption("logy");
   getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPtTPC());
   getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatch());
+  mMatchITSTPCQC.getHistoPt()->SetOption("logy");
   getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPt());
+  mMatchITSTPCQC.getHistoEta()->SetOption("logy");
   getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoEta());
+  mMatchITSTPCQC.getHistoChi2Matching()->SetOption("logy");
   getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoChi2Matching());
+  mMatchITSTPCQC.getHistoChi2Refit()->SetOption("logy");
   getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoChi2Refit());
+  mMatchITSTPCQC.getHistoTimeResVsPt()->SetOption("colz logz");
   getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoTimeResVsPt());
 }
+
 
 void ITSTPCMatchingTask::startOfActivity(Activity& activity)
 {
