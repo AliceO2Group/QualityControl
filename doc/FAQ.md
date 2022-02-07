@@ -14,12 +14,10 @@
          * [How do I make my module depend on library XXX from AliceO2 ?](#how-do-i-make-my-module-depend-on-library-xxx-from-aliceo2-)
       * [Run](#run)
          * [Why are my QC processes using 100% CPU ?](#why-are-my-qc-processes-using-100-cpu-)
-      * [QCDB](#ccdb-repository)
+      * [QCDB](#qcdb)
          * [How to see which objects are stored in the CCDB ?](#how-to-see-which-objects-are-stored-in-the-ccdb-)
          * [How to delete objects from the CCDB ?](#how-to-delete-objects-from-the-ccdb-)
-
-<!-- Added by: bvonhall, at:  -->
-
+         * [My objects are not stored due to their size. What can I do ?](#my-objects-are-not-stored-due-to-their-size-what-can-i-do-)
 <!--te-->
 
 [← Go back to Advanced Topics](Advanced.md) | [↑ Go to the Table of Content ↑](../README.md) 
