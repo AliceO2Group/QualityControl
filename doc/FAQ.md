@@ -14,7 +14,7 @@
          * [How do I make my module depend on library XXX from AliceO2 ?](#how-do-i-make-my-module-depend-on-library-xxx-from-aliceo2-)
       * [Run](#run)
          * [Why are my QC processes using 100% CPU ?](#why-are-my-qc-processes-using-100-cpu-)
-      * [CCDB repository](#ccdb-repository)
+      * [QCDB](#ccdb-repository)
          * [How to see which objects are stored in the CCDB ?](#how-to-see-which-objects-are-stored-in-the-ccdb-)
          * [How to delete objects from the CCDB ?](#how-to-delete-objects-from-the-ccdb-)
 
@@ -62,7 +62,7 @@ Simply start your binary with `--rate 10000` and it should solve the problem. Th
 o2-qc-run-producer | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/basic.json --rate 10000
 ```
 
-## CCDB repository
+## QCDB
 
 ### How to see which objects are stored in the CCDB ?
 
@@ -73,5 +73,21 @@ If for some reason you don't want or can't use the QCG, the CCDB provides a web 
 ### How to delete objects from the CCDB ?
 
 By accessing http://ccdb-test.cern.ch:8080/truncate/path/to/folder you will delete all the objects at the given path. Careful with that please ! Don't delete data of others.<br/>In production it will of course not be possible to do so. 
+
+### My objects are not stored due to their size. What can I do ?
+
+You see warnings in the logs: 
+```
+Warning - object qc/DET/MO/xxx/xxx is bigger than the maximum allowed size (2097152B) - skipped
+```
+This is because the maximum allowed size for an object is 2MiB. It can be increased by updating the following item 
+in the config: 
+```
+{
+  "qc": {
+    "config": {
+      "database": {
+        "maxObjectSize": "2097152",       "": "[Bytes, default=2MB] Maximum size allowed, larger objects are rejected."
+```
 
 [← Go back to Advanced Topics](Advanced.md) | [↑ Go to the Table of Content ↑](../README.md) 
