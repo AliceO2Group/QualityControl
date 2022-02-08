@@ -58,12 +58,7 @@ void VertexingQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info, Support) << "initialize VertexingQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
-  // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
-  if (auto param = mCustomParameters.find("verbose"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - verbose (= verbose printouts): " << param->second << ENDM;
-    if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
-      mVerbose = true;
-    }
+
   }
 
   if (auto param = mCustomParameters.find("isMC"); param != mCustomParameters.end()) {
@@ -110,50 +105,7 @@ void VertexingQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mZ = new TH1F("vertex_Z", "vertex_Z; vtx_Z (cm);entries", 1000, -20, 20);
   mNContributors = new TH1F("vertex_NContributors", "vertex_NContributors; n. contributors; entries", 1000, -0.5, 999.5);
   mTimeUncVsNContrib = new TProfile("timeUncVsNContrib", "timeUncVsNContrib; n. contributors; time uncertainty (us)", 100, -0.5, 999.5, 0.f, 10.f);
-  mBeamSpot = new TH2F("beamSpot", "beam spot; vtx_X (cm); vtx_Y (cm)", 300, -0.3, 0.3, 300, -0.3, 0.3);
-
-  mX->SetOption("logy");
-  getObjectsManager()->startPublishing(mX);
-  mY->SetOption("logy");
-  getObjectsManager()->startPublishing(mY);
-  mZ->SetOption("logy");
-  getObjectsManager()->startPublishing(mZ);
-  mNContributors->SetOption("logy");
-  getObjectsManager()->startPublishing(mNContributors);
-  mTimeUncVsNContrib->SetOption("logy");
-  getObjectsManager()->startPublishing(mTimeUncVsNContrib);
-  mBeamSpot->SetOption("colz");
-  getObjectsManager()->startPublishing(mBeamSpot);
-}
-
-void VertexingQcTask::startOfActivity(Activity& activity)
-{
-  ILOG(Info, Support) << "startOfActivity " << activity.mId << ENDM;
-  reset();
-}
-
-void VertexingQcTask::startOfCycle()
-{
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
-}
-
-void VertexingQcTask::monitorData(o2::framework::ProcessingContext& ctx)
-{
-
-  // get the payload of a specific input, which is a char array. "random" is the binding specified in the config file.
-  const auto pvertices = ctx.inputs().get<gsl::span<o2::dataformats::PrimaryVertex>>("pvtx");
-  gsl::span<const o2::MCEventLabel> mcLbl;
-  if (mUseMC) {
-    mcLbl = ctx.inputs().get<gsl::span<o2::MCEventLabel>>("pvtxLbl");
-    for (const auto& lbl : mcLbl) {
-      if (lbl.getSourceID() != 0) { // using only underlying event,  which is source 0
-        continue;
-      }
-      ILOG(Debug, Support) << "From source " << lbl.getSourceID() << ", event " << lbl.getEventID() << " has a vertex" << ENDM;
-      mMapEvIDSourceID[{ lbl.getEventID(), lbl.getSourceID() }]++;
-      if (mMapEvIDSourceID[{ lbl.getEventID(), lbl.getSourceID() }] == 1) { // filling numerator for efficiency
-        auto header = mMCReader.getMCEventHeader(lbl.getSourceID(), lbl.getEventID());
-        auto mult = header.GetNPrim();
+  mBeamSpot = new TH2F("beamSpot", "beam spot; vtx
         ILOG(Debug, Support) << "Found vertex for event with mult = " << mult << ENDM;
         mNPrimaryMCEvWithVtx->Fill(mult);
         // mRatioNPrimaryMCEvWithVtxvsNPrimaryMCGen = (TH1F *)mNPrimaryMCEvWithVtx->Clone(); //did not work
@@ -200,44 +152,7 @@ void VertexingQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     mTimeUncVsNContrib->Fill(nContr, timeUnc);
     mBeamSpot->Fill(x, y);
 
-    if (mUseMC && mcLbl[i].isSet()) { // make sure the label was set
-      auto header = mMCReader.getMCEventHeader(mcLbl[i].getSourceID(), mcLbl[i].getEventID());
-      auto purity = mcLbl[i].getCorrWeight();
-      auto mult = header.GetNPrim();
-      ILOG(Debug, Support) << "purity = " << purity << ", mult = " << mult << ENDM;
-      mPurityVsMult->Fill(mult, purity);
-      TVector3 vtMC;
-      header.GetVertex(vtMC);
-      mVtxResXVsMult->Fill(mult, vtMC[0] - pvertices[i].getX());
-      mVtxResYVsMult->Fill(mult, vtMC[1] - pvertices[i].getY());
-      mVtxResZVsMult->Fill(mult, vtMC[2] - pvertices[i].getZ());
-      mVtxPullsXVsMult->Fill(mult, (vtMC[0] - pvertices[i].getX()) / std::sqrt(pvertices[i].getSigmaX2()));
-      mVtxPullsYVsMult->Fill(mult, (vtMC[1] - pvertices[i].getY()) / std::sqrt(pvertices[i].getSigmaY2()));
-      mVtxPullsZVsMult->Fill(mult, (vtMC[2] - pvertices[i].getZ()) / std::sqrt(pvertices[i].getSigmaZ2()));
-    }
-  }
-
-  // 3. Access CCDB. If it is enough to retrieve it once, do it in initialize().
-  // Remember to delete the object when the pointer goes out of scope or it is no longer needed.
-  //   TObject* condition = TaskInterface::retrieveCondition("QcTask/example"); // put a valid condition path here
-  //   if (condition) {
-  //     LOG(info) << "Retrieved " << condition->ClassName();
-  //     delete condition;
-  //   }
-}
-
-void VertexingQcTask::endOfCycle()
-{
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
-
-  if (mUseMC) {
-
-    if (!mVtxEffVsMult->SetTotalHistogram(*mNPrimaryMCGen, "") ||
-        !mVtxEffVsMult->SetPassedHistogram(*mNPrimaryMCEvWithVtx, "")) {
-      ILOG(Fatal, Support) << "Something went wrong in defining the efficiency histograms!!";
-    } else {
-      if (mVerbose) {
-        for (int ibin = 0; ibin < mNPrimaryMCEvWithVtx->GetNbinsX(); ibin++) {
+    if (mUseMC && mcLbl[i].isSet()) { 
           if (mNPrimaryMCEvWithVtx->GetBinContent(ibin + 1) != 0 && mNPrimaryMCGen->GetBinContent(ibin + 1) != 0) {
             ILOG(Info, Support) << "ibin = " << ibin + 1 << ", mNPrimaryMCEvWithVtx->GetBinContent(ibin + 1) = " << mNPrimaryMCEvWithVtx->GetBinContent(ibin + 1) << ", mNPrimaryMCGen->GetBinContent(ibin + 1) = " << mNPrimaryMCGen->GetBinContent(ibin + 1) << ", efficiency = " << mVtxEffVsMult->GetEfficiency(ibin + 1) << ENDM;
             ILOG(Info, Support) << "ibin = " << ibin + 1 << ", mNPrimaryMCEvWithVtx->GetBinError(ibin + 1) = " << mNPrimaryMCEvWithVtx->GetBinError(ibin + 1) << ", mNPrimaryMCGen->GetBinError(ibin + 1) = " << mNPrimaryMCGen->GetBinError(ibin + 1) << ", efficiency error low = " << mVtxEffVsMult->GetEfficiencyErrorLow(ibin + 1) << ", efficiency error up = " << mVtxEffVsMult->GetEfficiencyErrorUp(ibin + 1) << ENDM;
