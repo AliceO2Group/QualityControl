@@ -20,6 +20,7 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/Reductor.h"
 #include "ITS/TH2XlineReductor.h"
+//#include "../../Common/include/Common/TH1Reductor.h"
 #include <TCanvas.h>
 #include <TH1.h>
 #include <TDatime.h>
@@ -62,9 +63,9 @@ void TrendingTaskITSCluster::initialize(Trigger, framework::ServiceRegistry&)
 void TrendingTaskITSCluster::update(Trigger, framework::ServiceRegistry& services)
 {
   auto& qcdb = services.get<repository::DatabaseInterface>();
-
+  printf("test1 \n");
   trendValues(qcdb);
-
+  printf("test2 \n");
   storePlots(qcdb);
   storeTrend(qcdb);
 }
@@ -108,7 +109,7 @@ void TrendingTaskITSCluster::trendValues(repository::DatabaseInterface& qcdb)
       auto mo = qcdb.retrieveMO(dataSource.path, "");
       if (!count) {
         std::map<std::string, std::string> entryMetadata = mo->getMetadataMap(); // full list of metadata as a map
-        mMetaData.runNumber = std::stoi(entryMetadata["Run"]);                   // get and set run number
+        mMetaData.runNumber = std::stoi(entryMetadata["RunNumber"]);             // get and set run number
         ntreeentries = (Int_t)mTrend->GetEntries() + 1;
         runlist.push_back(std::to_string(mMetaData.runNumber));
       }
@@ -134,10 +135,171 @@ void TrendingTaskITSCluster::storePlots(repository::DatabaseInterface& qcdb)
   ILOG(Info, Support) << "Generating and storing " << mConfig.plots.size() << " plots."
                       << ENDM;
   //
+  // Create average plots for all layers
+  //
+  int ilay = 0;
+  int colidx = 0;
+  int mkridx = 0;
+  // adding canvas for the average plots for the layers
+  TCanvas* c_avg[2];
+  c_avg[0] = new TCanvas("avg_cluster_size_summary");
+  c_avg[1] = new TCanvas("avg_cluster_std");
+  c_avg[2] = new TCanvas("avg_grouped_cluster_mean");
+  c_avg[3] = new TCanvas("avg_grouped_cluster_std");
+  double min = 0.0;
+  double max = 20.0;
+  TLegend* legend_std = new TLegend(0.91, 0.1, 0.98, 0.9);
+  TLegend* legend_mean = new TLegend(0.91, 0.1, 0.98, 0.9);
+  TLegend* legend_grouped_std = new TLegend(0.91, 0.1, 0.98, 0.9);
+  TLegend* legend_grouped_mean = new TLegend(0.91, 0.1, 0.98, 0.9);
+  for (const auto& plot : mConfig.plots) {
+    // separate loop for average plots, skipped for others
+    // This does 4 plots, the mean and std for the clusters and grouped topologies each
+    // all 7 layers are done on the same plot
+    // afterwards, a separate loop on all the plots is run to create the other plots. In that, these ones are skipped.
+    if (plot.name.find("avg") != std::string::npos) {
+      bool isrun = plot.varexp.find("ntreeentries") != std::string::npos ? true : false; // vs run or vs time
+      long int n = mTrend->Draw(plot.varexp.c_str(), plot.selection.c_str(), "goff");    // plot.option.c_str());
+      // post processing plot
+      TGraph* g = new TGraph(n, mTrend->GetV2(), mTrend->GetV1());
+      SetGraphStyle(g, col[colidx], mkr[mkridx]);
+      SetGraphNameAndAxes(g, plot.name, plot.title, isrun ? "run" : "time", "size", min, max, runlist);
+      ILOG(Info, Support) << " Saving " << plot.name << " to CCDB " << ENDM;
+      auto mo = std::make_shared<MonitorObject>(g, mConfig.taskName, "o2::quality_control_modules::its::TrendingTaskITSCluster", mConfig.detectorName);
+      mo->setIsOwner(false);
+      qcdb.storeMO(mo);
+      if (plot.name.find("avg_grouped_mean") != std::string::npos) {
+        c_avg[2]->cd();
+        if (ilay == 0) {
+          printf("GROUPED MEAN L) \n");
+          int npoints = g->GetN();
+          TH1F* hfake = new TH1F("hfake", Form("%s; %s; Avg grouped cluster size (pixel)", g->GetTitle(), g->GetXaxis()->GetTitle()), npoints, 0.5, (double)npoints + 0.5);
+          hfake->GetYaxis()->SetRangeUser(min, max);
+          hfake->GetXaxis()->SetNdivisions(505);
+          hfake->GetXaxis()->SetTitle("run");
+          hfake->SetTitle("Avg grouped topologies size mean");
+          hfake->SetStats(kFALSE);
+          hfake->GetXaxis()->Draw("");
+          for (int ir = 0; ir < (int)runlist.size(); ir++)
+            hfake->GetXaxis()->SetBinLabel(ir + 1, runlist[ir].c_str());
+          hfake->DrawCopy("");
+          delete hfake;
+        }
+        g->DrawClone("same");
+        printf("GROUPED drew g \n");
+        TGraph* gr = new TGraph(); // dummy histo
+        SetGraphStyle(gr, col[colidx], mkr[mkridx]);
+        legend_grouped_mean->AddEntry(gr, Form("layer %d", ilay));
+        printf("GROUPED added legend \n");
+      }
+      if (plot.name.find("avg_grouped_stddev") != std::string::npos) {
+        c_avg[3]->cd();
+        if (ilay == 0) {
+          int npoints = g->GetN();
+          TH1F* hfake = new TH1F("hfake", Form("%s; %s; std dev. of grouped cluster size (pixel)", g->GetTitle(), g->GetXaxis()->GetTitle()), npoints, 0.5, (double)npoints + 0.5);
+          hfake->GetYaxis()->SetRangeUser(min, max);
+          hfake->GetXaxis()->SetNdivisions(505);
+          hfake->GetXaxis()->SetTitle("run");
+          hfake->SetTitle("Avg grouped topologies size rms");
+          hfake->SetStats(kFALSE);
+          hfake->GetXaxis()->Draw("");
+          for (int ir = 0; ir < (int)runlist.size(); ir++)
+            hfake->GetXaxis()->SetBinLabel(ir + 1, runlist[ir].c_str());
+          hfake->DrawCopy("");
+          delete hfake;
+        }
+        g->DrawClone("same");
+        TGraph* gr = new TGraph(); // dummy histo
+        SetGraphStyle(gr, col[colidx], mkr[mkridx]);
+        legend_grouped_std->AddEntry(gr, Form("layer %d", ilay));
+      }
+      if (plot.name.find("avg_cluster_mean") != std::string::npos) {
+        c_avg[0]->cd();
+        if (ilay == 0) {
+          int npoints = g->GetN();
+          TH1F* hfake = new TH1F("hfake", Form("%s; %s; Avg cluster size (pixel)", g->GetTitle(), g->GetXaxis()->GetTitle()), npoints, 0.5, (double)npoints + 0.5);
+          hfake->GetYaxis()->SetRangeUser(min, max);
+          hfake->GetXaxis()->SetNdivisions(505);
+          hfake->GetXaxis()->SetTitle("run");
+          hfake->SetTitle("Avg cluster size mean");
+          hfake->SetStats(kFALSE);
+          hfake->GetXaxis()->Draw("");
+          for (int ir = 0; ir < (int)runlist.size(); ir++)
+            hfake->GetXaxis()->SetBinLabel(ir + 1, runlist[ir].c_str());
+          hfake->DrawCopy("");
+          delete hfake;
+        }
+        g->DrawClone("same");
+        TGraph* gr = new TGraph(); // dummy histo
+        SetGraphStyle(gr, col[colidx], mkr[mkridx]);
+        legend_mean->AddEntry(gr, Form("layer %d", ilay));
+      }
+      if (plot.name.find("avg_cluster_stddev") != std::string::npos) {
+        c_avg[1]->cd();
+        if (ilay == 0) {
+          int npoints = g->GetN();
+          TH1F* hfake = new TH1F("hfake", Form("%s; %s;Std dev. of cluster size dist (pixel) ", g->GetTitle(), g->GetXaxis()->GetTitle()), npoints, 0.5, (double)npoints + 0.5);
+          hfake->GetYaxis()->SetRangeUser(min, max);
+          hfake->GetXaxis()->SetNdivisions(505);
+          hfake->GetXaxis()->SetTitle("run");
+          hfake->SetTitle("Avg cluster size rms");
+          hfake->SetStats(kFALSE);
+          hfake->GetXaxis()->Draw("");
+          for (int ir = 0; ir < (int)runlist.size(); ir++)
+            hfake->GetXaxis()->SetBinLabel(ir + 1, runlist[ir].c_str());
+          hfake->DrawCopy("");
+          delete hfake;
+        }
+        g->DrawClone("same");
+        TGraph* gr = new TGraph(); // dummy histo
+        SetGraphStyle(gr, col[colidx], mkr[mkridx]);
+        legend_std->AddEntry(gr, Form("layer %d", ilay));
+        ilay++;
+        colidx++;
+        mkridx++;
+      }
+      delete g;
+    }
+
+    else
+      continue;
+  }
+  c_avg[0]->cd();
+  legend_mean->Draw("same");
+  c_avg[1]->cd();
+  legend_std->Draw("same");
+  c_avg[2]->cd();
+  legend_grouped_mean->Draw("same");
+  c_avg[3]->cd();
+  legend_grouped_std->Draw("same");
+
+  // ILOG(Info, Support) << " Saving canvas for layer " << idx / NTRENDSCLUSTER << " to CCDB "
+  //                     << ENDM;
+  auto mo_avg_mean = std::make_shared<MonitorObject>(c_avg[0], mConfig.taskName, "o2::quality_control_modules::its::TrendingTaskITSCluster",
+                                                     mConfig.detectorName);
+
+  mo_avg_mean->setIsOwner(false);
+  qcdb.storeMO(mo_avg_mean);
+  auto mo_avg_std = std::make_shared<MonitorObject>(c_avg[1], mConfig.taskName, "o2::quality_control_modules::its::TrendingTaskITSCluster",
+                                                    mConfig.detectorName);
+
+  mo_avg_std->setIsOwner(false);
+  qcdb.storeMO(mo_avg_std);
+  auto mo_avg_grouped_std = std::make_shared<MonitorObject>(c_avg[3], mConfig.taskName, "o2::quality_control_modules::its::TrendingTaskITSCluster",
+                                                            mConfig.detectorName);
+
+  mo_avg_grouped_std->setIsOwner(false);
+  qcdb.storeMO(mo_avg_grouped_std);
+  auto mo_avg_grouped_mean = std::make_shared<MonitorObject>(c_avg[2], mConfig.taskName, "o2::quality_control_modules::its::TrendingTaskITSCluster",
+                                                             mConfig.detectorName);
+
+  mo_avg_grouped_mean->setIsOwner(false);
+  qcdb.storeMO(mo_avg_grouped_mean);
+
   // Create and save trends for each stave
   //
   int countplots = 0;
-  int ilay = 0;
+  ilay = 0;
   double ymin[NTRENDSCLUSTER] = { 0, 1e-1, -.5, 1e-9 };
   double ymax[NTRENDSCLUSTER] = { 50, 1e-5, 15.5, 1 };
 
@@ -147,15 +309,17 @@ void TrendingTaskITSCluster::storePlots(repository::DatabaseInterface& qcdb)
       countplots = 0;
       ilay++;
     }
-    int colidx = countplots > 13  ? countplots - 14
-                 : countplots > 6 ? countplots - 7
-                                  : countplots;
-    int mkridx = countplots > 13 ? 2 : countplots > 6 ? 1
-                                                      : 0;
+    colidx = countplots > 13  ? countplots - 14
+             : countplots > 6 ? countplots - 7
+                              : countplots;
+    mkridx = countplots > 13 ? 2 : countplots > 6 ? 1
+                                                  : 0;
     int index = 0;
-    if (plot.name.find("occ") != std::string::npos)
+    if (plot.name.find("occ") != std::string::npos) {
       index = 3;
-    else if (plot.name.find("chips") != std::string::npos)
+    } else if (plot.name.find("avg") != std::string::npos) {
+      continue;
+    } else if (plot.name.find("chips") != std::string::npos)
       index = 2;
     else if (plot.name.find("stddev") != std::string::npos)
       index = 1;
@@ -163,7 +327,6 @@ void TrendingTaskITSCluster::storePlots(repository::DatabaseInterface& qcdb)
       index = 0;
     bool isrun = plot.varexp.find("ntreeentries") != std::string::npos ? true : false; // vs run or vs time
     long int n = mTrend->Draw(plot.varexp.c_str(), plot.selection.c_str(), "goff");    // plot.option.c_str());
-
     // post processing plot
     TGraph* g = new TGraph(n, mTrend->GetV2(), mTrend->GetV1());
     SetGraphStyle(g, col[colidx], mkr[mkridx]);
@@ -174,6 +337,7 @@ void TrendingTaskITSCluster::storePlots(repository::DatabaseInterface& qcdb)
     qcdb.storeMO(mo);
     // It should delete everything inside. Confirmed by trying to delete histo
     // after and getting a segfault.
+
     delete g;
     if (plot.name.find("occ") != std::string::npos)
       countplots++;
@@ -226,7 +390,9 @@ void TrendingTaskITSCluster::storePlots(repository::DatabaseInterface& qcdb)
       index = 3;
     else if (plot.name.find("chips") != std::string::npos)
       index = 2;
-    else if (plot.name.find("stddev") != std::string::npos)
+    else if (plot.name.find("avg") != std::string::npos) {
+      continue;
+    } else if (plot.name.find("stddev") != std::string::npos)
       index = 1;
     else
       index = 0;
