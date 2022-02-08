@@ -217,6 +217,24 @@ void VertexingQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
   }
 
+  for (auto const& el : mMapLabels) {
+    auto const& trk = mITSTPCTracks[el.second.mIdx];
+    auto const& trkTpc = mTPCTracks[trk.getRefTPC()];
+    mPt->Fill(trkTpc.getPt());
+    mPhi->Fill(trkTpc.getPhi());
+    // we fill also the denominator
+    mPtTPC->Fill(trkTpc.getPt());
+    mPhiTPC->Fill(trkTpc.getPhi());
+    if (el.second.mIsPhysicalPrimary) {
+      mPtPhysPrim->Fill(trkTpc.getPt());
+      mPhiPhysPrim->Fill(trkTpc.getPhi());
+      // we fill also the denominator
+      mPtTPCPhysPrim->Fill(trkTpc.getPt());
+      mPhiTPCPhysPrim->Fill(trkTpc.getPhi());
+    }
+    ++mNITSTPCSelectedTracks;
+  }
+
   // 3. Access CCDB. If it is enough to retrieve it once, do it in initialize().
   // Remember to delete the object when the pointer goes out of scope or it is no longer needed.
   //   TObject* condition = TaskInterface::retrieveCondition("QcTask/example"); // put a valid condition path here
