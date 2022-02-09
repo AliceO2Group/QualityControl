@@ -54,7 +54,6 @@ void PhysicsTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
   initHistograms();
   mNEventsTotal = 0;
-  mNEventsFromLastFillHistogramsCall = 0;
 }
 
 void PhysicsTask::startOfActivity(Activity& activity)
@@ -62,7 +61,6 @@ void PhysicsTask::startOfActivity(Activity& activity)
   ILOG(Info, Support) << "startOfActivity() : resetting everything" << activity.mId << ENDM;
   resetHistograms();
   mNEventsTotal = 0;
-  mNEventsFromLastFillHistogramsCall = 0;
 }
 
 void PhysicsTask::startOfCycle()
@@ -90,10 +88,21 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
   int nValidInputs = ctx.inputs().countValidInputs();
   mHist1D[H1DNValidInputs]->Fill(nValidInputs);
 
+  bool hasClusters = false, hasDigits = false;
   for (auto&& input : ctx.inputs()) {
     // get message header
     if (input.header != nullptr && input.payload != nullptr) {
       const auto* header = header::get<header::DataHeader*>(input.header);
+      //LOG(info) << "monitorData() : obtained input " << header->dataOrigin.str << "/" << header->dataDescription.str;
+      if ((strcmp(header->dataOrigin.str, "CPV") == 0) && (strcmp(header->dataDescription.str, "DIGITS") == 0)) {
+        LOG(info) << "monitorData() : I found digits in inputs";
+        hasDigits = true;
+      }
+      if ((strcmp(header->dataOrigin.str, "CPV") == 0) && (strcmp(header->dataDescription.str, "CLUSTERS") == 0)) {
+        LOG(info) << "monitorData() : I found clusters in inputs";
+        hasDigits = true;
+      }
+
       // get payload of a specific input, which is a char array.
       // const char* payload = input.payload;
 
@@ -103,52 +112,57 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
 
   // 2. Using get("<binding>")
-  auto digits = ctx.inputs().get<gsl::span<o2::cpv::Digit>>("digits");
-  mHist1D[H1DNDigitsPerInput]->Fill(digits.size());
-
-  auto clusters = ctx.inputs().get<gsl::span<o2::cpv::Cluster>>("clusters");
-  mHist1D[H1DNClustersPerInput]->Fill(clusters.size());
-
-  auto digitsTR = ctx.inputs().get<gsl::span<o2::cpv::TriggerRecord>>("dtrigrec");
-  auto clustersTR = ctx.inputs().get<gsl::span<o2::cpv::TriggerRecord>>("ctrigrec");
-
   //digits
-  for (const auto& trigRecord : digitsTR) {
-    LOG(debug) << " monitorData() : digit trigger record #" << mNEventsTotal
-               << " contains " << trigRecord.getNumberOfObjects() << " objects.";
-    mNEventsTotal++;
-    mNEventsFromLastFillHistogramsCall++;
-
-    if (trigRecord.getNumberOfObjects() > 0) {
-      for (int iDig = trigRecord.getFirstEntry(); iDig < trigRecord.getFirstEntry() + trigRecord.getNumberOfObjects(); iDig++) {
-        mHist1D[H1DDigitIds]->Fill(digits[iDig].getAbsId());
-        short relId[3];
-        if (mCPVGeometry.absToRelNumbering(digits[iDig].getAbsId(), relId)) {
-          //reminder: relId[3]={Module, phi col, z row} where Module=2..4, phi col=0..127, z row=0..59
-          mHist2D[H2DDigitMapM2 + relId[0] - 2]->Fill(relId[1], relId[2]);
-          mHist1D[H1DDigitEnergyM2 + relId[0] - 2]->Fill(digits[iDig].getAmplitude());
+  if (hasDigits) {
+    auto digits = ctx.inputs().get<gsl::span<o2::cpv::Digit>>("digits");
+    auto digitsTR = ctx.inputs().get<gsl::span<o2::cpv::TriggerRecord>>("dtrigrec");
+    mHist1D[H1DNDigitsPerInput]->Fill(digits.size());
+    for (const auto& trigRecord : digitsTR) {
+      LOG(debug) << " monitorData() : digit trigger record #" << mNEventsTotal
+                 << " contains " << trigRecord.getNumberOfObjects() << " objects.";
+      mNEventsTotal++;
+      if (trigRecord.getNumberOfObjects() > 0) {
+        for (int iDig = trigRecord.getFirstEntry(); iDig < trigRecord.getFirstEntry() + trigRecord.getNumberOfObjects(); iDig++) {
+          mHist1D[H1DDigitIds]->Fill(digits[iDig].getAbsId());
+          short relId[3];
+          if (Geometry::absToRelNumbering(digits[iDig].getAbsId(), relId)) {
+            //reminder: relId[3]={Module, phi col, z row} where Module=2..4, phi col=0..127, z row=0..59
+            mHist2D[H2DDigitMapM2 + relId[0] - 2]->Fill(relId[1], relId[2]);
+            mHist1D[H1DDigitEnergyM2 + relId[0] - 2]->Fill(digits[iDig].getAmplitude());
+          }
+        }
+      }
+    }
+    for (int iMod = 0; iMod < kNModules; iMod++) {
+      for (int iZ = 1; iZ <= 60; iZ++) {
+        for (int iX = 1; iX <= 128; iX++) {
+          mHist2D[H2DDigitFreqM2 + iMod]->SetBinContent(iX, iZ, mHist2D[H2DDigitMapM2 + iMod]->GetBinContent(iX, iZ) / mNEventsTotal);
         }
       }
     }
   }
 
   //clusters
-  for (const auto& trigRecord : clustersTR) {
-    if (trigRecord.getNumberOfObjects() > 0) {
-      for (int iClu = trigRecord.getFirstEntry(); iClu < trigRecord.getFirstEntry() + trigRecord.getNumberOfObjects(); iClu++) {
-        //reminder: relId[3]={Module, phi col, z row} where Module=2..4, phi col=0..127, z row=0..59
-        char mod = clusters[iClu].getModule();
-        float x, z, totEn;
-        clusters[iClu].getLocalPosition(x, z);
-        totEn = clusters[iClu].getEnergy();
-        int mult = clusters[iClu].getMultiplicity();
-        mHist2D[H2DClusterMapM2 + mod - 2]->Fill(x, z);
-        mHist1D[H1DClusterTotEnergyM2 + mod - 2]->Fill(totEn);
-        mHist1D[H1DNDigitsInClusterM2 + mod - 2]->Fill(mult);
+  if (hasClusters) {
+    auto clusters = ctx.inputs().get<gsl::span<o2::cpv::Cluster>>("clusters");
+    auto clustersTR = ctx.inputs().get<gsl::span<o2::cpv::TriggerRecord>>("ctrigrec");
+    mHist1D[H1DNClustersPerInput]->Fill(clusters.size());
+    for (const auto& trigRecord : clustersTR) {
+      if (trigRecord.getNumberOfObjects() > 0) {
+        for (int iClu = trigRecord.getFirstEntry(); iClu < trigRecord.getFirstEntry() + trigRecord.getNumberOfObjects(); iClu++) {
+          //reminder: relId[3]={Module, phi col, z row} where Module=2..4, phi col=0..127, z row=0..59
+          char mod = clusters[iClu].getModule();
+          float x, z, totEn;
+          clusters[iClu].getLocalPosition(x, z);
+          totEn = clusters[iClu].getEnergy();
+          int mult = clusters[iClu].getMultiplicity();
+          mHist2D[H2DClusterMapM2 + mod - 2]->Fill(x, z);
+          mHist1D[H1DClusterTotEnergyM2 + mod - 2]->Fill(totEn);
+          mHist1D[H1DNDigitsInClusterM2 + mod - 2]->Fill(mult);
+        }
       }
     }
   }
-
   // 3. Access CCDB. If it is enough to retrieve it once, do it in initialize().
   // Remember to delete the object when the pointer goes out of scope or it is no longer needed.
   //   TObject* condition = TaskInterface::retrieveCondition("QcTask/example"); // put a valid condition path here
@@ -175,7 +189,6 @@ void PhysicsTask::reset()
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
   resetHistograms();
   mNEventsTotal = 0;
-  mNEventsFromLastFillHistogramsCall = 0;
 }
 
 void PhysicsTask::initHistograms()
@@ -228,10 +241,10 @@ void PhysicsTask::initHistograms()
     mHist1D[H1DDigitIds]->Reset();
   }
 
-  int nPadsX = mCPVGeometry.kNumberOfCPVPadsPhi;
-  int nPadsZ = mCPVGeometry.kNumberOfCPVPadsZ;
-  float rangeX = mCPVGeometry.kCPVPadSizePhi / 2. * nPadsX + 10.;
-  float rangeZ = mCPVGeometry.kCPVPadSizeZ / 2. * nPadsZ + 10.;
+  int nPadsX = Geometry::kNumberOfCPVPadsPhi;
+  int nPadsZ = Geometry::kNumberOfCPVPadsZ;
+  float rangeX = Geometry::kCPVPadSizePhi / 2. * nPadsX + 10.;
+  float rangeZ = Geometry::kCPVPadSizeZ / 2. * nPadsZ + 10.;
 
   for (int mod = 0; mod < kNModules; mod++) {
     // 1D
@@ -289,6 +302,23 @@ void PhysicsTask::initHistograms()
       mHist2D[H2DDigitMapM2 + mod]->Reset();
     }
 
+    // digit frequency
+    if (!mHist2D[H2DDigitFreqM2 + mod]) {
+      mHist2D[H2DDigitFreqM2 + mod] =
+        new TH2F(
+          Form("DigitFreqM%d", 2 + mod),
+          Form("Digit Frequency in M%d", mod + 2),
+          nPadsX, -0.5, nPadsX - 0.5,
+          nPadsZ, -0.5, nPadsZ - 0.5);
+      mHist2D[H2DDigitFreqM2 + mod]->GetXaxis()->SetTitle("x, pad");
+      mHist2D[H2DDigitFreqM2 + mod]->GetYaxis()->SetTitle("z, pad");
+      mHist2D[H2DDigitFreqM2 + mod]->SetStats(0);
+      getObjectsManager()->startPublishing(mHist2D[H2DDigitFreqM2 + mod]);
+    } else {
+      mHist2D[H2DDigitFreqM2 + mod]->Reset();
+    }
+
+    // cluster map
     if (!mHist2D[H2DClusterMapM2 + mod]) {
       mHist2D[H2DClusterMapM2 + mod] =
         new TH2F(
