@@ -79,7 +79,6 @@ void ITSTPCMatchingTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoTimeResVsPt());
 }
 
-
 void ITSTPCMatchingTask::startOfActivity(Activity& activity)
 {
   ILOG(Info, Support) << "startOfActivity " << activity.mId << ENDM;

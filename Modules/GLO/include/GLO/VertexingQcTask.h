@@ -73,11 +73,7 @@ class VertexingQcTask final : public TaskInterface
   std::unordered_map<o2::MCEventLabel, int> mMapEvIDSourceID; // unordered_map counting the number of vertices reconstructed per event and source (--> MCEventLabel)
   TH1F* mNPrimaryMCEvWithVtx = nullptr;                       // event multiplicity for MC events with at least 1 vertex
   TH1F* mNPrimaryMCGen = nullptr;                             // event multiplicity for all MC events
-<<<<<<< HEAD
   TH1F *mRatioNPrimaryMCEvWithVtxvsNPrimaryMCGen = nullptr;  /* ratio event multiplicity for MC events with at least 1 vertex vs. event multiplicity for all MC events */
-=======
-  TH1F *mRatioNPrimaryMCEvWithVtxvsNPrimaryMCGen = nullptr;  // ratio event multiplicity for MC events with at least 1 vertex vs. event multiplicity for all MC events
->>>>>>> 86b95bd2e0ce960c47427e8d396eab9a2dbe053c
   TEfficiency *mVtxEffVsMult = nullptr;                       // for vertex efficiency
   TProfile* mCloneFactorVsMult = nullptr;                     // clone factor vs multiplicity
   TProfile* mVtxResXVsMult = nullptr;                         // vertex resolution in X
