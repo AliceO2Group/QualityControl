@@ -27,7 +27,7 @@
 namespace o2::quality_control_modules::its
 {
 
-void ITSFeeCheck::configure(std::string) {}
+void ITSFeeCheck::configure() {}
 
 Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {

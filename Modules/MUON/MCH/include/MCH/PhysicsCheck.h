@@ -37,7 +37,7 @@ class PhysicsCheck : public o2::quality_control::checker::CheckInterface
   ~PhysicsCheck() override;
 
   // Override interface
-  void configure(std::string name) override;
+  void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
@@ -46,7 +46,7 @@ class PhysicsCheck : public o2::quality_control::checker::CheckInterface
   int mPrintLevel;
   double minOccupancy;
   double maxOccupancy;
-  ClassDefOverride(PhysicsCheck, 1);
+  ClassDefOverride(PhysicsCheck, 2);
 };
 
 } // namespace o2::quality_control_modules::muonchambers

@@ -36,7 +36,7 @@ class CheckDiagnostics : public o2::quality_control::checker::CheckInterface
   ~CheckDiagnostics() override = default;
 
   // Override interface
-  void configure(std::string name) override;
+  void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult) override;
   std::string getAcceptedType() override;
@@ -45,7 +45,7 @@ class CheckDiagnostics : public o2::quality_control::checker::CheckInterface
   /// Messages to print on the output PAD
   MessagePad mShifterMessages;
 
-  ClassDefOverride(CheckDiagnostics, 1);
+  ClassDefOverride(CheckDiagnostics, 2);
 };
 
 } // namespace o2::quality_control_modules::tof
