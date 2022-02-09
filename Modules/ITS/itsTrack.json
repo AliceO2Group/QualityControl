@@ -56,7 +56,7 @@
         "dataSource" : [ {
           "type" : "Task",
           "name" : "ITSTrackTask",
-          "MOs" : ["NClusters","PhiDistribution","AngularDistribution","EtaDistribution","VertexCoordinates","VertexRvsZ","VertexZ","BunchCrossingIDvsClusterSize"]
+          "MOs" : ["NClusters","PhiDistribution","AngularDistribution","EtaDistribution","VertexCoordinates","VertexRvsZ","VertexZ","BunchCrossingIDvsClusterRatio"]
         } ]
       }
     }

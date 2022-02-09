@@ -129,7 +129,7 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
     hNtracks->Fill(nTracks);
 
     const auto bcdata = trackRofArr[iROF].getBCData();
-    hClusterVsBunchCrossing->Fill(bcdata.bc, nClusterCntTrack);
+    hClusterVsBunchCrossing->Fill(bcdata.bc, clusterRatio);
 
     if (mDoTTree)
       tClusterMap->Fill();
@@ -263,10 +263,10 @@ void ITSTrackTask::createAllHistos()
   formatAxes(hNClustersPerTrackEta, "#eta", "# of Clusters per Track", 1, 1.10);
   hNClustersPerTrackEta->SetStats(0);
 
-  hClusterVsBunchCrossing = new TH2D("BunchCrossingIDvsClusterSize", "BunchCrossingIDvsClusterSize", 4096, 0, 4095, 100, 0, 100);
-  hClusterVsBunchCrossing->SetTitle("Bunch Crossing ID vs Cluster Size");
+  hClusterVsBunchCrossing = new TH2D("BunchCrossingIDvsClusterRatio", "BunchCrossingIDvsClusterRatio", 4096, 0, 4095, 100, 0, 1);
+  hClusterVsBunchCrossing->SetTitle("Bunch Crossing ID vs Cluster Ratio");
   addObject(hClusterVsBunchCrossing);
-  formatAxes(hClusterVsBunchCrossing, "Bunch Crossing ID", "Number of clusters in ROF", 1, 1.10);
+  formatAxes(hClusterVsBunchCrossing, "Bunch Crossing ID", "Fraction of clusters in tracks", 1, 1.10);
   hClusterVsBunchCrossing->SetStats(0);
 }
 
