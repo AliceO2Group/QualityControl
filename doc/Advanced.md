@@ -792,7 +792,8 @@ should not be present in real configuration files.
         "password": "qc_user",            "": "Password to log into a DB. Relevant only to the MySQL implementation.",
         "name": "quality_control",        "": "Name of a DB. Relevant only to the MySQL implementation.",
         "implementation": "CCDB",         "": "Implementation of a DB. It can be CCDB, or MySQL (deprecated).",
-        "host": "ccdb-test.cern.ch:8080", "": "URL of a DB."
+        "host": "ccdb-test.cern.ch:8080", "": "URL of a DB.",
+        "maxObjectSize": "2097152",       "": "[Bytes, default=2MB] Maximum size allowed, larger objects are rejected."
       },
       "Activity": {                       "": ["Configuration of a QC Activity (Run). This structure is subject to",
                                                "change or the values might come from other source (e.g. AliECS)." ],
