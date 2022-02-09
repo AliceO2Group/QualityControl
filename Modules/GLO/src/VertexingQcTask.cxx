@@ -72,13 +72,13 @@ void VertexingQcTask::initialize(o2::framework::InitContext& /*ctx*/)
       mUseMC = true;
       mMCReader.initFromDigitContext("collisioncontext.root");
       mPurityVsMult = new TProfile("purityVsMult", "purityVsMult; MC primary mult; vtx purity", 100, -0.5, 9999.5, 0.f, 1.f);
-      mNPrimaryMCEvWithVtx = new TH1F("NPrimaryMCEvWithVtx", "NPrimaryMCEvWithVtx; MC primary mult; n. events", 100, -0.5, 9999.5);
+      mNPrimaryMCEvWithVtx = new TH1F("NPrimaryMCEvWithVtx", "NPrimaryMCEvWithVtx; MC primary mult; n. events", 10000, -0.5, 9999.5);
       mNPrimaryMCEvWithVtx->Sumw2();
-      mNPrimaryMCGen = new TH1F("NPrimaryMCGen", "NPrimaryMCGen; MC primary mult; n. events with vtx", 100, -0.5, 9999.5);
+      mNPrimaryMCGen = new TH1F("NPrimaryMCGen", "NPrimaryMCGen; MC primary mult; n. events with vtx", 10000, -0.5, 9999.5);
       mNPrimaryMCGen->Sumw2();
-      mRatioNPrimaryMCEvWithVtxvsNPrimaryMCGen = new TH1F("RatioNPrimaryMCEvWithVtxvsNPrimaryMCGen", "Ratio NPrimaryMCEvWithVtx vs. NPrimaryMCGen", 100, -0.5, 9999.5);
+      mRatioNPrimaryMCEvWithVtxvsNPrimaryMCGen = new TH1F("RatioNPrimaryMCEvWithVtxvsNPrimaryMCGen", "Ratio NPrimaryMCEvWithVtx vs. NPrimaryMCGen", 10000, -0.5, 9999.5);
       mRatioNPrimaryMCEvWithVtxvsNPrimaryMCGen->Sumw2();
-      mVtxEffVsMult = new TEfficiency("vtxEffVsMult", "vtxEffVsMult; MC primary mult; vtx reco efficiency", 100, -0.5, 9999.5);
+      mVtxEffVsMult = new TEfficiency("vtxEffVsMult", "vtxEffVsMult; MC primary mult; vtx reco efficiency", 10000, -0.5, 9999.5);
       mCloneFactorVsMult = new TProfile("cloneFactorVsMult", "cloneFactorVsMult; MC primary mult; n. cloned vertices", 100, -0.5, 9999.5, 0.f, 1.f);
       mVtxResXVsMult = new TProfile("vtxResXVsMult", "vtxRes (X) vs mult; n. contributors; res on X (cm)", 100, -0.5, 9999.5, 0.f, 100.f);
       mVtxResYVsMult = new TProfile("vtxResYVsMult", "vtxRes (Y) vs mult; n. conrtibutors; res on Y (cm)", 100, -0.5, 9999.5, 0.f, 100.f);
