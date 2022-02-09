@@ -100,7 +100,7 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
       if ((strcmp(header->dataOrigin.str, "CPV") == 0) && (strcmp(header->dataDescription.str, "CLUSTERS") == 0)) {
         LOG(info) << "monitorData() : I found clusters in inputs";
-        hasDigits = true;
+        hasClusters = true;
       }
 
       // get payload of a specific input, which is a char array.
