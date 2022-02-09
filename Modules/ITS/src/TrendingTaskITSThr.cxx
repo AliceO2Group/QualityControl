@@ -106,7 +106,7 @@ void TrendingTaskITSThr::trendValues(repository::DatabaseInterface& qcdb)
       auto mo = qcdb.retrieveMO(dataSource.path, "");
       if (!count) {
         std::map<std::string, std::string> entryMetadata = mo->getMetadataMap(); //full list of metadata as a map
-        mMetaData.runNumber = std::stoi(entryMetadata["Run"]);                   //get and set run number
+        mMetaData.runNumber = std::stoi(entryMetadata["RunNumber"]);             //get and set run number
         ntreeentries = (Int_t)mTrend->GetEntries() + 1;
         runlist.push_back(std::to_string(mMetaData.runNumber));
       }
@@ -141,12 +141,15 @@ void TrendingTaskITSThr::storePlots(repository::DatabaseInterface& qcdb)
       countplots = 0;
       ilay++;
     }
-    int colidx = countplots > 13 ? countplots - 14
-                                 : countplots > 6 ? countplots - 7 : countplots;
-    int mkridx = countplots > 13 ? 2 : countplots > 6 ? 1 : 0;
+    int colidx = countplots > 13  ? countplots - 14
+                 : countplots > 6 ? countplots - 7
+                                  : countplots;
+    int mkridx = countplots > 13 ? 2 : countplots > 6 ? 1
+                                                      : 0;
     int add = (plot.name.find("rms") != std::string::npos)
                 ? 1
-                : plot.name.find("dead") != std::string::npos ? 2 : 0;
+              : plot.name.find("dead") != std::string::npos ? 2
+                                                            : 0;
 
     bool isrun = plot.varexp.find("ntreeentries") != std::string::npos ? true : false; // vs run or vs time
     long int n = mTrend->Draw(plot.varexp.c_str(), plot.selection.c_str(),
@@ -156,10 +159,12 @@ void TrendingTaskITSThr::storePlots(repository::DatabaseInterface& qcdb)
     SetGraphStyle(g, col[colidx], mkr[mkridx]);
     double ymin = plot.name.find("rms") != std::string::npos
                     ? 0.
-                    : plot.name.find("dead") != std::string::npos ? 1e-1 : 7.;
+                  : plot.name.find("dead") != std::string::npos ? 1e-1
+                                                                : 7.;
     double ymax = plot.name.find("rms") != std::string::npos
                     ? 5.
-                    : plot.name.find("dead") != std::string::npos ? 5e3 : 14.;
+                  : plot.name.find("dead") != std::string::npos ? 5e3
+                                                                : 14.;
     SetGraphNameAndAxes(g, plot.name, plot.title, isrun ? "run" : "time", ytitles[add], ymin,
                         ymax, runlist);
     ILOG(Info, Support) << " Saving " << plot.name << " to CCDB " << ENDM;
@@ -201,12 +206,15 @@ void TrendingTaskITSThr::storePlots(repository::DatabaseInterface& qcdb)
       countplots = 0;
       ilay++;
     }
-    int colidx = countplots > 13 ? countplots - 14
-                                 : countplots > 6 ? countplots - 7 : countplots;
-    int mkridx = countplots > 13 ? 2 : countplots > 6 ? 1 : 0;
+    int colidx = countplots > 13  ? countplots - 14
+                 : countplots > 6 ? countplots - 7
+                                  : countplots;
+    int mkridx = countplots > 13 ? 2 : countplots > 6 ? 1
+                                                      : 0;
     int add = (plot.name.find("rms") != std::string::npos)
                 ? 1
-                : plot.name.find("dead") != std::string::npos ? 2 : 0;
+              : plot.name.find("dead") != std::string::npos ? 2
+                                                            : 0;
 
     bool isrun = plot.varexp.find("ntreeentries") != std::string::npos ? true : false; // vs run or vs time
 
@@ -222,10 +230,12 @@ void TrendingTaskITSThr::storePlots(repository::DatabaseInterface& qcdb)
     SetGraphStyle(g, col[colidx], mkr[mkridx]);
     double ymin = plot.name.find("rms") != std::string::npos
                     ? 0.
-                    : plot.name.find("dead") != std::string::npos ? 1e-1 : 7.;
+                  : plot.name.find("dead") != std::string::npos ? 1e-1
+                                                                : 7.;
     double ymax = plot.name.find("rms") != std::string::npos
                     ? 5.
-                    : plot.name.find("dead") != std::string::npos ? 5e3 : 14.;
+                  : plot.name.find("dead") != std::string::npos ? 5e3
+                                                                : 14.;
     SetGraphNameAndAxes(g, plot.name,
                         Form("L%d - %s trends", ilay, trendtitles[add].c_str()),
                         isrun ? "run" : "time", ytitles[add], ymin, ymax, runlist);
@@ -307,8 +317,10 @@ void TrendingTaskITSThr::SetGraphNameAndAxes(TGraph* g, std::string name,
 void TrendingTaskITSThr::PrepareLegend(TLegend* leg, int layer)
 {
   for (int istv = 0; istv < nStaves[layer]; istv++) {
-    int colidx = istv > 13 ? istv - 14 : istv > 6 ? istv - 7 : istv;
-    int mkridx = istv > 13 ? 2 : istv > 6 ? 1 : 0;
+    int colidx = istv > 13 ? istv - 14 : istv > 6 ? istv - 7
+                                                  : istv;
+    int mkridx = istv > 13 ? 2 : istv > 6 ? 1
+                                          : 0;
     TGraph* gr = new TGraph(); // dummy histo
     SetGraphStyle(gr, col[colidx], mkr[mkridx]);
     leg->AddEntry(gr, Form("%02d", istv), "pl");

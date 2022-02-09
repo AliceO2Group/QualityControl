@@ -34,7 +34,7 @@ using namespace o2::quality_control;
 namespace o2::quality_control_modules::trd
 {
 
-void PulseHeightCheck::configure(std::string)
+void PulseHeightCheck::configure()
 {
 }
 

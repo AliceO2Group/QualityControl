@@ -20,7 +20,6 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/Reductor.h"
 #include "ITS/TH2XlineReductor.h"
-//#include "../../Common/include/Common/TH1Reductor.h"
 #include <TCanvas.h>
 #include <TH1.h>
 #include <TDatime.h>
@@ -63,9 +62,9 @@ void TrendingTaskITSCluster::initialize(Trigger, framework::ServiceRegistry&)
 void TrendingTaskITSCluster::update(Trigger, framework::ServiceRegistry& services)
 {
   auto& qcdb = services.get<repository::DatabaseInterface>();
-  printf("test1 \n");
+
   trendValues(qcdb);
-  printf("test2 \n");
+
   storePlots(qcdb);
   storeTrend(qcdb);
 }
@@ -309,6 +308,7 @@ void TrendingTaskITSCluster::storePlots(repository::DatabaseInterface& qcdb)
       countplots = 0;
       ilay++;
     }
+
     colidx = countplots > 13  ? countplots - 14
              : countplots > 6 ? countplots - 7
                               : countplots;
@@ -327,6 +327,7 @@ void TrendingTaskITSCluster::storePlots(repository::DatabaseInterface& qcdb)
       index = 0;
     bool isrun = plot.varexp.find("ntreeentries") != std::string::npos ? true : false; // vs run or vs time
     long int n = mTrend->Draw(plot.varexp.c_str(), plot.selection.c_str(), "goff");    // plot.option.c_str());
+
     // post processing plot
     TGraph* g = new TGraph(n, mTrend->GetV2(), mTrend->GetV1());
     SetGraphStyle(g, col[colidx], mkr[mkridx]);

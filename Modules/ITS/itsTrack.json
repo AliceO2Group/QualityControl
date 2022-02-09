@@ -3,7 +3,7 @@
     "config": {
       "database": {
         "implementation": "CCDB",
-        "host": "ccdb-test.cern.ch:8080",
+        "host": "188.184.2.55:8080",
         "username": "not_applicable",
         "password": "not_applicable",
         "name": "not_applicable"
@@ -19,7 +19,7 @@
         "url": ""
       },
       "conditionDB": {
-        "url": "ccdb-test.cern.ch:8080"
+        "url": "188.184.2.55:8080"
       }
     },
    "tasks" : {
@@ -37,9 +37,10 @@
         },
         "location" : "remote",
         "taskParameters" : {
-	  "vertexXYsize" : "0.1",
+	  "vertexXYsize" : "0.5",
 	  "vertexZsize": "15",
-	  "vertexRsize": "0.1",
+	  "vertexRsize": "0.8",
+	  "NtracksMAX"  : "100",
           "doTTree": "0"
         }
 
@@ -55,7 +56,7 @@
         "dataSource" : [ {
           "type" : "Task",
           "name" : "ITSTrackTask",
-          "MOs" : ["NClusters","PhiDistribution","AngularDistribution","ClusterUsage","EtaDistribution","VertexCoordinates","VertexRvsZ","VertexZ"]
+          "MOs" : ["NClusters","PhiDistribution","AngularDistribution","EtaDistribution","VertexCoordinates","VertexRvsZ","VertexZ"]
         } ]
       }
     }
@@ -66,7 +67,7 @@
              "id" : "tracks",
              "active" : "true",
              "machines" : [],
-             "query" : "Vertices:ITS/VERTICES/0;tracks:ITS/TRACKS/0;rofs:ITS/ITSTrackROF/0;compclus:ITS/COMPCLUSTERS/0",
+             "query" : "Vertices:ITS/VERTICES/0;tracks:ITS/TRACKS/0;rofs:ITS/ITSTrackROF/0;clustersrof:ITS/CLUSTERSROF/0;compclus:ITS/COMPCLUSTERS/0",
              "samplingConditions" : [
                {
                  "condition" : "random",

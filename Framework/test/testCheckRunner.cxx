@@ -41,15 +41,13 @@ BOOST_AUTO_TEST_CASE(test_getDetector)
   CheckConfig config;
   config.detectorName = "TST";
 
-  vector<Check> checks;
+  vector<CheckConfig> checks;
   BOOST_CHECK_EQUAL(CheckRunner::getDetectorName(checks), "");
-  Check checkTST(config);
-  checks.push_back(checkTST);
+  checks.push_back(config);
   BOOST_CHECK_EQUAL(CheckRunner::getDetectorName(checks), "TST");
-  checks.push_back(checkTST);
+  checks.push_back(config);
   BOOST_CHECK_EQUAL(CheckRunner::getDetectorName(checks), "TST");
   config.detectorName = "EMC";
-  Check checkEMC(config);
-  checks.push_back(checkEMC);
+  checks.push_back(config);
   BOOST_CHECK_EQUAL(CheckRunner::getDetectorName(checks), "MANY");
 }

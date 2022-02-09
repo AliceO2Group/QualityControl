@@ -178,6 +178,8 @@ class DatabaseInterface
    * @param objectName Name of the object
    */
   virtual void truncate(std::string taskName, std::string objectName) = 0;
+
+  virtual void setMaxObjectSize(size_t maxObjectSize) = 0;
 };
 
 } // namespace o2::quality_control::repository

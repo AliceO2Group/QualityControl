@@ -39,7 +39,7 @@ class QcMFTReadoutCheck : public o2::quality_control::checker::CheckInterface
   ~QcMFTReadoutCheck() override = default;
 
   // Override interface
-  void configure(std::string name) override;
+  void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
@@ -50,11 +50,11 @@ class QcMFTReadoutCheck : public o2::quality_control::checker::CheckInterface
   std::vector<int> mVectorOfWarningBins;
 
   TLatex* drawLatex(double xmin, double ymin, Color_t color, TString text);
-  void resetVector(std::vector<int> vector);
-  Quality checkQualityStatus(TH1F* histo, std::vector<int> vector);
-  void writeMessages(TH1F* histo, std::vector<int> vector, Quality checkResult);
+  void resetVector(std::vector<int>& vector);
+  Quality checkQualityStatus(TH1F* histo, std::vector<int>& vector);
+  void writeMessages(TH1F* histo, std::vector<int>& vector, Quality checkResult);
 
-  ClassDefOverride(QcMFTReadoutCheck, 1);
+  ClassDefOverride(QcMFTReadoutCheck, 2);
 };
 
 } // namespace o2::quality_control_modules::mft

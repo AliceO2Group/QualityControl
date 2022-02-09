@@ -36,7 +36,7 @@ class CheckRawMultiplicity : public o2::quality_control::checker::CheckInterface
   ~CheckRawMultiplicity() override = default;
 
   // Override interface
-  void configure(std::string name) override;
+  void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult) override;
   std::string getAcceptedType() override;
@@ -70,7 +70,7 @@ class CheckRawMultiplicity : public o2::quality_control::checker::CheckInterface
   /// Messages to print on the output PAD
   MessagePad mShifterMessages;
 
-  ClassDefOverride(CheckRawMultiplicity, 1);
+  ClassDefOverride(CheckRawMultiplicity, 2);
 };
 
 } // namespace o2::quality_control_modules::tof

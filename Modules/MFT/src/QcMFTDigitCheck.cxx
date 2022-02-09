@@ -33,7 +33,7 @@ using namespace std;
 namespace o2::quality_control_modules::mft
 {
 
-void QcMFTDigitCheck::configure(std::string) {}
+void QcMFTDigitCheck::configure() {}
 
 Quality QcMFTDigitCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {

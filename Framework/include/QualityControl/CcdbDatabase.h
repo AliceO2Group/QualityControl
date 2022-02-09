@@ -98,6 +98,8 @@ class CcdbDatabase : public DatabaseInterface
    */
   std::vector<uint64_t> getTimestampsForObject(std::string path);
 
+  void setMaxObjectSize(size_t maxObjectSize) override;
+
  private:
   /**
    * \brief Load StreamerInfos from a ROOT file.
@@ -118,6 +120,7 @@ class CcdbDatabase : public DatabaseInterface
 
   o2::ccdb::CcdbApi ccdbApi;
   std::string mUrl;
+  size_t mMaxObjectSize = 2097152; // 2MB by default
 };
 
 } // namespace o2::quality_control::repository

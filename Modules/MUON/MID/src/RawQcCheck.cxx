@@ -26,7 +26,7 @@ using namespace std;
 namespace o2::quality_control_modules::mid
 {
 
-void RawQcCheck::configure(std::string) {}
+void RawQcCheck::configure() {}
 
 Quality RawQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {

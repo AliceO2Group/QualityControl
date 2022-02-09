@@ -29,7 +29,7 @@
 namespace o2::quality_control_modules::tpc
 {
 
-void CheckOfTrendings::configure(std::string) {}
+void CheckOfTrendings::configure() {}
 Quality CheckOfTrendings::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
   Quality result = Quality::Null;

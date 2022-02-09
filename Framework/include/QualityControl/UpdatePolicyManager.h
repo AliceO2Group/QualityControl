@@ -122,6 +122,12 @@ class UpdatePolicyManager
    * @param policyHelper
    */
   void addPolicy(std::string actorName, UpdatePolicyType policyType, std::vector<std::string> objectNames, bool allObjects, bool policyHelper);
+
+  /**
+   * Remove all policies and reset revisions.
+   */
+  void reset();
+
   /**
    * Checks whether the given actor is ready or not.
    * @param actorName

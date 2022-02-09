@@ -24,7 +24,7 @@ using namespace std;
 namespace o2::quality_control_modules::tof
 {
 
-void CheckRawMultiplicity::configure(std::string)
+void CheckRawMultiplicity::configure()
 {
   if (auto param = mCustomParameters.find("RunningMode"); param != mCustomParameters.end()) {
     mRunningMode = ::atoi(param->second.c_str());

@@ -4,7 +4,7 @@
     "config": {
       "database": {
         "implementation": "CCDB",
-        "host": "ccdb-test.cern.ch:8080",
+        "host": "188.184.2.55:8080",
         "username": "not_applicable",
         "password": "not_applicable",
         "name": "not_applicable"
@@ -20,7 +20,7 @@
         "url": ""
       },
       "conditionDB": {
-        "url": "ccdb-test.cern.ch:8080"
+        "url": "188.184.2.55:8080"
       }
     },
    "tasks": {
@@ -41,7 +41,7 @@
                     "layer": "1111111",
                     "clusterDictionaryPath": "/home/its/aisakov/workdir/ITSdictionary.bin",
                     "geomPath": "./o2sim_geometry.root",
-                    "nThreads": "4"
+                    "nThreads": "1"
         }
  
       }
@@ -68,7 +68,7 @@
     	    "id": "compclus",
             "active": "true",
             "machines": [],
-            "query": "compclus:ITS/COMPCLUSTERS/0;clustersrof:ITS/CLUSTERSROF/0",
+            "query": "compclus:ITS/COMPCLUSTERS/0;clustersrof:ITS/CLUSTERSROF/0;patterns:ITS/PATTERNS/0",
             "samplingConditions": [
                 {
                     "condition": "random",

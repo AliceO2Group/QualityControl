@@ -29,6 +29,10 @@
 #include "QualityControl/DatabaseFactory.h"
 #include "QualityControl/ServiceDiscovery.h"
 #include "QualityControl/runnerUtils.h"
+#include "QualityControl/InfrastructureSpecReader.h"
+#include "QualityControl/CheckRunnerFactory.h"
+
+#include <TSystem.h>
 
 using namespace std::chrono;
 using namespace AliceO2::Common;
@@ -67,7 +71,7 @@ std::string CheckRunner::createCheckRunnerName(const std::vector<CheckConfig>& c
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     "abcdefghijklmnopqrstuvwxyz";
   const int NAME_LEN = 4;
-  std::string name(CheckRunner::createCheckRunnerIdString() + "-");
+  std::string name(CheckRunner::createCheckRunnerIdString() + "-" + getDetectorName(checks));
 
   if (checks.size() == 1) {
     // If single check, use the check name
@@ -99,7 +103,7 @@ std::string CheckRunner::createCheckRunnerName(const std::vector<CheckConfig>& c
 
 std::string CheckRunner::createCheckRunnerFacility(std::string deviceName)
 {
-  // it starts with "check/" and is followed by the unique part of the device name truncated to a maximum of 32 characters.f
+  // it starts with "check/" and is followed by the unique part of the device name truncated to a maximum of 32 characters.
   string facilityName = "check/" + deviceName.substr(CheckRunner::createCheckRunnerIdString().length() + 1, string::npos);
   facilityName = facilityName.substr(0, 32);
   return facilityName;
@@ -122,7 +126,8 @@ o2::framework::Outputs CheckRunner::collectOutputs(const std::vector<CheckConfig
 }
 
 CheckRunner::CheckRunner(CheckRunnerConfig checkRunnerConfig, const std::vector<CheckConfig>& checkConfigs)
-  : mDeviceName(createCheckRunnerName(checkConfigs)),
+  : mDetectorName(getDetectorName(checkConfigs)),
+    mDeviceName(createCheckRunnerName(checkConfigs)),
     mConfig(std::move(checkRunnerConfig)),
     /* All checks have the same Input */
     mInputs(checkConfigs.front().inputSpecs),
@@ -133,14 +138,13 @@ CheckRunner::CheckRunner(CheckRunnerConfig checkRunnerConfig, const std::vector<
     mTotalNumberMOStored(0),
     mTotalQOSent(0)
 {
-  for (const auto& checkConfig : checkConfigs) {
-    mChecks.emplace_back(checkConfig);
+  for (auto& checkConfig : checkConfigs) {
+    mChecks.emplace(checkConfig.name, checkConfig);
   }
 }
 
 CheckRunner::CheckRunner(CheckRunnerConfig checkRunnerConfig, InputSpec input)
   : mDeviceName(createSinkCheckRunnerName(input)),
-    mChecks{},
     mConfig(std::move(checkRunnerConfig)),
     mInputs{ input },
     mOutputs{},
@@ -159,24 +163,47 @@ CheckRunner::~CheckRunner()
   }
 }
 
+void CheckRunner::refreshConfig(InitContext& iCtx)
+{
+  try {
+    // get the tree
+    auto updatedTree = iCtx.options().get<boost::property_tree::ptree>("qcConfiguration");
+
+    if (updatedTree.empty()) {
+      ILOG(Warning, Devel) << "Templated config tree is empty, we continue with the original one" << ENDM;
+    } else {
+      if (gSystem->Getenv("O2_QC_DEBUG_CONFIG_TREE")) { // until we are sure it works, keep a backdoor
+        ILOG(Debug, Devel) << "We print the tree we got from the ECS via DPL : " << ENDM;
+        printTree(updatedTree);
+      }
+
+      // prepare the information we need
+      auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(updatedTree);
+
+      // Use the config to reconfigure the check runner.
+      // The configs for the checks we find in the config and in our map are updated.
+      // Topology changes are ignored: New checks are ignored. Removed checks are ignored.
+      for (const auto& checkSpec : infrastructureSpec.checks) {
+        // search if we have this check in this runner and replace it
+        if (mChecks.find(checkSpec.checkName) != mChecks.end()) {
+          auto checkConfig = Check::extractConfig(infrastructureSpec.common, checkSpec);
+          mChecks.erase(checkConfig.name);
+          mChecks.emplace(checkConfig.name, checkConfig);
+          ILOG(Debug, Devel) << "Check " << checkSpec.checkName << " has been updated" << ENDM;
+        }
+      }
+    }
+  } catch (std::invalid_argument& error) {
+    // ignore the error, we just skip the update of the config file. It can be legit, e.g. in command line mode
+    ILOG(Warning, Devel) << "Could not get updated config tree in TaskRunner::init() - `qcConfiguration` could not be retrieved" << ENDM;
+  }
+}
+
 void CheckRunner::init(framework::InitContext& iCtx)
 {
-  InfoLoggerContext* ilContext = nullptr;
-  AliceO2::InfoLogger::InfoLogger* il = nullptr;
   try {
-    ilContext = &iCtx.services().get<AliceO2::InfoLogger::InfoLoggerContext>();
-    il = &iCtx.services().get<AliceO2::InfoLogger::InfoLogger>();
-  } catch (const RuntimeErrorRef& err) {
-    ILOG(Error) << "Could not find the DPL InfoLogger." << ENDM;
-  }
-
-  try {
-    QcInfoLogger::init(createCheckRunnerFacility(mDeviceName),
-                       mConfig.infologgerFilterDiscardDebug,
-                       mConfig.infologgerDiscardLevel,
-                       il,
-                       ilContext);
-    QcInfoLogger::setDetector(CheckRunner::getDetectorName(mChecks));
+    initInfologger(iCtx);
+    refreshConfig(iCtx);
     initDatabase();
     initMonitoring();
     initServiceDiscovery();
@@ -186,7 +213,8 @@ void CheckRunner::init(framework::InitContext& iCtx)
     iCtx.services().get<CallbackService>().set(CallbackService::Id::Reset, [this]() { reset(); });
     iCtx.services().get<CallbackService>().set(CallbackService::Id::Stop, [this]() { stop(); });
 
-    for (auto& check : mChecks) {
+    updatePolicyManager.reset();
+    for (auto& [checkName, check] : mChecks) {
       check.init();
       updatePolicyManager.addPolicy(check.getName(), check.getUpdatePolicyType(), check.getObjectsNames(), check.getAllObjectsOption(), false);
     }
@@ -293,7 +321,7 @@ QualityObjectsType CheckRunner::check()
                       << ENDM;
 
   QualityObjectsType allQOs;
-  for (auto& check : mChecks) {
+  for (auto& [checkName, check] : mChecks) {
     if (updatePolicyManager.isReady(check.getName())) {
       auto newQOs = check.check(mMonitorObjects);
       mTotalNumberCheckExecuted += newQOs.size();
@@ -302,9 +330,9 @@ QualityObjectsType CheckRunner::check()
       newQOs.clear();
 
       // Was checked, update latest revision
-      updatePolicyManager.updateActorRevision(check.getName());
+      updatePolicyManager.updateActorRevision(checkName);
     } else {
-      ILOG(Info, Support) << "Monitor Objects for the check '" << check.getName() << "' are not ready, ignoring" << ENDM;
+      ILOG(Info, Support) << "Monitor Objects for the check '" << checkName << "' are not ready, ignoring" << ENDM;
     }
   }
   return allQOs;
@@ -345,12 +373,8 @@ void CheckRunner::send(QualityObjectsType& qualityObjects, framework::DataAlloca
 
   ILOG(Info, Support) << "Sending " << qualityObjects.size() << " quality objects" << ENDM;
   for (const auto& qo : qualityObjects) {
-
-    const auto& correspondingCheck = std::find_if(mChecks.begin(), mChecks.end(), [checkName = qo->getCheckName()](const auto& check) {
-      return check.getName() == checkName;
-    });
-
-    auto outputSpec = correspondingCheck->getOutputSpec();
+    const auto& correspondingCheck = mChecks.at(qo->getCheckName());
+    auto outputSpec = correspondingCheck.getOutputSpec();
     auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(outputSpec);
     allocator.snapshot(
       framework::Output{ concreteOutput.origin, concreteOutput.description, concreteOutput.subSpec, outputSpec.lifetime }, *qo);
@@ -417,6 +441,23 @@ void CheckRunner::initServiceDiscovery()
   ILOG(Info, Support) << "ServiceDiscovery initialized" << ENDM;
 }
 
+void CheckRunner::initInfologger(framework::InitContext& iCtx)
+{
+  InfoLoggerContext* ilContext = nullptr;
+  AliceO2::InfoLogger::InfoLogger* il = nullptr;
+  try {
+    ilContext = &iCtx.services().get<AliceO2::InfoLogger::InfoLoggerContext>();
+    il = &iCtx.services().get<AliceO2::InfoLogger::InfoLogger>();
+  } catch (const RuntimeErrorRef& err) {
+    ILOG(Error) << "Could not find the DPL InfoLogger." << ENDM;
+  }
+  QcInfoLogger::init(createCheckRunnerFacility(mDeviceName),
+                     mConfig.infologgerFilterDiscardDebug,
+                     mConfig.infologgerDiscardLevel,
+                     il,
+                     ilContext);
+}
+
 void CheckRunner::start(const ServiceRegistry& services)
 {
   mActivity.mId = computeRunNumber(services, mConfig.fallbackRunNumber);
@@ -458,11 +499,11 @@ void CheckRunner::reset()
   mTotalQOSent = 0;
 }
 
-std::string CheckRunner::getDetectorName(std::vector<Check> checks)
+std::string CheckRunner::getDetectorName(const std::vector<CheckConfig> checks)
 {
   std::string detectorName;
   for (auto& check : checks) {
-    const std::string& thisDetector = check.getDetector();
+    const std::string& thisDetector = check.detectorName;
     if (detectorName.length() == 0) {
       detectorName = thisDetector;
     } else if (thisDetector != detectorName) {
