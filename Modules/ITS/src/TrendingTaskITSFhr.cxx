@@ -45,7 +45,7 @@ void TrendingTaskITSFhr::initialize(Trigger, framework::ServiceRegistry&)
                                       // continue trending. maybe do it
                                       // optionally?
   mTrend->SetName(PostProcessingInterface::getName().c_str());
-  //mTrend->Branch("meta", &mMetaData, "runNumber/I");
+  // mTrend->Branch("meta", &mMetaData, "runNumber/I");
   mTrend->Branch("runNumber", &mMetaData.runNumber);
   mTrend->Branch("ntreeentries", &ntreeentries);
   mTrend->Branch("time", &mTime);
@@ -108,8 +108,8 @@ void TrendingTaskITSFhr::trendValues(repository::DatabaseInterface& qcdb)
       // auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name);
       auto mo = qcdb.retrieveMO(dataSource.path, "");
       if (!count) {
-        std::map<std::string, std::string> entryMetadata = mo->getMetadataMap(); //full list of metadata as a map
-        mMetaData.runNumber = std::stoi(entryMetadata["RunNumber"]);             //get and set run number
+        std::map<std::string, std::string> entryMetadata = mo->getMetadataMap(); // full list of metadata as a map
+        mMetaData.runNumber = std::stoi(entryMetadata["RunNumber"]);             // get and set run number
         ntreeentries = (Int_t)mTrend->GetEntries() + 1;
         runlist.push_back(std::to_string(mMetaData.runNumber));
       }
@@ -140,23 +140,21 @@ void TrendingTaskITSFhr::storePlots(repository::DatabaseInterface& qcdb)
   int countplots = 0;
   int ilay = 0;
   double ymin[NTRENDSFHR] = { 1e-15, 1e-1, -.5, 1e-9 };
-  double ymax[NTRENDSFHR] = { 1e-3, 1e-5, 9.5, 1 };
+  double ymaxIB[NTRENDSFHR] = { 1e-3, 1e-5, 9.5, 1 };
+  double ymaxOB[NTRENDSFHR] = { 1e-3, 1e-5, 30.5, 1 };
 
-  //Loop on plots
+  // Loop on plots
   for (const auto& plot : mConfig.plots) {
     if (countplots > nStaves[ilay] - 1) {
       countplots = 0;
       ilay++;
     }
-    int colidx = countplots > 13  ? countplots - 14
-                 : countplots > 6 ? countplots - 7
-                                  : countplots;
-    int mkridx = countplots > 13 ? 2 : countplots > 6 ? 1
-                                                      : 0;
+    int colidx = countplots % 7;
+    int mkridx = countplots / 7;
     int index = 0;
     if (plot.name.find("occ") != std::string::npos)
       index = 3;
-    else if (plot.name.find("chips") != std::string::npos)
+    else if (plot.name.find("chips") != std::string::npos || plot.name.find("lanes") != std::string::npos)
       index = 2;
     else if (plot.name.find("stddev") != std::string::npos)
       index = 1;
@@ -168,7 +166,12 @@ void TrendingTaskITSFhr::storePlots(repository::DatabaseInterface& qcdb)
     // post processing plot
     TGraph* g = new TGraph(n, mTrend->GetV2(), mTrend->GetV1());
     SetGraphStyle(g, col[colidx], mkr[mkridx]);
-    SetGraphNameAndAxes(g, plot.name, plot.title, isrun ? "run" : "time", ytitles[index], ymin[index], ymax[index], runlist);
+    if (ilay < 3) {
+      SetGraphNameAndAxes(g, plot.name, plot.title, isrun ? "run" : "time", ytitlesIB[index], ymin[index], ymaxIB[index], runlist);
+    } else {
+      SetGraphNameAndAxes(g, plot.name, plot.title, isrun ? "run" : "time", ytitlesOB[index], ymin[index], ymaxOB[index], runlist);
+    }
+
     ILOG(Info, Support) << " Saving " << plot.name << " to CCDB " << ENDM;
     auto mo = std::make_shared<MonitorObject>(g, mConfig.taskName, "o2::quality_control_modules::its::TrendingTaskITSFhr", mConfig.detectorName);
     mo->setIsOwner(false);
@@ -188,11 +191,19 @@ void TrendingTaskITSFhr::storePlots(repository::DatabaseInterface& qcdb)
   TCanvas* c[NLAYERS * NTRENDSFHR];
   TLegend* legstaves[NLAYERS];
   for (int idx = 0; idx < NLAYERS * NTRENDSFHR; idx++) { // define canvases
-    c[idx] = new TCanvas(
-      Form("fhr_%s_trends_L%d", trendnames[idx % NTRENDSFHR].c_str(),
-           idx / NTRENDSFHR),
-      Form("fhr_%s_trends_L%d", trendnames[idx % NTRENDSFHR].c_str(),
-           idx / NTRENDSFHR));
+    if (idx < 13) {
+      c[idx] = new TCanvas(
+        Form("fhr_%s_trends_L%d", trendnamesIB[idx % NTRENDSFHR].c_str(),
+             idx / NTRENDSFHR),
+        Form("fhr_%s_trends_L%d", trendnamesIB[idx % NTRENDSFHR].c_str(),
+             idx / NTRENDSFHR));
+    } else {
+      c[idx] = new TCanvas(
+        Form("fhr_%s_trends_L%d", trendnamesOB[idx % NTRENDSFHR].c_str(),
+             idx / NTRENDSFHR),
+        Form("fhr_%s_trends_L%d", trendnamesOB[idx % NTRENDSFHR].c_str(),
+             idx / NTRENDSFHR));
+    }
   }
 
   for (int ilay = 0; ilay < NLAYERS; ilay++) { // define legends
@@ -207,15 +218,12 @@ void TrendingTaskITSFhr::storePlots(repository::DatabaseInterface& qcdb)
       countplots = 0;
       ilay++;
     }
-    int colidx = countplots > 13  ? countplots - 14
-                 : countplots > 6 ? countplots - 7
-                                  : countplots;
-    int mkridx = countplots > 13 ? 2 : countplots > 6 ? 1
-                                                      : 0;
+    int colidx = countplots % 7;
+    int mkridx = countplots / 7;
     int index = 0;
     if (plot.name.find("occ") != std::string::npos)
       index = 3;
-    else if (plot.name.find("chips") != std::string::npos)
+    else if (plot.name.find("chips") != std::string::npos || plot.name.find("lanes") != std::string::npos)
       index = 2;
     else if (plot.name.find("stddev") != std::string::npos)
       index = 1;
@@ -234,21 +242,37 @@ void TrendingTaskITSFhr::storePlots(repository::DatabaseInterface& qcdb)
     // post processing plot
     TGraph* g = new TGraph(n, mTrend->GetV2(), mTrend->GetV1());
     SetGraphStyle(g, col[colidx], mkr[mkridx]);
-    SetGraphNameAndAxes(g, plot.name,
-                        Form("L%d - %s trends", ilay, trendtitles[index].c_str()),
-                        isrun ? "run" : "time", ytitles[index], ymin[index], ymax[index], runlist);
-    ILOG(Info, Support) << " Drawing " << plot.name << ENDM;
+    if (ilay < 3) {
+      SetGraphNameAndAxes(g, plot.name,
+                          Form("L%d - %s trends", ilay, trendtitlesIB[index].c_str()),
+                          isrun ? "run" : "time", ytitlesIB[index], ymin[index], ymaxIB[index], runlist);
 
-    if (!countplots && isrun) { //fake histo with runs as x-axis labels
-      int npoints = g->GetN();
-      TH1F* hfake = new TH1F("hfake", Form("%s; %s; %s", g->GetTitle(), g->GetXaxis()->GetTitle(), g->GetYaxis()->GetTitle()), npoints, 0.5, (double)npoints + 0.5);
-      hfake->GetYaxis()->SetRangeUser(ymin[index], ymax[index]);
-      hfake->GetXaxis()->SetNdivisions(505);
-      for (int ir = 0; ir < (int)runlist.size(); ir++)
-        hfake->GetXaxis()->SetBinLabel(ir + 1, runlist[ir].c_str());
-      hfake->DrawCopy();
-      delete hfake;
+      if (!countplots && isrun) { // fake histo with runs as x-axis labels
+        int npoints = g->GetN();
+        TH1F* hfake = new TH1F("hfake", Form("%s; %s; %s", g->GetTitle(), g->GetXaxis()->GetTitle(), g->GetYaxis()->GetTitle()), npoints, 0.5, (double)npoints + 0.5);
+        hfake->GetYaxis()->SetRangeUser(ymin[index], ymaxIB[index]);
+        hfake->GetXaxis()->SetNdivisions(505);
+        for (int ir = 0; ir < (int)runlist.size(); ir++)
+          hfake->GetXaxis()->SetBinLabel(ir + 1, runlist[ir].c_str());
+        hfake->DrawCopy();
+        delete hfake;
+      }
+    } else {
+      SetGraphNameAndAxes(g, plot.name,
+                          Form("L%d - %s trends", ilay, trendtitlesOB[index].c_str()),
+                          isrun ? "run" : "time", ytitlesOB[index], ymin[index], ymaxOB[index], runlist);
+      if (!countplots && isrun) { // fake histo with runs as x-axis labels
+        int npoints = g->GetN();
+        TH1F* hfake = new TH1F("hfake", Form("%s; %s; %s", g->GetTitle(), g->GetXaxis()->GetTitle(), g->GetYaxis()->GetTitle()), npoints, 0.5, (double)npoints + 0.5);
+        hfake->GetYaxis()->SetRangeUser(ymin[index], ymaxOB[index]);
+        hfake->GetXaxis()->SetNdivisions(505);
+        for (int ir = 0; ir < (int)runlist.size(); ir++)
+          hfake->GetXaxis()->SetBinLabel(ir + 1, runlist[ir].c_str());
+        hfake->DrawCopy();
+        delete hfake;
+      }
     }
+    ILOG(Info, Support) << " Drawing " << plot.name << ENDM;
 
     g->DrawClone((!countplots && !isrun) ? plot.option.c_str() : Form("%s same", plot.option.c_str()));
     if (countplots == nStaves[ilay] - 1)
@@ -315,10 +339,8 @@ void TrendingTaskITSFhr::SetGraphNameAndAxes(TGraph* g, std::string name,
 void TrendingTaskITSFhr::PrepareLegend(TLegend* leg, int layer)
 {
   for (int istv = 0; istv < nStaves[layer]; istv++) {
-    int colidx = istv > 13 ? istv - 14 : istv > 6 ? istv - 7
-                                                  : istv;
-    int mkridx = istv > 13 ? 2 : istv > 6 ? 1
-                                          : 0;
+    int colidx = istv % 7;
+    int mkridx = istv / 7;
     TGraph* gr = new TGraph(); // dummy histo
     SetGraphStyle(gr, col[colidx], mkr[mkridx]);
     leg->AddEntry(gr, Form("%02d", istv), "pl");

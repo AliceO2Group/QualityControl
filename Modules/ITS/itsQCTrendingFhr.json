@@ -78,7 +78,151 @@
                       "qc/ITS/MO/FHRTask/Occupancy/Layer2/Stave16/Layer2Stave16HITMAP",
                       "qc/ITS/MO/FHRTask/Occupancy/Layer2/Stave17/Layer2Stave17HITMAP",
                       "qc/ITS/MO/FHRTask/Occupancy/Layer2/Stave18/Layer2Stave18HITMAP",
-                      "qc/ITS/MO/FHRTask/Occupancy/Layer2/Stave19/Layer2Stave19HITMAP"],
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer2/Stave19/Layer2Stave19HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer3/Stave0/Layer3Stave0HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer3/Stave1/Layer3Stave1HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer3/Stave2/Layer3Stave2HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer3/Stave3/Layer3Stave3HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer3/Stave4/Layer3Stave4HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer3/Stave5/Layer3Stave5HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer3/Stave6/Layer3Stave6HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer3/Stave7/Layer3Stave7HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer3/Stave8/Layer3Stave8HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer3/Stave9/Layer3Stave9HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer3/Stave10/Layer3Stave10HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer3/Stave11/Layer3Stave11HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer3/Stave12/Layer3Stave12HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer3/Stave13/Layer3Stave13HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer3/Stave14/Layer3Stave14HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer3/Stave15/Layer3Stave15HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer3/Stave16/Layer3Stave16HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer3/Stave17/Layer3Stave17HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer3/Stave18/Layer3Stave18HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer3/Stave19/Layer3Stave19HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer3/Stave20/Layer3Stave20HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer3/Stave21/Layer3Stave21HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer3/Stave22/Layer3Stave22HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer3/Stave23/Layer3Stave23HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer4/Stave0/Layer4Stave0HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer4/Stave1/Layer4Stave1HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer4/Stave2/Layer4Stave2HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer4/Stave3/Layer4Stave3HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer4/Stave4/Layer4Stave4HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer4/Stave5/Layer4Stave5HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer4/Stave6/Layer4Stave6HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer4/Stave7/Layer4Stave7HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer4/Stave8/Layer4Stave8HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer4/Stave9/Layer4Stave9HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer4/Stave10/Layer4Stave10HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer4/Stave11/Layer4Stave11HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer4/Stave12/Layer4Stave12HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer4/Stave13/Layer4Stave13HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer4/Stave14/Layer4Stave14HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer4/Stave15/Layer4Stave15HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer4/Stave16/Layer4Stave16HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer4/Stave17/Layer4Stave17HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer4/Stave18/Layer4Stave18HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer4/Stave19/Layer4Stave19HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer4/Stave20/Layer4Stave20HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer4/Stave21/Layer4Stave21HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer4/Stave22/Layer4Stave22HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer4/Stave23/Layer4Stave23HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer4/Stave24/Layer4Stave24HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer4/Stave25/Layer4Stave25HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer4/Stave26/Layer4Stave26HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer4/Stave27/Layer4Stave27HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer4/Stave28/Layer4Stave28HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer4/Stave29/Layer4Stave29HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave0/Layer5Stave0HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave1/Layer5Stave1HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave2/Layer5Stave2HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave3/Layer5Stave3HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave4/Layer5Stave4HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave5/Layer5Stave5HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave6/Layer5Stave6HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave7/Layer5Stave7HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave8/Layer5Stave8HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave9/Layer5Stave9HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave10/Layer5Stave10HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave11/Layer5Stave11HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave12/Layer5Stave12HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave13/Layer5Stave13HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave14/Layer5Stave14HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave15/Layer5Stave15HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave16/Layer5Stave16HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave17/Layer5Stave17HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave18/Layer5Stave18HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave19/Layer5Stave19HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave20/Layer5Stave20HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave21/Layer5Stave21HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave22/Layer5Stave22HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave23/Layer5Stave23HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave24/Layer5Stave24HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave25/Layer5Stave25HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave26/Layer5Stave26HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave27/Layer5Stave27HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave28/Layer5Stave28HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave29/Layer5Stave29HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave30/Layer5Stave30HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave31/Layer5Stave31HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave32/Layer5Stave32HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave33/Layer5Stave33HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave34/Layer5Stave34HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave35/Layer5Stave35HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave36/Layer5Stave36HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave37/Layer5Stave37HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave38/Layer5Stave38HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave39/Layer5Stave39HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave40/Layer5Stave40HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Stave41/Layer5Stave41HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave0/Layer6Stave0HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave1/Layer6Stave1HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave2/Layer6Stave2HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave3/Layer6Stave3HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave4/Layer6Stave4HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave5/Layer6Stave5HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave6/Layer6Stave6HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave7/Layer6Stave7HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave8/Layer6Stave8HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave9/Layer6Stave9HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave10/Layer6Stave10HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave11/Layer6Stave11HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave12/Layer6Stave12HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave13/Layer6Stave13HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave14/Layer6Stave14HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave15/Layer6Stave15HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave16/Layer6Stave16HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave17/Layer6Stave17HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave18/Layer6Stave18HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave19/Layer6Stave19HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave20/Layer6Stave20HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave21/Layer6Stave21HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave22/Layer6Stave22HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave23/Layer6Stave23HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave24/Layer6Stave24HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave25/Layer6Stave25HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave26/Layer6Stave26HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave27/Layer6Stave27HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave28/Layer6Stave28HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave29/Layer6Stave29HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave30/Layer6Stave30HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave31/Layer6Stave31HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave32/Layer6Stave32HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave33/Layer6Stave33HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave34/Layer6Stave34HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave35/Layer6Stave35HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave36/Layer6Stave36HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave37/Layer6Stave37HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave38/Layer6Stave38HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave39/Layer6Stave39HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave40/Layer6Stave40HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave41/Layer6Stave41HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave42/Layer6Stave42HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave43/Layer6Stave43HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave44/Layer6Stave44HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave45/Layer6Stave45HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave46/Layer6Stave46HITMAP",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Stave47/Layer6Stave47HITMAP"],
             "names": ["NoisyPixels_l0_0",
                       "NoisyPixels_l0_1",
                       "NoisyPixels_l0_2",
@@ -126,7 +270,151 @@
                       "NoisyPixels_l2_16",
                       "NoisyPixels_l2_17",
                       "NoisyPixels_l2_18",
-                      "NoisyPixels_l2_19"],
+                      "NoisyPixels_l2_19",
+                      "NoisyPixels_l3_0",
+                      "NoisyPixels_l3_1",
+                      "NoisyPixels_l3_2",
+                      "NoisyPixels_l3_3",
+                      "NoisyPixels_l3_4",
+                      "NoisyPixels_l3_5",
+                      "NoisyPixels_l3_6",
+                      "NoisyPixels_l3_7",
+                      "NoisyPixels_l3_8",
+                      "NoisyPixels_l3_9",
+                      "NoisyPixels_l3_10",
+                      "NoisyPixels_l3_11",
+                      "NoisyPixels_l3_12",
+                      "NoisyPixels_l3_13",
+                      "NoisyPixels_l3_14",
+                      "NoisyPixels_l3_15",
+                      "NoisyPixels_l3_16",
+                      "NoisyPixels_l3_17",
+                      "NoisyPixels_l3_18",
+                      "NoisyPixels_l3_19",
+                      "NoisyPixels_l3_20",
+                      "NoisyPixels_l3_21",
+                      "NoisyPixels_l3_22",
+                      "NoisyPixels_l3_23",
+                      "NoisyPixels_l4_0",
+                      "NoisyPixels_l4_1",
+                      "NoisyPixels_l4_2",
+                      "NoisyPixels_l4_3",
+                      "NoisyPixels_l4_4",
+                      "NoisyPixels_l4_5",
+                      "NoisyPixels_l4_6",
+                      "NoisyPixels_l4_7",
+                      "NoisyPixels_l4_8",
+                      "NoisyPixels_l4_9",
+                      "NoisyPixels_l4_10",
+                      "NoisyPixels_l4_11",
+                      "NoisyPixels_l4_12",
+                      "NoisyPixels_l4_13",
+                      "NoisyPixels_l4_14",
+                      "NoisyPixels_l4_15",
+                      "NoisyPixels_l4_16",
+                      "NoisyPixels_l4_17",
+                      "NoisyPixels_l4_18",
+                      "NoisyPixels_l4_19",
+                      "NoisyPixels_l4_20",
+                      "NoisyPixels_l4_21",
+                      "NoisyPixels_l4_22",
+                      "NoisyPixels_l4_23",
+                      "NoisyPixels_l4_24",
+                      "NoisyPixels_l4_25",
+                      "NoisyPixels_l4_26",
+                      "NoisyPixels_l4_27",
+                      "NoisyPixels_l4_28",
+                      "NoisyPixels_l4_29",
+                      "NoisyPixels_l5_0",
+                      "NoisyPixels_l5_1",
+                      "NoisyPixels_l5_2",
+                      "NoisyPixels_l5_3",
+                      "NoisyPixels_l5_4",
+                      "NoisyPixels_l5_5",
+                      "NoisyPixels_l5_6",
+                      "NoisyPixels_l5_7",
+                      "NoisyPixels_l5_8",
+                      "NoisyPixels_l5_9",
+                      "NoisyPixels_l5_10",
+                      "NoisyPixels_l5_11",
+                      "NoisyPixels_l5_12",
+                      "NoisyPixels_l5_13",
+                      "NoisyPixels_l5_14",
+                      "NoisyPixels_l5_15",
+                      "NoisyPixels_l5_16",
+                      "NoisyPixels_l5_17",
+                      "NoisyPixels_l5_18",
+                      "NoisyPixels_l5_19",
+                      "NoisyPixels_l5_20",
+                      "NoisyPixels_l5_21",
+                      "NoisyPixels_l5_22",
+                      "NoisyPixels_l5_23",
+                      "NoisyPixels_l5_24",
+                      "NoisyPixels_l5_25",
+                      "NoisyPixels_l5_26",
+                      "NoisyPixels_l5_27",
+                      "NoisyPixels_l5_28",
+                      "NoisyPixels_l5_29",
+                      "NoisyPixels_l5_30",
+                      "NoisyPixels_l5_31",
+                      "NoisyPixels_l5_32",
+                      "NoisyPixels_l5_33",
+                      "NoisyPixels_l5_34",
+                      "NoisyPixels_l5_35",
+                      "NoisyPixels_l5_36",
+                      "NoisyPixels_l5_37",
+                      "NoisyPixels_l5_38",
+                      "NoisyPixels_l5_39",
+                      "NoisyPixels_l5_40",
+                      "NoisyPixels_l5_41",
+                      "NoisyPixels_l6_0",
+                      "NoisyPixels_l6_1",
+                      "NoisyPixels_l6_2",
+                      "NoisyPixels_l6_3",
+                      "NoisyPixels_l6_4",
+                      "NoisyPixels_l6_5",
+                      "NoisyPixels_l6_6",
+                      "NoisyPixels_l6_7",
+                      "NoisyPixels_l6_8",
+                      "NoisyPixels_l6_9",
+                      "NoisyPixels_l6_10",
+                      "NoisyPixels_l6_11",
+                      "NoisyPixels_l6_12",
+                      "NoisyPixels_l6_13",
+                      "NoisyPixels_l6_14",
+                      "NoisyPixels_l6_15",
+                      "NoisyPixels_l6_16",
+                      "NoisyPixels_l6_17",
+                      "NoisyPixels_l6_18",
+                      "NoisyPixels_l6_19",
+                      "NoisyPixels_l6_20",
+                      "NoisyPixels_l6_21",
+                      "NoisyPixels_l6_22",
+                      "NoisyPixels_l6_23",
+                      "NoisyPixels_l6_24",
+                      "NoisyPixels_l6_25",
+                      "NoisyPixels_l6_26",
+                      "NoisyPixels_l6_27",
+                      "NoisyPixels_l6_28",
+                      "NoisyPixels_l6_29",
+                      "NoisyPixels_l6_30",
+                      "NoisyPixels_l6_31",
+                      "NoisyPixels_l6_32",
+                      "NoisyPixels_l6_33",
+                      "NoisyPixels_l6_34",
+                      "NoisyPixels_l6_35",
+                      "NoisyPixels_l6_36",
+                      "NoisyPixels_l6_37",
+                      "NoisyPixels_l6_38",
+                      "NoisyPixels_l6_39",
+                      "NoisyPixels_l6_40",
+                      "NoisyPixels_l6_41",
+                      "NoisyPixels_l6_42",
+                      "NoisyPixels_l6_43",
+                      "NoisyPixels_l6_44",
+                      "NoisyPixels_l6_45",
+                      "NoisyPixels_l6_46",
+                      "NoisyPixels_l6_47"],
             "reductorName": "o2::quality_control_modules::common::THnSparse5Reductor",
             "moduleName": "QcCommon"
           },
@@ -135,11 +423,19 @@
             "paths": ["qc/ITS/MO/FHRTask/Occupancy/Layer0/Layer0ChipStave",
                       "qc/ITS/MO/FHRTask/Occupancy/Layer1/Layer1ChipStave",
                       "qc/ITS/MO/FHRTask/Occupancy/Layer2/Layer2ChipStave",
-                      "qc/ITS/MO/FHRTask/Occupancy/Layer2/Layer2ChipStave"],
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer2/Layer2ChipStave",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer3/Layer3ChipStave",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer4/Layer4ChipStave",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer5/Layer5ChipStave",
+                      "qc/ITS/MO/FHRTask/Occupancy/Layer6/Layer6ChipStave"],
             "names": ["Fhr_l0",
                       "Fhr_l1",
                       "Fhr_l2t",
-                      "Fhr_l2b"],
+                      "Fhr_l2b",
+                      "Fhr_l3",
+                      "Fhr_l4",
+                      "Fhr_l5",
+                      "Fhr_l6"],
             "reductorName": "o2::quality_control_modules::its::TH2XlineReductor",
             "moduleName": "QcITS"
           }
@@ -480,8 +776,1017 @@
             "varexp": ["Fhr_l2b.mean[19]:ntreeentries", "Fhr_l2b.stddev[19]:ntreeentries", "Fhr_l2b.entries[19]:ntreeentries", "Fhr_l2b.mean_scaled[19]:ntreeentries"],
             "selection": "",
             "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L3_00", "fhr_stddev_of_L3_00", "fhr_lanes_of_L3_00", "fhr_occ_of_L3_00"],
+            "title": ["Average FHR trend: L3_00", "Stddev FHR trend: L3_00", "Active lanes trend: L3_00", "Occupancy trend: L3_00"],
+            "varexp": ["Fhr_l3.mean[0]:ntreeentries", "Fhr_l3.stddev[0]:ntreeentries", "Fhr_l3.entries[0]:ntreeentries", "Fhr_l3.mean_scaled[0]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L3_01", "fhr_stddev_of_L3_01", "fhr_lanes_of_L3_01", "fhr_occ_of_L3_01"],
+            "title": ["Average FHR trend: L3_01", "Stddev FHR trend: L3_01", "Active lanes trend: L3_01", "Occupancy trend: L3_01"],
+            "varexp": ["Fhr_l3.mean[1]:ntreeentries", "Fhr_l3.stddev[1]:ntreeentries", "Fhr_l3.entries[1]:ntreeentries", "Fhr_l3.mean_scaled[1]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L3_02", "fhr_stddev_of_L3_02", "fhr_lanes_of_L3_02", "fhr_occ_of_L3_02"],
+            "title": ["Average FHR trend: L3_02", "Stddev FHR trend: L3_02", "Active lanes trend: L3_02", "Occupancy trend: L3_02"],
+            "varexp": ["Fhr_l3.mean[2]:ntreeentries", "Fhr_l3.stddev[2]:ntreeentries", "Fhr_l3.entries[2]:ntreeentries", "Fhr_l3.mean_scaled[2]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+{
+            "names": ["fhr_mean_of_L3_03", "fhr_stddev_of_L3_03", "fhr_lanes_of_L3_03", "fhr_occ_of_L3_03"],
+            "title": ["Average FHR trend: L3_03", "Stddev FHR trend: L3_03", "Active lanes trend: L3_03", "Occupancy trend: L3_03"],
+            "varexp": ["Fhr_l3.mean[3]:ntreeentries", "Fhr_l3.stddev[3]:ntreeentries", "Fhr_l3.entries[3]:ntreeentries", "Fhr_l3.mean_scaled[3]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L3_04", "fhr_stddev_of_L3_04", "fhr_lanes_of_L3_04", "fhr_occ_of_L3_04"],
+            "title": ["Average FHR trend: L3_04", "Stddev FHR trend: L3_04", "Active lanes trend: L3_04", "Occupancy trend: L3_04"],
+            "varexp": ["Fhr_l3.mean[4]:ntreeentries", "Fhr_l3.stddev[4]:ntreeentries", "Fhr_l3.entries[4]:ntreeentries", "Fhr_l3.mean_scaled[4]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L3_05", "fhr_stddev_of_L3_05", "fhr_lanes_of_L3_05", "fhr_occ_of_L3_05"],
+            "title": ["Average FHR trend: L3_05", "Stddev FHR trend: L3_05", "Active lanes trend: L3_05", "Occupancy trend: L3_05"],
+            "varexp": ["Fhr_l3.mean[5]:ntreeentries", "Fhr_l3.stddev[5]:ntreeentries", "Fhr_l3.entries[5]:ntreeentries", "Fhr_l3.mean_scaled[5]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L3_06", "fhr_stddev_of_L3_06", "fhr_lanes_of_L3_06", "fhr_occ_of_L3_06"],
+            "title": ["Average FHR trend: L3_06", "Stddev FHR trend: L3_06", "Active lanes trend: L3_06", "Occupancy trend: L3_06"],
+            "varexp": ["Fhr_l3.mean[6]:ntreeentries", "Fhr_l3.stddev[6]:ntreeentries", "Fhr_l3.entries[6]:ntreeentries", "Fhr_l3.mean_scaled[6]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L3_07", "fhr_stddev_of_L3_07", "fhr_lanes_of_L3_07", "fhr_occ_of_L3_07"],
+            "title": ["Average FHR trend: L3_07", "Stddev FHR trend: L3_07", "Active lanes trend: L3_07", "Occupancy trend: L3_07"],
+            "varexp": ["Fhr_l3.mean[7]:ntreeentries", "Fhr_l3.stddev[7]:ntreeentries", "Fhr_l3.entries[7]:ntreeentries", "Fhr_l3.mean_scaled[7]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L3_08", "fhr_stddev_of_L3_08", "fhr_lanes_of_L3_08", "fhr_occ_of_L3_08"],
+            "title": ["Average FHR trend: L3_08", "Stddev FHR trend: L3_08", "Active lanes trend: L3_08", "Occupancy trend: L3_08"],
+            "varexp": ["Fhr_l3.mean[8]:ntreeentries", "Fhr_l3.stddev[8]:ntreeentries", "Fhr_l3.entries[8]:ntreeentries", "Fhr_l3.mean_scaled[8]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L3_09", "fhr_stddev_of_L3_09", "fhr_lanes_of_L3_09", "fhr_occ_of_L3_09"],
+            "title": ["Average FHR trend: L3_09", "Stddev FHR trend: L3_09", "Active lanes trend: L3_09", "Occupancy trend: L3_09"],
+            "varexp": ["Fhr_l3.mean[9]:ntreeentries", "Fhr_l3.stddev[9]:ntreeentries", "Fhr_l3.entries[9]:ntreeentries", "Fhr_l3.mean_scaled[9]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L3_10", "fhr_stddev_of_L3_10", "fhr_lanes_of_L3_10", "fhr_occ_of_L3_10"],
+            "title": ["Average FHR trend: L3_10", "Stddev FHR trend: L3_10", "Active lanes trend: L3_10", "Occupancy trend: L3_10"],
+            "varexp": ["Fhr_l3.mean[10]:ntreeentries", "Fhr_l3.stddev[10]:ntreeentries", "Fhr_l3.entries[10]:ntreeentries", "Fhr_l3.mean_scaled[10]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L3_11", "fhr_stddev_of_L3_11", "fhr_lanes_of_L3_11", "fhr_occ_of_L3_11"],
+            "title": ["Average FHR trend: L3_11", "Stddev FHR trend: L3_11", "Active lanes trend: L3_11", "Occupancy trend: L3_11"],
+            "varexp": ["Fhr_l3.mean[11]:ntreeentries", "Fhr_l3.stddev[11]:ntreeentries", "Fhr_l3.entries[11]:ntreeentries", "Fhr_l3.mean_scaled[11]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L3_12", "fhr_stddev_of_L3_12", "fhr_lanes_of_L3_12", "fhr_occ_of_L3_12"],
+            "title": ["Average FHR trend: L3_12", "Stddev FHR trend: L3_12", "Active lanes trend: L3_12", "Occupancy trend: L3_12"],
+            "varexp": ["Fhr_l3.mean[12]:ntreeentries", "Fhr_l3.stddev[12]:ntreeentries", "Fhr_l3.entries[12]:ntreeentries", "Fhr_l3.mean_scaled[12]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L3_13", "fhr_stddev_of_L3_13", "fhr_lanes_of_L3_13", "fhr_occ_of_L3_13"],
+            "title": ["Average FHR trend: L3_13", "Stddev FHR trend: L3_13", "Active lanes trend: L3_13", "Occupancy trend: L3_13"],
+            "varexp": ["Fhr_l3.mean[13]:ntreeentries", "Fhr_l3.stddev[13]:ntreeentries", "Fhr_l3.entries[13]:ntreeentries", "Fhr_l3.mean_scaled[13]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L3_14", "fhr_stddev_of_L3_14", "fhr_lanes_of_L3_14", "fhr_occ_of_L3_14"],
+            "title": ["Average FHR trend: L3_14", "Stddev FHR trend: L3_14", "Active lanes trend: L3_14", "Occupancy trend: L3_14"],
+            "varexp": ["Fhr_l3.mean[14]:ntreeentries", "Fhr_l3.stddev[14]:ntreeentries", "Fhr_l3.entries[14]:ntreeentries", "Fhr_l3.mean_scaled[14]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L3_15", "fhr_stddev_of_L3_15", "fhr_lanes_of_L3_15", "fhr_occ_of_L3_15"],
+            "title": ["Average FHR trend: L3_15", "Stddev FHR trend: L3_15", "Active lanes trend: L3_15", "Occupancy trend: L3_15"],
+            "varexp": ["Fhr_l3.mean[15]:ntreeentries", "Fhr_l3.stddev[15]:ntreeentries", "Fhr_l3.entries[15]:ntreeentries", "Fhr_l3.mean_scaled[15]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L3_16", "fhr_stddev_of_L3_16", "fhr_lanes_of_L3_16", "fhr_occ_of_L3_16"],
+            "title": ["Average FHR trend: L3_16", "Stddev FHR trend: L3_16", "Active lanes trend: L3_16", "Occupancy trend: L3_16"],
+            "varexp": ["Fhr_l3.mean[16]:ntreeentries", "Fhr_l3.stddev[16]:ntreeentries", "Fhr_l3.entries[16]:ntreeentries", "Fhr_l3.mean_scaled[16]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L3_17", "fhr_stddev_of_L3_17", "fhr_lanes_of_L3_17", "fhr_occ_of_L3_17"],
+            "title": ["Average FHR trend: L3_17", "Stddev FHR trend: L3_17", "Active lanes trend: L3_17", "Occupancy trend: L3_17"],
+            "varexp": ["Fhr_l3.mean[17]:ntreeentries", "Fhr_l3.stddev[17]:ntreeentries", "Fhr_l3.entries[17]:ntreeentries", "Fhr_l3.mean_scaled[17]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L3_18", "fhr_stddev_of_L3_18", "fhr_lanes_of_L3_18", "fhr_occ_of_L3_18"],
+            "title": ["Average FHR trend: L3_18", "Stddev FHR trend: L3_18", "Active lanes trend: L3_18", "Occupancy trend: L3_18"],
+            "varexp": ["Fhr_l3.mean[18]:ntreeentries", "Fhr_l3.stddev[18]:ntreeentries", "Fhr_l3.entries[18]:ntreeentries", "Fhr_l3.mean_scaled[18]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L3_19", "fhr_stddev_of_L3_19", "fhr_lanes_of_L3_19", "fhr_occ_of_L3_19"],
+            "title": ["Average FHR trend: L3_19", "Stddev FHR trend: L3_19", "Active lanes trend: L3_19", "Occupancy trend: L3_19"],
+            "varexp": ["Fhr_l3.mean[19]:ntreeentries", "Fhr_l3.stddev[19]:ntreeentries", "Fhr_l3.entries[19]:ntreeentries", "Fhr_l3.mean_scaled[19]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L3_20", "fhr_stddev_of_L3_20", "fhr_lanes_of_L3_20", "fhr_occ_of_L3_20"],
+            "title": ["Average FHR trend: L3_20", "Stddev FHR trend: L3_20", "Active lanes trend: L3_20", "Occupancy trend: L3_20"],
+            "varexp": ["Fhr_l3.mean[20]:ntreeentries", "Fhr_l3.stddev[20]:ntreeentries", "Fhr_l3.entries[20]:ntreeentries", "Fhr_l3.mean_scaled[20]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L3_21", "fhr_stddev_of_L3_21", "fhr_lanes_of_L3_21", "fhr_occ_of_L3_21"],
+            "title": ["Average FHR trend: L3_21", "Stddev FHR trend: L3_21", "Active lanes trend: L3_21", "Occupancy trend: L3_21"],
+            "varexp": ["Fhr_l3.mean[21]:ntreeentries", "Fhr_l3.stddev[21]:ntreeentries", "Fhr_l3.entries[21]:ntreeentries", "Fhr_l3.mean_scaled[21]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L3_22", "fhr_stddev_of_L3_22", "fhr_lanes_of_L3_22", "fhr_occ_of_L3_22"],
+            "title": ["Average FHR trend: L3_22", "Stddev FHR trend: L3_22", "Active lanes trend: L3_22", "Occupancy trend: L3_22"],
+            "varexp": ["Fhr_l3.mean[22]:ntreeentries", "Fhr_l3.stddev[22]:ntreeentries", "Fhr_l3.entries[22]:ntreeentries", "Fhr_l3.mean_scaled[22]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L3_23", "fhr_stddev_of_L3_23", "fhr_lanes_of_L3_23", "fhr_occ_of_L3_23"],
+            "title": ["Average FHR trend: L3_23", "Stddev FHR trend: L3_23", "Active lanes trend: L3_23", "Occupancy trend: L3_23"],
+            "varexp": ["Fhr_l3.mean[23]:ntreeentries", "Fhr_l3.stddev[23]:ntreeentries", "Fhr_l3.entries[23]:ntreeentries", "Fhr_l3.mean_scaled[23]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L4_00", "fhr_stddev_of_L4_00", "fhr_lanes_of_L4_00", "fhr_occ_of_L4_00"],
+            "title": ["Average FHR trend: L4_00", "Stddev FHR trend: L4_00", "Active lanes trend: L4_00", "Occupancy trend: L4_00"],
+            "varexp": ["Fhr_l4.mean[0]:ntreeentries", "Fhr_l4.stddev[0]:ntreeentries", "Fhr_l4.entries[0]:ntreeentries", "Fhr_l4.mean_scaled[0]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L4_01", "fhr_stddev_of_L4_01", "fhr_lanes_of_L4_01", "fhr_occ_of_L4_01"],
+            "title": ["Average FHR trend: L4_01", "Stddev FHR trend: L4_01", "Active lanes trend: L4_01", "Occupancy trend: L4_01"],
+            "varexp": ["Fhr_l4.mean[1]:ntreeentries", "Fhr_l4.stddev[1]:ntreeentries", "Fhr_l4.entries[1]:ntreeentries", "Fhr_l4.mean_scaled[1]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L4_02", "fhr_stddev_of_L4_02", "fhr_lanes_of_L4_02", "fhr_occ_of_L4_02"],
+            "title": ["Average FHR trend: L4_02", "Stddev FHR trend: L4_02", "Active lanes trend: L4_02", "Occupancy trend: L4_02"],
+            "varexp": ["Fhr_l4.mean[2]:ntreeentries", "Fhr_l4.stddev[2]:ntreeentries", "Fhr_l4.entries[2]:ntreeentries", "Fhr_l4.mean_scaled[2]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L4_03", "fhr_stddev_of_L4_03", "fhr_lanes_of_L4_03", "fhr_occ_of_L4_03"],
+            "title": ["Average FHR trend: L4_03", "Stddev FHR trend: L4_03", "Active lanes trend: L4_03", "Occupancy trend: L4_03"],
+            "varexp": ["Fhr_l4.mean[3]:ntreeentries", "Fhr_l4.stddev[3]:ntreeentries", "Fhr_l4.entries[3]:ntreeentries", "Fhr_l4.mean_scaled[3]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L4_04", "fhr_stddev_of_L4_04", "fhr_lanes_of_L4_04", "fhr_occ_of_L4_04"],
+            "title": ["Average FHR trend: L4_04", "Stddev FHR trend: L4_04", "Active lanes trend: L4_04", "Occupancy trend: L4_04"],
+            "varexp": ["Fhr_l4.mean[4]:ntreeentries", "Fhr_l4.stddev[4]:ntreeentries", "Fhr_l4.entries[4]:ntreeentries", "Fhr_l4.mean_scaled[4]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L4_05", "fhr_stddev_of_L4_05", "fhr_lanes_of_L4_05", "fhr_occ_of_L4_05"],
+            "title": ["Average FHR trend: L4_05", "Stddev FHR trend: L4_05", "Active lanes trend: L4_05", "Occupancy trend: L4_05"],
+            "varexp": ["Fhr_l4.mean[5]:ntreeentries", "Fhr_l4.stddev[5]:ntreeentries", "Fhr_l4.entries[5]:ntreeentries", "Fhr_l4.mean_scaled[5]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L4_06", "fhr_stddev_of_L4_06", "fhr_lanes_of_L4_06", "fhr_occ_of_L4_06"],
+            "title": ["Average FHR trend: L4_06", "Stddev FHR trend: L4_06", "Active lanes trend: L4_06", "Occupancy trend: L4_06"],
+            "varexp": ["Fhr_l4.mean[6]:ntreeentries", "Fhr_l4.stddev[6]:ntreeentries", "Fhr_l4.entries[6]:ntreeentries", "Fhr_l4.mean_scaled[6]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L4_07", "fhr_stddev_of_L4_07", "fhr_lanes_of_L4_07", "fhr_occ_of_L4_07"],
+            "title": ["Average FHR trend: L4_07", "Stddev FHR trend: L4_07", "Active lanes trend: L4_07", "Occupancy trend: L4_07"],
+            "varexp": ["Fhr_l4.mean[7]:ntreeentries", "Fhr_l4.stddev[7]:ntreeentries", "Fhr_l4.entries[7]:ntreeentries", "Fhr_l4.mean_scaled[7]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L4_08", "fhr_stddev_of_L4_08", "fhr_lanes_of_L4_08", "fhr_occ_of_L4_08"],
+            "title": ["Average FHR trend: L4_08", "Stddev FHR trend: L4_08", "Active lanes trend: L4_08", "Occupancy trend: L4_08"],
+            "varexp": ["Fhr_l4.mean[8]:ntreeentries", "Fhr_l4.stddev[8]:ntreeentries", "Fhr_l4.entries[8]:ntreeentries", "Fhr_l4.mean_scaled[8]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L4_09", "fhr_stddev_of_L4_09", "fhr_lanes_of_L4_09", "fhr_occ_of_L4_09"],
+            "title": ["Average FHR trend: L4_09", "Stddev FHR trend: L4_09", "Active lanes trend: L4_09", "Occupancy trend: L4_09"],
+            "varexp": ["Fhr_l4.mean[9]:ntreeentries", "Fhr_l4.stddev[9]:ntreeentries", "Fhr_l4.entries[9]:ntreeentries", "Fhr_l4.mean_scaled[9]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L4_10", "fhr_stddev_of_L4_10", "fhr_lanes_of_L4_10", "fhr_occ_of_L4_10"],
+            "title": ["Average FHR trend: L4_10", "Stddev FHR trend: L4_10", "Active lanes trend: L4_10", "Occupancy trend: L4_10"],
+            "varexp": ["Fhr_l4.mean[10]:ntreeentries", "Fhr_l4.stddev[10]:ntreeentries", "Fhr_l4.entries[10]:ntreeentries", "Fhr_l4.mean_scaled[10]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L4_11", "fhr_stddev_of_L4_11", "fhr_lanes_of_L4_11", "fhr_occ_of_L4_11"],
+            "title": ["Average FHR trend: L4_11", "Stddev FHR trend: L4_11", "Active lanes trend: L4_11", "Occupancy trend: L4_11"],
+            "varexp": ["Fhr_l4.mean[11]:ntreeentries", "Fhr_l4.stddev[11]:ntreeentries", "Fhr_l4.entries[11]:ntreeentries", "Fhr_l4.mean_scaled[11]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L4_12", "fhr_stddev_of_L4_12", "fhr_lanes_of_L4_12", "fhr_occ_of_L4_12"],
+            "title": ["Average FHR trend: L4_12", "Stddev FHR trend: L4_12", "Active lanes trend: L4_12", "Occupancy trend: L4_12"],
+            "varexp": ["Fhr_l4.mean[12]:ntreeentries", "Fhr_l4.stddev[12]:ntreeentries", "Fhr_l4.entries[12]:ntreeentries", "Fhr_l4.mean_scaled[12]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L4_13", "fhr_stddev_of_L4_13", "fhr_lanes_of_L4_13", "fhr_occ_of_L4_13"],
+            "title": ["Average FHR trend: L4_13", "Stddev FHR trend: L4_13", "Active lanes trend: L4_13", "Occupancy trend: L4_13"],
+            "varexp": ["Fhr_l4.mean[13]:ntreeentries", "Fhr_l4.stddev[13]:ntreeentries", "Fhr_l4.entries[13]:ntreeentries", "Fhr_l4.mean_scaled[13]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L4_14", "fhr_stddev_of_L4_14", "fhr_lanes_of_L4_14", "fhr_occ_of_L4_14"],
+            "title": ["Average FHR trend: L4_14", "Stddev FHR trend: L4_14", "Active lanes trend: L4_14", "Occupancy trend: L4_14"],
+            "varexp": ["Fhr_l4.mean[14]:ntreeentries", "Fhr_l4.stddev[14]:ntreeentries", "Fhr_l4.entries[14]:ntreeentries", "Fhr_l4.mean_scaled[14]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L4_15", "fhr_stddev_of_L4_15", "fhr_lanes_of_L4_15", "fhr_occ_of_L4_15"],
+            "title": ["Average FHR trend: L4_15", "Stddev FHR trend: L4_15", "Active lanes trend: L4_15", "Occupancy trend: L4_15"],
+            "varexp": ["Fhr_l4.mean[15]:ntreeentries", "Fhr_l4.stddev[15]:ntreeentries", "Fhr_l4.entries[15]:ntreeentries", "Fhr_l4.mean_scaled[15]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L4_16", "fhr_stddev_of_L4_16", "fhr_lanes_of_L4_16", "fhr_occ_of_L4_16"],
+            "title": ["Average FHR trend: L4_16", "Stddev FHR trend: L4_16", "Active lanes trend: L4_16", "Occupancy trend: L4_16"],
+            "varexp": ["Fhr_l4.mean[16]:ntreeentries", "Fhr_l4.stddev[16]:ntreeentries", "Fhr_l4.entries[16]:ntreeentries", "Fhr_l4.mean_scaled[16]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L4_17", "fhr_stddev_of_L4_17", "fhr_lanes_of_L4_17", "fhr_occ_of_L4_17"],
+            "title": ["Average FHR trend: L4_17", "Stddev FHR trend: L4_17", "Active lanes trend: L4_17", "Occupancy trend: L4_17"],
+            "varexp": ["Fhr_l4.mean[17]:ntreeentries", "Fhr_l4.stddev[17]:ntreeentries", "Fhr_l4.entries[17]:ntreeentries", "Fhr_l4.mean_scaled[17]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L4_18", "fhr_stddev_of_L4_18", "fhr_lanes_of_L4_18", "fhr_occ_of_L4_18"],
+            "title": ["Average FHR trend: L4_18", "Stddev FHR trend: L4_18", "Active lanes trend: L4_18", "Occupancy trend: L4_18"],
+            "varexp": ["Fhr_l4.mean[18]:ntreeentries", "Fhr_l4.stddev[18]:ntreeentries", "Fhr_l4.entries[18]:ntreeentries", "Fhr_l4.mean_scaled[18]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L4_19", "fhr_stddev_of_L4_19", "fhr_lanes_of_L4_19", "fhr_occ_of_L4_19"],
+            "title": ["Average FHR trend: L4_19", "Stddev FHR trend: L4_19", "Active lanes trend: L4_19", "Occupancy trend: L4_19"],
+            "varexp": ["Fhr_l4.mean[19]:ntreeentries", "Fhr_l4.stddev[19]:ntreeentries", "Fhr_l4.entries[19]:ntreeentries", "Fhr_l4.mean_scaled[19]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L4_20", "fhr_stddev_of_L4_20", "fhr_lanes_of_L4_20", "fhr_occ_of_L4_20"],
+            "title": ["Average FHR trend: L4_20", "Stddev FHR trend: L4_20", "Active lanes trend: L4_20", "Occupancy trend: L4_20"],
+            "varexp": ["Fhr_l4.mean[20]:ntreeentries", "Fhr_l4.stddev[20]:ntreeentries", "Fhr_l4.entries[20]:ntreeentries", "Fhr_l4.mean_scaled[20]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L4_21", "fhr_stddev_of_L4_21", "fhr_lanes_of_L4_21", "fhr_occ_of_L4_21"],
+            "title": ["Average FHR trend: L4_21", "Stddev FHR trend: L4_21", "Active lanes trend: L4_21", "Occupancy trend: L4_21"],
+            "varexp": ["Fhr_l4.mean[21]:ntreeentries", "Fhr_l4.stddev[21]:ntreeentries", "Fhr_l4.entries[21]:ntreeentries", "Fhr_l4.mean_scaled[21]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L4_22", "fhr_stddev_of_L4_22", "fhr_lanes_of_L4_22", "fhr_occ_of_L4_22"],
+            "title": ["Average FHR trend: L4_22", "Stddev FHR trend: L4_22", "Active lanes trend: L4_22", "Occupancy trend: L4_22"],
+            "varexp": ["Fhr_l4.mean[22]:ntreeentries", "Fhr_l4.stddev[22]:ntreeentries", "Fhr_l4.entries[22]:ntreeentries", "Fhr_l4.mean_scaled[22]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L4_23", "fhr_stddev_of_L4_23", "fhr_lanes_of_L4_23", "fhr_occ_of_L4_23"],
+            "title": ["Average FHR trend: L4_23", "Stddev FHR trend: L4_23", "Active lanes trend: L4_23", "Occupancy trend: L4_23"],
+            "varexp": ["Fhr_l4.mean[23]:ntreeentries", "Fhr_l4.stddev[23]:ntreeentries", "Fhr_l4.entries[23]:ntreeentries", "Fhr_l4.mean_scaled[23]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L4_24", "fhr_stddev_of_L4_24", "fhr_lanes_of_L4_24", "fhr_occ_of_L4_24"],
+            "title": ["Average FHR trend: L4_24", "Stddev FHR trend: L4_24", "Active lanes trend: L4_24", "Occupancy trend: L4_24"],
+            "varexp": ["Fhr_l4.mean[24]:ntreeentries", "Fhr_l4.stddev[24]:ntreeentries", "Fhr_l4.entries[24]:ntreeentries", "Fhr_l4.mean_scaled[24]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L4_25", "fhr_stddev_of_L4_25", "fhr_lanes_of_L4_25", "fhr_occ_of_L4_25"],
+            "title": ["Average FHR trend: L4_25", "Stddev FHR trend: L4_25", "Active lanes trend: L4_25", "Occupancy trend: L4_25"],
+            "varexp": ["Fhr_l4.mean[25]:ntreeentries", "Fhr_l4.stddev[25]:ntreeentries", "Fhr_l4.entries[25]:ntreeentries", "Fhr_l4.mean_scaled[25]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L4_26", "fhr_stddev_of_L4_26", "fhr_lanes_of_L4_26", "fhr_occ_of_L4_26"],
+            "title": ["Average FHR trend: L4_26", "Stddev FHR trend: L4_26", "Active lanes trend: L4_26", "Occupancy trend: L4_26"],
+            "varexp": ["Fhr_l4.mean[26]:ntreeentries", "Fhr_l4.stddev[26]:ntreeentries", "Fhr_l4.entries[26]:ntreeentries", "Fhr_l4.mean_scaled[26]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L4_27", "fhr_stddev_of_L4_27", "fhr_lanes_of_L4_27", "fhr_occ_of_L4_27"],
+            "title": ["Average FHR trend: L4_27", "Stddev FHR trend: L4_27", "Active lanes trend: L4_27", "Occupancy trend: L4_27"],
+            "varexp": ["Fhr_l4.mean[27]:ntreeentries", "Fhr_l4.stddev[27]:ntreeentries", "Fhr_l4.entries[27]:ntreeentries", "Fhr_l4.mean_scaled[27]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L4_28", "fhr_stddev_of_L4_28", "fhr_lanes_of_L4_28", "fhr_occ_of_L4_28"],
+            "title": ["Average FHR trend: L4_28", "Stddev FHR trend: L4_28", "Active lanes trend: L4_28", "Occupancy trend: L4_28"],
+            "varexp": ["Fhr_l4.mean[28]:ntreeentries", "Fhr_l4.stddev[28]:ntreeentries", "Fhr_l4.entries[28]:ntreeentries", "Fhr_l4.mean_scaled[28]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L4_29", "fhr_stddev_of_L4_29", "fhr_lanes_of_L4_29", "fhr_occ_of_L4_29"],
+            "title": ["Average FHR trend: L4_29", "Stddev FHR trend: L4_29", "Active lanes trend: L4_29", "Occupancy trend: L4_29"],
+            "varexp": ["Fhr_l4.mean[29]:ntreeentries", "Fhr_l4.stddev[29]:ntreeentries", "Fhr_l4.entries[29]:ntreeentries", "Fhr_l4.mean_scaled[29]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_00", "fhr_stddev_of_L5_00", "fhr_lanes_of_L5_00", "fhr_occ_of_L5_00"],
+            "title": ["Average FHR trend: L5_00", "Stddev FHR trend: L5_00", "Active lanes trend: L5_00", "Occupancy trend: L5_00"],
+            "varexp": ["Fhr_l5.mean[0]:ntreeentries", "Fhr_l5.stddev[0]:ntreeentries", "Fhr_l5.entries[0]:ntreeentries", "Fhr_l5.mean_scaled[0]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_01", "fhr_stddev_of_L5_01", "fhr_lanes_of_L5_01", "fhr_occ_of_L5_01"],
+            "title": ["Average FHR trend: L5_01", "Stddev FHR trend: L5_01", "Active lanes trend: L5_01", "Occupancy trend: L5_01"],
+            "varexp": ["Fhr_l5.mean[1]:ntreeentries", "Fhr_l5.stddev[1]:ntreeentries", "Fhr_l5.entries[1]:ntreeentries", "Fhr_l5.mean_scaled[1]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_02", "fhr_stddev_of_L5_02", "fhr_lanes_of_L5_02", "fhr_occ_of_L5_02"],
+            "title": ["Average FHR trend: L5_02", "Stddev FHR trend: L5_02", "Active lanes trend: L5_02", "Occupancy trend: L5_02"],
+            "varexp": ["Fhr_l5.mean[2]:ntreeentries", "Fhr_l5.stddev[2]:ntreeentries", "Fhr_l5.entries[2]:ntreeentries", "Fhr_l5.mean_scaled[2]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_03", "fhr_stddev_of_L5_03", "fhr_lanes_of_L5_03", "fhr_occ_of_L5_03"],
+            "title": ["Average FHR trend: L5_03", "Stddev FHR trend: L5_03", "Active lanes trend: L5_03", "Occupancy trend: L5_03"],
+            "varexp": ["Fhr_l5.mean[3]:ntreeentries", "Fhr_l5.stddev[3]:ntreeentries", "Fhr_l5.entries[3]:ntreeentries", "Fhr_l5.mean_scaled[3]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_04", "fhr_stddev_of_L5_04", "fhr_lanes_of_L5_04", "fhr_occ_of_L5_04"],
+            "title": ["Average FHR trend: L5_04", "Stddev FHR trend: L5_04", "Active lanes trend: L5_04", "Occupancy trend: L5_04"],
+            "varexp": ["Fhr_l5.mean[4]:ntreeentries", "Fhr_l5.stddev[4]:ntreeentries", "Fhr_l5.entries[4]:ntreeentries", "Fhr_l5.mean_scaled[4]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_05", "fhr_stddev_of_L5_05", "fhr_lanes_of_L5_05", "fhr_occ_of_L5_05"],
+            "title": ["Average FHR trend: L5_05", "Stddev FHR trend: L5_05", "Active lanes trend: L5_05", "Occupancy trend: L5_05"],
+            "varexp": ["Fhr_l5.mean[5]:ntreeentries", "Fhr_l5.stddev[5]:ntreeentries", "Fhr_l5.entries[5]:ntreeentries", "Fhr_l5.mean_scaled[5]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_06", "fhr_stddev_of_L5_06", "fhr_lanes_of_L5_06", "fhr_occ_of_L5_06"],
+            "title": ["Average FHR trend: L5_06", "Stddev FHR trend: L5_06", "Active lanes trend: L5_06", "Occupancy trend: L5_06"],
+            "varexp": ["Fhr_l5.mean[6]:ntreeentries", "Fhr_l5.stddev[6]:ntreeentries", "Fhr_l5.entries[6]:ntreeentries", "Fhr_l5.mean_scaled[6]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_07", "fhr_stddev_of_L5_07", "fhr_lanes_of_L5_07", "fhr_occ_of_L5_07"],
+            "title": ["Average FHR trend: L5_07", "Stddev FHR trend: L5_07", "Active lanes trend: L5_07", "Occupancy trend: L5_07"],
+            "varexp": ["Fhr_l5.mean[7]:ntreeentries", "Fhr_l5.stddev[7]:ntreeentries", "Fhr_l5.entries[7]:ntreeentries", "Fhr_l5.mean_scaled[7]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_08", "fhr_stddev_of_L5_08", "fhr_lanes_of_L5_08", "fhr_occ_of_L5_08"],
+            "title": ["Average FHR trend: L5_08", "Stddev FHR trend: L5_08", "Active lanes trend: L5_08", "Occupancy trend: L5_08"],
+            "varexp": ["Fhr_l5.mean[8]:ntreeentries", "Fhr_l5.stddev[8]:ntreeentries", "Fhr_l5.entries[8]:ntreeentries", "Fhr_l5.mean_scaled[8]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_09", "fhr_stddev_of_L5_09", "fhr_lanes_of_L5_09", "fhr_occ_of_L5_09"],
+            "title": ["Average FHR trend: L5_09", "Stddev FHR trend: L5_09", "Active lanes trend: L5_09", "Occupancy trend: L5_09"],
+            "varexp": ["Fhr_l5.mean[9]:ntreeentries", "Fhr_l5.stddev[9]:ntreeentries", "Fhr_l5.entries[9]:ntreeentries", "Fhr_l5.mean_scaled[9]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_10", "fhr_stddev_of_L5_10", "fhr_lanes_of_L5_10", "fhr_occ_of_L5_10"],
+            "title": ["Average FHR trend: L5_10", "Stddev FHR trend: L5_10", "Active lanes trend: L5_10", "Occupancy trend: L5_10"],
+            "varexp": ["Fhr_l5.mean[10]:ntreeentries", "Fhr_l5.stddev[10]:ntreeentries", "Fhr_l5.entries[10]:ntreeentries", "Fhr_l5.mean_scaled[10]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_11", "fhr_stddev_of_L5_11", "fhr_lanes_of_L5_11", "fhr_occ_of_L5_11"],
+            "title": ["Average FHR trend: L5_11", "Stddev FHR trend: L5_11", "Active lanes trend: L5_11", "Occupancy trend: L5_11"],
+            "varexp": ["Fhr_l5.mean[11]:ntreeentries", "Fhr_l5.stddev[11]:ntreeentries", "Fhr_l5.entries[11]:ntreeentries", "Fhr_l5.mean_scaled[11]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_12", "fhr_stddev_of_L5_12", "fhr_lanes_of_L5_12", "fhr_occ_of_L5_12"],
+            "title": ["Average FHR trend: L5_12", "Stddev FHR trend: L5_12", "Active lanes trend: L5_12", "Occupancy trend: L5_12"],
+            "varexp": ["Fhr_l5.mean[12]:ntreeentries", "Fhr_l5.stddev[12]:ntreeentries", "Fhr_l5.entries[12]:ntreeentries", "Fhr_l5.mean_scaled[12]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_13", "fhr_stddev_of_L5_13", "fhr_lanes_of_L5_13", "fhr_occ_of_L5_13"],
+            "title": ["Average FHR trend: L5_13", "Stddev FHR trend: L5_13", "Active lanes trend: L5_13", "Occupancy trend: L5_13"],
+            "varexp": ["Fhr_l5.mean[13]:ntreeentries", "Fhr_l5.stddev[13]:ntreeentries", "Fhr_l5.entries[13]:ntreeentries", "Fhr_l5.mean_scaled[13]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_14", "fhr_stddev_of_L5_14", "fhr_lanes_of_L5_14", "fhr_occ_of_L5_14"],
+            "title": ["Average FHR trend: L5_14", "Stddev FHR trend: L5_14", "Active lanes trend: L5_14", "Occupancy trend: L5_14"],
+            "varexp": ["Fhr_l5.mean[14]:ntreeentries", "Fhr_l5.stddev[14]:ntreeentries", "Fhr_l5.entries[14]:ntreeentries", "Fhr_l5.mean_scaled[14]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_15", "fhr_stddev_of_L5_15", "fhr_lanes_of_L5_15", "fhr_occ_of_L5_15"],
+            "title": ["Average FHR trend: L5_15", "Stddev FHR trend: L5_15", "Active lanes trend: L5_15", "Occupancy trend: L5_15"],
+            "varexp": ["Fhr_l5.mean[15]:ntreeentries", "Fhr_l5.stddev[15]:ntreeentries", "Fhr_l5.entries[15]:ntreeentries", "Fhr_l5.mean_scaled[15]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_16", "fhr_stddev_of_L5_16", "fhr_lanes_of_L5_16", "fhr_occ_of_L5_16"],
+            "title": ["Average FHR trend: L5_16", "Stddev FHR trend: L5_16", "Active lanes trend: L5_16", "Occupancy trend: L5_16"],
+            "varexp": ["Fhr_l5.mean[16]:ntreeentries", "Fhr_l5.stddev[16]:ntreeentries", "Fhr_l5.entries[16]:ntreeentries", "Fhr_l5.mean_scaled[16]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_17", "fhr_stddev_of_L5_17", "fhr_lanes_of_L5_17", "fhr_occ_of_L5_17"],
+            "title": ["Average FHR trend: L5_17", "Stddev FHR trend: L5_17", "Active lanes trend: L5_17", "Occupancy trend: L5_17"],
+            "varexp": ["Fhr_l5.mean[17]:ntreeentries", "Fhr_l5.stddev[17]:ntreeentries", "Fhr_l5.entries[17]:ntreeentries", "Fhr_l5.mean_scaled[17]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_18", "fhr_stddev_of_L5_18", "fhr_lanes_of_L5_18", "fhr_occ_of_L5_18"],
+            "title": ["Average FHR trend: L5_18", "Stddev FHR trend: L5_18", "Active lanes trend: L5_18", "Occupancy trend: L5_18"],
+            "varexp": ["Fhr_l5.mean[18]:ntreeentries", "Fhr_l5.stddev[18]:ntreeentries", "Fhr_l5.entries[18]:ntreeentries", "Fhr_l5.mean_scaled[18]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_19", "fhr_stddev_of_L5_19", "fhr_lanes_of_L5_19", "fhr_occ_of_L5_19"],
+            "title": ["Average FHR trend: L5_19", "Stddev FHR trend: L5_19", "Active lanes trend: L5_19", "Occupancy trend: L5_19"],
+            "varexp": ["Fhr_l5.mean[19]:ntreeentries", "Fhr_l5.stddev[19]:ntreeentries", "Fhr_l5.entries[19]:ntreeentries", "Fhr_l5.mean_scaled[19]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_20", "fhr_stddev_of_L5_20", "fhr_lanes_of_L5_20", "fhr_occ_of_L5_20"],
+            "title": ["Average FHR trend: L5_20", "Stddev FHR trend: L5_20", "Active lanes trend: L5_20", "Occupancy trend: L5_20"],
+            "varexp": ["Fhr_l5.mean[20]:ntreeentries", "Fhr_l5.stddev[20]:ntreeentries", "Fhr_l5.entries[20]:ntreeentries", "Fhr_l5.mean_scaled[20]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_21", "fhr_stddev_of_L5_21", "fhr_lanes_of_L5_21", "fhr_occ_of_L5_21"],
+            "title": ["Average FHR trend: L5_21", "Stddev FHR trend: L5_21", "Active lanes trend: L5_21", "Occupancy trend: L5_21"],
+            "varexp": ["Fhr_l5.mean[21]:ntreeentries", "Fhr_l5.stddev[21]:ntreeentries", "Fhr_l5.entries[21]:ntreeentries", "Fhr_l5.mean_scaled[21]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_22", "fhr_stddev_of_L5_22", "fhr_lanes_of_L5_22", "fhr_occ_of_L5_22"],
+            "title": ["Average FHR trend: L5_22", "Stddev FHR trend: L5_22", "Active lanes trend: L5_22", "Occupancy trend: L5_22"],
+            "varexp": ["Fhr_l5.mean[22]:ntreeentries", "Fhr_l5.stddev[22]:ntreeentries", "Fhr_l5.entries[22]:ntreeentries", "Fhr_l5.mean_scaled[22]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_23", "fhr_stddev_of_L5_23", "fhr_lanes_of_L5_23", "fhr_occ_of_L5_23"],
+            "title": ["Average FHR trend: L5_23", "Stddev FHR trend: L5_23", "Active lanes trend: L5_23", "Occupancy trend: L5_23"],
+            "varexp": ["Fhr_l5.mean[23]:ntreeentries", "Fhr_l5.stddev[23]:ntreeentries", "Fhr_l5.entries[23]:ntreeentries", "Fhr_l5.mean_scaled[23]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_24", "fhr_stddev_of_L5_24", "fhr_lanes_of_L5_24", "fhr_occ_of_L5_24"],
+            "title": ["Average FHR trend: L5_24", "Stddev FHR trend: L5_24", "Active lanes trend: L5_24", "Occupancy trend: L5_24"],
+            "varexp": ["Fhr_l5.mean[24]:ntreeentries", "Fhr_l5.stddev[24]:ntreeentries", "Fhr_l5.entries[24]:ntreeentries", "Fhr_l5.mean_scaled[24]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_25", "fhr_stddev_of_L5_25", "fhr_lanes_of_L5_25", "fhr_occ_of_L5_25"],
+            "title": ["Average FHR trend: L5_25", "Stddev FHR trend: L5_25", "Active lanes trend: L5_25", "Occupancy trend: L5_25"],
+            "varexp": ["Fhr_l5.mean[25]:ntreeentries", "Fhr_l5.stddev[25]:ntreeentries", "Fhr_l5.entries[25]:ntreeentries", "Fhr_l5.mean_scaled[25]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_26", "fhr_stddev_of_L5_26", "fhr_lanes_of_L5_26", "fhr_occ_of_L5_26"],
+            "title": ["Average FHR trend: L5_26", "Stddev FHR trend: L5_26", "Active lanes trend: L5_26", "Occupancy trend: L5_26"],
+            "varexp": ["Fhr_l5.mean[26]:ntreeentries", "Fhr_l5.stddev[26]:ntreeentries", "Fhr_l5.entries[26]:ntreeentries", "Fhr_l5.mean_scaled[26]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_27", "fhr_stddev_of_L5_27", "fhr_lanes_of_L5_27", "fhr_occ_of_L5_27"],
+            "title": ["Average FHR trend: L5_27", "Stddev FHR trend: L5_27", "Active lanes trend: L5_27", "Occupancy trend: L5_27"],
+            "varexp": ["Fhr_l5.mean[27]:ntreeentries", "Fhr_l5.stddev[27]:ntreeentries", "Fhr_l5.entries[27]:ntreeentries", "Fhr_l5.mean_scaled[27]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_28", "fhr_stddev_of_L5_28", "fhr_lanes_of_L5_28", "fhr_occ_of_L5_28"],
+            "title": ["Average FHR trend: L5_28", "Stddev FHR trend: L5_28", "Active lanes trend: L5_28", "Occupancy trend: L5_28"],
+            "varexp": ["Fhr_l5.mean[28]:ntreeentries", "Fhr_l5.stddev[28]:ntreeentries", "Fhr_l5.entries[28]:ntreeentries", "Fhr_l5.mean_scaled[28]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_29", "fhr_stddev_of_L5_29", "fhr_lanes_of_L5_29", "fhr_occ_of_L5_29"],
+            "title": ["Average FHR trend: L5_29", "Stddev FHR trend: L5_29", "Active lanes trend: L5_29", "Occupancy trend: L5_29"],
+            "varexp": ["Fhr_l5.mean[29]:ntreeentries", "Fhr_l5.stddev[29]:ntreeentries", "Fhr_l5.entries[29]:ntreeentries", "Fhr_l5.mean_scaled[29]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_30", "fhr_stddev_of_L5_30", "fhr_lanes_of_L5_30", "fhr_occ_of_L5_30"],
+            "title": ["Average FHR trend: L5_30", "Stddev FHR trend: L5_30", "Active lanes trend: L5_30", "Occupancy trend: L5_30"],
+            "varexp": ["Fhr_l5.mean[30]:ntreeentries", "Fhr_l5.stddev[30]:ntreeentries", "Fhr_l5.entries[30]:ntreeentries", "Fhr_l5.mean_scaled[30]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_31", "fhr_stddev_of_L5_31", "fhr_lanes_of_L5_31", "fhr_occ_of_L5_31"],
+            "title": ["Average FHR trend: L5_31", "Stddev FHR trend: L5_31", "Active lanes trend: L5_31", "Occupancy trend: L5_31"],
+            "varexp": ["Fhr_l5.mean[31]:ntreeentries", "Fhr_l5.stddev[31]:ntreeentries", "Fhr_l5.entries[31]:ntreeentries", "Fhr_l5.mean_scaled[31]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_32", "fhr_stddev_of_L5_32", "fhr_lanes_of_L5_32", "fhr_occ_of_L5_32"],
+            "title": ["Average FHR trend: L5_32", "Stddev FHR trend: L5_32", "Active lanes trend: L5_32", "Occupancy trend: L5_32"],
+            "varexp": ["Fhr_l5.mean[32]:ntreeentries", "Fhr_l5.stddev[32]:ntreeentries", "Fhr_l5.entries[32]:ntreeentries", "Fhr_l5.mean_scaled[32]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_33", "fhr_stddev_of_L5_33", "fhr_lanes_of_L5_33", "fhr_occ_of_L5_33"],
+            "title": ["Average FHR trend: L5_33", "Stddev FHR trend: L5_33", "Active lanes trend: L5_33", "Occupancy trend: L5_33"],
+            "varexp": ["Fhr_l5.mean[33]:ntreeentries", "Fhr_l5.stddev[33]:ntreeentries", "Fhr_l5.entries[33]:ntreeentries", "Fhr_l5.mean_scaled[33]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_34", "fhr_stddev_of_L5_34", "fhr_lanes_of_L5_34", "fhr_occ_of_L5_34"],
+            "title": ["Average FHR trend: L5_34", "Stddev FHR trend: L5_34", "Active lanes trend: L5_34", "Occupancy trend: L5_34"],
+            "varexp": ["Fhr_l5.mean[34]:ntreeentries", "Fhr_l5.stddev[34]:ntreeentries", "Fhr_l5.entries[34]:ntreeentries", "Fhr_l5.mean_scaled[34]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_35", "fhr_stddev_of_L5_35", "fhr_lanes_of_L5_35", "fhr_occ_of_L5_35"],
+            "title": ["Average FHR trend: L5_35", "Stddev FHR trend: L5_35", "Active lanes trend: L5_35", "Occupancy trend: L5_35"],
+            "varexp": ["Fhr_l5.mean[35]:ntreeentries", "Fhr_l5.stddev[35]:ntreeentries", "Fhr_l5.entries[35]:ntreeentries", "Fhr_l5.mean_scaled[35]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_36", "fhr_stddev_of_L5_36", "fhr_lanes_of_L5_36", "fhr_occ_of_L5_36"],
+            "title": ["Average FHR trend: L5_36", "Stddev FHR trend: L5_36", "Active lanes trend: L5_36", "Occupancy trend: L5_36"],
+            "varexp": ["Fhr_l5.mean[36]:ntreeentries", "Fhr_l5.stddev[36]:ntreeentries", "Fhr_l5.entries[36]:ntreeentries", "Fhr_l5.mean_scaled[36]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_37", "fhr_stddev_of_L5_37", "fhr_lanes_of_L5_37", "fhr_occ_of_L5_37"],
+            "title": ["Average FHR trend: L5_37", "Stddev FHR trend: L5_37", "Active lanes trend: L5_37", "Occupancy trend: L5_37"],
+            "varexp": ["Fhr_l5.mean[37]:ntreeentries", "Fhr_l5.stddev[37]:ntreeentries", "Fhr_l5.entries[37]:ntreeentries", "Fhr_l5.mean_scaled[37]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_38", "fhr_stddev_of_L5_38", "fhr_lanes_of_L5_38", "fhr_occ_of_L5_38"],
+            "title": ["Average FHR trend: L5_38", "Stddev FHR trend: L5_38", "Active lanes trend: L5_38", "Occupancy trend: L5_38"],
+            "varexp": ["Fhr_l5.mean[38]:ntreeentries", "Fhr_l5.stddev[38]:ntreeentries", "Fhr_l5.entries[38]:ntreeentries", "Fhr_l5.mean_scaled[38]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_39", "fhr_stddev_of_L5_39", "fhr_lanes_of_L5_39", "fhr_occ_of_L5_39"],
+            "title": ["Average FHR trend: L5_39", "Stddev FHR trend: L5_39", "Active lanes trend: L5_39", "Occupancy trend: L5_39"],
+            "varexp": ["Fhr_l5.mean[39]:ntreeentries", "Fhr_l5.stddev[39]:ntreeentries", "Fhr_l5.entries[39]:ntreeentries", "Fhr_l5.mean_scaled[39]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_40", "fhr_stddev_of_L5_40", "fhr_lanes_of_L5_40", "fhr_occ_of_L5_40"],
+            "title": ["Average FHR trend: L5_40", "Stddev FHR trend: L5_40", "Active lanes trend: L5_40", "Occupancy trend: L5_40"],
+            "varexp": ["Fhr_l5.mean[40]:ntreeentries", "Fhr_l5.stddev[40]:ntreeentries", "Fhr_l5.entries[40]:ntreeentries", "Fhr_l5.mean_scaled[40]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L5_41", "fhr_stddev_of_L5_41", "fhr_lanes_of_L5_41", "fhr_occ_of_L5_41"],
+            "title": ["Average FHR trend: L5_41", "Stddev FHR trend: L5_41", "Active lanes trend: L5_41", "Occupancy trend: L5_41"],
+            "varexp": ["Fhr_l5.mean[41]:ntreeentries", "Fhr_l5.stddev[41]:ntreeentries", "Fhr_l5.entries[41]:ntreeentries", "Fhr_l5.mean_scaled[41]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_00", "fhr_stddev_of_L6_00", "fhr_lanes_of_L6_00", "fhr_occ_of_L6_00"],
+            "title": ["Average FHR trend: L6_00", "Stddev FHR trend: L6_00", "Active lanes trend: L6_00", "Occupancy trend: L6_00"],
+            "varexp": ["Fhr_l6.mean[0]:ntreeentries", "Fhr_l6.stddev[0]:ntreeentries", "Fhr_l6.entries[0]:ntreeentries", "Fhr_l6.mean_scaled[0]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_01", "fhr_stddev_of_L6_01", "fhr_lanes_of_L6_01", "fhr_occ_of_L6_01"],
+            "title": ["Average FHR trend: L6_01", "Stddev FHR trend: L6_01", "Active lanes trend: L6_01", "Occupancy trend: L6_01"],
+            "varexp": ["Fhr_l6.mean[1]:ntreeentries", "Fhr_l6.stddev[1]:ntreeentries", "Fhr_l6.entries[1]:ntreeentries", "Fhr_l6.mean_scaled[1]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_02", "fhr_stddev_of_L6_02", "fhr_lanes_of_L6_02", "fhr_occ_of_L6_02"],
+            "title": ["Average FHR trend: L6_02", "Stddev FHR trend: L6_02", "Active lanes trend: L6_02", "Occupancy trend: L6_02"],
+            "varexp": ["Fhr_l6.mean[2]:ntreeentries", "Fhr_l6.stddev[2]:ntreeentries", "Fhr_l6.entries[2]:ntreeentries", "Fhr_l6.mean_scaled[2]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_03", "fhr_stddev_of_L6_03", "fhr_lanes_of_L6_03", "fhr_occ_of_L6_03"],
+            "title": ["Average FHR trend: L6_03", "Stddev FHR trend: L6_03", "Active lanes trend: L6_03", "Occupancy trend: L6_03"],
+            "varexp": ["Fhr_l6.mean[3]:ntreeentries", "Fhr_l6.stddev[3]:ntreeentries", "Fhr_l6.entries[3]:ntreeentries", "Fhr_l6.mean_scaled[3]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_04", "fhr_stddev_of_L6_04", "fhr_lanes_of_L6_04", "fhr_occ_of_L6_04"],
+            "title": ["Average FHR trend: L6_04", "Stddev FHR trend: L6_04", "Active lanes trend: L6_04", "Occupancy trend: L6_04"],
+            "varexp": ["Fhr_l6.mean[4]:ntreeentries", "Fhr_l6.stddev[4]:ntreeentries", "Fhr_l6.entries[4]:ntreeentries", "Fhr_l6.mean_scaled[4]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_05", "fhr_stddev_of_L6_05", "fhr_lanes_of_L6_05", "fhr_occ_of_L6_05"],
+            "title": ["Average FHR trend: L6_05", "Stddev FHR trend: L6_05", "Active lanes trend: L6_05", "Occupancy trend: L6_05"],
+            "varexp": ["Fhr_l6.mean[5]:ntreeentries", "Fhr_l6.stddev[5]:ntreeentries", "Fhr_l6.entries[5]:ntreeentries", "Fhr_l6.mean_scaled[5]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_06", "fhr_stddev_of_L6_06", "fhr_lanes_of_L6_06", "fhr_occ_of_L6_06"],
+            "title": ["Average FHR trend: L6_06", "Stddev FHR trend: L6_06", "Active lanes trend: L6_06", "Occupancy trend: L6_06"],
+            "varexp": ["Fhr_l6.mean[6]:ntreeentries", "Fhr_l6.stddev[6]:ntreeentries", "Fhr_l6.entries[6]:ntreeentries", "Fhr_l6.mean_scaled[6]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_07", "fhr_stddev_of_L6_07", "fhr_lanes_of_L6_07", "fhr_occ_of_L6_07"],
+            "title": ["Average FHR trend: L6_07", "Stddev FHR trend: L6_07", "Active lanes trend: L6_07", "Occupancy trend: L6_07"],
+            "varexp": ["Fhr_l6.mean[7]:ntreeentries", "Fhr_l6.stddev[7]:ntreeentries", "Fhr_l6.entries[7]:ntreeentries", "Fhr_l6.mean_scaled[7]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_08", "fhr_stddev_of_L6_08", "fhr_lanes_of_L6_08", "fhr_occ_of_L6_08"],
+            "title": ["Average FHR trend: L6_08", "Stddev FHR trend: L6_08", "Active lanes trend: L6_08", "Occupancy trend: L6_08"],
+            "varexp": ["Fhr_l6.mean[8]:ntreeentries", "Fhr_l6.stddev[8]:ntreeentries", "Fhr_l6.entries[8]:ntreeentries", "Fhr_l6.mean_scaled[8]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_09", "fhr_stddev_of_L6_09", "fhr_lanes_of_L6_09", "fhr_occ_of_L6_09"],
+            "title": ["Average FHR trend: L6_09", "Stddev FHR trend: L6_09", "Active lanes trend: L6_09", "Occupancy trend: L6_09"],
+            "varexp": ["Fhr_l6.mean[9]:ntreeentries", "Fhr_l6.stddev[9]:ntreeentries", "Fhr_l6.entries[9]:ntreeentries", "Fhr_l6.mean_scaled[9]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_10", "fhr_stddev_of_L6_10", "fhr_lanes_of_L6_10", "fhr_occ_of_L6_10"],
+            "title": ["Average FHR trend: L6_10", "Stddev FHR trend: L6_10", "Active lanes trend: L6_10", "Occupancy trend: L6_10"],
+            "varexp": ["Fhr_l6.mean[10]:ntreeentries", "Fhr_l6.stddev[10]:ntreeentries", "Fhr_l6.entries[10]:ntreeentries", "Fhr_l6.mean_scaled[10]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_11", "fhr_stddev_of_L6_11", "fhr_lanes_of_L6_11", "fhr_occ_of_L6_11"],
+            "title": ["Average FHR trend: L6_11", "Stddev FHR trend: L6_11", "Active lanes trend: L6_11", "Occupancy trend: L6_11"],
+            "varexp": ["Fhr_l6.mean[11]:ntreeentries", "Fhr_l6.stddev[11]:ntreeentries", "Fhr_l6.entries[11]:ntreeentries", "Fhr_l6.mean_scaled[11]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_12", "fhr_stddev_of_L6_12", "fhr_lanes_of_L6_12", "fhr_occ_of_L6_12"],
+            "title": ["Average FHR trend: L6_12", "Stddev FHR trend: L6_12", "Active lanes trend: L6_12", "Occupancy trend: L6_12"],
+            "varexp": ["Fhr_l6.mean[12]:ntreeentries", "Fhr_l6.stddev[12]:ntreeentries", "Fhr_l6.entries[12]:ntreeentries", "Fhr_l6.mean_scaled[12]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_13", "fhr_stddev_of_L6_13", "fhr_lanes_of_L6_13", "fhr_occ_of_L6_13"],
+            "title": ["Average FHR trend: L6_13", "Stddev FHR trend: L6_13", "Active lanes trend: L6_13", "Occupancy trend: L6_13"],
+            "varexp": ["Fhr_l6.mean[13]:ntreeentries", "Fhr_l6.stddev[13]:ntreeentries", "Fhr_l6.entries[13]:ntreeentries", "Fhr_l6.mean_scaled[13]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_14", "fhr_stddev_of_L6_14", "fhr_lanes_of_L6_14", "fhr_occ_of_L6_14"],
+            "title": ["Average FHR trend: L6_14", "Stddev FHR trend: L6_14", "Active lanes trend: L6_14", "Occupancy trend: L6_14"],
+            "varexp": ["Fhr_l6.mean[14]:ntreeentries", "Fhr_l6.stddev[14]:ntreeentries", "Fhr_l6.entries[14]:ntreeentries", "Fhr_l6.mean_scaled[14]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_15", "fhr_stddev_of_L6_15", "fhr_lanes_of_L6_15", "fhr_occ_of_L6_15"],
+            "title": ["Average FHR trend: L6_15", "Stddev FHR trend: L6_15", "Active lanes trend: L6_15", "Occupancy trend: L6_15"],
+            "varexp": ["Fhr_l6.mean[15]:ntreeentries", "Fhr_l6.stddev[15]:ntreeentries", "Fhr_l6.entries[15]:ntreeentries", "Fhr_l6.mean_scaled[15]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_16", "fhr_stddev_of_L6_16", "fhr_lanes_of_L6_16", "fhr_occ_of_L6_16"],
+            "title": ["Average FHR trend: L6_16", "Stddev FHR trend: L6_16", "Active lanes trend: L6_16", "Occupancy trend: L6_16"],
+            "varexp": ["Fhr_l6.mean[16]:ntreeentries", "Fhr_l6.stddev[16]:ntreeentries", "Fhr_l6.entries[16]:ntreeentries", "Fhr_l6.mean_scaled[16]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_17", "fhr_stddev_of_L6_17", "fhr_lanes_of_L6_17", "fhr_occ_of_L6_17"],
+            "title": ["Average FHR trend: L6_17", "Stddev FHR trend: L6_17", "Active lanes trend: L6_17", "Occupancy trend: L6_17"],
+            "varexp": ["Fhr_l6.mean[17]:ntreeentries", "Fhr_l6.stddev[17]:ntreeentries", "Fhr_l6.entries[17]:ntreeentries", "Fhr_l6.mean_scaled[17]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_18", "fhr_stddev_of_L6_18", "fhr_lanes_of_L6_18", "fhr_occ_of_L6_18"],
+            "title": ["Average FHR trend: L6_18", "Stddev FHR trend: L6_18", "Active lanes trend: L6_18", "Occupancy trend: L6_18"],
+            "varexp": ["Fhr_l6.mean[18]:ntreeentries", "Fhr_l6.stddev[18]:ntreeentries", "Fhr_l6.entries[18]:ntreeentries", "Fhr_l6.mean_scaled[18]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_19", "fhr_stddev_of_L6_19", "fhr_lanes_of_L6_19", "fhr_occ_of_L6_19"],
+            "title": ["Average FHR trend: L6_19", "Stddev FHR trend: L6_19", "Active lanes trend: L6_19", "Occupancy trend: L6_19"],
+            "varexp": ["Fhr_l6.mean[19]:ntreeentries", "Fhr_l6.stddev[19]:ntreeentries", "Fhr_l6.entries[19]:ntreeentries", "Fhr_l6.mean_scaled[19]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_20", "fhr_stddev_of_L6_20", "fhr_lanes_of_L6_20", "fhr_occ_of_L6_20"],
+            "title": ["Average FHR trend: L6_20", "Stddev FHR trend: L6_20", "Active lanes trend: L6_20", "Occupancy trend: L6_20"],
+            "varexp": ["Fhr_l6.mean[20]:ntreeentries", "Fhr_l6.stddev[20]:ntreeentries", "Fhr_l6.entries[20]:ntreeentries", "Fhr_l6.mean_scaled[20]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_21", "fhr_stddev_of_L6_21", "fhr_lanes_of_L6_21", "fhr_occ_of_L6_21"],
+            "title": ["Average FHR trend: L6_21", "Stddev FHR trend: L6_21", "Active lanes trend: L6_21", "Occupancy trend: L6_21"],
+            "varexp": ["Fhr_l6.mean[21]:ntreeentries", "Fhr_l6.stddev[21]:ntreeentries", "Fhr_l6.entries[21]:ntreeentries", "Fhr_l6.mean_scaled[21]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_22", "fhr_stddev_of_L6_22", "fhr_lanes_of_L6_22", "fhr_occ_of_L6_22"],
+            "title": ["Average FHR trend: L6_22", "Stddev FHR trend: L6_22", "Active lanes trend: L6_22", "Occupancy trend: L6_22"],
+            "varexp": ["Fhr_l6.mean[22]:ntreeentries", "Fhr_l6.stddev[22]:ntreeentries", "Fhr_l6.entries[22]:ntreeentries", "Fhr_l6.mean_scaled[22]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_23", "fhr_stddev_of_L6_23", "fhr_lanes_of_L6_23", "fhr_occ_of_L6_23"],
+            "title": ["Average FHR trend: L6_23", "Stddev FHR trend: L6_23", "Active lanes trend: L6_23", "Occupancy trend: L6_23"],
+            "varexp": ["Fhr_l6.mean[23]:ntreeentries", "Fhr_l6.stddev[23]:ntreeentries", "Fhr_l6.entries[23]:ntreeentries", "Fhr_l6.mean_scaled[23]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_24", "fhr_stddev_of_L6_24", "fhr_lanes_of_L6_24", "fhr_occ_of_L6_24"],
+            "title": ["Average FHR trend: L6_24", "Stddev FHR trend: L6_24", "Active lanes trend: L6_24", "Occupancy trend: L6_24"],
+            "varexp": ["Fhr_l6.mean[24]:ntreeentries", "Fhr_l6.stddev[24]:ntreeentries", "Fhr_l6.entries[24]:ntreeentries", "Fhr_l6.mean_scaled[24]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_25", "fhr_stddev_of_L6_25", "fhr_lanes_of_L6_25", "fhr_occ_of_L6_25"],
+            "title": ["Average FHR trend: L6_25", "Stddev FHR trend: L6_25", "Active lanes trend: L6_25", "Occupancy trend: L6_25"],
+            "varexp": ["Fhr_l6.mean[25]:ntreeentries", "Fhr_l6.stddev[25]:ntreeentries", "Fhr_l6.entries[25]:ntreeentries", "Fhr_l6.mean_scaled[25]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_26", "fhr_stddev_of_L6_26", "fhr_lanes_of_L6_26", "fhr_occ_of_L6_26"],
+            "title": ["Average FHR trend: L6_26", "Stddev FHR trend: L6_26", "Active lanes trend: L6_26", "Occupancy trend: L6_26"],
+            "varexp": ["Fhr_l6.mean[26]:ntreeentries", "Fhr_l6.stddev[26]:ntreeentries", "Fhr_l6.entries[26]:ntreeentries", "Fhr_l6.mean_scaled[26]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_27", "fhr_stddev_of_L6_27", "fhr_lanes_of_L6_27", "fhr_occ_of_L6_27"],
+            "title": ["Average FHR trend: L6_27", "Stddev FHR trend: L6_27", "Active lanes trend: L6_27", "Occupancy trend: L6_27"],
+            "varexp": ["Fhr_l6.mean[27]:ntreeentries", "Fhr_l6.stddev[27]:ntreeentries", "Fhr_l6.entries[27]:ntreeentries", "Fhr_l6.mean_scaled[27]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_28", "fhr_stddev_of_L6_28", "fhr_lanes_of_L6_28", "fhr_occ_of_L6_28"],
+            "title": ["Average FHR trend: L6_28", "Stddev FHR trend: L6_28", "Active lanes trend: L6_28", "Occupancy trend: L6_28"],
+            "varexp": ["Fhr_l6.mean[28]:ntreeentries", "Fhr_l6.stddev[28]:ntreeentries", "Fhr_l6.entries[28]:ntreeentries", "Fhr_l6.mean_scaled[28]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_29", "fhr_stddev_of_L6_29", "fhr_lanes_of_L6_29", "fhr_occ_of_L6_29"],
+            "title": ["Average FHR trend: L6_29", "Stddev FHR trend: L6_29", "Active lanes trend: L6_29", "Occupancy trend: L6_29"],
+            "varexp": ["Fhr_l6.mean[29]:ntreeentries", "Fhr_l6.stddev[29]:ntreeentries", "Fhr_l6.entries[29]:ntreeentries", "Fhr_l6.mean_scaled[29]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_30", "fhr_stddev_of_L6_30", "fhr_lanes_of_L6_30", "fhr_occ_of_L6_30"],
+            "title": ["Average FHR trend: L6_30", "Stddev FHR trend: L6_30", "Active lanes trend: L6_30", "Occupancy trend: L6_30"],
+            "varexp": ["Fhr_l6.mean[30]:ntreeentries", "Fhr_l6.stddev[30]:ntreeentries", "Fhr_l6.entries[30]:ntreeentries", "Fhr_l6.mean_scaled[30]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_31", "fhr_stddev_of_L6_31", "fhr_lanes_of_L6_31", "fhr_occ_of_L6_31"],
+            "title": ["Average FHR trend: L6_31", "Stddev FHR trend: L6_31", "Active lanes trend: L6_31", "Occupancy trend: L6_31"],
+            "varexp": ["Fhr_l6.mean[31]:ntreeentries", "Fhr_l6.stddev[31]:ntreeentries", "Fhr_l6.entries[31]:ntreeentries", "Fhr_l6.mean_scaled[31]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_32", "fhr_stddev_of_L6_32", "fhr_lanes_of_L6_32", "fhr_occ_of_L6_32"],
+            "title": ["Average FHR trend: L6_32", "Stddev FHR trend: L6_32", "Active lanes trend: L6_32", "Occupancy trend: L6_32"],
+            "varexp": ["Fhr_l6.mean[32]:ntreeentries", "Fhr_l6.stddev[32]:ntreeentries", "Fhr_l6.entries[32]:ntreeentries", "Fhr_l6.mean_scaled[32]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_33", "fhr_stddev_of_L6_33", "fhr_lanes_of_L6_33", "fhr_occ_of_L6_33"],
+            "title": ["Average FHR trend: L6_33", "Stddev FHR trend: L6_33", "Active lanes trend: L6_33", "Occupancy trend: L6_33"],
+            "varexp": ["Fhr_l6.mean[33]:ntreeentries", "Fhr_l6.stddev[33]:ntreeentries", "Fhr_l6.entries[33]:ntreeentries", "Fhr_l6.mean_scaled[33]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_34", "fhr_stddev_of_L6_34", "fhr_lanes_of_L6_34", "fhr_occ_of_L6_34"],
+            "title": ["Average FHR trend: L6_34", "Stddev FHR trend: L6_34", "Active lanes trend: L6_34", "Occupancy trend: L6_34"],
+            "varexp": ["Fhr_l6.mean[34]:ntreeentries", "Fhr_l6.stddev[34]:ntreeentries", "Fhr_l6.entries[34]:ntreeentries", "Fhr_l6.mean_scaled[34]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_35", "fhr_stddev_of_L6_35", "fhr_lanes_of_L6_35", "fhr_occ_of_L6_35"],
+            "title": ["Average FHR trend: L6_35", "Stddev FHR trend: L6_35", "Active lanes trend: L6_35", "Occupancy trend: L6_35"],
+            "varexp": ["Fhr_l6.mean[35]:ntreeentries", "Fhr_l6.stddev[35]:ntreeentries", "Fhr_l6.entries[35]:ntreeentries", "Fhr_l6.mean_scaled[35]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_36", "fhr_stddev_of_L6_36", "fhr_lanes_of_L6_36", "fhr_occ_of_L6_36"],
+            "title": ["Average FHR trend: L6_36", "Stddev FHR trend: L6_36", "Active lanes trend: L6_36", "Occupancy trend: L6_36"],
+            "varexp": ["Fhr_l6.mean[36]:ntreeentries", "Fhr_l6.stddev[36]:ntreeentries", "Fhr_l6.entries[36]:ntreeentries", "Fhr_l6.mean_scaled[36]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_37", "fhr_stddev_of_L6_37", "fhr_lanes_of_L6_37", "fhr_occ_of_L6_37"],
+            "title": ["Average FHR trend: L6_37", "Stddev FHR trend: L6_37", "Active lanes trend: L6_37", "Occupancy trend: L6_37"],
+            "varexp": ["Fhr_l6.mean[37]:ntreeentries", "Fhr_l6.stddev[37]:ntreeentries", "Fhr_l6.entries[37]:ntreeentries", "Fhr_l6.mean_scaled[37]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_38", "fhr_stddev_of_L6_38", "fhr_lanes_of_L6_38", "fhr_occ_of_L6_38"],
+            "title": ["Average FHR trend: L6_38", "Stddev FHR trend: L6_38", "Active lanes trend: L6_38", "Occupancy trend: L6_38"],
+            "varexp": ["Fhr_l6.mean[38]:ntreeentries", "Fhr_l6.stddev[38]:ntreeentries", "Fhr_l6.entries[38]:ntreeentries", "Fhr_l6.mean_scaled[38]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_39", "fhr_stddev_of_L6_39", "fhr_lanes_of_L6_39", "fhr_occ_of_L6_39"],
+            "title": ["Average FHR trend: L6_39", "Stddev FHR trend: L6_39", "Active lanes trend: L6_39", "Occupancy trend: L6_39"],
+            "varexp": ["Fhr_l6.mean[39]:ntreeentries", "Fhr_l6.stddev[39]:ntreeentries", "Fhr_l6.entries[39]:ntreeentries", "Fhr_l6.mean_scaled[39]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_40", "fhr_stddev_of_L6_40", "fhr_lanes_of_L6_40", "fhr_occ_of_L6_40"],
+            "title": ["Average FHR trend: L6_40", "Stddev FHR trend: L6_40", "Active lanes trend: L6_40", "Occupancy trend: L6_40"],
+            "varexp": ["Fhr_l6.mean[40]:ntreeentries", "Fhr_l6.stddev[40]:ntreeentries", "Fhr_l6.entries[40]:ntreeentries", "Fhr_l6.mean_scaled[40]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_41", "fhr_stddev_of_L6_41", "fhr_lanes_of_L6_41", "fhr_occ_of_L6_41"],
+            "title": ["Average FHR trend: L6_41", "Stddev FHR trend: L6_41", "Active lanes trend: L6_41", "Occupancy trend: L6_41"],
+            "varexp": ["Fhr_l6.mean[41]:ntreeentries", "Fhr_l6.stddev[41]:ntreeentries", "Fhr_l6.entries[41]:ntreeentries", "Fhr_l6.mean_scaled[41]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_42", "fhr_stddev_of_L6_42", "fhr_lanes_of_L6_42", "fhr_occ_of_L6_42"],
+            "title": ["Average FHR trend: L6_42", "Stddev FHR trend: L6_42", "Active lanes trend: L6_42", "Occupancy trend: L6_42"],
+            "varexp": ["Fhr_l6.mean[42]:ntreeentries", "Fhr_l6.stddev[42]:ntreeentries", "Fhr_l6.entries[42]:ntreeentries", "Fhr_l6.mean_scaled[42]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_43", "fhr_stddev_of_L6_43", "fhr_lanes_of_L6_43", "fhr_occ_of_L6_43"],
+            "title": ["Average FHR trend: L6_43", "Stddev FHR trend: L6_43", "Active lanes trend: L6_43", "Occupancy trend: L6_43"],
+            "varexp": ["Fhr_l6.mean[43]:ntreeentries", "Fhr_l6.stddev[43]:ntreeentries", "Fhr_l6.entries[43]:ntreeentries", "Fhr_l6.mean_scaled[43]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_44", "fhr_stddev_of_L6_44", "fhr_lanes_of_L6_44", "fhr_occ_of_L6_44"],
+            "title": ["Average FHR trend: L6_44", "Stddev FHR trend: L6_44", "Active lanes trend: L6_44", "Occupancy trend: L6_44"],
+            "varexp": ["Fhr_l6.mean[44]:ntreeentries", "Fhr_l6.stddev[44]:ntreeentries", "Fhr_l6.entries[44]:ntreeentries", "Fhr_l6.mean_scaled[44]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_45", "fhr_stddev_of_L6_45", "fhr_lanes_of_L6_45", "fhr_occ_of_L6_45"],
+            "title": ["Average FHR trend: L6_45", "Stddev FHR trend: L6_45", "Active lanes trend: L6_45", "Occupancy trend: L6_45"],
+            "varexp": ["Fhr_l6.mean[45]:ntreeentries", "Fhr_l6.stddev[45]:ntreeentries", "Fhr_l6.entries[45]:ntreeentries", "Fhr_l6.mean_scaled[45]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_46", "fhr_stddev_of_L6_46", "fhr_lanes_of_L6_46", "fhr_occ_of_L6_46"],
+            "title": ["Average FHR trend: L6_46", "Stddev FHR trend: L6_46", "Active lanes trend: L6_46", "Occupancy trend: L6_46"],
+            "varexp": ["Fhr_l6.mean[46]:ntreeentries", "Fhr_l6.stddev[46]:ntreeentries", "Fhr_l6.entries[46]:ntreeentries", "Fhr_l6.mean_scaled[46]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["fhr_mean_of_L6_47", "fhr_stddev_of_L6_47", "fhr_lanes_of_L6_47", "fhr_occ_of_L6_47"],
+            "title": ["Average FHR trend: L6_47", "Stddev FHR trend: L6_47", "Active lanes trend: L6_47", "Occupancy trend: L6_47"],
+            "varexp": ["Fhr_l6.mean[47]:ntreeentries", "Fhr_l6.stddev[47]:ntreeentries", "Fhr_l6.entries[47]:ntreeentries", "Fhr_l6.mean_scaled[47]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
           }
         ],
+
         "initTrigger": [
           "userorcontrol"
         ],
