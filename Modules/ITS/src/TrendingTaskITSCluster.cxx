@@ -140,7 +140,7 @@ void TrendingTaskITSCluster::storePlots(repository::DatabaseInterface& qcdb)
   int colidx = 0;
   int mkridx = 0;
   // adding canvas for the average plots for the layers
-  TCanvas* c_avg[2];
+  TCanvas* c_avg[4];
   c_avg[0] = new TCanvas("avg_cluster_size_summary");
   c_avg[1] = new TCanvas("avg_cluster_std");
   c_avg[2] = new TCanvas("avg_grouped_cluster_mean");
