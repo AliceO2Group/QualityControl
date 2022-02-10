@@ -100,6 +100,18 @@ void VertexingQcTask::initialize(o2::framework::InitContext& /*ctx*/)
       getObjectsManager()->startPublishing(mVtxPullsXVsMult);
       getObjectsManager()->startPublishing(mVtxPullsYVsMult);
       getObjectsManager()->startPublishing(mVtxPullsZVsMult);
+
+      mPurityVsMult->GetYaxis()->SetTitleOffset(1.4);
+      mNPrimaryMCEvWithVtx->GetYaxis()->SetTitleOffset(1.4);
+      mNPrimaryMCGen->GetYaxis()->SetTitleOffset(1.4);
+      mRatioNPrimaryMCEvWithVtxvsNPrimaryMCGen->GetYaxis()->SetTitleOffset(1.4);
+      mCloneFactorVsMult->GetYaxis()->SetTitleOffset(1.4);
+      mVtxResXVsMult->GetYaxis()->SetTitleOffset(1.4);
+      mVtxResYVsMult->GetYaxis()->SetTitleOffset(1.4);
+      mVtxResZVsMult->GetYaxis()->SetTitleOffset(1.4);
+      mVtxPullsXVsMult->GetYaxis()->SetTitleOffset(1.4);
+      mVtxPullsYVsMult->GetYaxis()->SetTitleOffset(1.4);
+      mVtxPullsZVsMult->GetYaxis()->SetTitleOffset(1.4);
     }
   }
 
@@ -124,6 +136,13 @@ void VertexingQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mTimeUncVsNContrib);
   mBeamSpot->SetOption("colz");
   getObjectsManager()->startPublishing(mBeamSpot);
+
+  mX->GetYaxis()->SetTitleOffset(1.4);
+  mY->GetYaxis()->SetTitleOffset(1.4);
+  mZ->GetYaxis()->SetTitleOffset(1.4);
+  mNContributors->GetYaxis()->SetTitleOffset(1.4);
+  mTimeUncVsNContrib->GetYaxis()->SetTitleOffset(1.4);
+  mBeamSpot->GetYaxis()->SetTitleOffset(1.4);
 }
 
 void VertexingQcTask::startOfActivity(Activity& activity)
