@@ -95,11 +95,11 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
       const auto* header = header::get<header::DataHeader*>(input.header);
       //LOG(info) << "monitorData() : obtained input " << header->dataOrigin.str << "/" << header->dataDescription.str;
       if ((strcmp(header->dataOrigin.str, "CPV") == 0) && (strcmp(header->dataDescription.str, "DIGITS") == 0)) {
-        LOG(info) << "monitorData() : I found digits in inputs";
+        //LOG(info) << "monitorData() : I found digits in inputs";
         hasDigits = true;
       }
       if ((strcmp(header->dataOrigin.str, "CPV") == 0) && (strcmp(header->dataDescription.str, "CLUSTERS") == 0)) {
-        LOG(info) << "monitorData() : I found clusters in inputs";
+        //LOG(info) << "monitorData() : I found clusters in inputs";
         hasClusters = true;
       }
 
