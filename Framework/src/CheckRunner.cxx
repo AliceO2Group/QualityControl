@@ -195,10 +195,10 @@ void CheckRunner::refreshConfig(InitContext& iCtx)
     }
   } catch (std::invalid_argument& error) {
     // ignore the error, we just skip the update of the config file. It can be legit, e.g. in command line mode
-    ILOG(Warning, Devel) << "Could not get updated config tree in TaskRunner::init() - `qcConfiguration` could not be retrieved" << ENDM;
+    ILOG(Warning, Devel) << "Could not get updated config tree in CheckRunner::init() - `qcConfiguration` could not be retrieved" << ENDM;
   } catch (...) {
     // we catch here because we don't know where it will get lost in DPL, and also we don't care if this part has failed.
-    ILOG(Warning, Devel) << "Error caught in refreshConfig() :\n"
+    ILOG(Warning, Devel) << "Error caught in CheckRunner::refreshConfig() :\n"
                          << current_diagnostic(true) << ENDM;
   }
 }

@@ -24,6 +24,7 @@
 
 class TH1F;
 class TH2F;
+class TF1;
 class TProfile;
 class TEfficiency;
 
@@ -55,7 +56,9 @@ class VertexingQcTask final : public TaskInterface
 
  private:
   TH1F* mX = nullptr;                     // vertex X
+  TF1* fX = nullptr;                      // fit vertex X
   TH1F* mY = nullptr;                     // vertex Y
+  TF1* fY = nullptr;                      // fit vertex Y
   TH1F* mZ = nullptr;                     // vertex Z
   TH1F* mNContributors = nullptr;         // vertex N contributors
   TProfile* mTimeUncVsNContrib = nullptr; // time uncertainty vs N contributors
@@ -70,6 +73,7 @@ class VertexingQcTask final : public TaskInterface
   std::unordered_map<o2::MCEventLabel, int> mMapEvIDSourceID; // unordered_map counting the number of vertices reconstructed per event and source (--> MCEventLabel)
   TH1F* mNPrimaryMCEvWithVtx = nullptr;                       // event multiplicity for MC events with at least 1 vertex
   TH1F* mNPrimaryMCGen = nullptr;                             // event multiplicity for all MC events
+  TH1F* mRatioNPrimaryMCEvWithVtxvsNPrimaryMCGen = nullptr;   /* ratio event multiplicity for MC events with at least 1 vertex vs. event multiplicity for all MC events */
   TEfficiency* mVtxEffVsMult = nullptr;                       // for vertex efficiency
   TProfile* mCloneFactorVsMult = nullptr;                     // clone factor vs multiplicity
   TProfile* mVtxResXVsMult = nullptr;                         // vertex resolution in X
