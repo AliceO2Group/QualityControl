@@ -12,6 +12,7 @@
 #pragma link C++ class o2::quality_control_modules::ft0::MergedTreeCheck + ;
 #pragma link C++ class o2::quality_control_modules::ft0::TreeReaderPostProcessing + ;
 #pragma link C++ class o2::quality_control_modules::ft0::CalibrationTask + ;
+#pragma link C++ class o2::quality_control_modules::ft0::ChannelCalibrationTask + ;
 #pragma link C++ class o2::quality_control_modules::ft0::ChannelTimeCalibrationCheck + ;
 #pragma link C++ class o2::quality_control_modules::ft0::BasicPPTask + ;
 #pragma link C++ class o2::quality_control_modules::ft0::OutOfBunchCollTask + ;

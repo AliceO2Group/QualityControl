@@ -21,7 +21,7 @@
 #include <Framework/InputRecord.h>
 
 #include "QualityControl/QcInfoLogger.h"
-#include "FT0Base/Constants.h"
+#include "FT0Base/Geometry.h"
 #include "DataFormatsFT0/RecPoints.h"
 #include "DataFormatsFT0/ChannelData.h"
 #include "QualityControl/TaskInterface.h"
@@ -41,6 +41,8 @@ namespace o2::quality_control_modules::ft0
 
 class RecPointsQcTask final : public TaskInterface
 {
+  static constexpr int NCHANNELS = o2::ft0::Geometry::Nchannels;
+
  public:
   /// \brief Constructor
   RecPointsQcTask() = default;
@@ -105,7 +107,6 @@ class RecPointsQcTask final : public TaskInterface
   std::unique_ptr<TH1F> mHistResCollTimeA;
   std::unique_ptr<TH1F> mHistResCollTimeC;
   std::unique_ptr<TH2F> mHistTimeSum2Diff;
-  std::unique_ptr<TH2F> mHistEventDensity2Ch;
   std::map<unsigned int, TH2F*> mMapHistAmpVsTime;
 };
 
