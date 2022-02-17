@@ -63,7 +63,7 @@
              "id" : "compclus",
              "active" : "true",
              "machines" : [],
-             "query" : "tracks:ITS/TRACKS/0;mstruth:ITS/TRACKSMCTR/0;rofs:ITS/ITSTrackROF/0;mcrofs:ITS/ITSTrackMC2ROF/0;compclus:ITS/COMPCLUSTERS/0",
+             "query" : "tracks:ITS/TRACKS/0;mstruth:ITS/TRACKSMCTR/0;rofs:ITS/ITSTrackROF/0;mcrofs:ITS/ITSTrackMC2ROF/0;compclus:ITS/COMPCLUSTERS/0;mcclustruth:ITS/CLUSTERSMCTR/0",
              "samplingConditions" : [
                {
                  "condition" : "random",
