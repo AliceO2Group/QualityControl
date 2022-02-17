@@ -43,7 +43,7 @@ PhysicsOccupancyCheck::PhysicsOccupancyCheck()
 
 PhysicsOccupancyCheck::~PhysicsOccupancyCheck() {}
 
-void PhysicsOccupancyCheck::configure(std::string)
+void PhysicsOccupancyCheck::configure()
 {
 }
 

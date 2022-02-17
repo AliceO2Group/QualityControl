@@ -29,7 +29,6 @@ ITSTPCMatchingTask::~ITSTPCMatchingTask()
 {
   //  mMatchITSTPCQC.deleteHistograms();
 }
-
 void ITSTPCMatchingTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info, Support) << "initialize ITSTPCMatchingTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.

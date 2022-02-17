@@ -32,11 +32,7 @@ using namespace o2::its;
 namespace o2::quality_control_modules::its
 {
 
-ITSNoisyPixelTask::ITSNoisyPixelTask() : TaskInterface()
-{
-  o2::base::GeometryManager::loadGeometry(mGeomPath.c_str());
-  mGeom = o2::its::GeometryTGeo::Instance();
-}
+ITSNoisyPixelTask::ITSNoisyPixelTask() : TaskInterface() {}
 
 ITSNoisyPixelTask::~ITSNoisyPixelTask()
 {
@@ -79,6 +75,10 @@ void ITSNoisyPixelTask::initialize(o2::framework::InitContext& /*ctx*/)
   ILOG(Info, Support) << "initialize ITSNoisyPixelTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
   getJsonParameters();
+
+  o2::base::GeometryManager::loadGeometry(mGeomPath.c_str());
+  mGeom = o2::its::GeometryTGeo::Instance();
+
   createAllHistos();
 
   publishHistos();
@@ -297,7 +297,7 @@ void ITSNoisyPixelTask::reset()
       for (Int_t iStave = 0; iStave < mNStaves[iLayer]; iStave++)
         hNoisyPixelMapIB[iLayer][iStave]->Reset();
 
-    } //END INNER BARREL
+    } // END INNER BARREL
     // OUTER BARRREL
     else {
 

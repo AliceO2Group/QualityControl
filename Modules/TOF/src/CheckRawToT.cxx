@@ -25,7 +25,7 @@ using namespace std;
 namespace o2::quality_control_modules::tof
 {
 
-void CheckRawToT::configure(std::string)
+void CheckRawToT::configure()
 {
 
   if (auto param = mCustomParameters.find("MinRawTime"); param != mCustomParameters.end()) {

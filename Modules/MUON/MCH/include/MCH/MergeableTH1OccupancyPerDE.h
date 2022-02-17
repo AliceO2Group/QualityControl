@@ -48,46 +48,71 @@ class MergeableTH1OccupancyPerDE : public TH1F, public o2::mergers::MergeInterfa
   MergeableTH1OccupancyPerDE() = default;
 
   MergeableTH1OccupancyPerDE(MergeableTH1OccupancyPerDE const& copymerge)
-    : TH1F("DefaultName", "DefaultTitle", 1100, -0.5, 1099.5), o2::mergers::MergeInterface(), mhistoNum(copymerge.getNum()), mhistoDen(copymerge.getDen())
+    : TH1F("DefaultName", "DefaultTitle", 1100, -0.5, 1099.5), o2::mergers::MergeInterface()
   {
+    Bool_t bStatus = TH1::AddDirectoryStatus();
+    TH1::AddDirectory(kFALSE);
+    mHistoNum = (TH1F*)copymerge.getNum()->Clone();
+    mHistoDen = (TH1F*)copymerge.getDen()->Clone();
+    TH1::AddDirectory(bStatus);
   }
 
-  MergeableTH1OccupancyPerDE(const char* name, const char* title, TH2F* histonum, TH2F* histoden)
-    : TH1F(name, title, 1100, -0.5, 1099.5), o2::mergers::MergeInterface(), mhistoNum(histonum), mhistoDen(histoden)
+  MergeableTH1OccupancyPerDE(const char* name, const char* title)
+    : TH1F(name, title, 1100, -0.5, 1099.5), o2::mergers::MergeInterface()
   {
+    Bool_t bStatus = TH1::AddDirectoryStatus();
+    TH1::AddDirectory(kFALSE);
+    mHistoNum = new TH1F("num", "num", 1100, -0.5, 1099.5);
+    mHistoDen = new TH1F("den", "den", 1100, -0.5, 1099.5);
+    TH1::AddDirectory(bStatus);
     update();
   }
 
-  ~MergeableTH1OccupancyPerDE() override = default;
+  ~MergeableTH1OccupancyPerDE()
+  {
+    if (mHistoNum) {
+      delete mHistoNum;
+    }
+
+    if (mHistoDen) {
+      delete mHistoDen;
+    }
+  }
 
   void merge(MergeInterface* const other) override
   {
-    mhistoNum->Add(dynamic_cast<const MergeableTH1OccupancyPerDE* const>(other)->getNum());
-    mhistoDen->Add(dynamic_cast<const MergeableTH1OccupancyPerDE* const>(other)->getDen());
+    mHistoNum->Add(dynamic_cast<const MergeableTH1OccupancyPerDE* const>(other)->getNum());
+    mHistoDen->Add(dynamic_cast<const MergeableTH1OccupancyPerDE* const>(other)->getDen());
 
     update();
   }
 
-  TH2F* getNum() const
+  TH1F* getNum() const
   {
-    return mhistoNum;
+    return mHistoNum;
   }
 
-  TH2F* getDen() const
+  TH1F* getDen() const
   {
-    return mhistoDen;
+    return mHistoDen;
   }
 
   void update()
   {
-    TH2F htemp = TH2F("TempNameDiv", "TempTitleDiv", mhistoNum->GetNbinsX(), 0, mhistoNum->GetNbinsX(), mhistoNum->GetNbinsY(), 0, mhistoNum->GetNbinsY());
-    htemp.Divide(mhistoNum, mhistoDen);
-
+    static constexpr double sOrbitLengthInNanoseconds = 3564 * 25;
+    static constexpr double sOrbitLengthInMicroseconds = sOrbitLengthInNanoseconds / 1000;
+    static constexpr double sOrbitLengthInMilliseconds = sOrbitLengthInMicroseconds / 1000;
     const char* name = this->GetName();
     const char* title = this->GetTitle();
     Reset();
+    Divide(mHistoNum, mHistoDen);
     SetNameTitle(name, title);
+    // convertion to KHz units
+    Scale(1. / sOrbitLengthInMilliseconds);
+  }
 
+  void update(TH2F* histoNum2D, TH2F* histoDen2D)
+  {
     o2::mch::raw::Elec2DetMapper mElec2DetMapper = o2::mch::raw::createElec2DetMapper<o2::mch::raw::ElectronicMapperGenerated>();
     o2::mch::raw::Det2ElecMapper mDet2ElecMapper = o2::mch::raw::createDet2ElecMapper<o2::mch::raw::ElectronicMapperGenerated>();
     o2::mch::raw::FeeLink2SolarMapper mFeeLink2SolarMapper = o2::mch::raw::createFeeLink2SolarMapper<o2::mch::raw::ElectronicMapperGenerated>();
@@ -95,57 +120,59 @@ class MergeableTH1OccupancyPerDE : public TH1F, public o2::mergers::MergeInterfa
 
     // Using OccupancyElec to get the mean occupancy per DE
     // By looking at each bin in NHits Elec histogram, getting the Elec info (fee, link, de) for each bin, computing the number of hits seen on a given DE and dividing by the number of bins
-    double MeanOccupancyDE[1100];
-    int NbinsDE[1100];
-    auto horbits = mhistoDen;
-    if (horbits) {
-      for (auto de : o2::mch::raw::deIdsForAllMCH) {
-        MeanOccupancyDE[de] = 0;
-        NbinsDE[de] = 0;
-      }
-      for (int binx = 1; binx < htemp.GetXaxis()->GetNbins() + 1; binx++) {
-        for (int biny = 1; biny < htemp.GetYaxis()->GetNbins() + 1; biny++) {
+    double nHitsDE[1100] = { 0 };
+    int nOrbitsDE[1100] = { 0 };
+    auto horbits = histoDen2D;
+    if (!horbits) {
+      return;
+    }
 
-          int mNOrbits = horbits->GetBinContent(binx, biny);
-          if (mNOrbits <= 0) {
-            // no orbits detected for this channel, skip it
-            continue;
-          }
-          // Getting Elec information based on the definition of x and y bins in ElecHistograms
-          uint32_t dsAddr = (binx - 1) % 40;
-          uint32_t linkId = ((binx - 1 - dsAddr) / 40) % 12;
-          uint32_t feeId = (binx - 1 - dsAddr - 40 * linkId) / (12 * 40);
-          uint32_t de;
-          std::optional<uint16_t> solarId = mFeeLink2SolarMapper(o2::mch::raw::FeeLinkId{ static_cast<uint16_t>(feeId), static_cast<uint8_t>(linkId) });
-          if (!solarId.has_value()) {
-            continue;
-          }
-          std::optional<o2::mch::raw::DsDetId> dsDetId =
-            mElec2DetMapper(o2::mch::raw::DsElecId{ solarId.value(), static_cast<uint8_t>(dsAddr / 5), static_cast<uint8_t>(dsAddr % 5) });
-          if (!dsDetId.has_value()) {
-            continue;
-          }
-          de = dsDetId->deId();
+    for (auto de : o2::mch::raw::deIdsForAllMCH) {
+      nHitsDE[de] = 0;
+      nOrbitsDE[de] = 0;
+    }
 
-          MeanOccupancyDE[de] += htemp.GetBinContent(binx, biny);
-          NbinsDE[de] += 1;
+    for (int binx = 1; binx < horbits->GetXaxis()->GetNbins() + 1; binx++) {
+      for (int biny = 1; biny < horbits->GetYaxis()->GetNbins() + 1; biny++) {
+
+        int mNOrbits = horbits->GetBinContent(binx, biny);
+        //std::cout << fmt::format("  norbits {}", mNOrbits) << std::endl;
+        if (mNOrbits <= 0) {
+          // no orbits detected for this channel, skip it
+          continue;
         }
-      }
-
-      for (auto i : o2::mch::raw::deIdsForAllMCH) {
-        if (NbinsDE[i] > 0) {
-          MeanOccupancyDE[i] /= NbinsDE[i];
+        // Getting Elec information based on the definition of x and y bins in ElecHistograms
+        uint32_t dsAddr = (binx - 1) % 40;
+        uint32_t linkId = ((binx - 1 - dsAddr) / 40) % 12;
+        uint32_t feeId = (binx - 1 - dsAddr - 40 * linkId) / (12 * 40);
+        uint32_t de;
+        std::optional<uint16_t> solarId = mFeeLink2SolarMapper(o2::mch::raw::FeeLinkId{ static_cast<uint16_t>(feeId), static_cast<uint8_t>(linkId) });
+        if (!solarId.has_value()) {
+          continue;
         }
-        SetBinContent(i + 1, MeanOccupancyDE[i]);
+        std::optional<o2::mch::raw::DsDetId> dsDetId =
+          mElec2DetMapper(o2::mch::raw::DsElecId{ solarId.value(), static_cast<uint8_t>(dsAddr / 5), static_cast<uint8_t>(dsAddr % 5) });
+        if (!dsDetId.has_value()) {
+          continue;
+        }
+        de = dsDetId->deId();
+
+        nHitsDE[de] += histoNum2D->GetBinContent(binx, biny);
+        nOrbitsDE[de] += mNOrbits;
       }
     }
 
-    Scale(1 / 87.5);
+    for (auto i : o2::mch::raw::deIdsForAllMCH) {
+      mHistoNum->SetBinContent(i + 1, nHitsDE[i]);
+      mHistoDen->SetBinContent(i + 1, nOrbitsDE[i]);
+    }
+
+    update();
   }
 
  private:
-  TH2F* mhistoNum{ nullptr };
-  TH2F* mhistoDen{ nullptr };
+  TH1F* mHistoNum{ nullptr };
+  TH1F* mHistoDen{ nullptr };
   std::string mTreatMeAs = "TH1F";
 
   ClassDefOverride(MergeableTH1OccupancyPerDE, 2);

@@ -29,7 +29,7 @@
 namespace o2::quality_control_modules::its
 {
 
-void ITSFhrCheck::configure(std::string) {}
+void ITSFhrCheck::configure() {}
 
 Quality ITSFhrCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {

@@ -21,6 +21,7 @@
 
 class TH1F;
 class TH2F;
+class TH1D;
 
 using namespace o2::quality_control::core;
 
@@ -59,7 +60,7 @@ class DigitsTask final : public TaskInterface
   std::shared_ptr<TH1F> mDigitHCID = nullptr;
   std::shared_ptr<TH1F> mParsingErrors = nullptr;
 
-  std::array<std::shared_ptr<TH1F>, 540> mClusterAmplitudeChamber;
+  std::shared_ptr<TH2F> mClusterAmplitudeChamber;
   std::array<std::shared_ptr<TH2F>, 6> mNClsLayer;        ///[layer]->Fill(sm - 0.5 + col / 144., startRow[istack]+row);
   std::shared_ptr<TH1D> mADCvalue;                        //->Fill(value);
   std::array<std::shared_ptr<TH1F>, 18> mADC;             //[sm]->Fill(value);
@@ -79,7 +80,6 @@ class DigitsTask final : public TaskInterface
   std::shared_ptr<TH1F> mClsAmpTb;                        //, "ClsAmpTb", "ClsAmpTb", 30, -0.5, 29.5);
   std::shared_ptr<TH1F> mClsAmpCh;                        //
   std::array<std::shared_ptr<TH2F>, 18> mClsDetAmp;       //[sm]->Fill(detLoc, sum);
-  std::array<std::shared_ptr<TH1F>, 540> mClsAmpChamber;  //[iChamber]->Fill(sum);
   std::shared_ptr<TH2F> mClsSector;                       //, "ClsSector", "ClsSector", nSMs, -0.5, 17.5, 500, -0.5, 999.5);
   std::shared_ptr<TH2F> mClsStack;                        //, "ClsStack", "ClsStack", 5, -0.5, 4.5, 500, -0.5, 999.5);
   std::array<std::shared_ptr<TH2F>, 18> mClsDetTime;      //[sm]->Fill(detLoc, time, sum);

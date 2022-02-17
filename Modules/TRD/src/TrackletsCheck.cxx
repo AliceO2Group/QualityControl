@@ -29,7 +29,7 @@ using namespace o2::quality_control;
 namespace o2::quality_control_modules::trd
 {
 
-void TrackletsCheck::configure(std::string) {}
+void TrackletsCheck::configure() {}
 
 Quality TrackletsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {

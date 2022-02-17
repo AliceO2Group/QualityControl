@@ -36,7 +36,7 @@ class CheckCompressedData : public o2::quality_control::checker::CheckInterface
   ~CheckCompressedData() override = default;
 
   // Override interface
-  void configure(std::string name) override;
+  void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult) override;
   std::string getAcceptedType() override;
@@ -47,7 +47,7 @@ class CheckCompressedData : public o2::quality_control::checker::CheckInterface
   /// Messages to print on the output PAD
   MessagePad mShifterMessages;
 
-  ClassDefOverride(CheckCompressedData, 1);
+  ClassDefOverride(CheckCompressedData, 2);
 };
 
 } // namespace o2::quality_control_modules::tof

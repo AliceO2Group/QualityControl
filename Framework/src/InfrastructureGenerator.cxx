@@ -133,8 +133,7 @@ WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(const boost::p
         if (machine == targetHost) {
           // If we use delta mergers, then the moving window is implemented by the last Merger layer.
           // The QC Tasks should always send a delta covering one cycle.
-          int resetAfterCycles = taskSpec.mergingMode == "delta" ? 1 : (int)taskSpec.resetAfterCycles;
-          auto taskConfig = TaskRunnerFactory::extractConfig(infrastructureSpec.common, taskSpec, id, resetAfterCycles);
+          auto taskConfig = TaskRunnerFactory::extractConfig(infrastructureSpec.common, taskSpec, id, TaskRunnerFactory::computeResetAfterCycles(taskSpec));
           // Generate QC Task Runner
           workflow.emplace_back(TaskRunnerFactory::create(taskConfig));
           // Generate an output proxy
@@ -594,7 +593,7 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
   std::vector<framework::OutputSpec> checkRunnerOutputs;
   auto checkRunnerConfig = CheckRunnerFactory::extractConfig(infrastructureSpec.common);
   for (auto& [inputNames, checkConfigs] : checksMap) {
-    //Logging
+    // Logging
     ILOG(Info, Devel) << ">> Inputs (" << inputNames.size() << "): ";
     for (const auto& name : inputNames)
       ILOG(Info, Devel) << name << " ";
@@ -631,15 +630,7 @@ void InfrastructureGenerator::generateAggregator(WorkflowSpec& workflow, const I
     return;
   }
 
-  std::vector<AggregatorConfig> aggregatorConfigs;
-  for (const auto& aggregatorSpec : infrastructureSpec.aggregators) {
-    if (aggregatorSpec.active) {
-      ILOG(Debug, Devel) << ">> Aggregator name : " << aggregatorSpec.aggregatorName << ENDM;
-      aggregatorConfigs.emplace_back(Aggregator::extractConfig(infrastructureSpec.common, aggregatorSpec));
-    }
-  }
-
-  DataProcessorSpec spec = AggregatorRunnerFactory::create(AggregatorRunnerFactory::extractConfig(infrastructureSpec.common), aggregatorConfigs);
+  DataProcessorSpec spec = AggregatorRunnerFactory::create(infrastructureSpec.common, infrastructureSpec.aggregators);
   workflow.emplace_back(spec);
 }
 

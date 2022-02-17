@@ -30,7 +30,7 @@
 namespace o2::quality_control_modules::its
 {
 
-void ITSTrackCheck::configure(std::string) {}
+void ITSTrackCheck::configure() {}
 
 Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
@@ -62,15 +62,9 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
         result = result.getLevel() + 1e2;
     }
 
-    if (iter->second->getName() == "ClusterUsage") {
-      auto* h = dynamic_cast<TH1D*>(iter->second->getObject());
-      if (h->GetMaximum() < 0.1)
-        result = result.getLevel() + 1e3;
-    }
-
     if (iter->second->getName() == "EtaDistribution") {
       auto* h = dynamic_cast<TH1D*>(iter->second->getObject());
-      if (abs(h->GetBinCenter(h->GetMaximumBin())) > 0.5)
+      if (abs(1. - (h->Integral(1, h->FindBin(0)) / h->Integral(h->FindBin(0), h->GetNbinsX()))) > 0.3)
         result = result.getLevel() + 1e4;
     }
 
@@ -78,10 +72,10 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
       TH2D* h = dynamic_cast<TH2D*>(iter->second->getObject());
 
       TH1D* projectY = h->ProjectionY();
-      if ((projectY->Integral(1, projectY->FindBin(-0.02)) > 0) || (projectY->Integral(projectY->FindBin(0.02), projectY->GetNbinsX()) > 0))
+      if ((projectY->Integral(1, projectY->FindBin(-0.2)) > 0) || (projectY->Integral(projectY->FindBin(0.2), projectY->GetNbinsX()) > 0))
         result = result.getLevel() + 1e5;
       TH1D* projectX = h->ProjectionX();
-      if ((projectX->Integral(1, projectX->FindBin(-0.02))) > 0 || (projectX->Integral(projectX->FindBin(0.02), projectX->GetNbinsX()) > 0))
+      if ((projectX->Integral(1, projectX->FindBin(-0.2))) > 0 || (projectX->Integral(projectX->FindBin(0.2), projectX->GetNbinsX()) > 0))
         result = result.getLevel() + 2e5;
     }
 
@@ -92,7 +86,7 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
         result = result.getLevel() + 1e6;
 
       TH1D* projectR = h->ProjectionX();
-      if (projectR->Integral(projectR->FindBin(0.02), projectR->GetNbinsX()) > 0)
+      if (projectR->Integral(projectR->FindBin(0.3), projectR->GetNbinsX()) > 0)
         result = result.getLevel() + 2e6;
     }
 
@@ -128,7 +122,7 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       text[1] = "call expert";
       textColor = kRed;
     }
-    auto* msg = new TLatex(0.15, 0.7, Form("#bf{#splitline{%s}{%s}}", text[0].Data(), text[1].Data()));
+    auto* msg = new TLatex(0.15, 0.7, histoQuality == 0 ? text[0].Data() : Form("#bf{#splitline{%s}{%s}}", text[0].Data(), text[1].Data()));
     msg->SetTextColor(textColor);
     msg->SetTextSize(0.08);
     msg->SetTextFont(43);
@@ -148,7 +142,7 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       textColor = kRed;
     }
 
-    auto* msg = new TLatex(0.15, 0.25, Form("#bf{#splitline{%s}{%s}}", text[0].Data(), text[1].Data()));
+    auto* msg = new TLatex(0.15, 0.25, histoQuality == 0 ? text[0].Data() : Form("#bf{#splitline{%s}{%s}}", text[0].Data(), text[1].Data()));
     msg->SetTextColor(textColor);
     msg->SetTextSize(0.08);
     msg->SetTextFont(43);
@@ -173,26 +167,7 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       positionY = 0.7;
     }
 
-    auto* msg = new TLatex(positionX, positionY, Form("#bf{#splitline{%s}{%s}}", text[0].Data(), text[1].Data()));
-    msg->SetTextColor(textColor);
-    msg->SetTextSize(0.08);
-    msg->SetTextFont(43);
-    msg->SetNDC();
-    h->GetListOfFunctions()->Add(msg);
-  }
-
-  if (mo->getName() == "ClusterUsage") {
-    auto* h = dynamic_cast<TH1D*>(mo->getObject());
-    int histoQuality = getDigit(checkResult.getLevel(), 4);
-    if (histoQuality == 0) {
-      text[0] = "Quality::GOOD";
-      textColor = kGreen;
-    } else {
-      text[0] = "INFO: fraction of clusters below 0.1";
-      text[1] = "call expert";
-      textColor = kRed;
-    }
-    auto* msg = new TLatex(0.15, 0.7, Form("#bf{#splitline{%s}{%s}}", text[0].Data(), text[1].Data()));
+    auto* msg = new TLatex(positionX, positionY, histoQuality == 0 ? text[0].Data() : Form("#bf{#splitline{%s}{%s}}", text[0].Data(), text[1].Data()));
     msg->SetTextColor(textColor);
     msg->SetTextSize(0.08);
     msg->SetTextFont(43);
@@ -211,7 +186,7 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       text[1] = "call expert";
       textColor = kRed;
     }
-    auto* msg = new TLatex(0.15, 0.2, Form("#bf{#splitline{%s}{%s}}", text[0].Data(), text[1].Data()));
+    auto* msg = new TLatex(0.15, 0.2, histoQuality == 0 ? text[0].Data() : Form("#bf{#splitline{%s}{%s}}", text[0].Data(), text[1].Data()));
     msg->SetTextColor(textColor);
     msg->SetTextSize(0.08);
     msg->SetTextFont(43);
@@ -243,7 +218,7 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       positionX = 0.15;
       positionY = 0.7;
     }
-    auto* msg = new TLatex(positionX, positionY, Form("#bf{#splitline{%s}{%s}}", text[0].Data(), text[1].Data()));
+    auto* msg = new TLatex(positionX, positionY, histoQuality == 0 ? text[0].Data() : Form("#bf{#splitline{%s}{%s}}", text[0].Data(), text[1].Data()));
     msg->SetTextColor(textColor);
     msg->SetTextSize(0.08);
     msg->SetTextFont(43);
@@ -261,16 +236,16 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     } else {
 
       if (histoQuality == 1) {
-        text[0] = "INFO: vertex distance on XY plane > 2 mm";
+        text[0] = "INFO: vertex distance on XY plane > 3 mm";
       } else if (histoQuality == 2) {
         text[0] = "INFO: vertex Z displaced > 10 cm";
       } else if (histoQuality == 3) {
-        text[0] = "INFO: vertex Z displaced > 10 cm, XY > 2 mm";
+        text[0] = "INFO: vertex Z displaced > 10 cm, XY > 3 mm";
       }
       text[1] = "Inform expert on MM";
       textColor = kRed;
     }
-    auto* msg = new TLatex(0.15, 0.7, Form("#bf{#splitline{%s}{%s}}", text[0].Data(), text[1].Data()));
+    auto* msg = new TLatex(0.15, 0.7, histoQuality == 0 ? text[0].Data() : Form("#bf{#splitline{%s}{%s}}", text[0].Data(), text[1].Data()));
     msg->SetTextColor(textColor);
     msg->SetTextSize(0.08);
     msg->SetTextFont(43);
@@ -289,7 +264,7 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       textColor = kRed;
     }
 
-    auto* msg = new TLatex(0.15, 0.7, Form("#bf{#splitline{%s}{%s}}", text[0].Data(), text[1].Data()));
+    auto* msg = new TLatex(0.15, 0.7, histoQuality == 0 ? text[0].Data() : Form("#bf{#splitline{%s}{%s}}", text[0].Data(), text[1].Data()));
     msg->SetTextColor(textColor);
     msg->SetTextSize(0.08);
     msg->SetTextFont(43);

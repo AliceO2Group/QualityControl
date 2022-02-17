@@ -33,7 +33,7 @@ using namespace std;
 namespace o2::quality_control_modules::ft0
 {
 
-void MergedTreeCheck::configure(std::string) {}
+void MergedTreeCheck::configure() {}
 
 Quality MergedTreeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {

@@ -33,7 +33,7 @@ class CheckRawToT : public o2::quality_control::checker::CheckInterface
   ~CheckRawToT() override = default;
 
   // Override interface
-  void configure(std::string name) override;
+  void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult) override;
   std::string getAcceptedType() override;
@@ -47,7 +47,7 @@ class CheckRawToT : public o2::quality_control::checker::CheckInterface
   /// Messages to print on the output PAD
   MessagePad mShifterMessages;
 
-  ClassDefOverride(CheckRawToT, 1);
+  ClassDefOverride(CheckRawToT, 2);
 };
 
 } // namespace o2::quality_control_modules::tof

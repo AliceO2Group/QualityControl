@@ -35,14 +35,14 @@ class ITSFhrCheck : public o2::quality_control::checker::CheckInterface
   ~ITSFhrCheck() override = default;
 
   // Override interface
-  void configure(std::string name) override;
+  void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
 
  private:
   int mNPixelPerStave[3] = { 4718592, 58720256, 102760448 }; //IB, ML, OL
-  ClassDefOverride(ITSFhrCheck, 1);
+  ClassDefOverride(ITSFhrCheck, 2);
 };
 
 } // namespace o2::quality_control_modules::its

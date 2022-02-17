@@ -21,6 +21,7 @@
 #include <Framework/DataProcessorSpec.h>
 #include <Framework/DataSpecUtils.h>
 #include <Framework/CompletionPolicyHelpers.h>
+#include <Framework/O2ControlLabels.h>
 
 #include "QualityControl/CheckRunner.h"
 #include "QualityControl/CheckRunnerFactory.h"
@@ -39,8 +40,9 @@ DataProcessorSpec CheckRunnerFactory::create(CheckRunnerConfig checkRunnerConfig
                                     qcCheckRunner.getInputs(),
                                     Outputs{ qcCheckRunner.getOutputs() },
                                     AlgorithmSpec{},
-                                    Options{} };
-  newCheckRunner.labels.emplace_back(CheckRunner::getLabel());
+                                    checkRunnerConfig.options };
+  newCheckRunner.labels.emplace_back(o2::framework::ecs::qcReconfigurable);
+  newCheckRunner.labels.emplace_back(CheckRunner::getCheckRunnerLabel());
   newCheckRunner.algorithm = adaptFromTask<CheckRunner>(std::move(qcCheckRunner));
   return newCheckRunner;
 }
@@ -54,7 +56,7 @@ DataProcessorSpec CheckRunnerFactory::createSinkDevice(CheckRunnerConfig checkRu
                                     qcCheckRunner.getInputs(),
                                     Outputs{ qcCheckRunner.getOutputs() },
                                     adaptFromTask<CheckRunner>(std::move(qcCheckRunner)),
-                                    Options{},
+                                    checkRunnerConfig.options,
                                     {},
                                     std::vector<DataProcessorLabel>{} };
 
@@ -63,7 +65,7 @@ DataProcessorSpec CheckRunnerFactory::createSinkDevice(CheckRunnerConfig checkRu
 
 void CheckRunnerFactory::customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies)
 {
-  auto matcher = [label = CheckRunner::getLabel()](framework::DeviceSpec const& device) {
+  auto matcher = [label = CheckRunner::getCheckRunnerLabel()](framework::DeviceSpec const& device) {
     return std::find(device.labels.begin(), device.labels.end(), label) != device.labels.end();
   };
 
@@ -74,6 +76,11 @@ void CheckRunnerFactory::customizeInfrastructure(std::vector<framework::Completi
 
 CheckRunnerConfig CheckRunnerFactory::extractConfig(const CommonSpec& commonSpec)
 {
+  Options options{
+    { "runNumber", framework::VariantType::String, { "Run number" } },
+    { "qcConfiguration", VariantType::Dict, emptyDict(), { "Some dictionary configuration" } }
+  };
+
   return {
     commonSpec.database,
     commonSpec.consulUrl,
@@ -83,7 +90,8 @@ CheckRunnerConfig CheckRunnerFactory::extractConfig(const CommonSpec& commonSpec
     commonSpec.activityNumber,
     commonSpec.activityPeriodName,
     commonSpec.activityPassName,
-    commonSpec.activityProvenance
+    commonSpec.activityProvenance,
+    options
   };
 }
 

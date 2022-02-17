@@ -15,7 +15,7 @@ using namespace std;
 namespace o2::quality_control_modules::trd
 {
 
-void DigitsCheck::configure(std::string) {}
+void DigitsCheck::configure() {}
 
 Quality DigitsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {

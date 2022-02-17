@@ -40,6 +40,9 @@
 #include "MIDRaw/Decoder.h"
 #include "MIDRaw/ElectronicsDelay.h"
 #include "MIDRaw/FEEIdConfig.h"
+#include "MIDBase/Mapping.h"
+#include "MIDBase/DetectorParameters.h"
+#include "MIDBase/GeometryParameters.h"
 
 #define MID_NDE 72
 #define MID_NCOL 7
@@ -101,6 +104,31 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mROFTimeDiff->SetOption("colz");
 
   getObjectsManager()->startPublishing(mROFTimeDiff);
+
+  /////////////////
+
+  mMultHitMT11B = new TH1F("MultHitMT11B", "Multiplicity Hits - MT11 bending plane", 300, 0, 300);
+  mMultHitMT11NB = new TH1F("MultHitMT11NB", "Multiplicity Hits - MT11 non-bending plane", 300, 0, 300);
+  mMultHitMT12B = new TH1F("MultHitMT12B", "Multiplicity Hits - MT12 bending plane", 300, 0, 300);
+  mMultHitMT12NB = new TH1F("MultHitMT12NB", "Multiplicity Hits - MT12 non-bending plane", 300, 0, 300);
+  mMultHitMT21B = new TH1F("MultHitMT21B", "Multiplicity Hits - MT21 bending plane", 300, 0, 300);
+  mMultHitMT21NB = new TH1F("MultHitMT21NB", "Multiplicity Hits - MT21 non-bending plane", 300, 0, 300);
+  mMultHitMT22B = new TH1F("MultHitMT22B", "Multiplicity Hits - MT22 bending plane", 300, 0, 300);
+  mMultHitMT22NB = new TH1F("MultHitMT22NB", "Multiplicity Hits - MT22 non-bending plane", 300, 0, 300);
+
+  mLocalBoardsMap = new TH2F("LocalBoardsMap", "Local boards Occupancy Map", 14, -7, 7, 36, 0, 9);
+  mLocalBoardsMap->SetOption("colz");
+  // mLocalBoardsMap->SetGrid();
+
+  getObjectsManager()->startPublishing(mMultHitMT11B);
+  getObjectsManager()->startPublishing(mMultHitMT11NB);
+  getObjectsManager()->startPublishing(mMultHitMT12B);
+  getObjectsManager()->startPublishing(mMultHitMT12NB);
+  getObjectsManager()->startPublishing(mMultHitMT21B);
+  getObjectsManager()->startPublishing(mMultHitMT21NB);
+  getObjectsManager()->startPublishing(mMultHitMT22B);
+  getObjectsManager()->startPublishing(mMultHitMT22NB);
+  getObjectsManager()->startPublishing(mLocalBoardsMap);
 }
 
 void DigitsQcTask::startOfActivity(Activity& /*activity*/)
@@ -116,12 +144,14 @@ void DigitsQcTask::startOfCycle()
 static int countColumnDataHits(const o2::mid::ColumnData& digit, int id)
 {
   int nHits = 0;
-  int mask = 1;
-  for (int j = 0; j < 16; j++) {
-    if ((digit.patterns[id] & mask) != 0) {
-      nHits += 1;
+  int mask = 32768; // 1000000000000000
+  if (digit.patterns[id] != 0) {
+    for (int j = 0; j < 16; j++) {
+      if ((digit.patterns[id] & mask) != 0) {
+        nHits += 1;
+      }
+      mask >>= 1;
     }
-    mask <<= 1;
   }
   return nHits;
 }
@@ -157,8 +187,18 @@ static std::pair<uint32_t, uint32_t> getROFSize(const o2::mid::ROFRecord& rof, g
 
 void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
+
   auto digits = ctx.inputs().get<gsl::span<o2::mid::ColumnData>>("digits");
   auto rofs = ctx.inputs().get<gsl::span<o2::mid::ROFRecord>>("digitrofs");
+
+  int multHitMT11B = 0;
+  int multHitMT12B = 0;
+  int multHitMT21B = 0;
+  int multHitMT22B = 0;
+  int multHitMT11NB = 0;
+  int multHitMT12NB = 0;
+  int multHitMT21NB = 0;
+  int multHitMT22NB = 0;
 
   for (int i = 0; i < MID_NDE; i++) {
     for (int j = 0; j < MID_NCOL; j++) {
@@ -197,6 +237,84 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     prevSize = rofSize;
     prevIr = rof.interactionRecord;
   }
+
+  //////////////////////////////
+  o2::mid::Mapping mMapping;
+
+  for (const auto& rofRecord : rofs) { // loop ROFRecords //
+    nROF++;
+    multHitMT11B = 0;
+    multHitMT12B = 0;
+    multHitMT21B = 0;
+    multHitMT22B = 0;
+    multHitMT11NB = 0;
+    multHitMT12NB = 0;
+    multHitMT21NB = 0;
+    multHitMT22NB = 0;
+
+    // loadStripPatterns (ColumnData)
+    for (auto& digit : digits.subspan(rofRecord.firstEntry, rofRecord.nEntries)) { // loop DE //
+      int deIndex = digit.deId;
+      int colId = digit.columnId;
+      int rpcLine = o2::mid::detparams::getRPCLine(deIndex);
+      int ichamber = o2::mid::detparams::getChamber(deIndex);
+      auto isRightSide = o2::mid::detparams::isRightSide(deIndex);
+      auto detId = o2::mid::detparams::getDEId(isRightSide, ichamber, colId);
+      for (int i = 0; i < 4; i++) {
+        if (digit.patterns[i] != 0) {
+          if (ichamber == 0) {
+            int nBoard = 2;
+            if (rpcLine == 0 || rpcLine == 8 || colId == 6)
+              nBoard = 4;
+            else if ((rpcLine == 3 || rpcLine == 5) && (colId == 0))
+              nBoard = 1;
+            else if ((rpcLine == 3 || rpcLine == 4 || rpcLine == 5) && (colId == 1 || colId == 2))
+              nBoard = 1;
+            double linepos = 0;
+            int il;
+            for (int board = 0; board < nBoard; board++) {
+              linepos = rpcLine;
+              il = i;
+              if ((nBoard == 2) && (i == 1)) {
+                linepos = rpcLine + 0.5;
+                il = 0;
+              }
+              linepos = linepos + 0.01 + (0.25 * board) + (0.25 * il);
+              if (isRightSide)
+                mLocalBoardsMap->Fill(colId + 0.5, linepos, 1);
+              else
+                mLocalBoardsMap->Fill(-colId - 0.5, linepos, 1);
+            }
+          }
+        }
+      }
+
+      if (ichamber == 0) {
+        multHitMT11B += getBendingHits(digit);
+        multHitMT11NB += getNonBendingHits(digit);
+      } else if (ichamber == 1) {
+        multHitMT12B += getBendingHits(digit);
+        multHitMT12NB += getNonBendingHits(digit);
+      } else if (ichamber == 2) {
+        multHitMT21B += getBendingHits(digit);
+        multHitMT21NB += getNonBendingHits(digit);
+      } else if (ichamber == 3) {
+        multHitMT22B += getBendingHits(digit);
+        multHitMT22NB += getNonBendingHits(digit);
+      }
+
+    } // digits //
+    mMultHitMT11B->Fill(multHitMT11B);
+    mMultHitMT12B->Fill(multHitMT12B);
+    mMultHitMT21B->Fill(multHitMT21B);
+    mMultHitMT22B->Fill(multHitMT22B);
+    mMultHitMT11NB->Fill(multHitMT11NB);
+    mMultHitMT12NB->Fill(multHitMT12NB);
+    mMultHitMT21NB->Fill(multHitMT21NB);
+    mMultHitMT22NB->Fill(multHitMT22NB);
+  } //  ROFRecords //
+
+  //////////////////////////////
 }
 
 void DigitsQcTask::endOfCycle()

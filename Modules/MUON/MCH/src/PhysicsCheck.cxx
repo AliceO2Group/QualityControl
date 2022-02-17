@@ -43,7 +43,7 @@ PhysicsCheck::PhysicsCheck()
 
 PhysicsCheck::~PhysicsCheck() {}
 
-void PhysicsCheck::configure(std::string)
+void PhysicsCheck::configure()
 {
   //   if (AliRecoParam::ConvertIndex(specie) == AliRecoParam::kCosmic) {
   //     minTOFrawTime = 150.; //ns
