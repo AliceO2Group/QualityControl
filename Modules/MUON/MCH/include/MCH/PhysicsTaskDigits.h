@@ -74,6 +74,7 @@ class PhysicsTaskDigits /*final*/ : public TaskInterface // todo add back the "f
   static constexpr int sMaxDsId = 40;
 
   bool mDiagnostic{ false };
+  bool mSaveToRootFile{ false };
 
   o2::mch::raw::Elec2DetMapper mElec2DetMapper;
   o2::mch::raw::Det2ElecMapper mDet2ElecMapper;
@@ -91,8 +92,10 @@ class PhysicsTaskDigits /*final*/ : public TaskInterface // todo add back the "f
   std::shared_ptr<TH2F> mDigitsOrbitInTF;
   std::shared_ptr<TH2F> mDigitsBcInOrbit;
   std::shared_ptr<TH2F> mAmplitudeVsSamples;
+  std::shared_ptr<TH2F> mAmplitudeElec;
 
   std::map<int, std::shared_ptr<TH1F>> mHistogramADCamplitudeDE;              // Histogram of ADC distribution per DE
+  std::map<int, std::shared_ptr<TH1F>> mHistogramADCamplitudeDEFiltered;      // Histogram of ADC distribution per DE
   std::map<int, std::shared_ptr<DetectorHistogram>> mHistogramNhitsDE[2];     // Histogram of Number of hits (XY view)
   std::map<int, std::shared_ptr<DetectorHistogram>> mHistogramNorbitsDE[2];   // Histogram of Number of orbits (XY view)
   std::map<int, std::shared_ptr<MergeableTH2Ratio>> mHistogramOccupancyDE[2]; // Mergeable object, Occupancy histogram (XY view)
