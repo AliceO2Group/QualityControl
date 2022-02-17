@@ -12,6 +12,8 @@
 ///
 /// \file   ITSTrackSimTask.cxx
 /// \author Artem Isakov
+/// MC simulation tool inspired by Detectors/ITS/macros/CheckTracks
+//
 ///
 
 #include "QualityControl/QcInfoLogger.h"
@@ -21,14 +23,14 @@
 #include <Framework/InputRecord.h>
 
 
-#include "SimulationDataFormat/MCTrack.h" //NEW
+#include "SimulationDataFormat/MCTrack.h"
 #include "SimulationDataFormat/MCCompLabel.h"
 #include "Field/MagneticField.h"
 #include "TGeoGlobalMagField.h"
 #include "DetectorsBase/Propagator.h"
 
 #include "DataFormatsITSMFT/CompCluster.h"
-
+#include "Steer/MCKinematicsReader.h" //ADDED FOR MC FILE READING
 
 #include <typeinfo>
 
@@ -36,10 +38,10 @@
 #include "ReconstructionDataFormats/Track.h"
 #include "CommonDataFormat/RangeReference.h"
 #include "CommonConstants/MathConstants.h"
-#include "Steer/MCKinematicsReader.h"
 #include "SimulationDataFormat/MCTruthContainer.h"
 #include "SimulationDataFormat/ConstMCTruthContainer.h"
 #include "TFile.h"
+#include "TTree.h"
 #include <fstream>
 using namespace o2::constants::math;
 using namespace o2::itsmft;
@@ -52,20 +54,10 @@ namespace o2::quality_control_modules::its
 
 ITSTrackSimTask::ITSTrackSimTask() : TaskInterface()
 {
- // createAllHistos();
 }
 
 ITSTrackSimTask::~ITSTrackSimTask()
 {
-/*
-  delete hNClusters;
-  delete hTrackEta;
-  delete hTrackPhi;
-  delete hOccupancyROF;
-  delete hClusterUsage;
-  delete hAngularDistribution;
-*/
-
   delete hNumRecoValid_pt;
   delete hNumRecoFake_pt;
   delete hDenTrue_pt;
@@ -78,15 +70,12 @@ ITSTrackSimTask::~ITSTrackSimTask()
   delete hFakeTrack_eta;
   delete hEfficiency_eta;
 
-
   delete hNumRecoValid_phi;
   delete hNumRecoFake_phi;
   delete hDenTrue_phi;
   delete hFakeTrack_phi;
   delete hEfficiency_phi;
-
   
-
   delete hNumRecoValid_r;
   delete hNumRecoFake_r;
   delete hDenTrue_r;
@@ -99,9 +88,7 @@ ITSTrackSimTask::~ITSTrackSimTask()
   delete hFakeTrack_z;
   delete hEfficiency_z;
  
-
  
-
   delete hTrackImpactTransvFake;
   delete hTrackImpactTransvValid;
 
@@ -112,12 +99,241 @@ void ITSTrackSimTask::initialize(o2::framework::InitContext& /*ctx*/)
   ILOG(Info, Support) << "initialize ITSTrackSimTask" << ENDM;
 
   mRunNumberPath = mCustomParameters["runNumberPath"];
+  mMCKinePath = mCustomParameters["MCKinePath"];
+  mO2GrpPath = mCustomParameters["o2GrpPath"];
 
+  createAllHistos();
+  publishHistos();
+  o2::base::Propagator::initFieldFromGRP(mO2GrpPath.c_str());
+  auto field = static_cast<o2::field::MagneticField*>(TGeoGlobalMagField::Instance()->GetField());
+  double orig[3] = {0., 0., 0.};
+  bz = field->getBz(orig);
 
   o2::base::GeometryManager::loadGeometry();
-  auto geom = o2::its::GeometryTGeo::Instance();
+  mGeom = o2::its::GeometryTGeo::Instance();
+
+}
+
+void ITSTrackSimTask::startOfActivity(Activity& /*activity*/)
+{
+  ILOG(Info, Support) << "startOfActivity" << ENDM;
+}
+
+void ITSTrackSimTask::startOfCycle()
+{
+  TFile* file = new TFile("o2sim_Kine.root");  ILOG(Info, Support) << "startOfCycle" << ENDM;
+}
+
+void ITSTrackSimTask::monitorData(o2::framework::ProcessingContext& ctx)
+{
+  ILOG(Info, Support) << "START DOING QC General" << ENDM;
+  
+  
+  TFile* file = new TFile(mMCKinePath.c_str());  //MC Kinematics files is used to get particle level information
+  TTree* mcTree = (TTree*)file->Get("o2sim");
+  mcTree->SetBranchStatus("MCTrack*", 1);
+  mcTree->SetBranchStatus("MCEventHeader.*", 1);
+
+  auto mcArr = new std::vector<o2::MCTrack>;
+  auto mcHeader = new o2::dataformats::MCEventHeader;
+
+  mcTree->SetBranchAddress("MCTrack", &mcArr);
+  mcTree->SetBranchAddress("MCEventHeader.", &mcHeader);
+
+  info.resize(mcTree->GetEntriesFast());
+  for(int i=0; i<mcTree->GetEntriesFast(); ++i) {
+     if (!mcTree->GetEvent(i)) continue;
+     info[i].resize(mcArr->size());
+
+   }
+
+  auto clusArr = ctx.inputs().get<gsl::span<o2::itsmft::CompClusterExt>>("compclus");  //used to get hit information  
+  auto clusLabArr = ctx.inputs().get<const dataformats::MCTruthContainer<MCCompLabel>*>("mcclustruth").release();
+  
+  for (int iCluster = 0; iCluster < clusArr.size(); iCluster++) {
+     
+        auto lab = (clusLabArr->getLabels(iCluster))[0];
+        if (!lab.isValid() || lab.getSourceID() != 0) 
+          continue;
+
+        int TrackID = lab.getTrackID();
+
+        if (TrackID < 0 || TrackID >= mcTree->GetEntriesFast()) {
+          continue;
+        }
+
+        if (!lab.isCorrect()) continue;
+        const auto& Cluster = (clusArr)[iCluster];
+        unsigned short& ok = info[lab.getEventID()][lab.getTrackID()].clusters; //bitmask with track hits at each layer
+        auto layer = mGeom->getLayer(Cluster.getSensorID());
+        float r = 0.f;
+        if (layer == 0)
+          ok |= 0b1;
+        if (layer == 1)
+          ok |= 0b10;
+        if (layer == 2)
+          ok |= 0b100;
+        if (layer == 3)
+          ok |= 0b1000;
+        if (layer == 4)
+          ok |= 0b10000;
+        if (layer == 5)
+          ok |= 0b100000;
+        if (layer == 6)
+          ok |= 0b1000000;
+  }
+
+  for(int i=0; i<mcTree->GetEntriesFast(); ++i) {  //filling denominator
+          
+     if (!mcTree->GetEvent(i)) continue;
+     for (int mc = 0; mc < mcArr->size(); mc++) {
+
+        const auto& mcTrack = (*mcArr)[mc];
+
+        info[i][mc].isFilled=false;
+        if (mcTrack.Vx() * mcTrack.Vx() + mcTrack.Vy() * mcTrack.Vy() > 1)  continue;  
+        if (TMath::Abs(mcTrack.GetPdgCode()) != 211)   continue; // Select pions
+        if (TMath::Abs(mcTrack.GetEta()) > 1.2) continue;
+        if (info[i][mc].clusters != 0b1111111) continue;
+               
+        Double_t distance = sqrt(    pow(mcHeader->GetX()-mcTrack.Vx(),2) +  pow(mcHeader->GetY()-mcTrack.Vy(),2) +  pow(mcHeader->GetZ()-mcTrack.Vz(),2) );   
+        info[i][mc].isFilled= true; 
+        info[i][mc].r= distance;
+        info[i][mc].pt= mcTrack.GetPt();
+        info[i][mc].eta= mcTrack.GetEta();
+        info[i][mc].phi= mcTrack.GetPhi();
+        info[i][mc].z= mcTrack.Vz();
+        info[i][mc].isPrimary= mcTrack.isPrimary();
+        
+
+        hDenTrue_r->Fill(distance);
+        hDenTrue_pt->Fill(mcTrack.GetPt());
+        hDenTrue_eta->Fill(mcTrack.GetEta());
+        hDenTrue_phi->Fill(mcTrack.GetPhi());  
+        hDenTrue_z->Fill(mcTrack.Vz());
 
 
+      }
+  }
+  
+  auto trackArr = ctx.inputs().get<gsl::span<o2::its::TrackITS>>("tracks"); //MC Tracks
+  auto MCTruth= ctx.inputs().get<gsl::span<o2::MCCompLabel>>("mstruth");  //MC track label, contains info about EventID, TrackID, SourceID etc
+
+
+  for (int itrack = 0; itrack < trackArr.size(); itrack++) {
+      const auto& track = trackArr[itrack];
+      const auto& MCinfo = MCTruth[itrack];
+      
+      if (MCinfo.isNoise()) continue;
+      
+      Float_t ip[2]{0., 0.};
+      Float_t vx = 0., vy = 0., vz = 0.; // Assumed primary vertex at 0,0,0
+      track.getImpactParams(vx, vy, vz, bz, ip);
+ 
+      if (info[MCinfo.getEventID()][MCinfo.getTrackID()].isFilled) {
+           if (MCinfo.isFake()) {
+
+               hNumRecoFake_pt->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
+               hNumRecoFake_phi->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].phi);
+               hNumRecoFake_eta->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].eta);
+               hNumRecoFake_z->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].z);
+               hNumRecoFake_r->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].r); 
+               if (info[MCinfo.getEventID()][MCinfo.getTrackID()].isPrimary)  hTrackImpactTransvFake->Fill(ip[0]);
+           } else {
+               hNumRecoValid_pt->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
+               hNumRecoValid_phi->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].phi);
+               hNumRecoValid_eta->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].eta);
+               hNumRecoValid_z->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].z);
+               hNumRecoValid_r->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].r);
+               if (info[MCinfo.getEventID()][MCinfo.getTrackID()].isPrimary) hTrackImpactTransvValid->Fill(ip[0]);
+           }
+           
+       }
+
+   }
+   
+  hFakeTrack_pt->Divide(hNumRecoFake_pt, hDenTrue_pt, 1, 1);
+  hEfficiency_pt->Divide(hNumRecoValid_pt, hDenTrue_pt, 1, 1);
+
+  hFakeTrack_phi->Divide(hNumRecoFake_phi, hDenTrue_phi, 1, 1); 
+  hEfficiency_phi->Divide(hNumRecoValid_phi, hDenTrue_phi, 1, 1);
+
+  hFakeTrack_eta->Divide(hNumRecoFake_eta, hDenTrue_eta, 1, 1);
+  hEfficiency_eta->Divide(hNumRecoValid_eta, hDenTrue_eta, 1, 1);
+ 
+  hFakeTrack_r->Divide(hNumRecoFake_r, hDenTrue_r, 1, 1);
+  hEfficiency_r->Divide(hNumRecoValid_r, hDenTrue_r, 1, 1);
+
+  hFakeTrack_z->Divide(hNumRecoFake_z, hDenTrue_z, 1, 1);
+  hEfficiency_z->Divide(hNumRecoValid_z, hDenTrue_z, 1, 1);
+
+
+}
+
+void ITSTrackSimTask::endOfCycle()
+{
+
+  std::ifstream runNumberFile(mRunNumberPath.c_str());
+  if (runNumberFile) {
+
+    std::string runNumber;
+    runNumberFile >> runNumber;
+    if (runNumber != mRunNumber) {
+      for (unsigned int iObj = 0; iObj < mPublishedObjects.size(); iObj++)
+        getObjectsManager()->addMetadata(mPublishedObjects.at(iObj)->GetName(), "Run", runNumber);
+      mRunNumber = runNumber;
+    }
+     ILOG(Info, Support) << "endOfCycle" << ENDM;    
+  }
+}
+
+void ITSTrackSimTask::endOfActivity(Activity& /*activity*/)
+{
+   ILOG(Info, Support) << "endOfActivity" << ENDM;
+}
+
+void ITSTrackSimTask::reset()
+{
+    ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  hEfficiency_pt->Reset();
+  hFakeTrack_pt->Reset();
+  hNumRecoValid_pt->Reset();
+  hNumRecoFake_pt->Reset();
+  hDenTrue_pt->Reset();
+
+  hEfficiency_phi->Reset();
+  hFakeTrack_phi->Reset();
+  hNumRecoValid_phi->Reset();
+  hNumRecoFake_phi->Reset();
+  hDenTrue_phi->Reset();
+
+  hEfficiency_eta->Reset();
+  hFakeTrack_eta->Reset();
+  hNumRecoValid_eta->Reset();
+  hNumRecoFake_eta->Reset();
+  hDenTrue_eta->Reset();
+
+  hEfficiency_r->Reset();
+  hFakeTrack_r->Reset();
+  hNumRecoValid_r->Reset();
+  hNumRecoFake_r->Reset();
+  hDenTrue_r->Reset();
+
+
+  hEfficiency_z->Reset();
+  hFakeTrack_z->Reset();
+  hNumRecoValid_z->Reset();
+  hNumRecoFake_z->Reset();
+  hDenTrue_z->Reset();
+
+  hTrackImpactTransvValid->Reset();
+  hTrackImpactTransvFake->Reset();
+
+  
+}
+
+void ITSTrackSimTask::createAllHistos()
+{
   const Int_t nb = 100;
   Double_t xbins[nb + 1], ptcutl = 0.01, ptcuth = 10.;
   Double_t a = TMath::Log(ptcuth / ptcutl) / nb;
@@ -211,549 +427,13 @@ void ITSTrackSimTask::initialize(o2::framework::InitContext& /*ctx*/)
   formatAxes(hTrackImpactTransvFake, "D (cm)", "counts", 1, 1.10);
 
 
-  o2::steer::MCKinematicsReader reader("o2sim", o2::steer::MCKinematicsReader::Mode::kMCKine); 
- 
-/*
- for (int iSource=0;iSource < (int) reader.getNSources();iSource++){
-   for (int iEvent=0;iEvent < (int) reader.getNEvents(iSource);iEvent++){
-      
-      auto mcTracks = reader.getTracks(iSource, iEvent);
-      auto mcHeader= reader.getMCEventHeader(iSource, iEvent);
-      for (auto mcTrack : mcTracks){
-
-        if (mcTrack.Vx() * mcTrack.Vx() + mcTrack.Vy() * mcTrack.Vy() > 1) continue; 
-        //if ( abs(mcTrack.Vz())  > 10 ) continue;
-        Int_t pdg = mcTrack.GetPdgCode();
-        if (TMath::Abs(pdg) != 211) continue; // Select pions
-        if (TMath::Abs(mcTrack.GetEta()) > 1.2) continue;
-  
-        Double_t distance = sqrt(    pow(mcHeader.GetX()-mcTrack.Vx(),2) +  pow(mcHeader.GetY()-mcTrack.Vy(),2) +  pow(mcHeader.GetZ()-mcTrack.Vz(),2) );   
-        hDenTrue_r->Fill(distance);
-        hDenTrue_pt->Fill(mcTrack.GetPt());
-        hDenTrue_eta->Fill(mcTrack.GetEta());
-        hDenTrue_phi->Fill(mcTrack.GetPhi());  
-        hDenTrue_z->Fill(mcTrack.Vz());
-
-      }
-    }
-  }
-
-
-*/
-/*   COMMENT OUT HERE!!!!!!!!!!!!!!!!!!!
-  TFile* file = new TFile("o2sim_Kine.root");
-  TTree* mcTree = (TTree*)file->Get("o2sim");
-  mcTree->SetBranchStatus("MCTrack*", 1);  //WHY?! needs to be checked
-  mcTree->SetBranchStatus("MCEventHeader.*", 1);
-
-  auto mcArr = new std::vector<o2::MCTrack>;
-  auto mcHeader = new o2::dataformats::MCEventHeader;
-
-  mcTree->SetBranchAddress("MCTrack", &mcArr);
-  mcTree->SetBranchAddress("MCEventHeader.", &mcHeader);
-
-  info.resize(mcTree->GetEntriesFast());
-  for(int i=0; i<mcTree->GetEntriesFast(); ++i) {
-     if (!mcTree->GetEvent(i)) continue;
-     info[i].resize(mcArr->size());
-
-   }
-
-
-
-
-
-
-
-  std::cout<<"Open check 1"<<std::endl;
-  TFile* file_c = new TFile("o2clus_its2.root");
-   std::cout<<"Open check 2"<<std::endl;
-  TTree* clusTree = (TTree*)file_c->Get("o2sim");
-    std::cout<<"Open check 3"<<std::endl;
-  clusTree->SetBranchStatus("ITSClusterComp*", 1);  //WHY?! needs to be checked
-  clusTree->SetBranchStatus("ITSClusterMCTruth*", 1);
-
-
- std::cout<<"Open check 4"<<std::endl;
-
-  auto clusArr = new std::vector<o2::itsmft::CompClusterExt>;
-  auto clusLabArr = new o2::dataformats::MCTruthContainer<o2::MCCompLabel>;
-
-  clusTree->SetBranchAddress("ITSClusterComp", &clusArr);  
-  clusTree->SetBranchAddress("ITSClusterMCTruth", &clusLabArr);
-  std::cout<<"Getting n Entries: "<<std::endl;
-  std::cout<<"clusTree->GetEntriesFast() = "<< clusTree->GetEntriesFast() <<std::endl; 
-
-
-  for(int i=0; i<clusTree->GetEntriesFast(); ++i) {
-     if (!clusTree->GetEvent(i)) continue;
-
-     //std::cout<<"Cluster Tree event: "<< i << " with the size of "<<clusArr->size()<<std::endl;
-     for (int iCluster = 0; iCluster < clusArr->size(); iCluster++) {
-     
-       // auto lab = (*clusLabArr)[iCluster];
-        auto lab = (clusLabArr->getLabels(iCluster))[0];
-
-        if (!lab.isValid() || lab.getSourceID() != 0) //there was comparison with n, check what is it
-          continue;
-
-        int TrackID = lab.getTrackID();
-       // std::cout<<"Good Cluster with trackID: "<< TrackID << " EventID: " << lab.getEventID() << " Source: " << lab.getSourceID() <<std::endl;
-
-
-        if (TrackID < 0 || TrackID >= mcTree->GetEntriesFast()) {
-          ///cout << "cluster mc label is too big!!!" << endl;
-          continue;
-        }
-
-        if (!lab.isCorrect()) continue;
-
-        const CompClusterExt& Cluster = (*clusArr)[iCluster];
-
-        unsigned short& ok = info[lab.getEventID()][lab.getTrackID()].clusters;
-        auto layer = geom->getLayer(Cluster.getSensorID());
-     //   std::cout<<" at the beginig ok = " << ok << " layer is " << layer << " Cluster.getSensorID() "<< Cluster.getSensorID() << "ClusterTopology: " << Cluster.getPatternID() <<std::endl;
-    //    Cluster.print();
-        float r = 0.f;
-        if (layer == 0)
-          ok |= 0b1;
-        if (layer == 1)
-          ok |= 0b10;
-        if (layer == 2)
-          ok |= 0b100;
-        if (layer == 3)
-          ok |= 0b1000;
-        if (layer == 4)
-          ok |= 0b10000;
-        if (layer == 5)
-          ok |= 0b100000;
-        if (layer == 6)
-          ok |= 0b1000000;
-       
-   //     std::cout<< " OK after: " << ok <<std::endl;
-
-      }
-  }
- file_c->Close();
-
-
- for(int i=0; i<mcTree->GetEntriesFast(); ++i) {
-      
-     
-     if (!mcTree->GetEvent(i)) continue;
- 
-     for (int mc = 0; mc < mcArr->size(); mc++) {
-
-        const auto& mcTrack = (*mcArr)[mc];
-
-
-        info[i][mc].isFilled=false;
-  
-        if (mcTrack.Vx() * mcTrack.Vx() + mcTrack.Vy() * mcTrack.Vy() > 1)  continue;  
-        if (TMath::Abs(mcTrack.GetPdgCode()) != 211)   continue; // Select pions
-        if (TMath::Abs(mcTrack.GetEta()) > 1.2) continue;
-        if (info[i][mc].clusters != 0b1111111) continue;
-               
-        Double_t distance = sqrt(    pow(mcHeader->GetX()-mcTrack.Vx(),2) +  pow(mcHeader->GetY()-mcTrack.Vy(),2) +  pow(mcHeader->GetZ()-mcTrack.Vz(),2) );   
-
-        info[i][mc].isFilled= true; 
-        info[i][mc].r= distance;
-        info[i][mc].pt= mcTrack.GetPt();
-        info[i][mc].eta= mcTrack.GetEta();
-        info[i][mc].phi= mcTrack.GetPhi();
-        info[i][mc].z= mcTrack.Vz();
-        info[i][mc].isPrimary= mcTrack.isPrimary();
-        
-
-      //  std::cout<<"den phi " << mcTrack.GetPhi()<< " event= "<<i<<" track= "<<mc<<std::endl;
-        hDenTrue_r->Fill(distance);
-        hDenTrue_pt->Fill(mcTrack.GetPt());
-        hDenTrue_eta->Fill(mcTrack.GetEta());
-        hDenTrue_phi->Fill(mcTrack.GetPhi());  
-        hDenTrue_z->Fill(mcTrack.Vz());
-
-
-      }
-  }
-
-
- // std::cout<<"Getting n Entries: "<<std::endl;
- // std::cout<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! mcTree->GetEntriesFast(): " << mcTree->GetEntriesFast() <<std::endl; 
-  file->Close();
-
-   comment out here!!!!!!!!!!!!!!!!!!
-*/
-  publishHistos();
-  o2::base::Propagator::initFieldFromGRP("./o2sim_grp.root");
-  auto field = static_cast<o2::field::MagneticField*>(TGeoGlobalMagField::Instance()->GetField());
-  double orig[3] = {0., 0., 0.};
-  bz = field->getBz(orig);
-
-}
-
-void ITSTrackSimTask::startOfActivity(Activity& /*activity*/)
-{
-  ILOG(Info, Support) << "startOfActivity" << ENDM;
-  //reset();
-
-}
-
-void ITSTrackSimTask::startOfCycle()
-{
-   ILOG(Info, Support) << "startOfCycle" << ENDM;
-}
-
-void ITSTrackSimTask::monitorData(o2::framework::ProcessingContext& ctx)
-{
-  ILOG(Info, Support) << "START DOING QC General" << ENDM;
-  
-  o2::base::GeometryManager::loadGeometry();
-  auto geom = o2::its::GeometryTGeo::Instance();
-
-  std::cout<<"Opening MC file" <<std::endl;
-  
-  TFile* file = new TFile("o2sim_Kine.root");
-  TTree* mcTree = (TTree*)file->Get("o2sim");
-  mcTree->SetBranchStatus("MCTrack*", 1);  //WHY?! needs to be checked
-  mcTree->SetBranchStatus("MCEventHeader.*", 1);
-
-  auto mcArr = new std::vector<o2::MCTrack>;
-  auto mcHeader = new o2::dataformats::MCEventHeader;
-
-  mcTree->SetBranchAddress("MCTrack", &mcArr);
-  mcTree->SetBranchAddress("MCEventHeader.", &mcHeader);
-
-  info.resize(mcTree->GetEntriesFast());
-  for(int i=0; i<mcTree->GetEntriesFast(); ++i) {
-     if (!mcTree->GetEvent(i)) continue;
-     info[i].resize(mcArr->size());
-
-   }
-
-  std::cout<<"Getting data for clusters:" <<std::endl;
-  std::cout<<"1: "<<std::endl;
-  auto clusArr = ctx.inputs().get<gsl::span<o2::itsmft::CompClusterExt>>("compclus");    
-  std::cout<<"2: "<<std::endl;
-  //auto clusLabArr = ctx.inputs().get<gsl::span<o2::MCCompLabel>>("mcclustruth");
-//  auto clusLabArr = ctx.inputs().get<gsl::span< o2::dataformats::MCTruthContainer<o2::MCCompLabel>>>("mcclustruth");
-    auto clusLabArr = ctx.inputs().get<const dataformats::MCTruthContainer<MCCompLabel>*>("mcclustruth").release();
- 
-
-
- //   auto labelbuffer = ctx.inputs().get<gsl::span<char>>("mcclustruth");
- // o2::dataformats::MCTruthContainer<o2::MCCompLabel> clusLabArr(labelbuffer);
- // o2::dataformats::ConstMCTruthContainerView<o2::MCCompLabel> clusLabArr(labelbuffer); 
- std::cout<<" reading done! "<<std::endl;
-  //LOG(info) << "ITSClusterer pulled " << clusLabArr.getNElements() << " labels and " << clusArr.size() << " clusters" ;
-
- 
-  for (int iCluster = 0; iCluster < clusArr.size(); iCluster++) {
-     
-        //const auto& lab = clusLabArr[iCluster];
-        //std::cout<<"Before getting lab: "<<std::endl;
-        //auto lab = (clusLabArr.getLabels(iCluster))[0];
-        //auto lab = * clusLabArr.getLabels(iCluster).begin(); // only most significant MC label
-       // auto lab_test = clusLabArr->getLabels(iCluster);
-        
-        //std::cout<<" it was done! with labels size" << lab_test.size() <<std::endl;
-        auto lab = (clusLabArr->getLabels(iCluster))[0];
-        if (!lab.isValid() || lab.getSourceID() != 0) //there was comparison with n, check what is it
-          continue;
-
-        int TrackID = lab.getTrackID();
-
-        if (TrackID < 0 || TrackID >= mcTree->GetEntriesFast()) {
-          continue;
-        }
-
-        if (!lab.isCorrect()) continue;
-
-        const auto& Cluster = (clusArr)[iCluster];
-
-        unsigned short& ok = info[lab.getEventID()][lab.getTrackID()].clusters;
-        auto layer = geom->getLayer(Cluster.getSensorID());
-        float r = 0.f;
-        if (layer == 0)
-          ok |= 0b1;
-        if (layer == 1)
-          ok |= 0b10;
-        if (layer == 2)
-          ok |= 0b100;
-        if (layer == 3)
-          ok |= 0b1000;
-        if (layer == 4)
-          ok |= 0b10000;
-        if (layer == 5)
-          ok |= 0b100000;
-        if (layer == 6)
-          ok |= 0b1000000;
-      }
- 
-   std::cout<<"done"<<std::endl;
-  for(int i=0; i<mcTree->GetEntriesFast(); ++i) {
-          
-     if (!mcTree->GetEvent(i)) continue;
-     for (int mc = 0; mc < mcArr->size(); mc++) {
-
-        const auto& mcTrack = (*mcArr)[mc];
-
-        info[i][mc].isFilled=false;
-        if (mcTrack.Vx() * mcTrack.Vx() + mcTrack.Vy() * mcTrack.Vy() > 1)  continue;  
-        if (TMath::Abs(mcTrack.GetPdgCode()) != 211)   continue; // Select pions
-        if (TMath::Abs(mcTrack.GetEta()) > 1.2) continue;
-        if (info[i][mc].clusters != 0b1111111) continue;
-               
-        Double_t distance = sqrt(    pow(mcHeader->GetX()-mcTrack.Vx(),2) +  pow(mcHeader->GetY()-mcTrack.Vy(),2) +  pow(mcHeader->GetZ()-mcTrack.Vz(),2) );   
-        info[i][mc].isFilled= true; 
-        info[i][mc].r= distance;
-        info[i][mc].pt= mcTrack.GetPt();
-        info[i][mc].eta= mcTrack.GetEta();
-        info[i][mc].phi= mcTrack.GetPhi();
-        info[i][mc].z= mcTrack.Vz();
-        info[i][mc].isPrimary= mcTrack.isPrimary();
-        
-
-        hDenTrue_r->Fill(distance);
-        hDenTrue_pt->Fill(mcTrack.GetPt());
-        hDenTrue_eta->Fill(mcTrack.GetEta());
-        hDenTrue_phi->Fill(mcTrack.GetPhi());  
-        hDenTrue_z->Fill(mcTrack.Vz());
-
-
-      }
-  }
-
-  
-
-
-
-  std::cout<<" Getting Track data: "<<std::endl;
-
-  auto trackArr = ctx.inputs().get<gsl::span<o2::its::TrackITS>>("tracks");
-  auto MCTruth= ctx.inputs().get<gsl::span<o2::MCCompLabel>>("mstruth");
-
-  o2::steer::MCKinematicsReader reader("o2sim", o2::steer::MCKinematicsReader::Mode::kMCKine);
-
-  std::cout<< " @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@2222 trackArr: "<<trackArr.size()<< " MCTruth: "<<MCTruth.size()   <<std::endl;
-  for (int itrack = 0; itrack < trackArr.size(); itrack++) {
-      const auto& track = trackArr[itrack];
-      const auto& MCinfo = MCTruth[itrack];
-      
-      if (MCinfo.isNoise()) continue;
-    //  std::cout<<"Check 1: MCinfo.getEventID() "<< MCinfo.getEventID() << " MCinfo.getTrackID() : " << MCinfo.getTrackID() <<std::endl;
-    //  auto* mcTrack = reader.getTrack(MCinfo.getSourceID(), MCinfo.getEventID(), MCinfo.getTrackID());
-   //    std::cout<<"Check 1.5"<<std::endl;
-   //   auto mcHeader= reader.getMCEventHeader(MCinfo.getSourceID(), MCinfo.getEventID());
-    // std::cout<<"Check 2"<<std::endl;
-      
-      Float_t ip[2]{0., 0.};
-      Float_t vx = 0., vy = 0., vz = 0.; // Assumed primary vertex
-      track.getImpactParams(vx, vy, vz, bz, ip);
-
-      //std::cout<<"Check 3"<<std::endl;
-    
-      if (info[MCinfo.getEventID()][MCinfo.getTrackID()].isFilled) {
-      //    std::cout<<"Check 4"<<std::endl;
-           if (MCinfo.isFake()) {
-
-               hNumRecoFake_pt->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
-               hNumRecoFake_phi->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].phi);
-               hNumRecoFake_eta->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].eta);
-               hNumRecoFake_z->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].z);
-               hNumRecoFake_r->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].r); 
-               if (info[MCinfo.getEventID()][MCinfo.getTrackID()].isPrimary)  hTrackImpactTransvFake->Fill(ip[0]);
-           } else {
-               hNumRecoValid_pt->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
-               hNumRecoValid_phi->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].phi);
-//               std::cout<<"num phi " << info[MCinfo.getEventID()][MCinfo.getTrackID()].phi << " event= "<<MCinfo.getEventID()<<" MCinfo.trackID= "<<MCinfo.getTrackID()<<" SourceID"<<MCinfo.getSourceID()<< " itrack "<< itrack<< " traclPt: "<< track.getPt()<<std::endl;
-               hNumRecoValid_eta->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].eta);
-               hNumRecoValid_z->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].z);
-               hNumRecoValid_r->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].r);
-               if (info[MCinfo.getEventID()][MCinfo.getTrackID()].isPrimary) hTrackImpactTransvValid->Fill(ip[0]);
-           }
-    //      std::cout<<" MC Particle analysd"<<std::endl;
-           
-       }
-
-   }
-    
-  std::cout<<"Divide #1"<<std::endl;
-  hFakeTrack_pt->Divide(hNumRecoFake_pt, hDenTrue_pt, 1, 1);
-  hEfficiency_pt->Divide(hNumRecoValid_pt, hDenTrue_pt, 1, 1);
-
-  std::cout<<"Divide #2"<<std::endl;
-  hFakeTrack_phi->Divide(hNumRecoFake_phi, hDenTrue_phi, 1, 1);
-  std::cout<<"Integral  Num: "<<hNumRecoValid_phi->Integral() << " Den: "<<hDenTrue_phi->Integral()<<std::endl;
-
-  std::cout<<"First num bin 1: " << hNumRecoValid_phi->GetBinContent(1) << " bin 2 "<< hNumRecoValid_phi->GetBinContent(1)<<std::endl;
- std::cout<<"First den bin 1: " << hDenTrue_phi->GetBinContent(1) << " bin 2 "<< hDenTrue_phi->GetBinContent(1)<<std::endl;
-
- 
-  hEfficiency_phi->Divide(hNumRecoValid_phi, hDenTrue_phi, 1, 1);
-
-  std::cout<<"Divide #3"<<std::endl;
-  hFakeTrack_eta->Divide(hNumRecoFake_eta, hDenTrue_eta, 1, 1);
-  hEfficiency_eta->Divide(hNumRecoValid_eta, hDenTrue_eta, 1, 1);
- 
-  std::cout<<"Divide #4"<<std::endl;
-  hFakeTrack_r->Divide(hNumRecoFake_r, hDenTrue_r, 1, 1);
-  hEfficiency_r->Divide(hNumRecoValid_r, hDenTrue_r, 1, 1);
-
-  std::cout<<"Divide #5"<<std::endl;
-  hFakeTrack_z->Divide(hNumRecoFake_z, hDenTrue_z, 1, 1);
-  hEfficiency_z->Divide(hNumRecoValid_z, hDenTrue_z, 1, 1);
-
-
-
-
-std::cout<<"---------------------  END OF THE TASK --------------------"<<std::endl;
-
-}
-
-void ITSTrackSimTask::endOfCycle()
-{
-
-  std::ifstream runNumberFile(mRunNumberPath.c_str());
-  if (runNumberFile) {
-
-    std::string runNumber;
-    runNumberFile >> runNumber;
-    if (runNumber != mRunNumber) {
-      for (unsigned int iObj = 0; iObj < mPublishedObjects.size(); iObj++)
-        getObjectsManager()->addMetadata(mPublishedObjects.at(iObj)->GetName(), "Run", runNumber);
-      mRunNumber = runNumber;
-    }
-     ILOG(Info, Support) << "endOfCycle" << ENDM;    
-  }
-}
-
-void ITSTrackSimTask::endOfActivity(Activity& /*activity*/)
-{
-   ILOG(Info, Support) << "endOfActivity" << ENDM;
-}
-
-void ITSTrackSimTask::reset()
-{
-    ILOG(Info, Support) << "Resetting the histogram" << ENDM;
-/*  hAngularDistribution->Reset();
-  hNClusters->Reset();
-  hTrackPhi->Reset();
-  hTrackEta->Reset();
-  hOccupancyROF->Reset();
-  hClusterUsage->Reset();
-*/
-  hEfficiency_pt->Reset();
-  hFakeTrack_pt->Reset();
-  hNumRecoValid_pt->Reset();
-  hNumRecoFake_pt->Reset();
-  hDenTrue_pt->Reset();
-
-  hEfficiency_phi->Reset();
-  hFakeTrack_phi->Reset();
-  hNumRecoValid_phi->Reset();
-  hNumRecoFake_phi->Reset();
-  hDenTrue_phi->Reset();
-
-  hEfficiency_eta->Reset();
-  hFakeTrack_eta->Reset();
-  hNumRecoValid_eta->Reset();
-  hNumRecoFake_eta->Reset();
-  hDenTrue_eta->Reset();
-
-  hEfficiency_r->Reset();
-  hFakeTrack_r->Reset();
-  hNumRecoValid_r->Reset();
-  hNumRecoFake_r->Reset();
-  hDenTrue_r->Reset();
-
-
-  hEfficiency_z->Reset();
-  hFakeTrack_z->Reset();
-  hNumRecoValid_z->Reset();
-  hNumRecoFake_z->Reset();
-  hDenTrue_z->Reset();
-
-
-
-  hTrackImpactTransvValid->Reset();
-  hTrackImpactTransvFake->Reset();
-
-  
-}
-
-void ITSTrackSimTask::createAllHistos()
-{
-
-  hAngularDistribution = new TH2D("AngularDistribution", "AngularDistribution", 30, -1.5, 1.5, 60, 0, TMath::TwoPi());
-  hAngularDistribution->SetTitle("AngularDistribution");
-  addObject(hAngularDistribution);
-  formatAxes(hAngularDistribution, "#eta", "#phi", 1, 1.10);
-  hAngularDistribution->SetStats(0);
-
-  hNClusters = new TH1D("NClusters", "NClusters", 100, 0, 100);
-  hNClusters->SetTitle("hNClusters");
-  addObject(hNClusters);
-  formatAxes(hNClusters, "Number of clusters per Track", "Counts", 1, 1.10);
-
-  hTrackEta = new TH1D("EtaDistribution", "EtaDistribution", 30, -1.5, 1.5);
-  hTrackEta->SetTitle("Eta Distribution of tracks");
-  addObject(hTrackEta);
-  formatAxes(hTrackEta, "#eta", "counts", 1, 1.10);
-
-  hTrackPhi = new TH1D("PhiDistribution", "PhiDistribution", 60, 0, TMath::TwoPi());
-  hTrackPhi->SetTitle("Phi Distribution of tracks");
-  addObject(hTrackPhi);
-  formatAxes(hTrackPhi, "#phi", "counts", 1, 1.10);
-
-  hTrackPt = new TH1D("PtDistribution", "PtDistribution", 200, 0, 100);
-  hTrackPt->SetTitle("Pt Distribution of tracks");
-  addObject(hTrackPt);
-  formatAxes(hTrackPt, "#pt", "counts", 1, 1.10);
-
-  hTrackImpactTransvValid = new TH1F("ImpactTransvVaild", "Transverse impact parameter for valid tracks; D (cm)", 30, -0.1, 0.1);
-  hTrackImpactTransvValid->SetTitle("Transverse impact parameter distribution of valid tracks");
-  addObject(hTrackImpactTransvValid);
-  formatAxes(hTrackImpactTransvValid, "D (cm)", "counts", 1, 1.10);
-
-
-  hTrackImpactTransvFake = new TH1F("ImpactTransvFake", "Transverse impact parameter for fake tracks; D (cm)", 30, -0.1, 0.1);
-  hTrackImpactTransvFake->SetTitle("Transverse impact parameter distribution of fake tracks");
-  addObject(hTrackImpactTransvFake);
-  formatAxes(hTrackImpactTransvFake, "D (cm)", "counts", 1, 1.10);
-
-
-
-  hOccupancyROF = new TH1D("OccupancyROF", "OccupancyROF", 1, 0, 1);
-  hOccupancyROF->SetTitle("Track occupancy in ROF");
-  addObject(hOccupancyROF);
-  formatAxes(hOccupancyROF, "", "nTracks/ROF", 1, 1.10);
-
-  hClusterUsage = new TH1D("ClusterUsage", "ClusterUsage", 1, 0, 1);
-  hClusterUsage->SetTitle("Fraction of clusters used in tracking");
-  addObject(hClusterUsage);
-  formatAxes(hClusterUsage, "", "nCluster in track / Total cluster", 1, 1.10);
-
-  /*
-  hEfficiency = new TH1D("efficiency", ";#it{p}_{T} (GeV/#it{c});Efficiency (fake-track rate)", nb, xbins);
-  hEfficiency->SetTitle("Efficiency of tracking");
-  addObject(hEfficiency);
-  formatAxes(hEfficiency, "#it{p}_{T} (GeV/#it{c})", "Efficiency", 1, 1.10); 
-
-  hFakeTrack = new TH1D("faketrack", ";#it{p}_{T} (GeV/#it{c});Fake-track rate", nb, xbins);
-  hFakeTrack->SetTitle("Fake-track rate");
-  addObject(hFakeTrack);
-  formatAxes(hFakeTrack, "#it{p}_{T} (GeV/#it{c})", "Fake-track rate", 1, 1.10);   
- 
-*/
-
-
 
 }
 
 void ITSTrackSimTask::addObject(TObject* aObject)
 {
   if (!aObject) {
-    LOG(INFO) << " ERROR: trying to add non-existent object ";
+    ILOG(Info, Support) << " ERROR: trying to add non-existent object "<< ENDM;
     return;
   } else {
     mPublishedObjects.push_back(aObject);
@@ -772,7 +452,7 @@ void ITSTrackSimTask::publishHistos()
 {
   for (unsigned int iObj = 0; iObj < mPublishedObjects.size(); iObj++) {
     getObjectsManager()->startPublishing(mPublishedObjects.at(iObj));
-    LOG(INFO) << " Object will be published: " << mPublishedObjects.at(iObj)->GetName();
+    ILOG(Info, Support) << " Object will be published: " << mPublishedObjects.at(iObj)->GetName()  << ENDM;
   }
 }
 

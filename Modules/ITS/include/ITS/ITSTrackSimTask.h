@@ -73,50 +73,9 @@ class ITSTrackSimTask : public TaskInterface
   void addObject(TObject* aObject);
   void createAllHistos();
 
-
- 
-  struct DataFrames {
-    void update(int frame, long index)
-    {
-      if (frame < firstFrame) {
-        firstFrame = frame;
-        firstIndex = index;
-      }
-      if (frame > lastFrame) {
-        lastFrame = frame;
-        lastIndex = index;
-      }
-      if (frame == firstFrame && index < firstIndex) {
-        firstIndex = index;
-      }
-      if (frame == lastFrame && index > lastIndex) {
-        lastIndex = index;
-      }
-    }
-
-    long firstFrame = 10000;
-    int firstIndex = 1;
-    long lastFrame = -10000;
-    int lastIndex = -1;
-  };
-
-
-
-  static constexpr int NLayer = 7;
-  static constexpr int NLayerIB = 3;
-
   std::vector<std::vector<InfoStruct>> info;
-
   std::vector<TObject*> mPublishedObjects;
-  TH1D* hNClusters;
-  TH1D* hTrackEta;
-  TH1D* hTrackPhi;
-  TH1D* hTrackPt;
-  TH1D* hOccupancyROF;
-  TH1F* hTrackImpactTransv;
-  TH1D* hClusterUsage;
-  TH2D* hAngularDistribution;
-
+ 
   TH1D*  hNumRecoValid_pt;
   TH1D* hNumRecoFake_pt;
   TH1D* hDenTrue_pt;
@@ -154,17 +113,13 @@ class ITSTrackSimTask : public TaskInterface
 
   std::string mRunNumber;
   std::string mRunNumberPath;
+  std::string mMCKinePath;
+  std::string mO2GrpPath;
 
-  Int_t mNTracks = 0;
-  Int_t mNRofs = 0;
-
-  const int NROFOCCUPANCY = 100;
-  Int_t mNClustersInTracks = 0;
-  Int_t mNClusters = 0;
-
-  o2::itsmft::TopologyDictionary mDict;
+  o2::its::GeometryTGeo* mGeom; 
+ 
   float bz;
 };
 } // namespace o2::quality_control_modules::its
 
-#endif // QC_MODULE_ITS_ITSTRACKTASK_H
+#endif // QC_MODULE_ITS_ITSTRACKSIMTASK_H
