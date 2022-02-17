@@ -23,7 +23,6 @@
 #include <DataFormatsITSMFT/TopologyDictionary.h>
 #include <ITSBase/GeometryTGeo.h>
 
-
 #include "SimulationDataFormat/MCTrack.h"
 #include "SimulationDataFormat/MCCompLabel.h"
 #include "Field/MagneticField.h"
@@ -54,18 +53,15 @@ class ITSTrackSimTask : public TaskInterface
   void reset() override;
 
   struct InfoStruct {
-     unsigned short clusters = 0;
-     bool isFilled = 0;
-     bool isPrimary = 0;
-     float r;
-     float pt;
-     float eta;
-     float phi;
-     float z;
+    unsigned short clusters = 0;
+    bool isFilled = 0;
+    bool isPrimary = 0;
+    float r;
+    float pt;
+    float eta;
+    float phi;
+    float z;
   };
-
-
-
 
  private:
   void publishHistos();
@@ -75,38 +71,36 @@ class ITSTrackSimTask : public TaskInterface
 
   std::vector<std::vector<InfoStruct>> info;
   std::vector<TObject*> mPublishedObjects;
- 
-  TH1D*  hNumRecoValid_pt;
+
+  TH1D* hNumRecoValid_pt;
   TH1D* hNumRecoFake_pt;
   TH1D* hDenTrue_pt;
   TH1D* hFakeTrack_pt;
   TH1D* hEfficiency_pt;
 
-  TH1D*  hNumRecoValid_eta;
+  TH1D* hNumRecoValid_eta;
   TH1D* hNumRecoFake_eta;
   TH1D* hDenTrue_eta;
   TH1D* hFakeTrack_eta;
   TH1D* hEfficiency_eta;
 
-  TH1D*  hNumRecoValid_phi;
+  TH1D* hNumRecoValid_phi;
   TH1D* hNumRecoFake_phi;
   TH1D* hDenTrue_phi;
   TH1D* hFakeTrack_phi;
   TH1D* hEfficiency_phi;
 
-  TH1D*  hNumRecoValid_r;
+  TH1D* hNumRecoValid_r;
   TH1D* hNumRecoFake_r;
   TH1D* hDenTrue_r;
   TH1D* hFakeTrack_r;
   TH1D* hEfficiency_r;
 
-  TH1D*  hNumRecoValid_z;
+  TH1D* hNumRecoValid_z;
   TH1D* hNumRecoFake_z;
   TH1D* hDenTrue_z;
   TH1D* hFakeTrack_z;
   TH1D* hEfficiency_z;
-
-  
 
   TH1F* hTrackImpactTransvFake;
   TH1F* hTrackImpactTransvValid;
@@ -116,8 +110,8 @@ class ITSTrackSimTask : public TaskInterface
   std::string mMCKinePath;
   std::string mO2GrpPath;
 
-  o2::its::GeometryTGeo* mGeom; 
- 
+  o2::its::GeometryTGeo* mGeom;
+
   float bz;
 };
 } // namespace o2::quality_control_modules::its
