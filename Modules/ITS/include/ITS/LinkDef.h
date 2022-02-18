@@ -13,10 +13,11 @@
 #pragma link C++ class o2::quality_control_modules::its::ITSFeeTask + ;
 #pragma link C++ class o2::quality_control_modules::its::ITSClusterTask + ;
 #pragma link C++ class o2::quality_control_modules::its::ITSNoisyPixelTask + ;
+#pragma link C++ class o2::quality_control_modules::its::ITSThresholdCalibrationTask + ;
 #pragma link C++ class o2::quality_control_modules::its::ITSTrackTask + ;
 #pragma link C++ class o2::quality_control_modules::its::ITSFhrCheck + ;
 #pragma link C++ class o2::quality_control_modules::its::ITSClusterCheck + ;
 #pragma link C++ class o2::quality_control_modules::its::ITSTrackCheck + ;
 #pragma link C++ class o2::quality_control_modules::its::ITSFeeCheck + ;
-
+#pragma link C++ class o2::quality_control_modules::its::ITSThresholdCalibrationCheck + ;
 #endif

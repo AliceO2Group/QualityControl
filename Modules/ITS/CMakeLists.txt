@@ -13,10 +13,12 @@ add_library(O2QcITS
             src/ITSClusterTask.cxx
             src/ITSNoisyPixelTask.cxx
             src/ITSTrackTask.cxx
+            src/ITSThresholdCalibrationTask.cxx
             src/ITSFhrCheck.cxx
             src/ITSClusterCheck.cxx
             src/ITSTrackCheck.cxx
             src/ITSFeeCheck.cxx
+            src/ITSThresholdCalibrationCheck.cxx 
             )
 
 target_sources(O2QcITS PRIVATE src/TH2XlineReductor.cxx)
@@ -55,10 +57,12 @@ add_root_dictionary(O2QcITS
                             include/ITS/ITSClusterTask.h
                             include/ITS/ITSNoisyPixelTask.h
                             include/ITS/ITSTrackTask.h
+                            include/ITS/ITSThresholdCalibrationTask.h
                             include/ITS/ITSFhrCheck.h
                             include/ITS/ITSClusterCheck.h
                             include/ITS/ITSTrackCheck.h
                             include/ITS/ITSFeeCheck.h
+                            include/ITS/ITSThresholdCalibrationCheck.h 
                     LINKDEF include/ITS/LinkDef.h
                     BASENAME O2QcITS)
 
