@@ -20,6 +20,7 @@
 
 #include <TH2.h>
 
+#include "MCH/MergeableTH2Ratio.h"
 #include <DPLUtils/DPLRawParser.h>
 #include <MCHRawDecoder/PageDecoder.h>
 #include "QualityControl/QcInfoLogger.h"
@@ -62,13 +63,19 @@ class DecodingErrorsTask /*final*/ : public TaskInterface
   void decodePage(gsl::span<const std::byte> page);
 
   // helper function for storing the histograms to a ROOT file on disk
-  void saveHistograms();
+  void writeHistos();
 
   mch::raw::Elec2DetMapper mElec2Det{ nullptr };
   mch::raw::FeeLink2SolarMapper mFee2Solar{ nullptr };
+  o2::mch::raw::Solar2FeeLinkMapper mSolar2Fee{ nullptr };
   o2::mch::raw::PageDecoder mDecoder;
 
-  TH2F* mHistogramErrors{ nullptr }; ///< histogram to visualize the decoding errors
+  bool mSaveToRootFile{ false }; ///< flag for saving the histograms to a local ROOT file
+
+  std::shared_ptr<MergeableTH2Ratio> mHistogramErrorsPerChamber; ///< histogram to visualize the decoding errors
+  std::shared_ptr<MergeableTH2Ratio> mHistogramErrorsPerFeeId;   ///< histogram to visualize the decoding errors
+
+  std::vector<TH1*> mAllHistograms;
 };
 
 } // namespace o2::quality_control_modules::muonchambers
