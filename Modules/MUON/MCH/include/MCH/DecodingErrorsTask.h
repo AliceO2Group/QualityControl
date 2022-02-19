@@ -20,7 +20,7 @@
 
 #include <TH2.h>
 
-#include "MCH/MergeableTH2Ratio.h"
+#include "MUONCommon/MergeableTH2Ratio.h"
 #include <DPLUtils/DPLRawParser.h>
 #include <MCHRawDecoder/PageDecoder.h>
 #include "QualityControl/QcInfoLogger.h"

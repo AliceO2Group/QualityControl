@@ -23,6 +23,10 @@
 
 #include <TH2.h>
 #include "QualityControl/TaskInterface.h"
+#include "MUONCommon/MergeableTH2Ratio.h"
+#include "MCH/MergeableTH1PseudoEfficiencyPerDE.h"
+//#include "MCH/MergeableTH1PseudoEfficiencyPerDECycle.h"
+//#include "MCH/MergeableTH1MPVPerDECycle.h"
 #include "MCH/GlobalHistogram.h"
 #ifdef HAVE_DIGIT_IN_DATAFORMATS
 #include "DataFormatsMCH/Digit.h"
@@ -30,10 +34,6 @@
 #include "MCHBase/Digit.h"
 #endif
 #include "MCHBase/PreCluster.h"
-#include "MCH/MergeableTH2Ratio.h"
-#include "MCH/MergeableTH1PseudoEfficiencyPerDE.h"
-//#include "MCH/MergeableTH1PseudoEfficiencyPerDECycle.h"
-//#include "MCH/MergeableTH1MPVPerDECycle.h"
 
 namespace o2
 {

@@ -26,7 +26,6 @@ set(HEADERS
   include/MCH/PhysicsOccupancyCheck.h
   include/MCH/PhysicsPreclustersCheck.h
   include/MCH/TH1MCHReductor.h
-  include/MCH/MergeableTH2Ratio.h
   include/MCH/MergeableTH1OccupancyPerDE.h
   include/MCH/MergeableTH1OccupancyPerDECycle.h
   include/MCH/MergeableTH1PseudoEfficiencyPerDE.h
@@ -44,7 +43,7 @@ target_include_directories(
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_link_libraries(${MODULE_NAME} PUBLIC O2QualityControl O2::CommonDataFormat O2::GPUCommon
+target_link_libraries(${MODULE_NAME} PUBLIC O2QualityControl O2QcMUONCommon O2::CommonDataFormat O2::GPUCommon
         $<TARGET_NAME_IF_EXISTS:O2::MCHMappingFactory> O2::MCHMappingImpl4 O2::MCHMappingSegContour O2::MCHBase O2::DataFormatsMCH O2::MCHRawDecoder O2::MCHCalibration O2::MCHPreClustering)
 
 target_compile_definitions(${MODULE_NAME} PRIVATE $<$<TARGET_EXISTS:O2::MCHMappingFactory>:MCH_HAS_MAPPING_FACTORY>)
@@ -82,7 +81,6 @@ add_root_dictionary(${MODULE_NAME}
                             include/MCH/PedestalsCheck.h
                             include/MCH/TH1MCHReductor.h
                             include/MCH/sampa_header.h
-                            include/MCH/MergeableTH2Ratio.h
                             include/MCH/MergeableTH1OccupancyPerDE.h
                             include/MCH/MergeableTH1OccupancyPerDECycle.h
                             include/MCH/MergeableTH1PseudoEfficiencyPerDE.h
