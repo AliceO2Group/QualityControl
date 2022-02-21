@@ -23,7 +23,7 @@
       }
     },
     "tasks" : {
-      "ITSTrackSimTask" : {
+      "ITSThresholdCalibrationTask" : {
         "active" : "true",
         "className" : "o2::quality_control_modules::its::ITSThresholdCalibrationTask",
         "moduleName" : "QcITS",
@@ -41,22 +41,8 @@
         }
 
       }
-    },
-
-    "checks" : {
-      "ITSThresholdCalibrationCheck" : {
-        "active" : "true",
-        "className" : "o2::quality_control_modules::its::ITSThresholdCalibrationCheck",
-        "moduleName" : "QcITS",
-        "policy" : "OnAny",
-        "detectorName" : "ITS",
-        "dataSource" : [ {
-          "type" : "Task",
-          "name" : "ITSThesholdCalibrationTask",
-          "MOs" : ["NClusters"]
-        } ]
-      }
     }
+
 
 
  },

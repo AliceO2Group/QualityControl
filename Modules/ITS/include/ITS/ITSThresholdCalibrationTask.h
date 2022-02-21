@@ -45,6 +45,7 @@ class ITSThresholdCalibrationTask : public TaskInterface
   void endOfCycle() override;
   void endOfActivity(Activity& activity) override;
   void reset() override;
+  std::vector<std::string> split (std::string, std::string); 
 
  private:
   void publishHistos();
@@ -54,7 +55,7 @@ class ITSThresholdCalibrationTask : public TaskInterface
 
   static constexpr int NLayer = 7;
   static constexpr int NLayerIB = 3;
-
+  std::vector<TObject*> mPublishedObjects;
 
   std::string mRunNumber;
   std::string mRunNumberPath;

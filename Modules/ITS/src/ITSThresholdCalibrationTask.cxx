@@ -15,7 +15,7 @@
 ///
 
 #include "QualityControl/QcInfoLogger.h"
-#include "ITS/ITSTrackTask.h"
+#include "ITS/ITSThresholdCalibrationTask.h"
 #include <DataFormatsITS/TrackITS.h>
 #include <DataFormatsITSMFT/ROFRecord.h>
 #include <Framework/InputRecord.h>
@@ -65,13 +65,38 @@ void ITSThresholdCalibrationTask::monitorData(o2::framework::ProcessingContext& 
 {
 
   ILOG(Info, Support) << "START DOING QC General" << ENDM;
-  const auto tunString = pc.inputs().get<gsl::span<char>>("tunestring");
-  const auto runType = 	pc.inputs().get<short int>("runtype");
-  const auto scanType = pc.inputs().get<char>("scantype");
+  const auto tunString = ctx.inputs().get<gsl::span<char>>("tunestring");
+  const auto runType = 	ctx.inputs().get<short int>("runtype");
+  const auto scanType = ctx.inputs().get<char>("scantype");
 
+
+  string inString(tunString.begin(), tunString.end());
   std::cout<<"Scan type is: "<< scanType<<std::endl;
   std::cout<<"Run type is: "<< runType<<std::endl;
-  std::cout<<"Output is :  "<<tunString<<std::endl;
+  std::cout<<"Output: "<<inString<<std::endl;
+/*
+  for (auto inString: tunString){
+   
+     std::cout<<"Output: "<<inString<<std::endl;
+
+  }
+
+*/
+
+/*
+  std::string delimiter = "Stave";
+  std::string token = inString.substr(0, inString.find(delimiter)); // token is "scott"
+  
+  std::cout<< "First stave: " << token << " at " << inString.find(delimiter)<<std::endl;
+*/
+  
+  auto splitRes = split(inString,"Stave:");
+  for (auto StaveStr: splitRes){
+     std::cout<<"Stave !: "<<StaveStr<<std::endl;
+     for (auto thr_info: split(StaveStr,",")){
+         std::cout<<"info: "<< thr_info <<std::endl;
+      }
+  }
 
   std::cout<<" END!!!!!!!!!!!!!" <<std::endl;
 
@@ -141,6 +166,22 @@ void ITSThresholdCalibrationTask::publishHistos()
     ILOG(Info, Support) << " Object will be published: " << mPublishedObjects.at(iObj)->GetName() << ENDM;
   }
 }
+
+std::vector<std::string> ITSThresholdCalibrationTask::split (std::string s, std::string delimiter) {
+    size_t pos_start = 0, pos_end, delim_len = delimiter.length();
+    std::string token;
+    std::vector<std::string> res;
+
+    while ((pos_end = s.find (delimiter, pos_start)) != string::npos) {
+        token = s.substr (pos_start, pos_end - pos_start);
+        pos_start = pos_end + delim_len;
+        res.push_back (token);
+    }
+
+    res.push_back (s.substr (pos_start));
+    return res;
+}
+
 
 } // namespace o2::quality_control_modules::its
 
