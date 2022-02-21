@@ -21,6 +21,7 @@
 #include "CPV/PhysicsTask.h"
 #include <Framework/InputRecord.h>
 #include <Framework/InputRecordWalker.h>
+#include <Framework/DataRefUtils.h>
 #include "DataFormatsCPV/Digit.h"
 #include "DataFormatsCPV/Cluster.h"
 #include "DataFormatsCPV/TriggerRecord.h"
@@ -89,10 +90,11 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
   mHist1D[H1DNValidInputs]->Fill(nValidInputs);
 
   bool hasClusters = false, hasDigits = false;
-  for (auto&& input : ctx.inputs()) {
+  for (auto&& input : o2::framework::InputRecordWalker(ctx.inputs())) {
     // get message header
     if (input.header != nullptr && input.payload != nullptr) {
-      const auto* header = header::get<header::DataHeader*>(input.header);
+      const auto* header = o2::framework::DataRefUtils::getHeader<header::DataHeader*>(input);
+      auto payloadSize = o2::framework::DataRefUtils::getPayloadSize(input);
       //LOG(info) << "monitorData() : obtained input " << header->dataOrigin.str << "/" << header->dataDescription.str;
       if ((strcmp(header->dataOrigin.str, "CPV") == 0) && (strcmp(header->dataDescription.str, "DIGITS") == 0)) {
         //LOG(info) << "monitorData() : I found digits in inputs";
@@ -107,7 +109,7 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
       // const char* payload = input.payload;
 
       // for the sake of an example, let's fill the histogram with payload sizes
-      mHist1D[H1DInputPayloadSize]->Fill(header->payloadSize);
+      mHist1D[H1DInputPayloadSize]->Fill(payloadSize);
     }
   }
 

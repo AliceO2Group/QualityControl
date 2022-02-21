@@ -501,28 +501,29 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
     auto rawData = ctx.inputs().getByPos(posReadout, islot);
     // get message header
     if (rawData.header != nullptr && rawData.payload != nullptr) {
-      const auto* header = header::get<header::DataHeader*>(rawData.header);
+      const auto* header = o2::framework::DataRefUtils::getHeader<header::DataHeader*>(rawData);
+      const auto payloadSize = o2::framework::DataRefUtils::getPayloadSize(rawData);
       // get payload of a specific input, which is a char array.
       ILOG(Debug, Support) << "Processing superpage " << mNumberOfSuperpages << ENDM;
       mNumberOfSuperpages++;
       nSuperpagesMessage++;
       mSuperpageCounter->Fill(1); //for expert
-      ILOG(Debug, Support) << " EMCAL Reading Payload size: " << header->payloadSize << " for " << header->dataOrigin << ENDM;
+      ILOG(Debug, Support) << " EMCAL Reading Payload size: " << payloadSize << " for " << header->dataOrigin << ENDM;
 
       //fill the histogram with payload sizes
-      mPayloadSize->Fill(header->payloadSize);         //for expert
-      mTotalDataVolume->Fill(1., header->payloadSize); //for expert
+      mPayloadSize->Fill(payloadSize);         //for expert
+      mTotalDataVolume->Fill(1., payloadSize); //for expert
 
       // Skip SOX headers
       auto rdhblock = reinterpret_cast<const o2::header::RDHAny*>(rawData.payload); //
-      if (o2::raw::RDHUtils::getHeaderSize(rdhblock) == static_cast<int>(header->payloadSize)) {
+      if (o2::raw::RDHUtils::getHeaderSize(rdhblock) == static_cast<int>(payloadSize)) {
         continue;
       }
-      mPayloadSizeTFPerDDL->Fill(o2::raw::RDHUtils::getFEEID(rdhblock), header->payloadSize / 1024.); //PayLoad size per TimeFrame for shifter
-      mPayloadSizeTFPerDDL_1D->Fill(o2::raw::RDHUtils::getFEEID(rdhblock), header->payloadSize / 1024.);
+      mPayloadSizeTFPerDDL->Fill(o2::raw::RDHUtils::getFEEID(rdhblock), payloadSize / 1024.); //PayLoad size per TimeFrame for shifter
+      mPayloadSizeTFPerDDL_1D->Fill(o2::raw::RDHUtils::getFEEID(rdhblock), payloadSize / 1024.);
 
       // try decoding payload
-      o2::emcal::RawReaderMemory rawreader(gsl::span(rawData.payload, header->payloadSize));
+      o2::emcal::RawReaderMemory rawreader(ctx.inputs().get<gsl::span<char>>(rawData));
 
       while (rawreader.hasNext()) {
 
@@ -531,23 +532,23 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
         nPagesMessage++;
         mPageCounter->Fill(1); //expert
         rawreader.next();
-        auto payLoadSize = rawreader.getPayloadSize(); //payloadsize in byte;
+        auto rawSize = rawreader.getPayloadSize(); //payloadsize in byte;
 
-        auto headerR = rawreader.getRawHeader();
-        auto feeID = o2::raw::RDHUtils::getFEEID(headerR);
+        auto rdh = rawreader.getRawHeader();
+        auto feeID = o2::raw::RDHUtils::getFEEID(rdh);
 
         if (feeID > 40)
           continue; //skip STU ddl
 
-        o2::InteractionRecord triggerIR{ o2::raw::RDHUtils::getTriggerBC(headerR), o2::raw::RDHUtils::getTriggerOrbit(headerR) };
-        RawEventType evIndex{ triggerIR, o2::raw::RDHUtils::getTriggerType(headerR) };
+        o2::InteractionRecord triggerIR{ o2::raw::RDHUtils::getTriggerBC(rdh), o2::raw::RDHUtils::getTriggerOrbit(rdh) };
+        RawEventType evIndex{ triggerIR, o2::raw::RDHUtils::getTriggerType(rdh) };
 
         //trigger type
-        auto triggertype = o2::raw::RDHUtils::getTriggerType(headerR);
+        auto triggertype = o2::raw::RDHUtils::getTriggerType(rdh);
         bool isPhysTrigger = triggertype & o2::trigger::PhT, isCalibTrigger = triggertype & o2::trigger::Cal;
         if (isPhysTrigger) {
-          mPayloadSizePerDDL->Fill(feeID, payLoadSize / 1024.);    //for shifter
-          mPayloadSizePerDDL_1D->Fill(feeID, payLoadSize / 1024.); //for shifter
+          mPayloadSizePerDDL->Fill(feeID, rawSize / 1024.);    //for shifter
+          mPayloadSizePerDDL_1D->Fill(feeID, rawSize / 1024.); //for shifter
         }
         if (!(isPhysTrigger || isCalibTrigger)) {
           ILOG(Error, Support) << " Unmonitored trigger class requested " << ENDM;
@@ -841,8 +842,9 @@ bool RawTask::isLostTimeframe(framework::ProcessingContext& ctx) const
     //for (decltype(nslots) islot = 0; islot < nslots; islot++) {
     //  const auto& ref = ctx.inputs().getByPos(posReadout, islot);
     const auto dh = o2::framework::DataRefUtils::getHeader<o2::header::DataHeader*>(ref);
+    const auto payloadSize = o2::framework::DataRefUtils::getPayloadSize(ref);
     // if (dh->subSpecification == 0xDEADBEEF) {
-    if (dh->payloadSize == 0) {
+    if (payloadSize == 0) {
       return true;
       //  }
     }

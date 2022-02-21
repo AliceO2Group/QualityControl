@@ -21,6 +21,7 @@
 #include "Example/EveryObject.h"
 #include <Framework/InputRecord.h>
 #include <Framework/InputRecordWalker.h>
+#include <Framework/DataRefUtils.h>
 
 #include <TH1F.h>
 #include <TH2F.h>
@@ -98,10 +99,11 @@ void EveryObject::startOfCycle()
 void EveryObject::monitorData(o2::framework::ProcessingContext& ctx)
 {
   for (auto&& input : framework::InputRecordWalker(ctx.inputs())) {
-    const auto* header = header::get<header::DataHeader*>(input.header);
-    auto value1 = (Float_t)(header->payloadSize % (size_t)rangeLimiter);
-    auto value2 = (Float_t)((header->tfCounter + header->payloadSize) % (size_t)rangeLimiter);
-    auto value3 = (Float_t)((header->tfCounter * header->payloadSize) % (size_t)rangeLimiter);
+    const auto* header = framework::DataRefUtils::getHeader<header::DataHeader*>(input);
+    const auto payloadSize = framework::DataRefUtils::getPayloadSize(input);
+    auto value1 = (Float_t)(payloadSize % (size_t)rangeLimiter);
+    auto value2 = (Float_t)((header->tfCounter + payloadSize) % (size_t)rangeLimiter);
+    auto value3 = (Float_t)((header->tfCounter * payloadSize) % (size_t)rangeLimiter);
 
     if (mTH1F) {
       mTH1F->Fill(value1);

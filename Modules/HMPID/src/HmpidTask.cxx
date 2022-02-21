@@ -20,6 +20,7 @@
 #include <TMath.h>
 #include <Framework/InputRecord.h>
 #include <Framework/InputRecordWalker.h>
+#include <Framework/DataRefUtils.h>
 
 #include "QualityControl/QcInfoLogger.h"
 //#include "HMPID/HmpidDecodeRawMem.h"
@@ -134,13 +135,13 @@ void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
   for (auto&& input : o2::framework::InputRecordWalker(ctx.inputs())) {
     // get message header
     if (input.header != nullptr && input.payload != nullptr) {
-      const auto* header = header::get<header::DataHeader*>(input.header);
+      auto payloadSize = o2::framework::DataRefUtils::getPayloadSize(input);
       int32_t* ptrToPayload = (int32_t*)(input.payload);
 
-      if (header->payloadSize < 80) {
+      if (payloadSize < 80) {
         continue;
       }
-      mDecoder->setUpStream(ptrToPayload, (long int)header->payloadSize);
+      mDecoder->setUpStream(ptrToPayload, (long int)payloadSize);
       if (!mDecoder->decodeBufferFast()) {
         ILOG(Error, Devel) << "Error decoding the Superpage !" << ENDM;
       }
