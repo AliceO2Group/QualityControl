@@ -9,7 +9,6 @@ target_sources(O2QcFT0 PRIVATE  src/BasicDigitQcTask.cxx
                              src/MergedTreeCheck.cxx
                              src/TreeReaderPostProcessing.cxx
                              src/CalibrationTask.cxx
-                             src/ChannelCalibrationTask.cxx
                              src/ChannelTimeCalibrationCheck.cxx
                              src/BasicPPTask.cxx
                              src/OutOfBunchCollTask.cxx
@@ -42,7 +41,6 @@ add_root_dictionary(O2QcFT0
                 include/FT0/MergedTreeCheck.h
                 include/FT0/TreeReaderPostProcessing.h
                 include/FT0/CalibrationTask.h
-                include/FT0/ChannelCalibrationTask.h
                 include/FT0/ChannelTimeCalibrationCheck.h
                 include/FT0/BasicPPTask.h
                 include/FT0/OutOfBunchCollTask.h
@@ -96,7 +94,6 @@ endforeach()
 # ----- Configs -------
 install(FILES
         ft0-calibration-config.json
-        ft0-channel-calibration-config.json
         ft0-multinode-config.json
         ft0-postprocessing-config.json
         ft0-basic-config.json

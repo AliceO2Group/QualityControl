@@ -14,16 +14,16 @@
 /// \author Artur Furs afurs@cern.ch
 /// modified by Sebastin Bysiak sbysiak@cern.ch
 
-#include "TCanvas.h"
-#include "TH1.h"
-#include "TH2.h"
-#include "TROOT.h"
+#include <TCanvas.h>
+#include <TH1.h>
+#include <TH2.h>
+#include <TROOT.h>
 
 #include "QualityControl/QcInfoLogger.h"
-#include "FT0/RecPointsQcTask.h"
-#include "DataFormatsFT0/RecPoints.h"
-#include "DataFormatsFT0/ChannelData.h"
-#include "Framework/InputRecord.h"
+#include <FT0/RecPointsQcTask.h>
+#include <DataFormatsFT0/RecPoints.h>
+#include <DataFormatsFT0/ChannelData.h>
+#include <Framework/InputRecord.h>
 #include <vector>
 
 namespace o2::quality_control_modules::ft0
@@ -86,22 +86,24 @@ void RecPointsQcTask::rebinFromConfig()
 
 void RecPointsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize RecoQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Info) << "@@@@initialize RecoQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
   mStateLastIR2Ch = {};
 
-  mHistTime2Ch = std::make_unique<TH2F>("TimePerChannel", "Time vs Channel;Channel;Time [ps]", NCHANNELS, 0, NCHANNELS, 200, -2050, 2050);
+  mHistTime2Ch = std::make_unique<TH2F>("TimePerChannel", "Time vs Channel;Channel;Time [ps]", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM, 500, -2050, 2050);
   mHistTime2Ch->SetOption("colz");
-  mHistAmp2Ch = std::make_unique<TH2F>("AmpPerChannel", "Amplitude vs Channel;Channel;Amp [#ADC channels]", NCHANNELS, 0, NCHANNELS, 500, 0, 500);
+  mHistAmp2Ch = std::make_unique<TH2F>("AmpPerChannel", "Amplitude vs Channel;Channel;Amp [#ADC channels]", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM, 100, -100, 100);
   mHistAmp2Ch->SetOption("colz");
-  mHistCollTimeAC = std::make_unique<TH1F>("CollTimeAC", "(T0A+T0C)/2;ps", 500, -2000, 2000);
-  mHistCollTimeA = std::make_unique<TH1F>("CollTimeA", "T0A;ps", 500, -2000, 2000);
-  mHistCollTimeC = std::make_unique<TH1F>("CollTimeC", "T0C;ps", 500, -2000, 2000);
-  mHistResCollTimeA = std::make_unique<TH1F>("ResCollTimeA", "(T0Aup-T0Adown)/2;ps", 100, -500, 500);
-  mHistResCollTimeC = std::make_unique<TH1F>("ResCollTimeC", "(T0Cup-T0Cdown)/2;ps", 100, -500, 500);
+  mHistCollTimeAC = std::make_unique<TH1F>("CollTimeAC", "(T0A+T0C)/2;ps", 100, -1000, 1000);
+  mHistCollTimeA = std::make_unique<TH1F>("CollTimeA", "T0A;ps", 100, -1000, 1000);
+  mHistCollTimeC = std::make_unique<TH1F>("CollTimeC", "T0C;ps", 100, -1000, 1000);
+  mHistResCollTimeA = std::make_unique<TH1F>("ResCollTimeA", "(T0Aup-T0Adown)/2;ps", 100, -200, 200);
+  mHistResCollTimeC = std::make_unique<TH1F>("ResCollTimeC", "(T0Cup-T0Cdown)/2;ps", 100, -200, 200);
   mListHistGarbage = new TList();
   mListHistGarbage->SetOwner(kTRUE);
   mHistTimeSum2Diff = std::make_unique<TH2F>("timeSumVsDiff", "time A/C side: sum VS diff;(TOC-TOA)/2 [ns];(TOA+TOC)/2 [ns]", 400, -52.08, 52.08, 400, -52.08, 52.08); // range of 52.08 ns = 4000*13.02ps = 4000 channels
   mHistTimeSum2Diff->SetOption("colz");
+  mHistEventDensity2Ch = std::make_unique<TH2F>("EventDensityPerChannel", "Event density(in BC) per Channel;Channel;BC;", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM, 10000, 0, 1e5);
+  mHistEventDensity2Ch->SetOption("colz");
 
   std::vector<unsigned int> vecChannelIDs;
   if (auto param = mCustomParameters.find("ChannelIDs"); param != mCustomParameters.end()) {
@@ -109,13 +111,22 @@ void RecPointsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     const std::string del = ",";
     vecChannelIDs = parseParameters<unsigned int>(chIDs, del);
   } else {
-    for (unsigned int iCh = 0; iCh < NCHANNELS; iCh++)
+    for (unsigned int iCh = 0; iCh < o2::ft0::Constants::sNCHANNELS_PM; iCh++)
       vecChannelIDs.push_back(iCh);
   }
   for (const auto& entry : vecChannelIDs) {
     mSetAllowedChIDs.insert(entry);
   }
 
+  for (const auto& chID : mSetAllowedChIDs) {
+    auto pairHistAmpVsTime = mMapHistAmpVsTime.insert({ chID, new TH2F(Form("Amp_vs_time_channel%i", chID), Form("Amplitude vs time, channel %i;Amp;Time", chID), 420, -100, 500, 410, -2050, 2050) });
+    if (pairHistAmpVsTime.second) {
+      mListHistGarbage->Add(pairHistAmpVsTime.first->second);
+      getObjectsManager()->startPublishing(pairHistAmpVsTime.first->second);
+    }
+  }
+
+  ILOG(Info) << "@@@ histos created" << ENDM;
   rebinFromConfig(); // after all histos are created
 
   getObjectsManager()->startPublishing(mHistTime2Ch.get());
@@ -126,18 +137,12 @@ void RecPointsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mHistCollTimeC.get());
   getObjectsManager()->startPublishing(mHistResCollTimeA.get());
   getObjectsManager()->startPublishing(mHistResCollTimeC.get());
-  for (const auto& chID : mSetAllowedChIDs) {
-    auto pairHistAmpVsTime = mMapHistAmpVsTime.insert({ chID, new TH2F(Form("Amp_vs_time_channel%i", chID), Form("Amplitude vs time, channel %i;Amp;Time", chID), 420, -100, 500, 410, -2050, 2050) });
-    if (pairHistAmpVsTime.second) {
-      mListHistGarbage->Add(pairHistAmpVsTime.first->second);
-      getObjectsManager()->startPublishing(pairHistAmpVsTime.first->second);
-    }
-  }
+  getObjectsManager()->startPublishing(mHistEventDensity2Ch.get());
 }
 
 void RecPointsQcTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity" << activity.mId << ENDM;
+  ILOG(Info) << "@@@@ startOfActivity" << activity.mId << ENDM;
   mHistTime2Ch->Reset();
   mHistAmp2Ch->Reset();
   mHistTimeSum2Diff->Reset();
@@ -146,6 +151,7 @@ void RecPointsQcTask::startOfActivity(Activity& activity)
   mHistCollTimeC->Reset();
   mHistResCollTimeA->Reset();
   mHistResCollTimeC->Reset();
+  mHistEventDensity2Ch->Reset();
   for (auto& entry : mMapHistAmpVsTime) {
     entry.second->Reset();
   }
@@ -153,7 +159,7 @@ void RecPointsQcTask::startOfActivity(Activity& activity)
 
 void RecPointsQcTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Info) << "@@@@startOfCycle" << ENDM;
   mTimeMinNS = -1;
   mTimeMaxNS = 0.;
   mTimeCurNS = 0.;
@@ -165,88 +171,26 @@ void RecPointsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   double curTfTimeMin = -1;
   double curTfTimeMax = 0;
-  int channelTimeCut = 1000;
-
   mTfCounter++;
   auto chan = ctx.inputs().get<gsl::span<o2::ft0::ChannelDataFloat>>("channels");
   auto recpoints = ctx.inputs().get<gsl::span<o2::ft0::RecPoints>>("recpoints");
-
   bool isFirst = true;
   uint32_t firstOrbit;
 
   for (auto& recpoint : recpoints) {
-    o2::ft0::Triggers triggersignals = recpoint.getTrigger();
-    bool ora = triggersignals.getOrA();
-    bool orc = triggersignals.getOrC();
-    bool vertexTrigger = triggersignals.getVertex();
     auto channels = recpoint.getBunchChannelData(chan);
     mHistCollTimeAC->Fill(static_cast<Float_t>(recpoint.getCollisionTimeMean()));
     mHistCollTimeA->Fill(static_cast<Float_t>(recpoint.getCollisionTimeA()));
     mHistCollTimeC->Fill(static_cast<Float_t>(recpoint.getCollisionTimeC()));
-    int time[NCHANNELS] = {}, amp[NCHANNELS] = {};
+    ILOG(Info) << "@@@ Collision time " << recpoint.getCollisionTimeMean() << ENDM;
     for (const auto& chData : channels) {
-      time[chData.ChId] = static_cast<int>(chData.CFDTime);
-      amp[chData.ChId] = static_cast<int>(chData.QTCAmpl);
-      mHistTime2Ch->Fill(static_cast<Float_t>(chData.ChId), static_cast<Float_t>(chData.CFDTime));
-      mHistAmp2Ch->Fill(static_cast<Float_t>(chData.ChId), static_cast<Float_t>(chData.QTCAmpl));
+      mHistTime2Ch->Fill(static_cast<Double_t>(chData.ChId), static_cast<Double_t>(chData.CFDTime));
+      mHistAmp2Ch->Fill(static_cast<Double_t>(chData.ChId), static_cast<Double_t>(chData.QTCAmpl));
       if (mSetAllowedChIDs.find(static_cast<unsigned int>(chData.ChId)) != mSetAllowedChIDs.end()) {
         mMapHistAmpVsTime[chData.ChId]->Fill(chData.QTCAmpl, chData.CFDTime);
       }
     }
-    // A and C resolution
-    if (vertexTrigger) {
-      int avtimeAup = 0, avtimeAdown = 0, naup = 0, nadown = 0;
-      int avtimeCup = 0, avtimeCdown = 0, ncup = 0, ncdown = 0;
-      int a_up = 2 * o2::ft0::Geometry::NCellsA ;            //A upper part 0 -47 ch; down : 48 - 95
-      int c_up = 2 * a_up + 2 * o2::ft0::Geometry::NCellsC; //C upper 96 -151; C down 152-208
-      for (int ich = 0; ich < a_up; ich++) {
-        if (amp[ich] > 0 && std::abs(time[ich]) < channelTimeCut) {
-          avtimeAup += time[ich];
-          naup++;
-        }
-      }
-      for (int ich = a_up; ich < 2 * a_up; ich++) {
-        if (amp[ich] > 0 && std::abs(time[ich]) < channelTimeCut) {
-          avtimeAdown += time[ich];
-          nadown++;
-        }
-      }
-      for (int ich = 2 * a_up; ich < c_up; ich++) {
-        if (amp[ich] > 0 && std::abs(time[ich]) < channelTimeCut) {
-          avtimeCup += time[ich];
-          ncup++;
-        }
-      }
-      for (int ich = c_up; ich < NCHANNELS; ich++) {
-        if (amp[ich] > 0 && std::abs(time[ich]) < channelTimeCut) {
-          avtimeCdown += time[ich];
-          ncdown++;
-        }
-      }
-      if (naup > 0) {
-        avtimeAup /= naup;
-      }
-      if (nadown > 0) {
-        avtimeAdown /= nadown;
-      }
-      if (nadown > 0 && naup > 0) {
-        mHistResCollTimeA->Fill((avtimeAdown - avtimeAup) / 2);
-        ILOG(Info) << " @@@ A res filled " << (avtimeAdown - avtimeAup) / 2 << ENDM;
-      }
-
-      if (ncup > 0) {
-        avtimeCup /= ncup;
-      }
-      if (ncdown > 0) {
-        avtimeCdown /= ncdown;
-      }
-      if (ncdown > 0 && ncup > 0) {
-        mHistResCollTimeC->Fill((avtimeCdown - avtimeCup) / 2);
-        ILOG(Info) << " @@@ C res filled " << (avtimeCdown - avtimeCup) / 2 << ENDM;
-      }
-    }
   }
-
   mTimeSum += curTfTimeMax - curTfTimeMin;
 }
 
@@ -267,6 +211,7 @@ void RecPointsQcTask::reset()
   // clean all the monitor objects here
   mHistTime2Ch->Reset();
   mHistAmp2Ch->Reset();
+  mHistEventDensity2Ch->Reset();
   mHistTimeSum2Diff->Reset();
   mHistCollTimeAC->Reset();
   mHistCollTimeA->Reset();
