@@ -18,5 +18,6 @@
 #pragma link C++ class o2::quality_control_modules::its::ITSClusterCheck + ;
 #pragma link C++ class o2::quality_control_modules::its::ITSTrackCheck + ;
 #pragma link C++ class o2::quality_control_modules::its::ITSFeeCheck + ;
+#pragma link C++ class o2::quality_control_modules::its::ITSTrackSimTask + ;
 
 #endif

@@ -1,0 +1,49 @@
+{
+    "qc": {
+      "config": {
+        "database": {
+          "implementation": "CCDB",
+          "host": "http://localhost:8083",
+          "username": "not_applicable",
+          "password": "not_applicable",
+          "name": "not_applicable"
+        },
+        "Activity": {
+          "number": "42",
+          "type": "2"
+        },
+        "monitoring": {
+          "url": "infologger:///debug?qc"
+        },
+        "consul": {
+          "url":  "http://localhost:8083"
+        },
+        "conditionDB": {
+          "url":  "http://localhost:8083"
+        }
+      },
+      "tasks": {
+        "RecPointsQcTask": {
+          "active": "true",
+          "className": "o2::quality_control_modules::ft0::RecPointsQcTask",
+          "moduleName": "QcFT0",
+          "detectorName": "FT0",
+          "cycleDurationSeconds": "600",
+          "maxNumberCycles": "-1",
+          "dataSource": {
+              "type": "direct",
+              "query": "recpoints:FT0/RECPOINTS/0;channels:FT0/RECCHDATA/0"
+            },
+          "location": "local",
+          "localMachines": [
+            "localhost"
+          ],
+          "remoteMachine": "localhost",
+          "remotePort": "30132",
+            "mergingMode": "entire",
+            "saveObjectsToFile":"qcrootobjects.root"
+        }
+      
+      }
+    }
+}
