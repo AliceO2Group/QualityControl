@@ -18,7 +18,6 @@ add_library(O2QcITS
             src/ITSTrackCheck.cxx
             src/ITSFeeCheck.cxx
             src/ITSTrackSimTask.cxx
-            src/ITSTrackSimCheck.cxx 
             )
 
 target_sources(O2QcITS PRIVATE src/TH2XlineReductor.cxx)
@@ -62,7 +61,6 @@ add_root_dictionary(O2QcITS
                             include/ITS/ITSTrackCheck.h
                             include/ITS/ITSFeeCheck.h
                             include/ITS/ITSTrackSimTask.h
-                            include/ITS/ITSTrackSimCheck.h 
                     LINKDEF include/ITS/LinkDef.h
                     BASENAME O2QcITS)
 

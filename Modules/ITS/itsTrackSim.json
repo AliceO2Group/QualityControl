@@ -43,22 +43,7 @@
         }
 
       }
-    },
-    "checks" : {
-      "ITSTrackSimCheck" : {
-        "active" : "true",
-        "className" : "o2::quality_control_modules::its::ITSTrackSimCheck",
-        "moduleName" : "QcITS",
-        "policy" : "OnAny",
-        "detectorName" : "ITS",
-        "dataSource" : [ {
-          "type" : "Task",
-          "name" : "ITSTrackSimTask",
-          "MOs" : ["NClusters"]
-        } ]
-      }
     }
-
  },
 
          "dataSamplingPolicies" : [
