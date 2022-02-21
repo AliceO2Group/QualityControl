@@ -21,18 +21,18 @@
 #include <Framework/InputRecord.h>
 
 #include "QualityControl/QcInfoLogger.h"
-#include "FT0Base/Constants.h"
-#include "DataFormatsFT0/RecPoints.h"
-#include "DataFormatsFT0/ChannelData.h"
-#include "QualityControl/TaskInterface.h"
+#include <FT0Base/Constants.h>
+#include <DataFormatsFT0/RecPoints.h>
+#include <DataFormatsFT0/ChannelData.h>
+#include "QualityControl/TaskInterface.h>
 #include <memory>
 #include <regex>
 #include <type_traits>
 #include <boost/algorithm/string.hpp>
-#include "TH1.h"
-#include "TH2.h"
-#include "TList.h"
-#include "Rtypes.h"
+#include <TH1.h>
+#include <TH2.h>
+#include <TList.h>
+#include <Rtypes.h>
 
 using namespace o2::quality_control::core;
 

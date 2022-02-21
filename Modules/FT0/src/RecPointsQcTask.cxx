@@ -14,16 +14,16 @@
 /// \author Artur Furs afurs@cern.ch
 /// modified by Sebastin Bysiak sbysiak@cern.ch
 
-#include "TCanvas.h"
-#include "TH1.h"
-#include "TH2.h"
-#include "TROOT.h"
+#include <TCanvas.h>
+#include <TH1.h>
+#include <TH2.h>
+#include <TROOT.h>
 
 #include "QualityControl/QcInfoLogger.h"
-#include "FT0/RecPointsQcTask.h"
-#include "DataFormatsFT0/RecPoints.h"
-#include "DataFormatsFT0/ChannelData.h"
-#include "Framework/InputRecord.h"
+#include <FT0/RecPointsQcTask.h>
+#include <DataFormatsFT0/RecPoints.h>
+#include <DataFormatsFT0/ChannelData.h>
+#include <Framework/InputRecord.h>
 #include <vector>
 
 namespace o2::quality_control_modules::ft0
