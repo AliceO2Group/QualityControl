@@ -85,6 +85,7 @@ void HmpidTask::initialize(o2::framework::InitContext& /*ctx*/)
   hEventSize->Sumw2();
   hEventSize->SetOption("P");
   hEventSize->SetMinimum(0);
+
   hEventSize->SetMarkerStyle(20);
   hEventSize->SetMarkerColor(kBlack);
   hEventSize->SetLineColor(kBlack);
@@ -100,6 +101,13 @@ void HmpidTask::initialize(o2::framework::InitContext& /*ctx*/)
   hEventSize->GetXaxis()->SetTitle("Equipment");
   hEventSize->GetYaxis()->SetTitle("Event size (kB)");
 
+  hEventSize = new TGraph(14);
+  hEventSize->SetName("hEventSize");
+  hEventSize->SetMarkerStyle(20);
+  hEventSize->SetLineWidth(0);
+  hEventSize->GetXaxis()->SetTitle("Equipment");
+  hEventSize->GetYaxis()->SetTitle("Event size (kB)");
+*/
   getObjectsManager()->startPublishing(hPedestalMean);
   getObjectsManager()->addMetadata(hPedestalMean->GetName(), "custom", "34");
 
