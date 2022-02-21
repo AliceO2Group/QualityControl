@@ -93,7 +93,7 @@ void HmpidTask::initialize(o2::framework::InitContext& /*ctx*/)
     hEventSize->GetXaxis()->SetBinLabel(iddl + 1, Form("%d", iddl + 1));
   hEventSize->GetXaxis()->SetLabelSize(0.02);
   hEventSize->SetStats(0);
-
+/*
   hEventSize = new TGraph(14);
   hEventSize->SetName("hEventSize");
   hEventSize->SetMarkerStyle(20);
