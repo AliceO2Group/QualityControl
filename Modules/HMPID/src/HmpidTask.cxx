@@ -22,7 +22,6 @@
 #include <Framework/InputRecordWalker.h>
 
 #include "QualityControl/QcInfoLogger.h"
-//#include "HMPID/HmpidDecodeRawMem.h"
 #include "HMPID/HmpidTask.h"
 #include "HMPIDReconstruction/HmpidEquipment.h"
 #include "HMPIDReconstruction/HmpidDecoder2.h"
@@ -93,21 +92,7 @@ void HmpidTask::initialize(o2::framework::InitContext& /*ctx*/)
     hEventSize->GetXaxis()->SetBinLabel(iddl + 1, Form("%d", iddl + 1));
   hEventSize->GetXaxis()->SetLabelSize(0.02);
   hEventSize->SetStats(0);
-/*
-  hEventSize = new TGraph(14);
-  hEventSize->SetName("hEventSize");
-  hEventSize->SetMarkerStyle(20);
-  hEventSize->SetLineWidth(0);
-  hEventSize->GetXaxis()->SetTitle("Equipment");
-  hEventSize->GetYaxis()->SetTitle("Event size (kB)");
 
-  hEventSize = new TGraph(14);
-  hEventSize->SetName("hEventSize");
-  hEventSize->SetMarkerStyle(20);
-  hEventSize->SetLineWidth(0);
-  hEventSize->GetXaxis()->SetTitle("Equipment");
-  hEventSize->GetYaxis()->SetTitle("Event size (kB)");
-*/
   getObjectsManager()->startPublishing(hPedestalMean);
   getObjectsManager()->addMetadata(hPedestalMean->GetName(), "custom", "34");
 
@@ -181,7 +166,7 @@ void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
       uint16_t   decoder.theEquipments[0..13]->padSamples[0..23][0..9][0..47]  Number of samples
       float      decoder.theEquipments[0..13]->padSum[0..23][0..9][0..47]      Sum of the charge of all samples
       float      decoder.theEquipments[0..13]->padSquares[0..23][0..9][0..47]  Sum of the charge squares of all samples
-'     uint16_t GetChannelSamples(int Equipment, int Column, int Dilogic, int Channel);
+      uint16_t GetChannelSamples(int Equipment, int Column, int Dilogic, int Channel);
       float GetChannelSum(int Equipment, int Column, int Dilogic, int Channel);
       float GetChannelSquare(int Equipment, int Column, int Dilogic, int Channel);
       uint16_t GetPadSamples(int Module, int Column, int Row);
