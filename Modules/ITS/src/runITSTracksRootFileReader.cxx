@@ -24,6 +24,7 @@
 #include <TFile.h>
 #include <TTree.h>
 // O2
+#include "QualityControl/QcInfoLogger.h"
 #include <Framework/CallbackService.h>
 #include <Framework/ControlService.h>
 #include <Framework/runDataProcessing.h>
@@ -61,7 +62,7 @@ class ITSTracksRootFileReader : public o2::framework::Task
     // Tracks: load TTree and branches
     mTreeTracks = (TTree*)mFileTracks->Get("o2sim");
     mTreeTracks->SetBranchAddress("ITSTrack", &ptracks);
-    mTreeTracks->SetBranchAddress("ITSTracksROF", &profs);
+    mTreeTracks->SetBranchAddress("ITSTracksROF", &ptrackRofs);
     mTreeTracks->SetBranchAddress("Vertices", &pvertices);
 
     // Clusters
@@ -78,6 +79,7 @@ class ITSTracksRootFileReader : public o2::framework::Task
     // Clusters: load TTree and branches
     mTreeClusters = (TTree*)mFileClusters->Get("o2sim");
     mTreeClusters->SetBranchAddress("ITSClusterComp", &pclusters);
+    mTreeClusters->SetBranchAddress("ITSClustersROF", &pclusterRofs);
 
     // check match of entries in loaded files
     unsigned long mNumberOfEntriesTrack = mTreeTracks->GetEntries();
@@ -102,7 +104,6 @@ class ITSTracksRootFileReader : public o2::framework::Task
 
   void run(framework::ProcessingContext& pc)
   {
-
     // Check if this is the last Entry
     if (mCurrentEntry == mNumberOfEntries) {
       LOG(info) << " ITSClustersRootFileReader::run. End of files reached.";
@@ -115,9 +116,12 @@ class ITSTracksRootFileReader : public o2::framework::Task
     mTreeTracks->GetEntry(mCurrentEntry);
     mTreeClusters->GetEntry(mCurrentEntry);
 
-    // Prepare ROFs output
-    std::vector<o2::itsmft::ROFRecord>* rofArr = new std::vector<o2::itsmft::ROFRecord>();
-    std::copy(rofs.begin(), rofs.end(), std::back_inserter(*rofArr));
+    // Prepare ROFs output: tracks and clusters
+    std::vector<o2::itsmft::ROFRecord>* trackRofArr = new std::vector<o2::itsmft::ROFRecord>();
+    std::copy(trackRofs.begin(), trackRofs.end(), std::back_inserter(*trackRofArr));
+
+    std::vector<o2::itsmft::ROFRecord>* clusRofArr = new std::vector<o2::itsmft::ROFRecord>();
+    std::copy(clusterRofs.begin(), clusterRofs.end(), std::back_inserter(*clusRofArr));
 
     // Prepare vector with tracks and clusters for all ROFs
     std::vector<o2::its::TrackITS>* trackArr = new std::vector<o2::its::TrackITS>();
@@ -130,7 +134,8 @@ class ITSTracksRootFileReader : public o2::framework::Task
     std::copy(clusters.begin(), clusters.end(), std::back_inserter(*clusArr));
 
     // Output vectors
-    pc.outputs().snapshot(Output{ "ITS", "ITSTrackROF", 0, Lifetime::Timeframe }, *rofArr);
+    pc.outputs().snapshot(Output{ "ITS", "ITSTrackROF", 0, Lifetime::Timeframe }, *trackRofArr);
+    pc.outputs().snapshot(Output{ "ITS", "CLUSTERSROF", 0, Lifetime::Timeframe }, *clusRofArr);
     pc.outputs().snapshot(Output{ "ITS", "TRACKS", 0, Lifetime::Timeframe }, *trackArr);
     pc.outputs().snapshot(Output{ "ITS", "VERTICES", 0, Lifetime::Timeframe }, *vertexArr);
     pc.outputs().snapshot(Output{ "ITS", "COMPCLUSTERS", 0, Lifetime::Timeframe }, *clusArr);
@@ -144,7 +149,8 @@ class ITSTracksRootFileReader : public o2::framework::Task
   std::unique_ptr<TFile> mFileClusters = nullptr;                                                         // root file with Clusters
   TTree* mTreeTracks = nullptr;                                                                           // TTree object inside file with Tracks
   TTree* mTreeClusters = nullptr;                                                                         // TTree object inside file with Clusters
-  std::vector<o2::itsmft::ROFRecord> rofs, *profs = &rofs;                                                // pointer to ROF branch
+  std::vector<o2::itsmft::ROFRecord> trackRofs, *ptrackRofs = &trackRofs;                                 // pointer to ROF branch (tracks)
+  std::vector<o2::itsmft::ROFRecord> clusterRofs, *pclusterRofs = &clusterRofs;                           // pointer to ROF branch (clusters)
   std::vector<o2::its::TrackITS> tracks, *ptracks = &tracks;                                              // pointer to Track branch
   std::vector<o2::itsmft::CompClusterExt> clusters, *pclusters = &clusters;                               // pointer to Cluster branch
   std::vector<o2::dataformats::Vertex<o2::dataformats::TimeStamp<int>>> vertices, *pvertices = &vertices; // pointer to Vertex branch
@@ -161,6 +167,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext&)
   // Define the outputs
   std::vector<OutputSpec> outputs;
   outputs.emplace_back("ITS", "ITSTrackROF", 0, Lifetime::Timeframe);
+  outputs.emplace_back("ITS", "CLUSTERSROF", 0, Lifetime::Timeframe);
   outputs.emplace_back("ITS", "TRACKS", 0, Lifetime::Timeframe);
   outputs.emplace_back("ITS", "VERTICES", 0, Lifetime::Timeframe);
   outputs.emplace_back("ITS", "COMPCLUSTERS", 0, Lifetime::Timeframe);
