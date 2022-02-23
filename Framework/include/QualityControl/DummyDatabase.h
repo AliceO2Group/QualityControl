@@ -39,6 +39,11 @@ class DummyDatabase : public DatabaseInterface
   // QualityObject
   void storeQO(std::shared_ptr<const o2::quality_control::core::QualityObject> q, long from, long to) override;
   std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string checkerName, long timestamp = 0) override;
+  // TRFC
+  void storeTRFC(std::shared_ptr<const o2::quality_control::TimeRangeFlagCollection> trfc) override;
+  std::shared_ptr<o2::quality_control::TimeRangeFlagCollection> retrieveTRFC(const std::string& name, const std::string& detector, int runNumber = 0,
+                                                                             const std::string& passName = "", const std::string& periodName = "",
+                                                                             const std::string& provenance = "", long timestamp = -1) override;
   // General
   void* retrieveAny(std::type_info const& tinfo, std::string const& path,
                     std::map<std::string, std::string> const& metadata, long timestamp = -1,

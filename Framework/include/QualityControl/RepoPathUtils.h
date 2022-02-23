@@ -22,6 +22,7 @@
 #include <Common/Exceptions.h>
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/QualityObject.h"
+#include <DataFormatsQualityControl/TimeRangeFlagCollection.h>
 
 namespace o2::quality_control::core
 {
@@ -98,6 +99,31 @@ class RepoPathUtils
                      qo->getPolicyName(),
                      qo->getMonitorObjectsNames(),
                      qo->getActivity().mProvenance);
+  }
+  /**
+   * Compute and return the path to the TRFCollection.
+   * Current algorithm does <provenance(qc)>/<detectorCode>/TRFC/<trfcName>
+   * @param detectorCode
+   * @param trfcName
+   * @param provenance
+   * @return the path to the TRFCollection
+   */
+  static std::string getTrfcPath(const std::string& detectorCode,
+                                 const std::string& trfcName,
+                                 const std::string& provenance = "qc")
+  {
+    return provenance + "/" + detectorCode + "/TRFC/" + trfcName;
+  }
+
+  /**
+   * Compute and return the path to the TRFCollection.
+   * Current algorithm does <provenance(qc)>/<detectorCode>/TRFC/<trfcName>
+   * @param trfc
+   * @return the path to the TRFCollection
+   */
+  static std::string getTrfcPath(const TimeRangeFlagCollection* trfc)
+  {
+    return getTrfcPath(trfc->getDetector(), trfc->getName(), trfc->getProvenance());
   }
 };
 } // namespace o2::quality_control::core
