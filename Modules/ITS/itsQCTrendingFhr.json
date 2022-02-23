@@ -423,15 +423,13 @@
             "paths": ["qc/ITS/MO/FHRTask/Occupancy/Layer0/Layer0ChipStave",
                       "qc/ITS/MO/FHRTask/Occupancy/Layer1/Layer1ChipStave",
                       "qc/ITS/MO/FHRTask/Occupancy/Layer2/Layer2ChipStave",
-                      "qc/ITS/MO/FHRTask/Occupancy/Layer2/Layer2ChipStave",
                       "qc/ITS/MO/FHRTask/Occupancy/Layer3/Layer3ChipStave",
                       "qc/ITS/MO/FHRTask/Occupancy/Layer4/Layer4ChipStave",
                       "qc/ITS/MO/FHRTask/Occupancy/Layer5/Layer5ChipStave",
                       "qc/ITS/MO/FHRTask/Occupancy/Layer6/Layer6ChipStave"],
             "names": ["Fhr_l0",
                       "Fhr_l1",
-                      "Fhr_l2t",
-                      "Fhr_l2b",
+                      "Fhr_l2",
                       "Fhr_l3",
                       "Fhr_l4",
                       "Fhr_l5",
@@ -640,140 +638,140 @@
           {
             "names": ["fhr_mean_of_L2_00", "fhr_stddev_of_L2_00", "fhr_chips_of_L2_00", "fhr_occ_of_L2_00"],
             "title": ["Average FHR trend: L2_00", "Stddev FHR trend: L2_00", "Active chips trend: L2_00", "Occupancy trend: L2_00"],
-            "varexp": ["Fhr_l2t.mean[0]:ntreeentries", "Fhr_l2t.stddev[0]:ntreeentries", "Fhr_l2t.entries[0]:ntreeentries", "Fhr_l2t.mean_scaled[0]:ntreeentries"],
+            "varexp": ["Fhr_l2.mean[0]:ntreeentries", "Fhr_l2.stddev[0]:ntreeentries", "Fhr_l2.entries[0]:ntreeentries", "Fhr_l2.mean_scaled[0]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
             "names": ["fhr_mean_of_L2_01", "fhr_stddev_of_L2_01", "fhr_chips_of_L2_01", "fhr_occ_of_L2_01"],
             "title": ["Average FHR trend: L2_01", "Stddev FHR trend: L2_01", "Active chips trend: L2_01", "Occupancy trend: L2_01"],
-            "varexp": ["Fhr_l2t.mean[1]:ntreeentries", "Fhr_l2t.stddev[1]:ntreeentries", "Fhr_l2t.entries[1]:ntreeentries", "Fhr_l2t.mean_scaled[1]:ntreeentries"],
+            "varexp": ["Fhr_l2.mean[1]:ntreeentries", "Fhr_l2.stddev[1]:ntreeentries", "Fhr_l2.entries[1]:ntreeentries", "Fhr_l2.mean_scaled[1]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
             "names": ["fhr_mean_of_L2_02", "fhr_stddev_of_L2_02", "fhr_chips_of_L2_02", "fhr_occ_of_L2_02"],
             "title": ["Average FHR trend: L2_02", "Stddev FHR trend: L2_02", "Active chips trend: L2_02", "Occupancy trend: L2_02"],
-            "varexp": ["Fhr_l2t.mean[2]:ntreeentries", "Fhr_l2t.stddev[2]:ntreeentries", "Fhr_l2t.entries[2]:ntreeentries", "Fhr_l2t.mean_scaled[2]:ntreeentries"],
+            "varexp": ["Fhr_l2.mean[2]:ntreeentries", "Fhr_l2.stddev[2]:ntreeentries", "Fhr_l2.entries[2]:ntreeentries", "Fhr_l2.mean_scaled[2]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
             "names": ["fhr_mean_of_L2_03", "fhr_stddev_of_L2_03", "fhr_chips_of_L2_03", "fhr_occ_of_L2_03"],
             "title": ["Average FHR trend: L2_03", "Stddev FHR trend: L2_03", "Active chips trend: L2_03", "Occupancy trend: L2_03"],
-            "varexp": ["Fhr_l2t.mean[3]:ntreeentries", "Fhr_l2t.stddev[3]:ntreeentries", "Fhr_l2t.entries[3]:ntreeentries", "Fhr_l2t.mean_scaled[3]:ntreeentries"],
+            "varexp": ["Fhr_l2.mean[3]:ntreeentries", "Fhr_l2.stddev[3]:ntreeentries", "Fhr_l2.entries[3]:ntreeentries", "Fhr_l2.mean_scaled[3]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
             "names": ["fhr_mean_of_L2_04", "fhr_stddev_of_L2_04", "fhr_chips_of_L2_04", "fhr_occ_of_L2_04"],
             "title": ["Average FHR trend: L2_04", "Stddev FHR trend: L2_04", "Active chips trend: L2_04", "Occupancy trend: L2_04"],
-            "varexp": ["Fhr_l2t.mean[4]:ntreeentries", "Fhr_l2t.stddev[4]:ntreeentries", "Fhr_l2t.entries[4]:ntreeentries", "Fhr_l2t.mean_scaled[4]:ntreeentries"],
+            "varexp": ["Fhr_l2.mean[4]:ntreeentries", "Fhr_l2.stddev[4]:ntreeentries", "Fhr_l2.entries[4]:ntreeentries", "Fhr_l2.mean_scaled[4]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
             "names": ["fhr_mean_of_L2_05", "fhr_stddev_of_L2_05", "fhr_chips_of_L2_05", "fhr_occ_of_L2_05"],
             "title": ["Average FHR trend: L2_05", "Stddev FHR trend: L2_05", "Active chips trend: L2_05", "Occupancy trend: L2_05"],
-            "varexp": ["Fhr_l2t.mean[5]:ntreeentries", "Fhr_l2t.stddev[5]:ntreeentries", "Fhr_l2t.entries[5]:ntreeentries", "Fhr_l2t.mean_scaled[5]:ntreeentries"],
+            "varexp": ["Fhr_l2.mean[5]:ntreeentries", "Fhr_l2.stddev[5]:ntreeentries", "Fhr_l2.entries[5]:ntreeentries", "Fhr_l2.mean_scaled[5]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
             "names": ["fhr_mean_of_L2_06", "fhr_stddev_of_L2_06", "fhr_chips_of_L2_06", "fhr_occ_of_L2_06"],
             "title": ["Average FHR trend: L2_06", "Stddev FHR trend: L2_06", "Active chips trend: L2_06", "Occupancy trend: L2_06"],
-            "varexp": ["Fhr_l2t.mean[6]:ntreeentries", "Fhr_l2t.stddev[6]:ntreeentries", "Fhr_l2t.entries[6]:ntreeentries", "Fhr_l2t.mean_scaled[6]:ntreeentries"],
+            "varexp": ["Fhr_l2.mean[6]:ntreeentries", "Fhr_l2.stddev[6]:ntreeentries", "Fhr_l2.entries[6]:ntreeentries", "Fhr_l2.mean_scaled[6]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
             "names": ["fhr_mean_of_L2_07", "fhr_stddev_of_L2_07", "fhr_chips_of_L2_07", "fhr_occ_of_L2_07"],
             "title": ["Average FHR trend: L2_07", "Stddev FHR trend: L2_07", "Active chips trend: L2_07", "Occupancy trend: L2_07"],
-            "varexp": ["Fhr_l2t.mean[7]:ntreeentries", "Fhr_l2t.stddev[7]:ntreeentries", "Fhr_l2t.entries[7]:ntreeentries", "Fhr_l2t.mean_scaled[7]:ntreeentries"],
+            "varexp": ["Fhr_l2.mean[7]:ntreeentries", "Fhr_l2.stddev[7]:ntreeentries", "Fhr_l2.entries[7]:ntreeentries", "Fhr_l2.mean_scaled[7]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
             "names": ["fhr_mean_of_L2_08", "fhr_stddev_of_L2_08", "fhr_chips_of_L2_08", "fhr_occ_of_L2_08"],
             "title": ["Average FHR trend: L2_08", "Stddev FHR trend: L2_08", "Active chips trend: L2_08", "Occupancy trend: L2_08"],
-            "varexp": ["Fhr_l2t.mean[8]:ntreeentries", "Fhr_l2t.stddev[8]:ntreeentries", "Fhr_l2t.entries[8]:ntreeentries", "Fhr_l2t.mean_scaled[8]:ntreeentries"],
+            "varexp": ["Fhr_l2.mean[8]:ntreeentries", "Fhr_l2.stddev[8]:ntreeentries", "Fhr_l2.entries[8]:ntreeentries", "Fhr_l2.mean_scaled[8]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
             "names": ["fhr_mean_of_L2_09", "fhr_stddev_of_L2_09", "fhr_chips_of_L2_09", "fhr_occ_of_L2_09"],
             "title": ["Average FHR trend: L2_09", "Stddev FHR trend: L2_09", "Active chips trend: L2_09", "Occupancy trend: L2_09"],
-            "varexp": ["Fhr_l2t.mean[9]:ntreeentries", "Fhr_l2t.stddev[9]:ntreeentries", "Fhr_l2t.entries[9]:ntreeentries", "Fhr_l2t.mean_scaled[9]:ntreeentries"],
+            "varexp": ["Fhr_l2.mean[9]:ntreeentries", "Fhr_l2.stddev[9]:ntreeentries", "Fhr_l2.entries[9]:ntreeentries", "Fhr_l2.mean_scaled[9]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
             "names": ["fhr_mean_of_L2_10", "fhr_stddev_of_L2_10", "fhr_chips_of_L2_10", "fhr_occ_of_L2_10"],
             "title": ["Average FHR trend: L2_10", "Stddev FHR trend: L2_10", "Active chips trend: L2_10", "Occupancy trend: L2_10"],
-            "varexp": ["Fhr_l2b.mean[10]:ntreeentries", "Fhr_l2b.stddev[10]:ntreeentries", "Fhr_l2b.entries[10]:ntreeentries", "Fhr_l2b.mean_scaled[10]:ntreeentries"],
+            "varexp": ["Fhr_l2.mean[10]:ntreeentries", "Fhr_l2.stddev[10]:ntreeentries", "Fhr_l2.entries[10]:ntreeentries", "Fhr_l2.mean_scaled[10]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
             "names": ["fhr_mean_of_L2_11", "fhr_stddev_of_L2_11", "fhr_chips_of_L2_11", "fhr_occ_of_L2_11"],
             "title": ["Average FHR trend: L2_11", "Stddev FHR trend: L2_11", "Active chips trend: L2_11", "Occupancy trend: L2_11"],
-            "varexp": ["Fhr_l2b.mean[11]:ntreeentries", "Fhr_l2b.stddev[11]:ntreeentries", "Fhr_l2b.entries[11]:ntreeentries", "Fhr_l2b.mean_scaled[11]:ntreeentries"],
+            "varexp": ["Fhr_l2.mean[11]:ntreeentries", "Fhr_l2.stddev[11]:ntreeentries", "Fhr_l2.entries[11]:ntreeentries", "Fhr_l2.mean_scaled[11]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
             "names": ["fhr_mean_of_L2_12", "fhr_stddev_of_L2_12", "fhr_chips_of_L2_12", "fhr_occ_of_L2_12"],
             "title": ["Average FHR trend: L2_12", "Stddev FHR trend: L2_12", "Active chips trend: L2_12", "Occupancy trend: L2_12"],
-            "varexp": ["Fhr_l2b.mean[12]:ntreeentries", "Fhr_l2b.stddev[12]:ntreeentries", "Fhr_l2b.entries[12]:ntreeentries", "Fhr_l2b.mean_scaled[12]:ntreeentries"],
+            "varexp": ["Fhr_l2.mean[12]:ntreeentries", "Fhr_l2.stddev[12]:ntreeentries", "Fhr_l2.entries[12]:ntreeentries", "Fhr_l2.mean_scaled[12]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
             "names": ["fhr_mean_of_L2_13", "fhr_stddev_of_L2_13", "fhr_chips_of_L2_13", "fhr_occ_of_L2_13"],
             "title": ["Average FHR trend: L2_13", "Stddev FHR trend: L2_13", "Active chips trend: L2_13", "Occupancy trend: L2_13"],
-            "varexp": ["Fhr_l2b.mean[13]:ntreeentries", "Fhr_l2b.stddev[13]:ntreeentries", "Fhr_l2b.entries[13]:ntreeentries", "Fhr_l2b.mean_scaled[13]:ntreeentries"],
+            "varexp": ["Fhr_l2.mean[13]:ntreeentries", "Fhr_l2.stddev[13]:ntreeentries", "Fhr_l2.entries[13]:ntreeentries", "Fhr_l2.mean_scaled[13]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
             "names": ["fhr_mean_of_L2_14", "fhr_stddev_of_L2_14", "fhr_chips_of_L2_14", "fhr_occ_of_L2_14"],
             "title": ["Average FHR trend: L2_14", "Stddev FHR trend: L2_14", "Active chips trend: L2_14", "Occupancy trend: L2_14"],
-            "varexp": ["Fhr_l2b.mean[14]:ntreeentries", "Fhr_l2b.stddev[14]:ntreeentries", "Fhr_l2b.entries[14]:ntreeentries", "Fhr_l2b.mean_scaled[14]:ntreeentries"],
+            "varexp": ["Fhr_l2.mean[14]:ntreeentries", "Fhr_l2.stddev[14]:ntreeentries", "Fhr_l2.entries[14]:ntreeentries", "Fhr_l2.mean_scaled[14]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
             "names": ["fhr_mean_of_L2_15", "fhr_stddev_of_L2_15", "fhr_chips_of_L2_15", "fhr_occ_of_L2_15"],
             "title": ["Average FHR trend: L2_15", "Stddev FHR trend: L2_15", "Active chips trend: L2_15", "Occupancy trend: L2_15"],
-            "varexp": ["Fhr_l2b.mean[15]:ntreeentries", "Fhr_l2b.stddev[15]:ntreeentries", "Fhr_l2b.entries[15]:ntreeentries", "Fhr_l2b.mean_scaled[15]:ntreeentries"],
+            "varexp": ["Fhr_l2.mean[15]:ntreeentries", "Fhr_l2.stddev[15]:ntreeentries", "Fhr_l2.entries[15]:ntreeentries", "Fhr_l2.mean_scaled[15]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
             "names": ["fhr_mean_of_L2_16", "fhr_stddev_of_L2_16", "fhr_chips_of_L2_16", "fhr_occ_of_L2_16"],
             "title": ["Average FHR trend: L2_16", "Stddev FHR trend: L2_16", "Active chips trend: L2_16", "Occupancy trend: L2_16"],
-            "varexp": ["Fhr_l2b.mean[16]:ntreeentries", "Fhr_l2b.stddev[16]:ntreeentries", "Fhr_l2b.entries[16]:ntreeentries", "Fhr_l2b.mean_scaled[16]:ntreeentries"],
+            "varexp": ["Fhr_l2.mean[16]:ntreeentries", "Fhr_l2.stddev[16]:ntreeentries", "Fhr_l2.entries[16]:ntreeentries", "Fhr_l2.mean_scaled[16]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
             "names": ["fhr_mean_of_L2_17", "fhr_stddev_of_L2_17", "fhr_chips_of_L2_17", "fhr_occ_of_L2_17"],
             "title": ["Average FHR trend: L2_17", "Stddev FHR trend: L2_17", "Active chips trend: L2_17", "Occupancy trend: L2_17"],
-            "varexp": ["Fhr_l2b.mean[17]:ntreeentries", "Fhr_l2b.stddev[17]:ntreeentries", "Fhr_l2b.entries[17]:ntreeentries", "Fhr_l2b.mean_scaled[17]:ntreeentries"],
+            "varexp": ["Fhr_l2.mean[17]:ntreeentries", "Fhr_l2.stddev[17]:ntreeentries", "Fhr_l2.entries[17]:ntreeentries", "Fhr_l2.mean_scaled[17]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
             "names": ["fhr_mean_of_L2_18", "fhr_stddev_of_L2_18", "fhr_chips_of_L2_18", "fhr_occ_of_L2_18"],
             "title": ["Average FHR trend: L2_18", "Stddev FHR trend: L2_18", "Active chips trend: L2_18", "Occupancy trend: L2_18"],
-            "varexp": ["Fhr_l2b.mean[18]:ntreeentries", "Fhr_l2b.stddev[18]:ntreeentries", "Fhr_l2b.entries[18]:ntreeentries", "Fhr_l2b.mean_scaled[18]:ntreeentries"],
+            "varexp": ["Fhr_l2.mean[18]:ntreeentries", "Fhr_l2.stddev[18]:ntreeentries", "Fhr_l2.entries[18]:ntreeentries", "Fhr_l2.mean_scaled[18]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
             "names": ["fhr_mean_of_L2_19", "fhr_stddev_of_L2_19", "fhr_chips_of_L2_19", "fhr_occ_of_L2_19"],
             "title": ["Average FHR trend: L2_19", "Stddev FHR trend: L2_19", "Active chips trend: L2_19", "Occupancy trend: L2_19"],
-            "varexp": ["Fhr_l2b.mean[19]:ntreeentries", "Fhr_l2b.stddev[19]:ntreeentries", "Fhr_l2b.entries[19]:ntreeentries", "Fhr_l2b.mean_scaled[19]:ntreeentries"],
+            "varexp": ["Fhr_l2.mean[19]:ntreeentries", "Fhr_l2.stddev[19]:ntreeentries", "Fhr_l2.entries[19]:ntreeentries", "Fhr_l2.mean_scaled[19]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },

@@ -143,48 +143,10 @@ void TrendingTaskITSFhr::storePlots(repository::DatabaseInterface& qcdb)
   double ymaxIB[NTRENDSFHR] = { 1e-3, 1e-5, 9.5, 1 };
   double ymaxOB[NTRENDSFHR] = { 1e-3, 1e-5, 30.5, 1 };
 
-  // Loop on plots
-  for (const auto& plot : mConfig.plots) {
-    if (countplots > nStaves[ilay] - 1) {
-      countplots = 0;
-      ilay++;
-    }
-    int colidx = countplots % 7;
-    int mkridx = countplots / 7;
-    int index = 0;
-    if (plot.name.find("occ") != std::string::npos)
-      index = 3;
-    else if (plot.name.find("chips") != std::string::npos || plot.name.find("lanes") != std::string::npos)
-      index = 2;
-    else if (plot.name.find("stddev") != std::string::npos)
-      index = 1;
-    else
-      index = 0;
-    bool isrun = plot.varexp.find("ntreeentries") != std::string::npos ? true : false; // vs run or vs time
-    long int n = mTrend->Draw(plot.varexp.c_str(), plot.selection.c_str(), "goff");    // plot.option.c_str());
-
-    // post processing plot
-    TGraph* g = new TGraph(n, mTrend->GetV2(), mTrend->GetV1());
-    SetGraphStyle(g, col[colidx], mkr[mkridx]);
-    if (ilay < 3) {
-      SetGraphNameAndAxes(g, plot.name, plot.title, isrun ? "run" : "time", ytitlesIB[index], ymin[index], ymaxIB[index], runlist);
-    } else {
-      SetGraphNameAndAxes(g, plot.name, plot.title, isrun ? "run" : "time", ytitlesOB[index], ymin[index], ymaxOB[index], runlist);
-    }
-
-    ILOG(Info, Support) << " Saving " << plot.name << " to CCDB " << ENDM;
-    auto mo = std::make_shared<MonitorObject>(g, mConfig.taskName, "o2::quality_control_modules::its::TrendingTaskITSFhr", mConfig.detectorName);
-    mo->setIsOwner(false);
-    qcdb.storeMO(mo);
-    // It should delete everything inside. Confirmed by trying to delete histo
-    // after and getting a segfault.
-    delete g;
-    if (plot.name.find("occ") != std::string::npos)
-      countplots++;
-  } // end loop on plots
-
+  // There was previously loop on plots for each stave
+  // Removed to reduce number of saved histograms
   //
-  // Create canvas with multiple trends - average threshold - 1 canvas per layer
+  //  Create canvas with multiple trends - average threshold - 1 canvas per layer
   //
   ilay = 0;
   countplots = 0;
