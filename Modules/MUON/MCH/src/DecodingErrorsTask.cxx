@@ -21,6 +21,7 @@
 #include "DetectorsRaw/RDHUtils.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "Framework/WorkflowSpec.h"
+#include "Framework/DataRefUtils.h"
 
 #include "MCHRawElecMap/Mapper.h"
 #include "MCHMappingInterface/Segmentation.h"
@@ -147,12 +148,12 @@ void DecodingErrorsTask::decodeReadout(const o2::framework::DataRef& input)
     return;
   }
 
-  const auto* header = o2::header::get<header::DataHeader*>(input.header);
+  const auto* header = o2::framework::DataRefUtils::getHeader<header::DataHeader*>(input);
   if (!header) {
     return;
   }
 
-  size_t payloadSize = header->payloadSize;
+  size_t payloadSize = o2::framework::DataRefUtils::getPayloadSize(input);
   if (payloadSize == 0) {
     return;
   }

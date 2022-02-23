@@ -30,6 +30,7 @@
 #include "Headers/RAWDataHeader.h"
 #include "DetectorsRaw/HBFUtils.h"
 #include <Framework/InputRecord.h>
+#include <Framework/InputRecordWalker.h>
 #include "DetectorsRaw/RDHUtils.h"
 
 using namespace o2::framework;
@@ -481,16 +482,15 @@ void TaskRaw::monitorData(o2::framework::ProcessingContext& ctx)
   // Reset counter before decode() call
   mDecoderRaw.mCounterRDHOpen.Reset();
   //
-  for (auto iit = ctx.inputs().begin(), iend = ctx.inputs().end(); iit != iend; ++iit) {
-    if (!iit.isValid()) {
-      continue;
-    }
+  {
     /** loop over input parts **/
-    for (auto const& input : iit) {
+    for (auto const& input : o2::framework::InputRecordWalker(ctx.inputs())) {
       /** input **/
       const auto* headerIn = o2::framework::DataRefUtils::getHeader<o2::header::DataHeader*>(input);
       const auto payloadIn = input.payload;
-      const auto payloadInSize = headerIn->payloadSize;
+      const auto payloadInSize = o2::framework::DataRefUtils::getPayloadSize(input);
+      // TODO: better use InputRecord::get<byte type>(input) to extract a span and pass
+      // either the span or its data pointer and size
       mDecoderRaw.setDecoderBuffer(payloadIn);
       mDecoderRaw.setDecoderBufferSize(payloadInSize);
       //

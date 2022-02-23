@@ -160,13 +160,13 @@ void DaqTask::reset()
   }
 }
 
-void DaqTask::printInputPayload(const header::DataHeader* header, const char* payload)
+void DaqTask::printInputPayload(const header::DataHeader* header, const char* payload, size_t payloadSize)
 {
   std::vector<std::string> representation;
   if (mCustomParameters["printInputPayload"] == "hex") {
-    representation = getHexRepresentation((unsigned char*)payload, header->payloadSize);
+    representation = getHexRepresentation((unsigned char*)payload, payloadSize);
   } else if (mCustomParameters["printInputPayload"] == "bin") {
-    representation = getBinRepresentation((unsigned char*)payload, header->payloadSize);
+    representation = getBinRepresentation((unsigned char*)payload, payloadSize);
   }
   size_t limit = std::numeric_limits<size_t>::max();
   if (mCustomParameters.count("printInputPayloadLimit") > 0) {
@@ -199,11 +199,11 @@ void DaqTask::monitorInputRecord(InputRecord& inputRecord)
   uint32_t totalPayloadSize = 0;
   for (const auto& input : InputRecordWalker(inputRecord)) {
     if (input.header != nullptr) {
-      const auto* header = o2::header::get<header::DataHeader*>(input.header);
+      const auto* header = DataRefUtils::getHeader<header::DataHeader*>(input);
       const char* payload = input.payload;
 
       // payload size
-      uint32_t size = header->payloadSize;
+      auto size = DataRefUtils::getPayloadSize(input);
       mInputSize->Fill(size);
       totalPayloadSize += size;
 
@@ -212,7 +212,7 @@ void DaqTask::monitorInputRecord(InputRecord& inputRecord)
         std::cout << fmt::format("{}", *header) << std::endl;
       }
       if (mCustomParameters.count("printInputPayload") > 0) {
-        printInputPayload(header, payload);
+        printInputPayload(header, payload, size);
       }
     } else {
       ILOG(Warning, Support) << "Received an input with an empty header" << ENDM;
