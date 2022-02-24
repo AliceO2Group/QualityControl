@@ -11,7 +11,7 @@
 
 ///
 /// \file   ZDCRawDataCheck.h
-/// \author My Name
+/// \author Carlo Puggioni
 ///
 
 #ifndef QC_MODULE_ZDC_ZDCZDCRAWDATACHECK_H
@@ -22,8 +22,8 @@
 namespace o2::quality_control_modules::zdc
 {
 
-/// \brief  Example QC Check
-/// \author My Name
+/// \brief  QC Check Data Raw
+/// \author Carlo Puggioni
 class ZDCRawDataCheck : public o2::quality_control::checker::CheckInterface
 {
  public:
@@ -33,7 +33,8 @@ class ZDCRawDataCheck : public o2::quality_control::checker::CheckInterface
   ~ZDCRawDataCheck() override = default;
 
   // Override interface
-  void configure() override;
+  // void configure() override;
+  void configure();
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;

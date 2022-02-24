@@ -11,7 +11,7 @@
 
 ///
 /// \file   ZDCRawDataCheck.cxx
-/// \author My Name
+/// \author Carlo Puggioni
 ///
 
 #include "ZDC/ZDCRawDataCheck.h"

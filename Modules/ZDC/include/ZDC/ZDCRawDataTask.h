@@ -34,7 +34,7 @@ using namespace o2::quality_control::core;
 namespace o2::quality_control_modules::zdc
 {
 
-/// \brief Example Quality Control DPL Task
+/// \brief Quality Control Raw Data Task
 /// \author Carlo Puggioni
 class ZDCRawDataTask final : public TaskInterface
 {
@@ -44,19 +44,19 @@ class ZDCRawDataTask final : public TaskInterface
   /// Destructor
   ~ZDCRawDataTask() override;
 
-// Definition structures
+  // Definition structures
   struct infoHisto {
     int idHisto;
-    std::vector <std::string> condHisto;
+    std::vector<std::string> condHisto;
   };
 
   struct infoHisto1D {
     TH1* histo;
-    std::vector <std::string> condHisto;
+    std::vector<std::string> condHisto;
   };
   struct infoHisto2D {
     TH2* histo;
-    std::vector <std::string> condHisto;
+    std::vector<std::string> condHisto;
   };
   // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& ctx) override;
@@ -71,39 +71,39 @@ class ZDCRawDataTask final : public TaskInterface
   int process(const o2::zdc::EventData& ev);
   int process(const o2::zdc::EventChData& ch);
   int processWord(const uint32_t* word);
-  int getHPos(uint32_t board, uint32_t ch,int matrix[o2::zdc::NModules][o2::zdc::NChPerModule]);
+  int getHPos(uint32_t board, uint32_t ch, int matrix[o2::zdc::NModules][o2::zdc::NChPerModule]);
   std::string getNameChannel(int imod, int ich);
-  void setNameChannel(int imod,int ich, std::string namech);
-  void setBinHisto1D(int numBinX, double minBinX, double maxBinX );
+  void setNameChannel(int imod, int ich, std::string namech);
+  void setBinHisto1D(int numBinX, double minBinX, double maxBinX);
   void setBinHisto2D(int numBinX, double minBinX, double maxBinX, int numBinY, double minBinY, double maxBinY);
-  void setNumBinX(int   nbin){fNumBinX=nbin;};
-  void setMinBinX(double min){fMinBinX=min;};
-  void setMaxBinX(double max){fMaxBinX=max;};
-  void setNumBinY(int   nbin){fNumBinY=nbin;};
-  void setMinBinY(double min){fMinBinY=min;};
-  void setMaxBinY(double max){fMaxBinY=max;};
-  int getNumBinX(){return fNumBinX;};
-  int getMinBinX(){return fMinBinX;};
-  int getMaxBinX(){return fMaxBinX;};
-  int getNumBinY(){return fNumBinY;};
-  int getMinBinY(){return fMinBinY;};
-  int getMaxBinY(){return fMaxBinY;};
-  bool getModAndCh(std::string chName,int * module, int * channel);
-  bool addNewHisto(std::string type,std::string name,std::string title,std::string chName, std::string condition);
-  std::string removeSpaces( std::string s );
+  void setNumBinX(int nbin) { fNumBinX = nbin; };
+  void setMinBinX(double min) { fMinBinX = min; };
+  void setMaxBinX(double max) { fMaxBinX = max; };
+  void setNumBinY(int nbin) { fNumBinY = nbin; };
+  void setMinBinY(double min) { fMinBinY = min; };
+  void setMaxBinY(double max) { fMaxBinY = max; };
+  int getNumBinX() { return fNumBinX; };
+  int getMinBinX() { return fMinBinX; };
+  int getMaxBinX() { return fMaxBinX; };
+  int getNumBinY() { return fNumBinY; };
+  int getMinBinY() { return fMinBinY; };
+  int getMaxBinY() { return fMaxBinY; };
+  bool getModAndCh(std::string chName, int* module, int* channel);
+  bool addNewHisto(std::string type, std::string name, std::string title, std::string chName, std::string condition);
+  std::string removeSpaces(std::string s);
   std::vector<std::string> tokenLine(std::string Line, std::string Delimiter);
   bool configureRawDataTask();
   bool checkCondition(std::string cond);
-  bool decodeConfLine(std::vector<std::string> tokenString,int lineNumber);
-  bool decodeModule(std::vector<std::string> tokenString,int lineNumber);
-  bool decodeBinHistogram(std::vector<std::string> tokenString,int lineNumber);
-  bool decodeBaseline(std::vector<std::string> tokenString,int lineNumber);
-  bool decodeCounts(std::vector<std::string> tokenString,int lineNumber);
-  bool decodeSignal(std::vector<std::string> tokenString,int lineNumber);
-  bool decodeBunch(std::vector<std::string> tokenString,int lineNumber);
-  bool decodeFireChannel(std::vector<std::string> tokenString,int lineNumber);
-  bool decodeTrasmittedChannel(std::vector<std::string> tokenString,int lineNumber);
-  bool decodeSummaryBaseline(std::vector<std::string> tokenString,int lineNumber);
+  bool decodeConfLine(std::vector<std::string> tokenString, int lineNumber);
+  bool decodeModule(std::vector<std::string> tokenString, int lineNumber);
+  bool decodeBinHistogram(std::vector<std::string> tokenString, int lineNumber);
+  bool decodeBaseline(std::vector<std::string> tokenString, int lineNumber);
+  bool decodeCounts(std::vector<std::string> tokenString, int lineNumber);
+  bool decodeSignal(std::vector<std::string> tokenString, int lineNumber);
+  bool decodeBunch(std::vector<std::string> tokenString, int lineNumber);
+  bool decodeFireChannel(std::vector<std::string> tokenString, int lineNumber);
+  bool decodeTrasmittedChannel(std::vector<std::string> tokenString, int lineNumber);
+  bool decodeSummaryBaseline(std::vector<std::string> tokenString, int lineNumber);
   void DumpHistoStructure();
   void setVerbosity(int v)
   {
@@ -112,7 +112,6 @@ class ZDCRawDataTask final : public TaskInterface
   int getVerbosity() const { return mVerbosity; }
 
  private:
-  TH1F* mHistogram = nullptr;
   void setStat(TH1* h);
   int mVerbosity = 1;
 
@@ -127,18 +126,17 @@ class ZDCRawDataTask final : public TaskInterface
   TH2* fTrasmChannel;
   TH1* fSummaryPedestal;
 
-  std::vector <std::string> fNameHisto;
+  std::vector<std::string> fNameHisto;
   std::map<std::string, int> fMapBinNameIdSummaryHisto;
 
-  std::map <std::string, std::vector<int>> fMapChNameModCh;
+  std::map<std::string, std::vector<int>> fMapChNameModCh;
 
-  int fNumBinX=0;
-  double fMinBinX=0;
-  double fMaxBinX=0;
-  int fNumBinY=0;
-  double fMinBinY=0;
-  double fMaxBinY=0;
-
+  int fNumBinX = 0;
+  double fMinBinX = 0;
+  double fMaxBinX = 0;
+  int fNumBinY = 0;
+  double fMinBinY = 0;
+  double fMaxBinY = 0;
 };
 
 } // namespace o2::quality_control_modules::zdc

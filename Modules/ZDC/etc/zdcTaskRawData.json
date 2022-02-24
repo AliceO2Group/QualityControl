@@ -41,20 +41,6 @@
         "location": "remote",
         "saveObjectsToFile": "QcZDCRawData.root",      "": "For debugging, path to the file where to save. If empty it won't save."
       }
-    },
-    "checks": {
-      "QcZDCCheck": {
-        "active": "true",
-        "className": "o2::quality_control_modules::zdc::ZDCRawDataCheck",
-        "moduleName": "QcZDC",
-        "policy": "OnAny",
-        "detectorName": "ZDC",
-        "dataSource": [{
-          "type": "Task",
-          "name": "QcZDCTask",
-          "MOs": ["example","hpedMod0Ch0","hpedMod0Ch1","hpedMod0Ch2","hpedMod0Ch3","hpedMod1Ch0","hpedMod1Ch1","hpedMod1Ch2","hpedMod1Ch3","hpedMod2Ch0","hpedMod2Ch1","hpedMod2Ch2","hpedMod2Ch3","hpedMod3Ch0","hpedMod3Ch1","hpedMod3Ch2","hpedMod3Ch3","hpedMod4Ch0","hpedMod4Ch1","hpedMod4Ch2","hpedMod4Ch3","hpedMod5Ch0","hpedMod5Ch1","hpedMod5Ch2","hpedMod5Ch3","hpedMod6Ch0","hpedMod6Ch1","hpedMod6Ch2","hpedMod6Ch3","hpedMod7Ch0","hpedMod7Ch1","hpedMod7Ch2","hpedMod7Ch3"]
-        }]
-      }
     }
   },
   "dataSamplingPolicies": [
