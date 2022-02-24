@@ -145,11 +145,12 @@ void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
 
       for (Int_t eq = 0; eq < 14; eq++) {
+        int eqId = mDecoder->mTheEquipments[eq]->getEquipmentId();
         if (mDecoder->getAverageEventSize(eq) > 0.) {
-          hEventSize->Fill(eq + 1, mDecoder->getAverageEventSize(eq) / 1000.);
+          hEventSize->Fill(eqId + 1, mDecoder->getAverageEventSize(eq) / 1000.);
         }
         if (mDecoder->getAverageBusyTime(eq) > 0.) {
-          hBusyTime->Fill(eq + 1, mDecoder->getAverageBusyTime(eq) * 1000000);
+          hBusyTime->Fill(eqId + 1, mDecoder->getAverageBusyTime(eq) * 1000000);
         }
         for (Int_t column = 0; column < 24; column++) {
           for (Int_t dilogic = 0; dilogic < 10; dilogic++) {
