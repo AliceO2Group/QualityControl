@@ -171,7 +171,7 @@ void CcdbDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::Moni
                           << errinfo_details("Object and task names can't contain white spaces. Do not store."));
   }
 
-  map<string, string> metadata;
+  map<string, string> metadata = database_helpers::asDatabaseMetadata(mo->getActivity());
 
   // user metadata
   map<string, string> userMetadata = mo->getMetadataMap();
@@ -181,9 +181,6 @@ void CcdbDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::Moni
 
   // extract object and metadata from MonitorObject
   TObject* obj = mo->getObject();
-  metadata["RunNumber"] = std::to_string(mo->getActivity().mId);
-  metadata["PeriodName"] = mo->getActivity().mPeriodName;
-  metadata["PassName"] = mo->getActivity().mPassName;
   metadata["ObjectType"] = mo->getObject()->IsA()->GetName(); // ObjectType says TObject and not MonitorObject due to a quirk in the API. Once fixed, remove this.
 
   // QC metadata (prefix qc_)
@@ -214,10 +211,7 @@ void CcdbDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::Moni
 void CcdbDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::QualityObject> qo, long from, long to)
 {
   // metadata
-  map<string, string> metadata;
-  metadata["RunNumber"] = std::to_string(qo->getActivity().mId);
-  metadata["PeriodName"] = qo->getActivity().mPeriodName;
-  metadata["PassName"] = qo->getActivity().mPassName;
+  map<string, string> metadata = database_helpers::asDatabaseMetadata(qo->getActivity());
   metadata["ObjectType"] = qo->IsA()->GetName(); // ObjectType says TObject and not MonitorObject due to a quirk in the API. Once fixed, remove this.
   // QC metadata (prefix qc_)
   metadata["qc_version"] = Version::GetQcVersion().getString();
@@ -331,11 +325,12 @@ std::shared_ptr<o2::quality_control::core::MonitorObject> CcdbDatabase::retrieve
   } else {
     // Version >= 0.25 -> the object is stored directly unencapsulated
     ILOG(Debug, Devel) << "Version of object " << objectPath << "/" << objectName << " is >= 0.25" << ENDM;
-    int runNumber = stoi(headers["RunNumber"]);
-    string provenance = path.substr(0, path.find('/')); // get the item before the first slash corresponding to the provenance
-    mo = make_shared<MonitorObject>(obj, headers["qc_task_name"], headers["qc_task_class"], headers["qc_detector_name"], runNumber, headers["PeriodName"], headers["PassName"], provenance);
+    mo = make_shared<MonitorObject>(obj, headers["qc_task_name"], headers["qc_task_class"], headers["qc_detector_name"]);
     // TODO should we remove the headers we know are general such as ETag and qc_task_name ?
     mo->addMetadata(headers);
+    // we could just copy the argument here, but this would not cover cases where the activity in headers has more non-default fields
+    string provenance = path.substr(0, path.find('/')); // get the item before the first slash corresponding to the provenance
+    mo->setActivity(database_helpers::asActivity(headers, provenance));
   }
   mo->setIsOwner(true);
   return mo;
@@ -352,6 +347,9 @@ std::shared_ptr<o2::quality_control::core::QualityObject> CcdbDatabase::retrieve
   } else {
     // TODO should we remove the headers we know are general such as ETag and qc_task_name ?
     qo->addMetadata(headers);
+    // we could just copy the argument here, but this would not cover cases where the activity in headers has more non-default fields
+    string provenance = qoPath.substr(0, qoPath.find('/')); // get the item before the first slash corresponding to the provenance
+    qo->setActivity(database_helpers::asActivity(headers, provenance));
   }
   return qo;
 }
