@@ -128,35 +128,33 @@ void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
   NumCycles++;
   mDecoder->init();
   mDecoder->setVerbosity(2); // this is for Debug
-
   //for (auto&& input : ctx.inputs()) {
   for (auto&& input : o2::framework::InputRecordWalker(ctx.inputs())) {
     // get message header
     if (input.header != nullptr && input.payload != nullptr) {
       auto payloadSize = o2::framework::DataRefUtils::getPayloadSize(input);
       int32_t* ptrToPayload = (int32_t*)(input.payload);
-
       if (payloadSize < 80) {
         continue;
       }
       mDecoder->setUpStream(ptrToPayload, (long int)payloadSize);
       if (!mDecoder->decodeBufferFast()) {
         ILOG(Error, Devel) << "Error decoding the Superpage !" << ENDM;
+        break;
       }
-
       for (Int_t eq = 0; eq < 14; eq++) {
         int eqId = mDecoder->mTheEquipments[eq]->getEquipmentId();
-        if (mDecoder->getAverageEventSize(eq) > 0.) {
-          hEventSize->Fill(eqId + 1, mDecoder->getAverageEventSize(eq) / 1000.);
+        if (mDecoder->getAverageEventSize(eqId) > 0.) {
+          hEventSize->Fill(eqId + 1, mDecoder->getAverageEventSize(eqId) / 1000.);
         }
-        if (mDecoder->getAverageBusyTime(eq) > 0.) {
-          hBusyTime->Fill(eqId + 1, mDecoder->getAverageBusyTime(eq) * 1000000);
+        if (mDecoder->getAverageBusyTime(eqId) > 0.) {
+          hBusyTime->Fill(eqId + 1, mDecoder->getAverageBusyTime(eqId) * 1000000);
         }
         for (Int_t column = 0; column < 24; column++) {
           for (Int_t dilogic = 0; dilogic < 10; dilogic++) {
             for (Int_t channel = 0; channel < 48; channel++) {
-              Float_t mean = mDecoder->getChannelSum(eq, column, dilogic, channel) / mDecoder->getChannelSamples(eq, column, dilogic, channel);
-              Float_t sigma = TMath::Sqrt(mDecoder->getChannelSquare(eq, column, dilogic, channel) / mDecoder->getChannelSamples(eq, column, dilogic, channel) - mean * mean);
+              Float_t mean = mDecoder->getChannelSum(eqId, column, dilogic, channel) / mDecoder->getChannelSamples(eqId, column, dilogic, channel);
+              Float_t sigma = TMath::Sqrt(mDecoder->getChannelSquare(eqId, column, dilogic, channel) / mDecoder->getChannelSamples(eqId, column, dilogic, channel) - mean * mean);
               hPedestalMean->Fill(mean);
               hPedestalSigma->Fill(sigma);
             }
