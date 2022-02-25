@@ -17,6 +17,11 @@
 #ifndef QC_CORE_ACTIVITY_H
 #define QC_CORE_ACTIVITY_H
 
+#include <map>
+#include <string>
+
+#include "Rtypes.h"
+
 namespace o2::quality_control::core
 {
 

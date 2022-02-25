@@ -70,9 +70,9 @@ class CcdbDatabase : public DatabaseInterface
                     const std::string& createdNotAfter = "", const std::string& createdNotBefore = "") override;
 
   // retrieval - MO - deprecated
-  std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string taskName, std::string objectName, long timestamp = -1) override;
+  std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string objectPath, std::string objectName, long timestamp = -1, const core::Activity& activity = {}) override;
   // retrieval - QO - deprecated
-  std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string qoPath, long timestamp = -1) override;
+  std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string qoPath, long timestamp = -1, const core::Activity& activity = {}) override;
   std::shared_ptr<o2::quality_control::TimeRangeFlagCollection> retrieveTRFC(const std::string& name, const std::string& detector, int runNumber = 0,
                                                                              const string& passName = "", const string& periodName = "",
                                                                              const std::string& provenance = "", long timestamp = -1) override;

@@ -26,6 +26,7 @@
 
 #include "QualityControl/QualityObject.h"
 #include "QualityControl/MonitorObject.h"
+#include "QualityControl/Activity.h"
 
 namespace o2::quality_control
 {
@@ -135,13 +136,13 @@ class DatabaseInterface
    * Look up a monitor object and return it if found or nullptr if not.
    * @deprecated
    */
-  virtual std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string taskName, std::string objectName, long timestamp = -1) = 0;
+  virtual std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string taskName, std::string objectName, long timestamp = -1, const core::Activity& activity = {}) = 0;
   /**
    * \brief Look up a quality object and return it.
    * Look up a quality object and return it if found or nullptr if not.
    * @deprecated
    */
-  virtual std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string qoPath, long timestamp = -1) = 0;
+  virtual std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string qoPath, long timestamp = -1, const core::Activity& activity = {}) = 0;
   /**
    * \brief Look up a TimeRangeFlagCollection object and return it.
    * Look up a TimeRangeFlagCollection and return it if found or nullptr if not.
