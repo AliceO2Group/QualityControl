@@ -1,5 +1,6 @@
-
-nfig": {
+{
+    "qc": {
+        "config": {
             "database": {
                 "implementation": "CCDB",
                 "host": "ccdb-test.cern.ch:8080",
