@@ -395,7 +395,6 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
     int istave = (int)(rdh->feeId & 0x00ff);
     int ilink = (int)((rdh->feeId & 0x0f00) >> 8);
     lay = (int)(rdh->feeId >> 12);
-    if(lay!=mLayer) continue;  //new AID 
     if (partID == 0) {
       partID += lay * 100;
       partID += partID <= 100 ? (istave / (NStaves[lay] / 2)) * 2 : istave / (NStaves[lay] / 4);
@@ -415,7 +414,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
         }
       }
     }
-  
+  }
 
   //update general information according trigger type
   if (mTriggerPlots->GetBinContent(10) || mTriggerPlots->GetBinContent(8)) {
@@ -463,7 +462,6 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
       int stave = 0, ssta = 0, mod = 0, chip = 0;
       int hic = 0;
       const auto& pixels = mChipDataBuffer->getData();
-      if(mChipDataBuffer->getChipID() < ChipBoundary[lay] || mChipDataBuffer->getChipID() >= ChipBoundary[lay+1]) continue;
       for (auto& pixel : pixels) {
         if (lay < NLayerIB) {
           stave = mChipDataBuffer->getChipID() / 9 - StaveBoundary[lay];
@@ -681,7 +679,6 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
   delete[] occupancyPlotTmp;
   //temporarily reverting to get TFId by querying binding
   //  mTimeFrameId = ctx.inputs().get<int>("G");
- }  //new AID
   //Timer LOG
   mTFInfo->Fill(mTimeFrameId);
   end = std::chrono::high_resolution_clock::now();
