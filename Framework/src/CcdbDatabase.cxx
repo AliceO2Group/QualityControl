@@ -19,6 +19,8 @@
 #include "QualityControl/Version.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/RepoPathUtils.h"
+#include "QualityControl/DatabaseHelpers.h"
+
 #include <DataFormatsQualityControl/TimeRangeFlagCollection.h>
 #include <Common/Exceptions.h>
 // O2
@@ -299,11 +301,11 @@ void* CcdbDatabase::retrieveAny(const type_info& tinfo, const string& path, cons
   return object;
 }
 
-std::shared_ptr<core::MonitorObject> CcdbDatabase::retrieveMO(std::string taskName, std::string objectName, long timestamp)
+std::shared_ptr<o2::quality_control::core::MonitorObject> CcdbDatabase::retrieveMO(std::string objectPath, std::string objectName, long timestamp, const core::Activity& activity)
 {
-  string path = taskName + "/" + objectName;
+  string path = objectPath + "/" + objectName;
   map<string, string> headers;
-  map<string, string> metadata;
+  map<string, string> metadata = database_helpers::asDatabaseMetadata(activity);
   TObject* obj = retrieveTObject(path, metadata, timestamp, &headers);
 
   // no object found
@@ -320,15 +322,15 @@ std::shared_ptr<core::MonitorObject> CcdbDatabase::retrieveMO(std::string taskNa
 
   std::shared_ptr<MonitorObject> mo;
   if (objectVersion == Version("0.0.0") || objectVersion < Version("0.25")) {
-    ILOG(Debug, Devel) << "Version of object " << taskName << "/" << objectName << " is < 0.25" << ENDM;
+    ILOG(Debug, Devel) << "Version of object " << objectPath << "/" << objectName << " is < 0.25" << ENDM;
     // The object is either in a TFile or is a blob but it was stored with storeAsTFile as a full MO
     mo.reset(dynamic_cast<MonitorObject*>(obj));
     if (mo == nullptr) {
-      ILOG(Error, Devel) << "Could not cast the object " << taskName << "/" << objectName << " to MonitorObject" << ENDM;
+      ILOG(Error, Devel) << "Could not cast the object " << objectPath << "/" << objectName << " to MonitorObject" << ENDM;
     }
   } else {
     // Version >= 0.25 -> the object is stored directly unencapsulated
-    ILOG(Debug, Devel) << "Version of object " << taskName << "/" << objectName << " is >= 0.25" << ENDM;
+    ILOG(Debug, Devel) << "Version of object " << objectPath << "/" << objectName << " is >= 0.25" << ENDM;
     int runNumber = stoi(headers["RunNumber"]);
     string provenance = path.substr(0, path.find('/')); // get the item before the first slash corresponding to the provenance
     mo = make_shared<MonitorObject>(obj, headers["qc_task_name"], headers["qc_task_class"], headers["qc_detector_name"], runNumber, headers["PeriodName"], headers["PassName"], provenance);
@@ -339,10 +341,10 @@ std::shared_ptr<core::MonitorObject> CcdbDatabase::retrieveMO(std::string taskNa
   return mo;
 }
 
-std::shared_ptr<QualityObject> CcdbDatabase::retrieveQO(std::string qoPath, long timestamp)
+std::shared_ptr<o2::quality_control::core::QualityObject> CcdbDatabase::retrieveQO(std::string qoPath, long timestamp, const core::Activity& activity)
 {
   map<string, string> headers;
-  map<string, string> metadata;
+  map<string, string> metadata = database_helpers::asDatabaseMetadata(activity);
   TObject* obj = retrieveTObject(qoPath, metadata, timestamp, &headers);
   std::shared_ptr<QualityObject> qo(dynamic_cast<QualityObject*>(obj));
   if (qo == nullptr) {

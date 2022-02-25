@@ -124,7 +124,7 @@ class QualityObject : public TObject
   void setQuality(const Quality& quality);
   const std::string& getCheckName() const;
   const std::string& getPolicyName() const;
-  const std::vector<std::string> getMonitorObjectsNames() const;
+  const std::vector<std::string>& getMonitorObjectsNames() const;
   Activity& getActivity();
   const Activity& getActivity() const;
   void setActivity(const Activity& activity);

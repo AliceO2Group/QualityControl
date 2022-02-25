@@ -46,6 +46,7 @@ add_library(O2QualityControl
   src/AggregatorRunnerFactory.cxx
   src/CheckInterface.cxx
   src/DatabaseFactory.cxx
+  src/DatabaseHelpers.cxx
   src/CcdbDatabase.cxx
   src/QcInfoLogger.cxx
   src/TaskFactory.cxx

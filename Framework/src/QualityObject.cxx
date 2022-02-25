@@ -154,7 +154,7 @@ const std::string& QualityObject::getPolicyName() const
   return mPolicyName;
 }
 
-const std::vector<std::string> QualityObject::getMonitorObjectsNames() const
+const std::vector<std::string>& QualityObject::getMonitorObjectsNames() const
 {
   return mMonitorObjectsNames;
 }
