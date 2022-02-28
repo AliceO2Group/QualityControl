@@ -139,7 +139,7 @@ class QualityObject : public TObject
   std::vector<std::string> mMonitorObjectsNames;
   Activity mActivity;
 
-  ClassDefOverride(QualityObject, 5);
+  ClassDefOverride(QualityObject, 6);
 };
 
 using QualityObjectsType = std::vector<std::shared_ptr<QualityObject>>;
