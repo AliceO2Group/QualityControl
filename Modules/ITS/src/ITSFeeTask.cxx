@@ -92,11 +92,10 @@ void ITSFeeTask::createFeePlots()
     getObjectsManager()->startPublishing(mLaneStatus[i]); // mlaneStatus
   }
 
-  //  //initializing the TH2Poly, from :(here) and FHR.cxx task line (120to128)
   for (int i = 0; i < NFlags; i++) {
     mLaneStatusOverview[i] = new TH2Poly();
     mLaneStatusOverview[i]->SetName(Form("LaneStatusOverview/laneStatusFlag%s", mLaneStatusFlag[i].c_str()));
-    getObjectsManager()->startPublishing(mLaneStatusOverview[i]);
+    getObjectsManager()->startPublishing(mLaneStatusOverview[i]); // mLaneStatusOverview
   }
 
   for (int i = 0; i < NLayer; i++) {
@@ -290,7 +289,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
     int memorysize = (int)(rdh->memorySize);
     int headersize = (int)(rdh->headerSize);
 
-    payloadTot[ifee] += memorysize - headersize; 
+    payloadTot[ifee] += memorysize - headersize;
 
     if ((int)(rdh->stop) && it.size()) { // looking into the DDW0 from the closing packet
       auto const* ddw = reinterpret_cast<const GBTDiagnosticWord*>(it.data());
@@ -324,9 +323,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
       for (int i = 0; i < NLanesMax; i++) {
         int laneValue = laneInfo >> (2 * i) & 0x3;
         if (laneValue) {
-          //Added by me, basically a counter looping over the full stave
           mStatusFlagNumber[ilayer][istave][laneValue - 1]++;
-          //As it was before Antonio modifications
           mLaneStatus[laneValue - 1]->Fill(ifee, i);
           mLaneStatusSummary[ilayer]->Fill(laneValue - 1);
           mLaneStatusSummaryGlobal->Fill(laneValue - 1);
@@ -340,7 +337,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
         }
       }
     }
-    // Fill status histogram with counters
+    //Fill TH2Poly mLanestatusOverview with counters
     for(int iflag=0; iflag<NFlags; iflag++){
       mLaneStatusOverview[iflag]->SetBinContent(istave + 1 + StaveBoundary[ilayer], mStatusFlagNumber[ilayer][istave][iflag]);
     }
