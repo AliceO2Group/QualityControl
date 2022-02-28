@@ -23,7 +23,7 @@
             }
         },
         "tasks": {
-            "ITSFee": {
+            "ITSFEE": {
                 "active": "true",
                 "className": "o2::quality_control_modules::its::ITSFeeTask",
                 "moduleName": "QcITS",
@@ -31,12 +31,14 @@
                 "cycleDurationSeconds": "30",
                 "maxNumberCycles": "-1",
                 "dataSource": {
-                    "type": "dataSamplingPolicy",
-                    "name": "feedata"
+                    "type": "direct",
+                    "query": "filter:ITS/RAWDATA;G:FLP/DISTSUBTIMEFRAME"
                 },
-                "location": "remote",
+                "location": "local",
                 "taskParameters": {
-                    "NPayloadSizeBins": "4096"
+                    "NPayloadSizeBins": "4096",
+                    "MaxGeneralAxisRange": "6",
+                    "MinGeneralAxisRange": "0"
                 }
             }
         },
@@ -63,7 +65,7 @@
     },
     "dataSamplingPolicies": [
         {
-            "id": "feedata",
+            "id": "RAWDATA",
             "active": "true",
             "machines": [],
             "query": "filter:ITS/RAWDATA;G:FLP/DISTSUBTIMEFRAME",

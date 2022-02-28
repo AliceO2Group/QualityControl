@@ -14,6 +14,7 @@
 /// \author Jian Liu
 /// \author Liang Zhang
 /// \author Pietro Fecchio
+/// \author Antonio Palasciano
 ///
 
 #include "ITS/ITSFeeTask.h"
@@ -51,6 +52,9 @@ ITSFeeTask::~ITSFeeTask()
   for (int i = 0; i < NFlags; i++) {
     delete mLaneStatus[i];
   }
+  for (int i = 0; i < NFlags; i++) {
+    delete mLaneStatusOverview[i];
+  }
   for (int i = 0; i < NLayer; i++) {
     delete mLaneStatusSummary[i];
   }
@@ -86,6 +90,13 @@ void ITSFeeTask::createFeePlots()
   for (int i = 0; i < NFlags; i++) {
     mLaneStatus[i] = new TH2I(Form("LaneStatus/laneStatusFlag%s", mLaneStatusFlag[i].c_str()), Form("Lane Status Flag : %s", mLaneStatusFlag[i].c_str()), NFees, 0, NFees, NLanesMax, 0, NLanesMax);
     getObjectsManager()->startPublishing(mLaneStatus[i]); // mlaneStatus
+  }
+
+  //  //initializing the TH2Poly, from :(here) and FHR.cxx task line (120to128)
+  for (int i = 0; i < NFlags; i++) {
+    mLaneStatusOverview[i] = new TH2Poly();
+    mLaneStatusOverview[i]->SetName(Form("LaneStatusOverview/laneStatusFlag%s", mLaneStatusFlag[i].c_str()));
+    getObjectsManager()->startPublishing(mLaneStatusOverview[i]);
   }
 
   for (int i = 0; i < NLayer; i++) {
@@ -160,6 +171,22 @@ void ITSFeeTask::setPlotsFormat()
       for (const int& lay : LayerBoundaryFEE) {
         auto l = new TLine(lay, 0, lay, NLanesMax);
         mLaneStatus[i]->GetListOfFunctions()->Add(l);
+      }
+    }
+  }
+
+  for (int i = 0; i < NFlags; i++) {
+    TString title = Form("Lane Status Flag : %s", mLaneStatusFlag[i].c_str()); title += ";mm;mm";
+    mLaneStatusOverview[i]->SetTitle(title);
+    mLaneStatusOverview[i]->SetStats(0);
+    mLaneStatusOverview[i]->SetMinimum(pow(10, mMinGeneralAxisRange));
+    mLaneStatusOverview[i]->SetMaximum(pow(10, mMaxGeneralAxisRange));
+    for (int ilayer = 0; ilayer < 7; ilayer++) {
+      for (int istave = 0; istave < NStaves[ilayer]; istave++) {
+        double* px = new double[4];
+        double* py = new double[4];
+        getStavePoint(ilayer, istave, px, py);
+        mLaneStatusOverview[i]->AddBin(4, px, py);
       }
     }
   }
@@ -263,7 +290,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
     int memorysize = (int)(rdh->memorySize);
     int headersize = (int)(rdh->headerSize);
 
-    payloadTot[ifee] += memorysize - headersize;
+    payloadTot[ifee] += memorysize - headersize; 
 
     if ((int)(rdh->stop) && it.size()) { // looking into the DDW0 from the closing packet
       auto const* ddw = reinterpret_cast<const GBTDiagnosticWord*>(it.data());
@@ -297,6 +324,9 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
       for (int i = 0; i < NLanesMax; i++) {
         int laneValue = laneInfo >> (2 * i) & 0x3;
         if (laneValue) {
+          //Added by me, basically a counter looping over the full stave
+          mStatusFlagNumber[ilayer][istave][laneValue - 1]++;
+          //As it was before Antonio modifications
           mLaneStatus[laneValue - 1]->Fill(ifee, i);
           mLaneStatusSummary[ilayer]->Fill(laneValue - 1);
           mLaneStatusSummaryGlobal->Fill(laneValue - 1);
@@ -309,6 +339,10 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
           }
         }
       }
+    }
+    // Fill status histogram with counters
+    for(int iflag=0; iflag<NFlags; iflag++){
+      mLaneStatusOverview[iflag]->SetBinContent(istave + 1 + StaveBoundary[ilayer], mStatusFlagNumber[ilayer][istave][iflag]);
     }
 
     for (int i = 0; i < 13; i++) {
@@ -341,6 +375,37 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
 void ITSFeeTask::getParameters()
 {
   mNPayloadSizeBins = std::stoi(mCustomParameters["NPayloadSizeBins"]);
+  mMaxGeneralAxisRange = std::stof(mCustomParameters["MaxGeneralAxisRange"]);
+  mMinGeneralAxisRange = std::stof(mCustomParameters["MinGeneralAxisRange"]);
+}
+
+void ITSFeeTask::getStavePoint(int layer, int stave, double* px, double* py)
+{
+  float stepAngle = TMath::Pi() * 2 / NStaves[layer];             //the angle between to stave
+  float midAngle = StartAngle[layer] + (stave * stepAngle);       //mid point angle
+  float staveRotateAngle = TMath::Pi() / 2 - (stave * stepAngle); //how many angle this stave rotate(compare with first stave)
+  px[1] = MidPointRad[layer] * TMath::Cos(midAngle);              //there are 4 point to decide this TH2Poly bin
+                                                                  //0:left point in this stave;
+                                                                  //1:mid point in this stave;
+                                                                  //2:right point in this stave;
+                                                                  //3:higher point int this stave;
+  py[1] = MidPointRad[layer] * TMath::Sin(midAngle);              //4 point calculated accord the blueprint
+                                                                  //roughly calculate
+  if (layer < NLayerIB) {
+    px[0] = 7.7 * TMath::Cos(staveRotateAngle) + px[1];
+    py[0] = -7.7 * TMath::Sin(staveRotateAngle) + py[1];
+    px[2] = -7.7 * TMath::Cos(staveRotateAngle) + px[1];
+    py[2] = 7.7 * TMath::Sin(staveRotateAngle) + py[1];
+    px[3] = 5.623 * TMath::Sin(staveRotateAngle) + px[1];
+    py[3] = 5.623 * TMath::Cos(staveRotateAngle) + py[1];
+  } else {
+    px[0] = 21 * TMath::Cos(staveRotateAngle) + px[1];
+    py[0] = -21 * TMath::Sin(staveRotateAngle) + py[1];
+    px[2] = -21 * TMath::Cos(staveRotateAngle) + px[1];
+    py[2] = 21 * TMath::Sin(staveRotateAngle) + py[1];
+    px[3] = 40 * TMath::Sin(staveRotateAngle) + px[1];
+    py[3] = 40 * TMath::Cos(staveRotateAngle) + py[1];
+  }
 }
 
 void ITSFeeTask::endOfCycle()
