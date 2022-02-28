@@ -13,11 +13,12 @@
 #include <TH1.h>
 
 #include <DataSampling/DataSampling.h>
-// #include <DataFormatsPHOS/Digit.h>
 #include <PHOSWorkflow/ReaderSpec.h>
 #include "QualityControl/InfrastructureGenerator.h"
 #include "QualityControl/CheckRunner.h"
 #include "QualityControl/CheckRunnerFactory.h"
+#include "QualityControl/QcInfoLogger.h"
+
 using namespace o2::utilities;
 
 void customize(std::vector<o2::framework::CompletionPolicy>& policies)
@@ -69,21 +70,21 @@ o2::framework::WorkflowSpec defineDataProcessing(o2::framework::ConfigContext co
     ILOG(Info, Support) << "To create both local and remote QC topologies, one does not have to add any of '--local' or '--remote' flags." << ENDM;
   }
 
+  auto configInterface = ConfigurationFactory::getConfiguration(qcConfigurationSource);
   if (config.options().get<bool>("local") || !config.options().get<bool>("remote")) {
 
     LOG(info) << "Local GenerateInfrastructure";
     // Generation of Data Sampling infrastructure
-    auto configInterface = ConfigurationFactory::getConfiguration(qcConfigurationSource);
     auto dataSamplingTree = configInterface->getRecursive("dataSamplingPolicies");
     DataSampling::GenerateInfrastructure(specs, dataSamplingTree);
 
     LOG(info) << "Local: generateLocalInfrastructure";
     // Generation of the local QC topology (local QC tasks)
-    o2::quality_control::generateLocalInfrastructure(specs, qcConfigurationSource, config.options().get<std::string>("host"));
+    o2::quality_control::generateLocalInfrastructure(specs, configInterface->getRecursive(), config.options().get<std::string>("host"));
   }
   if (config.options().get<bool>("remote") || !config.options().get<bool>("local")) {
     // Generation of the remote QC topology (task for QC servers, mergers and all checkers)
-    o2::quality_control::generateRemoteInfrastructure(specs, qcConfigurationSource);
+    o2::quality_control::generateRemoteInfrastructure(specs, configInterface->getRecursive());
   }
   LOG(info) << "Done ";
 

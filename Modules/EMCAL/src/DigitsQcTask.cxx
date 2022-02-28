@@ -15,13 +15,13 @@
 ///
 
 #include <boost/algorithm/string.hpp>
+#include <algorithm>
 #include <iostream>
 
 #include <TCanvas.h>
 #include <TH2.h>
 #include <TProfile2D.h>
 
-#include <DataFormatsEMCAL/EMCALBlockHeader.h>
 #include <DataFormatsEMCAL/TriggerRecord.h>
 #include <DataFormatsEMCAL/Digit.h>
 #include "QualityControl/QcInfoLogger.h"
@@ -59,12 +59,14 @@ DigitsQcTask::~DigitsQcTask()
     delete mTFPerCycles;
   if (mTFPerCyclesTOT)
     delete mTFPerCyclesTOT;
+  if (mDigitsMaxSM)
+    delete mDigitsMaxSM;
 }
 
 void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  QcInfoLogger::GetInstance().setDetector("EMC");
-  QcInfoLogger::GetInstance() << "initialize DigitsQcTask" << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::setDetector("EMC");
+  ILOG(Info, Support) << "initialize DigitsQcTask" << ENDM;
   //define histograms
 
   auto get_bool = [](const std::string_view input) -> bool {
@@ -92,13 +94,13 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   double thresholdPHYS = hasConfigValue("threshold") ? get_double(getConfigValue("threshold")) : 0.2;
 
   if (hasAmpVsCell) {
-    QcInfoLogger::GetInstance() << QcInfoLogger::Debug << "Enabling histograms : Amplitude vs. cellID" << QcInfoLogger::endm;
+    ILOG(Debug, Support) << "Enabling histograms : Amplitude vs. cellID" << ENDM;
   }
   if (hasTimeVsCell) {
-    QcInfoLogger::GetInstance() << QcInfoLogger::Debug << "Enabling histograms : Time vs. cellID" << QcInfoLogger::endm;
+    ILOG(Debug, Support) << "Enabling histograms : Time vs. cellID" << ENDM;
   }
   if (hasCalib2D) {
-    QcInfoLogger::GetInstance() << QcInfoLogger::Debug << "Enabling calibrated histograms" << QcInfoLogger::endm;
+    ILOG(Debug, Support) << "Enabling calibrated histograms" << ENDM;
   }
 
   // initialize geometry
@@ -125,42 +127,47 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mTFPerCycles->GetYaxis()->SetTitle("Counts");
   getObjectsManager()->startPublishing(mTFPerCycles);
 
-  mEvCounterTF = new TH1D("NEventsPerTF", "NEventsPerTF", 100, -0.5, 99.5);
+  mEvCounterTF = new TH1D("NEventsPerTF", "NEventsPerTF", 401, -0.5, 400.5);
   mEvCounterTF->GetXaxis()->SetTitle("NEventsPerTimeFrame");
   mEvCounterTF->GetYaxis()->SetTitle("Counts");
   getObjectsManager()->startPublishing(mEvCounterTF);
 
-  mEvCounterTFPHYS = new TH1D("NEventsPerTFPHYS", "NEventsPerTFPHYS", 100, -0.5, 99.5);
+  mEvCounterTFPHYS = new TH1D("NEventsPerTFPHYS", "NEventsPerTFPHYS", 401, -0.5, 400.5);
   mEvCounterTFPHYS->GetXaxis()->SetTitle("NEventsPerTimeFrame_PHYS");
   mEvCounterTFPHYS->GetYaxis()->SetTitle("Counts");
   getObjectsManager()->startPublishing(mEvCounterTFPHYS);
 
-  mEvCounterTFCALIB = new TH1D("NEventsPerTFCALIB", "NEventsPerTFCALIB", 100, -0.5, 99.5);
+  mEvCounterTFCALIB = new TH1D("NEventsPerTFCALIB", "NEventsPerTFCALIB", 6, -0.5, 5.5);
   mEvCounterTFCALIB->GetXaxis()->SetTitle("NEventsPerTimeFrame_CALIB");
   mEvCounterTFCALIB->GetYaxis()->SetTitle("Counts");
   getObjectsManager()->startPublishing(mEvCounterTFCALIB);
+
+  mDigitsMaxSM = new TH1D("SMMaxNumDigits", "Supermodule with largest amount of digits", 20, -0.5, 19.5);
+  mDigitsMaxSM->GetXaxis()->SetTitle("Supermodule");
+  mDigitsMaxSM->GetYaxis()->SetTitle("counts");
+  getObjectsManager()->startPublishing(mDigitsMaxSM);
 }
 
 void DigitsQcTask::startOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "startOfActivity" << ENDM;
   reset();
 }
 
 void DigitsQcTask::startOfCycle()
 {
   mTimeFramesPerCycles = 0;
-  QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Support) << "startOfCycle" << ENDM;
   std::map<std::string, std::string> metadata;
   mBadChannelMap = retrieveConditionAny<o2::emcal::BadChannelMap>("EMC/Calib/BadChannels", metadata);
   //it was EMC/BadChannelMap
   if (!mBadChannelMap)
-    QcInfoLogger::GetInstance() << "No Bad Channel Map object " << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Info, Support) << "No Bad Channel Map object " << ENDM;
 
   mTimeCalib = retrieveConditionAny<o2::emcal::TimeCalibrationParams>("EMC/Calib/Time", metadata);
   //"EMC/TimeCalibrationParams
   if (!mTimeCalib)
-    QcInfoLogger::GetInstance() << " No Time Calib object " << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Info, Support) << " No Time Calib object " << ENDM;
 }
 
 void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -169,15 +176,6 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   mTimeFramesPerCycles++;
   // check if we have payoad
   using MaskType_t = o2::emcal::BadChannelMap::MaskType_t;
-
-  if (mDoEndOfPayloadCheck) {
-    auto dataref = ctx.inputs().get("emcal-digits");
-    auto const* emcheader = o2::framework::DataRefUtils::getHeader<o2::emcal::EMCALBlockHeader*>(dataref);
-    if (!emcheader->mHasPayload) {
-      QcInfoLogger::GetInstance() << "No more digits" << AliceO2::InfoLogger::InfoLogger::endm;
-      return;
-    }
-  }
 
   // Handling of inputs from multiple subevents (multiple FLPs)
   // Build maps of trigger records and cells according to the subspecification
@@ -211,15 +209,17 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   auto combinedEvents = buildCombinedEvents(triggerRecordSubevents);
 
-  //  QcInfoLogger::GetInstance() << "Received " << digitcontainer.size() << " digits " << AliceO2::InfoLogger::InfoLogger::endm;
+  //  ILOG(Info, Support) <<"Received " << digitcontainer.size() << " digits " << ENDM;
   int eventcounter = 0;
   int eventcounterCALIB = 0;
   int eventcounterPHYS = 0;
+  std::array<int, 20> numDigitsSM;
+  std::fill(numDigitsSM.begin(), numDigitsSM.end(), 0);
   for (auto trg : combinedEvents) {
     if (!trg.getNumberOfObjects()) {
       continue;
     }
-    QcInfoLogger::GetInstance() << QcInfoLogger::Debug << "Next event " << eventcounter << " has " << trg.getNumberOfObjects() << " digits from " << trg.getNumberOfSubevents() << " subevent(s)" << QcInfoLogger::endm;
+    ILOG(Debug, Support) << "Next event " << eventcounter << " has " << trg.getNumberOfObjects() << " digits from " << trg.getNumberOfSubevents() << " subevent(s)" << ENDM;
 
     //trigger type
     auto triggertype = trg.mTriggerType;
@@ -233,20 +233,21 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       trgClass = "CAL";
       eventcounterCALIB++;
     } else {
-      QcInfoLogger::GetInstance() << QcInfoLogger::Error << " Unmonitored trigger class requested " << AliceO2::InfoLogger::InfoLogger::endm;
+      ILOG(Error, Support) << " Unmonitored trigger class requested " << ENDM;
       continue;
     }
 
     auto bcphase = trg.mInteractionRecord.bc % 4; // to be fixed:4 histos for EMCAL, 4 histos for DCAL
     auto histos = mHistogramContainer[trgClass];
+    std::fill(numDigitsSM.begin(), numDigitsSM.end(), 0);
 
     // iterate over subevents
     for (auto& subev : trg.mSubevents) {
       auto cellsSubspec = cellSubEvents.find(subev.mSpecification);
       if (cellsSubspec == cellSubEvents.end()) {
-        QcInfoLogger::GetInstance() << QcInfoLogger::Error << "No cell data found for subspecification " << subev.mSpecification << QcInfoLogger::endm;
+        ILOG(Error, Support) << "No cell data found for subspecification " << subev.mSpecification << ENDM;
       } else {
-        QcInfoLogger::GetInstance() << QcInfoLogger::Debug << subev.mCellRange.getEntries() << " digits in subevent from equipment " << subev.mSpecification << QcInfoLogger::endm;
+        ILOG(Debug, Support) << subev.mCellRange.getEntries() << " digits in subevent from equipment " << subev.mSpecification << ENDM;
         gsl::span<const o2::emcal::Cell> eventdigits(cellsSubspec->second.data() + subev.mCellRange.getFirstEntry(), subev.mCellRange.getEntries());
         int ndigit = 0, ndigitGlobal = subev.mCellRange.getFirstEntry();
         for (auto digit : eventdigits) {
@@ -259,12 +260,22 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
             goodcell = mBadChannelMap->getChannelStatus(digit.getTower()) != MaskType_t::GOOD_CELL;
           }
           histos.fillHistograms(digit, goodcell, timeoffset, bcphase);
+          if (isPhysTrigger) {
+            auto [sm, mod, iphi, ieta] = mGeometry->GetCellIndex(digit.getTower());
+            numDigitsSM[sm]++;
+          }
           ndigit++;
           ndigitGlobal++;
         }
       }
     }
     histos.countEvent();
+
+    if (isPhysTrigger) {
+      auto maxSM = std::max_element(numDigitsSM.begin(), numDigitsSM.end());
+      auto indexMaxSM = maxSM - numDigitsSM.begin();
+      mDigitsMaxSM->Fill(indexMaxSM);
+    }
 
     eventcounter++;
   }
@@ -277,19 +288,19 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 void DigitsQcTask::endOfCycle()
 {
   mTFPerCyclesTOT->Fill(mTimeFramesPerCycles); // do not reset this histo
-  QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfCycle" << ENDM;
 }
 
 void DigitsQcTask::endOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Support) << "endOfActivity" << ENDM;
 }
 
 void DigitsQcTask::reset()
 {
   // clean all the monitor objects here
 
-  QcInfoLogger::GetInstance() << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Support) << "Resetting the histogram" << ENDM;
   for (auto cont : mHistogramContainer) {
     cont.second.reset();
   }
@@ -301,6 +312,8 @@ void DigitsQcTask::reset()
     mEvCounterTFCALIB->Reset();
   if (mTFPerCycles)
     mTFPerCycles->Reset();
+  if (mDigitsMaxSM)
+    mDigitsMaxSM->Reset();
 }
 
 std::vector<DigitsQcTask::CombinedEvent> DigitsQcTask::buildCombinedEvents(const std::unordered_map<header::DataHeader::SubSpecificationType, gsl::span<const o2::emcal::TriggerRecord>>& triggerrecords) const
@@ -382,51 +395,81 @@ void DigitsQcTask::DigitsHistograms::initForTrigger(const std::string trigger, b
     return new TH2D(histname.data(), histtitle.data(), nbinsx, xmin, xmax, nbinsy, ymin, ymax);
   };
 
+  std::map<std::string, double> maxAmps = { { "PHYS", 50. }, { "CAL", 10. } };
+  double maxAmp = maxAmps[trigger];
+
   bool isPhysTrigger = trigger == "PHYS";
   if (isPhysTrigger) {
     if (hasAmpVsCellID) {
       mDigitAmplitude = histBuilder2D("digitAmplitudeHG", "Digit Amplitude (High gain)", 80, 0, 16, 17664, -0.5, 17663.5, false);
-
+      mDigitAmplitude->SetStats(0);
       //mDigitAmplitude[1] = histBuilder2D("digitAmplitudeLG", "Digit Amplitude (Low gain)", 100, 0, 100, 17664, -0.5, 17663.5, false);
       if (hasHistosCalib2D) {
         mDigitAmplitudeCalib = histBuilder2D("digitAmplitudeHGCalib", "Digit Amplitude (High gain)", 80, 0, 16, 17664, -0.5, 17663.5, false);
+        mDigitAmplitudeCalib->SetStats(0);
         //mDigitAmplitudeCalib[1] = histBuilder2D("digitAmplitudeLGCalib", "Digit Amplitude (Low gain)", 100, 0, 100, 17664, -0.5, 17663.5, false);
       }
     }
     if (hasTimeVsCellID) {
       mDigitTime = histBuilder2D("digitTimeHG", "Digit Time (High gain)", 400, -200, 200, 17664, -0.5, 17663.5, false);
+      mDigitTime->SetStats(0);
       // mDigitTime[1] = histBuilder2D("digitTimeLG", "Digit Time (Low gain)", 400, -200, 200, 17664, -0.5, 17663.5, false);
       if (hasHistosCalib2D) {
         mDigitTimeCalib = histBuilder2D("digitTimeHGCalib", "Digit Time Calib (High gain)", 400, -200, 200, 17664, -0.5, 17663.5, false);
+        mDigitTimeCalib->SetStats(0);
         // mDigitTimeCalib[1] = histBuilder2D("digitTimeLGCalib", "Digit Time Calib (Low gain)", 400, -200, 200, 17664, -0.5, 17663.5, false);
       }
     }
 
-    mDigitAmpSupermodule = histBuilder2D("digitAmplitudeSupermodule", "Digit amplitude vs. supermodule ID ", 400, 0., 100, 20, -0.5, 19.5, false);
-    mDigitTimeSupermodule = histBuilder2D("digitTimeSupermodule", "Digit Time vs. supermodule ID ", 400, -200, 200, 20, -0.5, 19.5, false);
+    mDigitAmpSupermodule = histBuilder2D("digitAmplitudeSupermodule", "Digit amplitude vs. supermodule ID ", 4 * static_cast<int>(maxAmp), 0., maxAmp, 20, -0.5, 19.5, false);
+    mDigitAmpSupermodule->SetStats(0);
+    mDigitTimeSupermodule = histBuilder2D("digitTimeSupermodule", "Digit Time vs. supermodule ID ", 600, -400, 800, 20, -0.5, 19.5, false);
+    mDigitTimeSupermodule->SetStats(0);
     if (hasHistosCalib2D) {
-      mDigitAmpSupermoduleCalib = histBuilder2D("digitAmplitudeSupermoduleCalib", "Digit amplitude (Calib) vs. supermodule ID ", 400, 0., 100, 20, -0.5, 19.5, false);
-      mDigitTimeSupermoduleCalib = histBuilder2D("digitTimeSupermoduleCalib", "Digit Time (Calib) vs. supermodule ID (High gain)", 400, -200, 200, 20, -0.5, 19.5, false);
+      mDigitAmpSupermoduleCalib = histBuilder2D("digitAmplitudeSupermoduleCalib", "Digit amplitude (Calib) vs. supermodule ID ", 4 * static_cast<int>(maxAmp), 0., maxAmp, 20, -0.5, 19.5, false);
+      mDigitAmpSupermoduleCalib->SetStats(0);
+      mDigitTimeSupermoduleCalib = histBuilder2D("digitTimeSupermoduleCalib", "Digit Time (Calib) vs. supermodule ID (High gain)", 600, -400, 800, 20, -0.5, 19.5, false);
+      mDigitTimeSupermoduleCalib->SetStats(0);
     }
   }
 
   mDigitOccupancy = histBuilder2D("digitOccupancyEMC", "Digit Occupancy EMCAL", 96, -0.5, 95.5, 208, -0.5, 207.5, false);
+  mDigitOccupancy->SetStats(0);
   mDigitOccupancyThr = histBuilder2D("digitOccupancyEMCwThr", Form("Digit Occupancy EMCAL,DCAL with E>%.1f GeV/c", mCellThreshold), 96, -0.5, 95.5, 208, -0.5, 207.5, false);
+  mDigitOccupancyThr->SetStats(0);
   mDigitOccupancyThrBelow = histBuilder2D("digitOccupancyEMCwThrBelow", Form("Digit Occupancy EMCAL,DCAL with E<%.1f GeV/c", mCellThreshold), 96, -0.5, 95.5, 208, -0.5, 207.5, false);
+  mDigitOccupancyThrBelow->SetStats(0);
 
   mIntegratedOccupancy = histBuilder2D("digitOccupancyInt", "Digit Occupancy Integrated", 96, -0.5, 95.5, 208, -0.5, 207.5, true);
   mIntegratedOccupancy->GetXaxis()->SetTitle("col");
   mIntegratedOccupancy->GetYaxis()->SetTitle("row");
+  mIntegratedOccupancy->SetStats(0);
   // 1D histograms for showing the integrated spectrum
 
-  mDigitTimeSupermodule_tot = histBuilder1D("digitTime", "Digit Time EMCAL,DCAL", 400, -200, 200);
-  mDigitTimeSupermoduleEMCAL = histBuilder1D("digitTimeEMCAL", "Digit Time EMCAL", 400, -200, 200);
-  mDigitTimeSupermoduleDCAL = histBuilder1D("digitTimeDCAL", "Digit Time DCAL", 400, -200, 200);
-  mDigitAmplitude_tot = histBuilder1D("digitAmplitude", "Digit amplitude in EMCAL,DCAL", 400, 0., 100.);
-  mDigitAmplitudeEMCAL = histBuilder1D("digitAmplitudeEMCAL", "Digit amplitude in EMCAL", 400, 0., 100.);
-  mDigitAmplitudeEMCAL_0 = histBuilder1D("digitAmplitudeEMCAL_bc0", "Digit amplitude in EMCAL(bc=0)", 400, 0., 100.);
-  mDigitAmplitudeDCAL = histBuilder1D("digitAmplitudeDCAL", "Digit amplitude in DCAL", 400, 0., 100.);
+  mDigitTimeSupermodule_tot = histBuilder1D("digitTime", "Digit Time EMCAL,DCAL", 600, -400, 800);
+  mDigitTimeSupermoduleEMCAL = histBuilder1D("digitTimeEMCAL", "Digit Time EMCAL", 600, -400, 800);
+  mDigitTimeSupermoduleDCAL = histBuilder1D("digitTimeDCAL", "Digit Time DCAL", 600, -400, 800);
+  mDigitAmplitude_tot = histBuilder1D("digitAmplitude", "Digit amplitude in EMCAL,DCAL", 4 * static_cast<int>(maxAmp), 0., maxAmp);
+  mDigitAmplitudeEMCAL = histBuilder1D("digitAmplitudeEMCAL", "Digit amplitude in EMCAL", 4 * static_cast<int>(maxAmp), 0., maxAmp);
+  mDigitAmplitudeDCAL = histBuilder1D("digitAmplitudeDCAL", "Digit amplitude in DCAL", 4 * static_cast<int>(maxAmp), 0., maxAmp);
   mnumberEvents = histBuilder1D("NumberOfEvents", "Number Of Events", 1, 0.5, 1.5);
+  if (isPhysTrigger) {
+    // Phys. trigger: monitor all bunch crossings
+    for (auto bcID = 0; bcID < 4; bcID++) {
+      std::array<TH1*, 20> digitTimeBCSM;
+      for (auto smID = 0; smID < 20; smID++) {
+        digitTimeBCSM[smID] = histBuilder1D(Form("digitTimeBC%dSM%d", bcID, smID), Form("Digit Time BC%d SM%d", bcID, smID), 600, -400, 800);
+      }
+      mDigitTimeBC[bcID] = digitTimeBCSM;
+    }
+  } else {
+    // Calib trigger: Only bc0;
+    std::array<TH1*, 20> digitTimeBCSM;
+    for (auto smID = 0; smID < 20; smID++) {
+      digitTimeBCSM[smID] = histBuilder1D(Form("digitTimeBC0SM%d", smID), Form("Digit Time BC0 SM%d", smID), 600, -400, 800);
+    }
+    mDigitTimeBC[0] = digitTimeBCSM;
+  }
 }
 
 void DigitsQcTask::DigitsHistograms::fillHistograms(const o2::emcal::Cell& digit, bool goodCell, double timecalib, int bcphase)
@@ -466,32 +509,43 @@ void DigitsQcTask::DigitsHistograms::fillHistograms(const o2::emcal::Cell& digit
     fillOptional2D(mIntegratedOccupancy, col, row, digit.getEnergy());
 
   } catch (o2::emcal::InvalidCellIDException& e) {
-    QcInfoLogger::GetInstance() << "Invalid cell ID: " << e.getCellID() << QcInfoLogger::endm;
+    ILOG(Error, Support) << "Invalid cell ID: " << e.getCellID() << ENDM;
   };
 
   try {
     auto cellindices = mGeometry->GetCellIndex(digit.getTower());
     auto supermoduleID = std::get<0>(cellindices);
     fillOptional2D(mDigitAmpSupermodule, digit.getEnergy(), supermoduleID);
-    fillOptional2D(mDigitTimeSupermodule, digit.getTimeStamp(), supermoduleID);
+    if (digit.getEnergy() > 0.3)
+      fillOptional2D(mDigitTimeSupermodule, digit.getTimeStamp(), supermoduleID);
     if (goodCell) {
       fillOptional2D(mDigitAmpSupermoduleCalib, digit.getEnergy(), supermoduleID);
-      fillOptional2D(mDigitTimeSupermoduleCalib, digit.getTimeStamp() - timecalib, supermoduleID);
+      if (digit.getEnergy() > 0.3)
+        fillOptional2D(mDigitTimeSupermoduleCalib, digit.getTimeStamp() - timecalib, supermoduleID);
     }
-    fillOptional1D(mDigitAmplitude_tot, digit.getEnergy());          //EMCAL+DCAL, shifter
-    fillOptional1D(mDigitTimeSupermodule_tot, digit.getTimeStamp()); //EMCAL+DCAL shifter
+    fillOptional1D(mDigitAmplitude_tot, digit.getEnergy()); //EMCAL+DCAL, shifter
+    if (digit.getEnergy() > 0.15)
+      fillOptional1D(mDigitTimeSupermodule_tot, digit.getTimeStamp()); //EMCAL+DCAL shifter
     if (supermoduleID < 12) {
 
-      fillOptional1D(mDigitTimeSupermoduleEMCAL, digit.getTimeStamp());
+      if (digit.getEnergy() > 0.15)
+        fillOptional1D(mDigitTimeSupermoduleEMCAL, digit.getTimeStamp());
       fillOptional1D(mDigitAmplitudeEMCAL, digit.getEnergy()); //EMCAL
-      if (bcphase == 0)
-        fillOptional1D(mDigitAmplitudeEMCAL_0, digit.getEnergy()); //EMCALBC bcphase in the name?if bcphase=0-->Fill?
     } else {
       fillOptional1D(mDigitAmplitudeDCAL, digit.getEnergy());
-      fillOptional1D(mDigitTimeSupermoduleDCAL, digit.getTimeStamp());
+      if (digit.getEnergy() > 0.15)
+        fillOptional1D(mDigitTimeSupermoduleDCAL, digit.getTimeStamp());
+    }
+    // bc phase histograms
+    if (digit.getEnergy() > 0.15) {
+      auto bchistos = mDigitTimeBC.find(bcphase);
+      if (bchistos != mDigitTimeBC.end()) {
+        auto histcontainer = bchistos->second;
+        histcontainer[supermoduleID]->Fill(digit.getTimeStamp());
+      }
     }
   } catch (o2::emcal::InvalidCellIDException& e) {
-    QcInfoLogger::GetInstance() << "Invalid cell ID: " << e.getCellID() << QcInfoLogger::endm;
+    ILOG(Info, Support) << "Invalid cell ID: " << e.getCellID() << ENDM;
   }
 }
 
@@ -520,13 +574,16 @@ void DigitsQcTask::DigitsHistograms::startPublishing(o2::quality_control::core::
   publishOptional(mDigitTimeSupermoduleCalib);
   publishOptional(mDigitAmplitude_tot);
   publishOptional(mDigitAmplitudeEMCAL);
-  publishOptional(mDigitAmplitudeEMCAL_0);
   publishOptional(mDigitAmplitudeDCAL);
   publishOptional(mDigitOccupancy);
   publishOptional(mDigitOccupancyThr);
   publishOptional(mDigitOccupancyThrBelow);
   publishOptional(mIntegratedOccupancy);
   publishOptional(mnumberEvents);
+  for (auto& [bcID, histos] : mDigitTimeBC) {
+    for (auto hist : histos)
+      publishOptional(hist);
+  }
   //  publishOptional(mEvCounterTF);
   //  publishOptional(mEvCounterTFPHYS);
   //  publishOptional(mEvCounterTFCALIB);
@@ -567,13 +624,16 @@ void DigitsQcTask::DigitsHistograms::reset()
   resetOptional(mDigitTimeSupermoduleCalib);
   resetOptional(mDigitAmplitude_tot);
   resetOptional(mDigitAmplitudeEMCAL);
-  resetOptional(mDigitAmplitudeEMCAL_0);
   resetOptional(mDigitAmplitudeDCAL);
   resetOptional(mDigitOccupancy);
   resetOptional(mDigitOccupancyThr);
   resetOptional(mDigitOccupancyThrBelow);
   resetOptional(mIntegratedOccupancy);
   resetOptional(mnumberEvents);
+  for (auto& [bcID, histos] : mDigitTimeBC) {
+    for (auto hist : histos)
+      resetOptional(hist);
+  }
   //  resetOptional(mEvCounterTF);
   //  resetOptional(mEvCounterTFPHYS);
   //  resetOptional(mEvCounterTFCALIB);
@@ -613,13 +673,16 @@ void DigitsQcTask::DigitsHistograms::clean()
   cleanOptional(mDigitTimeSupermoduleCalib);
   cleanOptional(mDigitAmplitude_tot);
   cleanOptional(mDigitAmplitudeEMCAL);
-  cleanOptional(mDigitAmplitudeEMCAL_0);
   cleanOptional(mDigitAmplitudeDCAL);
   cleanOptional(mDigitOccupancy);
   cleanOptional(mDigitOccupancyThr);
   cleanOptional(mDigitOccupancyThrBelow);
   cleanOptional(mIntegratedOccupancy);
   cleanOptional(mnumberEvents);
+  for (auto& [bcID, histos] : mDigitTimeBC) {
+    for (auto hist : histos)
+      cleanOptional(hist);
+  }
   //  cleanOptional(mEvCounterTF);
   //  cleanOptional(mEvCounterTFPHYS);
   //  cleanOptional(mEvCounterTFCALIB);

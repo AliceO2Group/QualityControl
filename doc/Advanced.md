@@ -17,7 +17,8 @@ Advanced topics
    * [Moving window](#moving-window)
    * [Writing a DPL data producer](#writing-a-dpl-data-producer)
    * [QC with DPL Analysis](#qc-with-dpl-analysis)
-      * [Getting AODs directly](#getting-aods-directly)
+      * [Uploading objects to QCDB](#uploading-objects-to-qcdb)
+      * [Getting AODs in QC Tasks](#getting-aods-in-qc-tasks)
       * [Merging with other analysis workflows](#merging-with-other-analysis-workflows)
       * [Enabling a workflow to run on Hyperloop](#enabling-a-workflow-to-run-on-hyperloop)
 * [CCDB / QCDB](#ccdb--qcdb)
@@ -368,15 +369,48 @@ You will probably write it in your detector's O2 directory rather than in the QC
 
 ## QC with DPL Analysis
 
-It is possible to attach QC to the Run 3 Analysis Tasks, as they use Data Processing Layer, just as
-QC. AOD tables can be requested as direct data sources and then read by a QC task with
-TableConsumer. One can also request AOD tables directly from an AOD file.
+QC offers several ways to interact with the DPL Analysis framework.
+One allows to [upload root objects generated](#uploading-objects-to-qcdb) by an Analysis Task into QCDB.
+It is also possible to [run QC workflows alongside Analysis Tasks](#merging-with-other-analysis-workflows),
+ as they are also based on the Data Processing Layer.
+AOD tables can be [requested as direct data sources](#getting-aods-in-qc-tasks) and then read by a QC task with TableConsumer.
 
 In this piece of documentation it is assumed that the users already have some idea about QC and
 [DPL Analysis](https://aliceo2group.github.io/analysis-framework), and
 they have an access to AOD files following the Run 3 data model.
 
-### Getting AODs directly
+### Uploading objects to QCDB
+
+To upload objects written to a file by an Analysis Task to QCDB, one may use the following command:
+```shell script
+o2-qc-upload-root-objects \
+  --input-file ./QAResults.root \
+  --qcdb-url ccdb-test.cern.ch:8080 \
+  --task-name AnalysisFromFileTest \
+  --detector-code TST \
+  --provenance qc_mc \
+  --pass-name passMC \
+  --period-name SimChallenge \ 
+  --run-number 49999
+```
+
+See the `--help` message for explanation of the arguments.
+If everything went well, the objects should be accessible in [the test QCG instance](https://qcg-test.cern.ch) under
+the directories listed in the logs:
+```
+2021-10-05 10:59:41.408998     QC infologger initialized
+2021-10-05 10:59:41.409053     Input file './QAResults.root' successfully open.
+...
+2021-10-05 10:59:41.585893     Storing MonitorObject qc_mc/TST/MO/AnalysisFromFileTest/hMcEventCounter
+2021-10-05 10:59:41.588649     Storing MonitorObject qc_mc/TST/MO/AnalysisFromFileTest/hGlobalBcFT0
+2021-10-05 10:59:41.591542     Storing MonitorObject qc_mc/TST/MO/AnalysisFromFileTest/hTimeT0Aall
+2021-10-05 10:59:41.594386     Storing MonitorObject qc_mc/TST/MO/AnalysisFromFileTest/hTimeT0Call
+2021-10-05 10:59:41.597743     Successfully uploaded 10 objects to the QCDB.
+```
+Notice that the executable will ignore the directory structure in the input file and upload all objects to one directory.
+If you need a different behaviour, please contact the developers.
+
+### Getting AODs in QC Tasks
 
 First, let's see how to get data directly from an AOD file. To read the table, we will use TableConsumer from DPL, as in [the example of a QC analysis
 task](../Modules/Example/src/AnalysisTask.cxx):
@@ -506,6 +540,12 @@ Simply call `ObjectsManager::addMetadata(...)`, like in
 ```
 This metadata will end up in the QCDB.
 
+It is also possible to add or update metadata of a MonitorObject directly: 
+```
+  MonitorObject* mo = getMonitorObject(objectName);
+  mo->addOrUpdateMetadata(key, value);
+```
+
 ## Details on the data storage format in the CCDB
 
 Each MonitorObject is stored as a TFile in the CCDB.
@@ -587,33 +627,57 @@ The QC is part of the FLP Suite. The Suite is installed on FLPs through RPMs and
 
 ## Developing QC modules on a machine with FLP suite
 
-FOLLOWING THE INTRODUCTION OF UPDATABLE RPMS, THE FOLLOWING PROCEDURES ARE NOT CORRECT ANY MORE, ALTHOUGH OPTION 1 should still work.
+Development RPMs are available on the FLPs. Start by installing them, then compile QC and finally tell aliECS to use it. 
 
-NEW PROCEDURES ARE BEING TESTED.
+**Installation**
 
-__Option 1__: Rebuild everything locally and point ECS to it
+As root do:
+```
+yum install o2-QualityControl-devel git -y
+```
 
-1. Prepare the machine for aliBuild : https://alice-doc.github.io/alice-analysis-tutorial/building/custom.html
-2. `aliBuild init QualityControl@master`
-3. You might want to switch alidist to a branch corresponding to an FLP Suite version but `master` should work as well.
-4. `aliBuild build O2Suite --defaults o2-dataflow`     
-   It is necessary to build `O2Suite` and not `QualityControl`
-6. Run alienv at least once, or each time you switch branch: `alienv enter O2Suite/latest`
-7. Copy the absolute path to `sw/MODULES/<arch>`
-8. In aliECS, add a parameter `modulepath` and paste the path.
-9. When running with aliECS, the software from your build will be used.
+**Compilation**
 
-__Option 2__: Build on your development setup and scp the library
+As user `flp` do:
+```
+git clone https://github.com/AliceO2Group/QualityControl.git
+cd QualityControl
+mkdir build
+cd build
+mkdir ~/installdir
+cmake -DCMAKE_INSTALL_PREFIX=~/installdir ..
+make
+```
 
-1. Switch alidist to the branch corresponding to the flp-suite you installed, e.g. `flp-suite-v0.12.0`.
-2. Rebuild QC using alibuild
-3. Backup the library (/opt/alisw/el7/QualityControl/<version>/lib)
-3. scp from development setup alice/sw/slc7_x86-64/QualityControl/latest/lib/yourlib* to /opt/alisw/el7/QualityControl/<version>/lib on the FLP.
-4. Rebuild the aliECS environment.
+***Compilation on top of a local O2***
 
-__Option 3__: Rebuild only the QC reusing the installed software
+If you want to build also O2 locally do 
+```
+# O2
+git clone https://github.com/AliceO2Group/AliceO2.git
+cd AliceO2
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX=~/installdir ..
+make -j8 install
 
-NOT WORKING YET, follow it up here: https://alice.its.cern.ch/jira/browse/O2-1896
+# QC
+git clone https://github.com/AliceO2Group/QualityControl.git
+cd QualityControl
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX=~/installdir .. -DO2_ROOT=~/installdir
+make -j8 install
+```
+
+**Use it in aliECS**
+
+Set an extra variable `extra_env_vars` and set it to 
+```
+PATH=~/installdir/bin/:$PATH LD_LIBRARY_PATH=~/installdir/lib/:$LD_LIBRARY_PATH QUALITYCONTROL_ROOT=~/installdir/
+```
+
+Replace ~/installdir (which is relative to user flp) with your own path. Make sure that the directory is anyway readable and traversable by user flp.
 
 ## Switch detector in the workflow _readout-dataflow_
 
@@ -728,7 +792,8 @@ should not be present in real configuration files.
         "password": "qc_user",            "": "Password to log into a DB. Relevant only to the MySQL implementation.",
         "name": "quality_control",        "": "Name of a DB. Relevant only to the MySQL implementation.",
         "implementation": "CCDB",         "": "Implementation of a DB. It can be CCDB, or MySQL (deprecated).",
-        "host": "ccdb-test.cern.ch:8080", "": "URL of a DB."
+        "host": "ccdb-test.cern.ch:8080", "": "URL of a DB.",
+        "maxObjectSize": "2097152",       "": "[Bytes, default=2MB] Maximum size allowed, larger objects are rejected."
       },
       "Activity": {                       "": ["Configuration of a QC Activity (Run). This structure is subject to",
                                                "change or the values might come from other source (e.g. AliECS)." ],
@@ -772,7 +837,7 @@ the "tasks" path.
         "className": "namespace::of::Task", "": "Class name of the QC Task with full namespace.",
         "moduleName": "QcSkeleton",         "": "Library name. It can be found in CMakeLists of the detector module.",
         "detectorName": "TST",              "": "3-letter code of the detector.",
-        "cycleDurationSeconds": "10",       "": "Duration of one cycle (how often MonitorObjects are published).",
+        "cycleDurationSeconds": "10",       "": "Cycle duration (how often objects are published), 10 seconds minimum.",
         "maxNumberCycles": "-1",            "": "Number of cycles to perform. Use -1 for infinite.",
         "dataSource": {                     "": "Data source of the QC Task.",
           "type": "dataSamplingPolicy",     "": "Type of the data source, \"dataSamplingPolicy\" or \"direct\".",

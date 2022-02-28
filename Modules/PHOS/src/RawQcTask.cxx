@@ -55,18 +55,24 @@ void RawQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   context.setField(infoCONTEXT::FieldName::Facility, "QC");
   context.setField(infoCONTEXT::FieldName::System, "QC");
   context.setField(infoCONTEXT::FieldName::Detector, "PHS");
-  QcInfoLogger::GetInstance().setContext(context);
-  QcInfoLogger::GetInstance() << "initialize RawQcTask" << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInfoLogger().setContext(context);
+  ILOG(Info, Support) << "initialize RawQcTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
   if (auto param = mCustomParameters.find("pedestal"); param != mCustomParameters.end()) {
-    QcInfoLogger::GetInstance() << "Working in pedestal mode " << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Info, Support) << "Working in pedestal mode " << AliceO2::InfoLogger::InfoLogger::endm;
     if (param->second.find("on") != std::string::npos) {
       mMode = 1;
     }
   }
+  if (auto param = mCustomParameters.find("LED"); param != mCustomParameters.end()) {
+    ILOG(Info, Support) << "Working in LED mode " << AliceO2::InfoLogger::InfoLogger::endm;
+    if (param->second.find("on") != std::string::npos) {
+      mMode = 2;
+    }
+  }
   if (auto param = mCustomParameters.find("physics"); param != mCustomParameters.end()) {
-    QcInfoLogger::GetInstance() << "Working in physics mode " << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Info, Support) << "Working in physics mode " << AliceO2::InfoLogger::InfoLogger::endm;
     if (param->second.find("on") != std::string::npos) {
       mMode = 0;
     }
@@ -108,13 +114,13 @@ void RawQcTask::InitHistograms()
 
 void RawQcTask::startOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
   reset();
 }
 
 void RawQcTask::startOfCycle()
 {
-  QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
   if (mMode == 1) {   //Pedestals
     if (mFinalized) { //means were already calculated
       for (Int_t mod = 0; mod < 4; mod++) {
@@ -184,7 +190,7 @@ void RawQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void RawQcTask::endOfCycle()
 {
-  QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
   if (mMode == 1) {   //Pedestals
     if (mFinalized) { //means were already calculated
       return;
@@ -256,7 +262,7 @@ void RawQcTask::endOfCycle()
 void RawQcTask::endOfActivity(Activity& /*activity*/)
 {
   endOfCycle();
-  QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 void RawQcTask::reset()
@@ -264,7 +270,7 @@ void RawQcTask::reset()
   // clean all the monitor objects here
   mFinalized = false;
 
-  QcInfoLogger::GetInstance() << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
   for (int i = kNhist1D; i--;) {
     if (mHist1D[i]) {
       mHist1D[i]->Reset();

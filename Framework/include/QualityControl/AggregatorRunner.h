@@ -25,6 +25,8 @@
 #include "QualityControl/QualityObject.h"
 #include "QualityControl/UpdatePolicyManager.h"
 #include "QualityControl/Activity.h"
+#include "QualityControl/AggregatorRunnerConfig.h"
+#include "QualityControl/AggregatorConfig.h"
 
 namespace o2::framework
 {
@@ -88,10 +90,10 @@ class AggregatorRunner : public framework::Task
    * \brief AggregatorRunner constructor
    * Create the AggregatorRunner device.
    *
-   * @param configurationSource Path to configuration
-   * @param checkRunnerOutputs List of checkRunners' output that it will take as inputs.
+   * @param arc AggregatorRunner Config
+   * @param acs Aggregator configs
    */
-  AggregatorRunner(const std::string& configurationSource, const std::vector<framework::OutputSpec> checkRunnerOutputs);
+  AggregatorRunner(AggregatorRunnerConfig arc, const std::vector<AggregatorConfig>& acs);
 
   /// Destructor
   ~AggregatorRunner() override;
@@ -106,9 +108,15 @@ class AggregatorRunner : public framework::Task
   std::string getDeviceName() { return mDeviceName; }
   const std::vector<std::shared_ptr<Aggregator>>& getAggregators() const { return mAggregators; }
 
+  static framework::DataProcessorLabel getLabel() { return { "qc-aggregator" }; }
   static std::string createAggregatorRunnerIdString() { return "QC-AGGREGATOR-RUNNER"; };
   static std::string createAggregatorRunnerName();
   static header::DataDescription createAggregatorRunnerDataDescription(const std::string& aggregatorName);
+
+  /// \brief Compute the detector name to be used in the infologger for this runner.
+  /// Compute the detector name to be used in the infologger for this runner.
+  /// If all checks belong to the same detector we use it, otherwise we use "MANY"
+  static std::string getDetectorName(std::vector<std::shared_ptr<Aggregator>> aggregators);
 
  private:
   /**
@@ -127,10 +135,18 @@ class AggregatorRunner : public framework::Task
    */
   void store(core::QualityObjectsType& qualityObjects);
 
-  inline void initDatabase();
-  inline void initMonitoring();
-  inline void initServiceDiscovery();
-  inline void initAggregators();
+  void refreshConfig(framework::InitContext& iCtx);
+
+  /**
+   * Prepare the inputs, remove the duplicates
+   */
+  void prepareInputs();
+
+  void initInfoLogger(framework::InitContext& iCtx);
+  void initDatabase();
+  void initMonitoring();
+  void initServiceDiscovery();
+  void initAggregators();
 
   /**
    * Reorder the aggregators stored in mAggregators.
@@ -155,7 +171,7 @@ class AggregatorRunner : public framework::Task
   /// \brief Callback for CallbackService::Id::Start (DPL) a.k.a. RUN transition (FairMQ)
   void start(const framework::ServiceRegistry& services);
   /// \brief Callback for CallbackService::Id::Stop (DPL) a.k.a. STOP transition (FairMQ)
-  void stop();
+  void stop() override;
   /// \brief Callback for CallbackService::Id::Reset (DPL) a.k.a. RESET DEVICE transition (FairMQ)
   void reset();
 
@@ -164,7 +180,8 @@ class AggregatorRunner : public framework::Task
   core::Activity mActivity;
   std::vector<std::shared_ptr<Aggregator>> mAggregators;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
-  std::shared_ptr<o2::configuration::ConfigurationInterface> mConfigFile;
+  AggregatorRunnerConfig mRunnerConfig;
+  std::vector<AggregatorConfig> mAggregatorsConfig;
   core::QualityObjectsMapType mQualityObjects; // where we cache the incoming quality objects and the output of the aggregators
   UpdatePolicyManager updatePolicyManager;
 
@@ -174,6 +191,7 @@ class AggregatorRunner : public framework::Task
   // monitoring
   std::shared_ptr<o2::monitoring::Monitoring> mCollector;
   AliceO2::Common::Timer mTimer;
+  AliceO2::Common::Timer mTimerTotalDurationActivity;
   int mTotalNumberObjectsReceived;
   int mTotalNumberAggregatorExecuted;
   int mTotalNumberObjectsProduced;

@@ -29,6 +29,10 @@
 #include "QualityControl/DatabaseFactory.h"
 #include "QualityControl/ServiceDiscovery.h"
 #include "QualityControl/runnerUtils.h"
+#include "QualityControl/InfrastructureSpecReader.h"
+#include "QualityControl/CheckRunnerFactory.h"
+
+#include <TSystem.h>
 
 using namespace std::chrono;
 using namespace AliceO2::Common;
@@ -67,7 +71,7 @@ std::string CheckRunner::createCheckRunnerName(const std::vector<CheckConfig>& c
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     "abcdefghijklmnopqrstuvwxyz";
   const int NAME_LEN = 4;
-  std::string name(CheckRunner::createCheckRunnerIdString() + "-");
+  std::string name(CheckRunner::createCheckRunnerIdString() + "-" + getDetectorName(checks));
 
   if (checks.size() == 1) {
     // If single check, use the check name
@@ -99,7 +103,7 @@ std::string CheckRunner::createCheckRunnerName(const std::vector<CheckConfig>& c
 
 std::string CheckRunner::createCheckRunnerFacility(std::string deviceName)
 {
-  // it starts with "check/" and is followed by the unique part of the device name truncated to a maximum of 32 characters.f
+  // it starts with "check/" and is followed by the unique part of the device name truncated to a maximum of 32 characters.
   string facilityName = "check/" + deviceName.substr(CheckRunner::createCheckRunnerIdString().length() + 1, string::npos);
   facilityName = facilityName.substr(0, 32);
   return facilityName;
@@ -122,33 +126,33 @@ o2::framework::Outputs CheckRunner::collectOutputs(const std::vector<CheckConfig
 }
 
 CheckRunner::CheckRunner(CheckRunnerConfig checkRunnerConfig, const std::vector<CheckConfig>& checkConfigs)
-  : mDeviceName(createCheckRunnerName(checkConfigs)),
+  : mDetectorName(getDetectorName(checkConfigs)),
+    mDeviceName(createCheckRunnerName(checkConfigs)),
     mConfig(std::move(checkRunnerConfig)),
-    mLogger(QcInfoLogger::GetInstance()),
     /* All checks have the same Input */
     mInputs(checkConfigs.front().inputSpecs),
     mOutputs(CheckRunner::collectOutputs(checkConfigs)),
     mTotalNumberObjectsReceived(0),
     mTotalNumberCheckExecuted(0),
     mTotalNumberQOStored(0),
-    mTotalNumberMOStored(0)
+    mTotalNumberMOStored(0),
+    mTotalQOSent(0)
 {
-  for (const auto& checkConfig : checkConfigs) {
-    mChecks.emplace_back(checkConfig);
+  for (auto& checkConfig : checkConfigs) {
+    mChecks.emplace(checkConfig.name, checkConfig);
   }
 }
 
 CheckRunner::CheckRunner(CheckRunnerConfig checkRunnerConfig, InputSpec input)
   : mDeviceName(createSinkCheckRunnerName(input)),
-    mChecks{},
     mConfig(std::move(checkRunnerConfig)),
-    mLogger(QcInfoLogger::GetInstance()),
     mInputs{ input },
     mOutputs{},
     mTotalNumberObjectsReceived(0),
     mTotalNumberCheckExecuted(0),
     mTotalNumberQOStored(0),
-    mTotalNumberMOStored(0)
+    mTotalNumberMOStored(0),
+    mTotalQOSent(0)
 {
 }
 
@@ -159,30 +163,62 @@ CheckRunner::~CheckRunner()
   }
 }
 
+void CheckRunner::refreshConfig(InitContext& iCtx)
+{
+  try {
+    // get the tree
+    auto updatedTree = iCtx.options().get<boost::property_tree::ptree>("qcConfiguration");
+
+    if (updatedTree.empty()) {
+      ILOG(Warning, Devel) << "Templated config tree is empty, we continue with the original one" << ENDM;
+    } else {
+      if (gSystem->Getenv("O2_QC_DEBUG_CONFIG_TREE")) { // until we are sure it works, keep a backdoor
+        ILOG(Debug, Devel) << "We print the tree we got from the ECS via DPL : " << ENDM;
+        printTree(updatedTree);
+      }
+
+      // prepare the information we need
+      auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(updatedTree);
+
+      // Use the config to reconfigure the check runner.
+      // The configs for the checks we find in the config and in our map are updated.
+      // Topology changes are ignored: New checks are ignored. Removed checks are ignored.
+      for (const auto& checkSpec : infrastructureSpec.checks) {
+        // search if we have this check in this runner and replace it
+        if (mChecks.find(checkSpec.checkName) != mChecks.end()) {
+          auto checkConfig = Check::extractConfig(infrastructureSpec.common, checkSpec);
+          mChecks.erase(checkConfig.name);
+          mChecks.emplace(checkConfig.name, checkConfig);
+          ILOG(Debug, Devel) << "Check " << checkSpec.checkName << " has been updated" << ENDM;
+        }
+      }
+    }
+  } catch (std::invalid_argument& error) {
+    // ignore the error, we just skip the update of the config file. It can be legit, e.g. in command line mode
+    ILOG(Warning, Devel) << "Could not get updated config tree in CheckRunner::init() - `qcConfiguration` could not be retrieved" << ENDM;
+  } catch (...) {
+    // we catch here because we don't know where it will get lost in DPL, and also we don't care if this part has failed.
+    ILOG(Warning, Devel) << "Error caught in CheckRunner::refreshConfig() :\n"
+                         << current_diagnostic(true) << ENDM;
+  }
+}
+
 void CheckRunner::init(framework::InitContext& iCtx)
 {
-  InfoLoggerContext* ilContext = nullptr;
   try {
-    ilContext = &iCtx.services().get<AliceO2::InfoLogger::InfoLoggerContext>();
-  } catch (const RuntimeErrorRef& err) {
-    ILOG(Error) << "Could not find the DPL InfoLogger Context." << ENDM;
-  }
-
-  try {
-    ILOG_INST.init(createCheckRunnerFacility(mDeviceName),
-                   mConfig.infologgerFilterDiscardDebug,
-                   mConfig.infologgerDiscardLevel,
-                   ilContext);
+    initInfologger(iCtx);
+    refreshConfig(iCtx);
     initDatabase();
     initMonitoring();
     initServiceDiscovery();
 
     // registering state machine callbacks
     iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, &services = iCtx.services()]() { start(services); });
-    iCtx.services().get<CallbackService>().set(CallbackService::Id::Stop, [this]() { stop(); });
     iCtx.services().get<CallbackService>().set(CallbackService::Id::Reset, [this]() { reset(); });
+    iCtx.services().get<CallbackService>().set(CallbackService::Id::Stop, [this]() { stop(); });
 
-    for (auto& check : mChecks) {
+    updatePolicyManager.reset();
+    for (auto& [checkName, check] : mChecks) {
       check.init();
       updatePolicyManager.addPolicy(check.getName(), check.getUpdatePolicyType(), check.getObjectsNames(), check.getAllObjectsOption(), false);
     }
@@ -227,18 +263,18 @@ void CheckRunner::prepareCacheData(framework::InputRecord& inputRecord)
       if (tobj->InheritsFrom("TObjArray")) {
         array.reset(dynamic_cast<TObjArray*>(tobj.release()));
         array->SetOwner(false);
-        mLogger << AliceO2::InfoLogger::InfoLogger::Info << "CheckRunner " << mDeviceName
-                << " received an array with " << array->GetEntries()
-                << " entries from " << input.binding << ENDM;
+        ILOG(Info, Support) << "CheckRunner " << mDeviceName
+                            << " received an array with " << array->GetEntries()
+                            << " entries from " << input.binding << ENDM;
       } else {
         // it is just a TObject not embedded in a TObjArray. We build a TObjArray for it.
         auto* newArray = new TObjArray();    // we cannot use `array` to add an object as it is const
         TObject* newTObject = tobj->Clone(); // we need a copy to avoid that it gets deleted behind our back.
         newArray->Add(newTObject);
         array.reset(newArray); // now that the array is ready we can adopt it.
-        mLogger << AliceO2::InfoLogger::InfoLogger::Info << "CheckRunner " << mDeviceName
-                << " received a tobject named " << tobj->GetName()
-                << " from " << input.binding << ENDM;
+        ILOG(Info, Support) << "CheckRunner " << mDeviceName
+                            << " received a tobject named " << tobj->GetName()
+                            << " from " << input.binding << ENDM;
       }
 
       // for each item of the array, check whether it is a MonitorObject. If not, create one and encapsulate.
@@ -248,10 +284,10 @@ void CheckRunner::prepareCacheData(framework::InputRecord& inputRecord)
         std::shared_ptr<MonitorObject> mo{ dynamic_cast<MonitorObject*>(tObject) };
 
         if (mo == nullptr) {
-          mLogger << AliceO2::InfoLogger::InfoLogger::Info << "The MO is null, probably a TObject could not be casted into an MO." << ENDM;
-          mLogger << AliceO2::InfoLogger::InfoLogger::Info << "    Creating an ad hoc MO." << ENDM;
+          ILOG(Info, Support) << "The MO is null, probably a TObject could not be casted into an MO." << ENDM;
+          ILOG(Info, Support) << "    Creating an ad hoc MO." << ENDM;
           header::DataOrigin origin = DataSpecUtils::asConcreteOrigin(input);
-          mo = std::make_shared<MonitorObject>(tObject, input.binding, origin.str);
+          mo = std::make_shared<MonitorObject>(tObject, input.binding, "CheckRunner", origin.str);
         }
 
         if (mo) {
@@ -273,20 +309,23 @@ void CheckRunner::sendPeriodicMonitoring()
 {
   if (mTimer.isTimeout()) {
     mTimer.reset(10000000); // 10 s.
-    mCollector->send({ mTotalNumberObjectsReceived, "qc_objects_received" }, DerivedMetricMode::RATE);
-    mCollector->send({ mTotalNumberCheckExecuted, "qc_checks_executed" }, DerivedMetricMode::RATE);
-    mCollector->send({ mTotalNumberQOStored, "qc_qo_stored" }, DerivedMetricMode::RATE);
-    mCollector->send({ mTotalNumberMOStored, "qc_mo_stored" }, DerivedMetricMode::RATE);
+    mCollector->send({ mTotalNumberObjectsReceived, "qc_checkrunner_objects_received" });
+    mCollector->send({ mTotalNumberCheckExecuted, "qc_checkrunner_checks_executed" });
+    mCollector->send(Metric{ "qc_checkrunner_stored" }
+                       .addValue(mTotalNumberMOStored, "mos")
+                       .addValue(mTotalNumberQOStored, "qos"));
+    mCollector->send({ mTotalQOSent, "qc_checkrunner_qo_sent" });
+    mCollector->send({ mTimerTotalDurationActivity.getTime(), "qc_checkrunner_duration" });
   }
 }
 
 QualityObjectsType CheckRunner::check()
 {
-  mLogger << "Trying " << mChecks.size() << " checks for " << mMonitorObjects.size() << " monitor objects"
-          << ENDM;
+  ILOG(Info, Support) << "Trying " << mChecks.size() << " checks for " << mMonitorObjects.size() << " monitor objects"
+                      << ENDM;
 
   QualityObjectsType allQOs;
-  for (auto& check : mChecks) {
+  for (auto& [checkName, check] : mChecks) {
     if (updatePolicyManager.isReady(check.getName())) {
       auto newQOs = check.check(mMonitorObjects);
       mTotalNumberCheckExecuted += newQOs.size();
@@ -295,9 +334,9 @@ QualityObjectsType CheckRunner::check()
       newQOs.clear();
 
       // Was checked, update latest revision
-      updatePolicyManager.updateActorRevision(check.getName());
+      updatePolicyManager.updateActorRevision(checkName);
     } else {
-      mLogger << "Monitor Objects for the check '" << check.getName() << "' are not ready, ignoring" << ENDM;
+      ILOG(Info, Support) << "Monitor Objects for the check '" << checkName << "' are not ready, ignoring" << ENDM;
     }
   }
   return allQOs;
@@ -305,7 +344,7 @@ QualityObjectsType CheckRunner::check()
 
 void CheckRunner::store(QualityObjectsType& qualityObjects)
 {
-  mLogger << "Storing " << qualityObjects.size() << " QualityObjects" << ENDM;
+  ILOG(Info, Support) << "Storing " << qualityObjects.size() << " QualityObjects" << ENDM;
   try {
     for (auto& qo : qualityObjects) {
       qo->setActivity(mActivity);
@@ -313,13 +352,13 @@ void CheckRunner::store(QualityObjectsType& qualityObjects)
       mTotalNumberQOStored++;
     }
   } catch (boost::exception& e) {
-    mLogger << "Unable to " << diagnostic_information(e) << ENDM;
+    ILOG(Info, Support) << "Unable to " << diagnostic_information(e) << ENDM;
   }
 }
 
 void CheckRunner::store(std::vector<std::shared_ptr<MonitorObject>>& monitorObjects)
 {
-  mLogger << "Storing " << monitorObjects.size() << " MonitorObjects" << ENDM;
+  ILOG(Info, Support) << "Storing " << monitorObjects.size() << " MonitorObjects" << ENDM;
   try {
     for (auto& mo : monitorObjects) {
       mo->setActivity(mActivity);
@@ -327,7 +366,7 @@ void CheckRunner::store(std::vector<std::shared_ptr<MonitorObject>>& monitorObje
       mTotalNumberMOStored++;
     }
   } catch (boost::exception& e) {
-    mLogger << "Unable to " << diagnostic_information(e) << ENDM;
+    ILOG(Info, Support) << "Unable to " << diagnostic_information(e) << ENDM;
   }
 }
 
@@ -336,17 +375,14 @@ void CheckRunner::send(QualityObjectsType& qualityObjects, framework::DataAlloca
   // Note that we might send multiple QOs in one output, as separate parts.
   // This should be fine if they are retrieved on the other side with InputRecordWalker.
 
-  mLogger << "Sending " << qualityObjects.size() << " quality objects" << ENDM;
+  ILOG(Info, Support) << "Sending " << qualityObjects.size() << " quality objects" << ENDM;
   for (const auto& qo : qualityObjects) {
-
-    const auto& correspondingCheck = std::find_if(mChecks.begin(), mChecks.end(), [checkName = qo->getCheckName()](const auto& check) {
-      return check.getName() == checkName;
-    });
-
-    auto outputSpec = correspondingCheck->getOutputSpec();
+    const auto& correspondingCheck = mChecks.at(qo->getCheckName());
+    auto outputSpec = correspondingCheck.getOutputSpec();
     auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(outputSpec);
     allocator.snapshot(
       framework::Output{ concreteOutput.origin, concreteOutput.description, concreteOutput.subSpec, outputSpec.lifetime }, *qo);
+    mTotalQOSent++;
   }
 }
 
@@ -405,9 +441,25 @@ void CheckRunner::initServiceDiscovery()
     ILOG(Warning, Ops) << "Service Discovery disabled" << ENDM;
     return;
   }
-  std::string url = ServiceDiscovery::GetDefaultUrl(ServiceDiscovery::DefaultHealthPort + 1); // we try to avoid colliding with the TaskRunner
-  mServiceDiscovery = std::make_shared<ServiceDiscovery>(mConfig.consulUrl, mDeviceName, mDeviceName, url);
+  mServiceDiscovery = std::make_shared<ServiceDiscovery>(mConfig.consulUrl, mDeviceName, mDeviceName);
   ILOG(Info, Support) << "ServiceDiscovery initialized" << ENDM;
+}
+
+void CheckRunner::initInfologger(framework::InitContext& iCtx)
+{
+  InfoLoggerContext* ilContext = nullptr;
+  AliceO2::InfoLogger::InfoLogger* il = nullptr;
+  try {
+    ilContext = &iCtx.services().get<AliceO2::InfoLogger::InfoLoggerContext>();
+    il = &iCtx.services().get<AliceO2::InfoLogger::InfoLogger>();
+  } catch (const RuntimeErrorRef& err) {
+    ILOG(Error) << "Could not find the DPL InfoLogger." << ENDM;
+  }
+  QcInfoLogger::init(createCheckRunnerFacility(mDeviceName),
+                     mConfig.infologgerFilterDiscardDebug,
+                     mConfig.infologgerDiscardLevel,
+                     il,
+                     ilContext);
 }
 
 void CheckRunner::start(const ServiceRegistry& services)
@@ -416,8 +468,13 @@ void CheckRunner::start(const ServiceRegistry& services)
   mActivity.mPeriodName = computePeriodName(services, mConfig.fallbackPeriodName);
   mActivity.mPassName = computePassName(mConfig.fallbackPassName);
   mActivity.mProvenance = computeProvenance(mConfig.fallbackProvenance);
+  string partitionName = computePartitionName(services);
+  QcInfoLogger::setRun(mActivity.mId);
+  QcInfoLogger::setPartition(partitionName);
   ILOG(Info, Ops) << "Starting run " << mActivity.mId << ":"
                   << "\n   - period: " << mActivity.mPeriodName << "\n   - pass type: " << mActivity.mPassName << "\n   - provenance: " << mActivity.mProvenance << ENDM;
+  mTimerTotalDurationActivity.reset();
+  mCollector->setRunNumber(mActivity.mId);
 }
 
 void CheckRunner::stop()
@@ -438,6 +495,27 @@ void CheckRunner::reset()
                          << current_diagnostic(true) << ENDM;
     throw;
   }
+
+  mTotalNumberObjectsReceived = 0;
+  mTotalNumberCheckExecuted = 0;
+  mTotalNumberMOStored = 0;
+  mTotalNumberQOStored = 0;
+  mTotalQOSent = 0;
+}
+
+std::string CheckRunner::getDetectorName(const std::vector<CheckConfig> checks)
+{
+  std::string detectorName;
+  for (auto& check : checks) {
+    const std::string& thisDetector = check.detectorName;
+    if (detectorName.length() == 0) {
+      detectorName = thisDetector;
+    } else if (thisDetector != detectorName) {
+      detectorName = "MANY";
+      break;
+    }
+  }
+  return detectorName;
 }
 
 } // namespace o2::quality_control::checker

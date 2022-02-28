@@ -26,10 +26,14 @@
 /// Similarly, to generate only the remote part (running on QC servers) add '--remote'. By default, the executable
 /// generates both local and remote topologies, as it is the usual use-case for local development.
 
+#include <string>
+#include <vector>
+#include <utility>
 #include <boost/asio/ip/host_name.hpp>
 #include <DataSampling/DataSampling.h>
 #include <Configuration/ConfigurationFactory.h>
 #include <Configuration/ConfigurationInterface.h>
+#include <CommonUtils/StringUtils.h>
 #include "QualityControl/InfrastructureGenerator.h"
 #include "QualityControl/QcInfoLogger.h"
 
@@ -66,6 +70,10 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
   workflowOptions.push_back(
     ConfigParamSpec{ "remote-batch", VariantType::String, "", { "Runs the remote part of the QC workflow reading the inputs from a file (files). "
                                                                 "Takes the file path as argument." } });
+
+  workflowOptions.push_back(
+    ConfigParamSpec{ "override-values", VariantType::String, "", { "QC configuration file key/value pairs which should be overwritten. "
+                                                                   "The format is \"full.path.to.key=value[;full.path.to.key=value]\"." } });
 }
 
 void customize(std::vector<CompletionPolicy>& policies)
@@ -104,6 +112,26 @@ bool validateArguments(const ConfigContext& config)
   return true;
 }
 
+std::vector<std::pair<std::string, std::string>> parseOverrideValues(const std::string& input)
+{
+  std::vector<std::pair<std::string, std::string>> keyValuePairs;
+  for (const auto& keyValueToken : utils::Str::tokenize(input, ';', true)) {
+    auto keyValue = utils::Str::tokenize(keyValueToken, '=', true);
+    if (keyValue.size() != 2) {
+      throw std::runtime_error("Token '" + keyValueToken + "' in the --override-values argument is malformed, use key=value.");
+    }
+    keyValuePairs.emplace_back(keyValue[0], keyValue[1]);
+  }
+  return keyValuePairs;
+}
+
+void overrideValues(boost::property_tree::ptree& tree, std::vector<std::pair<std::string, std::string>> keyValues)
+{
+  for (const auto& [key, value] : keyValues) {
+    tree.put(key, value);
+  }
+}
+
 enum class WorkflowType {
   Standalone,
   Local,
@@ -135,9 +163,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
     return {};
   }
 
-  const std::string qcConfigurationSource = config.options().get<std::string>("config");
-  ILOG(Info, Support) << "Using config file '" << qcConfigurationSource << "'" << ENDM;
-
+  auto qcConfigurationSource = config.options().get<std::string>("config");
   try {
     // The online QC infrastructure is divided into two parts:
     // - local - QC tasks which are on the same machines as the main processing. We also put Data Sampling there.
@@ -153,19 +179,30 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
     // - remote-batch - Checks and Aggregators are run on the QC objects inside a file created by a local-batch workflow.
     //                  The results are stored in the database specified in the config file.
 
+    // we set the infologger levels as soon as possible to avoid spamming
+    auto configTree = ConfigurationFactory::getConfiguration(qcConfigurationSource)->getRecursive();
+    auto infologgerFilterDiscardDebug = configTree.get<bool>("qc.config.infologger.filterDiscardDebug", false);
+    auto infologgerDiscardLevel = configTree.get<int>("qc.config.infologger.filterDiscardLevel", 21);
+    ILOG_INST.filterDiscardDebug(infologgerFilterDiscardDebug);
+    ILOG_INST.filterDiscardLevel(infologgerDiscardLevel);
+    o2::quality_control::core::QcInfoLogger::setFacility("runQC");
+
+    ILOG(Info, Support) << "Using config file '" << qcConfigurationSource << "'" << ENDM;
+    auto keyValuesToOverride = parseOverrideValues(config.options().get<std::string>("override-values"));
+    overrideValues(configTree, keyValuesToOverride);
+
     auto workflowType = getWorkflowType(config);
     switch (workflowType) {
       case WorkflowType::Standalone: {
         ILOG(Info, Support) << "Creating a standalone QC workflow." << ENDM;
 
-        auto configTree = ConfigurationFactory::getConfiguration(qcConfigurationSource)->getRecursive();
         if (!config.options().get<bool>("no-data-sampling") && configTree.count("dataSamplingPolicies") > 0) {
           ILOG(Info, Support) << "Generating Data Sampling" << ENDM;
           DataSampling::GenerateInfrastructure(specs, configTree.get_child("dataSamplingPolicies"));
         } else {
           ILOG(Info, Support) << "Omitting Data Sampling" << ENDM;
         }
-        quality_control::generateStandaloneInfrastructure(specs, qcConfigurationSource);
+        quality_control::generateStandaloneInfrastructure(specs, configTree);
         break;
       }
       case WorkflowType::Local: {
@@ -174,7 +211,6 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
                       ? boost::asio::ip::host_name()
                       : config.options().get<std::string>("host");
 
-        auto configTree = ConfigurationFactory::getConfiguration(qcConfigurationSource)->getRecursive();
         if (!config.options().get<bool>("no-data-sampling") && configTree.count("dataSamplingPolicies") > 0) {
           ILOG(Info, Support) << "Generating Data Sampling" << ENDM;
           DataSampling::GenerateInfrastructure(specs, configTree.get_child("dataSamplingPolicies"), 1, host);
@@ -183,19 +219,18 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
         }
 
         // Generation of the local QC topology (local QC tasks and their output proxies)
-        quality_control::generateLocalInfrastructure(specs, qcConfigurationSource, host);
+        quality_control::generateLocalInfrastructure(specs, configTree, host);
         break;
       }
       case WorkflowType::Remote: {
         ILOG(Info, Support) << "Creating a remote QC workflow." << ENDM;
 
         // Generation of the remote QC topology (task for QC servers, input proxies, mergers and all check runners)
-        quality_control::generateRemoteInfrastructure(specs, qcConfigurationSource);
+        quality_control::generateRemoteInfrastructure(specs, configTree);
         break;
       }
       case WorkflowType::LocalBatch: {
         ILOG(Info, Support) << "Creating a local batch QC workflow." << ENDM;
-        auto configTree = ConfigurationFactory::getConfiguration(qcConfigurationSource)->getRecursive();
         if (!config.options().get<bool>("no-data-sampling") && configTree.count("dataSamplingPolicies") > 0) {
           ILOG(Info, Support) << "Generating Data Sampling" << ENDM;
           DataSampling::GenerateInfrastructure(specs, configTree.get_child("dataSamplingPolicies"));
@@ -205,13 +240,13 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
 
         auto localBatchFilePath = config.options().get<std::string>("local-batch");
         // Generation of the local batch QC workflow (QC tasks and file sink)
-        quality_control::generateLocalBatchInfrastructure(specs, qcConfigurationSource, localBatchFilePath);
+        quality_control::generateLocalBatchInfrastructure(specs, configTree, localBatchFilePath);
         break;
       }
       case WorkflowType::RemoteBatch: {
         auto remoteBatchFilePath = config.options().get<std::string>("remote-batch");
         // Creating the remote batch QC topology (file reader, check runners, aggregator runners, postprocessing)
-        quality_control::generateRemoteBatchInfrastructure(specs, qcConfigurationSource, remoteBatchFilePath);
+        quality_control::generateRemoteBatchInfrastructure(specs, configTree, remoteBatchFilePath);
         break;
       }
     }

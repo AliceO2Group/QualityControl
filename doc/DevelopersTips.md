@@ -49,6 +49,33 @@ The repo_cleaner is launched every 5 minutes by [Jenkins](https://alijenkins.cer
 
 Documentation of the repo_cleaner can be found [here](../Framework/script/RepoCleaner/README.md).
 
+### How to backup the local data of the QCDB
+
+Four things to backup: 
+
+1. database dump
+2. postgresql.conf
+3. QC directory (this is big)
+4. repocleaner.yaml (if not stored in consul)
+
+```
+ssh root@ali-qcdb
+
+# you could let them run but the data might not be 100% consistent
+systemctl stop ccdb-sql
+systemctl stop postgresql
+
+su - postgres
+cd /data/pgsql/backups/
+pg_dumpall -l ccdb -p 5432 -v | pbzip2 > ccdb-dd-mm-yy.sql.bz2
+cp ../data/postgresql.conf postgresql-dd.mm.yy.conf
+cp /etc/flp.d/ccdb-sql/repocleaner.yaml repocleaner-dd.mm.yy.yaml
+exit
+
+cd /data/pgsql
+cp -r QC QC-dd-mm-yy
+```
+
 ### Trick used to load old data
 Until version 3 of the class MonitorObject, objects were stored in the repository directly. They are now stored within TFiles. The issue with the former way is that the StreamerInfo are lost. To be able to load old data, the StreamerInfos have been saved in a root file "streamerinfos.root". The CcdbDatabase access class loads this file and the StreamerInfos upon creation which allows for a smooth reading of the old objects. The day we are certain nobody will add objects in the old format and that the old objects have been removed from the database, we can delete this file and remove the loading from CcdbDatabase. Moreover, the following lines can be removed : 
 ```
@@ -88,10 +115,26 @@ When we don't see the monitoring data in grafana, here is what to do to pinpoint
     
 ### Monitoring setup for building the grafana dashboard
 
-1. Ask Adam for an account on pcald03.cern.ch:3000.
-3. Make a copy of the QC dashboard that you can edit. 
-2. Set the monitoring url to `"url": "influxdb-udp://alio2-cr1-mvs01.cern.ch:8089"`
-4. Once the dashboard is ready, tell Adam. 
+1. Go to `root@flptest1`
+2. Edit telegraf config file, add following lines:
+```
+echo "[[inputs.socket_listener]]    
+   service_address = \"udp://:8089\"" >> /etc/telegraf/telegraf.conf
+```
+3. Restart telegraf: `systemctl restart telegraf`
+4. Open port
+```
+firewall-cmd --add-port=8089/udp --zone=public --permanent
+firewall-cmd --reload
+```
+5. Go to Grafana (flptest1.cern.ch:3000) and login as `admin`, the password is in here: https://gitlab.cern.ch/AliceO2Group/system-configuration/-/blob/dev/ansible/roles/grafana/vars/main.yml#L2
+6. Go to "Explore" tab (4th icon from top), and select `qc` as data source
+7. Run your workflow with `--monitoring-backend influxdb-udp://flptest1.cern.ch:8089 --resources-monitoring 2`
+8. The metrics should be there 
+9. Make a copy of the QC dashboard that you can edit.
+10. Set the monitoring url to `"url": "stdout://?qc,influxdb-udp://flptest1.cern.ch:8089"`
+11. Once the dashboard is ready, tell Adam.
+
 
 ### Avoid writing QC objects to a repository
 
@@ -111,13 +154,23 @@ Any one in alice-member has access. We use the egroup alice-o2-qcg-access to gra
 
 `systemctl restart qcg`
 
+### Update host certificate for qcg-test
+
+1. Create a new host certificate and download it
+2. scp the p12 file to qcg-test
+3. `openssl pkcs12 -in /tmp/qcg-test-new.p12 -out qcg-test.pem -clcerts -nokeys`
+4. `openssl pkcs12 -in /tmp/qcg-test-new.p12 -out qcg-test.key -nocerts -nodes`
+5. `cd /etc/pki/tls/certs/ ; mv qcg-test.pem qcg-test.pem-old ; mv path/to/qcg-test.pem .`
+6. `cd /etc/pki/tls/private/ ; mv qcg-test.key qcg-test.key-old ; mv path/to/qcg-test.key .`
+7. Check that it works by connecting to the website and clicking the little lock in the bar to display the certificate.
+
 ### Logging
 
 We use the infologger. There is a utility class, `QcInfoLogger`, that can be used. It is a singleton. See [the header](../Framework/include/QualityControl/QcInfoLogger.h) for its usage.
 
 Related issues : https://alice.its.cern.ch/jira/browse/QC-224
 
-To have the full details of what is sent to the logs, do `export INFOLOGGER_MODE=raw`.
+To have the full details of what is sent to the logs, do `export O2_INFOLOGGER_MODE=raw`.
 
 ### Service Discovery (Online mode)
 

@@ -19,11 +19,13 @@
 
 #include <Framework/DataProcessorSpec.h>
 #include <Framework/DeviceSpec.h>
-#include <Framework/DataSpecUtils.h>
 #include <Framework/CompletionPolicyHelpers.h>
+#include <Framework/O2ControlLabels.h>
 
 #include "QualityControl/AggregatorRunner.h"
+#include "QualityControl/Aggregator.h"
 #include "QualityControl/AggregatorRunnerFactory.h"
+#include "QualityControl/QcInfoLogger.h"
 
 using namespace std;
 using namespace o2::framework;
@@ -31,17 +33,22 @@ using namespace o2::framework;
 namespace o2::quality_control::checker
 {
 
-DataProcessorSpec AggregatorRunnerFactory::create(const std::vector<OutputSpec>& checkerRunnerOutputs, const std::string& configurationSource)
+DataProcessorSpec AggregatorRunnerFactory::create(const core::CommonSpec& commonSpec,
+                                                  const std::vector<checker::AggregatorSpec>& aggregatorsSpec)
 {
-  AggregatorRunner aggregator{ configurationSource, checkerRunnerOutputs };
+  AggregatorRunnerConfig aggRunnerConfig = AggregatorRunnerFactory::extractRunnerConfig(commonSpec);
+  std::vector<AggregatorConfig> aggConfigs = AggregatorRunnerFactory::extractAggregatorsConfig(commonSpec, aggregatorsSpec);
+  AggregatorRunner aggregator{ aggRunnerConfig, aggConfigs };
 
   DataProcessorSpec newAggregatorRunner{
     aggregator.getDeviceName(),
     aggregator.getInputs(),
     Outputs{},
     AlgorithmSpec{},
-    Options{}
+    aggRunnerConfig.options
   };
+  newAggregatorRunner.labels.emplace_back(o2::framework::ecs::qcReconfigurable);
+  newAggregatorRunner.labels.emplace_back(AggregatorRunner::getLabel());
   newAggregatorRunner.algorithm = adaptFromTask<AggregatorRunner>(std::move(aggregator));
   return newAggregatorRunner;
 }
@@ -49,12 +56,47 @@ DataProcessorSpec AggregatorRunnerFactory::create(const std::vector<OutputSpec>&
 // Specify a custom policy to trigger whenever something arrive regardless of the timeslice.
 void AggregatorRunnerFactory::customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies)
 {
-  auto matcher = [](framework::DeviceSpec const& device) {
-    return device.name.find(AggregatorRunner::createAggregatorRunnerIdString()) != std::string::npos;
+  auto matcher = [label = AggregatorRunner::getLabel()](framework::DeviceSpec const& device) {
+    return std::find(device.labels.begin(), device.labels.end(), label) != device.labels.end();
   };
   auto callback = CompletionPolicyHelpers::consumeWhenAny().callback;
 
   policies.emplace_back("aggregatorRunnerCompletionPolicy", matcher, callback);
+}
+
+AggregatorRunnerConfig AggregatorRunnerFactory::extractRunnerConfig(const core::CommonSpec& commonSpec)
+{
+  Options options{
+    { "runNumber", framework::VariantType::String, { "Run number" } },
+    { "qcConfiguration", VariantType::Dict, emptyDict(), { "Some dictionary configuration" } }
+  };
+
+  return {
+    commonSpec.database,
+    commonSpec.consulUrl,
+    commonSpec.monitoringUrl,
+    commonSpec.infologgerFilterDiscardDebug,
+    commonSpec.infologgerDiscardLevel,
+    commonSpec.activityNumber,
+    commonSpec.activityPeriodName,
+    commonSpec.activityPassName,
+    commonSpec.activityProvenance,
+    options
+  };
+}
+
+std::vector<AggregatorConfig> AggregatorRunnerFactory::extractAggregatorsConfig(
+  const core::CommonSpec& commonSpec,
+  const std::vector<checker::AggregatorSpec>& aggregatorsSpec)
+{
+  std::vector<AggregatorConfig> aggConfigs;
+  for (const auto& aggregatorSpec : aggregatorsSpec) {
+    if (aggregatorSpec.active) {
+      ILOG(Debug, Devel) << ">> Aggregator name : " << aggregatorSpec.aggregatorName << ENDM;
+      aggConfigs.emplace_back(Aggregator::extractConfig(commonSpec, aggregatorSpec));
+    }
+  }
+  return aggConfigs;
 }
 
 } // namespace o2::quality_control::checker

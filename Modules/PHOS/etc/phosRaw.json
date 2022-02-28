@@ -16,7 +16,7 @@
                 "url": "infologger:///debug?qc"
             },
             "consul": {
-                "url": "http://consul-test.cern.ch:8500"
+                "url": ""
             },
             "conditionDB": {
                 "url": "ccdb-test.cern.ch:8080"
@@ -35,7 +35,7 @@
             "name": "phos-rawerr"
           },
           "taskParameters": {
-            "pedestal": "on"    
+            "physics": "on"    
           },
           "location": "remote"
         }
@@ -48,21 +48,6 @@
         "machines": [],
         "query_comment" : "query is in the format of binding1:origin1/description1/subSpec1[;binding2:...]",
         "query": "rawerr:PHS/RAWHWERRORS/0;cells:PHS/CELLS/0;cellstr:PHS/CELLTRIGREC/0",
-        "samplingConditions": [
-          {
-            "condition": "random",
-            "fraction": "1.",
-            "seed": "1234"
-          }
-        ],
-        "blocking": "false"
-      },
-      {
-        "id": "phos-clusters",
-        "active": "true",
-        "machines": [],
-        "query_comment" : "query is in the format of binding1:origin1/description1/subSpec1[;binding2:...]",
-        "query": "clusters:PHS/CLUSTERS/0;clusterstr:PHS/CLUSTERTRIGRECS/0",
         "samplingConditions": [
           {
             "condition": "random",

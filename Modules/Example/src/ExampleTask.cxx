@@ -16,6 +16,8 @@
 
 #include "Example/ExampleTask.h"
 #include <Framework/InputRecord.h>
+#include <Framework/InputRecordWalker.h>
+#include <Framework/DataRefUtils.h>
 #include "QualityControl/QcInfoLogger.h"
 #include <TH1.h>
 #include "Example/CustomTH2F.h"
@@ -80,11 +82,11 @@ void ExampleTask::startOfCycle()
 
 void ExampleTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  for (auto& input : ctx.inputs()) {
+  for (const auto& input : o2::framework::InputRecordWalker(ctx.inputs())) {
     if (input.header != nullptr) {
-      const auto* header = o2::header::get<header::DataHeader*>(input.header); // header of first valid input
-      mHistos[0]->Fill(header->payloadSize);
-      mCustomTH2F->Fill(header->payloadSize % 100, header->payloadSize % 100);
+      const auto payloadSize = o2::framework::DataRefUtils::getPayloadSize(input);
+      mHistos[0]->Fill(payloadSize);
+      mCustomTH2F->Fill(payloadSize % 100, payloadSize % 100);
       for (auto& mHisto : mHistos) {
         if (mHisto) {
           mHisto->FillRandom("gaus", 1);

@@ -21,10 +21,15 @@
 #include <string>
 // QC
 #include "QualityControl/QualityObject.h"
-#include "QualityControl/CheckConfig.h"
+#include "QualityControl/AggregatorConfig.h"
 #include "QualityControl/UpdatePolicyType.h"
+#include "QualityControl/CommonSpec.h"
+#include "QualityControl/AggregatorSpec.h"
+#include "QualityControl/DataSourceSpec.h"
+#include "QualityControl/AggregatorSource.h"
 // config
 #include <boost/property_tree/ptree_fwd.hpp>
+#include <utility>
 
 namespace o2::configuration
 {
@@ -35,17 +40,6 @@ namespace o2::quality_control::checker
 {
 
 class AggregatorInterface;
-
-// todo: it can be replaced DataSourceType
-enum AggregatorSourceType { check,
-                            aggregator };
-
-struct AggregatorSource {
-  AggregatorSource(const std::string& t, const std::string& n);
-  AggregatorSourceType type;
-  std::string name;
-  std::vector<std::string> objects;
-};
 
 /// \brief An aggregator as found in the configuration.
 ///
@@ -61,10 +55,9 @@ class Aggregator
    *
    * Create an aggregator using the provided configuration.
    *
-   * @param aggregatorName Aggregator name that must exist in the configuration
-   * @param configurationSource Path to configuration
+   * @param configuration configuration structure of an aggregator
    */
-  Aggregator(const std::string& aggregatorName, const boost::property_tree::ptree& configuration);
+  Aggregator(AggregatorConfig configuration);
 
   /**
    * \brief Initialize the aggregator
@@ -78,7 +71,10 @@ class Aggregator
   std::vector<std::string> getObjectsNames() const;
   bool getAllObjectsOption() const;
   std::vector<AggregatorSource> getSources();
-  std::vector<AggregatorSource> getSources(AggregatorSourceType type);
+  std::vector<AggregatorSource> getSources(core::DataSourceType type);
+  const std::string& getDetector() const { return mAggregatorConfig.detectorName; };
+
+  static AggregatorConfig extractConfig(const core::CommonSpec&, const AggregatorSpec&);
 
  private:
   /**
@@ -88,7 +84,7 @@ class Aggregator
    */
   core::QualityObjectsMapType filter(core::QualityObjectsMapType& qoMap);
 
-  CheckConfig mAggregatorConfig; // we reuse checkConfig, just consider that Check = Aggregator
+  AggregatorConfig mAggregatorConfig;
   AggregatorInterface* mAggregatorInterface = nullptr;
   std::vector<AggregatorSource> mSources;
 };

@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE(Task_Factory)
   config.moduleName = "QcCommon";
   config.className = "o2::quality_control_modules::example::ExampleTask";
   config.detectorName = "DAQ";
-  auto manager = make_shared<ObjectsManager>(config.taskName, config.detectorName, config.consulUrl, 0, true);
+  auto manager = make_shared<ObjectsManager>(config.taskName, config.className, config.detectorName, config.consulUrl, 0, true);
   try {
     gSystem->AddDynamicPath("lib:../../lib:../../../lib:.:"); // add local  paths for the test
     factory.create(config, manager);
@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE(Task_Factory_failures, *utf::depends_on("Task_Factory") /* 
 {
   TaskFactory factory;
   TaskRunnerConfig config;
-  auto manager = make_shared<ObjectsManager>(config.taskName, config.detectorName, config.consulUrl, 0, true);
+  auto manager = make_shared<ObjectsManager>(config.taskName, config.className, config.detectorName, config.consulUrl, 0, true);
 
   config.taskName = "task";
   config.moduleName = "WRONGNAME";

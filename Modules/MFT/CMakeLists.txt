@@ -9,6 +9,7 @@ target_sources(O2QcMFT PRIVATE
                src/QcMFTClusterTask.cxx
                src/QcMFTTrackCheck.cxx
                src/QcMFTTrackTask.cxx
+               src/QcMFTAsyncTask.cxx
                src/QcMFTReadoutCheck.cxx
                src/QcMFTReadoutTask.cxx)
 
@@ -33,6 +34,7 @@ add_root_dictionary(O2QcMFT
                     include/MFT/QcMFTClusterTask.h
                     include/MFT/QcMFTTrackCheck.h
                     include/MFT/QcMFTTrackTask.h 
+                    include/MFT/QcMFTAsyncTask.h
                     include/MFT/QcMFTReadoutCheck.h
                     include/MFT/QcMFTReadoutTask.h
                     include/MFT/QcMFTUtilTables.h
@@ -92,4 +94,6 @@ install(FILES qc-mft-digit.json
               qc-mft-cluster.json
               qc-mft-track.json
               qc-mft-readout.json
+              qc-mft-async.json
+              qc-mft-async_direct.json
         DESTINATION etc)

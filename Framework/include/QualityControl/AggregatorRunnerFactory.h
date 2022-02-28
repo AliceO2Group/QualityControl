@@ -20,6 +20,13 @@
 #include <Framework/DataProcessorSpec.h>
 #include <Framework/CompletionPolicy.h>
 
+#include "QualityControl/CommonSpec.h"
+#include "QualityControl/AggregatorRunnerConfig.h"
+#include "QualityControl/AggregatorConfig.h"
+#include "QualityControl/AggregatorSpec.h"
+
+#include <vector>
+
 namespace o2::quality_control::checker
 {
 
@@ -30,8 +37,13 @@ class AggregatorRunnerFactory
   AggregatorRunnerFactory() = default;
   virtual ~AggregatorRunnerFactory() = default;
 
-  static framework::DataProcessorSpec create(const std::vector<framework::OutputSpec>& checkerRunnerOutputs, const std::string& configurationSource);
+  static framework::DataProcessorSpec create(const core::CommonSpec& commonSpec,
+                                             const std::vector<AggregatorSpec>& aggregatorsSpec);
   static void customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies);
+
+  static AggregatorRunnerConfig extractRunnerConfig(const core::CommonSpec&);
+  static std::vector<AggregatorConfig> extractAggregatorsConfig(const core::CommonSpec& commonSpec,
+                                                                const std::vector<AggregatorSpec>& aggregatorsSpec);
 };
 
 } // namespace o2::quality_control::checker

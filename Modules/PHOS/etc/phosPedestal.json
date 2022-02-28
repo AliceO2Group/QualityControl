@@ -16,19 +16,19 @@
         "url": "infologger:///debug?qc"
       },
       "consul": {
-        "url": "http://localhost:8500"
+        "url": ""
       },
       "conditionDB": {
         "url": "ccdb-test.cern.ch:8080"
       }
     },
     "tasks": {
-      "QcTask": {
+      "PHOSPedestal": {
         "active": "true",
         "className": "o2::quality_control_modules::phos::RawQcTask",
         "moduleName": "QcPHOS",
         "detectorName": "PHS",
-        "cycleDurationSeconds": "1000",
+        "cycleDurationSeconds": "10",
         "maxNumberCycles": "-1",
         "dataSource": {
           "type": "direct",

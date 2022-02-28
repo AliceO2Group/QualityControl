@@ -6,7 +6,8 @@
         "host": "ccdb-test.cern.ch:8080",
         "username": "not_applicable",
         "password": "not_applicable",
-        "name": "not_applicable"
+        "name": "not_applicable",
+        "maxObjectSize": "2097152",       "": "[Bytes, default=2MB] Maximum size allowed, larger objects are rejected."
       },
       "Activity": {
         "number": "42",
@@ -35,7 +36,7 @@
         "className": "o2::quality_control_modules::skeleton::SkeletonTask",
         "moduleName": "QcSkeleton",
         "detectorName": "TST",
-        "cycleDurationSeconds": "10",
+        "cycleDurationSeconds": "10",     "": "10 seconds minimum",
         "maxNumberCycles": "-1",
         "": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {

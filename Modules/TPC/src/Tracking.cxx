@@ -54,7 +54,7 @@ Tracking::~Tracking()
 
 void Tracking::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  QcInfoLogger::GetInstance() << "initialize TPC Tracking QC task" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "initialize TPC Tracking QC task" << ENDM;
   mOutputMode = o2::tpc::qc::Tracking::outputMergeable;
   mQCTracking.initialize(mOutputMode);
 
@@ -77,13 +77,13 @@ void Tracking::initialize(o2::framework::InitContext& /*ctx*/)
 
 void Tracking::startOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "startOfActivity" << ENDM;
   mQCTracking.resetHistograms();
 }
 
 void Tracking::startOfCycle()
 {
-  QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "startOfCycle" << ENDM;
 }
 
 void Tracking::monitorData(o2::framework::ProcessingContext& ctx)
@@ -99,19 +99,19 @@ void Tracking::monitorData(o2::framework::ProcessingContext& ctx)
 
 void Tracking::endOfCycle()
 {
-  QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfCycle" << ENDM;
 }
 
 void Tracking::endOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfActivity" << ENDM;
 }
 
 void Tracking::reset()
 {
   // clean all the monitor objects here
 
-  QcInfoLogger::GetInstance() << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
   mQCTracking.resetHistograms();
 }
 

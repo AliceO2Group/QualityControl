@@ -30,7 +30,7 @@ using namespace std;
 namespace o2::quality_control_modules::tpc
 {
 
-void PIDClusterCheck::configure(std::string) {}
+void PIDClusterCheck::configure() {}
 
 Quality PIDClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {

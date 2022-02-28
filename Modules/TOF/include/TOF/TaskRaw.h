@@ -68,6 +68,8 @@ class RawDataDecoder final : public DecoderBase
   void setTimeWindowMin(std::string min) { mTimeMin = atoi(min.c_str()); }
   void setTimeWindowMax(std::string max) { mTimeMax = atoi(max.c_str()); }
   void setNoiseThreshold(std::string thresholdnoise) { mNoiseThreshold = atof(thresholdnoise.c_str()); }
+  void setDebugCrateMultiplicity(bool debug) { mDebugCrateMultiplicity = debug; }
+  const bool& isDebugCrateMultiplicity() const { return mDebugCrateMultiplicity; }
 
   // Names of diagnostic counters
   static const char* RDHDiagnosticsName[nRDHwords]; /// RDH Counter names
@@ -84,9 +86,9 @@ class RawDataDecoder final : public DecoderBase
   Counter<nequipments, nullptr> mCounterIndexEOInTimeWin; /// Counter for the single electronic index for noise analysis
   Counter<nequipments, nullptr> mCounterNoisyChannels;    /// Counter for noisy channels
   Counter<1024, nullptr> mCounterTimeBC;                  /// Counter for the Bunch Crossing Time
-  Counter<91, nullptr> mCounterNoiseMap[ncrates][4];      /// Counter for the Noise Hit Map, counts per crate and per FEA (4 per strip)
+  Counter<nstrips, nullptr> mCounterNoiseMap[ncrates][4]; /// Counter for the Noise Hit Map, counts per crate and per FEA (4 per strip)
   Counter<ncrates, nullptr> mCounterRDHTriggers[2];       /// Counter for RDH triggers, one counts the triggers served to TDCs and one counts the triggers received
-  Counter<72, nullptr> mCounterRDHOpen;                   /// Counter for RDH open
+  Counter<ncrates, nullptr> mCounterRDHOpen;              /// Counter for RDH open
   Counter<800, nullptr> mCounterOrbitsPerCrate[ncrates];  /// Counter for orbits per crate
 
   /// Function to init histograms
@@ -99,18 +101,19 @@ class RawDataDecoder final : public DecoderBase
   void estimateNoise(std::shared_ptr<TH1F> hIndexEOIsNoise);
 
   // Histograms filled in the decoder to be kept to the bare bone so as to increase performance
-  std::shared_ptr<TH1F> mHistoHits;           /// Number of TOF hits
-  std::shared_ptr<TH1F> mHistoTime;           /// Time
-  std::shared_ptr<TH1F> mHistoTOT;            /// Time-Over-Threshold
-  std::shared_ptr<TH2F> mHistoDiagnostic;     /// Diagnostic words
-  std::shared_ptr<TH1F> mHistoNErrors;        /// Number of errors
-  std::shared_ptr<TH1F> mHistoErrorBits;      /// Bits of errors
-  std::shared_ptr<TH2F> mHistoError;          /// Errors in slot and TDC
-  std::shared_ptr<TH1F> mHistoNTests;         /// Number of tests
-  std::shared_ptr<TH2F> mHistoTest;           /// Tests in slot and TDC
-  std::shared_ptr<TH2F> mHistoOrbitID;        /// Orbit ID for the header and trailer words
-  std::shared_ptr<TH2F> mHistoNoiseMap;       /// Noise map, one bin corresponds to one FEA card
-  std::shared_ptr<TH1F> mHistoIndexEOHitRate; /// Noise rate x channel
+  std::shared_ptr<TH1I> mHistoHits;               /// Number of TOF hits
+  std::shared_ptr<TH1I> mHistoHitsCrate[ncrates]; /// Number of TOF hits in TRMs per Crate
+  std::shared_ptr<TH1F> mHistoTime;               /// Time
+  std::shared_ptr<TH1F> mHistoTOT;                /// Time-Over-Threshold
+  std::shared_ptr<TH2F> mHistoDiagnostic;         /// Diagnostic words
+  std::shared_ptr<TH1F> mHistoNErrors;            /// Number of errors
+  std::shared_ptr<TH1F> mHistoErrorBits;          /// Bits of errors
+  std::shared_ptr<TH2F> mHistoError;              /// Errors in slot and TDC
+  std::shared_ptr<TH1F> mHistoNTests;             /// Number of tests
+  std::shared_ptr<TH2F> mHistoTest;               /// Tests in slot and TDC
+  std::shared_ptr<TH2F> mHistoOrbitID;            /// Orbit ID for the header and trailer words
+  std::shared_ptr<TH2F> mHistoNoiseMap;           /// Noise map, one bin corresponds to one FEA card
+  std::shared_ptr<TH1F> mHistoIndexEOHitRate;     /// Noise rate x channel
 
  private:
   /** decoding handlers **/
@@ -128,6 +131,7 @@ class RawDataDecoder final : public DecoderBase
   int mTimeMax = -1;                               /// End of the time window in bins of the TDC
   static constexpr double mTDCWidth = 24.3660e-12; /// Width of the TDC bins in [s]
   double mNoiseThreshold = 1.e+3;                  /// Threshold used to define noisy channels [Hz]
+  bool mDebugCrateMultiplicity = false;            /// Save 72 histo with multiplicity per crate
 };
 
 /// \brief TOF Quality Control DPL Task for TOF Compressed data

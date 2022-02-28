@@ -52,25 +52,25 @@ RawQcTask::~RawQcTask()
 
 void RawQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info) << "initialize RawQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Info, Support) << "initialize RawQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // Retrieve task parameters from the config file
   if (auto param = mCustomParameters.find("feeId-config-file"); param != mCustomParameters.end()) {
-    ILOG(Info) << "Custom parameter - FEE Id config file: " << param->second << ENDM;
+    ILOG(Info, Support) << "Custom parameter - FEE Id config file: " << param->second << ENDM;
     if (!param->second.empty()) {
       mFeeIdConfig = o2::mid::FEEIdConfig(param->second.c_str());
     }
   }
 
   if (auto param = mCustomParameters.find("crate-masks-file"); param != mCustomParameters.end()) {
-    ILOG(Info) << "Custom parameter - Crate masks file: " << param->second << ENDM;
+    ILOG(Info, Support) << "Custom parameter - Crate masks file: " << param->second << ENDM;
     if (!param->second.empty()) {
       mCrateMasks = o2::mid::CrateMasks(param->second.c_str());
     }
   }
 
   if (auto param = mCustomParameters.find("electronics-delays-file"); param != mCustomParameters.end()) {
-    ILOG(Info) << "Custom parameter - Electronics delays file: " << param->second << ENDM;
+    ILOG(Info, Support) << "Custom parameter - Electronics delays file: " << param->second << ENDM;
     if (!param->second.empty()) {
       mElectronicsDelay = o2::mid::readElectronicsDelay(param->second.c_str());
     }
@@ -88,18 +88,18 @@ void RawQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void RawQcTask::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info) << "startOfActivity" << ENDM;
+  ILOG(Info, Support) << "startOfActivity" << ENDM;
 }
 
 void RawQcTask::startOfCycle()
 {
-  ILOG(Info) << "startOfCycle" << ENDM;
+  ILOG(Info, Support) << "startOfCycle" << ENDM;
 }
 
 void RawQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
 
-  ILOG(Info) << "startOfDataMonitoring" << ENDM;
+  ILOG(Info, Support) << "startOfDataMonitoring" << ENDM;
 
   o2::framework::DPLRawParser parser(ctx.inputs());
 
@@ -108,7 +108,7 @@ void RawQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   if (!mDecoder) {
     auto const* rdhPtr = reinterpret_cast<const o2::header::RDHAny*>(parser.begin().raw());
     mDecoder = createDecoder(*rdhPtr, true, mElectronicsDelay, mCrateMasks, mFeeIdConfig);
-    ILOG(Info) << "Created decoder" << ENDM;
+    ILOG(Info, Support) << "Created decoder" << ENDM;
   }
 
   mDecoder->clear();
@@ -123,32 +123,32 @@ void RawQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   mChecker.clear();
   if (!mChecker.process(mDecoder->getData(), mDecoder->getROFRecords(), dummy)) {
-    //ILOG(Info) << mChecker.getDebugMessage() << ENDM;
+    //ILOG(Info, Support) << mChecker.getDebugMessage() << ENDM;
     mRawDataChecker->Fill("Faulty", mChecker.getNEventsFaulty());
   }
 
-  ILOG(Info) << "Number of busy raised: " << mChecker.getNBusyRaised() << ENDM;
-  ILOG(Info) << "Fraction of faulty events: " << mChecker.getNEventsFaulty() << " / " << mChecker.getNEventsProcessed() << ENDM;
-  ILOG(Info) << "Counts: " << count << ENDM;
+  ILOG(Info, Support) << "Number of busy raised: " << mChecker.getNBusyRaised() << ENDM;
+  ILOG(Info, Support) << "Fraction of faulty events: " << mChecker.getNEventsFaulty() << " / " << mChecker.getNEventsProcessed() << ENDM;
+  ILOG(Info, Support) << "Counts: " << count << ENDM;
 
   mRawDataChecker->Fill("Processed", mChecker.getNEventsProcessed());
 }
 
 void RawQcTask::endOfCycle()
 {
-  ILOG(Info) << "endOfCycle" << ENDM;
+  ILOG(Info, Support) << "endOfCycle" << ENDM;
 }
 
 void RawQcTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info) << "endOfActivity" << ENDM;
+  ILOG(Info, Support) << "endOfActivity" << ENDM;
 }
 
 void RawQcTask::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info) << "Resetting the histogram" << ENDM;
+  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
   mRawDataChecker->Reset();
 }
 

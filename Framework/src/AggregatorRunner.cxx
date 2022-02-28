@@ -23,12 +23,19 @@
 #include <Monitoring/MonitoringFactory.h>
 #include <Monitoring/Monitoring.h>
 #include <Framework/InputRecordWalker.h>
+
+#include <utility>
+
+#include <TSystem.h>
+
 // QC
 #include "QualityControl/DatabaseFactory.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/ServiceDiscovery.h"
 #include "QualityControl/Aggregator.h"
 #include "QualityControl/runnerUtils.h"
+#include "QualityControl/InfrastructureSpecReader.h"
+#include "QualityControl/AggregatorRunnerFactory.h"
 
 using namespace AliceO2::Common;
 using namespace AliceO2::InfoLogger;
@@ -44,33 +51,75 @@ const auto current_diagnostic = boost::current_exception_diagnostic_information;
 namespace o2::quality_control::checker
 {
 
-AggregatorRunner::AggregatorRunner(const std::string& configurationSource, const std::vector<framework::OutputSpec> checkRunnerOutputs)
+AggregatorRunner::AggregatorRunner(AggregatorRunnerConfig arc, const std::vector<AggregatorConfig>& acs) //, const o2::quality_control::core::InfrastructureSpec& infrastructureSpec)
   : mDeviceName(createAggregatorRunnerName()),
-    mTotalNumberObjectsReceived(0)
+    mRunnerConfig(std::move(arc)),
+    mAggregatorsConfig(std::move(acs)),
+    mTotalNumberObjectsReceived(0),
+    mTotalNumberAggregatorExecuted(0),
+    mTotalNumberObjectsProduced(0)
 {
-  try {
-    mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
-  } catch (...) {
-    // catch the exceptions and print it (the ultimate caller might not know how to display it)
-    ILOG(Fatal) << "Unexpected exception during initialization:\n"
-                << boost::current_exception_diagnostic_information(true) << ENDM;
-    throw;
-  }
-
-  // prepare list of all inputs
-  // we cannot use the binding of the output because it is empty.
-  int i = 0;
-  for (const auto& spec : checkRunnerOutputs) {
-    auto input = DataSpecUtils::matchingInput(spec);
-    input.binding = "checkerOutput" + to_string(i++);
-    mInputs.emplace_back(input);
-  }
+  prepareInputs();
 }
 
 AggregatorRunner::~AggregatorRunner()
 {
   if (mServiceDiscovery != nullptr) {
     mServiceDiscovery->deregister();
+  }
+}
+
+void AggregatorRunner::refreshConfig(InitContext& iCtx)
+{
+  try {
+    auto updatedTree = iCtx.options().get<boost::property_tree::ptree>("qcConfiguration");
+
+    if (updatedTree.empty()) {
+      ILOG(Warning, Devel) << "Templated config tree is empty, we continue with the original one" << ENDM;
+    } else {
+      if (gSystem->Getenv("O2_QC_DEBUG_CONFIG_TREE")) { // until we are sure it works, keep a backdoor
+        ILOG(Debug, Devel) << "We print the tree we got from the ECS via DPL : " << ENDM;
+        printTree(updatedTree);
+      }
+
+      // read the config, prepare spec
+      auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(updatedTree);
+
+      // replace the runner config
+      mRunnerConfig = AggregatorRunnerFactory::extractRunnerConfig(infrastructureSpec.common);
+
+      // replace the aggregators configs
+      mAggregatorsConfig.clear();
+      mAggregatorsConfig = AggregatorRunnerFactory::extractAggregatorsConfig(infrastructureSpec.common, infrastructureSpec.aggregators);
+
+      // replace the inputs
+      mInputs.clear();
+      prepareInputs();
+
+      ILOG(Debug, Devel) << "Configuration refreshed" << ENDM;
+    }
+  } catch (std::invalid_argument& error) {
+    // ignore the error, we just skip the update of the config file. It can be legit, e.g. in command line mode
+    ILOG(Warning, Devel) << "Could not get updated config tree in TaskRunner::init() - `qcConfiguration` could not be retrieved" << ENDM;
+  } catch (...) {
+    // we catch here because we don't know where it will get lost in DPL, and also we don't care if this part has failed.
+    ILOG(Warning, Devel) << "Error caught in refreshConfig() :\n"
+                         << current_diagnostic(true) << ENDM;
+  }
+}
+
+void AggregatorRunner::prepareInputs()
+{
+  std::set<std::string> alreadySeen;
+  int i = 0;
+  for (const auto& aggConfig : mAggregatorsConfig) {
+    for (auto input : aggConfig.inputSpecs) {
+      if (alreadySeen.count(input.binding) == 0) {
+        alreadySeen.insert(input.binding);
+        input.binding = "checkerOutput" + to_string(i++);
+        mInputs.emplace_back(input);
+      }
+    }
   }
 }
 
@@ -91,15 +140,12 @@ std::string AggregatorRunner::createAggregatorRunnerName()
 
 void AggregatorRunner::init(framework::InitContext& iCtx)
 {
-  InfoLoggerContext* ilContext = nullptr;
-  try {
-    ilContext = &iCtx.services().get<AliceO2::InfoLogger::InfoLoggerContext>();
-  } catch (const RuntimeErrorRef& err) {
-    ILOG(Error) << "Could not find the DPL InfoLogger Context." << ENDM;
-  }
+  initInfoLogger(iCtx);
+
+  refreshConfig(iCtx);
+  QcInfoLogger::setDetector(AggregatorRunner::getDetectorName(mAggregators));
 
   try {
-    ILOG_INST.init("aggregator", mConfigFile->getRecursive(), ilContext);
     initDatabase();
     initMonitoring();
     initServiceDiscovery();
@@ -113,8 +159,8 @@ void AggregatorRunner::init(framework::InitContext& iCtx)
   try {
     // registering state machine callbacks
     iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, &services = iCtx.services()]() { start(services); });
-    iCtx.services().get<CallbackService>().set(CallbackService::Id::Stop, [this]() { stop(); });
     iCtx.services().get<CallbackService>().set(CallbackService::Id::Reset, [this]() { reset(); });
+    iCtx.services().get<CallbackService>().set(CallbackService::Id::Stop, [this]() { stop(); });
   } catch (o2::framework::RuntimeErrorRef& ref) {
     ILOG(Error) << "Error during initialization: " << o2::framework::error_from_ref(ref).what << ENDM;
   }
@@ -188,17 +234,16 @@ void AggregatorRunner::store(QualityObjectsType& qualityObjects)
 
 void AggregatorRunner::initDatabase()
 {
-  mDatabase = DatabaseFactory::create(mConfigFile->get<std::string>("qc.config.database.implementation"));
-  mDatabase->connect(mConfigFile->getRecursiveMap("qc.config.database"));
+  mDatabase = DatabaseFactory::create(mRunnerConfig.database.at("implementation"));
+  mDatabase->connect(mRunnerConfig.database);
   ILOG(Info, Devel) << "Database that is going to be used : ";
-  ILOG(Info, Devel) << ">> Implementation : " << mConfigFile->get<std::string>("qc.config.database.implementation");
-  ILOG(Info, Devel) << ">> Host : " << mConfigFile->get<std::string>("qc.config.database.host");
+  ILOG(Info, Support) << ">> Implementation : " << mRunnerConfig.database.at("implementation") << ENDM;
+  ILOG(Info, Support) << ">> Host : " << mRunnerConfig.database.at("host") << ENDM;
 }
 
 void AggregatorRunner::initMonitoring()
 {
-  auto monitoringUrl = mConfigFile->get<std::string>("qc.config.monitoring.url", "infologger:///debug?qc");
-  mCollector = MonitoringFactory::Get(monitoringUrl);
+  mCollector = MonitoringFactory::Get(mRunnerConfig.monitoringUrl);
   mCollector->enableProcessMonitoring();
   mCollector->addGlobalTag(tags::Key::Subsystem, tags::Value::QC);
   mCollector->addGlobalTag("AggregatorRunnerName", mDeviceName);
@@ -207,14 +252,13 @@ void AggregatorRunner::initMonitoring()
 
 void AggregatorRunner::initServiceDiscovery()
 {
-  auto consulUrl = mConfigFile->get<std::string>("qc.config.consul.url", "");
+  auto consulUrl = mRunnerConfig.consulUrl;
   if (consulUrl.empty()) {
     mServiceDiscovery = nullptr;
     ILOG(Warning, Ops) << "Service Discovery disabled" << ENDM;
     return;
   }
-  std::string url = ServiceDiscovery::GetDefaultUrl(ServiceDiscovery::DefaultHealthPort + 1); // we try to avoid colliding with the TaskRunner
-  mServiceDiscovery = std::make_shared<ServiceDiscovery>(consulUrl, mDeviceName, mDeviceName, url);
+  mServiceDiscovery = std::make_shared<ServiceDiscovery>(consulUrl, mDeviceName, mDeviceName);
   ILOG(Info, Devel) << "ServiceDiscovery initialized";
 }
 
@@ -222,34 +266,40 @@ void AggregatorRunner::initAggregators()
 {
   ILOG(Info, Devel) << "Initialization of the aggregators" << ENDM;
 
-  // Build aggregators based on the configurationd
-  if (mConfigFile->getRecursive("qc").count("aggregators")) {
-
-    // For every aggregator definition, create an Aggregator
-    for (const auto& [aggregatorName, aggregatorConfig] : mConfigFile->getRecursive("qc.aggregators")) {
-      ILOG(Info, Devel) << ">> Aggregator name : " << aggregatorName << ENDM;
-
-      if (aggregatorConfig.get<bool>("active", true)) {
-        try {
-          auto aggregator = make_shared<Aggregator>(aggregatorName, aggregatorConfig);
-          aggregator->init();
-          updatePolicyManager.addPolicy(aggregator->getName(),
-                                        aggregator->getUpdatePolicyType(),
-                                        aggregator->getObjectsNames(),
-                                        aggregator->getAllObjectsOption(),
-                                        false);
-          mAggregators.push_back(aggregator);
-        } catch (...) {
-          // catch the configuration exception and print it to avoid losing it
-          ILOG(Error, Ops) << "Error creating aggregator '" << aggregatorName << "'"
-                           << current_diagnostic(true) << ENDM;
-          continue; // skip this aggregator, it might still fail fatally later if another aggregator depended on it
-        }
-      }
+  // For every aggregator definition, create an Aggregator
+  for (const auto& aggregatorConfig : mAggregatorsConfig) {
+    ILOG(Info, Devel) << ">> Aggregator name : " << aggregatorConfig.name << ENDM;
+    try {
+      auto aggregator = make_shared<Aggregator>(aggregatorConfig);
+      aggregator->init();
+      updatePolicyManager.addPolicy(aggregator->getName(),
+                                    aggregator->getUpdatePolicyType(),
+                                    aggregator->getObjectsNames(),
+                                    aggregator->getAllObjectsOption(),
+                                    false);
+      mAggregators.push_back(aggregator);
+    } catch (...) {
+      // catch the configuration exception and print it to avoid losing it
+      ILOG(Error, Ops) << "Error creating aggregator '" << aggregatorConfig.name << "'"
+                       << current_diagnostic(true) << ENDM;
+      continue; // skip this aggregator, it might still fail fatally later if another aggregator depended on it
     }
   }
 
   reorderAggregators();
+}
+
+void AggregatorRunner::initInfoLogger(InitContext& iCtx)
+{
+  InfoLoggerContext* ilContext = nullptr;
+  AliceO2::InfoLogger::InfoLogger* il = nullptr;
+  try {
+    ilContext = &iCtx.services().get<AliceO2::InfoLogger::InfoLoggerContext>();
+    il = &iCtx.services().get<AliceO2::InfoLogger::InfoLogger>();
+  } catch (const RuntimeErrorRef& err) {
+    ILOG(Error) << "Could not find the DPL InfoLogger." << ENDM;
+  }
+  QcInfoLogger::init("aggregator", mRunnerConfig.infologgerFilterDiscardDebug, mRunnerConfig.infologgerDiscardLevel, il, ilContext);
 }
 
 bool AggregatorRunner::areSourcesIn(const std::vector<AggregatorSource>& sources,
@@ -291,7 +341,7 @@ void AggregatorRunner::reorderAggregators()
     // Loop over remaining items in the original list
     for (const auto& orig : originals) {
       // if no Aggregator dependencies or Aggregator sources are all already in result
-      auto sources = orig->getSources(aggregator);
+      auto sources = orig->getSources(DataSourceType::Aggregator);
       if (sources.empty() || areSourcesIn(sources, results)) {
         // move from original to result
         toBeMoved.push_back(orig);
@@ -320,20 +370,26 @@ void AggregatorRunner::sendPeriodicMonitoring()
 {
   if (mTimer.isTimeout()) {
     mTimer.reset(1000000); // 10 s.
-    mCollector->send({ mTotalNumberObjectsReceived, "qc_objects_received" }, DerivedMetricMode::RATE);
+    mCollector->send({ mTotalNumberObjectsReceived, "qc_aggregator_objects_received" });
+    mCollector->send({ mTotalNumberAggregatorExecuted, "qc_aggregator_executed" });
+    mCollector->send({ mTotalNumberObjectsProduced, "qc_aggregator_objects_produced" });
+    mCollector->send({ mTimerTotalDurationActivity.getTime(), "qc_aggregator_duration" });
   }
 }
 
 void AggregatorRunner::start(const ServiceRegistry& services)
 {
-  mActivity.mId = computeRunNumber(services, mConfigFile->getRecursive());
-  mActivity.mPeriodName = computePeriodName(services, mConfigFile->getRecursive());
-  mActivity.mPassName = computePassName(mConfigFile->getRecursive());
-  mActivity.mProvenance = computeProvenance(mConfigFile->getRecursive());
+  mActivity.mId = computeRunNumber(services, mRunnerConfig.fallbackRunNumber);
+  mActivity.mPeriodName = computePeriodName(services, mRunnerConfig.fallbackPeriodName);
+  mActivity.mPassName = computePassName(mRunnerConfig.fallbackPassName);
+  mActivity.mProvenance = computeProvenance(mRunnerConfig.fallbackProvenance);
+  mTimerTotalDurationActivity.reset();
+  string partitionName = computePartitionName(services);
+  QcInfoLogger::setRun(mActivity.mId);
+  QcInfoLogger::setPartition(partitionName);
   ILOG(Info, Ops) << "Starting run " << mActivity.mId << ":"
                   << "\n   - period: " << mActivity.mPeriodName << "\n   - pass type: " << mActivity.mPassName << "\n   - provenance: " << mActivity.mProvenance << ENDM;
 }
-
 
 void AggregatorRunner::stop()
 {
@@ -353,6 +409,21 @@ void AggregatorRunner::reset()
                          << current_diagnostic(true) << ENDM;
     throw;
   }
+}
+
+std::string AggregatorRunner::getDetectorName(std::vector<std::shared_ptr<Aggregator>> aggregators)
+{
+  std::string detectorName;
+  for (auto& aggregator : aggregators) {
+    const std::string& thisDetector = aggregator->getDetector();
+    if (detectorName.length() == 0) {
+      detectorName = thisDetector;
+    } else if (thisDetector != detectorName) {
+      detectorName = "MANY";
+      break;
+    }
+  }
+  return detectorName;
 }
 
 } // namespace o2::quality_control::checker

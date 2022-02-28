@@ -37,7 +37,9 @@ BOOST_AUTO_TEST_CASE(test_checks)
   std::map<std::string, std::shared_ptr<MonitorObject>> moMap = { { "test", mo } };
 
   MeanIsAbove check;
-  check.configure("mytest");
+  std::unordered_map<std::string, std::string> customParameters;
+  customParameters["meanThreshold"] = "1.0";
+  check.setCustomParameters(customParameters);
   Quality quality = check.check(&moMap);
   BOOST_CHECK_EQUAL(quality, Quality::Bad);
 
@@ -67,7 +69,6 @@ BOOST_AUTO_TEST_CASE(test_types)
   std::map<std::string, std::shared_ptr<MonitorObject>> moMap = { { "test", mo } };
 
   MeanIsAbove check;
-  check.configure("mytest");
   BOOST_TEST(!check.isObjectCheckable(mo));
 
   Quality quality = check.check(&moMap);

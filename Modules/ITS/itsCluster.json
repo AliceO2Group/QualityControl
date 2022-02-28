@@ -1,5 +1,6 @@
 {
-  "qc": {
+
+   "qc": {
     "config": {
       "database": {
         "implementation": "CCDB",
@@ -16,13 +17,13 @@
         "url": "infologger:///debug?qc"
       },
       "consul": {
-        "url": "http://consul-test.cern.ch:8500"
+        "url": ""
       },
       "conditionDB": {
         "url": "188.184.2.55:8080"
       }
     },
-    "tasks": {
+   "tasks": {
       "ITSClusterTask": {
         "active": "true",
         "className": "o2::quality_control_modules::its::ITSClusterTask",
@@ -36,14 +37,13 @@
           "name": "compclus"
         },
         "location": "remote",
-        "taskParameters": {
+              "taskParameters": {
                     "layer": "1111111",
                     "clusterDictionaryPath": "/home/its/aisakov/workdir/ITSdictionary.bin",
-                    "runNumberPath": "/home/its/QC/workdir/infiles/RunNumber.dat",
-                    "geomPath": "/home/its/aisakov/workdir/o2sim_geometry.root",
-                    "nThreads": "4"  
+                    "geomPath": "./o2sim_geometry.root",
+                    "nThreads": "1"
         }
-
+ 
       }
     },
     "checks": {
@@ -56,7 +56,8 @@
         "dataSource": [{
           "type": "Task",
           "name": "ITSClusterTask",
-          "MOs": ["Layer0/AverageClusterSize"]
+          "MOs": ["Layer0/AverageClusterSize","Layer1/AverageClusterSize","Layer2/AverageClusterSize","Layer3/AverageClusterSize","Layer4/AverageClusterSize","Layer5/AverageClusterSize","Layer6/AverageClusterSize", "Layer0/ClusterOccupation","Layer1/ClusterOccupation","Layer2/ClusterOccupation","Layer3/ClusterOccupation","Layer4/ClusterOccupation", "Layer5/ClusterOccupation",  "Layer6/ClusterOccupation"]
+
           }]
         }
     }
@@ -67,7 +68,7 @@
     	    "id": "compclus",
             "active": "true",
             "machines": [],
-            "query": "compclus:ITS/COMPCLUSTERS/0;clustersrof:ITS/CLUSTERSROF/0",
+            "query": "compclus:ITS/COMPCLUSTERS/0;clustersrof:ITS/CLUSTERSROF/0;patterns:ITS/PATTERNS/0",
             "samplingConditions": [
                 {
                     "condition": "random",

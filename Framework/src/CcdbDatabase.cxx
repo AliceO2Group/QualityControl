@@ -18,7 +18,9 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Version.h"
 #include "QualityControl/QcInfoLogger.h"
-#include "Common/Exceptions.h"
+#include "QualityControl/RepoPathUtils.h"
+#include <DataFormatsQualityControl/TimeRangeFlagCollection.h>
+#include <Common/Exceptions.h>
 // O2
 #include <CommonUtils/MemFileHelper.h>
 // ROOT
@@ -33,9 +35,9 @@
 // std
 #include <chrono>
 #include <sstream>
+#include <filesystem>
 #include <unordered_set>
 // boost
-#include <boost/algorithm/string.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/foreach.hpp>
@@ -101,6 +103,9 @@ void CcdbDatabase::connect(const std::unordered_map<std::string, std::string>& c
 {
   mUrl = config.at("host");
   init();
+  if (config.count("maxObjectSize")) {
+    mMaxObjectSize = std::stoi(config.at("maxObjectSize"));
+  }
 }
 
 void CcdbDatabase::init()
@@ -142,7 +147,13 @@ void CcdbDatabase::storeAny(const void* obj, std::type_info const& typeInfo, std
   }
 
   ILOG(Debug, Support) << "Storing object " << path << " of type " << fullMetadata["ObjectType"] << ENDM;
-  ccdbApi.storeAsTFile_impl(obj, typeInfo, path, fullMetadata, from, to);
+  int result = ccdbApi.storeAsTFile_impl(obj, typeInfo, path, fullMetadata, from, to, mMaxObjectSize);
+
+  if (result == -1 /* object bigger than maxObjectSize */) {
+    static AliceO2::InfoLogger::InfoLogger::AutoMuteToken msgLimit(LogWarningSupport, 1, 600); // send it once every 10 minutes
+    string msg = "object " + path + " is bigger than the maximum allowed size (" + to_string(mMaxObjectSize) + "B) - skipped";
+    ILOG_INST.log(msgLimit, "%s", msg.c_str());
+  }
 }
 
 // Monitor object
@@ -177,6 +188,7 @@ void CcdbDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::Moni
   metadata["qc_version"] = Version::GetQcVersion().getString();
   metadata["qc_detector_name"] = mo->getDetectorName();
   metadata["qc_task_name"] = mo->getTaskName();
+  metadata["qc_task_class"] = mo->getTaskClass();
 
   // path attributes
   string path = mo->getPath();
@@ -188,7 +200,13 @@ void CcdbDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::Moni
   }
 
   ILOG(Debug, Support) << "Storing MonitorObject " << path << ENDM;
-  ccdbApi.storeAsTFileAny<TObject>(obj, path, metadata, from, to);
+  int result = ccdbApi.storeAsTFileAny<TObject>(obj, path, metadata, from, to, mMaxObjectSize);
+
+  if (result == -1 /* object bigger than maxObjectSize */) {
+    static AliceO2::InfoLogger::InfoLogger::AutoMuteToken msgLimit(LogWarningSupport, 1, 600); // send it once every 10 minutes
+    string msg = "object " + path + " is bigger than the maximum allowed size (" + to_string(mMaxObjectSize) + "B) - skipped";
+    ILOG_INST.log(msgLimit, "%s", msg.c_str());
+  }
 }
 
 void CcdbDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::QualityObject> qo, long from, long to)
@@ -220,7 +238,42 @@ void CcdbDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::Qual
   }
 
   ILOG(Debug, Support) << "Storing quality object " << path << " (" << qo->getName() << ")" << ENDM;
-  ccdbApi.storeAsTFileAny<QualityObject>(qo.get(), path, metadata, from, to);
+  int result = ccdbApi.storeAsTFileAny<QualityObject>(qo.get(), path, metadata, from, to);
+
+  if (result == -1 /* object bigger than maxObjectSize */) {
+    static AliceO2::InfoLogger::InfoLogger::AutoMuteToken msgLimit(LogWarningSupport, 1, 600); // send it once every 10 minutes
+    string msg = "object " + path + " is bigger than the maximum allowed size (" + to_string(mMaxObjectSize) + "B) - skipped";
+    ILOG_INST.log(msgLimit, "%s", msg.c_str());
+  }
+}
+
+void CcdbDatabase::storeTRFC(std::shared_ptr<const o2::quality_control::TimeRangeFlagCollection> trfc)
+{
+  // metadata
+  map<string, string> metadata;
+  metadata["RunNumber"] = std::to_string(trfc->getRunNumber());
+  metadata["PeriodName"] = trfc->getPeriodName();
+  metadata["PassName"] = trfc->getPassName();
+  metadata["ObjectType"] = trfc->IsA()->GetName();
+  // QC metadata (prefix qc_)
+  metadata["qc_version"] = Version::GetQcVersion().getString();
+  metadata["qc_trfc_name"] = trfc->getName();
+  metadata["qc_detector_name"] = trfc->getDetector();
+
+  // other attributes
+  string path = RepoPathUtils::getTrfcPath(trfc.get());
+  auto from = trfc->getStart();
+  auto to = trfc->getEnd();
+  if (from > to) {
+    ILOG(Error, Support) << "TRFC '" + trfc->getName() + "' cannot be stored in CCDB, because it has invalid validity range (" + std::to_string(from) + ", " + std::to_string(to) + ")." << ENDM;
+  }
+  std::stringstream buffer;
+  trfc->streamTo(buffer);
+  ILOG(Debug, Support) << "Storing TimeRangeFlagCollection at " << path << " (" << trfc->getName() << ")" << ENDM;
+  auto result = ccdbApi.storeAsBinaryFile(buffer.str().c_str(), buffer.str().size(), trfc->getName(), trfc->IsA()->GetName(), path, metadata, from, to);
+  if (result != 0) {
+    ILOG(Error, Support) << "TRFC '" + trfc->getName() + "' could not be stored in CCDB, error: " + std::to_string(result) << ENDM;
+  }
 }
 
 TObject* CcdbDatabase::retrieveTObject(std::string path, std::map<std::string, std::string> const& metadata, long timestamp, std::map<std::string, std::string>* headers)
@@ -278,7 +331,7 @@ std::shared_ptr<core::MonitorObject> CcdbDatabase::retrieveMO(std::string taskNa
     ILOG(Debug, Devel) << "Version of object " << taskName << "/" << objectName << " is >= 0.25" << ENDM;
     int runNumber = stoi(headers["RunNumber"]);
     string provenance = path.substr(0, path.find('/')); // get the item before the first slash corresponding to the provenance
-    mo = make_shared<MonitorObject>(obj, headers["qc_task_name"], headers["qc_detector_name"], runNumber, headers["PeriodName"], headers["PassName"], provenance);
+    mo = make_shared<MonitorObject>(obj, headers["qc_task_name"], headers["qc_task_class"], headers["qc_detector_name"], runNumber, headers["PeriodName"], headers["PassName"], provenance);
     // TODO should we remove the headers we know are general such as ETag and qc_task_name ?
     mo->addMetadata(headers);
   }
@@ -299,6 +352,62 @@ std::shared_ptr<QualityObject> CcdbDatabase::retrieveQO(std::string qoPath, long
     qo->addMetadata(headers);
   }
   return qo;
+}
+
+std::shared_ptr<o2::quality_control::TimeRangeFlagCollection> CcdbDatabase::retrieveTRFC(const std::string& trfcName, const std::string& detector, int runNumber, const string& passName, const string& periodName, const std::string& provenance, long timestamp)
+{
+  map<string, string> headers;
+  map<string, string> metadata;
+  if (runNumber != 0) {
+    metadata["RunNumber"] = std::to_string(runNumber);
+  }
+  if (!passName.empty()) {
+    metadata["PassName"] = passName;
+  }
+  if (!periodName.empty()) {
+    metadata["PeriodName"] = periodName;
+  }
+  const auto trfcPath = RepoPathUtils::getTrfcPath(detector, trfcName, provenance);
+  const std::string localFileDir = "/tmp";
+  const std::string localFileName = "trfc_" + trfcName + std::to_string(time_point_cast<nanoseconds>(system_clock::now()).time_since_epoch().count());
+  const std::string localFilePath = localFileDir + std::filesystem::path::preferred_separator + localFileName;
+  if (localFilePath.find("..") != std::string::npos || localFilePath.find('~') != std::string::npos) {
+    ILOG(Error, Support) << "The path '" << localFilePath << "' looks hacky, will not download any files there." << ENDM;
+    return nullptr;
+  }
+
+  auto resultMetadata = ccdbApi.retrieveHeaders(trfcPath, metadata, timestamp);
+  if (resultMetadata.empty()) {
+    ILOG(Error, Support) << "Could not extract headers of TRFC at '" << trfcPath << "' with the metadata: " << ENDM; // TODO
+    ILOG(Error, Support) << " - RunNumber  : " << metadata["RunNumber"] << ENDM;
+    ILOG(Error, Support) << " - PassName   : " << metadata["PassName"] << ENDM;
+    ILOG(Error, Support) << " - PeriodName : " << metadata["PeriodName"] << ENDM;
+    return nullptr;
+  }
+
+  auto success = ccdbApi.retrieveBlob(trfcPath, localFileDir, metadata, timestamp, false, localFileName);
+  if (!success) {
+    ILOG(Error, Support) << "Could not retrieve the TRFC at '" << trfcPath << "' with the metadata: " << ENDM; // TODO
+    ILOG(Error, Support) << " - RunNumber  : " << metadata["RunNumber"] << ENDM;
+    ILOG(Error, Support) << " - PassName   : " << metadata["PassName"] << ENDM;
+    ILOG(Error, Support) << " - PeriodName : " << metadata["PeriodName"] << ENDM;
+    return nullptr;
+  }
+
+  std::ifstream localFile(localFilePath);
+  if (!localFile.is_open()) {
+    ILOG(Error, Support) << "Could not open a file at '" << localFilePath << "'" << ENDM;
+    std::filesystem::remove(localFilePath);
+    return nullptr;
+  }
+
+  TimeRangeFlagCollection::RangeInterval validity{ std::stoull(resultMetadata["Valid-From"]), std::stoull(resultMetadata["Valid-Until"]) };
+  auto trfc = std::make_shared<TimeRangeFlagCollection>(trfcName, detector, validity, runNumber, periodName, passName, provenance);
+  trfc->streamFrom(localFile);
+  localFile.close();
+  std::filesystem::remove(localFilePath);
+
+  return trfc;
 }
 
 std::string CcdbDatabase::retrieveJson(std::string path, long timestamp, const std::map<std::string, std::string>& metadata)
@@ -479,7 +588,7 @@ void CcdbDatabase::truncate(std::string taskName, std::string objectName)
 void CcdbDatabase::storeStreamerInfosToFile(std::string filename)
 {
   TH1F* h1 = new TH1F("asdf", "asdf", 100, 0, 99);
-  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "fake");
+  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "fake", "class", "DET");
   TMessage message(kMESS_OBJECT);
   message.Reset();
   message.EnableSchemaEvolution(true);
@@ -488,6 +597,11 @@ void CcdbDatabase::storeStreamerInfosToFile(std::string filename)
   TFile f(filename.data(), "recreate");
   infos->Write();
   f.Close();
+}
+
+void CcdbDatabase::setMaxObjectSize(size_t maxObjectSize)
+{
+  CcdbDatabase::mMaxObjectSize = maxObjectSize;
 }
 
 } // namespace o2::quality_control::repository

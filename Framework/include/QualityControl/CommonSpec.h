@@ -37,8 +37,6 @@ struct CommonSpec {
   std::string conditionDBUrl = "http://ccdb-test.cern.ch:8080";
   bool infologgerFilterDiscardDebug = false;
   int infologgerDiscardLevel = 21;
-
-  std::string configurationSource;
 };
 
 } // namespace o2::quality_control::core

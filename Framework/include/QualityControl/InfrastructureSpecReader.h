@@ -31,24 +31,49 @@ namespace o2::quality_control::core
 // we can probably improve it by writing a proper parser like for WorkflowSerializationHelpers in O2
 // Also, move operators could be implemented.
 
-class InfrastructureSpecReader
+namespace InfrastructureSpecReader
 {
- public:
-  /// \brief Reads the full QC configuration file.
-  // todo remove configurationSource when it is possible
-  static InfrastructureSpec readInfrastructureSpec(const boost::property_tree::ptree& wholeTree, const std::string& configurationSource);
+/// \brief Reads the full QC configuration structure.
+InfrastructureSpec readInfrastructureSpec(const boost::property_tree::ptree& wholeTree);
 
-  // readers for separate parts
-  static CommonSpec readCommonSpec(const boost::property_tree::ptree& commonTree, const std::string& configurationSource);
-  static TaskSpec readTaskSpec(std::string taskName, const boost::property_tree::ptree& taskTree, const boost::property_tree::ptree& wholeTree);
-  static DataSourceSpec readDataSourceSpec(const boost::property_tree::ptree& dataSourceTree, const boost::property_tree::ptree& wholeTree);
-  static checker::CheckSpec readCheckSpec(std::string checkName, const boost::property_tree::ptree& checkTree, const boost::property_tree::ptree& wholeTree);
-  static PostProcessingTaskSpec readPostProcessingTaskSpec(std::string ppTaskName, const boost::property_tree::ptree& ppTaskTree, const boost::property_tree::ptree& wholeTree);
-  static ExternalTaskSpec readExternalTaskSpec(std::string externalTaskName, const boost::property_tree::ptree& externalTaskTree, const boost::property_tree::ptree& wholeTree);
+template <typename T>
+T readSpecEntry(std::string entryName, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
 
-  static std::string validateDetectorName(std::string name);
-};
+// readers for separate parts
+template <>
+DataSourceSpec readSpecEntry<DataSourceSpec>(std::string entryName, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
+template <>
+TaskSpec readSpecEntry<TaskSpec>(std::string entryName, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
+template <>
+checker::CheckSpec readSpecEntry<checker::CheckSpec>(std::string entryName, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
+template <>
+checker::AggregatorSpec readSpecEntry<checker::AggregatorSpec>(std::string entryName, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
+template <>
+postprocessing::PostProcessingTaskSpec readSpecEntry<postprocessing::PostProcessingTaskSpec>(std::string entryName, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
+template <>
+ExternalTaskSpec readSpecEntry<ExternalTaskSpec>(std::string entryName, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
+template <>
+CommonSpec readSpecEntry<CommonSpec>(std::string entryName, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
 
+// todo: section names should be enum.
+template <typename T>
+std::vector<T> readSectionSpec(const boost::property_tree::ptree& wholeTree, const std::string& section)
+{
+  const auto& qcTree = wholeTree.get_child("qc");
+  std::vector<T> sectionSpec;
+  if (qcTree.find(section) != qcTree.not_found()) {
+    const auto& sectionTree = qcTree.get_child(section);
+    sectionSpec.reserve(sectionTree.size());
+    for (const auto& [entryName, entryTree] : sectionTree) {
+      sectionSpec.push_back(readSpecEntry<T>(entryName, entryTree, wholeTree));
+    }
+  }
+  return sectionSpec;
+}
+
+std::string validateDetectorName(std::string name);
+
+} // namespace InfrastructureSpecReader
 } // namespace o2::quality_control::core
 
 #endif //QUALITYCONTROL_INFRASTRUCTURESPECREADER_H

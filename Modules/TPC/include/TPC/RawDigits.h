@@ -19,13 +19,13 @@
 #define QC_MODULE_TPC_RAWDIGITS_H
 
 // O2 includes
-#include "TPCQC/Clusters.h"
 #include "TPCQC/CalPadWrapper.h"
 #include "TPCReconstruction/RawReaderCRU.h"
 #include "TPCWorkflow/CalibProcessingHelper.h"
 
 // QC includes
 #include "QualityControl/TaskInterface.h"
+#include "TPC/ClustersData.h"
 
 class TCanvas;
 
@@ -56,7 +56,8 @@ class RawDigits /*final*/ : public TaskInterface // todo add back the "final" wh
   void reset() override;
 
  private:
-  o2::tpc::qc::Clusters mRawDigitQC;                            ///< O2 Cluster task to perform actions on cluster objects
+  bool mIsMergeable = true;
+  ClustersData mRawDigitQC{ "N_RawDigits" };                    ///< O2 Cluster task to perform actions on cluster objects
   std::vector<o2::tpc::qc::CalPadWrapper> mWrapperVector{};     ///< vector holding CalPad objects wrapped as TObjects; published on QCG; will be non-wrapped CalPad objects in the future
   std::vector<std::unique_ptr<TCanvas>> mNRawDigitsCanvasVec{}; ///< summary canvases of the NRawDigits object
   std::vector<std::unique_ptr<TCanvas>> mQMaxCanvasVec{};       ///< summary canvases of the QMax object

@@ -78,43 +78,8 @@ class QcMFTDigitTask final : public TaskInterface
   int mTransID[936] = { 0 };
   int mLayer[936] = { 0 };
   int mLadder[936] = { 0 };
-  int mX[936] = { 0 };
-  int mY[936] = { 0 };
-
-  //  bin numbers for chip hit maps
-  double mNumberOfBinsInOccupancyMaps[20][6] = {
-    // half0
-    { 12, -10, 10, 4, -12, 0 }, // disk0, face 0
-    { 12, -10, 10, 4, -12, 0 }, // disk0, face 1
-
-    { 12, -10, 10, 4, -12, 0 },
-    { 12, -10, 10, 4, -12, 0 },
-
-    { 13, -11, 10, 4, -12, 0 },
-    { 13, -10, 11, 4, -12, 0 },
-
-    { 16, -13, 14, 5, -15, 0 },
-    { 16, -14, 13, 5, -15, 0 },
-
-    { 17, -14, 14, 5, -15, 0 },
-    { 17, -14, 14, 5, -15, 0 },
-
-    // half1
-    { 12, -10, 10, 4, 0, 12 },
-    { 12, -10, 10, 4, 0, 12 },
-
-    { 12, -10, 10, 4, 0, 12 },
-    { 12, -10, 10, 4, 0, 12 },
-
-    { 13, -10, 11, 4, 0, 12 },
-    { 13, -11, 10, 4, 0, 12 },
-
-    { 16, -14, 13, 5, 0, 15 },
-    { 16, -13, 14, 5, 0, 15 },
-
-    { 17, -14, 14, 5, 0, 15 },
-    { 17, -14, 14, 5, 0, 15 },
-  };
+  float mX[936] = { 0 };
+  float mY[936] = { 0 };
 
   std::unique_ptr<TH1F> mChipOccupancy = nullptr;
   std::unique_ptr<TH1F> mChipOccupancyStdDev = nullptr;
@@ -129,7 +94,7 @@ class QcMFTDigitTask final : public TaskInterface
   int getChipIndexPixelOccupancyMap(int vectorIndex);
   void getNameOfChipOccupancyMap(TString& folderName, TString& histogramName, int iOccupancyMapIndex);
   void getNameOfPixelOccupancyMap(TString& folderName, TString& histogramName, int iChipIndex);
-  void resetArrays(int array[], int array2[], int array3[]);
+  void resetArrays(int* array1, int* array2, int* array3);
   void getChipMapData();
 };
 

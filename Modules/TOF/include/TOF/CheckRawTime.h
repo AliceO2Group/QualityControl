@@ -19,8 +19,7 @@
 #define QC_MODULE_TOF_TOFCHECKRAWSTIME_H
 
 #include "QualityControl/CheckInterface.h"
-#include "QualityControl/MonitorObject.h"
-#include "QualityControl/Quality.h"
+#include "Base/MessagePad.h"
 
 namespace o2::quality_control_modules::tof
 {
@@ -34,16 +33,21 @@ class CheckRawTime : public o2::quality_control::checker::CheckInterface
   ~CheckRawTime() override = default;
 
   // Override interface
-  void configure(std::string name) override;
+  void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult) override;
   std::string getAcceptedType() override;
 
  private:
+  // Running configurable parameters
   /// Minimum value for TOF average raw time
-  float mMinRawTime;
+  float mMinRawTime = -1.f;
   /// Maximum value for TOF average raw time
-  float mMaxRawTime;
+  float mMaxRawTime = 300000.f;
+  /// Minimum value for the ratio between value the integral in the peak and the one outside for TOF raw time
+  float mMinPeakRatioIntegral = 0.20;
+
+  // User variables
   /// Mean of the TOF raw time distribution
   float mRawTimeMean = 0.f;
   /// Integral of the TOF raw time distribution in the peak region i.e. within minTOFrawTime and maxTOFrawTime
@@ -51,7 +55,10 @@ class CheckRawTime : public o2::quality_control::checker::CheckInterface
   /// Integral of the TOF raw time distribution in the whole histogram range
   float mRawTimeIntegral = 0.f;
 
-  ClassDefOverride(CheckRawTime, 1);
+  /// Messages to print on the output PAD
+  MessagePad mShifterMessages;
+
+  ClassDefOverride(CheckRawTime, 2);
 };
 
 } // namespace o2::quality_control_modules::tof

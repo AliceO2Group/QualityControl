@@ -35,7 +35,7 @@ class MeanIsAbove : public o2::quality_control::checker::CheckInterface
   /// Destructor
   ~MeanIsAbove() override = default;
 
-  void configure(std::string name) override;
+  void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult) override;
   std::string getAcceptedType() override;
@@ -43,7 +43,7 @@ class MeanIsAbove : public o2::quality_control::checker::CheckInterface
  private:
   float mThreshold = 0.0f;
 
-  ClassDefOverride(MeanIsAbove, 1)
+  ClassDefOverride(MeanIsAbove, 2)
 };
 
 } // namespace o2::quality_control_modules::common

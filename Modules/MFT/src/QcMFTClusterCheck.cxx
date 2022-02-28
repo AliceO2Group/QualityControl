@@ -32,7 +32,7 @@ using namespace std;
 namespace o2::quality_control_modules::mft
 {
 
-void QcMFTClusterCheck::configure(std::string) {}
+void QcMFTClusterCheck::configure() {}
 
 Quality QcMFTClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
@@ -46,13 +46,13 @@ Quality QcMFTClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorOb
 
       // test it
       if ((int(histogram->GetBinContent(400)) % 3) == 0) {
-        result = Quality::Good;
+        // result = Quality::Good;
       }
       if ((int(histogram->GetBinContent(400)) % 3) == 1) {
-        result = Quality::Medium;
+        // result = Quality::Medium;
       }
       if ((int(histogram->GetBinContent(400)) % 3) == 2) {
-        result = Quality::Bad;
+        // result = Quality::Bad;
       }
     }
   }

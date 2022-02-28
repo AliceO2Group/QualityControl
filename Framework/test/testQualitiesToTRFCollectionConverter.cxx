@@ -29,8 +29,9 @@ using namespace o2::quality_control::core;
 
 BOOST_AUTO_TEST_CASE(test_NoQOs)
 {
-  QualitiesToTRFCollectionConverter converter("test1", "DET", 5, 100, "qc/DET/QO/xyzCheck");
-  auto trfc = converter.getResult();
+  std::unique_ptr<TimeRangeFlagCollection> trfc{ new TimeRangeFlagCollection("test1", "DET", { 5, 100 }) };
+  QualitiesToTRFCollectionConverter converter(std::move(trfc), "qc/DET/QO/xyzCheck");
+  trfc = converter.getResult();
 
   BOOST_REQUIRE_EQUAL(trfc->size(), 1);
   auto& trf = *trfc->begin();
@@ -46,11 +47,12 @@ BOOST_AUTO_TEST_CASE(test_NoBeginning)
     { Quality::Bad, "xyzCheck", "DET", {}, {}, {}, { { "Valid-From", "10" }, { "Valid-Until", "50" } } },
     { Quality::Good, "xyzCheck", "DET", {}, {}, {}, { { "Valid-From", "50" }, { "Valid-Until", "120" } } }
   };
-  QualitiesToTRFCollectionConverter converter("test1", "DET", 5, 100, "qc/DET/QO/xyzCheck");
+  std::unique_ptr<TimeRangeFlagCollection> trfc{ new TimeRangeFlagCollection("test1", "DET", { 5, 100 }) };
+  QualitiesToTRFCollectionConverter converter(std::move(trfc), "qc/DET/QO/xyzCheck");
   for (const auto& qo : qos) {
     converter(qo);
   }
-  auto trfc = converter.getResult();
+  trfc = converter.getResult();
 
   BOOST_REQUIRE_EQUAL(trfc->size(), 2);
 
@@ -72,11 +74,12 @@ BOOST_AUTO_TEST_CASE(test_NoEnd)
   std::vector<QualityObject> qos{
     { Quality::Good, "xyzCheck", "DET", {}, {}, {}, { { "Valid-From", "5" }, { "Valid-Until", "80" } } }
   };
-  QualitiesToTRFCollectionConverter converter("test1", "DET", 5, 100, "qc/DET/QO/xyzCheck");
+  std::unique_ptr<TimeRangeFlagCollection> trfc{ new TimeRangeFlagCollection("test1", "DET", { 5, 100 }) };
+  QualitiesToTRFCollectionConverter converter(std::move(trfc), "qc/DET/QO/xyzCheck");
   for (const auto& qo : qos) {
     converter(qo);
   }
-  auto trfc = converter.getResult();
+  trfc = converter.getResult();
 
   BOOST_REQUIRE_EQUAL(trfc->size(), 1);
   auto& trf = *trfc->begin();
@@ -98,25 +101,29 @@ BOOST_AUTO_TEST_CASE(test_WrongOrder)
 
   {
     // good to good
-    QualitiesToTRFCollectionConverter converter("test1", "DET", 5, 100, "qc/DET/QO/xyzCheck");
+    std::unique_ptr<TimeRangeFlagCollection> trfc{ new TimeRangeFlagCollection("test1", "DET", { 5, 100 }) };
+    QualitiesToTRFCollectionConverter converter(std::move(trfc), "qc/DET/QO/xyzCheck");
     converter(qos[0]);
     BOOST_CHECK_THROW(converter(qos[1]), std::runtime_error);
   }
   {
     // good to bad
-    QualitiesToTRFCollectionConverter converter("test1", "DET", 5, 100, "qc/DET/QO/xyzCheck");
+    std::unique_ptr<TimeRangeFlagCollection> trfc{ new TimeRangeFlagCollection("test1", "DET", { 5, 100 }) };
+    QualitiesToTRFCollectionConverter converter(std::move(trfc), "qc/DET/QO/xyzCheck");
     converter(qos[1]);
     BOOST_CHECK_THROW(converter(qos[2]), std::runtime_error);
   }
   {
     // bad to bad
-    QualitiesToTRFCollectionConverter converter("test1", "DET", 5, 100, "qc/DET/QO/xyzCheck");
+    std::unique_ptr<TimeRangeFlagCollection> trfc{ new TimeRangeFlagCollection("test1", "DET", { 5, 100 }) };
+    QualitiesToTRFCollectionConverter converter(std::move(trfc), "qc/DET/QO/xyzCheck");
     converter(qos[2]);
     BOOST_CHECK_THROW(converter(qos[3]), std::runtime_error);
   }
   {
     // bad to good
-    QualitiesToTRFCollectionConverter converter("test1", "DET", 5, 100, "qc/DET/QO/xyzCheck");
+    std::unique_ptr<TimeRangeFlagCollection> trfc{ new TimeRangeFlagCollection("test1", "DET", { 5, 100 }) };
+    QualitiesToTRFCollectionConverter converter(std::move(trfc), "qc/DET/QO/xyzCheck");
     converter(qos[3]);
     BOOST_CHECK_THROW(converter(qos[4]), std::runtime_error);
   }
@@ -132,17 +139,20 @@ BOOST_AUTO_TEST_CASE(test_MismatchingParameters)
 
   {
     // different detector
-    QualitiesToTRFCollectionConverter converter("test1", "DET", 5, 100, "qc/DET/QO/xyzCheck");
+    std::unique_ptr<TimeRangeFlagCollection> trfc{ new TimeRangeFlagCollection("test1", "DET", { 5, 100 }) };
+    QualitiesToTRFCollectionConverter converter(std::move(trfc), "qc/DET/QO/xyzCheck");
     BOOST_CHECK_THROW(converter(qos[0]), std::runtime_error);
   }
   {
     // QO start after the TRFC end limit
-    QualitiesToTRFCollectionConverter converter("test1", "DET", 5, 100, "qc/DET/QO/xyzCheck");
+    std::unique_ptr<TimeRangeFlagCollection> trfc{ new TimeRangeFlagCollection("test1", "DET", { 5, 100 }) };
+    QualitiesToTRFCollectionConverter converter(std::move(trfc), "qc/DET/QO/xyzCheck");
     BOOST_CHECK_THROW(converter(qos[1]), std::runtime_error);
   }
   {
     // QO validity starts after it finishes
-    QualitiesToTRFCollectionConverter converter("test1", "DET", 5, 100, "qc/DET/QO/xyzCheck");
+    std::unique_ptr<TimeRangeFlagCollection> trfc{ new TimeRangeFlagCollection("test1", "DET", { 5, 100 }) };
+    QualitiesToTRFCollectionConverter converter(std::move(trfc), "qc/DET/QO/xyzCheck");
     BOOST_CHECK_THROW(converter(qos[2]), std::runtime_error);
   }
 }
@@ -157,11 +167,12 @@ BOOST_AUTO_TEST_CASE(test_OverlappingQOs)
     { Quality::Bad, "xyzCheck", "DET", {}, {}, {}, { { "Valid-From", "60" }, { "Valid-Until", "120" } } },
     { Quality::Bad, "xyzCheck", "DET", {}, {}, {}, { { "Valid-From", "70" }, { "Valid-Until", "120" } } }
   };
-  QualitiesToTRFCollectionConverter converter("test1", "DET", 5, 100, "qc/DET/QO/xyzCheck");
+  std::unique_ptr<TimeRangeFlagCollection> trfc{ new TimeRangeFlagCollection("test1", "DET", { 5, 100 }) };
+  QualitiesToTRFCollectionConverter converter(std::move(trfc), "qc/DET/QO/xyzCheck");
   for (const auto& qo : qos) {
     converter(qo);
   }
-  auto trfc = converter.getResult();
+  trfc = converter.getResult();
 
   BOOST_REQUIRE_EQUAL(trfc->size(), 1);
 
@@ -182,11 +193,13 @@ BOOST_AUTO_TEST_CASE(test_AdjacentQOs)
     { Quality::Bad, "xyzCheck", "DET", {}, {}, {}, { { "Valid-From", "80" }, { "Valid-Until", "95" } } },
     { Quality::Bad, "xyzCheck", "DET", {}, {}, {}, { { "Valid-From", "96" }, { "Valid-Until", "120" } } }
   };
-  QualitiesToTRFCollectionConverter converter("test1", "DET", 5, 100, "qc/DET/QO/xyzCheck");
+  std::unique_ptr<TimeRangeFlagCollection> trfc{ new TimeRangeFlagCollection("test1", "DET", { 5, 100 }) };
+  QualitiesToTRFCollectionConverter converter(std::move(trfc), "qc/DET/QO/xyzCheck");
+  ;
   for (const auto& qo : qos) {
     converter(qo);
   }
-  auto trfc = converter.getResult();
+  trfc = converter.getResult();
 
   BOOST_REQUIRE_EQUAL(trfc->size(), 1);
 
@@ -203,11 +216,12 @@ BOOST_AUTO_TEST_CASE(test_UnexplainedMediumIsBad)
     { Quality::Medium, "xyzCheck", "DET", {}, {}, {}, { { "Valid-From", "5" }, { "Valid-Until", "150" } } },
     { Quality::Bad, "xyzCheck", "DET", {}, {}, {}, { { "Valid-From", "10" }, { "Valid-Until", "100" } } }
   };
-  QualitiesToTRFCollectionConverter converter("test1", "DET", 5, 100, "qc/DET/QO/xyzCheck");
+  std::unique_ptr<TimeRangeFlagCollection> trfc{ new TimeRangeFlagCollection("test1", "DET", { 5, 100 }) };
+  QualitiesToTRFCollectionConverter converter(std::move(trfc), "qc/DET/QO/xyzCheck");
   for (const auto& qo : qos) {
     converter(qo);
   }
-  auto trfc = converter.getResult();
+  trfc = converter.getResult();
 
   BOOST_REQUIRE_EQUAL(trfc->size(), 1);
 
@@ -231,11 +245,12 @@ BOOST_AUTO_TEST_CASE(test_KnownReasons)
   qos[2].addReason(FlagReasonFactory::LimitedAcceptance(), "Sector C was off");
   qos[3].addReason(FlagReasonFactory::ProcessingError(), "Bug in reco");
 
-  QualitiesToTRFCollectionConverter converter("test1", "DET", 5, 100, "qc/DET/QO/xyzCheck");
+  std::unique_ptr<TimeRangeFlagCollection> trfc{ new TimeRangeFlagCollection("test1", "DET", { 5, 100 }) };
+  QualitiesToTRFCollectionConverter converter(std::move(trfc), "qc/DET/QO/xyzCheck");
   for (const auto& qo : qos) {
     converter(qo);
   }
-  auto trfc = converter.getResult();
+  trfc = converter.getResult();
 
   BOOST_REQUIRE_EQUAL(trfc->size(), 2);
 
@@ -266,11 +281,13 @@ BOOST_AUTO_TEST_CASE(test_TheSameReasonsButSeparated)
   qos[2].addReason(FlagReasonFactory::ProcessingError(), "Bug in reco");
   qos[3].addReason(FlagReasonFactory::ProcessingError(), "Bug in reco");
 
-  QualitiesToTRFCollectionConverter converter("test1", "DET", 5, 100, "qc/DET/QO/xyzCheck");
+  std::unique_ptr<TimeRangeFlagCollection> trfc{ new TimeRangeFlagCollection("test1", "DET", { 5, 100 }) };
+  QualitiesToTRFCollectionConverter converter(std::move(trfc), "qc/DET/QO/xyzCheck");
+  ;
   for (const auto& qo : qos) {
     converter(qo);
   }
-  auto trfc = converter.getResult();
+  trfc = converter.getResult();
 
   BOOST_REQUIRE_EQUAL(trfc->size(), 3);
 

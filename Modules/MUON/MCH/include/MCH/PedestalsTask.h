@@ -63,8 +63,8 @@ class PedestalsTask final : public TaskInterface
 
   std::map<int, TH2F*> mHistogramPedestalsDE;
   std::map<int, TH2F*> mHistogramNoiseDE;
-  std::map<int, TH2F*> mHistogramPedestalsXY[2];
-  std::map<int, TH2F*> mHistogramNoiseXY[2];
+  std::map<int, DetectorHistogram*> mHistogramPedestalsXY[2];
+  std::map<int, DetectorHistogram*> mHistogramNoiseXY[2];
 
   std::map<int, TH1F*> mHistogramNoiseDistributionDE[5][2];
 

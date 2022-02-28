@@ -34,12 +34,14 @@ class PedestalCheck : public o2::quality_control::checker::CheckInterface
   ~PedestalCheck() override = default;
 
   // Override interface
-  void configure(std::string name) override;
+  void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
 
  private:
+  int getRunNumberFromMO(std::shared_ptr<MonitorObject> mo);
+
   //configurable parameters and their default values
   //see config example in Modules/CPV/etc/pedestal-task-no-sampling.json
   int mMinGoodPedestalValueM[3] = { 1, 1, 1 };
@@ -51,7 +53,7 @@ class PedestalCheck : public o2::quality_control::checker::CheckInterface
   int mToleratedBadPedestalSigmaChannelsM[3] = { 20, 20, 20 };      //pedestal value < mMinGoodPedestalValue or > 512
   int mToleratedBadPedestalEfficiencyChannelsM[3] = { 20, 20, 20 }; //efficiency < min or > max
 
-  ClassDefOverride(PedestalCheck, 1);
+  ClassDefOverride(PedestalCheck, 2);
 };
 
 } // namespace o2::quality_control_modules::cpv

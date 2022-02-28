@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE(mopath)
 {
   string objectName = "asdf";
   TH1F h(objectName.data(), objectName.data(), 100, 0, 99);
-  o2::quality_control::core::MonitorObject obj(&h, "task");
+  o2::quality_control::core::MonitorObject obj(&h, "task", "class", "DET");
   obj.setIsOwner(false);
   string path = RepoPathUtils::getMoPath(&obj);
   BOOST_CHECK_EQUAL(path, "qc/DET/MO/task/asdf");

@@ -29,72 +29,113 @@ namespace o2::quality_control_modules::tpc
 
 RawDigits::RawDigits() : TaskInterface()
 {
-  mWrapperVector.emplace_back(&mRawDigitQC.getNClusters());
-  mWrapperVector.emplace_back(&mRawDigitQC.getQMax());
-  mWrapperVector.emplace_back(&mRawDigitQC.getTimeBin());
 }
 
 void RawDigits::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  QcInfoLogger::GetInstance() << "initialize TPC RawDigits QC task" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "initialize TPC RawDigits QC task" << ENDM;
+
+  mRawDigitQC.setName("RawDigitData");
+
+  const auto last = mCustomParameters.end();
+  const auto itMergeable = mCustomParameters.find("mergeableOutput");
+  std::string mergeable;
+
+  if (itMergeable == last) {
+    LOGP(warning, "missing parameter 'mergeableOutput'");
+    LOGP(warning, "Please add 'mergeableOutput': '<value>' to the 'taskParameters'.");
+  } else {
+    mergeable = itMergeable->second;
+  }
+
+  if (mergeable == "true") {
+    mIsMergeable = true;
+    ILOG(Info, Support) << "Using mergeable output for RawDigits Task." << ENDM;
+  } else if (mergeable == "false") {
+    mIsMergeable = false;
+    ILOG(Info, Support) << "Using non-mergeable output for RawDigits Task." << ENDM;
+  } else {
+    mIsMergeable = false;
+    LOGP(warning, "No valid value for 'mergeableOutput'. Set it as 'true' or 'false'. Falling back to non-mergeable output.");
+  }
 
   mRawReader.createReader("");
 
-  addAndPublish(getObjectsManager(), mNRawDigitsCanvasVec, { "c_Sides_N_RawDigits", "c_ROCs_N_RawDigits_1D", "c_ROCs_N_RawDigits_2D" });
-  addAndPublish(getObjectsManager(), mQMaxCanvasVec, { "c_Sides_Q_Max", "c_ROCs_Q_Max_1D", "c_ROCs_Q_Max_2D" });
-  addAndPublish(getObjectsManager(), mTimeBinCanvasVec, { "c_Sides_Time_Bin", "c_ROCs_Time_Bin_1D", "c_ROCs_Time_Bin_2D" });
+  if (mIsMergeable) {
+    getObjectsManager()->startPublishing(&mRawDigitQC);
+  } else {
+    mWrapperVector.emplace_back(&mRawDigitQC.getClusters().getNClusters());
+    mWrapperVector.emplace_back(&mRawDigitQC.getClusters().getQMax());
+    mWrapperVector.emplace_back(&mRawDigitQC.getClusters().getTimeBin());
 
-  for (auto& wrapper : mWrapperVector) {
-    getObjectsManager()->startPublishing(&wrapper);
+    addAndPublish(getObjectsManager(), mNRawDigitsCanvasVec, { "c_Sides_N_RawDigits", "c_ROCs_N_RawDigits_1D", "c_ROCs_N_RawDigits_2D" });
+    addAndPublish(getObjectsManager(), mQMaxCanvasVec, { "c_Sides_Q_Max", "c_ROCs_Q_Max_1D", "c_ROCs_Q_Max_2D" });
+    addAndPublish(getObjectsManager(), mTimeBinCanvasVec, { "c_Sides_Time_Bin", "c_ROCs_Time_Bin_1D", "c_ROCs_Time_Bin_2D" });
+
+    for (auto& wrapper : mWrapperVector) {
+      getObjectsManager()->startPublishing(&wrapper);
+    }
   }
 
   mRawReader.setLinkZSCallback([this](int cru, int rowInSector, int padInRow, int timeBin, float adcValue) -> bool {
-    mRawDigitQC.fillADCValue(cru, rowInSector, padInRow, timeBin, adcValue);
+    mRawDigitQC.getClusters().fillADCValue(cru, rowInSector, padInRow, timeBin, adcValue);
     return true;
   });
 }
 
 void RawDigits::startOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "startOfActivity" << ENDM;
 }
 
 void RawDigits::startOfCycle()
 {
-  QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "startOfCycle" << ENDM;
 }
 
 void RawDigits::monitorData(o2::framework::ProcessingContext& ctx)
 {
+  mRawDigitQC.getClusters().denormalize();
+
   auto& reader = mRawReader.getReaders()[0];
   o2::tpc::calib_processing_helper::processRawData(ctx.inputs(), reader, false);
 
-  mRawDigitQC.analyse();
+  if (!mIsMergeable) {
+    mRawDigitQC.getClusters().normalize();
 
-  fillCanvases(mRawDigitQC.getNClusters(), mNRawDigitsCanvasVec, mCustomParameters, "NRawDigits");
-  fillCanvases(mRawDigitQC.getQMax(), mQMaxCanvasVec, mCustomParameters, "Qmax");
-  fillCanvases(mRawDigitQC.getTimeBin(), mTimeBinCanvasVec, mCustomParameters, "TimeBin");
+    fillCanvases(mRawDigitQC.getClusters().getNClusters(), mNRawDigitsCanvasVec, mCustomParameters, "NRawDigits");
+    fillCanvases(mRawDigitQC.getClusters().getQMax(), mQMaxCanvasVec, mCustomParameters, "Qmax");
+    fillCanvases(mRawDigitQC.getClusters().getTimeBin(), mTimeBinCanvasVec, mCustomParameters, "TimeBin");
+  }
 }
 
 void RawDigits::endOfCycle()
 {
-  QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfCycle" << ENDM;
+
+  if (mIsMergeable) {
+    mRawDigitQC.getClusters().normalize();
+  }
 }
 
 void RawDigits::endOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfActivity" << ENDM;
 }
 
 void RawDigits::reset()
 {
   // clean all the monitor objects here
 
-  QcInfoLogger::GetInstance() << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "Resetting the data" << ENDM;
 
-  clearCanvases(mNRawDigitsCanvasVec);
-  clearCanvases(mQMaxCanvasVec);
-  clearCanvases(mTimeBinCanvasVec);
+  mRawDigitQC.getClusters().reset();
+
+  if (!mIsMergeable) {
+    clearCanvases(mNRawDigitsCanvasVec);
+    clearCanvases(mQMaxCanvasVec);
+    clearCanvases(mTimeBinCanvasVec);
+  }
 }
 
 } // namespace o2::quality_control_modules::tpc

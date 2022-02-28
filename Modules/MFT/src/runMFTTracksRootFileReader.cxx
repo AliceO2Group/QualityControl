@@ -94,10 +94,6 @@ class MFTTracksRootFileReader : public o2::framework::Task
     mTree->GetEntry(mCurrentTF); // get TF
     mNumberOfROF = rofs.size();  // get number of ROFs in this TF
 
-    // check if we need to read a new TF
-    if (mCurrentROF == mNumberOfROF - 1)
-      mCurrentTF++;
-
     // prepare the rof output
     std::vector<o2::itsmft::ROFRecord>* oneROFvec = new std::vector<o2::itsmft::ROFRecord>();
     std::copy(rofs.begin() + mCurrentROF, rofs.begin() + mCurrentROF + 1, std::back_inserter(*oneROFvec));
@@ -120,6 +116,12 @@ class MFTTracksRootFileReader : public o2::framework::Task
 
     //  update the ROF counter
     mCurrentROF++;
+
+    // check if we need to read a new TF
+    if (mCurrentROF == mNumberOfROF) {
+      mCurrentTF++;
+      mCurrentROF = 0;
+    }
   }
 
  private:

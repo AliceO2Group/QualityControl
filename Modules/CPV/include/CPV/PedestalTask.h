@@ -20,8 +20,6 @@
 #include "QualityControl/TaskInterface.h"
 #include <memory>
 #include <array>
-#include "DataFormatsCPV/Digit.h"
-#include "DataFormatsCPV/TriggerRecord.h"
 #include <gsl/span>
 #include "CPVBase/Geometry.h"
 
@@ -100,6 +98,7 @@ class PedestalTask final : public TaskInterface
   int mNEventsTotal;
   int mNEventsFromLastFillHistogramsCall;
   int mMinNEventsToUpdatePedestals = 1000; ///< min number of events needed to update pedestals
+  int mRunNumber = 0;                      ///< Run number of current activity
 
   std::array<TH1F*, kNHist1D> mHist1D = { nullptr }; ///< Array of 1D histograms
   std::array<TH2F*, kNHist2D> mHist2D = { nullptr }; ///< Array of 2D histograms

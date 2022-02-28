@@ -19,6 +19,7 @@
 
 #include <DataFormatsQualityControl/TimeRangeFlag.h>
 #include <memory>
+#include <utility>
 #include <vector>
 
 namespace o2::quality_control
@@ -35,7 +36,8 @@ class QualityObject;
 class QualitiesToTRFCollectionConverter
 {
  public:
-  QualitiesToTRFCollectionConverter(std::string trfcName, std::string detectorCode, uint64_t startTimeLimit, uint64_t endTimeLimit, std::string qoPath);
+  QualitiesToTRFCollectionConverter(std::unique_ptr<TimeRangeFlagCollection> trfc, std::string qoPath);
+
   ~QualitiesToTRFCollectionConverter() = default;
 
   /// \brief Converts a Quality into TRFCollection. The converter should get Qualities in chronological order.
@@ -48,17 +50,15 @@ class QualitiesToTRFCollectionConverter
   size_t getWorseThanGoodQOs() const;
 
  private:
-  uint64_t mStartTimeLimit;
-  uint64_t mEndTimeLimit;
   std::string mQOPath; // this is only to indicate what is the missing Quality in TRF
 
   std::unique_ptr<TimeRangeFlagCollection> mConverted;
 
-  uint64_t mCurrentStartTime;
+  uint64_t mCurrentStartTime = 0;
   uint64_t mCurrentEndTime;
   std::vector<TimeRangeFlag> mCurrentTRFs;
-  size_t mQOsIncluded;
-  size_t mWorseThanGoodQOs;
+  size_t mQOsIncluded = 0;
+  size_t mWorseThanGoodQOs = 0;
 };
 
 } // namespace o2::quality_control::core

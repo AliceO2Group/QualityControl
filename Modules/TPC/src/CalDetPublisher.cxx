@@ -38,6 +38,8 @@ namespace o2::quality_control_modules::tpc
 
 void CalDetPublisher::configure(std::string name, const boost::property_tree::ptree& config)
 {
+  o2::tpc::CDBInterface::instance().setURL(config.get<std::string>("qc.config.conditionDB.url"));
+
   for (const auto& output : config.get_child("qc.postprocessing." + name + ".outputCalPadMaps")) {
     mOutputListMap.emplace_back(output.second.data());
   }
@@ -205,7 +207,7 @@ void CalDetPublisher::update(Trigger t, framework::ServiceRegistry&)
       mLookupMaps.size() > 1 ? mLookupMaps.at(calVecIter) : mLookupMaps.at(0));
     for (const auto& item : calMap) {
       auto vecPtr = toVector(mCalDetCanvasVec.at(calDetIter));
-      o2::tpc::painter::makeSummaryCanvases(item.second, int(mRanges[item.second.getName()].at(0)), mRanges[item.second.getName()].at(1), mRanges[item.second.getName()].at(2), true, &vecPtr);
+      o2::tpc::painter::makeSummaryCanvases(item.second, int(mRanges[item.second.getName()].at(0)), mRanges[item.second.getName()].at(1), mRanges[item.second.getName()].at(2), false, &vecPtr);
       calDetIter++;
     }
     calVecIter++;
@@ -239,7 +241,7 @@ void CalDetPublisher::update(Trigger t, framework::ServiceRegistry&)
                                                                                                       mTimestamps.size() > 0 ? mTimestamps.at(calDetIter) : -1,
                                                                                                       mLookupMaps.size() > 1 ? mLookupMaps.at(calDetIter) : mLookupMaps.at(0));
     auto vecPtr = toVector(mCalDetCanvasVec.at(calDetIter));
-    o2::tpc::painter::makeSummaryCanvases(calDet, int(mRanges[calDet.getName()].at(0)), mRanges[calDet.getName()].at(1), mRanges[calDet.getName()].at(2), true, &vecPtr);
+    o2::tpc::painter::makeSummaryCanvases(calDet, int(mRanges[calDet.getName()].at(0)), mRanges[calDet.getName()].at(1), mRanges[calDet.getName()].at(2), false, &vecPtr);
     calDetIter++;
 
     /// This will be removed when Pedestal and Noise are stored in a unordered_map

@@ -1,19 +1,23 @@
-# ---- Library ----
+﻿# ---- Library ----
 
 add_library(O2QcITS
             src/ITSRawTask.cxx
             src/TrendingTaskITSThr.cxx
             src/TrendingTaskITSFhr.cxx
+            src/TrendingTaskITSCluster.cxx
+            src/TrendingTaskITSTracks.cxx
             src/TrendingTaskConfigITS.cxx
             src/TH2XlineReductor.cxx
             src/ITSFhrTask.cxx
             src/ITSFeeTask.cxx
             src/ITSClusterTask.cxx
+            src/ITSNoisyPixelTask.cxx
             src/ITSTrackTask.cxx
             src/ITSFhrCheck.cxx
             src/ITSClusterCheck.cxx
             src/ITSTrackCheck.cxx
             src/ITSFeeCheck.cxx
+            src/ITSTrackSimTask.cxx
             )
 
 target_sources(O2QcITS PRIVATE src/TH2XlineReductor.cxx)
@@ -26,7 +30,7 @@ target_include_directories(
 
 include_directories(${O2_ROOT}/include/GPU)
 
-target_link_libraries(O2QcITS PUBLIC O2QualityControl O2::ITSBase O2::ITSMFTBase O2::ITSMFTReconstruction ROOT::Hist)
+target_link_libraries(O2QcITS PUBLIC O2QualityControl O2::ITSBase O2::ITSMFTBase O2::ITSMFTReconstruction ROOT::Hist O2::DataFormatsITS O2::Steer)
 
 if (OpenMP_CXX_FOUND)
   target_compile_definitions(O2QcITS PRIVATE WITH_OPENMP)
@@ -44,15 +48,19 @@ add_root_dictionary(O2QcITS
                     HEADERS include/ITS/ITSRawTask.h
                             include/ITS/TrendingTaskITSThr.h
                             include/ITS/TrendingTaskITSFhr.h
+                            include/ITS/TrendingTaskITSCluster.h
+                            include/ITS/TrendingTaskITSTracks.h
                             include/ITS/TH2XlineReductor.h
                             include/ITS/ITSFhrTask.h
                             include/ITS/ITSFeeTask.h
                             include/ITS/ITSClusterTask.h
+                            include/ITS/ITSNoisyPixelTask.h
                             include/ITS/ITSTrackTask.h
                             include/ITS/ITSFhrCheck.h
                             include/ITS/ITSClusterCheck.h
                             include/ITS/ITSTrackCheck.h
                             include/ITS/ITSFeeCheck.h
+                            include/ITS/ITSTrackSimTask.h
                     LINKDEF include/ITS/LinkDef.h
                     BASENAME O2QcITS)
 
@@ -70,25 +78,22 @@ install(
 # ---- Executables ----
 
 set(EXE_SRCS
-    src/runITS.cxx)
+    src/runITS.cxx
+    src/runITSTracksRootFileReader.cxx
+    src/runITSClustersRootFileReader.cxx)
 
 set(EXE_NAMES
-    o2-qc-run-its)
-
-# These were the original names before the convention changed. We will get rid
-# of them but for the time being we want to create symlinks to avoid confusion.
-set(EXE_OLD_NAMES
-    qcRunITS)
+    o2-qc-run-its
+    o2-qc-its-tracks-root-file-reader
+    o2-qc-its-clusters-root-file-reader)
 
 list(LENGTH EXE_SRCS count)
 math(EXPR count "${count}-1")
 foreach(i RANGE ${count})
   list(GET EXE_SRCS ${i} src)
   list(GET EXE_NAMES ${i} name)
-  list(GET EXE_OLD_NAMES ${i} oldname)
   add_executable(${name} ${src})
   target_link_libraries(${name} PRIVATE O2QualityControl CURL::libcurl O2::ITSQCDataReaderWorkflow O2::DetectorsBase ROOT::Tree)
-  install_symlink(${name} ${CMAKE_INSTALL_FULL_BINDIR}/${oldname})
 endforeach()
 
 install(
@@ -102,9 +107,13 @@ install(FILES
         its.json
         itsQCTrendingThr.json
         itsQCTrendingFhr.json
+        itsQCTrendingCluster.json
+        itsQCTrendingTracks.json
         itsFhr.json
         itsFee.json
         itsCluster.json
+        itsNoisyPixel.json
+        itsTrackSim.json 
         DESTINATION etc)
 
 get_property(dirs

@@ -11,7 +11,7 @@
 
 ///
 /// \file   HmpidTask.h
-/// \author My Name
+/// \author Antonio Franco, Giacomo Volpe
 ///
 
 #ifndef QC_MODULE_HMPID_HMPIDHMPIDTASK_H
@@ -21,6 +21,7 @@
 #include "HMPIDReconstruction/HmpidDecoder2.h"
 
 class TH1F;
+class TProfile;
 
 using namespace o2::quality_control::core;
 
@@ -49,8 +50,8 @@ class HmpidTask final : public TaskInterface
  private:
   TH1F* hPedestalMean = nullptr;
   TH1F* hPedestalSigma = nullptr;
-  TH1F* hBusyTime = nullptr;
-  TH1F* hEventSize = nullptr;
+  TProfile* hBusyTime = nullptr;
+  TProfile* hEventSize = nullptr;
   o2::hmpid::HmpidDecoder2* mDecoder = nullptr;
 };
 

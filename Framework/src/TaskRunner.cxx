@@ -30,13 +30,18 @@
 #include <Framework/DataSpecUtils.h>
 #include <Framework/InputRecordWalker.h>
 #include <Framework/InputSpan.h>
+#include <Framework/DataRefUtils.h>
 
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/TaskFactory.h"
 #include "QualityControl/runnerUtils.h"
+#include "QualityControl/InfrastructureSpecReader.h"
+#include "QualityControl/TaskRunnerFactory.h"
 
 #include <string>
 #include <TFile.h>
+#include <boost/property_tree/ptree.hpp>
+#include <TSystem.h>
 
 using namespace std;
 
@@ -59,33 +64,78 @@ TaskRunner::TaskRunner(const TaskRunnerConfig& config)
 {
 }
 
-void TaskRunner::init(InitContext& iCtx)
+void TaskRunner::refreshConfig(InitContext& iCtx)
+{
+  try {
+    // get the tree
+    auto updatedTree = iCtx.options().get<boost::property_tree::ptree>("qcConfiguration");
+
+    if (updatedTree.empty()) {
+      ILOG(Warning, Devel) << "Templated config tree is empty, we continue with the original one" << ENDM;
+    } else {
+      if (gSystem->Getenv("O2_QC_DEBUG_CONFIG_TREE")) { // until we are sure it works, keep a backdoor
+        ILOG(Debug, Devel) << "We print the tree we got from the ECS via DPL : " << ENDM;
+        printTree(updatedTree);
+      }
+
+      // prepare the information we need
+      auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(updatedTree);
+      // find the correct taskSpec
+      auto taskSpecIter = find_if(infrastructureSpec.tasks.begin(),
+                                  infrastructureSpec.tasks.end(),
+                                  [this](const TaskSpec& ts) { return ts.taskName == mTaskConfig.taskName; });
+      if (taskSpecIter != infrastructureSpec.tasks.end()) {
+        int resetAfterCycles = TaskRunnerFactory::computeResetAfterCycles(*taskSpecIter);
+        mTaskConfig = TaskRunnerFactory::extractConfig(infrastructureSpec.common, *taskSpecIter, mTaskConfig.parallelTaskID, resetAfterCycles);
+        ILOG(Debug, Devel) << "Configuration refreshed" << ENDM;
+      } else {
+        ILOG(Error, Support) << "Could not find the task " << mTaskConfig.taskName << " in the templated config provided by ECS, we continue with the original config" << ENDM;
+      }
+    }
+  } catch (std::invalid_argument& error) {
+    // ignore the error, we just skip the update of the config file. It can be legit, e.g. in command line mode
+    ILOG(Warning, Devel) << "Could not get updated config tree in TaskRunner::init() - `qcConfiguration` could not be retrieved" << ENDM;
+  } catch (...) {
+    // we catch here because we don't know where it will get lost in dpl, and also we don't care if this part has failed.
+    ILOG(Warning, Devel) << "Error caught in refreshConfig() :\n"
+                         << current_diagnostic(true) << ENDM;
+  }
+}
+
+void TaskRunner::initInfologger(InitContext& iCtx)
 {
   AliceO2::InfoLogger::InfoLoggerContext* ilContext = nullptr;
+  AliceO2::InfoLogger::InfoLogger* il = nullptr;
   try {
     ilContext = &iCtx.services().get<AliceO2::InfoLogger::InfoLoggerContext>();
+    il = &iCtx.services().get<AliceO2::InfoLogger::InfoLogger>();
   } catch (const RuntimeErrorRef& err) {
-    ILOG(Error) << "Could not find the DPL InfoLogger Context." << ENDM;
+    ILOG(Error, Devel) << "Could not find the DPL InfoLogger" << ENDM;
   }
-  ILOG_INST.init("task/" + mTaskConfig.taskName,
-                 mTaskConfig.infologgerFilterDiscardDebug,
-                 mTaskConfig.infologgerDiscardLevel,
-                 ilContext);
+  QcInfoLogger::init("task/" + mTaskConfig.taskName,
+                     mTaskConfig.infologgerFilterDiscardDebug,
+                     mTaskConfig.infologgerDiscardLevel,
+                     il,
+                     ilContext);
+  QcInfoLogger::setDetector(mTaskConfig.detectorName);
+}
 
+void TaskRunner::init(InitContext& iCtx)
+{
+  initInfologger(iCtx);
   ILOG(Info, Support) << "Initializing TaskRunner" << ENDM;
-  try {
-    loadTaskConfig();
-  } catch (...) {
-    // catch the configuration exception and print it to avoid losing it
-    ILOG(Fatal, Ops) << "Unexpected exception during configuration:\n"
-                     << current_diagnostic(true) << ENDM;
-    throw;
-  }
+
+  refreshConfig(iCtx);
+  printTaskConfig();
 
   // registering state machine callbacks
-  iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, &services = iCtx.services()]() { start(services); });
-  iCtx.services().get<CallbackService>().set(CallbackService::Id::Stop, [this]() { stop(); });
-  iCtx.services().get<CallbackService>().set(CallbackService::Id::Reset, [this]() { reset(); });
+  try {
+    iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, &services = iCtx.services()]() { start(services); });
+    iCtx.services().get<CallbackService>().set(CallbackService::Id::Reset, [this]() { reset(); });
+    iCtx.services().get<CallbackService>().set(CallbackService::Id::Stop, [this]() { stop(); });
+  } catch (o2::framework::RuntimeErrorRef& ref) {
+    ILOG(Error) << "Error during initialization: " << o2::framework::error_from_ref(ref).what << ENDM;
+  }
 
   // setup monitoring
   mCollector = MonitoringFactory::Get(mTaskConfig.monitoringUrl);
@@ -93,11 +143,11 @@ void TaskRunner::init(InitContext& iCtx)
   mCollector->addGlobalTag("TaskName", mTaskConfig.taskName);
 
   // setup publisher
-  mObjectsManager = std::make_shared<ObjectsManager>(mTaskConfig.taskName, mTaskConfig.detectorName, mTaskConfig.consulUrl, mTaskConfig.parallelTaskID);
+  mObjectsManager = std::make_shared<ObjectsManager>(mTaskConfig.taskName, mTaskConfig.className, mTaskConfig.detectorName, mTaskConfig.consulUrl, mTaskConfig.parallelTaskID);
 
   // setup user's task
-  TaskFactory f;
-  mTask.reset(f.create(mTaskConfig, mObjectsManager));
+  TaskFactory factory;
+  mTask.reset(factory.create(mTaskConfig, mObjectsManager));
   mTask->setMonitoring(mCollector);
 
   // init user's task
@@ -180,7 +230,7 @@ CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framewor
 
 std::string TaskRunner::createTaskRunnerIdString()
 {
-  return std::string("QC-TASK-RUNNER");
+  return std::string("qc-task");
 }
 
 header::DataOrigin TaskRunner::createTaskDataOrigin()
@@ -194,7 +244,25 @@ header::DataDescription TaskRunner::createTaskDataDescription(const std::string&
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Empty taskName for task's data description"));
   }
   o2::header::DataDescription description;
-  description.runtimeInit(std::string(taskName.substr(0, header::DataDescription::size - 3) + "-mo").c_str());
+  if (taskName.length() > header::DataDescription::size) {
+    ILOG(Warning, Devel) << "Task name is longer than " << (int)header::DataDescription::size << ", it might cause name clashes in the DPL workflow" << ENDM;
+  }
+  description.runtimeInit(std::string(taskName.substr(0, header::DataDescription::size)).c_str());
+  return description;
+}
+
+header::DataDescription TaskRunner::createTimerDataDescription(const std::string& taskName)
+{
+  if (taskName.empty()) {
+    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Empty taskName for timers's data description"));
+  }
+  // hash the taskName to avoid clashing if the name is long and the beginning is identical
+  auto hashedName = std::hash<std::string>{}(taskName);
+  hashedName = hashedName % 10000000000LU; // 10 characters max
+  std::ostringstream ss;
+  ss << std::setw(10) << std::setfill('0') << hashedName; // 10 characters min
+  o2::header::DataDescription description;
+  description.runtimeInit(std::string("TIMER-" + ss.str()).substr(0, header::DataDescription::size).c_str());
   return description;
 }
 
@@ -208,6 +276,9 @@ void TaskRunner::endOfStream(framework::EndOfStreamContext& eosContext)
 void TaskRunner::start(const ServiceRegistry& services)
 {
   mRunNumber = o2::quality_control::core::computeRunNumber(services, mTaskConfig.fallbackRunNumber);
+  QcInfoLogger::setRun(mRunNumber);
+  string partitionName = computePartitionName(services);
+  QcInfoLogger::setPartition(partitionName);
 
   try {
     startOfActivity();
@@ -284,12 +355,8 @@ std::tuple<bool /*data ready*/, bool /*timer ready*/> TaskRunner::validateInputs
   return { dataReady, timerReady };
 }
 
-void TaskRunner::loadTaskConfig() // todo consider renaming
+void TaskRunner::printTaskConfig()
 {
-  ILOG(Info, Support) << "Loading configuration" << ENDM;
-
-  ILOG_INST.setDetector(mTaskConfig.detectorName);
-
   ILOG(Info, Support) << "Configuration loaded : " << ENDM;
   ILOG(Info, Support) << ">> Task name : " << mTaskConfig.taskName << ENDM;
   ILOG(Info, Support) << ">> Module name : " << mTaskConfig.moduleName << ENDM;
@@ -308,6 +375,7 @@ void TaskRunner::startOfActivity()
   // Start activity in module's stask and update objectsManager
   Activity activity(mRunNumber, mTaskConfig.activityType, mTaskConfig.activityPeriodName, mTaskConfig.activityPassName, mTaskConfig.activityProvenance);
   ILOG(Info, Ops) << "Starting run " << mRunNumber << ENDM;
+  mObjectsManager->setActivity(activity);
   mCollector->setRunNumber(mRunNumber);
   mTask->startOfActivity(activity);
   mObjectsManager->updateServiceDiscovery();
@@ -360,12 +428,13 @@ void TaskRunner::updateMonitoringStats(ProcessingContext& pCtx)
 {
   mNumberMessagesReceivedInCycle++;
   for (const auto& input : InputRecordWalker(pCtx.inputs())) {
-    const auto* inputHeader = header::get<header::DataHeader*>(input.header);
+    const auto* inputHeader = DataRefUtils::getHeader<header::DataHeader*>(input);
+    auto payloadSize = DataRefUtils::getPayloadSize(input);
     if (inputHeader == nullptr) {
       ILOG(Warning, Devel) << "No DataHeader found in message, ignoring this one for the statistics." << ENDM;
       continue;
     }
-    mDataReceivedInCycle += inputHeader->headerSize + inputHeader->payloadSize;
+    mDataReceivedInCycle += inputHeader->headerSize + payloadSize;
   }
 }
 
