@@ -30,7 +30,7 @@ using namespace std;
 namespace o2::quality_control_modules::mft
 {
 
-void QcMFTTrackCheck::configure(std::string) {}
+void QcMFTTrackCheck::configure() {}
 
 Quality QcMFTTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {

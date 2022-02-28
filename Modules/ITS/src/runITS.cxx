@@ -74,7 +74,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
 
   o2::base::GeometryManager::loadGeometry();
 
-  QcInfoLogger::GetInstance() << "START READER" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "START READER" << AliceO2::InfoLogger::InfoLogger::endm;
 
   specs.emplace_back(o2::its::getTestDataReaderSpec());
 
@@ -88,7 +88,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
   DataSampling::GenerateInfrastructure(specs, dataSamplingTree);
 
   // Generation of the QC topology (one task, one checker in this case)
-  quality_control::generateStandaloneInfrastructure(specs, qcConfigurationSource);
+  quality_control::generateStandaloneInfrastructure(specs, configInterface->getRecursive());
 
   return specs;
 }

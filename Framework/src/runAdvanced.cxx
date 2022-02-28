@@ -84,6 +84,8 @@ using namespace o2::configuration;
 
 WorkflowSpec defineDataProcessing(ConfigContext const& config)
 {
+  QcInfoLogger::setFacility("runAdvanced");
+
   bool noQC = config.options().get<bool>("no-qc");
   bool noDebug = config.options().get<bool>("no-debug-output");
   const std::string qcConfigurationSource =
@@ -100,7 +102,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const& config)
     auto dataSamplingTree = configInterface->getRecursive("dataSamplingPolicies");
     DataSampling::GenerateInfrastructure(specs, dataSamplingTree);
     // Generation of the remote QC topology (for the QC servers)
-    quality_control::generateStandaloneInfrastructure(specs, qcConfigurationSource);
+    quality_control::generateStandaloneInfrastructure(specs, configInterface->getRecursive());
   }
   return specs;
 }

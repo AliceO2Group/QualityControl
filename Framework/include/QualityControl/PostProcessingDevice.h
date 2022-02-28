@@ -20,6 +20,7 @@
 #include <Framework/Task.h>
 #include <Framework/DataProcessorSpec.h>
 #include <Headers/DataHeader.h>
+#include "QualityControl/PostProcessingRunnerConfig.h"
 
 #include <string>
 #include <memory>
@@ -28,6 +29,7 @@ namespace o2::quality_control::postprocessing
 {
 
 class PostProcessingRunner;
+struct PostProcessingRunnerConfig;
 
 /// \brief A class driving the execution of a QC PostProcessing task inside DPL.
 ///
@@ -39,7 +41,7 @@ class PostProcessingDevice : public framework::Task
   ///
   /// \param taskName - name of the task, which exists in tasks list in the configuration file
   /// \param configurationSource - absolute path to configuration file, preceded with backend (f.e. "json://")
-  PostProcessingDevice(const std::string& taskName, const std::string& configurationSource);
+  PostProcessingDevice(const PostProcessingRunnerConfig& runnerConfig);
   ~PostProcessingDevice() override = default;
 
   /// \brief PostProcessingDevice's init callback
@@ -52,6 +54,8 @@ class PostProcessingDevice : public framework::Task
   framework::Outputs getOutputSpecs();
   framework::Options getOptions();
 
+  /// \brief Data Processor Label to identify all Task Runners
+  static framework::DataProcessorLabel getLabel() { return { "qc-pp-task-runner" }; }
   /// \brief ID string for all PostProcessingDevices
   static std::string createPostProcessingIdString();
   /// \brief Unified DataOrigin for Post-processing tasks
@@ -63,14 +67,14 @@ class PostProcessingDevice : public framework::Task
   /// \brief Callback for CallbackService::Id::Start (DPL) a.k.a. RUN transition (FairMQ)
   void start();
   /// \brief Callback for CallbackService::Id::Stop (DPL) a.k.a. STOP transition (FairMQ)
-  void stop();
+  void stop() override;
   /// \brief Callback for CallbackService::Id::Reset (DPL) a.k.a. RESET DEVICE transition (FairMQ)
   void reset();
 
  private:
   std::shared_ptr<PostProcessingRunner> mRunner;
   std::string mDeviceName;
-  std::string mConfigSource;
+  PostProcessingRunnerConfig mRunnerConfig;
 };
 
 } // namespace o2::quality_control::postprocessing

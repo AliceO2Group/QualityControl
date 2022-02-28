@@ -26,7 +26,7 @@
 namespace o2::quality_control::checker
 {
 
-/// \brief  Container for the configuration of a Check or an Aggregator.
+/// \brief  Container for the configuration of a Check.
 struct CheckConfig {
   std::string name;
   std::string moduleName;

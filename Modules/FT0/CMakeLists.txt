@@ -2,14 +2,21 @@
 
 add_library(O2QcFT0)
 
-target_sources(O2QcFT0 PRIVATE src/BasicDigitQcTask.cxx
+target_sources(O2QcFT0 PRIVATE  src/BasicDigitQcTask.cxx
                              src/DigitQcTask.cxx
                              src/ChannelsCheck.cxx
                              src/DigitsCheck.cxx
                              src/MergedTreeCheck.cxx
                              src/TreeReaderPostProcessing.cxx
                              src/CalibrationTask.cxx
-                             src/ChannelTimeCalibrationCheck.cxx)
+                             src/ChannelTimeCalibrationCheck.cxx
+                             src/BasicPPTask.cxx
+                             src/OutOfBunchCollTask.cxx
+                             src/CFDEffCheck.cxx
+                             src/TriggerQcTask.cxx
+                             src/OutOfBunchCollCheck.cxx
+                             src/RecPointsQcTask.cxx
+                            )
 
 target_include_directories(
   O2QcFT0
@@ -35,11 +42,17 @@ add_root_dictionary(O2QcFT0
                 include/FT0/TreeReaderPostProcessing.h
                 include/FT0/CalibrationTask.h
                 include/FT0/ChannelTimeCalibrationCheck.h
+                include/FT0/BasicPPTask.h
+                include/FT0/OutOfBunchCollTask.h
+                include/FT0/CFDEffCheck.h
+                include/FT0/TriggerQcTask.h
+                include/FT0/OutOfBunchCollCheck.h
+                include/FT0/RecPointsQcTask.h
         LINKDEF include/FT0/LinkDef.h
         BASENAME O2QcFT0)
 
 # ---- Executables ----
-# keep commented as an example 
+# keep commented as an example
 
 #set(EXE_SRCS
 #     src/runDataProducer.cxx )
@@ -84,6 +97,7 @@ install(FILES
         ft0-multinode-config.json
         ft0-postprocessing-config.json
         ft0-basic-config.json
+        ft0-reconstruction-config.json
         DESTINATION etc)
 
 get_property(dirs

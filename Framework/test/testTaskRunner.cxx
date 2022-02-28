@@ -22,6 +22,9 @@
 #include "QualityControl/InfrastructureSpecReader.h"
 #include "Configuration/ConfigurationFactory.h"
 #include "Configuration/ConfigurationInterface.h"
+#include <Framework/InitContext.h>
+#include <Framework/ConfigParamRegistry.h>
+#include <Framework/ConfigParamStore.h>
 
 #define BOOST_TEST_MODULE TaskRunner test
 #define BOOST_TEST_MAIN
@@ -39,7 +42,7 @@ using namespace o2::configuration;
 TaskRunnerConfig getTaskConfig(const std::string& configFilePath, const std::string& taskName, size_t id)
 {
   auto config = ConfigurationFactory::getConfiguration(configFilePath);
-  auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(config->getRecursive(), configFilePath);
+  auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(config->getRecursive());
 
   auto taskSpec = std::find_if(infrastructureSpec.tasks.begin(), infrastructureSpec.tasks.end(), [&taskName](const auto& taskSpec) {
     return taskSpec.taskName == taskName;
@@ -57,7 +60,7 @@ BOOST_AUTO_TEST_CASE(test_factory)
 
   DataProcessorSpec taskRunner = TaskRunnerFactory::create(getTaskConfig(configFilePath, "abcTask", 123));
 
-  BOOST_CHECK_EQUAL(taskRunner.name, "QC-TASK-RUNNER-abcTask");
+  BOOST_CHECK_EQUAL(taskRunner.name, "qc-task-MISC-abcTask");
 
   auto dataSamplingTree = ConfigurationFactory::getConfiguration(configFilePath)->getRecursive("dataSamplingPolicies");
   BOOST_REQUIRE_EQUAL(taskRunner.inputs.size(), 2);
@@ -65,21 +68,21 @@ BOOST_AUTO_TEST_CASE(test_factory)
   BOOST_CHECK(taskRunner.inputs[1].lifetime == Lifetime::Timer);
 
   BOOST_REQUIRE_EQUAL(taskRunner.outputs.size(), 1);
-  BOOST_CHECK_EQUAL(taskRunner.outputs[0], (OutputSpec{ { "mo" }, "QC", "abcTask-mo", 123 }));
+  BOOST_CHECK_EQUAL(taskRunner.outputs[0], (OutputSpec{ { "mo" }, "QC", "abcTask", 123, Lifetime::Sporadic }));
 
   BOOST_CHECK(taskRunner.algorithm.onInit != nullptr);
 
-  BOOST_REQUIRE_EQUAL(taskRunner.options.size(), 2);
+  BOOST_REQUIRE_EQUAL(taskRunner.options.size(), 3);
   BOOST_CHECK_EQUAL(taskRunner.options[0].name, "period-timer-cycle");
 }
 
 BOOST_AUTO_TEST_CASE(test_task_runner_static)
 {
   BOOST_CHECK_EQUAL(TaskRunner::createTaskDataOrigin(), DataOrigin("QC"));
-  BOOST_CHECK(TaskRunner::createTaskDataDescription("qwertyuiop") == DataDescription("qwertyuiop-mo"));
-  BOOST_CHECK(TaskRunner::createTaskDataDescription("012345678901234567890") == DataDescription("0123456789012-mo"));
+  BOOST_CHECK(TaskRunner::createTaskDataDescription("qwertyuiop") == DataDescription("qwertyuiop"));
+  BOOST_CHECK(TaskRunner::createTaskDataDescription("012345678901234567890") == DataDescription("0123456789012345"));
   BOOST_CHECK_THROW(TaskRunner::createTaskDataDescription(""), AliceO2::Common::FatalException);
-  BOOST_CHECK_EQUAL(TaskRunner::createTaskRunnerIdString(), "QC-TASK-RUNNER");
+  BOOST_CHECK_EQUAL(TaskRunner::createTaskRunnerIdString(), "qc-task");
 }
 
 BOOST_AUTO_TEST_CASE(test_task_runner)
@@ -87,20 +90,32 @@ BOOST_AUTO_TEST_CASE(test_task_runner)
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
   TaskRunner qcTask{ getTaskConfig(configFilePath, "abcTask", 0) };
 
-  BOOST_CHECK_EQUAL(qcTask.getDeviceName(), "QC-TASK-RUNNER-abcTask");
+  BOOST_CHECK_EQUAL(qcTask.getDeviceName(), "qc-task-MISC-abcTask");
 
   auto dataSamplingTree = ConfigurationFactory::getConfiguration(configFilePath)->getRecursive("dataSamplingPolicies");
   BOOST_REQUIRE_EQUAL(qcTask.getInputsSpecs().size(), 2);
   BOOST_CHECK_EQUAL(qcTask.getInputsSpecs()[0], DataSampling::InputSpecsForPolicy(dataSamplingTree, "tpcclust").at(0));
   BOOST_CHECK(qcTask.getInputsSpecs()[1].lifetime == Lifetime::Timer);
 
-  BOOST_CHECK_EQUAL(qcTask.getOutputSpec(), (OutputSpec{ { "mo" }, "QC", "abcTask-mo", 0 }));
+  BOOST_CHECK_EQUAL(qcTask.getOutputSpec(), (OutputSpec{ { "mo" }, "QC", "abcTask", 0, Lifetime::Sporadic }));
 
-  BOOST_REQUIRE_EQUAL(qcTask.getOptions().size(), 2);
+  BOOST_REQUIRE_EQUAL(qcTask.getOptions().size(), 3);
   BOOST_CHECK_EQUAL(qcTask.getOptions()[0].name, "period-timer-cycle");
 
   // This is maximum that we can do until we are able to test the DPL algorithms in isolation.
   // TODO: When it is possible, we should try calling run() and init()
+
+  // Attempt for init:
+  Options options{
+    { "runNumber", VariantType::String, { "Run number" } },
+    { "qcConfiguration", VariantType::Dict, emptyDict(), { "Some dictionary configuration" } }
+  };
+  std::vector<std::unique_ptr<ParamRetriever>> retr;
+  std::unique_ptr<ConfigParamStore> store = make_unique<ConfigParamStore>(move(options), move(retr));
+  ConfigParamRegistry cfReg(std::move(store));
+  ServiceRegistry sReg;
+  InitContext initContext{ cfReg, sReg };
+  qcTask.init(initContext);
 }
 
 BOOST_AUTO_TEST_CASE(test_task_wrong_detector_name)

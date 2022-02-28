@@ -33,15 +33,35 @@ RootFileSink::RootFileSink(std::string filePath)
 {
 }
 
+TFile* openSinkFile(const std::string& name)
+{
+  auto file = new TFile(name.c_str(), "UPDATE");
+  if (file->IsZombie()) {
+    throw std::runtime_error("File '" + name + "' is zombie.");
+  }
+  if (!file->IsOpen()) {
+    throw std::runtime_error("Failed to open the file: " + name);
+  }
+  if (!file->IsWritable()) {
+    throw std::runtime_error("File '" + name + "' is not writable.");
+  }
+  ILOG(Info) << "Output file '" << name << "' successfully open." << ENDM;
+  return file;
+}
+
+void closeSinkFile(TFile* file)
+{
+  if (file != nullptr) {
+    if (file->IsOpen()) {
+      ILOG(Info) << "Closing file '" << file->GetName() << "'." << ENDM;
+      file->Close();
+    }
+    delete file;
+  }
+}
+
 RootFileSink::~RootFileSink()
 {
-  if (mFile != nullptr) {
-    if (mFile->IsOpen()) {
-      ILOG(Info) << "Closing file '" << mFilePath << "'." << ENDM;
-      mFile->Close();
-    }
-    delete mFile;
-  }
 }
 
 void RootFileSink::customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies)
@@ -56,73 +76,55 @@ void RootFileSink::customizeInfrastructure(std::vector<framework::CompletionPoli
 
 void RootFileSink::init(framework::InitContext& ictx)
 {
-  ictx.services().get<CallbackService>().set(CallbackService::Id::Reset, [this]() { reset(); });
-
-  if (mFile != nullptr) {
-    if (mFile->IsOpen()) {
-      ILOG(Info) << "Closing file '" << mFilePath << "'." << ENDM;
-      mFile->Close();
-    }
-    delete mFile;
-  }
-  mFile = new TFile(mFilePath.c_str(), "UPDATE");
-  if (mFile->IsZombie()) {
-    throw std::runtime_error("File '" + mFilePath + "' is zombie.");
-  }
-  if (!mFile->IsOpen()) {
-    throw std::runtime_error("Failed to open the file: " + mFilePath);
-  }
-  if (!mFile->IsWritable()) {
-    throw std::runtime_error("File '" + mFilePath + "' is not writable.");
-  }
-  ILOG(Info) << "Output file '" << mFilePath << "' successfully open." << ENDM;
-}
-
-void RootFileSink::reset()
-{
-  if (mFile != nullptr) {
-    if (mFile->IsOpen()) {
-      ILOG(Info) << "Closing file '" << mFilePath << "'." << ENDM;
-      mFile->Close();
-    }
-    delete mFile;
-    mFile = nullptr;
-  }
 }
 
 void RootFileSink::run(framework::ProcessingContext& pctx)
 {
-  for (const auto& input : InputRecordWalker(pctx.inputs())) {
-    auto moc = DataRefUtils::as<MonitorObjectCollection>(input).release();
-    if (moc == nullptr) {
-      ILOG(Error) << "Could not cast the input to MonitorObjectCollection, skipping." << ENDM;
-      continue;
-    }
-    moc->SetOwner();
-
-    auto mocName = moc->GetName();
-    if (*mocName == '\0') {
-      ILOG(Error) << "MonitorObjectCollection does not have a name, skipping." << ENDM;
-      continue;
-    }
-
-    auto storedTObj = mFile->Get(mocName);
-    if (storedTObj != nullptr) {
-      auto storedMOC = dynamic_cast<MonitorObjectCollection*>(storedTObj);
-      if (storedMOC == nullptr) {
-        ILOG(Error) << "Could not cast the stored object to MonitorObjectCollection, skipping." << ENDM;
-        delete storedTObj;
+  TFile* sinkFile = nullptr;
+  try {
+    sinkFile = openSinkFile(mFilePath);
+    for (const auto& input : InputRecordWalker(pctx.inputs())) {
+      auto moc = DataRefUtils::as<MonitorObjectCollection>(input).release();
+      if (moc == nullptr) {
+        ILOG(Error) << "Could not cast the input object to MonitorObjectCollection, skipping." << ENDM;
         continue;
       }
-      storedMOC->SetOwner();
-      ILOG(Info) << "Merging object '" << moc->GetName() << "' with the existing one in the file." << ENDM;
-      moc->merge(storedMOC);
-    }
-    delete storedTObj;
+      ILOG(Info, Support) << "Received MonitorObjectCollection '" << moc->GetName() << "'" << ENDM;
+      moc->postDeserialization();
 
-    ILOG(Info) << "Object '" << moc->GetName() << "' has been stored in the file." << ENDM;
-    mFile->WriteObject(moc, moc->GetName(), "Overwrite");
-    delete moc;
+      auto mocName = moc->GetName();
+      if (*mocName == '\0') {
+        ILOG(Error, Support) << "MonitorObjectCollection does not have a name, skipping." << ENDM;
+        continue;
+      }
+
+      ILOG(Info, Support) << "Checking for existing objects in the file." << ENDM;
+      auto storedTObj = sinkFile->Get(mocName);
+      if (storedTObj != nullptr) {
+        auto storedMOC = dynamic_cast<MonitorObjectCollection*>(storedTObj);
+        if (storedMOC == nullptr) {
+          ILOG(Error, Ops) << "Could not cast the stored object to MonitorObjectCollection, skipping." << ENDM;
+          delete storedTObj;
+          continue;
+        }
+        storedMOC->postDeserialization();
+        ILOG(Info, Support) << "Merging object '" << moc->GetName() << "' with the existing one in the file." << ENDM;
+        moc->merge(storedMOC);
+      }
+      delete storedTObj;
+
+      auto nbytes = sinkFile->WriteObject(moc, moc->GetName(), "Overwrite");
+      ILOG(Info, Support) << "Object '" << moc->GetName() << "' has been stored in the file (" << nbytes << " bytes)." << ENDM;
+      delete moc;
+    }
+    closeSinkFile(sinkFile);
+  } catch (const std::bad_alloc& ex) {
+    ILOG(Error, Ops) << "Caught a bad_alloc exception, there is probably a huge file or object present, but I will try to survive" << ENDM;
+    ILOG(Error, Support) << "Details: " << ex.what() << ENDM;
+    closeSinkFile(sinkFile);
+  } catch (...) {
+    closeSinkFile(sinkFile);
+    throw;
   }
 }
 

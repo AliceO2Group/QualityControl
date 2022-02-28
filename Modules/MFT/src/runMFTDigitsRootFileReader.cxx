@@ -74,7 +74,6 @@ class MFTDigitsRootFileReader : public o2::framework::Task
       ic.services().get<ControlService>().readyToQuit(QuitRequest::Me);
       return;
     }
-    //LOG(info) << " oooooooooooo In MFTDigitsRootFileReader::init ... mNumberOfTF = " << mNumberOfTF;
   }
 
   //_________________________________________________________________________________________________
@@ -92,10 +91,6 @@ class MFTDigitsRootFileReader : public o2::framework::Task
 
     mTree->GetEntry(mCurrentTF); // get TF
     mNumberOfROF = rofs.size();  // get number of ROFs in this TF
-
-    // check if we need to read a new TF
-    if (mCurrentROF == mNumberOfROF - 1)
-      mCurrentTF++;
 
     // prepare the rof output
     std::vector<o2::itsmft::ROFRecord>* oneROFvec = new std::vector<o2::itsmft::ROFRecord>();
@@ -119,6 +114,12 @@ class MFTDigitsRootFileReader : public o2::framework::Task
 
     // update the ROF counter
     mCurrentROF++;
+
+    // check if we need to read a new TF
+    if (mCurrentROF == mNumberOfROF) {
+      mCurrentTF++;
+      mCurrentROF = 0;
+    }
   }
 
  private:

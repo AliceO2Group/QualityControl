@@ -16,14 +16,14 @@
         "url" : "infologger:///debug?qc"
       },
       "consul" : {
-        "url" : "http://consul-test.cern.ch:8500"
+        "url" : ""
       },
       "conditionDB" : {
         "url" : "ccdb-test.cern.ch:8080"
       }
     },
     "tasks" : {
-      "QcMFTReadoutTask" : {
+      "QcMFTReadout" : {
         "active" : "true",
         "className" : "o2::quality_control_modules::mft::QcMFTReadoutTask",
         "moduleName" : "QcMFT",
@@ -31,9 +31,9 @@
         "cycleDurationSeconds" : "60",
         "maxNumberCycles" : "-1",
         "dataSource_comment" : "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
-        "dataSource" : {
-          "type" : "dataSamplingPolicy",
-          "name" : "RAWDATA"
+        "dataSource": {
+          "type": "direct",
+          "query": "filter:MFT/RAWDATA"
         },
         "taskParameters" : {
           "myOwnKey" : "myOwnValue"
@@ -42,7 +42,7 @@
       }
     },
     "checks" : {
-      "QcMFTReadoutCheck" : {
+      "QcMFTReadout" : {
         "active" : "true",
         "className" : "o2::quality_control_modules::mft::QcMFTReadoutCheck",
         "moduleName" : "QcMFT",
@@ -50,26 +50,10 @@
         "policy" : "OnEachSeparately",
         "dataSource" : [ {
           "type" : "Task",
-          "name" : "QcMFTReadoutTask",
-          "MOs" : ["mMFTSummaryLaneStatus"]
+          "name" : "QcMFTReadout",
+          "MOs"  : ["mSummaryChipFault", "mSummaryChipError", "mSummaryChipWarning"]
         } ]
       }
     }
-  },
-         "dataSamplingPolicies" : [
-           {
-             "id" : "RAWDATA",
-             "active" : "true",
-             "machines" : [],
-             "query" : "filter:MFT/RAWDATA",
-             "samplingConditions" : [
-               {
-                 "condition" : "random",
-                 "fraction" : "1",
-                 "seed" : "1234"
-               }
-             ],
-             "blocking" : "false"
-           }
-         ]
+  }
 }

@@ -89,6 +89,8 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
 {
   WorkflowSpec specs;
 
+  QcInfoLogger::setFacility("runBasic");
+
   // The producer to generate some data in the workflow
   DataProcessorSpec producer = getDataProducerSpec(1, 10000, 10);
   specs.push_back(producer);
@@ -103,14 +105,14 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
   DataSampling::GenerateInfrastructure(specs, dataSamplingTree);
 
   // Generation of the QC topology (one task, one checker in this case)
-  quality_control::generateStandaloneInfrastructure(specs, qcConfigurationSource);
+  quality_control::generateStandaloneInfrastructure(specs, configInterface->getRecursive());
 
   // Finally the printer
   if (hasChecks(qcConfigurationSource)) {
     DataProcessorSpec printer{
       "printer",
       Inputs{
-        { "checked-mo", "QC", Check::createCheckerDataDescription(getFirstCheckName(qcConfigurationSource)), 0 } },
+        { "checked-mo", "QC", Check::createCheckDataDescription(getFirstCheckName(qcConfigurationSource)), 0 } },
       Outputs{},
       adaptFromTask<o2::quality_control::example::ExampleQualityPrinterSpec>()
     };

@@ -10,8 +10,17 @@ target_sources(O2QcTPC PRIVATE src/PID.cxx
                              src/ROCReductor.cxx
                              src/Clusters.cxx
                              src/CalDetPublisher.cxx
+                             src/PadCalibrationCheck.cxx
                              src/Utility.cxx
-                             src/RawDigits.cxx)
+                             src/RawDigits.cxx
+                             src/CheckOfTrendings.cxx
+                             src/LaserTracks.cxx
+                             src/LtrCalibReductor.cxx
+                             src/ClusterVisualizer.cxx
+                             src/TrendingTaskTPC.cxx
+                             src/TrendingTaskConfigTPC.cxx
+                             src/TH1ReductorTPC.cxx
+                             src/TH2ReductorTPC.cxx)
 
 target_include_directories(
   O2QcTPC
@@ -36,8 +45,20 @@ add_root_dictionary(O2QcTPC
                             include/TPC/ROCReductor.h
                             include/TPC/Clusters.h
                             include/TPC/CalDetPublisher.h
+                            include/TPC/PadCalibrationCheck.h
                             include/TPC/Utility.h
                             include/TPC/RawDigits.h
+                            include/TPC/ClustersData.h
+                            include/TPC/CheckOfTrendings.h
+                            include/TPC/LaserTracks.h
+                            include/TPC/LtrCalibReductor.h
+                            include/TPC/ClusterVisualizer.h
+                            include/TPC/SliceInfo.h
+                            include/TPC/TrendingTaskTPC.h
+                            include/TPC/TrendingTaskConfigTPC.h
+                            include/TPC/ReductorTPC.h
+                            include/TPC/TH1ReductorTPC.h
+                            include/TPC/TH2ReductorTPC.h
                     LINKDEF include/TPC/LinkDef.h
                     BASENAME O2QcTPC)
 
@@ -90,11 +111,18 @@ install(FILES run/tpcQCPID_sampled.json
               run/tpcQCTracking_direct.json
               run/tpcQCClusterChecker.json
               run/tpcQCSimpleTrending.json
-              run/tpcQCTrendingClusters.json
               run/tpcQCTrending.json
               run/tpcQCClusters_direct.json
               run/tpcQCTrackingFromExternal_direct.json
               run/tpcQCCalDetPublisher.json
+              run/tpcQCPadCalibration.json
               run/tpcQCRawDigits_direct.json
               run/tpcQCTasks_multinode.json
+              run/tpcQCCheckTrending.json
+              run/tpcQCLaserTracks.json
+              run/tpcQCTrending_laserCalib.json
+              run/tpcQCClusterVisualizer.json
+              run/tpcQCRawDigitVisualizer.json
+              run/tpcQCTrending_slicer.json
+              run/tpcQCTrending_canvas.json
         DESTINATION etc)

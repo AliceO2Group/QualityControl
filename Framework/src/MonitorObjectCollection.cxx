@@ -61,9 +61,15 @@ void MonitorObjectCollection::postDeserialization()
       continue;
     }
     mo->setIsOwner(true);
-    if (mo->getObject() != nullptr && mo->getObject()->InheritsFrom(TCollection::Class())) {
-      auto collection = dynamic_cast<TCollection*>(mo->getObject());
-      collection->SetOwner(true);
+    if (auto objPtr = mo->getObject(); objPtr != nullptr) {
+      if (objPtr->InheritsFrom(MergeInterface::Class())) {
+        auto mergeable = dynamic_cast<MergeInterface*>(mo->getObject());
+        mergeable->postDeserialization();
+      } else if (objPtr->InheritsFrom(TCollection::Class())) {
+        // if a class inherits from both MergeInterface and TCollection, we assume that MergeInterface does the correct job of setting the ownership.
+        auto collection = dynamic_cast<TCollection*>(mo->getObject());
+        collection->SetOwner(true);
+      }
     }
   }
   this->SetOwner(true);

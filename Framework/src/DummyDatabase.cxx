@@ -47,6 +47,10 @@ void DummyDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::Qua
 {
 }
 
+void DummyDatabase::storeTRFC(std::shared_ptr<const o2::quality_control::TimeRangeFlagCollection> trfc)
+{
+}
+
 std::shared_ptr<QualityObject> DummyDatabase::retrieveQO(std::string, long)
 {
   return std::shared_ptr<QualityObject>();
@@ -82,6 +86,14 @@ std::string DummyDatabase::retrieveJson(std::string, long, const std::map<std::s
 void* DummyDatabase::retrieveAny(const std::type_info&, const std::string&, const std::map<std::string, std::string>&, long, std::map<std::string, std::string>*, const std::string&, const std::string&)
 {
   return nullptr;
+}
+std::shared_ptr<o2::quality_control::TimeRangeFlagCollection> DummyDatabase::retrieveTRFC(const std::string& name, const std::string& detector, int runNumber, const std::string& passName, const std::string& periodName, const std::string& provenance, long timestamp)
+{
+  return nullptr;
+}
+
+void DummyDatabase::setMaxObjectSize(size_t maxObjectSize)
+{
 }
 
 } // namespace o2::quality_control::repository

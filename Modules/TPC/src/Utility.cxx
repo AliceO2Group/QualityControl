@@ -76,7 +76,7 @@ void fillCanvases(const o2::tpc::CalDet<float>& calDet, std::vector<std::unique_
     xmax = std::stof(itXMax->second);
   }
   auto vecPtr = toVector(canvases);
-  o2::tpc::painter::makeSummaryCanvases(calDet, nbins, xmin, xmax, true, &vecPtr);
+  o2::tpc::painter::makeSummaryCanvases(calDet, nbins, xmin, xmax, false, &vecPtr);
 }
 
 void clearCanvases(std::vector<std::unique_ptr<TCanvas>>& canvases)

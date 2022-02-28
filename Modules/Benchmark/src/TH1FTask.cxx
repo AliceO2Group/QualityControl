@@ -20,6 +20,8 @@
 #include <Headers/DataHeader.h>
 #include "QualityControl/QcInfoLogger.h"
 #include <Framework/InputRecord.h>
+#include <Framework/InputRecordWalker.h>
+#include <Framework/DataRefUtils.h>
 
 namespace o2::quality_control_modules::benchmark
 {
@@ -70,10 +72,13 @@ void TH1FTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   // the minimum that we can do, which includes accessing data and creating non-empty histograms
   size_t dummySum = 0;
-  for (auto&& input : ctx.inputs()) {
+  for (auto&& input : o2::framework::InputRecordWalker(ctx.inputs())) {
     if (input.header != nullptr && input.payload != nullptr) {
-      const auto* header = header::get<header::DataHeader*>(input.header);
-      dummySum += header->payloadSize + input.payload[0];
+      // TODO: better use InputRecord::get<std::byte> to get a span of the raw input data
+      // and use its size and first byte
+      const auto* header = o2::framework::DataRefUtils::getHeader<header::DataHeader*>(input);
+      auto payloadSize = o2::framework::DataRefUtils::getPayloadSize(input);
+      dummySum += payloadSize + input.payload[0];
     }
   }
 

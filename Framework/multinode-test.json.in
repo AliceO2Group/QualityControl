@@ -70,7 +70,7 @@
         "detectorName": "TST",
         "dataSource": [{
           "type": "Task",
-          "name": "MultiNodeLocal",
+          "name": "MultiNodeLocalTest@UNIQUE_PORT_1@",
           "MOs": ["example"]
         }]
       },
@@ -82,7 +82,7 @@
         "detectorName": "TST",
         "dataSource": [{
           "type": "Task",
-          "name": "MultiNodeRemote",
+          "name": "MultiNodeRemoteTest@UNIQUE_PORT_2@",
           "MOs": ["example"]
         }]
       }
@@ -112,7 +112,7 @@
         "localhost"
       ],
       "port": "@UNIQUE_PORT_2@",
-      "query": "random0:TST/RAWDATA/0;random1:TST/RAWDATA/1",
+      "query": "random0:TST/RAWDATA",
       "samplingConditions": [
         {
           "condition": "random",

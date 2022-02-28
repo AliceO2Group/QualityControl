@@ -183,4 +183,11 @@ std::ostream& operator<<(std::ostream& out, const UpdatePolicy& updatePolicy) //
   return out;
 }
 
+void UpdatePolicyManager::reset()
+{
+  mPoliciesByActor.clear();
+  mObjectsRevision.clear();
+  mGlobalRevision = 1;
+}
+
 } // namespace o2::quality_control::checker

@@ -22,6 +22,7 @@
 #include <TH2D.h>
 #include <DataFormatsITSMFT/TopologyDictionary.h>
 #include <ITSBase/GeometryTGeo.h>
+#include <TTree.h>
 
 class TH1D;
 class TH2D;
@@ -59,18 +60,35 @@ class ITSTrackTask : public TaskInterface
   TH1D* hNClusters;
   TH1D* hTrackEta;
   TH1D* hTrackPhi;
-  TH1D* hOccupancyROF;
-  TH1D* hClusterUsage;
   TH2D* hAngularDistribution;
+  TH2D* hVertexCoordinates;
+  TH2D* hVertexRvsZ;
+  TH1D* hVertexZ;
+  TH1D* hVertexContributors;
+  TH1D* hAssociatedClusterFraction;
+  TH1D* hNtracks;
+  TH2D* hNClustersPerTrackEta;
+  TH2D* hClusterVsBunchCrossing;
+
   std::string mRunNumber;
   std::string mRunNumberPath;
 
+  float mVertexXYsize;
+  float mVertexZsize;
+  float mVertexRsize;
+  Int_t mNtracksMAX;
+  Int_t mDoTTree;
   Int_t mNTracks = 0;
   Int_t mNRofs = 0;
 
   const int NROFOCCUPANCY = 100;
-  Int_t mNClustersInTracks = 0;
   Int_t mNClusters = 0;
+
+  TTree* tClusterMap;
+  //  Int_t mNtracksInROF;
+  std::vector<UInt_t> vMap;
+  std::vector<Float_t> vPhi;
+  std::vector<Float_t> vEta;
 
   o2::itsmft::TopologyDictionary mDict;
 };

@@ -12,11 +12,15 @@
 #include "QualityControl/PostProcessingRunner.h"
 
 #include "QualityControl/PostProcessingFactory.h"
+#include "QualityControl/PostProcessingConfig.h"
 #include "QualityControl/TriggerHelpers.h"
 #include "QualityControl/DatabaseFactory.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/CommonSpec.h"
+#include "QualityControl/InfrastructureSpecReader.h"
 
 #include <boost/property_tree/ptree.hpp>
+#include <utility>
 #include <Framework/DataAllocator.h>
 
 using namespace o2::quality_control::core;
@@ -28,52 +32,64 @@ namespace o2::quality_control::postprocessing
 constexpr long objectValidity = 1000l * 60 * 60 * 24 * 365 * 10;
 
 PostProcessingRunner::PostProcessingRunner(std::string name) //
-  : mName(name)
+  : mName(std::move(name))
 {
 }
 
 void PostProcessingRunner::setPublicationCallback(MOCPublicationCallback callback)
 {
-  mPublicationCallback = callback;
+  mPublicationCallback = std::move(callback);
 }
 
 void PostProcessingRunner::init(const boost::property_tree::ptree& config)
 {
-  ILOG_INST.init("post/" + mName, config);
+  auto specs = InfrastructureSpecReader::readInfrastructureSpec(config);
+  auto ppTaskSpec = std::find_if(specs.postProcessingTasks.begin(),
+                                 specs.postProcessingTasks.end(),
+                                 [name = mName](const auto& spec) {
+                                   return spec.taskName == name;
+                                 });
+  if (ppTaskSpec == specs.postProcessingTasks.end()) {
+    throw std::runtime_error("Could not find the configuration of the post-processing task '" + mName + "'");
+  }
+
+  init(PostProcessingRunner::extractConfig(specs.common, *ppTaskSpec), PostProcessingConfig{ mName, config });
+}
+
+void PostProcessingRunner::init(const PostProcessingRunnerConfig& runnerConfig, const PostProcessingConfig& taskConfig)
+{
+  mRunnerConfig = runnerConfig;
+  mTaskConfig = taskConfig;
+
+  QcInfoLogger::init("post/" + mName, runnerConfig.infologgerFilterDiscardDebug, runnerConfig.infologgerDiscardLevel);
   ILOG(Info, Support) << "Initializing PostProcessingRunner" << ENDM;
 
-  mConfig = PostProcessingConfig(mName, config);
-
   // configuration of the database
-  mDatabase = DatabaseFactory::create(config.get<std::string>("qc.config.database.implementation"));
-  std::unordered_map<std::string, std::string> dbConfig;
-  for (const auto& [key, value] : config.get_child("qc.config.database")) {
-    dbConfig[key] = value.get_value<std::string>();
-  }
-  mDatabase->connect(dbConfig);
+  mDatabase = DatabaseFactory::create(mRunnerConfig.database.at("implementation"));
+  mDatabase->connect(mRunnerConfig.database);
   ILOG(Info, Support) << "Database that is going to be used : " << ENDM;
-  ILOG(Info, Support) << ">> Implementation : " << config.get<std::string>("qc.config.database.implementation") << ENDM;
-  ILOG(Info, Support) << ">> Host : " << config.get<std::string>("qc.config.database.host") << ENDM;
+  ILOG(Info, Support) << ">> Implementation : " << mRunnerConfig.database.at("implementation") << ENDM;
+  ILOG(Info, Support) << ">> Host : " << mRunnerConfig.database.at("host") << ENDM;
 
-  mObjectManager = std::make_shared<ObjectsManager>(mConfig.taskName, mConfig.detectorName, mConfig.consulUrl);
+  mObjectManager = std::make_shared<ObjectsManager>(mTaskConfig.taskName, mTaskConfig.className, mTaskConfig.detectorName, mRunnerConfig.consulUrl);
   mServices.registerService<DatabaseInterface>(mDatabase.get());
   if (mPublicationCallback == nullptr) {
     mPublicationCallback = publishToRepository(*mDatabase);
   }
 
   // setup user's task
-  ILOG(Info, Support) << "Creating a user task '" << mConfig.taskName << "'" << ENDM;
+  ILOG(Info, Support) << "Creating a user task '" << mTaskConfig.taskName << "'" << ENDM;
   PostProcessingFactory f;
-  mTask.reset(f.create(mConfig));
+  mTask.reset(f.create(mTaskConfig));
   mTask->setObjectsManager(mObjectManager);
   if (mTask) {
-    ILOG(Info, Support) << "The user task '" << mConfig.taskName << "' has been successfully created" << ENDM;
+    ILOG(Info, Support) << "The user task '" << mTaskConfig.taskName << "' has been successfully created" << ENDM;
 
     mTaskState = TaskState::Created;
-    mTask->setName(mConfig.taskName);
-    mTask->configure(mConfig.taskName, config);
+    mTask->setName(mTaskConfig.taskName);
+    mTask->configure(mTaskConfig.taskName, mRunnerConfig.configTree);
   } else {
-    throw std::runtime_error("Failed to create the task '" + mConfig.taskName + "'");
+    throw std::runtime_error("Failed to create the task '" + mTaskConfig.taskName + "'");
   }
 }
 
@@ -126,8 +142,8 @@ void PostProcessingRunner::runOverTimestamps(const std::vector<uint64_t>& timest
 void PostProcessingRunner::start()
 {
   if (mTaskState == TaskState::Created || mTaskState == TaskState::Finished) {
-    mInitTriggers = trigger_helpers::createTriggers(mConfig.initTriggers, mConfig);
-    if (trigger_helpers::hasUserOrControlTrigger(mConfig.initTriggers)) {
+    mInitTriggers = trigger_helpers::createTriggers(mTaskConfig.initTriggers, mTaskConfig);
+    if (trigger_helpers::hasUserOrControlTrigger(mTaskConfig.initTriggers)) {
       doInitialize({ TriggerType::UserOrControl });
     }
   } else if (mTaskState == TaskState::Running) {
@@ -142,7 +158,7 @@ void PostProcessingRunner::start()
 void PostProcessingRunner::stop()
 {
   if (mTaskState == TaskState::Created || mTaskState == TaskState::Running) {
-    if (trigger_helpers::hasUserOrControlTrigger(mConfig.stopTriggers)) {
+    if (trigger_helpers::hasUserOrControlTrigger(mTaskConfig.stopTriggers)) {
       doFinalize({ TriggerType::UserOrControl });
     }
   } else if (mTaskState == TaskState::Finished) {
@@ -176,8 +192,8 @@ void PostProcessingRunner::doInitialize(Trigger trigger)
   mTaskState = TaskState::Running;
 
   // We create the triggers just after task init (and not any sooner), so the timer triggers work as expected.
-  mUpdateTriggers = trigger_helpers::createTriggers(mConfig.updateTriggers, mConfig);
-  mStopTriggers = trigger_helpers::createTriggers(mConfig.stopTriggers, mConfig);
+  mUpdateTriggers = trigger_helpers::createTriggers(mTaskConfig.updateTriggers, mTaskConfig);
+  mStopTriggers = trigger_helpers::createTriggers(mTaskConfig.stopTriggers, mTaskConfig);
 }
 
 void PostProcessingRunner::doUpdate(Trigger trigger)
@@ -197,6 +213,18 @@ void PostProcessingRunner::doFinalize(Trigger trigger)
 const std::string& PostProcessingRunner::getName()
 {
   return mName;
+}
+
+PostProcessingRunnerConfig PostProcessingRunner::extractConfig(const CommonSpec& commonSpec, const PostProcessingTaskSpec& ppTaskSpec)
+{
+  return {
+    ppTaskSpec.taskName,
+    commonSpec.database,
+    commonSpec.consulUrl,
+    commonSpec.infologgerFilterDiscardDebug,
+    commonSpec.infologgerDiscardLevel,
+    ppTaskSpec.tree
+  };
 }
 
 MOCPublicationCallback publishToDPL(framework::DataAllocator& allocator, std::string outputBinding)

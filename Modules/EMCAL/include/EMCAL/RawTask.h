@@ -138,9 +138,11 @@ class RawTask final : public TaskInterface
   std::unordered_map<EventType, std::array<TProfile2D*, 20>> mMaxChannelADCRCSM; ///< ADC max per SM
   std::unordered_map<EventType, std::array<TProfile2D*, 20>> mMinChannelADCRCSM; ///< ADC min per SM
   std::unique_ptr<o2::emcal::MappingHandler> mMappings;                          ///< Mappings Hardware address -> Channel
-  TH2F* mErrorTypeAltro = nullptr;                                               ///< Error from AltroDecoder
-  TH2F* mPayloadSizePerDDL = nullptr;                                            ///< Payload size per ddl
-  TH2F* mPayloadSizeTFPerDDL = nullptr;                                          ///< Payload size per TimeFrame per ddl
+  TH2* mErrorTypeAltro = nullptr;                                                ///< Error from AltroDecoder
+  TH2* mPayloadSizePerDDL = nullptr;                                             ///< Payload size per ddl
+  TH1* mPayloadSizePerDDL_1D = nullptr;                                          ///< Accumulated Payload size per ddl
+  TH2* mPayloadSizeTFPerDDL = nullptr;                                           ///< Payload size per TimeFrame per ddl
+  TH1* mPayloadSizeTFPerDDL_1D = nullptr;                                        ///< Accumulated Payload size per TimeFrame per ddl
   Int_t mNumberOfSuperpages = 0;                                                 ///< Simple total superpage counter
   Int_t mNumberOfPages = 0;                                                      ///< Simple total number of superpages counter
   Int_t mNumberOfMessages = 0;

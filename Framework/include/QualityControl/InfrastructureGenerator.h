@@ -19,6 +19,7 @@
 
 #include <vector>
 #include <string>
+#include <boost/property_tree/ptree_fwd.hpp>
 
 namespace o2::framework
 {
@@ -54,9 +55,9 @@ class InfrastructureGenerator
   /// Generates a full QC infrastructure from a configuration file. This function is aimed to use for standalone setups
   /// and local development. It will create both local and remote QC tasks, and CheckRunners running associated Checks.
   ///
-  /// \param configurationSource - full path to configuration file, preceded with the backend (e.g. "json://")
+  /// \param configurationTree - full path to configuration file, preceded with the backend (e.g. "json://")
   /// \return generated standalone QC workflow
-  static framework::WorkflowSpec generateStandaloneInfrastructure(std::string configurationSource);
+  static framework::WorkflowSpec generateStandaloneInfrastructure(const boost::property_tree::ptree& configurationTree);
 
   /// \brief Generates a standalone QC infrastructure.
   ///
@@ -64,18 +65,18 @@ class InfrastructureGenerator
   /// and local development. It will create both local and remote QC tasks, and CheckRunners running associated Checks.
   ///
   /// \param workflow - existing workflow where QC infrastructure should be placed
-  /// \param configurationSource - full path to configuration file, preceded with the backend (e.g. "json://")
-  static void generateStandaloneInfrastructure(framework::WorkflowSpec& workflow, std::string configurationSource);
+  /// \param configurationTree - full QC config ptree
+  static void generateStandaloneInfrastructure(framework::WorkflowSpec& workflow, const boost::property_tree::ptree& configurationTree);
 
   /// \brief Generates the local part of the QC infrastructure for a specified host.
   ///
   /// Generates the local part of the QC infrastructure for a specified host - taskRunners which are declared in the
   /// configuration to be 'local'.
   ///
-  /// \param configurationSource - full path to configuration file, preceded with the backend (e.g. "json://")
+  /// \param configurationTree - full QC config ptree
   /// \param targetHost - name of the machine
   /// \return generated local QC workflow
-  static framework::WorkflowSpec generateLocalInfrastructure(std::string configurationSource, std::string targetHost);
+  static framework::WorkflowSpec generateLocalInfrastructure(const boost::property_tree::ptree& configurationTree, std::string targetHost);
 
   /// \brief Generates the local part of the QC infrastructure for a specified host.
   ///
@@ -83,19 +84,19 @@ class InfrastructureGenerator
   /// configuration to be 'local'.
   ///
   /// \param workflow - existing workflow where QC infrastructure should be placed
-  /// \param configurationSource - full path to configuration file, preceded with the backend (e.g. "json://")
+  /// \param configurationTree - full QC config ptree
   /// \param host - name of the machine
   /// \return generated local QC workflow
-  static void generateLocalInfrastructure(framework::WorkflowSpec& workflow, std::string configurationSource, std::string host);
+  static void generateLocalInfrastructure(framework::WorkflowSpec& workflow, const boost::property_tree::ptree& configurationTree, std::string host);
 
   /// \brief Generates the remote part of the QC infrastructure.
   ///
   /// Generates the remote part of the QC infrastructure - mergers and checkers for 'local' tasks and full QC chain for
   /// 'remote' tasks.
   ///
-  /// \param configurationSource - full path to configuration file, preceded with the backend (e.g. "json://")
+  /// \param configurationTree - full QC config ptree
   /// \return generated remote QC workflow
-  static o2::framework::WorkflowSpec generateRemoteInfrastructure(std::string configurationSource);
+  static o2::framework::WorkflowSpec generateRemoteInfrastructure(const boost::property_tree::ptree& configurationTree);
 
   /// \brief Generates the remote part of the QC infrastructure.
   ///
@@ -103,44 +104,44 @@ class InfrastructureGenerator
   /// 'remote' tasks.
   ///
   /// \param workflow - existing workflow where QC infrastructure should be placed
-  /// \param configurationSource - full path to configuration file, preceded with the backend (e.g. "json://")
-  static void generateRemoteInfrastructure(framework::WorkflowSpec& workflow, std::string configurationSource);
+  /// \param configurationTree - full QC config ptree
+  static void generateRemoteInfrastructure(framework::WorkflowSpec& workflow, const boost::property_tree::ptree& configurationTree);
 
   /// \brief Generates the local batch part of the QC infrastructure.
   ///
   /// Generates the local batch part of the QC infrastructure - tasks and a file sink/merger.
   ///
   /// \param workflow - existing workflow where QC infrastructure should be placed
-  /// \param configurationSource - full path to configuration file, preceded with the backend (e.g. "json://")
+  /// \param configurationTree - full QC config ptree
   /// \param sinkFilePath - path to the output file
-  static void generateLocalBatchInfrastructure(framework::WorkflowSpec& workflow, std::string configurationSource, std::string sinkFilePath);
+  static void generateLocalBatchInfrastructure(framework::WorkflowSpec& workflow, const boost::property_tree::ptree& configurationTree, std::string sinkFilePath);
 
   /// \brief Generates the local batch part of the QC infrastructure.
   ///
   /// Generates the local batch part of the QC infrastructure - tasks and a file sink/merger.
   ///
-  /// \param configurationSource - full path to configuration file, preceded with the backend (f.e. "json://")
+  /// \param configurationTree - full QC config ptree
   /// \param sinkFilePath - path to the output file
   /// \return generated local QC workflow
-  static framework::WorkflowSpec generateLocalBatchInfrastructure(std::string configurationSource, std::string sinkFilePath);
+  static framework::WorkflowSpec generateLocalBatchInfrastructure(const boost::property_tree::ptree& configurationTree, std::string sinkFilePath);
 
   /// \brief Generates the remote batch part of the QC infrastructure.
   ///
   /// Generates the remote batch part of the QC infrastructure - file reader, check runners, aggregator runners.
   ///
   /// \param workflow - existing workflow where QC infrastructure should be placed
-  /// \param configurationSource - full path to configuration file, preceded with the backend (f.e. "json://")
+  /// \param configurationTree - full QC config ptree
   /// \param sourceFilePath - path to the input file
-  static void generateRemoteBatchInfrastructure(framework::WorkflowSpec& workflow, std::string configurationSource, std::string sourceFilePath);
+  static void generateRemoteBatchInfrastructure(framework::WorkflowSpec& workflow, const boost::property_tree::ptree& configurationTree, std::string sourceFilePath);
 
   /// \brief Generates the remote batch part of the QC infrastructure.
   ///
   /// Generates the remote batch part of the QC infrastructure - file reader, check runners, aggregator runners.
   ///
-  /// \param configurationSource - full path to configuration file, preceded with the backend (f.e. "json://")
+  /// \param configurationTree - full QC config ptree
   /// \param sourceFilePath - path to the input file
   /// \return generated remote batch QC workflow
-  static framework::WorkflowSpec generateRemoteBatchInfrastructure(std::string configurationSource, std::string sourceFilePath);
+  static framework::WorkflowSpec generateRemoteBatchInfrastructure(const boost::property_tree::ptree& configurationTree, std::string sourceFilePath);
 
   /// \brief Provides necessary customization of the QC infrastructure.
   ///
@@ -200,64 +201,65 @@ class InfrastructureGenerator
                               double cycleDurationSeconds,
                               std::string mergingMode,
                               size_t resetAfterCycles,
-                              std::string monitoringUrl);
-  static std::vector<framework::OutputSpec> generateCheckRunners(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec);
-  static void generateAggregator(framework::WorkflowSpec& workflow, std::string configurationSource, std::vector<framework::OutputSpec>& checkRunnerOutputs);
-  static void generatePostProcessing(framework::WorkflowSpec& workflow, std::string configurationSource);
+                              std::string monitoringUrl,
+                              std::string detectorName);
+  static void generateCheckRunners(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec);
+  static void generateAggregator(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec);
+  static void generatePostProcessing(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec);
 };
 
 } // namespace core
 
 // exposing the class above as a main QC interface, syntactic sugar
 
-inline framework::WorkflowSpec generateStandaloneInfrastructure(std::string configurationSource)
+inline framework::WorkflowSpec generateStandaloneInfrastructure(const boost::property_tree::ptree& configurationTree)
 {
-  return core::InfrastructureGenerator::generateStandaloneInfrastructure(configurationSource);
+  return core::InfrastructureGenerator::generateStandaloneInfrastructure(configurationTree);
 }
 
-inline void generateStandaloneInfrastructure(framework::WorkflowSpec& workflow, std::string configurationSource)
+inline void generateStandaloneInfrastructure(framework::WorkflowSpec& workflow, const boost::property_tree::ptree& configurationTree)
 {
-  core::InfrastructureGenerator::generateStandaloneInfrastructure(workflow, configurationSource);
+  core::InfrastructureGenerator::generateStandaloneInfrastructure(workflow, configurationTree);
 }
 
-inline framework::WorkflowSpec generateLocalInfrastructure(std::string configurationSource, std::string host)
+inline framework::WorkflowSpec generateLocalInfrastructure(const boost::property_tree::ptree& configurationTree, std::string host)
 {
-  return core::InfrastructureGenerator::generateLocalInfrastructure(configurationSource, host);
+  return core::InfrastructureGenerator::generateLocalInfrastructure(configurationTree, host);
 }
 
-inline void generateLocalInfrastructure(framework::WorkflowSpec& workflow, std::string configurationSource, std::string host)
+inline void generateLocalInfrastructure(framework::WorkflowSpec& workflow, const boost::property_tree::ptree& configurationTree, std::string host)
 {
-  core::InfrastructureGenerator::generateLocalInfrastructure(workflow, configurationSource, host);
+  core::InfrastructureGenerator::generateLocalInfrastructure(workflow, configurationTree, host);
 }
 
-inline framework::WorkflowSpec generateRemoteInfrastructure(std::string configurationSource)
+inline framework::WorkflowSpec generateRemoteInfrastructure(const boost::property_tree::ptree& configurationTree)
 {
-  return core::InfrastructureGenerator::generateRemoteInfrastructure(configurationSource);
+  return core::InfrastructureGenerator::generateRemoteInfrastructure(configurationTree);
 }
 
-inline framework::WorkflowSpec generateLocalBatchInfrastructure(std::string configurationSource, std::string sinkFilePath)
+inline framework::WorkflowSpec generateLocalBatchInfrastructure(const boost::property_tree::ptree& configurationTree, std::string sinkFilePath)
 {
-  return core::InfrastructureGenerator::generateLocalBatchInfrastructure(configurationSource, std::move(sinkFilePath));
+  return core::InfrastructureGenerator::generateLocalBatchInfrastructure(configurationTree, std::move(sinkFilePath));
 }
 
-inline void generateLocalBatchInfrastructure(framework::WorkflowSpec& workflow, std::string configurationSource, std::string sinkFilePath)
+inline void generateLocalBatchInfrastructure(framework::WorkflowSpec& workflow, const boost::property_tree::ptree& configurationTree, std::string sinkFilePath)
 {
-  core::InfrastructureGenerator::generateLocalBatchInfrastructure(workflow, configurationSource, std::move(sinkFilePath));
+  core::InfrastructureGenerator::generateLocalBatchInfrastructure(workflow, configurationTree, std::move(sinkFilePath));
 }
 
-inline framework::WorkflowSpec generateRemoteBatchInfrastructure(std::string configurationSource, std::string sourceFilePath)
+inline framework::WorkflowSpec generateRemoteBatchInfrastructure(const boost::property_tree::ptree& configurationTree, std::string sourceFilePath)
 {
-  return core::InfrastructureGenerator::generateRemoteBatchInfrastructure(configurationSource, std::move(sourceFilePath));
+  return core::InfrastructureGenerator::generateRemoteBatchInfrastructure(configurationTree, std::move(sourceFilePath));
 }
 
-inline void generateRemoteBatchInfrastructure(framework::WorkflowSpec& workflow, std::string configurationSource, std::string sourceFilePath)
+inline void generateRemoteBatchInfrastructure(framework::WorkflowSpec& workflow, const boost::property_tree::ptree& configurationTree, std::string sourceFilePath)
 {
-  core::InfrastructureGenerator::generateRemoteBatchInfrastructure(workflow, configurationSource, std::move(sourceFilePath));
+  core::InfrastructureGenerator::generateRemoteBatchInfrastructure(workflow, configurationTree, std::move(sourceFilePath));
 }
 
-inline void generateRemoteInfrastructure(framework::WorkflowSpec& workflow, std::string configurationSource)
+inline void generateRemoteInfrastructure(framework::WorkflowSpec& workflow, const boost::property_tree::ptree& configurationTree)
 {
-  core::InfrastructureGenerator::generateRemoteInfrastructure(workflow, configurationSource);
+  core::InfrastructureGenerator::generateRemoteInfrastructure(workflow, configurationTree);
 }
 
 inline void customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies)

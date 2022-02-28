@@ -35,3 +35,19 @@ BOOST_AUTO_TEST_CASE(test_check_runner_static)
   BOOST_CHECK(CheckRunner::createCheckRunnerFacility(CheckRunner::createCheckRunnerIdString() + "-abcdefghijklmnopqrstuvwxyz") == "check/abcdefghijklmnopqrstuvwxyz");
   BOOST_CHECK(CheckRunner::createCheckRunnerFacility(CheckRunner::createCheckRunnerIdString() + "-abcdefghijklmnopqrstuvwxyz123456789") == "check/abcdefghijklmnopqrstuvwxyz");
 }
+
+BOOST_AUTO_TEST_CASE(test_getDetector)
+{
+  CheckConfig config;
+  config.detectorName = "TST";
+
+  vector<CheckConfig> checks;
+  BOOST_CHECK_EQUAL(CheckRunner::getDetectorName(checks), "");
+  checks.push_back(config);
+  BOOST_CHECK_EQUAL(CheckRunner::getDetectorName(checks), "TST");
+  checks.push_back(config);
+  BOOST_CHECK_EQUAL(CheckRunner::getDetectorName(checks), "TST");
+  config.detectorName = "EMC";
+  checks.push_back(config);
+  BOOST_CHECK_EQUAL(CheckRunner::getDetectorName(checks), "MANY");
+}

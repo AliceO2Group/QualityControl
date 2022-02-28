@@ -17,15 +17,15 @@
 #include "QualityControl/PostProcessingDevice.h"
 
 #include "QualityControl/PostProcessingRunner.h"
+#include "QualityControl/PostProcessingConfig.h"
+#include "QualityControl/PostProcessingRunnerConfig.h"
 #include "QualityControl/QcInfoLogger.h"
 
 #include <Common/Exceptions.h>
-#include <Configuration/ConfigurationFactory.h>
 #include <Framework/CallbackService.h>
 #include <Framework/ControlService.h>
 
 using namespace AliceO2::Common;
-using namespace o2::configuration;
 using namespace o2::framework;
 
 constexpr auto outputBinding = "mo";
@@ -33,22 +33,23 @@ constexpr auto outputBinding = "mo";
 namespace o2::quality_control::postprocessing
 {
 
-PostProcessingDevice::PostProcessingDevice(const std::string& taskName, const std::string& configurationSource)
-  : mRunner(std::make_unique<PostProcessingRunner>(taskName)), mDeviceName(createPostProcessingIdString() + "-" + taskName), mConfigSource(configurationSource)
+PostProcessingDevice::PostProcessingDevice(const PostProcessingRunnerConfig& runnerConfig)
+  : mRunner(std::make_unique<PostProcessingRunner>(runnerConfig.taskName)),
+    mDeviceName(createPostProcessingIdString() + "-" + runnerConfig.taskName),
+    mRunnerConfig(runnerConfig)
 {
-  ILOG_INST.setFacility("PostProcessing");
+  core::QcInfoLogger::setFacility("PostProcessing");
 }
 
 void PostProcessingDevice::init(framework::InitContext& ctx)
 {
-  // todo: eventually we should retrieve the configuration from context
-  auto config = ConfigurationFactory::getConfiguration(mConfigSource);
-  mRunner->init(config->getRecursive());
+  // todo: read the updated config from ctx, one available
+  mRunner->init(mRunnerConfig, PostProcessingConfig{ mRunnerConfig.taskName, mRunnerConfig.configTree });
 
   // registering state machine callbacks
   ctx.services().get<CallbackService>().set(CallbackService::Id::Start, [this]() { start(); });
-  ctx.services().get<CallbackService>().set(CallbackService::Id::Stop, [this]() { stop(); });
   ctx.services().get<CallbackService>().set(CallbackService::Id::Reset, [this]() { reset(); });
+  ctx.services().get<CallbackService>().set(CallbackService::Id::Stop, [this]() { stop(); });
 }
 
 void PostProcessingDevice::run(framework::ProcessingContext& ctx)

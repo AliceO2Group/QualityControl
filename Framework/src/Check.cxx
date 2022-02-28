@@ -23,13 +23,12 @@
 #include <Common/Exceptions.h>
 #include <Framework/DataDescriptorQueryBuilder.h>
 // QC
-#include "QualityControl/TaskRunner.h"
 #include "QualityControl/InputUtils.h"
 #include "QualityControl/RootClassFactory.h"
+#include "QualityControl/QcInfoLogger.h"
 
 using namespace AliceO2::Common;
 using namespace AliceO2::InfoLogger;
-using namespace o2::configuration;
 
 using namespace o2::quality_control::checker;
 using namespace std;
@@ -38,20 +37,19 @@ namespace o2::quality_control::checker
 {
 
 /// Static functions
-o2::header::DataDescription Check::createCheckerDataDescription(const std::string& name)
+o2::header::DataDescription Check::createCheckDataDescription(const std::string& checkName)
 {
-  if (name.empty()) {
-    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Empty taskName for checker's data description"));
+  if (checkName.empty()) {
+    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Empty checkName for check's data description"));
   }
   o2::header::DataDescription description;
-  description.runtimeInit(std::string(name.substr(0, o2::header::DataDescription::size - 4) + "-chk").c_str());
+  description.runtimeInit(std::string(checkName.substr(0, o2::header::DataDescription::size - 4) + "-chk").c_str());
   return description;
 }
 
 /// Members
 Check::Check(CheckConfig config)
-  : mLogger(QcInfoLogger::GetInstance()),
-    mCheckConfig(std::move(config))
+  : mCheckConfig(std::move(config))
 {
 }
 
@@ -60,7 +58,6 @@ void Check::init()
   try {
     mCheckInterface = root_class_factory::create<CheckInterface>(mCheckConfig.moduleName, mCheckConfig.className);
     mCheckInterface->setCustomParameters(mCheckConfig.customParameters);
-    mCheckInterface->configure(mCheckConfig.name);
   } catch (...) {
     std::string diagnostic = boost::current_exception_diagnostic_information();
     ILOG(Fatal, Ops) << "Unexpected exception, diagnostic information follows:\n"
@@ -69,13 +66,13 @@ void Check::init()
   }
 
   // Print setting
-  mLogger << mCheckConfig.name << ": Module " << mCheckConfig.moduleName << AliceO2::InfoLogger::InfoLogger::endm;
-  mLogger << mCheckConfig.name << ": Class " << mCheckConfig.className << AliceO2::InfoLogger::InfoLogger::endm;
-  mLogger << mCheckConfig.name << ": Detector " << mCheckConfig.detectorName << AliceO2::InfoLogger::InfoLogger::endm;
-  mLogger << mCheckConfig.name << ": Policy " << UpdatePolicyTypeUtils::ToString(mCheckConfig.policyType) << AliceO2::InfoLogger::InfoLogger::endm;
-  mLogger << mCheckConfig.name << ": MonitorObjects : " << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << mCheckConfig.name << ": Module " << mCheckConfig.moduleName << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << mCheckConfig.name << ": Class " << mCheckConfig.className << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << mCheckConfig.name << ": Detector " << mCheckConfig.detectorName << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << mCheckConfig.name << ": Policy " << UpdatePolicyTypeUtils::ToString(mCheckConfig.policyType) << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << mCheckConfig.name << ": MonitorObjects : " << AliceO2::InfoLogger::InfoLogger::endm;
   for (const auto& moname : mCheckConfig.objectNames) {
-    mLogger << mCheckConfig.name << "   - " << moname << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Info, Support) << mCheckConfig.name << "   - " << moname << AliceO2::InfoLogger::InfoLogger::endm;
   }
 }
 
@@ -126,7 +123,7 @@ QualityObjectsType Check::check(std::map<std::string, std::shared_ptr<MonitorObj
     boost::copy(moMapToCheck | boost::adaptors::map_keys, std::back_inserter(monitorObjectsNames));
 
     auto quality = mCheckInterface->check(&moMapToCheck);
-    mLogger << "Check '" << mCheckConfig.name << "', quality '" << quality << "'" << ENDM;
+    ILOG(Info, Support) << "Check '" << mCheckConfig.name << "', quality '" << quality << "'" << ENDM;
     // todo: take metadata from somewhere
     qualityObjects.emplace_back(std::make_shared<QualityObject>(
       quality,
@@ -205,8 +202,6 @@ CheckConfig Check::extractConfig(const CommonSpec&, const CheckSpec& checkSpec)
     ILOG(Warning, Devel) << "Beautification disabled because more than one source is used in this Check (" << checkSpec.checkName << ")" << ENDM;
   }
 
-  framework::OutputSpec qoSpec{ "QC", createCheckerDataDescription(checkSpec.checkName), 0 };
-
   return {
     checkSpec.checkName,
     checkSpec.moduleName,
@@ -218,8 +213,13 @@ CheckConfig Check::extractConfig(const CommonSpec&, const CheckSpec& checkSpec)
     checkAllObjects,
     allowBeautify,
     std::move(inputs),
-    std::move(qoSpec)
+    createOutputSpec(checkSpec.checkName)
   };
+}
+
+framework::OutputSpec Check::createOutputSpec(const std::string& checkName)
+{
+  return { "QC", createCheckDataDescription(checkName), 0, framework::Lifetime::Sporadic };
 }
 
 } // namespace o2::quality_control::checker

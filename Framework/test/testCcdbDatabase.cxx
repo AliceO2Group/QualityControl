@@ -28,6 +28,7 @@
 #include <TH1F.h>
 #include "QualityControl/RepoPathUtils.h"
 #include "QualityControl/testUtils.h"
+#include <DataFormatsQualityControl/TimeRangeFlagCollection.h>
 #include <TROOT.h>
 
 namespace utf = boost::unit_test;
@@ -38,6 +39,7 @@ namespace o2::quality_control::core
 namespace
 {
 
+using namespace o2::quality_control;
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::repository;
 using namespace std;
@@ -90,6 +92,7 @@ struct MyGlobalFixture {
     // cannot use the test_fixture because we are tearing down
     backend->truncate("qc/TST/MO/Test/pid" + std::to_string(getpid()), "*");
     backend->truncate("qc/TST/QO/Test/pid" + std::to_string(getpid()), "*");
+    backend->truncate("qc/TST/TRFC/Test_pid" + std::to_string(getpid()), "*");
     backend->truncate("qc_hello/TST/MO/Test/pid" + std::to_string(getpid()), "*");
     backend->truncate("qc_hello/TST/QO/Test/pid" + std::to_string(getpid()), "*");
   }
@@ -104,18 +107,18 @@ BOOST_AUTO_TEST_CASE(ccdb_store)
 
   TH1F* h1 = new TH1F("quarantine", "asdf", 100, 0, 99);
   h1->FillRandom("gaus", 10000);
-  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, f.taskName, "TST");
+  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, f.taskName, "TestClass", "TST");
   mo1->updateActivity(1234, "LHC66", "passName1", "qc");
 
   TH1F* h2 = new TH1F("metadata", "asdf", 100, 0, 99);
-  shared_ptr<MonitorObject> mo2 = make_shared<MonitorObject>(h2, f.taskName, "TST");
+  shared_ptr<MonitorObject> mo2 = make_shared<MonitorObject>(h2, f.taskName, "TestClass", "TST");
   mo2->addMetadata("my_meta", "is_good");
 
   TH1F* h3 = new TH1F("short", "asdf", 100, 0, 99);
-  shared_ptr<MonitorObject> mo3 = make_shared<MonitorObject>(h3, f.taskName, "TST");
+  shared_ptr<MonitorObject> mo3 = make_shared<MonitorObject>(h3, f.taskName, "TestClass", "TST");
 
   TH1F* h4 = new TH1F("provenance", "asdf", 100, 0, 99);
-  shared_ptr<MonitorObject> mo4 = make_shared<MonitorObject>(h4, f.taskName, "TST");
+  shared_ptr<MonitorObject> mo4 = make_shared<MonitorObject>(h4, f.taskName, "TestClass", "TST");
   mo4->updateActivity(1234, "LHC66", "passName1", "qc_hello");
 
   shared_ptr<QualityObject> qo1 = make_shared<QualityObject>(Quality::Bad, f.taskName + "/test-ccdb-check", "TST", "OnAll", vector{ string("input1"), string("input2") });
@@ -137,6 +140,10 @@ BOOST_AUTO_TEST_CASE(ccdb_store)
   // with timestamps
   f.backend->storeMO(mo3, 10000, 20000);
   f.backend->storeQO(qo3, 10000, 20000);
+
+  // test the max size
+  f.backend->setMaxObjectSize(1);
+  f.backend->storeMO(mo3, 10000, 20000); // should fail
 }
 
 BOOST_AUTO_TEST_CASE(ccdb_store_for_future_tests)
@@ -147,7 +154,7 @@ BOOST_AUTO_TEST_CASE(ccdb_store_for_future_tests)
 
   TH1F* h1 = new TH1F("to_be_kept", "asdf", 100, 0, 99);
   h1->FillRandom("gaus", 12345);
-  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "task", "TST_KEEP");
+  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "TestClass", "task", "TST_KEEP");
   mo1->addMetadata("RunNumber", o2::quality_control::core::Version::GetQcVersion().getString());
   shared_ptr<QualityObject> qo1 = make_shared<QualityObject>(Quality::Bad, "check", "TST_KEEP", "OnAll", vector{ string("input1"), string("input2") });
   qo1->addMetadata("RunNumber", o2::quality_control::core::Version::GetQcVersion().getString());
@@ -366,6 +373,31 @@ BOOST_AUTO_TEST_CASE(ccdb_store_retrieve_any)
   BOOST_CHECK(h1_back != nullptr);
   BOOST_CHECK(h1_back->GetNbinsX() == 100);
   BOOST_CHECK(h1_back->GetEntries() > 0);
+}
+
+BOOST_AUTO_TEST_CASE(ccdb_trfc)
+{
+  test_fixture f;
+  const std::string pid = std::to_string(getpid());
+  const std::string trfcName = "Test_pid" + pid; // TODO we can use a 'Test' directory once https://github.com/AliceO2Group/AliceO2/pull/8195 is merged
+
+  std::shared_ptr<TimeRangeFlagCollection> trfc1{ new TimeRangeFlagCollection{ trfcName, "TST", { 45, 500000 }, 42, "LHC42x", "spass", "qc" } };
+  trfc1->insert({ 50, 77, FlagReasonFactory::Invalid(), "a comment", "a source" });
+  trfc1->insert({ 51, 77, FlagReasonFactory::Invalid() });
+  trfc1->insert({ 1234, 3434, FlagReasonFactory::LimitedAcceptance() });
+  trfc1->insert({ 50, 77, FlagReasonFactory::LimitedAcceptance() });
+  trfc1->insert({ 43434, 63421, FlagReasonFactory::NotBadFlagExample() });
+
+  f.backend->storeTRFC(trfc1);
+
+  auto trfc2 = f.backend->retrieveTRFC(trfc1->getName(), trfc1->getDetector(), trfc1->getRunNumber(),
+                                       trfc1->getPassName(), trfc1->getPeriodName(), trfc1->getProvenance(), 400000);
+  BOOST_REQUIRE(trfc2 != nullptr);
+
+  BOOST_REQUIRE_EQUAL(trfc1->size(), trfc2->size());
+  for (auto it1 = trfc1->begin(), it2 = trfc2->begin(); it1 != trfc1->end() && it2 != trfc2->end(); ++it1, ++it2) {
+    BOOST_CHECK_EQUAL(*it1, *it2);
+  }
 }
 
 } // namespace

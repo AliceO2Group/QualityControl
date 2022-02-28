@@ -64,21 +64,20 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
   // Defining histograms
   //==============================================
   mChipOccupancy = std::make_unique<TH1F>(
-    "ChipOccupancyMaps/mMFTChipOccupancy",
+    "mMFTChipOccupancy",
     "Chip Occupancy;Chip ID;#Entries",
     936, -0.5, 935.5);
-  if (mTaskLevel == 3 || mTaskLevel == 4)
-    getObjectsManager()->startPublishing(mChipOccupancy.get());
+  getObjectsManager()->startPublishing(mChipOccupancy.get());
 
   mChipOccupancyStdDev = std::make_unique<TH1F>(
-    "ChipOccupancyMaps/mMFTChipOccupancyStdDev",
+    "mMFTChipOccupancyStdDev",
     "Chip Occupancy Std Dev;Chip ID;Chip std dev",
     936, -0.5, 935.5);
-  if (mTaskLevel == 3 || mTaskLevel == 4)
-    getObjectsManager()->startPublishing(mChipOccupancyStdDev.get());
+  getObjectsManager()->startPublishing(mChipOccupancyStdDev.get());
 
   // --Chip hit maps
   //==============================================
+  QcMFTUtilTables MFTTable;
   for (int iVectorOccupancyMapIndex = 0; iVectorOccupancyMapIndex < 4; iVectorOccupancyMapIndex++) {
     // create only hit maps corresponding to the FLP
     int iOccupancyMapIndex = getIndexChipOccupancyMap(iVectorOccupancyMapIndex);
@@ -90,16 +89,16 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
 
     auto chiphitmap = std::make_unique<TH2F>(
       folderName, histogramName,
-      mNumberOfBinsInOccupancyMaps[iOccupancyMapIndex][0],
-      mNumberOfBinsInOccupancyMaps[iOccupancyMapIndex][1],
-      mNumberOfBinsInOccupancyMaps[iOccupancyMapIndex][2],
-      mNumberOfBinsInOccupancyMaps[iOccupancyMapIndex][3],
-      mNumberOfBinsInOccupancyMaps[iOccupancyMapIndex][4],
-      mNumberOfBinsInOccupancyMaps[iOccupancyMapIndex][5]);
+      MFTTable.mNumberOfBinsInOccupancyMaps[iOccupancyMapIndex][0],
+      MFTTable.mNumberOfBinsInOccupancyMaps[iOccupancyMapIndex][1],
+      MFTTable.mNumberOfBinsInOccupancyMaps[iOccupancyMapIndex][2],
+      MFTTable.mNumberOfBinsInOccupancyMaps[iOccupancyMapIndex][3],
+      MFTTable.mNumberOfBinsInOccupancyMaps[iOccupancyMapIndex][4],
+      MFTTable.mNumberOfBinsInOccupancyMaps[iOccupancyMapIndex][5]);
     chiphitmap->SetStats(0);
+    chiphitmap->SetOption("colz");
     mChipOccupancyMap.push_back(std::move(chiphitmap));
-    if (mTaskLevel == 0 || mTaskLevel == 1 || mTaskLevel == 4)
-      getObjectsManager()->startPublishing(mChipOccupancyMap[iVectorOccupancyMapIndex].get());
+    getObjectsManager()->startPublishing(mChipOccupancyMap[iVectorOccupancyMapIndex].get());
   }
 
   // --Pixel hit maps
@@ -123,8 +122,9 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
       minBinPixelOccupancyMap - shiftPixelOccupancyMap,
       maxBinYPixelOccupancyMap - shiftPixelOccupancyMap);
     pixelhitmap->SetStats(0);
+    pixelhitmap->SetOption("colz");
     mPixelOccupancyMap.push_back(std::move(pixelhitmap));
-    if (mTaskLevel == 2 || mTaskLevel == 4)
+    if (mTaskLevel == 1)
       getObjectsManager()->startPublishing(mPixelOccupancyMap[iVectorIndex].get());
   }
 }
@@ -313,11 +313,11 @@ int QcMFTDigitTask::getChipIndexPixelOccupancyMap(int vectorIndex)
   return chipIndex;
 }
 
-void QcMFTDigitTask::resetArrays(int array[], int array2[], int array3[])
+void QcMFTDigitTask::resetArrays(int* array1, int* array2, int* array3)
 {
 
   for (int iChip = 0; iChip < numberOfChips; iChip++) {
-    array[iChip] = -1;
+    array1[iChip] = -1;
     array2[iChip] = -1;
   }
 

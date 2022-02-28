@@ -14,7 +14,6 @@
 /// \author Sergey Evdokimov
 ///
 
-#include <TCanvas.h>
 #include <TH1.h>
 #include <TH2.h>
 #include <TF1.h>
@@ -23,7 +22,10 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "CPV/PedestalTask.h"
 #include <Framework/InputRecord.h>
+#include <Framework/InputRecordWalker.h>
+#include <Framework/DataRefUtils.h>
 #include "DataFormatsCPV/TriggerRecord.h"
+#include "DataFormatsCPV/Digit.h"
 
 namespace o2::quality_control_modules::cpv
 {
@@ -67,10 +69,21 @@ void PedestalTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void PedestalTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity() : resetting everything" << activity.mId << ENDM;
+  ILOG(Info, Support) << "startOfActivity() : Run Number of Activity is " << activity.mId << ENDM;
   resetHistograms();
   mNEventsTotal = 0;
   mNEventsFromLastFillHistogramsCall = 0;
+  mRunNumber = activity.mId;
+  for (int i = 0; i < kNHist1D; i++) {
+    if (mHist1D[i]) {
+      getObjectsManager()->addMetadata(mHist1D[i]->GetName(), "RunNumberFromTask", Form("%d", mRunNumber));
+    }
+  }
+  for (int i = 0; i < kNHist2D; i++) {
+    if (mHist2D[i]) {
+      getObjectsManager()->addMetadata(mHist2D[i]->GetName(), "RunNumberFromTask", Form("%d", mRunNumber));
+    }
+  }
 }
 
 void PedestalTask::startOfCycle()
@@ -101,15 +114,15 @@ void PedestalTask::monitorData(o2::framework::ProcessingContext& ctx)
   int nValidInputs = ctx.inputs().countValidInputs();
   mHist1D[H1DNValidInputs]->Fill(nValidInputs);
 
-  for (auto&& input : ctx.inputs()) {
+  for (auto&& input : o2::framework::InputRecordWalker(ctx.inputs())) {
     // get message header
     if (input.header != nullptr && input.payload != nullptr) {
-      const auto* header = header::get<header::DataHeader*>(input.header);
+      auto payloadSize = o2::framework::DataRefUtils::getPayloadSize(input);
       // get payload of a specific input, which is a char array.
       // const char* payload = input.payload;
 
       // for the sake of an example, let's fill the histogram with payload sizes
-      mHist1D[H1DInputPayloadSize]->Fill(header->payloadSize);
+      mHist1D[H1DInputPayloadSize]->Fill(payloadSize);
     }
   }
 
@@ -121,7 +134,7 @@ void PedestalTask::monitorData(o2::framework::ProcessingContext& ctx)
   //mNEventsTotal += digitsTR.size();//number of events in the current input
   for (const auto& trigRecord : digitsTR) {
     LOG(debug) << " monitorData() : trigger record #" << mNEventsTotal
-               << " contains " << trigRecord.getNumberOfObjects() << " objects." << ENDM;
+               << " contains " << trigRecord.getNumberOfObjects() << " objects.";
     if (trigRecord.getNumberOfObjects() > 0) { //at least 1 digit -> pedestal event
       mNEventsTotal++;
       mNEventsFromLastFillHistogramsCall++;
@@ -137,31 +150,6 @@ void PedestalTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
     }
   }
-  // get the payload of a specific input, which is a char array. "random" is the binding specified in the config file.
-  //   auto payload = ctx.inputs().get("random").payload;
-
-  // get payload of a specific input, which is a structure array:
-  //  const auto* header = header::get<header::DataHeader*>(ctx.inputs().get("random").header);
-  //  struct s {int a; double b;};
-  //  auto array = ctx.inputs().get<s*>("random");
-  //  for (int j = 0; j < header->payloadSize / sizeof(s); ++j) {
-  //    int i = array.get()[j].a;
-  //  }
-
-  // get payload of a specific input, which is a root object
-  //   auto h = ctx.inputs().get<TH1F*>("histos");
-  //   Double_t stats[4];
-  //   h->GetStats(stats);
-  //   auto s = ctx.inputs().get<TObjString*>("string");
-  //   LOG(info) << "String is " << s->GetString().Data();
-
-  // 3. Access CCDB. If it is enough to retrieve it once, do it in initialize().
-  // Remember to delete the object when the pointer goes out of scope or it is no longer needed.
-  //   TObject* condition = TaskInterface::retrieveCondition("QcTask/example"); // put a valid condition path here
-  //   if (condition) {
-  //     LOG(info) << "Retrieved " << condition->ClassName();
-  //     delete condition;
-  //   }
 }
 
 void PedestalTask::endOfCycle()

@@ -17,8 +17,11 @@
 #include "getTestDataDirectory.h"
 #include "QualityControl/AggregatorRunnerFactory.h"
 #include "QualityControl/AggregatorRunner.h"
+#include "QualityControl/AggregatorRunnerConfig.h"
+#include "QualityControl/AggregatorConfig.h"
 #include "QualityControl/Aggregator.h"
 #include "QualityControl/MonitorObject.h"
+#include "QualityControl/InfrastructureSpecReader.h"
 #include <Configuration/ConfigurationFactory.h>
 #include <Framework/InitContext.h>
 #include <Framework/ConfigParamRegistry.h>
@@ -33,8 +36,24 @@
 using namespace o2::quality_control::checker;
 using namespace std;
 using namespace o2::framework;
+using namespace o2::configuration;
 using namespace o2::header;
 using namespace o2::quality_control::core;
+
+std::pair<AggregatorRunnerConfig, std::vector<AggregatorConfig>> getAggregatorConfigs(const std::string& configFilePath)
+{
+  auto config = ConfigurationFactory::getConfiguration(configFilePath);
+  auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(config->getRecursive());
+  std::vector<AggregatorConfig> aggregatorConfigs;
+  for (const auto& aggregatorSpec : infrastructureSpec.aggregators) {
+    if (aggregatorSpec.active) {
+      aggregatorConfigs.emplace_back(Aggregator::extractConfig(infrastructureSpec.common, aggregatorSpec));
+    }
+  }
+  auto aggregatorRunnerConfig = AggregatorRunnerFactory::extractRunnerConfig(infrastructureSpec.common);
+
+  return { aggregatorRunnerConfig, aggregatorConfigs };
+}
 
 BOOST_AUTO_TEST_CASE(test_aggregator_runner_static)
 {
@@ -46,9 +65,15 @@ BOOST_AUTO_TEST_CASE(test_aggregator_runner_static)
 BOOST_AUTO_TEST_CASE(test_aggregator_runner)
 {
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
-  AggregatorRunner aggregatorRunner{ configFilePath, { OutputSpec{ { "mo" }, "QC", "abcTask-mo", 123 } } };
+  auto [aggregatorRunnerConfig, aggregatorConfigs] = getAggregatorConfigs(configFilePath);
+  AggregatorRunner aggregatorRunner{ aggregatorRunnerConfig, aggregatorConfigs };
 
-  std::unique_ptr<ConfigParamStore> store;
+  Options options{
+    { "runNumber", VariantType::String, { "Run number" } },
+    { "qcConfiguration", VariantType::Dict, emptyDict(), { "Some dictionary configuration" } }
+  };
+  std::vector<std::unique_ptr<ParamRetriever>> retr;
+  std::unique_ptr<ConfigParamStore> store = make_unique<ConfigParamStore>(move(options), move(retr));
   ConfigParamRegistry cfReg(std::move(store));
   ServiceRegistry sReg;
   InitContext initContext{ cfReg, sReg };
@@ -77,9 +102,10 @@ Quality getQualityForCheck(QualityObjectsType qos, string checkName)
 BOOST_AUTO_TEST_CASE(test_aggregator_quality_filter)
 {
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
-  std::shared_ptr<o2::configuration::ConfigurationInterface> configFile = o2::configuration::ConfigurationFactory::getConfiguration(configFilePath);
-  boost::property_tree::ptree config = configFile->getRecursive("qc.aggregators.MyAggregatorB");
-  auto aggregator = make_shared<Aggregator>("MyAggregatorB", config);
+  auto [aggregatorRunnerConfig, aggregatorConfigs] = getAggregatorConfigs(configFilePath);
+  auto myAggregatorBConfig = std::find_if(aggregatorConfigs.begin(), aggregatorConfigs.end(), [](const auto& cfg) { return cfg.name == "MyAggregatorB"; });
+  BOOST_REQUIRE(myAggregatorBConfig != aggregatorConfigs.end());
+  auto aggregator = make_shared<Aggregator>(*myAggregatorBConfig);
   aggregator->init();
 
   // empty list -> Good
@@ -112,4 +138,23 @@ BOOST_AUTO_TEST_CASE(test_aggregator_quality_filter)
   qoMap["dataSizeCheck2/someNumbersTask/example2"] = make_shared<QualityObject>(Quality::Bad, "dataSizeCheck2/someNumbersTask/example2");
   result = aggregator->aggregate(qoMap);
   BOOST_CHECK_EQUAL(getQualityForCheck(result, "MyAggregatorB/newQuality"), Quality::Medium);
+}
+
+BOOST_AUTO_TEST_CASE(test_getDetector)
+{
+  AggregatorConfig config;
+  config.detectorName = "TST";
+
+  std::vector<std::shared_ptr<Aggregator>> aggregators;
+  BOOST_CHECK_EQUAL(AggregatorRunner::getDetectorName(aggregators), "");
+  auto checkTST = std::make_shared<Aggregator>(config);
+  aggregators.push_back(checkTST);
+  BOOST_CHECK_EQUAL(AggregatorRunner::getDetectorName(aggregators), "TST");
+  auto checkTST2 = std::make_shared<Aggregator>(config);
+  aggregators.push_back(checkTST2);
+  BOOST_CHECK_EQUAL(AggregatorRunner::getDetectorName(aggregators), "TST");
+  config.detectorName = "EMC";
+  auto checkEMC = std::make_shared<Aggregator>(config);
+  aggregators.push_back(checkEMC);
+  BOOST_CHECK_EQUAL(AggregatorRunner::getDetectorName(aggregators), "MANY");
 }

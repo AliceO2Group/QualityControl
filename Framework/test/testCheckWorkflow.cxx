@@ -111,7 +111,7 @@ class Receiver : public framework::Task
   {
     Inputs inputs;
     for (auto& checkName : mNames) {
-      inputs.push_back({ checkName, "QC", Check::createCheckerDataDescription(checkName) });
+      inputs.push_back({ checkName, "QC", Check::createCheckDataDescription(checkName) });
     }
     return inputs;
   }
@@ -148,7 +148,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
   DataSampling::GenerateInfrastructure(specs, dataSamplingTree);
 
   // Generation of the QC topology (one task, one checker in this case)
-  quality_control::generateStandaloneInfrastructure(specs, qcConfigurationSource);
+  quality_control::generateStandaloneInfrastructure(specs, configInterface->getRecursive());
 
   Receiver receiver(qcConfigurationSource);
   // Finally the receiver

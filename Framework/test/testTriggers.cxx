@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE(test_trigger_new_object)
 
   TH1I* obj = new TH1I(objectName.c_str(), objectName.c_str(), 10, 0, 10.0);
   obj->Fill(4);
-  std::shared_ptr<MonitorObject> mo = std::make_shared<MonitorObject>(obj, taskName, detectorCode);
+  std::shared_ptr<MonitorObject> mo = std::make_shared<MonitorObject>(obj, taskName, "TestClass", detectorCode);
 
   const std::string objectPath = RepoPathUtils::getMoPath(mo.get());
   auto newObjectTrigger = triggers::NewObject(CCDB_ENDPOINT, objectPath);

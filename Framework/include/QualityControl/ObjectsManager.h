@@ -44,12 +44,13 @@ class ObjectsManager
   /**
    * Constructor
    * @param taskName Task name
+   * @param taskClass Task's class
    * @param detectorName Detector 3-letter code
    * @param consulUrl Consul URL, for the service discovery
    * @param parallelTaskID ID of a parallel Task, use 0 if there is only one.
    * @param noDiscovery If true disables the use of ServiceDiscovery
    */
-  ObjectsManager(std::string taskName, std::string detectorName, std::string consulUrl, int parallelTaskID = 0, bool noDiscovery = false);
+  ObjectsManager(std::string taskName, std::string taskClass, std::string detectorName, std::string consulUrl, int parallelTaskID = 0, bool noDiscovery = false);
   virtual ~ObjectsManager();
 
   static const std::string gDrawOptionsKey;
@@ -105,6 +106,16 @@ class ObjectsManager
   void addMetadata(const std::string& objectName, const std::string& key, const std::string& value);
 
   /**
+   * \brief Add or update metadata to a MonitorObject.
+   * Add or update a metadata pair to a MonitorObject. This is propagated to the database.
+   * @param objectName Name of the MonitorObject.
+   * @param key Key of the metadata.
+   * @param value Value of the metadata.
+   * @throw ObjectNotFoundError if object is not found.
+   */
+  void addOrUpdateMetadata(const std::string& objectName, const std::string& key, const std::string& value);
+
+  /**
    * \brief Set default draw options for this object.
    * If possible, the object will be drawn with these options (in the ROOT sense).
    * See for example https://root.cern/doc/master/classTHistPainter.html#HP01
@@ -143,7 +154,7 @@ class ObjectsManager
   size_t getNumberPublishedObjects();
 
   /**
-   * Returns the published MonitorObject specified by its name
+   * Returns the published MonitorObject specified by its index
    * @param index
    * @return A pointer to the MonitorObject.
    * @throw ObjectNotFoundError if the object is not found.
@@ -163,12 +174,17 @@ class ObjectsManager
    */
   void removeAllFromServiceDiscovery();
 
+  const Activity& getActivity() const;
+  void setActivity(const Activity& activity);
+
  private:
   std::unique_ptr<MonitorObjectCollection> mMonitorObjects;
   std::string mTaskName;
+  std::string mTaskClass;
   std::string mDetectorName;
   std::unique_ptr<ServiceDiscovery> mServiceDiscovery;
   bool mUpdateServiceDiscovery;
+  Activity mActivity;
 };
 
 } // namespace o2::quality_control::core

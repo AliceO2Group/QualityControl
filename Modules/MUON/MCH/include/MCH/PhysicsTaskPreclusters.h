@@ -23,8 +23,12 @@
 
 #include <TH2.h>
 #include "QualityControl/TaskInterface.h"
+#include "MUONCommon/MergeableTH2Ratio.h"
+#include "MCH/MergeableTH1PseudoEfficiencyPerDE.h"
+//#include "MCH/MergeableTH1PseudoEfficiencyPerDECycle.h"
+//#include "MCH/MergeableTH1MPVPerDECycle.h"
 #include "MCH/GlobalHistogram.h"
-#if HAVE_DIGIT_IN_DATAFORMATS
+#ifdef HAVE_DIGIT_IN_DATAFORMATS
 #include "DataFormatsMCH/Digit.h"
 #else
 #include "MCHBase/Digit.h"
@@ -58,32 +62,36 @@ class PhysicsTaskPreclusters /*final*/ : public o2::quality_control::core::TaskI
   void endOfActivity(o2::quality_control::core::Activity& activity) override;
   void reset() override;
 
+ private:
   bool plotPrecluster(const o2::mch::PreCluster& preCluster, gsl::span<const o2::mch::Digit> digits);
+  void printPrecluster(gsl::span<const o2::mch::Digit> preClusterDigits);
   void printPreclusters(gsl::span<const o2::mch::PreCluster> preClusters, gsl::span<const o2::mch::Digit> digits);
 
- private:
-  double MeanPseudoeffDE[1100];
-  double MeanPseudoeffDECycle[1100];
-  // Arrays needed to compute the Pseudo-efficiency on the elapsed cycle
-  double LastPreclBNBDE[1100];
-  double NewPreclBNBDE[1100];
-  double LastPreclNumDE[1100];
-  double NewPreclNumDE[1100];
+  void computePseudoEfficiency();
+  void writeHistos();
 
-  std::vector<std::unique_ptr<mch::Digit>> digits;
+  // TH1 of Mean Pseudo-efficiency on DEs
+  //Since beginning of run
+  std::shared_ptr<MergeableTH1PseudoEfficiencyPerDE> mMeanPseudoeffPerDE[2]; //Pseudoefficiency of B and NB
 
-  // TH1 of Mean Pseudo-efficiency on DEs, integrated or only on the elapsed cycle - Sent for Trending
-  TH1F* mMeanPseudoeffPerDE;
-  TH1F* mMeanPseudoeffPerDECycle;
+  //On last cycle only
+  // WARNING: the code for the efficiency on cycle is currently broken and therefore disabled
+  //MergeableTH1PseudoEfficiencyPerDECycle* mMeanPseudoeffPerDE_DoesGoodNBHaveSomethingB_Cycle;
+  //MergeableTH1PseudoEfficiencyPerDECycle* mMeanPseudoeffPerDE_DoesGoodBHaveSomethingNB_Cycle;
+  //MergeableTH1MPVPerDECycle* mMPVCycle; //MPV of the Landau best fitted to the cluster charge distribution on each DE each cycle
 
-  std::map<int, TH1F*> mHistogramClchgDE;
-  std::map<int, TH1F*> mHistogramClchgDEOnCycle;
-  std::map<int, TH1F*> mHistogramClsizeDE;
+  std::shared_ptr<TH2F> mDigitChargeVsSize[4];
+  std::shared_ptr<TH2F> mDigitClsizeVsCharge[2];
+  std::shared_ptr<TH2F> mDigitChargeNBVsChargeB;
 
-  std::map<int, TH2F*> mHistogramPreclustersXY[4];
-  std::map<int, TH2F*> mHistogramPseudoeffXY[3];
+  std::map<int, std::shared_ptr<TH2F>> mHistogramClchgDE;
+  std::map<int, std::shared_ptr<TH1F>> mHistogramClchgDEOnCycle;
+  std::map<int, std::shared_ptr<TH2F>> mHistogramClsizeDE;
 
-  GlobalHistogram* mHistogramPseudoeff[3];
+  std::map<int, std::shared_ptr<DetectorHistogram>> mHistogramPreclustersXY[4];
+  std::map<int, std::shared_ptr<MergeableTH2Ratio>> mHistogramPseudoeffXY[2];
+
+  std::vector<TH1*> mAllHistograms;
 };
 
 } // namespace muonchambers

@@ -1,0 +1,50 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "2"
+      }
+    },
+    "tasks": {
+      "QcTaskMIDDigits": {
+        "active": "true",
+        "className": "o2::quality_control_modules::mid::DigitsQcTask",
+        "moduleName": "QcMID",
+        "detectorName": "MID",
+        "cycleDurationSeconds": "60",
+        "maxNumberCycles": "-1",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "digits"
+        },
+        "location": "remote"
+      }
+    }
+  },
+  "dataSamplingPolicies": [
+  {
+    "id": "digits",
+    "active": "true",
+    "machines": [],
+    "query" : "digits:MID/DATA/0;digitrofs:MID/DATAROF/0",
+    "samplingConditions": [
+      {
+        "condition": "random",
+        "fraction": "1",
+        "seed": "1441"
+      }
+    ],
+    "blocking": "false"
+  }
+  ]
+}
+
+

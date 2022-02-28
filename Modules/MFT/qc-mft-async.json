@@ -1,0 +1,67 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "2"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": ""
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      }
+    },
+    "tasks": {
+      "QcMFTAsync": {
+        "active": "true",
+        "className": "o2::quality_control_modules::mft::QcMFTAsyncTask",
+        "moduleName": "QcMFT",
+        "detectorName": "MFT",
+        "cycleDurationSeconds": "60",
+        "maxNumberCycles": "-1",
+        "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "mft-async"
+        },
+        "taskParameters": {
+          "ROFLengthInBC": "198",
+          "MaxTrackROFSize": "1000",
+          "MaxClusterROFSize": "5000",
+          "MaxDuration": "60000",
+          "TimeBinSize": "0.1",
+          "RefOrbit": "0"
+        },
+        "location": "remote"
+      }
+    },
+    "checks": {}
+  },
+  "dataSamplingPolicies": [
+    {
+      "id": "mft-async",
+      "active": "true",
+      "machines": [],
+      "query": "tracks:MFT/TRACKS/0;tracksrofs:MFT/MFTTrackROF/0;clusters:MFT/COMPCLUSTERS/0;clustersrofs:MFT/CLUSTERSROF/0",
+      "samplingConditions": [
+        {
+          "condition": "random",
+          "fraction": "0.05",
+          "seed": "1234"
+        }
+      ],
+      "blocking": "false"
+    }
+  ]
+}

@@ -21,7 +21,7 @@
 #include <string>
 #include <vector>
 
-namespace o2::quality_control::core
+namespace o2::quality_control::postprocessing
 {
 
 struct PostProcessingTaskSpec {
@@ -29,25 +29,18 @@ struct PostProcessingTaskSpec {
   PostProcessingTaskSpec() = default;
 
   // minimal valid spec
-  PostProcessingTaskSpec(std::string taskName, std::string className, std::string moduleName, std::string detectorName)
-    : taskName(std::move(taskName)),
-      className(std::move(className)),
-      moduleName(std::move(moduleName)),
-      detectorName(std::move(detectorName))
+  PostProcessingTaskSpec(std::string taskName)
+    : taskName(std::move(taskName))
   {
   }
 
-  // basic
+  // Post Processing Tasks configure themselves with a ptree.
+  // While this is a lack of consequence, with respect to other *Specs,
+  // I am afraid it is too late to change it, since also users rely on this (see ITS Trending Task).
+
   std::string taskName = "Invalid";
-  std::string className = "Invalid";
-  std::string moduleName = "Invalid";
-  std::string detectorName = "Invalid";
-  std::vector<std::string> initTriggers;
-  std::vector<std::string> updateTriggers;
-  std::vector<std::string> stopTriggers;
-  // advanced
   bool active = true;
-  boost::property_tree::ptree tree = {}; // todo see if it can be avoided
+  boost::property_tree::ptree tree = {};
 };
 
 } // namespace o2::quality_control::core

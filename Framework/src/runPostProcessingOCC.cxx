@@ -22,7 +22,7 @@
 #include <RuntimeControlledObject.h>
 #include <boost/program_options.hpp>
 #include <Common/Timer.h>
-#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/ptree_fwd.hpp>
 
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;
@@ -196,6 +196,8 @@ int main(int argc, const char* argv[])
     bpo::variables_map vm;
     store(parse_command_line(argc, argv, desc), vm);
     notify(vm);
+
+    QcInfoLogger::setFacility("runPostProcessingOCC");
 
     if (vm.count("help")) {
       ILOG(Info, Support) << desc << ENDM;

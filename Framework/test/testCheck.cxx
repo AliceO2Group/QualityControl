@@ -42,7 +42,7 @@ using namespace AliceO2::Common;
 CheckConfig getCheckConfig(const std::string& configFilePath, const std::string& checkName)
 {
   auto config = ConfigurationFactory::getConfiguration(configFilePath);
-  auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(config->getRecursive(), configFilePath);
+  auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(config->getRecursive());
 
   auto checkSpec = std::find_if(infrastructureSpec.checks.begin(), infrastructureSpec.checks.end(), [&checkName](const auto& checkSpec) {
     return checkSpec.checkName == checkName;
@@ -61,9 +61,9 @@ BOOST_AUTO_TEST_CASE(test_check_specs)
   Check check(getCheckConfig(configFilePath, "singleCheck"));
 
   BOOST_REQUIRE_EQUAL(check.getInputs().size(), 1);
-  BOOST_CHECK_EQUAL(check.getInputs()[0], (InputSpec{ { "mo" }, "QC", "skeletonTask-mo", 0 }));
+  BOOST_CHECK_EQUAL(check.getInputs()[0], (InputSpec{ { "mo" }, "QC", "skeletonTask", 0, Lifetime::Sporadic }));
 
-  BOOST_CHECK_EQUAL(check.getOutputSpec(), (OutputSpec{ "QC", "singleCheck-chk", 0 }));
+  BOOST_CHECK_EQUAL(check.getOutputSpec(), (OutputSpec{ "QC", "singleCheck-chk", 0, Lifetime::Sporadic }));
 }
 
 /*
@@ -73,9 +73,8 @@ class TestCheck : public CheckInterface
 {
  public:
   TestCheck() {}
-  void configure(std::string name)
+  void configure()
   {
-    (void)name;
   }
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
   {

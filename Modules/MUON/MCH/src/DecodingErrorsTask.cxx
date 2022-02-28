@@ -21,6 +21,7 @@
 #include "DetectorsRaw/RDHUtils.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "Framework/WorkflowSpec.h"
+#include "Framework/DataRefUtils.h"
 
 #include "MCHRawElecMap/Mapper.h"
 #include "MCHMappingInterface/Segmentation.h"
@@ -45,64 +46,88 @@ DecodingErrorsTask::DecodingErrorsTask()
 {
 }
 
-DecodingErrorsTask::~DecodingErrorsTask()
-{
-  delete mHistogramErrors;
-}
+DecodingErrorsTask::~DecodingErrorsTask() = default;
 
-static void setAxisLabels(TH2F* hErrors)
+static int sErrorMax = 11;
+
+static void setXAxisLabels(TH2F* hErrors)
 {
   TAxis* ax = hErrors->GetXaxis();
+  ax->SetBinLabel(1, "Parity Error");
+  ax->SetBinLabel(2, "Hamming Error (correctable)");
+  ax->SetBinLabel(3, "Hamming Error (uncorrectable)");
+  ax->SetBinLabel(4, "Bad Cluster Size");
+  ax->SetBinLabel(5, "Bad Packet Type");
+  ax->SetBinLabel(6, "Bad HB Packet");
+  ax->SetBinLabel(7, "Bad Incomplete word");
+  ax->SetBinLabel(8, "Truncated Data");
+  ax->SetBinLabel(9, "Bad Elink ID");
+  ax->SetBinLabel(10, "Bad Link ID");
+  ax->SetBinLabel(11, "Unknown Link ID");
+  for (int i = 1; i <= sErrorMax; i++) {
+    ax->ChangeLabel(i, 45);
+  }
+}
+
+static void setYAxisLabels(TH2F* hErrors)
+{
+  TAxis* ay = hErrors->GetYaxis();
   for (int i = 1; i <= 10; i++) {
     auto label = fmt::format("CH{}", i);
-    ax->SetBinLabel(i, label.c_str());
-  }
-  TAxis* ay = hErrors->GetYaxis();
-  //a->SetBit(TAxis::kLabelsHori);
-  ay->SetBinLabel(1, "Parity Error");
-  ay->SetBinLabel(2, "Hamming Error (correctable)");
-  ay->SetBinLabel(3, "Hamming Error (uncorrectable)");
-  ay->SetBinLabel(4, "Bad Cluster Size");
-  ay->SetBinLabel(5, "Bad Packet Type");
-  ay->SetBinLabel(6, "Bad HB Packet");
-  ay->SetBinLabel(7, "Bad Incomplete word");
-  ay->SetBinLabel(8, "Truncated Data");
-  ay->SetBinLabel(9, "Bad Elink ID");
-  ay->SetBinLabel(10, "Bad Link ID");
-  ay->SetBinLabel(11, "Unknown Link ID");
-  for (int i = 1; i <= 11; i++) {
-    ay->ChangeLabel(i, 45);
+    ay->SetBinLabel(i, label.c_str());
   }
 }
 
 void DecodingErrorsTask::initialize(o2::framework::InitContext& /*ic*/)
 {
-  ILOG(Info) << "initialize DecodingErrorsTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Info, Support) << "initialize DecodingErrorsTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+
+  mSaveToRootFile = false;
+  if (auto param = mCustomParameters.find("SaveToRootFile"); param != mCustomParameters.end()) {
+    if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
+      mSaveToRootFile = true;
+    }
+  }
 
   mElec2Det = createElec2DetMapper<ElectronicMapperGenerated>();
   mFee2Solar = createFeeLink2SolarMapper<ElectronicMapperGenerated>();
+  mSolar2Fee = createSolar2FeeLinkMapper<ElectronicMapperGenerated>();
 
-  mHistogramErrors = new TH2F("QcMuonChambers_Errors", "Error codes vs. Chamber Number", 10, 1, 11, 10, 0, 10);
-  setAxisLabels(mHistogramErrors);
-  getObjectsManager()->startPublishing(mHistogramErrors);
+  // Number of decoding errors, grouped by chamber ID and normalized to the number of processed TF
+  mHistogramErrorsPerChamber = std::make_shared<MergeableTH2Ratio>("DecodingErrorsPerChamber", "Chamber Number vs. Error Type", sErrorMax, 1, sErrorMax + 1, 10, 1, 11);
+  setXAxisLabels(mHistogramErrorsPerChamber.get());
+  setYAxisLabels(mHistogramErrorsPerChamber.get());
+  mHistogramErrorsPerChamber->SetOption("colz");
+  mAllHistograms.push_back(mHistogramErrorsPerChamber.get());
+  if (!mSaveToRootFile) {
+    getObjectsManager()->startPublishing(mHistogramErrorsPerChamber.get());
+  }
+
+  // Number of decoding errors, grouped by FEE ID and normalized to the number of processed TF
+  mHistogramErrorsPerFeeId = std::make_shared<MergeableTH2Ratio>("DecodingErrorsPerFeeId", "FEE ID vs. Error Type", sErrorMax, 1, sErrorMax + 1, 64, 0, 64);
+  setXAxisLabels(mHistogramErrorsPerFeeId.get());
+  mHistogramErrorsPerFeeId->SetOption("colz");
+  mAllHistograms.push_back(mHistogramErrorsPerFeeId.get());
+  if (!mSaveToRootFile) {
+    getObjectsManager()->startPublishing(mHistogramErrorsPerFeeId.get());
+  }
 }
 
 void DecodingErrorsTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info) << "startOfActivity : " << activity.mId << ENDM;
-  mHistogramErrors->Reset();
+  ILOG(Info, Support) << "startOfActivity : " << activity.mId << ENDM;
 }
 
 void DecodingErrorsTask::startOfCycle()
 {
-  ILOG(Info) << "startOfCycle" << ENDM;
+  ILOG(Info, Support) << "startOfCycle" << ENDM;
 }
 
 void DecodingErrorsTask::decodeTF(framework::ProcessingContext& pc)
 {
   // get the input buffer
   auto& inputs = pc.inputs();
-  DPLRawParser parser(inputs, o2::framework::select("TF:MCH/RAWDATA"));
+  DPLRawParser parser(inputs, o2::framework::select(""));
 
   for (auto it = parser.begin(), end = parser.end(); it != end; ++it) {
     auto const* raw = it.raw();
@@ -123,12 +148,12 @@ void DecodingErrorsTask::decodeReadout(const o2::framework::DataRef& input)
     return;
   }
 
-  const auto* header = o2::header::get<header::DataHeader*>(input.header);
+  const auto* header = o2::framework::DataRefUtils::getHeader<header::DataHeader*>(input);
   if (!header) {
     return;
   }
 
-  size_t payloadSize = header->payloadSize;
+  size_t payloadSize = o2::framework::DataRefUtils::getPayloadSize(input);
   if (payloadSize == 0) {
     return;
   }
@@ -141,7 +166,8 @@ void DecodingErrorsTask::decodeReadout(const o2::framework::DataRef& input)
 
 void DecodingErrorsTask::decodeBuffer(gsl::span<const std::byte> buf)
 {
-  ILOG(Debug) << "Start of new buffer" << ENDM;
+  // RDH source ID for the MCH system
+  static constexpr int sMCHSourceId = 10;
 
   size_t bufSize = buf.size();
   size_t pageStart = 0;
@@ -153,6 +179,12 @@ void DecodingErrorsTask::decodeBuffer(gsl::span<const std::byte> buf)
     }
     auto pageSize = o2::raw::RDHUtils::getOffsetToNext(rdh);
 
+    // skip all buffers that do not belong to MCH
+    auto sourceId = o2::raw::RDHUtils::getSourceID(rdh);
+    if (sourceId != sMCHSourceId) {
+      continue;
+    }
+
     gsl::span<const std::byte> page(reinterpret_cast<const std::byte*>(rdh), pageSize);
     decodePage(page);
 
@@ -162,25 +194,29 @@ void DecodingErrorsTask::decodeBuffer(gsl::span<const std::byte> buf)
 
 void DecodingErrorsTask::decodePage(gsl::span<const std::byte> page)
 {
-  int nErrors = 0;
   auto errorHandler = [&](DsElecId dsElecId, int8_t /*chip*/, uint32_t error) {
-    nErrors += 1;
-    int deId{ -1 };
-    if (auto opt = mElec2Det(dsElecId); opt.has_value()) {
-      DsDetId dsDetId = opt.value();
-      deId = dsDetId.deId();
+    int feeId{ -1 };
+    uint32_t solarId = dsElecId.solarId();
+    uint32_t dsAddr = dsElecId.elinkId();
+
+    std::optional<FeeLinkId> feeLinkId = mSolar2Fee(solarId);
+    if (feeLinkId) {
+      feeId = feeLinkId->feeId();
     }
 
-    if (deId < 0) {
-      return;
+    int chamberId{ -1 };
+    if (auto opt = mElec2Det(dsElecId); opt.has_value()) {
+      DsDetId dsDetId = opt.value();
+      int deId = dsDetId.deId();
+      chamberId = deId / 100;
     }
-    int chamber = deId / 100;
 
     uint32_t errMask = 1;
     for (int i = 0; i < 30; i++) {
       // Fill the error histogram if the i-th bin is set in the error word
       if ((error & errMask) != 0) {
-        mHistogramErrors->Fill(chamber, 0.5 + i);
+        mHistogramErrorsPerChamber->getNum()->Fill(0.5 + i, chamberId);
+        mHistogramErrorsPerFeeId->getNum()->Fill(0.5 + i, feeId);
       }
       errMask <<= 1;
     }
@@ -192,14 +228,11 @@ void DecodingErrorsTask::decodePage(gsl::span<const std::byte> page)
     mDecoder = o2::mch::raw::createPageDecoder(page, handlers);
   }
   mDecoder(page);
-
-  auto& rdhAny = *reinterpret_cast<RDH*>(const_cast<std::byte*>(&(page[0])));
-  int feeId = o2::raw::RDHUtils::getFEEID(rdhAny) & 0x7F;
-  ILOG(Debug) << "Received " << nErrors << " from " << feeId << ENDM;
 }
 
 void DecodingErrorsTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
+  static int nTF = 0;
   for (auto&& input : ctx.inputs()) {
     if (input.spec->binding == "readout") {
       decodeReadout(input);
@@ -208,38 +241,67 @@ void DecodingErrorsTask::monitorData(o2::framework::ProcessingContext& ctx)
       decodeTF(ctx);
     }
   }
+
+  // Count the number of processed TF and set the denominators of the error histograms accordingly
+  nTF += 1;
+
+  auto hTF = mHistogramErrorsPerChamber->getDen();
+  for (int ybin = 0; ybin <= hTF->GetYaxis()->GetNbins(); ybin++) {
+    for (int xbin = 0; xbin <= hTF->GetXaxis()->GetNbins(); xbin++) {
+      hTF->SetBinContent(xbin, ybin, nTF);
+    }
+  }
+
+  hTF = mHistogramErrorsPerFeeId->getDen();
+  for (int ybin = 0; ybin <= hTF->GetYaxis()->GetNbins(); ybin++) {
+    for (int xbin = 0; xbin <= hTF->GetXaxis()->GetNbins(); xbin++) {
+      hTF->SetBinContent(xbin, ybin, nTF);
+    }
+  }
 }
 
-void DecodingErrorsTask::saveHistograms()
+void DecodingErrorsTask::writeHistos()
 {
-  TFile f("/tmp/qc-errors.root", "RECREATE");
-
-  mHistogramErrors->Write();
-
-  f.ls();
+  TFile f("mch-qc-errors.root", "RECREATE");
+  for (auto h : mAllHistograms) {
+    h->Write();
+  }
   f.Close();
 }
 
 void DecodingErrorsTask::endOfCycle()
 {
-  ILOG(Info) << "endOfCycle" << ENDM;
+  ILOG(Info, Support) << "endOfCycle" << ENDM;
+
+  mHistogramErrorsPerChamber->update();
+  mHistogramErrorsPerFeeId->update();
+
+  if (mSaveToRootFile) {
+    writeHistos();
+  }
 }
 
 void DecodingErrorsTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info) << "endOfActivity" << ENDM;
+  ILOG(Info, Support) << "endOfActivity" << ENDM;
 
-#ifdef QC_MCH_SAVE_TEMP_ROOTFILE
-  saveHistograms();
-#endif
+  mHistogramErrorsPerChamber->update();
+  mHistogramErrorsPerFeeId->update();
+
+  if (mSaveToRootFile) {
+    writeHistos();
+  }
 }
 
 void DecodingErrorsTask::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info) << "Resetting the histogram" << ENDM;
-  mHistogramErrors->Reset();
+  ILOG(Info, Support) << "Resetting the histograms" << ENDM;
+
+  for (auto h : mAllHistograms) {
+    h->Reset();
+  }
 }
 
 } // namespace muonchambers

@@ -42,6 +42,7 @@ bool CheckInterface::isObjectCheckable(const MonitorObject* mo)
 void CheckInterface::setCustomParameters(const std::unordered_map<std::string, std::string>& parameters)
 {
   mCustomParameters = parameters;
+  configure();
 }
 
 } // namespace o2::quality_control::checker
