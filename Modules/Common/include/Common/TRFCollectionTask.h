@@ -45,7 +45,7 @@ class TRFCollectionTask final : public quality_control::postprocessing::PostProc
   void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
 
  private:
-  quality_control::TimeRangeFlagCollection
+  std::unique_ptr<quality_control::TimeRangeFlagCollection>
     transformQualities(quality_control::repository::DatabaseInterface& qcdb, const uint64_t timestampLimitStart, const uint64_t timestampLimitEnd);
 
  private:

@@ -27,6 +27,10 @@ TRFCollectionTaskConfig::TRFCollectionTaskConfig(std::string name, const boost::
   for (const auto& qoPath : config.get_child("qc.postprocessing." + name + ".QOs")) {
     qualityObjects.push_back(qoPath.second.data());
   }
+  runNumber = config.get<int>("qc.config.Activity.number", 0);
+  passName = config.get<std::string>("qc.config.Activity.passName", "");
+  periodName = config.get<std::string>("qc.config.Activity.periodName", "");
+  provenance = config.get<std::string>("qc.config.Activity.provenance", "qc");
 }
 
 } // namespace o2::quality_control_modules::common

@@ -18,7 +18,9 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Version.h"
 #include "QualityControl/QcInfoLogger.h"
-#include "Common/Exceptions.h"
+#include "QualityControl/RepoPathUtils.h"
+#include <DataFormatsQualityControl/TimeRangeFlagCollection.h>
+#include <Common/Exceptions.h>
 // O2
 #include <CommonUtils/MemFileHelper.h>
 // ROOT
@@ -33,6 +35,7 @@
 // std
 #include <chrono>
 #include <sstream>
+#include <filesystem>
 #include <unordered_set>
 // boost
 #include <boost/property_tree/json_parser.hpp>
@@ -244,6 +247,35 @@ void CcdbDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::Qual
   }
 }
 
+void CcdbDatabase::storeTRFC(std::shared_ptr<const o2::quality_control::TimeRangeFlagCollection> trfc)
+{
+  // metadata
+  map<string, string> metadata;
+  metadata["RunNumber"] = std::to_string(trfc->getRunNumber());
+  metadata["PeriodName"] = trfc->getPeriodName();
+  metadata["PassName"] = trfc->getPassName();
+  metadata["ObjectType"] = trfc->IsA()->GetName();
+  // QC metadata (prefix qc_)
+  metadata["qc_version"] = Version::GetQcVersion().getString();
+  metadata["qc_trfc_name"] = trfc->getName();
+  metadata["qc_detector_name"] = trfc->getDetector();
+
+  // other attributes
+  string path = RepoPathUtils::getTrfcPath(trfc.get());
+  auto from = trfc->getStart();
+  auto to = trfc->getEnd();
+  if (from > to) {
+    ILOG(Error, Support) << "TRFC '" + trfc->getName() + "' cannot be stored in CCDB, because it has invalid validity range (" + std::to_string(from) + ", " + std::to_string(to) + ")." << ENDM;
+  }
+  std::stringstream buffer;
+  trfc->streamTo(buffer);
+  ILOG(Debug, Support) << "Storing TimeRangeFlagCollection at " << path << " (" << trfc->getName() << ")" << ENDM;
+  auto result = ccdbApi.storeAsBinaryFile(buffer.str().c_str(), buffer.str().size(), trfc->getName(), trfc->IsA()->GetName(), path, metadata, from, to);
+  if (result != 0) {
+    ILOG(Error, Support) << "TRFC '" + trfc->getName() + "' could not be stored in CCDB, error: " + std::to_string(result) << ENDM;
+  }
+}
+
 TObject* CcdbDatabase::retrieveTObject(std::string path, std::map<std::string, std::string> const& metadata, long timestamp, std::map<std::string, std::string>* headers)
 {
   // we try first to load a TFile
@@ -320,6 +352,62 @@ std::shared_ptr<QualityObject> CcdbDatabase::retrieveQO(std::string qoPath, long
     qo->addMetadata(headers);
   }
   return qo;
+}
+
+std::shared_ptr<o2::quality_control::TimeRangeFlagCollection> CcdbDatabase::retrieveTRFC(const std::string& trfcName, const std::string& detector, int runNumber, const string& passName, const string& periodName, const std::string& provenance, long timestamp)
+{
+  map<string, string> headers;
+  map<string, string> metadata;
+  if (runNumber != 0) {
+    metadata["RunNumber"] = std::to_string(runNumber);
+  }
+  if (!passName.empty()) {
+    metadata["PassName"] = passName;
+  }
+  if (!periodName.empty()) {
+    metadata["PeriodName"] = periodName;
+  }
+  const auto trfcPath = RepoPathUtils::getTrfcPath(detector, trfcName, provenance);
+  const std::string localFileDir = "/tmp";
+  const std::string localFileName = "trfc_" + trfcName + std::to_string(time_point_cast<nanoseconds>(system_clock::now()).time_since_epoch().count());
+  const std::string localFilePath = localFileDir + std::filesystem::path::preferred_separator + localFileName;
+  if (localFilePath.find("..") != std::string::npos || localFilePath.find('~') != std::string::npos) {
+    ILOG(Error, Support) << "The path '" << localFilePath << "' looks hacky, will not download any files there." << ENDM;
+    return nullptr;
+  }
+
+  auto resultMetadata = ccdbApi.retrieveHeaders(trfcPath, metadata, timestamp);
+  if (resultMetadata.empty()) {
+    ILOG(Error, Support) << "Could not extract headers of TRFC at '" << trfcPath << "' with the metadata: " << ENDM; // TODO
+    ILOG(Error, Support) << " - RunNumber  : " << metadata["RunNumber"] << ENDM;
+    ILOG(Error, Support) << " - PassName   : " << metadata["PassName"] << ENDM;
+    ILOG(Error, Support) << " - PeriodName : " << metadata["PeriodName"] << ENDM;
+    return nullptr;
+  }
+
+  auto success = ccdbApi.retrieveBlob(trfcPath, localFileDir, metadata, timestamp, false, localFileName);
+  if (!success) {
+    ILOG(Error, Support) << "Could not retrieve the TRFC at '" << trfcPath << "' with the metadata: " << ENDM; // TODO
+    ILOG(Error, Support) << " - RunNumber  : " << metadata["RunNumber"] << ENDM;
+    ILOG(Error, Support) << " - PassName   : " << metadata["PassName"] << ENDM;
+    ILOG(Error, Support) << " - PeriodName : " << metadata["PeriodName"] << ENDM;
+    return nullptr;
+  }
+
+  std::ifstream localFile(localFilePath);
+  if (!localFile.is_open()) {
+    ILOG(Error, Support) << "Could not open a file at '" << localFilePath << "'" << ENDM;
+    std::filesystem::remove(localFilePath);
+    return nullptr;
+  }
+
+  TimeRangeFlagCollection::RangeInterval validity{ std::stoull(resultMetadata["Valid-From"]), std::stoull(resultMetadata["Valid-Until"]) };
+  auto trfc = std::make_shared<TimeRangeFlagCollection>(trfcName, detector, validity, runNumber, periodName, passName, provenance);
+  trfc->streamFrom(localFile);
+  localFile.close();
+  std::filesystem::remove(localFilePath);
+
+  return trfc;
 }
 
 std::string CcdbDatabase::retrieveJson(std::string path, long timestamp, const std::map<std::string, std::string>& metadata)
