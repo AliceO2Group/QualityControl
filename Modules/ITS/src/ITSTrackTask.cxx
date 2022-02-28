@@ -62,6 +62,7 @@ void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
   mVertexRsize = std::stof(mCustomParameters["vertexRsize"]);
   mNtracksMAX = std::stof(mCustomParameters["NtracksMAX"]);
   mDoTTree = std::stoi(mCustomParameters["doTTree"]);
+  nBCbins = std::stoi(mCustomParameters.find("nBCbins")->second);
 
   createAllHistos();
   publishHistos();
@@ -263,7 +264,7 @@ void ITSTrackTask::createAllHistos()
   formatAxes(hNClustersPerTrackEta, "#eta", "# of Clusters per Track", 1, 1.10);
   hNClustersPerTrackEta->SetStats(0);
 
-  hClusterVsBunchCrossing = new TH2D("BunchCrossingIDvsClusterRatio", "BunchCrossingIDvsClusterRatio", 4096, 0, 4095, 100, 0, 1);
+  hClusterVsBunchCrossing = new TH2D("BunchCrossingIDvsClusterRatio", "BunchCrossingIDvsClusterRatio", nBCbins, 0, 4095, 100, 0, 1);
   hClusterVsBunchCrossing->SetTitle("Bunch Crossing ID vs Cluster Ratio");
   addObject(hClusterVsBunchCrossing);
   formatAxes(hClusterVsBunchCrossing, "Bunch Crossing ID", "Fraction of clusters in tracks", 1, 1.10);

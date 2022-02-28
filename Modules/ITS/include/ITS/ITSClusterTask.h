@@ -99,6 +99,7 @@ class ITSClusterTask : public TaskInterface
   int mNThreads = 1;
   int mNRofs = 0;
   int mNRofsMonitor = 0;
+  int nBCbins;
   std::string mDictPath;
   std::string mRunNumberPath;
   std::string mGeomPath;
