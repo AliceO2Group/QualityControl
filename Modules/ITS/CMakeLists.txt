@@ -13,11 +13,12 @@ add_library(O2QcITS
             src/ITSClusterTask.cxx
             src/ITSNoisyPixelTask.cxx
             src/ITSTrackTask.cxx
+            src/ITSThresholdCalibrationTask.cxx
             src/ITSFhrCheck.cxx
             src/ITSClusterCheck.cxx
             src/ITSTrackCheck.cxx
             src/ITSFeeCheck.cxx
-            src/ITSTrackSimTask.cxx
+            src/ITSThresholdCalibrationCheck.cxx 
             )
 
 target_sources(O2QcITS PRIVATE src/TH2XlineReductor.cxx)
@@ -30,7 +31,7 @@ target_include_directories(
 
 include_directories(${O2_ROOT}/include/GPU)
 
-target_link_libraries(O2QcITS PUBLIC O2QualityControl O2::ITSBase O2::ITSMFTBase O2::ITSMFTReconstruction ROOT::Hist O2::DataFormatsITS O2::Steer)
+target_link_libraries(O2QcITS PUBLIC O2QualityControl O2::ITSBase O2::ITSMFTBase O2::ITSMFTReconstruction ROOT::Hist)
 
 if (OpenMP_CXX_FOUND)
   target_compile_definitions(O2QcITS PRIVATE WITH_OPENMP)
@@ -56,11 +57,12 @@ add_root_dictionary(O2QcITS
                             include/ITS/ITSClusterTask.h
                             include/ITS/ITSNoisyPixelTask.h
                             include/ITS/ITSTrackTask.h
+                            include/ITS/ITSThresholdCalibrationTask.h
                             include/ITS/ITSFhrCheck.h
                             include/ITS/ITSClusterCheck.h
                             include/ITS/ITSTrackCheck.h
                             include/ITS/ITSFeeCheck.h
-                            include/ITS/ITSTrackSimTask.h
+                            include/ITS/ITSThresholdCalibrationCheck.h 
                     LINKDEF include/ITS/LinkDef.h
                     BASENAME O2QcITS)
 
@@ -113,7 +115,6 @@ install(FILES
         itsFee.json
         itsCluster.json
         itsNoisyPixel.json
-        itsTrackSim.json 
         DESTINATION etc)
 
 get_property(dirs
