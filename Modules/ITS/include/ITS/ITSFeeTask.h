@@ -99,8 +99,6 @@ class ITSFeeTask final : public TaskInterface
 
   // parameters taken from the .json
   int mNPayloadSizeBins = 0;
-  int mMaxGeneralAxisRange = -3;  //the range of TH2Poly plots z axis range, pow(10, mMinGeneralAxisRange) ~ pow(10, mMaxGeneralAxisRange)
-  int mMinGeneralAxisRange = -12; //
 
   TH1I* mTFInfo; // count vs TF ID
   TH2I* mTriggerVsFeeId;

@@ -22,6 +22,7 @@
 
 #include <DPLUtils/RawParser.h>
 #include <DPLUtils/DPLRawParser.h>
+#include <iostream>
 
 using namespace o2::framework;
 using namespace o2::header;
@@ -95,7 +96,7 @@ void ITSFeeTask::createFeePlots()
   for (int i = 0; i < NFlags; i++) {
     mLaneStatusOverview[i] = new TH2Poly();
     mLaneStatusOverview[i]->SetName(Form("LaneStatusOverview/laneStatusFlag%s", mLaneStatusFlag[i].c_str()));
-    getObjectsManager()->startPublishing(mLaneStatusOverview[i]); // mLaneStatusOverview
+    //getObjectsManager()->startPublishing(mLaneStatusOverview[i]); // mLaneStatusOverview
   }
 
   for (int i = 0; i < NLayer; i++) {
@@ -175,11 +176,11 @@ void ITSFeeTask::setPlotsFormat()
   }
 
   for (int i = 0; i < NFlags; i++) {
-    TString title = Form("Lane Status Flag : %s", mLaneStatusFlag[i].c_str()); title += ";mm;mm";
+    TString title = Form("Number of lanes into %s", mLaneStatusFlag[i].c_str()); title += ";mm;mm";
     mLaneStatusOverview[i]->SetTitle(title);
     mLaneStatusOverview[i]->SetStats(0);
-    mLaneStatusOverview[i]->SetMinimum(pow(10, mMinGeneralAxisRange));
-    mLaneStatusOverview[i]->SetMaximum(pow(10, mMaxGeneralAxisRange));
+    mLaneStatusOverview[i]->SetMinimum(0);
+    mLaneStatusOverview[i]->SetMaximum(NLanesMax);
     for (int ilayer = 0; ilayer < 7; ilayer++) {
       for (int istave = 0; istave < NStaves[ilayer]; istave++) {
         double* px = new double[4];
@@ -188,6 +189,7 @@ void ITSFeeTask::setPlotsFormat()
         mLaneStatusOverview[i]->AddBin(4, px, py);
       }
     }
+    getObjectsManager()->startPublishing(mLaneStatusOverview[i]); // mLaneStatusOverview
   }
 
   for (int i = 0; i < NLayer; i++) {
