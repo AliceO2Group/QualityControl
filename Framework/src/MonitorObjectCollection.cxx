@@ -34,7 +34,11 @@ void MonitorObjectCollection::merge(mergers::MergeInterface* const other)
 
   auto otherIterator = otherCollection->MakeIterator();
   while (auto otherObject = otherIterator->Next()) {
-    if (auto targetObject = this->FindObject(otherObject->GetName())) {
+    auto otherObjectName = otherObject->GetName();
+    if (std::strlen(otherObjectName) == 0) {
+      ILOG(Warning, Devel) << "The other object does not have a name, probably it is empty. Skipping..." << ENDM;
+    } else if (auto targetObject = this->FindObject(otherObjectName)) {
+      // A corresponding object in the target collection was found, we try to merge.
       auto otherMO = dynamic_cast<MonitorObject*>(otherObject);
       auto targetMO = dynamic_cast<MonitorObject*>(targetObject);
       if (otherMO && targetMO) {
@@ -44,6 +48,7 @@ void MonitorObjectCollection::merge(mergers::MergeInterface* const other)
         throw std::runtime_error("The target object or the other object could not be casted to MonitorObject.");
       }
     } else {
+      // A corresponding object in the target collection could not be found.
       // We prefer to clone instead of passing the pointer in order to simplify deleting the `other`.
       this->Add(otherObject->Clone());
     }
