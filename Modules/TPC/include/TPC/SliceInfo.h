@@ -34,13 +34,15 @@ namespace o2::quality_control_modules::tpc
 ///
 
 struct SliceInfo {
-  double entries = 0.;  // Number of entries in the slice/canvas.
-  double meanX = 0.;    // Standard mean for a given range in X.
-  double stddevX = 0.;  // Standard deviation for the range in X.
-  double errMeanX = 0.; // Error on the mean along X.
-  double meanY = 0.;    // Standard mean in Y.
-  double stddevY = 0.;  // Standard deviation in Y.
-  double errMeanY = 0.; // Error on the mean along Y.
+  double entries = 0.;     // Number of entries in the slice/canvas.
+  double meanX = 0.;       // Standard mean for a given range in X.
+  double stddevX = 0.;     // Standard deviation for the range in X.
+  double errMeanX = 0.;    // Error on the mean along X.
+  double meanY = 0.;       // Standard mean in Y.
+  double stddevY = 0.;     // Standard deviation in Y.
+  double errMeanY = 0.;    // Error on the mean along Y.
+  double sliceLabelX = 0.; // Stores numerical center of slice along X in case of slicing or pad number in case of canvas
+  double sliceLabelY = 0.; // Stores numerical center of slice along Y in case of slicing or pad number in case of canvas
 
   /// \brief Check if the argument is a floating number or a string.
   bool isStringFloating(std::string var)
@@ -71,6 +73,10 @@ struct SliceInfo {
         return stddevY;
       } else if (strcmp(VarType.data(), "errMeanY") == 0) {
         return errMeanY;
+      } else if (strcmp(VarType.data(), "sliceLabelX") == 0) {
+        return sliceLabelX;
+      } else if (strcmp(VarType.data(), "sliceLabelY") == 0) {
+        return sliceLabelY;
       } else {
         ILOG(Error, Support) << "TPC SliceInfo.h: 'VarType' " << VarType.data()
                              << " in 'RetrieveValue' unknown. Breaking." << ENDM;

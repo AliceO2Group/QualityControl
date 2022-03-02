@@ -34,7 +34,9 @@ TrendingTaskConfigTPC::TrendingTaskConfigTPC(const std::string& name,
                       plotConfig.second.get<std::string>("selection", ""),
                       plotConfig.second.get<std::string>("option", ""),
                       plotConfig.second.get<std::string>("graphErrors", ""),
-                      plotConfig.second.get<std::string>("graphYRange", "") });
+                      plotConfig.second.get<std::string>("graphYRange", ""),
+                      plotConfig.second.get<std::string>("graphXRange", ""),
+                      plotConfig.second.get<std::string>("graphAxisLabel", "") });
   }
 
   // Loop over all the data sources to trend.

@@ -44,7 +44,7 @@ class TH1ReductorTPC : public quality_control_modules::tpc::ReductorTPC
               std::vector<std::vector<float>>& axis, std::vector<std::string>& ranges) final;
 
  private:
-  void GetTH1StatsY(TH1* Hist, float Stats[3], float LowerBoundary, float UpperBoundary);
+  void GetTH1StatsY(TH1* Hist, float Stats[3], const int LowerBin, const int UpperBin);
 };
 
 } // namespace o2::quality_control_modules::tpc

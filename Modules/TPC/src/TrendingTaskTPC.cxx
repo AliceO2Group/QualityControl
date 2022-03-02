@@ -27,17 +27,16 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/algorithm/string.hpp>
 #include <string>
-//#include <TAxis.h>
 #include <TDatime.h>
-//#include <TFile.h>
 #include <TGraph.h>
 #include <TGraphErrors.h>
-//#include <TH1.h>
-//#include <TPaveText.h>
-//#include <TPoint.h>
 #include <TTreeReader.h>
 #include <TTreeReaderValue.h>
 #include <TTreeReaderArray.h>
+#include <fmt/format.h>
+#include <TAxis.h>
+#include <TH2F.h>
+#include <TStyle.h>
 
 using namespace o2::quality_control;
 using namespace o2::quality_control::core;
@@ -93,6 +92,9 @@ void TrendingTaskTPC::trendValues(uint64_t timestamp,
     if (dataSource.type == "repository") {
       auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name, timestamp);
       TObject* obj = mo ? mo->getObject() : nullptr;
+
+      mAxisDivision[dataSource.name] = dataSource.axisDivision;
+
       if (obj) {
         mReductors[dataSource.name]->update(obj, mSources[dataSource.name],
                                             dataSource.axisDivision, mSubtitles[dataSource.name]);
@@ -109,7 +111,7 @@ void TrendingTaskTPC::trendValues(uint64_t timestamp,
   }
 
   mTrend->Fill();
-}
+} // void TrendingTaskTPC::trendValues(uint64_t timestamp, repository::DatabaseInterface& qcdb)
 
 void TrendingTaskTPC::generatePlots()
 {
@@ -126,21 +128,31 @@ void TrendingTaskTPC::generatePlots()
       delete mPlots[plot.name];
     }
 
+    // Postprocess each pad (titles, axes, flushing buffers).
+    std::size_t posEndVar = plot.varexp.find("."); // Find the end of the dataSource.
+    std::string varName(plot.varexp.substr(0, posEndVar));
+
     // Draw the trending on a new canvas.
     TCanvas* c = new TCanvas();
     c->SetName(plot.name.c_str());
     c->SetTitle(plot.title.c_str());
-    drawCanvas(c, plot.varexp, plot.name, plot.option, plot.graphErrors);
+    drawCanvas(c, plot.varexp, plot.name, plot.option, plot.graphErrors, mAxisDivision[varName]);
 
-    // Postprocess each pad (titles, axes, flushing buffers).
-    std::size_t posEndVar = plot.varexp.find("."); // Find the end of the dataSource.
-    std::string varName(plot.varexp.substr(0, posEndVar));
-    for (int p = 0; p < mSubtitles[varName].size(); p++) {
+    int NumberPlots = 1;
+    if (plot.varexp.find(":time") != std::string::npos) { // we plot vs time, multiple plots on canvas possible
+      NumberPlots = mSubtitles[varName].size();
+    }
+    for (int p = 0; p < NumberPlots; p++) {
       c->cd(p + 1);
-      if (auto histo = dynamic_cast<TGraph*>(c->cd(p + 1)->GetPrimitive("Graph"))) {
+      if (auto histo = dynamic_cast<TGraphErrors*>(c->cd(p + 1)->GetPrimitive("Graph"))) {
 
         // Set the title of the graph in a proper way.
-        std::string thisTitle = Form("%s - %s", plot.title.data(), mSubtitles[varName][p].data());
+        std::string thisTitle;
+        if (plot.varexp.find(":time") != std::string::npos) {
+          thisTitle = fmt::format("{0:s} - {1:s}", plot.title.data(), mSubtitles[varName][p].data()); // for plots vs time slicing might be applied for the title
+        } else {
+          thisTitle = fmt::format("{0:s}", plot.title.data());
+        }
         histo->SetTitle(thisTitle.data());
 
         // Set the user-defined range on the y axis if needed.
@@ -151,8 +163,35 @@ void TrendingTaskTPC::generatePlots()
 
           float yMin = std::stof(yMinString);
           float yMax = std::stof(yMaxString);
+
           histo->SetMinimum(yMin);
           histo->SetMaximum(yMax);
+          histo->Draw(plot.option.data()); // redraw and update to force changes on y-axis
+          c->Update();
+        }
+
+        if (!plot.graphXRange.empty()) {
+          std::size_t posDivider = plot.graphXRange.find(":");
+          std::string xMinString(plot.graphXRange.substr(0, posDivider));
+          std::string xMaxString(plot.graphXRange.substr(posDivider + 1));
+
+          float xMin = std::stof(xMinString);
+          float xMax = std::stof(xMaxString);
+
+          histo->GetXaxis()->SetLimits(xMin, xMax);
+          histo->Draw(fmt::format("{0:s} A", plot.option.data()).data());
+          c->Update();
+        }
+
+        if (!plot.graphAxisLabel.empty()) {
+          std::size_t posDivider = plot.graphAxisLabel.find(":");
+          std::string yAxisLabel(plot.graphAxisLabel.substr(0, posDivider));
+          std::string xAxisLabel(plot.graphAxisLabel.substr(posDivider + 1));
+
+          histo->GetXaxis()->SetTitle(xAxisLabel.data());
+          histo->GetYaxis()->SetTitle(yAxisLabel.data());
+          histo->Draw(fmt::format("{0:s} A", plot.option.data()).data());
+          c->Update();
         }
 
         // Configure the time for the x axis.
@@ -165,6 +204,40 @@ void TrendingTaskTPC::generatePlots()
 
         // Manually empty the buffers before visualising the plot.
         // histo->BufferEmpty(); // TBD: Should we keep it or not? Graph does not have this method.
+      } else if (auto histo = dynamic_cast<TH2F*>(c->cd(p + 1)->GetPrimitive("Graph2D"))) {
+
+        std::string thisTitle = fmt::format("{0:s}", plot.title.data());
+        histo->SetTitle(thisTitle.data());
+
+        if (!plot.graphAxisLabel.empty()) {
+          std::size_t posDivider = plot.graphAxisLabel.find(":");
+          std::string yAxisLabel(plot.graphAxisLabel.substr(0, posDivider));
+          std::string xAxisLabel(plot.graphAxisLabel.substr(posDivider + 1));
+
+          histo->GetXaxis()->SetTitle(xAxisLabel.data());
+          histo->GetYaxis()->SetTitle(yAxisLabel.data());
+          histo->Draw(plot.option.data());
+          c->Update();
+        }
+
+        if (!plot.graphYRange.empty()) {
+          std::size_t posDivider = plot.graphYRange.find(":");
+          std::string yMinString(plot.graphYRange.substr(0, posDivider));
+          std::string yMaxString(plot.graphYRange.substr(posDivider + 1));
+
+          float yMin = std::stof(yMinString);
+          float yMax = std::stof(yMaxString);
+
+          histo->SetMinimum(yMin);
+          histo->SetMaximum(yMax);
+          histo->Draw(plot.option.data()); // redraw and update to force changes on y-axis
+          c->Update();
+        }
+
+        gStyle->SetPalette(kBird);
+        histo->SetStats(kFALSE);
+        histo->Draw(plot.option.data());
+
       } else {
         ILOG(Error, Devel) << "Could not get the 'Graph' of the plot '"
                            << plot.name << "'." << ENDM;
@@ -174,10 +247,10 @@ void TrendingTaskTPC::generatePlots()
     mPlots[plot.name] = c;
     getObjectsManager()->startPublishing(c);
   }
-}
+} // void TrendingTaskTPC::generatePlots()
 
 void TrendingTaskTPC::drawCanvas(TCanvas* thisCanvas, const std::string& var,
-                                 const std::string& name, const std::string& opt, const std::string& err)
+                                 const std::string& name, const std::string& opt, const std::string& err, const std::vector<std::vector<float>>& axis)
 {
   // Determine the order of the plot (1 - histo, 2 - graph, ...)
   const size_t plotOrder = std::count(var.begin(), var.end(), ':') + 1;
@@ -187,17 +260,21 @@ void TrendingTaskTPC::drawCanvas(TCanvas* thisCanvas, const std::string& var,
   std::size_t posEndType = var.find(":"); // Find the end of the quantity.
   std::string varName(var.substr(0, posEndVar));
   std::string typeName(var.substr(posEndVar + 1, posEndType - posEndVar - 1));
+  std::string trendType(var.substr(posEndType + 1, -1));
 
   std::size_t posEndType_err = err.find(":"); // Find the end of the error.
   std::string errXName(err.substr(posEndType_err + 1));
   std::string errYName(err.substr(0, posEndType_err));
 
   // Divide the canvas into the correct number of pads.
-  thisCanvas->DivideSquare(mSubtitles[varName].size());
+  if (var.find(":time") != std::string::npos) {
+    thisCanvas->DivideSquare(mSubtitles[varName].size()); // trending vs time: multiple plots per canvas possible
+  } else {
+    thisCanvas->DivideSquare(1);
+  }
 
-  // Delete the graph errors after the plot is saved.
+  // Delete the graph errors after the plot is saved. //To-Do check if ownership is now taken
   // Unfortunately the canvas does not take its ownership.
-  TGraph* graphPad = nullptr;
   TGraphErrors* graphErrors = nullptr;
 
   // Setup the tree reader with the needed values.
@@ -205,63 +282,144 @@ void TrendingTaskTPC::drawCanvas(TCanvas* thisCanvas, const std::string& var,
   TTreeReaderValue<UInt_t> RetrieveTime(myReader, "time");
   TTreeReaderValue<std::vector<SliceInfo>> DataRetrieveVector(myReader, varName.data());
 
-  int iEntry = 0;
-  const int nEntries = mTrend->GetEntriesFast();
   const int NuPa = mSubtitles[varName].size();
-  double TimeStorage[nEntries];
-  double DataStorage[NuPa][nEntries];
-  double ErrorX[NuPa][nEntries];
-  double ErrorY[NuPa][nEntries];
-  // ILOG(Info, Support) << "Total number of entries: " << nEntries << ENDM;
-  // ILOG(Info, Support) << "Total number of pads: " << NuPa << ENDM;
-
-  while (myReader.Next()) {
-    if (iEntry >= nEntries) {
-      ILOG(Error, Support) << "Something went wrong, the reader is going too far." << ENDM;
-      break;
-    }
-
-    TimeStorage[iEntry] = (double)(*RetrieveTime);
-
-    for (int p = 0; p < NuPa; p++) {
-      DataStorage[p][iEntry] = (DataRetrieveVector->at(p)).RetrieveValue(typeName);
-
-      if (!err.empty()) {
-        ErrorX[p][iEntry] = (DataRetrieveVector->at(p)).RetrieveValue(errXName);
-        ErrorY[p][iEntry] = (DataRetrieveVector->at(p)).RetrieveValue(errYName);
-      } else {
-        ErrorX[p][iEntry] = 0.;
-        ErrorY[p][iEntry] = 0.;
-      }
-    }
-    iEntry++;
-  }
+  const int nEntries = mTrend->GetEntriesFast();
 
   // Fill the graph(errors) to be published.
-  for (int p = 0; p < NuPa; p++) {
-    thisCanvas->cd(p + 1);
-    graphPad = new TGraph(nEntries, TimeStorage, DataStorage[p]);
-    graphPad->Draw(opt.data());
+  if (strcmp(trendType.data(), "time") == 0) {
 
-    // Draw errors if they are specified.
+    for (int p = 0; p < NuPa; p++) {
+      thisCanvas->cd(p + 1);
+      int iEntry = 0;
+
+      graphErrors = new TGraphErrors(nEntries);
+
+      while (myReader.Next()) {
+        double DataPoint = (DataRetrieveVector->at(p)).RetrieveValue(typeName);
+        double TimeStamp = (double)(*RetrieveTime);
+        double ErrorX = 0.;
+        double ErrorY = 0.;
+        if (!err.empty()) {
+          ErrorX = (DataRetrieveVector->at(p)).RetrieveValue(errXName);
+          ErrorY = (DataRetrieveVector->at(p)).RetrieveValue(errYName);
+        }
+
+        graphErrors->SetPoint(iEntry, TimeStamp, DataPoint);
+        graphErrors->SetPointError(iEntry, ErrorX, ErrorY); // Add Error to the last added point
+
+        iEntry++;
+      }
+      myReader.Restart();
+
+      if (!err.empty()) {
+        if (plotOrder != 2) {
+          ILOG(Info, Support) << "Non empty graphErrors seen for the plot '" << name
+                              << "', which is not a graph, ignoring." << ENDM;
+        } else {
+          graphErrors->Draw(opt.data());
+          // We try to convince ROOT to delete graphErrors together with the rest of the canvas.
+          if (auto* pad = thisCanvas->GetPad(p + 1)) {
+            if (auto* primitives = pad->GetListOfPrimitives()) {
+              primitives->Add(graphErrors); // TO-DO: Is this needed?
+            }
+          }
+        }
+      }
+    }
+  } else if (strcmp(trendType.data(), "slices") == 0) {
+
+    graphErrors = new TGraphErrors(NuPa);
+    thisCanvas->cd(1);
+
+    myReader.SetEntry(nEntries - 1); // set event to last entry with index nEntries-1
+
+    int iEntry = 0;
+    for (int p = 0; p < NuPa; p++) {
+
+      double DataPoint = (DataRetrieveVector->at(p)).RetrieveValue(typeName);
+      double ErrorX = 0.;
+      double ErrorY = 0.;
+      if (!err.empty()) {
+        ErrorX = (DataRetrieveVector->at(p)).RetrieveValue(errXName);
+        ErrorY = (DataRetrieveVector->at(p)).RetrieveValue(errYName);
+      }
+      double xLabel = (DataRetrieveVector->at(p)).RetrieveValue("sliceLabelX");
+
+      graphErrors->SetPoint(iEntry, xLabel, DataPoint);
+      graphErrors->SetPointError(iEntry, ErrorX, ErrorY); // Add Error to the last added point
+
+      iEntry++;
+    }
+
+    if (myReader.Next()) {
+      ILOG(Error, Devel) << "Entry beyond expected last entry" << ENDM;
+    }
+
+    myReader.Restart();
+
     if (!err.empty()) {
       if (plotOrder != 2) {
         ILOG(Info, Support) << "Non empty graphErrors seen for the plot '" << name
                             << "', which is not a graph, ignoring." << ENDM;
       } else {
-        graphPad->Draw("goff");
-        graphErrors = new TGraphErrors(nEntries, TimeStorage, DataStorage[p], ErrorX[p], ErrorY[p]);
-
-        // We draw on the same plot as the main graph, but only error bars.
-        graphErrors->Draw("SAME E");
-
+        graphErrors->Draw(opt.data());
         // We try to convince ROOT to delete graphErrors together with the rest of the canvas.
-        if (auto* pad = thisCanvas->GetPad(p + 1)) {
+        if (auto* pad = thisCanvas->GetPad(1)) {
           if (auto* primitives = pad->GetListOfPrimitives()) {
-            primitives->Add(graphErrors);
+            primitives->Add(graphErrors); // TO-DO: Is this needed?
           }
         }
       }
     }
-  }
+  } // Trending vs Slices
+  else if (strcmp(trendType.data(), "slices2D") == 0) {
+
+    thisCanvas->cd(1);
+    const int xBins = axis[0].size();
+    float xBoundaries[xBins];
+    for (int i = 0; i < xBins; i++) {
+      xBoundaries[i] = axis[0][i];
+    }
+    const int yBins = axis[1].size();
+    float yBoundaries[yBins];
+    for (int i = 0; i < yBins; i++) {
+      yBoundaries[i] = axis[1][i];
+    }
+
+    TH2F* graph2D = new TH2F("Graph2D", "", xBins - 1, xBoundaries, yBins - 1, yBoundaries);
+    thisCanvas->cd(1);
+
+    myReader.SetEntry(nEntries - 1); // set event to last entry with index nEntries-1
+
+    int iEntry = 0;
+    for (int p = 0; p < NuPa; p++) {
+
+      double DataPoint = (double)(DataRetrieveVector->at(p)).RetrieveValue(typeName);
+      double Error = 0.;
+      if (!err.empty()) {
+        Error = (double)(DataRetrieveVector->at(p)).RetrieveValue(errYName);
+      }
+      double xLabel = (double)(DataRetrieveVector->at(p)).RetrieveValue("sliceLabelX");
+      double yLabel = (double)(DataRetrieveVector->at(p)).RetrieveValue("sliceLabelY");
+
+      graph2D->Fill(xLabel, yLabel, DataPoint);
+      graph2D->SetBinError(graph2D->GetXaxis()->FindBin(xLabel), graph2D->GetYaxis()->FindBin(yLabel), Error);
+
+      iEntry++;
+    }
+
+    if (myReader.Next()) {
+      ILOG(Error, Devel) << "Entry beyond expected last entry" << ENDM;
+    }
+
+    myReader.Restart();
+    gStyle->SetPalette(kBird);
+    graph2D->Draw(opt.data());
+    // We try to convince ROOT to delete graphErrors together with the rest of the canvas.
+    if (auto* pad = thisCanvas->GetPad(1)) {
+      if (auto* primitives = pad->GetListOfPrimitives()) {
+        primitives->Add(graph2D); // TO-DO: Is this needed?
+      }
+    }
+  } // Trending vs Slices2D
 }
