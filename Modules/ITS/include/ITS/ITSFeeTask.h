@@ -95,7 +95,7 @@ class ITSFeeTask final : public TaskInterface
   TString mTriggerType[NTrigger] = { "ORBIT", "HB", "HBr", "HC", "PHYSICS", "PP", "CAL", "SOT", "EOT", "SOC", "EOC", "TF", "INT" };
   std::string mLaneStatusFlag[NFlags] = { "WARNING", "ERROR", "FAULT" }; // b00 OK, b01 WARNING, b10 ERROR, b11 FAULT
 
-  int mStatusFlagNumber[7][48][3] = { { 0 } }; //[iLayer][iStave][iLaneStatusFlag]
+  int mStatusFlagNumber[7][48][28][3] = { { { 0 } } }; //[iLayer][iStave][iLane][iLaneStatusFlag]
 
   // parameters taken from the .json
   int mNPayloadSizeBins = 0;
@@ -110,7 +110,7 @@ class ITSFeeTask final : public TaskInterface
   TH2I* mIndexCheck;         // should be zero
   TH2I* mIdCheck;            // should be 0x : e4
   TH2I* mLaneStatus[NFlags]; // 4 flags for each lane. 3/8/14 lane for each link. 3/2/2 link for each RU. TODO: remove the OK flag in these 4 flag plots, OK flag plot just used to debug.
-  TH2Poly* mLaneStatusOverview[NFlags];
+  TH2Poly* mLaneStatusOverview[NFlags]={0x0};
   TH1I* mLaneStatusSummary[NLayer];
   TH1I* mLaneStatusSummaryIB;
   TH1I* mLaneStatusSummaryML;

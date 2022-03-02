@@ -323,7 +323,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
       for (int i = 0; i < NLanesMax; i++) {
         int laneValue = laneInfo >> (2 * i) & 0x3;
         if (laneValue) {
-          mStatusFlagNumber[ilayer][istave][laneValue - 1]++;
+          mStatusFlagNumber[ilayer][istave][i][laneValue - 1]++;
           mLaneStatus[laneValue - 1]->Fill(ifee, i);
           mLaneStatusSummary[ilayer]->Fill(laneValue - 1);
           mLaneStatusSummaryGlobal->Fill(laneValue - 1);
@@ -338,8 +338,14 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
     }
     //Fill TH2Poly mLanestatusOverview with counters
-    for(int iflag=0; iflag<NFlags; iflag++){
-      mLaneStatusOverview[iflag]->SetBinContent(istave + 1 + StaveBoundary[ilayer], mStatusFlagNumber[ilayer][istave][iflag]);
+    for(int iflag=0; iflag<NFlags; iflag++) {
+      int flagCount=0;
+      for(int ilane=0; ilane<NLanesMax; ilane++) {
+        if (mStatusFlagNumber[ilayer][istave][ilane][iflag] > 0) {
+        flagCount++;
+        }
+      }
+      mLaneStatusOverview[iflag]->SetBinContent(istave + 1 + StaveBoundary[ilayer], flagCount);
     }
 
     for (int i = 0; i < 13; i++) {
