@@ -25,7 +25,7 @@
 #include "Mergers/MergeInterface.h"
 
 using namespace std;
-namespace o2::quality_control_modules::muonchambers
+namespace o2::quality_control_modules::muon
 {
 
 class MergeableTH2Ratio : public TH2F, public o2::mergers::MergeInterface
@@ -72,6 +72,6 @@ class MergeableTH2Ratio : public TH2F, public o2::mergers::MergeInterface
   ClassDefOverride(MergeableTH2Ratio, 1);
 };
 
-} // namespace o2::quality_control_modules::muonchambers
+} // namespace o2::quality_control_modules::muon
 
 #endif // O2_MERGEABLETH2RATIO_H

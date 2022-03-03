@@ -35,6 +35,8 @@
 #endif
 #include "MCHBase/PreCluster.h"
 
+using namespace o2::quality_control_modules::muon;
+
 namespace o2
 {
 namespace quality_control_modules
