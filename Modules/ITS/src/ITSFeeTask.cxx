@@ -176,7 +176,7 @@ void ITSFeeTask::setPlotsFormat()
   }
 
   for (int i = 0; i < NFlags; i++) {
-    TString title = Form("Number of lanes into %s", mLaneStatusFlag[i].c_str()); title += ";mm;mm";
+    TString title = Form("Fraction of lanes into %s", mLaneStatusFlag[i].c_str()); title += ";mm;mm";
     mLaneStatusOverview[i]->SetTitle(title);
     mLaneStatusOverview[i]->SetStats(0);
     mLaneStatusOverview[i]->SetMinimum(0);
