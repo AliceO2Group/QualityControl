@@ -49,21 +49,16 @@ ITSThresholdCalibrationTask::~ITSThresholdCalibrationTask()
       }
     }
     for (int iBarrel = 0; iBarrel < 3; iBarrel++) {
-      delete hCalibrationChipSum[iScan][iBarrel];
       delete hCalibrationChipAverage[iScan][iBarrel];
       delete hCalibrationChipCounts[iScan][iBarrel];
 
-      delete hCalibrationRMSChipSum[iScan][iBarrel];
       delete hCalibrationRMSChipAverage[iScan][iBarrel];
     }
   }
 
   for (int iBarrel = 0; iBarrel < 3; iBarrel++) {
 
-    delete hCalibrationThrNoiseChipSum[iBarrel];
     delete hCalibrationThrNoiseChipAverage[iBarrel];
-
-    delete hCalibrationThrNoiseRMSChipSum[iBarrel];
     delete hCalibrationThrNoiseRMSChipAverage[iBarrel];
   }
 }
@@ -73,13 +68,11 @@ void ITSThresholdCalibrationTask::initialize(o2::framework::InitContext& /*ctx*/
 
   ILOG(Info, Support) << "initialize ITSThresholdCalibrationTask" << ENDM;
 
-  mRunNumberPath = mCustomParameters["runNumberPath"];
-
   createAllHistos();
   publishHistos();
 }
 
-void ITSThresholdCalibrationTask::startOfActivity(Activity& /*activity*/)
+void ITSThresholdCalibrationTask::startOfActivity(Activity& activity)
 {
   ILOG(Info, Support) << "startOfActivity" << ENDM;
 }
@@ -100,7 +93,7 @@ void ITSThresholdCalibrationTask::monitorData(o2::framework::ProcessingContext& 
   string inString(tunString.begin(), tunString.end());
 
   Int_t iScan;
-  Double_t CalibrationValue;
+  Double_t calibrationValue;
   if (scanType == 'V')
     iScan = 0;
   else if (scanType == 'I')
@@ -108,31 +101,45 @@ void ITSThresholdCalibrationTask::monitorData(o2::framework::ProcessingContext& 
   else if (scanType == 'T')
     iScan = 2;
 
-  auto splitRes = split(inString, "Stave:");
+  auto splitRes = splitString(inString, "Stave:");
 
   for (auto StaveStr : splitRes) {
     if (StaveStr.size() > 0) {
       CalibrationResStruct result = CalibrationParser(StaveStr);
 
       int currentStave = StaveBoundary[result.Layer] + result.Stave + 1;
-      int currentChip = result.ChipID + 1;
+      int currentChip;
       int iBarrel = getBarrel(result.Layer);
 
+      switch (iBarrel) {
+        case 0: {
+          currentChip = result.ChipID + 1;
+          break;
+        }
+        case 1: {
+          currentChip = result.ChipID < 7 ? (result.ChipID + 1) + 14 * (result.HIC - 1) + result.Hs * 56 : result.ChipID + 14 * (result.HIC - 1) + result.Hs * 56; // this is already from 1 to 112
+          break;
+        }
+        case 2: {
+          currentChip = result.ChipID < 7 ? (result.ChipID + 1) + 14 * (result.HIC - 1) + result.Hs * 98 : result.ChipID + 14 * (result.HIC - 1) + result.Hs * 98; // this is already from 1 to 196
+          break;
+        }
+      }
+
       if (scanType == 'V') {
-        CalibrationValue = result.VCASN;
+        calibrationValue = result.VCASN;
       } else if (scanType == 'I') {
-        CalibrationValue = result.ITHR;
-      }
-      if (scanType == 'T') {
-        CalibrationValue = result.THR;
-        hCalibrationThrNoiseChipSum[iBarrel]->SetBinContent(currentChip, currentStave, result.Noise + hCalibrationThrNoiseChipSum[iBarrel]->GetBinContent(currentChip, currentStave));
-        hCalibrationThrNoiseRMSChipSum[iBarrel]->SetBinContent(currentChip, currentStave, result.NoiseRMS + hCalibrationThrNoiseRMSChipSum[iBarrel]->GetBinContent(currentChip, currentStave));
+        calibrationValue = result.ITHR;
+      } else if (scanType == 'T') {
+        calibrationValue = result.THR;
+        hCalibrationThrNoiseChipAverage[iBarrel]->SetBinContent(currentChip, currentStave, result.Noise);
+        hCalibrationThrNoiseRMSChipAverage[iBarrel]->Fill(currentChip, currentStave, result.NoiseRMS);
       }
 
-      hCalibrationChipSum[iScan][iBarrel]->SetBinContent(currentChip, currentStave, CalibrationValue + hCalibrationChipSum[iScan][iBarrel]->GetBinContent(currentChip, currentStave));
-      hCalibrationRMSChipSum[iScan][iBarrel]->SetBinContent(currentChip, currentStave, result.RMS + hCalibrationRMSChipSum[iScan][iBarrel]->GetBinContent(currentChip, currentStave));
+      hCalibrationChipAverage[iScan][iBarrel]->SetBinContent(currentChip, currentStave, calibrationValue);
+      hCalibrationRMSChipAverage[iScan][iBarrel]->SetBinContent(currentChip, currentStave, result.RMS);
 
-      hCalibrationChipCounts[iScan][iBarrel]->SetBinContent(currentChip, currentStave, hCalibrationChipCounts[iScan][iBarrel]->GetBinContent(currentChip, currentStave) + 1);
+      hCalibrationChipCounts[iScan][iBarrel]->Fill(currentChip, currentStave);
 
       if (result.status == 1)
         SuccessStatus[result.Layer]++;
@@ -140,32 +147,22 @@ void ITSThresholdCalibrationTask::monitorData(o2::framework::ProcessingContext& 
     }
   }
 
-  calculateAverages(iScan);
-
   for (int iLayer; iLayer < 7; iLayer++) {
     if (TotalStatus[iLayer] > 0)
       hSuccessRate->SetBinContent(iLayer + 1, SuccessStatus[iLayer] / TotalStatus[iLayer]);
-  }
-}
-
-void ITSThresholdCalibrationTask::calculateAverages(Int_t iScan)
-{
-
-  for (int iBarrel = 0; iBarrel < 3; iBarrel++) { // TH2 Plots per Chip
-    hCalibrationChipAverage[iScan][iBarrel]->Divide(hCalibrationChipSum[iScan][iBarrel], hCalibrationChipCounts[iScan][iBarrel]);
-    hCalibrationRMSChipAverage[iScan][iBarrel]->Divide(hCalibrationRMSChipSum[iScan][iBarrel], hCalibrationChipCounts[iScan][iBarrel]);
-
-    if (iScan == 2) {
-      hCalibrationThrNoiseChipAverage[iBarrel]->Divide(hCalibrationThrNoiseChipSum[iBarrel], hCalibrationChipCounts[iScan][iBarrel]);
-      hCalibrationThrNoiseRMSChipAverage[iBarrel]->Divide(hCalibrationThrNoiseRMSChipSum[iBarrel], hCalibrationChipCounts[iScan][iBarrel]);
-    }
   }
 
   for (int iLayer = 0; iLayer < 7; iLayer++) { // TH1 plots per layer
 
     Int_t iBarrel = getBarrel(iLayer);
+    hCalibrationLayer[iLayer][iScan]->Reset();
+    hCalibrationRMSLayer[iLayer][iScan]->Reset();
+    if (iScan == 2) {
+      hCalibrationThrNoiseLayer[iLayer]->Reset();
+      hCalibrationThrNoiseRMSLayer[iLayer]->Reset();
+    }
 
-    for (int iStave = 1; iStave <= NStaves[iLayer]; iStave++)
+    for (int iStave = 1; iStave <= NStaves[iLayer]; iStave++) {
       for (int iChip = 1; iChip <= nChipsPerStave[iLayer]; iChip++) {
         hCalibrationLayer[iLayer][iScan]->Fill(hCalibrationChipAverage[iScan][iBarrel]->GetBinContent(iChip, StaveBoundary[iLayer] + iStave));
         hCalibrationRMSLayer[iLayer][iScan]->Fill(hCalibrationRMSChipAverage[iScan][iBarrel]->GetBinContent(iChip, StaveBoundary[iLayer] + iStave));
@@ -175,13 +172,14 @@ void ITSThresholdCalibrationTask::calculateAverages(Int_t iScan)
           hCalibrationThrNoiseRMSLayer[iLayer]->Fill(hCalibrationThrNoiseChipAverage[iBarrel]->GetBinContent(iChip, StaveBoundary[iLayer] + iStave));
         }
       }
+    }
   }
 }
 
 ITSThresholdCalibrationTask::CalibrationResStruct ITSThresholdCalibrationTask::CalibrationParser(string input)
 {
   CalibrationResStruct result;
-  auto StaveINFO = split(input, ",");
+  auto StaveINFO = splitString(input, ",");
 
   for (string info : StaveINFO) {
     if (info.size() == 0)
@@ -192,8 +190,8 @@ ITSThresholdCalibrationTask::CalibrationResStruct ITSThresholdCalibrationTask::C
       result.Stave = std::stod(info.substr(3, 2));
     } else {
 
-      std::string name = split(info, ":")[0];
-      string data = split(info, ":")[1];
+      std::string name = splitString(info, ":")[0];
+      string data = splitString(info, ":")[1];
       if (name == "Hs_pos") {
         result.Hs = std::stod(data);
       } else if (name == "Hic_Pos") {
@@ -222,19 +220,7 @@ ITSThresholdCalibrationTask::CalibrationResStruct ITSThresholdCalibrationTask::C
 
 void ITSThresholdCalibrationTask::endOfCycle()
 {
-
-  std::ifstream runNumberFile(mRunNumberPath.c_str());
-  if (runNumberFile) {
-
-    std::string runNumber;
-    runNumberFile >> runNumber;
-    if (runNumber != mRunNumber) {
-      for (unsigned int iObj = 0; iObj < mPublishedObjects.size(); iObj++)
-        getObjectsManager()->addMetadata(mPublishedObjects.at(iObj)->GetName(), "Run", runNumber);
-      mRunNumber = runNumber;
-    }
-    ILOG(Info, Support) << "endOfCycle" << ENDM;
-  }
+  ILOG(Info, Support) << "endOfCycle" << ENDM;
 }
 
 void ITSThresholdCalibrationTask::endOfActivity(Activity& /*activity*/)
@@ -258,44 +244,31 @@ void ITSThresholdCalibrationTask::reset()
       }
     }
     for (int iBarrel = 0; iBarrel < 3; iBarrel++) {
-      hCalibrationChipSum[iScan][iBarrel]->Reset();
       hCalibrationChipAverage[iScan][iBarrel]->Reset();
       hCalibrationChipCounts[iScan][iBarrel]->Reset();
 
-      hCalibrationRMSChipSum[iScan][iBarrel]->Reset();
       hCalibrationRMSChipAverage[iScan][iBarrel]->Reset();
     }
   }
 
   for (int iBarrel = 0; iBarrel < 3; iBarrel++) {
 
-    hCalibrationThrNoiseChipSum[iBarrel]->Reset();
     hCalibrationThrNoiseChipAverage[iBarrel]->Reset();
-
-    hCalibrationThrNoiseRMSChipSum[iBarrel]->Reset();
     hCalibrationThrNoiseRMSChipAverage[iBarrel]->Reset();
   }
 }
 
 void ITSThresholdCalibrationTask::createAllHistos()
 {
-  /*
-    TString sScanTypes[3]= {"VCASN","ITHR","THR"};
-    TString sBarrelType[3]= {"IB","MB","OB"};
-    Int_t nChips[3]= {9,112, 196};
-    Int_t nStaves[3]={48,54,90};
-    Int_t nXmax[3]= {80,100,400};
-    TString sXtitles[3]={"DAC","DAC","e"};
-  */
   for (int iScan = 0; iScan < 3; iScan++) {
 
     for (int iLayer = 0; iLayer < 7; iLayer++) {
-      hCalibrationLayer[iLayer][iScan] = new TH1F(Form("%sLayer%d", sScanTypes[iScan].Data(), iLayer), Form("%sLayer%d", sScanTypes[iScan].Data(), iLayer), nXmax[iScan], -0.5, nXmax[iScan] - 0.5);
+      hCalibrationLayer[iLayer][iScan] = new TH1F(Form("%sLayer%d", sScanTypes[iScan].Data(), iLayer), Form("%s for Layer%d", sScanTypes[iScan].Data(), iLayer), nXmax[iScan], -0.5, nXmax[iScan] - 0.5);
       hCalibrationLayer[iLayer][iScan]->SetStats(0);
       formatAxes(hCalibrationLayer[iLayer][iScan], Form("%s (%s) ", sScanTypes[iScan].Data(), sXtitles[iScan].Data()), "Chip counts", 1, 1.10);
       addObject(hCalibrationLayer[iLayer][iScan]);
 
-      hCalibrationRMSLayer[iLayer][iScan] = new TH1F(Form("%sRMSLayer%d", sScanTypes[iScan].Data(), iLayer), Form("%sRMSLayer%d", sScanTypes[iScan].Data(), iLayer), 50, -0.5, 9.5);
+      hCalibrationRMSLayer[iLayer][iScan] = new TH1F(Form("%sRMSLayer%d", sScanTypes[iScan].Data(), iLayer), Form("%s RMS for Layer%d", sScanTypes[iScan].Data(), iLayer), 50, -0.5, 9.5);
       hCalibrationRMSLayer[iLayer][iScan]->SetStats(0);
       formatAxes(hCalibrationRMSLayer[iLayer][iScan], Form("RMS (%s)", sXtitles[iScan].Data()), "Chip counts", 1, 1.10);
       addObject(hCalibrationRMSLayer[iLayer][iScan]);
@@ -303,18 +276,19 @@ void ITSThresholdCalibrationTask::createAllHistos()
 
     for (int iBarrel = 0; iBarrel < 3; iBarrel++) {
 
-      hCalibrationChipSum[iScan][iBarrel] = new TH2F(Form("%sChipSum%s", sScanTypes[iScan].Data(), sBarrelType[iBarrel].Data()), Form("%sChipSum%s", sScanTypes[iScan].Data(), sBarrelType[iBarrel].Data()), nChips[iBarrel], -0.5, nChips[iBarrel] - 0.5, nStaves[iBarrel], -0.5, nStaves[iBarrel] - 0.5);
-      hCalibrationChipCounts[iScan][iBarrel] = new TH2F(Form("%sChipCounts%s", sScanTypes[iScan].Data(), sBarrelType[iBarrel].Data()), Form("%sChipCounts%s", sScanTypes[iScan].Data(), sBarrelType[iBarrel].Data()), nChips[iBarrel], -0.5, nChips[iBarrel] - 0.5, nStaves[iBarrel], -0.5, nStaves[iBarrel] - 0.5);
-      hCalibrationChipAverage[iScan][iBarrel] = new TH2F(Form("%sChipAverage%s", sScanTypes[iScan].Data(), sBarrelType[iBarrel].Data()), Form("Average %s per Chip in %s", sScanTypes[iScan].Data(), sBarrelType[iBarrel].Data()), nChips[iBarrel], -0.5, nChips[iBarrel] - 0.5, nStaves[iBarrel], -0.5, nStaves[iBarrel] - 0.5);
+      hCalibrationChipCounts[iScan][iBarrel] = new TH2F(Form("%sChipCounts%s", sScanTypes[iScan].Data(), sBarrelType[iBarrel].Data()), Form("%s Chip Counts %s", sScanTypes[iScan].Data(), sBarrelType[iBarrel].Data()), nChips[iBarrel], -0.5, nChips[iBarrel] - 0.5, nStaves[iBarrel], -0.5, nStaves[iBarrel] - 0.5);
+      hCalibrationChipCounts[iScan][iBarrel]->SetStats(0);
+      formatAxes(hCalibrationChipCounts[iScan][iBarrel], "Chip", "Stave", 1, 1.10);
+      formatLayers(hCalibrationChipCounts[iScan][iBarrel], iBarrel);
+      addObject(hCalibrationChipCounts[iScan][iBarrel]);
+
+      hCalibrationChipAverage[iScan][iBarrel] = new TH2F(Form("%sChipAverage%s", sScanTypes[iScan].Data(), sBarrelType[iBarrel].Data()), Form("Average chip %s for %s", sScanTypes[iScan].Data(), sBarrelType[iBarrel].Data()), nChips[iBarrel], -0.5, nChips[iBarrel] - 0.5, nStaves[iBarrel], -0.5, nStaves[iBarrel] - 0.5);
       hCalibrationChipAverage[iScan][iBarrel]->SetStats(0);
       formatAxes(hCalibrationChipAverage[iScan][iBarrel], "Chip", "Stave", 1, 1.10);
-
       formatLayers(hCalibrationChipAverage[iScan][iBarrel], iBarrel);
-
       addObject(hCalibrationChipAverage[iScan][iBarrel]);
 
-      hCalibrationRMSChipSum[iScan][iBarrel] = new TH2F(Form("%sRMSChipSum%s", sScanTypes[iScan].Data(), sBarrelType[iBarrel].Data()), Form("%sRMSChipSum%s", sScanTypes[iScan].Data(), sBarrelType[iBarrel].Data()), nChips[iBarrel], -0.5, nChips[iBarrel] - 0.5, nStaves[iBarrel], -0.5, nStaves[iBarrel] - 0.5);
-      hCalibrationRMSChipAverage[iScan][iBarrel] = new TH2F(Form("%sRMSChipAverage%s", sScanTypes[iScan].Data(), sBarrelType[iBarrel].Data()), Form("Average %s RMS per Chip in %s", sScanTypes[iScan].Data(), sBarrelType[iBarrel].Data()), nChips[iBarrel], -0.5, nChips[iBarrel] - 0.5, nStaves[iBarrel], -0.5, nStaves[iBarrel] - 0.5);
+      hCalibrationRMSChipAverage[iScan][iBarrel] = new TH2F(Form("%sRMSChipAverage%s", sScanTypes[iScan].Data(), sBarrelType[iBarrel].Data()), Form("Average chip %s RMS for %s", sScanTypes[iScan].Data(), sBarrelType[iBarrel].Data()), nChips[iBarrel], -0.5, nChips[iBarrel] - 0.5, nStaves[iBarrel], -0.5, nStaves[iBarrel] - 0.5);
       hCalibrationRMSChipAverage[iScan][iBarrel]->SetStats(0);
       formatAxes(hCalibrationRMSChipAverage[iScan][iBarrel], "Chip", "Stave", 1, 1.10);
       formatLayers(hCalibrationRMSChipAverage[iScan][iBarrel], iBarrel);
@@ -326,27 +300,25 @@ void ITSThresholdCalibrationTask::createAllHistos()
 
   for (int iBarrel = 0; iBarrel < 3; iBarrel++) { // TH2 for THR noise plots
 
-    hCalibrationThrNoiseChipSum[iBarrel] = new TH2F(Form("ThrNoiseChipSum%s", sBarrelType[iBarrel].Data()), Form("ThrNoiseChipSum%s", sBarrelType[iBarrel].Data()), nChips[iBarrel], -0.5, nChips[iBarrel] - 0.5, nStaves[iBarrel], -0.5, nStaves[iBarrel] - 0.5);
-    hCalibrationThrNoiseChipAverage[iBarrel] = new TH2F(Form("ThrNoiseChipAverage%s", sBarrelType[iBarrel].Data()), Form("Average THR Noise per Chip in %s", sBarrelType[iBarrel].Data()), nChips[iBarrel], -0.5, nChips[iBarrel] - 0.5, nStaves[iBarrel], -0.5, nStaves[iBarrel] - 0.5);
+    hCalibrationThrNoiseChipAverage[iBarrel] = new TH2F(Form("ThrNoiseChipAverage%s", sBarrelType[iBarrel].Data()), Form("Average chip threshold noise for %s", sBarrelType[iBarrel].Data()), nChips[iBarrel], -0.5, nChips[iBarrel] - 0.5, nStaves[iBarrel], -0.5, nStaves[iBarrel] - 0.5);
     hCalibrationThrNoiseChipAverage[iBarrel]->SetStats(0);
     formatAxes(hCalibrationThrNoiseChipAverage[iBarrel], "Chip", "Stave", 1, 1.10);
     formatLayers(hCalibrationThrNoiseChipAverage[iBarrel], iBarrel);
     addObject(hCalibrationThrNoiseChipAverage[iBarrel]);
 
-    hCalibrationThrNoiseRMSChipSum[iBarrel] = new TH2F(Form("ThrNoiseRMSChipSum%s", sBarrelType[iBarrel].Data()), Form("ThrNoiseRMSChipSum%s", sBarrelType[iBarrel].Data()), nChips[iBarrel], -0.5, nChips[iBarrel] - 0.5, nStaves[iBarrel], -0.5, nStaves[iBarrel] - 0.5);
-    hCalibrationThrNoiseRMSChipAverage[iBarrel] = new TH2F(Form("ThrNoiseRMSChipAverage%s", sBarrelType[iBarrel].Data()), Form("Average THR NoiseRMS per Chip in %s", sBarrelType[iBarrel].Data()), nChips[iBarrel], -0.5, nChips[iBarrel] - 0.5, nStaves[iBarrel], -0.5, nStaves[iBarrel] - 0.5);
+    hCalibrationThrNoiseRMSChipAverage[iBarrel] = new TH2F(Form("ThrNoiseRMSChipAverage%s", sBarrelType[iBarrel].Data()), Form("Average chip threshold NoiseRMS for %s", sBarrelType[iBarrel].Data()), nChips[iBarrel], -0.5, nChips[iBarrel] - 0.5, nStaves[iBarrel], -0.5, nStaves[iBarrel] - 0.5);
     hCalibrationThrNoiseRMSChipAverage[iBarrel]->SetStats(0);
     formatAxes(hCalibrationThrNoiseRMSChipAverage[iBarrel], "Chip", "Stave", 1, 1.10);
     formatLayers(hCalibrationThrNoiseRMSChipAverage[iBarrel], iBarrel);
     addObject(hCalibrationThrNoiseRMSChipAverage[iBarrel]);
   }
   for (int iLayer = 0; iLayer < 7; iLayer++) {
-    hCalibrationThrNoiseLayer[iLayer] = new TH1F(Form("ThrNoiseLayer%d", iLayer), Form("ThrNoiseLayer%d", iLayer), 10, -0.5, 9.5);
+    hCalibrationThrNoiseLayer[iLayer] = new TH1F(Form("ThrNoiseLayer%d", iLayer), Form("Threshold Noise for Layer%d", iLayer), 10, -0.5, 9.5);
     hCalibrationThrNoiseLayer[iLayer]->SetStats(0);
     formatAxes(hCalibrationThrNoiseLayer[iLayer], "THR noise (e) ", "Chip counts", 1, 1.10);
     addObject(hCalibrationThrNoiseLayer[iLayer]);
 
-    hCalibrationThrNoiseRMSLayer[iLayer] = new TH1F(Form("ThrNoiseRMSLayer%d", iLayer), Form("ThrNoiseRMSLayer%d", iLayer), 50, -0.5, 9.5);
+    hCalibrationThrNoiseRMSLayer[iLayer] = new TH1F(Form("ThrNoiseRMSLayer%d", iLayer), Form("Threshold Noise RMS for Layer%d", iLayer), 50, -0.5, 9.5);
     hCalibrationThrNoiseRMSLayer[iLayer]->SetStats(0);
     formatAxes(hCalibrationThrNoiseRMSLayer[iLayer], "THR noise RMS (e)", "Chip counts", 1, 1.10);
     addObject(hCalibrationThrNoiseRMSLayer[iLayer]);
@@ -394,7 +366,10 @@ void ITSThresholdCalibrationTask::formatLayers(TH2* h, Int_t iBarrel)
     }
   };
 
+  std::cout << " Drawing Line for the new histogram at iBarrel " << iBarrel << std::endl;
+
   for (Int_t iLayer = iLayerBegin; iLayer <= iLayerEnd; iLayer++) {
+
     TLatex* msg = new TLatex(0.5 + iBarrel * 4, StaveBoundary[iLayer - 1] + 2 + iBarrel * 2, Form("L%d", iLayer - 1));
     msg->SetTextSize(18);
     msg->SetTextFont(43);
@@ -402,6 +377,7 @@ void ITSThresholdCalibrationTask::formatLayers(TH2* h, Int_t iBarrel)
 
     if (iLayer < iLayerEnd) {
       auto l = new TLine(-0.5, StaveBoundary[iLayer] - 0.5, nChipsPerStave[iLayer] - 0.5, StaveBoundary[iLayer] - 0.5);
+      std::cout << " L x: " << -0.5 << " to " << nChipsPerStave[iLayer] - 0.5 << " y: " << StaveBoundary[iLayer] - 0.5 << std::endl;
       h->GetListOfFunctions()->Add(l);
     }
   }
@@ -437,7 +413,7 @@ void ITSThresholdCalibrationTask::publishHistos()
   }
 }
 
-std::vector<std::string> ITSThresholdCalibrationTask::split(std::string s, std::string delimiter)
+std::vector<std::string> ITSThresholdCalibrationTask::splitString(std::string s, std::string delimiter)
 {
   size_t pos_start = 0, pos_end, delim_len = delimiter.length();
   std::string token;

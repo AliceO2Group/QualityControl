@@ -60,7 +60,7 @@ class ITSThresholdCalibrationTask : public TaskInterface
   void endOfCycle() override;
   void endOfActivity(Activity& activity) override;
   void reset() override;
-  std::vector<std::string> split(std::string, std::string);
+  std::vector<std::string> splitString(std::string, std::string);
 
  private:
   void publishHistos();
@@ -68,15 +68,11 @@ class ITSThresholdCalibrationTask : public TaskInterface
   void formatLayers(TH2* h, Int_t iBarrel);
   void addObject(TObject* aObject);
   void createAllHistos();
-  void calculateAverages(Int_t Scan);
   Int_t getBarrel(Int_t iLayer);
 
   CalibrationResStruct CalibrationParser(string input);
 
   std::vector<TObject*> mPublishedObjects;
-
-  std::string mRunNumber;
-  std::string mRunNumberPath;
 
   static constexpr int NLayer = 7; // layer number in ITS detector
   static constexpr int NLayerIB = 3;
@@ -96,18 +92,8 @@ class ITSThresholdCalibrationTask : public TaskInterface
   Int_t nXmax[3] = { 80, 100, 400 };
   TString sXtitles[3] = { "DAC", "DAC", "e" };
 
-  TH2F *hThrAverageChipIB, *hIthrAverageChipIB, *hVcasnAverageChipIB;
-  TH2F *hThrSumChipIB, *hIthrSumChipIB, *hVcasnSumChipIB;
-  TH2F *hThrCountsChipIB, *hIthrCountsChipIB, *hVcasnCountsChipIB;
-
-  TH2F *hThrRMSAverageChipIB, *hIthrRMSAverageChipIB, *hVcasnRMSAverageChipIB;
-  TH2F *hThrRMSSumChipIB, *hIthrRMSSumChipIB, *hVcasnRMSSumChipIB;
-  TH2F *hThrRMSCountsChipIB, *hIthrRMSCountsChipIB, *hVcasnRMSCountsChipIB;
-
-  TH2F *hCalibrationChipSum[3][3], *hCalibrationChipCounts[3][3], *hCalibrationChipAverage[3][3];
-  TH2F *hCalibrationRMSChipSum[3][3], *hCalibrationRMSChipAverage[3][3];
-  TH2F *hCalibrationThrNoiseRMSChipAverage[3], *hCalibrationThrNoiseRMSChipSum[3];
-  TH2F *hCalibrationThrNoiseChipAverage[3], *hCalibrationThrNoiseChipSum[3];
+  TH2F *hCalibrationChipCounts[3][3], *hCalibrationChipAverage[3][3], *hCalibrationRMSChipAverage[3][3];
+  TH2F *hCalibrationThrNoiseRMSChipAverage[3], *hCalibrationThrNoiseChipAverage[3];
 
   TH1F* hSuccessRate;
   TH1F *hCalibrationLayer[7][3], *hCalibrationRMSLayer[7][3];
