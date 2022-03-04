@@ -39,6 +39,7 @@ add_root_dictionary(O2QualityControlTypes
 # ---- Library ----
 
 add_library(O2QualityControl
+  src/Activity.cxx
   src/ObjectsManager.cxx
   src/CheckRunner.cxx
   src/AggregatorRunner.cxx

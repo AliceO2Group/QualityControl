@@ -51,6 +51,9 @@ class Activity
   /// Move assignment operator
   Activity& operator=(Activity&& other) noexcept = default;
 
+  /// Checks if the other activity matches this, taking into account that default values match any.
+  bool matches(const Activity& other) const;
+
   virtual ~Activity() = default;
 
   int mId{ 0 };
