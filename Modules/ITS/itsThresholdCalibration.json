@@ -36,10 +36,7 @@
           "name" : "thresholdcalibration"
         },
         "location" : "remote",
-        "taskParameters" : {
-          "runNumberPath" : "/home/its/QC/workdir/infiles/RunNumber.dat"
-        }
-
+        "taskParameters" : {}
       }
     }
 
