@@ -37,6 +37,5 @@ std::string ITSThresholdCalibrationCheck::getAcceptedType() { return "TH1D"; }
 
 void ITSThresholdCalibrationCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-
 }
 } // namespace o2::quality_control_modules::its
