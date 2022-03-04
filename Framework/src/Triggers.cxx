@@ -49,7 +49,7 @@ TriggerFcn NotImplemented(std::string triggerName)
   };
 }
 
-TriggerFcn StartOfRun()
+TriggerFcn StartOfRun(const core::Activity&)
 {
   return NotImplemented("StartOfRun");
 
@@ -73,53 +73,53 @@ TriggerFcn StartOfRun()
   //  };
 }
 
-TriggerFcn Once()
+TriggerFcn Once(const core::Activity& activity)
 {
-  return [hasTriggered = false]() mutable -> Trigger {
+  return [hasTriggered = false, activity]() mutable -> Trigger {
     if (hasTriggered) {
       return { TriggerType::No };
     } else {
       hasTriggered = true;
-      return { TriggerType::Once };
+      return { TriggerType::Once, activity };
     }
   };
 }
 
-TriggerFcn Always()
+TriggerFcn Always(const core::Activity& activity)
 {
-  return []() mutable -> Trigger {
-    return { TriggerType::Always };
+  return [activity]() mutable -> Trigger {
+    return { TriggerType::Always, activity };
   };
 }
 
-TriggerFcn Never()
+TriggerFcn Never(const core::Activity& activity)
 {
-  return []() mutable -> Trigger {
-    return { TriggerType::No };
+  return [activity]() mutable -> Trigger {
+    return { TriggerType::No, activity };
   };
 }
 
-TriggerFcn EndOfRun()
+TriggerFcn EndOfRun(const core::Activity&)
 {
   return NotImplemented("EndOfRun");
 }
 
-TriggerFcn StartOfFill()
+TriggerFcn StartOfFill(const core::Activity&)
 {
   return NotImplemented("StartOfFill");
 }
 
-TriggerFcn EndOfFill()
+TriggerFcn EndOfFill(const core::Activity&)
 {
   return NotImplemented("EndOfFill");
 }
 
-TriggerFcn Periodic(double seconds)
+TriggerFcn Periodic(double seconds, const core::Activity& activity)
 {
   AliceO2::Common::Timer timer;
   timer.reset(static_cast<int>(seconds * 1000000));
 
-  return [timer]() mutable -> Trigger {
+  return [timer, activity]() mutable -> Trigger {
     if (timer.isTimeout()) {
       // We calculate the exact time when timer has passed
       uint64_t timestamp = Trigger::msSinceEpoch() + static_cast<int>(timer.getRemainingTime() * 1000);
@@ -128,14 +128,14 @@ TriggerFcn Periodic(double seconds)
       while (timer.isTimeout()) {
         timer.increment();
       }
-      return { TriggerType::Periodic, timestamp };
+      return { TriggerType::Periodic, activity, timestamp };
     } else {
       return { TriggerType::No };
     }
   };
 }
 
-TriggerFcn NewObject(std::string databaseUrl, std::string objectPath)
+TriggerFcn NewObject(std::string databaseUrl, std::string objectPath, const core::Activity& activity)
 {
   // Key names in the header map.
   constexpr auto md5key = "Content-MD5";
@@ -151,7 +151,8 @@ TriggerFcn NewObject(std::string databaseUrl, std::string objectPath)
   // We rely on changing MD5 - if the object has changed, it should have a different check sum.
   // If someone reuploaded an old object, it should not have an influence.
   std::string lastMD5;
-  if (auto headers = db->retrieveHeaders(objectPath, {}); headers.count(md5key)) {
+  auto metadata = repository::database_helpers::asDatabaseMetadata(activity);
+  if (auto headers = db->retrieveHeaders(objectPath, metadata); headers.count(md5key)) {
     lastMD5 = headers[md5key];
   } else {
     // We don't make a fuss over it, because we might be just waiting for the first version of such object.
@@ -159,12 +160,12 @@ TriggerFcn NewObject(std::string databaseUrl, std::string objectPath)
     ILOG(Warning, Support) << "No MD5 of the file '" << objectPath << "' in the db '" << databaseUrl << "', probably the file is missing." << ENDM;
   }
 
-  return [db, databaseUrl = std::move(databaseUrl), objectPath = std::move(objectPath), lastMD5]() mutable -> Trigger {
-    if (auto headers = db->retrieveHeaders(objectPath, {}); headers.count(md5key)) {
+  return [db, databaseUrl = std::move(databaseUrl), objectPath = std::move(objectPath), lastMD5, activity, metadata]() mutable -> Trigger {
+    if (auto headers = db->retrieveHeaders(objectPath, metadata); headers.count(md5key)) {
       auto newMD5 = headers[md5key];
       if (lastMD5 != newMD5) {
         lastMD5 = newMD5;
-        return { TriggerType::NewObject, std::stoull(headers[timestampKey]) };
+        return { TriggerType::NewObject, activity, std::stoull(headers[timestampKey]) };
       }
     } else {
       // We don't make a fuss over it, because we might be just waiting for the first version of such object.

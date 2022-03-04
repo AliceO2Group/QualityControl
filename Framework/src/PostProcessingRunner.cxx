@@ -18,6 +18,7 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/CommonSpec.h"
 #include "QualityControl/InfrastructureSpecReader.h"
+#include "QualityControl/Activity.h"
 
 #include <boost/property_tree/ptree.hpp>
 #include <utility>
@@ -132,11 +133,11 @@ void PostProcessingRunner::runOverTimestamps(const std::vector<uint64_t>& timest
 
   ILOG(Info, Support) << "Running the task '" << mTask->getName() << "' over " << timestamps.size() << " timestamps." << ENDM;
 
-  doInitialize({ TriggerType::UserOrControl, timestamps.front() });
+  doInitialize({ TriggerType::UserOrControl, mTaskConfig.activity, timestamps.front() });
   for (size_t i = 1; i < timestamps.size() - 1; i++) {
-    doUpdate({ TriggerType::UserOrControl, timestamps[i] });
+    doUpdate({ TriggerType::UserOrControl, mTaskConfig.activity, timestamps[i] });
   }
-  doFinalize({ TriggerType::UserOrControl, timestamps.back() });
+  doFinalize({ TriggerType::UserOrControl, mTaskConfig.activity, timestamps.back() });
 }
 
 void PostProcessingRunner::start()

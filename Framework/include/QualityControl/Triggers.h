@@ -20,6 +20,8 @@
 #include <string>
 #include <functional>
 #include <iosfwd>
+#include <utility>
+#include "QualityControl/Activity.h"
 
 namespace o2::quality_control::postprocessing
 {
@@ -43,9 +45,11 @@ enum TriggerType {
 struct Trigger {
 
   /// \brief Constructor. Timestamp is generated from the time of construction.
-  Trigger(TriggerType triggerType) : triggerType(triggerType), timestamp(msSinceEpoch()){};
+  Trigger(TriggerType triggerType, core::Activity activity = {}) : triggerType(triggerType), activity(std::move(activity)), timestamp(msSinceEpoch()){};
   /// \brief Constructor.
-  Trigger(TriggerType triggerType, uint64_t timestamp) : triggerType(triggerType), timestamp(timestamp){};
+  Trigger(TriggerType triggerType, core::Activity activity, uint64_t timestamp) : triggerType(triggerType), activity(std::move(activity)), timestamp(timestamp){};
+  /// \brief Constructor.
+  Trigger(TriggerType triggerType, uint64_t timestamp) : triggerType(triggerType), activity(), timestamp(timestamp){};
 
   operator bool() const { return triggerType != TriggerType::No && triggerType != TriggerType::INVALID; }
   friend std::ostream& operator<<(std::ostream& out, const Trigger& t);
@@ -57,6 +61,7 @@ struct Trigger {
   static uint64_t msSinceEpoch();
 
   TriggerType triggerType;
+  core::Activity activity;
   uint64_t timestamp;
 };
 
@@ -66,23 +71,23 @@ namespace triggers
 {
 
 /// \brief Triggers when it detects a Start Of Run during its uptime (once per each)
-TriggerFcn StartOfRun();
+TriggerFcn StartOfRun(const core::Activity& = {});
 /// \brief Triggers when it detects an End Of Run during its uptime (once per each)
-TriggerFcn EndOfRun();
+TriggerFcn EndOfRun(const core::Activity& = {});
 /// \brief Triggers when it detects Stable Beams during its uptime (once per each)
-TriggerFcn StartOfFill();
+TriggerFcn StartOfFill(const core::Activity& = {});
 /// \brief Triggers when it detects an event dump during its uptime (once per each)
-TriggerFcn EndOfFill();
+TriggerFcn EndOfFill(const core::Activity& = {});
 /// \brief Triggers when a period of time passes
-TriggerFcn Periodic(double seconds);
+TriggerFcn Periodic(double seconds, const core::Activity& = {});
 /// \brief Triggers when it detect a new object in QC repository with given name
-TriggerFcn NewObject(std::string databaseUrl, std::string objectPath);
+TriggerFcn NewObject(std::string databaseUrl, std::string objectPath, const core::Activity& = {});
 /// \brief Triggers only first time it is executed
-TriggerFcn Once();
+TriggerFcn Once(const core::Activity& = {});
 /// \brief Triggers always
-TriggerFcn Always();
+TriggerFcn Always(const core::Activity& = {});
 /// \brief Triggers never
-TriggerFcn Never();
+TriggerFcn Never(const core::Activity& = {});
 
 } // namespace triggers
 

@@ -54,19 +54,20 @@ TriggerFcn triggerFactory(std::string trigger, const PostProcessingConfig& confi
   // todo: should we accept many versions of trigger names?
   std::string triggerLowerCase = trigger;
   boost::algorithm::to_lower(triggerLowerCase);
+  auto& activity = config.activity;
 
   if (triggerLowerCase == "once") {
-    return triggers::Once();
+    return triggers::Once(activity);
   } else if (triggerLowerCase == "always") {
-    return triggers::Always();
+    return triggers::Always(activity);
   } else if (triggerLowerCase == "sor" || triggerLowerCase == "startofrun") {
-    return triggers::StartOfRun();
+    return triggers::StartOfRun(activity);
   } else if (triggerLowerCase == "eor" || triggerLowerCase == "endofrun") {
-    return triggers::EndOfRun();
+    return triggers::EndOfRun(activity);
   } else if (triggerLowerCase == "sof" || triggerLowerCase == "startoffill") {
-    return triggers::StartOfFill();
+    return triggers::StartOfFill(activity);
   } else if (triggerLowerCase == "eof" || triggerLowerCase == "endoffill") {
-    return triggers::EndOfFill();
+    return triggers::EndOfFill(activity);
   } else if (triggerLowerCase.find("newobject") != std::string::npos) {
     // we expect the config string to be:
     // newobject:[qcdb/ccdb]:qc/path/to/object
@@ -94,14 +95,14 @@ TriggerFcn triggerFactory(std::string trigger, const PostProcessingConfig& confi
       throw std::invalid_argument("The third token in '" + trigger + "' is empty, but it should contain the object path");
     }
 
-    return triggers::NewObject(dbUrl, tokens[2]);
+    return triggers::NewObject(dbUrl, tokens[2], activity);
   } else if (auto seconds = string2Seconds(triggerLowerCase); seconds.has_value()) {
     if (seconds.value() < 0) {
       throw std::invalid_argument("negative number of seconds in trigger '" + trigger + "'");
     }
-    return triggers::Periodic(seconds.value());
+    return triggers::Periodic(seconds.value(), activity);
   } else if (triggerLowerCase.find("user") != std::string::npos || triggerLowerCase.find("control") != std::string::npos) {
-    return triggers::Never();
+    return triggers::Never(activity);
   } else {
     throw std::invalid_argument("unknown trigger: " + trigger);
   }
