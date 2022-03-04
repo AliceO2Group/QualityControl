@@ -88,6 +88,7 @@ class ITSFeeTask final : public TaskInterface
   static constexpr int NFlags = 3;
   static constexpr int NTrigger = 13;
   const int StaveBoundary[NLayer + 1] = { 0, 12, 28, 48, 72, 102, 144, 192 };
+  const int NLanePerStaveLayer[NLayer] = {9, 9, 9, 16, 16, 28, 28};
   const int LayerBoundaryFEE[NLayer - 1] = { 35, 83, 143, 191, 251, 335 };
   const float StartAngle[7] = { 16.997 / 360 * (TMath::Pi() * 2.), 17.504 / 360 * (TMath::Pi() * 2.), 17.337 / 360 * (TMath::Pi() * 2.), 8.75 / 360 * (TMath::Pi() * 2.), 7 / 360 * (TMath::Pi() * 2.), 5.27 / 360 * (TMath::Pi() * 2.), 4.61 / 360 * (TMath::Pi() * 2.) }; //start angle of first stave in each layer
   const float MidPointRad[7] = { 23.49, 31.586, 39.341, 197.598, 246.944, 345.348, 394.883 }; 

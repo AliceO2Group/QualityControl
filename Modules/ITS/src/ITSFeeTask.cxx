@@ -180,7 +180,7 @@ void ITSFeeTask::setPlotsFormat()
     mLaneStatusOverview[i]->SetTitle(title);
     mLaneStatusOverview[i]->SetStats(0);
     mLaneStatusOverview[i]->SetMinimum(0);
-    mLaneStatusOverview[i]->SetMaximum(NLanesMax);
+    mLaneStatusOverview[i]->SetMaximum(1);
     for (int ilayer = 0; ilayer < 7; ilayer++) {
       for (int istave = 0; istave < NStaves[ilayer]; istave++) {
         double* px = new double[4];
@@ -339,7 +339,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
         }
       }
     }
-    //Fill TH2Poly mLanestatusOverview with counters
+    
     for(int iflag=0; iflag<NFlags; iflag++) {
       int flagCount=0;
       for(int ilane=0; ilane<NLanesMax; ilane++) {
@@ -347,7 +347,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
         flagCount++;
         }
       }
-      mLaneStatusOverview[iflag]->SetBinContent(istave + 1 + StaveBoundary[ilayer], flagCount);
+      mLaneStatusOverview[iflag]->SetBinContent(istave + 1 + StaveBoundary[ilayer], (float)(flagCount)/(float)(NLanePerStaveLayer[ilayer]));
     }
 
     for (int i = 0; i < 13; i++) {
@@ -380,8 +380,6 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
 void ITSFeeTask::getParameters()
 {
   mNPayloadSizeBins = std::stoi(mCustomParameters["NPayloadSizeBins"]);
-  mMaxGeneralAxisRange = std::stof(mCustomParameters["MaxGeneralAxisRange"]);
-  mMinGeneralAxisRange = std::stof(mCustomParameters["MinGeneralAxisRange"]);
 }
 
 void ITSFeeTask::getStavePoint(int layer, int stave, double* px, double* py)
