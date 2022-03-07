@@ -154,7 +154,16 @@ int main(int argc, const char* argv[])
           }
 
           if (mergedMocMap.count(inputMOC->GetName())) {
-            mergedMocMap[inputMOC->GetName()]->merge(inputMOC);
+            try {
+              mergedMocMap[inputMOC->GetName()]->merge(inputMOC);
+            } catch (...) {
+              if (vm["exit-on-error"].as<bool>()) {
+                throw;
+              } else {
+                ILOG(Error, Ops) << "Exception caught: " << boost::current_exception_diagnostic_information(true) << ENDM;
+                ILOG(Error, Ops) << "Failed to merge the Monitor Object Collection, but will try to continue." << ENDM;
+              }
+            }
             delete inputMOC;
           } else {
             mergedMocMap[inputMOC->GetName()] = inputMOC;
