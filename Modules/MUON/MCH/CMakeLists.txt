@@ -9,6 +9,7 @@ set(SRCS
   src/PhysicsTaskPreclusters.cxx
   src/DecodingErrorsTask.cxx
   src/PedestalsCheck.cxx
+  src/DecodingErrorsCheck.cxx
   src/PhysicsCheck.cxx
   src/PhysicsOccupancyCheck.cxx
   src/PhysicsPreclustersCheck.cxx
@@ -22,6 +23,7 @@ set(HEADERS
   include/MCH/PhysicsTaskPreclusters.h
   include/MCH/DecodingErrorsTask.h
   include/MCH/PedestalsCheck.h
+  include/MCH/DecodingErrorsCheck.h
   include/MCH/PhysicsCheck.h
   include/MCH/PhysicsOccupancyCheck.h
   include/MCH/PhysicsPreclustersCheck.h
@@ -78,6 +80,7 @@ add_root_dictionary(${MODULE_NAME}
                             include/MCH/PhysicsOccupancyCheck.h
                             include/MCH/PhysicsPreclustersCheck.h
                             include/MCH/DecodingErrorsTask.h
+                            include/MCH/DecodingErrorsCheck.h
                             include/MCH/PedestalsCheck.h
                             include/MCH/TH1MCHReductor.h
                             include/MCH/sampa_header.h
