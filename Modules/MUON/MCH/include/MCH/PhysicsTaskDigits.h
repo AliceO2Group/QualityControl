@@ -35,6 +35,7 @@ class TH1F;
 class TH2F;
 
 using namespace o2::quality_control::core;
+using namespace o2::quality_control_modules::muon;
 
 namespace o2
 {

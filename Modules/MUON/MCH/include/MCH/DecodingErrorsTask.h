@@ -29,6 +29,8 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 
+using namespace o2::quality_control_modules::muon;
+
 namespace o2::quality_control_modules::muonchambers
 {
 

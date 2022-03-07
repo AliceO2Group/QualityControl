@@ -17,7 +17,7 @@
 #include "MUONCommon/MergeableTH2Ratio.h"
 
 using namespace std;
-namespace o2::quality_control_modules::muonchambers
+namespace o2::quality_control_modules::muon
 {
 
 MergeableTH2Ratio::MergeableTH2Ratio(MergeableTH2Ratio const& copymerge)
@@ -113,4 +113,4 @@ void MergeableTH2Ratio::beautify()
   // GetListOfFunctions()->AddAll(mlistOfFunctions);
 }
 
-} // namespace o2::quality_control_modules::muonchambers
+} // namespace o2::quality_control_modules::muon
