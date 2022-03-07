@@ -8,6 +8,7 @@
 #pragma link C++ class o2::quality_control_modules::muonchambers::PhysicsTaskPreclusters + ;
 #pragma link C++ class o2::quality_control_modules::muonchambers::DecodingErrorsTask + ;
 #pragma link C++ class o2::quality_control_modules::muonchambers::PedestalsCheck + ;
+#pragma link C++ class o2::quality_control_modules::muonchambers::DecodingErrorsCheck + ;
 #pragma link C++ class o2::quality_control_modules::muonchambers::PhysicsCheck + ;
 #pragma link C++ class o2::quality_control_modules::muonchambers::PhysicsOccupancyCheck + ;
 #pragma link C++ class o2::quality_control_modules::muonchambers::PhysicsPreclustersCheck + ;
