@@ -27,6 +27,7 @@
 #include "MFT/QcMFTDigitCheck.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
+#include "QualityControl/QcInfoLogger.h"
 
 using namespace std;
 
@@ -43,7 +44,33 @@ Quality QcMFTDigitCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
 
     (void)moName;
 
-    if (mo->getName().find("mMFTChipOccupancyStdDev") != std::string::npos) {
+    if (mo->getName() == "mDigitChipOccupancy") {
+      auto* histogram = dynamic_cast<TH1F*>(mo->getObject());
+
+      float den = histogram->GetBinContent(0); // normalisation stored in the uderflow bin
+
+      for (int iBin = 0; iBin < histogram->GetNbinsX(); iBin++) {
+        float num = histogram->GetBinContent(iBin + 1);
+        float ratio = (den > 0) ? (num / den) : 0.0;
+        histogram->SetBinContent(iBin + 1, ratio);
+      }
+    }
+
+    if (mo->getName() == "mDigitOccupancySummary") {
+      auto* histogram = dynamic_cast<TH2F*>(mo->getObject());
+
+      float den = histogram->GetBinContent(0, 0); // normalisation stored in the uderflow bin
+
+      for (int iBinX = 0; iBinX < histogram->GetNbinsX(); iBinX++) {
+        for (int iBinY = 0; iBinY < histogram->GetNbinsY(); iBinY++) {
+          float num = histogram->GetBinContent(iBinX + 1, iBinY + 1);
+          float ratio = (den > 0) ? (num / den) : 0.0;
+          histogram->SetBinContent(iBinX + 1, iBinY + 1, ratio);
+        }
+      }
+    }
+
+    if (mo->getName().find("mDigitChipStdDev") != std::string::npos) {
       auto* histogram = dynamic_cast<TH1F*>(mo->getObject());
 
       // test it
@@ -65,7 +92,7 @@ std::string QcMFTDigitCheck::getAcceptedType() { return "TH1"; }
 
 void QcMFTDigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  if (mo->getName().find("mMFTChipOccupancyStdDev") != std::string::npos) {
+  if (mo->getName().find("mDigitChipStdDev") != std::string::npos) {
     auto* histogram = dynamic_cast<TH1F*>(mo->getObject());
 
     if (checkResult == Quality::Good) {

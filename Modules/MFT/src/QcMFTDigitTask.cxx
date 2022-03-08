@@ -23,6 +23,7 @@
 #include <TH2.h>
 // O2
 #include <DataFormatsITSMFT/Digit.h>
+#include <DataFormatsITSMFT/ROFRecord.h>
 #include <Framework/InputRecord.h>
 #include <ITSMFTReconstruction/ChipMappingMFT.h>
 // Quality Control
@@ -63,17 +64,45 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   // Defining histograms
   //==============================================
-  mChipOccupancy = std::make_unique<TH1F>(
-    "mMFTChipOccupancy",
-    "Chip Occupancy;Chip ID;#Entries",
+  mDigitChipOccupancy = std::make_unique<TH1F>(
+    "mDigitChipOccupancy",
+    "Digit Chip Occupancy;Chip ID;#Entries per ROF",
     936, -0.5, 935.5);
-  getObjectsManager()->startPublishing(mChipOccupancy.get());
+  mDigitChipOccupancy->SetStats(0);
+  getObjectsManager()->startPublishing(mDigitChipOccupancy.get());
 
-  mChipOccupancyStdDev = std::make_unique<TH1F>(
-    "mMFTChipOccupancyStdDev",
-    "Chip Occupancy Std Dev;Chip ID;Chip std dev",
+  mDigitChipStdDev = std::make_unique<TH1F>(
+    "mDigitChipStdDev",
+    "Digit Chip Std Dev;Chip ID;Chip std dev",
     936, -0.5, 935.5);
-  getObjectsManager()->startPublishing(mChipOccupancyStdDev.get());
+  mDigitChipStdDev->SetStats(0);
+  getObjectsManager()->startPublishing(mDigitChipStdDev.get());
+
+  mDigitOccupancySummary = std::make_unique<TH2F>(
+    "mDigitOccupancySummary",
+    "Digit Occupancy Summary;;",
+    10, -0.5, 9.5, 8, -0.5, 7.5);
+  mDigitOccupancySummary->GetXaxis()->SetBinLabel(1, "d0-f0");
+  mDigitOccupancySummary->GetXaxis()->SetBinLabel(2, "d0-f1");
+  mDigitOccupancySummary->GetXaxis()->SetBinLabel(3, "d1-f0");
+  mDigitOccupancySummary->GetXaxis()->SetBinLabel(4, "d1-f1");
+  mDigitOccupancySummary->GetXaxis()->SetBinLabel(5, "d2-f0");
+  mDigitOccupancySummary->GetXaxis()->SetBinLabel(6, "d2-f1");
+  mDigitOccupancySummary->GetXaxis()->SetBinLabel(7, "d3-f0");
+  mDigitOccupancySummary->GetXaxis()->SetBinLabel(8, "d3-f1");
+  mDigitOccupancySummary->GetXaxis()->SetBinLabel(9, "d4-f0");
+  mDigitOccupancySummary->GetXaxis()->SetBinLabel(10, "d4-f1");
+  mDigitOccupancySummary->GetYaxis()->SetBinLabel(1, "h0-z0");
+  mDigitOccupancySummary->GetYaxis()->SetBinLabel(2, "h0-z1");
+  mDigitOccupancySummary->GetYaxis()->SetBinLabel(3, "h0-z2");
+  mDigitOccupancySummary->GetYaxis()->SetBinLabel(4, "h0-z3");
+  mDigitOccupancySummary->GetYaxis()->SetBinLabel(5, "h1-z0");
+  mDigitOccupancySummary->GetYaxis()->SetBinLabel(6, "h1-z1");
+  mDigitOccupancySummary->GetYaxis()->SetBinLabel(7, "h1-z2");
+  mDigitOccupancySummary->GetYaxis()->SetBinLabel(8, "h1-z3");
+  mDigitOccupancySummary->SetOption("colz");
+  mDigitOccupancySummary->SetStats(0);
+  getObjectsManager()->startPublishing(mDigitOccupancySummary.get());
 
   // --Chip hit maps
   //==============================================
@@ -97,8 +126,8 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
       MFTTable.mNumberOfBinsInOccupancyMaps[iOccupancyMapIndex][5]);
     chiphitmap->SetStats(0);
     chiphitmap->SetOption("colz");
-    mChipOccupancyMap.push_back(std::move(chiphitmap));
-    getObjectsManager()->startPublishing(mChipOccupancyMap[iVectorOccupancyMapIndex].get());
+    mDigitChipOccupancyMap.push_back(std::move(chiphitmap));
+    getObjectsManager()->startPublishing(mDigitChipOccupancyMap[iVectorOccupancyMapIndex].get());
   }
 
   // --Pixel hit maps
@@ -123,9 +152,9 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
       maxBinYPixelOccupancyMap - shiftPixelOccupancyMap);
     pixelhitmap->SetStats(0);
     pixelhitmap->SetOption("colz");
-    mPixelOccupancyMap.push_back(std::move(pixelhitmap));
+    mDigitPixelOccupancyMap.push_back(std::move(pixelhitmap));
     if (mTaskLevel == 1)
-      getObjectsManager()->startPublishing(mPixelOccupancyMap[iVectorIndex].get());
+      getObjectsManager()->startPublishing(mDigitPixelOccupancyMap[iVectorIndex].get());
   }
 }
 
@@ -133,16 +162,17 @@ void QcMFTDigitTask::startOfActivity(Activity& /*activity*/)
 {
   ILOG(Info, Support) << "startOfActivity" << ENDM;
 
-  mChipOccupancy->Reset();
-  mChipOccupancyStdDev->Reset();
+  mDigitChipOccupancy->Reset();
+  mDigitChipStdDev->Reset();
+  mDigitOccupancySummary->Reset();
 
   for (int iVectorOccupancyMapIndex = 0; iVectorOccupancyMapIndex < 4; iVectorOccupancyMapIndex++) {
-    mChipOccupancyMap[iVectorOccupancyMapIndex]->Reset();
+    mDigitChipOccupancyMap[iVectorOccupancyMapIndex]->Reset();
   }
 
   int maxVectorIndex = mNumberOfPixelMapsPerFLP[mCurrentFLP] + mNumberOfPixelMapsPerFLP[4 - mCurrentFLP];
   for (int iVectorIndex = 0; iVectorIndex < maxVectorIndex; iVectorIndex++) {
-    mPixelOccupancyMap[iVectorIndex]->Reset();
+    mDigitPixelOccupancyMap[iVectorIndex]->Reset();
   }
 }
 
@@ -158,6 +188,14 @@ void QcMFTDigitTask::monitorData(o2::framework::ProcessingContext& ctx)
   if (digits.size() < 1)
     return;
 
+  // get the number of rofs and fill it in the underflow bin
+  const auto rofs = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("digitsrof");
+  auto nROFs = rofs.size();
+  mDigitChipOccupancy->Fill(-1, nROFs);
+
+  // keep track of normalisation for the Summary histogram
+  mDigitOccupancySummary->Fill(-1, -1, nROFs);
+
   // fill the pixel hit maps and overview histograms
   for (auto& oneDigit : digits) {
 
@@ -167,18 +205,23 @@ void QcMFTDigitTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (vectorIndex < 0) // if the chip is not from wanted FLP, the array will give -1
       continue;
 
+    // fill info into the summary histo
+    int xBin = mDisk[chipIndex] * 2 + mFace[chipIndex];
+    int yBin = mZone[chipIndex] + mHalf[chipIndex] * 4;
+    mDigitOccupancySummary->Fill(xBin, yBin);
+
     // fill pixel hit maps
-    mPixelOccupancyMap[vectorIndex]->Fill(oneDigit.getColumn(), oneDigit.getRow());
+    mDigitPixelOccupancyMap[vectorIndex]->Fill(oneDigit.getColumn(), oneDigit.getRow());
 
     // fill overview histograms
-    mChipOccupancy->SetBinContent(chipIndex + 1, mPixelOccupancyMap[vectorIndex]->GetEntries());
-    mChipOccupancyStdDev->SetBinContent(chipIndex + 1, mPixelOccupancyMap[vectorIndex]->GetStdDev(1));
+    mDigitChipOccupancy->SetBinContent(chipIndex + 1, mDigitPixelOccupancyMap[vectorIndex]->GetEntries());
+    mDigitChipStdDev->SetBinContent(chipIndex + 1, mDigitPixelOccupancyMap[vectorIndex]->GetStdDev(1));
 
     // fill integrated chip hit maps
     int vectorOccupancyMapIndex = getVectorIndexChipOccupancyMap(chipIndex);
     if (vectorOccupancyMapIndex < 0)
       continue;
-    mChipOccupancyMap[vectorOccupancyMapIndex]->Fill(mX[chipIndex], mY[chipIndex]);
+    mDigitChipOccupancyMap[vectorOccupancyMapIndex]->Fill(mX[chipIndex], mY[chipIndex]);
   }
 }
 
@@ -197,43 +240,44 @@ void QcMFTDigitTask::reset()
   // clean all the monitor objects here
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
 
-  mChipOccupancy->Reset();
-  mChipOccupancyStdDev->Reset();
+  mDigitChipOccupancy->Reset();
+  mDigitChipStdDev->Reset();
+  mDigitOccupancySummary->Reset();
 
   for (int iVectorOccupancyMapIndex = 0; iVectorOccupancyMapIndex < 4; iVectorOccupancyMapIndex++) {
-    mChipOccupancyMap[iVectorOccupancyMapIndex]->Reset();
+    mDigitChipOccupancyMap[iVectorOccupancyMapIndex]->Reset();
   }
 
   int maxVectorIndex = mNumberOfPixelMapsPerFLP[mCurrentFLP] + mNumberOfPixelMapsPerFLP[4 - mCurrentFLP];
   for (int iVectorIndex = 0; iVectorIndex < maxVectorIndex; iVectorIndex++) {
-    mPixelOccupancyMap[iVectorIndex]->Reset();
+    mDigitPixelOccupancyMap[iVectorIndex]->Reset();
   }
 }
 
 void QcMFTDigitTask::getNameOfChipOccupancyMap(TString& folderName, TString& histogramName, int iOccupancyMapIndex)
 {
-  folderName = Form("ChipOccupancyMaps/Half_%d/Disk_%d/Face_%d/mMFTChipOccupancyMap",
+  folderName = Form("ChipOccupancyMaps/Half_%d/Disk_%d/Face_%d/mDigitChipOccupancyMap",
                     int(iOccupancyMapIndex / 10), int((iOccupancyMapIndex % 10) / 2), (iOccupancyMapIndex % 10) % 2);
 
-  histogramName = Form("h%d-d%d-f%d;x (cm);y (cm)",
+  histogramName = Form("Digit Chip Map h%d-d%d-f%d;x (cm);y (cm)",
                        int(iOccupancyMapIndex / 10), int((iOccupancyMapIndex % 10) / 2), (iOccupancyMapIndex % 10) % 2);
 }
 
 void QcMFTDigitTask::getNameOfPixelOccupancyMap(TString& folderName, TString& histogramName, int iChipIndex)
 {
-  folderName = Form("PixelOccupancyMaps/Half_%d/Disk_%d/Face_%d/mMFTPixelOccupancyMap-z%d-l%d-s%d-tr%d",
+  folderName = Form("PixelOccupancyMaps/Half_%d/Disk_%d/Face_%d/mDigitPixelOccupancyMap-z%d-l%d-s%d-tr%d",
                     mHalf[iChipIndex], mDisk[iChipIndex], mFace[iChipIndex], mZone[iChipIndex],
                     mLadder[iChipIndex], mSensor[iChipIndex], mTransID[iChipIndex]);
 
-  histogramName = Form("h%d-d%d-f%d-z%d-l%d-s%d-tr%d",
+  histogramName = Form("Pixel Map h%d-d%d-f%d-z%d-l%d-s%d-tr%d",
                        mHalf[iChipIndex], mDisk[iChipIndex], mFace[iChipIndex], mZone[iChipIndex],
                        mLadder[iChipIndex], mSensor[iChipIndex], mTransID[iChipIndex]);
 }
 
 void QcMFTDigitTask::getChipMapData()
 {
-  const o2::itsmft::ChipMappingMFT map;
-  auto chipMapData = map.getChipMappingData();
+  const o2::itsmft::ChipMappingMFT mapMFT;
+  auto chipMapData = mapMFT.getChipMappingData();
   QcMFTUtilTables MFTTable;
 
   for (int i = 0; i < 936; i++) {
