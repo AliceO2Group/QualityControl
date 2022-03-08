@@ -20,6 +20,7 @@
 #include "QualityControl/ObjectsManager.h"
 
 #include "DataFormatsTPC/ClusterNative.h"
+#include "DataFormatsTPC/WorkflowHelper.h"
 #include "Framework/ProcessingContext.h"
 
 #include <TCanvas.h>
@@ -52,10 +53,10 @@ void fillCanvases(const o2::tpc::CalDet<float>& calDet, std::vector<std::unique_
 /// \param canvases Contains the canvases that will be cleared
 void clearCanvases(std::vector<std::unique_ptr<TCanvas>>& canvases);
 
-/// \brief Converts CLUSTERNATIVE from InputRecord to ClusterNativeAccess
+/// \brief Converts CLUSTERNATIVE from InputRecord to getWorkflowTPCInput_ret
 /// Convenience funtion to make native clusters accessible when receiving them from the DPL
 /// \param input InputReconrd from the ProcessingContext
-/// \return ClusterNativeAccess object for easy cluster access
-o2::tpc::ClusterNativeAccess clusterHandler(o2::framework::InputRecord& input);
+/// \return getWorkflowTPCInput_ret object for easy cluster access
+std::unique_ptr<o2::tpc::internal::getWorkflowTPCInput_ret> clusterHandler(o2::framework::InputRecord& inputs, int verbosity = 0, unsigned long tpcSectorMask = 0xFFFFFFFFF);
 } //namespace o2::quality_control_modules::tpc
 #endif //QUALITYCONTROL_TPCUTILITY_H
