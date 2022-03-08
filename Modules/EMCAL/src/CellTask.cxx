@@ -27,6 +27,7 @@
 #include "EMCAL/CellTask.h"
 #include "DataFormatsEMCAL/Cell.h"
 #include "EMCALBase/Geometry.h"
+#include "EMCALCalib/CalibDB.h"
 #include "EMCALCalib/BadChannelMap.h"
 #include "EMCALCalib/TimeCalibrationParams.h"
 #include <Framework/ConcreteDataMatcher.h>
@@ -158,12 +159,12 @@ void CellTask::startOfCycle()
   mTimeFramesPerCycles = 0;
   ILOG(Debug, Support) << "startOfCycle" << ENDM;
   std::map<std::string, std::string> metadata;
-  mBadChannelMap = retrieveConditionAny<o2::emcal::BadChannelMap>("EMC/Calib/BadChannels", metadata);
+  mBadChannelMap = retrieveConditionAny<o2::emcal::BadChannelMap>(o2::emcal::CalibDB::getCDBPathBadChannelMap(), metadata);
   // it was EMC/BadChannelMap
   if (!mBadChannelMap)
     ILOG(Info, Support) << "No Bad Channel Map object " << ENDM;
 
-  mTimeCalib = retrieveConditionAny<o2::emcal::TimeCalibrationParams>("EMC/Calib/Time", metadata);
+  mTimeCalib = retrieveConditionAny<o2::emcal::TimeCalibrationParams>(o2::emcal::CalibDB::getCDBPathTimeCalibrationParams(), metadata);
   //"EMC/TimeCalibrationParams
   if (!mTimeCalib)
     ILOG(Info, Support) << " No Time Calib object " << ENDM;
