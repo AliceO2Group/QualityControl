@@ -123,3 +123,62 @@ BOOST_AUTO_TEST_CASE(test_trigger_new_object)
   BOOST_REQUIRE(directDBAPI->isHostReachable());
   directDBAPI->truncate(objectPath);
 }
+
+BOOST_AUTO_TEST_CASE(test_trigger_for_each_object)
+{
+  // Setup and initialise objects
+  const std::string pid = std::to_string(getpid());
+  const std::string detectorCode = "TST";
+  const std::string taskName = "testTriggersForEachObject";
+  const std::string objectName = "test_object" + pid;
+
+  TH1I* obj = new TH1I(objectName.c_str(), objectName.c_str(), 10, 0, 10.0);
+  obj->Fill(4);
+  std::shared_ptr<MonitorObject> mo = std::make_shared<MonitorObject>(obj, taskName, "TestClass", detectorCode);
+
+  // Send three objects with different metadata
+  std::shared_ptr<DatabaseInterface> repository = DatabaseFactory::create("CCDB");
+  repository->connect(CCDB_ENDPOINT, "", "", "");
+  auto currentTimestamp = CcdbDatabase::getCurrentTimestamp();
+  mo->setActivity({ 100, 2, "FCC42x", "tpass1", "qc" });
+  repository->storeMO(mo, currentTimestamp);
+  mo->setActivity({ 101, 2, "FCC42x", "tpass1", "qc" });
+  repository->storeMO(mo, currentTimestamp);
+  mo->setActivity({ 100, 2, "FCC42x", "tpass2", "qc" });
+  repository->storeMO(mo, currentTimestamp);
+
+  const std::string objectPath = RepoPathUtils::getMoPath(mo.get());
+  {
+    const Activity activityAllRunsPass1{ 0, 2, "FCC42x", "tpass1", "qc" };
+    auto forEachObjectTrigger = triggers::ForEachObject(CCDB_ENDPOINT, objectPath, activityAllRunsPass1);
+
+    BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachObject);
+    BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachObject);
+    BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::No);
+  }
+
+  {
+    const Activity activityRun100AllPasses{ 100, 2, "FCC42x", "", "qc" };
+    auto forEachObjectTrigger = triggers::ForEachObject(CCDB_ENDPOINT, objectPath, activityRun100AllPasses);
+
+    BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachObject);
+    BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachObject);
+    BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::No);
+  }
+
+  {
+    const Activity activityAll{ 0, 0, "", "", "qc" };
+    auto forEachObjectTrigger = triggers::ForEachObject(CCDB_ENDPOINT, objectPath, activityAll);
+
+    BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachObject);
+    BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachObject);
+    BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachObject);
+    BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::No);
+  }
+
+  // Clean up remaining objects
+  auto directDBAPI = std::make_shared<o2::ccdb::CcdbApi>();
+  directDBAPI->init(CCDB_ENDPOINT);
+  BOOST_REQUIRE(directDBAPI->isHostReachable());
+  directDBAPI->truncate(objectPath);
+}
