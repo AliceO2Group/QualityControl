@@ -16,6 +16,7 @@
 
 #include "QualityControl/Triggers.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/DatabaseHelpers.h"
 
 #include <CCDB/CcdbApi.h>
 #include <Common/Timer.h>

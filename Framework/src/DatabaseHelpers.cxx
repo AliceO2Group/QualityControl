@@ -15,6 +15,7 @@
 ///
 
 #include "QualityControl/DatabaseHelpers.h"
+#include <boost/property_tree/ptree.hpp>
 
 namespace o2::quality_control::repository::database_helpers
 {
@@ -53,6 +54,25 @@ core::Activity asActivity(const std::map<std::string, std::string>& metadata, co
   }
   if (auto periodName = metadata.find("PeriodName"); periodName != metadata.end()) {
     activity.mPeriodName = periodName->second;
+  }
+  activity.mProvenance = provenance;
+  return activity;
+}
+
+core::Activity asActivity(const boost::property_tree::ptree& tree, const std::string& provenance)
+{
+  core::Activity activity;
+  if (auto runType = tree.get_optional<int>("RunType"); runType.has_value()) {
+    activity.mType = runType.value();
+  }
+  if (auto runNumber = tree.get_optional<int>("RunNumber"); runNumber.has_value()) {
+    activity.mId = runNumber.value();
+  }
+  if (auto passName = tree.get_optional<std::string>("PassName"); passName.has_value()) {
+    activity.mPassName = passName.value();
+  }
+  if (auto periodName = tree.get_optional<std::string>("PeriodName"); periodName.has_value()) {
+    activity.mPeriodName = periodName.value();
   }
   activity.mProvenance = provenance;
   return activity;
