@@ -50,7 +50,9 @@ void TrendingTask::initialize(Trigger, framework::ServiceRegistry&)
     mTrend->Branch(source.name.c_str(), reductor->getBranchAddress(), reductor->getBranchLeafList());
     mReductors[source.name] = std::move(reductor);
   }
-  getObjectsManager()->startPublishing(mTrend.get());
+  if (mConfig.producePlotsOnUpdate) {
+    getObjectsManager()->startPublishing(mTrend.get());
+  }
 }
 
 //todo: see if OptimizeBaskets() indeed helps after some time
@@ -59,11 +61,16 @@ void TrendingTask::update(Trigger t, framework::ServiceRegistry& services)
   auto& qcdb = services.get<repository::DatabaseInterface>();
 
   trendValues(t, qcdb);
-  generatePlots();
+  if (mConfig.producePlotsOnUpdate) {
+    generatePlots();
+  }
 }
 
 void TrendingTask::finalize(Trigger, framework::ServiceRegistry&)
 {
+  if (!mConfig.producePlotsOnUpdate) {
+    getObjectsManager()->startPublishing(mTrend.get());
+  }
   generatePlots();
 }
 
