@@ -30,4 +30,8 @@ bool Activity::matches(const Activity& other) const
          (mProvenance == other.mProvenance); // provenance has to match!
 }
 
+bool Activity::operator==(const Activity& other) const
+{
+  return mId == other.mId && mType == other.mType && mPeriodName == other.mPeriodName && mPassName == other.mPassName && mProvenance == other.mProvenance;
+}
 } // namespace o2::quality_control::core
