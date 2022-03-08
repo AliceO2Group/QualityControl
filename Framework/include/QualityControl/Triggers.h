@@ -38,6 +38,7 @@ enum TriggerType {
   EndOfFill,
   Periodic,
   NewObject,
+  ForEachObject,
   UserOrControl, // reacts start and stop transitions (not an update trigger).
   INVALID
 };
@@ -83,6 +84,8 @@ TriggerFcn EndOfFill(const core::Activity& = {});
 TriggerFcn Periodic(double seconds, const core::Activity& = {});
 /// \brief Triggers when it detect a new object in QC repository with given name
 TriggerFcn NewObject(std::string databaseUrl, std::string objectPath, const core::Activity& = {});
+/// \brief Triggers for each object version in the path which match the activity. It retrieves the available list only once!
+TriggerFcn ForEachObject(std::string databaseUrl, std::string objectPath, const core::Activity& = {});
 /// \brief Triggers only first time it is executed
 TriggerFcn Once(const core::Activity& = {});
 /// \brief Triggers always

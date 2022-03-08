@@ -94,8 +94,36 @@ TriggerFcn triggerFactory(std::string trigger, const PostProcessingConfig& confi
     if (tokens[2].empty()) {
       throw std::invalid_argument("The third token in '" + trigger + "' is empty, but it should contain the object path");
     }
+    const auto& objectPath = tokens[2];
+    return triggers::NewObject(dbUrl, objectPath, activity);
+  } else if (triggerLowerCase.find("foreachobject") != std::string::npos) {
+    // we expect the config string to be:
+    // foreachobjects:[qcdb/ccdb]:qc/path/to/object
+    std::vector<std::string> tokens;
+    boost::split(tokens, trigger, boost::is_any_of(":"));
 
-    return triggers::NewObject(dbUrl, tokens[2], activity);
+    if (tokens.size() != 3) {
+      throw std::invalid_argument(
+        "The 'for each' trigger is configured incorrectly. The expected format is "
+        "'foreachobjects:[qcdb/ccdb]:qc/path/to/object', received `" +
+        trigger + "'");
+    }
+
+    std::string dbUrl;
+    boost::algorithm::to_lower(tokens[1]);
+    if (tokens[1] == "qcdb") {
+      dbUrl = config.qcdbUrl;
+    } else if (tokens[1] == "ccdb") {
+      dbUrl = config.ccdbUrl;
+    } else {
+      throw std::invalid_argument("The second token in '" + trigger + "' should be either qcdb or ccdb");
+    }
+
+    if (tokens[2].empty()) {
+      throw std::invalid_argument("The third token in '" + trigger + "' is empty, but it should contain the object path");
+    }
+    const auto& objectPath = tokens[2];
+    return triggers::ForEachObject(dbUrl, objectPath, activity);
   } else if (auto seconds = string2Seconds(triggerLowerCase); seconds.has_value()) {
     if (seconds.value() < 0) {
       throw std::invalid_argument("negative number of seconds in trigger '" + trigger + "'");

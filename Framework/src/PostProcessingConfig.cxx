@@ -28,8 +28,8 @@ PostProcessingConfig::PostProcessingConfig(std::string name, const boost::proper
     qcdbUrl(config.get<std::string>("qc.config.database.implementation") == "CCDB" ? config.get<std::string>("qc.config.database.host") : ""),
     ccdbUrl(config.get<std::string>("qc.config.conditionDB.url", "")),
     consulUrl(config.get<std::string>("qc.config.consul.url", "")),
-    activity(config.get<int>("qc.config.Activity.type", 0),
-             config.get<int>("qc.config.Activity.number", 0),
+    activity(config.get<int>("qc.config.Activity.number", 0),
+             config.get<int>("qc.config.Activity.type", 0),
              config.get<std::string>("qc.config.Activity.periodName", ""),
              config.get<std::string>("qc.config.Activity.passName", ""),
              config.get<std::string>("qc.config.Activity.provenance", ""))

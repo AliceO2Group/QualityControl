@@ -17,6 +17,7 @@
 #include "QualityControl/Triggers.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/DatabaseHelpers.h"
+#include "QualityControl/CcdbDatabase.h"
 
 #include <CCDB/CcdbApi.h>
 #include <Common/Timer.h>
@@ -175,6 +176,53 @@ TriggerFcn NewObject(std::string databaseUrl, std::string objectPath, const core
     }
 
     return { TriggerType::No, false };
+  };
+}
+
+TriggerFcn ForEachObject(std::string databaseUrl, std::string objectPath, const core::Activity& activity)
+{
+  // Key names in the header map.
+  constexpr auto md5key = "Content-MD5";
+  constexpr auto timestampKey = "Valid-From";
+
+  // We support only CCDB here.
+  auto db = std::make_shared<repository::CcdbDatabase>();
+  db->connect(databaseUrl, "", "", "");
+
+  auto objects = db->getListingAsPtree(objectPath).get_child("objects");
+  ILOG(Info, Support) << "Got " << objects.size() << " objects for the path '" << objectPath << "'" << ENDM;
+  auto filteredObjects = std::make_shared<std::vector<boost::property_tree::ptree>>();
+  const auto& filter = activity;
+
+  ILOG(Debug, Devel) << "Filter activity: " << activity.mId << ", " << activity.mType << ", " << activity.mPassName << ", " << activity.mPeriodName << ", " << activity.mProvenance << ENDM;
+
+  // As for today, we receive objects in the order of the newest to the oldest.
+  // We prefer the other order here.
+  for (auto rit = objects.rbegin(); rit != objects.rend(); ++rit) {
+    auto objectActivity = repository::database_helpers::asActivity(rit->second);
+    if (filter.matches(objectActivity)) {
+      filteredObjects->emplace_back(rit->second);
+      ILOG(Debug, Devel) << "Matched an object with activity: " << objectActivity.mId << ", " << objectActivity.mType << ", " << objectActivity.mPassName << ", " << objectActivity.mPeriodName << ", " << objectActivity.mProvenance << ENDM;
+    }
+  }
+  ILOG(Info, Support) << filteredObjects->size() << " objects matched the specified activity" << ENDM;
+
+  // we make sure it is sorted. If it is already, it shouldn't cost much.
+  std::sort(filteredObjects->begin(), filteredObjects->end(),
+            [](const boost::property_tree::ptree& a, const boost::property_tree::ptree& b) {
+              return a.get<int64_t>(timestampKey) < b.get<int64_t>(timestampKey);
+            });
+
+  return [filteredObjects, activity, currentObject = filteredObjects->begin(), timestampKey]() mutable -> Trigger {
+    if (currentObject != filteredObjects->end()) {
+      auto currentActivity = repository::database_helpers::asActivity(*currentObject);
+      bool last = currentObject + 1 == filteredObjects->end();
+      Trigger trigger(TriggerType::ForEachObject, last, currentActivity, currentObject->get<int64_t>(timestampKey));
+      ++currentObject;
+      return trigger;
+    } else {
+      return { TriggerType::No, true, activity };
+    }
   };
 }
 
