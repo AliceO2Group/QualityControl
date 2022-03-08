@@ -46,7 +46,7 @@ TriggerFcn NotImplemented(std::string triggerName)
 {
   ILOG(Warning, Support) << "TriggerType '" << triggerName << "' is not implemented yet. It will always return TriggerType::No" << ENDM;
   return [triggerName]() mutable -> Trigger {
-    return { TriggerType::No };
+    return { TriggerType::No, true };
   };
 }
 
@@ -78,10 +78,10 @@ TriggerFcn Once(const core::Activity& activity)
 {
   return [hasTriggered = false, activity]() mutable -> Trigger {
     if (hasTriggered) {
-      return { TriggerType::No };
+      return { TriggerType::No, true, activity };
     } else {
       hasTriggered = true;
-      return { TriggerType::Once, activity };
+      return { TriggerType::Once, true, activity };
     }
   };
 }
@@ -89,14 +89,14 @@ TriggerFcn Once(const core::Activity& activity)
 TriggerFcn Always(const core::Activity& activity)
 {
   return [activity]() mutable -> Trigger {
-    return { TriggerType::Always, activity };
+    return { TriggerType::Always, false, activity };
   };
 }
 
 TriggerFcn Never(const core::Activity& activity)
 {
   return [activity]() mutable -> Trigger {
-    return { TriggerType::No, activity };
+    return { TriggerType::No, true, activity };
   };
 }
 
@@ -129,9 +129,9 @@ TriggerFcn Periodic(double seconds, const core::Activity& activity)
       while (timer.isTimeout()) {
         timer.increment();
       }
-      return { TriggerType::Periodic, activity, timestamp };
+      return { TriggerType::Periodic, false, activity, timestamp };
     } else {
-      return { TriggerType::No };
+      return { TriggerType::No, false };
     }
   };
 }
@@ -166,7 +166,7 @@ TriggerFcn NewObject(std::string databaseUrl, std::string objectPath, const core
       auto newMD5 = headers[md5key];
       if (lastMD5 != newMD5) {
         lastMD5 = newMD5;
-        return { TriggerType::NewObject, activity, std::stoull(headers[timestampKey]) };
+        return { TriggerType::NewObject, false, activity, std::stoull(headers[timestampKey]) };
       }
     } else {
       // We don't make a fuss over it, because we might be just waiting for the first version of such object.
@@ -174,7 +174,7 @@ TriggerFcn NewObject(std::string databaseUrl, std::string objectPath, const core
       ILOG(Warning, Support) << "No MD5 of the file '" << objectPath << "' in the db '" << databaseUrl << "', probably the file is missing." << ENDM;
     }
 
-    return TriggerType::No;
+    return { TriggerType::No, false };
   };
 }
 

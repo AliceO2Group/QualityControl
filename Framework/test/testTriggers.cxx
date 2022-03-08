@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE(test_casting_triggers)
 
 BOOST_AUTO_TEST_CASE(test_timestamps_triggers)
 {
-  Trigger t1(TriggerType::Once, 123);
+  Trigger t1(TriggerType::Once, false, 123);
   BOOST_CHECK_EQUAL(t1.triggerType, TriggerType::Once);
   BOOST_CHECK_EQUAL(t1.timestamp, 123);
 

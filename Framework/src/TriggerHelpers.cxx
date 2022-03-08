@@ -110,8 +110,12 @@ TriggerFcn triggerFactory(std::string trigger, const PostProcessingConfig& confi
 
 Trigger tryTrigger(std::vector<TriggerFcn>& triggerFcns)
 {
-  for (auto& triggerFcn : triggerFcns) {
-    if (auto trigger = triggerFcn()) {
+  Trigger result(TriggerType::No);
+  auto it = triggerFcns.begin();
+  while (it != triggerFcns.end()) {
+    auto trigger = (*it)();
+    it = trigger.last ? triggerFcns.erase(it) : it + 1;
+    if (trigger) {
       return trigger;
     }
   }

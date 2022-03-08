@@ -107,7 +107,9 @@ bool PostProcessingRunner::run()
     if (Trigger trigger = trigger_helpers::tryTrigger(mUpdateTriggers)) {
       doUpdate(trigger);
     }
-    if (Trigger trigger = trigger_helpers::tryTrigger(mStopTriggers)) {
+    if (mUpdateTriggers.empty()) {
+      doFinalize({ TriggerType::UserOrControl, true, mTaskConfig.activity });
+    } else if (Trigger trigger = trigger_helpers::tryTrigger(mStopTriggers)) {
       doFinalize(trigger);
     }
   }
@@ -133,11 +135,11 @@ void PostProcessingRunner::runOverTimestamps(const std::vector<uint64_t>& timest
 
   ILOG(Info, Support) << "Running the task '" << mTask->getName() << "' over " << timestamps.size() << " timestamps." << ENDM;
 
-  doInitialize({ TriggerType::UserOrControl, mTaskConfig.activity, timestamps.front() });
+  doInitialize({ TriggerType::UserOrControl, false, mTaskConfig.activity, timestamps.front() });
   for (size_t i = 1; i < timestamps.size() - 1; i++) {
-    doUpdate({ TriggerType::UserOrControl, mTaskConfig.activity, timestamps[i] });
+    doUpdate({ TriggerType::UserOrControl, i == timestamps.size() - 2, mTaskConfig.activity, timestamps[i] });
   }
-  doFinalize({ TriggerType::UserOrControl, mTaskConfig.activity, timestamps.back() });
+  doFinalize({ TriggerType::UserOrControl, false, mTaskConfig.activity, timestamps.back() });
 }
 
 void PostProcessingRunner::start()
