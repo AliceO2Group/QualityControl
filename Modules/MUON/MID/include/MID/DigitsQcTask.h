@@ -19,12 +19,12 @@
 #define QC_MODULE_MID_MIDDIGITSQCTASK_H
 
 #include "QualityControl/TaskInterface.h"
+#include "MUONCommon/MergeableTH2Ratio.h"
 #include "MIDQC/RawDataChecker.h"
 #include "MIDRaw/CrateMasks.h"
 #include "MIDRaw/Decoder.h"
 #include "MIDRaw/ElectronicsDelay.h"
 #include "MIDRaw/FEEIdConfig.h"
-#include "MID/MergeableTH2Ratio.h"
 
 class TH1F;
 class TH2F;
@@ -54,30 +54,26 @@ class DigitsQcTask final : public TaskInterface
   void reset() override;
 
  private:
-  TH2F* mHitsMapB{ nullptr };
-  TH2F* mHitsMapNB{ nullptr };
-  TH2F* mOrbitsMapB{ nullptr };
-  TH2F* mOrbitsMapNB{ nullptr };
-  MergeableTH2Ratio* mOccupancyMapB{ nullptr };
-  MergeableTH2Ratio* mOccupancyMapNB{ nullptr };
+  std::shared_ptr<muon::MergeableTH2Ratio> mOccupancyMapB{ nullptr };
+  std::shared_ptr<muon::MergeableTH2Ratio> mOccupancyMapNB{ nullptr };
 
-  TH1F* mROFSizeB{ nullptr };
-  TH1F* mROFSizeNB{ nullptr };
+  std::shared_ptr<TH1F> mROFSizeB{ nullptr };
+  std::shared_ptr<TH1F> mROFSizeNB{ nullptr };
 
-  TH2F* mROFTimeDiff{ nullptr };
+  std::shared_ptr<TH2F> mROFTimeDiff{ nullptr };
 
   ///////////////////////////
   int nROF = 0;
-  TH1F* mMultHitMT11B{ nullptr };
-  TH1F* mMultHitMT11NB{ nullptr };
-  TH1F* mMultHitMT12B{ nullptr };
-  TH1F* mMultHitMT12NB{ nullptr };
-  TH1F* mMultHitMT21B{ nullptr };
-  TH1F* mMultHitMT21NB{ nullptr };
-  TH1F* mMultHitMT22B{ nullptr };
-  TH1F* mMultHitMT22NB{ nullptr };
+  std::shared_ptr<TH1F> mMultHitMT11B{ nullptr };
+  std::shared_ptr<TH1F> mMultHitMT11NB{ nullptr };
+  std::shared_ptr<TH1F> mMultHitMT12B{ nullptr };
+  std::shared_ptr<TH1F> mMultHitMT12NB{ nullptr };
+  std::shared_ptr<TH1F> mMultHitMT21B{ nullptr };
+  std::shared_ptr<TH1F> mMultHitMT21NB{ nullptr };
+  std::shared_ptr<TH1F> mMultHitMT22B{ nullptr };
+  std::shared_ptr<TH1F> mMultHitMT22NB{ nullptr };
 
-  TH2F* mLocalBoardsMap{ nullptr };
+  std::shared_ptr<TH2F> mLocalBoardsMap{ nullptr };
 };
 
 } // namespace o2::quality_control_modules::mid
