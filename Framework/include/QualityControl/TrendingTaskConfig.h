@@ -48,6 +48,7 @@ struct TrendingTaskConfig : PostProcessingConfig {
     std::string moduleName;
   };
 
+  bool producePlotsOnUpdate;
   std::vector<Plot> plots;
   std::vector<DataSource> dataSources;
 };

@@ -86,86 +86,68 @@ void clearCanvases(std::vector<std::unique_ptr<TCanvas>>& canvases)
   }
 }
 
-o2::tpc::ClusterNativeAccess clusterHandler(o2::framework::InputRecord& input)
+std::unique_ptr<o2::tpc::internal::getWorkflowTPCInput_ret> clusterHandler(o2::framework::InputRecord& inputs, int verbosity, unsigned long tpcSectorMask)
 {
-  using namespace o2::tpc;
-  using namespace o2::framework;
+  auto retVal = std::make_unique<o2::tpc::internal::getWorkflowTPCInput_ret>();
 
-  ClusterNativeAccess clusterIndex;
-
-  constexpr static size_t NSectors = o2::tpc::constants::MAXSECTOR;
-
-  std::vector<gsl::span<const char>> inputs;
-  struct InputRef {
-    DataRef data;
-    DataRef labels;
-  };
-  std::map<int, InputRef> inputrefs;
-
-  std::bitset<NSectors> validInputs = 0;
-
-  int operation = 0;
-  std::vector<int> inputIds(36);
-  std::iota(inputIds.begin(), inputIds.end(), 0);
-  std::vector<InputSpec> filter = {
-    { "input", ConcreteDataTypeMatcher{ "TPC", "CLUSTERNATIVE" }, Lifetime::Timeframe },
+  std::vector<o2::framework::InputSpec> filter = {
+    { "input", o2::framework::ConcreteDataTypeMatcher{ "TPC", "CLUSTERNATIVE" }, o2::framework::Lifetime::Timeframe },
   };
   bool sampledData = true;
-  for ([[maybe_unused]] auto const& ref : InputRecordWalker(input, filter)) {
+  for ([[maybe_unused]] auto const& ref : o2::framework::InputRecordWalker(inputs, filter)) {
     sampledData = false;
     break;
   }
   if (sampledData) {
     filter = {
-      { "sampled-data", ConcreteDataTypeMatcher{ "DS", "CLUSTERNATIVE" }, Lifetime::Timeframe },
+      { "sampled-data", o2::framework::ConcreteDataTypeMatcher{ "DS", "CLUSTERNATIVE" }, o2::framework::Lifetime::Timeframe },
     };
     LOG(info) << "Using sampled data.";
   }
-  for (auto const& ref : InputRecordWalker(input, filter)) {
-    auto const* sectorHeader = DataRefUtils::getHeader<o2::tpc::TPCSectorHeader*>(ref);
+
+  unsigned long recvMask = 0;
+  for (auto const& ref : o2::framework::InputRecordWalker(inputs, filter)) {
+    auto const* sectorHeader = o2::framework::DataRefUtils::getHeader<o2::tpc::TPCSectorHeader*>(ref);
     if (sectorHeader == nullptr) {
-      // FIXME: think about error policy
-      LOG(error) << "sector header missing on header stack";
-      return clusterIndex;
+      throw std::runtime_error("sector header missing on header stack");
     }
     const int sector = sectorHeader->sector();
-    std::bitset<o2::tpc::constants::MAXSECTOR> sectorMask(sectorHeader->sectorBits);
-    LOG(info) << "Reading TPC cluster data, sector mask is " << sectorMask;
-
     if (sector < 0) {
-      if (operation < 0 && operation != sector) {
-        // we expect the same operation on all inputs
-        LOG(error) << "inconsistent lane operation, got " << sector << ", expecting " << operation;
-      } else if (operation == 0) {
-        // store the operation
-        operation = sector;
-      }
       continue;
     }
-    if ((validInputs & sectorMask).any()) {
-      // have already data for this sector, this should not happen in the current
-      // sequential implementation, for parallel path merged at the tracker stage
-      // multiple buffers need to be handled
+    if (recvMask & sectorHeader->sectorBits) {
       throw std::runtime_error("can only have one cluster data set per sector");
     }
-    validInputs |= sectorMask;
-    inputrefs[sector].data = ref;
+    recvMask |= (sectorHeader->sectorBits & tpcSectorMask);
+    retVal->internal.inputrefs[sector].data = ref;
+  }
+  if (recvMask != tpcSectorMask) {
+    throw std::runtime_error("Incomplete set of clusters/digits received");
   }
 
-  for (auto const& refentry : inputrefs) {
-    //auto& sector = refentry.first;
+  for (auto const& refentry : retVal->internal.inputrefs) {
+    auto& sector = refentry.first;
     auto& ref = refentry.second.data;
-    inputs.emplace_back(gsl::span(ref.payload, DataRefUtils::getPayloadSize(ref)));
+    if (ref.payload == nullptr) {
+      // skip zero-length message
+      continue;
+    }
+    if (!(tpcSectorMask & (1ul << sector))) {
+      continue;
+    }
+    if (refentry.second.labels.header != nullptr && refentry.second.labels.payload != nullptr) {
+      retVal->internal.mcInputs.emplace_back(o2::dataformats::ConstMCLabelContainerView(inputs.get<gsl::span<char>>(refentry.second.labels)));
+    }
+    retVal->internal.inputs.emplace_back(gsl::span(ref.payload, o2::framework::DataRefUtils::getPayloadSize(ref)));
+    if (verbosity > 1) {
+      LOG(info) << "received " << *(ref.spec) << ", size " << o2::framework::DataRefUtils::getPayloadSize(ref) << " for sector " << sector;
+    }
   }
 
-  std::unique_ptr<ClusterNative[]> clusterBuffer;
-  ClusterNativeHelper::ConstMCLabelContainerViewWithBuffer clustersMCBufferDummy;
-  std::vector<o2::dataformats::ConstMCLabelContainerView> mcInputsDummy;
-  memset(&clusterIndex, 0, sizeof(clusterIndex));
-  ClusterNativeHelper::Reader::fillIndex(clusterIndex, clusterBuffer, clustersMCBufferDummy,
-                                         inputs, mcInputsDummy);
+  memset(&retVal->clusterIndex, 0, sizeof(retVal->clusterIndex));
+  o2::tpc::ClusterNativeHelper::Reader::fillIndex(retVal->clusterIndex, retVal->internal.clusterBuffer, retVal->internal.clustersMCBuffer, retVal->internal.inputs, retVal->internal.mcInputs, tpcSectorMask);
 
-  return clusterIndex;
+  return std::move(retVal);
 }
 
 } // namespace o2::quality_control_modules::tpc

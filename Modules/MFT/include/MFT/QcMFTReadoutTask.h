@@ -72,12 +72,12 @@ class QcMFTReadoutTask /*final*/ : public TaskInterface // todo add back the "fi
   std::array<int, (104 * 25)> mChipIndex;
 
   // histos
-  std::unique_ptr<TH1F> mSummaryLaneStatus = nullptr;
-  std::unique_ptr<TH1F> mSummaryChipError = nullptr;
-  std::unique_ptr<TH1F> mSummaryChipFault = nullptr;
+  std::unique_ptr<TH1F> mRDHSummary = nullptr;
+  std::unique_ptr<TH1F> mDDWSummary = nullptr;
   std::unique_ptr<TH1F> mSummaryChipOk = nullptr;
   std::unique_ptr<TH1F> mSummaryChipWarning = nullptr;
-  // std::vector<std::unique_ptr<TH2F>> mIndividualLaneStatus;
+  std::unique_ptr<TH1F> mSummaryChipError = nullptr;
+  std::unique_ptr<TH1F> mSummaryChipFault = nullptr;
 
   // maps RU+lane to Chip
   void generateChipIndex();

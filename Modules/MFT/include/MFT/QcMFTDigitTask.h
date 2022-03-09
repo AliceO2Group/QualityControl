@@ -81,11 +81,12 @@ class QcMFTDigitTask final : public TaskInterface
   float mX[936] = { 0 };
   float mY[936] = { 0 };
 
-  std::unique_ptr<TH1F> mChipOccupancy = nullptr;
-  std::unique_ptr<TH1F> mChipOccupancyStdDev = nullptr;
+  std::unique_ptr<TH1F> mDigitChipOccupancy = nullptr;
+  std::unique_ptr<TH1F> mDigitChipStdDev = nullptr;
+  std::unique_ptr<TH2F> mDigitOccupancySummary = nullptr;
 
-  std::vector<std::unique_ptr<TH2F>> mChipOccupancyMap;
-  std::vector<std::unique_ptr<TH2F>> mPixelOccupancyMap;
+  std::vector<std::unique_ptr<TH2F>> mDigitChipOccupancyMap;
+  std::vector<std::unique_ptr<TH2F>> mDigitPixelOccupancyMap;
 
   //  functions
   int getVectorIndexChipOccupancyMap(int chipIndex);

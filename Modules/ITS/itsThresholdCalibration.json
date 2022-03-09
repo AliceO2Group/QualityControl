@@ -16,59 +16,48 @@
         "url" : "infologger:///debug?qc"
       },
       "consul" : {
-        "url" : ""
+        "url" : "http://consul-test.cern.ch:8500"
       },
       "conditionDB" : {
         "url" : "ccdb-test.cern.ch:8080"
       }
     },
     "tasks" : {
-      "MFTClusterTask" : {
+      "ITSThresholdCalibrationTask" : {
         "active" : "true",
-        "className" : "o2::quality_control_modules::mft::QcMFTClusterTask",
-        "moduleName" : "QcMFT",
-        "detectorName" : "MFT",
-        "cycleDurationSeconds" : "60",
+        "className" : "o2::quality_control_modules::its::ITSThresholdCalibrationTask",
+        "moduleName" : "QcITS",
+        "detectorName" : "ITS",
+        "cycleDurationSeconds" : "30",
         "maxNumberCycles" : "-1",
         "dataSource_comment" : "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource" : {
           "type" : "dataSamplingPolicy",
-          "name" : "mft-clusters"
+          "name" : "thresholdcalibration"
         },
-        "taskParameters" : {
-          "myOwnKey" : "myOwnValue"
-        },
-        "location" : "remote"
-      }
-    },
-    "checks" : {
-      "MFTClusterCheck" : {
-        "active" : "false",
-        "dataSource" : [ {
-          "type" : "Task",
-          "name" : "MFTClusterTask",
-          "MOs" : ["mClusterOccupancy"]
-        } ],
-        "className" : "o2::quality_control_modules::mft::QcMFTClusterCheck",
-        "moduleName" : "QcMFT",
-        "detectorName" : "MFT",
-        "policy" : "OnAny"
+        "location" : "remote",
+        "taskParameters" : {}
       }
     }
-  },
+
+
+
+ },
+
          "dataSamplingPolicies" : [
            {
-             "id" : "mft-clusters",
+             "id" : "thresholdcalibration",
              "active" : "true",
              "machines" : [],
-             "query" : "randomcluster:MFT/COMPCLUSTERS/0;clustersrof:MFT/CLUSTERSROF/0",
+             "query" : "tunestring:ITS/TSTR/0;runtype:ITS/RUNT/0;scantype:ITS/SCANT/0",
              "samplingConditions" : [
                {
                  "condition" : "random",
-                 "fraction" : "0.01",
-                 "seed" : "1234"
+                 "fraction" : "1",
+                 "seed" : "1441"
                }
              ],
+
              "blocking" : "false"
            }
          ]

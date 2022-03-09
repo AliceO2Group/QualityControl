@@ -23,7 +23,7 @@
       }
     },
     "tasks" : {
-      "QcMFTReadout" : {
+      "MFTReadoutTask" : {
         "active" : "true",
         "className" : "o2::quality_control_modules::mft::QcMFTReadoutTask",
         "moduleName" : "QcMFT",
@@ -42,7 +42,7 @@
       }
     },
     "checks" : {
-      "QcMFTReadout" : {
+      "MFTReadoutCheck" : {
         "active" : "true",
         "className" : "o2::quality_control_modules::mft::QcMFTReadoutCheck",
         "moduleName" : "QcMFT",
@@ -50,8 +50,8 @@
         "policy" : "OnEachSeparately",
         "dataSource" : [ {
           "type" : "Task",
-          "name" : "QcMFTReadout",
-          "MOs"  : ["mSummaryChipFault", "mSummaryChipError", "mSummaryChipWarning"]
+          "name" : "MFTReadoutTask",
+            "MOs"  : ["mDDWSummary","mSummaryChipOk","mSummaryChipFault", "mSummaryChipError", "mSummaryChipWarning", "mRDHSummary"]
         } ]
       }
     }

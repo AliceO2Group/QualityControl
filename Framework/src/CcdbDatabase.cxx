@@ -516,16 +516,20 @@ std::vector<std::string> CcdbDatabase::getListing(std::string subpath)
   return result;
 }
 
-std::vector<uint64_t> CcdbDatabase::getTimestampsForObject(std::string path)
+boost::property_tree::ptree CcdbDatabase::getListingAsPtree(std::string path)
 {
   std::stringstream listingAsStringStream{ getListingAsString(path, "application/json") };
-  //  std::cout << "listingAsString: " << listingAsStringStream.str() << std::endl;
 
   boost::property_tree::ptree listingAsTree;
   boost::property_tree::read_json(listingAsStringStream, listingAsTree);
 
+  return listingAsTree;
+}
+
+std::vector<uint64_t> CcdbDatabase::getTimestampsForObject(std::string path)
+{
+  const auto& objects = getListingAsPtree(path).get_child("objects");
   std::vector<uint64_t> timestamps;
-  const auto& objects = listingAsTree.get_child("objects");
   timestamps.reserve(objects.size());
 
   // As for today, we receive objects in the order of the newest to the oldest.
