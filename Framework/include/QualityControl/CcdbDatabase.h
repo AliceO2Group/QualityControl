@@ -96,6 +96,13 @@ class CcdbDatabase : public DatabaseInterface
   std::vector<std::string> getListing(std::string subpath = "");
 
   /**
+   * Return the listing of folder and/or objects in the subpath
+   * @param path the folder we want to list the children of.
+   * @return The list of folder and/or objects as Ptree
+   */
+  boost::property_tree::ptree getListingAsPtree(std::string path); // TODO allow to filter by metadata
+
+  /**
    * \brief Returns a vector of all 'valid from' timestamps for an object.
    * \path Path on an object.
    * \return A vector of all 'valid from' timestamps for an object in non-descending order.

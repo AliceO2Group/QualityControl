@@ -23,6 +23,7 @@ namespace o2::quality_control::postprocessing
 TrendingTaskConfig::TrendingTaskConfig(std::string name, const boost::property_tree::ptree& config)
   : PostProcessingConfig(name, config)
 {
+  producePlotsOnUpdate = config.get<bool>("qc.postprocessing." + name + ".producePlotsOnUpdate", true);
   for (const auto& plotConfig : config.get_child("qc.postprocessing." + name + ".plots")) {
     plots.push_back({ plotConfig.second.get<std::string>("name"),
                       plotConfig.second.get<std::string>("title", ""),

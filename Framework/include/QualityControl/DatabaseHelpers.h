@@ -19,6 +19,7 @@
 
 #include <map>
 #include <string>
+#include <boost/property_tree/ptree_fwd.hpp>
 #include "QualityControl/Activity.h"
 
 namespace o2::quality_control::repository::database_helpers
@@ -26,6 +27,7 @@ namespace o2::quality_control::repository::database_helpers
 
 std::map<std::string, std::string> asDatabaseMetadata(const core::Activity&);
 core::Activity asActivity(const std::map<std::string, std::string>& metadata, const std::string& provenance = "qc");
+core::Activity asActivity(const boost::property_tree::ptree&, const std::string& provenance = "qc");
 
 } // namespace o2::quality_control::repository::database_helpers
 
