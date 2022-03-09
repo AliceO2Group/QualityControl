@@ -58,8 +58,10 @@ std::pair<std::string, std::string> parseDbTriggers(const std::string& trigger, 
 
   if (tokens.size() != 3) {
     throw std::invalid_argument(
-      "The " + type + " trigger is configured incorrectly. The expected format is "
-        "'" + type + ":[qcdb/ccdb]:qc/path/to/object', received `" +
+      "The " + type +
+      " trigger is configured incorrectly. The expected format is "
+      "'" +
+      type + ":[qcdb/ccdb]:qc/path/to/object', received `" +
       trigger + "'");
   }
 
@@ -74,7 +76,7 @@ std::pair<std::string, std::string> parseDbTriggers(const std::string& trigger, 
     throw std::invalid_argument("The third token in '" + trigger + "' is empty, but it should contain the object path");
   }
 
-  return {db, objPath};
+  return { db, objPath };
 }
 TriggerFcn triggerFactory(std::string trigger, const PostProcessingConfig& config)
 {
