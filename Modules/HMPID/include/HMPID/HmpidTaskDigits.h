@@ -31,8 +31,6 @@ using namespace o2::quality_control::core;
 namespace o2::quality_control_modules::hmpid
 {
 
-/// \brief Example Quality Control DPL Task
-/// \author My Name
 class HmpidTaskDigits final : public TaskInterface
 {
  public:

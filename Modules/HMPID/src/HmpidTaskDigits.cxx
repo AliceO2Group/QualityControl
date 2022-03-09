@@ -39,28 +39,22 @@ namespace o2::quality_control_modules::hmpid
 
 HmpidTaskDigits::~HmpidTaskDigits()
 {
-  if (hOccupancyAvg) {
-    delete hOccupancyAvg;
-  }
+  delete hOccupancyAvg;
 
   for (Int_t i = 0; i < numCham; ++i) {
-    if (hHMPIDchargeDist[i]) {
-      delete hHMPIDchargeDist[i];
-    }
-    if (hHMPIDdigitmapAvg[i]) {
-      delete hHMPIDdigitmapAvg[i];
-    }
+    delete hHMPIDchargeDist[i];
+    delete hHMPIDdigitmapAvg[i];
   }
 }
 
 void HmpidTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info) << "initialize HmpidTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Info) << "initialize HmpidTaskDigits" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
-  if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {
-    ILOG(Info) << "Custom parameter - myOwnKey: " << param->second << ENDM;
-  }
+  // if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {
+  //  ILOG(Info) << "Custom parameter - myOwnKey: " << param->second << ENDM;
+  // }
 
   hOccupancyAvg = new TProfile("hOccupancyAvg", "Occupancy per DDL;;Occupancy (%)", 14, 0.5, 14.5);
   hOccupancyAvg->Sumw2();
@@ -69,8 +63,9 @@ void HmpidTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   hOccupancyAvg->SetMarkerStyle(20);
   hOccupancyAvg->SetMarkerColor(kBlack);
   hOccupancyAvg->SetLineColor(kBlack);
-  for (Int_t iddl = 0; iddl < 14; iddl++)
+  for (Int_t iddl = 0; iddl < 14; iddl++) {
     hOccupancyAvg->GetXaxis()->SetBinLabel(iddl + 1, Form("%d", iddl + 1));
+  }
   hOccupancyAvg->GetXaxis()->SetLabelSize(0.02);
   hOccupancyAvg->SetStats(0);
 
@@ -89,10 +84,8 @@ void HmpidTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
     hHMPIDdigitmapAvg[i]->SetYTitle("padY");
 
     getObjectsManager()->startPublishing(hHMPIDchargeDist[i]);
-    getObjectsManager()->addMetadata(hHMPIDchargeDist[i]->GetName(), "custom", "34");
 
     getObjectsManager()->startPublishing(hHMPIDdigitmapAvg[i]);
-    getObjectsManager()->addMetadata(hHMPIDdigitmapAvg[i]->GetName(), "custom", "34");
   }
 }
 
