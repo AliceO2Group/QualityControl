@@ -23,7 +23,7 @@
       }
     },
     "tasks" : {
-      "QcMFTDigitTask" : {
+      "MFTDigitTask" : {
         "active" : "true",
         "className" : "o2::quality_control_modules::mft::QcMFTDigitTask",
         "moduleName" : "QcMFT",
@@ -43,7 +43,7 @@
       }
     },
     "checks" : {
-      "QcMFTDigitCheck" : {
+      "MFTDigitCheck" : {
         "active" : "true",
         "className" : "o2::quality_control_modules::mft::QcMFTDigitCheck",
         "moduleName" : "QcMFT",
@@ -51,7 +51,8 @@
         "policy" : "OnEachSeparately",
         "dataSource" : [ {
           "type" : "Task",
-          "name" : "QcMFTDigitTask"
+          "name" : "MFTDigitTask",
+            "MOs"  : ["mDigitChipOccupancy","mDigitOccupancySummary","mDigitChipStdDev"]
         } ]
       }
     }

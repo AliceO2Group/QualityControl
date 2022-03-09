@@ -41,7 +41,7 @@ Quality QcMFTClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorOb
   for (auto& [moName, mo] : *moMap) {
 
     (void)moName;
-    if (mo->getName() == "mMFTClusterSensorIndex") {
+    if (mo->getName() == "mClusterOccupancy") {
       auto* histogram = dynamic_cast<TH1F*>(mo->getObject());
 
       // test it
@@ -63,7 +63,7 @@ std::string QcMFTClusterCheck::getAcceptedType() { return "TH1"; }
 
 void QcMFTClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  if (mo->getName() == "mMFTClusterSensorIndex") {
+  if (mo->getName() == "mClusterOccupancy") {
     auto* histogram = dynamic_cast<TH1F*>(mo->getObject());
 
     if (checkResult == Quality::Good) {
