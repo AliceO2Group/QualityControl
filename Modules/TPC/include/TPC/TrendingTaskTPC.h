@@ -71,6 +71,9 @@ class TrendingTaskTPC : public PostProcessingInterface
   void drawCanvas(TCanvas* thisCanvas, const std::string& var,
                   const std::string& name, const std::string& opt, const std::string& err, const std::vector<std::vector<float>>& axis);
 
+  void getUserAxisRange(const std::string graphAxisRange, float& limitLow, float& limitUp);
+  void setUserAxisLabel(TAxis* xAxis, TAxis* yAxis, const std::string graphAxisLabel);
+
   TrendingTaskConfigTPC mConfig;
   MetaData mMetaData;
   UInt_t mTime;

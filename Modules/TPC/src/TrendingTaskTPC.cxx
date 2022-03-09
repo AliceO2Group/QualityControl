@@ -129,8 +129,8 @@ void TrendingTaskTPC::generatePlots()
     }
 
     // Postprocess each pad (titles, axes, flushing buffers).
-    std::size_t posEndVar = plot.varexp.find("."); // Find the end of the dataSource.
-    std::string varName(plot.varexp.substr(0, posEndVar));
+    const std::size_t posEndVar = plot.varexp.find("."); // Find the end of the dataSource.
+    const std::string varName(plot.varexp.substr(0, posEndVar));
 
     // Draw the trending on a new canvas.
     TCanvas* c = new TCanvas();
@@ -157,13 +157,8 @@ void TrendingTaskTPC::generatePlots()
 
         // Set the user-defined range on the y axis if needed.
         if (!plot.graphYRange.empty()) {
-          std::size_t posDivider = plot.graphYRange.find(":");
-          std::string yMinString(plot.graphYRange.substr(0, posDivider));
-          std::string yMaxString(plot.graphYRange.substr(posDivider + 1));
-
-          float yMin = std::stof(yMinString);
-          float yMax = std::stof(yMaxString);
-
+          float yMin, yMax;
+          getUserAxisRange(plot.graphYRange, yMin, yMax);
           histo->SetMinimum(yMin);
           histo->SetMaximum(yMax);
           histo->Draw(plot.option.data()); // redraw and update to force changes on y-axis
@@ -171,25 +166,15 @@ void TrendingTaskTPC::generatePlots()
         }
 
         if (!plot.graphXRange.empty()) {
-          std::size_t posDivider = plot.graphXRange.find(":");
-          std::string xMinString(plot.graphXRange.substr(0, posDivider));
-          std::string xMaxString(plot.graphXRange.substr(posDivider + 1));
-
-          float xMin = std::stof(xMinString);
-          float xMax = std::stof(xMaxString);
-
+          float xMin, xMax;
+          getUserAxisRange(plot.graphXRange, xMin, xMax);
           histo->GetXaxis()->SetLimits(xMin, xMax);
           histo->Draw(fmt::format("{0:s} A", plot.option.data()).data());
           c->Update();
         }
 
         if (!plot.graphAxisLabel.empty()) {
-          std::size_t posDivider = plot.graphAxisLabel.find(":");
-          std::string yAxisLabel(plot.graphAxisLabel.substr(0, posDivider));
-          std::string xAxisLabel(plot.graphAxisLabel.substr(posDivider + 1));
-
-          histo->GetXaxis()->SetTitle(xAxisLabel.data());
-          histo->GetYaxis()->SetTitle(yAxisLabel.data());
+          setUserAxisLabel(histo->GetXaxis(), histo->GetYaxis(), plot.graphAxisLabel);
           histo->Draw(fmt::format("{0:s} A", plot.option.data()).data());
           c->Update();
         }
@@ -206,28 +191,18 @@ void TrendingTaskTPC::generatePlots()
         // histo->BufferEmpty(); // TBD: Should we keep it or not? Graph does not have this method.
       } else if (auto histo = dynamic_cast<TH2F*>(c->cd(p + 1)->GetPrimitive("Graph2D"))) {
 
-        std::string thisTitle = fmt::format("{0:s}", plot.title.data());
+        const std::string thisTitle = fmt::format("{0:s}", plot.title.data());
         histo->SetTitle(thisTitle.data());
 
         if (!plot.graphAxisLabel.empty()) {
-          std::size_t posDivider = plot.graphAxisLabel.find(":");
-          std::string yAxisLabel(plot.graphAxisLabel.substr(0, posDivider));
-          std::string xAxisLabel(plot.graphAxisLabel.substr(posDivider + 1));
-
-          histo->GetXaxis()->SetTitle(xAxisLabel.data());
-          histo->GetYaxis()->SetTitle(yAxisLabel.data());
+          setUserAxisLabel(histo->GetXaxis(), histo->GetYaxis(), plot.graphAxisLabel);
           histo->Draw(plot.option.data());
           c->Update();
         }
 
         if (!plot.graphYRange.empty()) {
-          std::size_t posDivider = plot.graphYRange.find(":");
-          std::string yMinString(plot.graphYRange.substr(0, posDivider));
-          std::string yMaxString(plot.graphYRange.substr(posDivider + 1));
-
-          float yMin = std::stof(yMinString);
-          float yMax = std::stof(yMaxString);
-
+          float yMin, yMax;
+          getUserAxisRange(plot.graphYRange, yMin, yMax);
           histo->SetMinimum(yMin);
           histo->SetMaximum(yMax);
           histo->Draw(plot.option.data()); // redraw and update to force changes on y-axis
@@ -256,15 +231,15 @@ void TrendingTaskTPC::drawCanvas(TCanvas* thisCanvas, const std::string& var,
   const size_t plotOrder = std::count(var.begin(), var.end(), ':') + 1;
 
   // Prepare the strings for the dataSource and its trending quantity.
-  std::size_t posEndVar = var.find(".");  // Find the end of the dataSource.
-  std::size_t posEndType = var.find(":"); // Find the end of the quantity.
-  std::string varName(var.substr(0, posEndVar));
-  std::string typeName(var.substr(posEndVar + 1, posEndType - posEndVar - 1));
-  std::string trendType(var.substr(posEndType + 1, -1));
+  const std::size_t posEndVar = var.find(".");  // Find the end of the dataSource.
+  const std::size_t posEndType = var.find(":"); // Find the end of the quantity.
+  const std::string varName(var.substr(0, posEndVar));
+  const std::string typeName(var.substr(posEndVar + 1, posEndType - posEndVar - 1));
+  const std::string trendType(var.substr(posEndType + 1, -1));
 
-  std::size_t posEndType_err = err.find(":"); // Find the end of the error.
-  std::string errXName(err.substr(posEndType_err + 1));
-  std::string errYName(err.substr(0, posEndType_err));
+  const std::size_t posEndType_err = err.find(":"); // Find the end of the error.
+  const std::string errXName(err.substr(posEndType_err + 1));
+  const std::string errYName(err.substr(0, posEndType_err));
 
   // Divide the canvas into the correct number of pads.
   if (var.find(":time") != std::string::npos) {
@@ -282,30 +257,30 @@ void TrendingTaskTPC::drawCanvas(TCanvas* thisCanvas, const std::string& var,
   TTreeReaderValue<UInt_t> RetrieveTime(myReader, "time");
   TTreeReaderValue<std::vector<SliceInfo>> DataRetrieveVector(myReader, varName.data());
 
-  const int NuPa = mSubtitles[varName].size();
+  const int nuPa = mSubtitles[varName].size();
   const int nEntries = mTrend->GetEntriesFast();
 
   // Fill the graph(errors) to be published.
-  if (strcmp(trendType.data(), "time") == 0) {
+  if (trendType == "time") {
 
-    for (int p = 0; p < NuPa; p++) {
+    for (int p = 0; p < nuPa; p++) {
       thisCanvas->cd(p + 1);
       int iEntry = 0;
 
       graphErrors = new TGraphErrors(nEntries);
 
       while (myReader.Next()) {
-        double DataPoint = (DataRetrieveVector->at(p)).RetrieveValue(typeName);
-        double TimeStamp = (double)(*RetrieveTime);
-        double ErrorX = 0.;
-        double ErrorY = 0.;
+        const double dataPoint = (DataRetrieveVector->at(p)).RetrieveValue(typeName);
+        const double timeStamp = (double)(*RetrieveTime);
+        double errorX = 0.;
+        double errorY = 0.;
         if (!err.empty()) {
-          ErrorX = (DataRetrieveVector->at(p)).RetrieveValue(errXName);
-          ErrorY = (DataRetrieveVector->at(p)).RetrieveValue(errYName);
+          errorX = (DataRetrieveVector->at(p)).RetrieveValue(errXName);
+          errorY = (DataRetrieveVector->at(p)).RetrieveValue(errYName);
         }
 
-        graphErrors->SetPoint(iEntry, TimeStamp, DataPoint);
-        graphErrors->SetPointError(iEntry, ErrorX, ErrorY); // Add Error to the last added point
+        graphErrors->SetPoint(iEntry, timeStamp, dataPoint);
+        graphErrors->SetPointError(iEntry, errorX, errorY); // Add Error to the last added point
 
         iEntry++;
       }
@@ -326,27 +301,27 @@ void TrendingTaskTPC::drawCanvas(TCanvas* thisCanvas, const std::string& var,
         }
       }
     }
-  } else if (strcmp(trendType.data(), "slices") == 0) {
+  } else if (trendType == "slices") {
 
-    graphErrors = new TGraphErrors(NuPa);
+    graphErrors = new TGraphErrors(nuPa);
     thisCanvas->cd(1);
 
     myReader.SetEntry(nEntries - 1); // set event to last entry with index nEntries-1
 
     int iEntry = 0;
-    for (int p = 0; p < NuPa; p++) {
+    for (int p = 0; p < nuPa; p++) {
 
-      double DataPoint = (DataRetrieveVector->at(p)).RetrieveValue(typeName);
-      double ErrorX = 0.;
-      double ErrorY = 0.;
+      const double dataPoint = (DataRetrieveVector->at(p)).RetrieveValue(typeName);
+      double errorX = 0.;
+      double errorY = 0.;
       if (!err.empty()) {
-        ErrorX = (DataRetrieveVector->at(p)).RetrieveValue(errXName);
-        ErrorY = (DataRetrieveVector->at(p)).RetrieveValue(errYName);
+        errorX = (DataRetrieveVector->at(p)).RetrieveValue(errXName);
+        errorY = (DataRetrieveVector->at(p)).RetrieveValue(errYName);
       }
-      double xLabel = (DataRetrieveVector->at(p)).RetrieveValue("sliceLabelX");
+      const double xLabel = (DataRetrieveVector->at(p)).RetrieveValue("sliceLabelX");
 
-      graphErrors->SetPoint(iEntry, xLabel, DataPoint);
-      graphErrors->SetPointError(iEntry, ErrorX, ErrorY); // Add Error to the last added point
+      graphErrors->SetPoint(iEntry, xLabel, dataPoint);
+      graphErrors->SetPointError(iEntry, errorX, errorY); // Add Error to the last added point
 
       iEntry++;
     }
@@ -372,7 +347,7 @@ void TrendingTaskTPC::drawCanvas(TCanvas* thisCanvas, const std::string& var,
       }
     }
   } // Trending vs Slices
-  else if (strcmp(trendType.data(), "slices2D") == 0) {
+  else if (trendType == "slices2D") {
 
     thisCanvas->cd(1);
     const int xBins = axis[0].size();
@@ -392,18 +367,18 @@ void TrendingTaskTPC::drawCanvas(TCanvas* thisCanvas, const std::string& var,
     myReader.SetEntry(nEntries - 1); // set event to last entry with index nEntries-1
 
     int iEntry = 0;
-    for (int p = 0; p < NuPa; p++) {
+    for (int p = 0; p < nuPa; p++) {
 
-      double DataPoint = (double)(DataRetrieveVector->at(p)).RetrieveValue(typeName);
-      double Error = 0.;
+      const double dataPoint = (double)(DataRetrieveVector->at(p)).RetrieveValue(typeName);
+      double error = 0.;
       if (!err.empty()) {
-        Error = (double)(DataRetrieveVector->at(p)).RetrieveValue(errYName);
+        error = (double)(DataRetrieveVector->at(p)).RetrieveValue(errYName);
       }
-      double xLabel = (double)(DataRetrieveVector->at(p)).RetrieveValue("sliceLabelX");
-      double yLabel = (double)(DataRetrieveVector->at(p)).RetrieveValue("sliceLabelY");
+      const double xLabel = (double)(DataRetrieveVector->at(p)).RetrieveValue("sliceLabelX");
+      const double yLabel = (double)(DataRetrieveVector->at(p)).RetrieveValue("sliceLabelY");
 
-      graph2D->Fill(xLabel, yLabel, DataPoint);
-      graph2D->SetBinError(graph2D->GetXaxis()->FindBin(xLabel), graph2D->GetYaxis()->FindBin(yLabel), Error);
+      graph2D->Fill(xLabel, yLabel, dataPoint);
+      graph2D->SetBinError(graph2D->GetXaxis()->FindBin(xLabel), graph2D->GetYaxis()->FindBin(yLabel), error);
 
       iEntry++;
     }
@@ -422,4 +397,24 @@ void TrendingTaskTPC::drawCanvas(TCanvas* thisCanvas, const std::string& var,
       }
     }
   } // Trending vs Slices2D
+}
+
+void TrendingTaskTPC::getUserAxisRange(const std::string graphAxisRange, float& limitLow, float& limitUp)
+{
+  const std::size_t posDivider = graphAxisRange.find(":");
+  const std::string minString(graphAxisRange.substr(0, posDivider));
+  const std::string maxString(graphAxisRange.substr(posDivider + 1));
+
+  limitLow = std::stof(minString);
+  limitUp = std::stof(maxString);
+}
+
+void TrendingTaskTPC::setUserAxisLabel(TAxis* xAxis, TAxis* yAxis, const std::string graphAxisLabel)
+{
+  const std::size_t posDivider = graphAxisLabel.find(":");
+  const std::string yLabel(graphAxisLabel.substr(0, posDivider));
+  const std::string xLabel(graphAxisLabel.substr(posDivider + 1));
+
+  xAxis->SetTitle(xLabel.data());
+  yAxis->SetTitle(yLabel.data());
 }

@@ -148,14 +148,14 @@
           "userorcontrol"
         ],
         "updateTrigger": [
-          "10 seconds"
+          "60 seconds"
         ],
         "stopTrigger": [
           "userorcontrol"
         ]
       },
       "TestTPCTH2Slicer": {
-        "active": "false",
+        "active": "true",
         "className": "o2::quality_control_modules::tpc::TrendingTaskTPC",
         "moduleName": "QcTPC",
         "detectorName": "TPC",
@@ -230,7 +230,7 @@
           "userorcontrol"
         ],
         "updateTrigger": [
-          "10 seconds"
+          "60 seconds"
         ],
         "stopTrigger": [
           "userorcontrol"

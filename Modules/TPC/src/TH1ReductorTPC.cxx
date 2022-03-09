@@ -18,7 +18,6 @@
 
 #include "QualityControl/QcInfoLogger.h"
 #include "TPC/TH1ReductorTPC.h"
-#include <TAxis.h>
 #include <TCanvas.h>
 #include <TList.h>
 #include <fmt/format.h>
@@ -72,42 +71,33 @@ void TH1ReductorTPC::update(TObject* obj, std::vector<SliceInfo>& reducedSource,
 
     if (histo) {
       // Bin Numbers for correctly getting the statistical properties
-      int BinXLow = 0;
-      int BinXUp = 0;
+      int binXLow = 0;
+      int binXUp = 0;
 
       // Get the trending quantities defined in 'SlicerInfo'.
       for (int j = 0; j < numberSlices; j++) {
         std::string thisRange;
-        float SliceLabel = 0.;
+        float sliceLabel = 0.;
 
         if (useSlicing) {
-          BinXLow = histo->GetXaxis()->FindBin(axis[0][j]);
-          if (axis[0][j] > histo->GetXaxis()->GetBinCenter(BinXLow)) {
-            BinXLow += 1;
-          } // Lower slice boundary is above bin center. Start at next higher bin
-          BinXUp = histo->GetXaxis()->FindBin(axis[0][j + 1]);
-          if (axis[0][j + 1] <= histo->GetXaxis()->GetBinCenter(BinXUp)) {
-            BinXUp -= 1;
-          } // Upper slice boundary is smaller equal bin center. Stop at next lower bin
-
-          histo->GetXaxis()->SetRange(BinXLow, BinXUp);
+          getBinSlices(histo->GetXaxis(), axis[0][j], axis[0][j + 1], binXLow, binXUp, sliceLabel);
+          histo->GetXaxis()->SetRange(binXLow, binXUp);
           thisRange = fmt::format("{0:s} - RangeX: [{1:.1f}, {2:.1f}]", histo->GetTitle(), axis[0][j], axis[0][j + 1]);
-          SliceLabel = (axis[0][j] + axis[0][j + 1]) / 2.;
         } else {
           if (isCanvas) {
             thisRange = fmt::format("{0:s}", histo->GetTitle());
-            SliceLabel = (float)(j);
+            sliceLabel = (float)(j);
           } else {
             thisRange = fmt::format("{0:s} - RangeX (default): [{1:.1f}, {2:.1f}]", histo->GetTitle(), histo->GetXaxis()->GetXmin(), histo->GetXaxis()->GetXmax());
-            SliceLabel = (histo->GetXaxis()->GetXmin() + histo->GetXaxis()->GetXmax()) / 2.;
+            sliceLabel = (histo->GetXaxis()->GetXmin() + histo->GetXaxis()->GetXmax()) / 2.;
           }
-          BinXLow = 1;
-          BinXUp = histo->GetNbinsX();
+          binXLow = 1;
+          binXUp = histo->GetNbinsX();
         }
         ranges.push_back(thisRange);
 
         SliceInfo mySlice;
-        mySlice.entries = histo->Integral(BinXLow, BinXUp);
+        mySlice.entries = histo->Integral(binXLow, binXUp);
         mySlice.meanX = histo->GetMean(1);
         mySlice.stddevX = histo->GetStdDev(1);
         if (mySlice.entries != 0) {
@@ -118,15 +108,15 @@ void TH1ReductorTPC::update(TObject* obj, std::vector<SliceInfo>& reducedSource,
 
         float StatsY[3]; // 0 Mean, 1 Stddev, 2 Error
         if (useSlicing) {
-          GetTH1StatsY(histo, StatsY, BinXLow, BinXUp);
+          GetTH1StatsY(histo, StatsY, binXLow, binXUp);
         } else { // We don't slice and take the full histo as defined.
-          GetTH1StatsY(histo, StatsY, BinXLow, BinXUp);
+          GetTH1StatsY(histo, StatsY, binXLow, binXUp);
         }
 
         mySlice.meanY = StatsY[0];
         mySlice.stddevY = StatsY[1];
         mySlice.errMeanY = StatsY[2];
-        mySlice.sliceLabelX = SliceLabel;
+        mySlice.sliceLabelX = sliceLabel;
         mySlice.sliceLabelY = 0.;
 
         reducedSource.emplace_back(mySlice);
@@ -138,49 +128,49 @@ void TH1ReductorTPC::update(TObject* obj, std::vector<SliceInfo>& reducedSource,
   } // All the vector elements have been updated.
 }
 
-void TH1ReductorTPC::GetTH1StatsY(TH1* Hist, float Stats[3],
-                                  const int LowerBin, const int UpperBin)
+void TH1ReductorTPC::GetTH1StatsY(TH1* hist, float stats[3],
+                                  const int lowerBin, const int upperBin)
 {
-  const int NTotalBins = Hist->GetNbinsX();
-  const int IterateBins = UpperBin - LowerBin + 1; // Amount of bins included in the calculation.
-                                                   // Includes LowerBin and UpperBin.
+  const int nTotalBins = hist->GetNbinsX();
+  const int iterateBins = upperBin - lowerBin + 1; // Amount of bins included in the calculation.
+                                                   // Includes lowerBin and upperBin.
 
   // Safety measures.
-  if (LowerBin <= 0 || UpperBin <= 0) {
+  if (lowerBin <= 0 || upperBin <= 0) {
     ILOG(Error, Support) << "Error: Negative bin in TH1ReducterTPC::GetTH1StatsY" << ENDM;
     exit(0);
   }
-  if (UpperBin <= LowerBin) {
+  if (upperBin <= lowerBin) {
     ILOG(Error, Support) << "Error: Upper bin smaller than lower bin in TH1ReducterTPC::GetTH1StatsY" << ENDM;
     exit(0);
   }
-  if (NTotalBins < (UpperBin - LowerBin)) {
+  if (nTotalBins < (upperBin - lowerBin)) {
     ILOG(Error, Support) << "Error: Bin region bigger than total amount of bins TH1ReducterTPC::GetTH1StatsY" << ENDM;
     exit(0);
   }
 
-  float MeanY = 0.;
-  float StddevY = 0.;
-  float ErrMeanY = 0.;
+  float meanY = 0.;
+  float stddevY = 0.;
+  float errMeanY = 0.;
 
-  for (int i = LowerBin; i <= UpperBin; i++) {
-    MeanY += Hist->GetBinContent(i);
+  for (int i = lowerBin; i <= upperBin; i++) {
+    meanY += hist->GetBinContent(i);
   }
 
-  MeanY /= (float)IterateBins;
+  meanY /= (float)iterateBins;
 
-  for (int i = LowerBin; i <= UpperBin; i++) {
-    StddevY += pow(MeanY - Hist->GetBinContent(i), 2.);
+  for (int i = lowerBin; i <= upperBin; i++) {
+    stddevY += pow(meanY - hist->GetBinContent(i), 2.);
   }
 
-  StddevY /= ((float)IterateBins - 1.);
-  ErrMeanY = StddevY / ((float)IterateBins);
-  StddevY = sqrt(StddevY);
-  ErrMeanY = sqrt(ErrMeanY);
+  stddevY /= ((float)iterateBins - 1.);
+  errMeanY = stddevY / ((float)iterateBins);
+  stddevY = sqrt(stddevY);
+  errMeanY = sqrt(errMeanY);
 
-  Stats[0] = MeanY;
-  Stats[1] = StddevY;
-  Stats[2] = ErrMeanY;
-} // TH1ReductorTPC::GetTH1StatsY(TH1* Hist, float Stats[3], float LowerBoundary, float UpperBoundary)
+  stats[0] = meanY;
+  stats[1] = stddevY;
+  stats[2] = errMeanY;
+} // TH1ReductorTPC::GetTH1StatsY(TH1* hist, float stats[3], float LowerBoundary, float UpperBoundary)
 
 } // namespace o2::quality_control_modules::tpc

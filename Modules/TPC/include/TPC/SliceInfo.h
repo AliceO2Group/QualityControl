@@ -54,31 +54,31 @@ struct SliceInfo {
   }
 
   /// \brief Return the struct member/float corresponding to the argument.
-  double RetrieveValue(std::string VarType)
+  double RetrieveValue(std::string varType)
   {
-    if (isStringFloating(VarType)) {
-      return std::stod(VarType);
+    if (isStringFloating(varType)) {
+      return std::stod(varType);
     } else {
-      if (strcmp(VarType.data(), "entries") == 0) {
+      if (varType == "entries") {
         return entries;
-      } else if (strcmp(VarType.data(), "meanX") == 0) {
+      } else if (varType == "meanX") {
         return meanX;
-      } else if (strcmp(VarType.data(), "stddevX") == 0) {
+      } else if (varType == "stddevX") {
         return stddevX;
-      } else if (strcmp(VarType.data(), "errMeanX") == 0) {
+      } else if (varType == "errMeanX") {
         return errMeanX;
-      } else if (strcmp(VarType.data(), "meanY") == 0) {
+      } else if (varType == "meanY") {
         return meanY;
-      } else if (strcmp(VarType.data(), "stddevY") == 0) {
+      } else if (varType == "stddevY") {
         return stddevY;
-      } else if (strcmp(VarType.data(), "errMeanY") == 0) {
+      } else if (varType == "errMeanY") {
         return errMeanY;
-      } else if (strcmp(VarType.data(), "sliceLabelX") == 0) {
+      } else if (varType == "sliceLabelX") {
         return sliceLabelX;
-      } else if (strcmp(VarType.data(), "sliceLabelY") == 0) {
+      } else if (varType == "sliceLabelY") {
         return sliceLabelY;
       } else {
-        ILOG(Error, Support) << "TPC SliceInfo.h: 'VarType' " << VarType.data()
+        ILOG(Error, Support) << "TPC SliceInfo.h: 'varType' " << varType.data()
                              << " in 'RetrieveValue' unknown. Breaking." << ENDM;
         exit(0);
       }

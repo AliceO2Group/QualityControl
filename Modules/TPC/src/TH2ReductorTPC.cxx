@@ -18,7 +18,6 @@
 
 #include "QualityControl/QcInfoLogger.h"
 #include "TPC/TH2ReductorTPC.h"
-#include <TAxis.h>
 #include <TCanvas.h>
 #include <TH2.h>
 #include <TList.h>
@@ -87,69 +86,50 @@ void TH2ReductorTPC::update(TObject* obj, std::vector<SliceInfo>& reducedSource,
     if (histo) {
 
       // Bin Numbers for correctly getting the statistical properties
-      int BinXLow = 0;
-      int BinXUp = 0;
-      int BinYLow = 0;
-      int BinYUp = 0;
+      int binXLow = 0;
+      int binXUp = 0;
+      int binYLow = 0;
+      int binYUp = 0;
 
       // Get the trending quantities defined in 'SlicerInfo'.
       // The two for-loop do only one pass if we have an input canvas.
 
       for (int iX = 0; iX < numberSlicesX; iX++) {
         std::string thisRange;
-        float SliceLabelX = 0.;
+        float sliceLabelX = 0.;
 
         if (useSlicingX) {
-          BinXLow = histo->GetXaxis()->FindBin(axis[0][iX]);
-          if (axis[0][iX] > histo->GetXaxis()->GetBinCenter(BinXLow)) {
-            BinXLow += 1;
-          } // Lower slice boundary is above bin center. Start at next higher bin
-          BinXUp = histo->GetXaxis()->FindBin(axis[0][iX + 1]);
-          if (axis[0][iX + 1] <= histo->GetXaxis()->GetBinCenter(BinXUp)) {
-            BinXUp -= 1;
-          } // Upper slice boundary is smaller equal bin center. Stop at next lower bin
-
-          histo->GetXaxis()->SetRange(BinXLow, BinXUp);
+          getBinSlices(histo->GetXaxis(), axis[0][iX], axis[0][iX + 1], binXLow, binXUp, sliceLabelX);
+          histo->GetXaxis()->SetRange(binXLow, binXUp);
           thisRange = fmt::format("{0:s} - RangeX: [{1:.1f}, {2:.1f}]", histo->GetTitle(), axis[0][iX], axis[0][iX + 1]);
-          SliceLabelX = (axis[0][iX] + axis[0][iX + 1]) / 2.;
-
         } else {
           if (isCanvas) {
             thisRange = fmt::format("{0:s}", histo->GetTitle());
-            SliceLabelX = (float)(iX);
+            sliceLabelX = (float)(iX);
           } else {
             thisRange = fmt::format("{0:s} - RangeX (default): [{1:.1f}, {2:.1f}]", histo->GetTitle(), histo->GetXaxis()->GetXmin(), histo->GetXaxis()->GetXmax());
-            SliceLabelX = (histo->GetXaxis()->GetXmin() + histo->GetXaxis()->GetXmax()) / 2.;
+            sliceLabelX = (histo->GetXaxis()->GetXmin() + histo->GetXaxis()->GetXmax()) / 2.;
           }
-          BinXLow = 1;
-          BinXUp = histo->GetNbinsX();
+          binXLow = 1;
+          binXUp = histo->GetNbinsX();
         }
 
         for (int jY = 0; jY < numberSlicesY; jY++) {
-          float SliceLabelY = 0.;
+          float sliceLabelY = 0.;
 
           if (useSlicingY) {
-            BinYLow = histo->GetYaxis()->FindBin(axis[1][jY]);
-            if (axis[1][jY] > histo->GetYaxis()->GetBinCenter(BinYLow)) {
-              BinYLow += 1;
-            } // Lower slice boundary is above bin center. Start at next higher bin
-            BinYUp = histo->GetYaxis()->FindBin(axis[1][jY + 1]);
-            if (axis[1][jY + 1] <= histo->GetYaxis()->GetBinCenter(BinYUp)) {
-              BinYUp -= 1;
-            } // Upper slice boundary is smaller equal bin center. Stop at next lower bin
-
-            histo->GetYaxis()->SetRange(BinYLow, BinYUp);
+            getBinSlices(histo->GetYaxis(), axis[1][jY], axis[1][jY + 1], binYLow, binYUp, sliceLabelY);
+            histo->GetYaxis()->SetRange(binYLow, binYUp);
             ranges.push_back(thisRange + fmt::format(" and RangeY: [{0:.1f}, {1:.1f}]", axis[1][jY], axis[1][jY + 1]));
-            SliceLabelY = (axis[1][jY] + axis[1][jY + 1]) / 2.;
           } else {
             ranges.push_back(thisRange + fmt::format(" and RangeY (default): [{0:.1f}, {1:.1f}]", histo->GetYaxis()->GetXmin(), histo->GetYaxis()->GetXmax()));
-            SliceLabelY = (histo->GetYaxis()->GetXmin() + histo->GetYaxis()->GetXmax()) / 2.;
-            BinYLow = 1;
-            BinYUp = histo->GetNbinsY();
+            sliceLabelY = (histo->GetYaxis()->GetXmin() + histo->GetYaxis()->GetXmax()) / 2.;
+            binYLow = 1;
+            binYUp = histo->GetNbinsY();
           }
 
           SliceInfo mySlice;
-          mySlice.entries = histo->Integral(BinXLow, BinXUp, BinYLow, BinYUp, "");
+          mySlice.entries = histo->Integral(binXLow, binXUp, binYLow, binYUp, "");
           mySlice.meanX = histo->GetMean(1);
           mySlice.stddevX = histo->GetStdDev(1);
           if (mySlice.entries != 0) {
@@ -166,8 +146,8 @@ void TH2ReductorTPC::update(TObject* obj, std::vector<SliceInfo>& reducedSource,
             mySlice.errMeanY = 0.;
           }
 
-          mySlice.sliceLabelX = SliceLabelX;
-          mySlice.sliceLabelY = SliceLabelY;
+          mySlice.sliceLabelX = sliceLabelX;
+          mySlice.sliceLabelY = sliceLabelY;
 
           reducedSource.emplace_back(mySlice);
         }

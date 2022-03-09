@@ -22,6 +22,7 @@
 #include "TPC/SliceInfo.h"
 #include <TObject.h>
 #include <vector>
+#include "TAxis.h"
 
 namespace o2::quality_control_modules::tpc
 {
@@ -43,6 +44,21 @@ class ReductorTPC
   virtual void update(TObject* obj, std::vector<SliceInfo>& reducedSource,
                       std::vector<std::vector<float>>& axis,
                       std::vector<std::string>& ranges) = 0;
+
+  /// \brief Function to return proper bin numbers to avoid double counting if slicing is used
+  void getBinSlices(TAxis* histAxis, float sliceLow, float sliceUp, int& binLow, int& binUp, float& sliceLabel)
+  {
+    binLow = histAxis->FindBin(sliceLow);
+    if (sliceLow > histAxis->GetBinCenter(binLow)) {
+      binLow += 1;
+    } // Lower slice boundary is above bin center. Start at next higher bin
+    binUp = histAxis->FindBin(sliceUp);
+    if (sliceUp <= histAxis->GetBinCenter(binUp)) {
+      binUp -= 1;
+    } // Upper slice boundary is smaller equal bin center. Stop at next lower bin
+
+    sliceLabel = (sliceLow + sliceUp) / 2.;
+  }
 };
 
 } // namespace o2::quality_control_modules::tpc
