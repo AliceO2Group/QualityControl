@@ -185,7 +185,7 @@ o2-qc-run-basic
 In another terminal window run the ExampleTrend post-processing task, as follows:
 
 ```
-o2-qc-run-postprocessing --config json://${QUALITYCONTROL_ROOT}/etc/postprocessing.json --name ExampleTrend --period 10
+o2-qc-run-postprocessing --config json://${QUALITYCONTROL_ROOT}/etc/postprocessing.json --name ExampleTrend
 ```
 
 On the [QCG website](https://qcg-test.cern.ch/?page=objectTree) you will see a TTree and additional plots visible under the path `/qc/TST/MO/ExampleTrend`. They show how different properties of the Example histogram change during time. The longer the applications are running, the more data will be visible.

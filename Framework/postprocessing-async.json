@@ -10,7 +10,10 @@
       },
       "Activity": {
         "number": "42",
-        "type": "2"
+        "type": "",
+        "passName": "",
+        "periodName" : "",
+        "provenance" : "qc"
       },
       "monitoring": {
         "url": "infologger:///debug?qc"
@@ -22,7 +25,7 @@
         "url": "ccdb-test.cern.ch:8080"
       },
       "postprocessing": {
-        "periodSeconds": "10"
+        "periodSeconds": "0.0001"
       }
     },
     "checks": {
@@ -40,39 +43,18 @@
       }
     },
     "postprocessing": {
-      "ExamplePostprocessing": {
-        "active": "true",
-        "className": "o2::quality_control_modules::skeleton::SkeletonPostProcessing",
-        "moduleName": "QcSkeleton",
-        "detectorName": "TST",
-        "initTrigger": [
-          "once"
-        ],
-        "updateTrigger": [
-          "once"
-        ],
-        "stopTrigger": [
-          "once"
-        ]
-      },
-      "ExampleTrend": {
+      "ExampleTrendAsync": {
         "active": "true",
         "className": "o2::quality_control::postprocessing::TrendingTask",
         "moduleName": "QualityControl",
         "detectorName": "TST",
+        "producePlotsOnUpdate" : "false",
         "dataSources": [
           {
             "type": "repository",
             "path": "qc/TST/MO/QcTask",
             "names": [ "example" ],
             "reductorName": "o2::quality_control_modules::common::TH1Reductor",
-            "moduleName": "QcCommon"
-          },
-          {
-            "type": "repository-quality",
-            "path": "qc/TST/QO",
-            "names": [ "QcCheck" ],
-            "reductorName": "o2::quality_control_modules::common::QualityReductor",
             "moduleName": "QcCommon"
           }
         ],
@@ -104,23 +86,16 @@
             "varexp": "example.stddev:example.entries",
             "selection": "",
             "option": "*"
-          },
-          {
-            "name": "example_quality",
-            "title": "Trend of the example histogram's quality",
-            "varexp": "QcCheck.name:time",
-            "selection": "",
-            "option": "*"
           }
         ],
         "initTrigger": [
           "userorcontrol"
         ],
         "updateTrigger": [
-          "newobject:qcdb:qc/TST/MO/QcTask/example"
+          "foreachobject:qcdb:qc/TST/MO/QcTask/example"
         ],
         "stopTrigger": [
-          "userorcontrol", "10 minutes"
+          "userorcontrol"
         ]
       }
     }
