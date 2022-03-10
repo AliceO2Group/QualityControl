@@ -17,6 +17,7 @@
 
 #include "QualityControl/PostProcessingRunner.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/runnerUtils.h"
 
 #include <Common/Timer.h>
 #include <boost/program_options.hpp>
@@ -36,7 +37,9 @@ int main(int argc, const char* argv[])
       ("help,h", "Help screen")                                                                              //
       ("config", bpo::value<std::string>(), "Absolute path to a configuration file, preceded with backend.") //
       ("name", bpo::value<std::string>(), "Name of a post processing task to run")                           //
-      ("period", bpo::value<double>()->default_value(10.0), "Cycle period of checking triggers in seconds")  //
+      ("override-values", bpo::value<std::string>(),                                                         //
+       "QC configuration file key/value pairs which should be overwritten. "                                 //
+       "The format is \"full.path.to.key=value[;full.path.to.key=value]\".")                                 //
       ("timestamps,t", bpo::value<std::vector<uint64_t>>()->composing(),
        "Space-separated timestamps (ms since epoch) which should be given to the post processing task."
        " Effectively, it ignores triggers declared in the configuration file and replaces them with"
@@ -60,13 +63,18 @@ int main(int argc, const char* argv[])
       return 1;
     }
 
-    int periodUs = static_cast<int>(1000000 * vm["period"].as<double>());
-
     PostProcessingRunner runner(vm["name"].as<std::string>());
 
     auto config = ConfigurationFactory::getConfiguration(vm["config"].as<std::string>());
+    auto configTree = config->getRecursive();
+    if (vm.count("override-values")) {
+      auto keyValuesToOverride = parseOverrideValues(vm["override-values"].as<std::string>());
+      overrideValues(configTree, keyValuesToOverride);
+    }
 
-    runner.init(config->getRecursive());
+    int periodUs = static_cast<int>(1000000 * configTree.get<double>("qc.config.postprocessing.periodSeconds", 10.0));
+
+    runner.init(configTree);
 
     if (vm.count("timestamps")) {
       // running the PP task on a set of timestamps

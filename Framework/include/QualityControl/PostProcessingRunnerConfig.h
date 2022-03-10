@@ -30,6 +30,7 @@ struct PostProcessingRunnerConfig {
   std::string consulUrl{};
   bool infologgerFilterDiscardDebug = false;
   int infologgerDiscardLevel = 21;
+  double periodSeconds = 10.0;
   boost::property_tree::ptree configTree{};
 };
 
