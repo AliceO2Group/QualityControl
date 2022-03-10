@@ -9,7 +9,7 @@ target_include_directories(
   PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-target_link_libraries(O2QcMID PUBLIC O2QualityControl O2QcMUONCommon O2::MIDRaw O2::MIDQC)
+target_link_libraries(O2QcMID PUBLIC O2QualityControl O2QcMUONCommon O2::MIDRaw O2::MIDQC O2::MIDSimulation)
 
 install(
   TARGETS O2QcMID
@@ -19,7 +19,9 @@ install(
 
 add_root_dictionary(
   O2QcMID
-  HEADERS include/MID/RawQcCheck.h include/MID/RawQcTask.h include/MID/DigitsQcTask.h
+  HEADERS include/MID/RawQcCheck.h
+          include/MID/RawQcTask.h
+	  include/MID/DigitsQcTask.h
   LINKDEF include/MID/LinkDef.h
   BASENAME O2QcMID)
 

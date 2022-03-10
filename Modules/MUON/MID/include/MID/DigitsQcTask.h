@@ -14,6 +14,7 @@
 /// \author Bogdan Vulpescu
 /// \author Xavier Lopez
 /// \author Guillaume Taillepied
+/// \author Valerie Ramillien
 
 #ifndef QC_MODULE_MID_MIDDIGITSQCTASK_H
 #define QC_MODULE_MID_MIDDIGITSQCTASK_H
@@ -25,6 +26,8 @@
 #include "MIDRaw/Decoder.h"
 #include "MIDRaw/ElectronicsDelay.h"
 #include "MIDRaw/FEEIdConfig.h"
+#include "MUONCommon/MergeableTH2Ratio.h"
+#include "MIDBase/Mapping.h"
 
 class TH1F;
 class TH2F;
@@ -54,8 +57,11 @@ class DigitsQcTask final : public TaskInterface
   void reset() override;
 
  private:
-  std::shared_ptr<muon::MergeableTH2Ratio> mOccupancyMapB{ nullptr };
-  std::shared_ptr<muon::MergeableTH2Ratio> mOccupancyMapNB{ nullptr };
+  // TH2F* mHitsMapB;
+  std::shared_ptr<TH2F> mHitsMapB{ nullptr };
+  std::shared_ptr<TH2F> mHitsMapNB{ nullptr };
+  std::shared_ptr<TH2F> mOrbitsMapB{ nullptr };
+  std::shared_ptr<TH2F> mOrbitsMapNB{ nullptr };
 
   std::shared_ptr<TH1F> mROFSizeB{ nullptr };
   std::shared_ptr<TH1F> mROFSizeNB{ nullptr };
@@ -64,6 +70,8 @@ class DigitsQcTask final : public TaskInterface
 
   ///////////////////////////
   int nROF = 0;
+  o2::mid::Mapping mMapping; ///< Mapping
+
   std::shared_ptr<TH1F> mMultHitMT11B{ nullptr };
   std::shared_ptr<TH1F> mMultHitMT11NB{ nullptr };
   std::shared_ptr<TH1F> mMultHitMT12B{ nullptr };
