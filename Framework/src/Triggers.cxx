@@ -153,7 +153,7 @@ TriggerFcn NewObject(std::string databaseUrl, std::string objectPath, const Acti
   // We rely on changing MD5 - if the object has changed, it should have a different check sum.
   // If someone reuploaded an old object, it should not have an influence.
   std::string lastMD5;
-  auto metadata = repository::database_helpers::asDatabaseMetadata(activity);
+  auto metadata = repository::database_helpers::asDatabaseMetadata(activity, false);
   if (auto headers = db->retrieveHeaders(objectPath, metadata); headers.count(md5key)) {
     lastMD5 = headers[md5key];
   } else {
