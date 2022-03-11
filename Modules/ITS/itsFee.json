@@ -56,7 +56,10 @@
                         "MOs": [
                             "LaneStatus/laneStatusFlagFAULT",
                             "LaneStatus/laneStatusFlagERROR",
-                            "LaneStatus/laneStatusFlagWARNING"
+                            "LaneStatus/laneStatusFlagWARNING",
+                            "LaneStatus/laneStatusOverviewFlagFAULT",
+                            "LaneStatus/laneStatusOverviewFlagERROR",
+                            "LaneStatus/laneStatusOverviewFlagWARNING"
                         ]
                     }
                 ]

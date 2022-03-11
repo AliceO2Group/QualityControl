@@ -19,6 +19,8 @@
 #define QC_MODULE_ITS_ITSFEECHECK_H
 
 #include "QualityControl/CheckInterface.h"
+#include <TH2Poly.h>
+
 
 namespace o2::quality_control_modules::its
 {
@@ -37,11 +39,19 @@ class ITSFeeCheck : public o2::quality_control::checker::CheckInterface
   // Override interface
   void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
-  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
+  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult= Quality::Null) override;
   std::string getAcceptedType() override;
 
  private:
   ClassDefOverride(ITSFeeCheck, 2);
+
+  static constexpr int NLayer = 7;
+  const int StaveBoundary[NLayer + 1] = { 0, 12, 28, 48, 72, 102, 144, 192 };
+  const int NLanePerStaveLayer[NLayer] = {9, 9, 9, 16, 16, 28, 28};
+  const int NStaves[NLayer] = { 12, 16, 20, 24, 30, 42, 48 };
+  static constexpr int NFlags = 3;
+  std::string mLaneStatusFlag[NFlags] = { "WARNING", "ERROR", "FAULT"  };
+
 };
 
 } // namespace o2::quality_control_modules::its

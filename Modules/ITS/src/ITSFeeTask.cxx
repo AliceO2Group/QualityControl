@@ -95,8 +95,7 @@ void ITSFeeTask::createFeePlots()
 
   for (int i = 0; i < NFlags; i++) {
     mLaneStatusOverview[i] = new TH2Poly();
-    mLaneStatusOverview[i]->SetName(Form("LaneStatusOverview/laneStatusFlag%s", mLaneStatusFlag[i].c_str()));
-    //getObjectsManager()->startPublishing(mLaneStatusOverview[i]); // mLaneStatusOverview
+    mLaneStatusOverview[i]->SetName(Form("LaneStatus/laneStatusOverviewFlag%s", mLaneStatusFlag[i].c_str()));
   }
 
   for (int i = 0; i < NLayer; i++) {
