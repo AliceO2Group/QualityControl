@@ -33,7 +33,7 @@
 #include <DataSampling/DataSampling.h>
 #include <Configuration/ConfigurationFactory.h>
 #include <Configuration/ConfigurationInterface.h>
-#include <CommonUtils/StringUtils.h>
+#include "QualityControl/runnerUtils.h"
 #include "QualityControl/InfrastructureGenerator.h"
 #include "QualityControl/QcInfoLogger.h"
 
@@ -112,26 +112,6 @@ bool validateArguments(const ConfigContext& config)
   return true;
 }
 
-std::vector<std::pair<std::string, std::string>> parseOverrideValues(const std::string& input)
-{
-  std::vector<std::pair<std::string, std::string>> keyValuePairs;
-  for (const auto& keyValueToken : utils::Str::tokenize(input, ';', true)) {
-    auto keyValue = utils::Str::tokenize(keyValueToken, '=', true);
-    if (keyValue.size() != 2) {
-      throw std::runtime_error("Token '" + keyValueToken + "' in the --override-values argument is malformed, use key=value.");
-    }
-    keyValuePairs.emplace_back(keyValue[0], keyValue[1]);
-  }
-  return keyValuePairs;
-}
-
-void overrideValues(boost::property_tree::ptree& tree, std::vector<std::pair<std::string, std::string>> keyValues)
-{
-  for (const auto& [key, value] : keyValues) {
-    tree.put(key, value);
-  }
-}
-
 enum class WorkflowType {
   Standalone,
   Local,
@@ -188,8 +168,8 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
     o2::quality_control::core::QcInfoLogger::setFacility("runQC");
 
     ILOG(Info, Support) << "Using config file '" << qcConfigurationSource << "'" << ENDM;
-    auto keyValuesToOverride = parseOverrideValues(config.options().get<std::string>("override-values"));
-    overrideValues(configTree, keyValuesToOverride);
+    auto keyValuesToOverride = quality_control::core::parseOverrideValues(config.options().get<std::string>("override-values"));
+    quality_control::core::overrideValues(configTree, keyValuesToOverride);
 
     auto workflowType = getWorkflowType(config);
     switch (workflowType) {
