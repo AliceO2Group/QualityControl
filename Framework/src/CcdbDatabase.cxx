@@ -134,12 +134,11 @@ void CcdbDatabase::handleStorageError(const string& path, int result)
 
 bool CcdbDatabase::isDbInFailure()
 {
-  if(mDatabaseFailure) {
+  if (mDatabaseFailure) {
     if (mFailureTimer.isTimeout()) {
       mDatabaseFailure = false;
     } else {
-      ILOG(Debug, Devel) << "Storage is disabled following a failure, this object won't be stored. New attempt in " <<
-        (int)mFailureTimer.getRemainingTime() << " seconds" << ENDM;
+      ILOG(Debug, Devel) << "Storage is disabled following a failure, this object won't be stored. New attempt in " << (int)mFailureTimer.getRemainingTime() << " seconds" << ENDM;
       return true;
     }
   }
@@ -162,7 +161,7 @@ void CcdbDatabase::storeAny(const void* obj, std::type_info const& typeInfo, std
                           << errinfo_details("Object and task names can't contain white spaces. Do not store."));
   }
 
-  if(isDbInFailure()) {
+  if (isDbInFailure()) {
     return;
   }
 
@@ -201,7 +200,7 @@ void CcdbDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::Moni
                           << errinfo_details("Object and task names can't contain white spaces. Do not store."));
   }
 
-  if(isDbInFailure()) {
+  if (isDbInFailure()) {
     return;
   }
 
@@ -240,7 +239,7 @@ void CcdbDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::Moni
 
 void CcdbDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::QualityObject> qo, long from, long to)
 {
-  if(isDbInFailure()) {
+  if (isDbInFailure()) {
     return;
   }
 

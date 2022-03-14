@@ -147,7 +147,7 @@ class CcdbDatabase : public DatabaseInterface
   o2::ccdb::CcdbApi ccdbApi;
   std::string mUrl;
   size_t mMaxObjectSize = 2097152; // 2MB by default
-  int mFailureDelay = 60; // 60 seconds delay between attempts to store things in the database
+  int mFailureDelay = 60;          // 60 seconds delay between attempts to store things in the database
   bool mDatabaseFailure = false;
   AliceO2::Common::Timer mFailureTimer;
 };
