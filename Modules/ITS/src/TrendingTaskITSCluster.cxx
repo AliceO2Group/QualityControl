@@ -44,6 +44,7 @@ void TrendingTaskITSCluster::initialize(Trigger, framework::ServiceRegistry&)
                                       // continue trending. maybe do it
                                       // optionally?
   mTrend->SetName(PostProcessingInterface::getName().c_str());
+  // mTrend->Branch("meta", &mMetaData, "runNumber/I");
   mTrend->Branch("runNumber", &mMetaData.runNumber);
   mTrend->Branch("ntreeentries", &ntreeentries);
   mTrend->Branch("time", &mTime);
@@ -295,7 +296,6 @@ void TrendingTaskITSCluster::storePlots(repository::DatabaseInterface& qcdb)
   double ymin[NTRENDSCLUSTER] = { 0, 1e-1, -.5, 1e-9 };
   double ymax[NTRENDSCLUSTER] = { 50, 1e-5, 15.5, 1 };
 
- 
   //
   // Create canvas with multiple trends - average threshold - 1 canvas per layer
   //
