@@ -201,7 +201,7 @@ void HmpidTask::reset()
   hPedestalMean->Reset();
   hPedestalSigma->Reset();
   hBusyTime->Reset();
-  hEventSize->Reset(0);
+  hEventSize->Reset();
 }
 
 } // namespace o2::quality_control_modules::hmpid

@@ -1,0 +1,57 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "2"
+      },
+      "monitoring": {
+	    "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": ""
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      }
+    },
+    "tasks": {
+      "daqTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::hmpid::HmpidTask",
+        "moduleName": "QcHMPID",
+        "detectorName": "HMP",
+        "cycleDurationSeconds": "10",
+        "maxNumberCycles": "-1",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "readout"
+        },
+        "location": "remote"
+      }
+    }
+  },
+  "dataSamplingPolicies": [
+    {
+      "id": "readout",
+      "active": "true",
+      "machines": [],
+      "query" : "readout:ROUT/RAWDATA",
+      "samplingConditions": [
+        {
+          "condition": "random",
+          "fraction": "0.1",
+          "seed": "1441"
+        }
+      ],
+      "blocking": "false"
+    }
+  ]
+}
