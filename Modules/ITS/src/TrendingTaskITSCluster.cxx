@@ -163,7 +163,6 @@ void TrendingTaskITSCluster::storePlots(repository::DatabaseInterface& qcdb)
       ILOG(Info, Support) << " Saving " << plot.name << " to CCDB " << ENDM;
       auto mo = std::make_shared<MonitorObject>(g, mConfig.taskName, "o2::quality_control_modules::its::TrendingTaskITSCluster", mConfig.detectorName);
       mo->setIsOwner(false);
-      // qcdb.storeMO(mo);
       if (plot.name.find("avg_grouped_mean") != std::string::npos) {
         c_avg[2]->cd();
         if (ilay == 0) {
