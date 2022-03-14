@@ -34,6 +34,9 @@ install(TARGETS O2QcExample
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/Example
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+
 # ---- Workflows for analysis ----
 
 # This is disabled because it can create problems when building on an FLP. This is due to the fact that we use the install directory before the install stage.

@@ -25,6 +25,9 @@ add_root_dictionary(O2QcCPV
                     LINKDEF include/CPV/LinkDef.h
                     BASENAME O2QcCPV)
 
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/CPV
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+
 # ---- Test(s) ----
 
 set(TEST_SRCS test/testQcCPV.cxx)

@@ -69,6 +69,9 @@ install(
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/MCH
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+
 # ---- ROOT dictionary ----
 
 add_root_dictionary(${MODULE_NAME}

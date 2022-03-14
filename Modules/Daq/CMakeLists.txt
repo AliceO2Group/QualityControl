@@ -23,6 +23,10 @@ install(TARGETS O2QcDaq
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
+# Install headers
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/Daq
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+
 # ---- Tests ----
 
 set(TEST_SRCS test/testQcDaq.cxx)
