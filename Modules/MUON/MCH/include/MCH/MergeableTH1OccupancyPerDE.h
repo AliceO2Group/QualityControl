@@ -37,6 +37,7 @@
 #include "MCHMappingInterface/Segmentation.h"
 #include "MCHMappingInterface/CathodeSegmentation.h"
 #include "MCHMappingSegContour/CathodeSegmentationContours.h"
+#include "MCH/GlobalHistogram.h"
 
 using namespace std;
 namespace o2::quality_control_modules::muonchambers
@@ -48,7 +49,7 @@ class MergeableTH1OccupancyPerDE : public TH1F, public o2::mergers::MergeInterfa
   MergeableTH1OccupancyPerDE() = default;
 
   MergeableTH1OccupancyPerDE(MergeableTH1OccupancyPerDE const& copymerge)
-    : TH1F("DefaultName", "DefaultTitle", 1100, -0.5, 1099.5), o2::mergers::MergeInterface()
+    : TH1F("DefaultName", "DefaultTitle", getDEindexMax(), 0, getDEindexMax()), o2::mergers::MergeInterface()
   {
     Bool_t bStatus = TH1::AddDirectoryStatus();
     TH1::AddDirectory(kFALSE);
@@ -58,12 +59,12 @@ class MergeableTH1OccupancyPerDE : public TH1F, public o2::mergers::MergeInterfa
   }
 
   MergeableTH1OccupancyPerDE(const char* name, const char* title)
-    : TH1F(name, title, 1100, -0.5, 1099.5), o2::mergers::MergeInterface()
+    : TH1F(name, title, getDEindexMax(), 0, getDEindexMax()), o2::mergers::MergeInterface()
   {
     Bool_t bStatus = TH1::AddDirectoryStatus();
     TH1::AddDirectory(kFALSE);
-    mHistoNum = new TH1F("num", "num", 1100, -0.5, 1099.5);
-    mHistoDen = new TH1F("den", "den", 1100, -0.5, 1099.5);
+    mHistoNum = new TH1F("num", "num", getDEindexMax(), 0, getDEindexMax());
+    mHistoDen = new TH1F("den", "den", getDEindexMax(), 0, getDEindexMax());
     TH1::AddDirectory(bStatus);
     update();
   }
@@ -136,7 +137,6 @@ class MergeableTH1OccupancyPerDE : public TH1F, public o2::mergers::MergeInterfa
       for (int biny = 1; biny < horbits->GetYaxis()->GetNbins() + 1; biny++) {
 
         int mNOrbits = horbits->GetBinContent(binx, biny);
-        //std::cout << fmt::format("  norbits {}", mNOrbits) << std::endl;
         if (mNOrbits <= 0) {
           // no orbits detected for this channel, skip it
           continue;
@@ -163,8 +163,9 @@ class MergeableTH1OccupancyPerDE : public TH1F, public o2::mergers::MergeInterfa
     }
 
     for (auto i : o2::mch::raw::deIdsForAllMCH) {
-      mHistoNum->SetBinContent(i + 1, nHitsDE[i]);
-      mHistoDen->SetBinContent(i + 1, nOrbitsDE[i]);
+      auto id = getDEindex(i);
+      mHistoNum->SetBinContent(id + 1, nHitsDE[i]);
+      mHistoDen->SetBinContent(id + 1, nOrbitsDE[i]);
     }
 
     update();
@@ -180,4 +181,4 @@ class MergeableTH1OccupancyPerDE : public TH1F, public o2::mergers::MergeInterfa
 
 } // namespace o2::quality_control_modules::muonchambers
 
-#endif //O2_MERGEABLETH1OCCUPANCYPERDE_H
+#endif // O2_MERGEABLETH1OCCUPANCYPERDE_H
