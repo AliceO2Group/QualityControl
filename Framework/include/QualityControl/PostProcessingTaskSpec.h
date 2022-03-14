@@ -35,7 +35,7 @@ struct PostProcessingTaskSpec {
   }
 
   // Post Processing Tasks configure themselves with a ptree.
-  // While this is a lack of consequence, with respect to other *Specs,
+  // While this is a lack of consequence with respect to other *Specs,
   // I am afraid it is too late to change it, since also users rely on this (see ITS Trending Task).
 
   std::string taskName = "Invalid";

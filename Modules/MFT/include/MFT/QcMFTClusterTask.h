@@ -54,12 +54,12 @@ class QcMFTClusterTask /*final*/ : public TaskInterface // todo add back the "fi
   std::unique_ptr<TH1F> mClusterLayerIndexH1 = nullptr;
   std::unique_ptr<TH1F> mClusterDiskIndex = nullptr;
 
-  std::unique_ptr<TH1F> mClusterSensorIndex = nullptr;
+  std::unique_ptr<TH1F> mClusterOccupancy = nullptr;
   std::unique_ptr<TH1F> mClusterPatternIndex = nullptr;
 
   std::unique_ptr<TH2F> mClusterPatternSensorIndices = nullptr;
   std::vector<std::unique_ptr<TH1F>> mClusterPatternSensorMap;
-  std::vector<std::unique_ptr<TH2F>> mChipOccupancyMap;
+  std::vector<std::unique_ptr<TH2F>> mClusterChipOccupancyMap;
 
   // needed to construct the name and path of some histograms
   int mHalf[936] = { 0 };

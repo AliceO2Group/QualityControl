@@ -30,6 +30,7 @@
 #include <Framework/DataSpecUtils.h>
 #include <Framework/InputRecordWalker.h>
 #include <Framework/InputSpan.h>
+#include <Framework/DataRefUtils.h>
 
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/TaskFactory.h"
@@ -94,6 +95,10 @@ void TaskRunner::refreshConfig(InitContext& iCtx)
   } catch (std::invalid_argument& error) {
     // ignore the error, we just skip the update of the config file. It can be legit, e.g. in command line mode
     ILOG(Warning, Devel) << "Could not get updated config tree in TaskRunner::init() - `qcConfiguration` could not be retrieved" << ENDM;
+  } catch (...) {
+    // we catch here because we don't know where it will get lost in dpl, and also we don't care if this part has failed.
+    ILOG(Warning, Devel) << "Error caught in refreshConfig() :\n"
+                         << current_diagnostic(true) << ENDM;
   }
 }
 
@@ -423,12 +428,13 @@ void TaskRunner::updateMonitoringStats(ProcessingContext& pCtx)
 {
   mNumberMessagesReceivedInCycle++;
   for (const auto& input : InputRecordWalker(pCtx.inputs())) {
-    const auto* inputHeader = header::get<header::DataHeader*>(input.header);
+    const auto* inputHeader = DataRefUtils::getHeader<header::DataHeader*>(input);
+    auto payloadSize = DataRefUtils::getPayloadSize(input);
     if (inputHeader == nullptr) {
       ILOG(Warning, Devel) << "No DataHeader found in message, ignoring this one for the statistics." << ENDM;
       continue;
     }
-    mDataReceivedInCycle += inputHeader->headerSize + inputHeader->payloadSize;
+    mDataReceivedInCycle += inputHeader->headerSize + payloadSize;
   }
 }
 

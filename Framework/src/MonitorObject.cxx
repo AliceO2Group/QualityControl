@@ -75,7 +75,7 @@ const std::string MonitorObject::getName() const
 const char* MonitorObject::GetName() const
 {
   if (mObject == nullptr) {
-    cerr << "MonitorObject::getName() : No object in this MonitorObject, returning empty string";
+    cerr << "MonitorObject::getName() : No object in this MonitorObject, returning empty string" << endl;
     return "";
   }
   return mObject->GetName();

@@ -56,6 +56,7 @@ For a general overview of our (O2) software, organization and processes, please 
     * [Convenience classes](doc/PostProcessing.md#convenience-classes)
         * [The TrendingTask class](doc/PostProcessing.md#the-trendingtask-class)
         * [The TRFCollectionTask class](doc/PostProcessing.md#the-trfcollectiontask-class)
+    * [More examples](doc/PostProcessing.md#more-examples)
 
 * [Advanced topics](doc/Advanced.md)
     * [Framework](doc/Advanced.md#framework)
@@ -90,8 +91,8 @@ For a general overview of our (O2) software, organization and processes, please 
 
 ### Where to get help
 
-* CERN Mailing lists: alice-o2-wp7 and alice-o2-qc-contact
 * Discourse: https://alice-talk.web.cern.ch/
 * JIRA: https://alice.its.cern.ch
 * O2 development newcomers' guide: https://aliceo2group.github.io/quickstart
 * Doxygen: https://aliceo2group.github.io/QualityControl/
+* CERN Mailing lists: alice-o2-wp7 and alice-o2-qc-contact

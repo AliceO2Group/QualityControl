@@ -18,5 +18,6 @@
 #pragma link C++ class o2::quality_control_modules::ft0::CFDEffCheck + ;
 #pragma link C++ class o2::quality_control_modules::ft0::TriggerQcTask + ;
 #pragma link C++ class o2::quality_control_modules::ft0::OutOfBunchCollCheck + ;
+#pragma link C++ class o2::quality_control_modules::ft0::RecPointsQcTask + ;
 
 #endif

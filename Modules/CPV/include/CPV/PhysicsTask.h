@@ -31,8 +31,9 @@ using namespace o2::quality_control::core;
 namespace o2::quality_control_modules::cpv
 {
 
-/// \brief Example Quality Control DPL Task
-/// \author My Name
+/// \brief Task for CPV Physics monitoring
+/// \author Sergey Evdokimov
+using Geometry = o2::cpv::Geometry;
 class PhysicsTask final : public TaskInterface
 {
  public:
@@ -52,7 +53,6 @@ class PhysicsTask final : public TaskInterface
 
  private:
   void initHistograms();
-  //void fillHistograms(); // this will be needed in the future
   void resetHistograms();
 
   static constexpr short kNHist1D = 15;
@@ -73,10 +73,13 @@ class PhysicsTask final : public TaskInterface
                   H1DNDigitsInClusterM4
   };
 
-  static constexpr short kNHist2D = 6;
+  static constexpr short kNHist2D = 9;
   enum Histos2D { H2DDigitMapM2,
                   H2DDigitMapM3,
                   H2DDigitMapM4,
+                  H2DDigitFreqM2,
+                  H2DDigitFreqM3,
+                  H2DDigitFreqM4,
                   H2DClusterMapM2,
                   H2DClusterMapM3,
                   H2DClusterMapM4
@@ -84,10 +87,7 @@ class PhysicsTask final : public TaskInterface
 
   static constexpr short kNModules = 3;
   static constexpr short kNChannels = 23040;
-  o2::cpv::Geometry mCPVGeometry;
-
   int mNEventsTotal;
-  int mNEventsFromLastFillHistogramsCall;
 
   std::array<TH1F*, kNHist1D> mHist1D = { nullptr }; ///< Array of 1D histograms
   std::array<TH2F*, kNHist2D> mHist2D = { nullptr }; ///< Array of 2D histograms

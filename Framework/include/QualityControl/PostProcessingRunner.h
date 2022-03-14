@@ -38,6 +38,7 @@ class DataAllocator;
 namespace o2::quality_control::core
 {
 struct CommonSpec;
+class Activity;
 }
 
 namespace o2::quality_control::postprocessing

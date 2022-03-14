@@ -20,6 +20,7 @@
 #include <vector>
 #include <string>
 #include <boost/property_tree/ptree_fwd.hpp>
+#include "QualityControl/Activity.h"
 
 namespace o2::quality_control::postprocessing
 {
@@ -41,6 +42,7 @@ struct PostProcessingConfig {
   std::string qcdbUrl;
   std::string ccdbUrl;
   std::string consulUrl;
+  core::Activity activity;
 };
 
 } // namespace o2::quality_control::postprocessing

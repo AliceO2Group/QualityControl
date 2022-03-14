@@ -26,15 +26,10 @@ namespace o2::quality_control::core
 
 const char* noQualityObjectsComment = "No Quality Objects found within the specified time range";
 
-QualitiesToTRFCollectionConverter::QualitiesToTRFCollectionConverter(std::string trfcName, std::string detectorCode, uint64_t startTimeLimit, uint64_t endTimeLimit, std::string qoPath)
-  : mStartTimeLimit(startTimeLimit),
-    mEndTimeLimit(endTimeLimit),
-    mQOPath(std::move(qoPath)),
-    mConverted(new TimeRangeFlagCollection(std::move(trfcName), std::move(detectorCode))),
-    mCurrentStartTime(0),
-    mCurrentEndTime(startTimeLimit), // this is to correctly set the missing QO time range if none were given
-    mQOsIncluded(0),
-    mWorseThanGoodQOs(0)
+QualitiesToTRFCollectionConverter::QualitiesToTRFCollectionConverter(std::unique_ptr<TimeRangeFlagCollection> trfc, std::string qoPath)
+  : mQOPath(std::move(qoPath)),
+    mConverted(std::move(trfc)),
+    mCurrentEndTime(mConverted->getStart())
 {
 }
 
@@ -54,6 +49,7 @@ std::vector<TimeRangeFlag> QO2TRFs(uint64_t startTime, uint64_t endTime, const Q
     return result;
   }
 }
+
 void QualitiesToTRFCollectionConverter::operator()(const QualityObject& newQO)
 {
   if (mConverted->getDetector() != newQO.getDetectorName()) {
@@ -76,12 +72,12 @@ void QualitiesToTRFCollectionConverter::operator()(const QualityObject& newQO)
   }
 
   // Is the beginning of time range covered by the first QO provided?
-  if (mCurrentStartTime < mStartTimeLimit && validFrom > mStartTimeLimit) {
-    mConverted->insert({ mStartTimeLimit, validFrom - 1, FlagReasonFactory::MissingQualityObject(), noQualityObjectsComment, mQOPath });
+  if (mCurrentStartTime < mConverted->getStart() && validFrom > mConverted->getStart()) {
+    mConverted->insert({ mConverted->getStart(), validFrom - 1, FlagReasonFactory::MissingQualityObject(), noQualityObjectsComment, newQO.getPath() });
   }
 
-  mCurrentStartTime = std::max(validFrom, mStartTimeLimit);
-  mCurrentEndTime = std::min(validUntil, mEndTimeLimit);
+  mCurrentStartTime = std::max(validFrom, mConverted->getStart());
+  mCurrentEndTime = std::min(validUntil, mConverted->getEnd());
 
   auto newTRFs = QO2TRFs(mCurrentStartTime, mCurrentEndTime, newQO);
 
@@ -116,15 +112,17 @@ std::unique_ptr<TimeRangeFlagCollection> QualitiesToTRFCollectionConverter::getR
     mConverted->insert(trf);
     mCurrentEndTime = std::max(mCurrentEndTime, trf.getEnd());
   }
-  if (mCurrentEndTime < mEndTimeLimit) {
-    mConverted->insert({ mCurrentEndTime, mEndTimeLimit, FlagReasonFactory::MissingQualityObject(), noQualityObjectsComment, mQOPath });
+  if (mCurrentEndTime < mConverted->getEnd()) {
+    mConverted->insert({ mCurrentEndTime, mConverted->getEnd(), FlagReasonFactory::MissingQualityObject(), noQualityObjectsComment, mQOPath });
   }
 
-  auto result = std::make_unique<TimeRangeFlagCollection>(mConverted->getName(), mConverted->getDetector());
+  auto result = std::make_unique<TimeRangeFlagCollection>(
+    mConverted->getName(), mConverted->getDetector(), mConverted->getInterval(),
+    mConverted->getRunNumber(), mConverted->getPeriodName(), mConverted->getPassName(), mConverted->getProvenance());
   result.swap(mConverted);
 
   mCurrentStartTime = 0;
-  mCurrentEndTime = mStartTimeLimit;
+  mCurrentEndTime = mConverted->getStart();
   mCurrentTRFs.clear();
   mQOsIncluded = 0;
   mWorseThanGoodQOs = 0;

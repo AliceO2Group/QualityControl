@@ -38,7 +38,7 @@ void DummyDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::Mon
 {
 }
 
-std::shared_ptr<MonitorObject> DummyDatabase::retrieveMO(std::string, std::string, long)
+std::shared_ptr<o2::quality_control::core::MonitorObject> DummyDatabase::retrieveMO(std::string, std::string, long, const core::Activity& activity)
 {
   return std::shared_ptr<MonitorObject>();
 }
@@ -47,7 +47,11 @@ void DummyDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::Qua
 {
 }
 
-std::shared_ptr<QualityObject> DummyDatabase::retrieveQO(std::string, long)
+void DummyDatabase::storeTRFC(std::shared_ptr<const o2::quality_control::TimeRangeFlagCollection> trfc)
+{
+}
+
+std::shared_ptr<o2::quality_control::core::QualityObject> DummyDatabase::retrieveQO(std::string, long, const core::Activity& activity)
 {
   return std::shared_ptr<QualityObject>();
 }
@@ -80,6 +84,10 @@ std::string DummyDatabase::retrieveJson(std::string, long, const std::map<std::s
 }
 
 void* DummyDatabase::retrieveAny(const std::type_info&, const std::string&, const std::map<std::string, std::string>&, long, std::map<std::string, std::string>*, const std::string&, const std::string&)
+{
+  return nullptr;
+}
+std::shared_ptr<o2::quality_control::TimeRangeFlagCollection> DummyDatabase::retrieveTRFC(const std::string& name, const std::string& detector, int runNumber, const std::string& passName, const std::string& periodName, const std::string& provenance, long timestamp)
 {
   return nullptr;
 }

@@ -3,7 +3,7 @@
     "config" : {
       "database" : {
         "implementation" : "CCDB",
-        "host" : "qcdb.cern.ch:8083",
+        "host" : "ccdb-test.cern.ch:8080",
         "username" : "not_applicable",
         "password" : "not_applicable",
         "name" : "not_applicable"
@@ -16,10 +16,10 @@
         "url" : "infologger:///debug?qc"
       },
       "consul" : {
-        "url" : "aliecs.cern.ch:8500"
+        "url" : ""
       },
       "conditionDB" : {
-        "url" : "qcdb.cern.ch:8083"
+        "url" : "ccdb-test.cern.ch:8080"
       }
     },
     "tasks" : {

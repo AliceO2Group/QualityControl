@@ -26,6 +26,12 @@
 
 #include "QualityControl/QualityObject.h"
 #include "QualityControl/MonitorObject.h"
+#include "QualityControl/Activity.h"
+
+namespace o2::quality_control
+{
+class TimeRangeFlagCollection;
+}
 
 namespace o2::quality_control::repository
 {
@@ -121,17 +127,29 @@ class DatabaseInterface
   virtual void storeQO(std::shared_ptr<const o2::quality_control::core::QualityObject> qo, long from = -1, long to = -1) = 0;
 
   /**
+   * Stores the serialized TimeRangeFlagCollection in the database.
+   * @param trfc The TimeRangeFlagCollection to serialize and store. It should contain correct time validity inside the object.
+   */
+  virtual void storeTRFC(std::shared_ptr<const o2::quality_control::TimeRangeFlagCollection> trfc) = 0;
+  /**
    * \brief Look up a monitor object and return it.
    * Look up a monitor object and return it if found or nullptr if not.
    * @deprecated
    */
-  virtual std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string taskName, std::string objectName, long timestamp = -1) = 0;
+  virtual std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string taskName, std::string objectName, long timestamp = -1, const core::Activity& activity = {}) = 0;
   /**
    * \brief Look up a quality object and return it.
    * Look up a quality object and return it if found or nullptr if not.
    * @deprecated
    */
-  virtual std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string qoPath, long timestamp = -1) = 0;
+  virtual std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string qoPath, long timestamp = -1, const core::Activity& activity = {}) = 0;
+  /**
+   * \brief Look up a TimeRangeFlagCollection object and return it.
+   * Look up a TimeRangeFlagCollection and return it if found or nullptr if not.
+   */
+  virtual std::shared_ptr<o2::quality_control::TimeRangeFlagCollection> retrieveTRFC(const std::string& name, const std::string& detector, int runNumber = 0,
+                                                                                     const std::string& passName = "", const std::string& periodName = "",
+                                                                                     const std::string& provenance = "", long timestamp = -1) = 0;
   /**
    * \brief Look up an object and return it.
    * Look up an object and return it if found or nullptr if not. It is a raw pointer because we might need it to build a MO.

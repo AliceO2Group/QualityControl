@@ -52,7 +52,7 @@ echo "Cloning in /tmp/QualityControl"
 cd /tmp
 if [[ ! -d "/tmp/QualityControl" ]];
 then
-  git clone https://github.com/AliceO2Group/QualityControl.git
+  git clone git@github.com:AliceO2Group/QualityControl.git
 else
   echo "/tmp/QualityControl already exists, please [re]move it"
   exit 5

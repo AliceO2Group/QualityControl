@@ -26,8 +26,8 @@
 #else
 #include "MCHBase/Digit.h"
 #endif
+#include "MUONCommon/MergeableTH2Ratio.h"
 #include "MCH/GlobalHistogram.h"
-#include "MCH/MergeableTH2Ratio.h"
 #include "MCH/MergeableTH1OccupancyPerDE.h"
 #include "MCH/MergeableTH1OccupancyPerDECycle.h"
 
@@ -35,6 +35,7 @@ class TH1F;
 class TH2F;
 
 using namespace o2::quality_control::core;
+using namespace o2::quality_control_modules::muon;
 
 namespace o2
 {
@@ -100,7 +101,7 @@ class PhysicsTaskDigits /*final*/ : public TaskInterface // todo add back the "f
   // TH1 of the Mean Occupancy on each DE, integrated or only on elapsed cycle - Sent for Trending
   // WARNING: the code for the occupancy on cycle is currently broken and therefore disabled
   std::shared_ptr<MergeableTH1OccupancyPerDE> mMeanOccupancyPerDE;
-  //std::shared_ptr<MergeableTH1OccupancyPerDECycle> mMeanOccupancyPerDECycle;
+  // std::shared_ptr<MergeableTH1OccupancyPerDECycle> mMeanOccupancyPerDECycle;
 
   std::vector<TH1*> mAllHistograms;
 };

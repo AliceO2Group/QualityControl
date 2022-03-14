@@ -122,12 +122,7 @@ framework::Outputs PostProcessingDevice::getOutputSpecs()
 
 framework::Options PostProcessingDevice::getOptions()
 {
-  // Getting a configurable value for timer period is not straightforward at all.
-  // Passing it as an exec argument would make a long route through InfrastructureGenerator and others
-  // Putting it in the config file is not possible, because we need this parameter during workflow
-  // creation, but PostProcessingRunner reads the config during device initialisation, not sooner.
-  // It is still possible to tweak the value through AliECS, by setting a custom argument value when running this process.
-  return { { "period-timer-pp-" + mRunner->getName(), framework::VariantType::Int, static_cast<int>(10 * 1000000), { "PP task timer period" } } };
+  return { { "period-timer-pp-" + mRunner->getName(), framework::VariantType::Int, static_cast<int>(mRunnerConfig.periodSeconds * 1000000), { "PP task timer period" } } };
 }
 
 } // namespace o2::quality_control::postprocessing

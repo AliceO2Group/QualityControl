@@ -41,7 +41,8 @@
 	  "vertexZsize": "15",
 	  "vertexRsize": "0.8",
 	  "NtracksMAX"  : "100",
-          "doTTree": "0"
+          "doTTree": "0",
+          "nBCbins": "103"
         }
 
       }
@@ -56,7 +57,7 @@
         "dataSource" : [ {
           "type" : "Task",
           "name" : "ITSTrackTask",
-          "MOs" : ["NClusters","PhiDistribution","AngularDistribution","EtaDistribution","VertexCoordinates","VertexRvsZ","VertexZ"]
+          "MOs" : ["NClusters","PhiDistribution","AngularDistribution","EtaDistribution","VertexCoordinates","VertexRvsZ","VertexZ","BunchCrossingIDvsClusterRatio"]
         } ]
       }
     }

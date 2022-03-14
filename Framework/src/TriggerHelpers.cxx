@@ -49,59 +49,73 @@ std::optional<double> string2Seconds(std::string str)
   }
 }
 
+std::pair<std::string, std::string> parseDbTriggers(const std::string& trigger, const std::string& type)
+{
+  // we expect the config string to be:
+  // type:[qcdb/ccdb]:qc/path/to/object
+  std::vector<std::string> tokens;
+  boost::split(tokens, trigger, boost::is_any_of(":"));
+
+  if (tokens.size() != 3) {
+    throw std::invalid_argument(
+      "The " + type +
+      " trigger is configured incorrectly. The expected format is "
+      "'" +
+      type + ":[qcdb/ccdb]:qc/path/to/object', received `" +
+      trigger + "'");
+  }
+
+  boost::algorithm::to_lower(tokens[1]);
+  const std::string& db = tokens[1];
+  if (db != "qcdb" && db != "ccdb") {
+    throw std::invalid_argument("The second token in '" + trigger + "' should be either qcdb or ccdb");
+  }
+
+  const std::string& objPath = tokens[2];
+  if (objPath.empty()) {
+    throw std::invalid_argument("The third token in '" + trigger + "' is empty, but it should contain the object path");
+  }
+
+  return { db, objPath };
+}
 TriggerFcn triggerFactory(std::string trigger, const PostProcessingConfig& config)
 {
   // todo: should we accept many versions of trigger names?
   std::string triggerLowerCase = trigger;
   boost::algorithm::to_lower(triggerLowerCase);
+  auto& activity = config.activity;
 
   if (triggerLowerCase == "once") {
-    return triggers::Once();
+    return triggers::Once(activity);
   } else if (triggerLowerCase == "always") {
-    return triggers::Always();
+    return triggers::Always(activity);
   } else if (triggerLowerCase == "sor" || triggerLowerCase == "startofrun") {
-    return triggers::StartOfRun();
+    return triggers::StartOfRun(activity);
   } else if (triggerLowerCase == "eor" || triggerLowerCase == "endofrun") {
-    return triggers::EndOfRun();
+    return triggers::EndOfRun(activity);
   } else if (triggerLowerCase == "sof" || triggerLowerCase == "startoffill") {
-    return triggers::StartOfFill();
+    return triggers::StartOfFill(activity);
   } else if (triggerLowerCase == "eof" || triggerLowerCase == "endoffill") {
-    return triggers::EndOfFill();
+    return triggers::EndOfFill(activity);
   } else if (triggerLowerCase.find("newobject") != std::string::npos) {
-    // we expect the config string to be:
-    // newobject:[qcdb/ccdb]:qc/path/to/object
-    std::vector<std::string> tokens;
-    boost::split(tokens, trigger, boost::is_any_of(":"));
-
-    if (tokens.size() != 3) {
-      throw std::invalid_argument(
-        "The new object trigger is configured incorrectly. The expected format is "
-        "'newobject:[qcdb/ccdb]:qc/path/to/object', received `" +
-        trigger + "'");
-    }
-
-    std::string dbUrl;
-    boost::algorithm::to_lower(tokens[1]);
-    if (tokens[1] == "qcdb") {
-      dbUrl = config.qcdbUrl;
-    } else if (tokens[1] == "ccdb") {
-      dbUrl = config.ccdbUrl;
-    } else {
-      throw std::invalid_argument("The second token in '" + trigger + "' should be either qcdb or ccdb");
-    }
-
-    if (tokens[2].empty()) {
-      throw std::invalid_argument("The third token in '" + trigger + "' is empty, but it should contain the object path");
-    }
-
-    return triggers::NewObject(dbUrl, tokens[2]);
+    const auto [db, objectPath] = parseDbTriggers(trigger, "newobject");
+    const std::string& dbUrl = db == "qcdb" ? config.qcdbUrl : config.ccdbUrl;
+    return triggers::NewObject(dbUrl, objectPath, activity);
+  } else if (triggerLowerCase.find("foreachobject") != std::string::npos) {
+    const auto [db, objectPath] = parseDbTriggers(trigger, "foreachobject");
+    const std::string& dbUrl = db == "qcdb" ? config.qcdbUrl : config.ccdbUrl;
+    return triggers::ForEachObject(dbUrl, objectPath, activity);
+  } else if (triggerLowerCase.find("foreachlatest") != std::string::npos) {
+    const auto [db, objectPath] = parseDbTriggers(trigger, "foreachlatest");
+    const std::string& dbUrl = db == "qcdb" ? config.qcdbUrl : config.ccdbUrl;
+    return triggers::ForEachLatest(dbUrl, objectPath, activity);
   } else if (auto seconds = string2Seconds(triggerLowerCase); seconds.has_value()) {
     if (seconds.value() < 0) {
       throw std::invalid_argument("negative number of seconds in trigger '" + trigger + "'");
     }
-    return triggers::Periodic(seconds.value());
+    return triggers::Periodic(seconds.value(), activity);
   } else if (triggerLowerCase.find("user") != std::string::npos || triggerLowerCase.find("control") != std::string::npos) {
-    return triggers::Never();
+    return triggers::Never(activity);
   } else {
     throw std::invalid_argument("unknown trigger: " + trigger);
   }
@@ -109,8 +123,12 @@ TriggerFcn triggerFactory(std::string trigger, const PostProcessingConfig& confi
 
 Trigger tryTrigger(std::vector<TriggerFcn>& triggerFcns)
 {
-  for (auto& triggerFcn : triggerFcns) {
-    if (auto trigger = triggerFcn()) {
+  Trigger result(TriggerType::No);
+  auto it = triggerFcns.begin();
+  while (it != triggerFcns.end()) {
+    auto trigger = (*it)();
+    it = trigger.last ? triggerFcns.erase(it) : it + 1;
+    if (trigger) {
       return trigger;
     }
   }

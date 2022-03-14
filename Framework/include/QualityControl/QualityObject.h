@@ -124,7 +124,7 @@ class QualityObject : public TObject
   void setQuality(const Quality& quality);
   const std::string& getCheckName() const;
   const std::string& getPolicyName() const;
-  const std::vector<std::string> getMonitorObjectsNames() const;
+  const std::vector<std::string>& getMonitorObjectsNames() const;
   Activity& getActivity();
   const Activity& getActivity() const;
   void setActivity(const Activity& activity);
@@ -139,7 +139,7 @@ class QualityObject : public TObject
   std::vector<std::string> mMonitorObjectsNames;
   Activity mActivity;
 
-  ClassDefOverride(QualityObject, 5);
+  ClassDefOverride(QualityObject, 6);
 };
 
 using QualityObjectsType = std::vector<std::shared_ptr<QualityObject>>;

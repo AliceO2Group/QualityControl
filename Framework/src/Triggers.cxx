@@ -16,6 +16,8 @@
 
 #include "QualityControl/Triggers.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/DatabaseHelpers.h"
+#include "QualityControl/CcdbDatabase.h"
 
 #include <CCDB/CcdbApi.h>
 #include <Common/Timer.h>
@@ -45,11 +47,11 @@ TriggerFcn NotImplemented(std::string triggerName)
 {
   ILOG(Warning, Support) << "TriggerType '" << triggerName << "' is not implemented yet. It will always return TriggerType::No" << ENDM;
   return [triggerName]() mutable -> Trigger {
-    return { TriggerType::No };
+    return { TriggerType::No, true };
   };
 }
 
-TriggerFcn StartOfRun()
+TriggerFcn StartOfRun(const Activity&)
 {
   return NotImplemented("StartOfRun");
 
@@ -73,53 +75,53 @@ TriggerFcn StartOfRun()
   //  };
 }
 
-TriggerFcn Once()
+TriggerFcn Once(const Activity& activity)
 {
-  return [hasTriggered = false]() mutable -> Trigger {
+  return [hasTriggered = false, activity]() mutable -> Trigger {
     if (hasTriggered) {
-      return { TriggerType::No };
+      return { TriggerType::No, true, activity };
     } else {
       hasTriggered = true;
-      return { TriggerType::Once };
+      return { TriggerType::Once, true, activity };
     }
   };
 }
 
-TriggerFcn Always()
+TriggerFcn Always(const Activity& activity)
 {
-  return []() mutable -> Trigger {
-    return { TriggerType::Always };
+  return [activity]() mutable -> Trigger {
+    return { TriggerType::Always, false, activity };
   };
 }
 
-TriggerFcn Never()
+TriggerFcn Never(const Activity& activity)
 {
-  return []() mutable -> Trigger {
-    return { TriggerType::No };
+  return [activity]() mutable -> Trigger {
+    return { TriggerType::No, true, activity };
   };
 }
 
-TriggerFcn EndOfRun()
+TriggerFcn EndOfRun(const Activity&)
 {
   return NotImplemented("EndOfRun");
 }
 
-TriggerFcn StartOfFill()
+TriggerFcn StartOfFill(const Activity&)
 {
   return NotImplemented("StartOfFill");
 }
 
-TriggerFcn EndOfFill()
+TriggerFcn EndOfFill(const Activity&)
 {
   return NotImplemented("EndOfFill");
 }
 
-TriggerFcn Periodic(double seconds)
+TriggerFcn Periodic(double seconds, const Activity& activity)
 {
   AliceO2::Common::Timer timer;
   timer.reset(static_cast<int>(seconds * 1000000));
 
-  return [timer]() mutable -> Trigger {
+  return [timer, activity]() mutable -> Trigger {
     if (timer.isTimeout()) {
       // We calculate the exact time when timer has passed
       uint64_t timestamp = Trigger::msSinceEpoch() + static_cast<int>(timer.getRemainingTime() * 1000);
@@ -128,14 +130,14 @@ TriggerFcn Periodic(double seconds)
       while (timer.isTimeout()) {
         timer.increment();
       }
-      return { TriggerType::Periodic, timestamp };
+      return { TriggerType::Periodic, false, activity, timestamp };
     } else {
-      return { TriggerType::No };
+      return { TriggerType::No, false };
     }
   };
 }
 
-TriggerFcn NewObject(std::string databaseUrl, std::string objectPath)
+TriggerFcn NewObject(std::string databaseUrl, std::string objectPath, const Activity& activity)
 {
   // Key names in the header map.
   constexpr auto md5key = "Content-MD5";
@@ -151,7 +153,8 @@ TriggerFcn NewObject(std::string databaseUrl, std::string objectPath)
   // We rely on changing MD5 - if the object has changed, it should have a different check sum.
   // If someone reuploaded an old object, it should not have an influence.
   std::string lastMD5;
-  if (auto headers = db->retrieveHeaders(objectPath, {}); headers.count(md5key)) {
+  auto metadata = repository::database_helpers::asDatabaseMetadata(activity, false);
+  if (auto headers = db->retrieveHeaders(objectPath, metadata); headers.count(md5key)) {
     lastMD5 = headers[md5key];
   } else {
     // We don't make a fuss over it, because we might be just waiting for the first version of such object.
@@ -159,12 +162,12 @@ TriggerFcn NewObject(std::string databaseUrl, std::string objectPath)
     ILOG(Warning, Support) << "No MD5 of the file '" << objectPath << "' in the db '" << databaseUrl << "', probably the file is missing." << ENDM;
   }
 
-  return [db, databaseUrl = std::move(databaseUrl), objectPath = std::move(objectPath), lastMD5]() mutable -> Trigger {
-    if (auto headers = db->retrieveHeaders(objectPath, {}); headers.count(md5key)) {
+  return [db, databaseUrl = std::move(databaseUrl), objectPath = std::move(objectPath), lastMD5, activity, metadata]() mutable -> Trigger {
+    if (auto headers = db->retrieveHeaders(objectPath, metadata); headers.count(md5key)) {
       auto newMD5 = headers[md5key];
       if (lastMD5 != newMD5) {
         lastMD5 = newMD5;
-        return { TriggerType::NewObject, std::stoull(headers[timestampKey]) };
+        return { TriggerType::NewObject, false, activity, std::stoull(headers[timestampKey]) };
       }
     } else {
       // We don't make a fuss over it, because we might be just waiting for the first version of such object.
@@ -172,7 +175,110 @@ TriggerFcn NewObject(std::string databaseUrl, std::string objectPath)
       ILOG(Warning, Support) << "No MD5 of the file '" << objectPath << "' in the db '" << databaseUrl << "', probably the file is missing." << ENDM;
     }
 
-    return TriggerType::No;
+    return { TriggerType::No, false };
+  };
+}
+
+TriggerFcn ForEachObject(std::string databaseUrl, std::string objectPath, const Activity& activity)
+{
+  // Key names in the header map.
+  constexpr auto md5key = "Content-MD5";
+  constexpr auto timestampKey = "Valid-From";
+
+  // We support only CCDB here.
+  auto db = std::make_shared<repository::CcdbDatabase>();
+  db->connect(databaseUrl, "", "", "");
+
+  auto objects = db->getListingAsPtree(objectPath).get_child("objects");
+  ILOG(Info, Support) << "Got " << objects.size() << " objects for the path '" << objectPath << "'" << ENDM;
+  auto filteredObjects = std::make_shared<std::vector<boost::property_tree::ptree>>();
+  const auto& filter = activity;
+
+  ILOG(Debug, Devel) << "Filter activity: " << activity.mId << ", " << activity.mType << ", " << activity.mPassName << ", " << activity.mPeriodName << ", " << activity.mProvenance << ENDM;
+
+  // As for today, we receive objects in the order of the newest to the oldest.
+  // We prefer the other order here.
+  for (auto rit = objects.rbegin(); rit != objects.rend(); ++rit) {
+    auto objectActivity = repository::database_helpers::asActivity(rit->second);
+    if (filter.matches(objectActivity)) {
+      filteredObjects->emplace_back(rit->second);
+      ILOG(Debug, Devel) << "Matched an object with activity: " << objectActivity.mId << ", " << objectActivity.mType << ", " << objectActivity.mPassName << ", " << objectActivity.mPeriodName << ", " << objectActivity.mProvenance << ENDM;
+    }
+  }
+  ILOG(Info, Support) << filteredObjects->size() << " objects matched the specified activity" << ENDM;
+
+  // we make sure it is sorted. If it is already, it shouldn't cost much.
+  std::sort(filteredObjects->begin(), filteredObjects->end(),
+            [](const boost::property_tree::ptree& a, const boost::property_tree::ptree& b) {
+              return a.get<int64_t>(timestampKey) < b.get<int64_t>(timestampKey);
+            });
+
+  return [filteredObjects, activity, currentObject = filteredObjects->begin()]() mutable -> Trigger {
+    if (currentObject != filteredObjects->end()) {
+      auto currentActivity = repository::database_helpers::asActivity(*currentObject);
+      bool last = currentObject + 1 == filteredObjects->end();
+      Trigger trigger(TriggerType::ForEachObject, last, currentActivity, currentObject->get<int64_t>(timestampKey));
+      ++currentObject;
+      return trigger;
+    } else {
+      return { TriggerType::No, true, activity };
+    }
+  };
+}
+
+TriggerFcn ForEachLatest(std::string databaseUrl, std::string objectPath, const Activity& activity)
+{
+  // Key names in the header map.
+  constexpr auto md5key = "Content-MD5";
+  constexpr auto timestampKey = "Created";
+
+  // We support only CCDB here.
+  auto db = std::make_shared<repository::CcdbDatabase>();
+  db->connect(databaseUrl, "", "", "");
+
+  auto objects = db->getListingAsPtree(objectPath).get_child("objects");
+  ILOG(Info, Support) << "Got " << objects.size() << " objects for the path '" << objectPath << "'" << ENDM;
+  auto filteredObjects = std::make_shared<std::vector<std::pair<Activity, boost::property_tree::ptree>>>();
+  const auto& filter = activity;
+
+  ILOG(Debug, Devel) << "Filter activity: " << activity.mId << ", " << activity.mType << ", " << activity.mPassName << ", " << activity.mPeriodName << ", " << activity.mProvenance << ENDM;
+
+  // As for today, we receive objects in the order of the newest to the oldest.
+  // We prefer the other order here.
+  for (auto rit = objects.rbegin(); rit != objects.rend(); ++rit) {
+    auto objectActivity = repository::database_helpers::asActivity(rit->second);
+    if (filter.matches(objectActivity)) {
+      auto latestObject = std::find_if(filteredObjects->begin(), filteredObjects->end(), [&](const std::pair<Activity, boost::property_tree::ptree>& entry) {
+        return entry.first == objectActivity;
+      });
+      if (latestObject != filteredObjects->end() && latestObject->second.get<int64_t>(timestampKey) < rit->second.get<int64_t>(timestampKey)) {
+        *latestObject = { objectActivity, rit->second };
+        ILOG(Debug, Devel) << "Updated the object with activity: " << objectActivity.mId << ", " << objectActivity.mType << ", " << objectActivity.mPassName << ", " << objectActivity.mPeriodName << ", " << objectActivity.mProvenance << ENDM;
+      } else {
+        filteredObjects->emplace_back(objectActivity, rit->second);
+        ILOG(Debug, Devel) << "Matched an object with activity: " << objectActivity.mId << ", " << objectActivity.mType << ", " << objectActivity.mPassName << ", " << objectActivity.mPeriodName << ", " << objectActivity.mProvenance << ENDM;
+      }
+    }
+  }
+  ILOG(Info, Support) << filteredObjects->size() << " objects matched the specified activity" << ENDM;
+
+  // we make sure it is sorted. If it is already, it shouldn't cost much.
+  std::sort(filteredObjects->begin(), filteredObjects->end(),
+            [](const std::pair<Activity, boost::property_tree::ptree>& a, const std::pair<Activity, boost::property_tree::ptree>& b) {
+              return a.second.get<int64_t>(timestampKey) < b.second.get<int64_t>(timestampKey);
+            });
+
+  return [filteredObjects, activity, currentObject = filteredObjects->begin()]() mutable -> Trigger {
+    if (currentObject != filteredObjects->end()) {
+      const auto& currentActivity = currentObject->first;
+      const auto& currentPtree = currentObject->second;
+      bool last = currentObject + 1 == filteredObjects->end();
+      Trigger trigger(TriggerType::ForEachLatest, last, currentActivity, currentPtree.get<int64_t>(timestampKey));
+      ++currentObject;
+      return trigger;
+    } else {
+      return { TriggerType::No, true, activity };
+    }
   };
 }
 

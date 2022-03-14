@@ -50,7 +50,9 @@ void TrendingTask::initialize(Trigger, framework::ServiceRegistry&)
     mTrend->Branch(source.name.c_str(), reductor->getBranchAddress(), reductor->getBranchLeafList());
     mReductors[source.name] = std::move(reductor);
   }
-  getObjectsManager()->startPublishing(mTrend.get());
+  if (mConfig.producePlotsOnUpdate) {
+    getObjectsManager()->startPublishing(mTrend.get());
+  }
 }
 
 //todo: see if OptimizeBaskets() indeed helps after some time
@@ -58,18 +60,23 @@ void TrendingTask::update(Trigger t, framework::ServiceRegistry& services)
 {
   auto& qcdb = services.get<repository::DatabaseInterface>();
 
-  trendValues(t.timestamp, qcdb);
-  generatePlots();
+  trendValues(t, qcdb);
+  if (mConfig.producePlotsOnUpdate) {
+    generatePlots();
+  }
 }
 
 void TrendingTask::finalize(Trigger, framework::ServiceRegistry&)
 {
+  if (!mConfig.producePlotsOnUpdate) {
+    getObjectsManager()->startPublishing(mTrend.get());
+  }
   generatePlots();
 }
 
-void TrendingTask::trendValues(uint64_t timestamp, repository::DatabaseInterface& qcdb)
+void TrendingTask::trendValues(const Trigger& t, repository::DatabaseInterface& qcdb)
 {
-  mTime = timestamp / 1000; // ROOT expects seconds since epoch
+  mTime = t.timestamp / 1000; // ROOT expects seconds since epoch
   // todo get run number when it is available. consider putting it inside monitor object's metadata (this might be not
   //  enough if we trend across runs).
   mMetaData.runNumber = -1;
@@ -78,13 +85,13 @@ void TrendingTask::trendValues(uint64_t timestamp, repository::DatabaseInterface
 
     // todo: make it agnostic to MOs, QOs or other objects. Let the reductor cast to whatever it needs.
     if (dataSource.type == "repository") {
-      auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name, timestamp);
+      auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name, t.timestamp, t.activity);
       TObject* obj = mo ? mo->getObject() : nullptr;
       if (obj) {
         mReductors[dataSource.name]->update(obj);
       }
     } else if (dataSource.type == "repository-quality") {
-      auto qo = qcdb.retrieveQO(dataSource.path + "/" + dataSource.name, timestamp);
+      auto qo = qcdb.retrieveQO(dataSource.path + "/" + dataSource.name, t.timestamp, t.activity);
       if (qo) {
         mReductors[dataSource.name]->update(qo.get());
       }

@@ -48,6 +48,7 @@ ITSTrackTask::~ITSTrackTask()
   delete hAssociatedClusterFraction;
   delete hNtracks;
   delete hNClustersPerTrackEta;
+  delete hClusterVsBunchCrossing;
 }
 
 void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -61,6 +62,7 @@ void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
   mVertexRsize = std::stof(mCustomParameters["vertexRsize"]);
   mNtracksMAX = std::stof(mCustomParameters["NtracksMAX"]);
   mDoTTree = std::stoi(mCustomParameters["doTTree"]);
+  nBCbins = std::stoi(mCustomParameters.find("nBCbins")->second);
 
   createAllHistos();
   publishHistos();
@@ -89,7 +91,7 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
   for (const auto& vertex : vertexArr) {
 
     hVertexCoordinates->Fill(vertex.getX(), vertex.getY());
-    hVertexRvsZ->Fill(sqrt(vertex.getX() * vertex.getX() + vertex.getY() * vertex.getY()), vertex.getZ());
+    hVertexRvsZ->Fill(vertex.getZ(), sqrt(vertex.getX() * vertex.getX() + vertex.getY() * vertex.getY()));
     hVertexZ->Fill(vertex.getZ());
     hVertexContributors->Fill(vertex.getNContributors());
   }
@@ -126,6 +128,9 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
     float clusterRatio = nTotCls > 0 ? (float)nClusterCntTrack / (float)nTotCls : -1;
     hAssociatedClusterFraction->Fill(clusterRatio);
     hNtracks->Fill(nTracks);
+
+    const auto bcdata = trackRofArr[iROF].getBCData();
+    hClusterVsBunchCrossing->Fill(bcdata.bc, clusterRatio);
 
     if (mDoTTree)
       tClusterMap->Fill();
@@ -180,6 +185,7 @@ void ITSTrackTask::reset()
   hAssociatedClusterFraction->Reset();
   hNtracks->Reset();
   hNClustersPerTrackEta->Reset();
+  hClusterVsBunchCrossing->Reset();
 }
 
 void ITSTrackTask::createAllHistos()
@@ -222,17 +228,17 @@ void ITSTrackTask::createAllHistos()
   formatAxes(hVertexCoordinates, "X coordinate (cm)", "Y coordinate (cm)", 1, 1.10);
   hVertexCoordinates->SetStats(0);
 
-  hVertexRvsZ = new TH2D("VertexRvsZ", "VertexRvsZ", (int)(mVertexRsize / 0.01), 0, mVertexRsize, (int)(mVertexZsize * 2 / 0.01), -mVertexZsize, mVertexZsize);
+  hVertexRvsZ = new TH2D("VertexRvsZ", "VertexRvsZ", (int)(mVertexZsize * 2 / 0.01), -mVertexZsize, mVertexZsize, (int)(mVertexRsize / 0.01), 0, mVertexRsize);
   hVertexRvsZ->SetTitle("Distance to primary vertex vs Z");
   addObject(hVertexRvsZ);
-  formatAxes(hVertexRvsZ, "R (cm) ", "Z coordinate (cm)", 1, 1.10);
+  formatAxes(hVertexRvsZ, "Z coordinate (cm)", "R (cm)", 1, 1.10);
   hVertexRvsZ->SetStats(0);
 
   hVertexZ = new TH1D("VertexZ", "VertexZ", (int)(mVertexZsize * 2 / 0.01), -mVertexZsize, mVertexZsize);
   hVertexZ->SetTitle("Z coordinate of vertex");
   addObject(hVertexZ);
   formatAxes(hVertexZ, "Z coordinate (cm)", "counts", 1, 1.10);
-  hVertexRvsZ->SetStats(0);
+  hVertexZ->SetStats(0);
 
   hVertexContributors = new TH1D("NVertexContributors", "NVertexContributors", 100, 0, 100);
   hVertexContributors->SetTitle("NVertexContributors");
@@ -257,6 +263,12 @@ void ITSTrackTask::createAllHistos()
   addObject(hNClustersPerTrackEta);
   formatAxes(hNClustersPerTrackEta, "#eta", "# of Clusters per Track", 1, 1.10);
   hNClustersPerTrackEta->SetStats(0);
+
+  hClusterVsBunchCrossing = new TH2D("BunchCrossingIDvsClusterRatio", "BunchCrossingIDvsClusterRatio", nBCbins, 0, 4095, 100, 0, 1);
+  hClusterVsBunchCrossing->SetTitle("Bunch Crossing ID vs Cluster Ratio");
+  addObject(hClusterVsBunchCrossing);
+  formatAxes(hClusterVsBunchCrossing, "Bunch Crossing ID", "Fraction of clusters in tracks", 1, 1.10);
+  hClusterVsBunchCrossing->SetStats(0);
 }
 
 void ITSTrackTask::addObject(TObject* aObject)

@@ -59,76 +59,65 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   ILOG(Info, Support) << "initialize DigitsQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // Histograms to be published
-  mHitsMapB = new TH2F("HitsMapB", "Hits Map - bending plane", MID_NDE, 0, MID_NDE, MID_NCOL, 0, MID_NCOL);
-  mHitsMapB->GetXaxis()->SetTitle("DE ID");
-  mHitsMapB->GetYaxis()->SetTitle("Column ID");
-  mHitsMapB->SetOption("colz");
-
-  mHitsMapNB = new TH2F("HitsMapNB", "Hits Map - non-bending plane", MID_NDE, 0, MID_NDE, MID_NCOL, 0, MID_NCOL);
-  mHitsMapNB->GetXaxis()->SetTitle("DE ID");
-  mHitsMapNB->GetYaxis()->SetTitle("Column ID");
-  mHitsMapNB->SetOption("colz");
-
-  getObjectsManager()->startPublishing(mHitsMapB);
-  getObjectsManager()->startPublishing(mHitsMapNB);
-
-  mOrbitsMapB = new TH2F("OrbitsMapB", "Orbits Map - bending plane", MID_NDE, 0, MID_NDE, MID_NCOL, 0, MID_NCOL);
-  mOrbitsMapB->GetXaxis()->SetTitle("DE ID");
-  mOrbitsMapB->GetYaxis()->SetTitle("Column ID");
-  mOrbitsMapB->SetOption("colz");
-
-  mOrbitsMapNB = new TH2F("OrbitsMapNB", "Orbits Map - non-bending plane", MID_NDE, 0, MID_NDE, MID_NCOL, 0, MID_NCOL);
-  mOrbitsMapNB->GetXaxis()->SetTitle("DE ID");
-  mOrbitsMapNB->GetYaxis()->SetTitle("Column ID");
-  mOrbitsMapNB->SetOption("colz");
-
-  getObjectsManager()->startPublishing(mOrbitsMapB);
-  getObjectsManager()->startPublishing(mOrbitsMapNB);
-
-  mOccupancyMapB = new MergeableTH2Ratio("OccupancyMapB", "Occupancy - bending (MHz)", mHitsMapB, mOrbitsMapB);
+  mOccupancyMapB = std::make_shared<muon::MergeableTH2Ratio>("OccupancyMapB", "Occupancy - bending (MHz)", MID_NDE, 0, MID_NDE, MID_NCOL, 0, MID_NCOL);
   mOccupancyMapB->SetOption("colz");
+  getObjectsManager()->startPublishing(mOccupancyMapB.get());
+  mOccupancyMapB->getNum()->SetName("HitsMapB");
+  mOccupancyMapB->getNum()->SetTitle("Hits Map - bending plane");
+  mOccupancyMapB->getNum()->SetOption("colz");
+  getObjectsManager()->startPublishing(mOccupancyMapB->getNum());
+  mOccupancyMapB->getDen()->SetName("OrbitsMapB");
+  mOccupancyMapB->getDen()->SetTitle("Orbits Map - bending plane");
+  mOccupancyMapB->getDen()->SetOption("colz");
+  getObjectsManager()->startPublishing(mOccupancyMapB->getDen());
 
-  mOccupancyMapNB = new MergeableTH2Ratio("OccupancyMapNB", "Occupancy - non-bending (MHz)", mHitsMapNB, mOrbitsMapNB);
+  mOccupancyMapNB = std::make_shared<muon::MergeableTH2Ratio>("OccupancyMapNB", "Occupancy - non-bending (MHz)", MID_NDE, 0, MID_NDE, MID_NCOL, 0, MID_NCOL);
   mOccupancyMapNB->SetOption("colz");
+  getObjectsManager()->startPublishing(mOccupancyMapNB.get());
+  mOccupancyMapNB->getNum()->SetName("HitsMapNB");
+  mOccupancyMapNB->getNum()->SetTitle("Hits Map - non-bending plane");
+  mOccupancyMapNB->getNum()->SetOption("colz");
+  getObjectsManager()->startPublishing(mOccupancyMapNB->getNum());
+  mOccupancyMapNB->getDen()->SetName("OrbitsMapNB");
+  mOccupancyMapNB->getDen()->SetTitle("Orbits Map - non-bending plane");
+  mOccupancyMapNB->getDen()->SetOption("colz");
+  getObjectsManager()->startPublishing(mOccupancyMapNB->getDen());
 
-  getObjectsManager()->startPublishing(mOccupancyMapB);
-  getObjectsManager()->startPublishing(mOccupancyMapNB);
+  mROFSizeB = std::make_shared<TH1F>("ROFSizeB", "ROF size distribution - bending plane", 100, 0, 100);
+  mROFSizeNB = std::make_shared<TH1F>("ROFSizeNB", "ROF size distribution - non-bending plane", 100, 0, 100);
 
-  mROFSizeB = new TH1F("ROFSizeB", "ROF size distribution - bending plane", 100, 0, 100);
-  mROFSizeNB = new TH1F("ROFSizeNB", "ROF size distribution - non-bending plane", 100, 0, 100);
+  getObjectsManager()->startPublishing(mROFSizeB.get());
+  getObjectsManager()->startPublishing(mROFSizeNB.get());
 
-  getObjectsManager()->startPublishing(mROFSizeB);
-  getObjectsManager()->startPublishing(mROFSizeNB);
-
-  mROFTimeDiff = new TH2F("ROFTimeDiff", "ROF time difference vs. min. ROF size", 100, 0, 100, 100, 0, 100);
+  mROFTimeDiff = std::make_shared<TH2F>("ROFTimeDiff", "ROF time difference vs. min. ROF size", 100, 0, 100, 100, 0, 100);
   mROFTimeDiff->SetOption("colz");
 
-  getObjectsManager()->startPublishing(mROFTimeDiff);
+  getObjectsManager()->startPublishing(mROFTimeDiff.get());
 
   /////////////////
 
-  mMultHitMT11B = new TH1F("MultHitMT11B", "Multiplicity Hits - MT11 bending plane", 300, 0, 300);
-  mMultHitMT11NB = new TH1F("MultHitMT11NB", "Multiplicity Hits - MT11 non-bending plane", 300, 0, 300);
-  mMultHitMT12B = new TH1F("MultHitMT12B", "Multiplicity Hits - MT12 bending plane", 300, 0, 300);
-  mMultHitMT12NB = new TH1F("MultHitMT12NB", "Multiplicity Hits - MT12 non-bending plane", 300, 0, 300);
-  mMultHitMT21B = new TH1F("MultHitMT21B", "Multiplicity Hits - MT21 bending plane", 300, 0, 300);
-  mMultHitMT21NB = new TH1F("MultHitMT21NB", "Multiplicity Hits - MT21 non-bending plane", 300, 0, 300);
-  mMultHitMT22B = new TH1F("MultHitMT22B", "Multiplicity Hits - MT22 bending plane", 300, 0, 300);
-  mMultHitMT22NB = new TH1F("MultHitMT22NB", "Multiplicity Hits - MT22 non-bending plane", 300, 0, 300);
+  mMultHitMT11B = std::make_shared<TH1F>("MultHitMT11B", "Multiplicity Hits - MT11 bending plane", 300, 0, 300);
+  mMultHitMT11NB = std::make_shared<TH1F>("MultHitMT11NB", "Multiplicity Hits - MT11 non-bending plane", 300, 0, 300);
+  mMultHitMT12B = std::make_shared<TH1F>("MultHitMT12B", "Multiplicity Hits - MT12 bending plane", 300, 0, 300);
+  mMultHitMT12NB = std::make_shared<TH1F>("MultHitMT12NB", "Multiplicity Hits - MT12 non-bending plane", 300, 0, 300);
+  mMultHitMT21B = std::make_shared<TH1F>("MultHitMT21B", "Multiplicity Hits - MT21 bending plane", 300, 0, 300);
+  mMultHitMT21NB = std::make_shared<TH1F>("MultHitMT21NB", "Multiplicity Hits - MT21 non-bending plane", 300, 0, 300);
+  mMultHitMT22B = std::make_shared<TH1F>("MultHitMT22B", "Multiplicity Hits - MT22 bending plane", 300, 0, 300);
+  mMultHitMT22NB = std::make_shared<TH1F>("MultHitMT22NB", "Multiplicity Hits - MT22 non-bending plane", 300, 0, 300);
 
-  mLocalBoardsMap = new TH2F("LocalBoardsMap", "Local boards Occupancy Map", 14, -7, 7, 36, 0, 9);
+  mLocalBoardsMap = std::make_shared<TH2F>("LocalBoardsMap", "Local boards Occupancy Map", 14, -7, 7, 36, 0, 9);
   mLocalBoardsMap->SetOption("colz");
   // mLocalBoardsMap->SetGrid();
 
-  getObjectsManager()->startPublishing(mMultHitMT11B);
-  getObjectsManager()->startPublishing(mMultHitMT11NB);
-  getObjectsManager()->startPublishing(mMultHitMT12B);
-  getObjectsManager()->startPublishing(mMultHitMT12NB);
-  getObjectsManager()->startPublishing(mMultHitMT21B);
-  getObjectsManager()->startPublishing(mMultHitMT21NB);
-  getObjectsManager()->startPublishing(mMultHitMT22B);
-  getObjectsManager()->startPublishing(mMultHitMT22NB);
-  getObjectsManager()->startPublishing(mLocalBoardsMap);
+  getObjectsManager()->startPublishing(mMultHitMT11B.get());
+  getObjectsManager()->startPublishing(mMultHitMT11NB.get());
+  getObjectsManager()->startPublishing(mMultHitMT12B.get());
+  getObjectsManager()->startPublishing(mMultHitMT12NB.get());
+  getObjectsManager()->startPublishing(mMultHitMT21B.get());
+  getObjectsManager()->startPublishing(mMultHitMT21NB.get());
+  getObjectsManager()->startPublishing(mMultHitMT22B.get());
+  getObjectsManager()->startPublishing(mMultHitMT22NB.get());
+  getObjectsManager()->startPublishing(mLocalBoardsMap.get());
 }
 
 void DigitsQcTask::startOfActivity(Activity& /*activity*/)
@@ -202,18 +191,18 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   for (int i = 0; i < MID_NDE; i++) {
     for (int j = 0; j < MID_NCOL; j++) {
-      mOrbitsMapB->Fill(i, j, 128);
-      mOrbitsMapNB->Fill(i, j, 128);
+      mOccupancyMapB->getDen()->Fill(i, j, 128);
+      mOccupancyMapNB->getDen()->Fill(i, j, 128);
     }
   }
 
   for (const auto& digit : digits) {
     // total number of bending plane hits
     int nHitsB = getBendingHits(digit);
-    mHitsMapB->Fill(digit.deId, digit.columnId, nHitsB);
+    mOccupancyMapB->getNum()->Fill(digit.deId, digit.columnId, nHitsB);
     // total number of non-bending plane hits
     int nHitsNB = getNonBendingHits(digit);
-    mHitsMapNB->Fill(digit.deId, digit.columnId, nHitsNB);
+    mOccupancyMapNB->getNum()->Fill(digit.deId, digit.columnId, nHitsNB);
   }
 
   std::pair<uint32_t, uint32_t> prevSize;
@@ -335,6 +324,25 @@ void DigitsQcTask::reset()
   // clean all the monitor objects here
 
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  mOccupancyMapB->getNum()->Reset();
+  mOccupancyMapB->getDen()->Reset();
+  mOccupancyMapNB->getNum()->Reset();
+  mOccupancyMapNB->getDen()->Reset();
+  mROFSizeB->Reset();
+  mROFSizeNB->Reset();
+
+  mROFTimeDiff->Reset();
+
+  mMultHitMT11B->Reset();
+  mMultHitMT11NB->Reset();
+  mMultHitMT12B->Reset();
+  mMultHitMT12NB->Reset();
+  mMultHitMT21B->Reset();
+  mMultHitMT21NB->Reset();
+  mMultHitMT22B->Reset();
+  mMultHitMT22NB->Reset();
+
+  mLocalBoardsMap->Reset();
 }
 
 } // namespace o2::quality_control_modules::mid

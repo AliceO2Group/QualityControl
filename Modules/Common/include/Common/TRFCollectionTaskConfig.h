@@ -33,6 +33,10 @@ struct TRFCollectionTaskConfig : quality_control::postprocessing::PostProcessing
 
   std::string name;
   std::string detector;
+  int runNumber;
+  std::string passName;
+  std::string periodName;
+  std::string provenance;
   std::vector<std::string> qualityObjects;
 };
 

@@ -48,7 +48,7 @@ void TRFCollectionTask::initialize(Trigger t, framework::ServiceRegistry&)
   mLastTimestampLimitStart = t.timestamp;
 }
 
-TimeRangeFlagCollection TRFCollectionTask::transformQualities(repository::DatabaseInterface& qcdb, const uint64_t timestampLimitStart, const uint64_t timestampLimitEnd)
+std::unique_ptr<quality_control::TimeRangeFlagCollection> TRFCollectionTask::transformQualities(repository::DatabaseInterface& qcdb, const uint64_t timestampLimitStart, const uint64_t timestampLimitEnd)
 {
   // ------ HELPERS ------
   std::function<std::vector<uint64_t>(const std::string& /*QO*/)> fetchAvailableTimestamps;
@@ -61,17 +61,22 @@ TimeRangeFlagCollection TRFCollectionTask::transformQualities(repository::Databa
     ILOG(Error) << "Could not cast the database interface to CcdbDatabase, this task supports only the CCDB backend" << ENDM
   }
 
+  auto makeTRFC = [&]() {
+    return std::make_unique<TimeRangeFlagCollection>(mConfig.name, mConfig.detector,
+                                                     TimeRangeFlagCollection::RangeInterval{ timestampLimitStart, timestampLimitEnd },
+                                                     mConfig.runNumber, mConfig.periodName, mConfig.passName, mConfig.provenance);
+  };
+
   // ------ IMPLEMENTATION ------
   // stats
   size_t totalQOsIncluded = 0;
   size_t totalWorseThanGoodQOs = 0;
 
-  TimeRangeFlagCollection mainTrfCollection{ mConfig.name, mConfig.detector };
-
+  auto mainTrfCollection = makeTRFC();
   for (const auto& qoName : mConfig.qualityObjects) {
 
     std::string qoPath = RepoPathUtils::getQoPath(mConfig.detector, qoName);
-    QualitiesToTRFCollectionConverter converter(mConfig.name, mConfig.detector, timestampLimitStart, timestampLimitEnd, qoPath);
+    QualitiesToTRFCollectionConverter converter(makeTRFC(), qoPath);
 
     auto availableTimestamps = fetchAvailableTimestamps(qoName);
     auto firstMatchingTimestamp = std::upper_bound(availableTimestamps.begin(), availableTimestamps.end(), timestampLimitStart);
@@ -107,14 +112,14 @@ TimeRangeFlagCollection TRFCollectionTask::transformQualities(repository::Databa
 
     totalQOsIncluded += converter.getQOsIncluded();
     totalWorseThanGoodQOs += converter.getWorseThanGoodQOs();
-    mainTrfCollection.merge(*converter.getResult());
+    mainTrfCollection->merge(*converter.getResult());
   }
 
   ILOG(Info) << "Total number of QOs included in TRFCollection: " << totalQOsIncluded << ENDM;
   ILOG(Info) << "Total number of worse than good QOs: " << totalWorseThanGoodQOs << ENDM;
-  ILOG(Info) << "Number of TRFs: " << mainTrfCollection.size() << ENDM;
+  ILOG(Info) << "Number of TRFs: " << mainTrfCollection->size() << ENDM;
   // TODO: now we print it, but it should be stored in the QCDB after we have QC-547.
-  ILOG(Info) << mainTrfCollection << ENDM;
+  ILOG(Info) << *mainTrfCollection << ENDM;
 
   return mainTrfCollection;
 }
@@ -130,6 +135,7 @@ void TRFCollectionTask::finalize(Trigger t, framework::ServiceRegistry& services
 
   auto& qcdb = services.get<repository::DatabaseInterface>();
   auto trfCollection = transformQualities(qcdb, mLastTimestampLimitStart, timestampLimitEnd);
+  qcdb.storeTRFC(std::shared_ptr<const TimeRangeFlagCollection>(trfCollection.release()));
 
   mLastTimestampLimitStart = timestampLimitEnd;
 }

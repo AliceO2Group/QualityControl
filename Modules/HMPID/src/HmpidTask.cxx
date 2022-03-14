@@ -20,9 +20,9 @@
 #include <TMath.h>
 #include <Framework/InputRecord.h>
 #include <Framework/InputRecordWalker.h>
+#include <Framework/DataRefUtils.h>
 
 #include "QualityControl/QcInfoLogger.h"
-//#include "HMPID/HmpidDecodeRawMem.h"
 #include "HMPID/HmpidTask.h"
 #include "HMPIDReconstruction/HmpidEquipment.h"
 #include "HMPIDReconstruction/HmpidDecoder2.h"
@@ -85,6 +85,7 @@ void HmpidTask::initialize(o2::framework::InitContext& /*ctx*/)
   hEventSize->Sumw2();
   hEventSize->SetOption("P");
   hEventSize->SetMinimum(0);
+
   hEventSize->SetMarkerStyle(20);
   hEventSize->SetMarkerColor(kBlack);
   hEventSize->SetLineColor(kBlack);
@@ -111,8 +112,6 @@ void HmpidTask::startOfActivity(Activity& /*activity*/)
   ILOG(Info, Support) << "startOfActivity" << ENDM;
   hPedestalMean->Reset();
   hPedestalSigma->Reset();
-  hBusyTime->Reset();
-  hEventSize->Reset();
 
   mDecoder = new o2::hmpid::HmpidDecoder2(14);
   mDecoder->init();
@@ -129,34 +128,33 @@ void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
   NumCycles++;
   mDecoder->init();
   mDecoder->setVerbosity(2); // this is for Debug
-
   //for (auto&& input : ctx.inputs()) {
   for (auto&& input : o2::framework::InputRecordWalker(ctx.inputs())) {
     // get message header
     if (input.header != nullptr && input.payload != nullptr) {
-      const auto* header = header::get<header::DataHeader*>(input.header);
+      auto payloadSize = o2::framework::DataRefUtils::getPayloadSize(input);
       int32_t* ptrToPayload = (int32_t*)(input.payload);
-
-      if (header->payloadSize < 80) {
+      if (payloadSize < 80) {
         continue;
       }
-      mDecoder->setUpStream(ptrToPayload, (long int)header->payloadSize);
+      mDecoder->setUpStream(ptrToPayload, (long int)payloadSize);
       if (!mDecoder->decodeBufferFast()) {
         ILOG(Error, Devel) << "Error decoding the Superpage !" << ENDM;
+        break;
       }
-
       for (Int_t eq = 0; eq < 14; eq++) {
-        if (mDecoder->getAverageEventSize(eq) > 0.) {
-          hEventSize->Fill(eq + 1, mDecoder->getAverageEventSize(eq) / 1000.);
+        int eqId = mDecoder->mTheEquipments[eq]->getEquipmentId();
+        if (mDecoder->getAverageEventSize(eqId) > 0.) {
+          hEventSize->Fill(eqId + 1, mDecoder->getAverageEventSize(eqId) / 1000.);
         }
-        if (mDecoder->getAverageBusyTime(eq) > 0.) {
-          hBusyTime->Fill(eq + 1, mDecoder->getAverageBusyTime(eq) * 1000000);
+        if (mDecoder->getAverageBusyTime(eqId) > 0.) {
+          hBusyTime->Fill(eqId + 1, mDecoder->getAverageBusyTime(eqId) * 1000000);
         }
         for (Int_t column = 0; column < 24; column++) {
           for (Int_t dilogic = 0; dilogic < 10; dilogic++) {
             for (Int_t channel = 0; channel < 48; channel++) {
-              Float_t mean = mDecoder->getChannelSum(eq, column, dilogic, channel) / mDecoder->getChannelSamples(eq, column, dilogic, channel);
-              Float_t sigma = TMath::Sqrt(mDecoder->getChannelSquare(eq, column, dilogic, channel) / mDecoder->getChannelSamples(eq, column, dilogic, channel) - mean * mean);
+              Float_t mean = mDecoder->getChannelSum(eqId, column, dilogic, channel) / mDecoder->getChannelSamples(eqId, column, dilogic, channel);
+              Float_t sigma = TMath::Sqrt(mDecoder->getChannelSquare(eqId, column, dilogic, channel) / mDecoder->getChannelSamples(eqId, column, dilogic, channel) - mean * mean);
               hPedestalMean->Fill(mean);
               hPedestalSigma->Fill(sigma);
             }
@@ -168,7 +166,7 @@ void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
       uint16_t   decoder.theEquipments[0..13]->padSamples[0..23][0..9][0..47]  Number of samples
       float      decoder.theEquipments[0..13]->padSum[0..23][0..9][0..47]      Sum of the charge of all samples
       float      decoder.theEquipments[0..13]->padSquares[0..23][0..9][0..47]  Sum of the charge squares of all samples
-'     uint16_t GetChannelSamples(int Equipment, int Column, int Dilogic, int Channel);
+      uint16_t GetChannelSamples(int Equipment, int Column, int Dilogic, int Channel);
       float GetChannelSum(int Equipment, int Column, int Dilogic, int Channel);
       float GetChannelSquare(int Equipment, int Column, int Dilogic, int Channel);
       uint16_t GetPadSamples(int Module, int Column, int Row);
@@ -203,7 +201,7 @@ void HmpidTask::reset()
   hPedestalMean->Reset();
   hPedestalSigma->Reset();
   hBusyTime->Reset();
-  hEventSize->Reset(0);
+  hEventSize->Reset();
 }
 
 } // namespace o2::quality_control_modules::hmpid

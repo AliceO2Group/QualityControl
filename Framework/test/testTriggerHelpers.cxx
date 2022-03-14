@@ -82,6 +82,30 @@ BOOST_AUTO_TEST_CASE(test_factory)
   BOOST_CHECK_THROW(trigger_helpers::triggerFactory("newobject:nodb:qc/incorrect/db/speficied", configWithDBs), std::invalid_argument);
   BOOST_CHECK_THROW(trigger_helpers::triggerFactory("newobject:ccdb:qc/too:many tokens", configWithDBs), std::invalid_argument);
 
+  BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("foreachobject:qcdb:qc/asdf/vcxz", configWithDBs));
+  BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("foreachobject:ccdb:qc/asdf/vcxz", configWithDBs));
+  BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("foreachobject:QCDB:qc/asdf/vcxz", configWithDBs));
+  BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("foreachobject:CCDB:qc/asdf/vcxz", configWithDBs));
+  BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("ForEachObject:QcDb:qc/asdf/vcxz", configWithDBs));
+  BOOST_CHECK_THROW(trigger_helpers::triggerFactory("foreachobject", configWithDBs), std::invalid_argument);
+  BOOST_CHECK_THROW(trigger_helpers::triggerFactory("foreachobject:", configWithDBs), std::invalid_argument);
+  BOOST_CHECK_THROW(trigger_helpers::triggerFactory("foreachobject::", configWithDBs), std::invalid_argument);
+  BOOST_CHECK_THROW(trigger_helpers::triggerFactory("foreachobject::qc/no/db/specified", configWithDBs), std::invalid_argument);
+  BOOST_CHECK_THROW(trigger_helpers::triggerFactory("foreachobject:nodb:qc/incorrect/db/speficied", configWithDBs), std::invalid_argument);
+  BOOST_CHECK_THROW(trigger_helpers::triggerFactory("foreachobject:ccdb:qc/too:many tokens", configWithDBs), std::invalid_argument);
+
+  BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("foreachlatest:qcdb:qc/asdf/vcxz", configWithDBs));
+  BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("foreachlatest:ccdb:qc/asdf/vcxz", configWithDBs));
+  BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("foreachlatest:QCDB:qc/asdf/vcxz", configWithDBs));
+  BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("foreachlatest:CCDB:qc/asdf/vcxz", configWithDBs));
+  BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("ForEachLatest:QcDb:qc/asdf/vcxz", configWithDBs));
+  BOOST_CHECK_THROW(trigger_helpers::triggerFactory("foreachlatest", configWithDBs), std::invalid_argument);
+  BOOST_CHECK_THROW(trigger_helpers::triggerFactory("foreachlatest:", configWithDBs), std::invalid_argument);
+  BOOST_CHECK_THROW(trigger_helpers::triggerFactory("foreachlatest::", configWithDBs), std::invalid_argument);
+  BOOST_CHECK_THROW(trigger_helpers::triggerFactory("foreachlatest::qc/no/db/specified", configWithDBs), std::invalid_argument);
+  BOOST_CHECK_THROW(trigger_helpers::triggerFactory("foreachlatest:nodb:qc/incorrect/db/speficied", configWithDBs), std::invalid_argument);
+  BOOST_CHECK_THROW(trigger_helpers::triggerFactory("foreachlatest:ccdb:qc/too:many tokens", configWithDBs), std::invalid_argument);
+
   // fixme: this is treated as "123 seconds", do we want to be so defensive?
   BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("123 secure code", dummyConfig));
 }
