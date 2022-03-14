@@ -205,16 +205,6 @@ void CcdbDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::Moni
     return;
   }
 
-//  if(mDatabaseFailure) {
-//    if (mFailureTimer.isTimeout()) {
-//      mDatabaseFailure = false;
-//    } else {
-//      ILOG(Debug, Devel) << "Storage is disabled following a failure, this object won't be stored. New attempt in " <<
-//        mFailureTimer.getRemainingTime() << ENDM;
-//      return;
-//    }
-//  }
-
   map<string, string> metadata = database_helpers::asDatabaseMetadata(mo->getActivity());
 
   // user metadata
