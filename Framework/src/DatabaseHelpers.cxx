@@ -20,21 +20,21 @@
 namespace o2::quality_control::repository::database_helpers
 {
 
-std::map<std::string, std::string> asDatabaseMetadata(const core::Activity& activity)
+std::map<std::string, std::string> asDatabaseMetadata(const core::Activity& activity, bool putDefault)
 {
   std::map<std::string, std::string> metadata;
-  if (activity.mType != 0) {
+  if (putDefault || activity.mType != 0) {
     // TODO should we really treat 0 as none?
     //  we could consider making Activity use std::optional to be clear about this
     metadata["RunType"] = std::to_string(activity.mType);
   }
-  if (activity.mId != 0) {
+  if (putDefault || activity.mId != 0) {
     metadata["RunNumber"] = std::to_string(activity.mId);
   }
-  if (!activity.mPassName.empty()) {
+  if (putDefault || !activity.mPassName.empty()) {
     metadata["PassName"] = activity.mPassName;
   }
-  if (!activity.mPeriodName.empty()) {
+  if (putDefault || !activity.mPeriodName.empty()) {
     metadata["PeriodName"] = activity.mPeriodName;
   }
   return metadata;

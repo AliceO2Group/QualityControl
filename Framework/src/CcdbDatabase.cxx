@@ -299,7 +299,7 @@ std::shared_ptr<o2::quality_control::core::MonitorObject> CcdbDatabase::retrieve
 {
   string path = objectPath + "/" + objectName;
   map<string, string> headers;
-  map<string, string> metadata = database_helpers::asDatabaseMetadata(activity);
+  map<string, string> metadata = database_helpers::asDatabaseMetadata(activity, false);
   TObject* obj = retrieveTObject(path, metadata, timestamp, &headers);
 
   // no object found
@@ -339,7 +339,7 @@ std::shared_ptr<o2::quality_control::core::MonitorObject> CcdbDatabase::retrieve
 std::shared_ptr<o2::quality_control::core::QualityObject> CcdbDatabase::retrieveQO(std::string qoPath, long timestamp, const core::Activity& activity)
 {
   map<string, string> headers;
-  map<string, string> metadata = database_helpers::asDatabaseMetadata(activity);
+  map<string, string> metadata = database_helpers::asDatabaseMetadata(activity, false);
   TObject* obj = retrieveTObject(qoPath, metadata, timestamp, &headers);
   std::shared_ptr<QualityObject> qo(dynamic_cast<QualityObject*>(obj));
   if (qo == nullptr) {
