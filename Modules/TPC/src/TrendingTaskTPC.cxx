@@ -73,25 +73,25 @@ void TrendingTaskTPC::initialize(Trigger, framework::ServiceRegistry&)
 void TrendingTaskTPC::update(Trigger t, framework::ServiceRegistry& services)
 {
   auto& qcdb = services.get<repository::DatabaseInterface>();
-  trendValues(t.timestamp, qcdb);
+  trendValues(t, qcdb);
   generatePlots();
 }
 
-void TrendingTaskTPC::finalize(Trigger, framework::ServiceRegistry&)
+void TrendingTaskTPC::finalize(Trigger t, framework::ServiceRegistry&)
 {
   generatePlots();
 }
 
-void TrendingTaskTPC::trendValues(uint64_t timestamp,
+void TrendingTaskTPC::trendValues(const Trigger& t,
                                   repository::DatabaseInterface& qcdb)
 {
-  mTime = timestamp / 1000; // ROOT expects seconds since epoch.
+  mTime = t.timestamp / 1000; // ROOT expects seconds since epoch.
   mMetaData.runNumber = -1;
 
   for (auto& dataSource : mConfig.dataSources) {
     mSubtitles[dataSource.name] = std::vector<std::string>();
     if (dataSource.type == "repository") {
-      auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name, timestamp);
+      auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name, t.timestamp, t.activity);
       TObject* obj = mo ? mo->getObject() : nullptr;
       if (obj) {
         mReductors[dataSource.name]->update(obj, mSources[dataSource.name],
@@ -99,7 +99,7 @@ void TrendingTaskTPC::trendValues(uint64_t timestamp,
       }
 
     } else if (dataSource.type == "repository-quality") {
-      if (auto qo = qcdb.retrieveQO(dataSource.path + "/" + dataSource.name, timestamp)) {
+      if (auto qo = qcdb.retrieveQO(dataSource.path + "/" + dataSource.name, t.timestamp, t.activity)) {
         mReductors[dataSource.name]->update(qo.get(), mSources[dataSource.name],
                                             dataSource.axisDivision, mSubtitles[dataSource.name]);
       }

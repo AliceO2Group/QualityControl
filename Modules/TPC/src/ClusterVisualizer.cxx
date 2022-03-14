@@ -194,7 +194,7 @@ void ClusterVisualizer::update(Trigger t, framework::ServiceRegistry&)
   calDetIter++;
 }
 
-void ClusterVisualizer::finalize(Trigger, framework::ServiceRegistry&)
+void ClusterVisualizer::finalize(Trigger t, framework::ServiceRegistry&)
 {
   for (const auto& calDetCanvasVec : mCalDetCanvasVec) {
     for (const auto& canvas : calDetCanvasVec) {
