@@ -13,6 +13,7 @@
       * [The TrendingTask class](#the-trendingtask-class)
          * [Configuration](#configuration-1)
       * [The TRFCollectionTask class](#the-trfcollectiontask-class)
+   * [More examples](#more-examples)
 <!--te-->
 
 
@@ -35,20 +36,25 @@ Any Post-processing Task should inherit PostProcessingInterface, which includes 
   * `finalize` - finalizes the processing, given the event which it was triggered by.
   
 Interfaces to databases and other services are accesible via `ServiceRegistry`, which is an argument to the last three methods. They are invoked when any of the specified triggers is up, which can be:
- * Start Of Run (SOR)
- * End Of Run (EOR)
- * Start Of Fill (SOF)
- * End Of Fill (EOF)
+ * Start Of Run (SOR, not implemented yet)
+ * End Of Run (EOR, not implemented yet)
+ * Start Of Fill (SOF, not implemented yet)
+ * End Of Fill (EOF, not implemented yet)
  * Periodic - triggers when a specified period of time passes 
  * New Object - triggers when an object in QCDB is updated
+ * For Each Object - triggers for each object in QCDB which matches an Activity
+ * For Each Latest - trggers for the latest object in QCDB for each matching Activity
  * Once - triggers only first time it is checked
  * Always - triggers each time it is checked
 
-Triggers are complemented with timestamps which correspond the time when trigger started to be valid, in form of ms
- since epoch, just like in CCDB and QCDB. For example, the periodic trigger will provide evenly spaced timestamps
- , even if the trigger is checked more rarely. The New Object trigger provide the timestamp of the updated object
- . These timestamps should be used to access databases, so any Post-processing Task can be rerun with any, arbitrary
-  timestamps.
+Triggers are complemented with:
+- timestamps which correspond the time when trigger started to be valid, in form of ms since epoch, just like in CCDB and QCDB,
+- `last` flag, being `true` if it is the last time trigger will fire,
+- `Activity` object, which contains metadata such as run type and number, pass name, periond name, data provenance.
+
+For example, the periodic trigger will provide evenly spaced timestamps, even if the trigger is checked more rarely.
+The New Object trigger provide the timestamp of the updated object. The timestamps and Activites should be used to
+access databases, so any Post-processing Task can be rerun at any time for any run and reconstruction pass.
   
 MonitorObjects may be saved by registering them in ObjectManager, similarly to normal QC Tasks (recommended, see
  examples linked below), or by using DatabaseInterface directly. Please note, that created objects have to
@@ -123,8 +129,9 @@ Each of the three methods can be invoked by one or more triggers. Below are list
  * `"sof"` or `"startoffill"` - Start Of Fill
  * `"eof"` or `"endoffill"` - End Of Fill
  * `"<x><sec/min/hour>"` - Periodic - triggers when a specified period of time passes. For example: "5min", "0.001 seconds", "10sec", "2hours".
- * `"newobject:[qcdb/ccdb]:<path>"` - New Object - triggers when an object in QCDB or CCDB is updated. For example
- : `"newobject:qcdb:qc/TST/MO/QcTask/Example"`
+ * `"newobject:[qcdb/ccdb]:<path>"` - New Object - triggers when an object in QCDB or CCDB is updated (applicable for synchronous processing). For example: `"newobject:qcdb:qc/TST/MO/QcTask/Example"`
+ * `"foreachobject:[qcdb/ccdb]:<path>"` - For Each Object - triggers for each object in QCDB or CCDB which matches the activity indicated in the QC config file (applicable for asynchronous processing).
+ * `"foreachlatest:[qcdb/ccdb]:<path>"` - For Each Latest - triggers for the latest object version in QCDB or CCDB for each matching activity (applicable for asynchronous processing).
  * `"once"` - Once - triggers only first time it is checked
  * `"always"` - Always - triggers each time it is checked
 
@@ -138,15 +145,21 @@ To try it out, use it like for any other QC configuration:
 o2-qc -b --config json://${QUALITYCONTROL_ROOT}/etc/postprocessing.json
 ```
 All declared and active tasks in the configuration file will be run in parallel.
+To change how often triggers are evaluated, modify the value for `qc.config.postprocessing.periodSeconds` in the config file.
+
+To run a different configuration which trends all the `qc/TST/MO/QcTask/example` objects existing in QCDB, try the following:
+```
+o2-qc -b --config json://${QUALITYCONTROL_ROOT}/etc/postprocessing-async.json
+```
 
 Debugging post-processing tasks might be easier when using the `o2-qc-run-postprocessing` application (only for
  development) or with `o2-qc-run-postprocessing-occ` (both development and production), as they are one-process
   executables, running only one, chosen task.
 
-To run the basic example, use the command below. The `--config` parameter should point to the configuration file. The `--period` parameter specifies the time interval of checking the specified triggers (in seconds).
+To run the basic example, use the command below. The `--config` parameter should point to the configuration file.
 
 ```
-o2-qc-run-postprocessing --config json://${QUALITYCONTROL_ROOT}/etc/postprocessing.json --name ExamplePostprocessing --period 10
+o2-qc-run-postprocessing --config json://${QUALITYCONTROL_ROOT}/etc/postprocessing.json --name ExamplePostprocessing
 ```
 
 As it is configured to invoke each method only `"once"`, you will see it initializing, entering the update method, then finalizing the task and exiting.
@@ -324,5 +337,87 @@ The task is configured as follows:
 ```
 
 TimeRangeFlagCollections are meant to be used as a base to derive Data Tags for analysis (WIP).
+
+## More examples
+
+This section contains examples of how to approach usual use-cases.
+
+### I want to run postprocessing alongside of synchronous QC and trend some object parameters
+
+Use either Periodic or NewObject as the update trigger:
+```json
+        "updateTrigger": [ "5 seconds" ],
+```
+```json
+        "updateTrigger": [ "newobject:qcdb:qc/TST/MO/QcTask/example" ],
+```
+
+Be sure to match the run number and other Activity metadata to isolate the QC run you need.
+Leaving values empty will match anything available (which might be also what you want).
+```json
+      "Activity": {
+        "number": "3212",
+        "type": "",
+        "passName": "",
+        "periodName" : "",
+        "provenance" : "qc"
+      },
+```
+
+### I want to run postprocessing on all already existing objects for a run
+
+Use ForEachObject as the update trigger:
+```json
+        "updateTrigger": [ "foreachobject:qcdb:qc/TST/MO/QcTask/example" ],
+```
+Since objects are usually published in collections at the same time, you can use a path for one object to be triggered 
+ for a collection of them (all objects produced by a QC Task).
+
+Use the Activity which matches the run, and (optionally) period and pass name:
+```json
+      "Activity": {
+        "number": "3212",
+        "type": "",
+        "passName": "apass2",
+        "periodName" : "OCT",
+        "provenance" : "qc"
+      },
+```
+
+### I want to run postprocessing for all objects in all the runs of a given reconstruction pass and period
+
+Use ForEachObject as the update trigger:
+```json
+        "updateTrigger": [ "foreachobject:qcdb:qc/TST/MO/QcTask/example" ],
+```
+Use the Activity which leaves the run number empty, but indicate the pass and period names.
+```json
+      "Activity": {
+        "number": "",
+        "type": "",
+        "passName": "apass2",
+        "periodName" : "OCT",
+        "provenance" : "qc"
+      },
+```
+
+### I want to run postprocessing for the latest object for each available run in a given pass and period
+
+Use ForEachObject as the update trigger:
+```json
+        "updateTrigger": [ "foreachlatest:qcdb:qc/TST/MO/QcTask/example" ],
+```
+This way you will avoid iterating on potential duplicates and intermediate objects, and get only the final versions instead.
+
+Use the Activity which leaves the run number empty, but indicate the pass and period names.
+```json
+      "Activity": {
+        "number": "",
+        "type": "",
+        "passName": "apass2",
+        "periodName" : "OCT",
+        "provenance" : "qc"
+      },
+```
 
 [← Go back to Modules Development](ModulesDevelopment.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Advanced Topics →](Advanced.md)
