@@ -28,7 +28,6 @@ install(TARGETS O2QcFV0
 add_root_dictionary(O2QcFV0
                     HEADERS
   include/FV0/DigitQcTask.h
-  include/FV0/Helper.h
   include/FV0/CFDEffCheck.h
   include/FV0/BasicPPTask.h
   include/FV0/OutOfBunchCollTask.h

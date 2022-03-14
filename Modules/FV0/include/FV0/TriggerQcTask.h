@@ -19,9 +19,7 @@
 
 #include "QualityControl/TaskInterface.h"
 #include "QualityControl/QcInfoLogger.h"
-#include "DataFormatsFV0/BCData.h"
-#include "DataFormatsFV0/ChannelData.h"
-#include "FV0/Helper.h"
+#include "DataFormatsFV0/Digit.h"
 
 #include "TH1.h"
 #include "TH2.h"
@@ -30,9 +28,6 @@ using namespace o2::quality_control::core;
 
 namespace o2::quality_control_modules::fv0
 {
-namespace ch_data = helper::channel_data;
-using ChannelData = o2::fv0::ChannelData;
-using Digit = o2::fv0::BCData;
 
 /// \brief Task to verify in software triggers generated on FEE
 /// \author Sebastian Bysiak sbysiak@cern.ch
@@ -72,7 +67,6 @@ class TriggerQcTask final : public TaskInterface
                           kNone,
                           kBoth
   };
-
   std::map<int, std::string> mMapDigitTrgNames;
   std::map<int, bool> mMapTrgSoftware;
 
