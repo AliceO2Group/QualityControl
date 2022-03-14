@@ -116,6 +116,36 @@ void CcdbDatabase::init()
   loadDeprecatedStreamerInfos();
 }
 
+void CcdbDatabase::handleStorageError(const string& path, int result)
+{
+  if (result == -1 /* object bigger than maxObjectSize */) {
+    static AliceO2::InfoLogger::InfoLogger::AutoMuteToken msgLimit(LogWarningSupport, 1, 600); // send it once every 10 minutes
+    string msg = "object " + path + " is bigger than the maximum allowed size (" + to_string(mMaxObjectSize) + "B) - skipped";
+    ILOG_INST.log(msgLimit, "%s", msg.c_str());
+  }
+
+  if (result == -2 /* curl initialization error */ || result > 0 /* curl error */) {
+    mDatabaseFailure = true;
+    mFailureTimer.reset(mFailureDelay * 1000000);
+    string msg = "Unable to store object " + path + ". Next attempt to store objects in " + to_string(mFailureDelay) + " seconds.";
+    ILOG(Warning, Ops) << msg << ENDM;
+  }
+}
+
+bool CcdbDatabase::isDbInFailure()
+{
+  if(mDatabaseFailure) {
+    if (mFailureTimer.isTimeout()) {
+      mDatabaseFailure = false;
+    } else {
+      ILOG(Debug, Devel) << "Storage is disabled following a failure, this object won't be stored. New attempt in " <<
+        (int)mFailureTimer.getRemainingTime() << " seconds" << ENDM;
+      return true;
+    }
+  }
+  return false;
+}
+
 void CcdbDatabase::storeAny(const void* obj, std::type_info const& typeInfo, std::string const& path, std::map<std::string, std::string> const& metadata,
                             std::string const& detectorName, std::string const& taskName, long from, long to)
 {
@@ -130,6 +160,10 @@ void CcdbDatabase::storeAny(const void* obj, std::type_info const& typeInfo, std
   if (path.find_first_of("\t\n ") != string::npos) {
     BOOST_THROW_EXCEPTION(DatabaseException()
                           << errinfo_details("Object and task names can't contain white spaces. Do not store."));
+  }
+
+  if(isDbInFailure()) {
+    return;
   }
 
   // metadata
@@ -151,11 +185,7 @@ void CcdbDatabase::storeAny(const void* obj, std::type_info const& typeInfo, std
   ILOG(Debug, Support) << "Storing object " << path << " of type " << fullMetadata["ObjectType"] << ENDM;
   int result = ccdbApi.storeAsTFile_impl(obj, typeInfo, path, fullMetadata, from, to, mMaxObjectSize);
 
-  if (result == -1 /* object bigger than maxObjectSize */) {
-    static AliceO2::InfoLogger::InfoLogger::AutoMuteToken msgLimit(LogWarningSupport, 1, 600); // send it once every 10 minutes
-    string msg = "object " + path + " is bigger than the maximum allowed size (" + to_string(mMaxObjectSize) + "B) - skipped";
-    ILOG_INST.log(msgLimit, "%s", msg.c_str());
-  }
+  handleStorageError(path, result);
 }
 
 // Monitor object
@@ -170,6 +200,20 @@ void CcdbDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::Moni
     BOOST_THROW_EXCEPTION(DatabaseException()
                           << errinfo_details("Object and task names can't contain white spaces. Do not store."));
   }
+
+  if(isDbInFailure()) {
+    return;
+  }
+
+//  if(mDatabaseFailure) {
+//    if (mFailureTimer.isTimeout()) {
+//      mDatabaseFailure = false;
+//    } else {
+//      ILOG(Debug, Devel) << "Storage is disabled following a failure, this object won't be stored. New attempt in " <<
+//        mFailureTimer.getRemainingTime() << ENDM;
+//      return;
+//    }
+//  }
 
   map<string, string> metadata = database_helpers::asDatabaseMetadata(mo->getActivity());
 
@@ -201,15 +245,15 @@ void CcdbDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::Moni
   ILOG(Debug, Support) << "Storing MonitorObject " << path << ENDM;
   int result = ccdbApi.storeAsTFileAny<TObject>(obj, path, metadata, from, to, mMaxObjectSize);
 
-  if (result == -1 /* object bigger than maxObjectSize */) {
-    static AliceO2::InfoLogger::InfoLogger::AutoMuteToken msgLimit(LogWarningSupport, 1, 600); // send it once every 10 minutes
-    string msg = "object " + path + " is bigger than the maximum allowed size (" + to_string(mMaxObjectSize) + "B) - skipped";
-    ILOG_INST.log(msgLimit, "%s", msg.c_str());
-  }
+  handleStorageError(path, result);
 }
 
 void CcdbDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::QualityObject> qo, long from, long to)
 {
+  if(isDbInFailure()) {
+    return;
+  }
+
   // metadata
   map<string, string> metadata = database_helpers::asDatabaseMetadata(qo->getActivity());
   metadata["ObjectType"] = qo->IsA()->GetName(); // ObjectType says TObject and not MonitorObject due to a quirk in the API. Once fixed, remove this.
@@ -236,11 +280,7 @@ void CcdbDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::Qual
   ILOG(Debug, Support) << "Storing quality object " << path << " (" << qo->getName() << ")" << ENDM;
   int result = ccdbApi.storeAsTFileAny<QualityObject>(qo.get(), path, metadata, from, to);
 
-  if (result == -1 /* object bigger than maxObjectSize */) {
-    static AliceO2::InfoLogger::InfoLogger::AutoMuteToken msgLimit(LogWarningSupport, 1, 600); // send it once every 10 minutes
-    string msg = "object " + path + " is bigger than the maximum allowed size (" + to_string(mMaxObjectSize) + "B) - skipped";
-    ILOG_INST.log(msgLimit, "%s", msg.c_str());
-  }
+  handleStorageError(path, result);
 }
 
 void CcdbDatabase::storeTRFC(std::shared_ptr<const o2::quality_control::TimeRangeFlagCollection> trfc)

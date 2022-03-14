@@ -20,6 +20,7 @@
 #include <CCDB/CcdbApi.h>
 
 #include "QualityControl/DatabaseInterface.h"
+#include <Common/Timer.h>
 
 namespace o2::quality_control::repository
 {
@@ -129,9 +130,26 @@ class CcdbDatabase : public DatabaseInterface
    */
   std::string getListingAsString(std::string subpath = "", std::string accept = "text/plain");
 
+  /**
+   * Takes care of the possible errors returned by the storage calls.
+   * @param path
+   * @param result
+   */
+  void handleStorageError(const string& path, int result);
+
+  /**
+   * Check whether the database has encountered a failure previously and if we are still in the
+   * period afterwards when no attempt should be done.
+   * @return
+   */
+  bool isDbInFailure();
+
   o2::ccdb::CcdbApi ccdbApi;
   std::string mUrl;
   size_t mMaxObjectSize = 2097152; // 2MB by default
+  int mFailureDelay = 60; // 60 seconds delay between attempts to store things in the database
+  bool mDatabaseFailure = false;
+  AliceO2::Common::Timer mFailureTimer;
 };
 
 } // namespace o2::quality_control::repository
