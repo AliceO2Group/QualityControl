@@ -8,7 +8,7 @@ target_sources(O2QcTOF
                       src/TaskCosmics.cxx
                       src/TaskRaw.cxx
                       src/TOFMatchedTracks.cxx
-                      src/TaskTOFPID.cxx
+                      src/TaskPID.cxx
                       # Checkers
                       src/CheckDiagnostics.cxx
                       src/CheckDRMDiagnostics.cxx
@@ -56,7 +56,7 @@ add_root_dictionary(O2QcTOF
                             include/TOF/TaskCosmics.h
                             include/TOF/TaskRaw.h
                             include/TOF/TOFMatchedTracks.h
-                            include/TOF/TaskTOFPID.h
+                            include/TOF/TaskPID.h
                             # Checkers
                             include/TOF/CheckCompressedData.h
                             include/TOF/CheckDiagnostics.h

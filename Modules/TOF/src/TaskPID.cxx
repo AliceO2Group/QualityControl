@@ -10,7 +10,7 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   TaskTOFPID.cxx
+/// \file   TaskPID.cxx
 /// \author Francesca Ercolessi
 /// \brief  Task to monitor TOF PID performance
 /// \since  13/01/2022
@@ -21,7 +21,7 @@
 #include <TH2.h>
 
 #include "QualityControl/QcInfoLogger.h"
-#include "TOF/TaskTOFPID.h"
+#include "TOF/TaskPID.h"
 #include <Framework/InputRecord.h>
 #include <Framework/InputRecordWalker.h>
 #include <Framework/InputSpec.h>
@@ -51,7 +51,7 @@ bool MyFilter(const MyTrack& tr)
   return (tr.getP() < 2.0);
 }
 
-TaskTOFPID::~TaskTOFPID()
+TaskPID::~TaskPID()
 {
   // delete
   delete mHistDeltatPi;
@@ -64,7 +64,7 @@ TaskTOFPID::~TaskTOFPID()
   delete mHistBetavsP;
 }
 
-void TaskTOFPID::initialize(o2::framework::InitContext& /*ctx*/)
+void TaskPID::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info, Support) << " Initializing... " << ENDM;
   // track selection
@@ -138,18 +138,18 @@ void TaskTOFPID::initialize(o2::framework::InitContext& /*ctx*/)
   mDataRequest->requestTracks(mSrc, 0 /*mUseMC*/);
 }
 
-void TaskTOFPID::startOfActivity(Activity& activity)
+void TaskPID::startOfActivity(Activity& activity)
 {
   ILOG(Info, Support) << "startOfActivity " << activity.mId << ENDM;
   reset();
 }
 
-void TaskTOFPID::startOfCycle()
+void TaskPID::startOfCycle()
 {
   ILOG(Info, Support) << "startOfCycle" << ENDM;
 }
 
-void TaskTOFPID::monitorData(o2::framework::ProcessingContext& ctx)
+void TaskPID::monitorData(o2::framework::ProcessingContext& ctx)
 {
   ++mTF;
   ILOG(Info, Support) << " Processing TF: " << mTF << ENDM;
@@ -211,18 +211,18 @@ void TaskTOFPID::monitorData(o2::framework::ProcessingContext& ctx)
   return;
 }
 
-void TaskTOFPID::endOfCycle()
+void TaskPID::endOfCycle()
 {
 
   ILOG(Info, Support) << "endOfCycle" << ENDM;
 }
 
-void TaskTOFPID::endOfActivity(Activity& /*activity*/)
+void TaskPID::endOfActivity(Activity& /*activity*/)
 {
   ILOG(Info, Support) << "endOfActivity" << ENDM;
 }
 
-void TaskTOFPID::reset()
+void TaskPID::reset()
 {
   // clean all the monitor objects here
   mHistDeltatPi->Reset();
@@ -235,7 +235,7 @@ void TaskTOFPID::reset()
   mHistBetavsP->Reset();
 }
 
-void TaskTOFPID::processEvent(const std::vector<MyTrack>& tracks)
+void TaskPID::processEvent(const std::vector<MyTrack>& tracks)
 {
 
   auto evtime = o2::tof::evTimeMaker<std::vector<MyTrack>, MyTrack, MyFilter>(tracks);
@@ -273,7 +273,7 @@ void TaskTOFPID::processEvent(const std::vector<MyTrack>& tracks)
 
 //__________________________________________________________
 
-bool TaskTOFPID::selectTrack(o2::tpc::TrackTPC const& track)
+bool TaskPID::selectTrack(o2::tpc::TrackTPC const& track)
 {
 
   if (track.getPt() < mPtCut) {

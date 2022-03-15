@@ -10,14 +10,14 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   TaskTOFPID.h
+/// \file   TaskPID.h
 /// \author Francesca Ercolessi
 /// \brief  Header task to monitor TOF PID performance
 /// \since  13/01/2022
 ///
 
-#ifndef QC_MODULE_TOF_TOFTASKTOFPID_H
-#define QC_MODULE_TOF_TOFTASKTOFPID_H
+#ifndef QC_MODULE_TOF_TOFTASKPID_H
+#define QC_MODULE_TOF_TOFTASKPID_H
 
 #include "QualityControl/TaskInterface.h"
 
@@ -61,13 +61,13 @@ struct MyTrack {
   const o2::dataformats::TrackTPCITS& getTrack() { return trk; }
 };
 
-class TaskTOFPID final : public TaskInterface
+class TaskPID final : public TaskInterface
 {
  public:
   /// \brief Constructor
-  TaskTOFPID() = default;
+  TaskPID() = default;
   /// Destructor
-  ~TaskTOFPID() override;
+  ~TaskPID() override;
 
   // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& ctx) override;
@@ -129,4 +129,4 @@ class TaskTOFPID final : public TaskInterface
 
 } // namespace o2::quality_control_modules::tof
 
-#endif // QC_MODULE_TOF_TOFTaskTOFPID_H
+#endif // QC_MODULE_TOF_TOFTaskPID_H
