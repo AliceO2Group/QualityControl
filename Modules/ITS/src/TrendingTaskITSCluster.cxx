@@ -12,7 +12,6 @@
 /// \file    TrendingTaskITSCluster.cxx
 /// \author  Ivan Ravasenga on the structure from Piotr Konopka
 ///
-
 #include "ITS/TrendingTaskITSCluster.h"
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/DatabaseInterface.h"
