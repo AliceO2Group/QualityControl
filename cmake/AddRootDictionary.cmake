@@ -1,4 +1,18 @@
+# Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+# See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+# All rights not expressly granted are reserved.
+#
+# This software is distributed under the terms of the GNU General Public
+# License v3 (GPL Version 3), copied verbatim in the file "COPYING".
+#
+# In applying this license CERN does not waive the privileges and immunities
+# granted to it by virtue of its status as an Intergovernmental Organization
+# or submit itself to any jurisdiction.
+
 include_guard()
+
+configure_file(${CMAKE_CURRENT_LIST_DIR}/rootcling_wrapper.sh.in
+               ${CMAKE_BINARY_DIR}/rootcling_wrapper.sh @ONLY)
 
 #
 # add_root_dictionary generates one dictionary to be added to a target.
@@ -17,9 +31,6 @@ include_guard()
 # * LINKDEF (required) is a single relative filepath to the LINKDEF file needed
 #   by rootcling.
 #
-# * BASENAME (required) the basename used to compute the names of the extra
-#   generated files (rootmap and pcm file)
-#
 # LINKDEF and HEADERS must contain relative paths only (relative to the
 # CMakeLists.txt that calls this add_root_dictionary function).
 #
@@ -35,24 +46,28 @@ include_guard()
 # Note also that the generated dictionary is added to PRIVATE SOURCES list of
 # the target.
 #
-function(add_root_dictionary)
+function(add_root_dictionary target)
   cmake_parse_arguments(PARSE_ARGV
                         1
                         A
                         ""
-                        "LINKDEF;BASENAME"
-                        "HEADERS")
+                        "LINKDEF"
+                        "HEADERS;BASENAME")
   if(A_UNPARSED_ARGUMENTS)
     message(
       FATAL_ERROR "Unexpected unparsed arguments: ${A_UNPARSED_ARGUMENTS}")
   endif()
 
-  if(${ARGC} LESS 4)
-    message(
-      FATAL_ERROR "Wrong number of arguments. All arguments are required.")
+  if(A_BASENAME)
+    message(STATUS "BASENAME parameter is deprecated. Will be ignored")
   endif()
 
-  set(target ${ARGV0})
+  set(required_args "LINKDEF;HEADERS")
+  foreach(required_arg IN LISTS required_args)
+    if(NOT A_${required_arg})
+      message(FATAL_ERROR "Missing required argument: ${required_arg}")
+    endif()
+  endforeach()
 
   # check all given filepaths are relative ones
   foreach(h ${A_HEADERS} ${A_LINKDEF})
@@ -79,13 +94,30 @@ function(add_root_dictionary)
     endif()
   endforeach()
 
-  set(dictionaryFile ${CMAKE_CURRENT_BINARY_DIR}/G__${A_BASENAME}Dict.cxx)
-  set(pcmFile G__${A_BASENAME}Dict_rdict.pcm)
+  # Generate the pcm and rootmap files alongside the library
+  get_property(lib_output_dir
+               TARGET ${target}
+               PROPERTY LIBRARY_OUTPUT_DIRECTORY)
+  if(NOT lib_output_dir)
+    set(lib_output_dir ${CMAKE_CURRENT_BINARY_DIR})
+  endif()
 
-  # get the list of compile_definitions and split it into -Dxxx pieces but only
-  # if non empty
-  set(prop "$<TARGET_PROPERTY:${target},COMPILE_DEFINITIONS>")
-  set(defs $<$<BOOL:${prop}>:-D$<JOIN:${prop}, -D>>)
+  # Define the names of generated files
+  get_property(basename TARGET ${target} PROPERTY OUTPUT_NAME)
+  if(NOT basename)
+    set(basename ${target})
+  endif()
+  set(dictionary G__${basename})
+  set(dictionaryFile ${CMAKE_CURRENT_BINARY_DIR}/${dictionary}.cxx)
+  set(pcmBase ${dictionary}_rdict.pcm)
+  set(pcmFile ${lib_output_dir}/${pcmBase})
+  set(rootmapFile ${lib_output_dir}/lib${basename}.rootmap)
+  
+  set(O2_TARGETPCMMAP_TARGET "${O2_TARGETPCMMAP_TARGET};${target}" CACHE INTERNAL "target/PCM map (target)")
+  set(O2_TARGETPCMMAP_PCM "${O2_TARGETPCMMAP_PCM};${pcmFile}" CACHE INTERNAL "target/PCM map (pcm)")
+
+  # get the list of compile_definitions
+  set(prop $<TARGET_PROPERTY:${target},COMPILE_DEFINITIONS>)
 
   # Build the LD_LIBRARY_PATH required to get rootcling running fine
   #
@@ -97,28 +129,27 @@ function(add_root_dictionary)
     set(LD_LIBRARY_PATH "${LD_LIBRARY_PATH}:$ENV{GCC_TOOLCHAIN_ROOT}/lib64")
   endif()
 
+  set(includeDirs $<TARGET_PROPERTY:${target},INCLUDE_DIRECTORIES>)
+
   # add a custom command to generate the dictionary using rootcling
   # cmake-format: off
   add_custom_command(
-    OUTPUT ${dictionaryFile}
+    OUTPUT ${dictionaryFile} ${pcmFile} ${rootmapFile}
     VERBATIM
     COMMAND
-    ${CMAKE_COMMAND} -E env LD_LIBRARY_PATH=${LD_LIBRARY_PATH} ${ROOT_rootcling_CMD}
-      -f
-      ${dictionaryFile}
-      -inlineInputHeader
-      -rmf ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/lib${A_BASENAME}.rootmap
-      -rml $<TARGET_FILE:${target}>
-      $<GENEX_EVAL:-I$<JOIN:$<TARGET_PROPERTY:${target},INCLUDE_DIRECTORIES>,\;-I>>
-      # the generator expression above gets the list of all include 
-      # directories that might be required using the transitive dependencies 
-      # of the target ${target} and prepend each item of that list with -I 
-      "${defs}"
-      ${incdirs} ${headers}
+    ${CMAKE_BINARY_DIR}/rootcling_wrapper.sh
+      --rootmap_file ${rootmapFile}
+      --dictionary_file ${dictionaryFile}
+      --ld_library_path ${LD_LIBRARY_PATH}
+      --rootmap_library_name $<TARGET_FILE_NAME:${target}>
+      --include_dirs -I$<JOIN:${includeDirs},$<SEMICOLON>-I>
+      $<$<BOOL:${prop}>:--compile_defs>
+      $<$<BOOL:${prop}>:-D$<JOIN:${prop},$<SEMICOLON>-D>>
+      --pcmdeps "$<REMOVE_DUPLICATES:${list_pcm_deps_${target}}>"
+      --headers "${headers}"
     COMMAND
-    ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_BINARY_DIR}/${pcmFile} ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${pcmFile}
-    COMMAND_EXPAND_LISTS
-    DEPENDS ${headers})
+    ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_BINARY_DIR}/${pcmBase} ${pcmFile}
+    DEPENDS ${headers} "$<REMOVE_DUPLICATES:${list_pcm_deps_${target}}>")
   # cmake-format: on
 
   # add dictionary source to the target sources
@@ -146,8 +177,6 @@ function(add_root_dictionary)
 
   # will install the rootmap and pcm files alongside the target's lib
   get_filename_component(dict ${dictionaryFile} NAME_WE)
-  install(FILES ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/lib${A_BASENAME}.rootmap
-                ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${dict}_rdict.pcm
-          DESTINATION ${CMAKE_INSTALL_LIBDIR})
+  install(FILES ${rootmapFile} ${pcmFile} DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 endfunction()
