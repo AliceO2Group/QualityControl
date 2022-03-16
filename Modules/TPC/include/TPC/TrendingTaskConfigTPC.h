@@ -46,6 +46,8 @@ struct TrendingTaskConfigTPC : public quality_control::postprocessing::PostProce
     std::string option;
     std::string graphErrors;
     std::string graphYRange;
+    std::string graphXRange;
+    std::string graphAxisLabel;
   };
 
   struct DataSource {

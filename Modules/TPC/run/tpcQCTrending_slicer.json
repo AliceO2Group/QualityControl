@@ -44,6 +44,14 @@
             "reductorName": "o2::quality_control_modules::tpc::TH1ReductorTPC",
             "axisDivision": [[ "-1.0", "0.0", "1.0" ]],
             "moduleName": "QcTPC"
+          }, 
+          {
+            "type": "repository",
+            "path": "qc/TPC/MO/Tracks",
+            "names": [ "hPhiAside", "hPhiAsideRatio", "hPhiCside", "hPhiCsideRatio"  ],
+            "reductorName": "o2::quality_control_modules::tpc::TH1ReductorTPC",
+            "axisDivision": [[ "0.0", "0.349066", "0.698132", "1.0472", "1.39626", "1.74533", "2.0944", "2.44346", "2.79253", "3.14159", "3.49066", "3.83972", "4.18879", "4.53786", "4.88692", "5.23599", "5.58505", "5.93412", "6.28319" ]],
+            "moduleName": "QcTPC"
           }
         ],
         "plots": [
@@ -52,27 +60,88 @@
             "title": "Mean of the #eta ratio",
             "varexp": "hEtaRatio.meanX:time",
             "selection": "",
-            "option": "*L",
+            "option": "*LE",
             "graphErrors": "errMeanX:0.5", 
-            "graphYRange": "-2.0:2.0"
+            "graphYRange": "-2.0:2.0",
+	    "graphXRange": "", 
+	    "graphAxisLabel": "Mean #eta:time"
           },
           {
             "name": "hEtaRatio_StatMeanY_Trend",
             "title": "Mean Y of the #eta ratio",
             "varexp": "hEtaRatio.meanY:time",
             "selection": "",
-            "option": "*L",
+            "option": "*LE",
             "graphErrors": "errMeanY:0.5", 
-            "graphYRange": "-0.1:2.0"
+            "graphYRange": "-0.1:2.0",
+	    "graphXRange": "", 
+	    "graphAxisLabel": "Mean #eta ratio:time"
+          },
+          {
+            "name": "hEtaRatio_StatMeanY_Trend_Slices",
+            "title": "Mean Y of the #eta ratio vs slices",
+            "varexp": "hEtaRatio.meanY:slices",
+            "selection": "",
+            "option": "*LE",
+            "graphErrors": "errMeanY:0", 
+            "graphYRange": "-0.1:2.0",
+	    "graphXRange": "-2.0:2.0", 
+	    "graphAxisLabel": "Mean #eta:#eta"
           },
           {
             "name": "hEta_StatMean_Trend",
             "title": "Mean of #eta",
             "varexp": "hEta.meanX:time",
             "selection": "",
-            "option": "*L",
+            "option": "*LE",
             "graphErrors": "errMeanX:0.5", 
-            "graphYRange": "-1.0:1.0"
+            "graphYRange": "-1.0:1.0",
+	    "graphXRange": "", 
+	    "graphAxisLabel": "Mean #eta:time"
+          },
+          {
+            "name": "hPhiAsideRatio_StatMeanY_Trend",
+            "title": "Mean of #phi ratio - A side",
+            "varexp": "hPhiAsideRatio.meanY:time",
+            "selection": "",
+            "option": "*LE",
+            "graphErrors": "errMeanY:0.0", 
+            "graphYRange": "0.0:1.5",
+	    "graphXRange": "", 
+	    "graphAxisLabel": "Mean #phi ratio A side:time"
+          },
+          {
+            "name": "hPhiAsideRatio_StatMeanY_Trend_Slices",
+            "title": "Mean of #phi ratio - A side",
+            "varexp": "hPhiAsideRatio.meanY:slices",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "errMeanY:0.0", 
+            "graphYRange": "0.0:1.5",
+	    "graphXRange": "-0.5:6.5", 
+	    "graphAxisLabel": "Mean #phi ratio A side:#phi"
+          },
+          {
+            "name": "hPhiCsideRatio_StatMeanY_Trend",
+            "title": "Mean of #phi ratio - C side",
+            "varexp": "hPhiCsideRatio.meanY:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "errMeanY:0.", 
+            "graphYRange": "0.0:1.5",
+	    "graphXRange": "", 
+	    "graphAxisLabel": "Mean #phi ratio C side:time"
+          },
+          {
+            "name": "hPhiCsideRatio_StatMeanY_Trend_Slices",
+            "title": "Mean of #phi ratio - C side",
+            "varexp": "hPhiCsideRatio.meanY:slices",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "errMeanY:0.0", 
+            "graphYRange": "0.0:1.5",
+	    "graphXRange": "-0.5:6.5", 
+	    "graphAxisLabel": "Mean #phi ratio C side:#phi"
           }
         ],
         "initTrigger": [
@@ -96,28 +165,65 @@
             "path": "qc/TPC/MO/Tracks",
             "names": [ "h2DEtaPhi" ],
             "reductorName": "o2::quality_control_modules::tpc::TH2ReductorTPC",
-            "axisDivision": [ [ "0.0", "3.14", "6.28" ] , [ "-2.0", "-1.0", "0.0", "1.0", "2.0" ] ],
+            "axisDivision": [ [ "0.0", "0.349066", "0.698132", "1.0472", "1.39626", "1.74533", "2.0944", "2.44346", "2.79253", "3.14159", "3.49066", "3.83972", "4.18879", "4.53786", "4.88692", "5.23599", "5.58505", "5.93412", "6.28319" ] , [ "-1.0", "0.0", "1.0" ] ],
             "moduleName": "QcTPC"
           }
         ],
         "plots": [
           {
             "name": "h2DEtaPhi_StatMeanX_Trend",
-            "title": "Mean of the #eta-#phi along #phi",
+            "title": "Mean of #phi for #eta-#phi slices",
             "varexp": "h2DEtaPhi.meanX:time",
             "selection": "",
-            "option": "*L",
+            "option": "*LE",
             "graphErrors": "errMeanX:0.5", 
-            "graphYRange": "-2.0:2.0"
+            "graphYRange": "-2.0:8.0",
+	    "graphXRange": "",
+	    "graphAxisLabel": "Mean #phi:time"
           },
           {
             "name": "h2DEtaPhi_StatMeanY_Trend",
-            "title": "Mean of the #eta-#phi along #eta",
+            "title": "Mean of #eta for #eta-#phi slices",
             "varexp": "h2DEtaPhi.meanY:time",
             "selection": "",
-            "option": "*L",
+            "option": "*LE",
             "graphErrors": "errMeanY:0.5", 
-            "graphYRange": "-2.0:2.0"
+            "graphYRange": "-2.0:2.0",
+	    "graphXRange": "", 
+	    "graphAxisLabel": "Mean #eta:time"
+          },
+          {
+            "name": "h2DEtaPhi_StatMeanY_Trend_Slices",
+            "title": "Mean of the #eta vs slices in #eta and #phi",
+            "varexp": "h2DEtaPhi.meanY:slices2D",
+            "selection": "",
+            "option": "colz text",
+            "graphErrors": "errMeanY:0.5", 
+            "graphYRange": "-1.0:1.0",
+	    "graphXRange": "", 
+	    "graphAxisLabel": "#eta:#phi"
+          },
+          {
+            "name": "h2DEtaPhi_StatMeanX_Trend_Slices",
+            "title": "Mean of the #phi vs slices in #eta and #phi",
+            "varexp": "h2DEtaPhi.meanX:slices2D",
+            "selection": "",
+            "option": "colz text",
+            "graphErrors": "errMeanX:0.5", 
+            "graphYRange": "0.0:6.5",
+	    "graphXRange": "", 
+	    "graphAxisLabel": "#eta:#phi"
+          },
+          {
+            "name": "h2DEtaPhi_NumberEntries_Trend_Slices",
+            "title": "Number of entries per slices in #eta and #phi",
+            "varexp": "h2DEtaPhi.entries:slices2D",
+            "selection": "",
+            "option": "colz text",
+            "graphErrors": "", 
+            "graphYRange": "",
+	    "graphXRange": "", 
+	    "graphAxisLabel": "#eta:#phi"
           }
         ],
         "initTrigger": [

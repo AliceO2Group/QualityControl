@@ -73,6 +73,9 @@ This is a snippet of a JSON structure which configures a post-processing task:
   "qc": {
     "config": {
       ...
+      "postprocessing": {
+        "periodSeconds": 10.0
+      }
     },
     "postprocessing": {
       "MyPostProcessingTask": {
@@ -96,7 +99,7 @@ This is a snippet of a JSON structure which configures a post-processing task:
   }
 }
 ```
-Each task is identified by its name (`MyPostProcessingTask`). One can activate it by setting the `"active"` field to `"true"`. The task is loaded given its full `"className"` and a `"moduleName"` where it is located. The `"detectorName"` might be used by tasks to store generated data in correct paths in QCDB. The `"initTrigger"`, `"updateTrigger"` and `"stopTrigger"` lists contain triggers which should invoke corresponding interface methods.
+Each task is identified by its name (`MyPostProcessingTask`). One can activate it by setting the `"active"` field to `"true"`. The task is loaded given its full `"className"` and a `"moduleName"` where it is located. The `"detectorName"` might be used by tasks to store generated data in correct paths in QCDB. The `"initTrigger"`, `"updateTrigger"` and `"stopTrigger"` lists contain triggers which should invoke corresponding interface methods. The `"periodSeconds"` parameter in the common section defines how often should the triggers be checked. Values larger than 10 seconds should be applied when running synchronously to data taking, while very small periods can be used when processing batches of already existing objects.
 
 Checks can be applied to the results of Post-processing Tasks just as for normal QC Tasks. However, one should use
  data source type of `"PostProcessing"` instead of `"Task"`:
