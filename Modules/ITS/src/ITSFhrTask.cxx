@@ -57,12 +57,19 @@ ITSFhrTask::~ITSFhrTask()
   delete mChipStaveOccupancy[mLayer];
   delete mChipStaveEventHitCheck[mLayer];
   delete mOccupancyPlot[mLayer];
+  delete mDeadChipPos[mLayer];
+  delete mAliveChipPos[mLayer];
+  delete mTotalDeadChipPos;
+  delete mTotalAliveChipPos;
   for (int istave = 0; istave < NStaves[mLayer]; istave++) {
     delete mStaveHitmap[mLayer][istave];
   }
   for (int istave = 0; istave < NStaves[mLayer]; istave++) {
     delete[] mHitnumberLane[istave];
     delete[] mOccupancyLane[istave];
+    delete[] mChipPhi[istave];
+    delete[] mChipEta[istave];
+    delete[] mChipStat[istave];
     int maxlink = mLayer < NLayerIB ? 2 : 3;
     for (int ilink = 0; ilink < maxlink; ilink++) {
       delete[] mErrorCount[istave][ilink];
@@ -75,6 +82,9 @@ ITSFhrTask::~ITSFhrTask()
   }
   delete[] mHitnumberLane;
   delete[] mOccupancyLane;
+  delete[] mChipPhi;
+  delete[] mChipEta;
+  delete[] mChipStat;
   delete[] mErrorCount;
   delete[] mHitPixelID_InStave;
 }
@@ -85,6 +95,9 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
   getParameters();
   o2::base::GeometryManager::loadGeometry(mGeomPath.c_str());
   mGeom = o2::its::GeometryTGeo::Instance();
+  int numOfChips = mGeom->getNumberOfChips();
+
+  
 
   mGeneralOccupancy = new TH2Poly();
   mGeneralOccupancy->SetTitle("General Occupancy;mm;mm");
@@ -110,12 +123,18 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
   mDecoder->setUserDataOrigin(header::DataOrigin("DS")); // set user data origin in dpl
   mDecoder->setUserDataDescription(header::DataDescription("RAWDATA0"));
   mChipsBuffer.resize(mGeom->getNumberOfChips());
-
+  	
+  mGeom->fillMatrixCache(o2::math_utils::bit2Mask(o2::math_utils::TransformType::L2G));
+  const math_utils::Point3D<float> loc(0., 0., 0.);
+  
   if (mLayer != -1) {
     // define the hitnumber, occupancy, errorcount array
     mHitPixelID_InStave = new std::unordered_map<unsigned int, int>**[NStaves[mLayer]];
     mHitnumberLane = new int*[NStaves[mLayer]];
     mOccupancyLane = new double*[NStaves[mLayer]];
+    mChipPhi = new double*[NStaves[mLayer]];
+    mChipEta = new double*[NStaves[mLayer]];
+    mChipStat = new int*[NStaves[mLayer]];
     mErrorCount = new int**[NStaves[mLayer]];
 
     for (int ilayer = 0; ilayer < 7; ilayer++) {
@@ -160,6 +179,9 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
       for (int istave = 0; istave < NStaves[mLayer]; istave++) {
         mHitnumberLane[istave] = new int[nChipsPerHic[mLayer]];
         mOccupancyLane[istave] = new double[nChipsPerHic[mLayer]];
+        mChipPhi[istave] = new double[nChipsPerHic[mLayer]];
+        mChipEta[istave] = new double[nChipsPerHic[mLayer]];
+        mChipStat[istave] = new int[nChipsPerHic[mLayer]];
         mHitPixelID_InStave[istave] = new std::unordered_map<unsigned int, int>*[nHicPerStave[mLayer]];
         for (int ihic = 0; ihic < nHicPerStave[mLayer]; ihic++) {
           mHitPixelID_InStave[istave][ihic] = new std::unordered_map<unsigned int, int>[nChipsPerHic[mLayer]];
@@ -167,6 +189,9 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
         for (int ichip = 0; ichip < nChipsPerHic[mLayer]; ichip++) {
           mHitnumberLane[istave][ichip] = 0;
           mOccupancyLane[istave][ichip] = 0;
+          mChipPhi[istave][ichip] = 0;
+          mChipEta[istave][ichip] = 0;
+          mChipStat[istave][ichip] = 0;
           mChipStaveOccupancy[mLayer]->GetXaxis()->SetBinLabel(ichip + 1, Form("Chip %i", ichip));
           mChipStaveEventHitCheck[mLayer]->GetXaxis()->SetBinLabel(ichip + 1, Form("Chip %i", ichip));
         }
@@ -175,10 +200,18 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
       for (int istave = 0; istave < NStaves[mLayer]; istave++) {
         mHitnumberLane[istave] = new int[nHicPerStave[mLayer] * 2];
         mOccupancyLane[istave] = new double[nHicPerStave[mLayer] * 2];
+        mChipPhi[istave] = new double[nHicPerStave[mLayer] * nChipsPerHic[mLayer]];
+        mChipEta[istave] = new double[nHicPerStave[mLayer] * nChipsPerHic[mLayer]];
+        mChipStat[istave] = new int[nHicPerStave[mLayer] * nChipsPerHic[mLayer]];
         mHitPixelID_InStave[istave] = new std::unordered_map<unsigned int, int>*[nHicPerStave[mLayer]];
         for (int ihic = 0; ihic < nHicPerStave[mLayer]; ihic++) {
           mHitPixelID_InStave[istave][ihic] = new std::unordered_map<unsigned int, int>[nChipsPerHic[mLayer]];
         }
+	for (int ichip = 0; ichip < nHicPerStave[mLayer] * nChipsPerHic[mLayer]; ichip++) {
+	    mChipPhi[istave][ichip] = 0;
+	    mChipEta[istave][ichip] = 0;
+	    mChipStat[istave][ichip] = 0;
+	}
         mChipStaveOccupancy[mLayer]->GetYaxis()->SetBinLabel(istave + 1, Form("Stave %i", istave));
         mChipStaveEventHitCheck[mLayer]->GetYaxis()->SetBinLabel(istave + 1, Form("Stave %i", istave));
         if (mLayer < 5) {
@@ -192,6 +225,7 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
             mChipStaveEventHitCheck[mLayer]->GetXaxis()->SetBinLabel(2 * ihic + 1, Form("%s", OBLabel34[2 * ihic]));
             mChipStaveEventHitCheck[mLayer]->GetXaxis()->SetBinLabel(2 * ihic + 2, Form("%s", OBLabel34[2 * ihic + 1]));
           }
+	  
         } else {
           for (int ihic = 0; ihic < nHicPerStave[mLayer]; ihic++) {
             mHitnumberLane[istave][2 * ihic] = 0;
@@ -284,7 +318,17 @@ void ITSFhrTask::createOccupancyPlots() // create general plots like error, trig
   int nBins[nDim] = { 1024, 512 };
   double Min[nDim] = { 0, 0 };
   double Max[nDim] = { 1024, 512 };
+    //if(!mTotalDeadChipPos) {
+    mTotalDeadChipPos = new TH2D(Form("Occupancy/TotalDeadChipPos"), Form("TotalDeadChipPos "), 240, -2.4, 2.4, 220, -3.3, 3.3 );
+    mTotalDeadChipPos->SetStats(0);
+    getObjectsManager()->startPublishing(mTotalDeadChipPos);
+   // }
 
+    //if(!mTotalAliveChipPos) {
+    mTotalAliveChipPos = new TH2D(Form("Occupancy/TotalAliveChipPos"), Form("TotalAliveChipPos "), 240, -2.4, 2.4, 220, -3.3, 3.3 );	
+    mTotalAliveChipPos->SetStats(0);
+    getObjectsManager()->startPublishing(mTotalAliveChipPos);
+    //}
   // create IB plots
   if (mLayer < NLayerIB) {
     int nBinstmp[nDim] = { nBins[0] * nChipsPerHic[mLayer] / ReduceFraction, nBins[1] / ReduceFraction };
@@ -294,9 +338,15 @@ void ITSFhrTask::createOccupancyPlots() // create general plots like error, trig
       getObjectsManager()->startPublishing(mStaveHitmap[mLayer][istave]);
     }
 
+    mDeadChipPos[mLayer] = new TH2D(Form("Occupancy/Layer%d/Layer%dDeadChipPos", mLayer,  mLayer), Form("DeadChipPos on Layer %d", mLayer), 24, -2.4, 2.4, 20, -3.0, 3.0 );	//every nine chips have same phi
+    mAliveChipPos[mLayer] = new TH2D(Form("Occupancy/Layer%d/Layer%dAliveChipPos", mLayer,  mLayer), Form("AliveChipPos on Layer %d", mLayer), 24, -2.4, 2.4, 20, -3.0, 3.0 );	//every nine chips have same phi
     mChipStaveOccupancy[mLayer] = new TH2D(Form("Occupancy/Layer%d/Layer%dChipStave", mLayer, mLayer), Form("ITS Layer%d, Occupancy vs Chip and Stave", mLayer), nHicPerStave[mLayer] * nChipsPerHic[mLayer], -0.5, nHicPerStave[mLayer] * nChipsPerHic[mLayer] - 0.5, NStaves[mLayer], -0.5, NStaves[mLayer] - 0.5);
+    mDeadChipPos[mLayer]->SetStats(0);
+    mAliveChipPos[mLayer]->SetStats(0);
     mChipStaveOccupancy[mLayer]->SetStats(0);
     mChipStaveOccupancy[mLayer]->GetYaxis()->SetTickLength(0.01);
+    getObjectsManager()->startPublishing(mDeadChipPos[mLayer]);
+    getObjectsManager()->startPublishing(mAliveChipPos[mLayer]);
     getObjectsManager()->startPublishing(mChipStaveOccupancy[mLayer]); // mChipStaveOccupancy
 
     mChipStaveEventHitCheck[mLayer] = new TH2I(Form("Occupancy/Layer%d/Layer%dChipStaveEventHit", mLayer, mLayer), Form("ITS Layer%d, Event Hit Check vs Chip and Stave", mLayer), nHicPerStave[mLayer] * nChipsPerHic[mLayer], -0.5, nHicPerStave[mLayer] * nChipsPerHic[mLayer] - 0.5, NStaves[mLayer], -0.5, NStaves[mLayer] - 0.5);
@@ -313,8 +363,15 @@ void ITSFhrTask::createOccupancyPlots() // create general plots like error, trig
       mStaveHitmap[mLayer][istave] = new THnSparseI(Form("Occupancy/Layer%d/Stave%d/Layer%dStave%dHITMAP", mLayer, istave, mLayer, istave), Form("Hits on Layer %d, Stave %d", mLayer, istave), nDim, nBinstmp, Min, Maxtmp);
       getObjectsManager()->startPublishing(mStaveHitmap[mLayer][istave]);
     }
+
+    mDeadChipPos[mLayer] = new TH2D(Form("Occupancy/Layer%d/Layer%dDeadChipPos", mLayer,  mLayer), Form("DeadChipPos on Layer %d", mLayer), 240, -2.4, 2.4, 220, -3.3, 3.3 );
+    mAliveChipPos[mLayer] = new TH2D(Form("Occupancy/Layer%d/Layer%dAliveChipPos", mLayer,  mLayer), Form("AliveChipPos on Layer %d", mLayer), 240, -2.4, 2.4, 220, -3.3, 3.3 );
     mChipStaveOccupancy[mLayer] = new TH2D(Form("Occupancy/Layer%d/Layer%dChipStave", mLayer, mLayer), Form("ITS Layer%d, Occupancy vs Chip and Stave", mLayer), nHicPerStave[mLayer] * nLanePerHic[mLayer], -0.5, nHicPerStave[mLayer] * nLanePerHic[mLayer] - 0.5, NStaves[mLayer], -0.5, NStaves[mLayer] - 0.5);
+    mDeadChipPos[mLayer]->SetStats(0);
+    mAliveChipPos[mLayer]->SetStats(0);
     mChipStaveOccupancy[mLayer]->SetStats(0);
+    getObjectsManager()->startPublishing(mDeadChipPos[mLayer]);
+    getObjectsManager()->startPublishing(mAliveChipPos[mLayer]);
     getObjectsManager()->startPublishing(mChipStaveOccupancy[mLayer]);
 
     mChipStaveEventHitCheck[mLayer] = new TH2I(Form("Occupancy/Layer%d/Layer%dChipStaveEventHit", mLayer, mLayer), Form("ITS Layer%d, Event Hit Check vs Chip and Stave", mLayer), nHicPerStave[mLayer] * nLanePerHic[mLayer], -0.5, nHicPerStave[mLayer] * nLanePerHic[mLayer] - 0.5, NStaves[mLayer], -0.5, NStaves[mLayer] - 0.5);
@@ -357,6 +414,12 @@ void ITSFhrTask::setPlotsFormat()
     }
   }
 
+  if (mTotalDeadChipPos) {
+     setAxisTitle(mTotalDeadChipPos, "ChipEta", "ChipPhi");
+  }
+  if (mTotalAliveChipPos) {
+     setAxisTitle(mTotalAliveChipPos, "ChipEta", "ChipPhi");
+  }
   for (int ilayer = 0; ilayer < NLayer; ilayer++) {
     if (mOccupancyPlot[ilayer]) {
       mOccupancyPlot[ilayer]->GetXaxis()->SetTitle("log(Occupancy)");
@@ -368,12 +431,24 @@ void ITSFhrTask::setPlotsFormat()
       if (mChipStaveEventHitCheck[ilayer]) {
         setAxisTitle(mChipStaveEventHitCheck[ilayer], "Chip Number", "Stave Number");
       }
+      if (mDeadChipPos[ilayer]) {
+	 setAxisTitle(mDeadChipPos[ilayer], "ChipEta", "ChipPhi");
+      }
+      if (mAliveChipPos[ilayer]) {
+	 setAxisTitle(mAliveChipPos[ilayer], "ChipEta", "ChipPhi");
+      }
     } else {
       if (mChipStaveOccupancy[ilayer]) {
         setAxisTitle(mChipStaveOccupancy[ilayer], "", "Stave Number");
       }
       if (mChipStaveEventHitCheck[ilayer]) {
         setAxisTitle(mChipStaveEventHitCheck[ilayer], "", "Stave Number");
+      }
+      if (mDeadChipPos[ilayer]) {
+         setAxisTitle(mDeadChipPos[ilayer], "ChipEta", "ChipPhi");
+      }
+      if (mAliveChipPos[ilayer]) {
+         setAxisTitle(mAliveChipPos[ilayer], "ChipEta", "ChipPhi");
       }
     }
   }
@@ -469,6 +544,8 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
   // define digit hit vector
   std::vector<Digit>** digVec = new std::vector<Digit>*[NStaves[lay]];            // IB : digVec[stave][0]; OB : digVec[stave][hic]
   std::vector<ROFRecord>** digROFVec = new std::vector<ROFRecord>*[NStaves[lay]]; // IB : digROFVec[stave][0]; OB : digROFVec[stave][hic]
+  const math_utils::Point3D<float> loc(0., 0., 0.);  				  
+  
   if (lay < NLayerIB) {
     for (int istave = 0; istave < NStaves[lay]; istave++) {
       digVec[istave] = new std::vector<Digit>[nHicPerStave[lay]];
@@ -482,6 +559,27 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
 
   // decode raw data and save digit hit to digit hit vector, and save hitnumber per chip/hic
+  
+  // get the position of all chips in this layer
+for (int ichip = ChipBoundary[lay]; ichip < ChipBoundary[lay+1]; ichip++)
+{
+	int stave = 0, chip = 0;
+	auto glo = mGeom->getMatrixL2G(ichip)(loc);
+	if(lay <NLayerIB) {
+		stave = ichip / 9 -StaveBoundary[lay];
+		chip = ichip % 9;
+		mChipEta[stave][chip] = glo.eta();
+          	mChipPhi[stave][chip] = glo.phi();
+	}
+	else {
+		stave = (ichip-ChipBoundary[lay]) / (14 * nHicPerStave[lay]);
+		int chipIdLocal = (ichip- ChipBoundary[lay]) % (14 * nHicPerStave[lay]);
+		chip = chipIdLocal % 14;
+		mChipEta[stave][chip] = glo.eta();
+          	mChipPhi[stave][chip] = glo.phi();
+	}
+}
+
   while ((mChipDataBuffer = mDecoder->getNextChipData(mChipsBuffer))) {
     if (mChipDataBuffer) {
       int stave = 0, chip = 0;
@@ -494,6 +592,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
           chip = mChipDataBuffer->getChipID() % 9;
           hic = 0;
           mHitnumberLane[stave][chip]++;
+	  mChipStat[stave][chip]++;
         } else {
           stave = (mChipDataBuffer->getChipID() - ChipBoundary[lay]) / (14 * nHicPerStave[lay]);
           int chipIdLocal = (mChipDataBuffer->getChipID() - ChipBoundary[lay]) % (14 * nHicPerStave[lay]);
@@ -502,6 +601,8 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
 
           lane = (chipIdLocal % (14 * nHicPerStave[lay])) / (14 / 2);
           mHitnumberLane[stave][lane]++;
+	  mChipStat[stave][chip]++;
+
         }
         digVec[stave][hic].emplace_back(mChipDataBuffer->getChipID(), pixel.getRow(), pixel.getCol());
       }
@@ -652,14 +753,23 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
     }
   }
-
   // fill Occupancy plots, chip stave occupancy plots and error statistic plots
   for (int i = 0; i < (int)activeStaves.size(); i++) {
     int istave = activeStaves[i];
     mOccupancyPlot[lay]->Add(occupancyPlotTmp[i]);
     if (lay < NLayerIB) {
       for (int ichip = 0; ichip < nChipsPerHic[lay]; ichip++) {
+	int EtaBin = (mChipEta[istave][ichip]+2.4)/0.2;
+	int PhiBin = (mChipPhi[istave][ichip]+3.0)/0.3;
         mChipStaveOccupancy[lay]->SetBinContent(ichip + 1, istave + 1, mOccupancyLane[istave][ichip]);
+	if (!mChipStat[istave][ichip]) {
+           mDeadChipPos[lay]->SetBinContent(EtaBin, PhiBin,mChipStat[istave][ichip]);
+           mTotalDeadChipPos->SetBinContent(EtaBin, PhiBin,mChipStat[istave][ichip]);
+	}
+        else {
+           mAliveChipPos[lay]->SetBinContent(EtaBin, PhiBin,mChipStat[istave][ichip]);
+           mTotalAliveChipPos->SetBinContent(EtaBin, PhiBin,mChipStat[istave][ichip]);
+	}
         int ilink = ichip / 3;
         for (int ierror = 0; ierror < o2::itsmft::GBTLinkDecodingStat::NErrorsDefined; ierror++) {
           if (mErrorVsFeeid && (mErrorCount[istave][ilink][ierror] != 0)) {
@@ -670,6 +780,19 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
       mGeneralOccupancy->SetBinContent(istave + 1 + StaveBoundary[mLayer], *(std::max_element(mOccupancyLane[istave], mOccupancyLane[istave] + nChipsPerHic[lay])));
       mGeneralNoisyPixel->SetBinContent(istave + 1 + StaveBoundary[mLayer], mNoisyPixelNumber[lay][istave]);
     } else {
+      for (int ichip = 0; ichip < nHicPerStave[lay] * nChipsPerHic[lay]; ichip++) {
+	int EtaBin = (mChipEta[istave][ichip]+2.4)/0.02;
+	int PhiBin = (mChipPhi[istave][ichip]+3.3)/0.03;
+      	if (!mChipStat[istave][ichip]) {
+           mDeadChipPos[lay]->SetBinContent(EtaBin, PhiBin,mChipStat[istave][ichip]);
+           mTotalDeadChipPos->SetBinContent(EtaBin, PhiBin,mChipStat[istave][ichip]);
+      	}
+        else {
+           mAliveChipPos[lay]->SetBinContent(EtaBin, PhiBin,mChipStat[istave][ichip]);
+           mTotalAliveChipPos->SetBinContent(EtaBin, PhiBin,mChipStat[istave][ichip]);
+	}
+      }
+      
       for (int ihic = 0; ihic < nHicPerStave[lay]; ihic++) {
         int ilink = ihic / (nHicPerStave[lay] / 2);
         mChipStaveOccupancy[lay]->SetBinContent(2 * ihic + 1, istave + 1, mOccupancyLane[istave][2 * ihic]);
@@ -759,6 +882,10 @@ void ITSFhrTask::resetOccupancyPlots()
   mChipStaveOccupancy[mLayer]->Reset();
   mChipStaveEventHitCheck[mLayer]->Reset();
   mOccupancyPlot[mLayer]->Reset();
+  mDeadChipPos[mLayer]->Reset();
+  mAliveChipPos[mLayer]->Reset();
+  mTotalDeadChipPos->Reset();
+  mTotalAliveChipPos->Reset();
   for (int istave = 0; istave < NStaves[mLayer]; istave++) {
     mStaveHitmap[mLayer][istave]->Reset();
   }

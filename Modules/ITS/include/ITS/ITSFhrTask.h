@@ -118,6 +118,9 @@ class ITSFhrTask final : public TaskInterface
   int** mHitnumberLane /* = new int*[NStaves[lay]]*/;       // IB : hitnumber[stave][chip]; OB : hitnumber[stave][lane]
   double** mOccupancyLane /* = new double*[NStaves[lay]]*/; // IB : occupancy[stave][chip]; OB : occupancy[stave][Lane]
   int*** mErrorCount /* = new int**[NStaves[lay]]*/;        // IB : errorcount[stave][FEE][errorid]
+  double** mChipPhi /* = new double*[NStaves[lay]]*/;	   //IB/OB : mChipPhi[Stave][chip]
+  double** mChipEta /* = new double*[NStaves[lay]]*/;	   //IB/OB : mChipEta[Stave][chip]
+  int** mChipStat /* = new double*[NStaves[lay]]*/;	   //IB/OB : mChipStat[Stave][chip]
   int mNoisyPixelNumber[7][48] = { { 0 } };
 
   int mMaxGeneralAxisRange = -3;  // the range of TH2Poly plots z axis range, pow(10, mMinGeneralAxisRange) ~ pow(10, mMaxGeneralAxisRange)
@@ -146,6 +149,10 @@ class ITSFhrTask final : public TaskInterface
 
   // Occupancy and hit-map
   THnSparseI* mStaveHitmap[7][48];
+  TH2D* mDeadChipPos[7];
+  TH2D* mAliveChipPos[7];
+  TH2D* mTotalDeadChipPos;
+  TH2D* mTotalAliveChipPos;
   TH2D* mChipStaveOccupancy[7];
   TH2I* mChipStaveEventHitCheck[7];
   TH1D* mOccupancyPlot[7];
