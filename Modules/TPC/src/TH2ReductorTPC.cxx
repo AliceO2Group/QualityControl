@@ -18,10 +18,10 @@
 
 #include "QualityControl/QcInfoLogger.h"
 #include "TPC/TH2ReductorTPC.h"
-#include <TAxis.h>
 #include <TCanvas.h>
 #include <TH2.h>
 #include <TList.h>
+#include <fmt/format.h>
 
 namespace o2::quality_control_modules::tpc
 {
@@ -72,6 +72,8 @@ void TH2ReductorTPC::update(TObject* obj, std::vector<SliceInfo>& reducedSource,
   ILOG(Info, Support) << "Number of input histograms for the trending of "
                       << obj->GetName() << ": " << numberPads << ENDM;
 
+  double labelIterator = 0;
+
   // Access the histograms embedded in 'obj'.
   for (int iPad = 0; iPad < numberPads; iPad++) {
     if (isCanvas) {
@@ -82,33 +84,52 @@ void TH2ReductorTPC::update(TObject* obj, std::vector<SliceInfo>& reducedSource,
     }
 
     if (histo) {
+
+      // Bin Numbers for correctly getting the statistical properties
+      int binXLow = 0;
+      int binXUp = 0;
+      int binYLow = 0;
+      int binYUp = 0;
+
       // Get the trending quantities defined in 'SlicerInfo'.
       // The two for-loop do only one pass if we have an input canvas.
+
       for (int iX = 0; iX < numberSlicesX; iX++) {
         std::string thisRange;
+        float sliceLabelX = 0.;
+
         if (useSlicingX) {
-          histo->GetXaxis()->SetRangeUser(axis[0][iX], axis[0][iX + 1]);
-          thisRange = Form("RangeX: [%.1f, %.1f]", axis[0][iX], axis[0][iX + 1]);
+          getBinSlices(histo->GetXaxis(), axis[0][iX], axis[0][iX + 1], binXLow, binXUp, sliceLabelX);
+          histo->GetXaxis()->SetRange(binXLow, binXUp);
+          thisRange = fmt::format("{0:s} - RangeX: [{1:.1f}, {2:.1f}]", histo->GetTitle(), axis[0][iX], axis[0][iX + 1]);
         } else {
           if (isCanvas) {
-            thisRange = Form("ROC: %d", iPad);
+            thisRange = fmt::format("{0:s}", histo->GetTitle());
+            sliceLabelX = (float)(iX);
           } else {
-            thisRange = Form("RangeX (default): [%.1f, %.1f]", histo->GetXaxis()->GetXmin(), histo->GetXaxis()->GetXmax());
+            thisRange = fmt::format("{0:s} - RangeX (default): [{1:.1f}, {2:.1f}]", histo->GetTitle(), histo->GetXaxis()->GetXmin(), histo->GetXaxis()->GetXmax());
+            sliceLabelX = (histo->GetXaxis()->GetXmin() + histo->GetXaxis()->GetXmax()) / 2.;
           }
+          binXLow = 1;
+          binXUp = histo->GetNbinsX();
         }
 
         for (int jY = 0; jY < numberSlicesY; jY++) {
+          float sliceLabelY = 0.;
+
           if (useSlicingY) {
-            histo->GetYaxis()->SetRangeUser(axis[1][jY], axis[1][jY + 1]);
-            // thisRange += Form(" and RangeY: [%.1f, %.1f]", axis[1][jY], axis[1][jY + 1]);
+            getBinSlices(histo->GetYaxis(), axis[1][jY], axis[1][jY + 1], binYLow, binYUp, sliceLabelY);
+            histo->GetYaxis()->SetRange(binYLow, binYUp);
+            ranges.push_back(thisRange + fmt::format(" and RangeY: [{0:.1f}, {1:.1f}]", axis[1][jY], axis[1][jY + 1]));
           } else {
-            // thisRange += Form(" and RangeY (default): [%.1f, %.1f]", histo->GetYaxis()->GetXmin(), histo->GetYaxis()->GetXmax());
-            // thisRange += Form(" and RangeY (default): [-2., 2.]");
+            ranges.push_back(thisRange + fmt::format(" and RangeY (default): [{0:.1f}, {1:.1f}]", histo->GetYaxis()->GetXmin(), histo->GetYaxis()->GetXmax()));
+            sliceLabelY = (histo->GetYaxis()->GetXmin() + histo->GetYaxis()->GetXmax()) / 2.;
+            binYLow = 1;
+            binYUp = histo->GetNbinsY();
           }
-          ranges.push_back(thisRange);
 
           SliceInfo mySlice;
-          mySlice.entries = histo->GetEntries();
+          mySlice.entries = histo->Integral(binXLow, binXUp, binYLow, binYUp, "");
           mySlice.meanX = histo->GetMean(1);
           mySlice.stddevX = histo->GetStdDev(1);
           if (mySlice.entries != 0) {
@@ -124,6 +145,9 @@ void TH2ReductorTPC::update(TObject* obj, std::vector<SliceInfo>& reducedSource,
           } else {
             mySlice.errMeanY = 0.;
           }
+
+          mySlice.sliceLabelX = sliceLabelX;
+          mySlice.sliceLabelY = sliceLabelY;
 
           reducedSource.emplace_back(mySlice);
         }
