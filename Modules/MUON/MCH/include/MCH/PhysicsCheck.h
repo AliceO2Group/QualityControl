@@ -20,6 +20,8 @@
 #include "QualityControl/CheckInterface.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
+#include "MCHRawCommon/DataFormats.h"
+#include "MCHRawElecMap/Mapper.h"
 #include <string>
 
 namespace o2::quality_control_modules::muonchambers
@@ -43,9 +45,17 @@ class PhysicsCheck : public o2::quality_control::checker::CheckInterface
   std::string getAcceptedType() override;
 
  private:
+  bool checkPadMapping(uint16_t feeId, uint8_t linkId, uint8_t eLinkId, o2::mch::raw::DualSampaChannelId channel);
+
   int mPrintLevel;
-  double minOccupancy;
-  double maxOccupancy;
+  double mMinOccupancy;
+  double mMaxOccupancy;
+
+  o2::mch::raw::Elec2DetMapper mElec2DetMapper;
+  o2::mch::raw::Det2ElecMapper mDet2ElecMapper;
+  o2::mch::raw::FeeLink2SolarMapper mFeeLink2SolarMapper;
+  o2::mch::raw::Solar2FeeLinkMapper mSolar2FeeLinkMapper;
+
   ClassDefOverride(PhysicsCheck, 2);
 };
 
