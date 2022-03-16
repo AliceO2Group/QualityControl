@@ -114,15 +114,15 @@ void BasicPPTask::initialize(Trigger, framework::ServiceRegistry& services)
   getObjectsManager()->startPublishing(mTime);
 }
 
-void BasicPPTask::update(Trigger, framework::ServiceRegistry&)
+void BasicPPTask::update(Trigger t, framework::ServiceRegistry&)
 {
-  auto mo = mDatabase->retrieveMO(mPathDigitQcTask, "Triggers");
+  auto mo = mDatabase->retrieveMO(mPathDigitQcTask, "Triggers", t.timestamp, t.activity);
   auto hTriggers = mo ? (TH1F*)mo->getObject() : nullptr;
   if (!hTriggers) {
     ILOG(Error, Support) << "MO \"Triggers\" NOT retrieved!!!" << ENDM;
   }
 
-  auto mo2 = mDatabase->retrieveMO(mPathDigitQcTask, mCycleDurationMoName);
+  auto mo2 = mDatabase->retrieveMO(mPathDigitQcTask, mCycleDurationMoName, t.timestamp, t.activity);
   auto hCycleDuration = mo2 ? (TH1D*)mo2->getObject() : nullptr;
   if (!hCycleDuration) {
     ILOG(Error, Support) << "MO \"" << mCycleDurationMoName << "\" NOT retrieved!!!" << ENDM;
@@ -171,13 +171,13 @@ void BasicPPTask::update(Trigger, framework::ServiceRegistry&)
     leg->SetFillStyle(1);
   }
 
-  auto mo3 = mDatabase->retrieveMO(mPathDigitQcTask, "AmpPerChannel");
+  auto mo3 = mDatabase->retrieveMO(mPathDigitQcTask, "AmpPerChannel", t.timestamp, t.activity);
   auto hAmpPerChannel = mo3 ? (TH2D*)mo3->getObject() : nullptr;
   if (!hAmpPerChannel) {
     ILOG(Error, Support) << "MO \"AmpPerChannel\" NOT retrieved!!!"
                          << ENDM;
   }
-  auto mo4 = mDatabase->retrieveMO(mPathDigitQcTask, "TimePerChannel");
+  auto mo4 = mDatabase->retrieveMO(mPathDigitQcTask, "TimePerChannel", t.timestamp, t.activity);
   auto hTimePerChannel = mo4 ? (TH2D*)mo4->getObject() : nullptr;
   if (!hTimePerChannel) {
     ILOG(Error, Support) << "MO \"TimePerChannel\" NOT retrieved!!!"
@@ -202,7 +202,7 @@ void BasicPPTask::update(Trigger, framework::ServiceRegistry&)
   }
 }
 
-void BasicPPTask::finalize(Trigger, framework::ServiceRegistry&)
+void BasicPPTask::finalize(Trigger t, framework::ServiceRegistry&)
 {
 }
 
