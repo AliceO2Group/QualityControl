@@ -12,7 +12,6 @@
 /// \file    TrendingTaskITSCluster.cxx
 /// \author  Ivan Ravasenga on the structure from Piotr Konopka
 ///
-
 #include "ITS/TrendingTaskITSCluster.h"
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/DatabaseInterface.h"
@@ -62,9 +61,7 @@ void TrendingTaskITSCluster::initialize(Trigger, framework::ServiceRegistry&)
 void TrendingTaskITSCluster::update(Trigger, framework::ServiceRegistry& services)
 {
   auto& qcdb = services.get<repository::DatabaseInterface>();
-
   trendValues(qcdb);
-
   storePlots(qcdb);
   storeTrend(qcdb);
 }
@@ -166,11 +163,9 @@ void TrendingTaskITSCluster::storePlots(repository::DatabaseInterface& qcdb)
       ILOG(Info, Support) << " Saving " << plot.name << " to CCDB " << ENDM;
       auto mo = std::make_shared<MonitorObject>(g, mConfig.taskName, "o2::quality_control_modules::its::TrendingTaskITSCluster", mConfig.detectorName);
       mo->setIsOwner(false);
-      qcdb.storeMO(mo);
       if (plot.name.find("avg_grouped_mean") != std::string::npos) {
         c_avg[2]->cd();
         if (ilay == 0) {
-          printf("GROUPED MEAN L) \n");
           int npoints = g->GetN();
           TH1F* hfake = new TH1F("hfake", Form("%s; %s; Avg grouped cluster size (pixel)", g->GetTitle(), g->GetXaxis()->GetTitle()), npoints, 0.5, (double)npoints + 0.5);
           hfake->GetYaxis()->SetRangeUser(min, max);
@@ -185,11 +180,9 @@ void TrendingTaskITSCluster::storePlots(repository::DatabaseInterface& qcdb)
           delete hfake;
         }
         g->DrawClone("same");
-        printf("GROUPED drew g \n");
         TGraph* gr = new TGraph(); // dummy histo
         SetGraphStyle(gr, col[colidx], mkr[mkridx]);
         legend_grouped_mean->AddEntry(gr, Form("layer %d", ilay));
-        printf("GROUPED added legend \n");
       }
       if (plot.name.find("avg_grouped_stddev") != std::string::npos) {
         c_avg[3]->cd();
@@ -301,48 +294,6 @@ void TrendingTaskITSCluster::storePlots(repository::DatabaseInterface& qcdb)
   ilay = 0;
   double ymin[NTRENDSCLUSTER] = { 0, 1e-1, -.5, 1e-9 };
   double ymax[NTRENDSCLUSTER] = { 50, 1e-5, 15.5, 1 };
-
-  // Loop on plots
-  for (const auto& plot : mConfig.plots) {
-    if (countplots > nStaves[ilay] - 1) {
-      countplots = 0;
-      ilay++;
-    }
-
-    colidx = countplots > 13  ? countplots - 14
-             : countplots > 6 ? countplots - 7
-                              : countplots;
-    mkridx = countplots > 13 ? 2 : countplots > 6 ? 1
-                                                  : 0;
-    int index = 0;
-    if (plot.name.find("occ") != std::string::npos) {
-      index = 3;
-    } else if (plot.name.find("avg") != std::string::npos) {
-      continue;
-    } else if (plot.name.find("chips") != std::string::npos)
-      index = 2;
-    else if (plot.name.find("stddev") != std::string::npos)
-      index = 1;
-    else
-      index = 0;
-    bool isrun = plot.varexp.find("ntreeentries") != std::string::npos ? true : false; // vs run or vs time
-    long int n = mTrend->Draw(plot.varexp.c_str(), plot.selection.c_str(), "goff");    // plot.option.c_str());
-
-    // post processing plot
-    TGraph* g = new TGraph(n, mTrend->GetV2(), mTrend->GetV1());
-    SetGraphStyle(g, col[colidx], mkr[mkridx]);
-    SetGraphNameAndAxes(g, plot.name, plot.title, isrun ? "run" : "time", ytitles[index], ymin[index], ymax[index], runlist);
-    ILOG(Info, Support) << " Saving " << plot.name << " to CCDB " << ENDM;
-    auto mo = std::make_shared<MonitorObject>(g, mConfig.taskName, "o2::quality_control_modules::its::TrendingTaskITSCluster", mConfig.detectorName);
-    mo->setIsOwner(false);
-    qcdb.storeMO(mo);
-    // It should delete everything inside. Confirmed by trying to delete histo
-    // after and getting a segfault.
-
-    delete g;
-    if (plot.name.find("occ") != std::string::npos)
-      countplots++;
-  } // end loop on plots
 
   //
   // Create canvas with multiple trends - average threshold - 1 canvas per layer
