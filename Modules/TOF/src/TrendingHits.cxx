@@ -63,18 +63,18 @@ void TrendingHits::update(Trigger t, framework::ServiceRegistry& services)
 {
   auto& qcdb = services.get<repository::DatabaseInterface>();
 
-  trendValues(t.timestamp, qcdb);
+  trendValues(t, qcdb);
   generatePlots();
 }
 
-void TrendingHits::finalize(Trigger, framework::ServiceRegistry&)
+void TrendingHits::finalize(Trigger t, framework::ServiceRegistry&)
 {
   generatePlots();
 }
 
-void TrendingHits::trendValues(uint64_t timestamp, repository::DatabaseInterface& qcdb)
+void TrendingHits::trendValues(const Trigger& t, repository::DatabaseInterface& qcdb)
 {
-  mTime = timestamp / 1000; // ROOT expects seconds since epoch
+  mTime = t.timestamp / 1000; // ROOT expects seconds since epoch
   // todo get run number when it is available. consider putting it inside monitor object's metadata (this might be not
   //  enough if we trend across runs).
   mMetaData.runNumber = -1;
@@ -83,13 +83,13 @@ void TrendingHits::trendValues(uint64_t timestamp, repository::DatabaseInterface
 
     // todo: make it agnostic to MOs, QOs or other objects. Let the reductor cast to whatever it needs.
     if (dataSource.type == "repository") {
-      auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name, timestamp);
+      auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name, t.timestamp, t.activity);
       TObject* obj = mo ? mo->getObject() : nullptr;
       if (obj) {
         mReductors[dataSource.name]->update(obj);
       }
     } else if (dataSource.type == "repository-quality") {
-      auto qo = qcdb.retrieveQO(dataSource.path + "/" + dataSource.name, timestamp);
+      auto qo = qcdb.retrieveQO(dataSource.path + "/" + dataSource.name, t.timestamp, t.activity);
       if (qo) {
         mReductors[dataSource.name]->update(qo.get());
       }
