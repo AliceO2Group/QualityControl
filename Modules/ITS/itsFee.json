@@ -37,8 +37,6 @@
                 "location": "local",
                 "taskParameters": {
                     "NPayloadSizeBins": "4096",
-                    "MaxGeneralAxisRange": "6",
-                    "MinGeneralAxisRange": "0"
                 }
             }
         },
