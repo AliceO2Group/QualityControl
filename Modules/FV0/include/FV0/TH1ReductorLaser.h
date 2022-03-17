@@ -17,24 +17,26 @@
 #ifndef QUALITYCONTROL_TH1REDUCTORLASER_H
 #define QUALITYCONTROL_TH1REDUCTORLASER_H
 
-  #include "QualityControl/Reductor.h"
+#include "QualityControl/Reductor.h"
 
-namespace o2::quality_control_modules::fv0 {
+namespace o2::quality_control_modules::fv0
+{
 
 /// \brief A Reductor which obtains the most popular characteristics of TH1.
 ///
 /// A Reductor which obtains the most popular characteristics of TH1.
 /// It produces a branch in the format: "mean/D:stddev:entries"
-class TH1ReductorLaser : public quality_control::postprocessing::Reductor {
-public:
+class TH1ReductorLaser : public quality_control::postprocessing::Reductor
+{
+ public:
   TH1ReductorLaser() = default;
   ~TH1ReductorLaser() = default;
 
-  void *getBranchAddress() override;
-  const char *getBranchLeafList() override;
-  void update(TObject *obj) override;
+  void* getBranchAddress() override;
+  const char* getBranchLeafList() override;
+  void update(TObject* obj) override;
 
-private:
+ private:
   struct {
     Double_t mean;
     Double_t mean1fit;
