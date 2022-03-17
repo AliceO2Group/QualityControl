@@ -34,10 +34,9 @@
 #include <regex>
 #include <type_traits>
 
-using namespace o2::quality_control::core;
+      using namespace o2::quality_control::core;
 
-namespace o2::quality_control_modules::fv0
-{
+namespace o2::quality_control_modules::fv0 {
 namespace ch_data = helper::channel_data;
 using ChannelData = o2::fv0::ChannelData;
 using Digit = o2::fv0::BCData;
