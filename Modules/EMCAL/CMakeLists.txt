@@ -31,7 +31,10 @@ install(TARGETS O2QcEMCAL
 
 install (
   DIRECTORY etc DESTINATION Modules/EMCAL
-  )
+)
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/EMCAL
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 
 # ---- Executables ----
 

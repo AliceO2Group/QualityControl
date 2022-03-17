@@ -23,6 +23,9 @@ add_root_dictionary(
   LINKDEF include/MID/LinkDef.h
   BASENAME O2QcMID)
 
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/MID
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+
 # ---- Test(s) ----
 
 set(TEST_SRCS test/testQcMID.cxx)
