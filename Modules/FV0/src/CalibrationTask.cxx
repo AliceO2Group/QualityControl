@@ -20,8 +20,7 @@
 
 #include "QualityControl/QcInfoLogger.h"
 #include "FV0/CalibrationTask.h"
-//#include "DataFormatsFV0/Digit.h"
-#include "DataFormatsFV0/BCData.h"
+#include "DataFormatsFV0/Digit.h"
 #include "DataFormatsFV0/ChannelData.h"
 #include "FV0Base/Constants.h"
 #include <Framework/InputRecord.h>
@@ -93,20 +92,20 @@ void CalibrationTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (mCurrentChannelTimeCalibrationObject) {
       //   mCalibratedChannelTimeHistogram->Fill(channel.time + mCurrentChannelTimeCalibrationObject->mTimeOffsets[channel.getChannelID()]);
       //   mCalibratedTimePerChannelHistogram->Fill(channel.getChannelID(), channel.time + mCurrentChannelTimeCalibrationObject->mTimeOffsets[channel.getChannelID()]);
-      mCalibratedChannelTimeHistogram->Fill(channel.time - mCurrentChannelTimeCalibrationObject->mTimeOffsets[channel.getChannelID()]);
-      mCalibratedTimePerChannelHistogram->Fill(channel.getChannelID(), channel.time - mCurrentChannelTimeCalibrationObject->mTimeOffsets[channel.getChannelID()]);
-
+      mCalibratedChannelTimeHistogram->Fill(channel.CFDTime - mCurrentChannelTimeCalibrationObject->mTimeOffsets[channel.getChannelID()]);
+      mCalibratedTimePerChannelHistogram->Fill(channel.getChannelID(), channel.CFDTime - mCurrentChannelTimeCalibrationObject->mTimeOffsets[channel.getChannelID()]);
     } else {
-      mCalibratedChannelTimeHistogram->Fill(channel.time);
-      mCalibratedTimePerChannelHistogram->Fill(channel.getChannelID(), channel.time);
+      mCalibratedChannelTimeHistogram->Fill(channel.CFDTime);
+      mCalibratedTimePerChannelHistogram->Fill(channel.getChannelID(), channel.CFDTime);
     }
-    mNotCalibratedChannelTimeHistogram->Fill(channel.time);
-    mNotCalibratedTimePerChannelHistogram->Fill(channel.getChannelID(), channel.time);
+    mNotCalibratedChannelTimeHistogram->Fill(channel.CFDTime);
+    mNotCalibratedTimePerChannelHistogram->Fill(channel.getChannelID(), channel.CFDTime);
     // std::cout <<  "-------++++++++++++++++++++++----------++++++++++++++------------_+++++++++++++++++ "  << std::endl;
     // std::cout << channel.time << std::endl;
     // std::cout <<  "-------++++++++++++++++++++++----------++++++++++++++------------_+++++++++++++++++ "  << std::endl;
   }
 }
+
 void CalibrationTask::endOfCycle()
 {
   ILOG(Info, Support) << "endOfCycle" << ENDM;

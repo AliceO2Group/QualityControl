@@ -119,8 +119,8 @@ void TriggerQcTask::startOfCycle()
 
 void TriggerQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  auto channels = ctx.inputs().get<gsl::span<ChannelData>>("channels");
-  auto digits = ctx.inputs().get<gsl::span<Digit>>("digits");
+  auto channels = ctx.inputs().get<gsl::span<o2::fv0::ChannelData>>("channels");
+  auto digits = ctx.inputs().get<gsl::span<o2::fv0::Digit>>("digits");
 
   for (auto& digit : digits) {
     const auto& vecChData = digit.getBunchChannelData(channels);
@@ -134,17 +134,18 @@ void TriggerQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     int nFiredChannelsInner = 0;
     int nFiredChannelsOuter = 0;
     for (const auto& chData : vecChData) {
-      if (ch_data::getCharge(chData) <= 0)
+      if (chData.QTCAmpl <= 0)
         continue;
-      if (ch_data::getChId(chData) >= sNCHANNELS_PM) { // skip reference PMT
+
+      if (chData.ChId >= sNCHANNELS_PM) { // skip reference PMT
         continue;
       }
 
-      if (ch_data::getChId(chData) < sNCHANNELS_PM_INNER) {
-        sumAmplInner += ch_data::getCharge(chData);
+      if (chData.ChId < sNCHANNELS_PM_INNER) {
+        sumAmplInner += chData.QTCAmpl;
         nFiredChannelsInner++;
       } else {
-        sumAmplOuter += ch_data::getCharge(chData);
+        sumAmplOuter += chData.QTCAmpl;
         nFiredChannelsOuter++;
       }
     }
@@ -166,7 +167,7 @@ void TriggerQcTask::monitorData(o2::framework::ProcessingContext& ctx)
         mHistTriggersSw->Fill(entry.first);
 
     for (const auto& entry : mMapTrgSoftware) {
-      bool isTCMFired = digit.mTriggers.triggerSignals & (1 << entry.first);
+      bool isTCMFired = digit.mTriggers.triggersignals & (1 << entry.first);
       bool isSwFired = entry.second;
       if (!isTCMFired && isSwFired)
         mHistTriggersSoftwareVsTCM->Fill(entry.first, ComparisonResult::kSWonly);
