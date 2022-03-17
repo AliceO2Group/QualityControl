@@ -36,13 +36,14 @@
 
 using namespace o2::quality_control::core;
 
-      namespace o2::quality_control_modules::fv0  {
+namespace o2::quality_control_modules::fv0
+{
 namespace ch_data = helper::channel_data;
 using ChannelData = o2::fv0::ChannelData;
 using Digit = o2::fv0::BCData;
 /// \brief Quality Control DPL Task for FV0's digit visualization
 /// \author Artur Furs afurs@cern.ch
-class DigitQcTaskLaser final : public TaskInterface 
+class DigitQcTaskLaser final : public TaskInterface
 {
  public:
   /// \brief Constructor
@@ -78,11 +79,11 @@ class DigitQcTaskLaser final : public TaskInterface
   const float mCFDChannel2NS = 0.01302; // CFD channel width in ns
 
   template <typename Param_t, typename = typename std::enable_if<
-                                  std::is_floating_point<Param_t>::value ||
-                                  std::is_same<std::string, Param_t>::value ||
-                                  (std::is_integral<Param_t>::value &&
-                                   !std::is_same<bool, Param_t>::value)>::type>
-  auto parseParameters(const std::string &param, const std::string &del)
+                                std::is_floating_point<Param_t>::value ||
+                                std::is_same<std::string, Param_t>::value ||
+                                (std::is_integral<Param_t>::value &&
+                                 !std::is_same<bool, Param_t>::value)>::type>
+  auto parseParameters(const std::string& param, const std::string& del)
   {
     std::regex reg(del);
     std::sregex_token_iterator first{ param.begin(), param.end(), reg, -1 }, last;
@@ -113,7 +114,7 @@ class DigitQcTaskLaser final : public TaskInterface
   std::unique_ptr<TH1F> mHistNumCFD;
 
   // temp
-  enum ETrgMenu { kMinBias, 
+  enum ETrgMenu { kMinBias,
                   kOuterRing,
                   kNChannels,
                   kCharge,
