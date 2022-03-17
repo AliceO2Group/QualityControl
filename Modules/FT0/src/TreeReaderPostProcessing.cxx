@@ -40,7 +40,7 @@ void TreeReaderPostProcessing::initialize(Trigger, framework::ServiceRegistry& s
 void TreeReaderPostProcessing::update(Trigger, framework::ServiceRegistry&)
 {
   mChargeHistogram->Reset();
-  auto mo = mDatabase->retrieveMO("qc/FT0/MO/BasicDigitQcTask", "EventTree");
+  auto mo = mDatabase->retrieveMO("FT0/MO/BasicDigitQcTask", "EventTree");
   TTree* moTree = static_cast<TTree*>(mo ? mo->getObject() : nullptr);
 
   if (moTree) {

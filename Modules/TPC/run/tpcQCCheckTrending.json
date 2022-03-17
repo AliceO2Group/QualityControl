@@ -57,14 +57,14 @@
         "dataSources": [
           {
             "type": "repository",
-            "path": "qc/TPC/MO/PID",
+            "path": "TPC/MO/PID",
             "names": [ "hNClusters", "hdEdxTot", "hdEdxMax", "hTgl", "hSnp", "hdEdxEles",  "hdEdxMips" ],
             "reductorName": "o2::quality_control_modules::common::TH1Reductor",
             "moduleName": "QcCommon"
           },
           {
             "type": "repository",
-            "path": "qc/TPC/MO/PID",
+            "path": "TPC/MO/PID",
             "names": [  "hdEdxVsncls", "hdEdxVsp", "hdEdxVsPhiMipsAside", "hdEdxVsPhiMipsCside", "hdEdxVsPhiElesAside", "hdEdxVsPhiElesCside" ],
             "reductorName": "o2::quality_control_modules::common::TH2Reductor",
             "moduleName": "QcCommon"
@@ -226,14 +226,14 @@
         "dataSources": [
           {
             "type": "repository",
-            "path": "qc/TPC/MO/Tracks",
+            "path": "TPC/MO/Tracks",
             "names": [ "hNClustersBeforeCuts", "hNClustersAfterCuts", "hEta", "hPt", "hSign", "hPtPos", "hPtNeg" ],
             "reductorName": "o2::quality_control_modules::common::TH1Reductor",
             "moduleName": "QcCommon"
           },
           {
             "type": "repository",
-            "path": "qc/TPC/MO/Tracks",
+            "path": "TPC/MO/Tracks",
             "names": [ "h2DNClustersPhiAside", "h2DNClustersPhiCside" ],
             "reductorName": "o2::quality_control_modules::common::TH2Reductor",
             "moduleName": "QcCommon"

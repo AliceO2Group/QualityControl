@@ -31,7 +31,7 @@
         "dataSources": [
           {
             "type": "repository",
-            "path": "qc/TPC/MO/Tracks",
+            "path": "TPC/MO/Tracks",
             "names": [ "hEtaRatio" ],
             "reductorName": "o2::quality_control_modules::tpc::TH1ReductorTPC",
             "axisDivision": [ [ "-2.0", "-1.0", "0.0", "1.0", "2.0" ] ],
@@ -39,7 +39,7 @@
           },
           {
             "type": "repository",
-            "path": "qc/TPC/MO/Tracks",
+            "path": "TPC/MO/Tracks",
             "names": [ "hEta" ],
             "reductorName": "o2::quality_control_modules::tpc::TH1ReductorTPC",
             "axisDivision": [[ "-1.0", "0.0", "1.0" ]],
@@ -162,7 +162,7 @@
         "dataSources": [
           {
             "type": "repository",
-            "path": "qc/TPC/MO/Tracks",
+            "path": "TPC/MO/Tracks",
             "names": [ "h2DEtaPhi" ],
             "reductorName": "o2::quality_control_modules::tpc::TH2ReductorTPC",
             "axisDivision": [ [ "0.0", "0.349066", "0.698132", "1.0472", "1.39626", "1.74533", "2.0944", "2.44346", "2.79253", "3.14159", "3.49066", "3.83972", "4.18879", "4.53786", "4.88692", "5.23599", "5.58505", "5.93412", "6.28319" ] , [ "-1.0", "0.0", "1.0" ] ],

@@ -306,7 +306,7 @@ TObject* CcdbDatabase::retrieveTObject(std::string path, std::map<std::string, s
   // we try first to load a TFile
   auto* object = ccdbApi.retrieveFromTFileAny<TObject>(path, metadata, timestamp, headers);
   if (object == nullptr) {
-    ILOG(Error, Support) << "We could NOT retrieve the object " << path << "." << ENDM;
+    ILOG(Error, Support) << "We could NOT retrieve the object " << path << " with timestamp " << timestamp << "." << ENDM;
     return nullptr;
   }
   ILOG(Debug, Support) << "Retrieved object " << path << " with timestamp " << timestamp << ENDM;
@@ -317,7 +317,7 @@ void* CcdbDatabase::retrieveAny(const type_info& tinfo, const string& path, cons
 {
   auto* object = ccdbApi.retrieveFromTFile(tinfo, path, metadata, timestamp, headers, "", createdNotAfter, createdNotBefore);
   if (object == nullptr) {
-    ILOG(Error, Support) << "We could NOT retrieve the object " << path << "." << ENDM;
+    ILOG(Error, Support) << "We could NOT retrieve the object " << path << " with timestamp " << timestamp << "." << ENDM;
     return nullptr;
   }
   ILOG(Debug, Support) << "Retrieved object " << path << " with timestamp " << timestamp << ENDM;
@@ -326,10 +326,10 @@ void* CcdbDatabase::retrieveAny(const type_info& tinfo, const string& path, cons
 
 std::shared_ptr<o2::quality_control::core::MonitorObject> CcdbDatabase::retrieveMO(std::string objectPath, std::string objectName, long timestamp, const core::Activity& activity)
 {
-  string path = objectPath + "/" + objectName;
+  string fullPath = activity.mProvenance + "/" + objectPath + "/" + objectName;
   map<string, string> headers;
   map<string, string> metadata = database_helpers::asDatabaseMetadata(activity, false);
-  TObject* obj = retrieveTObject(path, metadata, timestamp, &headers);
+  TObject* obj = retrieveTObject(fullPath, metadata, timestamp, &headers);
 
   // no object found
   if (obj == nullptr) {
@@ -345,21 +345,20 @@ std::shared_ptr<o2::quality_control::core::MonitorObject> CcdbDatabase::retrieve
 
   std::shared_ptr<MonitorObject> mo;
   if (objectVersion == Version("0.0.0") || objectVersion < Version("0.25")) {
-    ILOG(Debug, Devel) << "Version of object " << objectPath << "/" << objectName << " is < 0.25" << ENDM;
+    ILOG(Debug, Devel) << "Version of object " << fullPath << " is < 0.25" << ENDM;
     // The object is either in a TFile or is a blob but it was stored with storeAsTFile as a full MO
     mo.reset(dynamic_cast<MonitorObject*>(obj));
     if (mo == nullptr) {
-      ILOG(Error, Devel) << "Could not cast the object " << objectPath << "/" << objectName << " to MonitorObject" << ENDM;
+      ILOG(Error, Devel) << "Could not cast the object " << fullPath << " to MonitorObject" << ENDM;
     }
   } else {
     // Version >= 0.25 -> the object is stored directly unencapsulated
-    ILOG(Debug, Devel) << "Version of object " << objectPath << "/" << objectName << " is >= 0.25" << ENDM;
+    ILOG(Debug, Devel) << "Version of object " << fullPath << " is >= 0.25" << ENDM;
     mo = make_shared<MonitorObject>(obj, headers["qc_task_name"], headers["qc_task_class"], headers["qc_detector_name"]);
     // TODO should we remove the headers we know are general such as ETag and qc_task_name ?
     mo->addMetadata(headers);
     // we could just copy the argument here, but this would not cover cases where the activity in headers has more non-default fields
-    string provenance = path.substr(0, path.find('/')); // get the item before the first slash corresponding to the provenance
-    mo->setActivity(database_helpers::asActivity(headers, provenance));
+    mo->setActivity(database_helpers::asActivity(headers, activity.mProvenance));
   }
   mo->setIsOwner(true);
   return mo;
@@ -369,16 +368,16 @@ std::shared_ptr<o2::quality_control::core::QualityObject> CcdbDatabase::retrieve
 {
   map<string, string> headers;
   map<string, string> metadata = database_helpers::asDatabaseMetadata(activity, false);
-  TObject* obj = retrieveTObject(qoPath, metadata, timestamp, &headers);
+  auto fullPath = activity.mProvenance + "/" + qoPath;
+  TObject* obj = retrieveTObject(fullPath, metadata, timestamp, &headers);
   std::shared_ptr<QualityObject> qo(dynamic_cast<QualityObject*>(obj));
   if (qo == nullptr) {
-    ILOG(Error, Devel) << "Could not cast the object " << qoPath << " to QualityObject" << ENDM;
+    ILOG(Error, Devel) << "Could not cast the object " << fullPath << " to QualityObject" << ENDM;
   } else {
     // TODO should we remove the headers we know are general such as ETag and qc_task_name ?
     qo->addMetadata(headers);
     // we could just copy the argument here, but this would not cover cases where the activity in headers has more non-default fields
-    string provenance = qoPath.substr(0, qoPath.find('/')); // get the item before the first slash corresponding to the provenance
-    qo->setActivity(database_helpers::asActivity(headers, provenance));
+    qo->setActivity(database_helpers::asActivity(headers, activity.mProvenance));
   }
   return qo;
 }

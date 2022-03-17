@@ -62,7 +62,7 @@
           { "Time_Bin" :   [ "1000", "0", "100000" ] }
         ],
         "path_comment": "This is the path of the ClustersData object that shall be visualized.",
-        "path": "qc/TPC/MO/Clusters/ClusterData",
+        "path": "TPC/MO/Clusters/ClusterData",
         "dataType_comment": "This is the switch for 'RawDigits' or 'Clusters' task. Choose 'raw' or 'clusters'.",
         "dataType": "clusters",
         "initTrigger": [

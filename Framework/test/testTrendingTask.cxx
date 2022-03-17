@@ -19,6 +19,7 @@
 #include "QualityControl/DatabaseFactory.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Triggers.h"
+#include "QualityControl/PostProcessingRunner.h"
 #include <Framework/ServiceRegistry.h>
 
 #include <Configuration/ConfigurationFactory.h>
@@ -56,18 +57,18 @@ BOOST_AUTO_TEST_CASE(test_task)
     histo->Fill(5);
     histo->Fill(6);
     std::shared_ptr<MonitorObject> mo = std::make_shared<MonitorObject>(histo, taskName, "TestClass", "TST");
-    repository->storeMO(mo);
+    repository->storeMO(mo, 1, 100000);
 
-    std::shared_ptr<QualityObject> qo = std::make_shared<QualityObject>(Quality::Null, "testTrendingTaskCheck", "TestClass", "TST");
+    std::shared_ptr<QualityObject> qo = std::make_shared<QualityObject>(Quality::Null, "testTrendingTaskCheck", "TST");
     qo->updateQuality(Quality::Bad);
-    repository->storeQO(qo);
+    repository->storeQO(qo, 1, 100000);
   }
 
   // We make sure, that destroy the previous, possibly correct test result
   {
     TTree* dummyTree = new TTree(taskName.c_str(), taskName.c_str());
     repository->storeMO(std::make_shared<MonitorObject>(dummyTree, taskName, "TestClass", "TST"));
-    auto treeMO = repository->retrieveMO("qc/TST/MO/" + taskName, taskName);
+    auto treeMO = repository->retrieveMO("TST/MO/" + taskName, taskName);
     BOOST_REQUIRE(treeMO != nullptr);
     TTree* treeFromRepo = dynamic_cast<TTree*>(treeMO->getObject());
     BOOST_REQUIRE(treeFromRepo != nullptr);
@@ -78,22 +79,26 @@ BOOST_AUTO_TEST_CASE(test_task)
   {
     ServiceRegistry services;
     services.registerService<DatabaseInterface>(repository.get());
+    auto objectManager = std::make_shared<ObjectsManager>(taskName, "o2::quality_control::postprocessing::TrendingTask", "TST", "");
+    auto publicationCallback = publishToRepository(*repository);
 
     TrendingTask task;
     task.setName(taskName);
+    task.setObjectsManager(objectManager);
     task.configure(taskName, ConfigurationFactory::getConfiguration(configFilePath)->getRecursive());
-    task.initialize({ TriggerType::Once }, services);
+    task.initialize({ TriggerType::Once, false, { 0, 0, "", "", "qc"}, 1 }, services);
     for (size_t i = 0; i < trendTimes; i++) {
-      task.update({ TriggerType::Always }, services);
+      task.update({ TriggerType::Always, false, { 0, 0, "", "", "qc" }, i * 1000 + 50 }, services);
+      publicationCallback(objectManager->getNonOwningArray(), i * 1000, i * 1000 + 100);
     }
-    task.finalize({ TriggerType::UserOrControl }, services);
+    task.finalize({ TriggerType::UserOrControl, false, {0, 0, "", "", "qc"}, trendTimes * 1000 }, services);
   }
 
   // The test itself
   {
-    auto treeMO = repository->retrieveMO("qc/TST/MO/" + taskName, taskName); //the tree is stored under the same name as task
+    auto treeMO = repository->retrieveMO("TST/MO/" + taskName, taskName, (trendTimes - 1) * 1000 + 5); // the tree is stored under the same name as task
+    BOOST_REQUIRE(treeMO != nullptr);
     TTree* tree = dynamic_cast<TTree*>(treeMO->getObject());
-
     BOOST_REQUIRE(tree != nullptr);
 
     BOOST_REQUIRE_EQUAL(tree->GetEntries(), trendTimes);
