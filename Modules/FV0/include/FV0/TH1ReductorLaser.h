@@ -17,7 +17,7 @@
 #ifndef QUALITYCONTROL_TH1REDUCTORLASER_H
 #define QUALITYCONTROL_TH1REDUCTORLASER_H
 
-          #include "QualityControl/Reductor.h"
+  #include "QualityControl/Reductor.h"
 
 namespace o2::quality_control_modules::fv0 {
 
