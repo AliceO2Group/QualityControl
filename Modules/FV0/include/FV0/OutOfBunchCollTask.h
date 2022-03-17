@@ -23,7 +23,7 @@
 #include "FV0Base/Constants.h"
 #include "DataFormatsFT0/Digit.h" // temp, for o2::ft0::Triggers::bitXYZ
 #include "DataFormatsFV0/ChannelData.h"
-#include "DataFormatsFV0/BCData.h"
+#include "DataFormatsFV0/Digit.h"
 #include "CCDB/CcdbApi.h"
 
 #include "TList.h"

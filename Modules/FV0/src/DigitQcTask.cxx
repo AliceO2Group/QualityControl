@@ -338,12 +338,12 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   for (auto& digit : digits) {
     const auto& vecChData = digit.getBunchChannelData(channels);
     bool isTCM = true;
-    mTimeCurNS = o2::InteractionRecord::bc2ns(digit.getIntRecord().bc, digit.getIntRecord().orbit);
+    mTimeCurNS = o2::InteractionRecord::bc2ns(digit.getBC(), digit.getOrbit());
     if (mTimeMinNS < 0)
       mTimeMinNS = mTimeCurNS;
     /*
     if (isFirst == true) {
-      //firstOrbit = digit.getIntRecord().orbit;
+      //firstOrbit = digit.getOrbit();
       isFirst = false;
     }
     */
@@ -359,30 +359,30 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (mTimeCurNS > curTfTimeMax)
       curTfTimeMax = mTimeCurNS;
     /*
-    if (digit.getTriggers().amplA == -5000 && digit.getTriggers().amplC == -5000 && digit.getTriggers().timeA == -5000 && digit.getTriggers().timeC == -5000)
+    if (digit.mTriggers.amplA == -5000 && digit.mTriggers.amplC == -5000 && digit.mTriggers.timeA == -5000 && digit.mTriggers.timeC == -5000)
       isTCM = false;
     */
     mHistOrbit2BC->Fill(digit.getIntRecord().orbit % sOrbitsPerTF, digit.getIntRecord().bc);
-    mHistBC->Fill(digit.getIntRecord().bc);
+    mHistBC->Fill(digit.getBC());
 
-    if (isTCM && !(digit.getTriggers().triggerSignals & (1 << sLaserBitPos))) {
+    if (isTCM && !digit.mTriggers.getLaserBit()) {
       mHistNchA->Fill(digit.mTriggers.nChanA);
       //mHistNchC->Fill(digit.mTriggers.nChanC);
       mHistSumAmpA->Fill(digit.mTriggers.amplA);
       //mHistSumAmpC->Fill(digit.mTriggers.amplC);
-      //mHistAverageTimeA->Fill(digit.mTriggers.timeA);
+      mHistAverageTimeA->Fill(digit.mTriggers.timeA);
       //mHistAverageTimeC->Fill(digit.mTriggers.timeC);
       //mHistTimeSum2Diff->Fill((digit.mTriggers.timeC - digit.mTriggers.timeA) * mCFDChannel2NS / 2, (digit.mTriggers.timeC + digit.mTriggers.timeA) * mCFDChannel2NS / 2);
       for (const auto& entry : mMapDigitTrgNames) {
-        if (digit.getTriggers().triggerSignals & (1 << entry.first))
+        if (digit.mTriggers.triggersignals & (1 << entry.first))
           mHistTriggers->Fill(static_cast<Double_t>(entry.first));
         for (const auto& entry2 : mMapDigitTrgNames) {
-          if ((digit.getTriggers().triggerSignals & (1 << entry.first)) && (digit.getTriggers().triggerSignals & (1 << entry2.first)))
+          if ((digit.mTriggers.triggersignals & (1 << entry.first)) && (digit.mTriggers.triggersignals & (1 << entry2.first)))
             mHistTriggersCorrelation->Fill(static_cast<Double_t>(entry.first), static_cast<Double_t>(entry2.first));
         }
       }
       for (auto& entry : mMapTrgBcOrbit) {
-        if (digit.getTriggers().triggerSignals & (1 << entry.first)) {
+        if (digit.mTriggers.triggersignals & (1 << entry.first)) {
           entry.second->Fill(digit.getIntRecord().orbit % sOrbitsPerTF, digit.getIntRecord().bc);
         }
       }
@@ -390,33 +390,33 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
     for (auto& entry : mMapPmModuleChannels) {
       for (const auto& chData : vecChData) {
-        if (std::find(entry.second.begin(), entry.second.end(), ch_data::getChId(chData)) != entry.second.end()) {
+        if (std::find(entry.second.begin(), entry.second.end(), chData.ChId) != entry.second.end()) {
           mMapPmModuleBcOrbit[entry.first]->Fill(digit.getIntRecord().orbit % sOrbitsPerTF, digit.getIntRecord().bc);
           break;
         }
       }
-      if (entry.first == "TCM" && isTCM && (digit.getTriggers().triggerSignals & (1 << sDataIsValidBitPos))) {
+      if (entry.first == "TCM" && isTCM && (digit.getTriggers().triggersignals & (1 << sDataIsValidBitPos))) {
         mMapPmModuleBcOrbit[entry.first]->Fill(digit.getIntRecord().orbit % sOrbitsPerTF, digit.getIntRecord().bc);
       }
     }
 
     for (const auto& chData : vecChData) {
-      mHistTime2Ch->Fill(static_cast<Double_t>(ch_data::getChId(chData)), static_cast<Double_t>(chData.time));
-      mHistAmp2Ch->Fill(static_cast<Double_t>(ch_data::getChId(chData)), static_cast<Double_t>(ch_data::getCharge(chData)));
-      mHistEventDensity2Ch->Fill(static_cast<Double_t>(ch_data::getChId(chData)), static_cast<Double_t>(digit.getIntRecord().differenceInBC(mStateLastIR2Ch[ch_data::getChId(chData)])));
-      mStateLastIR2Ch[ch_data::getChId(chData)] = digit.getIntRecord();
-      mHistChannelID->Fill(ch_data::getChId(chData));
-      if (ch_data::getCharge(chData) > 0)
-        mHistNumADC->Fill(ch_data::getChId(chData));
-      mHistNumCFD->Fill(ch_data::getChId(chData));
-      if (mSetAllowedChIDs.find(static_cast<unsigned int>(ch_data::getChId(chData))) != mSetAllowedChIDs.end()) {
-        mMapHistAmp1D[ch_data::getChId(chData)]->Fill(ch_data::getCharge(chData));
-        mMapHistTime1D[ch_data::getChId(chData)]->Fill(chData.time);
-        mMapHistAmpVsTime[ch_data::getChId(chData)]->Fill(ch_data::getCharge(chData), chData.time);
+      mHistTime2Ch->Fill(static_cast<Double_t>(chData.ChId), static_cast<Double_t>(chData.CFDTime));
+      mHistAmp2Ch->Fill(static_cast<Double_t>(chData.ChId), static_cast<Double_t>(chData.QTCAmpl));
+      mHistEventDensity2Ch->Fill(static_cast<Double_t>(chData.ChId), static_cast<Double_t>(digit.mIntRecord.differenceInBC(mStateLastIR2Ch[chData.ChId])));
+      mStateLastIR2Ch[chData.ChId] = digit.mIntRecord;
+      mHistChannelID->Fill(chData.ChId);
+      if (chData.QTCAmpl > 0)
+        mHistNumADC->Fill(chData.ChId);
+      mHistNumCFD->Fill(chData.ChId);
+      if (mSetAllowedChIDs.find(static_cast<unsigned int>(chData.ChId)) != mSetAllowedChIDs.end()) {
+        mMapHistAmp1D[chData.ChId]->Fill(chData.QTCAmpl);
+        mMapHistTime1D[chData.ChId]->Fill(chData.CFDTime);
+        mMapHistAmpVsTime[chData.ChId]->Fill(chData.QTCAmpl, chData.CFDTime);
         /*
         for (const auto& entry : mMapChTrgNames) {
-          if ((ch_data::getCharge(chData) & (1 << entry.first))) {
-            mMapHistPMbits[ch_data::getChId(chData)]->Fill(entry.first);
+          if ((chData.ChainQTC & (1 << entry.first))) {
+            mMapHistPMbits[chData.ChId]->Fill(entry.first);
           }
         }
         */
@@ -424,7 +424,7 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       /*
       for (const auto& entry : mMapChTrgNames) {
         if ((chData.ChainQTC & (1 << entry.first))) {
-          mHistChDataBits->Fill(ch_data::getChId(chData), entry.first);
+          mHistChDataBits->Fill(chData.ChId, entry.first);
         }
       }
       */
