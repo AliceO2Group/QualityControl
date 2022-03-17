@@ -76,7 +76,7 @@ void VertexingQcTask::initialize(o2::framework::InitContext& /*ctx*/)
       mNPrimaryMCEvWithVtx->Sumw2();
       mNPrimaryMCGen = new TH1F("NPrimaryMCGen", "NPrimaryMCGen; MC primary mult; n. events with vtx", 10000, -0.5, 9999.5);
       mNPrimaryMCGen->Sumw2();
-      mRatioNPrimaryMCEvWithVtxvsNPrimaryMCGen = new TH1F("RatioNPrimaryMCEvWithVtxvsNPrimaryMCGen", "Ratio NPrimaryMCEvWithVtx vs. NPrimaryMCGen", 100, -0.5, 9999.5);
+      mRatioNPrimaryMCEvWithVtxvsNPrimaryMCGen = new TH1F("RatioNPrimaryMCEvWithVtxvsNPrimaryMCGen", "Ratio NPrimaryMCEvWithVtx vs. NPrimaryMCGen", 10000, -0.5, 9999.5);
       mRatioNPrimaryMCEvWithVtxvsNPrimaryMCGen->Sumw2();
       mVtxEffVsMult = new TEfficiency("vtxEffVsMult", "vtxEffVsMult; MC primary mult; vtx reco efficiency", 10000, -0.5, 9999.5);
       mCloneFactorVsMult = new TProfile("cloneFactorVsMult", "cloneFactorVsMult; MC primary mult; n. cloned vertices", 100, -0.5, 9999.5, 0.f, 1.f);
@@ -211,13 +211,29 @@ void VertexingQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     auto timeUnc = pvertices[i].getTimeStamp().getTimeStampError();
     ILOG(Debug, Support) << "x = " << x << ", y = " << y << ", z = " << z << ", nContributors = " << nContr << ", timeUnc = " << timeUnc << ENDM;
     mX->Fill(x);
-    mX->Fit("fX", "", "", mX->GetMean() - mX->GetRMS(), mX->GetMean() + mX->GetRMS());
+    mX->Fit("fX", "Q", "", mX->GetMean() - mX->GetRMS(), mX->GetMean() + mX->GetRMS());
     mY->Fill(y);
-    mY->Fit("fY", "", "", mY->GetMean() - mY->GetRMS(), mY->GetMean() + mY->GetRMS());
+    mY->Fit("fY", "Q", "", mY->GetMean() - mY->GetRMS(), mY->GetMean() + mY->GetRMS());
     mZ->Fill(z);
     mNContributors->Fill(nContr);
     mTimeUncVsNContrib->Fill(nContr, timeUnc);
     mBeamSpot->Fill(x, y);
+
+    if (mUseMC && mcLbl[i].isSet()) { // make sure the label was set
+      auto header = mMCReader.getMCEventHeader(mcLbl[i].getSourceID(), mcLbl[i].getEventID());
+      auto purity = mcLbl[i].getCorrWeight();
+      auto mult = header.GetNPrim();
+      ILOG(Debug, Support) << "purity = " << purity << ", mult = " << mult << ENDM;
+      mPurityVsMult->Fill(mult, purity);
+      TVector3 vtMC;
+      header.GetVertex(vtMC);
+      mVtxResXVsMult->Fill(mult, vtMC[0] - pvertices[i].getX());
+      mVtxResYVsMult->Fill(mult, vtMC[1] - pvertices[i].getY());
+      mVtxResZVsMult->Fill(mult, vtMC[2] - pvertices[i].getZ());
+      mVtxPullsXVsMult->Fill(mult, (vtMC[0] - pvertices[i].getX()) / std::sqrt(pvertices[i].getSigmaX2()));
+      mVtxPullsYVsMult->Fill(mult, (vtMC[1] - pvertices[i].getY()) / std::sqrt(pvertices[i].getSigmaY2()));
+      mVtxPullsZVsMult->Fill(mult, (vtMC[2] - pvertices[i].getZ()) / std::sqrt(pvertices[i].getSigmaZ2()));
+    }
   }
 
   // 3. Access CCDB. If it is enough to retrieve it once, do it in initialize().
