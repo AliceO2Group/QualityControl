@@ -50,6 +50,9 @@ add_root_dictionary(O2QcCommon
 install(FILES etc/trfcollection-example.json
   DESTINATION Modules/Common)
 
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/Common
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+
 # ---- Tests ----
 
 set(TEST_SRCS

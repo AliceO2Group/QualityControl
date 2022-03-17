@@ -40,6 +40,9 @@ add_root_dictionary(O2QcMFT
                     include/MFT/QcMFTUtilTables.h
                     LINKDEF include/MFT/LinkDef.h
                     BASENAME O2QcMFT)
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/MFT
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
                     
 # ---- Executables ----
 

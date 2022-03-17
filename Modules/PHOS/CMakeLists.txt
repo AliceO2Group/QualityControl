@@ -34,6 +34,9 @@ install (
   DIRECTORY etc DESTINATION Modules/PHOS
 )
 
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/PHOS
+	DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+
 # ---- Executables ----
 
 add_executable(o2-qc-run-phos-raw src/runQCPHOSRaw.cxx)

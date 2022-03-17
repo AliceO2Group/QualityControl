@@ -25,6 +25,7 @@
 #include <Framework/ConfigParamRegistry.h>
 #include <QualityControl/QcInfoLogger.h>
 #include <boost/property_tree/json_parser.hpp>
+#include <CommonUtils/StringUtils.h>
 
 namespace o2::quality_control::core
 {
@@ -131,6 +132,26 @@ inline void printTree(const boost::property_tree::ptree& pt, int level = 0)
   boost::property_tree::json_parser::write_json(ss, pt);
   for (std::string line; std::getline(ss, line, '\n');)
     ILOG(Debug, Trace) << line << ENDM;
+}
+
+inline std::vector<std::pair<std::string, std::string>> parseOverrideValues(const std::string& input)
+{
+  std::vector<std::pair<std::string, std::string>> keyValuePairs;
+  for (const auto& keyValueToken : utils::Str::tokenize(input, ';', true)) {
+    auto keyValue = utils::Str::tokenize(keyValueToken, '=', true);
+    if (keyValue.size() != 2) {
+      throw std::runtime_error("Token '" + keyValueToken + "' in the --override-values argument is malformed, use key=value.");
+    }
+    keyValuePairs.emplace_back(keyValue[0], keyValue[1]);
+  }
+  return keyValuePairs;
+}
+
+inline void overrideValues(boost::property_tree::ptree& tree, std::vector<std::pair<std::string, std::string>> keyValues)
+{
+  for (const auto& [key, value] : keyValues) {
+    tree.put(key, value);
+  }
 }
 
 } // namespace o2::quality_control::core

@@ -17,6 +17,10 @@ install(TARGETS O2QcSkeleton
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
+# Install headers
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/Skeleton
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+
 # ---- ROOT dictionary ----
 
 add_root_dictionary(O2QcSkeleton

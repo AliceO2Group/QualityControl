@@ -52,7 +52,7 @@ void PostProcessDiagnosticPerCrate::initialize(Trigger, framework::ServiceRegist
   mDatabase = &services.get<o2::quality_control::repository::DatabaseInterface>();
 }
 
-void PostProcessDiagnosticPerCrate::update(Trigger, framework::ServiceRegistry&)
+void PostProcessDiagnosticPerCrate::update(Trigger t, framework::ServiceRegistry&)
 {
   ILOG(Debug) << "UPDATING !" << ENDM;
   for (int slot = 0; slot < mNSlots; slot++) { // Loop over slots
@@ -63,7 +63,7 @@ void PostProcessDiagnosticPerCrate::update(Trigger, framework::ServiceRegistry&)
       moName = Form("TRMCounterSlot%i", slot);
     }
     ILOG(Debug) << "Processing slot " << slot << " from " << moName << ENDM;
-    auto mo = mDatabase->retrieveMO(mCCDBPath, moName);
+    auto mo = mDatabase->retrieveMO(mCCDBPath, moName, t.timestamp, t.activity);
     TH2F* moH = static_cast<TH2F*>(mo ? mo->getObject() : nullptr);
     if (moH) {
       for (int crate = 0; crate < moH->GetNbinsY(); crate++) { // Loop over crates
@@ -85,7 +85,7 @@ void PostProcessDiagnosticPerCrate::update(Trigger, framework::ServiceRegistry&)
   ILOG(Debug) << "DONE UPDATING !" << ENDM;
 }
 
-void PostProcessDiagnosticPerCrate::finalize(Trigger, framework::ServiceRegistry&)
+void PostProcessDiagnosticPerCrate::finalize(Trigger t, framework::ServiceRegistry&)
 {
   ILOG(Info) << "FINALIZING !" << ENDM;
 

@@ -226,6 +226,7 @@ PostProcessingRunnerConfig PostProcessingRunner::extractConfig(const CommonSpec&
     commonSpec.consulUrl,
     commonSpec.infologgerFilterDiscardDebug,
     commonSpec.infologgerDiscardLevel,
+    commonSpec.postprocessingPeriod,
     ppTaskSpec.tree
   };
 }
