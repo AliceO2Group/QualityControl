@@ -55,17 +55,17 @@ void TrendingTaskITSThr::initialize(Trigger, framework::ServiceRegistry&)
 }
 
 // todo: see if OptimizeBaskets() indeed helps after some time
-void TrendingTaskITSThr::update(Trigger, framework::ServiceRegistry& services)
+void TrendingTaskITSThr::update(Trigger t, framework::ServiceRegistry& services)
 {
   auto& qcdb = services.get<repository::DatabaseInterface>();
 
-  trendValues(qcdb);
+  trendValues(t, qcdb);
 
   storePlots(qcdb);
   storeTrend(qcdb);
 }
 
-void TrendingTaskITSThr::finalize(Trigger, framework::ServiceRegistry& services)
+void TrendingTaskITSThr::finalize(Trigger t, framework::ServiceRegistry& services)
 {
   auto& qcdb = services.get<repository::DatabaseInterface>();
 
@@ -84,7 +84,7 @@ void TrendingTaskITSThr::storeTrend(repository::DatabaseInterface& qcdb)
   qcdb.storeMO(mo);
 }
 
-void TrendingTaskITSThr::trendValues(repository::DatabaseInterface& qcdb)
+void TrendingTaskITSThr::trendValues(const Trigger& t, repository::DatabaseInterface& qcdb)
 {
   // We use current date and time. This for planned processing (not history). We
   // still might need to use the objects
@@ -103,7 +103,7 @@ void TrendingTaskITSThr::trendValues(repository::DatabaseInterface& qcdb)
     // cast to whatever it needs.
     if (dataSource.type == "repository") {
       // auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name);
-      auto mo = qcdb.retrieveMO(dataSource.path, "");
+      auto mo = qcdb.retrieveMO(dataSource.path, "", t.timestamp, t.activity);
       if (!count) {
         std::map<std::string, std::string> entryMetadata = mo->getMetadataMap(); //full list of metadata as a map
         mMetaData.runNumber = std::stoi(entryMetadata["RunNumber"]);             //get and set run number
