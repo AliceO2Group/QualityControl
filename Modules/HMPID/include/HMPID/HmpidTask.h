@@ -52,6 +52,7 @@ class HmpidTask final : public TaskInterface
   TH1F* hPedestalSigma = nullptr;
   TProfile* hBusyTime = nullptr;
   TProfile* hEventSize = nullptr;
+  TProfile* hEventNumber = nullptr;
   o2::hmpid::HmpidDecoder2* mDecoder = nullptr;
 };
 
