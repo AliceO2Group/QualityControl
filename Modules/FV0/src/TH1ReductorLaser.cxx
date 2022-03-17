@@ -18,12 +18,15 @@
 #include "FV0/TH1ReductorLaser.h"
 #include <TF1.h>
 #include <TH1.h>
-namespace o2::quality_control_modules::fv0 {
-void *TH1ReductorLaser::getBranchAddress() { return &mStats; }
-const char *TH1ReductorLaser::getBranchLeafList() {
+namespace o2::quality_control_modules::fv0
+{
+void* TH1ReductorLaser::getBranchAddress() { return &mStats; }
+const char* TH1ReductorLaser::getBranchLeafList()
+{
   return "mean/D:mean1fit/D:mean2fit/D:stddev:stddev1fit:stddev2fit:entries";
 }
-double Gauss(double *x, double *par) {
+double Gauss(double* x, double* par)
+{
   double arg = 0;
   if (par[2] != 0) {
     arg = (x[0] - par[1]) / par[2];
@@ -32,8 +35,9 @@ double Gauss(double *x, double *par) {
   return fitval;
 }
 
-void TH1ReductorLaser::update(TObject *obj) {
-  auto histo = dynamic_cast<TH1 *>(obj);
+void TH1ReductorLaser::update(TObject* obj)
+{
+  auto histo = dynamic_cast<TH1*>(obj);
   if (histo) {
     /// Store the mean and the stddev (makes sense if there is one peak)
     if (histo->GetBinCenter(1) != 0)
@@ -60,7 +64,7 @@ void TH1ReductorLaser::update(TObject *obj) {
     double peak1Pos = histo->GetMean();
     double peak1Wid = histo->GetStdDev();
 
-    TF1 *GaussFit1 = new TF1("gauss1", Gauss, -2. * histo->GetStdDev(),
+    TF1* GaussFit1 = new TF1("gauss1", Gauss, -2. * histo->GetStdDev(),
                              2. * histo->GetStdDev(), 3);
 
     bool goodFit1 = false;
@@ -88,7 +92,7 @@ void TH1ReductorLaser::update(TObject *obj) {
     double peak2Pos = histo->GetMean();
     double peak2Wid = histo->GetStdDev();
 
-    TF1 *GaussFit2 = new TF1("gauss2", Gauss, -2. * histo->GetStdDev(),
+    TF1* GaussFit2 = new TF1("gauss2", Gauss, -2. * histo->GetStdDev(),
                              2. * histo->GetStdDev(), 3);
 
     GaussFit2->SetParameter(0, peak2Amp);
