@@ -83,7 +83,7 @@ struct test_fixture {
     string fullQoPath = getQoPath(checkName, "");
     return fullQoPath.substr(1, fullQoPath.find_last_of('/'));
   }
-    std::unique_ptr<CcdbDatabase> backend;
+  std::unique_ptr<CcdbDatabase> backend;
   map<string, string> metadata;
   std::string pid;
   const std::string detector = "TST";
@@ -218,11 +218,11 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_qo, *utf::depends_on("ccdb_store"))
 BOOST_AUTO_TEST_CASE(ccdb_provenance, *utf::depends_on("ccdb_store"))
 {
   test_fixture f;
-  std::shared_ptr<QualityObject> qo = f.backend->retrieveQO(RepoPathUtils::getQoPath("TST", f.taskName + "/provenance", "", {}, "").substr(1), -1, {0, 0, "", "", "qc_hello"});
+  std::shared_ptr<QualityObject> qo = f.backend->retrieveQO(RepoPathUtils::getQoPath("TST", f.taskName + "/provenance", "", {}, "").substr(1), -1, { 0, 0, "", "", "qc_hello" });
   BOOST_CHECK_NE(qo, nullptr);
   BOOST_CHECK_EQUAL(qo->getActivity().mProvenance, "qc_hello");
 
-  std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO(f.getMoFolder("provenance"), "provenance", -1, {0, 0, "", "", "qc_hello"});
+  std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO(f.getMoFolder("provenance"), "provenance", -1, { 0, 0, "", "", "qc_hello" });
   BOOST_CHECK_NE(mo, nullptr);
   BOOST_CHECK_EQUAL(mo->getActivity().mProvenance, "qc_hello");
 }

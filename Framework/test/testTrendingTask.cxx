@@ -86,12 +86,12 @@ BOOST_AUTO_TEST_CASE(test_task)
     task.setName(taskName);
     task.setObjectsManager(objectManager);
     task.configure(taskName, ConfigurationFactory::getConfiguration(configFilePath)->getRecursive());
-    task.initialize({ TriggerType::Once, false, { 0, 0, "", "", "qc"}, 1 }, services);
+    task.initialize({ TriggerType::Once, false, { 0, 0, "", "", "qc" }, 1 }, services);
     for (size_t i = 0; i < trendTimes; i++) {
       task.update({ TriggerType::Always, false, { 0, 0, "", "", "qc" }, i * 1000 + 50 }, services);
       publicationCallback(objectManager->getNonOwningArray(), i * 1000, i * 1000 + 100);
     }
-    task.finalize({ TriggerType::UserOrControl, false, {0, 0, "", "", "qc"}, trendTimes * 1000 }, services);
+    task.finalize({ TriggerType::UserOrControl, false, { 0, 0, "", "", "qc" }, trendTimes * 1000 }, services);
   }
 
   // The test itself
