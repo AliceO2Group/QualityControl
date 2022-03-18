@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE(test_trigger_new_object)
   std::shared_ptr<MonitorObject> mo = std::make_shared<MonitorObject>(obj, taskName, "TestClass", detectorCode);
 
   const std::string objectPath = RepoPathUtils::getMoPath(mo.get(), false);
-  auto newObjectTrigger = triggers::NewObject(CCDB_ENDPOINT, objectPath);
+  auto newObjectTrigger = triggers::NewObject(CCDB_ENDPOINT, "qcdb", objectPath);
 
   // Check before update - no objects expected
   BOOST_CHECK_EQUAL(newObjectTrigger(), TriggerType::No);
@@ -150,7 +150,7 @@ BOOST_AUTO_TEST_CASE(test_trigger_for_each_object)
   const std::string objectPath = RepoPathUtils::getMoPath(mo.get(), false);
   {
     const Activity activityAllRunsPass1{ 0, 2, "FCC42x", "tpass1", "qc" };
-    auto forEachObjectTrigger = triggers::ForEachObject(CCDB_ENDPOINT, objectPath, activityAllRunsPass1);
+    auto forEachObjectTrigger = triggers::ForEachObject(CCDB_ENDPOINT, "qcdb", objectPath, activityAllRunsPass1);
 
     BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachObject);
     BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachObject);
@@ -159,7 +159,7 @@ BOOST_AUTO_TEST_CASE(test_trigger_for_each_object)
 
   {
     const Activity activityRun100AllPasses{ 100, 2, "FCC42x", "", "qc" };
-    auto forEachObjectTrigger = triggers::ForEachObject(CCDB_ENDPOINT, objectPath, activityRun100AllPasses);
+    auto forEachObjectTrigger = triggers::ForEachObject(CCDB_ENDPOINT, "qcdb", objectPath, activityRun100AllPasses);
 
     BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachObject);
     BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachObject);
@@ -168,7 +168,7 @@ BOOST_AUTO_TEST_CASE(test_trigger_for_each_object)
 
   {
     const Activity activityAll{ 0, 0, "", "", "qc" };
-    auto forEachObjectTrigger = triggers::ForEachObject(CCDB_ENDPOINT, objectPath, activityAll);
+    auto forEachObjectTrigger = triggers::ForEachObject(CCDB_ENDPOINT, "qcdb", objectPath, activityAll);
 
     BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachObject);
     BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachObject);
@@ -212,7 +212,7 @@ BOOST_AUTO_TEST_CASE(test_trigger_for_each_latest)
   const std::string objectPath = RepoPathUtils::getMoPath(mo.get(), false);
   {
     const Activity activityAllRunsPass1{ 0, 2, "FCC42x", "tpass1", "qc" };
-    auto forEachObjectTrigger = triggers::ForEachLatest(CCDB_ENDPOINT, objectPath, activityAllRunsPass1);
+    auto forEachObjectTrigger = triggers::ForEachLatest(CCDB_ENDPOINT, "qcdb", objectPath, activityAllRunsPass1);
 
     BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachLatest);
     BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachLatest);
@@ -221,7 +221,7 @@ BOOST_AUTO_TEST_CASE(test_trigger_for_each_latest)
 
   {
     const Activity activityRun100AllPasses{ 100, 2, "FCC42x", "", "qc" };
-    auto forEachObjectTrigger = triggers::ForEachLatest(CCDB_ENDPOINT, objectPath, activityRun100AllPasses);
+    auto forEachObjectTrigger = triggers::ForEachLatest(CCDB_ENDPOINT, "qcdb", objectPath, activityRun100AllPasses);
 
     BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachLatest);
     BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachLatest);
@@ -230,7 +230,7 @@ BOOST_AUTO_TEST_CASE(test_trigger_for_each_latest)
 
   {
     const Activity activityAll{ 0, 0, "", "", "qc" };
-    auto forEachObjectTrigger = triggers::ForEachLatest(CCDB_ENDPOINT, objectPath, activityAll);
+    auto forEachObjectTrigger = triggers::ForEachLatest(CCDB_ENDPOINT, "qcdb", objectPath, activityAll);
 
     BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachLatest);
     BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachLatest);

@@ -100,15 +100,15 @@ TriggerFcn triggerFactory(std::string trigger, const PostProcessingConfig& confi
   } else if (triggerLowerCase.find("newobject") != std::string::npos) {
     const auto [db, objectPath] = parseDbTriggers(trigger, "newobject");
     const std::string& dbUrl = db == "qcdb" ? config.qcdbUrl : config.ccdbUrl;
-    return triggers::NewObject(dbUrl, objectPath, activity);
+    return triggers::NewObject(dbUrl, db, objectPath, activity);
   } else if (triggerLowerCase.find("foreachobject") != std::string::npos) {
     const auto [db, objectPath] = parseDbTriggers(trigger, "foreachobject");
     const std::string& dbUrl = db == "qcdb" ? config.qcdbUrl : config.ccdbUrl;
-    return triggers::ForEachObject(dbUrl, objectPath, activity);
+    return triggers::ForEachObject(dbUrl, db, objectPath, activity);
   } else if (triggerLowerCase.find("foreachlatest") != std::string::npos) {
     const auto [db, objectPath] = parseDbTriggers(trigger, "foreachlatest");
     const std::string& dbUrl = db == "qcdb" ? config.qcdbUrl : config.ccdbUrl;
-    return triggers::ForEachLatest(dbUrl, objectPath, activity);
+    return triggers::ForEachLatest(dbUrl, db, objectPath, activity);
   } else if (auto seconds = string2Seconds(triggerLowerCase); seconds.has_value()) {
     if (seconds.value() < 0) {
       throw std::invalid_argument("negative number of seconds in trigger '" + trigger + "'");

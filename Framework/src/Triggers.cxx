@@ -137,12 +137,12 @@ TriggerFcn Periodic(double seconds, const Activity& activity)
   };
 }
 
-TriggerFcn NewObject(std::string databaseUrl, std::string objectPath, const Activity& activity)
+TriggerFcn NewObject(std::string databaseUrl, std::string databaseType, std::string objectPath, const Activity& activity)
 {
   // Key names in the header map.
   constexpr auto md5key = "Content-MD5";
   constexpr auto timestampKey = "Valid-From";
-  auto fullObjectPath = activity.mProvenance + "/" + objectPath;
+  auto fullObjectPath = (databaseType == "qcdb" ? activity.mProvenance + "/" : "") + objectPath;
 
   // We support only CCDB here.
   auto db = std::make_shared<o2::ccdb::CcdbApi>();
@@ -180,12 +180,12 @@ TriggerFcn NewObject(std::string databaseUrl, std::string objectPath, const Acti
   };
 }
 
-TriggerFcn ForEachObject(std::string databaseUrl, std::string objectPath, const Activity& activity)
+TriggerFcn ForEachObject(std::string databaseUrl, std::string databaseType, std::string objectPath, const Activity& activity)
 {
   // Key names in the header map.
   constexpr auto md5key = "Content-MD5";
   constexpr auto timestampKey = "Valid-From";
-  auto fullObjectPath = activity.mProvenance + "/" + objectPath;
+  auto fullObjectPath = (databaseType == "qcdb" ? activity.mProvenance + "/" : "") + objectPath;
 
   // We support only CCDB here.
   auto db = std::make_shared<repository::CcdbDatabase>();
@@ -228,12 +228,12 @@ TriggerFcn ForEachObject(std::string databaseUrl, std::string objectPath, const 
   };
 }
 
-TriggerFcn ForEachLatest(std::string databaseUrl, std::string objectPath, const Activity& activity)
+TriggerFcn ForEachLatest(std::string databaseUrl, std::string databaseType, std::string objectPath, const Activity& activity)
 {
   // Key names in the header map.
   constexpr auto md5key = "Content-MD5";
   constexpr auto timestampKey = "Created";
-  auto fullObjectPath = activity.mProvenance + "/" + objectPath;
+  auto fullObjectPath = (databaseType == "qcdb" ? activity.mProvenance + "/" : "") + objectPath;
 
   // We support only CCDB here.
   auto db = std::make_shared<repository::CcdbDatabase>();
