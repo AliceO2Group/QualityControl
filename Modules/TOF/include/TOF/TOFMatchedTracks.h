@@ -42,10 +42,10 @@ class TOFMatchedTracks final : public TaskInterface
 {
  public:
   enum matchType : int8_t { TPC = 0,
-			    ITSTPC_ITSTPCTRD,
-			    TPCTRD,
-			    SIZE };
-      
+                            ITSTPC_ITSTPCTRD,
+                            TPCTRD,
+                            SIZE };
+
   /// \brief Constructor
   TOFMatchedTracks() = default;
   /// Destructor
@@ -77,7 +77,7 @@ class TOFMatchedTracks final : public TaskInterface
   std::shared_ptr<o2::globaltracking::DataRequest> mDataRequest;
   o2::globaltracking::RecoContainer mRecoCont;
   GID::mask_t mSrc = GID::getSourcesMask("ITS-TPC");
-  GID::mask_t mAllowedSources = GID::getSourcesMask("TPC,ITS-TPC,TPC-TOF,ITS-TPC-TOF,TPC-TRD,ITS-TPC-TRD-TOF,ITS-TPC-TRD-TOF");
+  GID::mask_t mAllowedSources = GID::getSourcesMask("TPC,ITS-TPC,TPC-TOF,ITS-TPC-TOF,TPC-TRD,ITS-TPC-TRD-TOF,TPC-TRD-TOF,ITS-TPC-TRD");
   // TPC-TOF
   gsl::span<const o2::tpc::TrackTPC> mTPCTracks;
   gsl::span<const o2::dataformats::MatchInfoTOF> mTPCTOFMatches;
@@ -90,7 +90,6 @@ class TOFMatchedTracks final : public TaskInterface
   // TPC-TRD-TOF
   gsl::span<const o2::trd::TrackTRD> mITSTPCTRDTracks;
   gsl::span<const o2::dataformats::MatchInfoTOF> mITSTPCTRDTOFMatches;
-  
 
   bool mUseMC = false;
   bool mVerbose = false;

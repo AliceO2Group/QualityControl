@@ -131,7 +131,7 @@ void TOFMatchedTracks::initialize(o2::framework::InitContext& /*ctx*/)
     ILOG(Fatal, Support) << "Check the requested sources: ITSTPCTRDTOF = " << mSrc[GID::Source::ITSTPCTRDTOF] << ", ITSTPCTRD = " << mSrc[GID::Source::ITSTPCTRD] << ENDM;
   }
 
-  std::array<std::string, 3> title{ "TPC", "ITSTPC-ITSTPCTRD", "TPCTRD"};
+  std::array<std::string, 3> title{ "TPC", "ITSTPC-ITSTPCTRD", "TPCTRD" };
   for (int i = 0; i < matchType::SIZE; ++i) {
     mInTracksPt[i] = new TH1F(Form("mInTracksPt_%s", title[i].c_str()), Form("mInTracksPt (matchType: %s); #it{p}_{T}; counts", title[i].c_str()), 100, 0.f, 20.f);
     mInTracksEta[i] = new TH1F(Form("mInTracksEta_%s", title[i].c_str()), Form("mInTracksEta (matchType: %s); #eta; counts", title[i].c_str()), 100, -1.0f, 1.0f);
@@ -376,7 +376,7 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
       GTrackID gTrackId = matchTOF.getTrackRef();
       const auto& trk = mITSTPCTRDTracks[gTrackId.getIndex()];
       const auto& trkITSTPC = mITSTPCTracks[trk.getRefGlobalTrackId()];
-      const auto& trkTPC = mTPCTracks[trkITSTPC.getRefTPC()];  // check!
+      const auto& trkTPC = mTPCTracks[trkITSTPC.getRefTPC()]; // check!
       const auto& trkDz = matchTOF.getDZatTOF();
       const auto& trkDx = matchTOF.getDXatTOF();
       const auto& trkchi2 = matchTOF.getChi2();
@@ -450,30 +450,30 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
     }
     // In case of ITS-TPC-TRD-TOF, TPC-TRD, ITS-TPC-TRD-TOF, TPC-TRD-TOF, it is always a TRD track
     if constexpr (isTRDTrack<decltype(trk)>()) {
-	// now we need to check if this is a track with or without the ITS
-	if (gid.includesDet(GID::DetID::ITS)) {
-	  const auto& trkITSTPC = mITSTPCTracks[trk.getRefGlobalTrackId()];
-	  const auto& tpcTrack = mTPCTracks[trkITSTPC.getRefTPC()];  // check!
-	  if (!selectTrack(tpcTrack)) {
-	    LOG(debug) << "DEN CONSTR: track with eta " << tpcTrack.getEta() << " and pT " << tpcTrack.getPt() << " DISCARDED for denominator CONSTR, ITSTPC track";
-	    return true;
-	  }
-	  LOG(debug) << "DEN CONSTR: track with eta " << tpcTrack.getEta() << " and pT " << tpcTrack.getPt() << " ACCEPTED for denominator CONSTR, ITSTPC track";
-	  this->mInTracksPt[matchType::ITSTPC_ITSTPCTRD]->Fill(tpcTrack.getPt());
-	  this->mInTracksEta[matchType::ITSTPC_ITSTPCTRD]->Fill(tpcTrack.getEta());
-	  this->mInTracks2DPtEta[matchType::ITSTPC_ITSTPCTRD]->Fill(tpcTrack.getPt(), tpcTrack.getEta());
-	} else {
-	  const auto& tpcTrack = mTPCTracks[trk.getRefGlobalTrackId()];
-	  if (!selectTrack(tpcTrack)) {
-	    LOG(debug) << "DEN CONSTR: track with eta " << tpcTrack.getEta() << " and pT " << tpcTrack.getPt() << " DISCARDED for denominator CONSTR, ITSTPC track";
-	    return true;
-	  }
-	  LOG(debug) << "DEN CONSTR: track with eta " << tpcTrack.getEta() << " and pT " << tpcTrack.getPt() << " ACCEPTED for denominator CONSTR, ITSTPC track";
-	  this->mInTracksPt[matchType::TPCTRD]->Fill(tpcTrack.getPt());
-	  this->mInTracksEta[matchType::TPCTRD]->Fill(tpcTrack.getEta());
-	  this->mInTracks2DPtEta[matchType::TPCTRD]->Fill(tpcTrack.getPt(), tpcTrack.getEta());
-	}
+      // now we need to check if this is a track with or without the ITS
+      if (gid.includesDet(GID::DetID::ITS)) {
+        const auto& trkITSTPC = mITSTPCTracks[trk.getRefGlobalTrackId()];
+        const auto& tpcTrack = mTPCTracks[trkITSTPC.getRefTPC()]; // check!
+        if (!selectTrack(tpcTrack)) {
+          LOG(debug) << "DEN CONSTR: track with eta " << tpcTrack.getEta() << " and pT " << tpcTrack.getPt() << " DISCARDED for denominator CONSTR, ITSTPC track";
+          return true;
+        }
+        LOG(debug) << "DEN CONSTR: track with eta " << tpcTrack.getEta() << " and pT " << tpcTrack.getPt() << " ACCEPTED for denominator CONSTR, ITSTPC track";
+        this->mInTracksPt[matchType::ITSTPC_ITSTPCTRD]->Fill(tpcTrack.getPt());
+        this->mInTracksEta[matchType::ITSTPC_ITSTPCTRD]->Fill(tpcTrack.getEta());
+        this->mInTracks2DPtEta[matchType::ITSTPC_ITSTPCTRD]->Fill(tpcTrack.getPt(), tpcTrack.getEta());
+      } else {
+        const auto& tpcTrack = mTPCTracks[trk.getRefGlobalTrackId()];
+        if (!selectTrack(tpcTrack)) {
+          LOG(debug) << "DEN CONSTR: track with eta " << tpcTrack.getEta() << " and pT " << tpcTrack.getPt() << " DISCARDED for denominator CONSTR, ITSTPC track";
+          return true;
+        }
+        LOG(debug) << "DEN CONSTR: track with eta " << tpcTrack.getEta() << " and pT " << tpcTrack.getPt() << " ACCEPTED for denominator CONSTR, ITSTPC track";
+        this->mInTracksPt[matchType::TPCTRD]->Fill(tpcTrack.getPt());
+        this->mInTracksEta[matchType::TPCTRD]->Fill(tpcTrack.getEta());
+        this->mInTracks2DPtEta[matchType::TPCTRD]->Fill(tpcTrack.getPt(), tpcTrack.getEta());
       }
+    }
     return true;
   };
   mRecoCont.createTracksVariadic(creator);

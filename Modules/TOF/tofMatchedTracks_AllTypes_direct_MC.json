@@ -28,7 +28,7 @@
                        "" : "Message at this level or above are discarded (default: 21 - Trace)" }
     },
     "tasks" : {
-      "MatchedTracksITSTPCTOF_TPCTOF" : {
+      "MatchedTracksAllTypes" : {
         "active" : "true",
         "className" : "o2::quality_control_modules::tof::TOFMatchedTracks",
         "moduleName" : "QcTOF",
@@ -53,7 +53,7 @@
           "geomFileName" : "o2sim_geometry.root"
         },
         "location" : "remote",
-        "saveObjectsToFile" : "TOFmatchedITSTPCTOF_TPCTOF_ITSTPCTRD_MC.root",
+        "saveObjectsToFile" : "TOFmatchedITSTPC_TPC_ITSTPCTRD_TPCTRD_MC.root",
         "" : "For debugging, path to the file where to save. If empty or missing it won't save."
       }
     },
