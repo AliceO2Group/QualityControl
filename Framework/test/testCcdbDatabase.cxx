@@ -63,25 +63,25 @@ struct test_fixture {
   ~test_fixture() = default;
 
   // shorthands to get the paths to the objects and their containing folder
-  std::string getQoPath(const string& checkName, const string& provenance = "qc") const
+  std::string getMoPath(const string& objectName, const string& provenance = "qc", bool includeProvenance = true) const
   {
-    return RepoPathUtils::getQoPath(detector, taskName + "/" + checkName, "", {}, provenance);
+    return RepoPathUtils::getMoPath(detector, taskName, objectName, provenance, includeProvenance);
   }
-  std::string getMoPath(const string& objectName, const string& provenance = "qc") const
+  std::string getQoPath(const string& checkName, const string& provenance = "qc", bool includeProvenance = true) const
   {
-    return RepoPathUtils::getMoPath(detector, taskName, objectName, provenance);
+    return RepoPathUtils::getQoPath(detector, taskName + "/" + checkName, "", {}, provenance, includeProvenance);
   }
   std::string getMoFolder(const string& objectName) const
   {
     // we extract the path after the provenance and before the object name
-    string fullMoPath = getMoPath(objectName, "");
-    return fullMoPath.substr(1, fullMoPath.find_last_of('/'));
+    string fullMoPath = getMoPath(objectName, "", false);
+    return fullMoPath.substr(0, fullMoPath.find_last_of('/'));
   }
   std::string getQoFolder(const string& checkName) const
   {
     // we extract the path after the provenance and before the object name
-    string fullQoPath = getQoPath(checkName, "");
-    return fullQoPath.substr(1, fullQoPath.find_last_of('/'));
+    string fullQoPath = getQoPath(checkName, "", false);
+    return fullQoPath.substr(0, fullQoPath.find_last_of('/'));
   }
   std::unique_ptr<CcdbDatabase> backend;
   map<string, string> metadata;
@@ -189,7 +189,7 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_timestamps, *utf::depends_on("ccdb_store"))
   BOOST_REQUIRE_NE(mo, nullptr);
   BOOST_CHECK_EQUAL(mo->getName(), "short");
 
-  std::shared_ptr<QualityObject> qo = f.backend->retrieveQO(f.getQoPath("short").substr(3), 15000);
+  std::shared_ptr<QualityObject> qo = f.backend->retrieveQO(f.getQoPath("short", "", false), 15000);
   BOOST_REQUIRE_NE(qo, nullptr);
   BOOST_CHECK_EQUAL(qo->getName(), f.taskName + "/short");
 }
@@ -205,7 +205,7 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_inexisting_mo)
 BOOST_AUTO_TEST_CASE(ccdb_retrieve_qo, *utf::depends_on("ccdb_store"))
 {
   test_fixture f;
-  std::shared_ptr<QualityObject> qo = f.backend->retrieveQO(RepoPathUtils::getQoPath("TST", f.taskName + "/test-ccdb-check").substr(3));
+  std::shared_ptr<QualityObject> qo = f.backend->retrieveQO(RepoPathUtils::getQoPath("TST", f.taskName + "/test-ccdb-check", "", {}, "", false));
   BOOST_CHECK_NE(qo, nullptr);
   Quality q = qo->getQuality();
   BOOST_CHECK_EQUAL(q.getLevel(), 3);
@@ -218,7 +218,7 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_qo, *utf::depends_on("ccdb_store"))
 BOOST_AUTO_TEST_CASE(ccdb_provenance, *utf::depends_on("ccdb_store"))
 {
   test_fixture f;
-  std::shared_ptr<QualityObject> qo = f.backend->retrieveQO(RepoPathUtils::getQoPath("TST", f.taskName + "/provenance", "", {}, "").substr(1), -1, { 0, 0, "", "", "qc_hello" });
+  std::shared_ptr<QualityObject> qo = f.backend->retrieveQO(RepoPathUtils::getQoPath("TST", f.taskName + "/provenance", "", {}, "", false), -1, { 0, 0, "", "", "qc_hello" });
   BOOST_CHECK_NE(qo, nullptr);
   BOOST_CHECK_EQUAL(qo->getActivity().mProvenance, "qc_hello");
 
