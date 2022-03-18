@@ -23,6 +23,9 @@ include/CTP/RawDataQcTask.h
                     LINKDEF include/CTP/LinkDef.h
                     BASENAME O2QcCTP)
 
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/CTP
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+
 # ---- Test(s) ----
 
 set(TEST_SRCS test/testQcCTP.cxx)

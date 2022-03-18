@@ -53,15 +53,40 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 
   // define histograms
-  mClusterLayerIndexH0 = std::make_unique<TH1F>("mClusterLayerIndexH0", "Clusters per layer in H0;Layer(=Disk*2+Face);Entries", 10, -0.5, 9.5);
+  mClusterLayerIndexH0 = std::make_unique<TH1F>("mClusterLayerIndexH0", "Clusters per layer in H0;Layer;Entries", 10, -0.5, 9.5);
+  mClusterLayerIndexH0->GetXaxis()->SetBinLabel(1, "d0-f0");
+  mClusterLayerIndexH0->GetXaxis()->SetBinLabel(2, "d0-f1");
+  mClusterLayerIndexH0->GetXaxis()->SetBinLabel(3, "d1-f0");
+  mClusterLayerIndexH0->GetXaxis()->SetBinLabel(4, "d1-f1");
+  mClusterLayerIndexH0->GetXaxis()->SetBinLabel(5, "d2-f0");
+  mClusterLayerIndexH0->GetXaxis()->SetBinLabel(6, "d2-f1");
+  mClusterLayerIndexH0->GetXaxis()->SetBinLabel(7, "d3-f0");
+  mClusterLayerIndexH0->GetXaxis()->SetBinLabel(8, "d3-f1");
+  mClusterLayerIndexH0->GetXaxis()->SetBinLabel(9, "d4-f0");
+  mClusterLayerIndexH0->GetXaxis()->SetBinLabel(10, "d4-f1");
+  mClusterLayerIndexH0->SetStats(0);
   getObjectsManager()->startPublishing(mClusterLayerIndexH0.get());
-  mClusterLayerIndexH1 = std::make_unique<TH1F>("mClusterLayerIndexH1", "Clusters per layer in H1;Layer(=Disk*2+Face);Entries", 10, -0.5, 9.5);
+
+  mClusterLayerIndexH1 = std::make_unique<TH1F>("mClusterLayerIndexH1", "Clusters per layer in H1;Layer;Entries", 10, -0.5, 9.5);
+  mClusterLayerIndexH1->GetXaxis()->SetBinLabel(1, "d0-f0");
+  mClusterLayerIndexH1->GetXaxis()->SetBinLabel(2, "d0-f1");
+  mClusterLayerIndexH1->GetXaxis()->SetBinLabel(3, "d1-f0");
+  mClusterLayerIndexH1->GetXaxis()->SetBinLabel(4, "d1-f1");
+  mClusterLayerIndexH1->GetXaxis()->SetBinLabel(5, "d2-f0");
+  mClusterLayerIndexH1->GetXaxis()->SetBinLabel(6, "d2-f1");
+  mClusterLayerIndexH1->GetXaxis()->SetBinLabel(7, "d3-f0");
+  mClusterLayerIndexH1->GetXaxis()->SetBinLabel(8, "d3-f1");
+  mClusterLayerIndexH1->GetXaxis()->SetBinLabel(9, "d4-f0");
+  mClusterLayerIndexH1->GetXaxis()->SetBinLabel(10, "d4-f1");
+  mClusterLayerIndexH1->SetStats(0);
   getObjectsManager()->startPublishing(mClusterLayerIndexH1.get());
 
-  mClusterSensorIndex = std::make_unique<TH1F>("mMFTClusterSensorIndex", "Chip Cluster Occupancy;Chip ID;#Entries", 936, -0.5, 935.5);
-  getObjectsManager()->startPublishing(mClusterSensorIndex.get());
+  mClusterOccupancy = std::make_unique<TH1F>("mClusterOccupancy", "Chip Cluster Occupancy;Chip ID;#Entries", 936, -0.5, 935.5);
+  mClusterOccupancy->SetStats(0);
+  getObjectsManager()->startPublishing(mClusterOccupancy.get());
 
-  mClusterPatternIndex = std::make_unique<TH1F>("mMFTClusterPatternIndex", "Cluster Pattern ID;Pattern ID;#Entries", 300, -0.5, 299.5);
+  mClusterPatternIndex = std::make_unique<TH1F>("mClusterPatternIndex", "Cluster Pattern ID;Pattern ID;#Entries", 300, -0.5, 299.5);
+  mClusterPatternIndex->SetStats(0);
   getObjectsManager()->startPublishing(mClusterPatternIndex.get());
 
   mClusterPatternSensorIndices = std::make_unique<TH2F>("mClusterPatternSensorIndices",
@@ -91,8 +116,8 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
       for (int iFace = 0; iFace < 2; iFace++) {
         int idx = (iDisk * 2 + iFace) + (10 * iHalf);
         auto chipmap = std::make_unique<TH2F>(
-          Form("ChipOccupancyMaps/Half_%d/Disk_%d/Face_%d/mMFTChipOccupancyMap", iHalf, iDisk, iFace),
-          Form("h%d-d%d-f%d;x (cm);y (cm)", iHalf, iDisk, iFace),
+          Form("ChipOccupancyMaps/Half_%d/Disk_%d/Face_%d/mClusterChipOccupancyMap", iHalf, iDisk, iFace),
+          Form("Cluster Chip Map h%d-d%d-f%d;x (cm);y (cm)", iHalf, iDisk, iFace),
           MFTTable.mNumberOfBinsInOccupancyMaps[idx][0],
           MFTTable.mNumberOfBinsInOccupancyMaps[idx][1],
           MFTTable.mNumberOfBinsInOccupancyMaps[idx][2],
@@ -101,8 +126,8 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
           MFTTable.mNumberOfBinsInOccupancyMaps[idx][5]);
         chipmap->SetStats(0);
         chipmap->SetOption("colz");
-        mChipOccupancyMap.push_back(std::move(chipmap));
-        getObjectsManager()->startPublishing(mChipOccupancyMap[idx].get());
+        mClusterChipOccupancyMap.push_back(std::move(chipmap));
+        getObjectsManager()->startPublishing(mClusterChipOccupancyMap[idx].get());
       } // loop over faces
     }   // loop over disks
   }     // loop over halfs
@@ -111,7 +136,7 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
 void QcMFTClusterTask::startOfActivity(Activity& /*activity*/)
 {
   ILOG(Info, Support) << "startOfActivity" << ENDM;
-  mClusterSensorIndex->Reset();
+  mClusterOccupancy->Reset();
   mClusterPatternIndex->Reset();
   mClusterPatternSensorIndices->Reset();
   mClusterLayerIndexH0->Reset();
@@ -120,7 +145,7 @@ void QcMFTClusterTask::startOfActivity(Activity& /*activity*/)
     mClusterPatternSensorMap[i]->Reset();
   }
   for (int i = 0; i < 20; i++) {
-    mChipOccupancyMap[i]->Reset();
+    mClusterChipOccupancyMap[i]->Reset();
   }
 }
 
@@ -141,14 +166,14 @@ void QcMFTClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
     int layerID = mDisk[sensorID] * 2 + mFace[sensorID];
     (mHalf[sensorID] == 0) ? mClusterLayerIndexH0->Fill(layerID)
                            : mClusterLayerIndexH1->Fill(layerID);
-    mClusterSensorIndex->Fill(sensorID);
+    mClusterOccupancy->Fill(sensorID);
     mClusterPatternIndex->Fill(oneCluster.getPatternID());
     mClusterPatternSensorIndices->Fill(sensorID,
                                        oneCluster.getPatternID());
     mClusterPatternSensorMap[oneCluster.getSensorID()]->Fill(oneCluster.getPatternID());
     // fill occupancy maps
     int idx = layerID + (10 * mHalf[sensorID]);
-    mChipOccupancyMap[idx]->Fill(mX[sensorID], mY[sensorID]);
+    mClusterChipOccupancyMap[idx]->Fill(mX[sensorID], mY[sensorID]);
   }
 }
 
@@ -167,7 +192,7 @@ void QcMFTClusterTask::reset()
   // clean all the monitor objects here
 
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
-  mClusterSensorIndex->Reset();
+  mClusterOccupancy->Reset();
   mClusterPatternIndex->Reset();
   mClusterPatternSensorIndices->Reset();
   mClusterLayerIndexH0->Reset();
@@ -176,7 +201,7 @@ void QcMFTClusterTask::reset()
     mClusterPatternSensorMap[i]->Reset();
   }
   for (int i = 0; i < 20; i++) {
-    mChipOccupancyMap[i]->Reset();
+    mClusterChipOccupancyMap[i]->Reset();
   }
 }
 
@@ -186,15 +211,15 @@ void QcMFTClusterTask::getNameOfMap(TString& folderName, TString& histogramName,
                     mHalf[iChipIndex], mDisk[iChipIndex], mFace[iChipIndex], mZone[iChipIndex],
                     mLadder[iChipIndex], mSensor[iChipIndex], mTransID[iChipIndex]);
 
-  histogramName = Form("h%d-d%d-f%d-z%d-l%d-s%d-tr%d;Pattern ID;#Entries",
+  histogramName = Form("Cluster Pattern h%d-d%d-f%d-z%d-l%d-s%d-tr%d;Pattern ID;#Entries",
                        mHalf[iChipIndex], mDisk[iChipIndex], mFace[iChipIndex], mZone[iChipIndex],
                        mLadder[iChipIndex], mSensor[iChipIndex], mTransID[iChipIndex]);
 }
 
 void QcMFTClusterTask::getChipMapData()
 {
-  const o2::itsmft::ChipMappingMFT map;
-  auto chipMapData = map.getChipMappingData();
+  const o2::itsmft::ChipMappingMFT mapMFT;
+  auto chipMapData = mapMFT.getChipMappingData();
   QcMFTUtilTables MFTTable;
 
   for (int i = 0; i < 936; i++) {

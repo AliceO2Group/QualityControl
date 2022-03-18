@@ -20,6 +20,9 @@
       },
       "conditionDB": {
         "url": "ccdb-test.cern.ch:8080"
+      },
+      "postprocessing": {
+        "periodSeconds": "10"
       }
     },
     "checks": {

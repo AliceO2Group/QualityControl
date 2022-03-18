@@ -31,6 +31,9 @@ namespace muonchambers
 
 std::string getHistoPath(int deId);
 
+int getDEindex(int de);
+int getDEindexMax();
+
 class DetectorHistogram
 {
  public:
@@ -59,8 +62,11 @@ class DetectorHistogram
 
   bool mFlipX{ false };
   bool mFlipY{ false };
+  float mShiftX{ 0 };
+  float mShiftY{ 0 };
 
   void init();
+  void addContour();
 };
 
 class GlobalHistogram : public TH2F

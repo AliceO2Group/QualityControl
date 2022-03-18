@@ -28,7 +28,6 @@ install(TARGETS O2QcFV0
 add_root_dictionary(O2QcFV0
                     HEADERS
   include/FV0/DigitQcTask.h
-  include/FV0/Helper.h
   include/FV0/CFDEffCheck.h
   include/FV0/BasicPPTask.h
   include/FV0/OutOfBunchCollTask.h
@@ -38,6 +37,9 @@ add_root_dictionary(O2QcFV0
   include/FV0/ChannelTimeCalibrationCheck.h
                     LINKDEF include/FV0/LinkDef.h
                     BASENAME O2QcFV0)
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/FV0
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 
 # ---- Test(s) ----
 

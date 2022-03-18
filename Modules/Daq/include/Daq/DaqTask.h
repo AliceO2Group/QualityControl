@@ -51,7 +51,7 @@ class DaqTask final : public o2::quality_control::core::TaskInterface
   void reset() override;
 
  private:
-  void printInputPayload(const header::DataHeader* header, const char* payload);
+  void printInputPayload(const header::DataHeader* header, const char* payload, size_t payloadSize);
   void monitorInputRecord(o2::framework::InputRecord& inputRecord);
   void monitorRDHs(o2::framework::InputRecord& inputRecord);
 

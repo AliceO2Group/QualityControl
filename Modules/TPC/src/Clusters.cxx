@@ -99,16 +99,16 @@ void Clusters::startOfCycle()
 
 void Clusters::processClusterNative(InputRecord& inputs)
 {
-  ClusterNativeAccess clusterIndex = clusterHandler(inputs);
-  if (!clusterIndex.nClustersTotal) {
+  const auto& inputsTPCclusters = clusterHandler(inputs);
+  if (!inputsTPCclusters->clusterIndex.nClustersTotal) {
     return;
   }
 
-  for (int isector = 0; isector < constants::MAXSECTOR; ++isector) {
-    for (int irow = 0; irow < constants::MAXGLOBALPADROW; ++irow) {
-      const int nClusters = clusterIndex.nClusters[isector][irow];
+  for (int isector = 0; isector < o2::tpc::constants::MAXSECTOR; ++isector) {
+    for (int irow = 0; irow < o2::tpc::constants::MAXGLOBALPADROW; ++irow) {
+      const int nClusters = inputsTPCclusters->clusterIndex.nClusters[isector][irow];
       for (int icl = 0; icl < nClusters; ++icl) {
-        const auto& cl = *(clusterIndex.clusters[isector][irow] + icl);
+        const auto& cl = *(inputsTPCclusters->clusterIndex.clusters[isector][irow] + icl);
         mQCClusters.getClusters().processCluster(cl, Sector(isector), irow);
       }
     }

@@ -20,7 +20,7 @@
 #include <Framework/InputRecord.h>
 #include "QualityControl/QcInfoLogger.h"
 //#include "FT0Base/Constants.h"
-#include "DataFormatsFV0/BCData.h"
+#include "DataFormatsFV0/Digit.h"
 #include "DataFormatsFV0/ChannelData.h"
 #include "QualityControl/TaskInterface.h"
 #include <memory>
@@ -31,15 +31,13 @@
 #include "TH2.h"
 #include "TList.h"
 #include "Rtypes.h"
-#include "FV0/Helper.h"
 
 using namespace o2::quality_control::core;
 
 namespace o2::quality_control_modules::fv0
 {
-namespace ch_data = helper::channel_data;
 using ChannelData = o2::fv0::ChannelData;
-using Digit = o2::fv0::BCData;
+using Digit = o2::fv0::Digit;
 /// \brief Quality Control DPL Task for FV0's digit visualization
 /// \author Artur Furs afurs@cern.ch
 class DigitQcTask final : public TaskInterface

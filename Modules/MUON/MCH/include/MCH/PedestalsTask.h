@@ -21,7 +21,7 @@
 #include "MCHRawElecMap/Mapper.h"
 #include "MCH/GlobalHistogram.h"
 #include "Framework/DataRef.h"
-#include "MCHCalibration/MCHChannelCalibrator.h"
+#include "MCHCalibration/PedestalData.h"
 
 class TH1F;
 class TH2F;
@@ -56,7 +56,7 @@ class PedestalsTask final : public TaskInterface
   o2::mch::raw::Elec2DetMapper mElec2DetMapper;
 
   /// helper class that performs the actual computation of the pedestals from the input digits
-  o2::mch::calibration::PedestalProcessor mPedestalProcessor;
+  o2::mch::calibration::PedestalData mPedestalData;
 
   TH2F* mHistogramPedestals;
   TH2F* mHistogramNoise;

@@ -77,7 +77,7 @@ class TrendingTaskITSFhr : public PostProcessingInterface
     Int_t runNumber = 0;
   };
 
-  void trendValues(repository::DatabaseInterface& qcdb);
+  void trendValues(const Trigger& t, repository::DatabaseInterface& qcdb);
   void storePlots(repository::DatabaseInterface& qcdb);
   void storeTrend(repository::DatabaseInterface& qcdb);
 
@@ -90,15 +90,21 @@ class TrendingTaskITSFhr : public PostProcessingInterface
   std::unordered_map<std::string, std::unique_ptr<Reductor>> mReductors;
 
   const int col[7] = { 1, 2, 3, 4, 5, 6, 7 };
-  const int mkr[3] = { 8, 29, 34 };
-  static constexpr int NLAYERS = 3;
+  const int mkr[8] = { 20, 21, 22, 29, 24, 25, 26, 30 };
+  static constexpr int NLAYERS = 7;
   static constexpr int NTRENDSFHR = 4;
-  const int nStaves[NLAYERS] = { 12, 16, 20 };
-  const std::string trendtitles[NTRENDSFHR] = { "Fake-hit rate",
-                                                "Stddev Fake-hit rate", "Number of Active chips", "Occupancy" };
-  const std::string trendnames[NTRENDSFHR] = { "mean", "rms", "activechips", "occupancy" };
-  const std::string ytitles[NTRENDSFHR] = {
+  const int nStaves[NLAYERS] = { 12, 16, 20, 24, 30, 42, 48 };
+  const std::string trendtitlesIB[NTRENDSFHR] = { "Fake-hit rate",
+                                                  "Stddev Fake-hit rate", "Number of Active chips", "Occupancy" };
+  const std::string trendtitlesOB[NTRENDSFHR] = { "Fake-hit rate",
+                                                  "Stddev Fake-hit rate", "Number of Active lanes", "Occupancy" };
+  const std::string trendnamesIB[NTRENDSFHR] = { "mean", "rms", "activechips", "occupancy" };
+  const std::string trendnamesOB[NTRENDSFHR] = { "mean", "rms", "activelanes", "occupancy" };
+  const std::string ytitlesIB[NTRENDSFHR] = {
     "Fake-hit rate (/event/pixel)", "Stddev Fake-hit rate (/event/pixel)", "# Active chips", "Occupancy (/event)"
+  };
+  const std::string ytitlesOB[NTRENDSFHR] = {
+    "Fake-hit rate (/event/pixel)", "Stddev Fake-hit rate (/event/pixel)", "# Active lanes", "Occupancy (/event)"
   };
 };
 

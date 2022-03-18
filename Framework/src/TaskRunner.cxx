@@ -30,6 +30,7 @@
 #include <Framework/DataSpecUtils.h>
 #include <Framework/InputRecordWalker.h>
 #include <Framework/InputSpan.h>
+#include <Framework/DataRefUtils.h>
 
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/TaskFactory.h"
@@ -427,12 +428,13 @@ void TaskRunner::updateMonitoringStats(ProcessingContext& pCtx)
 {
   mNumberMessagesReceivedInCycle++;
   for (const auto& input : InputRecordWalker(pCtx.inputs())) {
-    const auto* inputHeader = header::get<header::DataHeader*>(input.header);
+    const auto* inputHeader = DataRefUtils::getHeader<header::DataHeader*>(input);
+    auto payloadSize = DataRefUtils::getPayloadSize(input);
     if (inputHeader == nullptr) {
       ILOG(Warning, Devel) << "No DataHeader found in message, ignoring this one for the statistics." << ENDM;
       continue;
     }
-    mDataReceivedInCycle += inputHeader->headerSize + inputHeader->payloadSize;
+    mDataReceivedInCycle += inputHeader->headerSize + payloadSize;
   }
 }
 

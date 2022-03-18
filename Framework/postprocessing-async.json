@@ -1,0 +1,103 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "",
+        "passName": "",
+        "periodName" : "",
+        "provenance" : "qc"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": ""
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      },
+      "postprocessing": {
+        "periodSeconds": "0.0001"
+      }
+    },
+    "checks": {
+      "ExamplePPCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAny",
+        "detectorName": "TST",
+        "dataSource": [{
+          "type": "PostProcessing",
+          "name": "ExampleTrend",
+          "MOs": ["mean_of_histogram"]
+        }]
+      }
+    },
+    "postprocessing": {
+      "ExampleTrendAsync": {
+        "active": "true",
+        "className": "o2::quality_control::postprocessing::TrendingTask",
+        "moduleName": "QualityControl",
+        "detectorName": "TST",
+        "producePlotsOnUpdate" : "false",
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "qc/TST/MO/QcTask",
+            "names": [ "example" ],
+            "reductorName": "o2::quality_control_modules::common::TH1Reductor",
+            "moduleName": "QcCommon"
+          }
+        ],
+        "plots": [
+          {
+            "name": "mean_of_histogram",
+            "title": "Mean trend of the example histogram",
+            "varexp": "example.mean:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "histogram_of_means",
+            "title": "Distribution of mean values in the example histogram",
+            "varexp": "example.mean",
+            "selection": "",
+            "option": ""
+          },
+          {
+            "name": "correlation_mean_stddev",
+            "title": "Correlation between the mean and stddev of the example histogram",
+            "varexp": "example.mean:example.stddev",
+            "selection": "",
+            "option": "*"
+          },
+          {
+            "name": "correlation_stddev_entries",
+            "title": "Correlation between the stddev and entries of the example histogram",
+            "varexp": "example.stddev:example.entries",
+            "selection": "",
+            "option": "*"
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "foreachobject:qcdb:qc/TST/MO/QcTask/example"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      }
+    }
+  }
+}

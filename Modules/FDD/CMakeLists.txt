@@ -24,6 +24,9 @@ add_root_dictionary(O2QcFDD
                     LINKDEF include/FDD/LinkDef.h
                     BASENAME O2QcFDD)
 
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/FDD
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+
 # ---- Test(s) ----
 
 set(TEST_SRCS test/testQcFDD.cxx)

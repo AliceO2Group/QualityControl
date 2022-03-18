@@ -264,7 +264,7 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       textColor = kRed;
     }
 
-    auto* msg = new TLatex(0.15, 0.7, histoQuality == 0 ? text[0].Data() : Form("#bf{#splitline{%s}{%s}}", text[0].Data(), text[1].Data()));
+    auto* msg = new TLatex(0.15, 0.7, text[0].Data());
     msg->SetTextColor(textColor);
     msg->SetTextSize(0.08);
     msg->SetTextFont(43);

@@ -17,6 +17,11 @@
 #ifndef QC_CORE_ACTIVITY_H
 #define QC_CORE_ACTIVITY_H
 
+#include <map>
+#include <string>
+
+#include "Rtypes.h"
+
 namespace o2::quality_control::core
 {
 
@@ -45,6 +50,11 @@ class Activity
   Activity& operator=(const Activity& other) = default;
   /// Move assignment operator
   Activity& operator=(Activity&& other) noexcept = default;
+  /// Comparator
+  bool operator==(const Activity& other) const;
+
+  /// Checks if the other activity matches this, taking into account that default values match any.
+  bool matches(const Activity& other) const;
 
   virtual ~Activity() = default;
 

@@ -69,7 +69,10 @@ class TrendingTaskTPC : public PostProcessingInterface
   void trendValues(uint64_t timestamp, o2::quality_control::repository::DatabaseInterface&);
   void generatePlots();
   void drawCanvas(TCanvas* thisCanvas, const std::string& var,
-                  const std::string& name, const std::string& opt, const std::string& err);
+                  const std::string& name, const std::string& opt, const std::string& err, const std::vector<std::vector<float>>& axis);
+
+  void getUserAxisRange(const std::string graphAxisRange, float& limitLow, float& limitUp);
+  void setUserAxisLabel(TAxis* xAxis, TAxis* yAxis, const std::string graphAxisLabel);
 
   TrendingTaskConfigTPC mConfig;
   MetaData mMetaData;
@@ -81,6 +84,7 @@ class TrendingTaskTPC : public PostProcessingInterface
   std::unordered_map<std::string, std::unique_ptr<ReductorTPC>> mReductors;
   std::unordered_map<std::string, std::vector<SliceInfo>> mSources;
   std::unordered_map<std::string, std::vector<std::string>> mSubtitles;
+  std::unordered_map<std::string, std::vector<std::vector<float>>> mAxisDivision;
 };
 
 } // namespace o2::quality_control_modules::tpc

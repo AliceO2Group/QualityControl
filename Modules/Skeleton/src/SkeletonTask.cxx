@@ -21,6 +21,7 @@
 #include "Skeleton/SkeletonTask.h"
 #include <Framework/InputRecord.h>
 #include <Framework/InputRecordWalker.h>
+#include <Framework/DataRefUtils.h>
 
 namespace o2::quality_control_modules::skeleton
 {
@@ -84,12 +85,13 @@ void SkeletonTask::monitorData(o2::framework::ProcessingContext& ctx)
   // 1. In a loop
   for (auto&& input : framework::InputRecordWalker(ctx.inputs())) {
     // get message header
-    const auto* header = header::get<header::DataHeader*>(input.header);
+    const auto* header = o2::framework::DataRefUtils::getHeader<header::DataHeader*>(input);
+    auto payloadSize = o2::framework::DataRefUtils::getPayloadSize(input);
     // get payload of a specific input, which is a char array.
     // const char* payload = input.payload;
 
     // for the sake of an example, let's fill the histogram with payload sizes
-    mHistogram->Fill(header->payloadSize);
+    mHistogram->Fill(payloadSize);
   }
 
   // 2. Using get("<binding>")
@@ -98,10 +100,15 @@ void SkeletonTask::monitorData(o2::framework::ProcessingContext& ctx)
   //   auto payload = ctx.inputs().get("random").payload;
 
   // get payload of a specific input, which is a structure array:
-  //  const auto* header = header::get<header::DataHeader*>(ctx.inputs().get("random").header);
+  //   auto input = ctx.inputs().get("random");
+  //   auto payload = input.payload;
+
+  // get payload of a specific input, which is a structure array:
+  //  const auto* header = DataRefUtils::getHeader<header::DataHeader*>(input);
+  //  auto payloadSize = DataRefUtils::getPayloadSize(input);
   //  struct s {int a; double b;};
-  //  auto array = ctx.inputs().get<s*>("random");
-  //  for (int j = 0; j < header->payloadSize / sizeof(s); ++j) {
+  //  auto array = ctx.inputs().get<s*>(input);
+  //  for (int j = 0; j < payloadSize / sizeof(s); ++j) {
   //    int i = array.get()[j].a;
   //  }
 

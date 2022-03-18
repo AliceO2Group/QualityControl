@@ -34,13 +34,15 @@ namespace o2::quality_control_modules::tpc
 ///
 
 struct SliceInfo {
-  double entries = 0.;  // Number of entries in the slice/canvas.
-  double meanX = 0.;    // Standard mean for a given range in X.
-  double stddevX = 0.;  // Standard deviation for the range in X.
-  double errMeanX = 0.; // Error on the mean along X.
-  double meanY = 0.;    // Standard mean in Y.
-  double stddevY = 0.;  // Standard deviation in Y.
-  double errMeanY = 0.; // Error on the mean along Y.
+  double entries = 0.;     // Number of entries in the slice/canvas.
+  double meanX = 0.;       // Standard mean for a given range in X.
+  double stddevX = 0.;     // Standard deviation for the range in X.
+  double errMeanX = 0.;    // Error on the mean along X.
+  double meanY = 0.;       // Standard mean in Y.
+  double stddevY = 0.;     // Standard deviation in Y.
+  double errMeanY = 0.;    // Error on the mean along Y.
+  double sliceLabelX = 0.; // Stores numerical center of slice along X in case of slicing or pad number in case of canvas
+  double sliceLabelY = 0.; // Stores numerical center of slice along Y in case of slicing or pad number in case of canvas
 
   /// \brief Check if the argument is a floating number or a string.
   bool isStringFloating(std::string var)
@@ -52,27 +54,31 @@ struct SliceInfo {
   }
 
   /// \brief Return the struct member/float corresponding to the argument.
-  double RetrieveValue(std::string VarType)
+  double RetrieveValue(std::string varType)
   {
-    if (isStringFloating(VarType)) {
-      return std::stod(VarType);
+    if (isStringFloating(varType)) {
+      return std::stod(varType);
     } else {
-      if (strcmp(VarType.data(), "entries") == 0) {
+      if (varType == "entries") {
         return entries;
-      } else if (strcmp(VarType.data(), "meanX") == 0) {
+      } else if (varType == "meanX") {
         return meanX;
-      } else if (strcmp(VarType.data(), "stddevX") == 0) {
+      } else if (varType == "stddevX") {
         return stddevX;
-      } else if (strcmp(VarType.data(), "errMeanX") == 0) {
+      } else if (varType == "errMeanX") {
         return errMeanX;
-      } else if (strcmp(VarType.data(), "meanY") == 0) {
+      } else if (varType == "meanY") {
         return meanY;
-      } else if (strcmp(VarType.data(), "stddevY") == 0) {
+      } else if (varType == "stddevY") {
         return stddevY;
-      } else if (strcmp(VarType.data(), "errMeanY") == 0) {
+      } else if (varType == "errMeanY") {
         return errMeanY;
+      } else if (varType == "sliceLabelX") {
+        return sliceLabelX;
+      } else if (varType == "sliceLabelY") {
+        return sliceLabelY;
       } else {
-        ILOG(Error, Support) << "TPC SliceInfo.h: 'VarType' " << VarType.data()
+        ILOG(Error, Support) << "TPC SliceInfo.h: 'varType' " << varType.data()
                              << " in 'RetrieveValue' unknown. Breaking." << ENDM;
         exit(0);
       }

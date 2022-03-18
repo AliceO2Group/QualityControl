@@ -51,6 +51,9 @@ add_root_dictionary(O2QcFT0
         LINKDEF include/FT0/LinkDef.h
         BASENAME O2QcFT0)
 
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/FT0
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+
 # ---- Executables ----
 # keep commented as an example
 
@@ -97,6 +100,7 @@ install(FILES
         ft0-multinode-config.json
         ft0-postprocessing-config.json
         ft0-basic-config.json
+        ft0-reconstruction-config.json
         DESTINATION etc)
 
 get_property(dirs

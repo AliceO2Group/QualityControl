@@ -30,6 +30,7 @@
 #include "MCHMappingInterface/Segmentation.h"
 #include "MCHMappingInterface/CathodeSegmentation.h"
 #include "MCHRawElecMap/Mapper.h"
+#include "MCHCalibration/PedestalChannel.h"
 #ifdef MCH_HAS_MAPPING_FACTORY
 #include "MCHMappingFactory/CreateSegmentation.h"
 #endif
@@ -303,13 +304,12 @@ void PedestalsTask::PlotPedestalDE(uint16_t solarID, uint8_t dsID, uint8_t chann
 void PedestalsTask::monitorDataPedestals(o2::framework::ProcessingContext& ctx)
 {
   ILOG(Info, Support) << "Plotting pedestals" << AliceO2::InfoLogger::InfoLogger::endm;
-  using ChannelPedestal = o2::mch::calibration::MCHChannelCalibrator::ChannelPedestal;
 
-  auto pedestals = ctx.inputs().get<gsl::span<ChannelPedestal>>("pedestals");
+  auto pedestals = ctx.inputs().get<gsl::span<o2::mch::calibration::PedestalChannel>>("pedestals");
   for (auto& p : pedestals) {
-    auto dsChID = p.mDsChId;
-    double mean = p.mPedMean;
-    double rms = p.mPedRms;
+    auto dsChID = p.dsChannelId;
+    double mean = p.mPedestal;
+    double rms = p.getRms();
 
     auto solarID = dsChID.getSolarId();
     auto dsID = dsChID.getDsId();
@@ -322,23 +322,19 @@ void PedestalsTask::monitorDataPedestals(o2::framework::ProcessingContext& ctx)
 void PedestalsTask::monitorDataDigits(o2::framework::ProcessingContext& ctx)
 {
   auto digits = ctx.inputs().get<gsl::span<o2::mch::calibration::PedestalDigit>>("digits");
-  mPedestalProcessor.process(digits);
+  mPedestalData.fill(digits);
 
-  auto pedestals = mPedestalProcessor.getPedestals();
-  for (auto& p : pedestals) {
-    auto& pMat = p.second;
-    for (size_t dsId = 0; dsId < pMat.size(); dsId++) {
-      auto& pRow = pMat[dsId];
-      for (size_t ch = 0; ch < pRow.size(); ch++) {
-        auto& pRecord = pRow[ch];
+  for (auto& p : mPedestalData) {
 
-        if (pRecord.mEntries == 0) {
-          continue;
-        }
-
-        PlotPedestal(p.first, dsId, ch, pRecord.mPedestal, pRecord.getRms());
-      }
+    if (p.mEntries == 0) {
+      continue;
     }
+
+    PlotPedestal(p.dsChannelId.getSolarId(),
+                 p.dsChannelId.getDsId(),
+                 p.dsChannelId.getChannel(),
+                 p.mPedestal,
+                 p.getRms());
   }
 }
 
@@ -375,7 +371,7 @@ void PedestalsTask::reset()
   // clean all the monitor objects here
 
   ILOG(Info, Support) << "Reseting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
-  mPedestalProcessor.reset();
+  mPedestalData.reset();
 }
 
 } // namespace muonchambers

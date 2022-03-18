@@ -24,7 +24,7 @@
 #include <FT0Base/Constants.h>
 #include <DataFormatsFT0/RecPoints.h>
 #include <DataFormatsFT0/ChannelData.h>
-#include "QualityControl/TaskInterface.h>
+#include "QualityControl/TaskInterface.h"
 #include <memory>
 #include <regex>
 #include <type_traits>

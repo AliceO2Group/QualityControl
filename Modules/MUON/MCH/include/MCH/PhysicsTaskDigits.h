@@ -26,8 +26,8 @@
 #else
 #include "MCHBase/Digit.h"
 #endif
+#include "MUONCommon/MergeableTH2Ratio.h"
 #include "MCH/GlobalHistogram.h"
-#include "MCH/MergeableTH2Ratio.h"
 #include "MCH/MergeableTH1OccupancyPerDE.h"
 #include "MCH/MergeableTH1OccupancyPerDECycle.h"
 
@@ -35,6 +35,7 @@ class TH1F;
 class TH2F;
 
 using namespace o2::quality_control::core;
+using namespace o2::quality_control_modules::muon;
 
 namespace o2
 {
@@ -74,6 +75,7 @@ class PhysicsTaskDigits /*final*/ : public TaskInterface // todo add back the "f
   static constexpr int sMaxDsId = 40;
 
   bool mDiagnostic{ false };
+  bool mSaveToRootFile{ false };
 
   o2::mch::raw::Elec2DetMapper mElec2DetMapper;
   o2::mch::raw::Det2ElecMapper mDet2ElecMapper;
@@ -88,9 +90,9 @@ class PhysicsTaskDigits /*final*/ : public TaskInterface // todo add back the "f
   TH2F* mHistogramNorbitsElec;                                // Histogram of Number of orbits (Elec view)
   std::shared_ptr<MergeableTH2Ratio> mHistogramOccupancyElec; // Mergeable object, Occupancy histogram (Elec view)
 
-  std::shared_ptr<TH2F> mDigitsOrbitInTF;
-  std::shared_ptr<TH2F> mDigitsBcInOrbit;
-  std::shared_ptr<TH2F> mAmplitudeVsSamples;
+  std::shared_ptr<TH2F> mHistogramDigitsOrbitInTF;
+  std::shared_ptr<TH2F> mHistogramDigitsBcInOrbit;
+  std::shared_ptr<TH2F> mHistogramAmplitudeVsSamples;
 
   std::map<int, std::shared_ptr<TH1F>> mHistogramADCamplitudeDE;              // Histogram of ADC distribution per DE
   std::map<int, std::shared_ptr<DetectorHistogram>> mHistogramNhitsDE[2];     // Histogram of Number of hits (XY view)
@@ -100,7 +102,7 @@ class PhysicsTaskDigits /*final*/ : public TaskInterface // todo add back the "f
   // TH1 of the Mean Occupancy on each DE, integrated or only on elapsed cycle - Sent for Trending
   // WARNING: the code for the occupancy on cycle is currently broken and therefore disabled
   std::shared_ptr<MergeableTH1OccupancyPerDE> mMeanOccupancyPerDE;
-  //std::shared_ptr<MergeableTH1OccupancyPerDECycle> mMeanOccupancyPerDECycle;
+  // std::shared_ptr<MergeableTH1OccupancyPerDECycle> mMeanOccupancyPerDECycle;
 
   std::vector<TH1*> mAllHistograms;
 };

@@ -56,7 +56,7 @@ class TrendingHits : public PostProcessingInterface
     Int_t runNumber = 0;
   };
 
-  void trendValues(uint64_t timestamp, repository::DatabaseInterface&);
+  void trendValues(const Trigger& t, repository::DatabaseInterface&);
   void generatePlots();
 
   TrendingConfigTOF mConfig;

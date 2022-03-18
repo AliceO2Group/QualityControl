@@ -20,6 +20,7 @@
 #include <CCDB/CcdbApi.h>
 
 #include "QualityControl/DatabaseInterface.h"
+#include <Common/Timer.h>
 
 namespace o2::quality_control::repository
 {
@@ -60,6 +61,7 @@ class CcdbDatabase : public DatabaseInterface
   // storage
   void storeMO(std::shared_ptr<const o2::quality_control::core::MonitorObject> q, long from = -1, long to = -1) override;
   void storeQO(std::shared_ptr<const o2::quality_control::core::QualityObject> q, long from = -1, long to = -1) override;
+  void storeTRFC(std::shared_ptr<const o2::quality_control::TimeRangeFlagCollection> trfc) override;
   void storeAny(const void* obj, std::type_info const& typeInfo, std::string const& path, std::map<std::string, std::string> const& metadata,
                 std::string const& detectorName, std::string const& taskName, long from = -1, long to = -1) override;
 
@@ -69,9 +71,12 @@ class CcdbDatabase : public DatabaseInterface
                     const std::string& createdNotAfter = "", const std::string& createdNotBefore = "") override;
 
   // retrieval - MO - deprecated
-  std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string taskName, std::string objectName, long timestamp = -1) override;
+  std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string objectPath, std::string objectName, long timestamp = -1, const core::Activity& activity = {}) override;
   // retrieval - QO - deprecated
-  std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string qoPath, long timestamp = -1) override;
+  std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string qoPath, long timestamp = -1, const core::Activity& activity = {}) override;
+  std::shared_ptr<o2::quality_control::TimeRangeFlagCollection> retrieveTRFC(const std::string& name, const std::string& detector, int runNumber = 0,
+                                                                             const string& passName = "", const string& periodName = "",
+                                                                             const std::string& provenance = "", long timestamp = -1) override;
 
   // retrieval - general
   std::string retrieveJson(std::string path, long timestamp, const std::map<std::string, std::string>& metadata) override;
@@ -90,6 +95,13 @@ class CcdbDatabase : public DatabaseInterface
   * @return The listing of folder and/or objects at the subpath.
   */
   std::vector<std::string> getListing(std::string subpath = "");
+
+  /**
+   * Return the listing of folder and/or objects in the subpath
+   * @param path the folder we want to list the children of.
+   * @return The list of folder and/or objects as Ptree
+   */
+  boost::property_tree::ptree getListingAsPtree(std::string path); // TODO allow to filter by metadata
 
   /**
    * \brief Returns a vector of all 'valid from' timestamps for an object.
@@ -118,9 +130,26 @@ class CcdbDatabase : public DatabaseInterface
    */
   std::string getListingAsString(std::string subpath = "", std::string accept = "text/plain");
 
+  /**
+   * Takes care of the possible errors returned by the storage calls.
+   * @param path
+   * @param result
+   */
+  void handleStorageError(const string& path, int result);
+
+  /**
+   * Check whether the database has encountered a failure previously and if we are still in the
+   * period afterwards when no attempt should be done.
+   * @return
+   */
+  bool isDbInFailure();
+
   o2::ccdb::CcdbApi ccdbApi;
   std::string mUrl;
   size_t mMaxObjectSize = 2097152; // 2MB by default
+  int mFailureDelay = 60;          // 60 seconds delay between attempts to store things in the database
+  bool mDatabaseFailure = false;
+  AliceO2::Common::Timer mFailureTimer;
 };
 
 } // namespace o2::quality_control::repository
