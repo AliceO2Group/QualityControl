@@ -52,34 +52,38 @@ class PedestalsTask final : public TaskInterface
   void reset() override;
 
  private:
-  o2::mch::raw::Solar2FeeLinkMapper mSolar2FeeLinkMapper;
-  o2::mch::raw::Elec2DetMapper mElec2DetMapper;
-
-  /// helper class that performs the actual computation of the pedestals from the input digits
-  o2::mch::calibration::PedestalData mPedestalData;
-
-  TH2F* mHistogramPedestals;
-  TH2F* mHistogramNoise;
-
-  std::map<int, TH2F*> mHistogramPedestalsDE;
-  std::map<int, TH2F*> mHistogramNoiseDE;
-  std::map<int, DetectorHistogram*> mHistogramPedestalsXY[2];
-  std::map<int, DetectorHistogram*> mHistogramNoiseXY[2];
-
-  std::map<int, TH1F*> mHistogramNoiseDistributionDE[5][2];
-
-  GlobalHistogram* mHistogramPedestalsMCH;
-  GlobalHistogram* mHistogramNoiseMCH;
-
-  int mPrintLevel;
-
   void monitorDataDigits(o2::framework::ProcessingContext& ctx);
   void monitorDataPedestals(o2::framework::ProcessingContext& ctx);
 
   void PlotPedestal(uint16_t solarID, uint8_t dsID, uint8_t channel, double mean, double rms);
   void PlotPedestalDE(uint16_t solarID, uint8_t dsID, uint8_t channel, double mean, double rms);
   void fill_noise_distributions();
-  void save_histograms();
+  void writeHistos();
+
+  o2::mch::raw::Solar2FeeLinkMapper mSolar2FeeLinkMapper;
+  o2::mch::raw::Elec2DetMapper mElec2DetMapper;
+
+  /// helper class that performs the actual computation of the pedestals from the input digits
+  o2::mch::calibration::PedestalData mPedestalData;
+
+  std::shared_ptr<TH2F> mHistogramPedestals;
+  std::shared_ptr<TH2F> mHistogramNoise;
+
+  std::map<int, std::shared_ptr<TH2F>> mHistogramPedestalsDE;
+  std::map<int, std::shared_ptr<TH2F>> mHistogramNoiseDE;
+  std::map<int, std::shared_ptr<DetectorHistogram>> mHistogramPedestalsXY[2];
+  std::map<int, std::shared_ptr<DetectorHistogram>> mHistogramNoiseXY[2];
+
+  std::map<int, std::shared_ptr<TH1F>> mHistogramNoiseDistributionDE[5][2];
+  std::shared_ptr<TH1F> mHistogramNoiseDistribution[5];
+
+  std::shared_ptr<GlobalHistogram> mHistogramPedestalsMCH[2];
+  std::shared_ptr<GlobalHistogram> mHistogramNoiseMCH[2];
+
+  int mPrintLevel;
+  bool mSaveToRootFile{ false };
+
+  std::vector<TH1*> mAllHistograms;
 };
 
 } // namespace o2::quality_control_modules::muonchambers
