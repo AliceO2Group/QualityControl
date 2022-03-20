@@ -31,7 +31,7 @@
 
 #include "MCH/GlobalHistogram.h"
 
-#define GLOBAL_HIST_SCALE 2
+#define GLOBAL_HIST_SCALE 5
 
 namespace o2
 {

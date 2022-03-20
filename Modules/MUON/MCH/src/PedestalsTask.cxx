@@ -70,16 +70,16 @@ void PedestalsTask::initialize(o2::framework::InitContext& /*ctx*/)
   mSolar2FeeLinkMapper = o2::mch::raw::createSolar2FeeLinkMapper<o2::mch::raw::ElectronicMapperGenerated>();
   mElec2DetMapper = o2::mch::raw::createElec2DetMapper<o2::mch::raw::ElectronicMapperGenerated>();
 
-  mHistogramPedestals = std::make_shared<TH2F>("Pedestals_Elec", "Pedestals",
-                                              (MCH_FFEID_MAX + 1) * 12 * 40, 0, (MCH_FFEID_MAX + 1) * 12 * 40, 64, 0, 64);
+  const uint32_t nElecXbins = PedestalsTask::sMaxFeeId * PedestalsTask::sMaxLinkId * PedestalsTask::sMaxDsId;
+
+  mHistogramPedestals = std::make_shared<TH2F>("Pedestals_Elec", "Pedestals", nElecXbins, 0, nElecXbins, 64, 0, 64);
   mHistogramPedestals->SetOption("colz");
   mAllHistograms.push_back(mHistogramPedestals.get());
   if (!mSaveToRootFile) {
     getObjectsManager()->startPublishing(mHistogramPedestals.get());
   }
 
-  mHistogramNoise = std::make_shared<TH2F>("Noise_Elec", "Noise",
-                                           (MCH_FFEID_MAX + 1) * 12 * 40, 0, (MCH_FFEID_MAX + 1) * 12 * 40, 64, 0, 64);
+  mHistogramNoise = std::make_shared<TH2F>("Noise_Elec", "Noise", nElecXbins, 0, nElecXbins, 64, 0, 64);
   mHistogramNoise->SetOption("colz");
   mAllHistograms.push_back(mHistogramNoise.get());
   if (!mSaveToRootFile) {

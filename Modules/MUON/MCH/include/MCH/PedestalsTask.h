@@ -60,6 +60,10 @@ class PedestalsTask final : public TaskInterface
   void fill_noise_distributions();
   void writeHistos();
 
+  static constexpr int sMaxFeeId = 64;
+  static constexpr int sMaxLinkId = 12;
+  static constexpr int sMaxDsId = 40;
+
   o2::mch::raw::Solar2FeeLinkMapper mSolar2FeeLinkMapper;
   o2::mch::raw::Elec2DetMapper mElec2DetMapper;
 
