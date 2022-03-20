@@ -463,12 +463,12 @@ static float getGlobalHistDeWidth(int id)
   float result{ 0 };
 
   switch (id) {
-  case 0:
-    result = 130;
-    break;
-  case 1:
-    result = 250;
-    break;
+    case 0:
+      result = 130;
+      break;
+    case 1:
+      result = 250;
+      break;
   }
 
   return result;
@@ -479,12 +479,12 @@ static float getGlobalHistDeHeight(int id)
   float result{ 0 };
 
   switch (id) {
-  case 0:
-    result = 130;
-    break;
-  case 1:
-    result = 60;
-    break;
+    case 0:
+      result = 130;
+      break;
+    case 1:
+      result = 60;
+      break;
   }
 
   return result;
@@ -519,22 +519,22 @@ static float getGlobalHistHeight(int id)
 }
 
 GlobalHistogram::GlobalHistogram(std::string name, std::string title, int id)
-: TH2F(name.c_str(), title.c_str(), getGlobalHistWidth(id) / GLOBAL_HIST_SCALE, 0, getGlobalHistWidth(id),
-       getGlobalHistHeight(id) / GLOBAL_HIST_SCALE, 0, getGlobalHistHeight(id)), mId(id)
+  : TH2F(name.c_str(), title.c_str(), getGlobalHistWidth(id) / GLOBAL_HIST_SCALE, 0, getGlobalHistWidth(id),
+         getGlobalHistHeight(id) / GLOBAL_HIST_SCALE, 0, getGlobalHistHeight(id)),
+    mId(id)
 {
   SetOption("colz");
 }
 
-
 void GlobalHistogram::init()
 {
   switch (mId) {
-  case 0:
-    initST12();
-    break;
-  case 1:
-    initST345();
-    break;
+    case 0:
+      initST12();
+      break;
+    case 1:
+      initST345();
+      break;
   }
 }
 
@@ -664,7 +664,6 @@ void GlobalHistogram::initST345()
     }
   }
 }
-
 
 void GlobalHistogram::getDeCenter(int de, float& xB0, float& yB0, float& xNB0, float& yNB0)
 {
