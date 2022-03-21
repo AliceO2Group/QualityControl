@@ -255,17 +255,23 @@ void TaskPID::processEvent(const std::vector<MyTrack>& tracks)
 
     nt++;
 
+    // Delta t Pion
+    float deltatpi = track.tofSignal() - mT0 - track.tofExpSignalPi();
+    // Delta t Kaon
+    float deltatka = track.tofSignal() - mT0 - track.tofExpSignalKa();
+    // Delta t Proton
+    float deltatpr = track.tofSignal() - mT0 - track.tofExpSignalPr();
     // Beta
     float beta = track.getL() / (track.tofSignal() - mT0) * cinv;
     // Mass
     float mass = track.getP() / beta * TMath::Sqrt(TMath::Abs(1 - beta * beta));
 
-    mHistDeltatPi->Fill(track.tofSignal() - mT0 - track.tofExpSignalPi());
-    mHistDeltatKa->Fill(track.tofSignal() - mT0 - track.tofExpSignalKa());
-    mHistDeltatPr->Fill(track.tofSignal() - mT0 - track.tofExpSignalPr());
-    mHistDeltatPiPt->Fill(track.getPt(), track.tofSignal() - mT0 - track.tofExpSignalPi());
-    mHistDeltatKaPt->Fill(track.getPt(), track.tofSignal() - mT0 - track.tofExpSignalKa());
-    mHistDeltatPrPt->Fill(track.getPt(), track.tofSignal() - mT0 - track.tofExpSignalPr());
+    mHistDeltatPi->Fill(deltatpi);
+    mHistDeltatKa->Fill(deltatka);
+    mHistDeltatPr->Fill(deltatpr);
+    mHistDeltatPiPt->Fill(track.getPt(), deltatpi);
+    mHistDeltatKaPt->Fill(track.getPt(), deltatka);
+    mHistDeltatPrPt->Fill(track.getPt(), deltatpr);
     mHistMass->Fill(mass);
     mHistBetavsP->Fill(track.getP(), beta);
   }
