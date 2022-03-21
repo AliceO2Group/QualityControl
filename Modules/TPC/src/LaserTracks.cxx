@@ -54,7 +54,7 @@ void LaserTracks::update(Trigger t, framework::ServiceRegistry&)
   o2::tpc::painter::makeSummaryCanvases(calibData, &vecPtr);
 }
 
-void LaserTracks::finalize(Trigger, framework::ServiceRegistry&)
+void LaserTracks::finalize(Trigger t, framework::ServiceRegistry&)
 {
   for (const auto& canvas : mLaserTracksCanvasVec) {
     getObjectsManager()->stopPublishing(canvas.get());

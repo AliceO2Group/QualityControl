@@ -66,7 +66,7 @@ class TrendingTaskTPC : public PostProcessingInterface
   };
 
   /// \brief Methods specific to the trending itself.
-  void trendValues(uint64_t timestamp, o2::quality_control::repository::DatabaseInterface&);
+  void trendValues(const Trigger& t, o2::quality_control::repository::DatabaseInterface&);
   void generatePlots();
   void drawCanvas(TCanvas* thisCanvas, const std::string& var,
                   const std::string& name, const std::string& opt, const std::string& err, const std::vector<std::vector<float>>& axis);
