@@ -388,12 +388,12 @@ void ITSFeeTask::getStavePoint(int layer, int stave, double* px, double* py)
   float midAngle = StartAngle[layer] + (stave * stepAngle);       // mid point angle
   float staveRotateAngle = TMath::Pi() / 2 - (stave * stepAngle); // how many angle this stave rotate(compare with first stave)
   px[1] = MidPointRad[layer] * TMath::Cos(midAngle);              // there are 4 point to decide this TH2Poly bin
-                                                     // 0:left point in this stave;
-                                                     // 1:mid point in this stave;
-                                                     // 2:right point in this stave;
-                                                     // 3:higher point int this stave;
-  py[1] = MidPointRad[layer] * TMath::Sin(midAngle); // 4 point calculated accord the blueprint
-                                                     // roughly calculate
+                                                                  // 0:left point in this stave;
+                                                                  // 1:mid point in this stave;
+                                                                  // 2:right point in this stave;
+                                                                  // 3:higher point int this stave;
+  py[1] = MidPointRad[layer] * TMath::Sin(midAngle);              // 4 point calculated accord the blueprint
+                                                                  // roughly calculate
   if (layer < NLayerIB) {
     px[0] = 7.7 * TMath::Cos(staveRotateAngle) + px[1];
     py[0] = -7.7 * TMath::Sin(staveRotateAngle) + py[1];
