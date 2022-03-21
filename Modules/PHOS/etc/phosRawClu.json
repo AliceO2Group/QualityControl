@@ -31,8 +31,8 @@
           "cycleDurationSeconds": "10",
           "maxNumberCycles": "-1",
           "dataSource": {
-            "type": "dataSamplingPolicy",
-            "name": "phos-rawerr"
+            "type": "direct",
+            "query": "rawerr:PHS/RAWHWERRORS;fitquality:PHS/CELLFITQA;cells:PHS/CELLS/0;cellstr:PHS/CELLTRIGREC/0"
           },
           "taskParameters": {
             "physics": "on"    
@@ -47,8 +47,8 @@
           "cycleDurationSeconds": "100",
           "maxNumberCycles": "-1",
           "dataSource": {
-            "type": "dataSamplingPolicy",
-            "name": "phos-clu"
+            "type": "direct",
+            "query": "clusters:PHS/CLUSTERS;clustertr:PHS/CLUSTERTRIGREC"
           },
           "taskParameters": {
             "": ""    
@@ -58,36 +58,5 @@
       }
     },
     "dataSamplingPolicies": [
-      {
-        "id": "phos-rawerr",
-        "active": "true",
-        "machines": [],
-        "query_comment" : "query is in the format of binding1:origin1/description1/subSpec1[;binding2:...]",
-        "query": "rawerr:PHS/RAWHWERRORS/0;cells:PHS/CELLS/0;cellstr:PHS/CELLTRIGREC/0",
-        "samplingConditions": [
-          {
-            "condition": "random",
-            "fraction": "1.",
-            "seed": "1234"
-          }
-        ],
-        "blocking": "false"
-      },
-      {
-        "id": "phos-clu",
-        "active": "true",
-        "machines": [],
-        "query_comment" : "query is in the format of binding1:origin1/description1/subSpec1[;binding2:...]",
-        "query": "clusters:PHS/CLUSTERS/0;clustertr:PHS/CLUSTERTRIGREC/0",
-        "samplingConditions": [
-          {
-            "condition": "random",
-            "fraction": "1.",
-            "seed": "1234"
-          }
-        ],
-        "blocking": "false"
-      }
-
-  ]
+    ]
 }
