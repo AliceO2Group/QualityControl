@@ -23,7 +23,7 @@
             }
         },
         "tasks": {
-            "ITSFee": {
+            "ITSFEE": {
                 "active": "true",
                 "className": "o2::quality_control_modules::its::ITSFeeTask",
                 "moduleName": "QcITS",
@@ -31,12 +31,12 @@
                 "cycleDurationSeconds": "30",
                 "maxNumberCycles": "-1",
                 "dataSource": {
-                    "type": "dataSamplingPolicy",
-                    "name": "feedata"
+                    "type": "direct",
+                    "query": "filter:ITS/RAWDATA;G:FLP/DISTSUBTIMEFRAME"
                 },
-                "location": "remote",
+                "location": "local",
                 "taskParameters": {
-                    "NPayloadSizeBins": "4096"
+                    "NPayloadSizeBins": "4096",
                 }
             }
         },
@@ -45,7 +45,7 @@
                 "active": "true",
                 "className": "o2::quality_control_modules::its::ITSFeeCheck",
                 "moduleName": "QcITS",
-                "policy": "OnAny",
+                "policy": "OnEachSeparately",
                 "detectorName": "ITS",
                 "dataSource": [
                     {
@@ -54,7 +54,10 @@
                         "MOs": [
                             "LaneStatus/laneStatusFlagFAULT",
                             "LaneStatus/laneStatusFlagERROR",
-                            "LaneStatus/laneStatusFlagWARNING"
+                            "LaneStatus/laneStatusFlagWARNING",
+                            "LaneStatus/laneStatusOverviewFlagFAULT",
+                            "LaneStatus/laneStatusOverviewFlagERROR",
+                            "LaneStatus/laneStatusOverviewFlagWARNING"
                         ]
                     }
                 ]
@@ -63,7 +66,7 @@
     },
     "dataSamplingPolicies": [
         {
-            "id": "feedata",
+            "id": "RAWDATA",
             "active": "true",
             "machines": [],
             "query": "filter:ITS/RAWDATA;G:FLP/DISTSUBTIMEFRAME",
