@@ -243,18 +243,12 @@ void TaskPID::processEvent(const std::vector<MyTrack>& tracks)
   int nt = 0;
   for (auto& track : tracks) {
 
-    float mT0 = evtime.eventTime;
-    float mT0Res = evtime.eventTimeError;
+    float mT0 = evtime.mEventTime;
+    float mT0Res = evtime.mEventTimeError;
+    const auto mMultiplicity = evtime.mEventTimeMultiplicity;
     //
-    float sumw = 1. / (mT0Res * mT0Res);
-    mT0 *= sumw;
-    mT0 -= evtime.weights[nt] * evtime.tracktime[nt];
-    sumw -= evtime.weights[nt];
-    mT0 /= sumw;
-    mT0Res = sqrt(1. / sumw);
-
-    nt++;
-
+    evtime.removeBias<MyTrack, MyFilter>(track, nt, mT0, mT0Res);
+        
     // Delta t Pion
     const float deltatpi = track.tofSignal() - mT0 - track.tofExpSignalPi();
     // Delta t Kaon
@@ -274,6 +268,7 @@ void TaskPID::processEvent(const std::vector<MyTrack>& tracks)
     mHistDeltatPrPt->Fill(track.getPt(), deltatpr);
     mHistMass->Fill(mass);
     mHistBetavsP->Fill(track.getP(), beta);
+
   }
 }
 
@@ -282,7 +277,7 @@ void TaskPID::processEvent(const std::vector<MyTrack>& tracks)
 bool TaskPID::selectTrack(o2::tpc::TrackTPC const& track)
 {
 
-  if (track.getPt() < mPtCut) {
+  if (track.getPt() < mMinPtCut) {
     return false;
   }
   if (std::abs(track.getEta()) > mEtaCut) {
@@ -294,7 +289,7 @@ bool TaskPID::selectTrack(o2::tpc::TrackTPC const& track)
 
   math_utils::Point3D<float> v{};
   std::array<float, 2> dca;
-  if (!(const_cast<o2::tpc::TrackTPC&>(track).propagateParamToDCA(v, mBz, &dca, mDCACut)) || std::abs(dca[0]) > mDCACutY) {
+  if (!(const_cast<o2::tpc::TrackTPC&>(track).propagateParamToDCA(v, mBz, &dca, mMinDCAtoBeamPipeCut)) || std::abs(dca[0]) > mMinDCAtoBeamPipeCutY) {
     return false;
   }
 
