@@ -175,7 +175,8 @@ void ITSFeeTask::setPlotsFormat()
   }
 
   for (int i = 0; i < NFlags; i++) {
-    TString title = Form("Fraction of lanes into %s", mLaneStatusFlag[i].c_str()); title += ";mm;mm";
+    TString title = Form("Fraction of lanes into %s", mLaneStatusFlag[i].c_str());
+    title += ";mm;mm";
     mLaneStatusOverview[i]->SetTitle(title);
     mLaneStatusOverview[i]->SetStats(0);
     mLaneStatusOverview[i]->SetMinimum(0);
@@ -338,15 +339,15 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
         }
       }
     }
-    
-    for(int iflag=0; iflag<NFlags; iflag++) {
-      int flagCount=0;
-      for(int ilane=0; ilane<NLanesMax; ilane++) {
+
+    for (int iflag = 0; iflag < NFlags; iflag++) {
+      int flagCount = 0;
+      for (int ilane = 0; ilane < NLanesMax; ilane++) {
         if (mStatusFlagNumber[ilayer][istave][ilane][iflag] > 0) {
-        flagCount++;
+          flagCount++;
         }
       }
-      mLaneStatusOverview[iflag]->SetBinContent(istave + 1 + StaveBoundary[ilayer], (float)(flagCount)/(float)(NLanePerStaveLayer[ilayer]));
+      mLaneStatusOverview[iflag]->SetBinContent(istave + 1 + StaveBoundary[ilayer], (float)(flagCount) / (float)(NLanePerStaveLayer[ilayer]));
     }
 
     for (int i = 0; i < 13; i++) {
@@ -383,16 +384,16 @@ void ITSFeeTask::getParameters()
 
 void ITSFeeTask::getStavePoint(int layer, int stave, double* px, double* py)
 {
-  float stepAngle = TMath::Pi() * 2 / NStaves[layer];             //the angle between to stave
-  float midAngle = StartAngle[layer] + (stave * stepAngle);       //mid point angle
-  float staveRotateAngle = TMath::Pi() / 2 - (stave * stepAngle); //how many angle this stave rotate(compare with first stave)
-  px[1] = MidPointRad[layer] * TMath::Cos(midAngle);              //there are 4 point to decide this TH2Poly bin
-                                                                  //0:left point in this stave;
-                                                                  //1:mid point in this stave;
-                                                                  //2:right point in this stave;
-                                                                  //3:higher point int this stave;
-  py[1] = MidPointRad[layer] * TMath::Sin(midAngle);              //4 point calculated accord the blueprint
-                                                                  //roughly calculate
+  float stepAngle = TMath::Pi() * 2 / NStaves[layer];             // the angle between to stave
+  float midAngle = StartAngle[layer] + (stave * stepAngle);       // mid point angle
+  float staveRotateAngle = TMath::Pi() / 2 - (stave * stepAngle); // how many angle this stave rotate(compare with first stave)
+  px[1] = MidPointRad[layer] * TMath::Cos(midAngle);              // there are 4 point to decide this TH2Poly bin
+                                                     // 0:left point in this stave;
+                                                     // 1:mid point in this stave;
+                                                     // 2:right point in this stave;
+                                                     // 3:higher point int this stave;
+  py[1] = MidPointRad[layer] * TMath::Sin(midAngle); // 4 point calculated accord the blueprint
+                                                     // roughly calculate
   if (layer < NLayerIB) {
     px[0] = 7.7 * TMath::Cos(staveRotateAngle) + px[1];
     py[0] = -7.7 * TMath::Sin(staveRotateAngle) + py[1];

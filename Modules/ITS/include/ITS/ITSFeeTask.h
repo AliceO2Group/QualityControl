@@ -77,7 +77,7 @@ class ITSFeeTask final : public TaskInterface
   void getParameters(); // get Task parameters from json file
   void setAxisTitle(TH1* object, const char* xTitle, const char* yTitle);
   void createFeePlots();
-  void getStavePoint(int layer, int stave, double* px, double* py); //prepare for fill TH2Poly, get all point for add TH2Poly bin
+  void getStavePoint(int layer, int stave, double* px, double* py); // prepare for fill TH2Poly, get all point for add TH2Poly bin
   void setPlotsFormat();
   void resetGeneralPlots();
   static constexpr int NLayer = 7;
@@ -88,10 +88,10 @@ class ITSFeeTask final : public TaskInterface
   static constexpr int NFlags = 3;
   static constexpr int NTrigger = 13;
   const int StaveBoundary[NLayer + 1] = { 0, 12, 28, 48, 72, 102, 144, 192 };
-  const int NLanePerStaveLayer[NLayer] = {9, 9, 9, 16, 16, 28, 28};
+  const int NLanePerStaveLayer[NLayer] = { 9, 9, 9, 16, 16, 28, 28 };
   const int LayerBoundaryFEE[NLayer - 1] = { 35, 83, 143, 191, 251, 335 };
-  const float StartAngle[7] = { 16.997 / 360 * (TMath::Pi() * 2.), 17.504 / 360 * (TMath::Pi() * 2.), 17.337 / 360 * (TMath::Pi() * 2.), 8.75 / 360 * (TMath::Pi() * 2.), 7 / 360 * (TMath::Pi() * 2.), 5.27 / 360 * (TMath::Pi() * 2.), 4.61 / 360 * (TMath::Pi() * 2.) }; //start angle of first stave in each layer
-  const float MidPointRad[7] = { 23.49, 31.586, 39.341, 197.598, 246.944, 345.348, 394.883 }; 
+  const float StartAngle[7] = { 16.997 / 360 * (TMath::Pi() * 2.), 17.504 / 360 * (TMath::Pi() * 2.), 17.337 / 360 * (TMath::Pi() * 2.), 8.75 / 360 * (TMath::Pi() * 2.), 7 / 360 * (TMath::Pi() * 2.), 5.27 / 360 * (TMath::Pi() * 2.), 4.61 / 360 * (TMath::Pi() * 2.) }; // start angle of first stave in each layer
+  const float MidPointRad[7] = { 23.49, 31.586, 39.341, 197.598, 246.944, 345.348, 394.883 };
   int mTimeFrameId = 0;
   TString mTriggerType[NTrigger] = { "ORBIT", "HB", "HBr", "HC", "PHYSICS", "PP", "CAL", "SOT", "EOT", "SOC", "EOC", "TF", "INT" };
   std::string mLaneStatusFlag[NFlags] = { "WARNING", "ERROR", "FAULT" }; // b00 OK, b01 WARNING, b10 ERROR, b11 FAULT
@@ -109,7 +109,7 @@ class ITSFeeTask final : public TaskInterface
   TH2I* mIndexCheck;         // should be zero
   TH2I* mIdCheck;            // should be 0x : e4
   TH2I* mLaneStatus[NFlags]; // 4 flags for each lane. 3/8/14 lane for each link. 3/2/2 link for each RU. TODO: remove the OK flag in these 4 flag plots, OK flag plot just used to debug.
-  TH2Poly* mLaneStatusOverview[NFlags]={0x0};
+  TH2Poly* mLaneStatusOverview[NFlags] = { 0x0 };
   TH1I* mLaneStatusSummary[NLayer];
   TH1I* mLaneStatusSummaryIB;
   TH1I* mLaneStatusSummaryML;
