@@ -125,6 +125,9 @@ class TaskPID final : public TaskInterface
   TH2F* mHistDeltatPrPt;
   TH1F* mHistMass;
   TH2F* mHistBetavsP;
+  TH2F* mHistDeltatPiEvtimeRes;
+  TH2F* mHistDeltatPiEvTimeMult;
+  TH2F* mHistT0ResEvTimeMult;
 };
 
 } // namespace o2::quality_control_modules::tof

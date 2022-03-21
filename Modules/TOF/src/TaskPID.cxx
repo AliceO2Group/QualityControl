@@ -62,6 +62,9 @@ TaskPID::~TaskPID()
   delete mHistDeltatPrPt;
   delete mHistMass;
   delete mHistBetavsP;
+  delete mHistDeltatPiEvtimeRes;
+  delete mHistDeltatPiEvTimeMult;
+  delete mHistT0ResEvTimeMult;
 }
 
 void TaskPID::initialize(o2::framework::InitContext& /*ctx*/)
@@ -115,6 +118,9 @@ void TaskPID::initialize(o2::framework::InitContext& /*ctx*/)
   mHistDeltatPrPt = new TH2F("DeltatPr_Pt", ";#it{p}_{T} (GeV/#it{c});t_{TOF} - t_{exp}^{#pi} (ps)", 1000, 0., 20., 500, -5000, 5000);
   mHistMass = new TH1F("HadronMasses", ";M (GeV/#it{c}^{2})", 1000, 0, 3.);
   mHistBetavsP = new TH2F("BetavsP", ";#it{p} (GeV/#it{c});TOF #beta", 1000, 0., 5, 1000, 0., 1.5);
+  mHistDeltatPiEvtimeRes = new TH2F("DeltatPiEvtimeRes", "0.7 < p < 1.1 GeV/#it{c};TOF event time resolution (ps);t_{TOF} - t_{exp}^{#pi} (ps)", 200, 0., 200, 500, -5000, 5000);
+  mHistDeltatPiEvTimeMult = new TH2F("DeltatPiEvTimeMult", "0.7 < p < 1.1 GeV/#it{c};TOF multiplicity; t_{TOF} - t_{exp}^{#pi} (ps)", 100, 0., 100, 500, -5000, 5000);
+  mHistT0ResEvTimeMult = new TH2F("T0ResEvTimeMult", "0.7 < p < 1.1 GeV/#it{c};TOF multiplicity;TOF event time resolution (ps)", 100, 0., 100, 200, 0, 200);
 
   // initialize B field and geometry for track selection
   o2::base::GeometryManager::loadGeometry(mGeomFileName);
@@ -131,6 +137,9 @@ void TaskPID::initialize(o2::framework::InitContext& /*ctx*/)
     getObjectsManager()->startPublishing(mHistDeltatPrPt);
     getObjectsManager()->startPublishing(mHistMass);
     getObjectsManager()->startPublishing(mHistBetavsP);
+    getObjectsManager()->startPublishing(mHistDeltatPiEvtimeRes);
+    getObjectsManager()->startPublishing(mHistDeltatPiEvTimeMult);
+    getObjectsManager()->startPublishing(mHistT0ResEvTimeMult);
   }
   ILOG(Info, Support) << " Initialized!!!! " << ENDM;
 
@@ -233,6 +242,9 @@ void TaskPID::reset()
   mHistDeltatPrPt->Reset();
   mHistMass->Reset();
   mHistBetavsP->Reset();
+  mHistDeltatPiEvtimeRes->Reset();
+  mHistDeltatPiEvTimeMult->Reset();
+  mHistT0ResEvTimeMult->Reset();
 }
 
 void TaskPID::processEvent(const std::vector<MyTrack>& tracks)
@@ -248,7 +260,7 @@ void TaskPID::processEvent(const std::vector<MyTrack>& tracks)
     const auto mMultiplicity = evtime.mEventTimeMultiplicity;
     //
     evtime.removeBias<MyTrack, MyFilter>(track, nt, mT0, mT0Res);
-        
+
     // Delta t Pion
     const float deltatpi = track.tofSignal() - mT0 - track.tofExpSignalPi();
     // Delta t Kaon
@@ -269,6 +281,11 @@ void TaskPID::processEvent(const std::vector<MyTrack>& tracks)
     mHistMass->Fill(mass);
     mHistBetavsP->Fill(track.getP(), beta);
 
+    if (track.getP() > 0.7 && track.getP() < 1.1) {
+      mHistDeltatPiEvtimeRes->Fill(mT0Res, deltatpi);
+      mHistDeltatPiEvTimeMult->Fill(mMultiplicity, deltatpi);
+      mHistT0ResEvTimeMult->Fill(mMultiplicity, mT0Res);
+    }
   }
 }
 
