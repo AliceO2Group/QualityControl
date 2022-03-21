@@ -81,16 +81,16 @@ class TaskPID final : public TaskInterface
   void processEvent(const std::vector<MyTrack>& tracks);
   // track selection
   bool selectTrack(o2::tpc::TrackTPC const& track);
-  void setPtCut(float v) { mPtCut = v; }
+  void setMinPtCut(float v) { mMinPtCut = v; }
   void setEtaCut(float v) { mEtaCut = v; }
   void setMinNTPCClustersCut(float v) { mNTPCClustersCut = v; }
   void setMinDCAtoBeamPipeCut(std::array<float, 2> v)
   {
-    setMinDCAtoBeamPipeDistanceCut(v[0]);
+    setMinDCAtoBeamPipeCut(v[0]);
     setMinDCAtoBeamPipeYCut(v[1]);
   }
-  void setMinDCAtoBeamPipeDistanceCut(float v) { mDCACut = v; }
-  void setMinDCAtoBeamPipeYCut(float v) { mDCACutY = v; }
+  void setMinDCAtoBeamPipeCut(float v) { mMinDCAtoBeamPipeCut = v; }
+  void setMinDCAtoBeamPipeYCut(float v) { mMinDCAtoBeamPipeCutY = v; }
 
  private:
   std::shared_ptr<o2::globaltracking::DataRequest> mDataRequest;
@@ -106,11 +106,11 @@ class TaskPID final : public TaskInterface
   std::vector<MyTrack> mMyTracks;
 
   // for track selection
-  float mPtCut = 0.1f;
+  float mMinPtCut = 0.1f;
   float mEtaCut = 0.8f;
   int32_t mNTPCClustersCut = 40;
-  float mDCACut = 100.f;
-  float mDCACutY = 10.f;
+  float mMinDCAtoBeamPipeCut = 100.f;
+  float mMinDCAtoBeamPipeCutY = 10.f;
   std::string mGRPFileName = "o2sim_grp.root";
   std::string mGeomFileName = "o2sim_geometry.root";
   float mBz = 0; ///< nominal Bz

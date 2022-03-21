@@ -70,7 +70,7 @@ void TaskPID::initialize(o2::framework::InitContext& /*ctx*/)
   // track selection
   if (auto param = mCustomParameters.find("minPtCut"); param != mCustomParameters.end()) {
     ILOG(Info, Devel) << "Custom parameter - minPtCut (for track selection): " << param->second << ENDM;
-    setPtCut(atof(param->second.c_str()));
+    setMinPtCut(atof(param->second.c_str()));
   }
   if (auto param = mCustomParameters.find("etaCut"); param != mCustomParameters.end()) {
     ILOG(Info, Devel) << "Custom parameter - etaCut (for track selection): " << param->second << ENDM;
@@ -82,7 +82,7 @@ void TaskPID::initialize(o2::framework::InitContext& /*ctx*/)
   }
   if (auto param = mCustomParameters.find("minDCACut"); param != mCustomParameters.end()) {
     ILOG(Info, Devel) << "Custom parameter - minDCACut (for track selection): " << param->second << ENDM;
-    setMinDCAtoBeamPipeDistanceCut(atof(param->second.c_str()));
+    setMinDCAtoBeamPipeCut(atof(param->second.c_str()));
   }
   if (auto param = mCustomParameters.find("minDCACutY"); param != mCustomParameters.end()) {
     ILOG(Info, Devel) << "Custom parameter - minDCACutY (for track selection): " << param->second << ENDM;
@@ -256,15 +256,15 @@ void TaskPID::processEvent(const std::vector<MyTrack>& tracks)
     nt++;
 
     // Delta t Pion
-    float deltatpi = track.tofSignal() - mT0 - track.tofExpSignalPi();
+    const float deltatpi = track.tofSignal() - mT0 - track.tofExpSignalPi();
     // Delta t Kaon
-    float deltatka = track.tofSignal() - mT0 - track.tofExpSignalKa();
+    const float deltatka = track.tofSignal() - mT0 - track.tofExpSignalKa();
     // Delta t Proton
-    float deltatpr = track.tofSignal() - mT0 - track.tofExpSignalPr();
+    const float deltatpr = track.tofSignal() - mT0 - track.tofExpSignalPr();
     // Beta
-    float beta = track.getL() / (track.tofSignal() - mT0) * cinv;
+    const float beta = track.getL() / (track.tofSignal() - mT0) * cinv;
     // Mass
-    float mass = track.getP() / beta * TMath::Sqrt(TMath::Abs(1 - beta * beta));
+    const float mass = track.getP() / beta * TMath::Sqrt(TMath::Abs(1 - beta * beta));
 
     mHistDeltatPi->Fill(deltatpi);
     mHistDeltatKa->Fill(deltatka);
