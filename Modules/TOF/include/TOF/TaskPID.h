@@ -16,8 +16,8 @@
 /// \since  13/01/2022
 ///
 
-#ifndef QC_MODULE_TOF_TOFTASKPID_H
-#define QC_MODULE_TOF_TOFTASKPID_H
+#ifndef QC_MODULE_TOF_TASKPID_H
+#define QC_MODULE_TOF_TASKPID_H
 
 #include "QualityControl/TaskInterface.h"
 
@@ -132,4 +132,4 @@ class TaskPID final : public TaskInterface
 
 } // namespace o2::quality_control_modules::tof
 
-#endif // QC_MODULE_TOF_TOFTaskPID_H
+#endif // QC_MODULE_TOF_TASKPID_H
