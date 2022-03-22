@@ -12,7 +12,7 @@
 ///
 /// \file   RawQcCheck.h
 /// \author Bogdan Vulpescu / Xavier Lopez
-///
+/// \author Valerie Ramillien
 
 #ifndef QC_MODULE_MID_MIDRAWQCCHECK_H
 #define QC_MODULE_MID_MIDRAWQCCHECK_H

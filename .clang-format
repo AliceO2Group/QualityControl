@@ -49,6 +49,7 @@ SpacesInParentheses: false
 Standard:        Cpp11
 TabWidth:        2
 UseTab:          Never
+DeriveLineEnding: true
 ---
 Language: ObjC
 DisableFormat: true

@@ -14,6 +14,7 @@
 /// \author Bogdan Vulpescu
 /// \author Xavier Lopez
 /// \author Guillaume Taillepied
+/// \author Valerie Ramillien
 
 #ifndef QC_MODULE_MID_MIDRAWQCTASK_H
 #define QC_MODULE_MID_MIDRAWQCTASK_H
@@ -24,8 +25,10 @@
 #include "MIDRaw/Decoder.h"
 #include "MIDRaw/ElectronicsDelay.h"
 #include "MIDRaw/FEEIdConfig.h"
+#include "MUONCommon/MergeableTH2Ratio.h"
 
 class TH1F;
+class TH2F;
 
 using namespace o2::quality_control::core;
 
@@ -52,13 +55,40 @@ class RawQcTask final : public TaskInterface
   void reset() override;
 
  private:
-  TH1F* mRawDataChecker{ nullptr };
-
   std::unique_ptr<o2::mid::Decoder> mDecoder{ nullptr };
   o2::mid::RawDataChecker mChecker{};
   o2::mid::FEEIdConfig mFeeIdConfig{};
   o2::mid::ElectronicsDelay mElectronicsDelay{};
   o2::mid::CrateMasks mCrateMasks{};
+
+  void InitMultiplicity()
+  {
+    for (int i = 0; i < 4; i++)
+      multHitB[i] = multHitNB[i] = 0;
+  };
+  static int Pattern(uint16_t pattern);
+  // static int BPPattern(const o2::mid::ROBoard& board, uint8_t station);
+  // static int NBPPattern(const o2::mid::ROBoard& board, uint8_t station);
+  // void PatternMultiplicity(const o2::mid::ROBoard& board);
+  void FillMultiplicity(int multB[], int multNB[]);
+
+  ///////////////////////////
+  int nEvt = 0;
+  int iBC = 0;
+  int iOrbit = 0;
+  int nMonitor = 0;
+  int nROF = 0;
+  int nEntriesROF = 0;
+  int nBoard = 0;
+  int multHitB[4] = { 0 };
+  int multHitNB[4] = { 0 };
+
+  TH1F* mRawDataChecker{ nullptr };
+
+  TH1F* mBCSize{ nullptr };
+
+  TH2F* mRawLocalBoardsMap{ nullptr };
+  TH2F* mBusyRawLocalBoards{ nullptr };
 };
 
 } // namespace o2::quality_control_modules::mid
