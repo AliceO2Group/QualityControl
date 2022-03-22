@@ -60,59 +60,126 @@ void PedestalsTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info, Support) << "initialize PedestalsTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
+  mSaveToRootFile = false;
+  if (auto param = mCustomParameters.find("SaveToRootFile"); param != mCustomParameters.end()) {
+    if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
+      mSaveToRootFile = true;
+    }
+  }
+
   mSolar2FeeLinkMapper = o2::mch::raw::createSolar2FeeLinkMapper<o2::mch::raw::ElectronicMapperGenerated>();
   mElec2DetMapper = o2::mch::raw::createElec2DetMapper<o2::mch::raw::ElectronicMapperGenerated>();
 
-  mHistogramPedestals = new TH2F("Pedestals", "Pedestals",
-                                 (MCH_FFEID_MAX + 1) * 12 * 40, 0, (MCH_FFEID_MAX + 1) * 12 * 40, 64, 0, 64);
-  getObjectsManager()->startPublishing(mHistogramPedestals);
-  mHistogramPedestalsMCH = new GlobalHistogram("Pedestals_AllDE", "Pedestals");
-  mHistogramPedestalsMCH->init();
-  getObjectsManager()->startPublishing(mHistogramPedestalsMCH);
+  const uint32_t nElecXbins = PedestalsTask::sMaxFeeId * PedestalsTask::sMaxLinkId * PedestalsTask::sMaxDsId;
 
-  mHistogramNoise = new TH2F("QcMuonChambers_Noise", "Noise",
-                             (MCH_FFEID_MAX + 1) * 12 * 40, 0, (MCH_FFEID_MAX + 1) * 12 * 40, 64, 0, 64);
-  getObjectsManager()->startPublishing(mHistogramNoise);
-  mHistogramNoiseMCH = new GlobalHistogram("Noise_AllDE", "Noise");
-  mHistogramNoiseMCH->init();
-  getObjectsManager()->startPublishing(mHistogramNoiseMCH);
+  mHistogramPedestals = std::make_shared<TH2F>("Pedestals_Elec", "Pedestals", nElecXbins, 0, nElecXbins, 64, 0, 64);
+  mHistogramPedestals->SetOption("colz");
+  mAllHistograms.push_back(mHistogramPedestals.get());
+  if (!mSaveToRootFile) {
+    getObjectsManager()->startPublishing(mHistogramPedestals.get());
+  }
+
+  mHistogramNoise = std::make_shared<TH2F>("Noise_Elec", "Noise", nElecXbins, 0, nElecXbins, 64, 0, 64);
+  mHistogramNoise->SetOption("colz");
+  mAllHistograms.push_back(mHistogramNoise.get());
+  if (!mSaveToRootFile) {
+    getObjectsManager()->startPublishing(mHistogramNoise.get());
+  }
+
+  std::string stname[2]{ "ST12", "ST345" };
+  for (int i = 0; i < 2; i++) {
+    mHistogramPedestalsMCH[i] = std::make_shared<GlobalHistogram>(fmt::format("Pedestals_{}", stname[i]), "Pedestals", i);
+    mHistogramPedestalsMCH[i]->init();
+    mHistogramPedestalsMCH[i]->SetOption("colz");
+    mAllHistograms.push_back(mHistogramPedestalsMCH[i].get());
+    if (!mSaveToRootFile) {
+      getObjectsManager()->startPublishing(mHistogramPedestalsMCH[i].get());
+    }
+
+    mHistogramNoiseMCH[i] = std::make_shared<GlobalHistogram>(fmt::format("Noise_{}", stname[i]), "Noise", i);
+    mHistogramNoiseMCH[i]->init();
+    mHistogramNoiseMCH[i]->SetOption("colz");
+    mAllHistograms.push_back(mHistogramNoiseMCH[i].get());
+    if (!mSaveToRootFile) {
+      getObjectsManager()->startPublishing(mHistogramNoiseMCH[i].get());
+    }
+  }
+
+  for (int si = 0; si < 5; si++) {
+    mHistogramNoiseDistribution[si] = std::make_shared<TH1F>(TString::Format("ST%d/Noise_Distr_ST%d", si + 1, si + 1),
+                                                             TString::Format("Noise distribution (ST%d)", si + 1), 1000, 0, 10);
+    mAllHistograms.push_back(mHistogramNoiseDistribution[si].get());
+    if (!mSaveToRootFile) {
+      getObjectsManager()->startPublishing(mHistogramNoiseDistribution[si].get());
+    }
+  }
 
   for (auto de : o2::mch::raw::deIdsForAllMCH) {
-    TH2F* hPedDE = new TH2F(TString::Format("Pedestals_Elec_DE%03d", de),
-                            TString::Format("Pedestals (DE%03d)", de), 2000, 0, 2000, 64, 0, 64);
+    auto hPedDE = std::make_shared<TH2F>(TString::Format("%sPedestals_Elec_DE%03d", getHistoPath(de).c_str(), de),
+                                         TString::Format("Pedestals (DE%03d)", de), 2000, 0, 2000, 64, 0, 64);
     mHistogramPedestalsDE.insert(make_pair(de, hPedDE));
-    TH2F* hNoiseDE = new TH2F(TString::Format("Noise_Elec_DE%03d", de),
-                              TString::Format("Noise (DE%03d)", de), 2000, 0, 2000, 64, 0, 64);
+    hPedDE->SetOption("colz");
+    mAllHistograms.push_back(hPedDE.get());
+
+    auto hNoiseDE = std::make_shared<TH2F>(TString::Format("%sNoise_Elec_DE%03d", getHistoPath(de).c_str(), de),
+                                           TString::Format("Noise (DE%03d)", de), 2000, 0, 2000, 64, 0, 64);
     mHistogramNoiseDE.insert(make_pair(de, hNoiseDE));
+    hNoiseDE->SetOption("colz");
+    mAllHistograms.push_back(hNoiseDE.get());
 
     for (int pi = 0; pi < 5; pi++) {
-      TH1F* hNoiseDE = new TH1F(TString::Format("Noise_Distr_DE%03d_b_%d", de, pi),
-                                TString::Format("Noise distribution (DE%03d B, %d)", de, pi), 1000, 0, 10);
+      auto hNoiseDE = std::make_shared<TH1F>(TString::Format("%sNoise_Distr_DE%03d_b_%d", getHistoPath(de).c_str(), de, pi),
+                                             TString::Format("Noise distribution (DE%03d B, %d)", de, pi), 1000, 0, 10);
       mHistogramNoiseDistributionDE[pi][0].insert(make_pair(de, hNoiseDE));
-      hNoiseDE = new TH1F(TString::Format("Noise_Distr_DE%03d_nb_%d", de, pi),
-                          TString::Format("Noise distribution (DE%03d NB, %d)", de, pi), 1000, 0, 10);
+      hNoiseDE->SetOption("hist");
+      mAllHistograms.push_back(hNoiseDE.get());
+      if (!mSaveToRootFile) {
+        getObjectsManager()->startPublishing(hNoiseDE.get());
+      }
+
+      hNoiseDE = std::make_shared<TH1F>(TString::Format("%sNoise_Distr_DE%03d_nb_%d", getHistoPath(de).c_str(), de, pi),
+                                        TString::Format("Noise distribution (DE%03d NB, %d)", de, pi), 1000, 0, 10);
       mHistogramNoiseDistributionDE[pi][1].insert(make_pair(de, hNoiseDE));
+      hNoiseDE->SetOption("hist");
+      mAllHistograms.push_back(hNoiseDE.get());
+      if (!mSaveToRootFile) {
+        getObjectsManager()->startPublishing(hNoiseDE.get());
+      }
     }
 
     {
-      DetectorHistogram* hPedXY = new DetectorHistogram(TString::Format("%sPedestals_%03d_B", getHistoPath(de).c_str(), de),
+      auto hPedXY = std::make_shared<DetectorHistogram>(TString::Format("%sPedestals_%03d_B", getHistoPath(de).c_str(), de),
                                                         TString::Format("Pedestals (DE%03d B)", de), de);
       mHistogramPedestalsXY[0].insert(make_pair(de, hPedXY));
-      getObjectsManager()->startPublishing(hPedXY->getHist());
-      DetectorHistogram* hNoiseXY = new DetectorHistogram(TString::Format("%sNoise_%03d_B", getHistoPath(de).c_str(), de),
+      mAllHistograms.push_back(hPedXY->getHist());
+      if (!mSaveToRootFile) {
+        getObjectsManager()->startPublishing(hPedXY->getHist());
+      }
+
+      auto hNoiseXY = std::make_shared<DetectorHistogram>(TString::Format("%sNoise_%03d_B", getHistoPath(de).c_str(), de),
                                                           TString::Format("Noise (DE%03d B)", de), de);
       mHistogramNoiseXY[0].insert(make_pair(de, hNoiseXY));
-      getObjectsManager()->startPublishing(hNoiseXY->getHist());
+      mAllHistograms.push_back(hNoiseXY->getHist());
+      if (!mSaveToRootFile) {
+        getObjectsManager()->startPublishing(hNoiseXY->getHist());
+      }
     }
     {
-      DetectorHistogram* hPedXY = new DetectorHistogram(TString::Format("%sPedestals_%03d_NB", getHistoPath(de).c_str(), de),
+      auto hPedXY = std::make_shared<DetectorHistogram>(TString::Format("%sPedestals_%03d_NB", getHistoPath(de).c_str(), de),
                                                         TString::Format("Pedestals (DE%03d NB)", de), de);
       mHistogramPedestalsXY[1].insert(make_pair(de, hPedXY));
-      getObjectsManager()->startPublishing(hPedXY->getHist());
-      DetectorHistogram* hNoiseXY = new DetectorHistogram(TString::Format("%sNoise_%03d_NB", getHistoPath(de).c_str(), de),
+      mAllHistograms.push_back(hPedXY->getHist());
+      if (!mSaveToRootFile) {
+        getObjectsManager()->startPublishing(hPedXY->getHist());
+      }
+
+      auto hNoiseXY = std::make_shared<DetectorHistogram>(TString::Format("%sNoise_%03d_NB", getHistoPath(de).c_str(), de),
                                                           TString::Format("Noise (DE%03d NB)", de), de);
       mHistogramNoiseXY[1].insert(make_pair(de, hNoiseXY));
-      getObjectsManager()->startPublishing(hNoiseXY->getHist());
+      mAllHistograms.push_back(hNoiseXY->getHist());
+      if (!mSaveToRootFile) {
+        getObjectsManager()->startPublishing(hNoiseXY->getHist());
+      }
     }
   }
 
@@ -131,9 +198,10 @@ void PedestalsTask::startOfCycle()
 
 void PedestalsTask::fill_noise_distributions()
 {
-  /*
-  // This code is currently broken and needs to be fixed. It only involves expert histograms that are not
-  // part of the calibration procedure.
+  for (int si = 0; si < 5; si++) {
+    mHistogramNoiseDistribution[si]->Reset();
+  }
+
   for (int pi = 0; pi < 5; pi++) {
     for (int i = 0; i < 2; i++) {
       auto ih = mHistogramNoiseDistributionDE[pi][i].begin();
@@ -143,6 +211,7 @@ void PedestalsTask::fill_noise_distributions()
       }
     }
   }
+
   auto ih = mHistogramNoiseDE.begin();
   for (; ih != mHistogramNoiseDE.end(); ih++) {
     int de = ih->first;
@@ -189,62 +258,14 @@ void PedestalsTask::fill_noise_distributions()
         if ((hNoiseDE != mHistogramNoiseDistributionDE[szid][cathode].end()) && (hNoiseDE->second != NULL)) {
           hNoiseDE->second->Fill(noise);
         }
+
+        int si = (de - 100) / 200;
+        if (si >= 0 && si < 5) {
+          mHistogramNoiseDistribution[si]->Fill(noise);
+        }
       }
     }
   }
-  */
-}
-
-void PedestalsTask::save_histograms()
-{
-  TFile f("mch-qc-pedestals.root", "RECREATE");
-  fill_noise_distributions();
-
-  mHistogramPedestalsMCH->Write();
-  mHistogramNoiseMCH->Write();
-
-  mHistogramNoise->Write();
-  mHistogramPedestals->Write();
-
-  for (int i = 0; i < 2; i++) {
-    auto ih = mHistogramPedestalsXY[i].begin();
-    while (ih != mHistogramPedestalsXY[i].end()) {
-      ih->second->getHist()->Write();
-      ih++;
-    }
-  }
-  for (int i = 0; i < 2; i++) {
-    auto ih = mHistogramNoiseXY[i].begin();
-    while (ih != mHistogramNoiseXY[i].end()) {
-      ih->second->getHist()->Write();
-      ih++;
-    }
-  }
-  {
-    auto ih = mHistogramPedestalsDE.begin();
-    while (ih != mHistogramPedestalsDE.end()) {
-      ih->second->Write();
-      ih++;
-    }
-  }
-  {
-    auto ih = mHistogramNoiseDE.begin();
-    while (ih != mHistogramNoiseDE.end()) {
-      ih->second->Write();
-      ih++;
-    }
-  }
-  for (int pi = 0; pi < 5; pi++) {
-    for (int i = 0; i < 2; i++) {
-      auto ih = mHistogramNoiseDistributionDE[pi][i].begin();
-      while (ih != mHistogramNoiseDistributionDE[pi][i].end()) {
-        ih->second->Write();
-        ih++;
-      }
-    }
-  }
-
-  f.Close();
 }
 
 void PedestalsTask::PlotPedestal(uint16_t solarID, uint8_t dsID, uint8_t channel, double mean, double rms)
@@ -282,6 +303,20 @@ void PedestalsTask::PlotPedestalDE(uint16_t solarID, uint8_t dsID, uint8_t chann
   padId = segment.findPadByFEE(dsIddet, int(channel));
   if (padId < 0) {
     return;
+  }
+
+  auto hPed = mHistogramPedestalsDE.find(deId);
+  if ((hPed != mHistogramPedestalsDE.end()) && (hPed->second != NULL)) {
+    int binx = hPed->second->GetXaxis()->FindBin(dsIddet + 0.5);
+    int biny = hPed->second->GetYaxis()->FindBin(channel + 0.5);
+    hPed->second->SetBinContent(binx, biny, mean);
+  }
+
+  auto hNoise = mHistogramNoiseDE.find(deId);
+  if ((hNoise != mHistogramNoiseDE.end()) && (hNoise->second != NULL)) {
+    int binx = hPed->second->GetXaxis()->FindBin(dsIddet + 0.5);
+    int biny = hPed->second->GetYaxis()->FindBin(channel + 0.5);
+    hNoise->second->SetBinContent(binx, biny, rms);
   }
 
   double padX = segment.padPositionX(padId);
@@ -348,12 +383,32 @@ void PedestalsTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
 }
 
+void PedestalsTask::writeHistos()
+{
+  if (!mSaveToRootFile) {
+    return;
+  }
+
+  TFile f("mch-qc-pedestals.root", "RECREATE");
+  for (auto h : mAllHistograms) {
+    h->Write();
+  }
+  f.Close();
+}
+
 void PedestalsTask::endOfCycle()
 {
   ILOG(Info, Support) << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 
-  //mHistogramPedestalsMCH->set(mHistogramPedestalsXY[0], mHistogramPedestalsXY[1], true);
-  //mHistogramNoiseMCH->set(mHistogramNoiseXY[0], mHistogramNoiseXY[1], true);
+  fill_noise_distributions();
+
+  mHistogramPedestalsMCH[0]->set(mHistogramPedestalsXY[0], mHistogramPedestalsXY[1], true);
+  mHistogramNoiseMCH[0]->set(mHistogramNoiseXY[0], mHistogramNoiseXY[1], true);
+
+  mHistogramPedestalsMCH[1]->set(mHistogramPedestalsXY[0], mHistogramPedestalsXY[1], true);
+  mHistogramNoiseMCH[1]->set(mHistogramNoiseXY[0], mHistogramNoiseXY[1], true);
+
+  writeHistos();
 }
 
 void PedestalsTask::endOfActivity(Activity& /*activity*/)
@@ -361,9 +416,9 @@ void PedestalsTask::endOfActivity(Activity& /*activity*/)
   printf("PedestalsTask::endOfActivity() called\n");
   ILOG(Info, Support) << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 
-#ifdef QC_MCH_SAVE_TEMP_ROOTFILE
-  save_histograms();
-#endif
+  fill_noise_distributions();
+
+  writeHistos();
 }
 
 void PedestalsTask::reset()
