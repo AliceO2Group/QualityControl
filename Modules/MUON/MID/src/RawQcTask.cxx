@@ -126,7 +126,7 @@ static int BPPattern(const o2::mid::ROBoard& board, uint8_t station)
   } else
     return 0;
 }
-  
+
 static int NBPPattern(const o2::mid::ROBoard& board, uint8_t station)
 {
   if (board.patternsNBP[station] != 0) {
@@ -230,13 +230,13 @@ void RawQcTask::monitorData(o2::framework::ProcessingContext& ctx)
         if (iBC != rof.interactionRecord.bc) { // test new BC
           iBC = rof.interactionRecord.bc;
           iOrbit = rof.interactionRecord.orbit;
-	  nEntriesROF = rof.nEntries;
+          nEntriesROF = rof.nEntries;
           std::vector<int> OrbitSize = { iOrbit, nEntriesROF };
           BCOrbitSize[iBC] = OrbitSize;
           auto& OS = BCOrbitSize[iBC];
         } else { // exist BC
           auto& OS = BCOrbitSize[iBC];
-          if (OS[0] == iOrbit) {   // test new Orbit
+          if (OS[0] == iOrbit) {  // test new Orbit
             OS[1] += nEntriesROF; // same Orbit
           } else
             OS[1] += nEntriesROF; // not same Orbit !! modify ??
