@@ -21,7 +21,6 @@
 #include "QualityControl/TaskInterface.h"
 #include <array>
 
-class TH1F;
 class TH2F;
 
 using namespace o2::quality_control::core;
