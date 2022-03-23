@@ -66,9 +66,9 @@
         "initTrigger": [
           "once"
         ],
-        "updateTrigger_comment": "To trigger on a specific file being updated, use e.g. 'newobject:ccdb:TPC/Calib/Noise'",
+        "updateTrigger_comment": "To trigger on a specific file being updated, use e.g. 'newobject:qcdb:TPC/Calib/Noise'",
         "updateTrigger": [
-          "newobject:ccdb:TPC/MO/RawDigits/RawDigitData"
+          "newobject:qcdb:TPC/MO/RawDigits/RawDigitData"
         ],
         "stopTrigger": [
           "userorcontrol"
