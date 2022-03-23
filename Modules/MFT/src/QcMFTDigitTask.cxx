@@ -271,7 +271,8 @@ void QcMFTDigitTask::reset()
 
   mMergerTest->Reset();
   mDigitChipOccupancy->Reset();
-  if (mNoiseScan == 1) mDigitChipStdDev->Reset();
+  if (mNoiseScan == 1)
+    mDigitChipStdDev->Reset();
   mDigitOccupancySummary->Reset();
 
   // ladder histograms

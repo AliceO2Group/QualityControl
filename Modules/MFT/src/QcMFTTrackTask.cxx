@@ -106,19 +106,8 @@ void QcMFTTrackTask::startOfActivity(Activity& /*activity*/)
 {
   ILOG(Info, Support) << "startOfActivity" << ENDM;
 
-  mTrackNumberOfClusters->Reset();
-  mCATrackNumberOfClusters->Reset();
-  mLTFTrackNumberOfClusters->Reset();
-  mTrackOnvQPt->Reset();
-  mTrackChi2->Reset();
-  mTrackCharge->Reset();
-  mTrackPhi->Reset();
-  mPositiveTrackPhi->Reset();
-  mNegativeTrackPhi->Reset();
-  mTrackEta->Reset();
-  mCATrackEta->Reset();
-  mLTFTrackEta->Reset();
-  mTrackTanl->Reset();
+  // reset histograms
+  reset();
 }
 
 void QcMFTTrackTask::startOfCycle()

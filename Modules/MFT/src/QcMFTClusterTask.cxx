@@ -136,17 +136,9 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
 void QcMFTClusterTask::startOfActivity(Activity& /*activity*/)
 {
   ILOG(Info, Support) << "startOfActivity" << ENDM;
-  mClusterOccupancy->Reset();
-  mClusterPatternIndex->Reset();
-  mClusterPatternSensorIndices->Reset();
-  mClusterLayerIndexH0->Reset();
-  mClusterLayerIndexH1->Reset();
-  for (int i = 0; i < 936; i++) {
-    mClusterPatternSensorMap[i]->Reset();
-  }
-  for (int i = 0; i < 20; i++) {
-    mClusterChipOccupancyMap[i]->Reset();
-  }
+
+  // reset histograms
+  reset();
 }
 
 void QcMFTClusterTask::startOfCycle()
