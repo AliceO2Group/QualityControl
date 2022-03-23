@@ -118,7 +118,7 @@ void QcMFTReadoutTask::initialize(o2::framework::InitContext& /*ctx*/)
 void QcMFTReadoutTask::startOfActivity(Activity& /*activity*/)
 {
   ILOG(Info, Support) << "startOfActivity" << ENDM;
-  
+
   // reset histograms
   reset();
 }
