@@ -69,6 +69,7 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
     "Digit Chip Occupancy;Chip ID;#Entries per ROF",
     936, -0.5, 935.5);
   mDigitChipOccupancy->SetStats(0);
+  mDigitChipOccupancy->SetOption("hist");
   getObjectsManager()->startPublishing(mDigitChipOccupancy.get());
 
   mDigitChipStdDev = std::make_unique<TH1F>(

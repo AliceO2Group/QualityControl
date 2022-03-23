@@ -37,10 +37,10 @@ void TreeReaderPostProcessing::initialize(Trigger, framework::ServiceRegistry& s
   mDatabase = &services.get<o2::quality_control::repository::DatabaseInterface>();
 }
 
-void TreeReaderPostProcessing::update(Trigger, framework::ServiceRegistry&)
+void TreeReaderPostProcessing::update(Trigger t, framework::ServiceRegistry&)
 {
   mChargeHistogram->Reset();
-  auto mo = mDatabase->retrieveMO("FT0/MO/BasicDigitQcTask", "EventTree");
+  auto mo = mDatabase->retrieveMO("FT0/MO/BasicDigitQcTask", "EventTree", t.timestamp, t.activity);
   TTree* moTree = static_cast<TTree*>(mo ? mo->getObject() : nullptr);
 
   if (moTree) {
@@ -56,7 +56,7 @@ void TreeReaderPostProcessing::update(Trigger, framework::ServiceRegistry&)
   }
 }
 
-void TreeReaderPostProcessing::finalize(Trigger, framework::ServiceRegistry&)
+void TreeReaderPostProcessing::finalize(Trigger t, framework::ServiceRegistry&)
 {
   getObjectsManager()->stopPublishing(mChargeHistogram.get());
 }

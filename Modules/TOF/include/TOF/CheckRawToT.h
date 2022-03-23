@@ -39,11 +39,19 @@ class CheckRawToT : public o2::quality_control::checker::CheckInterface
   std::string getAcceptedType() override;
 
  private:
+  // Running configurable parameters
   /// Minimum ToT allowed for the mean in ns
   float mMinRawToT = 10.; // ns
   /// Maximum ToT allowed for the mean in ns
   float mMaxRawToT = 15.; // ns
 
+  // User variables
+  /// Mean of the TOF ToT histogram
+  float mToTMean = 0.f;
+  /// Number of events with ToT==0 (orphans)
+  float mToTZeroMultIntegral = 0.f;
+  /// Number of events with ToT > 0 (excluding orphans)
+  float mToTIntegral = 0.f;
   /// Messages to print on the output PAD
   MessagePad mShifterMessages;
 

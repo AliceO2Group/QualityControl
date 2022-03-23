@@ -274,7 +274,7 @@ void CalDetPublisher::update(Trigger t, framework::ServiceRegistry&)
   }
 }
 
-void CalDetPublisher::finalize(Trigger, framework::ServiceRegistry&)
+void CalDetPublisher::finalize(Trigger t, framework::ServiceRegistry&)
 {
   for (const auto& calDetCanvasVec : mCalDetCanvasVec) {
     for (const auto& canvas : calDetCanvasVec) {

@@ -77,10 +77,18 @@ class RawQcTask final : public TaskInterface
                   kCellSpM4
   };
 
-  static constexpr short kNhist2D = 39;
+  static constexpr short kNhist2D = 47;
   enum histos2D { kErrorNumber,
                   kErrorType,
                   kPayloadSizePerDDL,
+                  kChi2M1,
+                  kChi2M2,
+                  kChi2M3,
+                  kChi2M4,
+                  kChi2NormM1,
+                  kChi2NormM2,
+                  kChi2NormM3,
+                  kChi2NormM4,
                   kHGmeanM1,
                   kHGmeanM2,
                   kHGmeanM3,
@@ -134,6 +142,7 @@ class RawQcTask final : public TaskInterface
 
   int mMode = 0;           ///< Possible modes: 0(def): Physics, 1: Pedestals, 2: LED
   bool mFinalized = false; ///< if final histograms calculated
+  bool mCheckChi2 = false; ///< scan Chi2 distributions
 
   std::array<TH1F*, kNhist1D> mHist1D = { nullptr }; ///< Array of 1D histograms
   std::array<TH2F*, kNhist2D> mHist2D = { nullptr }; ///< Array of 2D histograms

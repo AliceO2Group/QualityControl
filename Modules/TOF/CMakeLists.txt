@@ -8,6 +8,7 @@ target_sources(O2QcTOF
                       src/TaskCosmics.cxx
                       src/TaskRaw.cxx
                       src/TOFMatchedTracks.cxx
+                      src/TaskPID.cxx
                       # Checkers
                       src/CheckDiagnostics.cxx
                       src/CheckDRMDiagnostics.cxx
@@ -55,6 +56,7 @@ add_root_dictionary(O2QcTOF
                             include/TOF/TaskCosmics.h
                             include/TOF/TaskRaw.h
                             include/TOF/TOFMatchedTracks.h
+                            include/TOF/TaskPID.h
                             # Checkers
                             include/TOF/CheckCompressedData.h
                             include/TOF/CheckDiagnostics.h
@@ -115,6 +117,8 @@ install(FILES tofdigits.json
               tofMatchedTracks_ITSTPCTOF_TPCTOF_MC.json
               tofMatchedTracks_ITSTPCTOF_TPCTOF_direct.json
               tofMatchedTracks_ITSTPCTOF_TPCTOF_direct_MC.json
+              tofpid.json
+              tofMatchedTracks_AllTypes_direct_MC.json
         DESTINATION etc)
 
 get_property(dirs
