@@ -5,6 +5,7 @@ here. It is not sanitized or organized. Just a brain dump.
 
 ### Release procedure / check list
 
+
 One can use the script `release.sh` : 
 ```shell
 release.sh
