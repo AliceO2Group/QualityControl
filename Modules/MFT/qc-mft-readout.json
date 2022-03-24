@@ -48,6 +48,12 @@
         "moduleName" : "QcMFT",
         "detectorName" : "MFT",
         "policy" : "OnEachSeparately",
+        "checkParameters" : {
+          "WarningThreshold" : "17",
+          "ErrorThresholdMedium" : "9",
+          "ErrorThresholdBad" : "20",
+          "FaultThreshold" : "4"
+        },
         "dataSource" : [ {
           "type" : "Task",
           "name" : "MFTReadoutTask",
