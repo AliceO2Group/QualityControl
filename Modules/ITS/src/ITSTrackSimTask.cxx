@@ -87,19 +87,18 @@ ITSTrackSimTask::~ITSTrackSimTask()
 
   delete hTrackImpactTransvFake;
   delete hTrackImpactTransvValid;
+
+  delete hPrimaryReco_pt;
+  delete hPrimaryGen_pt;
 }
 
 void ITSTrackSimTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info, Support) << "initialize ITSTrackSimTask" << ENDM;
 
-  mRunNumberPath = mCustomParameters["runNumberPath"];
-  mMCKinePath = mCustomParameters["MCKinePath"];
-  mO2GrpPath = mCustomParameters["o2GrpPath"];
-
   createAllHistos();
   publishHistos();
-  o2::base::Propagator::initFieldFromGRP(mO2GrpPath.c_str());
+  o2::base::Propagator::initFieldFromGRP("o2sim_grp.root");
   auto field = static_cast<o2::field::MagneticField*>(TGeoGlobalMagField::Instance()->GetField());
   double orig[3] = { 0., 0., 0. };
   bz = field->getBz(orig);
@@ -108,37 +107,25 @@ void ITSTrackSimTask::initialize(o2::framework::InitContext& /*ctx*/)
   mGeom = o2::its::GeometryTGeo::Instance();
 }
 
-void ITSTrackSimTask::startOfActivity(Activity& /*activity*/)
+void ITSTrackSimTask::startOfActivity(Activity& activity)
 {
   ILOG(Info, Support) << "startOfActivity" << ENDM;
+  mRunNumber = activity.mId;
 }
 
 void ITSTrackSimTask::startOfCycle()
 {
-  TFile* file = new TFile("o2sim_Kine.root");
   ILOG(Info, Support) << "startOfCycle" << ENDM;
 }
 
 void ITSTrackSimTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   ILOG(Info, Support) << "START DOING QC General" << ENDM;
-
-  TFile* file = new TFile(mMCKinePath.c_str()); // MC Kinematics files is used to get particle level information
-  TTree* mcTree = (TTree*)file->Get("o2sim");
-  mcTree->SetBranchStatus("MCTrack*", 1);
-  mcTree->SetBranchStatus("MCEventHeader.*", 1);
-
-  auto mcArr = new std::vector<o2::MCTrack>;
-  auto mcHeader = new o2::dataformats::MCEventHeader;
-
-  mcTree->SetBranchAddress("MCTrack", &mcArr);
-  mcTree->SetBranchAddress("MCEventHeader.", &mcHeader);
-
-  info.resize(mcTree->GetEntriesFast());
-  for (int i = 0; i < mcTree->GetEntriesFast(); ++i) {
-    if (!mcTree->GetEvent(i))
-      continue;
-    info[i].resize(mcArr->size());
+  o2::steer::MCKinematicsReader reader("collisioncontext.root");
+  info.resize(reader.getNEvents(0));
+  for (int i = 0; i < reader.getNEvents(0); ++i) {
+    std::vector<MCTrack> const& mcArr = reader.getTracks(i);
+    info[i].resize(mcArr.size());
   }
 
   auto clusArr = ctx.inputs().get<gsl::span<o2::itsmft::CompClusterExt>>("compclus"); // used to get hit information
@@ -152,7 +139,7 @@ void ITSTrackSimTask::monitorData(o2::framework::ProcessingContext& ctx)
 
     int TrackID = lab.getTrackID();
 
-    if (TrackID < 0 || TrackID >= mcTree->GetEntriesFast()) {
+    if (TrackID < 0) {
       continue;
     }
 
@@ -178,13 +165,13 @@ void ITSTrackSimTask::monitorData(o2::framework::ProcessingContext& ctx)
       ok |= 0b1000000;
   }
 
-  for (int i = 0; i < mcTree->GetEntriesFast(); ++i) { // filling denominator
+  for (int i = 0; i < reader.getNEvents(0); ++i) {
+    std::vector<MCTrack> const& mcArr = reader.getTracks(i);
+    auto mcHeader = reader.getMCEventHeader(0, i); // SourceID=0 for ITS
 
-    if (!mcTree->GetEvent(i))
-      continue;
-    for (int mc = 0; mc < mcArr->size(); mc++) {
+    for (int mc = 0; mc < mcArr.size(); mc++) {
 
-      const auto& mcTrack = (*mcArr)[mc];
+      const auto& mcTrack = (mcArr)[mc];
 
       info[i][mc].isFilled = false;
       if (mcTrack.Vx() * mcTrack.Vx() + mcTrack.Vy() * mcTrack.Vy() > 1)
@@ -196,7 +183,7 @@ void ITSTrackSimTask::monitorData(o2::framework::ProcessingContext& ctx)
       if (info[i][mc].clusters != 0b1111111)
         continue;
 
-      Double_t distance = sqrt(pow(mcHeader->GetX() - mcTrack.Vx(), 2) + pow(mcHeader->GetY() - mcTrack.Vy(), 2) + pow(mcHeader->GetZ() - mcTrack.Vz(), 2));
+      Double_t distance = sqrt(pow(mcHeader.GetX() - mcTrack.Vx(), 2) + pow(mcHeader.GetY() - mcTrack.Vy(), 2) + pow(mcHeader.GetZ() - mcTrack.Vz(), 2));
       info[i][mc].isFilled = true;
       info[i][mc].r = distance;
       info[i][mc].pt = mcTrack.GetPt();
@@ -204,6 +191,9 @@ void ITSTrackSimTask::monitorData(o2::framework::ProcessingContext& ctx)
       info[i][mc].phi = mcTrack.GetPhi();
       info[i][mc].z = mcTrack.Vz();
       info[i][mc].isPrimary = mcTrack.isPrimary();
+      if (mcTrack.isPrimary()) {
+        hPrimaryGen_pt->Fill(mcTrack.GetPt());
+      }
 
       hDenTrue_r->Fill(distance);
       hDenTrue_pt->Fill(mcTrack.GetPt());
@@ -235,51 +225,46 @@ void ITSTrackSimTask::monitorData(o2::framework::ProcessingContext& ctx)
         hNumRecoFake_eta->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].eta);
         hNumRecoFake_z->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].z);
         hNumRecoFake_r->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].r);
-        if (info[MCinfo.getEventID()][MCinfo.getTrackID()].isPrimary)
+        if (info[MCinfo.getEventID()][MCinfo.getTrackID()].isPrimary) {
           hTrackImpactTransvFake->Fill(ip[0]);
+          hPrimaryReco_pt->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
+        }
       } else {
         hNumRecoValid_pt->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
         hNumRecoValid_phi->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].phi);
         hNumRecoValid_eta->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].eta);
         hNumRecoValid_z->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].z);
         hNumRecoValid_r->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].r);
-        if (info[MCinfo.getEventID()][MCinfo.getTrackID()].isPrimary)
+        if (info[MCinfo.getEventID()][MCinfo.getTrackID()].isPrimary) {
           hTrackImpactTransvValid->Fill(ip[0]);
+          hPrimaryReco_pt->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
+        }
       }
     }
   }
 
-  hFakeTrack_pt->Divide(hNumRecoFake_pt, hDenTrue_pt, 1, 1);
-  hEfficiency_pt->Divide(hNumRecoValid_pt, hDenTrue_pt, 1, 1);
+  hFakeTrack_pt->Divide(hNumRecoFake_pt, hDenTrue_pt, 1, 1, "B");
+  hEfficiency_pt->Divide(hNumRecoValid_pt, hDenTrue_pt, 1, 1, "B");
 
-  hFakeTrack_phi->Divide(hNumRecoFake_phi, hDenTrue_phi, 1, 1);
-  hEfficiency_phi->Divide(hNumRecoValid_phi, hDenTrue_phi, 1, 1);
+  hFakeTrack_phi->Divide(hNumRecoFake_phi, hDenTrue_phi, 1, 1, "B");
+  hEfficiency_phi->Divide(hNumRecoValid_phi, hDenTrue_phi, 1, 1, "B");
 
-  hFakeTrack_eta->Divide(hNumRecoFake_eta, hDenTrue_eta, 1, 1);
-  hEfficiency_eta->Divide(hNumRecoValid_eta, hDenTrue_eta, 1, 1);
+  hFakeTrack_eta->Divide(hNumRecoFake_eta, hDenTrue_eta, 1, 1, "B");
+  hEfficiency_eta->Divide(hNumRecoValid_eta, hDenTrue_eta, 1, 1, "B");
 
-  hFakeTrack_r->Divide(hNumRecoFake_r, hDenTrue_r, 1, 1);
-  hEfficiency_r->Divide(hNumRecoValid_r, hDenTrue_r, 1, 1);
+  hFakeTrack_r->Divide(hNumRecoFake_r, hDenTrue_r, 1, 1, "B");
+  hEfficiency_r->Divide(hNumRecoValid_r, hDenTrue_r, 1, 1, "B");
 
-  hFakeTrack_z->Divide(hNumRecoFake_z, hDenTrue_z, 1, 1);
-  hEfficiency_z->Divide(hNumRecoValid_z, hDenTrue_z, 1, 1);
+  hFakeTrack_z->Divide(hNumRecoFake_z, hDenTrue_z, 1, 1, "B");
+  hEfficiency_z->Divide(hNumRecoValid_z, hDenTrue_z, 1, 1, "B");
 }
 
 void ITSTrackSimTask::endOfCycle()
 {
 
-  std::ifstream runNumberFile(mRunNumberPath.c_str());
-  if (runNumberFile) {
-
-    std::string runNumber;
-    runNumberFile >> runNumber;
-    if (runNumber != mRunNumber) {
-      for (unsigned int iObj = 0; iObj < mPublishedObjects.size(); iObj++)
-        getObjectsManager()->addMetadata(mPublishedObjects.at(iObj)->GetName(), "Run", runNumber);
-      mRunNumber = runNumber;
-    }
-    ILOG(Info, Support) << "endOfCycle" << ENDM;
-  }
+  for (unsigned int iObj = 0; iObj < mPublishedObjects.size(); iObj++)
+    getObjectsManager()->addMetadata(mPublishedObjects.at(iObj)->GetName(), "Run", mRunNumber);
+  ILOG(Info, Support) << "endOfCycle" << ENDM;
 }
 
 void ITSTrackSimTask::endOfActivity(Activity& /*activity*/)
@@ -322,6 +307,9 @@ void ITSTrackSimTask::reset()
 
   hTrackImpactTransvValid->Reset();
   hTrackImpactTransvFake->Reset();
+
+  hPrimaryGen_pt->Reset();
+  hPrimaryReco_pt->Reset();
 }
 
 void ITSTrackSimTask::createAllHistos()
@@ -334,11 +322,13 @@ void ITSTrackSimTask::createAllHistos()
 
   hEfficiency_pt = new TH1D("efficiency_pt", ";#it{p}_{T} (GeV/#it{c});t{p}_{T}Efficiency", nb, xbins);
   hEfficiency_pt->SetTitle("#it{p}_{T} efficiency of tracking");
+  hEfficiency_pt->SetBit(TH1::kIsAverage);
   addObject(hEfficiency_pt);
   formatAxes(hEfficiency_pt, "#it{p}_{T} (GeV/#it{c})", "Efficiency", 1, 1.10);
 
   hFakeTrack_pt = new TH1D("faketrack_pt", ";#it{p}_{T} (GeV/#it{c});Fake-track rate", nb, xbins);
   hFakeTrack_pt->SetTitle("#it{p}_{T} fake-track rate");
+  hFakeTrack_pt->SetBit(TH1::kIsAverage);
   addObject(hFakeTrack_pt);
   formatAxes(hFakeTrack_pt, "#it{p}_{T} (GeV/#it{c})", "Fake-track rate", 1, 1.10);
 
@@ -348,11 +338,13 @@ void ITSTrackSimTask::createAllHistos()
 
   hEfficiency_phi = new TH1D("efficiency_phi", ";#phi;Efficiency", 60, 0, TMath::TwoPi());
   hEfficiency_phi->SetTitle("#phi efficiency of tracking");
+  hEfficiency_phi->SetBit(TH1::kIsAverage);
   addObject(hEfficiency_phi);
   formatAxes(hEfficiency_phi, "#phi", "Efficiency", 1, 1.10);
 
   hFakeTrack_phi = new TH1D("faketrack_phi", ";#phi;Fake-track rate", 60, 0, TMath::TwoPi());
   hFakeTrack_phi->SetTitle("#phi fake-track rate");
+  hFakeTrack_phi->SetBit(TH1::kIsAverage);
   addObject(hFakeTrack_phi);
   formatAxes(hFakeTrack_phi, "#phi", "Fake-track rate", 1, 1.10);
 
@@ -362,11 +354,13 @@ void ITSTrackSimTask::createAllHistos()
 
   hEfficiency_eta = new TH1D("efficiency_eta", ";#eta;Efficiency", 30, -1.5, 1.5);
   hEfficiency_eta->SetTitle("#eta efficiency of tracking");
+  hEfficiency_eta->SetBit(TH1::kIsAverage);
   addObject(hEfficiency_eta);
   formatAxes(hEfficiency_eta, "#eta", "Efficiency", 1, 1.10);
 
   hFakeTrack_eta = new TH1D("faketrack_eta", ";#eta;Fake-track rate", 30, -1.5, 1.5);
   hFakeTrack_eta->SetTitle("#eta fake-track rate");
+  hFakeTrack_eta->SetBit(TH1::kIsAverage);
   addObject(hFakeTrack_eta);
   formatAxes(hFakeTrack_eta, "#eta", "Fake-track rate", 1, 1.10);
 
@@ -374,43 +368,57 @@ void ITSTrackSimTask::createAllHistos()
   hNumRecoFake_eta = new TH1D("NumRecoFake_eta", "", 30, -1.5, 1.5);
   hDenTrue_eta = new TH1D("DenTrueMC_eta", "", 30, -1.5, 1.5);
 
-  hEfficiency_r = new TH1D("efficiency_r", ";r;Efficiency", 50, 0, 5);
+  hEfficiency_r = new TH1D("efficiency_r", ";r (cm);Efficiency", 50, 0, 5);
   hEfficiency_r->SetTitle("r efficiency of tracking");
+  hEfficiency_r->SetBit(TH1::kIsAverage);
   addObject(hEfficiency_r);
-  formatAxes(hEfficiency_r, "r", "Efficiency", 1, 1.10);
+  formatAxes(hEfficiency_r, "r (cm)", "Efficiency", 1, 1.10);
 
-  hFakeTrack_r = new TH1D("faketrack_r", ";r;Fake-track rate", 50, 0, 5);
+  hFakeTrack_r = new TH1D("faketrack_r", ";r (cm);Fake-track rate", 50, 0, 5);
   hFakeTrack_r->SetTitle("r fake-track rate");
+  hFakeTrack_r->SetBit(TH1::kIsAverage);
   addObject(hFakeTrack_r);
-  formatAxes(hFakeTrack_r, "r", "Fake-track rate", 1, 1.10);
+  formatAxes(hFakeTrack_r, "r (cm)", "Fake-track rate", 1, 1.10);
 
   hNumRecoValid_r = new TH1D("NumRecoValid_r", "", 50, 0, 5);
   hNumRecoFake_r = new TH1D("NumRecoFake_r", "", 50, 0, 5);
   hDenTrue_r = new TH1D("DenTrueMC_r", "", 50, 0, 5);
 
-  hEfficiency_z = new TH1D("efficiency_z", ";z;Efficiency", 100, -5, 5);
+  hEfficiency_z = new TH1D("efficiency_z", ";z (cm);Efficiency", 100, -5, 5);
   hEfficiency_z->SetTitle("z efficiency of tracking");
+  hEfficiency_z->SetBit(TH1::kIsAverage);
   addObject(hEfficiency_z);
-  formatAxes(hEfficiency_z, "z", "Efficiency", 1, 1.10);
+  formatAxes(hEfficiency_z, "z (cm)", "Efficiency", 1, 1.10);
 
-  hFakeTrack_z = new TH1D("faketrack_z", ";z;Fake-track rate", 100, -5, 5);
+  hFakeTrack_z = new TH1D("faketrack_z", ";z (cm);Fake-track rate", 100, -5, 5);
   hFakeTrack_z->SetTitle("z fake-track rate");
+  hFakeTrack_z->SetBit(TH1::kIsAverage);
   addObject(hFakeTrack_z);
-  formatAxes(hFakeTrack_z, "z", "Fake-track rate", 1, 1.10);
+  formatAxes(hFakeTrack_z, "z (cm)", "Fake-track rate", 1, 1.10);
 
   hNumRecoValid_z = new TH1D("NumRecoValid_z", "", 100, -5, 5);
   hNumRecoFake_z = new TH1D("NumRecoFake_z", "", 100, -5, 5);
   hDenTrue_z = new TH1D("DenTrueMC_z", "", 100, -5, 5);
 
-  hTrackImpactTransvValid = new TH1F("ImpactTransvVaild", "Transverse impact parameter for valid tracks; D (cm)", 60, -0.1, 0.1);
-  hTrackImpactTransvValid->SetTitle("Transverse impact parameter distribution of valid tracks");
+  hTrackImpactTransvValid = new TH1F("ImpactTransvVaild", "Transverse impact parameter for valid primary tracks; D (cm)", 60, -0.1, 0.1);
+  hTrackImpactTransvValid->SetTitle("Transverse impact parameter distribution of valid primary tracks");
   addObject(hTrackImpactTransvValid);
   formatAxes(hTrackImpactTransvValid, "D (cm)", "counts", 1, 1.10);
 
-  hTrackImpactTransvFake = new TH1F("ImpactTransvFake", "Transverse impact parameter for fake tracks; D (cm)", 60, -0.1, 0.1);
-  hTrackImpactTransvFake->SetTitle("Transverse impact parameter distribution of fake tracks");
+  hTrackImpactTransvFake = new TH1F("ImpactTransvFake", "Transverse impact parameter for fake primary tracks; D (cm)", 60, -0.1, 0.1);
+  hTrackImpactTransvFake->SetTitle("Transverse impact parameter distribution of fake primary tracks");
   addObject(hTrackImpactTransvFake);
   formatAxes(hTrackImpactTransvFake, "D (cm)", "counts", 1, 1.10);
+
+  hPrimaryGen_pt = new TH1D("PrimaryGen_pt", ";#it{p}_{T} (GeV/#it{c});counts", nb, xbins);
+  hPrimaryGen_pt->SetTitle("#it{p}_{T} of primary generated particles");
+  addObject(hPrimaryGen_pt);
+  formatAxes(hPrimaryGen_pt, "#it{p}_{T} (GeV/#it{c})", "counts", 1, 1.10);
+
+  hPrimaryReco_pt = new TH1D("PrimaryReco_pt", ";#it{p}_{T} (GeV/#it{c});counts", nb, xbins);
+  hPrimaryReco_pt->SetTitle("#it{p}_{T} of primary reconstructed particles");
+  addObject(hPrimaryReco_pt);
+  formatAxes(hPrimaryReco_pt, "#it{p}_{T} (GeV/#it{c})", "counts", 1, 1.10);
 }
 
 void ITSTrackSimTask::addObject(TObject* aObject)
