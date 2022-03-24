@@ -24,7 +24,7 @@ include/CTP/RawDataQcTask.h
                     BASENAME O2QcCTP)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/CTP
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")
 
 # ---- Test(s) ----
 

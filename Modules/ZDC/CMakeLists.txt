@@ -24,8 +24,8 @@ add_root_dictionary(O2QcZDC
                     LINKDEF include/ZDC/LinkDef.h
                     BASENAME O2QcZDC)
 
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/QualityControl/ZDC
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/includeZDC
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")
 
 # ---- Test(s) ----
 

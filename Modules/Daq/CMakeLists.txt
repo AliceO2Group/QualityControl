@@ -25,7 +25,7 @@ install(TARGETS O2QcDaq
 
 # Install headers
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/Daq
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")
 
 # ---- Tests ----
 

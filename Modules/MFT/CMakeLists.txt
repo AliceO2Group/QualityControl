@@ -41,8 +41,8 @@ add_root_dictionary(O2QcMFT
                     LINKDEF include/MFT/LinkDef.h
                     BASENAME O2QcMFT)
 
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/QualityControl/MFT
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/MFT
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")
                     
 # ---- Executables ----
 

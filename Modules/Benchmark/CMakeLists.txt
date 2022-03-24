@@ -28,7 +28,7 @@ add_root_dictionary(O2QcBenchmark
 install(DIRECTORY etc DESTINATION Modules/Benchmark)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/Benchmark
-        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")
 
 # ---- Test(s) ----
 

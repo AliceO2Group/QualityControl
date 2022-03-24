@@ -42,7 +42,7 @@ add_root_dictionary(O2QcGLO
                     BASENAME O2QcGLO)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/GLO
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")
 
 # ---- Test(s) ----
 
