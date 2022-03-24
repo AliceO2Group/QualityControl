@@ -3,7 +3,8 @@
 add_library(O2QcHMPID)
 
 target_sources(O2QcHMPID PRIVATE src/HmpidTask.cxx
-                                 src/HmpidTaskDigits.cxx)
+                                 src/HmpidTaskDigits.cxx
+                                 src/HmpidTaskClusters.cxx)
 
 target_include_directories(
   O2QcHMPID
@@ -29,6 +30,7 @@ add_root_dictionary(O2QcHMPID
                     HEADERS 
                     include/HMPID/HmpidTask.h
                     include/HMPID/HmpidTaskDigits.h
+                    include/HMPID/HmpidTaskClusters.h
                     LINKDEF include/HMPID/LinkDef.h
                     BASENAME O2QcHMPID)
 

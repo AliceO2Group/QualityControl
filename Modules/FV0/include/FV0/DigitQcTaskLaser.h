@@ -18,29 +18,27 @@
 #ifndef QC_MODULE_FV0_FV0DIGITQCTASKLASER_H
 #define QC_MODULE_FV0_FV0DIGITQCTASKLASER_H
 
-#include "QualityControl/QcInfoLogger.h"
 #include <Framework/InputRecord.h>
+#include "QualityControl/QcInfoLogger.h"
 //#include "FT0Base/Constants.h"
-#include "DataFormatsFV0/BCData.h"
+#include "DataFormatsFV0/Digit.h"
 #include "DataFormatsFV0/ChannelData.h"
-#include "FV0/Helper.h"
 #include "QualityControl/TaskInterface.h"
-#include "Rtypes.h"
-#include "TH1.h"
-#include "TH2.h"
-#include "TList.h"
-#include <boost/algorithm/string.hpp>
 #include <memory>
 #include <regex>
 #include <type_traits>
+#include <boost/algorithm/string.hpp>
+#include "TH1.h"
+#include "TH2.h"
+#include "TList.h"
+#include "Rtypes.h"
 
 using namespace o2::quality_control::core;
 
 namespace o2::quality_control_modules::fv0
 {
-namespace ch_data = helper::channel_data;
 using ChannelData = o2::fv0::ChannelData;
-using Digit = o2::fv0::BCData;
+using Digit = o2::fv0::Digit;
 /// \brief Quality Control DPL Task for FV0's digit visualization
 /// \author Artur Furs afurs@cern.ch
 class DigitQcTaskLaser final : public TaskInterface
@@ -59,8 +57,7 @@ class DigitQcTaskLaser final : public TaskInterface
   void endOfCycle() override;
   void endOfActivity(Activity& activity) override;
   void reset() override;
-  constexpr static std::size_t sNCHANNELS_PM =
-    60; // 48(for PM) + 12(just in case for possible PM-LCS)
+  constexpr static std::size_t sNCHANNELS_PM = 60; // 48(for PM) + 12(just in case for possible PM-LCS)
   constexpr static std::size_t sOrbitsPerTF = 256;
   constexpr static uint8_t sLaserBitPos = 5;
   constexpr static uint8_t sDataIsValidBitPos = 7;
@@ -78,19 +75,16 @@ class DigitQcTaskLaser final : public TaskInterface
   double mTimeSum = 0.;
   const float mCFDChannel2NS = 0.01302; // CFD channel width in ns
 
-  template <typename Param_t, typename = typename std::enable_if<
-                                std::is_floating_point<Param_t>::value ||
-                                std::is_same<std::string, Param_t>::value ||
-                                (std::is_integral<Param_t>::value &&
-                                 !std::is_same<bool, Param_t>::value)>::type>
+  template <typename Param_t,
+            typename = typename std::enable_if<std::is_floating_point<Param_t>::value ||
+                                               std::is_same<std::string, Param_t>::value || (std::is_integral<Param_t>::value && !std::is_same<bool, Param_t>::value)>::type>
   auto parseParameters(const std::string& param, const std::string& del)
   {
     std::regex reg(del);
     std::sregex_token_iterator first{ param.begin(), param.end(), reg, -1 }, last;
     std::vector<Param_t> vecResult;
     for (auto it = first; it != last; it++) {
-      if constexpr (std::is_integral<Param_t>::value &&
-                    !std::is_same<bool, Param_t>::value) {
+      if constexpr (std::is_integral<Param_t>::value && !std::is_same<bool, Param_t>::value) {
         vecResult.push_back(std::stoi(*it));
       } else if constexpr (std::is_floating_point<Param_t>::value) {
         vecResult.push_back(std::stod(*it));
@@ -108,8 +102,7 @@ class DigitQcTaskLaser final : public TaskInterface
   std::array<o2::InteractionRecord, sNCHANNELS_PM> mStateLastIR2Ch;
   std::map<int, std::string> mMapDigitTrgNames;
   std::map<int, std::string> mMapChTrgNames;
-  std::map<std::string, std::vector<int>>
-    mMapPmModuleChannels; // PM name to its channels
+  std::map<std::string, std::vector<int>> mMapPmModuleChannels; // PM name to its channels
   std::unique_ptr<TH1F> mHistNumADC;
   std::unique_ptr<TH1F> mHistNumCFD;
 
@@ -118,7 +111,8 @@ class DigitQcTaskLaser final : public TaskInterface
                   kOuterRing,
                   kNChannels,
                   kCharge,
-                  kInnerRing };
+                  kInnerRing
+  };
 
   // Object which will be published
   std::unique_ptr<TH2F> mHistAmp2Ch;
