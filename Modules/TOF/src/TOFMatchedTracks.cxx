@@ -312,11 +312,11 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
                  << " gid: " << gTrackId << " TPC gid =" << trk.getRefTPC();
       mMatchedTracksPt[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getPt());
       mMatchedTracksEta[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getEta());
-      mMatchedTracks2DPtEta[matchType::ITSTPC_ITSTPCTRD]->Fill(trk.getPt(), trk.getEta());
-      mDeltaZEta[matchType::ITSTPC_ITSTPCTRD]->Fill(trk.getEta(), trkDz);
-      mDeltaZPhi[matchType::ITSTPC_ITSTPCTRD]->Fill(trk.getPhi(), trkDz);
-      mDeltaXEta[matchType::ITSTPC_ITSTPCTRD]->Fill(trk.getEta(), trkDx);
-      mDeltaXPhi[matchType::ITSTPC_ITSTPCTRD]->Fill(trk.getPhi(), trkDx);
+      mMatchedTracks2DPtEta[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getPt(), trkTPC.getEta());
+      mDeltaZEta[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getEta(), trkDz);
+      mDeltaZPhi[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getPhi(), trkDz);
+      mDeltaXEta[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getEta(), trkDx);
+      mDeltaXPhi[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getPhi(), trkDx);
       mTOFChi2[matchType::ITSTPC_ITSTPCTRD]->Fill(trkchi2);
       if (mUseMC) {
         auto lbl = mRecoCont.getTrackMCLabel(gTrackId);
@@ -388,11 +388,11 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
                  << " gid: " << gTrackId << " TPC gid =" << trkITSTPC.getRefTPC();
       mMatchedTracksPt[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getPt());
       mMatchedTracksEta[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getEta());
-      mMatchedTracks2DPtEta[matchType::ITSTPC_ITSTPCTRD]->Fill(trk.getPt(), trk.getEta());
-      mDeltaZEta[matchType::ITSTPC_ITSTPCTRD]->Fill(trk.getEta(), trkDz);
-      mDeltaZPhi[matchType::ITSTPC_ITSTPCTRD]->Fill(trk.getPhi(), trkDz);
-      mDeltaXEta[matchType::ITSTPC_ITSTPCTRD]->Fill(trk.getEta(), trkDx);
-      mDeltaXPhi[matchType::ITSTPC_ITSTPCTRD]->Fill(trk.getPhi(), trkDx);
+      mMatchedTracks2DPtEta[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getPt(), trkTPC.getEta());
+      mDeltaZEta[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getEta(), trkDz);
+      mDeltaZPhi[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getPhi(), trkDz);
+      mDeltaXEta[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getEta(), trkDx);
+      mDeltaXPhi[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getPhi(), trkDx);
       mTOFChi2[matchType::ITSTPC_ITSTPCTRD]->Fill(trkchi2);
       if (mUseMC) {
         auto lbl = mRecoCont.getTrackMCLabel(gTrackId);
@@ -524,6 +524,9 @@ void TOFMatchedTracks::endOfCycle()
       if (mInTracksPt[i]->GetBinContent(ibin) < mMatchedTracksPt[i]->GetBinContent(ibin)) {
         LOG(error) << "End Of Cycle issue spotted: ibin " << ibin << ": mInTracksPt[" << i << "]->GetBinContent(" << ibin << ") = " << mInTracksPt[i]->GetBinContent(ibin) << ", mMatchedTracksPt[" << i << "]->GetBinContent(" << ibin << ") = " << mMatchedTracksPt[i]->GetBinContent(ibin);
       }
+      if (mInTracksPt[i]->GetBinContent(ibin) != 0 || mMatchedTracksPt[i]->GetBinContent(ibin) != 0) {
+        LOG(debug) << "End Of Cycle - histo filled : ibin " << ibin << ": mInTracksPt[" << i << "]->GetBinContent(" << ibin << ") = " << mInTracksPt[i]->GetBinContent(ibin) << ", mMatchedTracksPt[" << i << "]->GetBinContent(" << ibin << ") = " << mMatchedTracksPt[i]->GetBinContent(ibin);
+      }
       if (mUseMC) {
         if (mMatchedTracksPt[i]->GetBinContent(ibin) < mFakeMatchedTracksPt[i]->GetBinContent(ibin)) {
           LOG(error) << "End Of Cycle issue spotted: ibin " << ibin << ": mMatchedTracksPt[" << i << "]->GetBinContent(" << ibin << ") = " << mMatchedTracksPt[i]->GetBinContent(ibin) << ", mFakeMatchedTracksPt[" << i << "]->GetBinContent(" << ibin << ") = " << mFakeMatchedTracksPt[i]->GetBinContent(ibin);
@@ -534,9 +537,19 @@ void TOFMatchedTracks::endOfCycle()
       if (mInTracksEta[i]->GetBinContent(ibin) < mMatchedTracksEta[i]->GetBinContent(ibin)) {
         LOG(error) << "End Of Cycle issue spotted: ibin " << ibin << ": mInTracksEta[" << i << "]->GetBinContent(" << ibin << ") = " << mInTracksEta[i]->GetBinContent(ibin) << ", mMatchedTracksEta[" << i << "]->GetBinContent(" << ibin << ") = " << mMatchedTracksEta[i]->GetBinContent(ibin);
       }
+      if (mInTracksEta[i]->GetBinContent(ibin) != 0 || mMatchedTracksEta[i]->GetBinContent(ibin) != 0) {
+        LOG(debug) << "End Of Cycle - histo filled: ibin " << ibin << ": mInTracksEta[" << i << "]->GetBinContent(" << ibin << ") = " << mInTracksEta[i]->GetBinContent(ibin) << ", mMatchedTracksEta[" << i << "]->GetBinContent(" << ibin << ") = " << mMatchedTracksEta[i]->GetBinContent(ibin);
+      }
       if (mUseMC) {
         if (mMatchedTracksEta[i]->GetBinContent(ibin) < mFakeMatchedTracksEta[i]->GetBinContent(ibin)) {
           LOG(error) << "End Of Cycle issue spotted: ibin " << ibin << ": mMatchedTracksEta[" << i << "]->GetBinContent(" << ibin << ") = " << mMatchedTracksEta[i]->GetBinContent(ibin) << ", mFakeMatchedTracksEta[" << i << "]->GetBinContent(" << ibin << ") = " << mFakeMatchedTracksEta[i]->GetBinContent(ibin);
+        }
+      }
+    }
+    for (int ibinx = 1; ibinx <= mMatchedTracks2DPtEta[i]->GetNbinsX(); ++ibinx) {
+      for (int ibiny = 1; ibiny <= mMatchedTracks2DPtEta[i]->GetNbinsY(); ++ibiny) {
+        if (mInTracks2DPtEta[i]->GetBinContent(ibinx, ibiny) < mMatchedTracks2DPtEta[i]->GetBinContent(ibinx, ibiny)) {
+          LOG(error) << "End Of Cycle issue spotted: ibinx " << ibinx << ", ibiny " << ibiny << ": mInTracks2DPtEta[" << i << "]->GetBinContent(" << ibinx << ", " << ibiny << ") = " << mInTracks2DPtEta[i]->GetBinContent(ibinx, ibiny) << ", mMatchedTracks2DPtEta[" << i << "]->GetBinContent(" << ibinx << ", " << ibiny << ") = " << mMatchedTracks2DPtEta[i]->GetBinContent(ibinx, ibiny);
         }
       }
     }
@@ -549,14 +562,14 @@ void TOFMatchedTracks::endOfCycle()
         !mEffEta[matchType::TPC]->SetPassedHistogram(*mMatchedTracksEta[matchType::TPC], "") ||
         !mEff2DPtEta[matchType::TPC]->SetTotalHistogram(*mInTracks2DPtEta[matchType::TPC], "f") ||
         !mEff2DPtEta[matchType::TPC]->SetPassedHistogram(*mMatchedTracks2DPtEta[matchType::TPC], "")) {
-      ILOG(Fatal, Support) << "Something went wrong in defining the efficiency histograms, UNCONS!!";
+      ILOG(Fatal, Support) << "Something went wrong in defining the efficiency histograms, UNCONS!!" << ENDM;
     }
     if (mUseMC) {
       if (!mFakeFractionTracksPt[matchType::TPC]->SetTotalHistogram(*mMatchedTracksPt[matchType::TPC], "f") ||
           !mFakeFractionTracksPt[matchType::TPC]->SetPassedHistogram(*mFakeMatchedTracksPt[matchType::TPC], "") ||
           !mFakeFractionTracksEta[matchType::TPC]->SetTotalHistogram(*mMatchedTracksEta[matchType::TPC], "f") ||
           !mFakeFractionTracksEta[matchType::TPC]->SetPassedHistogram(*mFakeMatchedTracksEta[matchType::TPC], "")) {
-        ILOG(Fatal, Support) << "Something went wrong in defining the efficiency histograms for MC, UNCONS!!";
+        ILOG(Fatal, Support) << "Something went wrong in defining the efficiency histograms for MC, UNCONS!!" << ENDM;
       }
     }
   }
@@ -567,14 +580,14 @@ void TOFMatchedTracks::endOfCycle()
         !mEffEta[matchType::ITSTPC_ITSTPCTRD]->SetPassedHistogram(*mMatchedTracksEta[matchType::ITSTPC_ITSTPCTRD], "") ||
         !mEff2DPtEta[matchType::ITSTPC_ITSTPCTRD]->SetTotalHistogram(*mInTracks2DPtEta[matchType::ITSTPC_ITSTPCTRD], "f") ||
         !mEff2DPtEta[matchType::ITSTPC_ITSTPCTRD]->SetPassedHistogram(*mMatchedTracks2DPtEta[matchType::ITSTPC_ITSTPCTRD], "")) {
-      ILOG(Fatal, Support) << "Something went wrong in defining the efficiency histograms, ITS-CONSTR (ITSTPC + ITSTPCTRD)!!";
+      ILOG(Fatal, Support) << "Something went wrong in defining the efficiency histograms, ITS-CONSTR (ITSTPC + ITSTPCTRD)!!" << ENDM;
     }
     if (mUseMC) {
       if (!mFakeFractionTracksPt[matchType::ITSTPC_ITSTPCTRD]->SetTotalHistogram(*mMatchedTracksPt[matchType::ITSTPC_ITSTPCTRD], "f") ||
           !mFakeFractionTracksPt[matchType::ITSTPC_ITSTPCTRD]->SetPassedHistogram(*mFakeMatchedTracksPt[matchType::ITSTPC_ITSTPCTRD], "") ||
           !mFakeFractionTracksEta[matchType::ITSTPC_ITSTPCTRD]->SetTotalHistogram(*mMatchedTracksEta[matchType::ITSTPC_ITSTPCTRD], "f") ||
           !mFakeFractionTracksEta[matchType::ITSTPC_ITSTPCTRD]->SetPassedHistogram(*mFakeMatchedTracksEta[matchType::ITSTPC_ITSTPCTRD], "")) {
-        ILOG(Fatal, Support) << "Something went wrong in defining the efficiency histograms for MC, ITS-CONSTR (ITSTPC + ITSTPCTRD)!!";
+        ILOG(Fatal, Support) << "Something went wrong in defining the efficiency histograms for MC, ITS-CONSTR (ITSTPC + ITSTPCTRD)!!" << ENDM;
       }
     }
   }
@@ -585,14 +598,14 @@ void TOFMatchedTracks::endOfCycle()
         !mEffEta[matchType::TPCTRD]->SetPassedHistogram(*mMatchedTracksEta[matchType::TPCTRD], "") ||
         !mEff2DPtEta[matchType::TPCTRD]->SetTotalHistogram(*mInTracks2DPtEta[matchType::TPCTRD], "f") ||
         !mEff2DPtEta[matchType::TPCTRD]->SetPassedHistogram(*mMatchedTracks2DPtEta[matchType::TPCTRD], "")) {
-      ILOG(Fatal, Support) << "Something went wrong in defining the efficiency histograms, TRD-CONSTR (TPCTRD)!!";
+      ILOG(Fatal, Support) << "Something went wrong in defining the efficiency histograms, TRD-CONSTR (TPCTRD)!!" << ENDM;
     }
     if (mUseMC) {
       if (!mFakeFractionTracksPt[matchType::TPCTRD]->SetTotalHistogram(*mMatchedTracksPt[matchType::TPCTRD], "f") ||
           !mFakeFractionTracksPt[matchType::TPCTRD]->SetPassedHistogram(*mFakeMatchedTracksPt[matchType::TPCTRD], "") ||
           !mFakeFractionTracksEta[matchType::TPCTRD]->SetTotalHistogram(*mMatchedTracksEta[matchType::TPCTRD], "f") ||
           !mFakeFractionTracksEta[matchType::TPCTRD]->SetPassedHistogram(*mFakeMatchedTracksEta[matchType::TPCTRD], "")) {
-        ILOG(Fatal, Support) << "Something went wrong in defining the efficiency histograms for MC, TRD-CONSTR (TPCTRD)!!";
+        ILOG(Fatal, Support) << "Something went wrong in defining the efficiency histograms for MC, TRD-CONSTR (TPCTRD)!!" << ENDM;
       }
     }
   }
