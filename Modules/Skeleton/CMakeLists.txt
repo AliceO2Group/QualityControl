@@ -18,7 +18,7 @@ install(TARGETS O2QcSkeleton
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 # Install headers
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/Skeleton
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/QualityControl/Skeleton
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 
 # ---- ROOT dictionary ----

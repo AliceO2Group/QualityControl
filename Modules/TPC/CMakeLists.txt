@@ -62,7 +62,7 @@ add_root_dictionary(O2QcTPC
                     LINKDEF include/TPC/LinkDef.h
                     BASENAME O2QcTPC)
 
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/TPC
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/QualityControl/TPC
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 
 # ---- Test(s) ----

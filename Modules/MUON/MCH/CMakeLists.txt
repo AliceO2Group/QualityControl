@@ -69,7 +69,7 @@ install(
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/MCH
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/QualityControl/MCH
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 
 # ---- ROOT dictionary ----
