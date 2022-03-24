@@ -37,7 +37,7 @@
         },
         "taskParameters" : {
           "FLP" : "0",
-          "TaskLevel" : "1"
+          "NoiseScan" : "1"
         },
         "location" : "remote"
       }

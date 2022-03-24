@@ -172,32 +172,8 @@ void QcMFTAsyncTask::startOfActivity(Activity& /*activity*/)
 {
   ILOG(Info, Support) << "startOfActivity" << ENDM;
 
-  mTrackNumberOfClusters->Reset();
-  mCATrackNumberOfClusters->Reset();
-  mLTFTrackNumberOfClusters->Reset();
-  mTrackOnvQPt->Reset();
-  mTrackChi2->Reset();
-  mTrackCharge->Reset();
-  mTrackPhi->Reset();
-  mPositiveTrackPhi->Reset();
-  mNegativeTrackPhi->Reset();
-  mTrackEta->Reset();
-  for (auto minNClusters : sMinNClustersList) {
-    auto nHisto = minNClusters - sMinNClustersList[0];
-    mTrackEtaNCls[nHisto]->Reset();
-    mTrackPhiNCls[nHisto]->Reset();
-    mTrackXYNCls[nHisto]->Reset();
-    mTrackEtaPhiNCls[nHisto]->Reset();
-  }
-  mCATrackEta->Reset();
-  mLTFTrackEta->Reset();
-  mTrackTanl->Reset();
-
-  mTrackROFNEntries->Reset();
-  mClusterROFNEntries->Reset();
-
-  mClusterSensorIndex->Reset();
-  mClusterPatternIndex->Reset();
+  // reset histograms
+  reset();
 }
 
 void QcMFTAsyncTask::startOfCycle()

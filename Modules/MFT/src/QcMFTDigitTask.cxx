@@ -52,9 +52,9 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
     ILOG(Info, Support) << "Custom parameter - FLP: " << param->second << ENDM;
     mCurrentFLP = stoi(param->second);
   }
-  if (auto param = mCustomParameters.find("TaskLevel"); param != mCustomParameters.end()) {
-    ILOG(Info, Support) << "Custom parameter - TaskLevel: " << param->second << ENDM;
-    mTaskLevel = stoi(param->second);
+  if (auto param = mCustomParameters.find("NoiseScan"); param != mCustomParameters.end()) {
+    ILOG(Info, Support) << "Custom parameter - NoiseScan: " << param->second << ENDM;
+    mNoiseScan = stoi(param->second);
   }
 
   getChipMapData();
@@ -64,6 +64,15 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   // Defining histograms
   //==============================================
+  mMergerTest = std::make_unique<TH1F>("mMergerTest", "Merger testing from different FLPs;FLP ID;#Entries", 5, -0.5, 4.5);
+  mMergerTest->SetStats(0);
+  mMergerTest->GetXaxis()->SetBinLabel(1, "FLP 182");
+  mMergerTest->GetXaxis()->SetBinLabel(2, "FLP 183");
+  mMergerTest->GetXaxis()->SetBinLabel(3, "FLP 184");
+  mMergerTest->GetXaxis()->SetBinLabel(4, "FLP 185");
+  mMergerTest->GetXaxis()->SetBinLabel(5, "FLP 186");
+  getObjectsManager()->startPublishing(mMergerTest.get());
+
   mDigitChipOccupancy = std::make_unique<TH1F>(
     "mDigitChipOccupancy",
     "Digit Chip Occupancy;Chip ID;#Entries per ROF",
@@ -72,12 +81,14 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
   mDigitChipOccupancy->SetOption("hist");
   getObjectsManager()->startPublishing(mDigitChipOccupancy.get());
 
-  mDigitChipStdDev = std::make_unique<TH1F>(
-    "mDigitChipStdDev",
-    "Digit Chip Std Dev;Chip ID;Chip std dev",
-    936, -0.5, 935.5);
-  mDigitChipStdDev->SetStats(0);
-  getObjectsManager()->startPublishing(mDigitChipStdDev.get());
+  if (mNoiseScan == 1) { // to be executed only for special runs
+    mDigitChipStdDev = std::make_unique<TH1F>(
+      "mDigitChipStdDev",
+      "Digit Chip Std Dev;Chip ID;Chip std dev",
+      936, -0.5, 935.5);
+    mDigitChipStdDev->SetStats(0);
+    getObjectsManager()->startPublishing(mDigitChipStdDev.get());
+  }
 
   mDigitOccupancySummary = std::make_unique<TH2F>(
     "mDigitOccupancySummary",
@@ -104,6 +115,22 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
   mDigitOccupancySummary->SetOption("colz");
   mDigitOccupancySummary->SetStats(0);
   getObjectsManager()->startPublishing(mDigitOccupancySummary.get());
+
+  // --Ladder occupancy maps
+  //==============================================
+  for (int i = 0; i < 280; i++) { // there are 280 ladders
+    auto ladderHistogram = std::make_unique<TH2F>(
+      Form("LadderMaps/h%d-d%d-f%d-z%d-l%d", mHalfLadder[i], mDiskLadder[i], mFaceLadder[i], mZoneLadder[i], i),
+      Form("Digit Occupancy h%d-d%d-f%d-z%d-l%d; Double column; Chip", mHalfLadder[i], mDiskLadder[i], mFaceLadder[i], mZoneLadder[i], i),
+      512, -0.5, 511.5, // double columns per chip
+      mChipsInLadder[i], -0.5, mChipsInLadder[i] - 0.5);
+    for (int iBin = 0; iBin < mChipsInLadder[i]; iBin++)
+      ladderHistogram->GetYaxis()->SetBinLabel(iBin + 1, Form("%d", iBin));
+    ladderHistogram->SetStats(0);
+    ladderHistogram->SetOption("colz");
+    mDigitLadderDoubleColumnOccupancyMap.push_back(std::move(ladderHistogram));
+    getObjectsManager()->startPublishing(mDigitLadderDoubleColumnOccupancyMap[i].get());
+  }
 
   // --Chip hit maps
   //==============================================
@@ -137,25 +164,29 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
   for (int iVectorIndex = 0; iVectorIndex < maxVectorIndex; iVectorIndex++) {
     // create only hit maps corresponding to the FLP
     int iChipIndex = getChipIndexPixelOccupancyMap(iVectorIndex);
+  }
+  if (mNoiseScan == 1) { // to be executed only for special runs
+    for (int iVectorIndex = 0; iVectorIndex < maxVectorIndex; iVectorIndex++) {
+      // create only hit maps corresponding to the FLP
+      int iChipIndex = getChipIndexPixelOccupancyMap(iVectorIndex);
+      //  generate folder and histogram name using the mapping table
+      TString folderName = "";
+      TString histogramName = "";
+      getNameOfPixelOccupancyMap(folderName, histogramName, iChipIndex);
 
-    //  generate folder and histogram name using the mapping table
-    TString folderName = "";
-    TString histogramName = "";
-    getNameOfPixelOccupancyMap(folderName, histogramName, iChipIndex);
-
-    auto pixelhitmap = std::make_unique<TH2F>(
-      folderName, histogramName,
-      maxBinXPixelOccupancyMap / binWidthPixelOccupancyMap,
-      minBinPixelOccupancyMap - shiftPixelOccupancyMap,
-      maxBinXPixelOccupancyMap - shiftPixelOccupancyMap,
-      maxBinYPixelOccupancyMap / binWidthPixelOccupancyMap,
-      minBinPixelOccupancyMap - shiftPixelOccupancyMap,
-      maxBinYPixelOccupancyMap - shiftPixelOccupancyMap);
-    pixelhitmap->SetStats(0);
-    pixelhitmap->SetOption("colz");
-    mDigitPixelOccupancyMap.push_back(std::move(pixelhitmap));
-    if (mTaskLevel == 1)
+      auto pixelhitmap = std::make_unique<TH2F>(
+        folderName, histogramName,
+        maxBinXPixelOccupancyMap / binWidthPixelOccupancyMap,
+        minBinPixelOccupancyMap - shiftPixelOccupancyMap,
+        maxBinXPixelOccupancyMap - shiftPixelOccupancyMap,
+        maxBinYPixelOccupancyMap / binWidthPixelOccupancyMap,
+        minBinPixelOccupancyMap - shiftPixelOccupancyMap,
+        maxBinYPixelOccupancyMap - shiftPixelOccupancyMap);
+      pixelhitmap->SetStats(0);
+      pixelhitmap->SetOption("colz");
+      mDigitPixelOccupancyMap.push_back(std::move(pixelhitmap));
       getObjectsManager()->startPublishing(mDigitPixelOccupancyMap[iVectorIndex].get());
+    }
   }
 }
 
@@ -163,18 +194,8 @@ void QcMFTDigitTask::startOfActivity(Activity& /*activity*/)
 {
   ILOG(Info, Support) << "startOfActivity" << ENDM;
 
-  mDigitChipOccupancy->Reset();
-  mDigitChipStdDev->Reset();
-  mDigitOccupancySummary->Reset();
-
-  for (int iVectorOccupancyMapIndex = 0; iVectorOccupancyMapIndex < 4; iVectorOccupancyMapIndex++) {
-    mDigitChipOccupancyMap[iVectorOccupancyMapIndex]->Reset();
-  }
-
-  int maxVectorIndex = mNumberOfPixelMapsPerFLP[mCurrentFLP] + mNumberOfPixelMapsPerFLP[4 - mCurrentFLP];
-  for (int iVectorIndex = 0; iVectorIndex < maxVectorIndex; iVectorIndex++) {
-    mDigitPixelOccupancyMap[iVectorIndex]->Reset();
-  }
+  // reset histograms
+  reset();
 }
 
 void QcMFTDigitTask::startOfCycle()
@@ -184,23 +205,28 @@ void QcMFTDigitTask::startOfCycle()
 
 void QcMFTDigitTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
+  mMergerTest->Fill(mCurrentFLP);
+  mMergerTest->Fill(-1); // To test what happenes with the normalisation when merged.
   // get the digits
   const auto digits = ctx.inputs().get<gsl::span<o2::itsmft::Digit>>("randomdigit");
   if (digits.size() < 1)
     return;
 
-  // get the number of rofs and fill it in the underflow bin
+  // get the number of rofs
   const auto rofs = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("digitsrof");
   auto nROFs = rofs.size();
-  mDigitChipOccupancy->Fill(-1, nROFs);
 
-  // keep track of normalisation for the Summary histogram
+  // keep track of normalisation of the different histograms in the underflow
+  mDigitChipOccupancy->Fill(-1, nROFs);
   mDigitOccupancySummary->Fill(-1, -1, nROFs);
 
   // fill the pixel hit maps and overview histograms
   for (auto& oneDigit : digits) {
 
     int chipIndex = oneDigit.getChipIndex();
+
+    // fill ladder histogram
+    mDigitLadderDoubleColumnOccupancyMap[mChipLadder[chipIndex]]->Fill(oneDigit.getColumn() >> 1, mChipPositionInLadder[chipIndex]);
 
     int vectorIndex = getVectorIndexPixelOccupancyMap(chipIndex);
     if (vectorIndex < 0) // if the chip is not from wanted FLP, the array will give -1
@@ -212,11 +238,13 @@ void QcMFTDigitTask::monitorData(o2::framework::ProcessingContext& ctx)
     mDigitOccupancySummary->Fill(xBin, yBin);
 
     // fill pixel hit maps
-    mDigitPixelOccupancyMap[vectorIndex]->Fill(oneDigit.getColumn(), oneDigit.getRow());
+    if (mNoiseScan == 1)
+      mDigitPixelOccupancyMap[vectorIndex]->Fill(oneDigit.getColumn(), oneDigit.getRow());
 
     // fill overview histograms
-    mDigitChipOccupancy->SetBinContent(chipIndex + 1, mDigitPixelOccupancyMap[vectorIndex]->GetEntries());
-    mDigitChipStdDev->SetBinContent(chipIndex + 1, mDigitPixelOccupancyMap[vectorIndex]->GetStdDev(1));
+    mDigitChipOccupancy->Fill(chipIndex);
+    if (mNoiseScan == 1)
+      mDigitChipStdDev->SetBinContent(chipIndex + 1, mDigitPixelOccupancyMap[vectorIndex]->GetStdDev(1));
 
     // fill integrated chip hit maps
     int vectorOccupancyMapIndex = getVectorIndexChipOccupancyMap(chipIndex);
@@ -241,17 +269,27 @@ void QcMFTDigitTask::reset()
   // clean all the monitor objects here
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
 
+  mMergerTest->Reset();
   mDigitChipOccupancy->Reset();
-  mDigitChipStdDev->Reset();
+  if (mNoiseScan == 1)
+    mDigitChipStdDev->Reset();
   mDigitOccupancySummary->Reset();
 
+  // ladder histograms
+  for (int i = 0; i < 280; i++) { // there are 280 ladders
+    mDigitLadderDoubleColumnOccupancyMap[i]->Reset();
+  }
+
+  // maps
   for (int iVectorOccupancyMapIndex = 0; iVectorOccupancyMapIndex < 4; iVectorOccupancyMapIndex++) {
     mDigitChipOccupancyMap[iVectorOccupancyMapIndex]->Reset();
   }
 
-  int maxVectorIndex = mNumberOfPixelMapsPerFLP[mCurrentFLP] + mNumberOfPixelMapsPerFLP[4 - mCurrentFLP];
-  for (int iVectorIndex = 0; iVectorIndex < maxVectorIndex; iVectorIndex++) {
-    mDigitPixelOccupancyMap[iVectorIndex]->Reset();
+  if (mNoiseScan == 1) {
+    int maxVectorIndex = mNumberOfPixelMapsPerFLP[mCurrentFLP] + mNumberOfPixelMapsPerFLP[4 - mCurrentFLP];
+    for (int iVectorIndex = 0; iVectorIndex < maxVectorIndex; iVectorIndex++) {
+      mDigitPixelOccupancyMap[iVectorIndex]->Reset();
+    }
   }
 }
 
@@ -292,6 +330,15 @@ void QcMFTDigitTask::getChipMapData()
     mLadder[i] = MFTTable.mLadder[i];
     mX[i] = MFTTable.mX[i];
     mY[i] = MFTTable.mY[i];
+    // info needed for ladder histograms
+    mChipLadder[i] = chipMapData[i].module;
+    mChipPositionInLadder[i] = chipMapData[i].chipOnModule;
+    if (mChipsInLadder[mChipLadder[i]] < (mChipPositionInLadder[i] + 1))
+      mChipsInLadder[mChipLadder[i]]++;
+    mHalfLadder[mChipLadder[i]] = mHalf[i];
+    mDiskLadder[mChipLadder[i]] = mDisk[i];
+    mFaceLadder[mChipLadder[i]] = mFace[i];
+    mZoneLadder[mChipLadder[i]] = mZone[i];
   }
 }
 

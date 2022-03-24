@@ -24,6 +24,8 @@
 #include <TCanvas.h>
 #include <TH1.h>
 #include <TH2.h>
+// O2
+#include <ITSMFTReconstruction/ChipMappingMFT.h>
 // Quality Control
 #include "QualityControl/TaskInterface.h"
 
@@ -63,7 +65,7 @@ class QcMFTDigitTask final : public TaskInterface
   const int numberOfChips = 936;
 
   int mCurrentFLP;
-  int mTaskLevel;
+  int mNoiseScan;
   int mNumberOfPixelMapsPerFLP[5] = { 66, 66, 82, 118, 136 };
 
   int mVectorIndexOfChips[936] = { 0 };
@@ -81,12 +83,23 @@ class QcMFTDigitTask final : public TaskInterface
   float mX[936] = { 0 };
   float mY[936] = { 0 };
 
+  std::unique_ptr<TH1F> mMergerTest = nullptr;
   std::unique_ptr<TH1F> mDigitChipOccupancy = nullptr;
   std::unique_ptr<TH1F> mDigitChipStdDev = nullptr;
   std::unique_ptr<TH2F> mDigitOccupancySummary = nullptr;
 
   std::vector<std::unique_ptr<TH2F>> mDigitChipOccupancyMap;
   std::vector<std::unique_ptr<TH2F>> mDigitPixelOccupancyMap;
+
+  // new ladder vs double column histrograms
+  int mChipLadder[936] = { 0 };
+  int mChipPositionInLadder[936] = { 0 };
+  int mChipsInLadder[280] = { 0 };
+  int mHalfLadder[280] = { 0 };
+  int mDiskLadder[280] = { 0 };
+  int mFaceLadder[280] = { 0 };
+  int mZoneLadder[280] = { 0 };
+  std::vector<std::unique_ptr<TH2F>> mDigitLadderDoubleColumnOccupancyMap;
 
   //  functions
   int getVectorIndexChipOccupancyMap(int chipIndex);
