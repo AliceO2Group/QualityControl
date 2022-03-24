@@ -25,7 +25,7 @@ add_root_dictionary(O2QcFDD
                     BASENAME O2QcFDD)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/FDD
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")
 
 # ---- Test(s) ----
 

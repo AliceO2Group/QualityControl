@@ -42,7 +42,7 @@ add_root_dictionary(O2QcMFT
                     BASENAME O2QcMFT)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/MFT
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")
                     
 # ---- Executables ----
 

@@ -41,7 +41,7 @@ add_root_dictionary(O2QcFV0
                     BASENAME O2QcFV0)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/FV0
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")
 
 # ---- Test(s) ----
 

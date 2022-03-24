@@ -52,7 +52,7 @@ add_root_dictionary(O2QcFT0
         BASENAME O2QcFT0)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/FT0
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")
 
 # ---- Executables ----
 # keep commented as an example

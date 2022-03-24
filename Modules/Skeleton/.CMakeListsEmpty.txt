@@ -23,7 +23,7 @@ add_root_dictionary(O2QcSkeleton
                     BASENAME O2QcSkeleton)
 
 # Install headers
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/Skeleton
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/QualityControl/Skeleton
         DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 
 # ---- Test(s) ----
