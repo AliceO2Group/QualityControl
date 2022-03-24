@@ -25,7 +25,7 @@ add_root_dictionary(O2QcZDC
                     BASENAME O2QcZDC)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ZDC
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")
 
 # ---- Test(s) ----
 

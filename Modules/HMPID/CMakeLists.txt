@@ -35,7 +35,7 @@ add_root_dictionary(O2QcHMPID
                     BASENAME O2QcHMPID)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/HMPID
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")
 
 # ---- Test(s) ----
 

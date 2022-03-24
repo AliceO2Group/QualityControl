@@ -26,7 +26,7 @@ add_root_dictionary(O2QcCPV
                     BASENAME O2QcCPV)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/CPV
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")
 
 # ---- Test(s) ----
 

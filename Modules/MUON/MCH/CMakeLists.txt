@@ -70,7 +70,7 @@ install(
 )
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/MCH
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")
 
 # ---- ROOT dictionary ----
 
