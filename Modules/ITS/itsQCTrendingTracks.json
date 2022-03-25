@@ -31,7 +31,7 @@
         "dataSources": [
           {
             "type": "repository",
-            "paths": ["qc/ITS/MO/ITSTrackTask/NClusters"],
+            "paths": ["ITS/MO/ITSTrackTask/NClusters"],
             "names": ["NClusters"],
             "reductorName": "o2::quality_control_modules::common::TH1Reductor",
             "moduleName": "QcITS"

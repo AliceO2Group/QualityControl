@@ -246,14 +246,14 @@ Data sources are defined by filling the corresponding structure, as in the examp
         "dataSources": [
           {
             "type": "repository",
-            "path": "qc/TST/MO/QcTask",
+            "path": "TST/MO/QcTask",
             "names": [ "example" ],
             "reductorName": "o2::quality_control_modules::common::TH1Reductor",
             "moduleName": "QcCommon"
           },
           {
             "type": "repository-quality",
-            "path": "qc/TST/QO",
+            "path": "TST/QO",
             "names": [ "QcCheck" ],
             "reductorName": "o2::quality_control_modules::common::QualityReductor",
             "moduleName": "QcCommon"

@@ -31,7 +31,7 @@
         "dataSources": [
           {
             "type": "repository",
-            "path": "qc/TOF/MO/TaskDigits",
+            "path": "TOF/MO/TaskDigits",
             "names": [
               "TOFRawsMulti"
             ],
@@ -52,7 +52,7 @@
           "userorcontrol"
         ],
         "updateTrigger": [
-          "newobject:ccdb:qc/TOF/MO/TaskDigits/TOFRawsMulti"
+          "newobject:ccdb:TOF/MO/TaskDigits/TOFRawsMulti"
         ],
         "stopTrigger": [
           "userorcontrol",
