@@ -72,10 +72,12 @@ class DetectorHistogram
   float mHistHeight{ 0 };
 };
 
-class GlobalHistogram : public TH2F
+class GlobalHistogram
 {
  public:
-  GlobalHistogram(std::string name, std::string title, int id = 0);
+  GlobalHistogram(std::string name, std::string title, int id);
+  GlobalHistogram(std::string name, std::string title, int id, TH2F* hist);
+  ~GlobalHistogram();
 
   void init();
 
@@ -88,6 +90,8 @@ class GlobalHistogram : public TH2F
   // replace the contents with the histograms of the individual detection elements
   void set(std::map<int, std::shared_ptr<DetectorHistogram>>& histB, std::map<int, std::shared_ptr<DetectorHistogram>>& histNB, bool doAverage = true, bool includeNullBins = false);
 
+  TH2F* getHist() { return mHist.first; }
+
  private:
   void initST345();
   void initST12();
@@ -97,7 +101,10 @@ class GlobalHistogram : public TH2F
   void getDeCenterST4(int de, float& xB0, float& yB0, float& xNB0, float& yNB0);
   void getDeCenterST5(int de, float& xB0, float& yB0, float& xNB0, float& yNB0);
 
+  TString mName;
+  TString mTitle;
   int mId;
+  std::pair<TH2F*, bool> mHist;
 };
 
 } // namespace muonchambers
