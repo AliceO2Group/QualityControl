@@ -65,7 +65,6 @@ class MergeableTH2Ratio : public TH2F, public o2::mergers::MergeInterface
  private:
   TH2F* mHistoNum{ nullptr };
   TH2F* mHistoDen{ nullptr };
-  TList* mlistOfFunctions{ nullptr };
   std::string mTreatMeAs = "TH2F";
   double mScalingFactor = 1.;
 
