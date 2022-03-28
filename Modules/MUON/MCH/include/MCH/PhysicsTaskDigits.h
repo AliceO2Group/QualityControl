@@ -96,7 +96,6 @@ class PhysicsTaskDigits /*final*/ : public TaskInterface // todo add back the "f
   std::shared_ptr<GlobalHistogram> mHistogramNorbitsST345;     // Histogram of Number of orbits (global XY view)
   std::shared_ptr<MergeableTH2Ratio> mHistogramOccupancyST345; // Mergeable object, Occupancy histogram (global XY view)
 
-
   std::shared_ptr<TH2F> mHistogramDigitsOrbitInTF;
   std::shared_ptr<TH2F> mHistogramDigitsBcInOrbit;
   std::shared_ptr<TH2F> mHistogramAmplitudeVsSamples;
