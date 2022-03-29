@@ -45,7 +45,6 @@ class DecodingErrorsTask /*final*/ : public TaskInterface
   /// Destructor
   ~DecodingErrorsTask() override;
 
-  // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& ctx) override;
   void startOfActivity(Activity& activity) override;
   void startOfCycle() override;
@@ -55,16 +54,21 @@ class DecodingErrorsTask /*final*/ : public TaskInterface
   void reset() override;
 
  private:
-  // decoding of the TimeFrame data sent from the (sub)TimeFrame builder
+  /// \brief decoding of the TimeFrame data sent from the (sub)TimeFrame builder
   void decodeTF(framework::ProcessingContext& pc);
-  // decoding of the TimeFrame data sent directly from readout
+  /// \brief decoding of the TimeFrame data sent directly from readout
   void decodeReadout(const o2::framework::DataRef& input);
-  // helper function to process the TimeFrame data
+  /// \brief helper function to process the TimeFrame data
   void decodeBuffer(gsl::span<const std::byte> buf);
-  // helper function to process one CRU page
+  /// \brief helper function to process one CRU page
   void decodePage(gsl::span<const std::byte> page);
+  /// \brief helper function to process the array of errors sent via DPL
+  void processErrors(framework::ProcessingContext& pc);
 
-  // helper function for storing the histograms to a ROOT file on disk
+  /// \brief helper function for updating the error histograms
+  void plotError(int solarId, int dsAddr, int chip, uint32_t error);
+
+  /// \brief helper function for storing the histograms to a ROOT file on disk
   void writeHistos();
 
   mch::raw::Elec2DetMapper mElec2Det{ nullptr };

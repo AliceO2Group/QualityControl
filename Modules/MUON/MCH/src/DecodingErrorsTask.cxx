@@ -26,8 +26,8 @@
 #include "MCHRawElecMap/Mapper.h"
 #include "MCHMappingInterface/Segmentation.h"
 #include "MCHRawDecoder/PageDecoder.h"
-
-//#define QC_MCH_SAVE_TEMP_ROOTFILE 1
+#include "MCHRawDecoder/ErrorCodes.h"
+#include "MCHBase/DecoderError.h"
 
 namespace o2
 {
@@ -53,17 +53,17 @@ static int sErrorMax = 11;
 static void setXAxisLabels(TH2F* hErrors)
 {
   TAxis* ax = hErrors->GetXaxis();
-  ax->SetBinLabel(1, "Parity Error");
-  ax->SetBinLabel(2, "Hamming Error (correctable)");
-  ax->SetBinLabel(3, "Hamming Error (uncorrectable)");
-  ax->SetBinLabel(4, "Bad Cluster Size");
-  ax->SetBinLabel(5, "Bad Packet Type");
-  ax->SetBinLabel(6, "Bad HB Packet");
-  ax->SetBinLabel(7, "Bad Incomplete word");
-  ax->SetBinLabel(8, "Truncated Data");
-  ax->SetBinLabel(9, "Bad Elink ID");
-  ax->SetBinLabel(10, "Bad Link ID");
-  ax->SetBinLabel(11, "Unknown Link ID");
+  ax->SetBinLabel(1, errorCodeAsString(1).c_str());
+  ax->SetBinLabel(2, errorCodeAsString(1 << 1).c_str());
+  ax->SetBinLabel(3, errorCodeAsString(1 << 2).c_str());
+  ax->SetBinLabel(4, errorCodeAsString(1 << 3).c_str());
+  ax->SetBinLabel(5, errorCodeAsString(1 << 4).c_str());
+  ax->SetBinLabel(6, errorCodeAsString(1 << 5).c_str());
+  ax->SetBinLabel(7, errorCodeAsString(1 << 6).c_str());
+  ax->SetBinLabel(8, errorCodeAsString(1 << 7).c_str());
+  ax->SetBinLabel(9, errorCodeAsString(1 << 8).c_str());
+  ax->SetBinLabel(10, errorCodeAsString(1 << 9).c_str());
+  ax->SetBinLabel(11, errorCodeAsString(1 << 10).c_str());
   for (int i = 1; i <= sErrorMax; i++) {
     ax->ChangeLabel(i, 45);
   }
@@ -194,32 +194,12 @@ void DecodingErrorsTask::decodeBuffer(gsl::span<const std::byte> buf)
 
 void DecodingErrorsTask::decodePage(gsl::span<const std::byte> page)
 {
-  auto errorHandler = [&](DsElecId dsElecId, int8_t /*chip*/, uint32_t error) {
+  auto errorHandler = [&](DsElecId dsElecId, int8_t chip, uint32_t error) {
     int feeId{ -1 };
     uint32_t solarId = dsElecId.solarId();
     uint32_t dsAddr = dsElecId.elinkId();
 
-    std::optional<FeeLinkId> feeLinkId = mSolar2Fee(solarId);
-    if (feeLinkId) {
-      feeId = feeLinkId->feeId();
-    }
-
-    int chamberId{ -1 };
-    if (auto opt = mElec2Det(dsElecId); opt.has_value()) {
-      DsDetId dsDetId = opt.value();
-      int deId = dsDetId.deId();
-      chamberId = deId / 100;
-    }
-
-    uint32_t errMask = 1;
-    for (int i = 0; i < 30; i++) {
-      // Fill the error histogram if the i-th bin is set in the error word
-      if ((error & errMask) != 0) {
-        mHistogramErrorsPerChamber->getNum()->Fill(0.5 + i, chamberId);
-        mHistogramErrorsPerFeeId->getNum()->Fill(0.5 + i, feeId);
-      }
-      errMask <<= 1;
-    }
+    plotError(solarId, dsAddr, chip, error);
   };
 
   if (!mDecoder) {
@@ -228,6 +208,41 @@ void DecodingErrorsTask::decodePage(gsl::span<const std::byte> page)
     mDecoder = o2::mch::raw::createPageDecoder(page, handlers);
   }
   mDecoder(page);
+}
+
+void DecodingErrorsTask::processErrors(framework::ProcessingContext& pc)
+{
+  auto rawerrors = pc.inputs().get<gsl::span<o2::mch::DecoderError>>("rawerrors");
+  for (auto& error : rawerrors) {
+    plotError(error.getSolarID(), error.getDsID(), error.getChip(), error.getError());
+  }
+}
+
+void DecodingErrorsTask::plotError(int solarId, int dsAddr, int chip, uint32_t error)
+{
+  int feeId{ -1 };
+  std::optional<FeeLinkId> feeLinkId = mSolar2Fee(solarId);
+  if (feeLinkId) {
+    feeId = feeLinkId->feeId();
+  }
+
+  DsElecId dsElecId{ uint16_t(solarId), uint8_t(dsAddr / 5), uint8_t(dsAddr % 5) };
+  int chamberId{ -1 };
+  if (auto opt = mElec2Det(dsElecId); opt.has_value()) {
+    DsDetId dsDetId = opt.value();
+    int deId = dsDetId.deId();
+    chamberId = deId / 100;
+  }
+
+  uint32_t errMask = 1;
+  for (int i = 0; i <= sErrorMax; i++) {
+    // Fill the error histogram if the i-th bin is set in the error word
+    if ((error & errMask) != 0) {
+      mHistogramErrorsPerChamber->getNum()->Fill(0.5 + i, chamberId);
+      mHistogramErrorsPerFeeId->getNum()->Fill(0.5 + i, feeId);
+    }
+    errMask <<= 1;
+  }
 }
 
 void DecodingErrorsTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -241,6 +256,8 @@ void DecodingErrorsTask::monitorData(o2::framework::ProcessingContext& ctx)
       decodeTF(ctx);
     }
   }
+
+  processErrors(ctx);
 
   // Count the number of processed TF and set the denominators of the error histograms accordingly
   nTF += 1;
