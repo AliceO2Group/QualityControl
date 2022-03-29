@@ -90,15 +90,19 @@ ITSTrackSimTask::~ITSTrackSimTask()
 
   delete hPrimaryReco_pt;
   delete hPrimaryGen_pt;
+
+  delete hAngularDistribution;
 }
 
 void ITSTrackSimTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info, Support) << "initialize ITSTrackSimTask" << ENDM;
+  mO2GrpPath = mCustomParameters["o2GrpPath"];
+  mCollisionsContextPath = mCustomParameters["collisionsContextPath"];
 
   createAllHistos();
   publishHistos();
-  o2::base::Propagator::initFieldFromGRP("o2sim_grp.root");
+  o2::base::Propagator::initFieldFromGRP(mO2GrpPath.c_str());
   auto field = static_cast<o2::field::MagneticField*>(TGeoGlobalMagField::Instance()->GetField());
   double orig[3] = { 0., 0., 0. };
   bz = field->getBz(orig);
@@ -109,8 +113,8 @@ void ITSTrackSimTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void ITSTrackSimTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity" << ENDM;
   mRunNumber = activity.mId;
+  ILOG(Info, Support) << "startOfActivity" << ENDM;
 }
 
 void ITSTrackSimTask::startOfCycle()
@@ -121,7 +125,7 @@ void ITSTrackSimTask::startOfCycle()
 void ITSTrackSimTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   ILOG(Info, Support) << "START DOING QC General" << ENDM;
-  o2::steer::MCKinematicsReader reader("collisioncontext.root");
+  o2::steer::MCKinematicsReader reader(mCollisionsContextPath.c_str());
   info.resize(reader.getNEvents(0));
   for (int i = 0; i < reader.getNEvents(0); ++i) {
     std::vector<MCTrack> const& mcArr = reader.getTracks(i);
@@ -217,6 +221,8 @@ void ITSTrackSimTask::monitorData(o2::framework::ProcessingContext& ctx)
     Float_t vx = 0., vy = 0., vz = 0.; // Assumed primary vertex at 0,0,0
     track.getImpactParams(vx, vy, vz, bz, ip);
 
+    hAngularDistribution->Fill(track.getEta(), track.getPhi());
+
     if (info[MCinfo.getEventID()][MCinfo.getTrackID()].isFilled) {
       if (MCinfo.isFake()) {
 
@@ -263,7 +269,7 @@ void ITSTrackSimTask::endOfCycle()
 {
 
   for (unsigned int iObj = 0; iObj < mPublishedObjects.size(); iObj++)
-    getObjectsManager()->addMetadata(mPublishedObjects.at(iObj)->GetName(), "Run", mRunNumber);
+    getObjectsManager()->addMetadata(mPublishedObjects.at(iObj)->GetName(), "Run", std::to_string(mRunNumber));
   ILOG(Info, Support) << "endOfCycle" << ENDM;
 }
 
@@ -310,6 +316,8 @@ void ITSTrackSimTask::reset()
 
   hPrimaryGen_pt->Reset();
   hPrimaryReco_pt->Reset();
+
+  hAngularDistribution->Reset();
 }
 
 void ITSTrackSimTask::createAllHistos()
@@ -419,6 +427,12 @@ void ITSTrackSimTask::createAllHistos()
   hPrimaryReco_pt->SetTitle("#it{p}_{T} of primary reconstructed particles");
   addObject(hPrimaryReco_pt);
   formatAxes(hPrimaryReco_pt, "#it{p}_{T} (GeV/#it{c})", "counts", 1, 1.10);
+
+  hAngularDistribution = new TH2D("AngularDistribution", "AngularDistribution", 30, -1.5, 1.5, 60, 0, TMath::TwoPi());
+  hAngularDistribution->SetTitle("AngularDistribution");
+  addObject(hAngularDistribution);
+  formatAxes(hAngularDistribution, "#eta", "#phi", 1, 1.10);
+  hAngularDistribution->SetStats(0);
 }
 
 void ITSTrackSimTask::addObject(TObject* aObject)

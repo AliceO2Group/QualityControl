@@ -36,7 +36,10 @@
           "name" : "tracksim"
         },
         "location" : "remote",
-        "taskParameters" : { }
+        "taskParameters" : {
+                     "O2GrpPath" : "./o2sim_grp.root",
+                     "collisionsContextPath": "./collisioncontext.root" 
+          }
 
       }
     }

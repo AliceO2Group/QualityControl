@@ -108,8 +108,11 @@ class ITSTrackSimTask : public TaskInterface
   TH1D* hPrimaryReco_pt;
   TH1D* hPrimaryGen_pt;
 
-  std::string mRunNumber = "000000";
+  TH2D* hAngularDistribution;
+
+  int mRunNumber = 0;
   std::string mO2GrpPath;
+  std::string mCollisionsContextPath;
 
   o2::its::GeometryTGeo* mGeom;
 
