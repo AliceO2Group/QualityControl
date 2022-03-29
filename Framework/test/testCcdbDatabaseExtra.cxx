@@ -102,21 +102,21 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_former_versions, *utf::depends_on("ccdb_store
   f.backend->storeMO(mo1);
 
   // Retrieve old object stored at timestampStorage
-  std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO("qc/TST/MO/my/task", "asdf/asdf", oldTimestamp);
+  std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO("TST/MO/my/task", "asdf/asdf", oldTimestamp);
   BOOST_CHECK(mo);
   TH1F* old = dynamic_cast<TH1F*>(mo->getObject());
   BOOST_CHECK_NE(old, nullptr);
   BOOST_CHECK_EQUAL(old->GetEntries(), 10000);
 
   // Retrieve latest object with timestamp
-  std::shared_ptr<MonitorObject> mo2 = f.backend->retrieveMO("qc/TST/MO/my/task", "asdf/asdf", CcdbDatabase::getCurrentTimestamp());
+  std::shared_ptr<MonitorObject> mo2 = f.backend->retrieveMO("TST/MO/my/task", "asdf/asdf", CcdbDatabase::getCurrentTimestamp());
   BOOST_CHECK(mo2);
   TH1F* latest = dynamic_cast<TH1F*>(mo2->getObject());
   BOOST_CHECK_NE(latest, nullptr);
   BOOST_CHECK_EQUAL(latest->GetEntries(), 10001);
 
   // Retrieve latest object without timetsamp
-  std::shared_ptr<MonitorObject> mo3 = f.backend->retrieveMO("qc/TST/MO/my/task", "asdf/asdf");
+  std::shared_ptr<MonitorObject> mo3 = f.backend->retrieveMO("TST/MO/my/task", "asdf/asdf");
   BOOST_CHECK(mo3);
   TH1F* latest2 = dynamic_cast<TH1F*>(mo3->getObject());
   BOOST_CHECK_NE(latest2, nullptr);

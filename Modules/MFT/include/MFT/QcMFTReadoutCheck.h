@@ -45,6 +45,11 @@ class QcMFTReadoutCheck : public o2::quality_control::checker::CheckInterface
   std::string getAcceptedType() override;
 
  private:
+  int mWarningThreshold;
+  int mErrorThresholdMedium;
+  int mErrorThresholdBad;
+  int mFaultThreshold;
+
   std::vector<int> mVectorOfFaultBins;
   std::vector<int> mVectorOfErrorBins;
   std::vector<int> mVectorOfWarningBins;

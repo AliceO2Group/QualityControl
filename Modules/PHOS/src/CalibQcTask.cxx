@@ -25,7 +25,7 @@
 #include "PHOSBase/Geometry.h"
 #include "PHOSBase/Mapping.h"
 
-//using namespace o2::phos;
+// using namespace o2::phos;
 
 namespace o2::quality_control_modules::phos
 {
@@ -41,13 +41,14 @@ CalibQcTask::~CalibQcTask()
 }
 void CalibQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
+  ILOG(Info, Support) << "==============initialize CalibQcTask==============" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "initialize CalibQcTask" << AliceO2::InfoLogger::InfoLogger::endm;
   using infoCONTEXT = AliceO2::InfoLogger::InfoLoggerContext;
   infoCONTEXT context;
   context.setField(infoCONTEXT::FieldName::Facility, "QC");
   context.setField(infoCONTEXT::FieldName::System, "QC");
   context.setField(infoCONTEXT::FieldName::Detector, "PHS");
   QcInfoLogger::GetInfoLogger().setContext(context);
-  ILOG(Info, Support) << "initialize CalibQcTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
   if (auto param = mCustomParameters.find("pedestal"); param != mCustomParameters.end()) {
@@ -69,8 +70,9 @@ void CalibQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     }
   }
 
-  //Prepare histograms
-  if (mMode == 1) { //Pedestals
+  ILOG(Info, Support) << "==============Prepare Histos===============" << AliceO2::InfoLogger::InfoLogger::endm;
+  // Prepare histograms
+  if (mMode == 1) { // Pedestals
     for (Int_t mod = 0; mod < 4; mod++) {
       if (!mHist2D[kChangeHGM1 + mod]) {
         mHist2D[kChangeHGM1 + mod] = new TH2F(Form("HGPedestalChange%d", mod + 1), Form("Change of HG pedestals in mod %d", mod + 1), 64, 0., 64., 56, 0., 56.);
@@ -99,8 +101,8 @@ void CalibQcTask::initialize(o2::framework::InitContext& /*ctx*/)
         mHist2D[kChangeLGM1 + mod]->Reset();
       }
     }
-  }                 //Pedestals
-  if (mMode == 2) { //LED
+  }                 // Pedestals
+  if (mMode == 2) { // LED
     for (Int_t mod = 0; mod < 4; mod++) {
       if (!mHist2D[kChangeHGM1 + mod]) {
         mHist2D[kChangeHGM1 + mod] = new TH2F(Form("HGLGRatioChange%d", mod + 1), Form("Change of HG/LG ratio in mod %d", mod + 1), 64, 0., 64., 56, 0., 56.);
@@ -116,8 +118,8 @@ void CalibQcTask::initialize(o2::framework::InitContext& /*ctx*/)
         mHist2D[kChangeHGM1 + mod]->Reset();
       }
     }
-  }                 //LED
-  if (mMode == 0) { //BadMap
+  }                 // LED
+  if (mMode == 0) { // BadMap
     for (Int_t mod = 0; mod < 4; mod++) {
       if (!mHist2D[kChangeHGM1 + mod]) {
         mHist2D[kChangeHGM1 + mod] = new TH2F(Form("BadMapChange%d", mod + 1), Form("Change of bad map in mod %d", mod + 1), 64, 0., 64., 56, 0., 56.);
@@ -133,7 +135,8 @@ void CalibQcTask::initialize(o2::framework::InitContext& /*ctx*/)
         mHist2D[kChangeHGM1 + mod]->Reset();
       }
     }
-  } //BadMap
+  } // BadMap
+  ILOG(Info, Support) << " CalibQcTask histos ready " << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 void CalibQcTask::startOfActivity(Activity& /*activity*/)
@@ -149,8 +152,7 @@ void CalibQcTask::startOfCycle()
 
 void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-
-  //std::array<short, 2*o2::phos::Mapping::NCHANNELS>
+  // std::array<short, 2*o2::phos::Mapping::NCHANNELS>
   auto diff = ctx.inputs().get<gsl::span<short>>("calibdiff");
   bool fillLG = diff.size() > o2::phos::Mapping::NCHANNELS + 1;
 
@@ -158,13 +160,13 @@ void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   for (short absId = o2::phos::Mapping::NCHANNELS; absId > 1792; absId--) {
 
     o2::phos::Geometry::absToRelNumbering(absId, relid);
-    mHist2D[kChangeHGM1 + relid[0] - 1]->SetBinContent(relid[1], relid[2], diff[absId]);
-    if (fillLG && mMode == 1) { //Only in pedestals prepare both histos
-      mHist2D[kChangeLGM1 + relid[0] - 1]->SetBinContent(relid[1], relid[2], diff[absId + o2::phos::Mapping::NCHANNELS]);
+    mHist2D[kChangeHGM1 + relid[0] - 1]->SetBinContent(relid[1], relid[2], diff[absId - 1792]);
+    if (fillLG && mMode == 1) { // Only in pedestals prepare both histos
+      mHist2D[kChangeLGM1 + relid[0] - 1]->SetBinContent(relid[1], relid[2], diff[absId + o2::phos::Mapping::NCHANNELS - 1792]);
     }
   }
 
-} //function monitor data
+} // function monitor data
 
 void CalibQcTask::endOfCycle()
 {

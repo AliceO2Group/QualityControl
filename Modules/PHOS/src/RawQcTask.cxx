@@ -27,7 +27,7 @@
 #include "PHOSReconstruction/RawReaderError.h"
 #include "PHOSBase/Geometry.h"
 #include "Framework/InputRecord.h"
-//using namespace o2::phos;
+// using namespace o2::phos;
 
 namespace o2::quality_control_modules::phos
 {
@@ -77,6 +77,12 @@ void RawQcTask::initialize(o2::framework::InitContext& /*ctx*/)
       mMode = 0;
     }
   }
+  if (auto param = mCustomParameters.find("chi2"); param != mCustomParameters.end()) {
+    ILOG(Info, Support) << "Scan chi2 distributions " << AliceO2::InfoLogger::InfoLogger::endm;
+    if (param->second.find("on") != std::string::npos) {
+      mCheckChi2 = true;
+    }
+  }
 
   InitHistograms();
 }
@@ -84,10 +90,10 @@ void RawQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 void RawQcTask::InitHistograms()
 {
 
-  //First init general histograms for any mode
+  // First init general histograms for any mode
 
   // Statistics histograms
-  mHist2D[kErrorNumber] = new TH2F("NumberOfErrors", "Number of hardware errors", 32, 0, 32, 15, 0, 15.); //xaxis: FEE card number + 2 for TRU and global errors
+  mHist2D[kErrorNumber] = new TH2F("NumberOfErrors", "Number of hardware errors", 32, 0, 32, 15, 0, 15.); // xaxis: FEE card number + 2 for TRU and global errors
   mHist2D[kErrorNumber]->GetXaxis()->SetTitle("FEE card");
   mHist2D[kErrorNumber]->GetYaxis()->SetTitle("DDL");
   mHist2D[kErrorNumber]->SetDrawOption("colz");
@@ -101,7 +107,34 @@ void RawQcTask::InitHistograms()
   mHist2D[kErrorType]->SetStats(0);
   getObjectsManager()->startPublishing(mHist2D[kErrorType]);
 
-  if (mMode == 0) { //Physics
+  if (mCheckChi2) {
+    for (Int_t mod = 0; mod < 4; mod++) {
+      if (!mHist2D[kChi2M1 + mod]) {
+        mHist2D[kChi2M1 + mod] = new TH2F(Form("Chi2M%d", mod + 1), Form("sample fit #chi2/NDF, mod %d", mod + 1), 64, 0., 64., 56, 0., 56.);
+        mHist2D[kChi2M1 + mod]->GetXaxis()->SetNdivisions(508, kFALSE);
+        mHist2D[kChi2M1 + mod]->GetYaxis()->SetNdivisions(514, kFALSE);
+        mHist2D[kChi2M1 + mod]->GetXaxis()->SetTitle("x, cells");
+        mHist2D[kChi2M1 + mod]->GetYaxis()->SetTitle("z, cells");
+        mHist2D[kChi2M1 + mod]->SetStats(0);
+        mHist2D[kChi2M1 + mod]->SetMinimum(0);
+        getObjectsManager()->startPublishing(mHist2D[kChi2M1 + mod]);
+
+        mHist2D[kChi2NormM1 + mod] = new TH2F(Form("Chi2NormM%d", mod + 1), Form("sample fit #chi2/NDF normalization, mod %d", mod + 1), 64, 0., 64., 56, 0., 56.);
+        mHist2D[kChi2NormM1 + mod]->GetXaxis()->SetNdivisions(508, kFALSE);
+        mHist2D[kChi2NormM1 + mod]->GetYaxis()->SetNdivisions(514, kFALSE);
+        mHist2D[kChi2NormM1 + mod]->GetXaxis()->SetTitle("x, cells");
+        mHist2D[kChi2NormM1 + mod]->GetYaxis()->SetTitle("z, cells");
+        mHist2D[kChi2NormM1 + mod]->SetStats(0);
+        mHist2D[kChi2NormM1 + mod]->SetMinimum(0);
+        // getObjectsManager()->startPublishing(mHist2D[kChi2NormM1 + mod]);
+      } else {
+        mHist2D[kChi2M1 + mod]->Reset();
+        mHist2D[kChi2NormM1 + mod]->Reset();
+      }
+    }
+  }
+
+  if (mMode == 0) { // Physics
     CreatePhysicsHistograms();
   }
   if (mMode == 1) { // Pedestals
@@ -121,8 +154,21 @@ void RawQcTask::startOfActivity(Activity& /*activity*/)
 void RawQcTask::startOfCycle()
 {
   ILOG(Info, Support) << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
-  if (mMode == 1) {   //Pedestals
-    if (mFinalized) { //means were already calculated
+  if (mCheckChi2) {
+    if (mFinalized) { // mean already calculated
+      for (Int_t mod = 0; mod < 4; mod++) {
+        if (mHist2D[kChi2M1 + mod]) {
+          mHist2D[kChi2M1 + mod]->Multiply(mHist2D[kChi2NormM1 + mod]);
+        }
+      }
+      if (mMode != 1) { // for mode 1 another check below
+        mFinalized = false;
+      }
+    }
+  }
+
+  if (mMode == 1) {   // Pedestals
+    if (mFinalized) { // means were already calculated
       for (Int_t mod = 0; mod < 4; mod++) {
         if (mHist2D[kHGmeanM1 + mod]) {
           mHist2D[kHGmeanM1 + mod]->Multiply(mHist2D[kHGoccupM1 + mod]);
@@ -157,42 +203,56 @@ void RawQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     mHist2D[kErrorType]->SetBinContent(ibin, cont);
   }
 
-  // //Chi2: not hardware errors but unusual/correpted sample
-  // //vector contains subsequent pairs (address,chi2)
-  // auto chi2list = ctx.inputs().get<std::vector<short>>("fitquality");
-  // auto it=chi2list.begin() ;
-  // while(it!=chi2list.end()){
-  //   short address=*it;
-  //   bool caloFlag=address&1<<14 ;
-  //   address&=~(1<<14) ; //remove HG/LG bit 14
-  //   short chi=*(++it) ;
+  // Chi2: not hardware errors but unusual/correpted sample
+  if (mCheckChi2) {
+    // vector contains subsequent pairs (address,chi2)
+    auto chi2list = ctx.inputs().get<std::vector<short>>("fitquality");
+    auto it = chi2list.begin();
+    while (it != chi2list.end()) {
+      short address = *it;
+      it++;
+      bool caloFlag = address & 1 << 14;
+      address &= ~(1 << 14); // remove HG/LG bit 14
+      float chi = 0.2 * (*it);
+      it++;
+      char relid[3];
+      o2::phos::Geometry::absToRelNumbering(address, relid);
+      mHist2D[kChi2M1 + relid[0] - 1]->Fill(relid[1] - 0.5, relid[2] - 0.5, chi);
+      mHist2D[kChi2NormM1 + relid[0] - 1]->Fill(relid[1] - 0.5, relid[2] - 0.5);
+    }
+  }
 
-  //   char relid[3];
-  //   o2::phos::Geometry::absToRelNumbering(address,relid) ;
-  //   mFitQualityMod[relid[0]]->Fill(float(relid[2]),float(relid[1]),float(chi)) ;
-  //   mFitQualityNormMod[relid[0]]->Fill(float(relid[2]),float(relid[1])) ;
-  // }
-
-  //Cells
+  // Cells
   auto cells = ctx.inputs().get<gsl::span<o2::phos::Cell>>("cells");
   auto cellsTR = ctx.inputs().get<gsl::span<o2::phos::TriggerRecord>>("cellstr");
 
-  if (mMode == 0) { //Physics
+  if (mMode == 0) { // Physics
     FillPhysicsHistograms(cells, cellsTR);
   }
-  if (mMode == 1) { //Pedestals
+  if (mMode == 1) { // Pedestals
     FillPedestalHistograms(cells, cellsTR);
   }
-  if (mMode == 2) { //LED
+  if (mMode == 2) { // LED
     FillLEDHistograms(cells, cellsTR);
   }
-} //function monitor data
+} // function monitor data
 
 void RawQcTask::endOfCycle()
 {
   ILOG(Info, Support) << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
-  if (mMode == 1) {   //Pedestals
-    if (mFinalized) { //means were already calculated
+
+  if (mCheckChi2) {
+    if (!mFinalized) { // not already calculated
+      for (Int_t mod = 0; mod < 4; mod++) {
+        if (mHist2D[kChi2M1 + mod]) {
+          mHist2D[kChi2M1 + mod]->Divide(mHist2D[kChi2NormM1 + mod]);
+        }
+      }
+    }
+  }
+
+  if (mMode == 1) {   // Pedestals
+    if (mFinalized) { // means were already calculated
       return;
     }
     for (Int_t mod = 0; mod < 4; mod++) {
@@ -289,7 +349,7 @@ void RawQcTask::FillPhysicsHistograms(const gsl::span<const o2::phos::Cell>& cel
     int lastCellInEvent = firstCellInEvent + tr.getNumberOfObjects();
     for (int i = firstCellInEvent; i < lastCellInEvent; i++) {
       const o2::phos::Cell c = cells[i];
-      //short cell, float amplitude, float time, int label
+      // short cell, float amplitude, float time, int label
       short address = c.getAbsId();
       float e = c.getEnergy();
       if (e > kOcccupancyTh) {
@@ -338,7 +398,7 @@ void RawQcTask::FillPedestalHistograms(const gsl::span<const o2::phos::Cell>& ce
       short mod = relid[0] - 1;
       if (c.getHighGain()) {
         mHist2D[kHGmeanM1 + mod]->Fill(relid[1] - 0.5, relid[2] - 0.5, c.getEnergy());
-        mHist2D[kHGrmsM1 + mod]->Fill(relid[1] - 0.5, relid[2] - 0.5, 1.e+7 * c.getTime()); //to store in Cells format
+        mHist2D[kHGrmsM1 + mod]->Fill(relid[1] - 0.5, relid[2] - 0.5, 1.e+7 * c.getTime()); // to store in Cells format
         mHist2D[kHGoccupM1 + mod]->Fill(relid[1] - 0.5, relid[2] - 0.5);
       } else {
         mHist2D[kLGmeanM1 + mod]->Fill(relid[1] - 0.5, relid[2] - 0.5, c.getEnergy());
@@ -351,7 +411,7 @@ void RawQcTask::FillPedestalHistograms(const gsl::span<const o2::phos::Cell>& ce
 
 void RawQcTask::CreatePedestalHistograms()
 {
-  //Prepare historams for pedestal run QA
+  // Prepare historams for pedestal run QA
 
   for (Int_t mod = 0; mod < 4; mod++) {
     if (!mHist2D[kHGmeanM1 + mod]) {
@@ -468,7 +528,7 @@ void RawQcTask::CreatePedestalHistograms()
 }
 void RawQcTask::CreatePhysicsHistograms()
 {
-  //Prepare historams for pedestal run QA
+  // Prepare historams for pedestal run QA
 
   for (Int_t mod = 0; mod < 4; mod++) {
     if (!mHist2D[kCellOccupM1 + mod]) {

@@ -31,17 +31,7 @@
 
 #include "MCH/GlobalHistogram.h"
 
-#define DE_HEIGHT 60
-#define DE_WIDTH 250
-#define NXHIST_PER_CHAMBER 2
-#define NYHIST_PER_CHAMBER 13
-#define NCHAMBERS_PER_STATION 2
-#define NXHIST_PER_STATION NXHIST_PER_CHAMBER* NCHAMBERS_PER_STATION
-#define NSTATIONS 3
-
-#define HIST_WIDTH (NSTATIONS * NXHIST_PER_CHAMBER * NCHAMBERS_PER_STATION * DE_WIDTH)
-#define HIST_HEIGHT (NYHIST_PER_CHAMBER * DE_HEIGHT * 2)
-#define HIST_SCALE 2
+#define GLOBAL_HIST_SCALE 5
 
 namespace o2
 {
@@ -222,7 +212,7 @@ static int getDetectorHistYbins(int deId)
 static bool getDetectorFlipX(int deId)
 {
   int lr = getLR(deId);
-  bool flip = (lr == 0);
+  bool flip = (lr == 1);
 
   if (deId >= 700) {
     int mod = (deId % 100);
@@ -234,6 +224,8 @@ static bool getDetectorFlipX(int deId)
     if (mod == 2 || mod == 7 || mod == 11 || mod == 16) {
       flip = !flip;
     }
+  } else {
+    flip = (lr == 0);
   }
 
   return flip;
@@ -263,28 +255,20 @@ static bool getDetectorFlipY(int deId)
 
 static float getDetectorShiftX(int deId)
 {
-  if (deId >= 500) {
-    return 0;
-  } else if (deId >= 300) {
-    return (-115.0 / 2);
-  } else {
-    return (-90.0 / 2);
+  if (deId < 500) {
+    return 5;
   }
 
-  return 0; //5;
+  return 0;
 }
 
 static float getDetectorShiftY(int deId)
 {
-  if (deId >= 500) {
-    return 0;
-  } else if (deId >= 300) {
-    return (-117.0 / 2);
-  } else {
-    return (-90.0 / 2);
+  if (deId < 500) {
+    return 5;
   }
 
-  return 0; //5;
+  return 0;
 }
 
 DetectorHistogram::DetectorHistogram(TString name, TString title, int deId)
@@ -292,6 +276,7 @@ DetectorHistogram::DetectorHistogram(TString name, TString title, int deId)
 {
   mHist = std::make_pair(new TH2F(name, title, getNbinsX(), getXmin(), getXmax(), getNbinsY(), getYmin(), getYmax()), true);
   addContour();
+  mHist.first->SetOption("colz");
 }
 
 DetectorHistogram::DetectorHistogram(TString name, TString title, int deId, TH2F* hist)
@@ -300,6 +285,7 @@ DetectorHistogram::DetectorHistogram(TString name, TString title, int deId, TH2F
   mHist = std::make_pair(hist, false);
   init();
   addContour();
+  mHist.first->SetOption("colz");
 }
 
 DetectorHistogram::~DetectorHistogram()
@@ -321,21 +307,53 @@ int DetectorHistogram::getNbinsY()
 
 float DetectorHistogram::getXmin()
 {
+  if (mDeId < 500) {
+    if (getDetectorFlipX(mDeId)) {
+      return -1.0 * getDetectorHistWidth(mDeId);
+    } else {
+      return 0;
+    }
+  }
+
   return -1.0 * getDetectorHistWidth(mDeId) / 2;
 }
 
 float DetectorHistogram::getXmax()
 {
+  if (mDeId < 500) {
+    if (getDetectorFlipX(mDeId)) {
+      return 0;
+    } else {
+      return getDetectorHistWidth(mDeId);
+    }
+  }
+
   return getDetectorHistWidth(mDeId) / 2;
 }
 
 float DetectorHistogram::getYmin()
 {
+  if (mDeId < 500) {
+    if (getDetectorFlipY(mDeId)) {
+      return -1.0 * getDetectorHistHeight(mDeId);
+    } else {
+      return 0;
+    }
+  }
+
   return -1.0 * getDetectorHistHeight(mDeId) / 2;
 }
 
 float DetectorHistogram::getYmax()
 {
+  if (mDeId < 500) {
+    if (getDetectorFlipY(mDeId)) {
+      return 0;
+    } else {
+      return getDetectorHistHeight(mDeId);
+    }
+  }
+
   return getDetectorHistHeight(mDeId) / 2;
 }
 
@@ -440,12 +458,87 @@ void DetectorHistogram::Set(double padX, double padY, double padSizeX, double pa
   }
 }
 
-GlobalHistogram::GlobalHistogram(std::string name, std::string title) : TH2F(name.c_str(), title.c_str(), HIST_WIDTH / HIST_SCALE, 0, HIST_WIDTH, HIST_HEIGHT / HIST_SCALE, 0, HIST_HEIGHT)
+static float getGlobalHistDeWidth(int id)
 {
-  SetDrawOption("colz");
+  float result{ 0 };
+
+  switch (id) {
+    case 0:
+      result = 130;
+      break;
+    case 1:
+      result = 250;
+      break;
+  }
+
+  return result;
+}
+
+static float getGlobalHistDeHeight(int id)
+{
+  float result{ 0 };
+
+  switch (id) {
+    case 0:
+      result = 130;
+      break;
+    case 1:
+      result = 60;
+      break;
+  }
+
+  return result;
+}
+
+static int getNHistPerChamberX(int /* id */)
+{
+  return 2;
+}
+
+static int getNHistPerChamberY(int id)
+{
+  return (id == 0) ? 2 : 13;
+}
+
+static int getNStations(int id)
+{
+  int nStations = (id == 0) ? 2 : 3;
+  return nStations;
+}
+
+static float getGlobalHistWidth(int id)
+{
+  constexpr int chambersPerStation = 2;
+
+  return (getGlobalHistDeWidth(id) * getNHistPerChamberX(id) * chambersPerStation * getNStations(id));
+}
+
+static float getGlobalHistHeight(int id)
+{
+  return (getGlobalHistDeHeight(id) * getNHistPerChamberY(id) * 2);
+}
+
+GlobalHistogram::GlobalHistogram(std::string name, std::string title, int id)
+  : TH2F(name.c_str(), title.c_str(), getGlobalHistWidth(id) / GLOBAL_HIST_SCALE, 0, getGlobalHistWidth(id),
+         getGlobalHistHeight(id) / GLOBAL_HIST_SCALE, 0, getGlobalHistHeight(id)),
+    mId(id)
+{
+  SetOption("colz");
 }
 
 void GlobalHistogram::init()
+{
+  switch (mId) {
+    case 0:
+      initST12();
+      break;
+    case 1:
+      initST345();
+      break;
+  }
+}
+
+void GlobalHistogram::initST12()
 {
   std::vector<int> allDE;
 
@@ -456,23 +549,89 @@ void GlobalHistogram::init()
 
   TLine* line;
 
-  line = new TLine(0, HIST_HEIGHT / 2, HIST_WIDTH, HIST_HEIGHT / 2);
+  float histWidth = GetXaxis()->GetXmax();
+  float histHeight = GetYaxis()->GetXmax();
+  float stationWidth = histWidth / 2;
+
+  line = new TLine(0, histHeight / 2, histWidth, histHeight / 2);
   GetListOfFunctions()->Add(line);
 
-  line = new TLine(NXHIST_PER_STATION * DE_WIDTH, 0, NXHIST_PER_STATION * DE_WIDTH, HIST_HEIGHT);
-  GetListOfFunctions()->Add(line);
-
-  line = new TLine(NXHIST_PER_STATION * DE_WIDTH * 2, 0, NXHIST_PER_STATION * DE_WIDTH * 2, HIST_HEIGHT);
+  line = new TLine(stationWidth, 0, stationWidth, histHeight);
   GetListOfFunctions()->Add(line);
 
   for (auto& de : allDE) {
-    if (de < 500)
-      continue;
-    // std::cout<<"DE: "<<de<<std::endl;
-    const o2::mch::mapping::Segmentation& segment = o2::mch::mapping::segmentation(de);
-    if ((&segment) == nullptr) {
+    if (de >= 500) {
       continue;
     }
+    const o2::mch::mapping::Segmentation& segment = o2::mch::mapping::segmentation(de);
+    const o2::mch::mapping::CathodeSegmentation& csegment = segment.bending();
+    o2::mch::contour::Contour<double> envelop = o2::mch::mapping::getEnvelop(csegment);
+    std::vector<o2::mch::contour::Vertex<double>> vertices = envelop.getVertices();
+
+    float xB0, yB0, xNB0, yNB0;
+    getDeCenter(de, xB0, yB0, xNB0, yNB0);
+    bool flipX = getDetectorFlipX(de);
+    bool flipY = getDetectorFlipY(de);
+
+    float shiftX = getDetectorShiftX(de);
+    float shiftY = getDetectorShiftY(de);
+
+    for (unsigned int vi = 0; vi < vertices.size(); vi++) {
+      o2::mch::contour::Vertex<double> v1 = vertices[vi];
+      o2::mch::contour::Vertex<double> v2 = (vi < (vertices.size() - 1)) ? vertices[vi + 1] : vertices[0];
+
+      v1.x += shiftX;
+      v1.y += shiftY;
+      v2.x += shiftX;
+      v2.y += shiftY;
+
+      if (flipX) {
+        v1.x *= -1;
+        v2.x *= -1;
+      }
+
+      if (flipY) {
+        v1.y *= -1;
+        v2.y *= -1;
+      }
+
+      line = new TLine(v1.x + xB0, v1.y + yB0, v2.x + xB0, v2.y + yB0);
+      GetListOfFunctions()->Add(line);
+      line = new TLine(v1.x + xNB0, v1.y + yNB0, v2.x + xNB0, v2.y + yNB0);
+      GetListOfFunctions()->Add(line);
+    }
+  }
+}
+
+void GlobalHistogram::initST345()
+{
+  std::vector<int> allDE;
+
+  auto addDE = [&allDE](int detElemId) {
+    allDE.push_back(detElemId);
+  };
+  o2::mch::mapping::forEachDetectionElement(addDE);
+
+  TLine* line;
+
+  float histWidth = GetXaxis()->GetXmax();
+  float histHeight = GetYaxis()->GetXmax();
+  float stationWidth = histWidth / 3;
+
+  line = new TLine(0, histHeight / 2, histWidth, histHeight / 2);
+  GetListOfFunctions()->Add(line);
+
+  line = new TLine(stationWidth, 0, stationWidth, histHeight);
+  GetListOfFunctions()->Add(line);
+
+  line = new TLine(stationWidth * 2, 0, stationWidth * 2, histHeight);
+  GetListOfFunctions()->Add(line);
+
+  for (auto& de : allDE) {
+    if (de < 500) {
+      continue;
+    }
+    const o2::mch::mapping::Segmentation& segment = o2::mch::mapping::segmentation(de);
     const o2::mch::mapping::CathodeSegmentation& csegment = segment.bending();
     o2::mch::contour::Contour<double> envelop = o2::mch::mapping::getEnvelop(csegment);
     std::vector<o2::mch::contour::Vertex<double>> vertices = envelop.getVertices();
@@ -508,6 +667,15 @@ void GlobalHistogram::init()
 
 void GlobalHistogram::getDeCenter(int de, float& xB0, float& yB0, float& xNB0, float& yNB0)
 {
+  xB0 = 0;
+  yB0 = 0;
+  xNB0 = 0;
+  yNB0 = 0;
+
+  if ((de >= 100) && (de < 500)) {
+    getDeCenterST12(de, xB0, yB0, xNB0, yNB0);
+  }
+
   if ((de >= 500) && (de < 700)) {
     getDeCenterST3(de, xB0, yB0, xNB0, yNB0);
   }
@@ -521,8 +689,62 @@ void GlobalHistogram::getDeCenter(int de, float& xB0, float& yB0, float& xNB0, f
   }
 }
 
+void GlobalHistogram::getDeCenterST12(int de, float& xB0, float& yB0, float& xNB0, float& yNB0)
+{
+  float deWidth = getGlobalHistDeWidth(mId);
+  float deHeight = getGlobalHistDeHeight(mId);
+
+  int yOffset = 0;
+  // DE index within the chamber
+  int deId = de % 100;
+
+  int xId = getLR(de), yId = -1;
+
+  switch (deId) {
+    case 0:
+    case 1:
+      yId = 1;
+      break;
+    case 2:
+    case 3:
+      yId = 0;
+      break;
+  }
+
+  yId += yOffset;
+
+  xB0 = xNB0 = deWidth;
+
+  yB0 = yNB0 = deHeight;
+  yB0 += getNHistPerChamberY(mId) * deHeight;
+
+  int chamber = de / 100;
+  if ((chamber % 2) == 0) {
+    xB0 += getNHistPerChamberX(mId) * deWidth;
+    xNB0 += getNHistPerChamberX(mId) * deWidth;
+  }
+
+  int station = (de - 100) / 200 + 1;
+  if (de >= 300) {
+    xB0 += getNHistPerChamberX(mId) * deWidth * 2;
+    xNB0 += getNHistPerChamberX(mId) * deWidth * 2;
+  }
+
+  const o2::mch::mapping::Segmentation& segment = o2::mch::mapping::segmentation(de);
+  if ((&segment) == nullptr) {
+    return;
+  }
+  const o2::mch::mapping::CathodeSegmentation& csegment = segment.bending();
+  o2::mch::contour::Contour<double> envelop = o2::mch::mapping::getEnvelop(csegment);
+  std::vector<o2::mch::contour::Vertex<double>> vertices = envelop.getVertices();
+  o2::mch::contour::BBox<double> bbox = o2::mch::mapping::getBBox(csegment);
+}
+
 void GlobalHistogram::getDeCenterST3(int de, float& xB0, float& yB0, float& xNB0, float& yNB0)
 {
+  float deWidth = getGlobalHistDeWidth(mId);
+  float deHeight = getGlobalHistDeHeight(mId);
+
   int yOffset = 2;
   // DE index within the chamber
   int deId = de % 100;
@@ -570,18 +792,15 @@ void GlobalHistogram::getDeCenterST3(int de, float& xB0, float& yB0, float& xNB0
 
   yId += yOffset;
 
-  xB0 = xNB0 = DE_WIDTH * xId + DE_WIDTH / 2;
-  // xNB0 = DE_WIDTH * xId + DE_WIDTH * 2 + DE_WIDTH / 2;
+  xB0 = xNB0 = deWidth * xId + deWidth / 2;
 
-  yB0 = yNB0 = DE_HEIGHT * yId + DE_HEIGHT / 2;
-  yB0 += NYHIST_PER_CHAMBER * DE_HEIGHT;
+  yB0 = yNB0 = deHeight * yId + deHeight / 2;
+  yB0 += getNHistPerChamberY(mId) * deHeight;
 
   int chamber = de / 100;
   if ((chamber % 2) == 0) {
-    // yB0  += NYHIST_PER_CHAMBER * DE_HEIGHT;
-    // yNB0 += NYHIST_PER_CHAMBER * DE_HEIGHT;
-    xB0 += NXHIST_PER_CHAMBER * DE_WIDTH;
-    xNB0 += NXHIST_PER_CHAMBER * DE_WIDTH;
+    xB0 += getNHistPerChamberX(mId) * deWidth;
+    xNB0 += getNHistPerChamberX(mId) * deWidth;
   }
 
   const o2::mch::mapping::Segmentation& segment = o2::mch::mapping::segmentation(de);
@@ -592,7 +811,6 @@ void GlobalHistogram::getDeCenterST3(int de, float& xB0, float& yB0, float& xNB0
   o2::mch::contour::Contour<double> envelop = o2::mch::mapping::getEnvelop(csegment);
   std::vector<o2::mch::contour::Vertex<double>> vertices = envelop.getVertices();
   o2::mch::contour::BBox<double> bbox = o2::mch::mapping::getBBox(csegment);
-  // std::cout<<"DE "<<de<<"  BBOX "<<bbox<<std::endl;
 
   double xmax = bbox.xmax();
   if (xId == 0) {
@@ -617,6 +835,9 @@ void GlobalHistogram::getDeCenterST3(int de, float& xB0, float& yB0, float& xNB0
 
 void GlobalHistogram::getDeCenterST4(int de, float& xB0, float& yB0, float& xNB0, float& yNB0)
 {
+  float deWidth = getGlobalHistDeWidth(mId);
+  float deHeight = getGlobalHistDeHeight(mId);
+
   int yOffset = 0;
   // DE index within the chamber
   int deId = de % 100;
@@ -680,22 +901,15 @@ void GlobalHistogram::getDeCenterST4(int de, float& xB0, float& yB0, float& xNB0
 
   yId += yOffset;
 
-  xB0 = xNB0 = DE_WIDTH * xId + DE_WIDTH / 2 + NXHIST_PER_STATION * DE_WIDTH;
+  xB0 = xNB0 = deWidth * xId + deWidth / 2 + getNHistPerChamberX(mId) * 2 * deWidth;
 
-  // xB0  = DE_WIDTH * xId + DE_WIDTH / 2 + NXHIST_PER_STATION * DE_WIDTH;
-  // xNB0 = DE_WIDTH * xId + DE_WIDTH * 2 + DE_WIDTH / 2 + NXHIST_PER_STATION * DE_WIDTH;
-  // xB0  = DE_WIDTH * (2 * xId)     + DE_WIDTH / 2 + NXHIST_PER_CHAMBER * DE_WIDTH;
-  // xNB0 = DE_WIDTH * (2 * xId + 1) + DE_WIDTH / 2 + NXHIST_PER_CHAMBER * DE_WIDTH;
-
-  yB0 = yNB0 = DE_HEIGHT * yId + DE_HEIGHT / 2;
-  yB0 += NYHIST_PER_CHAMBER * DE_HEIGHT;
+  yB0 = yNB0 = deHeight * yId + deHeight / 2;
+  yB0 += getNHistPerChamberY(mId) * deHeight;
 
   int chamber = de / 100;
   if ((chamber % 2) == 0) {
-    // yB0  += NYHIST_PER_CHAMBER * DE_HEIGHT;
-    // yNB0 += NYHIST_PER_CHAMBER * DE_HEIGHT;
-    xB0 += NXHIST_PER_CHAMBER * DE_WIDTH;
-    xNB0 += NXHIST_PER_CHAMBER * DE_WIDTH;
+    xB0 += getNHistPerChamberX(mId) * deWidth;
+    xNB0 += getNHistPerChamberX(mId) * deWidth;
   }
 
   const o2::mch::mapping::Segmentation& segment = o2::mch::mapping::segmentation(de);
@@ -706,7 +920,6 @@ void GlobalHistogram::getDeCenterST4(int de, float& xB0, float& yB0, float& xNB0
   o2::mch::contour::Contour<double> envelop = o2::mch::mapping::getEnvelop(csegment);
   std::vector<o2::mch::contour::Vertex<double>> vertices = envelop.getVertices();
   o2::mch::contour::BBox<double> bbox = o2::mch::mapping::getBBox(csegment);
-  // std::cout<<"DE "<<de<<"  BBOX "<<bbox<<std::endl;
 
   double xmax = bbox.xmax();
   if (xId == 0) {
@@ -731,31 +944,35 @@ void GlobalHistogram::getDeCenterST4(int de, float& xB0, float& yB0, float& xNB0
 
 void GlobalHistogram::getDeCenterST5(int de, float& xB0, float& yB0, float& xNB0, float& yNB0)
 {
+  float deWidth = getGlobalHistDeWidth(mId);
+
   getDeCenterST4(de, xB0, yB0, xNB0, yNB0);
-  xB0 += NXHIST_PER_STATION * DE_WIDTH;
-  xNB0 += NXHIST_PER_STATION * DE_WIDTH;
+  xB0 += getNHistPerChamberX(mId) * 2 * deWidth;
+  xNB0 += getNHistPerChamberX(mId) * 2 * deWidth;
 }
 
-void GlobalHistogram::add(std::map<int, DetectorHistogram*>& histB, std::map<int, DetectorHistogram*>& histNB)
+void GlobalHistogram::add(std::map<int, std::shared_ptr<DetectorHistogram>>& histB, std::map<int, std::shared_ptr<DetectorHistogram>>& histNB)
 {
   set(histB, histNB, false);
 }
 
-void GlobalHistogram::set_includeNull(std::map<int, DetectorHistogram*>& histB, std::map<int, DetectorHistogram*>& histNB)
+void GlobalHistogram::set_includeNull(std::map<int, std::shared_ptr<DetectorHistogram>>& histB, std::map<int, std::shared_ptr<DetectorHistogram>>& histNB)
 {
   set(histB, histNB, true, true);
 }
 
-void GlobalHistogram::set(std::map<int, DetectorHistogram*>& histB, std::map<int, DetectorHistogram*>& histNB, bool doAverage, bool includeNullBins)
+void GlobalHistogram::set(std::map<int, std::shared_ptr<DetectorHistogram>>& histB, std::map<int, std::shared_ptr<DetectorHistogram>>& histNB, bool doAverage, bool includeNullBins)
 {
+  int deMin = (mId == 0) ? 100 : 500;
+  int deMax = (mId == 0) ? 403 : 1100;
+
   for (auto& ih : histB) {
     int de = ih.first;
-    // if (de != 819) continue;
-    if (de < 500)
+    if (de < deMin || de > deMax) {
       continue;
-    if (de >= 1100)
-      continue;
-    auto hB = ih.second;
+    }
+
+    auto hB = ih.second.get();
     if (!hB) {
       continue;
     }
@@ -766,7 +983,7 @@ void GlobalHistogram::set(std::map<int, DetectorHistogram*>& histB, std::map<int
     DetectorHistogram* hNB = nullptr;
     auto jh = histNB.find(de);
     if (jh != histNB.end()) {
-      hNB = jh->second;
+      hNB = jh->second.get();
     }
     if (!hNB) {
       continue;
@@ -784,9 +1001,6 @@ void GlobalHistogram::set(std::map<int, DetectorHistogram*>& histB, std::map<int
     float y0[2] = { yB0, yNB0 };
 
     const o2::mch::mapping::Segmentation& segment = o2::mch::mapping::segmentation(de);
-    if ((&segment) == nullptr) {
-      continue;
-    }
     const o2::mch::mapping::CathodeSegmentation& csegmentB = segment.bending();
     o2::mch::contour::BBox<double> bboxB = o2::mch::mapping::getBBox(csegmentB);
     o2::mch::contour::Contour<double> envelopB = o2::mch::mapping::getEnvelop(csegmentB);
@@ -799,6 +1013,22 @@ void GlobalHistogram::set(std::map<int, DetectorHistogram*>& histB, std::map<int
     float xMax[2] = { static_cast<float>(xB0 + bboxB.width() / 2), static_cast<float>(xNB0 + bboxNB.width() / 2) };
     float yMin[2] = { static_cast<float>(yB0 + bboxB.ymin()), static_cast<float>(yNB0 + bboxNB.ymin()) };
     float yMax[2] = { static_cast<float>(yB0 + bboxB.ymax()), static_cast<float>(yNB0 + bboxNB.ymax()) };
+
+    if (mId == 0) {
+      bool flipX = getDetectorFlipX(de);
+      bool flipY = getDetectorFlipY(de);
+      float shiftX = getDetectorShiftX(de);
+      float shiftY = getDetectorShiftY(de);
+      xMin[0] = flipX ? xB0 - 1.0 * (bboxB.width() + shiftX) : xB0 + shiftX;
+      xMin[1] = flipX ? xNB0 - 1.0 * (bboxNB.width() + shiftX) : xNB0 + shiftX;
+      xMax[0] = flipX ? xB0 - shiftX : (xB0 + bboxB.width() + shiftX);
+      xMax[1] = flipX ? xNB0 - shiftX : (xNB0 + bboxNB.width() + shiftX);
+
+      yMin[0] = flipY ? yB0 - 1.0 * (bboxB.height() + shiftY) : yB0 + shiftY;
+      yMin[1] = flipY ? yNB0 - 1.0 * (bboxNB.height() + shiftY) : yNB0 + shiftY;
+      yMax[0] = flipY ? yB0 - shiftY : (yB0 + bboxB.height() + shiftY);
+      yMax[1] = flipY ? yNB0 - shiftY : (yNB0 + bboxNB.height() + shiftY);
+    }
 
     float binWidthX = GetXaxis()->GetBinWidth(1);
     float binWidthY = GetYaxis()->GetBinWidth(1);

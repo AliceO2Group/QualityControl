@@ -31,7 +31,7 @@
         "dataSources": [
           {
             "type": "repository",
-            "path": "qc/TPC/MO/Clusters",
+            "path": "TPC/MO/Clusters",
             "names": [ "c_ROCs_N_Clusters_1D" ],
             "reductorName": "o2::quality_control_modules::tpc::TH1ReductorTPC",
             "axisDivision": [ [ "0.0", "100.0" ] ],

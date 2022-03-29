@@ -48,11 +48,13 @@ Quality CheckRawToT::check(std::map<std::string, std::shared_ptr<MonitorObject>>
     if (h->GetEntries() == 0) {
       result = Quality::Medium;
     } else {
-      const float timeMean = h->GetMean();
-      if ((timeMean > mMinRawToT) && (timeMean < mMaxRawToT)) {
+      mToTMean = h->GetMean();
+      mToTZeroMultIntegral = h->Integral(1, 1);
+      mToTIntegral = h->Integral(2, h->GetNbinsX());
+      if ((mToTMean > mMinRawToT) && (mToTMean < mMaxRawToT)) {
         result = Quality::Good;
       } else {
-        ILOG(Warning, Support) << Form("ToT mean = %5.2f ns", timeMean);
+        ILOG(Warning, Support) << Form("ToT mean = %5.2f ns", mToTMean);
         result = Quality::Bad;
       }
     }
@@ -70,14 +72,15 @@ void CheckRawToT::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
     if (!msg) {
       return;
     }
+    msg->AddText(Form("Mean value = %5.2f", mToTMean));
+    msg->AddText(Form("Allowed range: %3.1f-%3.1f ns", mMinRawToT, mMaxRawToT));
+    msg->AddText(Form("Orphan fraction = %5.2f%%", mToTZeroMultIntegral * 100. / mToTIntegral));
     if (checkResult == Quality::Good) {
-      msg->AddText("Mean inside limits: OK");
-      msg->AddText(Form("Allowed range: %3.1f-%3.1f ns", mMinRawToT, mMaxRawToT));
+      msg->AddText("OK!");
     } else if (checkResult == Quality::Bad) {
-      msg->AddText(Form("Mean outside limits (%3.1f-%3.1f ns)", mMinRawToT, mMaxRawToT));
-      msg->AddText("If NOT a technical run,");
       msg->AddText("call TOF on-call.");
     } else if (checkResult == Quality::Medium) {
+      msg->Clear();
       msg->AddText("No entries.");
     }
   } else {

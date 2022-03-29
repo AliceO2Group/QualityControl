@@ -45,7 +45,7 @@ void OutOfBunchCollTask::configure(std::string, const boost::property_tree::ptre
     mPathDigitQcTask = node.get_ptr()->get_child("").get_value<std::string>();
     ILOG(Info, Support) << "configure() : using pathDigitQcTask = \"" << mPathDigitQcTask << "\"" << ENDM;
   } else {
-    mPathDigitQcTask = "qc/FT0/MO/DigitQcTask/";
+    mPathDigitQcTask = "FT0/MO/DigitQcTask/";
     ILOG(Info, Support) << "configure() : using default pathDigitQcTask = \"" << mPathDigitQcTask << "\"" << ENDM;
   }
 
@@ -87,7 +87,7 @@ void OutOfBunchCollTask::initialize(Trigger, framework::ServiceRegistry& service
   getObjectsManager()->startPublishing(mHistBcPattern.get());
 }
 
-void OutOfBunchCollTask::update(Trigger, framework::ServiceRegistry&)
+void OutOfBunchCollTask::update(Trigger t, framework::ServiceRegistry&)
 {
   std::map<std::string, std::string> metadata;
   std::map<std::string, std::string> headers;
@@ -106,7 +106,7 @@ void OutOfBunchCollTask::update(Trigger, framework::ServiceRegistry&)
 
   for (auto& entry : mMapOutOfBunchColl) {
     auto moName = Form("BcOrbitMap_Trg%s", mMapDigitTrgNames.at(entry.first).c_str());
-    auto mo = mDatabase->retrieveMO(mPathDigitQcTask, moName);
+    auto mo = mDatabase->retrieveMO(mPathDigitQcTask, moName, t.timestamp, t.activity);
     auto hBcOrbitMapTrg = mo ? (TH2F*)mo->getObject() : nullptr;
     if (!hBcOrbitMapTrg) {
       ILOG(Error, Support) << "MO \"" << moName << "\" NOT retrieved!!!"
@@ -127,7 +127,7 @@ void OutOfBunchCollTask::update(Trigger, framework::ServiceRegistry&)
   }
 }
 
-void OutOfBunchCollTask::finalize(Trigger, framework::ServiceRegistry&)
+void OutOfBunchCollTask::finalize(Trigger t, framework::ServiceRegistry&)
 {
 }
 

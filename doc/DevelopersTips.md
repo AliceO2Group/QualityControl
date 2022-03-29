@@ -5,6 +5,7 @@ here. It is not sanitized or organized. Just a brain dump.
 
 ### Release procedure / check list
 
+
 One can use the script `release.sh` : 
 ```shell
 release.sh
@@ -289,3 +290,25 @@ Dload  Upload   Total   Spent    Left  Speed
 "165.132.27.119"
 "128.141.19.252"
 ```
+
+## ControlWorkflows
+
+### Parameter `qcConfiguration` in tasks
+
+This parameter is used to point to the config file in consul that should be loaded and passed to the task, check
+and aggregator runners upon the Start transition. It looks like:
+```
+qcConfiguration: "{{ ToPtree(GetConfig('qc/ANY/any/stfb_to_daqtask-cru-ctp2'), 'json') }}"
+```
+Typically a task gets a config file via the command line options which is used to prepare the workflow and then the 
+consul one is loaded, if available, when starting. 
+
+The reconfiguration is done only on devices that have the label `qc-reconfigurable` as defined in `Framework/Core/src/O2ControlLabels.cxx`, 
+i.e. `o2::framework::ecs::qcReconfigurable`. This is the case for Tasks, Checks and Aggregators runners. 
+
+A more complex example with dumping the payload for debugging:
+```
+qcConfiguration: {{ ToPtree(Dump(GetConfigLegacy('qc/ANY/any/stfb_to_daqtask-alio2-cr1-mvs03'), '/tmp/QcTaskPayload-' + environment_id + '.dump'), 'json') }}
+```
+
+Related issue: QC-310

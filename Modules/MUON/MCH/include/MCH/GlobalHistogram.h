@@ -54,6 +54,9 @@ class DetectorHistogram
   TH2F* getHist() { return mHist.first; }
 
  private:
+  void init();
+  void addContour();
+
   int mDeId{ 0 };
 
   TString mName;
@@ -65,30 +68,36 @@ class DetectorHistogram
   float mShiftX{ 0 };
   float mShiftY{ 0 };
 
-  void init();
-  void addContour();
+  float mHistWidth{ 0 };
+  float mHistHeight{ 0 };
 };
 
 class GlobalHistogram : public TH2F
 {
-  void getDeCenter(int de, float& xB0, float& yB0, float& xNB0, float& yNB0);
-  void getDeCenterST3(int de, float& xB0, float& yB0, float& xNB0, float& yNB0);
-  void getDeCenterST4(int de, float& xB0, float& yB0, float& xNB0, float& yNB0);
-  void getDeCenterST5(int de, float& xB0, float& yB0, float& xNB0, float& yNB0);
-
  public:
-  GlobalHistogram(std::string name, std::string title);
+  GlobalHistogram(std::string name, std::string title, int id = 0);
 
   void init();
 
   // add the histograms of the individual detection elements
-  void add(std::map<int, DetectorHistogram*>& histB, std::map<int, DetectorHistogram*>& histNB);
+  void add(std::map<int, std::shared_ptr<DetectorHistogram>>& histB, std::map<int, std::shared_ptr<DetectorHistogram>>& histNB);
 
   // replace the contents with the histograms of the individual detection elements, including null bins
-  void set_includeNull(std::map<int, DetectorHistogram*>& histB, std::map<int, DetectorHistogram*>& histNB);
+  void set_includeNull(std::map<int, std::shared_ptr<DetectorHistogram>>& histB, std::map<int, std::shared_ptr<DetectorHistogram>>& histNB);
 
   // replace the contents with the histograms of the individual detection elements
-  void set(std::map<int, DetectorHistogram*>& histB, std::map<int, DetectorHistogram*>& histNB, bool doAverage = true, bool includeNullBins = false);
+  void set(std::map<int, std::shared_ptr<DetectorHistogram>>& histB, std::map<int, std::shared_ptr<DetectorHistogram>>& histNB, bool doAverage = true, bool includeNullBins = false);
+
+ private:
+  void initST345();
+  void initST12();
+  void getDeCenter(int de, float& xB0, float& yB0, float& xNB0, float& yNB0);
+  void getDeCenterST12(int de, float& xB0, float& yB0, float& xNB0, float& yNB0);
+  void getDeCenterST3(int de, float& xB0, float& yB0, float& xNB0, float& yNB0);
+  void getDeCenterST4(int de, float& xB0, float& yB0, float& xNB0, float& yNB0);
+  void getDeCenterST5(int de, float& xB0, float& yB0, float& xNB0, float& yNB0);
+
+  int mId;
 };
 
 } // namespace muonchambers

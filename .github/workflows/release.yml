@@ -12,7 +12,7 @@ jobs:
       - run: |
           git config --global user.email ${{ secrets.GH_EMAIL }}
           git config --global user.name ${{ secrets.GH_USERNAME }}
-      - run: git clone git://github.com/${{ secrets.ORG }}/alidist
+      - run: git clone https://github.com/alisw/alidist.git
       - run: |
           cd alidist
           CURRENT_VERSION=`cat ${{ secrets.MODULE }}.sh | grep "tag:" | awk '{print $2}'`

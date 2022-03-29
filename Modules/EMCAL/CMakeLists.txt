@@ -34,7 +34,7 @@ install (
 )
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/EMCAL
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")
 
 # ---- Executables ----
 

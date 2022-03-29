@@ -45,7 +45,7 @@ install(TARGETS O2QcTOF
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/TOF
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")
 
 # ---- ROOT dictionary ----
 
@@ -115,6 +115,7 @@ install(FILES tofdigits.json
               tofMatchedTracks_ITSTPCTOF_TPCTOF_MC.json
               tofMatchedTracks_ITSTPCTOF_TPCTOF_direct.json
               tofMatchedTracks_ITSTPCTOF_TPCTOF_direct_MC.json
+              tofMatchedTracks_AllTypes_direct_MC.json
         DESTINATION etc)
 
 get_property(dirs

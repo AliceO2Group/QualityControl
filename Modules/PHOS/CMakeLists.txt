@@ -35,7 +35,7 @@ install (
 )
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/PHOS
-	DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+	DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")
 
 # ---- Executables ----
 

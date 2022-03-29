@@ -77,7 +77,7 @@ class TrendingTaskITSCluster : public PostProcessingInterface
     Int_t runNumber = 0;
   };
 
-  void trendValues(repository::DatabaseInterface& qcdb);
+  void trendValues(const Trigger& t, repository::DatabaseInterface& qcdb);
   void storePlots(repository::DatabaseInterface& qcdb);
   void storeTrend(repository::DatabaseInterface& qcdb);
 

@@ -34,7 +34,27 @@ using namespace std;
 namespace o2::quality_control_modules::mft
 {
 
-void QcMFTReadoutCheck::configure() {}
+void QcMFTReadoutCheck::configure()
+{
+
+  // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
+  if (auto param = mCustomParameters.find("FaultThreshold"); param != mCustomParameters.end()) {
+    ILOG(Info, Support) << "Custom parameter - FaultThreshold: " << param->second << ENDM;
+    mFaultThreshold = stoi(param->second);
+  }
+  if (auto param = mCustomParameters.find("ErrorThresholdMedium"); param != mCustomParameters.end()) {
+    ILOG(Info, Support) << "Custom parameter - ErrorThresholdMedium: " << param->second << ENDM;
+    mErrorThresholdMedium = stoi(param->second);
+  }
+  if (auto param = mCustomParameters.find("ErrorThresholdBad"); param != mCustomParameters.end()) {
+    ILOG(Info, Support) << "Custom parameter - ErrorThresholdBad: " << param->second << ENDM;
+    mErrorThresholdBad = stoi(param->second);
+  }
+  if (auto param = mCustomParameters.find("WarningThreshold"); param != mCustomParameters.end()) {
+    ILOG(Info, Support) << "Custom parameter - WarningThreshold: " << param->second << ENDM;
+    mWarningThreshold = stoi(param->second);
+  }
+}
 
 Quality QcMFTReadoutCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
@@ -75,6 +95,7 @@ Quality QcMFTReadoutCheck::check(std::map<std::string, std::shared_ptr<MonitorOb
       for (int iBin = 0; iBin < hFault->GetNbinsX(); iBin++) {
         if (hFault->GetBinContent(iBin + 1) != 0) {
           mVectorOfFaultBins.push_back(iBin + 1);
+          hFault->Fill(937); // number of chips with problem stored in the overflow bin
         }
         float num = hFault->GetBinContent(iBin + 1);
         float ratio = (den > 0) ? (num / den) : 0.0;
@@ -91,6 +112,7 @@ Quality QcMFTReadoutCheck::check(std::map<std::string, std::shared_ptr<MonitorOb
       for (int iBin = 0; iBin < hError->GetNbinsX(); iBin++) {
         if (hError->GetBinContent(iBin + 1) != 0) {
           mVectorOfErrorBins.push_back(iBin + 1);
+          hError->Fill(937); // number of chips with problem stored in the overflow bin
         }
         float num = hError->GetBinContent(iBin + 1);
         float ratio = (den > 0) ? (num / den) : 0.0;
@@ -107,6 +129,7 @@ Quality QcMFTReadoutCheck::check(std::map<std::string, std::shared_ptr<MonitorOb
       for (int iBin = 0; iBin < hWarning->GetNbinsX(); iBin++) {
         if (hWarning->GetBinContent(iBin + 1) != 0) {
           mVectorOfWarningBins.push_back(iBin + 1);
+          hWarning->Fill(937); // number of chips with problem stored in the overflow bin
         }
         float num = hWarning->GetBinContent(iBin + 1);
         float ratio = (den > 0) ? (num / den) : 0.0;
@@ -173,25 +196,25 @@ Quality QcMFTReadoutCheck::checkQualityStatus(TH1F* histo, std::vector<int>& vec
   Quality result = Quality::Good;
 
   if (strcmp(histo->GetName(), "mSummaryChipFault") == 0) {
-    if (vector.size() > 3)
+    if (vector.size() > mFaultThreshold)
       result = Quality::Bad;
-    if (vector.size() > 0 && vector.size() <= 3)
+    if (vector.size() > 0 && vector.size() <= mFaultThreshold)
       result = Quality::Medium;
     if (vector.size() == 0)
       result = Quality::Good;
   }
   if (strcmp(histo->GetName(), "mSummaryChipError") == 0) {
-    if (vector.size() > 20)
+    if (vector.size() > mErrorThresholdBad)
       result = Quality::Bad;
-    if (vector.size() > 9 && vector.size() <= 20)
+    if (vector.size() > mErrorThresholdMedium && vector.size() <= mErrorThresholdBad)
       result = Quality::Medium;
-    if (vector.size() <= 9)
+    if (vector.size() <= mErrorThresholdMedium)
       result = Quality::Good;
   }
   if (strcmp(histo->GetName(), "mSummaryChipWarning") == 0) {
-    if (vector.size() > 0)
+    if (vector.size() > mWarningThreshold)
       result = Quality::Bad;
-    if (vector.size() == 0)
+    if (vector.size() <= mWarningThreshold)
       result = Quality::Good;
   }
 
@@ -202,52 +225,51 @@ void QcMFTReadoutCheck::writeMessages(TH1F* histo, std::vector<int>& vector, Qua
 {
   if (checkResult == Quality::Good) {
     TLatex* tlGood;
+    histo->SetFillColor(kGreen + 2);
+    histo->SetLineColor(kGreen + 2);
     if (strcmp(histo->GetName(), "mSummaryChipFault") == 0)
-      tlGood = drawLatex(0.15, 0.85, kGreen + 2, "No chips in Fault.");
+      tlGood = drawLatex(0.15, 0.875, kGreen + 2, Form("%lu chips in Fault as expected. Quality is good.", vector.size()));
     if (strcmp(histo->GetName(), "mSummaryChipError") == 0)
-      tlGood = drawLatex(0.15, 0.85, kGreen + 2, Form("%lu chips in Error as expected. Quality is good.", vector.size()));
+      tlGood = drawLatex(0.15, 0.875, kGreen + 2, Form("%lu chips in Error as expected. Quality is good.", vector.size()));
     if (strcmp(histo->GetName(), "mSummaryChipWarning") == 0)
-      tlGood = drawLatex(0.15, 0.85, kGreen + 2, "No chips in Warning.");
+      tlGood = drawLatex(0.15, 0.875, kGreen + 2, Form("%lu chips in Warning as expected. Quality is good.", vector.size()));
     histo->GetListOfFunctions()->Add(tlGood);
     tlGood->Draw();
   } else if (checkResult == Quality::Medium) {
     histo->SetFillColor(kOrange + 7);
     histo->SetLineColor(kOrange + 7);
-    histo->SetMaximum(histo->GetMaximum() * (3.2 / 2.));
-
-    TLatex* tlMediumCount;
+    TLatex* tlMedium;
     if (strcmp(histo->GetName(), "mSummaryChipFault") == 0)
-      tlMediumCount = drawLatex(0.15, 0.875, kOrange + 7, Form("%lu chips in Fault. Inform the MFT oncall (via Mattermost during night).", vector.size()));
+      tlMedium = drawLatex(0.15, 0.875, kOrange + 7, Form("%lu chips in Fault. Inform the MFT oncall (via Mattermost during night).", vector.size()));
     if (strcmp(histo->GetName(), "mSummaryChipError") == 0)
-      tlMediumCount = drawLatex(0.15, 0.875, kOrange + 7, Form("%lu chips in Error. Inform the MFT oncall (via Mattermost during night).", vector.size()));
-    histo->GetListOfFunctions()->Add(tlMediumCount);
-    tlMediumCount->Draw();
-
-    int midBinIteration = (vector.size() < 10) ? vector.size() : 10;
-    for (int iBin = 0; iBin < midBinIteration; iBin++) {
-      TLatex* tlMedium = drawLatex(0.15, 0.85 - iBin * 0.025, kBlack, Form("%s", histo->GetXaxis()->GetBinLabel(vector[iBin])));
-      histo->GetListOfFunctions()->Add(tlMedium);
-      tlMedium->Draw();
-    }
-    int maxBinIteration = (vector.size() < 20) ? vector.size() : 20;
-    for (int iBin = midBinIteration; iBin < maxBinIteration; iBin++) {
-      TLatex* tlMedium = drawLatex(0.55, 0.85 - (iBin - midBinIteration) * 0.025, kBlack, Form("%s", histo->GetXaxis()->GetBinLabel(vector[iBin])));
-      histo->GetListOfFunctions()->Add(tlMedium);
-      tlMedium->Draw();
-    }
+      tlMedium = drawLatex(0.15, 0.875, kOrange + 7, Form("%lu chips in Error. Inform the MFT oncall (via Mattermost during night).", vector.size()));
+    histo->GetListOfFunctions()->Add(tlMedium);
+    tlMedium->Draw();
   } else if (checkResult == Quality::Bad) {
     histo->SetFillColor(kRed + 1);
     histo->SetLineColor(kRed + 1);
-    histo->SetMaximum(histo->GetMaximum() * (6. / 5.));
     TLatex* tlBad;
     if (strcmp(histo->GetName(), "mSummaryChipFault") == 0)
-      tlBad = drawLatex(0.15, 0.85, kRed + 1, Form("%lu chips in Fault. Inform the MFT oncall immediately!", vector.size()));
+      tlBad = drawLatex(0.15, 0.875, kRed + 1, Form("%lu chips in Fault. Inform the MFT oncall immediately!", vector.size()));
     if (strcmp(histo->GetName(), "mSummaryChipError") == 0)
-      tlBad = drawLatex(0.15, 0.85, kRed + 1, Form("%lu chips in Error. Inform the MFT oncall immediately!", vector.size()));
+      tlBad = drawLatex(0.15, 0.875, kRed + 1, Form("%lu chips in Error. Inform the MFT oncall immediately!", vector.size()));
     if (strcmp(histo->GetName(), "mSummaryChipWarning") == 0)
-      tlBad = drawLatex(0.15, 0.85, kRed + 1, Form("%lu chips in Warning. Inform the MFT oncall immediately!", vector.size()));
+      tlBad = drawLatex(0.15, 0.875, kRed + 1, Form("%lu chips in Warning. Inform the MFT oncall immediately!", vector.size()));
     histo->GetListOfFunctions()->Add(tlBad);
     tlBad->Draw();
+  }
+  histo->SetMaximum(histo->GetMaximum() * (3.2 / 2.));
+  int midBinIteration = (vector.size() < 10) ? vector.size() : 10;
+  for (int iBin = 0; iBin < midBinIteration; iBin++) {
+    TLatex* tlList = drawLatex(0.15, 0.85 - iBin * 0.025, kBlack, Form("%s", histo->GetXaxis()->GetBinLabel(vector[iBin])));
+    histo->GetListOfFunctions()->Add(tlList);
+    tlList->Draw();
+  }
+  int maxBinIteration = (vector.size() < 20) ? vector.size() : 20;
+  for (int iBin = midBinIteration; iBin < maxBinIteration; iBin++) {
+    TLatex* tlList = drawLatex(0.55, 0.85 - (iBin - midBinIteration) * 0.025, kBlack, Form("%s", histo->GetXaxis()->GetBinLabel(vector[iBin])));
+    histo->GetListOfFunctions()->Add(tlList);
+    tlList->Draw();
   }
 }
 

@@ -97,7 +97,9 @@ void RawQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mBusyRawLocalBoards->GetYaxis()->SetTitle("LocID in Crate");
   mBusyRawLocalBoards->SetOption("colz");
 
+
   mBCSize = new TH1F("BCSize", "Bunch Crossing Size", o2::constants::lhc::LHCMaxBunches, 0, o2::constants::lhc::LHCMaxBunches);
+
   mBCSize->GetXaxis()->SetTitle("BC");
   mBCSize->GetYaxis()->SetTitle("Entry");
 

@@ -87,7 +87,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info, Support) << "initialize DigitQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
   mStateLastIR2Ch = {};
-  //Not ready yet
+  // Not ready yet
   /*
   mMapChTrgNames.insert({ o2::fv0::ChannelData::kNumberADC, "NumberADC" });
   mMapChTrgNames.insert({ o2::fv0::ChannelData::kIsDoubleEvent, "IsDoubleEvent" });
@@ -197,8 +197,8 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistSumAmpC = std::make_unique<TH1F>("SumAmpC", "Sum of amplitudes(TCM), side C;", 1000, 0, 1e4);
   mHistAverageTimeA = std::make_unique<TH1F>("AverageTimeA", "Average time(TCM), side A", 4100, -2050, 2050);
   mHistAverageTimeC = std::make_unique<TH1F>("AverageTimeC", "Average time(TCM), side C", 4100, -2050, 2050);
-  //mHistTimeSum2Diff = std::make_unique<TH2F>("timeSumVsDiff", "time A/C side: sum VS diff;(TOC-TOA)/2 [ns];(TOA+TOC)/2 [ns]", 400, -52.08, 52.08, 400, -52.08, 52.08); // range of 52.08 ns = 4000*13.02ps = 4000 channels
-  //mHistTimeSum2Diff->SetOption("colz");
+  // mHistTimeSum2Diff = std::make_unique<TH2F>("timeSumVsDiff", "time A/C side: sum VS diff;(TOC-TOA)/2 [ns];(TOA+TOC)/2 [ns]", 400, -52.08, 52.08, 400, -52.08, 52.08); // range of 52.08 ns = 4000*13.02ps = 4000 channels
+  // mHistTimeSum2Diff->SetOption("colz");
   mHistChannelID = std::make_unique<TH1F>("StatChannelID", "ChannelID statistics;ChannelID", sNCHANNELS_PM, 0, sNCHANNELS_PM);
   mHistNumADC = std::make_unique<TH1F>("HistNumADC", "HistNumADC", sNCHANNELS_PM, 0, sNCHANNELS_PM);
   mHistNumCFD = std::make_unique<TH1F>("HistNumCFD", "HistNumCFD", sNCHANNELS_PM, 0, sNCHANNELS_PM);
@@ -238,7 +238,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     }
     if (pairHistBits.second) {
       mListHistGarbage->Add(pairHistBits.first->second);
-      //getObjectsManager()->startPublishing(pairHistBits.first->second); // TODO: why commented out
+      // getObjectsManager()->startPublishing(pairHistBits.first->second); // TODO: why commented out
     }
     if (pairHistAmpVsTime.second) {
       mListHistGarbage->Add(pairHistAmpVsTime.first->second);
@@ -253,18 +253,18 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mHistOrbit2BC.get());
   getObjectsManager()->startPublishing(mHistBC.get());
   getObjectsManager()->startPublishing(mHistEventDensity2Ch.get());
-  //getObjectsManager()->startPublishing(mHistChDataBits.get());
+  // getObjectsManager()->startPublishing(mHistChDataBits.get());
   getObjectsManager()->startPublishing(mHistTriggers.get());
   getObjectsManager()->startPublishing(mHistNchA.get());
-  //getObjectsManager()->startPublishing(mHistNchC.get());
+  // getObjectsManager()->startPublishing(mHistNchC.get());
   getObjectsManager()->startPublishing(mHistSumAmpA.get());
-  //getObjectsManager()->startPublishing(mHistSumAmpC.get());
-  //getObjectsManager()->startPublishing(mHistAverageTimeA.get());
-  //getObjectsManager()->startPublishing(mHistAverageTimeC.get());
+  // getObjectsManager()->startPublishing(mHistSumAmpC.get());
+  // getObjectsManager()->startPublishing(mHistAverageTimeA.get());
+  // getObjectsManager()->startPublishing(mHistAverageTimeC.get());
   getObjectsManager()->startPublishing(mHistChannelID.get());
   getObjectsManager()->startPublishing(mHistCFDEff.get());
   getObjectsManager()->startPublishing(mHistTriggersCorrelation.get());
-  //getObjectsManager()->startPublishing(mHistTimeSum2Diff.get());
+  // getObjectsManager()->startPublishing(mHistTimeSum2Diff.get());
   getObjectsManager()->startPublishing(mHistCycleDuration.get());
   getObjectsManager()->startPublishing(mHistCycleDurationNTF.get());
   getObjectsManager()->startPublishing(mHistCycleDurationRange.get());
@@ -291,7 +291,7 @@ void DigitQcTask::startOfActivity(Activity& activity)
   mHistNumADC->Reset();
   mHistNumCFD->Reset();
   mHistTriggersCorrelation->Reset();
-  //mHistTimeSum2Diff->Reset();
+  // mHistTimeSum2Diff->Reset();
   mHistCycleDuration->Reset();
   mHistCycleDurationNTF->Reset();
   mHistCycleDurationRange->Reset();
@@ -332,8 +332,8 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   mTfCounter++;
   auto channels = ctx.inputs().get<gsl::span<ChannelData>>("channels");
   auto digits = ctx.inputs().get<gsl::span<Digit>>("digits");
-  //bool isFirst = true;
-  //uint32_t firstOrbit;
+  // bool isFirst = true;
+  // uint32_t firstOrbit;
 
   for (auto& digit : digits) {
     const auto& vecChData = digit.getBunchChannelData(channels);
@@ -362,17 +362,17 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (digit.mTriggers.amplA == -5000 && digit.mTriggers.amplC == -5000 && digit.mTriggers.timeA == -5000 && digit.mTriggers.timeC == -5000)
       isTCM = false;
     */
-    mHistOrbit2BC->Fill(digit.getIntRecord().orbit % sOrbitsPerTF, digit.getIntRecord().bc);
+    mHistOrbit2BC->Fill(digit.getOrbit() % sOrbitsPerTF, digit.getBC());
     mHistBC->Fill(digit.getBC());
 
     if (isTCM && !digit.mTriggers.getLaserBit()) {
       mHistNchA->Fill(digit.mTriggers.nChanA);
-      //mHistNchC->Fill(digit.mTriggers.nChanC);
+      // mHistNchC->Fill(digit.mTriggers.nChanC);
       mHistSumAmpA->Fill(digit.mTriggers.amplA);
-      //mHistSumAmpC->Fill(digit.mTriggers.amplC);
+      // mHistSumAmpC->Fill(digit.mTriggers.amplC);
       mHistAverageTimeA->Fill(digit.mTriggers.timeA);
-      //mHistAverageTimeC->Fill(digit.mTriggers.timeC);
-      //mHistTimeSum2Diff->Fill((digit.mTriggers.timeC - digit.mTriggers.timeA) * mCFDChannel2NS / 2, (digit.mTriggers.timeC + digit.mTriggers.timeA) * mCFDChannel2NS / 2);
+      // mHistAverageTimeC->Fill(digit.mTriggers.timeC);
+      // mHistTimeSum2Diff->Fill((digit.mTriggers.timeC - digit.mTriggers.timeA) * mCFDChannel2NS / 2, (digit.mTriggers.timeC + digit.mTriggers.timeA) * mCFDChannel2NS / 2);
       for (const auto& entry : mMapDigitTrgNames) {
         if (digit.mTriggers.triggersignals & (1 << entry.first))
           mHistTriggers->Fill(static_cast<Double_t>(entry.first));
@@ -383,7 +383,7 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
       for (auto& entry : mMapTrgBcOrbit) {
         if (digit.mTriggers.triggersignals & (1 << entry.first)) {
-          entry.second->Fill(digit.getIntRecord().orbit % sOrbitsPerTF, digit.getIntRecord().bc);
+          entry.second->Fill(digit.getOrbit() % sOrbitsPerTF, digit.getBC());
         }
       }
     }
@@ -391,12 +391,12 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     for (auto& entry : mMapPmModuleChannels) {
       for (const auto& chData : vecChData) {
         if (std::find(entry.second.begin(), entry.second.end(), chData.ChId) != entry.second.end()) {
-          mMapPmModuleBcOrbit[entry.first]->Fill(digit.getIntRecord().orbit % sOrbitsPerTF, digit.getIntRecord().bc);
+          mMapPmModuleBcOrbit[entry.first]->Fill(digit.getOrbit() % sOrbitsPerTF, digit.getBC());
           break;
         }
       }
       if (entry.first == "TCM" && isTCM && (digit.getTriggers().triggersignals & (1 << sDataIsValidBitPos))) {
-        mMapPmModuleBcOrbit[entry.first]->Fill(digit.getIntRecord().orbit % sOrbitsPerTF, digit.getIntRecord().bc);
+        mMapPmModuleBcOrbit[entry.first]->Fill(digit.getOrbit() % sOrbitsPerTF, digit.getBC());
       }
     }
 
@@ -415,7 +415,7 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
         mMapHistAmpVsTime[chData.ChId]->Fill(chData.QTCAmpl, chData.CFDTime);
         /*
         for (const auto& entry : mMapChTrgNames) {
-          if ((chData.ChainQTC & (1 << entry.first))) {
+          if ((chData.QTCAmpl & (1 << entry.first))) {
             mMapHistPMbits[chData.ChId]->Fill(entry.first);
           }
         }
@@ -476,7 +476,7 @@ void DigitQcTask::reset()
   mHistNumADC->Reset();
   mHistNumCFD->Reset();
   mHistTriggersCorrelation->Reset();
-  //mHistTimeSum2Diff->Reset();
+  // mHistTimeSum2Diff->Reset();
   mHistCycleDuration->Reset();
   mHistCycleDurationNTF->Reset();
   mHistCycleDurationRange->Reset();

@@ -31,14 +31,14 @@
         "dataSources": [
           {
             "type": "repository",
-            "path": "qc/TST/TestTrendingTask",
+            "path": "TST/MO/TestTrendingTask",
             "name": "testHistoTrending",
             "reductorName": "o2::quality_control_modules::common::TH1Reductor",
             "moduleName": "QcCommon"
           },
           {
             "type": "repository-quality",
-            "path": "qc/checks/TST",
+            "path": "TST/QO",
             "names": [ "testTrendingTaskCheck" ],
             "reductorName": "o2::quality_control_modules::common::QualityReductor",
             "moduleName": "QcCommon"

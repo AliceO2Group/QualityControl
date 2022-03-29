@@ -20,13 +20,12 @@
 #include "QualityControl/CheckInterface.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
+#include "MCHRawCommon/DataFormats.h"
+#include "MCHRawElecMap/Mapper.h"
 
 namespace o2::quality_control_modules::muonchambers
 {
 
-/// \brief  Check whether a plot is empty or not.
-///
-/// \author Barthelemy von Haller
 class PedestalsCheck : public o2::quality_control::checker::CheckInterface
 {
  public:
@@ -41,16 +40,24 @@ class PedestalsCheck : public o2::quality_control::checker::CheckInterface
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
 
-  /// Minimum value for SAMPA pedestals
-  float minMCHpedestal;
-  /// Maximum value for SAMPA pedestals
-  float maxMCHpedestal;
-
  private:
-  /// Vector filled with DualSampas Ids that have been tested but sent back no data
-  std::vector<int> missing;
+  /// check if a given electronics channel is associated with a detector pad
+  bool checkPadMapping(uint16_t feeId, uint8_t linkId, uint8_t eLinkId, o2::mch::raw::DualSampaChannelId channel);
 
-  ClassDefOverride(PedestalsCheck, 2);
+  /// Minimum value for SAMPA pedestals
+  float mMinPedestal;
+  /// Maximum value for SAMPA pedestals
+  float mMaxPedestal;
+  /// Minimum fraction of good channels for "good" quality status
+  float mMinGoodFraction;
+
+  /// direct and inverse electronics and detector mappings
+  o2::mch::raw::Elec2DetMapper mElec2DetMapper;
+  o2::mch::raw::Det2ElecMapper mDet2ElecMapper;
+  o2::mch::raw::FeeLink2SolarMapper mFeeLink2SolarMapper;
+  o2::mch::raw::Solar2FeeLinkMapper mSolar2FeeLinkMapper;
+
+  ClassDefOverride(PedestalsCheck, 3);
 };
 
 } // namespace o2::quality_control_modules::muonchambers
