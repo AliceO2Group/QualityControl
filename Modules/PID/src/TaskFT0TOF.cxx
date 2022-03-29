@@ -10,7 +10,7 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   TaskPID.cxx
+/// \file   TaskFT0TOF.cxx
 /// \author Francesca Ercolessi
 /// \brief  Task to monitor TOF PID performance
 /// \since  13/01/2022
@@ -21,7 +21,7 @@
 #include <TH2.h>
 
 #include "QualityControl/QcInfoLogger.h"
-#include "TOF/TaskPID.h"
+#include "PID/TaskFT0TOF.h"
 #include <Framework/InputRecord.h>
 #include <Framework/InputRecordWalker.h>
 #include <Framework/InputSpec.h>
@@ -43,7 +43,7 @@
 
 using GTrackID = o2::dataformats::GlobalTrackID;
 
-namespace o2::quality_control_modules::tof
+namespace o2::quality_control_modules::pid
 {
 
 bool MyFilter(const MyTrack& tr)
@@ -51,7 +51,7 @@ bool MyFilter(const MyTrack& tr)
   return (tr.getP() < 2.0);
 }
 
-TaskPID::~TaskPID()
+TaskFT0TOF::~TaskFT0TOF()
 {
   // delete
   delete mHistDeltatPi;
@@ -67,7 +67,7 @@ TaskPID::~TaskPID()
   delete mHistT0ResEvTimeMult;
 }
 
-void TaskPID::initialize(o2::framework::InitContext& /*ctx*/)
+void TaskFT0TOF::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info, Support) << " Initializing... " << ENDM;
   // track selection
@@ -147,18 +147,18 @@ void TaskPID::initialize(o2::framework::InitContext& /*ctx*/)
   mDataRequest->requestTracks(mSrc, 0 /*mUseMC*/);
 }
 
-void TaskPID::startOfActivity(Activity& activity)
+void TaskFT0TOF::startOfActivity(Activity& activity)
 {
   ILOG(Info, Support) << "startOfActivity " << activity.mId << ENDM;
   reset();
 }
 
-void TaskPID::startOfCycle()
+void TaskFT0TOF::startOfCycle()
 {
   ILOG(Info, Support) << "startOfCycle" << ENDM;
 }
 
-void TaskPID::monitorData(o2::framework::ProcessingContext& ctx)
+void TaskFT0TOF::monitorData(o2::framework::ProcessingContext& ctx)
 {
   ++mTF;
   ILOG(Info, Support) << " Processing TF: " << mTF << ENDM;
@@ -220,18 +220,18 @@ void TaskPID::monitorData(o2::framework::ProcessingContext& ctx)
   return;
 }
 
-void TaskPID::endOfCycle()
+void TaskFT0TOF::endOfCycle()
 {
 
   ILOG(Info, Support) << "endOfCycle" << ENDM;
 }
 
-void TaskPID::endOfActivity(Activity& /*activity*/)
+void TaskFT0TOF::endOfActivity(Activity& /*activity*/)
 {
   ILOG(Info, Support) << "endOfActivity" << ENDM;
 }
 
-void TaskPID::reset()
+void TaskFT0TOF::reset()
 {
   // clean all the monitor objects here
   mHistDeltatPi->Reset();
@@ -247,7 +247,7 @@ void TaskPID::reset()
   mHistT0ResEvTimeMult->Reset();
 }
 
-void TaskPID::processEvent(const std::vector<MyTrack>& tracks)
+void TaskFT0TOF::processEvent(const std::vector<MyTrack>& tracks)
 {
 
   auto evtime = o2::tof::evTimeMaker<std::vector<MyTrack>, MyTrack, MyFilter>(tracks);
@@ -291,7 +291,7 @@ void TaskPID::processEvent(const std::vector<MyTrack>& tracks)
 
 //__________________________________________________________
 
-bool TaskPID::selectTrack(o2::tpc::TrackTPC const& track)
+bool TaskFT0TOF::selectTrack(o2::tpc::TrackTPC const& track)
 {
 
   if (track.getPt() < mMinPtCut) {
@@ -313,4 +313,4 @@ bool TaskPID::selectTrack(o2::tpc::TrackTPC const& track)
   return true;
 }
 
-} // namespace o2::quality_control_modules::tof
+} // namespace o2::quality_control_modules::pid
