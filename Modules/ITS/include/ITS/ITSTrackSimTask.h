@@ -105,10 +105,14 @@ class ITSTrackSimTask : public TaskInterface
   TH1F* hTrackImpactTransvFake;
   TH1F* hTrackImpactTransvValid;
 
-  std::string mRunNumber;
-  std::string mRunNumberPath;
-  std::string mMCKinePath;
+  TH1D* hPrimaryReco_pt;
+  TH1D* hPrimaryGen_pt;
+
+  TH2D* hAngularDistribution;
+
+  int mRunNumber = 0;
   std::string mO2GrpPath;
+  std::string mCollisionsContextPath;
 
   o2::its::GeometryTGeo* mGeom;
 
