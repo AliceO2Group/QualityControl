@@ -98,7 +98,6 @@ void DigitQcTaskLaser::initialize(o2::framework::InitContext& /*ctx*/)
   mMapChTrgNames.insert({ o2::fv0::ChannelData::kIsAmpHigh, "IsAmpHigh" });
   mMapChTrgNames.insert({ o2::fv0::ChannelData::kIsEventInTVDC, "IsEventInTVDC" });
   mMapChTrgNames.insert({ o2::fv0::ChannelData::kIsTimeInfoLost, "IsTimeInfoLost" });
-
   mMapDigitTrgNames.insert({ o2::fv0::Triggers::bitA, "OrA" });
   mMapDigitTrgNames.insert({ o2::fv0::Triggers::bitC, "OrC" });
   mMapDigitTrgNames.insert({ o2::fv0::Triggers::bitVertex, "Vertex" });
@@ -366,7 +365,7 @@ void DigitQcTaskLaser::monitorData(o2::framework::ProcessingContext& ctx)
     mHistOrbit2BC->Fill(digit.getOrbit() % sOrbitsPerTF, digit.getBC());
     mHistBC->Fill(digit.getBC());
 
-    if (isTCM && !digit.mTriggers.getLaserBit()) {
+    if (isTCM && digit.mTriggers.triggersignals & (1 << 6)) {
       mHistNchA->Fill(digit.mTriggers.nChanA);
       // mHistNchC->Fill(digit.mTriggers.nChanC);
       mHistSumAmpA->Fill(digit.mTriggers.amplA);

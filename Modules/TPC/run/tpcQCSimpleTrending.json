@@ -31,14 +31,14 @@
         "dataSources": [
           {
             "type": "repository",
-            "path": "qc/TPC/MO/PID",
+            "path": "TPC/MO/PID",
             "names": [ "hNClusters", "hPhi" ],
             "reductorName": "o2::quality_control_modules::common::TH1Reductor",
             "moduleName": "QcCommon"
           },
           {
             "type": "repository-quality",
-            "path": "qc/TPC/QO",
+            "path": "TPC/QO",
             "names": [ "PIDClusterCheck" ],
             "reductorName": "o2::quality_control_modules::common::QualityReductor",
             "moduleName": "QcCommon"
@@ -106,14 +106,14 @@
         "dataSources": [
           {
             "type": "repository",
-            "path": "qc/TPC/MO/Tracks",
+            "path": "TPC/MO/Tracks",
             "names": [ "hNClustersBeforeCuts" ],
             "reductorName": "o2::quality_control_modules::common::TH1Reductor",
             "moduleName": "QcCommon"
           },
           {
             "type": "repository-quality",
-            "path": "qc/TPC/QO",
+            "path": "TPC/QO",
             "names": [ "TrackClusterCheck" ],
             "reductorName": "o2::quality_control_modules::common::QualityReductor",
             "moduleName": "QcCommon"

@@ -84,11 +84,11 @@ TriggerFcn EndOfFill(const core::Activity& = {});
 /// \brief Triggers when a period of time passes
 TriggerFcn Periodic(double seconds, const core::Activity& = {});
 /// \brief Triggers when it detect a new object in QC repository with given name
-TriggerFcn NewObject(std::string databaseUrl, std::string objectPath, const core::Activity& = {});
+TriggerFcn NewObject(std::string databaseUrl, std::string databaseType, std::string objectPath, const core::Activity& = {});
 /// \brief Triggers for each object version in the path which match the activity. It retrieves the available list only once!
-TriggerFcn ForEachObject(std::string databaseUrl, std::string objectPath, const core::Activity& = {});
+TriggerFcn ForEachObject(std::string databaseUrl, std::string databaseType, std::string objectPath, const core::Activity& = {});
 /// \brief Triggers for the latest object version for each distinct activity. It retrieves the available list only once!
-TriggerFcn ForEachLatest(std::string databaseUrl, std::string objectPath, const core::Activity& = {});
+TriggerFcn ForEachLatest(std::string databaseUrl, std::string databaseType, std::string objectPath, const core::Activity& = {});
 /// \brief Triggers only first time it is executed
 TriggerFcn Once(const core::Activity& = {});
 /// \brief Triggers always

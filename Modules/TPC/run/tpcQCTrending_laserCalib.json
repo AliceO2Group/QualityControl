@@ -31,7 +31,7 @@
         "dataSources": [
           {
             "type": "repository",
-            "path": "qc/TPC/MO/LaserCalibration",
+            "path": "TPC/MO/LaserCalibration",
             "name": "Calib_Values",
             "reductorName": "o2::quality_control_modules::tpc::LtrCalibReductor",
             "moduleName": "QcTPC"

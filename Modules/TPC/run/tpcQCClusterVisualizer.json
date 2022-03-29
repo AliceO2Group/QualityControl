@@ -62,15 +62,15 @@
           { "Time_Bin" :   [ "1000", "0", "100000" ] }
         ],
         "path_comment": "This is the path of the ClustersData object that shall be visualized.",
-        "path": "qc/TPC/MO/Clusters/ClusterData",
+        "path": "TPC/MO/Clusters/ClusterData",
         "dataType_comment": "This is the switch for 'RawDigits' or 'Clusters' task. Choose 'raw' or 'clusters'.",
         "dataType": "clusters",
         "initTrigger": [
           "once"
         ],
-        "updateTrigger_comment": "To trigger on a specific file being updated, use e.g. 'newobject:ccdb:TPC/Calib/Noise'",
+        "updateTrigger_comment": "To trigger on a specific file being updated, use e.g. 'newobject:qcdb:TPC/Calib/Noise'",
         "updateTrigger": [
-          "newobject:ccdb:qc/TPC/MO/Clusters/ClusterData"
+          "newobject:qcdb:TPC/MO/Clusters/ClusterData"
         ],
         "stopTrigger": [
           "userorcontrol"
