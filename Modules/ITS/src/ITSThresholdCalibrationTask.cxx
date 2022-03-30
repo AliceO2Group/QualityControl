@@ -206,7 +206,7 @@ ITSThresholdCalibrationTask::CalibrationResStruct ITSThresholdCalibrationTask::C
         result.status = std::stod(data);
       } else if (name == "Noise") {
         result.Noise = std::stof(data);
-      } else if (name == "NoiseRMS") {
+      } else if (name == "NoiseRms") {
         result.NoiseRMS = std::stof(data);
       } else if (name == "ITHR") {
         result.ITHR = std::stof(data);
