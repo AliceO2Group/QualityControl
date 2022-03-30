@@ -21,7 +21,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int, extra_params: Dict[str, st
     This is the rule we use in production for the objects that need to be migrated.
 
     What it does:
-      - Versions without run number -> delete after the `delay`
+      - Versions without run number -> delete after the `delay` if the extra flag delete_when_no_run is not present
          - (The run number is set in "RunNumber" metadata)
       - For a given run
          - Keep everything for 30 minutes (configurable: delay_first_trimming)
@@ -35,11 +35,12 @@ def process(ccdb: Ccdb, object_path: str, delay: int, extra_params: Dict[str, st
       - period_btw_versions_first: Period in minutes between the versions we will keep after first trimming. (default: 10)
       - delay_final_trimming: Delay in minutes, counted from the EOR, before we do the final cleanup and mark for migration. (default: 180)
       - period_btw_versions_final: Period in minutes between the versions we will migrate. (default: 60)
+      - delete_when_no_run: delete the objects after the delay if they don't have a run associated with them. (default: false).
 
     Implementation :
       - Go through all objects:
          - if a run is set, add the object to the corresponding map element.
-         - if not, if the delay has passed, delete.
+         - if not, if the delay has passed and delete_when_no_run is true, delete.
       - Go through the map: for each run
          - Check if run has finished and get the time of EOR if so.
          - if run is over for more than 3 hours
@@ -74,6 +75,8 @@ def process(ccdb: Ccdb, object_path: str, delay: int, extra_params: Dict[str, st
     logging.debug(f"delay_final_trimming : {delay_final_trimming}")
     period_btw_versions_final = int(extra_params.get("period_btw_versions_final", 60))
     logging.debug(f"period_btw_versions_final : {period_btw_versions_final}")
+    delete_when_no_run = (extra_params.get("delete_when_no_run", False) is True)
+    logging.debug(f"delete_when_no_run : {delete_when_no_run}")
 
     # Find all the runs and group the versions
     versions = ccdb.getVersionsList(object_path)
@@ -89,7 +92,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int, extra_params: Dict[str, st
     # Versions without runs: spare if more recent than the delay
     logging.debug(f"Eliminating versions without runs if older than the grace period")
     for run_version in runs_dict[-1]:
-        if in_grace_period(run_version, delay):
+        if not delete_when_no_run or in_grace_period(run_version, delay):
             preservation_list.append(run_version)
         else:
             logging.debug(f"   delete {run_version}")
@@ -100,6 +103,8 @@ def process(ccdb: Ccdb, object_path: str, delay: int, extra_params: Dict[str, st
     # For each run
     logging.debug(f"Trimming the versions with a run number")
     for run, run_versions in runs_dict.items():
+        if run == -1:
+            continue
         logging.debug(f"   Processing run {run}")
         # TODO get the EOR if it happened, meanwhile we use `eor_dict` or compute first object time + 15 hours
         eor = eor_dict.get(int(run), run_versions[0].validFromAsDt + timedelta(hours=15))
