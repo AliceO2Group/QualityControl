@@ -77,6 +77,17 @@ void ITSTPCMatchingTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoChi2Matching());
   getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoChi2Refit());
   getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoTimeResVsPt());
+  getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPhi());
+  getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPhiTPC());
+  getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatchPhi());
+  if (mMatchITSTPCQC.getUseMC()) {
+    getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPtPhysPrim());
+    getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPtTPCPhysPrim());
+    getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatchPhysPrim());
+    getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPhiPhysPrim());
+    getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPhiTPCPhysPrim());
+    getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatchPhiPhysPrim());
+  }
 }
 
 void ITSTPCMatchingTask::startOfActivity(Activity& activity)
