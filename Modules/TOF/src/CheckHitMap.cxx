@@ -26,7 +26,6 @@ namespace o2::quality_control_modules::tof
 
 void CheckHitMap::configure()
 {
-  mPhosModuleMessage.configure(13.f, 38.f, 16.f, 53.f); // Values corresponding to the PHOS hole
   mPhosModuleMessage.configureEnabledFlag(mCustomParameters);
   mShifterMessages.configure(mCustomParameters);
 }
@@ -37,9 +36,13 @@ Quality CheckHitMap::check(std::map<std::string, std::shared_ptr<MonitorObject>>
   Quality result = Quality::Null;
 
   for (auto& [moName, mo] : *moMap) {
-    (void)moName;
-    if (mo->getName() == "TOFRawHitMap") {
-      auto* h = dynamic_cast<TH1I*>(mo->getObject());
+    if (!isObjectCheckable(mo)) {
+      ILOG(Error, Support) << "Cannot check MO " << mo->getName() << " " << moName << " which is not of type " << getAcceptedType() << ENDM;
+      continue;
+    }
+    ILOG(Debug, Devel) << "Checking " << mo->getName() << ENDM;
+    if (mo->getName() == "HitMap") {
+      const auto* h = static_cast<TH2F*>(mo->getObject());
       if (h->GetEntries() == 0) { // Histogram is empty
         result = Quality::Medium;
         mShifterMessages.AddMessage("No counts!");
@@ -50,20 +53,24 @@ Quality CheckHitMap::check(std::map<std::string, std::shared_ptr<MonitorObject>>
   return result;
 }
 
-std::string CheckHitMap::getAcceptedType() { return "TH2F"; }
-
 void CheckHitMap::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
+  ILOG(Debug, Devel) << "Beautifying " << mo->getName() << ENDM;
+  if (!isObjectCheckable(mo)) {
+    ILOG(Error, Support) << "Cannot beautify MO " << mo->getName() << " which is not of type " << getAcceptedType() << ENDM;
+    return;
+  }
   if (mo->getName() == "TOFRawHitMap") {
-    auto* h = dynamic_cast<TH2F*>(mo->getObject());
+    auto* h = static_cast<TH2F*>(mo->getObject());
     // auto msg = mShifterMessages.MakeMessagePad(h, checkResult);
     // if (!msg) {
     //   return;
     // }
-    auto msgPhos = mPhosModuleMessage.MakeMessagePad(h, checkResult, "bl");
+    auto msgPhos = mPhosModuleMessage.MakeMessagePad(h, Quality::Good, "bl");
     if (!msgPhos) {
       return;
     }
+    msgPhos->SetFillStyle(3004);
     msgPhos->AddText("PHOS");
     // if (checkResult == Quality::Good) {
     //   msg->AddText(Form("Mean value = %5.2f", mRawHitsMean));
@@ -77,7 +84,8 @@ void CheckHitMap::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
     //   msg->AddText("IF TOF IN RUN email TOF on-call.");
     // }
   } else {
-    ILOG(Error, Support) << "Did not get correct histo from " << mo->GetName();
+    ILOG(Error, Support) << "Did not get correct histo from " << mo->GetName() << ENDM;
+    return;
   }
 }
 

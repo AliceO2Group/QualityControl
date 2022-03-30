@@ -11,8 +11,8 @@
 
 ///
 /// \file   CheckRawTime.cxx
-/// \author Nicolo' Jacazio
-/// \brief  Checker for TOF Raw data on time distributions
+/// \author Nicolò Jacazio <nicolo.jacazio@cern.ch>
+/// \brief  Checker for the meassured time obtained with the TaskDigits
 ///
 
 // QC
@@ -40,28 +40,36 @@ void CheckRawTime::configure()
 
 Quality CheckRawTime::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
-  auto mo = moMap->begin()->second;
+
   Quality result = Quality::Null;
 
-  if (mo->getName().find("RawsTime") != std::string::npos) {
-    auto* h = dynamic_cast<TH1F*>(mo->getObject());
-    if (h->GetEntries() == 0) {
-      result = Quality::Medium;
-    } else {
-      mRawTimeMean = h->GetMean();
-      const Int_t lowBinId = h->GetXaxis()->FindBin(mMinRawTime);
-      const Int_t highBinId = h->GetXaxis()->FindBin(mMaxRawTime);
-      mRawTimePeakIntegral = h->Integral(lowBinId, highBinId);
-      mRawTimeIntegral = h->Integral(1, h->GetNbinsX());
-      if ((mRawTimeMean > mMinRawTime) && (mRawTimeMean < mMaxRawTime)) {
-        result = Quality::Good;
+  for (auto& [moName, mo] : *moMap) {
+    if (!isObjectCheckable(mo)) {
+      ILOG(Error, Support) << "Cannot check MO " << mo->getName() << " " << moName << " which is not of type " << getAcceptedType() << ENDM;
+      continue;
+    }
+    ILOG(Debug, Devel) << "Checking " << mo->getName() << ENDM;
+
+    if (mo->getName().find("Time/") != std::string::npos) {
+      auto* h = static_cast<TH1F*>(mo->getObject());
+      if (h->GetEntries() == 0) {
+        result = Quality::Medium;
       } else {
-        if (mRawTimePeakIntegral / mRawTimeIntegral > mMinPeakRatioIntegral) {
-          ILOG(Warning, Support) << Form("Raw time: peak/total integral = %5.2f, mean = %5.2f ns -> Check filling scheme...", mRawTimePeakIntegral / mRawTimeIntegral, mRawTimeMean);
-          result = Quality::Medium;
+        mRawTimeMean = h->GetMean();
+        const Int_t lowBinId = h->GetXaxis()->FindBin(mMinRawTime);
+        const Int_t highBinId = h->GetXaxis()->FindBin(mMaxRawTime);
+        mRawTimePeakIntegral = h->Integral(lowBinId, highBinId);
+        mRawTimeIntegral = h->Integral(1, h->GetNbinsX());
+        if ((mRawTimeMean > mMinRawTime) && (mRawTimeMean < mMaxRawTime)) {
+          result = Quality::Good;
         } else {
-          ILOG(Warning, Support) << Form("Raw time peak/total integral = %5.2f, mean = %5.2f ns", mRawTimePeakIntegral / mRawTimeIntegral, mRawTimeMean);
-          result = Quality::Bad;
+          if (mRawTimePeakIntegral / mRawTimeIntegral > mMinPeakRatioIntegral) {
+            ILOG(Warning, Support) << Form("Raw time: peak/total integral = %5.2f, mean = %5.2f ns -> Check filling scheme...", mRawTimePeakIntegral / mRawTimeIntegral, mRawTimeMean);
+            result = Quality::Medium;
+          } else {
+            ILOG(Warning, Support) << Form("Raw time peak/total integral = %5.2f, mean = %5.2f ns", mRawTimePeakIntegral / mRawTimeIntegral, mRawTimeMean);
+            result = Quality::Bad;
+          }
         }
       }
     }
@@ -69,12 +77,15 @@ Quality CheckRawTime::check(std::map<std::string, std::shared_ptr<MonitorObject>
   return result;
 }
 
-std::string CheckRawTime::getAcceptedType() { return "TH1"; }
-
 void CheckRawTime::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  if (mo->getName().find("RawsTime") != std::string::npos) {
-    auto* h = dynamic_cast<TH1F*>(mo->getObject());
+  ILOG(Debug, Devel) << "Beautifying " << mo->getName() << ENDM;
+  if (!isObjectCheckable(mo)) {
+    ILOG(Error, Support) << "Cannot beautify MO " << mo->getName() << " which is not of type " << getAcceptedType() << ENDM;
+    return;
+  }
+  if (mo->getName().find("Time/") != std::string::npos) {
+    auto* h = static_cast<TH1F*>(mo->getObject());
     auto msg = mShifterMessages.MakeMessagePad(h, checkResult);
     if (!msg) {
       return;
@@ -98,7 +109,8 @@ void CheckRawTime::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResu
       // text->SetFillColor(kYellow);
     }
   } else {
-    ILOG(Error, Support) << "Did not get correct histo from " << mo->GetName();
+    ILOG(Error, Support) << "Did not get correct histo from " << mo->GetName() << ENDM;
+    return;
   }
 }
 

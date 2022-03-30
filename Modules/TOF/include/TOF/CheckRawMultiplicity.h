@@ -11,8 +11,8 @@
 
 ///
 /// \file   CheckRawMultiplicity.h
-/// \author Nicolo' Jacazio
-/// \brief  Checker for the raw hit multiplicity obtained with the TaskDigits
+/// \author Nicolò Jacazio <nicolo.jacazio@cern.ch>
+/// \brief  Checker for the hit multiplicity obtained with the TaskDigits
 ///
 
 #ifndef QC_MODULE_TOF_TOFCHECKRAWSMULTI_H
@@ -24,9 +24,6 @@
 namespace o2::quality_control_modules::tof
 {
 
-/// \brief  Check whether a plot is empty or not.
-///
-/// \author Nicolo' Jacazio
 class CheckRawMultiplicity : public o2::quality_control::checker::CheckInterface
 {
  public:
@@ -39,7 +36,7 @@ class CheckRawMultiplicity : public o2::quality_control::checker::CheckInterface
   void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult) override;
-  std::string getAcceptedType() override;
+  std::string getAcceptedType() override { return "TH1I"; }
 
   /// Running modes available
   static constexpr int kModeCollisions = 0; /// Standard running mode with collisions
@@ -59,14 +56,6 @@ class CheckRawMultiplicity : public o2::quality_control::checker::CheckInterface
   float mMaxFractAtLowMult = 0.75;
 
   // User variables
-  /// Mean of the TOF hit multiplicity histogram
-  float mRawHitsMean = 0.f;
-  /// Number of events with 0 TOF hits
-  float mRawHitsZeroMultIntegral = 0.f;
-  /// Number of events with low TOF hits multiplicity
-  float mRawHitsLowMultIntegral = 0.f;
-  /// Number of events with TOF hits multiplicity > 0
-  float mRawHitsIntegral = 0.f;
   /// Messages to print on the output PAD
   MessagePad mShifterMessages;
 

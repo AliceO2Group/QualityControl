@@ -21,6 +21,7 @@
 
 // QC includes
 #include "QualityControl/Quality.h"
+#include "QualityControl/QcInfoLogger.h"
 
 // ROOT includes
 #include "TPaveText.h"
@@ -39,36 +40,51 @@ struct MessagePad {
   std::vector<std::string> mMessages{}; /// Message to print on the pad, this is reset at each call of MakeMessagePad
   TPaveText* mMessagePad = nullptr;     /// Text pad with the messages
   int mEnabledFlag = 1;                 /// Flag to enable or disable the pad
+  const std::string mName = "";         /// Name of the message pad, can be used to identify the pad if multiple are used
 
-  /// Function configure the message pad
+  MessagePad(const std::string name = "",
+             const float padLowX = 0.6, const float padLowY = 0.5,
+             const float padHighX = 0.9, const float padHighY = 0.75) : mName(name)
+  {
+    ILOG(Info, Support) << "Making new message pad " << mName << ", " << mPadLowX << padLowY << ", " << padHighX << ", " << padHighY << ENDM;
+    setPosition(padLowX, padLowY, padHighX, padHighY);
+  }
+
+  /// Function configure the message pad based on the input configuration
   template <typename T>
   void configure(const T& CustomParameters)
   {
-    if (auto param = CustomParameters.find("PadLowX"); param != CustomParameters.end()) {
+    if (auto param = CustomParameters.find(mName + "PadLowX"); param != CustomParameters.end()) {
       mPadLowX = ::atof(param->second.c_str());
+      ILOG(Info, Support) << "Setting message pad " << mName << " mPadLowX to " << mPadLowX << ENDM;
     }
-    if (auto param = CustomParameters.find("PadLowY"); param != CustomParameters.end()) {
+    if (auto param = CustomParameters.find(mName + "PadLowY"); param != CustomParameters.end()) {
       mPadLowY = ::atof(param->second.c_str());
+      ILOG(Info, Support) << "Setting message pad " << mName << " mPadLowY to " << mPadLowY << ENDM;
     }
-    if (auto param = CustomParameters.find("PadHighX"); param != CustomParameters.end()) {
+    if (auto param = CustomParameters.find(mName + "PadHighX"); param != CustomParameters.end()) {
       mPadHighX = ::atof(param->second.c_str());
+      ILOG(Info, Support) << "Setting message pad " << mName << " mPadHighX to " << mPadHighX << ENDM;
     }
-    if (auto param = CustomParameters.find("PadHighY"); param != CustomParameters.end()) {
+    if (auto param = CustomParameters.find(mName + "PadHighY"); param != CustomParameters.end()) {
       mPadHighY = ::atof(param->second.c_str());
+      ILOG(Info, Support) << "Setting message pad " << mName << " mPadHighY to " << mPadHighY << ENDM;
     }
     configureEnabledFlag(CustomParameters);
   }
 
+  /// Function to set the enabled flag based on the input configuration
   template <typename T>
   void configureEnabledFlag(const T& CustomParameters)
   {
-    if (auto param = CustomParameters.find("EnabledFlag"); param != CustomParameters.end()) {
+    if (auto param = CustomParameters.find(mName + "EnabledFlag"); param != CustomParameters.end()) {
       mEnabledFlag = ::atoi(param->second.c_str());
+      ILOG(Info, Support) << "Setting message pad " << mName << " mEnabledFlag to " << mEnabledFlag << ENDM;
     }
   }
 
-  /// Function configure the message pad
-  void configure(const float& padLowX, const float& padLowY, const float& padHighX, const float& padHighY)
+  /// Function configure the message pad position
+  void setPosition(const float& padLowX, const float& padLowY, const float& padHighX, const float& padHighY)
   {
     mPadLowX = padLowX;
     mPadLowY = padLowY;
@@ -91,8 +107,10 @@ struct MessagePad {
   {
     if (!mEnabledFlag) {
       mMessages.clear();
+      ILOG(Info, Devel) << "Message pad " << mName << " is disabled" << ENDM;
       return nullptr;
     }
+    ILOG(Info, Devel) << "Message pad " << mName << " is enabled" << ENDM;
 
     mMessagePad = new TPaveText(mPadLowX, mPadLowY, mPadHighX, mPadHighY, padOpt);
     mMessagePad->SetName(Form("%s_msg", histogram->GetName()));

@@ -11,7 +11,7 @@
 
 ///
 /// \file   TaskDigits.h
-/// \author Nicolo' Jacazio
+/// \author Nicolò Jacazio <nicolo.jacazio@cern.ch>
 /// \brief  Task to monitor quantities in TOF digits in both data and MC
 ///
 
@@ -27,6 +27,7 @@ class TH1F;
 class TH2F;
 class TH1I;
 class TH2I;
+class TProfile;
 class TProfile2D;
 
 using namespace o2::quality_control::core;
@@ -34,8 +35,8 @@ using namespace o2::quality_control::core;
 namespace o2::quality_control_modules::tof
 {
 
-/// \brief TOF Quality Control DPL Task
-/// \author Nicolo' Jacazio
+/// \brief TOF Quality Control DPL Task for digits. Monitoring multiplicity, time, ToT and readout errors
+/// \author Nicolò Jacazio <nicolo.jacazio@cern.ch>
 class TaskDigits final : public TaskInterface
 {
  public:
@@ -53,54 +54,81 @@ class TaskDigits final : public TaskInterface
   void endOfActivity(Activity& activity) override;
   void reset() override;
 
-  int fgNbinsMultiplicity = 2000;                        /// Number of bins in multiplicity plot
-  static constexpr int fgRangeMinMultiplicity = 0;       /// Min range in multiplicity plot
-  int fgRangeMaxMultiplicity = fgNbinsMultiplicity;      /// Max range in multiplicity plot
-  int fgNbinsTime = 300;                                 /// Number of bins in time plot
-  float fgkNbinsWidthTime = 2.44;                        /// Width of bins in time plot
-  float fgRangeMinTime = 0.f;                            /// Range min in time plot
-  float fgRangeMaxTime = o2::constants::lhc::LHCOrbitNS; /// Range max in time plot
-  int fgNbinsToT = 100;                                  /// Number of bins in ToT plot
-  float fgRangeMinToT = 0;                               /// Range min in ToT plot
-  float fgRangeMaxToT = 48.8;                            /// Range max in ToT plot
-  bool fgDiagnostic = false;                             /// enable diagnostic plots
-  bool fgPerChannel = false;                             /// enable per channel plots
-
  private:
+  ////////////////////////
+  // Histogram binnings //
+  ////////////////////////
+
+  // Orbit
+  static constexpr int mBinsOrbitId = 1024;        /// Number of bins for the orbitID axis
+  static constexpr int mRangeMaxOrbitId = 1048576; /// Max range in the orbitID axis
+  // BC
+  static constexpr int mBinsBC = 594;                                     /// Number of bins for the BC axis
+  static constexpr float mRangeMaxBC = o2::constants::lhc::LHCMaxBunches; /// Max range in the BC axis
+  // Event counter
+  static constexpr int mBinsEventCounter = 1000;                  /// Number of bins for the EventCounter axis
+  static constexpr int mRangeMaxEventCounter = mBinsEventCounter; /// Max range in the EventCounter axis
+  // Orbit in the Time Frame
+  static constexpr int mRangeMaxOrbitPerTimeFrame = 256;                        /// Number of bins for the OrbitPerTimeFrame axis.
+  static constexpr int mBinsOrbitPerTimeFrame = mRangeMaxOrbitPerTimeFrame * 3; /// Max range in the OrbitPerTimeFrame axis. 3 orbits are recorded per time frame
+  // Multiplicity
+  int mBinsMultiplicity = 2000;                   /// Number of bins in multiplicity plot
+  static constexpr int mRangeMinMultiplicity = 0; /// Min range in multiplicity plot
+  int mRangeMaxMultiplicity = mBinsMultiplicity;  /// Max range in multiplicity plot
+  // Time
+  int mBinsTime = 300;                                  /// Number of bins in time plot
+  float fgkNbinsWidthTime = 2.44;                       /// Width of bins in time plot
+  float mRangeMinTime = 0.f;                            /// Range min in time plot
+  float mRangeMaxTime = o2::constants::lhc::LHCOrbitNS; /// Range max in time plot
+  // ToT
+  int mBinsToT = 100;        /// Number of bins in ToT plot
+  float mRangeMinToT = 0;    /// Range min in ToT plot
+  float mRangeMaxToT = 48.8; /// Range max in ToT plot
+
+  ///////////
+  // Flags //
+  ///////////
+
+  bool mFlagEnableDiagnostic = false;       /// Flag to enable or disable diagnostic plots
+  bool mFlagEnableOrphanPerChannel = false; /// Flag to enable the histogram of the orphan counter per channel
+  ////////////////
+  // Histograms //
+  ////////////////
+
   // Event info
-  std::shared_ptr<TH2F> mOrbitID = nullptr;        /// Orbits seen
-  std::shared_ptr<TH2F> mTimeBC = nullptr;         /// Bunch crossings seen
-  std::shared_ptr<TH2F> mEventCounter = nullptr;   /// Event counters seen
-  std::shared_ptr<TH2F> mTOFRawHitMap = nullptr;   /// TOF raw hit map (1 bin = 1 FEA = 24 channels)
-  std::shared_ptr<TH2F> mTOFtimeVsBCID = nullptr;  /// TOF time vs BCID
-  std::shared_ptr<TProfile2D> mOrbitDDL = nullptr; /// Orbits per crate
-  std::shared_ptr<TH1I> mROWSize = nullptr;        ///Readout window size
+  std::shared_ptr<TH2F> mHistoOrbitID = nullptr;            /// Orbits seen
+  std::shared_ptr<TH2F> mHistoBCID = nullptr;               /// Bunch crossings seen
+  std::shared_ptr<TH2F> mHistoEventCounter = nullptr;       /// Event counters seen
+  std::shared_ptr<TH2F> mHistoHitMap = nullptr;             /// TOF hit map (1 bin = 1 FEA = 24 channels)
+  std::shared_ptr<TH2F> mHistoTimeVsBCID = nullptr;         /// TOF time vs BCID
+  std::shared_ptr<TProfile2D> mHistoOrbitVsCrate = nullptr; /// Orbits per crate
+  std::shared_ptr<TH1I> mHistoROWSize = nullptr;            /// Readout window size
+  std::shared_ptr<TH2I> mHistoDecodingErrors = nullptr;     /// Decoding error monitoring
+  std::shared_ptr<TH1S> mHistoOrphanPerChannel = nullptr;   /// Orphans per channel
 
   // Multiplicity
-  std::shared_ptr<TH1I> mTOFRawsMulti = nullptr;   /// TOF raw hit multiplicity per event
-  std::shared_ptr<TH1I> mTOFRawsMultiIA = nullptr; /// TOF raw hit multiplicity per event - I/A side
-  std::shared_ptr<TH1I> mTOFRawsMultiOA = nullptr; /// TOF raw hit multiplicity per event - O/A side
-  std::shared_ptr<TH1I> mTOFRawsMultiIC = nullptr; /// TOF raw hit multiplicity per event - I/C side
-  std::shared_ptr<TH1I> mTOFRawsMultiOC = nullptr; /// TOF raw hit multiplicity per event- O/C side
+  std::shared_ptr<TH1I> mHistoMultiplicity = nullptr;          /// TOF raw hit multiplicity per event
+  std::shared_ptr<TH1I> mHistoMultiplicityIA = nullptr;        /// TOF raw hit multiplicity per event - I/A side
+  std::shared_ptr<TH1I> mHistoMultiplicityOA = nullptr;        /// TOF raw hit multiplicity per event - O/A side
+  std::shared_ptr<TH1I> mHistoMultiplicityIC = nullptr;        /// TOF raw hit multiplicity per event - I/C side
+  std::shared_ptr<TH1I> mHistoMultiplicityOC = nullptr;        /// TOF raw hit multiplicity per event - O/C side
+  std::shared_ptr<TProfile> mHitMultiplicityVsCrate = nullptr; /// TOF raw hit multiplicity per event vs Crate
 
   // Time
-  std::shared_ptr<TH1F> mTOFRawsTime = nullptr;   /// TOF Raws - Hit time (ns)
-  std::shared_ptr<TH1F> mTOFRawsTimeIA = nullptr; /// TOF Raws - Hit time (ns) - I/A side
-  std::shared_ptr<TH1F> mTOFRawsTimeOA = nullptr; /// TOF Raws - Hit time (ns) - O/A side
-  std::shared_ptr<TH1F> mTOFRawsTimeIC = nullptr; /// TOF Raws - Hit time (ns) - I/C side
-  std::shared_ptr<TH1F> mTOFRawsTimeOC = nullptr; /// TOF Raws - Hit time (ns) - O/C side
+  std::shared_ptr<TH1F> mHistoTime = nullptr;        /// TOF hit time (ns)
+  std::shared_ptr<TH1F> mHistoTimeIA = nullptr;      /// TOF hit time (ns) - I/A side
+  std::shared_ptr<TH1F> mHistoTimeOA = nullptr;      /// TOF hit time (ns) - O/A side
+  std::shared_ptr<TH1F> mHistoTimeIC = nullptr;      /// TOF hit time (ns) - I/C side
+  std::shared_ptr<TH1F> mHistoTimeOC = nullptr;      /// TOF hit time (ns) - O/C side
+  std::shared_ptr<TH1F> mHistoTimeOrphans = nullptr; /// TOF hit time (ns) for orphan hits (missing trailer word)
 
   // ToT
-  std::shared_ptr<TH1F> mTOFRawsToT = nullptr;   /// TOF Raws - Hit ToT (ns)
-  std::shared_ptr<TH1F> mTOFRawsToTIA = nullptr; /// TOF Raws - Hit ToT (ns) - I/A side
-  std::shared_ptr<TH1F> mTOFRawsToTOA = nullptr; /// TOF Raws - Hit ToT (ns) - O/A side
-  std::shared_ptr<TH1F> mTOFRawsToTIC = nullptr; /// TOF Raws - Hit ToT (ns) - I/C side
-  std::shared_ptr<TH1F> mTOFRawsToTOC = nullptr; /// TOF Raws - Hit ToT (ns) - O/C side
+  std::shared_ptr<TH1F> mHistoToT = nullptr;   /// TOF hit ToT (ns)
+  std::shared_ptr<TH1F> mHistoToTIA = nullptr; /// TOF hit ToT (ns) - I/A side
+  std::shared_ptr<TH1F> mHistoToTOA = nullptr; /// TOF hit ToT (ns) - O/A side
+  std::shared_ptr<TH1F> mHistoToTIC = nullptr; /// TOF hit ToT (ns) - I/C side
+  std::shared_ptr<TH1F> mHistoToTOC = nullptr; /// TOF hit ToT (ns) - O/C side
 
-  // std::shared_ptr<TH1F> mTOFRawsLTMHits = nullptr;          /// LTMs OR signals
-  // std::shared_ptr<TH2F> mTOFrefMap = nullptr;               /// TOF enabled channel reference map
-  std::shared_ptr<TH2I> mTOFDecodingErrors = nullptr; /// Decoding error monitoring
-  // std::shared_ptr<TH1F> mTOFOrphansTime = nullptr;          /// TOF Raws - Orphans time (ns)
   // std::shared_ptr<TH2F> mTOFRawTimeVsTRM035 = nullptr;      /// TOF raws - Hit time vs TRM - crates 0 to 35
   // std::shared_ptr<TH2F> mTOFRawTimeVsTRM3671 = nullptr;     /// TOF raws - Hit time vs TRM - crates 36 to 72
   // std::shared_ptr<TH2F> mTOFTimeVsStrip = nullptr;          /// TOF raw hit time vs. MRPC (along z axis)
@@ -110,10 +138,6 @@ class TaskDigits final : public TaskInterface
   // std::shared_ptr<TH2F> mTOFmacropadDeltaPhiTime = nullptr; /// #Deltat vs #Delta#Phi of hit macropads
   // std::shared_ptr<TH2I> mBXVsCttmBit = nullptr;             /// BX ID in TOF matching window vs trg channel
   // std::shared_ptr<TH2F> mTimeVsCttmBit = nullptr;           /// TOF raw time vs trg channel
-  // std::shared_ptr<TH2F> mTOFRawHitMap24 = nullptr;          /// TOF average raw hits/channel map (1 bin = 1 FEA = 24 channels)
-  // std::shared_ptr<TH2I> mHitMultiVsDDL = nullptr;           /// TOF raw hit multiplicity per event vs DDL
-  // std::shared_ptr<TH1I> mNfiredMacropad = nullptr;          /// Number of fired TOF macropads per event
-  std::shared_ptr<TH1S> mOrphanPerChannel = nullptr; /// Orphan counter per channel
 
   // Counters
   static constexpr unsigned int nchannels = RawDataDecoder::ncrates * RawDataDecoder::nstrips * 24; /// Number of channels

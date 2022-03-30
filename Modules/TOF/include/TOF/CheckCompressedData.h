@@ -45,7 +45,7 @@ class CheckCompressedData : public o2::quality_control::checker::CheckInterface
   float mDiagnosticThresholdPerSlot = 0;
 
   /// Messages to print on the output PAD
-  MessagePad mShifterMessages;
+  MessagePad mShifterMessages{ "", 0.9, 0.1, 1.0, 0.5 };
 
   ClassDefOverride(CheckCompressedData, 2);
 };
