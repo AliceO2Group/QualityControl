@@ -316,11 +316,11 @@ void ITSFhrTask::createOccupancyPlots() // create general plots like error, trig
   int nBins[nDim] = { 1024, 512 };
   double Min[nDim] = { 0, 0 };
   double Max[nDim] = { 1024, 512 };
-  mTotalDeadChipPos = new TH2D(Form("Occupancy/TotalDeadChipPos"), Form("TotalDeadChipPos "), metabins, -2.405, 2.405, mphibins, -3.24, 3.24);
+  mTotalDeadChipPos = new TH2D(Form("Occupancy/TotalDeadChipPos"), Form("TotalDeadChipPos "), mEtabins, -2.405, 2.405, mPhibins, -3.24, 3.24);
   mTotalDeadChipPos->SetStats(0);
   getObjectsManager()->startPublishing(mTotalDeadChipPos);
 
-  mTotalAliveChipPos = new TH2D(Form("Occupancy/TotalAliveChipPos"), Form("TotalAliveChipPos "), metabins, -2.405, 2.405, mphibins, -3.24, 3.24);
+  mTotalAliveChipPos = new TH2D(Form("Occupancy/TotalAliveChipPos"), Form("TotalAliveChipPos "), mEtabins, -2.405, 2.405, mPhibins, -3.24, 3.24);
   mTotalAliveChipPos->SetStats(0);
   getObjectsManager()->startPublishing(mTotalAliveChipPos);
   // create IB plots
@@ -843,8 +843,8 @@ void ITSFhrTask::getParameters()
   mMinGeneralAxisRange = std::stof(mCustomParameters["MinGeneralAxisRange"]);
   mMaxGeneralNoisyAxisRange = std::stof(mCustomParameters["MaxGeneralNoisyAxisRange"]);
   mMinGeneralNoisyAxisRange = std::stof(mCustomParameters["MinGeneralNoisyAxisRange"]);
-  mphibins = std::stoi(mCustomParameters["Phibins"]);
-  metabins = std::stoi(mCustomParameters["Etabins"]);
+  mPhibins = std::stoi(mCustomParameters["Phibins"]);
+  mEtabins = std::stoi(mCustomParameters["Etabins"]);
 }
 
 void ITSFhrTask::endOfCycle()
