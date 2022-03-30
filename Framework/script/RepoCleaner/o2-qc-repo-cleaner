@@ -17,13 +17,14 @@
 #
 # Usage
 #         # run with debug logs and don't actually touch the database
-#         ./repoCleaner --dry-run --log-level 10 
+#         PYTHONPATH=./rules:$PYTHONPATH./o2-qc-repo-cleaner --dry-run --log-level 10
 
 import argparse
 import logging
 import requests
 import re
 import sys
+import importlib
 from typing import List
 import tempfile
 import socket
@@ -295,11 +296,17 @@ def process_object(object_path, rules, ccdb):
 
     # Take the first matching rule, if any
     rule = findMatchingRule(rules, object_path)
+
     if rule is None:
+        logger.info(f"    no matching rule")
         return
 
     # Apply rule on object (find the plug-in script and apply)
-    module = __import__(rule.policy)
+    try:
+        module = importlib.import_module(rule.policy)
+    except ModuleNotFoundError as err:
+        logger.error(f"could not load module {rule.policy}")
+        return
     stats = module.process(ccdb, object_path, int(rule.delay),  # rule.migration == "True",
                            rule.extra_params)
     logger.info(f"{rule.policy} applied on {object_path}: {stats}")
