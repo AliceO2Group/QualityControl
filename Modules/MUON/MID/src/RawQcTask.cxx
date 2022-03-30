@@ -97,7 +97,7 @@ void RawQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mBusyRawLocalBoards->GetYaxis()->SetTitle("LocID in Crate");
   mBusyRawLocalBoards->SetOption("colz");
 
-  mBCSize = new TH1F("BCSize", "Bunch Crossing Size", 2500, 0, 2500);
+  mBCSize = new TH1F("BCSize", "Bunch Crossing Size", o2::constants::lhc::LHCMaxBunches, 0, o2::constants::lhc::LHCMaxBunches);
   mBCSize->GetXaxis()->SetTitle("BC");
   mBCSize->GetYaxis()->SetTitle("Entry");
 
@@ -262,11 +262,6 @@ void RawQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   for (auto const& OS : BCOrbitSize) {
     nBC++;
     auto& OrbitSize = OS.second;
-    // change binning ::
-    if (OS.first > mBCSize->GetXaxis()->GetBinCenter(mBCSize->GetXaxis()->GetLast())) {
-      int Nbins = mBCSize->GetNbinsX();
-      mBCSize->GetXaxis()->SetLimits(OS.first - (Nbins + 10), (OS.first) + 10);
-    }
     mBCSize->Fill(OS.first, OrbitSize[1]);
   }
 
