@@ -31,7 +31,7 @@
         "dataSources": [
           {
             "type": "repository",
-            "path": "qc/MFT/MO/MFTReadoutTask",
+            "path": "MFT/MO/MFTReadoutTask",
             "names": [ "mSummaryChipError", "mSummaryChipWarning", "mSummaryChipFault" ],
             "reductorName": "o2::quality_control_modules::mft::QcMFTReadoutTrend",
             "moduleName": "QcMFT"

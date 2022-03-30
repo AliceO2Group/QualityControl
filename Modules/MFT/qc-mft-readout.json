@@ -70,7 +70,7 @@
         "dataSources": [
           {
             "type": "repository",
-            "path": "qc/MFT/MO/MFTReadoutTask",
+            "path": "MFT/MO/MFTReadoutTask",
             "names": [ "mSummaryChipError", "mSummaryChipWarning", "mSummaryChipFault" ],
             "reductorName": "o2::quality_control_modules::mft::QcMFTReadoutTrend",
             "moduleName": "QcMFT"
@@ -103,7 +103,7 @@
           "userorcontrol"
         ],
         "updateTrigger": [
-          "newobject:qcdb:qc/MFT/MO/MFTReadoutTask/mSummaryChipError"
+          "newobject:qcdb:MFT/MO/MFTReadoutTask/mSummaryChipError"
         ],
         "stopTrigger": [
           "userorcontrol"
