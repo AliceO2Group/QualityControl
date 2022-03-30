@@ -11,7 +11,8 @@ target_sources(O2QcMFT PRIVATE
                src/QcMFTTrackTask.cxx
                src/QcMFTAsyncTask.cxx
                src/QcMFTReadoutCheck.cxx
-               src/QcMFTReadoutTask.cxx)
+               src/QcMFTReadoutTask.cxx
+               src/QcMFTReadoutTrend.cxx)
 
 target_include_directories(
   O2QcMFT
@@ -37,12 +38,13 @@ add_root_dictionary(O2QcMFT
                     include/MFT/QcMFTAsyncTask.h
                     include/MFT/QcMFTReadoutCheck.h
                     include/MFT/QcMFTReadoutTask.h
+                    include/MFT/QcMFTReadoutTrend.h
                     include/MFT/QcMFTUtilTables.h
                     LINKDEF include/MFT/LinkDef.h
                     BASENAME O2QcMFT)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/MFT
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
                     
 # ---- Executables ----
 
@@ -99,4 +101,5 @@ install(FILES qc-mft-digit.json
               qc-mft-readout.json
               qc-mft-async.json
               qc-mft-async_direct.json
+              qc-mft-readout-trend.json
         DESTINATION etc)

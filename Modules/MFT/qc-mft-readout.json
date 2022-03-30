@@ -10,7 +10,7 @@
       },
       "Activity" : {
         "number" : "42",
-        "type" : "2"
+        "type" : "0"
       },
       "monitoring" : {
         "url" : "infologger:///debug?qc"
@@ -49,7 +49,7 @@
         "detectorName" : "MFT",
         "policy" : "OnEachSeparately",
         "checkParameters" : {
-          "WarningThreshold" : "17",
+          "WarningThreshold" : "0",
           "ErrorThresholdMedium" : "9",
           "ErrorThresholdBad" : "20",
           "FaultThreshold" : "4"
@@ -59,6 +59,55 @@
           "name" : "MFTReadoutTask",
             "MOs"  : ["mDDWSummary","mSummaryChipOk","mSummaryChipFault", "mSummaryChipError", "mSummaryChipWarning", "mRDHSummary"]
         } ]
+      }
+    },
+    "postprocessing": {
+      "MFTReadoutTrend": {
+        "active": "true",
+        "className": "o2::quality_control::postprocessing::TrendingTask",
+        "moduleName": "QcMFT",
+        "detectorName": "MFT",
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "qc/MFT/MO/MFTReadoutTask",
+            "names": [ "mSummaryChipError", "mSummaryChipWarning", "mSummaryChipFault" ],
+            "reductorName": "o2::quality_control_modules::mft::QcMFTReadoutTrend",
+            "moduleName": "QcMFT"
+          }
+        ],
+        "plots": [
+          {
+            "name": "mChipErrorTrend",
+            "title": "Trend of total number of chips in error",
+            "varexp": "mSummaryChipError.binContentOverflow:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "mChipWarningTrend",
+            "title": "Trend of total number of chips in warning",
+            "varexp": "mSummaryChipWarning.binContentOverflow:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "mChipFaultTrend",
+            "title": "Trend of total number of chips in fault",
+            "varexp": "mSummaryChipFault.binContentOverflow:time",
+            "selection": "",
+            "option": "*L"
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "newobject:qcdb:qc/MFT/MO/MFTReadoutTask/mSummaryChipError"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
       }
     }
   }
