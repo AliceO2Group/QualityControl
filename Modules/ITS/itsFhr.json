@@ -46,7 +46,9 @@
           	    "MaxGeneralAxisRange": "-2",
           	    "MinGeneralAxisRange": "-12",
           	    "MaxGeneralNoisyAxisRange": "5000",
-                    "MinGeneralNoisyAxisRange": "0"
+                    "MinGeneralNoisyAxisRange": "0",
+		    "Etabins": "130",
+                    "Phibins": "240"
                 }
             }
         },
