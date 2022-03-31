@@ -318,11 +318,11 @@ def run(args, ccdb_url, rules):
 
     # Get list of objects from CCDB
     ccdb = Ccdb(ccdb_url)
+    ccdb.logger = logging.getLogger
     paths = ccdb.getObjectsList(getTimestampLastExecution())
     if args.only_path != '':
         paths = [item for item in paths if item is not None and item.startswith(args.only_path)]
     logging.debug(paths)
-    logging.debug(len(paths))
     # For each object call the first matching rule
     logging.info("Loop through the objects and apply first matching rule.")
 

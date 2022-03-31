@@ -7,6 +7,9 @@ import dryable
 import requests
 
 
+logger = logging  # default logger
+
+
 class ObjectVersion:
     '''
     A version of an object in the CCDB. 
@@ -50,7 +53,7 @@ class Ccdb:
     counter_preserved: int = 0
 
     def __init__(self, url):
-        logging.info(f"Instantiate CCDB at {url}")
+        logger.info(f"Instantiate CCDB at {url}")
         self.url = url
 
     def getObjectsList(self, added_since: int = 0) -> List[str]:
@@ -60,16 +63,16 @@ class Ccdb:
         :param added_since: if specified, only return objects added since this timestamp in epoch milliseconds.
         :return A list of strings, each containing a path to an object in the CCDB.
         '''
-        logging.debug(f"added_since : {added_since}")
+        logger.debug(f"added_since : {added_since}")
         url_for_all_obj = self.url + '/latest/.*'
-        logging.debug(f"Ccdb::getObjectsList -> {url_for_all_obj}")
+        logger.debug(f"Ccdb::getObjectsList -> {url_for_all_obj}")
         headers = {'Accept':'application/json', 'If-Not-Before':str(added_since)}
         r = requests.get(url_for_all_obj, headers=headers)
         r.raise_for_status()
         try:
             json = r.json()
         except JSONDecodeError as err:
-            logging.error(f"JSON decode error: {err}")
+            logger.error(f"JSON decode error: {err}")
             raise
         paths = []
         for item in json['objects']:
@@ -83,7 +86,7 @@ class Ccdb:
         :return A list of ObjectVersion.
         '''
         url_browse_all_versions = self.url + '/browse/' + object_path
-        logging.debug(f"Ccdb::getVersionsList -> {url_browse_all_versions}")
+        logger.debug(f"Ccdb::getVersionsList -> {url_browse_all_versions}")
         headers = {'Accept':'application/json', 'Connection': 'close'}
         r = requests.get(url_browse_all_versions, headers=headers)
         r.raise_for_status()
@@ -106,7 +109,7 @@ class Ccdb:
         :param version: The version of the object to delete, as an instance of ObjectVersion.
         '''
         url_delete = self.url + '/' + version.path + '/' + str(version.validFrom) + '/' + version.uuid
-        logging.debug(f"Delete version at url {url_delete}")
+        logger.debug(f"Delete version at url {url_delete}")
         headers = {'Connection': 'close'}
         try:
             r = requests.delete(url_delete, headers=headers)
@@ -126,9 +129,9 @@ class Ccdb:
         :param metadata: Add or modify metadata
         '''
         full_path = self.url + '/' + version.path + '/' + str(valid_from) + '/' + str(valid_to) + '/' + str(version.uuid) + '?'
-        logging.debug(f"Update end limit validity of {version.path} ({version.uuid}) from {version.validTo} to {valid_to}")
+        logger.debug(f"Update end limit validity of {version.path} ({version.uuid}) from {version.validTo} to {valid_to}")
         if metadata is not None:
-            logging.debug(f"{metadata}")
+            logger.debug(f"{metadata}")
             for key in metadata:
                 full_path += key + "=" + metadata[key] + "&"
         try:
@@ -150,17 +153,17 @@ class Ccdb:
         if version.metadata is not None:
             for key in version.metadata:
                 full_path += key + "=" + version.metadata[key] + "/"
-        logging.debug(f"fullpath: {full_path}")
+        logger.debug(f"fullpath: {full_path}")
         headers = {'Connection': 'close'}
         r = requests.post(full_path, files=data, headers=headers)
         if r.ok:
-            logging.debug(f"Version pushed to {version.path}")
+            logger.debug(f"Version pushed to {version.path}")
         else:
-            logging.error(f"Could not post a new version of {version.path}: {r.text}")
+            logger.error(f"Could not post a new version of {version.path}: {r.text}")
 
 def main():
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
-    logging.getLogger().setLevel(int(10))
+    logger.basicConfig(level=logger.INFO, format='%(asctime)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
+    logger.getLogger().setLevel(int(10))
 
     ccdb = Ccdb('http://ccdb-test.cern.ch:8080')
 
