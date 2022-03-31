@@ -42,3 +42,9 @@ Most of the classes and Rules have a main to help test them. To run do e.g. `pyt
 
 ## Installation
 CMake will install the python scripts in bin and the config file in etc.
+
+## Example
+
+```
+PYTHONPATH=./rules:$PYTHONPATH ./o2-qc-repo-cleaner --dry-run --config config-test.yaml --dry-run --only-path qc/DAQ --log-level 10
+```

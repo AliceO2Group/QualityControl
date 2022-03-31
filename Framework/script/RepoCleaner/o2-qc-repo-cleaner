@@ -290,8 +290,9 @@ def read_config(args):
     return ccdb_url, rules
 
 
-def process_object(object_path, rules, ccdb):
+def process_object(object_path, rules, ccdb, args):
     logger = create_parallel_logger()
+    logger.setLevel(int(args.log_level))
     logger.info(f"Processing {object_path}")
 
     # Take the first matching rule, if any
@@ -304,6 +305,7 @@ def process_object(object_path, rules, ccdb):
     # Apply rule on object (find the plug-in script and apply)
     try:
         module = importlib.import_module(rule.policy)
+        module.logger = logger
     except ModuleNotFoundError as err:
         logger.error(f"could not load module {rule.policy}")
         return
@@ -326,7 +328,7 @@ def run(args, ccdb_url, rules):
 
     logging.info(f"workers: {args.workers}")
     pool = mp.Pool(int(args.workers))
-    [pool.apply_async(process_object, args=(object_path, rules, ccdb)) for object_path in paths]
+    [pool.apply_async(process_object, args=(object_path, rules, ccdb, args)) for object_path in paths]
     pool.close()
     pool.join()
 

@@ -140,7 +140,7 @@ class Ccdb:
             print(e)
             sys.exit(1)  # really ?
 
-def putVersion(self, version: ObjectVersion, data):
+    def putVersion(self, version: ObjectVersion, data):
         '''
         :param version: An ObjectVersion that describes the data to be uploaded.
         :param data: the actual data to send. E.g.:{'somekey': 'somevalue'}
