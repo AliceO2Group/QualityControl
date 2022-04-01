@@ -271,8 +271,10 @@ void RawDataDecoder::estimateNoise(std::shared_ptr<TH1F> hIndexEOIsNoise)
   for (unsigned int i = 0; i < nequipments; ++i) {
     const auto indexcounter = mCounterIndexEOInTimeWin.HowMany(i);
     const unsigned int crate = i / 2400;
+    const int crate_ = i % 2400;
+    const int slot = crate_ / 240;
     const double time_window = mTDCWidth * (mTimeMax - mTimeMin);
-    const double time = mCounterDRM[crate].HowMany(0) * time_window;
+    const double time = mCounterTRM[crate][slot - 3].HowMany(0) * time_window;
 
     // start measure time from 1 micro second
     if (time < 1.e-6) {
@@ -293,8 +295,6 @@ void RawDataDecoder::estimateNoise(std::shared_ptr<TH1F> hIndexEOIsNoise)
       continue;
     }
 
-    const int crate_ = i % 2400;
-    const int slot = crate_ / 240;
     const int slot_ = crate_ % 240;
     const int chain = slot_ / 120;
     const int chain_ = slot_ % 120;
