@@ -90,18 +90,16 @@ void PedestalsTask::initialize(o2::framework::InitContext& /*ctx*/)
   for (int i = 0; i < 2; i++) {
     mHistogramPedestalsMCH[i] = std::make_shared<GlobalHistogram>(fmt::format("Pedestals_{}", stname[i]), "Pedestals", i);
     mHistogramPedestalsMCH[i]->init();
-    mHistogramPedestalsMCH[i]->SetOption("colz");
-    mAllHistograms.push_back(mHistogramPedestalsMCH[i].get());
+    mAllHistograms.push_back(mHistogramPedestalsMCH[i]->getHist());
     if (!mSaveToRootFile) {
-      getObjectsManager()->startPublishing(mHistogramPedestalsMCH[i].get());
+      getObjectsManager()->startPublishing(mHistogramPedestalsMCH[i]->getHist());
     }
 
     mHistogramNoiseMCH[i] = std::make_shared<GlobalHistogram>(fmt::format("Noise_{}", stname[i]), "Noise", i);
     mHistogramNoiseMCH[i]->init();
-    mHistogramNoiseMCH[i]->SetOption("colz");
-    mAllHistograms.push_back(mHistogramNoiseMCH[i].get());
+    mAllHistograms.push_back(mHistogramNoiseMCH[i]->getHist());
     if (!mSaveToRootFile) {
-      getObjectsManager()->startPublishing(mHistogramNoiseMCH[i].get());
+      getObjectsManager()->startPublishing(mHistogramNoiseMCH[i]->getHist());
     }
   }
 

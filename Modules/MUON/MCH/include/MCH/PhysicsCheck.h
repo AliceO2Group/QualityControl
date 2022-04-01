@@ -47,16 +47,19 @@ class PhysicsCheck : public o2::quality_control::checker::CheckInterface
  private:
   bool checkPadMapping(uint16_t feeId, uint8_t linkId, uint8_t eLinkId, o2::mch::raw::DualSampaChannelId channel);
 
-  int mPrintLevel;
   double mMinOccupancy;
   double mMaxOccupancy;
+  double mMinGoodFraction;
+  double mOccupancyPlotScaleMin;
+  double mOccupancyPlotScaleMax;
+  bool mVerbose;
 
   o2::mch::raw::Elec2DetMapper mElec2DetMapper;
   o2::mch::raw::Det2ElecMapper mDet2ElecMapper;
   o2::mch::raw::FeeLink2SolarMapper mFeeLink2SolarMapper;
   o2::mch::raw::Solar2FeeLinkMapper mSolar2FeeLinkMapper;
 
-  ClassDefOverride(PhysicsCheck, 2);
+  ClassDefOverride(PhysicsCheck, 3);
 };
 
 } // namespace o2::quality_control_modules::muonchambers
