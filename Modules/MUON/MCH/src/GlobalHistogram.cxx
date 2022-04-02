@@ -180,7 +180,7 @@ static int getDetectorHistWidth(int deId)
   if (deId >= 500) {
     return (40 * 6 + 20);
   } else if (deId >= 300) {
-    return 120;
+    return 130;
   } else {
     return 100;
   }
@@ -271,16 +271,16 @@ static float getDetectorShiftY(int deId)
   return 0;
 }
 
-DetectorHistogram::DetectorHistogram(TString name, TString title, int deId)
-  : mName(name), mTitle(title), mDeId(deId), mFlipX(getDetectorFlipX(deId)), mFlipY(getDetectorFlipY(deId)), mShiftX(getDetectorShiftX(deId)), mShiftY(getDetectorShiftY(deId))
+DetectorHistogram::DetectorHistogram(TString name, TString title, int deId, int cathode)
+  : mName(name), mTitle(title), mDeId(deId), mCathode(cathode), mFlipX(getDetectorFlipX(deId)), mFlipY(getDetectorFlipY(deId)), mShiftX(getDetectorShiftX(deId)), mShiftY(getDetectorShiftY(deId))
 {
   mHist = std::make_pair(new TH2F(name, title, getNbinsX(), getXmin(), getXmax(), getNbinsY(), getYmin(), getYmax()), true);
   addContour();
   mHist.first->SetOption("colz");
 }
 
-DetectorHistogram::DetectorHistogram(TString name, TString title, int deId, TH2F* hist)
-  : mName(name), mTitle(title), mDeId(deId), mFlipX(getDetectorFlipX(deId)), mFlipY(getDetectorFlipY(deId)), mShiftX(getDetectorShiftX(deId)), mShiftY(getDetectorShiftY(deId))
+DetectorHistogram::DetectorHistogram(TString name, TString title, int deId, int cathode, TH2F* hist)
+  : mName(name), mTitle(title), mDeId(deId), mCathode(cathode), mFlipX(getDetectorFlipX(deId)), mFlipY(getDetectorFlipY(deId)), mShiftX(getDetectorShiftX(deId)), mShiftY(getDetectorShiftY(deId))
 {
   mHist = std::make_pair(hist, false);
   init();
@@ -371,7 +371,7 @@ void DetectorHistogram::init()
 void DetectorHistogram::addContour()
 {
   const o2::mch::mapping::Segmentation& segment = o2::mch::mapping::segmentation(mDeId);
-  const o2::mch::mapping::CathodeSegmentation& csegment = segment.bending();
+  const o2::mch::mapping::CathodeSegmentation& csegment = (mCathode == 0) ? segment.bending() : segment.nonBending();
   o2::mch::contour::Contour<double> envelop = o2::mch::mapping::getEnvelop(csegment);
   std::vector<o2::mch::contour::Vertex<double>> vertices = envelop.getVertices();
 

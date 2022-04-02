@@ -37,8 +37,8 @@ int getDEindexMax();
 class DetectorHistogram
 {
  public:
-  DetectorHistogram(TString name, TString title, int deId);
-  DetectorHistogram(TString name, TString title, int deId, TH2F* hist);
+  DetectorHistogram(TString name, TString title, int deId, int cathode);
+  DetectorHistogram(TString name, TString title, int deId, int cathode, TH2F* hist);
   ~DetectorHistogram();
 
   void Fill(double padX, double padY, double padSizeX, double padSizeY, double val = 1);
@@ -58,6 +58,7 @@ class DetectorHistogram
   void addContour();
 
   int mDeId{ 0 };
+  int mCathode{ 0 };
 
   TString mName;
   TString mTitle;
