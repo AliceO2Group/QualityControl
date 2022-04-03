@@ -146,12 +146,11 @@ void ITSNoisyPixelTask::monitorData(o2::framework::ProcessingContext& ctx)
       col = hit.getCol();
       row = hit.getRow();
 
-      if (mEnableOrderedHitsObject){
+      if (mEnableOrderedHitsObject) {
 
-	label = 1024 * 512;
-	label = label * ChipID + 1024 * row + col;
-	hashtable[label]++;
-
+        label = 1024 * 512;
+        label = label * ChipID + 1024 * row + col;
+        hashtable[label]++;
       }
 
       mGeom->getChipId(ChipID, lay, sta, hsta, mod, chip);
@@ -165,9 +164,9 @@ void ITSNoisyPixelTask::monitorData(o2::framework::ProcessingContext& ctx)
       } else {
 
         std::vector<int> XY = MapOverHIC(col, row, chip);
-        Double_t Addr[3] = { (double)XY[0], (double)XY[1], (double)(mod+hsta*mNHicPerStave[lay]/2) };
+        Double_t Addr[3] = { (double)XY[0], (double)XY[1], (double)(mod + hsta * mNHicPerStave[lay] / 2) };
 
-        hOccupancyOB[lay - 3]->Fill(mod+hsta*mNHicPerStave[lay]/2, sta, 1. / ((mROFcounter + ROFCycle) * 5.24e5 * mNChipsPerHic[lay]));
+        hOccupancyOB[lay - 3]->Fill(mod + hsta * mNHicPerStave[lay] / 2, sta, 1. / ((mROFcounter + ROFCycle) * 5.24e5 * mNChipsPerHic[lay]));
         hNoisyPixelMapOB[lay - 3][sta]->Fill(Addr);
       }
     }
@@ -231,8 +230,8 @@ void ITSNoisyPixelTask::monitorData(o2::framework::ProcessingContext& ctx)
 
       int column_ = (int)((vvalue % (1024 * 512)) % 1024);
       int row_ = (int)((vvalue % (1024 * 512)) / 1024);
-      int mod_offset = (int)(hsta*mNHicPerStave[lay]/2);
-      hOrderedHitsAddressML->GetXaxis()->SetBinLabel(counterbin, Form("L%d_%d-%d-%d;%d;%d", lay, sta, mod+mod_offset, chip, column_, row_));
+      int mod_offset = (int)(hsta * mNHicPerStave[lay] / 2);
+      hOrderedHitsAddressML->GetXaxis()->SetBinLabel(counterbin, Form("L%d_%d-%d-%d;%d;%d", lay, sta, mod + mod_offset, chip, column_, row_));
 
       hOrderedHitsAddressML->SetBinContent(counterbin, 1. * kkey / mROFcycle);
 
@@ -250,8 +249,8 @@ void ITSNoisyPixelTask::monitorData(o2::framework::ProcessingContext& ctx)
 
       int column_ = (int)((vvalue % (1024 * 512)) % 1024);
       int row_ = (int)((vvalue % (1024 * 512)) / 1024);
-      int mod_offset = (int)(hsta*mNHicPerStave[lay]/2);
-      hOrderedHitsAddressOL->GetXaxis()->SetBinLabel(counterbin, Form("L%d_%d-%d-%d;%d;%d", lay, sta, mod+mod_offset, chip, column_, row_));
+      int mod_offset = (int)(hsta * mNHicPerStave[lay] / 2);
+      hOrderedHitsAddressOL->GetXaxis()->SetBinLabel(counterbin, Form("L%d_%d-%d-%d;%d;%d", lay, sta, mod + mod_offset, chip, column_, row_));
 
       hOrderedHitsAddressOL->SetBinContent(counterbin, 1. * kkey / mROFcycle);
 
