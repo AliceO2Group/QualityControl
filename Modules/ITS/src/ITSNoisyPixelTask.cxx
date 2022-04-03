@@ -115,7 +115,7 @@ void ITSNoisyPixelTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   int ROFCycle = clusRofArr.size();
 
-  int lay = -1, sta, ssta, mod, chip;
+  int lay = -1, sta, hsta, mod, chip;
 
   int col = 0, row = 0, ChipID = 0;
 
@@ -146,25 +146,28 @@ void ITSNoisyPixelTask::monitorData(o2::framework::ProcessingContext& ctx)
       col = hit.getCol();
       row = hit.getRow();
 
-      label = 1024 * 512;
-      label = label * ChipID + 1024 * row + col;
+      if (mEnableOrderedHitsObject){
 
-      hashtable[label]++;
+	label = 1024 * 512;
+	label = label * ChipID + 1024 * row + col;
+	hashtable[label]++;
 
-      mGeom->getChipId(ChipID, lay, sta, ssta, mod, chip);
+      }
+
+      mGeom->getChipId(ChipID, lay, sta, hsta, mod, chip);
 
       if (lay < 3) {
 
         Double_t Addr[3] = { (double)col, (double)row, (double)chip };
-        hOccupancyIB[lay]->Fill(chip + 1, sta, 1. / ((mROFcounter + ROFCycle) * 5.24e5));
+        hOccupancyIB[lay]->Fill(chip, sta, 1. / ((mROFcounter + ROFCycle) * 5.24e5));
         hNoisyPixelMapIB[lay][sta]->Fill(Addr);
 
       } else {
 
         std::vector<int> XY = MapOverHIC(col, row, chip);
-        Double_t Addr[3] = { (double)XY[0], (double)XY[1], (double)mod };
+        Double_t Addr[3] = { (double)XY[0], (double)XY[1], (double)(mod+hsta*mNHicPerStave[lay]/2) };
 
-        hOccupancyOB[lay - 3]->Fill(mod, sta, 1. / ((mROFcounter + ROFCycle) * 5.24e5 * mNChipsPerHic[lay]));
+        hOccupancyOB[lay - 3]->Fill(mod+hsta*mNHicPerStave[lay]/2, sta, 1. / ((mROFcounter + ROFCycle) * 5.24e5 * mNChipsPerHic[lay]));
         hNoisyPixelMapOB[lay - 3][sta]->Fill(Addr);
       }
     }
@@ -174,7 +177,7 @@ void ITSNoisyPixelTask::monitorData(o2::framework::ProcessingContext& ctx)
   mROFcycle += ROFCycle;
 
   // SHOWING NOISY PIXELS IN ORDER OF HITS
-  // x-axis label will be displayed as L<layer>_<stave>-<chip>;<column>;<row>
+  // x-axis label will be displayed as L<layer>_<stave>-[<module>, for OB]-<chip>;<column>;<row>
   if (mEnableOrderedHitsObject && mROFcycle >= mOccUpdateFrequency) {
 
     hOrderedHitsAddressIB->Reset();
@@ -189,7 +192,7 @@ void ITSNoisyPixelTask::monitorData(o2::framework::ProcessingContext& ctx)
 
       int chipid_ = (int)(key / (1024 * 512));
 
-      mGeom->getChipId(chipid_, lay, sta, ssta, mod, chip);
+      mGeom->getChipId(chipid_, lay, sta, hsta, mod, chip);
 
       if (!mEnableLayers[lay])
         continue;
@@ -206,13 +209,13 @@ void ITSNoisyPixelTask::monitorData(o2::framework::ProcessingContext& ctx)
     for (auto [kkey, vvalue] : orderedHitsIB) {
 
       int chipid_ = (int)(vvalue / (1024 * 512));
-      mGeom->getChipId(chipid_, lay, sta, ssta, mod, chip);
+      mGeom->getChipId(chipid_, lay, sta, hsta, mod, chip);
 
       int column_ = (int)((vvalue % (1024 * 512)) % 1024);
       int row_ = (int)((vvalue % (1024 * 512)) / 1024);
       hOrderedHitsAddressIB->GetXaxis()->SetBinLabel(counterbin, Form("L%d_%d-%d;%d;%d", lay, sta, chip, column_, row_));
 
-      hOrderedHitsAddressIB->SetBinContent(counterbin, 1. * kkey / mROFcounter);
+      hOrderedHitsAddressIB->SetBinContent(counterbin, 1. * kkey / mROFcycle);
 
       if (counterbin == nmostnoisy) {
         counterbin = 1;
@@ -224,13 +227,14 @@ void ITSNoisyPixelTask::monitorData(o2::framework::ProcessingContext& ctx)
     for (auto [kkey, vvalue] : orderedHitsML) {
 
       int chipid_ = (int)(vvalue / (1024 * 512));
-      mGeom->getChipId(chipid_, lay, sta, ssta, mod, chip);
+      mGeom->getChipId(chipid_, lay, sta, hsta, mod, chip);
 
       int column_ = (int)((vvalue % (1024 * 512)) % 1024);
       int row_ = (int)((vvalue % (1024 * 512)) / 1024);
-      hOrderedHitsAddressML->GetXaxis()->SetBinLabel(counterbin, Form("L%d_%d-%d;%d;%d", lay, sta, chip, column_, row_));
+      int mod_offset = (int)(hsta*mNHicPerStave[lay]/2);
+      hOrderedHitsAddressML->GetXaxis()->SetBinLabel(counterbin, Form("L%d_%d-%d-%d;%d;%d", lay, sta, mod+mod_offset, chip, column_, row_));
 
-      hOrderedHitsAddressML->SetBinContent(counterbin, 1. * kkey / mROFcounter);
+      hOrderedHitsAddressML->SetBinContent(counterbin, 1. * kkey / mROFcycle);
 
       if (counterbin == nmostnoisy) {
         counterbin = 1;
@@ -242,13 +246,14 @@ void ITSNoisyPixelTask::monitorData(o2::framework::ProcessingContext& ctx)
     for (auto [kkey, vvalue] : orderedHitsOL) {
 
       int chipid_ = (int)(vvalue / (1024 * 512));
-      mGeom->getChipId(chipid_, lay, sta, ssta, mod, chip);
+      mGeom->getChipId(chipid_, lay, sta, hsta, mod, chip);
 
       int column_ = (int)((vvalue % (1024 * 512)) % 1024);
       int row_ = (int)((vvalue % (1024 * 512)) / 1024);
-      hOrderedHitsAddressOL->GetXaxis()->SetBinLabel(counterbin, Form("L%d_%d-%d;%d;%d", lay, sta, chip, column_, row_));
+      int mod_offset = (int)(hsta*mNHicPerStave[lay]/2);
+      hOrderedHitsAddressOL->GetXaxis()->SetBinLabel(counterbin, Form("L%d_%d-%d-%d;%d;%d", lay, sta, mod+mod_offset, chip, column_, row_));
 
-      hOrderedHitsAddressOL->SetBinContent(counterbin, 1. * kkey / mROFcounter);
+      hOrderedHitsAddressOL->SetBinContent(counterbin, 1. * kkey / mROFcycle);
 
       if (counterbin == nmostnoisy) {
         counterbin = 1;
@@ -257,6 +262,7 @@ void ITSNoisyPixelTask::monitorData(o2::framework::ProcessingContext& ctx)
         counterbin++;
     }
 
+    hashtable.clear();
     mROFcycle = 0;
   }
 
@@ -314,17 +320,17 @@ void ITSNoisyPixelTask::createAllHistos()
 
   if (mEnableOrderedHitsObject) {
     hOrderedHitsAddressIB = new TH1D("OrderedHitsAddressIB", "OrderedHitsAddresIB", nmostnoisy, 0, nmostnoisy);
-    hOrderedHitsAddressIB->SetTitle("Most noisy pixels in IB");
+    hOrderedHitsAddressIB->SetTitle("Noisiest pixels in IB - <Lx_yy-chip col row>");
     formatAxes(hOrderedHitsAddressIB, "#", "Hits/ROF");
     addObject(hOrderedHitsAddressIB);
 
     hOrderedHitsAddressML = new TH1D("OrderedHitsAddressML", "OrderedHitsAddresML", nmostnoisy, 0, nmostnoisy);
-    hOrderedHitsAddressML->SetTitle("Most noisy pixels in ML");
+    hOrderedHitsAddressML->SetTitle("Noisiest pixels in ML - <Lx_yy-mod-chip col row>");
     formatAxes(hOrderedHitsAddressML, "#", "Hits/ROF");
     addObject(hOrderedHitsAddressML);
 
     hOrderedHitsAddressOL = new TH1D("OrderedHitsAddressOL", "OrderedHitsAddresOL", nmostnoisy, 0, nmostnoisy);
-    hOrderedHitsAddressOL->SetTitle("Most noisy pixels in OL");
+    hOrderedHitsAddressOL->SetTitle("Noisiest pixels in OL - <Lx_yy-mod-chip col row>");
     formatAxes(hOrderedHitsAddressOL, "#", "Hits/ROF");
     addObject(hOrderedHitsAddressOL);
   }
