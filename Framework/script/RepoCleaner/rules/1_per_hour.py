@@ -6,7 +6,7 @@ from typing import Dict
 from Ccdb import Ccdb, ObjectVersion
 
 
-logger = logger  # default logger
+logger = logging  # default logger
 
 
 def process(ccdb: Ccdb, object_path: str, delay: int, #migration: bool,
