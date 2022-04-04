@@ -172,12 +172,12 @@ void PhysicsTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
     }
 
     auto h2n0 = std::make_shared<DetectorHistogram>(TString::Format("Expert/%sNhits_DE%03d_B", getHistoPath(de).c_str(), de),
-                                                    TString::Format("Number of hits (DE%03d B)", de), de, hm->getNum());
+                                                    TString::Format("Number of hits (DE%03d B)", de), de, int(0), hm->getNum());
     mHistogramNhitsDE[0].insert(make_pair(de, h2n0));
     mAllHistograms.push_back(h2n0->getHist());
 
     auto h2d0 = std::make_shared<DetectorHistogram>(TString::Format("Expert/%sNorbits_DE%03d_B", getHistoPath(de).c_str(), de),
-                                                    TString::Format("Number of orbits (DE%03d B)", de), de, hm->getDen());
+                                                    TString::Format("Number of orbits (DE%03d B)", de), de, int(0), hm->getDen());
     mHistogramNorbitsDE[0].insert(make_pair(de, h2d0));
     mAllHistograms.push_back(h2d0->getHist());
 
@@ -190,12 +190,12 @@ void PhysicsTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
     }
 
     auto h2n1 = std::make_shared<DetectorHistogram>(TString::Format("Expert/%sNhits_DE%03d_NB", getHistoPath(de).c_str(), de),
-                                                    TString::Format("Number of hits (DE%03d NB)", de), de, hm->getNum());
+                                                    TString::Format("Number of hits (DE%03d NB)", de), de, int(1), hm->getNum());
     mHistogramNhitsDE[1].insert(make_pair(de, h2n1));
     mAllHistograms.push_back(h2n1->getHist());
 
     auto h2d1 = std::make_shared<DetectorHistogram>(TString::Format("Expert/%sNorbits_DE%03d_NB", getHistoPath(de).c_str(), de),
-                                                    TString::Format("Number of orbits (DE%03d NB)", de), de, hm->getDen());
+                                                    TString::Format("Number of orbits (DE%03d NB)", de), de, int(1), hm->getDen());
     mHistogramNorbitsDE[1].insert(make_pair(de, h2d1));
     mAllHistograms.push_back(h2d1->getHist());
   }

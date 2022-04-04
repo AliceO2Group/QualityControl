@@ -146,16 +146,16 @@ void PedestalsTask::initialize(o2::framework::InitContext& /*ctx*/)
     }
 
     {
-      auto hPedXY = std::make_shared<DetectorHistogram>(TString::Format("%sPedestals_%03d_B", getHistoPath(de).c_str(), de),
-                                                        TString::Format("Pedestals (DE%03d B)", de), de);
+      auto hPedXY = std::make_shared<DetectorHistogram>(TString::Format("%sPedestals_DE%03d_B", getHistoPath(de).c_str(), de),
+                                                        TString::Format("Pedestals (DE%03d B)", de), de, 0);
       mHistogramPedestalsXY[0].insert(make_pair(de, hPedXY));
       mAllHistograms.push_back(hPedXY->getHist());
       if (!mSaveToRootFile) {
         getObjectsManager()->startPublishing(hPedXY->getHist());
       }
 
-      auto hNoiseXY = std::make_shared<DetectorHistogram>(TString::Format("%sNoise_%03d_B", getHistoPath(de).c_str(), de),
-                                                          TString::Format("Noise (DE%03d B)", de), de);
+      auto hNoiseXY = std::make_shared<DetectorHistogram>(TString::Format("%sNoise_DE%03d_B", getHistoPath(de).c_str(), de),
+                                                          TString::Format("Noise (DE%03d B)", de), de, 0);
       mHistogramNoiseXY[0].insert(make_pair(de, hNoiseXY));
       mAllHistograms.push_back(hNoiseXY->getHist());
       if (!mSaveToRootFile) {
@@ -163,16 +163,16 @@ void PedestalsTask::initialize(o2::framework::InitContext& /*ctx*/)
       }
     }
     {
-      auto hPedXY = std::make_shared<DetectorHistogram>(TString::Format("%sPedestals_%03d_NB", getHistoPath(de).c_str(), de),
-                                                        TString::Format("Pedestals (DE%03d NB)", de), de);
+      auto hPedXY = std::make_shared<DetectorHistogram>(TString::Format("%sPedestals_DE%03d_NB", getHistoPath(de).c_str(), de),
+                                                        TString::Format("Pedestals (DE%03d NB)", de), de, 1);
       mHistogramPedestalsXY[1].insert(make_pair(de, hPedXY));
       mAllHistograms.push_back(hPedXY->getHist());
       if (!mSaveToRootFile) {
         getObjectsManager()->startPublishing(hPedXY->getHist());
       }
 
-      auto hNoiseXY = std::make_shared<DetectorHistogram>(TString::Format("%sNoise_%03d_NB", getHistoPath(de).c_str(), de),
-                                                          TString::Format("Noise (DE%03d NB)", de), de);
+      auto hNoiseXY = std::make_shared<DetectorHistogram>(TString::Format("%sNoise_DE%03d_NB", getHistoPath(de).c_str(), de),
+                                                          TString::Format("Noise (DE%03d NB)", de), de, 1);
       mHistogramNoiseXY[1].insert(make_pair(de, hNoiseXY));
       mAllHistograms.push_back(hNoiseXY->getHist());
       if (!mSaveToRootFile) {
