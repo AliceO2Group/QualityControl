@@ -61,9 +61,6 @@ def process(ccdb: Ccdb, object_path: str, delay: int, extra_params: Dict[str, st
     '''
 
     logger.info(f"Plugin 'production' processing {object_path}")
-    print("AAAA")
-    logger.debug("debug")
-    logger.warning("warn")
 
     # Variables
     preservation_list: List[ObjectVersion] = []
