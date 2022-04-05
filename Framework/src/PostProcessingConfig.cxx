@@ -32,7 +32,7 @@ PostProcessingConfig::PostProcessingConfig(std::string name, const boost::proper
              config.get<int>("qc.config.Activity.type", 0),
              config.get<std::string>("qc.config.Activity.periodName", ""),
              config.get<std::string>("qc.config.Activity.passName", ""),
-             config.get<std::string>("qc.config.Activity.provenance", ""))
+             config.get<std::string>("qc.config.Activity.provenance", "qc"))
 {
   for (const auto& initTrigger : config.get_child("qc.postprocessing." + name + ".initTrigger")) {
     initTriggers.push_back(initTrigger.second.get_value<std::string>());
