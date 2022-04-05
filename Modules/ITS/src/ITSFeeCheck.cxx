@@ -95,8 +95,41 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
           result.set(Quality::Bad);
         }
       } // end lanestatusOverview
-    }   // end flag loop
-  }     // end mop
+    }
+    // Adding summary Plots Checks (General, IB, ML, OL)
+    for (int isummary = 0; isummary < NSummary; isummary++) {
+      bool StatusSummary = true;
+      if (mo->getName() == Form("LaneStatusSummary/LaneStatusSummary%s", mSummaryPlots[isummary].c_str())) {
+        result = Quality::Good;
+        for (int iflag = 0; iflag < 3; iflag++) {
+          result.addMetadata(Form("Flag%s", (mLaneStatusFlag[iflag]).c_str()), "good");
+          auto* h = dynamic_cast<TH1I*>(mo->getObject());
+          if (strcmp(mSummaryPlots[isummary].c_str(), "IB") == 0) {
+            if (h->GetBinContent(iflag + 1) > 0) {
+              result.updateMetadata(Form("Flag%s", (mLaneStatusFlag[iflag]).c_str()), "bad");
+              StatusSummary = false;
+            }
+          }      // end IB
+          else { // General, ML, OL: if #lane > 25% than bad status assigned
+            if (h->GetBinContent(iflag + 1) > 0.25 * laneMaxSummaryPlots[isummary]) {
+              result.updateMetadata(Form("Flag%s", (mLaneStatusFlag[iflag]).c_str()), "bad");
+              StatusSummary = false;
+            }
+          }
+        }
+      } // end flag plot loop
+      if (!StatusSummary) {
+        result.set(Quality::Bad);
+      }
+    } // end summary loop
+    if (mo->getName() == Form("RDHSummary")) {
+      result = Quality::Good;
+      auto* h = dynamic_cast<TH2I*>(mo->getObject());
+      if (h->GetMaximum() > 0) {
+        result.set(Quality::Bad);
+      }
+    }
+  }
   return result;
 } // end check
 
@@ -109,6 +142,7 @@ void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
   TText* tInfoML = new TText();
   TText* tInfoOL = new TText();
   TText* tInfoLayers[7];
+  TText* tInfoSummary[4];
 
   for (int iflag = 0; iflag < NFlags; iflag++) {
     if (mo->getName() == Form("LaneStatus/laneStatusFlag%s", mLaneStatusFlag[iflag].c_str())) {
@@ -132,7 +166,6 @@ void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
         tInfo->SetTextSize(22);
         tInfo->SetNDC();
         hp->GetListOfFunctions()->Add(tInfo);
-
       } else if (checkResult == Quality::Bad) {
         tInfo->SetText(0.12, 0.835, "Quality::BAD (call expert)");
         tInfo->SetTextColor(kRed);
@@ -174,6 +207,52 @@ void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
       }
     }
   } // end flags
-}
+  for (int isummary = 0; isummary < NSummary; isummary++) {
+    if (mo->getName() == Form("LaneStatusSummary/LaneStatusSummary%s", mSummaryPlots[isummary].c_str())) {
+      auto* h = dynamic_cast<TH1I*>(mo->getObject());
+      if (checkResult == Quality::Good) {
+        tInfo->SetText(0.12, 0.835, "Quality::GOOD");
+        tInfo->SetTextColor(kGreen);
+        tInfo->SetTextSize(22);
+        tInfo->SetNDC();
+        h->GetListOfFunctions()->Add(tInfo);
+      } else if (checkResult == Quality::Bad) {
+        tInfo->SetText(0.12, 0.835, "Quality::BAD (call expert)");
+        tInfo->SetTextColor(kRed);
+        tInfo->SetTextSize(22);
+        tInfo->SetNDC();
+        h->GetListOfFunctions()->Add(tInfo);
+        tInfo->Draw();
+        for (int iflag = 0; iflag < NFlags; iflag++) {
+          tInfoSummary[iflag] = new TText();
+          if (strcmp(checkResult.getMetadata(Form("Flag%s", mLaneStatusFlag[iflag].c_str())).c_str(), "bad") == 0) {
+            if (strcmp(mSummaryPlots[isummary].c_str(), "IB") == 0) {
+              tInfoSummary[iflag]->SetText(0.12, 0.75 - 0.07 * iflag, Form("%s: > 1 lane in %s", mSummaryPlots[isummary].c_str(), mLaneStatusFlag[iflag].c_str()));
+            } else {
+              tInfoSummary[iflag]->SetText(0.12, 0.75 - 0.07 * iflag, Form("%s: > 25%% of staves in %s", mSummaryPlots[isummary].c_str(), mLaneStatusFlag[iflag].c_str()));
+            }
+            tInfoSummary[iflag]->SetTextColor(kRed + 1);
+            tInfoSummary[iflag]->SetTextSize(21);
+            tInfoSummary[iflag]->SetNDC();
+            h->GetListOfFunctions()->Add(tInfoSummary[iflag]);
+          }
+        }
+      }
+    }
+  } // end summary
+  if (mo->getName() == Form("RDHSummary")) {
+    auto* h = dynamic_cast<TH2I*>(mo->getObject());
+    if (checkResult == Quality::Good) {
+      tInfo->SetText(0.1, 0.8, "Quality::GOOD");
+      tInfo->SetTextColor(kGreen);
+    } else if (checkResult == Quality::Bad) {
+      tInfo->SetText(0.15, 0.8, "Quality::BAD (call expert)");
+      tInfo->SetTextColor(kRed);
+    }
+    tInfo->SetTextSize(18);
+    tInfo->SetNDC();
+    h->GetListOfFunctions()->Add(tInfo);
+  }
+} // end beautify
 
 } // namespace o2::quality_control_modules::its

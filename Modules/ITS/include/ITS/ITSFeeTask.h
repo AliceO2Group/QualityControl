@@ -27,6 +27,7 @@
 #include <TH2Poly.h>
 #include "TMath.h"
 #include <TLine.h>
+#include <TText.h>
 
 class TH2I;
 class TH1I;
@@ -79,6 +80,7 @@ class ITSFeeTask final : public TaskInterface
   void createFeePlots();
   void getStavePoint(int layer, int stave, double* px, double* py); // prepare for fill TH2Poly, get all point for add TH2Poly bin
   void setPlotsFormat();
+  void drawLayerName(TH2I* laneStatus);
   void resetGeneralPlots();
   static constexpr int NLayer = 7;
   const int NStaves[NLayer] = { 12, 16, 20, 24, 30, 42, 48 };
@@ -97,6 +99,8 @@ class ITSFeeTask final : public TaskInterface
   std::string mLaneStatusFlag[NFlags] = { "WARNING", "ERROR", "FAULT" }; // b00 OK, b01 WARNING, b10 ERROR, b11 FAULT
 
   int mStatusFlagNumber[7][48][28][3] = { { { 0 } } }; //[iLayer][iStave][iLane][iLaneStatusFlag]
+  int mStatusSummaryLayerNumber[7][3] = { { 0 } };     //[iLayer][iflag]
+  int mStatusSummaryNumber[4][3] = { { 0 } };          //[summary][iflag] ---> Global, IB, ML, OL
 
   // parameters taken from the .json
   int mNPayloadSizeBins = 0;
@@ -105,9 +109,10 @@ class ITSFeeTask final : public TaskInterface
   TH2I* mTriggerVsFeeId;
   TH1I* mTrigger;
   TH2I* mLaneInfo;
-  TH2I* mFlag1Check;         // include transmission_timeout, packet_overflow, lane_starts_violation
-  TH2I* mIndexCheck;         // should be zero
-  TH2I* mIdCheck;            // should be 0x : e4
+  TH2I* mFlag1Check; // include transmission_timeout, packet_overflow, lane_starts_violation
+  TH2I* mIndexCheck; // should be zero
+  TH2I* mIdCheck;    // should be 0x : e4
+  TH2I* mRDHSummary;
   TH2I* mLaneStatus[NFlags]; // 4 flags for each lane. 3/8/14 lane for each link. 3/2/2 link for each RU. TODO: remove the OK flag in these 4 flag plots, OK flag plot just used to debug.
   TH2Poly* mLaneStatusOverview[NFlags] = { 0x0 };
   TH1I* mLaneStatusSummary[NLayer];
