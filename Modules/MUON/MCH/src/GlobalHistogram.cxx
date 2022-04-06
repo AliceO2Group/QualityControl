@@ -76,19 +76,19 @@ int getDEindex(int deId)
   }
   offset += 5;
 
-  // CH 5 - 17 DE
+  // CH 5 - 18 DE
   DEmin = 500;
   if (deId < (DEmin + 100)) {
     return (deId - DEmin + offset);
   }
-  offset += 18;
+  offset += 19;
 
-  // CH 6 - 17 DE
+  // CH 6 - 18 DE
   DEmin = 600;
   if (deId < (DEmin + 100)) {
     return (deId - DEmin + offset);
   }
-  offset += 18;
+  offset += 19;
 
   // CH 7 - 26 DE
   DEmin = 700;
