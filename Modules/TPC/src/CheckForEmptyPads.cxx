@@ -9,11 +9,11 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   PadCalibrationCheck.cxx
+/// \file   CheckForEmptyPads.cxx
 /// \author Laura Serksnyte
 ///
 
-#include "TPC/PadCalibrationCheck.h"
+#include "TPC/CheckForEmptyPads.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 
@@ -30,18 +30,26 @@
 
 namespace o2::quality_control_modules::tpc
 {
-void PadCalibrationCheck::configure()
+void CheckForEmptyPads::configure()
 {
-  if (auto param = mCustomParameters.find("mediumQualityNoiseMean"); param != mCustomParameters.end()) {
-    mMediumQualityLimitNoiseMean = std::atof(param->second.c_str());
+  if (auto param = mCustomParameters.find("mediumQualityPercentageOfWorkingPads"); param != mCustomParameters.end()) {
+    mMediumQualityLimit = std::atof(param->second.c_str());
   }
-  if (auto param = mCustomParameters.find("badQualityNoiseMean"); param != mCustomParameters.end()) {
-    mBadQualityLimitNoiseMean = std::atof(param->second.c_str());
+  if (auto param = mCustomParameters.find("badQualityPercentageOfWorkingPads"); param != mCustomParameters.end()) {
+    mBadQualityLimit = std::atof(param->second.c_str());
+  }
+  if (auto param = mCustomParameters.find("MOsNames2D"); param != mCustomParameters.end()) {
+    auto temp = param->second.c_str();
+    std::istringstream ss(temp);
+    std::string token;
+    while (std::getline(ss, token, ',')) {
+      mMOsToCheck2D.emplace_back(token);
+    }
   }
 }
 
 //______________________________________________________________________________
-Quality PadCalibrationCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
+Quality CheckForEmptyPads::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
   Quality result = Quality::Null;
   for (auto const& moObj : *moMap) {
@@ -52,61 +60,60 @@ Quality PadCalibrationCheck::check(std::map<std::string, std::shared_ptr<Monitor
     auto moName = mo->getName();
     std::string histName, histNameS;
     int padsTotal = 0, padsstart = 1000;
-    // If it is a noise histogram, not only the quality but also the counts, mean and standart deviation excluding 0 bin must be stored
-    if (moName == "c_Sides_Noise" || moName == "c_ROCs_Noise_1D") {
+    if (auto it = std::find(mMOsToCheck2D.begin(), mMOsToCheck2D.end(), moName); it != mMOsToCheck2D.end()) {
+      size_t end = moName.find("_2D");
+      auto histSubName = moName.substr(7, end - 7);
       result = Quality::Good;
-      if (moName == "c_Sides_Noise") {
-        padsstart = 3;
-        padsTotal = 4;
-      }
-      if (moName == "c_ROCs_Noise_1D") {
-        padsstart = 1;
-        padsTotal = 72;
-      }
       auto* canv = (TCanvas*)mo->getObject();
-      if (!canv) {
+      if (!canv)
         continue;
-      }
       // Check all histograms in the canvas
-      for (int tpads = padsstart; tpads <= padsTotal; tpads++) {
+      for (int tpads = 1; tpads <= 72; tpads++) {
         const auto padName = fmt::format("{:s}_{:d}", moName, tpads);
+        const auto histName = fmt::format("h_{:s}_ROC_{:02d}", histSubName, tpads - 1);
         TPad* pad = (TPad*)canv->GetListOfPrimitives()->FindObject(padName.data());
         if (!pad) {
+          mSectorsName.push_back("notitle");
+          mSectorsQuality.push_back(Quality::Null);
           continue;
         }
-        TH1F* h = nullptr;
-        if (moName == "c_Sides_Noise") {
-          if (tpads == 3) {
-            histName = "h_Aside_1D_Noise";
-          }
-          if (tpads == 4) {
-            histName = "h_Cside_1D_Noise";
-          }
-        } else if (moName == "c_ROCs_Noise_1D") {
-          histName = fmt::format("h1_Noise_{:02d}", tpads - 1);
-        }
-        h = (TH1F*)pad->GetListOfPrimitives()->FindObject(histName.data());
+        TH2F* h = (TH2F*)pad->GetListOfPrimitives()->FindObject(histName.data());
         if (!h) {
+          mSectorsName.push_back("notitle");
+          mSectorsQuality.push_back(Quality::Null);
           continue;
         }
         const std::string titleh = h->GetTitle();
-        // Set histogram range to correct one and then obtain information about total counts, mean, standard deviation
+
+        // check if we are dealing with IROC or OROC
+        int totalPads = 0;
+        if (titleh.find("IROC") != std::string::npos) {
+          totalPads = 5280;
+        } else if (titleh.find("OROC") != std::string::npos) {
+          totalPads = 9280;
+        } else {
+          return Quality::Null;
+        }
         const int NX = h->GetNbinsX();
-        h->GetXaxis()->SetRangeUser(h->GetXaxis()->GetBinCenter(2), h->GetXaxis()->GetBinCenter(NX));
-        auto mean = h->GetMean();
-        auto stdDev = h->GetStdDev();
-        auto nonZeroEntries = h->Integral();
-        mNoiseMean.push_back(mean);
-        mNoiseStdDev.push_back(stdDev);
-        mNoiseNonZeroEntries.push_back(nonZeroEntries);
-        // check quality
-        if (mean > mMediumQualityLimitNoiseMean && mean < mBadQualityLimitNoiseMean) {
+        const int NY = h->GetNbinsY();
+        // Check how many of the pads are non zero
+        int sum = 0;
+        for (int i = 1; i <= NX; i++) {
+          for (int j = 1; j <= NY; j++) {
+            float val = h->GetBinContent(i, j);
+            if (val > 0.) {
+              sum += 1;
+            }
+          }
+        }
+        // Check how many are off
+        if (sum > mBadQualityLimit * totalPads && sum < mMediumQualityLimit * totalPads) {
           if (result == Quality::Good) {
             result = Quality::Medium;
           }
           mSectorsName.push_back(titleh);
           mSectorsQuality.push_back(Quality::Medium);
-        } else if (mean > mBadQualityLimitNoiseMean) {
+        } else if (sum < mBadQualityLimit * totalPads) {
           result = Quality::Bad;
           mSectorsName.push_back(titleh);
           mSectorsQuality.push_back(Quality::Bad);
@@ -122,24 +129,21 @@ Quality PadCalibrationCheck::check(std::map<std::string, std::shared_ptr<Monitor
 }
 
 //______________________________________________________________________________
-std::string PadCalibrationCheck::getAcceptedType() { return "TCanvas"; }
+std::string CheckForEmptyPads::getAcceptedType() { return "TCanvas"; }
 
 //______________________________________________________________________________
-void PadCalibrationCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality)
+void CheckForEmptyPads::beautify(std::shared_ptr<MonitorObject> mo, Quality)
 {
   auto moName = mo->getName();
-  if (moName == "c_Sides_Noise" || moName == "c_ROCs_Noise_1D") {
+  if (auto it = std::find(mMOsToCheck2D.begin(), mMOsToCheck2D.end(), moName); it != mMOsToCheck2D.end()) {
     int padsTotal = 0, padsstart = 1000;
     auto* tcanv = (TCanvas*)mo->getObject();
     std::string histNameS, histName;
-    if (moName == "c_Sides_Noise") {
-      padsstart = 3;
-      padsTotal = 4;
-    } else if (moName == "c_ROCs_Noise_1D") {
-      padsstart = 1;
-      padsTotal = 72;
-      histNameS = "h1_Noise";
-    }
+    padsstart = 1;
+    padsTotal = 72;
+    size_t end = moName.find("_2D");
+    auto histSubName = moName.substr(7, end - 7);
+    histNameS = fmt::format("h_{:s}_ROC", histSubName);
     for (int tpads = padsstart; tpads <= padsTotal; tpads++) {
       const std::string padName = fmt::format("{:s}_{:d}", moName, tpads);
       TPad* pad = (TPad*)tcanv->GetListOfPrimitives()->FindObject(padName.data());
@@ -148,17 +152,7 @@ void PadCalibrationCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality)
       }
       pad->cd();
       TH1F* h = nullptr;
-      // In case of working on noise information
-      if (moName == "c_Sides_Noise") {
-        if (tpads == 3) {
-          histName = "h_Aside_1D_Noise";
-        }
-        if (tpads == 4) {
-          histName = "h_Cside_1D_Noise";
-        }
-      } else {
-        histName = fmt::format("{:s}_{:02d}", histNameS, tpads - 1);
-      }
+      histName = fmt::format("{:s}_{:02d}", histNameS, tpads - 1);
       h = (TH1F*)pad->GetListOfPrimitives()->FindObject(histName.data());
       if (!h) {
         continue;
@@ -169,17 +163,6 @@ void PadCalibrationCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality)
         continue;
       }
       const int index = std::distance(mSectorsName.begin(), it);
-      TPaveText* msg = new TPaveText(0.7, 0.8, 0.898, 0.9, "NDC");
-      h->SetStats(0);
-      msg->SetBorderSize(1);
-      msg->SetName(Form("%s_msg", mo->GetName()));
-      msg->Clear();
-      msg->AddText(fmt::format("Entries: {:d}", mNoiseNonZeroEntries[index]).data());
-      msg->AddText(fmt::format("Mean: {:.4f}", mNoiseMean[index]).data());
-      msg->AddText(fmt::format("Std Dev: {:.4f}", mNoiseStdDev[index]).data());
-      msg->Draw("same");
-
-      // In case of all histograms
       TPaveText* msgQuality = new TPaveText(0.1, 0.9, 0.9, 0.95, "NDC");
       msgQuality->SetBorderSize(1);
       Quality qualitySpecial = mSectorsQuality[index];
@@ -202,11 +185,10 @@ void PadCalibrationCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality)
       h->SetLineColor(kBlack);
       msgQuality->Draw("same");
     }
+    auto savefileNAme = fmt::format("/home/ge56luj/Desktop/ThisIsBeautifyObject{:s}.pdf", moName);
+    tcanv->SaveAs(savefileNAme.c_str());
     mSectorsName.clear();
     mSectorsQuality.clear();
-    mNoiseMean.clear();
-    mNoiseStdDev.clear();
-    mNoiseNonZeroEntries.clear();
   }
 }
 
