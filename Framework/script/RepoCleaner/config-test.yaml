@@ -5,6 +5,10 @@ Rules:
   - object_path: QcTask/example
     delay: 120
     policy: 1_per_hour
-    
+  - object_path: qc/TST/MO/repo/test/.*
+    delay: 60
+    policy: production
+    delete_when_no_run: True
+
 Ccdb:
    Url: http://ccdb-test.cern.ch:8080

@@ -1,9 +1,12 @@
 from datetime import datetime
 from datetime import timedelta
-import logging
+import logger
 from typing import Dict
 
 from Ccdb import Ccdb, ObjectVersion
+
+
+logger = logging  # default logger
 
 
 def process(ccdb: Ccdb, object_path: str, delay: int, #migration: bool,
@@ -23,7 +26,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int, #migration: bool,
     :return a dictionary with the number of deleted, preserved and updated versions. Total = deleted+preserved.
     '''
     
-    logging.debug(f"Plugin 1_per_hour processing {object_path}")
+    logger.debug(f"Plugin 1_per_hour processing {object_path}")
 
     versions = ccdb.getVersionsList(object_path)
 
@@ -41,22 +44,22 @@ def process(ccdb: Ccdb, object_path: str, delay: int, #migration: bool,
         else:
             if v.validFromAsDt < datetime.now() - timedelta(minutes=delay):
                 deletion_list.append(v)
-                logging.debug(f"not in the grace period, we delete {v}")
+                logger.debug(f"not in the grace period, we delete {v}")
                 ccdb.deleteVersion(v)
             else:
                 preservation_list.append(v)
 
-    logging.debug("deleted : ")
+    logger.debug("deleted : ")
     for v in deletion_list:
-        logging.debug(f"   {v}")
+        logger.debug(f"   {v}")
 
-    logging.debug("preserved : ")
+    logger.debug("preserved : ")
     for v in preservation_list:
-        logging.debug(f"   {v}")
+        logger.debug(f"   {v}")
 
-    logging.debug("updated : ")
+    logger.debug("updated : ")
     for v in update_list:
-        logging.debug(f"   {v}")
+        logger.debug(f"   {v}")
 
     return {"deleted" : len(deletion_list), "preserved": len(preservation_list), "updated" : len(update_list)}
 
