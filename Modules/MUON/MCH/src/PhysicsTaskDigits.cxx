@@ -135,6 +135,13 @@ void PhysicsTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   // mMeanOccupancyPerDECycle = std::make_shared<MergeableTH1OccupancyPerDECycle>("MeanOccupancyPerCycle", "Mean Occupancy of each DE Per Cycle (MHz)", mHistogramNHitsElec, mHistogramNorbitsElec);
   // getObjectsManager()->startPublishing(mMeanOccupancyPerDECycle.get());
 
+  mHistogramDigitsOrbitInTFDE = std::make_shared<TH2F>("DigitOrbitInTFDE", "Digit orbits vs DE", getDEindexMax(), 0, getDEindexMax(), 768, -384, 384);
+  mHistogramDigitsOrbitInTFDE->SetOption("colz");
+  mAllHistograms.push_back(mHistogramDigitsOrbitInTFDE.get());
+  if (!mSaveToRootFile) {
+    getObjectsManager()->startPublishing(mHistogramDigitsOrbitInTFDE.get());
+  }
+
   mHistogramDigitsOrbitInTF = std::make_shared<TH2F>("Expert/DigitOrbitInTF", "Digit orbits vs DS Id", nElecXbins, 0, nElecXbins, 768, -384, 384);
   mHistogramDigitsOrbitInTF->SetOption("colz");
   mAllHistograms.push_back(mHistogramDigitsOrbitInTF.get());
@@ -309,11 +316,13 @@ void PhysicsTaskDigits::plotDigit(const o2::mch::Digit& digit)
   auto tfTime = digit.getTime();
   if (tfTime == o2::mch::raw::DataDecoder::tfTimeInvalid) {
     mHistogramDigitsOrbitInTF->Fill(xbin - 0.5, -256);
+    mHistogramDigitsOrbitInTFDE->Fill(getDEindex(deId), -256);
     mHistogramDigitsBcInOrbit->Fill(xbin - 0.5, 3559);
   } else {
     auto orbit = digit.getTime() / o2::constants::lhc::LHCMaxBunches;
     auto bc = digit.getTime() % o2::constants::lhc::LHCMaxBunches;
     mHistogramDigitsOrbitInTF->Fill(xbin - 0.5, orbit);
+    mHistogramDigitsOrbitInTFDE->Fill(getDEindex(deId), orbit);
     mHistogramDigitsBcInOrbit->Fill(xbin - 0.5, bc);
   }
 
