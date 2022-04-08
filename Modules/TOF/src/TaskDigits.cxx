@@ -81,6 +81,11 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
       fgDiagnostic = true;
     }
   }
+  if (auto param = mCustomParameters.find("PerChannel"); param != mCustomParameters.end()) {
+    if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
+      fgPerChannel = true;
+    }
+  }
 
   // Define histograms
   ILOG(Info, Support) << "initialize TaskDigits" << ENDM;
@@ -208,6 +213,11 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
 
   mROWSize = std::make_shared<TH1I>("mROWSize", "N Orbits in TF; Orbits in TF", 300, 0., 300.);
   getObjectsManager()->startPublishing(mROWSize.get());
+
+  if (fgPerChannel) {
+    mOrphanPerChannel = std::make_shared<TH1S>("mOrphanPerChannel", "TOF orphans vs channel;Channel;Counts", nchannels, 0., nchannels);
+    getObjectsManager()->startPublishing(mOrphanPerChannel.get());
+  }
 }
 
 void TaskDigits::startOfActivity(Activity& /*activity*/)
@@ -306,6 +316,9 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
       // TDC time and ToT time
       tdc_time = (digit.getTDC() + digit.getIR().bc * 1024) * o2::tof::Geo::TDCBIN * 0.001;
       tot_time = digit.getTOT() * o2::tof::Geo::TOTBIN_NS;
+      if (fgPerChannel && (tot_time <= 0.f)) {
+        mOrphanCounterPerChannel.Count(digit.getChannel());
+      }
       mTOFtimeVsBCID->Fill(row.mFirstIR.bc % 1024, tdc_time);
       mTOFRawsTime->Fill(tdc_time);
       mTOFRawsToT->Fill(tot_time);
@@ -345,7 +358,7 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
     ndigits[3] = 0;
   }
 
-  //To complete the second TF in case it receives orbits
+  // To complete the second TF in case it receives orbits
   for (; currentrow < 768; currentrow++) {
     for (unsigned int i = 0; i < RawDataDecoder::ncrates; i++) { // Loop on all crates
       mOrbitDDL->Fill(i, currentrow / 3.0, 0);
@@ -358,6 +371,9 @@ void TaskDigits::endOfCycle()
   ILOG(Info, Support) << "endOfCycle" << ENDM;
   for (unsigned int i = 0; i < RawDataDecoder::nstrips; i++) {
     mHitCounterPerStrip[i].FillHistogram(mTOFRawHitMap.get(), i + 1);
+  }
+  if (fgPerChannel) {
+    mOrphanCounterPerChannel.FillHistogram(mOrphanPerChannel.get());
   }
 }
 
@@ -374,6 +390,7 @@ void TaskDigits::reset()
     mHitCounterPerStrip[i].Reset();
   }
   mHitCounterPerChannel.Reset();
+  mOrphanCounterPerChannel.Reset();
 
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
   // Event info
@@ -407,6 +424,9 @@ void TaskDigits::reset()
   if (fgDiagnostic) {
     mTOFDecodingErrors->Reset();
   }
+
+  mOrphanPerChannel->Reset();
+
   // mTOFOrphansTime->Reset();
   // mTOFRawTimeVsTRM035->Reset();
   // mTOFRawTimeVsTRM3671->Reset();
