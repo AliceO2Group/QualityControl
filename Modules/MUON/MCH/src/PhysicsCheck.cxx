@@ -36,12 +36,8 @@ using namespace std;
 namespace o2::quality_control_modules::muonchambers
 {
 
-PhysicsCheck::PhysicsCheck()
+PhysicsCheck::PhysicsCheck() : mMinOccupancy(0.001), mMaxOccupancy(1.0), mMinGoodFraction(0.9), mOccupancyPlotScaleMin(0), mOccupancyPlotScaleMax(1), mVerbose(false)
 {
-  mPrintLevel = 0;
-  mMinOccupancy = 0.001;
-  mMaxOccupancy = 1.00;
-
   mElec2DetMapper = o2::mch::raw::createElec2DetMapper<o2::mch::raw::ElectronicMapperGenerated>();
   mDet2ElecMapper = o2::mch::raw::createDet2ElecMapper<o2::mch::raw::ElectronicMapperGenerated>();
   mFeeLink2SolarMapper = o2::mch::raw::createFeeLink2SolarMapper<o2::mch::raw::ElectronicMapperGenerated>();
@@ -57,6 +53,20 @@ void PhysicsCheck::configure()
   }
   if (auto param = mCustomParameters.find("MaxOccupancy"); param != mCustomParameters.end()) {
     mMaxOccupancy = std::stof(param->second);
+  }
+  if (auto param = mCustomParameters.find("MinGoodFraction"); param != mCustomParameters.end()) {
+    mMinGoodFraction = std::stof(param->second);
+  }
+  if (auto param = mCustomParameters.find("OccupancyPlotScaleMin"); param != mCustomParameters.end()) {
+    mOccupancyPlotScaleMin = std::stof(param->second);
+  }
+  if (auto param = mCustomParameters.find("OccupancyPlotScaleMax"); param != mCustomParameters.end()) {
+    mOccupancyPlotScaleMax = std::stof(param->second);
+  }
+  if (auto param = mCustomParameters.find("Verbose"); param != mCustomParameters.end()) {
+    if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
+      mVerbose = true;
+    }
   }
 }
 
@@ -114,7 +124,7 @@ Quality PhysicsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
       } else {
         int nbinsx = h->GetXaxis()->GetNbins();
         int nbinsy = h->GetYaxis()->GetNbins();
-        int nbad = 0;
+        int ngood = 0;
         int npads = 0;
         for (int i = 1; i <= nbinsx; i++) {
           int index = i - 1;
@@ -132,18 +142,15 @@ Quality PhysicsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
 
             Float_t occupancy = h->GetBinContent(i, j);
             if (occupancy >= mMinOccupancy && occupancy <= mMaxOccupancy) {
-              continue;
-            }
-
-            nbad += 1;
-
-            if (mPrintLevel >= 1) {
-              std::cout << "Channel with unusual occupancy read from OccupancyElec histogrm: fee_id = " << fee_id << ", link_id = " << link_id << ", ds_addr = " << ds_addr << " , chan_addr = " << chan_addr << " with an occupancy of " << occupancy << std::endl;
+              ngood += 1;
             }
           }
         }
-        std::cout << fmt::format("Npads {}  Nbad {}   Frac {}", npads, nbad, nbad / npads) << std::endl;
-        if (nbad < 0.1 * npads)
+        if (mVerbose) {
+          LOGP(debug, "Npads {}  Ngood {}   Frac {}", npads, ngood, float(ngood) / float(npads));
+        }
+
+        if (ngood >= mMinGoodFraction * npads)
           result = Quality::Good;
         else
           result = Quality::Bad;
@@ -157,17 +164,15 @@ std::string PhysicsCheck::getAcceptedType() { return "TH1"; }
 
 void PhysicsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  // std::cout<<"===================================="<<std::endl;
-  // std::cout<<"PhysicsCheck::beautify() called"<<std::endl;
-  // std::cout<<"===================================="<<std::endl;
   if (mo->getName().find("Occupancy_Elec") != std::string::npos) {
     auto* h = dynamic_cast<TH2F*>(mo->getObject());
     h->SetDrawOption("colz");
-    h->SetMinimum(0);
-    h->SetMaximum(10);
+    h->SetMinimum(mOccupancyPlotScaleMin);
+    h->SetMaximum(mOccupancyPlotScaleMax);
     TPaveText* msg = new TPaveText(0.1, 0.9, 0.9, 0.95, "NDC");
     h->GetListOfFunctions()->Add(msg);
     msg->SetName(Form("%s_msg", mo->GetName()));
+    msg->SetBorderSize(0);
 
     if (checkResult == Quality::Good) {
       msg->Clear();
@@ -194,16 +199,29 @@ void PhysicsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResu
     h->SetLineColor(kBlack);
   }
 
+  if ((mo->getName().find("Occupancy_ST12") != std::string::npos) ||
+      (mo->getName().find("Occupancy_ST345") != std::string::npos)) {
+    auto* h = dynamic_cast<TH2F*>(mo->getObject());
+    h->SetDrawOption("colz");
+    h->SetMinimum(mOccupancyPlotScaleMin);
+    h->SetMaximum(mOccupancyPlotScaleMax);
+    h->GetXaxis()->SetTickLength(0.0);
+    h->GetXaxis()->SetLabelSize(0.0);
+    h->GetYaxis()->SetTickLength(0.0);
+    h->GetYaxis()->SetLabelSize(0.0);
+  }
+
   if (mo->getName().find("MeanOccupancy") != std::string::npos) {
     auto* h = dynamic_cast<TH1F*>(mo->getObject());
     // disable ticks on vertical axis
+    h->GetXaxis()->SetTickLength(0.0);
+    h->GetXaxis()->SetLabelSize(0.0);
     h->GetYaxis()->SetTickLength(0);
-    h->SetMaximum(h->GetMaximum() * 1.2);
+    h->SetMaximum(h->GetMaximum() * 2);
     // draw chamber delimiters
     for (int demin = 200; demin <= 1000; demin += 100) {
       float xpos = static_cast<float>(getDEindex(demin)) - 0.5;
-      std::cout << "DEmin " << demin << "  ID " << getDEindex(demin) << std::endl;
-      TLine* delimiter = new TLine(xpos, 0, xpos, 1.1 * h->GetMaximum());
+      TLine* delimiter = new TLine(xpos, 0, xpos, h->GetMaximum());
       delimiter->SetLineColor(kBlack);
       delimiter->SetLineStyle(kDashed);
       h->GetListOfFunctions()->Add(delimiter);
@@ -211,21 +229,29 @@ void PhysicsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResu
       if (demin < 600) {
         float x1 = static_cast<float>(getDEindex(demin - 100));
         float x2 = static_cast<float>(getDEindex(demin));
-        float x0 = (x1 + x2) / 2;
-        TText* msg = new TText(x0, 0.88 * h->GetMaximum(), TString::Format("CH%d", (demin - 1) / 100));
-        msg->SetTextAngle(90);
-        h->GetListOfFunctions()->Add(msg);
+        float x0 = 0.8 * (x1 + x2) / (2 * h->GetXaxis()->GetXmax()) + 0.105;
+        float y0 = 0.82;
+        TText* label = new TText();
+        label->SetNDC();
+        label->SetText(x0, y0, TString::Format("CH%d", (demin - 1) / 100));
+        label->SetTextSize(22);
+        label->SetTextAngle(90);
+        h->GetListOfFunctions()->Add(label);
       } else {
         float x1 = static_cast<float>(getDEindex(demin - 100));
         float x2 = static_cast<float>(getDEindex(demin));
-        float x0 = (x1 + x2) / 2;
-        TText* msg = new TText(x0, 0.95 * h->GetMaximum(), TString::Format("CH%d", (demin - 1) / 100));
-        msg->SetTextAlign(22);
-        h->GetListOfFunctions()->Add(msg);
+        float x0 = 0.8 * (x1 + x2) / (2 * h->GetXaxis()->GetXmax()) + 0.1;
+        float y0 = 0.87;
+        TText* label = new TText();
+        label->SetNDC();
+        label->SetText(x0, y0, TString::Format("CH%d", (demin - 1) / 100));
+        label->SetTextSize(25);
+        label->SetTextAlign(22);
+        h->GetListOfFunctions()->Add(label);
       }
     }
 
-    TPaveText* msg = new TPaveText(0.1, 0.9, 0.9, 0.95, "NDC");
+    TPaveText* msg = new TPaveText(0.1, 0.903, 0.9, 0.945, "NDC");
     h->GetListOfFunctions()->Add(msg);
     msg->SetName(Form("%s_msg", mo->GetName()));
     msg->SetBorderSize(0);

@@ -6,6 +6,9 @@ from typing import Dict
 from Ccdb import Ccdb, ObjectVersion
 
 
+logger = logging  # default logger
+
+
 def process(ccdb: Ccdb, object_path: str, delay: int, extra_params: Dict[str, str]):
     '''
     Process this deletion rule on the object. We use the CCDB passed by argument.
@@ -19,7 +22,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int, extra_params: Dict[str, st
     :return a dictionary with the number of deleted, preserved and updated versions. Total = deleted+preserved.
     '''
     
-    logging.debug(f"Plugin last_only processing {object_path}")
+    logger.debug(f"Plugin last_only processing {object_path}")
 
     versions = ccdb.getVersionsList(object_path)
 
@@ -30,7 +33,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int, extra_params: Dict[str, st
     for v in versions:
         if earliest == None or v.validFromAsDt > earliest.validFromAsDt:
             earliest = v
-    logging.debug(f"earliest : {earliest}")
+    logger.debug(f"earliest : {earliest}")
             
     # delete the non-earliest if we are not in the grace period
     for v in versions:
@@ -44,13 +47,13 @@ def process(ccdb: Ccdb, object_path: str, delay: int, extra_params: Dict[str, st
         else:
             preservation_list.append(v)
 
-    logging.debug("deleted : ")
+    logger.debug("deleted : ")
     for v in deletion_list:
-        logging.debug(f"   {v}")
+        logger.debug(f"   {v}")
 
-    logging.debug("preserved : ")
+    logger.debug("preserved : ")
     for v in preservation_list:
-        logging.debug(f"   {v}")
+        logger.debug(f"   {v}")
         
     return {"deleted" : len(deletion_list), "preserved": len(preservation_list)}
 

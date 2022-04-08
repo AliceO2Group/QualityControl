@@ -12,4 +12,5 @@
 #pragma link C++ class o2::quality_control_modules::mft::QcMFTTrackCheck + ;
 #pragma link C++ class o2::quality_control_modules::mft::QcMFTReadoutCheck + ;
 #pragma link C++ class o2::quality_control_modules::mft::QcMFTReadoutTask + ;
+#pragma link C++ class o2::quality_control_modules::mft::QcMFTReadoutTrend + ;
 #endif

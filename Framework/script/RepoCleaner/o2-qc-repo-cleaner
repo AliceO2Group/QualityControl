@@ -17,13 +17,14 @@
 #
 # Usage
 #         # run with debug logs and don't actually touch the database
-#         ./repoCleaner --dry-run --log-level 10 
+#         PYTHONPATH=./rules:$PYTHONPATH./o2-qc-repo-cleaner --dry-run --log-level 10
 
 import argparse
 import logging
 import requests
 import re
 import sys
+import importlib
 from typing import List
 import tempfile
 import socket
@@ -289,17 +290,25 @@ def read_config(args):
     return ccdb_url, rules
 
 
-def process_object(object_path, rules, ccdb):
+def process_object(object_path, rules, ccdb, args):
     logger = create_parallel_logger()
+    logger.setLevel(int(args.log_level))
     logger.info(f"Processing {object_path}")
 
     # Take the first matching rule, if any
     rule = findMatchingRule(rules, object_path)
+
     if rule is None:
+        logger.info(f"    no matching rule")
         return
 
     # Apply rule on object (find the plug-in script and apply)
-    module = __import__(rule.policy)
+    try:
+        module = importlib.import_module(rule.policy)
+        module.logger = logger
+    except ModuleNotFoundError as err:
+        logger.error(f"could not load module {rule.policy}")
+        return
     stats = module.process(ccdb, object_path, int(rule.delay),  # rule.migration == "True",
                            rule.extra_params)
     logger.info(f"{rule.policy} applied on {object_path}: {stats}")
@@ -309,17 +318,17 @@ def run(args, ccdb_url, rules):
 
     # Get list of objects from CCDB
     ccdb = Ccdb(ccdb_url)
+    ccdb.logger = logging.getLogger
     paths = ccdb.getObjectsList(getTimestampLastExecution())
     if args.only_path != '':
         paths = [item for item in paths if item is not None and item.startswith(args.only_path)]
     logging.debug(paths)
-    logging.debug(len(paths))
     # For each object call the first matching rule
     logging.info("Loop through the objects and apply first matching rule.")
 
     logging.info(f"workers: {args.workers}")
     pool = mp.Pool(int(args.workers))
-    [pool.apply_async(process_object, args=(object_path, rules, ccdb)) for object_path in paths]
+    [pool.apply_async(process_object, args=(object_path, rules, ccdb, args)) for object_path in paths]
     pool.close()
     pool.join()
 

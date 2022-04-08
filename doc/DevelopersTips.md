@@ -312,3 +312,13 @@ qcConfiguration: {{ ToPtree(Dump(GetConfigLegacy('qc/ANY/any/stfb_to_daqtask-ali
 ```
 
 Related issue: QC-310
+
+## ccdb-test connection
+
+Ask Costin to put your key on the server. 
+
+Address: root@alicdb1
+So the file repo is in the default location, `/root/QC`, but the database is also there. Careful.
+
+
+

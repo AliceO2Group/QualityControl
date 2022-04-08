@@ -74,6 +74,26 @@
           "userorcontrol"
         ]
       }
+    },
+    "checks":{
+      "CheckForEmptyPads": {
+        "active" : "true",
+        "className" : "o2::quality_control_modules::tpc::CheckForEmptyPads",
+        "moduleName" : "QcTPC",
+        "policy" : "OnEachSeparately",
+        "detectorName" : "TPC",
+        "dataSource" : [{
+          "type" : "PostProcessing",
+          "name" : "RawDigits",
+          "MOs" : ["c_ROCs_N_RawDigits_2D","c_ROCs_Q_Max_2D"]
+        }],
+        "stopTrigger_comment": [ "MOsNames are required for code to work, runs check of empty pads, should be the same as MOs, the MOs must be separated by comma only, no spaces" ],
+        "checkParameters": {
+          "mediumQualityPercentageOfWorkingPads" : "0.7",
+          "badQualityPercentageOfWorkingPads" : "0.4",
+          "MOsNames2D" : "c_ROCs_N_RawDigits_2D,c_ROCs_Q_Max_2D"
+        }
+      }
     }
   }
 }

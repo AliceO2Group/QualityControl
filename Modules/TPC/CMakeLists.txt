@@ -5,8 +5,6 @@ add_library(O2QcTPC)
 target_sources(O2QcTPC PRIVATE src/PID.cxx
                              src/Tracking.cxx
                              src/Tracks.cxx
-                             src/PIDClusterCheck.cxx
-                             src/TrackClusterCheck.cxx
                              src/ROCReductor.cxx
                              src/Clusters.cxx
                              src/CalDetPublisher.cxx
@@ -20,7 +18,8 @@ target_sources(O2QcTPC PRIVATE src/PID.cxx
                              src/TrendingTaskTPC.cxx
                              src/TrendingTaskConfigTPC.cxx
                              src/TH1ReductorTPC.cxx
-                             src/TH2ReductorTPC.cxx)
+                             src/TH2ReductorTPC.cxx
+                             src/CheckForEmptyPads.cxx)
 
 target_include_directories(
   O2QcTPC
@@ -40,8 +39,6 @@ add_root_dictionary(O2QcTPC
                     HEADERS include/TPC/PID.h
                             include/TPC/Tracking.h
                             include/TPC/Tracks.h
-                            include/TPC/PIDClusterCheck.h
-                            include/TPC/TrackClusterCheck.h
                             include/TPC/ROCReductor.h
                             include/TPC/Clusters.h
                             include/TPC/CalDetPublisher.h
@@ -59,6 +56,7 @@ add_root_dictionary(O2QcTPC
                             include/TPC/ReductorTPC.h
                             include/TPC/TH1ReductorTPC.h
                             include/TPC/TH2ReductorTPC.h
+                            include/TPC/CheckForEmptyPads.h
                     LINKDEF include/TPC/LinkDef.h
                     BASENAME O2QcTPC)
 
@@ -112,7 +110,6 @@ install(FILES run/tpcQCPID_sampled.json
               run/tpcQCTracks_sampled.json
               run/tpcQCTracks_direct.json
               run/tpcQCTracking_direct.json
-              run/tpcQCClusterChecker.json
               run/tpcQCSimpleTrending.json
               run/tpcQCTrending.json
               run/tpcQCClusters_direct.json

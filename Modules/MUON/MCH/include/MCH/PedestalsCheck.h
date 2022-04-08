@@ -42,7 +42,7 @@ class PedestalsCheck : public o2::quality_control::checker::CheckInterface
 
  private:
   /// check if a given electronics channel is associated with a detector pad
-  bool checkPadMapping(uint16_t feeId, uint8_t linkId, uint8_t eLinkId, o2::mch::raw::DualSampaChannelId channel);
+  bool checkPadMapping(uint16_t feeId, uint8_t linkId, uint8_t eLinkId, o2::mch::raw::DualSampaChannelId channel, int& deId);
 
   /// Minimum value for SAMPA pedestals
   float mMinPedestal;
@@ -50,6 +50,16 @@ class PedestalsCheck : public o2::quality_control::checker::CheckInterface
   float mMaxPedestal;
   /// Minimum fraction of good channels for "good" quality status
   float mMinGoodFraction;
+  /// Minimum fraction of good channels in one DE for "good" quality status
+  float mMinGoodFractionPerDE;
+  /// Minimum value of the z-axis range for the pedestals plots
+  double mPedestalsPlotScaleMin;
+  /// Maximum value of the z-axis range for the pedestals plots
+  double mPedestalsPlotScaleMax;
+  /// Minimum value of the z-axis range for the noise plots
+  double mNoisePlotScaleMin;
+  /// Maximum value of the z-axis range for the noise plots
+  double mNoisePlotScaleMax;
 
   /// direct and inverse electronics and detector mappings
   o2::mch::raw::Elec2DetMapper mElec2DetMapper;

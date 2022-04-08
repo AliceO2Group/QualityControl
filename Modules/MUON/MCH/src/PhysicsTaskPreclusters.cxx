@@ -95,19 +95,19 @@ void PhysicsTaskPreclusters::initialize(o2::framework::InitContext& /*ctx*/)
       mAllHistograms.push_back(hXYPseudo1.get());
 
       auto hXY0 = std::make_shared<DetectorHistogram>(TString::Format("%sPreclusters_den_B_XY_%03d", getHistoPath(de).c_str(), de),
-                                                      TString::Format("Preclusters XY (DE%03d B, den)", de), de, hXYPseudo0->getDen());
+                                                      TString::Format("Preclusters XY (DE%03d B, den)", de), de, 0, hXYPseudo0->getDen());
       mHistogramPreclustersXY[0].insert(make_pair(de, hXY0));
       mAllHistograms.push_back(hXY0.get()->getHist());
       auto hXY1 = std::make_shared<DetectorHistogram>(TString::Format("%sPreclusters_den_NB_XY_%03d", getHistoPath(de).c_str(), de),
-                                                      TString::Format("Preclusters XY (DE%03d NB, den)", de), de, hXYPseudo1->getDen());
+                                                      TString::Format("Preclusters XY (DE%03d NB, den)", de), de, 1, hXYPseudo1->getDen());
       mHistogramPreclustersXY[1].insert(make_pair(de, hXY1));
       mAllHistograms.push_back(hXY1.get()->getHist());
       auto hXY2 = std::make_shared<DetectorHistogram>(TString::Format("%sPreclusters_num_B_XY_%03d", getHistoPath(de).c_str(), de),
-                                                      TString::Format("Preclusters XY (DE%03d B, num)", de), de, hXYPseudo0->getNum());
+                                                      TString::Format("Preclusters XY (DE%03d B, num)", de), de, 0, hXYPseudo0->getNum());
       mHistogramPreclustersXY[2].insert(make_pair(de, hXY2));
       mAllHistograms.push_back(hXY2.get()->getHist());
       auto hXY3 = std::make_shared<DetectorHistogram>(TString::Format("%sPreclusters_num_NB_XY_%03d", getHistoPath(de).c_str(), de),
-                                                      TString::Format("Preclusters XY (DE%03d NB, num)", de), de, hXYPseudo1->getNum());
+                                                      TString::Format("Preclusters XY (DE%03d NB, num)", de), de, 1, hXYPseudo1->getNum());
       mHistogramPreclustersXY[3].insert(make_pair(de, hXY3));
       mAllHistograms.push_back(hXY3.get()->getHist());
     }

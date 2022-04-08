@@ -37,8 +37,8 @@ int getDEindexMax();
 class DetectorHistogram
 {
  public:
-  DetectorHistogram(TString name, TString title, int deId);
-  DetectorHistogram(TString name, TString title, int deId, TH2F* hist);
+  DetectorHistogram(TString name, TString title, int deId, int cathode);
+  DetectorHistogram(TString name, TString title, int deId, int cathode, TH2F* hist);
   ~DetectorHistogram();
 
   void Fill(double padX, double padY, double padSizeX, double padSizeY, double val = 1);
@@ -58,6 +58,7 @@ class DetectorHistogram
   void addContour();
 
   int mDeId{ 0 };
+  int mCathode{ 0 };
 
   TString mName;
   TString mTitle;
@@ -72,10 +73,12 @@ class DetectorHistogram
   float mHistHeight{ 0 };
 };
 
-class GlobalHistogram : public TH2F
+class GlobalHistogram
 {
  public:
-  GlobalHistogram(std::string name, std::string title, int id = 0);
+  GlobalHistogram(std::string name, std::string title, int id);
+  GlobalHistogram(std::string name, std::string title, int id, TH2F* hist);
+  ~GlobalHistogram();
 
   void init();
 
@@ -88,6 +91,8 @@ class GlobalHistogram : public TH2F
   // replace the contents with the histograms of the individual detection elements
   void set(std::map<int, std::shared_ptr<DetectorHistogram>>& histB, std::map<int, std::shared_ptr<DetectorHistogram>>& histNB, bool doAverage = true, bool includeNullBins = false);
 
+  TH2F* getHist() { return mHist.first; }
+
  private:
   void initST345();
   void initST12();
@@ -97,7 +102,10 @@ class GlobalHistogram : public TH2F
   void getDeCenterST4(int de, float& xB0, float& yB0, float& xNB0, float& yNB0);
   void getDeCenterST5(int de, float& xB0, float& yB0, float& xNB0, float& yNB0);
 
+  TString mName;
+  TString mTitle;
   int mId;
+  std::pair<TH2F*, bool> mHist;
 };
 
 } // namespace muonchambers

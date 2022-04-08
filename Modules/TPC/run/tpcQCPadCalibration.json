@@ -6,7 +6,8 @@
         "host": "ccdb-test.cern.ch:8080",
         "username": "not_applicable",
         "password": "not_applicable",
-        "name": "not_applicable"
+        "name": "not_applicable",
+        "maxObjectSize": "100000000"
       },
       "Activity": {
         "number": "42",
@@ -31,14 +32,11 @@
         "outputCalPadMaps_comment" : [ "CalDet objects that are stored in std::unordered_map<std::string, o2::tpc::CalDet<float>> need to go here.",
                                        "This needs to be the last part of the CCDB path, e.g. Pulser or CE." ],
         "outputCalPadMaps": [
-          "CE",
-          "Pulser"
+          "PedestalNoise"
         ],
         "outputCalPads_comment" : [ "CalDet objects that are stored as plain o2::tpc::CalDet<float> objects need to go here.",
                                     "This needs to be the last part of the CCDB path, e.g. Pedestal or Noise." ],
         "outputCalPads": [
-          "Pedestal",
-          "Noise"
         ],
         "timestamps_comment": [ "Put the timestamp of the corresponding file you want to look for in the timestamps array.",
                                 "You can either put a timestamp for every object or leave the array empty to take the latest file from the CCDB.",
@@ -77,13 +75,7 @@
         "histogramRanges_comment" : [ "nBins", "min", "max" ],
         "histogramRanges": [
           { "Pedestals" :   [ "240", "0",   "120" ] },
-          { "Noise" :       [ "200", "0",   "2"   ] },
-          { "PulserQtot" :  [ "600", "0",   "300" ] },
-          { "PulserT0" :    [ "100", "239", "240" ] },
-          { "PulserWidth" : [ "100", "0",   "1"   ] },
-          { "CEQtot" :      [ "600", "0",   "300" ] },
-          { "CET0" :        [ "200", "400", "500" ] },
-          { "CEWidth" :     [ "100", "0",   "1"   ] }
+          { "Noise" :       [ "200", "0",   "2"   ] }
         ],
         "checkZSCalibration": {
           "check": "false",
@@ -115,8 +107,31 @@
         "dataSource" : [{
           "type" : "PostProcessing",
           "name" : "Calibration",
-          "MOs" : ["c_ROCs_Noise_1D","c_Sides_Noise","c_ROCs_Pedestal_2D"]
-        }]
+          "MOs" : ["c_ROCs_Noise_1D","c_Sides_Noise"]
+        }],
+        "checkParameters": {
+          "mediumQualityNoiseMean" : "1.25",
+          "badQualityNoiseMean" : "1.5"
+        }
+      },
+
+      "CheckForEmptyPads": {
+        "active" : "true",
+        "className" : "o2::quality_control_modules::tpc::CheckForEmptyPads",
+        "moduleName" : "QcTPC",
+        "policy" : "OnEachSeparately",
+        "detectorName" : "TPC",
+        "dataSource" : [{
+          "type" : "PostProcessing",
+          "name" : "Calibration",
+          "MOs" : ["c_ROCs_Pedestals_2D","c_ROCs_Noise_2D"]
+        }],
+        "stopTrigger_comment": [ "MOsNames are required for code to work, runs check of empty pads, should be the same as MOs, the MOs must be separated by comma only, no spaces" ],
+        "checkParameters": {
+          "mediumQualityPercentageOfWorkingPads" : "0.7",
+          "badQualityPercentageOfWorkingPads" : "0.4",
+          "MOsNames2D" : "c_ROCs_Pedestals_2D,c_ROCs_Noise_2D"
+        }
       }
     }
   }
