@@ -64,6 +64,7 @@ class TaskDigits final : public TaskInterface
   float fgRangeMinToT = 0;                               /// Range min in ToT plot
   float fgRangeMaxToT = 48.8;                            /// Range max in ToT plot
   bool fgDiagnostic = false;                             /// enable diagnostic plots
+  bool fgPerChannel = false;                             /// enable per channel plots
 
  private:
   // Event info
@@ -112,11 +113,13 @@ class TaskDigits final : public TaskInterface
   // std::shared_ptr<TH2F> mTOFRawHitMap24 = nullptr;          /// TOF average raw hits/channel map (1 bin = 1 FEA = 24 channels)
   // std::shared_ptr<TH2I> mHitMultiVsDDL = nullptr;           /// TOF raw hit multiplicity per event vs DDL
   // std::shared_ptr<TH1I> mNfiredMacropad = nullptr;          /// Number of fired TOF macropads per event
+  std::shared_ptr<TH1S> mOrphanPerChannel = nullptr; /// Orphan counter per channel
 
   // Counters
   static constexpr unsigned int nchannels = RawDataDecoder::ncrates * RawDataDecoder::nstrips * 24; /// Number of channels
   Counter<RawDataDecoder::ncrates, nullptr> mHitCounterPerStrip[RawDataDecoder::nstrips];           /// Hit map counter in the crate, one per strip
   Counter<nchannels, nullptr> mHitCounterPerChannel;                                                /// Hit map counter in the single channel
+  Counter<nchannels, nullptr> mOrphanCounterPerChannel;                                             /// Orphan counter in the single channel
 };
 
 } // namespace o2::quality_control_modules::tof
