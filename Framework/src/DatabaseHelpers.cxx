@@ -55,6 +55,12 @@ core::Activity asActivity(const std::map<std::string, std::string>& metadata, co
   if (auto periodName = metadata.find("PeriodName"); periodName != metadata.end()) {
     activity.mPeriodName = periodName->second;
   }
+  if (auto validFrom = metadata.find("Valid-From"); validFrom != metadata.end()) {
+    activity.mValidity.setMin(std::stoull(validFrom->second));
+  }
+  if (auto validUntil = metadata.find("Valid-Until"); validUntil != metadata.end()) {
+    activity.mValidity.setMax(std::stoull(validUntil->second));
+  }
   activity.mProvenance = provenance;
   return activity;
 }
@@ -73,6 +79,12 @@ core::Activity asActivity(const boost::property_tree::ptree& tree, const std::st
   }
   if (auto periodName = tree.get_optional<std::string>("PeriodName"); periodName.has_value()) {
     activity.mPeriodName = periodName.value();
+  }
+  if (auto validFrom = tree.get_optional<core::validity_time_t>("Valid-From"); validFrom.has_value()) {
+    activity.mValidity.setMin(validFrom.value());
+  }
+  if (auto validUntil = tree.get_optional<core::validity_time_t>("Valid-Until"); validUntil.has_value()) {
+    activity.mValidity.setMax(validUntil.value());
   }
   activity.mProvenance = provenance;
   return activity;
