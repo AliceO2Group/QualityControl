@@ -32,7 +32,7 @@ std::map<std::string, Quality> WorstOfAllAggregator::aggregate(QualityObjectsMap
 {
   if (qoMap.empty()) {
     Quality null = Quality::Null;
-    null.addReason(FlagReasonFactory::MissingQualityObject(),
+    null.addReason(FlagReasonFactory::UnknownQuality(),
                    "QO map given to the aggregator '" + mName + "' is empty.");
     return { { mName, null } };
   }
