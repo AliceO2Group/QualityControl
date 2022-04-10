@@ -83,7 +83,9 @@ class ITSNoisyPixelTask : public TaskInterface
   THnSparseD* hNoisyPixelMapIB[3][20];
   THnSparseD* hNoisyPixelMapOB[4][48];
 
-  enum QueryType { kUndefined, kCluster, kDigit};
+  enum QueryType { kUndefined,
+                   kCluster,
+                   kDigit };
   QueryType mQueryOption = kUndefined;
 
   int mOccUpdateFrequency;
