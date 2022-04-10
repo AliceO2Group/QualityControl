@@ -60,6 +60,7 @@ class ITSNoisyPixelTask : public TaskInterface
   void addObject(TObject* aObject);
   void getJsonParameters();
   void createAllHistos();
+  void NormalizeOccupancyPlots(int n_cycle);
   std::vector<int> MapOverHIC(int col, int row, int chip);
 
   static constexpr int NLayer = 7;
@@ -81,6 +82,9 @@ class ITSNoisyPixelTask : public TaskInterface
 
   THnSparseD* hNoisyPixelMapIB[3][20];
   THnSparseD* hNoisyPixelMapOB[4][48];
+
+  enum QueryType { kUndefined, kCluster, kDigit};
+  QueryType mQueryOption = kUndefined;
 
   int mOccUpdateFrequency;
   bool mEnableOrderedHitsObject;
