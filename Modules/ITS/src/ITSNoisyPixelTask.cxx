@@ -110,10 +110,6 @@ void ITSNoisyPixelTask::monitorData(o2::framework::ProcessingContext& ctx)
   start = std::chrono::high_resolution_clock::now();
 
   ILOG(Info, Support) << "START DOING QC General" << AliceO2::InfoLogger::InfoLogger::endm;
-  auto clusArr = ctx.inputs().get<gsl::span<o2::itsmft::CompClusterExt>>("compclus");
-  auto clusRofArr = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("clustersrof");
-
-  int ROFCycle = clusRofArr.size();
 
   int lay = -1, sta, hsta, mod, chip;
 
@@ -121,29 +117,64 @@ void ITSNoisyPixelTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   uint64_t label;
 
-  // re-normalizing occupancy histograms before filling them with new hits
-  long double norm_factor = (long double)mROFcounter / (long double)(mROFcounter + ROFCycle);
+  // CASE1. HITS FROM CLUSTERS
+  if (mQueryOption == kCluster) {
+    auto RofArr = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("clustersrof");
+    auto clusArr = ctx.inputs().get<gsl::span<o2::itsmft::CompClusterExt>>("compclus");
+    int ROFCycle = RofArr.size();
+    NormalizeOccupancyPlots(ROFCycle);
 
-  for (Int_t iLayer = 0; iLayer < NLayer; iLayer++) {
-    if (!mEnableLayers[iLayer])
-      continue;
+    for (const auto& rof : RofArr) {
 
-    if (iLayer < 3)
-      hOccupancyIB[iLayer]->Scale(norm_factor);
+      auto clustersInFrame = rof.getROFData(clusArr);
 
-    else
+      for (auto& hit : clustersInFrame) {
 
-      hOccupancyOB[iLayer - 3]->Scale(norm_factor);
+        ChipID = hit.getSensorID();
+        col = hit.getCol();
+        row = hit.getRow();
+
+        if (mEnableOrderedHitsObject) {
+
+          label = 1024 * 512;
+          label = label * ChipID + 1024 * row + col;
+          hashtable[label]++;
+        }
+
+        mGeom->getChipId(ChipID, lay, sta, hsta, mod, chip);
+
+        if (lay < 3) {
+
+          Double_t Addr[3] = { (double)col, (double)row, (double)chip };
+          hOccupancyIB[lay]->Fill(chip, sta, 1. / ((mROFcounter + ROFCycle) * 5.24e5));
+          hNoisyPixelMapIB[lay][sta]->Fill(Addr);
+
+        } else {
+
+          std::vector<int> XY = MapOverHIC(col, row, chip);
+          Double_t Addr[3] = { (double)XY[0], (double)XY[1], (double)(mod + hsta * mNHicPerStave[lay] / 2) };
+
+          hOccupancyOB[lay - 3]->Fill(mod + hsta * mNHicPerStave[lay] / 2, sta, 1. / ((mROFcounter + ROFCycle) * 5.24e5 * mNChipsPerHic[lay]));
+          hNoisyPixelMapOB[lay - 3][sta]->Fill(Addr);
+        }
+      }
+    }
+    mROFcounter += ROFCycle;
+    mROFcycle += ROFCycle;
   }
+  // END OF CASE1 (HITS FROM CLUSTERS)
 
-  for (const auto& rof : clusRofArr) {
+  // CASE2. HITS FROM DIGITS
+  if (mQueryOption == kDigit) {
+    auto RofArr = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("digitsrof");
+    auto digits = ctx.inputs().get<const std::vector<o2::itsmft::Digit>>("digits");
+    int ROFCycle = RofArr.size();
+    NormalizeOccupancyPlots(ROFCycle);
 
-    auto clustersInFrame = rof.getROFData(clusArr);
+    for (auto&& hit : digits) {
 
-    for (auto& hit : clustersInFrame) {
-
-      ChipID = hit.getSensorID();
-      col = hit.getCol();
+      ChipID = hit.getChipIndex();
+      col = hit.getColumn();
       row = hit.getRow();
 
       if (mEnableOrderedHitsObject) {
@@ -170,10 +201,11 @@ void ITSNoisyPixelTask::monitorData(o2::framework::ProcessingContext& ctx)
         hNoisyPixelMapOB[lay - 3][sta]->Fill(Addr);
       }
     }
-  }
 
-  mROFcounter += ROFCycle;
-  mROFcycle += ROFCycle;
+    mROFcounter += ROFCycle;
+    mROFcycle += ROFCycle;
+  }
+  // END OF CASE2 (HITS FROM DIGITS)
 
   // SHOWING NOISY PIXELS IN ORDER OF HITS
   // x-axis label will be displayed as L<layer>_<stave>-[<module>, for OB]-<chip>;<column>;<row>
@@ -383,6 +415,12 @@ void ITSNoisyPixelTask::getJsonParameters()
 {
   mDictPath = mCustomParameters["clusterDictionaryPath"];
   mGeomPath = mCustomParameters["geomPath"];
+
+  if (mCustomParameters["queryOption"].find("digit") != std::string::npos)
+    mQueryOption = kDigit;
+  else if (mCustomParameters["queryOption"].find("cluster") != std::string::npos)
+    mQueryOption = kCluster;
+
   mOccUpdateFrequency = std::stoi(mCustomParameters["orderedPlotsUpdateFrequency"]);
   int request_nmostnoisy = std::stoi(mCustomParameters["orderedPlotsBinNumber"]);
   if (request_nmostnoisy > 0)
@@ -415,6 +453,24 @@ void ITSNoisyPixelTask::formatAxes(TH1* h, const char* xTitle, const char* yTitl
   h->GetYaxis()->SetTitle(yTitle);
   h->GetXaxis()->SetTitleOffset(xOffset);
   h->GetYaxis()->SetTitleOffset(yOffset);
+}
+
+void ITSNoisyPixelTask::NormalizeOccupancyPlots(int n_cycle)
+{
+  // re-normalizing occupancy histograms before filling them with new hits
+  long double norm_factor = (long double)mROFcounter / (long double)(mROFcounter + n_cycle);
+
+  for (Int_t iLayer = 0; iLayer < NLayer; iLayer++) {
+    if (!mEnableLayers[iLayer])
+      continue;
+
+    if (iLayer < 3)
+      hOccupancyIB[iLayer]->Scale(norm_factor);
+
+    else
+
+      hOccupancyOB[iLayer - 3]->Scale(norm_factor);
+  }
 }
 
 std::vector<int> ITSNoisyPixelTask::MapOverHIC(int col, int row, int chip)
