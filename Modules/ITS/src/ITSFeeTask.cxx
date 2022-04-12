@@ -377,14 +377,25 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
         }
       }
 
+      // std::cout << "Layer:"<< ilayer << "Stave:" << istave << std::endl;
       for (int i = 0; i < NLanesMax; i++) {
         int laneValue = laneInfo >> (2 * i) & 0x3;
         if (laneValue) {
           mStatusFlagNumber[ilayer][istave][i][laneValue - 1]++;
           mLaneStatus[laneValue - 1]->Fill(ifee, i);
         }
+      }
+
+      for (int iflag = 0; iflag < 3; iflag++) {
         if (clockEvt) {
-          mLaneStatus[laneValue - 1]->Fill(ifee, i);
+          int feeInStave = (ifee - feeBoundary[ilayer]) - (feePerStave[ilayer] * (istave));
+          int startingLane = (feeInStave - 1) * lanesPerFeeId[ilayer];
+          for (int indexLaneFee = indexFeeLow[ilayer]; indexLaneFee < indexFeeUp[ilayer]; indexLaneFee++) {
+            mLaneStatus[iflag]->Fill(ifee, indexLaneFee);
+          }
+          for (int indexLane = startingLane; indexLane < (startingLane + lanesPerFeeId[ilayer]); indexLane++) {
+            mStatusFlagNumber[ilayer][istave][indexLane][iflag]++;
+          }
         }
       }
     }

@@ -94,6 +94,14 @@ class ITSFeeTask final : public TaskInterface
   const int LayerBoundaryFEE[NLayer - 1] = { 35, 83, 143, 191, 251, 335 };
   const float StartAngle[7] = { 16.997 / 360 * (TMath::Pi() * 2.), 17.504 / 360 * (TMath::Pi() * 2.), 17.337 / 360 * (TMath::Pi() * 2.), 8.75 / 360 * (TMath::Pi() * 2.), 7 / 360 * (TMath::Pi() * 2.), 5.27 / 360 * (TMath::Pi() * 2.), 4.61 / 360 * (TMath::Pi() * 2.) }; // start angle of first stave in each layer
   const float MidPointRad[7] = { 23.49, 31.586, 39.341, 197.598, 246.944, 345.348, 394.883 };
+  const int laneMax[NLayer] = { 108, 144, 180, 384, 480, 1176, 1344 };
+  const int lanesPerFeeId[NLayer] = { 3, 3, 3, 8, 8, 14, 14 };
+  const int feePerLayer[NLayer] = { 36, 48, 60, 48, 60, 84, 96 };
+  const int StavePerLayer[NLayer] = { 12, 16, 20, 24, 30, 42, 48 };
+  const int feePerStave[NLayer] = { 3, 3, 3, 2, 2, 2, 2 };
+  const int feeBoundary[NLayer] = { 0, 35, 83, 143, 191, 251, 335 };
+  const int indexFeeLow[NLayer] = { 0, 3, 6, 3, 17, 0, 14 };
+  const int indexFeeUp[NLayer] = { 3, 6, 9, 11, 25, 14, 28 };
   int mTimeFrameId = 0;
   TString mTriggerType[NTrigger] = { "ORBIT", "HB", "HBr", "HC", "PHYSICS", "PP", "CAL", "SOT", "EOT", "SOC", "EOC", "TF", "INT" };
   std::string mLaneStatusFlag[NFlags] = { "WARNING", "ERROR", "FAULT" }; // b00 OK, b01 WARNING, b10 ERROR, b11 FAULT
