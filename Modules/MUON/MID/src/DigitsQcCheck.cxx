@@ -36,7 +36,7 @@ void DigitsQcCheck::configure() {}
 Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
   Quality result = Quality::Null;
-  int mean = 0;
+  unsigned long mean = 0;
 
   for (auto& [moName, mo] : *moMap) {
 
@@ -134,31 +134,33 @@ void DigitsQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
 {
 
   TPaveText* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
+  unsigned long mean = 0.;
 
   // Bend Multiplicity Histo ::
   if (mo->getName() == "mMultHitMT11B") {
     msg->SetName(Form("%s_msg", mo->GetName()));
     auto* h = dynamic_cast<TH1F*>(mo->getObject());
+    mean = h->GetMean();
     if (resultBMT11 == Quality::Good) {
-      std::cout << "beautify :: BMT11 mean =>>  " << h->GetMean() << std::endl;
+      std::cout << "beautify :: BMT11 mean =>>  " << mean << std::endl;
       h->SetFillColor(kGreen);
       msg->Clear();
       msg->AddText("Quality::Good");
-      msg->AddText(Form("Mean value = %lu is under the limit ", h->GetMean()));
+      msg->AddText(Form("Mean value = %lu is under the limit ", mean));
       msg->SetFillColor(kGreen);
     } else if (resultBMT11 == Quality::Bad) {
       ILOG(Info) << "Quality::Bad, setting to red";
       h->SetFillColor(kRed);
       msg->Clear();
       msg->AddText("Quality::Bad");
-      msg->AddText(Form("Mean value = %lu is upper the limit ", h->GetMean()));
+      msg->AddText(Form("Mean value = %lu is upper the limit ", mean));
       msg->AddText("call expert");
       msg->SetFillColor(kRed);
     } else if (resultBMT11 == Quality::Medium) {
       ILOG(Info) << "Quality::medium, setting to orange";
       h->SetFillColor(kOrange);
       msg->AddText("Quality::Medium");
-      msg->AddText(Form("Mean value = %lu ; Quality::Medium", h->GetMean()));
+      msg->AddText(Form("Mean value = %lu ; Quality::Medium", mean));
       msg->AddText("PLEASE IGNORE.");
       msg->SetFillColor(kOrange);
     }
@@ -167,18 +169,19 @@ void DigitsQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
   if (mo->getName() == "mMultHitMT12B") {
     msg->SetName(Form("%s_msg", mo->GetName()));
     auto* h = dynamic_cast<TH1F*>(mo->getObject());
+    mean = h->GetMean();
     if (resultBMT12 == Quality::Good) {
       h->SetFillColor(kGreen);
       msg->Clear();
       msg->AddText("Quality::Good");
-      msg->AddText(Form("Mean value = %lu is under the limit ", h->GetMean()));
+      msg->AddText(Form("Mean value = %lu is under the limit ", mean));
       msg->SetFillColor(kGreen);
     } else if (resultBMT12 == Quality::Bad) {
       ILOG(Info) << "Quality::Bad, setting to red";
       h->SetFillColor(kRed);
       msg->Clear();
       msg->AddText("Quality::Bad");
-      msg->AddText(Form("Mean value = %lu is upper the limit ", h->GetMean()));
+      msg->AddText(Form("Mean value = %lu is upper the limit ", mean));
       msg->AddText("call expert");
       msg->SetFillColor(kRed);
     } else if (resultBMT12 == Quality::Medium) {
@@ -186,7 +189,7 @@ void DigitsQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       h->SetFillColor(kOrange);
       msg->Clear();
       msg->AddText("Quality::Medium");
-      msg->AddText(Form("Mean value = %lu ; Quality::Medium", h->GetMean()));
+      msg->AddText(Form("Mean value = %lu ; Quality::Medium", mean));
       msg->AddText("PLEASE IGNORE.");
       msg->SetFillColor(kOrange);
     }
@@ -195,18 +198,19 @@ void DigitsQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
   if (mo->getName() == "mMultHitMT21B") {
     msg->SetName(Form("%s_msg", mo->GetName()));
     auto* h = dynamic_cast<TH1F*>(mo->getObject());
+    mean = h->GetMean();
     if (resultBMT21 == Quality::Good) {
       h->SetFillColor(kGreen);
       msg->Clear();
       msg->AddText("Quality::Good");
-      msg->AddText("Mean value is under the limit");
+      msg->AddText(Form("Mean value = %lu is under the limit ", mean));
       msg->SetFillColor(kGreen);
     } else if (resultBMT21 == Quality::Bad) {
       ILOG(Info) << "Quality::Bad, setting to red";
       h->SetFillColor(kRed);
       msg->Clear();
       msg->AddText("Quality::Bad");
-      msg->AddText("Mean value is upper the limit");
+      msg->AddText(Form("Mean value = %lu is upper the limit ", mean));
       msg->AddText("call expert");
       msg->SetFillColor(kRed);
     } else if (resultBMT21 == Quality::Medium) {
@@ -214,6 +218,7 @@ void DigitsQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       h->SetFillColor(kOrange);
       msg->Clear();
       msg->AddText("Quality::Medium");
+      msg->AddText(Form("Mean value = %lu ; Quality::Medium", mean));
       msg->AddText("PLEASE IGNORE.");
       msg->SetFillColor(kOrange);
     }
@@ -222,18 +227,19 @@ void DigitsQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
   if (mo->getName() == "mMultHitMT22B") {
     msg->SetName(Form("%s_msg", mo->GetName()));
     auto* h = dynamic_cast<TH1F*>(mo->getObject());
+    mean = h->GetMean();
     if (resultBMT22 == Quality::Good) {
       h->SetFillColor(kGreen);
       msg->Clear();
       msg->AddText("Quality::Good");
-      msg->AddText("Mean value is under the limit");
+      msg->AddText(Form("Mean value = %lu is under the limit ", mean));
       msg->SetFillColor(kGreen);
     } else if (resultBMT22 == Quality::Bad) {
       ILOG(Info) << "Quality::Bad, setting to red";
       h->SetFillColor(kRed);
       msg->Clear();
       msg->AddText("Quality::Bad");
-      msg->AddText("Mean value is upper the limit");
+      msg->AddText(Form("Mean value = %lu is upper the limit ", mean));
       msg->AddText("call expert");
       msg->SetFillColor(kRed);
     } else if (resultBMT22 == Quality::Medium) {
@@ -241,6 +247,7 @@ void DigitsQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       h->SetFillColor(kOrange);
       msg->Clear();
       msg->AddText("Quality::Medium");
+      msg->AddText(Form("Mean value = %lu ; Quality::Medium", mean));
       msg->AddText("PLEASE IGNORE.");
       msg->SetFillColor(kOrange);
     }
@@ -250,26 +257,27 @@ void DigitsQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
   if (mo->getName() == "mMultHitMT11NB") {
     msg->SetName(Form("%s_msg", mo->GetName()));
     auto* h = dynamic_cast<TH1F*>(mo->getObject());
+    mean = h->GetMean();
     if (resultNBMT11 == Quality::Good) {
-      std::cout << "beautify :: NBMT11 mean =>>  " << h->GetMean() << std::endl;
+      std::cout << "beautify :: NBMT11 mean =>>  " << mean << std::endl;
       h->SetFillColor(kGreen);
       msg->Clear();
       msg->AddText("Quality::Good");
-      msg->AddText(Form("Mean value = %lu is under the limit ", h->GetMean()));
+      msg->AddText(Form("Mean value = %lu is under the limit ", mean));
       msg->SetFillColor(kGreen);
     } else if (resultNBMT11 == Quality::Bad) {
       ILOG(Info) << "Quality::Bad, setting to red";
       h->SetFillColor(kRed);
       msg->Clear();
       msg->AddText("Quality::Bad");
-      msg->AddText(Form("Mean value = %lu is upper the limit ", h->GetMean()));
+      msg->AddText(Form("Mean value = %lu is upper the limit ", mean));
       msg->AddText("call expert");
       msg->SetFillColor(kRed);
     } else if (resultNBMT11 == Quality::Medium) {
       ILOG(Info) << "Quality::medium, setting to orange";
       h->SetFillColor(kOrange);
       msg->AddText("Quality::Medium");
-      msg->AddText(Form("Mean value = %lu ; Quality::Medium", h->GetMean()));
+      msg->AddText(Form("Mean value = %lu ; Quality::Medium", mean));
       msg->AddText("PLEASE IGNORE.");
       msg->SetFillColor(kOrange);
     }
@@ -278,18 +286,19 @@ void DigitsQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
   if (mo->getName() == "mMultHitMT12NB") {
     msg->SetName(Form("%s_msg", mo->GetName()));
     auto* h = dynamic_cast<TH1F*>(mo->getObject());
+    mean = h->GetMean();
     if (resultNBMT12 == Quality::Good) {
       h->SetFillColor(kGreen);
       msg->Clear();
       msg->AddText("Quality::Good");
-      msg->AddText(Form("Mean value = %lu is under the limit ", h->GetMean()));
+      msg->AddText(Form("Mean value = %lu is under the limit ", mean));
       msg->SetFillColor(kGreen);
     } else if (resultNBMT12 == Quality::Bad) {
       ILOG(Info) << "Quality::Bad, setting to red";
       h->SetFillColor(kRed);
       msg->Clear();
       msg->AddText("Quality::Bad");
-      msg->AddText(Form("Mean value = %lu is upper the limit ", h->GetMean()));
+      msg->AddText(Form("Mean value = %lu is upper the limit ", mean));
       msg->AddText("call expert");
       msg->SetFillColor(kRed);
     } else if (resultNBMT12 == Quality::Medium) {
@@ -297,7 +306,7 @@ void DigitsQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       h->SetFillColor(kOrange);
       msg->Clear();
       msg->AddText("Quality::Medium");
-      msg->AddText(Form("Mean value = %lu ; Quality::Medium", h->GetMean()));
+      msg->AddText(Form("Mean value = %lu ; Quality::Medium", mean));
       msg->AddText("PLEASE IGNORE.");
       msg->SetFillColor(kOrange);
     }
@@ -306,18 +315,19 @@ void DigitsQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
   if (mo->getName() == "mMultHitMT21NB") {
     msg->SetName(Form("%s_msg", mo->GetName()));
     auto* h = dynamic_cast<TH1F*>(mo->getObject());
+    mean = h->GetMean();
     if (resultNBMT21 == Quality::Good) {
       h->SetFillColor(kGreen);
       msg->Clear();
       msg->AddText("Quality::Good");
-      msg->AddText("Mean value is under the limit");
+      msg->AddText(Form("Mean value = %lu is under the limit ", mean));
       msg->SetFillColor(kGreen);
     } else if (resultNBMT21 == Quality::Bad) {
       ILOG(Info) << "Quality::Bad, setting to red";
       h->SetFillColor(kRed);
       msg->Clear();
       msg->AddText("Quality::Bad");
-      msg->AddText("Mean value is upper the limit");
+      msg->AddText(Form("Mean value = %lu is upper the limit ", mean));
       msg->AddText("call expert");
       msg->SetFillColor(kRed);
     } else if (resultNBMT21 == Quality::Medium) {
@@ -325,6 +335,7 @@ void DigitsQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       h->SetFillColor(kOrange);
       msg->Clear();
       msg->AddText("Quality::Medium");
+      msg->AddText(Form("Mean value = %lu ; Quality::Medium", mean));
       msg->AddText("PLEASE IGNORE.");
       msg->SetFillColor(kOrange);
     }
@@ -333,18 +344,19 @@ void DigitsQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
   if (mo->getName() == "mMultHitMT22NB") {
     msg->SetName(Form("%s_msg", mo->GetName()));
     auto* h = dynamic_cast<TH1F*>(mo->getObject());
+    mean = h->GetMean();
     if (resultNBMT22 == Quality::Good) {
       h->SetFillColor(kGreen);
       msg->Clear();
       msg->AddText("Quality::Good");
-      msg->AddText("Mean value is under the limit");
+      msg->AddText(Form("Mean value = %lu is under the limit ", mean));
       msg->SetFillColor(kGreen);
     } else if (resultNBMT22 == Quality::Bad) {
       ILOG(Info) << "Quality::Bad, setting to red";
       h->SetFillColor(kRed);
       msg->Clear();
       msg->AddText("Quality::Bad");
-      msg->AddText("Mean value is upper the limit");
+      msg->AddText(Form("Mean value = %lu is upper the limit ", mean));
       msg->AddText("call expert");
       msg->SetFillColor(kRed);
     } else if (resultNBMT22 == Quality::Medium) {
@@ -352,6 +364,7 @@ void DigitsQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       h->SetFillColor(kOrange);
       msg->Clear();
       msg->AddText("Quality::Medium");
+      msg->AddText(Form("Mean value = %lu ; Quality::Medium", mean));
       msg->AddText("PLEASE IGNORE.");
       msg->SetFillColor(kOrange);
     }
