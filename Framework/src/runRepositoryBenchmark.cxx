@@ -1,4 +1,4 @@
-// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// Copyright 2019-2022 CERN and copyright holders of ALICE O2.
 // See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
 // All rights not expressly granted are reserved.
 //
@@ -15,7 +15,7 @@
 ///
 
 #include "RepositoryBenchmark.h"
-#include <fairmq/runFairMQDevice.h>
+#include <fairmq/runDevice.h>
 
 namespace bpo = boost::program_options;
 
@@ -49,7 +49,7 @@ void addCustomOptions(bpo::options_description& options)
     "The URL to the monitoring system (default : \"infologger://\")");
 }
 
-FairMQDevicePtr getDevice(const FairMQProgOptions& /*config*/)
+std::unique_ptr<fair::mq::Device> getDevice(fair::mq::ProgOptions& /*config*/)
 {
-  return new o2::quality_control::core::RepositoryBenchmark();
+  return std::make_unique<o2::quality_control::core::RepositoryBenchmark>();
 }
