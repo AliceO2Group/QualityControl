@@ -362,7 +362,7 @@ void InfrastructureGenerator::generateDataSamplingPolicyLocalProxyBind(framework
   std::string channelName = policyName + "-" + localMachine;
   std::string channelConfig = "name=" + channelName + ",type=pub,method=bind,address=tcp://*:" + localPort +
                               ",rateLogging=60,transport=zeromq";
-  auto channelSelector = [channelName](InputSpec const&, const std::unordered_map<std::string, std::vector<FairMQChannel>>&) {
+  auto channelSelector = [channelName](InputSpec const&, const std::unordered_map<std::string, std::vector<fair::mq::Channel>>&) {
     return channelName;
   };
 
@@ -407,7 +407,7 @@ void InfrastructureGenerator::generateDataSamplingPolicyLocalProxyConnect(framew
   const std::string& channelName = policyName;
   std::string channelConfig = "name=" + channelName + ",type=pub,method=connect,address=tcp://" + remoteMachine + ":" + remotePort +
                               ",rateLogging=60,transport=zeromq";
-  auto channelSelector = [channelName](InputSpec const&, const std::unordered_map<std::string, std::vector<FairMQChannel>>&) {
+  auto channelSelector = [channelName](InputSpec const&, const std::unordered_map<std::string, std::vector<fair::mq::Channel>>&) {
     return channelName;
   };
 

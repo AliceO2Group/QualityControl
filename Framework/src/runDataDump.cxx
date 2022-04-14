@@ -1,4 +1,4 @@
-// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// Copyright 2019-2022 CERN and copyright holders of ALICE O2.
 // See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
 // All rights not expressly granted are reserved.
 //
@@ -16,10 +16,10 @@
 ///
 
 #include "QualityControl/DataDumpGui.h"
-#include <fairmq/runFairMQDevice.h>
+#include <fairmq/runDevice.h>
 
 namespace bpo = boost::program_options;
 
 void addCustomOptions(bpo::options_description& /*options*/) {}
 
-FairMQDevicePtr getDevice(const FairMQProgOptions& /*config*/) { return new o2::quality_control::core::DataDumpGui(); }
+std::unique_ptr<fair::mq::Device> getDevice(fair::mq::ProgOptions&) { return std::make_unqiue<o2::quality_control::core::DataDumpGui>(); }
