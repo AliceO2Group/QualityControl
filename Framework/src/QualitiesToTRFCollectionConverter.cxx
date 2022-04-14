@@ -73,7 +73,7 @@ void QualitiesToTRFCollectionConverter::operator()(const QualityObject& newQO)
 
   // Is the beginning of time range covered by the first QO provided?
   if (mCurrentStartTime < mConverted->getStart() && validFrom > mConverted->getStart()) {
-    mConverted->insert({ mConverted->getStart(), validFrom - 1, FlagReasonFactory::MissingQualityObject(), noQualityObjectsComment, newQO.getPath() });
+    mConverted->insert({ mConverted->getStart(), validFrom - 1, FlagReasonFactory::UnknownQuality(), noQualityObjectsComment, newQO.getPath() });
   }
 
   mCurrentStartTime = std::max(validFrom, mConverted->getStart());
@@ -113,7 +113,7 @@ std::unique_ptr<TimeRangeFlagCollection> QualitiesToTRFCollectionConverter::getR
     mCurrentEndTime = std::max(mCurrentEndTime, trf.getEnd());
   }
   if (mCurrentEndTime < mConverted->getEnd()) {
-    mConverted->insert({ mCurrentEndTime, mConverted->getEnd(), FlagReasonFactory::MissingQualityObject(), noQualityObjectsComment, mQOPath });
+    mConverted->insert({ mCurrentEndTime, mConverted->getEnd(), FlagReasonFactory::UnknownQuality(), noQualityObjectsComment, mQOPath });
   }
 
   auto result = std::make_unique<TimeRangeFlagCollection>(
