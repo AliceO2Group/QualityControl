@@ -36,15 +36,15 @@ void TaskInterface::setObjectsManager(std::shared_ptr<ObjectsManager> objectsMan
   mObjectsManager = objectsManager;
 }
 
-void TaskInterface::loadCcdb(std::string url)
+void TaskInterface::loadCcdb()
 {
   if (!mCcdbApi) {
     mCcdbApi = std::make_shared<CcdbApi>();
   }
 
-  mCcdbApi->init(url);
+  mCcdbApi->init(mCcdbUrl);
   if (!mCcdbApi->isHostReachable()) {
-    ILOG(Warning, Support) << "CCDB at URL '" << url << "' is not reachable." << ENDM;
+    ILOG(Warning, Support) << "CCDB at URL '" << mCcdbUrl << "' is not reachable." << ENDM;
   }
 }
 
@@ -55,12 +55,11 @@ void TaskInterface::setCustomParameters(const std::unordered_map<std::string, st
 
 TObject* TaskInterface::retrieveCondition(std::string path, std::map<std::string, std::string> metadata, long timestamp)
 {
-  if (mCcdbApi) {
-    return mCcdbApi->retrieveFromTFileAny<TObject>(path, metadata, timestamp);
-  } else {
-    ILOG(Error, Support) << "Trying to retrieve a condition, but CCDB API is not constructed." << ENDM;
-    return nullptr;
+  if(!mCcdbApi) {
+    loadCcdb();
   }
+
+  return mCcdbApi->retrieveFromTFileAny<TObject>(path, metadata, timestamp);
 }
 
 std::shared_ptr<ObjectsManager> TaskInterface::getObjectsManager() { return mObjectsManager; }
@@ -68,6 +67,11 @@ std::shared_ptr<ObjectsManager> TaskInterface::getObjectsManager() { return mObj
 void TaskInterface::setMonitoring(const std::shared_ptr<o2::monitoring::Monitoring>& mMonitoring)
 {
   TaskInterface::mMonitoring = mMonitoring;
+}
+
+void TaskInterface::setCcdbUrl(const std::string& url)
+{
+  mCcdbUrl = url;
 }
 
 } // namespace o2::quality_control::core

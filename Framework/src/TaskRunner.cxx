@@ -151,7 +151,7 @@ void TaskRunner::init(InitContext& iCtx)
   mTask->setMonitoring(mCollector);
 
   // init user's task
-  mTask->loadCcdb(mTaskConfig.conditionUrl);
+  mTask->setCcdbUrl(mTaskConfig.conditionUrl);
   mTask->initialize(iCtx);
 
   mNoMoreCycles = false;
