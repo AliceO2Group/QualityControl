@@ -6,5 +6,6 @@
 #pragma link C++ class o2::quality_control_modules::mid::RawQcTask + ;
 #pragma link C++ class o2::quality_control_modules::mid::RawQcCheck + ;
 #pragma link C++ class o2::quality_control_modules::mid::DigitsQcTask + ;
+#pragma link C++ class o2::quality_control_modules::mid::DigitsQcCheck + ;
 
 #endif

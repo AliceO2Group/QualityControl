@@ -88,22 +88,23 @@ void RawQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mRawDataChecker);
 
   mRawLocalBoardsMap = new TH2F("RawLocalBoardsMap", "Raw Local boards Occupancy Map", 16, 0, 16, 16, 0, 16);
+  getObjectsManager()->startPublishing(mRawLocalBoardsMap);
   mRawLocalBoardsMap->GetXaxis()->SetTitle("CrateID");
   mRawLocalBoardsMap->GetYaxis()->SetTitle("LocID in Crate");
   mRawLocalBoardsMap->SetOption("colz");
+  mRawLocalBoardsMap->SetStats(0);
 
-  mBusyRawLocalBoards = new TH2F("BusyRawLocalBoards", "Busy Raw Local boards", 16, 0, 16, 1, 0, 16); // crateId X: locId Y
+  mBusyRawLocalBoards = new TH2F("BusyRawLocalBoards", "Busy Raw Local boards", 16, 0, 16, 16, 0, 16); // crateId X: locId Y
+  getObjectsManager()->startPublishing(mBusyRawLocalBoards);
   mBusyRawLocalBoards->GetXaxis()->SetTitle("CrateID");
   mBusyRawLocalBoards->GetYaxis()->SetTitle("LocID in Crate");
   mBusyRawLocalBoards->SetOption("colz");
+  mBusyRawLocalBoards->SetStats(0);
 
-  mBCSize = new TH1F("BCSize", "Bunch Crossing Size", o2::constants::lhc::LHCMaxBunches, 0, o2::constants::lhc::LHCMaxBunches);
-  mBCSize->GetXaxis()->SetTitle("BC");
-  mBCSize->GetYaxis()->SetTitle("Entry");
-
-  getObjectsManager()->startPublishing(mRawLocalBoardsMap);
-  getObjectsManager()->startPublishing(mBusyRawLocalBoards);
-  getObjectsManager()->startPublishing(mBCSize);
+  mBCCounts = new TH1F("BCCounts", "Bunch Crossing Counts", o2::constants::lhc::LHCMaxBunches, 0, o2::constants::lhc::LHCMaxBunches);
+  getObjectsManager()->startPublishing(mBCCounts);
+  mBCCounts->GetXaxis()->SetTitle("BC");
+  mBCCounts->GetYaxis()->SetTitle("Entry");
 }
 
 static int Pattern(uint16_t pattern)
@@ -201,13 +202,17 @@ void RawQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
   }
 
-  std::unordered_map<int, std::vector<int>> BCOrbitSize; // Number of entry par BC
+  std::unordered_map<int, std::vector<int>> BCOrbitCounts; // Number of entry par BC
   nROF = 0;
   int nBoardTot = 0;
   int firstBCEntry = 0;
   int lastBCEntry = 0;
 
   for (auto& rof : mDecoder->getROFRecords()) { // boucle sur les ROFRecords //
+    // printf("========================================================== \n");
+    // printf("%05d ROF with first entry %05zu and nentries %02zu , BC %05d, ORB %05d , EventType %02d\n", nROF, rof.firstEntry, rof.nEntries, rof.interactionRecord.bc, rof.interactionRecord.orbit,rof.eventType);
+    // eventType::  Standard = 0, Calib = 1, FET = 2
+
     nROF++;
     nBoard = 0;
     nEntriesROF = 0;
@@ -231,16 +236,16 @@ void RawQcTask::monitorData(o2::framework::ProcessingContext& ctx)
           iBC = rof.interactionRecord.bc;
           iOrbit = rof.interactionRecord.orbit;
           nEntriesROF = rof.nEntries;
-          std::vector<int> OrbitSize = { iOrbit, nEntriesROF };
-          BCOrbitSize[iBC] = OrbitSize;
-          auto& OS = BCOrbitSize[iBC];
+          std::vector<int> OrbitCounts = { iOrbit, nEntriesROF };
+          BCOrbitCounts[iBC] = OrbitCounts;
+          auto& OS = BCOrbitCounts[iBC];
         } else { // exist BC
-          auto& OS = BCOrbitSize[iBC];
+          auto& OS = BCOrbitCounts[iBC];
           if (OS[0] == iOrbit) {  // test new Orbit
             OS[1] += nEntriesROF; // same Orbit
           } else
             OS[1] += nEntriesROF; // not same Orbit !! modify ??
-          BCOrbitSize[iBC] = OS;
+          BCOrbitCounts[iBC] = OS;
         }
       }
       int isLoc = (statusWord >> 6) & 1;
@@ -259,23 +264,23 @@ void RawQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
 
   int nBC = 0;
-  for (auto const& OS : BCOrbitSize) {
+  for (auto const& OS : BCOrbitCounts) {
     nBC++;
-    auto& OrbitSize = OS.second;
-    mBCSize->Fill(OS.first, OrbitSize[1]);
+    auto& OrbitCounts = OS.second;
+    mBCCounts->Fill(OS.first, OrbitCounts[1]);
   }
 
-  mChecker.clear();
-  if (!mChecker.process(mDecoder->getData(), mDecoder->getROFRecords(), dummy)) {
-    // ILOG(Info, Support) << mChecker.getDebugMessage() << ENDM;
-    mRawDataChecker->Fill("Faulty", mChecker.getNEventsFaulty());
-  }
+  // mChecker.clear();
+  // if (!mChecker.process(mDecoder->getData(), mDecoder->getROFRecords(), dummy)) {
+  //  // ILOG(Info, Support) << mChecker.getDebugMessage() << ENDM;
+  //  mRawDataChecker->Fill("Faulty", mChecker.getNEventsFaulty());
+  //}
 
-  ILOG(Info, Support) << "Number of busy raised: " << mChecker.getNBusyRaised() << ENDM;
-  ILOG(Info, Support) << "Fraction of faulty events: " << mChecker.getNEventsFaulty() << " / " << mChecker.getNEventsProcessed() << ENDM;
-  ILOG(Info, Support) << "Counts: " << count << ENDM;
+  // ILOG(Info, Support) << "Number of busy raised: " << mChecker.getNBusyRaised() << ENDM;
+  // ILOG(Info, Support) << "Fraction of faulty events: " << mChecker.getNEventsFaulty() << " / " << mChecker.getNEventsProcessed() << ENDM;
+  // ILOG(Info, Support) << "Counts: " << count << ENDM;
 
-  mRawDataChecker->Fill("Processed", mChecker.getNEventsProcessed());
+  // mRawDataChecker->Fill("Processed", mChecker.getNEventsProcessed());
 }
 
 void RawQcTask::endOfCycle()
