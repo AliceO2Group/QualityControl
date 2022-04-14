@@ -55,7 +55,7 @@ void TaskInterface::setCustomParameters(const std::unordered_map<std::string, st
 
 TObject* TaskInterface::retrieveCondition(std::string path, std::map<std::string, std::string> metadata, long timestamp)
 {
-  if(!mCcdbApi) {
+  if (!mCcdbApi) {
     loadCcdb();
   }
 
