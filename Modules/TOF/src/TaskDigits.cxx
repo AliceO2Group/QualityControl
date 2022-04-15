@@ -425,7 +425,9 @@ void TaskDigits::reset()
     mTOFDecodingErrors->Reset();
   }
 
-  mOrphanPerChannel->Reset();
+  if (mFlagEnableOrphanPerChannel) {
+    mHistoOrphanPerChannel->Reset();
+  }
 
   // mTOFOrphansTime->Reset();
   // mTOFRawTimeVsTRM035->Reset();
