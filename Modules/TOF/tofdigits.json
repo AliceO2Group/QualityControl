@@ -53,7 +53,11 @@
             "type": "Task",
             "name": "TaskDigits",
             "MOs": [
-              "TOFRawsMulti"
+              "Multiplicity/Integrated",
+              "Multiplicity/SectorIA",
+              "Multiplicity/SectorOA",
+              "Multiplicity/SectorIC",
+              "Multiplicity/SectorOC"
             ]
           }
         ]
@@ -69,7 +73,11 @@
             "type": "Task",
             "name": "TaskDigits",
             "MOs": [
-              "TOFRawsTime"
+              "Time/Integrated",
+              "Time/SectorIA",
+              "Time/SectorOA",
+              "Time/SectorIC",
+              "Time/SectorOC"
             ]
           }
         ]
@@ -85,7 +93,11 @@
             "type": "Task",
             "name": "TaskDigits",
             "MOs": [
-              "TOFRawsToT"
+              "ToT/Integrated",
+              "ToT/SectorIA",
+              "ToT/SectorOA",
+              "ToT/SectorIC",
+              "ToT/SectorOC"
             ]
           }
         ]

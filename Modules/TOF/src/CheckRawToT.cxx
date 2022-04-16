@@ -11,14 +11,13 @@
 
 ///
 /// \file   CheckRawToT.cxx
-/// \author Nicolo' Jacazio
-/// \brief  Checker for TOF Raw data on ToT
+/// \author Nicolò Jacazio <nicolo.jacazio@cern.ch>
+/// \brief  Checker for the ToT obtained in the TaskDigits
 ///
 
 // QC
 #include "TOF/CheckRawToT.h"
 #include "QualityControl/QcInfoLogger.h"
-#include "Base/MessagePad.h"
 
 using namespace std;
 
@@ -39,52 +38,83 @@ void CheckRawToT::configure()
 
 Quality CheckRawToT::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
-  auto mo = moMap->begin()->second;
+
   Quality result = Quality::Null;
 
-  // if ((histname.EndsWith("RawsToT")) || (histname.Contains("RawsToT") && suffixTrgCl)) {
-  if (mo->getName().find("RawsToT") != std::string::npos) {
-    auto* h = dynamic_cast<TH1F*>(mo->getObject());
-    if (h->GetEntries() == 0) {
-      result = Quality::Medium;
-    } else {
-      mToTMean = h->GetMean();
-      mToTZeroMultIntegral = h->Integral(1, 1);
-      mToTIntegral = h->Integral(2, h->GetNbinsX());
-      if ((mToTMean > mMinRawToT) && (mToTMean < mMaxRawToT)) {
-        result = Quality::Good;
+  /// Mean of the TOF ToT histogram
+  float ToTMean = 0.f;
+  /// Number of events with ToT==0 (orphans)
+  float ToTOrphanIntegral = 0.f;
+  /// Number of events with ToT > 0 (excluding orphans)
+  float ToTIntegral = 0.f;
+
+  for (auto& [moName, mo] : *moMap) {
+    if (!isObjectCheckable(mo)) {
+      ILOG(Error, Support) << "Cannot check MO " << mo->getName() << " " << moName << " which is not of type " << getAcceptedType() << ENDM;
+      continue;
+    }
+    ILOG(Debug, Devel) << "Checking " << mo->getName() << ENDM;
+
+    if (mo->getName().find("ToT/") != std::string::npos) {
+      auto* h = static_cast<TH1F*>(mo->getObject());
+      if (h->GetEntries() == 0) {
+        result = Quality::Medium;
       } else {
-        ILOG(Warning, Support) << Form("ToT mean = %5.2f ns", mToTMean);
-        result = Quality::Bad;
+        // Set range to compute the average without the orphans
+        h->GetXaxis()->SetRange(2, h->GetNbinsX());
+        ToTMean = h->GetMean();
+        // Reset the range
+        h->GetXaxis()->SetRange();
+        // Computing fractions
+        ToTOrphanIntegral = h->Integral(1, 1);
+        ToTIntegral = h->Integral(1, h->GetNbinsX());
+        mo->addMetadata("mean", Form("%5.2f", ToTMean));
+        if (ToTIntegral > 0) {
+          mo->addMetadata("orphanfraction", Form("%5.2f%%", ToTOrphanIntegral * 100. / ToTIntegral));
+        } else {
+          mo->addMetadata("orphanfraction", "UNDEF");
+        }
+
+        if ((ToTMean > mMinRawToT) && (ToTMean < mMaxRawToT)) {
+          result = Quality::Good;
+        } else {
+          ILOG(Warning, Support) << Form("ToT mean = %5.2f ns", ToTMean) << ENDM;
+          result = Quality::Bad;
+        }
       }
     }
   }
   return result;
 }
 
-std::string CheckRawToT::getAcceptedType() { return "TH1"; }
-
 void CheckRawToT::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  if (mo->getName().find("RawsToT") != std::string::npos) {
-    auto* h = dynamic_cast<TH1F*>(mo->getObject());
+  ILOG(Debug, Devel) << "Beautifying " << mo->getName() << ENDM;
+  if (!isObjectCheckable(mo)) {
+    ILOG(Error, Support) << "Cannot beautify MO " << mo->getName() << " which is not of type " << getAcceptedType() << ENDM;
+    return;
+  }
+  if (mo->getName().find("ToT/") != std::string::npos) {
+    auto* h = static_cast<TH1F*>(mo->getObject());
     auto msg = mShifterMessages.MakeMessagePad(h, checkResult);
     if (!msg) {
       return;
     }
-    msg->AddText(Form("Mean value = %5.2f", mToTMean));
+    const auto& meta = mo->getMetadataMap();
+    msg->AddText(Form("Mean value = %s", meta.at("mean").c_str()));
     msg->AddText(Form("Allowed range: %3.1f-%3.1f ns", mMinRawToT, mMaxRawToT));
-    msg->AddText(Form("Orphan fraction = %5.2f%%", mToTZeroMultIntegral * 100. / mToTIntegral));
+    msg->AddText(Form("Orphan fraction = %s", meta.at("orphanfraction").c_str()));
     if (checkResult == Quality::Good) {
       msg->AddText("OK!");
     } else if (checkResult == Quality::Bad) {
-      msg->AddText("call TOF on-call.");
+      msg->AddText("Call TOF on-call.");
     } else if (checkResult == Quality::Medium) {
-      msg->Clear();
-      msg->AddText("No entries.");
+      ILOG(Info, Support) << "Quality::medium, setting to yellow";
+      msg->AddText("IF TOF IN RUN email TOF on-call.");
     }
   } else {
-    ILOG(Error, Support) << "Did not get correct histo from " << mo->GetName();
+    ILOG(Error, Support) << "Did not get correct histo from " << mo->GetName() << ENDM;
+    return;
   }
 }
 

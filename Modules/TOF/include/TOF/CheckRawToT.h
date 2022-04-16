@@ -11,7 +11,7 @@
 
 ///
 /// \file   CheckRawToT.h
-/// \author Nicolo' Jacazio
+/// \author Nicolò Jacazio <nicolo.jacazio@cern.ch>
 /// \brief  Checker for TOF Raw data on ToT
 ///
 
@@ -36,7 +36,7 @@ class CheckRawToT : public o2::quality_control::checker::CheckInterface
   void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult) override;
-  std::string getAcceptedType() override;
+  std::string getAcceptedType() override { return "TH1F"; }
 
  private:
   // Running configurable parameters
@@ -46,12 +46,6 @@ class CheckRawToT : public o2::quality_control::checker::CheckInterface
   float mMaxRawToT = 15.; // ns
 
   // User variables
-  /// Mean of the TOF ToT histogram
-  float mToTMean = 0.f;
-  /// Number of events with ToT==0 (orphans)
-  float mToTZeroMultIntegral = 0.f;
-  /// Number of events with ToT > 0 (excluding orphans)
-  float mToTIntegral = 0.f;
   /// Messages to print on the output PAD
   MessagePad mShifterMessages;
 

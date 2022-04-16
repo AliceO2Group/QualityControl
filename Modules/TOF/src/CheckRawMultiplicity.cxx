@@ -11,7 +11,7 @@
 
 ///
 /// \file   CheckRawMultiplicity.cxx
-/// \author Nicolo' Jacazio
+/// \author Nicolò Jacazio <nicolo.jacazio@cern.ch>
 /// \brief  Checker for the raw hit multiplicity obtained with the TaskDigits
 ///
 
@@ -57,31 +57,55 @@ Quality CheckRawMultiplicity::check(std::map<std::string, std::shared_ptr<Monito
 
   Quality result = Quality::Null;
 
+  /// Mean of the TOF hit multiplicity histogram
+  float hitsMean = 0.f;
+  /// Number of events with 0 TOF hits
+  float hitsZeroMultIntegral = 0.f;
+  /// Number of events with low TOF hits multiplicity
+  float hitsLowMultIntegral = 0.f;
+  /// Number of events with TOF hits multiplicity > 0
+  float hitsIntegral = 0.f;
+
   for (auto& [moName, mo] : *moMap) {
-    (void)moName;
-    if (mo->getName() == "TOFRawsMulti") {
-      auto* h = dynamic_cast<TH1I*>(mo->getObject());
+    if (!isObjectCheckable(mo)) {
+      ILOG(Error, Support) << "Cannot check MO " << mo->getName() << " " << moName << " which is not of type " << getAcceptedType() << ENDM;
+      continue;
+    }
+    ILOG(Debug, Devel) << "Checking " << mo->getName() << ENDM;
+    if (mo->getName() == "Multiplicity/Integrated") {
+      const auto* h = static_cast<TH1I*>(mo->getObject());
       if (h->GetEntries() == 0) { // Histogram is empty
         result = Quality::Medium;
         mShifterMessages.AddMessage("No counts!");
       } else { // Histogram is non empty
 
         // Computing variables to check
-        mRawHitsMean = h->GetMean();
-        mRawHitsZeroMultIntegral = h->Integral(1, 1);
-        mRawHitsLowMultIntegral = h->Integral(1, 10);
-        mRawHitsIntegral = h->Integral(2, h->GetNbinsX());
+        hitsMean = h->GetMean();
+        hitsZeroMultIntegral = h->Integral(1, 1);
+        hitsLowMultIntegral = h->Integral(1, 10);
+        hitsIntegral = h->Integral(2, h->GetNbinsX());
 
-        if (mRawHitsIntegral == 0) { //if only "0 hits per event" bin is filled -> error
+        mo->addMetadata("mean", Form("%5.2f", hitsMean));
+        mo->addMetadata("integ0mult", Form("%f", hitsZeroMultIntegral));
+        mo->addMetadata("integlowmult", Form("%f", hitsLowMultIntegral));
+        mo->addMetadata("integ", Form("%f", hitsIntegral));
+
+        if (hitsIntegral > 0) {
+          mo->addMetadata("frac0mult", Form("%5.2f%%", hitsZeroMultIntegral * 100. / hitsIntegral));
+        } else {
+          mo->addMetadata("frac0mult", "UNDEF");
+        }
+
+        if (hitsIntegral == 0) { //if only "0 hits per event" bin is filled -> error
           if (h->GetBinContent(1) > 0) {
             result = Quality::Bad;
             mShifterMessages.AddMessage("Only events at 0 filled!");
           }
         } else {
-          const bool isZeroBinContentHigh = (mRawHitsZeroMultIntegral > (mMaxFractAtZeroMult * mRawHitsIntegral));
-          const bool isLowMultContentHigh = (mRawHitsLowMultIntegral > (mMaxFractAtLowMult * mRawHitsIntegral));
-          const bool isAverageLow = (mRawHitsMean < mMinRawHits);
-          const bool isAverageHigh = (mRawHitsMean > mMaxRawHits);
+          const bool isZeroBinContentHigh = (hitsZeroMultIntegral > (mMaxFractAtZeroMult * hitsIntegral));
+          const bool isLowMultContentHigh = (hitsLowMultIntegral > (mMaxFractAtLowMult * hitsIntegral));
+          const bool isAverageLow = (hitsMean < mMinRawHits);
+          const bool isAverageHigh = (hitsMean > mMaxRawHits);
           switch (mRunningMode) {
             case kModeCollisions: // Collisions
               if (isZeroBinContentHigh) {
@@ -104,7 +128,7 @@ Quality CheckRawMultiplicity::check(std::map<std::string, std::shared_ptr<Monito
               }
               break;
             case kModeCosmics: // Cosmics
-              if (mRawHitsMean < 10.) {
+              if (hitsMean < 10.) {
                 result = Quality::Good;
                 mShifterMessages.AddMessage("Average within limits");
               } else {
@@ -113,7 +137,7 @@ Quality CheckRawMultiplicity::check(std::map<std::string, std::shared_ptr<Monito
               }
               break;
             default:
-              ILOG(Error, Support) << "Not running in correct mode " << mRunningMode;
+              ILOG(Fatal, Support) << "Not running in correct mode " << mRunningMode << ENDM;
               break;
           }
         }
@@ -123,20 +147,25 @@ Quality CheckRawMultiplicity::check(std::map<std::string, std::shared_ptr<Monito
   return result;
 }
 
-std::string CheckRawMultiplicity::getAcceptedType() { return "TH1I"; }
-
 void CheckRawMultiplicity::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  if (mo->getName() == "TOFRawsMulti") {
-    auto* h = dynamic_cast<TH1I*>(mo->getObject());
+  ILOG(Debug, Devel) << "Beautifying " << mo->getName() << ENDM;
+  if (!isObjectCheckable(mo)) {
+    ILOG(Error, Support) << "Cannot beautify MO " << mo->getName() << " which is not of type " << getAcceptedType() << ENDM;
+    return;
+  }
+  if (mo->getName() == "Multiplicity/Integrated") {
+    auto* h = static_cast<TH1I*>(mo->getObject());
     auto msg = mShifterMessages.MakeMessagePad(h, checkResult);
     if (!msg) {
       return;
     }
+    const auto& meta = mo->getMetadataMap();
+    msg->AddText(Form("Mean value = %s", meta.at("mean").c_str()));
+    msg->AddText(Form("Reference range: %5.2f-%5.2f", mMinRawHits, mMaxRawHits));
+    msg->AddText(Form("Events with 0 hits = %s", meta.at("frac0mult").c_str()));
+
     if (checkResult == Quality::Good) {
-      msg->AddText(Form("Mean value = %5.2f", mRawHitsMean));
-      msg->AddText(Form("Reference range: %5.2f-%5.2f", mMinRawHits, mMaxRawHits));
-      msg->AddText(Form("Events with 0 hits = %5.2f%%", mRawHitsZeroMultIntegral * 100. / mRawHitsIntegral));
       msg->AddText("OK!");
     } else if (checkResult == Quality::Bad) {
       msg->AddText("Call TOF on-call.");
@@ -144,8 +173,19 @@ void CheckRawMultiplicity::beautify(std::shared_ptr<MonitorObject> mo, Quality c
       ILOG(Info, Support) << "Quality::medium, setting to yellow";
       msg->AddText("IF TOF IN RUN email TOF on-call.");
     }
+  } else if (mo->getName() == "Multiplicity/SectorIA" ||
+             mo->getName() == "Multiplicity/SectorOA" ||
+             mo->getName() == "Multiplicity/SectorIC" ||
+             mo->getName() == "Multiplicity/SectorOC") {
+    auto* h = static_cast<TH1I*>(mo->getObject());
+    auto msg = mShifterMessages.MakeMessagePad(h, checkResult);
+    if (!msg) {
+      return;
+    }
+    msg->AddText(Form("Mean value = %5.2f", h->GetMean()));
   } else {
-    ILOG(Error, Support) << "Did not get correct histo from " << mo->GetName();
+    ILOG(Error, Support) << "Did not get correct histo from " << mo->GetName() << ENDM;
+    return;
   }
 }
 
