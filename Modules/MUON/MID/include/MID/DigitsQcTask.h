@@ -82,6 +82,20 @@ class DigitsQcTask final : public TaskInterface
   std::shared_ptr<TH1F> mMultHitMT22NB{ nullptr };
 
   std::shared_ptr<TH2F> mLocalBoardsMap{ nullptr };
+  std::shared_ptr<TH2F> mLocalBoardsMap11{ nullptr };
+  std::shared_ptr<TH2F> mLocalBoardsMap12{ nullptr };
+  std::shared_ptr<TH2F> mLocalBoardsMap21{ nullptr };
+  std::shared_ptr<TH2F> mLocalBoardsMap22{ nullptr };
+
+  std::shared_ptr<TH2F> mBendHitsMap11{ nullptr };
+  std::shared_ptr<TH2F> mBendHitsMap12{ nullptr };
+  std::shared_ptr<TH2F> mBendHitsMap21{ nullptr };
+  std::shared_ptr<TH2F> mBendHitsMap22{ nullptr };
+
+  std::shared_ptr<TH2F> mNBendHitsMap11{ nullptr };
+  std::shared_ptr<TH2F> mNBendHitsMap12{ nullptr };
+  std::shared_ptr<TH2F> mNBendHitsMap21{ nullptr };
+  std::shared_ptr<TH2F> mNBendHitsMap22{ nullptr };
 };
 
 } // namespace o2::quality_control_modules::mid

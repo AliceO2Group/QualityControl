@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE(test_WorstOfAllAggregator)
   BOOST_REQUIRE_EQUAL(result1.size(), 1);
   BOOST_CHECK_EQUAL(result1["agg1"], Quality::Null); // because empty vector passed
   BOOST_REQUIRE_EQUAL(result1["agg1"].getReasons().size(), 1);
-  BOOST_CHECK_EQUAL(result1["agg1"].getReasons().at(0).first, FlagReasonFactory::MissingQualityObject());
+  BOOST_CHECK_EQUAL(result1["agg1"].getReasons().at(0).first, FlagReasonFactory::UnknownQuality());
 
   input[qoGood->getName()] = qoGood;
   std::map<std::string, Quality> result2 = agg1.aggregate(input);

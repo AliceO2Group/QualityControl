@@ -27,6 +27,7 @@
 #include <TH2Poly.h>
 #include "TMath.h"
 #include <TLine.h>
+#include <TText.h>
 
 class TH2I;
 class TH1I;
@@ -79,6 +80,7 @@ class ITSFeeTask final : public TaskInterface
   void createFeePlots();
   void getStavePoint(int layer, int stave, double* px, double* py); // prepare for fill TH2Poly, get all point for add TH2Poly bin
   void setPlotsFormat();
+  void drawLayerName(TH2I* laneStatus);
   void resetGeneralPlots();
   static constexpr int NLayer = 7;
   const int NStaves[NLayer] = { 12, 16, 20, 24, 30, 42, 48 };
@@ -92,11 +94,21 @@ class ITSFeeTask final : public TaskInterface
   const int LayerBoundaryFEE[NLayer - 1] = { 35, 83, 143, 191, 251, 335 };
   const float StartAngle[7] = { 16.997 / 360 * (TMath::Pi() * 2.), 17.504 / 360 * (TMath::Pi() * 2.), 17.337 / 360 * (TMath::Pi() * 2.), 8.75 / 360 * (TMath::Pi() * 2.), 7 / 360 * (TMath::Pi() * 2.), 5.27 / 360 * (TMath::Pi() * 2.), 4.61 / 360 * (TMath::Pi() * 2.) }; // start angle of first stave in each layer
   const float MidPointRad[7] = { 23.49, 31.586, 39.341, 197.598, 246.944, 345.348, 394.883 };
+  const int laneMax[NLayer] = { 108, 144, 180, 384, 480, 1176, 1344 };
+  const int lanesPerFeeId[NLayer] = { 3, 3, 3, 8, 8, 14, 14 };
+  const int feePerLayer[NLayer] = { 36, 48, 60, 48, 60, 84, 96 };
+  const int StavePerLayer[NLayer] = { 12, 16, 20, 24, 30, 42, 48 };
+  const int feePerStave[NLayer] = { 3, 3, 3, 2, 2, 2, 2 };
+  const int feeBoundary[NLayer] = { 0, 35, 83, 143, 191, 251, 335 };
+  const int indexFeeLow[NLayer] = { 0, 3, 6, 3, 17, 0, 14 };
+  const int indexFeeUp[NLayer] = { 3, 6, 9, 11, 25, 14, 28 };
   int mTimeFrameId = 0;
   TString mTriggerType[NTrigger] = { "ORBIT", "HB", "HBr", "HC", "PHYSICS", "PP", "CAL", "SOT", "EOT", "SOC", "EOC", "TF", "INT" };
   std::string mLaneStatusFlag[NFlags] = { "WARNING", "ERROR", "FAULT" }; // b00 OK, b01 WARNING, b10 ERROR, b11 FAULT
 
   int mStatusFlagNumber[7][48][28][3] = { { { 0 } } }; //[iLayer][iStave][iLane][iLaneStatusFlag]
+  int mStatusSummaryLayerNumber[7][3] = { { 0 } };     //[iLayer][iflag]
+  int mStatusSummaryNumber[4][3] = { { 0 } };          //[summary][iflag] ---> Global, IB, ML, OL
 
   // parameters taken from the .json
   int mNPayloadSizeBins = 0;
@@ -105,9 +117,10 @@ class ITSFeeTask final : public TaskInterface
   TH2I* mTriggerVsFeeId;
   TH1I* mTrigger;
   TH2I* mLaneInfo;
-  TH2I* mFlag1Check;         // include transmission_timeout, packet_overflow, lane_starts_violation
-  TH2I* mIndexCheck;         // should be zero
-  TH2I* mIdCheck;            // should be 0x : e4
+  TH2I* mFlag1Check; // include transmission_timeout, packet_overflow, lane_starts_violation
+  TH2I* mIndexCheck; // should be zero
+  TH2I* mIdCheck;    // should be 0x : e4
+  TH2I* mRDHSummary;
   TH2I* mLaneStatus[NFlags]; // 4 flags for each lane. 3/8/14 lane for each link. 3/2/2 link for each RU. TODO: remove the OK flag in these 4 flag plots, OK flag plot just used to debug.
   TH2Poly* mLaneStatusOverview[NFlags] = { 0x0 };
   TH1I* mLaneStatusSummary[NLayer];

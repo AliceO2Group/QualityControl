@@ -36,7 +36,7 @@
                 },
                 "location": "local",
                 "taskParameters": {
-                    "NPayloadSizeBins": "4096",
+                    "NPayloadSizeBins": "4096"
                 }
             }
         },
@@ -57,7 +57,12 @@
                             "LaneStatus/laneStatusFlagWARNING",
                             "LaneStatus/laneStatusOverviewFlagFAULT",
                             "LaneStatus/laneStatusOverviewFlagERROR",
-                            "LaneStatus/laneStatusOverviewFlagWARNING"
+                            "LaneStatus/laneStatusOverviewFlagWARNING",
+                            "LaneStatusSummary/LaneStatusSummaryGlobal",
+                            "LaneStatusSummary/LaneStatusSummaryIB",
+                            "LaneStatusSummary/LaneStatusSummaryML",
+                            "LaneStatusSummary/LaneStatusSummaryOL",
+                            "RDHSummary"
                         ]
                     }
                 ]

@@ -13,7 +13,7 @@ include(AddQCWorkflow)
 # ---- Project ----
 
 project(QualityControl
-        VERSION 1.53.0 
+        VERSION 1.54.0 
         DESCRIPTION "O2 Data Quality Control Framework"
         LANGUAGES CXX)
 
@@ -98,7 +98,7 @@ find_package(InfoLogger REQUIRED)
 find_package(O2 CONFIG REQUIRED)
 find_package(CURL REQUIRED)
 find_package(GLFW NAMES glfw3 CONFIG)
-find_package(FairMQ REQUIRED)
+find_package(FairMQ 1.4.41 REQUIRED)
 find_package(FairLogger REQUIRED)
 find_package(Occ REQUIRED)
 find_package(ROOT 6.06.02 COMPONENTS RHTTP Gui REQUIRED)

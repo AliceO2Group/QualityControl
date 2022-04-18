@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE(test_NoQOs)
   auto& trf = *trfc->begin();
   BOOST_CHECK_EQUAL(trf.getStart(), 5);
   BOOST_CHECK_EQUAL(trf.getEnd(), 100);
-  BOOST_CHECK_EQUAL(trf.getFlag(), FlagReasonFactory::MissingQualityObject());
+  BOOST_CHECK_EQUAL(trf.getFlag(), FlagReasonFactory::UnknownQuality());
   BOOST_CHECK_EQUAL(trf.getSource(), "qc/DET/QO/xyzCheck");
 }
 
@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE(test_NoBeginning)
   auto& trf1 = *trfc->begin();
   BOOST_CHECK_EQUAL(trf1.getStart(), 5);
   BOOST_CHECK_EQUAL(trf1.getEnd(), 9);
-  BOOST_CHECK_EQUAL(trf1.getFlag(), FlagReasonFactory::MissingQualityObject());
+  BOOST_CHECK_EQUAL(trf1.getFlag(), FlagReasonFactory::UnknownQuality());
   BOOST_CHECK_EQUAL(trf1.getSource(), "qc/DET/QO/xyzCheck");
 
   auto& trf2 = *(++trfc->begin());
@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE(test_NoEnd)
   auto& trf = *trfc->begin();
   BOOST_CHECK_EQUAL(trf.getStart(), 80);
   BOOST_CHECK_EQUAL(trf.getEnd(), 100);
-  BOOST_CHECK_EQUAL(trf.getFlag(), FlagReasonFactory::MissingQualityObject());
+  BOOST_CHECK_EQUAL(trf.getFlag(), FlagReasonFactory::UnknownQuality());
   BOOST_CHECK_EQUAL(trf.getSource(), "qc/DET/QO/xyzCheck");
 }
 
