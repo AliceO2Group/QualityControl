@@ -121,7 +121,7 @@ void SkeletonTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   // 3. Access CCDB. If it is enough to retrieve it once, do it in initialize().
   // Remember to delete the object when the pointer goes out of scope or it is no longer needed.
-  //     TObject* condition = TaskInterface::retrieveCondition("qc/TST/MO/QcTask/example"); // put a valid condition path here
+  //     TObject* condition = TaskInterface::retrieveCondition("GRP/Calib/LHCClockPhase"); // put a valid condition or calibration object path here
   //     if (condition) {
   //       LOG(info) << "Retrieved " << condition->ClassName();
   //       delete condition;
