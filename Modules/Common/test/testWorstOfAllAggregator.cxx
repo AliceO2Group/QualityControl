@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE(test_WorstOfAllAggregator)
 
   // prepare data
   std::shared_ptr<QualityObject> qoNull = std::make_shared<QualityObject>(Quality::Null, "testCheckNull", "TST");
-  qoNull->addReason(FlagReasonFactory::ProcessingError(), "oh no");
+  qoNull->addReason(FlagReasonFactory::BadTracking(), "oh no");
   std::shared_ptr<QualityObject> qoGood = std::make_shared<QualityObject>(Quality::Good, "testCheckGood", "TST");
   std::shared_ptr<QualityObject> qoMedium = std::make_shared<QualityObject>(Quality::Medium, "testCheckMedium", "TST");
   qoMedium->addReason(FlagReasonFactory::LimitedAcceptance(), "booo");
@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE(test_WorstOfAllAggregator)
   BOOST_CHECK_EQUAL(result5["agg1"], Quality::Null);
   BOOST_REQUIRE_EQUAL(result5["agg1"].getReasons().size(), 2);
   BOOST_CHECK_EQUAL(result5["agg1"].getReasons().at(0).first, FlagReasonFactory::LimitedAcceptance());
-  BOOST_CHECK_EQUAL(result5["agg1"].getReasons().at(1).first, FlagReasonFactory::ProcessingError());
+  BOOST_CHECK_EQUAL(result5["agg1"].getReasons().at(1).first, FlagReasonFactory::BadTracking());
 }
 
 } // namespace o2::quality_control_modules::common
