@@ -59,23 +59,23 @@ BOOST_AUTO_TEST_CASE(quality_test)
 BOOST_AUTO_TEST_CASE(quality_reasons)
 {
   Quality myQuality = Quality::Bad;
-  myQuality.addReason(FlagReasonFactory::ProcessingError(), "exception in x");
-  myQuality.addReason(FlagReasonFactory::ProcessingError(), "exception in y");
+  myQuality.addReason(FlagReasonFactory::BadTracking(), "exception in x");
+  myQuality.addReason(FlagReasonFactory::BadTracking(), "exception in y");
   myQuality.addReason(FlagReasonFactory::LimitedAcceptance(), "sector C off");
 
   auto myReasons = myQuality.getReasons();
-  BOOST_CHECK_EQUAL(myReasons[0].first, FlagReasonFactory::ProcessingError());
+  BOOST_CHECK_EQUAL(myReasons[0].first, FlagReasonFactory::BadTracking());
   BOOST_CHECK_EQUAL(myReasons[0].second, "exception in x");
-  BOOST_CHECK_EQUAL(myReasons[1].first, FlagReasonFactory::ProcessingError());
+  BOOST_CHECK_EQUAL(myReasons[1].first, FlagReasonFactory::BadTracking());
   BOOST_CHECK_EQUAL(myReasons[1].second, "exception in y");
   BOOST_CHECK_EQUAL(myReasons[2].first, FlagReasonFactory::LimitedAcceptance());
   BOOST_CHECK_EQUAL(myReasons[2].second, "sector C off");
 
   auto copyQuality = myQuality;
   auto copyReasons = copyQuality.getReasons();
-  BOOST_CHECK_EQUAL(copyReasons[0].first, FlagReasonFactory::ProcessingError());
+  BOOST_CHECK_EQUAL(copyReasons[0].first, FlagReasonFactory::BadTracking());
   BOOST_CHECK_EQUAL(copyReasons[0].second, "exception in x");
-  BOOST_CHECK_EQUAL(copyReasons[1].first, FlagReasonFactory::ProcessingError());
+  BOOST_CHECK_EQUAL(copyReasons[1].first, FlagReasonFactory::BadTracking());
   BOOST_CHECK_EQUAL(copyReasons[1].second, "exception in y");
   BOOST_CHECK_EQUAL(copyReasons[2].first, FlagReasonFactory::LimitedAcceptance());
   BOOST_CHECK_EQUAL(copyReasons[2].second, "sector C off");

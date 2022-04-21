@@ -60,7 +60,7 @@ Quality PulseHeightCheck::check(std::map<std::string, std::shared_ptr<MonitorObj
           result = Quality::Medium;
           result.addReason(FlagReasonFactory::Unknown(),
                            "Peak rather low " + std::to_string(i) + " is not empty");
-          result.addReason(FlagReasonFactory::ProcessingError(),
+          result.addReason(FlagReasonFactory::BadTracking(),
                            "This is to demonstrate that we can assign more than one Reason to a Quality");
         }
       }
