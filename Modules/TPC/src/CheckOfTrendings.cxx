@@ -23,10 +23,10 @@
 #include <TGraph.h>
 #include <TList.h>
 #include <TPaveText.h>
+#include <TLine.h>
 
 #include <vector>
 #include <numeric>
-
 namespace o2::quality_control_modules::tpc
 {
 
@@ -166,8 +166,8 @@ Quality CheckOfTrendings::check(std::map<std::string, std::shared_ptr<MonitorObj
   return result;
 }
 
-std::string CheckOfTrendings::getAcceptedType() { return "TCanvas"; }
-
+std::string
+  CheckOfTrendings::getAcceptedType() { return "TCanvas"; }
 void CheckOfTrendings::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   auto* c1 = (TCanvas*)mo->getObject();
@@ -175,7 +175,6 @@ void CheckOfTrendings::beautify(std::shared_ptr<MonitorObject> mo, Quality check
   TPaveText* msg = new TPaveText(0.7, 0.85, 0.9, 0.9, "NDC");
   h->GetListOfFunctions()->Add(msg);
   msg->SetName(Form("%s_msg", mo->GetName()));
-
   if (checkResult == Quality::Good) {
     h->SetFillColor(kGreen);
     msg->Clear();
@@ -199,6 +198,46 @@ void CheckOfTrendings::beautify(std::shared_ptr<MonitorObject> mo, Quality check
     h->SetFillColor(0);
   }
   h->SetLineColor(kBlack);
-}
 
+  TLine* lineExpectedValue = new TLine(0, expectedPhysicsValue, 1, expectedPhysicsValue);
+  lineExpectedValue->SetLineColor(kGreen);
+  lineExpectedValue->SetLineWidth(2);
+  // mean Line
+  TLine* lineMean = new TLine(0, mean, 1, mean);
+  lineMean->SetLineColor(kGreen);
+  lineMean->SetLineWidth(2);
+  lineMean->SetLineStyle(10);
+  //+- 3sigma
+  TLine* lineThreeSigmaP = new TLine(0, mean + 3 * stdev, 1, mean + 3 * stdev);
+  lineThreeSigmaP->SetLineColor(kOrange);
+  lineThreeSigmaP->SetLineWidth(2);
+
+  TLine* lineThreeSigmaM = new TLine(0, mean - 3 * stdev, 1, mean - 3 * stdev);
+  lineThreeSigmaM->SetLineColor(kOrange);
+  lineThreeSigmaM->SetLineWidth(2);
+  //+- 6sigma
+  TLine* lineSixSigmaP = new TLine(0, mean + 6 * stdev, 1, mean + 6 * stdev);
+  lineSixSigmaP->SetLineColor(kRed);
+  lineSixSigmaP->SetLineWidth(2);
+
+  TLine* lineSixSigmaM = new TLine(0, mean - 6 * stdev, 1, mean - 6 * stdev);
+  lineSixSigmaM->SetLineColor(kRed);
+  lineSixSigmaM->SetLineWidth(2);
+
+  h->GetListOfFunctions()->Add(lineExpectedValue);
+  h->GetListOfFunctions()->Add(lineMean);
+  h->GetListOfFunctions()->Add(lineThreeSigmaP);
+  h->GetListOfFunctions()->Add(lineThreeSigmaM);
+  h->GetListOfFunctions()->Add(lineSixSigmaP);
+  h->GetListOfFunctions()->Add(lineSixSigmaM);
+  // Try with TBox
+  /* g->GetPoint(NBins - 1, x_last, y_last);
+    const double* yValues = g->GetY();
+    const std::vector<double> v(yValues, yValues + NBins - 1);
+
+    double x1 = v[b.back() - PointsUsedForMean];
+    BoxThreeSigma = TBox(x1, mean - 3 * stdev, )
+
+  */
+} // beautify function
 } // namespace o2::quality_control_modules::tpc
