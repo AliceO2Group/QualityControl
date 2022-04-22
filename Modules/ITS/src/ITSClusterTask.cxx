@@ -23,6 +23,9 @@
 #include <ITSMFTReconstruction/DigitPixelReader.h>
 #include <DataFormatsITSMFT/ROFRecord.h>
 #include <ITSMFTReconstruction/ChipMappingITS.h>
+#include "ITSMFTReconstruction/ClustererParam.h"
+#include "DetectorsCommonDataFormats/DetectorNameConf.h"
+#include "ITStracking/IOUtils.h"
 #include <DataFormatsITSMFT/ClusterTopology.h>
 #include <Framework/InputRecord.h>
 #include <THnSparse.h>
@@ -98,7 +101,7 @@ void ITSClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   getJsonParameters();
 
-  o2::base::GeometryManager::loadGeometry(mGeomPath.c_str());
+  o2::base::GeometryManager::loadGeometry();
   mGeom = o2::its::GeometryTGeo::Instance();
 
   createAllHistos();
@@ -121,14 +124,15 @@ void ITSClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   mGeneralOccupancy->SetBit(TH1::kIsAverage);
 
   publishHistos();
-  std::ifstream file(mDictPath.c_str());
 
-  if (file.good()) {
-    mDict.readBinaryFile(mDictPath);
-    ILOG(Info, Support) << "Running with dictionary: " << mDictPath << " with size: " << mDict.getSize();
+  std::string dictPath = o2::itsmft::ClustererParam<o2::detectors::DetID::ITS>::Instance().dictFilePath;
+  std::string dictFile = o2::base::DetectorNameConf::getAlpideClusterDictionaryFileName(o2::detectors::DetID::ITS, dictPath);
 
+  if (o2::utils::Str::pathExists(dictFile)) {
+    mDict.readFromFile(dictFile);
+    ILOG(Info, Support) << "Running with a provided dictionary: " << dictFile << ENDM;
   } else {
-    ILOG(Info, Support) << "Running without dictionary !";
+    ILOG(Info, Support) << "Dictionary " << dictFile << " is absent, ITSClusterTask expects cluster dict" << ENDM;
   }
 }
 
@@ -335,18 +339,7 @@ void ITSClusterTask::updateOccMonitorPlots()
 
 void ITSClusterTask::endOfCycle()
 {
-
-  std::ifstream runNumberFile(mRunNumberPath.c_str()); // catching ITS run number in commissioning; to be redesinged for the final version
-  if (runNumberFile) {
-    std::string runNumber;
-    runNumberFile >> runNumber;
-    if (runNumber != mRunNumber) {
-      for (unsigned int iObj = 0; iObj < mPublishedObjects.size(); iObj++)
-        getObjectsManager()->addMetadata(mPublishedObjects.at(iObj)->GetName(), "Run", runNumber);
-      mRunNumber = runNumber;
-    }
-    ILOG(Info, Support) << "endOfCycle" << ENDM;
-  }
+  ILOG(Info, Support) << "endOfCycle" << ENDM;
 }
 
 void ITSClusterTask::endOfActivity(Activity& /*activity*/)
@@ -566,9 +559,6 @@ void ITSClusterTask::getStavePoint(int layer, int stave, double* px, double* py)
 
 void ITSClusterTask::getJsonParameters()
 {
-  mDictPath = mCustomParameters["clusterDictionaryPath"];
-  mRunNumberPath = mCustomParameters["runNumberPath"];
-  mGeomPath = mCustomParameters["geomPath"];
   mNThreads = stoi(mCustomParameters.find("nThreads")->second);
   nBCbins = stoi(mCustomParameters.find("nBCbins")->second);
 
@@ -576,7 +566,7 @@ void ITSClusterTask::getJsonParameters()
 
     if (mCustomParameters["layer"][ilayer] != '0') {
       mEnableLayers[ilayer] = 1;
-      ILOG(Info, Support) << "enable layer : " << ilayer;
+      ILOG(Info, Support) << "enable layer : " << ilayer << ENDM;
     } else {
       mEnableLayers[ilayer] = 0;
     }
@@ -586,7 +576,7 @@ void ITSClusterTask::getJsonParameters()
 void ITSClusterTask::addObject(TObject* aObject)
 {
   if (!aObject) {
-    ILOG(Info, Support) << " ERROR: trying to add non-existent object ";
+    ILOG(Info, Support) << " ERROR: trying to add non-existent object " << ENDM;
     return;
   } else
     mPublishedObjects.push_back(aObject);

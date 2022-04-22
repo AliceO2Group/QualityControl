@@ -100,10 +100,6 @@ class ITSClusterTask : public TaskInterface
   int mNRofs = 0;
   int mNRofsMonitor = 0;
   int nBCbins;
-  std::string mDictPath;
-  std::string mRunNumberPath;
-  std::string mGeomPath;
-  std::string mRunNumber = "000000";
 
   const int mNStaves[7] = { 12, 16, 20, 24, 30, 42, 48 };
   const int mNHicPerStave[NLayer] = { 1, 1, 1, 8, 8, 14, 14 };
