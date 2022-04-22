@@ -93,7 +93,7 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info, Support) << "initialize ITSFhrTask" << ENDM;
   getParameters();
-  o2::base::GeometryManager::loadGeometry(mGeomPath.c_str());
+  o2::base::GeometryManager::loadGeometry();
   mGeom = o2::its::GeometryTGeo::Instance();
   int numOfChips = mGeom->getNumberOfChips();
 
@@ -836,7 +836,6 @@ void ITSFhrTask::getParameters()
   mHitCutForCheck = std::stoi(mCustomParameters["HitNumberCut"]);
   mGetTFFromBinding = std::stoi(mCustomParameters["GetTFFromBinding"]);
   mRunNumberPath = mCustomParameters["runNumberPath"];
-  mGeomPath = mCustomParameters["geomPath"];
   mHitCutForNoisyPixel = std::stoi(mCustomParameters["HitNumberCutForNoisyPixel"]);
   mOccupancyCutForNoisyPixel = std::stof(mCustomParameters["OccupancyNumberCutForNoisyPixel"]);
   mMaxGeneralAxisRange = std::stof(mCustomParameters["MaxGeneralAxisRange"]);

@@ -177,7 +177,6 @@ class ITSFhrTask final : public TaskInterface
 
   // Geometry decoder
   o2::its::GeometryTGeo* mGeom;
-  std::string mGeomPath;
 };
 } // namespace o2::quality_control_modules::its
 
