@@ -74,7 +74,7 @@ class TaskInterface
   /// Move assignment operator
   TaskInterface& operator=(TaskInterface&& other) /* noexcept */ = default; // error with gcc if noexcept
 
-  virtual void loadCcdb(std::string url) final;
+  virtual void loadCcdb() final;
 
   // Definition of the methods for the template method pattern
   virtual void initialize(o2::framework::InitContext& ctx) = 0;
@@ -91,6 +91,7 @@ class TaskInterface
   void setCustomParameters(const std::unordered_map<std::string, std::string>& parameters);
   void setMonitoring(const std::shared_ptr<o2::monitoring::Monitoring>& mMonitoring);
   const std::string& getName() const;
+  void setCcdbUrl(const std::string& url);
 
  protected:
   std::shared_ptr<ObjectsManager> getObjectsManager();
@@ -106,6 +107,7 @@ class TaskInterface
   std::string mName;
   std::shared_ptr<ObjectsManager> mObjectsManager;
   std::shared_ptr<o2::ccdb::CcdbApi> mCcdbApi;
+  std::string mCcdbUrl; // we need to keep the url in addition to the ccdbapi because we don't initialize the latter before the first call
 };
 
 template <typename T>
