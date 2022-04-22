@@ -22,6 +22,7 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/CcdbDatabase.h"
 #include "QualityControl/MonitorObject.h"
+#include "QualityControl/RepoPathUtils.h"
 
 #include <functional>
 #include <filesystem>
@@ -87,8 +88,8 @@ int main(int argc, const char* argv[])
     if (validityStart > validityEnd) {
       throw std::runtime_error("Validity start (" + std::to_string(validityStart) + ") is further in the future than validity end (" + std::to_string(validityEnd) + ")");
     }
-    if (provenance != "qc" && provenance != "qc_mc") {
-      throw std::runtime_error("Provenance should be either 'qc' (for data from detector) or 'qc_mc' (for simulated data), while '" + provenance + "' was given.");
+    if (!RepoPathUtils::isProvenanceAllowed(provenance)) {
+      throw std::runtime_error(std::string(RepoPathUtils::allowedProvenancesMessage) + " '" + provenance + "' was given.");
     }
 
     /// Open ROOT file
