@@ -27,6 +27,8 @@
 #include "DetectorsCommonDataFormats/DetectorNameConf.h"
 #include "ITStracking/IOUtils.h"
 #include <DataFormatsITSMFT/ClusterTopology.h>
+#include "CCDB/BasicCCDBManager.h"
+#include "CCDB/CCDBTimeStampUtils.h"
 #include <Framework/InputRecord.h>
 #include <THnSparse.h>
 
@@ -125,15 +127,15 @@ void ITSClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   publishHistos();
 
-  std::string dictPath = o2::itsmft::ClustererParam<o2::detectors::DetID::ITS>::Instance().dictFilePath;
-  std::string dictFile = o2::base::DetectorNameConf::getAlpideClusterDictionaryFileName(o2::detectors::DetID::ITS, dictPath);
-
-  if (o2::utils::Str::pathExists(dictFile)) {
-    mDict.readFromFile(dictFile);
-    ILOG(Info, Support) << "Running with a provided dictionary: " << dictFile << ENDM;
-  } else {
-    ILOG(Info, Support) << "Dictionary " << dictFile << " is absent, ITSClusterTask expects cluster dict" << ENDM;
-  }
+  // get dict from ccdb
+  mTimestamp = std::stol(mCustomParameters["dicttimestamp"]);
+  long int ts = mTimestamp ? mTimestamp : o2::ccdb::getCurrentTimestamp();
+  ILOG(Info, Support) << "Getting dictionary from ccdb - timestamp: " << ts << ENDM;
+  auto& mgr = o2::ccdb::BasicCCDBManager::instance();
+  mgr.setURL("http://alice-ccdb.cern.ch");
+  mgr.setTimestamp(ts);
+  mDict = mgr.get<o2::itsmft::TopologyDictionary>("ITS/Calib/ClusterDictionary");
+  ILOG(Info, Support) << "Dictionary size: " << mDict->getSize() << ENDM;
 }
 
 void ITSClusterTask::startOfActivity(Activity& /*activity*/)
@@ -149,6 +151,7 @@ void ITSClusterTask::startOfCycle()
 
 void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
+
   std::chrono::time_point<std::chrono::high_resolution_clock> start;
   std::chrono::time_point<std::chrono::high_resolution_clock> end;
   int difference;
@@ -159,7 +162,7 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
   auto clusRofArr = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("clustersrof");
   auto clusPatternArr = ctx.inputs().get<gsl::span<unsigned char>>("patterns");
   auto pattIt = clusPatternArr.begin();
-  int dictSize = mDict.getSize();
+  int dictSize = mDict->getSize();
 
   int iPattern = 0;
   int ChipIDprev = -1;
@@ -187,8 +190,8 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
       int npix = -1;
       int isGrouped = -1;
-      if (ClusterID != o2::itsmft::CompCluster::InvalidPatternID && !mDict.isGroup(ClusterID)) { // Normal (frequent) cluster shapes
-        npix = mDict.getNpixels(ClusterID);
+      if (ClusterID != o2::itsmft::CompCluster::InvalidPatternID && !mDict->isGroup(ClusterID)) { // Normal (frequent) cluster shapes
+        npix = mDict->getNpixels(ClusterID);
         isGrouped = 0;
       } else {
         o2::itsmft::ClusterPattern patt(pattIt);

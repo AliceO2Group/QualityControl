@@ -40,7 +40,8 @@
               "taskParameters": {
                     "layer": "1111111",
                     "nThreads": "1",
-                    "nBCbins" : "103"
+                    "nBCbins" : "103",
+		    "dicttimestamp" : "0"
         }
  
       }
