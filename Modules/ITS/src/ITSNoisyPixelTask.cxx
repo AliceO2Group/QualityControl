@@ -23,6 +23,7 @@
 #include <DataFormatsITSMFT/ROFRecord.h>
 #include <ITSMFTReconstruction/ChipMappingITS.h>
 #include <DataFormatsITSMFT/ClusterTopology.h>
+#include "CCDB/BasicCCDBManager.h"
 #include <Framework/InputRecord.h>
 
 using o2::itsmft::Digit;
@@ -76,20 +77,23 @@ void ITSNoisyPixelTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   getJsonParameters();
 
-  o2::base::GeometryManager::loadGeometry(mGeomPath.c_str());
+  o2::base::GeometryManager::loadGeometry();
   mGeom = o2::its::GeometryTGeo::Instance();
 
   createAllHistos();
 
   publishHistos();
-  std::ifstream file(mDictPath.c_str());
+  
+  // get dict from ccdb
+  mTimestamp = std::stol(mCustomParameters["dicttimestamp"]);
+  long int ts = mTimestamp ? mTimestamp : o2::ccdb::getCurrentTimestamp();
+  ILOG(Info, Support) << "Getting dictionary from ccdb - timestamp: " << ts << ENDM;
+  auto& mgr = o2::ccdb::BasicCCDBManager::instance();
+  mgr.setURL("http://alice-ccdb.cern.ch");
+  mgr.setTimestamp(ts);
+  mDict = mgr.get<o2::itsmft::TopologyDictionary>("ITS/Calib/ClusterDictionary");
+  ILOG(Info, Support) << "Dictionary size: " << mDict->getSize() << ENDM;
 
-  if (file.good()) {
-    LOG(info) << "Running with dictionary: " << mDictPath;
-    mDict.readBinaryFile(mDictPath);
-  } else {
-    LOG(info) << "Running without dictionary !";
-  }
 }
 
 void ITSNoisyPixelTask::startOfActivity(Activity& /*activity*/)
@@ -413,8 +417,6 @@ void ITSNoisyPixelTask::createAllHistos()
 
 void ITSNoisyPixelTask::getJsonParameters()
 {
-  mDictPath = mCustomParameters["clusterDictionaryPath"];
-  mGeomPath = mCustomParameters["geomPath"];
 
   if (mCustomParameters["queryOption"].find("digit") != std::string::npos)
     mQueryOption = kDigit;
