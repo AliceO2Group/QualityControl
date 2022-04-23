@@ -83,7 +83,7 @@ void ITSNoisyPixelTask::initialize(o2::framework::InitContext& /*ctx*/)
   createAllHistos();
 
   publishHistos();
-  
+
   // get dict from ccdb
   mTimestamp = std::stol(mCustomParameters["dicttimestamp"]);
   long int ts = mTimestamp ? mTimestamp : o2::ccdb::getCurrentTimestamp();
@@ -93,7 +93,6 @@ void ITSNoisyPixelTask::initialize(o2::framework::InitContext& /*ctx*/)
   mgr.setTimestamp(ts);
   mDict = mgr.get<o2::itsmft::TopologyDictionary>("ITS/Calib/ClusterDictionary");
   ILOG(Info, Support) << "Dictionary size: " << mDict->getSize() << ENDM;
-
 }
 
 void ITSNoisyPixelTask::startOfActivity(Activity& /*activity*/)
