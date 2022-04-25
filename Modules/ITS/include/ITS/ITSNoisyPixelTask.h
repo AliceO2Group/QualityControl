@@ -92,15 +92,14 @@ class ITSNoisyPixelTask : public TaskInterface
   bool mEnableOrderedHitsObject;
   int mTotalTimeInQCTask;
   int ChipIDprev = 0;
-  std::string mDictPath;
-  std::string mGeomPath;
 
   const int mNStaves[7] = { 12, 16, 20, 24, 30, 42, 48 };
   const int mNHicPerStave[7] = { 1, 1, 1, 8, 8, 14, 14 };
   const int mNChipsPerHic[7] = { 9, 9, 9, 14, 14, 14, 14 };
   int mEnableLayers[7];
-  o2::itsmft::TopologyDictionary mDict;
+  o2::itsmft::TopologyDictionary* mDict;
   o2::its::GeometryTGeo* mGeom;
+  long int mTimestamp;
 };
 } //  namespace o2::quality_control_modules::its
 

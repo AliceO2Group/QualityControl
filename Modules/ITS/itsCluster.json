@@ -39,10 +39,9 @@
         "location": "remote",
               "taskParameters": {
                     "layer": "1111111",
-                    "clusterDictionaryPath": "/home/its/iravasen/workdir/ITSdictionary.bin",
-                    "geomPath": "./o2sim_geometry.root",
                     "nThreads": "1",
-                    "nBCbins" : "103"
+                    "nBCbins" : "103",
+		    "dicttimestamp" : "0"
         }
  
       }

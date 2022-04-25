@@ -100,10 +100,7 @@ class ITSClusterTask : public TaskInterface
   int mNRofs = 0;
   int mNRofsMonitor = 0;
   int nBCbins;
-  std::string mDictPath;
-  std::string mRunNumberPath;
-  std::string mGeomPath;
-  std::string mRunNumber = "000000";
+  long int mTimestamp;
 
   const int mNStaves[7] = { 12, 16, 20, 24, 30, 42, 48 };
   const int mNHicPerStave[NLayer] = { 1, 1, 1, 8, 8, 14, 14 };
@@ -113,7 +110,7 @@ class ITSClusterTask : public TaskInterface
   const float StartAngle[7] = { 16.997 / 360 * (TMath::Pi() * 2.), 17.504 / 360 * (TMath::Pi() * 2.), 17.337 / 360 * (TMath::Pi() * 2.), 8.75 / 360 * (TMath::Pi() * 2.), 7 / 360 * (TMath::Pi() * 2.), 5.27 / 360 * (TMath::Pi() * 2.), 4.61 / 360 * (TMath::Pi() * 2.) }; // start angle of first stave in each layer
   //
   int mEnableLayers[7];
-  o2::itsmft::TopologyDictionary mDict;
+  o2::itsmft::TopologyDictionary* mDict;
   o2::its::GeometryTGeo* mGeom;
 };
 } //  namespace o2::quality_control_modules::its
