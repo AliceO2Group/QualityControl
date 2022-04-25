@@ -801,7 +801,9 @@ should not be present in real configuration files.
         "type": "2",                      "": "Arbitrary activity type.",
         "periodName": "",                 "": "Period name - e.g. LHC22c, LHC22c1b_test",
         "passName": "",                   "": "Pass type - e.g. spass, cpass1",
-        "provenance": "qc",               "": "Provenance - qc or qc_mc depending whether it is normal data or monte carlo data"
+        "provenance": "qc",               "": "Provenance - qc or qc_mc depending whether it is normal data or monte carlo data",
+        "start" : "0",                    "": "Activity start time in ms since epoch. One can use it as a filter in post-processing",
+        "end" : "1234",                   "": "Activity end time in ms since epoch. One can use it as a filter in post-processing"
       },
       "monitoring": {                     "": "Configuration of the Monitoring library.",
         "url": "infologger:///debug?qc",  "": ["URI to the Monitoring backend. Refer to the link below for more info:",

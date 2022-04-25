@@ -13,5 +13,6 @@
 #pragma link C++ class o2::quality_control::postprocessing::PostProcessingInterface + ;
 #pragma link C++ class o2::quality_control::postprocessing::TrendingTask + ;
 #pragma link C++ class o2::quality_control::core::MonitorObjectCollection + ;
+#pragma link C++ class o2::quality_control::core::ValidityInterval + ;
 
 #endif
