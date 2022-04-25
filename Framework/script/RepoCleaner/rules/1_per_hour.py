@@ -1,6 +1,6 @@
 from datetime import datetime
 from datetime import timedelta
-import logger
+import logging
 from typing import Dict
 
 from Ccdb import Ccdb, ObjectVersion
