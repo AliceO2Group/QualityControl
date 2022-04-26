@@ -41,11 +41,9 @@ PulseHeight::~PulseHeight()
 {
 }
 
-void PulseHeight::connectCCDB()
+void PulseHeight::retrieveCCDBSettings()
 {
-  auto& ccdbmgr = o2::ccdb::BasicCCDBManager::instance();
-  // ccdbmgr.setURL("http://localhost:8080");
-  mNoiseMap.reset(ccdbmgr.get<o2::trd::NoiseStatusMCM>("/TRD/Calib/NoiseMapMCM"));
+  mNoiseMap.reset(reinterpret_cast<o2::trd::NoiseStatusMCM*>(retrieveCondition("/TRD/Calib/NoiseMapMCM")));
 }
 
 void PulseHeight::buildHistograms()
@@ -134,7 +132,7 @@ void PulseHeight::initialize(o2::framework::InitContext& /*ctx*/)
     ILOG(Info, Support) << "configure() : using default pulseheightupper = " << mPulseHeightPeakRegion.second << ENDM;
   }
   buildHistograms();
-  connectCCDB();
+  retrieveCCDBSettings();
 }
 
 void PulseHeight::startOfActivity(Activity& activity)

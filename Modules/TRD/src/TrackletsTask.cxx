@@ -46,8 +46,6 @@ void TrackletsTask::drawLinesMCM(TH2F* histo)
   for (Int_t iStack = 0; iStack < o2::trd::constants::NSTACK - 1; ++iStack) {
     l = new TLine(nPos[iStack] - 0.5, -0.5, nPos[iStack] - 0.5, 47.5);
     l->SetLineStyle(2);
-    //std::cout << " adding vertical line to histo" << std::endl;
-    //std::cout << " l = new TLine(" << nPos[iStack] - 0.5 << "," << -0.5 << "," << nPos[iStack] - 0.5 << "," << 47.5 << ");" << std::endl;
     histo->GetListOfFunctions()->Add(l);
   }
 
@@ -55,18 +53,15 @@ void TrackletsTask::drawLinesMCM(TH2F* histo)
     l = new TLine(-0.5, iLayer * 8 - 0.5, 75.5, iLayer * 8 - 0.5);
     l = new TLine(0.5, iLayer * 8 - 0.5, 75.5, iLayer * 8 - 0.5);
     l->SetLineStyle(2);
-    //std::cout << " adding horizontal line to histo" << std::endl;
-    //std::cout << " l = new TLine(" << -0.5 <<","<< iLayer * 8 - 0.5 << "," << 75.5 << "," << iLayer * 8 - 0.5 << ");" << std::endl;
     histo->GetListOfFunctions()->Add(l);
   }
 }
 
-void TrackletsTask::connectToCCDB()
+void TrackletsTask::retrieveCCDBSettings()
 {
-  auto& ccdbmgr = o2::ccdb::BasicCCDBManager::instance();
-  //ccdbmgr.setURL("http://localhost:8080");
-  mNoiseMap.reset(ccdbmgr.get<o2::trd::NoiseStatusMCM>("/TRD/Calib/NoiseMapMCM"));
+  mNoiseMap.reset(reinterpret_cast<o2::trd::NoiseStatusMCM*>(retrieveCondition("/TRD/Calib/NoiseMapMCM")));
 }
+
 void TrackletsTask::buildHistograms()
 {
   for (Int_t sm = 0; sm < o2::trd::constants::NSECTOR; ++sm) {
@@ -121,7 +116,8 @@ void TrackletsTask::initialize(o2::framework::InitContext& /*ctx*/)
   ILOG(Info, Support) << "initialize TrackletsTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   buildHistograms();
-  connectToCCDB();
+  //    Setting up services
+  retrieveCCDBSettings();
 }
 
 void TrackletsTask::startOfActivity(Activity& activity)
