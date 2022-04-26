@@ -177,8 +177,35 @@ Quality PedestalsCheck::check(std::map<std::string, std::shared_ptr<MonitorObjec
 
 std::string PedestalsCheck::getAcceptedType() { return "TH1"; }
 
+static void updateTitle(TH1* hist, std::string suffix)
+{
+  if (!hist) return;
+  TString title = hist->GetTitle();
+  title.Append(" ");
+  title.Append(suffix.c_str());
+  hist->SetTitle(title);
+}
+
+static std::string getCurrentTime()
+{
+  time_t t ;
+  time( &t );
+
+  struct tm *tmp ;
+  tmp = localtime( &t );
+
+  char timestr[500];
+  strftime(timestr, sizeof(timestr), "(%x - %X)", tmp);
+
+  std::string result = timestr;
+  return result;
+}
+
 void PedestalsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
+  auto currentTime = getCurrentTime();
+  updateTitle(dynamic_cast<TH1*>(mo->getObject()), currentTime);
+
   if (mo->getName().find("Pedestals_Elec") != std::string::npos) {
     auto* h = dynamic_cast<TH2F*>(mo->getObject());
     h->SetOption("colz");
