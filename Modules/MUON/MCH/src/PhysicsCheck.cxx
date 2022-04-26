@@ -229,7 +229,9 @@ void PhysicsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResu
   }
 
   if ((mo->getName().find("Occupancy_ST12") != std::string::npos) ||
-      (mo->getName().find("Occupancy_ST345") != std::string::npos)) {
+      (mo->getName().find("Occupancy_ST345") != std::string::npos) ||
+      (mo->getName().find("Occupancy_B_XY") != std::string::npos) ||
+      (mo->getName().find("Occupancy_NB_XY") != std::string::npos)) {
     auto* h = dynamic_cast<TH2F*>(mo->getObject());
     h->SetDrawOption("colz");
     h->SetMinimum(mOccupancyPlotScaleMin);
