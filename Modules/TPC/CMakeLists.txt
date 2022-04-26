@@ -19,7 +19,8 @@ target_sources(O2QcTPC PRIVATE src/PID.cxx
                              src/TrendingTaskConfigTPC.cxx
                              src/TH1ReductorTPC.cxx
                              src/TH2ReductorTPC.cxx
-                             src/CheckForEmptyPads.cxx)
+                             src/CheckForEmptyPads.cxx
+                             src/QualityReductorTPC.cxx)
 
 target_include_directories(
   O2QcTPC
@@ -57,6 +58,7 @@ add_root_dictionary(O2QcTPC
                             include/TPC/TH1ReductorTPC.h
                             include/TPC/TH2ReductorTPC.h
                             include/TPC/CheckForEmptyPads.h
+                            include/TPC/QualityReductorTPC.h
                     LINKDEF include/TPC/LinkDef.h
                     BASENAME O2QcTPC)
 

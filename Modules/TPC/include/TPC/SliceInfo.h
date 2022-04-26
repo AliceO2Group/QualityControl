@@ -88,6 +88,24 @@ struct SliceInfo {
   ClassDefNV(SliceInfo, 1);
 };
 
+struct SliceInfoQuality {
+  UInt_t qualitylevel = 0;
+
+  /// \brief Return the struct member/float corresponding to the argument.
+  double RetrieveValue(std::string varType)
+  {
+    if (varType == "qualitylevel") {
+      return (double)qualitylevel;
+    } else {
+      ILOG(Error, Support) << "TPC SliceInfoQuality: 'varType' " << varType.data()
+                           << " in 'RetrieveValue' unknown. Breaking." << ENDM;
+      exit(0);
+    }
+  }
+
+  ClassDefNV(SliceInfoQuality, 1);
+};
+
 } // namespace o2::quality_control_modules::tpc
 
 #endif // QUALITYCONTROL_SLICEINFO_H
