@@ -162,8 +162,35 @@ Quality PhysicsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
 
 std::string PhysicsCheck::getAcceptedType() { return "TH1"; }
 
+static void updateTitle(TH1* hist, std::string suffix)
+{
+  if (!hist) return;
+  TString title = hist->GetTitle();
+  title.Append(" ");
+  title.Append(suffix.c_str());
+  hist->SetTitle(title);
+}
+
+static std::string getCurrentTime()
+{
+  time_t t ;
+  time( &t );
+
+  struct tm *tmp ;
+  tmp = localtime( &t );
+
+  char timestr[500];
+  strftime(timestr, sizeof(timestr), "(%x - %X)", tmp);
+
+  std::string result = timestr;
+  return result;
+}
+
 void PhysicsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
+  auto currentTime = getCurrentTime();
+  updateTitle(dynamic_cast<TH1*>(mo->getObject()), currentTime);
+
   if (mo->getName().find("Occupancy_Elec") != std::string::npos) {
     auto* h = dynamic_cast<TH2F*>(mo->getObject());
     h->SetDrawOption("colz");
@@ -217,38 +244,36 @@ void PhysicsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResu
     h->GetXaxis()->SetTickLength(0.0);
     h->GetXaxis()->SetLabelSize(0.0);
     h->GetYaxis()->SetTickLength(0);
-    h->SetMaximum(h->GetMaximum() * 2);
+    h->GetYaxis()->SetTitle("occupancy (kHz)");
+    h->SetMaximum(h->GetMaximum() * 1.5);
+
+    TText* xtitle = new TText();
+    xtitle->SetNDC();
+    xtitle->SetText(0.87, 0.03, "chamber #");
+    xtitle->SetTextSize(15);
+    h->GetListOfFunctions()->Add(xtitle);
+
     // draw chamber delimiters
     for (int demin = 200; demin <= 1000; demin += 100) {
-      float xpos = static_cast<float>(getDEindex(demin)) - 0.5;
+      float xpos = static_cast<float>(getDEindex(demin));
       TLine* delimiter = new TLine(xpos, 0, xpos, h->GetMaximum());
       delimiter->SetLineColor(kBlack);
       delimiter->SetLineStyle(kDashed);
       h->GetListOfFunctions()->Add(delimiter);
+    }
 
-      if (demin < 600) {
-        float x1 = static_cast<float>(getDEindex(demin - 100));
-        float x2 = static_cast<float>(getDEindex(demin));
-        float x0 = 0.8 * (x1 + x2) / (2 * h->GetXaxis()->GetXmax()) + 0.105;
-        float y0 = 0.82;
-        TText* label = new TText();
-        label->SetNDC();
-        label->SetText(x0, y0, TString::Format("CH%d", (demin - 1) / 100));
-        label->SetTextSize(22);
-        label->SetTextAngle(90);
-        h->GetListOfFunctions()->Add(label);
-      } else {
-        float x1 = static_cast<float>(getDEindex(demin - 100));
-        float x2 = static_cast<float>(getDEindex(demin));
-        float x0 = 0.8 * (x1 + x2) / (2 * h->GetXaxis()->GetXmax()) + 0.1;
-        float y0 = 0.87;
-        TText* label = new TText();
-        label->SetNDC();
-        label->SetText(x0, y0, TString::Format("CH%d", (demin - 1) / 100));
-        label->SetTextSize(25);
-        label->SetTextAlign(22);
-        h->GetListOfFunctions()->Add(label);
-      }
+    // draw x-axis labels
+    for (int ch = 1; ch <= 10; ch += 1) {
+      float x1 = static_cast<float>(getDEindex(ch * 100));
+      float x2 = (ch < 10) ? static_cast<float>(getDEindex(ch * 100 + 100)) : h->GetXaxis()->GetXmax();
+      float x0 = 0.8 * (x1 + x2) / (2 * h->GetXaxis()->GetXmax()) + 0.1;
+      float y0 = 0.05;
+      TText* label = new TText();
+      label->SetNDC();
+      label->SetText(x0, y0, TString::Format("%d", ch));
+      label->SetTextSize(15);
+      label->SetTextAlign(22);
+      h->GetListOfFunctions()->Add(label);
     }
 
     TPaveText* msg = new TPaveText(0.1, 0.903, 0.9, 0.945, "NDC");
@@ -279,6 +304,42 @@ void PhysicsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResu
       h->SetFillColor(kOrange);
     }
     h->SetLineColor(kBlack);
+  }
+
+  if (mo->getName().find("DigitOrbitInTFDE") != std::string::npos) {
+    auto* h = dynamic_cast<TH2F*>(mo->getObject());
+    // disable ticks on vertical axis
+    h->GetXaxis()->SetTickLength(0.0);
+    h->GetXaxis()->SetLabelSize(0.0);
+    h->GetYaxis()->SetTickLength(0);
+    h->GetYaxis()->SetTitle("digit orbit");
+
+    TText* xtitle = new TText();
+    xtitle->SetText(h->GetXaxis()->GetXmax() - 5, h->GetYaxis()->GetXmin() * 1.2, "chamber #");
+    xtitle->SetTextSize(15);
+    h->GetListOfFunctions()->Add(xtitle);
+
+    // draw chamber delimiters
+    for (int demin = 200; demin <= 1000; demin += 100) {
+      float xpos = static_cast<float>(getDEindex(demin));
+      TLine* delimiter = new TLine(xpos, h->GetYaxis()->GetXmin(), xpos, h->GetYaxis()->GetXmax());
+      delimiter->SetLineColor(kBlack);
+      delimiter->SetLineStyle(kDashed);
+      h->GetListOfFunctions()->Add(delimiter);
+    }
+
+    // draw x-axis labels
+    for (int ch = 1; ch <= 10; ch += 1) {
+      float x1 = static_cast<float>(getDEindex(ch * 100));
+      float x2 = (ch < 10) ? static_cast<float>(getDEindex(ch * 100 + 100)) : h->GetXaxis()->GetXmax();
+      float x0 = (x1 + x2) / 2;
+      float y0 = h->GetYaxis()->GetXmin() * 1.12;
+      TText* label = new TText();
+      label->SetText(x0, y0, TString::Format("%d", ch));
+      label->SetTextSize(15);
+      label->SetTextAlign(22);
+      h->GetListOfFunctions()->Add(label);
+    }
   }
 }
 
