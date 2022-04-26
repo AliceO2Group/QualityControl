@@ -95,7 +95,9 @@ std::string DecodingErrorsCheck::getAcceptedType() { return "TH1"; }
 
 static void updateTitle(TH1* hist, std::string suffix)
 {
-  if (!hist) return;
+  if (!hist) {
+    return;
+  }
   TString title = hist->GetTitle();
   title.Append(" ");
   title.Append(suffix.c_str());
@@ -104,11 +106,11 @@ static void updateTitle(TH1* hist, std::string suffix)
 
 static std::string getCurrentTime()
 {
-  time_t t ;
-  time( &t );
+  time_t t;
+  time(&t);
 
-  struct tm *tmp ;
-  tmp = localtime( &t );
+  struct tm* tmp;
+  tmp = localtime(&t);
 
   char timestr[500];
   strftime(timestr, sizeof(timestr), "(%x - %X)", tmp);
