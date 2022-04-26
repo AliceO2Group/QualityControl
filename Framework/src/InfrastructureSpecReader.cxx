@@ -63,6 +63,8 @@ CommonSpec InfrastructureSpecReader::readSpecEntry<CommonSpec>(std::string, cons
   spec.activityPassName = commonTree.get<std::string>("Activity.passName", spec.activityPassName);
   spec.activityPeriodName = commonTree.get<std::string>("Activity.periodName", spec.activityPeriodName);
   spec.activityProvenance = commonTree.get<std::string>("Activity.provenance", spec.activityProvenance);
+  spec.activityStart = commonTree.get<uint64_t>("Activity.start", spec.activityStart);
+  spec.activityEnd = commonTree.get<uint64_t>("Activity.end", spec.activityEnd);
   spec.monitoringUrl = commonTree.get<std::string>("monitoring.url", spec.monitoringUrl);
   spec.consulUrl = commonTree.get<std::string>("consul.url", spec.consulUrl);
   spec.conditionDBUrl = commonTree.get<std::string>("conditionDB.url", spec.conditionDBUrl);

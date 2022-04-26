@@ -38,15 +38,12 @@
         "location": "remote",
         "taskParameters": {
                     "layer": "1111111",
-                    "clusterDictionaryPath": "/home/nvalle/alice/qc/workdir/ITSdictionary.bin",
-                    "geomPath": "/home/nvalle/alice/qc/workdir/o2sim_geometry.root",
-
-	            "queryOpton_comments": "from-digit: to use with query digitsrof:ITS/DIGITSROF/0;digits:ITS/DIGITS/0; from-cluster: to use with query compclus:ITS/COMPCLUSTERS/0;clustersrof:ITS/CLUSTERSROF/0"
+	            "queryOpton_comments": "from-digit: to use with query digitsrof:ITS/DIGITSROF/0;digits:ITS/DIGITS/0; from-cluster: to use with query compclus:ITS/COMPCLUSTERS/0;clustersrof:ITS/CLUSTERSROF/0",
                     "queryOption": "from-digit",
-
                     "orderedPlots_comment": "The following are used for the OrderedHitsAddress objects only. If one of them is set to -1, the production of those objects is disabled",
                     "orderedPlotsUpdateFrequency": "10000",
-                    "orderedPlotsBinNumber": "25"
+                    "orderedPlotsBinNumber": "25",
+		    "dicttimestamp": "0"
 
         }
 	  

@@ -56,7 +56,6 @@ void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   ILOG(Info, Support) << "initialize ITSTrackTask" << ENDM;
 
-  mRunNumberPath = mCustomParameters["runNumberPath"];
   mVertexXYsize = std::stof(mCustomParameters["vertexXYsize"]);
   mVertexZsize = std::stof(mCustomParameters["vertexZsize"]);
   mVertexRsize = std::stof(mCustomParameters["vertexRsize"]);
@@ -149,19 +148,7 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void ITSTrackTask::endOfCycle()
 {
-
-  std::ifstream runNumberFile(mRunNumberPath.c_str());
-  if (runNumberFile) {
-
-    std::string runNumber;
-    runNumberFile >> runNumber;
-    if (runNumber != mRunNumber) {
-      for (unsigned int iObj = 0; iObj < mPublishedObjects.size(); iObj++)
-        getObjectsManager()->addMetadata(mPublishedObjects.at(iObj)->GetName(), "Run", runNumber);
-      mRunNumber = runNumber;
-    }
-    ILOG(Info, Support) << "endOfCycle" << ENDM;
-  }
+  ILOG(Info, Support) << "endOfCycle" << ENDM;
 }
 
 void ITSTrackTask::endOfActivity(Activity& /*activity*/)
