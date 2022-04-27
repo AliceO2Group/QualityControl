@@ -81,7 +81,7 @@ void PhysicsTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   }
 
   // Histograms in electronics coordinates
-  mHistogramOccupancyElec = std::make_shared<MergeableTH2Ratio>("Occupancy_Elec", "Occupancy (KHz)", nElecXbins, 0, nElecXbins, 64, 0, 64);
+  mHistogramOccupancyElec = std::make_shared<MergeableTH2Ratio>("Occupancy_Elec", "Occupancy", nElecXbins, 0, nElecXbins, 64, 0, 64);
   mHistogramOccupancyElec->SetOption("colz");
   mAllHistograms.push_back(mHistogramOccupancyElec.get());
   if (!mSaveToRootFile) {
@@ -93,7 +93,7 @@ void PhysicsTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   mAllHistograms.push_back(mHistogramNHitsElec);
   mAllHistograms.push_back(mHistogramNorbitsElec);
 
-  mMeanOccupancyPerDE = std::make_shared<MergeableTH1OccupancyPerDE>("MeanOccupancy", "Mean Occupancy of each DE (KHz)");
+  mMeanOccupancyPerDE = std::make_shared<MergeableTH1OccupancyPerDE>("MeanOccupancy", "Mean Occupancy vs DE");
   mMeanOccupancyPerDE->SetOption("hist");
   mAllHistograms.push_back(mMeanOccupancyPerDE.get());
   if (!mSaveToRootFile) {
@@ -101,7 +101,7 @@ void PhysicsTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   }
 
   // Histograms in global detector coordinates
-  mHistogramOccupancyST12 = std::make_shared<MergeableTH2Ratio>("Occupancy_ST12", "ST12 Occupancy (KHz)", 10, 0, 10, 10, 0, 10);
+  mHistogramOccupancyST12 = std::make_shared<MergeableTH2Ratio>("Occupancy_ST12", "ST12 Occupancy", 10, 0, 10, 10, 0, 10);
   mAllHistograms.push_back(mHistogramOccupancyST12.get());
   if (!mSaveToRootFile) {
     getObjectsManager()->startPublishing(mHistogramOccupancyST12.get());
@@ -116,7 +116,7 @@ void PhysicsTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   mHistogramNorbitsST12->init();
   mAllHistograms.push_back(mHistogramNorbitsST12->getHist());
 
-  mHistogramOccupancyST345 = std::make_shared<MergeableTH2Ratio>("Occupancy_ST345", "ST345 Occupancy (KHz)", 10, 0, 10, 10, 0, 10);
+  mHistogramOccupancyST345 = std::make_shared<MergeableTH2Ratio>("Occupancy_ST345", "ST345 Occupancy", 10, 0, 10, 10, 0, 10);
   mAllHistograms.push_back(mHistogramOccupancyST345.get());
   if (!mSaveToRootFile) {
     getObjectsManager()->startPublishing(mHistogramOccupancyST345.get());
@@ -136,7 +136,7 @@ void PhysicsTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   // getObjectsManager()->startPublishing(mMeanOccupancyPerDECycle.get());
 
   mHistogramDigitsOrbitInTFDE = std::make_shared<TH2F>("DigitOrbitInTFDE", "Digit orbits vs DE", getDEindexMax(), 0, getDEindexMax(), 768, -384, 384);
-  mHistogramDigitsOrbitInTFDE->SetOption("colz");
+  mHistogramDigitsOrbitInTFDE->SetOption("col");
   mAllHistograms.push_back(mHistogramDigitsOrbitInTFDE.get());
   if (!mSaveToRootFile) {
     getObjectsManager()->startPublishing(mHistogramDigitsOrbitInTFDE.get());
