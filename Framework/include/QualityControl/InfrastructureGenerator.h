@@ -20,7 +20,6 @@
 #include <vector>
 #include <string>
 #include <boost/property_tree/ptree_fwd.hpp>
-#include "QualityControl/TaskSpec.h"
 
 namespace o2::framework
 {
@@ -34,6 +33,7 @@ namespace o2::quality_control
 namespace core
 {
 
+class TaskSpec;
 struct InfrastructureSpec;
 
 /// \brief A factory class which can generate QC topologies given a configuration file.

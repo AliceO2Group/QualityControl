@@ -103,7 +103,6 @@ BOOST_AUTO_TEST_CASE(qc_factory_remote_test)
   auto skeletonTaskProxy = std::find_if(
     workflow.begin(), workflow.end(),
     [](const DataProcessorSpec& d) {
-      std::cout << "asdf : " << d.name << std::endl;
       return d.name == "TST-skeletonTask-proxy" &&
              d.inputs.size() == 0 &&
              d.outputs.size() == 2;
