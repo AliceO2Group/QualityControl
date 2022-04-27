@@ -33,6 +33,7 @@ namespace o2::quality_control
 namespace core
 {
 
+class TaskSpec;
 struct InfrastructureSpec;
 
 /// \brief A factory class which can generate QC topologies given a configuration file.
@@ -186,15 +187,10 @@ class InfrastructureGenerator
                                                         const std::string& control);
   static void generateLocalTaskLocalProxy(framework::WorkflowSpec& workflow,
                                           size_t id,
-                                          std::string taskName,
-                                          std::string remoteHost,
-                                          std::string remotePort,
-                                          const std::string& control);
+                                          const TaskSpec& taskSpec);
   static void generateLocalTaskRemoteProxy(framework::WorkflowSpec& workflow,
-                                           std::string taskName,
-                                           size_t numberOfLocalMachines,
-                                           std::string remotePort,
-                                           const std::string& control);
+                                           const TaskSpec& taskSpec,
+                                           size_t numberOfLocalMachines);
   static void generateMergers(framework::WorkflowSpec& workflow,
                               std::string taskName,
                               size_t numberOfLocalMachines,

@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE(qc_factory_local_test)
     BOOST_CHECK_EQUAL(workflow[0].outputs.size(), 1);
     BOOST_CHECK_EQUAL(DataSpecUtils::getOptionalSubSpec(workflow[0].outputs[0]).value_or(-1), 1);
 
-    BOOST_CHECK_EQUAL(workflow[1].name, "skeletonTask-proxy");
+    BOOST_CHECK_EQUAL(workflow[1].name, "TST-skeletonTask-proxy");
     BOOST_CHECK_EQUAL(workflow[1].inputs.size(), 1);
     BOOST_CHECK_EQUAL(DataSpecUtils::getOptionalSubSpec(workflow[1].inputs[0]).value_or(-1), 1);
     BOOST_CHECK_EQUAL(workflow[1].outputs.size(), 0);
@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE(qc_factory_local_test)
     BOOST_CHECK_EQUAL(workflow[0].outputs.size(), 1);
     BOOST_CHECK_EQUAL(DataSpecUtils::getOptionalSubSpec(workflow[0].outputs[0]).value_or(-1), 2);
 
-    BOOST_CHECK_EQUAL(workflow[1].name, "skeletonTask-proxy");
+    BOOST_CHECK_EQUAL(workflow[1].name, "TST-skeletonTask-proxy");
     BOOST_CHECK_EQUAL(workflow[1].inputs.size(), 1);
     BOOST_CHECK_EQUAL(DataSpecUtils::getOptionalSubSpec(workflow[1].inputs[0]).value_or(-1), 2);
     BOOST_CHECK_EQUAL(workflow[1].outputs.size(), 0);
@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE(qc_factory_remote_test)
   auto skeletonTaskProxy = std::find_if(
     workflow.begin(), workflow.end(),
     [](const DataProcessorSpec& d) {
-      return d.name == "skeletonTask-proxy" &&
+      return d.name == "TST-skeletonTask-proxy" &&
              d.inputs.size() == 0 &&
              d.outputs.size() == 2;
     });

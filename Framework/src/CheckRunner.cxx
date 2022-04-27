@@ -71,7 +71,7 @@ std::string CheckRunner::createCheckRunnerName(const std::vector<CheckConfig>& c
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     "abcdefghijklmnopqrstuvwxyz";
   const int NAME_LEN = 4;
-  std::string name(CheckRunner::createCheckRunnerIdString() + "-" + getDetectorName(checks));
+  std::string name(CheckRunner::createCheckRunnerIdString() + "-" + getDetectorName(checks) + "-");
 
   if (checks.size() == 1) {
     // If single check, use the check name
