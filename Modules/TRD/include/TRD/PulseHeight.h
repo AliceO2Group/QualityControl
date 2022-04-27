@@ -52,7 +52,7 @@ class PulseHeight final : public TaskInterface
   void endOfActivity(Activity& activity) override;
   void reset() override;
   void buildHistograms();
-  void connectCCDB();
+  void retrieveCCDBSettings();
 
  private:
   std::shared_ptr<TH1F> mPulseHeight = nullptr;

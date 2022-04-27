@@ -18,6 +18,7 @@
 #define QC_MODULE_TRD_TRDTRACKLETSTASK_H
 
 #include "QualityControl/TaskInterface.h"
+#include "QualityControl/DatabaseInterface.h"
 #include "DataFormatsTRD/NoiseCalibration.h"
 
 class TH1F;
@@ -47,7 +48,7 @@ class TrackletsTask final : public TaskInterface
   void endOfActivity(Activity& activity) override;
   void reset() override;
   void buildHistograms();
-  void connectToCCDB();
+  void retrieveCCDBSettings();
   void drawLinesMCM(TH2F* histo);
 
  private:
