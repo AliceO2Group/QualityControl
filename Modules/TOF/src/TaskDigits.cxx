@@ -195,38 +195,11 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   mHistoToTOC = std::make_shared<TH1F>("ToT/SectorOC", "TOF hit ToT - O/C side;Hit ToT (ns);Hits", mBinsToT, mRangeMinToT, mRangeMaxToT);
   getObjectsManager()->startPublishing(mHistoToTOC.get());
 
-  // mHistoRawTimeVsTRM035 = std::make_shared<TH2F>("TOFRawTimeVsTRM035", "Hit time vs TRM - crates 0 to 35; TRM index = DDL*10+TRM(0-9);TOF raw time (ns)", 361, 0., 361., mBinsTime, mRangeMinTime, mRangeMaxTime);
-  // getObjectsManager()->startPublishing(mHistoRawTimeVsTRM035.get());
-
-  // mHistoRawTimeVsTRM3671 = std::make_shared<TH2F>("TOFRawTimeVsTRM3671", "Hit time vs TRM - crates 36 to RawDataDecoder::ncrates; TRM index = DDL**10+TRM(0-9);TOF raw time (ns)", 361, 360., 721., mBinsTime, mRangeMinTime, mRangeMaxTime);
-  // getObjectsManager()->startPublishing(mHistoRawTimeVsTRM3671.get());
-
-  // mHistoTimeVsStrip = std::make_shared<TH2F>("TOFTimeVsStrip", "TOF raw hit time vs. MRPC (along z axis); MRPC index along z axis; Raws TOF time (ns) ", RawDataDecoder::nstrips, 0., RawDataDecoder::nstrips, mBinsTime, mRangeMinTime, mRangeMaxTime);
-  // getObjectsManager()->startPublishing(mHistoTimeVsStrip.get());
-
-  // mHistochannelEfficiencyMap = std::make_shared<TH2F>("TOFchannelEfficiencyMap", "TOF channels (HWok && efficient && !noisy && !problematic);sector;strip", RawDataDecoder::ncrates, 0., 18., RawDataDecoder::nstrips, 0., RawDataDecoder::nstrips);
-  // getObjectsManager()->startPublishing(mHistochannelEfficiencyMap.get());
-
-  // mHistohitsCTTM = std::make_shared<TH2F>("TOFhitsCTTM", "Map of hit pads according to CTTM numbering;LTM index;bit index", RawDataDecoder::ncrates, 0., RawDataDecoder::ncrates, 23, 0., 23.);
-  // getObjectsManager()->startPublishing(mHistohitsCTTM.get());
-
-  // mHistomacropadCTTM = std::make_shared<TH2F>("TOFmacropadCTTM", "Map of hit macropads according to CTTM numbering;LTM index; bit index", RawDataDecoder::ncrates, 0., RawDataDecoder::ncrates, 23, 0., 23.);
-  // getObjectsManager()->startPublishing(mHistomacropadCTTM.get());
-
-  // mHistomacropadDeltaPhiTime = std::make_shared<TH2F>("TOFmacropadDeltaPhiTime", "#Deltat vs #Delta#Phi of hit macropads;#Delta#Phi (degrees);#DeltaBX", 18, 0., 180., 20, 0., 20.0);
-  // getObjectsManager()->startPublishing(mHistomacropadDeltaPhiTime.get());
-
   // mBXVsCttmBit = std::make_shared<TH2I>("BXVsCttmBit", "BX ID in TOF matching window vs trg channel; trg channel; BX", 1728, 0, 1728, 24, 0, 24);
   // getObjectsManager()->startPublishing(mBXVsCttmBit.get());
 
   // mTimeVsCttmBit = std::make_shared<TH2F>("TimeVsCttmBit", "TOF raw time vs trg channel; trg channel; raw time (ns)", 1728, 0., 1728., mBinsTime, mRangeMinTime, mRangeMaxTime);
   // getObjectsManager()->startPublishing(mTimeVsCttmBit.get());
-
-  // mHistoRawHitMap24 = std::make_shared<TH2F>("TOFRawHitMap24", "TOF average raw hits/channel map (1 bin = 1 FEA = 24 channels);sector;strip", RawDataDecoder::ncrates, 0., 18., RawDataDecoder::nstrips, 0., RawDataDecoder::nstrips);
-  // getObjectsManager()->startPublishing(mHistoRawHitMap24.get());
-
-  // mNfiredMacropad = std::make_shared<TH1I>("NfiredMacropad", "Number of fired TOF macropads per event; number of fired macropads; Events ", 50, 0, 50);
-  // getObjectsManager()->startPublishing(mNfiredMacropad.get());
 }
 
 void TaskDigits::startOfActivity(Activity& /*activity*/)

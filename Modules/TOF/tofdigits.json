@@ -114,7 +114,7 @@
             "type": "Task",
             "name": "TaskDigits",
             "MOs": [
-              "TOFRawHitMap"
+              "HitMap"
             ]
           }
         ]

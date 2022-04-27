@@ -107,10 +107,10 @@ struct MessagePad {
   {
     if (!mEnabledFlag) {
       mMessages.clear();
-      ILOG(Info, Devel) << "Message pad " << mName << " is disabled" << ENDM;
+      ILOG(Info, Devel) << "Message pad '" << mName << "' is disabled" << ENDM;
       return nullptr;
     }
-    ILOG(Info, Devel) << "Message pad " << mName << " is enabled" << ENDM;
+    ILOG(Info, Devel) << "Message pad '" << mName << "' is enabled" << ENDM;
 
     mMessagePad = new TPaveText(mPadLowX, mPadLowY, mPadHighX, mPadHighY, padOpt);
     mMessagePad->SetName(Form("%s_msg", histogram->GetName()));
