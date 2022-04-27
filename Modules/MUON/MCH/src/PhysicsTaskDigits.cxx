@@ -34,6 +34,7 @@
 #include "QualityControl/QcInfoLogger.h"
 #include <Framework/InputRecord.h>
 #include <CommonConstants/LHCConstants.h>
+#include <DetectorsRaw/HBFUtils.h>
 
 using namespace std;
 using namespace o2::mch::raw;
@@ -220,18 +221,30 @@ void PhysicsTaskDigits::startOfCycle()
 
 void PhysicsTaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  // get the input preclusters and associated digits with the orbit information
+  bool hasOrbits = false;
+  for (auto&& input : ctx.inputs()) {
+    if (input.spec->binding == "orbits") {
+      hasOrbits = true;
+    }
+  }
+
+  if (hasOrbits) {
+    auto orbits = ctx.inputs().get<gsl::span<uint64_t>>("orbits");
+    if (orbits.empty()) {
+      static AliceO2::InfoLogger::InfoLogger::AutoMuteToken msgLimit(LogWarningSupport, 1, 600); // send it once every 10 minutes
+      string msg = "WARNING: empty orbits vector";
+      ILOG_INST.log(msgLimit, "%s", msg.c_str());
+      return;
+    }
+
+    for (auto& orb : orbits) {
+      storeOrbit(orb);
+    }
+  } else {
+    addDefaultOrbitsInTF();
+  }
+
   auto digits = ctx.inputs().get<gsl::span<o2::mch::Digit>>("digits");
-  auto orbits = ctx.inputs().get<gsl::span<uint64_t>>("orbits");
-  if (orbits.empty()) {
-    ILOG(Info, Support) << "WARNING: empty orbits vector" << AliceO2::InfoLogger::InfoLogger::endm;
-    return;
-  }
-
-  for (auto& orb : orbits) {
-    storeOrbit(orb);
-  }
-
   for (auto& d : digits) {
     plotDigit(d);
   }
@@ -253,6 +266,15 @@ void PhysicsTaskDigits::storeOrbit(const uint64_t& orb)
         mNOrbits[fee][li] += 1;
       }
       mLastOrbitSeen[fee][li] = orbit;
+    }
+  }
+}
+
+void PhysicsTaskDigits::addDefaultOrbitsInTF()
+{
+  for (int fee = 0; fee < PhysicsTaskDigits::sMaxFeeId; fee++) {
+    for (int li = 0; li < PhysicsTaskDigits::sMaxLinkId; li++) {
+      mNOrbits[fee][li] += o2::raw::HBFUtils::Instance().getNOrbitsPerTF();
     }
   }
 }
