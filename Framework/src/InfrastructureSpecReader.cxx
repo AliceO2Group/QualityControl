@@ -76,7 +76,7 @@ CommonSpec InfrastructureSpecReader::readSpecEntry<CommonSpec>(std::string, cons
 }
 
 template <>
-TaskSpec InfrastructureSpecReader::readSpecEntry<TaskSpec>(std::string taskName, const boost::property_tree::ptree& taskTree, const boost::property_tree::ptree& wholeTree)
+TaskSpec InfrastructureSpecReader::readSpecEntry<TaskSpec>(std::string taskID, const boost::property_tree::ptree& taskTree, const boost::property_tree::ptree& wholeTree)
 {
   static std::unordered_map<std::string, TaskLocationSpec> const taskLocationFromString = {
     { "local", TaskLocationSpec::Local },
@@ -85,7 +85,7 @@ TaskSpec InfrastructureSpecReader::readSpecEntry<TaskSpec>(std::string taskName,
 
   TaskSpec ts;
 
-  ts.taskName = taskName;
+  ts.taskName = taskTree.get<std::string>("taskName", taskID);
   ts.className = taskTree.get<std::string>("className");
   ts.moduleName = taskTree.get<std::string>("moduleName");
   ts.detectorName = taskTree.get<std::string>("detectorName");
@@ -217,11 +217,11 @@ DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(std::stri
 }
 
 template <>
-CheckSpec InfrastructureSpecReader::readSpecEntry<CheckSpec>(std::string checkName, const boost::property_tree::ptree& checkTree, const boost::property_tree::ptree& wholeTree)
+CheckSpec InfrastructureSpecReader::readSpecEntry<CheckSpec>(std::string checkID, const boost::property_tree::ptree& checkTree, const boost::property_tree::ptree& wholeTree)
 {
   CheckSpec cs;
 
-  cs.checkName = std::move(checkName);
+  cs.checkName = checkTree.get<std::string>("checkName", checkID);
   cs.className = checkTree.get<std::string>("className");
   cs.moduleName = checkTree.get<std::string>("moduleName");
   cs.detectorName = checkTree.get<std::string>("detectorName", cs.detectorName);
@@ -248,11 +248,11 @@ CheckSpec InfrastructureSpecReader::readSpecEntry<CheckSpec>(std::string checkNa
 }
 
 template <>
-AggregatorSpec InfrastructureSpecReader::readSpecEntry<AggregatorSpec>(std::string aggregatorName, const boost::property_tree::ptree& aggregatorTree, const boost::property_tree::ptree& wholeTree)
+AggregatorSpec InfrastructureSpecReader::readSpecEntry<AggregatorSpec>(std::string aggregatorID, const boost::property_tree::ptree& aggregatorTree, const boost::property_tree::ptree& wholeTree)
 {
   AggregatorSpec as;
 
-  as.aggregatorName = std::move(aggregatorName);
+  as.aggregatorName = aggregatorTree.get<std::string>("checkName", aggregatorID);
   as.className = aggregatorTree.get<std::string>("className");
   as.moduleName = aggregatorTree.get<std::string>("moduleName");
   as.detectorName = aggregatorTree.get<std::string>("detectorName", as.detectorName);
