@@ -403,7 +403,7 @@ void ITSThresholdCalibrationTask::formatLayers(TH2* h, Int_t iBarrel)
   int iLayer = iLayerBegin - 1;
   int iStave = 0;
   for (int i = 1; i <= h->GetNbinsY(); i++) {
-    h->GetYaxis()->SetBinLabel(i, Form("Stave %d ", iStave));
+    h->GetYaxis()->SetBinLabel(i, Form("L%02d_%02d", iLayer, iStave));
     iStave++;
     if (iStave >= NStaves[iLayer]) {
       iStave = 0;
