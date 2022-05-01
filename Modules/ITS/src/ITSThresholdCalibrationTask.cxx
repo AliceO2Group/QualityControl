@@ -84,7 +84,6 @@ void ITSThresholdCalibrationTask::startOfCycle()
 
 void ITSThresholdCalibrationTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-
   ILOG(Info, Support) << "START DOING QC General" << ENDM;
   const auto tunString = ctx.inputs().get<gsl::span<char>>("tunestring");
   const auto runType = ctx.inputs().get<short int>("runtype");
