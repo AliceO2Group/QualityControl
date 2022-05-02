@@ -69,6 +69,7 @@ class ITSThresholdCalibrationTask : public TaskInterface
   void addObject(TObject* aObject);
   void createAllHistos();
   Int_t getBarrel(Int_t iLayer);
+  int getCurrentChip(int barrel, int chipid, int hic, int hs);
 
   CalibrationResStruct CalibrationParser(string input);
 
@@ -95,7 +96,7 @@ class ITSThresholdCalibrationTask : public TaskInterface
 
   TString sXtitles[3] = { "DAC", "DAC", "e" };
 
-  TH2F *hCalibrationChipCounts[3][3], *hCalibrationChipAverage[3][3], *hCalibrationRMSChipAverage[3][3];
+  TH2F *hCalibrationChipDone[3], *hCalibrationChipAverage[3][3], *hCalibrationRMSChipAverage[3][3];
   TH2F *hCalibrationThrNoiseRMSChipAverage[3], *hCalibrationThrNoiseChipAverage[3];
 
   TH1F* hSuccessRate;
