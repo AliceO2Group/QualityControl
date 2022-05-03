@@ -93,7 +93,7 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info, Support) << "initialize ITSFhrTask" << ENDM;
   getParameters();
-  o2::base::GeometryManager::loadGeometry();
+  o2::base::GeometryManager::loadGeometry(mGeomPath.c_str());
   mGeom = o2::its::GeometryTGeo::Instance();
   int numOfChips = mGeom->getNumberOfChips();
 
@@ -461,7 +461,6 @@ void ITSFhrTask::setPlotsFormat()
 void ITSFhrTask::startOfActivity(Activity& activity)
 {
   ILOG(Info, Support) << "startOfActivity : " << activity.mId << ENDM;
-  mRunNumber = activity.mId;
   reset();
 }
 
@@ -831,11 +830,11 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void ITSFhrTask::getParameters()
 {
+  mGeomPath = mCustomParameters["geomPath"];
   mNThreads = std::stoi(mCustomParameters["decoderThreads"]);
   mLayer = std::stoi(mCustomParameters["Layer"]);
   mHitCutForCheck = std::stoi(mCustomParameters["HitNumberCut"]);
   mGetTFFromBinding = std::stoi(mCustomParameters["GetTFFromBinding"]);
-  mRunNumberPath = mCustomParameters["runNumberPath"];
   mHitCutForNoisyPixel = std::stoi(mCustomParameters["HitNumberCutForNoisyPixel"]);
   mOccupancyCutForNoisyPixel = std::stof(mCustomParameters["OccupancyNumberCutForNoisyPixel"]);
   mMaxGeneralAxisRange = std::stof(mCustomParameters["MaxGeneralAxisRange"]);

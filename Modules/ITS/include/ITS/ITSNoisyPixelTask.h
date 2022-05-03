@@ -99,6 +99,7 @@ class ITSNoisyPixelTask : public TaskInterface
   int mEnableLayers[7];
   o2::itsmft::TopologyDictionary* mDict;
   o2::its::GeometryTGeo* mGeom;
+  std::string mGeomPath;
   long int mTimestamp;
 };
 } //  namespace o2::quality_control_modules::its
