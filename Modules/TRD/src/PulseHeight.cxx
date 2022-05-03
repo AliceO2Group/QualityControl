@@ -43,7 +43,19 @@ PulseHeight::~PulseHeight()
 
 void PulseHeight::retrieveCCDBSettings()
 {
-  mNoiseMap.reset(reinterpret_cast<o2::trd::NoiseStatusMCM*>(retrieveCondition("/TRD/Calib/NoiseMapMCM")));
+  //std::string a = mCustomParameters["noisetimestamp"];
+  //mTimestamp = a;//std::stol(a,nullptr,10);
+  //long int ts = mTimestamp ? mTimestamp : o2::ccdb::getCurrentTimestamp();
+  //TODO come back and all for different time stamps
+  long int ts = o2::ccdb::getCurrentTimestamp();
+  ILOG(Info, Support) << "Getting noisemap from ccdb - timestamp: " << ts << ENDM;
+  auto& mgr = o2::ccdb::BasicCCDBManager::instance();
+  mgr.setURL("http://alice-ccdb.cern.ch");
+  mgr.setTimestamp(ts);
+  mNoiseMap = mgr.get<o2::trd::NoiseStatusMCM>("/TRD/Calib/NoiseMapMCM");
+  if (mNoiseMap == nullptr) {
+    ILOG(Info, Support) << "mNoiseMap is null, no noisy mcm reduction" << ENDM;
+  }
 }
 
 void PulseHeight::buildHistograms()
@@ -277,7 +289,6 @@ void PulseHeight::monitorData(o2::framework::ProcessingContext& ctx)
               if (dataMap.find(std::make_tuple(d, r, c + 2)) == dataMap.end()) {
 
                 if (tblo > 400) {
-                  // std::cout << "updatec " << d << " " << r << " " << c-1 << "("<<tbsum[d][r][c-1]<<") -- " << d << " " << r << " " << c << "("<<tbsum[d][r][c]<<") -- " << d << " " << r << " " << c+1 <<"("<< tbsum[d][r][c+1]<< ")" << std::endl;
                   int phVal = 0;
                   for (int tb = 0; tb < 30; tb++) {
                     phVal = ((adcMax->second)[tb] + (adcHi->second)[tb] + (adcLo->second)[tb]);
@@ -291,7 +302,6 @@ void PulseHeight::monitorData(o2::framework::ProcessingContext& ctx)
               } else {
                 auto adcHiNeighbour = dataMap.find(std::make_tuple(d, r, c + 2));
                 if (tblo > 400) {
-                  // std::cout << "updated " << d << " " << r << " " << c-1 << "("<<tbsum[d][r][c-1]<<") -- " << d << " " << r << " " << c << "("<<tbsum[d][r][c]<<") -- " << d << " " << r << " " << c+1 <<"("<< tbsum[d][r][c+1]<< ")" << std::endl;
                   int phVal = 0;
                   for (int tb = 0; tb < 30; tb++) {
                     phVal = ((adcMax->second)[tb] + (adcHi->second)[tb] + (adcLo->second)[tb]);
@@ -392,7 +402,7 @@ void PulseHeight::monitorData(o2::framework::ProcessingContext& ctx)
                 phVal = (b->getADC()[tb] + a->getADC()[tb] + c->getADC()[tb]);
                 // TODO do we have a corresponding tracklet?
                 mPulseHeight2->Fill(tb, phVal);
-                if (!mNoiseMap.get()->getIsNoisy(b->getHCId(), b->getROB(), b->getMCM()))
+                if (mNoiseMap != nullptr && !mNoiseMap->getIsNoisy(b->getHCId(), b->getROB(), b->getMCM()))
                   mPulseHeight2n->Fill(tb, phVal);
                 mTotalPulseHeight2D2->Fill(tb, phVal);
                 mPulseHeight2DperSM2[sector]->Fill(tb, phVal);
@@ -408,7 +418,7 @@ void PulseHeight::monitorData(o2::framework::ProcessingContext& ctx)
               for (int tb = 0; tb < 30; tb++) {
                 phVal = (b->getADC()[tb] + a->getADC()[tb] + c->getADC()[tb]);
                 mPulseHeight2->Fill(tb, phVal);
-                if (!mNoiseMap.get()->getIsNoisy(b->getHCId(), b->getROB(), b->getMCM()))
+                if (mNoiseMap != nullptr && !mNoiseMap->getIsNoisy(b->getHCId(), b->getROB(), b->getMCM()))
                   mPulseHeight2n->Fill(tb, phVal);
                 mTotalPulseHeight2D2->Fill(tb, phVal);
                 mPulseHeight2DperSM2[sector]->Fill(tb, phVal);
