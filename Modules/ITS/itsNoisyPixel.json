@@ -43,7 +43,8 @@
                     "orderedPlots_comment": "The following are used for the OrderedHitsAddress objects only. If one of them is set to -1, the production of those objects is disabled",
                     "orderedPlotsUpdateFrequency": "10000",
                     "orderedPlotsBinNumber": "25",
-		    "dicttimestamp": "0"
+		    "dicttimestamp": "0",
+		    "geomPath": "./"
 
         }
 	  

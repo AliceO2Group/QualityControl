@@ -77,7 +77,7 @@ void ITSNoisyPixelTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   getJsonParameters();
 
-  o2::base::GeometryManager::loadGeometry();
+  o2::base::GeometryManager::loadGeometry(mGeomPath.c_str());
   mGeom = o2::its::GeometryTGeo::Instance();
 
   createAllHistos();
@@ -416,6 +416,7 @@ void ITSNoisyPixelTask::createAllHistos()
 
 void ITSNoisyPixelTask::getJsonParameters()
 {
+  mGeomPath = mCustomParameters["geomPath"];
 
   if (mCustomParameters["queryOption"].find("digit") != std::string::npos)
     mQueryOption = kDigit;

@@ -103,7 +103,7 @@ void ITSClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   getJsonParameters();
 
-  o2::base::GeometryManager::loadGeometry();
+  o2::base::GeometryManager::loadGeometry(mGeomPath.c_str());
   mGeom = o2::its::GeometryTGeo::Instance();
 
   createAllHistos();
@@ -564,6 +564,7 @@ void ITSClusterTask::getJsonParameters()
 {
   mNThreads = stoi(mCustomParameters.find("nThreads")->second);
   nBCbins = stoi(mCustomParameters.find("nBCbins")->second);
+  mGeomPath = mCustomParameters["geomPath"];
 
   for (int ilayer = 0; ilayer < NLayer; ilayer++) {
 

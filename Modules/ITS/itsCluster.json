@@ -41,7 +41,8 @@
                     "layer": "1111111",
                     "nThreads": "1",
                     "nBCbins" : "103",
-		    "dicttimestamp" : "0"
+		    "dicttimestamp" : "0",
+		    "geomPath": "./"
         }
  
       }
