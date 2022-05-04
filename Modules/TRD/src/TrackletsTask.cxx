@@ -18,6 +18,8 @@
 #include <TH1.h>
 #include <TH2.h>
 #include <TLine.h>
+#include <sstream>
+#include <string>
 
 #include "QualityControl/QcInfoLogger.h"
 #include "TRD/TrackletsTask.h"
@@ -59,7 +61,19 @@ void TrackletsTask::drawLinesMCM(TH2F* histo)
 
 void TrackletsTask::retrieveCCDBSettings()
 {
-  mNoiseMap.reset(reinterpret_cast<o2::trd::NoiseStatusMCM*>(retrieveCondition("/TRD/Calib/NoiseMapMCM")));
+  //std::string a = mCustomParameters["noisetimestamp"];
+  //mTimestamp = a;//std::stol(a,nullptr,10);
+  //long int ts = mTimestamp ? mTimestamp : o2::ccdb::getCurrentTimestamp();
+  //TODO come back and all for different time stamps
+  long int ts = o2::ccdb::getCurrentTimestamp();
+  ILOG(Info, Support) << "Getting noisemap from ccdb - timestamp: " << ts << ENDM;
+  auto& mgr = o2::ccdb::BasicCCDBManager::instance();
+  mgr.setURL("http://alice-ccdb.cern.ch");
+  mgr.setTimestamp(ts);
+  mNoiseMap = mgr.get<o2::trd::NoiseStatusMCM>("/TRD/Calib/NoiseMapMCM");
+  if (mNoiseMap == nullptr) {
+    ILOG(Info, Support) << "mNoiseMap is null, no noisy mcm reduction" << ENDM;
+  }
 }
 
 void TrackletsTask::buildHistograms()
@@ -113,10 +127,9 @@ void TrackletsTask::buildHistograms()
 
 void TrackletsTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize TrackletsTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Info, Support) << "initialize TrackletsTask" << ENDM;
 
   buildHistograms();
-  //    Setting up services
   retrieveCCDBSettings();
 }
 
@@ -162,7 +175,7 @@ void TrackletsTask::monitorData(o2::framework::ProcessingContext& ctx)
           // y=stack_rob, x=layer_mcm
           int x = o2::trd::constants::NMCMROB * layer + tracklets[currenttracklet].getMCM();
           int y = o2::trd::constants::NROBC1 * istack + tracklets[currenttracklet].getROB();
-          if (mNoiseMap.get()->isTrackletFromNoisyMCM(tracklets[currenttracklet])) {
+          if (mNoiseMap != nullptr && mNoiseMap->isTrackletFromNoisyMCM(tracklets[currenttracklet])) {
             moHCMCMn[sm]->Fill(x, y);
             mTrackletSlopen->Fill(tracklets[currenttracklet].getUncalibratedDy());
             mTrackletSlopeRawn->Fill(tracklets[currenttracklet].getSlope());

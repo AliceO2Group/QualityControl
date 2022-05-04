@@ -69,7 +69,7 @@ class PulseHeight final : public TaskInterface
   std::shared_ptr<TH1F> mPulseHeightDuration;
   std::shared_ptr<TH1F> mPulseHeightDuration1;
   std::shared_ptr<TH1F> mPulseHeightDurationDiff;
-  std::shared_ptr<o2::trd::NoiseStatusMCM> mNoiseMap = nullptr;
+  o2::trd::NoiseStatusMCM* mNoiseMap = nullptr;
   std::shared_ptr<TProfile> mPulseHeightpro = nullptr;
   std::shared_ptr<TProfile2D> mPulseHeightperchamber = nullptr;
 };
