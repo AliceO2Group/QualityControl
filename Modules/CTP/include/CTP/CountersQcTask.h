@@ -48,10 +48,10 @@ class CTPCountersTask final : public TaskInterface
   void reset() override;
 
   // setters
-  void SetIsFirstCycle(bool isFirstCycle = true) {mIsFirstCycle = isFirstCycle;}
-  void SetFirstTimeStamp(double firstTimeStamp = 0) {mFirstTimeStamp = firstTimeStamp;}
-  void SetPreviousTimeStamp(double previousTimeStamp = 0) {mPreviousTimeStamp = previousTimeStamp;}
-  void SetPreviousInput(unsigned long long int previousInput = 0) {mPreviousInput = previousInput;}
+  void SetIsFirstCycle(bool isFirstCycle = true) { mIsFirstCycle = isFirstCycle; }
+  void SetFirstTimeStamp(double firstTimeStamp = 0) { mFirstTimeStamp = firstTimeStamp; }
+  void SetPreviousTimeStamp(double previousTimeStamp = 0) { mPreviousTimeStamp = previousTimeStamp; }
+  void SetPreviousInput(unsigned long long int previousInput = 0) { mPreviousInput = previousInput; }
 
   // getters
   bool GetIsFirstCycle() { return mIsFirstCycle; }
