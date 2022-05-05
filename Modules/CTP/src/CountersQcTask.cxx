@@ -34,7 +34,6 @@ namespace o2::quality_control_modules::ctp
 
 CTPCountersTask::~CTPCountersTask()
 {
-  delete mHistogram;
   delete mInputCountsHist;
   delete mInputRateHist;
 }
@@ -43,14 +42,6 @@ void CTPCountersTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
   ILOG(Info, Support) << "initialize CountersQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
-
-  // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
-  // if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {
-  //  ILOG(Info, Devel) << "Custom parameter - myOwnKey: " << param->second << ENDM;
-  //}
-
-  mHistogram = new TH1F("example", "example", 20, 0, 300);
-  getObjectsManager()->startPublishing(mHistogram);
 
   mInputCountsHist = new TH1D("InputCountsFix", "Trigger Input Counts", 48, 0, 48);
   // gPad->SetLogy(mInputCountsHist->GetEntries()>0);
@@ -97,7 +88,6 @@ void CTPCountersTask::initialize(o2::framework::InitContext& /*ctx*/)
 void CTPCountersTask::startOfActivity(Activity& activity)
 {
   ILOG(Info, Support) << "startOfActivity " << activity.mId << ENDM;
-  mHistogram->Reset();
   mInputCountsHist->Reset();
   mInputRateHist->Reset();
   if (mTCanvasInputs) {
@@ -172,7 +162,6 @@ void CTPCountersTask::monitorData(o2::framework::ProcessingContext& ctx)
     mInputCountsHist->SetBinContent(i, trgInputDouble);
     // std::cout << trgInput[i] << " ";
   }
-  mHistogram->Fill(5);
   double recentInput = 0.;
   double previousInput = 0.;
   double countDiff = 0.;
@@ -291,7 +280,6 @@ void CTPCountersTask::endOfActivity(Activity& /*activity*/)
 void CTPCountersTask::reset()
 {
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
-  mHistogram->Reset();
   mInputCountsHist->Reset();
   mInputRateHist->Reset();
   if (mTCanvasInputs) {

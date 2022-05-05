@@ -69,7 +69,6 @@ class CTPCountersTask final : public TaskInterface
   std::vector<double> mPreviousTrgInput;
   std::vector<double> mTimes[48];
   std::vector<double> mInputRates[48];
-  TH1F* mHistogram = nullptr;
   TH1D* mInputCountsHist = nullptr;
   TH1D* mInputRateHist = nullptr;
   TCanvas* mTCanvasInputs = nullptr;
