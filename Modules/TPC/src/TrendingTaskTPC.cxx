@@ -209,6 +209,9 @@ void TrendingTaskTPC::generatePlots()
           histo->GetYaxis()->SetBinLabel(2, "Good");
           histo->GetYaxis()->SetBinLabel(3, "Medium");
           histo->GetYaxis()->SetBinLabel(4, "Bad");
+          histo->GetYaxis()->ChangeLabel(2, -1., -1., -1., kGreen + 2, -1, "Good");
+          histo->GetYaxis()->ChangeLabel(3, -1., -1., -1., kOrange - 3, -1, "Medium");
+          histo->GetYaxis()->ChangeLabel(4, -1., -1., -1., kRed, -1, "Bad");
 
           histo->Draw(fmt::format("{0:s} A", plot.option.data()).data());
           c->Update();

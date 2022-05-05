@@ -21,16 +21,13 @@
 
 namespace o2::quality_control_modules::tpc
 {
-void QualityReductorTPC::updateQuality(TObject* obj, SliceInfoQuality& reducedQualitySource, std::vector<std::string>& ranges)
+void QualityReductorTPC::updateQuality(const TObject* obj, SliceInfoQuality& reducedQualitySource, std::vector<std::string>& ranges)
 {
-  auto qo = dynamic_cast<quality_control::core::QualityObject*>(obj); // Get Quality Object
-
+  auto qo = dynamic_cast<const quality_control::core::QualityObject*>(obj);
   if (qo) {
+    ranges.emplace_back(qo->getPath());
 
-    auto quality = qo->getQuality();
-    std::string qualityName = qo->getPath();
-    ranges.push_back(qualityName);
-
+    const auto quality = qo->getQuality();
     reducedQualitySource.qualitylevel = quality.getLevel();
   } else {
     ILOG(Error, Support) << "Error: 'Qualityobject' not found." << ENDM;

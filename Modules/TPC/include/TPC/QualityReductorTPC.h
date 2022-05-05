@@ -37,7 +37,7 @@ class QualityReductorTPC : public quality_control_modules::tpc::ReductorTPC
   ~QualityReductorTPC() = default;
 
   /// \brief Methods from the reductor class adapted for the needs of the TPC.
-  void updateQuality(TObject* obj, SliceInfoQuality& reducedQualitySource, std::vector<std::string>& ranges) final;
+  void updateQuality(const TObject* obj, SliceInfoQuality& reducedQualitySource, std::vector<std::string>& ranges) final;
 };
 
 } // namespace o2::quality_control_modules::tpc

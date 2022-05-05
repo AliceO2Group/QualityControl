@@ -46,10 +46,10 @@ class ReductorTPC
                       std::vector<std::string>& ranges){};
 
   /// \brief Methods from the reductor class adapted for the needs of the TPC QO.
-  virtual void updateQuality(TObject* obj, SliceInfoQuality& reducedSource, std::vector<std::string>& ranges){};
+  virtual void updateQuality(const TObject* obj, SliceInfoQuality& reducedSource, std::vector<std::string>& ranges){};
 
   /// \brief Function to return proper bin numbers to avoid double counting if slicing is used
-  void getBinSlices(TAxis* histAxis, float sliceLow, float sliceUp, int& binLow, int& binUp, float& sliceLabel)
+  void getBinSlices(TAxis* histAxis, const float sliceLow, const float sliceUp, int& binLow, int& binUp, float& sliceLabel)
   {
     binLow = histAxis->FindBin(sliceLow);
     if (sliceLow > histAxis->GetBinCenter(binLow)) {
