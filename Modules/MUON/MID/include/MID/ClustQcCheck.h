@@ -10,27 +10,25 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   DigitsQcCheck.h
-/// \author Bogdan Vulpescu
+/// \file   ClustQcCheck.h
 /// \author Valerie Ramillien
+///
 
-#ifndef QC_MODULE_MID_MIDDIGITSQCCHECK_H
-#define QC_MODULE_MID_MIDDIGITSQCCHECK_H
+#ifndef QC_MODULE_MID_MIDCLUSTQCCHECK_H
+#define QC_MODULE_MID_MIDCLUSTQCCHECK_H
 
 #include "QualityControl/CheckInterface.h"
 
 namespace o2::quality_control_modules::mid
 {
 
-/// \brief  Count number of digits per detector elements
-
-class DigitsQcCheck : public o2::quality_control::checker::CheckInterface
+class ClustQcCheck : public o2::quality_control::checker::CheckInterface
 {
  public:
   /// Default constructor
-  DigitsQcCheck() = default;
+  ClustQcCheck() = default;
   /// Destructor
-  ~DigitsQcCheck() override = default;
+  ~ClustQcCheck() override = default;
 
   // Override interface
   void configure() override;
@@ -38,21 +36,9 @@ class DigitsQcCheck : public o2::quality_control::checker::CheckInterface
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
 
- private:
-  double mMeanMultThreshold;
-
-  Quality resultBMT11 = Quality::Null;
-  Quality resultBMT12 = Quality::Null;
-  Quality resultBMT21 = Quality::Null;
-  Quality resultBMT22 = Quality::Null;
-  Quality resultNBMT11 = Quality::Null;
-  Quality resultNBMT12 = Quality::Null;
-  Quality resultNBMT21 = Quality::Null;
-  Quality resultNBMT22 = Quality::Null;
-
-  ClassDefOverride(DigitsQcCheck, 2);
+  ClassDefOverride(ClustQcCheck, 2);
 };
 
 } // namespace o2::quality_control_modules::mid
 
-#endif // QC_MODULE_MID_MIDDIGITSQCCHECK_H
+#endif // QC_MODULE_MID_MIDCLUSTQCCHECK_H
