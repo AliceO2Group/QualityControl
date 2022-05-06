@@ -57,7 +57,23 @@
         "dataSource" : [ {
           "type" : "Task",
           "name" : "ITSTrackTask",
-          "MOs" : ["NClusters","PhiDistribution","AngularDistribution","EtaDistribution","VertexCoordinates","VertexRvsZ","VertexZ","BunchCrossingIDvsClusterRatio"]
+          "MOs" : ["NClusters",
+                   "PhiDistribution",
+                   "AngularDistribution",
+                   "EtaDistribution",
+                   "VertexCoordinates",
+                   "VertexRvsZ",
+                   "VertexZ",
+                   "BunchCrossingIDvsClusterRatio",
+                   "NClusterVsChipInLayer0",
+                   "NClusterVsChipInLayer1",
+                   "NClusterVsChipInLayer2",
+                   "NClusterVsChipInLayer3",
+                   "NClusterVsChipInLayer4",
+                   "NClusterVsChipInLayer5",
+                   "NClusterVsChipInLayer6",
+                   "NClusterVsChipITS"
+                   ]
         } ]
       }
     }

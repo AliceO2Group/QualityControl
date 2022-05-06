@@ -23,6 +23,7 @@
 #include <DataFormatsITSMFT/TopologyDictionary.h>
 #include <ITSBase/GeometryTGeo.h>
 #include <TTree.h>
+#include <TLine.h>
 
 class TH1D;
 class TH2D;
@@ -56,6 +57,17 @@ class ITSTrackTask : public TaskInterface
   static constexpr int NLayer = 7;
   static constexpr int NLayerIB = 3;
 
+  static constexpr int NSubStave2[NLayer] = { 1, 1, 1, 2, 2, 2, 2 };
+  const int NSubStave[NLayer] = { 1, 1, 1, 2, 2, 2, 2 };
+  const int NStaves[NLayer] = { 12, 16, 20, 24, 30, 42, 48 };
+  const int nHicPerStave[NLayer] = { 1, 1, 1, 8, 8, 14, 14 };
+  const int nChipsPerHic[NLayer] = { 9, 9, 9, 14, 14, 14, 14 };
+  const int ChipBoundary[NLayer + 1] = { 0, 108, 252, 432, 3120, 6480, 14712, 24120 };
+  const int StaveBoundary[NLayer + 1] = { 0, 12, 28, 48, 72, 102, 144, 192 };
+  const int ReduceFraction = 1;
+  const float StartAngle[NLayer] = { 16.997 / 360 * (TMath::Pi() * 2.), 17.504 / 360 * (TMath::Pi() * 2.), 17.337 / 360 * (TMath::Pi() * 2.), 8.75 / 360 * (TMath::Pi() * 2.), 7 / 360 * (TMath::Pi() * 2.), 5.27 / 360 * (TMath::Pi() * 2.), 4.61 / 360 * (TMath::Pi() * 2.) };
+  const float MidPointRad[NLayer] = { 23.49, 31.586, 39.341, 197.598, 246.944, 345.348, 394.883 };
+
   std::vector<TObject*> mPublishedObjects;
   TH1D* hNClusters;
   TH1D* hTrackEta;
@@ -69,6 +81,10 @@ class ITSTrackTask : public TaskInterface
   TH1D* hNtracks;
   TH2D* hNClustersPerTrackEta;
   TH2D* hClusterVsBunchCrossing;
+  TH2D* hNClusterVsChip[NLayer];
+  TH2D* hNClusterVsChipITS;
+
+  std::string mDictPath;
 
   float mVertexXYsize;
   float mVertexZsize;
