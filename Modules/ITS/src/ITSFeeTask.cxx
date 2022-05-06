@@ -136,14 +136,10 @@ void ITSFeeTask::setAxisTitle(TH1* object, const char* xTitle, const char* yTitl
 
 void ITSFeeTask::drawLayerName(TH2I* histo2D)
 {
-  TText* t[NLayer];
-  double minTextPosX[NLayer] = { 0.11, 0.185, 0.285, 0.385, 0.48, 0.615, 0.78 };
+  TLatex* t[NLayer];
+  double minTextPosX[NLayer] = { 1, 42, 92, 150, 205, 275, 370 };
   for (int ilayer = 0; ilayer < NLayer; ilayer++) {
-    t[ilayer] = new TText();
-    t[ilayer]->SetText(minTextPosX[ilayer], 0.9075, Form("Layer %d", ilayer));
-    t[ilayer]->SetTextColor(1);
-    t[ilayer]->SetTextSize(22);
-    t[ilayer]->SetNDC();
+    t[ilayer] = new TLatex(minTextPosX[ilayer], 28.3, Form("Layer %d", ilayer));
     histo2D->GetListOfFunctions()->Add(t[ilayer]);
   }
   for (const int& lay : LayerBoundaryFEE) {
