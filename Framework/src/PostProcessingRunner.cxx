@@ -19,10 +19,12 @@
 #include "QualityControl/CommonSpec.h"
 #include "QualityControl/InfrastructureSpecReader.h"
 #include "QualityControl/Activity.h"
+#include "QualityControl/RootClassFactory.h"
 
 #include <boost/property_tree/ptree.hpp>
 #include <utility>
 #include <Framework/DataAllocator.h>
+#include <CommonUtils/ConfigurableParam.h>
 
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::repository;
@@ -64,6 +66,11 @@ void PostProcessingRunner::init(const PostProcessingRunnerConfig& runnerConfig, 
 
   QcInfoLogger::init("post/" + mName, runnerConfig.infologgerFilterDiscardDebug, runnerConfig.infologgerDiscardLevel);
   ILOG(Info, Support) << "Initializing PostProcessingRunner" << ENDM;
+
+  root_class_factory::loadLibrary(mTaskConfig.moduleName);
+  if (!mRunnerConfig.configKeyValues.empty()) {
+    conf::ConfigurableParam::updateFromString(mRunnerConfig.configKeyValues);
+  }
 
   // configuration of the database
   mDatabase = DatabaseFactory::create(mRunnerConfig.database.at("implementation"));
@@ -227,6 +234,7 @@ PostProcessingRunnerConfig PostProcessingRunner::extractConfig(const CommonSpec&
     commonSpec.infologgerFilterDiscardDebug,
     commonSpec.infologgerDiscardLevel,
     commonSpec.postprocessingPeriod,
+    "",
     ppTaskSpec.tree
   };
 }

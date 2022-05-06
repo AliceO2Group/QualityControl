@@ -23,6 +23,7 @@
 #include <Framework/DataSpecUtils.h>
 #include <Monitoring/MonitoringFactory.h>
 #include <Monitoring/Monitoring.h>
+#include <CommonUtils/ConfigurableParam.h>
 
 #include <utility>
 // QC
@@ -31,6 +32,7 @@
 #include "QualityControl/runnerUtils.h"
 #include "QualityControl/InfrastructureSpecReader.h"
 #include "QualityControl/CheckRunnerFactory.h"
+#include "QualityControl/RootClassFactory.h"
 
 #include <TSystem.h>
 
@@ -211,6 +213,11 @@ void CheckRunner::init(framework::InitContext& iCtx)
     initDatabase();
     initMonitoring();
     initServiceDiscovery();
+    initLibraries(); // we have to load libraries before we load ConfigurableParams, otherwise the corresponding ROOT dictionaries won't be found
+
+    if (iCtx.options().isSet("configKeyValues")) {
+      conf::ConfigurableParam::updateFromString(iCtx.options().get<std::string>("configKeyValues"));
+    }
 
     // registering state machine callbacks
     iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, &services = iCtx.services()]() { start(services); });
@@ -460,6 +467,18 @@ void CheckRunner::initInfologger(framework::InitContext& iCtx)
                      mConfig.infologgerDiscardLevel,
                      il,
                      ilContext);
+}
+
+void CheckRunner::initLibraries()
+{
+  std::set<std::string> moduleNames;
+  for (const auto& [_, check] : mChecks) {
+    (void)_;
+    moduleNames.insert(check.getConfig().moduleName);
+  }
+  for (const auto& moduleName : moduleNames) {
+    core::root_class_factory::loadLibrary(moduleName);
+  }
 }
 
 void CheckRunner::start(const ServiceRegistry& services)
