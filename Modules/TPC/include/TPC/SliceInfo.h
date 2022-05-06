@@ -92,7 +92,7 @@ struct SliceInfoQuality {
   UInt_t qualitylevel = 0;
 
   /// \brief Return the struct member/float corresponding to the argument.
-  double RetrieveValue(std::string varType) const
+  double RetrieveValue(const std::string& varType) const
   {
     if (varType == "qualitylevel") {
       return (double)qualitylevel;
