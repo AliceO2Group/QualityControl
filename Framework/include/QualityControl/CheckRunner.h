@@ -168,6 +168,7 @@ class CheckRunner : public framework::Task
   void initMonitoring();
   void initServiceDiscovery();
   void initInfologger(framework::InitContext& iCtx);
+  void initLibraries();
 
   /**
    * Update the list of objects this TaskRunner is sending out.

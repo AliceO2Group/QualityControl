@@ -146,6 +146,7 @@ class AggregatorRunner : public framework::Task
   void initDatabase();
   void initMonitoring();
   void initServiceDiscovery();
+  void initLibraries();
   void initAggregators();
 
   /**
