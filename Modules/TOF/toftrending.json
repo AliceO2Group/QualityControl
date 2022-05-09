@@ -52,7 +52,7 @@
           "userorcontrol"
         ],
         "updateTrigger": [
-          "newobject:ccdb:TOF/MO/TaskDigits/Multiplicity/Integrated"
+          "newobject:qcdb:TOF/MO/TaskDigits/Multiplicity/Integrated"
         ],
         "stopTrigger": [
           "userorcontrol",
