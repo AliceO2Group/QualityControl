@@ -11,7 +11,6 @@
 
 ///
 /// \file   DigitsQcCheck.cxx
-/// \author Bogdan Vulpescu
 /// \author Valerie Ramillien
 ///
 
@@ -22,16 +21,20 @@
 // ROOT
 #include <TH1.h>
 #include <TPaveText.h>
-#include <TLatex.h>
-
-#define MID_HITMULT_LIMIT 100
 
 using namespace std;
 
 namespace o2::quality_control_modules::mid
 {
 
-void DigitsQcCheck::configure() {}
+void DigitsQcCheck::configure()
+{
+  if (auto param = mCustomParameters.find("MeanMultThreshold"); param != mCustomParameters.end()) {
+    ILOG(Info, Support) << "Custom parameter - MeanMultThreshold: " << param->second << ENDM;
+    mMeanMultThreshold = stoi(param->second);
+    std::cout << "mMeanMultThreshold = " << mMeanMultThreshold << std::endl;
+  }
+}
 
 Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
@@ -47,9 +50,9 @@ Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
       resultBMT11 = Quality::Good;
       mean = h->GetMean();
       std::cout << "check :: BMT11 mean =>>  " << mean << std::endl;
-      if (mean > MID_HITMULT_LIMIT)
+      if (mean > mMeanMultThreshold)
         resultBMT11 = Quality::Bad;
-      else if (mean > MID_HITMULT_LIMIT / 2)
+      else if (mean > mMeanMultThreshold / 2)
         resultBMT11 = Quality::Medium;
     } // end mMultHitMT11B check
 
@@ -57,9 +60,9 @@ Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
       resultBMT12 = Quality::Good;
       mean = h->GetMean();
-      if (mean > MID_HITMULT_LIMIT)
+      if (mean > mMeanMultThreshold)
         resultBMT12 = Quality::Bad;
-      else if (mean > MID_HITMULT_LIMIT / 2)
+      else if (mean > mMeanMultThreshold / 2)
         resultBMT12 = Quality::Medium;
     } // end mMultHitMT12B check
 
@@ -67,9 +70,9 @@ Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
       resultBMT21 = Quality::Good;
       mean = h->GetMean();
-      if (mean > MID_HITMULT_LIMIT)
+      if (mean > mMeanMultThreshold)
         resultBMT21 = Quality::Bad;
-      else if (mean > MID_HITMULT_LIMIT / 2)
+      else if (mean > mMeanMultThreshold / 2)
         resultBMT21 = Quality::Medium;
     } // end mMultHitMT21B check
 
@@ -77,9 +80,9 @@ Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
       resultBMT22 = Quality::Good;
       mean = h->GetMean();
-      if (mean > MID_HITMULT_LIMIT)
+      if (mean > mMeanMultThreshold)
         resultBMT22 = Quality::Bad;
-      else if (mean > MID_HITMULT_LIMIT / 2)
+      else if (mean > mMeanMultThreshold / 2)
         resultBMT22 = Quality::Medium;
     } // end mMultHitMT22B check
 
@@ -89,9 +92,9 @@ Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
       resultNBMT11 = Quality::Good;
       mean = h->GetMean();
       // std::cout << "check :: NBMT11 mean =>>  " << mean << std::endl;
-      if (mean > MID_HITMULT_LIMIT)
+      if (mean > mMeanMultThreshold)
         resultNBMT11 = Quality::Bad;
-      else if (mean > MID_HITMULT_LIMIT / 2)
+      else if (mean > mMeanMultThreshold / 2)
         resultNBMT11 = Quality::Medium;
     } // end mMultHitMT11NB check
 
@@ -99,9 +102,9 @@ Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
       resultNBMT12 = Quality::Good;
       mean = h->GetMean();
-      if (mean > MID_HITMULT_LIMIT)
+      if (mean > mMeanMultThreshold)
         resultNBMT12 = Quality::Bad;
-      else if (mean > MID_HITMULT_LIMIT / 2)
+      else if (mean > mMeanMultThreshold / 2)
         resultNBMT12 = Quality::Medium;
     } // end mMultHitMT12NB check
 
@@ -109,9 +112,9 @@ Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
       resultNBMT21 = Quality::Good;
       mean = h->GetMean();
-      if (mean > MID_HITMULT_LIMIT)
+      if (mean > mMeanMultThreshold)
         resultNBMT21 = Quality::Bad;
-      else if (mean > MID_HITMULT_LIMIT / 2)
+      else if (mean > mMeanMultThreshold / 2)
         resultNBMT21 = Quality::Medium;
     } // end mMultHitMT21NB check
 
@@ -119,9 +122,9 @@ Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
       resultNBMT22 = Quality::Good;
       mean = h->GetMean();
-      if (mean > MID_HITMULT_LIMIT)
+      if (mean > mMeanMultThreshold)
         resultNBMT22 = Quality::Bad;
-      else if (mean > MID_HITMULT_LIMIT / 2)
+      else if (mean > mMeanMultThreshold / 2)
         resultNBMT22 = Quality::Medium;
     } // end mMultHitMT22NB check
   }
