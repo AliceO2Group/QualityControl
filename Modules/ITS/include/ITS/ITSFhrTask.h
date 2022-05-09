@@ -172,12 +172,8 @@ class ITSFhrTask final : public TaskInterface
   TH2I* mChipStaveEventHitCheck[7];
   TH1D* mOccupancyPlot[7];
 
-  std::string mRunNumberPath;
-  std::string mRunNumber = "000000";
-
   // Geometry decoder
   o2::its::GeometryTGeo* mGeom;
-  std::string mGeomPath;
 };
 } // namespace o2::quality_control_modules::its
 
