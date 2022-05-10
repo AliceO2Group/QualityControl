@@ -106,7 +106,12 @@ void MergeableTH2Ratio::beautify()
 {
   SetOption("colz");
   GetListOfFunctions()->RemoveAll();
-  GetListOfFunctions()->AddAll((TList*)(mHistoNum->GetListOfFunctions()->Clone()));
+
+  TList* functions = (TList*)mHistoNum->GetListOfFunctions()->Clone();
+  if (functions) {
+    GetListOfFunctions()->AddAll(functions);
+    delete functions;
+  }
 }
 
 } // namespace o2::quality_control_modules::muon
