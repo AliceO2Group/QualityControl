@@ -671,6 +671,10 @@ cmake -DCMAKE_INSTALL_PREFIX=~/installdir .. -DO2_ROOT=~/installdir
 make -j8 install
 ```
 
+***Important step in case several nodes are involved***
+
+In case the workflows will span over several FLPs and/or QC machines, one should `scp` the `installdir` to the other machines in the right home directory. The user on the FLPs is `flp` and `qc` on the QC nodes.
+
 **Use it in aliECS**
 
 Set an extra variable `extra_env_vars` and set it to 
