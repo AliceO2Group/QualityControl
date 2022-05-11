@@ -9,8 +9,8 @@
         "name": "not_applicable"
       },
       "Activity": {
-        "number": "42",
-        "type": "2"
+        "number": "",
+        "type": ""
       },
       "monitoring": {
         "url": "infologger:///debug?qc"
@@ -224,6 +224,55 @@
             "graphYRange": "",
 	    "graphXRange": "", 
 	    "graphAxisLabel": "#eta:#phi"
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "60 seconds"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      },
+      "TestQuality": {
+        "active": "true",
+        "className": "o2::quality_control_modules::tpc::TrendingTaskTPC",
+        "moduleName": "QcTPC",
+        "detectorName": "TPC",
+        "dataSources": [
+          {
+            "type": "repository-quality",
+            "path": "TPC/QO/CheckOfTrack_Trending/Tracks_Trending",
+            "names": [ "hEta_StatMean_Trend", "hNClustersAfterCuts_StatMean_Trend" ],
+            "reductorName": "o2::quality_control_modules::tpc::QualityReductorTPC",
+            "axisDivision": [ ],
+            "moduleName": "QcTPC"
+          }
+        ],
+        "plots": [
+          {
+            "name": "hEta_StatMean_Quality_Trend",
+            "title": "Quality trending",
+            "varexp": "hEta_StatMean_Trend.qualitylevel:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "", 
+            "graphYRange": "",
+	    "graphXRange": "",
+	    "graphAxisLabel": "qualitylevel:time"
+          },
+          {
+            "name": "hhNClustersAfterCuts_StatMean_Quality_Trend",
+            "title": "Quality trending",
+            "varexp": "hNClustersAfterCuts_StatMean_Trend.qualitylevel:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "", 
+            "graphYRange": "",
+	    "graphXRange": "",
+	    "graphAxisLabel": "qualitylevel:time"
           }
         ],
         "initTrigger": [

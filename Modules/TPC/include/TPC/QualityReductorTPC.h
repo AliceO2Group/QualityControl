@@ -10,39 +10,36 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file     TH2ReductorTPC.h
+/// \file     TH1ReductorTPC.h
 /// \author   Marcel Lesch
-/// \author   Cindy Mordasini
 /// \author   Based on the work from Piotr Konopka
 ///
 
-#ifndef QUALITYCONTROL_TH2REDUCTORTPC_H
-#define QUALITYCONTROL_TH2REDUCTORTPC_H
+#ifndef QUALITYCONTROL_QUALITYREDUCTORTPC_H
+#define QUALITYCONTROL_QUALITYREDUCTORTPC_H
 
 #include "TPC/ReductorTPC.h"
 
 namespace o2::quality_control_modules::tpc
 {
-/// \brief A reductor of TH2 histograms for the trending of TPC objects.
+/// \brief A reductor of quality objects for the trending of TPC objects.
 ///
-/// A Reductor for the TH2 histograms used for the TPC quantities. It receives
-/// a vector of 'SliceInfo' which size corresponds to the number of slices or
-/// pads which need to be trended.
+/// A Reductor for the quality objects used for the TPC quantities. It receives
+/// a struct of 'SliceInfoQuality'
 ///
 
-class TH2ReductorTPC : public quality_control_modules::tpc::ReductorTPC
+class QualityReductorTPC : public quality_control_modules::tpc::ReductorTPC
 {
  public:
   /// \brief Constructor.
-  TH2ReductorTPC() = default;
+  QualityReductorTPC() = default;
   /// \brief Destructor.
-  ~TH2ReductorTPC() = default;
+  ~QualityReductorTPC() = default;
 
   /// \brief Methods from the reductor class adapted for the needs of the TPC.
-  void update(TObject* obj, std::vector<SliceInfo>& reducedSource,
-              std::vector<std::vector<float>>& axis, std::vector<std::string>& ranges) final;
+  void updateQuality(const TObject* obj, SliceInfoQuality& reducedQualitySource, std::vector<std::string>& ranges) final;
 };
 
 } // namespace o2::quality_control_modules::tpc
 
-#endif // QUALITYCONTROL_TH2REDUCTORTPC_H
+#endif // QUALITYCONTROL_QUALITYREDUCTORTPC_H
