@@ -31,9 +31,9 @@
         "dataSources": [
           {
             "type": "repository",
-            "path": "TOF/MO/TaskDigits",
+            "path": "TOF/MO/TaskDigits/Multiplicity",
             "names": [
-              "TOFRawsMulti"
+              "Integrated"
             ],
             "reductorName": "o2::quality_control_modules::common::TH1Reductor",
             "moduleName": "QcCommon"
@@ -43,7 +43,7 @@
           {
             "name": "mean_of_hits",
             "title": "Mean trend of TOF hits",
-            "varexp": "TOFRawsMulti.mean:time",
+            "varexp": "Integrated.mean:time",
             "selection": "",
             "option": "*L"
           }
@@ -52,7 +52,7 @@
           "userorcontrol"
         ],
         "updateTrigger": [
-          "newobject:ccdb:TOF/MO/TaskDigits/TOFRawsMulti"
+          "newobject:qcdb:TOF/MO/TaskDigits/Multiplicity/Integrated"
         ],
         "stopTrigger": [
           "userorcontrol",
