@@ -55,7 +55,7 @@ class ITSTrackSimTask : public TaskInterface
   struct InfoStruct {
     unsigned short clusters = 0;
     bool isFilled = 0;
-    int isReco=0;
+    int isReco = 0;
     bool isPrimary = 0;
     float r;
     float pt;
@@ -76,8 +76,8 @@ class ITSTrackSimTask : public TaskInterface
   TH1D* hNumRecoValid_pt;
   TH1D* hNumRecoFake_pt;
   TH1D* hDenTrue_pt;
-  TEfficiency* hEfficiency_pt, *hEfficiency_phi, *hEfficiency_eta, *hEfficiency_z, *hEfficiency_r;
-  TEfficiency* hFakeTrack_pt, *hFakeTrack_phi, *hFakeTrack_eta, *hFakeTrack_z, *hFakeTrack_r; 
+  TEfficiency *hEfficiency_pt, *hEfficiency_phi, *hEfficiency_eta, *hEfficiency_z, *hEfficiency_r;
+  TEfficiency *hFakeTrack_pt, *hFakeTrack_phi, *hFakeTrack_eta, *hFakeTrack_z, *hFakeTrack_r;
 
   TH1D* hNumRecoValid_eta;
   TH1D* hNumRecoFake_eta;
@@ -103,7 +103,7 @@ class ITSTrackSimTask : public TaskInterface
 
   TH2D* hAngularDistribution;
 
-  TEfficiency* hDuplicate_pt, * hDuplicate_phi, * hDuplicate_eta, * hDuplicate_z, * hDuplicate_r;
+  TEfficiency *hDuplicate_pt, *hDuplicate_phi, *hDuplicate_eta, *hDuplicate_z, *hDuplicate_r;
   TH1D *hNumDuplicate_pt, *hNumDuplicate_phi, *hNumDuplicate_eta, *hNumDuplicate_z, *hNumDuplicate_r;
   int mRunNumber = 0;
   std::string mO2GrpPath;
