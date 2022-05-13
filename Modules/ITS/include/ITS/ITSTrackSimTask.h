@@ -28,7 +28,7 @@
 #include "Field/MagneticField.h"
 #include "TGeoGlobalMagField.h"
 #include "DataFormatsITS/TrackITS.h"
-
+#include <TEfficiency.h>
 class TH1D;
 class TH2D;
 
@@ -55,6 +55,7 @@ class ITSTrackSimTask : public TaskInterface
   struct InfoStruct {
     unsigned short clusters = 0;
     bool isFilled = 0;
+    int isReco=0;
     bool isPrimary = 0;
     float r;
     float pt;
@@ -75,32 +76,24 @@ class ITSTrackSimTask : public TaskInterface
   TH1D* hNumRecoValid_pt;
   TH1D* hNumRecoFake_pt;
   TH1D* hDenTrue_pt;
-  TH1D* hFakeTrack_pt;
-  TH1D* hEfficiency_pt;
+  TEfficiency* hEfficiency_pt, *hEfficiency_phi, *hEfficiency_eta, *hEfficiency_z, *hEfficiency_r;
+  TEfficiency* hFakeTrack_pt, *hFakeTrack_phi, *hFakeTrack_eta, *hFakeTrack_z, *hFakeTrack_r; 
 
   TH1D* hNumRecoValid_eta;
   TH1D* hNumRecoFake_eta;
   TH1D* hDenTrue_eta;
-  TH1D* hFakeTrack_eta;
-  TH1D* hEfficiency_eta;
 
   TH1D* hNumRecoValid_phi;
   TH1D* hNumRecoFake_phi;
   TH1D* hDenTrue_phi;
-  TH1D* hFakeTrack_phi;
-  TH1D* hEfficiency_phi;
 
   TH1D* hNumRecoValid_r;
   TH1D* hNumRecoFake_r;
   TH1D* hDenTrue_r;
-  TH1D* hFakeTrack_r;
-  TH1D* hEfficiency_r;
 
   TH1D* hNumRecoValid_z;
   TH1D* hNumRecoFake_z;
   TH1D* hDenTrue_z;
-  TH1D* hFakeTrack_z;
-  TH1D* hEfficiency_z;
 
   TH1F* hTrackImpactTransvFake;
   TH1F* hTrackImpactTransvValid;
@@ -110,6 +103,8 @@ class ITSTrackSimTask : public TaskInterface
 
   TH2D* hAngularDistribution;
 
+  TEfficiency* hDuplicate_pt, * hDuplicate_phi, * hDuplicate_eta, * hDuplicate_z, * hDuplicate_r;
+  TH1D *hNumDuplicate_pt, *hNumDuplicate_phi, *hNumDuplicate_eta, *hNumDuplicate_z, *hNumDuplicate_r;
   int mRunNumber = 0;
   std::string mO2GrpPath;
   std::string mCollisionsContextPath;
