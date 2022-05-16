@@ -10,29 +10,27 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   PIDClusterCheck.h
-/// \author Laura Serksnyte
-///
+/// \file   DigitsQcCheck.h
+/// \author Bogdan Vulpescu
+/// \author Valerie Ramillien
 
-#ifndef QC_MODULE_TPC_PIDCLUSTERCHECK_H
-#define QC_MODULE_TPC_PIDCLUSTERCHECK_H
+#ifndef QC_MODULE_MID_MIDDIGITSQCCHECK_H
+#define QC_MODULE_MID_MIDDIGITSQCCHECK_H
 
 #include "QualityControl/CheckInterface.h"
 
-namespace o2::quality_control_modules::tpc
+namespace o2::quality_control_modules::mid
 {
 
-/// \brief  Check whether the cluster number for a track is smaller than 159 in PID task.
-///
-/// \author Laura Serksnyte
-class PIDClusterCheck : public o2::quality_control::checker::CheckInterface
-{
+/// \brief  Count number of digits per detector elements
 
+class DigitsQcCheck : public o2::quality_control::checker::CheckInterface
+{
  public:
   /// Default constructor
-  PIDClusterCheck() = default;
+  DigitsQcCheck() = default;
   /// Destructor
-  ~PIDClusterCheck() override = default;
+  ~DigitsQcCheck() override = default;
 
   // Override interface
   void configure() override;
@@ -41,9 +39,20 @@ class PIDClusterCheck : public o2::quality_control::checker::CheckInterface
   std::string getAcceptedType() override;
 
  private:
-  ClassDefOverride(PIDClusterCheck, 2);
+  double mMeanMultThreshold;
+
+  Quality resultBMT11 = Quality::Null;
+  Quality resultBMT12 = Quality::Null;
+  Quality resultBMT21 = Quality::Null;
+  Quality resultBMT22 = Quality::Null;
+  Quality resultNBMT11 = Quality::Null;
+  Quality resultNBMT12 = Quality::Null;
+  Quality resultNBMT21 = Quality::Null;
+  Quality resultNBMT22 = Quality::Null;
+
+  ClassDefOverride(DigitsQcCheck, 2);
 };
 
-} // namespace o2::quality_control_modules::tpc
+} // namespace o2::quality_control_modules::mid
 
-#endif // QC_MODULE_TPC_PIDCLUSTERCHECK_H
+#endif // QC_MODULE_MID_MIDDIGITSQCCHECK_H

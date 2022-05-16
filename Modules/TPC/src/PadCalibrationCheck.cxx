@@ -30,8 +30,15 @@
 
 namespace o2::quality_control_modules::tpc
 {
-//______________________________________________________________________________
-void PadCalibrationCheck::configure() {}
+void PadCalibrationCheck::configure()
+{
+  if (auto param = mCustomParameters.find("mediumQualityNoiseMean"); param != mCustomParameters.end()) {
+    mMediumQualityLimitNoiseMean = std::atof(param->second.c_str());
+  }
+  if (auto param = mCustomParameters.find("badQualityNoiseMean"); param != mCustomParameters.end()) {
+    mBadQualityLimitNoiseMean = std::atof(param->second.c_str());
+  }
+}
 
 //______________________________________________________________________________
 Quality PadCalibrationCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
@@ -93,77 +100,13 @@ Quality PadCalibrationCheck::check(std::map<std::string, std::shared_ptr<Monitor
         mNoiseStdDev.push_back(stdDev);
         mNoiseNonZeroEntries.push_back(nonZeroEntries);
         // check quality
-        if (mean > 1.25 && mean < 1.5) {
+        if (mean > mMediumQualityLimitNoiseMean && mean < mBadQualityLimitNoiseMean) {
           if (result == Quality::Good) {
             result = Quality::Medium;
           }
           mSectorsName.push_back(titleh);
           mSectorsQuality.push_back(Quality::Medium);
-        } else if (mean > 1.5) {
-          result = Quality::Bad;
-          mSectorsName.push_back(titleh);
-          mSectorsQuality.push_back(Quality::Bad);
-        } else {
-          mSectorsName.push_back(titleh);
-          mSectorsQuality.push_back(Quality::Good);
-        }
-      }
-    }
-    // This can be reused for all 2D histograms in the task
-    else if (mo->getName() == "c_ROCs_Pedestal_2D") {
-      result = Quality::Good;
-      auto* canv = (TCanvas*)mo->getObject();
-      if (!canv)
-        continue;
-      // Check all histograms in the canvas
-      for (int tpads = 1; tpads <= 72; tpads++) {
-        const auto padName = fmt::format("c_ROCs_Pedestal_2D_{:d}", tpads);
-        const auto histName = fmt::format("h_Pedestals_ROC_{:02d}", tpads - 1);
-        TPad* pad = (TPad*)canv->GetListOfPrimitives()->FindObject(padName.data());
-        if (!pad) {
-          mSectorsName.push_back("notitle");
-          mSectorsQuality.push_back(Quality::Null);
-          continue;
-        }
-        TH2F* h = (TH2F*)pad->GetListOfPrimitives()->FindObject(histName.data());
-        if (!h) {
-          mSectorsName.push_back("notitle");
-          mSectorsQuality.push_back(Quality::Null);
-          continue;
-        }
-        const std::string titleh = h->GetTitle();
-
-        //check if we are dealing with IROC or OROC
-        int totalPads = 0;
-        if (titleh.find("IROC") != std::string::npos) {
-          totalPads = 5280;
-        } else if (titleh.find("OROC") != std::string::npos) {
-          totalPads = 9280;
-        } else {
-          return Quality::Null;
-        }
-        const int NX = h->GetNbinsX();
-        const int NY = h->GetNbinsY();
-        // Check how many of the pads are non zero
-        int sum = 0;
-        for (int i = 1; i <= NX; i++) {
-          for (int j = 1; j <= NY; j++) {
-            int val = h->GetBinContent(i, j);
-            if (val > 0) {
-              sum += 1;
-            }
-          }
-        }
-        // Check how many are off
-        const float mediumLimit = 0.7;
-        const float badLimit = 0.4;
-        if (sum > badLimit * totalPads && sum < mediumLimit * totalPads) {
-          if (result == Quality::Good) {
-            result = Quality::Medium;
-          }
-          mSectorsName.push_back(titleh);
-          mSectorsQuality.push_back(Quality::Medium);
-        } else if (sum < badLimit * totalPads) {
+        } else if (mean > mBadQualityLimitNoiseMean) {
           result = Quality::Bad;
           mSectorsName.push_back(titleh);
           mSectorsQuality.push_back(Quality::Bad);
@@ -185,23 +128,17 @@ std::string PadCalibrationCheck::getAcceptedType() { return "TCanvas"; }
 void PadCalibrationCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality)
 {
   auto moName = mo->getName();
-  if (moName == "c_Sides_Noise" || moName == "c_ROCs_Noise_1D" || moName == "c_ROCs_Pedestal_2D") {
+  if (moName == "c_Sides_Noise" || moName == "c_ROCs_Noise_1D") {
     int padsTotal = 0, padsstart = 1000;
     auto* tcanv = (TCanvas*)mo->getObject();
     std::string histNameS, histName;
     if (moName == "c_Sides_Noise") {
       padsstart = 3;
       padsTotal = 4;
-    }
-    if (moName == "c_ROCs_Noise_1D") {
+    } else if (moName == "c_ROCs_Noise_1D") {
       padsstart = 1;
       padsTotal = 72;
       histNameS = "h1_Noise";
-    }
-    if (moName == "c_ROCs_Pedestal_2D") {
-      padsstart = 1;
-      padsTotal = 72;
-      histNameS = "h_Pedestals_ROC";
     }
     for (int tpads = padsstart; tpads <= padsTotal; tpads++) {
       const std::string padName = fmt::format("{:s}_{:d}", moName, tpads);
@@ -232,17 +169,16 @@ void PadCalibrationCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality)
         continue;
       }
       const int index = std::distance(mSectorsName.begin(), it);
-      if (moName == "c_Sides_Noise" || moName == "c_ROCs_Noise_1D") {
-        TPaveText* msg = new TPaveText(0.7, 0.8, 0.898, 0.9, "NDC");
-        h->SetStats(0);
-        msg->SetBorderSize(1);
-        msg->SetName(Form("%s_msg", mo->GetName()));
-        msg->Clear();
-        msg->AddText(fmt::format("Entries: {:d}", mNoiseNonZeroEntries[index]).data());
-        msg->AddText(fmt::format("Mean: {:.4f}", mNoiseMean[index]).data());
-        msg->AddText(fmt::format("Std Dev: {:.4f}", mNoiseStdDev[index]).data());
-        msg->Draw("same");
-      }
+      TPaveText* msg = new TPaveText(0.7, 0.8, 0.898, 0.9, "NDC");
+      h->SetStats(0);
+      msg->SetBorderSize(1);
+      msg->SetName(Form("%s_msg", mo->GetName()));
+      msg->Clear();
+      msg->AddText(fmt::format("Entries: {:d}", mNoiseNonZeroEntries[index]).data());
+      msg->AddText(fmt::format("Mean: {:.4f}", mNoiseMean[index]).data());
+      msg->AddText(fmt::format("Std Dev: {:.4f}", mNoiseStdDev[index]).data());
+      msg->Draw("same");
+
       // In case of all histograms
       TPaveText* msgQuality = new TPaveText(0.1, 0.9, 0.9, 0.95, "NDC");
       msgQuality->SetBorderSize(1);

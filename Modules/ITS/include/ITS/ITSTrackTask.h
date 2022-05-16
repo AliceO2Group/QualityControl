@@ -70,9 +70,6 @@ class ITSTrackTask : public TaskInterface
   TH2D* hNClustersPerTrackEta;
   TH2D* hClusterVsBunchCrossing;
 
-  std::string mRunNumber;
-  std::string mRunNumberPath;
-
   float mVertexXYsize;
   float mVertexZsize;
   float mVertexRsize;

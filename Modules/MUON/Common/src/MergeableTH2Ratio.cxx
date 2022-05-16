@@ -25,8 +25,6 @@ MergeableTH2Ratio::MergeableTH2Ratio(MergeableTH2Ratio const& copymerge)
          copymerge.getNum()->GetXaxis()->GetNbins(), copymerge.getNum()->GetXaxis()->GetXmin(), copymerge.getNum()->GetXaxis()->GetXmax(),
          copymerge.getNum()->GetYaxis()->GetNbins(), copymerge.getNum()->GetYaxis()->GetXmin(), copymerge.getNum()->GetYaxis()->GetXmax()),
     o2::mergers::MergeInterface(),
-    // mlistOfFunctions(copymerge.getNum()->GetListOfFunctions()),
-    mlistOfFunctions(nullptr),
     mScalingFactor(copymerge.getScalingFactor())
 {
   Bool_t bStatus = TH1::AddDirectoryStatus();
@@ -39,8 +37,6 @@ MergeableTH2Ratio::MergeableTH2Ratio(MergeableTH2Ratio const& copymerge)
 MergeableTH2Ratio::MergeableTH2Ratio(const char* name, const char* title, int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax, double scaling)
   : TH2F(name, title, nbinsx, xmin, xmax, nbinsy, ymin, ymax),
     o2::mergers::MergeInterface(),
-    // mlistOfFunctions(mHistoNum->GetListOfFunctions()),
-    mlistOfFunctions(nullptr),
     mScalingFactor(scaling)
 {
   Bool_t bStatus = TH1::AddDirectoryStatus();
@@ -54,8 +50,6 @@ MergeableTH2Ratio::MergeableTH2Ratio(const char* name, const char* title, int nb
 MergeableTH2Ratio::MergeableTH2Ratio(const char* name, const char* title, double scaling)
   : TH2F(name, title, 10, 0, 10, 10, 0, 10),
     o2::mergers::MergeInterface(),
-    // mlistOfFunctions(mHistoNum->GetListOfFunctions()),
-    mlistOfFunctions(nullptr),
     mScalingFactor(scaling)
 {
   Bool_t bStatus = TH1::AddDirectoryStatus();
@@ -91,26 +85,33 @@ void MergeableTH2Ratio::update()
   static constexpr double sOrbitLengthInMilliseconds = sOrbitLengthInMicroseconds / 1000;
   const char* name = this->GetName();
   const char* title = this->GetTitle();
+
   Reset();
-  // if(mlistOfFunctions->GetLast() > 0){
-  //     beautify();
-  // }
+  beautify();
+
   GetXaxis()->Set(mHistoNum->GetXaxis()->GetNbins(), mHistoNum->GetXaxis()->GetXmin(), mHistoNum->GetXaxis()->GetXmax());
   GetYaxis()->Set(mHistoNum->GetYaxis()->GetNbins(), mHistoNum->GetYaxis()->GetXmin(), mHistoNum->GetYaxis()->GetXmax());
   SetBinsLength();
+
   Divide(mHistoNum, mHistoDen);
   SetNameTitle(name, title);
+
   // convertion to KHz units
   if (mScalingFactor != 1.) {
     Scale(1. / sOrbitLengthInMilliseconds);
   }
-  SetOption("colz");
 }
 
 void MergeableTH2Ratio::beautify()
 {
-  // GetListOfFunctions()->RemoveAll();
-  // GetListOfFunctions()->AddAll(mlistOfFunctions);
+  SetOption("colz");
+  GetListOfFunctions()->RemoveAll();
+
+  TList* functions = (TList*)mHistoNum->GetListOfFunctions()->Clone();
+  if (functions) {
+    GetListOfFunctions()->AddAll(functions);
+    delete functions;
+  }
 }
 
 } // namespace o2::quality_control_modules::muon

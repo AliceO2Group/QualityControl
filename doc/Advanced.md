@@ -38,6 +38,7 @@ Advanced topics
    * [Using a different config file with the general QC](#using-a-different-config-file-with-the-general-qc-1)
    * [Enable the repo cleaner](#enable-the-repo-cleaner)
 * [Configuration](#configuration-1)
+   * [Merging multiple configuration files into one](#merging-multiple-configuration-files-into-one)
    * [Definition and access of task-specific configuration](#definition-and-access-of-task-specific-configuration)
    * [Configuration files details](#configuration-files-details)
       * [Global configuration structure](#global-configuration-structure)
@@ -670,6 +671,10 @@ cmake -DCMAKE_INSTALL_PREFIX=~/installdir .. -DO2_ROOT=~/installdir
 make -j8 install
 ```
 
+***Important step in case several nodes are involved***
+
+In case the workflows will span over several FLPs and/or QC machines, one should `scp` the `installdir` to the other machines in the right home directory. The user on the FLPs is `flp` and `qc` on the QC nodes.
+
 **Use it in aliECS**
 
 Set an extra variable `extra_env_vars` and set it to 
@@ -711,9 +716,71 @@ By defaults there is a *disabled* cron job :
   
 # Configuration 
 
+## Merging multiple configuration files into one
+
+To merge multiple QC configuration files into one, one can use `jq` in the following way:
+```
+jq -n 'reduce inputs as $s (input; .qc.tasks += ($s.qc.tasks) | .qc.checks += ($s.qc.checks)  | .qc.externalTasks += ($s.qc.externalTasks) | .qc.postprocessing += ($s.qc.postprocessing)| .dataSamplingPolicies += ($s.dataSamplingPolicies))' $QC_JSON_GLOBAL $JSON_FILES > $MERGED_JSON_FILENAME
+```
+
+However, one should pay attention to avoid duplicate task definition keys (e.g. having RawTask twice, each for a different detector), otherwise only one of them would find its way to a merged file. 
+In such case, one can add the `taskName` parameter in the body of a task configuration structure to use the preferred name and change the root key to a unique id, which shall be used only for the purpose of navigating a configuration file.
+If `taskName` does not exist, it is taken from the root key value.
+
+These two tasks will **not** be merged correctly:
+```json
+      "RawTask": {
+        "className": "o2::quality_control_modules::abc::RawTask",
+        "moduleName": "QcA",
+        "detectorName": "A",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "raw-a"
+        }
+      }
+```
+```json
+      "RawTask": {
+        "className": "o2::quality_control_modules::xyz::RawTask",
+        "moduleName": "QcB",
+        "detectorName": "B",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "raw-b"
+        }
+      }
+```
+The following tasks will be merged correctly:
+```json
+      "RawTaskA": {
+        "taskName": "RawTask",
+        "className": "o2::quality_control_modules::abc::RawTask",
+        "moduleName": "QcA",
+        "detectorName": "A",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "raw-a"
+        }
+      }
+```
+```json
+      "RawTaskB": {
+        "taskName": "RawTask"
+        "className": "o2::quality_control_modules::xyz::RawTask",
+        "moduleName": "QcB",
+        "detectorName": "B",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "raw-b"
+        }
+      }
+```
+The same approach can be applied to other actors in the QC framework, like Checks (`checkName`), Aggregators (`aggregatorName`) and External Tasks (`taskName`).
+Post-processing tasks do not support this feature yet.
+
 ## Definition and access of task-specific configuration
 
-A task can access custom parameters declared in the configuration file at `qc.tasks.<task_name>.taskParameters`. They are stored inside a key-value map named mCustomParameters, which is a protected member of `TaskInterface`.
+A task can access custom parameters declared in the configuration file at `qc.tasks.<task_id>.taskParameters`. They are stored inside a key-value map named mCustomParameters, which is a protected member of `TaskInterface`.
 
 One can also tell the DPL driver to accept new arguments. This is done using the `customize` method at the top of your workflow definition (usually called "runXXX" in the QC).
 
@@ -801,7 +868,9 @@ should not be present in real configuration files.
         "type": "2",                      "": "Arbitrary activity type.",
         "periodName": "",                 "": "Period name - e.g. LHC22c, LHC22c1b_test",
         "passName": "",                   "": "Pass type - e.g. spass, cpass1",
-        "provenance": "qc",               "": "Provenance - qc or qc_mc depending whether it is normal data or monte carlo data"
+        "provenance": "qc",               "": "Provenance - qc or qc_mc depending whether it is normal data or monte carlo data",
+        "start" : "0",                    "": "Activity start time in ms since epoch. One can use it as a filter in post-processing",
+        "end" : "1234",                   "": "Activity end time in ms since epoch. One can use it as a filter in post-processing"
       },
       "monitoring": {                     "": "Configuration of the Monitoring library.",
         "url": "infologger:///debug?qc",  "": ["URI to the Monitoring backend. Refer to the link below for more info:",
@@ -832,8 +901,11 @@ the "tasks" path.
 {
   "qc": {
     "tasks": {
-      "QcTaskName": {                       "": "Name of the QC Task. Less than 14 character names are preferred.",
+      "QcTaskID": {                         "": ["ID of the QC Task. Less than 14 character names are preferred.",
+                                                 "If \"taskName\" is empty or missing, the ID is used"],
         "active": "true",                   "": "Activation flag. If not \"true\", the Task will not be created.",
+        "taskName": "MyTaskName",           "": ["Name of the task, used e.g. in the QCDB. If empty, the ID is used.",
+                                                 "Less than 14 character names are preferred."],
         "className": "namespace::of::Task", "": "Class name of the QC Task with full namespace.",
         "moduleName": "QcSkeleton",         "": "Library name. It can be found in CMakeLists of the detector module.",
         "detectorName": "TST",              "": "3-letter code of the detector.",
@@ -877,8 +949,11 @@ the "checks" path. Please also refer to [the Checks documentation](doc/ModulesDe
 {
   "qc": {
     "checks": {
-      "MeanIsAbove": {                "": "Name of the Check. Less than 12 character names are preferred.",
+      "MeanIsAbove": {                "": ["ID of the Check. Less than 12 character names are preferred.",
+                                           "If \"checkName\" is empty or missing, the ID is used"],
         "active": "true",             "": "Activation flag. If not \"true\", the Check will not be run.",
+        "checkName": "MeanIsAbove",   "": ["Name of the check, used e.g. in the QCDB. If empty, the ID is used.",
+                                           "Less than 12 character names are preferred."],
         "className": "ns::of::Check", "": "Class name of the QC Check with full namespace.",
         "moduleName": "QcCommon",     "": "Library name. It can be found in CMakeLists of the detector module.",
         "detectorName": "TST",        "": "3-letter code of the detector.",
@@ -908,16 +983,18 @@ the "aggregators" path. Please also refer to [the Aggregators documentation](doc
 {
   "qc": {
     "aggregators": {
-      "MyAggregator1": {              "": "Name of the Aggregator. Less than 12 character names are preferred.",
-        "active": "true",             "": "Activation flag. If not \"true\", the Aggregator will not be run.",
-        "className": "ns::of::Aggregator", "": "Class name of the QC Aggregator with full namespace.",
-        "moduleName": "QcCommon",     "": "Library name. It can be found in CMakeLists of the detector module.",
-        "policy": "OnAny",            "": ["Policy which determines when QOs should be aggregated. See the documentation",
-                                           "of Aggregators for the list of available policies and their behaviour."],
-        "detectorName": "TST",        "": "3-letter code of the detector.",
-        "dataSource": [{              "": "List of data source of the Aggregator.",
-          "type": "Check",,           "": "Type of the data source: \"Check\" or \"Aggregator\"", 
-          "name": "dataSizeCheck",    "": "Name of the Check or Aggregator",
+      "MyAggregator1": {                    "": "ID of the Aggregator. Less than 12 character names are preferred.",
+        "active": "true",                   "": "Activation flag. If not \"true\", the Aggregator will not be run.",
+        "aggregatorName" : "MyAggregator1", "": ["Name of the Aggregator, used e.g. in the QCDB. If empty, the ID is used.",
+                                                 "Less than 12 character names are preferred."],
+        "className": "ns::of::Aggregator",  "": "Class name of the QC Aggregator with full namespace.",
+        "moduleName": "QcCommon",           "": "Library name. It can be found in CMakeLists of the detector module.",
+        "policy": "OnAny",                  "": ["Policy which determines when QOs should be aggregated. See the documentation",
+                                                "of Aggregators for the list of available policies and their behaviour."],
+        "detectorName": "TST",              "": "3-letter code of the detector.",
+        "dataSource": [{                    "": "List of data source of the Aggregator.",
+          "type": "Check",,                 "": "Type of the data source: \"Check\" or \"Aggregator\"", 
+          "name": "dataSizeCheck",          "": "Name of the Check or Aggregator",
           "QOs": ["newQuality", "another"], "": ["List of QOs to be checked.",
                                           "Can be omitted for Checks", 
                                           "that publish a single Quality or to mean \"all\"."]
@@ -965,8 +1042,9 @@ Below the external task configuration structure is described. Note that more tha
 {
   "qc": {
     "externalTasks": {
-      "External-1": {                       "": "Name of the task",
+      "External-1": {                       "": "ID of the task",
         "active": "true",                   "": "Activation flag. If not \"true\", the Task will not be created.",
+        "taskName": "External-1",           "": "Name of the task, used e.g. in the QCDB. If empty, the ID is used.",
         "query": "External-1:TST/HISTO/0",  "": "Query specifying where the objects to be checked and stored are coming from. Use the task name as binding."
       }
     }

@@ -23,6 +23,7 @@
 #include <Monitoring/MonitoringFactory.h>
 #include <Monitoring/Monitoring.h>
 #include <Framework/InputRecordWalker.h>
+#include <CommonUtils/ConfigurableParam.h>
 
 #include <utility>
 
@@ -36,6 +37,7 @@
 #include "QualityControl/runnerUtils.h"
 #include "QualityControl/InfrastructureSpecReader.h"
 #include "QualityControl/AggregatorRunnerFactory.h"
+#include "QualityControl/RootClassFactory.h"
 
 using namespace AliceO2::Common;
 using namespace AliceO2::InfoLogger;
@@ -146,6 +148,12 @@ void AggregatorRunner::init(framework::InitContext& iCtx)
   QcInfoLogger::setDetector(AggregatorRunner::getDetectorName(mAggregators));
 
   try {
+    initLibraries(); // we have to load libraries before we load ConfigurableParams, otherwise the corresponding ROOT dictionaries won't be found
+    // load config params
+    if (iCtx.options().isSet("configKeyValues")) {
+      conf::ConfigurableParam::updateFromString(iCtx.options().get<std::string>("configKeyValues"));
+    }
+
     initDatabase();
     initMonitoring();
     initServiceDiscovery();
@@ -300,6 +308,17 @@ void AggregatorRunner::initInfoLogger(InitContext& iCtx)
     ILOG(Error) << "Could not find the DPL InfoLogger." << ENDM;
   }
   QcInfoLogger::init("aggregator", mRunnerConfig.infologgerFilterDiscardDebug, mRunnerConfig.infologgerDiscardLevel, il, ilContext);
+}
+
+void AggregatorRunner::initLibraries()
+{
+  std::set<std::string> moduleNames;
+  for (const auto& config : mAggregatorsConfig) {
+    moduleNames.insert(config.moduleName);
+  }
+  for (const auto& moduleName : moduleNames) {
+    core::root_class_factory::loadLibrary(moduleName);
+  }
 }
 
 bool AggregatorRunner::areSourcesIn(const std::vector<AggregatorSource>& sources,

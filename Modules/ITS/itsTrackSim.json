@@ -37,10 +37,9 @@
         },
         "location" : "remote",
         "taskParameters" : {
-          "runNumberPath" : "/home/its/QC/workdir/infiles/RunNumber.dat",
-          "MCKinePath" : "./o2sim_Kine.root",
-          "O2GrpPath" : "./o2sim_grp.root" 
-        }
+                     "O2GrpPath" : "./o2sim_grp.root",
+                     "collisionsContextPath": "./collisioncontext.root" 
+          }
 
       }
     }

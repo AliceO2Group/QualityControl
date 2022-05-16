@@ -40,13 +40,15 @@
 		    "HitNumberCut": "512",
                     "GetTFFromBinding": "0",
                     "decoderThreads": "8",
-                    "geomPath": "/tmp/qc_tmp/o2sim",
                     "HitNumberCutForNoisyPixel": "0",
                     "OccupancyNumberCutForNoisyPixel": "0.000001",
           	    "MaxGeneralAxisRange": "-2",
           	    "MinGeneralAxisRange": "-12",
           	    "MaxGeneralNoisyAxisRange": "5000",
-                    "MinGeneralNoisyAxisRange": "0"
+                    "MinGeneralNoisyAxisRange": "0",
+		    "Etabins": "130",
+                    "Phibins": "240",
+		    "geomPath": "./"
                 }
             }
         },

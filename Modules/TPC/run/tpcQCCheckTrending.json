@@ -9,8 +9,6 @@
         "name": "not_applicable"
       },
       "Activity": {
-        "number": "42",
-        "type": "2"
       },
       "monitoring": {
         "url": "infologger:///debug?qc"
@@ -33,7 +31,19 @@
           "type" : "PostProcessing",
           "name" : "PID_Trending",
           "MOs" : [ "hNClusters_StatMean_Trend", "hdEdxTot_StatMean_Trend", "hdEdxMax_StatMean_Trend", "hTgl_StatMean_Trend", "hSnp_StatMean_Trend", "hdEdxEles_StatMean_Trend", "hdEdxEles_StatStddev_Trend", "hdEdxMips_StatMean_Trend", "hdEdxMips_StatStddev_Trend", "hdEdxElesMips_Separ_Trend", "hdEdxElesMips_SeparPower_Trend", "hdEdxVsncls_StatMean_Trend_dEdx", "hdEdxVsp_StatMean_Trend_p", "hdEdxVsPhiMipsAside_StatMean_Trend_dEdx", "hdEdxVsPhiMipsCside_StatMean_Trend_dEdx", "hdEdxVsPhiElesAside_StatMean_Trend_dEdx", "hdEdxVsPhiElesCside_StatMean_Trend_dEdx" ]
-        } ]
+        } ],
+
+        "stopTrigger_comment": [ "Parameters are needed to choose if check should be performed only as last point comparison to average or average comparison to expected value." ],
+        "checkParameters": {
+          "chooseCheckMeanOrExpectedPhysicsValueOrBoth" : "Both",
+          "expectedPhysicsValue" : "0",
+          "allowedNSigmaForExpectation" : "3",
+          "badNSigmaForExpectation" : "6",
+          "allowedNSigmaForMean" : "3",
+          "badNSigmaForMean" : "6",
+          "pointsToTakeForExpectedValueCheck" : "10",
+          "pointsToTakeForMeanCheck" : "10"
+        }
         },
         "CheckOfTrack_Trending" : {
         "active" : "true",
@@ -45,7 +55,19 @@
           "type" : "PostProcessing",
           "name" : "Tracks_Trending",
           "MOs" : [ "hNClustersBeforeCuts_StatMean_Trend", "hNClustersAfterCuts_StatMean_Trend", "hEta_StatMean_Trend", "hPt_StatMean_Trend", "hSign_StatMean_Trend", "hPtNeg_StatMean_Trend", "hPtPos_StatMean_Trend", "h2DNClustersPhiAside_StatMean_Trend_Phi", "h2DNClustersPhiAside_StatMean_Trend_Nclusters", "h2DNClustersPhiCside_StatMean_Trend_Phi", "h2DNClustersPhiCside_StatMean_Trend_Nclusters" ]
-        } ]
+        } ],
+
+        "stopTrigger_comment": [ "Parameters are needed to choose if check should be performed only as last point comparison to average or average comparison to expected value." ],
+        "checkParameters": {
+          "chooseCheckMeanOrExpectedPhysicsValueOrBoth" : "Mean",
+          "expectedPhysicsValue" : "0",
+          "allowedNSigmaForExpectation" : "3",
+          "badNSigmaForExpectation" : "6",
+          "allowedNSigmaForMean" : "3",
+          "badNSigmaForMean" : "6",
+          "pointsToTakeForExpectedValueCheck" : "10",
+          "pointsToTakeForMeanCheck" : "10"
+        }
       }
      },
     "postprocessing": {
@@ -57,14 +79,14 @@
         "dataSources": [
           {
             "type": "repository",
-            "path": "qc/TPC/MO/PID",
+            "path": "TPC/MO/PID",
             "names": [ "hNClusters", "hdEdxTot", "hdEdxMax", "hTgl", "hSnp", "hdEdxEles",  "hdEdxMips" ],
             "reductorName": "o2::quality_control_modules::common::TH1Reductor",
             "moduleName": "QcCommon"
           },
           {
             "type": "repository",
-            "path": "qc/TPC/MO/PID",
+            "path": "TPC/MO/PID",
             "names": [  "hdEdxVsncls", "hdEdxVsp", "hdEdxVsPhiMipsAside", "hdEdxVsPhiMipsCside", "hdEdxVsPhiElesAside", "hdEdxVsPhiElesCside" ],
             "reductorName": "o2::quality_control_modules::common::TH2Reductor",
             "moduleName": "QcCommon"
@@ -226,14 +248,14 @@
         "dataSources": [
           {
             "type": "repository",
-            "path": "qc/TPC/MO/Tracks",
+            "path": "TPC/MO/Tracks",
             "names": [ "hNClustersBeforeCuts", "hNClustersAfterCuts", "hEta", "hPt", "hSign", "hPtPos", "hPtNeg" ],
             "reductorName": "o2::quality_control_modules::common::TH1Reductor",
             "moduleName": "QcCommon"
           },
           {
             "type": "repository",
-            "path": "qc/TPC/MO/Tracks",
+            "path": "TPC/MO/Tracks",
             "names": [ "h2DNClustersPhiAside", "h2DNClustersPhiCside" ],
             "reductorName": "o2::quality_control_modules::common::TH2Reductor",
             "moduleName": "QcCommon"

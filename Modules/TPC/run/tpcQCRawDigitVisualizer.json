@@ -60,19 +60,39 @@
           { "Time_Bin" :    [ "1000", "0", "100000" ] }
         ],
         "path_comment": "This is the path of the RawDigitData object that shall be visualized.",
-        "path": "qc/TPC/MO/RawDigits/RawDigitData",
+        "path": "TPC/MO/RawDigits/RawDigitData",
         "dataType_comment": "This is the switch for 'RawDigits' or 'Clusters' task. Choose 'raw' or 'clusters'.",
         "dataType": "raw",
         "initTrigger": [
           "once"
         ],
-        "updateTrigger_comment": "To trigger on a specific file being updated, use e.g. 'newobject:ccdb:TPC/Calib/Noise'",
+        "updateTrigger_comment": "To trigger on a specific file being updated, use e.g. 'newobject:qcdb:TPC/Calib/Noise'",
         "updateTrigger": [
-          "newobject:ccdb:qc/TPC/MO/RawDigits/RawDigitData"
+          "newobject:qcdb:TPC/MO/RawDigits/RawDigitData"
         ],
         "stopTrigger": [
           "userorcontrol"
         ]
+      }
+    },
+    "checks":{
+      "CheckForEmptyPads": {
+        "active" : "true",
+        "className" : "o2::quality_control_modules::tpc::CheckForEmptyPads",
+        "moduleName" : "QcTPC",
+        "policy" : "OnEachSeparately",
+        "detectorName" : "TPC",
+        "dataSource" : [{
+          "type" : "PostProcessing",
+          "name" : "RawDigits",
+          "MOs" : ["c_ROCs_N_RawDigits_2D","c_ROCs_Q_Max_2D"]
+        }],
+        "stopTrigger_comment": [ "MOsNames are required for code to work, runs check of empty pads, should be the same as MOs, the MOs must be separated by comma only, no spaces" ],
+        "checkParameters": {
+          "mediumQualityPercentageOfWorkingPads" : "0.7",
+          "badQualityPercentageOfWorkingPads" : "0.4",
+          "MOsNames2D" : "c_ROCs_N_RawDigits_2D,c_ROCs_Q_Max_2D"
+        }
       }
     }
   }

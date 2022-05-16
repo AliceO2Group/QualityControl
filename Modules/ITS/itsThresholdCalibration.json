@@ -23,12 +23,12 @@
       }
     },
     "tasks" : {
-      "ITSThresholdCalibrationTask" : {
+      "ITSThresholdCalibrationTask-prova" : {
         "active" : "true",
         "className" : "o2::quality_control_modules::its::ITSThresholdCalibrationTask",
         "moduleName" : "QcITS",
         "detectorName" : "ITS",
-        "cycleDurationSeconds" : "30",
+        "cycleDurationSeconds" : "60",
         "maxNumberCycles" : "-1",
         "dataSource_comment" : "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource" : {
@@ -49,7 +49,7 @@
              "id" : "thresholdcalibration",
              "active" : "true",
              "machines" : [],
-             "query" : "tunestring:ITS/TSTR/0;runtype:ITS/RUNT/0;scantype:ITS/SCANT/0",
+             "query" : "tunestring:ITS/TSTR;chipdonestring:ITS/QCSTR;runtype:ITS/RUNT;scantype:ITS/SCANT",
              "samplingConditions" : [
                {
                  "condition" : "random",

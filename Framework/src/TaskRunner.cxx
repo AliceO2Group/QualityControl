@@ -31,6 +31,7 @@
 #include <Framework/InputRecordWalker.h>
 #include <Framework/InputSpan.h>
 #include <Framework/DataRefUtils.h>
+#include <CommonUtils/ConfigurableParam.h>
 
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/TaskFactory.h"
@@ -150,8 +151,13 @@ void TaskRunner::init(InitContext& iCtx)
   mTask.reset(factory.create(mTaskConfig, mObjectsManager));
   mTask->setMonitoring(mCollector);
 
+  // load config params
+  if (iCtx.options().isSet("configKeyValues")) {
+    conf::ConfigurableParam::updateFromString(iCtx.options().get<std::string>("configKeyValues"));
+  }
+
   // init user's task
-  mTask->loadCcdb(mTaskConfig.conditionUrl);
+  mTask->setCcdbUrl(mTaskConfig.conditionUrl);
   mTask->initialize(iCtx);
 
   mNoMoreCycles = false;

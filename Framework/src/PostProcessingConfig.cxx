@@ -20,7 +20,7 @@
 namespace o2::quality_control::postprocessing
 {
 
-PostProcessingConfig::PostProcessingConfig(std::string name, const boost::property_tree::ptree& config) //
+PostProcessingConfig::PostProcessingConfig(const std::string& name, const boost::property_tree::ptree& config) //
   : taskName(name),
     moduleName(config.get<std::string>("qc.postprocessing." + name + ".moduleName")),
     className(config.get<std::string>("qc.postprocessing." + name + ".className")),
@@ -32,7 +32,9 @@ PostProcessingConfig::PostProcessingConfig(std::string name, const boost::proper
              config.get<int>("qc.config.Activity.type", 0),
              config.get<std::string>("qc.config.Activity.periodName", ""),
              config.get<std::string>("qc.config.Activity.passName", ""),
-             config.get<std::string>("qc.config.Activity.provenance", ""))
+             config.get<std::string>("qc.config.Activity.provenance", "qc"),
+             { config.get<uint64_t>("qc.config.Activity.start", 0),
+               config.get<uint64_t>("qc.config.Activity.end", -1) })
 {
   for (const auto& initTrigger : config.get_child("qc.postprocessing." + name + ".initTrigger")) {
     initTriggers.push_back(initTrigger.second.get_value<std::string>());

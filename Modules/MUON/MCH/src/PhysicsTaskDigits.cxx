@@ -34,6 +34,7 @@
 #include "QualityControl/QcInfoLogger.h"
 #include <Framework/InputRecord.h>
 #include <CommonConstants/LHCConstants.h>
+#include <DetectorsRaw/HBFUtils.h>
 
 using namespace std;
 using namespace o2::mch::raw;
@@ -81,7 +82,7 @@ void PhysicsTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   }
 
   // Histograms in electronics coordinates
-  mHistogramOccupancyElec = std::make_shared<MergeableTH2Ratio>("Occupancy_Elec", "Occupancy (KHz)", nElecXbins, 0, nElecXbins, 64, 0, 64);
+  mHistogramOccupancyElec = std::make_shared<MergeableTH2Ratio>("Occupancy_Elec", "Occupancy", nElecXbins, 0, nElecXbins, 64, 0, 64);
   mHistogramOccupancyElec->SetOption("colz");
   mAllHistograms.push_back(mHistogramOccupancyElec.get());
   if (!mSaveToRootFile) {
@@ -93,32 +94,66 @@ void PhysicsTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   mAllHistograms.push_back(mHistogramNHitsElec);
   mAllHistograms.push_back(mHistogramNorbitsElec);
 
-  mMeanOccupancyPerDE = std::make_shared<MergeableTH1OccupancyPerDE>("MeanOccupancy", "Mean Occupancy of each DE (KHz)");
+  mMeanOccupancyPerDE = std::make_shared<MergeableTH1OccupancyPerDE>("MeanOccupancy", "Mean Occupancy vs DE");
   mMeanOccupancyPerDE->SetOption("hist");
   mAllHistograms.push_back(mMeanOccupancyPerDE.get());
   if (!mSaveToRootFile) {
     getObjectsManager()->startPublishing(mMeanOccupancyPerDE.get());
   }
 
+  // Histograms in global detector coordinates
+  mHistogramOccupancyST12 = std::make_shared<MergeableTH2Ratio>("Occupancy_ST12", "ST12 Occupancy", 10, 0, 10, 10, 0, 10);
+  mAllHistograms.push_back(mHistogramOccupancyST12.get());
+  if (!mSaveToRootFile) {
+    getObjectsManager()->startPublishing(mHistogramOccupancyST12.get());
+  }
+
+  mHistogramNhitsST12 = std::make_shared<GlobalHistogram>("Nhits_ST12", "Number of hits (ST12)",
+                                                          0, mHistogramOccupancyST12->getNum());
+  mHistogramNhitsST12->init();
+  mAllHistograms.push_back(mHistogramNhitsST12->getHist());
+  mHistogramNorbitsST12 = std::make_shared<GlobalHistogram>("Norbits_ST12", "Number of orbits (ST12)",
+                                                            0, mHistogramOccupancyST12->getDen());
+  mHistogramNorbitsST12->init();
+  mAllHistograms.push_back(mHistogramNorbitsST12->getHist());
+
+  mHistogramOccupancyST345 = std::make_shared<MergeableTH2Ratio>("Occupancy_ST345", "ST345 Occupancy", 10, 0, 10, 10, 0, 10);
+  mAllHistograms.push_back(mHistogramOccupancyST345.get());
+  if (!mSaveToRootFile) {
+    getObjectsManager()->startPublishing(mHistogramOccupancyST345.get());
+  }
+
+  mHistogramNhitsST345 = std::make_shared<GlobalHistogram>("Nhits_ST345", "Number of hits (ST345)",
+                                                           1, mHistogramOccupancyST345->getNum());
+  mHistogramNhitsST345->init();
+  mAllHistograms.push_back(mHistogramNhitsST345->getHist());
+  mHistogramNorbitsST345 = std::make_shared<GlobalHistogram>("Norbits_ST345", "Number of orbits (ST345)",
+                                                             1, mHistogramOccupancyST345->getDen());
+  mHistogramNorbitsST345->init();
+  mAllHistograms.push_back(mHistogramNorbitsST345->getHist());
+
   // The code for the calculation of the on-cycle values is currently broken and therefore commented
   // mMeanOccupancyPerDECycle = std::make_shared<MergeableTH1OccupancyPerDECycle>("MeanOccupancyPerCycle", "Mean Occupancy of each DE Per Cycle (MHz)", mHistogramNHitsElec, mHistogramNorbitsElec);
   // getObjectsManager()->startPublishing(mMeanOccupancyPerDECycle.get());
 
-  if (!mDiagnostic) {
-    return;
+  mHistogramDigitsOrbitInTFDE = std::make_shared<TH2F>("DigitOrbitInTFDE", "Digit orbits vs DE", getDEindexMax(), 0, getDEindexMax(), 768, -384, 384);
+  mHistogramDigitsOrbitInTFDE->SetOption("col");
+  mAllHistograms.push_back(mHistogramDigitsOrbitInTFDE.get());
+  if (!mSaveToRootFile) {
+    getObjectsManager()->startPublishing(mHistogramDigitsOrbitInTFDE.get());
   }
 
   mHistogramDigitsOrbitInTF = std::make_shared<TH2F>("Expert/DigitOrbitInTF", "Digit orbits vs DS Id", nElecXbins, 0, nElecXbins, 768, -384, 384);
   mHistogramDigitsOrbitInTF->SetOption("colz");
   mAllHistograms.push_back(mHistogramDigitsOrbitInTF.get());
-  if (!mSaveToRootFile) {
+  if (mDiagnostic && !mSaveToRootFile) {
     getObjectsManager()->startPublishing(mHistogramDigitsOrbitInTF.get());
   }
 
   mHistogramDigitsBcInOrbit = std::make_shared<TH2F>("Expert/DigitsBcInOrbit", "Digit BC vs DS Id", nElecXbins, 0, nElecXbins, 3600, 0, 3600);
   mHistogramDigitsBcInOrbit->SetOption("colz");
   mAllHistograms.push_back(mHistogramDigitsBcInOrbit.get());
-  if (!mSaveToRootFile) {
+  if (mDiagnostic && !mSaveToRootFile) {
     getObjectsManager()->startPublishing(mHistogramDigitsBcInOrbit.get());
   }
 
@@ -132,7 +167,7 @@ void PhysicsTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
                                     TString::Format("ADC amplitude (DE%03d)", de), 5000, 0, 5000);
     mHistogramADCamplitudeDE.insert(make_pair(de, h));
     mAllHistograms.push_back(h.get());
-    if (!mSaveToRootFile) {
+    if (mDiagnostic && !mSaveToRootFile) {
       getObjectsManager()->startPublishing(h.get());
     }
 
@@ -140,17 +175,17 @@ void PhysicsTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
                                                   TString::Format("Occupancy XY (DE%03d B) (KHz)", de));
     mHistogramOccupancyDE[0].insert(make_pair(de, hm));
     mAllHistograms.push_back(hm.get());
-    if (!mSaveToRootFile) {
+    if (mDiagnostic && !mSaveToRootFile) {
       getObjectsManager()->startPublishing(hm.get());
     }
 
     auto h2n0 = std::make_shared<DetectorHistogram>(TString::Format("Expert/%sNhits_DE%03d_B", getHistoPath(de).c_str(), de),
-                                                    TString::Format("Number of hits (DE%03d B)", de), de, hm->getNum());
+                                                    TString::Format("Number of hits (DE%03d B)", de), de, int(0), hm->getNum());
     mHistogramNhitsDE[0].insert(make_pair(de, h2n0));
     mAllHistograms.push_back(h2n0->getHist());
 
     auto h2d0 = std::make_shared<DetectorHistogram>(TString::Format("Expert/%sNorbits_DE%03d_B", getHistoPath(de).c_str(), de),
-                                                    TString::Format("Number of orbits (DE%03d B)", de), de, hm->getDen());
+                                                    TString::Format("Number of orbits (DE%03d B)", de), de, int(0), hm->getDen());
     mHistogramNorbitsDE[0].insert(make_pair(de, h2d0));
     mAllHistograms.push_back(h2d0->getHist());
 
@@ -158,17 +193,17 @@ void PhysicsTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
                                              TString::Format("Occupancy XY (DE%03d NB) (KHz)", de));
     mHistogramOccupancyDE[1].insert(make_pair(de, hm));
     mAllHistograms.push_back(hm.get());
-    if (!mSaveToRootFile) {
+    if (mDiagnostic && !mSaveToRootFile) {
       getObjectsManager()->startPublishing(hm.get());
     }
 
     auto h2n1 = std::make_shared<DetectorHistogram>(TString::Format("Expert/%sNhits_DE%03d_NB", getHistoPath(de).c_str(), de),
-                                                    TString::Format("Number of hits (DE%03d NB)", de), de, hm->getNum());
+                                                    TString::Format("Number of hits (DE%03d NB)", de), de, int(1), hm->getNum());
     mHistogramNhitsDE[1].insert(make_pair(de, h2n1));
     mAllHistograms.push_back(h2n1->getHist());
 
     auto h2d1 = std::make_shared<DetectorHistogram>(TString::Format("Expert/%sNorbits_DE%03d_NB", getHistoPath(de).c_str(), de),
-                                                    TString::Format("Number of orbits (DE%03d NB)", de), de, hm->getDen());
+                                                    TString::Format("Number of orbits (DE%03d NB)", de), de, int(1), hm->getDen());
     mHistogramNorbitsDE[1].insert(make_pair(de, h2d1));
     mAllHistograms.push_back(h2d1->getHist());
   }
@@ -186,18 +221,30 @@ void PhysicsTaskDigits::startOfCycle()
 
 void PhysicsTaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  // get the input preclusters and associated digits with the orbit information
+  bool hasOrbits = false;
+  for (auto&& input : ctx.inputs()) {
+    if (input.spec->binding == "orbits") {
+      hasOrbits = true;
+    }
+  }
+
+  if (hasOrbits) {
+    auto orbits = ctx.inputs().get<gsl::span<uint64_t>>("orbits");
+    if (orbits.empty()) {
+      static AliceO2::InfoLogger::InfoLogger::AutoMuteToken msgLimit(LogWarningSupport, 1, 600); // send it once every 10 minutes
+      string msg = "WARNING: empty orbits vector";
+      ILOG_INST.log(msgLimit, "%s", msg.c_str());
+      return;
+    }
+
+    for (auto& orb : orbits) {
+      storeOrbit(orb);
+    }
+  } else {
+    addDefaultOrbitsInTF();
+  }
+
   auto digits = ctx.inputs().get<gsl::span<o2::mch::Digit>>("digits");
-  auto orbits = ctx.inputs().get<gsl::span<uint64_t>>("orbits");
-  if (orbits.empty()) {
-    ILOG(Info, Support) << "WARNING: empty orbits vector" << AliceO2::InfoLogger::InfoLogger::endm;
-    return;
-  }
-
-  for (auto& orb : orbits) {
-    storeOrbit(orb);
-  }
-
   for (auto& d : digits) {
     plotDigit(d);
   }
@@ -219,6 +266,15 @@ void PhysicsTaskDigits::storeOrbit(const uint64_t& orb)
         mNOrbits[fee][li] += 1;
       }
       mLastOrbitSeen[fee][li] = orbit;
+    }
+  }
+}
+
+void PhysicsTaskDigits::addDefaultOrbitsInTF()
+{
+  for (int fee = 0; fee < PhysicsTaskDigits::sMaxFeeId; fee++) {
+    for (int li = 0; li < PhysicsTaskDigits::sMaxLinkId; li++) {
+      mNOrbits[fee][li] += o2::raw::HBFUtils::Instance().getNOrbitsPerTF();
     }
   }
 }
@@ -267,10 +323,6 @@ void PhysicsTaskDigits::plotDigit(const o2::mch::Digit& digit)
 
   mHistogramNHitsElec->Fill(xbin - 0.5, ybin - 0.5);
 
-  if (!mDiagnostic) {
-    return;
-  }
-
   auto h = mHistogramADCamplitudeDE.find(deId);
   if ((h != mHistogramADCamplitudeDE.end()) && (h->second != NULL)) {
     h->second->Fill(ADC);
@@ -286,11 +338,13 @@ void PhysicsTaskDigits::plotDigit(const o2::mch::Digit& digit)
   auto tfTime = digit.getTime();
   if (tfTime == o2::mch::raw::DataDecoder::tfTimeInvalid) {
     mHistogramDigitsOrbitInTF->Fill(xbin - 0.5, -256);
+    mHistogramDigitsOrbitInTFDE->Fill(getDEindex(deId), -256);
     mHistogramDigitsBcInOrbit->Fill(xbin - 0.5, 3559);
   } else {
     auto orbit = digit.getTime() / o2::constants::lhc::LHCMaxBunches;
     auto bc = digit.getTime() % o2::constants::lhc::LHCMaxBunches;
     mHistogramDigitsOrbitInTF->Fill(xbin - 0.5, orbit);
+    mHistogramDigitsOrbitInTFDE->Fill(getDEindex(deId), orbit);
     mHistogramDigitsBcInOrbit->Fill(xbin - 0.5, bc);
   }
 
@@ -339,17 +393,15 @@ void PhysicsTaskDigits::updateOrbits()
           int ybin = channel + 1;
           mHistogramNorbitsElec->SetBinContent(xbin, ybin, mNOrbits[feeId][linkId]);
 
-          if (mDiagnostic) {
-            double padX = segment.padPositionX(padId);
-            double padY = segment.padPositionY(padId);
-            float padSizeX = segment.padSizeX(padId);
-            float padSizeY = segment.padSizeY(padId);
-            int cathode = segment.isBendingPad(padId) ? 0 : 1;
+          double padX = segment.padPositionX(padId);
+          double padY = segment.padPositionY(padId);
+          float padSizeX = segment.padSizeX(padId);
+          float padSizeY = segment.padSizeY(padId);
+          int cathode = segment.isBendingPad(padId) ? 0 : 1;
 
-            auto hNorbits = mHistogramNorbitsDE[cathode].find(deId);
-            if ((hNorbits != mHistogramNorbitsDE[cathode].end()) && (hNorbits->second != NULL)) {
-              hNorbits->second->Set(padX, padY, padSizeX, padSizeY, mNOrbits[feeId][linkId]);
-            }
+          auto hNorbits = mHistogramNorbitsDE[cathode].find(deId);
+          if ((hNorbits != mHistogramNorbitsDE[cathode].end()) && (hNorbits->second != NULL)) {
+            hNorbits->second->Set(padX, padY, padSizeX, padSizeY, mNOrbits[feeId][linkId]);
           }
         }
       }
@@ -376,16 +428,23 @@ void PhysicsTaskDigits::endOfCycle()
   mHistogramOccupancyElec->update();
   mMeanOccupancyPerDE->update(mHistogramOccupancyElec->getNum(), mHistogramOccupancyElec->getDen());
 
-  if (mDiagnostic) {
-    for (auto de : o2::mch::raw::deIdsForAllMCH) {
-      for (int i = 0; i < 2; i++) {
-        auto h = mHistogramOccupancyDE[i].find(de);
-        if ((h != mHistogramOccupancyDE[i].end()) && (h->second != NULL)) {
-          h->second->update();
-        }
+  for (auto de : o2::mch::raw::deIdsForAllMCH) {
+    for (int i = 0; i < 2; i++) {
+      auto h = mHistogramOccupancyDE[i].find(de);
+      if ((h != mHistogramOccupancyDE[i].end()) && (h->second != NULL)) {
+        h->second->update();
       }
     }
   }
+
+  mHistogramNhitsST12->set(mHistogramNhitsDE[0], mHistogramNhitsDE[1]);
+  mHistogramNorbitsST12->set(mHistogramNorbitsDE[0], mHistogramNorbitsDE[1]);
+
+  mHistogramNhitsST345->set(mHistogramNhitsDE[0], mHistogramNhitsDE[1]);
+  mHistogramNorbitsST345->set(mHistogramNorbitsDE[0], mHistogramNorbitsDE[1]);
+
+  mHistogramOccupancyST12->update();
+  mHistogramOccupancyST345->update();
 
   if (mSaveToRootFile) {
     writeHistos();

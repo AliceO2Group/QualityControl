@@ -31,7 +31,8 @@ using namespace std;
 namespace o2::quality_control_modules::muonchambers
 {
 
-PedestalsCheck::PedestalsCheck() : mMinPedestal(50.f), mMaxPedestal(100.f), mMinGoodFraction(0.9)
+PedestalsCheck::PedestalsCheck()
+  : mMinPedestal(50.f), mMaxPedestal(100.f), mMinGoodFraction(0.9), mMinGoodFractionPerDE(0.5), mPedestalsPlotScaleMin(40), mPedestalsPlotScaleMax(250), mNoisePlotScaleMin(0), mNoisePlotScaleMax(1.5)
 {
   mElec2DetMapper = o2::mch::raw::createElec2DetMapper<o2::mch::raw::ElectronicMapperGenerated>();
   mDet2ElecMapper = o2::mch::raw::createDet2ElecMapper<o2::mch::raw::ElectronicMapperGenerated>();
@@ -49,15 +50,29 @@ void PedestalsCheck::configure()
   if (auto param = mCustomParameters.find("MaxPedestal"); param != mCustomParameters.end()) {
     mMaxPedestal = std::stof(param->second);
   }
+  if (auto param = mCustomParameters.find("MinGoodFractionPerDE"); param != mCustomParameters.end()) {
+    mMinGoodFractionPerDE = std::stof(param->second);
+  }
   if (auto param = mCustomParameters.find("MinGoodFraction"); param != mCustomParameters.end()) {
     mMinGoodFraction = std::stof(param->second);
   }
+  if (auto param = mCustomParameters.find("PedestalsPlotScaleMin"); param != mCustomParameters.end()) {
+    mPedestalsPlotScaleMin = std::stof(param->second);
+  }
+  if (auto param = mCustomParameters.find("PedestalsPlotScaleMax"); param != mCustomParameters.end()) {
+    mPedestalsPlotScaleMax = std::stof(param->second);
+  }
+  if (auto param = mCustomParameters.find("NoisePlotScaleMin"); param != mCustomParameters.end()) {
+    mNoisePlotScaleMin = std::stof(param->second);
+  }
+  if (auto param = mCustomParameters.find("NoisePlotScaleMax"); param != mCustomParameters.end()) {
+    mNoisePlotScaleMax = std::stof(param->second);
+  }
 }
 
-bool PedestalsCheck::checkPadMapping(uint16_t feeId, uint8_t linkId, uint8_t eLinkId, o2::mch::raw::DualSampaChannelId channel)
+bool PedestalsCheck::checkPadMapping(uint16_t feeId, uint8_t linkId, uint8_t eLinkId, o2::mch::raw::DualSampaChannelId channel, int& deId)
 {
   uint16_t solarId = -1;
-  int deId = -1;
   int dsIddet = -1;
   int padId = -1;
 
@@ -95,6 +110,10 @@ Quality PedestalsCheck::check(std::map<std::string, std::shared_ptr<MonitorObjec
 {
   Quality result = Quality::Null;
 
+  static constexpr int sDeMax = 1100;
+  double nPadsPerDE[sDeMax + 1] = { 0 };
+  double nGoodPerDE[sDeMax + 1] = { 0 };
+
   for (auto& [moName, mo] : *moMap) {
 
     (void)moName;
@@ -118,21 +137,38 @@ Quality PedestalsCheck::check(std::map<std::string, std::shared_ptr<MonitorObjec
 
           for (int j = 1; j <= nbinsy; j++) {
             int chan_addr = j - 1;
+            int deId = -1;
 
-            if (!checkPadMapping(fee_id, link_id, ds_addr, chan_addr)) {
+            if (!checkPadMapping(fee_id, link_id, ds_addr, chan_addr, deId)) {
+              continue;
+            }
+            if (deId < 0 || deId > sDeMax) {
               continue;
             }
             npads += 1;
+            nPadsPerDE[deId] += 1;
             Float_t ped = h->GetBinContent(i, j);
             if (ped >= mMinPedestal && ped <= mMaxPedestal) {
               ngood += 1;
+              nGoodPerDE[deId] += 1;
             }
           }
         }
-        if (ngood >= mMinGoodFraction * npads)
-          result = Quality::Good;
-        else
+
+        result = Quality::Good;
+
+        if (ngood < mMinGoodFraction * npads) {
           result = Quality::Bad;
+        }
+        for (int deId = 0; deId <= sDeMax; deId++) {
+          if (nPadsPerDE[deId] == 0) {
+            continue;
+          }
+          if (nGoodPerDE[deId] < mMinGoodFractionPerDE * nPadsPerDE[deId]) {
+            result = Quality::Bad;
+            break;
+          }
+        }
       }
     }
   }
@@ -141,14 +177,46 @@ Quality PedestalsCheck::check(std::map<std::string, std::shared_ptr<MonitorObjec
 
 std::string PedestalsCheck::getAcceptedType() { return "TH1"; }
 
+static void updateTitle(TH1* hist, std::string suffix)
+{
+  if (!hist) {
+    return;
+  }
+  TString title = hist->GetTitle();
+  title.Append(" ");
+  title.Append(suffix.c_str());
+  hist->SetTitle(title);
+}
+
+static std::string getCurrentTime()
+{
+  time_t t;
+  time(&t);
+
+  struct tm* tmp;
+  tmp = localtime(&t);
+
+  char timestr[500];
+  strftime(timestr, sizeof(timestr), "(%x - %X)", tmp);
+
+  std::string result = timestr;
+  return result;
+}
+
 void PedestalsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
+  auto currentTime = getCurrentTime();
+  updateTitle(dynamic_cast<TH1*>(mo->getObject()), currentTime);
+
   if (mo->getName().find("Pedestals_Elec") != std::string::npos) {
     auto* h = dynamic_cast<TH2F*>(mo->getObject());
     h->SetOption("colz");
+    h->SetMinimum(mPedestalsPlotScaleMin);
+    h->SetMaximum(mPedestalsPlotScaleMax);
     TPaveText* msg = new TPaveText(0.1, 0.9, 0.9, 0.95, "NDC");
     h->GetListOfFunctions()->Add(msg);
     msg->SetName(Form("%s_msg", mo->GetName()));
+    msg->SetBorderSize(0);
 
     if (checkResult == Quality::Good) {
       msg->Clear();
@@ -176,11 +244,13 @@ void PedestalsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRe
     if (!h)
       return;
     h->SetOption("colz");
-    h->SetMaximum(1.5);
+    h->SetMinimum(mNoisePlotScaleMin);
+    h->SetMaximum(mNoisePlotScaleMax);
 
     TPaveText* msg = new TPaveText(0.1, 0.9, 0.9, 0.95, "NDC");
     h->GetListOfFunctions()->Add(msg);
     msg->SetName(Form("%s_msg", mo->GetName()));
+    msg->SetBorderSize(0);
 
     if (checkResult == Quality::Good) {
       msg->Clear();
@@ -202,6 +272,44 @@ void PedestalsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRe
       h->SetFillColor(kOrange);
     }
     h->SetLineColor(kBlack);
+  }
+
+  if ((mo->getName().find("Pedestals_ST12") != std::string::npos) ||
+      (mo->getName().find("Pedestals_ST345") != std::string::npos)) {
+    auto* h = dynamic_cast<TH2F*>(mo->getObject());
+    h->SetDrawOption("colz");
+    h->SetMinimum(mPedestalsPlotScaleMin);
+    h->SetMaximum(mPedestalsPlotScaleMax);
+    h->GetXaxis()->SetTickLength(0.0);
+    h->GetXaxis()->SetLabelSize(0.0);
+    h->GetYaxis()->SetTickLength(0.0);
+    h->GetYaxis()->SetLabelSize(0.0);
+  }
+
+  if ((mo->getName().find("Noise_ST12") != std::string::npos) ||
+      (mo->getName().find("Noise_ST345") != std::string::npos)) {
+    auto* h = dynamic_cast<TH2F*>(mo->getObject());
+    h->SetDrawOption("colz");
+    h->SetMinimum(mNoisePlotScaleMin);
+    h->SetMaximum(mNoisePlotScaleMax);
+    h->GetXaxis()->SetTickLength(0.0);
+    h->GetXaxis()->SetLabelSize(0.0);
+    h->GetYaxis()->SetTickLength(0.0);
+    h->GetYaxis()->SetLabelSize(0.0);
+  }
+
+  if (mo->getName().find("Pedestals_DE") != std::string::npos) {
+    auto* h = dynamic_cast<TH2F*>(mo->getObject());
+    h->SetDrawOption("colz");
+    h->SetMinimum(mPedestalsPlotScaleMin);
+    h->SetMaximum(mPedestalsPlotScaleMax);
+  }
+
+  if (mo->getName().find("Noise_DE") != std::string::npos) {
+    auto* h = dynamic_cast<TH2F*>(mo->getObject());
+    h->SetDrawOption("colz");
+    h->SetMinimum(mNoisePlotScaleMin);
+    h->SetMaximum(mNoisePlotScaleMax);
   }
 }
 

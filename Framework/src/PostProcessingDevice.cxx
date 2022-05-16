@@ -24,6 +24,8 @@
 #include <Common/Exceptions.h>
 #include <Framework/CallbackService.h>
 #include <Framework/ControlService.h>
+#include <Framework/InitContext.h>
+#include <Framework/ConfigParamRegistry.h>
 
 using namespace AliceO2::Common;
 using namespace o2::framework;
@@ -43,6 +45,9 @@ PostProcessingDevice::PostProcessingDevice(const PostProcessingRunnerConfig& run
 
 void PostProcessingDevice::init(framework::InitContext& ctx)
 {
+  if (ctx.options().isSet("configKeyValues")) {
+    mRunnerConfig.configKeyValues = ctx.options().get<std::string>("configKeyValues");
+  }
   // todo: read the updated config from ctx, one available
   mRunner->init(mRunnerConfig, PostProcessingConfig{ mRunnerConfig.taskName, mRunnerConfig.configTree });
 

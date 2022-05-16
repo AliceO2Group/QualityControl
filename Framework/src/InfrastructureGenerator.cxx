@@ -27,7 +27,6 @@
 #include "QualityControl/PostProcessingRunner.h"
 #include "QualityControl/Version.h"
 #include "QualityControl/QcInfoLogger.h"
-#include "QualityControl/TaskSpec.h"
 #include "QualityControl/InfrastructureSpecReader.h"
 #include "QualityControl/InfrastructureSpec.h"
 #include "QualityControl/RootFileSink.h"
@@ -138,7 +137,7 @@ WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(const boost::p
           workflow.emplace_back(TaskRunnerFactory::create(taskConfig));
           // Generate an output proxy
           // These should be removed when we are able to declare dangling output in normal DPL devices
-          generateLocalTaskLocalProxy(workflow, id, taskSpec.taskName, taskSpec.remoteMachine, std::to_string(taskSpec.remotePort), taskSpec.localControl);
+          generateLocalTaskLocalProxy(workflow, id, taskSpec);
           break;
         }
         id++;
@@ -203,7 +202,7 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
       size_t numberOfLocalMachines = taskSpec.localMachines.size() > 1 ? taskSpec.localMachines.size() : 1;
       // Generate an input proxy
       // These should be removed when we are able to declare dangling inputs in normal DPL devices
-      generateLocalTaskRemoteProxy(workflow, taskSpec.taskName, numberOfLocalMachines, std::to_string(taskSpec.remotePort), taskSpec.localControl);
+      generateLocalTaskRemoteProxy(workflow, taskSpec, numberOfLocalMachines);
 
       // In "delta" mode Mergers should implement moving window, in "entire" - QC Tasks.
       size_t resetAfterCycles = taskSpec.mergingMode == "delta" ? taskSpec.resetAfterCycles : 0;
@@ -362,7 +361,7 @@ void InfrastructureGenerator::generateDataSamplingPolicyLocalProxyBind(framework
   std::string channelName = policyName + "-" + localMachine;
   std::string channelConfig = "name=" + channelName + ",type=pub,method=bind,address=tcp://*:" + localPort +
                               ",rateLogging=60,transport=zeromq";
-  auto channelSelector = [channelName](InputSpec const&, const std::unordered_map<std::string, std::vector<FairMQChannel>>&) {
+  auto channelSelector = [channelName](InputSpec const&, const std::unordered_map<std::string, std::vector<fair::mq::Channel>>&) {
     return channelName;
   };
 
@@ -407,7 +406,7 @@ void InfrastructureGenerator::generateDataSamplingPolicyLocalProxyConnect(framew
   const std::string& channelName = policyName;
   std::string channelConfig = "name=" + channelName + ",type=pub,method=connect,address=tcp://" + remoteMachine + ":" + remotePort +
                               ",rateLogging=60,transport=zeromq";
-  auto channelSelector = [channelName](InputSpec const&, const std::unordered_map<std::string, std::vector<FairMQChannel>>&) {
+  auto channelSelector = [channelName](InputSpec const&, const std::unordered_map<std::string, std::vector<fair::mq::Channel>>&) {
     return channelName;
   };
 
@@ -440,28 +439,30 @@ void InfrastructureGenerator::generateDataSamplingPolicyRemoteProxyBind(framewor
 }
 
 void InfrastructureGenerator::generateLocalTaskLocalProxy(framework::WorkflowSpec& workflow, size_t id,
-                                                          std::string taskName, std::string remoteHost,
-                                                          std::string remotePort, const std::string& control)
+                                                          const TaskSpec& taskSpec)
 {
-  std::string proxyName = taskName + "-proxy";
-  std::string channelName = taskName + "-proxy";
+  std::string taskName = taskSpec.taskName;
+  std::string remotePort = std::to_string(taskSpec.remotePort);
+  std::string proxyName = taskSpec.detectorName + "-" + taskName + "-proxy";
+  std::string channelName = taskSpec.detectorName + "-" + taskName + "-proxy";
   InputSpec proxyInput{ channelName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName), static_cast<SubSpec>(id), Lifetime::Sporadic };
   std::string channelConfig = "name=" + channelName + ",type=pub,method=connect,address=tcp://" +
-                              remoteHost + ":" + remotePort + ",rateLogging=60,transport=zeromq";
+                              taskSpec.remoteMachine + ":" + remotePort + ",rateLogging=60,transport=zeromq";
 
   workflow.emplace_back(
     specifyFairMQDeviceMultiOutputProxy(
       proxyName.c_str(),
       { proxyInput },
       channelConfig.c_str()));
-  workflow.back().labels.emplace_back(control == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
+  workflow.back().labels.emplace_back(taskSpec.localControl == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
 }
 
-void InfrastructureGenerator::generateLocalTaskRemoteProxy(framework::WorkflowSpec& workflow, std::string taskName,
-                                                           size_t numberOfLocalMachines, std::string remotePort, const std::string& control)
+void InfrastructureGenerator::generateLocalTaskRemoteProxy(framework::WorkflowSpec& workflow, const TaskSpec& taskSpec, size_t numberOfLocalMachines)
 {
-  std::string proxyName = taskName + "-proxy"; // channel name has to match proxy name
-  std::string channelName = taskName + "-proxy";
+  std::string taskName = taskSpec.taskName;
+  std::string remotePort = std::to_string(taskSpec.remotePort);
+  std::string proxyName = taskSpec.detectorName + "-" + taskName + "-proxy"; // channel name has to match proxy name
+  std::string channelName = taskSpec.detectorName + "-" + taskName + "-proxy";
 
   Outputs proxyOutputs;
   for (size_t id = 1; id <= numberOfLocalMachines; id++) {
@@ -477,7 +478,7 @@ void InfrastructureGenerator::generateLocalTaskRemoteProxy(framework::WorkflowSp
     proxyOutputs,
     channelConfig.c_str(),
     dplModelAdaptor()));
-  workflow.back().labels.emplace_back(control == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
+  workflow.back().labels.emplace_back(taskSpec.localControl == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
 }
 
 void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow, std::string taskName,

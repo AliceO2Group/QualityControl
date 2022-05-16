@@ -137,11 +137,12 @@ TriggerFcn Periodic(double seconds, const Activity& activity)
   };
 }
 
-TriggerFcn NewObject(std::string databaseUrl, std::string objectPath, const Activity& activity)
+TriggerFcn NewObject(std::string databaseUrl, std::string databaseType, std::string objectPath, const Activity& activity)
 {
   // Key names in the header map.
   constexpr auto md5key = "Content-MD5";
   constexpr auto timestampKey = "Valid-From";
+  auto fullObjectPath = (databaseType == "qcdb" ? activity.mProvenance + "/" : "") + objectPath;
 
   // We support only CCDB here.
   auto db = std::make_shared<o2::ccdb::CcdbApi>();
@@ -154,16 +155,16 @@ TriggerFcn NewObject(std::string databaseUrl, std::string objectPath, const Acti
   // If someone reuploaded an old object, it should not have an influence.
   std::string lastMD5;
   auto metadata = repository::database_helpers::asDatabaseMetadata(activity, false);
-  if (auto headers = db->retrieveHeaders(objectPath, metadata); headers.count(md5key)) {
+  if (auto headers = db->retrieveHeaders(fullObjectPath, metadata); headers.count(md5key)) {
     lastMD5 = headers[md5key];
   } else {
     // We don't make a fuss over it, because we might be just waiting for the first version of such object.
     // It should not happen often though, so having a warning makes sense.
-    ILOG(Warning, Support) << "No MD5 of the file '" << objectPath << "' in the db '" << databaseUrl << "', probably the file is missing." << ENDM;
+    ILOG(Warning, Support) << "No MD5 of the file '" << fullObjectPath << "' in the db '" << databaseUrl << "', probably the file is missing." << ENDM;
   }
 
-  return [db, databaseUrl = std::move(databaseUrl), objectPath = std::move(objectPath), lastMD5, activity, metadata]() mutable -> Trigger {
-    if (auto headers = db->retrieveHeaders(objectPath, metadata); headers.count(md5key)) {
+  return [db, databaseUrl = std::move(databaseUrl), fullObjectPath = std::move(fullObjectPath), lastMD5, activity, metadata]() mutable -> Trigger {
+    if (auto headers = db->retrieveHeaders(fullObjectPath, metadata); headers.count(md5key)) {
       auto newMD5 = headers[md5key];
       if (lastMD5 != newMD5) {
         lastMD5 = newMD5;
@@ -172,29 +173,30 @@ TriggerFcn NewObject(std::string databaseUrl, std::string objectPath, const Acti
     } else {
       // We don't make a fuss over it, because we might be just waiting for the first version of such object.
       // It should not happen often though, so having a warning makes sense.
-      ILOG(Warning, Support) << "No MD5 of the file '" << objectPath << "' in the db '" << databaseUrl << "', probably the file is missing." << ENDM;
+      ILOG(Warning, Support) << "No MD5 of the file '" << fullObjectPath << "' in the db '" << databaseUrl << "', probably the file is missing." << ENDM;
     }
 
     return { TriggerType::No, false };
   };
 }
 
-TriggerFcn ForEachObject(std::string databaseUrl, std::string objectPath, const Activity& activity)
+TriggerFcn ForEachObject(std::string databaseUrl, std::string databaseType, std::string objectPath, const Activity& activity)
 {
   // Key names in the header map.
   constexpr auto md5key = "Content-MD5";
   constexpr auto timestampKey = "Valid-From";
+  auto fullObjectPath = (databaseType == "qcdb" ? activity.mProvenance + "/" : "") + objectPath;
 
   // We support only CCDB here.
   auto db = std::make_shared<repository::CcdbDatabase>();
   db->connect(databaseUrl, "", "", "");
 
-  auto objects = db->getListingAsPtree(objectPath).get_child("objects");
-  ILOG(Info, Support) << "Got " << objects.size() << " objects for the path '" << objectPath << "'" << ENDM;
+  auto objects = db->getListingAsPtree(fullObjectPath).get_child("objects");
+  ILOG(Info, Support) << "Got " << objects.size() << " objects for the path '" << fullObjectPath << "'" << ENDM;
   auto filteredObjects = std::make_shared<std::vector<boost::property_tree::ptree>>();
   const auto& filter = activity;
 
-  ILOG(Debug, Devel) << "Filter activity: " << activity.mId << ", " << activity.mType << ", " << activity.mPassName << ", " << activity.mPeriodName << ", " << activity.mProvenance << ENDM;
+  ILOG(Debug, Devel) << "Filter activity: " << activity << ENDM;
 
   // As for today, we receive objects in the order of the newest to the oldest.
   // We prefer the other order here.
@@ -202,7 +204,7 @@ TriggerFcn ForEachObject(std::string databaseUrl, std::string objectPath, const 
     auto objectActivity = repository::database_helpers::asActivity(rit->second);
     if (filter.matches(objectActivity)) {
       filteredObjects->emplace_back(rit->second);
-      ILOG(Debug, Devel) << "Matched an object with activity: " << objectActivity.mId << ", " << objectActivity.mType << ", " << objectActivity.mPassName << ", " << objectActivity.mPeriodName << ", " << objectActivity.mProvenance << ENDM;
+      ILOG(Debug, Devel) << "Matched an object with activity: " << activity << ENDM;
     }
   }
   ILOG(Info, Support) << filteredObjects->size() << " objects matched the specified activity" << ENDM;
@@ -226,22 +228,23 @@ TriggerFcn ForEachObject(std::string databaseUrl, std::string objectPath, const 
   };
 }
 
-TriggerFcn ForEachLatest(std::string databaseUrl, std::string objectPath, const Activity& activity)
+TriggerFcn ForEachLatest(std::string databaseUrl, std::string databaseType, std::string objectPath, const Activity& activity)
 {
   // Key names in the header map.
   constexpr auto md5key = "Content-MD5";
   constexpr auto timestampKey = "Created";
+  auto fullObjectPath = (databaseType == "qcdb" ? activity.mProvenance + "/" : "") + objectPath;
 
   // We support only CCDB here.
   auto db = std::make_shared<repository::CcdbDatabase>();
   db->connect(databaseUrl, "", "", "");
 
-  auto objects = db->getListingAsPtree(objectPath).get_child("objects");
-  ILOG(Info, Support) << "Got " << objects.size() << " objects for the path '" << objectPath << "'" << ENDM;
+  auto objects = db->getListingAsPtree(fullObjectPath).get_child("objects");
+  ILOG(Info, Support) << "Got " << objects.size() << " objects for the path '" << fullObjectPath << "'" << ENDM;
   auto filteredObjects = std::make_shared<std::vector<std::pair<Activity, boost::property_tree::ptree>>>();
   const auto& filter = activity;
 
-  ILOG(Debug, Devel) << "Filter activity: " << activity.mId << ", " << activity.mType << ", " << activity.mPassName << ", " << activity.mPeriodName << ", " << activity.mProvenance << ENDM;
+  ILOG(Debug, Devel) << "Filter activity: " << activity << ENDM;
 
   // As for today, we receive objects in the order of the newest to the oldest.
   // We prefer the other order here.
@@ -249,14 +252,14 @@ TriggerFcn ForEachLatest(std::string databaseUrl, std::string objectPath, const 
     auto objectActivity = repository::database_helpers::asActivity(rit->second);
     if (filter.matches(objectActivity)) {
       auto latestObject = std::find_if(filteredObjects->begin(), filteredObjects->end(), [&](const std::pair<Activity, boost::property_tree::ptree>& entry) {
-        return entry.first == objectActivity;
+        return entry.first.same(objectActivity);
       });
       if (latestObject != filteredObjects->end() && latestObject->second.get<int64_t>(timestampKey) < rit->second.get<int64_t>(timestampKey)) {
         *latestObject = { objectActivity, rit->second };
-        ILOG(Debug, Devel) << "Updated the object with activity: " << objectActivity.mId << ", " << objectActivity.mType << ", " << objectActivity.mPassName << ", " << objectActivity.mPeriodName << ", " << objectActivity.mProvenance << ENDM;
+        ILOG(Debug, Devel) << "Updated the object with activity: " << objectActivity << ENDM;
       } else {
         filteredObjects->emplace_back(objectActivity, rit->second);
-        ILOG(Debug, Devel) << "Matched an object with activity: " << objectActivity.mId << ", " << objectActivity.mType << ", " << objectActivity.mPassName << ", " << objectActivity.mPeriodName << ", " << objectActivity.mProvenance << ENDM;
+        ILOG(Debug, Devel) << "Matched an object with activity: " << objectActivity << ENDM;
       }
     }
   }

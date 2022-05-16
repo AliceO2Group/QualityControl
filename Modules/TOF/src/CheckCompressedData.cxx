@@ -30,8 +30,6 @@ void CheckCompressedData::configure()
   if (auto param = mCustomParameters.find("DiagnosticThresholdPerSlot"); param != mCustomParameters.end()) {
     mDiagnosticThresholdPerSlot = ::atof(param->second.c_str());
   }
-
-  mShifterMessages.configure(0.9, 0.1, 1.0, 0.5); // Setting default before checking in configuration
   mShifterMessages.configure(mCustomParameters);
 }
 

@@ -9,8 +9,8 @@
         "name": "not_applicable"
       },
       "Activity": {
-        "number": "42",
-        "type": "2"
+        "number": "",
+        "type": ""
       },
       "monitoring": {
         "url": "infologger:///debug?qc"
@@ -31,7 +31,7 @@
         "dataSources": [
           {
             "type": "repository",
-            "path": "qc/TPC/MO/Tracks",
+            "path": "TPC/MO/Tracks",
             "names": [ "hEtaRatio" ],
             "reductorName": "o2::quality_control_modules::tpc::TH1ReductorTPC",
             "axisDivision": [ [ "-2.0", "-1.0", "0.0", "1.0", "2.0" ] ],
@@ -39,7 +39,7 @@
           },
           {
             "type": "repository",
-            "path": "qc/TPC/MO/Tracks",
+            "path": "TPC/MO/Tracks",
             "names": [ "hEta" ],
             "reductorName": "o2::quality_control_modules::tpc::TH1ReductorTPC",
             "axisDivision": [[ "-1.0", "0.0", "1.0" ]],
@@ -47,7 +47,7 @@
           }, 
           {
             "type": "repository",
-            "path": "qc/TPC/MO/Tracks",
+            "path": "TPC/MO/Tracks",
             "names": [ "hPhiAside", "hPhiAsideRatio", "hPhiCside", "hPhiCsideRatio"  ],
             "reductorName": "o2::quality_control_modules::tpc::TH1ReductorTPC",
             "axisDivision": [[ "0.0", "0.349066", "0.698132", "1.0472", "1.39626", "1.74533", "2.0944", "2.44346", "2.79253", "3.14159", "3.49066", "3.83972", "4.18879", "4.53786", "4.88692", "5.23599", "5.58505", "5.93412", "6.28319" ]],
@@ -162,7 +162,7 @@
         "dataSources": [
           {
             "type": "repository",
-            "path": "qc/TPC/MO/Tracks",
+            "path": "TPC/MO/Tracks",
             "names": [ "h2DEtaPhi" ],
             "reductorName": "o2::quality_control_modules::tpc::TH2ReductorTPC",
             "axisDivision": [ [ "0.0", "0.349066", "0.698132", "1.0472", "1.39626", "1.74533", "2.0944", "2.44346", "2.79253", "3.14159", "3.49066", "3.83972", "4.18879", "4.53786", "4.88692", "5.23599", "5.58505", "5.93412", "6.28319" ] , [ "-1.0", "0.0", "1.0" ] ],
@@ -224,6 +224,55 @@
             "graphYRange": "",
 	    "graphXRange": "", 
 	    "graphAxisLabel": "#eta:#phi"
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "60 seconds"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      },
+      "TestQuality": {
+        "active": "true",
+        "className": "o2::quality_control_modules::tpc::TrendingTaskTPC",
+        "moduleName": "QcTPC",
+        "detectorName": "TPC",
+        "dataSources": [
+          {
+            "type": "repository-quality",
+            "path": "TPC/QO/CheckOfTrack_Trending/Tracks_Trending",
+            "names": [ "hEta_StatMean_Trend", "hNClustersAfterCuts_StatMean_Trend" ],
+            "reductorName": "o2::quality_control_modules::tpc::QualityReductorTPC",
+            "axisDivision": [ ],
+            "moduleName": "QcTPC"
+          }
+        ],
+        "plots": [
+          {
+            "name": "hEta_StatMean_Quality_Trend",
+            "title": "Quality trending",
+            "varexp": "hEta_StatMean_Trend.qualitylevel:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "", 
+            "graphYRange": "",
+	    "graphXRange": "",
+	    "graphAxisLabel": "qualitylevel:time"
+          },
+          {
+            "name": "hhNClustersAfterCuts_StatMean_Quality_Trend",
+            "title": "Quality trending",
+            "varexp": "hNClustersAfterCuts_StatMean_Trend.qualitylevel:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "", 
+            "graphYRange": "",
+	    "graphXRange": "",
+	    "graphAxisLabel": "qualitylevel:time"
           }
         ],
         "initTrigger": [

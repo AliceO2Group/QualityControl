@@ -1,4 +1,4 @@
-// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// Copyright 2019-2022 CERN and copyright holders of ALICE O2.
 // See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
 // All rights not expressly granted are reserved.
 //
@@ -21,7 +21,7 @@
 #include <Configuration/ConfigurationFactory.h>
 #include <Common/Exceptions.h>
 #include <Framework/RawDeviceService.h>
-#include <FairMQDevice.h>
+#include <fairmq/Device.h>
 #include <Framework/ConfigParamRegistry.h>
 #include <QualityControl/QcInfoLogger.h>
 #include <boost/property_tree/json_parser.hpp>
@@ -139,10 +139,13 @@ inline std::vector<std::pair<std::string, std::string>> parseOverrideValues(cons
   std::vector<std::pair<std::string, std::string>> keyValuePairs;
   for (const auto& keyValueToken : utils::Str::tokenize(input, ';', true)) {
     auto keyValue = utils::Str::tokenize(keyValueToken, '=', true);
-    if (keyValue.size() != 2) {
+    if (keyValue.size() == 1) {
+      keyValuePairs.emplace_back(keyValue[0], "");
+    } else if (keyValue.size() == 2) {
+      keyValuePairs.emplace_back(keyValue[0], keyValue[1]);
+    } else {
       throw std::runtime_error("Token '" + keyValueToken + "' in the --override-values argument is malformed, use key=value.");
     }
-    keyValuePairs.emplace_back(keyValue[0], keyValue[1]);
   }
   return keyValuePairs;
 }

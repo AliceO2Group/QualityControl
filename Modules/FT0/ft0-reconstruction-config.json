@@ -3,23 +3,26 @@
       "config": {
         "database": {
           "implementation": "CCDB",
-          "host": "http://localhost:8083",
+          "host":  "ccdb-test.cern.ch:8080",
           "username": "not_applicable",
           "password": "not_applicable",
           "name": "not_applicable"
         },
         "Activity": {
           "number": "42",
-          "type": "2"
-        },
+            "type": "2",
+            "provenance": "qc_mc",
+            "passName": "passMC",
+            "periodName": "SimChallenge"
+       },
         "monitoring": {
           "url": "infologger:///debug?qc"
         },
         "consul": {
-          "url":  "http://localhost:8083"
+          "url":   "ccdb-test.cern.ch:8080"
         },
         "conditionDB": {
-          "url":  "http://localhost:8083"
+          "url":  "ccdb-test.cern.ch:8080"
         }
       },
       "tasks": {

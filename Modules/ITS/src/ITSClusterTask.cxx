@@ -23,7 +23,12 @@
 #include <ITSMFTReconstruction/DigitPixelReader.h>
 #include <DataFormatsITSMFT/ROFRecord.h>
 #include <ITSMFTReconstruction/ChipMappingITS.h>
+#include "ITSMFTReconstruction/ClustererParam.h"
+#include "DetectorsCommonDataFormats/DetectorNameConf.h"
+#include "ITStracking/IOUtils.h"
 #include <DataFormatsITSMFT/ClusterTopology.h>
+#include "CCDB/BasicCCDBManager.h"
+#include "CCDB/CCDBTimeStampUtils.h"
 #include <Framework/InputRecord.h>
 #include <THnSparse.h>
 
@@ -121,15 +126,16 @@ void ITSClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   mGeneralOccupancy->SetBit(TH1::kIsAverage);
 
   publishHistos();
-  std::ifstream file(mDictPath.c_str());
 
-  if (file.good()) {
-    mDict.readBinaryFile(mDictPath);
-    ILOG(Info, Support) << "Running with dictionary: " << mDictPath << " with size: " << mDict.getSize();
-
-  } else {
-    ILOG(Info, Support) << "Running without dictionary !";
-  }
+  // get dict from ccdb
+  mTimestamp = std::stol(mCustomParameters["dicttimestamp"]);
+  long int ts = mTimestamp ? mTimestamp : o2::ccdb::getCurrentTimestamp();
+  ILOG(Info, Support) << "Getting dictionary from ccdb - timestamp: " << ts << ENDM;
+  auto& mgr = o2::ccdb::BasicCCDBManager::instance();
+  mgr.setURL("http://alice-ccdb.cern.ch");
+  mgr.setTimestamp(ts);
+  mDict = mgr.get<o2::itsmft::TopologyDictionary>("ITS/Calib/ClusterDictionary");
+  ILOG(Info, Support) << "Dictionary size: " << mDict->getSize() << ENDM;
 }
 
 void ITSClusterTask::startOfActivity(Activity& /*activity*/)
@@ -145,6 +151,7 @@ void ITSClusterTask::startOfCycle()
 
 void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
+
   std::chrono::time_point<std::chrono::high_resolution_clock> start;
   std::chrono::time_point<std::chrono::high_resolution_clock> end;
   int difference;
@@ -155,7 +162,7 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
   auto clusRofArr = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("clustersrof");
   auto clusPatternArr = ctx.inputs().get<gsl::span<unsigned char>>("patterns");
   auto pattIt = clusPatternArr.begin();
-  int dictSize = mDict.getSize();
+  int dictSize = mDict->getSize();
 
   int iPattern = 0;
   int ChipIDprev = -1;
@@ -183,8 +190,8 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
       int npix = -1;
       int isGrouped = -1;
-      if (ClusterID != o2::itsmft::CompCluster::InvalidPatternID && !mDict.isGroup(ClusterID)) { // Normal (frequent) cluster shapes
-        npix = mDict.getNpixels(ClusterID);
+      if (ClusterID != o2::itsmft::CompCluster::InvalidPatternID && !mDict->isGroup(ClusterID)) { // Normal (frequent) cluster shapes
+        npix = mDict->getNpixels(ClusterID);
         isGrouped = 0;
       } else {
         o2::itsmft::ClusterPattern patt(pattIt);
@@ -335,18 +342,7 @@ void ITSClusterTask::updateOccMonitorPlots()
 
 void ITSClusterTask::endOfCycle()
 {
-
-  std::ifstream runNumberFile(mRunNumberPath.c_str()); // catching ITS run number in commissioning; to be redesinged for the final version
-  if (runNumberFile) {
-    std::string runNumber;
-    runNumberFile >> runNumber;
-    if (runNumber != mRunNumber) {
-      for (unsigned int iObj = 0; iObj < mPublishedObjects.size(); iObj++)
-        getObjectsManager()->addMetadata(mPublishedObjects.at(iObj)->GetName(), "Run", runNumber);
-      mRunNumber = runNumber;
-    }
-    ILOG(Info, Support) << "endOfCycle" << ENDM;
-  }
+  ILOG(Info, Support) << "endOfCycle" << ENDM;
 }
 
 void ITSClusterTask::endOfActivity(Activity& /*activity*/)
@@ -566,17 +562,15 @@ void ITSClusterTask::getStavePoint(int layer, int stave, double* px, double* py)
 
 void ITSClusterTask::getJsonParameters()
 {
-  mDictPath = mCustomParameters["clusterDictionaryPath"];
-  mRunNumberPath = mCustomParameters["runNumberPath"];
-  mGeomPath = mCustomParameters["geomPath"];
   mNThreads = stoi(mCustomParameters.find("nThreads")->second);
   nBCbins = stoi(mCustomParameters.find("nBCbins")->second);
+  mGeomPath = mCustomParameters["geomPath"];
 
   for (int ilayer = 0; ilayer < NLayer; ilayer++) {
 
     if (mCustomParameters["layer"][ilayer] != '0') {
       mEnableLayers[ilayer] = 1;
-      ILOG(Info, Support) << "enable layer : " << ilayer;
+      ILOG(Info, Support) << "enable layer : " << ilayer << ENDM;
     } else {
       mEnableLayers[ilayer] = 0;
     }
@@ -586,7 +580,7 @@ void ITSClusterTask::getJsonParameters()
 void ITSClusterTask::addObject(TObject* aObject)
 {
   if (!aObject) {
-    ILOG(Info, Support) << " ERROR: trying to add non-existent object ";
+    ILOG(Info, Support) << " ERROR: trying to add non-existent object " << ENDM;
     return;
   } else
     mPublishedObjects.push_back(aObject);

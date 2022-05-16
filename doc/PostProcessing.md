@@ -50,7 +50,7 @@ Interfaces to databases and other services are accesible via `ServiceRegistry`, 
 Triggers are complemented with:
 - timestamps which correspond the time when trigger started to be valid, in form of ms since epoch, just like in CCDB and QCDB,
 - `last` flag, being `true` if it is the last time trigger will fire,
-- `Activity` object, which contains metadata such as run type and number, pass name, periond name, data provenance.
+- `Activity` object, which contains metadata such as run type and number, pass name, period name, data provenance.
 
 For example, the periodic trigger will provide evenly spaced timestamps, even if the trigger is checked more rarely.
 The New Object trigger provide the timestamp of the updated object. The timestamps and Activites should be used to
@@ -246,14 +246,14 @@ Data sources are defined by filling the corresponding structure, as in the examp
         "dataSources": [
           {
             "type": "repository",
-            "path": "qc/TST/MO/QcTask",
+            "path": "TST/MO/QcTask",
             "names": [ "example" ],
             "reductorName": "o2::quality_control_modules::common::TH1Reductor",
             "moduleName": "QcCommon"
           },
           {
             "type": "repository-quality",
-            "path": "qc/TST/QO",
+            "path": "TST/QO",
             "names": [ "QcCheck" ],
             "reductorName": "o2::quality_control_modules::common::QualityReductor",
             "moduleName": "QcCommon"
@@ -352,7 +352,7 @@ Use either Periodic or NewObject as the update trigger:
         "updateTrigger": [ "5 seconds" ],
 ```
 ```json
-        "updateTrigger": [ "newobject:qcdb:qc/TST/MO/QcTask/example" ],
+        "updateTrigger": [ "newobject:qcdb:TST/MO/QcTask/example" ],
 ```
 
 Be sure to match the run number and other Activity metadata to isolate the QC run you need.
@@ -371,7 +371,7 @@ Leaving values empty will match anything available (which might be also what you
 
 Use ForEachObject as the update trigger:
 ```json
-        "updateTrigger": [ "foreachobject:qcdb:qc/TST/MO/QcTask/example" ],
+        "updateTrigger": [ "foreachobject:qcdb:TST/MO/QcTask/example" ],
 ```
 Since objects are usually published in collections at the same time, you can use a path for one object to be triggered 
  for a collection of them (all objects produced by a QC Task).
@@ -391,7 +391,7 @@ Use the Activity which matches the run, and (optionally) period and pass name:
 
 Use ForEachObject as the update trigger:
 ```json
-        "updateTrigger": [ "foreachobject:qcdb:qc/TST/MO/QcTask/example" ],
+        "updateTrigger": [ "foreachobject:qcdb:TST/MO/QcTask/example" ],
 ```
 Use the Activity which leaves the run number empty, but indicate the pass and period names.
 ```json
@@ -404,11 +404,31 @@ Use the Activity which leaves the run number empty, but indicate the pass and pe
       },
 ```
 
+### I want to run postprocessing for all objects in all the runs of a given reconstruction pass and period which are valid in given time interval
+
+Use ForEachObject as the update trigger:
+```json
+        "updateTrigger": [ "foreachobject:qcdb:TST/MO/QcTask/example" ],
+```
+Use the Activity which leaves the run number empty, but indicate the pass and period names.
+Add `start` and `end` values in ms since epoch to restrict the validity start of objects.
+```json
+      "Activity": {
+        "number": "",
+        "type": "",
+        "passName": "apass2",
+        "periodName" : "OCT",
+        "provenance" : "qc",
+        "start" : "1649417693630",
+        "end" : "1649417800000"
+      },
+```
+
 ### I want to run postprocessing for the latest object for each available run in a given pass and period
 
 Use ForEachObject as the update trigger:
 ```json
-        "updateTrigger": [ "foreachlatest:qcdb:qc/TST/MO/QcTask/example" ],
+        "updateTrigger": [ "foreachlatest:qcdb:TST/MO/QcTask/example" ],
 ```
 This way you will avoid iterating on potential duplicates and intermediate objects, and get only the final versions instead.
 

@@ -66,6 +66,7 @@ class PhysicsTaskDigits /*final*/ : public TaskInterface // todo add back the "f
 
  private:
   void storeOrbit(const uint64_t& orb);
+  void addDefaultOrbitsInTF();
   void plotDigit(const o2::mch::Digit& digit);
   void updateOrbits();
   void writeHistos();
@@ -86,11 +87,18 @@ class PhysicsTaskDigits /*final*/ : public TaskInterface // todo add back the "f
   uint32_t mLastOrbitSeen[sMaxFeeId][sMaxLinkId];
 
   // 2D Histograms, using Elec view (where x and y uniquely identify each pad based on its Elec info (fee, link, de)
-  TH2F* mHistogramNHitsElec;                                  // Histogram of Number of hits (Elec view)
-  TH2F* mHistogramNorbitsElec;                                // Histogram of Number of orbits (Elec view)
-  std::shared_ptr<MergeableTH2Ratio> mHistogramOccupancyElec; // Mergeable object, Occupancy histogram (Elec view)
+  TH2F* mHistogramNHitsElec;                                   // Histogram of Number of hits (Elec view)
+  TH2F* mHistogramNorbitsElec;                                 // Histogram of Number of orbits (Elec view)
+  std::shared_ptr<MergeableTH2Ratio> mHistogramOccupancyElec;  // Mergeable object, Occupancy histogram (Elec view)
+  std::shared_ptr<GlobalHistogram> mHistogramNhitsST12;        // Histogram of Number of hits (global XY view)
+  std::shared_ptr<GlobalHistogram> mHistogramNorbitsST12;      // Histogram of Number of orbits (global XY view)
+  std::shared_ptr<MergeableTH2Ratio> mHistogramOccupancyST12;  // Mergeable object, Occupancy histogram (global XY view)
+  std::shared_ptr<GlobalHistogram> mHistogramNhitsST345;       // Histogram of Number of hits (global XY view)
+  std::shared_ptr<GlobalHistogram> mHistogramNorbitsST345;     // Histogram of Number of orbits (global XY view)
+  std::shared_ptr<MergeableTH2Ratio> mHistogramOccupancyST345; // Mergeable object, Occupancy histogram (global XY view)
 
   std::shared_ptr<TH2F> mHistogramDigitsOrbitInTF;
+  std::shared_ptr<TH2F> mHistogramDigitsOrbitInTFDE;
   std::shared_ptr<TH2F> mHistogramDigitsBcInOrbit;
   std::shared_ptr<TH2F> mHistogramAmplitudeVsSamples;
 

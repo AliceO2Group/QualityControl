@@ -18,6 +18,8 @@
 #include <TH1.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TProfile.h>
+#include <TProfile2D.h>
 #include <TStopwatch.h>
 
 #include "QualityControl/QcInfoLogger.h"
@@ -39,11 +41,21 @@ PulseHeight::~PulseHeight()
 {
 }
 
-void PulseHeight::connectCCDB()
+void PulseHeight::retrieveCCDBSettings()
 {
-  auto& ccdbmgr = o2::ccdb::BasicCCDBManager::instance();
-  //ccdbmgr.setURL("http://localhost:8080");
-  mNoiseMap.reset(ccdbmgr.get<o2::trd::NoiseStatusMCM>("/TRD/Calib/NoiseMapMCM"));
+  //std::string a = mCustomParameters["noisetimestamp"];
+  //mTimestamp = a;//std::stol(a,nullptr,10);
+  //long int ts = mTimestamp ? mTimestamp : o2::ccdb::getCurrentTimestamp();
+  //TODO come back and all for different time stamps
+  long int ts = o2::ccdb::getCurrentTimestamp();
+  ILOG(Info, Support) << "Getting noisemap from ccdb - timestamp: " << ts << ENDM;
+  auto& mgr = o2::ccdb::BasicCCDBManager::instance();
+  mgr.setURL("http://alice-ccdb.cern.ch");
+  mgr.setTimestamp(ts);
+  mNoiseMap = mgr.get<o2::trd::NoiseStatusMCM>("/TRD/Calib/NoiseMapMCM");
+  if (mNoiseMap == nullptr) {
+    ILOG(Info, Support) << "mNoiseMap is null, no noisy mcm reduction" << ENDM;
+  }
 }
 
 void PulseHeight::buildHistograms()
@@ -66,6 +78,17 @@ void PulseHeight::buildHistograms()
   mTotalPulseHeight2D2.reset(new TH2F("TotalPulseHeight2", "Total Pulse Height", 30, 0., 30., 200, 0., 200.));
   getObjectsManager()->startPublishing(mTotalPulseHeight2D2.get());
   getObjectsManager()->setDefaultDrawOptions(mTotalPulseHeight2D2->GetName(), "COLZ");
+
+  mPulseHeightpro.reset(new TProfile("mPulseHeightpro", "Pulse height profile  plot", 30, -0.5, 29.5));
+  mPulseHeightpro.get()->Sumw2();
+  getObjectsManager()->startPublishing(mPulseHeightpro.get());
+
+  mPulseHeightperchamber.reset(new TProfile2D("mPulseHeightperchamber", "mPulseHeightperchamber", 30, -0.5, 29.5, 540, 0, 540));
+  mPulseHeightperchamber.get()->Sumw2();
+  mPulseHeightperchamber.get()->GetXaxis()->SetTitle("Timebin");
+  mPulseHeightperchamber.get()->GetYaxis()->SetTitle("Chamber");
+  getObjectsManager()->startPublishing(mPulseHeightperchamber.get());
+  getObjectsManager()->setDefaultDrawOptions(mPulseHeightperchamber.get()->GetName(), "colz");
 
   for (int count = 0; count < 18; ++count) {
     std::string label = fmt::format("pulseheight2d_sm_{0}", count);
@@ -121,7 +144,7 @@ void PulseHeight::initialize(o2::framework::InitContext& /*ctx*/)
     ILOG(Info, Support) << "configure() : using default pulseheightupper = " << mPulseHeightPeakRegion.second << ENDM;
   }
   buildHistograms();
-  connectCCDB();
+  retrieveCCDBSettings();
 }
 
 void PulseHeight::startOfActivity(Activity& activity)
@@ -186,10 +209,10 @@ void PulseHeight::monitorData(o2::framework::ProcessingContext& ctx)
     dataMap.clear();
     for (int i = trigger.getFirstDigit(); i < trigger.getFirstDigit() + trigger.getNumberOfDigits(); ++i) {
 
-      //digit comes in sorted by hcid.
-      //resort them by chamber,row, pad, this then removes the need for the map.
+      // digit comes in sorted by hcid.
+      // resort them by chamber,row, pad, this then removes the need for the map.
       //
-      // loop over det, pad, row?
+      //  loop over det, pad, row?
       channel = digits[i].getChannel();
       if (channel == 0 || channel == 1 || channel == 20) {
         continue;
@@ -210,13 +233,13 @@ void PulseHeight::monitorData(o2::framework::ProcessingContext& ctx)
       }
     } // end digitcont
 
-    //std::cout << "start updating..... trigger:" << triggercount++ << " with " << trigger.getNumberOfDigits() << " digits " << std::endl;
+    // std::cout << "start updating..... trigger:" << triggercount++ << " with " << trigger.getNumberOfDigits() << " digits " << std::endl;
     for (int d = 0; d < 540; d++) {
       int sector = d / 30;
       for (int r = 0; r < 16; r++) {
         for (int c = 2; c < 142; c++) {
           if (d == 50 && tbsum[d][r][c] > 0) {
-            //std::cout << "updating on detector 50 " << d << " " << r << " " << c-1 << "("<<tbsum[d][r][c-1]<<") -- " << d << " " << r << " " << c << "("<<tbsum[d][r][c]<<") -- " << d << " " << r << " " << c+1 <<"("<< tbsum[d][r][c+1]<< ")" << std::endl;
+            // std::cout << "updating on detector 50 " << d << " " << r << " " << c-1 << "("<<tbsum[d][r][c-1]<<") -- " << d << " " << r << " " << c << "("<<tbsum[d][r][c]<<") -- " << d << " " << r << " " << c+1 <<"("<< tbsum[d][r][c+1]<< ")" << std::endl;
           }
           if (tbsum[d][r][c] > tbsum[d][r][c - 1] && tbsum[d][r][c] > tbsum[d][r][c + 1]) {
             if (tbsum[d][r][c - 1] > tbsum[d][r][c + 1]) {
@@ -230,25 +253,29 @@ void PulseHeight::monitorData(o2::framework::ProcessingContext& ctx)
               if (dataMap.find(std::make_tuple(d, r, c - 2)) == dataMap.end()) {
                 if (tblo > 400) {
                   int phVal = 0;
-                  //std::cout << "updatea " << d << " " << r << " " << c-1 << "("<<tbsum[d][r][c-1]<<") -- " << d << " " << r << " " << c << "("<<tbsum[d][r][c]<<") -- " << d << " " << r << " " << c+1 <<"("<< tbsum[d][r][c+1]<< ")" << std::endl;
+                  // std::cout << "updatea " << d << " " << r << " " << c-1 << "("<<tbsum[d][r][c-1]<<") -- " << d << " " << r << " " << c << "("<<tbsum[d][r][c]<<") -- " << d << " " << r << " " << c+1 <<"("<< tbsum[d][r][c+1]<< ")" << std::endl;
                   for (int tb = 0; tb < 30; tb++) {
                     phVal = ((adcMax->second)[tb] + (adcHi->second)[tb] + (adcLo->second)[tb]);
-                    //TODO do we have a corresponding tracklet?
+                    // TODO do we have a corresponding tracklet?
                     mPulseHeight->Fill(tb, phVal);
+                    mPulseHeightpro->Fill(tb, phVal);
                     mTotalPulseHeight2D->Fill(tb, phVal);
                     mPulseHeight2DperSM[sector]->Fill(tb, phVal);
+                    mPulseHeightperchamber->Fill(tb, d, phVal);
                   }
                 }
               } else {
                 auto adcHiNeighbour = dataMap.find(std::make_tuple(d, r, c - 2));
                 if (tblo > 400) {
-                  //std::cout << "updateb " << d << " " << r << " " << c-1 << "("<<tbsum[d][r][c-1]<<") -- " << d << " " << r << " " << c << "("<<tbsum[d][r][c]<<") -- " << d << " " << r << " " << c+1 <<"("<< tbsum[d][r][c+1]<< ")" << std::endl;
+                  // std::cout << "updateb " << d << " " << r << " " << c-1 << "("<<tbsum[d][r][c-1]<<") -- " << d << " " << r << " " << c << "("<<tbsum[d][r][c]<<") -- " << d << " " << r << " " << c+1 <<"("<< tbsum[d][r][c+1]<< ")" << std::endl;
                   int phVal = 0;
                   for (int tb = 0; tb < 30; tb++) {
                     phVal = ((adcMax->second)[tb] + (adcHi->second)[tb] + (adcLo->second)[tb]);
                     mPulseHeight->Fill(tb, phVal);
+                    mPulseHeightpro->Fill(tb, phVal);
                     mTotalPulseHeight2D->Fill(tb, phVal);
                     mPulseHeight2DperSM[sector]->Fill(tb, phVal);
+                    mPulseHeightperchamber->Fill(tb, d, phVal);
                   }
                 }
               }
@@ -262,42 +289,44 @@ void PulseHeight::monitorData(o2::framework::ProcessingContext& ctx)
               if (dataMap.find(std::make_tuple(d, r, c + 2)) == dataMap.end()) {
 
                 if (tblo > 400) {
-                  //std::cout << "updatec " << d << " " << r << " " << c-1 << "("<<tbsum[d][r][c-1]<<") -- " << d << " " << r << " " << c << "("<<tbsum[d][r][c]<<") -- " << d << " " << r << " " << c+1 <<"("<< tbsum[d][r][c+1]<< ")" << std::endl;
                   int phVal = 0;
                   for (int tb = 0; tb < 30; tb++) {
                     phVal = ((adcMax->second)[tb] + (adcHi->second)[tb] + (adcLo->second)[tb]);
                     mPulseHeight->Fill(tb, phVal);
+                    mPulseHeightpro->Fill(tb, phVal);
                     mTotalPulseHeight2D->Fill(tb, phVal);
                     mPulseHeight2DperSM[sector]->Fill(tb, phVal);
+                    mPulseHeightperchamber->Fill(tb, d, phVal);
                   }
                 }
               } else {
                 auto adcHiNeighbour = dataMap.find(std::make_tuple(d, r, c + 2));
                 if (tblo > 400) {
-                  //std::cout << "updated " << d << " " << r << " " << c-1 << "("<<tbsum[d][r][c-1]<<") -- " << d << " " << r << " " << c << "("<<tbsum[d][r][c]<<") -- " << d << " " << r << " " << c+1 <<"("<< tbsum[d][r][c+1]<< ")" << std::endl;
                   int phVal = 0;
                   for (int tb = 0; tb < 30; tb++) {
                     phVal = ((adcMax->second)[tb] + (adcHi->second)[tb] + (adcLo->second)[tb]);
                     mPulseHeight->Fill(tb, phVal);
+                    mPulseHeightpro->Fill(tb, phVal);
                     mTotalPulseHeight2D->Fill(tb, phVal);
                     mPulseHeight2DperSM[sector]->Fill(tb, phVal);
+                    mPulseHeightperchamber->Fill(tb, d, phVal);
                   }
                 }
               }
-            } //end else
+            } // end else
           }   // end if (tbsum[d][r][c]>tbsum[d][r][c-1] && tbsum[d][r][c]>tbsum[d][r][c+1])
         }     // end for c
-      }       //end for r
+      }       // end for r
     }         // end for d
-    //std::cout << "finishedupdating....." << std::endl;
+    // std::cout << "finishedupdating....." << std::endl;
     dataMap.clear();
-  } //end trigger event
+  } // end trigger event
 
   auto end = std::chrono::steady_clock::now();
   std::chrono::duration<double> pulseheightduration = end - start;
   LOG(info) << "Digits into pulsheight spectrum: " << digitcount;
   triggercount = 0;
-  //alternate formulation:
+  // alternate formulation:
   auto start1 = std::chrono::steady_clock::now();
   std::vector<o2::trd::Digit> digitv(digits.begin(), digits.end());
   std::vector<unsigned int> digitsIndex(digitv.size());
@@ -322,11 +351,11 @@ void PulseHeight::monitorData(o2::framework::ProcessingContext& ctx)
       continue;
 
     if (trigger.getNumberOfDigits() == 0)
-      continue; //bail if we have no digits in this trigger
-    //now sort digits to det,row,pad
+      continue; // bail if we have no digits in this trigger
+    // now sort digits to det,row,pad
     std::sort(std::begin(digitsIndex) + trigger.getFirstDigit(), std::begin(digitsIndex) + trigger.getFirstDigit() + trigger.getNumberOfDigits(),
               [&digitv](unsigned int i, unsigned int j) { return pulseheightdigitindexcompare(i, j, digitv); });
-    //std::cout << " staring updating second ... for trigger:" << triggercount++ << " with " << trigger.getNumberOfDigits() << " digits" << std::endl;
+    // std::cout << " staring updating second ... for trigger:" << triggercount++ << " with " << trigger.getNumberOfDigits() << " digits" << std::endl;
     for (int currentdigit = trigger.getFirstDigit() + 1; currentdigit < trigger.getFirstDigit() + trigger.getNumberOfDigits() - 1; ++currentdigit) { // -1 and +1 as we are looking for consecutive digits pre and post the current one indexed.
       int detector = digits[digitsIndex[currentdigit]].getDetector();
       auto adcs = digits[digitsIndex[currentdigit]].getADC();
@@ -340,7 +369,7 @@ void PulseHeight::monitorData(o2::framework::ProcessingContext& ctx)
       int istack = detLoc / 6;
       int iChamber = supermod * 30 + istack * o2::trd::constants::NLAYER + layer;
       int nADChigh = 0;
-      //do we have 3 digits next to each other:
+      // do we have 3 digits next to each other:
       std::tuple<unsigned int, unsigned int, unsigned int> aa, ba, ca;
       aa = std::make_tuple(digits[digitsIndex[currentdigit - 1]].getDetector(), digits[digitsIndex[currentdigit - 1]].getPadRow(), digits[digitsIndex[currentdigit - 1]].getPadCol());
       ba = std::make_tuple(digits[digitsIndex[currentdigit]].getDetector(), digits[digitsIndex[currentdigit]].getPadRow(), digits[digitsIndex[currentdigit]].getPadCol());
@@ -358,7 +387,7 @@ void PulseHeight::monitorData(o2::framework::ProcessingContext& ctx)
       uint32_t sumb = b->getADCsum();
       uint32_t sumc = c->getADCsum();
       if (det2 == 50) {
-        //std::cout << "on detector 50 " << det1 << " " << row1 << " " << col1 << "("<<suma<<") -- " << det2 << " " << row2 << " " << col2 << "("<<sumb<<") -- " << det3 << " " << row3 << " " << col3 <<"("<< sumc<< ")" << std::endl;
+        // std::cout << "on detector 50 " << det1 << " " << row1 << " " << col1 << "("<<suma<<") -- " << det2 << " " << row2 << " " << col2 << "("<<sumb<<") -- " << det3 << " " << row3 << " " << col3 <<"("<< sumc<< ")" << std::endl;
       }
       if (det1 == det2 && det2 == det3 && row1 == row2 && row2 == row3 && col1 + 1 == col2 && col2 + 1 == col3) {
         if (sumb > suma && sumb > sumc) {
@@ -368,12 +397,12 @@ void PulseHeight::monitorData(o2::framework::ProcessingContext& ctx)
             tblo = sumc;
             if (tblo > 400) {
               int phVal = 0;
-              //std::cout << "updating2a " << det1 << " " << row1 << " " << col1 << " -- " << det2 << " " << row2 << " " << col2 << " -- " << det3 << " " << row3 << " " << col3 << std::endl;
+              // std::cout << "updating2a " << det1 << " " << row1 << " " << col1 << " -- " << det2 << " " << row2 << " " << col2 << " -- " << det3 << " " << row3 << " " << col3 << std::endl;
               for (int tb = 0; tb < 30; tb++) {
                 phVal = (b->getADC()[tb] + a->getADC()[tb] + c->getADC()[tb]);
-                //TODO do we have a corresponding tracklet?
+                // TODO do we have a corresponding tracklet?
                 mPulseHeight2->Fill(tb, phVal);
-                if (!mNoiseMap.get()->getIsNoisy(b->getHCId(), b->getROB(), b->getMCM()))
+                if (mNoiseMap != nullptr && !mNoiseMap->getIsNoisy(b->getHCId(), b->getROB(), b->getMCM()))
                   mPulseHeight2n->Fill(tb, phVal);
                 mTotalPulseHeight2D2->Fill(tb, phVal);
                 mPulseHeight2DperSM2[sector]->Fill(tb, phVal);
@@ -385,26 +414,26 @@ void PulseHeight::monitorData(o2::framework::ProcessingContext& ctx)
             tbhi = sumc;
             if (tblo > 400) {
               int phVal = 0;
-              //std::cout << "updating2b " << det1 << " " << row1 << " " << col1 << " -- " << det2 << " " << row2 << " " << col2 << " -- " << det3 << " " << row3 << " " << col3 << std::endl;
+              // std::cout << "updating2b " << det1 << " " << row1 << " " << col1 << " -- " << det2 << " " << row2 << " " << col2 << " -- " << det3 << " " << row3 << " " << col3 << std::endl;
               for (int tb = 0; tb < 30; tb++) {
                 phVal = (b->getADC()[tb] + a->getADC()[tb] + c->getADC()[tb]);
                 mPulseHeight2->Fill(tb, phVal);
-                if (!mNoiseMap.get()->getIsNoisy(b->getHCId(), b->getROB(), b->getMCM()))
+                if (mNoiseMap != nullptr && !mNoiseMap->getIsNoisy(b->getHCId(), b->getROB(), b->getMCM()))
                   mPulseHeight2n->Fill(tb, phVal);
                 mTotalPulseHeight2D2->Fill(tb, phVal);
                 mPulseHeight2DperSM2[sector]->Fill(tb, phVal);
               }
             }
-          } //end else
+          } // end else
         }   // end if (tbsum[d][r][c]>tbsum[d][r][c-1] && tbsum[d][r][c]>tbsum[d][r][c+1])
       }     // end for c
-    }       //end for r
-    //std::cout << " finished updating second ... " << std::endl;
+    }       // end for r
+    // std::cout << " finished updating second ... " << std::endl;
   } // end for d
   auto end1 = std::chrono::steady_clock::now();
   std::chrono::duration<double> pulseheightduration1 = end1 - start1;
 
-  //plot the 2 pulseheight durations and the difference.
+  // plot the 2 pulseheight durations and the difference.
   mPulseHeightDuration->Fill(pulseheightduration.count());
   mPulseHeightDuration1->Fill(pulseheightduration1.count());
   mPulseHeightDurationDiff->Fill(pulseheightduration.count() - pulseheightduration1.count());

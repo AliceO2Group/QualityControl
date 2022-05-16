@@ -64,7 +64,7 @@ void BasicPPTask::configure(std::string, const boost::property_tree::ptree& conf
     mPathDigitQcTask = node.get_ptr()->get_child("").get_value<std::string>();
     ILOG(Info, Support) << "configure() : using pathDigitQcTask = \"" << mPathDigitQcTask << "\"" << ENDM;
   } else {
-    mPathDigitQcTask = "qc/FV0/MO/DigitQcTask/";
+    mPathDigitQcTask = "FV0/MO/DigitQcTask/";
     ILOG(Info, Support) << "configure() : using default pathDigitQcTask = \"" << mPathDigitQcTask << "\"" << ENDM;
   }
 }

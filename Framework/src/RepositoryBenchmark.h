@@ -1,4 +1,4 @@
-// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// Copyright 2019-2022 CERN and copyright holders of ALICE O2.
 // See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
 // All rights not expressly granted are reserved.
 //
@@ -18,7 +18,7 @@
 #define QC_REPOSITORYBENCHMARK_H
 
 #include "QualityControl/DatabaseInterface.h"
-#include <fairmq/FairMQDevice.h>
+#include <fairmq/Device.h>
 #include <TH1.h>
 #include <Monitoring/MonitoringFactory.h>
 #include <boost/asio.hpp>
@@ -28,7 +28,7 @@
 namespace o2::quality_control::core
 {
 
-class RepositoryBenchmark : public FairMQDevice
+class RepositoryBenchmark : public fair::mq::Device
 {
  public:
   RepositoryBenchmark() = default;

@@ -53,7 +53,7 @@ Quality ZDCRawDataCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
           result = Quality::Medium;
           result.addReason(FlagReasonFactory::Unknown(),
                            "It is medium because bin " + std::to_string(i) + " is not empty");
-          result.addReason(FlagReasonFactory::ProcessingError(),
+          result.addReason(FlagReasonFactory::BadTracking(),
                            "This is to demonstrate that we can assign more than one Reason to a Quality");
         }
       }

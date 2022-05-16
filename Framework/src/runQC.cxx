@@ -74,6 +74,8 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
   workflowOptions.push_back(
     ConfigParamSpec{ "override-values", VariantType::String, "", { "QC configuration file key/value pairs which should be overwritten. "
                                                                    "The format is \"full.path.to.key=value[;full.path.to.key=value]\"." } });
+  workflowOptions.push_back(
+    ConfigParamSpec{ "configKeyValues", VariantType::String, "", { "Semicolon separated key=value strings (e.g.: 'TPCHwClusterer.peakChargeThreshold=4;...')" } });
 }
 
 void customize(std::vector<CompletionPolicy>& policies)

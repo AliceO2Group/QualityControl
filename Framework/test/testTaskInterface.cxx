@@ -204,7 +204,8 @@ BOOST_AUTO_TEST_CASE(retrieveCondition)
   TaskRunnerConfig taskConfig;
   ObjectsManager* objectsManager = new ObjectsManager(taskConfig.taskName, taskConfig.className, taskConfig.detectorName, taskConfig.consulUrl, 0, true);
   test::TestTask testTask(objectsManager);
-  testTask.loadCcdb("ccdb-test.cern.ch:8080");
+  testTask.setCcdbUrl("ccdb-test.cern.ch:8080");
+  testTask.loadCcdb();
   o2::emcal::BadChannelMap* bcm = testTask.testRetrieveCondition();
   BOOST_CHECK_EQUAL(bcm->getChannelStatus(1), o2::emcal::BadChannelMap::MaskType_t::GOOD_CELL);
   BOOST_CHECK_EQUAL(bcm->getChannelStatus(3), o2::emcal::BadChannelMap::MaskType_t::DEAD_CELL);

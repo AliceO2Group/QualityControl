@@ -69,6 +69,7 @@ class ITSThresholdCalibrationTask : public TaskInterface
   void addObject(TObject* aObject);
   void createAllHistos();
   Int_t getBarrel(Int_t iLayer);
+  int getCurrentChip(int barrel, int chipid, int hic, int hs);
 
   CalibrationResStruct CalibrationParser(string input);
 
@@ -86,13 +87,16 @@ class ITSThresholdCalibrationTask : public TaskInterface
   const int StaveBoundary[NLayer] = { 0, 12, 28, 0, 24, 0, 42 };
 
   TString sScanTypes[3] = { "VCASN", "ITHR", "THR" };
-  TString sBarrelType[3] = { "IB", "MB", "OB" };
+  TString sBarrelType[3] = { "IB", "ML", "OL" };
   Int_t nChips[3] = { 9, 112, 196 };
   Int_t nStaves[3] = { 48, 54, 90 };
   Int_t nXmax[3] = { 80, 100, 400 };
+  Int_t nZmax[3] = { 90, 110, 300 };
+  Int_t nZmin[3] = { 20, 20, 30 };
+
   TString sXtitles[3] = { "DAC", "DAC", "e" };
 
-  TH2F *hCalibrationChipCounts[3][3], *hCalibrationChipAverage[3][3], *hCalibrationRMSChipAverage[3][3];
+  TH2F *hCalibrationChipDone[3], *hCalibrationChipAverage[3][3], *hCalibrationRMSChipAverage[3][3];
   TH2F *hCalibrationThrNoiseRMSChipAverage[3], *hCalibrationThrNoiseChipAverage[3];
 
   TH1F* hSuccessRate;

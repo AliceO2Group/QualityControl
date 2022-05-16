@@ -18,6 +18,7 @@
 #define QC_MODULE_TRD_TRDTRACKLETSTASK_H
 
 #include "QualityControl/TaskInterface.h"
+#include "QualityControl/DatabaseInterface.h"
 #include "DataFormatsTRD/NoiseCalibration.h"
 
 class TH1F;
@@ -47,10 +48,11 @@ class TrackletsTask final : public TaskInterface
   void endOfActivity(Activity& activity) override;
   void reset() override;
   void buildHistograms();
-  void connectToCCDB();
+  void retrieveCCDBSettings();
   void drawLinesMCM(TH2F* histo);
 
  private:
+  long int mTimestamp;
   std::array<std::shared_ptr<TH2F>, 18> moHCMCM;
   std::shared_ptr<TH1F> mTrackletSlope = nullptr;
   std::shared_ptr<TH1F> mTrackletSlopeRaw = nullptr;
@@ -65,7 +67,7 @@ class TrackletsTask final : public TaskInterface
   std::shared_ptr<TH1F> mTrackletPositionn = nullptr;
   std::shared_ptr<TH1F> mTrackletPositionRawn = nullptr;
   std::shared_ptr<TH1F> mTrackletsPerEventn = nullptr;
-  std::shared_ptr<o2::trd::NoiseStatusMCM> mNoiseMap = nullptr;
+  o2::trd::NoiseStatusMCM* mNoiseMap = nullptr;
 };
 
 } // namespace o2::quality_control_modules::trd
