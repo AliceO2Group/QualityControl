@@ -30,9 +30,9 @@ double Gauss(double* x, double* par)
   double arg = 0;
   const int PI = 3.1415926536;
   if (par[2] != 0) {
-    arg = (x[0] - par[1]) / par[2] ;
+    arg = (x[0] - par[1]) / par[2];
   }
-  double fitval = par[0] / (par[2] * sqrt( 2 * PI )) * exp(-0.5 * arg * arg);
+  double fitval = par[0] / (par[2] * sqrt(2 * PI)) * exp(-0.5 * arg * arg);
   return fitval;
 }
 
