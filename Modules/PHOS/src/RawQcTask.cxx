@@ -16,9 +16,9 @@
 ///
 
 #include <TCanvas.h>
-#include <TH1.h>
 #include <TH2.h>
 #include <TMath.h>
+#include <TSpectrum.h>
 #include <cfloat>
 
 #include "QualityControl/QcInfoLogger.h"
@@ -26,8 +26,10 @@
 #include "Headers/RAWDataHeader.h"
 #include "PHOSReconstruction/RawReaderError.h"
 #include "PHOSBase/Geometry.h"
+#include "PHOSBase/Mapping.h"
 #include "Framework/InputRecord.h"
-// using namespace o2::phos;
+#include "CommonUtils/NameConf.h"
+#include "CCDB/BasicCCDBManager.h"
 
 namespace o2::quality_control_modules::phos
 {
@@ -106,6 +108,13 @@ void RawQcTask::InitHistograms()
   mHist2D[kErrorType]->SetDrawOption("colz");
   mHist2D[kErrorType]->SetStats(0);
   getObjectsManager()->startPublishing(mHist2D[kErrorType]);
+
+  mHist1D[kBadMapSummary] = new TH1F("BadMapSummary", "Number of bad channels", 4, 1., 5.); // xaxis: FEE card number + 2 for TRU and global errors
+  mHist1D[kBadMapSummary]->GetXaxis()->SetTitle("module");
+  mHist1D[kBadMapSummary]->GetYaxis()->SetTitle("N bad channels");
+  mHist1D[kBadMapSummary]->SetDrawOption("h");
+  mHist1D[kBadMapSummary]->SetStats(0);
+  getObjectsManager()->startPublishing(mHist1D[kBadMapSummary]);
 
   if (mCheckChi2) {
     for (Int_t mod = 0; mod < 4; mod++) {
@@ -200,7 +209,32 @@ void RawQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     int ibin = mHist2D[kErrorNumber]->Fill(float(e.getFEC()), float(e.getDDL()));
     int cont = mHist2D[kErrorType]->GetBinContent(ibin);
     cont |= (1 << e.getError());
+    ILOG(Info, Support) << "[" << int(e.getFEC()) << "," << int(e.getDDL()) << "ERROR:" << cont << " e.getErr=" << int(e.getError()) << AliceO2::InfoLogger::InfoLogger::endm;
     mHist2D[kErrorType]->SetBinContent(ibin, cont);
+  }
+  // Bad Map
+  //  Read current bad map if not read yet
+  if (mInitBadMap) {
+    mInitBadMap = false;
+    ILOG(Info, Support) << "Getting bad map" << AliceO2::InfoLogger::InfoLogger::endm;
+    loadCcdb();
+    std::map<std::string, std::string> metadata;
+    mBadMap = retrieveConditionAny<o2::phos::BadChannelsMap>("PHS/Calib/BadMap", metadata);
+    if (!mBadMap) {
+      ILOG(Error, Support) << "Can not get bad map" << AliceO2::InfoLogger::InfoLogger::endm;
+      mHist1D[kBadMapSummary]->Reset();
+    } else {
+      unsigned short nbm[4] = { 0 };
+      for (short absId = 1973; absId <= o2::phos::Mapping::NCHANNELS; absId++) {
+        if (!mBadMap->isChannelGood(absId)) {
+          nbm[(absId - 1) / 3584]++;
+        }
+      }
+      for (int mod = 0; mod < 4; mod++) {
+        mHist1D[kBadMapSummary]->SetBinContent(mod + 1, nbm[mod]);
+      }
+      ILOG(Info, Support) << "Bad channels:[" << nbm[0] << "," << nbm[1] << "," << nbm[2] << "," << nbm[3] << "]" << AliceO2::InfoLogger::InfoLogger::endm;
+    }
   }
 
   // Chi2: not hardware errors but unusual/correpted sample
@@ -239,8 +273,6 @@ void RawQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void RawQcTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
-
   if (mCheckChi2) {
     if (!mFinalized) { // not already calculated
       for (Int_t mod = 0; mod < 4; mod++) {
@@ -317,6 +349,19 @@ void RawQcTask::endOfCycle()
     }
     mFinalized = true;
   }
+  //==========LED===========
+  if (mMode == 2) { // LED
+    ILOG(Info, Support) << " Caclulating number of peaks" << AliceO2::InfoLogger::InfoLogger::endm;
+    for (unsigned int absId = 1793; absId <= o2::phos::Mapping::NCHANNELS; absId++) {
+      int npeaks = mSpSearcher->Search(&(mSpectra[absId - 1793]), 2, "goff", 0.1);
+      char relid[3];
+      o2::phos::Geometry::absToRelNumbering(absId, relid);
+      short mod = relid[0] - 1;
+      int ibin = mHist2D[kLEDNpeaksM1 + mod]->FindBin(relid[1] - 0.5, relid[2] - 0.5);
+      mHist2D[kLEDNpeaksM1 + mod]->SetBinContent(ibin, npeaks);
+    }
+    ILOG(Info, Support) << " Caclulating number of peaks done" << AliceO2::InfoLogger::InfoLogger::endm;
+  }
 }
 
 void RawQcTask::endOfActivity(Activity& /*activity*/)
@@ -342,6 +387,22 @@ void RawQcTask::reset()
     }
   }
 }
+void RawQcTask::FillLEDHistograms(const gsl::span<const o2::phos::Cell>& cells, const gsl::span<const o2::phos::TriggerRecord>& cellsTR)
+{
+  FillPhysicsHistograms(cells, cellsTR);
+
+  // Fill intermediate histograms
+  for (const auto& tr : cellsTR) {
+    int firstCellInEvent = tr.getFirstEntry();
+    int lastCellInEvent = firstCellInEvent + tr.getNumberOfObjects();
+    for (int i = firstCellInEvent; i < lastCellInEvent; i++) {
+      const o2::phos::Cell c = cells[i];
+      if (c.getHighGain()) {
+        mSpectra[c.getAbsId() - 1793].Fill(c.getEnergy());
+      }
+    }
+  }
+}
 void RawQcTask::FillPhysicsHistograms(const gsl::span<const o2::phos::Cell>& cells, const gsl::span<const o2::phos::TriggerRecord>& cellsTR)
 {
   for (const auto& tr : cellsTR) {
@@ -352,6 +413,9 @@ void RawQcTask::FillPhysicsHistograms(const gsl::span<const o2::phos::Cell>& cel
       // short cell, float amplitude, float time, int label
       short address = c.getAbsId();
       float e = c.getEnergy();
+      if (!c.getHighGain()) {
+        e *= 16; // scale LowGain cells
+      }
       if (e > kOcccupancyTh) {
         // Converts the absolute numbering into the following array
         //  relid[0] = PHOS Module number 1,...4:module
@@ -560,14 +624,13 @@ void RawQcTask::CreatePhysicsHistograms()
     }
 
     if (!mHist2D[kTimeEM1 + mod]) {
-      mHist2D[kTimeEM1 + mod] = new TH2F(Form("TimevsE%d", mod + 1), Form("Cell time vs energy, mod %d", mod + 1), 50, 0., 1000., 50, -2.e-7, 2.e-7);
+      mHist2D[kTimeEM1 + mod] = new TH2F(Form("TimevsE%d", mod + 1), Form("Cell time vs energy, mod %d", mod + 1), 50, 0., 1000., 50, -5.e-7, 5.e-7);
       mHist2D[kTimeEM1 + mod]->GetXaxis()->SetNdivisions(508, kFALSE);
       mHist2D[kTimeEM1 + mod]->GetYaxis()->SetNdivisions(514, kFALSE);
-      mHist2D[kTimeEM1 + mod]->GetXaxis()->SetTitle("x, cells");
-      mHist2D[kTimeEM1 + mod]->GetYaxis()->SetTitle("z, cells");
+      mHist2D[kTimeEM1 + mod]->GetXaxis()->SetTitle("Amp");
+      mHist2D[kTimeEM1 + mod]->GetYaxis()->SetTitle("Time (ns)");
       mHist2D[kTimeEM1 + mod]->SetStats(0);
       mHist2D[kTimeEM1 + mod]->SetMinimum(0);
-      mHist2D[kTimeEM1 + mod]->SetMaximum(100);
       getObjectsManager()->startPublishing(mHist2D[kTimeEM1 + mod]);
     } else {
       mHist2D[kTimeEM1 + mod]->Reset();
@@ -582,6 +645,30 @@ void RawQcTask::CreatePhysicsHistograms()
     } else {
       mHist1D[kCellSpM1 + mod]->Reset();
     }
+  }
+}
+void RawQcTask::CreateLEDHistograms()
+{
+  // Occupancy+mean+spectra
+  CreatePhysicsHistograms();
+  for (Int_t mod = 0; mod < 4; mod++) {
+    if (!mHist2D[kLEDNpeaksM1 + mod]) {
+      mHist2D[kLEDNpeaksM1 + mod] = new TH2F(Form("NLedPeaksM%d", mod + 1), Form("Number of LED peaks, mod %d", mod + 1), 64, 0., 64., 56, 0., 56.);
+      mHist2D[kLEDNpeaksM1 + mod]->GetXaxis()->SetNdivisions(508, kFALSE);
+      mHist2D[kLEDNpeaksM1 + mod]->GetYaxis()->SetNdivisions(514, kFALSE);
+      mHist2D[kLEDNpeaksM1 + mod]->GetXaxis()->SetTitle("x, cells");
+      mHist2D[kLEDNpeaksM1 + mod]->GetYaxis()->SetTitle("z, cells");
+      mHist2D[kLEDNpeaksM1 + mod]->SetStats(0);
+      mHist2D[kLEDNpeaksM1 + mod]->SetMinimum(0);
+      getObjectsManager()->startPublishing(mHist2D[kLEDNpeaksM1 + mod]);
+    } else {
+      mHist2D[kLEDNpeaksM1 + mod]->Reset();
+    }
+  }
+  // Prepare internal array of histos and final plot with number of peaks per channel
+  mSpSearcher = std::make_unique<TSpectrum>(20);
+  for (unsigned int absId = 1793; absId <= o2::phos::Mapping::NCHANNELS; absId++) {
+    mSpectra.emplace_back(Form("SpChannel%d", absId), "", 487, 50., 1024.);
   }
 }
 } // namespace o2::quality_control_modules::phos
