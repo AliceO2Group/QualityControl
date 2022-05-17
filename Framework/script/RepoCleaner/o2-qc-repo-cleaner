@@ -39,7 +39,7 @@ from datetime import datetime
 
 from Ccdb import Ccdb
 from pidfile import PIDFile, AlreadyRunningError
-
+# from viztracer import log_sparse
 
 class Rule:
     """A class to hold information about a "rule" defined in the config file."""
@@ -289,7 +289,7 @@ def read_config(args):
     ccdb_url = config['ccdb_url']
     return ccdb_url, rules
 
-
+# @log_sparse
 def process_object(object_path, rules, ccdb, args):
     logger = create_parallel_logger()
     logger.setLevel(int(args.log_level))

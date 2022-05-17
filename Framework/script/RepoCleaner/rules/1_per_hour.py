@@ -38,7 +38,8 @@ def process(ccdb: Ccdb, object_path: str, delay: int, #migration: bool,
         if last_preserved == None or last_preserved.validFromAsDt < v.validFromAsDt - timedelta(hours=1):
             # first extend validity of the previous preserved (should we take into account the run ?)
             if last_preserved != None:
-                ccdb.updateValidity(last_preserved, last_preserved.validFrom, str(int(v.validFrom) - 1))
+                if last_preserved.validTo != int(v.validFrom) - 1:  # only update it if it is needed
+                    ccdb.updateValidity(last_preserved, last_preserved.validFrom, str(int(v.validFrom) - 1))
                 update_list.append(last_preserved)
             last_preserved = v
         else:
@@ -61,7 +62,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int, #migration: bool,
     for v in update_list:
         logger.debug(f"   {v}")
 
-    return {"deleted" : len(deletion_list), "preserved": len(preservation_list), "updated" : len(update_list)}
+    return {"deleted": len(deletion_list), "preserved": len(preservation_list), "updated" : len(update_list)}
 
 
 def main():
