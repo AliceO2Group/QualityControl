@@ -25,6 +25,7 @@
 #include "DataFormatsCPV/Digit.h"
 #include "DataFormatsCPV/Cluster.h"
 #include "DataFormatsCPV/TriggerRecord.h"
+#include "CPVReconstruction/RawDecoder.h"
 
 namespace o2::quality_control_modules::cpv
 {
@@ -89,20 +90,28 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
   int nValidInputs = ctx.inputs().countValidInputs();
   mHist1D[H1DNValidInputs]->Fill(nValidInputs);
 
-  bool hasClusters = false, hasDigits = false;
+  bool hasClusters = false, hasDigits = false, hasCalibDigits = false, hasRawErrors = false;
   for (auto&& input : o2::framework::InputRecordWalker(ctx.inputs())) {
     // get message header
     if (input.header != nullptr && input.payload != nullptr) {
       const auto* header = o2::framework::DataRefUtils::getHeader<header::DataHeader*>(input);
       auto payloadSize = o2::framework::DataRefUtils::getPayloadSize(input);
-      //LOG(info) << "monitorData() : obtained input " << header->dataOrigin.str << "/" << header->dataDescription.str;
+      // LOG(info) << "monitorData() : obtained input " << header->dataOrigin.str << "/" << header->dataDescription.str;
       if ((strcmp(header->dataOrigin.str, "CPV") == 0) && (strcmp(header->dataDescription.str, "DIGITS") == 0)) {
-        //LOG(info) << "monitorData() : I found digits in inputs";
+        // LOG(info) << "monitorData() : I found digits in inputs";
         hasDigits = true;
       }
       if ((strcmp(header->dataOrigin.str, "CPV") == 0) && (strcmp(header->dataDescription.str, "CLUSTERS") == 0)) {
-        //LOG(info) << "monitorData() : I found clusters in inputs";
+        // LOG(info) << "monitorData() : I found clusters in inputs";
         hasClusters = true;
+      }
+      if ((strcmp(header->dataOrigin.str, "CPV") == 0) && (strcmp(header->dataDescription.str, "CALIBDIGITS") == 0)) {
+        // LOG(info) << "monitorData() : I found clusters in inputs";
+        hasCalibDigits = true;
+      }
+      if ((strcmp(header->dataOrigin.str, "CPV") == 0) && (strcmp(header->dataDescription.str, "RAWHWERRORS") == 0)) {
+        // LOG(info) << "monitorData() : I found clusters in inputs";
+        hasRawErrors = true;
       }
 
       // get payload of a specific input, which is a char array.
@@ -114,28 +123,33 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
 
   // 2. Using get("<binding>")
-  //digits
+  // digits
   if (hasDigits) {
     auto digits = ctx.inputs().get<gsl::span<o2::cpv::Digit>>("digits");
     auto digitsTR = ctx.inputs().get<gsl::span<o2::cpv::TriggerRecord>>("dtrigrec");
     mHist1D[H1DNDigitsPerInput]->Fill(digits.size());
+    unsigned short nDigPerEvent[3];
     for (const auto& trigRecord : digitsTR) {
       LOG(debug) << " monitorData() : digit trigger record #" << mNEventsTotal
                  << " contains " << trigRecord.getNumberOfObjects() << " objects.";
       mNEventsTotal++;
+      mHist1D[H1DDigitsInEventM2M3M4]->Fill(trigRecord.getNumberOfObjects());
+      memset(nDigPerEvent, 0, 3 * sizeof(short));
       if (trigRecord.getNumberOfObjects() > 0) {
         for (int iDig = trigRecord.getFirstEntry(); iDig < trigRecord.getFirstEntry() + trigRecord.getNumberOfObjects(); iDig++) {
           mHist1D[H1DDigitIds]->Fill(digits[iDig].getAbsId());
           short relId[3];
           if (Geometry::absToRelNumbering(digits[iDig].getAbsId(), relId)) {
-            //reminder: relId[3]={Module, phi col, z row} where Module=2..4, phi col=0..127, z row=0..59
+            // reminder: relId[3]={Module, phi col, z row} where Module=2..4, phi col=0..127, z row=0..59
             mHist2D[H2DDigitMapM2 + relId[0] - 2]->Fill(relId[1], relId[2]);
             mHist1D[H1DDigitEnergyM2 + relId[0] - 2]->Fill(digits[iDig].getAmplitude());
+            nDigPerEvent[relId[0] - 2]++;
           }
         }
       }
     }
     for (int iMod = 0; iMod < kNModules; iMod++) {
+      mHist1D[H1DDigitsInEventM2 + iMod]->Fill(nDigPerEvent[iMod]);
       for (int iZ = 1; iZ <= 60; iZ++) {
         for (int iX = 1; iX <= 128; iX++) {
           mHist2D[H2DDigitFreqM2 + iMod]->SetBinContent(iX, iZ, mHist2D[H2DDigitMapM2 + iMod]->GetBinContent(iX, iZ) / mNEventsTotal);
@@ -144,16 +158,20 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
   }
 
-  //clusters
+  // clusters
   if (hasClusters) {
     auto clusters = ctx.inputs().get<gsl::span<o2::cpv::Cluster>>("clusters");
     auto clustersTR = ctx.inputs().get<gsl::span<o2::cpv::TriggerRecord>>("ctrigrec");
     mHist1D[H1DNClustersPerInput]->Fill(clusters.size());
+    unsigned short nCluPerEvent[3];
     for (const auto& trigRecord : clustersTR) {
+      mHist1D[H1DClustersInEventM2M3M4]->Fill(trigRecord.getNumberOfObjects());
+      memset(nCluPerEvent, 0, 3 * sizeof(short));
       if (trigRecord.getNumberOfObjects() > 0) {
         for (int iClu = trigRecord.getFirstEntry(); iClu < trigRecord.getFirstEntry() + trigRecord.getNumberOfObjects(); iClu++) {
-          //reminder: relId[3]={Module, phi col, z row} where Module=2..4, phi col=0..127, z row=0..59
+          // reminder: relId[3]={Module, phi col, z row} where Module=2..4, phi col=0..127, z row=0..59
           char mod = clusters[iClu].getModule();
+          nCluPerEvent[mod - 2]++;
           float x, z, totEn;
           clusters[iClu].getLocalPosition(x, z);
           totEn = clusters[iClu].getEnergy();
@@ -163,8 +181,35 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
           mHist1D[H1DNDigitsInClusterM2 + mod - 2]->Fill(mult);
         }
       }
+      for (unsigned char mod = 0; mod <= 2; mod++) {
+        mHist1D[H1DClustersInEventM2 + mod]->Fill(nCluPerEvent[mod]);
+      }
     }
   }
+
+  // calib digits
+  if (hasCalibDigits) {
+    auto calibDigits = ctx.inputs().get<gsl::span<o2::cpv::Digit>>("calibdigits");
+    mHist1D[H1DNCalibDigitsPerInput]->Fill(calibDigits.size());
+    for (const auto& digit : calibDigits) {
+      mHist1D[H1DCalibDigitIds]->Fill(digit.getAbsId());
+      short relId[3];
+      if (Geometry::absToRelNumbering(digit.getAbsId(), relId)) {
+        // reminder: relId[3]={Module, phi col, z row} where Module=2..4, phi col=0..127, z row=0..59
+        mHist2D[H2DCalibDigitMapM2 + relId[0] - 2]->Fill(relId[1], relId[2]);
+        mHist1D[H1DCalibDigitEnergyM2 + relId[0] - 2]->Fill(digit.getAmplitude());
+      }
+    }
+  }
+
+  // HW Raw Errors
+  if (hasRawErrors) {
+    auto rawErrors = ctx.inputs().get<gsl::span<o2::cpv::RawDecoderError>>("rawerrors");
+    for (const auto& rawError : rawErrors) {
+      mHist1D[H1DRawErrors]->Fill(rawError.errortype);
+    }
+  }
+
   // 3. Access CCDB. If it is enough to retrieve it once, do it in initialize().
   // Remember to delete the object when the pointer goes out of scope or it is no longer needed.
   //   TObject* condition = TaskInterface::retrieveCondition("QcTask/example"); // put a valid condition path here
@@ -196,7 +241,7 @@ void PhysicsTask::reset()
 void PhysicsTask::initHistograms()
 {
   ILOG(Info, Devel) << "initing histograms" << ENDM;
-  //1D Histos
+  // 1D Histos
   if (!mHist1D[H1DInputPayloadSize]) {
     mHist1D[H1DInputPayloadSize] =
       new TH1F("InputPayloadSize", "Input Payload Size", 30000, 0, 30000000);
@@ -228,6 +273,14 @@ void PhysicsTask::initHistograms()
     mHist1D[H1DNDigitsPerInput]->Reset();
   }
 
+  if (!mHist1D[H1DNCalibDigitsPerInput]) {
+    mHist1D[H1DNCalibDigitsPerInput] =
+      new TH1F("NCalibDigitsPerInput", "Number of CalibDigits per input", 30000, 0, 300000);
+    getObjectsManager()->startPublishing(mHist1D[H1DNCalibDigitsPerInput]);
+  } else {
+    mHist1D[H1DNCalibDigitsPerInput]->Reset();
+  }
+
   if (!mHist1D[H1DNClustersPerInput]) {
     mHist1D[H1DNClustersPerInput] =
       new TH1F("NClustersPerInput", "Number of clusters per input", 30000, 0, 300000);
@@ -241,6 +294,45 @@ void PhysicsTask::initHistograms()
     getObjectsManager()->startPublishing(mHist1D[H1DDigitIds]);
   } else {
     mHist1D[H1DDigitIds]->Reset();
+  }
+
+  if (!mHist1D[H1DCalibDigitIds]) {
+    mHist1D[H1DCalibDigitIds] = new TH1F("CalibDigitIds", "CalibDigit Ids", 30000, -0.5, 29999.5);
+    getObjectsManager()->startPublishing(mHist1D[H1DCalibDigitIds]);
+  } else {
+    mHist1D[H1DCalibDigitIds]->Reset();
+  }
+
+  if (!mHist1D[H1DDigitsInEventM2M3M4]) {
+    mHist1D[H1DDigitsInEventM2M3M4] =
+      new TH1F("NDigitsInEventM2M3M4", "Number of Digits per event", 23040, 0., 23040.);
+    getObjectsManager()->startPublishing(mHist1D[H1DDigitsInEventM2M3M4]);
+  } else {
+    mHist1D[H1DDigitsInEventM2M3M4]->Reset();
+  }
+
+  // if (!mHist1D[H1DCalibDigitsInEventM2M3M4]) {
+  //   mHist1D[H1DCalibDigitsInEventM2M3M4] =
+  //     new TH1F("NCalibDigitsInEventM2M3M4", "Number of CalibDigits per event", 23040, 0., 23040.);
+  //   getObjectsManager()->startPublishing(mHist1D[H1DCalibDigitsInEventM2M3M4]);
+  // } else {
+  //   mHist1D[H1DCalibDigitsInEventM2M3M4]->Reset();
+  // }
+
+  if (!mHist1D[H1DClustersInEventM2M3M4]) {
+    mHist1D[H1DClustersInEventM2M3M4] =
+      new TH1F("NClustersInEventM2M3M4", "Number of clusters per event", 23040, 0., 23040.);
+    getObjectsManager()->startPublishing(mHist1D[H1DClustersInEventM2M3M4]);
+  } else {
+    mHist1D[H1DClustersInEventM2M3M4]->Reset();
+  }
+
+  if (!mHist1D[H1DRawErrors]) {
+    mHist1D[H1DRawErrors] =
+      new TH1F("RawErrors", "Raw Errors", 20, 0., 20.);
+    getObjectsManager()->startPublishing(mHist1D[H1DRawErrors]);
+  } else {
+    mHist1D[H1DRawErrors]->Reset();
   }
 
   int nPadsX = Geometry::kNumberOfCPVPadsPhi;
@@ -262,6 +354,45 @@ void PhysicsTask::initHistograms()
     } else {
       mHist1D[H1DDigitEnergyM2 + mod]->Reset();
     }
+    // calib digits
+    if (!mHist1D[H1DCalibDigitEnergyM2 + mod]) {
+      mHist1D[H1DCalibDigitEnergyM2 + mod] =
+        new TH1F(
+          Form("CalibDigitEnergyM%d", mod + 2),
+          Form("CalibDigit energy distribution M%d", mod + 2),
+          1000, 0, 1000.);
+      mHist1D[H1DCalibDigitEnergyM2 + mod]->GetXaxis()->SetTitle("CalibDigit energy");
+      getObjectsManager()->startPublishing(mHist1D[H1DCalibDigitEnergyM2 + mod]);
+    } else {
+      mHist1D[H1DCalibDigitEnergyM2 + mod]->Reset();
+    }
+
+    // N Digits per event
+    if (!mHist1D[H1DDigitsInEventM2 + mod]) {
+      mHist1D[H1DDigitsInEventM2 + mod] =
+        new TH1F(
+          Form("DigitsInEventM%d", mod + 2),
+          Form("Digits per event in M%d", mod + 2),
+          Geometry::kNCHANNELS / 3, 0., float(Geometry::kNCHANNELS / 3));
+      mHist1D[H1DDigitsInEventM2 + mod]->GetXaxis()->SetTitle("Number of digits");
+      getObjectsManager()->startPublishing(mHist1D[H1DDigitsInEventM2 + mod]);
+    } else {
+      mHist1D[H1DDigitsInEventM2 + mod]->Reset();
+    }
+
+    // N CalibDigits per event
+    // if (!mHist1D[H1DCalibDigitsInEventM2 + mod]) {
+    //  mHist1D[H1DCalibDigitsInEventM2 + mod] =
+    //    new TH1F(
+    //      Form("CalibDigitsInEventM%d", mod + 2),
+    //      Form("CalibDigits per event in M%d", mod + 2),
+    //      Geometry::kNCHANNELS / 3, 0., float(Geometry::kNCHANNELS / 3));
+    //  mHist1D[H1DCalibDigitsInEventM2 + mod]->GetXaxis()->SetTitle("Number of CalibDigits");
+    //  getObjectsManager()->startPublishing(mHist1D[H1DCalibDigitsInEventM2 + mod]);
+    // } else {
+    //  mHist1D[H1DCalibDigitsInEventM2 + mod]->Reset();
+    // }
+
     // Total cluster energy
     if (!mHist1D[H1DClusterTotEnergyM2 + mod]) {
       mHist1D[H1DClusterTotEnergyM2 + mod] =
@@ -274,7 +405,8 @@ void PhysicsTask::initHistograms()
     } else {
       mHist1D[H1DClusterTotEnergyM2 + mod]->Reset();
     }
-    // Total cluster energy
+
+    // Number of digits in cluster
     if (!mHist1D[H1DNDigitsInClusterM2 + mod]) {
       mHist1D[H1DNDigitsInClusterM2 + mod] =
         new TH1F(
@@ -285,6 +417,19 @@ void PhysicsTask::initHistograms()
       getObjectsManager()->startPublishing(mHist1D[H1DNDigitsInClusterM2 + mod]);
     } else {
       mHist1D[H1DNDigitsInClusterM2 + mod]->Reset();
+    }
+
+    // N clusters per event
+    if (!mHist1D[H1DClustersInEventM2 + mod]) {
+      mHist1D[H1DClustersInEventM2 + mod] =
+        new TH1F(
+          Form("ClustersInEventM%d", mod + 2),
+          Form("Clusters per event in M%d", mod + 2),
+          Geometry::kNCHANNELS / 3, 0., float(Geometry::kNCHANNELS / 3));
+      mHist1D[H1DClustersInEventM2 + mod]->GetXaxis()->SetTitle("Number of digits");
+      getObjectsManager()->startPublishing(mHist1D[H1DClustersInEventM2 + mod]);
+    } else {
+      mHist1D[H1DClustersInEventM2 + mod]->Reset();
     }
 
     // 2D
@@ -302,6 +447,22 @@ void PhysicsTask::initHistograms()
       getObjectsManager()->startPublishing(mHist2D[H2DDigitMapM2 + mod]);
     } else {
       mHist2D[H2DDigitMapM2 + mod]->Reset();
+    }
+
+    // CalibDigit map
+    if (!mHist2D[H2DCalibDigitMapM2 + mod]) {
+      mHist2D[H2DCalibDigitMapM2 + mod] =
+        new TH2F(
+          Form("CalibDigitMapM%d", 2 + mod),
+          Form("CalibDigit Map in M%d", mod + 2),
+          nPadsX, -0.5, nPadsX - 0.5,
+          nPadsZ, -0.5, nPadsZ - 0.5);
+      mHist2D[H2DCalibDigitMapM2 + mod]->GetXaxis()->SetTitle("x, pad");
+      mHist2D[H2DCalibDigitMapM2 + mod]->GetYaxis()->SetTitle("z, pad");
+      mHist2D[H2DCalibDigitMapM2 + mod]->SetStats(0);
+      getObjectsManager()->startPublishing(mHist2D[H2DCalibDigitMapM2 + mod]);
+    } else {
+      mHist2D[H2DCalibDigitMapM2 + mod]->Reset();
     }
 
     // digit frequency
@@ -343,7 +504,11 @@ void PhysicsTask::resetHistograms()
   // clean all histograms
   ILOG(Info, Support) << "Resetting the 1D Histograms" << ENDM;
   for (int itHist1D = H1DInputPayloadSize; itHist1D < kNHist1D; itHist1D++) {
-    mHist1D[itHist1D]->Reset();
+    if (mHist1D[itHist1D]) {
+      mHist1D[itHist1D]->Reset();
+    } else {
+      ILOG(Info, Support) << "1D histo " << itHist1D << " is not created yet!";
+    }
   }
 
   ILOG(Info, Support) << "Resetting the 2D Histograms" << ENDM;
