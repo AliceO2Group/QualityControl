@@ -88,6 +88,17 @@
 	    "graphXRange": "-2.0:2.0", 
 	    "graphAxisLabel": "Mean #eta:#eta"
           },
+	  {
+            "name": "hEtaRatio_StatMeanY_Trend_MultiGraph",
+            "title": "Mean Y of the #eta ratio vs time for slices in #eta (x-axis)",
+            "varexp": "hEtaRatio.meanY:multigraphtime",
+            "selection": "",
+            "option": "*LE",
+            "graphErrors": "errMeanY:0", 
+            "graphYRange": "-0.1:2.0",
+	    "graphXRange": "", 
+	    "graphAxisLabel": "Mean #eta:time"
+          },
           {
             "name": "hEta_StatMean_Trend",
             "title": "Mean of #eta",
@@ -120,6 +131,17 @@
             "graphYRange": "0.0:1.5",
 	    "graphXRange": "-0.5:6.5", 
 	    "graphAxisLabel": "Mean #phi ratio A side:#phi"
+          },
+          {
+            "name": "hPhiAsideRatio_StatMeanY_Trend_MultiGraph",
+            "title": "Mean of #phi ratio - A side - slices along #phi (x-axis)",
+            "varexp": "hPhiAsideRatio.meanY:multigraphtime",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "errMeanY:0.0", 
+            "graphYRange": "0.0:1.5",
+	    "graphXRange": "", 
+	    "graphAxisLabel": "Mean #phi ratio A side:time"
           },
           {
             "name": "hPhiCsideRatio_StatMeanY_Trend",

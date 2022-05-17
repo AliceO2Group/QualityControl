@@ -43,6 +43,7 @@ struct SliceInfo {
   double errMeanY = 0.;    // Error on the mean along Y.
   double sliceLabelX = 0.; // Stores numerical center of slice along X in case of slicing or pad number in case of canvas
   double sliceLabelY = 0.; // Stores numerical center of slice along Y in case of slicing or pad number in case of canvas
+  std::string title = "";
 
   /// \brief Check if the argument is a floating number or a string.
   bool isStringFloating(std::string var)
@@ -85,11 +86,17 @@ struct SliceInfo {
     }
   }
 
+  std::string RetrieveTitle() const
+  {
+    return title;
+  }
+
   ClassDefNV(SliceInfo, 1);
 };
 
 struct SliceInfoQuality {
   UInt_t qualitylevel = 0;
+  std::string title = "";
 
   /// \brief Return the struct member/float corresponding to the argument.
   double RetrieveValue(const std::string& varType) const
@@ -101,6 +108,11 @@ struct SliceInfoQuality {
                            << " in 'RetrieveValue' unknown. Breaking." << ENDM;
       exit(0);
     }
+  }
+
+  std::string RetrieveTitle() const
+  {
+    return title;
   }
 
   ClassDefNV(SliceInfoQuality, 1);
