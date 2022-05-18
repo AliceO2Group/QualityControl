@@ -115,9 +115,9 @@ void ServiceDiscovery::runHealthServer(unsigned int port)
   // temporary switch to test the fix for the online mode
   const char* env_var = std::getenv("QC_TEST_FIX_ONLINE");
   bool testFixOnline = env_var && strlen(env_var) > 0;
-  if(testFixOnline) {
+  if (testFixOnline) {
     threadInfoLogger << "QC_TEST_FIX_ONLINE set" << ENDM;
-  } 
+  }
 
   try {
     boost::asio::io_service io_service;
@@ -139,7 +139,7 @@ void ServiceDiscovery::runHealthServer(unsigned int port)
           timer.cancel();
         }
       });
-      if(testFixOnline) {
+      if (testFixOnline) {
         io_service.run();
       }
       std::this_thread::sleep_for(std::chrono::seconds(1));
