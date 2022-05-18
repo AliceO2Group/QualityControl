@@ -323,14 +323,14 @@ void ITSTrackTask::createAllHistos()
     hNClusterVsChip[l] = new TH2D(Form("NClusterVsChipInLayer%d", l), Form("NClusterVsChipInLayer%d", l), (int)(ChipBoundary[l + 1] - ChipBoundary[l]), ChipBoundary[l], ChipBoundary[l + 1], 60, 0, 15);
     hNClusterVsChip[l]->SetTitle(Form("Corrected cluster size for track clusters vs Chip in layer %d", l));
     addObject(hNClusterVsChip[l]);
-    formatAxes(hNClusterVsChip[l], "chipID", "corrected cluster size for track clusters", 1, 1.10);
+    formatAxes(hNClusterVsChip[l], "chipID", "cluster size x cos(#lambda)", 1, 1.10);
     hNClusterVsChip[l]->SetStats(0);
   }
 
   hNClusterVsChipITS = new TH2D(Form("NClusterVsChipITS"), Form("NClusterVsChipITS"), (int)ChipBoundary[NLayer], 0, ChipBoundary[NLayer], 60, 0, 15);
   hNClusterVsChipITS->SetTitle(Form("Corrected cluster size for track clusters vs Chip Full Detector"));
   addObject(hNClusterVsChipITS);
-  formatAxes(hNClusterVsChipITS, "chipID", "corrected cluster size for track clusters", 1, 1.10);
+  formatAxes(hNClusterVsChipITS, "chipID", "cluster size x cos(#lambda)", 1, 1.10);
   hNClusterVsChipITS->SetStats(0);
   // NClusterVsChip Full Detector distinguishable
   for (int l = 0; l < NLayer + 1; l++) {
