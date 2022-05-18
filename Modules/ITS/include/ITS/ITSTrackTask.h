@@ -23,6 +23,7 @@
 #include <DataFormatsITSMFT/TopologyDictionary.h>
 #include <ITSBase/GeometryTGeo.h>
 #include <TTree.h>
+#include <TLine.h>
 
 class TH1D;
 class TH2D;
@@ -56,6 +57,8 @@ class ITSTrackTask : public TaskInterface
   static constexpr int NLayer = 7;
   static constexpr int NLayerIB = 3;
 
+  const int ChipBoundary[NLayer + 1] = { 0, 108, 252, 432, 3120, 6480, 14712, 24120 };
+
   std::vector<TObject*> mPublishedObjects;
   TH1D* hNClusters;
   TH1D* hTrackEta;
@@ -69,6 +72,8 @@ class ITSTrackTask : public TaskInterface
   TH1D* hNtracks;
   TH2D* hNClustersPerTrackEta;
   TH2D* hClusterVsBunchCrossing;
+  TH2D* hNClusterVsChip[NLayer];
+  TH2D* hNClusterVsChipITS;
 
   float mVertexXYsize;
   float mVertexZsize;
@@ -78,6 +83,7 @@ class ITSTrackTask : public TaskInterface
   Int_t mNTracks = 0;
   Int_t mNRofs = 0;
   int nBCbins;
+  long int mTimestamp;
 
   const int NROFOCCUPANCY = 100;
   Int_t mNClusters = 0;

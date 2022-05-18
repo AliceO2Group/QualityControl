@@ -42,7 +42,8 @@
 	  "vertexRsize": "0.8",
 	  "NtracksMAX"  : "100",
           "doTTree": "0",
-          "nBCbins": "103"
+          "nBCbins": "103",
+          "dicttimestamp" : "0"
         }
 
       }
@@ -57,7 +58,23 @@
         "dataSource" : [ {
           "type" : "Task",
           "name" : "ITSTrackTask",
-          "MOs" : ["NClusters","PhiDistribution","AngularDistribution","EtaDistribution","VertexCoordinates","VertexRvsZ","VertexZ","BunchCrossingIDvsClusterRatio"]
+          "MOs" : ["NClusters",
+                   "PhiDistribution",
+                   "AngularDistribution",
+                   "EtaDistribution",
+                   "VertexCoordinates",
+                   "VertexRvsZ",
+                   "VertexZ",
+                   "BunchCrossingIDvsClusterRatio",
+                   "NClusterVsChipInLayer0",
+                   "NClusterVsChipInLayer1",
+                   "NClusterVsChipInLayer2",
+                   "NClusterVsChipInLayer3",
+                   "NClusterVsChipInLayer4",
+                   "NClusterVsChipInLayer5",
+                   "NClusterVsChipInLayer6",
+                   "NClusterVsChipITS"
+                  ]
         } ]
       }
     }
@@ -68,7 +85,7 @@
              "id" : "tracks",
              "active" : "true",
              "machines" : [],
-             "query" : "Vertices:ITS/VERTICES/0;tracks:ITS/TRACKS/0;rofs:ITS/ITSTrackROF/0;clustersrof:ITS/CLUSTERSROF/0;compclus:ITS/COMPCLUSTERS/0",
+             "query" : "Vertices:ITS/VERTICES/0;tracks:ITS/TRACKS/0;rofs:ITS/ITSTrackROF/0;clustersrof:ITS/CLUSTERSROF/0;compclus:ITS/COMPCLUSTERS/0;patterns:ITS/PATTERNS/0;clusteridx:ITS/TRACKCLSID/0",
              "samplingConditions" : [
                {
                  "condition" : "random",
