@@ -97,6 +97,14 @@ void PhysicsTaskRofs::initialize(o2::framework::InitContext& /*ic*/)
   // Number of stations per ROF
   mHistRofNStations = std::make_shared<TH1F>("RofNStations", "Number of stations per ROF", 7, 0, 7);
   publishObject(mHistRofNStations, "hist", true);
+
+  // ROF time distribution
+  mHistRofTime = std::make_shared<TH1F>("RofTime", "ROF time distribution", 128 * 3600, 0, 128 * 3600);
+  publishObject(mHistRofTime, "hist", false);
+
+  // ROF time distribution (signal-like digits)
+  mHistRofTimeSignal = std::make_shared<TH1F>("RofTimeSignal", "ROF time distribution (signal-like digits)", 128 * 3600, 0, 128 * 3600);
+  publishObject(mHistRofTimeSignal, "hist", false);
 }
 
 void PhysicsTaskRofs::startOfActivity(Activity& activity)
@@ -119,7 +127,13 @@ void PhysicsTaskRofs::plotROF(const o2::mch::ROFRecord& rof, gsl::span<const o2:
   auto end = rofDigits.back().getTime();
   mHistRofWidth->Fill(end - start + 1);
 
+  // number of signal-like digits in ROF
   int nSignal = 0;
+
+  // average ROF time
+  double rofTime = 0;
+  double rofTimeSignal = 0;
+
   for (auto& digit : rofDigits) {
     int station = (digit.getDetID() - 100) / 200;
     if (station < 0 | station >= 10) {
@@ -127,11 +141,19 @@ void PhysicsTaskRofs::plotROF(const o2::mch::ROFRecord& rof, gsl::span<const o2:
     }
     stations[station] = true;
 
+    rofTime += digit.getTime();
+
     if (mIsSignalDigit(digit)) {
       nSignal += 1;
+      rofTimeSignal += digit.getTime();
     }
   }
   mHistRofSizeSignal->Fill(nSignal);
+
+  mHistRofTime->Fill(rofTime / rofDigits.size());
+  if (nSignal > 0) {
+    mHistRofTimeSignal->Fill(rofTimeSignal / nSignal);
+  }
 
   int nStations = 0;
   for (auto s : stations) {

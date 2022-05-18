@@ -68,6 +68,8 @@ class PhysicsTaskRofs /*final*/ : public TaskInterface
   std::shared_ptr<TH1F> mHistRofSizeSignal; ///< number of signal-like digits per ROF
   std::shared_ptr<TH1F> mHistRofWidth;      ///< ROF width in BC
   std::shared_ptr<TH1F> mHistRofNStations;  ///< number of stations per ROF
+  std::shared_ptr<TH1F> mHistRofTime;       ///< average ROF time
+  std::shared_ptr<TH1F> mHistRofTimeSignal; ///< average ROF time from signal-like digits
 
   std::vector<TH1*> mAllHistograms;
 };
