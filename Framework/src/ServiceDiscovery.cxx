@@ -114,10 +114,10 @@ void ServiceDiscovery::runHealthServer(unsigned int port)
 
   // temporary switch to test the fix for the online mode
   const char* env_var = std::getenv("QC_TEST_FIX_ONLINE");
-  bool testFixOnline = (env_var && std::string(env_var) == "true");
+  bool testFixOnline = env_var && strlen(env_var) > 0;
   if(testFixOnline) {
-    threadInfoLogger << "QC_TEST_FIX_ONLINE set to true" << ENDM;
-  }
+    threadInfoLogger << "QC_TEST_FIX_ONLINE set" << ENDM;
+  } 
 
   try {
     boost::asio::io_service io_service;
