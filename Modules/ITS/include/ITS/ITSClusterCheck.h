@@ -43,6 +43,8 @@ class ITSClusterCheck : public o2::quality_control::checker::CheckInterface
 
  private:
   ClassDefOverride(ITSClusterCheck, 2);
+
+  static constexpr int NLayer = 7;
 };
 
 } // namespace o2::quality_control_modules::its

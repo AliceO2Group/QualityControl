@@ -33,50 +33,40 @@ void ITSClusterCheck::configure() {}
 
 Quality ITSClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
-  Quality result = 0;
+  Quality result = Quality::Null;
+  double averageClusterSizeLimit[NLayer] = { 20, 20, 20, 20, 20, 20, 20 };
+  double clusterOccupationLimit[NLayer] = { 40, 30, 20, 60, 25, 15, 14 };
+
   std::map<std::string, std::shared_ptr<MonitorObject>>::iterator iter;
   for (iter = moMap->begin(); iter != moMap->end(); ++iter) {
+    result = Quality::Good;
 
     if (iter->second->getName().find("AverageClusterSize") != std::string::npos) {
       auto* h = dynamic_cast<TH2D*>(iter->second->getObject());
-
-      if (iter->second->getName().find("Layer0") != std::string::npos && h->GetMaximum() > 20)
-        result = result.getLevel() | (1 << 0);
-      if (iter->second->getName().find("Layer1") != std::string::npos && h->GetMaximum() > 20)
-        result = result.getLevel() | (1 << 1);
-      if (iter->second->getName().find("Layer2") != std::string::npos && h->GetMaximum() > 20)
-        result = result.getLevel() | (1 << 2);
-      if (iter->second->getName().find("Layer3") != std::string::npos && h->GetMaximum() > 20)
-        result = result.getLevel() | (1 << 3);
-      if (iter->second->getName().find("Layer4") != std::string::npos && h->GetMaximum() > 20)
-        result = result.getLevel() | (1 << 4);
-      if (iter->second->getName().find("Layer5") != std::string::npos && h->GetMaximum() > 20)
-        result = result.getLevel() | (1 << 5);
-      if (iter->second->getName().find("Layer6") != std::string::npos && h->GetMaximum() > 20)
-        result = result.getLevel() | (1 << 6);
+      for (int ilayer = 0; ilayer < NLayer; ilayer++) {
+        result.addMetadata(Form("Layer%d", ilayer), "good");
+        if (iter->second->getName().find(Form("Layer%d", ilayer)) != std::string::npos && h->GetMaximum() > averageClusterSizeLimit[ilayer]) {
+          result.updateMetadata(Form("Layer%d", ilayer), "bad");
+          result.set(Quality::Bad);
+        }
+      }
     }
 
     if (iter->second->getName().find("ClusterOccupation") != std::string::npos) {
       auto* h = dynamic_cast<TH2D*>(iter->second->getObject());
 
-      if (iter->second->getName().find("Layer0") != std::string::npos && h->GetMaximum() > 40)
-        result = result.getLevel() | (1 << 7);
-      if (iter->second->getName().find("Layer1") != std::string::npos && h->GetMaximum() > 30)
-        result = result.getLevel() | (1 << 8);
-      if (iter->second->getName().find("Layer2") != std::string::npos && h->GetMaximum() > 20)
-        result = result.getLevel() | (1 << 9);
-      if (iter->second->getName().find("Layer3") != std::string::npos && h->GetMaximum() > 30)
-        result = result.getLevel() | (1 << 10);
-      if (iter->second->getName().find("Layer4") != std::string::npos && h->GetMaximum() > 25)
-        result = result.getLevel() | (1 << 11);
-      if (iter->second->getName().find("Layer5") != std::string::npos && h->GetMaximum() > 15)
-        result = result.getLevel() | (1 << 12);
-      if (iter->second->getName().find("Layer6") != std::string::npos && h->GetMaximum() > 14)
-        result = result.getLevel() | (1 << 13);
+      for (int ilayer = 0; ilayer < NLayer; ilayer++) {
+        result.addMetadata(Form("Layer%d", ilayer), "good");
+        if (iter->second->getName().find(Form("Layer%d", ilayer)) != std::string::npos && h->GetMaximum() > clusterOccupationLimit[ilayer]) {
+          result.updateMetadata(Form("Layer%d", ilayer), "bad");
+          result.set(Quality::Bad);
+        }
+      }
     }
   }
+
   return result;
-}
+} // end check
 
 std::string ITSClusterCheck::getAcceptedType() { return "TH2D"; }
 
@@ -92,7 +82,7 @@ void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
     std::string histoName = mo->getName();
     int iLayer = histoName[histoName.find("Layer") + 5] - 48; // Searching for position of "Layer" in the name of the file, then +5 is the NUMBER of the layer, -48 is conversion to int
 
-    if ((int)(checkResult.getLevel() & (1 << iLayer)) == 0) {
+    if (checkResult == Quality::Good) {
       text = "Quality::GOOD";
       textColor = kGreen;
       positionX = 0.02;
@@ -118,7 +108,7 @@ void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
     std::string histoName = mo->getName();
     int iLayer = histoName[histoName.find("Layer") + 5] - 48;
 
-    if ((int)(checkResult.getLevel() & (1 << (7 + iLayer))) == 0) {
+    if (checkResult == Quality::Good) {
       text = "Quality::GOOD";
       textColor = kGreen;
       positionX = 0.02;

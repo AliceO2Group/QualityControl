@@ -106,6 +106,8 @@ class ITSClusterTask : public TaskInterface
   const int mNStaves[7] = { 12, 16, 20, 24, 30, 42, 48 };
   const int mNHicPerStave[NLayer] = { 1, 1, 1, 8, 8, 14, 14 };
   const int mNChipsPerHic[NLayer] = { 9, 9, 9, 14, 14, 14, 14 };
+  const int mNLanePerHic[NLayer] = { 3, 3, 3, 2, 2, 2, 2 };
+  const int ChipBoundary[NLayer + 1] = { 0, 108, 252, 432, 3120, 6480, 14712, 24120 };
   const int StaveBoundary[NLayer + 1] = { 0, 12, 28, 48, 72, 102, 144, 192 };
   const float MidPointRad[7] = { 23.49, 31.586, 39.341, 197.598, 246.944, 345.348, 394.883 };
   const float StartAngle[7] = { 16.997 / 360 * (TMath::Pi() * 2.), 17.504 / 360 * (TMath::Pi() * 2.), 17.337 / 360 * (TMath::Pi() * 2.), 8.75 / 360 * (TMath::Pi() * 2.), 7 / 360 * (TMath::Pi() * 2.), 5.27 / 360 * (TMath::Pi() * 2.), 4.61 / 360 * (TMath::Pi() * 2.) }; // start angle of first stave in each layer
