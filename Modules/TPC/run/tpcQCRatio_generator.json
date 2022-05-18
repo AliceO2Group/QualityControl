@@ -1,0 +1,59 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "",
+        "type": ""
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": ""
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      }
+    },
+    "postprocessing": {
+      "Tracks": {
+        "active": "true",
+        "className": "o2::quality_control_modules::tpc::RatioGeneratorTPC",
+        "moduleName": "QcTPC",
+        "detectorName": "TPC",
+        "ratioConfig": [
+          {
+            "path": "TPC/MO/Tracks",
+            "inputObjects": [ "hEtaNeg", "hEtaPos" ],
+            "outputName": "hEtaRatio",
+            "plotTitle": "Ratio neg/pos tracks vs #eta",
+	    "axisTitle": "Ratio neg/pos:#eta"
+          },
+          {
+            "path": "TPC/MO/Tracks",
+            "inputObjects": [ "hPhiAsideNeg", "hPhiAsidePos" ],
+            "outputName": "hPhiAsideRatio",
+            "plotTitle": "Ratio neg/pos tracks vs #phi",
+	    "axisTitle": "Ratio neg/pos:#phi"
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "60 seconds"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      }
+    }
+  }
+}
