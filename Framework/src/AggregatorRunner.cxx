@@ -380,6 +380,7 @@ void AggregatorRunner::sendPeriodicMonitoring()
 void AggregatorRunner::start(const ServiceRegistry& services)
 {
   mActivity.mId = computeRunNumber(services, mRunnerConfig.fallbackRunNumber);
+  mActivity.mType = computeRunType(services, mRunnerConfig.fallbackRunType);
   mActivity.mPeriodName = computePeriodName(services, mRunnerConfig.fallbackPeriodName);
   mActivity.mPassName = computePassName(mRunnerConfig.fallbackPassName);
   mActivity.mProvenance = computeProvenance(mRunnerConfig.fallbackProvenance);

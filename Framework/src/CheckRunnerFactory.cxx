@@ -88,6 +88,7 @@ CheckRunnerConfig CheckRunnerFactory::extractConfig(const CommonSpec& commonSpec
     commonSpec.infologgerFilterDiscardDebug,
     commonSpec.infologgerDiscardLevel,
     commonSpec.activityNumber,
+    commonSpec.activityType,
     commonSpec.activityPeriodName,
     commonSpec.activityPassName,
     commonSpec.activityProvenance,
