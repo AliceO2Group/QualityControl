@@ -16,16 +16,19 @@
 
 #include <TH1.h>
 #include <TH2.h>
-
+#include <chrono>
 #include "QualityControl/QcInfoLogger.h"
 #include "CPV/PhysicsTask.h"
 #include <Framework/InputRecord.h>
 #include <Framework/InputRecordWalker.h>
 #include <Framework/DataRefUtils.h>
-#include "DataFormatsCPV/Digit.h"
-#include "DataFormatsCPV/Cluster.h"
-#include "DataFormatsCPV/TriggerRecord.h"
-#include "CPVReconstruction/RawDecoder.h"
+#include <DataFormatsCPV/Digit.h>
+#include <DataFormatsCPV/Cluster.h>
+#include <DataFormatsCPV/TriggerRecord.h>
+#include <DataFormatsCPV/CalibParams.h>
+#include <DataFormatsCPV/BadChannelMap.h>
+#include <DataFormatsCPV/Pedestals.h>
+#include <CPVReconstruction/RawDecoder.h>
 
 namespace o2::quality_control_modules::cpv
 {
@@ -51,11 +54,15 @@ void PhysicsTask::initialize(o2::framework::InitContext& /*ctx*/)
   ILOG(Info, Support) << "initialize PhysicsTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
-  if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - myOwnKey: " << param->second << ENDM;
+  if (auto param = mCustomParameters.find("ccdbCheckInterval"); param != mCustomParameters.end()) {
+    mCcdbCheckIntervalInMinutes = stoi(param->second);
+    ILOG(Info, Devel) << "Custom parameter - ccdbCheckInterval: " << mCcdbCheckIntervalInMinutes << ENDM;
+  } else {
+    ILOG(Info, Devel) << "Default parameter - ccdbCheckInterval: " << mCcdbCheckIntervalInMinutes << ENDM;
   }
   initHistograms();
   mNEventsTotal = 0;
+  loadCcdb(); // initialize ccdb.
 }
 
 void PhysicsTask::startOfActivity(Activity& activity)
@@ -72,6 +79,7 @@ void PhysicsTask::startOfCycle()
 
 void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
+  static bool isFirstTime = true;
   // In this function you can access data inputs specified in the JSON config file, for example:
   //   "query": "random:ITS/RAWDATA/0"
   // which is correspondingly <binding>:<dataOrigin>/<dataDescription>/<subSpecification
@@ -91,6 +99,7 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
   mHist1D[H1DNValidInputs]->Fill(nValidInputs);
 
   bool hasClusters = false, hasDigits = false, hasCalibDigits = false, hasRawErrors = false;
+  bool hasGains = false, hasPedestals = false, hasBadChannelMap = false;
   for (auto&& input : o2::framework::InputRecordWalker(ctx.inputs())) {
     // get message header
     if (input.header != nullptr && input.payload != nullptr) {
@@ -106,12 +115,24 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
         hasClusters = true;
       }
       if ((strcmp(header->dataOrigin.str, "CPV") == 0) && (strcmp(header->dataDescription.str, "CALIBDIGITS") == 0)) {
-        // LOG(info) << "monitorData() : I found clusters in inputs";
+        // LOG(info) << "monitorData() : I found calibdigits in inputs";
         hasCalibDigits = true;
       }
       if ((strcmp(header->dataOrigin.str, "CPV") == 0) && (strcmp(header->dataDescription.str, "RAWHWERRORS") == 0)) {
-        // LOG(info) << "monitorData() : I found clusters in inputs";
+        // LOG(info) << "monitorData() : I found rawhwerrors in inputs";
         hasRawErrors = true;
+      }
+      if ((strcmp(header->dataOrigin.str, "CPV") == 0) && (strcmp(header->dataDescription.str, "CPV_Pedestals") == 0)) {
+        // LOG(info) << "monitorData() : I found peds in inputs";
+        hasPedestals = true;
+      }
+      if ((strcmp(header->dataOrigin.str, "CPV") == 0) && (strcmp(header->dataDescription.str, "CPV_BadMap") == 0)) {
+        // LOG(info) << "monitorData() : I found badmap in inputs";
+        hasBadChannelMap = true;
+      }
+      if ((strcmp(header->dataOrigin.str, "CPV") == 0) && (strcmp(header->dataDescription.str, "CPV_Gains") == 0)) {
+        // LOG(info) << "monitorData() : I found gains in inputs";
+        hasGains = true;
       }
 
       // get payload of a specific input, which is a char array.
@@ -212,11 +233,110 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   // 3. Access CCDB. If it is enough to retrieve it once, do it in initialize().
   // Remember to delete the object when the pointer goes out of scope or it is no longer needed.
-  //   TObject* condition = TaskInterface::retrieveCondition("QcTask/example"); // put a valid condition path here
-  //   if (condition) {
-  //     LOG(info) << "Retrieved " << condition->ClassName();
-  //     delete condition;
-  //   }
+
+  // !!!todo
+  // we need somehow to extract timestamp from data when there are no ccdb dpl fetcher inputs available
+
+  static auto startTime = std::chrono::system_clock::now(); // remember time when we first time checked ccdb
+  static int minutesPassed = 0;                             // count how much minutes passed from 1st ccdb check
+  bool checkCcdbEntries = isFirstTime;                      // check at first time or when  mCcdbCheckIntervalInMinutes passed
+  auto now = std::chrono::system_clock::now();
+  if (((now - startTime) / std::chrono::minutes(1)) > minutesPassed) {
+    minutesPassed = (now - startTime) / std::chrono::minutes(1);
+    LOG(info) << "minutes passed since first monitorData() call: " << minutesPassed;
+    if (minutesPassed % mCcdbCheckIntervalInMinutes == 0) {
+      checkCcdbEntries = true;
+    }
+  }
+
+  if (checkCcdbEntries) {
+    // retrieve gains
+    const o2::cpv::CalibParams* gains = nullptr;
+    if (hasGains) {
+      LOG(info) << "Retrieving CPV/Calib/Gains from DPL fetcher (i.e. internal-dpl-ccdb-backend)";
+      std::decay_t<decltype(ctx.inputs().get<o2::cpv::CalibParams*>("gains"))> gainsPtr{};
+      gainsPtr = ctx.inputs().get<o2::cpv::CalibParams*>("gains");
+      gains = gainsPtr.get();
+    } else {
+      LOG(info) << "Retrieving CPV/Calib/Gains directly from CCDB";
+      gains = TaskInterface::retrieveConditionAny<o2::cpv::CalibParams>("CPV/Calib/Gains");
+    }
+    if (gains) {
+      LOG(info) << "Retrieved CPV/Calib/Gains";
+      short relId[3];
+      for (int iMod = 0; iMod < kNModules; iMod++) {
+        for (int iCh = iMod * kNChannels / kNModules; iCh < (iMod + 1) * kNChannels / kNModules; iCh++) {
+          if (o2::cpv::Geometry::absToRelNumbering(iCh, relId)) {
+            mHist2D[H2DGainsM2 + iMod]->SetBinContent(relId[1] + 1, relId[2] + 1, gains->getGain(iCh));
+          }
+        }
+      }
+      if (!hasGains) {
+        delete gains; // delete object only if is retrieved from CCDB directly. DPL fetcher owns
+      }
+    } else {
+      LOG(info) << "failed to retrieve CPV/Calib/Gains";
+    }
+
+    // retrieve bad channel map
+    const o2::cpv::BadChannelMap* bcm = nullptr;
+    if (hasBadChannelMap) {
+      LOG(info) << "Retrieving CPV/Calib/BadChannelMap from DPL fetcher (i.e. internal-dpl-ccdb-backend)";
+      std::decay_t<decltype(ctx.inputs().get<o2::cpv::BadChannelMap*>("badmap"))> bcmPtr{};
+      bcmPtr = ctx.inputs().get<o2::cpv::BadChannelMap*>("badmap");
+      bcm = bcmPtr.get();
+    } else {
+      LOG(info) << "Retrieving CPV/Calib/BadChannelMap directly from CCDB";
+      bcm = TaskInterface::retrieveConditionAny<o2::cpv::BadChannelMap>("CPV/Calib/BadChannelMap");
+    }
+    if (bcm) {
+      LOG(info) << "Retrieved CPV/Calib/BadChannelMap";
+      short relId[3];
+      for (int iMod = 0; iMod < kNModules; iMod++) {
+        for (int iCh = iMod * kNChannels / kNModules; iCh < (iMod + 1) * kNChannels / kNModules; iCh++) {
+          if (o2::cpv::Geometry::absToRelNumbering(iCh, relId)) {
+            mHist2D[H2DBadChannelMapM2 + iMod]->SetBinContent(relId[1] + 1, relId[2] + 1, !bcm->isChannelGood(iCh));
+          }
+        }
+      }
+      if (!hasBadChannelMap) {
+        delete bcm; // delete object only if is retrieved from CCDB directly. DPL fetcher owns
+      }
+    } else {
+      LOG(info) << "failed to retrieve CPV/Calib/BadChannelMap";
+    }
+
+    // retrieve pedestals
+    const o2::cpv::Pedestals* peds = nullptr;
+    if (hasPedestals) {
+      LOG(info) << "Retrieving CPV/Calib/Pedestals from DPL fetcher (i.e. internal-dpl-ccdb-backend)";
+      std::decay_t<decltype(ctx.inputs().get<o2::cpv::Pedestals*>("peds"))> pedsPtr{};
+      pedsPtr = ctx.inputs().get<o2::cpv::Pedestals*>("peds");
+      peds = pedsPtr.get();
+    } else {
+      LOG(info) << "Retrieving CPV/Calib/Pedestals directly from CCDB";
+      peds = TaskInterface::retrieveConditionAny<o2::cpv::Pedestals>("CPV/Calib/Pedestals");
+    }
+    if (peds) {
+      LOG(info) << "Retrieved CPV/Calib/Pedestals";
+      short relId[3];
+      for (int iMod = 0; iMod < kNModules; iMod++) {
+        for (int iCh = iMod * kNChannels / kNModules; iCh < (iMod + 1) * kNChannels / kNModules; iCh++) {
+          if (o2::cpv::Geometry::absToRelNumbering(iCh, relId)) {
+            mHist2D[H2DPedestalValueM2 + iMod]->SetBinContent(relId[1] + 1, relId[2] + 1, peds->getPedestal(iCh));
+            mHist2D[H2DPedestalSigmaM2 + iMod]->SetBinContent(relId[1] + 1, relId[2] + 1, peds->getPedSigma(iCh));
+          }
+        }
+      }
+      if (!hasPedestals) {
+        delete peds; // delete object only if is retrieved from CCDB directly. DPL fetcher owns
+      }
+    } else {
+      LOG(info) << "failed to retrieve CPV/Calib/Pedestals";
+    }
+  }
+
+  isFirstTime = false;
 }
 
 void PhysicsTask::endOfCycle()
@@ -251,7 +371,7 @@ void PhysicsTask::initHistograms()
   }
 
   if (!mHist1D[H1DNInputs]) {
-    mHist1D[H1DNInputs] = new TH1F("NInputs", "Number of inputs", 10, -0.5, 9.5);
+    mHist1D[H1DNInputs] = new TH1F("NInputs", "Number of inputs", 20, -0.5, 19.5);
     getObjectsManager()->startPublishing(mHist1D[H1DNInputs]);
   } else {
     mHist1D[H1DNInputs]->Reset();
@@ -259,7 +379,7 @@ void PhysicsTask::initHistograms()
 
   if (!mHist1D[H1DNValidInputs]) {
     mHist1D[H1DNValidInputs] =
-      new TH1F("NValidInputs", "Number of valid inputs", 10, -0.5, 9.5);
+      new TH1F("NValidInputs", "Number of valid inputs", 20, -0.5, 19.5);
     getObjectsManager()->startPublishing(mHist1D[H1DNValidInputs]);
   } else {
     mHist1D[H1DNValidInputs]->Reset();
@@ -495,6 +615,70 @@ void PhysicsTask::initHistograms()
       getObjectsManager()->startPublishing(mHist2D[H2DClusterMapM2 + mod]);
     } else {
       mHist2D[H2DClusterMapM2 + mod]->Reset();
+    }
+
+    // pedestal values map
+    if (!mHist2D[H2DPedestalValueM2 + mod]) {
+      mHist2D[H2DPedestalValueM2 + mod] =
+        new TH2F(
+          Form("PedestalValueM%d", 2 + mod),
+          Form("Pedestal values in M%d", mod + 2),
+          nPadsX, -0.5, nPadsX - 0.5,
+          nPadsZ, -0.5, nPadsZ - 0.5);
+      mHist2D[H2DPedestalValueM2 + mod]->GetXaxis()->SetTitle("x, pad");
+      mHist2D[H2DPedestalValueM2 + mod]->GetYaxis()->SetTitle("z, pad");
+      mHist2D[H2DPedestalValueM2 + mod]->SetStats(0);
+      getObjectsManager()->startPublishing(mHist2D[H2DPedestalValueM2 + mod]);
+    } else {
+      mHist2D[H2DPedestalValueM2 + mod]->Reset();
+    }
+
+    // pedestal sigma map
+    if (!mHist2D[H2DPedestalSigmaM2 + mod]) {
+      mHist2D[H2DPedestalSigmaM2 + mod] =
+        new TH2F(
+          Form("PedestalSigmaM%d", 2 + mod),
+          Form("Pedestal Sigmas in M%d", mod + 2),
+          nPadsX, -0.5, nPadsX - 0.5,
+          nPadsZ, -0.5, nPadsZ - 0.5);
+      mHist2D[H2DPedestalSigmaM2 + mod]->GetXaxis()->SetTitle("x, pad");
+      mHist2D[H2DPedestalSigmaM2 + mod]->GetYaxis()->SetTitle("z, pad");
+      mHist2D[H2DPedestalSigmaM2 + mod]->SetStats(0);
+      getObjectsManager()->startPublishing(mHist2D[H2DPedestalSigmaM2 + mod]);
+    } else {
+      mHist2D[H2DPedestalSigmaM2 + mod]->Reset();
+    }
+
+    // bad channel map
+    if (!mHist2D[H2DBadChannelMapM2 + mod]) {
+      mHist2D[H2DBadChannelMapM2 + mod] =
+        new TH2F(
+          Form("BadChannelMapM%d", 2 + mod),
+          Form("Bad channel map in M%d", mod + 2),
+          nPadsX, -0.5, nPadsX - 0.5,
+          nPadsZ, -0.5, nPadsZ - 0.5);
+      mHist2D[H2DBadChannelMapM2 + mod]->GetXaxis()->SetTitle("x, pad");
+      mHist2D[H2DBadChannelMapM2 + mod]->GetYaxis()->SetTitle("z, pad");
+      mHist2D[H2DBadChannelMapM2 + mod]->SetStats(0);
+      getObjectsManager()->startPublishing(mHist2D[H2DBadChannelMapM2 + mod]);
+    } else {
+      mHist2D[H2DBadChannelMapM2 + mod]->Reset();
+    }
+
+    // gains map
+    if (!mHist2D[H2DGainsM2 + mod]) {
+      mHist2D[H2DGainsM2 + mod] =
+        new TH2F(
+          Form("GainsM%d", 2 + mod),
+          Form("Gains in M%d", mod + 2),
+          nPadsX, -0.5, nPadsX - 0.5,
+          nPadsZ, -0.5, nPadsZ - 0.5);
+      mHist2D[H2DGainsM2 + mod]->GetXaxis()->SetTitle("x, pad");
+      mHist2D[H2DGainsM2 + mod]->GetYaxis()->SetTitle("z, pad");
+      mHist2D[H2DGainsM2 + mod]->SetStats(0);
+      getObjectsManager()->startPublishing(mHist2D[H2DGainsM2 + mod]);
+    } else {
+      mHist2D[H2DGainsM2 + mod]->Reset();
     }
   }
 }
