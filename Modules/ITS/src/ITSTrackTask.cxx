@@ -160,8 +160,8 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
         int npix = -1;
         int isGrouped = -1;
 
-        if (ClusterID != o2::itsmft::CompCluster::InvalidPatternID && !mDict.isGroup(ClusterID)) { // Normal (frequent) cluster shapes
-          npix = mDict.getNpixels(ClusterID);
+        if (ClusterID != o2::itsmft::CompCluster::InvalidPatternID && !mDict->isGroup(ClusterID)) { // Normal (frequent) cluster shapes
+          npix = mDict->getNpixels(ClusterID);
           isGrouped = 0;
         } else {
           o2::itsmft::ClusterPattern patt(pattIt);

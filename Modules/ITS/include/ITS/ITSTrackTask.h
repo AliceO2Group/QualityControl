@@ -94,7 +94,7 @@ class ITSTrackTask : public TaskInterface
   std::vector<Float_t> vPhi;
   std::vector<Float_t> vEta;
 
-  o2::itsmft::TopologyDictionary mDict;
+  o2::itsmft::TopologyDictionary* mDict;
 };
 } // namespace o2::quality_control_modules::its
 
