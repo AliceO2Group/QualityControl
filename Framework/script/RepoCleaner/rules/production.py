@@ -156,7 +156,8 @@ def first_trimming(ccdb, delay_first_trimming, period_btw_versions_first, run_ve
                     last_preserved.validFromAsDt < v.validFromAsDt - timedelta(minutes=period_btw_versions_first):
                 if last_preserved is not None:
                     # first extend validity of the previous preserved and set flag
-                    ccdb.updateValidity(last_preserved, last_preserved.validFrom, str(int(v.validFrom) - 1), metadata)
+                    if last_preserved.validTo != int(v.validFrom) - 1:  # only update it if it is needed
+                        ccdb.updateValidity(last_preserved, last_preserved.validFrom, str(int(v.validFrom) - 1), metadata)
                     update_list.append(last_preserved)
                     logger.debug(f"      Extension of {last_preserved}")
                 last_preserved = v
