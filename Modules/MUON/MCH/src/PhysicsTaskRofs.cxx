@@ -83,36 +83,20 @@ void PhysicsTaskRofs::initialize(o2::framework::InitContext& /*ic*/)
   }
 
   // ROF size distributions
-  mHistRofSize[0] = std::make_shared<TH1F>("RofSize", "ROF size", nLogBins, xbins);
-  publishObject(mHistRofSize[0], "hist", true);
-
-  mHistRofSize[1] = std::make_shared<TH1F>("RofSizeFiltered", "ROF size (trackable)", nLogBins, xbins);
-  publishObject(mHistRofSize[1], "hist", true);
+  mHistRofSize = std::make_shared<TH1F>("RofSize", "ROF size", nLogBins, xbins);
+  publishObject(mHistRofSize, "hist", true);
 
   // ROF size distributions (signal-like digits only)
-  mHistRofSizeSignal[0] = std::make_shared<TH1F>("mHistRofSizeSignal", "ROF size (signal-like)", nLogBins, xbins);
-  publishObject(mHistRofSizeSignal[0], "hist", true);
-
-  mHistRofSizeSignal[1] = std::make_shared<TH1F>("mHistRofSizeSignalFiltered", "ROF size (signal-like, trackable)", nLogBins, xbins);
-  publishObject(mHistRofSizeSignal[1], "hist", true);
+  mHistRofSizeSignal = std::make_shared<TH1F>("RofSizeSignal", "ROF size (signal-like digits)", nLogBins, xbins);
+  publishObject(mHistRofSizeSignal, "hist", true);
 
   // ROF width distributions
-  mHistRofWidth[0] = std::make_shared<TH1F>("RofWidth", "ROF width", 5000 / 25, 0, 5000 / 25);
-  publishObject(mHistRofWidth[0], "hist", true);
-
-  mHistRofWidth[1] = std::make_shared<TH1F>("RofWidthFiltered", "ROF width (trackable)", 5000 / 25, 0, 5000 / 25);
-  publishObject(mHistRofWidth[1], "hist", true);
+  mHistRofWidth = std::make_shared<TH1F>("RofWidth", "ROF width", 5000 / 25, 0, 5000 / 25);
+  publishObject(mHistRofWidth, "hist", true);
 
   // Number of stations per ROF
-  mHistRofNStations[0] = std::make_shared<TH1F>("RofNStations", "Number of stations per ROF", 7, 0, 7);
-  publishObject(mHistRofNStations[0], "hist", true);
-
-  mHistRofNStations[1] = std::make_shared<TH1F>("RofNStationsFiltered", "Number of stations per ROF (trackable)", 7, 0, 7);
-  publishObject(mHistRofNStations[1], "hist", true);
-
-  // Fraction of ROFs kept in the filtering step
-  mHistRofFilterRatio = std::make_shared<TH1F>("RofFilterRatio", "Fraction of ROF after filtering", 110, 0, 1.1);
-  publishObject(mHistRofFilterRatio, "hist", true);
+  mHistRofNStations = std::make_shared<TH1F>("RofNStations", "Number of stations per ROF", 7, 0, 7);
+  publishObject(mHistRofNStations, "hist", true);
 }
 
 void PhysicsTaskRofs::startOfActivity(Activity& activity)
@@ -125,15 +109,15 @@ void PhysicsTaskRofs::startOfCycle()
   ILOG(Info, Support) << "startOfCycle" << ENDM;
 }
 
-void PhysicsTaskRofs::plotROF(const o2::mch::ROFRecord& rof, gsl::span<const o2::mch::Digit> digits, int plotId)
+void PhysicsTaskRofs::plotROF(const o2::mch::ROFRecord& rof, gsl::span<const o2::mch::Digit> digits)
 {
   std::array<bool, 10> stations{ false };
-  mHistRofSize[plotId]->Fill(rof.getNEntries());
+  mHistRofSize->Fill(rof.getNEntries());
 
   auto rofDigits = digits.subspan(rof.getFirstIdx(), rof.getNEntries());
   auto start = rofDigits.front().getTime();
   auto end = rofDigits.back().getTime();
-  mHistRofWidth[plotId]->Fill(end - start + 1);
+  mHistRofWidth->Fill(end - start + 1);
 
   int nSignal = 0;
   for (auto& digit : rofDigits) {
@@ -147,7 +131,7 @@ void PhysicsTaskRofs::plotROF(const o2::mch::ROFRecord& rof, gsl::span<const o2:
       nSignal += 1;
     }
   }
-  mHistRofSizeSignal[plotId]->Fill(nSignal);
+  mHistRofSizeSignal->Fill(nSignal);
 
   int nStations = 0;
   for (auto s : stations) {
@@ -155,25 +139,17 @@ void PhysicsTaskRofs::plotROF(const o2::mch::ROFRecord& rof, gsl::span<const o2:
       nStations += 1;
     }
   }
-  mHistRofNStations[plotId]->Fill(nStations);
+  mHistRofNStations->Fill(nStations);
 }
 
 void PhysicsTaskRofs::monitorData(o2::framework::ProcessingContext& ctx)
 {
   auto digits = ctx.inputs().get<gsl::span<o2::mch::Digit>>("digits");
-  auto fdigits = ctx.inputs().get<gsl::span<o2::mch::Digit>>("fdigits");
   auto rofs = ctx.inputs().get<gsl::span<o2::mch::ROFRecord>>("rofs");
-  auto frofs = ctx.inputs().get<gsl::span<o2::mch::ROFRecord>>("frofs");
 
   for (auto& rof : rofs) {
-    plotROF(rof, digits, 0);
+    plotROF(rof, digits);
   }
-
-  for (auto& rof : frofs) {
-    plotROF(rof, fdigits, 1);
-  }
-
-  mHistRofFilterRatio->Fill(float(frofs.size()) / float(rofs.size()));
 }
 
 void PhysicsTaskRofs::writeHistos()

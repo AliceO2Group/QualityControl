@@ -56,7 +56,7 @@ class PhysicsTaskRofs /*final*/ : public TaskInterface
   void reset() override;
 
  private:
-  void plotROF(const o2::mch::ROFRecord& rof, gsl::span<const o2::mch::Digit> digits, int plotId);
+  void plotROF(const o2::mch::ROFRecord& rof, gsl::span<const o2::mch::Digit> digits);
   /// \brief helper function for storing the histograms to a ROOT file on disk
   void writeHistos();
 
@@ -64,11 +64,10 @@ class PhysicsTaskRofs /*final*/ : public TaskInterface
 
   o2::mch::DigitFilter mIsSignalDigit; ///< functor to select signal-like digits
 
-  std::shared_ptr<TH1F> mHistRofSize[2];       ///< number of digits per ROF (all and filtered)
-  std::shared_ptr<TH1F> mHistRofSizeSignal[2]; ///< number of signal-like digits per ROF (all and filtered)
-  std::shared_ptr<TH1F> mHistRofWidth[2];      ///< ROF width in BC (all and filtered)
-  std::shared_ptr<TH1F> mHistRofNStations[2];  ///< number of stations per ROF (all and filtered)
-  std::shared_ptr<TH1F> mHistRofFilterRatio;   ///< fraction of ROFs remaining after filtering
+  std::shared_ptr<TH1F> mHistRofSize;       ///< number of digits per ROF
+  std::shared_ptr<TH1F> mHistRofSizeSignal; ///< number of signal-like digits per ROF
+  std::shared_ptr<TH1F> mHistRofWidth;      ///< ROF width in BC
+  std::shared_ptr<TH1F> mHistRofNStations;  ///< number of stations per ROF
 
   std::vector<TH1*> mAllHistograms;
 };
