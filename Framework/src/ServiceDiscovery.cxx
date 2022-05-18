@@ -120,14 +120,19 @@ void ServiceDiscovery::runHealthServer(unsigned int port)
       io_service.reset();
       timer.expires_from_now(boost::posix_time::seconds(1));
       timer.async_wait([&](boost::system::error_code ec) {
-        if (!ec)
+        if (ec.failed()) {
+          threadInfoLogger << "async_accept error: " << ec.message() << ENDM;
           acceptor.cancel();
+        }
       });
       tcp::socket socket(io_service);
       acceptor.async_accept(socket, [&](boost::system::error_code ec) {
-        if (!ec)
+        if (ec.failed()) {
+          threadInfoLogger << "async_accept error: " << ec.message() << ENDM;
           timer.cancel();
+        }
       });
+      io_service.run();
       std::this_thread::sleep_for(std::chrono::seconds(1));
     }
   } catch (std::exception& e) {
