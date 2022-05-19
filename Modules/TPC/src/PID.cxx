@@ -45,8 +45,8 @@ void PID::initialize(o2::framework::InitContext& /*ctx*/)
   mQCPID.initializeHistograms();
   //pass map of vectors of histograms to be beutified!
   o2::tpc::qc::helpers::setStyleHistogramsInMap(mQCPID.getMapOfHisto());
-  for (auto const& [key, vecOfHist] : mQCPID.getMapOfHisto()) {
-    for (auto& hist : vecOfHist) {
+  for (const auto& keyValue : mQCPID.getMapOfHisto()) {
+    for (auto& hist : keyValue.second) {
       getObjectsManager()->startPublishing(hist.get());
     }
  }
