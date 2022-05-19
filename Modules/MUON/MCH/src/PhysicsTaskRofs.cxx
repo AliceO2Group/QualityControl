@@ -23,24 +23,13 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "Framework/WorkflowSpec.h"
 #include "Framework/DataRefUtils.h"
+#include "CommonConstants/LHCConstants.h"
 
 #include "MCHRawElecMap/Mapper.h"
 #include "MCHMappingInterface/Segmentation.h"
 #include "MCHRawDecoder/PageDecoder.h"
 #include "MCHRawDecoder/ErrorCodes.h"
 #include "MCHBase/DecoderError.h"
-
-#define publishObject(object, drawOption, statBox)        \
-  {                                                       \
-    object->SetOption(drawOption);                        \
-    if (!statBox) {                                       \
-      object->SetStats(0);                                \
-    }                                                     \
-    mAllHistograms.push_back(object.get());               \
-    if (!mSaveToRootFile) {                               \
-      getObjectsManager()->startPublishing(object.get()); \
-    }                                                     \
-  }
 
 namespace o2
 {
@@ -66,13 +55,6 @@ void PhysicsTaskRofs::initialize(o2::framework::InitContext& /*ic*/)
 {
   ILOG(Info, Support) << "initialize PhysicsTaskRofs" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
-  mSaveToRootFile = false;
-  if (auto param = mCustomParameters.find("SaveToRootFile"); param != mCustomParameters.end()) {
-    if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
-      mSaveToRootFile = true;
-    }
-  }
-
   static constexpr int nLogBins = 100;
   Float_t xbins[nLogBins + 1];
   Float_t logMin = 0;
@@ -87,24 +69,29 @@ void PhysicsTaskRofs::initialize(o2::framework::InitContext& /*ic*/)
   publishObject(mHistRofSize, "hist", true);
 
   // ROF size distributions (signal-like digits only)
-  mHistRofSizeSignal = std::make_shared<TH1F>("RofSizeSignal", "ROF size (signal-like digits)", nLogBins, xbins);
-  publishObject(mHistRofSizeSignal, "hist", true);
+  mHistRofSize_Signal = std::make_shared<TH1F>("RofSize_Signal", "ROF size (signal-like digits)", nLogBins, xbins);
+  publishObject(mHistRofSize_Signal, "hist", true);
 
   // ROF width distributions
-  mHistRofWidth = std::make_shared<TH1F>("RofWidth", "ROF width", 5000 / 25, 0, 5000 / 25);
+  mHistRofWidth = std::make_shared<TH1F>("RofWidth", "ROF width", 2000 / 25, 0, 2000 / 25);
   publishObject(mHistRofWidth, "hist", true);
 
   // Number of stations per ROF
-  mHistRofNStations = std::make_shared<TH1F>("RofNStations", "Number of stations per ROF", 7, 0, 7);
+  mHistRofNStations = std::make_shared<TH1F>("RofNStations", "Number of stations per ROF", 6, 0, 6);
   publishObject(mHistRofNStations, "hist", true);
 
-  // ROF time distribution
-  mHistRofTime = std::make_shared<TH1F>("RofTime", "ROF time distribution", 128 * 3600, 0, 128 * 3600);
+  // Number of stations per ROF (signal-like digits)
+  mHistRofNStations_Signal = std::make_shared<TH1F>("RofNStations_Signal", "Number of stations per ROF (signal-like digits)", 6, 0, 6);
+  publishObject(mHistRofNStations_Signal, "hist", true);
+
+  auto bcInOrbit = o2::constants::lhc::LHCMaxBunches;
+  // ROF time distribution in orbit
+  mHistRofTime = std::make_shared<TH1F>("RofTime", "ROF time in orbit", bcInOrbit, 0, bcInOrbit);
   publishObject(mHistRofTime, "hist", false);
 
-  // ROF time distribution (signal-like digits)
-  mHistRofTimeSignal = std::make_shared<TH1F>("RofTimeSignal", "ROF time distribution (signal-like digits)", 128 * 3600, 0, 128 * 3600);
-  publishObject(mHistRofTimeSignal, "hist", false);
+  // ROF time distribution in orbit (signal-like digits)
+  mHistRofTime_Signal = std::make_shared<TH1F>("RofTime_Signal", "ROF time in orbit (signal-like digits)", bcInOrbit, 0, bcInOrbit);
+  publishObject(mHistRofTime_Signal, "hist", false);
 }
 
 void PhysicsTaskRofs::startOfActivity(Activity& activity)
@@ -119,9 +106,7 @@ void PhysicsTaskRofs::startOfCycle()
 
 void PhysicsTaskRofs::plotROF(const o2::mch::ROFRecord& rof, gsl::span<const o2::mch::Digit> digits)
 {
-  std::array<bool, 10> stations{ false };
-  mHistRofSize->Fill(rof.getNEntries());
-
+  const auto bcInOrbit = o2::constants::lhc::LHCMaxBunches;
   auto rofDigits = digits.subspan(rof.getFirstIdx(), rof.getNEntries());
   auto start = rofDigits.front().getTime();
   auto end = rofDigits.back().getTime();
@@ -134,34 +119,35 @@ void PhysicsTaskRofs::plotROF(const o2::mch::ROFRecord& rof, gsl::span<const o2:
   double rofTime = 0;
   double rofTimeSignal = 0;
 
+  // fired stations
+  std::array<bool, 5> stations{ false };
+  std::array<bool, 5> stationsSignal{ false };
+
   for (auto& digit : rofDigits) {
     int station = (digit.getDetID() - 100) / 200;
-    if (station < 0 | station >= 10) {
+    if (station < 0 || station >= 5) {
       continue;
     }
     stations[station] = true;
 
-    rofTime += digit.getTime();
+    rofTime += digit.getTime() % bcInOrbit;
 
     if (mIsSignalDigit(digit)) {
       nSignal += 1;
-      rofTimeSignal += digit.getTime();
+      rofTimeSignal += digit.getTime() % bcInOrbit;
+      stationsSignal[station] = true;
     }
   }
-  mHistRofSizeSignal->Fill(nSignal);
+  mHistRofSize->Fill(rof.getNEntries());
+  mHistRofSize_Signal->Fill(nSignal);
 
   mHistRofTime->Fill(rofTime / rofDigits.size());
   if (nSignal > 0) {
-    mHistRofTimeSignal->Fill(rofTimeSignal / nSignal);
+    mHistRofTime_Signal->Fill(rofTimeSignal / nSignal);
   }
 
-  int nStations = 0;
-  for (auto s : stations) {
-    if (s) {
-      nStations += 1;
-    }
-  }
-  mHistRofNStations->Fill(nStations);
+  mHistRofNStations->Fill(std::count(stations.cbegin(), stations.cend(), true));
+  mHistRofNStations_Signal->Fill(std::count(stationsSignal.cbegin(), stationsSignal.cend(), true));
 }
 
 void PhysicsTaskRofs::monitorData(o2::framework::ProcessingContext& ctx)
@@ -174,31 +160,14 @@ void PhysicsTaskRofs::monitorData(o2::framework::ProcessingContext& ctx)
   }
 }
 
-void PhysicsTaskRofs::writeHistos()
-{
-  TFile f("mch-qc-rofs.root", "RECREATE");
-  for (auto h : mAllHistograms) {
-    h->Write();
-  }
-  f.Close();
-}
-
 void PhysicsTaskRofs::endOfCycle()
 {
   ILOG(Info, Support) << "endOfCycle" << ENDM;
-
-  if (mSaveToRootFile) {
-    writeHistos();
-  }
 }
 
 void PhysicsTaskRofs::endOfActivity(Activity& /*activity*/)
 {
   ILOG(Info, Support) << "endOfActivity" << ENDM;
-
-  if (mSaveToRootFile) {
-    writeHistos();
-  }
 }
 
 void PhysicsTaskRofs::reset()

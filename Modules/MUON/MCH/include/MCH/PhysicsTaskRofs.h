@@ -56,20 +56,28 @@ class PhysicsTaskRofs /*final*/ : public TaskInterface
   void reset() override;
 
  private:
-  void plotROF(const o2::mch::ROFRecord& rof, gsl::span<const o2::mch::Digit> digits);
-  /// \brief helper function for storing the histograms to a ROOT file on disk
-  void writeHistos();
+  template <typename T>
+  void publishObject(std::shared_ptr<T> histo, const char* drawOption, bool statBox)
+  {
+    histo->SetOption(drawOption);
+    if (!statBox) {
+      histo->SetStats(0);
+    }
+    mAllHistograms.push_back(histo.get());
+    getObjectsManager()->startPublishing(histo.get());
+  }
 
-  bool mSaveToRootFile{ false }; ///< flag for saving the histograms to a local ROOT file
+  void plotROF(const o2::mch::ROFRecord& rof, gsl::span<const o2::mch::Digit> digits);
 
   o2::mch::DigitFilter mIsSignalDigit; ///< functor to select signal-like digits
 
-  std::shared_ptr<TH1F> mHistRofSize;       ///< number of digits per ROF
-  std::shared_ptr<TH1F> mHistRofSizeSignal; ///< number of signal-like digits per ROF
-  std::shared_ptr<TH1F> mHistRofWidth;      ///< ROF width in BC
-  std::shared_ptr<TH1F> mHistRofNStations;  ///< number of stations per ROF
-  std::shared_ptr<TH1F> mHistRofTime;       ///< average ROF time
-  std::shared_ptr<TH1F> mHistRofTimeSignal; ///< average ROF time from signal-like digits
+  std::shared_ptr<TH1F> mHistRofSize;             ///< number of digits per ROF
+  std::shared_ptr<TH1F> mHistRofSize_Signal;      ///< number of signal-like digits per ROF
+  std::shared_ptr<TH1F> mHistRofNStations;        ///< number of stations per ROF
+  std::shared_ptr<TH1F> mHistRofNStations_Signal; ///< number of stations per ROF from signal-like digits
+  std::shared_ptr<TH1F> mHistRofTime;             ///< average ROF time in orbit
+  std::shared_ptr<TH1F> mHistRofTime_Signal;      ///< average ROF time in orbit from signal-like digits
+  std::shared_ptr<TH1F> mHistRofWidth;            ///< ROF width in BC
 
   std::vector<TH1*> mAllHistograms;
 };
