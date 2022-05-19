@@ -85,6 +85,24 @@ inline int computeRunNumber(const framework::ServiceRegistry& services, int fall
   return run;
 }
 
+inline int computeRunType(const framework::ServiceRegistry& services, int fallbackRunType = 0)
+{ // Determine runType number
+  int runType = 0;
+  try {
+    auto temp = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("runType", "unspecified");
+    ILOG(Info, Devel) << "Got this property runType from RawDeviceService: '" << temp << "'" << ENDM;
+    runType = stoi(temp);
+    ILOG(Info, Support) << "   Run type found in options: " << runType << ENDM;
+  } catch (std::invalid_argument& ia) {
+    ILOG(Info, Support) << "   Run type not found in options or is not a number, \n"
+                           "   using the one from the config file or 0 as a last resort."
+                        << ENDM;
+  }
+  runType = runType > 0 /* found it in service */ ? runType : fallbackRunType;
+  ILOG(Debug, Devel) << "Run type returned by computeRunType (default) : " << runType << ENDM;
+  return runType;
+}
+
 inline std::string computePartitionName(const framework::ServiceRegistry& services, const std::string& fallbackPartitionName = "")
 {
   std::string partitionName;

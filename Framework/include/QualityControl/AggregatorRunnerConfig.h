@@ -30,6 +30,7 @@ struct AggregatorRunnerConfig {
   bool infologgerFilterDiscardDebug = false;
   int infologgerDiscardLevel = 21;
   int fallbackRunNumber = 0;
+  int fallbackRunType = 0;
   std::string fallbackPeriodName{};
   std::string fallbackPassName{};
   std::string fallbackProvenance{};
