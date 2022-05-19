@@ -85,10 +85,8 @@ void ITSThresholdCalibrationTask::startOfCycle()
 void ITSThresholdCalibrationTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
 
-  ILOG(Info, Support) << "START DOING QC General" << ENDM;
   const auto tunString = ctx.inputs().get<gsl::span<char>>("tunestring");
   const auto chipDoneString = ctx.inputs().get<gsl::span<char>>("chipdonestring");
-  const auto runType = ctx.inputs().get<short int>("runtype");
   const auto scanType = ctx.inputs().get<char>("scantype");
 
   string inString(tunString.begin(), tunString.end());
@@ -141,7 +139,7 @@ void ITSThresholdCalibrationTask::monitorData(o2::framework::ProcessingContext& 
       int currentStave = StaveBoundary[result.Layer] + result.Stave + 1;
       int iBarrel = getBarrel(result.Layer);
       int currentChip = getCurrentChip(iBarrel, result.ChipID, result.HIC, result.Hs);
-      if (hCalibrationChipDone[iBarrel]->GetBinContent(currentChip - 1, currentStave - 1) > 0) {
+      if (hCalibrationChipDone[iBarrel]->GetBinContent(currentChip, currentStave) > 0) {
         continue; // chip may appear >twice here
       }
       hCalibrationChipDone[iBarrel]->Fill(currentChip - 1, currentStave - 1);
