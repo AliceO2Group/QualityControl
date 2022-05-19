@@ -86,11 +86,6 @@ struct SliceInfo {
     }
   }
 
-  std::string RetrieveTitle() const
-  {
-    return title;
-  }
-
   ClassDefNV(SliceInfo, 1);
 };
 
@@ -108,11 +103,6 @@ struct SliceInfoQuality {
                            << " in 'RetrieveValue' unknown. Breaking." << ENDM;
       exit(0);
     }
-  }
-
-  std::string RetrieveTitle() const
-  {
-    return title;
   }
 
   ClassDefNV(SliceInfoQuality, 1);

@@ -269,7 +269,7 @@ void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
 
         iEntry++;
       }
-      graphErrors->SetTitle((DataRetrieveVector->at(p)).RetrieveTitle().data());
+      graphErrors->SetTitle((DataRetrieveVector->at(p)).title.data());
       myReader.Restart();
 
       if (!err.empty()) {
@@ -312,7 +312,7 @@ void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
         Graphs[p]->SetPoint(iEntry, timeStamp, dataPoint);
         Graphs[p]->SetPointError(iEntry, errorX, errorY); // Add Error to the last added point
 
-        std::string title = (DataRetrieveVector->at(p)).RetrieveTitle();
+        std::string title = (DataRetrieveVector->at(p)).title;
         const std::size_t posDivider = title.find("RangeX");
         Graphs[p]->SetName(title.substr(posDivider, -1).data());
         iEntry++;
@@ -497,7 +497,7 @@ void TrendingTaskTPC::drawCanvasQO(TCanvas* thisCanvas, const std::string& var,
 
     iEntry++;
   }
-  graphErrors->SetTitle(QualityRetrieveVector->RetrieveTitle().data());
+  graphErrors->SetTitle(QualityRetrieveVector->title.data());
   myReader.Restart();
 
   if (plotOrder != 2) {
