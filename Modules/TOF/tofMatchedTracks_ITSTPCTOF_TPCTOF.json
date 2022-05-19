@@ -48,7 +48,7 @@
           "minDCACut" : "100.f",
           "minDCACutY" : "10.f",
           "grpFileName" : "o2sim_grp.root",
-          "geomFileName" : "o2sim_geometry.root"
+          "geomFileName" : "o2sim_geometry-aligned.root"
         },
         "location" : "remote",
         "saveObjectsToFile" : "TOFmatchedITSTPCTOF_TPCTOF.root",
