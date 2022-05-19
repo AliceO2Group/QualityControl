@@ -92,7 +92,7 @@
           "userorcontrol"
         ],
         "updateTrigger": [
-          "foreachobject:qcdb:qc/TST/MO/QcTask/example"
+          "foreachobject:qcdb:TST/MO/QcTask/example"
         ],
         "stopTrigger": [
           "userorcontrol"
