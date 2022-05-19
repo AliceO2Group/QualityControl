@@ -47,7 +47,7 @@
          "dataSamplingPolicies" : [
            {
              "id" : "thresholdcalibration",
-             "active" : "true",
+             "active" : "false",
              "machines" : [],
              "query" : "tunestring:ITS/TSTR;chipdonestring:ITS/QCSTR;scantype:ITS/SCANT",
              "samplingConditions" : [
