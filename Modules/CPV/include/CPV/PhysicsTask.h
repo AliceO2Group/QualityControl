@@ -87,7 +87,7 @@ class PhysicsTask final : public TaskInterface
                   H1DNDigitsInClusterM4
   };
 
-  static constexpr short kNHist2D = 12;
+  static constexpr short kNHist2D = 24;
   enum Histos2D { H2DDigitMapM2,
                   H2DDigitMapM3,
                   H2DDigitMapM4,
@@ -99,13 +99,25 @@ class PhysicsTask final : public TaskInterface
                   H2DDigitFreqM4,
                   H2DClusterMapM2,
                   H2DClusterMapM3,
-                  H2DClusterMapM4
+                  H2DClusterMapM4,
+                  H2DPedestalValueM2,
+                  H2DPedestalValueM3,
+                  H2DPedestalValueM4,
+                  H2DPedestalSigmaM2,
+                  H2DPedestalSigmaM3,
+                  H2DPedestalSigmaM4,
+                  H2DBadChannelMapM2,
+                  H2DBadChannelMapM3,
+                  H2DBadChannelMapM4,
+                  H2DGainsM2,
+                  H2DGainsM3,
+                  H2DGainsM4
   };
 
   static constexpr short kNModules = 3;
   static constexpr short kNChannels = 23040;
-  int mNEventsTotal;
-
+  int mNEventsTotal = 0;
+  int mCcdbCheckIntervalInMinutes = 10;
   std::array<TH1F*, kNHist1D> mHist1D = { nullptr }; ///< Array of 1D histograms
   std::array<TH2F*, kNHist2D> mHist2D = { nullptr }; ///< Array of 2D histograms
 };
