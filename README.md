@@ -66,6 +66,7 @@ For a general overview of our (O2) software, organization and processes, please 
         * [Batch processing](doc/Advanced.md#batch-processing)
         * [Moving window](doc/Advanced.md#moving-window)
         * [Writing a DPL data producer](doc/Advanced.md#writing-a-dpl-data-producer)
+        * [Custom merging](doc/Advanced.md#custom-merging)
         * [QC with DPL Analysis](doc/Advanced.md#qc-with-dpl-analysis)
     * [CCDB / QCDB](doc/Advanced.md#ccdb--qcdb)
         * [Access run conditions and calibrations from the CCDB](doc/Advanced.md#access-run-conditions-and-calibrations-from-the-ccdb)

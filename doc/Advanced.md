@@ -16,6 +16,7 @@ Advanced topics
    * [Batch processing](#batch-processing)
    * [Moving window](#moving-window)
    * [Writing a DPL data producer](#writing-a-dpl-data-producer)
+   * [Custom merging](#custom-merging)
    * [QC with DPL Analysis](#qc-with-dpl-analysis)
       * [Uploading objects to QCDB](#uploading-objects-to-qcdb)
       * [Getting AODs in QC Tasks](#getting-aods-in-qc-tasks)
@@ -367,6 +368,15 @@ As an example we take the `DataProducerExample` that you can find in the QC repo
   This is just the implementation of the header described just above. You will probably want to modify `getDataProducerExampleSpec` and the inner-most block of `getDataProducerExampleAlgorithm`. You might be taken aback by the look of this function, if you don't know what a _lambda_ is just ignore it and write your code inside the accolades.
 
 You will probably write it in your detector's O2 directory rather than in the QC repository.
+
+## Custom merging
+
+When needed, one may define their own algorithm to merge a Monitor Object.
+To do so, inherit the [MergeInterface](https://github.com/AliceO2Group/AliceO2/blob/dev/Utilities/Mergers/include/Mergers/MergeInterface.h) class and override the corresponding methods.
+Please pay special attention to delete all the allocated resources in the destructor to avoid any memory leaks.
+Feel free to consult the existing usage examples among other modules in the QC repository.
+
+Once a custom class is implemented, one should let QCG know how to display it correctly, which is explained in the subsection [Display a non-standard ROOT object in QCG](#display-a-non-standard-root-object-in-qcg).
 
 ## QC with DPL Analysis
 
