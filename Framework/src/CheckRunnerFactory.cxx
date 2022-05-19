@@ -49,7 +49,7 @@ DataProcessorSpec CheckRunnerFactory::create(CheckRunnerConfig checkRunnerConfig
 
 DataProcessorSpec CheckRunnerFactory::createSinkDevice(CheckRunnerConfig checkRunnerConfig, o2::framework::InputSpec input)
 {
-  CheckRunner qcCheckRunner{ std::move(checkRunnerConfig), input };
+  CheckRunner qcCheckRunner{ checkRunnerConfig, input };
   qcCheckRunner.setTaskStoreSet({ DataSpecUtils::label(input) });
 
   DataProcessorSpec newCheckRunner{ qcCheckRunner.getDeviceName(),
@@ -58,7 +58,7 @@ DataProcessorSpec CheckRunnerFactory::createSinkDevice(CheckRunnerConfig checkRu
                                     adaptFromTask<CheckRunner>(std::move(qcCheckRunner)),
                                     checkRunnerConfig.options,
                                     {},
-                                    std::vector<DataProcessorLabel>{} };
+                                    { o2::framework::ecs::qcReconfigurable } };
 
   return newCheckRunner;
 }
