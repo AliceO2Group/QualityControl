@@ -176,7 +176,9 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
 
         double clusterSizeWithCorrection = (double)npix * cos(std::atan(out.getTgl()));
         hNClusterVsChip[layer]->Fill(ChipID, clusterSizeWithCorrection);
+        hNClusterVsChip[layer]->SetBinError(hNClusterVsChip[layer]->FindBin(ChipID), hNClusterVsChip[layer]->FindBin(clusterSizeWithCorrection), 0);
         hNClusterVsChipITS->Fill(ChipID, clusterSizeWithCorrection);
+        hNClusterVsChipITS->SetBinError(hNClusterVsChipITS->FindBin(ChipID), hNClusterVsChipITS->FindBin(clusterSizeWithCorrection), 0);
       }
     }
 
@@ -201,6 +203,24 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
     mNTracks = 0;
     mNRofs = 0;
     mNClusters = 0;
+  }
+
+  // set error of TH2 with cluster size x cos(lambda) --> for the merger operations
+  for (int ilay = 0; ilay < NLayer; ilay++) {
+    for (int ix = 1; ix <= hNClusterVsChip[ilay]->GetNbinsX(); ix++) {
+      for (int iy = 1; iy <= hNClusterVsChip[ilay]->GetNbinsY(); iy++) {
+        if (hNClusterVsChip[ilay]->GetBinContent(ix, iy) < 1e-15) {
+          hNClusterVsChip[ilay]->SetBinError(ix, iy, 1e200);
+        }
+      }
+    }
+  }
+  for (int ix = 1; ix <= hNClusterVsChipITS->GetNbinsX(); ix++) {
+    for (int iy = 1; iy <= hNClusterVsChipITS->GetNbinsY(); iy++) {
+      if (hNClusterVsChipITS->GetBinContent(ix, iy) < 1e-15) {
+        hNClusterVsChipITS->SetBinError(ix, iy, 1e200);
+      }
+    }
   }
 }
 
