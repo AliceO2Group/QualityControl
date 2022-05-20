@@ -29,7 +29,7 @@
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
 #include "TPC/Tracks.h"
-#include "TPC/Utility.h"
+#include "Common/Utils.h"
 
 namespace o2::quality_control_modules::tpc
 {
@@ -38,11 +38,11 @@ void Tracks::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info, Support) << "initialize TPC Tracks QC task" << ENDM;
 
-  const float cutMindEdxTot = getFromConfig<float>(mCustomParameters, "cutMindEdxTot");
-  const float cutAbsEta = getFromConfig<float>(mCustomParameters, "cutAbsEta");
-  const int cutMinNCluster = getFromConfig<int>(mCustomParameters, "cutMinNCluster");
+  const float cutMindEdxTot = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "cutMindEdxTot");
+  const float cutAbsEta = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "cutAbsEta");
+  const int cutMinNCluster = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "cutMinNCluster");
 
-  // set track cutss defaults are (AbsEta = 1.0, nCluster = 60, MindEdxTot  = 20)
+  // set track cuts defaults are (AbsEta = 1.0, nCluster = 60, MindEdxTot  = 20)
   mQCTracks.setTrackCuts(cutAbsEta, cutMinNCluster, cutMindEdxTot);
 
   mQCTracks.initializeHistograms();
