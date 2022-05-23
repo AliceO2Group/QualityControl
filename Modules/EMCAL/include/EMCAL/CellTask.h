@@ -98,13 +98,6 @@ class CellTask final : public TaskInterface
     void countEvent();
   };
 
-  TH1* mEvCounterTF = nullptr;      ///< Number of Events per timeframe
-  TH1* mEvCounterTFPHYS = nullptr;  ///< Number of Events per timeframe per PHYS
-  TH1* mEvCounterTFCALIB = nullptr; ///< Number of Events per timeframe per CALIB
-  TH1* mTFPerCyclesTOT = nullptr;   ///< Number of Time Frame per cycles TOT
-  TH1* mTFPerCycles = nullptr;      ///< Number of Time Frame per cycles per MonitorData
-  TH1* mCellsMaxSM = nullptr;       ///< Supermodule with the largest amount of cells
-
   /// \brief Constructor
   CellTask() = default;
   /// Destructor
@@ -155,6 +148,23 @@ class CellTask final : public TaskInterface
   o2::emcal::BadChannelMap* mBadChannelMap;                  ///< EMCAL channel map
   o2::emcal::TimeCalibrationParams* mTimeCalib;              ///< EMCAL time calib
   int mTimeFramesPerCycles = 0;                              ///< TF per cycles
+
+  TH1* mEvCounterTF = nullptr;      ///< Number of Events per timeframe
+  TH1* mEvCounterTFPHYS = nullptr;  ///< Number of Events per timeframe per PHYS
+  TH1* mEvCounterTFCALIB = nullptr; ///< Number of Events per timeframe per CALIB
+  TH1* mTFPerCyclesTOT = nullptr;   ///< Number of Time Frame per cycles TOT
+  TH1* mTFPerCycles = nullptr;      ///< Number of Time Frame per cycles per MonitorData
+  TH1* mCellsMaxSM = nullptr;       ///< Supermodule with the largest amount of cells
+  double mCellThreshold = 0;        //
+
+  TH2* mCells_ev_sm = nullptr;          ///< Number of Cells per events per supermodule
+  TH2* mCells_ev_smThr = nullptr;       ///< Number of Cells with Threshold per events per supermodule
+  TH1* mCells_ev = nullptr;             ///< Number of Cells per events
+  TH1* mCells_ev_Thres = nullptr;       ///< Number of Cells with Threshold per events
+  TH1* mCells_ev_EMCAL = nullptr;       ///< Number of Cells per events for EMCAL
+  TH1* mCells_ev_EMCAL_Thres = nullptr; ///< Number of Cells with Threshold per events for EMCAL
+  TH1* mCells_ev_DCAL = nullptr;        ///< Number of Cells per events for DCAL
+  TH1* mCells_ev_DCAL_Thres = nullptr;  ///< Number of Cells per events with Threshold  for DCAL
 };
 
 } // namespace emcal
