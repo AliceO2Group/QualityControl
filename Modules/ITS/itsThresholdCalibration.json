@@ -49,7 +49,7 @@
              "id" : "thresholdcalibration",
              "active" : "true",
              "machines" : [],
-             "query" : "tunestring:ITS/TSTR;chipdonestring:ITS/QCSTR;runtype:ITS/RUNT;scantype:ITS/SCANT",
+             "query" : "tunestring:ITS/TSTR;chipdonestring:ITS/QCSTR;scantype:ITS/SCANT",
              "samplingConditions" : [
                {
                  "condition" : "random",
