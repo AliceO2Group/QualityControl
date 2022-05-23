@@ -28,6 +28,8 @@ namespace o2::quality_control_modules::tpc
 class CheckOfSlices : public o2::quality_control::checker::CheckInterface
 {
 
+  //ILOG(Warning,Support) << "##########################################################################################Start Check Header file:" << ENDM;
+
  public:
   /// Default constructor
   CheckOfSlices() = default;
@@ -45,8 +47,10 @@ class CheckOfSlices : public o2::quality_control::checker::CheckInterface
   std::string mCheckChoice;
   float mExpectedPhysicsValue;
   float mNSigmaExpectedPhysicsValue;
+  float mNSigmaMediumExpectedPhysicsValue;
   float mNSigmaBadExpectedPhysicsValue;
   float mNSigmaMean;
+  float mNSigmaMediumMean;
   float mNSigmaBadMean;
   float mean;
   static constexpr std::string_view mCheckChoiceMean = "Mean";
