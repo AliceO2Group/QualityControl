@@ -5,6 +5,7 @@
 
 #pragma link C++ class o2::quality_control_modules::muonchambers::PedestalsTask + ;
 #pragma link C++ class o2::quality_control_modules::muonchambers::PhysicsTaskDigits + ;
+#pragma link C++ class o2::quality_control_modules::muonchambers::PhysicsTaskRofs + ;
 #pragma link C++ class o2::quality_control_modules::muonchambers::PhysicsTaskPreclusters + ;
 #pragma link C++ class o2::quality_control_modules::muonchambers::DecodingErrorsTask + ;
 #pragma link C++ class o2::quality_control_modules::muonchambers::PedestalsCheck + ;
