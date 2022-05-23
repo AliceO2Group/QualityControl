@@ -88,7 +88,7 @@
             "graphXRange": "-2.0:2.0", 
             "graphAxisLabel": "Mean #eta:#eta"
           },
-	  {
+	        {
             "name": "hEtaRatio_StatMeanY_Trend_MultiGraph",
             "title": "Mean Y of the #eta ratio vs time for slices in #eta (x-axis)",
             "varexp": "hEtaRatio.meanY:multigraphtime",

@@ -279,11 +279,7 @@ void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
         } else {
           graphErrors->Draw(opt.data());
           // We try to convince ROOT to delete graphErrors together with the rest of the canvas.
-          if (auto* pad = thisCanvas->GetPad(p + 1)) {
-            if (auto* primitives = pad->GetListOfPrimitives()) {
-              primitives->Add(graphErrors);
-            }
-          }
+          saveObjectToPrimitives(thisCanvas, p + 1, graphErrors);
         }
       }
     }
@@ -292,7 +288,7 @@ void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
 
     TMultiGraph* multigraph = new TMultiGraph();
     multigraph->SetName("MultiGraph");
-    TGraphErrors* Graphs[nuPa] = { NULL };
+    TGraphErrors* Graphs[nuPa] = { nullptr };
 
     for (int p = 0; p < nuPa; p++) {
       int iEntry = 0;
@@ -324,6 +320,7 @@ void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
 
     thisCanvas->cd(1);
     multigraph->Draw("A pmc plc");
+
     TLegend* legend = new TLegend(0., 0.1, 0.95, 0.9);
     TIter nextgraph(multigraph->GetListOfGraphs());
     legend->SetName("MultiGraphLegend");
@@ -336,16 +333,9 @@ void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
       legend->AddEntry(obj, gr->GetName(), "lpf");
     }
     // We try to convince ROOT to delete multigraph and legend together with the rest of the canvas.
-    if (auto* pad = thisCanvas->GetPad(1)) {
-      if (auto* primitives = pad->GetListOfPrimitives()) {
-        primitives->Add(multigraph);
-      }
-    }
-    if (auto* pad = thisCanvas->GetPad(2)) {
-      if (auto* primitives = pad->GetListOfPrimitives()) {
-        primitives->Add(legend);
-      }
-    }
+    saveObjectToPrimitives(thisCanvas, 1, multigraph);
+    saveObjectToPrimitives(thisCanvas, 2, legend);
+
   } // Trending vs Time as Multigraph
   else if (trendType == "slices") {
 
@@ -385,11 +375,7 @@ void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
       } else {
         graphErrors->Draw(opt.data());
         // We try to convince ROOT to delete graphErrors together with the rest of the canvas.
-        if (auto* pad = thisCanvas->GetPad(1)) {
-          if (auto* primitives = pad->GetListOfPrimitives()) {
-            primitives->Add(graphErrors); // TO-DO: Is this needed?
-          }
-        }
+        saveObjectToPrimitives(thisCanvas, 1, graphErrors);
       }
     }
   } // Trending vs Slices
@@ -437,11 +423,7 @@ void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
     gStyle->SetPalette(kBird);
     graph2D->Draw(opt.data());
     // We try to convince ROOT to delete graphErrors together with the rest of the canvas.
-    if (auto* pad = thisCanvas->GetPad(1)) {
-      if (auto* primitives = pad->GetListOfPrimitives()) {
-        primitives->Add(graph2D); // TO-DO: Is this needed?
-      }
-    }
+    saveObjectToPrimitives(thisCanvas, 1, graph2D);
   } // Trending vs Slices2D
 }
 
@@ -506,11 +488,7 @@ void TrendingTaskTPC::drawCanvasQO(TCanvas* thisCanvas, const std::string& var,
   } else {
     graphErrors->Draw(opt.data());
     // We try to convince ROOT to delete graphErrors together with the rest of the canvas.
-    if (auto* pad = thisCanvas->GetPad(1)) {
-      if (auto* primitives = pad->GetListOfPrimitives()) {
-        primitives->Add(graphErrors); // TO-DO: Is this needed?
-      }
-    }
+    saveObjectToPrimitives(thisCanvas, 1, graphErrors);
   }
 }
 
@@ -548,6 +526,15 @@ void TrendingTaskTPC::getTrendErrors(const std::string& inputvar, std::string& e
   const std::size_t posEndType_err = inputvar.find(":"); // Find the end of the error.
   errorX = inputvar.substr(posEndType_err + 1);
   errorY = inputvar.substr(0, posEndType_err);
+}
+
+void TrendingTaskTPC::saveObjectToPrimitives(TCanvas* Canvas, const int padNumber, TObject* Object)
+{
+  if (auto* pad = Canvas->GetPad(padNumber)) {
+    if (auto* primitives = pad->GetListOfPrimitives()) {
+      primitives->Add(Object);
+    }
+  }
 }
 
 template <typename T>
