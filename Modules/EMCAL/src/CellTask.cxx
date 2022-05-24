@@ -637,14 +637,12 @@ void CellTask::CellHistograms::fillHistograms(const o2::emcal::Cell& cell, bool 
       if (cell.getEnergy() > 0.15) {
         fillOptional1D(mCellTimeSupermoduleEMCAL, cell.getTimeStamp());
         fillOptional1D(mCellTimeSupermoduleEMCAL_Gain[index], cell.getTimeStamp());
-        fillOptional1D(mCellTimeSupermoduleEMCAL_Gain[index], cell.getTimeStamp());
       }
       fillOptional1D(mCellAmplitudeEMCAL, cell.getEnergy());
     } else {
       fillOptional1D(mCellAmplitudeDCAL, cell.getEnergy());
       if (cell.getEnergy() > 0.15) {
         fillOptional1D(mCellTimeSupermoduleDCAL, cell.getTimeStamp());
-        fillOptional1D(mCellTimeSupermoduleDCAL_Gain[index], cell.getTimeStamp());
         fillOptional1D(mCellTimeSupermoduleDCAL_Gain[index], cell.getTimeStamp());
       }
     }
