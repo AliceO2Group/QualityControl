@@ -33,14 +33,11 @@ class DatabaseInterface;
 using namespace o2::quality_control::postprocessing;
 namespace o2::quality_control_modules::tpc
 {
-/// \brief  A post-processing task tuned for the needs of the trending of the TPC.
+/// \brief  A post-processing task which generates ratios of two merged histogram for post-processing
 ///
-/// A post-processing task which trends TPC related objects inside QC database (QCDB).
-/// It extracts some values of one or multiple objects using the Reductor classes,
-/// then stores them inside a TTree.
-/// This class is specific to the TPC: a subrange slicer is available in the json,
-/// and input/output canvas can be dealt with alongside normal histograms.
-///
+/// A post-processing task which generates ratios of two histogram for post-processing.
+/// It takes two TH1 objects as input, calculates the ratio and stores the ratio TH1 on ccdb/qcg.
+/// 
 
 class RatioGeneratorTPC : public PostProcessingInterface
 {
