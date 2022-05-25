@@ -35,10 +35,10 @@
           "MOs" : ["hPhiAsideRatio_StatMeanY_Trend_Slices"]
         } ],
 
-        "stopTrigger_comment": [ "Parameters are needed to choose if check should be performed only as last point comparison to average or average comparison to expected value." ],
+        "stopTrigger_comment": [ "Parameters are needed to choose if check should be performed on the mean (Mean) of all points or as a comparison to an expected physics value (ExpectedPhysicsValue). Or both (Both)." ],
         "checkParameters": {
           "chooseCheckMeanOrExpectedPhysicsValueOrBoth" : "Both",
-          "expectedPhysicsValue" : "0",
+          "expectedPhysicsValue" : "0.05",
           "allowedNSigmaForExpectation" : "3",
           "badNSigmaForExpectation" : "6",
           "allowedNSigmaForMean" : "3",

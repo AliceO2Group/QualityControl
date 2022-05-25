@@ -21,6 +21,7 @@
 #include <fairlogger/Logger.h>
 #include <TCanvas.h>
 #include <TGraphErrors.h>
+#include <TGraph.h>
 #include <TList.h>
 #include <TPaveText.h>
 #include <TAxis.h>
@@ -32,10 +33,8 @@
 namespace o2::quality_control_modules::tpc
 {
 
-// ILOG(Warning,Support) << "##########################################################################################Start Check:" << ENDM;
 void CheckOfSlices::configure()
 {
-  ILOG(Warning, Support) << "##########################################################################################Load Parameters:" << ENDM;
   if (auto param = mCustomParameters.find("chooseCheckMeanOrExpectedPhysicsValueOrBoth"); param != mCustomParameters.end()) {
     mCheckChoice = param->second.c_str();
     if (mCheckChoice != mCheckChoiceMean && mCheckChoice != mCheckChoiceExpectedPhysicsValue && mCheckChoice != mCheckChoiceBoth) {
@@ -93,7 +92,6 @@ void CheckOfSlices::configure()
       */
     }
   }
-  ILOG(Warning, Support) << "Loaded all parameters from JSON:" << ENDM;
 }
 
 Quality CheckOfSlices::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
@@ -102,19 +100,35 @@ Quality CheckOfSlices::check(std::map<std::string, std::shared_ptr<MonitorObject
   Quality resultMean = Quality::Null;
   Quality resultExpectedPhysicsValue = Quality::Null;
 
-  ILOG(Warning, Support) << "Qualities initiallized" << ENDM;
   auto mo = moMap->begin()->second;
   if (!mo) {
-    ILOG(Fatal, Support) << "It not found mo" << ENDM;
+    ILOG(Fatal, Support) << "Monitoring object not found" << ENDM;
   }
   auto* canv = (TCanvas*)mo->getObject();
-  TGraphErrors* g = (TGraphErrors*)canv->GetListOfPrimitives()->FindObject("Graph");
-  if (!g) {
-    ILOG(Fatal, Support) << "It not found Graph" << ENDM;
+  if (!canv) {
+    ILOG(Fatal, Support) << "Canvas not found" << ENDM;
   }
+  TList* padList = (TList*)canv->GetListOfPrimitives();
+  padList->SetOwner(kTRUE);
+  int numberPads = padList->GetEntries();
+  if (numberPads > 1) {
+    ILOG(Fatal, Support) << "Number of Pads: " << numberPads << " Should not be more than 1" << ENDM;
+  }
+  TGraphErrors* g = nullptr;
+  for (int iPad = 0; iPad < numberPads; iPad++) {
+    auto pad = static_cast<TPad*>(padList->At(iPad));
+    g = static_cast<TGraphErrors*>(pad->GetPrimitive("Graph"));
+  }
+
+  if (!g) {
+    ILOG(Fatal, Support) << "No Graph object found" << ENDM;
+  }
+  if (strcmp(g->GetName(), "Graph") != 0) {
+    ILOG(Fatal, Support) << "If found an object of type: " << g->GetName() << " should be Graph" << ENDM;
+  }
+
   const int NBins = g->GetN();
 
-  ILOG(Warning, Support) << Form("we have a Graph with %i bins", NBins) << ENDM;
   // If only one data point available, don't check quality for mean --  not really necessary in slices. Maybe add an expected number of Slices?
   // if (NBins > 1) {
   const double* yValues = g->GetY();
@@ -124,11 +138,8 @@ Quality CheckOfSlices::check(std::map<std::string, std::shared_ptr<MonitorObject
 
   // now we have the mean and the stddev. Now check if all points are within the margins (default 3,6 sigma margins)
 
-  ILOG(Warning, Support) << "We check by CheckChoice:";
-  ILOG(Warning, Support) << mCheckChoice << ENDM;
   if (mCheckChoice == mCheckChoiceMean || mCheckChoice == mCheckChoiceBoth) {
 
-    ILOG(Warning, Support) << Form("we have a entered Mean or Both") << ENDM;
     // const std::vector<double> v(yValues + NBins - 1 - pointNumberForMean, yValues + NBins - 1);
 
     const double sum = std::accumulate(v.begin(), v.end(), 0.0);
@@ -137,11 +148,14 @@ Quality CheckOfSlices::check(std::map<std::string, std::shared_ptr<MonitorObject
     for (const double& yvalue : v) {
       int i = &yvalue - &v[0];
       double yError = vErr[i];
-      if (std::abs(yvalue - meanFull) <= yError * mNSigmaMean && !resultMean.isWorseThan(Quality::Good)) {
-        resultMean = Quality::Good;
+      // if (yError > 0) {
+      if (std::abs(yvalue - meanFull) <= yError * mNSigmaMean) {
+        if (!resultMean.isWorseThan(Quality::Good) || resultMean == Quality::Null) {
+          resultMean = Quality::Good;
+        }
       } else if (std::abs(yvalue - meanFull) > yError * mNSigmaBadMean) {
         resultMean = Quality::Bad;
-      } else if (!resultMean.isWorseThan(Quality::Medium)) {
+      } else if (!resultMean.isWorseThan(Quality::Medium) || resultMean == Quality::Null) {
         resultMean = Quality::Medium;
       } else {
         // just brick, this should hopefully never happen
@@ -150,23 +164,24 @@ Quality CheckOfSlices::check(std::map<std::string, std::shared_ptr<MonitorObject
       if (resultMean == Quality::Bad) {
         break;
       }
+      //}
     }
-    ILOG(Warning, Support) << "Our Mean Quality:";
-    ILOG(Warning, Support) << resultMean << ENDM;
   } // if (mCheckChoice == mCheckChoiceMean || mCheckChoice == mCheckChoiceBoth)
   result = resultMean;
   //########################## ExpectedPhysicsValue #######################################
   if (mCheckChoice == mCheckChoiceExpectedPhysicsValue || mCheckChoice == mCheckChoiceBoth) {
 
-    ILOG(Warning, Support) << Form("we have a entered Physics Value or Both") << ENDM;
     for (const double& yvalue : v) {
       int i = &yvalue - &v[0];
       double yError = vErr[i];
-      if (std::abs(yvalue - mExpectedPhysicsValue) <= yError * mNSigmaBadExpectedPhysicsValue && !resultExpectedPhysicsValue.isWorseThan(Quality::Good)) {
-        resultExpectedPhysicsValue = Quality::Good;
+      // if (yError > 0) {
+      if (std::abs(yvalue - mExpectedPhysicsValue) <= yError * mNSigmaExpectedPhysicsValue) {
+        if (!resultExpectedPhysicsValue.isWorseThan(Quality::Good) || resultExpectedPhysicsValue == Quality::Null) {
+          resultExpectedPhysicsValue = Quality::Good;
+        }
       } else if (std::abs(yvalue - mExpectedPhysicsValue) > yError * mNSigmaBadExpectedPhysicsValue) {
         resultExpectedPhysicsValue = Quality::Bad;
-      } else if (!resultExpectedPhysicsValue.isWorseThan(Quality::Medium)) {
+      } else if (!resultExpectedPhysicsValue.isWorseThan(Quality::Medium) || resultExpectedPhysicsValue == Quality::Null) {
         resultExpectedPhysicsValue = Quality::Medium;
       } else {
         // just brick, this should hopefully never happen
@@ -175,10 +190,9 @@ Quality CheckOfSlices::check(std::map<std::string, std::shared_ptr<MonitorObject
       if (resultExpectedPhysicsValue == Quality::Bad) {
         break;
       }
+      // }
     }
 
-    ILOG(Warning, Support) << "Our Physics Value Quality:";
-    ILOG(Warning, Support) << resultExpectedPhysicsValue << ENDM;
     result = resultExpectedPhysicsValue;
   }
   if (mCheckChoice == mCheckChoiceBoth) {
@@ -190,8 +204,6 @@ Quality CheckOfSlices::check(std::map<std::string, std::shared_ptr<MonitorObject
     }
   }
 
-  ILOG(Warning, Support) << "Our Overall Quality:";
-  ILOG(Warning, Support) << result << ENDM;
   return result;
 }
 
@@ -200,7 +212,25 @@ std::string CheckOfSlices::getAcceptedType() { return "TCanvas"; }
 void CheckOfSlices::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   auto* c1 = (TCanvas*)mo->getObject();
-  TGraphErrors* h = (TGraphErrors*)c1->GetListOfPrimitives()->FindObject("Graph");
+
+  TList* padList = (TList*)c1->GetListOfPrimitives();
+  padList->SetOwner(kTRUE);
+  int numberPads = padList->GetEntries();
+  TGraphErrors* h = nullptr;
+  for (int iPad = 0; iPad < numberPads; iPad++) {
+    auto pad = static_cast<TPad*>(padList->At(iPad));
+    h = static_cast<TGraphErrors*>(pad->GetPrimitive("Graph"));
+
+    ILOG(Error, Support) << h->GetName() << ENDM;
+  }
+  const int NBins = h->GetN();
+
+  const double* yValues = h->GetY();
+  const double* yErrors = h->GetEY();
+  const std::vector<double> v(yValues, yValues + NBins); // use all points
+  const std::vector<double> vErr(yErrors, yErrors + NBins);
+  const double sum = std::accumulate(v.begin(), v.end(), 0.0);
+  const double meanFull = sum / NBins;
   TPaveText* msg = new TPaveText(0.7, 0.85, 0.9, 0.9, "NDC");
   h->GetListOfFunctions()->Add(msg);
   msg->SetName(Form("%s_msg", mo->GetName()));
@@ -240,15 +270,22 @@ void CheckOfSlices::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     h->SetFillColor(0);
   }
   h->SetLineColor(kBlack);
-
+  if (mCheckChoice == mCheckChoiceExpectedPhysicsValue || mCheckChoice == mCheckChoiceBoth) {
+    msg->AddText(Form("Expected Physics Value: %f", mExpectedPhysicsValue));
+  }
+  if (mCheckChoice == mCheckChoiceMean || mCheckChoice == mCheckChoiceBoth) {
+    msg->AddText(Form("Mean: %f", meanFull));
+  }
   const double xMin = h->GetXaxis()->GetXmin();
   const double xMax = h->GetXaxis()->GetXmax();
   TLine* lineExpectedValue = new TLine(xMin, mExpectedPhysicsValue, xMax, mExpectedPhysicsValue);
   lineExpectedValue->SetLineColor(kGreen);
   lineExpectedValue->SetLineWidth(2);
   // mean Line
-  TLine* lineMean = new TLine(xMin, mean, xMax, mean);
-  lineMean->SetLineColor(kGreen);
+
+  ILOG(Error, Support) << meanFull << ENDM;
+  TLine* lineMean = new TLine(xMin, meanFull, xMax, meanFull);
+  lineMean->SetLineColor(kOrange);
   lineMean->SetLineWidth(2);
   lineMean->SetLineStyle(10);
 
