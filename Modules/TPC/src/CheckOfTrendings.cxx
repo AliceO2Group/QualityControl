@@ -23,8 +23,6 @@
 #include <TGraph.h>
 #include <TList.h>
 #include <TPaveText.h>
-#include <TAxis.h>
-#include <TLine.h>
 
 #include <vector>
 #include <numeric>
@@ -201,38 +199,5 @@ void CheckOfTrendings::beautify(std::shared_ptr<MonitorObject> mo, Quality check
     h->SetFillColor(0);
   }
   h->SetLineColor(kBlack);
-
-  const double xMin = h->GetXaxis()->GetXmin();
-  const double xMax = h->GetXaxis()->GetXmax();
-  TLine* lineExpectedValue = new TLine(xMin, mExpectedPhysicsValue, xMax, mExpectedPhysicsValue);
-  lineExpectedValue->SetLineColor(kGreen);
-  lineExpectedValue->SetLineWidth(2);
-  // mean Line
-  TLine* lineMean = new TLine(xMin, mean, xMax, mean);
-  lineMean->SetLineColor(kGreen);
-  lineMean->SetLineWidth(2);
-  lineMean->SetLineStyle(10);
-  //+- 3sigma
-  TLine* lineThreeSigmaP = new TLine(xMin, mean + 3 * stdev, xMax, mean + 3 * stdev);
-  lineThreeSigmaP->SetLineColor(kOrange);
-  lineThreeSigmaP->SetLineWidth(2);
-  TLine* lineThreeSigmaM = new TLine(xMin, mean - 3 * stdev, xMax, mean - 3 * stdev);
-  lineThreeSigmaM->SetLineColor(kOrange);
-  lineThreeSigmaM->SetLineWidth(2);
-  //+- 6sigma
-  TLine* lineSixSigmaP = new TLine(xMin, mean + 6 * stdev, xMax, mean + 6 * stdev);
-  lineSixSigmaP->SetLineColor(kRed);
-  lineSixSigmaP->SetLineWidth(2);
-  TLine* lineSixSigmaM = new TLine(xMin, mean - 6 * stdev, xMax, mean - 6 * stdev);
-  lineSixSigmaM->SetLineColor(kRed);
-  lineSixSigmaM->SetLineWidth(2);
-
-  h->GetListOfFunctions()->Add(lineExpectedValue);
-  h->GetListOfFunctions()->Add(lineMean);
-  h->GetListOfFunctions()->Add(lineThreeSigmaP);
-  h->GetListOfFunctions()->Add(lineThreeSigmaM);
-  h->GetListOfFunctions()->Add(lineSixSigmaP);
-  h->GetListOfFunctions()->Add(lineSixSigmaM);
-  
 } // beautify function
 } // namespace o2::quality_control_modules::tpc
