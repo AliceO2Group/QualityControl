@@ -88,6 +88,8 @@ class CellTask final : public TaskInterface
     TH1* mCellTimeSupermoduleEMCAL = nullptr;                  ///< Cell time in EMCAL per SuperModule
     TH1* mCellTimeSupermoduleDCAL = nullptr;                   ///< Cell time in DCAL per SuperModule
     TH1* mnumberEvents = nullptr;                              ///< Number of Events for normalization
+    std::array<TH1*, 2> mCellTimeSupermoduleEMCAL_Gain;        ///< Cell  time in EMCAL per high low Gain
+    std::array<TH1*, 2> mCellTimeSupermoduleDCAL_Gain;         ///< Digit time in DCAL per high low Gain
 
     void initForTrigger(const std::string trigger, bool hasAmpVsCellID, bool hasTimeVsCellID, bool hasHistosCalib2D);
     void startPublishing(o2::quality_control::core::ObjectsManager& manager);
@@ -155,7 +157,7 @@ class CellTask final : public TaskInterface
   TH1* mTFPerCyclesTOT = nullptr;   ///< Number of Time Frame per cycles TOT
   TH1* mTFPerCycles = nullptr;      ///< Number of Time Frame per cycles per MonitorData
   TH1* mCellsMaxSM = nullptr;       ///< Supermodule with the largest amount of cells
-  double mCellThreshold = 0;        //
+  double mCellThreshold = 0;        ///< Number of cells with Threshold
 
   TH2* mCells_ev_sm = nullptr;          ///< Number of Cells per events per supermodule
   TH2* mCells_ev_smThr = nullptr;       ///< Number of Cells with Threshold per events per supermodule
