@@ -38,62 +38,63 @@ ITSFhrTask::ITSFhrTask()
 
 ITSFhrTask::~ITSFhrTask()
 {
-  /* delete mGeneralOccupancy;
-   delete mGeneralNoisyPixel;
-   delete mDecoder;
-   delete mChipDataBuffer;
-   delete mTFInfo;
-   delete mErrorPlots;
-   delete mErrorVsFeeid;
-   delete mTriggerPlots;
-   delete mTriggerVsFeeid;
-   delete mInfoCanvasComm;
-   delete mInfoCanvasOBComm;
-   delete mTextForShifter;
-   delete mTextForShifter2;
-   delete mTextForShifterOB;
-   delete mTextForShifterOB2;
-   delete mGeom;
-   delete mChipStaveOccupancy[mLayer];
-   delete mChipStaveEventHitCheck[mLayer];
-   delete mOccupancyPlot[mLayer];
-   delete mDeadChipPos[mLayer];
-   delete mAliveChipPos[mLayer];
-   delete mTotalDeadChipPos;
-   delete mTotalAliveChipPos;
-   for (int istave = 0; istave < NStaves[mLayer]; istave++) {
-     delete mStaveHitmap[mLayer][istave];
-   }
-   for (int istave = 0; istave < NStaves[mLayer]; istave++) {
-     delete[] mHitnumberLane[istave];
-     delete[] mOccupancyLane[istave];
-     delete[] mChipPhi[istave];
-     delete[] mChipEta[istave];
-     delete[] mChipStat[istave];
-     int maxlink = mLayer < NLayerIB ? 2 : 3;
-     for (int ilink = 0; ilink < maxlink; ilink++) {
-       delete[] mErrorCount[istave][ilink];
-     }
-     delete[] mErrorCount[istave];
-     for (int ihic = 0; ihic < nHicPerStave[mLayer]; ihic++) {
-       delete[] mHitPixelID_InStave[istave][ihic];
-     }
-     delete[] mHitPixelID_InStave[istave];
-   }
-   delete[] mHitnumberLane;
-   delete[] mOccupancyLane;
-   delete[] mChipPhi;
-   delete[] mChipEta;
-   delete[] mChipStat;
-   delete[] mErrorCount;
-   delete[] mHitPixelID_InStave;*/
+  delete mGeneralOccupancy;
+  delete mGeneralNoisyPixel;
+  delete mDecoder;
+  delete mChipDataBuffer;
+  delete mTFInfo;
+  delete mErrorPlots;
+  delete mErrorVsFeeid;
+  delete mTriggerPlots;
+  delete mTriggerVsFeeid;
+  delete mInfoCanvasComm;
+  delete mInfoCanvasOBComm;
+  delete mTextForShifter;
+  delete mTextForShifter2;
+  delete mTextForShifterOB;
+  delete mTextForShifterOB2;
+  delete mGeom;
+  delete mChipStaveOccupancy[mLayer];
+  delete mChipStaveEventHitCheck[mLayer];
+  delete mOccupancyPlot[mLayer];
+  delete mDeadChipPos[mLayer];
+  delete mAliveChipPos[mLayer];
+  delete mTotalDeadChipPos;
+  delete mTotalAliveChipPos;
+  for (int istave = 0; istave < NStaves[mLayer]; istave++) {
+    delete mStaveHitmap[mLayer][istave];
+  }
+  for (int istave = 0; istave < NStaves[mLayer]; istave++) {
+    delete[] mHitnumberLane[istave];
+    delete[] mOccupancyLane[istave];
+    delete[] mChipPhi[istave];
+    delete[] mChipEta[istave];
+    delete[] mChipStat[istave];
+    int maxlink = mLayer < NLayerIB ? 2 : 3;
+    for (int ilink = 0; ilink < maxlink; ilink++) {
+      delete[] mErrorCount[istave][ilink];
+    }
+    delete[] mErrorCount[istave];
+    for (int ihic = 0; ihic < nHicPerStave[mLayer]; ihic++) {
+      delete[] mHitPixelID_InStave[istave][ihic];
+    }
+    delete[] mHitPixelID_InStave[istave];
+  }
+  delete[] mHitnumberLane;
+  delete[] mOccupancyLane;
+  delete[] mChipPhi;
+  delete[] mChipEta;
+  delete[] mChipStat;
+  delete[] mErrorCount;
+  delete[] mHitPixelID_InStave;
 }
 
 void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info, Support) << "initialize ITSFhrTask" << ENDM;
   getParameters();
-  o2::base::GeometryManager::loadGeometry();
+  // o2::base::GeometryManager::loadGeometry();
+  o2::base::GeometryManager::loadGeometry(mGeomPath.c_str());
   mGeom = o2::its::GeometryTGeo::Instance();
   int numOfChips = mGeom->getNumberOfChips();
 
