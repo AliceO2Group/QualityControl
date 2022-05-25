@@ -12,7 +12,7 @@
 ///
 /// \file   DigitQcTask.h
 /// \author Artur Furs afurs@cern.ch
-///
+/// LATEST modification for FDD on 24.05.2022 (akhuntia@cern.ch)
 
 #ifndef QC_MODULE_FDD_FDDDIGITQCTASK_H
 #define QC_MODULE_FDD_FDDDIGITQCTASK_H
@@ -72,14 +72,15 @@ class DigitQcTask final : public TaskInterface
   double mTimeSum = 0.;
   const float mCFDChannel2NS = 0.01302; // CFD channel width in ns
 
-  template <typename Param_t,
-            typename = typename std::enable_if<std::is_floating_point<Param_t>::value ||
-                                               std::is_same<std::string, Param_t>::value || (std::is_integral<Param_t>::value && !std::is_same<bool, Param_t>::value)>::type>
+  template<typename Param_t,
+    typename = typename std::enable_if<std::is_floating_point<Param_t>::value ||
+                                       std::is_same<std::string, Param_t>::value ||
+                                       (std::is_integral<Param_t>::value && !std::is_same<bool, Param_t>::value)>::type>
   auto parseParameters(const std::string& param, const std::string& del)
   {
     std::regex reg(del);
-    std::sregex_token_iterator first{ param.begin(), param.end(), reg, -1 }, last;
-    std::vector<Param_t> vecResult;
+    std::sregex_token_iterator first{param.begin(), param.end(), reg, -1}, last;
+    std::vector <Param_t> vecResult;
     for (auto it = first; it != last; it++) {
       if constexpr (std::is_integral<Param_t>::value && !std::is_same<bool, Param_t>::value) {
         vecResult.push_back(std::stoi(*it));
@@ -94,29 +95,29 @@ class DigitQcTask final : public TaskInterface
 
   TList* mListHistGarbage;
   std::set<unsigned int> mSetAllowedChIDs;
-  std::array<o2::InteractionRecord, sNCHANNELS_PM> mStateLastIR2Ch;
+  std::array <o2::InteractionRecord, sNCHANNELS_PM> mStateLastIR2Ch;
   std::map<int, std::string> mMapChTrgNames;
   std::map<int, std::string> mMapDigitTrgNames;
 
   // Object which will be published
-  std::unique_ptr<TH2F> mHistAmp2Ch;
-  std::unique_ptr<TH2F> mHistTime2Ch;
-  std::unique_ptr<TH2F> mHistEventDensity2Ch;
-  std::unique_ptr<TH2F> mHistOrbit2BC;
-  std::unique_ptr<TH1F> mHistBC;
-  std::unique_ptr<TH2F> mHistChDataBits;
-  std::unique_ptr<TH1F> mHistTriggers;
-  std::unique_ptr<TH1F> mHistNchA;
-  std::unique_ptr<TH1F> mHistNchC;
-  std::unique_ptr<TH1F> mHistSumAmpA;
-  std::unique_ptr<TH1F> mHistSumAmpC;
-  std::unique_ptr<TH1F> mHistAverageTimeA;
-  std::unique_ptr<TH1F> mHistAverageTimeC;
-  std::unique_ptr<TH1F> mHistChannelID;
+  std::unique_ptr <TH2F> mHistAmp2Ch;
+  std::unique_ptr <TH2F> mHistTime2Ch;
+  std::unique_ptr <TH2F> mHistEventDensity2Ch;
+  std::unique_ptr <TH2F> mHistOrbit2BC;
+  std::unique_ptr <TH1F> mHistBC;
+  std::unique_ptr <TH2F> mHistChDataBits;
+  std::unique_ptr <TH1F> mHistTriggers;
+  std::unique_ptr <TH1F> mHistNchA;
+  std::unique_ptr <TH1F> mHistNchC;
+  std::unique_ptr <TH1F> mHistSumAmpA;
+  std::unique_ptr <TH1F> mHistSumAmpC;
+  std::unique_ptr <TH1F> mHistAverageTimeA;
+  std::unique_ptr <TH1F> mHistAverageTimeC;
+  std::unique_ptr <TH1F> mHistChannelID;
 
-  std::unique_ptr<TH1D> mHistCycleDuration;
-  std::unique_ptr<TH1D> mHistCycleDurationNTF;
-  std::unique_ptr<TH1D> mHistCycleDurationRange;
+  std::unique_ptr <TH1D> mHistCycleDuration;
+  std::unique_ptr <TH1D> mHistCycleDurationNTF;
+  std::unique_ptr <TH1D> mHistCycleDurationRange;
 
   std::map<unsigned int, TH1F*> mMapHistAmp1D;
   std::map<unsigned int, TH1F*> mMapHistAmp1DCoincidence;
