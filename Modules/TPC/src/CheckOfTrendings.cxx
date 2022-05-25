@@ -199,5 +199,6 @@ void CheckOfTrendings::beautify(std::shared_ptr<MonitorObject> mo, Quality check
     h->SetFillColor(0);
   }
   h->SetLineColor(kBlack);
-} // beautify function
+}
+
 } // namespace o2::quality_control_modules::tpc
