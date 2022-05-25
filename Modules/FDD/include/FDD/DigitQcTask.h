@@ -79,8 +79,8 @@ class DigitQcTask final : public TaskInterface
   auto parseParameters(const std::string& param, const std::string& del)
   {
     std::regex reg(del);
-    std::sregex_token_iterator first{param.begin(), param.end(), reg, -1}, last;
-    std::vector <Param_t> vecResult;
+    std::sregex_token_iterator first{ param.begin(), param.end(), reg, -1 }, last;
+    std::vector<Param_t> vecResult;
     for (auto it = first; it != last; it++) {
       if constexpr (std::is_integral<Param_t>::value && !std::is_same<bool, Param_t>::value) {
         vecResult.push_back(std::stoi(*it));
@@ -95,36 +95,35 @@ class DigitQcTask final : public TaskInterface
 
   TList* mListHistGarbage;
   std::set<unsigned int> mSetAllowedChIDs;
-  std::array <o2::InteractionRecord, sNCHANNELS_PM> mStateLastIR2Ch;
+  std::array<o2::InteractionRecord, sNCHANNELS_PM> mStateLastIR2Ch;
   std::map<int, std::string> mMapChTrgNames;
   std::map<int, std::string> mMapDigitTrgNames;
 
   // Object which will be published
-  std::unique_ptr <TH2F> mHistAmp2Ch;
-  std::unique_ptr <TH2F> mHistTime2Ch;
-  std::unique_ptr <TH2F> mHistEventDensity2Ch;
-  std::unique_ptr <TH2F> mHistOrbit2BC;
-  std::unique_ptr <TH1F> mHistBC;
-  std::unique_ptr <TH2F> mHistChDataBits;
-  std::unique_ptr <TH1F> mHistTriggers;
-  std::unique_ptr <TH1F> mHistNchA;
-  std::unique_ptr <TH1F> mHistNchC;
-  std::unique_ptr <TH1F> mHistSumAmpA;
-  std::unique_ptr <TH1F> mHistSumAmpC;
-  std::unique_ptr <TH1F> mHistAverageTimeA;
-  std::unique_ptr <TH1F> mHistAverageTimeC;
-  std::unique_ptr <TH1F> mHistChannelID;
+  std::unique_ptr<TH2F> mHistAmp2Ch;
+  std::unique_ptr<TH2F> mHistTime2Ch;
+  std::unique_ptr<TH2F> mHistEventDensity2Ch;
+  std::unique_ptr<TH2F> mHistOrbit2BC;
+  std::unique_ptr<TH1F> mHistBC;
+  std::unique_ptr<TH2F> mHistChDataBits;
+  std::unique_ptr<TH1F> mHistTriggers;
+  std::unique_ptr<TH1F> mHistNchA;
+  std::unique_ptr<TH1F> mHistNchC;
+  std::unique_ptr<TH1F> mHistSumAmpA;
+  std::unique_ptr<TH1F> mHistSumAmpC;
+  std::unique_ptr<TH1F> mHistAverageTimeA;
+  std::unique_ptr<TH1F> mHistAverageTimeC;
+  std::unique_ptr<TH1F> mHistChannelID;
 
-  std::unique_ptr <TH1D> mHistCycleDuration;
-  std::unique_ptr <TH1D> mHistCycleDurationNTF;
-  std::unique_ptr <TH1D> mHistCycleDurationRange;
+  std::unique_ptr<TH1D> mHistCycleDuration;
+  std::unique_ptr<TH1D> mHistCycleDurationNTF;
+  std::unique_ptr<TH1D> mHistCycleDurationRange;
 
   std::map<unsigned int, TH1F*> mMapHistAmp1D;
   std::map<unsigned int, TH1F*> mMapHistAmp1DCoincidence;
   std::map<unsigned int, TH1F*> mMapHistTime1D;
   std::map<unsigned int, TH1F*> mMapHistPMbits;
   std::map<unsigned int, TH2F*> mMapHistAmpVsTime;
-
 };
 
 } // namespace o2::quality_control_modules::fdd
