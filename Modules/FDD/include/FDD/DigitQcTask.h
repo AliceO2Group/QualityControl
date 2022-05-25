@@ -72,10 +72,10 @@ class DigitQcTask final : public TaskInterface
   double mTimeSum = 0.;
   const float mCFDChannel2NS = 0.01302; // CFD channel width in ns
 
-  template<typename Param_t,
-    typename = typename std::enable_if<std::is_floating_point<Param_t>::value ||
-                                       std::is_same<std::string, Param_t>::value ||
-                                       (std::is_integral<Param_t>::value && !std::is_same<bool, Param_t>::value)>::type>
+  template <typename Param_t,
+            typename = typename std::enable_if<std::is_floating_point<Param_t>::value ||
+                                               std::is_same<std::string, Param_t>::value ||
+                                               (std::is_integral<Param_t>::value && !std::is_same<bool, Param_t>::value)>::type>
   auto parseParameters(const std::string& param, const std::string& del)
   {
     std::regex reg(del);
