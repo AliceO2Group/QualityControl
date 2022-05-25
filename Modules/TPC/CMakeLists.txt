@@ -22,7 +22,8 @@ target_sources(O2QcTPC PRIVATE src/PID.cxx
                              src/CheckForEmptyPads.cxx
                              src/QualityReductorTPC.cxx
                              src/DCSPTemperature.cxx
-                             src/IDCs.cxx)
+                             src/IDCs.cxx
+                             src/QualityObserver.cxx)
 
 target_include_directories(
   O2QcTPC
@@ -64,6 +65,7 @@ add_root_dictionary(O2QcTPC
                             include/TPC/QualityReductorTPC.h
                             include/TPC/DCSPTemperature.h
                             include/TPC/IDCs.h
+                            include/TPC/QualityObserver.h
                     LINKDEF include/TPC/LinkDef.h
                     BASENAME O2QcTPC)
 
@@ -134,4 +136,5 @@ install(FILES run/tpcQCPID_sampled.json
               run/tpcQCTrending_canvas.json
               run/tpcQCDCSPTemperature.json
               run/tpcQCIDCs.json
+              run/tpcQCQualityObserver.json
         DESTINATION etc)
