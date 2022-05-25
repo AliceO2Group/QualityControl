@@ -239,7 +239,6 @@ std::string TaskRunner::createTaskRunnerIdString()
   return std::string("qc-task");
 }
 
-
 header::DataOrigin TaskRunner::createTaskDataOrigin(const std::string& detectorCode)
 {
   // We need a unique Data Origin, so we can have QC Tasks with the same names for different detectors.
