@@ -37,7 +37,7 @@ namespace o2::quality_control_modules::tpc
 ///
 /// A post-processing task which generates ratios of two histogram for post-processing.
 /// It takes two TH1 objects as input, calculates the ratio and stores the ratio TH1 on ccdb/qcg.
-/// 
+///
 
 class RatioGeneratorTPC : public PostProcessingInterface
 {
