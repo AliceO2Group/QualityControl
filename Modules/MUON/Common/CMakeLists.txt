@@ -3,10 +3,12 @@ set(MODULE_NAME "O2QcMUONCommon")
 # ---- Files ----
 
 set(SRCS
+  src/MergeableTH1Ratio.cxx
   src/MergeableTH2Ratio.cxx
 )
 
 set(HEADERS
+  include/MUONCommon/MergeableTH1Ratio.h
   include/MUONCommon/MergeableTH2Ratio.h
 )
 
@@ -39,7 +41,8 @@ install(
 # ---- ROOT dictionary ----
 
 add_root_dictionary(${MODULE_NAME}
-                    HEADERS include/MUONCommon/MergeableTH2Ratio.h
+                    HEADERS include/MUONCommon/MergeableTH1Ratio.h
+                            include/MUONCommon/MergeableTH2Ratio.h
                     LINKDEF include/MUONCommon/LinkDef.h)
 
 # ---- Tests ----

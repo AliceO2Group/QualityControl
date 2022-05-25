@@ -9,13 +9,13 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
-/// \file MergeableTH2Ratio.h
+/// \file MergeableTH1Ratio.h
 /// \brief An example of a custom TH2Quotient inheriting MergeInterface
 ///
 /// \author Piotr Konopka, piotr.jan.konopka@cern.ch, Sebastien Perrin, Andrea Ferrero
 
-#ifndef O2_MERGEABLETH2RATIO_H
-#define O2_MERGEABLETH2RATIO_H
+#ifndef O2_MERGEABLETH1RATIO_H
+#define O2_MERGEABLETH1RATIO_H
 
 #include <sstream>
 #include <iostream>
@@ -28,27 +28,27 @@ using namespace std;
 namespace o2::quality_control_modules::muon
 {
 
-class MergeableTH2Ratio : public TH2F, public o2::mergers::MergeInterface
+class MergeableTH1Ratio : public TH1F, public o2::mergers::MergeInterface
 {
  public:
-  MergeableTH2Ratio() = default;
+  MergeableTH1Ratio() = default;
 
-  MergeableTH2Ratio(MergeableTH2Ratio const& copymerge);
+  MergeableTH1Ratio(MergeableTH1Ratio const& copymerge);
 
-  MergeableTH2Ratio(const char* name, const char* title, int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax, double scaling = 1., bool showZeroBins = false);
+  MergeableTH1Ratio(const char* name, const char* title, int nbinsx, double xmin, double xmax, double scaling = 1.);
 
-  MergeableTH2Ratio(const char* name, const char* title, double scaling = 1., bool showZeroBins = false);
+  MergeableTH1Ratio(const char* name, const char* title, double scaling = 1.);
 
-  ~MergeableTH2Ratio();
+  ~MergeableTH1Ratio();
 
   void merge(MergeInterface* const other) override;
 
-  TH2F* getNum() const
+  TH1D* getNum() const
   {
     return mHistoNum;
   }
 
-  TH2F* getDen() const
+  TH1D* getDen() const
   {
     return mHistoDen;
   }
@@ -58,23 +58,15 @@ class MergeableTH2Ratio : public TH2F, public o2::mergers::MergeInterface
     return mScalingFactor;
   }
 
-  bool getShowZeroBins() const
-  {
-    return mShowZeroBins;
-  }
-
   void update();
 
-  void beautify();
-
  private:
-  TH2F* mHistoNum{ nullptr };
-  TH2F* mHistoDen{ nullptr };
-  std::string mTreatMeAs{ "TH2F" };
-  double mScalingFactor{ 1. };
-  bool mShowZeroBins{ false };
+  TH1D* mHistoNum{ nullptr };
+  TH1D* mHistoDen{ nullptr };
+  std::string mTreatMeAs = "TH1F";
+  double mScalingFactor = 1.;
 
-  ClassDefOverride(MergeableTH2Ratio, 1);
+  ClassDefOverride(MergeableTH1Ratio, 1);
 };
 
 } // namespace o2::quality_control_modules::muon
