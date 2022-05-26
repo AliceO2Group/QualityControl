@@ -10,8 +10,11 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   HmpidTask.h
-/// \author Antonio Franco, Giacomo Volpe
+/// \file       HmpidTask.h
+/// \author     Antonio Franco, Giacomo Volpe, Antonio Paz
+/// \brief      Class for quality control of HMPID detectors
+/// \version    0.2.4
+/// \date       19/05/2022
 ///
 
 #ifndef QC_MODULE_HMPID_HMPIDHMPIDTASK_H
@@ -21,6 +24,7 @@
 #include "HMPIDReconstruction/HmpidDecoder2.h"
 
 class TH1F;
+class TH2I;
 class TProfile;
 
 using namespace o2::quality_control::core;
@@ -48,11 +52,13 @@ class HmpidTask final : public TaskInterface
   void reset() override;
 
  private:
+  static const Int_t numCham = 7;
   TH1F* hPedestalMean = nullptr;
   TH1F* hPedestalSigma = nullptr;
   TProfile* hBusyTime = nullptr;
   TProfile* hEventSize = nullptr;
   TProfile* hEventNumber = nullptr;
+  TH2F* hModuleMap[numCham] = { nullptr };
   o2::hmpid::HmpidDecoder2* mDecoder = nullptr;
 };
 
