@@ -221,7 +221,7 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
             mChipStaveOccupancy[mLayer]->GetXaxis()->SetLabelSize(0.02);
             mChipStaveOccupancy[mLayer]->GetXaxis()->SetBinLabel(2 * ihic + 1, Form("%s", OBLabel34[2 * ihic]));
             mChipStaveOccupancy[mLayer]->GetXaxis()->SetBinLabel(2 * ihic + 2, Form("%s", OBLabel34[2 * ihic + 1]));
-            mChipStaveEventHitCheck[mLayer]->GetXaxis()->SetLabelSize(0.02);
+            mChipStaveOccupancy[mLayer]->GetXaxis()->SetLabelSize(0.02);
             mChipStaveEventHitCheck[mLayer]->GetXaxis()->SetBinLabel(2 * ihic + 1, Form("%s", OBLabel34[2 * ihic]));
             mChipStaveEventHitCheck[mLayer]->GetXaxis()->SetBinLabel(2 * ihic + 2, Form("%s", OBLabel34[2 * ihic + 1]));
           }
@@ -463,7 +463,6 @@ void ITSFhrTask::setPlotsFormat()
 void ITSFhrTask::startOfActivity(Activity& activity)
 {
   ILOG(Info, Support) << "startOfActivity : " << activity.mId << ENDM;
-  mRunNumber = activity.mId;
   reset();
 }
 
@@ -833,12 +832,11 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void ITSFhrTask::getParameters()
 {
+  mGeomPath = mCustomParameters["geomPath"];
   mNThreads = std::stoi(mCustomParameters["decoderThreads"]);
   mLayer = std::stoi(mCustomParameters["Layer"]);
   mHitCutForCheck = std::stoi(mCustomParameters["HitNumberCut"]);
   mGetTFFromBinding = std::stoi(mCustomParameters["GetTFFromBinding"]);
-  mRunNumberPath = mCustomParameters["runNumberPath"];
-  mGeomPath = mCustomParameters["geomPath"];
   mHitCutForNoisyPixel = std::stoi(mCustomParameters["HitNumberCutForNoisyPixel"]);
   mOccupancyCutForNoisyPixel = std::stof(mCustomParameters["OccupancyNumberCutForNoisyPixel"]);
   mMaxGeneralAxisRange = std::stof(mCustomParameters["MaxGeneralAxisRange"]);
