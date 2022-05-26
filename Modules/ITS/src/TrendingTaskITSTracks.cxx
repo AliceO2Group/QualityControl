@@ -100,15 +100,15 @@ void TrendingTaskITSTracks::trendValues(const Trigger& t, repository::DatabaseIn
   int count = 0;
 
   for (auto& dataSource : mConfig.dataSources) {
-    //std::cout<<"TrendingTaskITSTracks dataSource type "<<dataSource.name<<" "<<dataSource.type<<std::endl;
-    // todo: make it agnostic to MOs, QOs or other objects. Let the reductor
-    // cast to whatever it needs.
+    // std::cout<<"TrendingTaskITSTracks dataSource type "<<dataSource.name<<" "<<dataSource.type<<std::endl;
+    //  todo: make it agnostic to MOs, QOs or other objects. Let the reductor
+    //  cast to whatever it needs.
     if (dataSource.type == "repository") {
       // auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name);
       auto mo = qcdb.retrieveMO(dataSource.path, "", t.timestamp, t.activity);
       if (!count) {
-        std::map<std::string, std::string> entryMetadata = mo->getMetadataMap(); //full list of metadata as a map
-        mMetaData.runNumber = std::stoi(entryMetadata["RunNumber"]);             //get and set run number
+        std::map<std::string, std::string> entryMetadata = mo->getMetadataMap(); // full list of metadata as a map
+        mMetaData.runNumber = std::stoi(entryMetadata["RunNumber"]);             // get and set run number
         ntreeentries = (Int_t)mTrend->GetEntries() + 1;
         runlist.push_back(std::to_string(mMetaData.runNumber));
       }
@@ -140,17 +140,73 @@ void TrendingTaskITSTracks::storePlots(repository::DatabaseInterface& qcdb)
   int ilay = 0;
   for (const auto& plot : mConfig.plots) {
 
-    int add = 0;
-    double ymin = -10.;
-    double ymax = +10.;
+    int class1 = 0;
+    int class2 = 0;
+    double ymin = 0.;
+    double ymax = 1.;
     if (plot.name.find("mean") != std::string::npos) {
-      add = 0;
-      ymin = 0.;
-      ymax = 15.;
+      class2 = 0;
+      if (plot.name.find("NCluster") != std::string::npos) {
+        class1 = 0;
+        ymin = 0.;
+        ymax = 20.;
+      } else if (plot.name.find("EtaDistribution") != std::string::npos) {
+        class1 = 1;
+        ymin = -1.5;
+        ymax = 1.5;
+      } else if (plot.name.find("PhiDistribution") != std::string::npos) {
+        class1 = 2;
+        ymin = 0.;
+        ymax = 2 * TMath::TwoPi();
+      } else if (plot.name.find("VertexZ") != std::string::npos) {
+        class1 = 3;
+        ymin = -15.;
+        ymax = 15.;
+      } else if (plot.name.find("NVertexContributors") != std::string::npos) {
+        class1 = 4;
+        ymin = 0.;
+        ymax = 100.;
+      } else if (plot.name.find("AssociatedClusterFraction") != std::string::npos) {
+        class1 = 5;
+        ymin = 0.;
+        ymax = 1.;
+      } else if (plot.name.find("Ntracks") != std::string::npos) {
+        class1 = 6;
+        ymin = 0.;
+        ymax = 100.;
+      } else if (plot.name.find("VertexX") != std::string::npos) {
+        class1 = 7;
+        ymin = -15.;
+        ymax = 15.;
+      } else if (plot.name.find("VertexY") != std::string::npos) {
+        class1 = 8;
+        ymin = -15.;
+        ymax = 15.;
+      }
+
     } else if (plot.name.find("stddev") != std::string::npos) {
-      add = 1;
+      class2 = 1;
+      if (plot.name.find("NCluster") != std::string::npos) {
+        class1 = 0;
+      } else if (plot.name.find("EtaDistribution") != std::string::npos) {
+        class1 = 1;
+      } else if (plot.name.find("PhiDistribution") != std::string::npos) {
+        class1 = 2;
+      } else if (plot.name.find("VertexZ") != std::string::npos) {
+        class1 = 3;
+      } else if (plot.name.find("NVertexContributors") != std::string::npos) {
+        class1 = 4;
+      } else if (plot.name.find("AssociatedClusterFraction") != std::string::npos) {
+        class1 = 5;
+      } else if (plot.name.find("Ntracks") != std::string::npos) {
+        class1 = 6;
+      } else if (plot.name.find("VertexZ") != std::string::npos) {
+        class1 = 7;
+      } else if (plot.name.find("VertexZ") != std::string::npos) {
+        class1 = 8;
+      }
       ymin = 0.;
-      ymax = 5.;
+      ymax = 10.;
     }
 
     bool isrun = plot.varexp.find("ntreeentries") != std::string::npos ? true : false; // vs run or vs time
@@ -162,9 +218,9 @@ void TrendingTaskITSTracks::storePlots(repository::DatabaseInterface& qcdb)
 
     // post processing plot
     TGraph* g = new TGraph(n, x, y);
-    SetGraphStyle(g, col[add], mkr[add]);
+    SetGraphStyle(g, col[class2], mkr[class2]);
 
-    SetGraphNameAndAxes(g, plot.name, plot.title, isrun ? "run" : "time", ytitles[add], ymin,
+    SetGraphNameAndAxes(g, plot.name, plot.title, isrun ? "run" : "time", ytitles[class1][class2], ymin,
                         ymax, runlist);
     ILOG(Info, Support) << " Saving " << plot.name << " to CCDB " << ENDM;
     auto mo = std::make_shared<MonitorObject>(g, mConfig.taskName, "o2::quality_control_modules::its::TrendingTaskITSTracks",
