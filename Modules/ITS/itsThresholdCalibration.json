@@ -23,7 +23,7 @@
       }
     },
     "tasks" : {
-      "ITSThresholdCalibrationTask-prova" : {
+      "ITSThresholdCalibrationTask" : {
         "active" : "true",
         "className" : "o2::quality_control_modules::its::ITSThresholdCalibrationTask",
         "moduleName" : "QcITS",
