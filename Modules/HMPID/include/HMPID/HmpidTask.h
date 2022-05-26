@@ -24,7 +24,7 @@
 #include "HMPIDReconstruction/HmpidDecoder2.h"
 
 class TH1F;
-class TH2I;
+class TH2F;
 class TProfile;
 
 using namespace o2::quality_control::core;
