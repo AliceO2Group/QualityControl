@@ -15,8 +15,8 @@
 /// \brief  Checker for the noise levels obtained with the TaskRaw
 ///
 
-#ifndef QC_MODULE_TOF_TOFCHECKNOISE_H
-#define QC_MODULE_TOF_TOFCHECKNOISE_H
+#ifndef QC_MODULE_TOF_CHECKNOISE_H
+#define QC_MODULE_TOF_CHECKNOISE_H
 
 #include "QualityControl/CheckInterface.h"
 #include "Base/MessagePad.h"
@@ -43,7 +43,7 @@ class CheckNoise : public o2::quality_control::checker::CheckInterface
   /// Messages to print on the output PAD
   MessagePad mShifterMessages;
   /// Name of the accepted MO
-  static constexpr std::string mAcceptedName = "hIndexEOHitRate";
+  static constexpr char mAcceptedName[] = "hIndexEOHitRate";
   /// Maximum rate allowed before declaring a channel noisy
   float mMaxNoiseRate = 50.f; // Hz
 
@@ -59,12 +59,12 @@ class CheckNoise : public o2::quality_control::checker::CheckInterface
   void locateChannel(const int channel = 69461)
   {
     locatedCrate = channel / 2400;
-    locatedTrm = (channel - crate * 2400) / 240 + 3;
-    locatedSupermodule = crate / 4;
-    locatedLink = crate % 4;
-    locatedChain = (channel - crate * 2400 - (trm - 3) * 240) / 120;
-    locatedTdc = (channel - 120 * chain - 240 * (trm - 3) - 2400 * crate) / 8;
-    locatedChannel = channel - crate * 2400 - (trm - 3) * 240 - chain * 120 - tdc * 8;
+    locatedTrm = (channel - locatedCrate * 2400) / 240 + 3;
+    locatedSupermodule = locatedCrate / 4;
+    locatedLink = locatedCrate % 4;
+    locatedChain = (channel - locatedCrate * 2400 - (locatedTrm - 3) * 240) / 120;
+    locatedTdc = (channel - 120 * locatedChain - 240 * (locatedTrm - 3) - 2400 * locatedCrate) / 8;
+    locatedChannel = channel - locatedCrate * 2400 - (locatedTrm - 3) * 240 - locatedChain * 120 - locatedTdc * 8;
   }
 
   ClassDefOverride(CheckNoise, 1);
@@ -72,4 +72,4 @@ class CheckNoise : public o2::quality_control::checker::CheckInterface
 
 } // namespace o2::quality_control_modules::tof
 
-#endif // QC_MODULE_TOF_TOFCHECKNOISE_H
+#endif // QC_MODULE_TOF_CHECKNOISE_H

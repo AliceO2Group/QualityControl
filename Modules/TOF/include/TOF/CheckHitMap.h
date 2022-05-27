@@ -15,8 +15,8 @@
 /// \brief  Checker for the hit map hit obtained with the TaskDigits
 ///
 
-#ifndef QC_MODULE_TOF_TOFCHECKHITMAP_H
-#define QC_MODULE_TOF_TOFCHECKHITMAP_H
+#ifndef QC_MODULE_TOF_CHECKHITMAP_H
+#define QC_MODULE_TOF_CHECKHITMAP_H
 
 #include "QualityControl/CheckInterface.h"
 #include "Base/MessagePad.h"
@@ -44,11 +44,12 @@ class CheckHitMap : public o2::quality_control::checker::CheckInterface
   MessagePad mShifterMessages;
   /// Message regarding the PHOS module (hole)
   MessagePad mPhosModuleMessage{ "PHOS", 13.f, 38.f, 16.f, 53.f }; // Values corresponding to the PHOS hole
-  static constexpr std::string mAcceptedName = "HitMap";
+  /// Name of the accepted MO
+  static constexpr char mAcceptedName[] = "HitMap";
 
   ClassDefOverride(CheckHitMap, 2);
 };
 
 } // namespace o2::quality_control_modules::tof
 
-#endif // QC_MODULE_TOF_TOFCHECKHITMAP_H
+#endif // QC_MODULE_TOF_CHECKHITMAP_H
