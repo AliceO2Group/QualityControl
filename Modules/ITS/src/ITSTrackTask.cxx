@@ -345,6 +345,7 @@ void ITSTrackTask::createAllHistos()
     addObject(hNClusterVsChip[l]);
     formatAxes(hNClusterVsChip[l], "chipID", "cluster size x cos(#lambda)", 1, 1.10);
     hNClusterVsChip[l]->SetStats(0);
+    hNClusterVsChip[l]->SetBit(TH1::kIsAverage);
   }
 
   hNClusterVsChipITS = new TH2D(Form("NClusterVsChipITS"), Form("NClusterVsChipITS"), (int)ChipBoundary[NLayer], 0, ChipBoundary[NLayer], 60, 0, 15);
@@ -352,6 +353,7 @@ void ITSTrackTask::createAllHistos()
   addObject(hNClusterVsChipITS);
   formatAxes(hNClusterVsChipITS, "chipID", "cluster size x cos(#lambda)", 1, 1.10);
   hNClusterVsChipITS->SetStats(0);
+  hNClusterVsChipITS->SetBit(TH1::kIsAverage);
   // NClusterVsChip Full Detector distinguishable
   for (int l = 0; l < NLayer + 1; l++) {
     auto line = new TLine(ChipBoundary[l], 0, ChipBoundary[l], 15);
