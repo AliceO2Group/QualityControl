@@ -385,14 +385,14 @@ void ITSThresholdCalibrationTask::createAllHistos()
   }
 
   for (int iBarrel = 0; iBarrel < 3; iBarrel++) {
-    hCalibrationDeadPixels[iBarrel] = new TH2F(Form("DeadPixels%s", sBarrelType[iBarrel].Data()), Form("Number of dead pixels per chip (not from bad dcols) for %s", sBarrelType[iBarrel].Data()), nChips[iBarrel], -0.5, nChips[iBarrel] - 0.5, nStaves[iBarrel], -0.5, nStaves[iBarrel] - 0.5);
+    hCalibrationDeadPixels[iBarrel] = new TH2F(Form("NoisyPixels%s", sBarrelType[iBarrel].Data()), Form("Number of noisy pixels per chip (not from bad dcols) for %s", sBarrelType[iBarrel].Data()), nChips[iBarrel], -0.5, nChips[iBarrel] - 0.5, nStaves[iBarrel], -0.5, nStaves[iBarrel] - 0.5);
     hCalibrationDeadPixels[iBarrel]->SetStats(0);
     if (iBarrel != 0)
       formatAxes(hCalibrationDeadPixels[iBarrel], "Chip", "", 1, 1.10);
     formatLayers(hCalibrationDeadPixels[iBarrel], iBarrel);
     addObject(hCalibrationDeadPixels[iBarrel]);
 
-    hCalibrationDeadColumns[iBarrel] = new TH2F(Form("DeadColumns%s", sBarrelType[iBarrel].Data()), Form("Number of dead columns per chip for %s", sBarrelType[iBarrel].Data()), nChips[iBarrel], -0.5, nChips[iBarrel] - 0.5, nStaves[iBarrel], -0.5, nStaves[iBarrel] - 0.5);
+    hCalibrationDeadColumns[iBarrel] = new TH2F(Form("NoisyDColumns%s", sBarrelType[iBarrel].Data()), Form("Number of noisy dcols per chip for %s", sBarrelType[iBarrel].Data()), nChips[iBarrel], -0.5, nChips[iBarrel] - 0.5, nStaves[iBarrel], -0.5, nStaves[iBarrel] - 0.5);
     hCalibrationDeadColumns[iBarrel]->SetStats(0);
     if (iBarrel != 0)
       formatAxes(hCalibrationDeadColumns[iBarrel], "Chip", "", 1, 1.10);
