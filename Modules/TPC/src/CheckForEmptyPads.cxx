@@ -16,8 +16,9 @@
 #include "TPC/CheckForEmptyPads.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
-
+#include "QualityControl/QcInfoLogger.h"
 #include <fairlogger/Logger.h>
+
 // ROOT
 #include <TCanvas.h>
 #include <TH1.h>
@@ -34,9 +35,15 @@ void CheckForEmptyPads::configure()
 {
   if (auto param = mCustomParameters.find("mediumQualityPercentageOfWorkingPads"); param != mCustomParameters.end()) {
     mMediumQualityLimit = std::atof(param->second.c_str());
+  } else {
+    mMediumQualityLimit = 0.7;
+    ILOG(Warning, Support) << "Chosen check requires mediumQualityPercentageOfWorkingPads which is not given. Setting to default 0.7 ." << ENDM;
   }
   if (auto param = mCustomParameters.find("badQualityPercentageOfWorkingPads"); param != mCustomParameters.end()) {
     mBadQualityLimit = std::atof(param->second.c_str());
+  } else {
+    mBadQualityLimit = 0.3;
+    ILOG(Warning, Support) << "Chosen check requires badQualityPercentageOfWorkingPads which is not given. Setting to default 0.3 ." << ENDM;
   }
   if (auto param = mCustomParameters.find("MOsNames2D"); param != mCustomParameters.end()) {
     auto temp = param->second.c_str();

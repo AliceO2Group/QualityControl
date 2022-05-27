@@ -66,6 +66,7 @@ class PhysicsTaskDigits /*final*/ : public TaskInterface // todo add back the "f
 
  private:
   void storeOrbit(const uint64_t& orb);
+  void addDefaultOrbitsInTF();
   void plotDigit(const o2::mch::Digit& digit);
   void updateOrbits();
   void writeHistos();

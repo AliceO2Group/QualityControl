@@ -119,6 +119,7 @@ install(FILES
         itsFhr.json
         itsFee.json
         itsCluster.json
+	itsTrack.json
         itsNoisyPixel.json
 	itsTrackSim.json
         itsThresholdCalibration.json	

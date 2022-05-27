@@ -23,7 +23,6 @@ namespace o2::quality_control_modules::trd
 
   void DigitsTask::drawLinesMCM(TH2F* histo)
   {
-
     TLine* l;
     Int_t nPos[o2::trd::constants::NSTACK - 1] = { 16, 32, 44, 60 };
 
@@ -257,7 +256,6 @@ namespace o2::quality_control_modules::trd
   void DigitsTask::startOfActivity(Activity& /*activity*/)
   {
     ILOG(Info) << "startOfActivity" << ENDM;
-
   } //set stats/stacs
 
   void DigitsTask::startOfCycle()

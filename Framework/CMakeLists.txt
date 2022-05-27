@@ -81,7 +81,8 @@ add_library(O2QualityControl
   src/DataSourceSpec.cxx
   src/RootFileSink.cxx
   src/RootFileSource.cxx
-  src/UpdatePolicyType.cxx)
+  src/UpdatePolicyType.cxx
+  src/RootClassFactory.cxx)
 
 target_include_directories(
   O2QualityControl

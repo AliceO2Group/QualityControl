@@ -24,6 +24,8 @@
 #include <Common/Exceptions.h>
 #include <Framework/CallbackService.h>
 #include <Framework/ControlService.h>
+#include <Framework/InitContext.h>
+#include <Framework/ConfigParamRegistry.h>
 
 using namespace AliceO2::Common;
 using namespace o2::framework;
@@ -43,11 +45,14 @@ PostProcessingDevice::PostProcessingDevice(const PostProcessingRunnerConfig& run
 
 void PostProcessingDevice::init(framework::InitContext& ctx)
 {
+  if (ctx.options().isSet("configKeyValues")) {
+    mRunnerConfig.configKeyValues = ctx.options().get<std::string>("configKeyValues");
+  }
   // todo: read the updated config from ctx, one available
   mRunner->init(mRunnerConfig, PostProcessingConfig{ mRunnerConfig.taskName, mRunnerConfig.configTree });
 
   // registering state machine callbacks
-  ctx.services().get<CallbackService>().set(CallbackService::Id::Start, [this]() { start(); });
+  ctx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, &services = ctx.services()]() { start(services); });
   ctx.services().get<CallbackService>().set(CallbackService::Id::Reset, [this]() { reset(); });
   ctx.services().get<CallbackService>().set(CallbackService::Id::Stop, [this]() { stop(); });
 }
@@ -83,9 +88,9 @@ header::DataDescription PostProcessingDevice::createPostProcessingDataDescriptio
   return description;
 }
 
-void PostProcessingDevice::start()
+void PostProcessingDevice::start(const ServiceRegistry& services)
 {
-  mRunner->start();
+  mRunner->start(&services);
 }
 
 void PostProcessingDevice::stop()

@@ -36,6 +36,7 @@ using namespace o2::quality_control::core;
 class TH1;
 class TH1F;
 class TH2F;
+class TEfficiency;
 
 namespace o2::quality_control_modules::tof
 {
@@ -167,7 +168,9 @@ class TaskRaw final : public TaskInterface
   std::shared_ptr<TH1F> mHistoIndexEO;          /// Index in electronic
   std::shared_ptr<TH1F> mHistoIndexEOInTimeWin; /// Index in electronic for noise analysis
   std::shared_ptr<TH1F> mHistoIndexEOIsNoise;   /// Noise hit map x channel
-  std::shared_ptr<TH1F> mHistoRDHTriggers;      /// RDH trigger efficiency, ratio of total triggers served to total triggers received per crate
+  std::shared_ptr<TH1F> mHistoRDHServed;        /// RDH triggers served per crate
+  std::shared_ptr<TH1F> mHistoRDHReceived;      /// RDH triggers received per crate
+  TEfficiency* mEffRDHTriggers;                 /// RDH trigger efficiency, ratio of total triggers served to total triggers received per crate
   std::shared_ptr<TH2F> mHistoOrbitsPerCrate;   /// Orbit per crate
 
   // Other observables

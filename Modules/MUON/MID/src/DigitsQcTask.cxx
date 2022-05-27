@@ -33,10 +33,6 @@
 #include "DataFormatsMID/ColumnData.h"
 #include "DataFormatsMID/ROBoard.h"
 #include "DataFormatsMID/ROFRecord.h"
-#include "DPLUtils/DPLRawParser.h"
-#include "MIDQC/RawDataChecker.h"
-#include "MIDRaw/CrateMasks.h"
-#include "MIDRaw/Decoder.h"
 #include "MIDRaw/ElectronicsDelay.h"
 #include "MIDRaw/FEEIdConfig.h"
 #include "MIDBase/DetectorParameters.h"
@@ -60,20 +56,28 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   mHitsMapB = std::make_shared<TH2F>("HitsMapB", "Hits Map - bending plane", MID_NDE, 0, MID_NDE, MID_NCOL, 0, MID_NCOL);
   getObjectsManager()->startPublishing(mHitsMapB.get());
+  mHitsMapB->GetXaxis()->SetTitle("DetectorElementID");
+  mHitsMapB->GetYaxis()->SetTitle("ColomnID");
   mHitsMapB->SetOption("colz");
   mHitsMapB->SetStats(0);
 
   mHitsMapNB = std::make_shared<TH2F>("HitsMapNB", "Hits Map - non-bending plane", MID_NDE, 0, MID_NDE, MID_NCOL, 0, MID_NCOL);
   getObjectsManager()->startPublishing(mHitsMapNB.get());
+  mHitsMapNB->GetXaxis()->SetTitle("DetectorElementID");
+  mHitsMapNB->GetYaxis()->SetTitle("ColomnID");
   mHitsMapNB->SetOption("colz");
   mHitsMapNB->SetStats(0);
 
   mOrbitsMapB = std::make_shared<TH2F>("OrbitsMapB", "Orbits Map - bending plane", MID_NDE, 0, MID_NDE, MID_NCOL, 0, MID_NCOL);
   getObjectsManager()->startPublishing(mOrbitsMapB.get());
+  mOrbitsMapB->GetXaxis()->SetTitle("DetectorElementID");
+  mOrbitsMapB->GetYaxis()->SetTitle("ColomnID");
   mOrbitsMapB->SetOption("colz");
   mOrbitsMapB->SetStats(0);
   mOrbitsMapNB = std::make_shared<TH2F>("OrbitsMapNB", "Orbits Map - bending plane", MID_NDE, 0, MID_NDE, MID_NCOL, 0, MID_NCOL);
   getObjectsManager()->startPublishing(mOrbitsMapNB.get());
+  mOrbitsMapNB->GetXaxis()->SetTitle("DetectorElementID");
+  mOrbitsMapNB->GetYaxis()->SetTitle("ColomnID");
   mOrbitsMapNB->SetOption("colz");
   mOrbitsMapNB->SetStats(0);
 
@@ -107,65 +111,96 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   mLocalBoardsMap = std::make_shared<TH2F>("LocalBoardsMap", "Local boards Occupancy Map", 14, -7, 7, 36, 0, 9);
   getObjectsManager()->startPublishing(mLocalBoardsMap.get());
+  mLocalBoardsMap->GetXaxis()->SetTitle("Column");
+  mLocalBoardsMap->GetYaxis()->SetTitle("Line");
   mLocalBoardsMap->SetOption("colz");
   mLocalBoardsMap->SetStats(0);
 
   mLocalBoardsMap11 = std::make_shared<TH2F>("LocalBoardsMap11", "Local boards Occupancy Map MT11", 14, -7, 7, 36, 0, 9);
   getObjectsManager()->startPublishing(mLocalBoardsMap11.get());
+  mLocalBoardsMap11->GetXaxis()->SetTitle("Column");
+  mLocalBoardsMap11->GetYaxis()->SetTitle("Line");
   mLocalBoardsMap11->SetOption("colz");
   mLocalBoardsMap11->SetStats(0);
 
   mLocalBoardsMap12 = std::make_shared<TH2F>("LocalBoardsMap12", "Local boards Occupancy Map MT12", 14, -7, 7, 36, 0, 9);
   getObjectsManager()->startPublishing(mLocalBoardsMap12.get());
+  mLocalBoardsMap12->GetXaxis()->SetTitle("Column");
+  mLocalBoardsMap12->GetYaxis()->SetTitle("Line");
   mLocalBoardsMap12->SetOption("colz");
   mLocalBoardsMap12->SetStats(0);
 
   mLocalBoardsMap21 = std::make_shared<TH2F>("LocalBoardsMap21", "Local boards Occupancy Map MT21", 14, -7, 7, 36, 0, 9);
   getObjectsManager()->startPublishing(mLocalBoardsMap21.get());
+  mLocalBoardsMap21->GetXaxis()->SetTitle("Column");
+  mLocalBoardsMap21->GetYaxis()->SetTitle("Line");
   mLocalBoardsMap21->SetOption("colz");
   mLocalBoardsMap21->SetStats(0);
 
   mLocalBoardsMap22 = std::make_shared<TH2F>("LocalBoardsMap22", "Local boards Occupancy Map MT22", 14, -7, 7, 36, 0, 9);
   getObjectsManager()->startPublishing(mLocalBoardsMap22.get());
+  mLocalBoardsMap22->GetXaxis()->SetTitle("Column");
+  mLocalBoardsMap22->GetYaxis()->SetTitle("Line");
   mLocalBoardsMap22->SetOption("colz");
   mLocalBoardsMap22->SetStats(0);
 
   mBendHitsMap11 = std::make_shared<TH2F>("BendHitsMap11", "Bending Hits Map MT11", 14, -7, 7, 576, 0, 9);
   getObjectsManager()->startPublishing(mBendHitsMap11.get());
+  mBendHitsMap11->GetXaxis()->SetTitle("Column");
+  mBendHitsMap11->GetYaxis()->SetTitle("Line");
   mBendHitsMap11->SetOption("colz");
   mBendHitsMap11->SetStats(0);
   mBendHitsMap12 = std::make_shared<TH2F>("BendHitsMap12", "Bending Hits Map MT12", 14, -7, 7, 576, 0, 9);
   getObjectsManager()->startPublishing(mBendHitsMap12.get());
+  mBendHitsMap12->GetXaxis()->SetTitle("Column");
+  mBendHitsMap12->GetYaxis()->SetTitle("Line");
   mBendHitsMap12->SetOption("colz");
   mBendHitsMap12->SetStats(0);
   mBendHitsMap21 = std::make_shared<TH2F>("BendHitsMap21", "Bending Hits Map MT21", 14, -7, 7, 576, 0, 9);
   getObjectsManager()->startPublishing(mBendHitsMap21.get());
+  mBendHitsMap21->GetXaxis()->SetTitle("Column");
+  mBendHitsMap21->GetYaxis()->SetTitle("Line");
   mBendHitsMap21->SetOption("colz");
   mBendHitsMap21->SetStats(0);
   mBendHitsMap22 = std::make_shared<TH2F>("BendHitsMap22", "Bending Hits Map MT22", 14, -7, 7, 576, 0, 9);
   getObjectsManager()->startPublishing(mBendHitsMap22.get());
+  mBendHitsMap22->GetXaxis()->SetTitle("Column");
+  mBendHitsMap22->GetYaxis()->SetTitle("Line");
   mBendHitsMap22->SetOption("colz");
   mBendHitsMap22->SetStats(0);
 
   mNBendHitsMap11 = std::make_shared<TH2F>("NBendHitsMap11", "Non-Bending Hits Map MT11", 224, -7, 7, 36, 0, 9);
   getObjectsManager()->startPublishing(mNBendHitsMap11.get());
+  mNBendHitsMap11->GetXaxis()->SetTitle("Column");
+  mNBendHitsMap11->GetYaxis()->SetTitle("Line");
   mNBendHitsMap11->SetOption("colz");
   mNBendHitsMap11->SetStats(0);
 
   mNBendHitsMap12 = std::make_shared<TH2F>("NBendHitsMap12", "Non-Bending Hits Map MT12", 224, -7, 7, 36, 0, 9);
   getObjectsManager()->startPublishing(mNBendHitsMap12.get());
+  mNBendHitsMap12->GetXaxis()->SetTitle("Column");
+  mNBendHitsMap12->GetYaxis()->SetTitle("Line");
   mNBendHitsMap12->SetOption("colz");
   mNBendHitsMap12->SetStats(0);
 
   mNBendHitsMap21 = std::make_shared<TH2F>("NBendHitsMap21", "Non-Bending Hits Map MT21", 224, -7, 7, 36, 0, 9);
   getObjectsManager()->startPublishing(mNBendHitsMap21.get());
+  mNBendHitsMap21->GetXaxis()->SetTitle("Column");
+  mNBendHitsMap21->GetYaxis()->SetTitle("Line");
   mNBendHitsMap21->SetOption("colz");
   mNBendHitsMap21->SetStats(0);
 
   mNBendHitsMap22 = std::make_shared<TH2F>("NBendHitsMap22", "Non-Bending Hits Map MT22", 224, -7, 7, 36, 0, 9);
   getObjectsManager()->startPublishing(mNBendHitsMap22.get());
+  mNBendHitsMap22->GetXaxis()->SetTitle("Column");
+  mNBendHitsMap22->GetYaxis()->SetTitle("Line");
   mNBendHitsMap22->SetOption("colz");
   mNBendHitsMap22->SetStats(0);
+
+  mDigitBCCounts = std::make_shared<TH1F>("DigitBCCounts", "Digit Bunch Crossing Counts", o2::constants::lhc::LHCMaxBunches, 0., o2::constants::lhc::LHCMaxBunches);
+  getObjectsManager()->startPublishing(mDigitBCCounts.get());
+  mDigitBCCounts->GetXaxis()->SetTitle("BC");
+  mDigitBCCounts->GetYaxis()->SetTitle("Entry");
 }
 
 void DigitsQcTask::startOfActivity(Activity& /*activity*/)
@@ -299,6 +334,7 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     multHitMT12NB = 0;
     multHitMT21NB = 0;
     multHitMT22NB = 0;
+    mDigitBCCounts->Fill(rofRecord.interactionRecord.bc);
 
     // loadStripPatterns (ColumnData)
     for (auto& digit : digits.subspan(rofRecord.firstEntry, rofRecord.nEntries)) { // loop DE //
@@ -308,15 +344,6 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       int ichamber = o2::mid::detparams::getChamber(deIndex);
       auto isRightSide = o2::mid::detparams::isRightSide(deIndex);
       auto detId = o2::mid::detparams::getDEId(isRightSide, ichamber, colId);
-
-      /* if(isDigitEmpty(digit) == 0){
-  std::cout << "  =>>  " << digit << std::endl;
-  for (int i = 0; i < 4; i++) {
-    if(digit.patterns[i]!=0){
-      std::cout <<"=== i = "<<i<< " :  BoardId  = " << mMapping.getBoardId(i,colId,deIndex,true) << std::endl;
-    }
-  }
-      }*/
 
       int nZoneHistoX = 1;
       int nZoneHistoY = 4;
@@ -330,7 +357,6 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
         stripXSize = 1. / 16;
       }
 
-      // std::cout << "colId  =>>  " << colId << "  deIndex = "<< deIndex <<" getNStripsNBP(deIndex)  = "<< mMapping.getNStripsNBP(colId,deIndex) << "  detId = "<< detId <<" getNStripsNBP(detId)  = "<< mMapping.getNStripsNBP(colId,detId) << std::endl;
       for (int board = mMapping.getFirstBoardBP(colId, deIndex), lastBoard = mMapping.getLastBoardBP(colId, deIndex); board <= lastBoard + 1; board++) {
         // These are the existing bend boards for this column Id (board = n°board in the column) + 1 (for non-bend)
         if ((lastBoard < 4) && (board == lastBoard + 1))
@@ -397,14 +423,14 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
               }
             }
           }
-          //// Strips Display :: // pb zone with 3 local boards
+          //// Strips Display ::
           int mask = 1;
 
-          double shift = 0;
+          double shift = 0; // for central zone with only 3 loc boards
           if ((colId == 0) && ((rpcLine == 3) || (rpcLine == 5)))
             nZoneHistoY = 3;
           if ((colId == 0) && (rpcLine == 5))
-            shift = 0.25; // for central zone with only 3 loc boards
+            shift = 0.25;
 
           for (int j = 0; j < 16; j++) {
             if ((digit.patterns[board] & mask) != 0) {
@@ -418,25 +444,25 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
                 if (ichamber == 0) {
                   if (board == 4) {
                     for (int ib = 0; ib < nZoneHistoY; ib++)
-                      mNBendHitsMap11->Fill(colHitPos, rpcLine + shift + (0.25 * ib), 1); // Non-Bend
+                      mNBendHitsMap11->Fill(colHitPos + 0.01, rpcLine + shift + (0.25 * ib), 1); // Non-Bend
                   } else
                     mBendHitsMap11->Fill(colId + 0.5, lineHitPos, 1); // Bend
                 } else if (ichamber == 1) {
                   if (board == 4) {
                     for (int ib = 0; ib < nZoneHistoY; ib++)
-                      mNBendHitsMap12->Fill(colHitPos, rpcLine + shift + (0.25 * ib), 1); // Non-Bend
+                      mNBendHitsMap12->Fill(colHitPos + 0.01, rpcLine + shift + (0.25 * ib), 1); // Non-Bend
                   } else
                     mBendHitsMap12->Fill(colId + 0.5, lineHitPos, 1); // Bend
                 } else if (ichamber == 2) {
                   if (board == 4) {
                     for (int ib = 0; ib < nZoneHistoY; ib++)
-                      mNBendHitsMap21->Fill(colHitPos, rpcLine + shift + (0.25 * ib), 1); // Non-Bend
+                      mNBendHitsMap21->Fill(colHitPos + 0.01, rpcLine + shift + (0.25 * ib), 1); // Non-Bend
                   } else
                     mBendHitsMap21->Fill(colId + 0.5, lineHitPos, 1); // Bend
                 } else if (ichamber == 3) {
                   if (board == 4) {
                     for (int ib = 0; ib < nZoneHistoY; ib++)
-                      mNBendHitsMap22->Fill(colHitPos, rpcLine + shift + (0.25 * ib), 1); // Non-Bend
+                      mNBendHitsMap22->Fill(colHitPos + 0.01, rpcLine + shift + (0.25 * ib), 1); // Non-Bend
                   } else
                     mBendHitsMap22->Fill(colId + 0.5, lineHitPos, 1); // Bend
                 }
@@ -444,25 +470,25 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
                 if (ichamber == 0) {
                   if (board == 4) {
                     for (int ib = 0; ib < nZoneHistoY; ib++)
-                      mNBendHitsMap11->Fill(-colHitPos, rpcLine + shift + (0.25 * ib), 1); // Non-Bend
+                      mNBendHitsMap11->Fill(-colHitPos - 0.01, rpcLine + shift + (0.25 * ib), 1); // Non-Bend
                   } else
                     mBendHitsMap11->Fill(-colId - 0.5, lineHitPos, 1); // Bend
                 } else if (ichamber == 1) {
                   if (board == 4) {
                     for (int ib = 0; ib < nZoneHistoY; ib++)
-                      mNBendHitsMap12->Fill(-colHitPos, rpcLine + shift + (0.25 * ib), 1); // Non-Bend
+                      mNBendHitsMap12->Fill(-colHitPos - 0.01, rpcLine + shift + (0.25 * ib), 1); // Non-Bend
                   } else
                     mBendHitsMap12->Fill(-colId - 0.5, lineHitPos, 1); // Bend
                 } else if (ichamber == 2) {
                   if (board == 4) {
                     for (int ib = 0; ib < nZoneHistoY; ib++)
-                      mNBendHitsMap21->Fill(-colHitPos, rpcLine + shift + (0.25 * ib), 1); // Non-Bend
+                      mNBendHitsMap21->Fill(-colHitPos - 0.01, rpcLine + shift + (0.25 * ib), 1); // Non-Bend
                   } else
                     mBendHitsMap21->Fill(-colId - 0.5, lineHitPos, 1); // Bend
                 } else if (ichamber == 3) {
                   if (board == 4) {
                     for (int ib = 0; ib < nZoneHistoY; ib++)
-                      mNBendHitsMap22->Fill(-colHitPos, rpcLine + shift + (0.25 * ib), 1); // Non-Bend
+                      mNBendHitsMap22->Fill(-colHitPos - 0.01, rpcLine + shift + (0.25 * ib), 1); // Non-Bend
                   } else
                     mBendHitsMap22->Fill(-colId - 0.5, lineHitPos, 1); // Bend
                 }
@@ -535,6 +561,21 @@ void DigitsQcTask::reset()
   mMultHitMT22NB->Reset();
 
   mLocalBoardsMap->Reset();
+  mLocalBoardsMap11->Reset();
+  mLocalBoardsMap12->Reset();
+  mLocalBoardsMap21->Reset();
+  mLocalBoardsMap22->Reset();
+
+  mBendHitsMap11->Reset();
+  mBendHitsMap12->Reset();
+  mBendHitsMap21->Reset();
+  mBendHitsMap22->Reset();
+  mNBendHitsMap11->Reset();
+  mNBendHitsMap12->Reset();
+  mNBendHitsMap21->Reset();
+  mNBendHitsMap22->Reset();
+
+  mDigitBCCounts->Reset();
 }
 
 } // namespace o2::quality_control_modules::mid

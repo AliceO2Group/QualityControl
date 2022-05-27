@@ -101,10 +101,10 @@ void RawQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mBusyRawLocalBoards->SetOption("colz");
   mBusyRawLocalBoards->SetStats(0);
 
-  mBCCounts = new TH1F("BCCounts", "Bunch Crossing Counts", o2::constants::lhc::LHCMaxBunches, 0, o2::constants::lhc::LHCMaxBunches);
-  getObjectsManager()->startPublishing(mBCCounts);
-  mBCCounts->GetXaxis()->SetTitle("BC");
-  mBCCounts->GetYaxis()->SetTitle("Entry");
+  mRawBCCounts = new TH1F("RawBCCounts", "Raw Bunch Crossing Counts", o2::constants::lhc::LHCMaxBunches, 0, o2::constants::lhc::LHCMaxBunches);
+  getObjectsManager()->startPublishing(mRawBCCounts);
+  mRawBCCounts->GetXaxis()->SetTitle("BC");
+  mRawBCCounts->GetYaxis()->SetTitle("Entry");
 }
 
 static int Pattern(uint16_t pattern)
@@ -267,7 +267,7 @@ void RawQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   for (auto const& OS : BCOrbitCounts) {
     nBC++;
     auto& OrbitCounts = OS.second;
-    mBCCounts->Fill(OS.first, OrbitCounts[1]);
+    mRawBCCounts->Fill(OS.first, OrbitCounts[1]);
   }
 
   // mChecker.clear();

@@ -53,63 +53,63 @@ int getDEindex(int deId)
   if (deId < (DEmin + 100)) {
     return (deId - DEmin);
   }
-  offset += 5;
+  offset += 4;
 
   // CH 2 - 4 DE
   DEmin = 200;
   if (deId < (DEmin + 100)) {
     return (deId - DEmin + offset);
   }
-  offset += 5;
+  offset += 4;
 
   // CH 3 - 4 DE
   DEmin = 300;
   if (deId < (DEmin + 100)) {
     return (deId - DEmin + offset);
   }
-  offset += 5;
+  offset += 4;
 
   // CH 4 - 4 DE
   DEmin = 400;
   if (deId < (DEmin + 100)) {
     return (deId - DEmin + offset);
   }
-  offset += 5;
+  offset += 4;
 
   // CH 5 - 18 DE
   DEmin = 500;
   if (deId < (DEmin + 100)) {
     return (deId - DEmin + offset);
   }
-  offset += 19;
+  offset += 18;
 
   // CH 6 - 18 DE
   DEmin = 600;
   if (deId < (DEmin + 100)) {
     return (deId - DEmin + offset);
   }
-  offset += 19;
+  offset += 18;
 
   // CH 7 - 26 DE
   DEmin = 700;
   if (deId < (DEmin + 100)) {
     return (deId - DEmin + offset);
   }
-  offset += 27;
+  offset += 26;
 
   // CH 8 - 26 DE
   DEmin = 800;
   if (deId < (DEmin + 100)) {
     return (deId - DEmin + offset);
   }
-  offset += 27;
+  offset += 26;
 
   // CH 9 - 26 DE
   DEmin = 900;
   if (deId < (DEmin + 100)) {
     return (deId - DEmin + offset);
   }
-  offset += 27;
+  offset += 26;
 
   // CH 10 - 26 DE
   DEmin = 1000;

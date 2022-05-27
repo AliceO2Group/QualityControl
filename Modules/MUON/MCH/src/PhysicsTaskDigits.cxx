@@ -34,6 +34,7 @@
 #include "QualityControl/QcInfoLogger.h"
 #include <Framework/InputRecord.h>
 #include <CommonConstants/LHCConstants.h>
+#include <DetectorsRaw/HBFUtils.h>
 
 using namespace std;
 using namespace o2::mch::raw;
@@ -81,7 +82,7 @@ void PhysicsTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   }
 
   // Histograms in electronics coordinates
-  mHistogramOccupancyElec = std::make_shared<MergeableTH2Ratio>("Occupancy_Elec", "Occupancy (KHz)", nElecXbins, 0, nElecXbins, 64, 0, 64);
+  mHistogramOccupancyElec = std::make_shared<MergeableTH2Ratio>("Occupancy_Elec", "Occupancy", nElecXbins, 0, nElecXbins, 64, 0, 64);
   mHistogramOccupancyElec->SetOption("colz");
   mAllHistograms.push_back(mHistogramOccupancyElec.get());
   if (!mSaveToRootFile) {
@@ -93,7 +94,7 @@ void PhysicsTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   mAllHistograms.push_back(mHistogramNHitsElec);
   mAllHistograms.push_back(mHistogramNorbitsElec);
 
-  mMeanOccupancyPerDE = std::make_shared<MergeableTH1OccupancyPerDE>("MeanOccupancy", "Mean Occupancy of each DE (KHz)");
+  mMeanOccupancyPerDE = std::make_shared<MergeableTH1OccupancyPerDE>("MeanOccupancy", "Mean Occupancy vs DE");
   mMeanOccupancyPerDE->SetOption("hist");
   mAllHistograms.push_back(mMeanOccupancyPerDE.get());
   if (!mSaveToRootFile) {
@@ -101,7 +102,7 @@ void PhysicsTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   }
 
   // Histograms in global detector coordinates
-  mHistogramOccupancyST12 = std::make_shared<MergeableTH2Ratio>("Occupancy_ST12", "ST12 Occupancy (KHz)", 10, 0, 10, 10, 0, 10);
+  mHistogramOccupancyST12 = std::make_shared<MergeableTH2Ratio>("Occupancy_ST12", "ST12 Occupancy", 10, 0, 10, 10, 0, 10);
   mAllHistograms.push_back(mHistogramOccupancyST12.get());
   if (!mSaveToRootFile) {
     getObjectsManager()->startPublishing(mHistogramOccupancyST12.get());
@@ -116,7 +117,7 @@ void PhysicsTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   mHistogramNorbitsST12->init();
   mAllHistograms.push_back(mHistogramNorbitsST12->getHist());
 
-  mHistogramOccupancyST345 = std::make_shared<MergeableTH2Ratio>("Occupancy_ST345", "ST345 Occupancy (KHz)", 10, 0, 10, 10, 0, 10);
+  mHistogramOccupancyST345 = std::make_shared<MergeableTH2Ratio>("Occupancy_ST345", "ST345 Occupancy", 10, 0, 10, 10, 0, 10);
   mAllHistograms.push_back(mHistogramOccupancyST345.get());
   if (!mSaveToRootFile) {
     getObjectsManager()->startPublishing(mHistogramOccupancyST345.get());
@@ -136,7 +137,7 @@ void PhysicsTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   // getObjectsManager()->startPublishing(mMeanOccupancyPerDECycle.get());
 
   mHistogramDigitsOrbitInTFDE = std::make_shared<TH2F>("DigitOrbitInTFDE", "Digit orbits vs DE", getDEindexMax(), 0, getDEindexMax(), 768, -384, 384);
-  mHistogramDigitsOrbitInTFDE->SetOption("colz");
+  mHistogramDigitsOrbitInTFDE->SetOption("col");
   mAllHistograms.push_back(mHistogramDigitsOrbitInTFDE.get());
   if (!mSaveToRootFile) {
     getObjectsManager()->startPublishing(mHistogramDigitsOrbitInTFDE.get());
@@ -220,18 +221,30 @@ void PhysicsTaskDigits::startOfCycle()
 
 void PhysicsTaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  // get the input preclusters and associated digits with the orbit information
+  bool hasOrbits = false;
+  for (auto&& input : ctx.inputs()) {
+    if (input.spec->binding == "orbits") {
+      hasOrbits = true;
+    }
+  }
+
+  if (hasOrbits) {
+    auto orbits = ctx.inputs().get<gsl::span<uint64_t>>("orbits");
+    if (orbits.empty()) {
+      static AliceO2::InfoLogger::InfoLogger::AutoMuteToken msgLimit(LogWarningSupport, 1, 600); // send it once every 10 minutes
+      string msg = "WARNING: empty orbits vector";
+      ILOG_INST.log(msgLimit, "%s", msg.c_str());
+      return;
+    }
+
+    for (auto& orb : orbits) {
+      storeOrbit(orb);
+    }
+  } else {
+    addDefaultOrbitsInTF();
+  }
+
   auto digits = ctx.inputs().get<gsl::span<o2::mch::Digit>>("digits");
-  auto orbits = ctx.inputs().get<gsl::span<uint64_t>>("orbits");
-  if (orbits.empty()) {
-    ILOG(Info, Support) << "WARNING: empty orbits vector" << AliceO2::InfoLogger::InfoLogger::endm;
-    return;
-  }
-
-  for (auto& orb : orbits) {
-    storeOrbit(orb);
-  }
-
   for (auto& d : digits) {
     plotDigit(d);
   }
@@ -253,6 +266,15 @@ void PhysicsTaskDigits::storeOrbit(const uint64_t& orb)
         mNOrbits[fee][li] += 1;
       }
       mLastOrbitSeen[fee][li] = orbit;
+    }
+  }
+}
+
+void PhysicsTaskDigits::addDefaultOrbitsInTF()
+{
+  for (int fee = 0; fee < PhysicsTaskDigits::sMaxFeeId; fee++) {
+    for (int li = 0; li < PhysicsTaskDigits::sMaxLinkId; li++) {
+      mNOrbits[fee][li] += o2::raw::HBFUtils::Instance().getNOrbitsPerTF();
     }
   }
 }

@@ -74,8 +74,8 @@ void CcdbDatabase::loadDeprecatedStreamerInfos()
     TFile file(localPath.data(), "READ");
     if (file.IsZombie()) {
       string s = string("Cannot find ") + localPath;
-      ILOG(Error, Support) << s << ENDM;
-      BOOST_THROW_EXCEPTION(DatabaseException() << errinfo_details(s));
+      ILOG(Warning, Support) << s << ENDM;
+      continue;
     }
     TIter next(file.GetListOfKeys());
     TKey* key;

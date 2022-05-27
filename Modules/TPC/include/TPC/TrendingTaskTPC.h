@@ -68,21 +68,23 @@ class TrendingTaskTPC : public PostProcessingInterface
   /// \brief Methods specific to the trending itself.
   void trendValues(const Trigger& t, o2::quality_control::repository::DatabaseInterface&);
   void generatePlots();
-  void drawCanvas(TCanvas* thisCanvas, const std::string& var,
-                  const std::string& name, const std::string& opt, const std::string& err, const std::vector<std::vector<float>>& axis);
-
+  void drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
+                    const std::string& name, const std::string& opt, const std::string& err, const std::vector<std::vector<float>>& axis);
+  void drawCanvasQO(TCanvas* thisCanvas, const std::string& var, const std::string& name, const std::string& opt);
   void getUserAxisRange(const std::string graphAxisRange, float& limitLow, float& limitUp);
   void setUserAxisLabel(TAxis* xAxis, TAxis* yAxis, const std::string graphAxisLabel);
+  void getTrendVariables(const std::string& inputvar, std::string& sourceName, std::string& variableName, std::string& trend);
+  void getTrendErrors(const std::string& inputvar, std::string& errorX, std::string& errorY);
 
   TrendingTaskConfigTPC mConfig;
   MetaData mMetaData;
   UInt_t mTime;
-  // int mNumberPads;
-  // std::vector<std::string>> mSubtitles;  // Sliced ranges for the titles. [nb dataSources][nb Pads]
   std::unique_ptr<TTree> mTrend;
   std::map<std::string, TObject*> mPlots;
   std::unordered_map<std::string, std::unique_ptr<ReductorTPC>> mReductors;
   std::unordered_map<std::string, std::vector<SliceInfo>> mSources;
+  std::unordered_map<std::string, SliceInfoQuality> mSourcesQuality;
+  std::unordered_map<std::string, bool> mIsMoObject;
   std::unordered_map<std::string, std::vector<std::string>> mSubtitles;
   std::unordered_map<std::string, std::vector<std::vector<float>>> mAxisDivision;
 };

@@ -18,8 +18,8 @@
 #include <TH1.h>
 #include <TH2.h>
 
-#include "QualityControl/QcInfoLogger.h"
 #include "EMCAL/ClusterTask.h"
+#include "QualityControl/QcInfoLogger.h"
 #include <Framework/InputRecord.h>
 #include <Framework/InputRecordWalker.h>
 
@@ -28,10 +28,10 @@
 #include "DataFormatsEMCAL/Digit.h"
 #include "DataFormatsEMCAL/Cluster.h"
 #include "DataFormatsEMCAL/TriggerRecord.h"
+#include "DetectorsBase/GeometryManager.h"
+#include "EMCALBase/Geometry.h"
 #include "Framework/ControlService.h"
 #include "Framework/Logger.h"
-#include "EMCALBase/Geometry.h"
-#include "DetectorsBase/GeometryManager.h"
 #include <TGeoManager.h>
 
 #include <DataFormatsEMCAL/EventHandler.h>
@@ -42,7 +42,7 @@
 std::unique_ptr<o2::emcal::EventHandler<o2::emcal::Cell>> mEventHandler;
 std::unique_ptr<o2::emcal::ClusterFactory<o2::emcal::Cell>> mClusterFactory;
 
-namespace o2::quality_control_modules::emcal::ClusterTask
+namespace o2::quality_control_modules::emcal
 {
 
 ClusterTask::~ClusterTask()
@@ -90,6 +90,8 @@ void ClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   mHistM20_DCal = new TH1F("M20_DCal", "M20 distribution; M20;Counts", 200, 0.0, 2.0);
   getObjectsManager()->startPublishing(mHistM20_DCal);
+
+  mGeometry = o2::emcal::Geometry::GetInstanceFromRunNumber(300000);
 }
 
 void ClusterTask::startOfActivity(Activity& activity)
@@ -101,6 +103,11 @@ void ClusterTask::startOfActivity(Activity& activity)
 void ClusterTask::startOfCycle()
 {
   ILOG(Info, Support) << "startOfCycle" << ENDM;
+
+  if (!o2::base::GeometryManager::isGeometryLoaded()) {
+    TaskInterface::retrieveCondition("GLO/Config/Geometry");
+  }
+
   resetHistograms();
 }
 
@@ -168,12 +175,12 @@ void ClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 
       if (clsTypeEMC) {
         mHistClustE_EMCal->Fill(clustE);
-        mHistNCells_EMCal->Fill(analysisCluster.getNCells());
+        mHistNCells_EMCal->Fill(clustE, analysisCluster.getNCells());
         mHistM02_EMCal->Fill(analysisCluster.getM02());
         mHistM20_EMCal->Fill(analysisCluster.getM20());
       } else {
         mHistClustE_DCal->Fill(clustE);
-        mHistNCells_DCal->Fill(analysisCluster.getNCells());
+        mHistNCells_DCal->Fill(clustE, analysisCluster.getNCells());
         mHistM02_DCal->Fill(analysisCluster.getM02());
         mHistM20_DCal->Fill(analysisCluster.getM20());
       }
@@ -210,4 +217,4 @@ void ClusterTask::resetHistograms()
   mHistM20_DCal->Reset();
 }
 
-} // namespace o2::quality_control_modules::emcal::ClusterTask
+} // namespace o2::quality_control_modules::emcal

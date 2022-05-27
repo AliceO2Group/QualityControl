@@ -196,7 +196,7 @@ TriggerFcn ForEachObject(std::string databaseUrl, std::string databaseType, std:
   auto filteredObjects = std::make_shared<std::vector<boost::property_tree::ptree>>();
   const auto& filter = activity;
 
-  ILOG(Debug, Devel) << "Filter activity: " << activity.mId << ", " << activity.mType << ", " << activity.mPassName << ", " << activity.mPeriodName << ", " << activity.mProvenance << ENDM;
+  ILOG(Debug, Devel) << "Filter activity: " << activity << ENDM;
 
   // As for today, we receive objects in the order of the newest to the oldest.
   // We prefer the other order here.
@@ -204,7 +204,7 @@ TriggerFcn ForEachObject(std::string databaseUrl, std::string databaseType, std:
     auto objectActivity = repository::database_helpers::asActivity(rit->second);
     if (filter.matches(objectActivity)) {
       filteredObjects->emplace_back(rit->second);
-      ILOG(Debug, Devel) << "Matched an object with activity: " << objectActivity.mId << ", " << objectActivity.mType << ", " << objectActivity.mPassName << ", " << objectActivity.mPeriodName << ", " << objectActivity.mProvenance << ENDM;
+      ILOG(Debug, Devel) << "Matched an object with activity: " << activity << ENDM;
     }
   }
   ILOG(Info, Support) << filteredObjects->size() << " objects matched the specified activity" << ENDM;
@@ -244,7 +244,7 @@ TriggerFcn ForEachLatest(std::string databaseUrl, std::string databaseType, std:
   auto filteredObjects = std::make_shared<std::vector<std::pair<Activity, boost::property_tree::ptree>>>();
   const auto& filter = activity;
 
-  ILOG(Debug, Devel) << "Filter activity: " << activity.mId << ", " << activity.mType << ", " << activity.mPassName << ", " << activity.mPeriodName << ", " << activity.mProvenance << ENDM;
+  ILOG(Debug, Devel) << "Filter activity: " << activity << ENDM;
 
   // As for today, we receive objects in the order of the newest to the oldest.
   // We prefer the other order here.
@@ -252,14 +252,14 @@ TriggerFcn ForEachLatest(std::string databaseUrl, std::string databaseType, std:
     auto objectActivity = repository::database_helpers::asActivity(rit->second);
     if (filter.matches(objectActivity)) {
       auto latestObject = std::find_if(filteredObjects->begin(), filteredObjects->end(), [&](const std::pair<Activity, boost::property_tree::ptree>& entry) {
-        return entry.first == objectActivity;
+        return entry.first.same(objectActivity);
       });
       if (latestObject != filteredObjects->end() && latestObject->second.get<int64_t>(timestampKey) < rit->second.get<int64_t>(timestampKey)) {
         *latestObject = { objectActivity, rit->second };
-        ILOG(Debug, Devel) << "Updated the object with activity: " << objectActivity.mId << ", " << objectActivity.mType << ", " << objectActivity.mPassName << ", " << objectActivity.mPeriodName << ", " << objectActivity.mProvenance << ENDM;
+        ILOG(Debug, Devel) << "Updated the object with activity: " << objectActivity << ENDM;
       } else {
         filteredObjects->emplace_back(objectActivity, rit->second);
-        ILOG(Debug, Devel) << "Matched an object with activity: " << objectActivity.mId << ", " << objectActivity.mType << ", " << objectActivity.mPassName << ", " << objectActivity.mPeriodName << ", " << objectActivity.mProvenance << ENDM;
+        ILOG(Debug, Devel) << "Matched an object with activity: " << objectActivity << ENDM;
       }
     }
   }

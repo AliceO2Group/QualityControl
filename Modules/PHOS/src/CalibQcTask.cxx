@@ -81,8 +81,8 @@ void CalibQcTask::initialize(o2::framework::InitContext& /*ctx*/)
         mHist2D[kChangeHGM1 + mod]->GetXaxis()->SetTitle("x, cells");
         mHist2D[kChangeHGM1 + mod]->GetYaxis()->SetTitle("z, cells");
         mHist2D[kChangeHGM1 + mod]->SetStats(0);
-        mHist2D[kChangeHGM1 + mod]->SetMinimum(0);
-        // mHist2D[kChangeHGM1+mod]->SetMaximum(100) ;
+        mHist2D[kChangeHGM1 + mod]->SetMinimum(-5);
+        mHist2D[kChangeHGM1 + mod]->SetMaximum(5);
         getObjectsManager()->startPublishing(mHist2D[kChangeHGM1 + mod]);
       } else {
         mHist2D[kChangeHGM1 + mod]->Reset();
@@ -94,8 +94,8 @@ void CalibQcTask::initialize(o2::framework::InitContext& /*ctx*/)
         mHist2D[kChangeLGM1 + mod]->GetXaxis()->SetTitle("x, cells");
         mHist2D[kChangeLGM1 + mod]->GetYaxis()->SetTitle("z, cells");
         mHist2D[kChangeLGM1 + mod]->SetStats(0);
-        mHist2D[kChangeLGM1 + mod]->SetMinimum(0);
-        // mHist2D[kChangeLGM1+mod]->SetMaximum(100) ;
+        mHist2D[kChangeLGM1 + mod]->SetMinimum(-5);
+        mHist2D[kChangeLGM1 + mod]->SetMaximum(5);
         getObjectsManager()->startPublishing(mHist2D[kChangeLGM1 + mod]);
       } else {
         mHist2D[kChangeLGM1 + mod]->Reset();
@@ -112,7 +112,7 @@ void CalibQcTask::initialize(o2::framework::InitContext& /*ctx*/)
         mHist2D[kChangeHGM1 + mod]->GetYaxis()->SetTitle("z, cells");
         mHist2D[kChangeHGM1 + mod]->SetStats(0);
         mHist2D[kChangeHGM1 + mod]->SetMinimum(0);
-        mHist2D[kChangeHGM1 + mod]->SetMaximum(20);
+        mHist2D[kChangeHGM1 + mod]->SetMaximum(5);
         getObjectsManager()->startPublishing(mHist2D[kChangeHGM1 + mod]);
       } else {
         mHist2D[kChangeHGM1 + mod]->Reset();
@@ -152,20 +152,29 @@ void CalibQcTask::startOfCycle()
 
 void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
+
   // std::array<short, 2*o2::phos::Mapping::NCHANNELS>
-  auto diff = ctx.inputs().get<gsl::span<short>>("calibdiff");
-  bool fillLG = diff.size() > o2::phos::Mapping::NCHANNELS + 1;
-
-  char relid[3];
-  for (short absId = o2::phos::Mapping::NCHANNELS; absId > 1792; absId--) {
-
-    o2::phos::Geometry::absToRelNumbering(absId, relid);
-    mHist2D[kChangeHGM1 + relid[0] - 1]->SetBinContent(relid[1], relid[2], diff[absId - 1792]);
-    if (fillLG && mMode == 1) { // Only in pedestals prepare both histos
-      mHist2D[kChangeLGM1 + relid[0] - 1]->SetBinContent(relid[1], relid[2], diff[absId + o2::phos::Mapping::NCHANNELS - 1792]);
+  if (mMode == 0 || mMode == 1) { // Bad map or pedestals
+    auto diff = ctx.inputs().get<gsl::span<short>>("calibdiff");
+    char relid[3];
+    for (short absId = o2::phos::Mapping::NCHANNELS; absId > 1792; absId--) {
+      o2::phos::Geometry::absToRelNumbering(absId, relid);
+      mHist2D[kChangeHGM1 + relid[0] - 1]->SetBinContent(relid[1], relid[2], diff[absId]);
+      if (mMode == 1) {
+        mHist2D[kChangeLGM1 + relid[0] - 1]->SetBinContent(relid[1], relid[2], diff[absId + o2::phos::Mapping::NCHANNELS]);
+      }
     }
+  } // Pedestals
+  else {
+    if (mMode == 2) { // LED
+      auto diff = ctx.inputs().get<gsl::span<float>>("calibdiff");
+      char relid[3];
+      for (short absId = o2::phos::Mapping::NCHANNELS; absId > 1792; absId--) {
+        o2::phos::Geometry::absToRelNumbering(absId, relid);
+        mHist2D[kChangeHGM1 + relid[0] - 1]->SetBinContent(relid[1], relid[2], diff[absId]);
+      }
+    } // LED, bad map
   }
-
 } // function monitor data
 
 void CalibQcTask::endOfCycle()

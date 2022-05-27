@@ -37,23 +37,23 @@ namespace InfrastructureSpecReader
 InfrastructureSpec readInfrastructureSpec(const boost::property_tree::ptree& wholeTree);
 
 template <typename T>
-T readSpecEntry(std::string entryName, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
+T readSpecEntry(std::string entryID, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
 
 // readers for separate parts
 template <>
-DataSourceSpec readSpecEntry<DataSourceSpec>(std::string entryName, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
+DataSourceSpec readSpecEntry<DataSourceSpec>(std::string entryID, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
 template <>
-TaskSpec readSpecEntry<TaskSpec>(std::string entryName, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
+TaskSpec readSpecEntry<TaskSpec>(std::string entryID, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
 template <>
-checker::CheckSpec readSpecEntry<checker::CheckSpec>(std::string entryName, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
+checker::CheckSpec readSpecEntry<checker::CheckSpec>(std::string entryID, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
 template <>
-checker::AggregatorSpec readSpecEntry<checker::AggregatorSpec>(std::string entryName, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
+checker::AggregatorSpec readSpecEntry<checker::AggregatorSpec>(std::string entryID, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
 template <>
-postprocessing::PostProcessingTaskSpec readSpecEntry<postprocessing::PostProcessingTaskSpec>(std::string entryName, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
+postprocessing::PostProcessingTaskSpec readSpecEntry<postprocessing::PostProcessingTaskSpec>(std::string entryID, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
 template <>
-ExternalTaskSpec readSpecEntry<ExternalTaskSpec>(std::string entryName, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
+ExternalTaskSpec readSpecEntry<ExternalTaskSpec>(std::string entryID, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
 template <>
-CommonSpec readSpecEntry<CommonSpec>(std::string entryName, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
+CommonSpec readSpecEntry<CommonSpec>(std::string entryID, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
 
 // todo: section names should be enum.
 template <typename T>
@@ -64,8 +64,8 @@ std::vector<T> readSectionSpec(const boost::property_tree::ptree& wholeTree, con
   if (qcTree.find(section) != qcTree.not_found()) {
     const auto& sectionTree = qcTree.get_child(section);
     sectionSpec.reserve(sectionTree.size());
-    for (const auto& [entryName, entryTree] : sectionTree) {
-      sectionSpec.push_back(readSpecEntry<T>(entryName, entryTree, wholeTree));
+    for (const auto& [entryID, entryTree] : sectionTree) {
+      sectionSpec.push_back(readSpecEntry<T>(entryID, entryTree, wholeTree));
     }
   }
   return sectionSpec;

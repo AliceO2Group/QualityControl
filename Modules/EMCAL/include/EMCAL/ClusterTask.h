@@ -27,7 +27,7 @@ class TH2;
 
 using namespace o2::quality_control::core;
 
-namespace o2::quality_control_modules::emcal::ClusterTask
+namespace o2::quality_control_modules::emcal
 {
 
 /// \brief Example Quality Control DPL Task
@@ -68,6 +68,6 @@ class ClusterTask final : public TaskInterface
   TH1* mHistM20_DCal = nullptr;
 };
 
-} // namespace o2::quality_control_modules::emcal::ClusterTask
+} // namespace o2::quality_control_modules::emcal
 
 #endif // QC_MODULE_EMC_EMCCLUSTERTASK_H

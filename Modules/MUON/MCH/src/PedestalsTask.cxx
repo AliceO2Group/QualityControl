@@ -345,7 +345,7 @@ void PedestalsTask::monitorDataPedestals(o2::framework::ProcessingContext& ctx)
     double rms = p.getRms();
 
     auto solarID = dsChID.getSolarId();
-    auto dsID = dsChID.getDsId();
+    auto dsID = dsChID.getElinkId();
     auto channel = dsChID.getChannel();
 
     PlotPedestal(solarID, dsID, channel, mean, rms);
@@ -364,7 +364,7 @@ void PedestalsTask::monitorDataDigits(o2::framework::ProcessingContext& ctx)
     }
 
     PlotPedestal(p.dsChannelId.getSolarId(),
-                 p.dsChannelId.getDsId(),
+                 p.dsChannelId.getElinkId(),
                  p.dsChannelId.getChannel(),
                  p.mPedestal,
                  p.getRms());

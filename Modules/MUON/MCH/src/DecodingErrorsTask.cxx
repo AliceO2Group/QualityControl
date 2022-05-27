@@ -48,24 +48,12 @@ DecodingErrorsTask::DecodingErrorsTask()
 
 DecodingErrorsTask::~DecodingErrorsTask() = default;
 
-static int sErrorMax = 11;
-
 static void setXAxisLabels(TH2F* hErrors)
 {
   TAxis* ax = hErrors->GetXaxis();
-  ax->SetBinLabel(1, errorCodeAsString(1).c_str());
-  ax->SetBinLabel(2, errorCodeAsString(1 << 1).c_str());
-  ax->SetBinLabel(3, errorCodeAsString(1 << 2).c_str());
-  ax->SetBinLabel(4, errorCodeAsString(1 << 3).c_str());
-  ax->SetBinLabel(5, errorCodeAsString(1 << 4).c_str());
-  ax->SetBinLabel(6, errorCodeAsString(1 << 5).c_str());
-  ax->SetBinLabel(7, errorCodeAsString(1 << 6).c_str());
-  ax->SetBinLabel(8, errorCodeAsString(1 << 7).c_str());
-  ax->SetBinLabel(9, errorCodeAsString(1 << 8).c_str());
-  ax->SetBinLabel(10, errorCodeAsString(1 << 9).c_str());
-  ax->SetBinLabel(11, errorCodeAsString(1 << 10).c_str());
-  for (int i = 1; i <= sErrorMax; i++) {
-    ax->ChangeLabel(i, 45);
+  for (int i = 0; i < getErrorCodesSize(); i++) {
+    ax->SetBinLabel(i + 1, errorCodeAsString(1 << i).c_str());
+    ax->ChangeLabel(i + 1, 45);
   }
 }
 
@@ -94,7 +82,7 @@ void DecodingErrorsTask::initialize(o2::framework::InitContext& /*ic*/)
   mSolar2Fee = createSolar2FeeLinkMapper<ElectronicMapperGenerated>();
 
   // Number of decoding errors, grouped by chamber ID and normalized to the number of processed TF
-  mHistogramErrorsPerChamber = std::make_shared<MergeableTH2Ratio>("DecodingErrorsPerChamber", "Chamber Number vs. Error Type", sErrorMax, 1, sErrorMax + 1, 10, 1, 11);
+  mHistogramErrorsPerChamber = std::make_shared<MergeableTH2Ratio>("DecodingErrorsPerChamber", "Chamber Number vs. Error Type", getErrorCodesSize(), 0, getErrorCodesSize(), 10, 1, 11);
   setXAxisLabels(mHistogramErrorsPerChamber.get());
   setYAxisLabels(mHistogramErrorsPerChamber.get());
   mHistogramErrorsPerChamber->SetOption("colz");
@@ -104,7 +92,7 @@ void DecodingErrorsTask::initialize(o2::framework::InitContext& /*ic*/)
   }
 
   // Number of decoding errors, grouped by FEE ID and normalized to the number of processed TF
-  mHistogramErrorsPerFeeId = std::make_shared<MergeableTH2Ratio>("DecodingErrorsPerFeeId", "FEE ID vs. Error Type", sErrorMax, 1, sErrorMax + 1, 64, 0, 64);
+  mHistogramErrorsPerFeeId = std::make_shared<MergeableTH2Ratio>("DecodingErrorsPerFeeId", "FEE ID vs. Error Type", getErrorCodesSize(), 0, getErrorCodesSize(), 64, 0, 64);
   setXAxisLabels(mHistogramErrorsPerFeeId.get());
   mHistogramErrorsPerFeeId->SetOption("colz");
   mAllHistograms.push_back(mHistogramErrorsPerFeeId.get());
@@ -235,7 +223,7 @@ void DecodingErrorsTask::plotError(int solarId, int dsAddr, int chip, uint32_t e
   }
 
   uint32_t errMask = 1;
-  for (int i = 0; i <= sErrorMax; i++) {
+  for (int i = 0; i < getErrorCodesSize(); i++) {
     // Fill the error histogram if the i-th bin is set in the error word
     if ((error & errMask) != 0) {
       mHistogramErrorsPerChamber->getNum()->Fill(0.5 + i, chamberId);
@@ -255,9 +243,10 @@ void DecodingErrorsTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (input.spec->binding == "TF") {
       decodeTF(ctx);
     }
+    if (input.spec->binding == "rawerrors") {
+      processErrors(ctx);
+    }
   }
-
-  processErrors(ctx);
 
   // Count the number of processed TF and set the denominators of the error histograms accordingly
   nTF += 1;

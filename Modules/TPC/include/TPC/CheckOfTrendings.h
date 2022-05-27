@@ -41,6 +41,17 @@ class CheckOfTrendings : public o2::quality_control::checker::CheckInterface
 
  private:
   ClassDefOverride(CheckOfTrendings, 2);
+  std::string mCheckChoice;
+  float mExpectedPhysicsValue;
+  float mNSigmaExpectedPhysicsValue;
+  float mNSigmaBadExpectedPhysicsValue;
+  float mNSigmaMean;
+  float mNSigmaBadMean;
+  int mPointToTakeForExpectedValueCheck;
+  int mPointToTakeForMeanCheck;
+  static constexpr std::string_view CheckChoiceMean = "Mean";
+  static constexpr std::string_view CheckChoiceExpectedPhysicsValue = "ExpectedPhysicsValue";
+  static constexpr std::string_view CheckChoiceBoth = "Both";
 };
 
 } // namespace o2::quality_control_modules::tpc
