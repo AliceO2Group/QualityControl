@@ -44,6 +44,7 @@ class CheckHitMap : public o2::quality_control::checker::CheckInterface
   MessagePad mShifterMessages;
   /// Message regarding the PHOS module (hole)
   MessagePad mPhosModuleMessage{ "PHOS", 13.f, 38.f, 16.f, 53.f }; // Values corresponding to the PHOS hole
+  static constexpr std::string mAcceptedName = "HitMap";
 
   ClassDefOverride(CheckHitMap, 2);
 };

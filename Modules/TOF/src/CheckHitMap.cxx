@@ -40,14 +40,16 @@ Quality CheckHitMap::check(std::map<std::string, std::shared_ptr<MonitorObject>>
       ILOG(Error, Support) << "Cannot check MO " << mo->getName() << " " << moName << " which is not of type " << getAcceptedType() << ENDM;
       continue;
     }
+    if (mo->getName() != mAcceptedName) {
+      ILOG(Error, Support) << "Cannot check MO " << mo->getName() << " " << moName << " which does not have name " << mAcceptedName << ENDM;
+      continue;
+    }
     ILOG(Debug, Devel) << "Checking " << mo->getName() << ENDM;
-    if (mo->getName() == "HitMap") {
-      const auto* h = static_cast<TH2F*>(mo->getObject());
-      if (h->GetEntries() == 0) { // Histogram is empty
-        result = Quality::Medium;
-        mShifterMessages.AddMessage("No counts!");
-      } else { // Histogram is non empty. Here we should check that it is in agreement with the reference from CCDB -> TODO
-      }
+    const auto* h = static_cast<TH2F*>(mo->getObject());
+    if (h->GetEntries() == 0) { // Histogram is empty
+      result = Quality::Medium;
+      mShifterMessages.AddMessage("No counts!");
+    } else { // Histogram is non empty. Here we should check that it is in agreement with the reference from CCDB -> TODO
     }
   }
   return result;
@@ -55,12 +57,16 @@ Quality CheckHitMap::check(std::map<std::string, std::shared_ptr<MonitorObject>>
 
 void CheckHitMap::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  ILOG(Debug, Devel) << "Beautifying " << mo->getName() << ENDM;
   if (!isObjectCheckable(mo)) {
     ILOG(Error, Support) << "Cannot beautify MO " << mo->getName() << " which is not of type " << getAcceptedType() << ENDM;
     return;
   }
-  if (mo->getName() == "TOFRawHitMap") {
+  if (mo->getName() != mAcceptedName) {
+    ILOG(Error, Support) << "Cannot beautify MO " << mo->getName() << " " << moName << " which does not have name " << mAcceptedName << ENDM;
+    return;
+  }
+  ILOG(Debug, Devel) << "Beautifying " << mo->getName() << ENDM;
+  if (mo->getName() == mAcceptedName) {
     auto* h = static_cast<TH2F*>(mo->getObject());
     // auto msg = mShifterMessages.MakeMessagePad(h, checkResult);
     // if (!msg) {
