@@ -58,7 +58,7 @@
                 "active": "true",
                 "className": "o2::quality_control_modules::its::ITSFhrCheck",
                 "moduleName": "QcITS",
-                "policy": "OnAny",
+                "policy": "OnEachSeparately",
                 "detectorName": "ITS",
                 "dataSource": [{
                     "type": "Task",
