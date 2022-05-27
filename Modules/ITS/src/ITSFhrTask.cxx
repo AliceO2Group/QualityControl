@@ -218,12 +218,12 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
             mHitnumberLane[istave][2 * ihic + 1] = 0;
             mOccupancyLane[istave][2 * ihic] = 0;
             mOccupancyLane[istave][2 * ihic + 1] = 0;
-            mChipStaveOccupancy[mLayer]->GetXaxis()->SetLabelSize(0.02);
             mChipStaveOccupancy[mLayer]->GetXaxis()->SetBinLabel(2 * ihic + 1, Form("%s", OBLabel34[2 * ihic]));
             mChipStaveOccupancy[mLayer]->GetXaxis()->SetBinLabel(2 * ihic + 2, Form("%s", OBLabel34[2 * ihic + 1]));
             mChipStaveOccupancy[mLayer]->GetXaxis()->SetLabelSize(0.02);
             mChipStaveEventHitCheck[mLayer]->GetXaxis()->SetBinLabel(2 * ihic + 1, Form("%s", OBLabel34[2 * ihic]));
             mChipStaveEventHitCheck[mLayer]->GetXaxis()->SetBinLabel(2 * ihic + 2, Form("%s", OBLabel34[2 * ihic + 1]));
+            mChipStaveEventHitCheck[mLayer]->GetXaxis()->SetLabelSize(0.02);
           }
 
         } else {
