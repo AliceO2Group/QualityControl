@@ -68,15 +68,16 @@ class PhysicsTaskPreclusters /*final*/ : public o2::quality_control::core::TaskI
 
  private:
   template <typename T>
-  void publishObject(std::shared_ptr<T> histo, const char* drawOption, bool statBox, bool isExpert)
+  void publishObject(std::shared_ptr<T> histo, std::string drawOption, bool statBox, bool isExpert)
   {
-    histo->SetOption(drawOption);
+    histo->SetOption(drawOption.c_str());
     if (!statBox) {
       histo->SetStats(0);
     }
     mAllHistograms.push_back(histo.get());
     if (mDiagnostic || (isExpert == false)) {
       getObjectsManager()->startPublishing(histo.get());
+      getObjectsManager()->setDefaultDrawOptions(histo.get(), drawOption);
     }
   }
 
