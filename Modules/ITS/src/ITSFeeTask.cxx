@@ -430,7 +430,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
           }
         }
         mLaneStatusOverview[iflag]->SetBinContent(istave + 1 + StaveBoundary[ilayer], (float)(flagCount) / (float)(NLanePerStaveLayer[ilayer]));
-        mLaneStatusOverview[iflag]->SetBinError(istave + 1 + StaveBoundary[ilayer], flagCount < 1e-15 ? 1e200 : 0);
+        mLaneStatusOverview[iflag]->SetBinError(istave + 1 + StaveBoundary[ilayer], 1e-15);
       }
       mLaneStatusSummary[ilayer]->SetBinContent(iflag + 1, layerSummary[ilayer][iflag]);
     }
