@@ -30,6 +30,7 @@
 #include "TOFBase/Geo.h"
 #include <Framework/InputRecord.h>
 #include "CommonConstants/LHCConstants.h"
+#include "DataFormatsTOF/Diagnostic.h"
 
 // Fairlogger includes
 #include <fairlogger/Logger.h>
@@ -249,6 +250,9 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
   const auto& digits = ctx.inputs().get<gsl::span<o2::tof::Digit>>("tofdigits");
   // Get TOF Readout window
   const auto& rows = ctx.inputs().get<std::vector<o2::tof::ReadoutWindowData>>("readoutwin");
+  // Get Diagnostic frequency to check noisy channels in the current TF
+  // to be added once all json changed
+  // const auto diafreq = ctx.inputs().get<o2::tof::Diagnostic*>("diafreq");
 
   int eta, phi;       // Eta and phi indices
   int det[5] = { 0 }; // Coordinates
@@ -318,6 +322,15 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
         LOG(error) << "No valid channel";
         continue;
       }
+
+      // it can  be used once all json changed and diafreq added
+      // diafreq->isNoisyChannel(digit.getChannel())
+
+      int bcCorr = digit.getIR().bc - o2::tof::Geo::LATENCYWINDOW_IN_BC;
+      if (bcCorr < 0) {
+        bcCorr += o2::constants::lhc::LHCMaxBunches;
+      }
+
       o2::tof::Geo::getVolumeIndices(digit.getChannel(), det);
       strip = o2::tof::Geo::getStripNumberPerSM(det[1], det[2]); // Strip index in the SM
       ndigitsPerCrate[strip]++;
