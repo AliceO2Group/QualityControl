@@ -250,9 +250,13 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
   LOG(debug) << " ************************ ";
   mRecoCont.collectData(ctx, *mDataRequest.get());
 
+  // TPC
+  if (mRecoCont.isTrackSourceLoaded(GID::TPC) || mRecoCont.isTrackSourceLoaded(GID::TPCTOF)) { // this is enough to know that also TPC was loades, see "initialize"
+    mTPCTracks = mRecoCont.getTPCTracks();
+  }
+
   // TPC-TOF
   if (mRecoCont.isTrackSourceLoaded(GID::TPCTOF)) { // this is enough to know that also TPC was loades, see "initialize"
-    mTPCTracks = mRecoCont.getTPCTracks();
     mTPCTOFMatches = mRecoCont.getTPCTOFMatches();
     LOG(debug) << "We found " << mTPCTracks.size() << " TPC-only tracks";
     LOG(debug) << "We found " << mRecoCont.getTPCTOFTracks().size() << " TPC-TOF tracks";
