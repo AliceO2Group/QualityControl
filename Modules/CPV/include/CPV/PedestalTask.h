@@ -21,7 +21,7 @@
 #include <memory>
 #include <array>
 #include <gsl/span>
-#include "CPVBase/Geometry.h"
+#include <CPVBase/Geometry.h>
 
 class TH1F;
 class TH2F;
@@ -37,7 +37,7 @@ class PedestalTask final : public TaskInterface
 {
  public:
   /// \brief Constructor
-  PedestalTask() = default;
+  PedestalTask();
   /// Destructor
   ~PedestalTask() override;
 
@@ -52,11 +52,12 @@ class PedestalTask final : public TaskInterface
 
  private:
   void initHistograms();
-  void fillHistograms();
+  void fillDigitsHistograms();
   void resetHistograms();
 
-  static constexpr short kNHist1D = 14;
-  enum Histos1D { H1DInputPayloadSize,
+  static constexpr short kNHist1D = 27;
+  enum Histos1D { H1DRawErrors,
+                  H1DInputPayloadSize,
                   H1DNInputs,
                   H1DNValidInputs,
                   H1DNDigitsPerInput,
@@ -69,10 +70,19 @@ class PedestalTask final : public TaskInterface
                   H1DPedestalSigmaM4,
                   H1DPedestalEfficiencyM2,
                   H1DPedestalEfficiencyM3,
-                  H1DPedestalEfficiencyM4
+                  H1DPedestalEfficiencyM4,
+                  H1DPedestalValueInDigitsM2,
+                  H1DPedestalValueInDigitsM3,
+                  H1DPedestalValueInDigitsM4,
+                  H1DPedestalSigmaInDigitsM2,
+                  H1DPedestalSigmaInDigitsM3,
+                  H1DPedestalSigmaInDigitsM4,
+                  H1DPedestalEfficiencyInDigitsM2,
+                  H1DPedestalEfficiencyInDigitsM3,
+                  H1DPedestalEfficiencyInDigitsM4
   };
 
-  static constexpr short kNHist2D = 16;
+  static constexpr short kNHist2D = 34;
   enum Histos2D { H2DErrorType,
                   H2DDigitMapM2,
                   H2DDigitMapM3,
@@ -86,25 +96,42 @@ class PedestalTask final : public TaskInterface
                   H2DPedestalEfficiencyMapM2,
                   H2DPedestalEfficiencyMapM3,
                   H2DPedestalEfficiencyMapM4,
-                  H2DPedestalNPeaksMapM2,
-                  H2DPedestalNPeaksMapM3,
-                  H2DPedestalNPeaksMapM4
+                  H2DFEEThresholdsMapM2,
+                  H2DFEEThresholdsMapM3,
+                  H2DFEEThresholdsMapM4,
+                  H2DHighThresholdMapM2,
+                  H2DHighThresholdMapM3,
+                  H2DHighThresholdMapM4,
+                  H2DDeadChanelsMapM2,
+                  H2DDeadChanelsMapM3,
+                  H2DDeadChanelsMapM4,
+                  H2DPedestalNPeaksMapInDigitsM2,
+                  H2DPedestalNPeaksMapInDigitsM3,
+                  H2DPedestalNPeaksMapInDigitsM4,
+                  H2DPedestalValueMapInDigitsM2,
+                  H2DPedestalValueMapInDigitsM3,
+                  H2DPedestalValueMapInDigitsM4,
+                  H2DPedestalSigmaMapInDigitsM2,
+                  H2DPedestalSigmaMapInDigitsM3,
+                  H2DPedestalSigmaMapInDigitsM4,
+                  H2DPedestalEfficiencyMapInDigitsM2,
+                  H2DPedestalEfficiencyMapInDigitsM3,
+                  H2DPedestalEfficiencyMapInDigitsM4
   };
 
-  static constexpr short kNModules = 3;
-  static constexpr short kNChannels = 23040;
-  o2::cpv::Geometry mCPVGeometry;
-
-  int mNEventsTotal;
+  int mNEventsTotal = 0;
   int mNEventsFromLastFillHistogramsCall;
   int mMinNEventsToUpdatePedestals = 1000; ///< min number of events needed to update pedestals
   int mRunNumber = 0;                      ///< Run number of current activity
+  bool mMonitorPedestalCalibrator = true;  ///< monitor results of pedestal calibrator
+  int mNtimesCCDBPayloadFetched = 0;       ///< how many times non-empty CCDB payload fetched
+  bool mMonitorDigits = false;             ///< monitor digits
 
   std::array<TH1F*, kNHist1D> mHist1D = { nullptr }; ///< Array of 1D histograms
   std::array<TH2F*, kNHist2D> mHist2D = { nullptr }; ///< Array of 2D histograms
 
-  std::array<TH1F*, kNChannels> mHistAmplitudes = { nullptr };  ///< Array of amplitude spectra
-  std::array<bool, kNChannels> mIsUpdatedAmplitude = { false }; ///< Array of isUpdatedAmplitude bools
+  std::array<TH1F*, o2::cpv::Geometry::kNCHANNELS> mHistAmplitudes = { nullptr };  ///< Array of amplitude spectra
+  std::array<bool, o2::cpv::Geometry::kNCHANNELS> mIsUpdatedAmplitude = { false }; ///< Array of isUpdatedAmplitude bools
 };
 
 } // namespace o2::quality_control_modules::cpv
