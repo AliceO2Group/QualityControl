@@ -321,4 +321,10 @@ Address: root@alicdb1
 So the file repo is in the default location, `/root/QC`, but the database is also there. Careful.
 
 
+## Config file on EPNs
+
+The config files on EPNs are merged to build a humongous config file used for the whole workflow. 
+The common part is stored here: https://github.com/AliceO2Group/O2DPG/blob/master/DATA/production/qc-sync/qc-global.json
+The config file to use for each detector are defined here: https://github.com/AliceO2Group/O2DPG/blob/3dacaf525309b6e8cb4b4e2b7ea357ed65a95094/DATA/production/qc-workflow.sh
+
 
