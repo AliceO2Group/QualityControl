@@ -63,7 +63,7 @@ class ClusterTask final : public TaskInterface
 
  private:
   o2::emcal::Geometry* mGeometry;
-  std::unique_ptr<o2::emcal::EventHandler<o2::emcal::Cell>> mEventHanlder;
+  std::unique_ptr<o2::emcal::EventHandler<o2::emcal::Cell>> mEventHandler;
   std::unique_ptr<o2::emcal::ClusterFactory<o2::emcal::Cell>> mClusterFactory;
   std::unique_ptr<o2::emcal::Clusterizer<o2::emcal::Cell>> mClusterizer; //svk
 
@@ -73,15 +73,25 @@ class ClusterTask final : public TaskInterface
 
   bool mInternalClusterizer = false; //svk
 
+  TH1* mHistNclustPerTF = nullptr;  //svk
+  TH1* mHistNclustPerEvt = nullptr; //svk
+  TH2* mHistClustEtaPhi = nullptr;  //svk
+
+  TH2* mHistTime_EMCal = nullptr; //svk
   TH1* mHistClustE_EMCal = nullptr;
   TH1* mHistNCells_EMCal = nullptr;
   TH1* mHistM02_EMCal = nullptr;
   TH1* mHistM20_EMCal = nullptr;
+  TH2* mHistM02VsClustE__EMCal = nullptr; //svk
+  TH2* mHistM20VsClustE__EMCal = nullptr; //svk
 
+  TH2* mHistTime_DCal = nullptr; //svk
   TH1* mHistClustE_DCal = nullptr;
   TH1* mHistNCells_DCal = nullptr;
   TH1* mHistM02_DCal = nullptr;
   TH1* mHistM20_DCal = nullptr;
+  TH2* mHistM02VsClustE__DCal = nullptr; //svk
+  TH2* mHistM20VsClustE__DCal = nullptr; //svk
 };
 
 } // namespace o2::quality_control_modules::emcal

@@ -45,24 +45,31 @@
 
 #include <EMCALReconstruction/Clusterizer.h> //svk
 
-std::unique_ptr<o2::emcal::EventHandler<o2::emcal::Cell>> mEventHandler;
-std::unique_ptr<o2::emcal::ClusterFactory<o2::emcal::Cell>> mClusterFactory;
-std::unique_ptr<o2::emcal::Clusterizer<o2::emcal::Cell>> mClusterizer; //svk
-
 namespace o2::quality_control_modules::emcal
 {
 
 ClusterTask::~ClusterTask()
 {
+
+  delete mHistNclustPerTF;  //svk
+  delete mHistNclustPerEvt; //svk
+  delete mHistClustEtaPhi;  //svk
+
+  delete mHistTime_EMCal; //svk
   delete mHistClustE_EMCal;
   delete mHistNCells_EMCal;
   delete mHistM02_EMCal;
   delete mHistM20_EMCal;
+  delete mHistM02VsClustE__EMCal; //svk
+  delete mHistM20VsClustE__EMCal; //svk
 
+  delete mHistTime_DCal; //svk
   delete mHistClustE_DCal;
   delete mHistNCells_DCal;
   delete mHistM02_DCal;
   delete mHistM20_DCal;
+  delete mHistM02VsClustE__DCal; //svk
+  delete mHistM20VsClustE__DCal; //svk
 }
 
 void ClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -82,7 +89,7 @@ void ClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   if (hasConfigValue("useInternalClusterizer")) {
     mInternalClusterizer = get_bool(getConfigValueLower("useInternalClusterizer"));
     if (mInternalClusterizer) {
-      LOG(debug) << "Enabling internal clusterizer . . . " << ENDM;
+      ILOG(Info, Support) << "Enabling internal clusterizer . . . " << ENDM;
     }
   }
 
@@ -92,11 +99,27 @@ void ClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   // initialize geometry
   if (!mGeometry)
     mGeometry = o2::emcal::Geometry::GetInstanceFromRunNumber(300000); //svk
+  mClusterFactory->setGeometry(mGeometry);
+
+  mHistNclustPerTF = new TH1F("NclustPerTF", "Number of clusters per time frame;N_{Cluster}/TF;", 10, 0.0, 10.0); //svk
+  getObjectsManager()->startPublishing(mHistNclustPerTF);
+
+  mHistNclustPerEvt = new TH1F("NclustPerEvt", "Number of clusters per event;N_{Cluster}/Event;", 100, 0.0, 100.0); //svk
+  getObjectsManager()->startPublishing(mHistNclustPerEvt);
+
+  mHistClustEtaPhi = new TH2F("ClustEtaPhi", "Cluster #eta and #phi distribution;#eta;#phi", 100, -1.0, 1.0, 100, 0.0, 2 * TMath::Pi()); //svk
+  getObjectsManager()->startPublishing(mHistClustEtaPhi);
+
+  ///////////////////
+  //EMCal histograms/
+  ///////////////////
+  mHistTime_EMCal = new TH2F("Time_EMCal", "Time of clusters;Clust E(GeV);t(ns);", 500, 0, 50, 1800, -900, 900); //svk
+  getObjectsManager()->startPublishing(mHistTime_EMCal);
 
   mHistClustE_EMCal = new TH1F("ClustE_EMCal", "Cluster energy distribution; Cluster E(GeV);Counts", 500, 0.0, 50.0);
   getObjectsManager()->startPublishing(mHistClustE_EMCal);
 
-  mHistNCells_EMCal = new TH2F("Cells_EMCal", "No of cells in a cluster;Cluster E;N^{EMC}_{cells}", 500, 0, 50, 30, 0, 30);
+  mHistNCells_EMCal = new TH2F("Cells_EMCal", "No of cells in a cluster;Cluster E(GeV);N^{EMC}_{cells}", 500, 0, 50, 30, 0, 30);
   getObjectsManager()->startPublishing(mHistNCells_EMCal);
 
   mHistM02_EMCal = new TH1F("M02_EMCal", "M02 distribution; M02;Counts", 200, 0.0, 2.0);
@@ -104,6 +127,19 @@ void ClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   mHistM20_EMCal = new TH1F("M20_EMCal", "M20 distribution; M20;Counts", 200, 0.0, 2.0);
   getObjectsManager()->startPublishing(mHistM20_EMCal);
+
+  mHistM02VsClustE__EMCal = new TH2F("M02_Vs_ClustE_EMCal", "M02 Vs Cluster Energy in EMCal;Cluster E(GeV);M02", 500, 0, 50.0, 200, 0.0, 2.0); //svk
+  getObjectsManager()->startPublishing(mHistM02VsClustE__EMCal);
+
+  mHistM20VsClustE__EMCal = new TH2F("M20_Vs_ClustE_EMCal", "M20 Vs Cluster Energy in EMCal;Cluster E(GeV);M02", 500, 0, 50.0, 200, 0.0, 2.0); //svk
+  getObjectsManager()->startPublishing(mHistM20VsClustE__EMCal);
+
+  ///////////////////
+  //DCal histograms//
+  ///////////////////
+
+  mHistTime_DCal = new TH2F("Time_DCal", "Time of clusters;Clust E(GeV);t(ns);", 500, 0, 50, 1800, -900, 900); //svk
+  getObjectsManager()->startPublishing(mHistTime_DCal);
 
   mHistClustE_DCal = new TH1F("ClustE_DCal", "Cluster energy distribution; Cluster E(GeV);Counts", 500, 0.0, 50.0);
   getObjectsManager()->startPublishing(mHistClustE_DCal);
@@ -116,6 +152,12 @@ void ClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   mHistM20_DCal = new TH1F("M20_DCal", "M20 distribution; M20;Counts", 200, 0.0, 2.0);
   getObjectsManager()->startPublishing(mHistM20_DCal);
+
+  mHistM02VsClustE__DCal = new TH2F("M02_Vs_ClustE_DCal", "M02 Vs Cluster Energy in DCal;Cluster E(GeV);M02", 500, 0, 50.0, 200, 0.0, 2.0); //svk
+  getObjectsManager()->startPublishing(mHistM02VsClustE__DCal);
+
+  mHistM20VsClustE__DCal = new TH2F("M20_Vs_ClustE_DCal", "M20 Vs Cluster Energy in DCal;Cluster E(GeV);M02", 500, 0, 50.0, 200, 0.0, 2.0); //svk
+  getObjectsManager()->startPublishing(mHistM20VsClustE__DCal);
 }
 
 void ClusterTask::startOfActivity(Activity& activity)
@@ -137,38 +179,39 @@ void ClusterTask::startOfCycle()
 
 void ClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  std::string InputCell = "emcal-cells";
-  std::string InputCellTR = "emcal-cellstriggerecords";
+  std::string inputCell = "emcal-cells";
+  std::string inputCellTR = "emcal-cellstriggerecords";
 
-  auto Cell = ctx.inputs().get<gsl::span<o2::emcal::Cell>>(InputCell.c_str());
-  auto CellTR = ctx.inputs().get<gsl::span<o2::emcal::TriggerRecord>>(InputCellTR.c_str());
+  auto cell = ctx.inputs().get<gsl::span<o2::emcal::Cell>>(inputCell.c_str());
+  auto cellTR = ctx.inputs().get<gsl::span<o2::emcal::TriggerRecord>>(inputCellTR.c_str());
 
   if (mInternalClusterizer) {
-    std::vector<o2::emcal::Cluster> Cluster;
-    std::vector<int> CellIndex;
-    std::vector<o2::emcal::TriggerRecord> ClusterTR, CellIndexTR;
+    std::vector<o2::emcal::Cluster> cluster;
+    std::vector<int> cellIndex;
+    std::vector<o2::emcal::TriggerRecord> clusterTR, cellIndexTR;
 
-    findClustersInternal(Cell, CellTR, Cluster, ClusterTR, CellIndex, CellIndexTR); //do internal clustering here
-    ILOG(Info, Support) << "Found  " << Cluster.size() << " CLusters  " << ENDM;
-    ILOG(Info, Support) << "Found  " << ClusterTR.size() << " ClusterTR  " << ENDM;
-    ILOG(Info, Support) << "Found  " << CellIndex.size() << " CellIndex  " << ENDM;
-    ILOG(Info, Support) << "Found  " << CellIndexTR.size() << " CellIndexTR  " << ENDM;
+    findClustersInternal(cell, cellTR, cluster, clusterTR, cellIndex, cellIndexTR); //do internal clustering here
+    LOG(debug) << "Found  " << cluster.size() << " CLusters  " << ENDM;
+    LOG(debug) << "Found  " << clusterTR.size() << " Cluster Trigger Records  " << ENDM;
+    LOG(debug) << "Found  " << cellIndex.size() << " Cell Index  " << ENDM;
+    LOG(debug) << "Found  " << cellIndexTR.size() << " Cell Index Records " << ENDM;
 
-    analyseTimeframe(Cell, CellTR, Cluster, ClusterTR, CellIndex, CellIndexTR); // Fill histos
+    analyseTimeframe(cell, cellTR, cluster, clusterTR, cellIndex, cellIndexTR); // Fill histos
+
   } else {
 
-    std::string InputCluster = "emcal-clusters";
-    std::string InputClusterTR = "emcal-clustertriggerecords";
+    std::string inputCluster = "emcal-clusters";
+    std::string inputClusterTR = "emcal-clustertriggerecords";
 
-    std::string InputCellIndex = "emcal-cellindices";
-    std::string InputCellIndexTR = "emcal-citriggerecords";
+    std::string inputCellIndex = "emcal-cellindices";
+    std::string inputCellIndexTR = "emcal-citriggerecords";
 
-    auto Cluster = ctx.inputs().get<gsl::span<o2::emcal::Cluster>>(InputCluster.c_str());
-    auto ClusterTR = ctx.inputs().get<gsl::span<o2::emcal::TriggerRecord>>(InputClusterTR.c_str());
-    auto CellIndex = ctx.inputs().get<gsl::span<int>>(InputCellIndex.c_str());
-    auto CellIndexTR = ctx.inputs().get<gsl::span<o2::emcal::TriggerRecord>>(InputCellIndexTR.c_str());
+    auto cluster = ctx.inputs().get<gsl::span<o2::emcal::Cluster>>(inputCluster.c_str());
+    auto clusterTR = ctx.inputs().get<gsl::span<o2::emcal::TriggerRecord>>(inputClusterTR.c_str());
+    auto cellIndex = ctx.inputs().get<gsl::span<int>>(inputCellIndex.c_str());
+    auto cellIndexTR = ctx.inputs().get<gsl::span<o2::emcal::TriggerRecord>>(inputCellIndexTR.c_str());
 
-    analyseTimeframe(Cell, CellTR, Cluster, ClusterTR, CellIndex, CellIndexTR); // Fill histos
+    analyseTimeframe(cell, cellTR, cluster, clusterTR, cellIndex, cellIndexTR); // Fill histos
   }
 }
 
@@ -185,11 +228,15 @@ void ClusterTask::endOfActivity(Activity& /*activity*/)
 //_____________________________  Fill function _____________________________
 void ClusterTask::analyseTimeframe(const gsl::span<const o2::emcal::Cell>& cells, const gsl::span<const o2::emcal::TriggerRecord>& cellTriggerRecords, const gsl::span<const o2::emcal::Cluster> clusters, const gsl::span<const o2::emcal::TriggerRecord> clusterTriggerRecords, const gsl::span<const int> clusterIndices, const gsl::span<const o2::emcal::TriggerRecord> cellIndexTriggerRecords)
 {
-  mEventHandler = std::make_unique<o2::emcal::EventHandler<o2::emcal::Cell>>();
-  mClusterFactory = std::make_unique<o2::emcal::ClusterFactory<o2::emcal::Cell>>();
+
+  mEventHandler->reset();
+  mClusterFactory->reset();
 
   mEventHandler->setClusterData(clusters, clusterIndices, clusterTriggerRecords, cellIndexTriggerRecords);
   mEventHandler->setCellData(cells, cellTriggerRecords);
+
+  mHistNclustPerTF->Fill(clusters.size());               //svk
+  mHistNclustPerEvt->Fill(clusterTriggerRecords.size()); //svk
 
   for (int iev = 0; iev < mEventHandler->getNumberOfEvents(); iev++) {
     auto inputEvent = mEventHandler->buildEvent(iev);
@@ -203,6 +250,7 @@ void ClusterTask::analyseTimeframe(const gsl::span<const o2::emcal::Cell>& cells
       o2::emcal::AnalysisCluster analysisCluster = mClusterFactory->buildCluster(icl);
 
       Double_t clustE = analysisCluster.E();
+      Double_t clustT = analysisCluster.getClusterTime(); //svk converted to ns adapted from Run2;
 
       /////////////////////////////////
       // Select EMCAL or DCAL clusters//
@@ -215,21 +263,29 @@ void ClusterTask::analyseTimeframe(const gsl::span<const o2::emcal::Cell>& cells
       Double_t emcphi = TVector2::Phi_0_2pi(clustpos.Phi());
       Double_t emceta = clustpos.Eta();
 
+      mHistClustEtaPhi->Fill(emceta, emcphi); //svk
+
       if (emcphi < 4.)
         clsTypeEMC = kTRUE; // EMCAL : 80 < phi < 187
       else
         clsTypeEMC = kFALSE; // DCAL  : 260 < phi < 327
 
       if (clsTypeEMC) {
+        mHistTime_EMCal->Fill(clustE, clustT); //svk
         mHistClustE_EMCal->Fill(clustE);
         mHistNCells_EMCal->Fill(clustE, analysisCluster.getNCells());
         mHistM02_EMCal->Fill(analysisCluster.getM02());
         mHistM20_EMCal->Fill(analysisCluster.getM20());
+        mHistM02VsClustE__EMCal->Fill(clustE, analysisCluster.getM02()); //svk
+        mHistM20VsClustE__EMCal->Fill(clustE, analysisCluster.getM20()); //svk
       } else {
+        mHistTime_DCal->Fill(clustE, clustT); //svk
         mHistClustE_DCal->Fill(clustE);
         mHistNCells_DCal->Fill(clustE, analysisCluster.getNCells());
         mHistM02_DCal->Fill(analysisCluster.getM02());
         mHistM20_DCal->Fill(analysisCluster.getM20());
+        mHistM02VsClustE__DCal->Fill(clustE, analysisCluster.getM02()); //svk
+        mHistM20VsClustE__DCal->Fill(clustE, analysisCluster.getM20()); //svk
       }
 
     } // cls loop
@@ -243,20 +299,16 @@ void ClusterTask::findClustersInternal(const gsl::span<const o2::emcal::Cell>& c
   LOG(debug) << "[EMCALClusterizer - findClustersInternal] called";
   //mTimer.Start(false);
 
-  ILOG(Info, Support) << " findClustersInternal Called  " << ENDM;
-
   if (!mClusterizer) {
     mClusterizer = std::make_unique<o2::emcal::Clusterizer<o2::emcal::Cell>>();
-    ILOG(Info, Support) << " mClusterizer Initialized  " << ENDM;
+    ILOG(Info, Support) << "Internal clusterizer initialized" << ENDM;
+    mClusterizer->setGeometry(mGeometry); //svk - set geometry for clusterizer
+
+    double timeCut = 10000, timeMin = 0, timeMax = 10000, gradientCut = 0.03, thresholdSeedEnergy = 0.1, thresholdCellEnergy = 0.05; //svk kept constant
+    bool doEnergyGradientCut = true;
+    // Initialize clusterizer
+    mClusterizer->initialize(timeCut, timeMin, timeMax, gradientCut, doEnergyGradientCut, thresholdSeedEnergy, thresholdCellEnergy);
   }
-
-  // FIXME: Placeholder configuration -> get config from CCDB object
-  double timeCut = 10000, timeMin = 0, timeMax = 10000, gradientCut = 0.03, thresholdSeedEnergy = 0.1, thresholdCellEnergy = 0.05; //svk
-  bool doEnergyGradientCut = true;
-
-  // Initialize clusterizer and link geometry
-  mClusterizer->initialize(timeCut, timeMin, timeMax, gradientCut, doEnergyGradientCut, thresholdSeedEnergy, thresholdCellEnergy);
-  mClusterizer->setGeometry(mGeometry);
 
   clusters.clear();
   clusterTriggerRecords.clear();
@@ -266,21 +318,18 @@ void ClusterTask::findClustersInternal(const gsl::span<const o2::emcal::Cell>& c
   int currentStartClusters = 0; //clusters->size();  //svk
   int currentStartIndices = 0;  //clusterIndices->size();  //svk
 
-  ILOG(Info, Support) << "  start clustering " << cellTriggerRecords.size() << ENDM;
-
   for (auto iTrgRcrd : cellTriggerRecords) {
-    ILOG(Info, Support) << " findClustersInternal loop over iTrgRcrd  " << ENDM;
+    LOG(debug) << " findClustersInternal loop over iTrgRcrd  " << ENDM;
 
     mClusterizer->clear();
     if (cells.size() && iTrgRcrd.getNumberOfObjects()) {
-      ILOG(Info, Support) << " Number of cells put in " << cells.size() << ENDM;
+      LOG(debug) << " Number of cells put in " << cells.size() << ENDM;
 
       mClusterizer->findClusters(gsl::span<const o2::emcal::Cell>(&cells[iTrgRcrd.getFirstEntry()], iTrgRcrd.getNumberOfObjects())); // Find clusters on cells/digits (pass by ref)
     }
 
     auto outputClustersTemp = mClusterizer->getFoundClusters();
-
-    ILOG(Info, Support) << " Number of Clusters in outputClustersTemp " << outputClustersTemp->size() << ENDM;
+    LOG(debug) << " Number of Clusters in outputClustersTemp " << outputClustersTemp->size() << ENDM;
 
     auto outputCellDigitIndicesTemp = mClusterizer->getFoundClustersInputIndices();
 
@@ -303,15 +352,24 @@ void ClusterTask::resetHistograms()
 
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
 
+  mHistNclustPerTF->Reset();  //svk
+  mHistNclustPerEvt->Reset(); //svk
+  mHistClustEtaPhi->Reset();  //svk
+
+  mHistTime_EMCal->Reset(); //svk
   mHistClustE_EMCal->Reset();
   mHistNCells_EMCal->Reset();
   mHistM02_EMCal->Reset();
   mHistM20_EMCal->Reset();
+  mHistM02VsClustE__EMCal->Reset(); //svk
+  mHistM20VsClustE__EMCal->Reset(); //svk
 
   mHistClustE_DCal->Reset();
   mHistNCells_DCal->Reset();
   mHistM02_DCal->Reset();
   mHistM20_DCal->Reset();
+  mHistM02VsClustE__DCal->Reset(); //svk
+  mHistM20VsClustE__DCal->Reset(); //svk
 }
 
 bool ClusterTask::hasConfigValue(const std::string_view key)
