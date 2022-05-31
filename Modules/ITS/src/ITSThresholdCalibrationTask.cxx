@@ -60,6 +60,8 @@ ITSThresholdCalibrationTask::~ITSThresholdCalibrationTask()
     delete hCalibrationThrNoiseChipAverage[iBarrel];
     delete hCalibrationThrNoiseRMSChipAverage[iBarrel];
     delete hCalibrationChipDone[iBarrel];
+    delete hCalibrationDeadColumns[iBarrel];
+    delete hCalibrationDeadPixels[iBarrel];
   }
 }
 
@@ -100,7 +102,8 @@ void ITSThresholdCalibrationTask::monitorData(o2::framework::ProcessingContext& 
     iScan = 1;
   else if (scanType == 'T')
     iScan = 2;
-
+  else if (scanType == 'A' || scanType == 'D')
+    iScan = 3;
   auto splitRes = splitString(inString, "Stave:");
   auto splitResChipDone = splitString(inStringChipDone, "Stave:");
 
@@ -112,18 +115,26 @@ void ITSThresholdCalibrationTask::monitorData(o2::framework::ProcessingContext& 
       int iBarrel = getBarrel(result.Layer);
       int currentChip = getCurrentChip(iBarrel, result.ChipID, result.HIC, result.Hs);
 
-      if (scanType == 'V') {
-        calibrationValue = result.VCASN;
-      } else if (scanType == 'I') {
-        calibrationValue = result.ITHR;
-      } else if (scanType == 'T') {
-        calibrationValue = result.THR;
-        hCalibrationThrNoiseChipAverage[iBarrel]->SetBinContent(currentChip, currentStave, result.Noise);
-        hCalibrationThrNoiseRMSChipAverage[iBarrel]->Fill(currentChip, currentStave, result.NoiseRMS);
-      }
+      if (iScan < 3) {
 
-      hCalibrationChipAverage[iScan][iBarrel]->SetBinContent(currentChip, currentStave, calibrationValue);
-      hCalibrationRMSChipAverage[iScan][iBarrel]->SetBinContent(currentChip, currentStave, result.RMS);
+        if (scanType == 'V') {
+          calibrationValue = result.VCASN;
+        } else if (scanType == 'I') {
+          calibrationValue = result.ITHR;
+        } else if (scanType == 'T') {
+          calibrationValue = result.THR;
+          hCalibrationThrNoiseChipAverage[iBarrel]->SetBinContent(currentChip, currentStave, result.Noise);
+          hCalibrationThrNoiseRMSChipAverage[iBarrel]->Fill(currentChip, currentStave, result.NoiseRMS);
+        }
+
+        hCalibrationChipAverage[iScan][iBarrel]->SetBinContent(currentChip, currentStave, calibrationValue);
+        hCalibrationRMSChipAverage[iScan][iBarrel]->SetBinContent(currentChip, currentStave, result.RMS);
+      } else {
+        if (result.isDeadPixel)
+          hCalibrationDeadPixels[iBarrel]->Fill(currentChip, currentStave);
+        if (result.isDeadColumn)
+          hCalibrationDeadColumns[iBarrel]->Fill(currentChip, currentStave);
+      }
 
       if (result.status == 1)
         SuccessStatus[result.Layer]++;
@@ -235,6 +246,10 @@ ITSThresholdCalibrationTask::CalibrationResStruct ITSThresholdCalibrationTask::C
         result.ITHR = std::stof(data);
       } else if (name == "THR") {
         result.THR = std::stof(data);
+      } else if (name == "Dcol" && std::stof(data) != -1) {
+        result.isDeadColumn = true;
+      } else if (name == "Row" && std::stof(data) != -1) {
+        result.isDeadPixel = true;
       }
     }
   }
@@ -277,6 +292,8 @@ void ITSThresholdCalibrationTask::reset()
     hCalibrationThrNoiseChipAverage[iBarrel]->Reset();
     hCalibrationThrNoiseRMSChipAverage[iBarrel]->Reset();
     hCalibrationChipDone[iBarrel]->Reset();
+    hCalibrationDeadColumns[iBarrel]->Reset();
+    hCalibrationDeadPixels[iBarrel]->Reset();
   }
 }
 
@@ -365,6 +382,22 @@ void ITSThresholdCalibrationTask::createAllHistos()
   for (int iLayer; iLayer < 7; iLayer++) {
     SuccessStatus[iLayer] = 0;
     TotalStatus[iLayer] = 0;
+  }
+
+  for (int iBarrel = 0; iBarrel < 3; iBarrel++) {
+    hCalibrationDeadPixels[iBarrel] = new TH2F(Form("NoisyPixels%s", sBarrelType[iBarrel].Data()), Form("Number of noisy pixels per chip (not from bad dcols) for %s", sBarrelType[iBarrel].Data()), nChips[iBarrel], -0.5, nChips[iBarrel] - 0.5, nStaves[iBarrel], -0.5, nStaves[iBarrel] - 0.5);
+    hCalibrationDeadPixels[iBarrel]->SetStats(0);
+    if (iBarrel != 0)
+      formatAxes(hCalibrationDeadPixels[iBarrel], "Chip", "", 1, 1.10);
+    formatLayers(hCalibrationDeadPixels[iBarrel], iBarrel);
+    addObject(hCalibrationDeadPixels[iBarrel]);
+
+    hCalibrationDeadColumns[iBarrel] = new TH2F(Form("NoisyDColumns%s", sBarrelType[iBarrel].Data()), Form("Number of noisy dcols per chip for %s", sBarrelType[iBarrel].Data()), nChips[iBarrel], -0.5, nChips[iBarrel] - 0.5, nStaves[iBarrel], -0.5, nStaves[iBarrel] - 0.5);
+    hCalibrationDeadColumns[iBarrel]->SetStats(0);
+    if (iBarrel != 0)
+      formatAxes(hCalibrationDeadColumns[iBarrel], "Chip", "", 1, 1.10);
+    formatLayers(hCalibrationDeadColumns[iBarrel], iBarrel);
+    addObject(hCalibrationDeadColumns[iBarrel]);
   }
 }
 void ITSThresholdCalibrationTask::addObject(TObject* aObject)
