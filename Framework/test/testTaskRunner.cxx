@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE(test_factory)
   BOOST_CHECK(taskRunner.inputs[1].lifetime == Lifetime::Timer);
 
   BOOST_REQUIRE_EQUAL(taskRunner.outputs.size(), 1);
-  BOOST_CHECK_EQUAL(taskRunner.outputs[0], (OutputSpec{ { "mo" }, "QC", "abcTask", 123, Lifetime::Sporadic }));
+  BOOST_CHECK_EQUAL(taskRunner.outputs[0], (OutputSpec{ { "mo" }, "QXXX", "abcTask", 123, Lifetime::Sporadic }));
 
   BOOST_CHECK(taskRunner.algorithm.onInit != nullptr);
 
@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE(test_factory)
 
 BOOST_AUTO_TEST_CASE(test_task_runner_static)
 {
-  BOOST_CHECK_EQUAL(TaskRunner::createTaskDataOrigin(), DataOrigin("QC"));
+  BOOST_CHECK_EQUAL(TaskRunner::createTaskDataOrigin("DET"), DataOrigin("QDET"));
   BOOST_CHECK(TaskRunner::createTaskDataDescription("qwertyuiop") == DataDescription("qwertyuiop"));
   BOOST_CHECK(TaskRunner::createTaskDataDescription("012345678901234567890") == DataDescription("0123456789012345"));
   BOOST_CHECK_THROW(TaskRunner::createTaskDataDescription(""), AliceO2::Common::FatalException);
@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE(test_task_runner)
   BOOST_CHECK_EQUAL(qcTask.getInputsSpecs()[0], DataSampling::InputSpecsForPolicy(dataSamplingTree, "tpcclust").at(0));
   BOOST_CHECK(qcTask.getInputsSpecs()[1].lifetime == Lifetime::Timer);
 
-  BOOST_CHECK_EQUAL(qcTask.getOutputSpec(), (OutputSpec{ { "mo" }, "QC", "abcTask", 0, Lifetime::Sporadic }));
+  BOOST_CHECK_EQUAL(qcTask.getOutputSpec(), (OutputSpec{ { "mo" }, "QXXX", "abcTask", 0, Lifetime::Sporadic }));
 
   BOOST_REQUIRE_EQUAL(qcTask.getOptions().size(), 3);
   BOOST_CHECK_EQUAL(qcTask.getOptions()[0].name, "period-timer-cycle");
