@@ -31,7 +31,6 @@
 #include "Rtypes.h"
 #include "FDD/Helper.h"
 
-
 using namespace o2::quality_control::core;
 
 namespace o2::quality_control_modules::fdd
