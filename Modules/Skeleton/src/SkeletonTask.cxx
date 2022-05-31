@@ -16,6 +16,7 @@
 
 #include <TCanvas.h>
 #include <TH1.h>
+#include <TGraph.h>
 
 #include "QualityControl/QcInfoLogger.h"
 #include "Skeleton/SkeletonTask.h"
@@ -44,6 +45,9 @@ void SkeletonTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistogram = new TH1F("example", "example", 20, 0, 30000);
   getObjectsManager()->startPublishing(mHistogram);
   getObjectsManager()->startPublishing(new TH1F("example2", "example2", 20, 0, 30000));
+  asdf = new TGraph(10);
+  asdf->SetName("asdf");
+  getObjectsManager()->startPublishing(asdf);
   try {
     getObjectsManager()->addMetadata(mHistogram->GetName(), "custom", "34");
   } catch (...) {
@@ -91,7 +95,9 @@ void SkeletonTask::monitorData(o2::framework::ProcessingContext& ctx)
     // const char* payload = input.payload;
 
     // for the sake of an example, let's fill the histogram with payload sizes
-    mHistogram->Fill(payloadSize);
+    if (mHistogram->GetEntries() < 20 || mHistogram->GetEntries() > 50) {
+      mHistogram->Fill(payloadSize);
+    }
   }
 
   // 2. Using get("<binding>")

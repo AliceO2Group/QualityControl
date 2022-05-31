@@ -46,14 +46,14 @@ Quality IncreasingEntries::check(std::map<std::string, std::shared_ptr<MonitorOb
   for (auto& [moName, mo] : *moMap) {
 
     TH1* histo = dynamic_cast<TH1*>(mo->getObject());
-    if(histo == nullptr) {
+    if (histo == nullptr) {
       continue;
     }
 
     double previousNumberEntries = mLastEntries.count(moName) > 0 ? mLastEntries.at(moName) : 0;
     double currentNumberEntries = histo->GetEntries();
 
-    if(previousNumberEntries == currentNumberEntries) {
+    if (previousNumberEntries == currentNumberEntries) {
       result = Quality::Bad;
       result.addReason(FlagReasonFactory::Unknown(),
                        "Number of entries stopped increasing.");

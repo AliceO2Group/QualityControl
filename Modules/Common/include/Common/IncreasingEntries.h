@@ -40,8 +40,8 @@ class IncreasingEntries : public o2::quality_control::checker::CheckInterface
   std::string getAcceptedType() override;
 
  private:
-   std::map<std::string, double> mLastEntries;
-   std::shared_ptr<TPaveText> mPaveText;
+  std::map<std::string, double> mLastEntries;
+  std::shared_ptr<TPaveText> mPaveText;
 
   ClassDefOverride(IncreasingEntries, 2);
 };
