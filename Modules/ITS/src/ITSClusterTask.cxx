@@ -88,10 +88,6 @@ ITSClusterTask::~ITSClusterTask()
         delete hClusterTopologySummaryOB[iLayer][iStave];
         delete hGroupedClusterSizeSummaryOB[iLayer][iStave];
 
-        for (Int_t iLane = 0; iLane < mNLanePerHic[iLayer] * mNHicPerStave[iLayer]; iLane++) {
-          // delete hClusterSizeOB[iLayer][iStave][iLane];
-          // delete hClusterSizeMonitorOB[iLayer][iStave][iLane];
-        }
       }
     }
   }
@@ -237,8 +233,6 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
           mClusterSizeOB[lay][sta][lane] += npix;
           mClusterSizeMonitorOB[lay][sta][lane] += npix;
           nClusters[lay][sta][lane]++;
-          // hClusterSizeOB[lay][sta][lane]->Fill(npix);
-          // hClusterSizeMonitorOB[lay][sta][lane]->Fill(npix);
 
           hClusterTopologySummaryOB[lay][sta]->Fill(ClusterID);
           hClusterSizeSummaryOB[lay][sta]->Fill(npix);
