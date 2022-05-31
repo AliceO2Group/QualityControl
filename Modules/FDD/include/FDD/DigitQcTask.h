@@ -98,8 +98,10 @@ class DigitQcTask final : public TaskInterface
   std::array<o2::InteractionRecord, sNCHANNELS_PM> mStateLastIR2Ch;
   std::map<int, std::string> mMapChTrgNames;
   std::map<int, std::string> mMapDigitTrgNames;
+  std::map<std::string, std::vector<int>> mMapPmModuleChannels; // PM name to its channels
 
   // Object which will be published
+  std::unique_ptr<TH2F> mHist2CorrTCMchAndPMch;
   std::unique_ptr<TH2F> mHistAmp2Ch;
   std::unique_ptr<TH2F> mHistTime2Ch;
   std::unique_ptr<TH2F> mHistEventDensity2Ch;
@@ -124,6 +126,7 @@ class DigitQcTask final : public TaskInterface
   std::map<unsigned int, TH1F*> mMapHistTime1D;
   std::map<unsigned int, TH1F*> mMapHistPMbits;
   std::map<unsigned int, TH2F*> mMapHistAmpVsTime;
+  std::map<std::string, TH2F*> mMapPmModuleBcOrbit;
 };
 
 } // namespace o2::quality_control_modules::fdd
