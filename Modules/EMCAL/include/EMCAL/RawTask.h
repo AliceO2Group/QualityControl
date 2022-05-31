@@ -143,6 +143,7 @@ class RawTask final : public TaskInterface
   TH1* mPayloadSizePerDDL_1D = nullptr;                                          ///< Accumulated Payload size per ddl
   TH2* mPayloadSizeTFPerDDL = nullptr;                                           ///< Payload size per TimeFrame per ddl
   TH1* mPayloadSizeTFPerDDL_1D = nullptr;                                        ///< Accumulated Payload size per TimeFrame per ddl
+  TH1* mTFerrorCounter = nullptr;                                                ///< Number of TF builder errors
   Int_t mNumberOfSuperpages = 0;                                                 ///< Simple total superpage counter
   Int_t mNumberOfPages = 0;                                                      ///< Simple total number of superpages counter
   Int_t mNumberOfMessages = 0;

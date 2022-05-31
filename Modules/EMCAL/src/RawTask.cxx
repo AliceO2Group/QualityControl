@@ -101,6 +101,9 @@ RawTask::~RawTask()
   if (mFECmaxIDperSM) {
     delete mFECmaxIDperSM;
   }
+  if (mTFerrorCounter) {
+    delete mTFerrorCounter;
+  }
 
   for (auto& histos : mRMSBunchADCRCFull) {
     delete histos.second;
@@ -197,6 +200,10 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
   mSuperpageCounter->GetXaxis()->SetTitle("MonitorData");
   mSuperpageCounter->GetYaxis()->SetTitle("Number of superpages");
   getObjectsManager()->startPublishing(mSuperpageCounter);
+
+  mTFerrorCounter = new TH1F("NumberOfTFerror", "Number of TFbuilder errors", 1, 0.5, 1.5);
+  mTFerrorCounter->GetYaxis()->SetTitle("Time Frame Builder Error");
+  getObjectsManager()->startPublishing(mTFerrorCounter);
 
   mPageCounter = new TH1F("NumberOfPages", "Number of pages in time interval", 1, 0.5, 1.5);
   mPageCounter->GetXaxis()->SetTitle("MonitorData");
@@ -477,8 +484,10 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
   char dataOrigin[4];
   strcpy(dataOrigin, mDataOrigin.data());
 
-  if (isLostTimeframe(ctx))
+  if (isLostTimeframe(ctx)) {
+    mTFerrorCounter->Fill(1);
     return;
+  }
 
   Int_t nPagesMessage = 0, nSuperpagesMessage = 0;
   ILOG(Debug, Support) << " Processing message " << mNumberOfMessages << ENDM;
