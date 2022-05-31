@@ -10,13 +10,13 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   CheckHitMap.cxx
+/// \file   CheckNoise.cxx
 /// \author Nicolò Jacazio nicolo.jacazio@cern.ch
 /// \brief  Checker for the hit map hit obtained with the TaskDigits
 ///
 
 // QC
-#include "TOF/CheckHitMap.h"
+#include "TOF/CheckNoise.h"
 #include "QualityControl/QcInfoLogger.h"
 
 using namespace std;
@@ -24,13 +24,12 @@ using namespace std;
 namespace o2::quality_control_modules::tof
 {
 
-void CheckHitMap::configure()
+void CheckNoise::configure()
 {
-  mPhosModuleMessage.configureEnabledFlag(mCustomParameters);
   mShifterMessages.configure(mCustomParameters);
 }
 
-Quality CheckHitMap::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
+Quality CheckNoise::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
 
   Quality result = Quality::Null;
@@ -44,18 +43,23 @@ Quality CheckHitMap::check(std::map<std::string, std::shared_ptr<MonitorObject>>
       ILOG(Error, Support) << "Cannot check MO " << mo->getName() << " " << moName << " which does not have name " << mAcceptedName << ENDM;
       continue;
     }
+
     ILOG(Debug, Devel) << "Checking " << mo->getName() << ENDM;
-    const auto* h = static_cast<TH2F*>(mo->getObject());
-    if (h->GetEntries() == 0) { // Histogram is empty
+    const auto* h = static_cast<TH1F*>(mo->getObject());
+
+    for (int i = 0; i < h->GetNbinsX(); i++) {
+      if (h->GetBinContent(i + 1) <= mMaxNoiseRate) {
+        continue;
+      }
       result = Quality::Medium;
-      mShifterMessages.AddMessage("No counts!");
-    } else { // Histogram is non empty. Here we should check that it is in agreement with the reference from CCDB -> TODO
+      locateChannel(i);
+      mShifterMessages.AddMessage(Form("%i %i %i %i %i %i", locatedSupermodule, locatedLink, locatedTrm, locatedChain, locatedTdc, locatedChannel));
     }
   }
   return result;
 }
 
-void CheckHitMap::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
+void CheckNoise::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   ILOG(Debug, Devel) << "Beautifying " << mo->getName() << ENDM;
   if (!isObjectCheckable(mo)) {
@@ -64,27 +68,10 @@ void CheckHitMap::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
   }
   if (mo->getName() == mAcceptedName) {
     auto* h = static_cast<TH2F*>(mo->getObject());
-    // auto msg = mShifterMessages.MakeMessagePad(h, checkResult);
-    // if (!msg) {
-    //   return;
-    // }
-    auto msgPhos = mPhosModuleMessage.MakeMessagePad(h, Quality::Good, "bl");
-    if (!msgPhos) {
+    auto msg = mShifterMessages.MakeMessagePad(h, checkResult);
+    if (!msg) {
       return;
     }
-    msgPhos->SetFillStyle(3004);
-    msgPhos->AddText("PHOS");
-    // if (checkResult == Quality::Good) {
-    //   msg->AddText(Form("Mean value = %5.2f", mRawHitsMean));
-    //   msg->AddText(Form("Reference range: %5.2f-%5.2f", mMinRawHits, mMaxRawHits));
-    //   msg->AddText(Form("Events with 0 hits = %5.2f%%", mRawHitsZeroMultIntegral * 100. / mRawHitsIntegral));
-    //   msg->AddText("OK!");
-    // } else if (checkResult == Quality::Bad) {
-    //   msg->AddText("Call TOF on-call.");
-    // } else if (checkResult == Quality::Medium) {
-    //   ILOG(Info, Support) << "Quality::medium, setting to yellow";
-    //   msg->AddText("IF TOF IN RUN email TOF on-call.");
-    // }
   } else {
     ILOG(Error, Support) << "Did not get correct histo from " << mo->GetName() << ENDM;
     return;
