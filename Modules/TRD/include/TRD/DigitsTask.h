@@ -18,11 +18,15 @@
 #define QC_MODULE_TRD_DIGITSTASK_H
 
 #include "QualityControl/TaskInterface.h"
+#include <array>
+#include "DataFormatsTRD/NoiseCalibration.h"
 
 class TH1F;
 class TH2F;
 class TH1D;
-
+class TH2D;
+class TProfile;
+class TProfile2D;
 using namespace o2::quality_control::core;
 
 namespace o2::quality_control_modules::trd
@@ -32,7 +36,7 @@ namespace o2::quality_control_modules::trd
 /// \author My Name
 class DigitsTask final : public TaskInterface
 {
-  
+
  public:
   /// \brief Constructor
   DigitsTask() = default;
@@ -48,10 +52,12 @@ class DigitsTask final : public TaskInterface
   void endOfActivity(Activity& activity) override;
   void reset() override;
   void buildHistograms();
+  void buildHistogramsPH();
   void drawLinesMCM(TH2F* histo);
+  void retrieveCCDBSettings();
 
  private:
-  //limits
+  // limits
   std::pair<float, float> mDriftRegion;
   std::pair<float, float> mPulseHeightPeakRegion;
 
@@ -88,6 +94,22 @@ class DigitsTask final : public TaskInterface
   std::shared_ptr<TH2F> mClsChargeTbTrigMinBias;          //->Fill(time, sum);
   std::shared_ptr<TH2F> mClsChargeTbTrigTRDL1;            //->Fill(time, sum);
   std::array<std::shared_ptr<TH2F>, 18> mClsTbSM;
+
+  std::shared_ptr<TH1F> mPulseHeight = nullptr;
+  std::shared_ptr<TH1F> mPulseHeightScaled = nullptr;
+  std::shared_ptr<TH2F> mTotalPulseHeight2D = nullptr;
+  std::array<std::shared_ptr<TH1F>, 18> mPulseHeight2DperSM; // ph2DSM;
+  std::shared_ptr<TH1F> mPulseHeight2 = nullptr;
+  std::shared_ptr<TH1F> mPulseHeight2n = nullptr;
+  std::shared_ptr<TH1F> mPulseHeightScaled2 = nullptr;
+  std::shared_ptr<TH2F> mTotalPulseHeight2D2 = nullptr;
+  std::array<std::shared_ptr<TH1F>, 18> mPulseHeight2DperSM2; // ph2DSM;
+  std::shared_ptr<TH1F> mPulseHeightDuration;
+  std::shared_ptr<TH1F> mPulseHeightDuration1;
+  std::shared_ptr<TH1F> mPulseHeightDurationDiff;
+  o2::trd::NoiseStatusMCM* mNoiseMap = nullptr;
+  std::shared_ptr<TProfile> mPulseHeightpro = nullptr;
+  std::shared_ptr<TProfile2D> mPulseHeightperchamber = nullptr;
 };
 
 } // namespace o2::quality_control_modules::trd
