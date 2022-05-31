@@ -78,9 +78,6 @@ class ITSClusterTask : public TaskInterface
   Int_t mClusterOccupancyIB[7][48][9];
   Int_t mClusterOccupancyIBmonitor[7][48][9];
 
-  TH1D* hClusterSizeOB[7][48][14];        // used to calculate hAverageClusterSizeSummaryIB
-  TH1D* hClusterSizeMonitorOB[7][48][14]; // used to calculate hAverageClusterSizeMonitorIB
-
   TH1D* hGroupedClusterSizeSummaryOB[7][48];
   TH1D* hClusterSizeSummaryOB[7][48];
   TH1D* hClusterTopologySummaryOB[7][48];
@@ -92,8 +89,6 @@ class ITSClusterTask : public TaskInterface
 
   //  THnSparseD *sClustersSize[7];
   TH2Poly* mGeneralOccupancy;
-  Int_t mClusterOccupancyOB[7][48][14];
-  Int_t mClusterOccupancyOBmonitor[7][48][14];
 
   const int mOccUpdateFrequency = 100000;
   int mNThreads = 1;
@@ -113,6 +108,12 @@ class ITSClusterTask : public TaskInterface
   const float StartAngle[7] = { 16.997 / 360 * (TMath::Pi() * 2.), 17.504 / 360 * (TMath::Pi() * 2.), 17.337 / 360 * (TMath::Pi() * 2.), 8.75 / 360 * (TMath::Pi() * 2.), 7 / 360 * (TMath::Pi() * 2.), 5.27 / 360 * (TMath::Pi() * 2.), 4.61 / 360 * (TMath::Pi() * 2.) }; // start angle of first stave in each layer
   //
   int mEnableLayers[7];
+  int mClusterSizeOB[7][48][28] = { { { 0 } } }; //[#layers][max staves][max lanes]
+  double mClusterSizeMonitorOB[7][48][28] = { { { 0 } } };
+  int nClusters[7][48][28] = { { { 0 } } };
+  Int_t mClusterOccupancyOB[7][48][28] = { { { 0 } } };
+  Int_t mClusterOccupancyOBmonitor[7][48][28] = { { { 0 } } };
+
   o2::itsmft::TopologyDictionary* mDict;
   o2::its::GeometryTGeo* mGeom;
 };

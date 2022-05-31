@@ -52,17 +52,18 @@ Quality ITSClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
       }
     }
 
-    if (iter->second->getName().find("ClusterOccupation") != std::string::npos) {
-      auto* h = dynamic_cast<TH2D*>(iter->second->getObject());
-
+    if (iter->second->getName().find("GeneralOccupancy") != std::string::npos) {
+      auto* hp = dynamic_cast<TH2Poly*>(iter->second->getObject());
       for (int ilayer = 0; ilayer < NLayer; ilayer++) {
         result.addMetadata(Form("Layer%d", ilayer), "good");
-        if (iter->second->getName().find(Form("Layer%d", ilayer)) != std::string::npos && h->GetMaximum() > clusterOccupationLimit[ilayer]) {
-          result.updateMetadata(Form("Layer%d", ilayer), "bad");
-          result.set(Quality::Bad);
+        for (int ibin = StaveBoundary[ilayer]; ibin < StaveBoundary[ilayer + 1]; ++ibin) {
+          if (hp->GetBinContent(ibin) > clusterOccupationLimit[ilayer]) {
+            result.set(Quality::Medium);
+            result.updateMetadata(Form("Layer%d", ilayer), "medium");
+          }
         }
       }
-    }
+    } // end GeneralOccupancy
   }
 
   return result;
@@ -82,7 +83,7 @@ void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
     std::string histoName = mo->getName();
     int iLayer = histoName[histoName.find("Layer") + 5] - 48; // Searching for position of "Layer" in the name of the file, then +5 is the NUMBER of the layer, -48 is conversion to int
 
-    if (checkResult == Quality::Good) {
+    if (checkResult == Quality::Medium) {
       text = "Quality::GOOD";
       textColor = kGreen;
       positionX = 0.02;
@@ -102,7 +103,7 @@ void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
     h->GetListOfFunctions()->Add(msg);
   }
 
-  if (mo->getName().find("ClusterOccupation") != std::string::npos) {
+  if (mo->getName().find("General_Occupancy") != std::string::npos) {
     auto* h = dynamic_cast<TH2D*>(mo->getObject());
 
     std::string histoName = mo->getName();
@@ -114,7 +115,7 @@ void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
       positionX = 0.02;
       positionY = 0.91;
     } else {
-      text = "INFO: large cluster occupancy, call expert";
+      text = "Medium - notify expert, do not call";
       textColor = kYellow;
       positionX = 0.15;
       positionY = 0.8;
