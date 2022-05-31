@@ -75,6 +75,7 @@ void PhysicsTask::startOfActivity(Activity& activity)
 void PhysicsTask::startOfCycle()
 {
   ILOG(Info, Support) << "startOfCycle" << ENDM;
+  mCycleNumber++;
 }
 
 void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -236,6 +237,7 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   // !!!todo
   // we need somehow to extract timestamp from data when there are no ccdb dpl fetcher inputs available
+  // however most of the time ccdb dpl fetcher is present. take care of it later
 
   static auto startTime = std::chrono::system_clock::now(); // remember time when we first time checked ccdb
   static int minutesPassed = 0;                             // count how much minutes passed from 1st ccdb check
@@ -267,9 +269,10 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
       for (int iMod = 0; iMod < kNModules; iMod++) {
         for (int iCh = iMod * kNChannels / kNModules; iCh < (iMod + 1) * kNChannels / kNModules; iCh++) {
           if (o2::cpv::Geometry::absToRelNumbering(iCh, relId)) {
-            mHist2D[H2DGainsM2 + iMod]->SetBinContent(relId[1] + 1, relId[2] + 1, gains->getGain(iCh));
+            mIntensiveHist2D[H2DGainsM2 + iMod]->SetBinContent(relId[1] + 1, relId[2] + 1, gains->getGain(iCh));
           }
         }
+        mIntensiveHist2D[H2DGainsM2 + iMod]->setCycleNumber(mCycleNumber);
       }
       if (!hasGains) {
         delete gains; // delete object only if is retrieved from CCDB directly. DPL fetcher owns
@@ -295,9 +298,10 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
       for (int iMod = 0; iMod < kNModules; iMod++) {
         for (int iCh = iMod * kNChannels / kNModules; iCh < (iMod + 1) * kNChannels / kNModules; iCh++) {
           if (o2::cpv::Geometry::absToRelNumbering(iCh, relId)) {
-            mHist2D[H2DBadChannelMapM2 + iMod]->SetBinContent(relId[1] + 1, relId[2] + 1, !bcm->isChannelGood(iCh));
+            mIntensiveHist2D[H2DBadChannelMapM2 + iMod]->SetBinContent(relId[1] + 1, relId[2] + 1, !bcm->isChannelGood(iCh));
           }
         }
+        mIntensiveHist2D[H2DBadChannelMapM2 + iMod]->setCycleNumber(mCycleNumber);
       }
       if (!hasBadChannelMap) {
         delete bcm; // delete object only if is retrieved from CCDB directly. DPL fetcher owns
@@ -323,10 +327,12 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
       for (int iMod = 0; iMod < kNModules; iMod++) {
         for (int iCh = iMod * kNChannels / kNModules; iCh < (iMod + 1) * kNChannels / kNModules; iCh++) {
           if (o2::cpv::Geometry::absToRelNumbering(iCh, relId)) {
-            mHist2D[H2DPedestalValueM2 + iMod]->SetBinContent(relId[1] + 1, relId[2] + 1, peds->getPedestal(iCh));
-            mHist2D[H2DPedestalSigmaM2 + iMod]->SetBinContent(relId[1] + 1, relId[2] + 1, peds->getPedSigma(iCh));
+            mIntensiveHist2D[H2DPedestalValueM2 + iMod]->SetBinContent(relId[1] + 1, relId[2] + 1, peds->getPedestal(iCh));
+            mIntensiveHist2D[H2DPedestalSigmaM2 + iMod]->SetBinContent(relId[1] + 1, relId[2] + 1, peds->getPedSigma(iCh));
           }
         }
+        mIntensiveHist2D[H2DPedestalValueM2 + iMod]->setCycleNumber(mCycleNumber);
+        mIntensiveHist2D[H2DPedestalSigmaM2 + iMod]->setCycleNumber(mCycleNumber);
       }
       if (!hasPedestals) {
         delete peds; // delete object only if is retrieved from CCDB directly. DPL fetcher owns
@@ -618,67 +624,67 @@ void PhysicsTask::initHistograms()
     }
 
     // pedestal values map
-    if (!mHist2D[H2DPedestalValueM2 + mod]) {
-      mHist2D[H2DPedestalValueM2 + mod] =
-        new TH2F(
+    if (!mIntensiveHist2D[H2DPedestalValueM2 + mod]) {
+      mIntensiveHist2D[H2DPedestalValueM2 + mod] =
+        new IntensiveTH2F(
           Form("PedestalValueM%d", 2 + mod),
           Form("Pedestal values in M%d", mod + 2),
           nPadsX, -0.5, nPadsX - 0.5,
           nPadsZ, -0.5, nPadsZ - 0.5);
-      mHist2D[H2DPedestalValueM2 + mod]->GetXaxis()->SetTitle("x, pad");
-      mHist2D[H2DPedestalValueM2 + mod]->GetYaxis()->SetTitle("z, pad");
-      mHist2D[H2DPedestalValueM2 + mod]->SetStats(0);
-      getObjectsManager()->startPublishing(mHist2D[H2DPedestalValueM2 + mod]);
+      mIntensiveHist2D[H2DPedestalValueM2 + mod]->GetXaxis()->SetTitle("x, pad");
+      mIntensiveHist2D[H2DPedestalValueM2 + mod]->GetYaxis()->SetTitle("z, pad");
+      mIntensiveHist2D[H2DPedestalValueM2 + mod]->SetStats(0);
+      getObjectsManager()->startPublishing(mIntensiveHist2D[H2DPedestalValueM2 + mod]);
     } else {
-      mHist2D[H2DPedestalValueM2 + mod]->Reset();
+      mIntensiveHist2D[H2DPedestalValueM2 + mod]->Reset();
     }
 
     // pedestal sigma map
-    if (!mHist2D[H2DPedestalSigmaM2 + mod]) {
-      mHist2D[H2DPedestalSigmaM2 + mod] =
-        new TH2F(
+    if (!mIntensiveHist2D[H2DPedestalSigmaM2 + mod]) {
+      mIntensiveHist2D[H2DPedestalSigmaM2 + mod] =
+        new IntensiveTH2F(
           Form("PedestalSigmaM%d", 2 + mod),
           Form("Pedestal Sigmas in M%d", mod + 2),
           nPadsX, -0.5, nPadsX - 0.5,
           nPadsZ, -0.5, nPadsZ - 0.5);
-      mHist2D[H2DPedestalSigmaM2 + mod]->GetXaxis()->SetTitle("x, pad");
-      mHist2D[H2DPedestalSigmaM2 + mod]->GetYaxis()->SetTitle("z, pad");
-      mHist2D[H2DPedestalSigmaM2 + mod]->SetStats(0);
-      getObjectsManager()->startPublishing(mHist2D[H2DPedestalSigmaM2 + mod]);
+      mIntensiveHist2D[H2DPedestalSigmaM2 + mod]->GetXaxis()->SetTitle("x, pad");
+      mIntensiveHist2D[H2DPedestalSigmaM2 + mod]->GetYaxis()->SetTitle("z, pad");
+      mIntensiveHist2D[H2DPedestalSigmaM2 + mod]->SetStats(0);
+      getObjectsManager()->startPublishing(mIntensiveHist2D[H2DPedestalSigmaM2 + mod]);
     } else {
-      mHist2D[H2DPedestalSigmaM2 + mod]->Reset();
+      mIntensiveHist2D[H2DPedestalSigmaM2 + mod]->Reset();
     }
 
     // bad channel map
-    if (!mHist2D[H2DBadChannelMapM2 + mod]) {
-      mHist2D[H2DBadChannelMapM2 + mod] =
-        new TH2F(
+    if (!mIntensiveHist2D[H2DBadChannelMapM2 + mod]) {
+      mIntensiveHist2D[H2DBadChannelMapM2 + mod] =
+        new IntensiveTH2F(
           Form("BadChannelMapM%d", 2 + mod),
           Form("Bad channel map in M%d", mod + 2),
           nPadsX, -0.5, nPadsX - 0.5,
           nPadsZ, -0.5, nPadsZ - 0.5);
-      mHist2D[H2DBadChannelMapM2 + mod]->GetXaxis()->SetTitle("x, pad");
-      mHist2D[H2DBadChannelMapM2 + mod]->GetYaxis()->SetTitle("z, pad");
-      mHist2D[H2DBadChannelMapM2 + mod]->SetStats(0);
-      getObjectsManager()->startPublishing(mHist2D[H2DBadChannelMapM2 + mod]);
+      mIntensiveHist2D[H2DBadChannelMapM2 + mod]->GetXaxis()->SetTitle("x, pad");
+      mIntensiveHist2D[H2DBadChannelMapM2 + mod]->GetYaxis()->SetTitle("z, pad");
+      mIntensiveHist2D[H2DBadChannelMapM2 + mod]->SetStats(0);
+      getObjectsManager()->startPublishing(mIntensiveHist2D[H2DBadChannelMapM2 + mod]);
     } else {
-      mHist2D[H2DBadChannelMapM2 + mod]->Reset();
+      mIntensiveHist2D[H2DBadChannelMapM2 + mod]->Reset();
     }
 
     // gains map
-    if (!mHist2D[H2DGainsM2 + mod]) {
-      mHist2D[H2DGainsM2 + mod] =
-        new TH2F(
+    if (!mIntensiveHist2D[H2DGainsM2 + mod]) {
+      mIntensiveHist2D[H2DGainsM2 + mod] =
+        new IntensiveTH2F(
           Form("GainsM%d", 2 + mod),
           Form("Gains in M%d", mod + 2),
           nPadsX, -0.5, nPadsX - 0.5,
           nPadsZ, -0.5, nPadsZ - 0.5);
-      mHist2D[H2DGainsM2 + mod]->GetXaxis()->SetTitle("x, pad");
-      mHist2D[H2DGainsM2 + mod]->GetYaxis()->SetTitle("z, pad");
-      mHist2D[H2DGainsM2 + mod]->SetStats(0);
-      getObjectsManager()->startPublishing(mHist2D[H2DGainsM2 + mod]);
+      mIntensiveHist2D[H2DGainsM2 + mod]->GetXaxis()->SetTitle("x, pad");
+      mIntensiveHist2D[H2DGainsM2 + mod]->GetYaxis()->SetTitle("z, pad");
+      mIntensiveHist2D[H2DGainsM2 + mod]->SetStats(0);
+      getObjectsManager()->startPublishing(mIntensiveHist2D[H2DGainsM2 + mod]);
     } else {
-      mHist2D[H2DGainsM2 + mod]->Reset();
+      mIntensiveHist2D[H2DGainsM2 + mod]->Reset();
     }
   }
 }
@@ -697,7 +703,15 @@ void PhysicsTask::resetHistograms()
 
   ILOG(Info, Support) << "Resetting the 2D Histograms" << ENDM;
   for (int itHist2D = H2DDigitMapM2; itHist2D < kNHist2D; itHist2D++) {
-    mHist2D[itHist2D]->Reset();
+    if (mHist2D[itHist2D]) {
+      mHist2D[itHist2D]->Reset();
+    }
+  }
+  ILOG(Info, Support) << "Resetting the 2D Intensive Histograms" << ENDM;
+  for (int itIntHist2D = 0; itIntHist2D < kNIntensiveHist2D; itIntHist2D++) {
+    if (mIntensiveHist2D[itIntHist2D]) {
+      mIntensiveHist2D[itIntHist2D]->Reset();
+    }
   }
 }
 
