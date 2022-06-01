@@ -233,7 +233,6 @@ void PhysicsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResu
       (mo->getName().find("Occupancy_B_XY") != std::string::npos) ||
       (mo->getName().find("Occupancy_NB_XY") != std::string::npos)) {
     auto* h = dynamic_cast<TH2F*>(mo->getObject());
-    h->SetDrawOption("colz");
     h->SetMinimum(mOccupancyPlotScaleMin);
     h->SetMaximum(mOccupancyPlotScaleMax);
     h->GetXaxis()->SetTickLength(0.0);
