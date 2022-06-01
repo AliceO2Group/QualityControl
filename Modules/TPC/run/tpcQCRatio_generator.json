@@ -34,14 +34,14 @@
             "inputObjects": [ "hEtaNeg", "hEtaPos" ],
             "outputName": "hEtaRatio",
             "plotTitle": "Ratio neg/pos tracks vs #eta",
-	    "axisTitle": "Ratio neg/pos:#eta"
+	          "axisTitle": "Ratio neg/pos:#eta"
           },
           {
             "path": "TPC/MO/Tracks",
             "inputObjects": [ "hPhiAsideNeg", "hPhiAsidePos" ],
             "outputName": "hPhiAsideRatio",
             "plotTitle": "Ratio neg/pos tracks vs #phi",
-	    "axisTitle": "Ratio neg/pos:#phi"
+	          "axisTitle": "Ratio neg/pos:#phi"
           }
         ],
         "initTrigger": [

@@ -33,16 +33,16 @@ void RatioGeneratorTPC::configure(std::string name,
 {
   for (const auto& dataSourceConfig : config.get_child("qc.postprocessing." + name + ".ratioConfig")) {
     std::string inputNames[2];
-    int Counter = 0;
+    int counter = 0;
 
     if (const auto& sourceNames = dataSourceConfig.second.get_child_optional("inputObjects"); sourceNames.has_value()) {
       for (const auto& sourceName : sourceNames.value()) {
-        if (Counter > 1) {
+        if (counter > 1) {
           ILOG(Error, Support) << "Ratio plots should not have more than two input objects!" << ENDM;
           break;
         }
-        inputNames[Counter] = sourceName.second.data();
-        Counter++;
+        inputNames[counter] = sourceName.second.data();
+        counter++;
       }
     }
     mConfig.push_back({ dataSourceConfig.second.get<std::string>("path"),
@@ -53,8 +53,6 @@ void RatioGeneratorTPC::configure(std::string name,
 
   } // for (const auto& dataSourceConfig : config.get_child("qc.postprocessing." + name + ".ratioConfig"))
 }
-
-void RatioGeneratorTPC::initialize(Trigger, framework::ServiceRegistry&) {}
 
 void RatioGeneratorTPC::update(Trigger t, framework::ServiceRegistry& services)
 {
@@ -67,7 +65,7 @@ void RatioGeneratorTPC::finalize(Trigger t, framework::ServiceRegistry&)
 {
   generatePlots();
 
-  for (const dataSource source : mConfig) {
+  for (const auto& source : mConfig) {
     if (mRatios.count(source.nameOutputObject)) {
       delete mRatios[source.nameOutputObject];
       mRatios[source.nameOutputObject] = nullptr;
@@ -80,21 +78,19 @@ void RatioGeneratorTPC::finalize(Trigger t, framework::ServiceRegistry&)
 void RatioGeneratorTPC::generateRatios(const Trigger& t,
                                        repository::DatabaseInterface& qcdb)
 {
-  for (const dataSource source : mConfig) {
+  for (const auto& source : mConfig) {
 
     if (mRatios.count(source.nameOutputObject)) {
       delete mRatios[source.nameOutputObject];
       mRatios[source.nameOutputObject] = nullptr;
     }
     auto moNumerator = qcdb.retrieveMO(source.path, source.nameInputObjects[0], t.timestamp, t.activity);
-    TObject* objNumerator = moNumerator ? moNumerator->getObject() : nullptr;
+    TH1* histoNumerator = moNumerator ? static_cast<TH1*>(moNumerator->getObject()) : nullptr;
     auto moDenominator = qcdb.retrieveMO(source.path, source.nameInputObjects[1], t.timestamp, t.activity);
-    TObject* objDenominator = moDenominator ? moDenominator->getObject() : nullptr;
+    TH1* histoDenominator = moDenominator ? static_cast<TH1*>(moDenominator->getObject()) : nullptr;
 
-    if (objNumerator && objDenominator) {
-      TH1* histoNumerator = static_cast<TH1*>(objNumerator);
-      TH1* histoDenominator = static_cast<TH1*>(objDenominator);
-      mRatios[source.nameOutputObject] = (TH1*)histoNumerator->Clone("");
+    if (histoNumerator && histoDenominator) {
+      mRatios[source.nameOutputObject] = (TH1*)histoNumerator->Clone(fmt::format("{}_over_{}", histoNumerator->GetName(), histoDenominator->GetName()).data());
       mRatios[source.nameOutputObject]->Divide(histoDenominator);
     }
   }
@@ -102,7 +98,7 @@ void RatioGeneratorTPC::generateRatios(const Trigger& t,
 
 void RatioGeneratorTPC::generatePlots()
 {
-  for (const dataSource source : mConfig) {
+  for (const auto& source : mConfig) {
     // Delete the existing plots before regenerating them.
     if (mPlots.count(source.nameOutputObject)) {
       getObjectsManager()->stopPublishing(source.nameOutputObject);

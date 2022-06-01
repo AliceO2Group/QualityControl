@@ -18,8 +18,6 @@
 #define QUALITYCONTROL_RATIOGENERATORTPC_H
 
 #include "QualityControl/PostProcessingInterface.h"
-
-#include <memory>
 #include <unordered_map>
 #include <vector>
 #include <TH1.h>
@@ -49,11 +47,11 @@ class RatioGeneratorTPC : public PostProcessingInterface
 
   /// \brief Post-processing methods inherited from 'PostProcessingInterface'.
   void configure(std::string name, const boost::property_tree::ptree& config) final;
-  void initialize(Trigger, framework::ServiceRegistry&) final;
+  void initialize(Trigger, framework::ServiceRegistry&) final{};
   void update(Trigger, framework::ServiceRegistry&) final;
   void finalize(Trigger, framework::ServiceRegistry&) final;
 
-  struct dataSource {
+  struct DataSource {
     std::string path;
     std::string nameInputObjects[2];
     std::string nameOutputObject;
@@ -67,10 +65,10 @@ class RatioGeneratorTPC : public PostProcessingInterface
   /// \brief Method to create and publish plot.
   void generatePlots();
 
-  std::map<std::string, TH1*> mRatios;
-  std::map<std::string, TCanvas*> mPlots;
+  std::unordered_map<std::string, TH1*> mRatios;
+  std::unordered_map<std::string, TCanvas*> mPlots;
 
-  std::vector<dataSource> mConfig;
+  std::vector<DataSource> mConfig;
 };
 
 } // namespace o2::quality_control_modules::tpc
