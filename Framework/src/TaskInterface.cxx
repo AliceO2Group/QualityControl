@@ -74,4 +74,18 @@ void TaskInterface::setCcdbUrl(const std::string& url)
   mCcdbUrl = url;
 }
 
+bool TaskInterface::parseBooleanParameter(const std::string& name, bool& flag) const
+{
+  if (auto param = mCustomParameters.find(name); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - " << name << " " << param->second << ENDM;
+    if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
+      flag = true;
+    } else if (param->second == "false" || param->second == "False" || param->second == "FALSE") {
+      flag = false;
+    }
+    return true;
+  }
+  return false;
+}
+
 } // namespace o2::quality_control::core

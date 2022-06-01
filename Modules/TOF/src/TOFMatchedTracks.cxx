@@ -69,18 +69,9 @@ void TOFMatchedTracks::initialize(o2::framework::InitContext& /*ctx*/)
   ILOG(Info, Support) << "initialize TOFMatchedTracks" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
-  if (auto param = mCustomParameters.find("isMC"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - isMC (= use of MC info): " << param->second << ENDM;
-    if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
-      mUseMC = true;
-    }
-  }
-  if (auto param = mCustomParameters.find("verbose"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - verbose (= verbose printouts): " << param->second << ENDM;
-    if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
-      mVerbose = true;
-    }
-  }
+
+  parseBooleanParameter("isMC", mUseMC);
+  parseBooleanParameter("verbose", mVerbose);
 
   // for track selection
   if (auto param = mCustomParameters.find("minPtCut"); param != mCustomParameters.end()) {
