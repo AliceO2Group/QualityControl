@@ -168,6 +168,10 @@ void TrendingTaskTPC::generatePlots()
           multigraph->Draw("A pmc plc");
           c->cd(2);
           legend->Draw();
+          c->cd(1)->SetLeftMargin(0.15);
+          c->cd(1)->SetRightMargin(0.01);
+          c->cd(2)->SetLeftMargin(0.01);
+          c->cd(2)->SetRightMargin(0.01);
         } else {
           ILOG(Error, Support) << "No legend in multigraph-time" << ENDM;
           c->cd(1);
@@ -238,8 +242,8 @@ void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
 
   // Setup the tree reader with the needed values.
   TTreeReader myReader(mTrend.get());
-  TTreeReaderValue<UInt_t> RetrieveTime(myReader, "time");
-  TTreeReaderValue<std::vector<SliceInfo>> DataRetrieveVector(myReader, varName.data());
+  TTreeReaderValue<UInt_t> retrieveTime(myReader, "time");
+  TTreeReaderValue<std::vector<SliceInfo>> dataRetrieveVector(myReader, varName.data());
 
   const int nuPa = mNumberPads[varName];
   const int nEntries = mTrend->GetEntriesFast();
@@ -254,14 +258,14 @@ void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
       graphErrors = new TGraphErrors(nEntries);
 
       while (myReader.Next()) {
-        const double timeStamp = (double)(*RetrieveTime);
-        const double dataPoint = (DataRetrieveVector->at(p)).RetrieveValue(typeName);
+        const double timeStamp = (double)(*retrieveTime);
+        const double dataPoint = (dataRetrieveVector->at(p)).RetrieveValue(typeName);
         double errorX = 0.;
         double errorY = 0.;
 
         if (!err.empty()) {
-          errorX = (DataRetrieveVector->at(p)).RetrieveValue(errXName);
-          errorY = (DataRetrieveVector->at(p)).RetrieveValue(errYName);
+          errorX = (dataRetrieveVector->at(p)).RetrieveValue(errXName);
+          errorY = (dataRetrieveVector->at(p)).RetrieveValue(errYName);
         }
 
         graphErrors->SetPoint(iEntry, timeStamp, dataPoint);
@@ -269,7 +273,7 @@ void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
 
         iEntry++;
       }
-      graphErrors->SetTitle((DataRetrieveVector->at(p)).title.data());
+      graphErrors->SetTitle((dataRetrieveVector->at(p)).title.data());
       myReader.Restart();
 
       if (!err.empty()) {
@@ -286,51 +290,46 @@ void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
   } // Trending vs time
   else if (trendType == "multigraphtime") {
 
-    TMultiGraph* multigraph = new TMultiGraph();
+    auto multigraph = new TMultiGraph();
     multigraph->SetName("MultiGraph");
-    TGraphErrors* Graphs[nuPa] = { nullptr };
 
     for (int p = 0; p < nuPa; p++) {
       int iEntry = 0;
-      Graphs[p] = new TGraphErrors(nEntries);
+      auto gr = new TGraphErrors(nEntries);
 
       while (myReader.Next()) {
-        const double timeStamp = (double)(*RetrieveTime);
-        const double dataPoint = (DataRetrieveVector->at(p)).RetrieveValue(typeName);
+        const double timeStamp = (double)(*retrieveTime);
+        const double dataPoint = (dataRetrieveVector->at(p)).RetrieveValue(typeName);
         double errorX = 0.;
         double errorY = 0.;
 
         if (!err.empty()) {
-          errorX = (DataRetrieveVector->at(p)).RetrieveValue(errXName);
-          errorY = (DataRetrieveVector->at(p)).RetrieveValue(errYName);
+          errorX = (dataRetrieveVector->at(p)).RetrieveValue(errXName);
+          errorY = (dataRetrieveVector->at(p)).RetrieveValue(errYName);
         }
 
-        Graphs[p]->SetPoint(iEntry, timeStamp, dataPoint);
-        Graphs[p]->SetPointError(iEntry, errorX, errorY); // Add Error to the last added point
-
-        std::string title = (DataRetrieveVector->at(p)).title;
-        const std::size_t posDivider = title.find("RangeX");
-        Graphs[p]->SetName(title.substr(posDivider, -1).data());
+        gr->SetPoint(iEntry, timeStamp, dataPoint);
+        gr->SetPointError(iEntry, errorX, errorY); // Add Error to the last added point
         iEntry++;
       }
 
+      const std::string_view title = (dataRetrieveVector->at(p)).title;
+      const auto posDivider = title.find("RangeX");
+      gr->SetName(title.substr(posDivider, -1).data());
+
       myReader.Restart();
-      multigraph->Add(Graphs[p]);
+      multigraph->Add(gr);
     } // for (int p = 0; p < nuPa; p++)
 
     thisCanvas->cd(1);
     multigraph->Draw("A pmc plc");
 
-    TLegend* legend = new TLegend(0., 0.1, 0.95, 0.9);
-    TIter nextgraph(multigraph->GetListOfGraphs());
+    auto legend = new TLegend(0., 0.1, 0.95, 0.9);
     legend->SetName("MultiGraphLegend");
     legend->SetNColumns(2);
     legend->SetTextSize(2.0);
-    TGraphErrors* gr;
-    TObject* obj;
-    while ((obj = nextgraph())) {
-      gr = (TGraphErrors*)obj;
-      legend->AddEntry(obj, gr->GetName(), "lpf");
+    for (auto obj : *multigraph->GetListOfGraphs()) {
+      legend->AddEntry(obj, obj->GetName(), "lpf");
     }
     // We try to convince ROOT to delete multigraph and legend together with the rest of the canvas.
     saveObjectToPrimitives(thisCanvas, 1, multigraph);
@@ -347,14 +346,14 @@ void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
     int iEntry = 0;
     for (int p = 0; p < nuPa; p++) {
 
-      const double dataPoint = (DataRetrieveVector->at(p)).RetrieveValue(typeName);
+      const double dataPoint = (dataRetrieveVector->at(p)).RetrieveValue(typeName);
       double errorX = 0.;
       double errorY = 0.;
       if (!err.empty()) {
-        errorX = (DataRetrieveVector->at(p)).RetrieveValue(errXName);
-        errorY = (DataRetrieveVector->at(p)).RetrieveValue(errYName);
+        errorX = (dataRetrieveVector->at(p)).RetrieveValue(errXName);
+        errorY = (dataRetrieveVector->at(p)).RetrieveValue(errYName);
       }
-      const double xLabel = (DataRetrieveVector->at(p)).RetrieveValue("sliceLabelX");
+      const double xLabel = (dataRetrieveVector->at(p)).RetrieveValue("sliceLabelX");
 
       graphErrors->SetPoint(iEntry, xLabel, dataPoint);
       graphErrors->SetPointError(iEntry, errorX, errorY); // Add Error to the last added point
@@ -401,13 +400,13 @@ void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
     int iEntry = 0;
     for (int p = 0; p < nuPa; p++) {
 
-      const double dataPoint = (double)(DataRetrieveVector->at(p)).RetrieveValue(typeName);
+      const double dataPoint = (double)(dataRetrieveVector->at(p)).RetrieveValue(typeName);
       double error = 0.;
       if (!err.empty()) {
-        error = (double)(DataRetrieveVector->at(p)).RetrieveValue(errYName);
+        error = (double)(dataRetrieveVector->at(p)).RetrieveValue(errYName);
       }
-      const double xLabel = (double)(DataRetrieveVector->at(p)).RetrieveValue("sliceLabelX");
-      const double yLabel = (double)(DataRetrieveVector->at(p)).RetrieveValue("sliceLabelY");
+      const double xLabel = (double)(dataRetrieveVector->at(p)).RetrieveValue("sliceLabelX");
+      const double yLabel = (double)(dataRetrieveVector->at(p)).RetrieveValue("sliceLabelY");
 
       graph2D->Fill(xLabel, yLabel, dataPoint);
       graph2D->SetBinError(graph2D->GetXaxis()->FindBin(xLabel), graph2D->GetYaxis()->FindBin(yLabel), error);
@@ -450,8 +449,8 @@ void TrendingTaskTPC::drawCanvasQO(TCanvas* thisCanvas, const std::string& var,
 
   // Setup the tree reader with the needed values.
   TTreeReader myReader(mTrend.get());
-  TTreeReaderValue<UInt_t> RetrieveTime(myReader, "time");
-  TTreeReaderValue<SliceInfoQuality> QualityRetrieveVector(myReader, varName.data());
+  TTreeReaderValue<UInt_t> retrieveTime(myReader, "time");
+  TTreeReaderValue<SliceInfoQuality> qualityRetrieveVector(myReader, varName.data());
 
   if (mNumberPads[varName] != 1)
     ILOG(Error, Devel) << "Error in trending of Quality Object  '" << name
@@ -465,10 +464,10 @@ void TrendingTaskTPC::drawCanvasQO(TCanvas* thisCanvas, const std::string& var,
   graphErrors = new TGraphErrors(nEntries);
 
   while (myReader.Next()) {
-    const double timeStamp = (double)(*RetrieveTime);
+    const double timeStamp = (double)(*retrieveTime);
     double dataPoint = 0.;
 
-    dataPoint = QualityRetrieveVector->RetrieveValue(typeName);
+    dataPoint = qualityRetrieveVector->RetrieveValue(typeName);
 
     if (dataPoint < 1. || dataPoint > 3.) { // if quality is outside standard good, medium, bad -> set to 0
       dataPoint = 0.;
@@ -479,7 +478,7 @@ void TrendingTaskTPC::drawCanvasQO(TCanvas* thisCanvas, const std::string& var,
 
     iEntry++;
   }
-  graphErrors->SetTitle(QualityRetrieveVector->title.data());
+  graphErrors->SetTitle(qualityRetrieveVector->title.data());
   myReader.Restart();
 
   if (plotOrder != 2) {
@@ -528,11 +527,11 @@ void TrendingTaskTPC::getTrendErrors(const std::string& inputvar, std::string& e
   errorY = inputvar.substr(0, posEndType_err);
 }
 
-void TrendingTaskTPC::saveObjectToPrimitives(TCanvas* Canvas, const int padNumber, TObject* Object)
+void TrendingTaskTPC::saveObjectToPrimitives(TCanvas* canvas, const int padNumber, TObject* object)
 {
-  if (auto* pad = Canvas->GetPad(padNumber)) {
+  if (auto* pad = canvas->GetPad(padNumber)) {
     if (auto* primitives = pad->GetListOfPrimitives()) {
-      primitives->Add(Object);
+      primitives->Add(object);
     }
   }
 }
@@ -579,7 +578,8 @@ void TrendingTaskTPC::beautifyGraph(T& graph, const TrendingTaskConfigTPC::Plot&
     graph->GetXaxis()->SetTimeDisplay(1);
     graph->GetXaxis()->SetNdivisions(505);
     graph->GetXaxis()->SetTimeOffset(0.0);
-    graph->GetXaxis()->SetTimeFormat("%Y-%m-%d %H:%M");
+    graph->GetXaxis()->SetLabelOffset(0.02);
+    graph->GetXaxis()->SetTimeFormat("#splitline{%d.%m.%y}{%H:%M}");
   }
 
   if (plotconfig.varexp.find("quality") != std::string::npos) {
