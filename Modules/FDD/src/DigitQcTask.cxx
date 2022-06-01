@@ -22,6 +22,7 @@
 #include <Framework/InputRecordWalker.h>
 #include "DataFormatsFDD/ChannelData.h"
 #include "DataFormatsFDD/Digit.h"
+#include <DataFormatsFDD/LookUpTable.h>
 
 namespace o2::quality_control_modules::fdd
 {
@@ -36,23 +37,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   ILOG(Info, Support) << "initialize DigitQcTask"
                       << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
   mStateLastIR2Ch = {};
-  // Not ready yet
-  /*
-  mMapChTrgNames.insert({ o2::fdd::ChannelData::kNumberADC, "NumberADC" });
-  mMapChTrgNames.insert({ o2::fdd::ChannelData::kIsDoubleEvent, "IsDoubleEvent" });
-  mMapChTrgNames.insert({ o2::fdd::ChannelData::kIsTimeInfoNOTvalid, "IsTimeInfoNOTvalid" });
-  mMapChTrgNames.insert({ o2::fdd::ChannelData::kIsCFDinADCgate, "IsCFDinADCgate" });
-  mMapChTrgNames.insert({ o2::fdd::ChannelData::kIsTimeInfoLate, "IsTimeInfoLate" });
-  mMapChTrgNames.insert({ o2::fdd::ChannelData::kIsAmpHigh, "IsAmpHigh" });
-  mMapChTrgNames.insert({ o2::fdd::ChannelData::kIsEventInTVDC, "IsEventInTVDC" });
-  mMapChTrgNames.insert({ o2::fdd::ChannelData::kIsTimeInfoLost, "IsTimeInfoLost" });
 
-  mMapDigitTrgNames.insert({ o2::fdd::Triggers::bitA, "OrA" });
-  mMapDigitTrgNames.insert({ o2::fdd::Triggers::bitC, "OrC" });
-  mMapDigitTrgNames.insert({ o2::fdd::Triggers::bitVertex, "Vertex" });
-  mMapDigitTrgNames.insert({ o2::fdd::Triggers::bitCen, "Central" });
-  mMapDigitTrgNames.insert({ o2::fdd::Triggers::bitSCen, "SemiCentral" });
-  */
   mMapChTrgNames.insert({ o2::fdd::ChannelData::EEventDataBit::kNumberADC, "NumberADC" });
   mMapChTrgNames.insert({ o2::fdd::ChannelData::EEventDataBit::kIsDoubleEvent, "IsDoubleEvent" });
   mMapChTrgNames.insert({ o2::fdd::ChannelData::EEventDataBit::kIsTimeInfoNOTvalid, "IsTimeInfoNOTvalid" });
@@ -71,6 +56,9 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mMapDigitTrgNames.insert({ 6, "OutputsAreBlocked" });
   mMapDigitTrgNames.insert({ 7, "DataIsValid" });
 
+  mHist2CorrTCMchAndPMch = std::make_unique<TH2F>("CorrTCMchAndPMch", "TCM charge  vs (PM totalCh/8);TCM charge;PM totalCh;", 3300, 0, 6600,
+                                                  3300, 0, 6600);
+  mHist2CorrTCMchAndPMch->SetOption("colz");
   mHistTime2Ch = std::make_unique<TH2F>("TimePerChannel", "Time vs Channel;Time;Channel;", 4100, -2050, 2050,
                                         sNCHANNELS_PM, 0, sNCHANNELS_PM);
   mHistTime2Ch->SetOption("colz");
@@ -100,6 +88,43 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   for (const auto& entry : mMapDigitTrgNames) {
     mHistTriggers->GetXaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
   }
+
+  mListHistGarbage = new TList();
+  mListHistGarbage->SetOwner(kTRUE);
+  //---------ak--------
+  char* p;
+  for (const auto& lutEntry : o2::fdd::SingleLUT::Instance().getVecMetadataFEE()) {
+    int chId = std::strtol(lutEntry.mChannelID.c_str(), &p, 10);
+    if (*p) {
+      // lutEntry.mChannelID is not a number
+      continue;
+    }
+    auto moduleName = lutEntry.mModuleName;
+    if (moduleName == "TCM") {
+      if (mMapPmModuleChannels.find(moduleName) == mMapPmModuleChannels.end()) {
+        mMapPmModuleChannels.insert({ moduleName, std::vector<int>{} });
+      }
+      continue;
+    }
+    if (mMapPmModuleChannels.find(moduleName) != mMapPmModuleChannels.end()) {
+      mMapPmModuleChannels[moduleName].push_back(chId);
+    } else {
+      std::vector<int> vChId = {
+        chId,
+      };
+      mMapPmModuleChannels.insert({ moduleName, vChId });
+    }
+  }
+
+  for (const auto& entry : mMapPmModuleChannels) {
+    auto pairModuleBcOrbit = mMapPmModuleBcOrbit.insert({ entry.first, new TH2F(Form("BcOrbitMap_%s", entry.first.c_str()), Form("BC-orbit map for %s;Orbit;BC", entry.first.c_str()), 256, 0, 256, 3564, 0, 3564) });
+    if (pairModuleBcOrbit.second) {
+      getObjectsManager()->startPublishing(pairModuleBcOrbit.first->second);
+      pairModuleBcOrbit.first->second->SetOption("colz");
+      mListHistGarbage->Add(pairModuleBcOrbit.first->second);
+    }
+  }
+  //---------ak--------
   mHistNchA = std::make_unique<TH1F>("NumChannelsA", "Number of channels(TCM), side A;Nch", sNCHANNELS_PM, 0,
                                      sNCHANNELS_PM);
   mHistNchC = std::make_unique<TH1F>("NumChannelsC", "Number of channels(TCM), side C;Nch", sNCHANNELS_PM, 0,
@@ -115,8 +140,6 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistCycleDurationRange = std::make_unique<TH1D>("CycleDurationRange",
                                                    "Cycle Duration (total cycle range);;time [ns]", 1, 0, 2);
 
-  mListHistGarbage = new TList();
-  mListHistGarbage->SetOwner(kTRUE);
   std::vector<unsigned int> vecChannelIDs;
   if (auto param = mCustomParameters.find("ChannelIDs"); param != mCustomParameters.end()) {
     const auto chIDs = param->second;
@@ -151,6 +174,12 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
       getObjectsManager()->startPublishing(pairHistAmp.first->second);
       mListHistGarbage->Add(pairHistAmp.first->second);
     }
+
+    if (pairHistAmpCoincidence.second) {
+      getObjectsManager()->startPublishing(pairHistAmpCoincidence.first->second);
+      mListHistGarbage->Add(pairHistAmpCoincidence.first->second);
+    }
+
     if (pairHistTime.second) {
       mListHistGarbage->Add(pairHistTime.first->second);
       getObjectsManager()->startPublishing(pairHistTime.first->second);
@@ -166,6 +195,8 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
       getObjectsManager()->startPublishing(pairHistAmpVsTime.first->second);
     }
   }
+
+  getObjectsManager()->startPublishing(mHist2CorrTCMchAndPMch.get());
   getObjectsManager()->startPublishing(mHistTime2Ch.get());
   getObjectsManager()->startPublishing(mHistAmp2Ch.get());
   getObjectsManager()->startPublishing(mHistOrbit2BC.get());
@@ -188,6 +219,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 void DigitQcTask::startOfActivity(Activity& activity)
 {
   ILOG(Info, Support) << "startOfActivity " << activity.mId << ENDM;
+  mHist2CorrTCMchAndPMch->Reset();
   mHistTime2Ch->Reset();
   mHistAmp2Ch->Reset();
   mHistOrbit2BC->Reset();
@@ -243,7 +275,11 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   auto digits = ctx.inputs().get<gsl::span<o2::fdd::Digit>>("digits");
   // bool isFirst = true;
   // uint32_t firstOrbit;
+
+  int mPMChargeTotalAside, mPMChargeTotalCside;
   for (auto& digit : digits) {
+    mPMChargeTotalAside = 0;
+    mPMChargeTotalCside = 0;
     const auto& vecChData = digit.getBunchChannelData(channels);
     bool isTCM = true;
     mTimeCurNS = o2::InteractionRecord::bc2ns(digit.getBC(), digit.getOrbit());
@@ -280,7 +316,7 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     mHistOrbit2BC->Fill(digit.getIntRecord().orbit % sOrbitsPerTF, digit.getIntRecord().bc);
     mHistBC->Fill(digit.getIntRecord().bc);
 
-    if (isTCM && !digit.mTriggers.getLaserBit()) {
+    if (isTCM && !digit.mTriggers.getLaser()) {
       // mHistNchA->Fill(digit.mTriggers.nChanA); ak
       mHistNchA->Fill(digit.mTriggers.getNChanA());
       mHistNchC->Fill(digit.mTriggers.getNChanC());
@@ -294,6 +330,19 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
         }
       }
     }
+    //-----ak------
+    for (auto& entry : mMapPmModuleChannels) {
+      for (const auto& chData : vecChData) {
+        if (std::find(entry.second.begin(), entry.second.end(), chData.mPMNumber) != entry.second.end()) {
+          mMapPmModuleBcOrbit[entry.first]->Fill(digit.getOrbit() % sOrbitsPerTF, digit.getBC());
+          break;
+        }
+      }
+      if (entry.first == "TCM" && isTCM && digit.mTriggers.getDataIsValid()) {
+        mMapPmModuleBcOrbit[entry.first]->Fill(digit.getOrbit() % sOrbitsPerTF, digit.getBC());
+      }
+    }
+    //-----ak------
     // Fill the amplitude, if there is a coincidence of the signals in in the front or back layers
     bool hasData[16] = { 0 };
     for (const auto& chData : vecChData) {
@@ -303,7 +352,6 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
         }
       }
     } // ak
-
     for (const auto& chData : vecChData) {
       mHistTime2Ch->Fill(static_cast<Double_t>(ch_data::getTime(chData)),
                          static_cast<Double_t>(ch_data::getChId(chData)));
@@ -315,6 +363,12 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       mStateLastIR2Ch[ch_data::getChId(chData)] = digit.getIntRecord();
       mHistChannelID->Fill(ch_data::getChId(chData));
       if (mSetAllowedChIDs.find(static_cast<unsigned int>(ch_data::getChId(chData))) != mSetAllowedChIDs.end()) {
+
+        if (static_cast<int>(chData.mPMNumber) < 8)
+          mPMChargeTotalCside += chData.mChargeADC;
+        else
+          mPMChargeTotalAside += chData.mChargeADC;
+
         mMapHistAmp1D[ch_data::getChId(chData)]->Fill(ch_data::getCharge(chData));
 
         if (static_cast<int>(chData.mPMNumber) == 0 && hasData[4]) {
@@ -380,6 +434,14 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
         }
       }
     }
+    /// PM charge is scaled by 8 to compare with TCM charge
+    mPMChargeTotalAside = std::lround(static_cast<int>(mPMChargeTotalAside / 8));
+    mPMChargeTotalCside = std::lround(static_cast<int>(mPMChargeTotalCside / 8));
+
+    if (isTCM) {
+      mHist2CorrTCMchAndPMch->Fill(digit.mTriggers.getAmplA() + digit.mTriggers.getAmplC(), mPMChargeTotalAside + mPMChargeTotalCside);
+      // std::cout<<"TCM ch "<<digit.mTriggers.getAmplA()+digit.mTriggers.getAmplC()<<" PM ch "<<mPMChargeTotalAside+mPMChargeTotalCside<<std::endl;
+    }
   }
   mTimeSum += curTfTimeMax - curTfTimeMin;
 }
@@ -407,6 +469,7 @@ void DigitQcTask::reset()
 {
   // clean all the monitor objects here
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  mHist2CorrTCMchAndPMch->Reset();
   mHistTime2Ch->Reset();
   mHistAmp2Ch->Reset();
   mHistOrbit2BC->Reset();
