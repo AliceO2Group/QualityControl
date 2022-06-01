@@ -53,14 +53,14 @@
     "checks": {
       "QcCheck": {
         "active": "true",
-        "className": "o2::quality_control_modules::common::IncreasingEntries",
-        "moduleName": "QcCommon",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
         "policy": "OnAny",
         "detectorName": "TST",
         "dataSource": [{
           "type": "Task",
           "name": "QcTask",
-          "MOs": ["example", "example2", "asdf"]
+          "MOs": ["example"]
         }]
       }
     }
