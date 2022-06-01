@@ -82,7 +82,7 @@ void CheckHitMap::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
     // } else if (checkResult == Quality::Bad) {
     //   msg->AddText("Call TOF on-call.");
     // } else if (checkResult == Quality::Medium) {
-    //   ILOG(Info, Support) << "Quality::medium, setting to yellow";
+    //   ILOG(Info, Support) << "Quality::medium, setting to yellow" << ENDM;
     //   msg->AddText("IF TOF IN RUN email TOF on-call.");
     // }
   } else {

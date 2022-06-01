@@ -58,29 +58,30 @@ void RawDataDecoder::rdhHandler(const o2::header::RAWDataHeader* rdh)
     return;
   }
 
+  constexpr auto rdhCrateWord = 0xFF;
   if (RDHUtils::getPageCounter(rdh) == 0) { // if RDH open
-    mCounterRDHOpen.Count(rdh->feeId & 0xFF);
+    mCounterRDHOpen.Count(rdh->feeId & rdhCrateWord);
   }
 
-  mCounterRDH[rdh->feeId & 0xFF].Count(0);
+  mCounterRDH[rdh->feeId & rdhCrateWord].Count(0);
 
   // Case for the RDH word "fatal"
   if ((rdh->detectorField & 0x00001000) != 0) {
-    mCounterRDH[rdh->feeId & 0xFF].Count(1);
-    // LOG(warn) << "RDH flag \"fatal\" error occurred in crate " << static_cast<int>(rdh->feeId & 0xFF);
+    mCounterRDH[rdh->feeId & rdhCrateWord].Count(1);
+    // LOG(warn) << "RDH flag \"fatal\" error occurred in crate " << static_cast<int>(rdh->feeId & rdhCrateWord);
   }
 
   if (rdh->stop) { // if RDH close
     // Triggers served and received (3 are expected)
-    const int triggerserved = ((rdh->detectorField >> 24) & 0xFF);
-    const int triggerreceived = ((rdh->detectorField >> 16) & 0xFF);
+    const int triggerserved = ((rdh->detectorField >> 24) & rdhCrateWord);
+    const int triggerreceived = ((rdh->detectorField >> 16) & rdhCrateWord);
     if (triggerserved < triggerreceived) {
       // RDH word "trigger error": served < received
-      mCounterRDH[rdh->feeId & 0xFF].Count(2);
+      mCounterRDH[rdh->feeId & rdhCrateWord].Count(2);
     }
     // Numerator and denominator for the trigger efficiency
-    mCounterRDHTriggers[0].Add(rdh->feeId & 0xFF, triggerserved);
-    mCounterRDHTriggers[1].Add(rdh->feeId & 0xFF, triggerreceived);
+    mCounterRDHTriggers[0].Add(rdh->feeId & rdhCrateWord, triggerserved);
+    mCounterRDHTriggers[1].Add(rdh->feeId & rdhCrateWord, triggerreceived);
   }
 }
 
@@ -351,11 +352,10 @@ void RawDataDecoder::estimateNoise(std::shared_ptr<TH1F> hIndexEOIsNoise)
 void TaskRaw::initialize(o2::framework::InitContext& /*ctx*/)
 {
   // Set task parameters from JSON
-  if (auto param = mCustomParameters.find("DecoderCONET"); param != mCustomParameters.end()) {
-    if (param->second == "True") {
-      ILOG(Info, Support) << "Rig for DecoderCONET";
-      mDecoderRaw.setDecoderCONET(kTRUE);
-    }
+  bool useConetMode = false;
+  if (parseBooleanParameter("DecoderCONET", useConetMode)) {
+    ILOG(Info, Support) << "Set DecoderCONET to " << useConetMode << ENDM;
+    mDecoderRaw.setDecoderCONET(useConetMode);
   }
   if (auto param = mCustomParameters.find("TimeWindowMin"); param != mCustomParameters.end()) {
     mDecoderRaw.setTimeWindowMin(param->second);
@@ -366,10 +366,10 @@ void TaskRaw::initialize(o2::framework::InitContext& /*ctx*/)
   if (auto param = mCustomParameters.find("NoiseThreshold"); param != mCustomParameters.end()) {
     mDecoderRaw.setNoiseThreshold(param->second);
   }
-  if (auto param = mCustomParameters.find("DebugCrateMultiplicity"); param != mCustomParameters.end()) {
-    if (param->second == "True") {
-      mDecoderRaw.setDebugCrateMultiplicity(true);
-    }
+  bool usePerCrateHistograms = false;
+  if (parseBooleanParameter("DebugCrateMultiplicity", usePerCrateHistograms)) {
+    ILOG(Info, Support) << "Set DebugCrateMultiplicity to " << usePerCrateHistograms << ENDM;
+    mDecoderRaw.setDebugCrateMultiplicity(usePerCrateHistograms);
   }
 
   // RDH
