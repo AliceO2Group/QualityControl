@@ -20,7 +20,6 @@
 #include "QualityControl/TaskInterface.h"
 
 class TH1F;
-class TGraph;
 
 using namespace o2::quality_control::core;
 
@@ -48,7 +47,6 @@ class SkeletonTask final : public TaskInterface
 
  private:
   TH1F* mHistogram = nullptr;
-  TGraph* asdf = nullptr;
 };
 
 } // namespace o2::quality_control_modules::skeleton
