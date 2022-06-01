@@ -18,12 +18,10 @@
 #define QUALITYCONTROL_QUALITYOBSERVER_H
 
 #include "QualityControl/PostProcessingInterface.h"
-
-#include <memory>
 #include <unordered_map>
 #include <vector>
 #include <string>
-#include <TCanvas.h>
+class TCanvas;
 
 namespace o2::quality_control::repository
 {
@@ -55,10 +53,10 @@ class QualityObserver : public PostProcessingInterface
   void finalize(Trigger, framework::ServiceRegistry&) final;
 
   struct Config {
-    std::string GroupTitle;
-    std::string Path;
-    std::vector<std::string> QO;
-    std::vector<std::string> QOTitle;
+    std::string groupTitle;
+    std::string path;
+    std::vector<std::string> qo;
+    std::vector<std::string> qoTitle;
   };
 
  private:
@@ -69,8 +67,8 @@ class QualityObserver : public PostProcessingInterface
 
   std::vector<Config> mConfig;
   std::string mObserverName;
-  std::map<std::string, std::vector<std::string>> Qualities;
-  std::map<std::string, int> mColors;
+  std::unordered_map<std::string, std::vector<std::string>> mQualities;
+  std::unordered_map<std::string, int> mColors;
   TCanvas* mCanvas = nullptr;
 };
 

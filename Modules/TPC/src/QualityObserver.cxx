@@ -22,6 +22,7 @@
 #include <TPaveText.h>
 #include <TLine.h>
 #include <TText.h>
+#include <TCanvas.h>
 
 using namespace o2::quality_control;
 using namespace o2::quality_control::core;
@@ -36,27 +37,27 @@ void QualityObserver::configure(std::string name,
   for (const auto& dataSourceConfig : config.get_child("qc.postprocessing." + name + ".qualityObserverConfig")) {
     Config dataConfig;
 
-    dataConfig.GroupTitle = dataSourceConfig.second.get<std::string>("groupTitle");
-    dataConfig.Path = dataSourceConfig.second.get<std::string>("path");
+    dataConfig.groupTitle = dataSourceConfig.second.get<std::string>("groupTitle");
+    dataConfig.path = dataSourceConfig.second.get<std::string>("path");
 
     std::vector<std::string> inputQO;
     std::vector<std::string> inputQOTitle;
 
-    if (const auto& QOsources = dataSourceConfig.second.get_child_optional("inputObjects"); QOsources.has_value()) {
-      for (const auto& QOsource : QOsources.value()) {
+    if (const auto& qoSources = dataSourceConfig.second.get_child_optional("inputObjects"); qoSources.has_value()) {
+      for (const auto& QOsource : qoSources.value()) {
         inputQO.push_back(QOsource.second.data());
       }
     }
-    if (const auto& QOTitlesources = dataSourceConfig.second.get_child_optional("inputObjectTitles"); QOTitlesources.has_value()) {
-      for (const auto& QOTitlesource : QOTitlesources.value()) {
+    if (const auto& qoTitlesources = dataSourceConfig.second.get_child_optional("inputObjectTitles"); qoTitlesources.has_value()) {
+      for (const auto& QOTitlesource : qoTitlesources.value()) {
         inputQOTitle.push_back(QOTitlesource.second.data());
       }
     }
     if (inputQO.size() != inputQOTitle.size()) {
-      ILOG(Error, Devel) << "in config of group" << dataConfig.GroupTitle << ": Number of QOs does not match number of QO titles!" << ENDM;
+      ILOG(Error, Devel) << "in config of group" << dataConfig.groupTitle << ": Number of QOs does not match number of qo titles!" << ENDM;
     }
-    dataConfig.QO = inputQO;
-    dataConfig.QOTitle = inputQOTitle;
+    dataConfig.qo = inputQO;
+    dataConfig.qoTitle = inputQOTitle;
     mConfig.push_back(dataConfig);
 
     inputQO.clear();
@@ -66,13 +67,13 @@ void QualityObserver::configure(std::string name,
 
 void QualityObserver::initialize(Trigger, framework::ServiceRegistry&)
 {
-  for (const auto config : mConfig) {
-    Qualities[config.GroupTitle] = std::vector<std::string>();
+  for (const auto& config : mConfig) {
+    mQualities[config.groupTitle] = std::vector<std::string>();
   }
-  mColors["bad"] = kRed;
-  mColors["medium"] = kOrange - 3;
-  mColors["good"] = kGreen + 2;
-  mColors["no quality"] = kGray + 2;
+  mColors[Quality::Bad.getName()] = kRed;
+  mColors[Quality::Medium.getName()] = kOrange - 3;
+  mColors[Quality::Good.getName()] = kGreen + 2;
+  mColors[Quality::Null.getName()] = kGray + 2;
 }
 
 void QualityObserver::update(Trigger t, framework::ServiceRegistry& services)
@@ -85,10 +86,8 @@ void QualityObserver::update(Trigger t, framework::ServiceRegistry& services)
 void QualityObserver::finalize(Trigger t, framework::ServiceRegistry&)
 {
   generatePanel();
-  if (mCanvas) {
-    delete mCanvas;
-    mCanvas = nullptr;
-  }
+  delete mCanvas;
+  mCanvas = nullptr;
 }
 
 void QualityObserver::getQualities(const Trigger& t,
@@ -96,27 +95,16 @@ void QualityObserver::getQualities(const Trigger& t,
 {
   for (const auto& config : mConfig) {
 
-    if (Qualities[config.GroupTitle].size() > 0) {
-      Qualities[config.GroupTitle].clear();
+    if (mQualities[config.groupTitle].size() > 0) {
+      mQualities[config.groupTitle].clear();
     }
-    for (const std::string qualityobject : config.QO) {
-      auto qo = qcdb.retrieveQO(config.Path + "/" + qualityobject, t.timestamp, t.activity);
-
+    for (const auto& qualityobject : config.qo) {
+      const auto qo = qcdb.retrieveQO(config.path + "/" + qualityobject, t.timestamp, t.activity);
       if (qo) {
         const auto quality = qo->getQuality();
-        uint qualitylevel = quality.getLevel();
-
-        if (qualitylevel == 1) {
-          Qualities[config.GroupTitle].push_back("good");
-        } else if (qualitylevel == 2) {
-          Qualities[config.GroupTitle].push_back("medium");
-        } else if (qualitylevel == 3) {
-          Qualities[config.GroupTitle].push_back("bad");
-        } else {
-          Qualities[config.GroupTitle].push_back("no quality");
-        }
+        mQualities[config.groupTitle].push_back(quality.getName());
       } else {
-        Qualities[config.GroupTitle].push_back("no quality");
+        mQualities[config.groupTitle].push_back(Quality::Null.getName());
       }
     }
   }
@@ -145,10 +133,10 @@ void QualityObserver::generatePanel()
   for (const auto& config : mConfig) {
 
     pt->AddText(""); // Emtpy line needed. AddLine() places the line to the first entry of the for loop. Check late
-    TText* GroupText = pt->AddText(config.GroupTitle.data());
+    TText* GroupText = pt->AddText(config.groupTitle.data());
     ((TText*)pt->GetListOfLines()->Last())->SetTextAlign(22);
-    for (int i = 0; i < config.QOTitle.size(); i++) {
-      pt->AddText(Form("%s = #color[%d]{%s}", config.QOTitle.at(i).data(), mColors[Qualities[config.GroupTitle].at(i).data()], Qualities[config.GroupTitle].at(i).data()));
+    for (int i = 0; i < config.qoTitle.size(); i++) {
+      pt->AddText(Form("%s = #color[%d]{%s}", config.qoTitle.at(i).data(), mColors[mQualities[config.groupTitle].at(i).data()], mQualities[config.groupTitle].at(i).data()));
       // To-Check: SetTextAlign does currently not work in QCG
       ((TText*)pt->GetListOfLines()->Last())->SetTextAlign(12);
     }
