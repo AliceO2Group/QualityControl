@@ -20,6 +20,7 @@
 #include <TH1.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TH2S.h>
 #include <TH1I.h>
 #include <TH2I.h>
 #include <TProfile2D.h>
@@ -79,20 +80,15 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   if (auto param = mCustomParameters.find("RangeMaxToT"); param != mCustomParameters.end()) {
     mRangeMaxToT = ::atof(param->second.c_str());
   }
-  if (auto param = mCustomParameters.find("Diagnostic"); param != mCustomParameters.end()) {
-    if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
-      mFlagEnableDiagnostic = true;
-    } else if (param->second == "false" || param->second == "False" || param->second == "FALSE") {
-      mFlagEnableDiagnostic = false;
+  if (auto param = mCustomParameters.find("NoiseClassSelection"); param != mCustomParameters.end()) {
+    mNoiseClassSelection = ::atoi(param->second.c_str());
+    if (mNoiseClassSelection <= -1 || mNoiseClassSelection > nNoiseClasses) {
+      ILOG(Error, Support) << "Asked to discard noise class " << mNoiseClassSelection << " but it is invalid, use -1, 0, 1, 2. Setting it to -1 (no selection)" << ENDM;
+      mNoiseClassSelection = -1;
     }
   }
-  if (auto param = mCustomParameters.find("PerChannel"); param != mCustomParameters.end()) {
-    if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
-      mFlagEnableOrphanPerChannel = true;
-    } else if (param->second == "false" || param->second == "False" || param->second == "FALSE") {
-      mFlagEnableOrphanPerChannel = false;
-    }
-  }
+  parseBooleanParameter("Diagnostic", mFlagEnableDiagnostic);
+  parseBooleanParameter("PerChannel", mFlagEnableOrphanPerChannel);
 
   // Define histograms
   ILOG(Info, Support) << "initialize TaskDigits" << ENDM;
@@ -144,6 +140,12 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
     mHistoOrphanPerChannel = std::make_shared<TH1S>("OrphanPerChannel", "TOF orphans vs channel;Channel;Counts", nchannels, 0., nchannels);
     getObjectsManager()->startPublishing(mHistoOrphanPerChannel.get());
   }
+
+  mHistoNoisyChannels = std::make_shared<TH2S>("NoisyChannels", "TOF orphans vs channel;Channel;Counts", nchannels, 0., nchannels, nNoiseClasses, 0, nNoiseClasses);
+  for (int i = 0; i < nNoiseClasses; i++) {
+    mHistoNoisyChannels->GetYaxis()->SetBinLabel(1 + i, Form("Class %i", i));
+  }
+  getObjectsManager()->startPublishing(mHistoNoisyChannels.get());
 
   // Multiplicity
   mHistoMultiplicity = std::make_shared<TH1I>("Multiplicity/Integrated", "TOF hit multiplicity;TOF hits;Events ", mBinsMultiplicity, mRangeMinMultiplicity, mRangeMaxMultiplicity);
@@ -251,8 +253,7 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
   // Get TOF Readout window
   const auto& rows = ctx.inputs().get<std::vector<o2::tof::ReadoutWindowData>>("readoutwin");
   // Get Diagnostic frequency to check noisy channels in the current TF
-  // to be added once all json changed
-  // const auto diafreq = ctx.inputs().get<o2::tof::Diagnostic*>("diafreq");
+  const auto& diafreq = ctx.inputs().get<o2::tof::Diagnostic*>("diafreq");
 
   int eta, phi;       // Eta and phi indices
   int det[5] = { 0 }; // Coordinates
@@ -323,8 +324,17 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
         continue;
       }
 
-      // it can  be used once all json changed and diafreq added
-      // diafreq->isNoisyChannel(digit.getChannel())
+      for (int i = 0; i < nNoiseClasses; i++) {
+        if (!diafreq->isNoisyChannel(digit.getChannel(), i)) {
+          continue;
+        }
+        mCounterNoisyChannels[i].Count(digit.getChannel());
+      }
+
+      if (mNoiseClassSelection >= 0 &&
+          diafreq->isNoisyChannel(digit.getChannel(), mNoiseClassSelection)) {
+        continue;
+      }
 
       int bcCorr = digit.getIR().bc - o2::tof::Geo::LATENCYWINDOW_IN_BC;
       if (bcCorr < 0) {
@@ -334,8 +344,8 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
       o2::tof::Geo::getVolumeIndices(digit.getChannel(), det);
       strip = o2::tof::Geo::getStripNumberPerSM(det[1], det[2]); // Strip index in the SM
       ndigitsPerCrate[strip]++;
-      mHitCounterPerStrip[strip].Count(det[0] * 4 + det[4] / 12);
-      mHitCounterPerChannel.Count(digit.getChannel());
+      mCounterHitsPerStrip[strip].Count(det[0] * 4 + det[4] / 12);
+      mCounterHitsPerChannel.Count(digit.getChannel());
       // TDC time and ToT time
       constexpr float TDCBIN_NS = o2::tof::Geo::TDCBIN * 0.001;
       tdc_time = (digit.getTDC() + digit.getIR().bc * 1024) * TDCBIN_NS;
@@ -345,7 +355,7 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
       if (tot_time <= 0.f) {
         mHistoTimeOrphans->Fill(tdc_time);
         if (mFlagEnableOrphanPerChannel) {
-          mOrphanCounterPerChannel.Count(digit.getChannel());
+          mCounterOrphansPerChannel.Count(digit.getChannel());
         }
       }
       mHistoToT->Fill(tot_time);
@@ -403,10 +413,13 @@ void TaskDigits::endOfCycle()
 {
   ILOG(Info, Support) << "endOfCycle" << ENDM;
   for (unsigned int i = 0; i < RawDataDecoder::nstrips; i++) {
-    mHitCounterPerStrip[i].FillHistogram(mHistoHitMap.get(), i + 1);
+    mCounterHitsPerStrip[i].FillHistogram(mHistoHitMap.get(), i + 1);
   }
   if (mFlagEnableOrphanPerChannel) {
-    mOrphanCounterPerChannel.FillHistogram(mHistoOrphanPerChannel.get());
+    mCounterOrphansPerChannel.FillHistogram(mHistoOrphanPerChannel.get());
+  }
+  for (unsigned int i = 0; i < nNoiseClasses; i++) {
+    mCounterNoisyChannels[i].FillHistogram(mHistoNoisyChannels.get(), i + 1);
   }
 }
 
@@ -420,10 +433,13 @@ void TaskDigits::reset()
   // clean all the monitor objects here
   ILOG(Info, Support) << "Resetting the counters" << ENDM;
   for (unsigned int i = 0; i < RawDataDecoder::nstrips; i++) {
-    mHitCounterPerStrip[i].Reset();
+    mCounterHitsPerStrip[i].Reset();
   }
-  mHitCounterPerChannel.Reset();
-  mOrphanCounterPerChannel.Reset();
+  mCounterHitsPerChannel.Reset();
+  mCounterOrphansPerChannel.Reset();
+  for (unsigned int i = 0; i < nNoiseClasses; i++) {
+    mCounterNoisyChannels[i].Reset();
+  }
 
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
   // Event info
