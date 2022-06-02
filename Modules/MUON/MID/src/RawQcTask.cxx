@@ -169,7 +169,7 @@ void RawQcTask::startOfCycle()
 void RawQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
 
-  ILOG(Info, Support) << "startOfDataMonitoring" << ENDM;
+//  ILOG(Info, Support) << "startOfDataMonitoring" << ENDM;
 
   o2::framework::DPLRawParser parser(ctx.inputs());
   o2::InteractionRecord IntRecord;
