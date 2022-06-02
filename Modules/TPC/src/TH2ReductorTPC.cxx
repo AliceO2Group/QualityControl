@@ -27,7 +27,7 @@ namespace o2::quality_control_modules::tpc
 {
 void TH2ReductorTPC::update(TObject* obj, std::vector<SliceInfo>& reducedSource,
                             std::vector<std::vector<float>>& axis,
-                            std::vector<std::string>& ranges)
+                            int& finalNumberPads)
 {
   // Define the local variables in the default case: 1 single pad
   // (no multipad canvas, nor slicer), and slicer axes size set to 1 (no slicing).
@@ -120,14 +120,15 @@ void TH2ReductorTPC::update(TObject* obj, std::vector<SliceInfo>& reducedSource,
           if (useSlicingY) {
             getBinSlices(histo->GetYaxis(), axis[1][jY], axis[1][jY + 1], binYLow, binYUp, sliceLabelY);
             histo->GetYaxis()->SetRange(binYLow, binYUp);
-            ranges.push_back(thisRange + fmt::format(" and RangeY: [{0:.1f}, {1:.1f}]", axis[1][jY], axis[1][jY + 1]));
+            thisRange += fmt::format(" and RangeY: [{0:.1f}, {1:.1f}]", axis[1][jY], axis[1][jY + 1]);
           } else {
-            ranges.push_back(thisRange + fmt::format(" and RangeY (default): [{0:.1f}, {1:.1f}]", histo->GetYaxis()->GetXmin(), histo->GetYaxis()->GetXmax()));
+            thisRange += fmt::format(" and RangeY (default): [{0:.1f}, {1:.1f}]", histo->GetYaxis()->GetXmin(), histo->GetYaxis()->GetXmax());
             sliceLabelY = (histo->GetYaxis()->GetXmin() + histo->GetYaxis()->GetXmax()) / 2.;
             binYLow = 1;
             binYUp = histo->GetNbinsY();
           }
 
+          finalNumberPads++;
           SliceInfo mySlice;
           mySlice.entries = histo->Integral(binXLow, binXUp, binYLow, binYUp, "");
           mySlice.meanX = histo->GetMean(1);
@@ -148,6 +149,7 @@ void TH2ReductorTPC::update(TObject* obj, std::vector<SliceInfo>& reducedSource,
 
           mySlice.sliceLabelX = sliceLabelX;
           mySlice.sliceLabelY = sliceLabelY;
+          mySlice.title = thisRange;
 
           reducedSource.emplace_back(mySlice);
         }

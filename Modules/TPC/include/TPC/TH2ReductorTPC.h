@@ -40,7 +40,7 @@ class TH2ReductorTPC : public quality_control_modules::tpc::ReductorTPC
 
   /// \brief Methods from the reductor class adapted for the needs of the TPC.
   void update(TObject* obj, std::vector<SliceInfo>& reducedSource,
-              std::vector<std::vector<float>>& axis, std::vector<std::string>& ranges) final;
+              std::vector<std::vector<float>>& axis, int& finalNumberPads) final;
 };
 
 } // namespace o2::quality_control_modules::tpc
