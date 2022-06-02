@@ -12,4 +12,6 @@
 #pragma link C++ class o2::quality_control_modules::common::EverIncreasingGraph + ;
 #pragma link C++ class o2::quality_control_modules::common::TRFCollectionTask + ;
 #pragma link C++ class o2::quality_control_modules::common::WorstOfAllAggregator + ;
+#pragma link C++ class o2::quality_control_modules::common::IncreasingEntries + ;
+
 #endif
