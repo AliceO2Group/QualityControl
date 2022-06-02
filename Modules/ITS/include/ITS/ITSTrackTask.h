@@ -78,6 +78,7 @@ class ITSTrackTask : public TaskInterface
   Int_t mNTracks = 0;
   Int_t mNRofs = 0;
   int nBCbins;
+  std::string mCCDBurl = "http://alice-ccdb.cern.ch";
 
   const int NROFOCCUPANCY = 100;
   Int_t mNClusters = 0;

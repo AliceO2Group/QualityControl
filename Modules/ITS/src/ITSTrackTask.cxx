@@ -62,6 +62,7 @@ void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
   mNtracksMAX = std::stof(mCustomParameters["NtracksMAX"]);
   mDoTTree = std::stoi(mCustomParameters["doTTree"]);
   nBCbins = std::stoi(mCustomParameters.find("nBCbins")->second);
+  mCCDBurl = mCustomParameters["ClusterDictCCDB"];
 
   createAllHistos();
   publishHistos();

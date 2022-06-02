@@ -42,7 +42,8 @@
                     "nThreads": "1",
                     "nBCbins" : "103",
 		                "dicttimestamp" : "0",
-		                "geomPath": "./"
+		                "geomPath": "./",
+                    "ClusterDictCCDB": "http://alice-ccdb.cern.ch"
         }
  
       }
