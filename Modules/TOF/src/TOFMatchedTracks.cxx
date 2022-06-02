@@ -156,7 +156,7 @@ void TOFMatchedTracks::initialize(o2::framework::InitContext& /*ctx*/)
   }
 
   // initialize B field and geometry for track selection
-  o2::base::GeometryManager::loadGeometry(mGeomFileName);
+  o2::base::GeometryManager::loadGeometry(mSimPrefix); // loads aligned geom by default
   o2::base::Propagator::initFieldFromGRP(mGRPFileName);
   mBz = o2::base::Propagator::Instance()->getNominalBz();
 

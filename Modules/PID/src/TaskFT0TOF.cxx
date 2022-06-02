@@ -123,7 +123,7 @@ void TaskFT0TOF::initialize(o2::framework::InitContext& /*ctx*/)
   mHistT0ResEvTimeMult = new TH2F("T0ResEvTimeMult", "0.7 < p < 1.1 GeV/#it{c};TOF multiplicity;TOF event time resolution (ps)", 100, 0., 100, 200, 0, 200);
 
   // initialize B field and geometry for track selection
-  o2::base::GeometryManager::loadGeometry(mGeomFileName);
+  o2::base::GeometryManager::loadGeometry(mSimPrefix); // loads aligned geom by default
   o2::base::Propagator::initFieldFromGRP(mGRPFileName);
   mBz = o2::base::Propagator::Instance()->getNominalBz();
 
