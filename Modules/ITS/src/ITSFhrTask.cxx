@@ -683,22 +683,28 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (!RUdecode) {
       continue;
     }
-    mNoisyPixelNumber[lay][istave] = 0;
-
     if (lay < NLayerIB) {
       for (int ilink = 0; ilink < RUDecodeData::MaxLinksPerRU; ilink++) {
         const auto* GBTLinkInfo = DecoderTmp->getGBTLink(RUdecode->links[ilink]);
         if (!GBTLinkInfo) {
           continue;
         }
+        if ((double)GBTLinkInfo->statistics.nTriggers >= 1e6 && (double)GBTLinkInfo->statistics.nTriggers < 1e6 + 10000) {
+          mNoisyPixelNumber[lay][istave] = 0;
+        }
+
         for (int ichip = 0 + (ilink * 3); ichip < (ilink * 3) + 3; ichip++) {
           std::unordered_map<unsigned int, int>::iterator iter;
           for (iter = mHitPixelID_InStave[istave][0][ichip].begin(); iter != mHitPixelID_InStave[istave][0][ichip].end(); iter++) {
-            if ((iter->second > mHitCutForNoisyPixel) && (iter->second / (double)GBTLinkInfo->statistics.nTriggers) > mOccupancyCutForNoisyPixel) {
-              mNoisyPixelNumber[lay][istave]++;
+            if ((iter->second > mHitCutForNoisyPixel) &&
+                (iter->second / (double)GBTLinkInfo->statistics.nTriggers) > mOccupancyCutForNoisyPixel &&
+                ((double)GBTLinkInfo->statistics.nTriggers >= 1e6 && (double)GBTLinkInfo->statistics.nTriggers < 1e6 + 10000)) {
+              mNoisyPixelNumber[lay][istave]++; // count only in 10000 events as soon as nTriggers is 1e6
             }
             int pixelPos[2] = { (int)(iter->first / 1000) + (1024 * ichip) + 1, (int)(iter->first % 1000) + 1 };
-            mStaveHitmap[lay][istave]->SetBinContent(pixelPos, (double)iter->second);
+            if ((double)GBTLinkInfo->statistics.nTriggers <= mCutTrgForSparse) {
+              mStaveHitmap[lay][istave]->SetBinContent(pixelPos, (double)iter->second);
+            }
             totalhit += (int)iter->second;
             occupancyPlotTmp[i]->Fill(log10((double)iter->second / GBTLinkInfo->statistics.nTriggers));
           }
@@ -717,6 +723,9 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
         if (!GBTLinkInfo) {
           continue;
         }
+        if ((double)GBTLinkInfo->statistics.nTriggers >= 1e6 && (double)GBTLinkInfo->statistics.nTriggers < 1e6 + 10000) {
+          mNoisyPixelNumber[lay][istave] = 0;
+        }
         for (int ihic = 0; ihic < ((nHicPerStave[lay] / NSubStave[lay])); ihic++) {
           for (int ichip = 0; ichip < nChipsPerHic[lay]; ichip++) {
             if (GBTLinkInfo->statistics.nTriggers > 0) {
@@ -729,10 +738,14 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
                 occupancyPlotTmp[i]->Fill(log10(pixelOccupancy / GBTLinkInfo->statistics.nTriggers));
                 if (ichip < 7) {
                   int pixelPos[2] = { (ihic * ((nChipsPerHic[lay] / 2) * NCols)) + ichip * NCols + (int)(iter->first / 1000) + 1, NRows - ((int)iter->first % 1000) - 1 + (1024 * ilink) + 1 };
-                  mStaveHitmap[lay][istave]->SetBinContent(pixelPos, pixelOccupancy);
+                  if ((double)GBTLinkInfo->statistics.nTriggers <= mCutTrgForSparse) {
+                    mStaveHitmap[lay][istave]->SetBinContent(pixelPos, pixelOccupancy);
+                  }
                 } else {
                   int pixelPos[2] = { (ihic * ((nChipsPerHic[lay] / 2) * NCols)) + (nChipsPerHic[lay] / 2) * NCols - (ichip - 7) * NCols - ((int)iter->first / 1000), NRows + ((int)iter->first % 1000) + (1024 * ilink) + 1 };
-                  mStaveHitmap[lay][istave]->SetBinContent(pixelPos, pixelOccupancy);
+                  if ((double)GBTLinkInfo->statistics.nTriggers <= mCutTrgForSparse) {
+                    mStaveHitmap[lay][istave]->SetBinContent(pixelPos, pixelOccupancy);
+                  }
                 }
               }
             }
@@ -762,11 +775,11 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
       for (int ichip = 0; ichip < nChipsPerHic[lay]; ichip++) {
         mChipStaveOccupancy[lay]->SetBinContent(ichip + 1, istave + 1, mOccupancyLane[istave][ichip]);
         if (!mChipStat[istave][ichip]) {
-          mDeadChipPos[lay]->SetBinContent(mDeadChipPos[lay]->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mDeadChipPos[lay]->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), mChipStat[istave][ichip]);
-          mTotalDeadChipPos->SetBinContent(mTotalDeadChipPos->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mTotalDeadChipPos->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), mChipStat[istave][ichip]);
+          mDeadChipPos[lay]->SetBinContent(mDeadChipPos[lay]->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mDeadChipPos[lay]->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), 1);
+          mTotalDeadChipPos->SetBinContent(mTotalDeadChipPos->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mTotalDeadChipPos->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), 1);
         } else {
-          mAliveChipPos[lay]->SetBinContent(mAliveChipPos[lay]->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mAliveChipPos[lay]->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), mChipStat[istave][ichip]);
-          mTotalAliveChipPos->SetBinContent(mTotalAliveChipPos->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mTotalAliveChipPos->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), mChipStat[istave][ichip]);
+          mAliveChipPos[lay]->SetBinContent(mAliveChipPos[lay]->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mAliveChipPos[lay]->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), 1);
+          mTotalAliveChipPos->SetBinContent(mTotalAliveChipPos->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mTotalAliveChipPos->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), 1);
         }
         int ilink = ichip / 3;
         for (int ierror = 0; ierror < o2::itsmft::GBTLinkDecodingStat::NErrorsDefined; ierror++) {
@@ -780,11 +793,11 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
     } else {
       for (int ichip = 0; ichip < nHicPerStave[lay] * nChipsPerHic[lay]; ichip++) {
         if (!mChipStat[istave][ichip]) {
-          mDeadChipPos[lay]->SetBinContent(mDeadChipPos[lay]->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mDeadChipPos[lay]->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), mChipStat[istave][ichip]);
-          mTotalDeadChipPos->SetBinContent(mTotalDeadChipPos->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mTotalDeadChipPos->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), mChipStat[istave][ichip]);
+          mDeadChipPos[lay]->SetBinContent(mDeadChipPos[lay]->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mDeadChipPos[lay]->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), 1);
+          mTotalDeadChipPos->SetBinContent(mTotalDeadChipPos->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mTotalDeadChipPos->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), 1);
         } else {
-          mAliveChipPos[lay]->SetBinContent(mAliveChipPos[lay]->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mAliveChipPos[lay]->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), mChipStat[istave][ichip]);
-          mTotalAliveChipPos->SetBinContent(mTotalAliveChipPos->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mTotalAliveChipPos->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), mChipStat[istave][ichip]);
+          mAliveChipPos[lay]->SetBinContent(mAliveChipPos[lay]->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mAliveChipPos[lay]->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), 1);
+          mTotalAliveChipPos->SetBinContent(mTotalAliveChipPos->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mTotalAliveChipPos->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), 1);
         }
       }
 
@@ -845,6 +858,7 @@ void ITSFhrTask::getParameters()
   mMinGeneralNoisyAxisRange = std::stof(mCustomParameters["MinGeneralNoisyAxisRange"]);
   mPhibins = std::stoi(mCustomParameters["Phibins"]);
   mEtabins = std::stoi(mCustomParameters["Etabins"]);
+  mCutTrgForSparse = std::stod(mCustomParameters["CutSparseTriggers"]);
 }
 
 void ITSFhrTask::endOfCycle()
