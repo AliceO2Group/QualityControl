@@ -54,7 +54,7 @@ Quality CheckNoise::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
       result = Quality::Medium;
       locateChannel(i);
       std::string channelFormat = Form("%i %i %i %i %i %i", locatedSupermodule, locatedLink, locatedTrm, locatedChain, locatedTdc, locatedChannel);
-      mo->addMetadata(Form("noisyChannel%i"), channelFormat);
+      mo->addMetadata(Form("noisyChannel%i", i), channelFormat);
       mShifterMessages.AddMessage(channelFormat);
     }
   }
