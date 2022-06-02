@@ -64,10 +64,10 @@ Quality CheckRawTime::check(std::map<std::string, std::shared_ptr<MonitorObject>
           result = Quality::Good;
         } else {
           if (mRawTimePeakIntegral / mRawTimeIntegral > mMinPeakRatioIntegral) {
-            ILOG(Warning, Support) << Form("Raw time: peak/total integral = %5.2f, mean = %5.2f ns -> Check filling scheme...", mRawTimePeakIntegral / mRawTimeIntegral, mRawTimeMean);
+            ILOG(Warning, Support) << Form("Raw time: peak/total integral = %5.2f, mean = %5.2f ns -> Check filling scheme...", mRawTimePeakIntegral / mRawTimeIntegral, mRawTimeMean) << ENDM;
             result = Quality::Medium;
           } else {
-            ILOG(Warning, Support) << Form("Raw time peak/total integral = %5.2f, mean = %5.2f ns", mRawTimePeakIntegral / mRawTimeIntegral, mRawTimeMean);
+            ILOG(Warning, Support) << Form("Raw time peak/total integral = %5.2f, mean = %5.2f ns", mRawTimePeakIntegral / mRawTimeIntegral, mRawTimeMean) << ENDM;
             result = Quality::Bad;
           }
         }

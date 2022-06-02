@@ -35,7 +35,7 @@ Quality CheckDiagnostics::check(std::map<std::string, std::shared_ptr<MonitorObj
 {
 
   Quality result = Quality::Null;
-  ILOG(Info, Support) << "Checking quality of diagnostic words";
+  ILOG(Info, Support) << "Checking quality of diagnostic words" << ENDM;
 
   for (auto& [moName, mo] : *moMap) {
     (void)moName;
@@ -69,7 +69,7 @@ void CheckDiagnostics::beautify(std::shared_ptr<MonitorObject> mo, Quality check
       msg->AddText("email TOF on-call.");
     }
   } else
-    ILOG(Error, Support) << "Did not get correct histo from " << mo->GetName();
+    ILOG(Error, Support) << "Did not get correct histo from " << mo->GetName() << ENDM;
 }
 
 } // namespace o2::quality_control_modules::tof

@@ -37,7 +37,7 @@ Quality CheckCompressedData::check(std::map<std::string, std::shared_ptr<Monitor
 {
 
   Quality result = Quality::Null;
-  ILOG(Info, Support) << "Checking quality of compressed data";
+  ILOG(Info, Support) << "Checking quality of compressed data" << ENDM;
 
   for (auto& [moName, mo] : *moMap) {
     (void)moName;
@@ -79,7 +79,7 @@ void CheckCompressedData::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
       msg->AddText("Diagnostics above zero");
     }
   } else {
-    ILOG(Error, Support) << "Did not get correct histo from " << mo->GetName();
+    ILOG(Error, Support) << "Did not get correct histo from " << mo->GetName() << ENDM;
   }
 }
 } // namespace o2::quality_control_modules::tof
