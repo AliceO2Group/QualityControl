@@ -10,7 +10,8 @@ configure_file("include/Common/Version.h.in"
 add_library(O2QcCommon)
 
 target_sources(O2QcCommon
-               PRIVATE src/WorstOfAllAggregator.cxx
+               PRIVATE src/IncreasingEntries.cxx
+                       src/WorstOfAllAggregator.cxx
                        src/TRFCollectionTask.cxx
                        src/TRFCollectionTaskConfig.cxx
                        src/NonEmpty.cxx
@@ -44,6 +45,7 @@ add_root_dictionary(O2QcCommon
                             include/Common/THnSparse5Reductor.h
                             include/Common/QualityReductor.h
                             include/Common/EverIncreasingGraph.h
+                            include/Common/IncreasingEntries.h
                     LINKDEF include/Common/LinkDef.h
                     BASENAME O2QcCommon)
 

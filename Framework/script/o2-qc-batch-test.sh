@@ -38,7 +38,7 @@ fi
 if [ -z "$JSON_DIR" ]
 then
   echo "JSON_DIR must be set when calling o2-qc-batch-test.sh"
-  exit 1
+  exit 2
 fi
 
 # make sure the CCDB is available otherwise we bail (no failure)
@@ -64,14 +64,14 @@ code=$(curl -L ccdb-test.cern.ch:8080/qc/TST/MO/BatchTestTask${UNIQUE_ID}/exampl
 if (( $code != 200 )); then
   echo "Error, monitor object of the QC Task could not be found."
   delete_data
-  exit 2
+  exit 3
 fi
 # try to check that we got a valid root object
 root -b -l -q -e 'TFile f("/tmp/batch_test_obj${UNIQUE_ID}.root"); f.Print();'
 if (( $? != 0 )); then
   echo "Error, monitor object of the QC Task is invalid."
   delete_data
-  exit 2
+  exit 4
 fi
 # try if it is a non empty histogram
 entries=`root -b -l -q -e 'TFile f("/tmp/batch_test_obj${UNIQUE_ID}.root"); TH1F *h = (TH1F*)f.Get("ccdb_object"); cout << h->GetEntries() << endl;' | tail -n 1`
@@ -79,7 +79,7 @@ if [ $entries -lt 150 ] 2>/dev/null
 then
   echo "The histogram of the QC Task has less than 150 (75%) of expected samples."
   delete_data
-  exit 2
+  exit 5
 fi
 
 # check QualityObject
@@ -88,7 +88,7 @@ code=$(curl -L ccdb-test.cern.ch:8080/qc/TST/QO/BatchTestCheck${UNIQUE_ID}/`date
 if (( $code != 200 )); then
   echo "Error, quality object of the QC Task could not be found."
   delete_data
-  exit 2
+  exit 6
 fi
 
 echo "Batch test was passed."

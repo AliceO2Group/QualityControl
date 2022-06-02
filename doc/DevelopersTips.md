@@ -327,4 +327,20 @@ The config files on EPNs are merged to build a humongous config file used for th
 The common part is stored here: https://github.com/AliceO2Group/O2DPG/blob/master/DATA/production/qc-sync/qc-global.json
 The config file to use for each detector are defined here: https://github.com/AliceO2Group/O2DPG/blob/3dacaf525309b6e8cb4b4e2b7ea357ed65a95094/DATA/production/qc-workflow.sh
 
-
+## run locally multi-node
+Terminal 1
+```bash
+cd sw/BUILD/QualityControl-latest/QualityControl
+export JSON_DIR=${PWD}/tests
+export UNIQUE_PORT_1=12345
+export UNIQUE_PORT_2=12346
+o2-qc-run-producer --producers 2 --message-amount 1500  --message-rate 10 -b | o2-qc --config json://${JSON_DIR}/multinode-test.json -b --local --host localhost --run 
+```
+Terminal 2
+```bash
+cd sw/BUILD/QualityControl-latest/QualityControl
+export JSON_DIR=${PWD}/tests
+export UNIQUE_PORT_1=12345
+export UNIQUE_PORT_2=12346
+o2-qc --config json://${JSON_DIR}/multinode-test.json -b --remote --run
+```
