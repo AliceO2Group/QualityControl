@@ -293,7 +293,6 @@ void TaskFT0TOF::processEvent(const std::vector<MyTrack>& tracks)
 
 bool TaskFT0TOF::selectTrack(o2::tpc::TrackTPC const& track)
 {
-
   if (track.getPt() < mMinPtCut) {
     return false;
   }

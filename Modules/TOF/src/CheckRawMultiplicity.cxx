@@ -17,18 +17,21 @@
 
 // QC
 #include "TOF/CheckRawMultiplicity.h"
+#include "TOF/Utils.h"
 #include "QualityControl/QcInfoLogger.h"
 
+#include <DataFormatsQualityControl/FlagReasons.h>
+
 using namespace std;
+using namespace o2::quality_control;
 
 namespace o2::quality_control_modules::tof
 {
 
 void CheckRawMultiplicity::configure()
 {
-  if (auto param = mCustomParameters.find("RunningMode"); param != mCustomParameters.end()) {
-    mRunningMode = ::atoi(param->second.c_str());
-  }
+  utils::parseDoubleParameter(mCustomParameters, "MinEntriesBeforeMessage", mMinEntriesBeforeMessage);
+  utils::parseIntParameter(mCustomParameters, "RunningMode", mRunningMode);
   switch (mRunningMode) {
     case kModeCollisions:
     case kModeCosmics:
@@ -37,18 +40,13 @@ void CheckRawMultiplicity::configure()
       ILOG(Fatal, Support) << "Run mode not correct " << mRunningMode << ENDM;
       break;
   }
-  if (auto param = mCustomParameters.find("MinRawHits"); param != mCustomParameters.end()) {
-    mMinRawHits = ::atof(param->second.c_str());
-  }
-  if (auto param = mCustomParameters.find("MaxRawHits"); param != mCustomParameters.end()) {
-    mMaxRawHits = ::atof(param->second.c_str());
-  }
-  if (auto param = mCustomParameters.find("MaxFractAtZeroMult"); param != mCustomParameters.end()) {
-    mMaxFractAtZeroMult = ::atof(param->second.c_str());
-  }
-  if (auto param = mCustomParameters.find("MaxFractAtLowMult"); param != mCustomParameters.end()) {
-    mMaxFractAtLowMult = ::atof(param->second.c_str());
-  }
+
+  utils::parseFloatParameter(mCustomParameters, "MinRawHits", mMinRawHits);
+  utils::parseFloatParameter(mCustomParameters, "MaxRawHits", mMaxRawHits);
+
+  utils::parseFloatParameter(mCustomParameters, "MaxFractAtZeroMult", mMaxFractAtZeroMult);
+  utils::parseFloatParameter(mCustomParameters, "MaxFractAtLowMult", mMaxFractAtLowMult);
+
   mShifterMessages.configure(mCustomParameters);
 }
 
@@ -76,6 +74,8 @@ Quality CheckRawMultiplicity::check(std::map<std::string, std::shared_ptr<Monito
       const auto* h = static_cast<TH1I*>(mo->getObject());
       if (h->GetEntries() == 0) { // Histogram is empty
         result = Quality::Medium;
+        result.addReason(FlagReasonFactory::NoDetectorData(),
+                         "Empty histogram (no counts)");
         mShifterMessages.AddMessage("No counts!");
       } else { // Histogram is non empty
 
@@ -99,6 +99,8 @@ Quality CheckRawMultiplicity::check(std::map<std::string, std::shared_ptr<Monito
         if (hitsIntegral == 0) { //if only "0 hits per event" bin is filled -> error
           if (h->GetBinContent(1) > 0) {
             result = Quality::Bad;
+            result.addReason(FlagReasonFactory::Unknown(),
+                             "Only events with 0 multiplicity");
             mShifterMessages.AddMessage("Only events at 0 filled!");
           }
         } else {
@@ -164,6 +166,12 @@ void CheckRawMultiplicity::beautify(std::shared_ptr<MonitorObject> mo, Quality c
     msg->AddText(Form("Mean value = %s", meta.at("mean").c_str()));
     msg->AddText(Form("Reference range: %5.2f-%5.2f", mMinRawHits, mMaxRawHits));
     msg->AddText(Form("Events with 0 hits = %s", meta.at("frac0mult").c_str()));
+
+    if (h->GetEntries() < mMinEntriesBeforeMessage) { // Checking that the histogram has enough entries before printing messages
+      msg->AddText("Cannot establish quality yet");
+      msg->SetTextColor(kWhite);
+      return;
+    }
 
     if (checkResult == Quality::Good) {
       msg->AddText("OK!");

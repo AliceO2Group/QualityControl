@@ -40,10 +40,12 @@ class CheckRawTime : public o2::quality_control::checker::CheckInterface
 
  private:
   // Running configurable parameters
+  /// Minimum number of entries in MO before message can be printed
+  double mMinEntriesBeforeMessage = -1.0;
   /// Minimum value for TOF average raw time
-  float mMinRawTime = -1.f;
+  float mMinAllowedTime = -1.f;
   /// Maximum value for TOF average raw time
-  float mMaxRawTime = 300000.f;
+  float mMaxAllowedTime = 300000.f;
   /// Minimum value for the ratio between value the integral in the peak and the one outside for TOF raw time
   float mMinPeakRatioIntegral = 0.20;
 
