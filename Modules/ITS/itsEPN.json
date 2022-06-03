@@ -40,7 +40,7 @@
           "layer": "1111111",
           "clusterDictionaryPath": "/home/epn/odc/files/ITSdictionary.bin",
           "runNumberPath": "/home/its/QC/workdir/infiles/RunNumber.dat",
-          "geomPath": "/home/epn/odc/files/o2sim_geometry.root",
+          "geomPath": "/home/epn/odc/files/o2sim_geometry-aligned.root",
           "nThreads": "4"
         }
       },
