@@ -271,7 +271,7 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 
           for (Int_t iLane = 0; iLane < mNLanePerHic[iLayer] * mNHicPerStave[iLayer]; iLane++) {
             hAverageClusterOccupancySummaryOB[iLayer]->SetBinContent(iLane + 1, iStave + 1, 1. * mClusterOccupancyOB[iLayer][iStave][iLane] / mNRofs / (mNChipsPerHic[iLayer] / mNLanePerHic[iLayer])); // 14 To have occupation per chip -> 7 because we're considering lanes
-            hAverageClusterOccupancySummaryOB[iLayer]->SetBinError(iLane + 1, iStave + 1, mClusterOccupancyOB[iLayer][iStave][iLane] < 1e-15);                                              // 14 To have occupation per chip
+            hAverageClusterOccupancySummaryOB[iLayer]->SetBinError(iLane + 1, iStave + 1, mClusterOccupancyOB[iLayer][iStave][iLane] < 1e-15);                                                          // 14 To have occupation per chip
             if (nClusters[iLayer][iStave][iLane] != 0) {
               hAverageClusterSizeSummaryOB[iLayer]->SetBinContent(iLane + 1, iStave + 1, (double)mClusterSizeOB[iLayer][iStave][iLane] / nClusters[iLayer][iStave][iLane]);
               hAverageClusterSizeSummaryOB[iLayer]->SetBinError(iLane + 1, iStave + 1, (double)mClusterSizeOB[iLayer][iStave][iLane] / nClusters[iLayer][iStave][iLane] < 1e-15);
