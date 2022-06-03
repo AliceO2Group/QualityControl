@@ -25,7 +25,8 @@ MergeableTH2Ratio::MergeableTH2Ratio(MergeableTH2Ratio const& copymerge)
          copymerge.getNum()->GetXaxis()->GetNbins(), copymerge.getNum()->GetXaxis()->GetXmin(), copymerge.getNum()->GetXaxis()->GetXmax(),
          copymerge.getNum()->GetYaxis()->GetNbins(), copymerge.getNum()->GetYaxis()->GetXmin(), copymerge.getNum()->GetYaxis()->GetXmax()),
     o2::mergers::MergeInterface(),
-    mScalingFactor(copymerge.getScalingFactor())
+    mScalingFactor(copymerge.getScalingFactor()),
+    mShowZeroBins(copymerge.getShowZeroBins())
 {
   Bool_t bStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
@@ -34,10 +35,11 @@ MergeableTH2Ratio::MergeableTH2Ratio(MergeableTH2Ratio const& copymerge)
   TH1::AddDirectory(bStatus);
 }
 
-MergeableTH2Ratio::MergeableTH2Ratio(const char* name, const char* title, int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax, double scaling)
+MergeableTH2Ratio::MergeableTH2Ratio(const char* name, const char* title, int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax, double scaling, bool showZeroBins)
   : TH2F(name, title, nbinsx, xmin, xmax, nbinsy, ymin, ymax),
     o2::mergers::MergeInterface(),
-    mScalingFactor(scaling)
+    mScalingFactor(scaling),
+    mShowZeroBins(showZeroBins)
 {
   Bool_t bStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
@@ -47,10 +49,11 @@ MergeableTH2Ratio::MergeableTH2Ratio(const char* name, const char* title, int nb
   update();
 }
 
-MergeableTH2Ratio::MergeableTH2Ratio(const char* name, const char* title, double scaling)
+MergeableTH2Ratio::MergeableTH2Ratio(const char* name, const char* title, double scaling, bool showZeroBins)
   : TH2F(name, title, 10, 0, 10, 10, 0, 10),
     o2::mergers::MergeInterface(),
-    mScalingFactor(scaling)
+    mScalingFactor(scaling),
+    mShowZeroBins(showZeroBins)
 {
   Bool_t bStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
@@ -99,6 +102,23 @@ void MergeableTH2Ratio::update()
   // convertion to KHz units
   if (mScalingFactor != 1.) {
     Scale(1. / sOrbitLengthInMilliseconds);
+  }
+
+  if (mShowZeroBins) {
+    // bins which have zero numerators are plotted in white when using the "col" and "colz" options, regardless of
+    // the contents of the denominators. However, it is sometimes useful to distinguish between bins with zero
+    // denominators (no information), and those with non-zero denominators and zero numerators.
+    // In the latter case we set the bin content in the ratio to a value slightly higher than zero, such that they
+    // will be plotted in dark-blue and can be distinguished from those with no information, which will still be
+    // plotted in white
+    for (int binx = 1; binx <= mHistoNum->GetXaxis()->GetNbins(); binx++) {
+      for (int biny = 1; biny <= mHistoNum->GetYaxis()->GetNbins(); biny++) {
+        if (mHistoNum->GetBinContent(binx, biny) == 0 && mHistoDen->GetBinContent(binx, biny) != 0) {
+          SetBinContent(binx, biny, 0.000001);
+          SetBinError(binx, biny, 1);
+        }
+      }
+    }
   }
 }
 

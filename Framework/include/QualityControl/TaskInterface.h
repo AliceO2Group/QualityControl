@@ -93,6 +93,12 @@ class TaskInterface
   const std::string& getName() const;
   void setCcdbUrl(const std::string& url);
 
+  /// Utility methods to fetch boolean otpions from the custom parameters.
+  /// @param name name of the option as in the mCustomParameters and JSON file
+  /// @param flag will be set accordingly if the 'name' element is in mCustomParameters
+  /// @return true if the option was found, false otherwise
+  bool parseBooleanParameter(const std::string& name, bool& flag) const;
+
  protected:
   std::shared_ptr<ObjectsManager> getObjectsManager();
   TObject* retrieveCondition(std::string path, std::map<std::string, std::string> metadata = {}, long timestamp = -1);

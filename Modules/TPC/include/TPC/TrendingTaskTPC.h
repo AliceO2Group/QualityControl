@@ -75,6 +75,10 @@ class TrendingTaskTPC : public PostProcessingInterface
   void setUserAxisLabel(TAxis* xAxis, TAxis* yAxis, const std::string graphAxisLabel);
   void getTrendVariables(const std::string& inputvar, std::string& sourceName, std::string& variableName, std::string& trend);
   void getTrendErrors(const std::string& inputvar, std::string& errorX, std::string& errorY);
+  void saveObjectToPrimitives(TCanvas* canvas, const int padNumber, TObject* object);
+
+  template <typename T>
+  void beautifyGraph(T& graph, const TrendingTaskConfigTPC::Plot& plotconfig, TCanvas* canv); // beautify function for TGraphs and TMultiGraphs
 
   TrendingTaskConfigTPC mConfig;
   MetaData mMetaData;
@@ -85,7 +89,7 @@ class TrendingTaskTPC : public PostProcessingInterface
   std::unordered_map<std::string, std::vector<SliceInfo>> mSources;
   std::unordered_map<std::string, SliceInfoQuality> mSourcesQuality;
   std::unordered_map<std::string, bool> mIsMoObject;
-  std::unordered_map<std::string, std::vector<std::string>> mSubtitles;
+  std::unordered_map<std::string, int> mNumberPads;
   std::unordered_map<std::string, std::vector<std::vector<float>>> mAxisDivision;
 };
 

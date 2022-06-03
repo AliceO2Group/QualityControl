@@ -26,7 +26,7 @@ namespace o2::quality_control_modules::tpc
 {
 void TH1ReductorTPC::update(TObject* obj, std::vector<SliceInfo>& reducedSource,
                             std::vector<std::vector<float>>& axis,
-                            std::vector<std::string>& ranges)
+                            int& finalNumberPads)
 {
   // Define the local variables in the default case: 1 single pad
   // (no multipad canvas, nor slicer), and slicer axes size set to 1 (no slicing).
@@ -94,8 +94,8 @@ void TH1ReductorTPC::update(TObject* obj, std::vector<SliceInfo>& reducedSource,
           binXLow = 1;
           binXUp = histo->GetNbinsX();
         }
-        ranges.push_back(thisRange);
 
+        finalNumberPads++;
         SliceInfo mySlice;
         mySlice.entries = histo->Integral(binXLow, binXUp);
         mySlice.meanX = histo->GetMean(1);
@@ -118,6 +118,7 @@ void TH1ReductorTPC::update(TObject* obj, std::vector<SliceInfo>& reducedSource,
         mySlice.errMeanY = StatsY[2];
         mySlice.sliceLabelX = sliceLabel;
         mySlice.sliceLabelY = 0.;
+        mySlice.title = thisRange;
 
         reducedSource.emplace_back(mySlice);
       }

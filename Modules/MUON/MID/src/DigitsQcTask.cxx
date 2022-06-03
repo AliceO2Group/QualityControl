@@ -345,15 +345,6 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       auto isRightSide = o2::mid::detparams::isRightSide(deIndex);
       auto detId = o2::mid::detparams::getDEId(isRightSide, ichamber, colId);
 
-      /* if(isDigitEmpty(digit) == 0){
-  std::cout << "  =>>  " << digit << std::endl;
-  for (int i = 0; i < 4; i++) {
-    if(digit.patterns[i]!=0){
-      std::cout <<"=== i = "<<i<< " :  BoardId  = " << mMapping.getBoardId(i,colId,deIndex,true) << std::endl;
-    }
-  }
-      }*/
-
       int nZoneHistoX = 1;
       int nZoneHistoY = 4;
       double stripYSize = 1. / 16;
@@ -366,7 +357,6 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
         stripXSize = 1. / 16;
       }
 
-      // std::cout << "colId  =>>  " << colId << "  deIndex = "<< deIndex <<" getNStripsNBP(deIndex)  = "<< mMapping.getNStripsNBP(colId,deIndex) << "  detId = "<< detId <<" getNStripsNBP(detId)  = "<< mMapping.getNStripsNBP(colId,detId) << std::endl;
       for (int board = mMapping.getFirstBoardBP(colId, deIndex), lastBoard = mMapping.getLastBoardBP(colId, deIndex); board <= lastBoard + 1; board++) {
         // These are the existing bend boards for this column Id (board = n°board in the column) + 1 (for non-bend)
         if ((lastBoard < 4) && (board == lastBoard + 1))
@@ -454,25 +444,25 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
                 if (ichamber == 0) {
                   if (board == 4) {
                     for (int ib = 0; ib < nZoneHistoY; ib++)
-                      mNBendHitsMap11->Fill(colHitPos, rpcLine + shift + (0.25 * ib), 1); // Non-Bend
+                      mNBendHitsMap11->Fill(colHitPos + 0.01, rpcLine + shift + (0.25 * ib), 1); // Non-Bend
                   } else
                     mBendHitsMap11->Fill(colId + 0.5, lineHitPos, 1); // Bend
                 } else if (ichamber == 1) {
                   if (board == 4) {
                     for (int ib = 0; ib < nZoneHistoY; ib++)
-                      mNBendHitsMap12->Fill(colHitPos, rpcLine + shift + (0.25 * ib), 1); // Non-Bend
+                      mNBendHitsMap12->Fill(colHitPos + 0.01, rpcLine + shift + (0.25 * ib), 1); // Non-Bend
                   } else
                     mBendHitsMap12->Fill(colId + 0.5, lineHitPos, 1); // Bend
                 } else if (ichamber == 2) {
                   if (board == 4) {
                     for (int ib = 0; ib < nZoneHistoY; ib++)
-                      mNBendHitsMap21->Fill(colHitPos, rpcLine + shift + (0.25 * ib), 1); // Non-Bend
+                      mNBendHitsMap21->Fill(colHitPos + 0.01, rpcLine + shift + (0.25 * ib), 1); // Non-Bend
                   } else
                     mBendHitsMap21->Fill(colId + 0.5, lineHitPos, 1); // Bend
                 } else if (ichamber == 3) {
                   if (board == 4) {
                     for (int ib = 0; ib < nZoneHistoY; ib++)
-                      mNBendHitsMap22->Fill(colHitPos, rpcLine + shift + (0.25 * ib), 1); // Non-Bend
+                      mNBendHitsMap22->Fill(colHitPos + 0.01, rpcLine + shift + (0.25 * ib), 1); // Non-Bend
                   } else
                     mBendHitsMap22->Fill(colId + 0.5, lineHitPos, 1); // Bend
                 }
@@ -480,25 +470,25 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
                 if (ichamber == 0) {
                   if (board == 4) {
                     for (int ib = 0; ib < nZoneHistoY; ib++)
-                      mNBendHitsMap11->Fill(-colHitPos, rpcLine + shift + (0.25 * ib), 1); // Non-Bend
+                      mNBendHitsMap11->Fill(-colHitPos - 0.01, rpcLine + shift + (0.25 * ib), 1); // Non-Bend
                   } else
                     mBendHitsMap11->Fill(-colId - 0.5, lineHitPos, 1); // Bend
                 } else if (ichamber == 1) {
                   if (board == 4) {
                     for (int ib = 0; ib < nZoneHistoY; ib++)
-                      mNBendHitsMap12->Fill(-colHitPos, rpcLine + shift + (0.25 * ib), 1); // Non-Bend
+                      mNBendHitsMap12->Fill(-colHitPos - 0.01, rpcLine + shift + (0.25 * ib), 1); // Non-Bend
                   } else
                     mBendHitsMap12->Fill(-colId - 0.5, lineHitPos, 1); // Bend
                 } else if (ichamber == 2) {
                   if (board == 4) {
                     for (int ib = 0; ib < nZoneHistoY; ib++)
-                      mNBendHitsMap21->Fill(-colHitPos, rpcLine + shift + (0.25 * ib), 1); // Non-Bend
+                      mNBendHitsMap21->Fill(-colHitPos - 0.01, rpcLine + shift + (0.25 * ib), 1); // Non-Bend
                   } else
                     mBendHitsMap21->Fill(-colId - 0.5, lineHitPos, 1); // Bend
                 } else if (ichamber == 3) {
                   if (board == 4) {
                     for (int ib = 0; ib < nZoneHistoY; ib++)
-                      mNBendHitsMap22->Fill(-colHitPos, rpcLine + shift + (0.25 * ib), 1); // Non-Bend
+                      mNBendHitsMap22->Fill(-colHitPos - 0.01, rpcLine + shift + (0.25 * ib), 1); // Non-Bend
                   } else
                     mBendHitsMap22->Fill(-colId - 0.5, lineHitPos, 1); // Bend
                 }

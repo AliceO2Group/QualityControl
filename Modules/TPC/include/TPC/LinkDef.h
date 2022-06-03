@@ -25,6 +25,9 @@
 #pragma link C++ class o2::quality_control_modules::tpc::CheckForEmptyPads+;
 #pragma link C++ class o2::quality_control_modules::tpc::SliceInfoQuality+;
 #pragma link C++ class o2::quality_control_modules::tpc::QualityReductorTPC+;
+#pragma link C++ class o2::quality_control_modules::tpc::DCSPTemperature+;
+#pragma link C++ class o2::quality_control_modules::tpc::IDCs+;
+#pragma link C++ class o2::quality_control_modules::tpc::RatioGeneratorTPC+;
 
 #pragma link C++ function o2::quality_control_modules::tpc::addAndPublish + ;
 #pragma link C++ function o2::quality_control_modules::tpc::toVector + ;

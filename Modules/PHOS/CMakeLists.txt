@@ -14,7 +14,7 @@ target_include_directories(
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_link_libraries(O2QcPHOS PUBLIC O2QualityControl O2::PHOSBase O2::PHOSReconstruction)
+target_link_libraries(O2QcPHOS PUBLIC O2QualityControl O2::PHOSBase O2::PHOSReconstruction ROOT::Spectrum)
 
 add_root_dictionary(O2QcPHOS
                     HEADERS include/PHOS/ClusterQcTask.h

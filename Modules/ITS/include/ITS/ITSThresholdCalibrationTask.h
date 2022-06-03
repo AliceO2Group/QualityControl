@@ -51,6 +51,8 @@ class ITSThresholdCalibrationTask : public TaskInterface
     float Noise;
     float NoiseRMS;
     int status;
+    bool isDeadPixel = false;
+    bool isDeadColumn = false;
   };
 
   void initialize(o2::framework::InitContext& ctx) override;
@@ -98,6 +100,7 @@ class ITSThresholdCalibrationTask : public TaskInterface
 
   TH2F *hCalibrationChipDone[3], *hCalibrationChipAverage[3][3], *hCalibrationRMSChipAverage[3][3];
   TH2F *hCalibrationThrNoiseRMSChipAverage[3], *hCalibrationThrNoiseChipAverage[3];
+  TH2F *hCalibrationDeadColumns[3], *hCalibrationDeadPixels[3];
 
   TH1F* hSuccessRate;
   TH1F *hCalibrationLayer[7][3], *hCalibrationRMSLayer[7][3];

@@ -92,6 +92,17 @@ ITSTrackSimTask::~ITSTrackSimTask()
   delete hPrimaryGen_pt;
 
   delete hAngularDistribution;
+
+  delete hDuplicate_pt;
+  delete hNumDuplicate_pt;
+  delete hDuplicate_phi;
+  delete hNumDuplicate_phi;
+  delete hDuplicate_eta;
+  delete hNumDuplicate_eta;
+  delete hDuplicate_r;
+  delete hNumDuplicate_r;
+  delete hDuplicate_z;
+  delete hNumDuplicate_z;
 }
 
 void ITSTrackSimTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -99,7 +110,6 @@ void ITSTrackSimTask::initialize(o2::framework::InitContext& /*ctx*/)
   ILOG(Info, Support) << "initialize ITSTrackSimTask" << ENDM;
   mO2GrpPath = mCustomParameters["o2GrpPath"];
   mCollisionsContextPath = mCustomParameters["collisionsContextPath"];
-
   createAllHistos();
   publishHistos();
   o2::base::Propagator::initFieldFromGRP(mO2GrpPath.c_str());
@@ -213,10 +223,8 @@ void ITSTrackSimTask::monitorData(o2::framework::ProcessingContext& ctx)
   for (int itrack = 0; itrack < trackArr.size(); itrack++) {
     const auto& track = trackArr[itrack];
     const auto& MCinfo = MCTruth[itrack];
-
     if (MCinfo.isNoise())
       continue;
-
     Float_t ip[2]{ 0., 0. };
     Float_t vx = 0., vy = 0., vz = 0.; // Assumed primary vertex at 0,0,0
     track.getImpactParams(vx, vy, vz, bz, ip);
@@ -224,6 +232,17 @@ void ITSTrackSimTask::monitorData(o2::framework::ProcessingContext& ctx)
     hAngularDistribution->Fill(track.getEta(), track.getPhi());
 
     if (info[MCinfo.getEventID()][MCinfo.getTrackID()].isFilled) {
+
+      if (info[MCinfo.getEventID()][MCinfo.getTrackID()].isReco != 0) {
+        hNumDuplicate_pt->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
+        hNumDuplicate_phi->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].phi);
+        hNumDuplicate_eta->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].eta);
+        hNumDuplicate_z->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].z);
+        hNumDuplicate_r->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].r);
+        continue;
+      }
+      info[MCinfo.getEventID()][MCinfo.getTrackID()].isReco++;
+
       if (MCinfo.isFake()) {
 
         hNumRecoFake_pt->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
@@ -248,21 +267,40 @@ void ITSTrackSimTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
     }
   }
+  hEfficiency_pt->SetPassedHistogram(*hNumRecoValid_pt, "f");
+  hEfficiency_pt->SetTotalHistogram(*hDenTrue_pt, "f");
+  hFakeTrack_pt->SetPassedHistogram(*hNumRecoFake_pt, "f");
+  hFakeTrack_pt->SetTotalHistogram(*hDenTrue_pt, "f");
+  hDuplicate_pt->SetPassedHistogram(*hNumDuplicate_pt, "f");
+  hDuplicate_pt->SetTotalHistogram(*hDenTrue_pt, "f");
 
-  hFakeTrack_pt->Divide(hNumRecoFake_pt, hDenTrue_pt, 1, 1, "B");
-  hEfficiency_pt->Divide(hNumRecoValid_pt, hDenTrue_pt, 1, 1, "B");
+  hFakeTrack_phi->SetPassedHistogram(*hNumRecoFake_phi, "f");
+  hFakeTrack_phi->SetTotalHistogram(*hDenTrue_phi, "f");
+  hEfficiency_phi->SetPassedHistogram(*hNumRecoValid_phi, "f");
+  hEfficiency_phi->SetTotalHistogram(*hDenTrue_phi, "f");
+  hDuplicate_phi->SetPassedHistogram(*hNumDuplicate_phi, "f");
+  hDuplicate_phi->SetTotalHistogram(*hDenTrue_phi, "f");
 
-  hFakeTrack_phi->Divide(hNumRecoFake_phi, hDenTrue_phi, 1, 1, "B");
-  hEfficiency_phi->Divide(hNumRecoValid_phi, hDenTrue_phi, 1, 1, "B");
+  hFakeTrack_eta->SetPassedHistogram(*hNumRecoFake_eta, "f");
+  hFakeTrack_eta->SetTotalHistogram(*hDenTrue_eta, "f");
+  hEfficiency_eta->SetPassedHistogram(*hNumRecoValid_eta, "f");
+  hEfficiency_eta->SetTotalHistogram(*hDenTrue_eta, "f");
+  hDuplicate_eta->SetPassedHistogram(*hNumDuplicate_eta, "f");
+  hDuplicate_eta->SetTotalHistogram(*hDenTrue_eta, "f");
 
-  hFakeTrack_eta->Divide(hNumRecoFake_eta, hDenTrue_eta, 1, 1, "B");
-  hEfficiency_eta->Divide(hNumRecoValid_eta, hDenTrue_eta, 1, 1, "B");
+  hFakeTrack_r->SetPassedHistogram(*hNumRecoFake_r, "f");
+  hFakeTrack_r->SetTotalHistogram(*hDenTrue_r, "f");
+  hEfficiency_r->SetPassedHistogram(*hNumRecoValid_r, "f");
+  hEfficiency_r->SetTotalHistogram(*hDenTrue_r, "f");
+  hDuplicate_r->SetPassedHistogram(*hNumDuplicate_r, "f");
+  hDuplicate_r->SetTotalHistogram(*hDenTrue_r, "f");
 
-  hFakeTrack_r->Divide(hNumRecoFake_r, hDenTrue_r, 1, 1, "B");
-  hEfficiency_r->Divide(hNumRecoValid_r, hDenTrue_r, 1, 1, "B");
-
-  hFakeTrack_z->Divide(hNumRecoFake_z, hDenTrue_z, 1, 1, "B");
-  hEfficiency_z->Divide(hNumRecoValid_z, hDenTrue_z, 1, 1, "B");
+  hFakeTrack_z->SetPassedHistogram(*hNumRecoFake_z, "f");
+  hFakeTrack_z->SetTotalHistogram(*hDenTrue_z, "f");
+  hEfficiency_z->SetPassedHistogram(*hNumRecoValid_z, "f");
+  hEfficiency_z->SetTotalHistogram(*hDenTrue_z, "f");
+  hDuplicate_z->SetPassedHistogram(*hNumDuplicate_z, "f");
+  hDuplicate_z->SetTotalHistogram(*hDenTrue_z, "f");
 }
 
 void ITSTrackSimTask::endOfCycle()
@@ -281,32 +319,22 @@ void ITSTrackSimTask::endOfActivity(Activity& /*activity*/)
 void ITSTrackSimTask::reset()
 {
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
-  hEfficiency_pt->Reset();
-  hFakeTrack_pt->Reset();
   hNumRecoValid_pt->Reset();
   hNumRecoFake_pt->Reset();
   hDenTrue_pt->Reset();
 
-  hEfficiency_phi->Reset();
-  hFakeTrack_phi->Reset();
   hNumRecoValid_phi->Reset();
   hNumRecoFake_phi->Reset();
   hDenTrue_phi->Reset();
 
-  hEfficiency_eta->Reset();
-  hFakeTrack_eta->Reset();
   hNumRecoValid_eta->Reset();
   hNumRecoFake_eta->Reset();
   hDenTrue_eta->Reset();
 
-  hEfficiency_r->Reset();
-  hFakeTrack_r->Reset();
   hNumRecoValid_r->Reset();
   hNumRecoFake_r->Reset();
   hDenTrue_r->Reset();
 
-  hEfficiency_z->Reset();
-  hFakeTrack_z->Reset();
   hNumRecoValid_z->Reset();
   hNumRecoFake_z->Reset();
   hDenTrue_z->Reset();
@@ -318,6 +346,7 @@ void ITSTrackSimTask::reset()
   hPrimaryReco_pt->Reset();
 
   hAngularDistribution->Reset();
+  hNumDuplicate_pt->Reset();
 }
 
 void ITSTrackSimTask::createAllHistos()
@@ -328,85 +357,60 @@ void ITSTrackSimTask::createAllHistos()
   for (Int_t i = 0; i <= nb; i++)
     xbins[i] = ptcutl * TMath::Exp(i * a);
 
-  hEfficiency_pt = new TH1D("efficiency_pt", ";#it{p}_{T} (GeV/#it{c});t{p}_{T}Efficiency", nb, xbins);
-  hEfficiency_pt->SetTitle("#it{p}_{T} efficiency of tracking");
-  hEfficiency_pt->SetBit(TH1::kIsAverage);
+  hDuplicate_pt = new TEfficiency("Duplicate_pt", "#it{p}_{T} fraction of mother duplicate track;#it{p}_{T} (GeV/#it{c});Fraction", nb, xbins);
+  addObject(hDuplicate_pt);
+  hEfficiency_pt = new TEfficiency("efficiency_pt", "#it{p}_{T} efficiency of tracking; #it{p}_{T} (GeV/#it{c}); {p}_{T}Efficiency", nb, xbins);
   addObject(hEfficiency_pt);
-  formatAxes(hEfficiency_pt, "#it{p}_{T} (GeV/#it{c})", "Efficiency", 1, 1.10);
-
-  hFakeTrack_pt = new TH1D("faketrack_pt", ";#it{p}_{T} (GeV/#it{c});Fake-track rate", nb, xbins);
-  hFakeTrack_pt->SetTitle("#it{p}_{T} fake-track rate");
-  hFakeTrack_pt->SetBit(TH1::kIsAverage);
+  hFakeTrack_pt = new TEfficiency("faketrack_pt", "#it{p}_{T} fake-track rate;#it{p}_{T} (GeV/#it{c});Fake-track rate", nb, xbins);
   addObject(hFakeTrack_pt);
-  formatAxes(hFakeTrack_pt, "#it{p}_{T} (GeV/#it{c})", "Fake-track rate", 1, 1.10);
-
+  hNumDuplicate_pt = new TH1D("NumDuplicate_pt", "", nb, xbins);
   hNumRecoValid_pt = new TH1D("NumRecoValid_pt", "", nb, xbins);
   hNumRecoFake_pt = new TH1D("NumRecoFake_pt", "", nb, xbins);
   hDenTrue_pt = new TH1D("DenTrueMC_pt", "", nb, xbins);
 
-  hEfficiency_phi = new TH1D("efficiency_phi", ";#phi;Efficiency", 60, 0, TMath::TwoPi());
-  hEfficiency_phi->SetTitle("#phi efficiency of tracking");
-  hEfficiency_phi->SetBit(TH1::kIsAverage);
+  hEfficiency_phi = new TEfficiency("efficiency_phi", "#phi efficiency of tracking;#phi;Efficiency", 60, 0, TMath::TwoPi());
   addObject(hEfficiency_phi);
-  formatAxes(hEfficiency_phi, "#phi", "Efficiency", 1, 1.10);
-
-  hFakeTrack_phi = new TH1D("faketrack_phi", ";#phi;Fake-track rate", 60, 0, TMath::TwoPi());
-  hFakeTrack_phi->SetTitle("#phi fake-track rate");
-  hFakeTrack_phi->SetBit(TH1::kIsAverage);
+  hFakeTrack_phi = new TEfficiency("faketrack_phi", "#phi fake-track rate;#phi;Fake-track rate", 60, 0, TMath::TwoPi());
   addObject(hFakeTrack_phi);
-  formatAxes(hFakeTrack_phi, "#phi", "Fake-track rate", 1, 1.10);
-
+  hDuplicate_phi = new TEfficiency("Duplicate_phi", "#phi fraction of mother duplicate track;#phi;Fraction", 60, 0, TMath::TwoPi());
+  addObject(hDuplicate_phi);
+  hNumDuplicate_phi = new TH1D("NumDuplicate_phi", "", 60, 0, TMath::TwoPi());
   hNumRecoValid_phi = new TH1D("NumRecoValid_phi", "", 60, 0, TMath::TwoPi());
   hNumRecoFake_phi = new TH1D("NumRecoFake_phi", "", 60, 0, TMath::TwoPi());
   hDenTrue_phi = new TH1D("DenTrueMC_phi", "", 60, 0, TMath::TwoPi());
 
-  hEfficiency_eta = new TH1D("efficiency_eta", ";#eta;Efficiency", 30, -1.5, 1.5);
-  hEfficiency_eta->SetTitle("#eta efficiency of tracking");
-  hEfficiency_eta->SetBit(TH1::kIsAverage);
+  hEfficiency_eta = new TEfficiency("efficiency_eta", "#eta efficiency of tracking;#eta;Efficiency", 30, -1.5, 1.5);
   addObject(hEfficiency_eta);
-  formatAxes(hEfficiency_eta, "#eta", "Efficiency", 1, 1.10);
-
-  hFakeTrack_eta = new TH1D("faketrack_eta", ";#eta;Fake-track rate", 30, -1.5, 1.5);
-  hFakeTrack_eta->SetTitle("#eta fake-track rate");
-  hFakeTrack_eta->SetBit(TH1::kIsAverage);
+  hFakeTrack_eta = new TEfficiency("faketrack_eta", "#eta fake-track rate;#eta;Fake-track rate", 30, -1.5, 1.5);
   addObject(hFakeTrack_eta);
-  formatAxes(hFakeTrack_eta, "#eta", "Fake-track rate", 1, 1.10);
-
+  hDuplicate_eta = new TEfficiency("Duplicate_eta", "#eta fraction of mother duplicate track;#eta;Fraction", 30, -1.5, 1.5);
+  addObject(hDuplicate_eta);
+  hNumDuplicate_eta = new TH1D("NumDuplicate_eta", "", 30, -1.5, 1.5);
   hNumRecoValid_eta = new TH1D("NumRecoValid_eta", "", 30, -1.5, 1.5);
   hNumRecoFake_eta = new TH1D("NumRecoFake_eta", "", 30, -1.5, 1.5);
   hDenTrue_eta = new TH1D("DenTrueMC_eta", "", 30, -1.5, 1.5);
 
-  hEfficiency_r = new TH1D("efficiency_r", ";r (cm);Efficiency", 50, 0, 5);
-  hEfficiency_r->SetTitle("r efficiency of tracking");
-  hEfficiency_r->SetBit(TH1::kIsAverage);
+  hEfficiency_r = new TEfficiency("efficiency_r", "r efficiency of tracking;r (cm);Efficiency", 100, 0, 5);
   addObject(hEfficiency_r);
-  formatAxes(hEfficiency_r, "r (cm)", "Efficiency", 1, 1.10);
-
-  hFakeTrack_r = new TH1D("faketrack_r", ";r (cm);Fake-track rate", 50, 0, 5);
-  hFakeTrack_r->SetTitle("r fake-track rate");
-  hFakeTrack_r->SetBit(TH1::kIsAverage);
+  hFakeTrack_r = new TEfficiency("faketrack_r", "r fake-track rate;r (cm);Fake-track rate", 100, 0, 5);
   addObject(hFakeTrack_r);
-  formatAxes(hFakeTrack_r, "r (cm)", "Fake-track rate", 1, 1.10);
+  hDuplicate_r = new TEfficiency("Duplicate_r", "r fraction of mother duplicate track;r (cm);Fraction", 100, 0, 5);
+  addObject(hDuplicate_r);
+  hNumRecoValid_r = new TH1D("NumRecoValid_r", "", 100, 0, 5);
+  hNumRecoFake_r = new TH1D("NumRecoFake_r", "", 100, 0, 5);
+  hNumDuplicate_r = new TH1D("NumDuplicate_r", "", 100, 0, 5);
+  hDenTrue_r = new TH1D("DenTrueMC_r", "", 100, 0, 5);
 
-  hNumRecoValid_r = new TH1D("NumRecoValid_r", "", 50, 0, 5);
-  hNumRecoFake_r = new TH1D("NumRecoFake_r", "", 50, 0, 5);
-  hDenTrue_r = new TH1D("DenTrueMC_r", "", 50, 0, 5);
-
-  hEfficiency_z = new TH1D("efficiency_z", ";z (cm);Efficiency", 100, -5, 5);
-  hEfficiency_z->SetTitle("z efficiency of tracking");
-  hEfficiency_z->SetBit(TH1::kIsAverage);
+  hEfficiency_z = new TEfficiency("efficiency_z", "z efficiency of tracking;z (cm);Efficiency", 101, -5, 5);
   addObject(hEfficiency_z);
-  formatAxes(hEfficiency_z, "z (cm)", "Efficiency", 1, 1.10);
-
-  hFakeTrack_z = new TH1D("faketrack_z", ";z (cm);Fake-track rate", 100, -5, 5);
-  hFakeTrack_z->SetTitle("z fake-track rate");
-  hFakeTrack_z->SetBit(TH1::kIsAverage);
+  hFakeTrack_z = new TEfficiency("faketrack_z", "z fake-track rate;z (cm);Fake-track rate", 101, -5, 5);
   addObject(hFakeTrack_z);
-  formatAxes(hFakeTrack_z, "z (cm)", "Fake-track rate", 1, 1.10);
-
-  hNumRecoValid_z = new TH1D("NumRecoValid_z", "", 100, -5, 5);
-  hNumRecoFake_z = new TH1D("NumRecoFake_z", "", 100, -5, 5);
-  hDenTrue_z = new TH1D("DenTrueMC_z", "", 100, -5, 5);
+  hDuplicate_z = new TEfficiency("Duplicate_z", "z fraction of mother duplicate track;z (cm);Fraction", 101, -5, 5);
+  addObject(hDuplicate_z);
+  hNumRecoValid_z = new TH1D("NumRecoValid_z", "", 101, -5, 5);
+  hNumRecoFake_z = new TH1D("NumRecoFake_z", "", 101, -5, 5);
+  hNumDuplicate_z = new TH1D("NumDuplicate_z", "", 101, -5, 5);
+  hDenTrue_z = new TH1D("DenTrueMC_z", "", 101, -5, 5);
 
   hTrackImpactTransvValid = new TH1F("ImpactTransvVaild", "Transverse impact parameter for valid primary tracks; D (cm)", 60, -0.1, 0.1);
   hTrackImpactTransvValid->SetTitle("Transverse impact parameter distribution of valid primary tracks");

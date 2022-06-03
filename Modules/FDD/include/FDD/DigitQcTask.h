@@ -12,7 +12,7 @@
 ///
 /// \file   DigitQcTask.h
 /// \author Artur Furs afurs@cern.ch
-///
+/// LATEST modification for FDD on 24.05.2022 (akhuntia@cern.ch)
 
 #ifndef QC_MODULE_FDD_FDDDIGITQCTASK_H
 #define QC_MODULE_FDD_FDDDIGITQCTASK_H
@@ -28,8 +28,8 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TList.h"
-#include "Rtypes.h"
 #include "FDD/Helper.h"
+#include "Rtypes.h"
 
 using namespace o2::quality_control::core;
 
@@ -60,9 +60,22 @@ class DigitQcTask final : public TaskInterface
   constexpr static uint8_t sLaserBitPos = 5;
 
  private:
+  // three ways of computing cycle duration:
+  // 1) number of time frames
+  // 2) time in ns from InteractionRecord: total range (totalMax - totalMin)
+  // 3) time in ns from InteractionRecord: sum of each TF duration
+  // later on choose the best and remove others
+  double mTimeMinNS = 0.;
+  double mTimeMaxNS = 0.;
+  double mTimeCurNS = 0.;
+  int mTfCounter = 0;
+  double mTimeSum = 0.;
+  const float mCFDChannel2NS = 0.01302; // CFD channel width in ns
+
   template <typename Param_t,
             typename = typename std::enable_if<std::is_floating_point<Param_t>::value ||
-                                               std::is_same<std::string, Param_t>::value || (std::is_integral<Param_t>::value && !std::is_same<bool, Param_t>::value)>::type>
+                                               std::is_same<std::string, Param_t>::value ||
+                                               (std::is_integral<Param_t>::value && !std::is_same<bool, Param_t>::value)>::type>
   auto parseParameters(const std::string& param, const std::string& del)
   {
     std::regex reg(del);
@@ -80,11 +93,20 @@ class DigitQcTask final : public TaskInterface
     return vecResult;
   }
 
+  TList* mListHistGarbage;
+  std::set<unsigned int> mSetAllowedChIDs;
+  std::array<o2::InteractionRecord, sNCHANNELS_PM> mStateLastIR2Ch;
+  std::map<int, std::string> mMapChTrgNames;
+  std::map<int, std::string> mMapDigitTrgNames;
+  std::map<std::string, std::vector<int>> mMapPmModuleChannels; // PM name to its channels
+
   // Object which will be published
+  std::unique_ptr<TH2F> mHist2CorrTCMchAndPMch;
   std::unique_ptr<TH2F> mHistAmp2Ch;
   std::unique_ptr<TH2F> mHistTime2Ch;
   std::unique_ptr<TH2F> mHistEventDensity2Ch;
   std::unique_ptr<TH2F> mHistOrbit2BC;
+  std::unique_ptr<TH1F> mHistBC;
   std::unique_ptr<TH2F> mHistChDataBits;
   std::unique_ptr<TH1F> mHistTriggers;
   std::unique_ptr<TH1F> mHistNchA;
@@ -94,15 +116,17 @@ class DigitQcTask final : public TaskInterface
   std::unique_ptr<TH1F> mHistAverageTimeA;
   std::unique_ptr<TH1F> mHistAverageTimeC;
   std::unique_ptr<TH1F> mHistChannelID;
-  std::array<o2::InteractionRecord, sNCHANNELS_PM> mStateLastIR2Ch;
-  std::map<int, std::string> mMapChTrgNames;
-  std::map<int, std::string> mMapDigitTrgNames;
-  TList* mListHistGarbage;
+
+  std::unique_ptr<TH1D> mHistCycleDuration;
+  std::unique_ptr<TH1D> mHistCycleDurationNTF;
+  std::unique_ptr<TH1D> mHistCycleDurationRange;
+
   std::map<unsigned int, TH1F*> mMapHistAmp1D;
+  std::map<unsigned int, TH1F*> mMapHistAmp1DCoincidence;
   std::map<unsigned int, TH1F*> mMapHistTime1D;
   std::map<unsigned int, TH1F*> mMapHistPMbits;
   std::map<unsigned int, TH2F*> mMapHistAmpVsTime;
-  std::set<unsigned int> mSetAllowedChIDs;
+  std::map<std::string, TH2F*> mMapPmModuleBcOrbit;
 };
 
 } // namespace o2::quality_control_modules::fdd

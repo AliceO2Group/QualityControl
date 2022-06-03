@@ -90,7 +90,7 @@ TaskSpec InfrastructureSpecReader::readSpecEntry<TaskSpec>(std::string taskID, c
   ts.moduleName = taskTree.get<std::string>("moduleName");
   ts.detectorName = taskTree.get<std::string>("detectorName");
   ts.cycleDurationSeconds = taskTree.get<int>("cycleDurationSeconds");
-  ts.dataSource = readSpecEntry<DataSourceSpec>("", taskTree.get_child("dataSource"), wholeTree);
+  ts.dataSource = readSpecEntry<DataSourceSpec>(taskID, taskTree.get_child("dataSource"), wholeTree);
   ts.active = taskTree.get<bool>("active", ts.active);
   ts.maxNumberCycles = taskTree.get<int>("maxNumberCycles", ts.maxNumberCycles);
   ts.resetAfterCycles = taskTree.get<size_t>("resetAfterCycles", ts.resetAfterCycles);
@@ -132,7 +132,7 @@ TaskSpec InfrastructureSpecReader::readSpecEntry<TaskSpec>(std::string taskID, c
 }
 
 template <>
-DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(std::string,
+DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(std::string dataRequestorId,
                                                                        const boost::property_tree::ptree& dataSourceTree,
                                                                        const boost::property_tree::ptree& wholeTree)
 {
@@ -164,7 +164,11 @@ DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(std::stri
     }
     case DataSourceType::Task: {
       dss.name = dataSourceTree.get<std::string>("name");
-      dss.inputs = { { dss.name, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(dss.name), 0, Lifetime::Sporadic } };
+      // dss.name is actually taskID (backwards compatibility). We deduce the taskName as followS:
+      auto taskName = wholeTree.get<std::string>("qc.tasks." + dss.name + ".taskName", dss.name);
+      auto detectorName = wholeTree.get<std::string>("qc.tasks." + dss.name + ".detectorName");
+
+      dss.inputs = { { dss.name, TaskRunner::createTaskDataOrigin(detectorName), TaskRunner::createTaskDataDescription(taskName), 0, Lifetime::Sporadic } };
       if (dataSourceTree.count("MOs") > 0) {
         for (const auto& moName : dataSourceTree.get_child("MOs")) {
           dss.subInputs.push_back(moName.second.get_value<std::string>());
@@ -230,7 +234,7 @@ CheckSpec InfrastructureSpecReader::readSpecEntry<CheckSpec>(std::string checkID
   const auto& dataSourcesTree = checkTree.count("dataSource") > 0 ? checkTree.get_child("dataSource") : checkTree.get_child("dataSources");
   for (const auto& [_key, dataSourceTree] : dataSourcesTree) {
     (void)_key;
-    cs.dataSources.push_back(readSpecEntry<DataSourceSpec>("", dataSourceTree, wholeTree));
+    cs.dataSources.push_back(readSpecEntry<DataSourceSpec>(checkID, dataSourceTree, wholeTree));
   }
 
   if (auto policy = checkTree.get_optional<std::string>("policy"); policy.has_value()) {
@@ -261,7 +265,7 @@ AggregatorSpec InfrastructureSpecReader::readSpecEntry<AggregatorSpec>(std::stri
   const auto& dataSourcesTree = aggregatorTree.count("dataSource") > 0 ? aggregatorTree.get_child("dataSource") : aggregatorTree.get_child("dataSources");
   for (const auto& [_key, dataSourceTree] : dataSourcesTree) {
     (void)_key;
-    as.dataSources.push_back(readSpecEntry<DataSourceSpec>("", dataSourceTree, wholeTree));
+    as.dataSources.push_back(readSpecEntry<DataSourceSpec>(aggregatorID, dataSourceTree, wholeTree));
   }
 
   if (auto policy = aggregatorTree.get_optional<std::string>("policy"); policy.has_value()) {

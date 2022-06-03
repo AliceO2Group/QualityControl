@@ -23,6 +23,7 @@
 
 #include <TH2.h>
 #include "QualityControl/TaskInterface.h"
+#include "MUONCommon/MergeableTH1Ratio.h"
 #include "MUONCommon/MergeableTH2Ratio.h"
 #include "MCH/MergeableTH1PseudoEfficiencyPerDE.h"
 //#include "MCH/MergeableTH1PseudoEfficiencyPerDECycle.h"
@@ -33,6 +34,7 @@
 #else
 #include "MCHBase/Digit.h"
 #endif
+#include "MCHDigitFiltering/DigitFilter.h"
 #include "MCHBase/PreCluster.h"
 
 using namespace o2::quality_control_modules::muon;
@@ -65,30 +67,62 @@ class PhysicsTaskPreclusters /*final*/ : public o2::quality_control::core::TaskI
   void reset() override;
 
  private:
+  template <typename T>
+  void publishObject(std::shared_ptr<T> histo, std::string drawOption, bool statBox, bool isExpert)
+  {
+    histo->SetOption(drawOption.c_str());
+    if (!statBox) {
+      histo->SetStats(0);
+    }
+    mAllHistograms.push_back(histo.get());
+    if (mDiagnostic || (isExpert == false)) {
+      getObjectsManager()->startPublishing(histo.get());
+      getObjectsManager()->setDefaultDrawOptions(histo.get(), drawOption);
+    }
+  }
+
   bool plotPrecluster(const o2::mch::PreCluster& preCluster, gsl::span<const o2::mch::Digit> digits);
   void printPrecluster(gsl::span<const o2::mch::Digit> preClusterDigits);
   void printPreclusters(gsl::span<const o2::mch::PreCluster> preClusters, gsl::span<const o2::mch::Digit> digits);
 
   void computePseudoEfficiency();
-  void writeHistos();
+  bool getFecChannel(int deId, int padId, int& fecId, int& channel);
+
+  static constexpr int sMaxFeeId = 64;
+  static constexpr int sMaxLinkId = 12;
+  static constexpr int sMaxDsId = 40;
+
+  bool mDiagnostic{ false };
+
+  o2::mch::raw::Elec2DetMapper mElec2DetMapper;
+  o2::mch::raw::Det2ElecMapper mDet2ElecMapper;
+  o2::mch::raw::FeeLink2SolarMapper mFeeLink2SolarMapper;
+  o2::mch::raw::Solar2FeeLinkMapper mSolar2FeeLinkMapper;
+
+  o2::mch::DigitFilter mIsSignalDigit;
 
   // TH1 of Mean Pseudo-efficiency on DEs
-  //Since beginning of run
-  std::shared_ptr<MergeableTH1PseudoEfficiencyPerDE> mMeanPseudoeffPerDE[2]; //Pseudoefficiency of B and NB
+  // Since beginning of run
+  // std::shared_ptr<MergeableTH1PseudoEfficiencyPerDE> mMeanPseudoeffPerDE[2]; // Pseudoefficiency of B and NB
+  std::shared_ptr<MergeableTH2Ratio> mHistogramPseudoeffElec; // Mergeable object, Occupancy histogram (Elec view)
 
-  //On last cycle only
-  // WARNING: the code for the efficiency on cycle is currently broken and therefore disabled
-  //MergeableTH1PseudoEfficiencyPerDECycle* mMeanPseudoeffPerDE_DoesGoodNBHaveSomethingB_Cycle;
-  //MergeableTH1PseudoEfficiencyPerDECycle* mMeanPseudoeffPerDE_DoesGoodBHaveSomethingNB_Cycle;
-  //MergeableTH1MPVPerDECycle* mMPVCycle; //MPV of the Landau best fitted to the cluster charge distribution on each DE each cycle
+  std::shared_ptr<GlobalHistogram> mHistogramNumST12;          // Histogram of Number of hits (global XY view)
+  std::shared_ptr<GlobalHistogram> mHistogramDenST12;          // Histogram of Number of orbits (global XY view)
+  std::shared_ptr<MergeableTH2Ratio> mHistogramPseudoeffST12;  // Mergeable object, Occupancy histogram (global XY view)
+  std::shared_ptr<GlobalHistogram> mHistogramNumST345;         // Histogram of Number of hits (global XY view)
+  std::shared_ptr<GlobalHistogram> mHistogramDenST345;         // Histogram of Number of orbits (global XY view)
+  std::shared_ptr<MergeableTH2Ratio> mHistogramPseudoeffST345; // Mergeable object, Occupancy histogram (global XY view)
 
-  std::shared_ptr<TH2F> mDigitChargeVsSize[4];
-  std::shared_ptr<TH2F> mDigitClsizeVsCharge[2];
-  std::shared_ptr<TH2F> mDigitChargeNBVsChargeB;
+  std::shared_ptr<MergeableTH1Ratio> mHistogramMeanPseudoeffPerDE[2]; // Pseudoefficiency of B and NB
 
-  std::map<int, std::shared_ptr<TH2F>> mHistogramClchgDE;
+  std::shared_ptr<MergeableTH1Ratio> mHistogramPreclustersPerDE;       // number of pre-clusters per DE and per TF
+  std::shared_ptr<MergeableTH1Ratio> mHistogramPreclustersSignalPerDE; // number of pre-clusters with signal per DE and per TF
+
+  std::map<int, std::shared_ptr<TH1F>> mHistogramClchgDE;
   std::map<int, std::shared_ptr<TH1F>> mHistogramClchgDEOnCycle;
-  std::map<int, std::shared_ptr<TH2F>> mHistogramClsizeDE;
+  std::map<int, std::shared_ptr<TH1F>> mHistogramClsizeDE;
+  std::map<int, std::shared_ptr<TH1F>> mHistogramClsizeDE_B;
+  std::map<int, std::shared_ptr<TH1F>> mHistogramClsizeDE_NB;
 
   std::map<int, std::shared_ptr<DetectorHistogram>> mHistogramPreclustersXY[4];
   std::map<int, std::shared_ptr<MergeableTH2Ratio>> mHistogramPseudoeffXY[2];

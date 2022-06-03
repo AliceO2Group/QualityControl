@@ -69,14 +69,26 @@ class PhysicsTaskDigits /*final*/ : public TaskInterface // todo add back the "f
   void addDefaultOrbitsInTF();
   void plotDigit(const o2::mch::Digit& digit);
   void updateOrbits();
-  void writeHistos();
+
+  template <typename T>
+  void publishObject(std::shared_ptr<T> histo, std::string drawOption, bool statBox, bool isExpert)
+  {
+    histo->SetOption(drawOption.c_str());
+    if (!statBox) {
+      histo->SetStats(0);
+    }
+    mAllHistograms.push_back(histo.get());
+    if (mDiagnostic || (isExpert == false)) {
+      getObjectsManager()->startPublishing(histo.get());
+      getObjectsManager()->setDefaultDrawOptions(histo.get(), drawOption);
+    }
+  }
 
   static constexpr int sMaxFeeId = 64;
   static constexpr int sMaxLinkId = 12;
   static constexpr int sMaxDsId = 40;
 
   bool mDiagnostic{ false };
-  bool mSaveToRootFile{ false };
 
   o2::mch::raw::Elec2DetMapper mElec2DetMapper;
   o2::mch::raw::Det2ElecMapper mDet2ElecMapper;

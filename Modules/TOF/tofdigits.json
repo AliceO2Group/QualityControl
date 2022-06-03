@@ -125,7 +125,7 @@
       "id": "tof-digits",
       "active": "true",
       "machines": [],
-      "query": "tofdigits:TOF/DIGITS/0;readoutwin:TOF/READOUTWINDOW/0",
+      "query": "tofdigits:TOF/DIGITS/0;readoutwin:TOF/READOUTWINDOW/0;diafreq:TOF/DIAFREQ/0",
       "samplingConditions": [
         {
           "condition": "random",
@@ -139,7 +139,7 @@
       "id": "tof-digits-dia",
       "active": "true",
       "machines": [],
-      "query": "tofdigits:TOF/DIGITS/0;readoutwin:TOF/READOUTWINDOW/0;patterns:TOF/PATTERNS",
+      "query": "tofdigits:TOF/DIGITS/0;readoutwin:TOF/READOUTWINDOW/0;patterns:TOF/PATTERNS/0;diafreq:TOF/DIAFREQ/0",
       "samplingConditions": [
         {
           "condition": "random",
