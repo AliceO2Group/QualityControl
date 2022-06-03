@@ -117,12 +117,12 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
   auto pattIt = clusPatternArr.begin();
   std::vector<int> clSize;
   for (const auto& clus : clusArr) {
-    auto ClusterID = clus.getPatternID(); 
+    auto ClusterID = clus.getPatternID();
     if (ClusterID != o2::itsmft::CompCluster::InvalidPatternID && !mDict->isGroup(ClusterID)) { // Normal (frequent) cluster shapes
-      clSize.push_back( mDict->getNpixels(ClusterID) );
+      clSize.push_back(mDict->getNpixels(ClusterID));
     } else {
       o2::itsmft::ClusterPattern patt(pattIt);
-      clSize.push_back( patt.getNPixels() );
+      clSize.push_back(patt.getNPixels());
     }
   }
 
