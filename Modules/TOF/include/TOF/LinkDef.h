@@ -21,5 +21,6 @@
 #pragma link C++ class o2::quality_control_modules::tof::PostProcessDiagnosticPerCrate + ;
 // Trending
 #pragma link C++ class o2::quality_control_modules::tof::TrendingHits + ;
+#pragma link C++ class o2::quality_control_modules::tof::TrendingRate + ;
 // Utilities
 #endif
