@@ -122,6 +122,7 @@ class TaskDigits final : public TaskInterface
   std::shared_ptr<TH1I> mHistoMultiplicityIC = nullptr;        /// TOF raw hit multiplicity per event - I/C side
   std::shared_ptr<TH1I> mHistoMultiplicityOC = nullptr;        /// TOF raw hit multiplicity per event - O/C side
   std::shared_ptr<TProfile> mHitMultiplicityVsCrate = nullptr; /// TOF raw hit multiplicity per event vs Crate
+  std::shared_ptr<TH2F> mHitMultiplicityVsBC = nullptr;        /// TOF raw hit multiplicity per event vs Crate
 
   // Time
   std::shared_ptr<TH1F> mHistoTime = nullptr;        /// TOF hit time (ns)
