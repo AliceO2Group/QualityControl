@@ -53,7 +53,7 @@
         "active": "true",
         "className": "o2::quality_control_modules::its::ITSClusterCheck",
         "moduleName": "QcITS",
-        "policy": "OnAny",
+        "policy": "OnEachSeparately",
         "detectorName": "ITS",
         "dataSource": [{
           "type": "Task",
