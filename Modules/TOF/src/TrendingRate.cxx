@@ -117,6 +117,9 @@ void TrendingRate::initialize(Trigger, framework::ServiceRegistry&)
   mTrend->SetName(PostProcessingInterface::getName().c_str());
   mTrend->Branch("runNumber", &mMetaData.runNumber);
   mTrend->Branch("time", &mTime);
+  mTrend->Branch("noiseRate", &mNoiseRatePerChannel);
+  mTrend->Branch("collisionRate", &mCollisionRate);
+  mTrend->Branch("activeChannels", &mActiveChannels);
 
   /*if (auto param = mCustomParameters.find("ThresholdSgn"); param != mCustomParameters.end()) {
     mThresholdSgn = ::atof(param->second.c_str());
