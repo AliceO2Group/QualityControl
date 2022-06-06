@@ -39,7 +39,28 @@
                     "reductorName": "o2::quality_control_modules::common::TH1Reductor",
                     "moduleName": "QcCommon"
                 }],
-                "plots": [],
+                "plots": [{
+                        "name": "interaction_rate",
+                        "title": "IR from TOF hits",
+                        "varexp": "collisionRate:time",
+                        "selection": "",
+                        "option": "L"
+                    },
+                    {
+                        "name": "noise_rate",
+                        "title": "Noise Rate per channel",
+                        "varexp": "noiseRate:time",
+                        "selection": "",
+                        "option": "L"
+                    },
+                    {
+                        "name": "active_channels",
+                        "title": "Active channels",
+                        "varexp": "activeChannels:time",
+                        "selection": "",
+                        "option": "*L"
+                    }
+                ],
                 "initTrigger": [
                     "userorcontrol"
                 ],
