@@ -42,16 +42,17 @@ class PedestalCheck : public o2::quality_control::checker::CheckInterface
  private:
   int getRunNumberFromMO(std::shared_ptr<MonitorObject> mo);
 
-  //configurable parameters and their default values
-  //see config example in Modules/CPV/etc/pedestal-task-no-sampling.json
+  // configurable parameters and their default values
+  // see config example in Modules/CPV/etc/pedestal-task-no-sampling.json
   int mMinGoodPedestalValueM[3] = { 1, 1, 1 };
   float mMaxGoodPedestalSigmaM[3] = { 2., 2., 2. };
   float mMinGoodPedestalEfficiencyM[3] = { 0.7, 0.7, 0.7 };
   float mMaxGoodPedestalEfficiencyM[3] = { 1., 1., 1. };
-  int mToleratedBadPedestalValueChannelsM[3] = { 10, 10, 10 };      //pedestal value < mMinGoodPedestalValue or > 512
-  int mToleratedBadChannelsM[3] = { 20, 20, 20 };                   //double peaks or empty or channels
-  int mToleratedBadPedestalSigmaChannelsM[3] = { 20, 20, 20 };      //pedestal value < mMinGoodPedestalValue or > 512
-  int mToleratedBadPedestalEfficiencyChannelsM[3] = { 20, 20, 20 }; //efficiency < min or > max
+  int mToleratedBadPedestalValueChannelsM[3] = { 10, 10, 10 };      // pedestal value < mMinGoodPedestalValue or > 512
+  int mToleratedBadChannelsM[3] = { 20, 20, 20 };                   // double peaks or empty or channels
+  int mToleratedBadPedestalSigmaChannelsM[3] = { 20, 20, 20 };      // pedestal value < mMinGoodPedestalValue or > 512
+  int mToleratedBadPedestalEfficiencyChannelsM[3] = { 20, 20, 20 }; // efficiency < min or > max
+  bool mIsConfigured = false;                                       // had configure() been called already?
 
   ClassDefOverride(PedestalCheck, 2);
 };
