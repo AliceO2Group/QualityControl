@@ -95,7 +95,15 @@ void TrendingRate::computeTOFRates(TH2F* h, TProfile* hp, std::vector<int>& bcIn
       hs->SetTitle(Form("%d < BC < %d", bcmin, bcmax));
       hb->Scale(hs->GetBinContent(1) / hb->GetBinContent(1));
       const float overall = hs->Integral();
+      if (overall <= 0) {
+        ILOG(Info, Support) << "no signal for BC index " << ibc << ENDM;
+        continue;
+      }
       const float background = hb->Integral();
+      if (background <= 0) {
+        ILOG(Info, Support) << "no background for BC index " << ibc << ENDM;
+        continue;
+      }
       const float prob = (overall - background) / overall;
       const float mu = TMath::Log(1.f / (1.f - prob));
       const float rate = mu / orbit_lenght;
