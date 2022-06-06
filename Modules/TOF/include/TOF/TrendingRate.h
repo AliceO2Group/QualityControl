@@ -12,7 +12,7 @@
 ///
 /// \file    TrendingRate.h
 /// \author  Francesca Ercolessi francesca.ercolessi@cern.ch
-/// \brief  
+/// \brief
 /// \since   06/06/2022
 ///
 
@@ -27,6 +27,9 @@
 #include <memory>
 #include <unordered_map>
 #include <TTree.h>
+
+class TH2F;
+class TProfile;
 
 namespace o2::quality_control::repository
 {
@@ -62,9 +65,17 @@ class TrendingRate : public PostProcessingInterface
   void trendValues(const Trigger& t, repository::DatabaseInterface&);
   void generatePlots();
 
+  void doplot(TH2F* h, TProfile* hp, std::vector<int>& bcInt, std::vector<float>& bcRate, std::vector<float>& bcPileup);
+
   TrendingConfigTOF mConfig;
   MetaData mMetaData;
   UInt_t mTime;
+  // Extra values to trend
+  float mNoiseRatePerChannel = 0.f; /// Noise rate
+  float mCollisionRate = 0.f;       /// Collision rate
+  float mPileupRate = 0.f;          /// Pileup rate
+  int mActiveChannels = 0;          /// Active channels
+
   std::unique_ptr<TTree> mTrend;
   std::map<std::string, TObject*> mPlots;
   std::unordered_map<std::string, std::unique_ptr<Reductor>> mReductors;
@@ -72,7 +83,6 @@ class TrendingRate : public PostProcessingInterface
   static constexpr float orbit_lenght = 90E-6;
   float mThresholdSgn = 0.15;
   float mThresholdBkg = 0.04;
-
 };
 
 } // namespace o2::quality_control_modules::tof
