@@ -65,7 +65,7 @@ class TrendingRate : public PostProcessingInterface
   void trendValues(const Trigger& t, repository::DatabaseInterface&);
   void generatePlots();
 
-  void doplot(TH2F* h, TProfile* hp, std::vector<int>& bcInt, std::vector<float>& bcRate, std::vector<float>& bcPileup);
+  void computeTOFRates(TH2F* h, TProfile* hp, std::vector<int>& bcInt, std::vector<float>& bcRate, std::vector<float>& bcPileup);
 
   TrendingConfigTOF mConfig;
   MetaData mMetaData;

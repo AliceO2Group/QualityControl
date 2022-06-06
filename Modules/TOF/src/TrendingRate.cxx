@@ -45,7 +45,7 @@ void TrendingRate::configure(std::string name, const boost::property_tree::ptree
   mConfig = TrendingConfigTOF(name, config);
 }
 
-void TrendingRate::doplot(TH2F* h, TProfile* hp, std::vector<int>& bcInt, std::vector<float>& bcRate, std::vector<float>& bcPileup)
+void TrendingRate::computeTOFRates(TH2F* h, TProfile* hp, std::vector<int>& bcInt, std::vector<float>& bcRate, std::vector<float>& bcPileup)
 {
   TH1D* hback = nullptr;
 
@@ -172,7 +172,6 @@ void TrendingRate::trendValues(const Trigger& t, repository::DatabaseInterface& 
     if (dataSource.name == "HitMap") {
       TH2F* hmap = (TH2F*)mo->getObject();
       hmap->Divide(hmap);
-      hmap->Draw("colz");
       mActiveChannels = hmap->Integral() * 24;
       ILOG(Info, Support) << "N channels = " << mActiveChannels << ENDM;
     } else if (dataSource.name == "Multiplicity/VsBC") {
@@ -182,7 +181,16 @@ void TrendingRate::trendValues(const Trigger& t, repository::DatabaseInterface& 
     }
   }
 
-  doplot(histogramMultVsBC, profileMultVsBC, bcInt, bcRate, bcPileup);
+  if (!histogramMultVsBC) {
+    ILOG(Info, Support) << "Got no histogramMultVsBC, can't compute rates";
+    return;
+  }
+  if (!profileMultVsBC) {
+    ILOG(Info, Support) << "Got no profileMultVsBC, can't compute rates";
+    return;
+  }
+
+  computeTOFRates(histogramMultVsBC, profileMultVsBC, bcInt, bcRate, bcPileup);
 
   ILOG(Info, Support) << "noise rate per channel= " << mNoiseRatePerChannel << " Hz - collision rate = " << mCollisionRate << " Hz - mu-pilup = " << mPileupRate << ENDM;
 
