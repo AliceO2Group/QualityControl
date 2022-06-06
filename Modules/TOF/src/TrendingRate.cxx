@@ -47,6 +47,14 @@ void TrendingRate::configure(std::string name, const boost::property_tree::ptree
 
 void TrendingRate::computeTOFRates(TH2F* h, TProfile* hp, std::vector<int>& bcInt, std::vector<float>& bcRate, std::vector<float>& bcPileup)
 {
+  if (!h) {
+    ILOG(Warning, Support) << "Got no histogram, skipping" << ENDM;
+    return;
+  }
+  if (!hp) {
+    ILOG(Warning, Support) << "Got no profile, skipping" << ENDM;
+    return;
+  }
   TH1D* hback = nullptr;
 
   // Counting background
@@ -65,9 +73,9 @@ void TrendingRate::computeTOFRates(TH2F* h, TProfile* hp, std::vector<int>& bcIn
   int ns = 0;
   std::vector<int> signals;
 
-  float sumw = 0.;
-  float pilup = 0.;
-  float ratetot = 0.;
+  float sumw = 0.f;
+  float pilup = 0.f;
+  float ratetot = 0.f;
 
   if (nb) {
     for (int i = 1; i <= h->GetNbinsX(); i++) {
@@ -80,17 +88,17 @@ void TrendingRate::computeTOFRates(TH2F* h, TProfile* hp, std::vector<int>& bcIn
     for (int i = 0; i < signals.size(); i++) {
       TH1D* hb = new TH1D(*hback);
       hb->SetName(Form("hback_%d", i));
-      int ibc = signals[i];
-      int bcmin = (ibc - 1) * 18;
-      int bcmax = ibc * 18;
+      const int ibc = signals[i];
+      const int bcmin = (ibc - 1) * 18;
+      const int bcmax = ibc * 18;
       TH1D* hs = h->ProjectionY(Form("sign_%d_%d", bcmin, bcmax), ibc, ibc);
       hs->SetTitle(Form("%d < BC < %d", bcmin, bcmax));
       hb->Scale(hs->GetBinContent(1) / hb->GetBinContent(1));
-      float overall = hs->Integral();
-      float background = hb->Integral();
-      float prob = (overall - background) / overall;
-      float mu = TMath::Log(1.f / (1.f - prob));
-      float rate = mu / orbit_lenght;
+      const float overall = hs->Integral();
+      const float background = hb->Integral();
+      const float prob = (overall - background) / overall;
+      const float mu = TMath::Log(1.f / (1.f - prob));
+      const float rate = mu / orbit_lenght;
       bcInt.push_back(ibc);
       bcRate.push_back(rate);
       bcPileup.push_back(mu / prob);
@@ -100,6 +108,8 @@ void TrendingRate::computeTOFRates(TH2F* h, TProfile* hp, std::vector<int>& bcIn
       if (prob > 0.f) {
         ILOG(Info, Support) << "interaction prob = " << mu << ", rate=" << rate << " Hz, mu=" << mu / prob << ENDM;
       }
+      delete hb;
+      delete hs;
     }
 
     if (sumw > 0) {
@@ -107,6 +117,7 @@ void TrendingRate::computeTOFRates(TH2F* h, TProfile* hp, std::vector<int>& bcIn
       mCollisionRate = ratetot;
       mPileupRate = pilup / sumw;
     }
+    delete hback;
   }
 }
 
@@ -153,9 +164,9 @@ void TrendingRate::trendValues(const Trigger& t, repository::DatabaseInterface& 
   //  enough if we trend across runs).
   mMetaData.runNumber = -1;
 
-  int mActiveChannels = o2::tof::Geo::NCHANNELS;
-  TH2F* histogramMultVsBC = nullptr;
-  TProfile* profileMultVsBC = nullptr;
+  mActiveChannels = o2::tof::Geo::NCHANNELS;
+  std::shared_ptr<o2::quality_control::core::MonitorObject> moHistogramMultVsBC = nullptr;
+  std::shared_ptr<o2::quality_control::core::MonitorObject> moProfileMultVsBC = nullptr;
 
   std::vector<int> bcInt;
   std::vector<float> bcRate;
@@ -166,19 +177,16 @@ void TrendingRate::trendValues(const Trigger& t, repository::DatabaseInterface& 
     if (!mo) {
       continue;
     }
+    ILOG(Debug, Support) << "Got MO " << mo << ENDM;
     if (dataSource.name == "HitMap") {
-      TH2F* hmap_ = (TH2F*)mo->getObject();
-      TH2F* hmap = new TH2F(*hmap_);
+      TH2F* hmap = (TH2F*)mo->getObject();
       hmap->Divide(hmap);
       mActiveChannels = hmap->Integral() * 24;
-      delete hmap;
       ILOG(Info, Support) << "N channels = " << mActiveChannels << ENDM;
     } else if (dataSource.name == "Multiplicity/VsBC") {
-      TH2F* histogramMultVsBC_ = (TH2F*)mo->getObject();
-      histogramMultVsBC = new TH2F(*histogramMultVsBC_);
+      moHistogramMultVsBC = mo;
     } else if ("Multiplicity/VsBCpro") {
-      TProfile* profileMultVsBC_ = (TProfile*)mo->getObject();
-      profileMultVsBC = new TProfile(*profileMultVsBC_);
+      moProfileMultVsBC = mo;
     }
   }
 
@@ -187,18 +195,18 @@ void TrendingRate::trendValues(const Trigger& t, repository::DatabaseInterface& 
     return;
   }
 
-  if (!histogramMultVsBC) {
+  if (!moHistogramMultVsBC) {
     ILOG(Info, Support) << "Got no histogramMultVsBC, can't compute rates";
     return;
   }
-  if (!profileMultVsBC) {
+  if (!moProfileMultVsBC) {
     ILOG(Info, Support) << "Got no profileMultVsBC, can't compute rates";
     return;
   }
 
-  computeTOFRates(histogramMultVsBC, profileMultVsBC, bcInt, bcRate, bcPileup);
+  computeTOFRates((TH2F*)moHistogramMultVsBC->getObject(), (TProfile*)moProfileMultVsBC->getObject(), bcInt, bcRate, bcPileup);
 
-  ILOG(Info, Support) << "noise rate per channel= " << mNoiseRatePerChannel << " Hz - collision rate = " << mCollisionRate << " Hz - mu-pilup = " << mPileupRate << ENDM;
+  ILOG(Info, Support) << "In " << mActiveChannels << " channels, noise rate per channel= " << mNoiseRatePerChannel << " Hz - collision rate = " << mCollisionRate << " Hz - mu-pilup = " << mPileupRate << ENDM;
 
   for (int i = 0; i < bcInt.size(); i++) {
     ILOG(Info, Support) << "bc = " << bcInt[i] * 18 - 9 << ") rate = " << bcRate[i] << ", pilup = " << bcPileup[i] << ENDM;
