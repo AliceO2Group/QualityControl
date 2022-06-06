@@ -17,6 +17,7 @@
 ///
 
 #include "TOF/TrendingRate.h"
+#include "TOFBase/Geo.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/DatabaseInterface.h"
 #include "QualityControl/MonitorObject.h"
@@ -24,6 +25,7 @@
 #include "QualityControl/RootClassFactory.h"
 #include <boost/property_tree/ptree.hpp>
 #include <TH1.h>
+#include <TMath.h>
 #include <TH2.h>
 #include <TCanvas.h>
 #include <TPaveText.h>
@@ -32,6 +34,7 @@
 #include <TProfile.h>
 #include <TPoint.h>
 
+using namespace o2::tof;
 using namespace o2::quality_control;
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;
@@ -40,6 +43,71 @@ using namespace o2::quality_control_modules::tof;
 void TrendingRate::configure(std::string name, const boost::property_tree::ptree& config)
 {
   mConfig = TrendingConfigTOF(name, config);
+}
+
+void TrendingRate::doplot(TH2F* h, TProfile* hp, std::vector<int>& bcInt, std::vector<float>& bcRate, std::vector<float>& bcPileup)
+{
+  TH1D* hback = nullptr;
+
+  // Counting background
+  int nb = 0;
+  for (int i = 1; i <= hp->GetNbinsX(); i++) {
+    if (hp->GetBinContent(i) < mThresholdBkg) {
+      if (!hback) {
+        hback = h->ProjectionY("back", i, i);
+      } else {
+        hback->Add(h->ProjectionY("tmp", i, i));
+      }
+      nb++;
+    }
+  }
+
+  int ns = 0;
+  std::vector<int> signals;
+
+  float sumw = 0.;
+  float pilup = 0.;
+  float ratetot = 0.;
+
+  if (nb) {
+    for (int i = 1; i <= h->GetNbinsX(); i++) {
+      if (hp->GetBinContent(i) > mThresholdSgn) {
+        signals.push_back(i);
+        ns++;
+      }
+    }
+
+    for (int i = 0; i < signals.size(); i++) {
+      TH1D* hb = new TH1D(*hback);
+      hb->SetName(Form("hback_%d", i));
+      int ibc = signals[i];
+      int bcmin = (ibc - 1) * 18;
+      int bcmax = ibc * 18;
+      TH1D* hs = h->ProjectionY(Form("sign_%d_%d", bcmin, bcmax), ibc, ibc);
+      hs->SetTitle(Form("%d < BC < %d", bcmin, bcmax));
+      hb->Scale(hs->GetBinContent(1) / hb->GetBinContent(1));
+      float overall = hs->Integral();
+      float background = hb->Integral();
+      float prob = (overall - background) / overall;
+      float mu = TMath::Log(1.f / (1.f - prob));
+      float rate = mu / orbit_lenght;
+      bcInt.push_back(ibc);
+      bcRate.push_back(rate);
+      bcPileup.push_back(mu / prob);
+      sumw += rate;
+      pilup += mu / prob * rate;
+      ratetot += rate;
+      if (prob > 0.f) {
+        ILOG(Info, Support) << "interaction prob = " << mu << ", rate=" << rate << " Hz, mu=" << mu / prob << ENDM;
+      }
+    }
+
+    if (sumw > 0) {
+      mNoiseRatePerChannel = (hback->GetMean() - 0.5) / orbit_lenght * h->GetNbinsX() / mActiveChannels;
+      mCollisionRate = ratetot;
+      mPileupRate = pilup / sumw;
+    }
+  }
 }
 
 void TrendingRate::initialize(Trigger, framework::ServiceRegistry&)
@@ -85,35 +153,40 @@ void TrendingRate::trendValues(const Trigger& t, repository::DatabaseInterface& 
   //  enough if we trend across runs).
   mMetaData.runNumber = -1;
 
+  int mActiveChannels = o2::tof::Geo::NCHANNELS;
+  TH2F* histogramMultVsBC = nullptr;
+  TProfile* profileMultVsBC = nullptr;
+
+  std::vector<int> bcInt;
+  std::vector<float> bcRate;
+  std::vector<float> bcPileup;
+
   for (auto& dataSource : mConfig.dataSources) {
-
-    auto HitMap = qcdb.retrieveMO(dataSource.path, nameHitMap, t.timestamp, t.activity);
-    TH2F* objHitMap = HitMap ? (TH2F*)HitMap->getObject() : nullptr;
-    if (objHitMap) {
-      objHitMap->Divide(objHitMap);
-      mReductors[dataSource.name]->update(objHitMap);
-    } else {
-      ILOG(Error, Support) << "Unknown type of data source '" << dataSource.type << "'." << ENDM;
+    auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name, t.timestamp, t.activity);
+    if (!mo) {
+      continue;
     }
-    unsigned int nactivechannels = objHitMap->Integral() * 24;
-    ILOG(Info, Support) << "Number of active channels...:  " << nactivechannels << ENDM;
-
-    auto MultVsBC = qcdb.retrieveMO(dataSource.path, nameMultVsBC, t.timestamp, t.activity);
-    auto objMultVsBC = MultVsBC ? MultVsBC->getObject() : nullptr;
-    if (objMultVsBC) {
-      mReductors[dataSource.name]->update(objMultVsBC);
-    } else {
-      ILOG(Error, Support) << "Unknown type of data source '" << dataSource.type << "'." << ENDM;
-    }
-
-    auto MultVsBCpro = qcdb.retrieveMO(dataSource.path, nameMultVsBCpro, t.timestamp, t.activity);
-    auto objMultVsBCpro = MultVsBCpro ? MultVsBCpro->getObject() : nullptr;
-    if (objMultVsBCpro) {
-      mReductors[dataSource.name]->update(objMultVsBCpro);
-    } else {
-      ILOG(Error, Support) << "Unknown type of data source '" << dataSource.type << "'." << ENDM;
+    if (dataSource.name == "HitMap") {
+      TH2F* hmap = (TH2F*)mo->getObject();
+      hmap->Divide(hmap);
+      hmap->Draw("colz");
+      mActiveChannels = hmap->Integral() * 24;
+      ILOG(Info, Support) << "N channels = " << mActiveChannels << ENDM;
+    } else if (dataSource.name == "Multiplicity/VsBC") {
+      histogramMultVsBC = (TH2F*)mo->getObject();
+    } else if ("Multiplicity/VsBCpro") {
+      profileMultVsBC = (TProfile*)mo->getObject();
     }
   }
+
+  doplot(histogramMultVsBC, profileMultVsBC, bcInt, bcRate, bcPileup);
+
+  ILOG(Info, Support) << "noise rate per channel= " << mNoiseRatePerChannel << " Hz - collision rate = " << mCollisionRate << " Hz - mu-pilup = " << mPileupRate << ENDM;
+
+  for (int i = 0; i < bcInt.size(); i++) {
+    ILOG(Info, Support) << "bc = " << bcInt[i] * 18 - 9 << ") rate = " << bcRate[i] << ", pilup = " << bcPileup[i] << ENDM;
+  }
+
   mTrend->Fill();
 }
 
