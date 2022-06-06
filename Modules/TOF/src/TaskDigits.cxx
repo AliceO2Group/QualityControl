@@ -166,8 +166,11 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   mHitMultiplicityVsCrate = std::make_shared<TProfile>("Multiplicity/VsCrate", "TOF hit multiplicity vs Crate;TOF hits;Crate;Events", RawDataDecoder::ncrates, 0, RawDataDecoder::ncrates);
   getObjectsManager()->startPublishing(mHitMultiplicityVsCrate.get());
 
-  mHitMultiplicityVsBC = std::make_shared<TH2F>("Multiplicity/VsBC", "TOF hit multiplicity vs BC;BC;#TOF hits;Events", 198, 0, 3564,2000,0,2000);
+  mHitMultiplicityVsBC = std::make_shared<TH2F>("Multiplicity/VsBC", "TOF hit multiplicity vs BC;BC;#TOF hits;Events", 198, 0, 3564, 2000, 0, 2000);
   getObjectsManager()->startPublishing(mHitMultiplicityVsBC.get());
+
+  mHitMultiplicityVsBCpro = std::make_shared<TProfile>("Multiplicity/VsBCpro", "TOF hit multiplicity vs BC;BC;#TOF hits;Events", 198, 0, 3564);
+  getObjectsManager()->startPublishing(mHitMultiplicityVsBCpro.get());
 
   // Time
   mHistoTime = std::make_shared<TH1F>("Time/Integrated", "TOF hit time;Hit time (ns);Hits", mBinsTime, mRangeMinTime, mRangeMaxTime);
@@ -275,7 +278,7 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
   bool isSectorI = false;
   std::array<int, 4> ndigitsPerQuater = { 0 };                      // Number of digits per side I/A,O/A,I/C,O/C
   std::array<int, RawDataDecoder::ncrates> ndigitsPerCrate = { 0 }; // Number of hits in one event per crate
-  int ndigitsPerBC[128][198] = {};                                     // number of digit per oribit, BC/18
+  int ndigitsPerBC[128][198] = {};                                  // number of digit per oribit, BC/18
 
   mHistoROWSize->Fill(rows.size() / 3.0);
 
@@ -337,17 +340,17 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
 
       if (mNoiseClassSelection >= 0 &&
           diafreq->isNoisyChannel(digit.getChannel(), mNoiseClassSelection)) {
-//        LOG(info) << "noisy channel " << digit.getChannel();
+        //        LOG(info) << "noisy channel " << digit.getChannel();
         continue;
       }
-//      LOG(info) << "good channel " << digit.getChannel();
+      //      LOG(info) << "good channel " << digit.getChannel();
 
       int bcCorr = digit.getIR().bc - o2::tof::Geo::LATENCYWINDOW_IN_BC;
       if (bcCorr < 0) {
         bcCorr += o2::constants::lhc::LHCMaxBunches;
       }
 
-      ndigitsPerBC[row.mFirstIR.orbit % 128][bcCorr/18]++;
+      ndigitsPerBC[row.mFirstIR.orbit % 128][bcCorr / 18]++;
 
       o2::tof::Geo::getVolumeIndices(digit.getChannel(), det);
       strip = o2::tof::Geo::getStripNumberPerSM(det[1], det[2]); // Strip index in the SM
@@ -392,7 +395,7 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
       }
     }
     // Filling histograms of hit multiplicity
-    mHistoMultiplicity->Fill(ndigitsPerQuater[0]+ndigitsPerQuater[1]+ndigitsPerQuater[2]+ndigitsPerQuater[3]); // Number of digits inside a readout window
+    mHistoMultiplicity->Fill(ndigitsPerQuater[0] + ndigitsPerQuater[1] + ndigitsPerQuater[2] + ndigitsPerQuater[3]); // Number of digits inside a readout window
     // Filling quarter histograms
     mHistoMultiplicityIA->Fill(ndigitsPerQuater[0]);
     mHistoMultiplicityOA->Fill(ndigitsPerQuater[1]);
@@ -410,11 +413,12 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
     ndigitsPerQuater[3] = 0;
   }
 
- for(int iorb=0; iorb < 128; iorb++){
-   for(int ibc=0; ibc < 198; ibc++){
-     mHitMultiplicityVsBC->Fill(ibc*18+1, ndigitsPerBC[iorb][ibc]);
-   }
- }
+  for (int iorb = 0; iorb < 128; iorb++) {
+    for (int ibc = 0; ibc < 198; ibc++) {
+      mHitMultiplicityVsBC->Fill(ibc * 18 + 1, ndigitsPerBC[iorb][ibc]);
+      mHitMultiplicityVsBCpro->Fill(ibc * 18 + 1, ndigitsPerBC[iorb][ibc]);
+    }
+  }
 
   // To complete the second TF in case it receives orbits
   for (; currentReadoutWindow < 768; currentReadoutWindow++) {
@@ -479,6 +483,7 @@ void TaskDigits::reset()
   mHistoMultiplicityOC->Reset();
   mHitMultiplicityVsCrate->Reset();
   mHitMultiplicityVsBC->Reset();
+  mHitMultiplicityVsBCpro->Reset();
   // Time
   mHistoTime->Reset();
   mHistoTimeIA->Reset();
