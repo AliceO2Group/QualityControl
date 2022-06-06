@@ -135,7 +135,7 @@ void TrendingRate::initialize(Trigger, framework::ServiceRegistry&)
   getObjectsManager()->startPublishing(mTrend.get());
 }
 
-//todo: see if OptimizeBaskets() indeed helps after some time
+// todo: see if OptimizeBaskets() indeed helps after some time
 void TrendingRate::update(Trigger t, framework::ServiceRegistry& services)
 {
   auto& qcdb = services.get<repository::DatabaseInterface>();
@@ -170,15 +170,24 @@ void TrendingRate::trendValues(const Trigger& t, repository::DatabaseInterface& 
       continue;
     }
     if (dataSource.name == "HitMap") {
-      TH2F* hmap = (TH2F*)mo->getObject();
+      TH2F* hmap_ = (TH2F*)mo->getObject();
+      TH2F* hmap = new TH2F(*hmap_);
       hmap->Divide(hmap);
       mActiveChannels = hmap->Integral() * 24;
+      delete hmap;
       ILOG(Info, Support) << "N channels = " << mActiveChannels << ENDM;
     } else if (dataSource.name == "Multiplicity/VsBC") {
-      histogramMultVsBC = (TH2F*)mo->getObject();
+      TH2F* histogramMultVsBC_ = (TH2F*)mo->getObject();
+      histogramMultVsBC = new TH2F(*histogramMultVsBC_);
     } else if ("Multiplicity/VsBCpro") {
-      profileMultVsBC = (TProfile*)mo->getObject();
+      TProfile* profileMultVsBC_ = (TProfile*)mo->getObject();
+      profileMultVsBC = new TProfile(*profileMultVsBC_);
     }
+  }
+
+  if (mActiveChannels < 1) {
+    ILOG(Info, Support) << "No active channels or empty objects";
+    return;
   }
 
   if (!histogramMultVsBC) {

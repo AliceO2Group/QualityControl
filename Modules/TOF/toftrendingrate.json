@@ -30,20 +30,16 @@
                 "detectorName": "TOF",
                 "dataSources": [{
                     "type": "repository",
-                    "path": "TOF/MO/TaskDigits/Multiplicity",
+                    "path": "TOF/MO/TaskDigits",
                     "names": [
-                        "VsBC"
+                        "HitMap"
+                        "Multiplicity/VsBC",
+                        "Multiplicity/VsBCpro"
                     ],
                     "reductorName": "o2::quality_control_modules::common::TH1Reductor",
                     "moduleName": "QcCommon"
                 }],
-                "plots": [{
-                    "name": "mean_of_hits",
-                    "title": "Mean trend of TOF hits",
-                    "varexp": "VsBC.mean:time",
-                    "selection": "",
-                    "option": "*L"
-                }],
+                "plots": [],
                 "initTrigger": [
                     "userorcontrol"
                 ],
