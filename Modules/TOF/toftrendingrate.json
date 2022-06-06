@@ -1,0 +1,60 @@
+{
+    "qc": {
+        "config": {
+            "database": {
+                "implementation": "CCDB",
+                "host": "ccdb-test.cern.ch:8080",
+                "username": "not_applicable",
+                "password": "not_applicable",
+                "name": "not_applicable"
+            },
+            "Activity": {
+                "number": "42",
+                "type": "2"
+            },
+            "monitoring": {
+                "url": "infologger:///debug?qc"
+            },
+            "consul": {
+                "url": ""
+            },
+            "conditionDB": {
+                "url": "ccdb-test.cern.ch:8080"
+            }
+        },
+        "postprocessing": {
+            "TOFTrendingRate": {
+                "active": "true",
+                "className": "o2::quality_control_modules::tof::TrendingRate",
+                "moduleName": "QcTOF",
+                "detectorName": "TOF",
+                "dataSources": [{
+                    "type": "repository",
+                    "path": "TOF/MO/TaskDigits/Multiplicity",
+                    "names": [
+                        "VsBC"
+                    ],
+                    "reductorName": "o2::quality_control_modules::common::TH1Reductor",
+                    "moduleName": "QcCommon"
+                }],
+                "plots": [{
+                    "name": "mean_of_hits",
+                    "title": "Mean trend of TOF hits",
+                    "varexp": "VsBC.mean:time",
+                    "selection": "",
+                    "option": "*L"
+                }],
+                "initTrigger": [
+                    "userorcontrol"
+                ],
+                "updateTrigger": [
+                    "newobject:qcdb:TOF/MO/TaskDigits/Multiplicity/VsBC"
+                ],
+                "stopTrigger": [
+                    "userorcontrol",
+                    "10 minutes"
+                ]
+            }
+        }
+    }
+}
