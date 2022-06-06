@@ -28,18 +28,21 @@
                 "className": "o2::quality_control_modules::tof::TrendingRate",
                 "moduleName": "QcTOF",
                 "detectorName": "TOF",
-                "dataSources": [{
-                    "type": "repository",
-                    "path": "TOF/MO/TaskDigits",
-                    "names": [
-                        "HitMap"
-                        "Multiplicity/VsBC",
-                        "Multiplicity/VsBCpro"
-                    ],
-                    "reductorName": "o2::quality_control_modules::common::TH1Reductor",
-                    "moduleName": "QcCommon"
-                }],
-                "plots": [{
+                "dataSources": [
+                    {
+                        "type": "repository",
+                        "path": "TOF/MO/TaskDigits",
+                        "names": [
+                            "HitMap",
+                            "Multiplicity/VsBC",
+                            "Multiplicity/VsBCpro"
+                        ],
+                        "reductorName": "o2::quality_control_modules::common::TH1Reductor",
+                        "moduleName": "QcCommon"
+                    }
+                ],
+                "plots": [
+                    {
                         "name": "interaction_rate",
                         "title": "IR from TOF hits",
                         "varexp": "collisionRate:time",
