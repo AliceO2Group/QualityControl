@@ -166,10 +166,10 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   mHitMultiplicityVsCrate = std::make_shared<TProfile>("Multiplicity/VsCrate", "TOF hit multiplicity vs Crate;TOF hits;Crate;Events", RawDataDecoder::ncrates, 0, RawDataDecoder::ncrates);
   getObjectsManager()->startPublishing(mHitMultiplicityVsCrate.get());
 
-  mHitMultiplicityVsBC = std::make_shared<TH2F>("Multiplicity/VsBC", "TOF hit multiplicity vs BC;BC;#TOF hits;Events", 198, 0, 3564, 2000, 0, 2000);
+  mHitMultiplicityVsBC = std::make_shared<TH2F>("Multiplicity/VsBC", "TOF hit multiplicity vs BC;BC;#TOF hits;Events", mBinsBCForMultiplicity, 0, mRangeMaxBC, mBinsMultiplicity, mRangeMinMultiplicity, mRangeMaxMultiplicity);
   getObjectsManager()->startPublishing(mHitMultiplicityVsBC.get());
 
-  mHitMultiplicityVsBCpro = std::make_shared<TProfile>("Multiplicity/VsBCpro", "TOF hit multiplicity vs BC;BC;#TOF hits;Events", 198, 0, 3564);
+  mHitMultiplicityVsBCpro = std::make_shared<TProfile>("Multiplicity/VsBCpro", "TOF hit multiplicity vs BC;BC;#TOF hits;Events", mBinsBCForMultiplicity, 0, mRangeMaxBC);
   getObjectsManager()->startPublishing(mHitMultiplicityVsBCpro.get());
 
   // Time
@@ -278,7 +278,8 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
   bool isSectorI = false;
   std::array<int, 4> ndigitsPerQuater = { 0 };                      // Number of digits per side I/A,O/A,I/C,O/C
   std::array<int, RawDataDecoder::ncrates> ndigitsPerCrate = { 0 }; // Number of hits in one event per crate
-  int ndigitsPerBC[128][198] = {};                                  // number of digit per oribit, BC/18
+  constexpr int nOrbits = 128;                                      // Number of orbits
+  int ndigitsPerBC[nOrbits][mBinsBCForMultiplicity] = {};           // number of digit per oribit, BC/18
 
   mHistoROWSize->Fill(rows.size() / 3.0);
 
@@ -345,12 +346,13 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
       }
       //      LOG(info) << "good channel " << digit.getChannel();
 
+      // Correct BC index
       int bcCorr = digit.getIR().bc - o2::tof::Geo::LATENCYWINDOW_IN_BC;
       if (bcCorr < 0) {
         bcCorr += o2::constants::lhc::LHCMaxBunches;
       }
 
-      ndigitsPerBC[row.mFirstIR.orbit % 128][bcCorr / 18]++;
+      ndigitsPerBC[row.mFirstIR.orbit % nOrbits][bcCorr / 18]++;
 
       o2::tof::Geo::getVolumeIndices(digit.getChannel(), det);
       strip = o2::tof::Geo::getStripNumberPerSM(det[1], det[2]); // Strip index in the SM
@@ -413,8 +415,8 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
     ndigitsPerQuater[3] = 0;
   }
 
-  for (int iorb = 0; iorb < 128; iorb++) {
-    for (int ibc = 0; ibc < 198; ibc++) {
+  for (int iorb = 0; iorb < nOrbits; iorb++) {
+    for (int ibc = 0; ibc < mBinsBCForMultiplicity; ibc++) {
       mHitMultiplicityVsBC->Fill(ibc * 18 + 1, ndigitsPerBC[iorb][ibc]);
       mHitMultiplicityVsBCpro->Fill(ibc * 18 + 1, ndigitsPerBC[iorb][ibc]);
     }
