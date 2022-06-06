@@ -12,7 +12,7 @@
 ///
 /// \file    TrendingRate.cxx
 /// \author  Francesca Ercolessi francesca.ercolessi@cern.ch
-/// \brief  
+/// \brief   Trending of the TOF interaction rate
 /// \since   06/06/2022
 ///
 
@@ -29,6 +29,7 @@
 #include <TPaveText.h>
 #include <TDatime.h>
 #include <TGraphErrors.h>
+#include <TProfile.h>
 #include <TPoint.h>
 
 using namespace o2::quality_control;
@@ -44,7 +45,7 @@ void TrendingRate::configure(std::string name, const boost::property_tree::ptree
 void TrendingRate::initialize(Trigger, framework::ServiceRegistry&)
 {
   // Preparing data structure of TTree
-  mTrend = std::make_unique<TTree>(); 
+  mTrend = std::make_unique<TTree>();
   mTrend->SetName(PostProcessingInterface::getName().c_str());
   mTrend->Branch("runNumber", &mMetaData.runNumber);
   mTrend->Branch("time", &mTime);
@@ -87,23 +88,21 @@ void TrendingRate::trendValues(const Trigger& t, repository::DatabaseInterface& 
   for (auto& dataSource : mConfig.dataSources) {
 
     auto HitMap = qcdb.retrieveMO(dataSource.path, nameHitMap, t.timestamp, t.activity);
-    TH2F *objHitMap = HitMap ? (TH2F *)HitMap->getObject() : nullptr;
+    TH2F* objHitMap = HitMap ? (TH2F*)HitMap->getObject() : nullptr;
     if (objHitMap) {
       objHitMap->Divide(objHitMap);
       mReductors[dataSource.name]->update(objHitMap);
-    }
-    else {
+    } else {
       ILOG(Error, Support) << "Unknown type of data source '" << dataSource.type << "'." << ENDM;
     }
-    unsigned int nactivechannels = objHitMap->Integral()*24;
+    unsigned int nactivechannels = objHitMap->Integral() * 24;
     ILOG(Info, Support) << "Number of active channels...:  " << nactivechannels << ENDM;
 
     auto MultVsBC = qcdb.retrieveMO(dataSource.path, nameMultVsBC, t.timestamp, t.activity);
     auto objMultVsBC = MultVsBC ? MultVsBC->getObject() : nullptr;
     if (objMultVsBC) {
       mReductors[dataSource.name]->update(objMultVsBC);
-    }
-    else {
+    } else {
       ILOG(Error, Support) << "Unknown type of data source '" << dataSource.type << "'." << ENDM;
     }
 
@@ -111,12 +110,10 @@ void TrendingRate::trendValues(const Trigger& t, repository::DatabaseInterface& 
     auto objMultVsBCpro = MultVsBCpro ? MultVsBCpro->getObject() : nullptr;
     if (objMultVsBCpro) {
       mReductors[dataSource.name]->update(objMultVsBCpro);
-    }
-    else {
+    } else {
       ILOG(Error, Support) << "Unknown type of data source '" << dataSource.type << "'." << ENDM;
     }
-   
-  }  
+  }
   mTrend->Fill();
 }
 
