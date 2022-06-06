@@ -112,6 +112,15 @@ void TrendingRate::computeTOFRates(TH2F* h, TProfile* hp, std::vector<int>& bcIn
 
 void TrendingRate::initialize(Trigger, framework::ServiceRegistry&)
 {
+  // Setting parameters
+  // This is not possible so far: TODO ask for parameters in trending!
+  // if (auto param = mCustomParameters.find("ThresholdSgn"); param != mCustomParameters.end()) {
+  //   mThresholdSgn = ::atof(param->second.c_str());
+  // }
+  // if (auto param = mCustomParameters.find("ThresholdBkg"); param != mCustomParameters.end()) {
+  //   mThresholdBkg = ::atof(param->second.c_str());
+  // }
+
   // Preparing data structure of TTree
   mTrend = std::make_unique<TTree>();
   mTrend->SetName(PostProcessingInterface::getName().c_str());
@@ -120,18 +129,6 @@ void TrendingRate::initialize(Trigger, framework::ServiceRegistry&)
   mTrend->Branch("noiseRate", &mNoiseRatePerChannel);
   mTrend->Branch("collisionRate", &mCollisionRate);
   mTrend->Branch("activeChannels", &mActiveChannels);
-
-  /*if (auto param = mCustomParameters.find("ThresholdSgn"); param != mCustomParameters.end()) {
-    mThresholdSgn = ::atof(param->second.c_str());
-  }
-  if (auto param = mCustomParameters.find("ThresholdBkg"); param != mCustomParameters.end()) {
-    mThresholdBkg = ::atof(param->second.c_str());
-  }*/
-  for (const auto& source : mConfig.dataSources) {
-    std::unique_ptr<Reductor> reductor(root_class_factory::create<Reductor>(source.moduleName, source.reductorName));
-    mTrend->Branch(source.name.c_str(), reductor->getBranchAddress(), reductor->getBranchLeafList());
-    mReductors[source.name] = std::move(reductor);
-  }
   getObjectsManager()->startPublishing(mTrend.get());
 }
 
