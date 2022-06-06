@@ -62,7 +62,6 @@ class ITSClusterTask : public TaskInterface
   TH2D* hClusterVsBunchCrossing;
   std::vector<TObject*> mPublishedObjects;
   TH1D* hClusterSizeSummaryIB[7][48][9];
-  TH1D* hClusterSizeMonitorIB[7][48][9];
   TH1D* hClusterTopologySummaryIB[7][48][9];
   TH1D* hGroupedClusterSizeSummaryIB[7][48][9];
 
@@ -109,8 +108,8 @@ class ITSClusterTask : public TaskInterface
   const float StartAngle[7] = { 16.997 / 360 * (TMath::Pi() * 2.), 17.504 / 360 * (TMath::Pi() * 2.), 17.337 / 360 * (TMath::Pi() * 2.), 8.75 / 360 * (TMath::Pi() * 2.), 7 / 360 * (TMath::Pi() * 2.), 5.27 / 360 * (TMath::Pi() * 2.), 4.61 / 360 * (TMath::Pi() * 2.) }; // start angle of first stave in each layer
   //
   int mEnableLayers[7];
-  int mClusterSizeOB[7][48][28] = { { { 0 } } }; //[#layers][max staves][max lanes]
-  double mClusterSizeMonitorOB[7][48][28] = { { { 0 } } };
+  int mClusterSize[7][48][28] = { { { 0 } } }; //[#layers][max staves][max lanes / chips]
+  double mClusterSizeMonitor[7][48][28] = { { { 0 } } };
   int nClusters[7][48][28] = { { { 0 } } };
   Int_t mClusterOccupancyOB[7][48][28] = { { { 0 } } };
   Int_t mClusterOccupancyOBmonitor[7][48][28] = { { { 0 } } };
