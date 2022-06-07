@@ -72,6 +72,10 @@ void TrendingRate::computeTOFRates(TH2F* h, TProfile* hp, std::vector<int>& bcIn
     }
   }
 
+  if (mActiveChannels) {
+    mNoiseRatePerChannel = (hback->GetMean() - 0.5) / orbit_lenght * h->GetNbinsX() / mActiveChannels;
+  }
+
   int ns = 0;
   std::vector<int> signals;
 
@@ -123,7 +127,6 @@ void TrendingRate::computeTOFRates(TH2F* h, TProfile* hp, std::vector<int>& bcIn
     }
 
     if (sumw > 0) {
-      mNoiseRatePerChannel = (hback->GetMean() - 0.5) / orbit_lenght * h->GetNbinsX() / mActiveChannels;
       mCollisionRate = ratetot;
       mPileup = pilup / sumw;
     }
