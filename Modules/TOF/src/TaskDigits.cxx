@@ -243,6 +243,8 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
   // Get Diagnostic frequency to check noisy channels in the current TF
   const auto& diafreq = ctx.inputs().get<o2::tof::Diagnostic*>("diafreq");
 
+  int nent = mHitMultiplicityVsBC->GetEntries();
+
   int eta, phi;       // Eta and phi indices
   int det[5] = { 0 }; // Coordinates
   int strip = 0;      // Strip

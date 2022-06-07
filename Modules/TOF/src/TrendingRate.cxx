@@ -47,36 +47,58 @@ void TrendingRate::configure(std::string name, const boost::property_tree::ptree
   mConfig = TrendingConfigTOF(name, config);
 }
 
-void TrendingRate::computeTOFRates(TH2F* h, TProfile* hp, std::vector<int>& bcInt, std::vector<float>& bcRate, std::vector<float>& bcPileup)
+void TrendingRate::computeTOFRates(TH2F* h, std::vector<int>& bcInt, std::vector<float>& bcRate, std::vector<float>& bcPileup)
 {
+
+  mCollisionRate = 0.;
+  mPileupRate = 0.;
+  mNoiseRatePerChannel = 0.;
+  mNIBC = 0;
+
   if (!h) {
     ILOG(Warning, Support) << "Got no histogram, skipping" << ENDM;
     return;
   }
-  if (!hp) {
-    ILOG(Warning, Support) << "Got no profile, skipping" << ENDM;
-    return;
-  }
   TH1D* hback = nullptr;
+
+  if (!mPreviousPlot) {
+    // create object for comparing with the past since
+    mPreviousPlot = new TH2F(*h);
+    mPreviousPlot->SetName("hTOFprevIRmap");
+    mPreviousPlot->Reset();
+  }
+
+  TH2F hDiffGlobal(*h);
+  hDiffGlobal.SetName("hTOFhitDiff");
+  hDiffGlobal.Add(mPreviousPlot, -1);
+
+  TProfile* hpdiff = hDiffGlobal.ProfileX("hProTOFhitDiff");
 
   // Counting background
   int nb = 0;
-  for (int i = 1; i <= hp->GetNbinsX(); i++) {
-    if (hp->GetBinContent(i) < mThresholdBkg) {
+  for (int i = 1; i <= hpdiff->GetNbinsX(); i++) {
+    if (hpdiff->GetBinContent(i) - 0.5 < mThresholdBkg) {
       if (!hback) {
-        hback = h->ProjectionY("back", i, i);
+        hback = hDiffGlobal.ProjectionY("back", i, i);
       } else {
-        hback->Add(h->ProjectionY("tmp", i, i));
+        hback->Add(hDiffGlobal.ProjectionY("tmp", i, i));
       }
       nb++;
     }
+  }
+
+  // update previous object status
+  mPreviousPlot->Reset();
+  mPreviousPlot->Add(h);
+
+  if (hback->Integral() < 0) {
+    return;
   }
 
   if (mActiveChannels) {
     mNoiseRatePerChannel = (hback->GetMean() - 0.5) / orbit_lenght * h->GetNbinsX() / mActiveChannels;
   }
 
-  int ns = 0;
   std::vector<int> signals;
 
   float sumw = 0.f;
@@ -84,10 +106,10 @@ void TrendingRate::computeTOFRates(TH2F* h, TProfile* hp, std::vector<int>& bcIn
   float ratetot = 0.f;
 
   if (nb) {
-    for (int i = 1; i <= h->GetNbinsX(); i++) {
-      if (hp->GetBinContent(i) > mThresholdSgn) {
+    for (int i = 1; i <= hDiffGlobal.GetNbinsX(); i++) {
+      if (hpdiff->GetBinContent(i) - 0.5 > mThresholdSgn) {
         signals.push_back(i);
-        ns++;
+        mNIBC++;
       }
     }
 
@@ -97,7 +119,7 @@ void TrendingRate::computeTOFRates(TH2F* h, TProfile* hp, std::vector<int>& bcIn
       const int ibc = signals[i];
       const int bcmin = (ibc - 1) * 18;
       const int bcmax = ibc * 18;
-      TH1D* hs = h->ProjectionY(Form("sign_%d_%d", bcmin, bcmax), ibc, ibc);
+      TH1D* hs = hDiffGlobal.ProjectionY(Form("sign_%d_%d", bcmin, bcmax), ibc, ibc);
       hs->SetTitle(Form("%d < BC < %d", bcmin, bcmax));
       hb->Scale(hs->GetBinContent(1) / hb->GetBinContent(1));
       const float overall = hs->Integral();
@@ -128,10 +150,12 @@ void TrendingRate::computeTOFRates(TH2F* h, TProfile* hp, std::vector<int>& bcIn
 
     if (sumw > 0) {
       mCollisionRate = ratetot;
-      mPileup = pilup / sumw;
+      mPileupRate = pilup / sumw;
     }
     delete hback;
   }
+
+  delete hpdiff;
 }
 
 void TrendingRate::initialize(Trigger, framework::ServiceRegistry&)
@@ -153,7 +177,8 @@ void TrendingRate::initialize(Trigger, framework::ServiceRegistry&)
   mTrend->Branch("noiseRate", &mNoiseRatePerChannel);
   mTrend->Branch("collisionRate", &mCollisionRate);
   mTrend->Branch("activeChannels", &mActiveChannels);
-  mTrend->Branch("pileup", &mPileup);
+  mTrend->Branch("pileup", &mPileupRate);
+  mTrend->Branch("nIBC", &mNIBC);
 
   for (const auto& source : mConfig.dataSources) {
     std::unique_ptr<Reductor> reductor(root_class_factory::create<Reductor>(source.moduleName, source.reductorName));
@@ -186,7 +211,6 @@ void TrendingRate::trendValues(const Trigger& t, repository::DatabaseInterface& 
 
   mActiveChannels = o2::tof::Geo::NCHANNELS;
   std::shared_ptr<o2::quality_control::core::MonitorObject> moHistogramMultVsBC = nullptr;
-  std::shared_ptr<o2::quality_control::core::MonitorObject> moProfileMultVsBC = nullptr;
 
   std::vector<int> bcInt;
   std::vector<float> bcRate;
@@ -205,8 +229,6 @@ void TrendingRate::trendValues(const Trigger& t, repository::DatabaseInterface& 
       ILOG(Info, Support) << "N channels = " << mActiveChannels << ENDM;
     } else if (dataSource.name == "Multiplicity/VsBC") {
       moHistogramMultVsBC = mo;
-    } else if ("Multiplicity/VsBCpro") {
-      moProfileMultVsBC = mo;
     }
   }
 
@@ -219,14 +241,10 @@ void TrendingRate::trendValues(const Trigger& t, repository::DatabaseInterface& 
     ILOG(Info, Support) << "Got no histogramMultVsBC, can't compute rates";
     return;
   }
-  if (!moProfileMultVsBC) {
-    ILOG(Info, Support) << "Got no profileMultVsBC, can't compute rates";
-    return;
-  }
 
-  computeTOFRates((TH2F*)moHistogramMultVsBC->getObject(), (TProfile*)moProfileMultVsBC->getObject(), bcInt, bcRate, bcPileup);
+  computeTOFRates((TH2F*)moHistogramMultVsBC->getObject(), bcInt, bcRate, bcPileup);
 
-  ILOG(Info, Support) << "In " << mActiveChannels << " channels, noise rate per channel= " << mNoiseRatePerChannel << " Hz - collision rate = " << mCollisionRate << " Hz - mu-pilup = " << mPileup << ENDM;
+  ILOG(Info, Support) << "In " << mActiveChannels << " channels, noise rate per channel= " << mNoiseRatePerChannel << " Hz - collision rate = " << mCollisionRate << " Hz - mu-pilup = " << mPileupRate << ENDM;
 
   for (int i = 0; i < bcInt.size(); i++) {
     ILOG(Info, Support) << "bc = " << bcInt[i] * 18 - 9 << ") rate = " << bcRate[i] << ", pilup = " << bcPileup[i] << ENDM;
