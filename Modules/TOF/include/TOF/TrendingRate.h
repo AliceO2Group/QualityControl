@@ -11,8 +11,10 @@
 
 ///
 /// \file    TrendingRate.h
+/// \author  Nicolò Jacazio nicolo.jacazio@cern.ch
+/// \author  Francesco Noferini francesco.noferini@cern.ch
 /// \author  Francesca Ercolessi francesca.ercolessi@cern.ch
-/// \brief
+/// \brief   Trending of the TOF interaction rate
 /// \since   06/06/2022
 ///
 
@@ -73,7 +75,7 @@ class TrendingRate : public PostProcessingInterface
   // Extra values to trend
   float mNoiseRatePerChannel = 0.f; /// Noise rate
   float mCollisionRate = 0.f;       /// Collision rate
-  float mPileupRate = 0.f;          /// Pileup rate
+  float mPileup = 0.f;              /// Pileup
   int mActiveChannels = 0;          /// Active channels
 
   std::unique_ptr<TTree> mTrend;

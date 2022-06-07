@@ -62,6 +62,13 @@
                         "varexp": "activeChannels:time",
                         "selection": "",
                         "option": "*L"
+                    },
+                    {
+                        "name": "pile_up",
+                        "title": "Pileup",
+                        "varexp": "pileup:time",
+                        "selection": "",
+                        "option": "*L"
                     }
                 ],
                 "initTrigger": [

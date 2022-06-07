@@ -11,6 +11,8 @@
 
 ///
 /// \file    TrendingRate.cxx
+/// \author  Nicolò Jacazio nicolo.jacazio@cern.ch
+/// \author  Francesco Noferini francesco.noferini@cern.ch
 /// \author  Francesca Ercolessi francesca.ercolessi@cern.ch
 /// \brief   Trending of the TOF interaction rate
 /// \since   06/06/2022
@@ -123,7 +125,7 @@ void TrendingRate::computeTOFRates(TH2F* h, TProfile* hp, std::vector<int>& bcIn
     if (sumw > 0) {
       mNoiseRatePerChannel = (hback->GetMean() - 0.5) / orbit_lenght * h->GetNbinsX() / mActiveChannels;
       mCollisionRate = ratetot;
-      mPileupRate = pilup / sumw;
+      mPileup = pilup / sumw;
     }
     delete hback;
   }
@@ -148,6 +150,13 @@ void TrendingRate::initialize(Trigger, framework::ServiceRegistry&)
   mTrend->Branch("noiseRate", &mNoiseRatePerChannel);
   mTrend->Branch("collisionRate", &mCollisionRate);
   mTrend->Branch("activeChannels", &mActiveChannels);
+  mTrend->Branch("pileup", &mPileup);
+
+  for (const auto& source : mConfig.dataSources) {
+    std::unique_ptr<Reductor> reductor(root_class_factory::create<Reductor>(source.moduleName, source.reductorName));
+    mTrend->Branch(source.name.c_str(), reductor->getBranchAddress(), reductor->getBranchLeafList());
+    mReductors[source.name] = std::move(reductor);
+  }
   getObjectsManager()->startPublishing(mTrend.get());
 }
 
@@ -214,7 +223,7 @@ void TrendingRate::trendValues(const Trigger& t, repository::DatabaseInterface& 
 
   computeTOFRates((TH2F*)moHistogramMultVsBC->getObject(), (TProfile*)moProfileMultVsBC->getObject(), bcInt, bcRate, bcPileup);
 
-  ILOG(Info, Support) << "In " << mActiveChannels << " channels, noise rate per channel= " << mNoiseRatePerChannel << " Hz - collision rate = " << mCollisionRate << " Hz - mu-pilup = " << mPileupRate << ENDM;
+  ILOG(Info, Support) << "In " << mActiveChannels << " channels, noise rate per channel= " << mNoiseRatePerChannel << " Hz - collision rate = " << mCollisionRate << " Hz - mu-pilup = " << mPileup << ENDM;
 
   for (int i = 0; i < bcInt.size(); i++) {
     ILOG(Info, Support) << "bc = " << bcInt[i] * 18 - 9 << ") rate = " << bcRate[i] << ", pilup = " << bcPileup[i] << ENDM;
