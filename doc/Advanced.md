@@ -736,6 +736,7 @@ jq -n 'reduce inputs as $s (input; .qc.tasks += ($s.qc.tasks) | .qc.checks += ($
 However, one should pay attention to avoid duplicate task definition keys (e.g. having RawTask twice, each for a different detector), otherwise only one of them would find its way to a merged file. 
 In such case, one can add the `taskName` parameter in the body of a task configuration structure to use the preferred name and change the root key to a unique id, which shall be used only for the purpose of navigating a configuration file.
 If `taskName` does not exist, it is taken from the root key value.
+Please remember to update also the references to the task in other actors which refer it (e.g. in Check's data source).
 
 These two tasks will **not** be merged correctly:
 ```json
