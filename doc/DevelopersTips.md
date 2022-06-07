@@ -117,7 +117,7 @@ When we don't see the monitoring data in grafana, here is what to do to pinpoint
 ### Monitoring setup for building the grafana dashboard
 
 1. Go to `root@flptest1`
-2. Edit telegraf config file, add following lines:
+2. Edit telegraf config file by executing these lines :
 ```
 echo "[[inputs.socket_listener]]    
    service_address = \"udp://:8089\"" >> /etc/telegraf/telegraf.conf
@@ -131,9 +131,9 @@ firewall-cmd --reload
 5. Go to Grafana (flptest1.cern.ch:3000) and login as `admin`, the password is in here: https://gitlab.cern.ch/AliceO2Group/system-configuration/-/blob/dev/ansible/roles/grafana/vars/main.yml#L2
 6. Go to "Explore" tab (4th icon from top), and select `qc` as data source
 7. Run your workflow with `--monitoring-backend influxdb-udp://flptest1.cern.ch:8089 --resources-monitoring 2`
+10. Set the monitoring url to `"url": "stdout://?qc,influxdb-udp://flptest1.cern.ch:8089"`
 8. The metrics should be there 
 9. Make a copy of the QC dashboard that you can edit.
-10. Set the monitoring url to `"url": "stdout://?qc,influxdb-udp://flptest1.cern.ch:8089"`
 11. Once the dashboard is ready, tell Adam.
 
 
