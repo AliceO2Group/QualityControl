@@ -86,7 +86,6 @@ void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
   long int ts = mTimestamp ? mTimestamp : o2::ccdb::getCurrentTimestamp();
   ILOG(Info, Support) << "Getting dictionary from ccdb - timestamp: " << ts << ENDM;
   auto& mgr = o2::ccdb::BasicCCDBManager::instance();
-  mgr.setURL("http://alice-ccdb.cern.ch");
   mgr.setTimestamp(ts);
   mDict = mgr.get<o2::itsmft::TopologyDictionary>("ITS/Calib/ClusterDictionary");
   ILOG(Info, Support) << "Dictionary size: " << mDict->getSize() << ENDM;
