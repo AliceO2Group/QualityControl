@@ -31,7 +31,7 @@ TrendingConfigTOF::TrendingConfigTOF(std::string name, const boost::property_tre
   if (const auto& customConfigs = config.get_child_optional("qc.postprocessing." + name + ".customization"); customConfigs.has_value()) {
     for (const auto& customConfig : customConfigs.value()) { // Plot configuration
       ILOG(Info, Support) << "Reading configuration " << customConfig.second.get<std::string>("name") << ENDM;
-      if (const auto& customNames = customConfig.second.get_child_optional("names"); customNames.has_value()) {
+      if (const auto& customNames = customConfig.second.get_child_optional("name"); customNames.has_value()) {
         if (customConfig.second.get<std::string>("name") == "ThresholdSgn") {
           mConfigTrendingRate.thresholdSignal = customConfig.second.get<float>("value");
           ILOG(Info, Support) << "Setting thresholdSignal to " << mConfigTrendingRate.thresholdSignal << ENDM;
