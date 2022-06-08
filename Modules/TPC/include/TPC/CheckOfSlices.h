@@ -16,7 +16,8 @@
 
 #ifndef QC_MODULE_TPC_CHECKOFSLICES_H
 #define QC_MODULE_TPC_CHECKOFSLICES_H
-
+#include <string_view>
+#include <string>
 #include "QualityControl/CheckInterface.h"
 
 namespace o2::quality_control_modules::tpc
@@ -40,22 +41,20 @@ class CheckOfSlices : public o2::quality_control::checker::CheckInterface
   void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
-  std::string getAcceptedType() override;
+  std::string getAcceptedType() override { return "TCanvas"; }
 
  private:
   ClassDefOverride(CheckOfSlices, 2);
   std::string mCheckChoice;
   float mExpectedPhysicsValue;
   float mNSigmaExpectedPhysicsValue;
-  float mNSigmaMediumExpectedPhysicsValue;
   float mNSigmaBadExpectedPhysicsValue;
   float mNSigmaMean;
-  float mNSigmaMediumMean;
   float mNSigmaBadMean;
   float meanFull;
-  static constexpr std::string_view mCheckChoiceMean = "Mean";
-  static constexpr std::string_view mCheckChoiceExpectedPhysicsValue = "ExpectedPhysicsValue";
-  static constexpr std::string_view mCheckChoiceBoth = "Both";
+  static constexpr std::string_view CheckChoiceMean = "Mean";
+  static constexpr std::string_view CheckChoiceExpectedPhysicsValue = "ExpectedPhysicsValue";
+  static constexpr std::string_view CheckChoiceBoth = "Both";
 };
 
 } // namespace o2::quality_control_modules::tpc

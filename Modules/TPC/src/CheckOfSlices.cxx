@@ -18,7 +18,6 @@
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
 
-#include <fairlogger/Logger.h>
 #include <TCanvas.h>
 #include <TGraphErrors.h>
 #include <TGraph.h>
@@ -37,11 +36,11 @@ void CheckOfSlices::configure()
 {
   if (auto param = mCustomParameters.find("chooseCheckMeanOrExpectedPhysicsValueOrBoth"); param != mCustomParameters.end()) {
     mCheckChoice = param->second.c_str();
-    if (mCheckChoice != mCheckChoiceMean && mCheckChoice != mCheckChoiceExpectedPhysicsValue && mCheckChoice != mCheckChoiceBoth) {
-      mCheckChoice = mCheckChoiceMean;
-      ILOG(Fatal, Support) << "The chosen value does not exist. Available options: mean, ExpectedPhysicsValue, both. Default mean selected." << ENDM;
+    if ((mCheckChoice != CheckChoiceMean) && (mCheckChoice != CheckChoiceExpectedPhysicsValue) && (mCheckChoice != CheckChoiceBoth)) {
+      mCheckChoice = CheckChoiceMean;
+      ILOG(Warning, Support) << "The chosen value does not exist. Available options: mean, ExpectedPhysicsValue, both. Default mean selected." << ENDM;
     }
-    if (mCheckChoice == mCheckChoiceExpectedPhysicsValue || mCheckChoice == mCheckChoiceBoth) {
+    if ((mCheckChoice == CheckChoiceExpectedPhysicsValue) || (mCheckChoice == CheckChoiceBoth)) {
       if (auto param = mCustomParameters.find("expectedPhysicsValue"); param != mCustomParameters.end()) {
         mExpectedPhysicsValue = std::atof(param->second.c_str());
       } else {
@@ -52,13 +51,13 @@ void CheckOfSlices::configure()
         mNSigmaExpectedPhysicsValue = std::atof(param->second.c_str());
       } else {
         mNSigmaExpectedPhysicsValue = 3;
-        ILOG(Warning, Support) << "Chosen check requires mNSigmaExpectedPhysicsValue which is not given. Setting to default 3." << ENDM;
+        ILOG(Info, Support) << "Chosen check requires mNSigmaExpectedPhysicsValue which is not given. Setting to default 3." << ENDM;
       }
       if (auto param = mCustomParameters.find("badNSigmaForExpectation"); param != mCustomParameters.end()) {
         mNSigmaBadExpectedPhysicsValue = std::atof(param->second.c_str());
       } else {
         mNSigmaBadExpectedPhysicsValue = 6;
-        ILOG(Warning, Support) << "Chosen check requires mNSigmaBadExpectedPhysicsValue which is not given. Setting to default 6." << ENDM;
+        ILOG(Info, Support) << "Chosen check requires mNSigmaBadExpectedPhysicsValue which is not given. Setting to default 6." << ENDM;
       }
       /*
       if (auto param = mCustomParameters.find("pointsToTakeForExpectedValueCheck"); param != mCustomParameters.end()) {
@@ -69,7 +68,7 @@ void CheckOfSlices::configure()
       }*/
     }
 
-    if (mCheckChoice == mCheckChoiceMean || mCheckChoice == mCheckChoiceBoth) {
+    if ((mCheckChoice == CheckChoiceMean) || (mCheckChoice == CheckChoiceBoth)) {
       if (auto param = mCustomParameters.find("allowedNSigmaForMean"); param != mCustomParameters.end()) {
         mNSigmaMean = std::atof(param->second.c_str());
       } else {
@@ -110,7 +109,7 @@ Quality CheckOfSlices::check(std::map<std::string, std::shared_ptr<MonitorObject
   }
   TList* padList = (TList*)canv->GetListOfPrimitives();
   padList->SetOwner(kTRUE);
-  int numberPads = padList->GetEntries();
+  const int numberPads = padList->GetEntries();
   if (numberPads > 1) {
     ILOG(Fatal, Support) << "Number of Pads: " << numberPads << " Should not be more than 1" << ENDM;
   }
@@ -138,17 +137,16 @@ Quality CheckOfSlices::check(std::map<std::string, std::shared_ptr<MonitorObject
 
   // now we have the mean and the stddev. Now check if all points are within the margins (default 3,6 sigma margins)
 
-  if (mCheckChoice == mCheckChoiceMean || mCheckChoice == mCheckChoiceBoth) {
+  if ((mCheckChoice == CheckChoiceMean) || (mCheckChoice == CheckChoiceBoth)) {
 
     // const std::vector<double> v(yValues + NBins - 1 - pointNumberForMean, yValues + NBins - 1);
 
     const double sum = std::accumulate(v.begin(), v.end(), 0.0);
     const double meanFull = sum / NBins;
 
-    for (const double& yvalue : v) {
-      int i = &yvalue - &v[0];
-      double yError = vErr[i];
-      // if (yError > 0) {
+    for (size_t i = 0; i < v.size(); ++i) {
+      const auto yvalue = v[i];
+      const auto yError = vErr[i];
       if (std::abs(yvalue - meanFull) <= yError * mNSigmaMean) {
         if (!resultMean.isWorseThan(Quality::Good) || resultMean == Quality::Null) {
           resultMean = Quality::Good;
@@ -169,12 +167,10 @@ Quality CheckOfSlices::check(std::map<std::string, std::shared_ptr<MonitorObject
   } // if (mCheckChoice == mCheckChoiceMean || mCheckChoice == mCheckChoiceBoth)
   result = resultMean;
   //########################## ExpectedPhysicsValue #######################################
-  if (mCheckChoice == mCheckChoiceExpectedPhysicsValue || mCheckChoice == mCheckChoiceBoth) {
-
-    for (const double& yvalue : v) {
-      int i = &yvalue - &v[0];
-      double yError = vErr[i];
-      // if (yError > 0) {
+  if ((mCheckChoice == CheckChoiceExpectedPhysicsValue) || (mCheckChoice == CheckChoiceBoth)) {
+    for (size_t i = 0; i < v.size(); ++i) {
+      const auto yvalue = v[i];
+      const auto yError = vErr[i];
       if (std::abs(yvalue - mExpectedPhysicsValue) <= yError * mNSigmaExpectedPhysicsValue) {
         if (!resultExpectedPhysicsValue.isWorseThan(Quality::Good) || resultExpectedPhysicsValue == Quality::Null) {
           resultExpectedPhysicsValue = Quality::Good;
@@ -195,7 +191,7 @@ Quality CheckOfSlices::check(std::map<std::string, std::shared_ptr<MonitorObject
 
     result = resultExpectedPhysicsValue;
   }
-  if (mCheckChoice == mCheckChoiceBoth) {
+  if (mCheckChoice == CheckChoiceBoth) {
     // If mean check is not performed, the total combined quality mean && expectedValue should be set to expectedValue result
     if (resultMean != Quality::Null) {
       if (resultMean.isWorseThan(resultExpectedPhysicsValue)) {
@@ -206,8 +202,6 @@ Quality CheckOfSlices::check(std::map<std::string, std::shared_ptr<MonitorObject
 
   return result;
 }
-
-std::string CheckOfSlices::getAcceptedType() { return "TCanvas"; }
 
 void CheckOfSlices::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
@@ -220,11 +214,14 @@ void CheckOfSlices::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
   for (int iPad = 0; iPad < numberPads; iPad++) {
     auto pad = static_cast<TPad*>(padList->At(iPad));
     h = static_cast<TGraphErrors*>(pad->GetPrimitive("Graph"));
-
-    ILOG(Error, Support) << h->GetName() << ENDM;
+  }
+  if (!h) {
+    ILOG(Fatal, Support) << "Could not find graph in given Pad" << ENDM;
   }
   const int NBins = h->GetN();
-
+  if (NBins == 0) {
+    ILOG(Fatal, Support) << "No bins were found for the Graph!" << ENDM;
+  }
   const double* yValues = h->GetY();
   const double* yErrors = h->GetEY();
   const std::vector<double> v(yValues, yValues + NBins); // use all points
@@ -232,7 +229,9 @@ void CheckOfSlices::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
   const double sum = std::accumulate(v.begin(), v.end(), 0.0);
   const double meanFull = sum / NBins;
   TPaveText* msg = new TPaveText(0.7, 0.85, 0.9, 0.9, "NDC");
+  TPaveText* Legend = new TPaveText(0.1, 0.85, 0.35, 0.9, "NDC");
   h->GetListOfFunctions()->Add(msg);
+  h->GetListOfFunctions()->Add(Legend);
   msg->SetName(Form("%s_msg", mo->GetName()));
 
   if (checkResult == Quality::Good) {
@@ -241,27 +240,27 @@ void CheckOfSlices::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     msg->AddText("Quality::Good");
     msg->SetFillColor(kGreen);
   } else if (checkResult == Quality::Bad) {
-    LOG(info) << "Quality::Bad, setting to red";
+    ILOG(Info) << "Quality::Bad, setting to red";
     h->SetFillColor(kRed);
     msg->Clear();
     msg->AddText("Quality::Bad");
-    if (mCheckChoice == mCheckChoiceExpectedPhysicsValue) {
+    if (mCheckChoice == CheckChoiceExpectedPhysicsValue) {
       msg->AddText(Form("Outlier, more than %isigma.", mNSigmaBadExpectedPhysicsValue));
-    } else if (mCheckChoice == mCheckChoiceMean) {
+    } else if (mCheckChoice == CheckChoiceMean) {
       msg->AddText(Form("Outlier, more than %isigma.", mNSigmaBadMean));
     } else {
       msg->AddText("Outlier. Bad Quality.");
     }
     msg->SetFillColor(kRed);
   } else if (checkResult == Quality::Medium) {
-    LOG(info) << "Quality::medium, setting to orange";
+    ILOG(Info) << "Quality::medium, setting to orange";
     h->SetFillColor(kOrange);
     msg->Clear();
     msg->AddText("Quality::Medium");
-    if (mCheckChoice == mCheckChoiceExpectedPhysicsValue) {
-      msg->AddText(Form("Outlier, more than %isigma.", mNSigmaMediumExpectedPhysicsValue));
-    } else if (mCheckChoice == mCheckChoiceMean) {
-      msg->AddText(Form("Outlier, more than %isigma.", mNSigmaMediumMean));
+    if (mCheckChoice == CheckChoiceExpectedPhysicsValue) {
+      msg->AddText(Form("Outlier, more than %isigma.", mNSigmaExpectedPhysicsValue));
+    } else if (mCheckChoice == CheckChoiceMean) {
+      msg->AddText(Form("Outlier, more than %isigma.", mNSigmaMean));
     } else {
       msg->AddText("Outlier. Medium Quality");
     }
@@ -270,11 +269,11 @@ void CheckOfSlices::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     h->SetFillColor(0);
   }
   h->SetLineColor(kBlack);
-  if (mCheckChoice == mCheckChoiceExpectedPhysicsValue || mCheckChoice == mCheckChoiceBoth) {
-    msg->AddText(Form("Expected Physics Value: %f", mExpectedPhysicsValue));
+  if (mCheckChoice == CheckChoiceExpectedPhysicsValue || mCheckChoice == CheckChoiceBoth) {
+    Legend->AddText(Form("Expected Physics Value: %f", mExpectedPhysicsValue));
   }
-  if (mCheckChoice == mCheckChoiceMean || mCheckChoice == mCheckChoiceBoth) {
-    msg->AddText(Form("Mean: %f", meanFull));
+  if (mCheckChoice == CheckChoiceMean || mCheckChoice == CheckChoiceBoth) {
+    Legend->AddText(Form("Mean: %f", meanFull));
   }
   const double xMin = h->GetXaxis()->GetXmin();
   const double xMax = h->GetXaxis()->GetXmax();
@@ -282,13 +281,10 @@ void CheckOfSlices::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
   lineExpectedValue->SetLineColor(kGreen);
   lineExpectedValue->SetLineWidth(2);
   // mean Line
-
-  ILOG(Error, Support) << meanFull << ENDM;
   TLine* lineMean = new TLine(xMin, meanFull, xMax, meanFull);
   lineMean->SetLineColor(kOrange);
   lineMean->SetLineWidth(2);
   lineMean->SetLineStyle(10);
-
   h->GetListOfFunctions()->Add(lineExpectedValue);
   h->GetListOfFunctions()->Add(lineMean);
 
