@@ -920,6 +920,7 @@ the "tasks" path.
         "moduleName": "QcSkeleton",         "": "Library name. It can be found in CMakeLists of the detector module.",
         "detectorName": "TST",              "": "3-letter code of the detector.",
         "cycleDurationSeconds": "10",       "": "Cycle duration (how often objects are published), 10 seconds minimum.",
+                                            "": "The first cycle will be randomly shorter",
         "maxNumberCycles": "-1",            "": "Number of cycles to perform. Use -1 for infinite.",
         "dataSource": {                     "": "Data source of the QC Task.",
           "type": "dataSamplingPolicy",     "": "Type of the data source, \"dataSamplingPolicy\" or \"direct\".",
