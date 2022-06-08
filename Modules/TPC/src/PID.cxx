@@ -43,17 +43,12 @@ void PID::initialize(o2::framework::InitContext& /*ctx*/)
   ILOG(Info, Support) << "initialize TPC PID QC task" << ENDM;
 
   mQCPID.initializeHistograms();
-  //o2::tpc::qc::helpers::setStyleHistogram1D(mQCPID.getHistograms1D());
-  o2::tpc::qc::helpers::setStyleHistogram2D(mQCPID.getHistograms2D());
-
-  for (auto& hist : mQCPID.getHistograms1D()) {
-    getObjectsManager()->startPublishing(&hist);
-    getObjectsManager()->addMetadata(hist.GetName(), "custom", "34");
-  }
-
-  for (auto& hist : mQCPID.getHistograms2D()) {
-    getObjectsManager()->startPublishing(&hist);
-    getObjectsManager()->addMetadata(hist.GetName(), "custom", "43");
+  //pass map of vectors of histograms to be beutified!
+  o2::tpc::qc::helpers::setStyleHistogramsInMap(mQCPID.getMapOfHisto());
+  for (auto const& pair : mQCPID.getMapOfHisto()) {
+    for (auto& hist : pair.second) {
+      getObjectsManager()->startPublishing(hist.get());
+    }
   }
 }
 
@@ -76,9 +71,6 @@ void PID::monitorData(o2::framework::ProcessingContext& ctx)
 
   for (auto const& track : tracks) {
     mQCPID.processTrack(track);
-    //const auto p = track.getP();
-    //const auto dEdx = track.getdEdx().dEdxTotTPC;
-    //printf("p: dEdx = %.2f: %.2f\n", p, dEdx);
   }
 }
 

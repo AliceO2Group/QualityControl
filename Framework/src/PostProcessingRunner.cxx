@@ -19,10 +19,13 @@
 #include "QualityControl/CommonSpec.h"
 #include "QualityControl/InfrastructureSpecReader.h"
 #include "QualityControl/Activity.h"
+#include "QualityControl/RootClassFactory.h"
+#include "QualityControl/runnerUtils.h"
 
 #include <boost/property_tree/ptree.hpp>
 #include <utility>
 #include <Framework/DataAllocator.h>
+#include <CommonUtils/ConfigurableParam.h>
 
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::repository;
@@ -64,6 +67,11 @@ void PostProcessingRunner::init(const PostProcessingRunnerConfig& runnerConfig, 
 
   QcInfoLogger::init("post/" + mName, runnerConfig.infologgerFilterDiscardDebug, runnerConfig.infologgerDiscardLevel);
   ILOG(Info, Support) << "Initializing PostProcessingRunner" << ENDM;
+
+  root_class_factory::loadLibrary(mTaskConfig.moduleName);
+  if (!mRunnerConfig.configKeyValues.empty()) {
+    conf::ConfigurableParam::updateFromString(mRunnerConfig.configKeyValues);
+  }
 
   // configuration of the database
   mDatabase = DatabaseFactory::create(mRunnerConfig.database.at("implementation"));
@@ -142,8 +150,16 @@ void PostProcessingRunner::runOverTimestamps(const std::vector<uint64_t>& timest
   doFinalize({ TriggerType::UserOrControl, false, mTaskConfig.activity, timestamps.back() });
 }
 
-void PostProcessingRunner::start()
+void PostProcessingRunner::start(const framework::ServiceRegistry* dplServices)
 {
+  if (dplServices != nullptr) {
+    mTaskConfig.activity.mId = computeRunNumber(*dplServices, mTaskConfig.activity.mId);
+    mTaskConfig.activity.mType = computeRunType(*dplServices, mTaskConfig.activity.mType);
+    mTaskConfig.activity.mPeriodName = computePeriodName(*dplServices, mTaskConfig.activity.mPeriodName);
+    mTaskConfig.activity.mPassName = computePassName(mTaskConfig.activity.mPassName);
+    mTaskConfig.activity.mProvenance = computeProvenance(mTaskConfig.activity.mProvenance);
+  }
+
   if (mTaskState == TaskState::Created || mTaskState == TaskState::Finished) {
     mInitTriggers = trigger_helpers::createTriggers(mTaskConfig.initTriggers, mTaskConfig);
     if (trigger_helpers::hasUserOrControlTrigger(mTaskConfig.initTriggers)) {
@@ -227,6 +243,7 @@ PostProcessingRunnerConfig PostProcessingRunner::extractConfig(const CommonSpec&
     commonSpec.infologgerFilterDiscardDebug,
     commonSpec.infologgerDiscardLevel,
     commonSpec.postprocessingPeriod,
+    "",
     ppTaskSpec.tree
   };
 }

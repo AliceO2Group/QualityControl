@@ -1,0 +1,71 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": "http://consul-test.cern.ch:8500"
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      }
+    },
+    "postprocessing": {
+      "DCS_Temperature": {
+        "active": "true",
+        "className": "o2::quality_control_modules::tpc::DCSPTemperature",
+        "moduleName": "QcTPC",
+        "detectorName": "TPC",
+        "timestamps_comment": [
+          "Use the 'Valid from' timestamp",
+          "The timestamp is used as a limit of how recent the files may be for visualization.",
+          "i.e. no file younger than timestamp is visualized.",
+          "-1 gets the file with the longest 'Valid until' timestamp, which should be the most recent file in production."
+        ],
+        "timestamp": "-1",
+        "nFiles_comment": [
+          "The number of files to be combined in the visualization",
+          "nFiles older than timestamp will be visualized."
+         ],
+        "nFiles": "12",
+        "lookupMetaData_comment": [
+          "Write the keys and values to filter the search in the CCDB.",
+          "Keys and values can be given comma separated.",
+          "The first value corresponds to the first value etc."
+        ],
+        "lookupMetaData": {
+          "keys": [],
+          "values": []
+        },
+        "storeMetaData_comment": [
+          "Metadata to be stored in the QC output in the QCDB.",
+          "For how-to, see 'lookupMetaData_comment'."
+        ],
+        "storeMetaData": {
+          "keys": [],
+          "values": []
+        },
+        "initTrigger": [
+          "once"
+        ],
+        "updateTrigger_comment": "To trigger on a specific file being updated, use e.g. 'newobject:ccdb:TPC/Calib/Noise'",
+        "updateTrigger": [
+          "60min"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      }
+    }
+  }
+}

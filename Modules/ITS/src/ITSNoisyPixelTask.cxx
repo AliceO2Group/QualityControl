@@ -23,6 +23,7 @@
 #include <DataFormatsITSMFT/ROFRecord.h>
 #include <ITSMFTReconstruction/ChipMappingITS.h>
 #include <DataFormatsITSMFT/ClusterTopology.h>
+#include "CCDB/BasicCCDBManager.h"
 #include <Framework/InputRecord.h>
 
 using o2::itsmft::Digit;
@@ -82,14 +83,16 @@ void ITSNoisyPixelTask::initialize(o2::framework::InitContext& /*ctx*/)
   createAllHistos();
 
   publishHistos();
-  std::ifstream file(mDictPath.c_str());
 
-  if (file.good()) {
-    LOG(info) << "Running with dictionary: " << mDictPath;
-    mDict.readBinaryFile(mDictPath);
-  } else {
-    LOG(info) << "Running without dictionary !";
-  }
+  // get dict from ccdb
+  mTimestamp = std::stol(mCustomParameters["dicttimestamp"]);
+  long int ts = mTimestamp ? mTimestamp : o2::ccdb::getCurrentTimestamp();
+  ILOG(Info, Support) << "Getting dictionary from ccdb - timestamp: " << ts << ENDM;
+  auto& mgr = o2::ccdb::BasicCCDBManager::instance();
+  mgr.setURL("http://alice-ccdb.cern.ch");
+  mgr.setTimestamp(ts);
+  mDict = mgr.get<o2::itsmft::TopologyDictionary>("ITS/Calib/ClusterDictionary");
+  ILOG(Info, Support) << "Dictionary size: " << mDict->getSize() << ENDM;
 }
 
 void ITSNoisyPixelTask::startOfActivity(Activity& /*activity*/)
@@ -297,6 +300,23 @@ void ITSNoisyPixelTask::monitorData(o2::framework::ProcessingContext& ctx)
     mROFcycle = 0;
   }
 
+  // setting errors for occupancy plots (for the merger)
+  for (int ilayer = 0; ilayer < 7; ilayer++) {
+    if (ilayer < 3) {
+      for (int ix = 1; ix <= hOccupancyIB[ilayer]->GetNbinsX(); ix++) {
+        for (int iy = 1; iy <= hOccupancyIB[ilayer]->GetNbinsY(); iy++) {
+          hOccupancyIB[ilayer]->SetBinError(ix, iy, 1e-15);
+        }
+      }
+    } else {
+      for (int ix = 1; ix <= hOccupancyOB[ilayer - 3]->GetNbinsX(); ix++) {
+        for (int iy = 1; iy <= hOccupancyOB[ilayer - 3]->GetNbinsY(); iy++) {
+          hOccupancyOB[ilayer - 3]->SetBinError(ix, iy, 1e-15);
+        }
+      }
+    }
+  }
+
   end = std::chrono::high_resolution_clock::now();
   difference = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
   mTotalTimeInQCTask += difference;
@@ -376,6 +396,7 @@ void ITSNoisyPixelTask::createAllHistos()
 
       hOccupancyIB[iLayer] = new TH2D(Form("Layer%d/PixelOccupancy", iLayer), Form("Layer%dPixelOccupancy", iLayer), mNChipsPerHic[iLayer], 0, mNChipsPerHic[iLayer], mNStaves[iLayer], 0, mNStaves[iLayer]);
       hOccupancyIB[iLayer]->SetTitle(Form("Hits per pixel per ROF, L%d", iLayer));
+      hOccupancyIB[iLayer]->SetBit(TH1::kIsAverage);
       addObject(hOccupancyIB[iLayer]);
       formatAxes(hOccupancyIB[iLayer], "Chip Number", "Stave Number", 1, 1.10);
       hOccupancyIB[iLayer]->SetStats(0);
@@ -395,6 +416,7 @@ void ITSNoisyPixelTask::createAllHistos()
 
       hOccupancyOB[iLayer - 3] = new TH2D(Form("Layer%d/PixelOccupancy", iLayer), Form("Layer%dPixelOccupancy", iLayer), mNHicPerStave[iLayer], 0, mNHicPerStave[iLayer], mNStaves[iLayer], 0, mNStaves[iLayer]);
       hOccupancyOB[iLayer - 3]->SetTitle(Form("Hits per pixel per ROF L%d", iLayer));
+      hOccupancyOB[iLayer - 3]->SetBit(TH1::kIsAverage);
       addObject(hOccupancyOB[iLayer - 3]);
       formatAxes(hOccupancyOB[iLayer - 3], "HIC Number", "Stave Number", 1, 1.10);
       hOccupancyOB[iLayer - 3]->SetStats(0);
@@ -413,7 +435,6 @@ void ITSNoisyPixelTask::createAllHistos()
 
 void ITSNoisyPixelTask::getJsonParameters()
 {
-  mDictPath = mCustomParameters["clusterDictionaryPath"];
   mGeomPath = mCustomParameters["geomPath"];
 
   if (mCustomParameters["queryOption"].find("digit") != std::string::npos)

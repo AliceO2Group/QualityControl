@@ -155,9 +155,9 @@ BOOST_AUTO_TEST_CASE(test_trigger_for_each_object)
   mo->setActivity({ 100, 2, "FCC42x", "tpass1", "qc" });
   repository->storeMO(mo, currentTimestamp);
   mo->setActivity({ 101, 2, "FCC42x", "tpass1", "qc" });
-  repository->storeMO(mo, currentTimestamp);
+  repository->storeMO(mo, currentTimestamp + 1000);
   mo->setActivity({ 100, 2, "FCC42x", "tpass2", "qc" });
-  repository->storeMO(mo, currentTimestamp);
+  repository->storeMO(mo, currentTimestamp + 2000);
 
   {
     const Activity activityAllRunsPass1{ 0, 2, "FCC42x", "tpass1", "qc" };
@@ -187,6 +187,13 @@ BOOST_AUTO_TEST_CASE(test_trigger_for_each_object)
     BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::No);
   }
 
+  {
+    const Activity activityTimeRestriction{ 0, 0, "", "", "qc", { static_cast<validity_time_t>(currentTimestamp), static_cast<validity_time_t>(currentTimestamp + 5) } };
+    auto forEachObjectTrigger = triggers::ForEachObject(CCDB_ENDPOINT, "qcdb", objectPath, activityTimeRestriction);
+
+    BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachObject);
+    BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::No);
+  }
   // Clean up remaining objects
   directDBAPI->truncate(fullObjectPath);
 }

@@ -117,7 +117,7 @@ When we don't see the monitoring data in grafana, here is what to do to pinpoint
 ### Monitoring setup for building the grafana dashboard
 
 1. Go to `root@flptest1`
-2. Edit telegraf config file, add following lines:
+2. Edit telegraf config file by executing these lines :
 ```
 echo "[[inputs.socket_listener]]    
    service_address = \"udp://:8089\"" >> /etc/telegraf/telegraf.conf
@@ -131,9 +131,9 @@ firewall-cmd --reload
 5. Go to Grafana (flptest1.cern.ch:3000) and login as `admin`, the password is in here: https://gitlab.cern.ch/AliceO2Group/system-configuration/-/blob/dev/ansible/roles/grafana/vars/main.yml#L2
 6. Go to "Explore" tab (4th icon from top), and select `qc` as data source
 7. Run your workflow with `--monitoring-backend influxdb-udp://flptest1.cern.ch:8089 --resources-monitoring 2`
+10. Set the monitoring url to `"url": "stdout://?qc,influxdb-udp://flptest1.cern.ch:8089"`
 8. The metrics should be there 
 9. Make a copy of the QC dashboard that you can edit.
-10. Set the monitoring url to `"url": "stdout://?qc,influxdb-udp://flptest1.cern.ch:8089"`
 11. Once the dashboard is ready, tell Adam.
 
 
@@ -321,4 +321,26 @@ Address: root@alicdb1
 So the file repo is in the default location, `/root/QC`, but the database is also there. Careful.
 
 
+## Config file on EPNs
 
+The config files on EPNs are merged to build a humongous config file used for the whole workflow. 
+The common part is stored here: https://github.com/AliceO2Group/O2DPG/blob/master/DATA/production/qc-sync/qc-global.json
+The config file to use for each detector are defined here: https://github.com/AliceO2Group/O2DPG/blob/3dacaf525309b6e8cb4b4e2b7ea357ed65a95094/DATA/production/qc-workflow.sh
+
+## run locally multi-node
+Terminal 1
+```bash
+cd sw/BUILD/QualityControl-latest/QualityControl
+export JSON_DIR=${PWD}/tests
+export UNIQUE_PORT_1=12345
+export UNIQUE_PORT_2=12346
+o2-qc-run-producer --producers 2 --message-amount 1500  --message-rate 10 -b | o2-qc --config json://${JSON_DIR}/multinode-test.json -b --local --host localhost --run 
+```
+Terminal 2
+```bash
+cd sw/BUILD/QualityControl-latest/QualityControl
+export JSON_DIR=${PWD}/tests
+export UNIQUE_PORT_1=12345
+export UNIQUE_PORT_2=12346
+o2-qc --config json://${JSON_DIR}/multinode-test.json -b --remote --run
+```

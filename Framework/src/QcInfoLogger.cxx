@@ -29,14 +29,14 @@ void QcInfoLogger::setFacility(const std::string& facility)
   mContext->setField(infoContext::FieldName::Facility, facility);
   mContext->setField(infoContext::FieldName::System, "QC");
   instance->setContext(*mContext);
-  ILOG(Debug, Support) << "Facility set to " << facility << ENDM;
+  ILOG(Debug, Support) << "IL: Facility set to " << facility << ENDM;
 }
 
 void QcInfoLogger::setDetector(const std::string& detector)
 {
   mContext->setField(infoContext::FieldName::Detector, detector);
   instance->setContext(*mContext);
-  ILOG(Debug, Support) << "Detector set to " << detector << ENDM;
+  ILOG(Debug, Support) << "IL: Detector set to " << detector << ENDM;
 }
 
 void QcInfoLogger::setRun(int run)
@@ -68,17 +68,17 @@ void QcInfoLogger::init(const std::string& facility,
     instance = dplInfoLogger;
     mContext = dplContext;
   }
-  setFacility(facility);
-  setRun(run);
-  setPartition(partitionName);
 
   // Set the proper discard filters
   ILOG_INST.filterDiscardDebug(discardDebug);
   ILOG_INST.filterDiscardLevel(discardFromLevel);
-  // we use cout because we might have just muted ourselves
   ILOG(Debug, Ops) << "QC infologger initialized" << ENDM;
   ILOG(Debug, Support) << "   Discard debug ? " << discardDebug << ENDM;
   ILOG(Debug, Support) << "   Discard from level ? " << discardFromLevel << ENDM;
+
+  setFacility(facility);
+  setRun(run);
+  setPartition(partitionName);
 }
 
 void QcInfoLogger::init(const std::string& facility,

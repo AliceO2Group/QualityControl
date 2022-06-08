@@ -39,6 +39,8 @@ class DigitsQcCheck : public o2::quality_control::checker::CheckInterface
   std::string getAcceptedType() override;
 
  private:
+  double mMeanMultThreshold;
+
   Quality resultBMT11 = Quality::Null;
   Quality resultBMT12 = Quality::Null;
   Quality resultBMT21 = Quality::Null;

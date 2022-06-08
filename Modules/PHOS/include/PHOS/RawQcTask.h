@@ -25,8 +25,10 @@
 #include "DataFormatsPHOS/TriggerRecord.h"
 #include <gsl/span>
 
-class TH1F;
+#include <TH1.h>
 class TH2F;
+#include "DataFormatsPHOS/BadChannelsMap.h"
+#include <TSpectrum.h>
 
 using namespace o2::quality_control::core;
 
@@ -52,9 +54,10 @@ class RawQcTask final : public TaskInterface
   void reset() override;
 
  protected:
-  static constexpr short kNhist1D = 22;
+  static constexpr short kNhist1D = 23;
   enum histos1D { kTotalDataVolume,
                   kMessageCounter,
+                  kBadMapSummary,
                   kHGmeanSummaryM1,
                   kHGmeanSummaryM2,
                   kHGmeanSummaryM3,
@@ -77,7 +80,7 @@ class RawQcTask final : public TaskInterface
                   kCellSpM4
   };
 
-  static constexpr short kNhist2D = 47;
+  static constexpr short kNhist2D = 51;
   enum histos2D { kErrorNumber,
                   kErrorType,
                   kPayloadSizePerDDL,
@@ -124,7 +127,11 @@ class RawQcTask final : public TaskInterface
                   kTimeEM1,
                   kTimeEM2,
                   kTimeEM3,
-                  kTimeEM4 };
+                  kTimeEM4,
+                  kLEDNpeaksM1,
+                  kLEDNpeaksM2,
+                  kLEDNpeaksM3,
+                  kLEDNpeaksM4 };
 
   void InitHistograms();
 
@@ -132,8 +139,8 @@ class RawQcTask final : public TaskInterface
   void FillPhysicsHistograms(const gsl::span<const o2::phos::Cell>& cells, const gsl::span<const o2::phos::TriggerRecord>& tr);
   void CreatePedestalHistograms();
   void FillPedestalHistograms(const gsl::span<const o2::phos::Cell>& cells, const gsl::span<const o2::phos::TriggerRecord>& tr);
-  void CreateLEDHistograms() {}
-  void FillLEDHistograms(const gsl::span<const o2::phos::Cell>& /*cells*/, const gsl::span<const o2::phos::TriggerRecord>& /*tr*/) {}
+  void CreateLEDHistograms();
+  void FillLEDHistograms(const gsl::span<const o2::phos::Cell>& cells, const gsl::span<const o2::phos::TriggerRecord>& tr);
 
  private:
   static constexpr short kNmod = 6;
@@ -146,6 +153,11 @@ class RawQcTask final : public TaskInterface
 
   std::array<TH1F*, kNhist1D> mHist1D = { nullptr }; ///< Array of 1D histograms
   std::array<TH2F*, kNhist2D> mHist2D = { nullptr }; ///< Array of 2D histograms
+
+  bool mInitBadMap = true;                           //! BadMap had to be initialized
+  const o2::phos::BadChannelsMap* mBadMap = nullptr; //! Bad map for comparison
+  std::unique_ptr<TSpectrum> mSpSearcher;
+  std::vector<TH1S> mSpectra;
 };
 
 } // namespace o2::quality_control_modules::phos

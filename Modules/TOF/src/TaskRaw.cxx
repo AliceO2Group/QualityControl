@@ -23,6 +23,7 @@
 #include <TH1.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TEfficiency.h>
 
 // O2 includes
 #include "DataFormatsTOF/CompressedDataFormat.h"
@@ -49,7 +50,7 @@ namespace o2::quality_control_modules::tof
 
 void RawDataDecoder::rdhHandler(const o2::header::RAWDataHeader* rdh)
 {
-  //auto orbit = RDHUtils::getHeartBeatOrbit(rdh);
+  // auto orbit = RDHUtils::getHeartBeatOrbit(rdh);
   bool isValidRDH = RDHUtils::checkRDH(rdh, false);
 
   if (!isValidRDH) {
@@ -57,29 +58,30 @@ void RawDataDecoder::rdhHandler(const o2::header::RAWDataHeader* rdh)
     return;
   }
 
+  constexpr auto rdhCrateWord = 0xFF;
   if (RDHUtils::getPageCounter(rdh) == 0) { // if RDH open
-    mCounterRDHOpen.Count(rdh->feeId & 0xFF);
+    mCounterRDHOpen.Count(rdh->feeId & rdhCrateWord);
   }
 
-  mCounterRDH[rdh->feeId & 0xFF].Count(0);
+  mCounterRDH[rdh->feeId & rdhCrateWord].Count(0);
 
-  //Case for the RDH word "fatal"
+  // Case for the RDH word "fatal"
   if ((rdh->detectorField & 0x00001000) != 0) {
-    mCounterRDH[rdh->feeId & 0xFF].Count(1);
-    // LOG(warn) << "RDH flag \"fatal\" error occurred in crate " << static_cast<int>(rdh->feeId & 0xFF);
+    mCounterRDH[rdh->feeId & rdhCrateWord].Count(1);
+    // LOG(warn) << "RDH flag \"fatal\" error occurred in crate " << static_cast<int>(rdh->feeId & rdhCrateWord);
   }
 
   if (rdh->stop) { // if RDH close
-    //Triggers served and received (3 are expected)
-    const int triggerserved = ((rdh->detectorField >> 24) & 0xFF);
-    const int triggerreceived = ((rdh->detectorField >> 16) & 0xFF);
+    // Triggers served and received (3 are expected)
+    const int triggerserved = ((rdh->detectorField >> 24) & rdhCrateWord);
+    const int triggerreceived = ((rdh->detectorField >> 16) & rdhCrateWord);
     if (triggerserved < triggerreceived) {
-      //RDH word "trigger error": served < received
-      mCounterRDH[rdh->feeId & 0xFF].Count(2);
+      // RDH word "trigger error": served < received
+      mCounterRDH[rdh->feeId & rdhCrateWord].Count(2);
     }
-    //Numerator and denominator for the trigger efficiency
-    mCounterRDHTriggers[0].Add(rdh->feeId & 0xFF, triggerserved);
-    mCounterRDHTriggers[1].Add(rdh->feeId & 0xFF, triggerreceived);
+    // Numerator and denominator for the trigger efficiency
+    mCounterRDHTriggers[0].Add(rdh->feeId & rdhCrateWord, triggerserved);
+    mCounterRDHTriggers[1].Add(rdh->feeId & rdhCrateWord, triggerreceived);
   }
 }
 
@@ -223,7 +225,7 @@ void RawDataDecoder::initHistograms() // Initialization of histograms in Decoder
   mHistoTest = std::make_shared<TH2F>("hTest", "Tests;slot;TDC", 24, 1., 13., 15, 0., 15.);
   mHistoOrbitID = std::make_shared<TH2F>("hOrbitID", "OrbitID;OrbitID % 1048576;Crate", 1024, 0, 1048576, ncrates, 0, ncrates);
   mHistoNoiseMap = std::make_shared<TH2F>("hNoiseMap", "Noise Map (1 bin = 1 FEA = 24 channels); crate; Fea x strip", ncrates, 0., ncrates, 364, 0., nstrips);
-  mHistoIndexEOHitRate = std::make_shared<TH1F>("hIndexEOHitRate", "Hit Rate (Hz); index EO", nequipments, 0., nequipments);
+  mHistoIndexEOHitRate = std::make_shared<TH1F>("hIndexEOHitRate", "Hit Rate (Hz); index EO; Rate (Hz)", nequipments, 0., nequipments);
 }
 
 void RawDataDecoder::resetHistograms() // Reset of histograms in Decoder
@@ -350,11 +352,10 @@ void RawDataDecoder::estimateNoise(std::shared_ptr<TH1F> hIndexEOIsNoise)
 void TaskRaw::initialize(o2::framework::InitContext& /*ctx*/)
 {
   // Set task parameters from JSON
-  if (auto param = mCustomParameters.find("DecoderCONET"); param != mCustomParameters.end()) {
-    if (param->second == "True") {
-      ILOG(Info, Support) << "Rig for DecoderCONET";
-      mDecoderRaw.setDecoderCONET(kTRUE);
-    }
+  bool useConetMode = false;
+  if (parseBooleanParameter("DecoderCONET", useConetMode)) {
+    ILOG(Info, Support) << "Set DecoderCONET to " << useConetMode << ENDM;
+    mDecoderRaw.setDecoderCONET(useConetMode);
   }
   if (auto param = mCustomParameters.find("TimeWindowMin"); param != mCustomParameters.end()) {
     mDecoderRaw.setTimeWindowMin(param->second);
@@ -365,10 +366,10 @@ void TaskRaw::initialize(o2::framework::InitContext& /*ctx*/)
   if (auto param = mCustomParameters.find("NoiseThreshold"); param != mCustomParameters.end()) {
     mDecoderRaw.setNoiseThreshold(param->second);
   }
-  if (auto param = mCustomParameters.find("DebugCrateMultiplicity"); param != mCustomParameters.end()) {
-    if (param->second == "True") {
-      mDecoderRaw.setDebugCrateMultiplicity(true);
-    }
+  bool usePerCrateHistograms = false;
+  if (parseBooleanParameter("DebugCrateMultiplicity", usePerCrateHistograms)) {
+    ILOG(Info, Support) << "Set DebugCrateMultiplicity to " << usePerCrateHistograms << ENDM;
+    mDecoderRaw.setDebugCrateMultiplicity(usePerCrateHistograms);
   }
 
   // RDH
@@ -428,7 +429,7 @@ void TaskRaw::initialize(o2::framework::InitContext& /*ctx*/)
   mHistoIndexEO = std::make_shared<TH1F>("hIndexEO", "Index Electronics Oriented;index EO;Counts", RawDataDecoder::nequipments, 0., RawDataDecoder::nequipments);
   mDecoderRaw.mCounterIndexEO.MakeHistogram(mHistoIndexEO.get());
   getObjectsManager()->startPublishing(mHistoIndexEO.get());
-  mHistoIndexEOInTimeWin = std::make_shared<TH1F>("hIndexEOInTimeWin", "Index Electronics Oriented for noise analysis;index EO", RawDataDecoder::nequipments, 0., RawDataDecoder::nequipments);
+  mHistoIndexEOInTimeWin = std::make_shared<TH1F>("hIndexEOInTimeWin", "Index Electronics Oriented for noise analysis;index EO;Counts", RawDataDecoder::nequipments, 0., RawDataDecoder::nequipments);
   mDecoderRaw.mCounterIndexEOInTimeWin.MakeHistogram(mHistoIndexEOInTimeWin.get());
   getObjectsManager()->startPublishing(mHistoIndexEOInTimeWin.get());
   mHistoTimeBC = std::make_shared<TH1F>("hTimeBC", "Raw BC Time;BC time (24.4 ps);Counts", 1024, 0., 1024.);
@@ -437,11 +438,15 @@ void TaskRaw::initialize(o2::framework::InitContext& /*ctx*/)
   mHistoIndexEOIsNoise = std::make_shared<TH1F>("hIndexEOIsNoise", "Noisy Channels; index EO;Counts", RawDataDecoder::nequipments, 0., RawDataDecoder::nequipments);
   mDecoderRaw.mCounterNoisyChannels.MakeHistogram(mHistoIndexEOIsNoise.get());
   getObjectsManager()->startPublishing(mHistoIndexEOIsNoise.get());
-  mHistoRDHTriggers = std::make_shared<TH1F>("hRDHTriggers", "RDH Trigger Efficiency;Crate;Triggers_{served}/Triggers_{received}", RawDataDecoder::ncrates, 0, RawDataDecoder::ncrates);
-  mHistoRDHTriggers->SetBit(TH1::kIsAverage);
-  mDecoderRaw.mCounterRDHTriggers[0].MakeHistogram(mHistoRDHTriggers.get());
-  getObjectsManager()->startPublishing(mHistoRDHTriggers.get());
-  mHistoOrbitsPerCrate = std::make_shared<TH2F>("hOrbitsPerCrate", "Orbits per Crate;Orbits;Crate;Events", 800, 0, 800., RawDataDecoder::ncrates, 0, RawDataDecoder::ncrates);
+  mHistoRDHReceived = std::make_shared<TH1F>("hRDHTriggersReceived", "RDH Trigger Received;Crate;Triggers_{received}", RawDataDecoder::ncrates, 0, RawDataDecoder::ncrates + 1);
+  mDecoderRaw.mCounterRDHTriggers[1].MakeHistogram(mHistoRDHReceived.get());
+  getObjectsManager()->startPublishing(mHistoRDHReceived.get());
+  mHistoRDHServed = std::make_shared<TH1F>("hRDHTriggersServed", "RDH Trigger Served;Crate;Triggers_{served}", RawDataDecoder::ncrates, 0, RawDataDecoder::ncrates + 1);
+  mDecoderRaw.mCounterRDHTriggers[0].MakeHistogram(mHistoRDHServed.get());
+  getObjectsManager()->startPublishing(mHistoRDHServed.get());
+  mEffRDHTriggers = new TEfficiency("hEffRDHTriggers", "RDH Efficiency vs Crate; Crate; Eff(Served/Received)", RawDataDecoder::ncrates, 0, RawDataDecoder::ncrates + 1);
+  getObjectsManager()->startPublishing(mEffRDHTriggers);
+  mHistoOrbitsPerCrate = std::make_shared<TH2F>("hOrbitsPerCrate", "Orbits per Crate;Orbits;Crate;Events", 800, 0, 800., RawDataDecoder::ncrates, 0, RawDataDecoder::ncrates + 1);
   mDecoderRaw.mCounterOrbitsPerCrate[0].MakeHistogram(mHistoOrbitsPerCrate.get());
   getObjectsManager()->startPublishing(mHistoOrbitsPerCrate.get());
 
@@ -522,10 +527,11 @@ void TaskRaw::endOfCycle()
       mHistoSlotParticipating->SetBinContent(crate + 1, j + 4, mDecoderRaw.mCounterTRM[crate][j].HowMany(0));
     }
     mHistoSlotParticipating->SetBinContent(crate + 1, 1, mDecoderRaw.mCounterRDH[crate].HowMany(0));
-    if (mDecoderRaw.mCounterRDHTriggers[1].HowMany(crate) != 0) {
-      mHistoRDHTriggers->SetBinContent(crate + 1, static_cast<float>(mDecoderRaw.mCounterRDHTriggers[0].HowMany(crate)) / mDecoderRaw.mCounterRDHTriggers[1].HowMany(crate));
-    }
+    mDecoderRaw.mCounterRDHTriggers[1].FillHistogram(mHistoRDHReceived.get());
+    mDecoderRaw.mCounterRDHTriggers[0].FillHistogram(mHistoRDHServed.get());
   }
+  mEffRDHTriggers->SetTotalHistogram(*mHistoRDHReceived, "f");
+  mEffRDHTriggers->SetPassedHistogram(*mHistoRDHServed, "");
   mDecoderRaw.mCounterIndexEO.FillHistogram(mHistoIndexEO.get());
   mDecoderRaw.mCounterIndexEOInTimeWin.FillHistogram(mHistoIndexEOInTimeWin.get());
   mDecoderRaw.mCounterTimeBC.FillHistogram(mHistoTimeBC.get());
@@ -583,7 +589,8 @@ void TaskRaw::reset()
   mHistoIndexEOInTimeWin->Reset();
   mHistoTimeBC->Reset();
   mHistoIndexEOIsNoise->Reset();
-  mHistoRDHTriggers->Reset();
+  mHistoRDHServed->Reset();
+  mHistoRDHReceived->Reset();
 
   mDecoderRaw.resetHistograms();
 }

@@ -39,7 +39,7 @@ from datetime import datetime
 
 from Ccdb import Ccdb
 from pidfile import PIDFile, AlreadyRunningError
-
+# from viztracer import log_sparse
 
 class Rule:
     """A class to hold information about a "rule" defined in the config file."""
@@ -78,7 +78,8 @@ def parseArgs():
     parser.add_argument('--config-git', action='store_true',
                         help='Check out the config file from git (branch repo_cleaner), ignore --config.')
     parser.add_argument('--config-consul', action='store',
-                        help='Specify the consul url (without initial `http[s]://` and port in the form of <url>:<port>,'
+                        help='Specify the consul url (without initial `http[s]://`) and port in the form of <url>:<port>,'
+                             ' file must be stored in o2/components/qc/ANY/any/repoCleanerConfig.yaml,'
                              ' if specified ignore both --config and --config-git.')
     parser.add_argument('--log-level', dest='log_level', action='store', default="20",
                         help='Log level (CRITICAL->50, ERROR->40, WARNING->30, INFO->20,DEBUG->10)')
@@ -289,7 +290,7 @@ def read_config(args):
     ccdb_url = config['ccdb_url']
     return ccdb_url, rules
 
-
+# @log_sparse
 def process_object(object_path, rules, ccdb, args):
     logger = create_parallel_logger()
     logger.setLevel(int(args.log_level))
@@ -309,8 +310,11 @@ def process_object(object_path, rules, ccdb, args):
     except ModuleNotFoundError as err:
         logger.error(f"could not load module {rule.policy}")
         return
-    stats = module.process(ccdb, object_path, int(rule.delay),  # rule.migration == "True",
-                           rule.extra_params)
+    try:
+        stats = module.process(ccdb, object_path, int(rule.delay),  rule.extra_params)
+    except Exception as e:
+        logger.error(f"processing error:  {e}")
+
     logger.info(f"{rule.policy} applied on {object_path}: {stats}")
 
 
@@ -327,7 +331,7 @@ def run(args, ccdb_url, rules):
     logging.info("Loop through the objects and apply first matching rule.")
 
     logging.info(f"workers: {args.workers}")
-    pool = mp.Pool(int(args.workers))
+    pool = mp.Pool(processes=int(args.workers))
     [pool.apply_async(process_object, args=(object_path, rules, ccdb, args)) for object_path in paths]
     pool.close()
     pool.join()

@@ -177,13 +177,43 @@ Quality PedestalsCheck::check(std::map<std::string, std::shared_ptr<MonitorObjec
 
 std::string PedestalsCheck::getAcceptedType() { return "TH1"; }
 
+static void updateTitle(TH1* hist, std::string suffix)
+{
+  if (!hist) {
+    return;
+  }
+  TString title = hist->GetTitle();
+  title.Append(" ");
+  title.Append(suffix.c_str());
+  hist->SetTitle(title);
+}
+
+static std::string getCurrentTime()
+{
+  time_t t;
+  time(&t);
+
+  struct tm* tmp;
+  tmp = localtime(&t);
+
+  char timestr[500];
+  strftime(timestr, sizeof(timestr), "(%x - %X)", tmp);
+
+  std::string result = timestr;
+  return result;
+}
+
 void PedestalsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
+  auto currentTime = getCurrentTime();
+  updateTitle(dynamic_cast<TH1*>(mo->getObject()), currentTime);
+
   if (mo->getName().find("Pedestals_Elec") != std::string::npos) {
     auto* h = dynamic_cast<TH2F*>(mo->getObject());
-    h->SetOption("colz");
+
     h->SetMinimum(mPedestalsPlotScaleMin);
     h->SetMaximum(mPedestalsPlotScaleMax);
+
     TPaveText* msg = new TPaveText(0.1, 0.9, 0.9, 0.95, "NDC");
     h->GetListOfFunctions()->Add(msg);
     msg->SetName(Form("%s_msg", mo->GetName()));
@@ -212,9 +242,7 @@ void PedestalsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRe
 
   if (mo->getName().find("Noise_Elec") != std::string::npos) {
     auto* h = dynamic_cast<TH2F*>(mo->getObject());
-    if (!h)
-      return;
-    h->SetOption("colz");
+
     h->SetMinimum(mNoisePlotScaleMin);
     h->SetMaximum(mNoisePlotScaleMax);
 
@@ -248,7 +276,6 @@ void PedestalsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRe
   if ((mo->getName().find("Pedestals_ST12") != std::string::npos) ||
       (mo->getName().find("Pedestals_ST345") != std::string::npos)) {
     auto* h = dynamic_cast<TH2F*>(mo->getObject());
-    h->SetDrawOption("colz");
     h->SetMinimum(mPedestalsPlotScaleMin);
     h->SetMaximum(mPedestalsPlotScaleMax);
     h->GetXaxis()->SetTickLength(0.0);
@@ -260,7 +287,6 @@ void PedestalsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRe
   if ((mo->getName().find("Noise_ST12") != std::string::npos) ||
       (mo->getName().find("Noise_ST345") != std::string::npos)) {
     auto* h = dynamic_cast<TH2F*>(mo->getObject());
-    h->SetDrawOption("colz");
     h->SetMinimum(mNoisePlotScaleMin);
     h->SetMaximum(mNoisePlotScaleMax);
     h->GetXaxis()->SetTickLength(0.0);
@@ -269,18 +295,24 @@ void PedestalsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRe
     h->GetYaxis()->SetLabelSize(0.0);
   }
 
-  if (mo->getName().find("Pedestals_DE") != std::string::npos) {
+  if (mo->getName().find("Pedestals_XY") != std::string::npos) {
     auto* h = dynamic_cast<TH2F*>(mo->getObject());
-    h->SetDrawOption("colz");
     h->SetMinimum(mPedestalsPlotScaleMin);
     h->SetMaximum(mPedestalsPlotScaleMax);
+    h->GetXaxis()->SetTickLength(0.0);
+    h->GetXaxis()->SetLabelSize(0.0);
+    h->GetYaxis()->SetTickLength(0.0);
+    h->GetYaxis()->SetLabelSize(0.0);
   }
 
-  if (mo->getName().find("Noise_DE") != std::string::npos) {
+  if (mo->getName().find("Noise_XY") != std::string::npos) {
     auto* h = dynamic_cast<TH2F*>(mo->getObject());
-    h->SetDrawOption("colz");
     h->SetMinimum(mNoisePlotScaleMin);
     h->SetMaximum(mNoisePlotScaleMax);
+    h->GetXaxis()->SetTickLength(0.0);
+    h->GetXaxis()->SetLabelSize(0.0);
+    h->GetYaxis()->SetTickLength(0.0);
+    h->GetYaxis()->SetLabelSize(0.0);
   }
 }
 

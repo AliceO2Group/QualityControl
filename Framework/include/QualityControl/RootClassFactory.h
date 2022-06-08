@@ -40,18 +40,14 @@ namespace root_class_factory
 using FatalException = AliceO2::Common::FatalException;
 using errinfo_details = AliceO2::Common::errinfo_details;
 
+void loadLibrary(const std::string& moduleName);
+
 template <typename T>
-T* create(std::string moduleName, std::string className)
+T* create(const std::string& moduleName, const std::string& className)
 {
   T* result = nullptr;
 
-  // Load the library
-  std::string library = bfs::path(moduleName).is_absolute() ? moduleName : "libO2" + moduleName;
-  ILOG(Info, Devel) << "Loading library " << library << ENDM;
-  int libLoaded = gSystem->Load(library.c_str(), "", true);
-  if (libLoaded < 0) {
-    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Failed to load Detector Publisher Library"));
-  }
+  loadLibrary(moduleName);
 
   // Get the class and instantiate
   ILOG(Info, Devel) << "Loading class " << className << ENDM;
@@ -77,4 +73,4 @@ T* create(std::string moduleName, std::string className)
 
 } // namespace o2::quality_control::core
 
-#endif //QUALITYCONTROL_ROOTCLASSFACTORY_H
+#endif // QUALITYCONTROL_ROOTCLASSFACTORY_H

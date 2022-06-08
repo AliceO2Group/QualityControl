@@ -58,8 +58,9 @@
         },
         "location": "remote"
       },
-      "xyzTask": {
+      "xyzTaskID": {
         "active": true,
+        "taskName": "xyzTask",
         "className": "o2::quality_control_modules::skeleton::SkeletonTask",
         "moduleName": "QcSkeleton",
         "detectorName": "ITS",
@@ -144,7 +145,7 @@
         "moduleName": "QcSkeleton",
         "dataSource": [{
           "type": "Task",
-          "name": "xyzTask"
+          "name": "xyzTaskID"
         }]
       },
       "checkOnEachSeparately": {

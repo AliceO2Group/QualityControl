@@ -2,7 +2,10 @@
 
 add_library(O2QcMID)
 
-target_sources(O2QcMID PRIVATE src/RawQcCheck.cxx src/RawQcTask.cxx src/DigitsQcCheck.cxx src/DigitsQcTask.cxx)
+target_sources(O2QcMID PRIVATE src/RawQcCheck.cxx src/RawQcTask.cxx 
+                               src/DigitsQcCheck.cxx src/DigitsQcTask.cxx
+                               src/ClustQcCheck.cxx src/ClustQcTask.cxx
+                               src/TracksQcCheck.cxx src/TracksQcTask.cxx)
 
 target_include_directories(
   O2QcMID
@@ -23,6 +26,10 @@ add_root_dictionary(
           include/MID/RawQcTask.h
 	  include/MID/DigitsQcCheck.h
 	  include/MID/DigitsQcTask.h
+	  include/MID/ClustQcCheck.h
+	  include/MID/ClustQcTask.h
+	  include/MID/TracksQcCheck.h
+	  include/MID/TracksQcTask.h
   LINKDEF include/MID/LinkDef.h
   BASENAME O2QcMID)
 

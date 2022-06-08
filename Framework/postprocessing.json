@@ -117,7 +117,7 @@
           "userorcontrol"
         ],
         "updateTrigger": [
-          "newobject:qcdb:qc/TST/MO/QcTask/example"
+          "newobject:qcdb:TST/MO/QcTask/example"
         ],
         "stopTrigger": [
           "userorcontrol", "10 minutes"

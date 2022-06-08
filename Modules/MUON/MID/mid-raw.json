@@ -23,7 +23,7 @@
       }
     },
     "tasks": {
-      "QcTestMID": {
+      "QcTaskMIDRaw": {
         "active": "true",
         "className": "o2::quality_control_modules::mid::RawQcTask",
         "moduleName": "QcMID",
@@ -33,7 +33,7 @@
         "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
           "type": "dataSamplingPolicy",
-          "name": "digits"
+          "name": "rawdata"
         },
         "taskParameters": {
           "feeId-config-file": "/home/mid/daq_utils/config/feeId_mapper.txt",
@@ -43,7 +43,7 @@
       }
     },
     "checks": {
-      "QcCheckMID": {
+      "QcCheckMIDRaw": {
         "active": "true",
         "className": "o2::quality_control_modules::mid::RawQcCheck",
         "moduleName": "QcMID",
@@ -52,9 +52,9 @@
         "dataSource": [
           {
             "type": "Task",
-            "name": "QcTestMID",
+            "name": "QcTaskMIDRaw",
             "MOs": [
-              "mDetElemID"
+              ""
             ]
           }
         ]
@@ -63,10 +63,10 @@
   },
   "dataSamplingPolicies": [
     {
-      "id": "digits",
+      "id": "rawdata",
       "active": "true",
       "machines": [],
-      "query": "digits:MID/RAWDATA",
+      "query": "rawdata:MID/RAWDATA",
       "samplingConditions": [
         {
           "condition": "random",

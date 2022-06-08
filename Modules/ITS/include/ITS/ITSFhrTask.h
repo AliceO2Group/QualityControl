@@ -113,6 +113,7 @@ class ITSFhrTask final : public TaskInterface
   int mGetTFFromBinding = 0;
   int mHitCutForNoisyPixel = 1024;        // Hit number cut for noisy pixel, this number should be define according how many TF will be accumulated before reset(one can reference the cycle time)
   float mOccupancyCutForNoisyPixel = 0.1; // Occupancy cut for noisy pixel. check if the hit/event value over this cut. similar with mHitCutForNoisyPixel
+  double mCutTrgForSparse = 1000;         // cut to stop THnSparse filling after mCutTrgForSparse triggers
 
   std::unordered_map<unsigned int, int>*** mHitPixelID_InStave /* = new std::unordered_map<unsigned int, int>**[NStaves[lay]]*/;
   int** mHitnumberLane /* = new int*[NStaves[lay]]*/;       // IB : hitnumber[stave][chip]; OB : hitnumber[stave][lane]
@@ -171,9 +172,6 @@ class ITSFhrTask final : public TaskInterface
   TH2D* mChipStaveOccupancy[7];
   TH2I* mChipStaveEventHitCheck[7];
   TH1D* mOccupancyPlot[7];
-
-  std::string mRunNumberPath;
-  std::string mRunNumber = "000000";
 
   // Geometry decoder
   o2::its::GeometryTGeo* mGeom;

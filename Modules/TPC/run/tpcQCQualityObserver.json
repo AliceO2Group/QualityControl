@@ -1,0 +1,64 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "",
+        "type": ""
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": ""
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      }
+    },
+    "postprocessing": {
+      "TestQuality": {
+        "active": "true",
+        "className": "o2::quality_control_modules::tpc::QualityObserver",
+        "moduleName": "QcTPC",
+        "detectorName": "TPC",
+        "qualityObserverName": "TestObserver",
+        "qualityObserverConfig": [
+          {
+            "groupTitle": "Tracks Trending",
+            "path": "TPC/QO/CheckOfTrack_Trending/Tracks_Trending",
+            "inputObjects": [ "hEta_StatMean_Trend", "hNClustersAfterCuts_StatMean_Trend" ],
+            "inputObjectTitles": [ "Eta, Mean Trend", "Clusters after Cut, Mean Trend" ]
+          },
+          {
+            "groupTitle": "Calibration",
+            "path": "TPC/QO/Calibration/Calibration",
+            "inputObjects": [ "c_ROCs_Noise_1D", "c_ROCs_Pedestal_2D", "c_Sides_Noise" ],
+            "inputObjectTitles": [ "ROCs Noise 1D", "ROCs Pedestal 2D", "Sides Noise" ]
+          }, 
+          {
+            "groupTitle": "Calibration Emtpy Pads",
+            "path": "TPC/QO/CheckForEmptyPads/Calibration",
+            "inputObjects": [ "c_ROCs_Noise_2D", "c_ROCs_Pedestals_2D" ],
+            "inputObjectTitles": [ "Empty Pads in ROCs Noise 2D", "Empty Pads in ROCs Pedestal 2D" ]
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "10 seconds"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      }
+    }
+  }
+}

@@ -63,6 +63,8 @@ CommonSpec InfrastructureSpecReader::readSpecEntry<CommonSpec>(std::string, cons
   spec.activityPassName = commonTree.get<std::string>("Activity.passName", spec.activityPassName);
   spec.activityPeriodName = commonTree.get<std::string>("Activity.periodName", spec.activityPeriodName);
   spec.activityProvenance = commonTree.get<std::string>("Activity.provenance", spec.activityProvenance);
+  spec.activityStart = commonTree.get<uint64_t>("Activity.start", spec.activityStart);
+  spec.activityEnd = commonTree.get<uint64_t>("Activity.end", spec.activityEnd);
   spec.monitoringUrl = commonTree.get<std::string>("monitoring.url", spec.monitoringUrl);
   spec.consulUrl = commonTree.get<std::string>("consul.url", spec.consulUrl);
   spec.conditionDBUrl = commonTree.get<std::string>("conditionDB.url", spec.conditionDBUrl);
@@ -74,7 +76,7 @@ CommonSpec InfrastructureSpecReader::readSpecEntry<CommonSpec>(std::string, cons
 }
 
 template <>
-TaskSpec InfrastructureSpecReader::readSpecEntry<TaskSpec>(std::string taskName, const boost::property_tree::ptree& taskTree, const boost::property_tree::ptree& wholeTree)
+TaskSpec InfrastructureSpecReader::readSpecEntry<TaskSpec>(std::string taskID, const boost::property_tree::ptree& taskTree, const boost::property_tree::ptree& wholeTree)
 {
   static std::unordered_map<std::string, TaskLocationSpec> const taskLocationFromString = {
     { "local", TaskLocationSpec::Local },
@@ -83,12 +85,12 @@ TaskSpec InfrastructureSpecReader::readSpecEntry<TaskSpec>(std::string taskName,
 
   TaskSpec ts;
 
-  ts.taskName = taskName;
+  ts.taskName = taskTree.get<std::string>("taskName", taskID);
   ts.className = taskTree.get<std::string>("className");
   ts.moduleName = taskTree.get<std::string>("moduleName");
   ts.detectorName = taskTree.get<std::string>("detectorName");
   ts.cycleDurationSeconds = taskTree.get<int>("cycleDurationSeconds");
-  ts.dataSource = readSpecEntry<DataSourceSpec>("", taskTree.get_child("dataSource"), wholeTree);
+  ts.dataSource = readSpecEntry<DataSourceSpec>(taskID, taskTree.get_child("dataSource"), wholeTree);
   ts.active = taskTree.get<bool>("active", ts.active);
   ts.maxNumberCycles = taskTree.get<int>("maxNumberCycles", ts.maxNumberCycles);
   ts.resetAfterCycles = taskTree.get<size_t>("resetAfterCycles", ts.resetAfterCycles);
@@ -130,7 +132,7 @@ TaskSpec InfrastructureSpecReader::readSpecEntry<TaskSpec>(std::string taskName,
 }
 
 template <>
-DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(std::string,
+DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(std::string dataRequestorId,
                                                                        const boost::property_tree::ptree& dataSourceTree,
                                                                        const boost::property_tree::ptree& wholeTree)
 {
@@ -162,7 +164,11 @@ DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(std::stri
     }
     case DataSourceType::Task: {
       dss.name = dataSourceTree.get<std::string>("name");
-      dss.inputs = { { dss.name, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(dss.name), 0, Lifetime::Sporadic } };
+      // dss.name is actually taskID (backwards compatibility). We deduce the taskName as followS:
+      auto taskName = wholeTree.get<std::string>("qc.tasks." + dss.name + ".taskName", dss.name);
+      auto detectorName = wholeTree.get<std::string>("qc.tasks." + dss.name + ".detectorName");
+
+      dss.inputs = { { dss.name, TaskRunner::createTaskDataOrigin(detectorName), TaskRunner::createTaskDataDescription(taskName), 0, Lifetime::Sporadic } };
       if (dataSourceTree.count("MOs") > 0) {
         for (const auto& moName : dataSourceTree.get_child("MOs")) {
           dss.subInputs.push_back(moName.second.get_value<std::string>());
@@ -215,11 +221,11 @@ DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(std::stri
 }
 
 template <>
-CheckSpec InfrastructureSpecReader::readSpecEntry<CheckSpec>(std::string checkName, const boost::property_tree::ptree& checkTree, const boost::property_tree::ptree& wholeTree)
+CheckSpec InfrastructureSpecReader::readSpecEntry<CheckSpec>(std::string checkID, const boost::property_tree::ptree& checkTree, const boost::property_tree::ptree& wholeTree)
 {
   CheckSpec cs;
 
-  cs.checkName = std::move(checkName);
+  cs.checkName = checkTree.get<std::string>("checkName", checkID);
   cs.className = checkTree.get<std::string>("className");
   cs.moduleName = checkTree.get<std::string>("moduleName");
   cs.detectorName = checkTree.get<std::string>("detectorName", cs.detectorName);
@@ -228,7 +234,7 @@ CheckSpec InfrastructureSpecReader::readSpecEntry<CheckSpec>(std::string checkNa
   const auto& dataSourcesTree = checkTree.count("dataSource") > 0 ? checkTree.get_child("dataSource") : checkTree.get_child("dataSources");
   for (const auto& [_key, dataSourceTree] : dataSourcesTree) {
     (void)_key;
-    cs.dataSources.push_back(readSpecEntry<DataSourceSpec>("", dataSourceTree, wholeTree));
+    cs.dataSources.push_back(readSpecEntry<DataSourceSpec>(checkID, dataSourceTree, wholeTree));
   }
 
   if (auto policy = checkTree.get_optional<std::string>("policy"); policy.has_value()) {
@@ -246,11 +252,11 @@ CheckSpec InfrastructureSpecReader::readSpecEntry<CheckSpec>(std::string checkNa
 }
 
 template <>
-AggregatorSpec InfrastructureSpecReader::readSpecEntry<AggregatorSpec>(std::string aggregatorName, const boost::property_tree::ptree& aggregatorTree, const boost::property_tree::ptree& wholeTree)
+AggregatorSpec InfrastructureSpecReader::readSpecEntry<AggregatorSpec>(std::string aggregatorID, const boost::property_tree::ptree& aggregatorTree, const boost::property_tree::ptree& wholeTree)
 {
   AggregatorSpec as;
 
-  as.aggregatorName = std::move(aggregatorName);
+  as.aggregatorName = aggregatorTree.get<std::string>("checkName", aggregatorID);
   as.className = aggregatorTree.get<std::string>("className");
   as.moduleName = aggregatorTree.get<std::string>("moduleName");
   as.detectorName = aggregatorTree.get<std::string>("detectorName", as.detectorName);
@@ -259,7 +265,7 @@ AggregatorSpec InfrastructureSpecReader::readSpecEntry<AggregatorSpec>(std::stri
   const auto& dataSourcesTree = aggregatorTree.count("dataSource") > 0 ? aggregatorTree.get_child("dataSource") : aggregatorTree.get_child("dataSources");
   for (const auto& [_key, dataSourceTree] : dataSourcesTree) {
     (void)_key;
-    as.dataSources.push_back(readSpecEntry<DataSourceSpec>("", dataSourceTree, wholeTree));
+    as.dataSources.push_back(readSpecEntry<DataSourceSpec>(aggregatorID, dataSourceTree, wholeTree));
   }
 
   if (auto policy = aggregatorTree.get_optional<std::string>("policy"); policy.has_value()) {

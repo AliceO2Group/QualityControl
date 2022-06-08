@@ -16,10 +16,12 @@ target_sources(O2QcTOF
                       src/CheckRawTime.cxx
                       src/CheckRawToT.cxx
                       src/CheckHitMap.cxx
+                      src/CheckNoise.cxx
                       # PostProcessing
                       src/PostProcessDiagnosticPerCrate.cxx
                       # Trending
                       src/TrendingHits.cxx
+                      src/TrendingRate.cxx
                       # Trending config
                       src/TrendingConfigTOF.cxx
                       # Utilities
@@ -63,10 +65,12 @@ add_root_dictionary(O2QcTOF
                             include/TOF/CheckRawTime.h
                             include/TOF/CheckRawToT.h
                             include/TOF/CheckHitMap.h
+                            include/TOF/CheckNoise.h
                             # PostProcessing
                             include/TOF/PostProcessDiagnosticPerCrate.h
                             # Trending
                             include/TOF/TrendingHits.h
+                            include/TOF/TrendingRate.h
                             # Trending config
                             include/TOF/TrendingConfigTOF.h
                             # Utilities
@@ -110,6 +114,7 @@ install(FILES tofdigits.json
               tofraw_multinode.json
               tofcosmics.json
               toftrending.json
+              toftrendingrate.json
               tofMatchedTracks_ITSTPCTOF.json
               tofMatchedTracks_ITSTPCTOF_TPCTOF.json
               tofMatchedTracks_ITSTPCTOF_TPCTOF_MC.json

@@ -37,18 +37,20 @@
                 "location": "remote",
                 "taskParameters": {
                     "Layer": "2",
-		    "HitNumberCut": "512",
+		                "HitNumberCut": "512",
                     "GetTFFromBinding": "0",
                     "decoderThreads": "8",
-                    "geomPath": "/tmp/qc_tmp/o2sim",
+		                "geomPath": "./",
                     "HitNumberCutForNoisyPixel": "0",
                     "OccupancyNumberCutForNoisyPixel": "0.000001",
-          	    "MaxGeneralAxisRange": "-2",
-          	    "MinGeneralAxisRange": "-12",
-          	    "MaxGeneralNoisyAxisRange": "5000",
+          	        "MaxGeneralAxisRange": "-2",
+          	        "MinGeneralAxisRange": "-12",
+          	        "MaxGeneralNoisyAxisRange": "5000",
                     "MinGeneralNoisyAxisRange": "0",
 		    "Etabins": "130",
-                    "Phibins": "240"
+                    "Phibins": "240",
+		    "geomPath": "./",
+		    "CutSparseTriggers": "1000"
                 }
             }
         },
@@ -57,7 +59,7 @@
                 "active": "true",
                 "className": "o2::quality_control_modules::its::ITSFhrCheck",
                 "moduleName": "QcITS",
-                "policy": "OnAny",
+                "policy": "OnEachSeparately",
                 "detectorName": "ITS",
                 "dataSource": [{
                     "type": "Task",

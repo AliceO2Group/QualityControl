@@ -74,6 +74,8 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
   workflowOptions.push_back(
     ConfigParamSpec{ "override-values", VariantType::String, "", { "QC configuration file key/value pairs which should be overwritten. "
                                                                    "The format is \"full.path.to.key=value[;full.path.to.key=value]\"." } });
+  workflowOptions.push_back(
+    ConfigParamSpec{ "configKeyValues", VariantType::String, "", { "Semicolon separated key=value strings (e.g.: 'TPCHwClusterer.peakChargeThreshold=4;...')" } });
 }
 
 void customize(std::vector<CompletionPolicy>& policies)
@@ -167,7 +169,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
     ILOG_INST.filterDiscardLevel(infologgerDiscardLevel);
     o2::quality_control::core::QcInfoLogger::setFacility("runQC");
 
-    ILOG(Info, Support) << "Using config file '" << qcConfigurationSource << "'" << ENDM;
+    ILOG(Info, Ops) << "Using config file '" << qcConfigurationSource << "'" << ENDM;
     auto keyValuesToOverride = quality_control::core::parseOverrideValues(config.options().get<std::string>("override-values"));
     quality_control::core::overrideValues(configTree, keyValuesToOverride);
 

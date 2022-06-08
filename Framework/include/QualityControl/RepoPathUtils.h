@@ -131,6 +131,12 @@ class RepoPathUtils
   {
     return getTrfcPath(trfc->getDetector(), trfc->getName(), trfc->getProvenance());
   }
+
+  static constexpr auto allowedProvenancesMessage = R"(Allowed provenances are "qc" (real data processed synchronously), "qc_async" (real data processed asynchronously) and "qc_mc" (simulated data).)";
+  static bool isProvenanceAllowed(const std::string& provenance)
+  {
+    return provenance == "qc" || provenance == "qc_async" || provenance == "qc_mc";
+  }
 };
 } // namespace o2::quality_control::core
 

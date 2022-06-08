@@ -52,13 +52,24 @@ class PedestalsTask final : public TaskInterface
   void reset() override;
 
  private:
+  template <typename T>
+  void publishObject(T* histo, std::string drawOption, bool statBox)
+  {
+    histo->SetOption(drawOption.c_str());
+    if (!statBox) {
+      histo->SetStats(0);
+    }
+    mAllHistograms.push_back(histo);
+    getObjectsManager()->startPublishing(histo);
+    getObjectsManager()->setDefaultDrawOptions(histo, drawOption);
+  }
+
   void monitorDataDigits(o2::framework::ProcessingContext& ctx);
   void monitorDataPedestals(o2::framework::ProcessingContext& ctx);
 
   void PlotPedestal(uint16_t solarID, uint8_t dsID, uint8_t channel, double mean, double rms);
   void PlotPedestalDE(uint16_t solarID, uint8_t dsID, uint8_t channel, double mean, double rms);
   void fill_noise_distributions();
-  void writeHistos();
 
   static constexpr int sMaxFeeId = 64;
   static constexpr int sMaxLinkId = 12;
@@ -85,7 +96,6 @@ class PedestalsTask final : public TaskInterface
   std::shared_ptr<GlobalHistogram> mHistogramNoiseMCH[2];
 
   int mPrintLevel;
-  bool mSaveToRootFile{ false };
 
   std::vector<TH1*> mAllHistograms;
 };

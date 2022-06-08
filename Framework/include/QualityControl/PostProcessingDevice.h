@@ -65,7 +65,7 @@ class PostProcessingDevice : public framework::Task
 
  private:
   /// \brief Callback for CallbackService::Id::Start (DPL) a.k.a. RUN transition (FairMQ)
-  void start();
+  void start(const framework::ServiceRegistry& services);
   /// \brief Callback for CallbackService::Id::Stop (DPL) a.k.a. STOP transition (FairMQ)
   void stop() override;
   /// \brief Callback for CallbackService::Id::Reset (DPL) a.k.a. RESET DEVICE transition (FairMQ)

@@ -26,7 +26,6 @@
 #include "MIDRaw/Decoder.h"
 #include "MIDRaw/ElectronicsDelay.h"
 #include "MIDRaw/FEEIdConfig.h"
-#include "MUONCommon/MergeableTH2Ratio.h"
 #include "MIDBase/Mapping.h"
 
 class TH1F;
@@ -57,7 +56,6 @@ class DigitsQcTask final : public TaskInterface
   void reset() override;
 
  private:
-  // TH2F* mHitsMapB;
   std::shared_ptr<TH2F> mHitsMapB{ nullptr };
   std::shared_ptr<TH2F> mHitsMapNB{ nullptr };
   std::shared_ptr<TH2F> mOrbitsMapB{ nullptr };
@@ -96,6 +94,8 @@ class DigitsQcTask final : public TaskInterface
   std::shared_ptr<TH2F> mNBendHitsMap12{ nullptr };
   std::shared_ptr<TH2F> mNBendHitsMap21{ nullptr };
   std::shared_ptr<TH2F> mNBendHitsMap22{ nullptr };
+
+  std::shared_ptr<TH1F> mDigitBCCounts{ nullptr };
 };
 
 } // namespace o2::quality_control_modules::mid

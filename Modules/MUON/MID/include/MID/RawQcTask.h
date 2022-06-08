@@ -85,7 +85,7 @@ class RawQcTask final : public TaskInterface
 
   TH1F* mRawDataChecker{ nullptr };
 
-  TH1F* mBCCounts{ nullptr };
+  TH1F* mRawBCCounts{ nullptr };
 
   TH2F* mRawLocalBoardsMap{ nullptr };
   TH2F* mBusyRawLocalBoards{ nullptr };

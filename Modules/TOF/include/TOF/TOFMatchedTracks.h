@@ -119,7 +119,7 @@ class TOFMatchedTracks final : public TaskInterface
   float mDCACut = 100.f;
   float mDCACutY = 10.f;
   std::string mGRPFileName = "o2sim_grp.root";
-  std::string mGeomFileName = "o2sim_geometry.root";
+  std::string mGeomFileName = "o2sim_geometry-aligned.root";
   float mBz = 0; ///< nominal Bz
 
   int mTF = -1; // to count the number of processed TFs

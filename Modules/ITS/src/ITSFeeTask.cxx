@@ -136,14 +136,10 @@ void ITSFeeTask::setAxisTitle(TH1* object, const char* xTitle, const char* yTitl
 
 void ITSFeeTask::drawLayerName(TH2I* histo2D)
 {
-  TText* t[NLayer];
-  double minTextPosX[NLayer] = { 0.11, 0.185, 0.285, 0.385, 0.48, 0.615, 0.78 };
+  TLatex* t[NLayer];
+  double minTextPosX[NLayer] = { 1, 42, 92, 150, 205, 275, 370 };
   for (int ilayer = 0; ilayer < NLayer; ilayer++) {
-    t[ilayer] = new TText();
-    t[ilayer]->SetText(minTextPosX[ilayer], 0.9075, Form("Layer %d", ilayer));
-    t[ilayer]->SetTextColor(1);
-    t[ilayer]->SetTextSize(22);
-    t[ilayer]->SetNDC();
+    t[ilayer] = new TLatex(minTextPosX[ilayer], 28.3, Form("Layer %d", ilayer));
     histo2D->GetListOfFunctions()->Add(t[ilayer]);
   }
   for (const int& lay : LayerBoundaryFEE) {
@@ -214,6 +210,7 @@ void ITSFeeTask::setPlotsFormat()
     mLaneStatusOverview[i]->SetOption("lcolz");
     mLaneStatusOverview[i]->SetMinimum(0);
     mLaneStatusOverview[i]->SetMaximum(1);
+    mLaneStatusOverview[i]->SetBit(TH1::kIsAverage);
     for (int ilayer = 0; ilayer < 7; ilayer++) {
       for (int istave = 0; istave < NStaves[ilayer]; istave++) {
         double* px = new double[4];
@@ -433,6 +430,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
           }
         }
         mLaneStatusOverview[iflag]->SetBinContent(istave + 1 + StaveBoundary[ilayer], (float)(flagCount) / (float)(NLanePerStaveLayer[ilayer]));
+        mLaneStatusOverview[iflag]->SetBinError(istave + 1 + StaveBoundary[ilayer], 1e-15);
       }
       mLaneStatusSummary[ilayer]->SetBinContent(iflag + 1, layerSummary[ilayer][iflag]);
     }

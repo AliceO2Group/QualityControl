@@ -19,6 +19,8 @@
 
 #include <map>
 #include <string>
+#include <iosfwd>
+#include "QualityControl/ValidityInterval.h"
 
 #include "Rtypes.h"
 
@@ -36,11 +38,14 @@ class Activity
            int type,
            const std::string& periodName = "",
            const std::string& passName = "",
-           const std::string& provenance = "qc") : mId(id),
-                                                   mType(type),
-                                                   mPeriodName(periodName),
-                                                   mPassName(passName),
-                                                   mProvenance(provenance) {}
+           const std::string& provenance = "qc",
+           ValidityInterval validity = gFullValidityInterval)
+    : mId(id),
+      mType(type),
+      mPeriodName(periodName),
+      mPassName(passName),
+      mProvenance(provenance),
+      mValidity(validity) {}
 
   /// Copy constructor
   Activity(const Activity& other) = default;
@@ -50,11 +55,16 @@ class Activity
   Activity& operator=(const Activity& other) = default;
   /// Move assignment operator
   Activity& operator=(Activity&& other) noexcept = default;
-  /// Comparator
+  /// Comparator. All fields should be exactly the same
   bool operator==(const Activity& other) const;
+
+  /// prints Activity
+  friend std::ostream& operator<<(std::ostream& out, const Activity& activity);
 
   /// Checks if the other activity matches this, taking into account that default values match any.
   bool matches(const Activity& other) const;
+  /// Checks if the other object describes the same Activity (but e.g. in different time)
+  bool same(const Activity& other) const;
 
   virtual ~Activity() = default;
 
@@ -63,8 +73,9 @@ class Activity
   std::string mPeriodName{};
   std::string mPassName{};
   std::string mProvenance{ "qc" };
+  ValidityInterval mValidity{ gFullValidityInterval };
 
-  ClassDef(Activity, 1);
+  ClassDef(Activity, 2);
 };
 
 } // namespace o2::quality_control::core
