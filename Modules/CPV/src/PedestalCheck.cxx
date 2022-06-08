@@ -31,6 +31,11 @@ namespace o2::quality_control_modules::cpv
 
 void PedestalCheck::configure()
 {
+  ILOG(Info, Support) << "PedestalCheck::configure() : I have been called with following custom parameters" << ENDM;
+  for (auto [key, value] : mCustomParameters) {
+    ILOG(Info, Support) << key << ": " << value << ENDM;
+  }
+
   for (int mod = 0; mod < 3; mod++) {
     // mMinGoodPedestalValueM
     if (auto param = mCustomParameters.find(Form("mMinGoodPedestalValueM%d", mod + 2));
@@ -130,10 +135,17 @@ void PedestalCheck::configure()
                         << " = "
                         << mToleratedBadPedestalEfficiencyChannelsM[mod] << ENDM;
   }
+  ILOG(Info, Support) << "PedestalCheck::configure() : configuring is done." << ENDM;
+  mIsConfigured = true;
 }
 
 Quality PedestalCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
+  if (!mIsConfigured) {
+    ILOG(Info, Support) << "PedestalCheck::check() : I'm about to check already but configure() had not been called yet. So I call it now." << ENDM;
+    configure();
+  }
+
   Quality result = Quality::Good;
 
   for (auto& [moName, mo] : *moMap) {
