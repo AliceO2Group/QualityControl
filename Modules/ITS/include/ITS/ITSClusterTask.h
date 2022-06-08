@@ -95,7 +95,6 @@ class ITSClusterTask : public TaskInterface
   int mNRofsMonitor = 0;
   int nBCbins;
   long int mTimestamp;
-  std::string mCCDBurl = "http://alice-ccdb.cern.ch";
   std::string mGeomPath;
 
   const int mNStaves[7] = { 12, 16, 20, 24, 30, 42, 48 };

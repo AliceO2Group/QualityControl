@@ -126,7 +126,6 @@ void ITSClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   long int ts = mTimestamp ? mTimestamp : o2::ccdb::getCurrentTimestamp();
   ILOG(Info, Support) << "Getting dictionary from ccdb - timestamp: " << ts << ENDM;
   auto& mgr = o2::ccdb::BasicCCDBManager::instance();
-  mgr.setURL(mCCDBurl);
   mgr.setTimestamp(ts);
   mDict = mgr.get<o2::itsmft::TopologyDictionary>("ITS/Calib/ClusterDictionary");
   ILOG(Info, Support) << "Dictionary size: " << mDict->getSize() << ENDM;
@@ -556,7 +555,6 @@ void ITSClusterTask::getJsonParameters()
   mNThreads = stoi(mCustomParameters.find("nThreads")->second);
   nBCbins = stoi(mCustomParameters.find("nBCbins")->second);
   mGeomPath = mCustomParameters["geomPath"];
-  mCCDBurl = mCustomParameters["ClusterDictCCDB"];
 
   for (int ilayer = 0; ilayer < NLayer; ilayer++) {
 
