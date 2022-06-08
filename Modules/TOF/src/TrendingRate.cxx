@@ -45,6 +45,8 @@ using namespace o2::quality_control_modules::tof;
 void TrendingRate::configure(std::string name, const boost::property_tree::ptree& config)
 {
   mConfig = TrendingConfigTOF(name, config);
+  mThresholdSgn = mConfig.mConfigTrendingRate.thresholdSignal;
+  mThresholdBkg = mConfig.mConfigTrendingRate.thresholdBackground;
 }
 
 void TrendingRate::computeTOFRates(TH2F* h, std::vector<int>& bcInt, std::vector<float>& bcRate, std::vector<float>& bcPileup)
@@ -161,13 +163,6 @@ void TrendingRate::computeTOFRates(TH2F* h, std::vector<int>& bcInt, std::vector
 void TrendingRate::initialize(Trigger, framework::ServiceRegistry&)
 {
   // Setting parameters
-  // This is not possible so far: TODO ask for parameters in trending!
-  // if (auto param = mCustomParameters.find("ThresholdSgn"); param != mCustomParameters.end()) {
-  //   mThresholdSgn = ::atof(param->second.c_str());
-  // }
-  // if (auto param = mCustomParameters.find("ThresholdBkg"); param != mCustomParameters.end()) {
-  //   mThresholdBkg = ::atof(param->second.c_str());
-  // }
 
   // Preparing data structure of TTree
   mTrend = std::make_unique<TTree>();
