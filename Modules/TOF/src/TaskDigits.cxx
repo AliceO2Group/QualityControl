@@ -39,6 +39,7 @@
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
 #include "TOF/TaskDigits.h"
+#include "TOF/Utils.h"
 
 namespace o2::quality_control_modules::tof
 {
@@ -50,39 +51,20 @@ TaskDigits::TaskDigits() : TaskInterface()
 void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
 {
   // Define parameters
-  if (auto param = mCustomParameters.find("NbinsMultiplicity"); param != mCustomParameters.end()) {
-    mBinsMultiplicity = ::atoi(param->second.c_str());
-  }
-  if (auto param = mCustomParameters.find("RangeMaxMultiplicity"); param != mCustomParameters.end()) {
-    mRangeMaxMultiplicity = ::atoi(param->second.c_str());
-  }
-  if (auto param = mCustomParameters.find("NbinsTime"); param != mCustomParameters.end()) {
-    mBinsTime = ::atoi(param->second.c_str());
-  }
-  if (auto param = mCustomParameters.find("kNbinsWidthTime"); param != mCustomParameters.end()) {
-    fgkNbinsWidthTime = ::atof(param->second.c_str());
-  }
-  if (auto param = mCustomParameters.find("RangeMinTime"); param != mCustomParameters.end()) {
-    mRangeMinTime = ::atof(param->second.c_str());
-  }
-  if (auto param = mCustomParameters.find("RangeMaxTime"); param != mCustomParameters.end()) {
-    mRangeMaxTime = ::atof(param->second.c_str());
-  }
-  if (auto param = mCustomParameters.find("NbinsToT"); param != mCustomParameters.end()) {
-    mBinsToT = ::atoi(param->second.c_str());
-  }
-  if (auto param = mCustomParameters.find("RangeMinTime"); param != mCustomParameters.end()) {
-    mRangeMinTime = ::atof(param->second.c_str());
-  }
-  if (auto param = mCustomParameters.find("RangeMinToT"); param != mCustomParameters.end()) {
-    mRangeMinToT = ::atof(param->second.c_str());
-  }
-  if (auto param = mCustomParameters.find("RangeMaxToT"); param != mCustomParameters.end()) {
-    mRangeMaxToT = ::atof(param->second.c_str());
-  }
-  if (auto param = mCustomParameters.find("NoiseClassSelection"); param != mCustomParameters.end()) {
-    mNoiseClassSelection = ::atoi(param->second.c_str());
-    if (mNoiseClassSelection <= -1 || mNoiseClassSelection > nNoiseClasses) {
+  utils::parseIntParameter(mCustomParameters, "NbinsMultiplicity", mBinsMultiplicity);
+  utils::parseIntParameter(mCustomParameters, "RangeMaxMultiplicity", mRangeMaxMultiplicity);
+
+  utils::parseIntParameter(mCustomParameters, "NbinsTime", mBinsTime);
+  utils::parseFloatParameter(mCustomParameters, "kNbinsWidthTime", fgkNbinsWidthTime);
+  utils::parseFloatParameter(mCustomParameters, "RangeMinTime", mRangeMinTime);
+  utils::parseFloatParameter(mCustomParameters, "RangeMaxTime", mRangeMaxTime);
+
+  utils::parseIntParameter(mCustomParameters, "NbinsToT", mBinsToT);
+  utils::parseFloatParameter(mCustomParameters, "RangeMinTime", mRangeMinToT);
+  utils::parseFloatParameter(mCustomParameters, "RangeMaxTime", mRangeMaxToT);
+
+  if (utils::parseIntParameter(mCustomParameters, "NoiseClassSelection", mNoiseClassSelection)) {
+    if (mNoiseClassSelection < -1 || mNoiseClassSelection >= nNoiseClasses) {
       ILOG(Error, Support) << "Asked to discard noise class " << mNoiseClassSelection << " but it is invalid, use -1, 0, 1, 2. Setting it to -1 (no selection)" << ENDM;
       mNoiseClassSelection = -1;
     }

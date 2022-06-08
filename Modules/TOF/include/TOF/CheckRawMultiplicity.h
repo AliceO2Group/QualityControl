@@ -44,6 +44,8 @@ class CheckRawMultiplicity : public o2::quality_control::checker::CheckInterface
 
  private:
   // Running configurable parameters
+  /// Minimum number of entries in MO before message can be printed
+  double mMinEntriesBeforeMessage = -1.0;
   /// Running mode, cosmics or collisions
   int mRunningMode = kModeCollisions;
   /// Minimum value of TOF raw hit multiplicity
