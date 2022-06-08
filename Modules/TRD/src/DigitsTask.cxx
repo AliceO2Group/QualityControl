@@ -275,18 +275,38 @@ void DigitsTask::buildHistogramsPH()
   getObjectsManager()->setDefaultDrawOptions(mPulseHeightperchamber.get()->GetName(), "colz");
 
   for (int count = 0; count < 18; ++count) {
-    std::string label = fmt::format("pulseheight2d_sm_{0}", count);
-    std::string title = fmt::format("Pulse Height Spectrum for SM {0}", count);
+    std::string label = fmt::format("pulseheight2d_sm_{0:02d}", count);
+    std::string title = fmt::format("Pulse Height Spectrum for SM {0:02d}", count);
     TH1F* h = new TH1F(label.c_str(), title.c_str(), 30, -0.5, 29.5);
     mPulseHeight2DperSM[count].reset(h);
     getObjectsManager()->startPublishing(h);
-    label = fmt::format("pulseheight2d2_sm_{0}", count);
-    title = fmt::format("Pulse Height Spectrum v 2 for SM {0}", count);
+    label = fmt::format("pulseheight2d2_sm_{0:02d}", count);
+    title = fmt::format("Pulse Height Spectrum v 2 for SM {0:02d}", count);
     TH1F* h2 = new TH1F(label.c_str(), title.c_str(), 30, -0.5, 29.5);
     mPulseHeight2DperSM2[count].reset(h2);
     getObjectsManager()->startPublishing(h2);
     getObjectsManager()->setDefaultDrawOptions(h->GetName(), "COLZ");
     getObjectsManager()->setDefaultDrawOptions(h2->GetName(), "COLZ");
+  }
+
+  int cn = 0;
+  int sm = 0;
+
+  for (int count = 0; count < 540; ++count) {
+    sm = count / 30;
+    std::string label = fmt::format("pulseheight_{0:02d}_{1}_{2}", sm, cn / 6, cn % 6);
+    std::string title = fmt::format("{0:02d}_{1}_{2}", sm, cn / 6, cn % 6);
+    TProfile* h = new TProfile(label.c_str(), title.c_str(), 30, -0.5, 29.5);
+    mPulseHeightPerChamber_1D[count].reset(h);
+
+    getObjectsManager()->startPublishing(h);
+
+    mPulseHeightPerChamber_1D[count].get()->GetXaxis()->SetTitle("Timebin");
+    mPulseHeightPerChamber_1D[count].get()->GetYaxis()->SetTitle("Chamber");
+    getObjectsManager()->setDefaultDrawOptions(h->GetName(), "COLZ");
+    cn++;
+    if (cn > 29)
+      cn = 0;
   }
 
   mPulseHeightDuration.reset(new TH1F("mPulseHeightDuration", "Pulse height duration", 10000, 0, 5.0));
@@ -636,6 +656,7 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
                     mTotalPulseHeight2D->Fill(tb, phVal);
                     mPulseHeight2DperSM[sector]->Fill(tb, phVal);
                     mPulseHeightperchamber->Fill(tb, d, phVal);
+                    mPulseHeightPerChamber_1D[d]->Fill(tb, phVal);
                   }
                 }
               } else {
@@ -650,6 +671,7 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
                     mTotalPulseHeight2D->Fill(tb, phVal);
                     mPulseHeight2DperSM[sector]->Fill(tb, phVal);
                     mPulseHeightperchamber->Fill(tb, d, phVal);
+                    mPulseHeightPerChamber_1D[d]->Fill(tb, phVal);
                   }
                 }
               }
@@ -671,6 +693,7 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
                     mTotalPulseHeight2D->Fill(tb, phVal);
                     mPulseHeight2DperSM[sector]->Fill(tb, phVal);
                     mPulseHeightperchamber->Fill(tb, d, phVal);
+                    mPulseHeightPerChamber_1D[d]->Fill(tb, phVal);
                   }
                 }
               } else {
@@ -684,6 +707,7 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
                     mTotalPulseHeight2D->Fill(tb, phVal);
                     mPulseHeight2DperSM[sector]->Fill(tb, phVal);
                     mPulseHeightperchamber->Fill(tb, d, phVal);
+                    mPulseHeightPerChamber_1D[d]->Fill(tb, phVal);
                   }
                 }
               }
