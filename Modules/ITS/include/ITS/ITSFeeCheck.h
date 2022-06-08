@@ -57,6 +57,13 @@ class ITSFeeCheck : public o2::quality_control::checker::CheckInterface
   std::string mSummaryPlots[NSummary] = { "Global", "IB", "ML", "OL" };
   const int laneMaxSummaryPlots[NSummary] = { 3816, 1, 864, 2520 };
   const int laneMax[NLayer] = { 108, 144, 180, 384, 480, 1176, 1344 };
+
+  std::shared_ptr<TLatex> tInfo;
+  std::shared_ptr<TLatex> tInfoLayers[7];
+  std::shared_ptr<TLatex> tInfoIB;
+  std::shared_ptr<TLatex> tInfoML;
+  std::shared_ptr<TLatex> tInfoOL;
+  std::shared_ptr<TLatex> tInfoSummary[4];
 };
 
 } // namespace o2::quality_control_modules::its
