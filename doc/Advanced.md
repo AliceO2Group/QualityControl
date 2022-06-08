@@ -897,6 +897,10 @@ should not be present in real configuration files.
       "infologger": {                     "": "Configuration of the Infologger (optional).",
         "filterDiscardDebug": "false",    "": "Set to 1 to discard debug and trace messages (default: false)",
         "filterDiscardLevel": "2",        "": "Message at this level or above are discarded (default: 21 - Trace)" 
+      },
+      "postprocessing": {                 "": "Configuration parameters for post-processing",
+        "periodSeconds": 10.0,            "": "Sets the interval of checking all the triggers. One can put a very small value",
+                                          "": "for async processing, but use 10 or more seconds for synchronous operations"
       }
     }
   }
