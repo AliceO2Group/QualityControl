@@ -94,6 +94,14 @@ void TOFMatchedTracks::initialize(o2::framework::InitContext& /*ctx*/)
     ILOG(Info, Devel) << "Custom parameter - minDCACutY (for track selection): " << param->second << ENDM;
     setMinDCAtoBeamPipeYCut(atof(param->second.c_str()));
   }
+  if (auto param = mCustomParameters.find("geomFileName"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - geomFileName: " << param->second << ENDM;
+    mGeomFileName = param->second.c_str();
+  }
+  if (auto param = mCustomParameters.find("grpFileName"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - grpFileName: " << param->second << ENDM;
+    mGRPFileName = param->second.c_str();
+  }
 
   // for track type selection
   if (auto param = mCustomParameters.find("GID"); param != mCustomParameters.end()) {
