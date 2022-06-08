@@ -115,6 +115,16 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
   auto clusIdx = ctx.inputs().get<gsl::span<int>>("clusteridx");
   auto clusPatternArr = ctx.inputs().get<gsl::span<unsigned char>>("patterns");
   auto pattIt = clusPatternArr.begin();
+  std::vector<int> clSize;
+  for (const auto& clus : clusArr) {
+    auto ClusterID = clus.getPatternID();
+    if (ClusterID != o2::itsmft::CompCluster::InvalidPatternID && !mDict->isGroup(ClusterID)) { // Normal (frequent) cluster shapes
+      clSize.push_back(mDict->getNpixels(ClusterID));
+    } else {
+      o2::itsmft::ClusterPattern patt(pattIt);
+      clSize.push_back(patt.getNPixels());
+    }
+  }
 
   for (const auto& vertex : vertexArr) {
 
@@ -132,8 +142,9 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
 
     int nClusterCntTrack = 0;
     int nTracks = trackRofArr[iROF].getNEntries();
-
-    for (int itrack = 0; itrack < nTracks; itrack++) {
+    int start = trackRofArr[iROF].getFirstEntry();
+    int end = start + trackRofArr[iROF].getNEntries();
+    for (int itrack = start; itrack < end; itrack++) {
 
       auto& track = trackArr[itrack];
       auto out = track.getParamOut();
@@ -152,29 +163,14 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
       for (int icluster = 0; icluster < track.getNumberOfClusters(); icluster++) {
         const int index = clusIdx[track.getFirstClusterEntry() + icluster];
         auto& cluster = clusArr[index];
-
-        auto row = cluster.getRow();
-        auto col = cluster.getCol();
         auto ChipID = cluster.getSensorID();
-        auto ClusterID = cluster.getPatternID(); // used for normal (frequent) cluster shapes
-        int npix = -1;
-        int isGrouped = -1;
-
-        if (ClusterID != o2::itsmft::CompCluster::InvalidPatternID && !mDict->isGroup(ClusterID)) { // Normal (frequent) cluster shapes
-          npix = mDict->getNpixels(ClusterID);
-          isGrouped = 0;
-        } else {
-          o2::itsmft::ClusterPattern patt(pattIt);
-          npix = patt.getNPixels();
-          isGrouped = 1;
-        }
 
         int layer = 0;
         while (ChipID > ChipBoundary[layer])
           layer++;
         layer--;
 
-        double clusterSizeWithCorrection = (double)npix * cos(std::atan(out.getTgl()));
+        double clusterSizeWithCorrection = (double)clSize[index] * cos(std::atan(out.getTgl()));
         hNClusterVsChip[layer]->Fill(ChipID, clusterSizeWithCorrection);
         hNClusterVsChip[layer]->SetBinError(hNClusterVsChip[layer]->FindBin(ChipID), hNClusterVsChip[layer]->FindBin(clusterSizeWithCorrection), 1e-15);
         hNClusterVsChipITS->Fill(ChipID, clusterSizeWithCorrection);
