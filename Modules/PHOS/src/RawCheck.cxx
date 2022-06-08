@@ -97,7 +97,6 @@ void RawCheck::configure()
 
 Quality RawCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
-
   mCheckResult = Quality::Null;
   for (auto& [moName, mo] : *moMap) {
     (void)moName; // trick the compiler about not used variable
@@ -116,10 +115,6 @@ Quality RawCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* m
 
 std::string RawCheck::getAcceptedType() { return "TH1"; }
 
-void RawCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
-{
-}
-
 bool RawCheck::checkErrHistograms(MonitorObject* mo)
 {
   // Return true if mo found and handled
@@ -136,7 +131,7 @@ bool RawCheck::checkErrHistograms(MonitorObject* mo)
     return true;
   }
   if (mo->getName().find("ErrorTypePerDDL") != std::string::npos) { // HG mean summary 100, 0., 100.
-    TH2F* h = dynamic_cast<TH2F*>(mo->getObject());
+    TH2S* h = dynamic_cast<TH2S*>(mo->getObject());
     if (h->Integral() == 0) {
       TPaveText* msg = new TPaveText(0., 0.8, 0.2, 0.9, "NDC");
       msg->SetName(Form("%s_msg", mo->GetName()));

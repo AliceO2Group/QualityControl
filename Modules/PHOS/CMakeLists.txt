@@ -2,7 +2,9 @@
 
 add_library(O2QcPHOS)
 
-target_sources(O2QcPHOS PRIVATE src/RawQcTask.cxx 
+target_sources(O2QcPHOS PRIVATE src/TH2FMean.cxx 
+                                src/TH2SBitmask.cxx 
+                                src/RawQcTask.cxx 
                                 src/RawCheck.cxx 
                                 src/ClusterQcTask.cxx 
                                 src/ClusterCheck.cxx
@@ -17,7 +19,9 @@ target_include_directories(
 target_link_libraries(O2QcPHOS PUBLIC O2QualityControl O2::PHOSBase O2::PHOSReconstruction ROOT::Spectrum)
 
 add_root_dictionary(O2QcPHOS
-                    HEADERS include/PHOS/ClusterQcTask.h
+                    HEADERS include/PHOS/TH2FMean.h
+                            include/PHOS/TH2SBitmask.h
+                            include/PHOS/ClusterQcTask.h
 		            include/PHOS/ClusterCheck.h
                             include/PHOS/RawQcTask.h
                             include/PHOS/RawCheck.h
