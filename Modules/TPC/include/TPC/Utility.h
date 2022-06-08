@@ -58,5 +58,15 @@ void clearCanvases(std::vector<std::unique_ptr<TCanvas>>& canvases);
 /// \param input InputReconrd from the ProcessingContext
 /// \return getWorkflowTPCInput_ret object for easy cluster access
 std::unique_ptr<o2::tpc::internal::getWorkflowTPCInput_ret> clusterHandler(o2::framework::InputRecord& inputs, int verbosity = 0, unsigned long tpcSectorMask = 0xFFFFFFFFF);
-} //namespace o2::quality_control_modules::tpc
-#endif //QUALITYCONTROL_TPCUTILITY_H
+
+std::string getFromConfig(const std::unordered_map<std::string, std::string>& params, const std::string_view name);
+
+/// \brief Gets a task parameter from the config file
+/// Convenience function to return a value for a given taskParameter given in the config file
+/// \param params mCustomParameters from within the QualityControl/TaskInterface
+/// \param name Name of the taskParameter
+/// \return taskParameter converted to bool, int, float, double or std::string depending on the template type
+template <typename T>
+T getFromConfig(const std::unordered_map<std::string, std::string>& params, const std::string_view name);
+} // namespace o2::quality_control_modules::tpc
+#endif // QUALITYCONTROL_TPCUTILITY_H

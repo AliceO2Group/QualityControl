@@ -150,4 +150,51 @@ std::unique_ptr<o2::tpc::internal::getWorkflowTPCInput_ret> clusterHandler(o2::f
   return std::move(retVal);
 }
 
+template <typename T>
+T getFromConfig(const std::unordered_map<std::string, std::string>& params, const std::string_view name)
+{
+  const auto last = params.end();
+  const auto itParam = params.find(name.data());
+  T retVal{};
+
+  if (itParam == last) {
+    LOGP(warning, "missing parameter {}", name.data());
+    LOGP(warning, "Please add '{}': '<value>' to the 'taskParameters'.", name.data());
+  } else {
+    const auto& param = itParam->second;
+    LOG(info) << "param type: " << typeid(param).name() << " param: " << param << " param name: " << itParam->first;
+    if constexpr (std::is_same<int, T>::value) {
+      retVal = std::stoi(param);
+    } else if constexpr (std::is_same<float, T>::value) {
+      retVal = std::stof(param);
+    } else if constexpr (std::is_same<double, T>::value) {
+      retVal = std::stod(param);
+    } else if constexpr (std::is_same<bool, T>::value) {
+      if ((param == "true") || (param == "True") || (param == "TRUE") || (param == "1")) {
+        retVal = true;
+      } else if ((param == "false") || (param == "False") || (param == "FALSE") || (param == "0")) {
+        retVal = false;
+      } else {
+        LOG(error) << fmt::format("Please provide a valid boolean value for {}.", name.data()).data();
+      }
+    } else if constexpr (std::is_same<std::string, T>::value) {
+      retVal = param;
+    } else {
+      LOG(error) << "Template type not supported";
+    }
+  }
+  LOGP(info, "return value type: {}; return value: {}", typeid(retVal).name(), retVal);
+  return retVal;
+}
+
+// ===| explicit instantiations |===============================================
+// this is required to force the compiler to create instances with the types
+// we usually would like to deal with
+
+template std::string getFromConfig<std::string>(const std::unordered_map<std::string, std::string>&, const std::string_view);
+template bool getFromConfig<bool>(const std::unordered_map<std::string, std::string>&, const std::string_view);
+template int getFromConfig<int>(const std::unordered_map<std::string, std::string>&, const std::string_view);
+template float getFromConfig<float>(const std::unordered_map<std::string, std::string>&, const std::string_view);
+template double getFromConfig<double>(const std::unordered_map<std::string, std::string>&, const std::string_view);
+
 } // namespace o2::quality_control_modules::tpc
