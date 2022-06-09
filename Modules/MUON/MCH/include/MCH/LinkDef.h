@@ -19,5 +19,6 @@
 #pragma link C++ class o2::quality_control_modules::muonchambers::MergeableTH1PseudoEfficiencyPerDE + ;
 #pragma link C++ class o2::quality_control_modules::muonchambers::MergeableTH1PseudoEfficiencyPerDECycle + ;
 #pragma link C++ class o2::quality_control_modules::muonchambers::MergeableTH1MPVPerDECycle + ;
+#pragma link C++ class o2::quality_control_modules::muonchambers::TracksTask + ;
 
 #endif
