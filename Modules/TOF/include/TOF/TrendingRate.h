@@ -67,7 +67,7 @@ class TrendingRate : public PostProcessingInterface
   void trendValues(const Trigger& t, repository::DatabaseInterface&);
   void generatePlots();
 
-  void computeTOFRates(TH2F* h, TProfile* hp, std::vector<int>& bcInt, std::vector<float>& bcRate, std::vector<float>& bcPileup);
+  void computeTOFRates(TH2F* h, std::vector<int>& bcInt, std::vector<float>& bcRate, std::vector<float>& bcPileup);
 
   TrendingConfigTOF mConfig;
   MetaData mMetaData;
@@ -75,16 +75,19 @@ class TrendingRate : public PostProcessingInterface
   // Extra values to trend
   float mNoiseRatePerChannel = 0.f; /// Noise rate
   float mCollisionRate = 0.f;       /// Collision rate
-  float mPileup = 0.f;              /// Pileup
+  float mPileupRate = 0.f;          /// Pileup
   int mActiveChannels = 0;          /// Active channels
+  int mNIBC = 0;                    /// n interction bunches
 
   std::unique_ptr<TTree> mTrend;
   std::map<std::string, TObject*> mPlots;
   std::unordered_map<std::string, std::unique_ptr<Reductor>> mReductors;
 
+  TH2F* mPreviousPlot = nullptr; /// to keep memory of previous plot to work only with updates
+
   static constexpr float orbit_lenght = 90E-6;
-  float mThresholdSgn = 0.15;
-  float mThresholdBkg = 0.04;
+  float mThresholdSgn = 0.3;
+  float mThresholdBkg = 0.1;
 };
 
 } // namespace o2::quality_control_modules::tof

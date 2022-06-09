@@ -36,7 +36,8 @@
           "name": "tof-digits"
         },
         "taskParameters": {
-          "Diagnostic": "false"
+          "Diagnostic": "false",
+          "NoiseClassSelection": "0"
         },
         "location": "remote"
       }
