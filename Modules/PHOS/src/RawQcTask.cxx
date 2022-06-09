@@ -483,7 +483,7 @@ void RawQcTask::FillTRUHistograms(const gsl::span<const o2::phos::Cell>& cells, 
     for (int bDG : triggerDGTiles) {
       bool matched = false;
       for (int aST : triggerSTTiles) {
-        if (aST & 0x7 == bDG & 0x7) { // same module
+        if ((aST & 0x7) == (bDG & 0x7)) { // same module
           int dx = ((bDG >> 3) & 0x7F) - ((aST >> 3) & 0x7F);
           int dz = ((bDG >> 10) & 0x7F) - ((aST >> 10) & 0x7F);
           if (dx >= 0 && dx <= 2 && dz >= 0 && dz <= 2) {
