@@ -52,8 +52,8 @@ struct TrendingConfigTOF : PostProcessingConfig {
   };
 
   struct ConfigTrendingRate {
-    float thresholdSignal = 0.15;
-    float thresholdBackground = 0.04;
+    float thresholdSignal = 0.3;
+    float thresholdBackground = 0.1;
   } mConfigTrendingRate;
 
   std::vector<Plot> plots;
