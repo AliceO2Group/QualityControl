@@ -110,6 +110,7 @@ class DigitsTask final : public TaskInterface
   o2::trd::NoiseStatusMCM* mNoiseMap = nullptr;
   std::shared_ptr<TProfile> mPulseHeightpro = nullptr;
   std::shared_ptr<TProfile2D> mPulseHeightperchamber = nullptr;
+  std::array<std::shared_ptr<TProfile>, 540> mPulseHeightPerChamber_1D; // ph2DSM;
 };
 
 } // namespace o2::quality_control_modules::trd

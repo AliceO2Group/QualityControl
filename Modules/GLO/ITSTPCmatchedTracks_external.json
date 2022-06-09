@@ -29,7 +29,7 @@
     },
     "tasks" : {},
     "externalTasks" : {
-      "MatchedTracksITSTPC" : {
+      "MTCITSTPC" : {
         "active" : "true",
         "query" : "MatchedTracksITSTPC:GLO/ITSTPCMATCHQC/0",
         "" : "Use the task name as binding (encouraged)"

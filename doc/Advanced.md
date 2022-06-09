@@ -736,6 +736,7 @@ jq -n 'reduce inputs as $s (input; .qc.tasks += ($s.qc.tasks) | .qc.checks += ($
 However, one should pay attention to avoid duplicate task definition keys (e.g. having RawTask twice, each for a different detector), otherwise only one of them would find its way to a merged file. 
 In such case, one can add the `taskName` parameter in the body of a task configuration structure to use the preferred name and change the root key to a unique id, which shall be used only for the purpose of navigating a configuration file.
 If `taskName` does not exist, it is taken from the root key value.
+Please remember to update also the references to the task in other actors which refer it (e.g. in Check's data source).
 
 These two tasks will **not** be merged correctly:
 ```json
@@ -896,6 +897,10 @@ should not be present in real configuration files.
       "infologger": {                     "": "Configuration of the Infologger (optional).",
         "filterDiscardDebug": "false",    "": "Set to 1 to discard debug and trace messages (default: false)",
         "filterDiscardLevel": "2",        "": "Message at this level or above are discarded (default: 21 - Trace)" 
+      },
+      "postprocessing": {                 "": "Configuration parameters for post-processing",
+        "periodSeconds": 10.0,            "": "Sets the interval of checking all the triggers. One can put a very small value",
+                                          "": "for async processing, but use 10 or more seconds for synchronous operations"
       }
     }
   }
@@ -920,6 +925,7 @@ the "tasks" path.
         "moduleName": "QcSkeleton",         "": "Library name. It can be found in CMakeLists of the detector module.",
         "detectorName": "TST",              "": "3-letter code of the detector.",
         "cycleDurationSeconds": "10",       "": "Cycle duration (how often objects are published), 10 seconds minimum.",
+                                            "": "The first cycle will be randomly shorter",
         "maxNumberCycles": "-1",            "": "Number of cycles to perform. Use -1 for infinite.",
         "dataSource": {                     "": "Data source of the QC Task.",
           "type": "dataSamplingPolicy",     "": "Type of the data source, \"dataSamplingPolicy\" or \"direct\".",
