@@ -340,7 +340,7 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
 
       o2::tof::Geo::getVolumeIndices(digit.getChannel(), det);
       strip = o2::tof::Geo::getStripNumberPerSM(det[1], det[2]); // Strip index in the SM
-      ndigitsPerCrate[strip]++;
+      ndigitsPerCrate[o2::tof::Geo::getCrateFromECH(o2::tof::Geo::getECHFromCH(digit.getChannel())) /*crate index*/]++;
       mCounterHitsPerStrip[strip].Count(det[0] * 4 + det[4] / 12);
       mCounterHitsPerChannel.Count(digit.getChannel());
       // TDC time and ToT time
