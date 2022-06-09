@@ -66,8 +66,6 @@ class RatioGeneratorTPC : public PostProcessingInterface
   void generatePlots();
 
   std::unordered_map<std::string, TH1*> mRatios;
-  std::unordered_map<std::string, TCanvas*> mPlots;
-
   std::vector<DataSource> mConfig;
 };
 

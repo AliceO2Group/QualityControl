@@ -59,6 +59,7 @@ struct TrendingTaskConfigTPC : public quality_control::postprocessing::PostProce
     std::string moduleName;
   };
 
+  bool producePlotsOnUpdate;
   std::vector<Plot> plots;
   std::vector<DataSource> dataSources;
 };

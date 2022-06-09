@@ -28,6 +28,7 @@
         "className": "o2::quality_control_modules::tpc::TrendingTaskTPC",
         "moduleName": "QcTPC",
         "detectorName": "TPC",
+        "producePlotsOnUpdate": "true",
         "dataSources": [
           {
             "type": "repository",
@@ -181,6 +182,7 @@
         "className": "o2::quality_control_modules::tpc::TrendingTaskTPC",
         "moduleName": "QcTPC",
         "detectorName": "TPC",
+        "producePlotsOnUpdate": "true",
         "dataSources": [
           {
             "type": "repository",
@@ -263,6 +265,7 @@
         "className": "o2::quality_control_modules::tpc::TrendingTaskTPC",
         "moduleName": "QcTPC",
         "detectorName": "TPC",
+        "producePlotsOnUpdate": "true",
         "dataSources": [
           {
             "type": "repository-quality",
