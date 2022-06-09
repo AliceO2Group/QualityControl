@@ -20,16 +20,38 @@
 #include "QualityControl/QcInfoLogger.h"
 // ROOT
 #include <TH1.h>
+#include <TH2.h>
 
 #include <DataFormatsQualityControl/FlagReasons.h>
 
-using namespace std;
+#include "CCDB/BasicCCDBManager.h"
+#include "TRDQC/StatusHelper.h"
+
 using namespace o2::quality_control;
 
 namespace o2::quality_control_modules::trd
 {
 
-void TrackletsCheck::configure() {}
+void TrackletsCheck::retrieveCCDBSettings()
+{
+  if (auto param = mCustomParameters.find("ccdbtimestamp"); param != mCustomParameters.end()) {
+    mTimestamp = std::stol(mCustomParameters["ccdbtimestamp"]);
+    ILOG(Info, Support) << "configure() : using ccdbtimestamp = " << mTimestamp << ENDM;
+  } else {
+    mTimestamp = o2::ccdb::getCurrentTimestamp();
+    ILOG(Info, Support) << "configure() : using default timestam of now = " << mTimestamp << ENDM;
+  }
+  auto& mgr = o2::ccdb::BasicCCDBManager::instance();
+  mgr.setTimestamp(mTimestamp);
+}
+
+void TrackletsCheck::configure()
+{
+  //get ccdb values
+  //fill mask spectra
+  retrieveCCDBSettings();
+  //fillTrdMaskHistsPerLayer();
+}
 
 Quality TrackletsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
@@ -63,6 +85,43 @@ Quality TrackletsCheck::check(std::map<std::string, std::shared_ptr<MonitorObjec
 }
 
 std::string TrackletsCheck::getAcceptedType() { return "TH1"; }
+
+std::vector<TH2F*> TrackletsCheck::createTrdMaskHistsPerLayer()
+{
+  std::vector<TH2F*> hMask;
+  for (int iLayer = 0; iLayer < 6; ++iLayer) {
+    hMask.push_back(new TH2F(Form("layer%i_mask", iLayer), "", 76, -0.5, 75.5, 144, -0.5, 143.5));
+    hMask.back()->SetMarkerColor(kRed);
+    hMask.back()->SetMarkerSize(0.9);
+  }
+  return hMask;
+}
+
+void TrackletsCheck::fillTrdMaskHistsPerLayer()
+{
+  for (int iSec = 0; iSec < 18; ++iSec) {
+    for (int iStack = 0; iStack < 5; ++iStack) {
+      int rowMax = (iStack == 2) ? 12 : 16;
+      for (int iLayer = 0; iLayer < 6; ++iLayer) {
+        for (int iCol = 0; iCol < 8; ++iCol) {
+          int side = (iCol < 4) ? 0 : 1;
+          int det = iSec * 30 + iStack * 6 + iLayer;
+          int hcid = (side == 0) ? det * 2 : det * 2 + 1;
+          for (int iRow = 0; iRow < rowMax; ++iRow) {
+            int rowGlb = iStack < 3 ? iRow + iStack * 16 : iRow + 44 + (iStack - 3) * 16; // pad row within whole sector
+            int colGlb = iCol + iSec * 8;
+            // bin number 0 is underflow
+            rowGlb += 1;
+            colGlb += 1;
+            if (mChamberStatus->isMasked(hcid)) {
+              mLayersMask[iLayer]->SetBinContent(rowGlb, colGlb, 1);
+            }
+          }
+        }
+      }
+    }
+  }
+}
 
 void TrackletsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
