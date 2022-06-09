@@ -20,6 +20,7 @@
 #define QC_MODULE_ITS_ITSCLUSTERCHECK_H
 
 #include "QualityControl/CheckInterface.h"
+#include <TLatex.h>
 
 namespace o2::quality_control_modules::its
 {
@@ -43,6 +44,8 @@ class ITSClusterCheck : public o2::quality_control::checker::CheckInterface
 
  private:
   ClassDefOverride(ITSClusterCheck, 2);
+
+  std::shared_ptr<TLatex> msg;
 };
 
 } // namespace o2::quality_control_modules::its
