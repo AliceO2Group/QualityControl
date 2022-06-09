@@ -55,20 +55,6 @@
         "saveObjectsToFile" : "TOFmatchedITSTPCTOF.root",
         "" : "For debugging, path to the file where to save. If empty or missing it won't save."
       }
-    },
-    "checks" : {
-      "QcCheck" : {
-        "active" : "false",
-        "className" : "o2::quality_control_modules::skeleton::SkeletonCheck",
-        "moduleName" : "QcSkeleton",
-        "policy" : "OnAny",
-        "detectorName" : "TOF",
-        "dataSource" : [ {
-          "type" : "Task",
-          "name" : "QcTask",
-          "MOs" : ["example"]
-        } ]
-      }
     }
   },
          "dataSamplingPolicies" : []

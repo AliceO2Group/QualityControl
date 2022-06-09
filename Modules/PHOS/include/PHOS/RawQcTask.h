@@ -29,6 +29,8 @@
 class TH2F;
 #include "DataFormatsPHOS/BadChannelsMap.h"
 #include <TSpectrum.h>
+#include "PHOS/TH2FMean.h"
+#include "PHOS/TH2SBitmask.h"
 
 using namespace o2::quality_control::core;
 
@@ -54,7 +56,7 @@ class RawQcTask final : public TaskInterface
   void reset() override;
 
  protected:
-  static constexpr short kNhist1D = 23;
+  static constexpr short kNhist1D = 27;
   enum histos1D { kTotalDataVolume,
                   kMessageCounter,
                   kBadMapSummary,
@@ -74,15 +76,18 @@ class RawQcTask final : public TaskInterface
                   kLGrmsSummaryM2,
                   kLGrmsSummaryM3,
                   kLGrmsSummaryM4,
-                  kCellSpM1,
-                  kCellSpM2,
-                  kCellSpM3,
-                  kCellSpM4
+                  kCellHGSpM1,
+                  kCellHGSpM2,
+                  kCellHGSpM3,
+                  kCellHGSpM4,
+                  kCellLGSpM1,
+                  kCellLGSpM2,
+                  kCellLGSpM3,
+                  kCellLGSpM4
   };
 
-  static constexpr short kNhist2D = 51;
+  static constexpr short kNhist2D = 42;
   enum histos2D { kErrorNumber,
-                  kErrorType,
                   kPayloadSizePerDDL,
                   kChi2M1,
                   kChi2M2,
@@ -92,22 +97,6 @@ class RawQcTask final : public TaskInterface
                   kChi2NormM2,
                   kChi2NormM3,
                   kChi2NormM4,
-                  kHGmeanM1,
-                  kHGmeanM2,
-                  kHGmeanM3,
-                  kHGmeanM4,
-                  kLGmeanM1,
-                  kLGmeanM2,
-                  kLGmeanM3,
-                  kLGmeanM4,
-                  kHGrmsM1,
-                  kHGrmsM2,
-                  kHGrmsM3,
-                  kHGrmsM4,
-                  kLGrmsM1,
-                  kLGrmsM2,
-                  kLGrmsM3,
-                  kLGrmsM4,
                   kHGoccupM1,
                   kHGoccupM2,
                   kHGoccupM3,
@@ -116,22 +105,60 @@ class RawQcTask final : public TaskInterface
                   kLGoccupM2,
                   kLGoccupM3,
                   kLGoccupM4,
-                  kCellOccupM1,
-                  kCellOccupM2,
-                  kCellOccupM3,
-                  kCellOccupM4,
-                  kCellEM1,
-                  kCellEM2,
-                  kCellEM3,
-                  kCellEM4,
                   kTimeEM1,
                   kTimeEM2,
                   kTimeEM3,
                   kTimeEM4,
-                  kLEDNpeaksM1,
-                  kLEDNpeaksM2,
-                  kLEDNpeaksM3,
-                  kLEDNpeaksM4 };
+                  kTRUSTOccupM1,
+                  kTRUSTOccupM2,
+                  kTRUSTOccupM3,
+                  kTRUSTOccupM4,
+                  kTRUDGOccupM1,
+                  kTRUDGOccupM2,
+                  kTRUDGOccupM3,
+                  kTRUDGOccupM4,
+                  kTRUSTMatchM1,
+                  kTRUSTMatchM2,
+                  kTRUSTMatchM3,
+                  kTRUSTMatchM4,
+                  kTRUSTFakeM1,
+                  kTRUSTFakeM2,
+                  kTRUSTFakeM3,
+                  kTRUSTFakeM4,
+                  kTRUDGFakeM1,
+                  kTRUDGFakeM2,
+                  kTRUDGFakeM3,
+                  kTRUDGFakeM4 };
+
+  static constexpr short kNhist2DMean = 24;
+  enum histos2DMean { kHGmeanM1,
+                      kHGmeanM2,
+                      kHGmeanM3,
+                      kHGmeanM4,
+                      kLGmeanM1,
+                      kLGmeanM2,
+                      kLGmeanM3,
+                      kLGmeanM4,
+                      kHGrmsM1,
+                      kHGrmsM2,
+                      kHGrmsM3,
+                      kHGrmsM4,
+                      kLGrmsM1,
+                      kLGrmsM2,
+                      kLGrmsM3,
+                      kLGrmsM4,
+                      kCellEM1,
+                      kCellEM2,
+                      kCellEM3,
+                      kCellEM4,
+                      kLEDNpeaksM1,
+                      kLEDNpeaksM2,
+                      kLEDNpeaksM3,
+                      kLEDNpeaksM4
+  };
+
+  static constexpr short kNhist2DBitmask = 1;
+  enum histos2DBitmask { kErrorType };
 
   void InitHistograms();
 
@@ -142,6 +169,9 @@ class RawQcTask final : public TaskInterface
   void CreateLEDHistograms();
   void FillLEDHistograms(const gsl::span<const o2::phos::Cell>& cells, const gsl::span<const o2::phos::TriggerRecord>& tr);
 
+  void CreateTRUHistograms();
+  void FillTRUHistograms(const gsl::span<const o2::phos::Cell>& cells, const gsl::span<const o2::phos::TriggerRecord>& tr);
+
  private:
   static constexpr short kNmod = 6;
   static constexpr short kMaxErr = 5;
@@ -150,9 +180,12 @@ class RawQcTask final : public TaskInterface
   int mMode = 0;           ///< Possible modes: 0(def): Physics, 1: Pedestals, 2: LED
   bool mFinalized = false; ///< if final histograms calculated
   bool mCheckChi2 = false; ///< scan Chi2 distributions
+  bool mTrNoise = false;   ///< check mathing of trigger summary tables and tr.digits
 
-  std::array<TH1F*, kNhist1D> mHist1D = { nullptr }; ///< Array of 1D histograms
-  std::array<TH2F*, kNhist2D> mHist2D = { nullptr }; ///< Array of 2D histograms
+  std::array<TH1F*, kNhist1D> mHist1D = { nullptr };                      ///< Array of 1D histograms
+  std::array<TH2F*, kNhist2D> mHist2D = { nullptr };                      ///< Array of 2D histograms
+  std::array<TH2FMean*, kNhist2DMean> mHist2DMean = { nullptr };          ///< Array of 2D mean histograms
+  std::array<TH2SBitmask*, kNhist2DBitmask> mHist2DBitmask = { nullptr }; ///< Array of 2D mean histograms
 
   bool mInitBadMap = true;                           //! BadMap had to be initialized
   const o2::phos::BadChannelsMap* mBadMap = nullptr; //! Bad map for comparison

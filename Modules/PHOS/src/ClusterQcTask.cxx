@@ -26,7 +26,7 @@
 #include "DataFormatsPHOS/TriggerRecord.h"
 #include "Framework/InputRecord.h"
 
-//using namespace o2::phos;
+// using namespace o2::phos;
 
 namespace o2::quality_control_modules::phos
 {
@@ -61,13 +61,13 @@ void ClusterQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     ILOG(Info, Support) << "Custom parameter - myOwnKey : " << param->second << AliceO2::InfoLogger::InfoLogger::endm;
   }
 
-  //read alignment to calculate cluster global coordinates
+  // read alignment to calculate cluster global coordinates
   mGeom = o2::phos::Geometry::GetInstance("Run3");
 
-  //TODO: configure reading bad map from CCDB
+  // TODO: configure reading bad map from CCDB
   mBadMap.reset(new o2::phos::BadChannelsMap());
 
-  //Prepare histograms
+  // Prepare histograms
   for (Int_t mod = 0; mod < 4; mod++) {
     if (!mHist2D[kOccupancyM1 + mod]) {
       mHist2D[kOccupancyM1 + mod] = new TH2F(Form("ClusterOccupancyM%d", mod + 1), Form("Cluster occupancy, mod %d", mod + 1), 64, 0., 64., 56, 0., 56.);
@@ -84,11 +84,11 @@ void ClusterQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     }
 
     if (!mHist2D[kTimeEM1 + mod]) {
-      mHist2D[kTimeEM1 + mod] = new TH2F(Form("TimevsE%d", mod + 1), Form("Cell time vs energy, mod %d", mod + 1), 50, 0., 10., 50, -2.e-7, 2.e-7);
+      mHist2D[kTimeEM1 + mod] = new TH2F(Form("TimevsE%d", mod + 1), Form("Cluster time vs energy, mod %d", mod + 1), 50, 0., 10., 50, -5.e-7, 5.e-7);
       mHist2D[kTimeEM1 + mod]->GetXaxis()->SetNdivisions(508, kFALSE);
       mHist2D[kTimeEM1 + mod]->GetYaxis()->SetNdivisions(514, kFALSE);
-      mHist2D[kTimeEM1 + mod]->GetXaxis()->SetTitle("x, cells");
-      mHist2D[kTimeEM1 + mod]->GetYaxis()->SetTitle("z, cells");
+      mHist2D[kTimeEM1 + mod]->GetXaxis()->SetTitle("E, GeV");
+      mHist2D[kTimeEM1 + mod]->GetYaxis()->SetTitle("t-t_{0}, ns");
       mHist2D[kTimeEM1 + mod]->SetStats(0);
       mHist2D[kTimeEM1 + mod]->SetMinimum(0);
       // mHist2D[kTimeEM1 + mod]->SetMaximum(100);
@@ -151,13 +151,11 @@ void ClusterQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
 
       int mod = clu.module();
-      //Fill occupancy and time-E histos
+      // Fill occupancy and time-E histos
       float posX, posZ;
       clu.getLocalPosition(posX, posZ);
-      short absId;
-      mGeom->relPosToAbsId(mod, posX, posZ, absId);
       char relid[3];
-      mGeom->absToRelNumbering(absId, relid);
+      mGeom->relPosToRelId(mod, posX, posZ, relid);
 
       if (e > mOccCut) {
         mHist2D[kOccupancyM1 + mod - 1]->Fill(relid[1] - 0.5, relid[2] - 0.5);
@@ -183,7 +181,7 @@ void ClusterQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
   }
 
-} //function monitor data
+} // function monitor data
 
 void ClusterQcTask::endOfCycle()
 {
@@ -212,7 +210,7 @@ void ClusterQcTask::reset()
 }
 bool ClusterQcTask::checkCluster(const o2::phos::Cluster& clu)
 {
-  //First check BadMap
+  // First check BadMap
   float posX, posZ;
   clu.getLocalPosition(posX, posZ);
   short absId;

@@ -42,12 +42,9 @@ class PhysicsPreclustersCheck : public o2::quality_control::checker::CheckInterf
   std::string getAcceptedType() override;
 
  private:
-  int mPrintLevel;
-  double minPseudoeff;
-  double maxPseudoeff;
-  double minMPV;
-  double maxMPV;
-  ClassDefOverride(PhysicsPreclustersCheck, 2);
+  double mMinPseudoeff;
+  double mMaxPseudoeff;
+  ClassDefOverride(PhysicsPreclustersCheck, 3);
 };
 
 } // namespace o2::quality_control_modules::muonchambers

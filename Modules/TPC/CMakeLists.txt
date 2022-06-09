@@ -21,7 +21,10 @@ target_sources(O2QcTPC PRIVATE src/PID.cxx
                              src/TH2ReductorTPC.cxx
                              src/CheckForEmptyPads.cxx
                              src/QualityReductorTPC.cxx
-                             src/DCSPTemperature.cxx)
+                             src/DCSPTemperature.cxx
+                             src/IDCs.cxx
+                             src/QualityObserver.cxx
+                             src/RatioGeneratorTPC.cxx)
 
 target_include_directories(
   O2QcTPC
@@ -33,7 +36,8 @@ target_include_directories(
 target_link_libraries(O2QcTPC
                       PUBLIC O2QualityControl
                              O2::TPCQC
-                             O2::TPCWorkflow)
+                             O2::TPCWorkflow
+                             O2::TPCCalibration)
 
 
 
@@ -61,6 +65,9 @@ add_root_dictionary(O2QcTPC
                             include/TPC/CheckForEmptyPads.h
                             include/TPC/QualityReductorTPC.h
                             include/TPC/DCSPTemperature.h
+                            include/TPC/IDCs.h
+                            include/TPC/QualityObserver.h
+                            include/TPC/RatioGeneratorTPC.h
                     LINKDEF include/TPC/LinkDef.h
                     BASENAME O2QcTPC)
 
@@ -129,4 +136,8 @@ install(FILES run/tpcQCPID_sampled.json
               run/tpcQCRawDigitVisualizer.json
               run/tpcQCTrending_slicer.json
               run/tpcQCTrending_canvas.json
+              run/tpcQCDCSPTemperature.json
+              run/tpcQCIDCs.json
+              run/tpcQCQualityObserver.json
+              run/tpcQCRatio_generator.json
         DESTINATION etc)

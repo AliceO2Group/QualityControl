@@ -41,7 +41,7 @@ class TH1ReductorTPC : public quality_control_modules::tpc::ReductorTPC
 
   /// \brief Methods from the reductor class adapted for the needs of the TPC.
   void update(TObject* obj, std::vector<SliceInfo>& reducedSource,
-              std::vector<std::vector<float>>& axis, std::vector<std::string>& ranges) final;
+              std::vector<std::vector<float>>& axis, int& finalNumberPads) final;
 
  private:
   void GetTH1StatsY(TH1* hist, float stats[3], const int lowerBin, const int upperBin);

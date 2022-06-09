@@ -142,6 +142,7 @@ void TaskRunner::init(InitContext& iCtx)
   mCollector = MonitoringFactory::Get(mTaskConfig.monitoringUrl);
   mCollector->addGlobalTag(tags::Key::Subsystem, tags::Value::QC);
   mCollector->addGlobalTag("TaskName", mTaskConfig.taskName);
+  mCollector->addGlobalTag("DetectorName", mTaskConfig.detectorName);
 
   // setup publisher
   mObjectsManager = std::make_shared<ObjectsManager>(mTaskConfig.taskName, mTaskConfig.className, mTaskConfig.detectorName, mTaskConfig.consulUrl, mTaskConfig.parallelTaskID);
@@ -239,9 +240,23 @@ std::string TaskRunner::createTaskRunnerIdString()
   return std::string("qc-task");
 }
 
-header::DataOrigin TaskRunner::createTaskDataOrigin()
+header::DataOrigin TaskRunner::createTaskDataOrigin(const std::string& detectorCode)
 {
-  return header::DataOrigin{ "QC" };
+  // We need a unique Data Origin, so we can have QC Tasks with the same names for different detectors.
+  // However, to avoid colliding with data marked as e.g. TPC/CLUSTERS, we add 'Q' to the data origin, so it is Q<det>.
+  std::string originStr = "Q";
+  if (detectorCode.empty()) {
+    ILOG(Warning, Ops) << "empty detector code for a task data origin, trying to survive with: DET" << ENDM;
+    originStr += "DET";
+  } else if (detectorCode.size() > 3) {
+    ILOG(Warning, Ops) << "too long detector code for a task data origin: " + detectorCode + ", trying to survive with: " + detectorCode.substr(0, 3) << ENDM;
+    originStr += detectorCode.substr(0, 3);
+  } else {
+    originStr += detectorCode;
+  }
+  o2::header::DataOrigin origin;
+  origin.runtimeInit(originStr.c_str());
+  return origin;
 }
 
 header::DataDescription TaskRunner::createTaskDataDescription(const std::string& taskName)

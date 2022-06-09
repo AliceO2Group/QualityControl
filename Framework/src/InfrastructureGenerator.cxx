@@ -278,7 +278,7 @@ framework::WorkflowSpec InfrastructureGenerator::generateLocalBatchInfrastructur
       auto taskConfig = TaskRunnerFactory::extractConfig(infrastructureSpec.common, taskSpec, 0, 1);
       workflow.emplace_back(TaskRunnerFactory::create(taskConfig));
 
-      fileSinkInputs.emplace_back(taskSpec.taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskSpec.taskName));
+      fileSinkInputs.emplace_back(taskSpec.taskName, TaskRunner::createTaskDataOrigin(taskSpec.detectorName), TaskRunner::createTaskDataDescription(taskSpec.taskName));
     }
   }
 
@@ -445,7 +445,7 @@ void InfrastructureGenerator::generateLocalTaskLocalProxy(framework::WorkflowSpe
   std::string remotePort = std::to_string(taskSpec.remotePort);
   std::string proxyName = taskSpec.detectorName + "-" + taskName + "-proxy";
   std::string channelName = taskSpec.detectorName + "-" + taskName + "-proxy";
-  InputSpec proxyInput{ channelName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName), static_cast<SubSpec>(id), Lifetime::Sporadic };
+  InputSpec proxyInput{ channelName, TaskRunner::createTaskDataOrigin(taskSpec.detectorName), TaskRunner::createTaskDataDescription(taskName), static_cast<SubSpec>(id), Lifetime::Sporadic };
   std::string channelConfig = "name=" + channelName + ",type=pub,method=connect,address=tcp://" +
                               taskSpec.remoteMachine + ":" + remotePort + ",rateLogging=60,transport=zeromq";
 
@@ -467,7 +467,7 @@ void InfrastructureGenerator::generateLocalTaskRemoteProxy(framework::WorkflowSp
   Outputs proxyOutputs;
   for (size_t id = 1; id <= numberOfLocalMachines; id++) {
     proxyOutputs.emplace_back(
-      OutputSpec{ { channelName }, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName), static_cast<SubSpec>(id), Lifetime::Sporadic });
+      OutputSpec{ { channelName }, TaskRunner::createTaskDataOrigin(taskSpec.detectorName), TaskRunner::createTaskDataDescription(taskName), static_cast<SubSpec>(id), Lifetime::Sporadic });
   }
 
   std::string channelConfig = "name=" + channelName + ",type=sub,method=bind,address=tcp://*:" + remotePort +
@@ -490,7 +490,7 @@ void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow,
   for (size_t id = 1; id <= numberOfLocalMachines; id++) {
     mergerInputs.emplace_back(
       InputSpec{ { taskName + std::to_string(id) },
-                 TaskRunner::createTaskDataOrigin(),
+                 TaskRunner::createTaskDataOrigin(detectorName),
                  TaskRunner::createTaskDataDescription(taskName),
                  static_cast<SubSpec>(id),
                  Lifetime::Sporadic });
@@ -500,7 +500,7 @@ void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow,
   mergersBuilder.setInfrastructureName(taskName);
   mergersBuilder.setInputSpecs(mergerInputs);
   mergersBuilder.setOutputSpec(
-    { { "main" }, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName), 0 });
+    { { "main" }, TaskRunner::createTaskDataOrigin(detectorName), TaskRunner::createTaskDataDescription(taskName), 0 });
   MergerConfig mergerConfig;
   // if we are to change the mode to Full, disable reseting tasks after each cycle.
   mergerConfig.inputObjectTimespan = { (mergingMode.empty() || mergingMode == "delta") ? InputObjectsTimespan::LastDifference : InputObjectsTimespan::FullHistory };
@@ -528,7 +528,7 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
   // todo: avoid code repetition
   for (const auto& taskSpec : infrastructureSpec.tasks) {
     if (taskSpec.active) {
-      InputSpec taskOutput{ taskSpec.taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskSpec.taskName), Lifetime::Sporadic };
+      InputSpec taskOutput{ taskSpec.taskName, TaskRunner::createTaskDataOrigin(taskSpec.detectorName), TaskRunner::createTaskDataDescription(taskSpec.taskName), Lifetime::Sporadic };
       tasksOutputMap.insert({ DataSpecUtils::label(taskOutput), taskOutput });
     }
   }

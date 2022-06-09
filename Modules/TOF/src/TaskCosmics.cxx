@@ -35,6 +35,7 @@
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
 #include "TOF/TaskCosmics.h"
+#include "TOF/Utils.h"
 
 namespace o2::quality_control_modules::tof
 {
@@ -43,34 +44,19 @@ TaskCosmics::TaskCosmics() : TaskInterface()
 {
 }
 
-TaskCosmics::~TaskCosmics()
-{
-  mHistoCrate1.reset();
-  mHistoCrate2.reset();
-  mHistoCrate1VsCrate2.reset();
-  mHistoDeltaT.reset();
-  mHistoToT1.reset();
-  mHistoToT2.reset();
-  mHistoLength.reset();
-  mHistoDeltaTLength.reset();
-}
-
 void TaskCosmics::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info, Support) << "initialize TaskCosmics" << ENDM;
 
   // Set task parameters from JSON
-  if (auto param = mCustomParameters.find("SelDeltaTSignalRegion"); param != mCustomParameters.end()) {
-    mSelDeltaTSignalRegion = atoi(param->second.c_str());
-    ILOG(Info, Support) << "Set SelDeltaTSignalRegion to " << mSelDeltaTSignalRegion << " ps";
+  if (utils::parseFloatParameter(mCustomParameters, "mSelDeltaTSignalRegion", mSelDeltaTSignalRegion)) {
+    ILOG(Info, Support) << "Set SelDeltaTSignalRegion to " << mSelDeltaTSignalRegion << " ps" << ENDM;
   }
-  if (auto param = mCustomParameters.find("SelDeltaTBackgroundRegion"); param != mCustomParameters.end()) {
-    mSelDeltaTBackgroundRegion = atoi(param->second.c_str());
-    ILOG(Info, Support) << "Set SelDeltaTBackgroundRegion to " << mSelDeltaTBackgroundRegion << " ps";
+  if (utils::parseFloatParameter(mCustomParameters, "SelDeltaTBackgroundRegion", mSelDeltaTBackgroundRegion)) {
+    ILOG(Info, Support) << "Set SelDeltaTBackgroundRegion to " << mSelDeltaTBackgroundRegion << " ps" << ENDM;
   }
-  if (auto param = mCustomParameters.find("SelMinLength"); param != mCustomParameters.end()) {
-    mSelMinLength = atoi(param->second.c_str());
-    ILOG(Info, Support) << "Set SelMinLength to " << mSelMinLength << " cm";
+  if (utils::parseFloatParameter(mCustomParameters, "SelMinLength", mSelMinLength)) {
+    ILOG(Info, Support) << "Set SelMinLength to " << mSelMinLength << " cm" << ENDM;
   }
 
   mHistoCrate1.reset(new TH1F("Crate1", "Crate1;Crate of first hit;Counts", 72, 0, 72));

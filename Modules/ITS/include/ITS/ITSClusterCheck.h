@@ -20,6 +20,7 @@
 #define QC_MODULE_ITS_ITSCLUSTERCHECK_H
 
 #include "QualityControl/CheckInterface.h"
+#include <TH2Poly.h>
 
 namespace o2::quality_control_modules::its
 {
@@ -43,6 +44,10 @@ class ITSClusterCheck : public o2::quality_control::checker::CheckInterface
 
  private:
   ClassDefOverride(ITSClusterCheck, 2);
+
+  static constexpr int NLayer = 7;
+  const int mNStaves[NLayer] = { 12, 16, 20, 24, 30, 42, 48 };
+  const int StaveBoundary[NLayer + 1] = { 0, 12, 28, 48, 72, 102, 144, 192 };
 };
 
 } // namespace o2::quality_control_modules::its

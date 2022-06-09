@@ -28,8 +28,9 @@
                        "" : "Message at this level or above are discarded (default: 21 - Trace)" }
     },
     "tasks" : {
-      "MatchedTracksITSTPCTOF_TPCTOF" : {
-        "active" : "true",
+      "MTCITSTPCTOF" : {
+        "taskName" : "MatchTOF_ITSTPCTOF_TPCTOF",
+	"active" : "true",
         "className" : "o2::quality_control_modules::tof::TOFMatchedTracks",
         "moduleName" : "QcTOF",
         "detectorName" : "TOF",
@@ -53,20 +54,6 @@
         "location" : "remote",
         "saveObjectsToFile" : "TOFmatchedITSTPCTOF_TPCTOF.root",
         "" : "For debugging, path to the file where to save. If empty or missing it won't save."
-      }
-    },
-    "checks" : {
-      "QcCheck" : {
-        "active" : "false",
-        "className" : "o2::quality_control_modules::skeleton::SkeletonCheck",
-        "moduleName" : "QcSkeleton",
-        "policy" : "OnAny",
-        "detectorName" : "TOF",
-        "dataSource" : [ {
-          "type" : "Task",
-          "name" : "QcTask",
-          "MOs" : ["example"]
-        } ]
       }
     }
   },

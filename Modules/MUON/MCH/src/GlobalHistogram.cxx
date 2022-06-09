@@ -197,7 +197,7 @@ static int getDetectorHistHeight(int deId)
   if (deId >= 500) {
     return (50);
   } else if (deId >= 300) {
-    return 120;
+    return 130;
   } else {
     return 100;
   }

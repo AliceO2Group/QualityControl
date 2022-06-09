@@ -251,7 +251,7 @@ void VertexingQcTask::endOfCycle()
 
   if (mUseMC) {
 
-    if (!mVtxEffVsMult->SetTotalHistogram(*mNPrimaryMCGen, "") ||
+    if (!mVtxEffVsMult->SetTotalHistogram(*mNPrimaryMCGen, "f") ||
         !mVtxEffVsMult->SetPassedHistogram(*mNPrimaryMCEvWithVtx, "")) {
       ILOG(Fatal, Support) << "Something went wrong in defining the efficiency histograms!!";
     } else {

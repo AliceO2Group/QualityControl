@@ -88,7 +88,13 @@ using namespace std::chrono;
 WorkflowSpec defineDataProcessing(const ConfigContext& config)
 {
   WorkflowSpec specs;
+  std::string qcConfigurationSource = getConfigPath(config);
 
+  auto configTree = ConfigurationFactory::getConfiguration(qcConfigurationSource)->getRecursive();
+  auto infologgerFilterDiscardDebug = configTree.get<bool>("qc.config.infologger.filterDiscardDebug", false);
+  auto infologgerDiscardLevel = configTree.get<int>("qc.config.infologger.filterDiscardLevel", 21);
+  ILOG_INST.filterDiscardDebug(infologgerFilterDiscardDebug);
+  ILOG_INST.filterDiscardLevel(infologgerDiscardLevel);
   QcInfoLogger::setFacility("runBasic");
 
   // The producer to generate some data in the workflow
@@ -96,7 +102,6 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
   specs.push_back(producer);
 
   // Path to the config file
-  std::string qcConfigurationSource = getConfigPath(config);
   ILOG(Info, Ops) << "Using config file '" << qcConfigurationSource << "'" << ENDM;
 
   // Generation of Data Sampling infrastructure

@@ -20,6 +20,7 @@
 #include "QualityControl/InfrastructureSpecReader.h"
 #include "QualityControl/Activity.h"
 #include "QualityControl/RootClassFactory.h"
+#include "QualityControl/runnerUtils.h"
 
 #include <boost/property_tree/ptree.hpp>
 #include <utility>
@@ -149,8 +150,16 @@ void PostProcessingRunner::runOverTimestamps(const std::vector<uint64_t>& timest
   doFinalize({ TriggerType::UserOrControl, false, mTaskConfig.activity, timestamps.back() });
 }
 
-void PostProcessingRunner::start()
+void PostProcessingRunner::start(const framework::ServiceRegistry* dplServices)
 {
+  if (dplServices != nullptr) {
+    mTaskConfig.activity.mId = computeRunNumber(*dplServices, mTaskConfig.activity.mId);
+    mTaskConfig.activity.mType = computeRunType(*dplServices, mTaskConfig.activity.mType);
+    mTaskConfig.activity.mPeriodName = computePeriodName(*dplServices, mTaskConfig.activity.mPeriodName);
+    mTaskConfig.activity.mPassName = computePassName(mTaskConfig.activity.mPassName);
+    mTaskConfig.activity.mProvenance = computeProvenance(mTaskConfig.activity.mProvenance);
+  }
+
   if (mTaskState == TaskState::Created || mTaskState == TaskState::Finished) {
     mInitTriggers = trigger_helpers::createTriggers(mTaskConfig.initTriggers, mTaskConfig);
     if (trigger_helpers::hasUserOrControlTrigger(mTaskConfig.initTriggers)) {

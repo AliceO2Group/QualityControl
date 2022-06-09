@@ -38,8 +38,6 @@
 using namespace std;
 using namespace o2::framework;
 
-//#define QC_MCH_SAVE_TEMP_ROOTFILE 1
-
 #define MCH_FFEID_MAX (31 * 2 + 1)
 
 namespace o2
@@ -60,56 +58,32 @@ void PedestalsTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info, Support) << "initialize PedestalsTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
-  mSaveToRootFile = false;
-  if (auto param = mCustomParameters.find("SaveToRootFile"); param != mCustomParameters.end()) {
-    if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
-      mSaveToRootFile = true;
-    }
-  }
-
   mSolar2FeeLinkMapper = o2::mch::raw::createSolar2FeeLinkMapper<o2::mch::raw::ElectronicMapperGenerated>();
   mElec2DetMapper = o2::mch::raw::createElec2DetMapper<o2::mch::raw::ElectronicMapperGenerated>();
 
   const uint32_t nElecXbins = PedestalsTask::sMaxFeeId * PedestalsTask::sMaxLinkId * PedestalsTask::sMaxDsId;
 
   mHistogramPedestals = std::make_shared<TH2F>("Pedestals_Elec", "Pedestals", nElecXbins, 0, nElecXbins, 64, 0, 64);
-  mHistogramPedestals->SetOption("colz");
-  mAllHistograms.push_back(mHistogramPedestals.get());
-  if (!mSaveToRootFile) {
-    getObjectsManager()->startPublishing(mHistogramPedestals.get());
-  }
+  publishObject(mHistogramPedestals.get(), "colz", false);
 
   mHistogramNoise = std::make_shared<TH2F>("Noise_Elec", "Noise", nElecXbins, 0, nElecXbins, 64, 0, 64);
-  mHistogramNoise->SetOption("colz");
-  mAllHistograms.push_back(mHistogramNoise.get());
-  if (!mSaveToRootFile) {
-    getObjectsManager()->startPublishing(mHistogramNoise.get());
-  }
+  publishObject(mHistogramNoise.get(), "colz", false);
 
   std::string stname[2]{ "ST12", "ST345" };
   for (int i = 0; i < 2; i++) {
     mHistogramPedestalsMCH[i] = std::make_shared<GlobalHistogram>(fmt::format("Pedestals_{}", stname[i]), "Pedestals", i);
     mHistogramPedestalsMCH[i]->init();
-    mAllHistograms.push_back(mHistogramPedestalsMCH[i]->getHist());
-    if (!mSaveToRootFile) {
-      getObjectsManager()->startPublishing(mHistogramPedestalsMCH[i]->getHist());
-    }
+    publishObject(mHistogramPedestalsMCH[i]->getHist(), "colz", false);
 
     mHistogramNoiseMCH[i] = std::make_shared<GlobalHistogram>(fmt::format("Noise_{}", stname[i]), "Noise", i);
     mHistogramNoiseMCH[i]->init();
-    mAllHistograms.push_back(mHistogramNoiseMCH[i]->getHist());
-    if (!mSaveToRootFile) {
-      getObjectsManager()->startPublishing(mHistogramNoiseMCH[i]->getHist());
-    }
+    publishObject(mHistogramNoiseMCH[i]->getHist(), "colz", false);
   }
 
   for (int si = 0; si < 5; si++) {
     mHistogramNoiseDistribution[si] = std::make_shared<TH1F>(TString::Format("ST%d/Noise_Distr_ST%d", si + 1, si + 1),
                                                              TString::Format("Noise distribution (ST%d)", si + 1), 1000, 0, 10);
-    mAllHistograms.push_back(mHistogramNoiseDistribution[si].get());
-    if (!mSaveToRootFile) {
-      getObjectsManager()->startPublishing(mHistogramNoiseDistribution[si].get());
-    }
+    publishObject(mHistogramNoiseDistribution[si].get(), "hist", false);
   }
 
   for (auto de : o2::mch::raw::deIdsForAllMCH) {
@@ -129,55 +103,35 @@ void PedestalsTask::initialize(o2::framework::InitContext& /*ctx*/)
       auto hNoiseDE = std::make_shared<TH1F>(TString::Format("%sNoise_Distr_DE%03d_b_%d", getHistoPath(de).c_str(), de, pi),
                                              TString::Format("Noise distribution (DE%03d B, %d)", de, pi), 1000, 0, 10);
       mHistogramNoiseDistributionDE[pi][0].insert(make_pair(de, hNoiseDE));
-      hNoiseDE->SetOption("hist");
-      mAllHistograms.push_back(hNoiseDE.get());
-      if (!mSaveToRootFile) {
-        getObjectsManager()->startPublishing(hNoiseDE.get());
-      }
+      publishObject(hNoiseDE.get(), "hist", false);
 
       hNoiseDE = std::make_shared<TH1F>(TString::Format("%sNoise_Distr_DE%03d_nb_%d", getHistoPath(de).c_str(), de, pi),
                                         TString::Format("Noise distribution (DE%03d NB, %d)", de, pi), 1000, 0, 10);
       mHistogramNoiseDistributionDE[pi][1].insert(make_pair(de, hNoiseDE));
-      hNoiseDE->SetOption("hist");
-      mAllHistograms.push_back(hNoiseDE.get());
-      if (!mSaveToRootFile) {
-        getObjectsManager()->startPublishing(hNoiseDE.get());
-      }
+      publishObject(hNoiseDE.get(), "hist", false);
     }
 
     {
-      auto hPedXY = std::make_shared<DetectorHistogram>(TString::Format("%sPedestals_DE%03d_B", getHistoPath(de).c_str(), de),
+      auto hPedXY = std::make_shared<DetectorHistogram>(TString::Format("%sPedestals_XY_B_%03d", getHistoPath(de).c_str(), de),
                                                         TString::Format("Pedestals (DE%03d B)", de), de, 0);
       mHistogramPedestalsXY[0].insert(make_pair(de, hPedXY));
-      mAllHistograms.push_back(hPedXY->getHist());
-      if (!mSaveToRootFile) {
-        getObjectsManager()->startPublishing(hPedXY->getHist());
-      }
+      publishObject(hPedXY->getHist(), "colz", false);
 
-      auto hNoiseXY = std::make_shared<DetectorHistogram>(TString::Format("%sNoise_DE%03d_B", getHistoPath(de).c_str(), de),
+      auto hNoiseXY = std::make_shared<DetectorHistogram>(TString::Format("%sNoise_XY_B_%03d", getHistoPath(de).c_str(), de),
                                                           TString::Format("Noise (DE%03d B)", de), de, 0);
       mHistogramNoiseXY[0].insert(make_pair(de, hNoiseXY));
-      mAllHistograms.push_back(hNoiseXY->getHist());
-      if (!mSaveToRootFile) {
-        getObjectsManager()->startPublishing(hNoiseXY->getHist());
-      }
+      publishObject(hNoiseXY->getHist(), "colz", false);
     }
     {
-      auto hPedXY = std::make_shared<DetectorHistogram>(TString::Format("%sPedestals_DE%03d_NB", getHistoPath(de).c_str(), de),
+      auto hPedXY = std::make_shared<DetectorHistogram>(TString::Format("%sPedestals_XY_NB_%03d", getHistoPath(de).c_str(), de),
                                                         TString::Format("Pedestals (DE%03d NB)", de), de, 1);
       mHistogramPedestalsXY[1].insert(make_pair(de, hPedXY));
-      mAllHistograms.push_back(hPedXY->getHist());
-      if (!mSaveToRootFile) {
-        getObjectsManager()->startPublishing(hPedXY->getHist());
-      }
+      publishObject(hPedXY->getHist(), "colz", false);
 
-      auto hNoiseXY = std::make_shared<DetectorHistogram>(TString::Format("%sNoise_DE%03d_NB", getHistoPath(de).c_str(), de),
+      auto hNoiseXY = std::make_shared<DetectorHistogram>(TString::Format("%sNoise_XY_NB_%03d", getHistoPath(de).c_str(), de),
                                                           TString::Format("Noise (DE%03d NB)", de), de, 1);
       mHistogramNoiseXY[1].insert(make_pair(de, hNoiseXY));
-      mAllHistograms.push_back(hNoiseXY->getHist());
-      if (!mSaveToRootFile) {
-        getObjectsManager()->startPublishing(hNoiseXY->getHist());
-      }
+      publishObject(hNoiseXY->getHist(), "colz", false);
     }
   }
 
@@ -345,7 +299,7 @@ void PedestalsTask::monitorDataPedestals(o2::framework::ProcessingContext& ctx)
     double rms = p.getRms();
 
     auto solarID = dsChID.getSolarId();
-    auto dsID = dsChID.getDsId();
+    auto dsID = dsChID.getElinkId();
     auto channel = dsChID.getChannel();
 
     PlotPedestal(solarID, dsID, channel, mean, rms);
@@ -364,7 +318,7 @@ void PedestalsTask::monitorDataDigits(o2::framework::ProcessingContext& ctx)
     }
 
     PlotPedestal(p.dsChannelId.getSolarId(),
-                 p.dsChannelId.getDsId(),
+                 p.dsChannelId.getElinkId(),
                  p.dsChannelId.getChannel(),
                  p.mPedestal,
                  p.getRms());
@@ -381,19 +335,6 @@ void PedestalsTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
 }
 
-void PedestalsTask::writeHistos()
-{
-  if (!mSaveToRootFile) {
-    return;
-  }
-
-  TFile f("mch-qc-pedestals.root", "RECREATE");
-  for (auto h : mAllHistograms) {
-    h->Write();
-  }
-  f.Close();
-}
-
 void PedestalsTask::endOfCycle()
 {
   ILOG(Info, Support) << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
@@ -405,8 +346,6 @@ void PedestalsTask::endOfCycle()
 
   mHistogramPedestalsMCH[1]->set(mHistogramPedestalsXY[0], mHistogramPedestalsXY[1], true);
   mHistogramNoiseMCH[1]->set(mHistogramNoiseXY[0], mHistogramNoiseXY[1], true);
-
-  writeHistos();
 }
 
 void PedestalsTask::endOfActivity(Activity& /*activity*/)
@@ -415,8 +354,6 @@ void PedestalsTask::endOfActivity(Activity& /*activity*/)
   ILOG(Info, Support) << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 
   fill_noise_distributions();
-
-  writeHistos();
 }
 
 void PedestalsTask::reset()

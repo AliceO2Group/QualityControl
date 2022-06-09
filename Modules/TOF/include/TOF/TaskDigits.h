@@ -27,6 +27,7 @@ class TH1F;
 class TH2F;
 class TH1I;
 class TH2I;
+class TH2S;
 class TProfile;
 class TProfile2D;
 
@@ -72,9 +73,10 @@ class TaskDigits final : public TaskInterface
   static constexpr int mRangeMaxOrbitPerTimeFrame = 256;                        /// Number of bins for the OrbitPerTimeFrame axis.
   static constexpr int mBinsOrbitPerTimeFrame = mRangeMaxOrbitPerTimeFrame * 3; /// Max range in the OrbitPerTimeFrame axis. 3 orbits are recorded per time frame
   // Multiplicity
-  int mBinsMultiplicity = 2000;                   /// Number of bins in multiplicity plot
-  static constexpr int mRangeMinMultiplicity = 0; /// Min range in multiplicity plot
-  int mRangeMaxMultiplicity = mBinsMultiplicity;  /// Max range in multiplicity plot
+  int mBinsMultiplicity = 2000;                      /// Number of bins in multiplicity plot
+  static constexpr int mRangeMinMultiplicity = 0;    /// Min range in multiplicity plot
+  int mRangeMaxMultiplicity = mBinsMultiplicity;     /// Max range in multiplicity plot
+  static constexpr int mBinsBCForMultiplicity = 198; /// Number of bins for the BC axis in the multiplicity vs BC plot
   // Time
   int mBinsTime = 300;                                  /// Number of bins in time plot
   float fgkNbinsWidthTime = 2.44;                       /// Width of bins in time plot
@@ -91,6 +93,13 @@ class TaskDigits final : public TaskInterface
 
   bool mFlagEnableDiagnostic = false;       /// Flag to enable or disable diagnostic plots
   bool mFlagEnableOrphanPerChannel = false; /// Flag to enable the histogram of the orphan counter per channel
+
+  ////////////////
+  // Parameters //
+  ////////////////
+
+  int mNoiseClassSelection = -1; /// Index to discard classes of noisy channels -1 no discarding, 0 first class are discarded, 1 second class, 2 third class
+
   ////////////////
   // Histograms //
   ////////////////
@@ -105,6 +114,7 @@ class TaskDigits final : public TaskInterface
   std::shared_ptr<TH1I> mHistoROWSize = nullptr;            /// Readout window size
   std::shared_ptr<TH2I> mHistoDecodingErrors = nullptr;     /// Decoding error monitoring
   std::shared_ptr<TH1S> mHistoOrphanPerChannel = nullptr;   /// Orphans per channel
+  std::shared_ptr<TH2S> mHistoNoisyChannels = nullptr;      /// Channel flagged as noise (divided per flagged rate class)
 
   // Multiplicity
   std::shared_ptr<TH1I> mHistoMultiplicity = nullptr;          /// TOF raw hit multiplicity per event
@@ -113,6 +123,8 @@ class TaskDigits final : public TaskInterface
   std::shared_ptr<TH1I> mHistoMultiplicityIC = nullptr;        /// TOF raw hit multiplicity per event - I/C side
   std::shared_ptr<TH1I> mHistoMultiplicityOC = nullptr;        /// TOF raw hit multiplicity per event - O/C side
   std::shared_ptr<TProfile> mHitMultiplicityVsCrate = nullptr; /// TOF raw hit multiplicity per event vs Crate
+  std::shared_ptr<TH2F> mHitMultiplicityVsBC = nullptr;        /// TOF raw hit multiplicity per event vs BC
+  std::shared_ptr<TProfile> mHitMultiplicityVsBCpro = nullptr; /// TOF raw hit multiplicity per event vs BC (TProfile)
 
   // Time
   std::shared_ptr<TH1F> mHistoTime = nullptr;        /// TOF hit time (ns)
@@ -141,9 +153,11 @@ class TaskDigits final : public TaskInterface
 
   // Counters
   static constexpr unsigned int nchannels = RawDataDecoder::ncrates * RawDataDecoder::nstrips * 24; /// Number of channels
-  Counter<RawDataDecoder::ncrates, nullptr> mHitCounterPerStrip[RawDataDecoder::nstrips];           /// Hit map counter in the crate, one per strip
-  Counter<nchannels, nullptr> mHitCounterPerChannel;                                                /// Hit map counter in the single channel
-  Counter<nchannels, nullptr> mOrphanCounterPerChannel;                                             /// Orphan counter in the single channel
+  Counter<RawDataDecoder::ncrates, nullptr> mCounterHitsPerStrip[RawDataDecoder::nstrips];          /// Hit map counter in the crate, one per strip
+  Counter<nchannels, nullptr> mCounterHitsPerChannel;                                               /// Hit map counter in the single channel
+  Counter<nchannels, nullptr> mCounterOrphansPerChannel;                                            /// Orphan counter in the single channel
+  static constexpr unsigned int nNoiseClasses = 3;                                                  /// Number of noise classes
+  Counter<nchannels, nullptr> mCounterNoisyChannels[nNoiseClasses];                                 /// Noise flagged channel counter
 };
 
 } // namespace o2::quality_control_modules::tof
