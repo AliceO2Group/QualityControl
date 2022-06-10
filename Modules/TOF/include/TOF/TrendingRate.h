@@ -86,8 +86,9 @@ class TrendingRate : public PostProcessingInterface
   TH2F* mPreviousPlot = nullptr; /// to keep memory of previous plot to work only with updates
 
   static constexpr float orbit_lenght = 90E-6;
-  float mThresholdSgn = 0.3;
-  float mThresholdBkg = 0.1;
+  // These are initialized from the TrendingConfigTOF.h
+  float mThresholdSgn = 0.f;
+  float mThresholdBkg = 0.f;
 };
 
 } // namespace o2::quality_control_modules::tof

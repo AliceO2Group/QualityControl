@@ -105,16 +105,17 @@ class TaskDigits final : public TaskInterface
   ////////////////
 
   // Event info
-  std::shared_ptr<TH2F> mHistoOrbitID = nullptr;            /// Orbits seen
-  std::shared_ptr<TH2F> mHistoBCID = nullptr;               /// Bunch crossings seen
-  std::shared_ptr<TH2F> mHistoEventCounter = nullptr;       /// Event counters seen
-  std::shared_ptr<TH2F> mHistoHitMap = nullptr;             /// TOF hit map (1 bin = 1 FEA = 24 channels)
-  std::shared_ptr<TH2F> mHistoTimeVsBCID = nullptr;         /// TOF time vs BCID
-  std::shared_ptr<TProfile2D> mHistoOrbitVsCrate = nullptr; /// Orbits per crate
-  std::shared_ptr<TH1I> mHistoROWSize = nullptr;            /// Readout window size
-  std::shared_ptr<TH2I> mHistoDecodingErrors = nullptr;     /// Decoding error monitoring
-  std::shared_ptr<TH1S> mHistoOrphanPerChannel = nullptr;   /// Orphans per channel
-  std::shared_ptr<TH2S> mHistoNoisyChannels = nullptr;      /// Channel flagged as noise (divided per flagged rate class)
+  std::shared_ptr<TH2F> mHistoOrbitID = nullptr;             /// Orbits seen
+  std::shared_ptr<TH2F> mHistoBCID = nullptr;                /// Bunch crossings seen
+  std::shared_ptr<TH2F> mHistoEventCounter = nullptr;        /// Event counters seen
+  std::shared_ptr<TH2F> mHistoHitMap = nullptr;              /// TOF hit map (1 bin = 1 FEA = 24 channels)
+  std::shared_ptr<TH2F> mHistoHitMapNoiseFiltered = nullptr; /// TOF hit map (1 bin = 1 FEA = 24 channels) filtered with the noise
+  std::shared_ptr<TH2F> mHistoTimeVsBCID = nullptr;          /// TOF time vs BCID
+  std::shared_ptr<TProfile2D> mHistoOrbitVsCrate = nullptr;  /// Orbits per crate
+  std::shared_ptr<TH1I> mHistoROWSize = nullptr;             /// Readout window size
+  std::shared_ptr<TH2I> mHistoDecodingErrors = nullptr;      /// Decoding error monitoring
+  std::shared_ptr<TH1S> mHistoOrphanPerChannel = nullptr;    /// Orphans per channel
+  std::shared_ptr<TH2S> mHistoNoisyChannels = nullptr;       /// Channel flagged as noise (divided per flagged rate class)
 
   // Multiplicity
   std::shared_ptr<TH1I> mHistoMultiplicity = nullptr;          /// TOF raw hit multiplicity per event
@@ -152,12 +153,13 @@ class TaskDigits final : public TaskInterface
   // std::shared_ptr<TH2F> mTimeVsCttmBit = nullptr;           /// TOF raw time vs trg channel
 
   // Counters
-  static constexpr unsigned int nchannels = RawDataDecoder::ncrates * RawDataDecoder::nstrips * 24; /// Number of channels
-  Counter<RawDataDecoder::ncrates, nullptr> mCounterHitsPerStrip[RawDataDecoder::nstrips];          /// Hit map counter in the crate, one per strip
-  Counter<nchannels, nullptr> mCounterHitsPerChannel;                                               /// Hit map counter in the single channel
-  Counter<nchannels, nullptr> mCounterOrphansPerChannel;                                            /// Orphan counter in the single channel
-  static constexpr unsigned int nNoiseClasses = 3;                                                  /// Number of noise classes
-  Counter<nchannels, nullptr> mCounterNoisyChannels[nNoiseClasses];                                 /// Noise flagged channel counter
+  static constexpr unsigned int nchannels = RawDataDecoder::ncrates * RawDataDecoder::nstrips * 24;     /// Number of channels
+  Counter<RawDataDecoder::ncrates, nullptr> mCounterHitsPerStrip[RawDataDecoder::nstrips];              /// Hit map counter in the crate, one per strip
+  Counter<RawDataDecoder::ncrates, nullptr> mCounterHitsPerStripNoiseFiltered[RawDataDecoder::nstrips]; /// Hit map counter in the crate, one per strip. With noise filtered
+  Counter<nchannels, nullptr> mCounterHitsPerChannel;                                                   /// Hit map counter in the single channel
+  Counter<nchannels, nullptr> mCounterOrphansPerChannel;                                                /// Orphan counter in the single channel
+  static constexpr unsigned int nNoiseClasses = 3;                                                      /// Number of noise classes
+  Counter<nchannels, nullptr> mCounterNoisyChannels[nNoiseClasses];                                     /// Noise flagged channel counter
 };
 
 } // namespace o2::quality_control_modules::tof
