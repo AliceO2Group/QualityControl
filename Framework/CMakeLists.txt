@@ -83,7 +83,10 @@ add_library(O2QualityControl
   src/RootFileSource.cxx
   src/UpdatePolicyType.cxx
   src/RootClassFactory.cxx
-  src/ConfigParamGlo.cxx)
+  src/ConfigParamGlo.cxx
+  src/TrendingTaskExtended.cxx
+  src/TrendingTaskExtendedConfig.cxx)
+
 
 target_include_directories(
   O2QualityControl
@@ -121,6 +124,8 @@ add_root_dictionary(O2QualityControl
   include/QualityControl/AggregatorInterface.h
   include/QualityControl/PostProcessingInterface.h
   include/QualityControl/TrendingTask.h
+  include/QualityControl/SliceInfoTrending.h
+  include/QualityControl/TrendingTaskExtended.h
   include/QualityControl/MonitorObjectCollection.h
   LINKDEF include/QualityControl/LinkDef.h
   BASENAME O2QualityControl)
