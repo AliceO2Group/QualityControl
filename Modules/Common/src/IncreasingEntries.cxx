@@ -33,7 +33,6 @@ namespace o2::quality_control_modules::common
 
 void IncreasingEntries::configure()
 {
-  ILOG(Debug, Support) << "AAAA " << mCustomParameters.size() << ENDM;
   parseBooleanParam(mCustomParameters, "mustIncrease", mMustIncrease);
 
   ILOG(Debug, Support) << "mustIncrease: " << mMustIncrease << ENDM;
