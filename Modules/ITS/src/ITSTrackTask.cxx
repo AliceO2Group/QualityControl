@@ -267,7 +267,7 @@ void ITSTrackTask::createAllHistos()
   formatAxes(hAngularDistribution, "#eta", "#phi", 1, 1.10);
   hAngularDistribution->SetStats(0);
 
-  hNClusters = new TH1D("NClusters", "NClusters", 20, 0, 20);
+  hNClusters = new TH1D("NClusters", "NClusters", 15, -0.5, 14.5);
   hNClusters->SetTitle("hNClusters");
   addObject(hNClusters);
   formatAxes(hNClusters, "Number of clusters per Track", "Counts", 1, 1.10);
@@ -322,7 +322,7 @@ void ITSTrackTask::createAllHistos()
   formatAxes(hNtracks, "# tracks", "Counts", 1, 1.10);
   hNtracks->SetStats(0);
 
-  hNClustersPerTrackEta = new TH2D("NClustersPerTrackEta", "NClustersPerTrackEta", 300, -1.5, 1.5, 13, 1.5, 14.5);
+  hNClustersPerTrackEta = new TH2D("NClustersPerTrackEta", "NClustersPerTrackEta", 300, -1.5, 1.5, 15, -0.5, 14.5);
   hNClustersPerTrackEta->SetTitle("Eta vs NClusters Per Track");
   addObject(hNClustersPerTrackEta);
   formatAxes(hNClustersPerTrackEta, "#eta", "# of Clusters per Track", 1, 1.10);
