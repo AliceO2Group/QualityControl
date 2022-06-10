@@ -73,7 +73,7 @@ Quality IncreasingEntries::check(std::map<std::string, std::shared_ptr<MonitorOb
       histo->GetListOfFunctions()->Add(mPaveText->Clone());
     } else if (!mMustIncrease && previousNumberEntries != currentNumberEntries) {
       result = Quality::Bad;
-      result.addReason(FlagReasonFactory::NoDetectorData(), "Number of entries has increased.");
+      result.addReason(FlagReasonFactory::Unknown(), "Number of entries has increased.");
       histo->GetListOfFunctions()->Add(mPaveText->Clone());
     }
 
