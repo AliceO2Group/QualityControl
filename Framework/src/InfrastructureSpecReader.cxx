@@ -152,23 +152,25 @@ DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(std::stri
 
   switch (dss.type) {
     case DataSourceType::DataSamplingPolicy: {
-      dss.name = dataSourceTree.get<std::string>("name");
+      dss.id = dataSourceTree.get<std::string>("name");
+      dss.name = dss.id;
       dss.inputs = DataSampling::InputSpecsForPolicy(wholeTree.get_child("dataSamplingPolicies"), dss.name);
       break;
     }
     case DataSourceType::Direct: {
       auto inputsQuery = dataSourceTree.get<std::string>("query");
-      dss.name = inputsQuery;
+      dss.id = inputsQuery;
+      dss.name = dss.id;
       dss.inputs = DataDescriptorQueryBuilder::parse(inputsQuery.c_str());
       break;
     }
     case DataSourceType::Task: {
-      dss.name = dataSourceTree.get<std::string>("name");
-      // dss.name is actually taskID (backwards compatibility). We deduce the taskName as followS:
-      auto taskName = wholeTree.get<std::string>("qc.tasks." + dss.name + ".taskName", dss.name);
-      auto detectorName = wholeTree.get<std::string>("qc.tasks." + dss.name + ".detectorName");
+      dss.id = dataSourceTree.get<std::string>("name");
+      // this allows us to have tasks with the same name for different detectors
+      dss.name = wholeTree.get<std::string>("qc.tasks." + dss.id + ".taskName", dss.id);
+      auto detectorName = wholeTree.get<std::string>("qc.tasks." + dss.id + ".detectorName");
 
-      dss.inputs = { { dss.name, TaskRunner::createTaskDataOrigin(detectorName), TaskRunner::createTaskDataDescription(taskName), 0, Lifetime::Sporadic } };
+      dss.inputs = { { dss.name, TaskRunner::createTaskDataOrigin(detectorName), TaskRunner::createTaskDataDescription(dss.name), 0, Lifetime::Sporadic } };
       if (dataSourceTree.count("MOs") > 0) {
         for (const auto& moName : dataSourceTree.get_child("MOs")) {
           dss.subInputs.push_back(moName.second.get_value<std::string>());
@@ -177,7 +179,8 @@ DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(std::stri
       break;
     }
     case DataSourceType::PostProcessingTask: {
-      dss.name = dataSourceTree.get<std::string>("name");
+      dss.id = dataSourceTree.get<std::string>("name");
+      dss.name = dss.id;
       dss.inputs = { { dss.name, PostProcessingDevice::createPostProcessingDataOrigin(), PostProcessingDevice::createPostProcessingDataDescription(dss.name), 0, Lifetime::Sporadic } };
       if (dataSourceTree.count("MOs") > 0) {
         for (const auto& moName : dataSourceTree.get_child("MOs")) {
@@ -187,7 +190,8 @@ DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(std::stri
       break;
     }
     case DataSourceType::Check: {
-      dss.name = dataSourceTree.get<std::string>("name");
+      dss.id = dataSourceTree.get<std::string>("name");
+      dss.name = dss.id;
       dss.inputs = { { dss.name, "QC", Check::createCheckDataDescription(dss.name), 0, Lifetime::Sporadic } };
       if (dataSourceTree.count("QOs") > 0) {
         for (const auto& moName : dataSourceTree.get_child("QOs")) {
@@ -207,7 +211,8 @@ DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(std::stri
       break;
     }
     case DataSourceType::ExternalTask: {
-      dss.name = dataSourceTree.get<std::string>("name");
+      dss.id = dataSourceTree.get<std::string>("name");
+      dss.name = dss.id;
       auto query = wholeTree.get<std::string>("qc.externalTasks." + dss.name + ".query");
       dss.inputs = o2::framework::DataDescriptorQueryBuilder::parse(query.c_str());
       break;
