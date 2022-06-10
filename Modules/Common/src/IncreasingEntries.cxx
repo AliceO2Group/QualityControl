@@ -37,7 +37,7 @@ void IncreasingEntries::configure()
 
   ILOG(Debug, Support) << "mustIncrease: " << mMustIncrease << ENDM;
 
-  if(mMustIncrease) {
+  if (mMustIncrease) {
     mPaveText = make_shared<TPaveText>(1, 0.125, 0.6, 0, "NDC");
     mPaveText->AddText("Number of Entries has *not* changed");
     mPaveText->AddText("in the past cycle");
@@ -50,7 +50,6 @@ void IncreasingEntries::configure()
     mPaveText->SetFillColor(kRed);
     mPaveText->SetMargin(0);
   }
-
 }
 
 Quality IncreasingEntries::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)

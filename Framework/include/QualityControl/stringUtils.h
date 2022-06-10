@@ -61,7 +61,7 @@ std::vector<std::string> getHexRepresentation(unsigned char* data, size_t size)
 /// @param flag will be set accordingly if the 'name' element is in mCustomParameters
 /// @return true if the option was found, false otherwise
 bool parseBooleanParam(std::unordered_map<std::string, std::string> customParameters, const std::string& name,
-                           bool& flag)
+                       bool& flag)
 {
   if (auto param = customParameters.find(name); param != customParameters.end()) {
     ILOG(Info, Devel) << "Custom parameter - " << name << " " << param->second << ENDM;
