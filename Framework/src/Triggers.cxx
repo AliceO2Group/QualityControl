@@ -144,6 +144,7 @@ TriggerFcn NewObject(std::string databaseUrl, std::string databaseType, std::str
   constexpr auto timestampKey = "Valid-From";
   auto fullObjectPath = (databaseType == "qcdb" ? activity.mProvenance + "/" : "") + objectPath;
 
+  ILOG(Debug, Support) << "Initializing newObject trigger for the object '" << fullObjectPath << "' and Activity '" << activity << "'" << ENDM;
   // We support only CCDB here.
   auto db = std::make_shared<o2::ccdb::CcdbApi>();
   db->init(databaseUrl);
@@ -160,7 +161,7 @@ TriggerFcn NewObject(std::string databaseUrl, std::string databaseType, std::str
   } else {
     // We don't make a fuss over it, because we might be just waiting for the first version of such object.
     // It should not happen often though, so having a warning makes sense.
-    ILOG(Warning, Support) << "No MD5 of the file '" << fullObjectPath << "' in the db '" << databaseUrl << "', probably the file is missing." << ENDM;
+    ILOG(Warning, Support) << "Could not find the file '" << fullObjectPath << "' in the db '" << databaseUrl << "' for given Activity settings. It is fine at SOR." << ENDM;
   }
 
   return [db, databaseUrl = std::move(databaseUrl), fullObjectPath = std::move(fullObjectPath), lastMD5, activity, metadata]() mutable -> Trigger {
@@ -173,7 +174,7 @@ TriggerFcn NewObject(std::string databaseUrl, std::string databaseType, std::str
     } else {
       // We don't make a fuss over it, because we might be just waiting for the first version of such object.
       // It should not happen often though, so having a warning makes sense.
-      ILOG(Warning, Support) << "No MD5 of the file '" << fullObjectPath << "' in the db '" << databaseUrl << "', probably the file is missing." << ENDM;
+      ILOG(Warning, Support) << "Could not find the file '" << fullObjectPath << "' in the db '" << databaseUrl << "' for given Activity settings." << ENDM;
     }
 
     return { TriggerType::No, false };
