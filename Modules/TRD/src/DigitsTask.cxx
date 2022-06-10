@@ -188,9 +188,9 @@ void DigitsTask::buildHistograms()
   mNCls->GetYaxis()->SetTitle("Counts");
   // getObjectsManager()->startPublishing(mNCls.get());
 
-  mClsAmp.reset(new TH1F("NClsAmp", "Total number of clusters per sector", 200, -0.5, 199.5));
-  mClsAmp->GetXaxis()->SetTitle("Sector");
-  mClsAmp->GetYaxis()->SetTitle("Counts");
+  //mClsAmp.reset(new TH1F("NClsAmp", "Total number of clusters per sector", 200, -0.5, 199.5));
+  //mClsAmp->GetXaxis()->SetTitle("Sector");
+  //mClsAmp->GetYaxis()->SetTitle("Counts");
   // getObjectsManager()->startPublishing(mClsAmp.get());
 
   mClsTb.reset(new TH2F("ClsTb", "Cluster  vs. timebin", 30, -0.5, 29.5, 200, 0, 2000));
