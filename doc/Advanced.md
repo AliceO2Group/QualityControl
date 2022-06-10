@@ -1090,6 +1090,21 @@ printing them as soon as they are reported, please also add `--monitoring-backen
 
 One can also enable publishing metrics related to CPU/memory usage. To do so, use `--resources-monitoring <interval_sec>`.
 
+## Common check `IncreasingEntries`
+
+This check make sures that the number of entries has increased in the past cycle. If not it will display a pavetext 
+on the plot and set the quality to bad. 
+
+If you use `SetBinContent` the number of entries does not increase creating a false positive. Please call `ResetStats()`
+after using `SetBinContent`.
+
+The behaviour of the check can be inverted by setting the customparameter "mustIncrease" to "false" : 
+```
+        "checkParameters": {
+          "mustIncrease": "false"
+        }
+```
+
 
 ---
 
