@@ -32,7 +32,7 @@
                 "maxNumberCycles": "-1",
                 "dataSource": {
                     "type": "direct",
-                    "query": "filter:ITS/RAWDATA;G:FLP/DISTSUBTIMEFRAME"
+                    "query": "filter:ITS/RAWDATA;G:FLP/DISTSUBTIMEFRAME/0"
                 },
                 "location": "remote",
                 "taskParameters": {
