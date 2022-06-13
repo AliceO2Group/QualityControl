@@ -74,26 +74,33 @@ Quality CheckHitMap::check(std::map<std::string, std::shared_ptr<MonitorObject>>
         if (!refmap->getChannelEnabled(i)) {
           continue;
         }
-        o2::tof::Geo::getVolumeIndices(refmap->getChannelEnabled(i), det);
+        o2::tof::Geo::getVolumeIndices(i, det);
         strip = o2::tof::Geo::getStripNumberPerSM(det[1], det[2]); // Strip index in the SM
-        mHistoRefHitMap->SetBinContent(strip, det[0] * 4 + det[4] / 12, 1);
+        const int istrip = mHistoRefHitMap->GetYaxis()->FindBin(strip);
+        const int crate = det[0] * 4 + det[4] / 12;
+        const int icrate = mHistoRefHitMap->GetXaxis()->FindBin(0.25f * crate);
+        mHistoRefHitMap->SetBinContent(icrate, istrip, 1);
+        // ILOG(Debug, Devel) << "setting channel " << i << " as enabled: crate " << crate << " -> " << icrate << "/" << mHistoRefHitMap->GetNbinsX() << ", strip " << strip << " -> " << istrip << "/" << mHistoRefHitMap->GetNbinsY() << ENDM;
       }
-      h->GetListOfFunctions()->Add(mHistoRefHitMap.get());
-
-      // for (int i = 1; i <= mHistoRefHitMap->GetNbinsX(); i++) {
-      //   for (int j = 1; j <= mHistoRefHitMap->GetNbinsY(); j++) {
-      //     mHistoRefHitMap->SetBinContent(i, i, 0);
-      //   }
-      // }
-      ILOG(Debug, Devel) << "got refmap " << refmap << ENDM;
-      result = Quality::Good;
+      mNWithHits = 0;
+      mNEnabled = 0;
       for (int i = 1; i <= h->GetNbinsX(); i++) {
         for (int j = 1; j <= h->GetNbinsY(); j++) {
-          if (0) {
-            result = Quality::Medium;
+          if (h->GetBinContent(i, j) > 0.0) { // Yes hit
+            mNWithHits++;
+          }
+          if (mHistoRefHitMap->GetBinContent(i, j) > 0.0) { // Ch. enabled
+            mNEnabled++;
           }
         }
       }
+
+      if ((mNWithHits - mNEnabled) > mTrheshold) {
+        mShifterMessages.AddMessage(Form("Hits %i > enabled %i (Thr. %i)", mNWithHits, mNEnabled, mTrheshold));
+      } else if ((mNWithHits - mNEnabled) < mTrheshold) {
+        mShifterMessages.AddMessage(Form("Hits %i < enabled %i (Thr. %i)", mNWithHits, mNEnabled, mTrheshold));
+      }
+      result = Quality::Bad;
     }
   }
   return result;
@@ -110,6 +117,11 @@ void CheckHitMap::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
     auto* h = static_cast<TH2F*>(mo->getObject());
     if (checkResult != Quality::Good) {
       auto msg = mShifterMessages.MakeMessagePad(h, checkResult);
+      if (checkResult == Quality::Bad) {
+        msg->AddText("Call TOF on-call.");
+      } else if (checkResult == Quality::Medium) {
+        msg->AddText("IF TOF IN RUN email TOF on-call.");
+      }
     }
     auto msgPhos = mPhosModuleMessage.MakeMessagePad(h, Quality::Good, "bl");
     if (!msgPhos) {
@@ -117,17 +129,6 @@ void CheckHitMap::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
     }
     msgPhos->SetFillStyle(3004);
     msgPhos->AddText("PHOS");
-    // if (checkResult == Quality::Good) {
-    //   msg->AddText(Form("Mean value = %5.2f", mRawHitsMean));
-    //   msg->AddText(Form("Reference range: %5.2f-%5.2f", mMinRawHits, mMaxRawHits));
-    //   msg->AddText(Form("Events with 0 hits = %5.2f%%", mRawHitsZeroMultIntegral * 100. / mRawHitsIntegral));
-    //   msg->AddText("OK!");
-    // } else if (checkResult == Quality::Bad) {
-    //   msg->AddText("Call TOF on-call.");
-    // } else if (checkResult == Quality::Medium) {
-    //   ILOG(Info, Support) << "Quality::medium, setting to yellow" << ENDM;
-    //   msg->AddText("IF TOF IN RUN email TOF on-call.");
-    // }
   } else {
     ILOG(Error, Support) << "Did not get correct histo from " << mo->GetName() << ENDM;
     return;
