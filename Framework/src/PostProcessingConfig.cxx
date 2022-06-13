@@ -34,7 +34,8 @@ PostProcessingConfig::PostProcessingConfig(const std::string& name, const boost:
              config.get<std::string>("qc.config.Activity.passName", ""),
              config.get<std::string>("qc.config.Activity.provenance", "qc"),
              { config.get<uint64_t>("qc.config.Activity.start", 0),
-               config.get<uint64_t>("qc.config.Activity.end", -1) })
+               config.get<uint64_t>("qc.config.Activity.end", -1) }),
+    matchAnyRunNumber(config.get<bool>("qc.config.postprocessing.matchAnyRunNumber", false))
 {
   for (const auto& initTrigger : config.get_child("qc.postprocessing." + name + ".initTrigger")) {
     initTriggers.push_back(initTrigger.second.get_value<std::string>());

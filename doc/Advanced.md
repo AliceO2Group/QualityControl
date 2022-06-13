@@ -900,7 +900,8 @@ should not be present in real configuration files.
       },
       "postprocessing": {                 "": "Configuration parameters for post-processing",
         "periodSeconds": 10.0,            "": "Sets the interval of checking all the triggers. One can put a very small value",
-                                          "": "for async processing, but use 10 or more seconds for synchronous operations"
+                                          "": "for async processing, but use 10 or more seconds for synchronous operations",
+        "matchAnyRunNumber": "false",     "": "Forces post-processing triggers to match any run, useful when running with AliECS"
       }
     }
   }
