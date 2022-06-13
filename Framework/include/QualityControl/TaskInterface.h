@@ -97,6 +97,7 @@ class TaskInterface
   /// @param name name of the option as in the mCustomParameters and JSON file
   /// @param flag will be set accordingly if the 'name' element is in mCustomParameters
   /// @return true if the option was found, false otherwise
+  /// @deprecated Please use parseBooleanParam in stringUtils
   bool parseBooleanParameter(const std::string& name, bool& flag) const;
 
  protected:

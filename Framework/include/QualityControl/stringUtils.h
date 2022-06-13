@@ -55,6 +55,26 @@ std::vector<std::string> getHexRepresentation(unsigned char* data, size_t size)
   }
   return result;
 }
+
+/// Utility methods to fetch boolean otpions from the custom parameters.
+/// @param name name of the option as in the mCustomParameters and JSON file
+/// @param flag will be set accordingly if the 'name' element is in mCustomParameters
+/// @return true if the option was found, false otherwise
+bool parseBooleanParam(std::unordered_map<std::string, std::string> customParameters, const std::string& name,
+                       bool& flag)
+{
+  if (auto param = customParameters.find(name); param != customParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - " << name << " " << param->second << ENDM;
+    if (param->second == "true" || param->second == "True" || param->second == "TRUE" || param->second == "1") {
+      flag = true;
+    } else if (param->second == "false" || param->second == "False" || param->second == "FALSE" || param->second == "0") {
+      flag = false;
+    }
+    return true;
+  }
+  return false;
+}
+
 } // namespace o2::quality_control::core
 
 #endif // QC_STRING_UTILS_H
