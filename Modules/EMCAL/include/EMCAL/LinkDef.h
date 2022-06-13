@@ -19,4 +19,6 @@
 
 #pragma link C++ class o2::quality_control_modules::emcal::ClusterTask + ;
 
+#pragma link C++ class o2::quality_control_modules::emcal::RawErrorTask + ;
+
 #endif
