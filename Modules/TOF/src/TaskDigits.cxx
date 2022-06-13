@@ -69,8 +69,8 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
       mNoiseClassSelection = -1;
     }
   }
-  parseBooleanParameter("Diagnostic", mFlagEnableDiagnostic);
-  parseBooleanParameter("PerChannel", mFlagEnableOrphanPerChannel);
+  utils::parseBooleanParameter(mCustomParameters, "Diagnostic", mFlagEnableDiagnostic);
+  utils::parseBooleanParameter(mCustomParameters, "PerChannel", mFlagEnableOrphanPerChannel);
 
   // Define histograms
   ILOG(Info, Support) << "initialize TaskDigits" << ENDM;
