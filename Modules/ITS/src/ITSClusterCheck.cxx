@@ -97,12 +97,12 @@ void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
       positionY = 0.8;
     }
 
-    auto* msg = new TLatex(positionX, positionY, Form("#bf{%s}", text.Data()));
+    msg = std::make_shared<TLatex>(positionX, positionY, Form("#bf{%s}", text.Data()));
     msg->SetTextColor(textColor);
-    msg->SetTextSize(0.08);
+    msg->SetTextSize(0.06);
     msg->SetTextFont(43);
     msg->SetNDC();
-    h->GetListOfFunctions()->Add(msg);
+    h->GetListOfFunctions()->Add(msg->Clone());
   }
 
   if (mo->getName().find("General_Occupancy") != std::string::npos) {
@@ -121,13 +121,13 @@ void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
       positionX = 0.15;
       positionY = 0.8;
     }
-    auto* msg = new TLatex(positionX, positionY, Form("#bf{%s}", text.Data()));
+    msg = std::make_shared<TLatex>(positionX, positionY, Form("#bf{%s}", text.Data()));
     msg->SetTextColor(textColor);
-    msg->SetTextSize(0.08);
+    msg->SetTextSize(0.06);
     msg->SetTextFont(43);
     msg->SetNDC();
 
-    h->GetListOfFunctions()->Add(msg);
+    h->GetListOfFunctions()->Add(msg->Clone());
   }
 }
 
