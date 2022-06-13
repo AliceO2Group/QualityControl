@@ -104,9 +104,18 @@ void PostProcessHitMap::update(Trigger t, framework::ServiceRegistry&)
     mHistoHitMap.reset(static_cast<TH2F*>(h->Clone("WithReferenceHitMap")));
     mHistoHitMap->SetFillColor(3);
   }
+  mNWithHits = 0;
+  mNEnabled = 0;
   for (int i = 1; i <= mHistoHitMap->GetNbinsX(); i++) {
     for (int j = 1; j <= mHistoHitMap->GetNbinsY(); j++) {
       mHistoHitMap->SetBinContent(i, j, h->GetBinContent(i, j));
+      // Check matching with respect to reference
+      if (h->GetBinContent(i, j) > 0.0) { // Yes hit
+        mNWithHits++;
+      }
+      if (mHistoRefHitMap->GetBinContent(i, j) > 0.0) { // Ch. enabled
+        mNEnabled++;
+      }
     }
   }
 }
@@ -130,10 +139,21 @@ void PostProcessHitMap::finalize(Trigger t, framework::ServiceRegistry&)
   phosPad.SetTextColor(kBlack);
   phosPad.SetFillColor(kGreen);
   phosPad.SetFillStyle(3004);
-  phosPad.AddText("PHOS");
   phosPad.AddText("Red: Channel ON");
   phosPad.AddText("Green: Hits");
   phosPad.Draw();
+  TPaveText errorPad{ 0.9f, 0.1f, 0.99f, 0.99f, "blNDC" };
+  errorPad.SetTextSize(0.05);
+  errorPad.SetBorderSize(1);
+  errorPad.SetTextColor(kBlack);
+  errorPad.SetFillColor(kRed);
+  if ((mNWithHits - mNEnabled) > mTrheshold) {
+    errorPad.AddText(Form("Hits %i > enabled %i", mNWithHits, mNEnabled));
+    errorPad.Draw();
+  } else if ((mNWithHits - mNEnabled) < mTrheshold) {
+    errorPad.AddText(Form("Hits %i < enabled %i", mNWithHits, mNEnabled));
+    errorPad.Draw();
+  }
 
   auto mo = std::make_shared<o2::quality_control::core::MonitorObject>(c, "PostProcessHitMap", "o2::quality_control_modules::tof::PostProcessDiagnosticPerCreate", "TOF");
   mo->setIsOwner(false);

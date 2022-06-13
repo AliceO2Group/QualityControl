@@ -74,6 +74,9 @@ class PostProcessHitMap final : public quality_control::postprocessing::PostProc
   /// Reference hit map taken from the CCDB and translated into QC binning
   std::shared_ptr<TH2F> mHistoRefHitMap = nullptr; /// TOF reference hit map
   std::shared_ptr<TH2F> mHistoHitMap = nullptr;    /// TOF hit map
+  int mNWithHits = 0;                              // Number of half strips with hits
+  int mNEnabled = 0;                               // Number of enabled half strips
+  int mTrheshold = 0;
 };
 
 } // namespace o2::quality_control_modules::tof
