@@ -23,6 +23,7 @@
 #include <TList.h>
 #include <TH2.h>
 #include <string.h>
+#include <TLatex.h>
 #include <iostream>
 
 namespace o2::quality_control_modules::its
@@ -52,13 +53,15 @@ Quality ITSClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
     }
 
     if (iter->second->getName().find("GeneralOccupancy") != std::string::npos) {
-      auto* hp = dynamic_cast<TH2Poly*>(iter->second->getObject());
-      for (int ilayer = 0; ilayer < NLayer; ilayer++) {
-        result.addMetadata(Form("Layer%d", ilayer), "good");
-        for (int ibin = StaveBoundary[ilayer]; ibin < StaveBoundary[ilayer + 1]; ++ibin) {
-          if (hp->GetBinContent(ibin) > clusterOccupationLimit[ilayer]) {
+      auto* hp = dynamic_cast<TH2D*>(iter->second->getObject());
+      for (int iy = 1; iy <= hp->GetNbinsY(); iy++) {
+        int ilayer = iy <= hp->GetNbinsY() / 2 ? hp->GetNbinsY() / 2 - iy : iy - hp->GetNbinsY() / 2 - 1;
+        std::string tb = iy <= hp->GetNbinsY() / 2 ? "B" : "T";
+        result.addMetadata(Form("Layer%d%s", ilayer, tb.c_str()), "good");
+        for (int ix = 1; ix <= hp->GetNbinsX(); ix++) { // loop on staves
+          if (hp->GetBinContent(ix) > clusterOccupationLimit[ilayer]) {
             result.set(Quality::Medium);
-            result.updateMetadata(Form("Layer%d", ilayer), "medium");
+            result.updateMetadata(Form("Layer%d%s", ilayer, tb.c_str()), "medium");
           }
         }
       }
@@ -94,19 +97,18 @@ void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
       positionY = 0.8;
     }
 
-    msg = std::make_shared<TLatex>(positionX, positionY, Form("#bf{%s}", text.Data()));
+    auto* msg = new TLatex(positionX, positionY, Form("#bf{%s}", text.Data()));
     msg->SetTextColor(textColor);
-    msg->SetTextSize(0.06);
+    msg->SetTextSize(0.08);
     msg->SetTextFont(43);
     msg->SetNDC();
-    h->GetListOfFunctions()->Add(msg->Clone());
+    h->GetListOfFunctions()->Add(msg);
   }
 
   if (mo->getName().find("General_Occupancy") != std::string::npos) {
     auto* h = dynamic_cast<TH2D*>(mo->getObject());
 
     std::string histoName = mo->getName();
-    int iLayer = histoName[histoName.find("Layer") + 5] - 48;
 
     if (checkResult == Quality::Good) {
       text = "Quality::GOOD";
@@ -119,13 +121,13 @@ void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
       positionX = 0.15;
       positionY = 0.8;
     }
-    msg = std::make_shared<TLatex>(positionX, positionY, Form("#bf{%s}", text.Data()));
+    auto* msg = new TLatex(positionX, positionY, Form("#bf{%s}", text.Data()));
     msg->SetTextColor(textColor);
-    msg->SetTextSize(0.06);
+    msg->SetTextSize(0.08);
     msg->SetTextFont(43);
     msg->SetNDC();
 
-    h->GetListOfFunctions()->Add(msg->Clone());
+    h->GetListOfFunctions()->Add(msg);
   }
 }
 
