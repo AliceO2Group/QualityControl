@@ -96,7 +96,7 @@
             "id": "RAWDATA",
             "active": "true",
             "machines": [],
-            "query": "filter:ITS/RAWDATA;G:FLP/DISTSUBTIMEFRAME",
+            "query": "filter:ITS/RAWDATA;G:FLP/DISTSUBTIMEFRAME/0",
             "samplingConditions": [
                 {
                     "condition": "random",
@@ -110,7 +110,7 @@
             "id": "feedata",
             "active": "true",
             "machines": [],
-            "query": "filter:ITS/RAWDATA;G:FLP/DISTSUBTIMEFRAME",
+            "query": "filter:ITS/RAWDATA;G:FLP/DISTSUBTIMEFRAME/0",
             "samplingConditions": [
                 {
                     "condition": "random",
