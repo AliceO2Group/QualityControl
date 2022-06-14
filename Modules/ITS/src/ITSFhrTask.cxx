@@ -731,9 +731,9 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
             if (GBTLinkInfo->statistics.nTriggers > 0) {
               std::unordered_map<unsigned int, int>::iterator iter;
               for (iter = mHitPixelID_InStave[istave][ihic + ilink * ((nHicPerStave[lay] / NSubStave[lay]))][ichip].begin(); iter != mHitPixelID_InStave[istave][ihic + ilink * ((nHicPerStave[lay] / NSubStave[lay]))][ichip].end(); iter++) {
-                if ((iter->second > mHitCutForNoisyPixel) && 
-		    (iter->second / (double)GBTLinkInfo->statistics.nTriggers) > mOccupancyCutForNoisyPixel &&
-		    ((double)GBTLinkInfo->statistics.nTriggers >= 1e6 && (double)GBTLinkInfo->statistics.nTriggers < 1e6 + 10000)) {
+                if ((iter->second > mHitCutForNoisyPixel) &&
+                    (iter->second / (double)GBTLinkInfo->statistics.nTriggers) > mOccupancyCutForNoisyPixel &&
+                    ((double)GBTLinkInfo->statistics.nTriggers >= 1e6 && (double)GBTLinkInfo->statistics.nTriggers < 1e6 + 10000)) {
                   mNoisyPixelNumber[lay][istave]++;
                 }
                 double pixelOccupancy = (double)iter->second;
@@ -782,8 +782,8 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
         } else {
           mAliveChipPos[lay]->SetBinContent(mAliveChipPos[lay]->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mAliveChipPos[lay]->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), 1);
           mTotalAliveChipPos->SetBinContent(mTotalAliveChipPos->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mTotalAliveChipPos->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), 1);
-	  mDeadChipPos[lay]->SetBinContent(mDeadChipPos[lay]->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mDeadChipPos[lay]->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), 0);//not dead
-          mTotalDeadChipPos->SetBinContent(mTotalDeadChipPos->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mTotalDeadChipPos->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), 0);//not dead
+          mDeadChipPos[lay]->SetBinContent(mDeadChipPos[lay]->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mDeadChipPos[lay]->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), 0); // not dead
+          mTotalDeadChipPos->SetBinContent(mTotalDeadChipPos->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mTotalDeadChipPos->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), 0); // not dead
         }
         int ilink = ichip / 3;
         for (int ierror = 0; ierror < o2::itsmft::GBTLinkDecodingStat::NErrorsDefined; ierror++) {
@@ -802,8 +802,8 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
         } else {
           mAliveChipPos[lay]->SetBinContent(mAliveChipPos[lay]->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mAliveChipPos[lay]->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), 1);
           mTotalAliveChipPos->SetBinContent(mTotalAliveChipPos->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mTotalAliveChipPos->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), 1);
-	  mDeadChipPos[lay]->SetBinContent(mDeadChipPos[lay]->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mDeadChipPos[lay]->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), 0);//not dead
-          mTotalDeadChipPos->SetBinContent(mTotalDeadChipPos->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mTotalDeadChipPos->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), 0);//not dead
+          mDeadChipPos[lay]->SetBinContent(mDeadChipPos[lay]->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mDeadChipPos[lay]->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), 0); // not dead
+          mTotalDeadChipPos->SetBinContent(mTotalDeadChipPos->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mTotalDeadChipPos->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), 0); // not dead
         }
       }
 
