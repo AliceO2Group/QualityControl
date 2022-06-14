@@ -102,23 +102,17 @@ void ITSClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   createAllHistos();
 
-  mGeneralOccupancy = new TH2Poly();
-  mGeneralOccupancy->SetTitle("General Occupancy (max clusters /event/chip);mm;mm");
-  mGeneralOccupancy->SetName("General/General_Occupancy");
-
-  for (int iLayer = 0; iLayer < 7; iLayer++) {
-    for (int iStave = 0; iStave < mNStaves[iLayer]; iStave++) {
-      double* px = new double[4];
-      double* py = new double[4];
-      getStavePoint(iLayer, iStave, px, py);
-      mGeneralOccupancy->AddBin(4, px, py);
-    }
-  }
+  mGeneralOccupancy = new TH2D("General/General_Occupancy", "General Cluster Occupancy (max n_clusters/event/chip)", 24, -12, 12, 14, 0, 14);
 
   addObject(mGeneralOccupancy);
   mGeneralOccupancy->SetStats(0);
   mGeneralOccupancy->SetBit(TH1::kIsAverage);
-
+  for (int iy = 1; iy <= mGeneralOccupancy->GetNbinsY(); iy++) {
+    mGeneralOccupancy->GetYaxis()->SetBinLabel(iy, mYlabels[iy - 1].c_str());
+  }
+  mGeneralOccupancy->GetXaxis()->SetLabelOffset(999);
+  mGeneralOccupancy->GetXaxis()->SetLabelSize(0);
+  mGeneralOccupancy->GetZaxis()->SetTitle("Max Avg Cluster occ (clusters/event/chip)");
   publishHistos();
 
   // get dict from ccdb
@@ -265,8 +259,10 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
               hAverageClusterSizeSummaryIB[iLayer]->SetBinError(iChip + 1, iStave + 1, 1e-15);
             }
           }
-          mGeneralOccupancy->SetBinContent(iStave + 1 + StaveBoundary[iLayer], (float)(*(std::max_element(mClusterOccupancyIB[iLayer][iStave], mClusterOccupancyIB[iLayer][iStave] + mNChipsPerHic[iLayer]))) / (float)(mNRofs));
-          mGeneralOccupancy->SetBinError(iStave + 1 + StaveBoundary[iLayer], 1e-15);
+          int ybin = iStave < (mNStaves[iLayer] / 2) ? 7 + iLayer + 1 : 7 - iLayer;
+          int xbin = 12 - mNStaves[iLayer] / 4 + 1 + (iStave % (mNStaves[iLayer] / 2));
+          mGeneralOccupancy->SetBinContent(xbin, ybin, (float)(*(std::max_element(mClusterOccupancyIB[iLayer][iStave], mClusterOccupancyIB[iLayer][iStave] + mNChipsPerHic[iLayer]))) / (float)(mNRofs));
+          mGeneralOccupancy->SetBinError(xbin, ybin, 1e-15);
         } else {
 
           for (Int_t iLane = 0; iLane < mNLanePerHic[iLayer] * mNHicPerStave[iLayer]; iLane++) {
@@ -277,8 +273,10 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
               hAverageClusterSizeSummaryOB[iLayer]->SetBinError(iLane + 1, iStave + 1, 1e-15);
             }
           }
-          mGeneralOccupancy->SetBinContent(iStave + 1 + StaveBoundary[iLayer], (float)(*(std::max_element(mClusterOccupancyOB[iLayer][iStave], mClusterOccupancyOB[iLayer][iStave] + mNHicPerStave[iLayer] * mNLanePerHic[iLayer]))) / (float)(mNRofs) / (mNChipsPerHic[iLayer] / mNLanePerHic[iLayer]));
-          mGeneralOccupancy->SetBinError(iStave + 1 + StaveBoundary[iLayer], 1e-15);
+          int ybin = iStave < (mNStaves[iLayer] / 2) ? 7 + iLayer + 1 : 7 - iLayer;
+          int xbin = 12 - mNStaves[iLayer] / 4 + 1 + (iStave % (mNStaves[iLayer] / 2));
+          mGeneralOccupancy->SetBinContent(xbin, ybin, (float)(*(std::max_element(mClusterOccupancyOB[iLayer][iStave], mClusterOccupancyOB[iLayer][iStave] + mNHicPerStave[iLayer] * mNLanePerHic[iLayer]))) / (float)(mNRofs) / (mNChipsPerHic[iLayer] / mNLanePerHic[iLayer]));
+          mGeneralOccupancy->SetBinError(xbin, ybin, 1e-15);
         }
       }
     }
@@ -339,7 +337,7 @@ void ITSClusterTask::reset()
 {
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
   hClusterVsBunchCrossing->Reset();
-  mGeneralOccupancy->Reset("content");
+  mGeneralOccupancy->Reset();
 
   for (Int_t iLayer = 0; iLayer < NLayer; iLayer++) {
     if (!mEnableLayers[iLayer])
@@ -517,36 +515,6 @@ void ITSClusterTask::createAllHistos()
         }
       }
     }
-  }
-}
-
-void ITSClusterTask::getStavePoint(int layer, int stave, double* px, double* py)
-{
-
-  float stepAngle = TMath::Pi() * 2 / mNStaves[layer];            // the angle between to stave
-  float midAngle = StartAngle[layer] + (stave * stepAngle);       // mid point angle
-  float staveRotateAngle = TMath::Pi() / 2 - (stave * stepAngle); // how many angle this stave rotate(compare with first stave)
-  px[1] = MidPointRad[layer] * TMath::Cos(midAngle);              // there are 4 point to decide this TH2Poly bin
-                                                                  // 0:left point in this stave;
-                                                                  // 1:mid point in this stave;
-                                                                  // 2:right point in this stave;
-                                                                  // 3:higher point int this stave;
-  py[1] = MidPointRad[layer] * TMath::Sin(midAngle);              // 4 point calculated accord the blueprint
-                                                                  // roughly calculate
-  if (layer < NLayerIB) {
-    px[0] = 7.7 * TMath::Cos(staveRotateAngle) + px[1];
-    py[0] = -7.7 * TMath::Sin(staveRotateAngle) + py[1];
-    px[2] = -7.7 * TMath::Cos(staveRotateAngle) + px[1];
-    py[2] = 7.7 * TMath::Sin(staveRotateAngle) + py[1];
-    px[3] = 5.623 * TMath::Sin(staveRotateAngle) + px[1];
-    py[3] = 5.623 * TMath::Cos(staveRotateAngle) + py[1];
-  } else {
-    px[0] = 21 * TMath::Cos(staveRotateAngle) + px[1];
-    py[0] = -21 * TMath::Sin(staveRotateAngle) + py[1];
-    px[2] = -21 * TMath::Cos(staveRotateAngle) + px[1];
-    py[2] = 21 * TMath::Sin(staveRotateAngle) + py[1];
-    px[3] = 40 * TMath::Sin(staveRotateAngle) + px[1];
-    py[3] = 40 * TMath::Cos(staveRotateAngle) + py[1];
   }
 }
 
