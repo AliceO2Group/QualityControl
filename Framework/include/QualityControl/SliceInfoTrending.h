@@ -89,25 +89,6 @@ struct SliceInfo {
   ClassDefNV(SliceInfo, 1);
 };
 
-struct SliceInfoQuality {
-  UInt_t qualitylevel = 0;
-  std::string title = "";
-
-  /// \brief Return the struct member/float corresponding to the argument.
-  double retrieveValue(const std::string& varType) const
-  {
-    if (varType == "qualitylevel") {
-      return (double)qualitylevel;
-    } else {
-      ILOG(Error, Support) << "SliceInfoQuality: 'varType' " << varType.data()
-                           << " in 'retrieveValue' unknown. Breaking." << ENDM;
-      exit(0);
-    }
-  }
-
-  ClassDefNV(SliceInfoQuality, 1);
-};
-
 } // namespace o2::quality_control::postprocessing
 
 #endif // QUALITYCONTROL_SLICEINFOTRENDING_H
