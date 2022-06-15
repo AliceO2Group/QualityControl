@@ -45,7 +45,7 @@ class PhysicsCheck : public o2::quality_control::checker::CheckInterface
   std::string getAcceptedType() override;
 
  private:
-  bool checkPadMapping(uint16_t feeId, uint8_t linkId, uint8_t eLinkId, o2::mch::raw::DualSampaChannelId channel);
+  int checkPadMapping(uint16_t feeId, uint8_t linkId, uint8_t eLinkId, o2::mch::raw::DualSampaChannelId channel);
 
   double mMinOccupancy;
   double mMaxOccupancy;
@@ -53,6 +53,8 @@ class PhysicsCheck : public o2::quality_control::checker::CheckInterface
   double mOccupancyPlotScaleMin;
   double mOccupancyPlotScaleMax;
   bool mVerbose;
+
+  std::vector<double> mDeOccupancy;
 
   o2::mch::raw::Elec2DetMapper mElec2DetMapper;
   o2::mch::raw::Det2ElecMapper mDet2ElecMapper;

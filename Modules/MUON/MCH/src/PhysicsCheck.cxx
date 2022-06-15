@@ -18,11 +18,13 @@
 #include "MCHMappingSegContour/CathodeSegmentationContours.h"
 #include "MCH/PhysicsCheck.h"
 #include "MCH/GlobalHistogram.h"
+#include "MUONCommon/MergeableTH2Ratio.h"
 
 // ROOT
 #include <fairlogger/Logger.h>
 #include <TH1.h>
 #include <TH2.h>
+#include <TGraph.h>
 #include <TList.h>
 #include <TMath.h>
 #include <TPaveText.h>
@@ -32,6 +34,7 @@
 #include <string>
 
 using namespace std;
+using namespace o2::quality_control_modules::muon;
 
 namespace o2::quality_control_modules::muonchambers
 {
@@ -42,6 +45,8 @@ PhysicsCheck::PhysicsCheck() : mMinOccupancy(0.001), mMaxOccupancy(1.0), mMinGoo
   mDet2ElecMapper = o2::mch::raw::createDet2ElecMapper<o2::mch::raw::ElectronicMapperGenerated>();
   mFeeLink2SolarMapper = o2::mch::raw::createFeeLink2SolarMapper<o2::mch::raw::ElectronicMapperGenerated>();
   mSolar2FeeLinkMapper = o2::mch::raw::createSolar2FeeLinkMapper<o2::mch::raw::ElectronicMapperGenerated>();
+
+  mDeOccupancy.resize(getDEindexMax() + 1);
 }
 
 PhysicsCheck::~PhysicsCheck() {}
@@ -70,7 +75,7 @@ void PhysicsCheck::configure()
   }
 }
 
-bool PhysicsCheck::checkPadMapping(uint16_t feeId, uint8_t linkId, uint8_t eLinkId, o2::mch::raw::DualSampaChannelId channel)
+int PhysicsCheck::checkPadMapping(uint16_t feeId, uint8_t linkId, uint8_t eLinkId, o2::mch::raw::DualSampaChannelId channel)
 {
   uint16_t solarId = -1;
   int deId = -1;
@@ -83,7 +88,7 @@ bool PhysicsCheck::checkPadMapping(uint16_t feeId, uint8_t linkId, uint8_t eLink
     solarId = opt.value();
   }
   if (solarId < 0 || solarId > 1023) {
-    return false;
+    return -1;
   }
 
   o2::mch::raw::DsElecId dsElecId{ solarId, static_cast<uint8_t>(eLinkId / 5), static_cast<uint8_t>(eLinkId % 5) };
@@ -95,29 +100,45 @@ bool PhysicsCheck::checkPadMapping(uint16_t feeId, uint8_t linkId, uint8_t eLink
   }
 
   if (deId < 0 || dsIddet < 0) {
-    return false;
+    return -1;
   }
 
   const o2::mch::mapping::Segmentation& segment = o2::mch::mapping::segmentation(deId);
   padId = segment.findPadByFEE(dsIddet, int(channel));
 
   if (padId < 0) {
-    return false;
+    return -1;
   }
-  return true;
+  return deId;
 }
 
 Quality PhysicsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
+  static constexpr double sOrbitLengthInNanoseconds = 3564 * 25;
+  static constexpr double sOrbitLengthInMicroseconds = sOrbitLengthInNanoseconds / 1000;
+  static constexpr double sOrbitLengthInMilliseconds = sOrbitLengthInMicroseconds / 1000;
   Quality result = Quality::Null;
 
   for (auto& [moName, mo] : *moMap) {
 
     (void)moName;
     if (mo->getName().find("Occupancy_Elec") != std::string::npos) {
-      auto* h = dynamic_cast<TH2F*>(mo->getObject());
-      if (!h)
+
+      // cumulative numerators and denominators for the computation of
+      // the average occupancy over one detection element
+      std::vector<double> deOccupancyNum(getDEindexMax() + 1);
+      std::vector<double> deOccupancyDen(getDEindexMax() + 1);
+      std::fill(deOccupancyNum.begin(), deOccupancyNum.end(), 0);
+      std::fill(deOccupancyDen.begin(), deOccupancyDen.end(), 0);
+
+      auto* hr = dynamic_cast<MergeableTH2Ratio*>(mo->getObject());
+      if (!hr) {
         return result;
+      }
+      auto* h = dynamic_cast<TH2F*>(mo->getObject());
+      if (!h) {
+        return result;
+      }
 
       if (h->GetEntries() == 0) {
         result = Quality::Medium;
@@ -135,14 +156,21 @@ Quality PhysicsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
           for (int j = 1; j <= nbinsy; j++) {
             int chan_addr = j - 1;
 
-            if (!checkPadMapping(fee_id, link_id, ds_addr, chan_addr)) {
+            int de = checkPadMapping(fee_id, link_id, ds_addr, chan_addr);
+            if (de < 0) {
               continue;
             }
-            npads += 1;
 
             Float_t occupancy = h->GetBinContent(i, j);
+            npads += 1;
             if (occupancy >= mMinOccupancy && occupancy <= mMaxOccupancy) {
               ngood += 1;
+            }
+
+            int deIndex = getDEindex(de);
+            if (deIndex >= 0) {
+              deOccupancyNum[deIndex] += occupancy;
+              deOccupancyDen[deIndex] += 1;
             }
           }
         }
@@ -154,6 +182,16 @@ Quality PhysicsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
           result = Quality::Good;
         else
           result = Quality::Bad;
+      }
+
+      // update the average occupancy values that will be copied
+      // into the histogram bins in the beutify() method
+      for (size_t de = 0; de < deOccupancyDen.size(); de++) {
+        if (deOccupancyDen[de] > 0) {
+          mDeOccupancy[de] = deOccupancyNum[de] / deOccupancyDen[de];
+        } else {
+          mDeOccupancy[de] = 0;
+        }
       }
     }
   }
@@ -243,6 +281,13 @@ void PhysicsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResu
 
   if (mo->getName().find("MeanOccupancy") != std::string::npos) {
     auto* h = dynamic_cast<TH1F*>(mo->getObject());
+
+    // update the mean occupancy values
+    for (size_t deIndex = 0; deIndex < mDeOccupancy.size(); deIndex++) {
+      h->SetBinContent(deIndex + 1, mDeOccupancy[deIndex]);
+      h->SetBinError(deIndex + 1, 0);
+    }
+
     // disable ticks on vertical axis
     h->GetXaxis()->SetTickLength(0.0);
     h->GetXaxis()->SetLabelSize(0.0);

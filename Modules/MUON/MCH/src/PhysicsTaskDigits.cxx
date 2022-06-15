@@ -20,6 +20,7 @@
 #include <TCanvas.h>
 #include <TH1.h>
 #include <TH2.h>
+#include <TGraph.h>
 #include <TFile.h>
 #include <algorithm>
 
@@ -83,7 +84,7 @@ void PhysicsTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   mAllHistograms.push_back(mHistogramNHitsElec);
   mAllHistograms.push_back(mHistogramNorbitsElec);
 
-  mMeanOccupancyPerDE = std::make_shared<MergeableTH1OccupancyPerDE>("MeanOccupancy", "Mean Occupancy vs DE");
+  mMeanOccupancyPerDE = std::make_shared<TH1F>("MeanOccupancy", "Mean Occupancy vs DE", getDEindexMax() + 1, 0, getDEindexMax() + 1);
   publishObject(mMeanOccupancyPerDE, "hist", false, false);
 
   // Histograms in global detector coordinates
@@ -374,7 +375,7 @@ void PhysicsTaskDigits::endOfCycle()
 
   // update mergeable ratios
   mHistogramOccupancyElec->update();
-  mMeanOccupancyPerDE->update(mHistogramOccupancyElec->getNum(), mHistogramOccupancyElec->getDen());
+  //mMeanOccupancyPerDE->update(mHistogramOccupancyElec->getNum(), mHistogramOccupancyElec->getDen());
 
   for (auto de : o2::mch::raw::deIdsForAllMCH) {
     for (int i = 0; i < 2; i++) {
