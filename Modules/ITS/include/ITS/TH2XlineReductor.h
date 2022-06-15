@@ -37,7 +37,7 @@ class TH2XlineReductor : public quality_control::postprocessing::Reductor
   void update(TObject* obj) override;
 
  private:
-  static constexpr int NDIM = 90; // put it so we have more 48+42
+  static constexpr int NDIM = 90; // put it so we have more 48+42 :)
   struct mystat {
     Double_t mean[NDIM];        // mean of the bin contents of each row (1 value per row)
     Double_t stddev[NDIM];      // stddev of the bin contents of each row (1 value per row)

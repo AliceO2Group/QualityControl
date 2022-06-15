@@ -26,7 +26,7 @@
       }
     },
     "postprocessing": {
-      "Bas3TrendingTaskITSThr": {
+      "ITSqcTrendingThr": {
         "active": "true",
         "className": "o2::quality_control::postprocessing::TrendingTaskITSThr",
         "moduleName": "QualityControl",
@@ -1427,12 +1427,6 @@
             "selection": "",
             "option": "PL"
           }
-
-
-          
-
-
-
         ],
         "initTrigger": [
                   "userorcontrol"

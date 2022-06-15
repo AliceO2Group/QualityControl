@@ -66,11 +66,11 @@ void TrendingTaskITSThr::update(Trigger t, framework::ServiceRegistry& services)
 }
 
 void TrendingTaskITSThr::finalize(Trigger t, framework::ServiceRegistry& services)
-{//Uncomment when outside of development
-  //auto& qcdb = services.get<repository::DatabaseInterface>();
+{
+  auto& qcdb = services.get<repository::DatabaseInterface>();
 
-  //storePlots(qcdb);
-  //storeTrend(qcdb);
+  storePlots(qcdb);
+  storeTrend(qcdb);
 }
 
 void TrendingTaskITSThr::storeTrend(repository::DatabaseInterface& qcdb)
@@ -127,33 +127,6 @@ void TrendingTaskITSThr::trendValues(const Trigger& t, repository::DatabaseInter
   mTrend->Fill();
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 void TrendingTaskITSThr::storePlots(repository::DatabaseInterface& qcdb)
 {
   ILOG(Info, Support) << "Generating " << mConfig.plots.size() << " plots." << ENDM;
@@ -202,8 +175,8 @@ void TrendingTaskITSThr::storePlots(repository::DatabaseInterface& qcdb)
               : plot.name.find("Active") != std::string::npos ? 2
                                                             : 0;
 
-    bool isrun = plot.varexp.find("ntreeentries") != std::string::npos ? true : false; // vs run or vs time
-    isrun = 1 ; //debug later
+    //bool isrun = plot.varexp.find("ntreeentries") != std::string::npos ? true : false; // vs run or vs time
+    bool isrun = 1 ; // time no longer needed
 
     c[ilay * NTRENDSTHR + add]->cd();
     c[ilay * NTRENDSTHR + add]->SetTickx();
