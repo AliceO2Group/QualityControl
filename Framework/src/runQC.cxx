@@ -36,6 +36,7 @@
 #include "QualityControl/runnerUtils.h"
 #include "QualityControl/InfrastructureGenerator.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/ConfigParamGlo.h"
 
 using namespace o2;
 using namespace o2::framework;
@@ -144,6 +145,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
   if (!validateArguments(config)) {
     return {};
   }
+  quality_control::ConfigParamGlo::keyValues = config.options().get<std::string>("configKeyValues");
 
   auto qcConfigurationSource = config.options().get<std::string>("config");
   try {

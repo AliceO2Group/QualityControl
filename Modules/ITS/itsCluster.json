@@ -38,11 +38,11 @@
         },
         "location": "remote",
               "taskParameters": {
-                    "layer": "1111111",
-                    "nThreads": "1",
-                    "nBCbins" : "103",
-		    "dicttimestamp" : "0",
-		    "geomPath": "./"
+              "layer": "1111111",
+              "nThreads": "1",
+              "nBCbins" : "103",
+	      "dicttimestamp" : "0",
+	      "geomPath": "./"
         }
  
       }
@@ -52,12 +52,12 @@
         "active": "true",
         "className": "o2::quality_control_modules::its::ITSClusterCheck",
         "moduleName": "QcITS",
-        "policy": "OnAny",
+        "policy": "OnEachSeparately",
         "detectorName": "ITS",
         "dataSource": [{
           "type": "Task",
           "name": "ITSClusterTask",
-          "MOs": ["Layer0/AverageClusterSize","Layer1/AverageClusterSize","Layer2/AverageClusterSize","Layer3/AverageClusterSize","Layer4/AverageClusterSize","Layer5/AverageClusterSize","Layer6/AverageClusterSize", "Layer0/ClusterOccupation","Layer1/ClusterOccupation","Layer2/ClusterOccupation","Layer3/ClusterOccupation","Layer4/ClusterOccupation", "Layer5/ClusterOccupation",  "Layer6/ClusterOccupation"]
+          "MOs": ["Layer0/AverageClusterSize","Layer1/AverageClusterSize","Layer2/AverageClusterSize","Layer3/AverageClusterSize","Layer4/AverageClusterSize","Layer5/AverageClusterSize","Layer6/AverageClusterSize", "General/General_Occupancy"]
 
           }]
         }

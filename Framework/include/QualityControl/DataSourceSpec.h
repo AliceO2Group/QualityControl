@@ -47,6 +47,7 @@ struct DataSourceSpec {
   }
 
   DataSourceType type;
+  std::string id;
   std::string name;
   std::vector<framework::InputSpec> inputs;
   std::vector<std::string> subInputs; // can be MO or QO names

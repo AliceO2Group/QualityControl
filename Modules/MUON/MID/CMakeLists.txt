@@ -2,17 +2,24 @@
 
 add_library(O2QcMID)
 
-target_sources(O2QcMID PRIVATE src/RawQcCheck.cxx src/RawQcTask.cxx 
-                               src/DigitsQcCheck.cxx src/DigitsQcTask.cxx
-                               src/ClustQcCheck.cxx src/ClustQcTask.cxx
-                               src/TracksQcCheck.cxx src/TracksQcTask.cxx)
+target_sources(
+  O2QcMID
+  PRIVATE src/RawQcCheck.cxx
+          src/RawQcTask.cxx
+          src/DigitsQcCheck.cxx
+          src/DigitsQcTask.cxx
+          src/ClustQcCheck.cxx
+          src/ClustQcTask.cxx
+          src/TracksQcCheck.cxx
+          src/TracksQcTask.cxx)
 
 target_include_directories(
   O2QcMID
   PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-target_link_libraries(O2QcMID PUBLIC O2QualityControl O2QcMUONCommon O2::MIDRaw O2::MIDQC O2::MIDSimulation)
+target_link_libraries(O2QcMID PUBLIC O2QualityControl O2QcMUONCommon O2::MIDRaw O2::MIDQC O2::MIDSimulation
+                                     O2::MIDWorkflow)
 
 install(
   TARGETS O2QcMID
@@ -24,17 +31,16 @@ add_root_dictionary(
   O2QcMID
   HEADERS include/MID/RawQcCheck.h
           include/MID/RawQcTask.h
-	  include/MID/DigitsQcCheck.h
-	  include/MID/DigitsQcTask.h
-	  include/MID/ClustQcCheck.h
-	  include/MID/ClustQcTask.h
-	  include/MID/TracksQcCheck.h
-	  include/MID/TracksQcTask.h
+          include/MID/DigitsQcCheck.h
+          include/MID/DigitsQcTask.h
+          include/MID/ClustQcCheck.h
+          include/MID/ClustQcTask.h
+          include/MID/TracksQcCheck.h
+          include/MID/TracksQcTask.h
   LINKDEF include/MID/LinkDef.h
   BASENAME O2QcMID)
 
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/MID
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/MID DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")
 
 # ---- Test(s) ----
 
@@ -64,6 +70,3 @@ endforeach()
 # install( TARGETS ${EXE_NAMES} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} )
 
 install(FILES mid-raw.json mid-digits.json DESTINATION etc)
-
-
-

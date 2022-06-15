@@ -21,6 +21,7 @@
 #include "QualityControl/Activity.h"
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/runnerUtils.h"
+#include "QualityControl/ConfigParamGlo.h"
 
 #include <boost/property_tree/ptree.hpp>
 #include <utility>
@@ -69,8 +70,8 @@ void PostProcessingRunner::init(const PostProcessingRunnerConfig& runnerConfig, 
   ILOG(Info, Support) << "Initializing PostProcessingRunner" << ENDM;
 
   root_class_factory::loadLibrary(mTaskConfig.moduleName);
-  if (!mRunnerConfig.configKeyValues.empty()) {
-    conf::ConfigurableParam::updateFromString(mRunnerConfig.configKeyValues);
+  if (!ConfigParamGlo::keyValues.empty()) {
+    conf::ConfigurableParam::updateFromString(ConfigParamGlo::keyValues);
   }
 
   // configuration of the database

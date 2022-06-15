@@ -28,7 +28,7 @@
                        "" : "Message at this level or above are discarded (default: 21 - Trace)" }
     },
     "tasks" : {
-      "MatchedTracksITSTPC" : {
+      "MTCITSTPC" : {
         "active" : "true",
         "className" : "o2::quality_control_modules::glo::ITSTPCMatchingTask",
         "moduleName" : "QcGLO",

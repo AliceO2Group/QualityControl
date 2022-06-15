@@ -28,6 +28,16 @@
                 "className": "o2::quality_control_modules::tof::TrendingRate",
                 "moduleName": "QcTOF",
                 "detectorName": "TOF",
+                "customization": [
+                    {
+                        "name": "ThresholdSgn",
+                        "value": "0.15"
+                    },
+                    {
+                        "name": "ThresholdBkg",
+                        "value": "0.04"
+                    }
+                ],
                 "dataSources": [
                     {
                         "type": "repository",

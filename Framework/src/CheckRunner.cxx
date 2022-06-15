@@ -33,6 +33,7 @@
 #include "QualityControl/InfrastructureSpecReader.h"
 #include "QualityControl/CheckRunnerFactory.h"
 #include "QualityControl/RootClassFactory.h"
+#include "QualityControl/ConfigParamGlo.h"
 
 #include <TSystem.h>
 
@@ -215,10 +216,9 @@ void CheckRunner::init(framework::InitContext& iCtx)
     initServiceDiscovery();
     initLibraries(); // we have to load libraries before we load ConfigurableParams, otherwise the corresponding ROOT dictionaries won't be found
 
-    if (iCtx.options().isSet("configKeyValues")) {
-      conf::ConfigurableParam::updateFromString(iCtx.options().get<std::string>("configKeyValues"));
+    if (!ConfigParamGlo::keyValues.empty()) {
+      conf::ConfigurableParam::updateFromString(ConfigParamGlo::keyValues);
     }
-
     // registering state machine callbacks
     iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, &services = iCtx.services()]() { start(services); });
     iCtx.services().get<CallbackService>().set(CallbackService::Id::Reset, [this]() { reset(); });

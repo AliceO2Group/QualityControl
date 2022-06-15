@@ -38,6 +38,7 @@
 #include "QualityControl/runnerUtils.h"
 #include "QualityControl/InfrastructureSpecReader.h"
 #include "QualityControl/TaskRunnerFactory.h"
+#include "QualityControl/ConfigParamGlo.h"
 
 #include <string>
 #include <TFile.h>
@@ -153,8 +154,8 @@ void TaskRunner::init(InitContext& iCtx)
   mTask->setMonitoring(mCollector);
 
   // load config params
-  if (iCtx.options().isSet("configKeyValues")) {
-    conf::ConfigurableParam::updateFromString(iCtx.options().get<std::string>("configKeyValues"));
+  if (!ConfigParamGlo::keyValues.empty()) {
+    conf::ConfigurableParam::updateFromString(ConfigParamGlo::keyValues);
   }
 
   // init user's task

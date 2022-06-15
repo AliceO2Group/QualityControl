@@ -16,6 +16,7 @@
 ///
 
 #include "QualityControl/TaskInterface.h"
+#include "QualityControl/stringUtils.h"
 #include <CCDB/CcdbApi.h>
 
 using namespace o2::ccdb;
@@ -76,16 +77,7 @@ void TaskInterface::setCcdbUrl(const std::string& url)
 
 bool TaskInterface::parseBooleanParameter(const std::string& name, bool& flag) const
 {
-  if (auto param = mCustomParameters.find(name); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - " << name << " " << param->second << ENDM;
-    if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
-      flag = true;
-    } else if (param->second == "false" || param->second == "False" || param->second == "FALSE") {
-      flag = false;
-    }
-    return true;
-  }
-  return false;
+  return parseBooleanParam(mCustomParameters, name, flag);
 }
 
 } // namespace o2::quality_control::core

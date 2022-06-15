@@ -23,8 +23,10 @@
 namespace o2::quality_control_modules::common
 {
 
-/// \brief  Example QC Check
-/// \author My Name
+/// \brief  Check if the number of Entries has increased or not
+/// If it does not increase, the quality is bad.
+/// The behaviour can be modified with the customParameter "mustIncrease". If set to "false",
+/// it will actually have a bad quality if the number of entries increases.
 class IncreasingEntries : public o2::quality_control::checker::CheckInterface
 {
  public:
@@ -42,6 +44,7 @@ class IncreasingEntries : public o2::quality_control::checker::CheckInterface
  private:
   std::map<std::string, double> mLastEntries;
   std::shared_ptr<TPaveText> mPaveText;
+  bool mMustIncrease = true;
 
   ClassDefOverride(IncreasingEntries, 2);
 };

@@ -38,6 +38,7 @@
 #include "QualityControl/InfrastructureSpecReader.h"
 #include "QualityControl/AggregatorRunnerFactory.h"
 #include "QualityControl/RootClassFactory.h"
+#include "QualityControl/ConfigParamGlo.h"
 
 using namespace AliceO2::Common;
 using namespace AliceO2::InfoLogger;
@@ -150,10 +151,9 @@ void AggregatorRunner::init(framework::InitContext& iCtx)
   try {
     initLibraries(); // we have to load libraries before we load ConfigurableParams, otherwise the corresponding ROOT dictionaries won't be found
     // load config params
-    if (iCtx.options().isSet("configKeyValues")) {
-      conf::ConfigurableParam::updateFromString(iCtx.options().get<std::string>("configKeyValues"));
+    if (!ConfigParamGlo::keyValues.empty()) {
+      conf::ConfigurableParam::updateFromString(ConfigParamGlo::keyValues);
     }
-
     initDatabase();
     initMonitoring();
     initServiceDiscovery();
