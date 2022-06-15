@@ -104,6 +104,7 @@ void TrendingTaskTPC::trendValues(const Trigger& t,
   for (auto& dataSource : mConfig.dataSources) {
     mNumberPads[dataSource.name] = 0;
     if (dataSource.type == "repository") {
+      mSources[dataSource.name].clear(); // reset
       auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name, t.timestamp, t.activity);
       TObject* obj = mo ? mo->getObject() : nullptr;
 
@@ -115,6 +116,7 @@ void TrendingTaskTPC::trendValues(const Trigger& t,
       }
 
     } else if (dataSource.type == "repository-quality") {
+      mSourcesQuality[dataSource.name] = {}; // reset
       if (auto qo = qcdb.retrieveQO(dataSource.path + "/" + dataSource.name, t.timestamp, t.activity)) {
         mReductors[dataSource.name]->updateQuality(qo.get(), mSourcesQuality[dataSource.name]);
         mNumberPads[dataSource.name] = 1;
