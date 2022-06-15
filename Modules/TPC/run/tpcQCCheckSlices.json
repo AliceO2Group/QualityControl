@@ -37,9 +37,9 @@
 
         "stopTrigger_comment": [ "Parameters are needed to choose if check should be performed on the mean (Mean) of all points or as a comparison to an expected physics value (ExpectedPhysicsValue). Or both (Both)." ],
         "checkParameters": {
-          "chooseCheckMeanOrExpectedPhysicsValueOrBoth" : "Both",
-          "expectedPhysicsValue" : "0.05",
-          "allowedNSigmaForExpectation" : "3",
+          "chooseCheckMeanOrExpectedPhysicsValueOrBoth" : "ExpectedPhysicsValue",
+          "expectedPhysicsValue" : "0.1",
+          "allowedNSigmaForExpectation" : "0.1",
           "badNSigmaForExpectation" : "6",
           "allowedNSigmaForMean" : "3",
           "badNSigmaForMean" : "6"

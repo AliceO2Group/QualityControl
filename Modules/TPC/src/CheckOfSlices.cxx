@@ -17,6 +17,7 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
+#include <fmt/format.h>
 
 #include <TCanvas.h>
 #include <TGraphErrors.h>
@@ -232,7 +233,7 @@ void CheckOfSlices::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
   TPaveText* Legend = new TPaveText(0.1, 0.85, 0.35, 0.9, "NDC");
   h->GetListOfFunctions()->Add(msg);
   h->GetListOfFunctions()->Add(Legend);
-  msg->SetName(Form("%s_msg", mo->GetName()));
+  msg->SetName(fmt::format("{}_msg", mo->GetName()).data());
 
   if (checkResult == Quality::Good) {
     h->SetFillColor(kGreen);
@@ -245,9 +246,9 @@ void CheckOfSlices::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     msg->Clear();
     msg->AddText("Quality::Bad");
     if (mCheckChoice == CheckChoiceExpectedPhysicsValue) {
-      msg->AddText(Form("Outlier, more than %isigma.", mNSigmaBadExpectedPhysicsValue));
+      msg->AddText(fmt::format("Outlier, more than {:f}sigma.", mNSigmaBadExpectedPhysicsValue).data());
     } else if (mCheckChoice == CheckChoiceMean) {
-      msg->AddText(Form("Outlier, more than %isigma.", mNSigmaBadMean));
+      msg->AddText(fmt::format("Outlier, more than {:f}sigma.", mNSigmaBadMean).data());
     } else {
       msg->AddText("Outlier. Bad Quality.");
     }
@@ -258,9 +259,9 @@ void CheckOfSlices::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     msg->Clear();
     msg->AddText("Quality::Medium");
     if (mCheckChoice == CheckChoiceExpectedPhysicsValue) {
-      msg->AddText(Form("Outlier, more than %isigma.", mNSigmaExpectedPhysicsValue));
+      msg->AddText(fmt::format("Outlier, more than {:f} sigma.", mNSigmaExpectedPhysicsValue).data());
     } else if (mCheckChoice == CheckChoiceMean) {
-      msg->AddText(Form("Outlier, more than %isigma.", mNSigmaMean));
+      msg->AddText(fmt::format("Outlier, more than {:f}sigma.", mNSigmaMean).data());
     } else {
       msg->AddText("Outlier. Medium Quality");
     }
@@ -270,10 +271,10 @@ void CheckOfSlices::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
   }
   h->SetLineColor(kBlack);
   if (mCheckChoice == CheckChoiceExpectedPhysicsValue || mCheckChoice == CheckChoiceBoth) {
-    Legend->AddText(Form("Expected Physics Value: %f", mExpectedPhysicsValue));
+    Legend->AddText(fmt::format("Expected Physics Value: {:f}", mExpectedPhysicsValue).data());
   }
   if (mCheckChoice == CheckChoiceMean || mCheckChoice == CheckChoiceBoth) {
-    Legend->AddText(Form("Mean: %f", meanFull));
+    Legend->AddText(fmt::format("Mean: {:f}", meanFull).data());
   }
   const double xMin = h->GetXaxis()->GetXmin();
   const double xMax = h->GetXaxis()->GetXmax();
