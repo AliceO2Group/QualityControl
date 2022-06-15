@@ -246,9 +246,9 @@ void CheckOfSlices::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     msg->Clear();
     msg->AddText("Quality::Bad");
     if (mCheckChoice == CheckChoiceExpectedPhysicsValue) {
-      msg->AddText(fmt::format("Outlier, more than {:f}sigma.", mNSigmaBadExpectedPhysicsValue).data());
+      msg->AddText(fmt::format("Outlier, more than {} sigma.", mNSigmaBadExpectedPhysicsValue).data());
     } else if (mCheckChoice == CheckChoiceMean) {
-      msg->AddText(fmt::format("Outlier, more than {:f}sigma.", mNSigmaBadMean).data());
+      msg->AddText(fmt::format("Outlier, more than {} sigma.", mNSigmaBadMean).data());
     } else {
       msg->AddText("Outlier. Bad Quality.");
     }
@@ -259,9 +259,9 @@ void CheckOfSlices::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     msg->Clear();
     msg->AddText("Quality::Medium");
     if (mCheckChoice == CheckChoiceExpectedPhysicsValue) {
-      msg->AddText(fmt::format("Outlier, more than {:f} sigma.", mNSigmaExpectedPhysicsValue).data());
+      msg->AddText(fmt::format("Outlier, more than {} sigma.", mNSigmaExpectedPhysicsValue).data());
     } else if (mCheckChoice == CheckChoiceMean) {
-      msg->AddText(fmt::format("Outlier, more than {:f}sigma.", mNSigmaMean).data());
+      msg->AddText(fmt::format("Outlier, more than {} sigma.", mNSigmaMean).data());
     } else {
       msg->AddText("Outlier. Medium Quality");
     }
@@ -271,10 +271,10 @@ void CheckOfSlices::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
   }
   h->SetLineColor(kBlack);
   if (mCheckChoice == CheckChoiceExpectedPhysicsValue || mCheckChoice == CheckChoiceBoth) {
-    Legend->AddText(fmt::format("Expected Physics Value: {:f}", mExpectedPhysicsValue).data());
+    Legend->AddText(fmt::format("Expected Physics Value: {}", mExpectedPhysicsValue).data());
   }
   if (mCheckChoice == CheckChoiceMean || mCheckChoice == CheckChoiceBoth) {
-    Legend->AddText(fmt::format("Mean: {:f}", meanFull).data());
+    Legend->AddText(fmt::format("Mean: {}", meanFull).data());
   }
   const double xMin = h->GetXaxis()->GetXmin();
   const double xMax = h->GetXaxis()->GetXmax();
