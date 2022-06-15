@@ -10,14 +10,14 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file     TH2ReductorExtended.cxx
+/// \file     TH2SliceReductor.cxx
 /// \author   Marcel Lesch
 /// \author   Cindy Mordasini
 /// \author   Based on the work from Piotr Konopka
 ///
 
 #include "QualityControl/QcInfoLogger.h"
-#include "Common/TH2ReductorExtended.h"
+#include "Common/TH2SliceReductor.h"
 #include <TCanvas.h>
 #include <TH2.h>
 #include <TList.h>
@@ -25,9 +25,9 @@
 
 namespace o2::quality_control_modules::common
 {
-void TH2ReductorExtended::update(TObject* obj, std::vector<SliceInfo>& reducedSource,
-                                 std::vector<std::vector<float>>& axis,
-                                 int& finalNumberPads)
+void TH2SliceReductor::update(TObject* obj, std::vector<SliceInfo>& reducedSource,
+                              std::vector<std::vector<float>>& axis,
+                              int& finalNumberPads)
 {
   // Define the local variables in the default case: 1 single pad
   // (no multipad canvas, nor slicer), and slicer axes size set to 1 (no slicing).

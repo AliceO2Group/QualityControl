@@ -125,7 +125,7 @@
       },
       "ExampleTrendExtended": {
         "active": "true",
-        "className": "o2::quality_control::postprocessing::TrendingTaskExtended",
+        "className": "o2::quality_control::postprocessing::SliceTrendingTask",
         "moduleName": "QualityControl",
         "detectorName": "TST",
         "dataSources": [
@@ -133,7 +133,7 @@
             "type": "repository",
             "path": "TST/MO/QcTask",
             "names": [ "example" ],
-            "reductorName": "o2::quality_control_modules::common::TH1ReductorExtended",
+            "reductorName": "o2::quality_control_modules::common::TH1SliceReductor",
             "axisDivision": [ [ "0", "4500", "10500" ] ],
             "moduleName": "QcCommon"
           }
@@ -157,7 +157,7 @@
             "selection": "",
             "option": "*L",
             "graphErrors": "errMeanY:0.5",
-            "graphYRange": "0:3.0",
+            "graphYRange": "",
             "graphXRange": "",
             "graphAxisLabel": "Mean Y:time"
           },
@@ -168,9 +168,9 @@
             "selection": "",
             "option": "*L",
             "graphErrors": "errMeanY:errMeanX",
-            "graphYRange": "0:3.0",
+            "graphYRange": "",
             "graphXRange": "-500.0:10000",
-            "graphAxisLabel": "Mean Y:slices"
+            "graphAxisLabel": "Mean Y:Center of slices along x"
           },
           {
             "name": "ExtendedTrending_meanY_of_histogram_timeMultigraph",
@@ -179,7 +179,7 @@
             "selection": "",
             "option": "*L",
             "graphErrors": "errMeanY:0.5",
-            "graphYRange": "0:3.0",
+            "graphYRange": "",
             "graphXRange": "",
             "graphAxisLabel": "Mean Y:time"
           },
@@ -192,7 +192,7 @@
             "graphErrors": "0:errMeanX",
             "graphYRange": "",
             "graphXRange": "",
-            "graphAxisLabel": "Number of Entries:slices"
+            "graphAxisLabel": "Number of Entries:Center of slices along x"
           }
         ],
         "initTrigger": [

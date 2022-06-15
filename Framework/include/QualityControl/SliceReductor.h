@@ -10,14 +10,14 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file     ReductorExtended.h
+/// \file     SliceReductor.h
 /// \author   Marcel Lesch
 /// \author   Cindy Mordasini
 /// \author   Based on the work from Piotr Konopka
 ///
 
-#ifndef QUALITYCONTROL_REDUCTOREXTENDED_H
-#define QUALITYCONTROL_REDUCTOREXTENDED_H
+#ifndef QUALITYCONTROL_SLICEREDUCTOR_H
+#define QUALITYCONTROL_SLICEREDUCTOR_H
 
 #include "QualityControl/SliceInfoTrending.h"
 #include <TObject.h>
@@ -31,21 +31,18 @@ namespace o2::quality_control::postprocessing
 /// A extended reductor class from which each reductor used for the extended trending.
 ///
 
-class ReductorExtended
+class SliceReductor
 {
  public:
   /// \brief Constructor.
-  ReductorExtended() = default;
+  SliceReductor() = default;
   /// \brief Destructor.
-  virtual ~ReductorExtended() = default;
+  virtual ~SliceReductor() = default;
 
   /// \brief Methods from the reductor class adapted for the needs of the TPC.
   virtual void update(TObject* obj, std::vector<SliceInfo>& reducedSource,
                       std::vector<std::vector<float>>& axis,
                       int& finalNumberPads){};
-
-  /// \brief Methods from the reductor class adapted for the needs of the TPC QO.
-  virtual void updateQuality(const TObject* obj, SliceInfoQuality& reducedSource){};
 
   /// \brief Function to return proper bin numbers to avoid double counting if slicing is used
   void getBinSlices(TAxis* histAxis, const float sliceLow, const float sliceUp, int& binLow, int& binUp, float& sliceLabel)
@@ -65,4 +62,4 @@ class ReductorExtended
 
 } // namespace o2::quality_control::postprocessing
 
-#endif // QUALITYCONTROL_REDUCTOREXTENDED_H
+#endif // QUALITYCONTROL_SLICEREDUCTOR_H

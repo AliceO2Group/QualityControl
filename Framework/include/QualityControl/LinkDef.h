@@ -16,6 +16,6 @@
 #pragma link C++ class o2::quality_control::core::ValidityInterval + ;
 #pragma link C++ class o2::quality_control::postprocessing::SliceInfo + ;
 #pragma link C++ class std::vector<o2::quality_control::postprocessing::SliceInfo> + ;
-#pragma link C++ class o2::quality_control::postprocessing::TrendingTaskExtended + ;
+#pragma link C++ class o2::quality_control::postprocessing::SliceTrendingTask + ;
 
 #endif

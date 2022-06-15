@@ -10,23 +10,23 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file     TH1ReductorExtended.cxx
+/// \file     TH1SliceReductor.cxx
 /// \author   Marcel Lesch
 /// \author   Cindy Mordasini
 /// \author   Based on the work from Piotr Konopka
 ///
 
 #include "QualityControl/QcInfoLogger.h"
-#include "Common/TH1ReductorExtended.h"
+#include "Common/TH1SliceReductor.h"
 #include <TCanvas.h>
 #include <TList.h>
 #include <fmt/format.h>
 
 namespace o2::quality_control_modules::common
 {
-void TH1ReductorExtended::update(TObject* obj, std::vector<SliceInfo>& reducedSource,
-                                 std::vector<std::vector<float>>& axis,
-                                 int& finalNumberPads)
+void TH1SliceReductor::update(TObject* obj, std::vector<SliceInfo>& reducedSource,
+                              std::vector<std::vector<float>>& axis,
+                              int& finalNumberPads)
 {
   // Define the local variables in the default case: 1 single pad
   // (no multipad canvas, nor slicer), and slicer axes size set to 1 (no slicing).
@@ -129,8 +129,8 @@ void TH1ReductorExtended::update(TObject* obj, std::vector<SliceInfo>& reducedSo
   } // All the vector elements have been updated.
 }
 
-void TH1ReductorExtended::GetTH1StatsY(TH1* hist, float stats[3],
-                                       const int lowerBin, const int upperBin)
+void TH1SliceReductor::GetTH1StatsY(TH1* hist, float stats[3],
+                                    const int lowerBin, const int upperBin)
 {
   const int nTotalBins = hist->GetNbinsX();
   const int iterateBins = upperBin - lowerBin + 1; // Amount of bins included in the calculation.
@@ -172,6 +172,6 @@ void TH1ReductorExtended::GetTH1StatsY(TH1* hist, float stats[3],
   stats[0] = meanY;
   stats[1] = stddevY;
   stats[2] = errMeanY;
-} // TH1ReductorExtended::GetTH1StatsY(TH1* hist, float stats[3], float LowerBoundary, float UpperBoundary)
+} // TH1SliceReductor::GetTH1StatsY(TH1* hist, float stats[3], float LowerBoundary, float UpperBoundary)
 
 } // namespace o2::quality_control_modules::common

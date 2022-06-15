@@ -55,7 +55,7 @@ struct SliceInfo {
   }
 
   /// \brief Return the struct member/float corresponding to the argument.
-  double RetrieveValue(std::string varType)
+  double retrieveValue(std::string varType)
   {
     if (isStringFloating(varType)) {
       return std::stod(varType);
@@ -79,8 +79,8 @@ struct SliceInfo {
       } else if (varType == "sliceLabelY") {
         return sliceLabelY;
       } else {
-        ILOG(Error, Support) << "TPC SliceInfo.h: 'varType' " << varType.data()
-                             << " in 'RetrieveValue' unknown. Breaking." << ENDM;
+        ILOG(Error, Support) << "SliceInfo: 'varType' " << varType.data()
+                             << " in 'retrieveValue' unknown. Breaking." << ENDM;
         exit(0);
       }
     }
@@ -94,13 +94,13 @@ struct SliceInfoQuality {
   std::string title = "";
 
   /// \brief Return the struct member/float corresponding to the argument.
-  double RetrieveValue(const std::string& varType) const
+  double retrieveValue(const std::string& varType) const
   {
     if (varType == "qualitylevel") {
       return (double)qualitylevel;
     } else {
-      ILOG(Error, Support) << "TPC SliceInfoQuality: 'varType' " << varType.data()
-                           << " in 'RetrieveValue' unknown. Breaking." << ENDM;
+      ILOG(Error, Support) << "SliceInfoQuality: 'varType' " << varType.data()
+                           << " in 'retrieveValue' unknown. Breaking." << ENDM;
       exit(0);
     }
   }

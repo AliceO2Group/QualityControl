@@ -10,16 +10,16 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file     TH2ReductorExtended.h
+/// \file     TH2SliceReductor.h
 /// \author   Marcel Lesch
 /// \author   Cindy Mordasini
 /// \author   Based on the work from Piotr Konopka
 ///
 
-#ifndef QUALITYCONTROL_TH2REDUCTOREXTENDED_H
-#define QUALITYCONTROL_TH2REDUCTOREXTENDED_H
+#ifndef QUALITYCONTROL_TH2SLICEREDUCTOR_H
+#define QUALITYCONTROL_TH2SLICEREDUCTOR_H
 
-#include "QualityControl/ReductorExtended.h"
+#include "QualityControl/SliceReductor.h"
 #include "QualityControl/SliceInfoTrending.h"
 
 using namespace o2::quality_control::postprocessing;
@@ -32,19 +32,19 @@ namespace o2::quality_control_modules::common
 /// pads which need to be trended.
 ///
 
-class TH2ReductorExtended : public quality_control::postprocessing::ReductorExtended
+class TH2SliceReductor : public quality_control::postprocessing::SliceReductor
 {
  public:
   /// \brief Constructor.
-  TH2ReductorExtended() = default;
+  TH2SliceReductor() = default;
   /// \brief Destructor.
-  ~TH2ReductorExtended() = default;
+  ~TH2SliceReductor() = default;
 
   /// \brief Methods from the extended reductor class.
   void update(TObject* obj, std::vector<SliceInfo>& reducedSource,
-              std::vector<std::vector<float>>& axis, int& finalNumberPads) final;
+              std::vector<std::vector<float>>& axis, int& finalNumberPads) override;
 };
 
 } // namespace o2::quality_control_modules::common
 
-#endif // QUALITYCONTROL_TH2REDUCTOREXTENDED_H
+#endif // QUALITYCONTROL_TH2SLICEREDUCTOR_H

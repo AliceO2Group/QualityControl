@@ -21,9 +21,8 @@ target_sources(O2QcCommon
                        src/THnSparse5Reductor.cxx
                        src/QualityReductor.cxx
                        src/EverIncreasingGraph.cxx
-                       src/TH1ReductorExtended.cxx
-                       src/TH2ReductorExtended.cxx
-                       src/QualityReductorExtended.cxx)
+                       src/TH1SliceReductor.cxx
+                       src/TH2SliceReductor.cxx)
 
 target_include_directories(
   O2QcCommon
@@ -49,9 +48,8 @@ add_root_dictionary(O2QcCommon
                             include/Common/QualityReductor.h
                             include/Common/EverIncreasingGraph.h
                             include/Common/IncreasingEntries.h
-                            include/Common/TH1ReductorExtended.h
-                            include/Common/TH2ReductorExtended.h
-                            include/Common/QualityReductorExtended.h
+                            include/Common/TH1SliceReductor.h
+                            include/Common/TH2SliceReductor.h
                     LINKDEF include/Common/LinkDef.h
                     BASENAME O2QcCommon)
 

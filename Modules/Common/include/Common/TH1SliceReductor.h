@@ -10,17 +10,17 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file     TH1ReductorExtended.h
+/// \file     TH1SliceReductor.h
 /// \author   Marcel Lesch
 /// \author   Cindy Mordasini
 /// \author   Based on the work from Piotr Konopka
 ///
 
-#ifndef QUALITYCONTROL_TH1REDUCTOREXTENDED_H
-#define QUALITYCONTROL_TH1REDUCTOREXTENDED_H
+#ifndef QUALITYCONTROL_TH1SLICEREDUCTOR_H
+#define QUALITYCONTROL_TH1SLICEREDUCTOR_H
 
 #include "QualityControl/SliceInfoTrending.h"
-#include "QualityControl/ReductorExtended.h"
+#include "QualityControl/SliceReductor.h"
 #include "TH1.h"
 
 using namespace o2::quality_control::postprocessing;
@@ -33,17 +33,17 @@ namespace o2::quality_control_modules::common
 /// pads which need to be trended.
 ///
 
-class TH1ReductorExtended : public quality_control::postprocessing::ReductorExtended
+class TH1SliceReductor : public quality_control::postprocessing::SliceReductor
 {
  public:
   /// \brief Constructor.
-  TH1ReductorExtended() = default;
+  TH1SliceReductor() = default;
   /// \brief Destructor.
-  ~TH1ReductorExtended() = default;
+  ~TH1SliceReductor() = default;
 
   /// \brief Methods from the extended reductor class.
   void update(TObject* obj, std::vector<SliceInfo>& reducedSource,
-              std::vector<std::vector<float>>& axis, int& finalNumberPads) final;
+              std::vector<std::vector<float>>& axis, int& finalNumberPads) override;
 
  private:
   void GetTH1StatsY(TH1* hist, float stats[3], const int lowerBin, const int upperBin);
@@ -51,4 +51,4 @@ class TH1ReductorExtended : public quality_control::postprocessing::ReductorExte
 
 } // namespace o2::quality_control_modules::common
 
-#endif // QUALITYCONTROL_TH1REDUCTOREXTENDED_H
+#endif // QUALITYCONTROL_TH1SLICEREDUCTOR_H

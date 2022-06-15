@@ -10,32 +10,32 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file     TrendingTaskExtendedConfig.h
+/// \file     SliceTrendingTaskConfig.h
 /// \author   Marcel Lesch
 /// \author   Cindy Mordasini
 /// \author   Based on the work from Piotr Konopka
 ///
 
-#ifndef QUALITYCONTROL_TRENDINGTASKEXTENDEDCONFIG_H
-#define QUALITYCONTROL_TRENDINGTASKEXTENDEDCONFIG_H
+#ifndef QUALITYCONTROL_SLICETRENDINGTASKCONFIG_H
+#define QUALITYCONTROL_SLICETRENDINGTASKCONFIG_H
 
 #include "QualityControl/PostProcessingConfig.h"
 
 namespace o2::quality_control::postprocessing
 {
-/// \brief  TrendingTaskExtended configuration structure
+/// \brief  SliceTrendingTask configuration structure
 ///
 /// Configuration structure for the trending objects: the data sources to trend
 /// and the plots to produce and publish on the QCG.
 /// This configuration structure allows
 /// to input/output canvases, and slice TH1 (TH2) objects along x (x&y) axis.
 
-struct TrendingTaskExtendedConfig : PostProcessingConfig {
+struct SliceTrendingTaskConfig : PostProcessingConfig {
   /// \brief Constructors.
-  TrendingTaskExtendedConfig() = default;
-  TrendingTaskExtendedConfig(const std::string& name, const boost::property_tree::ptree& config);
+  SliceTrendingTaskConfig() = default;
+  SliceTrendingTaskConfig(const std::string& name, const boost::property_tree::ptree& config);
   /// \brief Destructor.
-  ~TrendingTaskExtendedConfig() = default;
+  ~SliceTrendingTaskConfig() = default;
 
   struct Plot {
     std::string name;
@@ -65,4 +65,4 @@ struct TrendingTaskExtendedConfig : PostProcessingConfig {
 
 } // namespace o2::quality_control::postprocessing
 
-#endif // QUALITYCONTROL_TRENDINGTASKEXTENDEDCONFIG_H
+#endif // QUALITYCONTROL_SLICETRENDINGTASKCONFIG_H

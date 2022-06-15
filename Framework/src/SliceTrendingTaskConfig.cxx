@@ -10,21 +10,21 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file     TrendingTaskExtendedConfig.cxx
+/// \file     SliceTrendingTaskConfig.cxx
 /// \author   Marcel Lesch
 /// \author   Cindy Mordasini
 /// \author   Based on the work from Piotr Konopka
 ///
 
-#include "QualityControl/TrendingTaskExtendedConfig.h"
+#include "QualityControl/SliceTrendingTaskConfig.h"
 #include <boost/property_tree/ptree.hpp>
 #include <typeinfo>
 
 namespace o2::quality_control::postprocessing
 {
 
-TrendingTaskExtendedConfig::TrendingTaskExtendedConfig(const std::string& name,
-                                                       const boost::property_tree::ptree& config)
+SliceTrendingTaskConfig::SliceTrendingTaskConfig(const std::string& name,
+                                                 const boost::property_tree::ptree& config)
   : PostProcessingConfig(name, config)
 {
   producePlotsOnUpdate = config.get<bool>("qc.postprocessing." + name + ".producePlotsOnUpdate", true);
