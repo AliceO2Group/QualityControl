@@ -56,8 +56,8 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mMapDigitTrgNames.insert({ 6, "OutputsAreBlocked" });
   mMapDigitTrgNames.insert({ 7, "DataIsValid" });
 
-  mHist2CorrTCMchAndPMch = std::make_unique<TH2F>("CorrTCMchAndPMch", "TCM charge  vs (PM totalCh/8);TCM charge;PM totalCh;", 3300, 0, 6600,
-                                                  3300, 0, 6600);
+  mHist2CorrTCMchAndPMch = std::make_unique<TH2F>("DiffTCMchAndPMch", "TCM charge  vs (TCM charge - (PM totalCh/8));TCM charge;TCM - PM TotalCh/8;", 3300, 0, 6600,
+                                                  301, -150.5, 150.5);
   mHist2CorrTCMchAndPMch->SetOption("colz");
   mHistTime2Ch = std::make_unique<TH2F>("TimePerChannel", "Time vs Channel;Time;Channel;", 4100, -2050, 2050,
                                         sNCHANNELS_PM, 0, sNCHANNELS_PM);
@@ -309,15 +309,13 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
      }
      */
     if (digit.mTriggers.getAmplA() == fit::Triggers::DEFAULT_AMP && digit.mTriggers.getAmplC() == fit::Triggers::DEFAULT_AMP &&
-        digit.mTriggers.getTimeA() == fit::Triggers::DEFAULT_ZERO &&
-        digit.mTriggers.getTimeC() == fit::Triggers::DEFAULT_ZERO) {
+        digit.mTriggers.getTimeA() == fit::Triggers::DEFAULT_TIME && digit.mTriggers.getTimeC() == fit::Triggers::DEFAULT_TIME) {
       isTCM = false;
     }
     mHistOrbit2BC->Fill(digit.getIntRecord().orbit % sOrbitsPerTF, digit.getIntRecord().bc);
     mHistBC->Fill(digit.getIntRecord().bc);
 
-    if (isTCM && !digit.mTriggers.getLaser()) {
-      // mHistNchA->Fill(digit.mTriggers.nChanA); ak
+    if (isTCM && digit.mTriggers.getDataIsValid()) {
       mHistNchA->Fill(digit.mTriggers.getNChanA());
       mHistNchC->Fill(digit.mTriggers.getNChanC());
       mHistSumAmpA->Fill(digit.mTriggers.getAmplA());
@@ -364,10 +362,13 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       mHistChannelID->Fill(ch_data::getChId(chData));
       if (mSetAllowedChIDs.find(static_cast<unsigned int>(ch_data::getChId(chData))) != mSetAllowedChIDs.end()) {
 
-        if (static_cast<int>(chData.mPMNumber) < 8)
-          mPMChargeTotalCside += chData.mChargeADC;
-        else
-          mPMChargeTotalAside += chData.mChargeADC;
+        if (static_cast<int>(chData.mPMNumber) < 8) {
+          if (chData.mFEEBits & (1 << o2::fdd::ChannelData::kIsCFDinADCgate))
+            mPMChargeTotalCside += chData.mChargeADC;
+        } else {
+          if (chData.mFEEBits & (1 << o2::fdd::ChannelData::kIsCFDinADCgate))
+            mPMChargeTotalAside += chData.mChargeADC;
+        }
 
         mMapHistAmp1D[ch_data::getChId(chData)]->Fill(ch_data::getCharge(chData));
 
@@ -435,11 +436,11 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
     }
     /// PM charge is scaled by 8 to compare with TCM charge
-    mPMChargeTotalAside = std::lround(static_cast<int>(mPMChargeTotalAside / 8));
-    mPMChargeTotalCside = std::lround(static_cast<int>(mPMChargeTotalCside / 8));
+    mPMChargeTotalAside = std::lround(static_cast<float>(mPMChargeTotalAside / 8));
+    mPMChargeTotalCside = std::lround(static_cast<float>(mPMChargeTotalCside / 8));
 
-    if (isTCM) {
-      mHist2CorrTCMchAndPMch->Fill(digit.mTriggers.getAmplA() + digit.mTriggers.getAmplC(), mPMChargeTotalAside + mPMChargeTotalCside);
+    if (isTCM && digit.mTriggers.getDataIsValid()) {
+      mHist2CorrTCMchAndPMch->Fill(digit.mTriggers.getAmplA() + digit.mTriggers.getAmplC(), (digit.mTriggers.getAmplA() + digit.mTriggers.getAmplC()) - (mPMChargeTotalAside + mPMChargeTotalCside));
       // std::cout<<"TCM ch "<<digit.mTriggers.getAmplA()+digit.mTriggers.getAmplC()<<" PM ch "<<mPMChargeTotalAside+mPMChargeTotalCside<<std::endl;
     }
   }

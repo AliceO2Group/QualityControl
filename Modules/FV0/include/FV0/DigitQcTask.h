@@ -56,7 +56,7 @@ class DigitQcTask final : public TaskInterface
   void endOfCycle() override;
   void endOfActivity(Activity& activity) override;
   void reset() override;
-  constexpr static std::size_t sNCHANNELS_PM = 60; //48(for PM) + 12(just in case for possible PM-LCS)
+  constexpr static std::size_t sNCHANNELS_PM = 60; // 48(for PM) + 12(just in case for possible PM-LCS)
   constexpr static std::size_t sOrbitsPerTF = 256;
   constexpr static uint8_t sLaserBitPos = 5;
   constexpr static uint8_t sDataIsValidBitPos = 7;
@@ -140,6 +140,9 @@ class DigitQcTask final : public TaskInterface
   std::map<unsigned int, TH2F*> mMapHistAmpVsTime;
   std::map<unsigned int, TH2F*> mMapTrgBcOrbit;
   std::map<std::string, TH2F*> mMapPmModuleBcOrbit;
+  std::unique_ptr<TH2F> mHist2DiffTCMchAndPMch;
+  std::unique_ptr<TH1F> mHist1TCMchMinusPMch;
+  std::map<std::string, int> mPMTotalCh;
 };
 
 } // namespace o2::quality_control_modules::fv0

@@ -127,7 +127,10 @@ class DigitQcTask final : public TaskInterface
   std::map<unsigned int, TH1F*> mMapHistPMbits;
   std::map<unsigned int, TH2F*> mMapHistAmpVsTime;
   std::map<unsigned int, TH2F*> mMapTrgBcOrbit;
+  std::map<std::string, int> mPMTotalCh;
   std::map<std::string, TH2F*> mMapPmModuleBcOrbit;
+  std::unique_ptr<TH2F> mHist2DiffTCMchAndPMch;
+  std::unique_ptr<TH1F> mHist1TCMchMinusPMch;
 };
 
 } // namespace o2::quality_control_modules::ft0

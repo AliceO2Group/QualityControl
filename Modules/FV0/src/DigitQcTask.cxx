@@ -121,6 +121,11 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mMapDigitTrgNames.insert({ 5, "Laser" });
   mMapDigitTrgNames.insert({ 6, "OutputsAreBlocked" });
   mMapDigitTrgNames.insert({ 7, "DataIsValid" });
+  mHist2DiffTCMchAndPMch = std::make_unique<TH2F>("DiffTCMchAndPMch", "TCM charge  vs (TCM charge - (PM totalCh/8));TCM charge;TCM - PM TotalCh/8;", 3300, 0, 6600,
+                                                  301, -150.5, 150.5);
+  mHist2DiffTCMchAndPMch->SetOption("colz");
+
+  mHist1TCMchMinusPMch = std::make_unique<TH1F>("TCMchMinusPMch", "TCM charge - (PM totalCh/8));TCM - PM TotalCh/8;", 301, -150.5, 150.5);
 
   mHistTime2Ch = std::make_unique<TH2F>("TimePerChannel", "Time vs Channel;Channel;Time", sNCHANNELS_PM, 0, sNCHANNELS_PM, 4100, -2050, 2050);
   mHistTime2Ch->SetOption("colz");
@@ -247,7 +252,8 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 
   rebinFromConfig(); // after all histos are created
-
+  getObjectsManager()->startPublishing(mHist2DiffTCMchAndPMch.get());
+  getObjectsManager()->startPublishing(mHist1TCMchMinusPMch.get());
   getObjectsManager()->startPublishing(mHistTime2Ch.get());
   getObjectsManager()->startPublishing(mHistAmp2Ch.get());
   getObjectsManager()->startPublishing(mHistOrbit2BC.get());
@@ -273,6 +279,8 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 void DigitQcTask::startOfActivity(Activity& activity)
 {
   ILOG(Info, Support) << "startOfActivity " << activity.mId << ENDM;
+  mHist2DiffTCMchAndPMch->Reset();
+  mHist1TCMchMinusPMch->Reset();
   mHistTime2Ch->Reset();
   mHistAmp2Ch->Reset();
   mHistOrbit2BC->Reset();
@@ -358,20 +366,17 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       curTfTimeMin = mTimeCurNS;
     if (mTimeCurNS > curTfTimeMax)
       curTfTimeMax = mTimeCurNS;
-    /*
-    if (digit.mTriggers.amplA == -5000 && digit.mTriggers.amplC == -5000 && digit.mTriggers.timeA == -5000 && digit.mTriggers.timeC == -5000)
+
+    if (digit.mTriggers.getAmplA() == fit::Triggers::DEFAULT_AMP && digit.mTriggers.getTimeA() == fit::Triggers::DEFAULT_TIME) {
       isTCM = false;
-    */
+    }
     mHistOrbit2BC->Fill(digit.getOrbit() % sOrbitsPerTF, digit.getBC());
     mHistBC->Fill(digit.getBC());
 
-    if (isTCM && !digit.mTriggers.getLaserBit()) {
+    if (isTCM && digit.mTriggers.getDataIsValid()) {
       mHistNchA->Fill(digit.mTriggers.nChanA);
-      // mHistNchC->Fill(digit.mTriggers.nChanC);
       mHistSumAmpA->Fill(digit.mTriggers.amplA);
-      // mHistSumAmpC->Fill(digit.mTriggers.amplC);
       mHistAverageTimeA->Fill(digit.mTriggers.timeA);
-      // mHistAverageTimeC->Fill(digit.mTriggers.timeC);
       // mHistTimeSum2Diff->Fill((digit.mTriggers.timeC - digit.mTriggers.timeA) * mCFDChannel2NS / 2, (digit.mTriggers.timeC + digit.mTriggers.timeA) * mCFDChannel2NS / 2);
       for (const auto& entry : mMapDigitTrgNames) {
         if (digit.mTriggers.triggersignals & (1 << entry.first))
@@ -395,10 +400,36 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
           break;
         }
       }
-      if (entry.first == "TCM" && isTCM && (digit.getTriggers().triggersignals & (1 << sDataIsValidBitPos))) {
+      if (entry.first == "TCM" && isTCM && digit.mTriggers.getDataIsValid()) {
         mMapPmModuleBcOrbit[entry.first]->Fill(digit.getOrbit() % sOrbitsPerTF, digit.getBC());
       }
     }
+    int totalCh = 0;
+    for (auto& entry : mMapPmModuleChannels) {
+      if (entry.first == "TCM")
+        continue;
+      if (!isTCM && !digit.mTriggers.getDataIsValid())
+        continue;
+      for (const auto& chData : vecChData) {
+        if (std::find(entry.second.begin(), entry.second.end(), chData.ChId) != entry.second.end()) {
+          if ((chData.ChainQTC & (1 << o2::fv0::ChannelData::kIsCFDinADCgate)) && (chData.ChainQTC & (1 << o2::fv0::ChannelData::kIsEventInTVDC)))
+            totalCh += static_cast<Int_t>(chData.QTCAmpl);
+        }
+      }
+      mPMTotalCh.insert({ entry.first, totalCh });
+      totalCh = 0;
+    }
+    int totalChPMA = 0;
+    for (auto& entry : mPMTotalCh) {
+      if (entry.first.find("PMA") != std::string::npos) {
+        totalChPMA += std::lround(static_cast<float>(entry.second / 8.));
+      }
+    }
+    if (isTCM && digit.mTriggers.getDataIsValid()) {
+      mHist2DiffTCMchAndPMch->Fill(digit.mTriggers.getAmplA(), digit.mTriggers.getAmplA() - totalChPMA);
+      mHist1TCMchMinusPMch->Fill(digit.mTriggers.getAmplA() - totalChPMA);
+    }
+    mPMTotalCh.clear();
 
     for (const auto& chData : vecChData) {
       mHistTime2Ch->Fill(static_cast<Double_t>(chData.ChId), static_cast<Double_t>(chData.CFDTime));
@@ -458,6 +489,8 @@ void DigitQcTask::reset()
 {
   // clean all the monitor objects here
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  mHist2DiffTCMchAndPMch->Reset();
+  mHist1TCMchMinusPMch->Reset();
   mHistTime2Ch->Reset();
   mHistAmp2Ch->Reset();
   mHistOrbit2BC->Reset();
