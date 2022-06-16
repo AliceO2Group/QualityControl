@@ -122,6 +122,88 @@
         "stopTrigger": [
           "userorcontrol", "10 minutes"
         ]
+      },
+      "ExampleTrendExtended": {
+        "active": "true",
+        "className": "o2::quality_control::postprocessing::SliceTrendingTask",
+        "moduleName": "QualityControl",
+        "detectorName": "TST",
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "TST/MO/QcTask",
+            "names": [ "example" ],
+            "reductorName": "o2::quality_control_modules::common::TH1SliceReductor",
+            "axisDivision": [ [ "0", "4500", "10500" ] ],
+            "moduleName": "QcCommon"
+          }
+        ],
+        "plots": [
+          {
+            "name": "ExtendedTrending_meanX_of_histogram",
+            "title": "Mean X trend of the example histogram",
+            "varexp": "example.meanX:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "errMeanX:0.5",
+            "graphYRange": "",
+            "graphXRange": "",
+            "graphAxisLabel": "Mean X:time"
+          },
+          {
+            "name": "ExtendedTrending_meanY_of_histogram",
+            "title": "Mean Y trend of the example histogram",
+            "varexp": "example.meanY:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "errMeanY:0.5",
+            "graphYRange": "",
+            "graphXRange": "",
+            "graphAxisLabel": "Mean Y:time"
+          },
+          {
+            "name": "ExtendedTrending_meanY_of_histogram_slices",
+            "title": "Mean Y trend of the example histogram",
+            "varexp": "example.meanY:slices",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "errMeanY:errMeanX",
+            "graphYRange": "",
+            "graphXRange": "-500.0:10000",
+            "graphAxisLabel": "Mean Y:Center of slices along x"
+          },
+          {
+            "name": "ExtendedTrending_meanY_of_histogram_timeMultigraph",
+            "title": "Mean Y trend of the example histogram",
+            "varexp": "example.meanY:multigraphtime",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "errMeanY:0.5",
+            "graphYRange": "",
+            "graphXRange": "",
+            "graphAxisLabel": "Mean Y:time"
+          },
+          {
+            "name": "ExtendedTrending_NEntries_of_histogram",
+            "title": "Mean Y trend of the example histogram",
+            "varexp": "example.entries:slices",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "0:errMeanX",
+            "graphYRange": "",
+            "graphXRange": "",
+            "graphAxisLabel": "Number of Entries:Center of slices along x"
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "10 seconds"
+        ],
+        "stopTrigger": [
+          "userorcontrol", "10 minutes"
+        ]
       }
     }
   }
