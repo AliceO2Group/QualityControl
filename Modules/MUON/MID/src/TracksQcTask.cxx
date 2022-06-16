@@ -261,10 +261,9 @@ void TracksQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   auto tracks = ctx.inputs().get<gsl::span<o2::mid::Track>>("tracks");
   auto rofs = ctx.inputs().get<gsl::span<o2::mid::ROFRecord>>("trackrofs");
 
-  //auto tracks = o2::mid::specs::getData(ctx, "tracks", o2::mid::EventType::Standard);
-  //auto rofs = o2::mid::specs::getRofs(ctx, "tracks", o2::mid::EventType::Standard);
+  // auto tracks = o2::mid::specs::getData(ctx, "tracks", o2::mid::EventType::Standard);
+  // auto rofs = o2::mid::specs::getRofs(ctx, "tracks", o2::mid::EventType::Standard);
 
-  
   int multTracks;
   float DeltaZ = o2::mid::geoparams::DefaultChamberZ[0] - o2::mid::geoparams::DefaultChamberZ[3];
   float Zf = -975.; // Zf= position mid-dipole

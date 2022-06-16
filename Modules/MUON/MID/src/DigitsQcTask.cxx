@@ -272,12 +272,12 @@ static std::pair<uint32_t, uint32_t> getROFSize(const o2::mid::ROFRecord& rof, g
 
 void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  //auto digits = ctx.inputs().get<gsl::span<o2::mid::ColumnData>>("digits");
-  //auto rofs = ctx.inputs().get<gsl::span<o2::mid::ROFRecord>>("digitrofs");
+  // auto digits = ctx.inputs().get<gsl::span<o2::mid::ColumnData>>("digits");
+  // auto rofs = ctx.inputs().get<gsl::span<o2::mid::ROFRecord>>("digitrofs");
 
   auto digits = o2::mid::specs::getData(ctx, "digits", o2::mid::EventType::Standard);
   auto rofs = o2::mid::specs::getRofs(ctx, "digits", o2::mid::EventType::Standard);
-  
+
   int multHitMT11B = 0;
   int multHitMT12B = 0;
   int multHitMT21B = 0;

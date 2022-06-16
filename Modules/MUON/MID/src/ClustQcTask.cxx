@@ -131,9 +131,9 @@ void ClustQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   auto clusters = ctx.inputs().get<gsl::span<o2::mid::Cluster>>("clusters");
   auto rofs = ctx.inputs().get<gsl::span<o2::mid::ROFRecord>>("clusterrofs");
 
-  //auto clusters = o2::mid::specs::getData(ctx, "clusters", o2::mid::EventType::Standard);
-  //auto rofs = o2::mid::specs::getRofs(ctx, "clusters", o2::mid::EventType::Standard);
-  
+  // auto clusters = o2::mid::specs::getData(ctx, "clusters", o2::mid::EventType::Standard);
+  // auto rofs = o2::mid::specs::getRofs(ctx, "clusters", o2::mid::EventType::Standard);
+
   int multClusterMT11 = 0;
   int multClusterMT12 = 0;
   int multClusterMT21 = 0;
