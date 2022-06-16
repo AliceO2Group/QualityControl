@@ -32,6 +32,7 @@
 #include "DataFormatsMID/ROFRecord.h"
 #include "MIDBase/DetectorParameters.h"
 #include "MIDBase/GeometryParameters.h"
+#include "MIDWorkflow/ColumnDataSpecsUtils.h"
 
 #define MID_NDE 72
 #define DZpos 10
@@ -130,6 +131,9 @@ void ClustQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   auto clusters = ctx.inputs().get<gsl::span<o2::mid::Cluster>>("clusters");
   auto rofs = ctx.inputs().get<gsl::span<o2::mid::ROFRecord>>("clusterrofs");
 
+  //auto clusters = o2::mid::specs::getData(ctx, "clusters", o2::mid::EventType::Standard);
+  //auto rofs = o2::mid::specs::getRofs(ctx, "clusters", o2::mid::EventType::Standard);
+  
   int multClusterMT11 = 0;
   int multClusterMT12 = 0;
   int multClusterMT21 = 0;
