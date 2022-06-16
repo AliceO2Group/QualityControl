@@ -21,10 +21,11 @@
 #include <TH1.h>
 #include <TH2.h>
 #include <THnSparse.h>
+#include <string>
 
 #include <DataFormatsITSMFT/TopologyDictionary.h>
 #include <ITSBase/GeometryTGeo.h>
-#include <TH2Poly.h>
+
 class TH1D;
 class TH2D;
 
@@ -50,7 +51,6 @@ class ITSClusterTask : public TaskInterface
 
  private:
   void publishHistos();
-  void getStavePoint(int layer, int stave, double* px, double* py);
   void formatAxes(TH1* h, const char* xTitle, const char* yTitle, float xOffset = 1., float yOffset = 1.);
   void addObject(TObject* aObject);
   void getJsonParameters();
@@ -87,7 +87,7 @@ class ITSClusterTask : public TaskInterface
   TH2D* hAverageClusterSizeMonitorOB[7];
 
   //  THnSparseD *sClustersSize[7];
-  TH2Poly* mGeneralOccupancy;
+  TH2D* mGeneralOccupancy;
 
   const int mOccUpdateFrequency = 100000;
   int mNThreads = 1;
@@ -103,9 +103,8 @@ class ITSClusterTask : public TaskInterface
   const int mNLanePerHic[NLayer] = { 3, 3, 3, 2, 2, 2, 2 };
   const int ChipBoundary[NLayer + 1] = { 0, 108, 252, 432, 3120, 6480, 14712, 24120 };
   const int StaveBoundary[NLayer + 1] = { 0, 12, 28, 48, 72, 102, 144, 192 };
-  const float MidPointRad[7] = { 23.49, 31.586, 39.341, 197.598, 246.944, 345.348, 394.883 };
-  const float StartAngle[7] = { 16.997 / 360 * (TMath::Pi() * 2.), 17.504 / 360 * (TMath::Pi() * 2.), 17.337 / 360 * (TMath::Pi() * 2.), 8.75 / 360 * (TMath::Pi() * 2.), 7 / 360 * (TMath::Pi() * 2.), 5.27 / 360 * (TMath::Pi() * 2.), 4.61 / 360 * (TMath::Pi() * 2.) }; // start angle of first stave in each layer
-  //
+  const std::string mYlabels[NLayer * 2] = { "L6B(S24#rightarrow47)", "L5B(S21#rightarrow41)", "L4B(S15#rightarrow29)", "L3B(S12#rightarrow23)", "L2B(S10#rightarrow19)", "L1B(S08#rightarrow15)", "L0B(S06#rightarrow11)", "L0T(S00#rightarrow05)", "L1T(S00#rightarrow07)", "L2T(S00#rightarrow09)", "L3T(S00#rightarrow11)", "L4T(S00#rightarrow14)", "L5T(S00#rightarrow20)", "L6T(S00#rightarrow23)" };
+
   int mEnableLayers[7];
   int mClusterSize[7][48][28] = { { { 0 } } }; //[#layers][max staves][max lanes / chips]
   double mClusterSizeMonitor[7][48][28] = { { { 0 } } };

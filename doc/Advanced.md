@@ -900,7 +900,8 @@ should not be present in real configuration files.
       },
       "postprocessing": {                 "": "Configuration parameters for post-processing",
         "periodSeconds": 10.0,            "": "Sets the interval of checking all the triggers. One can put a very small value",
-                                          "": "for async processing, but use 10 or more seconds for synchronous operations"
+                                          "": "for async processing, but use 10 or more seconds for synchronous operations",
+        "matchAnyRunNumber": "false",     "": "Forces post-processing triggers to match any run, useful when running with AliECS"
       }
     }
   }
@@ -1089,6 +1090,21 @@ specified in the `"monitoring.url"` parameter in config files. If QC is run in s
 printing them as soon as they are reported, please also add `--monitoring-backend infologger://` as the argument.
 
 One can also enable publishing metrics related to CPU/memory usage. To do so, use `--resources-monitoring <interval_sec>`.
+
+## Common check `IncreasingEntries`
+
+This check make sures that the number of entries has increased in the past cycle. If not it will display a pavetext 
+on the plot and set the quality to bad. 
+
+If you use `SetBinContent` the number of entries does not increase creating a false positive. Please call `ResetStats()`
+after using `SetBinContent`.
+
+The behaviour of the check can be inverted by setting the customparameter "mustIncrease" to "false" : 
+```
+        "checkParameters": {
+          "mustIncrease": "false"
+        }
+```
 
 
 ---

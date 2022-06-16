@@ -55,6 +55,20 @@ Triggers are complemented with:
 For example, the periodic trigger will provide evenly spaced timestamps, even if the trigger is checked more rarely.
 The New Object trigger provide the timestamp of the updated object. The timestamps and Activites should be used to
 access databases, so any Post-processing Task can be rerun at any time for any run and reconstruction pass.
+
+The Activity specified at the top of the configuration file is used to for triggers to match objects which belong to 
+certain run, pass, period. A lack of a parameter or a default value are treated as a wildcard. Since AliECS overwrites
+the run number during initialization, one may force the run number wildcard by adding the following key-value pair:
+```json
+{
+  "qc": {
+    "config": {
+      "postprocessing": {
+        "matchAnyRunNumber": "true"
+      }
+    },
+```
+
   
 MonitorObjects may be saved by registering them in ObjectManager, similarly to normal QC Tasks (recommended, see
  examples linked below), or by using DatabaseInterface directly. Please note, that created objects have to
@@ -367,6 +381,18 @@ Leaving values empty will match anything available (which might be also what you
       },
 ```
 
+If the post-processing runs in a different AliECS environment than the acquisition run, one should add the following 
+flag. Since AliECS adds a concrete run number to the workflow, the triggers would match only objects from the same run.
+```json
+  "qc": {
+    "config": {
+      ...
+      "postprocessing": {
+        "matchAnyRunNumber": "true"
+      }
+    }
+```
+
 ### I want to run postprocessing on all already existing objects for a run
 
 Use ForEachObject as the update trigger:
@@ -385,6 +411,9 @@ Use the Activity which matches the run, and (optionally) period and pass name:
         "periodName" : "OCT",
         "provenance" : "qc"
       },
+      "postprocessing": {
+        "periodSeconds": 0.01
+      }
 ```
 
 ### I want to run postprocessing for all objects in all the runs of a given reconstruction pass and period
@@ -402,6 +431,9 @@ Use the Activity which leaves the run number empty, but indicate the pass and pe
         "periodName" : "OCT",
         "provenance" : "qc"
       },
+      "postprocessing": {
+        "periodSeconds": 0.01
+      }
 ```
 
 ### I want to run postprocessing for all objects in all the runs of a given reconstruction pass and period which are valid in given time interval
@@ -422,6 +454,9 @@ Add `start` and `end` values in ms since epoch to restrict the validity start of
         "start" : "1649417693630",
         "end" : "1649417800000"
       },
+      "postprocessing": {
+        "periodSeconds": 0.01
+      }
 ```
 
 ### I want to run postprocessing for the latest object for each available run in a given pass and period
@@ -441,6 +476,9 @@ Use the Activity which leaves the run number empty, but indicate the pass and pe
         "periodName" : "OCT",
         "provenance" : "qc"
       },
+      "postprocessing": {
+        "periodSeconds": 0.01
+      }
 ```
 
 [← Go back to Modules Development](ModulesDevelopment.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Advanced Topics →](Advanced.md)
