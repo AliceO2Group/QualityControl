@@ -38,13 +38,14 @@ class TH1ReductorLaser : public quality_control::postprocessing::Reductor
 
  private:
   struct {
+    Double_t validity1;
+    Double_t validity2;
     Double_t mean;
-    Double_t mean1fit;
-    Double_t mean2fit;
+    Double_t mean1;
+    Double_t mean2;
     Double_t stddev;
-    Double_t stddev1fit;
-    Double_t stddev2fit;
-    Double_t entries;
+    Double_t stddev1;
+    Double_t stddev2;
   } mStats;
 };
 
