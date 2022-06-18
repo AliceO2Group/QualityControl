@@ -212,7 +212,7 @@ void DigitQcTaskLaser::initialize(o2::framework::InitContext& /*ctx*/)
     const auto chIDs = param->second;
     const std::string del = ",";
     vecRefPMTChannelIDs = parseParameters<unsigned int>(chIDs, del);
-  } 
+  }
   for (const auto& entry : vecChannelIDs) {
     mSetAllowedChIDs.insert(entry);
   }
@@ -226,7 +226,7 @@ void DigitQcTaskLaser::initialize(o2::framework::InitContext& /*ctx*/)
     if (pairHistAmp.second) {
       getObjectsManager()->startPublishing(pairHistAmp.first->second);
       mListHistGarbage->Add(pairHistAmp.first->second);
-    }    
+    }
     if (pairHistAmpVsBC.second) {
       mListHistGarbage->Add(pairHistAmpVsBC.first->second);
       getObjectsManager()->startPublishing(pairHistAmpVsBC.first->second);
@@ -238,7 +238,7 @@ void DigitQcTaskLaser::initialize(o2::framework::InitContext& /*ctx*/)
     auto pairHistTime = mMapHistTime1D.insert({ chID, new TH1F(Form("Time_channel%i", chID), Form("Time, channel %i", chID), 4100, -2050, 2050) });
     auto pairHistBits = mMapHistPMbits.insert({ chID, new TH1F(Form("Bits_channel%i", chID), Form("Bits, channel %i", chID), mMapChTrgNames.size(), 0, mMapChTrgNames.size()) });
     auto pairHistAmpVsTime = mMapHistAmpVsTime.insert({ chID, new TH2F(Form("Amp_vs_time_channel%i", chID), Form("Amplitude vs time, channel %i;Amp;Time", chID), 420, -100, 4100, 410, -2050, 2050) });
-    
+
     for (const auto& entry : mMapChTrgNames) {
       pairHistBits.first->second->GetXaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
     }
@@ -373,39 +373,34 @@ void DigitQcTaskLaser::monitorData(o2::framework::ProcessingContext& ctx)
       curTfTimeMin = mTimeCurNS;
     if (mTimeCurNS > curTfTimeMax)
       curTfTimeMax = mTimeCurNS;
-    
+
     if (digit.mTriggers.amplA == digit.mTriggers.DEFAULT_AMP && digit.mTriggers.amplC == digit.mTriggers.DEFAULT_AMP && digit.mTriggers.timeA == digit.mTriggers.DEFAULT_TIME && digit.mTriggers.timeC == digit.mTriggers.DEFAULT_TIME)
-    // if (digit.mTriggers.amplA == -5000 && digit.mTriggers.amplC == -5000 && digit.mTriggers.timeA == -5000 && digit.mTriggers.timeC == -5000)
       isTCM = false;
 
     mHistOrbit2BC->Fill(digit.getIntRecord().orbit % sOrbitsPerTF, digit.getIntRecord().bc);
     mHistBC->Fill(digit.getBC());
 
     if (isTCM && digit.mTriggers.getOutputsAreBlocked() && digit.mTriggers.getDataIsValid()) {
-    // if (isTCM && digit.mTriggers.triggersignals & (1 << 6)) {
-    // if (isTCM) {
-      // if(!digit.mTriggers.getLaserBit()) {
-        mHistNchA->Fill(digit.mTriggers.nChanA);
-        mHistNchC->Fill(digit.mTriggers.nChanC);
-        mHistSumAmpA->Fill(digit.mTriggers.amplA);
-        mHistSumAmpC->Fill(digit.mTriggers.amplC);
-        mHistAverageTimeA->Fill(digit.mTriggers.timeA);
-        mHistAverageTimeC->Fill(digit.mTriggers.timeC);
-        mHistTimeSum2Diff->Fill((digit.mTriggers.timeC - digit.mTriggers.timeA) * mCFDChannel2NS / 2, (digit.mTriggers.timeC + digit.mTriggers.timeA) * mCFDChannel2NS / 2);
-        for (const auto& entry : mMapDigitTrgNames) {
-          if (digit.mTriggers.triggersignals & (1 << entry.first))
-            mHistTriggers->Fill(static_cast<Double_t>(entry.first));
-          for (const auto& entry2 : mMapDigitTrgNames) {
-            if ((digit.mTriggers.triggersignals & (1 << entry.first)) && (digit.mTriggers.triggersignals & (1 << entry2.first)))
-              mHistTriggersCorrelation->Fill(static_cast<Double_t>(entry.first), static_cast<Double_t>(entry2.first));
-          }
+      mHistNchA->Fill(digit.mTriggers.nChanA);
+      mHistNchC->Fill(digit.mTriggers.nChanC);
+      mHistSumAmpA->Fill(digit.mTriggers.amplA);
+      mHistSumAmpC->Fill(digit.mTriggers.amplC);
+      mHistAverageTimeA->Fill(digit.mTriggers.timeA);
+      mHistAverageTimeC->Fill(digit.mTriggers.timeC);
+      mHistTimeSum2Diff->Fill((digit.mTriggers.timeC - digit.mTriggers.timeA) * mCFDChannel2NS / 2, (digit.mTriggers.timeC + digit.mTriggers.timeA) * mCFDChannel2NS / 2);
+      for (const auto& entry : mMapDigitTrgNames) {
+        if (digit.mTriggers.triggersignals & (1 << entry.first))
+          mHistTriggers->Fill(static_cast<Double_t>(entry.first));
+        for (const auto& entry2 : mMapDigitTrgNames) {
+          if ((digit.mTriggers.triggersignals & (1 << entry.first)) && (digit.mTriggers.triggersignals & (1 << entry2.first)))
+            mHistTriggersCorrelation->Fill(static_cast<Double_t>(entry.first), static_cast<Double_t>(entry2.first));
         }
-        for (auto& entry : mMapTrgBcOrbit) {
-          if (digit.mTriggers.triggersignals & (1 << entry.first)) {
-            entry.second->Fill(digit.getIntRecord().orbit % sOrbitsPerTF, digit.getIntRecord().bc);
-          }
+      }
+      for (auto& entry : mMapTrgBcOrbit) {
+        if (digit.mTriggers.triggersignals & (1 << entry.first)) {
+          entry.second->Fill(digit.getIntRecord().orbit % sOrbitsPerTF, digit.getIntRecord().bc);
         }
-      // }
+      }
     }
 
     for (auto& entry : mMapPmModuleChannels) {
@@ -442,7 +437,7 @@ void DigitQcTaskLaser::monitorData(o2::framework::ProcessingContext& ctx)
       }
 
       if (mSetRefPMTChIDs.find(static_cast<unsigned int>(chData.ChId)) != mSetRefPMTChIDs.end()) {
-        mMapHistAmpVsBC[chData.ChId]->Fill(chData.QTCAmpl,digit.getIntRecord().bc);
+        mMapHistAmpVsBC[chData.ChId]->Fill(chData.QTCAmpl, digit.getIntRecord().bc);
       }
 
       for (const auto& entry : mMapChTrgNames) {

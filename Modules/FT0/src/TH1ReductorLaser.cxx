@@ -31,59 +31,55 @@ const char* TH1ReductorLaser::getBranchLeafList()
 void TH1ReductorLaser::update(TObject* obj)
 {
   if (auto histo = dynamic_cast<TH2*>(obj)) {
-    TH1 * bc_projection = histo->ProjectionY("bc_projection",0,-1);
+    TH1* bc_projection = histo->ProjectionY("bc_projection",0,-1);
     int ibc = 0;
     int ibc_max = 0;
     if ( bc_projection->GetEntries() > 0 ) {
-      ibc = bc_projection->GetMean()-2.*bc_projection->GetStdDev();
-      ibc_max = bc_projection->GetMean()+2.*bc_projection->GetStdDev();
+      ibc = bc_projection->GetMean()-2. * bc_projection->GetStdDev();
+      ibc_max = bc_projection->GetMean()+2. * bc_projection->GetStdDev();
     }     
     
-    TH1 * slice_first_peak;
+    TH1* slice_first_peak;
     bool gotFirstPeak = false;
     mStats.mean1 = 0.;
     mStats.stddev1 = 0.;
     mStats.validity1 = 0.;
-    while( !gotFirstPeak && ibc < ibc_max) {
-      slice_first_peak = histo->ProjectionX(Form("first peak in BC #%d",ibc),ibc,ibc+1);
-      if( slice_first_peak->GetEntries() > 1000 ) {
-          mStats.mean1 = slice_first_peak->GetMean();         /// Use this for the first from the two peaks
-          mStats.stddev1 = slice_first_peak->GetStdDev();
-          mStats.validity1 = 1.;
-          gotFirstPeak = true;
-          ibc+=2;
-          break;
-      }
-      else
+    while (!gotFirstPeak && ibc < ibc_max) {
+      slice_first_peak = histo->ProjectionX(Form("first peak in BC #%d", ibc), ibc, ibc+1);
+      if (slice_first_peak->GetEntries() > 1000) {
+        mStats.mean1 = slice_first_peak->GetMean();
+        mStats.stddev1 = slice_first_peak->GetStdDev();
+        mStats.validity1 = 1.;
+        gotFirstPeak = true;
+        ibc+=2;
+        break;
+      } else
         ibc++;
     }
 
-    TH1 * slice_second_peak;    
+    TH1* slice_second_peak;    
     bool gotSecondPeak = false;
     mStats.mean2 = 0.;
     mStats.stddev2 = 0.;
     mStats.validity2 = 0.;
-    while( !gotSecondPeak && gotFirstPeak && ibc < ibc_max ) {
-      slice_second_peak = histo->ProjectionX(Form("second peak in BC #%d",ibc),ibc,ibc+1);
-      if( slice_second_peak->GetEntries() > 1000 ) {
-        mStats.mean2 = slice_second_peak->GetMean();         /// Use this for the first from the two peaks
+    while (!gotSecondPeak && gotFirstPeak && ibc < ibc_max) {
+      slice_second_peak = histo->ProjectionX(Form("second peak in BC #%d", ibc), ibc, ibc+1);
+      if (slice_second_peak->GetEntries() > 1000) {
+        mStats.mean2 = slice_second_peak->GetMean();
         mStats.stddev2 = slice_second_peak->GetStdDev();
         mStats.validity2 = 1.;
         gotSecondPeak = true;
         break;
-      }
-      else
+      } else
         ibc++;
     }
-        
-    if( !gotSecondPeak )
-      ILOG(Warning) << "TH1ReductorLaser: one of the peaks of the reference PMT is missing!" << ENDM;
-    if( !gotFirstPeak && !gotSecondPeak )
-      ILOG(Warning) << "TH1ReductorLaser: cannot find peaks of the reference PMT distribution at all !" << ENDM;
 
-  }
-  else if (auto histo = dynamic_cast<TH1*>(obj)) {
-    mStats.mean = histo->GetMean();                     /// Use this for one peak
+    if (!gotSecondPeak)
+      ILOG(Warning) << "TH1ReductorLaser: one of the peaks of the reference PMT is missing!" << ENDM;
+    if (!gotFirstPeak && !gotSecondPeak)
+      ILOG(Warning) << "TH1ReductorLaser: cannot find peaks of the reference PMT distribution at all !" << ENDM;
+  } else if (auto histo = dynamic_cast<TH1*>(obj)) {
+    mStats.mean = histo->GetMean();
     mStats.stddev = histo->GetMean();
   }
 }
