@@ -92,33 +92,6 @@ class TrendingTaskITSTracks : public PostProcessingInterface
   static constexpr int NTRENDSTRACKS = 9;
   const int col[2] = { 1, 4 };
   const int mkr[2] = { 21, 21 };
-  const std::string trendtitles[NTRENDSTRACKS][2] = { { "NCluster mean", "NCluster stddev" },
-                                                      { "EtaDistribution mean", "EtaDistribution stddev" },
-                                                      { "PhiDistribution mean", "PhiDistribution stddev" },
-                                                      { "VertexZ mean", "VertexZ stddev" },
-                                                      { "NVertexContributors mean", "NVertexContributors stddev" },
-                                                      { "AssociatedClusterFraction mean", "AssociatedClusterFraction stddev" },
-                                                      { "Ntracks mean", "Ntracks stddev" },
-                                                      { "VertexX mean", "VertexX stddev" },
-                                                      { "VertexY mean", "VertexY stddev" } };
-  const std::string trendnames[NTRENDSTRACKS][2] = { { "NCluster mean", "NCluster stddev" },
-                                                     { "EtaDistribution mean", "EtaDistribution stddev" },
-                                                     { "PhiDistribution mean", "PhiDistribution stddev" },
-                                                     { "VertexZ mean", "VertexZ stddev" },
-                                                     { "NVertexContributors mean", "NVertexContributors stddev" },
-                                                     { "AssociatedClusterFraction mean", "AssociatedClusterFraction stddev" },
-                                                     { "Ntracks mean", "Ntracks stddev" },
-                                                     { "VertexX mean", "VertexX stddev" },
-                                                     { "VertexY mean", "VertexY stddev" } };
-  const std::string ytitles[NTRENDSTRACKS][2] = { { "NCluster mean", "NCluster stddev" },
-                                                  { "EtaDistribution mean", "EtaDistribution stddev" },
-                                                  { "PhiDistribution mean", "PhiDistribution stddev" },
-                                                  { "VertexZ mean", "VertexZ stddev" },
-                                                  { "NVertexContributors mean", "NVertexContributors stddev" },
-                                                  { "AssociatedClusterFraction mean", "AssociatedClusterFraction stddev" },
-                                                  { "Ntracks mean", "Ntracks stddev" },
-                                                  { "VertexX mean", "VertexX stddev" },
-                                                  { "VertexY mean", "VertexY stddev" } };
 };
 
 } // namespace o2::quality_control::postprocessing
