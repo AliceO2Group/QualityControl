@@ -113,7 +113,7 @@ class PhysicsTaskPreclusters /*final*/ : public o2::quality_control::core::TaskI
   std::shared_ptr<GlobalHistogram> mHistogramDenST345;         // Histogram of Number of orbits (global XY view)
   std::shared_ptr<MergeableTH2Ratio> mHistogramPseudoeffST345; // Mergeable object, Occupancy histogram (global XY view)
 
-  std::shared_ptr<MergeableTH1Ratio> mHistogramMeanPseudoeffPerDE[2]; // Pseudoefficiency of B and NB
+  std::shared_ptr<TH1F> mHistogramMeanPseudoeffPerDE[2]; // Pseudoefficiency of B and NB
 
   std::shared_ptr<MergeableTH1Ratio> mHistogramPreclustersPerDE;       // number of pre-clusters per DE and per TF
   std::shared_ptr<MergeableTH1Ratio> mHistogramPreclustersSignalPerDE; // number of pre-clusters with signal per DE and per TF
