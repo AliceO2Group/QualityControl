@@ -24,7 +24,7 @@ void TH2SBitmask::merge(MergeInterface* const other)
   auto otherHisto = dynamic_cast<const TH2SBitmask* const>(other);
   if (otherHisto) {
     for (unsigned int ix = 1; ix <= this->GetNbinsX(); ix++) {
-      for (unsigned int iz = 1; iz <= this->GetNbinsX(); iz++) {
+      for (unsigned int iz = 1; iz <= this->GetNbinsZ(); iz++) {
         int cont = this->GetBinContent(ix, iz);
         cont |= int(otherHisto->GetBinContent(ix, iz, cont));
       }
