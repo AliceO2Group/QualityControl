@@ -117,10 +117,8 @@ class PhysicsTaskDigits /*final*/ : public TaskInterface // todo add back the "f
   std::map<int, std::shared_ptr<DetectorHistogram>> mHistogramNorbitsDE[2];   // Histogram of Number of orbits (XY view)
   std::map<int, std::shared_ptr<MergeableTH2Ratio>> mHistogramOccupancyDE[2]; // Mergeable object, Occupancy histogram (XY view)
 
-  // TH1 of the Mean Occupancy on each DE, integrated or only on elapsed cycle - Sent for Trending
-  // WARNING: the code for the occupancy on cycle is currently broken and therefore disabled
+  // TH1 of the Mean Occupancy on each DE
   std::shared_ptr<TH1F> mMeanOccupancyPerDE;
-  // std::shared_ptr<MergeableTH1OccupancyPerDECycle> mMeanOccupancyPerDECycle;
 
   std::vector<TH1*> mAllHistograms;
 };

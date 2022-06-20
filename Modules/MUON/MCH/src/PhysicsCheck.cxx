@@ -14,9 +14,9 @@
 /// \author Andrea Ferrero, Sebastien Perrin
 ///
 
+#include "MCH/PhysicsCheck.h"
 #include "MCHMappingInterface/Segmentation.h"
 #include "MCHMappingSegContour/CathodeSegmentationContours.h"
-#include "MCH/PhysicsCheck.h"
 #include "MCH/GlobalHistogram.h"
 #include "MUONCommon/MergeableTH2Ratio.h"
 
@@ -24,7 +24,6 @@
 #include <fairlogger/Logger.h>
 #include <TH1.h>
 #include <TH2.h>
-#include <TGraph.h>
 #include <TList.h>
 #include <TMath.h>
 #include <TPaveText.h>
@@ -158,6 +157,11 @@ Quality PhysicsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
 
             int de = checkPadMapping(fee_id, link_id, ds_addr, chan_addr);
             if (de < 0) {
+              continue;
+            }
+
+            Float_t stat = hr->getDen()->GetBinContent(i, j);
+            if (stat < 1) {
               continue;
             }
 

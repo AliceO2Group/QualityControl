@@ -61,7 +61,7 @@ class PhysicsCheck : public o2::quality_control::checker::CheckInterface
   o2::mch::raw::FeeLink2SolarMapper mFeeLink2SolarMapper;
   o2::mch::raw::Solar2FeeLinkMapper mSolar2FeeLinkMapper;
 
-  ClassDefOverride(PhysicsCheck, 3);
+  ClassDefOverride(PhysicsCheck, 4);
 };
 
 } // namespace o2::quality_control_modules::muonchambers
