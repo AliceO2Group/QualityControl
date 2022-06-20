@@ -86,7 +86,6 @@ void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
   long int ts = mTimestamp ? mTimestamp : o2::ccdb::getCurrentTimestamp();
   ILOG(Info, Support) << "Getting dictionary from ccdb - timestamp: " << ts << ENDM;
   auto& mgr = o2::ccdb::BasicCCDBManager::instance();
-  mgr.setURL("http://alice-ccdb.cern.ch");
   mgr.setTimestamp(ts);
   mDict = mgr.get<o2::itsmft::TopologyDictionary>("ITS/Calib/ClusterDictionary");
   ILOG(Info, Support) << "Dictionary size: " << mDict->getSize() << ENDM;
@@ -115,6 +114,16 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
   auto clusIdx = ctx.inputs().get<gsl::span<int>>("clusteridx");
   auto clusPatternArr = ctx.inputs().get<gsl::span<unsigned char>>("patterns");
   auto pattIt = clusPatternArr.begin();
+  std::vector<int> clSize;
+  for (const auto& clus : clusArr) {
+    auto ClusterID = clus.getPatternID();
+    if (ClusterID != o2::itsmft::CompCluster::InvalidPatternID && !mDict->isGroup(ClusterID)) { // Normal (frequent) cluster shapes
+      clSize.push_back(mDict->getNpixels(ClusterID));
+    } else {
+      o2::itsmft::ClusterPattern patt(pattIt);
+      clSize.push_back(patt.getNPixels());
+    }
+  }
 
   for (const auto& vertex : vertexArr) {
 
@@ -132,8 +141,9 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
 
     int nClusterCntTrack = 0;
     int nTracks = trackRofArr[iROF].getNEntries();
-
-    for (int itrack = 0; itrack < nTracks; itrack++) {
+    int start = trackRofArr[iROF].getFirstEntry();
+    int end = start + trackRofArr[iROF].getNEntries();
+    for (int itrack = start; itrack < end; itrack++) {
 
       auto& track = trackArr[itrack];
       auto out = track.getParamOut();
@@ -152,33 +162,18 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
       for (int icluster = 0; icluster < track.getNumberOfClusters(); icluster++) {
         const int index = clusIdx[track.getFirstClusterEntry() + icluster];
         auto& cluster = clusArr[index];
-
-        auto row = cluster.getRow();
-        auto col = cluster.getCol();
         auto ChipID = cluster.getSensorID();
-        auto ClusterID = cluster.getPatternID(); // used for normal (frequent) cluster shapes
-        int npix = -1;
-        int isGrouped = -1;
-
-        if (ClusterID != o2::itsmft::CompCluster::InvalidPatternID && !mDict->isGroup(ClusterID)) { // Normal (frequent) cluster shapes
-          npix = mDict->getNpixels(ClusterID);
-          isGrouped = 0;
-        } else {
-          o2::itsmft::ClusterPattern patt(pattIt);
-          npix = patt.getNPixels();
-          isGrouped = 1;
-        }
 
         int layer = 0;
         while (ChipID > ChipBoundary[layer])
           layer++;
         layer--;
 
-        double clusterSizeWithCorrection = (double)npix * cos(std::atan(out.getTgl()));
+        double clusterSizeWithCorrection = (double)clSize[index] * cos(std::atan(out.getTgl()));
         hNClusterVsChip[layer]->Fill(ChipID, clusterSizeWithCorrection);
-        hNClusterVsChip[layer]->SetBinError(hNClusterVsChip[layer]->FindBin(ChipID), hNClusterVsChip[layer]->FindBin(clusterSizeWithCorrection), 0);
+        hNClusterVsChip[layer]->SetBinError(hNClusterVsChip[layer]->FindBin(ChipID), hNClusterVsChip[layer]->FindBin(clusterSizeWithCorrection), 1e-15);
         hNClusterVsChipITS->Fill(ChipID, clusterSizeWithCorrection);
-        hNClusterVsChipITS->SetBinError(hNClusterVsChipITS->FindBin(ChipID), hNClusterVsChipITS->FindBin(clusterSizeWithCorrection), 0);
+        hNClusterVsChipITS->SetBinError(hNClusterVsChipITS->FindBin(ChipID), hNClusterVsChipITS->FindBin(clusterSizeWithCorrection), 1e-15);
       }
     }
 
@@ -210,7 +205,7 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
     for (int ix = 1; ix <= hNClusterVsChip[ilay]->GetNbinsX(); ix++) {
       for (int iy = 1; iy <= hNClusterVsChip[ilay]->GetNbinsY(); iy++) {
         if (hNClusterVsChip[ilay]->GetBinContent(ix, iy) < 1e-15) {
-          hNClusterVsChip[ilay]->SetBinError(ix, iy, 1e200);
+          hNClusterVsChip[ilay]->SetBinError(ix, iy, 1e-15);
         }
       }
     }
@@ -218,7 +213,7 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
   for (int ix = 1; ix <= hNClusterVsChipITS->GetNbinsX(); ix++) {
     for (int iy = 1; iy <= hNClusterVsChipITS->GetNbinsY(); iy++) {
       if (hNClusterVsChipITS->GetBinContent(ix, iy) < 1e-15) {
-        hNClusterVsChipITS->SetBinError(ix, iy, 1e200);
+        hNClusterVsChipITS->SetBinError(ix, iy, 1e-15);
       }
     }
   }
@@ -272,7 +267,7 @@ void ITSTrackTask::createAllHistos()
   formatAxes(hAngularDistribution, "#eta", "#phi", 1, 1.10);
   hAngularDistribution->SetStats(0);
 
-  hNClusters = new TH1D("NClusters", "NClusters", 20, 0, 20);
+  hNClusters = new TH1D("NClusters", "NClusters", 15, -0.5, 14.5);
   hNClusters->SetTitle("hNClusters");
   addObject(hNClusters);
   formatAxes(hNClusters, "Number of clusters per Track", "Counts", 1, 1.10);
@@ -327,7 +322,7 @@ void ITSTrackTask::createAllHistos()
   formatAxes(hNtracks, "# tracks", "Counts", 1, 1.10);
   hNtracks->SetStats(0);
 
-  hNClustersPerTrackEta = new TH2D("NClustersPerTrackEta", "NClustersPerTrackEta", 300, -1.5, 1.5, 13, 1.5, 14.5);
+  hNClustersPerTrackEta = new TH2D("NClustersPerTrackEta", "NClustersPerTrackEta", 300, -1.5, 1.5, 15, -0.5, 14.5);
   hNClustersPerTrackEta->SetTitle("Eta vs NClusters Per Track");
   addObject(hNClustersPerTrackEta);
   formatAxes(hNClustersPerTrackEta, "#eta", "# of Clusters per Track", 1, 1.10);
@@ -340,18 +335,20 @@ void ITSTrackTask::createAllHistos()
   hClusterVsBunchCrossing->SetStats(0);
 
   for (int l = 0; l < NLayer; l++) {
-    hNClusterVsChip[l] = new TH2D(Form("NClusterVsChipInLayer%d", l), Form("NClusterVsChipInLayer%d", l), (int)(ChipBoundary[l + 1] - ChipBoundary[l]), ChipBoundary[l], ChipBoundary[l + 1], 60, 0, 15);
+    hNClusterVsChip[l] = new TH2D(Form("NClusterVsChipInLayer%d", l), Form("NClusterVsChipInLayer%d", l), (int)(ChipBoundary[l + 1] - ChipBoundary[l]), ChipBoundary[l], ChipBoundary[l + 1], 20, 0, 15);
     hNClusterVsChip[l]->SetTitle(Form("Corrected cluster size for track clusters vs Chip in layer %d", l));
     addObject(hNClusterVsChip[l]);
     formatAxes(hNClusterVsChip[l], "chipID", "cluster size x cos(#lambda)", 1, 1.10);
     hNClusterVsChip[l]->SetStats(0);
+    hNClusterVsChip[l]->SetBit(TH1::kIsAverage);
   }
 
-  hNClusterVsChipITS = new TH2D(Form("NClusterVsChipITS"), Form("NClusterVsChipITS"), (int)ChipBoundary[NLayer], 0, ChipBoundary[NLayer], 60, 0, 15);
+  hNClusterVsChipITS = new TH2D(Form("NClusterVsChipITS"), Form("NClusterVsChipITS"), (int)ChipBoundary[NLayer], 0, ChipBoundary[NLayer], 20, 0, 15);
   hNClusterVsChipITS->SetTitle(Form("Corrected cluster size for track clusters vs Chip Full Detector"));
   addObject(hNClusterVsChipITS);
   formatAxes(hNClusterVsChipITS, "chipID", "cluster size x cos(#lambda)", 1, 1.10);
   hNClusterVsChipITS->SetStats(0);
+  hNClusterVsChipITS->SetBit(TH1::kIsAverage);
   // NClusterVsChip Full Detector distinguishable
   for (int l = 0; l < NLayer + 1; l++) {
     auto line = new TLine(ChipBoundary[l], 0, ChipBoundary[l], 15);

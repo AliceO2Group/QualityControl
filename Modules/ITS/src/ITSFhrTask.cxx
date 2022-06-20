@@ -45,24 +45,15 @@ ITSFhrTask::~ITSFhrTask()
   delete mTFInfo;
   delete mErrorPlots;
   delete mErrorVsFeeid;
-  delete mTriggerPlots;
-  delete mTriggerVsFeeid;
-  delete mInfoCanvasComm;
-  delete mInfoCanvasOBComm;
-  delete mTextForShifter;
-  delete mTextForShifter2;
-  delete mTextForShifterOB;
-  delete mTextForShifterOB2;
-  delete mGeom;
-  delete mChipStaveOccupancy[mLayer];
-  delete mChipStaveEventHitCheck[mLayer];
-  delete mOccupancyPlot[mLayer];
-  delete mDeadChipPos[mLayer];
-  delete mAliveChipPos[mLayer];
+  delete mChipStaveOccupancy;
+  delete mChipStaveEventHitCheck;
+  delete mOccupancyPlot;
+  delete mDeadChipPos;
+  delete mAliveChipPos;
   delete mTotalDeadChipPos;
   delete mTotalAliveChipPos;
-  for (int istave = 0; istave < NStaves[mLayer]; istave++) {
-    delete mStaveHitmap[mLayer][istave];
+  for (int istave = 0; istave < 48; istave++) {
+    delete mStaveHitmap[istave];
   }
   for (int istave = 0; istave < NStaves[mLayer]; istave++) {
     delete[] mHitnumberLane[istave];
@@ -70,7 +61,7 @@ ITSFhrTask::~ITSFhrTask()
     delete[] mChipPhi[istave];
     delete[] mChipEta[istave];
     delete[] mChipStat[istave];
-    int maxlink = mLayer < NLayerIB ? 2 : 3;
+    int maxlink = mLayer < NLayerIB ? 3 : 2;
     for (int ilink = 0; ilink < maxlink; ilink++) {
       delete[] mErrorCount[istave][ilink];
     }
@@ -190,8 +181,8 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
           mChipPhi[istave][ichip] = 0;
           mChipEta[istave][ichip] = 0;
           mChipStat[istave][ichip] = 0;
-          mChipStaveOccupancy[mLayer]->GetXaxis()->SetBinLabel(ichip + 1, Form("Chip %i", ichip));
-          mChipStaveEventHitCheck[mLayer]->GetXaxis()->SetBinLabel(ichip + 1, Form("Chip %i", ichip));
+          mChipStaveOccupancy->GetXaxis()->SetBinLabel(ichip + 1, Form("Chip %i", ichip));
+          mChipStaveEventHitCheck->GetXaxis()->SetBinLabel(ichip + 1, Form("Chip %i", ichip));
         }
       }
     } else {
@@ -210,18 +201,20 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
           mChipEta[istave][ichip] = 0;
           mChipStat[istave][ichip] = 0;
         }
-        mChipStaveOccupancy[mLayer]->GetYaxis()->SetBinLabel(istave + 1, Form("Stave %i", istave));
-        mChipStaveEventHitCheck[mLayer]->GetYaxis()->SetBinLabel(istave + 1, Form("Stave %i", istave));
+        mChipStaveOccupancy->GetYaxis()->SetBinLabel(istave + 1, Form("Stave %i", istave));
+        mChipStaveEventHitCheck->GetYaxis()->SetBinLabel(istave + 1, Form("Stave %i", istave));
         if (mLayer < 5) {
           for (int ihic = 0; ihic < nHicPerStave[mLayer]; ihic++) {
             mHitnumberLane[istave][2 * ihic] = 0;
             mHitnumberLane[istave][2 * ihic + 1] = 0;
             mOccupancyLane[istave][2 * ihic] = 0;
             mOccupancyLane[istave][2 * ihic + 1] = 0;
-            mChipStaveOccupancy[mLayer]->GetXaxis()->SetBinLabel(2 * ihic + 1, Form("%s", OBLabel34[2 * ihic]));
-            mChipStaveOccupancy[mLayer]->GetXaxis()->SetBinLabel(2 * ihic + 2, Form("%s", OBLabel34[2 * ihic + 1]));
-            mChipStaveEventHitCheck[mLayer]->GetXaxis()->SetBinLabel(2 * ihic + 1, Form("%s", OBLabel34[2 * ihic]));
-            mChipStaveEventHitCheck[mLayer]->GetXaxis()->SetBinLabel(2 * ihic + 2, Form("%s", OBLabel34[2 * ihic + 1]));
+            mChipStaveOccupancy->GetXaxis()->SetBinLabel(2 * ihic + 1, Form("%s", OBLabel34[2 * ihic]));
+            mChipStaveOccupancy->GetXaxis()->SetBinLabel(2 * ihic + 2, Form("%s", OBLabel34[2 * ihic + 1]));
+            mChipStaveOccupancy->GetXaxis()->SetLabelSize(0.02);
+            mChipStaveEventHitCheck->GetXaxis()->SetBinLabel(2 * ihic + 1, Form("%s", OBLabel34[2 * ihic]));
+            mChipStaveEventHitCheck->GetXaxis()->SetBinLabel(2 * ihic + 2, Form("%s", OBLabel34[2 * ihic + 1]));
+            mChipStaveEventHitCheck->GetXaxis()->SetLabelSize(0.02);
           }
 
         } else {
@@ -230,10 +223,10 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
             mHitnumberLane[istave][2 * ihic + 1] = 0;
             mOccupancyLane[istave][2 * ihic] = 0;
             mOccupancyLane[istave][2 * ihic + 1] = 0;
-            mChipStaveOccupancy[mLayer]->GetXaxis()->SetBinLabel(2 * ihic + 1, Form("%s", OBLabel56[2 * ihic]));
-            mChipStaveOccupancy[mLayer]->GetXaxis()->SetBinLabel(2 * ihic + 2, Form("%s", OBLabel56[2 * ihic + 1]));
-            mChipStaveEventHitCheck[mLayer]->GetXaxis()->SetBinLabel(2 * ihic + 1, Form("%s", OBLabel56[2 * ihic]));
-            mChipStaveEventHitCheck[mLayer]->GetXaxis()->SetBinLabel(2 * ihic + 2, Form("%s", OBLabel56[2 * ihic + 1]));
+            mChipStaveOccupancy->GetXaxis()->SetBinLabel(2 * ihic + 1, Form("%s", OBLabel56[2 * ihic]));
+            mChipStaveOccupancy->GetXaxis()->SetBinLabel(2 * ihic + 2, Form("%s", OBLabel56[2 * ihic + 1]));
+            mChipStaveEventHitCheck->GetXaxis()->SetBinLabel(2 * ihic + 1, Form("%s", OBLabel56[2 * ihic]));
+            mChipStaveEventHitCheck->GetXaxis()->SetBinLabel(2 * ihic + 2, Form("%s", OBLabel56[2 * ihic + 1]));
           }
         }
       }
@@ -247,52 +240,10 @@ void ITSFhrTask::createErrorTriggerPlots()
   mErrorPlots->SetMinimum(0);
   mErrorPlots->SetFillColor(kRed);
   getObjectsManager()->startPublishing(mErrorPlots); // mErrorPlots
-
-  mTriggerPlots = new TH1D("General/TriggerPlots", "Decoding Triggers", mNTrigger, 0.5, mNTrigger + 0.5);
-  mTriggerPlots->SetMinimum(0);
-  mTriggerPlots->SetFillColor(kBlue);
-  getObjectsManager()->startPublishing(mTriggerPlots); // mTriggerPlots
 }
 
 void ITSFhrTask::createGeneralPlots()
 {
-  mInfoCanvasComm = new TH2I("General/InfoCanvas", "InfoCanvas", 3, -0.5, 2.5, 4, -0.5, 3.5);
-  mInfoCanvasOBComm = new TH2I("General/InfoCanvs_For_OB", "InfoCanvas for OB", 4, -0.5, 3.5, 4, -0.5, 3.5);
-  for (int i = 0; i < 3; i++) {
-    mInfoCanvasComm->GetXaxis()->SetBinLabel(i + 1, Form("layer%d", i));
-  }
-  for (int i = 0; i < 4; i++) {
-    mInfoCanvasOBComm->GetXaxis()->SetBinLabel(i + 1, Form("layer%d", i + 3));
-  }
-
-  mInfoCanvasComm->SetMinimum(0);
-  mInfoCanvasComm->SetMaximum(2);
-  mInfoCanvasComm->GetYaxis()->SetBinLabel(2, "ibt");
-  mInfoCanvasComm->GetYaxis()->SetBinLabel(4, "ibb");
-
-  mInfoCanvasOBComm->SetMinimum(0);
-  mInfoCanvasOBComm->SetMaximum(2);
-  mInfoCanvasOBComm->GetYaxis()->SetBinLabel(2, "ibt");
-  mInfoCanvasOBComm->GetYaxis()->SetBinLabel(4, "ibb");
-
-  mTextForShifter = new TText(.5, 1.5, "DarkGreen -> Processing");
-  mTextForShifterOB = new TText(.5, 1.5, "DarkGreen -> Processing");
-  mTextForShifter2 = new TText(.5, 1.2, "Yellow    -> Finished");
-  mTextForShifterOB2 = new TText(.5, 1.2, "Yellow    -> Finished");
-  mTextForShifter->SetNDC();
-  mTextForShifterOB->SetNDC();
-  mTextForShifter2->SetNDC();
-  mTextForShifterOB2->SetNDC();
-
-  mInfoCanvasComm->SetStats(0);
-  mInfoCanvasComm->GetListOfFunctions()->Add(mTextForShifter);
-  mInfoCanvasComm->GetListOfFunctions()->Add(mTextForShifter2);
-  getObjectsManager()->startPublishing(mInfoCanvasComm);
-
-  mInfoCanvasOBComm->SetStats(0);
-  mInfoCanvasOBComm->GetListOfFunctions()->Add(mTextForShifterOB);
-  mInfoCanvasOBComm->GetListOfFunctions()->Add(mTextForShifterOB2);
-  getObjectsManager()->startPublishing(mInfoCanvasOBComm);
 
   createErrorTriggerPlots();
 
@@ -300,13 +251,9 @@ void ITSFhrTask::createGeneralPlots()
   getObjectsManager()->startPublishing(mTFInfo); // mTFInfo
 
   mErrorVsFeeid = new TH2I("General/ErrorVsFeeid", "Error count vs Error id and Fee id", (3 * StaveBoundary[3]) + (2 * (StaveBoundary[7] - StaveBoundary[3])), 0, (3 * StaveBoundary[3]) + (2 * (StaveBoundary[7] - StaveBoundary[3])), o2::itsmft::GBTLinkDecodingStat::NErrorsDefined, 0.5, o2::itsmft::GBTLinkDecodingStat::NErrorsDefined + 0.5);
-  mTriggerVsFeeid = new TH2I("General/TriggerVsFeeid", "Trigger count vs Trigger id and Fee id", (3 * StaveBoundary[3]) + (2 * (StaveBoundary[7] - StaveBoundary[3])), 0, (3 * StaveBoundary[3]) + (2 * (StaveBoundary[7] - StaveBoundary[3])), mNTrigger, 0.5, mNTrigger + 0.5);
   mErrorVsFeeid->SetMinimum(0);
-  mTriggerVsFeeid->SetMinimum(0);
   mErrorVsFeeid->SetStats(0);
-  mTriggerVsFeeid->SetStats(0);
   getObjectsManager()->startPublishing(mErrorVsFeeid);
-  getObjectsManager()->startPublishing(mTriggerVsFeeid);
 }
 
 void ITSFhrTask::createOccupancyPlots() // create general plots like error, trigger, TF id plots and so on....
@@ -327,63 +274,65 @@ void ITSFhrTask::createOccupancyPlots() // create general plots like error, trig
   if (mLayer < NLayerIB) {
     int nBinstmp[nDim] = { nBins[0] * nChipsPerHic[mLayer] / ReduceFraction, nBins[1] / ReduceFraction };
     double Maxtmp[nDim] = { Max[0] * nChipsPerHic[mLayer], Max[1] };
-    for (int istave = 0; istave < NStaves[mLayer]; istave++) {
-      mStaveHitmap[mLayer][istave] = new THnSparseI(Form("Occupancy/Layer%d/Stave%d/Layer%dStave%dHITMAP", mLayer, istave, mLayer, istave), Form("Hits on Layer %d, Stave %d", mLayer, istave), nDim, nBinstmp, Min, Maxtmp);
-      getObjectsManager()->startPublishing(mStaveHitmap[mLayer][istave]);
+    for (int istave = 0; istave < 48; istave++) {
+      mStaveHitmap[istave] = new THnSparseI(Form("Occupancy/Layer%d/Stave%d/Layer%dStave%dHITMAP", mLayer, istave, mLayer, istave), Form("Hits on Layer %d, Stave %d", mLayer, istave), nDim, nBinstmp, Min, Maxtmp);
+      if (istave < NStaves[mLayer]) {
+        getObjectsManager()->startPublishing(mStaveHitmap[istave]);
+      }
     }
 
-    mDeadChipPos[mLayer] = new TH2D(Form("Occupancy/Layer%d/Layer%dDeadChipPos", mLayer, mLayer), Form("DeadChipPos on Layer %d", mLayer), nbinsetaIB, etabinsIB[mLayer], nbinsphiIB, phibinsIB[mLayer]);    // every nine chips have same phi
-    mAliveChipPos[mLayer] = new TH2D(Form("Occupancy/Layer%d/Layer%dAliveChipPos", mLayer, mLayer), Form("AliveChipPos on Layer %d", mLayer), nbinsetaIB, etabinsIB[mLayer], nbinsphiIB, phibinsIB[mLayer]); // every nine chips have same phi
-    mChipStaveOccupancy[mLayer] = new TH2D(Form("Occupancy/Layer%d/Layer%dChipStave", mLayer, mLayer), Form("ITS Layer%d, Occupancy vs Chip and Stave", mLayer), nHicPerStave[mLayer] * nChipsPerHic[mLayer], -0.5, nHicPerStave[mLayer] * nChipsPerHic[mLayer] - 0.5, NStaves[mLayer], -0.5, NStaves[mLayer] - 0.5);
-    mDeadChipPos[mLayer]->SetStats(0);
-    mAliveChipPos[mLayer]->SetStats(0);
-    mChipStaveOccupancy[mLayer]->SetStats(0);
-    mChipStaveOccupancy[mLayer]->GetYaxis()->SetTickLength(0.01);
-    getObjectsManager()->startPublishing(mDeadChipPos[mLayer]);
-    getObjectsManager()->startPublishing(mAliveChipPos[mLayer]);
-    getObjectsManager()->startPublishing(mChipStaveOccupancy[mLayer]); // mChipStaveOccupancy
+    mDeadChipPos = new TH2D(Form("Occupancy/Layer%d/Layer%dDeadChipPos", mLayer, mLayer), Form("DeadChipPos on Layer %d", mLayer), nbinsetaIB, etabinsIB[mLayer], nbinsphiIB, phibinsIB[mLayer]);    // every nine chips have same phi
+    mAliveChipPos = new TH2D(Form("Occupancy/Layer%d/Layer%dAliveChipPos", mLayer, mLayer), Form("AliveChipPos on Layer %d", mLayer), nbinsetaIB, etabinsIB[mLayer], nbinsphiIB, phibinsIB[mLayer]); // every nine chips have same phi
+    mChipStaveOccupancy = new TH2D(Form("Occupancy/Layer%d/Layer%dChipStave", mLayer, mLayer), Form("ITS Layer%d, Occupancy vs Chip and Stave", mLayer), nHicPerStave[mLayer] * nChipsPerHic[mLayer], -0.5, nHicPerStave[mLayer] * nChipsPerHic[mLayer] - 0.5, NStaves[mLayer], -0.5, NStaves[mLayer] - 0.5);
+    mDeadChipPos->SetStats(0);
+    mAliveChipPos->SetStats(0);
+    mChipStaveOccupancy->SetStats(0);
+    mChipStaveOccupancy->GetYaxis()->SetTickLength(0.01);
+    getObjectsManager()->startPublishing(mDeadChipPos);
+    getObjectsManager()->startPublishing(mAliveChipPos);
+    getObjectsManager()->startPublishing(mChipStaveOccupancy); // mChipStaveOccupancy
 
-    mChipStaveEventHitCheck[mLayer] = new TH2I(Form("Occupancy/Layer%d/Layer%dChipStaveEventHit", mLayer, mLayer), Form("ITS Layer%d, Event Hit Check vs Chip and Stave", mLayer), nHicPerStave[mLayer] * nChipsPerHic[mLayer], -0.5, nHicPerStave[mLayer] * nChipsPerHic[mLayer] - 0.5, NStaves[mLayer], -0.5, NStaves[mLayer] - 0.5);
-    mChipStaveEventHitCheck[mLayer]->SetStats(0);
-    getObjectsManager()->startPublishing(mChipStaveEventHitCheck[mLayer]);
+    mChipStaveEventHitCheck = new TH2I(Form("Occupancy/Layer%d/Layer%dChipStaveEventHit", mLayer, mLayer), Form("ITS Layer%d, Event Hit Check vs Chip and Stave", mLayer), nHicPerStave[mLayer] * nChipsPerHic[mLayer], -0.5, nHicPerStave[mLayer] * nChipsPerHic[mLayer] - 0.5, NStaves[mLayer], -0.5, NStaves[mLayer] - 0.5);
+    mChipStaveEventHitCheck->SetStats(0);
+    getObjectsManager()->startPublishing(mChipStaveEventHitCheck);
 
-    mOccupancyPlot[mLayer] = new TH1D(Form("Occupancy/Layer%dOccupancy", mLayer), Form("ITS Layer %d Occupancy Distribution", mLayer), 300, -15, 0);
-    getObjectsManager()->startPublishing(mOccupancyPlot[mLayer]); // mOccupancyPlot
+    mOccupancyPlot = new TH1D(Form("Occupancy/Layer%dOccupancy", mLayer), Form("ITS Layer %d Occupancy Distribution", mLayer), 300, -15, 0);
+    getObjectsManager()->startPublishing(mOccupancyPlot); // mOccupancyPlot
   } else {
     // Create OB plots
     int nBinstmp[nDim] = { (nBins[0] * (nChipsPerHic[mLayer] / 2) * (nHicPerStave[mLayer] / 2) / ReduceFraction), (nBins[1] * 2 * NSubStave[mLayer] / ReduceFraction) };
     double Maxtmp[nDim] = { (double)(nBins[0] * (nChipsPerHic[mLayer] / 2) * (nHicPerStave[mLayer] / 2)), (double)(nBins[1] * 2 * NSubStave[mLayer]) };
     for (int istave = 0; istave < NStaves[mLayer]; istave++) {
-      mStaveHitmap[mLayer][istave] = new THnSparseI(Form("Occupancy/Layer%d/Stave%d/Layer%dStave%dHITMAP", mLayer, istave, mLayer, istave), Form("Hits on Layer %d, Stave %d", mLayer, istave), nDim, nBinstmp, Min, Maxtmp);
-      getObjectsManager()->startPublishing(mStaveHitmap[mLayer][istave]);
+      mStaveHitmap[istave] = new THnSparseI(Form("Occupancy/Layer%d/Stave%d/Layer%dStave%dHITMAP", mLayer, istave, mLayer, istave), Form("Hits on Layer %d, Stave %d", mLayer, istave), nDim, nBinstmp, Min, Maxtmp);
+      getObjectsManager()->startPublishing(mStaveHitmap[istave]);
     }
     if (mLayer == 3) {
-      mDeadChipPos[mLayer] = new TH2D(Form("Occupancy/Layer%d/Layer%dDeadChipPos", mLayer, mLayer), Form("DeadChipPos on Layer %d", mLayer), 28, etabinsOB3, 96, phibinsOB3);
-      mAliveChipPos[mLayer] = new TH2D(Form("Occupancy/Layer%d/Layer%dAliveChipPos", mLayer, mLayer), Form("AliveChipPos on Layer %d", mLayer), 28, etabinsOB3, 96, phibinsOB3);
+      mDeadChipPos = new TH2D(Form("Occupancy/Layer%d/Layer%dDeadChipPos", mLayer, mLayer), Form("DeadChipPos on Layer %d", mLayer), 28, etabinsOB3, 96, phibinsOB3);
+      mAliveChipPos = new TH2D(Form("Occupancy/Layer%d/Layer%dAliveChipPos", mLayer, mLayer), Form("AliveChipPos on Layer %d", mLayer), 28, etabinsOB3, 96, phibinsOB3);
     } else if (mLayer == 4) {
-      mDeadChipPos[mLayer] = new TH2D(Form("Occupancy/Layer%d/Layer%dDeadChipPos", mLayer, mLayer), Form("DeadChipPos on Layer %d", mLayer), 28, etabinsOB4, 120, phibinsOB4);
-      mAliveChipPos[mLayer] = new TH2D(Form("Occupancy/Layer%d/Layer%dAliveChipPos", mLayer, mLayer), Form("AliveChipPos on Layer %d", mLayer), 28, etabinsOB4, 120, phibinsOB4);
+      mDeadChipPos = new TH2D(Form("Occupancy/Layer%d/Layer%dDeadChipPos", mLayer, mLayer), Form("DeadChipPos on Layer %d", mLayer), 28, etabinsOB4, 120, phibinsOB4);
+      mAliveChipPos = new TH2D(Form("Occupancy/Layer%d/Layer%dAliveChipPos", mLayer, mLayer), Form("AliveChipPos on Layer %d", mLayer), 28, etabinsOB4, 120, phibinsOB4);
     } else if (mLayer == 5) {
-      mDeadChipPos[mLayer] = new TH2D(Form("Occupancy/Layer%d/Layer%dDeadChipPos", mLayer, mLayer), Form("DeadChipPos on Layer %d", mLayer), 49, etabinsOB5, 168, phibinsOB5);
-      mAliveChipPos[mLayer] = new TH2D(Form("Occupancy/Layer%d/Layer%dAliveChipPos", mLayer, mLayer), Form("AliveChipPos on Layer %d", mLayer), 49, etabinsOB5, 168, phibinsOB5);
+      mDeadChipPos = new TH2D(Form("Occupancy/Layer%d/Layer%dDeadChipPos", mLayer, mLayer), Form("DeadChipPos on Layer %d", mLayer), 49, etabinsOB5, 168, phibinsOB5);
+      mAliveChipPos = new TH2D(Form("Occupancy/Layer%d/Layer%dAliveChipPos", mLayer, mLayer), Form("AliveChipPos on Layer %d", mLayer), 49, etabinsOB5, 168, phibinsOB5);
     } else {
-      mDeadChipPos[mLayer] = new TH2D(Form("Occupancy/Layer%d/Layer%dDeadChipPos", mLayer, mLayer), Form("DeadChipPos on Layer %d", mLayer), 49, etabinsOB6, 192, phibinsOB6);
-      mAliveChipPos[mLayer] = new TH2D(Form("Occupancy/Layer%d/Layer%dAliveChipPos", mLayer, mLayer), Form("AliveChipPos on Layer %d", mLayer), 49, etabinsOB6, 192, phibinsOB6);
+      mDeadChipPos = new TH2D(Form("Occupancy/Layer%d/Layer%dDeadChipPos", mLayer, mLayer), Form("DeadChipPos on Layer %d", mLayer), 49, etabinsOB6, 192, phibinsOB6);
+      mAliveChipPos = new TH2D(Form("Occupancy/Layer%d/Layer%dAliveChipPos", mLayer, mLayer), Form("AliveChipPos on Layer %d", mLayer), 49, etabinsOB6, 192, phibinsOB6);
     }
-    mChipStaveOccupancy[mLayer] = new TH2D(Form("Occupancy/Layer%d/Layer%dChipStave", mLayer, mLayer), Form("ITS Layer%d, Occupancy vs Chip and Stave", mLayer), nHicPerStave[mLayer] * nLanePerHic[mLayer], -0.5, nHicPerStave[mLayer] * nLanePerHic[mLayer] - 0.5, NStaves[mLayer], -0.5, NStaves[mLayer] - 0.5);
-    mDeadChipPos[mLayer]->SetStats(0);
-    mAliveChipPos[mLayer]->SetStats(0);
-    mChipStaveOccupancy[mLayer]->SetStats(0);
-    getObjectsManager()->startPublishing(mDeadChipPos[mLayer]);
-    getObjectsManager()->startPublishing(mAliveChipPos[mLayer]);
-    getObjectsManager()->startPublishing(mChipStaveOccupancy[mLayer]);
+    mChipStaveOccupancy = new TH2D(Form("Occupancy/Layer%d/Layer%dChipStave", mLayer, mLayer), Form("ITS Layer%d, Occupancy vs Chip and Stave", mLayer), nHicPerStave[mLayer] * nLanePerHic[mLayer], -0.5, nHicPerStave[mLayer] * nLanePerHic[mLayer] - 0.5, NStaves[mLayer], -0.5, NStaves[mLayer] - 0.5);
+    mDeadChipPos->SetStats(0);
+    mAliveChipPos->SetStats(0);
+    mChipStaveOccupancy->SetStats(0);
+    getObjectsManager()->startPublishing(mDeadChipPos);
+    getObjectsManager()->startPublishing(mAliveChipPos);
+    getObjectsManager()->startPublishing(mChipStaveOccupancy);
 
-    mChipStaveEventHitCheck[mLayer] = new TH2I(Form("Occupancy/Layer%d/Layer%dChipStaveEventHit", mLayer, mLayer), Form("ITS Layer%d, Event Hit Check vs Chip and Stave", mLayer), nHicPerStave[mLayer] * nLanePerHic[mLayer], -0.5, nHicPerStave[mLayer] * nLanePerHic[mLayer] - 0.5, NStaves[mLayer], -0.5, NStaves[mLayer] - 0.5);
-    mChipStaveEventHitCheck[mLayer]->SetStats(0);
-    getObjectsManager()->startPublishing(mChipStaveEventHitCheck[mLayer]);
+    mChipStaveEventHitCheck = new TH2I(Form("Occupancy/Layer%d/Layer%dChipStaveEventHit", mLayer, mLayer), Form("ITS Layer%d, Event Hit Check vs Chip and Stave", mLayer), nHicPerStave[mLayer] * nLanePerHic[mLayer], -0.5, nHicPerStave[mLayer] * nLanePerHic[mLayer] - 0.5, NStaves[mLayer], -0.5, NStaves[mLayer] - 0.5);
+    mChipStaveEventHitCheck->SetStats(0);
+    getObjectsManager()->startPublishing(mChipStaveEventHitCheck);
 
-    mOccupancyPlot[mLayer] = new TH1D(Form("Occupancy/Layer%dOccupancy", mLayer), Form("ITS Layer %d Occupancy Distribution", mLayer), 300, -15, 0);
-    getObjectsManager()->startPublishing(mOccupancyPlot[mLayer]); // mOccupancyPlot
+    mOccupancyPlot = new TH1D(Form("Occupancy/Layer%dOccupancy", mLayer), Form("ITS Layer %d Occupancy Distribution", mLayer), 300, -15, 0);
+    getObjectsManager()->startPublishing(mOccupancyPlot); // mOccupancyPlot
   }
 }
 
@@ -399,61 +348,41 @@ void ITSFhrTask::setPlotsFormat()
   if (mErrorPlots) {
     setAxisTitle(mErrorPlots, "Error ID", "Counts");
   }
-  if (mTriggerPlots) {
-    setAxisTitle(mTriggerPlots, "Trigger ID", "Counts");
-    for (int i = 0; i < mNTrigger; i++) {
-      mTriggerPlots->GetXaxis()->SetBinLabel(i + 1, mTriggerType[i]);
-    }
-  }
   if (mTFInfo) {
     setAxisTitle(mTFInfo, "TF ID", "Counts");
   }
   if (mErrorVsFeeid) {
     setAxisTitle(mErrorVsFeeid, "FeeID", "Error ID");
   }
-  if (mTriggerVsFeeid) {
-    setAxisTitle(mTriggerVsFeeid, "FeeID", "Trigger ID");
-    for (int i = 0; i < mNTrigger; i++) {
-      mTriggerVsFeeid->GetYaxis()->SetBinLabel(i + 1, mTriggerType[i]);
-    }
-  }
-
   if (mTotalDeadChipPos) {
     setAxisTitle(mTotalDeadChipPos, "ChipEta", "ChipPhi");
   }
   if (mTotalAliveChipPos) {
     setAxisTitle(mTotalAliveChipPos, "ChipEta", "ChipPhi");
   }
-  for (int ilayer = 0; ilayer < NLayer; ilayer++) {
-    if (mOccupancyPlot[ilayer]) {
-      mOccupancyPlot[ilayer]->GetXaxis()->SetTitle("log(Occupancy)");
+  if (mOccupancyPlot) {
+    mOccupancyPlot->GetXaxis()->SetTitle("log(Occupancy)");
+  }
+  if (mDeadChipPos) {
+    setAxisTitle(mDeadChipPos, "ChipEta", "ChipPhi");
+  }
+  if (mAliveChipPos) {
+    setAxisTitle(mAliveChipPos, "ChipEta", "ChipPhi");
+  }
+
+  if (mLayer < NLayerIB) {
+    if (mChipStaveOccupancy) {
+      setAxisTitle(mChipStaveOccupancy, "Chip Number", "Stave Number");
     }
-    if (ilayer < NLayerIB) {
-      if (mChipStaveOccupancy[ilayer]) {
-        setAxisTitle(mChipStaveOccupancy[ilayer], "Chip Number", "Stave Number");
-      }
-      if (mChipStaveEventHitCheck[ilayer]) {
-        setAxisTitle(mChipStaveEventHitCheck[ilayer], "Chip Number", "Stave Number");
-      }
-      if (mDeadChipPos[ilayer]) {
-        setAxisTitle(mDeadChipPos[ilayer], "ChipEta", "ChipPhi");
-      }
-      if (mAliveChipPos[ilayer]) {
-        setAxisTitle(mAliveChipPos[ilayer], "ChipEta", "ChipPhi");
-      }
-    } else {
-      if (mChipStaveOccupancy[ilayer]) {
-        setAxisTitle(mChipStaveOccupancy[ilayer], "", "Stave Number");
-      }
-      if (mChipStaveEventHitCheck[ilayer]) {
-        setAxisTitle(mChipStaveEventHitCheck[ilayer], "", "Stave Number");
-      }
-      if (mDeadChipPos[ilayer]) {
-        setAxisTitle(mDeadChipPos[ilayer], "ChipEta", "ChipPhi");
-      }
-      if (mAliveChipPos[ilayer]) {
-        setAxisTitle(mAliveChipPos[ilayer], "ChipEta", "ChipPhi");
-      }
+    if (mChipStaveEventHitCheck) {
+      setAxisTitle(mChipStaveEventHitCheck, "Chip Number", "Stave Number");
+    }
+  } else {
+    if (mChipStaveOccupancy) {
+      setAxisTitle(mChipStaveOccupancy, "", "Stave Number");
+    }
+    if (mChipStaveEventHitCheck) {
+      setAxisTitle(mChipStaveEventHitCheck, "", "Stave Number");
     }
   }
 }
@@ -488,93 +417,34 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
   // set Decoder
   mDecoder->startNewTF(ctx.inputs());
   mDecoder->setDecodeNextAuto(true);
-  std::vector<InputSpec> rawDataFilter{ InputSpec{ "", ConcreteDataTypeMatcher{ "DS", "RAWDATA0" }, Lifetime::Timeframe } };
-  DPLRawParser parser(ctx.inputs(), rawDataFilter); // set input data
-
-  // get data information from RDH(like witch layer, stave, link, trigger type)
-  int lay = 0;
-  for (auto it = parser.begin(), end = parser.end(); it != end; ++it) {
-    auto const* rdh = it.get_if<o2::header::RAWDataHeaderV6>(); // Decoding new data format (RDHv6)
-    int istave = (int)(rdh->feeId & 0x00ff);
-    int ilink = (int)((rdh->feeId & 0x0f00) >> 8);
-    lay = (int)(rdh->feeId >> 12);
-    if (partID == 0) {
-      partID += lay * 100;
-      partID += partID <= 100 ? (istave / (NStaves[lay] / 2)) * 2 : istave / (NStaves[lay] / 4);
-    }
-    if (lay < NLayerIB) {
-      istave += StaveBoundary[lay];
-    } else {
-      istave += StaveBoundary[lay] - StaveBoundary[NLayerIB];
-    }
-    for (int i = 0; i < 13; i++) {
-      if (((uint32_t)(rdh->triggerType) >> i & 1) == 1) {
-        mTriggerPlots->Fill(i + 1);
-        if (lay < NLayerIB) {
-          mTriggerVsFeeid->Fill((istave * 3) + ilink, i + 1);
-        } else {
-          mTriggerVsFeeid->Fill((3 * StaveBoundary[3]) + (istave * 2) + ilink, i + 1);
-        }
-      }
-    }
-  }
-
-  // update general information according trigger type
-  if (mTriggerPlots->GetBinContent(10) || mTriggerPlots->GetBinContent(8)) {
-    if (partID / 100 < 2) {
-      mInfoCanvasComm->SetBinContent(partID / 100 + 1, partID % 100 + 1, 1);
-      mInfoCanvasComm->SetBinContent(partID / 100 + 1, partID % 100 + 2, 1);
-    } else if (partID / 100 < NLayerIB) {
-      mInfoCanvasComm->SetBinContent(partID / 100 + 1, partID % 100 + 1, 1);
-    } else {
-      if (partID % 100 == 4) {
-        partID--;
-      }
-      mInfoCanvasOBComm->SetBinContent(partID / 100 + 1 - NLayerIB, partID % 100 + 1, 1);
-    }
-  }
-  if (mTriggerPlots->GetBinContent(11) || mTriggerPlots->GetBinContent(9)) {
-    if (partID / 100 < 2) {
-      mInfoCanvasComm->SetBinContent(partID / 100 + 1, partID % 100 + 1, 2);
-      mInfoCanvasComm->SetBinContent(partID / 100 + 1, partID % 100 + 2, 2);
-    } else if (partID / 100 < NLayerIB) {
-      mInfoCanvasComm->SetBinContent(partID / 100 + 1, partID % 100 + 1, 2);
-    } else {
-      mInfoCanvasOBComm->SetBinContent(partID / 100 + 1 - NLayerIB, partID % 100 + 1, 2);
-    }
-  }
 
   // define digit hit vector
-  std::vector<Digit>** digVec = new std::vector<Digit>*[NStaves[lay]];            // IB : digVec[stave][0]; OB : digVec[stave][hic]
-  std::vector<ROFRecord>** digROFVec = new std::vector<ROFRecord>*[NStaves[lay]]; // IB : digROFVec[stave][0]; OB : digROFVec[stave][hic]
+  std::vector<Digit>** digVec = new std::vector<Digit>*[NStaves[mLayer]]; // IB : digVec[stave][0]; OB : digVec[stave][hic]
   const math_utils::Point3D<float> loc(0., 0., 0.);
 
-  if (lay < NLayerIB) {
-    for (int istave = 0; istave < NStaves[lay]; istave++) {
-      digVec[istave] = new std::vector<Digit>[nHicPerStave[lay]];
-      digROFVec[istave] = new std::vector<ROFRecord>[nHicPerStave[lay]];
+  if (mLayer < NLayerIB) {
+    for (int istave = 0; istave < NStaves[mLayer]; istave++) {
+      digVec[istave] = new std::vector<Digit>[nHicPerStave[mLayer]];
     }
   } else {
-    for (int istave = 0; istave < NStaves[lay]; istave++) {
-      digVec[istave] = new std::vector<Digit>[nHicPerStave[lay]];
-      digROFVec[istave] = new std::vector<ROFRecord>[nHicPerStave[lay]];
+    for (int istave = 0; istave < NStaves[mLayer]; istave++) {
+      digVec[istave] = new std::vector<Digit>[nHicPerStave[mLayer]];
     }
   }
 
   // decode raw data and save digit hit to digit hit vector, and save hitnumber per chip/hic
-
   // get the position of all chips in this layer
-  for (int ichip = ChipBoundary[lay]; ichip < ChipBoundary[lay + 1]; ichip++) {
+  for (int ichip = ChipBoundary[mLayer]; ichip < ChipBoundary[mLayer + 1]; ichip++) {
     int stave = 0, chip = 0;
     auto glo = mGeom->getMatrixL2G(ichip)(loc);
-    if (lay < NLayerIB) {
-      stave = ichip / 9 - StaveBoundary[lay];
+    if (mLayer < NLayerIB) {
+      stave = ichip / 9 - StaveBoundary[mLayer];
       chip = ichip % 9;
       mChipEta[stave][chip] = glo.eta();
       mChipPhi[stave][chip] = glo.phi();
     } else {
-      stave = (ichip - ChipBoundary[lay]) / (14 * nHicPerStave[lay]);
-      chip = (ichip - ChipBoundary[lay]) % (14 * nHicPerStave[lay]);
+      stave = (ichip - ChipBoundary[mLayer]) / (14 * nHicPerStave[mLayer]);
+      chip = (ichip - ChipBoundary[mLayer]) % (14 * nHicPerStave[mLayer]);
       mChipEta[stave][chip] = glo.eta();
       mChipPhi[stave][chip] = glo.phi();
     }
@@ -586,32 +456,35 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
       int hic = 0;
       int lane = 0;
       const auto& pixels = mChipDataBuffer->getData();
+      if (mChipDataBuffer->getChipID() < ChipBoundary[mLayer] || mChipDataBuffer->getChipID() >= ChipBoundary[mLayer + 1]) { // useful for data replay
+        continue;
+      }
       for (auto& pixel : pixels) {
-        if (lay < NLayerIB) {
-          stave = mChipDataBuffer->getChipID() / 9 - StaveBoundary[lay];
+        if (mLayer < NLayerIB) {
+          stave = mChipDataBuffer->getChipID() / 9 - StaveBoundary[mLayer];
           chip = mChipDataBuffer->getChipID() % 9;
           hic = 0;
           mHitnumberLane[stave][chip]++;
           mChipStat[stave][chip]++;
         } else {
-          stave = (mChipDataBuffer->getChipID() - ChipBoundary[lay]) / (14 * nHicPerStave[lay]);
-          int chipIdLocal = (mChipDataBuffer->getChipID() - ChipBoundary[lay]) % (14 * nHicPerStave[lay]);
+          stave = (mChipDataBuffer->getChipID() - ChipBoundary[mLayer]) / (14 * nHicPerStave[mLayer]);
+          int chipIdLocal = (mChipDataBuffer->getChipID() - ChipBoundary[mLayer]) % (14 * nHicPerStave[mLayer]);
           chip = chipIdLocal % 14;
-          hic = (chipIdLocal % (14 * nHicPerStave[lay])) / 14;
+          hic = (chipIdLocal % (14 * nHicPerStave[mLayer])) / 14;
 
-          lane = (chipIdLocal % (14 * nHicPerStave[lay])) / (14 / 2);
+          lane = (chipIdLocal % (14 * nHicPerStave[mLayer])) / (14 / 2);
           mHitnumberLane[stave][lane]++;
           mChipStat[stave][chipIdLocal]++;
         }
         digVec[stave][hic].emplace_back(mChipDataBuffer->getChipID(), pixel.getRow(), pixel.getCol());
       }
-      if (lay < NLayerIB) {
+      if (mLayer < NLayerIB) {
         if (pixels.size() > (unsigned int)mHitCutForCheck) {
-          mChipStaveEventHitCheck[lay]->Fill(chip, stave);
+          mChipStaveEventHitCheck->Fill(chip, stave);
         }
       } else {
         if (pixels.size() > (unsigned int)mHitCutForCheck) {
-          mChipStaveEventHitCheck[lay]->Fill(lane, stave);
+          mChipStaveEventHitCheck->Fill(lane, stave);
         }
       }
     }
@@ -619,8 +492,8 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   // calculate active staves according digit hit vector
   std::vector<int> activeStaves;
-  for (int i = 0; i < NStaves[lay]; i++) {
-    for (int j = 0; j < nHicPerStave[lay]; j++) {
+  for (int i = 0; i < NStaves[mLayer]; i++) {
+    for (int j = 0; j < nHicPerStave[mLayer]; j++) {
       if (digVec[i][j].size() != 0) {
         activeStaves.push_back(i);
         break;
@@ -637,14 +510,14 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
   // So we want save hit information to undordered_map and fill THnSparse by THnSparse::SetBinContent (pixel by pixel)
   for (int i = 0; i < (int)activeStaves.size(); i++) {
     int istave = activeStaves[i];
-    if (lay < NLayerIB) {
+    if (mLayer < NLayerIB) {
       for (auto& digit : digVec[istave][0]) {
         mHitPixelID_InStave[istave][0][digit.getChipIndex() % 9][1000 * digit.getColumn() + digit.getRow()]++;
       }
     } else {
-      for (int ihic = 0; ihic < nHicPerStave[lay]; ihic++) {
+      for (int ihic = 0; ihic < nHicPerStave[mLayer]; ihic++) {
         for (auto& digit : digVec[istave][ihic]) {
-          int chip = ((digit.getChipIndex() - ChipBoundary[lay]) % (14 * nHicPerStave[lay])) % 14;
+          int chip = ((digit.getChipIndex() - ChipBoundary[mLayer]) % (14 * nHicPerStave[mLayer])) % 14;
           mHitPixelID_InStave[istave][ihic][chip][1000 * digit.getColumn() + digit.getRow()]++;
         }
       }
@@ -654,8 +527,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
   // Reset Error plots
   mErrorPlots->Reset();
   mErrorVsFeeid->Reset(); // Error is   statistic by decoder so if we didn't reset decoder, then we need reset Error plots, and use TH::SetBinContent function
-  // mTriggerVsFeeid->Reset();			  Trigger is statistic by ourself so we don't need reset this plot, just use TH::Fill function
-  mOccupancyPlot[lay]->Reset();
+  mOccupancyPlot->Reset();
 
   // define tmp occupancy plot, which will use for multiple threads
   TH1D** occupancyPlotTmp = new TH1D*[(int)activeStaves.size()];
@@ -672,31 +544,37 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
   // fill Monitor Objects use openMP multiple threads, and calculate the occupancy
   for (int i = 0; i < (int)activeStaves.size(); i++) {
     int istave = activeStaves[i];
-    if (digVec[istave][0].size() < 1 && lay < NLayerIB) {
+    if (digVec[istave][0].size() < 1 && mLayer < NLayerIB) {
       continue;
     }
     const auto* DecoderTmp = mDecoder;
-    int RUid = StaveBoundary[lay] + istave;
+    int RUid = StaveBoundary[mLayer] + istave;
     const o2::itsmft::RUDecodeData* RUdecode = DecoderTmp->getRUDecode(RUid);
     if (!RUdecode) {
       continue;
     }
-    mNoisyPixelNumber[lay][istave] = 0;
-
-    if (lay < NLayerIB) {
+    if (mLayer < NLayerIB) {
       for (int ilink = 0; ilink < RUDecodeData::MaxLinksPerRU; ilink++) {
         const auto* GBTLinkInfo = DecoderTmp->getGBTLink(RUdecode->links[ilink]);
         if (!GBTLinkInfo) {
           continue;
         }
+        if ((double)GBTLinkInfo->statistics.nTriggers >= 1e6 && (double)GBTLinkInfo->statistics.nTriggers < 1e6 + 10000) {
+          mNoisyPixelNumber[mLayer][istave] = 0;
+        }
+
         for (int ichip = 0 + (ilink * 3); ichip < (ilink * 3) + 3; ichip++) {
           std::unordered_map<unsigned int, int>::iterator iter;
           for (iter = mHitPixelID_InStave[istave][0][ichip].begin(); iter != mHitPixelID_InStave[istave][0][ichip].end(); iter++) {
-            if ((iter->second > mHitCutForNoisyPixel) && (iter->second / (double)GBTLinkInfo->statistics.nTriggers) > mOccupancyCutForNoisyPixel) {
-              mNoisyPixelNumber[lay][istave]++;
+            if ((iter->second > mHitCutForNoisyPixel) &&
+                (iter->second / (double)GBTLinkInfo->statistics.nTriggers) > mOccupancyCutForNoisyPixel &&
+                ((double)GBTLinkInfo->statistics.nTriggers >= 1e6 && (double)GBTLinkInfo->statistics.nTriggers < 1e6 + 10000)) {
+              mNoisyPixelNumber[mLayer][istave]++; // count only in 10000 events as soon as nTriggers is 1e6
             }
             int pixelPos[2] = { (int)(iter->first / 1000) + (1024 * ichip) + 1, (int)(iter->first % 1000) + 1 };
-            mStaveHitmap[lay][istave]->SetBinContent(pixelPos, (double)iter->second);
+            if ((double)GBTLinkInfo->statistics.nTriggers <= mCutTrgForSparse) {
+              mStaveHitmap[istave]->SetBinContent(pixelPos, (double)iter->second);
+            }
             totalhit += (int)iter->second;
             occupancyPlotTmp[i]->Fill(log10((double)iter->second / GBTLinkInfo->statistics.nTriggers));
           }
@@ -715,32 +593,41 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
         if (!GBTLinkInfo) {
           continue;
         }
-        for (int ihic = 0; ihic < ((nHicPerStave[lay] / NSubStave[lay])); ihic++) {
-          for (int ichip = 0; ichip < nChipsPerHic[lay]; ichip++) {
+        if ((double)GBTLinkInfo->statistics.nTriggers >= 1e6 && (double)GBTLinkInfo->statistics.nTriggers < 1e6 + 10000) {
+          mNoisyPixelNumber[mLayer][istave] = 0;
+        }
+        for (int ihic = 0; ihic < ((nHicPerStave[mLayer] / NSubStave[mLayer])); ihic++) {
+          for (int ichip = 0; ichip < nChipsPerHic[mLayer]; ichip++) {
             if (GBTLinkInfo->statistics.nTriggers > 0) {
               std::unordered_map<unsigned int, int>::iterator iter;
-              for (iter = mHitPixelID_InStave[istave][ihic + ilink * ((nHicPerStave[lay] / NSubStave[lay]))][ichip].begin(); iter != mHitPixelID_InStave[istave][ihic + ilink * ((nHicPerStave[lay] / NSubStave[lay]))][ichip].end(); iter++) {
-                if ((iter->second > mHitCutForNoisyPixel) && (iter->second / (double)GBTLinkInfo->statistics.nTriggers) > mOccupancyCutForNoisyPixel) {
-                  mNoisyPixelNumber[lay][istave]++;
+              for (iter = mHitPixelID_InStave[istave][ihic + ilink * ((nHicPerStave[mLayer] / NSubStave[mLayer]))][ichip].begin(); iter != mHitPixelID_InStave[istave][ihic + ilink * ((nHicPerStave[mLayer] / NSubStave[mLayer]))][ichip].end(); iter++) {
+                if ((iter->second > mHitCutForNoisyPixel) &&
+                    (iter->second / (double)GBTLinkInfo->statistics.nTriggers) > mOccupancyCutForNoisyPixel &&
+                    ((double)GBTLinkInfo->statistics.nTriggers >= 1e6 && (double)GBTLinkInfo->statistics.nTriggers < 1e6 + 10000)) {
+                  mNoisyPixelNumber[mLayer][istave]++;
                 }
                 double pixelOccupancy = (double)iter->second;
                 occupancyPlotTmp[i]->Fill(log10(pixelOccupancy / GBTLinkInfo->statistics.nTriggers));
                 if (ichip < 7) {
-                  int pixelPos[2] = { (ihic * ((nChipsPerHic[lay] / 2) * NCols)) + ichip * NCols + (int)(iter->first / 1000) + 1, NRows - ((int)iter->first % 1000) - 1 + (1024 * ilink) + 1 };
-                  mStaveHitmap[lay][istave]->SetBinContent(pixelPos, pixelOccupancy);
+                  int pixelPos[2] = { (ihic * ((nChipsPerHic[mLayer] / 2) * NCols)) + ichip * NCols + (int)(iter->first / 1000) + 1, NRows - ((int)iter->first % 1000) - 1 + (1024 * ilink) + 1 };
+                  if ((double)GBTLinkInfo->statistics.nTriggers <= mCutTrgForSparse) {
+                    mStaveHitmap[istave]->SetBinContent(pixelPos, pixelOccupancy);
+                  }
                 } else {
-                  int pixelPos[2] = { (ihic * ((nChipsPerHic[lay] / 2) * NCols)) + (nChipsPerHic[lay] / 2) * NCols - (ichip - 7) * NCols - ((int)iter->first / 1000), NRows + ((int)iter->first % 1000) + (1024 * ilink) + 1 };
-                  mStaveHitmap[lay][istave]->SetBinContent(pixelPos, pixelOccupancy);
+                  int pixelPos[2] = { (ihic * ((nChipsPerHic[mLayer] / 2) * NCols)) + (nChipsPerHic[mLayer] / 2) * NCols - (ichip - 7) * NCols - ((int)iter->first / 1000), NRows + ((int)iter->first % 1000) + (1024 * ilink) + 1 };
+                  if ((double)GBTLinkInfo->statistics.nTriggers <= mCutTrgForSparse) {
+                    mStaveHitmap[istave]->SetBinContent(pixelPos, pixelOccupancy);
+                  }
                 }
               }
             }
           }
-          if (lay == 3 || lay == 4) {
-            mOccupancyLane[istave][2 * (ihic + (ilink * 4))] = mHitnumberLane[istave][2 * (ihic + (ilink * 4))] / (GBTLinkInfo->statistics.nTriggers * 1024. * 512. * nChipsPerHic[lay] / 2);
-            mOccupancyLane[istave][2 * (ihic + (ilink * 4)) + 1] = mHitnumberLane[istave][2 * (ihic + (ilink * 4)) + 1] / (GBTLinkInfo->statistics.nTriggers * 1024. * 512. * nChipsPerHic[lay] / 2);
+          if (mLayer == 3 || mLayer == 4) {
+            mOccupancyLane[istave][2 * (ihic + (ilink * 4))] = mHitnumberLane[istave][2 * (ihic + (ilink * 4))] / (GBTLinkInfo->statistics.nTriggers * 1024. * 512. * nChipsPerHic[mLayer] / 2);
+            mOccupancyLane[istave][2 * (ihic + (ilink * 4)) + 1] = mHitnumberLane[istave][2 * (ihic + (ilink * 4)) + 1] / (GBTLinkInfo->statistics.nTriggers * 1024. * 512. * nChipsPerHic[mLayer] / 2);
           } else {
-            mOccupancyLane[istave][2 * (ihic + (ilink * 7))] = mHitnumberLane[istave][2 * (ihic + (ilink * 7))] / (GBTLinkInfo->statistics.nTriggers * 1024. * 512. * nChipsPerHic[lay] / 2);
-            mOccupancyLane[istave][2 * (ihic + (ilink * 7)) + 1] = mHitnumberLane[istave][2 * (ihic + (ilink * 7)) + 1] / (GBTLinkInfo->statistics.nTriggers * 1024. * 512. * nChipsPerHic[lay] / 2);
+            mOccupancyLane[istave][2 * (ihic + (ilink * 7))] = mHitnumberLane[istave][2 * (ihic + (ilink * 7))] / (GBTLinkInfo->statistics.nTriggers * 1024. * 512. * nChipsPerHic[mLayer] / 2);
+            mOccupancyLane[istave][2 * (ihic + (ilink * 7)) + 1] = mHitnumberLane[istave][2 * (ihic + (ilink * 7)) + 1] / (GBTLinkInfo->statistics.nTriggers * 1024. * 512. * nChipsPerHic[mLayer] / 2);
           }
         }
         for (int ierror = 0; ierror < o2::itsmft::GBTLinkDecodingStat::NErrorsDefined; ierror++) {
@@ -755,51 +642,55 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
   // fill Occupancy plots, chip stave occupancy plots and error statistic plots
   for (int i = 0; i < (int)activeStaves.size(); i++) {
     int istave = activeStaves[i];
-    mOccupancyPlot[lay]->Add(occupancyPlotTmp[i]);
-    if (lay < NLayerIB) {
-      for (int ichip = 0; ichip < nChipsPerHic[lay]; ichip++) {
-        mChipStaveOccupancy[lay]->SetBinContent(ichip + 1, istave + 1, mOccupancyLane[istave][ichip]);
+    mOccupancyPlot->Add(occupancyPlotTmp[i]);
+    if (mLayer < NLayerIB) {
+      for (int ichip = 0; ichip < nChipsPerHic[mLayer]; ichip++) {
+        mChipStaveOccupancy->SetBinContent(ichip + 1, istave + 1, mOccupancyLane[istave][ichip]);
         if (!mChipStat[istave][ichip]) {
-          mDeadChipPos[lay]->SetBinContent(mDeadChipPos[lay]->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mDeadChipPos[lay]->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), mChipStat[istave][ichip]);
-          mTotalDeadChipPos->SetBinContent(mTotalDeadChipPos->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mTotalDeadChipPos->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), mChipStat[istave][ichip]);
+          mDeadChipPos->SetBinContent(mDeadChipPos->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mDeadChipPos->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), 1);
+          mTotalDeadChipPos->SetBinContent(mTotalDeadChipPos->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mTotalDeadChipPos->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), 1);
         } else {
-          mAliveChipPos[lay]->SetBinContent(mAliveChipPos[lay]->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mAliveChipPos[lay]->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), mChipStat[istave][ichip]);
-          mTotalAliveChipPos->SetBinContent(mTotalAliveChipPos->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mTotalAliveChipPos->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), mChipStat[istave][ichip]);
+          mAliveChipPos->SetBinContent(mAliveChipPos->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mAliveChipPos->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), 1);
+          mTotalAliveChipPos->SetBinContent(mTotalAliveChipPos->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mTotalAliveChipPos->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), 1);
+          mDeadChipPos->SetBinContent(mDeadChipPos->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mDeadChipPos->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), 0);                // not dead
+          mTotalDeadChipPos->SetBinContent(mTotalDeadChipPos->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mTotalDeadChipPos->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), 0); // not dead
         }
         int ilink = ichip / 3;
         for (int ierror = 0; ierror < o2::itsmft::GBTLinkDecodingStat::NErrorsDefined; ierror++) {
           if (mErrorVsFeeid && (mErrorCount[istave][ilink][ierror] != 0)) {
-            mErrorVsFeeid->SetBinContent(((istave + StaveBoundary[lay]) * 3) + ilink + 1, ierror + 1, mErrorCount[istave][ilink][ierror]);
+            mErrorVsFeeid->SetBinContent(((istave + StaveBoundary[mLayer]) * 3) + ilink + 1, ierror + 1, mErrorCount[istave][ilink][ierror]);
           }
         }
       }
-      mGeneralOccupancy->SetBinContent(istave + 1 + StaveBoundary[mLayer], *(std::max_element(mOccupancyLane[istave], mOccupancyLane[istave] + nChipsPerHic[lay])));
-      mGeneralNoisyPixel->SetBinContent(istave + 1 + StaveBoundary[mLayer], mNoisyPixelNumber[lay][istave]);
+      mGeneralOccupancy->SetBinContent(istave + 1 + StaveBoundary[mLayer], *(std::max_element(mOccupancyLane[istave], mOccupancyLane[istave] + nChipsPerHic[mLayer])));
+      mGeneralNoisyPixel->SetBinContent(istave + 1 + StaveBoundary[mLayer], mNoisyPixelNumber[mLayer][istave]);
     } else {
-      for (int ichip = 0; ichip < nHicPerStave[lay] * nChipsPerHic[lay]; ichip++) {
+      for (int ichip = 0; ichip < nHicPerStave[mLayer] * nChipsPerHic[mLayer]; ichip++) {
         if (!mChipStat[istave][ichip]) {
-          mDeadChipPos[lay]->SetBinContent(mDeadChipPos[lay]->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mDeadChipPos[lay]->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), mChipStat[istave][ichip]);
-          mTotalDeadChipPos->SetBinContent(mTotalDeadChipPos->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mTotalDeadChipPos->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), mChipStat[istave][ichip]);
+          mDeadChipPos->SetBinContent(mDeadChipPos->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mDeadChipPos->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), 1);
+          mTotalDeadChipPos->SetBinContent(mTotalDeadChipPos->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mTotalDeadChipPos->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), 1);
         } else {
-          mAliveChipPos[lay]->SetBinContent(mAliveChipPos[lay]->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mAliveChipPos[lay]->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), mChipStat[istave][ichip]);
-          mTotalAliveChipPos->SetBinContent(mTotalAliveChipPos->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mTotalAliveChipPos->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), mChipStat[istave][ichip]);
+          mAliveChipPos->SetBinContent(mAliveChipPos->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mAliveChipPos->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), 1);
+          mTotalAliveChipPos->SetBinContent(mTotalAliveChipPos->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mTotalAliveChipPos->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), 1);
+          mDeadChipPos->SetBinContent(mDeadChipPos->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mDeadChipPos->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), 0);                // not dead
+          mTotalDeadChipPos->SetBinContent(mTotalDeadChipPos->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mTotalDeadChipPos->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), 0); // not dead
         }
       }
 
-      for (int ihic = 0; ihic < nHicPerStave[lay]; ihic++) {
-        int ilink = ihic / (nHicPerStave[lay] / 2);
-        mChipStaveOccupancy[lay]->SetBinContent(2 * ihic + 1, istave + 1, mOccupancyLane[istave][2 * ihic]);
-        mChipStaveOccupancy[lay]->SetBinContent(2 * ihic + 2, istave + 1, mOccupancyLane[istave][2 * ihic + 1]);
+      for (int ihic = 0; ihic < nHicPerStave[mLayer]; ihic++) {
+        int ilink = ihic / (nHicPerStave[mLayer] / 2);
+        mChipStaveOccupancy->SetBinContent(2 * ihic + 1, istave + 1, mOccupancyLane[istave][2 * ihic]);
+        mChipStaveOccupancy->SetBinContent(2 * ihic + 2, istave + 1, mOccupancyLane[istave][2 * ihic + 1]);
         if (ihic == 0 || ihic == 7) {
           for (int ierror = 0; ierror < o2::itsmft::GBTLinkDecodingStat::NErrorsDefined; ierror++) {
             if (mErrorVsFeeid && (mErrorCount[istave][ilink][ierror] != 0)) {
-              mErrorVsFeeid->SetBinContent((3 * StaveBoundary[3]) + ((StaveBoundary[lay] - StaveBoundary[NLayerIB] + istave) * 2) + ilink + 1, ierror + 1, mErrorCount[istave][ilink][ierror]);
+              mErrorVsFeeid->SetBinContent((3 * StaveBoundary[3]) + ((StaveBoundary[mLayer] - StaveBoundary[NLayerIB] + istave) * 2) + ilink + 1, ierror + 1, mErrorCount[istave][ilink][ierror]);
             }
           }
         }
       }
-      mGeneralOccupancy->SetBinContent(istave + 1 + StaveBoundary[mLayer], *(std::max_element(mOccupancyLane[istave], mOccupancyLane[istave] + nHicPerStave[lay] * 2)));
-      mGeneralNoisyPixel->SetBinContent(istave + 1 + StaveBoundary[mLayer], mNoisyPixelNumber[lay][istave]);
+      mGeneralOccupancy->SetBinContent(istave + 1 + StaveBoundary[mLayer], *(std::max_element(mOccupancyLane[istave], mOccupancyLane[istave] + nHicPerStave[mLayer] * 2)));
+      mGeneralNoisyPixel->SetBinContent(istave + 1 + StaveBoundary[mLayer], mNoisyPixelNumber[mLayer][istave]);
     }
   }
   for (int ierror = 0; ierror < o2::itsmft::GBTLinkDecodingStat::NErrorsDefined; ierror++) {
@@ -810,10 +701,8 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
   // delete pointor in monitorData()
   for (int istave = 0; istave < NStaves[mLayer]; istave++) {
     delete[] digVec[istave];
-    delete[] digROFVec[istave];
   }
   delete[] digVec;
-  delete[] digROFVec;
   for (int i = 0; i < (int)activeStaves.size(); i++) {
     delete occupancyPlotTmp[i];
   }
@@ -843,6 +732,7 @@ void ITSFhrTask::getParameters()
   mMinGeneralNoisyAxisRange = std::stof(mCustomParameters["MinGeneralNoisyAxisRange"]);
   mPhibins = std::stoi(mCustomParameters["Phibins"]);
   mEtabins = std::stoi(mCustomParameters["Etabins"]);
+  mCutTrgForSparse = std::stod(mCustomParameters["CutSparseTriggers"]);
 }
 
 void ITSFhrTask::endOfCycle()
@@ -861,27 +751,22 @@ void ITSFhrTask::resetGeneralPlots()
   resetObject(mTFInfo);
   resetObject(mErrorPlots);
   resetObject(mErrorVsFeeid);
-  resetObject(mTriggerVsFeeid);
-  resetObject(mTriggerPlots);
-  //	resetObject(mInfoCanvasComm);
-  //	resetObject(mInfoCanvasOBComm);
 }
 
 void ITSFhrTask::resetOccupancyPlots()
 {
   memset(mHitNumberOfChip, 0, sizeof(mHitNumberOfChip));
-  memset(mTriggerTypeCount, 0, sizeof(mTriggerTypeCount));
   memset(mErrors, 0, sizeof(mErrors));
   mTimeFrameId = 0;
-  mChipStaveOccupancy[mLayer]->Reset();
-  mChipStaveEventHitCheck[mLayer]->Reset();
-  mOccupancyPlot[mLayer]->Reset();
-  mDeadChipPos[mLayer]->Reset();
-  mAliveChipPos[mLayer]->Reset();
+  mChipStaveOccupancy->Reset();
+  mChipStaveEventHitCheck->Reset();
+  mOccupancyPlot->Reset();
+  mDeadChipPos->Reset();
+  mAliveChipPos->Reset();
   mTotalDeadChipPos->Reset();
   mTotalAliveChipPos->Reset();
   for (int istave = 0; istave < NStaves[mLayer]; istave++) {
-    mStaveHitmap[mLayer][istave]->Reset();
+    mStaveHitmap[istave]->Reset();
   }
 }
 

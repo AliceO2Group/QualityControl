@@ -16,6 +16,7 @@
 ///
 
 #include "QualityControl/TaskInterface.h"
+#include "QualityControl/stringUtils.h"
 #include <CCDB/CcdbApi.h>
 
 using namespace o2::ccdb;

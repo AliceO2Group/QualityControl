@@ -35,7 +35,7 @@ Quality CheckDRMDiagnostics::check(std::map<std::string, std::shared_ptr<Monitor
 {
 
   Quality result = Quality::Null;
-  ILOG(Info, Support) << "Checking quality of diagnostic words";
+  ILOG(Info, Support) << "Checking quality of diagnostic words" << ENDM;
 
   for (auto& [moName, mo] : *moMap) {
     (void)moName;
@@ -69,7 +69,7 @@ void CheckDRMDiagnostics::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
   if (mo->getName() == "DRMCounter") {
     auto* h = dynamic_cast<TH2F*>(mo->getObject());
     if (!h) {
-      ILOG(Warning, Support) << "Did not get MO for DRMCounter";
+      ILOG(Warning, Support) << "Did not get MO for DRMCounter" << ENDM;
       return;
     }
     auto msg = mShifterMessages.MakeMessagePad(h, checkResult);
@@ -85,7 +85,7 @@ void CheckDRMDiagnostics::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
       msg->AddText("email TOF on-call.");
     }
   } else
-    ILOG(Error, Support) << "Did not get correct histo from " << mo->GetName();
+    ILOG(Error, Support) << "Did not get correct histo from " << mo->GetName() << ENDM;
 }
 
 } // namespace o2::quality_control_modules::tof

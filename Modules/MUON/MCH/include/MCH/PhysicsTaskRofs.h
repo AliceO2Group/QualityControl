@@ -57,14 +57,15 @@ class PhysicsTaskRofs /*final*/ : public TaskInterface
 
  private:
   template <typename T>
-  void publishObject(std::shared_ptr<T> histo, const char* drawOption, bool statBox)
+  void publishObject(std::shared_ptr<T> histo, std::string drawOption, bool statBox)
   {
-    histo->SetOption(drawOption);
+    histo->SetOption(drawOption.c_str());
     if (!statBox) {
       histo->SetStats(0);
     }
     mAllHistograms.push_back(histo.get());
     getObjectsManager()->startPublishing(histo.get());
+    getObjectsManager()->setDefaultDrawOptions(histo.get(), drawOption);
   }
 
   void plotROF(const o2::mch::ROFRecord& rof, gsl::span<const o2::mch::Digit> digits);

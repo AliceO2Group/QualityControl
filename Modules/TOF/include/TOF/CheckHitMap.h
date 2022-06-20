@@ -15,8 +15,8 @@
 /// \brief  Checker for the hit map hit obtained with the TaskDigits
 ///
 
-#ifndef QC_MODULE_TOF_TOFCHECKHITMAP_H
-#define QC_MODULE_TOF_TOFCHECKHITMAP_H
+#ifndef QC_MODULE_TOF_CHECKHITMAP_H
+#define QC_MODULE_TOF_CHECKHITMAP_H
 
 #include "QualityControl/CheckInterface.h"
 #include "Base/MessagePad.h"
@@ -40,14 +40,29 @@ class CheckHitMap : public o2::quality_control::checker::CheckInterface
   std::string getAcceptedType() override { return "TH2F"; }
 
  private:
+  /// Reference hit map taken from the CCDB and translated into QC binning
+  std::shared_ptr<TH2F> mHistoRefHitMap = nullptr;    /// TOF reference hit map
+  std::shared_ptr<TH2F> mHistoBinaryHitMap = nullptr; /// TOF binary (yes or no) hit map
+
   /// Messages to print on the output PAD
   MessagePad mShifterMessages;
   /// Message regarding the PHOS module (hole)
   MessagePad mPhosModuleMessage{ "PHOS", 13.f, 38.f, 16.f, 53.f }; // Values corresponding to the PHOS hole
+  /// Name of the accepted MO
+  static constexpr char mAcceptedName[] = "HitMap";
+  /// Flag to enable or disable the check with respect to the reference map
+  bool mEnableReferenceHitMap = false;
+  /// Name of the Path to get on CCDB for the ref. map
+  std::string mRefMapCcdbPath = "/TOF/Calib/FEELIGHT";
+  /// Timestamp to get on CCDB for the ref. map
+  int mRefMapTimestamp = -1;
+  int mNWithHits = 0; /// Number of half strips with hits
+  int mNEnabled = 0;  /// Number of enabled half strips
+  int mTrheshold = 0; /// Threshold of agreement between read and enabled half strips
 
   ClassDefOverride(CheckHitMap, 2);
 };
 
 } // namespace o2::quality_control_modules::tof
 
-#endif // QC_MODULE_TOF_TOFCHECKHITMAP_H
+#endif // QC_MODULE_TOF_CHECKHITMAP_H

@@ -90,7 +90,7 @@ TaskSpec InfrastructureSpecReader::readSpecEntry<TaskSpec>(std::string taskID, c
   ts.moduleName = taskTree.get<std::string>("moduleName");
   ts.detectorName = taskTree.get<std::string>("detectorName");
   ts.cycleDurationSeconds = taskTree.get<int>("cycleDurationSeconds");
-  ts.dataSource = readSpecEntry<DataSourceSpec>("", taskTree.get_child("dataSource"), wholeTree);
+  ts.dataSource = readSpecEntry<DataSourceSpec>(taskID, taskTree.get_child("dataSource"), wholeTree);
   ts.active = taskTree.get<bool>("active", ts.active);
   ts.maxNumberCycles = taskTree.get<int>("maxNumberCycles", ts.maxNumberCycles);
   ts.resetAfterCycles = taskTree.get<size_t>("resetAfterCycles", ts.resetAfterCycles);
@@ -132,7 +132,7 @@ TaskSpec InfrastructureSpecReader::readSpecEntry<TaskSpec>(std::string taskID, c
 }
 
 template <>
-DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(std::string,
+DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(std::string dataRequestorId,
                                                                        const boost::property_tree::ptree& dataSourceTree,
                                                                        const boost::property_tree::ptree& wholeTree)
 {
@@ -152,19 +152,25 @@ DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(std::stri
 
   switch (dss.type) {
     case DataSourceType::DataSamplingPolicy: {
-      dss.name = dataSourceTree.get<std::string>("name");
+      dss.id = dataSourceTree.get<std::string>("name");
+      dss.name = dss.id;
       dss.inputs = DataSampling::InputSpecsForPolicy(wholeTree.get_child("dataSamplingPolicies"), dss.name);
       break;
     }
     case DataSourceType::Direct: {
       auto inputsQuery = dataSourceTree.get<std::string>("query");
-      dss.name = inputsQuery;
+      dss.id = inputsQuery;
+      dss.name = dss.id;
       dss.inputs = DataDescriptorQueryBuilder::parse(inputsQuery.c_str());
       break;
     }
     case DataSourceType::Task: {
-      dss.name = dataSourceTree.get<std::string>("name");
-      dss.inputs = { { dss.name, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(dss.name), 0, Lifetime::Sporadic } };
+      dss.id = dataSourceTree.get<std::string>("name");
+      // this allows us to have tasks with the same name for different detectors
+      dss.name = wholeTree.get<std::string>("qc.tasks." + dss.id + ".taskName", dss.id);
+      auto detectorName = wholeTree.get<std::string>("qc.tasks." + dss.id + ".detectorName");
+
+      dss.inputs = { { dss.name, TaskRunner::createTaskDataOrigin(detectorName), TaskRunner::createTaskDataDescription(dss.name), 0, Lifetime::Sporadic } };
       if (dataSourceTree.count("MOs") > 0) {
         for (const auto& moName : dataSourceTree.get_child("MOs")) {
           dss.subInputs.push_back(moName.second.get_value<std::string>());
@@ -173,7 +179,8 @@ DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(std::stri
       break;
     }
     case DataSourceType::PostProcessingTask: {
-      dss.name = dataSourceTree.get<std::string>("name");
+      dss.id = dataSourceTree.get<std::string>("name");
+      dss.name = dss.id;
       dss.inputs = { { dss.name, PostProcessingDevice::createPostProcessingDataOrigin(), PostProcessingDevice::createPostProcessingDataDescription(dss.name), 0, Lifetime::Sporadic } };
       if (dataSourceTree.count("MOs") > 0) {
         for (const auto& moName : dataSourceTree.get_child("MOs")) {
@@ -183,7 +190,8 @@ DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(std::stri
       break;
     }
     case DataSourceType::Check: {
-      dss.name = dataSourceTree.get<std::string>("name");
+      dss.id = dataSourceTree.get<std::string>("name");
+      dss.name = dss.id;
       dss.inputs = { { dss.name, "QC", Check::createCheckDataDescription(dss.name), 0, Lifetime::Sporadic } };
       if (dataSourceTree.count("QOs") > 0) {
         for (const auto& moName : dataSourceTree.get_child("QOs")) {
@@ -203,7 +211,8 @@ DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(std::stri
       break;
     }
     case DataSourceType::ExternalTask: {
-      dss.name = dataSourceTree.get<std::string>("name");
+      dss.id = dataSourceTree.get<std::string>("name");
+      dss.name = dss.id;
       auto query = wholeTree.get<std::string>("qc.externalTasks." + dss.name + ".query");
       dss.inputs = o2::framework::DataDescriptorQueryBuilder::parse(query.c_str());
       break;
@@ -230,7 +239,7 @@ CheckSpec InfrastructureSpecReader::readSpecEntry<CheckSpec>(std::string checkID
   const auto& dataSourcesTree = checkTree.count("dataSource") > 0 ? checkTree.get_child("dataSource") : checkTree.get_child("dataSources");
   for (const auto& [_key, dataSourceTree] : dataSourcesTree) {
     (void)_key;
-    cs.dataSources.push_back(readSpecEntry<DataSourceSpec>("", dataSourceTree, wholeTree));
+    cs.dataSources.push_back(readSpecEntry<DataSourceSpec>(checkID, dataSourceTree, wholeTree));
   }
 
   if (auto policy = checkTree.get_optional<std::string>("policy"); policy.has_value()) {
@@ -261,7 +270,7 @@ AggregatorSpec InfrastructureSpecReader::readSpecEntry<AggregatorSpec>(std::stri
   const auto& dataSourcesTree = aggregatorTree.count("dataSource") > 0 ? aggregatorTree.get_child("dataSource") : aggregatorTree.get_child("dataSources");
   for (const auto& [_key, dataSourceTree] : dataSourcesTree) {
     (void)_key;
-    as.dataSources.push_back(readSpecEntry<DataSourceSpec>("", dataSourceTree, wholeTree));
+    as.dataSources.push_back(readSpecEntry<DataSourceSpec>(aggregatorID, dataSourceTree, wholeTree));
   }
 
   if (auto policy = aggregatorTree.get_optional<std::string>("policy"); policy.has_value()) {

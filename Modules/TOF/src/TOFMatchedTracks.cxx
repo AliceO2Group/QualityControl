@@ -35,6 +35,8 @@
 #include "DetectorsBase/Propagator.h"
 #include "DetectorsBase/GeometryManager.h"
 
+#include "TOF/Utils.h"
+
 using GTrackID = o2::dataformats::GlobalTrackID;
 
 namespace o2::quality_control_modules::tof
@@ -69,18 +71,9 @@ void TOFMatchedTracks::initialize(o2::framework::InitContext& /*ctx*/)
   ILOG(Info, Support) << "initialize TOFMatchedTracks" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
-  if (auto param = mCustomParameters.find("isMC"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - isMC (= use of MC info): " << param->second << ENDM;
-    if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
-      mUseMC = true;
-    }
-  }
-  if (auto param = mCustomParameters.find("verbose"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - verbose (= verbose printouts): " << param->second << ENDM;
-    if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
-      mVerbose = true;
-    }
-  }
+
+  utils::parseBooleanParameter(mCustomParameters, "isMC", mUseMC);
+  utils::parseBooleanParameter(mCustomParameters, "verbose", mVerbose);
 
   // for track selection
   if (auto param = mCustomParameters.find("minPtCut"); param != mCustomParameters.end()) {
@@ -102,6 +95,14 @@ void TOFMatchedTracks::initialize(o2::framework::InitContext& /*ctx*/)
   if (auto param = mCustomParameters.find("minDCACutY"); param != mCustomParameters.end()) {
     ILOG(Info, Devel) << "Custom parameter - minDCACutY (for track selection): " << param->second << ENDM;
     setMinDCAtoBeamPipeYCut(atof(param->second.c_str()));
+  }
+  if (auto param = mCustomParameters.find("geomFileName"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - geomFileName: " << param->second << ENDM;
+    mGeomFileName = param->second.c_str();
+  }
+  if (auto param = mCustomParameters.find("grpFileName"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - grpFileName: " << param->second << ENDM;
+    mGRPFileName = param->second.c_str();
   }
 
   // for track type selection
@@ -250,9 +251,13 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
   LOG(debug) << " ************************ ";
   mRecoCont.collectData(ctx, *mDataRequest.get());
 
+  // TPC
+  if (mRecoCont.isTrackSourceLoaded(GID::TPC) || mRecoCont.isTrackSourceLoaded(GID::TPCTOF)) { // this is enough to know that also TPC was loades, see "initialize"
+    mTPCTracks = mRecoCont.getTPCTracks();
+  }
+
   // TPC-TOF
   if (mRecoCont.isTrackSourceLoaded(GID::TPCTOF)) { // this is enough to know that also TPC was loades, see "initialize"
-    mTPCTracks = mRecoCont.getTPCTracks();
     mTPCTOFMatches = mRecoCont.getTPCTOFMatches();
     LOG(debug) << "We found " << mTPCTracks.size() << " TPC-only tracks";
     LOG(debug) << "We found " << mRecoCont.getTPCTOFTracks().size() << " TPC-TOF tracks";

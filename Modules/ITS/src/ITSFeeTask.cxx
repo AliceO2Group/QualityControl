@@ -210,6 +210,7 @@ void ITSFeeTask::setPlotsFormat()
     mLaneStatusOverview[i]->SetOption("lcolz");
     mLaneStatusOverview[i]->SetMinimum(0);
     mLaneStatusOverview[i]->SetMaximum(1);
+    mLaneStatusOverview[i]->SetBit(TH1::kIsAverage);
     for (int ilayer = 0; ilayer < 7; ilayer++) {
       for (int istave = 0; istave < NStaves[ilayer]; istave++) {
         double* px = new double[4];
@@ -396,15 +397,14 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
     }
 
-    for (int i = 0; i < 13; i++) {
-      if (((uint32_t)(rdh->triggerType) >> i & 1) == 1) {
-        mTrigger->Fill(i + 1);
-        mTriggerVsFeeId->Fill(ifee, i + 1);
-      }
-    }
-
     if ((int)(rdh->stop)) {
       nStops[ifee]++;
+      for (int i = 0; i < 13; i++) {
+        if (((uint32_t)(rdh->triggerType) >> i & 1) == 1) {
+          mTrigger->Fill(i + 1);
+          mTriggerVsFeeId->Fill(ifee, i + 1);
+        }
+      }
     }
   }
 
@@ -429,6 +429,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
           }
         }
         mLaneStatusOverview[iflag]->SetBinContent(istave + 1 + StaveBoundary[ilayer], (float)(flagCount) / (float)(NLanePerStaveLayer[ilayer]));
+        mLaneStatusOverview[iflag]->SetBinError(istave + 1 + StaveBoundary[ilayer], 1e-15);
       }
       mLaneStatusSummary[ilayer]->SetBinContent(iflag + 1, layerSummary[ilayer][iflag]);
     }

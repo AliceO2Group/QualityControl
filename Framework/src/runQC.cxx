@@ -36,6 +36,7 @@
 #include "QualityControl/runnerUtils.h"
 #include "QualityControl/InfrastructureGenerator.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/ConfigParamGlo.h"
 
 using namespace o2;
 using namespace o2::framework;
@@ -144,6 +145,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
   if (!validateArguments(config)) {
     return {};
   }
+  quality_control::ConfigParamGlo::keyValues = config.options().get<std::string>("configKeyValues");
 
   auto qcConfigurationSource = config.options().get<std::string>("config");
   try {
@@ -169,7 +171,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
     ILOG_INST.filterDiscardLevel(infologgerDiscardLevel);
     o2::quality_control::core::QcInfoLogger::setFacility("runQC");
 
-    ILOG(Info, Support) << "Using config file '" << qcConfigurationSource << "'" << ENDM;
+    ILOG(Info, Ops) << "Using config file '" << qcConfigurationSource << "'" << ENDM;
     auto keyValuesToOverride = quality_control::core::parseOverrideValues(config.options().get<std::string>("override-values"));
     quality_control::core::overrideValues(configTree, keyValuesToOverride);
 

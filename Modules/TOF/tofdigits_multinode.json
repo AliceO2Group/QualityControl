@@ -110,7 +110,7 @@
         "localnode2",
         "localnode3"
       ],
-      "query": "tofdigits:TOF/DIGITS/0;readoutwin:TOF/READOUTWINDOW/0",
+      "query": "tofdigits:TOF/DIGITS/0;readoutwin:TOF/READOUTWINDOW/0;diafreq:TOF/DIAFREQ/0",
       "samplingConditions": [
         {
           "condition": "random",
@@ -127,7 +127,7 @@
         "localhost"
       ],
       "port": "30333",
-      "query": "tofdigits:TOF/DIGITS/0;readoutwin:TOF/READOUTWINDOW/0",
+      "query": "tofdigits:TOF/DIGITS/0;readoutwin:TOF/READOUTWINDOW/0;diafreq:TOF/DIAFREQ/0",
       "samplingConditions": [
         {
           "condition": "random",

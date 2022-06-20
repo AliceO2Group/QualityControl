@@ -17,22 +17,22 @@
 
 // QC
 #include "TOF/CheckRawToT.h"
+#include "TOF/Utils.h"
 #include "QualityControl/QcInfoLogger.h"
 
+#include <DataFormatsQualityControl/FlagReasons.h>
+
 using namespace std;
+using namespace o2::quality_control;
 
 namespace o2::quality_control_modules::tof
 {
 
 void CheckRawToT::configure()
 {
-
-  if (auto param = mCustomParameters.find("MinRawTime"); param != mCustomParameters.end()) {
-    mMinRawToT = ::atof(param->second.c_str());
-  }
-  if (auto param = mCustomParameters.find("MaxRawTime"); param != mCustomParameters.end()) {
-    mMaxRawToT = ::atof(param->second.c_str());
-  }
+  utils::parseDoubleParameter(mCustomParameters, "MinEntriesBeforeMessage", mMinEntriesBeforeMessage);
+  utils::parseFloatParameter(mCustomParameters, "MinAllowedToT", mMinAllowedToT);
+  utils::parseFloatParameter(mCustomParameters, "MaxAllowedToT", mMaxAllowedToT);
   mShifterMessages.configure(mCustomParameters);
 }
 
@@ -59,6 +59,8 @@ Quality CheckRawToT::check(std::map<std::string, std::shared_ptr<MonitorObject>>
       auto* h = static_cast<TH1F*>(mo->getObject());
       if (h->GetEntries() == 0) {
         result = Quality::Medium;
+        result.addReason(FlagReasonFactory::NoDetectorData(),
+                         "Empty histogram (no counts)");
       } else {
         // Set range to compute the average without the orphans
         h->GetXaxis()->SetRange(2, h->GetNbinsX());
@@ -75,11 +77,13 @@ Quality CheckRawToT::check(std::map<std::string, std::shared_ptr<MonitorObject>>
           mo->addMetadata("orphanfraction", "UNDEF");
         }
 
-        if ((ToTMean > mMinRawToT) && (ToTMean < mMaxRawToT)) {
+        if ((ToTMean > mMinAllowedToT) && (ToTMean < mMaxAllowedToT)) {
           result = Quality::Good;
         } else {
           ILOG(Warning, Support) << Form("ToT mean = %5.2f ns", ToTMean) << ENDM;
           result = Quality::Bad;
+          result.addReason(FlagReasonFactory::Unknown(),
+                           "ToT mean out of expected range");
         }
       }
     }
@@ -101,15 +105,29 @@ void CheckRawToT::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
       return;
     }
     const auto& meta = mo->getMetadataMap();
-    msg->AddText(Form("Mean value = %s", meta.at("mean").c_str()));
-    msg->AddText(Form("Allowed range: %3.1f-%3.1f ns", mMinRawToT, mMaxRawToT));
-    msg->AddText(Form("Orphan fraction = %s", meta.at("orphanfraction").c_str()));
+    auto getMetaData = [&meta, &mo](const char* key) {
+      if (meta.find(key) == meta.end()) {
+        ILOG(Warning, Support) << "Looking for key '" << key << "' in metadata of " << mo->getName() << ", not found!" << ENDM;
+        return static_cast<const char*>(Form("'Key %s not found'", key));
+      }
+      return meta.at(key).c_str();
+    };
+    msg->AddText(Form("Mean value = %s", getMetaData("mean")));
+    msg->AddText(Form("Allowed range: %3.1f-%3.1f ns", mMinAllowedToT, mMaxAllowedToT));
+    msg->AddText(Form("Orphan fraction = %s", getMetaData("orphanfraction")));
+
+    if (h->GetEntries() < mMinEntriesBeforeMessage) { // Checking that the histogram has enough entries before printing messages
+      msg->AddText("Cannot establish quality yet");
+      msg->SetTextColor(kWhite);
+      return;
+    }
+
     if (checkResult == Quality::Good) {
       msg->AddText("OK!");
     } else if (checkResult == Quality::Bad) {
       msg->AddText("Call TOF on-call.");
     } else if (checkResult == Quality::Medium) {
-      ILOG(Info, Support) << "Quality::medium, setting to yellow";
+      ILOG(Info, Support) << "Quality::medium, setting to yellow" << ENDM;
       msg->AddText("IF TOF IN RUN email TOF on-call.");
     }
   } else {

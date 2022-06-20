@@ -101,7 +101,6 @@ class ITSFhrTask final : public TaskInterface
   std::vector<ChipPixelData> mChipsBuffer;
   int mHitNumberOfChip[7][48][2][14][14] = { { { { { 0 } } } } }; // layer, stave, substave, hic, chip
   unsigned int mTimeFrameId = 0;
-  uint32_t mTriggerTypeCount[13] = { 0 };
 
   int mNError = 19;
   int mNTrigger = 13;
@@ -113,6 +112,7 @@ class ITSFhrTask final : public TaskInterface
   int mGetTFFromBinding = 0;
   int mHitCutForNoisyPixel = 1024;        // Hit number cut for noisy pixel, this number should be define according how many TF will be accumulated before reset(one can reference the cycle time)
   float mOccupancyCutForNoisyPixel = 0.1; // Occupancy cut for noisy pixel. check if the hit/event value over this cut. similar with mHitCutForNoisyPixel
+  double mCutTrgForSparse = 1000;         // cut to stop THnSparse filling after mCutTrgForSparse triggers
 
   std::unordered_map<unsigned int, int>*** mHitPixelID_InStave /* = new std::unordered_map<unsigned int, int>**[NStaves[lay]]*/;
   int** mHitnumberLane /* = new int*[NStaves[lay]]*/;       // IB : hitnumber[stave][chip]; OB : hitnumber[stave][lane]
@@ -143,34 +143,22 @@ class ITSFhrTask final : public TaskInterface
   float etabinsOB5[49 + 1] = { -1.483370, -1.445140, -1.405550, -1.364530, -1.321980, -1.277790, -1.231870, -1.184020, -1.134270, -1.082440, -1.028370, -0.971952, -0.913041, -0.851513, -0.787142, -0.720045, -0.650055, -0.577151, -0.501376, -0.422849, -0.341786, -0.258367, -0.173299, -0.086974, 0.000000, 0.086974, 0.173299, 0.258367, 0.341786, 0.422849, 0.501376, 0.577151, 0.650055, 0.720045, 0.787142, 0.851513, 0.913041, 0.971952, 1.028370, 1.082440, 1.134270, 1.184020, 1.231870, 1.277790, 1.321980, 1.364530, 1.405550, 1.445140, 1.483370, 1.53 };
   float etabinsOB6[49 + 1] = { -1.369600, -1.332400, -1.293960, -1.254200, -1.213050, -1.170430, -1.126260, -1.080380, -1.032840, -0.983488, -0.932225, -0.878966, -0.823626, -0.766135, -0.706331, -0.644375, -0.580163, -0.513723, -0.445132, -0.374519, -0.302079, -0.227946, -0.152690, -0.076567, 0.000000, 0.076567, 0.152690, 0.227946, 0.302079, 0.374519, 0.445132, 0.513723, 0.580163, 0.644375, 0.706331, 0.766135, 0.823626, 0.878966, 0.932225, 0.983488, 1.032840, 1.080380, 1.126260, 1.170430, 1.213050, 1.254200, 1.293960, 1.332400, 1.369600, 1.4 };
 
-  TString mTriggerType[NTrigger] = { "ORBIT", "HB", "HBr", "HC", "PHYSICS", "PP", "CAL", "SOT", "EOT", "SOC", "EOC", "TF", "INT" };
-
   // General plots
   TH1F* mTFInfo; // count vs TF ID
   TH1D* mErrorPlots;
   TH2I* mErrorVsFeeid;
-  TH2I* mTriggerVsFeeid;
-  TH1D* mTriggerPlots;
-  // TH1D* mInfoCanvas;//TODO: default, not implemented yet
-  TH2I* mInfoCanvasComm;       // tmp object decidated to ITS commissioning
-  TH2I* mInfoCanvasOBComm;     // tmp object decidated to ITS Outer Barral commissioning
   TH2Poly* mGeneralOccupancy;  // Max Occuapncy(chip/hic) in one stave
   TH2Poly* mGeneralNoisyPixel; // Noisy pixel number in one stave
 
-  TText* mTextForShifter;
-  TText* mTextForShifterOB;
-  TText* mTextForShifter2;
-  TText* mTextForShifterOB2;
-
   // Occupancy and hit-map
-  THnSparseI* mStaveHitmap[7][48];
-  TH2D* mDeadChipPos[7];
-  TH2D* mAliveChipPos[7];
+  THnSparseI* mStaveHitmap[48];
+  TH2D* mDeadChipPos;
+  TH2D* mAliveChipPos;
   TH2D* mTotalDeadChipPos;
   TH2D* mTotalAliveChipPos;
-  TH2D* mChipStaveOccupancy[7];
-  TH2I* mChipStaveEventHitCheck[7];
-  TH1D* mOccupancyPlot[7];
+  TH2D* mChipStaveOccupancy;
+  TH2I* mChipStaveEventHitCheck;
+  TH1D* mOccupancyPlot;
 
   // Geometry decoder
   o2::its::GeometryTGeo* mGeom;

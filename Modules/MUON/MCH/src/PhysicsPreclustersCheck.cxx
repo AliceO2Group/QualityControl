@@ -135,7 +135,10 @@ void PhysicsPreclustersCheck::beautify(std::shared_ptr<MonitorObject> mo, Qualit
     h->GetYaxis()->SetTitle("efficiency");
 
     h->SetMinimum(0);
-    h->SetMaximum(2);
+    if ((mo->getName().find("MeanPseudoeffPerDE_B") != std::string::npos) ||
+        (mo->getName().find("MeanPseudoeffPerDE_NB") != std::string::npos)) {
+      h->SetMaximum(2);
+    }
 
     TText* xtitle = new TText();
     xtitle->SetNDC();
@@ -170,12 +173,6 @@ void PhysicsPreclustersCheck::beautify(std::shared_ptr<MonitorObject> mo, Qualit
     h->GetListOfFunctions()->Add(msg);
     msg->SetName(Form("%s_msg", mo->GetName()));
 
-    TLine* lmin = new TLine(0, mMinPseudoeff, getDEindexMax(), mMinPseudoeff);
-    TLine* lmax = new TLine(0, mMaxPseudoeff, getDEindexMax(), mMaxPseudoeff);
-
-    h->GetListOfFunctions()->Add(lmin);
-    h->GetListOfFunctions()->Add(lmax);
-
     if (checkResult == Quality::Good) {
       msg->Clear();
       msg->AddText("Pseudo-efficiency consistently within limits: OK!!!");
@@ -192,6 +189,19 @@ void PhysicsPreclustersCheck::beautify(std::shared_ptr<MonitorObject> mo, Qualit
       msg->SetFillColor(kYellow);
     }
     h->SetLineColor(kBlack);
+  }
+
+  if ((mo->getName().find("Pseudoeff_ST12") != std::string::npos) ||
+      (mo->getName().find("Pseudoeff_ST345") != std::string::npos) ||
+      (mo->getName().find("Pseudoeff_B_XY") != std::string::npos) ||
+      (mo->getName().find("Pseudoeff_NB_XY") != std::string::npos)) {
+    auto* h = dynamic_cast<TH2F*>(mo->getObject());
+    h->SetMinimum(0);
+    h->SetMaximum(1);
+    h->GetXaxis()->SetTickLength(0.0);
+    h->GetXaxis()->SetLabelSize(0.0);
+    h->GetYaxis()->SetTickLength(0.0);
+    h->GetYaxis()->SetLabelSize(0.0);
   }
 }
 

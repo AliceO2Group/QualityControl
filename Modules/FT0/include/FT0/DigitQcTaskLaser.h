@@ -95,6 +95,7 @@ class DigitQcTaskLaser final : public TaskInterface
 
   TList* mListHistGarbage;
   std::set<unsigned int> mSetAllowedChIDs;
+  std::set<unsigned int> mSetRefPMTChIDs;
   std::array<o2::InteractionRecord, o2::ft0::Constants::sNCHANNELS_PM> mStateLastIR2Ch;
   std::map<int, std::string> mMapDigitTrgNames;
   std::map<o2::ft0::ChannelData::EEventDataBit, std::string> mMapChTrgNames;
@@ -127,6 +128,7 @@ class DigitQcTaskLaser final : public TaskInterface
   std::map<unsigned int, TH1F*> mMapHistTime1D;
   std::map<unsigned int, TH1F*> mMapHistPMbits;
   std::map<unsigned int, TH2F*> mMapHistAmpVsTime;
+  std::map<unsigned int, TH2F*> mMapHistAmpVsBC;
   std::map<unsigned int, TH2F*> mMapTrgBcOrbit;
   std::map<std::string, TH2F*> mMapPmModuleBcOrbit;
 };

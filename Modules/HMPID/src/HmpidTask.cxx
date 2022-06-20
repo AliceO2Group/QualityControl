@@ -11,11 +11,15 @@
 
 ///
 /// \file   HmpidTask.cxx
-/// \author Antonio Franco, Giacomo Volpe
+/// \author Antonio Franco, Giacomo Volpe, Antonio Paz
+/// \brief      Class for quality control of HMPID detectors
+/// \version    0.2.4
+/// \date       19/05/2022
 ///
 
 #include <TCanvas.h>
 #include <TH1.h>
+#include <TH2.h>
 #include <TProfile.h>
 #include <TMath.h>
 #include <Framework/InputRecord.h>
@@ -26,6 +30,7 @@
 #include "HMPID/HmpidTask.h"
 #include "HMPIDReconstruction/HmpidEquipment.h"
 #include "HMPIDReconstruction/HmpidDecoder2.h"
+#include "DataFormatsHMP/Digit.h"
 
 namespace o2::quality_control_modules::hmpid
 {
@@ -37,6 +42,9 @@ HmpidTask::~HmpidTask()
   delete hBusyTime;
   delete hEventSize;
   delete hEventNumber;
+  for (Int_t i = 0; i < numCham; ++i) {
+    delete hModuleMap[i];
+  }
 }
 
 Int_t NumCycles = 0;
@@ -56,7 +64,7 @@ void HmpidTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   hPedestalSigma = new TH1F("hPedestalSigma", "Pedestal Sigma", 100, 0, 10);
   hPedestalSigma->SetXTitle("Pedestal sigma (ADC channel)");
-  hPedestalMean->SetYTitle("Entries/0.1 ADC");
+  hPedestalSigma->SetYTitle("Entries/0.1 ADC");
 
   // TProfiles
   hBusyTime = new TProfile("hBusyTime", "HMP Busy Time per DDL;;Busy Time (#mus)", 14, 0.5, 14.5);
@@ -95,6 +103,17 @@ void HmpidTask::initialize(o2::framework::InitContext& /*ctx*/)
   hEventNumber->GetXaxis()->SetLabelSize(0.02);
   hEventNumber->SetStats(0);
 
+  for (Int_t i = 0; i < numCham; ++i) {
+    hModuleMap[i] = new TH2F(Form("hModuleMap%i", i), Form("Coordinates of hits in chamber %i", i), 160, 0, 160, 144, 0, 144);
+    hModuleMap[i]->SetXTitle("X coordinate");
+    hModuleMap[i]->SetYTitle("Y coordinate");
+    hModuleMap[i]->SetMarkerStyle(20);
+
+    getObjectsManager()->startPublishing(hModuleMap[i]);
+    getObjectsManager()->setDefaultDrawOptions(hModuleMap[i], "colz");
+    getObjectsManager()->setDisplayHint(hModuleMap[i], "colz");
+  }
+
   getObjectsManager()->startPublishing(hPedestalMean);
 
   getObjectsManager()->startPublishing(hPedestalSigma);
@@ -111,6 +130,13 @@ void HmpidTask::startOfActivity(Activity& /*activity*/)
   ILOG(Info, Support) << "startOfActivity" << ENDM;
   hPedestalMean->Reset();
   hPedestalSigma->Reset();
+  hBusyTime->Reset();
+  hEventSize->Reset();
+  hEventNumber->Reset();
+
+  for (Int_t i = 0; i < numCham; ++i) {
+    hModuleMap[i]->Reset();
+  }
 
   mDecoder = new o2::hmpid::HmpidDecoder2(14);
   mDecoder->init();
@@ -127,6 +153,8 @@ void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
   NumCycles++;
   mDecoder->init();
   mDecoder->setVerbosity(2); // this is for Debug
+                             //  static const Int_t numCham = 7;
+
   // for (auto&& input : ctx.inputs()) {
   for (auto&& input : o2::framework::InputRecordWalker(ctx.inputs())) {
     // get message header
@@ -141,6 +169,7 @@ void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
         ILOG(Error, Devel) << "Error decoding the Superpage !" << ENDM;
         break;
       }
+
       for (Int_t eq = 0; eq < 14; eq++) {
         int eqId = mDecoder->mTheEquipments[eq]->getEquipmentId();
         if (mDecoder->getAverageEventSize(eqId) > 0.) {
@@ -152,6 +181,8 @@ void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
 
         hEventNumber->Fill(eqId + 1, mDecoder->mTheEquipments[eq]->mEventNumber);
 
+        int module, x, y;
+
         for (Int_t column = 0; column < 24; column++) {
           for (Int_t dilogic = 0; dilogic < 10; dilogic++) {
             for (Int_t channel = 0; channel < 48; channel++) {
@@ -161,6 +192,8 @@ void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
                 Float_t sigma = TMath::Sqrt(mDecoder->getChannelSquare(eqId, column, dilogic, channel) / n_samp - mean * mean);
                 hPedestalMean->Fill(mean);
                 hPedestalSigma->Fill(sigma);
+                o2::hmpid::Digit::equipment2Absolute(eqId, column, dilogic, channel, &module, &x, &y);
+                hModuleMap[module]->Fill(x, y, mean);
               }
             }
           }
@@ -208,6 +241,9 @@ void HmpidTask::reset()
   hBusyTime->Reset();
   hEventSize->Reset();
   hEventNumber->Reset();
+  for (Int_t i = 0; i < numCham; ++i) {
+    hModuleMap[i]->Reset();
+  }
 }
 
 } // namespace o2::quality_control_modules::hmpid

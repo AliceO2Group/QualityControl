@@ -28,6 +28,7 @@
         "className": "o2::quality_control_modules::tpc::TrendingTaskTPC",
         "moduleName": "QcTPC",
         "detectorName": "TPC",
+        "producePlotsOnUpdate": "true",
         "dataSources": [
           {
             "type": "repository",
@@ -63,8 +64,8 @@
             "option": "*LE",
             "graphErrors": "errMeanX:0.5", 
             "graphYRange": "-2.0:2.0",
-	    "graphXRange": "", 
-	    "graphAxisLabel": "Mean #eta:time"
+            "graphXRange": "", 
+            "graphAxisLabel": "Mean #eta:time"
           },
           {
             "name": "hEtaRatio_StatMeanY_Trend",
@@ -74,8 +75,8 @@
             "option": "*LE",
             "graphErrors": "errMeanY:0.5", 
             "graphYRange": "-0.1:2.0",
-	    "graphXRange": "", 
-	    "graphAxisLabel": "Mean #eta ratio:time"
+            "graphXRange": "", 
+            "graphAxisLabel": "Mean #eta ratio:time"
           },
           {
             "name": "hEtaRatio_StatMeanY_Trend_Slices",
@@ -85,8 +86,19 @@
             "option": "*LE",
             "graphErrors": "errMeanY:0", 
             "graphYRange": "-0.1:2.0",
-	    "graphXRange": "-2.0:2.0", 
-	    "graphAxisLabel": "Mean #eta:#eta"
+            "graphXRange": "-2.0:2.0", 
+            "graphAxisLabel": "Mean #eta:#eta"
+          },
+	        {
+            "name": "hEtaRatio_StatMeanY_Trend_MultiGraph",
+            "title": "Mean Y of the #eta ratio vs time for slices in #eta (x-axis)",
+            "varexp": "hEtaRatio.meanY:multigraphtime",
+            "selection": "",
+            "option": "*LE",
+            "graphErrors": "errMeanY:0", 
+            "graphYRange": "-0.1:2.0",
+            "graphXRange": "", 
+            "graphAxisLabel": "Mean #eta:time"
           },
           {
             "name": "hEta_StatMean_Trend",
@@ -96,8 +108,8 @@
             "option": "*LE",
             "graphErrors": "errMeanX:0.5", 
             "graphYRange": "-1.0:1.0",
-	    "graphXRange": "", 
-	    "graphAxisLabel": "Mean #eta:time"
+            "graphXRange": "", 
+            "graphAxisLabel": "Mean #eta:time"
           },
           {
             "name": "hPhiAsideRatio_StatMeanY_Trend",
@@ -107,8 +119,8 @@
             "option": "*LE",
             "graphErrors": "errMeanY:0.0", 
             "graphYRange": "0.0:1.5",
-	    "graphXRange": "", 
-	    "graphAxisLabel": "Mean #phi ratio A side:time"
+            "graphXRange": "", 
+            "graphAxisLabel": "Mean #phi ratio A side:time"
           },
           {
             "name": "hPhiAsideRatio_StatMeanY_Trend_Slices",
@@ -118,8 +130,19 @@
             "option": "*L",
             "graphErrors": "errMeanY:0.0", 
             "graphYRange": "0.0:1.5",
-	    "graphXRange": "-0.5:6.5", 
-	    "graphAxisLabel": "Mean #phi ratio A side:#phi"
+            "graphXRange": "-0.5:6.5", 
+            "graphAxisLabel": "Mean #phi ratio A side:#phi"
+          },
+          {
+            "name": "hPhiAsideRatio_StatMeanY_Trend_MultiGraph",
+            "title": "Mean of #phi ratio - A side - slices along #phi (x-axis)",
+            "varexp": "hPhiAsideRatio.meanY:multigraphtime",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "errMeanY:0.0", 
+            "graphYRange": "0.0:1.5",
+            "graphXRange": "", 
+            "graphAxisLabel": "Mean #phi ratio A side:time"
           },
           {
             "name": "hPhiCsideRatio_StatMeanY_Trend",
@@ -129,8 +152,8 @@
             "option": "*L",
             "graphErrors": "errMeanY:0.", 
             "graphYRange": "0.0:1.5",
-	    "graphXRange": "", 
-	    "graphAxisLabel": "Mean #phi ratio C side:time"
+            "graphXRange": "", 
+            "graphAxisLabel": "Mean #phi ratio C side:time"
           },
           {
             "name": "hPhiCsideRatio_StatMeanY_Trend_Slices",
@@ -140,8 +163,8 @@
             "option": "*L",
             "graphErrors": "errMeanY:0.0", 
             "graphYRange": "0.0:1.5",
-	    "graphXRange": "-0.5:6.5", 
-	    "graphAxisLabel": "Mean #phi ratio C side:#phi"
+            "graphXRange": "-0.5:6.5", 
+            "graphAxisLabel": "Mean #phi ratio C side:#phi"
           }
         ],
         "initTrigger": [
@@ -159,6 +182,7 @@
         "className": "o2::quality_control_modules::tpc::TrendingTaskTPC",
         "moduleName": "QcTPC",
         "detectorName": "TPC",
+        "producePlotsOnUpdate": "true",
         "dataSources": [
           {
             "type": "repository",
@@ -178,8 +202,8 @@
             "option": "*LE",
             "graphErrors": "errMeanX:0.5", 
             "graphYRange": "-2.0:8.0",
-	    "graphXRange": "",
-	    "graphAxisLabel": "Mean #phi:time"
+            "graphXRange": "",
+            "graphAxisLabel": "Mean #phi:time"
           },
           {
             "name": "h2DEtaPhi_StatMeanY_Trend",
@@ -189,8 +213,8 @@
             "option": "*LE",
             "graphErrors": "errMeanY:0.5", 
             "graphYRange": "-2.0:2.0",
-	    "graphXRange": "", 
-	    "graphAxisLabel": "Mean #eta:time"
+            "graphXRange": "", 
+            "graphAxisLabel": "Mean #eta:time"
           },
           {
             "name": "h2DEtaPhi_StatMeanY_Trend_Slices",
@@ -200,8 +224,8 @@
             "option": "colz text",
             "graphErrors": "errMeanY:0.5", 
             "graphYRange": "-1.0:1.0",
-	    "graphXRange": "", 
-	    "graphAxisLabel": "#eta:#phi"
+            "graphXRange": "", 
+            "graphAxisLabel": "#eta:#phi"
           },
           {
             "name": "h2DEtaPhi_StatMeanX_Trend_Slices",
@@ -211,8 +235,8 @@
             "option": "colz text",
             "graphErrors": "errMeanX:0.5", 
             "graphYRange": "0.0:6.5",
-	    "graphXRange": "", 
-	    "graphAxisLabel": "#eta:#phi"
+            "graphXRange": "", 
+            "graphAxisLabel": "#eta:#phi"
           },
           {
             "name": "h2DEtaPhi_NumberEntries_Trend_Slices",
@@ -222,8 +246,8 @@
             "option": "colz text",
             "graphErrors": "", 
             "graphYRange": "",
-	    "graphXRange": "", 
-	    "graphAxisLabel": "#eta:#phi"
+            "graphXRange": "", 
+            "graphAxisLabel": "#eta:#phi"
           }
         ],
         "initTrigger": [
@@ -241,6 +265,7 @@
         "className": "o2::quality_control_modules::tpc::TrendingTaskTPC",
         "moduleName": "QcTPC",
         "detectorName": "TPC",
+        "producePlotsOnUpdate": "true",
         "dataSources": [
           {
             "type": "repository-quality",
@@ -260,8 +285,8 @@
             "option": "*L",
             "graphErrors": "", 
             "graphYRange": "",
-	    "graphXRange": "",
-	    "graphAxisLabel": "qualitylevel:time"
+            "graphXRange": "",
+            "graphAxisLabel": "qualitylevel:time"
           },
           {
             "name": "hhNClustersAfterCuts_StatMean_Quality_Trend",
@@ -271,8 +296,8 @@
             "option": "*L",
             "graphErrors": "", 
             "graphYRange": "",
-	    "graphXRange": "",
-	    "graphAxisLabel": "qualitylevel:time"
+            "graphXRange": "",
+            "graphAxisLabel": "qualitylevel:time"
           }
         ],
         "initTrigger": [
