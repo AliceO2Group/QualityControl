@@ -16,83 +16,71 @@
 ///
 
 #include "FT0/TH1ReductorLaser.h"
-#include <TF1.h>
-#include <TH1.h>
+#include "QualityControl/QcInfoLogger.h"
+#include <TF2.h>
+#include <TH2.h>
+
 namespace o2::quality_control_modules::ft0
 {
 void* TH1ReductorLaser::getBranchAddress() { return &mStats; }
 const char* TH1ReductorLaser::getBranchLeafList()
 {
-  return "mean/D:mean1fit/D:mean2fit/D:stddev:stddev1fit:stddev2fit:entries";
-}
-double Gauss(double* x, double* par)
-{
-  double arg = 0;
-  const double PI = 3.1415926536;
-  if (par[2] != 0) {
-    arg = (x[0] - par[1]) / par[2];
-  }
-  double fitval = par[0] / (par[2] * sqrt(2 * PI)) * exp(-0.5 * arg * arg);
-  return fitval;
+  return "validity1/D:validity2/D:mean/D:mean1/D:mean2/D:stddev:stddev1:stddev2:entries";
 }
 
 void TH1ReductorLaser::update(TObject* obj)
 {
-  auto histo = dynamic_cast<TH1*>(obj);
-  if (histo) {
-    /// Store the mean and the stddev (makes sense if there is one peak)
-    if (histo->GetBinCenter(1) != 0)
-      histo->GetXaxis()->SetRangeUser(1, histo->GetEntries() - 1);
+  if (auto histo = dynamic_cast<TH2*>(obj)) {
+    TH1* bc_projection = histo->ProjectionY("bc_projection", 0, -1);
+    int ibc = 0;
+    int ibc_max = 0;
+    if (bc_projection->GetEntries() > 0) {
+      ibc = bc_projection->GetMean() - 2. * bc_projection->GetStdDev();
+      ibc_max = bc_projection->GetMean() + 2. * bc_projection->GetStdDev();
+    }
 
-    double origMean = histo->GetMean();
-    double origStddev = histo->GetStdDev();
-    mStats.entries = histo->GetEntries();
-    /// Set parameters for single peak
-    mStats.mean = origMean;
-    mStats.stddev = origStddev;
+    TH1* slice_first_peak;
+    bool gotFirstPeak = false;
+    mStats.mean1 = 0.;
+    mStats.stddev1 = 0.;
+    mStats.validity1 = 0.;
+    while (!gotFirstPeak && ibc < ibc_max) {
+      slice_first_peak = histo->ProjectionX(Form("first peak in BC #%d", ibc), ibc, ibc + 1);
+      if (slice_first_peak->GetEntries() > 1000) {
+        mStats.mean1 = slice_first_peak->GetMean();
+        mStats.stddev1 = slice_first_peak->GetStdDev();
+        mStats.validity1 = 1.;
+        gotFirstPeak = true;
+        ibc += 2;
+        break;
+      } else
+        ibc++;
+    }
 
-    /// Store the original xmin and xmax
-    double origLowerLimit = histo->GetBinCenter(1);
-    double origUpperLimit = histo->GetBinCenter(histo->GetEntries() - 1);
+    TH1* slice_second_peak;
+    bool gotSecondPeak = false;
+    mStats.mean2 = 0.;
+    mStats.stddev2 = 0.;
+    mStats.validity2 = 0.;
+    while (!gotSecondPeak && gotFirstPeak && ibc < ibc_max) {
+      slice_second_peak = histo->ProjectionX(Form("second peak in BC #%d", ibc), ibc, ibc + 1);
+      if (slice_second_peak->GetEntries() > 1000) {
+        mStats.mean2 = slice_second_peak->GetMean();
+        mStats.stddev2 = slice_second_peak->GetStdDev();
+        mStats.validity2 = 1.;
+        gotSecondPeak = true;
+        break;
+      } else
+        ibc++;
+    }
 
-    /// Get the first peak and have a guess of its Gaussian parameters
-    /// The parameters from the fit cannot be too far from the initial guess
-    /// After that the original limits of the histo must be restored
-    histo->GetXaxis()->SetRangeUser(histo->GetMean() - 1.25 * histo->GetStdDev(), histo->GetMean() - 0.25 * histo->GetStdDev());
-    double peak1Amp = histo->GetBin(histo->GetMean());
-    double peak1Pos = histo->GetMean();
-    double peak1Wid = histo->GetStdDev();
-
-    TF1* GaussFit1 = new TF1("gauss1", Gauss, histo->GetStdDev(), histo->GetStdDev(), 3);
-
-    GaussFit1->SetParameter(0, peak1Amp);
-    GaussFit1->SetParameter(1, peak1Pos);
-    GaussFit1->SetParameter(2, peak1Wid);
-    histo->Fit("gauss1");
-
-    mStats.mean1fit = GaussFit1->GetParameter(1);
-    mStats.stddev1fit = GaussFit1->GetParameter(2);
-
-    /// Restoring the original limits
-    histo->GetXaxis()->SetRangeUser(origLowerLimit, origUpperLimit);
-
-    /// Get the second peak and have a guess of its Gaussian parameters
-    /// The parameters from the fit cannot be too far from the initial guess
-    /// After that the original limits of the histo must be restored
-    histo->GetXaxis()->SetRangeUser(histo->GetMean() + 0.25 * histo->GetStdDev(), histo->GetMean() + 1.25 * histo->GetStdDev());
-    double peak2Amp = histo->GetBin(histo->GetMean());
-    double peak2Pos = histo->GetMean();
-    double peak2Wid = histo->GetStdDev();
-
-    TF1* GaussFit2 = new TF1("gauss2", Gauss, histo->GetStdDev(), histo->GetStdDev(), 3);
-
-    GaussFit2->SetParameter(0, peak2Amp);
-    GaussFit2->SetParameter(1, peak2Pos);
-    GaussFit2->SetParameter(2, peak2Wid);
-    histo->Fit("gauss2");
-
-    mStats.mean2fit = GaussFit2->GetParameter(1);
-    mStats.stddev2fit = GaussFit2->GetParameter(2);
+    if (!gotSecondPeak)
+      ILOG(Warning) << "TH1ReductorLaser: one of the peaks of the reference PMT is missing!" << ENDM;
+    if (!gotFirstPeak && !gotSecondPeak)
+      ILOG(Warning) << "TH1ReductorLaser: cannot find peaks of the reference PMT distribution at all !" << ENDM;
+  } else if (auto histo = dynamic_cast<TH1*>(obj)) {
+    mStats.mean = histo->GetMean();
+    mStats.stddev = histo->GetMean();
   }
 }
 } // namespace o2::quality_control_modules::ft0
