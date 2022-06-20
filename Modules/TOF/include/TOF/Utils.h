@@ -24,6 +24,26 @@ namespace o2::quality_control_modules::tof::utils
 /// @param parameterOut will be set accordingly if the 'name' element is in mCustomParameters
 /// @return true if the option was found, false otherwise
 template <typename ParameterType>
+bool parseBooleanParameter(const ParameterType& parametersIn, const std::string& name, bool& parameterOut)
+{
+  if (auto param = parametersIn.find(name); param != parametersIn.end()) {
+    ILOG(Info, Devel) << "Custom parameter - " << name << " " << param->second << ENDM;
+    if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
+      parameterOut = true;
+    } else if (param->second == "false" || param->second == "False" || param->second == "FALSE") {
+      parameterOut = false;
+    }
+    return true;
+  }
+  return false;
+}
+
+/// Utility methods to fetch float options from the custom parameters.
+/// @param parametersIn container for the input parameters
+/// @param name name of the option as in the mCustomParameters and JSON file
+/// @param parameterOut will be set accordingly if the 'name' element is in mCustomParameters
+/// @return true if the option was found, false otherwise
+template <typename ParameterType>
 bool parseDoubleParameter(const ParameterType& parametersIn, const std::string& name, double& parameterOut)
 {
   if (auto param = parametersIn.find(name); param != parametersIn.end()) {
@@ -61,6 +81,22 @@ bool parseIntParameter(const ParameterType& parametersIn, const std::string& nam
   if (auto param = parametersIn.find(name); param != parametersIn.end()) {
     ILOG(Info, Devel) << "Custom parameter - " << name << " " << param->second << ENDM;
     parameterOut = ::atoi(param->second.c_str());
+    return true;
+  }
+  return false;
+}
+
+/// Utility methods to fetch float options from the custom parameters.
+/// @param parametersIn container for the input parameters
+/// @param name name of the option as in the mCustomParameters and JSON file
+/// @param parameter will be set accordingly if the 'name' element is in mCustomParameters
+/// @return true if the option was found, false otherwise
+template <typename ParameterType>
+bool parseStrParameter(const ParameterType& parametersIn, const std::string& name, std::string& parameterOut)
+{
+  if (auto param = parametersIn.find(name); param != parametersIn.end()) {
+    ILOG(Info, Devel) << "Custom parameter - " << name << " " << param->second << ENDM;
+    parameterOut = param->second;
     return true;
   }
   return false;

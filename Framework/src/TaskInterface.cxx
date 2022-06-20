@@ -75,9 +75,4 @@ void TaskInterface::setCcdbUrl(const std::string& url)
   mCcdbUrl = url;
 }
 
-bool TaskInterface::parseBooleanParameter(const std::string& name, bool& flag) const
-{
-  return parseBooleanParam(mCustomParameters, name, flag);
-}
-
 } // namespace o2::quality_control::core
