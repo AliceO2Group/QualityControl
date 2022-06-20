@@ -64,13 +64,11 @@ void RatioGeneratorTPC::update(Trigger t, framework::ServiceRegistry& services)
 void RatioGeneratorTPC::finalize(Trigger t, framework::ServiceRegistry&)
 {
   generatePlots();
-
   for (const auto& source : mConfig) {
     if (mRatios.count(source.nameOutputObject)) {
+      getObjectsManager()->stopPublishing(source.nameOutputObject);
       delete mRatios[source.nameOutputObject];
       mRatios[source.nameOutputObject] = nullptr;
-      delete mPlots[source.nameOutputObject];
-      mPlots[source.nameOutputObject] = nullptr;
     }
   }
 }
@@ -79,8 +77,9 @@ void RatioGeneratorTPC::generateRatios(const Trigger& t,
                                        repository::DatabaseInterface& qcdb)
 {
   for (const auto& source : mConfig) {
-
+    // Delete the existing ratios before regenerating them.
     if (mRatios.count(source.nameOutputObject)) {
+      getObjectsManager()->stopPublishing(source.nameOutputObject);
       delete mRatios[source.nameOutputObject];
       mRatios[source.nameOutputObject] = nullptr;
     }
@@ -99,29 +98,16 @@ void RatioGeneratorTPC::generateRatios(const Trigger& t,
 void RatioGeneratorTPC::generatePlots()
 {
   for (const auto& source : mConfig) {
-    // Delete the existing plots before regenerating them.
-    if (mPlots.count(source.nameOutputObject)) {
-      getObjectsManager()->stopPublishing(source.nameOutputObject);
-      delete mPlots[source.nameOutputObject];
-      mPlots[source.nameOutputObject] = nullptr;
-    }
-
-    // Draw the ratio on a new canvas.
-    TCanvas* c = new TCanvas();
-    c->SetName(source.nameOutputObject.c_str());
-    c->SetTitle(source.plotTitle.c_str());
-    c->cd(1);
-
+    // Beautify and publish the ratios
     const std::size_t posDivider = source.axisTitle.find(":");
     const std::string yLabel(source.axisTitle.substr(0, posDivider));
     const std::string xLabel(source.axisTitle.substr(posDivider + 1));
 
+    mRatios[source.nameOutputObject]->SetName(source.nameOutputObject.c_str());
     mRatios[source.nameOutputObject]->GetXaxis()->SetTitle(xLabel.data());
     mRatios[source.nameOutputObject]->GetYaxis()->SetTitle(yLabel.data());
     mRatios[source.nameOutputObject]->SetTitle(source.plotTitle.data());
-    mRatios[source.nameOutputObject]->Draw("hist");
 
-    mPlots[source.nameOutputObject] = c;
-    getObjectsManager()->startPublishing(c);
+    getObjectsManager()->startPublishing(mRatios[source.nameOutputObject]);
   }
 } // void RatioGeneratorTPC::generatePlots()

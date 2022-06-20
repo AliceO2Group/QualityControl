@@ -83,7 +83,10 @@ TriggerFcn triggerFactory(std::string trigger, const PostProcessingConfig& confi
   // todo: should we accept many versions of trigger names?
   std::string triggerLowerCase = trigger;
   boost::algorithm::to_lower(triggerLowerCase);
-  auto& activity = config.activity;
+  auto activity = config.activity;
+  if (config.matchAnyRunNumber) {
+    activity.mId = 0;
+  }
 
   if (triggerLowerCase == "once") {
     return triggers::Once(activity);

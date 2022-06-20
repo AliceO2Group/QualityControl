@@ -192,7 +192,7 @@ void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
                 Float_t sigma = TMath::Sqrt(mDecoder->getChannelSquare(eqId, column, dilogic, channel) / n_samp - mean * mean);
                 hPedestalMean->Fill(mean);
                 hPedestalSigma->Fill(sigma);
-                o2::hmpid::Digit::equipment2Absolute(eq, column, dilogic, channel, &module, &x, &y);
+                o2::hmpid::Digit::equipment2Absolute(eqId, column, dilogic, channel, &module, &x, &y);
                 hModuleMap[module]->Fill(x, y, mean);
               }
             }

@@ -13,5 +13,7 @@
 #pragma link C++ class o2::quality_control_modules::common::TRFCollectionTask + ;
 #pragma link C++ class o2::quality_control_modules::common::WorstOfAllAggregator + ;
 #pragma link C++ class o2::quality_control_modules::common::IncreasingEntries + ;
+#pragma link C++ class o2::quality_control_modules::common::TH1SliceReductor + ;
+#pragma link C++ class o2::quality_control_modules::common::TH2SliceReductor + ;
 
 #endif

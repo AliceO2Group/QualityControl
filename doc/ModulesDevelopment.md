@@ -270,7 +270,7 @@ When debugging and developping, and only in this case, it can be handy to save t
 
 ## Modification of the Task
 
-We are going to modify our task to make it publish a second histogram. Objects must be published only once and they will then be updated automatically every cycle (10 seconds for our example, 1 minute in general). Modify `RawDataQcTask.cxx` and its header to add a new histogram, build it and publish it with `getObjectsManager()->startPublishing(mHistogram);`.
+We are going to modify our task to make it publish a second histogram. Objects must be published only once and they will then be updated automatically every cycle (10 seconds for our example, 1 minute in general, the first cycle randomly shorter). Modify `RawDataQcTask.cxx` and its header to add a new histogram, build it and publish it with `getObjectsManager()->startPublishing(mHistogram);`.
 Once done, recompile it (see section above, `make -j8 install` in the build directory) and run it (same as above). You should see the second object published in the qcg.
 
 ## Check

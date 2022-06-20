@@ -73,9 +73,10 @@ class TaskDigits final : public TaskInterface
   static constexpr int mRangeMaxOrbitPerTimeFrame = 256;                        /// Number of bins for the OrbitPerTimeFrame axis.
   static constexpr int mBinsOrbitPerTimeFrame = mRangeMaxOrbitPerTimeFrame * 3; /// Max range in the OrbitPerTimeFrame axis. 3 orbits are recorded per time frame
   // Multiplicity
-  int mBinsMultiplicity = 2000;                   /// Number of bins in multiplicity plot
-  static constexpr int mRangeMinMultiplicity = 0; /// Min range in multiplicity plot
-  int mRangeMaxMultiplicity = mBinsMultiplicity;  /// Max range in multiplicity plot
+  int mBinsMultiplicity = 2000;                      /// Number of bins in multiplicity plot
+  static constexpr int mRangeMinMultiplicity = 0;    /// Min range in multiplicity plot
+  int mRangeMaxMultiplicity = mBinsMultiplicity;     /// Max range in multiplicity plot
+  static constexpr int mBinsBCForMultiplicity = 198; /// Number of bins for the BC axis in the multiplicity vs BC plot
   // Time
   int mBinsTime = 300;                                  /// Number of bins in time plot
   float fgkNbinsWidthTime = 2.44;                       /// Width of bins in time plot
@@ -104,16 +105,17 @@ class TaskDigits final : public TaskInterface
   ////////////////
 
   // Event info
-  std::shared_ptr<TH2F> mHistoOrbitID = nullptr;            /// Orbits seen
-  std::shared_ptr<TH2F> mHistoBCID = nullptr;               /// Bunch crossings seen
-  std::shared_ptr<TH2F> mHistoEventCounter = nullptr;       /// Event counters seen
-  std::shared_ptr<TH2F> mHistoHitMap = nullptr;             /// TOF hit map (1 bin = 1 FEA = 24 channels)
-  std::shared_ptr<TH2F> mHistoTimeVsBCID = nullptr;         /// TOF time vs BCID
-  std::shared_ptr<TProfile2D> mHistoOrbitVsCrate = nullptr; /// Orbits per crate
-  std::shared_ptr<TH1I> mHistoROWSize = nullptr;            /// Readout window size
-  std::shared_ptr<TH2I> mHistoDecodingErrors = nullptr;     /// Decoding error monitoring
-  std::shared_ptr<TH1S> mHistoOrphanPerChannel = nullptr;   /// Orphans per channel
-  std::shared_ptr<TH2S> mHistoNoisyChannels = nullptr;      /// Channel flagged as noise (divided per flagged rate class)
+  std::shared_ptr<TH2F> mHistoOrbitID = nullptr;             /// Orbits seen
+  std::shared_ptr<TH2F> mHistoBCID = nullptr;                /// Bunch crossings seen
+  std::shared_ptr<TH2F> mHistoEventCounter = nullptr;        /// Event counters seen
+  std::shared_ptr<TH2F> mHistoHitMap = nullptr;              /// TOF hit map (1 bin = 1 FEA = 24 channels)
+  std::shared_ptr<TH2F> mHistoHitMapNoiseFiltered = nullptr; /// TOF hit map (1 bin = 1 FEA = 24 channels) filtered with the noise
+  std::shared_ptr<TH2F> mHistoTimeVsBCID = nullptr;          /// TOF time vs BCID
+  std::shared_ptr<TProfile2D> mHistoOrbitVsCrate = nullptr;  /// Orbits per crate
+  std::shared_ptr<TH1I> mHistoROWSize = nullptr;             /// Readout window size
+  std::shared_ptr<TH2I> mHistoDecodingErrors = nullptr;      /// Decoding error monitoring
+  std::shared_ptr<TH1S> mHistoOrphanPerChannel = nullptr;    /// Orphans per channel
+  std::shared_ptr<TH2S> mHistoNoisyChannels = nullptr;       /// Channel flagged as noise (divided per flagged rate class)
 
   // Multiplicity
   std::shared_ptr<TH1I> mHistoMultiplicity = nullptr;          /// TOF raw hit multiplicity per event
@@ -122,6 +124,8 @@ class TaskDigits final : public TaskInterface
   std::shared_ptr<TH1I> mHistoMultiplicityIC = nullptr;        /// TOF raw hit multiplicity per event - I/C side
   std::shared_ptr<TH1I> mHistoMultiplicityOC = nullptr;        /// TOF raw hit multiplicity per event - O/C side
   std::shared_ptr<TProfile> mHitMultiplicityVsCrate = nullptr; /// TOF raw hit multiplicity per event vs Crate
+  std::shared_ptr<TH2F> mHitMultiplicityVsBC = nullptr;        /// TOF raw hit multiplicity per event vs BC
+  std::shared_ptr<TProfile> mHitMultiplicityVsBCpro = nullptr; /// TOF raw hit multiplicity per event vs BC (TProfile)
 
   // Time
   std::shared_ptr<TH1F> mHistoTime = nullptr;        /// TOF hit time (ns)
@@ -149,12 +153,13 @@ class TaskDigits final : public TaskInterface
   // std::shared_ptr<TH2F> mTimeVsCttmBit = nullptr;           /// TOF raw time vs trg channel
 
   // Counters
-  static constexpr unsigned int nchannels = RawDataDecoder::ncrates * RawDataDecoder::nstrips * 24; /// Number of channels
-  Counter<RawDataDecoder::ncrates, nullptr> mCounterHitsPerStrip[RawDataDecoder::nstrips];          /// Hit map counter in the crate, one per strip
-  Counter<nchannels, nullptr> mCounterHitsPerChannel;                                               /// Hit map counter in the single channel
-  Counter<nchannels, nullptr> mCounterOrphansPerChannel;                                            /// Orphan counter in the single channel
-  static constexpr unsigned int nNoiseClasses = 3;                                                  /// Number of noise classes
-  Counter<nchannels, nullptr> mCounterNoisyChannels[nNoiseClasses];                                 /// Noise flagged channel counter
+  static constexpr unsigned int nchannels = RawDataDecoder::ncrates * RawDataDecoder::nstrips * 24;     /// Number of channels
+  Counter<RawDataDecoder::ncrates, nullptr> mCounterHitsPerStrip[RawDataDecoder::nstrips];              /// Hit map counter in the crate, one per strip
+  Counter<RawDataDecoder::ncrates, nullptr> mCounterHitsPerStripNoiseFiltered[RawDataDecoder::nstrips]; /// Hit map counter in the crate, one per strip. With noise filtered
+  Counter<nchannels, nullptr> mCounterHitsPerChannel;                                                   /// Hit map counter in the single channel
+  Counter<nchannels, nullptr> mCounterOrphansPerChannel;                                                /// Orphan counter in the single channel
+  static constexpr unsigned int nNoiseClasses = 3;                                                      /// Number of noise classes
+  Counter<nchannels, nullptr> mCounterNoisyChannels[nNoiseClasses];                                     /// Noise flagged channel counter
 };
 
 } // namespace o2::quality_control_modules::tof

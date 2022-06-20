@@ -37,9 +37,9 @@
         },
         "location" : "remote",
         "taskParameters" : {
-	  "vertexXYsize" : "0.5",
-	  "vertexZsize": "15",
-	  "vertexRsize": "0.8",
+	        "vertexXYsize" : "0.5",
+	        "vertexZsize": "15",
+          "vertexRsize": "0.8",
 	  "NtracksMAX"  : "100",
           "doTTree": "0",
           "nBCbins": "103",

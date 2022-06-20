@@ -73,19 +73,25 @@ void TrendingTaskTPC::initialize(Trigger, framework::ServiceRegistry&)
     }
     mReductors[source.name] = std::move(reductor);
   }
-
-  getObjectsManager()->startPublishing(mTrend.get());
+  if (mConfig.producePlotsOnUpdate) {
+    getObjectsManager()->startPublishing(mTrend.get());
+  }
 }
 
 void TrendingTaskTPC::update(Trigger t, framework::ServiceRegistry& services)
 {
   auto& qcdb = services.get<repository::DatabaseInterface>();
   trendValues(t, qcdb);
-  generatePlots();
+  if (mConfig.producePlotsOnUpdate) {
+    generatePlots();
+  }
 }
 
 void TrendingTaskTPC::finalize(Trigger t, framework::ServiceRegistry&)
 {
+  if (!mConfig.producePlotsOnUpdate) {
+    getObjectsManager()->startPublishing(mTrend.get());
+  }
   generatePlots();
 }
 
@@ -98,6 +104,7 @@ void TrendingTaskTPC::trendValues(const Trigger& t,
   for (auto& dataSource : mConfig.dataSources) {
     mNumberPads[dataSource.name] = 0;
     if (dataSource.type == "repository") {
+      mSources[dataSource.name].clear(); // reset
       auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name, t.timestamp, t.activity);
       TObject* obj = mo ? mo->getObject() : nullptr;
 
@@ -109,6 +116,7 @@ void TrendingTaskTPC::trendValues(const Trigger& t,
       }
 
     } else if (dataSource.type == "repository-quality") {
+      mSourcesQuality[dataSource.name] = {}; // reset
       if (auto qo = qcdb.retrieveQO(dataSource.path + "/" + dataSource.name, t.timestamp, t.activity)) {
         mReductors[dataSource.name]->updateQuality(qo.get(), mSourcesQuality[dataSource.name]);
         mNumberPads[dataSource.name] = 1;
@@ -392,9 +400,9 @@ void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
       yBoundaries[i] = axis[1][i];
     }
 
-    TH2F* graph2D = new TH2F("Graph2D", "", xBins - 1, xBoundaries, yBins - 1, yBoundaries);
+    TH2F* graph2D = new TH2F("", "", xBins - 1, xBoundaries, yBins - 1, yBoundaries);
+    graph2D->SetName("Graph2D");
     thisCanvas->cd(1);
-
     myReader.SetEntry(nEntries - 1); // set event to last entry with index nEntries-1
 
     int iEntry = 0;

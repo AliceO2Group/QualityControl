@@ -201,8 +201,10 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
   mSuperpageCounter->GetYaxis()->SetTitle("Number of superpages");
   getObjectsManager()->startPublishing(mSuperpageCounter);
 
-  mTFerrorCounter = new TH1F("NumberOfTFerror", "Number of TFbuilder errors", 1, 0.5, 1.5);
+  mTFerrorCounter = new TH1F("NumberOfTFerror", "Number of TFbuilder errors", 2, 0.5, 2.5);
   mTFerrorCounter->GetYaxis()->SetTitle("Time Frame Builder Error");
+  mTFerrorCounter->GetXaxis()->SetBinLabel(1, "empty");
+  mTFerrorCounter->GetXaxis()->SetBinLabel(2, "filled");
   getObjectsManager()->startPublishing(mTFerrorCounter);
 
   mPageCounter = new TH1F("NumberOfPages", "Number of pages in time interval", 1, 0.5, 1.5);
@@ -488,6 +490,7 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
     mTFerrorCounter->Fill(1);
     return;
   }
+  mTFerrorCounter->Fill(2);
 
   Int_t nPagesMessage = 0, nSuperpagesMessage = 0;
   ILOG(Debug, Support) << " Processing message " << mNumberOfMessages << ENDM;
@@ -840,6 +843,7 @@ void RawTask::reset()
 
 bool RawTask::isLostTimeframe(framework::ProcessingContext& ctx) const
 {
+  //direct data
   constexpr auto originEMC = header::gDataOriginEMC;
   o2::framework::InputSpec dummy{ "dummy",
                                   framework::ConcreteDataMatcher{ originEMC,
@@ -858,6 +862,25 @@ bool RawTask::isLostTimeframe(framework::ProcessingContext& ctx) const
       //  }
     }
   }
+  // sampled data
+  o2::framework::InputSpec dummyDS{ "dummyDS",
+                                    framework::ConcreteDataMatcher{ "DS",
+                                                                    "emcrawdata0",
+                                                                    0xDEADBEEF } };
+  for (const auto& ref : o2::framework::InputRecordWalker(ctx.inputs(), { dummyDS })) {
+    // auto posReadout = ctx.inputs().getPos("readout");
+    // auto nslots = ctx.inputs().getNofParts(posReadout);
+    // for (decltype(nslots) islot = 0; islot < nslots; islot++) {
+    //   const auto& ref = ctx.inputs().getByPos(posReadout, islot);
+    const auto dh = o2::framework::DataRefUtils::getHeader<o2::header::DataHeader*>(ref);
+    const auto payloadSize = o2::framework::DataRefUtils::getPayloadSize(ref);
+    // if (dh->subSpecification == 0xDEADBEEF) {
+    if (payloadSize == 0) {
+      return true;
+      //  }
+    }
+  }
+
   return false;
 }
 

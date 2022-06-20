@@ -11,13 +11,14 @@
 
 ///
 /// \file   IncreasingEntries.cxx
-/// \author My Name
+/// \author Barthélémy von Haller
 ///
 
 #include "Common/IncreasingEntries.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/stringUtils.h"
 // ROOT
 #include <TH1.h>
 #include <TList.h>
@@ -32,11 +33,23 @@ namespace o2::quality_control_modules::common
 
 void IncreasingEntries::configure()
 {
-  mPaveText = make_shared<TPaveText>(1, 0.125, 0.6, 0, "NDC");
-  mPaveText->AddText("Number of Entries has not changed");
-  mPaveText->AddText("in the past cycle");
-  mPaveText->SetFillColor(kRed);
-  mPaveText->SetMargin(0);
+  parseBooleanParam(mCustomParameters, "mustIncrease", mMustIncrease);
+
+  ILOG(Debug, Support) << "mustIncrease: " << mMustIncrease << ENDM;
+
+  if (mMustIncrease) {
+    mPaveText = make_shared<TPaveText>(1, 0.125, 0.6, 0, "NDC");
+    mPaveText->AddText("Number of Entries has *not* changed");
+    mPaveText->AddText("in the past cycle");
+    mPaveText->SetFillColor(kRed);
+    mPaveText->SetMargin(0);
+  } else {
+    mPaveText = make_shared<TPaveText>(1, 0.125, 0.6, 0, "NDC");
+    mPaveText->AddText("Number of Entries has *changed*");
+    mPaveText->AddText("in the past cycle");
+    mPaveText->SetFillColor(kRed);
+    mPaveText->SetMargin(0);
+  }
 }
 
 Quality IncreasingEntries::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
@@ -53,10 +66,13 @@ Quality IncreasingEntries::check(std::map<std::string, std::shared_ptr<MonitorOb
     double previousNumberEntries = mLastEntries.count(moName) > 0 ? mLastEntries.at(moName) : 0;
     double currentNumberEntries = histo->GetEntries();
 
-    if (previousNumberEntries == currentNumberEntries) {
+    if (mMustIncrease && previousNumberEntries == currentNumberEntries) {
       result = Quality::Bad;
-      result.addReason(FlagReasonFactory::Unknown(),
-                       "Number of entries stopped increasing.");
+      result.addReason(FlagReasonFactory::NoDetectorData(), "Number of entries stopped increasing.");
+      histo->GetListOfFunctions()->Add(mPaveText->Clone());
+    } else if (!mMustIncrease && previousNumberEntries != currentNumberEntries) {
+      result = Quality::Bad;
+      result.addReason(FlagReasonFactory::Unknown(), "Number of entries has increased.");
       histo->GetListOfFunctions()->Add(mPaveText->Clone());
     }
 

@@ -39,6 +39,7 @@
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
 #include "TOF/TaskDigits.h"
+#include "TOF/Utils.h"
 
 namespace o2::quality_control_modules::tof
 {
@@ -50,39 +51,20 @@ TaskDigits::TaskDigits() : TaskInterface()
 void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
 {
   // Define parameters
-  if (auto param = mCustomParameters.find("NbinsMultiplicity"); param != mCustomParameters.end()) {
-    mBinsMultiplicity = ::atoi(param->second.c_str());
-  }
-  if (auto param = mCustomParameters.find("RangeMaxMultiplicity"); param != mCustomParameters.end()) {
-    mRangeMaxMultiplicity = ::atoi(param->second.c_str());
-  }
-  if (auto param = mCustomParameters.find("NbinsTime"); param != mCustomParameters.end()) {
-    mBinsTime = ::atoi(param->second.c_str());
-  }
-  if (auto param = mCustomParameters.find("kNbinsWidthTime"); param != mCustomParameters.end()) {
-    fgkNbinsWidthTime = ::atof(param->second.c_str());
-  }
-  if (auto param = mCustomParameters.find("RangeMinTime"); param != mCustomParameters.end()) {
-    mRangeMinTime = ::atof(param->second.c_str());
-  }
-  if (auto param = mCustomParameters.find("RangeMaxTime"); param != mCustomParameters.end()) {
-    mRangeMaxTime = ::atof(param->second.c_str());
-  }
-  if (auto param = mCustomParameters.find("NbinsToT"); param != mCustomParameters.end()) {
-    mBinsToT = ::atoi(param->second.c_str());
-  }
-  if (auto param = mCustomParameters.find("RangeMinTime"); param != mCustomParameters.end()) {
-    mRangeMinTime = ::atof(param->second.c_str());
-  }
-  if (auto param = mCustomParameters.find("RangeMinToT"); param != mCustomParameters.end()) {
-    mRangeMinToT = ::atof(param->second.c_str());
-  }
-  if (auto param = mCustomParameters.find("RangeMaxToT"); param != mCustomParameters.end()) {
-    mRangeMaxToT = ::atof(param->second.c_str());
-  }
-  if (auto param = mCustomParameters.find("NoiseClassSelection"); param != mCustomParameters.end()) {
-    mNoiseClassSelection = ::atoi(param->second.c_str());
-    if (mNoiseClassSelection <= -1 || mNoiseClassSelection > nNoiseClasses) {
+  utils::parseIntParameter(mCustomParameters, "NbinsMultiplicity", mBinsMultiplicity);
+  utils::parseIntParameter(mCustomParameters, "RangeMaxMultiplicity", mRangeMaxMultiplicity);
+
+  utils::parseIntParameter(mCustomParameters, "NbinsTime", mBinsTime);
+  utils::parseFloatParameter(mCustomParameters, "kNbinsWidthTime", fgkNbinsWidthTime);
+  utils::parseFloatParameter(mCustomParameters, "RangeMinTime", mRangeMinTime);
+  utils::parseFloatParameter(mCustomParameters, "RangeMaxTime", mRangeMaxTime);
+
+  utils::parseIntParameter(mCustomParameters, "NbinsToT", mBinsToT);
+  utils::parseFloatParameter(mCustomParameters, "RangeMinTime", mRangeMinToT);
+  utils::parseFloatParameter(mCustomParameters, "RangeMaxTime", mRangeMaxToT);
+
+  if (utils::parseIntParameter(mCustomParameters, "NoiseClassSelection", mNoiseClassSelection)) {
+    if (mNoiseClassSelection < -1 || mNoiseClassSelection >= nNoiseClasses) {
       ILOG(Error, Support) << "Asked to discard noise class " << mNoiseClassSelection << " but it is invalid, use -1, 0, 1, 2. Setting it to -1 (no selection)" << ENDM;
       mNoiseClassSelection = -1;
     }
@@ -108,6 +90,12 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mHistoHitMap.get());
   getObjectsManager()->setDefaultDrawOptions(mHistoHitMap.get(), "colz logz");
   getObjectsManager()->setDisplayHint(mHistoHitMap.get(), "colz logz");
+
+  mHistoHitMapNoiseFiltered = std::make_shared<TH2F>("HitMapNoiseFiltered", "TOF hit map (noise filtered);Sector;Strip", RawDataDecoder::ncrates, 0., RawDataDecoder::nsectors, RawDataDecoder::nstrips, 0., RawDataDecoder::nstrips);
+  mHistoHitMapNoiseFiltered->SetBit(TH1::kNoStats);
+  getObjectsManager()->startPublishing(mHistoHitMapNoiseFiltered.get());
+  getObjectsManager()->setDefaultDrawOptions(mHistoHitMapNoiseFiltered.get(), "colz logz");
+  getObjectsManager()->setDisplayHint(mHistoHitMapNoiseFiltered.get(), "colz logz");
 
   mHistoTimeVsBCID = std::make_shared<TH2F>("TimeVsBCID", "TOF time vs BC ID;BC ID in orbit (~25 ns);time (ns)", mBinsBC, 0., mRangeMaxBC, mBinsTime, mRangeMinTime, mRangeMaxTime);
   getObjectsManager()->startPublishing(mHistoTimeVsBCID.get());
@@ -165,6 +153,12 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
 
   mHitMultiplicityVsCrate = std::make_shared<TProfile>("Multiplicity/VsCrate", "TOF hit multiplicity vs Crate;TOF hits;Crate;Events", RawDataDecoder::ncrates, 0, RawDataDecoder::ncrates);
   getObjectsManager()->startPublishing(mHitMultiplicityVsCrate.get());
+
+  mHitMultiplicityVsBC = std::make_shared<TH2F>("Multiplicity/VsBC", "TOF hit multiplicity vs BC;BC;#TOF hits;Events", mBinsBCForMultiplicity, 0, mRangeMaxBC, mBinsMultiplicity, mRangeMinMultiplicity, mRangeMaxMultiplicity);
+  getObjectsManager()->startPublishing(mHitMultiplicityVsBC.get());
+
+  mHitMultiplicityVsBCpro = std::make_shared<TProfile>("Multiplicity/VsBCpro", "TOF hit multiplicity vs BC;BC;#TOF hits;Events", mBinsBCForMultiplicity, 0, mRangeMaxBC);
+  getObjectsManager()->startPublishing(mHitMultiplicityVsBCpro.get());
 
   // Time
   mHistoTime = std::make_shared<TH1F>("Time/Integrated", "TOF hit time;Hit time (ns);Hits", mBinsTime, mRangeMinTime, mRangeMaxTime);
@@ -255,6 +249,8 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
   // Get Diagnostic frequency to check noisy channels in the current TF
   const auto& diafreq = ctx.inputs().get<o2::tof::Diagnostic*>("diafreq");
 
+  int nent = mHitMultiplicityVsBC->GetEntries();
+
   int eta, phi;       // Eta and phi indices
   int det[5] = { 0 }; // Coordinates
   int strip = 0;      // Strip
@@ -272,6 +268,8 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
   bool isSectorI = false;
   std::array<int, 4> ndigitsPerQuater = { 0 };                      // Number of digits per side I/A,O/A,I/C,O/C
   std::array<int, RawDataDecoder::ncrates> ndigitsPerCrate = { 0 }; // Number of hits in one event per crate
+  constexpr int nOrbits = 128;                                      // Number of orbits
+  int ndigitsPerBC[nOrbits][mBinsBCForMultiplicity] = {};           // number of digit per oribit, BC/18
 
   mHistoROWSize->Fill(rows.size() / 3.0);
 
@@ -331,24 +329,32 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
         mCounterNoisyChannels[i].Count(digit.getChannel());
       }
 
+      // Fill hit map counter no matter the selection
+      o2::tof::Geo::getVolumeIndices(digit.getChannel(), det);
+      strip = o2::tof::Geo::getStripNumberPerSM(det[1], det[2]); // Strip index in the SM
+      mCounterHitsPerStrip[strip].Count(det[0] * 4 + det[4] / 12);
+
       if (mNoiseClassSelection >= 0 &&
           diafreq->isNoisyChannel(digit.getChannel(), mNoiseClassSelection)) {
+        //        LOG(info) << "noisy channel " << digit.getChannel();
         continue;
       }
+      //      LOG(info) << "good channel " << digit.getChannel();
 
+      // Correct BC index
       int bcCorr = digit.getIR().bc - o2::tof::Geo::LATENCYWINDOW_IN_BC;
       if (bcCorr < 0) {
         bcCorr += o2::constants::lhc::LHCMaxBunches;
       }
 
-      o2::tof::Geo::getVolumeIndices(digit.getChannel(), det);
-      strip = o2::tof::Geo::getStripNumberPerSM(det[1], det[2]); // Strip index in the SM
-      ndigitsPerCrate[strip]++;
-      mCounterHitsPerStrip[strip].Count(det[0] * 4 + det[4] / 12);
+      ndigitsPerBC[row.mFirstIR.orbit % nOrbits][bcCorr / 18]++;
+
+      ndigitsPerCrate[o2::tof::Geo::getCrateFromECH(o2::tof::Geo::getECHFromCH(digit.getChannel())) /*crate index*/]++;
+      mCounterHitsPerStripNoiseFiltered[strip].Count(det[0] * 4 + det[4] / 12);
       mCounterHitsPerChannel.Count(digit.getChannel());
       // TDC time and ToT time
       constexpr float TDCBIN_NS = o2::tof::Geo::TDCBIN * 0.001;
-      tdc_time = (digit.getTDC() + digit.getIR().bc * 1024) * TDCBIN_NS;
+      tdc_time = (digit.getTDC() + bcCorr * 1024) * TDCBIN_NS;
       tot_time = digit.getTOT() * o2::tof::Geo::TOTBIN_NS;
       mHistoTimeVsBCID->Fill(row.mFirstIR.bc, tdc_time);
       mHistoTime->Fill(tdc_time);
@@ -384,12 +390,13 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
       }
     }
     // Filling histograms of hit multiplicity
-    mHistoMultiplicity->Fill(row.size()); // Number of digits inside a readout window
+    mHistoMultiplicity->Fill(ndigitsPerQuater[0] + ndigitsPerQuater[1] + ndigitsPerQuater[2] + ndigitsPerQuater[3]); // Number of digits inside a readout window
     // Filling quarter histograms
     mHistoMultiplicityIA->Fill(ndigitsPerQuater[0]);
     mHistoMultiplicityOA->Fill(ndigitsPerQuater[1]);
     mHistoMultiplicityIC->Fill(ndigitsPerQuater[2]);
     mHistoMultiplicityOC->Fill(ndigitsPerQuater[3]);
+
     for (int crate = 0; crate < RawDataDecoder::ncrates; crate++) {
       mHitMultiplicityVsCrate->Fill(ndigitsPerCrate[crate], row.size());
       ndigitsPerCrate[crate] = 0;
@@ -399,6 +406,13 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
     ndigitsPerQuater[1] = 0;
     ndigitsPerQuater[2] = 0;
     ndigitsPerQuater[3] = 0;
+  }
+
+  for (int iorb = 0; iorb < nOrbits; iorb++) {
+    for (int ibc = 0; ibc < mBinsBCForMultiplicity; ibc++) {
+      mHitMultiplicityVsBC->Fill(ibc * 18 + 1, ndigitsPerBC[iorb][ibc]);
+      mHitMultiplicityVsBCpro->Fill(ibc * 18 + 1, ndigitsPerBC[iorb][ibc]);
+    }
   }
 
   // To complete the second TF in case it receives orbits
@@ -414,6 +428,7 @@ void TaskDigits::endOfCycle()
   ILOG(Info, Support) << "endOfCycle" << ENDM;
   for (unsigned int i = 0; i < RawDataDecoder::nstrips; i++) {
     mCounterHitsPerStrip[i].FillHistogram(mHistoHitMap.get(), i + 1);
+    mCounterHitsPerStripNoiseFiltered[i].FillHistogram(mHistoHitMapNoiseFiltered.get(), i + 1);
   }
   if (mFlagEnableOrphanPerChannel) {
     mCounterOrphansPerChannel.FillHistogram(mHistoOrphanPerChannel.get());
@@ -434,6 +449,7 @@ void TaskDigits::reset()
   ILOG(Info, Support) << "Resetting the counters" << ENDM;
   for (unsigned int i = 0; i < RawDataDecoder::nstrips; i++) {
     mCounterHitsPerStrip[i].Reset();
+    mCounterHitsPerStripNoiseFiltered[i].Reset();
   }
   mCounterHitsPerChannel.Reset();
   mCounterOrphansPerChannel.Reset();
@@ -463,6 +479,8 @@ void TaskDigits::reset()
   mHistoMultiplicityIC->Reset();
   mHistoMultiplicityOC->Reset();
   mHitMultiplicityVsCrate->Reset();
+  mHitMultiplicityVsBC->Reset();
+  mHitMultiplicityVsBCpro->Reset();
   // Time
   mHistoTime->Reset();
   mHistoTimeIA->Reset();

@@ -40,10 +40,12 @@ class CheckRawToT : public o2::quality_control::checker::CheckInterface
 
  private:
   // Running configurable parameters
+  /// Minimum number of entries in MO before message can be printed
+  double mMinEntriesBeforeMessage = -1.0;
   /// Minimum ToT allowed for the mean in ns
-  float mMinRawToT = 10.; // ns
+  float mMinAllowedToT = 10.; // ns
   /// Maximum ToT allowed for the mean in ns
-  float mMaxRawToT = 15.; // ns
+  float mMaxAllowedToT = 15.; // ns
 
   // User variables
   /// Messages to print on the output PAD

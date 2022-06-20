@@ -30,21 +30,19 @@
     }
   },
   "dataSamplingPolicies": [
-  {
-    "id": "digits",
-    "active": "true",
-    "machines": [],
-    "query" : "digits:MID/DATA/0;digitrofs:MID/DATAROF/0",
-    "samplingConditions": [
-      {
-        "condition": "random",
-        "fraction": "1",
-        "seed": "1441"
-      }
-    ],
-    "blocking": "false"
-  }
+    {
+      "id": "digits",
+      "active": "true",
+      "machines": [],
+      "query": "digits:MID/DATA;digits_rof:MID/DATAROF",
+      "samplingConditions": [
+        {
+          "condition": "random",
+          "fraction": "1",
+          "seed": "1441"
+        }
+      ],
+      "blocking": "false"
+    }
   ]
 }
-
-

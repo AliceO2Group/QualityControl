@@ -43,6 +43,7 @@ struct PostProcessingConfig {
   std::string ccdbUrl;
   std::string consulUrl;
   core::Activity activity;
+  bool matchAnyRunNumber = false;
 };
 
 } // namespace o2::quality_control::postprocessing
