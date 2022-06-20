@@ -9,8 +9,6 @@
         "name": "not_applicable"
       },
       "Activity": {
-        "number": "42",
-        "type": "2"
       },
       "monitoring": {
         "url": "infologger:///debug?qc"
@@ -36,7 +34,7 @@
           "name": "tpc-tracks"
         },
         "taskParameters": {
-          "myOwnKey": "myOwnValue"
+          "cutAbsEta": "1.",  "cutMinNCluster": "60", "cutMindEdxTot": "20."
         },
         "location": "remote"
       }
