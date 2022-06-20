@@ -311,6 +311,90 @@ The `"name"` and `"varexp"` are the only compulsory arguments, others can be omi
         ...
 }
 ```
+### The SliceTrendingTask class
+The `SliceTrendingTask` is a complementary task to the standard `TrendingTask`. This task allows the trending of canvas objects that hold multiple histograms (which have to be of the same dimension, e.g. TH1) and the slicing of histograms. The latter option allows the user to divide a histogram into multiple subsections along one or two dimensions which are trended in parallel to each other. The task has specific reductors for `TH1` and `TH2` objects which are `o2::quality_control_modules::common::TH1SliceReductor` and `o2::quality_control_modules::common::TH2SliceReductor`.
+
+#### Configuration
+Similar to the `TrendingTask`, the configuration of the `SliceTrendingTask` is divided into `"dataSources"` and `"plots"`, where both parts have been extended in respect to the standard trending. Here, only changes in respect to the standard trending task are highlighted.
+
+The data sources are extended by `"axisDivision"` which configures the slicing of the histograms. The inner most brackets relate the the actual axis. Its configuration can be understood as `"axisDivision": [ [x-Axis], [y-Axis] ]` where `[y-Axis]` does not need to be provided in case of one-dimensional objects. The values provided in `[x(y)-Axis]` are the numerical boundaries of the x(y)-axis. For *n* slices, one thus needs to provide *n*+1 values in ascending order. Protections are added such that each bin is part of only one slice. If the outer brackets are left empty (i.e. `"axisDivision": [ ]`), no slicing is applied and the whole histogram is trended as in the standard trending task.
+
+```
+{
+        ...
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "TST/MO/QcTask",
+            "names": [ "example" ],
+            "reductorName": "o2::quality_control_modules::common::TH1SliceReductor",
+            "axisDivision": [ [ "0", "4500", "10500" ] ],
+            "moduleName": "QcCommon"
+          }
+        ],
+        ...
+}
+```
+The `"plot"` configuration has changed in respect to the standard trending task as follows:
+The `"varexp"` selection is still set up as `"Histogram.Var:TrendingType"` where `"Histogram.Var"` is trended vs `"TrendingType"`. The options for `"Var"`are:
+- `"entries"`: Number of entries of the slice
+- `"meanX"`: Mean along the x-axis of the slice
+- `"stddevX"`: Stddev along the x-axis of the slice
+- `"errMeanX"`: Error of the mean along the x-axis of the slice
+- `"meanY"`: Mean along the y-axis of the slice.
+- `"stddevY"`: Stddev along the y-axis of the slice
+- `"errMeanY"`: Error of the mean along the y-axis of the slice
+
+In case of 1 dimensional objects, `"meanY"` is calculated as the arithmetic mean of all the bin values in the slice. The respective `"stddevY"` and `"errMeanY"` are provided as well.
+
+The options for `"TrendingType"` are limited to:
+- `"time"`: The quantity `"Histogram.Var"` of all slices is trended as a function of time. Each slice-trending has its own graph which are all published on one canvas.
+- `"multigraphtime"`:  The quantity `"Histogram.Var"` of all slices is trended as a function of time. All slice-trendings are published on one `"TMultiGraph"`. A legend is provided which contains the numerical boundaries of the slices.
+- `"slices"`:  The quantity `"Histogram.Var"` of all slices is trended as a function of the geometrical center of the slices. Always the latest timestamp is plotted.
+- `"slices2D"`:  The quantity `"Histogram.Var"` of all slices is trended as a function of the geometrical center of the slices in two dimensions. Always the latest timestamp is plotted. Errors (if used) are stored per bin but are not visualized.
+
+The field `"graphErrors"` is set up as `"graphErrors":"Var1:Var2"` where `Var1` is the error along y and `Var2` the error along x. For `Var1(2)` numerical values or the options listed for `Var` above can be set. The original histogram does not need to be provided as the task will take the histogram specified in `"varexp": "Histogram.Var:TrendingType"`. In `"graphYRange"` and `"graphXRange"` numerical values for fixed ranges of the x and y axis can be provided in the form of `"Min:Max"`. If provided, the task will set all x (or y) axis on the canvas to this range. `"graphAxisLabel"` allows the user to set axis labels in the form of `"Label Y axis: Label X axis"`.
+```  
+{
+        ...
+        "plots": [
+          {
+            "name": "ExtendedTrending_meanX_of_histogram",
+            "title": "Mean X trend of the example histogram",
+            "varexp": "example.meanX:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "errMeanX:0.5",
+            "graphYRange": "",
+            "graphXRange": "",
+            "graphAxisLabel": "Mean X:time"
+          },
+          {
+            "name": "ExtendedTrending_meanY_of_histogram_slices",
+            "title": "Mean Y trend of the example histogram",
+            "varexp": "example.meanY:slices",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "errMeanY:errMeanX",
+            "graphYRange": "",
+            "graphXRange": "-500.0:10000",
+            "graphAxisLabel": "Mean Y:Center of slices along x"
+          },
+          {
+            "name": "ExtendedTrending_meanY_of_histogram_timeMultigraph",
+            "title": "Mean Y trend of the example histogram",
+            "varexp": "example.meanY:multigraphtime",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "errMeanY:0.5",
+            "graphYRange": "",
+            "graphXRange": "",
+            "graphAxisLabel": "Mean Y:time"
+          }
+        ],
+        ...
+}
+```
 
 ### The TRFCollectionTask class
 
