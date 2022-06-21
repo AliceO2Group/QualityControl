@@ -47,13 +47,15 @@ def run(args):
     ccdb = Ccdb(args.url)
     versions = ccdb.getVersionsList(args.path, args.from_ts, args.to_ts)
     logging.debug(versions)
-    # For each object call the first matching rule
     logging.info("Here are the objects that are going to be deleted: ")
-    for v in versions:
-        logging.info(v)
 
     if args.print_list:
+        for v in versions:
+            logging.info(v)
+        logging.info(f"Number of items: {len(versions)}")
         exit(0)
+
+    logging.info(f"Number of items: {len(versions)}")
 
     logging.warning("****** ARE YOU ABSOLUTELY SURE YOU WANT TO CONTINUE ? ******")
     answer = input("Yes/No \n  ")
@@ -72,6 +74,8 @@ def run(args):
                 logging.error("   wrong input, skipping")
         else:
             ccdb.deleteVersion(v)
+
+    logging.info(f"Deleted items: {len(versions)}")
 
 # ****************
 # We start here !
