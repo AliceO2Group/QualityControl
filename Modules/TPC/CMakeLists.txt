@@ -26,7 +26,8 @@ target_sources(O2QcTPC PRIVATE src/PID.cxx
                              src/QualityObserver.cxx
                              src/RatioGeneratorTPC.cxx
                              src/CheckOfSlices.cxx
-                             src/GenericHistogramCheck.cxx)
+                             src/GenericHistogramCheck.cxx
+                             src/JunkDetection.cxx)
 
 target_include_directories(
   O2QcTPC
@@ -73,6 +74,7 @@ add_root_dictionary(O2QcTPC
                             include/TPC/RatioGeneratorTPC.h
                             include/TPC/CheckOfSlices.h
                             include/TPC/GenericHistogramCheck.h
+                            include/TPC/JunkDetection.h
                     LINKDEF include/TPC/LinkDef.h
                     BASENAME O2QcTPC)
 
@@ -147,4 +149,5 @@ install(FILES run/tpcQCPID_sampled.json
               run/tpcQCRatio_generator.json
               run/tpcQCCheckSlices.json
               run/tpcQCTracks_Generic.json
+              run/tpcQCJunkDetection.json
         DESTINATION etc)

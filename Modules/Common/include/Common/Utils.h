@@ -38,9 +38,9 @@ T getFromConfig(const std::unordered_map<std::string, std::string>& params, cons
 
   if (itParam == last) {
     LOGP(warning, "missing parameter {}", name.data());
+    LOGP(warning, "Please add '{}': '<value>' to the 'taskParameters'.", name.data());
   } else {
     const auto& param = itParam->second;
-    LOG(info) << "param type: " << typeid(param).name() << " param: " << param << " param name: " << itParam->first;
     if constexpr (std::is_same<int, T>::value) {
       retVal = std::stoi(param);
     } else if constexpr (std::is_same<float, T>::value) {
