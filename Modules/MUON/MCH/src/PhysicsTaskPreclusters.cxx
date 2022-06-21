@@ -399,7 +399,6 @@ bool PhysicsTaskPreclusters::plotPrecluster(const o2::mch::PreCluster& preCluste
   // Filling histograms to be used for Pseudo-efficiency computation
   if (isGoodDen[0]) {
     // good cluster on non-bending side, check if there is data from the bending side as well
-    mHistogramMeanPseudoeffPerDE[0]->getDen()->Fill(getDEindex(detid));
     if (fecIdB >= 0 && channelB >= 0) {
       mHistogramPseudoeffElec->getDen()->Fill(fecIdB, channelB);
     }
@@ -408,7 +407,6 @@ bool PhysicsTaskPreclusters::plotPrecluster(const o2::mch::PreCluster& preCluste
       hXY0->second->Fill(Xcog, Ycog, 0.5, 0.5);
     }
     if (isGoodNum[0]) { // Check if associated to something on Bending
-      mHistogramMeanPseudoeffPerDE[0]->getNum()->Fill(getDEindex(detid));
       if (fecIdB >= 0 && channelB >= 0) {
         mHistogramPseudoeffElec->getNum()->Fill(fecIdB, channelB);
       }
@@ -421,7 +419,6 @@ bool PhysicsTaskPreclusters::plotPrecluster(const o2::mch::PreCluster& preCluste
 
   if (isGoodDen[1]) {
     // good cluster on bending side, check if there is data from the non-bending side as well
-    mHistogramMeanPseudoeffPerDE[1]->getDen()->Fill(getDEindex(detid));
     if (fecIdNB >= 0 && channelNB >= 0) {
       mHistogramPseudoeffElec->getDen()->Fill(fecIdNB, channelNB);
     }
@@ -430,7 +427,6 @@ bool PhysicsTaskPreclusters::plotPrecluster(const o2::mch::PreCluster& preCluste
       hXY0->second->Fill(Xcog, Ycog, 0.5, 0.5);
     }
     if (isGoodNum[1]) { // Check if associated to something on Non-Bending
-      mHistogramMeanPseudoeffPerDE[1]->getNum()->Fill(getDEindex(detid));
       if (fecIdNB >= 0 && channelNB >= 0) {
         mHistogramPseudoeffElec->getNum()->Fill(fecIdNB, channelNB);
       }
@@ -557,9 +553,6 @@ void PhysicsTaskPreclusters::computePseudoEfficiency()
 
   mHistogramPseudoeffST12->update();
   mHistogramPseudoeffST345->update();
-
-  mHistogramMeanPseudoeffPerDE[0]->update();
-  mHistogramMeanPseudoeffPerDE[1]->update();
 
   mHistogramPreclustersPerDE->update();
   mHistogramPreclustersSignalPerDE->update();
