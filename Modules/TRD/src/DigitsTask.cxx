@@ -5,6 +5,7 @@
 #include <TLine.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TLine.h>
 #include <TProfile.h>
 #include <TProfile2D.h>
 #include <TStopwatch.h>
@@ -31,19 +32,62 @@ DigitsTask::~DigitsTask()
 
 void DigitsTask::retrieveCCDBSettings()
 {
-  // std::string a = mCustomParameters["noisetimestamp"];
-  // mTimestamp = a;//std::stol(a,nullptr,10);
-  // long int ts = mTimestamp ? mTimestamp : o2::ccdb::getCurrentTimestamp();
-  // TODO come back and all for different time stamps
-  long int ts = o2::ccdb::getCurrentTimestamp();
-  ILOG(Info, Support) << "Getting noisemap from ccdb - timestamp: " << ts << ENDM;
+  if (auto param = mCustomParameters.find("ccdbtimestamp"); param != mCustomParameters.end()) {
+    mTimestamp = std::stol(mCustomParameters["ccdbtimestamp"]);
+    ILOG(Info, Support) << "configure() : using ccdbtimestamp = " << mTimestamp << ENDM;
+  } else {
+    mTimestamp = o2::ccdb::getCurrentTimestamp();
+    ILOG(Info, Support) << "configure() : using default timestam of now = " << mTimestamp << ENDM;
+  }
   auto& mgr = o2::ccdb::BasicCCDBManager::instance();
-  mgr.setURL("http://alice-ccdb.cern.ch");
-  mgr.setTimestamp(ts);
+  mgr.setTimestamp(mTimestamp);
   mNoiseMap = mgr.get<o2::trd::NoiseStatusMCM>("/TRD/Calib/NoiseMapMCM");
   if (mNoiseMap == nullptr) {
     ILOG(Info, Support) << "mNoiseMap is null, no noisy mcm reduction" << ENDM;
   }
+}
+
+void DigitsTask::drawTrdLayersGrid(TH2F* hist)
+{
+  TLine* line;
+  for (int i = 0; i < 5; ++i) {
+    switch (i) {
+      case 0:
+        line = new TLine(15.5, 0, 15.5, 2592);
+        hist->GetListOfFunctions()->Add(line);
+        line->SetLineStyle(kDashed);
+        line->SetLineColor(kBlack);
+        break;
+      case 1:
+        line = new TLine(31.5, 0, 31.5, 2592);
+        hist->GetListOfFunctions()->Add(line);
+        line->SetLineStyle(kDashed);
+        line->SetLineColor(kBlack);
+        break;
+      case 2:
+        line = new TLine(43.5, 0, 43.5, 2592);
+        hist->GetListOfFunctions()->Add(line);
+        line->SetLineStyle(kDashed);
+        line->SetLineColor(kBlack);
+        break;
+      case 3:
+        line = new TLine(59.5, 0, 59.5, 2592);
+        hist->GetListOfFunctions()->Add(line);
+        line->SetLineStyle(kDashed);
+        line->SetLineColor(kBlack);
+        break;
+    }
+  }
+  for (int iSec = 1; iSec < 18; ++iSec) {
+    float yPos = iSec * 144 - 0.5;
+    line = new TLine(0, yPos, 76, yPos);
+    line->SetLineStyle(kDashed);
+    line->SetLineColor(kBlack);
+    hist->GetListOfFunctions()->Add(line);
+  }
+
+  ILOG(Info, Support) << "Layer Grid redrawn in check for : " << hist->GetName() << ENDM;
+  ILOG(Info, Support) << "Layer Grid redrawn in hist has function count of :  " << hist->GetListOfFunctions()->GetSize() << ENDM;
 }
 
 void DigitsTask::drawLinesMCM(TH2F* histo)
@@ -64,6 +108,18 @@ void DigitsTask::drawLinesMCM(TH2F* histo)
   }
 }
 
+void DigitsTask::drawLinesOnPulseHeight(TH1F* h)
+{
+  TLine* lmin = new TLine(mPulseHeightPeakRegion.first, 0, mPulseHeightPeakRegion.first, 1e9);
+  TLine* lmax = new TLine(mPulseHeightPeakRegion.second, 0, mPulseHeightPeakRegion.second, 1e9);
+  lmin->SetLineStyle(2);
+  lmax->SetLineStyle(2);
+  lmin->SetLineColor(kRed);
+  lmax->SetLineColor(kRed);
+  h->GetListOfFunctions()->Add(lmin);
+  h->GetListOfFunctions()->Add(lmax);
+}
+
 void DigitsTask::buildHistograms()
 {
   mDigitHCID.reset(new TH1F("digithcid", "Digit distribution over Halfchambers", 1080, 0, 1080));
@@ -71,41 +127,33 @@ void DigitsTask::buildHistograms()
   mDigitsPerEvent.reset(new TH1F("digitsperevent", "Digits per Event", 10000, 0, 10000));
   getObjectsManager()->startPublishing(mDigitsPerEvent.get());
 
-  mClsAmpCh.reset(new TH1F("ClsAmpCh", "Reconstructed mean amplitude;Amplitude (ADC);# chambers", 100, 25, 125));
+  mClsAmpCh.reset(new TH1F("Cluster/ClsAmpCh", "Reconstructed mean amplitude;Amplitude (ADC);# chambers", 100, 25, 125));
   mClsAmpCh->GetXaxis()->SetTitle("Amplitude (ADC)");
   mClsAmpCh->GetYaxis()->SetTitle("# chambers");
   getObjectsManager()->startPublishing(mClsAmpCh.get());
 
-  mClsNTb.reset(new TH1F("ClsNTb", "ClsNTb", 30, -0.5, 29.5));
-  mClsNTb->SetTitle("Number of clusters;Timebin");
-  mClsNTb->GetXaxis()->SetTitle("Number Of Clusters");
-  mClsNTb->GetYaxis()->SetTitle("Timebin");
+  mClsNTb.reset(new TH1F("Cluster/ClsNTb", "ClsNTb", 30, -0.5, 29.5));
+  mClsNTb->SetTitle("Clusters per time bin;Number of clusters;Timebin");
   getObjectsManager()->startPublishing(mClsNTb.get());
 
-  mClsChargeFirst.reset(new TH2F("ClsChargeFirst", "ClsChargeFirst", 100, 0, 1000, 101, -0.2, 0.2));
-  mClsChargeFirst->GetXaxis()->SetTitle("Timebin of the maximum signal");
-  mClsChargeFirst->GetYaxis()->SetTitle("Timebin");
+  mClsChargeFirst.reset(new TH2F("Cluster/ClsChargeFirst", "ClsChargeFirst;Timebin of max Signal;Timebin", 100, 0, 1000, 101, -0.2, 0.2));
   getObjectsManager()->startPublishing(mClsChargeFirst.get());
   getObjectsManager()->setDefaultDrawOptions(mClsChargeFirst->GetName(), "COLZ");
 
-  mClsChargeTb.reset(new TH1F("ClsChargeTb", "ClsChargeTb", 30, -0.5, 29.5));
+  mClsChargeTb.reset(new TH1F("Cluster/ClsChargeTb", "ClsChargeTb;", 30, -0.5, 29.5));
   getObjectsManager()->startPublishing(mClsChargeTb.get());
 
-  mClsChargeTbCycle.reset(new TH1F("ClsChargeTbCycle", "ClsChargeTbCycle", 30, -0.5, 29.5));
+  mClsChargeTbCycle.reset(new TH1F("Cluster/ClsChargeTbCycle", "ClsChargeTb cleared per cycle;Cluster charge; Timebin", 30, -0.5, 29.5));
   getObjectsManager()->startPublishing(mClsChargeTbCycle.get());
 
-  mClsAmp.reset(new TH1F("ClsAmp", "Amplitude of clusters", 200, -0.5, 1999.5));
-  mClsAmp->GetXaxis()->SetTitle("Amplitude (ADC)");
-  mClsAmp->GetYaxis()->SetTitle("Counts");
+  mClsAmp.reset(new TH1F("Cluster/ClsAmp", "Amplitude of clusters;Amplitdu(ADC);Counts", 200, -0.5, 1999.5));
   getObjectsManager()->startPublishing(mClsAmp.get());
 
-  mClsAmpDrift.reset(new TH1F("ClsAmpDrift", "Amplitude of clusters in drift region", 500, -0.5, 999.5));
-  mClsAmpDrift->GetXaxis()->SetTitle("Amplitude (ADC)");
-  mClsAmpDrift->GetYaxis()->SetTitle("Counts");
+  mClsAmpDrift.reset(new TH1F("Cluster/ClsAmpDrift", "Amplitude of clusters in drift region;Amplitdu(ADC);Counts", 500, -0.5, 999.5));
   getObjectsManager()->startPublishing(mClsAmpDrift.get());
 
   for (Int_t layer = 0; layer < o2::trd::constants::NLAYER; ++layer) {
-    std::string label = fmt::format("NClsLayer_{0}", layer);
+    std::string label = fmt::format("Cluster/NClsLayer_{0}", layer);
     std::string title = fmt::format("Illumination layer {0};Sectors;Padrows (z)", layer);
     mNClsLayer[layer].reset(new TH2F(label.c_str(), title.c_str(), 18 * 8, -0.5, 17.5, 76, -0.5, 75.5));
     getObjectsManager()->startPublishing(mNClsLayer[layer].get());
@@ -116,177 +164,117 @@ void DigitsTask::buildHistograms()
   char buffer[256];
   for (Int_t iSM = 0; iSM < o2::trd::constants::NSECTOR; ++iSM) {
 
-    std::string label = fmt::format("HCMCM_{0}", iSM);
-    std::string title = fmt::format("MCM in Digits data stream for sector {0}", iSM);
+    std::string label = fmt::format("DigitsPerMCM/HCMCM_{0}", iSM);
+    std::string title = fmt::format("MCM in Digits data stream for sector {0}; Pad Row; Pad Column", iSM);
     mHCMCM[iSM].reset(new TH2F(label.c_str(), title.c_str(), 76, -0.5, 75.5, 8 * 6, -0.5, 8 * 6 - 0.5));
-    mHCMCM[iSM]->GetXaxis()->SetTitle("PadRow");
-    mHCMCM[iSM]->GetYaxis()->SetTitle("PadCol");
     getObjectsManager()->startPublishing(mHCMCM[iSM].get());
     getObjectsManager()->setDefaultDrawOptions(mHCMCM[iSM]->GetName(), "COLZ");
     drawLinesMCM(mHCMCM[iSM].get());
 
-    label = fmt::format("ClsDetAmp_{0}", iSM);
-    title = fmt::format("Cluster amplitude chamberwise in SM {0}", iSM);
+    label = fmt::format("Cluster/ClsDetAmp_{0}", iSM);
+    title = fmt::format("Cluster amplitude chamberwise in SM {0};Chamber;Amplitude", iSM);
     mClsDetAmp[iSM].reset(new TH2F(label.c_str(), title.c_str(), 30, -0.5, 29.5, 500, -0.5, 999.5));
-    mClsDetAmp[iSM]->GetXaxis()->SetTitle("Chamber");
-    mClsDetAmp[iSM]->GetYaxis()->SetTitle("Amplitude");
     getObjectsManager()->startPublishing(mClsDetAmp[iSM].get());
     getObjectsManager()->setDefaultDrawOptions(mClsDetAmp[iSM]->GetName(), "COLZ");
 
     label = fmt::format("ADCTB_{0}", iSM);
-    title = fmt::format("Signal in Timebins for sector {0}", iSM);
+    title = fmt::format("Signal in Timebins for sector {0};Timebin;ADC", iSM);
     mADCTB[iSM].reset(new TH2F(label.c_str(), title.c_str(), 30, -0.5, 29.5, 128, -0.5, 127.5));
-    mADCTB[iSM]->GetXaxis()->SetTitle("Timebin");
-    mADCTB[iSM]->GetYaxis()->SetTitle("ADC");
     getObjectsManager()->startPublishing(mADCTB[iSM].get());
     getObjectsManager()->setDefaultDrawOptions(mADCTB[iSM]->GetName(), "COLZ");
 
     label = fmt::format("ADCTBfull_{0}", iSM);
-    title = fmt::format("Signal in Timebins full for sector {0}", iSM);
+    title = fmt::format("Signal in Timebins full for sector {0};Timebin;ADC", iSM);
     mADCTBfull[iSM].reset(new TH2F(label.c_str(), title.c_str(), 30, -0.5, 29.5, 128, -0.5, 127.5));
-    mADCTBfull[iSM]->GetXaxis()->SetTitle("Timebin");
-    mADCTBfull[iSM]->GetYaxis()->SetTitle("ADC");
     getObjectsManager()->startPublishing(mADCTBfull[iSM].get());
     getObjectsManager()->setDefaultDrawOptions(mADCTBfull[iSM]->GetName(), "COLZ");
 
     label = fmt::format("ADC_{0}", iSM);
-    title = fmt::format("ADC value distribution for sector {0}", iSM);
+    title = fmt::format("ADC value distribution for sector {0};ADC value;Counts", iSM);
     mADC[iSM].reset(new TH1F(label.c_str(), title.c_str(), 500, -0.5, 499.5));
-    mADC[iSM]->GetXaxis()->SetTitle("ADC value");
     getObjectsManager()->startPublishing(mADC[iSM].get());
-    mADC[iSM]->GetYaxis()->SetTitle("Counts");
 
     // clusters
-    label = fmt::format("ClsSM_{0}", iSM);
-    title = fmt::format("Cluster for Sector {0}", iSM);
+    label = fmt::format("Cluster/ClsSM_{0}", iSM);
+    title = fmt::format("Cluster for Sector {0};ADC value;Counts", iSM);
     mClsSM[iSM].reset(new TH1F(label.c_str(), title.c_str(), 100, 0, 200));
-    mClsSM[iSM]->GetXaxis()->SetTitle("ADC value");
-    mClsSM[iSM]->GetYaxis()->SetTitle("Counts");
     getObjectsManager()->startPublishing(mClsSM[iSM].get());
 
-    label = fmt::format("ClsTbSM_{0}", iSM);
-    title = fmt::format("Cluster Timbin  for sector {0}", iSM);
+    label = fmt::format("Cluster/ClsTbSM_{0}", iSM);
+    title = fmt::format("Cluster Timbin  for sector {0};Timebin;ADC", iSM);
     mClsTbSM[iSM].reset(new TH2F(label.c_str(), title.c_str(), 30, -0.5, 29.5, 10, 0, 200));
-    mClsTbSM[iSM]->GetXaxis()->SetTitle("Timebin");
-    mClsTbSM[iSM]->GetYaxis()->SetTitle("ADC");
     getObjectsManager()->startPublishing(mClsTbSM[iSM].get());
     getObjectsManager()->setDefaultDrawOptions(mClsTbSM[iSM]->GetName(), "COLZ");
 
-    label = fmt::format("ClsDetTime_{0}", iSM);
-    title = fmt::format("Cluster amplitude chamberwise for sector {0}", iSM);
+    label = fmt::format("Cluster/ClsDetTime_{0}", iSM);
+    title = fmt::format("Cluster amplitude chamberwise for sector {0};Chamber;Timebin", iSM);
     mClsDetTime[iSM].reset(new TH2F(label.c_str(), title.c_str(), 30, -0.5, 29.5, 30, -0.5, 29.5));
-    mClsDetTime[iSM]->GetXaxis()->SetTitle("Chamber");
-    mClsDetTime[iSM]->GetYaxis()->SetTitle("Timebin");
     getObjectsManager()->startPublishing(mClsDetTime[iSM].get());
     getObjectsManager()->setDefaultDrawOptions(mClsDetTime[iSM]->GetName(), "COLZ");
   }
 
-  // TH1F*	mNCls;//->Fill(sm);
-  mNCls.reset(new TH1F("NCls", "Total number of clusters per sector", 18, -0.5, 17.5));
+  mNCls.reset(new TH1F("Cluster/NCls", "Total number of clusters per sector", 18, -0.5, 17.5));
   mNCls->SetTitle("Total number of clusters per sector;Sector;Counts");
-  mNCls->GetXaxis()->SetTitle("Sector");
-  mNCls->GetYaxis()->SetTitle("Counts");
-  // getObjectsManager()->startPublishing(mNCls.get());
+  getObjectsManager()->startPublishing(mNCls.get());
 
-  //mClsAmp.reset(new TH1F("NClsAmp", "Total number of clusters per sector", 200, -0.5, 199.5));
-  //mClsAmp->GetXaxis()->SetTitle("Sector");
-  //mClsAmp->GetYaxis()->SetTitle("Counts");
-  // getObjectsManager()->startPublishing(mClsAmp.get());
+  mNClsAmp.reset(new TH1F("Cluster/NClsAmp", "Total number of clusters per sector;Sector;Counts", 200, -0.5, 199.5));
+  getObjectsManager()->startPublishing(mNClsAmp.get());
 
-  mClsTb.reset(new TH2F("ClsTb", "Cluster  vs. timebin", 30, -0.5, 29.5, 200, 0, 2000));
+  mClsTb.reset(new TH2F("Cluster/ClsTb", "Cluster  vs. timebin;Timebin;Cluster", 30, -0.5, 29.5, 200, 0, 2000));
   mClsTb->GetXaxis()->SetTitle("Timebin");
   mClsTb->GetYaxis()->SetTitle("Cluster");
   // getObjectsManager()->startPublishing(mClsTb.get());
 
-  mClsAmpTb.reset(new TH1F("ClsAmpTb", "Cluster amplitude vs. timebin", 30, -0.5, 29.5));
-  mClsAmpTb->GetXaxis()->SetTitle("Timebin");
-  mClsAmpTb->GetYaxis()->SetTitle("Amplitude");
+  mClsAmpTb.reset(new TH1F("Cluster/ClsAmpTb", "Cluster amplitude vs. timebin;Timebin;Amplitude", 30, -0.5, 29.5));
   // getObjectsManager()->startPublishing(mClsAmpTb.get());
 
-  mClsSector.reset(new TH2F("ClsSector", "Cluster amplidue per sector", 18, -0.5, 17.5, 500, -0.5, 999.5));
-  mClsSector->GetXaxis()->SetTitle("Sector");
-  mClsSector->GetYaxis()->SetTitle("Amplitude");
+  mClsSector.reset(new TH2F("Cluster/ClsSector", "Cluster amplidue per sector;Sector,Amplitude", 18, -0.5, 17.5, 500, -0.5, 999.5));
   getObjectsManager()->startPublishing(mClsSector.get());
 
-  mClsStack.reset(new TH2F("ClsStack", "Cluster amplitude per stack", 5, -0.5, 4.5, 500, -0.5, 999.5));
-  mClsStack->GetXaxis()->SetTitle("Stack");
-  mClsStack->GetYaxis()->SetTitle("Amplitude");
+  mClsStack.reset(new TH2F("Cluster/ClsStack", "Cluster amplitude per stack;Stack;Amplitude", 5, -0.5, 4.5, 500, -0.5, 999.5));
   getObjectsManager()->startPublishing(mClsStack.get());
-  mClsStack->SetTitle(";Stack;Amplitude");
 
   // local histos
-  std::string label = fmt::format("clsAmp");
-  std::string title = fmt::format("Cluster Amplitude for chamber");
+  std::string label = fmt::format("Cluster/clsAmp");
+  std::string title = fmt::format("Cluster Amplitude for chamber;Cluster Amplidute;Chamber");
   mClusterAmplitudeChamber.reset(new TH2F(label.c_str(), title.c_str(), 300, -0.5, 299.5, 540, -0.5, 539.5));
-
-  // TODO come back to figure out proper names mClusterAmplitudeChamber[det]->GetXaxis()->SetTitle("PadRow");
-  mClusterAmplitudeChamber->GetYaxis()->SetTitle("Chamber");
   getObjectsManager()->startPublishing(mClusterAmplitudeChamber.get());
-  for (int trgg = 0; trgg < 10; ++trgg) {
-    if (trgg == 3) {
-      std::string label = fmt::format("ClsChargeTbTrgg_{0}", trgg);
-      std::string title = fmt::format("Total charge vs. time bin", trgg);
-      // mClsChargeTbTigg[trgg]->SetDescription("This plot shows the pulse height distribution. It should have a peak between the two indicated lines. If not, you will receive a warning");
-      mClsChargeTbTigg[trgg].reset(new TH1F(label.c_str(), title.c_str(), 30, -0.5, 29.5));
-      mClsChargeTbTigg[trgg]->GetXaxis()->SetTitle("time bin");
-      mClsChargeTbTigg[trgg]->GetYaxis()->SetTitle("total charge");
-      getObjectsManager()->startPublishing(mClsChargeTbTigg[trgg].get());
-    } else {
-      std::string label = fmt::format("ClsChargeTbTrgg_{0}", trgg);
-      std::string title = fmt::format("Total charge vs. timebin, trigger class {0}", trgg);
-      mClsChargeTbTigg[trgg].reset(new TH1F(label.c_str(), title.c_str(), 30, -0.5, 29.5));
-      mClsChargeTbTigg[trgg]->GetXaxis()->SetTitle("time bin");
-      mClsChargeTbTigg[trgg]->GetYaxis()->SetTitle("total charge");
-      getObjectsManager()->startPublishing(mClsChargeTbTigg[trgg].get());
-    }
-  }
-}
 
-void DigitsTask::buildHistogramsPH()
-{
-  mPulseHeight.reset(new TH1F("mPulseHeight", "Pulse height plot", 30, -0.5, 29.5));
+  mClsChargeTbTigg.reset(new TH1F("Cluster/ClsChargeTbTrgg", "Total charge vs. time bin;timebin; totalcharge", 30, -0.5, 29.5));
+  getObjectsManager()->startPublishing(mClsChargeTbTigg.get());
+
+  mPulseHeight.reset(new TH1F("PulseHeight/mPulseHeight", "Pulse height plot", 30, -0.5, 29.5));
+  drawLinesOnPulseHeight(mPulseHeight.get());
   getObjectsManager()->startPublishing(mPulseHeight.get());
-  mPulseHeight2.reset(new TH1F("mPulseHeight2", "Pulse height plot v2", 30, -0.5, 29.5));
-  getObjectsManager()->startPublishing(mPulseHeight2.get());
-  mPulseHeight2n.reset(new TH1F("mPulseHeight2nonoise", "Pulse height plot v2 excluding noise", 30, -0.5, 29.5));
-  getObjectsManager()->startPublishing(mPulseHeight2n.get());
+  mPulseHeight.get()->GetYaxis()->SetTickSize(0.01);
+  mPulseHeightn.reset(new TH1F("mPulseHeight2nonoise", "Pulse height plot v2 excluding noise;TimeBins;Counts", 30, -0.5, 29.5));
+  drawLinesOnPulseHeight(mPulseHeightn.get());
+  getObjectsManager()->startPublishing(mPulseHeightn.get());
+  mPulseHeightn.get()->GetYaxis()->SetTickSize(0.01);
 
-  mPulseHeightScaled.reset(new TH1F("mPulseHeightScaled", "Scaled Pulse height plot", 30, -0.5, 29.5));
+  mPulseHeightScaled.reset(new TH1F("PulseHeight/mPulseHeightScaled", "Scaled Pulse height plot;TimeBins;Scaled Counts", 30, -0.5, 29.5));
   getObjectsManager()->startPublishing(mPulseHeightScaled.get());
-  mPulseHeightScaled2.reset(new TH1F("mPulseHeightScaled2", "Scaled Pulse height plot", 30, -0.5, 29.5));
-  getObjectsManager()->startPublishing(mPulseHeightScaled2.get());
+  mPulseHeightScaled.get()->GetYaxis()->SetTickSize(0.01);
 
-  mTotalPulseHeight2D.reset(new TH2F("TotalPulseHeight", "Total Pulse Height", 30, 0., 30., 200, 0., 200.));
+  mTotalPulseHeight2D.reset(new TH2F("PulseHeight/TotalPulseHeight", "Total Pulse Height;Timebins;Summed charge of neighbors", 30, 0., 30., 200, 0., 200.));
   getObjectsManager()->startPublishing(mTotalPulseHeight2D.get());
   getObjectsManager()->setDefaultDrawOptions(mTotalPulseHeight2D->GetName(), "COLZ");
-  mTotalPulseHeight2D2.reset(new TH2F("TotalPulseHeight2", "Total Pulse Height", 30, 0., 30., 200, 0., 200.));
-  getObjectsManager()->startPublishing(mTotalPulseHeight2D2.get());
-  getObjectsManager()->setDefaultDrawOptions(mTotalPulseHeight2D2->GetName(), "COLZ");
 
-  mPulseHeightpro.reset(new TProfile("mPulseHeightpro", "Pulse height profile  plot", 30, -0.5, 29.5));
+  mPulseHeightpro.reset(new TProfile("PulseHeight/mPulseHeightpro", "Pulse height profile  plot;Timebins;Counts", 30, -0.5, 29.5));
   mPulseHeightpro.get()->Sumw2();
   getObjectsManager()->startPublishing(mPulseHeightpro.get());
 
-  mPulseHeightperchamber.reset(new TProfile2D("mPulseHeightperchamber", "mPulseHeightperchamber", 30, -0.5, 29.5, 540, 0, 540));
+  mPulseHeightperchamber.reset(new TProfile2D("PulseHeight/mPulseHeightperchamber", "mPulseHeightperchamber;Timebin;Chamber", 30, -0.5, 29.5, 540, 0, 540));
   mPulseHeightperchamber.get()->Sumw2();
-  mPulseHeightperchamber.get()->GetXaxis()->SetTitle("Timebin");
-  mPulseHeightperchamber.get()->GetYaxis()->SetTitle("Chamber");
   getObjectsManager()->startPublishing(mPulseHeightperchamber.get());
   getObjectsManager()->setDefaultDrawOptions(mPulseHeightperchamber.get()->GetName(), "colz");
 
   for (int count = 0; count < 18; ++count) {
-    std::string label = fmt::format("pulseheight2d_sm_{0:02d}", count);
-    std::string title = fmt::format("Pulse Height Spectrum for SM {0:02d}", count);
+    std::string label = fmt::format("PulseHeight/pulseheight2d_sm_{0:02d}", count);
+    std::string title = fmt::format("Pulse Height Spectrum for SM {0:02d};Timebin;Counts", count);
     TH1F* h = new TH1F(label.c_str(), title.c_str(), 30, -0.5, 29.5);
     mPulseHeight2DperSM[count].reset(h);
     getObjectsManager()->startPublishing(h);
-    label = fmt::format("pulseheight2d2_sm_{0:02d}", count);
-    title = fmt::format("Pulse Height Spectrum v 2 for SM {0:02d}", count);
-    TH1F* h2 = new TH1F(label.c_str(), title.c_str(), 30, -0.5, 29.5);
-    mPulseHeight2DperSM2[count].reset(h2);
-    getObjectsManager()->startPublishing(h2);
-    getObjectsManager()->setDefaultDrawOptions(h->GetName(), "COLZ");
-    getObjectsManager()->setDefaultDrawOptions(h2->GetName(), "COLZ");
   }
 
   int cn = 0;
@@ -294,27 +282,43 @@ void DigitsTask::buildHistogramsPH()
 
   for (int count = 0; count < 540; ++count) {
     sm = count / 30;
-    std::string label = fmt::format("pulseheight_{0:02d}_{1}_{2}", sm, cn / 6, cn % 6);
-    std::string title = fmt::format("{0:02d}_{1}_{2}", sm, cn / 6, cn % 6);
-    TProfile* h = new TProfile(label.c_str(), title.c_str(), 30, -0.5, 29.5);
+    std::string label = fmt::format("PulseHeightPerChamber/pulseheight_{0:02d}_{1}_{2}", sm, cn / 6, cn % 6);
+    std::string title = fmt::format("{0:02d}_{1}_{2};Timebin;Chamber", sm, cn / 6, cn % 6);
+    TH1F* h = new TH1F(label.c_str(), title.c_str(), 30, -0.5, 29.5);
     mPulseHeightPerChamber_1D[count].reset(h);
-
     getObjectsManager()->startPublishing(h);
-
-    mPulseHeightPerChamber_1D[count].get()->GetXaxis()->SetTitle("Timebin");
-    mPulseHeightPerChamber_1D[count].get()->GetYaxis()->SetTitle("Chamber");
-    getObjectsManager()->setDefaultDrawOptions(h->GetName(), "COLZ");
     cn++;
     if (cn > 29)
       cn = 0;
   }
 
-  mPulseHeightDuration.reset(new TH1F("mPulseHeightDuration", "Pulse height duration", 10000, 0, 5.0));
-  getObjectsManager()->startPublishing(mPulseHeightDuration.get());
-  mPulseHeightDuration1.reset(new TH1F("mPulseHeightDuration1", "Pulse height duration v2", 10000, 0, 5.0));
-  getObjectsManager()->startPublishing(mPulseHeightDuration1.get());
-  mPulseHeightDurationDiff.reset(new TH1F("mPulseHeightDurationDiff", "Pulse height plot v2", 100000, -5.0, 5.0));
-  getObjectsManager()->startPublishing(mPulseHeightDurationDiff.get());
+  for (int iLayer = 0; iLayer < 6; ++iLayer) {
+    mLayers.push_back(new TH2F(Form("DigitsPerLayer/layer%i", iLayer), Form("Digit count per pad in layer %i;stack;sector", iLayer), 76, -0.5, 75.5, 2592, -0.5, 2591.5));
+    auto xax = mLayers.back()->GetXaxis();
+    xax->SetBinLabel(8, "0");
+    xax->SetBinLabel(24, "1");
+    xax->SetBinLabel(38, "2");
+    xax->SetBinLabel(52, "3");
+    xax->SetBinLabel(68, "4");
+    xax->SetTicks("-");
+    xax->SetTickSize(0.01);
+    xax->SetLabelSize(0.045);
+    xax->SetLabelOffset(0.01);
+    auto yax = mLayers.back()->GetYaxis();
+    for (int iSec = 0; iSec < 18; ++iSec) {
+      auto lbl = std::to_string(iSec);
+      yax->SetBinLabel(iSec * 144 + 72, lbl.c_str());
+    }
+    yax->SetTicks("-");
+    yax->SetTickSize(0.01);
+    yax->SetLabelSize(0.045);
+    yax->SetLabelOffset(0.01);
+    mLayers.back()->SetStats(0);
+    drawTrdLayersGrid(mLayers.back());
+    getObjectsManager()->startPublishing(mLayers.back());
+    getObjectsManager()->setDefaultDrawOptions(mLayers.back()->GetName(), "COLZ");
+    getObjectsManager()->setDisplayHint(mLayers.back(), "logz");
+  }
 }
 
 void DigitsTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -336,23 +340,30 @@ void DigitsTask::initialize(o2::framework::InitContext& /*ctx*/)
     mDriftRegion.second = 20.0;
     ILOG(Info, Support) << "configure() : using default dritfregionstart = " << mDriftRegion.second << ENDM;
   }
-  if (auto param = mCustomParameters.find("pulsheightpeaklower"); param != mCustomParameters.end()) {
+  if (auto param = mCustomParameters.find("pulseheightpeaklower"); param != mCustomParameters.end()) {
     mPulseHeightPeakRegion.first = stof(param->second);
     ILOG(Info, Support) << "configure() : using pulsehheightlower	= " << mPulseHeightPeakRegion.first << ENDM;
   } else {
     mPulseHeightPeakRegion.first = 1.0;
     ILOG(Info, Support) << "configure() : using default pulseheightlower = " << mPulseHeightPeakRegion.first << ENDM;
   }
-  if (auto param = mCustomParameters.find("pulsheightpeakupper"); param != mCustomParameters.end()) {
+  if (auto param = mCustomParameters.find("pulseheightpeakupper"); param != mCustomParameters.end()) {
     mPulseHeightPeakRegion.second = stof(param->second);
     ILOG(Info, Support) << "configure() : using pulsehheightupper	= " << mPulseHeightPeakRegion.second << ENDM;
   } else {
     mPulseHeightPeakRegion.second = 5.0;
     ILOG(Info, Support) << "configure() : using default pulseheightupper = " << mPulseHeightPeakRegion.second << ENDM;
   }
+  if (auto param = mCustomParameters.find("skippedshareddigits"); param != mCustomParameters.end()) {
+    mSkipSharedDigits = stod(param->second);
+    ILOG(Info, Support) << "configure() : using skip shared digits 	= " << mSkipSharedDigits << ENDM;
+  } else {
+    mSkipSharedDigits = false;
+    ILOG(Info, Support) << "configure() : using default skip shared digits = " << mSkipSharedDigits << ENDM;
+  }
+
   buildHistograms();
 
-  buildHistogramsPH();
   retrieveCCDBSettings();
 }
 
@@ -366,31 +377,7 @@ void DigitsTask::startOfCycle()
   ILOG(Info) << "startOfCycle" << ENDM;
 }
 
-bool digitindexcompare(unsigned int A, unsigned int B, const std::vector<o2::trd::Digit>& originalDigits)
-{
-  // sort into ROC:padrow
-  const o2::trd::Digit *a, *b;
-  a = &originalDigits[A];
-  b = &originalDigits[B];
-  if (a->getDetector() < b->getDetector()) {
-    return 1;
-  }
-  if (a->getDetector() > b->getDetector()) {
-    return 0;
-  }
-  if (a->getPadRow() < b->getPadRow()) {
-    return 1;
-  }
-  if (a->getPadRow() > b->getPadRow()) {
-    return 0;
-  }
-  if (a->getPadCol() > b->getPadCol()) {
-    return 0;
-  }
-  return 0;
-}
-
-bool pulseheightDigitindexcompare(unsigned int A, unsigned int B, const std::vector<o2::trd::Digit>& originalDigits)
+bool digitIndexCompare(unsigned int A, unsigned int B, const std::vector<o2::trd::Digit>& originalDigits)
 {
   // sort into ROC:padrow
   const o2::trd::Digit *a, *b;
@@ -431,11 +418,13 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
       std::iota(digitsIndex.begin(), digitsIndex.end(), 0);
       // we now have sorted digits, can loop sequentially and be going over det/row/pad
       for (auto& trigger : triggerrecords) {
+        uint64_t numtracklets = trigger.getNumberOfTracklets();
+        uint64_t numdigits = trigger.getNumberOfDigits();
         if (trigger.getNumberOfDigits() == 0)
           continue; // bail if we have no digits in this trigger
         // now sort digits to det,row,pad
         std::sort(std::begin(digitsIndex) + trigger.getFirstDigit(), std::begin(digitsIndex) + trigger.getFirstDigit() + trigger.getNumberOfDigits(),
-                  [&digitv](unsigned int i, unsigned int j) { return digitindexcompare(i, j, digitv); });
+                  [&digitv](unsigned int i, unsigned int j) { return digitIndexCompare(i, j, digitv); });
 
         ///////////////////////////////////////////////////
         // Go through all chambers (using digits)
@@ -447,293 +436,6 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
         } else {
           mDigitsPerEvent->Fill(trigger.getNumberOfDigits());
         }
-
-        for (int currentdigit = trigger.getFirstDigit() + 1; currentdigit < trigger.getFirstDigit() + trigger.getNumberOfDigits() - 1; ++currentdigit) { // -1 and +1 as we are looking for consecutive digits pre and post the current one indexed.
-
-          int detector = digits[digitsIndex[currentdigit]].getDetector();
-          int sm = detector / 30;
-          int detLoc = detector % 30;
-          int layer = detector % 6;
-          int istack = detLoc / 6;
-          int iChamber = sm * 30 + istack * o2::trd::constants::NLAYER + layer;
-          int nADChigh = 0;
-          int stackoffset = istack * o2::trd::constants::NROWC1;
-          if (istack >= 2)
-            stackoffset -= 4; // account for stack 2 having 4 less.
-          // std::cout << "padrow:" << digits[digitsIndex[currentdigit]].getPadRow() << " stackoffset: " << stackoffset << " padcol:" <<digits[digitsIndex[currentdigit]].getPadCol()<< " stack:" << istack << " layer:"<< layer << " chamber:" << iChamber << std::endl;
-          mHCMCM[sm]->Fill(digits[digitsIndex[currentdigit]].getPadRow() + stackoffset, digits[digitsIndex[currentdigit]].getPadCol());
-          mDigitHCID->Fill(digits[digitsIndex[currentdigit]].getHCId());
-          // after updating the 2 above histograms the first and last digits are of no use, as we are looking for 3 neighbouring digits after this.
-
-          int row = 0, col = 0;
-          // do we have 3 digits next to each other:
-          std::tuple<unsigned int, unsigned int, unsigned int> a, b, c;
-          a = std::make_tuple(digits[digitsIndex[currentdigit - 1]].getDetector(), digits[digitsIndex[currentdigit - 1]].getPadRow(), digits[digitsIndex[currentdigit - 1]].getPadCol());
-          b = std::make_tuple(digits[digitsIndex[currentdigit]].getDetector(), digits[digitsIndex[currentdigit]].getPadRow(), digits[digitsIndex[currentdigit]].getPadCol());
-          c = std::make_tuple(digits[digitsIndex[currentdigit + 1]].getDetector(), digits[digitsIndex[currentdigit + 1]].getPadRow(), digits[digitsIndex[currentdigit + 1]].getPadCol());
-          auto [det1, row1, col1] = a;
-          auto [det2, row2, col2] = b;
-          auto [det3, row3, col3] = c;
-          // check we 3 consecutive adc
-          bool consecutive = false;
-          if (det1 == det2 && det2 == det3 && row1 == row2 && row2 == row3 && col1 + 1 == col2 && col2 + 1 == col3) {
-            consecutive = true;
-          }
-          // illumination
-          mNClsLayer[layer]->Fill(sm - 0.5 + col / 144., startRow[istack] + row);
-          for (int time = 1; time < o2::trd::constants::TIMEBINS - 1; ++time) {
-            int digitindex = digitsIndex[currentdigit];
-            int digitindexbelow = digitsIndex[currentdigit - 1];
-            int digitindexabove = digitsIndex[currentdigit + 1];
-            int value = digits[digitsIndex[currentdigit]].getADC()[time];
-            if (value > adcThresh)
-              nADChigh++;
-
-            mADCvalue->Fill(value);
-            mADC[sm]->Fill(value);
-            mADCTB[sm]->Fill(time, value);
-            mADCTBfull[sm]->Fill(time, value);
-
-            if (consecutive) {
-              // clusterize
-              if (value > digits[digitindexbelow].getADC()[time] &&
-                  value > digits[digitindexabove].getADC()[time]) {
-                // How do we determine this? HV/LME/other?
-                // if(ChamberHasProblems(sm,istack,layer)) continue;
-
-                value -= 10;
-
-                int value = digits[digitindex].getADC()[time];
-                int valueLU = (digits[digitindexbelow].getADC()[time - 1] < 10) ? 0 : digits[digitindexbelow].getADC()[time - 1] - 10;
-                int valueRU = (digits[digitindexabove].getADC()[time - 1] < 10) ? 0 : digits[digitindexabove].getADC()[time - 1] - 10;
-                int valueU = digits[digitindex].getADC()[time - 1] - 10;
-
-                int valueLD = (digits[digitindexbelow].getADC()[time + 1] < 10) ? 0 : digits[digitindexbelow].getADC()[time + 1] - 10;
-                int valueRD = (digits[digitindexabove].getADC()[time + 1] < 10) ? 0 : digits[digitindexabove].getADC()[time + 1] - 10;
-                int valueD = digits[digitindex].getADC()[time + 1] - 10;
-
-                int valueL = (digits[digitindexbelow].getADC()[time] < 10) ? 0 : digits[digitindexbelow].getADC()[time] - 10;
-                int valueR = (digits[digitindexabove].getADC()[time] < 10) ? 0 : digits[digitindexabove].getADC()[time] - 10;
-
-                int sum = value + valueL + valueR;
-                int sumU = valueU + valueLU + valueRU;
-                int sumD = valueD + valueLD + valueRD;
-
-                if (sumU < 10 || sumD < 10)
-                  continue;
-                if (TMath::Abs(1. * sum / sumU - 1) < 0.01)
-                  continue;
-                if (TMath::Abs(1. * sum / sumD - 1) < 0.01)
-                  continue;
-                if (TMath::Abs(1. * sumU / sumD - 1) < 0.01)
-                  continue;
-
-                mNCls->Fill(sm);
-                mClsSM[sm]->Fill(sum);
-                mClsTbSM[sm]->Fill(time, sum);
-                mClsTb->Fill(time, sum);
-                mClsChargeFirst->Fill(sum, (1. * sum / sumU) - 1.);
-                mClsChargeFirst->Fill(sum, (1. * sum / sumD) - 1.);
-
-                if (sum > 10 && sum < clsCutoff) {
-                  mClsChargeTb->Fill(time, sum);
-                  mClsChargeTbCycle->Fill(time, sum);
-                  mClsNTb->Fill(time);
-                }
-
-                mClsAmp->Fill(sum);
-
-                if (time > mDriftRegion.first && time < mDriftRegion.second) {
-                  mClsAmpDrift->Fill(sum);
-                  mClsDetAmp[sm]->Fill(detLoc, sum);
-                  mClusterAmplitudeChamber->Fill(sum, iChamber);
-                }
-
-                mClsSector->Fill(sm, sum);
-                mClsStack->Fill(istack, sum);
-
-                // chamber by chamber drift time
-                if (sum > 10) // && sum < clsCutoff)
-                {
-                  mClsDetTime[sm]->Fill(detLoc, time, sum);
-                  // mClsDetTimeN[idSM]->Fill(iChamber, k);
-                }
-
-                // Fill pulse height plot according to demanded trigger
-                /*  TODO implement the different triggers, read the header in the cruhalfchamber this is lost on the epn,
-                 * if(IsRun(PHYSICSRUN)){
-                 }
-                 else if(IsRun(STANDALONE))
-                 else if(IsRun(CALIBRATION)) // the one with digits
-                 */
-                mClsChargeTbTigg[3]->Fill(time, sum);
-
-              } // if consecutive adc ( 3 next to each other and we are on the middle on
-            }   // loop over time-bins
-          }     // loop over col-pads
-          //	fNumberOfSignalADCsInCycle += nADChigh;
-        } // for loop over digits
-      }   // loop over triggers
-
-    } // if input is valid
-  }   // for loop over inputs
-
-  auto digits = ctx.inputs().get<gsl::span<o2::trd::Digit>>("digits");
-  auto tracklets = ctx.inputs().get<gsl::span<o2::trd::Tracklet64>>("tracklets");
-  auto triggerrecords = ctx.inputs().get<gsl::span<o2::trd::TriggerRecord>>("triggers");
-  uint16_t tbsum[540][16][144];
-  std::map<std::tuple<int, int, int>, o2::trd::ArrayADC> dataMap;
-  uint64_t digitcount = 0;
-  std::vector<int> digitIndex;
-  auto start = std::chrono::steady_clock::now();
-  int triggercount = 0;
-  for (auto& trigger : triggerrecords) {
-    uint64_t numtracklets = trigger.getNumberOfTracklets();
-    uint64_t numdigits = trigger.getNumberOfDigits();
-
-    int tbmax = 0;
-    int tbhi = 0;
-    int tblo = 0;
-
-    int det = 0;
-    int row = 0;
-    int pad = 0;
-    int channel = 0;
-    memset(tbsum, 0, sizeof(tbsum));
-    dataMap.clear();
-    for (int i = trigger.getFirstDigit(); i < trigger.getFirstDigit() + trigger.getNumberOfDigits(); ++i) {
-
-      // digit comes in sorted by hcid.
-      // resort them by chamber,row, pad, this then removes the need for the map.
-      //
-      //  loop over det, pad, row?
-      channel = digits[i].getChannel();
-      if (channel == 0 || channel == 1 || channel == 20) {
-        continue;
-      }
-
-      auto adcs = digits[i].getADC();
-      det = digits[i].getDetector();
-      row = digits[i].getPadRow();
-      pad = digits[i].getPadCol();
-      int supermod = det / 30;
-
-      tbsum[det][row][pad] = digits[i].getADCsum();
-
-      if (tbsum[det][row][pad] >= 400) {
-        dataMap.insert(std::make_pair(std::make_tuple(det, row, pad), adcs));
-      } else {
-        tbsum[det][row][pad] = 0;
-      }
-    } // end digitcont
-
-    // std::cout << "start updating..... trigger:" << triggercount++ << " with " << trigger.getNumberOfDigits() << " digits " << std::endl;
-    for (int d = 0; d < 540; d++) {
-      int sector = d / 30;
-      for (int r = 0; r < 16; r++) {
-        for (int c = 2; c < 142; c++) {
-          if (d == 50 && tbsum[d][r][c] > 0) {
-            // std::cout << "updating on detector 50 " << d << " " << r << " " << c-1 << "("<<tbsum[d][r][c-1]<<") -- " << d << " " << r << " " << c << "("<<tbsum[d][r][c]<<") -- " << d << " " << r << " " << c+1 <<"("<< tbsum[d][r][c+1]<< ")" << std::endl;
-          }
-          if (tbsum[d][r][c] > tbsum[d][r][c - 1] && tbsum[d][r][c] > tbsum[d][r][c + 1]) {
-            if (tbsum[d][r][c - 1] > tbsum[d][r][c + 1]) {
-              tbmax = tbsum[d][r][c];
-              tbhi = tbsum[d][r][c - 1];
-              tblo = tbsum[d][r][c + 1];
-              auto adcMax = dataMap.find(std::make_tuple(d, r, c));
-              auto adcHi = dataMap.find(std::make_tuple(d, r, c - 1));
-              auto adcLo = dataMap.find(std::make_tuple(d, r, c + 1));
-
-              if (dataMap.find(std::make_tuple(d, r, c - 2)) == dataMap.end()) {
-                if (tblo > 400) {
-                  int phVal = 0;
-                  // std::cout << "updatea " << d << " " << r << " " << c-1 << "("<<tbsum[d][r][c-1]<<") -- " << d << " " << r << " " << c << "("<<tbsum[d][r][c]<<") -- " << d << " " << r << " " << c+1 <<"("<< tbsum[d][r][c+1]<< ")" << std::endl;
-                  for (int tb = 0; tb < 30; tb++) {
-                    phVal = ((adcMax->second)[tb] + (adcHi->second)[tb] + (adcLo->second)[tb]);
-                    // TODO do we have a corresponding tracklet?
-                    mPulseHeight->Fill(tb, phVal);
-                    mPulseHeightpro->Fill(tb, phVal);
-                    mTotalPulseHeight2D->Fill(tb, phVal);
-                    mPulseHeight2DperSM[sector]->Fill(tb, phVal);
-                    mPulseHeightperchamber->Fill(tb, d, phVal);
-                    mPulseHeightPerChamber_1D[d]->Fill(tb, phVal);
-                  }
-                }
-              } else {
-                auto adcHiNeighbour = dataMap.find(std::make_tuple(d, r, c - 2));
-                if (tblo > 400) {
-                  // std::cout << "updateb " << d << " " << r << " " << c-1 << "("<<tbsum[d][r][c-1]<<") -- " << d << " " << r << " " << c << "("<<tbsum[d][r][c]<<") -- " << d << " " << r << " " << c+1 <<"("<< tbsum[d][r][c+1]<< ")" << std::endl;
-                  int phVal = 0;
-                  for (int tb = 0; tb < 30; tb++) {
-                    phVal = ((adcMax->second)[tb] + (adcHi->second)[tb] + (adcLo->second)[tb]);
-                    mPulseHeight->Fill(tb, phVal);
-                    mPulseHeightpro->Fill(tb, phVal);
-                    mTotalPulseHeight2D->Fill(tb, phVal);
-                    mPulseHeight2DperSM[sector]->Fill(tb, phVal);
-                    mPulseHeightperchamber->Fill(tb, d, phVal);
-                    mPulseHeightPerChamber_1D[d]->Fill(tb, phVal);
-                  }
-                }
-              }
-            } else {
-              tbmax = tbsum[d][r][c];
-              tbhi = tbsum[d][r][c + 1];
-              tblo = tbsum[d][r][c - 1];
-              auto adcMax = dataMap.find(std::make_tuple(d, r, c));
-              auto adcHi = dataMap.find(std::make_tuple(d, r, c + 1));
-              auto adcLo = dataMap.find(std::make_tuple(d, r, c - 1));
-              if (dataMap.find(std::make_tuple(d, r, c + 2)) == dataMap.end()) {
-
-                if (tblo > 400) {
-                  int phVal = 0;
-                  for (int tb = 0; tb < 30; tb++) {
-                    phVal = ((adcMax->second)[tb] + (adcHi->second)[tb] + (adcLo->second)[tb]);
-                    mPulseHeight->Fill(tb, phVal);
-                    mPulseHeightpro->Fill(tb, phVal);
-                    mTotalPulseHeight2D->Fill(tb, phVal);
-                    mPulseHeight2DperSM[sector]->Fill(tb, phVal);
-                    mPulseHeightperchamber->Fill(tb, d, phVal);
-                    mPulseHeightPerChamber_1D[d]->Fill(tb, phVal);
-                  }
-                }
-              } else {
-                auto adcHiNeighbour = dataMap.find(std::make_tuple(d, r, c + 2));
-                if (tblo > 400) {
-                  int phVal = 0;
-                  for (int tb = 0; tb < 30; tb++) {
-                    phVal = ((adcMax->second)[tb] + (adcHi->second)[tb] + (adcLo->second)[tb]);
-                    mPulseHeight->Fill(tb, phVal);
-                    mPulseHeightpro->Fill(tb, phVal);
-                    mTotalPulseHeight2D->Fill(tb, phVal);
-                    mPulseHeight2DperSM[sector]->Fill(tb, phVal);
-                    mPulseHeightperchamber->Fill(tb, d, phVal);
-                    mPulseHeightPerChamber_1D[d]->Fill(tb, phVal);
-                  }
-                }
-              }
-            } // end else
-          }   // end if (tbsum[d][r][c]>tbsum[d][r][c-1] && tbsum[d][r][c]>tbsum[d][r][c+1])
-        }     // end for c
-      }       // end for r
-    }         // end for d
-    // std::cout << "finishedupdating....." << std::endl;
-    dataMap.clear();
-  } // end trigger event
-
-  auto end = std::chrono::steady_clock::now();
-  std::chrono::duration<double> pulseheightduration = end - start;
-  LOG(info) << "Digits into pulsheight spectrum: " << digitcount;
-  triggercount = 0;
-  // alternate formulation:
-  auto start1 = std::chrono::steady_clock::now();
-  std::vector<o2::trd::Digit> digitv(digits.begin(), digits.end());
-  std::vector<unsigned int> digitsIndex(digitv.size());
-  std::iota(digitsIndex.begin(), digitsIndex.end(), 0);
-
-  for (auto& trigger : triggerrecords) {
-    uint64_t numtracklets = trigger.getNumberOfTracklets();
-    uint64_t numdigits = trigger.getNumberOfDigits();
-
     int tbmax = 0;
     int tbhi = 0;
     int tblo = 0;
@@ -743,30 +445,34 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
     int pad = 0;
     int channel = 0;
 
-    memset(tbsum, 0, sizeof(tbsum));
-
-    if (digitv.size() == 0)
-      continue;
-
-    if (trigger.getNumberOfDigits() == 0)
-      continue; // bail if we have no digits in this trigger
-    // now sort digits to det,row,pad
-    std::sort(std::begin(digitsIndex) + trigger.getFirstDigit(), std::begin(digitsIndex) + trigger.getFirstDigit() + trigger.getNumberOfDigits(),
-              [&digitv](unsigned int i, unsigned int j) { return pulseheightDigitindexcompare(i, j, digitv); });
-    // std::cout << " staring updating second ... for trigger:" << triggercount++ << " with " << trigger.getNumberOfDigits() << " digits" << std::endl;
     for (int currentdigit = trigger.getFirstDigit() + 1; currentdigit < trigger.getFirstDigit() + trigger.getNumberOfDigits() - 1; ++currentdigit) { // -1 and +1 as we are looking for consecutive digits pre and post the current one indexed.
+      if (digits[digitsIndex[currentdigit]].getChannel() > 21)
+        continue;
       int detector = digits[digitsIndex[currentdigit]].getDetector();
-      auto adcs = digits[digitsIndex[currentdigit]].getADC();
-      det = digits[digitsIndex[currentdigit]].getDetector();
-      row = digits[digitsIndex[currentdigit]].getPadRow();
-      pad = digits[digitsIndex[currentdigit]].getPadCol();
-      int supermod = detector / 30;
-      int sector = detector / 30;
+      int sm = detector / 30;
       int detLoc = detector % 30;
       int layer = detector % 6;
-      int istack = detLoc / 6;
-      int iChamber = supermod * 30 + istack * o2::trd::constants::NLAYER + layer;
+      int stack = detLoc / 6;
+      int chamber = sm * 30 + stack * o2::trd::constants::NLAYER + layer;
       int nADChigh = 0;
+      int stackoffset = stack * o2::trd::constants::NROWC1;
+      int row = 0, col = 0;
+      if (stack >= 2)
+        stackoffset -= 4; // account for stack 2 having 4 less.
+      // for now the if statement is commented as there is a problem finding isShareDigit, will come back to that.
+      ///if (!digits[digitsIndex[currentdigit]].isSharedDigit() && !mSkipSharedDigits.second) {
+      int rowGlb = stack < 3 ? digits[digitsIndex[currentdigit]].getPadRow() + stack * 16 : digits[digitsIndex[currentdigit]].getPadRow() + 44 + (stack - 3) * 16; // pad row within whole sector
+      int colGlb = digits[digitsIndex[currentdigit]].getPadCol() + sm * 144;                                                                                       // pad column number from 0 to NSectors * 144
+      mLayers[layer]->Fill(rowGlb, colGlb);
+      //}
+      mHCMCM[sm]->Fill(digits[digitsIndex[currentdigit]].getPadRow() + stackoffset, digits[digitsIndex[currentdigit]].getPadCol());
+      mDigitHCID->Fill(digits[digitsIndex[currentdigit]].getHCId());
+      // after updating the 2 above histograms the first and last digits are of no use, as we are looking for 3 neighbouring digits after this.
+
+      auto adcs = digits[digitsIndex[currentdigit]].getADC();
+      row = digits[digitsIndex[currentdigit]].getPadRow();
+      pad = digits[digitsIndex[currentdigit]].getPadCol();
+      int sector = detector / 30;
       // do we have 3 digits next to each other:
       std::tuple<unsigned int, unsigned int, unsigned int> aa, ba, ca;
       aa = std::make_tuple(digits[digitsIndex[currentdigit - 1]].getDetector(), digits[digitsIndex[currentdigit - 1]].getPadRow(), digits[digitsIndex[currentdigit - 1]].getPadCol());
@@ -775,18 +481,106 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
       auto [det1, row1, col1] = aa;
       auto [det2, row2, col2] = ba;
       auto [det3, row3, col3] = ca;
-      // check we have 3 consecutive adc
-      // if (det1 == det2 && det2 == det3 && row1 == row2 && row2 == row3 && col1 + 1 == col2 && col2 + 1 == col3) {
-
-      const o2::trd::Digit* b = &digits[digitsIndex[currentdigit]];
-      const o2::trd::Digit* a = &digits[digitsIndex[currentdigit - 1]];
-      const o2::trd::Digit* c = &digits[digitsIndex[currentdigit + 1]];
-      uint32_t suma = a->getADCsum();
-      uint32_t sumb = b->getADCsum();
-      uint32_t sumc = c->getADCsum();
-      if (det2 == 50) {
-        // std::cout << "on detector 50 " << det1 << " " << row1 << " " << col1 << "("<<suma<<") -- " << det2 << " " << row2 << " " << col2 << "("<<sumb<<") -- " << det3 << " " << row3 << " " << col3 <<"("<< sumc<< ")" << std::endl;
+      // do we have 3 digits next to each other:
+      // check we 3 consecutive adc
+      bool consecutive = false;
+      if (det1 == det2 && det2 == det3 && row1 == row2 && row2 == row3 && col1 + 1 == col2 && col2 + 1 == col3) {
+        consecutive = true;
       }
+      // illumination
+      mNClsLayer[layer]->Fill(sm - 0.5 + col / 144., startRow[stack] + row);
+      for (int time = 1; time < o2::trd::constants::TIMEBINS - 1; ++time) {
+        int digitindex = digitsIndex[currentdigit];
+        int digitindexbelow = digitsIndex[currentdigit - 1];
+        int digitindexabove = digitsIndex[currentdigit + 1];
+        int value = digits[digitsIndex[currentdigit]].getADC()[time];
+        if (value > adcThresh)
+          nADChigh++;
+
+        mADCvalue->Fill(value);
+        mADC[sm]->Fill(value);
+        mADCTB[sm]->Fill(time, value);
+        mADCTBfull[sm]->Fill(time, value);
+
+        if (consecutive) {
+          // clusterize
+          if (value > digits[digitindexbelow].getADC()[time] &&
+              value > digits[digitindexabove].getADC()[time]) {
+            // How do we determine this? HV/LME/other?
+            // if(ChamberHasProblems(sm,istack,layer)) continue;
+
+            value -= 10;
+
+            int value = digits[digitindex].getADC()[time];
+            int valueLU = (digits[digitindexbelow].getADC()[time - 1] < 10) ? 0 : digits[digitindexbelow].getADC()[time - 1] - 10;
+            int valueRU = (digits[digitindexabove].getADC()[time - 1] < 10) ? 0 : digits[digitindexabove].getADC()[time - 1] - 10;
+            int valueU = digits[digitindex].getADC()[time - 1] - 10;
+
+            int valueLD = (digits[digitindexbelow].getADC()[time + 1] < 10) ? 0 : digits[digitindexbelow].getADC()[time + 1] - 10;
+            int valueRD = (digits[digitindexabove].getADC()[time + 1] < 10) ? 0 : digits[digitindexabove].getADC()[time + 1] - 10;
+            int valueD = digits[digitindex].getADC()[time + 1] - 10;
+
+            int valueL = (digits[digitindexbelow].getADC()[time] < 10) ? 0 : digits[digitindexbelow].getADC()[time] - 10;
+            int valueR = (digits[digitindexabove].getADC()[time] < 10) ? 0 : digits[digitindexabove].getADC()[time] - 10;
+
+            int sum = value + valueL + valueR;
+            int sumU = valueU + valueLU + valueRU;
+            int sumD = valueD + valueLD + valueRD;
+
+            if (sumU < 10 || sumD < 10)
+              continue;
+            if (TMath::Abs(1. * sum / sumU - 1) < 0.01)
+              continue;
+            if (TMath::Abs(1. * sum / sumD - 1) < 0.01)
+              continue;
+            if (TMath::Abs(1. * sumU / sumD - 1) < 0.01)
+              continue;
+
+            mNCls->Fill(sm);
+            mClsSM[sm]->Fill(sum);
+            mClsTbSM[sm]->Fill(time, sum);
+            mClsTb->Fill(time, sum);
+            mClsChargeFirst->Fill(sum, (1. * sum / sumU) - 1.);
+            mClsChargeFirst->Fill(sum, (1. * sum / sumD) - 1.);
+
+            if (sum > 10 && sum < clsCutoff) {
+              mClsChargeTb->Fill(time, sum);
+              mClsChargeTbCycle->Fill(time, sum);
+              mClsNTb->Fill(time);
+            }
+
+            mClsAmp->Fill(sum);
+
+            if (time > mDriftRegion.first && time < mDriftRegion.second) {
+              mClsAmpDrift->Fill(sum);
+              mClsDetAmp[sm]->Fill(detLoc, sum);
+              mClusterAmplitudeChamber->Fill(sum, chamber);
+            }
+
+            mClsSector->Fill(sm, sum);
+            mClsStack->Fill(stack, sum);
+
+            // chamber by chamber drift time
+            if (sum > 10) // && sum < clsCutoff)
+            {
+              mClsDetTime[sm]->Fill(detLoc, time, sum);
+              // mClsDetTimeN[idSM]->Fill(iChamber, k);
+            }
+
+            // Fill pulse height plot according to demanded trigger
+            // This is pulseheight lifted from run2, probably not what was used.
+            mClsChargeTbTigg->Fill(time, sum);
+
+          } // if consecutive adc ( 3 next to each other and we are on the middle on
+        }   // loop over time-bins
+      }     // loop over col-pads
+
+      const o2::trd::Digit* mid = &digits[digitsIndex[currentdigit]];
+      const o2::trd::Digit* before = &digits[digitsIndex[currentdigit - 1]];
+      const o2::trd::Digit* after = &digits[digitsIndex[currentdigit + 1]];
+      uint32_t suma = before->getADCsum();
+      uint32_t sumb = mid->getADCsum();
+      uint32_t sumc = after->getADCsum();
       if (det1 == det2 && det2 == det3 && row1 == row2 && row2 == row3 && col1 + 1 == col2 && col2 + 1 == col3) {
         if (sumb > suma && sumb > sumc) {
           if (suma > sumc) {
@@ -795,15 +589,18 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
             tblo = sumc;
             if (tblo > 400) {
               int phVal = 0;
-              // std::cout << "updating2a " << det1 << " " << row1 << " " << col1 << " -- " << det2 << " " << row2 << " " << col2 << " -- " << det3 << " " << row3 << " " << col3 << std::endl;
               for (int tb = 0; tb < 30; tb++) {
-                phVal = (b->getADC()[tb] + a->getADC()[tb] + c->getADC()[tb]);
+                phVal = (mid->getADC()[tb] + before->getADC()[tb] + after->getADC()[tb]);
                 // TODO do we have a corresponding tracklet?
-                mPulseHeight2->Fill(tb, phVal);
-                if (mNoiseMap != nullptr && !mNoiseMap->getIsNoisy(b->getHCId(), b->getROB(), b->getMCM()))
-                  mPulseHeight2n->Fill(tb, phVal);
-                mTotalPulseHeight2D2->Fill(tb, phVal);
-                mPulseHeight2DperSM2[sector]->Fill(tb, phVal);
+                mPulseHeight->Fill(tb, phVal);
+                mTotalPulseHeight2D->Fill(tb, phVal);
+                mPulseHeight2DperSM[sector]->Fill(tb, phVal);
+                mPulseHeightpro->Fill(tb, phVal);
+                mPulseHeight2DperSM[sector]->Fill(tb, phVal);
+                mPulseHeightperchamber->Fill(tb, det1, phVal);
+                mPulseHeightPerChamber_1D[det1]->Fill(tb, phVal);
+                if (mNoiseMap != nullptr && !mNoiseMap->getIsNoisy(mid->getHCId(), mid->getROB(), mid->getMCM()))
+                  mPulseHeightn->Fill(tb, phVal);
               }
             }
           } else {
@@ -812,42 +609,41 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
             tbhi = sumc;
             if (tblo > 400) {
               int phVal = 0;
-              // std::cout << "updating2b " << det1 << " " << row1 << " " << col1 << " -- " << det2 << " " << row2 << " " << col2 << " -- " << det3 << " " << row3 << " " << col3 << std::endl;
               for (int tb = 0; tb < 30; tb++) {
-                phVal = (b->getADC()[tb] + a->getADC()[tb] + c->getADC()[tb]);
-                mPulseHeight2->Fill(tb, phVal);
-                if (mNoiseMap != nullptr && !mNoiseMap->getIsNoisy(b->getHCId(), b->getROB(), b->getMCM()))
-                  mPulseHeight2n->Fill(tb, phVal);
-                mTotalPulseHeight2D2->Fill(tb, phVal);
-                mPulseHeight2DperSM2[sector]->Fill(tb, phVal);
+                phVal = (mid->getADC()[tb] + before->getADC()[tb] + after->getADC()[tb]);
+                mPulseHeight->Fill(tb, phVal);
+                mTotalPulseHeight2D->Fill(tb, phVal);
+                mPulseHeight2DperSM[sector]->Fill(tb, phVal);
+                mPulseHeightpro->Fill(tb, phVal);
+                mPulseHeight2DperSM[sector]->Fill(tb, phVal);
+                mPulseHeightperchamber->Fill(tb, det1, phVal);
+                mPulseHeightPerChamber_1D[det1]->Fill(tb, phVal);
+                if (mNoiseMap != nullptr && !mNoiseMap->getIsNoisy(mid->getHCId(), mid->getROB(), mid->getMCM()))
+                  mPulseHeightn->Fill(tb, phVal);
+              }
               }
             }
           } // end else
-        }   // end if (tbsum[d][r][c]>tbsum[d][r][c-1] && tbsum[d][r][c]>tbsum[d][r][c+1])
+      }     // end if 3 pads next to each other
       }     // end for c
     }       // end for r
     // std::cout << " finished updating second ... " << std::endl;
   } // end for d
-  auto end1 = std::chrono::steady_clock::now();
-  std::chrono::duration<double> pulseheightduration1 = end1 - start1;
-
-  // plot the 2 pulseheight durations and the difference.
-  mPulseHeightDuration->Fill(pulseheightduration.count());
-  mPulseHeightDuration1->Fill(pulseheightduration1.count());
-  mPulseHeightDurationDiff->Fill(pulseheightduration.count() - pulseheightduration1.count());
-}
+  } // for loop over digits
+} // loop over triggers
 
 void DigitsTask::endOfCycle()
 {
   ILOG(Info) << "endOfCycle" << ENDM;
-  TProfile* prof = mClusterAmplitudeChamber->ProfileY();
   for (Int_t det = 0; det < 540; det++) {
-    mClsAmpCh->Fill(prof->GetBinContent(det));
+    mClsAmpCh->Fill(mClusterAmplitudeChamber->Integral(1, -1, det, det + 1)); //prof->GetBinContent(det));
   }
   double scale = mPulseHeight->GetEntries() / 30;
   for (int i = 0; i < 30; ++i)
     mPulseHeightScaled->SetBinContent(i, mPulseHeight->GetBinContent(i));
   mPulseHeightScaled->Scale(1 / scale);
+
+  mClsChargeTbCycle.get()->Reset();
 }
 
 void DigitsTask::endOfActivity(Activity& /*activity*/)
@@ -864,6 +660,64 @@ void DigitsTask::reset()
   mTotalPulseHeight2D->Reset();
   mPulseHeight->Reset();
 
-  // TODO reset all the other spectra
+  mDigitsPerEvent.get()->Reset();
+  mDigitHCID.get()->Reset();
+  mClusterAmplitudeChamber.get()->Reset();
+  for (auto& h : mNClsLayer) {
+    h->Reset();
+  }
+  mADCvalue.get()->Reset();
+  for (auto& h : mADC) {
+    h->Reset();
+  }
+  for (auto& h : mADCTB) {
+    h->Reset();
+  }
+  for (auto& h : mADCTBfull) {
+    h->Reset();
+  }
+  mNCls.get()->Reset();
+  for (auto& h : mHCMCM) {
+    h->Reset();
+  }
+  for (auto& h : mClsSM) {
+    h->Reset();
+  }
+  mClsTb.get()->Reset();
+  mClsChargeFirst.get()->Reset();
+  mClsChargeTb.get()->Reset();
+  mClsChargeTbCycle.get()->Reset();
+  mClsNTb.get()->Reset();
+  mClsAmp.get()->Reset();
+  mNClsAmp.get()->Reset();
+  mClsAmpDrift.get()->Reset();
+  mClsAmpTb.get()->Reset();
+  mClsAmpCh.get()->Reset();
+  for (auto& h : mClsDetAmp) {
+    h->Reset();
+  }
+  mClsSector.get()->Reset();
+  mClsStack.get()->Reset();
+  for (auto& h : mClsDetTime) {
+    h->Reset();
+  }
+  mClsChargeTbTigg.get()->Reset();
+  for (auto& h : mClsTbSM) {
+    h->Reset();
+  }
+  mPulseHeight.get()->Reset();
+  mPulseHeightScaled.get()->Reset();
+  mTotalPulseHeight2D.get()->Reset();
+  mPulseHeightn.get()->Reset();
+  mPulseHeightpro.get()->Reset();
+  mPulseHeightperchamber.get()->Reset();
+  for (auto& h : mPulseHeightPerChamber_1D) {
+    h->Reset();
+  }; // ph2DSM;
+
+  for (auto layer : mLayers) {
+    layer->Reset();
+    drawTrdLayersGrid(layer);
+  }
 }
 } // namespace o2::quality_control_modules::trd

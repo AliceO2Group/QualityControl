@@ -8,6 +8,8 @@
 
 #include "QualityControl/CheckInterface.h"
 #include <TFile.h>
+#include <TLine.h>
+#include <TH2.h>
 
 namespace o2::quality_control_modules::trd
 {

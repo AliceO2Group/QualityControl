@@ -101,8 +101,6 @@ void PulseHeight::buildHistograms()
     TH1F* h2 = new TH1F(label.c_str(), title.c_str(), 30, -0.5, 29.5);
     mPulseHeight2DperSM2[count].reset(h2);
     getObjectsManager()->startPublishing(h2);
-    getObjectsManager()->setDefaultDrawOptions(h->GetName(), "COLZ");
-    getObjectsManager()->setDefaultDrawOptions(h2->GetName(), "COLZ");
   }
 
   mPulseHeightDuration.reset(new TH1F("mPulseHeightDuration", "Pulse height duration", 10000, 0, 5.0));
