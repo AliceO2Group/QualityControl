@@ -20,6 +20,7 @@
 #include "QualityControl/TaskInterface.h"
 #include <TH1.h>
 #include <TH2.h>
+#include <TString.h>
 #include <THnSparse.h>
 
 #include <DataFormatsITSMFT/TopologyDictionary.h>
@@ -96,6 +97,7 @@ class ITSClusterTask : public TaskInterface
   int nBCbins;
   long int mTimestamp;
   std::string mGeomPath;
+  TString xLabel;
 
   const int mNStaves[7] = { 12, 16, 20, 24, 30, 42, 48 };
   const int mNHicPerStave[NLayer] = { 1, 1, 1, 8, 8, 14, 14 };
@@ -115,6 +117,9 @@ class ITSClusterTask : public TaskInterface
 
   o2::itsmft::TopologyDictionary* mDict;
   o2::its::GeometryTGeo* mGeom;
+
+  const char* OBLabel34[16] = { "HIC1L_B0_ln7", "HIC1L_A8_ln6", "HIC2L_B0_ln8", "HIC2L_A8_ln5", "HIC3L_B0_ln9", "HIC3L_A8_ln4", "HIC4L_B0_ln10", "HIC4L_A8_ln3", "HIC1U_B0_ln21", "HIC1U_A8_ln20", "HIC2U_B0_ln22", "HIC2U_A8_ln19", "HIC3U_B0_ln23", "HIC3U_A8_ln18", "HIC4U_B0_ln24", "HIC4U_A8_ln17" };
+  const char* OBLabel56[28] = { "HIC1L_B0_ln7", "HIC1L_A8_ln6", "HIC2L_B0_ln8", "HIC2L_A8_ln5", "HIC3L_B0_ln9", "HIC3L_A8_ln4", "HIC4L_B0_ln10", "HIC4L_A8_ln3", "HIC5L_B0_ln11", "HIC5L_A8_ln2", "HIC6L_B0_ln12", "HIC6L_A8_ln1", "HIC7L_B0_ln13", "HIC7L_A8_ln0", "HIC1U_B0_ln21", "HIC1U_A8_ln20", "HIC2U_B0_ln22", "HIC2U_A8_ln19", "HIC3U_B0_ln23", "HIC3U_A8_ln18", "HIC4U_B0_ln24", "HIC4U_A8_ln17", "HIC5U_B0_ln25", "HIC5U_A8_ln16", "HIC6U_B0_ln26", "HIC6U_A8_ln15", "HIC7U_B0_ln27", "HIC7U_A8_ln14" };
 };
 } //  namespace o2::quality_control_modules::its
 

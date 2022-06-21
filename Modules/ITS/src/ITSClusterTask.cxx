@@ -471,7 +471,7 @@ void ITSClusterTask::createAllHistos()
       hAverageClusterOccupancySummaryOB[iLayer] = new TH2D(Form("Layer%d/ClusterOccupation", iLayer), Form("Layer%dClusterOccupancy", iLayer), mNLanePerHic[iLayer] * mNHicPerStave[iLayer], 0, mNLanePerHic[iLayer] * mNHicPerStave[iLayer], mNStaves[iLayer], 0, mNStaves[iLayer]);
       hAverageClusterOccupancySummaryOB[iLayer]->SetTitle(Form("Cluster Occupancy on Layer %d", iLayer));
       addObject(hAverageClusterOccupancySummaryOB[iLayer]);
-      formatAxes(hAverageClusterOccupancySummaryOB[iLayer], "Lane Number", "Stave Number", 1, 1.10);
+      formatAxes(hAverageClusterOccupancySummaryOB[iLayer], "", "Stave Number", 1, 1.10);
       hAverageClusterOccupancySummaryOB[iLayer]->SetStats(0);
       hAverageClusterOccupancySummaryOB[iLayer]->SetBit(TH1::kIsAverage);
       hAverageClusterOccupancySummaryOB[iLayer]->GetYaxis()->SetLabelSize(0.02);
@@ -481,7 +481,7 @@ void ITSClusterTask::createAllHistos()
       hAverageClusterOccupancyMonitorOB[iLayer] = new TH2D(Form("Layer%d/ClusterOccupationForLastNROFS", iLayer), Form("Layer%dClusterOccupancyForLastNROFS", iLayer), mNLanePerHic[iLayer] * mNHicPerStave[iLayer], 0, mNLanePerHic[iLayer] * mNHicPerStave[iLayer], mNStaves[iLayer], 0, mNStaves[iLayer]);
       hAverageClusterOccupancyMonitorOB[iLayer]->SetTitle(Form("Cluster Occupancy in last NROFS on Layer %d", iLayer));
       addObject(hAverageClusterOccupancyMonitorOB[iLayer]);
-      formatAxes(hAverageClusterOccupancyMonitorOB[iLayer], "Lane Number", "Stave Number", 1, 1.10);
+      formatAxes(hAverageClusterOccupancyMonitorOB[iLayer], "", "Stave Number", 1, 1.10);
       hAverageClusterOccupancyMonitorOB[iLayer]->SetStats(0);
       hAverageClusterOccupancyMonitorOB[iLayer]->SetBit(TH1::kIsAverage);
       hAverageClusterOccupancyMonitorOB[iLayer]->GetYaxis()->SetLabelSize(0.02);
@@ -491,7 +491,7 @@ void ITSClusterTask::createAllHistos()
       hAverageClusterSizeSummaryOB[iLayer] = new TH2D(Form("Layer%d/AverageClusterSize", iLayer), Form("Layer%dAverageClusterSize", iLayer), mNLanePerHic[iLayer] * mNHicPerStave[iLayer], 0, mNLanePerHic[iLayer] * mNHicPerStave[iLayer], mNStaves[iLayer], 0, mNStaves[iLayer]);
       hAverageClusterSizeSummaryOB[iLayer]->SetTitle(Form("Average Cluster Size  on Layer %d", iLayer));
       addObject(hAverageClusterSizeSummaryOB[iLayer]);
-      formatAxes(hAverageClusterSizeSummaryOB[iLayer], "Lane Number", "Stave Number", 1, 1.10);
+      formatAxes(hAverageClusterSizeSummaryOB[iLayer], "", "Stave Number", 1, 1.10);
       hAverageClusterSizeSummaryOB[iLayer]->SetStats(0);
       hAverageClusterSizeSummaryOB[iLayer]->SetOption("colz");
       hAverageClusterSizeSummaryOB[iLayer]->SetBit(TH1::kIsAverage);
@@ -499,10 +499,10 @@ void ITSClusterTask::createAllHistos()
       hAverageClusterSizeSummaryOB[iLayer]->GetXaxis()->SetLabelSize(0.02);
       hAverageClusterSizeSummaryOB[iLayer]->GetXaxis()->SetTitleOffset(1.2);
 
-      hAverageClusterSizeMonitorOB[iLayer] = new TH2D(Form("Layer%d/AverageClusterSizeForLastNROFS", iLayer), Form("Layer%dAverageClusterSizeForLastNROFS", iLayer), mNHicPerStave[iLayer], 0, mNLanePerHic[iLayer] * mNHicPerStave[iLayer], mNStaves[iLayer], 0, mNStaves[iLayer]);
+      hAverageClusterSizeMonitorOB[iLayer] = new TH2D(Form("Layer%d/AverageClusterSizeForLastNROFS", iLayer), Form("Layer%dAverageClusterSizeForLastNROFS", iLayer), mNLanePerHic[iLayer] * mNHicPerStave[iLayer], 0, mNLanePerHic[iLayer] * mNHicPerStave[iLayer], mNStaves[iLayer], 0, mNStaves[iLayer]);
       hAverageClusterSizeMonitorOB[iLayer]->SetTitle(Form("Average Cluster Size for the last NROFs on Layer %d", iLayer));
       addObject(hAverageClusterSizeMonitorOB[iLayer]);
-      formatAxes(hAverageClusterSizeMonitorOB[iLayer], "Lane Number", "Stave Number", 1, 1.10);
+      formatAxes(hAverageClusterSizeMonitorOB[iLayer], "", "Stave Number", 1, 1.10);
       hAverageClusterSizeMonitorOB[iLayer]->SetStats(0);
       hAverageClusterSizeMonitorOB[iLayer]->SetOption("colz");
       hAverageClusterSizeMonitorOB[iLayer]->SetBit(TH1::kIsAverage);
@@ -532,10 +532,11 @@ void ITSClusterTask::createAllHistos()
         hAverageClusterOccupancySummaryOB[iLayer]->GetYaxis()->SetBinLabel(iStave + 1, Form("Stave %i", iStave));
         hAverageClusterOccupancyMonitorOB[iLayer]->GetYaxis()->SetBinLabel(iStave + 1, Form("Stave %i", iStave));
         for (Int_t iLane = 0; iLane < mNLanePerHic[iLayer] * mNHicPerStave[iLayer]; iLane++) { // are used in TH2 construction, no need to keep on ccdb
-          hAverageClusterSizeSummaryOB[iLayer]->GetXaxis()->SetBinLabel(iLane + 1, Form("Lane %i", iLane));
-          hAverageClusterSizeMonitorOB[iLayer]->GetXaxis()->SetBinLabel(iLane + 1, Form("Lane %i", iLane));
-          hAverageClusterOccupancySummaryOB[iLayer]->GetXaxis()->SetBinLabel(iLane + 1, Form("Lane %i", iLane));
-          hAverageClusterOccupancyMonitorOB[iLayer]->GetXaxis()->SetBinLabel(iLane + 1, Form("Lane %i", iLane));
+          (iLayer < 5) ? (xLabel = Form("%s", OBLabel34[iLane])) : (xLabel = Form("%s", OBLabel56[iLane]));
+          hAverageClusterSizeSummaryOB[iLayer]->GetXaxis()->SetBinLabel(iLane + 1, xLabel);
+          hAverageClusterSizeMonitorOB[iLayer]->GetXaxis()->SetBinLabel(iLane + 1, xLabel);
+          hAverageClusterOccupancySummaryOB[iLayer]->GetXaxis()->SetBinLabel(iLane + 1, xLabel);
+          hAverageClusterOccupancyMonitorOB[iLayer]->GetXaxis()->SetBinLabel(iLane + 1, xLabel);
         }
       }
     }
