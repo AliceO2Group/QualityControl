@@ -68,15 +68,22 @@ class DecodingErrorsTask /*final*/ : public TaskInterface
   /// \brief helper function for updating the error histograms
   void plotError(int solarId, int dsAddr, int chip, uint32_t error);
 
-  /// \brief helper function for storing the histograms to a ROOT file on disk
-  void writeHistos();
+  template <typename T>
+  void publishObject(std::shared_ptr<T> histo, std::string drawOption, bool statBox, bool isExpert)
+  {
+    histo->SetOption(drawOption.c_str());
+    if (!statBox) {
+      histo->SetStats(0);
+    }
+    mAllHistograms.push_back(histo.get());
+    getObjectsManager()->startPublishing(histo.get());
+    getObjectsManager()->setDefaultDrawOptions(histo.get(), drawOption);
+  }
 
   mch::raw::Elec2DetMapper mElec2Det{ nullptr };
   mch::raw::FeeLink2SolarMapper mFee2Solar{ nullptr };
   o2::mch::raw::Solar2FeeLinkMapper mSolar2Fee{ nullptr };
   o2::mch::raw::PageDecoder mDecoder;
-
-  bool mSaveToRootFile{ false }; ///< flag for saving the histograms to a local ROOT file
 
   std::shared_ptr<MergeableTH2Ratio> mHistogramErrorsPerChamber; ///< histogram to visualize the decoding errors
   std::shared_ptr<MergeableTH2Ratio> mHistogramErrorsPerFeeId;   ///< histogram to visualize the decoding errors

@@ -70,13 +70,6 @@ void DecodingErrorsTask::initialize(o2::framework::InitContext& /*ic*/)
 {
   ILOG(Info, Support) << "initialize DecodingErrorsTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
-  mSaveToRootFile = false;
-  if (auto param = mCustomParameters.find("SaveToRootFile"); param != mCustomParameters.end()) {
-    if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
-      mSaveToRootFile = true;
-    }
-  }
-
   mElec2Det = createElec2DetMapper<ElectronicMapperGenerated>();
   mFee2Solar = createFeeLink2SolarMapper<ElectronicMapperGenerated>();
   mSolar2Fee = createSolar2FeeLinkMapper<ElectronicMapperGenerated>();
@@ -85,20 +78,12 @@ void DecodingErrorsTask::initialize(o2::framework::InitContext& /*ic*/)
   mHistogramErrorsPerChamber = std::make_shared<MergeableTH2Ratio>("DecodingErrorsPerChamber", "Chamber Number vs. Error Type", getErrorCodesSize(), 0, getErrorCodesSize(), 10, 1, 11);
   setXAxisLabels(mHistogramErrorsPerChamber.get());
   setYAxisLabels(mHistogramErrorsPerChamber.get());
-  mHistogramErrorsPerChamber->SetOption("colz");
-  mAllHistograms.push_back(mHistogramErrorsPerChamber.get());
-  if (!mSaveToRootFile) {
-    getObjectsManager()->startPublishing(mHistogramErrorsPerChamber.get());
-  }
+  publishObject(mHistogramErrorsPerChamber, "colz", false, false);
 
   // Number of decoding errors, grouped by FEE ID and normalized to the number of processed TF
   mHistogramErrorsPerFeeId = std::make_shared<MergeableTH2Ratio>("DecodingErrorsPerFeeId", "FEE ID vs. Error Type", getErrorCodesSize(), 0, getErrorCodesSize(), 64, 0, 64);
   setXAxisLabels(mHistogramErrorsPerFeeId.get());
-  mHistogramErrorsPerFeeId->SetOption("colz");
-  mAllHistograms.push_back(mHistogramErrorsPerFeeId.get());
-  if (!mSaveToRootFile) {
-    getObjectsManager()->startPublishing(mHistogramErrorsPerFeeId.get());
-  }
+  publishObject(mHistogramErrorsPerFeeId, "colz", false, false);
 }
 
 void DecodingErrorsTask::startOfActivity(Activity& activity)
@@ -266,25 +251,12 @@ void DecodingErrorsTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
 }
 
-void DecodingErrorsTask::writeHistos()
-{
-  TFile f("mch-qc-errors.root", "RECREATE");
-  for (auto h : mAllHistograms) {
-    h->Write();
-  }
-  f.Close();
-}
-
 void DecodingErrorsTask::endOfCycle()
 {
   ILOG(Info, Support) << "endOfCycle" << ENDM;
 
   mHistogramErrorsPerChamber->update();
   mHistogramErrorsPerFeeId->update();
-
-  if (mSaveToRootFile) {
-    writeHistos();
-  }
 }
 
 void DecodingErrorsTask::endOfActivity(Activity& /*activity*/)
@@ -293,10 +265,6 @@ void DecodingErrorsTask::endOfActivity(Activity& /*activity*/)
 
   mHistogramErrorsPerChamber->update();
   mHistogramErrorsPerFeeId->update();
-
-  if (mSaveToRootFile) {
-    writeHistos();
-  }
 }
 
 void DecodingErrorsTask::reset()
