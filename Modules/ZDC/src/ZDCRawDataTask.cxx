@@ -114,7 +114,7 @@ void ZDCRawDataTask::reset()
   for (int i = 0; i < o2::zdc::NModules; i++) {
     for (int j = 0; j < o2::zdc::NChPerModule; j++) {
       for (int k = 0; k < (int)fMatrixHistoCounts[i][j].size(); k++) {
-        fMatrixHistoBaseline[i][j].at(k).histo->Reset();
+        fMatrixHistoCounts[i][j].at(k).histo->Reset();
       }
     }
   }
@@ -122,7 +122,7 @@ void ZDCRawDataTask::reset()
   for (int i = 0; i < o2::zdc::NModules; i++) {
     for (int j = 0; j < o2::zdc::NChPerModule; j++) {
       for (int k = 0; k < (int)fMatrixHistoSignal[i][j].size(); k++) {
-        fMatrixHistoBaseline[i][j].at(k).histo->Reset();
+        fMatrixHistoSignal[i][j].at(k).histo->Reset();
       }
     }
   }
@@ -241,7 +241,7 @@ void ZDCRawDataTask::initHisto()
 
   // Histograms Counts
   // setBinHisto1D(o2::constants::lhc::LHCMaxBunches + 6, -5.5, o2::constants::lhc::LHCMaxBunches+0.5);
-  setBinHisto1D(10, -0.5, 9.5);
+  setBinHisto1D(15, -5.5, 9.5);
   addNewHisto("COUNTS", "hcounts-ZNA_TC_TR", "Counts ZNA TC", "ZNA_TC_TR", "LBC");
   addNewHisto("COUNTS", "hcounts-ZNA_T1", "Counts ZNA T1", "ZNA_T1", "LBC");
   addNewHisto("COUNTS", "hcounts-ZNA_T2", "Counts ZNA T2", "ZNA_T2", "LBC");
@@ -274,62 +274,138 @@ void ZDCRawDataTask::initHisto()
   addNewHisto("COUNTS", "hcounts-ZEM2_TR", "Counts ZEM2", "ZEM2_TR", "LBC");
   // Histograms Signal
   int nBCAheadTrig = 3;
-  int nbx = (nBCAheadTrig + 1) * o2::zdc::NTimeBinsPerBC;
+  int nbx = (nBCAheadTrig + 1 + 12) * o2::zdc::NTimeBinsPerBC;
   double xmin = -nBCAheadTrig * o2::zdc::NTimeBinsPerBC - 0.5;
-  double xmax = o2::zdc::NTimeBinsPerBC - 0.5;
+  double xmax = o2::zdc::NTimeBinsPerBC - 0.5 + 12;
   setBinHisto2D(nbx, xmin, xmax, o2::zdc::ADCRange, o2::zdc::ADCMin - 0.5, o2::zdc::ADCMax + 0.5);
-  addNewHisto("SIGNAL", "hsignal-ZNA_TC_TR", "Signal ZNA TC", "ZNA_TC_TR", "A0oT0");
-  addNewHisto("SIGNAL", "hsignal-ZNA_T1", "Signal ZNA T1", "ZNA_T1", "A0oT0");
-  addNewHisto("SIGNAL", "hsignal-ZNA_T2", "Signal ZNA T2", "ZNA_T2", "A0oT0");
-  addNewHisto("SIGNAL", "hsignal-ZNA_T3", "Signal ZNA T3", "ZNA_T3", "A0oT0");
-  addNewHisto("SIGNAL", "hsignal-ZNA_T4", "Signal ZNA T4", "ZNA_T4", "A0oT0");
-  addNewHisto("SIGNAL", "hsignal-ZNA_SUM", "Signal ZNA SUM", "ZNA_SUM", "A0oT0");
 
-  addNewHisto("SIGNAL", "hsignal-ZNC_TC_TR", "Signal ZNC TC", "ZNC_TC_TR", "A0oT0");
-  addNewHisto("SIGNAL", "hsignal-ZNC_T1", "Signal ZNC T1", "ZNC_T1", "A0oT0");
-  addNewHisto("SIGNAL", "hsignal-ZNC_T2", "Signal ZNC T2", "ZNC_T2", "A0oT0");
-  addNewHisto("SIGNAL", "hsignal-ZNC_T3", "Signal ZNC T3", "ZNC_T3", "A0oT0");
-  addNewHisto("SIGNAL", "hsignal-ZNC_T4", "Signal ZNC T4", "ZNC_T4", "A0oT0");
-  addNewHisto("SIGNAL", "hsignal-ZNC_SUM", "Signal ZNC SUM", "ZNC_SUM", "A0oT0");
+  // Alice Trigger Or Auto Trigger
+  addNewHisto("SIGNAL", "hsignal-ZNA_TC_TR_AoT", "Signal ZNA TC Trigger Alice OR Auto Trigger", "ZNA_TC_TR", "AoT");
+  addNewHisto("SIGNAL", "hsignal-ZNA_T1_AoT", "Signal ZNA T1 Trigger Alice OR Auto Trigger", "ZNA_T1", "AoT");
+  addNewHisto("SIGNAL", "hsignal-ZNA_T2_AoT", "Signal ZNA T2 Trigger Alice OR Auto Trigger", "ZNA_T2", "AoT");
+  addNewHisto("SIGNAL", "hsignal-ZNA_T3_AoT", "Signal ZNA T3 Trigger Alice OR Auto Trigger", "ZNA_T3", "AoT");
+  addNewHisto("SIGNAL", "hsignal-ZNA_T4_AoT", "Signal ZNA T4 Trigger Alice OR Auto Trigger", "ZNA_T4", "AoT");
+  addNewHisto("SIGNAL", "hsignal-ZNA_SUM_AoT", "Signal ZNA SUM Trigger Alice OR Auto Trigger", "ZNA_SUM", "AoT");
 
-  addNewHisto("SIGNAL", "hsignal-ZPA_TC_TR", "Signal ZPA TC", "ZPA_TC_TR", "A0oT0");
-  addNewHisto("SIGNAL", "hsignal-ZPA_T1", "Signal ZPA T1", "ZPA_T1", "A0oT0");
-  addNewHisto("SIGNAL", "hsignal-ZPA_T2", "Signal ZPA T2", "ZPA_T2", "A0oT0");
-  addNewHisto("SIGNAL", "hsignal-ZPA_T3", "Signal ZPA T3", "ZPA_T3", "A0oT0");
-  addNewHisto("SIGNAL", "hsignal-ZPA_T4", "Signal ZPA T4", "ZPA_T4", "A0oT0");
-  addNewHisto("SIGNAL", "hsignal-ZPA_SUM", "Signal ZPA SUM", "ZPA_SUM", "A0oT0");
+  addNewHisto("SIGNAL", "hsignal-ZNC_TC_TR_AoT", "Signal ZNC TC Trigger Alice OR Auto Trigger", "ZNC_TC_TR", "AoT");
+  addNewHisto("SIGNAL", "hsignal-ZNC_T1_AoT", "Signal ZNC T1 Trigger Alice OR Auto Trigger", "ZNC_T1", "AoT");
+  addNewHisto("SIGNAL", "hsignal-ZNC_T2_AoT", "Signal ZNC T2 Trigger Alice OR Auto Trigger", "ZNC_T2", "AoT");
+  addNewHisto("SIGNAL", "hsignal-ZNC_T3_AoT", "Signal ZNC T3 Trigger Alice OR Auto Trigger", "ZNC_T3", "AoT");
+  addNewHisto("SIGNAL", "hsignal-ZNC_T4_AoT", "Signal ZNC T4 Trigger Alice OR Auto Trigger", "ZNC_T4", "AoT");
+  addNewHisto("SIGNAL", "hsignal-ZNC_SUM_AoT", "Signal ZNC SUM Trigger Alice OR Auto Trigger", "ZNC_SUM", "AoT");
 
-  addNewHisto("SIGNAL", "hsignal-ZPC_TC_TR", "Signal ZPC TC", "ZPC_TC_TR", "A0oT0");
-  addNewHisto("SIGNAL", "hsignal-ZPC_T1", "Signal ZPC T1", "ZPC_T1", "A0oT0");
-  addNewHisto("SIGNAL", "hsignal-ZPC_T2", "Signal ZPC T2", "ZPC_T2", "A0oT0");
-  addNewHisto("SIGNAL", "hsignal-ZPC_T3", "Signal ZPC T3", "ZPC_T3", "A0oT0");
-  addNewHisto("SIGNAL", "hsignal-ZPC_T4", "Signal ZPC T4", "ZPC_T4", "A0oT0");
-  addNewHisto("SIGNAL", "hsignal-ZPC_SUM", "Signal ZPC SUM", "ZPC_SUM", "A0oT0");
+  addNewHisto("SIGNAL", "hsignal-ZPA_TC_TR_AoT", "Signal ZPA TC Trigger Alice OR Auto Trigger", "ZPA_TC_TR", "AoT");
+  addNewHisto("SIGNAL", "hsignal-ZPA_T1_AoT", "Signal ZPA T1 Trigger Alice OR Auto Trigger", "ZPA_T1", "AoT");
+  addNewHisto("SIGNAL", "hsignal-ZPA_T2_AoT", "Signal ZPA T2 Trigger Alice OR Auto Trigger", "ZPA_T2", "AoT");
+  addNewHisto("SIGNAL", "hsignal-ZPA_T3_AoT", "Signal ZPA T3 Trigger Alice OR Auto Trigger", "ZPA_T3", "AoT");
+  addNewHisto("SIGNAL", "hsignal-ZPA_T4_AoT", "Signal ZPA T4 Trigger Alice OR Auto Trigger", "ZPA_T4", "AoT");
+  addNewHisto("SIGNAL", "hsignal-ZPA_SUM_AoT", "Signal ZPA SUM Trigger Alice OR Auto Trigger", "ZPA_SUM", "AoT");
 
-  addNewHisto("SIGNAL", "hsignal-ZEM1_TR", "Signal ZEM1", "ZEM1_TR", "A0oT0");
-  addNewHisto("SIGNAL", "hsignal-ZEM2_TR", "Signal ZEM2", "ZEM2_TR", "A0oT0");
+  addNewHisto("SIGNAL", "hsignal-ZPC_TC_TR_AoT", "Signal ZPC TC Trigger Alice OR Auto Trigger", "ZPC_TC_TR", "AoT");
+  addNewHisto("SIGNAL", "hsignal-ZPC_T1_AoT", "Signal ZPC T1 Trigger Alice OR Auto Trigger", "ZPC_T1", "AoT");
+  addNewHisto("SIGNAL", "hsignal-ZPC_T2_AoT", "Signal ZPC T2 Trigger Alice OR Auto Trigger", "ZPC_T2", "AoT");
+  addNewHisto("SIGNAL", "hsignal-ZPC_T3_AoT", "Signal ZPC T3 Trigger Alice OR Auto Trigger", "ZPC_T3", "AoT");
+  addNewHisto("SIGNAL", "hsignal-ZPC_T4_AoT", "Signal ZPC T4 Trigger Alice OR Auto Trigger", "ZPC_T4", "AoT");
+  addNewHisto("SIGNAL", "hsignal-ZPC_SUM_AoT", "Signal ZPC SUM Trigger Alice OR Auto Trigger", "ZPC_SUM", "AoT");
+
+  addNewHisto("SIGNAL", "hsignal-ZEM1_TR_AoT", "Signal ZEM1 Trigger Alice OR Auto Trigger", "ZEM1_TR", "AoT");
+  addNewHisto("SIGNAL", "hsignal-ZEM2_TR_AoT", "Signal ZEM2 Trigger Alice OR Auto Trigger", "ZEM2_TR", "AoT");
+
+  // Alice Trigger
+  addNewHisto("SIGNAL", "hsignal-ZNA_TC_TR_A", "Signal ZNA TC Trigger Alice", "ZNA_TC_TR", "A");
+  addNewHisto("SIGNAL", "hsignal-ZNA_T1_A", "Signal ZNA T1 Trigger Alice", "ZNA_T1", "A");
+  addNewHisto("SIGNAL", "hsignal-ZNA_T2_A", "Signal ZNA T2 Trigger Alice", "ZNA_T2", "A");
+  addNewHisto("SIGNAL", "hsignal-ZNA_T3_A", "Signal ZNA T3 Trigger Alice", "ZNA_T3", "A");
+  addNewHisto("SIGNAL", "hsignal-ZNA_T4_A", "Signal ZNA T4Trigger Alice", "ZNA_T4", "A");
+  addNewHisto("SIGNAL", "hsignal-ZNA_SUM_A", "Signal ZNA SUM Trigger Alice", "ZNA_SUM", "A");
+
+  addNewHisto("SIGNAL", "hsignal-ZNC_TC_TR_A", "Signal ZNC TC Trigger Alice", "ZNC_TC_TR", "A");
+  addNewHisto("SIGNAL", "hsignal-ZNC_T1_A", "Signal ZNC T1 Trigger Alice", "ZNC_T1", "A");
+  addNewHisto("SIGNAL", "hsignal-ZNC_T2_A", "Signal ZNC T2 Trigger Alice", "ZNC_T2", "A");
+  addNewHisto("SIGNAL", "hsignal-ZNC_T3_A", "Signal ZNC T3 Trigger Alice", "ZNC_T3", "A");
+  addNewHisto("SIGNAL", "hsignal-ZNC_T4_A", "Signal ZNC T4 Trigger Alice", "ZNC_T4", "A");
+  addNewHisto("SIGNAL", "hsignal-ZNC_SUM_A", "Signal ZNC SUM Trigger Alice", "ZNC_SUM", "A");
+
+  addNewHisto("SIGNAL", "hsignal-ZPA_TC_TR_A", "Signal ZPA TC Trigger Alice", "ZPA_TC_TR", "A");
+  addNewHisto("SIGNAL", "hsignal-ZPA_T1_A", "Signal ZPA T1 Trigger Alice", "ZPA_T1", "A");
+  addNewHisto("SIGNAL", "hsignal-ZPA_T2_A", "Signal ZPA T2 Trigger Alice", "ZPA_T2", "A");
+  addNewHisto("SIGNAL", "hsignal-ZPA_T3_A", "Signal ZPA T3 Trigger Alice", "ZPA_T3", "A");
+  addNewHisto("SIGNAL", "hsignal-ZPA_T4_A", "Signal ZPA T4 Trigger Alice", "ZPA_T4", "A");
+  addNewHisto("SIGNAL", "hsignal-ZPA_SUM_A", "Signal ZPA SUM Trigger Alice", "ZPA_SUM", "A");
+
+  addNewHisto("SIGNAL", "hsignal-ZPC_TC_TR_A", "Signal ZPC TC Trigger Alice", "ZPC_TC_TR", "A");
+  addNewHisto("SIGNAL", "hsignal-ZPC_T1_A", "Signal ZPC T1 Trigger Alice", "ZPC_T1", "A");
+  addNewHisto("SIGNAL", "hsignal-ZPC_T2_A", "Signal ZPC T2 Trigger Alice", "ZPC_T2", "A");
+  addNewHisto("SIGNAL", "hsignal-ZPC_T3_A", "Signal ZPC T3 Trigger Alice", "ZPC_T3", "A");
+  addNewHisto("SIGNAL", "hsignal-ZPC_T4_A", "Signal ZPC T4 Trigger Alice", "ZPC_T4", "A");
+  addNewHisto("SIGNAL", "hsignal-ZPC_SUM_A", "Signal ZPC SUM Trigger Alice", "ZPC_SUM", "A");
+
+  addNewHisto("SIGNAL", "hsignal-ZEM1_TR_A", "Signal ZEM1 Trigger Alice", "ZEM1_TR", "A");
+  addNewHisto("SIGNAL", "hsignal-ZEM2_TR_A", "Signal ZEM2 Trigger Alice", "ZEM2_TR", "A");
+
+  // Auto Trigger
+  addNewHisto("SIGNAL", "hsignal-ZNA_TC_TR_T", "Signal ZNA TC Auto Trigger", "ZNA_TC_TR", "T");
+  addNewHisto("SIGNAL", "hsignal-ZNA_T1_T", "Signal ZNA T1 Auto Trigger", "ZNA_T1", "T");
+  addNewHisto("SIGNAL", "hsignal-ZNA_T2_T", "Signal ZNA T2 Auto Trigger", "ZNA_T2", "T");
+  addNewHisto("SIGNAL", "hsignal-ZNA_T3_T", "Signal ZNA T3 Auto Trigger", "ZNA_T3", "T");
+  addNewHisto("SIGNAL", "hsignal-ZNA_T4_T", "Signal ZNA T4Auto Trigger", "ZNA_T4", "T");
+  addNewHisto("SIGNAL", "hsignal-ZNA_SUM_T", "Signal ZNA SUM Auto Trigger", "ZNA_SUM", "T");
+
+  addNewHisto("SIGNAL", "hsignal-ZNC_TC_TR_T", "Signal ZNC TC Auto Trigger", "ZNC_TC_TR", "T");
+  addNewHisto("SIGNAL", "hsignal-ZNC_T1_T", "Signal ZNC T1 Auto Trigger", "ZNC_T1", "T");
+  addNewHisto("SIGNAL", "hsignal-ZNC_T2_T", "Signal ZNC T2 Auto Trigger", "ZNC_T2", "T");
+  addNewHisto("SIGNAL", "hsignal-ZNC_T3_T", "Signal ZNC T3 Auto Trigger", "ZNC_T3", "T");
+  addNewHisto("SIGNAL", "hsignal-ZNC_T4_T", "Signal ZNC T4 Auto Trigger", "ZNC_T4", "T");
+  addNewHisto("SIGNAL", "hsignal-ZNC_SUM_T", "Signal ZNC SUM Auto Trigger", "ZNC_SUM", "T");
+
+  addNewHisto("SIGNAL", "hsignal-ZPA_TC_TR_T", "Signal ZPA TC Auto Trigger", "ZPA_TC_TR", "T");
+  addNewHisto("SIGNAL", "hsignal-ZPA_T1_T", "Signal ZPA T1 Auto Trigger", "ZPA_T1", "T");
+  addNewHisto("SIGNAL", "hsignal-ZPA_T2_T", "Signal ZPA T2 Auto Trigger", "ZPA_T2", "T");
+  addNewHisto("SIGNAL", "hsignal-ZPA_T3_T", "Signal ZPA T3 Auto Trigger", "ZPA_T3", "T");
+  addNewHisto("SIGNAL", "hsignal-ZPA_T4_T", "Signal ZPA T4 Auto Trigger", "ZPA_T4", "T");
+  addNewHisto("SIGNAL", "hsignal-ZPA_SUM_T", "Signal ZPA SUM Auto Trigger", "ZPA_SUM", "T");
+
+  addNewHisto("SIGNAL", "hsignal-ZPC_TC_TR_T", "Signal ZPC TC Auto Trigger", "ZPC_TC_TR", "T");
+  addNewHisto("SIGNAL", "hsignal-ZPC_T1_T", "Signal ZPC T1 Auto Trigger", "ZPC_T1", "T");
+  addNewHisto("SIGNAL", "hsignal-ZPC_T2_T", "Signal ZPC T2 Auto Trigger", "ZPC_T2", "T");
+  addNewHisto("SIGNAL", "hsignal-ZPC_T3_T", "Signal ZPC T3 Auto Trigger", "ZPC_T3", "T");
+  addNewHisto("SIGNAL", "hsignal-ZPC_T4_T", "Signal ZPC T4 Auto Trigger", "ZPC_T4", "T");
+  addNewHisto("SIGNAL", "hsignal-ZPC_SUM_T", "Signal ZPC SUM Auto Trigger", "ZPC_SUM", "T");
+
+  addNewHisto("SIGNAL", "hsignal-ZEM1_TR_T", "Signal ZEM1 Auto Trigger", "ZEM1_TR", "T");
+  addNewHisto("SIGNAL", "hsignal-ZEM2_TR_T", "Signal ZEM2 Auto Trigger", "ZEM2_TR", "T");
 
   // Histograms Bunch Crossing Maps
   setBinHisto2D(100, -0.5, 99.5, 36, -35.5, 0.5);
-  addNewHisto("BUNCH", "hbunch-ZNA_TC_TR_Ali0", "Bunch ZNA TC", "ZNA_TC_TR", "A0");
-  addNewHisto("BUNCH", "hbunch-ZNA_SUM_Ali0", "Bunch ZNA SUM", "ZNA_SUM", "A0");
-  addNewHisto("BUNCH", "hbunch-ZNC_TC_TR_Ali0", "Bunch ZNC TC", "ZNC_TC_TR", "A0");
-  addNewHisto("BUNCH", "hbunch-ZNC_SUM_Ali0", "Bunch ZNC SUM", "ZNC_SUM", "A0");
-  addNewHisto("BUNCH", "hbunch-ZPA_TC_TR_Ali0", "Bunch ZPA TC", "ZPA_TC_TR", "A0");
-  addNewHisto("BUNCH", "hbunch-ZPA_SUM_Ali0", "Bunch ZPA SUM", "ZPA_SUM", "A0");
-  addNewHisto("BUNCH", "hbunch-ZPC_TC_TR_Ali0", "Bunch ZPC TC", "ZPC_TC_TR", "A0");
-  addNewHisto("BUNCH", "hbunch-ZPC_SUM_Ali0", "Bunch ZPC SUM", "ZPC_SUM", "A0");
-  addNewHisto("BUNCH", "hbunch-ZNA_TC_TR_Aut0", "Bunch ZNA TC", "ZNA_TC_TR", "T0");
-  addNewHisto("BUNCH", "hbunch-ZNA_SUM_Aut0", "Bunch ZNA SUM", "ZNA_SUM", "T0");
-  addNewHisto("BUNCH", "hbunch-ZNC_TC_TR_Aut0", "Bunch ZNC TC", "ZNC_TC_TR", "T0");
-  addNewHisto("BUNCH", "hbunch-ZNC_SUM_Aut0", "Bunch ZNC SUM", "ZNC_SUM", "T0");
-  addNewHisto("BUNCH", "hbunch-ZPA_TC_TR_Aut0", "Bunch ZPA TC", "ZPA_TC_TR", "T0");
-  addNewHisto("BUNCH", "hbunch-ZPA_SUM_Aut0", "Bunch ZPA SUM", "ZPA_SUM", "T0");
-  addNewHisto("BUNCH", "hbunch-ZPC_TC_TR_Aut0", "Bunch ZPC TC", "ZPC_TC_TR", "T0");
-  addNewHisto("BUNCH", "hbunch-ZPC_SUM_Aut0", "Bunch ZPC SUM", "ZPC_SUM", "T0");
+  addNewHisto("BUNCH", "hbunch-ZNA_TC_TR_A0oT0", "Bunch ZNA TC Ali Trigger OR AutoTrigger", "ZNA_TC_TR", "A0oT0");
+  addNewHisto("BUNCH", "hbunch-ZNA_SUM_A0oT0", "Bunch ZNA SUM Ali Trigger OR AutoTrigger", "ZNA_SUM", "A0oT0");
+  addNewHisto("BUNCH", "hbunch-ZNC_TC_TR_A0oT0", "Bunch ZNC TC Ali Trigger OR AutoTrigger", "ZNC_TC_TR", "A0oT0");
+  addNewHisto("BUNCH", "hbunch-ZNC_SUM_A0oT0", "Bunch ZNC SUM  Ali Trigger OR AutoTrigger", "ZNC_SUM", "A0oT0");
+  addNewHisto("BUNCH", "hbunch-ZPA_TC_TR_A0oT0", "Bunch ZPA TC Ali Trigger OR AutoTrigger", "ZPA_TC_TR", "A0oT0");
+  addNewHisto("BUNCH", "hbunch-ZPA_SUM_A0oT0", "Bunch ZPA SUM  Ali Trigger OR AutoTrigger", "ZPA_SUM", "A0oT0");
+  addNewHisto("BUNCH", "hbunch-ZPC_TC_TR_A0oT0", "Bunch ZPC TC Ali Trigger OR AutoTrigger", "ZPC_TC_TR", "A0oT0");
+  addNewHisto("BUNCH", "hbunch-ZPC_SUM_A0oT0", "Bunch ZPC SUM  Ali Trigger OR AutoTrigger", "ZPC_SUM", "A0oT0");
+
+  addNewHisto("BUNCH", "hbunch-ZNA_TC_TR_A0", "Bunch ZNA TC Trigger Alice", "ZNA_TC_TR", "A0");
+  addNewHisto("BUNCH", "hbunch-ZNA_SUM_A0", "Bunch ZNA SUM Trigger Alice", "ZNA_SUM", "A0");
+  addNewHisto("BUNCH", "hbunch-ZNC_TC_TR_A0", "Bunch ZNC TC Trigger Alice", "ZNC_TC_TR", "A0");
+  addNewHisto("BUNCH", "hbunch-ZNC_SUM_A0", "Bunch ZNC SUM  Trigger Alice", "ZNC_SUM", "A0");
+  addNewHisto("BUNCH", "hbunch-ZPA_TC_TR_A0", "Bunch ZPA TC Trigger Alice", "ZPA_TC_TR", "A0");
+  addNewHisto("BUNCH", "hbunch-ZPA_SUM_A0", "Bunch ZPA SUM  Trigger Alice", "ZPA_SUM", "A0");
+  addNewHisto("BUNCH", "hbunch-ZPC_TC_TR_A0", "Bunch ZPC TC Trigger Alice", "ZPC_TC_TR", "A0");
+  addNewHisto("BUNCH", "hbunch-ZPC_SUM_A0", "Bunch ZPC SUM  Trigger Alice", "ZPC_SUM", "A0");
+
+  addNewHisto("BUNCH", "hbunch-ZNA_TC_TR_T0", "Bunch ZNA TC  Auto Trigger", "ZNA_TC_TR", "T0");
+  addNewHisto("BUNCH", "hbunch-ZNA_SUM_T0", "Bunch ZNA SUM  Auto Trigger", "ZNA_SUM", "T0");
+  addNewHisto("BUNCH", "hbunch-ZNC_TC_TR_T0", "Bunch ZNC TC  Auto Trigger", "ZNC_TC_TR", "T0");
+  addNewHisto("BUNCH", "hbunch-ZNC_SUM_T0", "Bunch ZNC SUM  Auto Trigger", "ZNC_SUM", "T0");
+  addNewHisto("BUNCH", "hbunch-ZPA_TC_TR_T0", "Bunch ZPA TC  Auto Trigger", "ZPA_TC_TR", "T0");
+  addNewHisto("BUNCH", "hbunch-ZPA_SUM_T0", "Bunch ZPA SUM  Auto Trigger", "ZPA_SUM", "T0");
+  addNewHisto("BUNCH", "hbunch-ZPC_TC_TR_T0", "Bunch ZPC TC  Auto Trigger", "ZPC_TC_TR", "T0");
+  addNewHisto("BUNCH", "hbunch-ZPC_SUM_T0", "Bunch ZPC SUM  Auto Trigger", "ZPC_SUM", "T0");
   setBinHisto2D(8, -0.5, 7.5, 4, -0.5, 3.5);
   addNewHisto("TRASMITTEDCHANNEL", "hchTrasmitted", "Channels Trasmitted", "NONE", "ALL");
-  addNewHisto("FIRECHANNEL", "hchFired", "Channels Fired", "NONE", "ALL");
+  // addNewHisto("FIRECHANNEL", "hchFired", "Channels Fired", "NONE", "ALL");
   setBinHisto1D(26, -0.5, 26 - 0.5);
   addNewHisto("SUMMARYBASELINE", "hpedSummary", "Baseline Summary", "NONE", "LBC");
 }
@@ -427,32 +503,99 @@ int ZDCRawDataTask::process(const o2::zdc::EventChData& ch)
       s[i] = us[i];
     }
   }
-
+  if (f.Auto_3) {
+    for (int j = 0; j < (int)fMatrixHistoSignal[f.board][f.ch].size(); j++) {
+      for (int32_t i = 0; i < 12; i++) {
+        if (fMatrixHistoSignal[f.board][f.ch].at(j).condHisto.at(0).compare("T") == 0)
+          fMatrixHistoSignal[f.board][f.ch].at(j).histo->Fill(i - 36., double(s[i]));
+      }
+    }
+  }
+  if (f.Auto_2) {
+    for (int j = 0; j < (int)fMatrixHistoSignal[f.board][f.ch].size(); j++) {
+      for (int32_t i = 0; i < 12; i++) {
+        if (fMatrixHistoSignal[f.board][f.ch].at(j).condHisto.at(0).compare("T") == 0)
+          fMatrixHistoSignal[f.board][f.ch].at(j).histo->Fill(i - 24., double(s[i]));
+      }
+    }
+  }
+  if (f.Auto_1) {
+    for (int j = 0; j < (int)fMatrixHistoSignal[f.board][f.ch].size(); j++) {
+      for (int32_t i = 0; i < 12; i++) {
+        if (fMatrixHistoSignal[f.board][f.ch].at(j).condHisto.at(0).compare("T") == 0)
+          fMatrixHistoSignal[f.board][f.ch].at(j).histo->Fill(i - 12., double(s[i]));
+      }
+    }
+  }
+  if (f.Auto_0) {
+    for (int j = 0; j < (int)fMatrixHistoSignal[f.board][f.ch].size(); j++) {
+      for (int32_t i = 0; i < 12; i++) {
+        if (fMatrixHistoSignal[f.board][f.ch].at(j).condHisto.at(0).compare("T") == 0)
+          fMatrixHistoSignal[f.board][f.ch].at(j).histo->Fill(i + 0., double(s[i]));
+      }
+    }
+  }
   if (f.Alice_3) {
     for (int j = 0; j < (int)fMatrixHistoSignal[f.board][f.ch].size(); j++) {
       for (int32_t i = 0; i < 12; i++) {
-        fMatrixHistoSignal[f.board][f.ch].at(j).histo->Fill(i - 36., double(s[i]));
+        if (fMatrixHistoSignal[f.board][f.ch].at(j).condHisto.at(0).compare("A") == 0)
+          fMatrixHistoSignal[f.board][f.ch].at(j).histo->Fill(i - 36., double(s[i]));
       }
     }
   }
   if (f.Alice_2) {
     for (int j = 0; j < (int)fMatrixHistoSignal[f.board][f.ch].size(); j++) {
       for (int32_t i = 0; i < 12; i++) {
-        fMatrixHistoSignal[f.board][f.ch].at(j).histo->Fill(i - 24., double(s[i]));
+        if (fMatrixHistoSignal[f.board][f.ch].at(j).condHisto.at(0).compare("A") == 0)
+          fMatrixHistoSignal[f.board][f.ch].at(j).histo->Fill(i - 24., double(s[i]));
+      }
+    }
+  }
+  if (f.Alice_1) {
+    for (int j = 0; j < (int)fMatrixHistoSignal[f.board][f.ch].size(); j++) {
+      for (int32_t i = 0; i < 12; i++) {
+        if (fMatrixHistoSignal[f.board][f.ch].at(j).condHisto.at(0).compare("A") == 0)
+          fMatrixHistoSignal[f.board][f.ch].at(j).histo->Fill(i - 12., double(s[i]));
+      }
+    }
+  }
+  if (f.Alice_0) {
+    for (int j = 0; j < (int)fMatrixHistoSignal[f.board][f.ch].size(); j++) {
+      for (int32_t i = 0; i < 12; i++) {
+        if (fMatrixHistoSignal[f.board][f.ch].at(j).condHisto.at(0).compare("A") == 0)
+          fMatrixHistoSignal[f.board][f.ch].at(j).histo->Fill(i + 0., double(s[i]));
+      }
+    }
+  }
+  if (f.Alice_3 || f.Auto_3) {
+    for (int j = 0; j < (int)fMatrixHistoSignal[f.board][f.ch].size(); j++) {
+      for (int32_t i = 0; i < 12; i++) {
+        if (fMatrixHistoSignal[f.board][f.ch].at(j).condHisto.at(0).compare("AoT") == 0)
+          fMatrixHistoSignal[f.board][f.ch].at(j).histo->Fill(i - 36., double(s[i]));
+      }
+    }
+  }
+  if (f.Alice_2 || f.Auto_2) {
+    for (int j = 0; j < (int)fMatrixHistoSignal[f.board][f.ch].size(); j++) {
+      for (int32_t i = 0; i < 12; i++) {
+        if (fMatrixHistoSignal[f.board][f.ch].at(j).condHisto.at(0).compare("AoT") == 0)
+          fMatrixHistoSignal[f.board][f.ch].at(j).histo->Fill(i - 24., double(s[i]));
       }
     }
   }
   if (f.Alice_1 || f.Auto_1) {
     for (int j = 0; j < (int)fMatrixHistoSignal[f.board][f.ch].size(); j++) {
       for (int32_t i = 0; i < 12; i++) {
-        fMatrixHistoSignal[f.board][f.ch].at(j).histo->Fill(i - 12., double(s[i]));
+        if (fMatrixHistoSignal[f.board][f.ch].at(j).condHisto.at(0).compare("AoT") == 0)
+          fMatrixHistoSignal[f.board][f.ch].at(j).histo->Fill(i - 12., double(s[i]));
       }
     }
   }
   if (f.Alice_0 || f.Auto_0) {
     for (int j = 0; j < (int)fMatrixHistoSignal[f.board][f.ch].size(); j++) {
       for (int32_t i = 0; i < 12; i++) {
-        fMatrixHistoSignal[f.board][f.ch].at(j).histo->Fill(i + 0., double(s[i]));
+        if (fMatrixHistoSignal[f.board][f.ch].at(j).condHisto.at(0).compare("AoT") == 0)
+          fMatrixHistoSignal[f.board][f.ch].at(j).histo->Fill(i + 0., double(s[i]));
       }
     }
     double bc_d = uint32_t(f.bc / 100);
@@ -593,7 +736,7 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
         if (ih < (int)fMatrixHistoBaseline[mod][ch].size()) {
           getObjectsManager()->startPublishing(fMatrixHistoBaseline[mod][ch].at(ih).histo);
           try {
-            getObjectsManager()->addMetadata(fMatrixHistoBaseline[mod][ch].at(ih).histo->GetName(), fMatrixHistoBaseline[mod][ch].at(ih).histo->GetTitle(), "34");
+            getObjectsManager()->addMetadata(fMatrixHistoBaseline[mod][ch].at(ih).histo->GetName(), fMatrixHistoBaseline[mod][ch].at(ih).histo->GetName(), "34");
             return true;
           } catch (...) {
             ILOG(Warning, Support) << "Metadata could not be added to " << fMatrixHistoBaseline[mod][ch].at(ih).histo->GetName() << ENDM;
@@ -624,7 +767,7 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
         if (ih < (int)fMatrixHistoCounts[mod][ch].size()) {
           getObjectsManager()->startPublishing(fMatrixHistoCounts[mod][ch].at(ih).histo);
           try {
-            getObjectsManager()->addMetadata(fMatrixHistoCounts[mod][ch].at(ih).histo->GetName(), fMatrixHistoCounts[mod][ch].at(ih).histo->GetTitle(), "34");
+            getObjectsManager()->addMetadata(fMatrixHistoCounts[mod][ch].at(ih).histo->GetName(), fMatrixHistoCounts[mod][ch].at(ih).histo->GetName(), "34");
             return true;
           } catch (...) {
             ILOG(Warning, Support) << "Metadata could not be added to " << fMatrixHistoCounts[mod][ch].at(ih).histo->GetName() << ENDM;
@@ -655,7 +798,7 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
         if (ih < (int)fMatrixHistoSignal[mod][ch].size()) {
           getObjectsManager()->startPublishing(fMatrixHistoSignal[mod][ch].at(ih).histo);
           try {
-            getObjectsManager()->addMetadata(fMatrixHistoSignal[mod][ch].at(ih).histo->GetName(), fMatrixHistoSignal[mod][ch].at(ih).histo->GetTitle(), "34");
+            getObjectsManager()->addMetadata(fMatrixHistoSignal[mod][ch].at(ih).histo->GetName(), fMatrixHistoSignal[mod][ch].at(ih).histo->GetName(), "34");
             return true;
           } catch (...) {
             ILOG(Warning, Support) << "Metadata could not be added to " << fMatrixHistoSignal[mod][ch].at(ih).histo->GetName() << ENDM;
@@ -686,7 +829,7 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
         if (ih < (int)fMatrixHistoBunch[mod][ch].size()) {
           getObjectsManager()->startPublishing(fMatrixHistoBunch[mod][ch].at(ih).histo);
           try {
-            getObjectsManager()->addMetadata(fMatrixHistoBunch[mod][ch].at(ih).histo->GetName(), fMatrixHistoBunch[mod][ch].at(ih).histo->GetTitle(), "34");
+            getObjectsManager()->addMetadata(fMatrixHistoBunch[mod][ch].at(ih).histo->GetName(), fMatrixHistoBunch[mod][ch].at(ih).histo->GetName(), "34");
             return true;
           } catch (...) {
             ILOG(Warning, Support) << "Metadata could not be added to " << fMatrixHistoBunch[mod][ch].at(ih).histo->GetName() << ENDM;
@@ -709,7 +852,7 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
       fFireChannel = new TH2F(hname, htit, fNumBinX, fMinBinX, fMaxBinX, fNumBinY, fMinBinY, fMaxBinY);
       getObjectsManager()->startPublishing(fFireChannel);
       try {
-        getObjectsManager()->addMetadata(fFireChannel->GetName(), fFireChannel->GetTitle(), "34");
+        getObjectsManager()->addMetadata(fFireChannel->GetName(), fFireChannel->GetName(), "34");
         return true;
       } catch (...) {
         ILOG(Warning, Support) << "Metadata could not be added to " << fFireChannel->GetName() << ENDM;
@@ -721,7 +864,7 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
       fTrasmChannel = new TH2F(hname, htit, fNumBinX, fMinBinX, fMaxBinX, fNumBinY, fMinBinY, fMaxBinY);
       getObjectsManager()->startPublishing(fTrasmChannel);
       try {
-        getObjectsManager()->addMetadata(fTrasmChannel->GetName(), fTrasmChannel->GetTitle(), "34");
+        getObjectsManager()->addMetadata(fTrasmChannel->GetName(), fTrasmChannel->GetName(), "34");
         return true;
       } catch (...) {
         ILOG(Warning, Support) << "Metadata could not be added to " << fTrasmChannel->GetName() << ENDM;
@@ -749,7 +892,7 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
       }
       getObjectsManager()->startPublishing(fSummaryPedestal);
       try {
-        getObjectsManager()->addMetadata(fSummaryPedestal->GetName(), fSummaryPedestal->GetTitle(), "34");
+        getObjectsManager()->addMetadata(fSummaryPedestal->GetName(), fSummaryPedestal->GetName(), "34");
         return true;
       } catch (...) {
         ILOG(Warning, Support) << "Metadata could not be added to " << fSummaryPedestal->GetName() << ENDM;
@@ -982,6 +1125,8 @@ bool ZDCRawDataTask::checkCondition(std::string cond)
     return true; // Alice Trigger 0 AND Auto Trigger 0
   if (cond.compare("A0oT0") == 0)
     return true; // Alice Trigger 0 OR Auto Trigger 0
+  if (cond.compare("AoT") == 0)
+    return true; // Alice Trigger 0 OR Auto Trigger 0
   if (cond.compare("LBC") == 0)
     return true; // Last BC
   if (cond.compare("ALL") == 0)
@@ -1038,7 +1183,7 @@ void ZDCRawDataTask::DumpHistoStructure()
   for (int i = 0; i < o2::zdc::NModules; i++) {
     for (int j = 0; j < o2::zdc::NChPerModule; j++) {
       for (int k = 0; k < (int)fMatrixHistoSignal[i][j].size(); k++) {
-        dumpFile << "[" << i << "][" << j << "] " << fMatrixHistoSignal[i][j].at(k).histo->GetName() << "  \t";
+        dumpFile << "[" << i << "][" << j << "] " << fMatrixHistoSignal[i][j].at(k).histo->GetName() << " Condition " << fMatrixHistoSignal[i][j].at(k).condHisto.at(0) << "  \t";
       }
       dumpFile << "\n";
     }

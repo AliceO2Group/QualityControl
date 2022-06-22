@@ -10,7 +10,7 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file     TrendingTaskTPC.cxx
+/// \file     SliceTrendingTask.cxx
 /// \author   Marcel Lesch
 /// \author   Cindy Mordasini
 /// \author   Based on the work from Piotr Konopka
@@ -20,7 +20,7 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/QcInfoLogger.h"
-#include "TPC/TrendingTaskTPC.h"
+#include "QualityControl/SliceTrendingTask.h"
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/algorithm/string.hpp>
@@ -42,15 +42,14 @@
 using namespace o2::quality_control;
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;
-using namespace o2::quality_control_modules::tpc;
 
-void TrendingTaskTPC::configure(std::string name,
-                                const boost::property_tree::ptree& config)
+void SliceTrendingTask::configure(std::string name,
+                                  const boost::property_tree::ptree& config)
 {
-  mConfig = TrendingTaskConfigTPC(name, config);
+  mConfig = SliceTrendingTaskConfig(name, config);
 }
 
-void TrendingTaskTPC::initialize(Trigger, framework::ServiceRegistry&)
+void SliceTrendingTask::initialize(Trigger, framework::ServiceRegistry&)
 {
   // Prepare the data structure of the trending TTree.
   mTrend = std::make_unique<TTree>();
@@ -60,17 +59,10 @@ void TrendingTaskTPC::initialize(Trigger, framework::ServiceRegistry&)
 
   for (const auto& source : mConfig.dataSources) {
     mSources[source.name] = std::vector<SliceInfo>();
-    mSourcesQuality[source.name] = SliceInfoQuality();
 
-    std::unique_ptr<ReductorTPC> reductor(root_class_factory::create<ReductorTPC>(
+    std::unique_ptr<SliceReductor> reductor(root_class_factory::create<SliceReductor>(
       source.moduleName, source.reductorName));
-    if (source.type == "repository") {
-      mTrend->Branch(source.name.c_str(), &mSources[source.name]);
-      mIsMoObject[source.name] = true;
-    } else if (source.type == "repository-quality") {
-      mTrend->Branch(source.name.c_str(), &mSourcesQuality[source.name]);
-      mIsMoObject[source.name] = false;
-    }
+    mTrend->Branch(source.name.c_str(), &mSources[source.name]);
     mReductors[source.name] = std::move(reductor);
   }
   if (mConfig.producePlotsOnUpdate) {
@@ -78,7 +70,7 @@ void TrendingTaskTPC::initialize(Trigger, framework::ServiceRegistry&)
   }
 }
 
-void TrendingTaskTPC::update(Trigger t, framework::ServiceRegistry& services)
+void SliceTrendingTask::update(Trigger t, framework::ServiceRegistry& services)
 {
   auto& qcdb = services.get<repository::DatabaseInterface>();
   trendValues(t, qcdb);
@@ -87,7 +79,7 @@ void TrendingTaskTPC::update(Trigger t, framework::ServiceRegistry& services)
   }
 }
 
-void TrendingTaskTPC::finalize(Trigger t, framework::ServiceRegistry&)
+void SliceTrendingTask::finalize(Trigger t, framework::ServiceRegistry&)
 {
   if (!mConfig.producePlotsOnUpdate) {
     getObjectsManager()->startPublishing(mTrend.get());
@@ -95,16 +87,16 @@ void TrendingTaskTPC::finalize(Trigger t, framework::ServiceRegistry&)
   generatePlots();
 }
 
-void TrendingTaskTPC::trendValues(const Trigger& t,
-                                  repository::DatabaseInterface& qcdb)
+void SliceTrendingTask::trendValues(const Trigger& t,
+                                    repository::DatabaseInterface& qcdb)
 {
   mTime = t.timestamp / 1000; // ROOT expects seconds since epoch.
   mMetaData.runNumber = -1;
 
   for (auto& dataSource : mConfig.dataSources) {
     mNumberPads[dataSource.name] = 0;
+    mSources[dataSource.name].clear();
     if (dataSource.type == "repository") {
-      mSources[dataSource.name].clear(); // reset
       auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name, t.timestamp, t.activity);
       TObject* obj = mo ? mo->getObject() : nullptr;
 
@@ -115,21 +107,15 @@ void TrendingTaskTPC::trendValues(const Trigger& t,
                                             dataSource.axisDivision, mNumberPads[dataSource.name]);
       }
 
-    } else if (dataSource.type == "repository-quality") {
-      mSourcesQuality[dataSource.name] = {}; // reset
-      if (auto qo = qcdb.retrieveQO(dataSource.path + "/" + dataSource.name, t.timestamp, t.activity)) {
-        mReductors[dataSource.name]->updateQuality(qo.get(), mSourcesQuality[dataSource.name]);
-        mNumberPads[dataSource.name] = 1;
-      }
     } else {
-      ILOG(Error, Support) << "Data source '" << dataSource.type << "' unknown." << ENDM;
+      ILOG(Error, Support) << "Data source '" << dataSource.type << "' is not of type repository." << ENDM;
     }
   }
 
   mTrend->Fill();
-} // void TrendingTaskTPC::trendValues(uint64_t timestamp, repository::DatabaseInterface& qcdb)
+} // void SliceTrendingTask::trendValues(const Trigger& t, repository::DatabaseInterface& qcdb)
 
-void TrendingTaskTPC::generatePlots()
+void SliceTrendingTask::generatePlots()
 {
   if (mTrend->GetEntries() < 1) {
     ILOG(Info, Support) << "No entries in the trend so far, no plot generated." << ENDM;
@@ -153,11 +139,7 @@ void TrendingTaskTPC::generatePlots()
     c->SetName(plot.name.c_str());
     c->SetTitle(plot.title.c_str());
 
-    if (mIsMoObject[varName]) {
-      drawCanvasMO(c, plot.varexp, plot.name, plot.option, plot.graphErrors, mAxisDivision[varName]);
-    } else {
-      drawCanvasQO(c, plot.varexp, plot.name, plot.option);
-    }
+    drawCanvasMO(c, plot.varexp, plot.name, plot.option, plot.graphErrors, mAxisDivision[varName]);
 
     int NumberPlots = 1;
     if (plot.varexp.find(":time") != std::string::npos) { // we plot vs time, multiple plots on canvas possible
@@ -220,10 +202,10 @@ void TrendingTaskTPC::generatePlots()
     mPlots[plot.name] = c;
     getObjectsManager()->startPublishing(c);
   }
-} // void TrendingTaskTPC::generatePlots()
+} // void SliceTrendingTask::generatePlots()
 
-void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
-                                   const std::string& name, const std::string& opt, const std::string& err, const std::vector<std::vector<float>>& axis)
+void SliceTrendingTask::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
+                                     const std::string& name, const std::string& opt, const std::string& err, const std::vector<std::vector<float>>& axis)
 {
   // Determine the order of the plot (1 - histo, 2 - graph, ...)
   const size_t plotOrder = std::count(var.begin(), var.end(), ':') + 1;
@@ -267,13 +249,13 @@ void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
 
       while (myReader.Next()) {
         const double timeStamp = (double)(*retrieveTime);
-        const double dataPoint = (dataRetrieveVector->at(p)).RetrieveValue(typeName);
+        const double dataPoint = (dataRetrieveVector->at(p)).retrieveValue(typeName);
         double errorX = 0.;
         double errorY = 0.;
 
         if (!err.empty()) {
-          errorX = (dataRetrieveVector->at(p)).RetrieveValue(errXName);
-          errorY = (dataRetrieveVector->at(p)).RetrieveValue(errYName);
+          errorX = (dataRetrieveVector->at(p)).retrieveValue(errXName);
+          errorY = (dataRetrieveVector->at(p)).retrieveValue(errYName);
         }
 
         graphErrors->SetPoint(iEntry, timeStamp, dataPoint);
@@ -307,13 +289,13 @@ void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
 
       while (myReader.Next()) {
         const double timeStamp = (double)(*retrieveTime);
-        const double dataPoint = (dataRetrieveVector->at(p)).RetrieveValue(typeName);
+        const double dataPoint = (dataRetrieveVector->at(p)).retrieveValue(typeName);
         double errorX = 0.;
         double errorY = 0.;
 
         if (!err.empty()) {
-          errorX = (dataRetrieveVector->at(p)).RetrieveValue(errXName);
-          errorY = (dataRetrieveVector->at(p)).RetrieveValue(errYName);
+          errorX = (dataRetrieveVector->at(p)).retrieveValue(errXName);
+          errorY = (dataRetrieveVector->at(p)).retrieveValue(errYName);
         }
 
         gr->SetPoint(iEntry, timeStamp, dataPoint);
@@ -354,14 +336,14 @@ void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
     int iEntry = 0;
     for (int p = 0; p < nuPa; p++) {
 
-      const double dataPoint = (dataRetrieveVector->at(p)).RetrieveValue(typeName);
+      const double dataPoint = (dataRetrieveVector->at(p)).retrieveValue(typeName);
       double errorX = 0.;
       double errorY = 0.;
       if (!err.empty()) {
-        errorX = (dataRetrieveVector->at(p)).RetrieveValue(errXName);
-        errorY = (dataRetrieveVector->at(p)).RetrieveValue(errYName);
+        errorX = (dataRetrieveVector->at(p)).retrieveValue(errXName);
+        errorY = (dataRetrieveVector->at(p)).retrieveValue(errYName);
       }
-      const double xLabel = (dataRetrieveVector->at(p)).RetrieveValue("sliceLabelX");
+      const double xLabel = (dataRetrieveVector->at(p)).retrieveValue("sliceLabelX");
 
       graphErrors->SetPoint(iEntry, xLabel, dataPoint);
       graphErrors->SetPointError(iEntry, errorX, errorY); // Add Error to the last added point
@@ -408,13 +390,13 @@ void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
     int iEntry = 0;
     for (int p = 0; p < nuPa; p++) {
 
-      const double dataPoint = (double)(dataRetrieveVector->at(p)).RetrieveValue(typeName);
+      const double dataPoint = (double)(dataRetrieveVector->at(p)).retrieveValue(typeName);
       double error = 0.;
       if (!err.empty()) {
-        error = (double)(dataRetrieveVector->at(p)).RetrieveValue(errYName);
+        error = (double)(dataRetrieveVector->at(p)).retrieveValue(errYName);
       }
-      const double xLabel = (double)(dataRetrieveVector->at(p)).RetrieveValue("sliceLabelX");
-      const double yLabel = (double)(dataRetrieveVector->at(p)).RetrieveValue("sliceLabelY");
+      const double xLabel = (double)(dataRetrieveVector->at(p)).retrieveValue("sliceLabelX");
+      const double yLabel = (double)(dataRetrieveVector->at(p)).retrieveValue("sliceLabelY");
 
       graph2D->Fill(xLabel, yLabel, dataPoint);
       graph2D->SetBinError(graph2D->GetXaxis()->FindBin(xLabel), graph2D->GetYaxis()->FindBin(yLabel), error);
@@ -434,72 +416,7 @@ void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
   } // Trending vs Slices2D
 }
 
-void TrendingTaskTPC::drawCanvasQO(TCanvas* thisCanvas, const std::string& var,
-                                   const std::string& name, const std::string& opt)
-{
-  // Determine the order of the plot (1 - histo, 2 - graph, ...)
-  const size_t plotOrder = std::count(var.begin(), var.end(), ':') + 1;
-
-  // Prepare the strings for the dataSource and its trending quantity.
-  std::string varName, typeName, trendType;
-  getTrendVariables(var, varName, typeName, trendType);
-
-  // Divide the canvas into the correct number of pads.
-  if (trendType != "time") {
-    ILOG(Error, Devel) << "Error in trending of Quality Object  '" << name
-                       << "'Trending only possible vs time, break." << ENDM;
-  }
-  thisCanvas->DivideSquare(1);
-
-  // Delete the graph errors after the plot is saved. //To-Do check if ownership is now taken
-  // Unfortunately the canvas does not take its ownership.
-  TGraphErrors* graphErrors = nullptr;
-
-  // Setup the tree reader with the needed values.
-  TTreeReader myReader(mTrend.get());
-  TTreeReaderValue<UInt_t> retrieveTime(myReader, "time");
-  TTreeReaderValue<SliceInfoQuality> qualityRetrieveVector(myReader, varName.data());
-
-  if (mNumberPads[varName] != 1)
-    ILOG(Error, Devel) << "Error in trending of Quality Object  '" << name
-                       << "'Quality trending should not have slicing, break." << ENDM;
-
-  const int nEntries = mTrend->GetEntriesFast();
-  const double errorX = 0.;
-  const double errorY = 0.;
-
-  int iEntry = 0;
-  graphErrors = new TGraphErrors(nEntries);
-
-  while (myReader.Next()) {
-    const double timeStamp = (double)(*retrieveTime);
-    double dataPoint = 0.;
-
-    dataPoint = qualityRetrieveVector->RetrieveValue(typeName);
-
-    if (dataPoint < 1. || dataPoint > 3.) { // if quality is outside standard good, medium, bad -> set to 0
-      dataPoint = 0.;
-    }
-
-    graphErrors->SetPoint(iEntry, timeStamp, dataPoint);
-    graphErrors->SetPointError(iEntry, errorX, errorY); // Add Error to the last added point
-
-    iEntry++;
-  }
-  graphErrors->SetTitle(qualityRetrieveVector->title.data());
-  myReader.Restart();
-
-  if (plotOrder != 2) {
-    ILOG(Info, Support) << "Non empty graphErrors seen for the plot '" << name
-                        << "', which is not a graph, ignoring." << ENDM;
-  } else {
-    graphErrors->Draw(opt.data());
-    // We try to convince ROOT to delete graphErrors together with the rest of the canvas.
-    saveObjectToPrimitives(thisCanvas, 1, graphErrors);
-  }
-}
-
-void TrendingTaskTPC::getUserAxisRange(const std::string graphAxisRange, float& limitLow, float& limitUp)
+void SliceTrendingTask::getUserAxisRange(const std::string graphAxisRange, float& limitLow, float& limitUp)
 {
   const std::size_t posDivider = graphAxisRange.find(":");
   const std::string minString(graphAxisRange.substr(0, posDivider));
@@ -509,7 +426,7 @@ void TrendingTaskTPC::getUserAxisRange(const std::string graphAxisRange, float& 
   limitUp = std::stof(maxString);
 }
 
-void TrendingTaskTPC::setUserAxisLabel(TAxis* xAxis, TAxis* yAxis, const std::string graphAxisLabel)
+void SliceTrendingTask::setUserAxisLabel(TAxis* xAxis, TAxis* yAxis, const std::string graphAxisLabel)
 {
   const std::size_t posDivider = graphAxisLabel.find(":");
   const std::string yLabel(graphAxisLabel.substr(0, posDivider));
@@ -519,7 +436,7 @@ void TrendingTaskTPC::setUserAxisLabel(TAxis* xAxis, TAxis* yAxis, const std::st
   yAxis->SetTitle(yLabel.data());
 }
 
-void TrendingTaskTPC::getTrendVariables(const std::string& inputvar, std::string& sourceName, std::string& variableName, std::string& trend)
+void SliceTrendingTask::getTrendVariables(const std::string& inputvar, std::string& sourceName, std::string& variableName, std::string& trend)
 {
   const std::size_t posEndVar = inputvar.find(".");  // Find the end of the dataSource.
   const std::size_t posEndType = inputvar.find(":"); // Find the end of the quantity.
@@ -528,14 +445,14 @@ void TrendingTaskTPC::getTrendVariables(const std::string& inputvar, std::string
   trend = inputvar.substr(posEndType + 1, -1);
 }
 
-void TrendingTaskTPC::getTrendErrors(const std::string& inputvar, std::string& errorX, std::string& errorY)
+void SliceTrendingTask::getTrendErrors(const std::string& inputvar, std::string& errorX, std::string& errorY)
 {
   const std::size_t posEndType_err = inputvar.find(":"); // Find the end of the error.
   errorX = inputvar.substr(posEndType_err + 1);
   errorY = inputvar.substr(0, posEndType_err);
 }
 
-void TrendingTaskTPC::saveObjectToPrimitives(TCanvas* canvas, const int padNumber, TObject* object)
+void SliceTrendingTask::saveObjectToPrimitives(TCanvas* canvas, const int padNumber, TObject* object)
 {
   if (auto* pad = canvas->GetPad(padNumber)) {
     if (auto* primitives = pad->GetListOfPrimitives()) {
@@ -545,7 +462,7 @@ void TrendingTaskTPC::saveObjectToPrimitives(TCanvas* canvas, const int padNumbe
 }
 
 template <typename T>
-void TrendingTaskTPC::beautifyGraph(T& graph, const TrendingTaskConfigTPC::Plot& plotconfig, TCanvas* canv)
+void SliceTrendingTask::beautifyGraph(T& graph, const SliceTrendingTaskConfig::Plot& plotconfig, TCanvas* canv)
 {
 
   // Set the title of the graph in a proper way.
@@ -588,23 +505,5 @@ void TrendingTaskTPC::beautifyGraph(T& graph, const TrendingTaskConfigTPC::Plot&
     graph->GetXaxis()->SetTimeOffset(0.0);
     graph->GetXaxis()->SetLabelOffset(0.02);
     graph->GetXaxis()->SetTimeFormat("#splitline{%d.%m.%y}{%H:%M}");
-  }
-
-  if (plotconfig.varexp.find("quality") != std::string::npos) {
-    graph->SetMinimum(-0.5);
-    graph->SetMaximum(3.5);
-
-    graph->GetYaxis()->Set(4, -0.5, 3.5);
-    graph->GetYaxis()->SetNdivisions(3);
-    graph->GetYaxis()->SetBinLabel(1, "No Quality");
-    graph->GetYaxis()->SetBinLabel(2, "Good");
-    graph->GetYaxis()->SetBinLabel(3, "Medium");
-    graph->GetYaxis()->SetBinLabel(4, "Bad");
-    graph->GetYaxis()->ChangeLabel(2, -1., -1., -1., kGreen + 2, -1, "Good");
-    graph->GetYaxis()->ChangeLabel(3, -1., -1., -1., kOrange - 3, -1, "Medium");
-    graph->GetYaxis()->ChangeLabel(4, -1., -1., -1., kRed, -1, "Bad");
-
-    graph->Draw(fmt::format("{0:s} A", plotconfig.option.data()).data());
-    canv->Update();
   }
 }

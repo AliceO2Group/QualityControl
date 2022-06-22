@@ -19,6 +19,7 @@ target_sources(O2QcTOF
                       src/CheckNoise.cxx
                       # PostProcessing
                       src/PostProcessDiagnosticPerCrate.cxx
+                      src/PostProcessHitMap.cxx
                       # Trending
                       src/TrendingHits.cxx
                       src/TrendingRate.cxx
@@ -68,6 +69,7 @@ add_root_dictionary(O2QcTOF
                             include/TOF/CheckNoise.h
                             # PostProcessing
                             include/TOF/PostProcessDiagnosticPerCrate.h
+                            include/TOF/PostProcessHitMap.h
                             # Trending
                             include/TOF/TrendingHits.h
                             include/TOF/TrendingRate.h

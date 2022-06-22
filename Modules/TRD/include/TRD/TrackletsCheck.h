@@ -18,6 +18,8 @@
 #define QC_MODULE_TRD_TRDTRACKLETSCHECK_H
 
 #include "QualityControl/CheckInterface.h"
+#include <TH2.h>
+#include "TRDQC/StatusHelper.h"
 
 namespace o2::quality_control_modules::trd
 {
@@ -38,6 +40,16 @@ class TrackletsCheck : public o2::quality_control::checker::CheckInterface
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
 
+  void retrieveCCDBSettings();
+  void fillTrdMaskHistsPerLayer();
+  std::vector<TH2F*> createTrdMaskHistsPerLayer();
+
+ private:
+  long int mTimestamp;
+  std::vector<TH2F*> mLayersMask;
+  o2::trd::HalfChamberStatusQC* mChamberStatus = nullptr;
+
+ public:
   ClassDefOverride(TrackletsCheck, 1);
 };
 

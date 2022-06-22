@@ -23,6 +23,7 @@
 
 #include "QualityControl/QcInfoLogger.h"
 #include "TRD/TrackletsTask.h"
+#include "TRDQC/StatusHelper.h"
 #include <Framework/InputRecord.h>
 #include <Framework/InputRecordWalker.h>
 #include "DataFormatsTRD/Tracklet64.h"
@@ -59,70 +60,196 @@ void TrackletsTask::drawLinesMCM(TH2F* histo)
   }
 }
 
+void TrackletsTask::drawTrdLayersGrid(TH2F* hist)
+{
+  TLine* line;
+  for (int i = 0; i < 5; ++i) {
+    switch (i) {
+      case 0:
+        line = new TLine(15.5, 0, 15.5, 144);
+        hist->GetListOfFunctions()->Add(line);
+        line->SetLineStyle(kDashed);
+        line->SetLineColor(kBlack);
+        break;
+      case 1:
+        line = new TLine(31.5, 0, 31.5, 144);
+        hist->GetListOfFunctions()->Add(line);
+        line->SetLineStyle(kDashed);
+        line->SetLineColor(kBlack);
+        break;
+      case 2:
+        line = new TLine(43.5, 0, 43.5, 144);
+        hist->GetListOfFunctions()->Add(line);
+        line->SetLineStyle(kDashed);
+        line->SetLineColor(kBlack);
+        break;
+      case 3:
+        line = new TLine(59.5, 0, 59.5, 144);
+        hist->GetListOfFunctions()->Add(line);
+        line->SetLineStyle(kDashed);
+        line->SetLineColor(kBlack);
+        break;
+    }
+  }
+  for (int iSec = 1; iSec < 18; ++iSec) {
+    float yPos = iSec * 8 - 0.5;
+    line = new TLine(0, yPos, 76, yPos);
+    line->SetLineStyle(kDashed);
+    line->SetLineColor(kBlack);
+    hist->GetListOfFunctions()->Add(line);
+  }
+}
+
 void TrackletsTask::retrieveCCDBSettings()
 {
-  //std::string a = mCustomParameters["noisetimestamp"];
-  //mTimestamp = a;//std::stol(a,nullptr,10);
-  //long int ts = mTimestamp ? mTimestamp : o2::ccdb::getCurrentTimestamp();
-  //TODO come back and all for different time stamps
-  long int ts = o2::ccdb::getCurrentTimestamp();
-  ILOG(Info, Support) << "Getting noisemap from ccdb - timestamp: " << ts << ENDM;
+  if (auto param = mCustomParameters.find("ccdbtimestamp"); param != mCustomParameters.end()) {
+    mTimestamp = std::stol(mCustomParameters["ccdbtimestamp"]);
+    ILOG(Info, Support) << "configure() : using ccdbtimestamp = " << mTimestamp << ENDM;
+  } else {
+    mTimestamp = o2::ccdb::getCurrentTimestamp();
+    ILOG(Info, Support) << "configure() : using default timestam of now = " << mTimestamp << ENDM;
+  }
   auto& mgr = o2::ccdb::BasicCCDBManager::instance();
-  mgr.setURL("http://alice-ccdb.cern.ch");
-  mgr.setTimestamp(ts);
+  mgr.setTimestamp(mTimestamp);
   mNoiseMap = mgr.get<o2::trd::NoiseStatusMCM>("/TRD/Calib/NoiseMapMCM");
   if (mNoiseMap == nullptr) {
     ILOG(Info, Support) << "mNoiseMap is null, no noisy mcm reduction" << ENDM;
   }
+  /* mChamberStatus = mgr.get<o2::trd::HalfChamberStatusQC>("/TRD/Calib/HalfChamberStatusQC");
+  if (mChamberStatus == nullptr) {
+    ILOG(Info, Support) << "mChamberStatus is null, no chamber status to display" << ENDM;
+  }
+  else{
+   fillTrdMaskHistsPerLayer();
+  }
+  NB This is commented out as its faililng to find HalfChamberStatusQC in ccdb, not sure why and its only needed to plot the mask.
+  Leaving code in for now.
+*/
 }
 
 void TrackletsTask::buildHistograms()
 {
   for (Int_t sm = 0; sm < o2::trd::constants::NSECTOR; ++sm) {
     std::string label = fmt::format("TrackletHCMCM_{0}", sm);
-    std::string title = fmt::format("MCM in Tracklets data stream for sector {0}", sm);
+    std::string title = fmt::format("MCM in Tracklets data stream for sector {0};mcm in rob in layer;ROB in stack", sm);
     moHCMCM[sm].reset(new TH2F(label.c_str(), title.c_str(), 76, -0.5, 75.5, 8 * 5, -0.5, 8 * 5 - 0.5));
-    moHCMCM[sm]->GetYaxis()->SetTitle("ROB in stack");
-    moHCMCM[sm]->GetXaxis()->SetTitle("mcm in rob in layer");
     getObjectsManager()->startPublishing(moHCMCM[sm].get());
     getObjectsManager()->setDefaultDrawOptions(moHCMCM[sm]->GetName(), "COLZ");
     drawLinesMCM(moHCMCM[sm].get());
   }
-  mTrackletSlope.reset(new TH1F("trackletslope", "uncalibrated Slope of tracklets", 1024, -6.0, 6.0)); // slope is 8 bits in the tracklet
+  mTrackletSlope.reset(new TH1F("trackletslope", "uncalibrated Slope of tracklets;Slope;Counts", 1024, -6.0, 6.0)); // slope is 8 bits in the tracklet
   getObjectsManager()->startPublishing(mTrackletSlope.get());
-  mTrackletSlopeRaw.reset(new TH1F("trackletsloperaw", "Raw Slope of tracklets", 256, 0, 256)); // slope is 8 bits in the tracklet
+  mTrackletSlopeRaw.reset(new TH1F("trackletsloperaw", "Raw Slope of tracklets;Slope;Counts", 256, 0, 256)); // slope is 8 bits in the tracklet
   getObjectsManager()->startPublishing(mTrackletSlopeRaw.get());
-  mTrackletHCID.reset(new TH1F("tracklethcid", "Tracklet distribution over Halfchambers", 1080, 0, 1080));
+  mTrackletHCID.reset(new TH1F("tracklethcid", "Tracklet distribution over Halfchambers;HalfChamber ID; Counts", 1080, 0, 1080));
   getObjectsManager()->startPublishing(mTrackletHCID.get());
-  mTrackletPosition.reset(new TH1F("trackletpos", "Uncalibrated Position of Tracklets", 1400, -70, 70));
+  mTrackletPosition.reset(new TH1F("trackletpos", "Uncalibrated Position of Tracklets;Position;Counts", 1400, -70, 70));
   getObjectsManager()->startPublishing(mTrackletPosition.get());
-  mTrackletPositionRaw.reset(new TH1F("trackletposraw", "Raw Position of Tracklets", 2048, 0, 2048));
+  mTrackletPositionRaw.reset(new TH1F("trackletposraw", "Raw Position of Tracklets;Position;Counts", 2048, 0, 2048));
   getObjectsManager()->startPublishing(mTrackletPositionRaw.get());
-  mTrackletsPerEvent.reset(new TH1F("trackletsperevent", "Number of Tracklets per event", 2500, 0, 250000));
+  mTrackletsPerEvent.reset(new TH1F("trackletsperevent", "Number of Tracklets per event;Tracklets in Event;Counts", 25000, 0, 25000));
   getObjectsManager()->startPublishing(mTrackletsPerEvent.get());
 
   for (Int_t sm = 0; sm < o2::trd::constants::NSECTOR; ++sm) {
     std::string label = fmt::format("TrackletHCMCMnoise_{0}", sm);
-    std::string title = fmt::format("MCM in Tracklets data stream for sector {0} noise in", sm);
+    std::string title = fmt::format("MCM in Tracklets data stream for sector {0} noise in;mcm in rob in layer;ROB in stack", sm);
     moHCMCMn[sm].reset(new TH2F(label.c_str(), title.c_str(), 76, -0.5, 75.5, 8 * 5, -0.5, 8 * 5 - 0.5));
-    moHCMCMn[sm]->GetYaxis()->SetTitle("ROB in stack");
-    moHCMCMn[sm]->GetXaxis()->SetTitle("mcm in rob in layer");
     getObjectsManager()->startPublishing(moHCMCMn[sm].get());
     getObjectsManager()->setDefaultDrawOptions(moHCMCMn[sm]->GetName(), "COLZ");
     drawLinesMCM(moHCMCM[sm].get());
   }
-  mTrackletSlopen.reset(new TH1F("trackletslopenoise", "uncalibrated Slope of tracklets noise in", 1024, -6.0, 6.0)); // slope is 8 bits in the tracklet
+  mTrackletSlopen.reset(new TH1F("trackletslopenoise", "uncalibrated Slope of tracklets noise in;Position;Counts", 1024, -6.0, 6.0)); // slope is 8 bits in the tracklet
   getObjectsManager()->startPublishing(mTrackletSlopen.get());
-  mTrackletSlopeRawn.reset(new TH1F("trackletsloperawnoise", "Raw Slope of tracklets noise in", 256, 0, 256)); // slope is 8 bits in the tracklet
+  mTrackletSlopeRawn.reset(new TH1F("trackletsloperawnoise", "Raw Slope of tracklets noise in;Slope;Counts", 256, 0, 256)); // slope is 8 bits in the tracklet
   getObjectsManager()->startPublishing(mTrackletSlopeRawn.get());
-  mTrackletHCIDn.reset(new TH1F("tracklethcidnoise", "Tracklet distribution over Halfchambers noise in", 1080, 0, 1080));
+  mTrackletHCIDn.reset(new TH1F("tracklethcidnoise", "Tracklet distribution over Halfchambers noise in;HalfChamber ID; Counts", 1080, 0, 1080));
   getObjectsManager()->startPublishing(mTrackletHCIDn.get());
-  mTrackletPositionn.reset(new TH1F("trackletposnoise", "Uncalibrated Position of Tracklets noise in", 1400, -70, 70));
+  mTrackletPositionn.reset(new TH1F("trackletposnoise", "Uncalibrated Position of Tracklets noise in;Position;Counts", 1400, -70, 70));
   getObjectsManager()->startPublishing(mTrackletPositionn.get());
-  mTrackletPositionRawn.reset(new TH1F("trackletposrawnoise", "Raw Position of Tracklets noise in", 2048, 0, 2048));
+  mTrackletPositionRawn.reset(new TH1F("trackletposrawnoise", "Raw Position of Tracklets noise in;Position;Counts", 2048, 0, 2048));
   getObjectsManager()->startPublishing(mTrackletPositionRawn.get());
-  mTrackletsPerEventn.reset(new TH1F("trackletspereventn", "Number of Tracklets per event noise in", 2500, 0, 250000));
+  mTrackletsPerEventn.reset(new TH1F("trackletspereventn", "Number of Tracklets per event noise in;Tracklets in Events;Counts", 25000, 0, 25000));
   getObjectsManager()->startPublishing(mTrackletsPerEventn.get());
+
+  for (int iLayer = 0; iLayer < 6; ++iLayer) {
+    mLayers.push_back(new TH2F(Form("layer%i", iLayer), Form("Tracklet count per MCM in layer %i;stack;sector", iLayer), 76, -0.5, 75.5, 144, -0.5, 143.5));
+    auto xax = mLayers.back()->GetXaxis();
+    xax->SetBinLabel(8, "0");
+    xax->SetBinLabel(24, "1");
+    xax->SetBinLabel(38, "2");
+    xax->SetBinLabel(52, "3");
+    xax->SetBinLabel(68, "4");
+    xax->SetTicks("-");
+    xax->SetTickSize(0.01);
+    xax->SetLabelSize(0.045);
+    xax->SetLabelOffset(0.01);
+    xax->SetTitleOffset(-1);
+    auto yax = mLayers.back()->GetYaxis();
+    for (int iSec = 0; iSec < 18; ++iSec) {
+      auto lbl = std::to_string(iSec);
+      yax->SetBinLabel(iSec * 8 + 4, lbl.c_str());
+    }
+    yax->SetTicks("-");
+    yax->SetTickSize(0.01);
+    yax->SetLabelSize(0.045);
+    yax->SetLabelOffset(0.01);
+    yax->SetTitleOffset(1.4);
+    mLayers.back()->SetStats(0);
+    getObjectsManager()->startPublishing(mLayers.back());
+    getObjectsManager()->setDisplayHint(mLayers.back(), "logz");
+    drawTrdLayersGrid(mLayers.back());
+  }
+}
+
+void TrackletsTask::fillTrdMaskHistsPerLayer()
+{
+  for (int iSec = 0; iSec < 18; ++iSec) {
+    for (int iStack = 0; iStack < 5; ++iStack) {
+      int rowMax = (iStack == 2) ? 12 : 16;
+      for (int iLayer = 0; iLayer < 6; ++iLayer) {
+        for (int iCol = 0; iCol < 8; ++iCol) {
+          int side = (iCol < 4) ? 0 : 1;
+          int det = iSec * 30 + iStack * 6 + iLayer;
+          int hcid = (side == 0) ? det * 2 : det * 2 + 1;
+          for (int iRow = 0; iRow < rowMax; ++iRow) {
+            int rowGlb = iStack < 3 ? iRow + iStack * 16 : iRow + 44 + (iStack - 3) * 16; // pad row within whole sector
+            int colGlb = iCol + iSec * 8;
+            // bin number 0 is underflow
+            rowGlb += 1;
+            colGlb += 1;
+            if (mChamberStatus->isMasked(hcid)) {
+              mLayersMask[iLayer]->SetBinContent(rowGlb, colGlb, 1);
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+std::vector<TH2F*> TrackletsTask::createTrdMaskHistsPerLayer()
+{
+  std::vector<TH2F*> hMask;
+  for (int iLayer = 0; iLayer < 6; ++iLayer) {
+    hMask.push_back(new TH2F(Form("layer%i_mask", iLayer), "", 76, -0.5, 75.5, 144, -0.5, 143.5));
+    hMask.back()->SetMarkerColor(kRed);
+    hMask.back()->SetMarkerSize(0.9);
+  }
+  return hMask;
+}
+
+void TrackletsTask::buildCanvas()
+{
+
+  mCanvas.reset(new TCanvas("layer0canvas", "tcanvas", 1000, 1000));
+  mCanvas->Clear();
+  mCanvasMembers[0] = mLayers[0];
+  mCanvasMembers[0]->Draw();
+  mCanvasMembers[0]->SetBit(TObject::kCanDelete);
+  mCanvasMembers[1] = mLayersMask[0];
+  mCanvasMembers[1]->Draw("same");
+  mCanvasMembers[1]->SetBit(TObject::kCanDelete);
+  getObjectsManager()->startPublishing(mCanvas.get());
 }
 
 void TrackletsTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -130,7 +257,9 @@ void TrackletsTask::initialize(o2::framework::InitContext& /*ctx*/)
   ILOG(Info, Support) << "initialize TrackletsTask" << ENDM;
 
   buildHistograms();
+  createTrdMaskHistsPerLayer();
   retrieveCCDBSettings();
+  //  buildCanvas();
 }
 
 void TrackletsTask::startOfActivity(Activity& activity)
@@ -155,8 +284,9 @@ void TrackletsTask::monitorData(o2::framework::ProcessingContext& ctx)
       auto tracklets = ctx.inputs().get<gsl::span<o2::trd::Tracklet64>>("tracklets");
       auto triggerrecords = ctx.inputs().get<gsl::span<o2::trd::TriggerRecord>>("triggers");
       for (auto& trigger : triggerrecords) {
-        if (trigger.getNumberOfTracklets() == 0)
+        if (trigger.getNumberOfTracklets() == 0) {
           continue; //bail if we have no digits in this trigger
+        }
         //now sort digits to det,row,pad
         mTrackletsPerEvent->Fill(trigger.getNumberOfTracklets());
         for (int currenttracklet = trigger.getFirstTracklet(); currenttracklet < trigger.getFirstTracklet() + trigger.getNumberOfTracklets() - 1; ++currenttracklet) {
@@ -190,6 +320,12 @@ void TrackletsTask::monitorData(o2::framework::ProcessingContext& ctx)
             mTrackletPositionRaw->Fill(tracklets[currenttracklet].getPosition());
             mTrackletHCID->Fill(tracklets[currenttracklet].getHCID());
           }
+          int side = tracklets[currenttracklet].getHCID() % 2; // 0: A-side, 1: B-side
+          int stack = (detector % 30) / 6;
+          int sec = detector / 30;
+          int rowGlb = stack < 3 ? tracklets[currenttracklet].getPadRow() + stack * 16 : tracklets[currenttracklet].getPadRow() + 44 + (stack - 3) * 16; // pad row within whole sector
+          int colGlb = tracklets[currenttracklet].getColumn() + sec * 8 + side * 4;
+          mLayers[layer]->Fill(rowGlb, colGlb);
         }
       }
     }
@@ -221,12 +357,27 @@ void TrackletsTask::reset()
   // clean all the monitor objects here
 
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
-  mTrackletPosition.get()->Reset();
-  mTrackletPositionRaw.get()->Reset();
+  for (auto h : moHCMCM) {
+    h.get()->Reset();
+  }
   mTrackletSlope.get()->Reset();
   mTrackletSlopeRaw.get()->Reset();
   mTrackletHCID.get()->Reset();
+  mTrackletPosition.get()->Reset();
+  mTrackletPositionRaw.get()->Reset();
   mTrackletsPerEvent.get()->Reset();
+  for (auto h : moHCMCMn) {
+    h.get()->Reset();
+  }
+  mTrackletSlopen.get()->Reset();
+  mTrackletSlopeRawn.get()->Reset();
+  mTrackletHCIDn.get()->Reset();
+  mTrackletPositionn.get()->Reset();
+  mTrackletPositionRawn.get()->Reset();
+  mTrackletsPerEventn.get()->Reset();
+  for (auto h : mLayers) {
+    h->Reset();
+  }
 }
 
 } // namespace o2::quality_control_modules::trd
