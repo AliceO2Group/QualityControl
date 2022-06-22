@@ -63,6 +63,7 @@ class ITSTrackTask : public TaskInterface
   TH1D* hNClusters;
   TH1D* hTrackEta;
   TH1D* hTrackPhi;
+  TH1D* hVerticesRof;
   TH2D* hAngularDistribution;
   TH2D* hVertexCoordinates;
   TH2D* hVertexRvsZ;
@@ -84,6 +85,7 @@ class ITSTrackTask : public TaskInterface
   Int_t mNRofs = 0;
   int nBCbins;
   long int mTimestamp;
+  int nVertices = 0;
 
   const int NROFOCCUPANCY = 100;
   Int_t mNClusters = 0;
