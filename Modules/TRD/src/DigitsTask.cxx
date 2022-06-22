@@ -326,14 +326,14 @@ void DigitsTask::initialize(o2::framework::InitContext& /*ctx*/)
   ILOG(Info) << "initialize TRDDigitQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
-  if (auto param = mCustomParameters.find("peakregionstart"); param != mCustomParameters.end()) {
+  if (auto param = mCustomParameters.find("driftregionstart"); param != mCustomParameters.end()) {
     mDriftRegion.first = stof(param->second);
     ILOG(Info, Support) << "configure() : using peakregionstart = " << mDriftRegion.first << ENDM;
   } else {
     mDriftRegion.first = 7.0;
     ILOG(Info, Support) << "configure() : using default dritfregionstart = " << mDriftRegion.first << ENDM;
   }
-  if (auto param = mCustomParameters.find("peakregionend"); param != mCustomParameters.end()) {
+  if (auto param = mCustomParameters.find("driftregionend"); param != mCustomParameters.end()) {
     mDriftRegion.second = stof(param->second);
     ILOG(Info, Support) << "configure() : using peakregionstart = " << mDriftRegion.second << ENDM;
   } else {
@@ -489,10 +489,10 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
       // illumination
       mNClsLayer[layer]->Fill(sm - 0.5 + col / 144., startRow[stack] + row);
+      int digitindex = digitsIndex[currentdigit];
+      int digitindexbelow = digitsIndex[currentdigit - 1];
+      int digitindexabove = digitsIndex[currentdigit + 1];
       for (int time = 1; time < o2::trd::constants::TIMEBINS - 1; ++time) {
-        int digitindex = digitsIndex[currentdigit];
-        int digitindexbelow = digitsIndex[currentdigit - 1];
-        int digitindexabove = digitsIndex[currentdigit + 1];
         int value = digits[digitsIndex[currentdigit]].getADC()[time];
         if (value > adcThresh)
           nADChigh++;
@@ -567,7 +567,6 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
               // mClsDetTimeN[idSM]->Fill(iChamber, k);
             }
 
-            // Fill pulse height plot according to demanded trigger
             // This is pulseheight lifted from run2, probably not what was used.
             mClsChargeTbTigg->Fill(time, sum);
 

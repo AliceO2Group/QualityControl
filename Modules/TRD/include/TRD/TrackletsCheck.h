@@ -48,6 +48,9 @@ class TrackletsCheck : public o2::quality_control::checker::CheckInterface
   long int mTimestamp;
   std::vector<TH2F*> mLayersMask;
   o2::trd::HalfChamberStatusQC* mChamberStatus = nullptr;
+  float mIntegralThreshold;
+  float mRatioThreshold;
+  float mZeroBinRatioThreshold;
 
  public:
   ClassDefOverride(TrackletsCheck, 1);

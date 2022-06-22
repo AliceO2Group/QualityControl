@@ -43,15 +43,15 @@ PulseHeight::~PulseHeight()
 
 void PulseHeight::retrieveCCDBSettings()
 {
-  //std::string a = mCustomParameters["noisetimestamp"];
-  //mTimestamp = a;//std::stol(a,nullptr,10);
-  //long int ts = mTimestamp ? mTimestamp : o2::ccdb::getCurrentTimestamp();
-  //TODO come back and all for different time stamps
-  long int ts = o2::ccdb::getCurrentTimestamp();
-  ILOG(Info, Support) << "Getting noisemap from ccdb - timestamp: " << ts << ENDM;
+  if (auto param = mCustomParameters.find("ccdbtimestamp"); param != mCustomParameters.end()) {
+    mTimestamp = std::stol(mCustomParameters["ccdbtimestamp"]);
+    ILOG(Info, Support) << "configure() : using ccdbtimestamp = " << mTimestamp << ENDM;
+  } else {
+    mTimestamp = o2::ccdb::getCurrentTimestamp();
+    ILOG(Info, Support) << "configure() : using default timestam of now = " << mTimestamp << ENDM;
+  }
   auto& mgr = o2::ccdb::BasicCCDBManager::instance();
-  mgr.setURL("http://alice-ccdb.cern.ch");
-  mgr.setTimestamp(ts);
+  mgr.setTimestamp(mTimestamp);
   mNoiseMap = mgr.get<o2::trd::NoiseStatusMCM>("/TRD/Calib/NoiseMapMCM");
   if (mNoiseMap == nullptr) {
     ILOG(Info, Support) << "mNoiseMap is null, no noisy mcm reduction" << ENDM;

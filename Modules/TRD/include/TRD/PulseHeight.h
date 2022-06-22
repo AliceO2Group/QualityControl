@@ -55,6 +55,7 @@ class PulseHeight final : public TaskInterface
   void retrieveCCDBSettings();
 
  private:
+  long int mTimestamp;
   std::shared_ptr<TH1F> mPulseHeight = nullptr;
   std::shared_ptr<TH1F> mPulseHeightScaled = nullptr;
   std::shared_ptr<TH2F> mTotalPulseHeight2D = nullptr;
