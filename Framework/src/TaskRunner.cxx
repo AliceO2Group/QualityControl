@@ -117,6 +117,7 @@ void TaskRunner::initInfologger(InitContext& iCtx)
   QcInfoLogger::init("task/" + mTaskConfig.taskName,
                      mTaskConfig.infologgerFilterDiscardDebug,
                      mTaskConfig.infologgerDiscardLevel,
+                     mTaskConfig.infologgerDiscardFile,
                      il,
                      ilContext);
   QcInfoLogger::setDetector(mTaskConfig.detectorName);

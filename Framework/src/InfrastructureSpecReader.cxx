@@ -70,6 +70,7 @@ CommonSpec InfrastructureSpecReader::readSpecEntry<CommonSpec>(std::string, cons
   spec.conditionDBUrl = commonTree.get<std::string>("conditionDB.url", spec.conditionDBUrl);
   spec.infologgerFilterDiscardDebug = commonTree.get<bool>("infologger.filterDiscardDebug", spec.infologgerFilterDiscardDebug);
   spec.infologgerDiscardLevel = commonTree.get<int>("infologger.filterDiscardLevel", spec.infologgerDiscardLevel);
+  spec.infologgerDiscardFile = commonTree.get<std::string>("infologger.filterDiscardFile", spec.infologgerDiscardFile);
   spec.postprocessingPeriod = commonTree.get<double>("postprocessing.period", spec.postprocessingPeriod);
 
   return spec;
