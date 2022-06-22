@@ -143,7 +143,6 @@ void TrendingTaskITSThr::storePlots(repository::DatabaseInterface& qcdb)
            idx / NTRENDSTHR),
       Form("threshold_%s_trends_L%d", trendnames[idx % NTRENDSTHR].c_str(),
            idx / NTRENDSTHR));
-    // ILOG(Info, Support) << "Layers:  " << idx / NTRENDSTHR << ENDM;
   }
 
   for (int ilay = 0; ilay < NLAYERS; ilay++) { // define legends
@@ -175,7 +174,6 @@ void TrendingTaskITSThr::storePlots(repository::DatabaseInterface& qcdb)
               : plot.name.find("Active") != std::string::npos ? 2
                                                               : 0;
 
-    // bool isrun = plot.varexp.find("ntreeentries") != std::string::npos ? true : false; // vs run or vs time
     bool isrun = 1; // time no longer needed
 
     c[ilay * NTRENDSTHR + add]->cd();
@@ -189,13 +187,10 @@ void TrendingTaskITSThr::storePlots(repository::DatabaseInterface& qcdb)
     // post processing plot
     TGraph* g = new TGraph(n, mTrend->GetV2(), mTrend->GetV1());
     SetGraphStyle(g, col[colidx], mkr[mkridx]);
-    double ymin = plot.name.find("rms") != std::string::npos
-                    ? 0.
-                  : plot.name.find("Active") != std::string::npos ? 0
-                                                                  : 0.;
+    double ymin = 0.;
     double ymax = plot.name.find("rms") != std::string::npos
-                    ? 40.
-                  : plot.name.find("Active") != std::string::npos ? 1e4
+                    ? 20.
+                  : plot.name.find("Active") != std::string::npos ? 100
                                                                   : 250.;
 
     SetGraphNameAndAxes(g, plot.name, Form("L%d - %s trends", ilay, trendtitles[add].c_str()), isrun ? "run" : "time", ytitles[add], ymin, ymax, runlist);

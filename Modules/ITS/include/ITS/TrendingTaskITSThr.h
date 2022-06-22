@@ -97,7 +97,7 @@ class TrendingTaskITSThr : public PostProcessingInterface
                                                 "Threshold rms", "Active Chips" };
   const std::string trendnames[NTRENDSTHR] = { "mean", "rms", "Nchips" };
   const std::string ytitles[NTRENDSTHR] = {
-    "Threshold mean (DAC)", "Threshold rms (DAC)", "# Active Chips"
+    "Threshold mean (electrons)", "Threshold rms (electrons)", "# Active Chips"
   };
 };
 
