@@ -13,7 +13,7 @@
 /// \file   CalibQcTask.h
 /// \author Valerie Ramillien
 
-#ifndef QC_MODULE_MID_MIDCLIBQCTASK_H
+#ifndef QC_MODULE_MID_MIDCALIBQCTASK_H
 #define QC_MODULE_MID_MIDCALIBQCTASK_H
 
 #include "QualityControl/TaskInterface.h"
