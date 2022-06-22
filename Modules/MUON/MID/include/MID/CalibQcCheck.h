@@ -15,7 +15,7 @@
 ///
 
 #ifndef QC_MODULE_MID_MIDCALIBQCCHECK_H
-#define QC_MODULE_MID_MIDCAlIBQCCHECK_H
+#define QC_MODULE_MID_MIDCALIBQCCHECK_H
 
 #include "QualityControl/CheckInterface.h"
 
