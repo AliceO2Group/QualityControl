@@ -45,7 +45,6 @@ class RepoPathUtils
                                const std::string& provenance = "qc",
                                bool includeProvenance = true)
   {
-    // std::string path = (includeProvenance ? provenance + "/" : "") + detectorCode + "/MO/" + taskName + "/" + moName;
     std::string path = (includeProvenance ? provenance + "/" : "") + detectorCode + "/MO/" + taskName + (moName.empty() ? "" : ("/" + moName));
     return path;
   }
