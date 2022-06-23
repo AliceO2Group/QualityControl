@@ -321,7 +321,7 @@ void ITSTrackTask::createAllHistos()
   formatAxes(hTrackEta, "#eta", "Counts / n_vertices", 1, 1.10);
   hTrackEta->SetStats(0);
 
-  hTrackPhi = new TH1D("PhiDistribution", "PhiDistribution", 60, 0, TMath::TwoPi());
+  hTrackPhi = new TH1D("PhiDistribution", "PhiDistribution", 65, -0.1, TMath::TwoPi());
   hTrackPhi->SetBit(TH1::kIsAverage);
   hTrackPhi->SetTitle("Phi Distribution of tracks / n_vertices with at least 3 contrib");
   hTrackPhi->SetMinimum(0);
