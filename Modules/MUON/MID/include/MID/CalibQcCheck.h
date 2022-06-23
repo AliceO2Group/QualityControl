@@ -10,27 +10,25 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   TracksQcCheck.h
+/// \file   CalibQcCheck.h
 /// \author Valerie Ramillien
 ///
-/// \file   TracksQcCheck.h
-/// \author Valerie Ramillien
 
-#ifndef QC_MODULE_MID_MIDTRACKSQCCHECK_H
-#define QC_MODULE_MID_MIDTRACKSQCCHECK_H
+#ifndef QC_MODULE_MID_MIDCALIBQCCHECK_H
+#define QC_MODULE_MID_MIDCALIBQCCHECK_H
 
 #include "QualityControl/CheckInterface.h"
 
 namespace o2::quality_control_modules::mid
 {
 
-class TracksQcCheck : public o2::quality_control::checker::CheckInterface
+class CalibQcCheck : public o2::quality_control::checker::CheckInterface
 {
  public:
   /// Default constructor
-  TracksQcCheck() = default;
+  CalibQcCheck() = default;
   /// Destructor
-  ~TracksQcCheck() override = default;
+  ~CalibQcCheck() override = default;
 
   // Override interface
   void configure() override;
@@ -38,12 +36,9 @@ class TracksQcCheck : public o2::quality_control::checker::CheckInterface
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
 
- private:
-  double mRatio44Threshold;
-
-  ClassDefOverride(TracksQcCheck, 2);
+  ClassDefOverride(CalibQcCheck, 2);
 };
 
 } // namespace o2::quality_control_modules::mid
 
-#endif // QC_MODULE_MID_MIDTRACKSQCCHECK_H
+#endif // QC_MODULE_MID_MIDCALIBQCCHECK_H

@@ -169,7 +169,7 @@ void RawQcTask::startOfCycle()
 void RawQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
 
-  //  ILOG(Info, Support) << "startOfDataMonitoring" << ENDM;
+  // ILOG(Info, Support) << "startOfDataMonitoring" << ENDM;
 
   o2::framework::DPLRawParser parser(ctx.inputs());
   o2::InteractionRecord IntRecord;
@@ -299,6 +299,9 @@ void RawQcTask::reset()
 
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
   mRawDataChecker->Reset();
+  mRawBCCounts->Reset();
+  mRawLocalBoardsMap->Reset();
+  mBusyRawLocalBoards->Reset();
 }
 
 } // namespace o2::quality_control_modules::mid
