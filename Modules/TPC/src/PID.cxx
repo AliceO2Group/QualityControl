@@ -28,6 +28,7 @@
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
 #include "TPC/PID.h"
+#include "TPC/Utility.h"
 
 namespace o2::quality_control_modules::tpc
 {
@@ -41,9 +42,20 @@ PID::~PID()
 void PID::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info, Support) << "initialize TPC PID QC task" << ENDM;
+  // elementary cuts for PID from json file
+  const int cutMinNCluster = getFromConfig<int>(mCustomParameters, "cutMinNCluster");
+  const float cutAbsTgl = getFromConfig<float>(mCustomParameters, "cutAbsTgl");
+  const float cutMindEdxTot = getFromConfig<float>(mCustomParameters, "cutMindEdxTot");
+  const float cutMaxdEdxTot = getFromConfig<float>(mCustomParameters, "cutMaxdEdxTot");
+  const float cutMinpTPC = getFromConfig<float>(mCustomParameters, "cutMinpTPC");
+  const float cutMaxpTPC = getFromConfig<float>(mCustomParameters, "cutMaxpTPC");
+  const float cutMinpTPCMIPs = getFromConfig<float>(mCustomParameters, "cutMinpTPCMIPs");
+  const float cutMaxpTPCMIPs = getFromConfig<float>(mCustomParameters, "cutMaxpTPCMIPs");
 
+  // set track cutss defaults are (AbsEta = 1.0, nCluster = 60, MindEdxTot  = 20)
+  mQCPID.setPIDCuts(cutMinNCluster, cutAbsTgl, cutMindEdxTot, cutMaxdEdxTot, cutMinpTPC, cutMaxpTPC, cutMinpTPCMIPs, cutMaxpTPCMIPs);
   mQCPID.initializeHistograms();
-  //pass map of vectors of histograms to be beutified!
+  // pass map of vectors of histograms to be beutified!
   o2::tpc::qc::helpers::setStyleHistogramsInMap(mQCPID.getMapOfHisto());
   for (auto const& pair : mQCPID.getMapOfHisto()) {
     for (auto& hist : pair.second) {
@@ -67,7 +79,7 @@ void PID::monitorData(o2::framework::ProcessingContext& ctx)
 {
   using TrackType = std::vector<o2::tpc::TrackTPC>;
   auto tracks = ctx.inputs().get<TrackType>("inputTracks");
-  //ILOG(Info, Support) << "monitorData: " << tracks.size() << ENDM;
+  // ILOG(Info, Support) << "monitorData: " << tracks.size() << ENDM;
 
   for (auto const& track : tracks) {
     mQCPID.processTrack(track);

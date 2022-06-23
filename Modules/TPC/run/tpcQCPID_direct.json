@@ -35,7 +35,7 @@
           "query" : "inputTracks:TPC/TRACKS/0"
         },
         "taskParameters": {
-          "nothing": "rien"
+           "cutMinNCluster": "60", "cutAbsTgl": "1.", "cutMindEdxTot": "20.", "cutMaxdEdxTot": "20.", "cutMinpTPC": "20.", "cutMaxpTPC": "20.", "cutMinpTPCMIPs": "0.45", "cutMaxpTPCMIPs": "0.55"
         },
         "location": "remote"
       }
