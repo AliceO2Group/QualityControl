@@ -90,14 +90,14 @@ class TrendingTaskITSThr : public PostProcessingInterface
 
   const int col[7] = { 1, 2, 3, 4, 5, 6, 7 };
   const int mkr[3] = { 8, 29, 34 };
-  static constexpr int NLAYERS = 3;
+  static constexpr int NLAYERS = 7;
   static constexpr int NTRENDSTHR = 3;
-  const int nStaves[NLAYERS] = { 12, 16, 20 };
+  const int nStaves[NLAYERS] = { 12, 16, 20, 24, 30, 42, 48 };
   const std::string trendtitles[NTRENDSTHR] = { "Threshold mean",
-                                                "Threshold rms", "Dead pixel" };
-  const std::string trendnames[NTRENDSTHR] = { "mean", "rms", "deadpix" };
+                                                "Threshold rms", "Active Chips" };
+  const std::string trendnames[NTRENDSTHR] = { "mean", "rms", "Nchips" };
   const std::string ytitles[NTRENDSTHR] = {
-    "Threshold mean (DAC)", "Threshold rms (DAC)", "# Dead Pixels"
+    "Threshold mean (electrons)", "Threshold rms (electrons)", "# Active Chips"
   };
 };
 

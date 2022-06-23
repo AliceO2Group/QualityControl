@@ -30,7 +30,7 @@ namespace o2::quality_control_modules::emcal
 
 RawErrorTask::~RawErrorTask()
 {
-  //delete mHistogram;
+  // delete mHistogram;
   if (mErrorTypeAltro)
     delete mErrorTypeAltro;
 
@@ -49,8 +49,8 @@ RawErrorTask::~RawErrorTask()
   if (mErrorTypeGain)
     delete mErrorTypeGain;
 
-  //histo per categoty with details
-  //histo summary with error per category
+  // histo per categoty with details
+  // histo summary with error per category
 }
 
 void RawErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -104,7 +104,7 @@ void RawErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
   mErrorTypeFit->GetYaxis()->SetBinLabel(1, "sample uninitalized");
   mErrorTypeFit->GetYaxis()->SetBinLabel(2, "No convergence");
   mErrorTypeFit->GetYaxis()->SetBinLabel(3, "Chi2 error");
-  //mErrorTypeFit->GetYaxis()->SetBinLabel(4, "bunch_not_ok");
+  // mErrorTypeFit->GetYaxis()->SetBinLabel(4, "bunch_not_ok");
   mErrorTypeFit->GetYaxis()->SetBinLabel(4, "Low signal");
   mErrorTypeFit->SetStats(0);
   getObjectsManager()
@@ -148,12 +148,13 @@ void RawErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
   std::vector<framework::InputSpec> filter{ { "filter", framework::ConcreteDataTypeMatcher(originEMC, "DECODERERR") } };
   int firstEntry = 0;
   for (const auto& rawErrorData : framework::InputRecordWalker(ctx.inputs(), filter)) {
-    auto errorcont = o2::framework::DataRefUtils::as<o2::emcal::ErrorTypeFEE>(rawErrorData); //read error message
+    auto errorcont = o2::framework::DataRefUtils::as<o2::emcal::ErrorTypeFEE>(rawErrorData); // read error message
+    LOG(debug) << "Received " << errorcont.size() << " errors";
     for (auto& error : errorcont) {
       auto feeid = error.getFEEID();
       auto errorCode = error.getErrorCode();
-      TH2* errorhist = nullptr; //to be deleted CRI
-      switch (errorCode) {
+      TH2* errorhist = nullptr; // to be deleted CRI
+      switch (error.getErrorType()) {
         case o2::emcal::ErrorTypeFEE::ErrorSource_t::PAGE_ERROR:
           errorhist = mErrorTypePage;
           break;
@@ -177,12 +178,12 @@ void RawErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
         //     break;
         default:
           break;
-      }; //switch errorCode
+      }; // switch errorCode
       errorhist->Fill(feeid, errorCode);
 
-    } //end for error in errorcont
-  }   //end of loop on raw error data
-} //end of monitorData
+    } // end for error in errorcont
+  }   // end of loop on raw error data
+} // end of monitorData
 void RawErrorTask::endOfCycle()
 {
   ILOG(Info, Support) << "endOfCycle" << ENDM;
