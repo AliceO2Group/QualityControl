@@ -383,7 +383,7 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       if (chData.QTCAmpl > 0)
         mHistNumADC->Fill(chData.ChId);
       mHistNumCFD->Fill(chData.ChId);
-      if (mSetAllowedChIDs.find(static_cast<unsigned int>(chData.ChId)) != mSetAllowedChIDs.end()) {
+      if (mSetAllowedChIDs.size() != 0 && mSetAllowedChIDs.find(static_cast<unsigned int>(chData.ChId)) != mSetAllowedChIDs.end()) {
         mMapHistAmp1D[chData.ChId]->Fill(chData.QTCAmpl);
         mMapHistTime1D[chData.ChId]->Fill(chData.CFDTime);
         mMapHistAmpVsTime[chData.ChId]->Fill(chData.QTCAmpl, chData.CFDTime);
