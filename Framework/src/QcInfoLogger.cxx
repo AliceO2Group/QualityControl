@@ -50,6 +50,10 @@ void QcInfoLogger::setRun(int run)
 
 void QcInfoLogger::setPartition(const std::string& partitionName)
 {
+  if(partitionName.empty()) {
+    ILOG(Debug, Support) << "IL: Partition empty, we don't set it" << ENDM;
+    return;
+  }
   mContext->setField(infoContext::FieldName::Partition, partitionName);
   instance->setContext(*mContext);
   ILOG(Debug, Support) << "IL: Partition set to " << partitionName << ENDM;
