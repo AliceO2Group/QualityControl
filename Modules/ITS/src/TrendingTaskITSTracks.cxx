@@ -147,7 +147,7 @@ void TrendingTaskITSTracks::storePlots(repository::DatabaseInterface& qcdb)
       if (plot.name.find("NCluster") != std::string::npos) {
         class1 = 0;
         ymin = 0.;
-        ymax = 20.;
+        ymax = 15.;
       } else if (plot.name.find("EtaDistribution") != std::string::npos) {
         class1 = 0;
         ymin = -1.5;
@@ -163,7 +163,7 @@ void TrendingTaskITSTracks::storePlots(repository::DatabaseInterface& qcdb)
       } else if (plot.name.find("NVertexContributors") != std::string::npos) {
         class1 = 0;
         ymin = 0.;
-        ymax = 100.;
+        ymax = 50.;
       } else if (plot.name.find("AssociatedClusterFraction") != std::string::npos) {
         class1 = 0;
         ymin = 0.;
@@ -174,12 +174,12 @@ void TrendingTaskITSTracks::storePlots(repository::DatabaseInterface& qcdb)
         ymax = 100.;
       } else if (plot.name.find("VertexX") != std::string::npos) {
         class1 = 0;
-        ymin = -15.;
-        ymax = 15.;
+        ymin = -1.;
+        ymax = 1.;
       } else if (plot.name.find("VertexY") != std::string::npos) {
         class1 = 2;
-        ymin = -15.;
-        ymax = 15.;
+        ymin = -1.;
+        ymax = 1.;
       }
 
     } else if (plot.name.find("stddev") != std::string::npos) {
