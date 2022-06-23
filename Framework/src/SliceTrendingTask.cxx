@@ -114,6 +114,11 @@ void SliceTrendingTask::finalize(Trigger t, framework::ServiceRegistry&)
     getObjectsManager()->startPublishing(mTrend.get());
   }
   generatePlots();
+
+  for (const auto& source : mConfig.dataSources) {
+    delete mSources[source.name];
+    mSources[source.name] = nullptr;
+  }
 }
 
 void SliceTrendingTask::trendValues(const Trigger& t,
