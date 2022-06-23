@@ -52,7 +52,7 @@ Quality ITSClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
       }
     }
 
-    if (iter->second->getName().find("GeneralOccupancy") != std::string::npos) {
+    if (iter->second->getName().find("General_Occupancy") != std::string::npos) {
       auto* hp = dynamic_cast<TH2D*>(iter->second->getObject());
       for (int iy = 1; iy <= hp->GetNbinsY(); iy++) {
         int ilayer = iy <= hp->GetNbinsY() / 2 ? hp->GetNbinsY() / 2 - iy : iy - hp->GetNbinsY() / 2 - 1;
