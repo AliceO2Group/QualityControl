@@ -21,6 +21,7 @@
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/SliceTrendingTask.h"
+#include "QualityControl/RepoPathUtils.h"
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/algorithm/string.hpp>
@@ -49,22 +50,50 @@ void SliceTrendingTask::configure(std::string name,
   mConfig = SliceTrendingTaskConfig(name, config);
 }
 
-void SliceTrendingTask::initialize(Trigger, framework::ServiceRegistry&)
+void SliceTrendingTask::initialize(Trigger, framework::ServiceRegistry& services)
 {
   // Prepare the data structure of the trending TTree.
-  mTrend = std::make_unique<TTree>();
-  mTrend->SetName(PostProcessingInterface::getName().c_str());
-  mTrend->Branch("meta", &mMetaData, "runNumber/I");
-  mTrend->Branch("time", &mTime);
+  if (mConfig.resumeTrend) {
+    ILOG(Info, Support) << "Trying to retrieve an existing TTree for this task to continue the trend." << ENDM;
+    auto& qcdb = services.get<repository::DatabaseInterface>();
+    auto path = RepoPathUtils::getMoPath(mConfig.detectorName, PostProcessingInterface::getName(), "", "", false);
+    auto mo = qcdb.retrieveMO(path, PostProcessingInterface::getName(), -1, mConfig.activity);
+    if (mo && mo->getObject()) {
+      auto tree = dynamic_cast<TTree*>(mo->getObject());
+      if (tree) {
+        mTrend = std::unique_ptr<TTree>(tree);
+        mo->setIsOwner(false);
+      }
+    } else {
+      ILOG(Warning, Support) << "Could not retrieve an existing TTree for this task, maybe there is none which match these Activity settings" << ENDM;
+    }
+  }
+  if (mTrend == nullptr) {
+    ILOG(Info, Support) << "Generating new TTree for SliceTrending" << ENDM;
+    mTrend = std::make_unique<TTree>();
+    mTrend->SetName(PostProcessingInterface::getName().c_str());
 
+    mTrend->Branch("meta", &mMetaData, "runNumber/I");
+    mTrend->Branch("time", &mTime);
+    for (const auto& source : mConfig.dataSources) {
+      mSources[source.name] = new std::vector<SliceInfo>();
+      mTrend->Branch(source.name.c_str(), &mSources[source.name]);
+    }
+  } else {                                                    // we picked up an older TTree
+    mTrend->SetBranchAddress("meta", &(mMetaData.runNumber)); // TO-DO: Find reason why simply &mMetaData does not work
+    mTrend->SetBranchAddress("time", &mTime);
+    for (const auto& source : mConfig.dataSources) {
+      mSources[source.name] = new std::vector<SliceInfo>();
+      mTrend->SetBranchAddress(source.name.c_str(), &mSources[source.name]);
+    }
+  }
+  // Reductors
   for (const auto& source : mConfig.dataSources) {
-    mSources[source.name] = std::vector<SliceInfo>();
-
     std::unique_ptr<SliceReductor> reductor(root_class_factory::create<SliceReductor>(
       source.moduleName, source.reductorName));
-    mTrend->Branch(source.name.c_str(), &mSources[source.name]);
     mReductors[source.name] = std::move(reductor);
   }
+
   if (mConfig.producePlotsOnUpdate) {
     getObjectsManager()->startPublishing(mTrend.get());
   }
@@ -85,6 +114,11 @@ void SliceTrendingTask::finalize(Trigger t, framework::ServiceRegistry&)
     getObjectsManager()->startPublishing(mTrend.get());
   }
   generatePlots();
+
+  for (const auto& source : mConfig.dataSources) {
+    delete mSources[source.name];
+    mSources[source.name] = nullptr;
+  }
 }
 
 void SliceTrendingTask::trendValues(const Trigger& t,
@@ -95,7 +129,7 @@ void SliceTrendingTask::trendValues(const Trigger& t,
 
   for (auto& dataSource : mConfig.dataSources) {
     mNumberPads[dataSource.name] = 0;
-    mSources[dataSource.name].clear();
+    mSources[dataSource.name]->clear();
     if (dataSource.type == "repository") {
       auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name, t.timestamp, t.activity);
       TObject* obj = mo ? mo->getObject() : nullptr;
@@ -103,7 +137,7 @@ void SliceTrendingTask::trendValues(const Trigger& t,
       mAxisDivision[dataSource.name] = dataSource.axisDivision;
 
       if (obj) {
-        mReductors[dataSource.name]->update(obj, mSources[dataSource.name],
+        mReductors[dataSource.name]->update(obj, *mSources[dataSource.name],
                                             dataSource.axisDivision, mNumberPads[dataSource.name]);
       }
 

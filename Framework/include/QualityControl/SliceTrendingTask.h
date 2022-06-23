@@ -87,7 +87,7 @@ class SliceTrendingTask : public PostProcessingInterface
   std::unique_ptr<TTree> mTrend;
   std::map<std::string, TObject*> mPlots;
   std::unordered_map<std::string, std::unique_ptr<SliceReductor>> mReductors;
-  std::unordered_map<std::string, std::vector<SliceInfo>> mSources;
+  std::unordered_map<std::string, std::vector<SliceInfo>*> mSources;
   std::unordered_map<std::string, int> mNumberPads;
   std::unordered_map<std::string, std::vector<std::vector<float>>> mAxisDivision;
 };
