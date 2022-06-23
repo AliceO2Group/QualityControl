@@ -198,9 +198,6 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     const auto chIDs = param->second;
     const std::string del = ",";
     vecChannelIDs = parseParameters<unsigned int>(chIDs, del);
-  } else {
-    for (unsigned int iCh = 0; iCh < o2::ft0::Constants::sNCHANNELS_PM; iCh++)
-      vecChannelIDs.push_back(iCh);
   }
   for (const auto& entry : vecChannelIDs) {
     mSetAllowedChIDs.insert(entry);
@@ -318,8 +315,6 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   mTfCounter++;
   auto channels = ctx.inputs().get<gsl::span<o2::ft0::ChannelData>>("channels");
   auto digits = ctx.inputs().get<gsl::span<o2::ft0::Digit>>("digits");
-  bool isFirst = true;
-  uint32_t firstOrbit;
 
   for (auto& digit : digits) {
     const auto& vecChData = digit.getBunchChannelData(channels);
@@ -327,10 +322,6 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     mTimeCurNS = o2::InteractionRecord::bc2ns(digit.getBC(), digit.getOrbit());
     if (mTimeMinNS < 0)
       mTimeMinNS = mTimeCurNS;
-    if (isFirst == true) {
-      firstOrbit = digit.getOrbit();
-      isFirst = false;
-    }
     if (mTimeCurNS < mTimeMinNS)
       mTimeMinNS = mTimeCurNS;
     if (mTimeCurNS > mTimeMaxNS)
@@ -392,7 +383,7 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       if (chData.QTCAmpl > 0)
         mHistNumADC->Fill(chData.ChId);
       mHistNumCFD->Fill(chData.ChId);
-      if (mSetAllowedChIDs.find(static_cast<unsigned int>(chData.ChId)) != mSetAllowedChIDs.end()) {
+      if (mSetAllowedChIDs.size() != 0 && mSetAllowedChIDs.find(static_cast<unsigned int>(chData.ChId)) != mSetAllowedChIDs.end()) {
         mMapHistAmp1D[chData.ChId]->Fill(chData.QTCAmpl);
         mMapHistTime1D[chData.ChId]->Fill(chData.CFDTime);
         mMapHistAmpVsTime[chData.ChId]->Fill(chData.QTCAmpl, chData.CFDTime);
