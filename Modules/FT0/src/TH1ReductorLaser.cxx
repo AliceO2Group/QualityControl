@@ -35,7 +35,7 @@ void TH1ReductorLaser::update(TObject* obj)
     int channel = -1;
     sscanf(histo->GetName(), "%*[^0-9]%d", &channel);
     if (channel < NChannel) {
-      for(int ichannel = 1; ichannel < NChannel; ichannel++) {
+      for (int ichannel = 1; ichannel < NChannel; ichannel++) {
         TH1* bc_projection = histo->ProjectionY(Form("first peak in BC #%d", ichannel), ichannel, ichannel + 1);
         mStats.mean[ichannel] = bc_projection->GetMean();
       }
