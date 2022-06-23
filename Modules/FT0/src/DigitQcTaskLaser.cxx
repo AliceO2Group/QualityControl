@@ -130,7 +130,7 @@ void DigitQcTaskLaser::initialize(o2::framework::InitContext& /*ctx*/)
 
   mListHistGarbage = new TList();
   mListHistGarbage->SetOwner(kTRUE);
-  
+
   char* p;
   for (const auto& lutEntry : o2::ft0::SingleLUT::Instance().getVecMetadataFEE()) {
     int chId = std::strtol(lutEntry.mChannelID.c_str(), &p, 10);
@@ -163,7 +163,7 @@ void DigitQcTaskLaser::initialize(o2::framework::InitContext& /*ctx*/)
   mHistNumCFD = std::make_unique<TH1F>("HistNumCFD", "HistNumCFD", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
   mHistCFDEff = std::make_unique<TH1F>("CFD_efficiency", "CFD efficiency;ChannelID;efficiency", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
   mHistCycleDuration = std::make_unique<TH1D>("CycleDuration", "Cycle Duration;;time [ns]", 1, 0, 2);
- 
+
   std::vector<unsigned int> vecChannelIDs;
   std::vector<unsigned int> vecRefPMTChannelIDs;
   if (auto param = mCustomParameters.find("ChannelIDs"); param != mCustomParameters.end()) {
@@ -311,7 +311,7 @@ void DigitQcTaskLaser::monitorData(o2::framework::ProcessingContext& ctx)
 void DigitQcTaskLaser::endOfCycle()
 {
   ILOG(Info, Support) << "endOfCycle" << ENDM;
-   mHistCycleDuration->SetBinContent(1., mTimeSum);
+  mHistCycleDuration->SetBinContent(1., mTimeSum);
   mHistCycleDuration->SetEntries(mTimeSum);
   ILOG(Debug) << "Cycle duration: NTF=" << mTfCounter << ", range = " << (mTimeMaxNS - mTimeMinNS) / 1e6 / mTfCounter << " ms/TF, sum = " << mTimeSum / 1e6 / mTfCounter << " ms/TF" << ENDM;
 }
