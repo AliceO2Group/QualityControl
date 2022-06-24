@@ -11,7 +11,7 @@
 
 ///
 /// \file   GenericHistogramCheck.h
-/// \author My Name
+/// \author Maximilian Horst
 ///
 
 #ifndef QC_MODULE_TPC_GENERICHISTOGRAMCHECK_H
@@ -22,8 +22,8 @@
 namespace o2::quality_control_modules::tpc
 {
 
-/// \brief  Example QC Check
-/// \author My Name
+/// \brief  Checks any 1D and 2D Histogram for their mean in X and Y agains an expected Value with a range or their StdDeviation
+/// \author Maximilian Horst
 class GenericHistogramCheck : public o2::quality_control::checker::CheckInterface
 {
  public:

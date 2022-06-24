@@ -11,7 +11,7 @@
 
 ///
 /// \file   GenericHistogramCheck.cxx
-/// \author My Name
+/// \author Maximilian Horst
 ///
 
 #include "TPC/GenericHistogramCheck.h"
