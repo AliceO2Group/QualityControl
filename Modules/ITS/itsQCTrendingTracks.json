@@ -31,17 +31,91 @@
         "dataSources": [
           {
             "type": "repository",
-            "paths": ["ITS/MO/ITSTrackTask/NClusters"],
-            "names": ["NClusters"],
+            "paths": ["ITS/MO/ITSTrackTask/NClusters",
+                      "ITS/MO/ITSTrackTask/EtaDistribution",
+                      "ITS/MO/ITSTrackTask/PhiDistribution",
+                      "ITS/MO/ITSTrackTask/VertexZ",
+                      "ITS/MO/ITSTrackTask/NVertexContributors",
+                      "ITS/MO/ITSTrackTask/AssociatedClusterFraction",
+                      "ITS/MO/ITSTrackTask/Ntracks"
+                     ],
+            "names": ["NClusters",
+                      "EtaDistribution",
+                      "PhiDistribution",
+                      "VertexZ",
+                      "NVertexContributors",
+                      "AssociatedClusterFraction",
+                      "Ntracks"
+                     ],
             "reductorName": "o2::quality_control_modules::common::TH1Reductor",
+            "moduleName": "QcITS"
+          },
+          {
+            "type": "repository",
+            "paths": [
+                      "ITS/MO/ITSTrackTask/VertexCoordinates"
+                     ],
+            "names": [
+                      "VertexXY"
+                     ],
+            "reductorName": "o2::quality_control_modules::common::TH2Reductor",
             "moduleName": "QcITS"
           }
         ],
         "plots": [
           {
             "names": ["NClusters_mean", "NClusters_stddev"],
-            "title": ["Average NClusters trend", "Stddev NClusters trend"],
+            "title": ["Average NClusters", "Stddev NClusters"],
             "varexp": ["NClusters.mean:ntreeentries", "NClusters.stddev:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["EtaDistribution_mean", "EtaDistribution_stddev"],
+            "title": ["Average EtaDistribution", "Stddev EtaDistribution"],
+            "varexp": ["EtaDistribution.mean:ntreeentries", "EtaDistribution.stddev:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["PhiDistribution_mean", "PhiDistribution_stddev"],
+            "title": ["Average PhiDistribution", "Stddev PhiDistribution"],
+            "varexp": ["PhiDistribution.mean:ntreeentries", "PhiDistribution.stddev:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["VertexZ_mean", "VertexZ_stddev"],
+            "title": ["Average VertexZ", "Stddev VertexZ"],
+            "varexp": ["VertexZ.mean:ntreeentries", "VertexZ.stddev:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["NVertexContributors_mean", "NVertexContributors_stddev"],
+            "title": ["Average NVertexContributors", "Stddev NVertexContributors"],
+            "varexp": ["NVertexContributors.mean:ntreeentries", "NVertexContributors.stddev:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["AssociatedClusterFraction_mean", "AssociatedClusterFraction_stddev"],
+            "title": ["Average fraction of clusters per track", "Stddev of fraction of clusters per track"],
+            "varexp": ["AssociatedClusterFraction.mean:ntreeentries", "AssociatedClusterFraction.stddev:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["Ntracks_mean", "Ntracks_stddev"],
+            "title": ["Average NTracks per event", "Stddev of NTracks per event"],
+            "varexp": ["Ntracks.mean:ntreeentries", "Ntracks.stddev:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["VertexX_mean", "VertexX_stddev", "VertexY_mean", "VertexY_stddev"],
+            "title": ["Average VertexX", "Stddev VertexX", "Average VertexY", "Stddev VertexY"],
+            "varexp": ["VertexXY.sumwx/VertexXY.sumw:ntreeentries", "TMath::Sqrt((VertexXY.sumwx2/VertexXY.sumw)-(VertexXY.sumwx/VertexXY.sumw)*(VertexXY.sumwx/VertexXY.sumw)):ntreeentries", "VertexXY.sumwy/VertexXY.sumw:ntreeentries", "TMath::Sqrt((VertexXY.sumwy2/VertexXY.sumw)-(VertexXY.sumwy/VertexXY.sumw)*(VertexXY.sumwy/VertexXY.sumw)):ntreeentries"],
             "selection": "",
             "option": "PL"
           }

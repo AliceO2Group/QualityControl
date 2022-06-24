@@ -260,11 +260,14 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       text[0] = "Quality::GOOD";
       textColor = kGreen;
     } else {
-      text[0] = "INFO: vertex z displaced > 10 cm";
+      if (std::abs(h->GetMean()) > 1.0)
+        text[0] = "INFO: z distribution average shifted by >1cm";
+      if (h->GetRMS() > 6.0)
+        text[1] = "INFO: z distribution RMS > 6 cm";
       textColor = kRed;
     }
 
-    auto* msg = new TLatex(0.15, 0.7, text[0].Data());
+    auto* msg = new TLatex(0.15, 0.7, !text[0].Length() ? (!text[1].Length() ? "" : text[1].Data()) : (!text[1].Length() ? text[0].Data() : Form("#bf{#splitline{%s}{%s}}", text[0].Data(), text[1].Data())));
     msg->SetTextColor(textColor);
     msg->SetTextSize(0.08);
     msg->SetTextFont(43);
