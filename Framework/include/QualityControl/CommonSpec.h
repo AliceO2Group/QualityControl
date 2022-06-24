@@ -39,6 +39,7 @@ struct CommonSpec {
   std::string conditionDBUrl = "http://ccdb-test.cern.ch:8080";
   bool infologgerFilterDiscardDebug = false;
   int infologgerDiscardLevel = 21;
+  std::string infologgerDiscardFile;
   double postprocessingPeriod = 10.0;
 };
 

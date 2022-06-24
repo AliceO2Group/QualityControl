@@ -465,6 +465,7 @@ void CheckRunner::initInfologger(framework::InitContext& iCtx)
   QcInfoLogger::init(createCheckRunnerFacility(mDeviceName),
                      mConfig.infologgerFilterDiscardDebug,
                      mConfig.infologgerDiscardLevel,
+                     mConfig.infologgerDiscardFile,
                      il,
                      ilContext);
 }
