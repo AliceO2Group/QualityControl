@@ -1,0 +1,61 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",     "": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "2"
+      }
+    },
+    "postprocessing": {
+      "MCHTrendingTracks": {
+        "active": "true",
+        "className": "o2::quality_control_modules::muonchambers::TrendingTracks",
+        "moduleName": "QcMuonChambers",
+        "detectorName": "MCH",
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "MCH/MO/MCHTracks",
+            "names": [
+              "TracksPerTF", "ClustersPerTrack"
+            ],
+            "reductorName": "o2::quality_control_modules::common::TH1Reductor",
+            "moduleName": "QcCommon"
+          }
+        ],
+        "plots": [
+          {
+            "name": "TracksNum",
+            "title": "Number of tracks per TF",
+            "varexp": "TracksPerTF.mean:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "ClustersPerTrack",
+            "title": "Number of clusters per track",
+            "varexp": "ClustersPerTrack.mean:time",
+            "selection": "",
+            "option": "*L"
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "2min"
+        ],
+        "stopTrigger": [
+          "endofrun"
+        ]
+      }
+    }
+  }
+}
