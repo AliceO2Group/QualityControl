@@ -245,9 +245,9 @@ void GenericHistogramCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality 
 
     auto* h = dynamic_cast<TH2F*>(mo->getObject());
     XText = h->GetXaxis()->GetXmin() + fabs(h->GetXaxis()->GetXmax() - h->GetXaxis()->GetXmin()) * 0.01;
-    YText = h->GetYaxis()->GetXmax()*0.9;
-    //if we need a second line, move it 5% down
-    YText2 = h->GetYaxis()->GetXmax()*0.9 - (h->GetYaxis()->GetXmax() - h->GetYaxis()->GetXmin()) * 0.05;
+    YText = h->GetYaxis()->GetXmax() * 0.9;
+    // if we need a second line, move it 5% down
+    YText2 = h->GetYaxis()->GetXmax() * 0.9 - (h->GetYaxis()->GetXmax() - h->GetYaxis()->GetXmin()) * 0.05;
     if (!h) {
 
       ILOG(Warning, Support) << "h not found in D= 2" << ENDM;
