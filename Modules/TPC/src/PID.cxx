@@ -28,7 +28,7 @@
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
 #include "TPC/PID.h"
-#include "TPC/Utility.h"
+#include "Common/Utils.h"
 
 namespace o2::quality_control_modules::tpc
 {
@@ -43,14 +43,14 @@ void PID::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info, Support) << "initialize TPC PID QC task" << ENDM;
   // elementary cuts for PID from json file
-  const int cutMinNCluster = getFromConfig<int>(mCustomParameters, "cutMinNCluster");
-  const float cutAbsTgl = getFromConfig<float>(mCustomParameters, "cutAbsTgl");
-  const float cutMindEdxTot = getFromConfig<float>(mCustomParameters, "cutMindEdxTot");
-  const float cutMaxdEdxTot = getFromConfig<float>(mCustomParameters, "cutMaxdEdxTot");
-  const float cutMinpTPC = getFromConfig<float>(mCustomParameters, "cutMinpTPC");
-  const float cutMaxpTPC = getFromConfig<float>(mCustomParameters, "cutMaxpTPC");
-  const float cutMinpTPCMIPs = getFromConfig<float>(mCustomParameters, "cutMinpTPCMIPs");
-  const float cutMaxpTPCMIPs = getFromConfig<float>(mCustomParameters, "cutMaxpTPCMIPs");
+  const int cutMinNCluster = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "cutMinNCluster");
+  const float cutAbsTgl = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "cutAbsTgl");
+  const float cutMindEdxTot = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "cutMindEdxTot");
+  const float cutMaxdEdxTot = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "cutMaxdEdxTot");
+  const float cutMinpTPC = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "cutMinpTPC");
+  const float cutMaxpTPC = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "cutMaxpTPC");
+  const float cutMinpTPCMIPs = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "cutMinpTPCMIPs");
+  const float cutMaxpTPCMIPs = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "cutMaxpTPCMIPs");
 
   // set track cutss defaults are (AbsEta = 1.0, nCluster = 60, MindEdxTot  = 20)
   mQCPID.setPIDCuts(cutMinNCluster, cutAbsTgl, cutMindEdxTot, cutMaxdEdxTot, cutMinpTPC, cutMaxpTPC, cutMinpTPCMIPs, cutMaxpTPCMIPs);

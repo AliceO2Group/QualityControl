@@ -2,7 +2,7 @@
 
 add_library(O2QcGLO)
 
-target_sources(O2QcGLO PRIVATE src/VertexingQcTask.cxx src/ITSTPCMatchingTask.cxx)
+target_sources(O2QcGLO PRIVATE src/VertexingQcTask.cxx src/ITSTPCMatchingTask.cxx src/DataCompressionQcTask.cxx)
 
 target_include_directories(
   O2QcGLO
@@ -16,7 +16,8 @@ target_link_libraries(O2QcGLO
   O2::Steer
   O2::DataFormatsGlobalTracking
   O2::DataFormatsITS
-  O2::GlobalTracking)
+  O2::GlobalTracking
+  O2QcCommon)
 
 install(TARGETS O2QcGLO
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -31,6 +32,7 @@ install(FILES ITSTPCmatchedTracks_external.json
               vertexing-qc-direct-mc.json
               vertexing-qc.json
               vertexing-qc-mc.json
+              dataCompression-qc.json
         DESTINATION etc
        )
 
@@ -38,6 +40,7 @@ add_root_dictionary(O2QcGLO
                     HEADERS
   include/GLO/VertexingQcTask.h
   include/GLO/ITSTPCMatchingTask.h
+  include/GLO/DataCompressionQcTask.h
                     LINKDEF include/GLO/LinkDef.h
                     BASENAME O2QcGLO)
 
