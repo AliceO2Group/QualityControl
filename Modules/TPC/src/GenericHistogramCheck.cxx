@@ -101,7 +101,6 @@ void GenericHistogramCheck::configure()
 }
 Quality GenericHistogramCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
-  // ILOG(Warning, Support) << "Check started....?" << ENDM;
   Quality result = Quality::Null;
   for (auto const& moObj : *moMap) {
     auto mo = moObj.second;
@@ -113,7 +112,9 @@ Quality GenericHistogramCheck::check(std::map<std::string, std::shared_ptr<Monit
 
     THn* hN = THn::CreateHn(moName.c_str(), moName.c_str(), (TH2F*)mo->getObject());
     mHistDimension = hN->GetNdimensions();
-
+    delete hN;
+    hN = nullptr;
+    
     if (mHistDimension == 1) {
       if (!mCheckXAxis) {
         ILOG(Error, Support) << "a 1D Histogram was given, but the X-axis is not assigned to be checked. No Check was performed." << ENDM;
@@ -127,7 +128,6 @@ Quality GenericHistogramCheck::check(std::map<std::string, std::shared_ptr<Monit
       }
     } else if (mHistDimension == 2) {
       TH2D* h2d = (TH2D*)mo->getObject();
-      ILOG(Warning, Support) << "Entered 2D" << ENDM;
       if (mCheckXAxis) {
         mMeanX = h2d->GetMean(1);
         mStdevX = h2d->GetStdDev(1);
@@ -240,7 +240,6 @@ void GenericHistogramCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality 
     h->SetLineColor(kBlack);
   }
   if (mHistDimension == 2) {
-    ILOG(Warning, Support) << "Dimension 2" << ENDM;
 
     auto* h = dynamic_cast<TH2F*>(mo->getObject());
     xText = h->GetXaxis()->GetXmin() + std::abs(h->GetXaxis()->GetXmax() - h->GetXaxis()->GetXmin()) * 0.01;
@@ -279,10 +278,7 @@ void GenericHistogramCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality 
     h->SetLineColor(kBlack);
   }
 
-  ILOG(Warning, Support) << msg->GetName() << ENDM;
   if (checkResult == Quality::Good) {
-    ILOG(Info, Support) << "Quality::Good, setting to green" << ENDM;
-    // h->SetFillColor(kGreen);
     msg->Clear();
     msg->AddText("Quality::Good");
     msg->SetFillColor(kGreen);
@@ -300,7 +296,6 @@ void GenericHistogramCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality 
     txt->SetTextColor(kGreen);
     txt2->SetTextColor(kGreen);
   } else if (checkResult == Quality::Bad) {
-    ILOG(Info, Support) << "Quality::Bad, setting to red" << ENDM;
 
     msg->Clear();
     msg->AddText("Quality::Bad");
@@ -320,7 +315,6 @@ void GenericHistogramCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality 
     txt->SetTextColor(kRed);
     txt2->SetTextColor(kRed);
   } else if (checkResult == Quality::Medium) {
-    ILOG(Info, Support) << "Quality::medium, setting to orange" << ENDM;
 
     msg->Clear();
     msg->AddText("Quality::Medium");
