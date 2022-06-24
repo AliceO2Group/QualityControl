@@ -114,7 +114,7 @@ Quality GenericHistogramCheck::check(std::map<std::string, std::shared_ptr<Monit
     mHistDimension = hN->GetNdimensions();
     delete hN;
     hN = nullptr;
-    
+
     if (mHistDimension == 1) {
       if (!mCheckXAxis) {
         ILOG(Error, Support) << "a 1D Histogram was given, but the X-axis is not assigned to be checked. No Check was performed." << ENDM;
