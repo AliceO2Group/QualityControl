@@ -36,11 +36,11 @@ void GenericHistogramCheck::configure()
 {
   // ILOG(Warning, Support) << "Config started....?" << ENDM;
   if (const auto param = mCustomParameters.find("checks"); param != mCustomParameters.end()) {
-    std::string CheckString = param->second.c_str();
-    if (const auto param1 = CheckString.find("Range"); param1 != string::npos) {
+    const std::string checkString = param->second.c_str();
+    if (const auto param1 = checkString.find("Range"); param1 != string::npos) {
       mCheckRange = true;
     }
-    if (const auto param1 = CheckString.find("StdDev"); param1 != string::npos) {
+    if (const auto param1 = checkString.find("StdDev"); param1 != string::npos) {
       mCheckStdDev = true;
     }
     if (!mCheckRange && !mCheckStdDev) {
@@ -54,12 +54,11 @@ void GenericHistogramCheck::configure()
   }
 
   if (const auto param = mCustomParameters.find("axis"); param != mCustomParameters.end()) {
-    std::string AxisString = param->second.c_str();
-    ILOG(Warning, Support) << "AxisString: " << AxisString << ENDM;
-    if (const auto param1 = AxisString.find("X"); param1 != string::npos) {
+    const std::string axisString = param->second.c_str();
+    if (const auto param1 = axisString.find("X"); param1 != string::npos) {
       mCheckXAxis = true;
     }
-    if (const auto param1 = AxisString.find("Y"); param1 != string::npos) {
+    if (const auto param1 = axisString.find("Y"); param1 != string::npos) {
       mCheckYAxis = true;
     }
     if (!mCheckXAxis && !mCheckYAxis) {
@@ -154,9 +153,9 @@ Quality GenericHistogramCheck::check(std::map<std::string, std::shared_ptr<Monit
     if (mCheckXAxis) {
       // Check for a range around an expected Value
       if (mCheckRange) {
-        if (fabs(mMeanX - mExpectedValueX) < mRangeX) {
+        if (std::abs(mMeanX - mExpectedValueX) < mRangeX) {
           resultRangeX = Quality::Good;
-        } else if (fabs(mMeanX - mExpectedValueX) > 2 * mRangeX) {
+        } else if (std::abs(mMeanX - mExpectedValueX) > 2 * mRangeX) {
           resultRangeX = Quality::Bad;
         } else {
           resultRangeX = Quality::Medium;
@@ -164,9 +163,9 @@ Quality GenericHistogramCheck::check(std::map<std::string, std::shared_ptr<Monit
       }
       // Check for 3/6 StdDev around expected value
       if (mCheckStdDev) {
-        if (fabs(mMeanX - mExpectedValueX) < 3 * mStdevX) {
+        if (std::abs(mMeanX - mExpectedValueX) < 3 * mStdevX) {
           resultStdDevX = Quality::Good;
-        } else if (fabs(mMeanX - mExpectedValueX) > 6 * mStdevX) {
+        } else if (std::abs(mMeanX - mExpectedValueX) > 6 * mStdevX) {
           resultStdDevX = Quality::Bad;
         } else {
           resultStdDevX = Quality::Medium;
@@ -177,9 +176,9 @@ Quality GenericHistogramCheck::check(std::map<std::string, std::shared_ptr<Monit
       if (mHistDimension == 2) {
         // Check for a range around an expected Value
         if (mCheckRange) {
-          if (fabs(mMeanY - mExpectedValueY) < mRangeY) {
+          if (std::abs(mMeanY - mExpectedValueY) < mRangeY) {
             resultRangeY = Quality::Good;
-          } else if (fabs(mMeanY - mExpectedValueY) > 2 * mRangeY) {
+          } else if (std::abs(mMeanY - mExpectedValueY) > 2 * mRangeY) {
 
             resultRangeY = Quality::Bad;
           } else {
@@ -188,9 +187,9 @@ Quality GenericHistogramCheck::check(std::map<std::string, std::shared_ptr<Monit
         }
         // Check for 3/6 StdDev around expected value
         if (mCheckStdDev) {
-          if (fabs(mMeanY - mExpectedValueY) < 3 * mStdevY) {
+          if (std::abs(mMeanY - mExpectedValueY) < 3 * mStdevY) {
             resultStdDevY = Quality::Good;
-          } else if (fabs(mMeanY - mExpectedValueY) > 6 * mStdevY) {
+          } else if (std::abs(mMeanY - mExpectedValueY) > 6 * mStdevY) {
             resultStdDevY = Quality::Bad;
           } else {
             resultStdDevY = Quality::Medium;
@@ -199,11 +198,11 @@ Quality GenericHistogramCheck::check(std::map<std::string, std::shared_ptr<Monit
       }
     }
     // find the worst quality that is NOT 10 ("Null")
-    std::vector<Quality> Quals = { resultRangeX, resultRangeY, resultStdDevX, resultStdDevY };
-    std::sort(Quals.begin(), Quals.end(), [](Quality a, Quality b) { return a.isWorseThan(b); });
-    auto result_iter = std::lower_bound(Quals.begin(), Quals.end(), Quality::Bad, [](Quality a, Quality b) { return a.isWorseThan(b); });
-    if (result_iter != Quals.end()) {
-      result = Quals[std::distance(Quals.begin(), result_iter)];
+    std::vector<Quality> quals = { resultRangeX, resultRangeY, resultStdDevX, resultStdDevY };
+    std::sort(quals.begin(), quals.end(), [](Quality a, Quality b) { return a.isWorseThan(b); });
+    auto result_iter = std::lower_bound(quals.begin(), quals.end(), Quality::Bad, [](Quality a, Quality b) { return a.isWorseThan(b); });
+    if (result_iter != quals.end()) {
+      result = quals[std::distance(quals.begin(), result_iter)];
     } else {
       ILOG(Warning, Support) << "There is a problem with the Qualities. All Qualities might be Null. Is there a check requested?" << ENDM;
     }
@@ -222,9 +221,9 @@ void GenericHistogramCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality 
   msg->SetBorderSize(1);
   TText* txt = new TText(0, 0, "Quality::Null");
   TText* txt2 = new TText(0, 0, "Quality::Null");
-  double XText = 0;
-  double YText = 0;
-  double YText2 = 0;
+  double xText = 0;
+  double yText = 0;
+  double yText2 = 0;
   if (mHistDimension == 1) {
     auto* h = dynamic_cast<TH1F*>(mo->getObject());
     TLine* lineX = new TLine(mMeanX, h->GetMinimum() * 1.1, mMeanX, h->GetMaximum() * 1.1);
@@ -244,10 +243,10 @@ void GenericHistogramCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality 
     ILOG(Warning, Support) << "Dimension 2" << ENDM;
 
     auto* h = dynamic_cast<TH2F*>(mo->getObject());
-    XText = h->GetXaxis()->GetXmin() + fabs(h->GetXaxis()->GetXmax() - h->GetXaxis()->GetXmin()) * 0.01;
-    YText = h->GetYaxis()->GetXmax() * 0.9;
+    xText = h->GetXaxis()->GetXmin() + std::abs(h->GetXaxis()->GetXmax() - h->GetXaxis()->GetXmin()) * 0.01;
+    yText = h->GetYaxis()->GetXmax() * 0.9;
     // if we need a second line, move it 5% down
-    YText2 = h->GetYaxis()->GetXmax() * 0.9 - (h->GetYaxis()->GetXmax() - h->GetYaxis()->GetXmin()) * 0.05;
+    yText2 = h->GetYaxis()->GetXmax() * 0.9 - std::abs(h->GetYaxis()->GetXmax() - h->GetYaxis()->GetXmin()) * 0.05;
     if (!h) {
 
       ILOG(Warning, Support) << "h not found in D= 2" << ENDM;
@@ -290,13 +289,13 @@ void GenericHistogramCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality 
     if (mCheckXAxis) {
       if (mCheckYAxis && mHistDimension == 2) {
 
-        txt->SetText(XText, YText, fmt::format("Quality::Medium, MeanX: {:.3}, ExpectedX: {:.3}", mMeanX, mExpectedValueX).data());
-        txt2->SetText(XText, YText2, fmt::format("MeanY: {:.3}, ExpectedY: {:.3}", mMeanY, mExpectedValueY).data());
+        txt->SetText(xText, yText, fmt::format("Quality::Medium, MeanX: {:.3}, ExpectedX: {:.3}", mMeanX, mExpectedValueX).data());
+        txt2->SetText(xText, yText2, fmt::format("MeanY: {:.3}, ExpectedY: {:.3}", mMeanY, mExpectedValueY).data());
       } else {
-        txt->SetText(XText, YText, fmt::format("Quality::Good, MeanX: {:.3}, ExpectedX: {:.3}", mMeanX, mExpectedValueX).data());
+        txt->SetText(xText, yText, fmt::format("Quality::Good, MeanX: {:.3}, ExpectedX: {:.3}", mMeanX, mExpectedValueX).data());
       }
     } else {
-      txt->SetText(XText, YText, fmt::format("Quality::Good, MeanY: {:.3}, ExpectedY: {:.3}", mMeanY, mExpectedValueY).data());
+      txt->SetText(xText, yText, fmt::format("Quality::Good, MeanY: {:.3}, ExpectedY: {:.3}", mMeanY, mExpectedValueY).data());
     }
     txt->SetTextColor(kGreen);
     txt2->SetTextColor(kGreen);
@@ -310,13 +309,13 @@ void GenericHistogramCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality 
     if (mCheckXAxis) {
       if (mCheckYAxis && mHistDimension == 2) {
 
-        txt->SetText(XText, YText, fmt::format("Quality::Bad, MeanX: {:.3}, ExpectedX: {:.3}", mMeanX, mExpectedValueX).data());
-        txt2->SetText(XText, YText2, fmt::format("MeanY: {:.3}, ExpectedY: {:.3}", mMeanY, mExpectedValueY).data());
+        txt->SetText(xText, yText, fmt::format("Quality::Bad, MeanX: {:.3}, ExpectedX: {:.3}", mMeanX, mExpectedValueX).data());
+        txt2->SetText(xText, yText2, fmt::format("MeanY: {:.3}, ExpectedY: {:.3}", mMeanY, mExpectedValueY).data());
       } else {
-        txt->SetText(XText, YText, fmt::format("Quality::Bad, MeanX: {:.3}, ExpectedX: {:.3}", mMeanX, mExpectedValueX).data());
+        txt->SetText(xText, yText, fmt::format("Quality::Bad, MeanX: {:.3}, ExpectedX: {:.3}", mMeanX, mExpectedValueX).data());
       }
     } else {
-      txt->SetText(XText, YText, fmt::format("Quality::Bad, MeanY: {:.3}, ExpectedY: {:.3}", mMeanY, mExpectedValueY).data());
+      txt->SetText(xText, yText, fmt::format("Quality::Bad, MeanY: {:.3}, ExpectedY: {:.3}", mMeanY, mExpectedValueY).data());
     }
     txt->SetTextColor(kRed);
     txt2->SetTextColor(kRed);
@@ -329,13 +328,13 @@ void GenericHistogramCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality 
     msg->SetFillColor(kOrange);
     if (mCheckXAxis) {
       if (mCheckYAxis && mHistDimension == 2) {
-        txt->SetText(XText, YText, fmt::format("Quality::Medium, MeanX: {:.3}, ExpectedX: {:.3}", mMeanX, mExpectedValueX).data());
-        txt2->SetText(XText, YText2, fmt::format("MeanY: {:.3}, ExpectedY: {:.3}", mMeanY, mExpectedValueY).data());
+        txt->SetText(xText, yText, fmt::format("Quality::Medium, MeanX: {:.3}, ExpectedX: {:.3}", mMeanX, mExpectedValueX).data());
+        txt2->SetText(xText, yText2, fmt::format("MeanY: {:.3}, ExpectedY: {:.3}", mMeanY, mExpectedValueY).data());
       } else {
-        txt->SetText(XText, YText, fmt::format("Quality::Medium, MeanX: {:.3}, ExpectedX: {:.3}", mMeanX, mExpectedValueX).data());
+        txt->SetText(xText, yText, fmt::format("Quality::Medium, MeanX: {:.3}, ExpectedX: {:.3}", mMeanX, mExpectedValueX).data());
       }
     } else {
-      txt->SetText(XText, YText, fmt::format("Quality::Medium, MeanY: {:.3}, ExpectedY: {:.3}", mMeanY, mExpectedValueY).data());
+      txt->SetText(xText, yText, fmt::format("Quality::Medium, MeanY: {:.3}, ExpectedY: {:.3}", mMeanY, mExpectedValueY).data());
     }
     txt->SetTextColor(kOrange);
     txt2->SetTextColor(kOrange);
