@@ -69,7 +69,6 @@ class BasicPPTask final : public quality_control::postprocessing::PostProcessing
   std::unique_ptr<TH1F> mHistTimeLowerFraction;
   std::unique_ptr<TH1F> mHistTimeInWindow;
 
-
   std::unique_ptr<TCanvas> mRatesCanv;
   TProfile* mAmpl = nullptr;
   TProfile* mTime = nullptr;
@@ -77,4 +76,4 @@ class BasicPPTask final : public quality_control::postprocessing::PostProcessing
 
 } // namespace o2::quality_control_modules::ft0
 
-#endif //QC_MODULE_FT0_BASICPPTASK_H
+#endif // QC_MODULE_FT0_BASICPPTASK_H

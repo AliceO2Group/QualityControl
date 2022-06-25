@@ -48,7 +48,7 @@ class DigitQcTask final : public TaskInterface
 {
  public:
   /// \brief Constructor
-  DigitQcTask():mHashedBitBinPos(fillHashedBitBinPos()),mHashedPairBitBinPos(fillHashedPairBitBinPos()) {}
+  DigitQcTask() : mHashedBitBinPos(fillHashedBitBinPos()), mHashedPairBitBinPos(fillHashedPairBitBinPos()) {}
   /// Destructor
   ~DigitQcTask() override;
   // Definition of the methods for the template method pattern
@@ -102,7 +102,7 @@ class DigitQcTask final : public TaskInterface
   std::set<unsigned int> mSetAllowedChIDs;
   std::array<o2::InteractionRecord, o2::ft0::Constants::sNCHANNELS_PM> mStateLastIR2Ch;
   std::array<uint8_t, o2::ft0::Constants::sNCHANNELS_PM> mChID2PMhash; // map chID->hashed PM value
-  uint8_t mTCMhash; // hash value for TCM, and bin position in hist
+  uint8_t mTCMhash;                                                    // hash value for TCM, and bin position in hist
   std::map<int, std::string> mMapDigitTrgNames;
   std::map<o2::ft0::ChannelData::EEventDataBit, std::string> mMapChTrgNames;
   std::unique_ptr<TH1F> mHistNumADC;
@@ -138,36 +138,36 @@ class DigitQcTask final : public TaskInterface
   std::unique_ptr<TH2F> mHistOrbitVsFEEmodules;
 
   // Hashed maps
-  const std::array<std::vector<double>,256> mHashedBitBinPos;// map with bit position for 1 byte trg signal, for 1 Dim hists;
-  const std::array<std::vector<std::pair<double,double>>,256> mHashedPairBitBinPos;// map with paired bit position for 1 byte trg signal, for 1 Dim hists;
-  static std::array<std::vector<double>,256> fillHashedBitBinPos() {
-    std::array<std::vector<double>,256> hashedBitBinPos{};
-    for(int iByteValue=0;iByteValue<hashedBitBinPos.size();iByteValue++) {
-      auto &vec = hashedBitBinPos[iByteValue];
-      for(int iBit=0;iBit<8;iBit++) {
-        if(iByteValue & (1 << iBit) ) {
+  const std::array<std::vector<double>, 256> mHashedBitBinPos;                        // map with bit position for 1 byte trg signal, for 1 Dim hists;
+  const std::array<std::vector<std::pair<double, double>>, 256> mHashedPairBitBinPos; // map with paired bit position for 1 byte trg signal, for 1 Dim hists;
+  static std::array<std::vector<double>, 256> fillHashedBitBinPos()
+  {
+    std::array<std::vector<double>, 256> hashedBitBinPos{};
+    for (int iByteValue = 0; iByteValue < hashedBitBinPos.size(); iByteValue++) {
+      auto& vec = hashedBitBinPos[iByteValue];
+      for (int iBit = 0; iBit < 8; iBit++) {
+        if (iByteValue & (1 << iBit)) {
           vec.push_back(iBit);
         }
       }
     }
     return hashedBitBinPos;
   }
-  static std::array<std::vector<std::pair<double,double>>,256> fillHashedPairBitBinPos() {
-    const std::array<std::vector<double>,256> hashedBitBinPos = fillHashedBitBinPos();
-    std::array<std::vector<std::pair<double,double> >,256> hashedPairBitBinPos{};
-    for(int iByteValue=0;iByteValue<hashedBitBinPos.size();iByteValue++) {
-      const auto &vecBits = hashedBitBinPos[iByteValue];
-      auto &vecPairBits = hashedPairBitBinPos[iByteValue];
-      for(int iBitFirst = 0 ;iBitFirst<vecBits.size();iBitFirst++) {
-        for(int iBitSecond = iBitFirst ;iBitSecond<vecBits.size();iBitSecond++) {
-          vecPairBits.push_back({static_cast<double>(vecBits[iBitFirst]),static_cast<double>(vecBits[iBitSecond])});
+  static std::array<std::vector<std::pair<double, double>>, 256> fillHashedPairBitBinPos()
+  {
+    const std::array<std::vector<double>, 256> hashedBitBinPos = fillHashedBitBinPos();
+    std::array<std::vector<std::pair<double, double>>, 256> hashedPairBitBinPos{};
+    for (int iByteValue = 0; iByteValue < hashedBitBinPos.size(); iByteValue++) {
+      const auto& vecBits = hashedBitBinPos[iByteValue];
+      auto& vecPairBits = hashedPairBitBinPos[iByteValue];
+      for (int iBitFirst = 0; iBitFirst < vecBits.size(); iBitFirst++) {
+        for (int iBitSecond = iBitFirst; iBitSecond < vecBits.size(); iBitSecond++) {
+          vecPairBits.push_back({ static_cast<double>(vecBits[iBitFirst]), static_cast<double>(vecBits[iBitSecond]) });
         }
       }
     }
     return hashedPairBitBinPos;
   }
-
-
 };
 
 } // namespace o2::quality_control_modules::ft0

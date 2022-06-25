@@ -104,7 +104,6 @@ void BasicPPTask::initialize(Trigger, framework::ServiceRegistry& services)
   mRateCentral->SetLineColor(kBlue);
   mRateSemiCentral->SetLineColor(kOrange);
 
-
   mMapChTrgNames.insert({ o2::ft0::ChannelData::kNumberADC, "NumberADC" });
   mMapChTrgNames.insert({ o2::ft0::ChannelData::kIsDoubleEvent, "IsDoubleEvent" });
   mMapChTrgNames.insert({ o2::ft0::ChannelData::kIsTimeInfoNOTvalid, "IsTimeInfoNOTvalid" });
@@ -116,7 +115,7 @@ void BasicPPTask::initialize(Trigger, framework::ServiceRegistry& services)
 
   mHistChDataNegBits = std::make_unique<TH2F>("ChannelDataNegBits", "ChannelData negative bits per ChannelID;Channel;Negative bit", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM, mMapChTrgNames.size(), 0, mMapChTrgNames.size());
   for (const auto& entry : mMapChTrgNames) {
-    std::string stBitName = "! "+ entry.second;
+    std::string stBitName = "! " + entry.second;
     mHistChDataNegBits->GetYaxis()->SetBinLabel(entry.first + 1, stBitName.c_str());
   }
   getObjectsManager()->startPublishing(mHistChDataNegBits.get());
@@ -136,15 +135,14 @@ void BasicPPTask::initialize(Trigger, framework::ServiceRegistry& services)
   }
   getObjectsManager()->startPublishing(mHistTriggers.get());
 
-  mHistTimeUpperFraction = std::make_unique<TH1F>("TimeUpperFraction","Fraction of events under time window(-+190 channels);ChID;Fraction",o2::ft0::Constants::sNCHANNELS_PM,0,o2::ft0::Constants::sNCHANNELS_PM);
+  mHistTimeUpperFraction = std::make_unique<TH1F>("TimeUpperFraction", "Fraction of events under time window(-+190 channels);ChID;Fraction", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
   getObjectsManager()->startPublishing(mHistTimeUpperFraction.get());
 
-  mHistTimeLowerFraction = std::make_unique<TH1F>("TimeLowerFraction","Fraction of events below time window(-+190 channels);ChID;Fraction",o2::ft0::Constants::sNCHANNELS_PM,0,o2::ft0::Constants::sNCHANNELS_PM);
+  mHistTimeLowerFraction = std::make_unique<TH1F>("TimeLowerFraction", "Fraction of events below time window(-+190 channels);ChID;Fraction", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
   getObjectsManager()->startPublishing(mHistTimeLowerFraction.get());
 
-  mHistTimeInWindow = std::make_unique<TH1F>("TimeInWindowFraction","Fraction of events within time window(-+190 channels);ChID;Fraction",o2::ft0::Constants::sNCHANNELS_PM,0,o2::ft0::Constants::sNCHANNELS_PM);
+  mHistTimeInWindow = std::make_unique<TH1F>("TimeInWindowFraction", "Fraction of events within time window(-+190 channels);ChID;Fraction", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
   getObjectsManager()->startPublishing(mHistTimeInWindow.get());
-
 
   getObjectsManager()->startPublishing(mRateOrA.get());
   getObjectsManager()->startPublishing(mRateOrC.get());
@@ -161,24 +159,22 @@ void BasicPPTask::update(Trigger t, framework::ServiceRegistry&)
   auto mo = mDatabase->retrieveMO(mPathDigitQcTask, "TriggersCorrelation", t.timestamp, t.activity);
   auto hTrgCorr = mo ? (TH2F*)mo->getObject() : nullptr;
   mHistTriggers->Reset();
-  auto getBinContent2Ddiag = [] (TH2 *hist,const std::string &binName) {
-    return hist->GetBinContent(hist->GetXaxis()->FindBin(binName.c_str()),hist->GetYaxis()->FindBin(binName.c_str()));
+  auto getBinContent2Ddiag = [](TH2* hist, const std::string& binName) {
+    return hist->GetBinContent(hist->GetXaxis()->FindBin(binName.c_str()), hist->GetYaxis()->FindBin(binName.c_str()));
   };
   if (!hTrgCorr) {
     ILOG(Error) << "MO \"TriggersCorrelation\" NOT retrieved!!!" << ENDM;
-  }
-  else {
-    double totalStat{0};
-    for(int iBin=1;iBin<mHistTriggers->GetXaxis()->GetNbins()+1;iBin++) {
-      std::string binName{mHistTriggers->GetXaxis()->GetBinLabel(iBin)};
-      const auto binContent = getBinContent2Ddiag(hTrgCorr,binName);
-      mHistTriggers->SetBinContent(iBin,getBinContent2Ddiag(hTrgCorr,binName));
-      totalStat+=binContent;
+  } else {
+    double totalStat{ 0 };
+    for (int iBin = 1; iBin < mHistTriggers->GetXaxis()->GetNbins() + 1; iBin++) {
+      std::string binName{ mHistTriggers->GetXaxis()->GetBinLabel(iBin) };
+      const auto binContent = getBinContent2Ddiag(hTrgCorr, binName);
+      mHistTriggers->SetBinContent(iBin, getBinContent2Ddiag(hTrgCorr, binName));
+      totalStat += binContent;
     }
     mHistChDataNegBits->SetEntries(totalStat);
   }
-  
-  
+
   auto moChDataBits = mDatabase->retrieveMO(mPathDigitQcTask, "ChannelDataBits", t.timestamp, t.activity);
   auto hChDataBits = moChDataBits ? (TH2F*)moChDataBits->getObject() : nullptr;
   if (!hChDataBits) {
@@ -190,15 +186,15 @@ void BasicPPTask::update(Trigger t, framework::ServiceRegistry&)
     ILOG(Error) << "MO \"StatChannelID\" NOT retrieved!!!" << ENDM;
   }
   mHistChDataNegBits->Reset();
-  if(hChDataBits != nullptr && hStatChannelID != nullptr) {
-    double totalStat{0};
-    for(int iBinX = 1; iBinX < hChDataBits->GetXaxis()->GetNbins()+1;iBinX++) {
-      for(int iBinY = 1; iBinY < hChDataBits->GetYaxis()->GetNbins()+1;iBinY++) {
+  if (hChDataBits != nullptr && hStatChannelID != nullptr) {
+    double totalStat{ 0 };
+    for (int iBinX = 1; iBinX < hChDataBits->GetXaxis()->GetNbins() + 1; iBinX++) {
+      for (int iBinY = 1; iBinY < hChDataBits->GetYaxis()->GetNbins() + 1; iBinY++) {
         const double nStatTotal = hStatChannelID->GetBinContent(iBinX);
-        const double nStatPMbit = hChDataBits->GetBinContent(iBinX,iBinY);
+        const double nStatPMbit = hChDataBits->GetBinContent(iBinX, iBinY);
         const double nStatNegPMbit = nStatTotal - nStatPMbit;
-        totalStat+=nStatNegPMbit;
-        mHistChDataNegBits->SetBinContent(iBinX,iBinY,nStatNegPMbit);
+        totalStat += nStatNegPMbit;
+        mHistChDataNegBits->SetBinContent(iBinX, iBinY, nStatNegPMbit);
       }
     }
     mHistChDataNegBits->SetEntries(totalStat);
@@ -225,11 +221,11 @@ void BasicPPTask::update(Trigger t, framework::ServiceRegistry&)
     if (cycleDurationMS < eps) {
       ILOG(Warning) << "cycle duration = " << cycleDurationMS << " ms, almost zero - cannot compute trigger rates!" << ENDM;
     } else {
-      mRateOrA->SetPoint(n, n,getBinContent2Ddiag(hTrgCorr,"OrA") / cycleDurationMS);
-      mRateOrC->SetPoint(n, n,getBinContent2Ddiag(hTrgCorr,"OrC") / cycleDurationMS);
-      mRateVertex->SetPoint(n, n,getBinContent2Ddiag(hTrgCorr,"Vertex") / cycleDurationMS);
-      mRateCentral->SetPoint(n, n,getBinContent2Ddiag(hTrgCorr,"Central") / cycleDurationMS);
-      mRateSemiCentral->SetPoint(n, n,getBinContent2Ddiag(hTrgCorr,"SemiCentral") / cycleDurationMS);
+      mRateOrA->SetPoint(n, n, getBinContent2Ddiag(hTrgCorr, "OrA") / cycleDurationMS);
+      mRateOrC->SetPoint(n, n, getBinContent2Ddiag(hTrgCorr, "OrC") / cycleDurationMS);
+      mRateVertex->SetPoint(n, n, getBinContent2Ddiag(hTrgCorr, "Vertex") / cycleDurationMS);
+      mRateCentral->SetPoint(n, n, getBinContent2Ddiag(hTrgCorr, "Central") / cycleDurationMS);
+      mRateSemiCentral->SetPoint(n, n, getBinContent2Ddiag(hTrgCorr, "SemiCentral") / cycleDurationMS);
       /*
       mRateOrA->SetPoint(n, n, hTriggers->GetBinContent(hTriggers->GetXaxis()->FindBin("OrA")) / cycleDurationMS);
       mRateOrC->SetPoint(n, n, hTriggers->GetBinContent(hTriggers->GetXaxis()->FindBin("OrC")) / cycleDurationMS);
@@ -237,7 +233,6 @@ void BasicPPTask::update(Trigger t, framework::ServiceRegistry&)
       mRateCentral->SetPoint(n, n, hTriggers->GetBinContent(hTriggers->GetXaxis()->FindBin("Central")) / cycleDurationMS);
       mRateSemiCentral->SetPoint(n, n, hTriggers->GetBinContent(hTriggers->GetXaxis()->FindBin("SemiCentral")) / cycleDurationMS);
       */
-      
     }
 
     mRatesCanv->cd();
@@ -272,15 +267,14 @@ void BasicPPTask::update(Trigger t, framework::ServiceRegistry&)
   if (!hTimePerChannel) {
     ILOG(Error) << "MO \"TimePerChannel\" NOT retrieved!!!"
                 << ENDM;
-  }
-  else {
-    auto projLower = hTimePerChannel->ProjectionX("projLower",0,hTimePerChannel->GetYaxis()->FindBin(-190.));
-    auto projUpper = hTimePerChannel->ProjectionX("projUpper",hTimePerChannel->GetYaxis()->FindBin(190.),-1);
-    auto projInWindow = hTimePerChannel->ProjectionX("projInWindow",hTimePerChannel->GetYaxis()->FindBin(-190.),hTimePerChannel->GetYaxis()->FindBin(190.));
+  } else {
+    auto projLower = hTimePerChannel->ProjectionX("projLower", 0, hTimePerChannel->GetYaxis()->FindBin(-190.));
+    auto projUpper = hTimePerChannel->ProjectionX("projUpper", hTimePerChannel->GetYaxis()->FindBin(190.), -1);
+    auto projInWindow = hTimePerChannel->ProjectionX("projInWindow", hTimePerChannel->GetYaxis()->FindBin(-190.), hTimePerChannel->GetYaxis()->FindBin(190.));
     auto projFull = hTimePerChannel->ProjectionX("projFull");
-    mHistTimeUpperFraction->Divide(projUpper,projFull);
-    mHistTimeLowerFraction->Divide(projLower,projFull);
-    mHistTimeInWindow->Divide(projInWindow,projFull);
+    mHistTimeUpperFraction->Divide(projUpper, projFull);
+    mHistTimeLowerFraction->Divide(projLower, projFull);
+    mHistTimeInWindow->Divide(projInWindow, projFull);
     delete projLower;
     delete projUpper;
     delete projInWindow;

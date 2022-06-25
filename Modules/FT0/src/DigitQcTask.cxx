@@ -128,40 +128,37 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     mHistOrbitVsTrg->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
   }
 
-  std::map<std::string,uint8_t> mapFEE2hash;
-  const auto &lut = o2::ft0::SingleLUT::Instance().getVecMetadataFEE();
+  std::map<std::string, uint8_t> mapFEE2hash;
+  const auto& lut = o2::ft0::SingleLUT::Instance().getVecMetadataFEE();
   auto lutSorted = lut;
-  std::sort(lutSorted.begin(),lutSorted.end(),[](const auto&first,const auto&second) {return first.mModuleName<second.mModuleName; });
-  uint8_t binPos{0};
+  std::sort(lutSorted.begin(), lutSorted.end(), [](const auto& first, const auto& second) { return first.mModuleName < second.mModuleName; });
+  uint8_t binPos{ 0 };
   for (const auto& lutEntry : lutSorted) {
-    const auto &moduleName = lutEntry.mModuleName;
-    const auto &moduleType = lutEntry.mModuleType;
-    const auto &strChID = lutEntry.mChannelID;
-    const auto &pairIt = mapFEE2hash.insert({moduleName,binPos});
-    if(pairIt.second) {
+    const auto& moduleName = lutEntry.mModuleName;
+    const auto& moduleType = lutEntry.mModuleType;
+    const auto& strChID = lutEntry.mChannelID;
+    const auto& pairIt = mapFEE2hash.insert({ moduleName, binPos });
+    if (pairIt.second) {
       binPos++;
     }
-    if(std::regex_match(strChID, std::regex("[[\\d]{1,3}"))) {
+    if (std::regex_match(strChID, std::regex("[[\\d]{1,3}"))) {
       int chID = std::stoi(strChID);
-      if(chID<o2::ft0::Constants::sNCHANNELS_PM) {
+      if (chID < o2::ft0::Constants::sNCHANNELS_PM) {
         mChID2PMhash[chID] = mapFEE2hash[moduleName];
-      }
-      else {
+      } else {
         LOG(error) << "Incorrect LUT entry: chID " << strChID << " | " << moduleName;
       }
-    }
-    else if(moduleType!="TCM") {
+    } else if (moduleType != "TCM") {
       LOG(error) << "Non-TCM module w/o numerical chID: chID " << strChID << " | " << moduleName;
-    }
-    else if(moduleType=="TCM") {
+    } else if (moduleType == "TCM") {
       mTCMhash = mapFEE2hash[moduleName];
     }
   }
   mHistBCvsFEEmodules = std::make_unique<TH2F>("BCvsFEEmodules", "BC vs FEE module;BC;FEE", sBCperOrbit, 0, sBCperOrbit, mapFEE2hash.size(), 0, mapFEE2hash.size());
   mHistOrbitVsFEEmodules = std::make_unique<TH2F>("OrbitVsFEEmodules", "Orbit vs FEE module;Orbit;FEE", sOrbitsPerTF, 0, sOrbitsPerTF, mapFEE2hash.size(), 0, mapFEE2hash.size());
   for (const auto& entry : mapFEE2hash) {
-    mHistBCvsFEEmodules->GetYaxis()->SetBinLabel(entry.second+1, entry.first.c_str());
-    mHistOrbitVsFEEmodules->GetYaxis()->SetBinLabel(entry.second+1, entry.first.c_str());
+    mHistBCvsFEEmodules->GetYaxis()->SetBinLabel(entry.second + 1, entry.first.c_str());
+    mHistOrbitVsFEEmodules->GetYaxis()->SetBinLabel(entry.second + 1, entry.first.c_str());
   }
 
   mHistNchA = std::make_unique<TH1F>("NumChannelsA", "Number of channels(TCM), side A;Nch", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
@@ -216,7 +213,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 
   rebinFromConfig(); // after all histos are created
-  //1-dim hists
+  // 1-dim hists
   getObjectsManager()->startPublishing(mHistNchA.get());
   getObjectsManager()->startPublishing(mHistNchC.get());
   getObjectsManager()->startPublishing(mHistSumAmpA.get());
@@ -229,7 +226,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mHistCycleDurationNTF.get());
   getObjectsManager()->startPublishing(mHistCycleDurationRange.get());
   getObjectsManager()->startPublishing(mHistBC.get());
-  //2-dim hists
+  // 2-dim hists
   getObjectsManager()->startPublishing(mHistTime2Ch.get());
   getObjectsManager()->setDefaultDrawOptions(mHistTime2Ch.get(), "COLZ");
   getObjectsManager()->startPublishing(mHistAmp2Ch.get());
@@ -311,14 +308,14 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   mTfCounter++;
   auto channels = ctx.inputs().get<gsl::span<o2::ft0::ChannelData>>("channels");
   auto digits = ctx.inputs().get<gsl::span<o2::ft0::Digit>>("digits");
-  if(digits.size() > 0 ) {
-    //Considering that Digit container is already sorted by IR
-    const o2::InteractionRecord &firstIR = digits[0].getIntRecord();
-    const o2::InteractionRecord &lastIR = digits[digits.size()-1].getIntRecord();
+  if (digits.size() > 0) {
+    // Considering that Digit container is already sorted by IR
+    const o2::InteractionRecord& firstIR = digits[0].getIntRecord();
+    const o2::InteractionRecord& lastIR = digits[digits.size() - 1].getIntRecord();
     auto timeMinNS = firstIR.bc2ns();
     auto timeMaxNS = firstIR.bc2ns();
-    mTimeMinNS = std::min(mTimeMinNS,timeMinNS); // to be sure if somehow TFID is unordered
-    mTimeMaxNS = std::max(mTimeMaxNS,timeMaxNS);
+    mTimeMinNS = std::min(mTimeMinNS, timeMinNS); // to be sure if somehow TFID is unordered
+    mTimeMaxNS = std::max(mTimeMaxNS, timeMaxNS);
     mTimeSum += timeMaxNS - timeMinNS;
   }
   for (auto& digit : digits) {
@@ -330,23 +327,23 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     mHistOrbit2BC->Fill(digit.getIntRecord().orbit % sOrbitsPerTF, digit.getIntRecord().bc);
     mHistBC->Fill(digit.getBC());
     if (isTCM && !digit.mTriggers.getLaserBit()) {
-      if(digit.mTriggers.nChanA>0) {
+      if (digit.mTriggers.nChanA > 0) {
         mHistNchA->Fill(digit.mTriggers.nChanA);
         mHistSumAmpA->Fill(digit.mTriggers.amplA);
         mHistAverageTimeA->Fill(digit.mTriggers.timeA);
       }
-      if(digit.mTriggers.nChanC>0) {
+      if (digit.mTriggers.nChanC > 0) {
         mHistNchC->Fill(digit.mTriggers.nChanC);
         mHistSumAmpC->Fill(digit.mTriggers.amplC);
         mHistAverageTimeC->Fill(digit.mTriggers.timeC);
       }
       mHistTimeSum2Diff->Fill((digit.mTriggers.timeC - digit.mTriggers.timeA) * sCFDChannel2NS / 2, (digit.mTriggers.timeC + digit.mTriggers.timeA) * sCFDChannel2NS / 2);
-      for(const auto &binPos: mHashedPairBitBinPos[digit.mTriggers.triggersignals]) {
-        mHistTriggersCorrelation->Fill(binPos.first,binPos.second);
+      for (const auto& binPos : mHashedPairBitBinPos[digit.mTriggers.triggersignals]) {
+        mHistTriggersCorrelation->Fill(binPos.first, binPos.second);
       }
-      for(const auto &binPos: mHashedBitBinPos[digit.mTriggers.triggersignals]) {
-        mHistBCvsTrg->Fill(digit.getIntRecord().bc,binPos);
-        mHistOrbitVsTrg->Fill(digit.getIntRecord().orbit % sOrbitsPerTF,binPos);
+      for (const auto& binPos : mHashedBitBinPos[digit.mTriggers.triggersignals]) {
+        mHistBCvsTrg->Fill(digit.getIntRecord().bc, binPos);
+        mHistOrbitVsTrg->Fill(digit.getIntRecord().orbit % sOrbitsPerTF, binPos);
       }
     }
     std::set<uint8_t> setFEEmodules{};
@@ -370,18 +367,18 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
           }
         }
       }
-      for(const auto &binPos: mHashedBitBinPos[chData.ChainQTC]) {
+      for (const auto& binPos : mHashedBitBinPos[chData.ChainQTC]) {
         mHistChDataBits->Fill(chData.ChId, binPos);
       }
 
       setFEEmodules.insert(mChID2PMhash[chData.ChId]);
     }
-    if(isTCM/* && (digit.getTriggers().triggersignals & (1 << o2::ft0::Triggers::bitDataIsValid))*/) {
+    if (isTCM /* && (digit.getTriggers().triggersignals & (1 << o2::ft0::Triggers::bitDataIsValid))*/) {
       setFEEmodules.insert(mTCMhash);
     }
-    for(const auto &feeHash: setFEEmodules) {
-      mHistBCvsFEEmodules->Fill(static_cast<double>(digit.getIntRecord().bc),static_cast<double>(feeHash));
-      mHistOrbitVsFEEmodules->Fill(static_cast<double>(digit.getIntRecord().orbit % sOrbitsPerTF),static_cast<double>(feeHash));
+    for (const auto& feeHash : setFEEmodules) {
+      mHistBCvsFEEmodules->Fill(static_cast<double>(digit.getIntRecord().bc), static_cast<double>(feeHash));
+      mHistOrbitVsFEEmodules->Fill(static_cast<double>(digit.getIntRecord().orbit % sOrbitsPerTF), static_cast<double>(feeHash));
     }
   }
 }
