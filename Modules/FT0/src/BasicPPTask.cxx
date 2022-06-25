@@ -104,6 +104,24 @@ void BasicPPTask::initialize(Trigger, framework::ServiceRegistry& services)
   mRateCentral->SetLineColor(kBlue);
   mRateSemiCentral->SetLineColor(kOrange);
 
+
+  mMapChTrgNames.insert({ o2::ft0::ChannelData::kNumberADC, "NumberADC" });
+  mMapChTrgNames.insert({ o2::ft0::ChannelData::kIsDoubleEvent, "IsDoubleEvent" });
+  mMapChTrgNames.insert({ o2::ft0::ChannelData::kIsTimeInfoNOTvalid, "IsTimeInfoNOTvalid" });
+  mMapChTrgNames.insert({ o2::ft0::ChannelData::kIsCFDinADCgate, "IsCFDinADCgate" });
+  mMapChTrgNames.insert({ o2::ft0::ChannelData::kIsTimeInfoLate, "IsTimeInfoLate" });
+  mMapChTrgNames.insert({ o2::ft0::ChannelData::kIsAmpHigh, "IsAmpHigh" });
+  mMapChTrgNames.insert({ o2::ft0::ChannelData::kIsEventInTVDC, "IsEventInTVDC" });
+  mMapChTrgNames.insert({ o2::ft0::ChannelData::kIsTimeInfoLost, "IsTimeInfoLost" });
+
+  mHistChDataNegBits = std::make_unique<TH2F>("ChannelDataNegBits", "ChannelData negative bits per ChannelID;Channel;Negative bit", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM, mMapChTrgNames.size(), 0, mMapChTrgNames.size());
+  for (const auto& entry : mMapChTrgNames) {
+    std::string stBitName = "! "+ entry.second;
+    mHistChDataNegBits->GetYaxis()->SetBinLabel(entry.first + 1, stBitName.c_str());
+  }
+  getObjectsManager()->startPublishing(mHistChDataNegBits.get());
+  getObjectsManager()->setDefaultDrawOptions(mHistChDataNegBits.get(), "COLZ");
+
   getObjectsManager()->startPublishing(mRateOrA.get());
   getObjectsManager()->startPublishing(mRateOrC.get());
   getObjectsManager()->startPublishing(mRateVertex.get());
@@ -121,7 +139,32 @@ void BasicPPTask::update(Trigger t, framework::ServiceRegistry&)
   if (!hTriggers) {
     ILOG(Error) << "MO \"Triggers\" NOT retrieved!!!" << ENDM;
   }
-
+  {
+    auto moChDataBits = mDatabase->retrieveMO(mPathDigitQcTask, "ChannelDataBits", t.timestamp, t.activity);
+    auto hChDataBits = moChDataBits ? (TH2F*)moChDataBits->getObject() : nullptr;
+    if (!hChDataBits) {
+      ILOG(Error) << "MO \"ChannelDataBits\" NOT retrieved!!!" << ENDM;
+    }
+    auto moStatChannelID = mDatabase->retrieveMO(mPathDigitQcTask, "StatChannelID", t.timestamp, t.activity);
+    auto hStatChannelID = moStatChannelID ? (TH2F*)moStatChannelID->getObject() : nullptr;
+    if (!hStatChannelID) {
+      ILOG(Error) << "MO \"StatChannelID\" NOT retrieved!!!" << ENDM;
+    }
+    mHistChDataNegBits->Reset();
+    if(hChDataBits != nullptr && hStatChannelID != nullptr) {
+      double totalStat{0};
+      for(int iBinX = 1; iBinX < hChDataBits->GetXaxis()->GetNbins();iBinX++) {
+        for(int iBinY = 1; iBinY < hChDataBits->GetYaxis()->GetNbins();iBinY++) {
+          const double nStatTotal = hStatChannelID->GetBinContent(iBinX);
+          const double nStatPMbit = hChDataBits->GetBinContent(iBinX,iBinY);
+          const double nStatNegPMbit = nStatTotal - nStatPMbit;
+          totalStat+=nStatNegPMbit;
+          mHistChDataNegBits->SetBinContent(iBinX,iBinY,nStatNegPMbit);
+        }
+      }
+      mHistChDataNegBits->SetEntries(totalStat);
+    }
+  }
   auto mo2 = mDatabase->retrieveMO(mPathDigitQcTask, mCycleDurationMoName, t.timestamp, t.activity);
   auto hCycleDuration = mo2 ? (TH1D*)mo2->getObject() : nullptr;
   if (!hCycleDuration) {
