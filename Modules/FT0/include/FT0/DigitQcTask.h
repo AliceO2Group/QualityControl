@@ -115,7 +115,6 @@ class DigitQcTask final : public TaskInterface
   std::unique_ptr<TH2F> mHistChDataBits;
   std::unique_ptr<TH2F> mHistOrbit2BC;
   std::unique_ptr<TH1F> mHistBC;
-  std::unique_ptr<TH1F> mHistTriggers;
   std::unique_ptr<TH1F> mHistNchA;
   std::unique_ptr<TH1F> mHistNchC;
   std::unique_ptr<TH1F> mHistSumAmpA;

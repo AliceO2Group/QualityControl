@@ -115,7 +115,6 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     mHistChDataBits->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
   }
   mHistTriggersCorrelation = std::make_unique<TH2F>("TriggersCorrelation", "Correlation of triggers from TCM", mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size(), mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
-  mHistTriggers = std::make_unique<TH1F>("Triggers", "Triggers from TCM", mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
 
   mHistBCvsTrg = std::make_unique<TH2F>("BCvsTriggers", "BC vs Triggers;BC;Trg", sBCperOrbit, 0, sBCperOrbit, mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
   mHistOrbitVsTrg = std::make_unique<TH2F>("OrbitVsTriggers", "Orbit vs Triggers;Orbit;Trg", sOrbitsPerTF, 0, sOrbitsPerTF, mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
@@ -123,7 +122,6 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mListHistGarbage = new TList();
   mListHistGarbage->SetOwner(kTRUE);
   for (const auto& entry : mMapDigitTrgNames) {
-    mHistTriggers->GetXaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
     mHistTriggersCorrelation->GetXaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
     mHistTriggersCorrelation->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
     mHistBCvsTrg->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
@@ -219,7 +217,6 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   rebinFromConfig(); // after all histos are created
   //1-dim hists
-  getObjectsManager()->startPublishing(mHistTriggers.get());
   getObjectsManager()->startPublishing(mHistNchA.get());
   getObjectsManager()->startPublishing(mHistNchC.get());
   getObjectsManager()->startPublishing(mHistSumAmpA.get());
@@ -266,7 +263,6 @@ void DigitQcTask::startOfActivity(Activity& activity)
   mHistBC->Reset();
   mHistEventDensity2Ch->Reset();
   mHistChDataBits->Reset();
-  mHistTriggers->Reset();
   mHistNchA->Reset();
   mHistNchC->Reset();
   mHistSumAmpA->Reset();
@@ -351,7 +347,6 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       for(const auto &binPos: mHashedBitBinPos[digit.mTriggers.triggersignals]) {
         mHistBCvsTrg->Fill(digit.getIntRecord().bc,binPos);
         mHistOrbitVsTrg->Fill(digit.getIntRecord().orbit % sOrbitsPerTF,binPos);
-        mHistTriggers->Fill(binPos); // will be moved to post-proc due to 2-Dim hist with trg correlation, including diagonal elements
       }
     }
     std::set<uint8_t> setFEEmodules{};
@@ -420,7 +415,6 @@ void DigitQcTask::reset()
   mHistBC->Reset();
   mHistEventDensity2Ch->Reset();
   mHistChDataBits->Reset();
-  mHistTriggers->Reset();
   mHistNchA->Reset();
   mHistNchC->Reset();
   mHistSumAmpA->Reset();

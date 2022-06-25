@@ -22,6 +22,7 @@
 
 #include "FT0Base/Constants.h"
 #include "DataFormatsFT0/ChannelData.h"
+#include "DataFormatsFT0/Digit.h"
 
 #include <TH2.h>
 #include <TCanvas.h>
@@ -53,6 +54,8 @@ class BasicPPTask final : public quality_control::postprocessing::PostProcessing
   int mNumOrbitsInTF;
 
   std::map<o2::ft0::ChannelData::EEventDataBit, std::string> mMapChTrgNames;
+  std::map<int, std::string> mMapDigitTrgNames;
+
   o2::quality_control::repository::DatabaseInterface* mDatabase = nullptr;
   std::unique_ptr<TGraph> mRateOrA;
   std::unique_ptr<TGraph> mRateOrC;
@@ -60,6 +63,13 @@ class BasicPPTask final : public quality_control::postprocessing::PostProcessing
   std::unique_ptr<TGraph> mRateCentral;
   std::unique_ptr<TGraph> mRateSemiCentral;
   std::unique_ptr<TH2F> mHistChDataNegBits;
+  std::unique_ptr<TH1F> mHistTriggers;
+
+  std::unique_ptr<TH1F> mHistTimeUpperFraction;
+  std::unique_ptr<TH1F> mHistTimeLowerFraction;
+  std::unique_ptr<TH1F> mHistTimeInWindow;
+
+
   std::unique_ptr<TCanvas> mRatesCanv;
   TProfile* mAmpl = nullptr;
   TProfile* mTime = nullptr;
