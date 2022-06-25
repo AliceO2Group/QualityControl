@@ -307,7 +307,7 @@ void AggregatorRunner::initInfoLogger(InitContext& iCtx)
   } catch (const RuntimeErrorRef& err) {
     ILOG(Error) << "Could not find the DPL InfoLogger." << ENDM;
   }
-  QcInfoLogger::init("aggregator", mRunnerConfig.infologgerFilterDiscardDebug, mRunnerConfig.infologgerDiscardLevel, il, ilContext);
+  QcInfoLogger::init("aggregator", mRunnerConfig.infologgerFilterDiscardDebug, mRunnerConfig.infologgerDiscardLevel, mRunnerConfig.infologgerDiscardFile, il, ilContext);
 }
 
 void AggregatorRunner::initLibraries()

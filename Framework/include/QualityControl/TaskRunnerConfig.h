@@ -47,6 +47,7 @@ struct TaskRunnerConfig {
   int resetAfterCycles = 0;
   bool infologgerFilterDiscardDebug = false;
   int infologgerDiscardLevel = 21;
+  std::string infologgerDiscardFile = "";
   int activityType = 0;
   std::string activityPeriodName = "";
   std::string activityPassName = "";

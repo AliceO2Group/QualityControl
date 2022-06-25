@@ -1,0 +1,64 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": ""
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      }
+    },
+    "tasks": {
+      "DataCompression": {
+        "active": "true",
+        "className": "o2::quality_control_modules::glo::DataCompressionQcTask",
+        "moduleName": "QcGLO",
+        "detectorName": "GLO",
+        "cycleDurationSeconds": "10",
+        "maxNumberCycles": "-1",
+        "dataSource": {
+          "type": "direct",
+          "query" : "ctfEncRepTPC:TPC/CTFENCREP/0;ctfEncRepITS:ITS/CTFENCREP/0"
+        },
+        "taskParameters": {
+          "mergeableOutput": "false", "": "Set this false for canvas output. Works only if the task runs remotely.",
+          "useAll": "0",              "": "This detector config is just an example. Any number of detectors can be selected via 1, true, True or TRUE.",
+          "CPV": "0",                 "": "If 'useAll' is set true all detectors are selected and the indivisual choice is ignored.",
+          "CTP": "0",                 "": "Each detector that shall be active has the be put in the query as shown in the example above.",
+          "EMC": "0",
+          "FDD": "0",
+          "FT0": "0",
+          "FV0": "0",
+          "HMP": "0",
+          "ITS": "1",
+          "MFT": "0",
+          "MCH": "0",
+          "MID": "0",
+          "PHS": "0",
+          "TOF": "0",
+          "TPC": "1",
+          "TRD": "0",
+          "ZDC": "0",
+          "nBins": "100",
+          "xMin": "0",
+          "xMax": "1"
+        },
+        "location": "remote", "": "It needs to be decided if it will run locally or remotely."
+      }
+    }
+  },
+  "dataSamplingPolicies": [
+  ]
+}

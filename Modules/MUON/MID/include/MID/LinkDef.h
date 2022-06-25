@@ -11,5 +11,7 @@
 #pragma link C++ class o2::quality_control_modules::mid::ClustQcCheck + ;
 #pragma link C++ class o2::quality_control_modules::mid::TracksQcTask + ;
 #pragma link C++ class o2::quality_control_modules::mid::TracksQcCheck + ;
+#pragma link C++ class o2::quality_control_modules::mid::CalibQcTask + ;
+#pragma link C++ class o2::quality_control_modules::mid::CalibQcCheck + ;
 
 #endif

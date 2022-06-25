@@ -77,6 +77,7 @@ AggregatorRunnerConfig AggregatorRunnerFactory::extractRunnerConfig(const core::
     commonSpec.monitoringUrl,
     commonSpec.infologgerFilterDiscardDebug,
     commonSpec.infologgerDiscardLevel,
+    commonSpec.infologgerDiscardFile,
     commonSpec.activityNumber,
     commonSpec.activityType,
     commonSpec.activityPeriodName,

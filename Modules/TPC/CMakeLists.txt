@@ -38,7 +38,8 @@ target_link_libraries(O2QcTPC
                       PUBLIC O2QualityControl
                              O2::TPCQC
                              O2::TPCWorkflow
-                             O2::TPCCalibration)
+                             O2::TPCCalibration
+                             O2QcCommon)
 
 
 

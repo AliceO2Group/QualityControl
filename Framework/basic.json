@@ -27,7 +27,8 @@
       },
       "infologger": {                     "": "Configuration of the Infologger (optional).",
         "filterDiscardDebug": "false",    "": "Set to true to discard debug and trace messages (default: false)",
-        "filterDiscardLevel": "21",       "": "Message at this level or above are discarded (default: 21 - Trace)"
+        "filterDiscardLevel": "21",       "": "Message at this level or above are discarded (default: 21 - Trace)",
+        "filterDiscardFile": "",  "": "If set, the discarded messages will go to this file (default: <none>)"
       }
     },
     "tasks": {

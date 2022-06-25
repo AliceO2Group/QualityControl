@@ -59,6 +59,7 @@ struct SliceTrendingTaskConfig : PostProcessingConfig {
   };
 
   bool producePlotsOnUpdate;
+  bool resumeTrend;
   std::vector<Plot> plots;
   std::vector<DataSource> dataSources;
 };

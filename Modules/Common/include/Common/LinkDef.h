@@ -16,4 +16,6 @@
 #pragma link C++ class o2::quality_control_modules::common::TH1SliceReductor + ;
 #pragma link C++ class o2::quality_control_modules::common::TH2SliceReductor + ;
 
+#pragma link C++ function o2::quality_control_modules::common::getFromConfig + ;
+
 #endif

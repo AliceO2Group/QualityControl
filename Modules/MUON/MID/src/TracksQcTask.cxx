@@ -35,6 +35,7 @@
 #include "DataFormatsMID/ROFRecord.h"
 #include "MIDBase/DetectorParameters.h"
 #include "MIDBase/GeometryParameters.h"
+#include "MIDWorkflow/ColumnDataSpecsUtils.h"
 
 #define MID_NDE 72
 #define MID_NLOC 234
@@ -82,18 +83,18 @@ void TracksQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     }
   }
 
-  mTrackBCCounts = std::make_shared<TH1F>("TrackBCCounts", "Cluster Bunch Crossing Counts", o2::constants::lhc::LHCMaxBunches, 0., o2::constants::lhc::LHCMaxBunches);
+  mTrackBCCounts = std::make_shared<TH1F>("TrackBCCounts", "Cluster Bunch Crossing Counts;BC;Entry", o2::constants::lhc::LHCMaxBunches, 0., o2::constants::lhc::LHCMaxBunches);
   getObjectsManager()->startPublishing(mTrackBCCounts.get());
-  mTrackBCCounts->GetXaxis()->SetTitle("BC");
-  mTrackBCCounts->GetYaxis()->SetTitle("Entry");
+  // mTrackBCCounts->GetXaxis()->SetTitle("BC");
+  // mTrackBCCounts->GetYaxis()->SetTitle("Entry");
 
   mMultTracks = std::make_shared<TH1F>("MultTracks", "Multiplicity Tracks ", 100, 0, 100);
   getObjectsManager()->startPublishing(mMultTracks.get());
 
-  mTrackMapXY = std::make_shared<TH2F>("TrackMapXY", "Track Map X-Y ", 300, -300., 300., 300, -300., 300.);
+  mTrackMapXY = std::make_shared<TH2F>("TrackMapXY", "Track Map X-Y ; X Position (cm) ; Y Position (cm) ", 300, -300., 300., 300, -300., 300.);
   getObjectsManager()->startPublishing(mTrackMapXY.get());
-  mTrackMapXY->GetXaxis()->SetTitle("X Position (cm)");
-  mTrackMapXY->GetYaxis()->SetTitle("Y Position (cm)");
+  // mTrackMapXY->GetXaxis()->SetTitle("X Position (cm)");
+  // mTrackMapXY->GetYaxis()->SetTitle("Y Position (cm)");
   mTrackMapXY->SetOption("colz");
   mTrackMapXY->SetStats(0);
 
@@ -149,7 +150,7 @@ void TracksQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mTrackThetaD->GetXaxis()->SetTitle("Track Theta Dev");
   mTrackThetaD->GetYaxis()->SetTitle("Entry");
 
-  mTrackPT = std::make_shared<TH1F>("TrackPT", "Track pT", 1000, 0., 1000.);
+  mTrackPT = std::make_shared<TH1F>("TrackPT", "Track pT", 200, 0., 200.);
   getObjectsManager()->startPublishing(mTrackPT.get());
   mTrackPT->GetXaxis()->SetTitle("Track pT");
   mTrackPT->GetYaxis()->SetTitle("Entry");
@@ -260,6 +261,9 @@ void TracksQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   auto tracks = ctx.inputs().get<gsl::span<o2::mid::Track>>("tracks");
   auto rofs = ctx.inputs().get<gsl::span<o2::mid::ROFRecord>>("trackrofs");
 
+  // auto tracks = o2::mid::specs::getData(ctx, "tracks", o2::mid::EventType::Standard);
+  // auto rofs = o2::mid::specs::getRofs(ctx, "tracks", o2::mid::EventType::Standard);
+
   int multTracks;
   float DeltaZ = o2::mid::geoparams::DefaultChamberZ[0] - o2::mid::geoparams::DefaultChamberZ[3];
   float Zf = -975.; // Zf= position mid-dipole
@@ -322,14 +326,12 @@ void TracksQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       thetaI = TMath::ATan(TMath::Sqrt(Xf * Xf + Yf * Yf) / TMath::Abs(Zf));
       etaI = -log(TMath::Tan(thetaI / 2));
       mTrackEtaI->Fill(etaI);
-      thetaI = thetaI * TMath::RadToDeg();
-      mTrackThetaI->Fill(thetaI);
+      mTrackThetaI->Fill(thetaI * TMath::RadToDeg());
 
       thetaD = (o2::mid::geoparams::DefaultChamberZ[0] * Y2 - o2::mid::geoparams::DefaultChamberZ[2] * Y1) / ((o2::mid::geoparams::DefaultChamberZ[2] - o2::mid::geoparams::DefaultChamberZ[0]) * Zf);
-      thetaD = thetaD * TMath::RadToDeg();
-      mTrackThetaD->Fill(thetaD);
+      mTrackThetaD->Fill(thetaD * TMath::RadToDeg());
       pT = TMath::Abs(p0 / thetaD) * (TMath::Sqrt(Xf * Xf + Yf * Yf) / TMath::Abs(Zf));
-      // printf("===> thetaD = %05f ; pT =  %05f \n",thetaD,pT);
+      // printf("==========================> thetaD = %05f ; pT =  %05f \n",thetaD,pT);
       mTrackPT->Fill(pT);
 
       /// Efficiency part

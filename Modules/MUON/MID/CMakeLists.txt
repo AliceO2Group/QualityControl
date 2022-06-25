@@ -11,7 +11,9 @@ target_sources(
           src/ClustQcCheck.cxx
           src/ClustQcTask.cxx
           src/TracksQcCheck.cxx
-          src/TracksQcTask.cxx)
+          src/TracksQcTask.cxx
+          src/CalibQcCheck.cxx
+          src/CalibQcTask.cxx)
 
 target_include_directories(
   O2QcMID
@@ -37,6 +39,8 @@ add_root_dictionary(
           include/MID/ClustQcTask.h
           include/MID/TracksQcCheck.h
           include/MID/TracksQcTask.h
+	  include/MID/CalibQcTask.h
+	  include/MID/CalibQcCheck.h
   LINKDEF include/MID/LinkDef.h
   BASENAME O2QcMID)
 
