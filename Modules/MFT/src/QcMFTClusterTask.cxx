@@ -94,7 +94,6 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   mClusterPatternIndex = std::make_unique<TH1F>("mClusterPatternIndex", "Cluster Pattern ID;Pattern ID;#Entries per TF", 300, -0.5, 299.5);
   mClusterPatternIndex->SetStats(0);
   getObjectsManager()->startPublishing(mClusterPatternIndex.get());
-  
 
   mClusterPatternSensorIndices = std::make_unique<TH2F>("mClusterPatternSensorIndices",
                                                         "Cluster Pattern ID vs Chip ID;Chip ID;Pattern ID",
