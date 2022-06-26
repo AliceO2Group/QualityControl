@@ -38,9 +38,13 @@ void QcMFTReadoutCheck::configure()
 {
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
-  if (auto param = mCustomParameters.find("FaultThreshold"); param != mCustomParameters.end()) {
-    ILOG(Info, Support) << "Custom parameter - FaultThreshold: " << param->second << ENDM;
-    mFaultThreshold = stoi(param->second);
+  if (auto param = mCustomParameters.find("FaultThresholdMedium"); param != mCustomParameters.end()) {
+    ILOG(Info, Support) << "Custom parameter - FaultThresholdMedium: " << param->second << ENDM;
+    mFaultThresholdMedium = stoi(param->second);
+  }
+  if (auto param = mCustomParameters.find("FaultThresholdBad"); param != mCustomParameters.end()) {
+    ILOG(Info, Support) << "Custom parameter - FaultThresholdBad: " << param->second << ENDM;
+    mFaultThresholdBad = stoi(param->second);
   }
   if (auto param = mCustomParameters.find("ErrorThresholdMedium"); param != mCustomParameters.end()) {
     ILOG(Info, Support) << "Custom parameter - ErrorThresholdMedium: " << param->second << ENDM;
@@ -50,9 +54,13 @@ void QcMFTReadoutCheck::configure()
     ILOG(Info, Support) << "Custom parameter - ErrorThresholdBad: " << param->second << ENDM;
     mErrorThresholdBad = stoi(param->second);
   }
-  if (auto param = mCustomParameters.find("WarningThreshold"); param != mCustomParameters.end()) {
-    ILOG(Info, Support) << "Custom parameter - WarningThreshold: " << param->second << ENDM;
-    mWarningThreshold = stoi(param->second);
+  if (auto param = mCustomParameters.find("WarningThresholdMedium"); param != mCustomParameters.end()) {
+    ILOG(Info, Support) << "Custom parameter - WarningThresholdMedium: " << param->second << ENDM;
+    mWarningThresholdMedium = stoi(param->second);
+  }
+  if (auto param = mCustomParameters.find("WarningThresholdBad"); param != mCustomParameters.end()) {
+    ILOG(Info, Support) << "Custom parameter - WarningThresholdBad: " << param->second << ENDM;
+    mWarningThresholdBad = stoi(param->second);
   }
 }
 
@@ -196,11 +204,11 @@ Quality QcMFTReadoutCheck::checkQualityStatus(TH1F* histo, std::vector<int>& vec
   Quality result = Quality::Good;
 
   if (strcmp(histo->GetName(), "mSummaryChipFault") == 0) {
-    if (vector.size() > mFaultThreshold)
+    if (vector.size() > mFaultThresholdBad)
       result = Quality::Bad;
-    if (vector.size() > 0 && vector.size() <= mFaultThreshold)
+    if (vector.size() > mFaultThresholdMedium && vector.size() <= mFaultThresholdBad)
       result = Quality::Medium;
-    if (vector.size() == 0)
+    if (vector.size() <= mFaultThresholdMedium)
       result = Quality::Good;
   }
   if (strcmp(histo->GetName(), "mSummaryChipError") == 0) {
@@ -212,9 +220,11 @@ Quality QcMFTReadoutCheck::checkQualityStatus(TH1F* histo, std::vector<int>& vec
       result = Quality::Good;
   }
   if (strcmp(histo->GetName(), "mSummaryChipWarning") == 0) {
-    if (vector.size() > mWarningThreshold)
+    if (vector.size() > mWarningThresholdBad)
       result = Quality::Bad;
-    if (vector.size() <= mWarningThreshold)
+    if (vector.size() > mWarningThresholdMedium && vector.size() <= mWarningThresholdBad)
+      result = Quality::Medium;
+    if (vector.size() <= mWarningThresholdMedium)
       result = Quality::Good;
   }
 
@@ -243,6 +253,8 @@ void QcMFTReadoutCheck::writeMessages(TH1F* histo, std::vector<int>& vector, Qua
       tlMedium = drawLatex(0.15, 0.875, kOrange + 7, Form("%lu chips in Fault. Inform the MFT oncall (via Mattermost during night).", vector.size()));
     if (strcmp(histo->GetName(), "mSummaryChipError") == 0)
       tlMedium = drawLatex(0.15, 0.875, kOrange + 7, Form("%lu chips in Error. Inform the MFT oncall (via Mattermost during night).", vector.size()));
+    if (strcmp(histo->GetName(), "mSummaryChipWarning") == 0)
+      tlMedium = drawLatex(0.15, 0.875, kOrange + 7, Form("%lu chips in Warning. Inform the MFT oncall (via Mattermost during night).", vector.size()));
     histo->GetListOfFunctions()->Add(tlMedium);
     tlMedium->Draw();
   } else if (checkResult == Quality::Bad) {
