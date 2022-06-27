@@ -620,14 +620,13 @@ The solution depends on the strategy to adopt to display the object.
 The developer of a Task might perfectly know how to display a plot or a graph but cannot set these options if they belong to the Canvas. This is typically the case of `drawOptions` such as `colz` or `alp`. It is also the case for canvases' properties such as logarithmic scale and grid. These options can be set by the end user in the QCG but it is likely that the developer wants to give pertinent default options.
 
 To do so, one can use one of the two following methods.
-* `getObjectsManager()->setDefaultDrawOptions(<objectname or pointer>, string& drawOptions)`
-
+* `getObjectsManager()->setDefaultDrawOptions(<objectname or pointer>, string& drawOptions)` where 
   `drawOptions` is a space-separated list of drawing options. E.g. "colz" or "alp lego1".
-* `getObjectsManager()->setDisplayHint(<objectname or pointer>, string& hints)`
-
+* `getObjectsManager()->setDisplayHint(<objectname or pointer>, string& hints)` where
   `hints` is a space-separated list of hints on how to draw the object. E.g. "logz" or "gridy logy".
-
   Currently supported by QCG: logx, logy, logz, gridx, gridy, gridz.
+
+These methods must be called after the objects has been published, i.e. after the call to `getObjectsManager()->startPublishing(<pointer to object>)
 
 ## Local QCG (QC GUI) setup
 
