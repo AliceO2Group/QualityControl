@@ -49,6 +49,12 @@ RawErrorTask::~RawErrorTask()
   if (mErrorTypeGain)
     delete mErrorTypeGain;
 
+  if (mErrorGainLow)
+    delete mErrorGainLow;
+
+  if (mErrorGainHigh)
+    delete mErrorGainHigh;
+
   // histo per categoty with details
   // histo summary with error per category
 }
@@ -127,6 +133,18 @@ void RawErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
   mErrorTypeGain->SetStats(0);
   getObjectsManager()
     ->startPublishing(mErrorTypeGain);
+
+  mErrorGainLow = new TH2F("NoHGPerDDL", "High Gain bunch missing", 40, 0, 40, 40, 0, 40);
+  mErrorGainLow->GetYaxis()->SetTitle("FECid");
+  mErrorGainLow->GetXaxis()->SetTitle("DDL");
+  mErrorGainLow->SetStats(0);
+  getObjectsManager()->startPublishing(mErrorGainLow);
+
+  mErrorGainHigh = new TH2F("NoLGPerDDL", "Low Gain bunch missing for saturated High Gain", 40, 0, 40, 40, 0, 40);
+  mErrorGainHigh->GetYaxis()->SetTitle("FECid");
+  mErrorGainHigh->GetXaxis()->SetTitle("DDL");
+  mErrorGainHigh->SetStats(0);
+  getObjectsManager()->startPublishing(mErrorGainHigh);
 }
 
 void RawErrorTask::startOfActivity(Activity& activity)
@@ -153,7 +171,7 @@ void RawErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
     for (auto& error : errorcont) {
       auto feeid = error.getFEEID();
       auto errorCode = error.getErrorCode();
-      TH2* errorhist = nullptr; // to be deleted CRI
+      TH2* errorhist = nullptr;
       switch (error.getErrorType()) {
         case o2::emcal::ErrorTypeFEE::ErrorSource_t::PAGE_ERROR:
           errorhist = mErrorTypePage;
@@ -181,9 +199,18 @@ void RawErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
       }; // switch errorCode
       errorhist->Fill(feeid, errorCode);
 
+      if (o2::emcal::ErrorTypeFEE::ErrorSource_t::GAIN_ERROR) {
+        auto FECid = error.getSubspecification();
+        if (errorCode == 0)
+          mErrorGainLow->Fill(feeid, FECid); //error 0
+        else
+          mErrorGainHigh->Fill(feeid, FECid); //error 1
+      }
+
     } // end for error in errorcont
   }   // end of loop on raw error data
 } // end of monitorData
+
 void RawErrorTask::endOfCycle()
 {
   ILOG(Info, Support) << "endOfCycle" << ENDM;
@@ -205,6 +232,8 @@ void RawErrorTask::reset()
   mErrorTypeFit->Reset();
   mErrorTypeGeometry->Reset();
   mErrorTypeGain->Reset();
+  mErrorGainLow->Reset();
+  mErrorGainHigh->Reset();
 }
 
 } // namespace o2::quality_control_modules::emcal

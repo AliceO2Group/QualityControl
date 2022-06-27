@@ -58,6 +58,8 @@ class RawErrorTask final : public TaskInterface
   TH2* mErrorTypeFit = nullptr;      ///< Error from
   TH2* mErrorTypeGeometry = nullptr; ///< Error from
   TH2* mErrorTypeGain = nullptr;     ///< Error from
+  TH2* mErrorGainLow = nullptr;      ///< Error per SM
+  TH2* mErrorGainHigh = nullptr;     ///< Error per SM
 
   o2::emcal::Geometry* mGeometry = nullptr; ///< EMCAL geometry
 };
