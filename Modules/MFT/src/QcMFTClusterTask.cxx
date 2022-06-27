@@ -94,14 +94,14 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   mClusterPatternIndex = std::make_unique<TH1F>("mClusterPatternIndex", "Cluster Pattern ID;Pattern ID;#Entries per TF", 300, -0.5, 299.5);
   mClusterPatternIndex->SetStats(0);
   getObjectsManager()->startPublishing(mClusterPatternIndex.get());
-  getObjectsManager()->setDisplayHint(mClusterPatternIndex.get(),"logy");
+  getObjectsManager()->setDisplayHint(mClusterPatternIndex.get(), "logy");
 
   mClusterPatternSensorIndices = std::make_unique<TH2F>("mClusterPatternSensorIndices",
                                                         "Cluster Pattern ID vs Chip ID;Chip ID;Pattern ID",
                                                         936, -0.5, 935.5, 100, -0.5, 99.5);
   mClusterPatternSensorIndices->SetStats(0);
   getObjectsManager()->startPublishing(mClusterPatternSensorIndices.get());
-  getObjectsManager()->setDefaultDrawOptions(mClusterPatternSensorIndices.get(),"colz");
+  getObjectsManager()->setDefaultDrawOptions(mClusterPatternSensorIndices.get(), "colz");
 
   mClusterOccupancySummary = std::make_unique<TH2F>("mClusterOccupancySummary", "mClusterOccupancySummary",
                                                     10, -0.5, 9.5, 8, -0.5, 7.5);
@@ -125,7 +125,7 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   mClusterOccupancySummary->GetYaxis()->SetBinLabel(8, "h1-z3");
   mClusterOccupancySummary->SetStats(0);
   getObjectsManager()->startPublishing(mClusterOccupancySummary.get());
-  getObjectsManager()->setDefaultDrawOptions(mClusterOccupancySummary.get(),"colz");
+  getObjectsManager()->setDefaultDrawOptions(mClusterOccupancySummary.get(), "colz");
 
   // --Ladder occupancy maps
   //==============================================
@@ -140,7 +140,7 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
     ladderHistogram->SetStats(0);
     mClusterLadderPatternSensorMap.push_back(std::move(ladderHistogram));
     getObjectsManager()->startPublishing(mClusterLadderPatternSensorMap[i].get());
-    getObjectsManager()->setDefaultDrawOptions(mClusterLadderPatternSensorMap[i].get(),"colz");
+    getObjectsManager()->setDefaultDrawOptions(mClusterLadderPatternSensorMap[i].get(), "colz");
   }
 
   // define chip occupancy maps
@@ -161,7 +161,7 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
         chipmap->SetStats(0);
         mClusterChipOccupancyMap.push_back(std::move(chipmap));
         getObjectsManager()->startPublishing(mClusterChipOccupancyMap[idx].get());
-        getObjectsManager()->setDefaultDrawOptions(mClusterChipOccupancyMap[idx].get(),"colz");
+        getObjectsManager()->setDefaultDrawOptions(mClusterChipOccupancyMap[idx].get(), "colz");
       } // loop over faces
     }   // loop over disks
   }     // loop over halfs
