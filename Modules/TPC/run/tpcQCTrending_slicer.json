@@ -29,6 +29,7 @@
         "moduleName": "QcTPC",
         "detectorName": "TPC",
         "producePlotsOnUpdate": "true",
+        "resumeTrend": "true",
         "dataSources": [
           {
             "type": "repository",
@@ -183,6 +184,7 @@
         "moduleName": "QcTPC",
         "detectorName": "TPC",
         "producePlotsOnUpdate": "true",
+        "resumeTrend": "true",
         "dataSources": [
           {
             "type": "repository",
@@ -266,11 +268,20 @@
         "moduleName": "QcTPC",
         "detectorName": "TPC",
         "producePlotsOnUpdate": "true",
+        "resumeTrend": "true",
         "dataSources": [
           {
             "type": "repository-quality",
             "path": "TPC/QO/CheckOfTrack_Trending/Tracks_Trending",
             "names": [ "hEta_StatMean_Trend", "hNClustersAfterCuts_StatMean_Trend" ],
+            "reductorName": "o2::quality_control_modules::tpc::QualityReductorTPC",
+            "axisDivision": [ ],
+            "moduleName": "QcTPC"
+          },
+          {
+            "type": "repository-quality",
+            "path": "TPC/QO/CheckOfPt/Trending",
+            "names": [ "hPt_Trend" ],
             "reductorName": "o2::quality_control_modules::tpc::QualityReductorTPC",
             "axisDivision": [ ],
             "moduleName": "QcTPC"
@@ -295,6 +306,17 @@
             "selection": "",
             "option": "*L",
             "graphErrors": "", 
+            "graphYRange": "",
+            "graphXRange": "",
+            "graphAxisLabel": "qualitylevel:time"
+          },
+          {
+            "name": "hPt_Trend_StatMean_Quality_Trend",
+            "title": "Quality trending",
+            "varexp": "hPt_Trend.qualitylevel:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "",
             "graphYRange": "",
             "graphXRange": "",
             "graphAxisLabel": "qualitylevel:time"

@@ -86,8 +86,8 @@ class TrendingTaskTPC : public PostProcessingInterface
   std::unique_ptr<TTree> mTrend;
   std::map<std::string, TObject*> mPlots;
   std::unordered_map<std::string, std::unique_ptr<ReductorTPC>> mReductors;
-  std::unordered_map<std::string, std::vector<SliceInfo>> mSources;
-  std::unordered_map<std::string, SliceInfoQuality> mSourcesQuality;
+  std::unordered_map<std::string, std::vector<SliceInfo>*> mSources;
+  std::unordered_map<std::string, SliceInfoQuality*> mSourcesQuality;
   std::unordered_map<std::string, bool> mIsMoObject;
   std::unordered_map<std::string, int> mNumberPads;
   std::unordered_map<std::string, std::vector<std::vector<float>>> mAxisDivision;
