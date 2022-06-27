@@ -56,10 +56,11 @@ class QcMFTClusterTask /*final*/ : public TaskInterface // todo add back the "fi
 
   std::unique_ptr<TH1F> mClusterOccupancy = nullptr;
   std::unique_ptr<TH1F> mClusterPatternIndex = nullptr;
+  std::unique_ptr<TH2F> mClusterOccupancySummary = nullptr;
 
   std::unique_ptr<TH2F> mClusterPatternSensorIndices = nullptr;
-  std::vector<std::unique_ptr<TH1F>> mClusterPatternSensorMap;
   std::vector<std::unique_ptr<TH2F>> mClusterChipOccupancyMap;
+  std::vector<std::unique_ptr<TH2F>> mClusterLadderPatternSensorMap;
 
   // needed to construct the name and path of some histograms
   int mHalf[936] = { 0 };
@@ -72,9 +73,17 @@ class QcMFTClusterTask /*final*/ : public TaskInterface // todo add back the "fi
   float mX[936] = { 0 };
   float mY[936] = { 0 };
 
+  // ladder vs Pattern ID histrograms
+  int mChipLadder[936] = { 0 };
+  int mChipPositionInLadder[936] = { 0 };
+  int mChipsInLadder[280] = { 0 };
+  int mHalfLadder[280] = { 0 };
+  int mDiskLadder[280] = { 0 };
+  int mFaceLadder[280] = { 0 };
+  int mZoneLadder[280] = { 0 };
+
   // internal functions
   void getChipMapData();
-  void getNameOfMap(TString& folderName, TString& histogramName, int iChipIndex);
 };
 
 } // namespace o2::quality_control_modules::mft

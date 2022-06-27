@@ -26,12 +26,16 @@
 #include <DataFormatsITSMFT/Cluster.h>
 #include <DataFormatsITSMFT/CompCluster.h>
 #include <Framework/InputRecord.h>
+#include <DataFormatsITSMFT/ROFRecord.h>
 #include <ITSMFTReconstruction/ChipMappingMFT.h>
 
 // Quality Control
 #include "QualityControl/QcInfoLogger.h"
 #include "MFT/QcMFTClusterTask.h"
 #include "MFT/QcMFTUtilTables.h"
+
+// C++
+#include <fstream>
 
 namespace o2::quality_control_modules::mft
 {
@@ -51,6 +55,8 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {
     ILOG(Info, Support) << "Custom parameter - myOwnKey: " << param->second << ENDM;
   }
+
+  getChipMapData();
 
   // define histograms
   mClusterLayerIndexH0 = std::make_unique<TH1F>("mClusterLayerIndexH0", "Clusters per layer in H0;Layer;Entries", 10, -0.5, 9.5);
@@ -81,11 +87,11 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   mClusterLayerIndexH1->SetStats(0);
   getObjectsManager()->startPublishing(mClusterLayerIndexH1.get());
 
-  mClusterOccupancy = std::make_unique<TH1F>("mClusterOccupancy", "Chip Cluster Occupancy;Chip ID;#Entries", 936, -0.5, 935.5);
+  mClusterOccupancy = std::make_unique<TH1F>("mClusterOccupancy", "Chip Cluster Occupancy;Chip ID;#Entries per TF", 936, -0.5, 935.5);
   mClusterOccupancy->SetStats(0);
   getObjectsManager()->startPublishing(mClusterOccupancy.get());
 
-  mClusterPatternIndex = std::make_unique<TH1F>("mClusterPatternIndex", "Cluster Pattern ID;Pattern ID;#Entries", 300, -0.5, 299.5);
+  mClusterPatternIndex = std::make_unique<TH1F>("mClusterPatternIndex", "Cluster Pattern ID;Pattern ID;#Entries per TF", 300, -0.5, 299.5);
   mClusterPatternIndex->SetStats(0);
   getObjectsManager()->startPublishing(mClusterPatternIndex.get());
 
@@ -96,17 +102,44 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   mClusterPatternSensorIndices->SetOption("colz");
   getObjectsManager()->startPublishing(mClusterPatternSensorIndices.get());
 
-  // define vector of histograms
-  getChipMapData(); // needed to construct the name and path of the histogram
-  for (int i = 0; i < 936; i++) {
-    //  generate folder and histogram name using the mapping table
-    TString folderName = "";
-    TString histogramName = "";
-    getNameOfMap(folderName, histogramName, i);
-    auto histo = std::make_unique<TH1F>(
-      folderName, histogramName, 100, -0.5, 99.5);
-    mClusterPatternSensorMap.push_back(std::move(histo));
-    getObjectsManager()->startPublishing(mClusterPatternSensorMap[i].get());
+  mClusterOccupancySummary = std::make_unique<TH2F>("mClusterOccupancySummary", "mClusterOccupancySummary",
+                                                    10, -0.5, 9.5, 8, -0.5, 7.5);
+  mClusterOccupancySummary->GetXaxis()->SetBinLabel(1, "d0-f0");
+  mClusterOccupancySummary->GetXaxis()->SetBinLabel(2, "d0-f1");
+  mClusterOccupancySummary->GetXaxis()->SetBinLabel(3, "d1-f0");
+  mClusterOccupancySummary->GetXaxis()->SetBinLabel(4, "d1-f1");
+  mClusterOccupancySummary->GetXaxis()->SetBinLabel(5, "d2-f0");
+  mClusterOccupancySummary->GetXaxis()->SetBinLabel(6, "d2-f1");
+  mClusterOccupancySummary->GetXaxis()->SetBinLabel(7, "d3-f0");
+  mClusterOccupancySummary->GetXaxis()->SetBinLabel(8, "d3-f1");
+  mClusterOccupancySummary->GetXaxis()->SetBinLabel(9, "d4-f0");
+  mClusterOccupancySummary->GetXaxis()->SetBinLabel(10, "d4-f1");
+  mClusterOccupancySummary->GetYaxis()->SetBinLabel(1, "h0-z0");
+  mClusterOccupancySummary->GetYaxis()->SetBinLabel(2, "h0-z1");
+  mClusterOccupancySummary->GetYaxis()->SetBinLabel(3, "h0-z2");
+  mClusterOccupancySummary->GetYaxis()->SetBinLabel(4, "h0-z3");
+  mClusterOccupancySummary->GetYaxis()->SetBinLabel(5, "h1-z0");
+  mClusterOccupancySummary->GetYaxis()->SetBinLabel(6, "h1-z1");
+  mClusterOccupancySummary->GetYaxis()->SetBinLabel(7, "h1-z2");
+  mClusterOccupancySummary->GetYaxis()->SetBinLabel(8, "h1-z3");
+  mClusterOccupancySummary->SetOption("colz");
+  mClusterOccupancySummary->SetStats(0);
+  getObjectsManager()->startPublishing(mClusterOccupancySummary.get());
+
+  // --Ladder occupancy maps
+  //==============================================
+  for (int i = 0; i < 280; i++) { // there are 280 ladders
+    auto ladderHistogram = std::make_unique<TH2F>(
+      Form("LadderClusterSensorMaps/Ladder%d-h%d-d%d-f%d-z%d", i, mHalfLadder[i], mDiskLadder[i], mFaceLadder[i], mZoneLadder[i]),
+      Form("Cluster sensor map ladder%d-h%d-d%d-f%d-z%d; Pattern ID; Chip", i, mHalfLadder[i], mDiskLadder[i], mFaceLadder[i], mZoneLadder[i]),
+      100, 0, 100, // Pattern ID per chip
+      mChipsInLadder[i], 0, mChipsInLadder[i]);
+    for (int iBin = 0; iBin < mChipsInLadder[i]; iBin++)
+      ladderHistogram->GetYaxis()->SetBinLabel(iBin + 1, Form("%d", iBin));
+    ladderHistogram->SetStats(0);
+    ladderHistogram->SetOption("colz");
+    mClusterLadderPatternSensorMap.push_back(std::move(ladderHistogram));
+    getObjectsManager()->startPublishing(mClusterLadderPatternSensorMap[i].get());
   }
 
   // define chip occupancy maps
@@ -148,10 +181,16 @@ void QcMFTClusterTask::startOfCycle()
 
 void QcMFTClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
+  // normalisation for the Summary histogram to TF
+  mClusterOccupancySummary->Fill(-1, -1);
+  mClusterOccupancy->Fill(-1);
+  mClusterPatternIndex->Fill(-1);
+
   // get the clusters
   const auto clusters = ctx.inputs().get<gsl::span<o2::itsmft::CompClusterExt>>("randomcluster");
   if (clusters.size() < 1)
     return;
+
   // fill the histograms
   for (auto& oneCluster : clusters) {
     int sensorID = oneCluster.getSensorID();
@@ -162,10 +201,18 @@ void QcMFTClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
     mClusterPatternIndex->Fill(oneCluster.getPatternID());
     mClusterPatternSensorIndices->Fill(sensorID,
                                        oneCluster.getPatternID());
-    mClusterPatternSensorMap[oneCluster.getSensorID()]->Fill(oneCluster.getPatternID());
+
     // fill occupancy maps
     int idx = layerID + (10 * mHalf[sensorID]);
     mClusterChipOccupancyMap[idx]->Fill(mX[sensorID], mY[sensorID]);
+
+    // fill info into the summary histo
+    int xBin = mDisk[sensorID] * 2 + mFace[sensorID];
+    int yBin = mZone[sensorID] + mHalf[sensorID] * 4;
+    mClusterOccupancySummary->Fill(xBin, yBin);
+
+    // fill ladder histogram
+    mClusterLadderPatternSensorMap[mChipLadder[sensorID]]->Fill(oneCluster.getPatternID() >> 1, mChipPositionInLadder[sensorID]);
   }
 }
 
@@ -189,23 +236,14 @@ void QcMFTClusterTask::reset()
   mClusterPatternSensorIndices->Reset();
   mClusterLayerIndexH0->Reset();
   mClusterLayerIndexH1->Reset();
-  for (int i = 0; i < 936; i++) {
-    mClusterPatternSensorMap[i]->Reset();
-  }
+  mClusterOccupancySummary->Reset();
   for (int i = 0; i < 20; i++) {
     mClusterChipOccupancyMap[i]->Reset();
   }
-}
-
-void QcMFTClusterTask::getNameOfMap(TString& folderName, TString& histogramName, int iChipIndex)
-{
-  folderName = Form("ClusterPatternSensorMap/Half_%d/Disk_%d/Face_%d/mClusterPatternSensorMap-z%d-l%d-s%d-tr%d",
-                    mHalf[iChipIndex], mDisk[iChipIndex], mFace[iChipIndex], mZone[iChipIndex],
-                    mLadder[iChipIndex], mSensor[iChipIndex], mTransID[iChipIndex]);
-
-  histogramName = Form("Cluster Pattern h%d-d%d-f%d-z%d-l%d-s%d-tr%d;Pattern ID;#Entries",
-                       mHalf[iChipIndex], mDisk[iChipIndex], mFace[iChipIndex], mZone[iChipIndex],
-                       mLadder[iChipIndex], mSensor[iChipIndex], mTransID[iChipIndex]);
+  // ladder histograms
+  for (int i = 0; i < 280; i++) { // there are 280 ladders
+    mClusterLadderPatternSensorMap[i]->Reset();
+  }
 }
 
 void QcMFTClusterTask::getChipMapData()
@@ -224,6 +262,15 @@ void QcMFTClusterTask::getChipMapData()
     mLadder[i] = MFTTable.mLadder[i];
     mX[i] = MFTTable.mX[i];
     mY[i] = MFTTable.mY[i];
+    // info needed for ladder histograms
+    mChipLadder[i] = chipMapData[i].module;
+    mChipPositionInLadder[i] = chipMapData[i].chipOnModule;
+    if (mChipsInLadder[mChipLadder[i]] < (mChipPositionInLadder[i] + 1))
+      mChipsInLadder[mChipLadder[i]]++;
+    mHalfLadder[mChipLadder[i]] = mHalf[i];
+    mDiskLadder[mChipLadder[i]] = mDisk[i];
+    mFaceLadder[mChipLadder[i]] = mFace[i];
+    mZoneLadder[mChipLadder[i]] = mZone[i];
   }
 }
 
