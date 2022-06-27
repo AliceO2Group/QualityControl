@@ -43,7 +43,7 @@
     },
     "checks" : {
       "MFTClusterCheck" : {
-        "active" : "false",
+        "active" : "true",
         "dataSource" : [ {
           "type" : "Task",
           "name" : "MFTClusterTask",
