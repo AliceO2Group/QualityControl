@@ -19,8 +19,12 @@
 
 #include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/DatabaseInterface.h"
-#include "FT0Base/Constants.h"
 
+#include "FT0Base/Constants.h"
+#include "DataFormatsFT0/ChannelData.h"
+#include "DataFormatsFT0/Digit.h"
+
+#include <TH2.h>
 #include <TCanvas.h>
 
 class TH1F;
@@ -49,12 +53,22 @@ class BasicPPTask final : public quality_control::postprocessing::PostProcessing
   std::string mCycleDurationMoName;
   int mNumOrbitsInTF;
 
+  std::map<o2::ft0::ChannelData::EEventDataBit, std::string> mMapChTrgNames;
+  std::map<int, std::string> mMapDigitTrgNames;
+
   o2::quality_control::repository::DatabaseInterface* mDatabase = nullptr;
   std::unique_ptr<TGraph> mRateOrA;
   std::unique_ptr<TGraph> mRateOrC;
   std::unique_ptr<TGraph> mRateVertex;
   std::unique_ptr<TGraph> mRateCentral;
   std::unique_ptr<TGraph> mRateSemiCentral;
+  std::unique_ptr<TH2F> mHistChDataNegBits;
+  std::unique_ptr<TH1F> mHistTriggers;
+
+  std::unique_ptr<TH1F> mHistTimeUpperFraction;
+  std::unique_ptr<TH1F> mHistTimeLowerFraction;
+  std::unique_ptr<TH1F> mHistTimeInWindow;
+
   std::unique_ptr<TCanvas> mRatesCanv;
   TProfile* mAmpl = nullptr;
   TProfile* mTime = nullptr;
@@ -62,4 +76,4 @@ class BasicPPTask final : public quality_control::postprocessing::PostProcessing
 
 } // namespace o2::quality_control_modules::ft0
 
-#endif //QC_MODULE_FT0_BASICPPTASK_H
+#endif // QC_MODULE_FT0_BASICPPTASK_H
