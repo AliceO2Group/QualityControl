@@ -58,10 +58,11 @@ class QcMFTAsyncTask /*final*/ : public TaskInterface // todo add back the "fina
   }
 
  private:
+  std::unique_ptr<TH1F> mNumberOfTracksPerTF = nullptr; 
   std::unique_ptr<TH1F> mTrackNumberOfClusters = nullptr;
   std::unique_ptr<TH1F> mCATrackNumberOfClusters = nullptr;
   std::unique_ptr<TH1F> mLTFTrackNumberOfClusters = nullptr;
-  std::unique_ptr<TH1F> mTrackOnvQPt = nullptr;
+  std::unique_ptr<TH1F> mTrackInvQPt = nullptr;
   std::unique_ptr<TH1F> mTrackChi2 = nullptr;
   std::unique_ptr<TH1F> mTrackCharge = nullptr;
   std::unique_ptr<TH1F> mTrackPhi = nullptr;

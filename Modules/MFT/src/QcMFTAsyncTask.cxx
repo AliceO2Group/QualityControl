@@ -84,6 +84,13 @@ void QcMFTAsyncTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 
   // Creating histos
+
+  double maxTracksPerTF = 400;
+
+  mNumberOfTracksPerTF = std::make_unique<TH1F>("tracks/mMFTTracksPerTF", 
+                                          "Number of tracks per TimeFrame; Number of tracks per TF", maxTracksPerTF, -0.5, maxTracksPerTF-0.5);
+  getObjectsManager()->startPublishing(mNumberOfTracksPerTF.get());
+
   mTrackNumberOfClusters = std::make_unique<TH1F>("tracks/mMFTTrackNumberOfClusters",
                                                   "Number Of Clusters Per Track; # clusters; # entries", 10, 0.5, 10.5);
   getObjectsManager()->startPublishing(mTrackNumberOfClusters.get());
@@ -96,8 +103,8 @@ void QcMFTAsyncTask::initialize(o2::framework::InitContext& /*ctx*/)
                                                      "Number Of Clusters Per LTF Track; # clusters; # entries", 10, 0.5, 10.5);
   getObjectsManager()->startPublishing(mLTFTrackNumberOfClusters.get());
 
-  mTrackOnvQPt = std::make_unique<TH1F>("tracks/mMFTTrackOnvQPt", "Track q/p_{T}; q/p_{T} [1/GeV]; # entries", 50, -2, 2);
-  getObjectsManager()->startPublishing(mTrackOnvQPt.get());
+  mTrackInvQPt = std::make_unique<TH1F>("tracks/mMFTTrackInvQPt", "Track q/p_{T}; q/p_{T} [1/GeV]; # entries", 50, -2, 2);
+  getObjectsManager()->startPublishing(mTrackInvQPt.get());
 
   mTrackChi2 = std::make_unique<TH1F>("tracks/mMFTTrackChi2", "Track #chi^{2}; #chi^{2}; # entries", 21, -0.5, 20.5);
   getObjectsManager()->startPublishing(mTrackChi2.get());
@@ -205,6 +212,8 @@ void QcMFTAsyncTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   // fill the tracks histogram
 
+  mNumberOfTracksPerTF->Fill(tracks.size());
+
   for (const auto& rof : tracksrofs) {
     mTrackROFNEntries->Fill(rof.getNEntries());
     mTracksBC->Fill(rof.getBCData().bc, rof.getNEntries());
@@ -231,12 +240,12 @@ void QcMFTAsyncTask::monitorData(o2::framework::ProcessingContext& ctx)
 
     if (oneTrack.getCharge() == +1) {
       mPositiveTrackPhi->Fill(oneTrack.getPhi());
-      mTrackOnvQPt->Fill(1 / oneTrack.getPt());
+      mTrackInvQPt->Fill(1 / oneTrack.getPt());
     }
 
     if (oneTrack.getCharge() == -1) {
       mNegativeTrackPhi->Fill(oneTrack.getPhi());
-      mTrackOnvQPt->Fill(-1 / oneTrack.getPt());
+      mTrackInvQPt->Fill(-1 / oneTrack.getPt());
     }
 
     if (oneTrack.isCA()) {
@@ -266,10 +275,11 @@ void QcMFTAsyncTask::reset()
 
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
 
+  mNumberOfTracksPerTF->Reset();
   mTrackNumberOfClusters->Reset();
   mCATrackNumberOfClusters->Reset();
   mLTFTrackNumberOfClusters->Reset();
-  mTrackOnvQPt->Reset();
+  mTrackInvQPt->Reset();
   mTrackChi2->Reset();
   mTrackCharge->Reset();
   mTrackPhi->Reset();
