@@ -119,19 +119,19 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
   hAngularDistribution->Scale((double)nVertices);
   hNClustersPerTrackEta->Scale((double)nVertices);
 
-  // Multiply cos(lambda) plot before refilling 
-  for(int ix = 1; ix<=hNClusterVsChipITS->GetNbinsX(); ix++) {
-    double integral = hNClusterVsChipITS->Integral(ix,ix,1,hNClusterVsChipITS->GetNbinsY());
-    if(integral<1e-15) {
+  // Multiply cos(lambda) plot before refilling
+  for (int ix = 1; ix <= hNClusterVsChipITS->GetNbinsX(); ix++) {
+    double integral = hNClusterVsChipITS->Integral(ix, ix, 1, hNClusterVsChipITS->GetNbinsY());
+    if (integral < 1e-15) {
       continue;
     }
-    for(int iy = 1; iy<=hNClusterVsChipITS->GetNbinsY(); iy++) {
-      double binc = hNClusterVsChipITS->GetBinContent(ix,iy);
-      if(binc<1e-15) {
+    for (int iy = 1; iy <= hNClusterVsChipITS->GetNbinsY(); iy++) {
+      double binc = hNClusterVsChipITS->GetBinContent(ix, iy);
+      if (binc < 1e-15) {
         continue;
       }
-      hNClusterVsChipITS->SetBinContent(ix,iy,binc*integral);
-      hNClusterVsChipITS->SetBinError(ix,iy,std::sqrt(binc*integral));
+      hNClusterVsChipITS->SetBinContent(ix, iy, binc * integral);
+      hNClusterVsChipITS->SetBinError(ix, iy, std::sqrt(binc * integral));
     }
   }
 
@@ -238,7 +238,7 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
     mNRofs = 0;
     mNClusters = 0;
   }
-  
+
   // Scale angular distributions by latest number of vertices
   if (nVertices > 0) {
     hAngularDistribution->Scale(1. / (double)nVertices);
@@ -248,19 +248,19 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
 
   // Normalize hNClusterVsChipITS to the clusters per chip
-  for(int ix = 1; ix<=hNClusterVsChipITS->GetNbinsX(); ix++) {
-    double integral = hNClusterVsChipITS->Integral(ix,ix,1,hNClusterVsChipITS->GetNbinsY());
-    if(integral < 1e-15) {
+  for (int ix = 1; ix <= hNClusterVsChipITS->GetNbinsX(); ix++) {
+    double integral = hNClusterVsChipITS->Integral(ix, ix, 1, hNClusterVsChipITS->GetNbinsY());
+    if (integral < 1e-15) {
       continue;
     }
-    for(int iy = 1; iy<=hNClusterVsChipITS->GetNbinsY(); iy++) {
-      double binc = hNClusterVsChipITS->GetBinContent(ix,iy);
-      if(binc<1e-15) {
+    for (int iy = 1; iy <= hNClusterVsChipITS->GetNbinsY(); iy++) {
+      double binc = hNClusterVsChipITS->GetBinContent(ix, iy);
+      if (binc < 1e-15) {
         continue;
       }
-      double bine = hNClusterVsChipITS->GetBinError(ix,iy);
-      hNClusterVsChipITS->SetBinContent(ix,iy,binc/integral);
-      hNClusterVsChipITS->SetBinError(ix,iy,binc*std::sqrt((bine/binc)*(bine/binc) + (std::sqrt(integral) / integral)*(std::sqrt(integral) / integral)));
+      double bine = hNClusterVsChipITS->GetBinError(ix, iy);
+      hNClusterVsChipITS->SetBinContent(ix, iy, binc / integral);
+      hNClusterVsChipITS->SetBinError(ix, iy, binc * std::sqrt((bine / binc) * (bine / binc) + (std::sqrt(integral) / integral) * (std::sqrt(integral) / integral)));
     }
   }
 }
