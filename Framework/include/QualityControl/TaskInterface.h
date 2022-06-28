@@ -95,10 +95,10 @@ class TaskInterface
 
  protected:
   std::shared_ptr<ObjectsManager> getObjectsManager();
-//  TObject* retrieveCondition(std::string path, std::map<std::string, std::string> metadata = {}, long timestamp = -1);
+  //  TObject* retrieveCondition(std::string path, std::map<std::string, std::string> metadata = {}, long timestamp = -1);
   template <typename T>
   T* retrieveConditionAny(std::string const& path, std::map<std::string, std::string> const& metadata = {},
-                          long timestamp = -1) ;
+                          long timestamp = -1);
 
   std::unordered_map<std::string, std::string> mCustomParameters;
   std::shared_ptr<o2::monitoring::Monitoring> mMonitoring;
