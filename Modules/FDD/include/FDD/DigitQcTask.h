@@ -31,6 +31,11 @@
 #include "FDD/Helper.h"
 #include "Rtypes.h"
 
+#include <set>
+#include <map>
+#include <vector>
+#include <array>
+
 using namespace o2::quality_control::core;
 
 namespace o2::quality_control_modules::fdd
@@ -43,7 +48,7 @@ class DigitQcTask final : public TaskInterface
 {
  public:
   /// \brief Constructor
-  DigitQcTask() = default;
+  DigitQcTask() : mHashedBitBinPos(fillHashedBitBinPos()), mHashedPairBitBinPos(fillHashedPairBitBinPos()){};
   /// Destructor
   ~DigitQcTask() override;
 
@@ -55,9 +60,10 @@ class DigitQcTask final : public TaskInterface
   void endOfCycle() override;
   void endOfActivity(Activity& activity) override;
   void reset() override;
-  constexpr static std::size_t sNCHANNELS_PM = 28; // 16(for PM) + 12 (just in case for possible PM-LCS)
+  constexpr static std::size_t sNCHANNELS_PM = 20; // 16(for PM) + 12 (just in case for possible PM-LCS)
   constexpr static std::size_t sOrbitsPerTF = 256;
-  constexpr static uint8_t sLaserBitPos = 5;
+  constexpr static std::size_t sBCperOrbit = 3564;
+  const float mCFDChannel2NS = 0.01302; // CFD channel width in ns
 
  private:
   // three ways of computing cycle duration:
@@ -70,7 +76,6 @@ class DigitQcTask final : public TaskInterface
   double mTimeCurNS = 0.;
   int mTfCounter = 0;
   double mTimeSum = 0.;
-  const float mCFDChannel2NS = 0.01302; // CFD channel width in ns
 
   template <typename Param_t,
             typename = typename std::enable_if<std::is_floating_point<Param_t>::value ||
@@ -96,9 +101,12 @@ class DigitQcTask final : public TaskInterface
   TList* mListHistGarbage;
   std::set<unsigned int> mSetAllowedChIDs;
   std::array<o2::InteractionRecord, sNCHANNELS_PM> mStateLastIR2Ch;
+  ///
+  std::array<uint8_t, sNCHANNELS_PM> mChID2PMhash; // map chID->hashed PM value
+  uint8_t mTCMhash;                                // hash value for TCM, and bin position in hist
+  ///
   std::map<int, std::string> mMapChTrgNames;
   std::map<int, std::string> mMapDigitTrgNames;
-  std::map<std::string, std::vector<int>> mMapPmModuleChannels; // PM name to its channels
 
   // Object which will be published
   std::unique_ptr<TH2F> mHist2CorrTCMchAndPMch;
@@ -127,6 +135,44 @@ class DigitQcTask final : public TaskInterface
   std::map<unsigned int, TH1F*> mMapHistPMbits;
   std::map<unsigned int, TH2F*> mMapHistAmpVsTime;
   std::map<std::string, TH2F*> mMapPmModuleBcOrbit;
+  /// ak
+  std::unique_ptr<TH2F> mHistBCvsTrg;
+  std::unique_ptr<TH2F> mHistBCvsFEEmodules;
+  std::unique_ptr<TH2F> mHistOrbitVsTrg;
+  std::unique_ptr<TH2F> mHistOrbitVsFEEmodules;
+
+  // Hashed maps
+  const std::array<std::vector<double>, 256> mHashedBitBinPos;                        // map with bit position for 1 byte trg signal, for 1 Dim hists;
+  const std::array<std::vector<std::pair<double, double>>, 256> mHashedPairBitBinPos; // map with paired bit position for 1 byte trg signal, for 1 Dim hists;
+  static std::array<std::vector<double>, 256> fillHashedBitBinPos()
+  {
+    std::array<std::vector<double>, 256> hashedBitBinPos{};
+    for (int iByteValue = 0; iByteValue < hashedBitBinPos.size(); iByteValue++) {
+      auto& vec = hashedBitBinPos[iByteValue];
+      for (int iBit = 0; iBit < 8; iBit++) {
+        if (iByteValue & (1 << iBit)) {
+          vec.push_back(iBit);
+        }
+      }
+    }
+    return hashedBitBinPos;
+  }
+  static std::array<std::vector<std::pair<double, double>>, 256> fillHashedPairBitBinPos()
+  {
+    const std::array<std::vector<double>, 256> hashedBitBinPos = fillHashedBitBinPos();
+    std::array<std::vector<std::pair<double, double>>, 256> hashedPairBitBinPos{};
+    for (int iByteValue = 0; iByteValue < hashedBitBinPos.size(); iByteValue++) {
+      const auto& vecBits = hashedBitBinPos[iByteValue];
+      auto& vecPairBits = hashedPairBitBinPos[iByteValue];
+      for (int iBitFirst = 0; iBitFirst < vecBits.size(); iBitFirst++) {
+        for (int iBitSecond = iBitFirst; iBitSecond < vecBits.size(); iBitSecond++) {
+          vecPairBits.push_back({ static_cast<double>(vecBits[iBitFirst]), static_cast<double>(vecBits[iBitSecond]) });
+        }
+      }
+    }
+    return hashedPairBitBinPos;
+  }
+  /// ak
 };
 
 } // namespace o2::quality_control_modules::fdd
