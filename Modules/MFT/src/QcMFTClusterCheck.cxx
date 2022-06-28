@@ -49,6 +49,9 @@ Quality QcMFTClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorOb
       float den = hChipOccupancy->GetBinContent(0); // normalisation stored in the uderflow bin
 
       for (int iBin = 0; iBin < hChipOccupancy->GetNbinsX(); iBin++) {
+        if (hChipOccupancy->GetBinContent(iBin + 1) == 0) {
+          hChipOccupancy->Fill(937); // number of chips with zero clusters stored in the overflow bin
+        }
         float num = hChipOccupancy->GetBinContent(iBin + 1);
         float ratio = (den > 0) ? (num / den) : 0.0;
         hChipOccupancy->SetBinContent(iBin + 1, ratio);
@@ -78,21 +81,6 @@ Quality QcMFTClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorOb
           float ratio = (den > 0) ? (num / den) : 0.0;
           histogram->SetBinContent(iBinX + 1, iBinY + 1, ratio);
         }
-      }
-    }
-
-    if (mo->getName() == "mClusterOccupancy") {
-      auto* histogram = dynamic_cast<TH1F*>(mo->getObject());
-
-      // test it
-      if ((int(histogram->GetBinContent(400)) % 3) == 0) {
-        // result = Quality::Good;
-      }
-      if ((int(histogram->GetBinContent(400)) % 3) == 1) {
-        // result = Quality::Medium;
-      }
-      if ((int(histogram->GetBinContent(400)) % 3) == 2) {
-        // result = Quality::Bad;
       }
     }
   }
