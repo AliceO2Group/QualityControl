@@ -116,7 +116,7 @@ void TracksTask::initialize(o2::framework::InitContext& /*ic*/)
   ILOG(Info, Support) << "initialize TracksTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   if (!o2::base::GeometryManager::isGeometryLoaded()) {
-    TaskInterface::retrieveCondition("GLO/Config/Geometry");
+    TaskInterface::retrieveConditionAny<TObject*>("GLO/Config/Geometry");
   }
 
   createTrackHistos();
