@@ -87,8 +87,8 @@ void QcMFTAsyncTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   double maxTracksPerTF = 400;
 
-  mNumberOfTracksPerTF = std::make_unique<TH1F>("tracks/mMFTTracksPerTF", 
-                                          "Number of tracks per TimeFrame; Number of tracks per TF", maxTracksPerTF, -0.5, maxTracksPerTF-0.5);
+  mNumberOfTracksPerTF = std::make_unique<TH1F>("tracks/mMFTTracksPerTF",
+                                                "Number of tracks per TimeFrame; Number of tracks per TF", maxTracksPerTF, -0.5, maxTracksPerTF - 0.5);
   getObjectsManager()->startPublishing(mNumberOfTracksPerTF.get());
 
   mTrackNumberOfClusters = std::make_unique<TH1F>("tracks/mMFTTrackNumberOfClusters",
