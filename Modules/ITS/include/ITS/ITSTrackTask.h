@@ -73,7 +73,6 @@ class ITSTrackTask : public TaskInterface
   TH1D* hNtracks;
   TH2D* hNClustersPerTrackEta;
   TH2D* hClusterVsBunchCrossing;
-  TH2D* hNClusterVsChip[NLayer];
   TH2D* hNClusterVsChipITS;
 
   float mVertexXYsize;
