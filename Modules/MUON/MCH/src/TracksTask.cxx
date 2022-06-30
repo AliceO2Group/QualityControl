@@ -181,7 +181,7 @@ void TracksTask::fillClusterHistos(gsl::span<const o2::mch::Cluster> clusters)
 {
   for (const auto& cluster : clusters) {
     int deId = cluster.getDEId();
-    o2::mch::mapping::Segmentation seg(deId);
+    const o2::mch::mapping::Segmentation& seg = o2::mch::mapping::segmentation(deId);
     int b, nb;
     seg.findPadPairByPosition(cluster.getX(), cluster.getY(), b, nb);
     if (b >= 0) {
