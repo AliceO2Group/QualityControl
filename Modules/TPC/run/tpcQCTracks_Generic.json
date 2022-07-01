@@ -1,0 +1,72 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "2"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": ""
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      }
+    },
+    "tasks": {
+      "Tracks": {
+        "active": "true",
+        "className": "o2::quality_control_modules::tpc::Tracks",
+        "moduleName": "QcTPC",
+        "detectorName": "TPC",
+        "cycleDurationSeconds": "60",
+        "maxNumberCycles": "-1",
+        "dataSource": {
+          "type": "direct",
+          "query": "inputTracks:TPC/TRACKS/0"
+        },
+        "taskParameters": {
+          "myOwnKey": "myOwnValue"
+        },
+        "location": "remote"
+      }
+    },
+    "checks": {
+      "GenericHistogramCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::tpc::GenericHistogramCheck",
+        "moduleName": "QcTPC",
+        "policy": "OnEachSeparately",
+        "detectorName": "TPC",
+        "dataSource": [{
+          "type": "Task",
+          "name": "Tracks",
+          "Noneed" : ["a"],
+          "MOs": ["h2DEtaPhiBeforeCuts","hEtaRatio_copy_copy","hNClustersBeforeCuts","hPhiAside","hEtaBeforeCuts","h2DNClustersPtBeforeCuts","h2DQOverPtPhiCside","h2DQOverPtPhiAside","h2DNClustersPt","h2DNClustersPhiCside","h2DNClustersEtaBeforeCuts","hPtBeforeCuts"]
+        }],
+
+        "stopTrigger_comment": [ "Parameters are needed to choose if check should be performed only as last point comparison to average or average comparison to expected value." ],
+        "checkParameters": {
+          "ExpectedValueX":"3.14",
+          "RangeX" : "0.006",
+          "ExpectedValueY":"0",
+          "RangeY" : "0.006",
+          "checks" : "StdDev, Range",
+          "axis" : "X,Y"
+        }
+      }
+    }
+  },
+  "dataSamplingPolicies": [
+
+  ]
+}
