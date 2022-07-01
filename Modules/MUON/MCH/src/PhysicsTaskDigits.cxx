@@ -20,6 +20,7 @@
 #include <TCanvas.h>
 #include <TH1.h>
 #include <TH2.h>
+#include <TGraph.h>
 #include <TFile.h>
 #include <algorithm>
 
@@ -83,7 +84,7 @@ void PhysicsTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   mAllHistograms.push_back(mHistogramNHitsElec);
   mAllHistograms.push_back(mHistogramNorbitsElec);
 
-  mMeanOccupancyPerDE = std::make_shared<MergeableTH1OccupancyPerDE>("MeanOccupancy", "Mean Occupancy vs DE");
+  mMeanOccupancyPerDE = std::make_shared<TH1F>("MeanOccupancy", "Mean Occupancy vs DE", getDEindexMax() + 1, 0, getDEindexMax() + 1);
   publishObject(mMeanOccupancyPerDE, "hist", false, false);
 
   // Histograms in global detector coordinates
@@ -310,6 +311,10 @@ void PhysicsTaskDigits::plotDigit(const o2::mch::Digit& digit)
 
 void PhysicsTaskDigits::updateOrbits()
 {
+  static constexpr double sOrbitLengthInNanoseconds = 3564 * 25;
+  static constexpr double sOrbitLengthInMicroseconds = sOrbitLengthInNanoseconds / 1000;
+  static constexpr double sOrbitLengthInMilliseconds = sOrbitLengthInMicroseconds / 1000;
+
   // Fill NOrbits, in Elec view, for electronics channels associated to readout pads (in order to then compute the Occupancy in Elec view, physically meaningful because in Elec view, each bin is a physical pad)
   for (uint16_t feeId = 0; feeId < sMaxFeeId; feeId++) {
 
@@ -348,7 +353,7 @@ void PhysicsTaskDigits::updateOrbits()
           }
 
           int ybin = channel + 1;
-          mHistogramNorbitsElec->SetBinContent(xbin, ybin, mNOrbits[feeId][linkId]);
+          mHistogramNorbitsElec->SetBinContent(xbin, ybin, mNOrbits[feeId][linkId] * sOrbitLengthInMilliseconds);
 
           double padX = segment.padPositionX(padId);
           double padY = segment.padPositionY(padId);
@@ -358,7 +363,7 @@ void PhysicsTaskDigits::updateOrbits()
 
           auto hNorbits = mHistogramNorbitsDE[cathode].find(deId);
           if ((hNorbits != mHistogramNorbitsDE[cathode].end()) && (hNorbits->second != NULL)) {
-            hNorbits->second->Set(padX, padY, padSizeX, padSizeY, mNOrbits[feeId][linkId]);
+            hNorbits->second->Set(padX, padY, padSizeX, padSizeY, mNOrbits[feeId][linkId] * sOrbitLengthInMilliseconds);
           }
         }
       }
@@ -374,7 +379,7 @@ void PhysicsTaskDigits::endOfCycle()
 
   // update mergeable ratios
   mHistogramOccupancyElec->update();
-  mMeanOccupancyPerDE->update(mHistogramOccupancyElec->getNum(), mHistogramOccupancyElec->getDen());
+  //mMeanOccupancyPerDE->update(mHistogramOccupancyElec->getNum(), mHistogramOccupancyElec->getDen());
 
   for (auto de : o2::mch::raw::deIdsForAllMCH) {
     for (int i = 0; i < 2; i++) {

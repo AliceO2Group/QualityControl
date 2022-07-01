@@ -71,13 +71,13 @@ void PhysicsTaskPreclusters::initialize(o2::framework::InitContext& /*ctx*/)
   const uint32_t nElecXbins = PhysicsTaskPreclusters::sMaxFeeId * PhysicsTaskPreclusters::sMaxLinkId * PhysicsTaskPreclusters::sMaxDsId;
 
   // Histograms in electronics coordinates
-  mHistogramPseudoeffElec = std::make_shared<MergeableTH2Ratio>("Pseudoeff_Elec", "Pseudoeff", nElecXbins, 0, nElecXbins, 64, 0, 64, 1, true);
+  mHistogramPseudoeffElec = std::make_shared<MergeableTH2Ratio>("Pseudoeff_Elec", "Pseudoeff", nElecXbins, 0, nElecXbins, 64, 0, 64, true);
   publishObject(mHistogramPseudoeffElec, "colz", false, false);
 
   // 1D histograms for mean pseudoeff per DE (integrated or per elapsed cycle) - Used in trending
-  mHistogramMeanPseudoeffPerDE[0] = std::make_shared<MergeableTH1Ratio>("MeanPseudoeffPerDE_B", "Mean Pseudoeff for each DE (B)", getDEindexMax(), 0, getDEindexMax());
+  mHistogramMeanPseudoeffPerDE[0] = std::make_shared<TH1F>("MeanPseudoeffPerDE_B", "Mean Pseudoeff for each DE (B)", getDEindexMax(), 0, getDEindexMax());
   publishObject(mHistogramMeanPseudoeffPerDE[0], "E", false, false);
-  mHistogramMeanPseudoeffPerDE[1] = std::make_shared<MergeableTH1Ratio>("MeanPseudoeffPerDE_NB", "Mean Pseudoeff for each DE (NB)", getDEindexMax(), 0, getDEindexMax());
+  mHistogramMeanPseudoeffPerDE[1] = std::make_shared<TH1F>("MeanPseudoeffPerDE_NB", "Mean Pseudoeff for each DE (NB)", getDEindexMax(), 0, getDEindexMax());
   publishObject(mHistogramMeanPseudoeffPerDE[1], "E", false, false);
 
   mHistogramPreclustersPerDE = std::make_shared<MergeableTH1Ratio>("PreclustersPerDE", "Number of pre-clusters for each DE", getDEindexMax(), 0, getDEindexMax());
@@ -86,7 +86,7 @@ void PhysicsTaskPreclusters::initialize(o2::framework::InitContext& /*ctx*/)
   publishObject(mHistogramPreclustersSignalPerDE, "hist", false, false);
 
   // Histograms in global detector coordinates
-  mHistogramPseudoeffST12 = std::make_shared<MergeableTH2Ratio>("Pseudoeff_ST12", "ST12 Pseudoeff", 10, 0, 10, 10, 0, 10, 1, true);
+  mHistogramPseudoeffST12 = std::make_shared<MergeableTH2Ratio>("Pseudoeff_ST12", "ST12 Pseudoeff", 10, 0, 10, 10, 0, 10, true);
   publishObject(mHistogramPseudoeffST12, "colz", false, false);
 
   mHistogramNumST12 = std::make_shared<GlobalHistogram>("Num_ST12", "Number of hits (ST12)", 0, mHistogramPseudoeffST12->getNum());
@@ -95,7 +95,7 @@ void PhysicsTaskPreclusters::initialize(o2::framework::InitContext& /*ctx*/)
   mHistogramDenST12->init();
   mAllHistograms.push_back(mHistogramDenST12->getHist());
 
-  mHistogramPseudoeffST345 = std::make_shared<MergeableTH2Ratio>("Pseudoeff_ST345", "ST345 Pseudoeff", 10, 0, 10, 10, 0, 10, 1, true);
+  mHistogramPseudoeffST345 = std::make_shared<MergeableTH2Ratio>("Pseudoeff_ST345", "ST345 Pseudoeff", 10, 0, 10, 10, 0, 10, true);
   publishObject(mHistogramPseudoeffST345, "colz", false, false);
 
   mHistogramNumST345 = std::make_shared<GlobalHistogram>("Num_ST345", "Number of hits (ST345)", 1, mHistogramPseudoeffST345->getNum());
@@ -135,7 +135,7 @@ void PhysicsTaskPreclusters::initialize(o2::framework::InitContext& /*ctx*/)
     {
       // Bending side
       auto hmB = std::make_shared<MergeableTH2Ratio>(TString::Format("Expert/%sPseudoeff_B_XY_%03d", getHistoPath(de).c_str(), de),
-                                                     TString::Format("Pseudo-efficiency XY (DE%03d B)", de), 1, true);
+                                                     TString::Format("Pseudo-efficiency XY (DE%03d B)", de), true);
       mHistogramPseudoeffXY[0].insert(make_pair(de, hmB));
       publishObject(hmB, "colz", false, true);
 
@@ -153,7 +153,7 @@ void PhysicsTaskPreclusters::initialize(o2::framework::InitContext& /*ctx*/)
 
       // Non-bending side
       auto hmNB = std::make_shared<MergeableTH2Ratio>(TString::Format("Expert/%sPseudoeff_NB_XY_%03d", getHistoPath(de).c_str(), de),
-                                                      TString::Format("Pseudo-efficiency XY (DE%03d NB)", de), 1, true);
+                                                      TString::Format("Pseudo-efficiency XY (DE%03d NB)", de), true);
       mHistogramPseudoeffXY[1].insert(make_pair(de, hmNB));
       publishObject(hmNB, "colz", false, true);
 

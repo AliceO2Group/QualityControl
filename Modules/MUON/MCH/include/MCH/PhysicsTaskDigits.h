@@ -28,8 +28,6 @@
 #endif
 #include "MUONCommon/MergeableTH2Ratio.h"
 #include "MCH/GlobalHistogram.h"
-#include "MCH/MergeableTH1OccupancyPerDE.h"
-#include "MCH/MergeableTH1OccupancyPerDECycle.h"
 
 class TH1F;
 class TH2F;
@@ -119,10 +117,8 @@ class PhysicsTaskDigits /*final*/ : public TaskInterface // todo add back the "f
   std::map<int, std::shared_ptr<DetectorHistogram>> mHistogramNorbitsDE[2];   // Histogram of Number of orbits (XY view)
   std::map<int, std::shared_ptr<MergeableTH2Ratio>> mHistogramOccupancyDE[2]; // Mergeable object, Occupancy histogram (XY view)
 
-  // TH1 of the Mean Occupancy on each DE, integrated or only on elapsed cycle - Sent for Trending
-  // WARNING: the code for the occupancy on cycle is currently broken and therefore disabled
-  std::shared_ptr<MergeableTH1OccupancyPerDE> mMeanOccupancyPerDE;
-  // std::shared_ptr<MergeableTH1OccupancyPerDECycle> mMeanOccupancyPerDECycle;
+  // TH1 of the Mean Occupancy on each DE
+  std::shared_ptr<TH1F> mMeanOccupancyPerDE;
 
   std::vector<TH1*> mAllHistograms;
 };
