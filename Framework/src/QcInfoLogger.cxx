@@ -50,7 +50,7 @@ void QcInfoLogger::setRun(int run)
 
 void QcInfoLogger::setPartition(const std::string& partitionName)
 {
-  if(partitionName.empty()) {
+  if (partitionName.empty()) {
     ILOG(Debug, Support) << "IL: Partition empty, we don't set it" << ENDM;
     return;
   }
