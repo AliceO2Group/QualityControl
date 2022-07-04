@@ -171,7 +171,7 @@ void ClusterTask::startOfCycle()
   ILOG(Info, Support) << "startOfCycle" << ENDM;
 
   if (!o2::base::GeometryManager::isGeometryLoaded()) {
-    TaskInterface::retrieveCondition("GLO/Config/Geometry");
+    TaskInterface::retrieveConditionAny<TObject*>("GLO/Config/Geometry");
   }
 
   resetHistograms();
