@@ -65,13 +65,13 @@ void TracksQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   multTraksB34MT22 = 0;
   multTraksNB34MT22 = 0;
 
-  for (int i = 0; i < MID_NDE; i++)
+  for (int i = 0; i <= MID_NDE; i++)
     DetTracks[i] = { 0, 0, 0, 0 };
-  for (int i = 0; i < MID_NLOC; i++)
+  for (int i = 0; i <= MID_NLOC; i++)
     LocTracks[i] = { 0, 0, 0, 0 };
 
-  for (int deId = 0; deId < MID_NDE; deId++) {
-    for (int locId = 0; locId < MID_NLOC; locId++) {
+  for (int deId = 0; deId <= MID_NDE; deId++) {
+    for (int locId = 0; locId <= MID_NLOC; locId++) {
       for (int icol = mMapping.getFirstColumn(deId); icol < 7; ++icol) {
         for (int ib = mMapping.getFirstBoardBP(icol, deId); ib <= mMapping.getLastBoardBP(icol, deId); ++ib) {
           if (mMapping.getBoardId(ib, icol, deId) == locId) {
@@ -83,10 +83,11 @@ void TracksQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     }
   }
 
-  mTrackBCCounts = std::make_shared<TH1F>("TrackBCCounts", "Cluster Bunch Crossing Counts;BC;Entry", o2::constants::lhc::LHCMaxBunches, 0., o2::constants::lhc::LHCMaxBunches);
+  // mTrackBCCounts = std::make_shared<TH1F>("TrackBCCounts", "Tracks Bunch Crossing Counts;BC;Entry (tracks nb)", o2::constants::lhc::LHCMaxBunches, 0., o2::constants::lhc::LHCMaxBunches);
+  mTrackBCCounts = std::make_shared<TProfile>("TrackBCCounts", "Mean Tracks in Bunch Crossing ; BC ; Mean Tracks nb", o2::constants::lhc::LHCMaxBunches, 0., o2::constants::lhc::LHCMaxBunches);
   getObjectsManager()->startPublishing(mTrackBCCounts.get());
   // mTrackBCCounts->GetXaxis()->SetTitle("BC");
-  // mTrackBCCounts->GetYaxis()->SetTitle("Entry");
+  // mTrackBCCounts->GetYaxis()->SetTitle("Mean Tracks nb");
 
   mMultTracks = std::make_shared<TH1F>("MultTracks", "Multiplicity Tracks ", 100, 0, 100);
   getObjectsManager()->startPublishing(mMultTracks.get());
@@ -155,7 +156,8 @@ void TracksQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mTrackPT->GetXaxis()->SetTitle("Track pT");
   mTrackPT->GetYaxis()->SetTitle("Entry");
 
-  mTrackRatio44 = std::make_shared<TH1F>("TrackRatio44", "Track 44/all ", 9, 0., 9.);
+  mTrackRatio44 = std::make_shared<TProfile>("TrackRatio44", "Track 44/all ", 9, 0., 9.);
+  // mTrackRatio44 = std::make_shared<TH1F>("TrackRatio44", "Track 44/all ", 9, 0., 9.);
   getObjectsManager()->startPublishing(mTrackRatio44.get());
   mTrackRatio44->GetXaxis()->SetBinLabel(1, "Global");
   mTrackRatio44->GetXaxis()->SetBinLabel(2, "MT11 Bend");
@@ -275,10 +277,10 @@ void TracksQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   for (const auto& rofRecord : rofs) { // loop ROFRecords == Events //
     // printf("========================================================== \n");
-    // printf("%05d ROF with first entry %05zu and nentries %02zu , BC %05d, ORB %05d , EventType %02d\n", nROF, rofRecord.firstEntry, rofRecord.nEntries, rofRecord.interactionRecord.bc, rofRecord.interactionRecord.orbit,rofRecord.eventType);
+    // printf("Tracks :: %05d ROF with first entry %05zu and nentries %02zu , BC %05d, ORB %05d , EventType %02d\n", nROF, rofRecord.firstEntry, rofRecord.nEntries, rofRecord.interactionRecord.bc, rofRecord.interactionRecord.orbit,rofRecord.eventType);
     nROF++;
     multTracks = 0;
-    mTrackBCCounts->Fill(rofRecord.interactionRecord.bc);
+    mTrackBCCounts->Fill(rofRecord.interactionRecord.bc, rofRecord.nEntries);
 
     // if(rofRecord.nEntries!=1)continue;/// TEST ONE TACKS ONLY !!!
 
@@ -314,9 +316,7 @@ void TracksQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       float Y2 = track.getPositionY() + track.getDirectionY() * dZ2;
 
       float dZf = Zf - track.getPositionZ();
-      // float Xf = track.getPositionX() + track.getDirectionX() * dZf;
       float Xf = X1 * Zf / o2::mid::geoparams::DefaultChamberZ[0];
-      // float Yf = track.getPositionY() + track.getDirectionY() * dZf;
       float Yf = Y2 - (Y2 - Y1) * (o2::mid::geoparams::DefaultChamberZ[2] - Zf) / (o2::mid::geoparams::DefaultChamberZ[2] - o2::mid::geoparams::DefaultChamberZ[0]);
       // printf("\n X =%02f ; Y =%02f ;  Z =%02f ;  dX =%02f ;  dY =%02f ; \n",track.getPositionX(),track.getPositionY(),track.getPositionZ(),track.getDirectionX(),track.getDirectionY());
       // printf(" X1 =%02f ; Y1 =%02f ;  Z1 =%02f ;  \n",X1,Y1, o2::mid::geoparams::DefaultChamberZ[0]);
@@ -351,22 +351,22 @@ void TracksQcTask::monitorData(o2::framework::ProcessingContext& ctx)
         if (HitMapNB == 0xF)
           multTracksNBend44++;
 
-        // if (HitMap != 0xFF) printf("HitMap = %X   \n",HitMap);
-        if (HitMapB == 0xE)
+        // track.isFiredChamber(i,j) :: i=0->3 (MT11->MT22) ; j=0->1 (BP->NBP)
+        if (track.isFiredChamber(0, 0))
           multTraksB34MT11++;
-        else if (HitMapB == 0xD)
+        else if (track.isFiredChamber(1, 0))
           multTraksB34MT12++;
-        else if (HitMapB == 0xB)
+        else if (track.isFiredChamber(2, 0))
           multTraksB34MT21++;
-        else if (HitMapB == 0x7)
+        else if (track.isFiredChamber(3, 0))
           multTraksB34MT22++;
-        if (HitMapNB == 0xE)
+        if (track.isFiredChamber(0, 1))
           multTraksNB34MT11++;
-        else if (HitMapNB == 0xD)
+        else if (track.isFiredChamber(1, 1))
           multTraksNB34MT12++;
-        else if (HitMapNB == 0xB)
+        else if (track.isFiredChamber(2, 1))
           multTraksNB34MT21++;
-        else if (HitMapNB == 0x7)
+        else if (track.isFiredChamber(3, 1))
           multTraksNB34MT22++;
 
         if (EffFlag > 1) { // RPCeff
@@ -436,7 +436,7 @@ void TracksQcTask::monitorData(o2::framework::ProcessingContext& ctx)
               LocTrack[3]++;
             else
               LocTrack[2]++;
-            LocTracks[track.getFiredLocalBoard()] = LocTrack; // map of vect
+            // LocTracks[track.getFiredLocalBoard()] = LocTrack; // map of vect
 
             float BLocEff = 0.;
             float NBLocEff = 0.;
@@ -483,25 +483,36 @@ void TracksQcTask::monitorData(o2::framework::ProcessingContext& ctx)
         }         //(EffFlag>1)
       }           // Efficiency part (EffFlag>0)
     }             // tracks in ROF
-
     mMultTracks->Fill(multTracks);
 
     /// Efficiency part
     if (multTracksTot > 0) {
       globEff = float(multTracks44Tot) / float(multTracksTot);
-      mTrackRatio44->SetBinContent(1, float(multTracks44Tot) / float(multTracksTot));
+      // mTrackRatio44->SetBinContent(1, float(multTracks44Tot) / float(multTracksTot));
+      mTrackRatio44->Fill(0., float(multTracks44Tot) / float(multTracksTot));
       globBendEff = float(multTracksBend44) / float(multTracksTot);
       globNBendEff = float(multTracksNBend44) / float(multTracksTot);
-      mTrackRatio44->SetBinContent(2, float(multTracksBend44) / float(multTracksBend44 + multTraksB34MT11));
-      mTrackRatio44->SetBinContent(3, float(multTracksBend44) / float(multTracksBend44 + multTraksB34MT12));
-      mTrackRatio44->SetBinContent(4, float(multTracksBend44) / float(multTracksBend44 + multTraksB34MT21));
-      mTrackRatio44->SetBinContent(5, float(multTracksBend44) / float(multTracksBend44 + multTraksB34MT22));
-      mTrackRatio44->SetBinContent(6, float(multTracksNBend44) / float(multTracksNBend44 + multTraksNB34MT11));
-      mTrackRatio44->SetBinContent(7, float(multTracksNBend44) / float(multTracksNBend44 + multTraksNB34MT12));
-      mTrackRatio44->SetBinContent(8, float(multTracksNBend44) / float(multTracksNBend44 + multTraksNB34MT21));
-      mTrackRatio44->SetBinContent(9, float(multTracksNBend44) / float(multTracksNBend44 + multTraksNB34MT22));
+      if (multTracksBend44 > 0) {
+        /*	mTrackRatio44->SetBinContent(2, float(multTracksBend44) / float(multTracksBend44 + multTraksB34MT11));
+        mTrackRatio44->SetBinContent(3, float(multTracksBend44) / float(multTracksBend44 + multTraksB34MT12));
+        mTrackRatio44->SetBinContent(4, float(multTracksBend44) / float(multTracksBend44 + multTraksB34MT21));
+        mTrackRatio44->SetBinContent(5, float(multTracksBend44) / float(multTracksBend44 + multTraksB34MT22));
+      */ mTrackRatio44->Fill(1, float(multTracksBend44) / float(multTracksBend44 + multTraksB34MT11));
+        mTrackRatio44->Fill(2, float(multTracksBend44) / float(multTracksBend44 + multTraksB34MT12));
+        mTrackRatio44->Fill(3, float(multTracksBend44) / float(multTracksBend44 + multTraksB34MT21));
+        mTrackRatio44->Fill(4, float(multTracksBend44) / float(multTracksBend44 + multTraksB34MT22));
+      }
+      if (multTracksNBend44 > 0) {
+        mTrackRatio44->Fill(5, float(multTracksNBend44) / float(multTracksNBend44 + multTraksNB34MT11));
+        mTrackRatio44->Fill(6, float(multTracksNBend44) / float(multTracksNBend44 + multTraksNB34MT12));
+        mTrackRatio44->Fill(7, float(multTracksNBend44) / float(multTracksNBend44 + multTraksNB34MT21));
+        mTrackRatio44->Fill(8, float(multTracksNBend44) / float(multTracksNBend44 + multTraksNB34MT22));
+  /*	mTrackRatio44->SetBinContent(6, float(multTracksNBend44) / float(multTracksNBend44 + multTraksNB34MT11));
+	mTrackRatio44->SetBinContent(7, float(multTracksNBend44) / float(multTracksNBend44 + multTraksNB34MT12));
+	mTrackRatio44->SetBinContent(8, float(multTracksNBend44) / float(multTracksNBend44 + multTraksNB34MT21));
+	mTrackRatio44->SetBinContent(9, float(multTracksNBend44) / float(multTracksNBend44 + multTraksNB34MT22));
+	*/      }
     }
-
   } //  ROFRecords //
 }
 

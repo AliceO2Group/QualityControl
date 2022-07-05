@@ -22,6 +22,7 @@
 
 class TH1F;
 class TH2F;
+class TProfile;
 
 using namespace o2::quality_control::core;
 
@@ -58,7 +59,7 @@ class ClustQcTask final : public TaskInterface
   std::shared_ptr<TH1F> mMultClust21{ nullptr };
   std::shared_ptr<TH1F> mMultClust22{ nullptr };
 
-  std::shared_ptr<TH1F> mClustBCCounts{ nullptr };
+  std::shared_ptr<TProfile> mClustBCCounts{ nullptr };
 
   std::shared_ptr<TH1F> mClustResX{ nullptr };
   std::shared_ptr<TH1F> mClustResY{ nullptr };
