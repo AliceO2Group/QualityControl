@@ -218,12 +218,9 @@ void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   auto noises = ctx.inputs().get<gsl::span<o2::mid::ColumnData>>("noise");
   auto noiserofs = ctx.inputs().get<gsl::span<o2::mid::ROFRecord>>("noiserofs");
-<<<<<<< HEAD
-=======
 
   // auto noises = o2::mid::specs::getData(ctx, "digits", o2::mid::EventType::Calib);
   // auto noiserofs = o2::mid::specs::getRofs(ctx, "digits", o2::mid::EventType::Calib);
->>>>>>> 690db1a2 (change BCCounts normalisation + Debug TracksQCTask)
 
   int multNoiseMT11B = 0;
   int multNoiseMT12B = 0;
@@ -401,14 +398,11 @@ void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   auto deads = ctx.inputs().get<gsl::span<o2::mid::ColumnData>>("dead");
   auto deadrofs = ctx.inputs().get<gsl::span<o2::mid::ROFRecord>>("deadrofs");
-<<<<<<< HEAD
-=======
 
   // auto deads = o2::mid::specs::getData(ctx, "digits", o2::mid::EventType::FET);
   // auto deadrofs = o2::mid::specs::getRofs(ctx, "digits", o2::mid::EventType::FET);
 
   printf("========================================================== \n");
->>>>>>> 690db1a2 (change BCCounts normalisation + Debug TracksQCTask)
 
   for (const auto& deadrof : deadrofs) { // loop deadROFs //
     printf("========================================================== \n");
