@@ -82,6 +82,16 @@ class PhysicsTaskDigits /*final*/ : public TaskInterface // todo add back the "f
     }
   }
 
+  struct GlobalHistogramRatio {
+    std::shared_ptr<GlobalHistogram> mHistNum; // Histogram of Number of hits (global XY view)
+    std::shared_ptr<GlobalHistogram> mHistDen; // Histogram of Number of orbits (global XY view)
+    std::shared_ptr<MergeableTH2Ratio> mHistOccupancy;
+    GlobalHistogramRatio(std::string name, std::string title, int id);
+    void setNum(std::map<int, std::shared_ptr<DetectorHistogram>>& histB, std::map<int, std::shared_ptr<DetectorHistogram>>& histNB);
+    void setDen(std::map<int, std::shared_ptr<DetectorHistogram>>& histB, std::map<int, std::shared_ptr<DetectorHistogram>>& histNB);
+    void update();
+  };
+
   static constexpr int sMaxFeeId = 64;
   static constexpr int sMaxLinkId = 12;
   static constexpr int sMaxDsId = 40;
@@ -97,18 +107,24 @@ class PhysicsTaskDigits /*final*/ : public TaskInterface // todo add back the "f
   uint32_t mLastOrbitSeen[sMaxFeeId][sMaxLinkId];
 
   // 2D Histograms, using Elec view (where x and y uniquely identify each pad based on its Elec info (fee, link, de)
-  TH2F* mHistogramNHitsElec;                                   // Histogram of Number of hits (Elec view)
-  TH2F* mHistogramNorbitsElec;                                 // Histogram of Number of orbits (Elec view)
-  std::shared_ptr<MergeableTH2Ratio> mHistogramOccupancyElec;  // Mergeable object, Occupancy histogram (Elec view)
-  std::shared_ptr<GlobalHistogram> mHistogramNhitsST12;        // Histogram of Number of hits (global XY view)
-  std::shared_ptr<GlobalHistogram> mHistogramNorbitsST12;      // Histogram of Number of orbits (global XY view)
-  std::shared_ptr<MergeableTH2Ratio> mHistogramOccupancyST12;  // Mergeable object, Occupancy histogram (global XY view)
-  std::shared_ptr<GlobalHistogram> mHistogramNhitsST345;       // Histogram of Number of hits (global XY view)
-  std::shared_ptr<GlobalHistogram> mHistogramNorbitsST345;     // Histogram of Number of orbits (global XY view)
-  std::shared_ptr<MergeableTH2Ratio> mHistogramOccupancyST345; // Mergeable object, Occupancy histogram (global XY view)
+  TH2F* mHistogramNHitsElec;                                  // Histogram of Number of hits (Elec view)
+  TH2F* mHistogramNorbitsElec;                                // Histogram of Number of orbits (Elec view)
+  std::shared_ptr<MergeableTH2Ratio> mHistogramOccupancyElec; // Mergeable object, Occupancy histogram (Elec view)
+
+  std::shared_ptr<GlobalHistogramRatio> mHistogramOccupancyST12;  // Mergeable object, Occupancy histogram (global XY view)
+  std::shared_ptr<GlobalHistogramRatio> mHistogramOccupancyST345; // Mergeable object, Occupancy histogram (global XY view)
+
+  // on-cycle occupancy plots
+  std::shared_ptr<GlobalHistogramRatio> mHistogramOccupancyPrevCycleST12;
+  std::shared_ptr<GlobalHistogramRatio> mHistogramOccupancyPrevCycleST345;
+  std::shared_ptr<GlobalHistogramRatio> mHistogramOccupancyOnCycleST12;
+  std::shared_ptr<GlobalHistogramRatio> mHistogramOccupancyOnCycleST345;
 
   std::shared_ptr<TH2F> mHistogramDigitsOrbitInTF;
   std::shared_ptr<TH2F> mHistogramDigitsOrbitInTFDE;
+
+  std::shared_ptr<TH2F> mHistogramDigitsOrbitInTFDEPrevCycle;
+  std::shared_ptr<TH2F> mHistogramDigitsOrbitInTFDEOnCycle;
   std::shared_ptr<TH2F> mHistogramDigitsBcInOrbit;
   std::shared_ptr<TH2F> mHistogramAmplitudeVsSamples;
 
@@ -118,7 +134,8 @@ class PhysicsTaskDigits /*final*/ : public TaskInterface // todo add back the "f
   std::map<int, std::shared_ptr<MergeableTH2Ratio>> mHistogramOccupancyDE[2]; // Mergeable object, Occupancy histogram (XY view)
 
   // TH1 of the Mean Occupancy on each DE
-  std::shared_ptr<TH1F> mMeanOccupancyPerDE;
+  std::shared_ptr<TH1F> mHistogramMeanOccupancyPerDE;
+  std::shared_ptr<TH1F> mHistogramMeanOccupancyOnCyclePerDE;
 
   std::vector<TH1*> mAllHistograms;
 };
