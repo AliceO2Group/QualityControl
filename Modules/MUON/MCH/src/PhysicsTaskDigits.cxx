@@ -53,13 +53,14 @@ PhysicsTaskDigits::~PhysicsTaskDigits() {}
 
 PhysicsTaskDigits::GlobalHistogramRatio::GlobalHistogramRatio(std::string name, std::string title, int id)
 {
+  float scaleFactors[2]{ 5, 10 };
   mHistOccupancy = std::make_shared<MergeableTH2Ratio>(name.c_str(), title.c_str(), 10, 0, 10, 10, 0, 10);
 
   mHistNum = std::make_shared<GlobalHistogram>((name + "_num").c_str(), (title + " Num").c_str(),
-                                               id, mHistOccupancy->getNum());
+                                               id, scaleFactors[id], mHistOccupancy->getNum());
   mHistNum->init();
   mHistDen = std::make_shared<GlobalHistogram>((name + "_num").c_str(), (title + " Num").c_str(),
-                                               id, mHistOccupancy->getDen());
+                                               id, scaleFactors[id], mHistOccupancy->getDen());
   mHistDen->init();
 }
 
