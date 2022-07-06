@@ -326,8 +326,7 @@ void CheckRunner::sendPeriodicMonitoring()
                        .addValue(mTotalNumberMOStored, "mos")
                        .addValue(rateMOs, "mos_per_second")
                        .addValue(mTotalNumberQOStored, "qos")
-                       .addValue(rateQOs, "qos_per_second")
-    );
+                       .addValue(rateQOs, "qos_per_second"));
     mCollector->send({ mTotalQOSent, "qc_checkrunner_qo_sent" });
     mCollector->send({ mTimerTotalDurationActivity.getTime(), "qc_checkrunner_duration" });
     mNumberQOStored = 0;
