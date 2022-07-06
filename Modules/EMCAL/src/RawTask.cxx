@@ -489,7 +489,7 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
   Int_t nPagesMessage = 0, nSuperpagesMessage = 0;
   ILOG(Debug, Support) << " Processing message " << mNumberOfMessages << ENDM;
   mNumberOfMessages++;
-  mMessageCounter->Fill(1, 0); //for expert fill bin 1 with number of messages
+  mMessageCounter->Fill(0); //for expert fill bin 1 with number of messages
 
   const int NUMBERSM = 20;
   const int NFEESM = 40; //number of fee per sm
@@ -514,7 +514,7 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
       mNumberOfSuperpages++;
       nSuperpagesMessage++;
       //mSuperpageCounter->Fill(1); //for expert
-      mMessageCounter->Fill(1, 1); //fill bin 2 with mSuperpageCounter
+      mMessageCounter->Fill(1); //fill bin 2 with mSuperpageCounter
       ILOG(Debug, Support) << " EMCAL Reading Payload size: " << payloadSize << " for " << header->dataOrigin << ENDM;
 
       //fill the histogram with payload sizes
@@ -538,7 +538,7 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
         mNumberOfPages++;
         nPagesMessage++;
         //mPageCounter->Fill(1); //expert
-        mMessageCounter->Fill(1, 2); //fill bin 3 with PageCounter
+        mMessageCounter->Fill(2); //fill bin 3 with PageCounter
         rawreader.next();
         auto rawSize = rawreader.getPayloadSize(); //payloadsize in byte;
 
