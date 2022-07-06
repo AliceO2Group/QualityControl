@@ -237,6 +237,8 @@ class CheckRunner : public framework::Task
   int mTotalNumberQOStored;
   int mTotalNumberMOStored;
   int mTotalQOSent;
+  int mNumberQOStored = 0; // since the last publication of the monitoring data
+  int mNumberMOStored = 0; // since the last publication of the monitoring data
   AliceO2::Common::Timer mTimer;
   AliceO2::Common::Timer mTimerTotalDurationActivity;
 };
