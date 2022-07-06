@@ -29,6 +29,7 @@
 
 class TH1F;
 class TH2F;
+class TProfile;
 
 using namespace o2::quality_control::core;
 
@@ -86,6 +87,7 @@ class RawQcTask final : public TaskInterface
   TH1F* mRawDataChecker{ nullptr };
 
   TH1F* mRawBCCounts{ nullptr };
+  // TProfile* mRawBCCounts{ nullptr };
 
   TH2F* mRawLocalBoardsMap{ nullptr };
   TH2F* mBusyRawLocalBoards{ nullptr };

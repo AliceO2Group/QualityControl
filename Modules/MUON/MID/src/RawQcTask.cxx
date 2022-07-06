@@ -19,6 +19,8 @@
 
 #include <TCanvas.h>
 #include <TH1.h>
+#include <TH2.h>
+#include <TProfile.h>
 
 #include <iostream>
 #include <fstream>
@@ -102,9 +104,10 @@ void RawQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mBusyRawLocalBoards->SetStats(0);
 
   mRawBCCounts = new TH1F("RawBCCounts", "Raw Bunch Crossing Counts", o2::constants::lhc::LHCMaxBunches, 0, o2::constants::lhc::LHCMaxBunches);
+  // mRawBCCounts = new TProfile("RawBCCounts", "Mean Raw Bunch Crossing Counts", o2::constants::lhc::LHCMaxBunches, 0, o2::constants::lhc::LHCMaxBunches);
   getObjectsManager()->startPublishing(mRawBCCounts);
   mRawBCCounts->GetXaxis()->SetTitle("BC");
-  mRawBCCounts->GetYaxis()->SetTitle("Entry");
+  mRawBCCounts->GetYaxis()->SetTitle("Entry (Ko)");
 }
 
 static int Pattern(uint16_t pattern)
@@ -202,20 +205,18 @@ void RawQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
   }
 
-  std::unordered_map<int, std::vector<int>> BCOrbitCounts; // Number of entry par BC
   nROF = 0;
   int nBoardTot = 0;
-  int firstBCEntry = 0;
-  int lastBCEntry = 0;
 
   for (auto& rof : mDecoder->getROFRecords()) { // boucle sur les ROFRecords //
     // printf("========================================================== \n");
-    // printf("%05d ROF with first entry %05zu and nentries %02zu , BC %05d, ORB %05d , EventType %02d\n", nROF, rof.firstEntry, rof.nEntries, rof.interactionRecord.bc, rof.interactionRecord.orbit,rof.eventType);
+    // printf("Raw :: %05d ROF with first entry %05zu and nentries %02zu , BC %05d, ORB %05d , EventType %02d\n", nROF, rof.firstEntry, rof.nEntries, rof.interactionRecord.bc, rof.interactionRecord.orbit,rof.eventType);
     // eventType::  Standard = 0, Calib = 1, FET = 2
 
     nROF++;
     nBoard = 0;
     nEntriesROF = 0;
+    mRawBCCounts->Fill(rof.interactionRecord.bc, float(rof.nEntries) * 20. / 1000.); // board = 20 octets
 
     for (auto board = mDecoder->getData().begin() + rof.firstEntry; board != mDecoder->getData().begin() + rof.firstEntry + rof.nEntries; ++board) {
 
@@ -228,26 +229,6 @@ void RawQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       int feeId = o2::mid::crateparams::makeGBTUniqueId(crateId, linkId);
       int statusWord = (*board).statusWord;
       int triggerWord = (*board).triggerWord;
-
-      if (isBoardEmpty(*board) == 0) {
-        mRawLocalBoardsMap->Fill(crateId, locId, 1);
-
-        if (iBC != rof.interactionRecord.bc) { // test new BC
-          iBC = rof.interactionRecord.bc;
-          iOrbit = rof.interactionRecord.orbit;
-          nEntriesROF = rof.nEntries;
-          std::vector<int> OrbitCounts = { iOrbit, nEntriesROF };
-          BCOrbitCounts[iBC] = OrbitCounts;
-          auto& OS = BCOrbitCounts[iBC];
-        } else { // exist BC
-          auto& OS = BCOrbitCounts[iBC];
-          if (OS[0] == iOrbit) {  // test new Orbit
-            OS[1] += nEntriesROF; // same Orbit
-          } else
-            OS[1] += nEntriesROF; // not same Orbit !! modify ??
-          BCOrbitCounts[iBC] = OS;
-        }
-      }
       int isLoc = (statusWord >> 6) & 1;
       int busyLoc = (statusWord >> 5) & 1;
       int decisionLoc = (statusWord >> 4) & 1;
@@ -261,13 +242,6 @@ void RawQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
       PatternMultiplicity(*board, multHitB, multHitNB);
     }
-  }
-
-  int nBC = 0;
-  for (auto const& OS : BCOrbitCounts) {
-    nBC++;
-    auto& OrbitCounts = OS.second;
-    mRawBCCounts->Fill(OS.first, OrbitCounts[1]);
   }
 
   // mChecker.clear();
