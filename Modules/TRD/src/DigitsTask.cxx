@@ -5,7 +5,6 @@
 #include <TLine.h>
 #include <TH1F.h>
 #include <TH2F.h>
-#include <TLine.h>
 #include <TProfile.h>
 #include <TProfile2D.h>
 #include <TStopwatch.h>
@@ -126,6 +125,9 @@ void DigitsTask::buildHistograms()
   getObjectsManager()->startPublishing(mDigitHCID.get());
   mDigitsPerEvent.reset(new TH1F("digitsperevent", "Digits per Event", 10000, 0, 10000));
   getObjectsManager()->startPublishing(mDigitsPerEvent.get());
+
+  mDigitsSizevsTrackletSize.reset(new TH2F("digitsvstracklets", "Tracklets Count vs Digits Count; Number of Tracklets;Number Of Digits", 20000, 0, 20000,20000,0,20000));
+  getObjectsManager()->startPublishing(mDigitsSizevsTrackletSize.get());
 
   mClsAmpCh.reset(new TH1F("Cluster/ClsAmpCh", "Reconstructed mean amplitude;Amplitude (ADC);# chambers", 100, 25, 125));
   mClsAmpCh->GetXaxis()->SetTitle("Amplitude (ADC)");
@@ -436,6 +438,7 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
         } else {
           mDigitsPerEvent->Fill(trigger.getNumberOfDigits());
         }
+        mDigitsSizevsTrackletSize->Fill(trigger.getNumberOfTracklets(), trigger.getNumberOfDigits());
     int tbmax = 0;
     int tbhi = 0;
     int tblo = 0;
