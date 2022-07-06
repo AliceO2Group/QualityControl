@@ -83,6 +83,15 @@ void PhysicsTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info, Support) << "initialize PhysicsTaskDigits" << AliceO2::InfoLogger::InfoLogger::endm;
 
+  // flag to enable on-cycle plots
+  mOnCycle = false;
+  if (auto param = mCustomParameters.find("OnCycle"); param != mCustomParameters.end()) {
+    if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
+      mOnCycle = true;
+    }
+  }
+
+  // flag to enable extra disagnostics plots; it also enables on-cycle plots
   mDiagnostic = false;
   if (auto param = mCustomParameters.find("Diagnostic"); param != mCustomParameters.end()) {
     if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
@@ -116,7 +125,7 @@ void PhysicsTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   publishObject(mHistogramMeanOccupancyPerDE, "hist", false, false);
 
   mHistogramMeanOccupancyOnCyclePerDE = std::make_shared<TH1F>("MeanOccupancyOnCycle", "Mean Occupancy vs DE, last cycle", getDEindexMax() + 1, 0, getDEindexMax() + 1);
-  publishObject(mHistogramMeanOccupancyOnCyclePerDE, "hist", false, false);
+  publishObject(mHistogramMeanOccupancyOnCyclePerDE, "hist", false, !mOnCycle);
 
   // Histograms in global detector coordinates
   mHistogramOccupancyST12 = std::make_shared<GlobalHistogramRatio>("Occupancy_ST12", "ST12 Occupancy", 0);
@@ -127,18 +136,18 @@ void PhysicsTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
 
   mHistogramOccupancyPrevCycleST12 = std::make_shared<GlobalHistogramRatio>("OccupancyPrevCycle_ST12", "ST12 Occupancy, last cycle", 0);
   mHistogramOccupancyOnCycleST12 = std::make_shared<GlobalHistogramRatio>("OccupancyOnCycle_ST12", "ST12 Occupancy on cycle", 0);
-  publishObject(mHistogramOccupancyOnCycleST12->mHistOccupancy, "colz", false, false);
+  publishObject(mHistogramOccupancyOnCycleST12->mHistOccupancy, "colz", false, !mOnCycle);
 
   mHistogramOccupancyPrevCycleST345 = std::make_shared<GlobalHistogramRatio>("OccupancyPrevCycle_ST345", "ST345 Occupancy, last cycle", 1);
   mHistogramOccupancyOnCycleST345 = std::make_shared<GlobalHistogramRatio>("OccupancyOnCycle_ST345", "ST345 Occupancy on cycle", 1);
-  publishObject(mHistogramOccupancyOnCycleST345->mHistOccupancy, "colz", false, false);
+  publishObject(mHistogramOccupancyOnCycleST345->mHistOccupancy, "colz", false, !mOnCycle);
 
   mHistogramDigitsOrbitInTFDE = std::make_shared<TH2F>("DigitOrbitInTFDE", "Digit orbits vs DE", getDEindexMax(), 0, getDEindexMax(), 768, -384, 384);
   publishObject(mHistogramDigitsOrbitInTFDE, "colz", false, false);
 
   mHistogramDigitsOrbitInTFDEPrevCycle = std::make_shared<TH2F>("DigitOrbitInTFDEPrevCycle", "Digit orbits vs DE", getDEindexMax(), 0, getDEindexMax(), 768, -384, 384);
   mHistogramDigitsOrbitInTFDEOnCycle = std::make_shared<TH2F>("DigitOrbitInTFDEOnCycle", "Digit orbits vs DE, last cycle", getDEindexMax(), 0, getDEindexMax(), 768, -384, 384);
-  publishObject(mHistogramDigitsOrbitInTFDEOnCycle, "colz", false, false);
+  publishObject(mHistogramDigitsOrbitInTFDEOnCycle, "colz", false, !mOnCycle);
 
   mHistogramDigitsOrbitInTF = std::make_shared<TH2F>("Expert/DigitOrbitInTF", "Digit orbits vs DS Id", nElecXbins, 0, nElecXbins, 768, -384, 384);
   publishObject(mHistogramDigitsOrbitInTF, "colz", false, false);

@@ -96,7 +96,8 @@ class PhysicsTaskDigits /*final*/ : public TaskInterface // todo add back the "f
   static constexpr int sMaxLinkId = 12;
   static constexpr int sMaxDsId = 40;
 
-  bool mDiagnostic{ false };
+  bool mOnCycle{ false };    // publish plots from last processed cycle
+  bool mDiagnostic{ false }; // publish extra diagnostics plots
 
   o2::mch::raw::Elec2DetMapper mElec2DetMapper;
   o2::mch::raw::Det2ElecMapper mDet2ElecMapper;
