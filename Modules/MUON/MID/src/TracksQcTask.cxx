@@ -493,11 +493,7 @@ void TracksQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       globBendEff = float(multTracksBend44) / float(multTracksTot);
       globNBendEff = float(multTracksNBend44) / float(multTracksTot);
       if (multTracksBend44 > 0) {
-        /*	mTrackRatio44->SetBinContent(2, float(multTracksBend44) / float(multTracksBend44 + multTraksB34MT11));
-        mTrackRatio44->SetBinContent(3, float(multTracksBend44) / float(multTracksBend44 + multTraksB34MT12));
-        mTrackRatio44->SetBinContent(4, float(multTracksBend44) / float(multTracksBend44 + multTraksB34MT21));
-        mTrackRatio44->SetBinContent(5, float(multTracksBend44) / float(multTracksBend44 + multTraksB34MT22));
-      */ mTrackRatio44->Fill(1, float(multTracksBend44) / float(multTracksBend44 + multTraksB34MT11));
+        mTrackRatio44->Fill(1, float(multTracksBend44) / float(multTracksBend44 + multTraksB34MT11));
         mTrackRatio44->Fill(2, float(multTracksBend44) / float(multTracksBend44 + multTraksB34MT12));
         mTrackRatio44->Fill(3, float(multTracksBend44) / float(multTracksBend44 + multTraksB34MT21));
         mTrackRatio44->Fill(4, float(multTracksBend44) / float(multTracksBend44 + multTraksB34MT22));
@@ -507,11 +503,7 @@ void TracksQcTask::monitorData(o2::framework::ProcessingContext& ctx)
         mTrackRatio44->Fill(6, float(multTracksNBend44) / float(multTracksNBend44 + multTraksNB34MT12));
         mTrackRatio44->Fill(7, float(multTracksNBend44) / float(multTracksNBend44 + multTraksNB34MT21));
         mTrackRatio44->Fill(8, float(multTracksNBend44) / float(multTracksNBend44 + multTraksNB34MT22));
-  /*	mTrackRatio44->SetBinContent(6, float(multTracksNBend44) / float(multTracksNBend44 + multTraksNB34MT11));
-	mTrackRatio44->SetBinContent(7, float(multTracksNBend44) / float(multTracksNBend44 + multTraksNB34MT12));
-	mTrackRatio44->SetBinContent(8, float(multTracksNBend44) / float(multTracksNBend44 + multTraksNB34MT21));
-	mTrackRatio44->SetBinContent(9, float(multTracksNBend44) / float(multTracksNBend44 + multTraksNB34MT22));
-	*/      }
+      }
     }
   } //  ROFRecords //
 }
