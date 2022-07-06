@@ -94,7 +94,7 @@ void TracksTask::createTrackHistos()
     maxTracksPerTF = std::stof(param->second);
   }
 
-  mNofTracksPerTF = createHisto<TH1F>("TracksPerTF", "Number of tracks per TimeFrame;Number of tracks per TF", maxTracksPerTF, 0, maxTracksPerTF - 1, true, "logy");
+  mNofTracksPerTF = createHisto<TH1F>("TracksPerTF", "Number of tracks per TimeFrame;Number of tracks per TF", maxTracksPerTF, 0, maxTracksPerTF, true, "logy");
 
   mTrackDCA = createHisto<TH1F>("TrackDCA", "Track DCA;DCA (cm)", 500, 0, 500);
   mTrackPDCA = createHisto<TH1F>("TrackPDCA", "Track p#timesDCA;p#timesDCA (GeVcm/c)", 5000, 0, 5000);
@@ -116,7 +116,7 @@ void TracksTask::initialize(o2::framework::InitContext& /*ic*/)
   ILOG(Info, Support) << "initialize TracksTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   if (!o2::base::GeometryManager::isGeometryLoaded()) {
-    TaskInterface::retrieveConditionAny<TObject*>("GLO/Config/Geometry");
+    TaskInterface::retrieveConditionAny<TObject>("GLO/Config/Geometry");
   }
 
   createTrackHistos();
@@ -232,7 +232,7 @@ void TracksTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
   }
 
-  decltype(tracks.size()) nok;
+  decltype(tracks.size()) nok{ 0 };
 
   for (const auto& track : tracks) {
     bool ok = fillTrackHistos(track, clusters);
@@ -245,7 +245,12 @@ void TracksTask::monitorData(o2::framework::ProcessingContext& ctx)
     ILOG(Error, Support) << "Could only extrapolate " << nok << " tracks over " << tracks.size() << ENDM;
   }
 
-  fillTrackPairHistos(tracks);
+  for (const auto& rof : rofs) {
+    if (rof.getNEntries() > 0) {
+      auto rtracks = tracks.subspan(rof.getFirstIdx(), rof.getNEntries());
+      fillTrackPairHistos(rtracks);
+    }
+  }
 }
 
 void TracksTask::fillTrackPairHistos(gsl::span<const o2::mch::TrackMCH> tracks)
