@@ -66,25 +66,25 @@ void TrackletsTask::drawTrdLayersGrid(TH2F* hist)
   for (int i = 0; i < 5; ++i) {
     switch (i) {
       case 0:
-        line = new TLine(15.5, 0, 15.5, 144);
+        line = new TLine(15.5, 0, 15.5, 75.5);
         hist->GetListOfFunctions()->Add(line);
         line->SetLineStyle(kDashed);
         line->SetLineColor(kBlack);
         break;
       case 1:
-        line = new TLine(31.5, 0, 31.5, 144);
+        line = new TLine(31.5, 0, 31.5, 75.5);
         hist->GetListOfFunctions()->Add(line);
         line->SetLineStyle(kDashed);
         line->SetLineColor(kBlack);
         break;
       case 2:
-        line = new TLine(43.5, 0, 43.5, 144);
+        line = new TLine(43.5, 0, 43.5, 75.5);
         hist->GetListOfFunctions()->Add(line);
         line->SetLineStyle(kDashed);
         line->SetLineColor(kBlack);
         break;
       case 3:
-        line = new TLine(59.5, 0, 59.5, 144);
+        line = new TLine(59.5, 0, 59.5, 75.5);
         hist->GetListOfFunctions()->Add(line);
         line->SetLineStyle(kDashed);
         line->SetLineColor(kBlack);
@@ -93,7 +93,7 @@ void TrackletsTask::drawTrdLayersGrid(TH2F* hist)
   }
   for (int iSec = 1; iSec < 18; ++iSec) {
     float yPos = iSec * 8 - 0.5;
-    line = new TLine(0, yPos, 76, yPos);
+    line = new TLine(-0.5, yPos, 143.5, yPos);
     line->SetLineStyle(kDashed);
     line->SetLineColor(kBlack);
     hist->GetListOfFunctions()->Add(line);
@@ -115,16 +115,13 @@ void TrackletsTask::retrieveCCDBSettings()
   if (mNoiseMap == nullptr) {
     ILOG(Info, Support) << "mNoiseMap is null, no noisy mcm reduction" << ENDM;
   }
-  /* mChamberStatus = mgr.get<o2::trd::HalfChamberStatusQC>("/TRD/Calib/HalfChamberStatusQC");
+  mChamberStatus = mgr.get<o2::trd::HalfChamberStatusQC>("/TRD/Calib/HalfChamberStatusQC");
   if (mChamberStatus == nullptr) {
     ILOG(Info, Support) << "mChamberStatus is null, no chamber status to display" << ENDM;
   }
-  else{
-   fillTrdMaskHistsPerLayer();
-  }
-  NB This is commented out as its faililng to find HalfChamberStatusQC in ccdb, not sure why and its only needed to plot the mask.
-  Leaving code in for now.
-*/
+  //j  else{
+  //   drawHashedOnHistsPerLayer();
+  //  }
 }
 
 void TrackletsTask::buildHistograms()
@@ -170,10 +167,49 @@ void TrackletsTask::buildHistograms()
   getObjectsManager()->startPublishing(mTrackletPositionRawn.get());
   mTrackletsPerEventn.reset(new TH1F("trackletspereventn", "Number of Tracklets per event noise in;Tracklets in Events;Counts", 25000, 0, 25000));
   getObjectsManager()->startPublishing(mTrackletsPerEventn.get());
+  mTrackletsPerTimeFrame.reset(new TH1F("trackletspertimeframe", "Number of Tracklets per timeframe;Tracklets in TimeFrame;Counts", 25000, 0, 25000));
+  getObjectsManager()->startPublishing(mTrackletsPerTimeFrame.get());
+  mTrackletsPerTimeFrameCycled.reset(new TH1F("trackletspertimeframecycled", "Number of Tracklets per timeframe, this cycle;Tracklets in TimeFrame;Counts", 25000, 0, 25000));
+  getObjectsManager()->startPublishing(mTrackletsPerTimeFrameCycled.get());
 
+  buildTrackletLayers();
+}
+
+void TrackletsTask::drawHashOnLayers(int layer, int hcid, int rowstart, int rowend)
+{
+  //instead of using overlays, draw a simple box in red with a cross on it.
+
+  std::pair<float, float> topright, bottomleft; //coordinates of box
+  TLine* boxlines[9];
+  int det = hcid / 2;
+  int side = hcid % 2;
+  int sec = hcid / 60;
+  bottomleft.first = rowstart; // - 0.5;
+  bottomleft.second = (sec * 2 + side) * 4 - 0.5;
+  topright.first = rowend - 0.5;
+  topright.second = (sec * 2 + side) * 4 + 4 - 0.5;
+
+  boxlines[0] = new TLine(bottomleft.first, bottomleft.second, topright.first, bottomleft.second);                                                                                         //bottom
+  boxlines[1] = new TLine(bottomleft.first, topright.second, topright.first, topright.second);                                                                                             // top
+  boxlines[2] = new TLine(bottomleft.first, bottomleft.second, bottomleft.first, topright.second);                                                                                         // left
+  boxlines[3] = new TLine(topright.first, bottomleft.second, topright.first, topright.second);                                                                                             // right
+  boxlines[4] = new TLine(bottomleft.first, topright.second - (topright.second - bottomleft.second) / 2, topright.first, topright.second - (topright.second - bottomleft.second) / 2);     //horizontal middle
+  boxlines[5] = new TLine(topright.first, bottomleft.second, bottomleft.first, topright.second);                                                                                           //backslash
+  boxlines[6] = new TLine(bottomleft.first, bottomleft.second, topright.first, topright.second);                                                                                           //forwardslash
+  boxlines[7] = new TLine(bottomleft.first + (topright.first - bottomleft.first) / 2, bottomleft.second, bottomleft.first + (topright.first - bottomleft.first) / 2, topright.second);     //vertical middle
+  boxlines[8] = new TLine(bottomleft.first, bottomleft.second + (topright.second - bottomleft.second) / 2, topright.first, bottomleft.second + (topright.second - bottomleft.second) / 2); //bottom
+  for (int line = 0; line < 9; ++line) {
+    boxlines[line]->SetLineColor(kRed);
+    mLayers[layer]->GetListOfFunctions()->Add(boxlines[line]);
+  }
+}
+
+void TrackletsTask::buildTrackletLayers()
+{
   for (int iLayer = 0; iLayer < 6; ++iLayer) {
-    mLayers.push_back(new TH2F(Form("layer%i", iLayer), Form("Tracklet count per MCM in layer %i;stack;sector", iLayer), 76, -0.5, 75.5, 144, -0.5, 143.5));
-    auto xax = mLayers.back()->GetXaxis();
+    mLayers[iLayer].reset(new TH2F(Form("TrackletsPerLayer/layer%i", iLayer), Form("Tracklet count per mcm in layer %i;stack;sector", iLayer), 76, -10.5, 75.5, 144, -10.5, 143.5));
+
+    auto xax = mLayers[iLayer].get()->GetXaxis();
     xax->SetBinLabel(8, "0");
     xax->SetBinLabel(24, "1");
     xax->SetBinLabel(38, "2");
@@ -183,83 +219,72 @@ void TrackletsTask::buildHistograms()
     xax->SetTickSize(0.01);
     xax->SetLabelSize(0.045);
     xax->SetLabelOffset(0.01);
-    xax->SetTitleOffset(-1);
-    auto yax = mLayers.back()->GetYaxis();
+    auto yax = mLayers[iLayer].get()->GetYaxis();
     for (int iSec = 0; iSec < 18; ++iSec) {
       auto lbl = std::to_string(iSec);
       yax->SetBinLabel(iSec * 8 + 4, lbl.c_str());
     }
-    yax->SetTicks("-");
+    yax->SetTicks("");
     yax->SetTickSize(0.01);
     yax->SetLabelSize(0.045);
     yax->SetLabelOffset(0.01);
-    yax->SetTitleOffset(1.4);
-    mLayers.back()->SetStats(0);
-    getObjectsManager()->startPublishing(mLayers.back());
-    getObjectsManager()->setDisplayHint(mLayers.back(), "logz");
-    drawTrdLayersGrid(mLayers.back());
+    mLayers[iLayer].get()->SetStats(0);
+
+    drawTrdLayersGrid(mLayers[iLayer].get());
+    drawHashedOnHistsPerLayer(iLayer); //drawHashOnLayers(iLayer,1);
+
+    getObjectsManager()->startPublishing(mLayers[iLayer].get());
+    getObjectsManager()->setDefaultDrawOptions(mLayers[iLayer]->GetName(), "COLZ");
+    getObjectsManager()->setDisplayHint(mLayers[iLayer].get(), "logz");
   }
 }
 
-void TrackletsTask::fillTrdMaskHistsPerLayer()
+void TrackletsTask::drawHashedOnHistsPerLayer(int iLayer)
 {
-  for (int iSec = 0; iSec < 18; ++iSec) {
-    for (int iStack = 0; iStack < 5; ++iStack) {
-      int rowMax = (iStack == 2) ? 12 : 16;
-      for (int iLayer = 0; iLayer < 6; ++iLayer) {
-        for (int iCol = 0; iCol < 8; ++iCol) {
-          int side = (iCol < 4) ? 0 : 1;
+  std::bitset<1080> hciddone;
+  hciddone.reset();
+  if (mChamberStatus != nullptr) {
+    for (int iSec = 0; iSec < 18; ++iSec) {
+      for (int iStack = 0; iStack < 5; ++iStack) {
+        int rowMax = (iStack == 2) ? 12 : 16;
+        for (int side = 0; side < 8; ++side) {
           int det = iSec * 30 + iStack * 6 + iLayer;
           int hcid = (side == 0) ? det * 2 : det * 2 + 1;
-          for (int iRow = 0; iRow < rowMax; ++iRow) {
-            int rowGlb = iStack < 3 ? iRow + iStack * 16 : iRow + 44 + (iStack - 3) * 16; // pad row within whole sector
-            int colGlb = iCol + iSec * 8;
-            // bin number 0 is underflow
-            rowGlb += 1;
-            colGlb += 1;
-            if (mChamberStatus->isMasked(hcid)) {
-              mLayersMask[iLayer]->SetBinContent(rowGlb, colGlb, 1);
-            }
+          int rowstart = iStack < 3 ? iStack * 16 : 44 + (iStack - 3) * 16;                 // pad row within whole sector
+          int rowend = iStack < 3 ? rowMax + iStack * 16 : rowMax + 44 + (iStack - 3) * 16; // pad row within whole sector
+          if (mChamberStatus->isMasked(hcid) && (!hciddone.test(hcid))) {
+            drawHashOnLayers(iLayer, hcid, rowstart, rowend);
+            hciddone.set(hcid);
           }
         }
       }
     }
+  } else {
+    ILOG(Info, Support) << " Failed to retrieve ChamberStatus, so it will be blank" << ENDM;
   }
 }
 
-std::vector<TH2F*> TrackletsTask::createTrdMaskHistsPerLayer()
-{
-  std::vector<TH2F*> hMask;
-  for (int iLayer = 0; iLayer < 6; ++iLayer) {
-    hMask.push_back(new TH2F(Form("layer%i_mask", iLayer), "", 76, -0.5, 75.5, 144, -0.5, 143.5));
-    hMask.back()->SetMarkerColor(kRed);
-    hMask.back()->SetMarkerSize(0.9);
-  }
-  return hMask;
-}
-
-void TrackletsTask::buildCanvas()
-{
-
-  mCanvas.reset(new TCanvas("layer0canvas", "tcanvas", 1000, 1000));
-  mCanvas->Clear();
-  mCanvasMembers[0] = mLayers[0];
-  mCanvasMembers[0]->Draw();
-  mCanvasMembers[0]->SetBit(TObject::kCanDelete);
-  mCanvasMembers[1] = mLayersMask[0];
-  mCanvasMembers[1]->Draw("same");
-  mCanvasMembers[1]->SetBit(TObject::kCanDelete);
-  getObjectsManager()->startPublishing(mCanvas.get());
-}
 
 void TrackletsTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info, Support) << "initialize TrackletsTask" << ENDM;
+  if (auto param = mCustomParameters.find("markerstyle"); param != mCustomParameters.end()) {
+    mMarkerStyle = stof(param->second);
+    ILOG(Info, Support) << "configure() : using marketstyle : = " << mMarkerStyle << ENDM;
+  } else {
+    mMarkerStyle = 3; // a plus sign
+    ILOG(Info, Support) << "configure() : using default dritfregionstart = " << mMarkerStyle << ENDM;
+  }
+  if (auto param = mCustomParameters.find("markersize"); param != mCustomParameters.end()) {
+    mMarkerSize = stof(param->second);
+    ILOG(Info, Support) << "configure() : using markersize : = " << mMarkerSize << ENDM;
+  } else {
+    mMarkerSize = 3; // a plus sign
+    ILOG(Info, Support) << "configure() : using default markersize = " << mMarkerSize << ENDM;
+  }
 
-  buildHistograms();
-  createTrdMaskHistsPerLayer();
   retrieveCCDBSettings();
-  //  buildCanvas();
+  buildHistograms();
 }
 
 void TrackletsTask::startOfActivity(Activity& activity)
@@ -283,6 +308,8 @@ void TrackletsTask::monitorData(o2::framework::ProcessingContext& ctx)
       auto digits = ctx.inputs().get<gsl::span<o2::trd::Digit>>("digits");
       auto tracklets = ctx.inputs().get<gsl::span<o2::trd::Tracklet64>>("tracklets");
       auto triggerrecords = ctx.inputs().get<gsl::span<o2::trd::TriggerRecord>>("triggers");
+      mTrackletsPerTimeFrame->Fill(tracklets.size());
+      mTrackletsPerTimeFrameCycled->Fill(tracklets.size());
       for (auto& trigger : triggerrecords) {
         if (trigger.getNumberOfTracklets() == 0) {
           continue; //bail if we have no digits in this trigger
@@ -345,6 +372,8 @@ void TrackletsTask::endOfCycle()
   for (auto& hist : moHCMCM) {
     hist->SetMaximum(max);
   }
+  //reset the TrackletPerTimeCycled
+  mTrackletsPerTimeFrameCycled->Reset();
 }
 
 void TrackletsTask::endOfActivity(Activity& /*activity*/)
@@ -375,6 +404,8 @@ void TrackletsTask::reset()
   mTrackletPositionn.get()->Reset();
   mTrackletPositionRawn.get()->Reset();
   mTrackletsPerEventn.get()->Reset();
+  mTrackletsPerTimeFrame->Reset();
+  mTrackletsPerTimeFrameCycled->Reset();
   for (auto h : mLayers) {
     h->Reset();
   }
