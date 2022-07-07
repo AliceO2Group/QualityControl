@@ -9,7 +9,7 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
-#include "MCH/TracksTask.h"
+#include "MUONCommon/TrackPlotter.h"
 
 #include "CommonConstants/LHCConstants.h"
 #include <DataFormatsMCH/Cluster.h>
@@ -22,11 +22,13 @@
 #include <MCHMappingInterface/Segmentation.h>
 #include <MCHTracking/TrackExtrap.h>
 #include <MCHTracking/TrackParam.h>
-#include <Math/Vector4Dfwd.h>
-#include <TH1F.h>
 #include <Math/Vector4D.h>
+#include <Math/Vector4Dfwd.h>
+#include <ReconstructionDataFormats/TrackMCHMID.h>
+#include <TH1F.h>
 #include <TMath.h>
 #include <gsl/span>
+#include <set>
 
 namespace
 {
@@ -66,16 +68,19 @@ std::array<int, 10> getClustersPerChamber(gsl::span<const o2::mch::Cluster> clus
 
 } // namespace
 
-namespace o2::quality_control_modules::muonchambers
+namespace o2::quality_control_modules::muon
 {
 
-TracksTask::TracksTask()
+TrackPlotter::TrackPlotter(o2::mch::geo::TransformationCreator transformation, int maxTracksPerTF) : mTransformation(transformation)
 {
+  createClusterHistos();
+  createTrackHistos(maxTracksPerTF);
+  createTrackPairHistos();
+  mDet2ElecMapper = o2::mch::raw::createDet2ElecMapper<o2::mch::raw::ElectronicMapperGenerated>();
+  mSolar2FeeLinkMapper = o2::mch::raw::createSolar2FeeLinkMapper<o2::mch::raw::ElectronicMapperGenerated>();
 }
 
-TracksTask::~TracksTask() = default;
-
-void TracksTask::createClusterHistos()
+void TrackPlotter::createClusterHistos()
 {
   mNofClustersPerTrack = createHisto<TH1F>("ClustersPerTrack", "Number of clusters per track;Mean number of clusters per track", 30, 0, 30);
   mNofClustersPerDualSampa = createHisto<TH1F>("ClustersPerDualSampa", "Number of clusters per dual sampa;Number of clusters per DS", 30720, 0, 30719);
@@ -83,16 +88,15 @@ void TracksTask::createClusterHistos()
   mNofClustersPerChamber = createHisto<TProfile>("ClustersPerChamber", "Clusters per chamber;;Number of clusters", 10, 1, 11);
   setXAxisLabels(mNofClustersPerChamber.get());
   mClusterSizePerChamber = createHisto<TProfile>("ClusterSizePerChamber", "Cluster size per chamber;;Mean number of pads per cluster", 10, 1, 11);
+  mClusterBendingSizePerChamber = createHisto<TProfile>("ClusterBendingSizePerChamber", "Cluster size in bending direction (y) per chamber;;Mean number of pads per cluster", 10, 1, 11);
+  mClusterNonBendingSizePerChamber = createHisto<TProfile>("ClusterNonBendingSizePerChamber", "Cluster size in non-bending direction (x) per chamber;;Mean number of pads per cluster", 10, 1, 11);
   setXAxisLabels(mClusterSizePerChamber.get());
+  setXAxisLabels(mClusterBendingSizePerChamber.get());
+  setXAxisLabels(mClusterNonBendingSizePerChamber.get());
 }
 
-void TracksTask::createTrackHistos()
+void TrackPlotter::createTrackHistos(int maxTracksPerTF)
 {
-  double maxTracksPerTF = 400;
-
-  if (auto param = mCustomParameters.find("maxTracksPerTF"); param != mCustomParameters.end()) {
-    maxTracksPerTF = std::stof(param->second);
-  }
 
   mNofTracksPerTF = createHisto<TH1F>("TracksPerTF", "Number of tracks per TimeFrame;Number of tracks per TF", maxTracksPerTF, 0, maxTracksPerTF, true, "logy");
 
@@ -102,60 +106,35 @@ void TracksTask::createTrackHistos()
   mTrackEta = createHisto<TH1F>("TrackEta", "Track #eta;#eta", 200, -4.5, -2);
   mTrackPhi = createHisto<TH1F>("TrackPhi", "Track #phi;#phi (deg)", 360, 0, 360);
   mTrackRAbs = createHisto<TH1F>("TrackRAbs", "Track R_{abs};R_{abs} (cm)", 1000, 0, 100);
-  mTrackBC = createHisto<TH1F>("TrackBC", "Track BC;BC", o2::constants::lhc::LHCMaxBunches, 0, o2::constants::lhc::LHCMaxBunches - 1);
+  mTrackBC = createHisto<TH1F>("TrackBC", "Track BC;BC", o2::constants::lhc::LHCMaxBunches, 0, o2::constants::lhc::LHCMaxBunches);
+  mTrackBCWidth = createHisto<TH1F>("TrackBCWidth", "Track BCWidth;BC Width", 400, 0, 400);
   mTrackChi2OverNDF = createHisto<TH1F>("TrackChi2OverNDF", "Track #chi^{2}/ndf;#chi^{2}/ndf", 500, 0, 50);
 }
 
-void TracksTask::createTrackPairHistos()
+void TrackPlotter::createTrackPairHistos()
 {
   mMinv = createHisto<TH1F>("Minv", "#mu^{+}#mu^{-} invariant mass;M_{#mu^{+}#mu^{-}} (GeV/c^{2})", 300, 0, 6);
 }
 
-void TracksTask::initialize(o2::framework::InitContext& /*ic*/)
-{
-  ILOG(Info, Support) << "initialize TracksTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
-
-  if (!o2::base::GeometryManager::isGeometryLoaded()) {
-    TaskInterface::retrieveConditionAny<TObject>("GLO/Config/Geometry");
-  }
-
-  createTrackHistos();
-  createClusterHistos();
-  createTrackPairHistos();
-
-  mDet2ElecMapper = o2::mch::raw::createDet2ElecMapper<o2::mch::raw::ElectronicMapperGenerated>();
-  mSolar2FeeLinkMapper = o2::mch::raw::createSolar2FeeLinkMapper<o2::mch::raw::ElectronicMapperGenerated>();
-}
-
-int TracksTask::dsbinx(int deid, int dsid) const
+int TrackPlotter::dsbinx(int deid, int dsid) const
 {
   o2::mch::raw::DsDetId det{ deid, dsid };
   auto elec = mDet2ElecMapper(det);
   if (!elec.has_value()) {
-    ILOGE << "mapping is wrong somewhere...";
+    std::cerr << "mapping is wrong somewhere...";
     return -1;
   }
   auto eLinkId = elec->elinkId();
   auto solarId = elec->solarId();
   auto s2f = mSolar2FeeLinkMapper(solarId);
   if (!s2f.has_value()) {
-    ILOGE << "mapping is wrong somewhere...";
+    std::cerr << "mapping is wrong somewhere...";
     return -1;
   }
   auto feeId = s2f->feeId();
   auto linkId = s2f->linkId();
 
   return computeDsBinX(feeId, linkId, eLinkId);
-}
-
-void TracksTask::startOfActivity(Activity& activity)
-{
-  ILOG(Info, Support) << "startOfActivity : " << activity.mId << ENDM;
-}
-
-void TracksTask::startOfCycle()
-{
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
 }
 
 ROOT::Math::PxPyPzMVector getMomentum4D(const o2::mch::TrackParam& trackParam)
@@ -171,19 +150,48 @@ ROOT::Math::PxPyPzMVector getMomentum4D(const o2::mch::TrackMCH& track)
   o2::mch::TrackParam trackParamAtVertex(track.getZ(), track.getParameters());
   double vz = 0.0;
   if (!o2::mch::TrackExtrap::extrapToVertex(trackParamAtVertex, 0.0, 0.0, 0.0, 0.0, 0.0)) {
-    ILOG(Error, Support) << "Track extrap failed" << ENDM;
+    std::cerr << "Track extrap failed\n";
     return { 0, 0, 0, 0 };
   }
   return getMomentum4D(trackParamAtVertex);
 }
 
-void TracksTask::fillClusterHistos(gsl::span<const o2::mch::Cluster> clusters)
+namespace
 {
+struct PadSize {
+  double dx, dy;
+};
+const bool operator<(const PadSize& s1, const PadSize& s2)
+{
+  if (s1.dx == s2.dx) {
+    return s1.dy < s2.dy;
+  }
+  return s1.dx < s2.dx;
+};
+} // namespace
+
+void TrackPlotter::fillClusterHistos(gsl::span<const o2::mch::Cluster> clusters,
+                                     gsl::span<const o2::mch::Digit> digits)
+{
+
+  auto padPosCompare = [](double a, double b) {
+    constexpr double smallestPadSize = 0.21;
+    if (std::fabs(a - b) < smallestPadSize) {
+      return false;
+    }
+    return a < b;
+  };
+
   for (const auto& cluster : clusters) {
     int deId = cluster.getDEId();
-    const o2::mch::mapping::Segmentation& seg = o2::mch::mapping::segmentation(deId);
+    const auto& seg = o2::mch::mapping::segmentation(deId);
     int b, nb;
-    seg.findPadPairByPosition(cluster.getX(), cluster.getY(), b, nb);
+    o2::math_utils::Point3D<double> global{ cluster.getX(),
+                                            cluster.getY(), cluster.getZ() };
+    auto t = mTransformation(deId).Inverse();
+    auto local = t(global);
+
+    seg.findPadPairByPosition(local.X(), local.Y(), b, nb);
     if (b >= 0) {
       int dsId = seg.padDualSampaId(b);
       mNofClustersPerDualSampa->Fill(dsbinx(deId, dsId));
@@ -194,66 +202,27 @@ void TracksTask::fillClusterHistos(gsl::span<const o2::mch::Cluster> clusters)
     }
     int chamberId = cluster.getChamberId();
     mClusterSizePerChamber->Fill(chamberId + 1, cluster.nDigits);
+    std::set<PadSize> padSizes;
+    std::set<double, decltype(padPosCompare)> xpos(padPosCompare);
+    std::set<double, decltype(padPosCompare)> ypos(padPosCompare);
+    for (int dix = cluster.firstDigit; dix < cluster.firstDigit + cluster.nDigits; ++dix) {
+      const auto& digit = digits[dix];
+      auto padid = digit.getPadID();
+      PadSize padSize{ seg.padSizeX(padid),
+                       seg.padSizeY(padid) };
+      padSizes.emplace(padSize);
+      if (seg.isBendingPad(padid)) {
+        ypos.emplace(seg.padPositionY(padid));
+      } else {
+        xpos.emplace(seg.padPositionX(padid));
+      }
+    }
+    mClusterBendingSizePerChamber->Fill(chamberId + 1, ypos.size());
+    mClusterNonBendingSizePerChamber->Fill(chamberId + 1, xpos.size());
   }
 }
 
-bool TracksTask::assertInputs(o2::framework::ProcessingContext& ctx)
-{
-  if (!ctx.inputs().isValid("tracks")) {
-    ILOG(Info, Support) << "no mch tracks available on input" << ENDM;
-    return false;
-  }
-  if (!ctx.inputs().isValid("trackrofs")) {
-    ILOG(Info, Support) << "no mch track rofs available on input" << ENDM;
-    return false;
-  }
-  if (!ctx.inputs().isValid("trackclusters")) {
-    ILOG(Info, Support) << "no mch track clusters available on input" << ENDM;
-    return false;
-  }
-  return true;
-}
-
-void TracksTask::monitorData(o2::framework::ProcessingContext& ctx)
-{
-  if (!assertInputs(ctx)) {
-    return;
-  }
-
-  auto tracks = ctx.inputs().get<gsl::span<o2::mch::TrackMCH>>("tracks");
-  auto rofs = ctx.inputs().get<gsl::span<o2::mch::ROFRecord>>("trackrofs");
-  auto clusters = ctx.inputs().get<gsl::span<o2::mch::Cluster>>("trackclusters");
-
-  mNofTracksPerTF->Fill(tracks.size());
-
-  for (const auto& rof : rofs) {
-    if (rof.getNEntries() > 0) {
-      mTrackBC->Fill(rof.getBCData().bc);
-    }
-  }
-
-  decltype(tracks.size()) nok{ 0 };
-
-  for (const auto& track : tracks) {
-    bool ok = fillTrackHistos(track, clusters);
-    if (ok) {
-      ++nok;
-    }
-  }
-
-  if (nok != tracks.size()) {
-    ILOG(Error, Support) << "Could only extrapolate " << nok << " tracks over " << tracks.size() << ENDM;
-  }
-
-  for (const auto& rof : rofs) {
-    if (rof.getNEntries() > 0) {
-      auto rtracks = tracks.subspan(rof.getFirstIdx(), rof.getNEntries());
-      fillTrackPairHistos(rtracks);
-    }
-  }
-}
-
-void TracksTask::fillTrackPairHistos(gsl::span<const o2::mch::TrackMCH> tracks)
+void TrackPlotter::fillTrackPairHistos(gsl::span<const o2::mch::TrackMCH> tracks)
 {
   if (tracks.size() > 1) {
     for (auto i = 0; i < tracks.size(); i++) {
@@ -270,15 +239,15 @@ void TracksTask::fillTrackPairHistos(gsl::span<const o2::mch::TrackMCH> tracks)
   }
 }
 
-bool TracksTask::fillTrackHistos(const o2::mch::TrackMCH& track,
-                                 gsl::span<const o2::mch::Cluster> clusters)
+bool TrackPlotter::fillTrackHistos(const o2::mch::TrackMCH& track,
+                                   gsl::span<const o2::mch::Cluster> clusters,
+                                   gsl::span<const o2::mch::Digit> digits)
 {
-
   mNofClustersPerTrack->Fill(track.getNClusters());
   mTrackChi2OverNDF->Fill(track.getChi2OverNDF());
 
   const auto trackClusters = clusters.subspan(track.getFirstClusterIdx(), track.getNClusters());
-  fillClusterHistos(trackClusters);
+  fillClusterHistos(trackClusters, digits);
 
   auto clustersPerChamber = getClustersPerChamber(trackClusters);
 
@@ -317,20 +286,85 @@ bool TracksTask::fillTrackHistos(const o2::mch::TrackMCH& track,
 
   return true;
 }
-
-void TracksTask::endOfCycle()
+void TrackPlotter::fillHistograms(gsl::span<const o2::mch::ROFRecord> rofs,
+                                  gsl::span<const o2::mch::TrackMCH> tracks,
+                                  gsl::span<const o2::mch::Cluster> clusters,
+                                  gsl::span<const o2::mch::Digit> digits,
+                                  gsl::span<const o2::dataformats::TrackMCHMID> muonTracks)
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+
+  if (muonTracks.size() == 0) {
+    return;
+  }
+
+  std::vector<bool> matchedTracks;
+  matchedTracks.resize(tracks.size(), false);
+
+  for (const auto& mt : muonTracks) {
+    auto ix = mt.getMCHRef().getIndex();
+    matchedTracks[ix] = true;
+  }
+  fill(rofs, tracks, clusters, digits,
+       matchedTracks);
 }
 
-void TracksTask::endOfActivity(Activity& /*activity*/)
+void TrackPlotter::fillHistograms(gsl::span<const o2::mch::ROFRecord> rofs,
+                                  gsl::span<const o2::mch::TrackMCH> tracks,
+                                  gsl::span<const o2::mch::Cluster> clusters,
+                                  gsl::span<const o2::mch::Digit> digits)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  std::vector<bool> selectedTracks;
+  selectedTracks.resize(tracks.size(), true);
+  fill(rofs, tracks, clusters, digits, selectedTracks);
 }
 
-void TracksTask::reset()
+void TrackPlotter::fill(gsl::span<const o2::mch::ROFRecord> rofs,
+                        gsl::span<const o2::mch::TrackMCH> tracks,
+                        gsl::span<const o2::mch::Cluster> clusters,
+                        gsl::span<const o2::mch::Digit> digits,
+                        const std::vector<bool>& selectedTracks)
 {
-  ILOG(Warning, Support) << "resetting the histograms is not implemented" << ENDM;
+
+  auto ntracks = std::count_if(selectedTracks.begin(), selectedTracks.end(),
+                               [](bool v) { return v; });
+
+  mNofTracksPerTF->Fill(ntracks);
+
+  for (const auto& rof : rofs) {
+    for (auto ix = rof.getFirstIdx(); ix <= rof.getLastIdx(); ix++) {
+      if (selectedTracks[ix]) {
+        mTrackBC->Fill(rof.getBCData().bc);
+        mTrackBCWidth->Fill(rof.getBCWidth());
+      }
+    }
+  }
+
+  decltype(tracks.size()) nok{ 0 };
+
+  for (auto ix = 0; ix < tracks.size(); ix++) {
+    if (selectedTracks[ix]) {
+      bool ok = fillTrackHistos(tracks[ix], clusters, digits);
+      if (ok) {
+        ++nok;
+      }
+    }
+  }
+
+  if (nok != ntracks) {
+    std::cerr << "Could only extrapolate " << nok << " tracks over " << ntracks << "\n";
+  }
+
+  for (const auto& rof : rofs) {
+    if (rof.getNEntries() > 0) {
+      std::vector<o2::mch::TrackMCH> rtracks;
+      for (auto ix = rof.getFirstIdx(); ix <= rof.getLastIdx(); ix++) {
+        if (selectedTracks[ix]) {
+          rtracks.emplace_back(tracks[ix]);
+        }
+      }
+      fillTrackPairHistos(rtracks);
+    }
+  }
 }
 
-} // namespace o2::quality_control_modules::muonchambers
+} // namespace o2::quality_control_modules::muon

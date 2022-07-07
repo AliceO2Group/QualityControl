@@ -5,5 +5,8 @@
 
 #pragma link C++ class o2::quality_control_modules::muon::MergeableTH1Ratio + ;
 #pragma link C++ class o2::quality_control_modules::muon::MergeableTH2Ratio + ;
+#pragma link C++ class o2::quality_control_modules::muon::TrackPlotter + ;
+#pragma link C++ class o2::quality_control_modules::muon::TracksTask + ;
+#pragma link C++ class o2::quality_control_modules::muon::TracksCheck + ;
 
 #endif
