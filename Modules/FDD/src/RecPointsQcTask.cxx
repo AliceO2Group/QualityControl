@@ -90,7 +90,7 @@ void RecPointsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   mHistTime2Ch = std::make_unique<TH2F>("TimePerChannel", "Time vs Channel;Channel;Time [ns]", NCHANNELS, 0, NCHANNELS, 420, -10.50, 10.50);
   mHistTime2Ch->SetOption("colz");
-  mHistAmp2Ch = std::make_unique<TH2F>("AmpPerChannel", "Amplitude vs Channel;Channel;Amp [#ADC channels]", NCHANNELS, 0, NCHANNELS, 2200,-100, 4100);
+  mHistAmp2Ch = std::make_unique<TH2F>("AmpPerChannel", "Amplitude vs Channel;Channel;Amp [#ADC channels]", NCHANNELS, 0, NCHANNELS, 2200, -100, 4100);
   mHistAmp2Ch->SetOption("colz");
   mHistCollTimeA = std::make_unique<TH1F>("CollTimeA", "T0A;Time [ns]", 4100, -20.5, 20.5);
   mHistCollTimeC = std::make_unique<TH1F>("CollTimeC", "T0C;Time [ns]", 4100, -20.5, 20.5);
@@ -124,7 +124,6 @@ void RecPointsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mHistBCTCM.get());
   getObjectsManager()->startPublishing(mHistBCorA.get());
   getObjectsManager()->startPublishing(mHistBCorC.get());
-
 
   for (const auto& chID : mSetAllowedChIDs) {
     auto pairHistAmpVsTime = mMapHistAmpVsTime.insert({ chID, new TH2F(Form("Amp_vs_time_channel%i", chID), Form("Amplitude vs time, channel %i;Amp;Time (ns)", chID), 2200, -100, 4100, 410, -20.5, 20.5) });
@@ -178,21 +177,21 @@ void RecPointsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       isTCM = false;
     }
     o2::fdd::Triggers triggersignals = recpoint.getTrigger();
-    //bool vertexTrigger = triggersignals.getVertex();
+    // bool vertexTrigger = triggersignals.getVertex();
     auto channels = recpoint.getBunchChannelData(chan);
     mHistBC->Fill(recpoint.getInteractionRecord().bc);
 
     if (isTCM) {
       mHistBCTCM->Fill(recpoint.getInteractionRecord().bc);
       if (triggersignals.getOrA()) {
-        mHistCollTimeA->Fill(static_cast<Float_t>(recpoint.getCollisionTimeA() * 1.e-3));//time ps-->ns
+        mHistCollTimeA->Fill(static_cast<Float_t>(recpoint.getCollisionTimeA() * 1.e-3)); // time ps-->ns
         mHistBCorA->Fill(recpoint.getInteractionRecord().bc);
       }
       if (triggersignals.getOrC()) {
-        mHistCollTimeC->Fill(static_cast<Float_t>(recpoint.getCollisionTimeC() * 1.e-3));//time ps-->ns
+        mHistCollTimeC->Fill(static_cast<Float_t>(recpoint.getCollisionTimeC() * 1.e-3)); // time ps-->ns
         mHistBCorC->Fill(recpoint.getInteractionRecord().bc);
       }
-    }/// TCM
+    } /// TCM
     for (const auto& chData : channels) {
       mHistTime2Ch->Fill(static_cast<Double_t>(chData.mPMNumber), static_cast<Double_t>(chData.mTime));
       mHistAmp2Ch->Fill(static_cast<Double_t>(chData.mPMNumber), static_cast<Double_t>(chData.mChargeADC));
