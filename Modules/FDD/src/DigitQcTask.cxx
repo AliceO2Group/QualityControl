@@ -155,11 +155,6 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     const auto chIDs = param->second;
     const std::string del = ",";
     vecChannelIDs = parseParameters<unsigned int>(chIDs, del);
-    /*} else {
-      for (unsigned int iCh = 0; iCh < sNCHANNELS_PM; iCh++) {
-        vecChannelIDs.push_back(iCh);
-        std::cout << " i am here " << std::endl;
-      }*/
   }
   for (const auto& entry : vecChannelIDs) {
     mSetAllowedChIDs.insert(entry);
@@ -335,16 +330,11 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       curTfTimeMax = mTimeCurNS;
     }
 
-    /* if (isFirst == true) {
-       //firstOrbit = digit.getIntRecord().orbit;
-       isFirst = false;
-     }
-     */
-    if (digit.mTriggers.getAmplA() == fit::Triggers::DEFAULT_AMP && digit.mTriggers.getAmplC() == fit::Triggers::DEFAULT_AMP &&
-        digit.mTriggers.getTimeA() == fit::Triggers::DEFAULT_TIME &&
+    if (digit.mTriggers.getTimeA() == fit::Triggers::DEFAULT_TIME &&
         digit.mTriggers.getTimeC() == fit::Triggers::DEFAULT_TIME) {
       isTCM = false;
     }
+
     mHistOrbit2BC->Fill(digit.getIntRecord().orbit % sOrbitsPerTF, digit.getIntRecord().bc);
     mHistBC->Fill(digit.getIntRecord().bc);
 
@@ -354,8 +344,8 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       mHistNchC->Fill(digit.mTriggers.getNChanC());
       mHistSumAmpA->Fill(digit.mTriggers.getAmplA());
       mHistSumAmpC->Fill(digit.mTriggers.getAmplC());
-      mHistAverageTimeA->Fill(digit.mTriggers.getTimeA());
-      mHistAverageTimeC->Fill(digit.mTriggers.getTimeC());
+      mHistAverageTimeA->Fill(digit.mTriggers.getTimeA() * mCFDChannel2NS);
+      mHistAverageTimeC->Fill(digit.mTriggers.getTimeC() * mCFDChannel2NS);
       for (const auto& entry : mMapDigitTrgNames) {
         if (helper::digit::getTriggerBits(digit) & (1 << entry.first)) {
           mHistTriggers->Fill(static_cast<Double_t>(entry.first));
