@@ -24,6 +24,7 @@ TrendingTaskConfig::TrendingTaskConfig(std::string name, const boost::property_t
   : PostProcessingConfig(name, config)
 {
   producePlotsOnUpdate = config.get<bool>("qc.postprocessing." + name + ".producePlotsOnUpdate", true);
+  resumeTrend = config.get<bool>("qc.postprocessing." + name + ".resumeTrend", false);
   for (const auto& plotConfig : config.get_child("qc.postprocessing." + name + ".plots")) {
     plots.push_back({ plotConfig.second.get<std::string>("name"),
                       plotConfig.second.get<std::string>("title", ""),

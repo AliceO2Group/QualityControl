@@ -67,9 +67,6 @@ void DataCompressionQcTask::initialize(o2::framework::InitContext&)
     mEntropyCompressionCanvas = std::make_unique<TCanvas>("c_entropy_compression", "Entropy Compression Factor", 1000, 1000);
     mCompressionCanvas = std::make_unique<TCanvas>("c_compression", "Compression Factor", 1000, 1000);
 
-    std::cout << "================================================================================" << std::endl;
-    std::cout << "number of active detectors: " << mCompressionHists.size() << std::endl;
-
     mEntropyCompressionCanvas->DivideSquare(mCompressionHists.size());
     mCompressionCanvas->DivideSquare(mCompressionHists.size());
 
@@ -98,22 +95,16 @@ void DataCompressionQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   // loop over active detectors and process the data
   for (const auto& det : mCompressionHists) {
-    std::cout << "================================================================================" << std::endl;
-    std::cout << "getting data from " << det.first << "..." << std::endl;
     auto ctfEncRep = ctx.inputs().get<o2::ctf::CTFIOSize>(fmt::format("ctfEncRep{}", det.first).data());
     processMessage(ctfEncRep, det.first);
   }
 
   if (!mIsMergeable) {
     // draw histograms to the canvases
-    std::cout << "================================================================================" << std::endl;
-    std::cout << "number of active detectors: " << mCompressionHists.size() << std::endl;
     size_t padIter = 1;
     for (const auto& det : mCompressionHists) {
-      std::cout << "drawing " << det.first << " to pad " << padIter << " on compression canvas" << std::endl;
       mEntropyCompressionCanvas->cd(padIter);
       det.second[0]->Draw();
-      std::cout << "drawing " << det.first << " to pad " << padIter << " on entropy compression canvas" << std::endl;
       mCompressionCanvas->cd(padIter);
       det.second[1]->Draw();
       padIter++;

@@ -76,8 +76,8 @@ class DetectorHistogram
 class GlobalHistogram
 {
  public:
-  GlobalHistogram(std::string name, std::string title, int id);
-  GlobalHistogram(std::string name, std::string title, int id, TH2F* hist);
+  GlobalHistogram(std::string name, std::string title, int id, float rescale);
+  GlobalHistogram(std::string name, std::string title, int id, float rescale, TH2F* hist);
   ~GlobalHistogram();
 
   void init();
@@ -105,6 +105,7 @@ class GlobalHistogram
   TString mName;
   TString mTitle;
   int mId;
+  float mScaleFactor;
   std::pair<TH2F*, bool> mHist;
 };
 

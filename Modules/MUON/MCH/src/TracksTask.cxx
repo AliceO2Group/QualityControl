@@ -116,7 +116,7 @@ void TracksTask::initialize(o2::framework::InitContext& /*ic*/)
   ILOG(Info, Support) << "initialize TracksTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   if (!o2::base::GeometryManager::isGeometryLoaded()) {
-    TaskInterface::retrieveCondition("GLO/Config/Geometry");
+    TaskInterface::retrieveConditionAny<TObject*>("GLO/Config/Geometry");
   }
 
   createTrackHistos();
@@ -181,7 +181,7 @@ void TracksTask::fillClusterHistos(gsl::span<const o2::mch::Cluster> clusters)
 {
   for (const auto& cluster : clusters) {
     int deId = cluster.getDEId();
-    o2::mch::mapping::Segmentation seg(deId);
+    const o2::mch::mapping::Segmentation& seg = o2::mch::mapping::segmentation(deId);
     int b, nb;
     seg.findPadPairByPosition(cluster.getX(), cluster.getY(), b, nb);
     if (b >= 0) {

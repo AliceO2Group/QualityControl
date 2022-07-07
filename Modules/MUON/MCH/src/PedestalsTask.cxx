@@ -70,12 +70,13 @@ void PedestalsTask::initialize(o2::framework::InitContext& /*ctx*/)
   publishObject(mHistogramNoise.get(), "colz", false);
 
   std::string stname[2]{ "ST12", "ST345" };
+  float scaleFactors[2]{ 5, 10 };
   for (int i = 0; i < 2; i++) {
-    mHistogramPedestalsMCH[i] = std::make_shared<GlobalHistogram>(fmt::format("Pedestals_{}", stname[i]), "Pedestals", i);
+    mHistogramPedestalsMCH[i] = std::make_shared<GlobalHistogram>(fmt::format("Pedestals_{}", stname[i]), "Pedestals", i, scaleFactors[i]);
     mHistogramPedestalsMCH[i]->init();
     publishObject(mHistogramPedestalsMCH[i]->getHist(), "colz", false);
 
-    mHistogramNoiseMCH[i] = std::make_shared<GlobalHistogram>(fmt::format("Noise_{}", stname[i]), "Noise", i);
+    mHistogramNoiseMCH[i] = std::make_shared<GlobalHistogram>(fmt::format("Noise_{}", stname[i]), "Noise", i, scaleFactors[i]);
     mHistogramNoiseMCH[i]->init();
     publishObject(mHistogramNoiseMCH[i]->getHist(), "colz", false);
   }

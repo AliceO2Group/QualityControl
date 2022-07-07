@@ -53,9 +53,9 @@ class TrackletsTask final : public TaskInterface
   void retrieveCCDBSettings();
   void drawLinesMCM(TH2F* histo);
   void drawTrdLayersGrid(TH2F* hist);
-  void fillTrdMaskHistsPerLayer();
-  std::vector<TH2F*> createTrdMaskHistsPerLayer();
-  void buildCanvas();
+  void buildTrackletLayers();
+  void drawHashedOnHistsPerLayer(int layer); //, int hcid, int rowstart, int rowend);
+  void drawHashOnLayers(int layer, int hcid, int rowstart, int rowend);
 
  private:
   long int mTimestamp;
@@ -73,13 +73,17 @@ class TrackletsTask final : public TaskInterface
   std::shared_ptr<TH1F> mTrackletPositionn = nullptr;
   std::shared_ptr<TH1F> mTrackletPositionRawn = nullptr;
   std::shared_ptr<TH1F> mTrackletsPerEventn = nullptr;
+  std::shared_ptr<TH1F> mTrackletsPerTimeFrame = nullptr;
+  std::shared_ptr<TH1F> mTrackletsPerTimeFrameCycled = nullptr;
   std::shared_ptr<TCanvas> mCanvas = nullptr;
-  std::vector<TH2F*> mLayers;
+  std::array<std::shared_ptr<TH2F>, 6> mLayers;
 
+  int mMarkerSize;
+  int mMarkerStyle;
+
+  // data to pull from CCDB
   o2::trd::NoiseStatusMCM* mNoiseMap = nullptr;
-  std::vector<TH2F*> mLayersMask;
   o2::trd::HalfChamberStatusQC* mChamberStatus = nullptr;
-  std::array<TH2F*, 2> mCanvasMembers = { nullptr };
 };
 
 } // namespace o2::quality_control_modules::trd

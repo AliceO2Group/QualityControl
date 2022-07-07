@@ -219,6 +219,9 @@ void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   auto noises = ctx.inputs().get<gsl::span<o2::mid::ColumnData>>("noise");
   auto noiserofs = ctx.inputs().get<gsl::span<o2::mid::ROFRecord>>("noiserofs");
 
+  // auto noises = o2::mid::specs::getData(ctx, "digits", o2::mid::EventType::Calib);
+  // auto noiserofs = o2::mid::specs::getRofs(ctx, "digits", o2::mid::EventType::Calib);
+
   int multNoiseMT11B = 0;
   int multNoiseMT12B = 0;
   int multNoiseMT21B = 0;
@@ -236,10 +239,11 @@ void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   int multDeadMT12NB = 0;
   int multDeadMT21NB = 0;
   int multDeadMT22NB = 0;
+  printf("========================================================== \n");
 
   for (const auto& noiserof : noiserofs) { // loop noiseROFs //
-    // printf("========================================================== \n");
-    // printf("%05d ROF with first entry %05zu and nentries %02zu , BC %05d, ORB %05d , EventType %02d\n", noiseROF, noiserof.firstEntry, noiserof.nEntries, noiserof.interactionRecord.bc, noiserof.interactionRecord.orbit,noiserof.eventType);
+    printf("========================================================== \n");
+    printf("%05d ROF with first entry %05zu and nentries %02zu , BC %05d, ORB %05d , EventType %02d\n", noiseROF, noiserof.firstEntry, noiserof.nEntries, noiserof.interactionRecord.bc, noiserof.interactionRecord.orbit, noiserof.eventType);
     //   eventType::  Standard = 0, Calib = 1, FET = 2
     noiseROF++;
     multNoiseMT11B = 0;
@@ -395,6 +399,11 @@ void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   auto deads = ctx.inputs().get<gsl::span<o2::mid::ColumnData>>("dead");
   auto deadrofs = ctx.inputs().get<gsl::span<o2::mid::ROFRecord>>("deadrofs");
 
+  // auto deads = o2::mid::specs::getData(ctx, "digits", o2::mid::EventType::FET);
+  // auto deadrofs = o2::mid::specs::getRofs(ctx, "digits", o2::mid::EventType::FET);
+
+  printf("========================================================== \n");
+
   for (const auto& deadrof : deadrofs) { // loop deadROFs //
     printf("========================================================== \n");
     printf("%05d deadROF with first entry %05zu and nentries %02zu , BC %05d, ORB %05d , EventType %02d\n", deadROF, deadrof.firstEntry, deadrof.nEntries, deadrof.interactionRecord.bc, deadrof.interactionRecord.orbit, deadrof.eventType);
@@ -411,8 +420,8 @@ void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     multDeadMT22NB = 0;
 
     // printf(" deadROF =%i ;EventType %02d   ;  \n", deadROF, deadrof.eventType);
-    if (deadROF != 1)
-      continue; /// TEST ONE FET EVENT ONLY !!!
+    // if (deadROF != 1)
+    // continue; /// TEST ONE FET EVENT ONLY !!!
 
     int Ntest = 0;
     // loadStripPatterns (ColumnData)

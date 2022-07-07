@@ -136,6 +136,10 @@ firewall-cmd --reload
 10. Set the monitoring url to `"url": "stdout://?qc,influxdb-udp://flptest1.cern.ch:8089"`
 11. Once the dashboard is ready, tell Adam.
 
+### Monitoring setup for building the grafana dashboard with prod data
+
+1. Go to http://pcald24.cern.ch:3000/?orgId=1
+
 
 ### Avoid writing QC objects to a repository
 

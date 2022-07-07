@@ -54,15 +54,6 @@ void TaskInterface::setCustomParameters(const std::unordered_map<std::string, st
   mCustomParameters = parameters;
 }
 
-TObject* TaskInterface::retrieveCondition(std::string path, std::map<std::string, std::string> metadata, long timestamp)
-{
-  if (!mCcdbApi) {
-    loadCcdb();
-  }
-
-  return mCcdbApi->retrieveFromTFileAny<TObject>(path, metadata, timestamp);
-}
-
 std::shared_ptr<ObjectsManager> TaskInterface::getObjectsManager() { return mObjectsManager; }
 
 void TaskInterface::setMonitoring(const std::shared_ptr<o2::monitoring::Monitoring>& mMonitoring)

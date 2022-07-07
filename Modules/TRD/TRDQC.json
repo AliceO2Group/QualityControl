@@ -112,32 +112,6 @@
 	"saveObjectsToFile":"qcpulseheight.root"
       }
     },
-    "checks": {
-      "QcCheck": {
-        "active": "false",
-        "className": "o2::quality_control_modules::trd::RawDataCheck",
-        "moduleName": "QcTRD",
-        "policy": "OnAny",
-        "detectorName": "TRD",
-        "dataSource": [{
-          "type": "Task",
-          "name": "RawDataTask",
-          "MOs": ["trackletsperevent"]
-        }]
-      },
-      "PulseHeightCheck": {
-        "active": "true",
-        "className": "o2::quality_control_modules::trd::PulseHeightCheck",
-        "moduleName": "QcTRD",
-        "policy": "OnAny",
-        "detectorName": "TRD",
-        "dataSource": [{
-          "type": "Task",
-          "name": "RawDataTask",
-          "MOs": ["trackletsperevent"]
-        }]
-      }
-  },
   "dataSamplingPolicies": [
   ]
 }
