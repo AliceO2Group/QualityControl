@@ -31,8 +31,6 @@
 
 #include "MCH/GlobalHistogram.h"
 
-#define GLOBAL_HIST_SCALE 5
-
 namespace o2
 {
 namespace quality_control_modules
@@ -518,15 +516,15 @@ static float getGlobalHistHeight(int id)
   return (getGlobalHistDeHeight(id) * getNHistPerChamberY(id) * 2);
 }
 
-GlobalHistogram::GlobalHistogram(std::string name, std::string title, int id) : mName(name), mTitle(title), mId(id)
+GlobalHistogram::GlobalHistogram(std::string name, std::string title, int id, float rescale) : mName(name), mTitle(title), mId(id), mScaleFactor(rescale)
 {
-  auto hist = new TH2F(name.c_str(), title.c_str(), getGlobalHistWidth(id) / GLOBAL_HIST_SCALE, 0, getGlobalHistWidth(id),
-                       getGlobalHistHeight(id) / GLOBAL_HIST_SCALE, 0, getGlobalHistHeight(id));
+  auto hist = new TH2F(name.c_str(), title.c_str(), getGlobalHistWidth(id) / rescale, 0, getGlobalHistWidth(id),
+                       getGlobalHistHeight(id) / rescale, 0, getGlobalHistHeight(id));
   mHist = std::make_pair(hist, true);
   mHist.first->SetOption("colz");
 }
 
-GlobalHistogram::GlobalHistogram(std::string name, std::string title, int id, TH2F* hist) : mName(name), mTitle(title), mId(id)
+GlobalHistogram::GlobalHistogram(std::string name, std::string title, int id, float rescale, TH2F* hist) : mName(name), mTitle(title), mId(id), mScaleFactor(rescale)
 {
   mHist = std::make_pair(hist, false);
   mHist.first->SetOption("colz");
@@ -545,8 +543,8 @@ void GlobalHistogram::init()
 
   mHist.first->SetNameTitle(mName, mTitle);
 
-  mHist.first->GetXaxis()->Set(getGlobalHistWidth(mId) / GLOBAL_HIST_SCALE, 0, getGlobalHistWidth(mId));
-  mHist.first->GetYaxis()->Set(getGlobalHistHeight(mId) / GLOBAL_HIST_SCALE, 0, getGlobalHistHeight(mId));
+  mHist.first->GetXaxis()->Set(getGlobalHistWidth(mId) / mScaleFactor, 0, getGlobalHistWidth(mId));
+  mHist.first->GetYaxis()->Set(getGlobalHistHeight(mId) / mScaleFactor, 0, getGlobalHistHeight(mId));
   mHist.first->SetBinsLength();
 
   switch (mId) {

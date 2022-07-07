@@ -89,19 +89,19 @@ void PhysicsTaskPreclusters::initialize(o2::framework::InitContext& /*ctx*/)
   mHistogramPseudoeffST12 = std::make_shared<MergeableTH2Ratio>("Pseudoeff_ST12", "ST12 Pseudoeff", 10, 0, 10, 10, 0, 10, true);
   publishObject(mHistogramPseudoeffST12, "colz", false, false);
 
-  mHistogramNumST12 = std::make_shared<GlobalHistogram>("Num_ST12", "Number of hits (ST12)", 0, mHistogramPseudoeffST12->getNum());
+  mHistogramNumST12 = std::make_shared<GlobalHistogram>("Num_ST12", "Number of hits (ST12)", 0, 5, mHistogramPseudoeffST12->getNum());
   mHistogramNumST12->init();
-  mHistogramDenST12 = std::make_shared<GlobalHistogram>("Den_ST12", "Number of orbits (ST12)", 0, mHistogramPseudoeffST12->getDen());
+  mHistogramDenST12 = std::make_shared<GlobalHistogram>("Den_ST12", "Number of orbits (ST12)", 0, 5, mHistogramPseudoeffST12->getDen());
   mHistogramDenST12->init();
   mAllHistograms.push_back(mHistogramDenST12->getHist());
 
   mHistogramPseudoeffST345 = std::make_shared<MergeableTH2Ratio>("Pseudoeff_ST345", "ST345 Pseudoeff", 10, 0, 10, 10, 0, 10, true);
   publishObject(mHistogramPseudoeffST345, "colz", false, false);
 
-  mHistogramNumST345 = std::make_shared<GlobalHistogram>("Num_ST345", "Number of hits (ST345)", 1, mHistogramPseudoeffST345->getNum());
+  mHistogramNumST345 = std::make_shared<GlobalHistogram>("Num_ST345", "Number of hits (ST345)", 1, 10, mHistogramPseudoeffST345->getNum());
   mHistogramNumST345->init();
   mAllHistograms.push_back(mHistogramNumST345->getHist());
-  mHistogramDenST345 = std::make_shared<GlobalHistogram>("Den_ST345", "Number of orbits (ST345)", 1, mHistogramPseudoeffST345->getDen());
+  mHistogramDenST345 = std::make_shared<GlobalHistogram>("Den_ST345", "Number of orbits (ST345)", 1, 10, mHistogramPseudoeffST345->getDen());
   mHistogramDenST345->init();
   mAllHistograms.push_back(mHistogramDenST345->getHist());
 

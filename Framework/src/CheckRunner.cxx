@@ -315,14 +315,22 @@ void CheckRunner::prepareCacheData(framework::InputRecord& inputRecord)
 void CheckRunner::sendPeriodicMonitoring()
 {
   if (mTimer.isTimeout()) {
+    double timeSinceLastCall = mTimer.getTime();
+    timeSinceLastCall = timeSinceLastCall == 0 ? 1 : timeSinceLastCall;
     mTimer.reset(10000000); // 10 s.
+    double rateMOs = mNumberMOStored / timeSinceLastCall;
+    double rateQOs = mNumberQOStored / timeSinceLastCall;
     mCollector->send({ mTotalNumberObjectsReceived, "qc_checkrunner_objects_received" });
     mCollector->send({ mTotalNumberCheckExecuted, "qc_checkrunner_checks_executed" });
     mCollector->send(Metric{ "qc_checkrunner_stored" }
                        .addValue(mTotalNumberMOStored, "mos")
-                       .addValue(mTotalNumberQOStored, "qos"));
+                       .addValue(rateMOs, "mos_per_second")
+                       .addValue(mTotalNumberQOStored, "qos")
+                       .addValue(rateQOs, "qos_per_second"));
     mCollector->send({ mTotalQOSent, "qc_checkrunner_qo_sent" });
     mCollector->send({ mTimerTotalDurationActivity.getTime(), "qc_checkrunner_duration" });
+    mNumberQOStored = 0;
+    mNumberMOStored = 0;
   }
 }
 
@@ -357,6 +365,7 @@ void CheckRunner::store(QualityObjectsType& qualityObjects)
       qo->setActivity(mActivity);
       mDatabase->storeQO(qo);
       mTotalNumberQOStored++;
+      mNumberQOStored++;
     }
   } catch (boost::exception& e) {
     ILOG(Info, Support) << "Unable to " << diagnostic_information(e) << ENDM;
@@ -371,6 +380,7 @@ void CheckRunner::store(std::vector<std::shared_ptr<MonitorObject>>& monitorObje
       mo->setActivity(mActivity);
       mDatabase->storeMO(mo);
       mTotalNumberMOStored++;
+      mNumberMOStored++;
     }
   } catch (boost::exception& e) {
     ILOG(Info, Support) << "Unable to " << diagnostic_information(e) << ENDM;
@@ -520,7 +530,9 @@ void CheckRunner::reset()
   mTotalNumberObjectsReceived = 0;
   mTotalNumberCheckExecuted = 0;
   mTotalNumberMOStored = 0;
+  mNumberMOStored = 0;
   mTotalNumberQOStored = 0;
+  mNumberQOStored = 0;
   mTotalQOSent = 0;
 }
 

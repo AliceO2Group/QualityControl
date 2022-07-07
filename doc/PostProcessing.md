@@ -229,7 +229,8 @@ The TTree is stored back to the **QC database** each time it is updated. In addi
 
 #### Configuration
 
-As this class is a post-processing task, it inherits also its configuration JSON template. It extends it, though, with two additional lists - `"dataSources"` and `"plots"`:
+As this class is a post-processing task, it inherits also its configuration JSON template. It extends it, though, 
+some additional parameters.
 
 ``` json
 {
@@ -241,6 +242,8 @@ As this class is a post-processing task, it inherits also its configuration JSON
         "className": "o2::quality_control::postprocessing::TrendingTask",
         "moduleName": "QualityControl",
         "detectorName": "TST",
+        "resumeTrend": "false",
+        "producePlotsOnUpdate": "true",
         "dataSources": [],
         "plots": [],
         "initTrigger": [ "once" ],
@@ -311,6 +314,12 @@ The `"name"` and `"varexp"` are the only compulsory arguments, others can be omi
         ...
 }
 ```
+
+To decide whether plots should be generated during each update or just during finalization, 
+use the boolean flag `"producePlotsOnUpdate"`.
+
+To pick up the last existing trend which matches the specified Activity, set `"resumeTrend"` to `"true"`.
+
 ### The SliceTrendingTask class
 The `SliceTrendingTask` is a complementary task to the standard `TrendingTask`. This task allows the trending of canvas objects that hold multiple histograms (which have to be of the same dimension, e.g. TH1) and the slicing of histograms. The latter option allows the user to divide a histogram into multiple subsections along one or two dimensions which are trended in parallel to each other. The task has specific reductors for `TH1` and `TH2` objects which are `o2::quality_control_modules::common::TH1SliceReductor` and `o2::quality_control_modules::common::TH2SliceReductor`.
 

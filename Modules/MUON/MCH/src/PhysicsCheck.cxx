@@ -33,7 +33,6 @@
 #include <string>
 
 using namespace std;
-using namespace o2::quality_control_modules::muon;
 
 namespace o2::quality_control_modules::muonchambers
 {
@@ -46,6 +45,7 @@ PhysicsCheck::PhysicsCheck() : mMinOccupancy(0.001), mMaxOccupancy(1.0), mMinGoo
   mSolar2FeeLinkMapper = o2::mch::raw::createSolar2FeeLinkMapper<o2::mch::raw::ElectronicMapperGenerated>();
 
   mDeOccupancy.resize(getDEindexMax() + 1);
+  mDeOccupancyOnCycle.resize(getDEindexMax() + 1);
 }
 
 PhysicsCheck::~PhysicsCheck() {}
@@ -111,92 +111,130 @@ int PhysicsCheck::checkPadMapping(uint16_t feeId, uint8_t linkId, uint8_t eLinkI
   return deId;
 }
 
+Quality PhysicsCheck::processFecOccupancy(MergeableTH2Ratio* hr, std::vector<double>& deOccupancy)
+{
+  Quality result = Quality::Null;
+  // cumulative numerators and denominators for the computation of
+  // the average occupancy over one detection element
+  std::vector<double> deOccupancyNum(getDEindexMax() + 1);
+  std::vector<double> deOccupancyDen(getDEindexMax() + 1);
+  std::fill(deOccupancyNum.begin(), deOccupancyNum.end(), 0);
+  std::fill(deOccupancyDen.begin(), deOccupancyDen.end(), 0);
+
+  auto* h = dynamic_cast<TH2F*>(hr);
+  if (!h) {
+    return result;
+  }
+
+  if (h->GetEntries() == 0) {
+    return Quality::Medium;
+  }
+
+  int nbinsx = h->GetXaxis()->GetNbins();
+  int nbinsy = h->GetYaxis()->GetNbins();
+  int ngood = 0;
+  int npads = 0;
+  for (int i = 1; i <= nbinsx; i++) {
+    int index = i - 1;
+    int ds_addr = (index % 40);
+    int link_id = (index / 40) % 12;
+    int fee_id = index / (12 * 40);
+
+    for (int j = 1; j <= nbinsy; j++) {
+      int chan_addr = j - 1;
+
+      int de = checkPadMapping(fee_id, link_id, ds_addr, chan_addr);
+      if (de < 0) {
+        continue;
+      }
+
+      Float_t stat = hr->getDen()->GetBinContent(i, j);
+      if (stat < 1) {
+        continue;
+      }
+
+      Float_t occupancy = h->GetBinContent(i, j);
+      npads += 1;
+      if (occupancy >= mMinOccupancy && occupancy <= mMaxOccupancy) {
+        ngood += 1;
+      }
+
+      int deIndex = getDEindex(de);
+      if (deIndex >= 0) {
+        deOccupancyNum[deIndex] += occupancy;
+        deOccupancyDen[deIndex] += 1;
+      }
+    }
+  }
+  if (mVerbose) {
+    LOGP(debug, "Npads {}  Ngood {}   Frac {}", npads, ngood, float(ngood) / float(npads));
+  }
+
+  if (ngood >= mMinGoodFraction * npads)
+    result = Quality::Good;
+  else
+    result = Quality::Bad;
+
+  // update the average occupancy values that will be copied
+  // into the histogram bins in the beutify() method
+  for (size_t de = 0; de < deOccupancyDen.size(); de++) {
+    // integrated occupancies
+    if (deOccupancyDen[de] > 0) {
+      deOccupancy[de] = deOccupancyNum[de] / deOccupancyDen[de];
+      if (de == 10) {
+        std::cout << fmt::format("xxxx occupancy: {} = {} / {}", deOccupancy[de], deOccupancyNum[de], deOccupancyDen[de]) << std::endl;
+      }
+    } else {
+      deOccupancy[de] = 0;
+    }
+  }
+
+  return result;
+}
+
 Quality PhysicsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
-  static constexpr double sOrbitLengthInNanoseconds = 3564 * 25;
-  static constexpr double sOrbitLengthInMicroseconds = sOrbitLengthInNanoseconds / 1000;
-  static constexpr double sOrbitLengthInMilliseconds = sOrbitLengthInMicroseconds / 1000;
   Quality result = Quality::Null;
 
   for (auto& [moName, mo] : *moMap) {
 
-    (void)moName;
     if (mo->getName().find("Occupancy_Elec") != std::string::npos) {
-
-      // cumulative numerators and denominators for the computation of
-      // the average occupancy over one detection element
-      std::vector<double> deOccupancyNum(getDEindexMax() + 1);
-      std::vector<double> deOccupancyDen(getDEindexMax() + 1);
-      std::fill(deOccupancyNum.begin(), deOccupancyNum.end(), 0);
-      std::fill(deOccupancyDen.begin(), deOccupancyDen.end(), 0);
 
       auto* hr = dynamic_cast<MergeableTH2Ratio*>(mo->getObject());
       if (!hr) {
         return result;
       }
-      auto* h = dynamic_cast<TH2F*>(mo->getObject());
-      if (!h) {
-        return result;
+
+      result = processFecOccupancy(hr, mDeOccupancy);
+
+      if (!mHistogramOccupancyFecPrevCycle) {
+        mHistogramOccupancyFecPrevCycle = std::make_shared<MergeableTH2Ratio>(*hr);
+        mHistogramOccupancyFecPrevCycle->SetName("mHistogramOccupancyFecPrevCycle");
+        mHistogramOccupancyFecPrevCycle->Reset();
+        mHistogramOccupancyFecPrevCycle->getNum()->Reset();
+        mHistogramOccupancyFecPrevCycle->getDen()->Reset();
       }
 
-      if (h->GetEntries() == 0) {
-        result = Quality::Medium;
-      } else {
-        int nbinsx = h->GetXaxis()->GetNbins();
-        int nbinsy = h->GetYaxis()->GetNbins();
-        int ngood = 0;
-        int npads = 0;
-        for (int i = 1; i <= nbinsx; i++) {
-          int index = i - 1;
-          int ds_addr = (index % 40);
-          int link_id = (index / 40) % 12;
-          int fee_id = index / (12 * 40);
+      MergeableTH2Ratio hdiff(*hr);
+      hdiff.SetName("mHistogramOccupancyFecOnCycle");
+      hdiff.Reset();
+      hdiff.getNum()->Reset();
+      hdiff.getDen()->Reset();
 
-          for (int j = 1; j <= nbinsy; j++) {
-            int chan_addr = j - 1;
+      hdiff.getNum()->Add(hr->getNum());
+      hdiff.getNum()->Add(mHistogramOccupancyFecPrevCycle->getNum(), -1);
+      hdiff.getDen()->Add(hr->getDen());
+      hdiff.getDen()->Add(mHistogramOccupancyFecPrevCycle->getDen(), -1);
+      hdiff.update();
 
-            int de = checkPadMapping(fee_id, link_id, ds_addr, chan_addr);
-            if (de < 0) {
-              continue;
-            }
+      processFecOccupancy(&hdiff, mDeOccupancyOnCycle);
 
-            Float_t stat = hr->getDen()->GetBinContent(i, j);
-            if (stat < 1) {
-              continue;
-            }
-
-            Float_t occupancy = h->GetBinContent(i, j);
-            npads += 1;
-            if (occupancy >= mMinOccupancy && occupancy <= mMaxOccupancy) {
-              ngood += 1;
-            }
-
-            int deIndex = getDEindex(de);
-            if (deIndex >= 0) {
-              deOccupancyNum[deIndex] += occupancy;
-              deOccupancyDen[deIndex] += 1;
-            }
-          }
-        }
-        if (mVerbose) {
-          LOGP(debug, "Npads {}  Ngood {}   Frac {}", npads, ngood, float(ngood) / float(npads));
-        }
-
-        if (ngood >= mMinGoodFraction * npads)
-          result = Quality::Good;
-        else
-          result = Quality::Bad;
-      }
-
-      // update the average occupancy values that will be copied
-      // into the histogram bins in the beutify() method
-      for (size_t de = 0; de < deOccupancyDen.size(); de++) {
-        if (deOccupancyDen[de] > 0) {
-          mDeOccupancy[de] = deOccupancyNum[de] / deOccupancyDen[de];
-        } else {
-          mDeOccupancy[de] = 0;
-        }
-      }
+      // update previous cycle plot
+      mHistogramOccupancyFecPrevCycle->Reset();
+      mHistogramOccupancyFecPrevCycle->getNum()->Reset();
+      mHistogramOccupancyFecPrevCycle->getDen()->Reset();
+      mHistogramOccupancyFecPrevCycle->getNum()->Add(hr->getNum());
+      mHistogramOccupancyFecPrevCycle->getDen()->Add(hr->getDen());
     }
   }
   return result;
@@ -224,7 +262,7 @@ static std::string getCurrentTime()
   tmp = localtime(&t);
 
   char timestr[500];
-  strftime(timestr, sizeof(timestr), "(%x - %X)", tmp);
+  strftime(timestr, sizeof(timestr), "(%d/%m/%Y - %R)", tmp);
 
   std::string result = timestr;
   return result;
@@ -272,11 +310,15 @@ void PhysicsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResu
 
   if ((mo->getName().find("Occupancy_ST12") != std::string::npos) ||
       (mo->getName().find("Occupancy_ST345") != std::string::npos) ||
+      (mo->getName().find("OccupancyOnCycle_ST12") != std::string::npos) ||
+      (mo->getName().find("OccupancyOnCycle_ST345") != std::string::npos) ||
       (mo->getName().find("Occupancy_B_XY") != std::string::npos) ||
       (mo->getName().find("Occupancy_NB_XY") != std::string::npos)) {
+    std::cout << "Beautifying " << mo->getName() << std::endl;
     auto* h = dynamic_cast<TH2F*>(mo->getObject());
     h->SetMinimum(mOccupancyPlotScaleMin);
     h->SetMaximum(mOccupancyPlotScaleMax);
+    std::cout << fmt::format("Beautifying: GetListOfFunctions->GetEntries() {}", h->GetListOfFunctions()->GetEntries()) << std::endl;
     h->GetXaxis()->SetTickLength(0.0);
     h->GetXaxis()->SetLabelSize(0.0);
     h->GetYaxis()->SetTickLength(0.0);
@@ -287,9 +329,16 @@ void PhysicsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResu
     auto* h = dynamic_cast<TH1F*>(mo->getObject());
 
     // update the mean occupancy values
-    for (size_t deIndex = 0; deIndex < mDeOccupancy.size(); deIndex++) {
-      h->SetBinContent(deIndex + 1, mDeOccupancy[deIndex]);
-      h->SetBinError(deIndex + 1, 0);
+    if (mo->getName().find("MeanOccupancyOnCycle") != std::string::npos) {
+      for (size_t deIndex = 0; deIndex < mDeOccupancy.size(); deIndex++) {
+        h->SetBinContent(deIndex + 1, mDeOccupancyOnCycle[deIndex]);
+        h->SetBinError(deIndex + 1, 0);
+      }
+    } else {
+      for (size_t deIndex = 0; deIndex < mDeOccupancy.size(); deIndex++) {
+        h->SetBinContent(deIndex + 1, mDeOccupancy[deIndex]);
+        h->SetBinError(deIndex + 1, 0);
+      }
     }
 
     // disable ticks on vertical axis

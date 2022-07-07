@@ -87,6 +87,12 @@ class DecodingErrorsTask /*final*/ : public TaskInterface
 
   std::shared_ptr<MergeableTH2Ratio> mHistogramErrorsPerChamber; ///< histogram to visualize the decoding errors
   std::shared_ptr<MergeableTH2Ratio> mHistogramErrorsPerFeeId;   ///< histogram to visualize the decoding errors
+  // histograms up to previously processed cycle
+  std::shared_ptr<MergeableTH2Ratio> mHistogramErrorsPerChamberPrevCycle; ///< histogram to visualize the decoding errors
+  std::shared_ptr<MergeableTH2Ratio> mHistogramErrorsPerFeeIdPrevCycle;   ///< histogram to visualize the decoding errors
+  // histograms from last processed cycle
+  std::shared_ptr<MergeableTH2Ratio> mHistogramErrorsPerChamberOnCycle; ///< histogram to visualize the decoding errors
+  std::shared_ptr<MergeableTH2Ratio> mHistogramErrorsPerFeeIdOnCycle;   ///< histogram to visualize the decoding errors
 
   std::vector<TH1*> mAllHistograms;
 };

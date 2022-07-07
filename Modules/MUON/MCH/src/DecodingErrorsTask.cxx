@@ -80,10 +80,21 @@ void DecodingErrorsTask::initialize(o2::framework::InitContext& /*ic*/)
   setYAxisLabels(mHistogramErrorsPerChamber.get());
   publishObject(mHistogramErrorsPerChamber, "colz", false, false);
 
+  mHistogramErrorsPerChamberPrevCycle = std::make_shared<MergeableTH2Ratio>("DecodingErrorsPerChamberPrevCycle", "Chamber Number vs. Error Type", getErrorCodesSize(), 0, getErrorCodesSize(), 10, 1, 11);
+  mHistogramErrorsPerChamberOnCycle = std::make_shared<MergeableTH2Ratio>("DecodingErrorsPerChamberOnCycle", "Chamber Number vs. Error Type, last cycle", getErrorCodesSize(), 0, getErrorCodesSize(), 10, 1, 11);
+  setXAxisLabels(mHistogramErrorsPerChamberOnCycle.get());
+  setYAxisLabels(mHistogramErrorsPerChamberOnCycle.get());
+  publishObject(mHistogramErrorsPerChamberOnCycle, "colz", false, false);
+
   // Number of decoding errors, grouped by FEE ID and normalized to the number of processed TF
   mHistogramErrorsPerFeeId = std::make_shared<MergeableTH2Ratio>("DecodingErrorsPerFeeId", "FEE ID vs. Error Type", getErrorCodesSize(), 0, getErrorCodesSize(), 64, 0, 64);
   setXAxisLabels(mHistogramErrorsPerFeeId.get());
   publishObject(mHistogramErrorsPerFeeId, "colz", false, false);
+
+  mHistogramErrorsPerFeeIdPrevCycle = std::make_shared<MergeableTH2Ratio>("DecodingErrorsPerFeeIdPrevCycle", "FEE ID vs. Error Type", getErrorCodesSize(), 0, getErrorCodesSize(), 64, 0, 64);
+  mHistogramErrorsPerFeeIdOnCycle = std::make_shared<MergeableTH2Ratio>("DecodingErrorsPerFeeIdOnCycle", "FEE ID vs. Error Type, last cycle", getErrorCodesSize(), 0, getErrorCodesSize(), 64, 0, 64);
+  setXAxisLabels(mHistogramErrorsPerFeeIdOnCycle.get());
+  publishObject(mHistogramErrorsPerFeeIdOnCycle, "colz", false, false);
 }
 
 void DecodingErrorsTask::startOfActivity(Activity& activity)
@@ -253,10 +264,44 @@ void DecodingErrorsTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void DecodingErrorsTask::endOfCycle()
 {
+  // copy bin contents from src to dst
+  auto copyHist = [&](TH2F* hdst, TH2F* hsrc) {
+    hdst->Reset("ICES");
+    hdst->Add(hsrc);
+  };
+
+  // copy numerator and denominator from src to dst
+  auto copyRatio = [&](std::shared_ptr<MergeableTH2Ratio> dst, std::shared_ptr<MergeableTH2Ratio> src) {
+    copyHist(dst->getNum(), src->getNum());
+    copyHist(dst->getDen(), src->getDen());
+  };
+
+  // dst = src1 - src2
+  auto subtractHist = [&](TH2F* hdst, TH2F* hsrc1, TH2F* hsrc2) {
+    hdst->Reset("ICES");
+    hdst->Add(hsrc1);
+    hdst->Add(hsrc2, -1);
+  };
+
+  // compute (src1 - src2) difference of numerators and denominators
+  auto subtractRatio = [&](std::shared_ptr<MergeableTH2Ratio> dst, std::shared_ptr<MergeableTH2Ratio> src1, std::shared_ptr<MergeableTH2Ratio> src2) {
+    subtractHist(dst->getNum(), src1->getNum(), src2->getNum());
+    subtractHist(dst->getDen(), src1->getDen(), src2->getDen());
+    dst->update();
+  };
+
   ILOG(Info, Support) << "endOfCycle" << ENDM;
 
   mHistogramErrorsPerChamber->update();
   mHistogramErrorsPerFeeId->update();
+
+  // fill on-cycle plots
+  subtractRatio(mHistogramErrorsPerChamberOnCycle, mHistogramErrorsPerChamber, mHistogramErrorsPerChamberPrevCycle);
+  subtractRatio(mHistogramErrorsPerFeeIdOnCycle, mHistogramErrorsPerFeeId, mHistogramErrorsPerFeeIdPrevCycle);
+
+  // update last cycle plots
+  copyRatio(mHistogramErrorsPerChamberPrevCycle, mHistogramErrorsPerChamber);
+  copyRatio(mHistogramErrorsPerFeeIdPrevCycle, mHistogramErrorsPerFeeId);
 }
 
 void DecodingErrorsTask::endOfActivity(Activity& /*activity*/)

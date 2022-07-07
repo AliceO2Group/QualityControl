@@ -51,10 +51,47 @@ PhysicsTaskDigits::PhysicsTaskDigits() : TaskInterface() {}
 
 PhysicsTaskDigits::~PhysicsTaskDigits() {}
 
+PhysicsTaskDigits::GlobalHistogramRatio::GlobalHistogramRatio(std::string name, std::string title, int id)
+{
+  float scaleFactors[2]{ 5, 10 };
+  mHistOccupancy = std::make_shared<MergeableTH2Ratio>(name.c_str(), title.c_str(), 10, 0, 10, 10, 0, 10);
+
+  mHistNum = std::make_shared<GlobalHistogram>((name + "_num").c_str(), (title + " Num").c_str(),
+                                               id, scaleFactors[id], mHistOccupancy->getNum());
+  mHistNum->init();
+  mHistDen = std::make_shared<GlobalHistogram>((name + "_num").c_str(), (title + " Num").c_str(),
+                                               id, scaleFactors[id], mHistOccupancy->getDen());
+  mHistDen->init();
+}
+
+void PhysicsTaskDigits::GlobalHistogramRatio::setNum(std::map<int, std::shared_ptr<DetectorHistogram>>& histB, std::map<int, std::shared_ptr<DetectorHistogram>>& histNB)
+{
+  mHistNum->set(histB, histNB);
+}
+
+void PhysicsTaskDigits::GlobalHistogramRatio::setDen(std::map<int, std::shared_ptr<DetectorHistogram>>& histB, std::map<int, std::shared_ptr<DetectorHistogram>>& histNB)
+{
+  mHistDen->set(histB, histNB);
+}
+
+void PhysicsTaskDigits::GlobalHistogramRatio::update()
+{
+  mHistOccupancy->update();
+}
+
 void PhysicsTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info, Support) << "initialize PhysicsTaskDigits" << AliceO2::InfoLogger::InfoLogger::endm;
 
+  // flag to enable on-cycle plots
+  mOnCycle = false;
+  if (auto param = mCustomParameters.find("OnCycle"); param != mCustomParameters.end()) {
+    if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
+      mOnCycle = true;
+    }
+  }
+
+  // flag to enable extra disagnostics plots; it also enables on-cycle plots
   mDiagnostic = false;
   if (auto param = mCustomParameters.find("Diagnostic"); param != mCustomParameters.end()) {
     if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
@@ -84,40 +121,33 @@ void PhysicsTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   mAllHistograms.push_back(mHistogramNHitsElec);
   mAllHistograms.push_back(mHistogramNorbitsElec);
 
-  mMeanOccupancyPerDE = std::make_shared<TH1F>("MeanOccupancy", "Mean Occupancy vs DE", getDEindexMax() + 1, 0, getDEindexMax() + 1);
-  publishObject(mMeanOccupancyPerDE, "hist", false, false);
+  mHistogramMeanOccupancyPerDE = std::make_shared<TH1F>("MeanOccupancy", "Mean Occupancy vs DE", getDEindexMax() + 1, 0, getDEindexMax() + 1);
+  publishObject(mHistogramMeanOccupancyPerDE, "hist", false, false);
+
+  mHistogramMeanOccupancyOnCyclePerDE = std::make_shared<TH1F>("MeanOccupancyOnCycle", "Mean Occupancy vs DE, last cycle", getDEindexMax() + 1, 0, getDEindexMax() + 1);
+  publishObject(mHistogramMeanOccupancyOnCyclePerDE, "hist", false, !mOnCycle);
 
   // Histograms in global detector coordinates
-  mHistogramOccupancyST12 = std::make_shared<MergeableTH2Ratio>("Occupancy_ST12", "ST12 Occupancy", 10, 0, 10, 10, 0, 10);
-  publishObject(mHistogramOccupancyST12, "colz", false, false);
+  mHistogramOccupancyST12 = std::make_shared<GlobalHistogramRatio>("Occupancy_ST12", "ST12 Occupancy", 0);
+  publishObject(mHistogramOccupancyST12->mHistOccupancy, "colz", false, false);
 
-  mHistogramNhitsST12 = std::make_shared<GlobalHistogram>("Nhits_ST12", "Number of hits (ST12)",
-                                                          0, mHistogramOccupancyST12->getNum());
-  mHistogramNhitsST12->init();
-  mAllHistograms.push_back(mHistogramNhitsST12->getHist());
-  mHistogramNorbitsST12 = std::make_shared<GlobalHistogram>("Norbits_ST12", "Number of orbits (ST12)",
-                                                            0, mHistogramOccupancyST12->getDen());
-  mHistogramNorbitsST12->init();
-  mAllHistograms.push_back(mHistogramNorbitsST12->getHist());
+  mHistogramOccupancyST345 = std::make_shared<GlobalHistogramRatio>("Occupancy_ST345", "ST345 Occupancy", 1);
+  publishObject(mHistogramOccupancyST345->mHistOccupancy, "colz", false, false);
 
-  mHistogramOccupancyST345 = std::make_shared<MergeableTH2Ratio>("Occupancy_ST345", "ST345 Occupancy", 10, 0, 10, 10, 0, 10);
-  publishObject(mHistogramOccupancyST345, "colz", false, false);
+  mHistogramOccupancyPrevCycleST12 = std::make_shared<GlobalHistogramRatio>("OccupancyPrevCycle_ST12", "ST12 Occupancy, last cycle", 0);
+  mHistogramOccupancyOnCycleST12 = std::make_shared<GlobalHistogramRatio>("OccupancyOnCycle_ST12", "ST12 Occupancy on cycle", 0);
+  publishObject(mHistogramOccupancyOnCycleST12->mHistOccupancy, "colz", false, !mOnCycle);
 
-  mHistogramNhitsST345 = std::make_shared<GlobalHistogram>("Nhits_ST345", "Number of hits (ST345)",
-                                                           1, mHistogramOccupancyST345->getNum());
-  mHistogramNhitsST345->init();
-  mAllHistograms.push_back(mHistogramNhitsST345->getHist());
-  mHistogramNorbitsST345 = std::make_shared<GlobalHistogram>("Norbits_ST345", "Number of orbits (ST345)",
-                                                             1, mHistogramOccupancyST345->getDen());
-  mHistogramNorbitsST345->init();
-  mAllHistograms.push_back(mHistogramNorbitsST345->getHist());
-
-  // The code for the calculation of the on-cycle values is currently broken and therefore commented
-  // mMeanOccupancyPerDECycle = std::make_shared<MergeableTH1OccupancyPerDECycle>("MeanOccupancyPerCycle", "Mean Occupancy of each DE Per Cycle (MHz)", mHistogramNHitsElec, mHistogramNorbitsElec);
-  // getObjectsManager()->startPublishing(mMeanOccupancyPerDECycle.get());
+  mHistogramOccupancyPrevCycleST345 = std::make_shared<GlobalHistogramRatio>("OccupancyPrevCycle_ST345", "ST345 Occupancy, last cycle", 1);
+  mHistogramOccupancyOnCycleST345 = std::make_shared<GlobalHistogramRatio>("OccupancyOnCycle_ST345", "ST345 Occupancy on cycle", 1);
+  publishObject(mHistogramOccupancyOnCycleST345->mHistOccupancy, "colz", false, !mOnCycle);
 
   mHistogramDigitsOrbitInTFDE = std::make_shared<TH2F>("DigitOrbitInTFDE", "Digit orbits vs DE", getDEindexMax(), 0, getDEindexMax(), 768, -384, 384);
   publishObject(mHistogramDigitsOrbitInTFDE, "colz", false, false);
+
+  mHistogramDigitsOrbitInTFDEPrevCycle = std::make_shared<TH2F>("DigitOrbitInTFDEPrevCycle", "Digit orbits vs DE", getDEindexMax(), 0, getDEindexMax(), 768, -384, 384);
+  mHistogramDigitsOrbitInTFDEOnCycle = std::make_shared<TH2F>("DigitOrbitInTFDEOnCycle", "Digit orbits vs DE, last cycle", getDEindexMax(), 0, getDEindexMax(), 768, -384, 384);
+  publishObject(mHistogramDigitsOrbitInTFDEOnCycle, "colz", false, !mOnCycle);
 
   mHistogramDigitsOrbitInTF = std::make_shared<TH2F>("Expert/DigitOrbitInTF", "Digit orbits vs DS Id", nElecXbins, 0, nElecXbins, 768, -384, 384);
   publishObject(mHistogramDigitsOrbitInTF, "colz", false, false);
@@ -373,13 +403,51 @@ void PhysicsTaskDigits::updateOrbits()
 
 void PhysicsTaskDigits::endOfCycle()
 {
+  // copy bin contents from src to dst
+  auto copyHist = [&](TH2F* hdst, TH2F* hsrc) {
+    hdst->Reset("ICES");
+    hdst->Add(hsrc);
+  };
+
+  // copy numerator and denominator from src to dst
+  auto copyRatio = [&](std::shared_ptr<MergeableTH2Ratio> dst, std::shared_ptr<MergeableTH2Ratio> src) {
+    copyHist(dst->getNum(), src->getNum());
+    copyHist(dst->getDen(), src->getDen());
+  };
+
+  // copy numerator and denominator from src to dst
+  auto copyGlobalHistRatio = [&](std::shared_ptr<GlobalHistogramRatio> dst, std::shared_ptr<GlobalHistogramRatio> src) {
+    copyHist(dst->mHistOccupancy->getNum(), src->mHistOccupancy->getNum());
+    copyHist(dst->mHistOccupancy->getDen(), src->mHistOccupancy->getDen());
+  };
+
+  // dst = src1 - src2
+  auto subtractHist = [&](TH2F* hdst, TH2F* hsrc1, TH2F* hsrc2) {
+    hdst->Reset("ICES");
+    hdst->Add(hsrc1);
+    hdst->Add(hsrc2, -1);
+  };
+
+  // compute (src1 - src2) difference of numerators and denominators
+  auto subtractRatio = [&](std::shared_ptr<MergeableTH2Ratio> dst, std::shared_ptr<MergeableTH2Ratio> src1, std::shared_ptr<MergeableTH2Ratio> src2) {
+    subtractHist(dst->getNum(), src1->getNum(), src2->getNum());
+    subtractHist(dst->getDen(), src1->getDen(), src2->getDen());
+    dst->update();
+  };
+
+  // compute (src1 - src2) difference of numerators and denominators
+  auto subtractGlobalHistRatio = [&](std::shared_ptr<GlobalHistogramRatio> dst, std::shared_ptr<GlobalHistogramRatio> src1, std::shared_ptr<GlobalHistogramRatio> src2) {
+    subtractHist(dst->mHistOccupancy->getNum(), src1->mHistOccupancy->getNum(), src2->mHistOccupancy->getNum());
+    subtractHist(dst->mHistOccupancy->getDen(), src1->mHistOccupancy->getDen(), src2->mHistOccupancy->getDen());
+    dst->update();
+  };
+
   ILOG(Info, Support) << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 
   updateOrbits();
 
   // update mergeable ratios
   mHistogramOccupancyElec->update();
-  //mMeanOccupancyPerDE->update(mHistogramOccupancyElec->getNum(), mHistogramOccupancyElec->getDen());
 
   for (auto de : o2::mch::raw::deIdsForAllMCH) {
     for (int i = 0; i < 2; i++) {
@@ -390,14 +458,24 @@ void PhysicsTaskDigits::endOfCycle()
     }
   }
 
-  mHistogramNhitsST12->set(mHistogramNhitsDE[0], mHistogramNhitsDE[1]);
-  mHistogramNorbitsST12->set(mHistogramNorbitsDE[0], mHistogramNorbitsDE[1]);
+  mHistogramOccupancyST12->setNum(mHistogramNhitsDE[0], mHistogramNhitsDE[1]);
+  mHistogramOccupancyST12->setDen(mHistogramNorbitsDE[0], mHistogramNorbitsDE[1]);
 
-  mHistogramNhitsST345->set(mHistogramNhitsDE[0], mHistogramNhitsDE[1]);
-  mHistogramNorbitsST345->set(mHistogramNorbitsDE[0], mHistogramNorbitsDE[1]);
+  mHistogramOccupancyST345->setNum(mHistogramNhitsDE[0], mHistogramNhitsDE[1]);
+  mHistogramOccupancyST345->setDen(mHistogramNorbitsDE[0], mHistogramNorbitsDE[1]);
 
   mHistogramOccupancyST12->update();
   mHistogramOccupancyST345->update();
+
+  // fill on-cycle plots
+  subtractGlobalHistRatio(mHistogramOccupancyOnCycleST12, mHistogramOccupancyST12, mHistogramOccupancyPrevCycleST12);
+  subtractGlobalHistRatio(mHistogramOccupancyOnCycleST345, mHistogramOccupancyST345, mHistogramOccupancyPrevCycleST345);
+  subtractHist(mHistogramDigitsOrbitInTFDEOnCycle.get(), mHistogramDigitsOrbitInTFDE.get(), mHistogramDigitsOrbitInTFDEPrevCycle.get());
+
+  // update last cycle plots
+  copyGlobalHistRatio(mHistogramOccupancyPrevCycleST12, mHistogramOccupancyST12);
+  copyGlobalHistRatio(mHistogramOccupancyPrevCycleST345, mHistogramOccupancyST345);
+  copyHist(mHistogramDigitsOrbitInTFDEPrevCycle.get(), mHistogramDigitsOrbitInTFDE.get());
 }
 
 void PhysicsTaskDigits::endOfActivity(Activity& /*activity*/)

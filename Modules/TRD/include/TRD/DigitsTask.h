@@ -65,7 +65,8 @@ class DigitsTask final : public TaskInterface
   std::pair<float, float> mPulseHeightPeakRegion;
   long int mTimestamp;
 
-  std::shared_ptr<TH1F> mDigitsPerEvent = nullptr;
+  std::shared_ptr<TH1F> mDigitsPerEvent;
+  std::shared_ptr<TH2F> mDigitsSizevsTrackletSize;
   std::shared_ptr<TH1F> mDigitHCID = nullptr;
   std::shared_ptr<TH2F> mClusterAmplitudeChamber;
   std::array<std::shared_ptr<TH2F>, 6> mNClsLayer;
