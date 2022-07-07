@@ -12,14 +12,15 @@
 #ifndef QC_MODULE_MUON_COMMON_TRACK_PLOTTER_H
 #define QC_MODULE_MUON_COMMON_TRACK_PLOTTER_H
 
+#include "MCHGeometryTransformer/Transformations.h"
 #include <MCHRawElecMap/Mapper.h>
 #include <TH1F.h>
 #include <TProfile.h>
+#include <fmt/core.h>
 #include <gsl/span>
 #include <memory>
 #include <string>
-#include <fmt/core.h>
-#include "MCHGeometryTransformer/Transformations.h"
+#include <vector>
 
 namespace o2::mch
 {
@@ -65,6 +66,12 @@ class TrackPlotter
   const std::vector<HistInfo>& histograms() const { return mHistograms; }
 
  private:
+  void fill(gsl::span<const o2::mch::ROFRecord> rofs,
+            gsl::span<const o2::mch::TrackMCH> tracks,
+            gsl::span<const o2::mch::Cluster> clusters,
+            gsl::span<const o2::mch::Digit> digits,
+            const std::vector<bool>& selectedTracks);
+
   /** create one histogram with relevant drawing options / stat box status.*/
   template <typename T>
   std::unique_ptr<T> createHisto(const char* name, const char* title,

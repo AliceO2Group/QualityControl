@@ -297,12 +297,15 @@ void TrackPlotter::fillHistograms(gsl::span<const o2::mch::ROFRecord> rofs,
     return;
   }
 
-  std::vector<o2::mch::TrackMCH> matchedTracks;
+  std::vector<bool> matchedTracks;
+  matchedTracks.resize(tracks.size(), false);
+
   for (const auto& mt : muonTracks) {
     auto ix = mt.getMCHRef().getIndex();
-    matchedTracks.emplace_back(tracks[ix]);
+    matchedTracks[ix] = true;
   }
-  fillHistograms(rofs, matchedTracks, clusters, digits);
+  fill(rofs, tracks, clusters, digits,
+       matchedTracks);
 }
 
 void TrackPlotter::fillHistograms(gsl::span<const o2::mch::ROFRecord> rofs,
@@ -310,32 +313,55 @@ void TrackPlotter::fillHistograms(gsl::span<const o2::mch::ROFRecord> rofs,
                                   gsl::span<const o2::mch::Cluster> clusters,
                                   gsl::span<const o2::mch::Digit> digits)
 {
+  std::vector<bool> selectedTracks;
+  selectedTracks.resize(tracks.size(), true);
+  fill(rofs, tracks, clusters, digits, selectedTracks);
+}
 
-  mNofTracksPerTF->Fill(tracks.size());
+void TrackPlotter::fill(gsl::span<const o2::mch::ROFRecord> rofs,
+                        gsl::span<const o2::mch::TrackMCH> tracks,
+                        gsl::span<const o2::mch::Cluster> clusters,
+                        gsl::span<const o2::mch::Digit> digits,
+                        const std::vector<bool>& selectedTracks)
+{
+
+  auto ntracks = std::count_if(selectedTracks.begin(), selectedTracks.end(),
+                               [](bool v) { return v; });
+
+  mNofTracksPerTF->Fill(ntracks);
 
   for (const auto& rof : rofs) {
-    if (rof.getNEntries() > 0) {
-      mTrackBC->Fill(rof.getBCData().bc);
-      mTrackBCWidth->Fill(rof.getBCWidth());
+    for (auto ix = rof.getFirstIdx(); ix <= rof.getLastIdx(); ix++) {
+      if (selectedTracks[ix]) {
+        mTrackBC->Fill(rof.getBCData().bc);
+        mTrackBCWidth->Fill(rof.getBCWidth());
+      }
     }
   }
 
   decltype(tracks.size()) nok{ 0 };
 
-  for (const auto& track : tracks) {
-    bool ok = fillTrackHistos(track, clusters, digits);
-    if (ok) {
-      ++nok;
+  for (auto ix = 0; ix < tracks.size(); ix++) {
+    if (selectedTracks[ix]) {
+      bool ok = fillTrackHistos(tracks[ix], clusters, digits);
+      if (ok) {
+        ++nok;
+      }
     }
   }
 
-  if (nok != tracks.size()) {
-    std::cerr << "Could only extrapolate " << nok << " tracks over " << tracks.size() << "\n";
+  if (nok != ntracks) {
+    std::cerr << "Could only extrapolate " << nok << " tracks over " << ntracks << "\n";
   }
 
   for (const auto& rof : rofs) {
     if (rof.getNEntries() > 0) {
-      auto rtracks = tracks.subspan(rof.getFirstIdx(), rof.getNEntries());
+      std::vector<o2::mch::TrackMCH> rtracks;
+      for (auto ix = rof.getFirstIdx(); ix <= rof.getLastIdx(); ix++) {
+        if (selectedTracks[ix]) {
+          rtracks.emplace_back(tracks[ix]);
+        }
+      }
       fillTrackPairHistos(rtracks);
     }
   }
