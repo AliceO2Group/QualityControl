@@ -95,11 +95,11 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mMapChTrgNames.insert({ o2::fv0::ChannelData::kIsEventInTVDC, "IsEventInTVDC" });
   mMapChTrgNames.insert({ o2::fv0::ChannelData::kIsTimeInfoLost, "IsTimeInfoLost" });
 
-  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitA, "OrA" });
-  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitAOut, "OrC" });
-  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitAIn, "Vertex" });
-  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitTrgCharge, "Central" });
-  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitTrgNchan, "SemiCentral" });
+  mMapDigitTrgNames.insert({ o2::fv0::Triggers::bitA, "OrA" });
+  mMapDigitTrgNames.insert({ o2::fv0::Triggers::bitAOut, "OrAOut" });
+  mMapDigitTrgNames.insert({ o2::fv0::Triggers::bitTrgNchan, "TrgNChan" });
+  mMapDigitTrgNames.insert({ o2::fv0::Triggers::bitTrgCharge, "TrgCharge" });
+  mMapDigitTrgNames.insert({ o2::fv0::Triggers::bitAIn, "OrAIn" });
   mMapDigitTrgNames.insert({ o2::fit::Triggers::bitLaser, "Laser" });
   mMapDigitTrgNames.insert({ o2::fit::Triggers::bitOutputsAreBlocked, "OutputsAreBlocked" });
   mMapDigitTrgNames.insert({ o2::fit::Triggers::bitDataIsValid, "DataIsValid" });

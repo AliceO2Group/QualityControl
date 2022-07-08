@@ -18,6 +18,7 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/DatabaseInterface.h"
 #include "FT0/OutOfBunchCollTask.h"
+#include "DataFormatsFT0/Digit.h"
 
 #include <TH1F.h>
 #include <TH2.h>
@@ -113,9 +114,13 @@ void OutOfBunchCollTask::update(Trigger t, framework::ServiceRegistry&)
       }
     }
   }
-  mHistBcTrgOutOfBunchColl->SetEntries(mHistBcTrgOutOfBunchColl->Integral(1, nBc, 1, 5));
-  getObjectsManager()->getMonitorObject(mHistBcTrgOutOfBunchColl->GetName())->addOrUpdateMetadata("BcVsTrgIntegral", std::to_string(mHistBcTrgOutOfBunchColl->Integral(1, nBc, 1, 5)));
-  ILOG(Info, Support) << "Integrals OutOfBunchColl_BCvsTrg: " << mHistBcTrgOutOfBunchColl->Integral() << ", OutOfBunchColl:" << mHistBcTrgOutOfBunchColl->Integral() << ENDM;
+  mHistBcTrgOutOfBunchColl->SetEntries(mHistBcTrgOutOfBunchColl->Integral(1, nBc, 1, mMapDigitTrgNames.size()));
+  for(int iBin=1;iBin<mMapDigitTrgNames.size()+1;iBin++) {
+    const std::string metadataKey = "BcVsTrgIntegralBin" + std::to_string(iBin);
+    const std::string metadataValue = std::to_string(mHistBcTrgOutOfBunchColl->Integral(1, nBc, iBin, iBin));
+    getObjectsManager()->getMonitorObject(mHistBcTrgOutOfBunchColl->GetName())->addOrUpdateMetadata(metadataKey, metadataValue);
+    ILOG(Info, Support) << metadataKey <<":" << metadataValue << ENDM;
+  }
 }
 
 void OutOfBunchCollTask::finalize(Trigger t, framework::ServiceRegistry&)

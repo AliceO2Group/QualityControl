@@ -19,6 +19,8 @@
 #include "QualityControl/DatabaseInterface.h"
 #include "FV0/OutOfBunchCollTask.h"
 
+#include "DataFormatsFV0/Digit.h"
+
 #include <TH1F.h>
 #include <TH2.h>
 #include <typeinfo>
@@ -28,11 +30,6 @@ using namespace o2::quality_control::postprocessing;
 
 namespace o2::quality_control_modules::fv0
 {
-
-OutOfBunchCollTask::~OutOfBunchCollTask()
-{
-  delete mListHistGarbage;
-}
 
 void OutOfBunchCollTask::configure(std::string, const boost::property_tree::ptree& config)
 {
@@ -64,27 +61,25 @@ void OutOfBunchCollTask::initialize(Trigger, framework::ServiceRegistry& service
   mDatabase = &services.get<o2::quality_control::repository::DatabaseInterface>();
   mCcdbApi.init(mCcdbUrl);
 
-  mMapDigitTrgNames.insert({ ETrgMenu::kMinBias, "MinBias" });
-  mMapDigitTrgNames.insert({ ETrgMenu::kOuterRing, "OuterRing" });
-  mMapDigitTrgNames.insert({ ETrgMenu::kNChannels, "NChannels" });
-  mMapDigitTrgNames.insert({ ETrgMenu::kCharge, "Charge" });
-  mMapDigitTrgNames.insert({ ETrgMenu::kInnerRing, "InnerRing" });
+  mMapDigitTrgNames.insert({ o2::fv0::Triggers::bitA, "OrA" });
+  mMapDigitTrgNames.insert({ o2::fv0::Triggers::bitAOut, "OrAOut" });
+  mMapDigitTrgNames.insert({ o2::fv0::Triggers::bitTrgNchan, "TrgNChan" });
+  mMapDigitTrgNames.insert({ o2::fv0::Triggers::bitTrgCharge, "TrgCharge" });
+  mMapDigitTrgNames.insert({ o2::fv0::Triggers::bitAIn, "OrAIn" });
+  mMapDigitTrgNames.insert({ o2::fv0::Triggers::bitLaser, "Laser" });
+  mMapDigitTrgNames.insert({ o2::fv0::Triggers::bitOutputsAreBlocked, "OutputsAreBlocked" });
+  mMapDigitTrgNames.insert({ o2::fv0::Triggers::bitDataIsValid, "DataIsValid" });
 
-  mListHistGarbage = new TList();
-  mListHistGarbage->SetOwner(kTRUE);
+  mHistBcTrgOutOfBunchColl = std::make_unique<TH2F>("OutOfBunchColl_BCvsTrg", "BC vs Triggers for out-of-bunch collisions;BC;Triggers", 3564, 0, 3564, mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
+  mHistBcPattern = std::make_unique<TH2F>("bcPattern", "BC pattern", 3564, 0, 3564, mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
   for (const auto& entry : mMapDigitTrgNames) {
-    auto pairOutOfBunchColl = mMapOutOfBunchColl.insert({ entry.first, new TH2F(Form("OutOfBunchColl_Trg%s", entry.second.c_str()), Form("BC-orbit map for out-of-bunch collisions: %s fired;Orbit;BC", entry.second.c_str()), 256, 0, 256, 3564, 0, 3564) });
-    if (pairOutOfBunchColl.second) {
-      getObjectsManager()->startPublishing(pairOutOfBunchColl.first->second);
-      mListHistGarbage->Add(pairOutOfBunchColl.first->second);
-    }
+    mHistBcTrgOutOfBunchColl->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
+    mHistBcPattern->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
   }
-  for (auto& entry : mMapOutOfBunchColl) {
-    entry.second->SetOption("colz");
-  }
-  mHistBcPattern = std::make_unique<TH2F>("bcPattern", "BC pattern", 256, 0, 256, 3564, 0, 3564);
-  mHistBcPattern->SetOption("colz");
+  getObjectsManager()->startPublishing(mHistBcTrgOutOfBunchColl.get());
   getObjectsManager()->startPublishing(mHistBcPattern.get());
+  getObjectsManager()->setDefaultDrawOptions(mHistBcTrgOutOfBunchColl.get(), "COLZ");
+  getObjectsManager()->setDefaultDrawOptions(mHistBcPattern.get(), "COLZ");
 }
 
 void OutOfBunchCollTask::update(Trigger t, framework::ServiceRegistry&)
@@ -93,37 +88,39 @@ void OutOfBunchCollTask::update(Trigger t, framework::ServiceRegistry&)
   std::map<std::string, std::string> headers;
   const auto* bcPattern = mCcdbApi.retrieveFromTFileAny<o2::BunchFilling>(mPathBunchFilling, metadata, -1, &headers);
   if (!bcPattern) {
-    ILOG(Error, Support) << "object \"" << mPathBunchFilling << "\" NOT retrieved!!!"
-                         << ENDM;
+    ILOG(Error, Support) << "object \"" << mPathBunchFilling << "\" NOT retrieved!!!" << ENDM;
     return;
   }
   const int nBc = 3564;
-  const int nOrbits = 256;
   mHistBcPattern->Reset();
-  for (int j = 0; j < nOrbits + 1; j++)
-    for (int i = 0; i < nBc + 1; i++)
-      mHistBcPattern->SetBinContent(j + 1, i + 1, bcPattern->testBC(i));
-
-  for (auto& entry : mMapOutOfBunchColl) {
-    auto moName = Form("BcOrbitMap_Trg%s", mMapDigitTrgNames.at(entry.first).c_str());
-    auto mo = mDatabase->retrieveMO(mPathDigitQcTask, moName, t.timestamp, t.activity);
-    auto hBcOrbitMapTrg = mo ? (TH2F*)mo->getObject() : nullptr;
-    if (!hBcOrbitMapTrg) {
-      ILOG(Error, Support) << "MO \"" << moName << "\" NOT retrieved!!!"
-                           << ENDM;
-      continue;
+  for (int i = 0; i < nBc + 1; i++) {
+    for (int j = 0; j < mMapDigitTrgNames.size() + 1; j++) {
+      mHistBcPattern->SetBinContent(i + 1, j + 1, bcPattern->testBC(i));
     }
-    entry.second->Reset();
-    // scale bc pattern by vmax to make sure the difference is non positive
-    float vmax = hBcOrbitMapTrg->GetBinContent(hBcOrbitMapTrg->GetMaximumBin());
-    entry.second->Add(hBcOrbitMapTrg, mHistBcPattern.get(), 1, -1 * vmax);
-    for (int j = 0; j < nOrbits + 1; j++)
-      for (int i = 0; i < nBc + 1; i++)
-        if (entry.second->GetBinContent(j + 1, i + 1) < 0)
-          entry.second->SetBinContent(j + 1, i + 1, 0); // is it too slow?
-    entry.second->SetEntries(entry.second->Integral());
-    getObjectsManager()->getMonitorObject(entry.second->GetName())->addOrUpdateMetadata("BcOrbitMapIntegral", std::to_string(hBcOrbitMapTrg->Integral()));
-    ILOG(Debug, Support) << "Trg: " << moName << "  Integrals BcOrbitMap: " << hBcOrbitMapTrg->Integral() << ", OutOfBunchColl:" << entry.second->Integral() << ENDM;
+  }
+  auto mo = mDatabase->retrieveMO(mPathDigitQcTask, "BCvsTriggers", t.timestamp, t.activity);
+  auto hBcVsTrg = mo ? (TH2F*)mo->getObject() : nullptr;
+  if (!hBcVsTrg) {
+    ILOG(Error, Support) << "MO \"BCvsTriggers\" NOT retrieved!!!" << ENDM;
+    return;
+  }
+
+  mHistBcTrgOutOfBunchColl->Reset();
+  float vmax = hBcVsTrg->GetBinContent(hBcVsTrg->GetMaximumBin());
+  mHistBcTrgOutOfBunchColl->Add(hBcVsTrg, mHistBcPattern.get(), 1, -1 * vmax);
+  for (int i = 0; i < nBc + 1; i++) {
+    for (int j = 0; j < mMapDigitTrgNames.size() + 1; j++) {
+      if (mHistBcTrgOutOfBunchColl->GetBinContent(i + 1, j + 1) < 0) {
+        mHistBcTrgOutOfBunchColl->SetBinContent(i + 1, j + 1, 0); // is it too slow?
+      }
+    }
+  }
+  mHistBcTrgOutOfBunchColl->SetEntries(mHistBcTrgOutOfBunchColl->Integral(1, nBc, 1, mMapDigitTrgNames.size()));
+  for(int iBin=1;iBin<mMapDigitTrgNames.size()+1;iBin++) {
+    const std::string metadataKey = "BcVsTrgIntegralBin" + std::to_string(iBin);
+    const std::string metadataValue = std::to_string(mHistBcTrgOutOfBunchColl->Integral(1, nBc, iBin, iBin));
+    getObjectsManager()->getMonitorObject(mHistBcTrgOutOfBunchColl->GetName())->addOrUpdateMetadata(metadataKey, metadataValue);
+    ILOG(Info, Support) << metadataKey <<":" << metadataValue << ENDM;
   }
 }
 
