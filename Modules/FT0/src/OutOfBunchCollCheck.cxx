@@ -58,7 +58,7 @@ Quality OutOfBunchCollCheck::check(std::map<std::string, std::shared_ptr<Monitor
   float integralBcOrbitMap = 0;
   float integralOutOfBunchColl = 0;
   bool metadataFound = false;
-  std::string metadataKey = "BcOrbitMapIntegral";
+  std::string metadataKey = "BcVsTrgIntegral";
 
   for (auto& [moName, mo] : *moMap) {
     (void)moName;
@@ -90,7 +90,7 @@ Quality OutOfBunchCollCheck::check(std::map<std::string, std::shared_ptr<Monitor
   mFractionOutOfBunchColl = 0;
   mNumNonEmptyBins = 0;
 
-  integralOutOfBunchColl = hOutOfBunchColl->Integral();
+  integralOutOfBunchColl = hOutOfBunchColl->Integral(1, 3564, 1, 5);
   mFractionOutOfBunchColl = integralOutOfBunchColl / integralBcOrbitMap;
 
   ILOG(Debug, Support) << "in checker: integralBcOrbitMap:" << integralBcOrbitMap << " integralOutOfBunchColl: " << integralOutOfBunchColl << " -> fraction: " << mFractionOutOfBunchColl << ENDM;
