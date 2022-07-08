@@ -2,7 +2,7 @@
 
 add_library(O2QcFDD)
 
-target_sources(O2QcFDD PRIVATE src/DigitQcTask.cxx )
+target_sources(O2QcFDD PRIVATE src/DigitQcTask.cxx src/DigitQcTaskLaser.cxx src/RecPointsQcTask.cxx )
 
 target_include_directories(
   O2QcFDD
@@ -20,6 +20,8 @@ install(TARGETS O2QcFDD
 add_root_dictionary(O2QcFDD
                     HEADERS
   include/FDD/DigitQcTask.h
+  include/FDD/DigitQcTaskLaser.h
+  include/FDD/RecPointsQcTask.h
   include/FDD/Helper.h
                     LINKDEF include/FDD/LinkDef.h
                     BASENAME O2QcFDD)
