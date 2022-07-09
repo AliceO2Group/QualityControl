@@ -20,7 +20,7 @@
 #include "TROOT.h"
 
 #include "QualityControl/QcInfoLogger.h"
-
+#include "DataFormatsFIT/Triggers.h"
 #include "Framework/InputRecord.h"
 #include "DataFormatsFV0/LookUpTable.h"
 
@@ -95,11 +95,11 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mMapChTrgNames.insert({ o2::fv0::ChannelData::kIsEventInTVDC, "IsEventInTVDC" });
   mMapChTrgNames.insert({ o2::fv0::ChannelData::kIsTimeInfoLost, "IsTimeInfoLost" });
 
-  mMapDigitTrgNames.insert({ o2::fv0::Triggers::bitA, "OrA" });
-  mMapDigitTrgNames.insert({ o2::fv0::Triggers::bitAOut, "OrAOut" });
-  mMapDigitTrgNames.insert({ o2::fv0::Triggers::bitTrgNchan, "TrgNChan" });
-  mMapDigitTrgNames.insert({ o2::fv0::Triggers::bitTrgCharge, "TrgCharge" });
-  mMapDigitTrgNames.insert({ o2::fv0::Triggers::bitAIn, "OrAIn" });
+  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitA, "OrA" });
+  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitAOut, "OrAOut" });
+  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitTrgNchan, "TrgNChan" });
+  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitTrgCharge, "TrgCharge" });
+  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitAIn, "OrAIn" });
   mMapDigitTrgNames.insert({ o2::fit::Triggers::bitLaser, "Laser" });
   mMapDigitTrgNames.insert({ o2::fit::Triggers::bitOutputsAreBlocked, "OutputsAreBlocked" });
   mMapDigitTrgNames.insert({ o2::fit::Triggers::bitDataIsValid, "DataIsValid" });

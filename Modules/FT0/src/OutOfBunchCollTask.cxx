@@ -18,7 +18,7 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/DatabaseInterface.h"
 #include "FT0/OutOfBunchCollTask.h"
-#include "DataFormatsFT0/Digit.h"
+#include "DataFormatsFIT/Triggers.h"
 
 #include <TH1F.h>
 #include <TH2.h>
@@ -60,14 +60,14 @@ void OutOfBunchCollTask::initialize(Trigger, framework::ServiceRegistry& service
   mDatabase = &services.get<o2::quality_control::repository::DatabaseInterface>();
   mCcdbApi.init(mCcdbUrl);
 
-  mMapDigitTrgNames.insert({ o2::ft0::Triggers::bitA, "OrA" });
-  mMapDigitTrgNames.insert({ o2::ft0::Triggers::bitC, "OrC" });
-  mMapDigitTrgNames.insert({ o2::ft0::Triggers::bitVertex, "Vertex" });
-  mMapDigitTrgNames.insert({ o2::ft0::Triggers::bitCen, "Central" });
-  mMapDigitTrgNames.insert({ o2::ft0::Triggers::bitSCen, "SemiCentral" });
-  mMapDigitTrgNames.insert({ o2::ft0::Triggers::bitLaser, "Laser" });
-  mMapDigitTrgNames.insert({ o2::ft0::Triggers::bitOutputsAreBlocked, "OutputsAreBlocked" });
-  mMapDigitTrgNames.insert({ o2::ft0::Triggers::bitDataIsValid, "DataIsValid" });
+  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitA, "OrA" });
+  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitC, "OrC" });
+  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitVertex, "Vertex" });
+  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitCen, "Central" });
+  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitSCen, "SemiCentral" });
+  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitLaser, "Laser" });
+  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitOutputsAreBlocked, "OutputsAreBlocked" });
+  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitDataIsValid, "DataIsValid" });
 
   mHistBcTrgOutOfBunchColl = std::make_unique<TH2F>("OutOfBunchColl_BCvsTrg", "BC vs Triggers for out-of-bunch collisions;BC;Triggers", 3564, 0, 3564, mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
   mHistBcPattern = std::make_unique<TH2F>("bcPattern", "BC pattern", 3564, 0, 3564, mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());

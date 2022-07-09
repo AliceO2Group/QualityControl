@@ -20,7 +20,7 @@
 #include "TROOT.h"
 
 #include "QualityControl/QcInfoLogger.h"
-
+#include "DataFormatsFIT/Triggers.h"
 #include "Framework/InputRecord.h"
 #include "DataFormatsFT0/LookUpTable.h"
 
@@ -95,14 +95,14 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mMapChTrgNames.insert({ o2::ft0::ChannelData::kIsEventInTVDC, "IsEventInTVDC" });
   mMapChTrgNames.insert({ o2::ft0::ChannelData::kIsTimeInfoLost, "IsTimeInfoLost" });
 
-  mMapDigitTrgNames.insert({ o2::ft0::Triggers::bitA, "OrA" });
-  mMapDigitTrgNames.insert({ o2::ft0::Triggers::bitC, "OrC" });
-  mMapDigitTrgNames.insert({ o2::ft0::Triggers::bitVertex, "Vertex" });
-  mMapDigitTrgNames.insert({ o2::ft0::Triggers::bitCen, "Central" });
-  mMapDigitTrgNames.insert({ o2::ft0::Triggers::bitSCen, "SemiCentral" });
-  mMapDigitTrgNames.insert({ o2::ft0::Triggers::bitLaser, "Laser" });
-  mMapDigitTrgNames.insert({ o2::ft0::Triggers::bitOutputsAreBlocked, "OutputsAreBlocked" });
-  mMapDigitTrgNames.insert({ o2::ft0::Triggers::bitDataIsValid, "DataIsValid" });
+  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitA, "OrA" });
+  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitC, "OrC" });
+  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitVertex, "Vertex" });
+  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitCen, "Central" });
+  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitSCen, "SemiCentral" });
+  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitLaser, "Laser" });
+  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitOutputsAreBlocked, "OutputsAreBlocked" });
+  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitDataIsValid, "DataIsValid" });
   mHistTime2Ch = std::make_unique<TH2F>("TimePerChannel", "Time vs Channel;Channel;Time", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM, 4100, -2050, 2050);
   mHistAmp2Ch = std::make_unique<TH2F>("AmpPerChannel", "Amplitude vs Channel;Channel;Amp", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM, 4200, -100, 4100);
   mHistOrbit2BC = std::make_unique<TH2F>("OrbitPerBC", "BC-Orbit map;Orbit;BC;", sOrbitsPerTF, 0, sOrbitsPerTF, sBCperOrbit, 0, sBCperOrbit);

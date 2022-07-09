@@ -19,7 +19,7 @@
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
 
-#include "DataFormatsFV0/Digit.h"
+#include "DataFormatsFIT/Triggers.h"
 // ROOT
 #include <TH1.h>
 #include <TH2.h>
@@ -56,7 +56,7 @@ void OutOfBunchCollCheck::configure()
     mBinPos = stoi(param->second);
     ILOG(Info, Support) << "configure() : using binPos = " << mBinPos << ENDM;
   } else {
-    mBinPos = int(o2::fv0::Triggers::bitA) + 1;
+    mBinPos = int(o2::fit::Triggers::bitA) + 1;
     ILOG(Info, Support) << "configure() : using default binPos = " << mBinPos << ENDM;
   }
 }
