@@ -41,13 +41,9 @@ class TrackletsCheck : public o2::quality_control::checker::CheckInterface
   std::string getAcceptedType() override;
 
   void retrieveCCDBSettings();
-  void fillTrdMaskHistsPerLayer();
-  std::vector<TH2F*> createTrdMaskHistsPerLayer();
 
  private:
   long int mTimestamp;
-  std::vector<TH2F*> mLayersMask;
-  o2::trd::HalfChamberStatusQC* mChamberStatus = nullptr;
   float mIntegralThreshold;
   float mRatioThreshold;
   float mZeroBinRatioThreshold;

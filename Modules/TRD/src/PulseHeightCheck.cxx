@@ -123,14 +123,17 @@ void PulseHeightCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality check
 
     if (checkResult == Quality::Good) {
       h->SetFillColor(kGreen);
+      h->SetLineColor(kGreen);
     } else if (checkResult == Quality::Bad) {
       ILOG(Info, Support) << "Quality::Bad, something wrong with the pulseheight spectrum" << ENDM;
       h->SetFillColor(kRed);
+      h->SetLineColor(kRed);
     } else if (checkResult == Quality::Medium) {
       ILOG(Info, Support) << "Quality::medium, pusleheight spectrum is a bit suspect" << ENDM;
       h->SetFillColor(kOrange);
+      h->SetLineColor(kOrange);
     }
-    h->SetLineColor(kBlack);
+    //h->SetLineColor(kBlack);
     h->Draw();
   }
 }
