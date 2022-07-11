@@ -14,6 +14,10 @@
 /// \author Cristina Terrevoli
 ///
 
+#include <string>
+#include <exception>
+#include <boost/algorithm/string.hpp>
+
 #include <TCanvas.h>
 #include <TH1.h>
 #include <TH2.h>
@@ -33,7 +37,81 @@ using namespace std;
 namespace o2::quality_control_modules::emcal
 {
 
-void RawCheck::configure() {}
+void RawCheck::configure()
+{
+  // switch on/off messages on the infoLogger
+  auto switchBunchMinSM = mCustomParameters.find("MessageBunchMinAmpSM");
+  if (switchBunchMinSM != mCustomParameters.end()) {
+    try {
+      mIlMessageBunchMinAmpCheckSM = decodeBool(switchBunchMinSM->second);
+    } catch (std::exception& e) {
+      ILOG(Error, Support) << e.what() << AliceO2::InfoLogger::InfoLogger::endm;
+    }
+  }
+
+  auto switchBunchMinDetector = mCustomParameters.find("MessageBunchMinAmpDetector");
+  if (switchBunchMinDetector != mCustomParameters.end()) {
+    try {
+      mIlMessageBunchMinAmpCheckDetector = decodeBool(switchBunchMinDetector->second);
+    } catch (std::exception& e) {
+      ILOG(Error, Support) << e.what() << AliceO2::InfoLogger::InfoLogger::endm;
+    }
+  }
+
+  auto switchBunchMinFull = mCustomParameters.find("MessageBunchMinAmpFull");
+  if (switchBunchMinFull != mCustomParameters.end()) {
+    try {
+      mIlMessageBunchMinAmpCheckFull = decodeBool(switchBunchMinFull->second);
+    } catch (std::exception& e) {
+      ILOG(Error, Support) << e.what() << AliceO2::InfoLogger::InfoLogger::endm;
+    }
+  }
+
+  auto switchErrorCode = mCustomParameters.find("MessageErrorCheck");
+  if (switchErrorCode != mCustomParameters.end()) {
+    try {
+      mILMessageRawErrorCheck = decodeBool(switchErrorCode->second);
+    } catch (std::exception& e) {
+      ILOG(Error, Support) << e.what() << AliceO2::InfoLogger::InfoLogger::endm;
+    }
+  }
+
+  auto switchNoisyFEC = mCustomParameters.find("MessageNoisyFECCheck");
+  if (switchNoisyFEC != mCustomParameters.end()) {
+    try {
+      mILMessageNoisyFECCheck = decodeBool(switchNoisyFEC->second);
+    } catch (std::exception& e) {
+      ILOG(Error, Support) << e.what() << AliceO2::InfoLogger::InfoLogger::endm;
+    }
+  }
+
+  auto switchPayloadSizeCheck = mCustomParameters.find("MessagePayloadSizeCheck");
+  if (switchPayloadSizeCheck != mCustomParameters.end()) {
+    try {
+      mILMessagePayloadSizeCheck = decodeBool(switchPayloadSizeCheck->second);
+    } catch (std::exception& e) {
+      ILOG(Error, Support) << e.what() << AliceO2::InfoLogger::InfoLogger::endm;
+    }
+  }
+
+  // configure nsigma sigma-based checkers
+  auto nsigmaFECMaxPayload = mCustomParameters.find("SigmaFECMaxPayload");
+  if (nsigmaFECMaxPayload != mCustomParameters.end()) {
+    try {
+      mNsigmaFECMaxPayload = decodeDouble(nsigmaFECMaxPayload->second);
+    } catch (std::exception& e) {
+      ILOG(Error, Support) << e.what() << AliceO2::InfoLogger::InfoLogger::endm;
+    }
+  }
+  auto nsigmaPayloadSize = mCustomParameters.find("SigmaPayloadSize");
+  if (nsigmaPayloadSize != mCustomParameters.end()) {
+    try {
+      mNsigmaPayloadSize = decodeDouble(nsigmaPayloadSize->second);
+    } catch (std::exception& e) {
+      ILOG(Error, Support) << e.what() << AliceO2::InfoLogger::InfoLogger::endm;
+    }
+  }
+}
 
 Quality RawCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
@@ -58,7 +136,7 @@ Quality RawCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* m
       Int_t maxbin = h->GetMaximumBin();
       h->GetXaxis()->SetRange(first, last);
       if (maxbin > 20 && maxbin < 50) {
-        //Float_t entries = h->GetBinContent(maxbin + 1);
+        // Float_t entries = h->GetBinContent(maxbin + 1);
         if (entriesBadRegion > 0.5 * totentries) {
           result = Quality::Bad;
         }
@@ -66,7 +144,6 @@ Quality RawCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* m
     } // checker for the raw ampl histos (second peak around 40)
   }
   if (mo->getName() == "FECidMaxChWithInput_perSM") {
-    double errormargin = 2.;
     auto* h = dynamic_cast<TH2*>(mo->getObject());
     if (h->GetEntries() == 0) {
       result = Quality::Medium;
@@ -90,7 +167,7 @@ Quality RawCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* m
         // compare count rate of each FEC to truncated mean
         for (int ifec = 0; ifec < smbin->GetXaxis()->GetNbins(); ifec++) {
           double countrate = smbin->GetBinContent(ifec + 1);
-          if (countrate > mean + errormargin * sigma) {
+          if (countrate > mean + mNsigmaFECMaxPayload * sigma) {
             hasBadFEC = true;
             break;
           }
@@ -105,7 +182,6 @@ Quality RawCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* m
   if (mo->getName().find("PayloadSize") != std::string::npos && mo->getName().find("1D") == std::string::npos) {
     // 2D checkers for payload size
     std::map<int, double> meanPayloadSizeDDL;
-    double errormargin = 2.;
     auto* h = dynamic_cast<TH2*>(mo->getObject());
     if (h->GetEntries() == 0) {
       result = Quality::Medium;
@@ -126,7 +202,7 @@ Quality RawCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* m
       TRobustEstimator estimmator;
       estimmator.EvaluateUni(meanPayloads.size(), meanPayloads.data(), mean, sigma);
       for (auto [ddlID, payloadmean] : meanPayloadSizeDDL) {
-        if (payloadmean > mean + errormargin * sigma) {
+        if (payloadmean > mean + mNsigmaPayloadSize * sigma) {
           result = Quality::Bad;
           break;
         }
@@ -134,7 +210,6 @@ Quality RawCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* m
     }
   }
   if (mo->getName().find("PayloadSize") != std::string::npos && mo->getName().find("1D") != std::string::npos) {
-    double errormargin = 2.;
     auto* h = dynamic_cast<TH1*>(mo->getObject());
     if (!h->GetEntries()) {
       result = Quality::Medium;
@@ -153,7 +228,7 @@ Quality RawCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* m
       // compare count rate of each FEC to truncated mean
       for (int ipay = 0; ipay < h->GetXaxis()->GetNbins(); ipay++) {
         double countrate = h->GetBinContent(ipay + 1);
-        if (countrate > mean + errormargin * sigma) {
+        if (countrate > mean + mNsigmaPayloadSize * sigma) {
           result = Quality::Bad;
         }
       }
@@ -172,7 +247,7 @@ void RawCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
     auto* h = dynamic_cast<TH1*>(mo->getObject());
 
     if (checkResult == Quality::Good) {
-      //check the error type, loop on X entries to find the SM and on Y to find the Error Number
+      // check the error type, loop on X entries to find the SM and on Y to find the Error Number
       TLatex* msg = new TLatex(0.2, 0.8, "#color[418]{No Error: OK}");
       msg->SetNDC();
       msg->SetTextSize(16);
@@ -180,8 +255,9 @@ void RawCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
       h->GetListOfFunctions()->Add(msg);
       msg->Draw();
     } else if (checkResult == Quality::Bad) {
-      LOG(info) << "Quality::Bad, setting to red";
-      ILOG(Error, Support) << " QualityBad:Presence of Error Code" << AliceO2::InfoLogger::InfoLogger::endm;
+      if (mILMessageRawErrorCheck) {
+        ILOG(Error, Support) << " QualityBad:Presence of Error Code" << AliceO2::InfoLogger::InfoLogger::endm;
+      }
       TLatex* msg = new TLatex(0.2, 0.8, "#color[2]{Presence of Error Code: call EMCAL oncall}");
       msg->SetNDC();
       msg->SetTextSize(16);
@@ -190,7 +266,7 @@ void RawCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
       msg->Draw();
       h->SetFillColor(kRed);
     } else if (checkResult == Quality::Medium) {
-      LOG(info) << "Quality::medium, setting to orange";
+      ILOG(Info, Support) << "Quality::medium, setting to orange";
       h->SetFillColor(kOrange);
     }
     h->SetLineColor(kBlack);
@@ -198,6 +274,7 @@ void RawCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
   if (mo->getName().find("BunchMinRawAmplitude") != std::string::npos) {
     auto* h = dynamic_cast<TH1*>(mo->getObject());
     if (checkResult == Quality::Good) {
+      ;
       TLatex* msg = new TLatex(0.3, 0.8, "#color[418]{Data OK}");
       msg->SetNDC();
       msg->SetTextSize(16);
@@ -206,8 +283,17 @@ void RawCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
       msg->Draw();
       h->SetFillColor(kGreen);
     } else if (checkResult == Quality::Bad) {
-      LOG(info) << "Quality::Bad, setting to red";
-      ILOG(Error, Support) << " QualityBad:Bunch min Amplitude outside limits " << AliceO2::InfoLogger::InfoLogger::endm;
+      bool showMessage = false;
+      if (mIlMessageBunchMinAmpCheckSM && (mo->getName().find("SM") != std::string::npos)) {
+        showMessage = true;
+      } else if (mIlMessageBunchMinAmpCheckDetector && (mo->getName().find("EMCAL") != std::string::npos || mo->getName().find("DCAL") != std::string::npos)) {
+        showMessage = true;
+      } else if (mIlMessageBunchMinAmpCheckFull && (mo->getName().find("Full") != std::string::npos)) {
+        showMessage = true;
+      }
+      if (showMessage) {
+        ILOG(Error, Support) << " QualityBad:Bunch min Amplitude outside limits (" << mo->getName() << ")" << AliceO2::InfoLogger::InfoLogger::endm;
+      }
       TLatex* msg = new TLatex(0.2, 0.8, "#color[2]{Pedestal peak detected}");
       msg->SetNDC();
       msg->SetTextSize(16);
@@ -224,7 +310,7 @@ void RawCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
       h->GetListOfFunctions()->Add(msg);
       msg->Draw();
     } else if (checkResult == Quality::Medium) {
-      LOG(info) << "Quality::medium, setting to orange";
+      ILOG(Info, Support) << "Quality::medium, setting to orange";
       TLatex* msg = new TLatex(0.2, 0.8, "#color[42]{empty:if in run, call EMCAL oncall}");
       msg->SetNDC();
       msg->SetTextSize(16);
@@ -246,13 +332,20 @@ void RawCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
       h->GetListOfFunctions()->Add(msg);
       msg->Draw();
     } else if (checkResult == Quality::Bad) {
-      LOG(info) << "Quality::Bad, setting to red";
       TLatex* msg;
-      if (mo->getName() == "FECidMaxChWithInput_perSM")
+      if (mo->getName() == "FECidMaxChWithInput_perSM") {
+        if (mILMessageNoisyFECCheck) {
+          ILOG(Error, Support) << "Noisy FEC detected" << AliceO2::InfoLogger::InfoLogger::endm;
+        }
         msg = new TLatex(0.2, 0.8, "#color[2]{Noisy FEC detected}");
-      if (mo->getName().find("PayloadSize") != std::string::npos)
+      }
+      if (mo->getName().find("PayloadSize") != std::string::npos) {
+        if (mILMessagePayloadSizeCheck) {
+          ILOG(Error, Support) << "Large payload in several DDLs" << AliceO2::InfoLogger::InfoLogger::endm;
+        }
         msg = new TLatex(0.2, 0.8, "#color[2]{Large payload in several DDLs}");
-      //Large payload in several DDLs
+      }
+      // Large payload in several DDLs
       msg->SetNDC();
       msg->SetTextSize(16);
       msg->SetTextFont(43);
@@ -267,7 +360,7 @@ void RawCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
       h->GetListOfFunctions()->Add(msg);
       msg->Draw();
     } else if (checkResult == Quality::Medium) {
-      LOG(info) << "Quality::medium, setting to orange";
+      ILOG(Info, Support) << "Quality::medium, setting to orange";
       TLatex* msg = new TLatex(0.2, 0.8, "#color[42]{empty:if in run, call EMCAL-oncall}");
       msg->SetNDC();
       msg->SetTextSize(16);
@@ -276,6 +369,36 @@ void RawCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
       msg->Draw();
     }
     h->SetLineColor(kBlack);
+  }
+}
+
+bool RawCheck::decodeBool(std::string value) const
+{
+  boost::algorithm::to_lower_copy(value);
+  if (value == "true") {
+    return true;
+  }
+  if (value == "false") {
+    return false;
+  }
+  throw std::runtime_error(fmt::format("Value {} not a boolean", value.data()).data());
+}
+
+double RawCheck::decodeDouble(std::string value) const
+{
+  try {
+    return std::stod(value);
+  } catch (std::exception& e) {
+    throw std::runtime_error(fmt::format("Value {} not a double", value.data()).data());
+  }
+}
+
+int RawCheck::decodeInt(std::string value) const
+{
+  try {
+    return std::stoi(value);
+  } catch (std::exception& e) {
+    throw std::runtime_error(fmt::format("Value {} not an integer", value.data()).data());
   }
 }
 
