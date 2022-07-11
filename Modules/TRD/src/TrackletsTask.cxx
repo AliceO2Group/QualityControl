@@ -167,9 +167,9 @@ void TrackletsTask::buildHistograms()
   getObjectsManager()->startPublishing(mTrackletPositionRawn.get());
   mTrackletsPerEventn.reset(new TH1F("trackletspereventn", "Number of Tracklets per event noise in;Tracklets in Events;Counts", 25000, 0, 25000));
   getObjectsManager()->startPublishing(mTrackletsPerEventn.get());
-  mTrackletsPerTimeFrame.reset(new TH1F("trackletspertimeframe", "Number of Tracklets per timeframe;Tracklets in TimeFrame;Counts", 25000, 0, 25000));
+  mTrackletsPerTimeFrame.reset(new TH1F("trackletspertimeframe", "Number of Tracklets per timeframe;Tracklets in TimeFrame;Counts", 25000, 0, 500000));
   getObjectsManager()->startPublishing(mTrackletsPerTimeFrame.get());
-  mTrackletsPerTimeFrameCycled.reset(new TH1F("trackletspertimeframecycled", "Number of Tracklets per timeframe, this cycle;Tracklets in TimeFrame;Counts", 25000, 0, 25000));
+  mTrackletsPerTimeFrameCycled.reset(new TH1F("trackletspertimeframecycled", "Number of Tracklets per timeframe, this cycle;Tracklets in TimeFrame;Counts", 25000, 0, 500000));
   getObjectsManager()->startPublishing(mTrackletsPerTimeFrameCycled.get());
 
   buildTrackletLayers();
@@ -184,11 +184,12 @@ void TrackletsTask::drawHashOnLayers(int layer, int hcid, int rowstart, int rowe
   int det = hcid / 2;
   int side = hcid % 2;
   int sec = hcid / 60;
-  bottomleft.first = rowstart; // - 0.5;
+  bottomleft.first = rowstart - 0.5;
   bottomleft.second = (sec * 2 + side) * 4 - 0.5;
   topright.first = rowend - 0.5;
   topright.second = (sec * 2 + side) * 4 + 4 - 0.5;
 
+  //LOG(info) << "Box for layer : " << layer << " hcid : " << hcid << ": " << bottomleft.first << ":" << bottomleft.second << " -- " << topright.first << ":" << topright.second;
   boxlines[0] = new TLine(bottomleft.first, bottomleft.second, topright.first, bottomleft.second);                                                                                         //bottom
   boxlines[1] = new TLine(bottomleft.first, topright.second, topright.first, topright.second);                                                                                             // top
   boxlines[2] = new TLine(bottomleft.first, bottomleft.second, bottomleft.first, topright.second);                                                                                         // left
@@ -199,7 +200,7 @@ void TrackletsTask::drawHashOnLayers(int layer, int hcid, int rowstart, int rowe
   boxlines[7] = new TLine(bottomleft.first + (topright.first - bottomleft.first) / 2, bottomleft.second, bottomleft.first + (topright.first - bottomleft.first) / 2, topright.second);     //vertical middle
   boxlines[8] = new TLine(bottomleft.first, bottomleft.second + (topright.second - bottomleft.second) / 2, topright.first, bottomleft.second + (topright.second - bottomleft.second) / 2); //bottom
   for (int line = 0; line < 9; ++line) {
-    boxlines[line]->SetLineColor(kRed);
+    boxlines[line]->SetLineColor(kBlack);
     mLayers[layer]->GetListOfFunctions()->Add(boxlines[line]);
   }
 }
@@ -207,7 +208,7 @@ void TrackletsTask::drawHashOnLayers(int layer, int hcid, int rowstart, int rowe
 void TrackletsTask::buildTrackletLayers()
 {
   for (int iLayer = 0; iLayer < 6; ++iLayer) {
-    mLayers[iLayer].reset(new TH2F(Form("TrackletsPerLayer/layer%i", iLayer), Form("Tracklet count per mcm in layer %i;stack;sector", iLayer), 76, -10.5, 75.5, 144, -10.5, 143.5));
+    mLayers[iLayer].reset(new TH2F(Form("TrackletsPerLayer/layer%i", iLayer), Form("Tracklet count per mcm in layer %i;stack;sector", iLayer), 76, -0.5, 75.5, 144, -0.5, 143.5));
 
     auto xax = mLayers[iLayer].get()->GetXaxis();
     xax->SetBinLabel(8, "0");
@@ -308,14 +309,15 @@ void TrackletsTask::monitorData(o2::framework::ProcessingContext& ctx)
       auto digits = ctx.inputs().get<gsl::span<o2::trd::Digit>>("digits");
       auto tracklets = ctx.inputs().get<gsl::span<o2::trd::Tracklet64>>("tracklets");
       auto triggerrecords = ctx.inputs().get<gsl::span<o2::trd::TriggerRecord>>("triggers");
+      //std::cout << "Tracklets per time frame: " << tracklets.size();
       mTrackletsPerTimeFrame->Fill(tracklets.size());
       mTrackletsPerTimeFrameCycled->Fill(tracklets.size());
       for (auto& trigger : triggerrecords) {
+        mTrackletsPerEvent->Fill(trigger.getNumberOfTracklets());
         if (trigger.getNumberOfTracklets() == 0) {
           continue; //bail if we have no digits in this trigger
         }
         //now sort digits to det,row,pad
-        mTrackletsPerEvent->Fill(trigger.getNumberOfTracklets());
         for (int currenttracklet = trigger.getFirstTracklet(); currenttracklet < trigger.getFirstTracklet() + trigger.getNumberOfTracklets() - 1; ++currenttracklet) {
           int detector = tracklets[currenttracklet].getDetector();
           int sm = detector / 30;
@@ -373,7 +375,7 @@ void TrackletsTask::endOfCycle()
     hist->SetMaximum(max);
   }
   //reset the TrackletPerTimeCycled
-  mTrackletsPerTimeFrameCycled->Reset();
+  mTrackletsPerTimeFrameCycled.get()->Reset();
 }
 
 void TrackletsTask::endOfActivity(Activity& /*activity*/)
@@ -404,8 +406,8 @@ void TrackletsTask::reset()
   mTrackletPositionn.get()->Reset();
   mTrackletPositionRawn.get()->Reset();
   mTrackletsPerEventn.get()->Reset();
-  mTrackletsPerTimeFrame->Reset();
-  mTrackletsPerTimeFrameCycled->Reset();
+  mTrackletsPerTimeFrame.get()->Reset();
+  mTrackletsPerTimeFrameCycled.get()->Reset();
   for (auto h : mLayers) {
     h->Reset();
   }
