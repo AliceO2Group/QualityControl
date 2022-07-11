@@ -18,6 +18,7 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/DatabaseInterface.h"
 #include "FT0/OutOfBunchCollTask.h"
+#include "DataFormatsFIT/Triggers.h"
 
 #include <TH1F.h>
 #include <TH2.h>
@@ -59,14 +60,14 @@ void OutOfBunchCollTask::initialize(Trigger, framework::ServiceRegistry& service
   mDatabase = &services.get<o2::quality_control::repository::DatabaseInterface>();
   mCcdbApi.init(mCcdbUrl);
 
-  mMapDigitTrgNames.insert({ o2::ft0::Triggers::bitA, "OrA" });
-  mMapDigitTrgNames.insert({ o2::ft0::Triggers::bitC, "OrC" });
-  mMapDigitTrgNames.insert({ o2::ft0::Triggers::bitVertex, "Vertex" });
-  mMapDigitTrgNames.insert({ o2::ft0::Triggers::bitCen, "Central" });
-  mMapDigitTrgNames.insert({ o2::ft0::Triggers::bitSCen, "SemiCentral" });
-  mMapDigitTrgNames.insert({ o2::ft0::Triggers::bitLaser, "Laser" });
-  mMapDigitTrgNames.insert({ o2::ft0::Triggers::bitOutputsAreBlocked, "OutputsAreBlocked" });
-  mMapDigitTrgNames.insert({ o2::ft0::Triggers::bitDataIsValid, "DataIsValid" });
+  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitA, "OrA" });
+  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitC, "OrC" });
+  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitVertex, "Vertex" });
+  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitCen, "Central" });
+  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitSCen, "SemiCentral" });
+  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitLaser, "Laser" });
+  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitOutputsAreBlocked, "OutputsAreBlocked" });
+  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitDataIsValid, "DataIsValid" });
 
   mHistBcTrgOutOfBunchColl = std::make_unique<TH2F>("OutOfBunchColl_BCvsTrg", "BC vs Triggers for out-of-bunch collisions;BC;Triggers", 3564, 0, 3564, mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
   mHistBcPattern = std::make_unique<TH2F>("bcPattern", "BC pattern", 3564, 0, 3564, mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
@@ -113,9 +114,13 @@ void OutOfBunchCollTask::update(Trigger t, framework::ServiceRegistry&)
       }
     }
   }
-  mHistBcTrgOutOfBunchColl->SetEntries(mHistBcTrgOutOfBunchColl->Integral(1, nBc, 1, 5));
-  getObjectsManager()->getMonitorObject(mHistBcTrgOutOfBunchColl->GetName())->addOrUpdateMetadata("BcVsTrgIntegral", std::to_string(mHistBcTrgOutOfBunchColl->Integral(1, nBc, 1, 5)));
-  ILOG(Info, Support) << "Integrals OutOfBunchColl_BCvsTrg: " << mHistBcTrgOutOfBunchColl->Integral() << ", OutOfBunchColl:" << mHistBcTrgOutOfBunchColl->Integral() << ENDM;
+  mHistBcTrgOutOfBunchColl->SetEntries(mHistBcTrgOutOfBunchColl->Integral(1, nBc, 1, mMapDigitTrgNames.size()));
+  for (int iBin = 1; iBin < mMapDigitTrgNames.size() + 1; iBin++) {
+    const std::string metadataKey = "BcVsTrgIntegralBin" + std::to_string(iBin);
+    const std::string metadataValue = std::to_string(mHistBcTrgOutOfBunchColl->Integral(1, nBc, iBin, iBin));
+    getObjectsManager()->getMonitorObject(mHistBcTrgOutOfBunchColl->GetName())->addOrUpdateMetadata(metadataKey, metadataValue);
+    ILOG(Info, Support) << metadataKey << ":" << metadataValue << ENDM;
+  }
 }
 
 void OutOfBunchCollTask::finalize(Trigger t, framework::ServiceRegistry&)

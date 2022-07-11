@@ -46,6 +46,7 @@ class OutOfBunchCollCheck : public o2::quality_control::checker::CheckInterface
   float mThreshWarning;
   float mThreshError;
   std::string mTrgName;
+  int mBinPos;
 };
 
 } // namespace o2::quality_control_modules::ft0

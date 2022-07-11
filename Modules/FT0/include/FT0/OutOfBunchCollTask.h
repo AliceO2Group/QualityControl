@@ -20,9 +20,6 @@
 #include "CommonDataFormat/BunchFilling.h"
 #include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/DatabaseInterface.h"
-#include "FT0Base/Constants.h"
-#include "DataFormatsFT0/Digit.h"
-#include "DataFormatsFT0/ChannelData.h"
 #include "CCDB/CcdbApi.h"
 
 #include "TList.h"
