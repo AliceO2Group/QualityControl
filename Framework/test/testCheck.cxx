@@ -73,7 +73,7 @@ class TestCheck : public CheckInterface
 {
  public:
   TestCheck() = default;
-  void configure(string /*name*/)
+  void configure()
   {
   }
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
