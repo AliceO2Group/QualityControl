@@ -82,6 +82,7 @@ void PostProcessingRunner::init(const PostProcessingRunnerConfig& runnerConfig, 
   ILOG(Info, Support) << ">> Host : " << mRunnerConfig.database.at("host") << ENDM;
 
   mObjectManager = std::make_shared<ObjectsManager>(mTaskConfig.taskName, mTaskConfig.className, mTaskConfig.detectorName, mRunnerConfig.consulUrl);
+  mObjectManager->setActivity(mTaskConfig.activity);
   mServices.registerService<DatabaseInterface>(mDatabase.get());
   if (mPublicationCallback == nullptr) {
     mPublicationCallback = publishToRepository(*mDatabase);
