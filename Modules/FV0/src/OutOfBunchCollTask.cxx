@@ -117,7 +117,7 @@ void OutOfBunchCollTask::update(Trigger t, framework::ServiceRegistry&)
   mHistBcTrgOutOfBunchColl->SetEntries(mHistBcTrgOutOfBunchColl->Integral(1, nBc, 1, mMapDigitTrgNames.size()));
   for (int iBin = 1; iBin < mMapDigitTrgNames.size() + 1; iBin++) {
     const std::string metadataKey = "BcVsTrgIntegralBin" + std::to_string(iBin);
-    const std::string metadataValue = std::to_string(mHistBcTrgOutOfBunchColl->Integral(1, nBc, iBin, iBin));
+    const std::string metadataValue = std::to_string(hBcVsTrg->Integral(1, nBc, iBin, iBin));
     getObjectsManager()->getMonitorObject(mHistBcTrgOutOfBunchColl->GetName())->addOrUpdateMetadata(metadataKey, metadataValue);
     ILOG(Info, Support) << metadataKey << ":" << metadataValue << ENDM;
   }
