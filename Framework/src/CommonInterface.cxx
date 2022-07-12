@@ -44,4 +44,4 @@ void CommonInterface::setCcdbUrl(const std::string& url)
   mCcdbUrl = url;
 }
 
-}
+} // namespace o2::quality_control::core

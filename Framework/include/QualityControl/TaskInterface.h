@@ -52,7 +52,7 @@ namespace o2::quality_control::core
 ///
 /// \author Barthelemy von Haller
 /// \author Piotr Konopka
-class TaskInterface: public CommonInterface
+class TaskInterface : public CommonInterface
 {
  public:
   /// \brief Constructor

@@ -69,7 +69,7 @@ class CommonInterface
 
 template <typename T>
 T* CommonInterface::retrieveConditionAny(std::string const& path, std::map<std::string, std::string> const& metadata,
-                                       long timestamp)
+                                         long timestamp)
 {
   if (!mCcdbApi) {
     loadCcdb();
@@ -78,6 +78,6 @@ T* CommonInterface::retrieveConditionAny(std::string const& path, std::map<std::
   return mCcdbApi->retrieveFromTFileAny<T>(path, metadata, timestamp);
 }
 
-}
+} // namespace o2::quality_control::core
 
 #endif // QUALITYCONTROL_COMMONINTERFACE_H

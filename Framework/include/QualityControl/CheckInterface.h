@@ -29,7 +29,7 @@ namespace o2::quality_control::checker
 /// \brief  Skeleton of a check.
 ///
 /// \author Barthelemy von Haller
-class CheckInterface: public CommonInterface
+class CheckInterface : public CommonInterface
 {
  public:
   /// Default constructor

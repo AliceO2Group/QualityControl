@@ -20,7 +20,7 @@
 
 ClassImp(o2::quality_control::checker::CheckInterface)
 
-using namespace std;
+  using namespace std;
 
 namespace o2::quality_control::checker
 {

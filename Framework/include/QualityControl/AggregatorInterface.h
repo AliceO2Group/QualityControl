@@ -30,7 +30,7 @@ namespace o2::quality_control::checker
 /// \brief  Skeleton of a quality aggregator user algorithm.
 ///
 /// \author Barthelemy von Haller
-class AggregatorInterface: public o2::quality_control::core::CommonInterface
+class AggregatorInterface : public o2::quality_control::core::CommonInterface
 {
  public:
   /// Default constructor

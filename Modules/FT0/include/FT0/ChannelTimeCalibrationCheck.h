@@ -33,7 +33,7 @@ class ChannelTimeCalibrationCheck : public o2::quality_control::checker::CheckIn
   ~ChannelTimeCalibrationCheck() override = default;
 
   // Override interface
-  void configure(string name ="") override;
+  void configure(string name = "") override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult) override;
   ClassDefOverride(ChannelTimeCalibrationCheck, 2);
