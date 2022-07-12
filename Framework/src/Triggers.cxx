@@ -202,7 +202,8 @@ TriggerFcn ForEachObject(std::string databaseUrl, std::string databaseType, std:
   // As for today, we receive objects in the order of the newest to the oldest.
   // We prefer the other order here.
   for (auto rit = objects.rbegin(); rit != objects.rend(); ++rit) {
-    auto objectActivity = repository::database_helpers::asActivity(rit->second);
+    auto objectActivity = repository::database_helpers::asActivity(rit->second, activity.mProvenance);
+    ILOG(Debug, Trace) << "Matching the filter with object's activity: " << objectActivity << ENDM;
     if (filter.matches(objectActivity)) {
       filteredObjects->emplace_back(rit->second);
       ILOG(Debug, Devel) << "Matched an object with activity: " << activity << ENDM;
@@ -250,7 +251,8 @@ TriggerFcn ForEachLatest(std::string databaseUrl, std::string databaseType, std:
   // As for today, we receive objects in the order of the newest to the oldest.
   // We prefer the other order here.
   for (auto rit = objects.rbegin(); rit != objects.rend(); ++rit) {
-    auto objectActivity = repository::database_helpers::asActivity(rit->second);
+    auto objectActivity = repository::database_helpers::asActivity(rit->second, activity.mProvenance);
+    ILOG(Debug, Trace) << "Matching the filter with object's activity: " << objectActivity << ENDM;
     if (filter.matches(objectActivity)) {
       auto latestObject = std::find_if(filteredObjects->begin(), filteredObjects->end(), [&](const std::pair<Activity, boost::property_tree::ptree>& entry) {
         return entry.first.same(objectActivity);

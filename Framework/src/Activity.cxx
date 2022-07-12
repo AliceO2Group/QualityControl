@@ -27,7 +27,7 @@ std::ostream& operator<<(std::ostream& out, const Activity& activity)
       << ", period: '" << activity.mPeriodName
       << "', pass: '" << activity.mPassName
       << "', provenance: '" << activity.mProvenance
-      << ", start: " << activity.mValidity.getMin()
+      << "', start: " << activity.mValidity.getMin()
       << ", end: " << activity.mValidity.getMax();
   return out;
 }
