@@ -91,7 +91,6 @@ class TaskInterface : public CommonInterface
   void setMonitoring(const std::shared_ptr<o2::monitoring::Monitoring>& mMonitoring);
 
  protected:
-
   std::shared_ptr<ObjectsManager> getObjectsManager();
   std::shared_ptr<o2::monitoring::Monitoring> mMonitoring;
 
