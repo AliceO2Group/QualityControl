@@ -25,7 +25,7 @@ TracksCheck::TracksCheck()
 
 TracksCheck::~TracksCheck() = default;
 
-void TracksCheck::configure()
+void TracksCheck::configure(string /*name*/)
 {
   //   auto bf = TaskInterface::retrieveConditionAny<o2::BunchFilling>("GLO/GRP/BunchFilling");
   o2::BunchFilling* bf = nullptr;

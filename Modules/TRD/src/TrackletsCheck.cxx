@@ -66,7 +66,7 @@ void TrackletsCheck::retrieveCCDBSettings()
   }
 }
 
-void TrackletsCheck::configure()
+void TrackletsCheck::configure(string /*name*/)
 {
   //get ccdb values
   //fill mask spectra

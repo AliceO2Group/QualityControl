@@ -24,7 +24,7 @@ using namespace std;
 namespace o2::quality_control_modules::tof
 {
 
-void CheckCompressedData::configure()
+void CheckCompressedData::configure(string /*name*/)
 {
   mDiagnosticThresholdPerSlot = 0;
   if (auto param = mCustomParameters.find("DiagnosticThresholdPerSlot"); param != mCustomParameters.end()) {

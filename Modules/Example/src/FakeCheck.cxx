@@ -25,7 +25,7 @@ ClassImp(o2::quality_control_modules::example::FakeCheck)
   namespace o2::quality_control_modules::example
 {
 
-  void FakeCheck::configure() {}
+  void FakeCheck::configure(string /*name*/) {}
 
   Quality FakeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>> * /*moMap*/)
   {

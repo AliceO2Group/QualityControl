@@ -30,8 +30,6 @@ using namespace std;
 
 namespace o2::quality_control_modules::common
 {
-void EverIncreasingGraph::configure() {}
-
 Quality EverIncreasingGraph::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
   auto mo = moMap->begin()->second;

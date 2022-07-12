@@ -27,7 +27,7 @@ using namespace o2::quality_control;
 namespace o2::quality_control_modules::tof
 {
 
-void CheckRawTime::configure()
+void CheckRawTime::configure(string /*name*/)
 {
   utils::parseDoubleParameter(mCustomParameters, "MinEntriesBeforeMessage", mMinEntriesBeforeMessage);
   utils::parseFloatParameter(mCustomParameters, "MinAllowedTime", mMinAllowedTime);

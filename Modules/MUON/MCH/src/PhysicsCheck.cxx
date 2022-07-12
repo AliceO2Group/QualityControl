@@ -50,7 +50,7 @@ PhysicsCheck::PhysicsCheck() : mMinOccupancy(0.001), mMaxOccupancy(1.0), mMinGoo
 
 PhysicsCheck::~PhysicsCheck() {}
 
-void PhysicsCheck::configure()
+void PhysicsCheck::configure(string /*name*/)
 {
   if (auto param = mCustomParameters.find("MinOccupancy"); param != mCustomParameters.end()) {
     mMinOccupancy = std::stof(param->second);

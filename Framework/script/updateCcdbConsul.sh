@@ -17,7 +17,8 @@ HEAD_NODES=(
 #  alio2-cr1-flp166
 #  alio2-cr1-flp181
 #  alio2-cr1-mvs01
-  barth-test-cc7.cern.ch
+#  barth-test-cc7.cern.ch
+  ali-consul-ui.cern.ch
 )
 echo "Number of nodes: ${#HEAD_NODES[@]}"
 
@@ -45,9 +46,23 @@ for ((nodeIndex = 0; nodeIndex < ${#HEAD_NODES[@]}; nodeIndex++)); do
     echo "file: $file"
     # download
     consul kv get "$file" >/tmp/consul.json
-    # modify
-    new_content=$(cat /tmp/consul.json | jq  '.qc.config.database.host |= "alio2-cr1-hv-qcdb1:8083"')
+
+    # if we need to check the value before modifying :
+    current=$(cat /tmp/consul.json | jq  '.qc.config.infologger.filterDiscardLevel')
+    current=$(echo $current| tr -d '"') # remove quotes
+    echo "current: $current"
+    unset new_content
+    if (( $current != null && $current < 11 )); then
+      # modify
+      new_content=$(cat /tmp/consul.json | jq  '.qc.config.infologger.filterDiscardLevel |= "11"')
+      echo $new_content
+      #consul kv put "$file" "$new_content"
+    fi
+
+    # or simply modify :
+    #new_content=$(cat /tmp/consul.json | jq  '.qc.config.infologger.filterDiscardLevel |= "21"')
     # upload
-    consul kv put "$file" "$new_content"
+    #echo $new_content
+    #consul kv put "$file" "$new_content"
   done
 done

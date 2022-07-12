@@ -50,7 +50,7 @@ PhysicsPreclustersCheck::PhysicsPreclustersCheck() : mMinPseudoeff(0.5), mMaxPse
 
 PhysicsPreclustersCheck::~PhysicsPreclustersCheck() {}
 
-void PhysicsPreclustersCheck::configure()
+void PhysicsPreclustersCheck::configure(string /*name*/)
 {
   if (auto param = mCustomParameters.find("MinPseudoefficiency"); param != mCustomParameters.end()) {
     mMinPseudoeff = std::stof(param->second);

@@ -33,8 +33,6 @@ using namespace std;
 namespace o2::quality_control_modules::mft
 {
 
-void QcMFTClusterCheck::configure() {}
-
 Quality QcMFTClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
   Quality result = Quality::Null;

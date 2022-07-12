@@ -31,7 +31,7 @@ using namespace std;
 namespace o2::quality_control_modules::tof
 {
 
-void CheckHitMap::configure()
+void CheckHitMap::configure(string /*name*/)
 {
   utils::parseBooleanParameter(mCustomParameters, "EnableReferenceHitMap", mEnableReferenceHitMap);
   utils::parseStrParameter(mCustomParameters, "RefMapCcdbPath", mRefMapCcdbPath);

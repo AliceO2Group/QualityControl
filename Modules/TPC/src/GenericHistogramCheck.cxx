@@ -42,7 +42,7 @@ Quality CheckQuality(double Mean, double Comparison, double Offset, double nMed,
   }
   return result;
 }
-void GenericHistogramCheck::configure()
+void GenericHistogramCheck::configure(string /*name*/)
 {
   // ILOG(Warning, Support) << "Config started....?" << ENDM;
   if (const auto param = mCustomParameters.find("checks"); param != mCustomParameters.end()) {

@@ -29,7 +29,7 @@ using namespace std;
 namespace o2::quality_control_modules::cpv
 {
 
-void PedestalCheck::configure()
+void PedestalCheck::configure(string /*name*/)
 {
   ILOG(Info, Support) << "PedestalCheck::configure() : I have been called with following custom parameters" << ENDM;
   for (auto [key, value] : mCustomParameters) {

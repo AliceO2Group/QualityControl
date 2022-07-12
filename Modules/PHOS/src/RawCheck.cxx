@@ -31,7 +31,7 @@ using namespace std;
 namespace o2::quality_control_modules::phos
 {
 
-void RawCheck::configure()
+void RawCheck::configure(string /*name*/)
 {
   auto param = mCustomParameters.find("mMinHGPedestalValue");
   if (param != mCustomParameters.end()) {

@@ -33,8 +33,6 @@ using namespace std;
 namespace o2::quality_control_modules::emcal
 {
 
-void RawCheck::configure() {}
-
 Quality RawCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
   auto mo = moMap->begin()->second;

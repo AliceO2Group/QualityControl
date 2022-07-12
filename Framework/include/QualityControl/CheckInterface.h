@@ -17,10 +17,9 @@
 #ifndef QC_CHECKER_CHECKINTERFACE_H
 #define QC_CHECKER_CHECKINTERFACE_H
 
-#include <unordered_map>
-
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
+#include "QualityControl/CommonInterface.h"
 
 using namespace o2::quality_control::core;
 
@@ -30,7 +29,7 @@ namespace o2::quality_control::checker
 /// \brief  Skeleton of a check.
 ///
 /// \author Barthelemy von Haller
-class CheckInterface
+class CheckInterface: public CommonInterface
 {
  public:
   /// Default constructor
@@ -68,15 +67,11 @@ class CheckInterface
   bool isObjectCheckable(const std::shared_ptr<MonitorObject> mo);
   bool isObjectCheckable(const MonitorObject* mo);
 
-  void setCustomParameters(const std::unordered_map<std::string, std::string>& parameters);
-
  protected:
   /// \brief Called each time mCustomParameters is updated.
-  virtual void configure() = 0;
+  virtual void configure(std::string name = "") override;
 
-  std::unordered_map<std::string, std::string> mCustomParameters;
-
-  ClassDef(CheckInterface, 3)
+  ClassDef(CheckInterface, 4)
 };
 
 } // namespace o2::quality_control::checker

@@ -30,7 +30,7 @@ using namespace std;
 namespace o2::quality_control_modules::phos
 {
 
-void ClusterCheck::configure()
+void ClusterCheck::configure(string /*name*/)
 {
   //TODO: configure reading bad map from CCDB
   mBadMap.reset(new o2::phos::BadChannelsMap());

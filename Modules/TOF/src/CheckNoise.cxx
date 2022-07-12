@@ -24,7 +24,7 @@ using namespace std;
 namespace o2::quality_control_modules::tof
 {
 
-void CheckNoise::configure()
+void CheckNoise::configure(string /*name*/)
 {
   mShifterMessages.configure(mCustomParameters);
 }

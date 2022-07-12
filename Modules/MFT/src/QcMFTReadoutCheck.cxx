@@ -34,7 +34,7 @@ using namespace std;
 namespace o2::quality_control_modules::mft
 {
 
-void QcMFTReadoutCheck::configure()
+void QcMFTReadoutCheck::configure(string /*name*/)
 {
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters

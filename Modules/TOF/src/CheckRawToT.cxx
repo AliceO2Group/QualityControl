@@ -28,7 +28,7 @@ using namespace o2::quality_control;
 namespace o2::quality_control_modules::tof
 {
 
-void CheckRawToT::configure()
+void CheckRawToT::configure(string /*name*/)
 {
   utils::parseDoubleParameter(mCustomParameters, "MinEntriesBeforeMessage", mMinEntriesBeforeMessage);
   utils::parseFloatParameter(mCustomParameters, "MinAllowedToT", mMinAllowedToT);

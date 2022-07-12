@@ -26,7 +26,7 @@ using namespace std;
 namespace o2::quality_control_modules::tof
 {
 
-void CheckDiagnostics::configure()
+void CheckDiagnostics::configure(string /*name*/)
 {
   mShifterMessages.configure(mCustomParameters);
 }

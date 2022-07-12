@@ -31,7 +31,7 @@ using namespace o2::quality_control;
 namespace o2::quality_control_modules::common
 {
 
-void IncreasingEntries::configure()
+void IncreasingEntries::configure(string /*name*/)
 {
   parseBooleanParam(mCustomParameters, "mustIncrease", mMustIncrease);
 

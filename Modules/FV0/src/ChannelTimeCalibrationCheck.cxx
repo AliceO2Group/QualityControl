@@ -23,7 +23,7 @@
 namespace o2::quality_control_modules::fv0
 {
 
-void ChannelTimeCalibrationCheck::configure()
+void ChannelTimeCalibrationCheck::configure(string /*name*/)
 {
   mMeanWarning = std::stod(mCustomParameters.at(MEAN_WARNING_KEY));
   mMeanError = std::stod(mCustomParameters.at(MEAN_ERROR_KEY));

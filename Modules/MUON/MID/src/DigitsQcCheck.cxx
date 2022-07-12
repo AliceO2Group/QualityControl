@@ -29,7 +29,7 @@ using namespace std;
 namespace o2::quality_control_modules::mid
 {
 
-void DigitsQcCheck::configure()
+void DigitsQcCheck::configure(string /*name*/)
 {
   ILOG(Info, Support) << "configure DigitsQcCheck" << ENDM;
   if (auto param = mCustomParameters.find("MeanMultThreshold"); param != mCustomParameters.end()) {

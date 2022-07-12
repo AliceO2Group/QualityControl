@@ -33,7 +33,7 @@
 namespace o2::quality_control_modules::tpc
 {
 
-void CheckOfSlices::configure()
+void CheckOfSlices::configure(string /*name*/)
 {
   if (auto param = mCustomParameters.find("chooseCheckMeanOrExpectedPhysicsValueOrBoth"); param != mCustomParameters.end()) {
     mCheckChoice = param->second.c_str();

@@ -29,7 +29,7 @@ using namespace o2::quality_control;
 namespace o2::quality_control_modules::skeleton
 {
 
-void SkeletonCheck::configure() {}
+void SkeletonCheck::configure(string /*name*/) {}
 
 Quality SkeletonCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {

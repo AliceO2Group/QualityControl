@@ -33,7 +33,7 @@ ClassImp(o2::quality_control_modules::common::MeanIsAbove)
 namespace o2::quality_control_modules::common
 {
 
-void MeanIsAbove::configure()
+void MeanIsAbove::configure(string /*name*/)
 {
   mThreshold = stof(mCustomParameters.at("meanThreshold"));
 }

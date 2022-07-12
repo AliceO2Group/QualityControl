@@ -72,8 +72,8 @@ BOOST_AUTO_TEST_CASE(test_check_specs)
 class TestCheck : public CheckInterface
 {
  public:
-  TestCheck() {}
-  void configure()
+  TestCheck()=default;
+  void configure(string /*name*/)
   {
   }
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)

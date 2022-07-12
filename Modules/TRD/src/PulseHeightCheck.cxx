@@ -36,7 +36,7 @@ using namespace o2::quality_control;
 namespace o2::quality_control_modules::trd
 {
 
-void PulseHeightCheck::configure()
+void PulseHeightCheck::configure(string /*name*/)
 {
   if (auto param = mCustomParameters.find("ccdbtimestamp"); param != mCustomParameters.end()) {
     mTimeStamp = std::stol(mCustomParameters["ccdbtimestamp"]);
