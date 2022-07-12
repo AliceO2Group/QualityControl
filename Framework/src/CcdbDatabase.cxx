@@ -20,6 +20,7 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/RepoPathUtils.h"
 #include "QualityControl/DatabaseHelpers.h"
+#include "QualityControl/ObjectMetadataKeys.h"
 
 #include <DataFormatsQualityControl/TimeRangeFlagCollection.h>
 #include <Common/Exceptions.h>
@@ -168,10 +169,10 @@ void CcdbDatabase::storeAny(const void* obj, std::type_info const& typeInfo, std
   // metadata
   map<string, string> fullMetadata(metadata);
   // QC metadata (prefix qc_)
-  fullMetadata["qc_version"] = Version::GetQcVersion().getString();
-  fullMetadata["qc_detector_name"] = detectorName;
-  fullMetadata["qc_task_name"] = taskName;
-  fullMetadata["ObjectType"] = o2::utils::MemFileHelper::getClassName(typeInfo);
+  fullMetadata[metadata_keys::qcVersion] = Version::GetQcVersion().getString();
+  fullMetadata[metadata_keys::qcDetectorCode] = detectorName;
+  fullMetadata[metadata_keys::qcTaskName] = taskName;
+  fullMetadata[metadata_keys::objectType] = o2::utils::MemFileHelper::getClassName(typeInfo);
 
   // other attributes
   if (from == -1) {
@@ -181,7 +182,7 @@ void CcdbDatabase::storeAny(const void* obj, std::type_info const& typeInfo, std
     to = from + 1000l * 60 * 60 * 24 * 365 * 10; // ~10 years since the start of validity
   }
 
-  ILOG(Debug, Support) << "Storing object " << path << " of type " << fullMetadata["ObjectType"] << ENDM;
+  ILOG(Debug, Support) << "Storing object " << path << " of type " << fullMetadata[metadata_keys::objectType] << ENDM;
   int result = ccdbApi.storeAsTFile_impl(obj, typeInfo, path, fullMetadata, from, to, mMaxObjectSize);
 
   handleStorageError(path, result);
@@ -214,13 +215,13 @@ void CcdbDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::Moni
 
   // extract object and metadata from MonitorObject
   TObject* obj = mo->getObject();
-  metadata["ObjectType"] = mo->getObject()->IsA()->GetName(); // ObjectType says TObject and not MonitorObject due to a quirk in the API. Once fixed, remove this.
+  metadata[metadata_keys::objectType] = mo->getObject()->IsA()->GetName(); // ObjectType says TObject and not MonitorObject due to a quirk in the API. Once fixed, remove this.
 
   // QC metadata (prefix qc_)
-  metadata["qc_version"] = Version::GetQcVersion().getString();
-  metadata["qc_detector_name"] = mo->getDetectorName();
-  metadata["qc_task_name"] = mo->getTaskName();
-  metadata["qc_task_class"] = mo->getTaskClass();
+  metadata[metadata_keys::qcVersion] = Version::GetQcVersion().getString();
+  metadata[metadata_keys::qcDetectorCode] = mo->getDetectorName();
+  metadata[metadata_keys::qcTaskName] = mo->getTaskName();
+  metadata[metadata_keys::qcTaskClass] = mo->getTaskClass();
 
   // path attributes
   string path = mo->getPath();
@@ -245,12 +246,12 @@ void CcdbDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::Qual
 
   // metadata
   map<string, string> metadata = database_helpers::asDatabaseMetadata(qo->getActivity());
-  metadata["ObjectType"] = qo->IsA()->GetName(); // ObjectType says TObject and not MonitorObject due to a quirk in the API. Once fixed, remove this.
+  metadata[metadata_keys::objectType] = qo->IsA()->GetName(); // ObjectType says TObject and not MonitorObject due to a quirk in the API. Once fixed, remove this.
   // QC metadata (prefix qc_)
-  metadata["qc_version"] = Version::GetQcVersion().getString();
-  metadata["qc_quality"] = std::to_string(qo->getQuality().getLevel());
-  metadata["qc_detector_name"] = qo->getDetectorName();
-  metadata["qc_check_name"] = qo->getCheckName();
+  metadata[metadata_keys::qcVersion] = Version::GetQcVersion().getString();
+  metadata[metadata_keys::qcQuality] = std::to_string(qo->getQuality().getLevel());
+  metadata[metadata_keys::qcDetectorCode] = qo->getDetectorName();
+  metadata[metadata_keys::qcCheckName] = qo->getCheckName();
   // user metadata
   map<string, string> userMetadata = qo->getMetadataMap();
   if (!userMetadata.empty()) {
@@ -276,14 +277,14 @@ void CcdbDatabase::storeTRFC(std::shared_ptr<const o2::quality_control::TimeRang
 {
   // metadata
   map<string, string> metadata;
-  metadata["RunNumber"] = std::to_string(trfc->getRunNumber());
-  metadata["PeriodName"] = trfc->getPeriodName();
-  metadata["PassName"] = trfc->getPassName();
-  metadata["ObjectType"] = trfc->IsA()->GetName();
+  metadata[metadata_keys::runNumber] = std::to_string(trfc->getRunNumber());
+  metadata[metadata_keys::periodName] = trfc->getPeriodName();
+  metadata[metadata_keys::passName] = trfc->getPassName();
+  metadata[metadata_keys::objectType] = trfc->IsA()->GetName();
   // QC metadata (prefix qc_)
-  metadata["qc_version"] = Version::GetQcVersion().getString();
-  metadata["qc_trfc_name"] = trfc->getName();
-  metadata["qc_detector_name"] = trfc->getDetector();
+  metadata[metadata_keys::qcVersion] = Version::GetQcVersion().getString();
+  metadata[metadata_keys::qcTRFCName] = trfc->getName();
+  metadata[metadata_keys::qcDetectorCode] = trfc->getDetector();
 
   // other attributes
   string path = RepoPathUtils::getTrfcPath(trfc.get());
@@ -340,7 +341,7 @@ std::shared_ptr<o2::quality_control::core::MonitorObject> CcdbDatabase::retrieve
   }
 
   // retrieve headers to determine the version of the QC framework
-  Version objectVersion(headers["qc_version"]);
+  Version objectVersion(headers[metadata_keys::qcVersion]);
   ILOG(Debug, Devel) << "Version of object is " << objectVersion << ENDM;
 
   std::shared_ptr<MonitorObject> mo;
@@ -354,7 +355,7 @@ std::shared_ptr<o2::quality_control::core::MonitorObject> CcdbDatabase::retrieve
   } else {
     // Version >= 0.25 -> the object is stored directly unencapsulated
     ILOG(Debug, Devel) << "Version of object " << fullPath << " is >= 0.25" << ENDM;
-    mo = make_shared<MonitorObject>(obj, headers["qc_task_name"], headers["qc_task_class"], headers["qc_detector_name"]);
+    mo = make_shared<MonitorObject>(obj, headers[metadata_keys::qcTaskName], headers[metadata_keys::qcTaskClass], headers[metadata_keys::qcDetectorCode]);
     // TODO should we remove the headers we know are general such as ETag and qc_task_name ?
     mo->addMetadata(headers);
     // we could just copy the argument here, but this would not cover cases where the activity in headers has more non-default fields
@@ -387,13 +388,13 @@ std::shared_ptr<o2::quality_control::TimeRangeFlagCollection> CcdbDatabase::retr
   map<string, string> headers;
   map<string, string> metadata;
   if (runNumber != 0) {
-    metadata["RunNumber"] = std::to_string(runNumber);
+    metadata[metadata_keys::runNumber] = std::to_string(runNumber);
   }
   if (!passName.empty()) {
-    metadata["PassName"] = passName;
+    metadata[metadata_keys::passName] = passName;
   }
   if (!periodName.empty()) {
-    metadata["PeriodName"] = periodName;
+    metadata[metadata_keys::periodName] = periodName;
   }
   const auto trfcPath = RepoPathUtils::getTrfcPath(detector, trfcName, provenance);
   const std::string localFileDir = "/tmp";
@@ -407,18 +408,18 @@ std::shared_ptr<o2::quality_control::TimeRangeFlagCollection> CcdbDatabase::retr
   auto resultMetadata = ccdbApi.retrieveHeaders(trfcPath, metadata, timestamp);
   if (resultMetadata.empty()) {
     ILOG(Error, Support) << "Could not extract headers of TRFC at '" << trfcPath << "' with the metadata: " << ENDM; // TODO
-    ILOG(Error, Support) << " - RunNumber  : " << metadata["RunNumber"] << ENDM;
-    ILOG(Error, Support) << " - PassName   : " << metadata["PassName"] << ENDM;
-    ILOG(Error, Support) << " - PeriodName : " << metadata["PeriodName"] << ENDM;
+    ILOG(Error, Support) << " - RunNumber  : " << metadata[metadata_keys::runNumber] << ENDM;
+    ILOG(Error, Support) << " - PassName   : " << metadata[metadata_keys::passName] << ENDM;
+    ILOG(Error, Support) << " - PeriodName : " << metadata[metadata_keys::periodName] << ENDM;
     return nullptr;
   }
 
   auto success = ccdbApi.retrieveBlob(trfcPath, localFileDir, metadata, timestamp, false, localFileName);
   if (!success) {
     ILOG(Error, Support) << "Could not retrieve the TRFC at '" << trfcPath << "' with the metadata: " << ENDM; // TODO
-    ILOG(Error, Support) << " - RunNumber  : " << metadata["RunNumber"] << ENDM;
-    ILOG(Error, Support) << " - PassName   : " << metadata["PassName"] << ENDM;
-    ILOG(Error, Support) << " - PeriodName : " << metadata["PeriodName"] << ENDM;
+    ILOG(Error, Support) << " - RunNumber  : " << metadata[metadata_keys::runNumber] << ENDM;
+    ILOG(Error, Support) << " - PassName   : " << metadata[metadata_keys::passName] << ENDM;
+    ILOG(Error, Support) << " - PeriodName : " << metadata[metadata_keys::periodName] << ENDM;
     return nullptr;
   }
 
@@ -429,7 +430,7 @@ std::shared_ptr<o2::quality_control::TimeRangeFlagCollection> CcdbDatabase::retr
     return nullptr;
   }
 
-  TimeRangeFlagCollection::RangeInterval validity{ std::stoull(resultMetadata["Valid-From"]), std::stoull(resultMetadata["Valid-Until"]) };
+  TimeRangeFlagCollection::RangeInterval validity{ std::stoull(resultMetadata[metadata_keys::validFrom]), std::stoull(resultMetadata[metadata_keys::validUntil]) };
   auto trfc = std::make_shared<TimeRangeFlagCollection>(trfcName, detector, validity, runNumber, periodName, passName, provenance);
   trfc->streamFrom(localFile);
   localFile.close();
@@ -563,7 +564,7 @@ std::vector<uint64_t> CcdbDatabase::getTimestampsForObject(std::string path)
   // As for today, we receive objects in the order of the newest to the oldest.
   // We prefer the other order here.
   for (auto rit = objects.rbegin(); rit != objects.rend(); ++rit) {
-    timestamps.emplace_back(rit->second.get<uint64_t>("Valid-From"));
+    timestamps.emplace_back(rit->second.get<uint64_t>(metadata_keys::validFrom));
   }
 
   // we make sure it is sorted. If it is already, it shouldn't cost much.

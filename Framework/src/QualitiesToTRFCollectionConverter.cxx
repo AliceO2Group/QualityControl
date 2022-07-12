@@ -20,6 +20,9 @@
 
 #include <utility>
 #include "QualityControl/QualityObject.h"
+#include "QualityControl/ObjectMetadataKeys.h"
+
+using namespace o2::quality_control::repository;
 
 namespace o2::quality_control::core
 {
@@ -63,8 +66,8 @@ void QualitiesToTRFCollectionConverter::operator()(const QualityObject& newQO)
     mWorseThanGoodQOs++;
   }
 
-  uint64_t validFrom = strtoull(newQO.getMetadata("Valid-From").c_str(), nullptr, 10);
-  uint64_t validUntil = strtoull(newQO.getMetadata("Valid-Until").c_str(), nullptr, 10);
+  uint64_t validFrom = strtoull(newQO.getMetadata(metadata_keys::validFrom).c_str(), nullptr, 10);
+  uint64_t validUntil = strtoull(newQO.getMetadata(metadata_keys::validUntil).c_str(), nullptr, 10);
   if (validFrom < mCurrentStartTime) {
     throw std::runtime_error("The currently provided QO is dated as earlier than the one before (" //
                              + std::to_string(validFrom) + " vs. " + std::to_string(mCurrentStartTime) +
