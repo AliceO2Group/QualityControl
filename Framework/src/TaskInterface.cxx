@@ -26,10 +26,6 @@ TaskInterface::TaskInterface(ObjectsManager* objectsManager) : mObjectsManager(o
 {
 }
 
-const std::string& TaskInterface::getName() const { return mName; }
-
-void TaskInterface::setName(const std::string& name) { mName = name; }
-
 void TaskInterface::setObjectsManager(std::shared_ptr<ObjectsManager> objectsManager)
 {
   mObjectsManager = objectsManager;
@@ -42,7 +38,7 @@ void TaskInterface::setMonitoring(const std::shared_ptr<o2::monitoring::Monitori
   TaskInterface::mMonitoring = mMonitoring;
 }
 
-void TaskInterface::configure(std::string /*name*/)
+void TaskInterface::configure()
 {
   // noop, override it if you want.
 }

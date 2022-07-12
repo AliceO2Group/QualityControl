@@ -30,7 +30,7 @@
 
 namespace o2::quality_control_modules::tpc
 {
-void PadCalibrationCheck::configure(string /*name*/)
+void PadCalibrationCheck::configure()
 {
   if (auto param = mCustomParameters.find("mediumQualityNoiseMean"); param != mCustomParameters.end()) {
     mMediumQualityLimitNoiseMean = std::atof(param->second.c_str());

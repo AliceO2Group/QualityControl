@@ -44,4 +44,8 @@ void CommonInterface::setCcdbUrl(const std::string& url)
   mCcdbUrl = url;
 }
 
+const std::string& CommonInterface::getName() const { return mName; }
+
+void CommonInterface::setName(const std::string& name) { mName = name; }
+
 } // namespace o2::quality_control::core

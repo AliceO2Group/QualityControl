@@ -44,9 +44,9 @@ class SimpleTestAggregator : public checker::AggregatorInterface
   ~SimpleTestAggregator() override = default;
 
   // Override interface
-  void configure(std::string name) override
+  void configure() override
   {
-    mValidString = name;
+    mValidString = "name";
   }
 
   // Returns a quality matching the number of quality objects passed as argument (1 good, 2 medium, 3 bad, otherwise null)

@@ -44,7 +44,7 @@ DecodingErrorsCheck::DecodingErrorsCheck()
 
 DecodingErrorsCheck::~DecodingErrorsCheck() {}
 
-void DecodingErrorsCheck::configure(string /*name*/)
+void DecodingErrorsCheck::configure()
 {
   bool mDiagnostic = false;
   if (auto param = mCustomParameters.find("MaxErrorRate"); param != mCustomParameters.end()) {

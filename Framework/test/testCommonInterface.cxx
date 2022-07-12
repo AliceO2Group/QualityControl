@@ -42,7 +42,7 @@ class TestInterface : public core::CommonInterface
   ~TestInterface() override = default;
 
   // Override interface
-  void configure(string name = "") override
+  void configure() override
   {
     configured = true;
   }

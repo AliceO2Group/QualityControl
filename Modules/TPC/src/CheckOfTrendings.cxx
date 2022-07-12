@@ -30,7 +30,7 @@
 namespace o2::quality_control_modules::tpc
 {
 
-void CheckOfTrendings::configure(string /*name*/)
+void CheckOfTrendings::configure()
 {
   if (const auto param = mCustomParameters.find("chooseCheckMeanOrExpectedPhysicsValueOrBoth"); param != mCustomParameters.end()) {
     mCheckChoice = param->second.c_str();

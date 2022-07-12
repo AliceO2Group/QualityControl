@@ -48,10 +48,12 @@ class CommonInterface
   /// It is called each time mCustomParameters is updated.
   ///
   /// \param name The name of the task/aggregator/check.
-  virtual void configure(std::string name = "") = 0;
+  virtual void configure() = 0;
 
   void loadCcdb();
   void setCcdbUrl(const std::string& url);
+  const std::string& getName() const;
+  void setName(const std::string& name);
 
   template <typename T>
   T* retrieveConditionAny(std::string const& path, std::map<std::string, std::string> const& metadata = {},
@@ -59,6 +61,7 @@ class CommonInterface
 
  protected:
   std::unordered_map<std::string, std::string> mCustomParameters;
+  std::string mName;
 
  private:
   std::shared_ptr<o2::ccdb::CcdbApi> mCcdbApi;

@@ -84,20 +84,18 @@ class TaskInterface : public CommonInterface
   virtual void reset() = 0;
 
   /// \brief Called each time mCustomParameters is updated.
-  virtual void configure(std::string name = "") override;
+  virtual void configure() override;
 
   // Setters and getters
   void setObjectsManager(std::shared_ptr<ObjectsManager> objectsManager);
-  void setName(const std::string& name);
   void setMonitoring(const std::shared_ptr<o2::monitoring::Monitoring>& mMonitoring);
-  const std::string& getName() const;
 
  protected:
+
   std::shared_ptr<ObjectsManager> getObjectsManager();
   std::shared_ptr<o2::monitoring::Monitoring> mMonitoring;
 
  private:
-  std::string mName;
   std::shared_ptr<ObjectsManager> mObjectsManager;
 };
 

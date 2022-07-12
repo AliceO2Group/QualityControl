@@ -28,7 +28,7 @@ using namespace o2::quality_control;
 namespace o2::quality_control_modules::tof
 {
 
-void CheckRawMultiplicity::configure(string /*name*/)
+void CheckRawMultiplicity::configure()
 {
   utils::parseDoubleParameter(mCustomParameters, "MinEntriesBeforeMessage", mMinEntriesBeforeMessage);
   utils::parseIntParameter(mCustomParameters, "RunningMode", mRunningMode);

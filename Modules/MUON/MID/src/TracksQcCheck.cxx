@@ -33,7 +33,7 @@ using namespace o2::quality_control;
 namespace o2::quality_control_modules::mid
 {
 
-void TracksQcCheck::configure(string /*name*/)
+void TracksQcCheck::configure()
 {
   ILOG(Info, Support) << "configure TraksQcCheck" << ENDM;
   if (auto param = mCustomParameters.find("Ratio44Threshold"); param != mCustomParameters.end()) {

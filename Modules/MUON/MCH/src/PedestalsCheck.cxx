@@ -42,7 +42,7 @@ PedestalsCheck::PedestalsCheck()
 
 PedestalsCheck::~PedestalsCheck() {}
 
-void PedestalsCheck::configure(string /*name*/)
+void PedestalsCheck::configure()
 {
   if (auto param = mCustomParameters.find("MinPedestal"); param != mCustomParameters.end()) {
     mMinPedestal = std::stof(param->second);

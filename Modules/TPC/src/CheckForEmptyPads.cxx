@@ -31,7 +31,7 @@
 
 namespace o2::quality_control_modules::tpc
 {
-void CheckForEmptyPads::configure(string /*name*/)
+void CheckForEmptyPads::configure()
 {
   if (auto param = mCustomParameters.find("mediumQualityPercentageOfWorkingPads"); param != mCustomParameters.end()) {
     mMediumQualityLimit = std::atof(param->second.c_str());

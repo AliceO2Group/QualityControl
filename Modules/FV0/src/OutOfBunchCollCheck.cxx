@@ -34,7 +34,7 @@ using namespace o2::quality_control;
 namespace o2::quality_control_modules::fv0
 {
 
-void OutOfBunchCollCheck::configure(string /*name*/)
+void OutOfBunchCollCheck::configure()
 {
   if (auto param = mCustomParameters.find("thresholdWarning"); param != mCustomParameters.end()) {
     mThreshWarning = stof(param->second);

@@ -69,7 +69,7 @@ class CheckInterface : public CommonInterface
 
  protected:
   /// \brief Called each time mCustomParameters is updated.
-  virtual void configure(std::string name = "") override;
+  virtual void configure() override;
 
   ClassDef(CheckInterface, 4)
 };

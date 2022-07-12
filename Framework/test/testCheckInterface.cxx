@@ -44,7 +44,7 @@ class TestCheck : public checker::CheckInterface
   ~TestCheck() override = default;
 
   // Override interface
-  void configure(string name = "") override
+  void configure() override
   {
     mValidString = mCustomParameters["test"];
   }

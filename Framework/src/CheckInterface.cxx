@@ -39,7 +39,7 @@ bool CheckInterface::isObjectCheckable(const MonitorObject* mo)
   return encapsulated->IsA()->InheritsFrom(getAcceptedType().c_str());
 }
 
-void CheckInterface::configure(std::string /*name*/)
+void CheckInterface::configure()
 {
   // noop, override it if you want.
 }

@@ -24,7 +24,7 @@ class TracksCheck : public o2::quality_control::checker::CheckInterface
   TracksCheck();
   ~TracksCheck() override;
 
-  void configure(string name = "") override;
+  void configure() override;
 
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMa) override;
 
