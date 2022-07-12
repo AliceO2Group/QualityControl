@@ -92,10 +92,7 @@ void TrendingTaskITSCluster::trendValues(const Trigger& t, repository::DatabaseI
   // timestamps in the end, but this would become ambiguous if there is more
   // than one data source.
   mTime = TDatime().Convert();
-  // todo get run number when it is available. consider putting it inside
-  // monitor object's metadata (this might be not
-  //  enough if we trend across runs).
-  mMetaData.runNumber = 0;
+  mMetaData.runNumber = t.activity.mId;
   int count = 0;
   for (auto& dataSource : mConfig.dataSources) {
 
