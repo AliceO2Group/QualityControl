@@ -102,7 +102,7 @@ void TrendingTask::finalize(Trigger, framework::ServiceRegistry&)
 
 void TrendingTask::trendValues(const Trigger& t, repository::DatabaseInterface& qcdb)
 {
-  mTime = t.timestamp / 1000; // ROOT expects seconds since epoch
+  mTime = t.timestamp / 1000; // ROOT expects seconds since epoch.
   mMetaData.runNumber = t.activity.mId;
 
   for (auto& dataSource : mConfig.dataSources) {
