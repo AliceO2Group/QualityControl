@@ -44,6 +44,7 @@ using RDHUtils = o2::raw::RDHUtils;
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
 #include "TOF/TaskRaw.h"
+#include "TOF/Utils.h"
 
 namespace o2::quality_control_modules::tof
 {
@@ -353,7 +354,7 @@ void TaskRaw::initialize(o2::framework::InitContext& /*ctx*/)
 {
   // Set task parameters from JSON
   bool useConetMode = false;
-  if (parseBooleanParameter("DecoderCONET", useConetMode)) {
+  if (utils::parseBooleanParameter(mCustomParameters, "DecoderCONET", useConetMode)) {
     ILOG(Info, Support) << "Set DecoderCONET to " << useConetMode << ENDM;
     mDecoderRaw.setDecoderCONET(useConetMode);
   }
@@ -367,7 +368,7 @@ void TaskRaw::initialize(o2::framework::InitContext& /*ctx*/)
     mDecoderRaw.setNoiseThreshold(param->second);
   }
   bool usePerCrateHistograms = false;
-  if (parseBooleanParameter("DebugCrateMultiplicity", usePerCrateHistograms)) {
+  if (utils::parseBooleanParameter(mCustomParameters, "DebugCrateMultiplicity", usePerCrateHistograms)) {
     ILOG(Info, Support) << "Set DebugCrateMultiplicity to " << usePerCrateHistograms << ENDM;
     mDecoderRaw.setDebugCrateMultiplicity(usePerCrateHistograms);
   }

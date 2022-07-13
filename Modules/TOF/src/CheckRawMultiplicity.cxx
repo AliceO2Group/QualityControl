@@ -163,9 +163,16 @@ void CheckRawMultiplicity::beautify(std::shared_ptr<MonitorObject> mo, Quality c
       return;
     }
     const auto& meta = mo->getMetadataMap();
-    msg->AddText(Form("Mean value = %s", meta.at("mean").c_str()));
+    auto getMetaData = [&meta, &mo](const char* key) {
+      if (meta.find(key) == meta.end()) {
+        ILOG(Warning, Support) << "Looking for key '" << key << "' in metadata of " << mo->getName() << ", not found!" << ENDM;
+        return static_cast<const char*>(Form("'Key %s not found'", key));
+      }
+      return meta.at(key).c_str();
+    };
+    msg->AddText(Form("Mean value = %s", getMetaData("mean")));
     msg->AddText(Form("Reference range: %5.2f-%5.2f", mMinRawHits, mMaxRawHits));
-    msg->AddText(Form("Events with 0 hits = %s", meta.at("frac0mult").c_str()));
+    msg->AddText(Form("Events with 0 hits = %s", getMetaData("frac0mult")));
 
     if (h->GetEntries() < mMinEntriesBeforeMessage) { // Checking that the histogram has enough entries before printing messages
       msg->AddText("Cannot establish quality yet");

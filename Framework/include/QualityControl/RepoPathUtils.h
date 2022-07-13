@@ -45,7 +45,7 @@ class RepoPathUtils
                                const std::string& provenance = "qc",
                                bool includeProvenance = true)
   {
-    std::string path = (includeProvenance ? provenance + "/" : "") + detectorCode + "/MO/" + taskName + "/" + moName;
+    std::string path = (includeProvenance ? provenance + "/" : "") + detectorCode + "/MO/" + taskName + (moName.empty() ? "" : ("/" + moName));
     return path;
   }
 
@@ -93,7 +93,7 @@ class RepoPathUtils
   /**
    * Compute and return the path to the QualityObject.
    * Current algorithm does <provenance(qc)>/<detectorCode>/QO/<checkName>[/<moName>].
-   * The last, optional, part depends on policyName and uses the first element of the vector monitorObjectsNames.    
+   * The last, optional, part depends on policyName and uses the first element of the vector monitorObjectsNames.
    * @param qo
    * @return the path to the QualityObject
    */

@@ -58,5 +58,5 @@ void clearCanvases(std::vector<std::unique_ptr<TCanvas>>& canvases);
 /// \param input InputReconrd from the ProcessingContext
 /// \return getWorkflowTPCInput_ret object for easy cluster access
 std::unique_ptr<o2::tpc::internal::getWorkflowTPCInput_ret> clusterHandler(o2::framework::InputRecord& inputs, int verbosity = 0, unsigned long tpcSectorMask = 0xFFFFFFFFF);
-} //namespace o2::quality_control_modules::tpc
-#endif //QUALITYCONTROL_TPCUTILITY_H
+} // namespace o2::quality_control_modules::tpc
+#endif // QUALITYCONTROL_TPCUTILITY_H

@@ -34,7 +34,7 @@ void ITSClusterCheck::configure() {}
 Quality ITSClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
   Quality result = Quality::Null;
-  double averageClusterSizeLimit[NLayer] = { 20, 20, 20, 20, 20, 20, 20 };
+  double averageClusterSizeLimit[NLayer] = { 5, 5, 5, 5, 5, 5, 5 };
   double clusterOccupationLimit[NLayer] = { 40, 30, 20, 60, 25, 15, 14 };
 
   std::map<std::string, std::shared_ptr<MonitorObject>>::iterator iter;
@@ -46,13 +46,13 @@ Quality ITSClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
       for (int ilayer = 0; ilayer < NLayer; ilayer++) {
         result.addMetadata(Form("Layer%d", ilayer), "good");
         if (iter->second->getName().find(Form("Layer%d", ilayer)) != std::string::npos && h->GetMaximum() > averageClusterSizeLimit[ilayer]) {
-          result.updateMetadata(Form("Layer%d", ilayer), "bad");
-          result.set(Quality::Bad);
+          result.updateMetadata(Form("Layer%d", ilayer), "medium");
+          result.set(Quality::Medium);
         }
       }
     }
 
-    if (iter->second->getName().find("GeneralOccupancy") != std::string::npos) {
+    if (iter->second->getName().find("General_Occupancy") != std::string::npos) {
       auto* hp = dynamic_cast<TH2D*>(iter->second->getObject());
       for (int iy = 1; iy <= hp->GetNbinsY(); iy++) {
         int ilayer = iy <= hp->GetNbinsY() / 2 ? hp->GetNbinsY() / 2 - iy : iy - hp->GetNbinsY() / 2 - 1;
@@ -86,15 +86,15 @@ void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
     int iLayer = histoName[histoName.find("Layer") + 5] - 48; // Searching for position of "Layer" in the name of the file, then +5 is the NUMBER of the layer, -48 is conversion to int
 
     if (checkResult == Quality::Medium) {
-      text = "Quality::GOOD";
-      textColor = kGreen;
-      positionX = 0.02;
-      positionY = 0.91;
-    } else {
       text = "INFO: large clusters - do not call expert";
       textColor = kYellow;
       positionX = 0.15;
       positionY = 0.8;
+    } else {
+      text = "Quality::GOOD";
+      textColor = kGreen;
+      positionX = 0.02;
+      positionY = 0.91;
     }
 
     msg = std::make_shared<TLatex>(positionX, positionY, Form("#bf{%s}", text.Data()));
@@ -116,7 +116,7 @@ void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
       positionX = 0.02;
       positionY = 0.91;
     } else {
-      text = "Medium - notify expert, do not call";
+      text = "Large cluster occupancy - notify expert, do not call";
       textColor = kYellow;
       positionX = 0.15;
       positionY = 0.8;

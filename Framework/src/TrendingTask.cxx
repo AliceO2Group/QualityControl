@@ -20,6 +20,7 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Reductor.h"
 #include "QualityControl/RootClassFactory.h"
+#include "QualityControl/RepoPathUtils.h"
 #include <boost/property_tree/ptree.hpp>
 #include <TH1.h>
 #include <TCanvas.h>
@@ -37,18 +38,43 @@ void TrendingTask::configure(std::string name, const boost::property_tree::ptree
   mConfig = TrendingTaskConfig(name, config);
 }
 
-void TrendingTask::initialize(Trigger, framework::ServiceRegistry&)
+void TrendingTask::initialize(Trigger, framework::ServiceRegistry& services)
 {
   // Preparing data structure of TTree
-  mTrend = std::make_unique<TTree>(); // todo: retrieve last TTree, so we continue trending. maybe do it optionally?
-  mTrend->SetName(PostProcessingInterface::getName().c_str());
-  mTrend->Branch("meta", &mMetaData, "runNumber/I");
-  mTrend->Branch("time", &mTime);
-
+  if (mConfig.resumeTrend) {
+    ILOG(Info, Support) << "Trying to retrieve an existing TTree for this task to continue the trend." << ENDM;
+    auto& qcdb = services.get<repository::DatabaseInterface>();
+    auto path = RepoPathUtils::getMoPath(mConfig.detectorName, PostProcessingInterface::getName(), "", "", false);
+    auto mo = qcdb.retrieveMO(path, PostProcessingInterface::getName(), -1, mConfig.activity);
+    if (mo && mo->getObject()) {
+      auto tree = dynamic_cast<TTree*>(mo->getObject());
+      if (tree) {
+        mTrend = std::unique_ptr<TTree>(tree);
+        mo->setIsOwner(false);
+      }
+    } else {
+      ILOG(Warning, Support) << "Could not retrieve an existing TTree for this task, maybe there is none which match these Activity settings" << ENDM;
+    }
+  }
   for (const auto& source : mConfig.dataSources) {
-    std::unique_ptr<Reductor> reductor(root_class_factory::create<Reductor>(source.moduleName, source.reductorName));
-    mTrend->Branch(source.name.c_str(), reductor->getBranchAddress(), reductor->getBranchLeafList());
-    mReductors[source.name] = std::move(reductor);
+    mReductors.emplace(source.name, root_class_factory::create<Reductor>(source.moduleName, source.reductorName));
+  }
+
+  if (mTrend == nullptr) {
+    mTrend = std::make_unique<TTree>();
+    mTrend->SetName(PostProcessingInterface::getName().c_str());
+
+    mTrend->Branch("meta", &mMetaData, mMetaData.getBranchLeafList());
+    mTrend->Branch("time", &mTime);
+    for (const auto& [sourceName, reductor] : mReductors) {
+      mTrend->Branch(sourceName.c_str(), reductor->getBranchAddress(), reductor->getBranchLeafList());
+    }
+  } else {
+    mTrend->SetBranchAddress("meta", &mMetaData);
+    mTrend->SetBranchAddress("time", &mTime);
+    for (const auto& [sourceName, reductor] : mReductors) {
+      mTrend->SetBranchAddress(sourceName.c_str(), reductor->getBranchAddress());
+    }
   }
   if (mConfig.producePlotsOnUpdate) {
     getObjectsManager()->startPublishing(mTrend.get());

@@ -397,15 +397,14 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
     }
 
-    for (int i = 0; i < 13; i++) {
-      if (((uint32_t)(rdh->triggerType) >> i & 1) == 1) {
-        mTrigger->Fill(i + 1);
-        mTriggerVsFeeId->Fill(ifee, i + 1);
-      }
-    }
-
     if ((int)(rdh->stop)) {
       nStops[ifee]++;
+      for (int i = 0; i < 13; i++) {
+        if (((uint32_t)(rdh->triggerType) >> i & 1) == 1) {
+          mTrigger->Fill(i + 1);
+          mTriggerVsFeeId->Fill(ifee, i + 1);
+        }
+      }
     }
   }
 

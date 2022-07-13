@@ -93,30 +93,29 @@ void RawData::buildHistograms()
     "TRDLastParsingError"
   };
 
-  mDataAcceptance = new TH1F("dataacceptance", "Data Accepted and Rejected", 2, 0, 2);
+  mDataAcceptance = new TH1F("dataacceptance", "Data Accepted and Rejected;Type;MBytes", 2, 0, 2);
   getObjectsManager()->startPublishing(mDataAcceptance);
-  mTimeFrameTime = new TH1F("timeframetime", "Time taken per time frame", 10000, 0, 10000);
+  mTimeFrameTime = new TH1F("timeframetime", "Time taken per time frame;Time taken [ms];Counts", 10000, 0, 10000);
   getObjectsManager()->startPublishing(mTimeFrameTime);
-  mTrackletParsingTime = new TH1F("tracklettime", "Time taken per tracklet block", 1000, 0, 1000);
+  mTrackletParsingTime = new TH1F("tracklettime", "Time taken per tracklet block;Time taken [ms];Counts", 1000, 0, 1000);
   getObjectsManager()->startPublishing(mTrackletParsingTime);
-  mDigitParsingTime = new TH1F("digittime", "Time taken per digit block", 1000, 0, 1000);
+  mDigitParsingTime = new TH1F("digittime", "Time taken per digit block;Time taken [ms];Counts", 1000, 0, 1000);
   getObjectsManager()->startPublishing(mDigitParsingTime);
-  mDataVersions = new TH1F("dataversions", "Data versions major.minor seen in data (half chamber header required)", 65000, 0, 65000);
+  mDataVersions = new TH1F("dataversions", "Data versions major.minor seen in data (half chamber header required);Version major.minor;Counts", 65000, 0, 65000);
   getObjectsManager()->startPublishing(mDataVersions);
-  mDataVersionsMajor = new TH1F("dataversionsmajor", "Data versions major seen in the data (half chamber header required)", 256, 0, 256);
+  mDataVersionsMajor = new TH1F("dataversionsmajor", "Data versions major seen in the data (half chamber header required);Version;Counts", 256, 0, 256);
   getObjectsManager()->startPublishing(mDataVersionsMajor);
-  mParsingErrors = new TH1F("parseerrors", "Parsing Errors seen in data", 256, 0, 256);
+  mParsingErrors = new TH1F("parseerrors", "Parsing Errors seen in data;Error Number;Counts", 256, 0, 256);
   getObjectsManager()->startPublishing(mParsingErrors);
 
-  mTotalChargevsTimeBin = new TH1F("totalchargevstimebin", "Total Charge vs Timebin", 30, 0, 30);
-  getObjectsManager()->startPublishing(mTotalChargevsTimeBin);
-  mDataVolumePerHalfSector = new TH2F("datavolumeperhalfsector", "Event size per half chamber, from parsing", 1080, 0, 1080, 1000, 0, 1000);
+  mDataVolumePerHalfSector = new TH2F("datavolumeperhalfsector", "Event size per half chamber, from parsing;Half Chamber ID;Data Volume [kB/event]", 1080, 0, 1080, 1000, 0, 1000);
   getObjectsManager()->startPublishing(mDataVolumePerHalfSector);
   getObjectsManager()->setDefaultDrawOptions("datavolumeperhalfsector", "COLZ");
-  mDataVolumePerHalfSectorCru = new TH2F("datavolumeperhalfsectorcru", "Event size per half chamber, from cru header", 1080, 0, 1080, 1000, 0, 1000);
+  mDataVolumePerHalfSectorCru = new TH2F("datavolumeperhalfsectorcru", "Event size per half chamber, from cru header; Half Chamber ID; Data Volume as per CRU [kB/event]", 1080, 0, 1080, 1000, 0, 1000);
+  getObjectsManager()->setDisplayHint(mDataVolumePerHalfSector->GetName(), "logz");
   getObjectsManager()->startPublishing(mDataVolumePerHalfSectorCru);
   getObjectsManager()->setDefaultDrawOptions("datavolumeperhalfsectorcru", "COLZ");
-  int count = 0;
+  getObjectsManager()->setDisplayHint(mDataVolumePerHalfSectorCru->GetName(), "logz");
   for (int count = 0; count < o2::trd::TRDLastParsingError; ++count) {
     std::string label = fmt::format("parsingerrors_{0}", count);
     std::string title = parsingerrortitle[count];
@@ -124,8 +123,8 @@ void RawData::buildHistograms()
     mParsingErrors2d[count] = h;
     getObjectsManager()->startPublishing(h);
     getObjectsManager()->setDefaultDrawOptions(h->GetName(), "COLZ");
+    getObjectsManager()->setDisplayHint(h->GetName(), "logz");
   }
-  count = 0;
   for (int count = 0; count < 10; ++count) {
     std::string label = fmt::format("linkstatus_{0}", count);
     std::string title = linkerrortitles[count];
@@ -133,27 +132,9 @@ void RawData::buildHistograms()
     mLinkErrors[count] = h;
     getObjectsManager()->startPublishing(h);
     getObjectsManager()->setDefaultDrawOptions(h->GetName(), "COLZ");
+    getObjectsManager()->setDisplayHint(h->GetName(), "logz");
   }
-  mDataAcceptance->GetXaxis()->SetTitle("Type");
-  mDataAcceptance->GetYaxis()->SetTitle("MBytes");
-  mTimeFrameTime->GetXaxis()->SetTitle("Time taken in ms");
-  mTimeFrameTime->GetYaxis()->SetTitle("Counts");
 
-  mTrackletParsingTime->GetXaxis()->SetTitle("Time taken in #mus");
-  mTrackletParsingTime->GetYaxis()->SetTitle("Counts");
-  mDigitParsingTime->GetXaxis()->SetTitle("Time taken in #mus");
-  mDigitParsingTime->GetYaxis()->SetTitle("Counts");
-  mDigitParsingTime->GetYaxis()->SetTitle("Counts");
-  mDataVersions->GetXaxis()->SetTitle("Version");
-  mDataVersions->GetYaxis()->SetTitle("Counts");
-  mDataVersionsMajor->GetYaxis()->SetTitle("Counts");
-  mDataVersionsMajor->GetXaxis()->SetTitle("Version major");
-  mParsingErrors->GetYaxis()->SetTitle("Counts");
-  mParsingErrors->GetXaxis()->SetTitle("Error Types");
-  mDataVolumePerHalfSector->GetXaxis()->SetTitle("half chamber");
-  mDataVolumePerHalfSectorCru->GetXaxis()->SetTitle("half chamber");
-  mDataVolumePerHalfSector->GetYaxis()->SetTitle("Data Volume [kB/event]");
-  mDataVolumePerHalfSectorCru->GetYaxis()->SetTitle("Data Volume [kB/event]");
   for (int i = 0; i < o2::trd::TRDLastParsingError; ++i) {
     std::string label = fmt::format("{0}_{1}", parsingerrortitle[i], i);
     mParsingErrors->GetXaxis()->SetBinLabel(i + 1, label.c_str());
@@ -170,6 +151,7 @@ void RawData::buildHistograms()
         int pos = s * o2::trd::constants::NLAYER + l + 1;
         h->GetYaxis()->SetBinLabel(pos, label.c_str());
       }
+      getObjectsManager()->setDisplayHint(h->GetName(), "logz");
     }
     for (int sm = 0; sm < o2::trd::constants::NSECTOR; ++sm) {
       for (int side = 0; side < 2; ++side) {
@@ -185,6 +167,7 @@ void RawData::buildHistograms()
     h->GetXaxis()->CenterTitle(kTRUE);
     h->GetYaxis()->SetTitle("Stack_Layer");
     h->GetYaxis()->CenterTitle(kTRUE);
+    getObjectsManager()->setDisplayHint(h->GetName(), "logz");
     for (int s = 0; s < o2::trd::constants::NSTACK; ++s) {
       for (int l = 0; l < o2::trd::constants::NLAYER; ++l) {
         std::string label = fmt::format("{0}.{1}", s, l);
@@ -201,9 +184,6 @@ void RawData::buildHistograms()
     }
   }
 
-  for (Int_t det = 0; det < 540; ++det) {
-    fClusterChamberAmplitude[det] = new TH1F(Form("clustramplitude_%d", det), "", 300, -0.5, 299.5);
-  }
 }
 
 void RawData::initialize(o2::framework::InitContext& /*ctx*/)
@@ -365,8 +345,6 @@ void RawData::resetHistograms()
   mParsingErrors->Reset();
   mDataVolumePerHalfSector->Reset();
   mDataVolumePerHalfSectorCru->Reset();
-  mTotalChargevsTimeBin->Reset();
-  //TODO come back and change the drawing of these and labels
 }
 
 } // namespace o2::quality_control_modules::trd

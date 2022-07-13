@@ -29,6 +29,7 @@
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
 #include "TPC/Tracks.h"
+#include "Common/Utils.h"
 
 namespace o2::quality_control_modules::tpc
 {
@@ -37,19 +38,18 @@ void Tracks::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info, Support) << "initialize TPC Tracks QC task" << ENDM;
 
+  const float cutMindEdxTot = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "cutMindEdxTot");
+  const float cutAbsEta = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "cutAbsEta");
+  const int cutMinNCluster = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "cutMinNCluster");
+
+  // set track cuts defaults are (AbsEta = 1.0, nCluster = 60, MindEdxTot  = 20)
+  mQCTracks.setTrackCuts(cutAbsEta, cutMinNCluster, cutMindEdxTot);
+
   mQCTracks.initializeHistograms();
-  o2::tpc::qc::helpers::setStyleHistogram2D(mQCTracks.getHistograms2D());
-
-  for (auto& hist : mQCTracks.getHistograms1D()) {
-    getObjectsManager()->startPublishing(&hist);
-  }
-
-  for (auto& hist2 : mQCTracks.getHistograms2D()) {
-    getObjectsManager()->startPublishing(&hist2);
-  }
-
-  for (auto& histR : mQCTracks.getHistogramRatios1D()) {
-    getObjectsManager()->startPublishing(&histR);
+  // pass map of vectors of histograms to be beutified!
+  o2::tpc::qc::helpers::setStyleHistogramsInMap(mQCTracks.getMapHist());
+  for (auto const& pair : mQCTracks.getMapHist()) {
+    getObjectsManager()->startPublishing(pair.second.get());
   }
 }
 
@@ -68,14 +68,10 @@ void Tracks::monitorData(o2::framework::ProcessingContext& ctx)
 {
   using TrackType = std::vector<o2::tpc::TrackTPC>;
   auto tracks = ctx.inputs().get<TrackType>("inputTracks");
-  //using TracksType = gsl::span<o2::tpc::TrackTPC>;
-  //const auto tracks = ctx.inputs().get<TracksType>("inputTracks");
-  //ILOG(Info, Support) << "monitorData: " << tracks.size() << ENDM;
 
   for (auto const& track : tracks) {
     mQCTracks.processTrack(track);
   }
-  //mQCTracks.processAllTracks(tracks);
 }
 
 void Tracks::endOfCycle()

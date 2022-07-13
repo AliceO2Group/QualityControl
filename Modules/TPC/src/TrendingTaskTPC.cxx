@@ -21,6 +21,7 @@
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "TPC/TrendingTaskTPC.h"
+#include "QualityControl/RepoPathUtils.h"
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/algorithm/string.hpp>
@@ -50,29 +51,65 @@ void TrendingTaskTPC::configure(std::string name,
   mConfig = TrendingTaskConfigTPC(name, config);
 }
 
-void TrendingTaskTPC::initialize(Trigger, framework::ServiceRegistry&)
+void TrendingTaskTPC::initialize(Trigger, framework::ServiceRegistry& services)
 {
   // Prepare the data structure of the trending TTree.
-  mTrend = std::make_unique<TTree>();
-  mTrend->SetName(PostProcessingInterface::getName().c_str());
-  mTrend->Branch("meta", &mMetaData, "runNumber/I");
-  mTrend->Branch("time", &mTime);
+  if (mConfig.resumeTrend) {
+    ILOG(Info, Support) << "Trying to retrieve an existing TTree for this task to continue the trend." << ENDM;
+    auto& qcdb = services.get<repository::DatabaseInterface>();
+    auto path = RepoPathUtils::getMoPath(mConfig.detectorName, PostProcessingInterface::getName(), "", "", false);
+    auto mo = qcdb.retrieveMO(path, PostProcessingInterface::getName(), -1, mConfig.activity);
+    if (mo && mo->getObject()) {
+      auto tree = dynamic_cast<TTree*>(mo->getObject());
+      if (tree) {
+        mTrend = std::unique_ptr<TTree>(tree);
+        mo->setIsOwner(false);
+      }
+    } else {
+      ILOG(Warning, Support) << "Could not retrieve an existing TTree for this task, maybe there is none which match these Activity settings" << ENDM;
+    }
+  }
+  if (mTrend == nullptr) {
+    ILOG(Info, Support) << "Generating new TTree for SliceTrending" << ENDM;
+    mTrend = std::make_unique<TTree>();
+    mTrend->SetName(PostProcessingInterface::getName().c_str());
 
+    mTrend->Branch("meta", &mMetaData, "runNumber/I");
+    mTrend->Branch("time", &mTime);
+    for (const auto& source : mConfig.dataSources) {
+      mSources[source.name] = new std::vector<SliceInfo>();
+      mSourcesQuality[source.name] = new SliceInfoQuality();
+      if (source.type == "repository") {
+        mTrend->Branch(source.name.c_str(), &mSources[source.name]);
+      } else if (source.type == "repository-quality") {
+        mTrend->Branch(source.name.c_str(), &mSourcesQuality[source.name]);
+      }
+    }
+  } else {                                                    // we picked up an older TTree
+    mTrend->SetBranchAddress("meta", &(mMetaData.runNumber)); // TO-DO: Find reason why simply &mMetaData does not work
+    mTrend->SetBranchAddress("time", &mTime);
+    for (const auto& source : mConfig.dataSources) {
+      mSources[source.name] = new std::vector<SliceInfo>();
+      mSourcesQuality[source.name] = new SliceInfoQuality();
+      if (source.type == "repository") {
+        mTrend->SetBranchAddress(source.name.c_str(), &mSources[source.name]);
+      } else if (source.type == "repository-quality") {
+        mTrend->SetBranchAddress(source.name.c_str(), &mSourcesQuality[source.name]);
+      }
+    }
+  }
+  // Reductors
   for (const auto& source : mConfig.dataSources) {
-    mSources[source.name] = std::vector<SliceInfo>();
-    mSourcesQuality[source.name] = SliceInfoQuality();
-
     std::unique_ptr<ReductorTPC> reductor(root_class_factory::create<ReductorTPC>(
       source.moduleName, source.reductorName));
+    mReductors[source.name] = std::move(reductor);
     if (source.type == "repository") {
-      mTrend->Branch(source.name.c_str(), &mSources[source.name]);
       mIsMoObject[source.name] = true;
     } else if (source.type == "repository-quality") {
-      mTrend->Branch(source.name.c_str(), &mSourcesQuality[source.name]);
       mIsMoObject[source.name] = false;
     }
-    mReductors[source.name] = std::move(reductor);
   }
+
   if (mConfig.producePlotsOnUpdate) {
     getObjectsManager()->startPublishing(mTrend.get());
   }
@@ -93,6 +130,12 @@ void TrendingTaskTPC::finalize(Trigger t, framework::ServiceRegistry&)
     getObjectsManager()->startPublishing(mTrend.get());
   }
   generatePlots();
+  for (const auto& source : mConfig.dataSources) {
+    delete mSources[source.name];
+    mSources[source.name] = nullptr;
+    delete mSourcesQuality[source.name];
+    mSourcesQuality[source.name] = nullptr;
+  }
 }
 
 void TrendingTaskTPC::trendValues(const Trigger& t,
@@ -104,19 +147,21 @@ void TrendingTaskTPC::trendValues(const Trigger& t,
   for (auto& dataSource : mConfig.dataSources) {
     mNumberPads[dataSource.name] = 0;
     if (dataSource.type == "repository") {
+      mSources[dataSource.name]->clear(); // reset
       auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name, t.timestamp, t.activity);
       TObject* obj = mo ? mo->getObject() : nullptr;
 
       mAxisDivision[dataSource.name] = dataSource.axisDivision;
-
       if (obj) {
-        mReductors[dataSource.name]->update(obj, mSources[dataSource.name],
+        mReductors[dataSource.name]->update(obj, *mSources[dataSource.name],
                                             dataSource.axisDivision, mNumberPads[dataSource.name]);
       }
-
     } else if (dataSource.type == "repository-quality") {
+      // reset
+      mSourcesQuality[dataSource.name]->qualitylevel = 0;
+      mSourcesQuality[dataSource.name]->title = "";
       if (auto qo = qcdb.retrieveQO(dataSource.path + "/" + dataSource.name, t.timestamp, t.activity)) {
-        mReductors[dataSource.name]->updateQuality(qo.get(), mSourcesQuality[dataSource.name]);
+        mReductors[dataSource.name]->updateQuality(qo.get(), *mSourcesQuality[dataSource.name]);
         mNumberPads[dataSource.name] = 1;
       }
     } else {

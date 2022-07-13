@@ -20,10 +20,6 @@
 #include "CommonDataFormat/BunchFilling.h"
 #include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/DatabaseInterface.h"
-#include "FV0Base/Constants.h"
-#include "DataFormatsFT0/Digit.h" // temp, for o2::ft0::Triggers::bitXYZ
-#include "DataFormatsFV0/ChannelData.h"
-#include "DataFormatsFV0/Digit.h"
 #include "CCDB/CcdbApi.h"
 
 #include "TList.h"
@@ -41,34 +37,25 @@ class OutOfBunchCollTask final : public quality_control::postprocessing::PostPro
 {
  public:
   OutOfBunchCollTask() = default;
-  ~OutOfBunchCollTask() override;
+  ~OutOfBunchCollTask() override = default;
   void initialize(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
   void update(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
   void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
   void configure(std::string, const boost::property_tree::ptree&) override;
 
  private:
-  // temp
-  enum ETrgMenu { kMinBias,
-                  kOuterRing,
-                  kNChannels,
-                  kCharge,
-                  kInnerRing
-  };
-
   std::string mPathDigitQcTask;
   std::string mPathBunchFilling;
   o2::quality_control::repository::DatabaseInterface* mDatabase = nullptr;
   std::string mCcdbUrl;
   o2::ccdb::CcdbApi mCcdbApi;
-  TList* mListHistGarbage;
   std::map<int, std::string> mMapDigitTrgNames;
-  std::map<unsigned int, TH2F*> mMapOutOfBunchColl;
   // if storage size matters it can be replaced with TH1
   // and TH2 can be created based on it on the fly, but only TH1 would be stored
   std::unique_ptr<TH2F> mHistBcPattern;
+  std::unique_ptr<TH2F> mHistBcTrgOutOfBunchColl;
 };
 
 } // namespace o2::quality_control_modules::fv0
 
-#endif //QC_MODULE_FV0_OUTOFBUNCHCOLLTASK_H
+#endif // QC_MODULE_FV0_OUTOFBUNCHCOLLTASK_H

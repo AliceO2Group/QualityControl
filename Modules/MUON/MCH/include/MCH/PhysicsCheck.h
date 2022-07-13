@@ -17,6 +17,7 @@
 #ifndef QC_MODULE_MCH_PHYSICSCHECK_H
 #define QC_MODULE_MCH_PHYSICSCHECK_H
 
+#include "MUONCommon/MergeableTH2Ratio.h"
 #include "QualityControl/CheckInterface.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
@@ -24,6 +25,7 @@
 #include "MCHRawElecMap/Mapper.h"
 #include <string>
 
+using namespace o2::quality_control_modules::muon;
 namespace o2::quality_control_modules::muonchambers
 {
 
@@ -45,7 +47,8 @@ class PhysicsCheck : public o2::quality_control::checker::CheckInterface
   std::string getAcceptedType() override;
 
  private:
-  bool checkPadMapping(uint16_t feeId, uint8_t linkId, uint8_t eLinkId, o2::mch::raw::DualSampaChannelId channel);
+  int checkPadMapping(uint16_t feeId, uint8_t linkId, uint8_t eLinkId, o2::mch::raw::DualSampaChannelId channel);
+  Quality processFecOccupancy(MergeableTH2Ratio* hr, std::vector<double>& deOccupancy);
 
   double mMinOccupancy;
   double mMaxOccupancy;
@@ -54,12 +57,17 @@ class PhysicsCheck : public o2::quality_control::checker::CheckInterface
   double mOccupancyPlotScaleMax;
   bool mVerbose;
 
+  std::vector<double> mDeOccupancy;
+  std::vector<double> mDeOccupancyOnCycle;
+
+  std::shared_ptr<MergeableTH2Ratio> mHistogramOccupancyFecPrevCycle;
+
   o2::mch::raw::Elec2DetMapper mElec2DetMapper;
   o2::mch::raw::Det2ElecMapper mDet2ElecMapper;
   o2::mch::raw::FeeLink2SolarMapper mFeeLink2SolarMapper;
   o2::mch::raw::Solar2FeeLinkMapper mSolar2FeeLinkMapper;
 
-  ClassDefOverride(PhysicsCheck, 3);
+  ClassDefOverride(PhysicsCheck, 4);
 };
 
 } // namespace o2::quality_control_modules::muonchambers

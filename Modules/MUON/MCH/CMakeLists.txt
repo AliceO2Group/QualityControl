@@ -16,6 +16,9 @@ set(SRCS
   src/PhysicsPreclustersCheck.cxx
   src/TH1MCHReductor.cxx
   src/TracksTask.cxx
+  src/TrendingConfigMCH.cxx
+  src/TrendingFECHistRatio.cxx
+  src/TrendingTracks.cxx
 )
 
 set(HEADERS
@@ -31,12 +34,13 @@ set(HEADERS
   include/MCH/PhysicsOccupancyCheck.h
   include/MCH/PhysicsPreclustersCheck.h
   include/MCH/TH1MCHReductor.h
-  include/MCH/MergeableTH1OccupancyPerDE.h
-  include/MCH/MergeableTH1OccupancyPerDECycle.h
   include/MCH/MergeableTH1PseudoEfficiencyPerDE.h
   include/MCH/MergeableTH1PseudoEfficiencyPerDECycle.h
   include/MCH/MergeableTH1MPVPerDECycle.h
   include/MCH/TracksTask.h
+  include/MCH/TrendingConfigMCH.h
+  include/MCH/TrendingFECHistRatio.h
+  include/MCH/TrendingTracks.h
 )
 
 # ---- Library ----
@@ -92,12 +96,13 @@ add_root_dictionary(${MODULE_NAME}
                             include/MCH/PedestalsCheck.h
                             include/MCH/TH1MCHReductor.h
                             include/MCH/sampa_header.h
-                            include/MCH/MergeableTH1OccupancyPerDE.h
-                            include/MCH/MergeableTH1OccupancyPerDECycle.h
                             include/MCH/MergeableTH1PseudoEfficiencyPerDE.h
                             include/MCH/MergeableTH1PseudoEfficiencyPerDECycle.h
                             include/MCH/MergeableTH1MPVPerDECycle.h
                             include/MCH/TracksTask.h
+                            include/MCH/TrendingConfigMCH.h
+                            include/MCH/TrendingFECHistRatio.h
+                            include/MCH/TrendingTracks.h
                     LINKDEF include/MCH/LinkDef.h)
 
 # ---- Tests ----

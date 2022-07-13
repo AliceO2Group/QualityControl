@@ -122,7 +122,16 @@ QualityObjectsType Check::check(std::map<std::string, std::shared_ptr<MonitorObj
     std::vector<std::string> monitorObjectsNames;
     boost::copy(moMapToCheck | boost::adaptors::map_keys, std::back_inserter(monitorObjectsNames));
 
-    auto quality = mCheckInterface->check(&moMapToCheck);
+    Quality quality;
+    try {
+      quality = mCheckInterface->check(&moMapToCheck);
+    } catch (...) {
+      std::string diagnostic = boost::current_exception_diagnostic_information();
+      ILOG(Error, Ops) << "Unexpected exception in user code (check):\n"
+                       << diagnostic << ENDM;
+      continue;
+    }
+
     ILOG(Info, Support) << "Check '" << mCheckConfig.name << "', quality '" << quality << "'" << ENDM;
     // todo: take metadata from somewhere
     qualityObjects.emplace_back(std::make_shared<QualityObject>(
@@ -145,7 +154,14 @@ void Check::beautify(std::map<std::string, std::shared_ptr<MonitorObject>>& moMa
   }
 
   for (auto const& item : moMap) {
-    mCheckInterface->beautify(item.second /*mo*/, quality);
+    try {
+      mCheckInterface->beautify(item.second /*mo*/, quality);
+    } catch (...) {
+      std::string diagnostic = boost::current_exception_diagnostic_information();
+      ILOG(Error, Ops) << "Unexpected exception in user code (beautify):\n"
+                       << diagnostic << ENDM;
+      continue;
+    }
   }
 }
 UpdatePolicyType Check::getUpdatePolicyType() const

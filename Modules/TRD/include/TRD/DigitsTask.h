@@ -20,11 +20,13 @@
 #include "QualityControl/TaskInterface.h"
 #include <array>
 #include "DataFormatsTRD/NoiseCalibration.h"
+#include "TRDQC/StatusHelper.h"
 
 class TH1F;
 class TH2F;
 class TH1D;
 class TH2D;
+class TLine;
 class TProfile;
 class TProfile2D;
 using namespace o2::quality_control::core;
@@ -52,65 +54,63 @@ class DigitsTask final : public TaskInterface
   void endOfActivity(Activity& activity) override;
   void reset() override;
   void buildHistograms();
-  void buildHistogramsPH();
   void drawLinesMCM(TH2F* histo);
+  void drawTrdLayersGrid(TH2F* hist);
   void retrieveCCDBSettings();
+  void drawLinesOnPulseHeight(TH1F* h);
+  void fillLinesOnHistsPerLayer(int iLayer);
+  void drawHashOnLayers(int layer, int hcid, int col, int rowstart, int rowend);
 
  private:
   // limits
+  bool mSkipSharedDigits;
   std::pair<float, float> mDriftRegion;
   std::pair<float, float> mPulseHeightPeakRegion;
+  long int mTimestamp;
 
-  std::shared_ptr<TH1F> mDigitsPerEvent = nullptr;
-  std::shared_ptr<TH1F> mTotalChargevsTimeBin = nullptr; //
+  std::shared_ptr<TH1F> mDigitsPerEvent;
+  std::shared_ptr<TH2F> mDigitsSizevsTrackletSize;
   std::shared_ptr<TH1F> mDigitHCID = nullptr;
-  std::shared_ptr<TH1F> mParsingErrors = nullptr;
-
   std::shared_ptr<TH2F> mClusterAmplitudeChamber;
-  std::array<std::shared_ptr<TH2F>, 6> mNClsLayer;        ///[layer]->Fill(sm - 0.5 + col / 144., startRow[istack]+row);
-  std::shared_ptr<TH1D> mADCvalue;                        //->Fill(value);
-  std::array<std::shared_ptr<TH1F>, 18> mADC;             //[sm]->Fill(value);
-  std::array<std::shared_ptr<TH2F>, 18> mADCTB;           //[sm]->Fill(time, value);
-  std::array<std::shared_ptr<TH2F>, 18> mADCTBfull;       //[sm]->Fill(time, value);
-  std::shared_ptr<TH1F> mNCls;                            //->Fill(sm);
-  std::array<std::shared_ptr<TH2F>, 18> mHCMCM;           //[sm]->Fill(sum);
-  std::array<std::shared_ptr<TH1F>, 18> mClsSM;           //[sm]->Fill(sum);
-  std::array<std::shared_ptr<TH2F>, 18> mcLStBsm;         //[SM]->fILL(TIme, sum);
-  std::shared_ptr<TH2F> mClsTb;                           //->Fill(time, sum);
-  std::shared_ptr<TH2F> mClsChargeFirst;                  //->Fill(sum, (1.*sum/sumU) -1.);
-  std::shared_ptr<TH1F> mClsChargeTb;                     //->Fill(time, sum);
-  std::shared_ptr<TH1F> mClsChargeTbCycle;                //->Fill(time, sum);
-  std::shared_ptr<TH1F> mClsNTb;                          //->Fill(time);
-  std::shared_ptr<TH1F> mClsAmp;                          //->Fill(sum);
-  std::shared_ptr<TH1F> mClsAmpDrift;                     //->Fill(sum);
-  std::shared_ptr<TH1F> mClsAmpTb;                        //, "ClsAmpTb", "ClsAmpTb", 30, -0.5, 29.5);
-  std::shared_ptr<TH1F> mClsAmpCh;                        //
-  std::array<std::shared_ptr<TH2F>, 18> mClsDetAmp;       //[sm]->Fill(detLoc, sum);
-  std::shared_ptr<TH2F> mClsSector;                       //, "ClsSector", "ClsSector", nSMs, -0.5, 17.5, 500, -0.5, 999.5);
-  std::shared_ptr<TH2F> mClsStack;                        //, "ClsStack", "ClsStack", 5, -0.5, 4.5, 500, -0.5, 999.5);
-  std::array<std::shared_ptr<TH2F>, 18> mClsDetTime;      //[sm]->Fill(detLoc, time, sum);
-  std::array<std::shared_ptr<TH1F>, 10> mClsChargeTbTigg; //[trgg]->Fill(time, sum);
-  std::shared_ptr<TH2F> mClsChargeTbTrigHM;               //->Fill(time, sum);
-  std::shared_ptr<TH2F> mClsChargeTbTrigMinBias;          //->Fill(time, sum);
-  std::shared_ptr<TH2F> mClsChargeTbTrigTRDL1;            //->Fill(time, sum);
+  std::array<std::shared_ptr<TH2F>, 6> mNClsLayer;
+  std::shared_ptr<TH1D> mADCvalue;
+  std::array<std::shared_ptr<TH1F>, 18> mADC;
+  std::array<std::shared_ptr<TH2F>, 18> mADCTB;
+  std::array<std::shared_ptr<TH2F>, 18> mADCTBfull;
+  std::shared_ptr<TH1F> mNCls;
+  std::array<std::shared_ptr<TH2F>, 18> mHCMCM;
+  std::array<std::shared_ptr<TH1F>, 18> mClsSM;
+  std::shared_ptr<TH2F> mClsTb;
+  std::shared_ptr<TH2F> mClsChargeFirst;
+  std::shared_ptr<TH1F> mClsChargeTb;
+  std::shared_ptr<TH1F> mClsChargeTbCycle;
+  std::shared_ptr<TH1F> mClsNTb;
+  std::shared_ptr<TH1F> mClsAmp;
+  std::shared_ptr<TH1F> mNClsAmp;
+  std::shared_ptr<TH1F> mClsAmpDrift;
+  std::shared_ptr<TH1F> mClsAmpTb;
+  std::shared_ptr<TH1F> mClsAmpCh;
+  std::array<std::shared_ptr<TH2F>, 18> mClsDetAmp;
+  std::shared_ptr<TH2F> mClsSector;
+  std::shared_ptr<TH2F> mClsStack;
+  std::array<std::shared_ptr<TH2F>, 18> mClsDetTime;
+  std::shared_ptr<TH1F> mClsChargeTbTigg;
+  std::shared_ptr<TH2F> mClsChargeTbTrigHM;
+  std::shared_ptr<TH2F> mClsChargeTbTrigMinBias;
+  std::shared_ptr<TH2F> mClsChargeTbTrigTRDL1;
   std::array<std::shared_ptr<TH2F>, 18> mClsTbSM;
-
   std::shared_ptr<TH1F> mPulseHeight = nullptr;
   std::shared_ptr<TH1F> mPulseHeightScaled = nullptr;
   std::shared_ptr<TH2F> mTotalPulseHeight2D = nullptr;
-  std::array<std::shared_ptr<TH1F>, 18> mPulseHeight2DperSM; // ph2DSM;
-  std::shared_ptr<TH1F> mPulseHeight2 = nullptr;
-  std::shared_ptr<TH1F> mPulseHeight2n = nullptr;
-  std::shared_ptr<TH1F> mPulseHeightScaled2 = nullptr;
-  std::shared_ptr<TH2F> mTotalPulseHeight2D2 = nullptr;
-  std::array<std::shared_ptr<TH1F>, 18> mPulseHeight2DperSM2; // ph2DSM;
-  std::shared_ptr<TH1F> mPulseHeightDuration;
-  std::shared_ptr<TH1F> mPulseHeightDuration1;
-  std::shared_ptr<TH1F> mPulseHeightDurationDiff;
-  o2::trd::NoiseStatusMCM* mNoiseMap = nullptr;
+  std::array<std::shared_ptr<TH1F>, 18> mPulseHeight2DperSM;
+  std::shared_ptr<TH1F> mPulseHeightn = nullptr;
   std::shared_ptr<TProfile> mPulseHeightpro = nullptr;
   std::shared_ptr<TProfile2D> mPulseHeightperchamber = nullptr;
-  std::array<std::shared_ptr<TProfile>, 540> mPulseHeightPerChamber_1D; // ph2DSM;
+  std::array<std::shared_ptr<TH1F>, 540> mPulseHeightPerChamber_1D; // ph2DSM;
+  std::vector<TH2F*> mLayers;
+  // information pulled from ccdb
+  o2::trd::NoiseStatusMCM* mNoiseMap = nullptr;
+  o2::trd::HalfChamberStatusQC* mChamberStatus = nullptr;
 };
 
 } // namespace o2::quality_control_modules::trd

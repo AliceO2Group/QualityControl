@@ -50,6 +50,10 @@ void QcInfoLogger::setRun(int run)
 
 void QcInfoLogger::setPartition(const std::string& partitionName)
 {
+  if (partitionName.empty()) {
+    ILOG(Debug, Support) << "IL: Partition empty, we don't set it" << ENDM;
+    return;
+  }
   mContext->setField(infoContext::FieldName::Partition, partitionName);
   instance->setContext(*mContext);
   ILOG(Debug, Support) << "IL: Partition set to " << partitionName << ENDM;
@@ -58,10 +62,11 @@ void QcInfoLogger::setPartition(const std::string& partitionName)
 void QcInfoLogger::init(const std::string& facility,
                         bool discardDebug,
                         int discardFromLevel,
+                        const std::string& discardToFile,
                         AliceO2::InfoLogger::InfoLogger* dplInfoLogger,
                         AliceO2::InfoLogger::InfoLoggerContext* dplContext,
                         int run,
-                        std::string partitionName)
+                        const std::string& partitionName)
 {
   if (dplInfoLogger && dplContext) {
     // we ignore the small memory leak that might occur if we are replacing the default InfoLogger
@@ -72,9 +77,13 @@ void QcInfoLogger::init(const std::string& facility,
   // Set the proper discard filters
   ILOG_INST.filterDiscardDebug(discardDebug);
   ILOG_INST.filterDiscardLevel(discardFromLevel);
+  if (!discardToFile.empty()) {
+    ILOG_INST.filterDiscardSetFile(discardToFile.c_str(), 1000000000, 10);
+  }
   ILOG(Debug, Ops) << "QC infologger initialized" << ENDM;
   ILOG(Debug, Support) << "   Discard debug ? " << discardDebug << ENDM;
   ILOG(Debug, Support) << "   Discard from level ? " << discardFromLevel << ENDM;
+  ILOG(Debug, Support) << "   Discard to file ? " << ((discardToFile != "") ? discardToFile : "No") << ENDM;
 
   setFacility(facility);
   setRun(run);
@@ -86,12 +95,13 @@ void QcInfoLogger::init(const std::string& facility,
                         AliceO2::InfoLogger::InfoLogger* dplInfoLogger,
                         AliceO2::InfoLogger::InfoLoggerContext* dplContext,
                         int run,
-                        std::string partitionName)
+                        const std::string& partitionName)
 {
   std::string discardDebugStr = config.get<std::string>("qc.config.infologger.filterDiscardDebug", "false");
   bool discardDebug = discardDebugStr == "true" ? 1 : 0;
   int discardLevel = config.get<int>("qc.config.infologger.filterDiscardLevel", 21 /* Discard Trace */);
-  init(facility, discardDebug, discardLevel, dplInfoLogger, dplContext, run, partitionName);
+  std::string discardToFile = config.get<std::string>("qc.config.infologger.filterDiscardFile", "");
+  init(facility, discardDebug, discardLevel, discardToFile, dplInfoLogger, dplContext, run, partitionName);
 }
 
 } // namespace o2::quality_control::core

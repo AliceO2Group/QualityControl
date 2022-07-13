@@ -25,7 +25,6 @@ MergeableTH2Ratio::MergeableTH2Ratio(MergeableTH2Ratio const& copymerge)
          copymerge.getNum()->GetXaxis()->GetNbins(), copymerge.getNum()->GetXaxis()->GetXmin(), copymerge.getNum()->GetXaxis()->GetXmax(),
          copymerge.getNum()->GetYaxis()->GetNbins(), copymerge.getNum()->GetYaxis()->GetXmin(), copymerge.getNum()->GetYaxis()->GetXmax()),
     o2::mergers::MergeInterface(),
-    mScalingFactor(copymerge.getScalingFactor()),
     mShowZeroBins(copymerge.getShowZeroBins())
 {
   Bool_t bStatus = TH1::AddDirectoryStatus();
@@ -35,10 +34,9 @@ MergeableTH2Ratio::MergeableTH2Ratio(MergeableTH2Ratio const& copymerge)
   TH1::AddDirectory(bStatus);
 }
 
-MergeableTH2Ratio::MergeableTH2Ratio(const char* name, const char* title, int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax, double scaling, bool showZeroBins)
+MergeableTH2Ratio::MergeableTH2Ratio(const char* name, const char* title, int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax, bool showZeroBins)
   : TH2F(name, title, nbinsx, xmin, xmax, nbinsy, ymin, ymax),
     o2::mergers::MergeInterface(),
-    mScalingFactor(scaling),
     mShowZeroBins(showZeroBins)
 {
   Bool_t bStatus = TH1::AddDirectoryStatus();
@@ -49,10 +47,9 @@ MergeableTH2Ratio::MergeableTH2Ratio(const char* name, const char* title, int nb
   update();
 }
 
-MergeableTH2Ratio::MergeableTH2Ratio(const char* name, const char* title, double scaling, bool showZeroBins)
+MergeableTH2Ratio::MergeableTH2Ratio(const char* name, const char* title, bool showZeroBins)
   : TH2F(name, title, 10, 0, 10, 10, 0, 10),
     o2::mergers::MergeInterface(),
-    mScalingFactor(scaling),
     mShowZeroBins(showZeroBins)
 {
   Bool_t bStatus = TH1::AddDirectoryStatus();
@@ -83,9 +80,6 @@ void MergeableTH2Ratio::merge(MergeInterface* const other)
 
 void MergeableTH2Ratio::update()
 {
-  static constexpr double sOrbitLengthInNanoseconds = 3564 * 25;
-  static constexpr double sOrbitLengthInMicroseconds = sOrbitLengthInNanoseconds / 1000;
-  static constexpr double sOrbitLengthInMilliseconds = sOrbitLengthInMicroseconds / 1000;
   const char* name = this->GetName();
   const char* title = this->GetTitle();
 
@@ -98,11 +92,6 @@ void MergeableTH2Ratio::update()
 
   Divide(mHistoNum, mHistoDen);
   SetNameTitle(name, title);
-
-  // convertion to KHz units
-  if (mScalingFactor != 1.) {
-    Scale(1. / sOrbitLengthInMilliseconds);
-  }
 
   if (mShowZeroBins) {
     // bins which have zero numerators are plotted in white when using the "col" and "colz" options, regardless of

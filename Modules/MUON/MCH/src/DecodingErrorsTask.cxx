@@ -70,13 +70,6 @@ void DecodingErrorsTask::initialize(o2::framework::InitContext& /*ic*/)
 {
   ILOG(Info, Support) << "initialize DecodingErrorsTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
-  mSaveToRootFile = false;
-  if (auto param = mCustomParameters.find("SaveToRootFile"); param != mCustomParameters.end()) {
-    if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
-      mSaveToRootFile = true;
-    }
-  }
-
   mElec2Det = createElec2DetMapper<ElectronicMapperGenerated>();
   mFee2Solar = createFeeLink2SolarMapper<ElectronicMapperGenerated>();
   mSolar2Fee = createSolar2FeeLinkMapper<ElectronicMapperGenerated>();
@@ -85,20 +78,23 @@ void DecodingErrorsTask::initialize(o2::framework::InitContext& /*ic*/)
   mHistogramErrorsPerChamber = std::make_shared<MergeableTH2Ratio>("DecodingErrorsPerChamber", "Chamber Number vs. Error Type", getErrorCodesSize(), 0, getErrorCodesSize(), 10, 1, 11);
   setXAxisLabels(mHistogramErrorsPerChamber.get());
   setYAxisLabels(mHistogramErrorsPerChamber.get());
-  mHistogramErrorsPerChamber->SetOption("colz");
-  mAllHistograms.push_back(mHistogramErrorsPerChamber.get());
-  if (!mSaveToRootFile) {
-    getObjectsManager()->startPublishing(mHistogramErrorsPerChamber.get());
-  }
+  publishObject(mHistogramErrorsPerChamber, "colz", false, false);
+
+  mHistogramErrorsPerChamberPrevCycle = std::make_shared<MergeableTH2Ratio>("DecodingErrorsPerChamberPrevCycle", "Chamber Number vs. Error Type", getErrorCodesSize(), 0, getErrorCodesSize(), 10, 1, 11);
+  mHistogramErrorsPerChamberOnCycle = std::make_shared<MergeableTH2Ratio>("DecodingErrorsPerChamberOnCycle", "Chamber Number vs. Error Type, last cycle", getErrorCodesSize(), 0, getErrorCodesSize(), 10, 1, 11);
+  setXAxisLabels(mHistogramErrorsPerChamberOnCycle.get());
+  setYAxisLabels(mHistogramErrorsPerChamberOnCycle.get());
+  publishObject(mHistogramErrorsPerChamberOnCycle, "colz", false, false);
 
   // Number of decoding errors, grouped by FEE ID and normalized to the number of processed TF
   mHistogramErrorsPerFeeId = std::make_shared<MergeableTH2Ratio>("DecodingErrorsPerFeeId", "FEE ID vs. Error Type", getErrorCodesSize(), 0, getErrorCodesSize(), 64, 0, 64);
   setXAxisLabels(mHistogramErrorsPerFeeId.get());
-  mHistogramErrorsPerFeeId->SetOption("colz");
-  mAllHistograms.push_back(mHistogramErrorsPerFeeId.get());
-  if (!mSaveToRootFile) {
-    getObjectsManager()->startPublishing(mHistogramErrorsPerFeeId.get());
-  }
+  publishObject(mHistogramErrorsPerFeeId, "colz", false, false);
+
+  mHistogramErrorsPerFeeIdPrevCycle = std::make_shared<MergeableTH2Ratio>("DecodingErrorsPerFeeIdPrevCycle", "FEE ID vs. Error Type", getErrorCodesSize(), 0, getErrorCodesSize(), 64, 0, 64);
+  mHistogramErrorsPerFeeIdOnCycle = std::make_shared<MergeableTH2Ratio>("DecodingErrorsPerFeeIdOnCycle", "FEE ID vs. Error Type, last cycle", getErrorCodesSize(), 0, getErrorCodesSize(), 64, 0, 64);
+  setXAxisLabels(mHistogramErrorsPerFeeIdOnCycle.get());
+  publishObject(mHistogramErrorsPerFeeIdOnCycle, "colz", false, false);
 }
 
 void DecodingErrorsTask::startOfActivity(Activity& activity)
@@ -266,25 +262,46 @@ void DecodingErrorsTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
 }
 
-void DecodingErrorsTask::writeHistos()
-{
-  TFile f("mch-qc-errors.root", "RECREATE");
-  for (auto h : mAllHistograms) {
-    h->Write();
-  }
-  f.Close();
-}
-
 void DecodingErrorsTask::endOfCycle()
 {
+  // copy bin contents from src to dst
+  auto copyHist = [&](TH2F* hdst, TH2F* hsrc) {
+    hdst->Reset("ICES");
+    hdst->Add(hsrc);
+  };
+
+  // copy numerator and denominator from src to dst
+  auto copyRatio = [&](std::shared_ptr<MergeableTH2Ratio> dst, std::shared_ptr<MergeableTH2Ratio> src) {
+    copyHist(dst->getNum(), src->getNum());
+    copyHist(dst->getDen(), src->getDen());
+  };
+
+  // dst = src1 - src2
+  auto subtractHist = [&](TH2F* hdst, TH2F* hsrc1, TH2F* hsrc2) {
+    hdst->Reset("ICES");
+    hdst->Add(hsrc1);
+    hdst->Add(hsrc2, -1);
+  };
+
+  // compute (src1 - src2) difference of numerators and denominators
+  auto subtractRatio = [&](std::shared_ptr<MergeableTH2Ratio> dst, std::shared_ptr<MergeableTH2Ratio> src1, std::shared_ptr<MergeableTH2Ratio> src2) {
+    subtractHist(dst->getNum(), src1->getNum(), src2->getNum());
+    subtractHist(dst->getDen(), src1->getDen(), src2->getDen());
+    dst->update();
+  };
+
   ILOG(Info, Support) << "endOfCycle" << ENDM;
 
   mHistogramErrorsPerChamber->update();
   mHistogramErrorsPerFeeId->update();
 
-  if (mSaveToRootFile) {
-    writeHistos();
-  }
+  // fill on-cycle plots
+  subtractRatio(mHistogramErrorsPerChamberOnCycle, mHistogramErrorsPerChamber, mHistogramErrorsPerChamberPrevCycle);
+  subtractRatio(mHistogramErrorsPerFeeIdOnCycle, mHistogramErrorsPerFeeId, mHistogramErrorsPerFeeIdPrevCycle);
+
+  // update last cycle plots
+  copyRatio(mHistogramErrorsPerChamberPrevCycle, mHistogramErrorsPerChamber);
+  copyRatio(mHistogramErrorsPerFeeIdPrevCycle, mHistogramErrorsPerFeeId);
 }
 
 void DecodingErrorsTask::endOfActivity(Activity& /*activity*/)
@@ -293,10 +310,6 @@ void DecodingErrorsTask::endOfActivity(Activity& /*activity*/)
 
   mHistogramErrorsPerChamber->update();
   mHistogramErrorsPerFeeId->update();
-
-  if (mSaveToRootFile) {
-    writeHistos();
-  }
 }
 
 void DecodingErrorsTask::reset()

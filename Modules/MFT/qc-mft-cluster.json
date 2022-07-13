@@ -43,11 +43,11 @@
     },
     "checks" : {
       "MFTClusterCheck" : {
-        "active" : "false",
+        "active" : "true",
         "dataSource" : [ {
           "type" : "Task",
           "name" : "MFTClusterTask",
-          "MOs" : ["mClusterOccupancy"]
+          "MOs" : ["mClusterOccupancy","mClusterPatternIndex","mClusterOccupancySummary"]
         } ],
         "className" : "o2::quality_control_modules::mft::QcMFTClusterCheck",
         "moduleName" : "QcMFT",

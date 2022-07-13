@@ -37,14 +37,17 @@ class TH1ReductorLaser : public quality_control::postprocessing::Reductor
   void update(TObject* obj) override;
 
  private:
+  static constexpr int NChannel = 208;
   struct {
-    Double_t mean;
-    Double_t mean1fit;
-    Double_t mean2fit;
-    Double_t stddev;
-    Double_t stddev1fit;
-    Double_t stddev2fit;
-    Double_t entries;
+    Double_t validity1;
+    Double_t validity2;
+    Double_t mean1;
+    Double_t mean2;
+    Double_t mean[NChannel];
+    Double_t stddev1;
+    Double_t stddev2;
+    Double_t stddev[NChannel];
+
   } mStats;
 };
 

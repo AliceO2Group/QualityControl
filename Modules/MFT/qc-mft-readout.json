@@ -49,10 +49,12 @@
         "detectorName" : "MFT",
         "policy" : "OnEachSeparately",
         "checkParameters" : {
-          "WarningThreshold" : "0",
-          "ErrorThresholdMedium" : "9",
-          "ErrorThresholdBad" : "20",
-          "FaultThreshold" : "4"
+          "WarningThresholdMedium" : "0",
+          "WarningThresholdBad" : "0",
+          "ErrorThresholdMedium" : "20",
+          "ErrorThresholdBad" : "150",
+          "FaultThresholdMedium" : "10",
+          "FaultThresholdBad" : "20"
         },
         "dataSource" : [ {
           "type" : "Task",
@@ -103,7 +105,7 @@
           "userorcontrol"
         ],
         "updateTrigger": [
-          "newobject:qcdb:MFT/MO/MFTReadoutTask/mSummaryChipError"
+          "newobject:qcdb:MFT/MO/MFTReadoutTask/mSummaryChipWarning"
         ],
         "stopTrigger": [
           "userorcontrol"

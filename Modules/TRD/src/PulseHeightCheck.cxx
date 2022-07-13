@@ -26,6 +26,8 @@
 
 #include <DataFormatsQualityControl/FlagReasons.h>
 
+#include "CCDB/BasicCCDBManager.h"
+#include "TRDQC/StatusHelper.h"
 #include "TRD/PulseHeightCheck.h"
 
 using namespace std;
@@ -36,6 +38,44 @@ namespace o2::quality_control_modules::trd
 
 void PulseHeightCheck::configure()
 {
+  if (auto param = mCustomParameters.find("ccdbtimestamp"); param != mCustomParameters.end()) {
+    mTimeStamp = std::stol(mCustomParameters["ccdbtimestamp"]);
+    ILOG(Info, Support) << "configure() : using ccdbtimestamp = " << mTimeStamp << ENDM;
+  } else {
+    mTimeStamp = o2::ccdb::getCurrentTimestamp();
+    ILOG(Info, Support) << "configure() : using default timestam of now = " << mTimeStamp << ENDM;
+  }
+  auto& mgr = o2::ccdb::BasicCCDBManager::instance();
+  mgr.setTimestamp(mTimeStamp);
+  ILOG(Info, Support) << "initialize PulseHeight" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  if (auto param = mCustomParameters.find("driftregionstart"); param != mCustomParameters.end()) {
+    mDriftRegion.first = stof(param->second);
+    ILOG(Info, Support) << "configure() : using driftregionstart = " << mDriftRegion.first << ENDM;
+  } else {
+    mDriftRegion.first = 7.0;
+    ILOG(Info, Support) << "configure() : using default dritfregionstart = " << mDriftRegion.first << ENDM;
+  }
+  if (auto param = mCustomParameters.find("driftregionend"); param != mCustomParameters.end()) {
+    mDriftRegion.second = stof(param->second);
+    ILOG(Info, Support) << "configure() : using dritftregionend = " << mDriftRegion.second << ENDM;
+  } else {
+    mDriftRegion.second = 20.0;
+    ILOG(Info, Support) << "configure() : using default dritfregionend = " << mDriftRegion.second << ENDM;
+  }
+  if (auto param = mCustomParameters.find("peakregionstart"); param != mCustomParameters.end()) {
+    mPulseHeightPeakRegion.first = stof(param->second);
+    ILOG(Info, Support) << "configure() : using peakregionstart " << mPulseHeightPeakRegion.first << ENDM;
+  } else {
+    mPulseHeightPeakRegion.first = 1.0;
+    ILOG(Info, Support) << "configure() : using default peakregionstart  = " << mPulseHeightPeakRegion.first << ENDM;
+  }
+  if (auto param = mCustomParameters.find("peakregionend"); param != mCustomParameters.end()) {
+    mPulseHeightPeakRegion.second = stof(param->second);
+    ILOG(Info, Support) << "configure() : using peak region ends = " << mPulseHeightPeakRegion.second << ENDM;
+  } else {
+    mPulseHeightPeakRegion.second = 5.0;
+    ILOG(Info, Support) << "configure() : using default peak region end = " << mPulseHeightPeakRegion.second << ENDM;
+  }
 }
 
 Quality PulseHeightCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
@@ -73,33 +113,27 @@ std::string PulseHeightCheck::getAcceptedType() { return "TH1"; }
 
 void PulseHeightCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  if (mo->getName() == "pulseheightscaled") {
+  if (mo->getName() == "PulseHeight/mPulseHeight") {
     auto* h = dynamic_cast<TH1F*>(mo->getObject());
     TPaveText* msg = new TPaveText(0.3, 0.9, 0.7, 0.95, "NDC");
     h->GetListOfFunctions()->Add(msg);
     //std::string message = fmt::format("Pulseheight message");
     std::string message = "Pulseheight message";
     msg->SetName(message.c_str());
-    TLine* lmin = new TLine(1, 0, 1, 1100);
-    TLine* lmax = new TLine(7, 0, 7, 1100);
-
-    h->GetListOfFunctions()->Add(lmin);
-    h->GetListOfFunctions()->Add(lmax);
-    lmin->SetLineColor(kBlue);
-    lmin->Draw();
-    lmax->SetLineColor(kBlue);
-    lmax->Draw();
 
     if (checkResult == Quality::Good) {
       h->SetFillColor(kGreen);
+      h->SetLineColor(kGreen);
     } else if (checkResult == Quality::Bad) {
-      ILOG(Info, Support) << "Quality::Bad, setting to red" << ENDM;
+      ILOG(Info, Support) << "Quality::Bad, something wrong with the pulseheight spectrum" << ENDM;
       h->SetFillColor(kRed);
+      h->SetLineColor(kRed);
     } else if (checkResult == Quality::Medium) {
-      ILOG(Info, Support) << "Quality::medium, setting to orange" << ENDM;
+      ILOG(Info, Support) << "Quality::medium, pusleheight spectrum is a bit suspect" << ENDM;
       h->SetFillColor(kOrange);
+      h->SetLineColor(kOrange);
     }
-    h->SetLineColor(kBlack);
+    //h->SetLineColor(kBlack);
     h->Draw();
   }
 }

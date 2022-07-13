@@ -29,6 +29,7 @@ struct AggregatorRunnerConfig {
   std::string monitoringUrl{};
   bool infologgerFilterDiscardDebug = false;
   int infologgerDiscardLevel = 21;
+  std::string infologgerDiscardFile{};
   int fallbackRunNumber = 0;
   int fallbackRunType = 0;
   std::string fallbackPeriodName{};

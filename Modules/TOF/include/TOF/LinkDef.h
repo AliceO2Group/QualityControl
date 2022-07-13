@@ -19,6 +19,7 @@
 #pragma link C++ class o2::quality_control_modules::tof::CheckNoise + ;
 // PostProcessing
 #pragma link C++ class o2::quality_control_modules::tof::PostProcessDiagnosticPerCrate + ;
+#pragma link C++ class o2::quality_control_modules::tof::PostProcessHitMap + ;
 // Trending
 #pragma link C++ class o2::quality_control_modules::tof::TrendingHits + ;
 #pragma link C++ class o2::quality_control_modules::tof::TrendingRate + ;

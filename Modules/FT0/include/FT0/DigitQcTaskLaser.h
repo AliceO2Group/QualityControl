@@ -95,6 +95,7 @@ class DigitQcTaskLaser final : public TaskInterface
 
   TList* mListHistGarbage;
   std::set<unsigned int> mSetAllowedChIDs;
+  std::set<unsigned int> mSetRefPMTChIDs;
   std::array<o2::InteractionRecord, o2::ft0::Constants::sNCHANNELS_PM> mStateLastIR2Ch;
   std::map<int, std::string> mMapDigitTrgNames;
   std::map<o2::ft0::ChannelData::EEventDataBit, std::string> mMapChTrgNames;
@@ -105,29 +106,12 @@ class DigitQcTaskLaser final : public TaskInterface
   // Objects which will be published
   std::unique_ptr<TH2F> mHistAmp2Ch;
   std::unique_ptr<TH2F> mHistTime2Ch;
-  std::unique_ptr<TH2F> mHistEventDensity2Ch;
   std::unique_ptr<TH2F> mHistChDataBits;
   std::unique_ptr<TH2F> mHistOrbit2BC;
   std::unique_ptr<TH1F> mHistBC;
-  std::unique_ptr<TH1F> mHistTriggers;
-  std::unique_ptr<TH1F> mHistNchA;
-  std::unique_ptr<TH1F> mHistNchC;
-  std::unique_ptr<TH1F> mHistSumAmpA;
-  std::unique_ptr<TH1F> mHistSumAmpC;
-  std::unique_ptr<TH1F> mHistAverageTimeA;
-  std::unique_ptr<TH1F> mHistAverageTimeC;
-  std::unique_ptr<TH1F> mHistChannelID;
   std::unique_ptr<TH1F> mHistCFDEff;
-  std::unique_ptr<TH2F> mHistTimeSum2Diff;
-  std::unique_ptr<TH2F> mHistTriggersCorrelation;
   std::unique_ptr<TH1D> mHistCycleDuration;
-  std::unique_ptr<TH1D> mHistCycleDurationNTF;
-  std::unique_ptr<TH1D> mHistCycleDurationRange;
-  std::map<unsigned int, TH1F*> mMapHistAmp1D;
-  std::map<unsigned int, TH1F*> mMapHistTime1D;
-  std::map<unsigned int, TH1F*> mMapHistPMbits;
-  std::map<unsigned int, TH2F*> mMapHistAmpVsTime;
-  std::map<unsigned int, TH2F*> mMapTrgBcOrbit;
+  std::map<unsigned int, TH2F*> mMapHistAmpVsBC;
   std::map<std::string, TH2F*> mMapPmModuleBcOrbit;
 };
 

@@ -66,7 +66,7 @@ void PostProcessingRunner::init(const PostProcessingRunnerConfig& runnerConfig, 
   mRunnerConfig = runnerConfig;
   mTaskConfig = taskConfig;
 
-  QcInfoLogger::init("post/" + mName, runnerConfig.infologgerFilterDiscardDebug, runnerConfig.infologgerDiscardLevel);
+  QcInfoLogger::init("post/" + mName, runnerConfig.infologgerFilterDiscardDebug, runnerConfig.infologgerDiscardLevel, runnerConfig.infologgerDiscardFile);
   ILOG(Info, Support) << "Initializing PostProcessingRunner" << ENDM;
 
   root_class_factory::loadLibrary(mTaskConfig.moduleName);
@@ -82,6 +82,7 @@ void PostProcessingRunner::init(const PostProcessingRunnerConfig& runnerConfig, 
   ILOG(Info, Support) << ">> Host : " << mRunnerConfig.database.at("host") << ENDM;
 
   mObjectManager = std::make_shared<ObjectsManager>(mTaskConfig.taskName, mTaskConfig.className, mTaskConfig.detectorName, mRunnerConfig.consulUrl);
+  mObjectManager->setActivity(mTaskConfig.activity);
   mServices.registerService<DatabaseInterface>(mDatabase.get());
   if (mPublicationCallback == nullptr) {
     mPublicationCallback = publishToRepository(*mDatabase);
@@ -243,6 +244,7 @@ PostProcessingRunnerConfig PostProcessingRunner::extractConfig(const CommonSpec&
     commonSpec.consulUrl,
     commonSpec.infologgerFilterDiscardDebug,
     commonSpec.infologgerDiscardLevel,
+    commonSpec.infologgerDiscardFile,
     commonSpec.postprocessingPeriod,
     "",
     ppTaskSpec.tree

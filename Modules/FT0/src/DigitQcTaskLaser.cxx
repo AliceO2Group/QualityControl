@@ -78,6 +78,10 @@ void DigitQcTaskLaser::rebinFromConfig()
         std::string hNameCur = hName.substr(0, hName.find(channelIdPlaceholder)) + std::to_string(chID) + hName.substr(hName.find(channelIdPlaceholder) + 1);
         rebinHisto(hNameCur, binning);
       }
+      for (const auto& chID : mSetRefPMTChIDs) {
+        std::string hNameCur = hName.substr(0, hName.find(channelIdPlaceholder)) + std::to_string(chID) + hName.substr(hName.find(channelIdPlaceholder) + 1);
+        rebinHisto(hNameCur, binning);
+      }
     } else if (!gROOT->FindObject(hName.data())) {
       ILOG(Warning) << "config: histogram named \"" << hName << "\" not found" << ENDM;
       continue;
@@ -117,33 +121,15 @@ void DigitQcTaskLaser::initialize(o2::framework::InitContext& /*ctx*/)
   mHistOrbit2BC->SetOption("colz");
   mHistBC = std::make_unique<TH1F>("BC", "BC;BC;counts;", 3564, 0, 3564);
 
-  mHistEventDensity2Ch = std::make_unique<TH2F>("EventDensityPerChannel", "Event density(in BC) per Channel;Channel;BC;", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM, 10000, 0, 1e5);
-  mHistEventDensity2Ch->SetOption("colz");
-
   mHistChDataBits = std::make_unique<TH2F>("ChannelDataBits", "ChannelData bits per ChannelID;Channel;Bit", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM, mMapChTrgNames.size(), 0, mMapChTrgNames.size());
   mHistChDataBits->SetOption("colz");
 
   for (const auto& entry : mMapChTrgNames) {
     mHistChDataBits->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
   }
-  mHistTriggersCorrelation = std::make_unique<TH2F>("TriggersCorrelation", "Correlation of triggers from TCM", mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size(), mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
-  mHistTriggersCorrelation->SetOption("colz");
-  mHistTriggers = std::make_unique<TH1F>("Triggers", "Triggers from TCM", mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
 
   mListHistGarbage = new TList();
   mListHistGarbage->SetOwner(kTRUE);
-  for (const auto& entry : mMapDigitTrgNames) {
-    mHistTriggers->GetXaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
-    mHistTriggersCorrelation->GetXaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
-    mHistTriggersCorrelation->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
-
-    auto pairTrgBcOrbit = mMapTrgBcOrbit.insert({ entry.first, new TH2F(Form("BcOrbitMap_Trg%s", entry.second.c_str()), Form("BC-orbit map: %s fired;Orbit;BC", entry.second.c_str()), 256, 0, 256, 3564, 0, 3564) });
-    if (pairTrgBcOrbit.second) {
-      getObjectsManager()->startPublishing(pairTrgBcOrbit.first->second);
-      pairTrgBcOrbit.first->second->SetOption("colz");
-      mListHistGarbage->Add(pairTrgBcOrbit.first->second);
-    }
-  }
 
   char* p;
   for (const auto& lutEntry : o2::ft0::SingleLUT::Instance().getVecMetadataFEE()) {
@@ -171,30 +157,15 @@ void DigitQcTaskLaser::initialize(o2::framework::InitContext& /*ctx*/)
 
   for (const auto& entry : mMapPmModuleChannels) {
     auto pairModuleBcOrbit = mMapPmModuleBcOrbit.insert({ entry.first, new TH2F(Form("BcOrbitMap_%s", entry.first.c_str()), Form("BC-orbit map for %s;Orbit;BC", entry.first.c_str()), 256, 0, 256, 3564, 0, 3564) });
-    if (pairModuleBcOrbit.second) {
-      getObjectsManager()->startPublishing(pairModuleBcOrbit.first->second);
-      pairModuleBcOrbit.first->second->SetOption("colz");
-      mListHistGarbage->Add(pairModuleBcOrbit.first->second);
-    }
   }
 
-  mHistNchA = std::make_unique<TH1F>("NumChannelsA", "Number of channels(TCM), side A;Nch", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
-  mHistNchC = std::make_unique<TH1F>("NumChannelsC", "Number of channels(TCM), side C;Nch", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
-  mHistSumAmpA = std::make_unique<TH1F>("SumAmpA", "Sum of amplitudes(TCM), side A;", 1000, 0, 1e4);
-  mHistSumAmpC = std::make_unique<TH1F>("SumAmpC", "Sum of amplitudes(TCM), side C;", 1000, 0, 1e4);
-  mHistAverageTimeA = std::make_unique<TH1F>("AverageTimeA", "Average time(TCM), side A", 4100, -2050, 2050);
-  mHistAverageTimeC = std::make_unique<TH1F>("AverageTimeC", "Average time(TCM), side C", 4100, -2050, 2050);
-  mHistTimeSum2Diff = std::make_unique<TH2F>("timeSumVsDiff", "time A/C side: sum VS diff;(TOC-TOA)/2 [ns];(TOA+TOC)/2 [ns]", 400, -52.08, 52.08, 400, -52.08, 52.08); // range of 52.08 ns = 4000*13.02ps = 4000 channels
-  mHistTimeSum2Diff->SetOption("colz");
-  mHistChannelID = std::make_unique<TH1F>("StatChannelID", "ChannelID statistics;ChannelID", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
   mHistNumADC = std::make_unique<TH1F>("HistNumADC", "HistNumADC", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
   mHistNumCFD = std::make_unique<TH1F>("HistNumCFD", "HistNumCFD", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
   mHistCFDEff = std::make_unique<TH1F>("CFD_efficiency", "CFD efficiency;ChannelID;efficiency", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
   mHistCycleDuration = std::make_unique<TH1D>("CycleDuration", "Cycle Duration;;time [ns]", 1, 0, 2);
-  mHistCycleDurationNTF = std::make_unique<TH1D>("CycleDurationNTF", "Cycle Duration;;time [TimeFrames]", 1, 0, 2);
-  mHistCycleDurationRange = std::make_unique<TH1D>("CycleDurationRange", "Cycle Duration (total cycle range);;time [ns]", 1, 0, 2);
 
   std::vector<unsigned int> vecChannelIDs;
+  std::vector<unsigned int> vecRefPMTChannelIDs;
   if (auto param = mCustomParameters.find("ChannelIDs"); param != mCustomParameters.end()) {
     const auto chIDs = param->second;
     const std::string del = ",";
@@ -203,33 +174,23 @@ void DigitQcTaskLaser::initialize(o2::framework::InitContext& /*ctx*/)
     for (unsigned int iCh = 0; iCh < o2::ft0::Constants::sNCHANNELS_PM; iCh++)
       vecChannelIDs.push_back(iCh);
   }
+  if (auto param = mCustomParameters.find("RefPMTChannelIDs"); param != mCustomParameters.end()) {
+    const auto chIDs = param->second;
+    const std::string del = ",";
+    vecRefPMTChannelIDs = parseParameters<unsigned int>(chIDs, del);
+  }
   for (const auto& entry : vecChannelIDs) {
     mSetAllowedChIDs.insert(entry);
   }
+  for (const auto& entry : vecRefPMTChannelIDs) {
+    mSetRefPMTChIDs.insert(entry);
+  }
 
-  for (const auto& chID : mSetAllowedChIDs) {
-    auto pairHistAmp = mMapHistAmp1D.insert({ chID, new TH1F(Form("Amp_channel%i", chID), Form("Amplitude, channel %i", chID), 4200, -100, 4100) });
-    auto pairHistTime = mMapHistTime1D.insert({ chID, new TH1F(Form("Time_channel%i", chID), Form("Time, channel %i", chID), 4100, -2050, 2050) });
-    auto pairHistBits = mMapHistPMbits.insert({ chID, new TH1F(Form("Bits_channel%i", chID), Form("Bits, channel %i", chID), mMapChTrgNames.size(), 0, mMapChTrgNames.size()) });
-    auto pairHistAmpVsTime = mMapHistAmpVsTime.insert({ chID, new TH2F(Form("Amp_vs_time_channel%i", chID), Form("Amplitude vs time, channel %i;Amp;Time", chID), 420, -100, 4100, 410, -2050, 2050) });
-    for (const auto& entry : mMapChTrgNames) {
-      pairHistBits.first->second->GetXaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
-    }
-    if (pairHistAmp.second) {
-      getObjectsManager()->startPublishing(pairHistAmp.first->second);
-      mListHistGarbage->Add(pairHistAmp.first->second);
-    }
-    if (pairHistTime.second) {
-      mListHistGarbage->Add(pairHistTime.first->second);
-      getObjectsManager()->startPublishing(pairHistTime.first->second);
-    }
-    if (pairHistBits.second) {
-      mListHistGarbage->Add(pairHistBits.first->second);
-      getObjectsManager()->startPublishing(pairHistBits.first->second);
-    }
-    if (pairHistAmpVsTime.second) {
-      mListHistGarbage->Add(pairHistAmpVsTime.first->second);
-      getObjectsManager()->startPublishing(pairHistAmpVsTime.first->second);
+  for (const auto& RefPMTChID : mSetRefPMTChIDs) {
+    auto pairHistAmpVsBC = mMapHistAmpVsBC.insert({ RefPMTChID, new TH2F(Form("Amp_vs_BC_channel%i", RefPMTChID), Form("Amplitude vs BC, channel %i;Amp;BC", RefPMTChID), 1000, 0, 1000, 1000, 0, 1000) });
+    if (pairHistAmpVsBC.second) {
+      mListHistGarbage->Add(pairHistAmpVsBC.first->second);
+      getObjectsManager()->startPublishing(pairHistAmpVsBC.first->second);
     }
   }
 
@@ -239,22 +200,8 @@ void DigitQcTaskLaser::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mHistAmp2Ch.get());
   getObjectsManager()->startPublishing(mHistOrbit2BC.get());
   getObjectsManager()->startPublishing(mHistBC.get());
-  getObjectsManager()->startPublishing(mHistEventDensity2Ch.get());
-  getObjectsManager()->startPublishing(mHistChDataBits.get());
-  getObjectsManager()->startPublishing(mHistTriggers.get());
-  getObjectsManager()->startPublishing(mHistNchA.get());
-  getObjectsManager()->startPublishing(mHistNchC.get());
-  getObjectsManager()->startPublishing(mHistSumAmpA.get());
-  getObjectsManager()->startPublishing(mHistSumAmpC.get());
-  getObjectsManager()->startPublishing(mHistAverageTimeA.get());
-  getObjectsManager()->startPublishing(mHistAverageTimeC.get());
-  getObjectsManager()->startPublishing(mHistChannelID.get());
   getObjectsManager()->startPublishing(mHistCFDEff.get());
-  getObjectsManager()->startPublishing(mHistTriggersCorrelation.get());
-  getObjectsManager()->startPublishing(mHistTimeSum2Diff.get());
   getObjectsManager()->startPublishing(mHistCycleDuration.get());
-  getObjectsManager()->startPublishing(mHistCycleDurationNTF.get());
-  getObjectsManager()->startPublishing(mHistCycleDurationRange.get());
 }
 
 void DigitQcTaskLaser::startOfActivity(Activity& activity)
@@ -264,37 +211,11 @@ void DigitQcTaskLaser::startOfActivity(Activity& activity)
   mHistAmp2Ch->Reset();
   mHistOrbit2BC->Reset();
   mHistBC->Reset();
-  mHistEventDensity2Ch->Reset();
-  mHistChDataBits->Reset();
-  mHistTriggers->Reset();
-  mHistNchA->Reset();
-  mHistNchC->Reset();
-  mHistSumAmpA->Reset();
-  mHistSumAmpC->Reset();
-  mHistAverageTimeA->Reset();
-  mHistAverageTimeC->Reset();
-  mHistChannelID->Reset();
   mHistCFDEff->Reset();
   mHistNumADC->Reset();
   mHistNumCFD->Reset();
-  mHistTriggersCorrelation->Reset();
-  mHistTimeSum2Diff->Reset();
   mHistCycleDuration->Reset();
-  mHistCycleDurationNTF->Reset();
-  mHistCycleDurationRange->Reset();
-  for (auto& entry : mMapHistAmp1D) {
-    entry.second->Reset();
-  }
-  for (auto& entry : mMapHistTime1D) {
-    entry.second->Reset();
-  }
-  for (auto& entry : mMapHistPMbits) {
-    entry.second->Reset();
-  }
-  for (auto& entry : mMapHistAmpVsTime) {
-    entry.second->Reset();
-  }
-  for (auto& entry : mMapTrgBcOrbit) {
+  for (auto& entry : mMapHistAmpVsBC) {
     entry.second->Reset();
   }
   for (auto& entry : mMapPmModuleBcOrbit) {
@@ -344,33 +265,11 @@ void DigitQcTaskLaser::monitorData(o2::framework::ProcessingContext& ctx)
     if (mTimeCurNS > curTfTimeMax)
       curTfTimeMax = mTimeCurNS;
 
-    if (digit.mTriggers.amplA == -5000 && digit.mTriggers.amplC == -5000 && digit.mTriggers.timeA == -5000 && digit.mTriggers.timeC == -5000)
+    if (digit.mTriggers.amplA == digit.mTriggers.DEFAULT_AMP && digit.mTriggers.amplC == digit.mTriggers.DEFAULT_AMP && digit.mTriggers.timeA == digit.mTriggers.DEFAULT_TIME && digit.mTriggers.timeC == digit.mTriggers.DEFAULT_TIME)
       isTCM = false;
+
     mHistOrbit2BC->Fill(digit.getIntRecord().orbit % sOrbitsPerTF, digit.getIntRecord().bc);
     mHistBC->Fill(digit.getBC());
-
-    if (isTCM && !digit.mTriggers.getLaserBit()) {
-      mHistNchA->Fill(digit.mTriggers.nChanA);
-      mHistNchC->Fill(digit.mTriggers.nChanC);
-      mHistSumAmpA->Fill(digit.mTriggers.amplA);
-      mHistSumAmpC->Fill(digit.mTriggers.amplC);
-      mHistAverageTimeA->Fill(digit.mTriggers.timeA);
-      mHistAverageTimeC->Fill(digit.mTriggers.timeC);
-      mHistTimeSum2Diff->Fill((digit.mTriggers.timeC - digit.mTriggers.timeA) * mCFDChannel2NS / 2, (digit.mTriggers.timeC + digit.mTriggers.timeA) * mCFDChannel2NS / 2);
-      for (const auto& entry : mMapDigitTrgNames) {
-        if (digit.mTriggers.triggersignals & (1 << entry.first))
-          mHistTriggers->Fill(static_cast<Double_t>(entry.first));
-        for (const auto& entry2 : mMapDigitTrgNames) {
-          if ((digit.mTriggers.triggersignals & (1 << entry.first)) && (digit.mTriggers.triggersignals & (1 << entry2.first)))
-            mHistTriggersCorrelation->Fill(static_cast<Double_t>(entry.first), static_cast<Double_t>(entry2.first));
-        }
-      }
-      for (auto& entry : mMapTrgBcOrbit) {
-        if (digit.mTriggers.triggersignals & (1 << entry.first)) {
-          entry.second->Fill(digit.getIntRecord().orbit % sOrbitsPerTF, digit.getIntRecord().bc);
-        }
-      }
-    }
 
     for (auto& entry : mMapPmModuleChannels) {
       for (const auto& chData : vecChData) {
@@ -387,22 +286,16 @@ void DigitQcTaskLaser::monitorData(o2::framework::ProcessingContext& ctx)
     for (const auto& chData : vecChData) {
       mHistTime2Ch->Fill(static_cast<Double_t>(chData.ChId), static_cast<Double_t>(chData.CFDTime));
       mHistAmp2Ch->Fill(static_cast<Double_t>(chData.ChId), static_cast<Double_t>(chData.QTCAmpl));
-      mHistEventDensity2Ch->Fill(static_cast<Double_t>(chData.ChId), static_cast<Double_t>(digit.mIntRecord.differenceInBC(mStateLastIR2Ch[chData.ChId])));
       mStateLastIR2Ch[chData.ChId] = digit.mIntRecord;
-      mHistChannelID->Fill(chData.ChId);
+
       if (chData.QTCAmpl > 0)
         mHistNumADC->Fill(chData.ChId);
       mHistNumCFD->Fill(chData.ChId);
-      if (mSetAllowedChIDs.find(static_cast<unsigned int>(chData.ChId)) != mSetAllowedChIDs.end()) {
-        mMapHistAmp1D[chData.ChId]->Fill(chData.QTCAmpl);
-        mMapHistTime1D[chData.ChId]->Fill(chData.CFDTime);
-        mMapHistAmpVsTime[chData.ChId]->Fill(chData.QTCAmpl, chData.CFDTime);
-        for (const auto& entry : mMapChTrgNames) {
-          if ((chData.ChainQTC & (1 << entry.first))) {
-            mMapHistPMbits[chData.ChId]->Fill(entry.first);
-          }
-        }
+
+      if (mSetRefPMTChIDs.find(static_cast<unsigned int>(chData.ChId)) != mSetRefPMTChIDs.end()) {
+        mMapHistAmpVsBC[chData.ChId]->Fill(chData.QTCAmpl, digit.getIntRecord().bc);
       }
+
       for (const auto& entry : mMapChTrgNames) {
         if ((chData.ChainQTC & (1 << entry.first))) {
           mHistChDataBits->Fill(chData.ChId, entry.first);
@@ -418,12 +311,6 @@ void DigitQcTaskLaser::monitorData(o2::framework::ProcessingContext& ctx)
 void DigitQcTaskLaser::endOfCycle()
 {
   ILOG(Info, Support) << "endOfCycle" << ENDM;
-  // one has to set num. of entries manually because
-  // default TH1Reductor gets only mean,stddev and entries (no integral)
-  mHistCycleDurationRange->SetBinContent(1., mTimeMaxNS - mTimeMinNS);
-  mHistCycleDurationRange->SetEntries(mTimeMaxNS - mTimeMinNS);
-  mHistCycleDurationNTF->SetBinContent(1., mTfCounter);
-  mHistCycleDurationNTF->SetEntries(mTfCounter);
   mHistCycleDuration->SetBinContent(1., mTimeSum);
   mHistCycleDuration->SetEntries(mTimeSum);
   ILOG(Debug) << "Cycle duration: NTF=" << mTfCounter << ", range = " << (mTimeMaxNS - mTimeMinNS) / 1e6 / mTfCounter << " ms/TF, sum = " << mTimeSum / 1e6 / mTfCounter << " ms/TF" << ENDM;
@@ -441,37 +328,12 @@ void DigitQcTaskLaser::reset()
   mHistAmp2Ch->Reset();
   mHistOrbit2BC->Reset();
   mHistBC->Reset();
-  mHistEventDensity2Ch->Reset();
   mHistChDataBits->Reset();
-  mHistTriggers->Reset();
-  mHistNchA->Reset();
-  mHistNchC->Reset();
-  mHistSumAmpA->Reset();
-  mHistSumAmpC->Reset();
-  mHistAverageTimeA->Reset();
-  mHistAverageTimeC->Reset();
-  mHistChannelID->Reset();
   mHistCFDEff->Reset();
   mHistNumADC->Reset();
   mHistNumCFD->Reset();
-  mHistTriggersCorrelation->Reset();
-  mHistTimeSum2Diff->Reset();
   mHistCycleDuration->Reset();
-  mHistCycleDurationNTF->Reset();
-  mHistCycleDurationRange->Reset();
-  for (auto& entry : mMapHistAmp1D) {
-    entry.second->Reset();
-  }
-  for (auto& entry : mMapHistTime1D) {
-    entry.second->Reset();
-  }
-  for (auto& entry : mMapHistPMbits) {
-    entry.second->Reset();
-  }
-  for (auto& entry : mMapHistAmpVsTime) {
-    entry.second->Reset();
-  }
-  for (auto& entry : mMapTrgBcOrbit) {
+  for (auto& entry : mMapHistAmpVsBC) {
     entry.second->Reset();
   }
   for (auto& entry : mMapPmModuleBcOrbit) {

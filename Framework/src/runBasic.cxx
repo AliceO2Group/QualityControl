@@ -93,8 +93,10 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
   auto configTree = ConfigurationFactory::getConfiguration(qcConfigurationSource)->getRecursive();
   auto infologgerFilterDiscardDebug = configTree.get<bool>("qc.config.infologger.filterDiscardDebug", false);
   auto infologgerDiscardLevel = configTree.get<int>("qc.config.infologger.filterDiscardLevel", 21);
+  auto infologgerDiscardFile = configTree.get<std::string>("qc.config.infologger.filterDiscardFile", "");
   ILOG_INST.filterDiscardDebug(infologgerFilterDiscardDebug);
   ILOG_INST.filterDiscardLevel(infologgerDiscardLevel);
+  ILOG_INST.filterDiscardSetFile(infologgerDiscardFile.c_str());
   QcInfoLogger::setFacility("runBasic");
 
   // The producer to generate some data in the workflow

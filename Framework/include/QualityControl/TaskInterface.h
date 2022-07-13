@@ -93,19 +93,12 @@ class TaskInterface
   const std::string& getName() const;
   void setCcdbUrl(const std::string& url);
 
-  /// Utility methods to fetch boolean otpions from the custom parameters.
-  /// @param name name of the option as in the mCustomParameters and JSON file
-  /// @param flag will be set accordingly if the 'name' element is in mCustomParameters
-  /// @return true if the option was found, false otherwise
-  /// @deprecated Please use parseBooleanParam in stringUtils
-  bool parseBooleanParameter(const std::string& name, bool& flag) const;
-
  protected:
   std::shared_ptr<ObjectsManager> getObjectsManager();
-  TObject* retrieveCondition(std::string path, std::map<std::string, std::string> metadata = {}, long timestamp = -1);
+  //  TObject* retrieveCondition(std::string path, std::map<std::string, std::string> metadata = {}, long timestamp = -1);
   template <typename T>
   T* retrieveConditionAny(std::string const& path, std::map<std::string, std::string> const& metadata = {},
-                          long timestamp = -1) const;
+                          long timestamp = -1);
 
   std::unordered_map<std::string, std::string> mCustomParameters;
   std::shared_ptr<o2::monitoring::Monitoring> mMonitoring;
@@ -119,14 +112,13 @@ class TaskInterface
 
 template <typename T>
 T* TaskInterface::retrieveConditionAny(std::string const& path, std::map<std::string, std::string> const& metadata,
-                                       long timestamp) const
+                                       long timestamp)
 {
-  if (mCcdbApi) {
-    return mCcdbApi->retrieveFromTFileAny<T>(path, metadata, timestamp);
-  } else {
-    ILOG(Error, Support) << "Trying to retrieve a condition, but CCDB API is not constructed." << ENDM;
-    return nullptr;
+  if (!mCcdbApi) {
+    loadCcdb();
   }
+
+  return mCcdbApi->retrieveFromTFileAny<T>(path, metadata, timestamp);
 }
 
 } // namespace o2::quality_control::core

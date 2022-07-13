@@ -1,6 +1,9 @@
 {
   "qc": {
     "config": {
+      "postprocessing": {
+        "periodSeconds": 10.0
+      },
       "database": {
         "implementation": "CCDB",
         "host": "ccdb-test.cern.ch:8080",
@@ -10,7 +13,7 @@
       },
       "Activity": {
         "number": "42",
-        "type": "2"
+        "type": "0"
       },
       "monitoring": {
         "url": "infologger:///debug?qc"
@@ -31,553 +34,1408 @@
         "dataSources": [
           {
             "type": "repository",
-            "paths": ["ITS/MO/ITSTHRTask0/Threshold/Layer0/Stave0/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask0/Threshold/Layer0/Stave1/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask0/Threshold/Layer0/Stave2/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask0/Threshold/Layer0/Stave3/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask0/Threshold/Layer0/Stave4/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask0/Threshold/Layer0/Stave5/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask0/Threshold/Layer0/Stave6/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask0/Threshold/Layer0/Stave7/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask0/Threshold/Layer0/Stave8/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask0/Threshold/Layer0/Stave9/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask0/Threshold/Layer0/Stave10/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask0/Threshold/Layer0/Stave11/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask1/Threshold/Layer1/Stave0/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask1/Threshold/Layer1/Stave1/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask1/Threshold/Layer1/Stave2/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask1/Threshold/Layer1/Stave3/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask1/Threshold/Layer1/Stave4/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask1/Threshold/Layer1/Stave5/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask1/Threshold/Layer1/Stave6/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask1/Threshold/Layer1/Stave7/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask1/Threshold/Layer1/Stave8/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask1/Threshold/Layer1/Stave9/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask1/Threshold/Layer1/Stave10/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask1/Threshold/Layer1/Stave11/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask1/Threshold/Layer1/Stave12/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask1/Threshold/Layer1/Stave13/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask1/Threshold/Layer1/Stave14/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask1/Threshold/Layer1/Stave15/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask2T/Threshold/Layer2/Stave0/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask2T/Threshold/Layer2/Stave1/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask2T/Threshold/Layer2/Stave2/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask2T/Threshold/Layer2/Stave3/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask2T/Threshold/Layer2/Stave4/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask2T/Threshold/Layer2/Stave5/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask2T/Threshold/Layer2/Stave6/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask2T/Threshold/Layer2/Stave7/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask2T/Threshold/Layer2/Stave8/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask2T/Threshold/Layer2/Stave9/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask2B/Threshold/Layer2/Stave10/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask2B/Threshold/Layer2/Stave11/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask2B/Threshold/Layer2/Stave12/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask2B/Threshold/Layer2/Stave13/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask2B/Threshold/Layer2/Stave14/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask2B/Threshold/Layer2/Stave15/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask2B/Threshold/Layer2/Stave16/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask2B/Threshold/Layer2/Stave17/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask2B/Threshold/Layer2/Stave18/HIC0/Threshold",
-                      "ITS/MO/ITSTHRTask2B/Threshold/Layer2/Stave19/HIC0/Threshold"],
-            "names": ["Threshold_l0_0",
-                      "Threshold_l0_1",
-                      "Threshold_l0_2",
-                      "Threshold_l0_3",
-                      "Threshold_l0_4",
-                      "Threshold_l0_5",
-                      "Threshold_l0_6",
-                      "Threshold_l0_7",
-                      "Threshold_l0_8",
-                      "Threshold_l0_9",
-                      "Threshold_l0_10",
-                      "Threshold_l0_11",
-                      "Threshold_l1_0",
-                      "Threshold_l1_1",
-                      "Threshold_l1_2",
-                      "Threshold_l1_3",
-                      "Threshold_l1_4",
-                      "Threshold_l1_5",
-                      "Threshold_l1_6",
-                      "Threshold_l1_7",
-                      "Threshold_l1_8",
-                      "Threshold_l1_9",
-                      "Threshold_l1_10",
-                      "Threshold_l1_11",
-                      "Threshold_l1_12",
-                      "Threshold_l1_13",
-                      "Threshold_l1_14",
-                      "Threshold_l1_15",
-                      "Threshold_l2_0",
-                      "Threshold_l2_1",
-                      "Threshold_l2_2",
-                      "Threshold_l2_3",
-                      "Threshold_l2_4",
-                      "Threshold_l2_5",
-                      "Threshold_l2_6",
-                      "Threshold_l2_7",
-                      "Threshold_l2_8",
-                      "Threshold_l2_9",
-                      "Threshold_l2_10",
-                      "Threshold_l2_11",
-                      "Threshold_l2_12",
-                      "Threshold_l2_13",
-                      "Threshold_l2_14",
-                      "Threshold_l2_15",
-                      "Threshold_l2_16",
-                      "Threshold_l2_17",
-                      "Threshold_l2_18",
-                      "Threshold_l2_19"],
-            "reductorName": "o2::quality_control_modules::common::TH1Reductor",
-            "moduleName": "QcCommon"
-          },
-          {
-            "type": "repository",
-            "paths": ["ITS/MO/ITSTHRTask0/DeadPixel/Layer0/Stave0/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask0/DeadPixel/Layer0/Stave1/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask0/DeadPixel/Layer0/Stave2/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask0/DeadPixel/Layer0/Stave3/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask0/DeadPixel/Layer0/Stave4/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask0/DeadPixel/Layer0/Stave5/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask0/DeadPixel/Layer0/Stave6/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask0/DeadPixel/Layer0/Stave7/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask0/DeadPixel/Layer0/Stave8/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask0/DeadPixel/Layer0/Stave9/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask0/DeadPixel/Layer0/Stave10/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask0/DeadPixel/Layer0/Stave11/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask1/DeadPixel/Layer1/Stave0/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask1/DeadPixel/Layer1/Stave1/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask1/DeadPixel/Layer1/Stave2/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask1/DeadPixel/Layer1/Stave3/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask1/DeadPixel/Layer1/Stave4/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask1/DeadPixel/Layer1/Stave5/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask1/DeadPixel/Layer1/Stave6/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask1/DeadPixel/Layer1/Stave7/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask1/DeadPixel/Layer1/Stave8/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask1/DeadPixel/Layer1/Stave9/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask1/DeadPixel/Layer1/Stave10/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask1/DeadPixel/Layer1/Stave11/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask1/DeadPixel/Layer1/Stave12/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask1/DeadPixel/Layer1/Stave13/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask1/DeadPixel/Layer1/Stave14/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask1/DeadPixel/Layer1/Stave15/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask2T/DeadPixel/Layer2/Stave0/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask2T/DeadPixel/Layer2/Stave1/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask2T/DeadPixel/Layer2/Stave2/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask2T/DeadPixel/Layer2/Stave3/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask2T/DeadPixel/Layer2/Stave4/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask2T/DeadPixel/Layer2/Stave5/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask2T/DeadPixel/Layer2/Stave6/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask2T/DeadPixel/Layer2/Stave7/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask2T/DeadPixel/Layer2/Stave8/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask2T/DeadPixel/Layer2/Stave9/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask2B/DeadPixel/Layer2/Stave10/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask2B/DeadPixel/Layer2/Stave11/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask2B/DeadPixel/Layer2/Stave12/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask2B/DeadPixel/Layer2/Stave13/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask2B/DeadPixel/Layer2/Stave14/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask2B/DeadPixel/Layer2/Stave15/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask2B/DeadPixel/Layer2/Stave16/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask2B/DeadPixel/Layer2/Stave17/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask2B/DeadPixel/Layer2/Stave18/HIC0/DeadPixelHITMAP",
-                      "ITS/MO/ITSTHRTask2B/DeadPixel/Layer2/Stave19/HIC0/DeadPixelHITMAP"],
-            "names": ["DeadPixels_l0_0",
-                      "DeadPixels_l0_1",
-                      "DeadPixels_l0_2",
-                      "DeadPixels_l0_3",
-                      "DeadPixels_l0_4",
-                      "DeadPixels_l0_5",
-                      "DeadPixels_l0_6",
-                      "DeadPixels_l0_7",
-                      "DeadPixels_l0_8",
-                      "DeadPixels_l0_9",
-                      "DeadPixels_l0_10",
-                      "DeadPixels_l0_11",
-                      "DeadPixels_l1_0",
-                      "DeadPixels_l1_1",
-                      "DeadPixels_l1_2",
-                      "DeadPixels_l1_3",
-                      "DeadPixels_l1_4",
-                      "DeadPixels_l1_5",
-                      "DeadPixels_l1_6",
-                      "DeadPixels_l1_7",
-                      "DeadPixels_l1_8",
-                      "DeadPixels_l1_9",
-                      "DeadPixels_l1_10",
-                      "DeadPixels_l1_11",
-                      "DeadPixels_l1_12",
-                      "DeadPixels_l1_13",
-                      "DeadPixels_l1_14",
-                      "DeadPixels_l1_15",
-                      "DeadPixels_l2_0",
-                      "DeadPixels_l2_1",
-                      "DeadPixels_l2_2",
-                      "DeadPixels_l2_3",
-                      "DeadPixels_l2_4",
-                      "DeadPixels_l2_5",
-                      "DeadPixels_l2_6",
-                      "DeadPixels_l2_7",
-                      "DeadPixels_l2_8",
-                      "DeadPixels_l2_9",
-                      "DeadPixels_l2_10",
-                      "DeadPixels_l2_11",
-                      "DeadPixels_l2_12",
-                      "DeadPixels_l2_13",
-                      "DeadPixels_l2_14",
-                      "DeadPixels_l2_15",
-                      "DeadPixels_l2_16",
-                      "DeadPixels_l2_17",
-                      "DeadPixels_l2_18",
-                      "DeadPixels_l2_19"],
-            "reductorName": "o2::quality_control_modules::common::THnSparse5Reductor",
+            "paths": ["ITS/MO/ITSThresholdCalibrationTask/THRChipAverageIB","ITS/MO/ITSThresholdCalibrationTask/THRChipAverageML","ITS/MO/ITSThresholdCalibrationTask/THRChipAverageOL"],  
+            "names": ["Threshold_IB","Threshold_ML","Threshold_OL"],
+            "reductorName": "o2::quality_control_modules::its::TH2XlineReductor",
             "moduleName": "QcCommon"
           }
         ],
         "plots": [
           {
-            "names": ["mean_of_Threshold_L0_00", "rms_of_Threshold_L0_00", "deadpix_of_L0_00"],
-            "title": ["Mean trend of Threshold: L0_00", "RMS trend of Threshold: L0_00", "Dead pixel trend: L0_00"],
-            "varexp": ["Threshold_l0_0.mean:ntreeentries", "Threshold_l0_0.stddev:ntreeentries", "DeadPixels_l0_0.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L0_00", "rms_of_Threshold_L0_00", "ActiveChips_of_L0_00"],
+            "title": ["Mean trend of Threshold: L0_00", "RMS trend of Threshold: L0_00", "Active_Chip trend: L0_00"],
+            "varexp": ["Threshold_IB.mean[0]:ntreeentries", "Threshold_IB.stddev[0]:ntreeentries", "Threshold_IB.entries[0]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L0_01", "rms_of_Threshold_L0_01", "deadpix_of_L0_01"],
-            "title": ["Mean trend of Threshold: L0_01", "RMS trend of Threshold: L0_01", "Dead pixel trend: L0_01"],
-            "varexp": ["Threshold_l0_1.mean:ntreeentries", "Threshold_l0_1.stddev:ntreeentries", "DeadPixels_l0_1.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L0_01", "rms_of_Threshold_L0_01", "ActiveChips_of_L0_01"],
+            "title": ["Mean trend of Threshold: L0_01", "RMS trend of Threshold: L0_01", "Active_Chip trend: L0_01"],
+            "varexp": ["Threshold_IB.mean[1]:ntreeentries", "Threshold_IB.stddev[1]:ntreeentries", "Threshold_IB.entries[1]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L0_02", "rms_of_Threshold_L0_02", "deadpix_of_L0_02"],
-            "title": ["Mean trend of Threshold: L0_02", "RMS trend of Threshold: L0_02", "Dead pixel trend: L0_02"],
-            "varexp": ["Threshold_l0_2.mean:ntreeentries", "Threshold_l0_2.stddev:ntreeentries", "DeadPixels_l0_2.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L0_02", "rms_of_Threshold_L0_02", "ActiveChips_of_L0_02"],
+            "title": ["Mean trend of Threshold: L0_02", "RMS trend of Threshold: L0_02", "Active_Chip trend: L0_02"],
+            "varexp": ["Threshold_IB.mean[2]:ntreeentries", "Threshold_IB.stddev[2]:ntreeentries", "Threshold_IB.entries[2]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L0_03", "rms_of_Threshold_L0_03", "deadpix_of_L0_03"],
-            "title": ["Mean trend of Threshold: L0_03", "RMS trend of Threshold: L0_03", "Dead pixel trend: L0_03"],
-            "varexp": ["Threshold_l0_3.mean:ntreeentries", "Threshold_l0_3.stddev:ntreeentries", "DeadPixels_l0_3.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L0_03", "rms_of_Threshold_L0_03", "ActiveChips_of_L0_03"],
+            "title": ["Mean trend of Threshold: L0_03", "RMS trend of Threshold: L0_03", "Active_Chip trend: L0_03"],
+            "varexp": ["Threshold_IB.mean[3]:ntreeentries", "Threshold_IB.stddev[3]:ntreeentries", "Threshold_IB.entries[3]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L0_04", "rms_of_Threshold_L0_04", "deadpix_of_L0_04"],
-            "title": ["Mean trend of Threshold: L0_04", "RMS trend of Threshold: L0_04", "Dead pixel trend: L0_04"],
-            "varexp": ["Threshold_l0_4.mean:ntreeentries", "Threshold_l0_4.stddev:ntreeentries", "DeadPixels_l0_4.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L0_04", "rms_of_Threshold_L0_04", "ActiveChips_of_L0_04"],
+            "title": ["Mean trend of Threshold: L0_04", "RMS trend of Threshold: L0_04", "Active_Chip trend: L0_04"],
+            "varexp": ["Threshold_IB.mean[4]:ntreeentries", "Threshold_IB.stddev[4]:ntreeentries", "Threshold_IB.entries[4]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L0_05", "rms_of_Threshold_L0_05", "deadpix_of_L0_05"],
-            "title": ["Mean trend of Threshold: L0_05", "RMS trend of Threshold: L0_05", "Dead pixel trend: L0_05"],
-            "varexp": ["Threshold_l0_5.mean:ntreeentries", "Threshold_l0_5.stddev:ntreeentries", "DeadPixels_l0_5.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L0_05", "rms_of_Threshold_L0_05", "ActiveChips_of_L0_05"],
+            "title": ["Mean trend of Threshold: L0_05", "RMS trend of Threshold: L0_05", "Active_Chip trend: L0_05"],
+            "varexp": ["Threshold_IB.mean[5]:ntreeentries", "Threshold_IB.stddev[5]:ntreeentries", "Threshold_IB.entries[5]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L0_06", "rms_of_Threshold_L0_06", "deadpix_of_L0_06"],
-            "title": ["Mean trend of Threshold: L0_06", "RMS trend of Threshold: L0_06", "Dead pixel trend: L0_06"],
-            "varexp": ["Threshold_l0_6.mean:ntreeentries", "Threshold_l0_6.stddev:ntreeentries", "DeadPixels_l0_6.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L0_06", "rms_of_Threshold_L0_06", "ActiveChips_of_L0_06"],
+            "title": ["Mean trend of Threshold: L0_06", "RMS trend of Threshold: L0_06", "Active_Chip trend: L0_06"],
+            "varexp": ["Threshold_IB.mean[6]:ntreeentries", "Threshold_IB.stddev[6]:ntreeentries", "Threshold_IB.entries[6]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L0_07", "rms_of_Threshold_L0_07", "deadpix_of_L0_07"],
-            "title": ["Mean trend of Threshold: L0_07", "RMS trend of Threshold: L0_07", "Dead pixel trend: L0_07"],
-            "varexp": ["Threshold_l0_7.mean:ntreeentries", "Threshold_l0_7.stddev:ntreeentries", "DeadPixels_l0_7.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L0_07", "rms_of_Threshold_L0_07", "ActiveChips_of_L0_07"],
+            "title": ["Mean trend of Threshold: L0_07", "RMS trend of Threshold: L0_07", "Active_Chip trend: L0_07"],
+            "varexp": ["Threshold_IB.mean[7]:ntreeentries", "Threshold_IB.stddev[7]:ntreeentries", "Threshold_IB.entries[7]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L0_08", "rms_of_Threshold_L0_08", "deadpix_of_L0_08"],
-            "title": ["Mean trend of Threshold: L0_08", "RMS trend of Threshold: L0_08", "Dead pixel trend: L0_08"],
-            "varexp": ["Threshold_l0_8.mean:ntreeentries", "Threshold_l0_8.stddev:ntreeentries", "DeadPixels_l0_8.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L0_08", "rms_of_Threshold_L0_08", "ActiveChips_of_L0_08"],
+            "title": ["Mean trend of Threshold: L0_08", "RMS trend of Threshold: L0_08", "Active_Chip trend: L0_08"],
+            "varexp": ["Threshold_IB.mean[8]:ntreeentries", "Threshold_IB.stddev[8]:ntreeentries", "Threshold_IB.entries[8]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L0_09", "rms_of_Threshold_L0_09", "deadpix_of_L0_09"],
-            "title": ["Mean trend of Threshold: L0_09", "RMS trend of Threshold: L0_09", "Dead pixel trend: L0_09"],
-            "varexp": ["Threshold_l0_9.mean:ntreeentries", "Threshold_l0_9.stddev:ntreeentries", "DeadPixels_l0_9.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L0_09", "rms_of_Threshold_L0_09", "ActiveChips_of_L0_09"],
+            "title": ["Mean trend of Threshold: L0_09", "RMS trend of Threshold: L0_09", "Active_Chip trend: L0_09"],
+            "varexp": ["Threshold_IB.mean[9]:ntreeentries", "Threshold_IB.stddev[9]:ntreeentries", "Threshold_IB.entries[9]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L0_10", "rms_of_Threshold_L0_10", "deadpix_of_L0_10"],
-            "title": ["Mean trend of Threshold: L0_10", "RMS trend of Threshold: L0_10", "Dead pixel trend: L0_10"],
-            "varexp": ["Threshold_l0_10.mean:ntreeentries", "Threshold_l0_10.stddev:ntreeentries", "DeadPixels_l0_10.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L0_10", "rms_of_Threshold_L0_10", "ActiveChips_of_L0_10"],
+            "title": ["Mean trend of Threshold: L0_10", "RMS trend of Threshold: L0_10", "Active_Chip trend: L0_10"],
+            "varexp": ["Threshold_IB.mean[10]:ntreeentries", "Threshold_IB.stddev[10]:ntreeentries", "Threshold_IB.entries[10]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L0_11", "rms_of_Threshold_L0_11", "deadpix_of_L0_11"],
-            "title": ["Mean trend of Threshold: L0_11", "RMS trend of Threshold: L0_11", "Dead pixel trend: L0_11"],
-            "varexp": ["Threshold_l0_11.mean:ntreeentries", "Threshold_l0_11.stddev:ntreeentries", "DeadPixels_l0_11.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L0_11", "rms_of_Threshold_L0_11", "ActiveChips_of_L0_11"],
+            "title": ["Mean trend of Threshold: L0_11", "RMS trend of Threshold: L0_11", "Active_Chip trend: L0_11"],
+            "varexp": ["Threshold_IB.mean[11]:ntreeentries", "Threshold_IB.stddev[11]:ntreeentries", "Threshold_IB.entries[11]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+
+
+
+
+
+
+          {
+            "names": ["mean_of_Threshold_L1_00", "rms_of_Threshold_L1_00", "ActiveChips_of_L1_00"],
+            "title": ["Mean trend of Threshold: L1_00", "RMS trend of Threshold: L1_00", "Active_Chip trend: L1_00"],
+            "varexp": ["Threshold_IB.mean[12]:ntreeentries", "Threshold_IB.stddev[12]:ntreeentries", "Threshold_IB.entries[12]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L1_00", "rms_of_Threshold_L1_00", "deadpix_of_L1_00"],
-            "title": ["Mean trend of Threshold: L1_00", "RMS trend of Threshold: L1_00", "Dead pixel trend: L1_00"],
-            "varexp": ["Threshold_l1_0.mean:ntreeentries", "Threshold_l1_0.stddev:ntreeentries", "DeadPixels_l1_0.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L1_01", "rms_of_Threshold_L1_01", "ActiveChips_of_L1_01"],
+            "title": ["Mean trend of Threshold: L1_02", "RMS trend of Threshold: L1_02", "Active_Chip trend: L1_02"],
+            "varexp": ["Threshold_IB.mean[13]:ntreeentries", "Threshold_IB.stddev[13]:ntreeentries", "Threshold_IB.entries[13]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L1_01", "rms_of_Threshold_L1_01", "deadpix_of_L1_01"],
-            "title": ["Mean trend of Threshold: L1_01", "RMS trend of Threshold: L1_01", "Dead pixel trend: L1_01"],
-            "varexp": ["Threshold_l1_1.mean:ntreeentries", "Threshold_l1_1.stddev:ntreeentries", "DeadPixels_l1_1.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L1_02", "rms_of_Threshold_L1_02", "ActiveChips_of_L1_02"],
+            "title": ["Mean trend of Threshold: L1_02", "RMS trend of Threshold: L1_02", "Active_Chip trend: L1_02"],
+            "varexp": ["Threshold_IB.mean[14]:ntreeentries", "Threshold_IB.stddev[14]:ntreeentries", "Threshold_IB.entries[14]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L1_02", "rms_of_Threshold_L1_02", "deadpix_of_L1_02"],
-            "title": ["Mean trend of Threshold: L1_02", "RMS trend of Threshold: L1_02", "Dead pixel trend: L1_02"],
-            "varexp": ["Threshold_l1_2.mean:ntreeentries", "Threshold_l1_2.stddev:ntreeentries", "DeadPixels_l1_2.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L1_03", "rms_of_Threshold_L1_03", "ActiveChips_of_L1_03"],
+            "title": ["Mean trend of Threshold: L1_03", "RMS trend of Threshold: L1_03", "Active_Chip trend: L1_03"],
+            "varexp": ["Threshold_IB.mean[15]:ntreeentries", "Threshold_IB.stddev[15]:ntreeentries", "Threshold_IB.entries[15]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L1_03", "rms_of_Threshold_L1_03", "deadpix_of_L1_03"],
-            "title": ["Mean trend of Threshold: L1_03", "RMS trend of Threshold: L1_03", "Dead pixel trend: L1_03"],
-            "varexp": ["Threshold_l1_3.mean:ntreeentries", "Threshold_l1_3.stddev:ntreeentries", "DeadPixels_l1_3.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L1_04", "rms_of_Threshold_L1_04", "ActiveChips_of_L1_04"],
+            "title": ["Mean trend of Threshold: L1_04", "RMS trend of Threshold: L1_04", "Active_Chip trend: L1_04"],
+            "varexp": ["Threshold_IB.mean[16]:ntreeentries", "Threshold_IB.stddev[16]:ntreeentries", "Threshold_IB.entries[16]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L1_04", "rms_of_Threshold_L1_04", "deadpix_of_L1_04"],
-            "title": ["Mean trend of Threshold: L1_04", "RMS trend of Threshold: L1_04", "Dead pixel trend: L1_04"],
-            "varexp": ["Threshold_l1_4.mean:ntreeentries", "Threshold_l1_4.stddev:ntreeentries", "DeadPixels_l1_4.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L1_05", "rms_of_Threshold_L1_05", "ActiveChips_of_L1_05"],
+            "title": ["Mean trend of Threshold: L1_05", "RMS trend of Threshold: L1_05", "Active_Chip trend: L1_05"],
+            "varexp": ["Threshold_IB.mean[17]:ntreeentries", "Threshold_IB.stddev[17]:ntreeentries", "Threshold_IB.entries[17]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L1_05", "rms_of_Threshold_L1_05", "deadpix_of_L1_05"],
-            "title": ["Mean trend of Threshold: L1_05", "RMS trend of Threshold: L1_05", "Dead pixel trend: L1_05"],
-            "varexp": ["Threshold_l1_5.mean:ntreeentries", "Threshold_l1_5.stddev:ntreeentries", "DeadPixels_l1_5.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L1_06", "rms_of_Threshold_L1_06", "ActiveChips_of_L1_06"],
+            "title": ["Mean trend of Threshold: L1_06", "RMS trend of Threshold: L1_06", "Active_Chip trend: L1_06"],
+            "varexp": ["Threshold_IB.mean[18]:ntreeentries", "Threshold_IB.stddev[18]:ntreeentries", "Threshold_IB.entries[18]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L1_06", "rms_of_Threshold_L1_06", "deadpix_of_L1_06"],
-            "title": ["Mean trend of Threshold: L1_06", "RMS trend of Threshold: L1_06", "Dead pixel trend: L1_06"],
-            "varexp": ["Threshold_l1_6.mean:ntreeentries", "Threshold_l1_6.stddev:ntreeentries", "DeadPixels_l1_6.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L1_07", "rms_of_Threshold_L1_07", "ActiveChips_of_L1_07"],
+            "title": ["Mean trend of Threshold: L1_07", "RMS trend of Threshold: L1_07", "Active_Chip trend: L1_07"],
+            "varexp": ["Threshold_IB.mean[19]:ntreeentries", "Threshold_IB.stddev[19]:ntreeentries", "Threshold_IB.entries[19]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L1_07", "rms_of_Threshold_L1_07", "deadpix_of_L1_07"],
-            "title": ["Mean trend of Threshold: L1_07", "RMS trend of Threshold: L1_07", "Dead pixel trend: L1_07"],
-            "varexp": ["Threshold_l1_7.mean:ntreeentries", "Threshold_l1_7.stddev:ntreeentries", "DeadPixels_l1_7.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L1_08", "rms_of_Threshold_L1_08", "ActiveChips_of_L1_08"],
+            "title": ["Mean trend of Threshold: L1_08", "RMS trend of Threshold: L1_08", "Active_Chip trend: L1_08"],
+            "varexp": ["Threshold_IB.mean[20]:ntreeentries", "Threshold_IB.stddev[20]:ntreeentries", "Threshold_IB.entries[20]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L1_08", "rms_of_Threshold_L1_08", "deadpix_of_L1_08"],
-            "title": ["Mean trend of Threshold: L1_08", "RMS trend of Threshold: L1_08", "Dead pixel trend: L1_08"],
-            "varexp": ["Threshold_l1_8.mean:ntreeentries", "Threshold_l1_8.stddev:ntreeentries", "DeadPixels_l1_8.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L1_09", "rms_of_Threshold_L1_09", "ActiveChips_of_L1_09"],
+            "title": ["Mean trend of Threshold: L1_09", "RMS trend of Threshold: L1_09", "Active_Chip trend: L1_09"],
+            "varexp": ["Threshold_IB.mean[21]:ntreeentries", "Threshold_IB.stddev[21]:ntreeentries", "Threshold_IB.entries[21]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L1_09", "rms_of_Threshold_L1_09", "deadpix_of_L1_09"],
-            "title": ["Mean trend of Threshold: L1_09", "RMS trend of Threshold: L1_09", "Dead pixel trend: L1_09"],
-            "varexp": ["Threshold_l1_9.mean:ntreeentries", "Threshold_l1_9.stddev:ntreeentries", "DeadPixels_l1_9.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L1_10", "rms_of_Threshold_L1_10", "ActiveChips_of_L1_10"],
+            "title": ["Mean trend of Threshold: L1_10", "RMS trend of Threshold: L1_10", "Active_Chip trend: L1_10"],
+            "varexp": ["Threshold_IB.mean[22]:ntreeentries", "Threshold_IB.stddev[22]:ntreeentries", "Threshold_IB.entries[22]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L1_10", "rms_of_Threshold_L1_10", "deadpix_of_L1_10"],
-            "title": ["Mean trend of Threshold: L1_10", "RMS trend of Threshold: L1_10", "Dead pixel trend: L1_10"],
-            "varexp": ["Threshold_l1_10.mean:ntreeentries", "Threshold_l1_10.stddev:ntreeentries", "DeadPixels_l1_10.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L1_11", "rms_of_Threshold_L1_11", "ActiveChips_of_L1_11"],
+            "title": ["Mean trend of Threshold: L1_11", "RMS trend of Threshold: L1_11", "Active_Chip trend: L1_11"],
+            "varexp": ["Threshold_IB.mean[23]:ntreeentries", "Threshold_IB.stddev[23]:ntreeentries", "Threshold_IB.entries[23]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L1_11", "rms_of_Threshold_L1_11", "deadpix_of_L1_11"],
-            "title": ["Mean trend of Threshold: L1_11", "RMS trend of Threshold: L1_11", "Dead pixel trend: L1_11"],
-            "varexp": ["Threshold_l1_11.mean:ntreeentries", "Threshold_l1_11.stddev:ntreeentries", "DeadPixels_l1_11.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L1_12", "rms_of_Threshold_L1_12", "ActiveChips_of_L1_12"],
+            "title": ["Mean trend of Threshold: L1_12", "RMS trend of Threshold: L1_12", "Active_Chip trend: L1_12"],
+            "varexp": ["Threshold_IB.mean[24]:ntreeentries", "Threshold_IB.stddev[24]:ntreeentries", "Threshold_IB.entries[24]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L1_12", "rms_of_Threshold_L1_12", "deadpix_of_L1_12"],
-            "title": ["Mean trend of Threshold: L1_12", "RMS trend of Threshold: L1_12", "Dead pixel trend: L1_12"],
-            "varexp": ["Threshold_l1_12.mean:ntreeentries", "Threshold_l1_12.stddev:ntreeentries", "DeadPixels_l1_12.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L1_13", "rms_of_Threshold_L1_13", "ActiveChips_of_L1_13"],
+            "title": ["Mean trend of Threshold: L1_13", "RMS trend of Threshold: L1_13", "Active_Chip trend: L1_13"],
+            "varexp": ["Threshold_IB.mean[25]:ntreeentries", "Threshold_IB.stddev[25]:ntreeentries", "Threshold_IB.entries[25]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L1_13", "rms_of_Threshold_L1_13", "deadpix_of_L1_13"],
-            "title": ["Mean trend of Threshold: L1_13", "RMS trend of Threshold: L1_13", "Dead pixel trend: L1_13"],
-            "varexp": ["Threshold_l1_13.mean:ntreeentries", "Threshold_l1_13.stddev:ntreeentries", "DeadPixels_l1_13.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L1_14", "rms_of_Threshold_L1_14", "ActiveChips_of_L1_14"],
+            "title": ["Mean trend of Threshold: L1_14", "RMS trend of Threshold: L1_14", "Active_Chip trend: L1_14"],
+            "varexp": ["Threshold_IB.mean[26]:ntreeentries", "Threshold_IB.stddev[26]:ntreeentries", "Threshold_IB.entries[26]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L1_14", "rms_of_Threshold_L1_14", "deadpix_of_L1_14"],
-            "title": ["Mean trend of Threshold: L1_14", "RMS trend of Threshold: L1_14", "Dead pixel trend: L1_14"],
-            "varexp": ["Threshold_l1_14.mean:ntreeentries", "Threshold_l1_14.stddev:ntreeentries", "DeadPixels_l1_14.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L1_15", "rms_of_Threshold_L1_15", "ActiveChips_of_L1_15"],
+            "title": ["Mean trend of Threshold: L1_15", "RMS trend of Threshold: L1_15", "Active_Chip trend: L1_15"],
+            "varexp": ["Threshold_IB.mean[27]:ntreeentries", "Threshold_IB.stddev[27]:ntreeentries", "Threshold_IB.entries[27]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+
+
+
+
+          {
+            "names": ["mean_of_Threshold_L2_00", "rms_of_Threshold_L2_00", "ActiveChips_of_L2_00"],
+            "title": ["Mean trend of Threshold: L2_00", "RMS trend of Threshold: L2_00", "Active_Chip trend: L2_00"],
+            "varexp": ["Threshold_IB.mean[28]:ntreeentries", "Threshold_IB.stddev[28]:ntreeentries", "Threshold_IB.entries[28]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L1_15", "rms_of_Threshold_L1_15", "deadpix_of_L1_15"],
-            "title": ["Mean trend of Threshold: L1_15", "RMS trend of Threshold: L1_15", "Dead pixel trend: L1_15"],
-            "varexp": ["Threshold_l1_15.mean:ntreeentries", "Threshold_l1_15.stddev:ntreeentries", "DeadPixels_l1_15.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L2_01", "rms_of_Threshold_L2_01", "ActiveChips_of_L2_01"],
+            "title": ["Mean trend of Threshold: L2_01", "RMS trend of Threshold: L2_01", "Active_Chip trend: L2_01"],
+            "varexp": ["Threshold_IB.mean[29]:ntreeentries", "Threshold_IB.stddev[29]:ntreeentries", "Threshold_IB.entries[29]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L2_00", "rms_of_Threshold_L2_00", "deadpix_of_L2_00"],
-            "title": ["Mean trend of Threshold: L2_00", "RMS trend of Threshold: L2_00", "Dead pixel trend: L2_00"],
-            "varexp": ["Threshold_l2_0.mean:ntreeentries", "Threshold_l2_0.stddev:ntreeentries", "DeadPixels_l2_0.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L2_02", "rms_of_Threshold_L2_02", "ActiveChips_of_L2_02"],
+            "title": ["Mean trend of Threshold: L2_02", "RMS trend of Threshold: L2_02", "Active_Chip trend: L2_02"],
+            "varexp": ["Threshold_IB.mean[30]:ntreeentries", "Threshold_IB.stddev[30]:ntreeentries", "Threshold_IB.entries[30]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L2_01", "rms_of_Threshold_L2_01", "deadpix_of_L2_01"],
-            "title": ["Mean trend of Threshold: L2_01", "RMS trend of Threshold: L2_01", "Dead pixel trend: L2_01"],
-            "varexp": ["Threshold_l2_1.mean:ntreeentries", "Threshold_l2_1.stddev:ntreeentries", "DeadPixels_l2_1.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L2_03", "rms_of_Threshold_L2_03", "ActiveChips_of_L2_03"],
+            "title": ["Mean trend of Threshold: L2_03", "RMS trend of Threshold: L2_03", "Active_Chip trend: L2_03"],
+            "varexp": ["Threshold_IB.mean[31]:ntreeentries", "Threshold_IB.stddev[31]:ntreeentries", "Threshold_IB.entries[31]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L2_02", "rms_of_Threshold_L2_02", "deadpix_of_L2_02"],
-            "title": ["Mean trend of Threshold: L2_02", "RMS trend of Threshold: L2_02", "Dead pixel trend: L2_02"],
-            "varexp": ["Threshold_l2_2.mean:ntreeentries", "Threshold_l2_2.stddev:ntreeentries", "DeadPixels_l2_2.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L2_04", "rms_of_Threshold_L2_04", "ActiveChips_of_L2_04"],
+            "title": ["Mean trend of Threshold: L2_04", "RMS trend of Threshold: L2_04", "Active_Chip trend: L2_04"],
+            "varexp": ["Threshold_IB.mean[32]:ntreeentries", "Threshold_IB.stddev[32]:ntreeentries", "Threshold_IB.entries[32]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L2_03", "rms_of_Threshold_L2_03", "deadpix_of_L2_03"],
-            "title": ["Mean trend of Threshold: L2_03", "RMS trend of Threshold: L2_03", "Dead pixel trend: L2_03"],
-            "varexp": ["Threshold_l2_3.mean:ntreeentries", "Threshold_l2_3.stddev:ntreeentries", "DeadPixels_l2_3.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L2_05", "rms_of_Threshold_L2_05", "ActiveChips_of_L2_05"],
+            "title": ["Mean trend of Threshold: L2_05", "RMS trend of Threshold: L2_05", "Active_Chip trend: L2_05"],
+            "varexp": ["Threshold_IB.mean[33]:ntreeentries", "Threshold_IB.stddev[33]:ntreeentries", "Threshold_IB.entries[33]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L2_04", "rms_of_Threshold_L2_04", "deadpix_of_L2_04"],
-            "title": ["Mean trend of Threshold: L2_04", "RMS trend of Threshold: L2_04", "Dead pixel trend: L2_04"],
-            "varexp": ["Threshold_l2_4.mean:ntreeentries", "Threshold_l2_4.stddev:ntreeentries", "DeadPixels_l2_4.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L2_06", "rms_of_Threshold_L2_06", "ActiveChips_of_L2_06"],
+            "title": ["Mean trend of Threshold: L2_06", "RMS trend of Threshold: L2_06", "Active_Chip trend: L2_06"],
+            "varexp": ["Threshold_IB.mean[34]:ntreeentries", "Threshold_IB.stddev[34]:ntreeentries", "Threshold_IB.entries[34]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L2_05", "rms_of_Threshold_L2_05", "deadpix_of_L2_05"],
-            "title": ["Mean trend of Threshold: L2_05", "RMS trend of Threshold: L2_05", "Dead pixel trend: L2_05"],
-            "varexp": ["Threshold_l2_5.mean:ntreeentries", "Threshold_l2_5.stddev:ntreeentries", "DeadPixels_l2_5.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L2_07", "rms_of_Threshold_L2_07", "ActiveChips_of_L2_07"],
+            "title": ["Mean trend of Threshold: L2_07", "RMS trend of Threshold: L2_07", "Active_Chip trend: L2_07"],
+            "varexp": ["Threshold_IB.mean[35]:ntreeentries", "Threshold_IB.stddev[35]:ntreeentries", "Threshold_IB.entries[35]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L2_06", "rms_of_Threshold_L2_06", "deadpix_of_L2_06"],
-            "title": ["Mean trend of Threshold: L2_06", "RMS trend of Threshold: L2_06", "Dead pixel trend: L2_06"],
-            "varexp": ["Threshold_l2_6.mean:ntreeentries", "Threshold_l2_6.stddev:ntreeentries", "DeadPixels_l2_6.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L2_08", "rms_of_Threshold_L2_08", "ActiveChips_of_L2_08"],
+            "title": ["Mean trend of Threshold: L2_08", "RMS trend of Threshold: L2_08", "Active_Chip trend: L2_08"],
+            "varexp": ["Threshold_IB.mean[36]:ntreeentries", "Threshold_IB.stddev[36]:ntreeentries", "Threshold_IB.entries[36]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L2_07", "rms_of_Threshold_L2_07", "deadpix_of_L2_07"],
-            "title": ["Mean trend of Threshold: L2_07", "RMS trend of Threshold: L2_07", "Dead pixel trend: L2_07"],
-            "varexp": ["Threshold_l2_7.mean:ntreeentries", "Threshold_l2_7.stddev:ntreeentries", "DeadPixels_l2_7.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L2_09", "rms_of_Threshold_L2_09", "ActiveChips_of_L2_09"],
+            "title": ["Mean trend of Threshold: L2_09", "RMS trend of Threshold: L2_09", "Active_Chip trend: L2_09"],
+            "varexp": ["Threshold_IB.mean[37]:ntreeentries", "Threshold_IB.stddev[37]:ntreeentries", "Threshold_IB.entries[37]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L2_08", "rms_of_Threshold_L2_08", "deadpix_of_L2_08"],
-            "title": ["Mean trend of Threshold: L2_08", "RMS trend of Threshold: L2_08", "Dead pixel trend: L2_08"],
-            "varexp": ["Threshold_l2_8.mean:ntreeentries", "Threshold_l2_8.stddev:ntreeentries", "DeadPixels_l2_8.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L2_10", "rms_of_Threshold_L2_10", "ActiveChips_of_L2_10"],
+            "title": ["Mean trend of Threshold: L2_10", "RMS trend of Threshold: L2_10", "Active_Chip trend: L2_10"],
+            "varexp": ["Threshold_IB.mean[38]:ntreeentries", "Threshold_IB.stddev[38]:ntreeentries", "Threshold_IB.entries[38]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L2_09", "rms_of_Threshold_L2_09", "deadpix_of_L2_09"],
-            "title": ["Mean trend of Threshold: L2_09", "RMS trend of Threshold: L2_09", "Dead pixel trend: L2_09"],
-            "varexp": ["Threshold_l2_9.mean:ntreeentries", "Threshold_l2_9.stddev:ntreeentries", "DeadPixels_l2_9.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L2_11", "rms_of_Threshold_L2_11", "ActiveChips_of_L2_11"],
+            "title": ["Mean trend of Threshold: L2_11", "RMS trend of Threshold: L2_11", "Active_Chip trend: L2_11"],
+            "varexp": ["Threshold_IB.mean[39]:ntreeentries", "Threshold_IB.stddev[39]:ntreeentries", "Threshold_IB.entries[39]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L2_10", "rms_of_Threshold_L2_10", "deadpix_of_L2_10"],
-            "title": ["Mean trend of Threshold: L2_10", "RMS trend of Threshold: L2_10", "Dead pixel trend: L2_10"],
-            "varexp": ["Threshold_l2_10.mean:ntreeentries", "Threshold_l2_10.stddev:ntreeentries", "DeadPixels_l2_10.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L2_12", "rms_of_Threshold_L2_12", "ActiveChips_of_L2_12"],
+            "title": ["Mean trend of Threshold: L2_12", "RMS trend of Threshold: L2_12", "Active_Chip trend: L2_12"],
+            "varexp": ["Threshold_IB.mean[40]:ntreeentries", "Threshold_IB.stddev[40]:ntreeentries", "Threshold_IB.entries[40]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L2_11", "rms_of_Threshold_L2_11", "deadpix_of_L2_11"],
-            "title": ["Mean trend of Threshold: L2_11", "RMS trend of Threshold: L2_11", "Dead pixel trend: L2_11"],
-            "varexp": ["Threshold_l2_11.mean:ntreeentries", "Threshold_l2_11.stddev:ntreeentries", "DeadPixels_l2_11.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L2_13", "rms_of_Threshold_L2_13", "ActiveChips_of_L2_13"],
+            "title": ["Mean trend of Threshold: L2_13", "RMS trend of Threshold: L2_13", "Active_Chip trend: L2_13"],
+            "varexp": ["Threshold_IB.mean[41]:ntreeentries", "Threshold_IB.stddev[41]:ntreeentries", "Threshold_IB.entries[41]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L2_12", "rms_of_Threshold_L2_12", "deadpix_of_L2_12"],
-            "title": ["Mean trend of Threshold: L2_12", "RMS trend of Threshold: L2_12", "Dead pixel trend: L2_12"],
-            "varexp": ["Threshold_l2_12.mean:ntreeentries", "Threshold_l2_12.stddev:ntreeentries", "DeadPixels_l2_12.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L2_14", "rms_of_Threshold_L2_14", "ActiveChips_of_L2_14"],
+            "title": ["Mean trend of Threshold: L2_14", "RMS trend of Threshold: L2_14", "Active_Chip trend: L2_14"],
+            "varexp": ["Threshold_IB.mean[42]:ntreeentries", "Threshold_IB.stddev[42]:ntreeentries", "Threshold_IB.entries[42]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L2_13", "rms_of_Threshold_L2_13", "deadpix_of_L2_13"],
-            "title": ["Mean trend of Threshold: L2_13", "RMS trend of Threshold: L2_13", "Dead pixel trend: L2_13"],
-            "varexp": ["Threshold_l2_13.mean:ntreeentries", "Threshold_l2_13.stddev:ntreeentries", "DeadPixels_l2_13.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L2_15", "rms_of_Threshold_L2_15", "ActiveChips_of_L2_15"],
+            "title": ["Mean trend of Threshold: L2_15", "RMS trend of Threshold: L2_15", "Active_Chip trend: L2_15"],
+            "varexp": ["Threshold_IB.mean[43]:ntreeentries", "Threshold_IB.stddev[43]:ntreeentries", "Threshold_IB.entries[43]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L2_14", "rms_of_Threshold_L2_14", "deadpix_of_L2_14"],
-            "title": ["Mean trend of Threshold: L2_14", "RMS trend of Threshold: L2_14", "Dead pixel trend: L2_14"],
-            "varexp": ["Threshold_l2_14.mean:ntreeentries", "Threshold_l2_14.stddev:ntreeentries", "DeadPixels_l2_14.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L2_16", "rms_of_Threshold_L2_16", "ActiveChips_of_L2_16"],
+            "title": ["Mean trend of Threshold: L2_16", "RMS trend of Threshold: L2_16", "Active_Chip trend: L2_16"],
+            "varexp": ["Threshold_IB.mean[44]:ntreeentries", "Threshold_IB.stddev[44]:ntreeentries", "Threshold_IB.entries[44]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L2_15", "rms_of_Threshold_L2_15", "deadpix_of_L2_15"],
-            "title": ["Mean trend of Threshold: L2_15", "RMS trend of Threshold: L2_15", "Dead pixel trend: L2_15"],
-            "varexp": ["Threshold_l2_15.mean:ntreeentries", "Threshold_l2_15.stddev:ntreeentries", "DeadPixels_l2_15.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L2_17", "rms_of_Threshold_L2_17", "ActiveChips_of_L2_17"],
+            "title": ["Mean trend of Threshold: L2_17", "RMS trend of Threshold: L2_17", "Active_Chip trend: L2_17"],
+            "varexp": ["Threshold_IB.mean[45]:ntreeentries", "Threshold_IB.stddev[45]:ntreeentries", "Threshold_IB.entries[45]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L2_16", "rms_of_Threshold_L2_16", "deadpix_of_L2_16"],
-            "title": ["Mean trend of Threshold: L2_16", "RMS trend of Threshold: L2_16", "Dead pixel trend: L2_16"],
-            "varexp": ["Threshold_l2_16.mean:ntreeentries", "Threshold_l2_16.stddev:ntreeentries", "DeadPixels_l2_16.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L2_18", "rms_of_Threshold_L2_18", "ActiveChips_of_L2_18"],
+            "title": ["Mean trend of Threshold: L2_18", "RMS trend of Threshold: L2_18", "Active_Chip trend: L2_18"],
+            "varexp": ["Threshold_IB.mean[46]:ntreeentries", "Threshold_IB.stddev[46]:ntreeentries", "Threshold_IB.entries[46]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L2_17", "rms_of_Threshold_L2_17", "deadpix_of_L2_17"],
-            "title": ["Mean trend of Threshold: L2_17", "RMS trend of Threshold: L2_17", "Dead pixel trend: L2_17"],
-            "varexp": ["Threshold_l2_17.mean:ntreeentries", "Threshold_l2_17.stddev:ntreeentries", "DeadPixels_l2_17.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L2_19", "rms_of_Threshold_L2_19", "ActiveChips_of_L2_19"],
+            "title": ["Mean trend of Threshold: L2_19", "RMS trend of Threshold: L2_19", "Active_Chip trend: L2_19"],
+            "varexp": ["Threshold_IB.mean[47]:ntreeentries", "Threshold_IB.stddev[47]:ntreeentries", "Threshold_IB.entries[47]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+
+
+
+
+
+
+
+
+
+
+
+
+
+          {
+            "names": ["mean_of_Threshold_L3_00", "rms_of_Threshold_L3_00", "ActiveChips_of_L3_00"],
+            "title": ["Mean trend of Threshold: L3_00", "RMS trend of Threshold: L3_00", "Active_Chip trend: L3_00"],
+            "varexp": ["Threshold_ML.mean[0]:ntreeentries", "Threshold_ML.stddev[0]:ntreeentries", "Threshold_ML.entries[0]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L2_18", "rms_of_Threshold_L2_18", "deadpix_of_L2_18"],
-            "title": ["Mean trend of Threshold: L2_18", "RMS trend of Threshold: L2_18", "Dead pixel trend: L2_18"],
-            "varexp": ["Threshold_l2_18.mean:ntreeentries", "Threshold_l2_18.stddev:ntreeentries", "DeadPixels_l2_18.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L3_01", "rms_of_Threshold_L3_01", "ActiveChips_of_L3_01"],
+            "title": ["Mean trend of Threshold: L3_01", "RMS trend of Threshold: L3_01", "Active_Chip trend: L3_01"],
+            "varexp": ["Threshold_ML.mean[1]:ntreeentries", "Threshold_ML.stddev[1]:ntreeentries", "Threshold_ML.entries[1]:ntreeentries"],
             "selection": "",
             "option": "PL"
           },
           {
-            "names": ["mean_of_Threshold_L2_19", "rms_of_Threshold_L2_19", "deadpix_of_L2_19"],
-            "title": ["Mean trend of Threshold: L2_19", "RMS trend of Threshold: L2_19", "Dead pixel trend: L2_19"],
-            "varexp": ["Threshold_l2_19.mean:ntreeentries", "Threshold_l2_19.stddev:ntreeentries", "DeadPixels_l2_19.entries[0]:ntreeentries"],
+            "names": ["mean_of_Threshold_L3_02", "rms_of_Threshold_L3_02", "ActiveChips_of_L3_02"],
+            "title": ["Mean trend of Threshold: L3_02", "RMS trend of Threshold: L3_02", "Active_Chip trend: L3_02"],
+            "varexp": ["Threshold_ML.mean[2]:ntreeentries", "Threshold_ML.stddev[2]:ntreeentries", "Threshold_ML.entries[2]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L3_03", "rms_of_Threshold_L3_03", "ActiveChips_of_L3_03"],
+            "title": ["Mean trend of Threshold: L3_03", "RMS trend of Threshold: L3_03", "Active_Chip trend: L3_03"],
+            "varexp": ["Threshold_ML.mean[3]:ntreeentries", "Threshold_ML.stddev[3]:ntreeentries", "Threshold_ML.entries[3]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L3_04", "rms_of_Threshold_L3_04", "ActiveChips_of_L3_04"],
+            "title": ["Mean trend of Threshold: L3_04", "RMS trend of Threshold: L3_04", "Active_Chip trend: L3_04"],
+            "varexp": ["Threshold_ML.mean[4]:ntreeentries", "Threshold_ML.stddev[4]:ntreeentries", "Threshold_ML.entries[4]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L3_05", "rms_of_Threshold_L3_05", "ActiveChips_of_L3_05"],
+            "title": ["Mean trend of Threshold: L3_05", "RMS trend of Threshold: L3_05", "Active_Chip trend: L3_05"],
+            "varexp": ["Threshold_ML.mean[5]:ntreeentries", "Threshold_ML.stddev[5]:ntreeentries", "Threshold_ML.entries[5]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L3_06", "rms_of_Threshold_L3_06", "ActiveChips_of_L3_06"],
+            "title": ["Mean trend of Threshold: L3_07", "RMS trend of Threshold: L3_07", "Active_Chip trend: L3_07"],
+            "varexp": ["Threshold_ML.mean[6]:ntreeentries", "Threshold_ML.stddev[6]:ntreeentries", "Threshold_ML.entries[6]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L3_07", "rms_of_Threshold_L3_07", "ActiveChips_of_L3_07"],
+            "title": ["Mean trend of Threshold: L3_07", "RMS trend of Threshold: L3_07", "Active_Chip trend: L3_07"],
+            "varexp": ["Threshold_ML.mean[7]:ntreeentries", "Threshold_ML.stddev[7]:ntreeentries", "Threshold_ML.entries[7]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L3_08", "rms_of_Threshold_L3_08", "ActiveChips_of_L3_08"],
+            "title": ["Mean trend of Threshold: L3_08", "RMS trend of Threshold: L3_08", "Active_Chip trend: L3_08"],
+            "varexp": ["Threshold_ML.mean[8]:ntreeentries", "Threshold_ML.stddev[8]:ntreeentries", "Threshold_ML.entries[8]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L3_09", "rms_of_Threshold_L3_09", "ActiveChips_of_L3_09"],
+            "title": ["Mean trend of Threshold: L3_09", "RMS trend of Threshold: L3_09", "Active_Chip trend: L3_09"],
+            "varexp": ["Threshold_ML.mean[9]:ntreeentries", "Threshold_ML.stddev[9]:ntreeentries", "Threshold_ML.entries[9]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L3_10", "rms_of_Threshold_L3_10", "ActiveChips_of_L3_10"],
+            "title": ["Mean trend of Threshold: L3_10", "RMS trend of Threshold: L3_10", "Active_Chip trend: L3_10"],
+            "varexp": ["Threshold_ML.mean[10]:ntreeentries", "Threshold_ML.stddev[10]:ntreeentries", "Threshold_ML.entries[10]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L3_11", "rms_of_Threshold_L3_11", "ActiveChips_of_L3_11"],
+            "title": ["Mean trend of Threshold: L3_11", "RMS trend of Threshold: L3_11", "Active_Chip trend: L3_11"],
+            "varexp": ["Threshold_ML.mean[11]:ntreeentries", "Threshold_ML.stddev[11]:ntreeentries", "Threshold_ML.entries[11]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L3_12", "rms_of_Threshold_L3_12", "ActiveChips_of_L3_12"],
+            "title": ["Mean trend of Threshold: L3_12", "RMS trend of Threshold: L3_12", "Active_Chip trend: L3_12"],
+            "varexp": ["Threshold_ML.mean[12]:ntreeentries", "Threshold_ML.stddev[12]:ntreeentries", "Threshold_ML.entries[12]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L3_13", "rms_of_Threshold_L3_13", "ActiveChips_of_L3_13"],
+            "title": ["Mean trend of Threshold: L3_13", "RMS trend of Threshold: L3_13", "Active_Chip trend: L3_13"],
+            "varexp": ["Threshold_ML.mean[13]:ntreeentries", "Threshold_ML.stddev[13]:ntreeentries", "Threshold_ML.entries[13]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L3_14", "rms_of_Threshold_L3_14", "ActiveChips_of_L3_14"],
+            "title": ["Mean trend of Threshold: L3_14", "RMS trend of Threshold: L3_14", "Active_Chip trend: L3_14"],
+            "varexp": ["Threshold_ML.mean[14]:ntreeentries", "Threshold_ML.stddev[14]:ntreeentries", "Threshold_ML.entries[14]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L3_15", "rms_of_Threshold_L3_15", "ActiveChips_of_L3_15"],
+            "title": ["Mean trend of Threshold: L3_15", "RMS trend of Threshold: L3_15", "Active_Chip trend: L3_15"],
+            "varexp": ["Threshold_ML.mean[15]:ntreeentries", "Threshold_ML.stddev[15]:ntreeentries", "Threshold_ML.entries[15]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L3_16", "rms_of_Threshold_L3_16", "ActiveChips_of_L3_16"],
+            "title": ["Mean trend of Threshold: L3_16", "RMS trend of Threshold: L3_16", "Active_Chip trend: L3_16"],
+            "varexp": ["Threshold_ML.mean[16]:ntreeentries", "Threshold_ML.stddev[16]:ntreeentries", "Threshold_ML.entries[16]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L3_17", "rms_of_Threshold_L3_17", "ActiveChips_of_L3_17"],
+            "title": ["Mean trend of Threshold: L3_17", "RMS trend of Threshold: L3_17", "Active_Chip trend: L3_17"],
+            "varexp": ["Threshold_ML.mean[17]:ntreeentries", "Threshold_ML.stddev[17]:ntreeentries", "Threshold_ML.entries[17]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L3_18", "rms_of_Threshold_L3_18", "ActiveChips_of_L3_18"],
+            "title": ["Mean trend of Threshold: L3_18", "RMS trend of Threshold: L3_18", "Active_Chip trend: L3_18"],
+            "varexp": ["Threshold_ML.mean[18]:ntreeentries", "Threshold_ML.stddev[18]:ntreeentries", "Threshold_ML.entries[18]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L3_19", "rms_of_Threshold_L3_19", "ActiveChips_of_L3_19"],
+            "title": ["Mean trend of Threshold: L3_19", "RMS trend of Threshold: L3_19", "Active_Chip trend: L3_19"],
+            "varexp": ["Threshold_ML.mean[19]:ntreeentries", "Threshold_ML.stddev[19]:ntreeentries", "Threshold_ML.entries[19]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L3_20", "rms_of_Threshold_L3_20", "ActiveChips_of_L3_20"],
+            "title": ["Mean trend of Threshold: L3_20", "RMS trend of Threshold: L3_20", "Active_Chip trend: L3_20"],
+            "varexp": ["Threshold_ML.mean[20]:ntreeentries", "Threshold_ML.stddev[20]:ntreeentries", "Threshold_ML.entries[20]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L3_21", "rms_of_Threshold_L3_21", "ActiveChips_of_L3_21"],
+            "title": ["Mean trend of Threshold: L3_21", "RMS trend of Threshold: L3_21", "Active_Chip trend: L3_21"],
+            "varexp": ["Threshold_ML.mean[21]:ntreeentries", "Threshold_ML.stddev[21]:ntreeentries", "Threshold_ML.entries[21]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L3_22", "rms_of_Threshold_L3_22", "ActiveChips_of_L3_22"],
+            "title": ["Mean trend of Threshold: L3_22", "RMS trend of Threshold: L3_22", "Active_Chip trend: L3_22"],
+            "varexp": ["Threshold_ML.mean[22]:ntreeentries", "Threshold_ML.stddev[22]:ntreeentries", "Threshold_ML.entries[22]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L3_23", "rms_of_Threshold_L3_23", "ActiveChips_of_L3_23"],
+            "title": ["Mean trend of Threshold: L3_23", "RMS trend of Threshold: L3_23", "Active_Chip trend: L3_23"],
+            "varexp": ["Threshold_ML.mean[23]:ntreeentries", "Threshold_ML.stddev[23]:ntreeentries", "Threshold_ML.entries[23]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+
+
+
+
+
+
+
+
+          {
+            "names": ["mean_of_Threshold_L4_00", "rms_of_Threshold_L4_00", "ActiveChips_of_L4_00"],
+            "title": ["Mean trend of Threshold: L4_00", "RMS trend of Threshold: L4_00", "Active_Chip trend: L4_0"],
+            "varexp": ["Threshold_ML.mean[24]:ntreeentries", "Threshold_ML.stddev[24]:ntreeentries", "Threshold_ML.entries[24]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L4_01", "rms_of_Threshold_L4_01", "ActiveChips_of_L4_01"],
+            "title": ["Mean trend of Threshold: L4_01", "RMS trend of Threshold: L4_01", "Active_Chip trend: L4_01"],
+            "varexp": ["Threshold_ML.mean[25]:ntreeentries", "Threshold_ML.stddev[25]:ntreeentries", "Threshold_ML.entries[25]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L4_02", "rms_of_Threshold_L4_02", "ActiveChips_of_L4_02"],
+            "title": ["Mean trend of Threshold: L4_02", "RMS trend of Threshold: L4_02", "Active_Chip trend: L4_02"],
+            "varexp": ["Threshold_ML.mean[26]:ntreeentries", "Threshold_ML.stddev[26]:ntreeentries", "Threshold_ML.entries[26]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L4_03", "rms_of_Threshold_L4_03", "ActiveChips_of_L4_03"],
+            "title": ["Mean trend of Threshold: L4_03", "RMS trend of Threshold: L4_03", "Active_Chip trend: L4_03"],
+            "varexp": ["Threshold_ML.mean[27]:ntreeentries", "Threshold_ML.stddev[27]:ntreeentries", "Threshold_ML.entries[27]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L4_04", "rms_of_Threshold_L4_04", "ActiveChips_of_L4_04"],
+            "title": ["Mean trend of Threshold: L4_04", "RMS trend of Threshold: L4_04", "Active_Chip trend: L4_04"],
+            "varexp": ["Threshold_ML.mean[28]:ntreeentries", "Threshold_ML.stddev[28]:ntreeentries", "Threshold_ML.entries[28]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L4_05", "rms_of_Threshold_L4_05", "ActiveChips_of_L4_05"],
+            "title": ["Mean trend of Threshold: L4_05", "RMS trend of Threshold: L4_05", "Active_Chip trend: L4_05"],
+            "varexp": ["Threshold_ML.mean[29]:ntreeentries", "Threshold_ML.stddev[29]:ntreeentries", "Threshold_ML.entries[29]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L4_06", "rms_of_Threshold_L4_06", "ActiveChips_of_L4_06"],
+            "title": ["Mean trend of Threshold: L4_06", "RMS trend of Threshold: L4_06", "Active_Chip trend: L4_06"],
+            "varexp": ["Threshold_ML.mean[30]:ntreeentries", "Threshold_ML.stddev[30]:ntreeentries", "Threshold_ML.entries[30]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L4_07", "rms_of_Threshold_L4_07", "ActiveChips_of_L4_07"],
+            "title": ["Mean trend of Threshold: L4_07", "RMS trend of Threshold: L4_07", "Active_Chip trend: L4_07"],
+            "varexp": ["Threshold_ML.mean[31]:ntreeentries", "Threshold_ML.stddev[31]:ntreeentries", "Threshold_ML.entries[31]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L4_08", "rms_of_Threshold_L4_08", "ActiveChips_of_L4_08"],
+            "title": ["Mean trend of Threshold: L4_08", "RMS trend of Threshold: L4_08", "Active_Chip trend: L4_08"],
+            "varexp": ["Threshold_ML.mean[32]:ntreeentries", "Threshold_ML.stddev[32]:ntreeentries", "Threshold_ML.entries[32]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L4_09", "rms_of_Threshold_L4_09", "ActiveChips_of_L4_09"],
+            "title": ["Mean trend of Threshold: L4_09", "RMS trend of Threshold: L4_09", "Active_Chip trend: L4_09"],
+            "varexp": ["Threshold_ML.mean[33]:ntreeentries", "Threshold_ML.stddev[33]:ntreeentries", "Threshold_ML.entries[33]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L4_10", "rms_of_Threshold_L4_10", "ActiveChips_of_L4_10"],
+            "title": ["Mean trend of Threshold: L4_10", "RMS trend of Threshold: L4_10", "Active_Chip trend: L4_10"],
+            "varexp": ["Threshold_ML.mean[34]:ntreeentries", "Threshold_ML.stddev[34]:ntreeentries", "Threshold_ML.entries[34]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L4_11", "rms_of_Threshold_L4_11", "ActiveChips_of_L4_11"],
+            "title": ["Mean trend of Threshold: L4_11", "RMS trend of Threshold: L4_11", "Active_Chip trend: L4_11"],
+            "varexp": ["Threshold_ML.mean[35]:ntreeentries", "Threshold_ML.stddev[35]:ntreeentries", "Threshold_ML.entries[35]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L4_12", "rms_of_Threshold_L4_12", "ActiveChips_of_L4_12"],
+            "title": ["Mean trend of Threshold: L4_12", "RMS trend of Threshold: L4_12", "Active_Chip trend: L4_12"],
+            "varexp": ["Threshold_ML.mean[36]:ntreeentries", "Threshold_ML.stddev[36]:ntreeentries", "Threshold_ML.entries[36]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L4_13", "rms_of_Threshold_L4_13", "ActiveChips_of_L4_13"],
+            "title": ["Mean trend of Threshold: L4_13", "RMS trend of Threshold: L4_13", "Active_Chip trend: L4_13"],
+            "varexp": ["Threshold_ML.mean[37]:ntreeentries", "Threshold_ML.stddev[37]:ntreeentries", "Threshold_ML.entries[37]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L4_14", "rms_of_Threshold_L4_14", "ActiveChips_of_L4_14"],
+            "title": ["Mean trend of Threshold: L4_14", "RMS trend of Threshold: L4_14", "Active_Chip trend: L4_14"],
+            "varexp": ["Threshold_ML.mean[38]:ntreeentries", "Threshold_ML.stddev[38]:ntreeentries", "Threshold_ML.entries[38]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L4_15", "rms_of_Threshold_L4_15", "ActiveChips_of_L4_15"],
+            "title": ["Mean trend of Threshold: L4_15", "RMS trend of Threshold: L4_15", "Active_Chip trend: L4_15"],
+            "varexp": ["Threshold_ML.mean[39]:ntreeentries", "Threshold_ML.stddev[39]:ntreeentries", "Threshold_ML.entries[39]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L4_16", "rms_of_Threshold_L4_16", "ActiveChips_of_L4_16"],
+            "title": ["Mean trend of Threshold: L4_16", "RMS trend of Threshold: L4_16", "Active_Chip trend: L4_16"],
+            "varexp": ["Threshold_ML.mean[40]:ntreeentries", "Threshold_ML.stddev[40]:ntreeentries", "Threshold_ML.entries[40]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L4_17", "rms_of_Threshold_L4_17", "ActiveChips_of_L4_17"],
+            "title": ["Mean trend of Threshold: L4_17", "RMS trend of Threshold: L4_17", "Active_Chip trend: L4_17"],
+            "varexp": ["Threshold_ML.mean[41]:ntreeentries", "Threshold_ML.stddev[41]:ntreeentries", "Threshold_ML.entries[41]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L4_18", "rms_of_Threshold_L4_18", "ActiveChips_of_L4_18"],
+            "title": ["Mean trend of Threshold: L4_18", "RMS trend of Threshold: L4_18", "Active_Chip trend: L4_18"],
+            "varexp": ["Threshold_ML.mean[42]:ntreeentries", "Threshold_ML.stddev[42]:ntreeentries", "Threshold_ML.entries[42]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L4_19", "rms_of_Threshold_L4_19", "ActiveChips_of_L4_19"],
+            "title": ["Mean trend of Threshold: L4_19", "RMS trend of Threshold: L4_19", "Active_Chip trend: L4_19"],
+            "varexp": ["Threshold_ML.mean[43]:ntreeentries", "Threshold_ML.stddev[43]:ntreeentries", "Threshold_ML.entries[43]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L4_20", "rms_of_Threshold_L4_20", "ActiveChips_of_L4_20"],
+            "title": ["Mean trend of Threshold: L4_20", "RMS trend of Threshold: L4_20", "Active_Chip trend: L4_20"],
+            "varexp": ["Threshold_ML.mean[44]:ntreeentries", "Threshold_ML.stddev[44]:ntreeentries", "Threshold_ML.entries[44]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L4_21", "rms_of_Threshold_L4_21", "ActiveChips_of_L4_21"],
+            "title": ["Mean trend of Threshold: L4_21", "RMS trend of Threshold: L4_21", "Active_Chip trend: L4_21"],
+            "varexp": ["Threshold_ML.mean[45]:ntreeentries", "Threshold_ML.stddev[45]:ntreeentries", "Threshold_ML.entries[45]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L4_22", "rms_of_Threshold_L4_22", "ActiveChips_of_L4_22"],
+            "title": ["Mean trend of Threshold: L4_22", "RMS trend of Threshold: L4_22", "Active_Chip trend: L4_22"],
+            "varexp": ["Threshold_ML.mean[46]:ntreeentries", "Threshold_ML.stddev[46]:ntreeentries", "Threshold_ML.entries[46]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L4_23", "rms_of_Threshold_L4_23", "ActiveChips_of_L4_23"],
+            "title": ["Mean trend of Threshold: L4_23", "RMS trend of Threshold: L4_23", "Active_Chip trend: L4_23"],
+            "varexp": ["Threshold_ML.mean[47]:ntreeentries", "Threshold_ML.stddev[47]:ntreeentries", "Threshold_ML.entries[47]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L4_24", "rms_of_Threshold_L4_24", "ActiveChips_of_L4_24"],
+            "title": ["Mean trend of Threshold: L4_24", "RMS trend of Threshold: L4_24", "Active_Chip trend: L4_24"],
+            "varexp": ["Threshold_ML.mean[48]:ntreeentries", "Threshold_ML.stddev[48]:ntreeentries", "Threshold_ML.entries[48]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L4_25", "rms_of_Threshold_L4_25", "ActiveChips_of_L4_25"],
+            "title": ["Mean trend of Threshold: L4_25", "RMS trend of Threshold: L4_25", "Active_Chip trend: L4_25"],
+            "varexp": ["Threshold_ML.mean[49]:ntreeentries", "Threshold_ML.stddev[49]:ntreeentries", "Threshold_ML.entries[49]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L4_26", "rms_of_Threshold_L4_26", "ActiveChips_of_L4_26"],
+            "title": ["Mean trend of Threshold: L4_26", "RMS trend of Threshold: L4_26", "Active_Chip trend: L4_26"],
+            "varexp": ["Threshold_ML.mean[50]:ntreeentries", "Threshold_ML.stddev[50]:ntreeentries", "Threshold_ML.entries[50]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L4_27", "rms_of_Threshold_L4_27", "ActiveChips_of_L4_27"],
+            "title": ["Mean trend of Threshold: L4_27", "RMS trend of Threshold: L4_27", "Active_Chip trend: L4_27"],
+            "varexp": ["Threshold_ML.mean[51]:ntreeentries", "Threshold_ML.stddev[51]:ntreeentries", "Threshold_ML.entries[51]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L4_28", "rms_of_Threshold_L4_28", "ActiveChips_of_L4_28"],
+            "title": ["Mean trend of Threshold: L4_28", "RMS trend of Threshold: L4_28", "Active_Chip trend: L4_28"],
+            "varexp": ["Threshold_ML.mean[52]:ntreeentries", "Threshold_ML.stddev[52]:ntreeentries", "Threshold_ML.entries[52]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L4_29", "rms_of_Threshold_L4_29", "ActiveChips_of_L4_29"],
+            "title": ["Mean trend of Threshold: L4_29", "RMS trend of Threshold: L4_29", "Active_Chip trend: L4_29"],
+            "varexp": ["Threshold_ML.mean[53]:ntreeentries", "Threshold_ML.stddev[53]:ntreeentries", "Threshold_ML.entries[53]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+
+
+
+
+
+          {
+            "names": ["mean_of_Threshold_L5_00", "rms_of_Threshold_L5_00", "ActiveChips_of_L5_00"],
+            "title": ["Mean trend of Threshold: L5_00", "RMS trend of Threshold: L5_00", "Active_Chip trend: L5_00"],
+            "varexp": ["Threshold_OL.mean[0]:ntreeentries", "Threshold_OL.stddev[0]:ntreeentries", "Threshold_OL.entries[0]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L5_01", "rms_of_Threshold_L5_01", "ActiveChips_of_L5_01"],
+            "title": ["Mean trend of Threshold: L5_01", "RMS trend of Threshold: L5_01", "Active_Chip trend: L5_01"],
+            "varexp": ["Threshold_OL.mean[1]:ntreeentries", "Threshold_OL.stddev[1]:ntreeentries", "Threshold_OL.entries[1]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L5_02", "rms_of_Threshold_L5_02", "ActiveChips_of_L5_02"],
+            "title": ["Mean trend of Threshold: L5_02", "RMS trend of Threshold: L5_02", "Active_Chip trend: L5_02"],
+            "varexp": ["Threshold_OL.mean[2]:ntreeentries", "Threshold_OL.stddev[2]:ntreeentries", "Threshold_OL.entries[2]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L5_03", "rms_of_Threshold_L5_03", "ActiveChips_of_L5_03"],
+            "title": ["Mean trend of Threshold: L5_03", "RMS trend of Threshold: L5_03", "Active_Chip trend: L5_03"],
+            "varexp": ["Threshold_OL.mean[3]:ntreeentries", "Threshold_OL.stddev[3]:ntreeentries", "Threshold_OL.entries[3]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L5_04", "rms_of_Threshold_L5_04", "ActiveChips_of_L5_04"],
+            "title": ["Mean trend of Threshold: L5_04", "RMS trend of Threshold: L5_04", "Active_Chip trend: L5_04"],
+            "varexp": ["Threshold_OL.mean[4]:ntreeentries", "Threshold_OL.stddev[4]:ntreeentries", "Threshold_OL.entries[4]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L5_05", "rms_of_Threshold_L5_05", "ActiveChips_of_L5_05"],
+            "title": ["Mean trend of Threshold: L5_05", "RMS trend of Threshold: L5_05", "Active_Chip trend: L5_05"],
+            "varexp": ["Threshold_OL.mean[5]:ntreeentries", "Threshold_OL.stddev[5]:ntreeentries", "Threshold_OL.entries[5]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L5_06", "rms_of_Threshold_L5_06", "ActiveChips_of_L5_06"],
+            "title": ["Mean trend of Threshold: L5_06", "RMS trend of Threshold: L5_06", "Active_Chip trend: L5_06"],
+            "varexp": ["Threshold_OL.mean[6]:ntreeentries", "Threshold_OL.stddev[6]:ntreeentries", "Threshold_OL.entries[6]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L5_07", "rms_of_Threshold_L5_07", "ActiveChips_of_L5_07"],
+            "title": ["Mean trend of Threshold: L5_07", "RMS trend of Threshold: L5_07", "Active_Chip trend: L5_07"],
+            "varexp": ["Threshold_OL.mean[7]:ntreeentries", "Threshold_OL.stddev[7]:ntreeentries", "Threshold_OL.entries[7]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L5_08", "rms_of_Threshold_L5_08", "ActiveChips_of_L5_08"],
+            "title": ["Mean trend of Threshold: L5_08", "RMS trend of Threshold: L5_08", "Active_Chip trend: L5_08"],
+            "varexp": ["Threshold_OL.mean[8]:ntreeentries", "Threshold_OL.stddev[8]:ntreeentries", "Threshold_OL.entries[8]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L5_09", "rms_of_Threshold_L5_09", "ActiveChips_of_L5_09"],
+            "title": ["Mean trend of Threshold: L5_09", "RMS trend of Threshold: L5_09", "Active_Chip trend: L5_09"],
+            "varexp": ["Threshold_OL.mean[9]:ntreeentries", "Threshold_OL.stddev[9]:ntreeentries", "Threshold_OL.entries[9]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L5_10", "rms_of_Threshold_L5_10", "ActiveChips_of_L5_10"],
+            "title": ["Mean trend of Threshold: L5_10", "RMS trend of Threshold: L5_10", "Active_Chip trend: L5_10"],
+            "varexp": ["Threshold_OL.mean[10]:ntreeentries", "Threshold_OL.stddev[10]:ntreeentries", "Threshold_OL.entries[10]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L5_11", "rms_of_Threshold_L5_11", "ActiveChips_of_L5_11"],
+            "title": ["Mean trend of Threshold: L5_11", "RMS trend of Threshold: L5_11", "Active_Chip trend: L5_11"],
+            "varexp": ["Threshold_OL.mean[11]:ntreeentries", "Threshold_OL.stddev[11]:ntreeentries", "Threshold_OL.entries[11]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L5_12", "rms_of_Threshold_L5_12", "ActiveChips_of_L5_12"],
+            "title": ["Mean trend of Threshold: L5_12", "RMS trend of Threshold: L5_12", "Active_Chip trend: L5_12"],
+            "varexp": ["Threshold_OL.mean[12]:ntreeentries", "Threshold_OL.stddev[12]:ntreeentries", "Threshold_OL.entries[12]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L5_13", "rms_of_Threshold_L5_13", "ActiveChips_of_L5_13"],
+            "title": ["Mean trend of Threshold: L5_13", "RMS trend of Threshold: L5_13", "Active_Chip trend: L5_13"],
+            "varexp": ["Threshold_OL.mean[13]:ntreeentries", "Threshold_OL.stddev[13]:ntreeentries", "Threshold_OL.entries[13]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L5_14", "rms_of_Threshold_L5_14", "ActiveChips_of_L5_14"],
+            "title": ["Mean trend of Threshold: L5_14", "RMS trend of Threshold: L5_14", "Active_Chip trend: L5_14"],
+            "varexp": ["Threshold_OL.mean[14]:ntreeentries", "Threshold_OL.stddev[14]:ntreeentries", "Threshold_OL.entries[14]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L5_15", "rms_of_Threshold_L5_15", "ActiveChips_of_L5_15"],
+            "title": ["Mean trend of Threshold: L5_15", "RMS trend of Threshold: L5_15", "Active_Chip trend: L5_15"],
+            "varexp": ["Threshold_OL.mean[15]:ntreeentries", "Threshold_OL.stddev[15]:ntreeentries", "Threshold_OL.entries[15]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L5_16", "rms_of_Threshold_L5_16", "ActiveChips_of_L5_16"],
+            "title": ["Mean trend of Threshold: L5_16", "RMS trend of Threshold: L5_16", "Active_Chip trend: L5_16"],
+            "varexp": ["Threshold_OL.mean[16]:ntreeentries", "Threshold_OL.stddev[16]:ntreeentries", "Threshold_OL.entries[16]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L5_17", "rms_of_Threshold_L5_17", "ActiveChips_of_L5_17"],
+            "title": ["Mean trend of Threshold: L5_17", "RMS trend of Threshold: L5_17", "Active_Chip trend: L5_17"],
+            "varexp": ["Threshold_OL.mean[17]:ntreeentries", "Threshold_OL.stddev[17]:ntreeentries", "Threshold_OL.entries[17]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L5_18", "rms_of_Threshold_L5_18", "ActiveChips_of_L5_18"],
+            "title": ["Mean trend of Threshold: L5_18", "RMS trend of Threshold: L5_18", "Active_Chip trend: L5_18"],
+            "varexp": ["Threshold_OL.mean[18]:ntreeentries", "Threshold_OL.stddev[18]:ntreeentries", "Threshold_OL.entries[18]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L5_19", "rms_of_Threshold_L5_19", "ActiveChips_of_L5_19"],
+            "title": ["Mean trend of Threshold: L5_19", "RMS trend of Threshold: L5_19", "Active_Chip trend: L5_19"],
+            "varexp": ["Threshold_OL.mean[19]:ntreeentries", "Threshold_OL.stddev[19]:ntreeentries", "Threshold_OL.entries[19]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L5_20", "rms_of_Threshold_L5_20", "ActiveChips_of_L5_20"],
+            "title": ["Mean trend of Threshold: L5_20", "RMS trend of Threshold: L5_20", "Active_Chip trend: L5_20"],
+            "varexp": ["Threshold_OL.mean[20]:ntreeentries", "Threshold_OL.stddev[20]:ntreeentries", "Threshold_OL.entries[20]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L5_21", "rms_of_Threshold_L5_21", "ActiveChips_of_L5_21"],
+            "title": ["Mean trend of Threshold: L5_21", "RMS trend of Threshold: L5_21", "Active_Chip trend: L5_21"],
+            "varexp": ["Threshold_OL.mean[21]:ntreeentries", "Threshold_OL.stddev[21]:ntreeentries", "Threshold_OL.entries[21]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L5_22", "rms_of_Threshold_L5_22", "ActiveChips_of_L5_22"],
+            "title": ["Mean trend of Threshold: L5_22", "RMS trend of Threshold: L5_22", "Active_Chip trend: L5_22"],
+            "varexp": ["Threshold_OL.mean[22]:ntreeentries", "Threshold_OL.stddev[22]:ntreeentries", "Threshold_OL.entries[22]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L5_23", "rms_of_Threshold_L5_23", "ActiveChips_of_L5_23"],
+            "title": ["Mean trend of Threshold: L5_23", "RMS trend of Threshold: L5_23", "Active_Chip trend: L5_23"],
+            "varexp": ["Threshold_OL.mean[23]:ntreeentries", "Threshold_OL.stddev[23]:ntreeentries", "Threshold_OL.entries[23]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L5_24", "rms_of_Threshold_L5_24", "ActiveChips_of_L5_24"],
+            "title": ["Mean trend of Threshold: L5_24", "RMS trend of Threshold: L5_24", "Active_Chip trend: L5_24"],
+            "varexp": ["Threshold_OL.mean[24]:ntreeentries", "Threshold_OL.stddev[24]:ntreeentries", "Threshold_OL.entries[24]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L5_25", "rms_of_Threshold_L5_25", "ActiveChips_of_L5_25"],
+            "title": ["Mean trend of Threshold: L5_25", "RMS trend of Threshold: L5_25", "Active_Chip trend: L5_25"],
+            "varexp": ["Threshold_OL.mean[25]:ntreeentries", "Threshold_OL.stddev[25]:ntreeentries", "Threshold_OL.entries[25]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L5_26", "rms_of_Threshold_L5_26", "ActiveChips_of_L5_26"],
+            "title": ["Mean trend of Threshold: L5_26", "RMS trend of Threshold: L5_26", "Active_Chip trend: L5_26"],
+            "varexp": ["Threshold_OL.mean[26]:ntreeentries", "Threshold_OL.stddev[26]:ntreeentries", "Threshold_OL.entries[26]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L5_27", "rms_of_Threshold_L5_27", "ActiveChips_of_L5_27"],
+            "title": ["Mean trend of Threshold: L5_27", "RMS trend of Threshold: L5_27", "Active_Chip trend: L5_27"],
+            "varexp": ["Threshold_OL.mean[27]:ntreeentries", "Threshold_OL.stddev[27]:ntreeentries", "Threshold_OL.entries[27]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L5_28", "rms_of_Threshold_L5_28", "ActiveChips_of_L5_28"],
+            "title": ["Mean trend of Threshold: L5_28", "RMS trend of Threshold: L5_28", "Active_Chip trend: L5_28"],
+            "varexp": ["Threshold_OL.mean[28]:ntreeentries", "Threshold_OL.stddev[28]:ntreeentries", "Threshold_OL.entries[28]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L5_29", "rms_of_Threshold_L5_29", "ActiveChips_of_L5_29"],
+            "title": ["Mean trend of Threshold: L5_29", "RMS trend of Threshold: L5_29", "Active_Chip trend: L5_29"],
+            "varexp": ["Threshold_OL.mean[29]:ntreeentries", "Threshold_OL.stddev[29]:ntreeentries", "Threshold_OL.entries[29]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L5_30", "rms_of_Threshold_L5_30", "ActiveChips_of_L5_30"],
+            "title": ["Mean trend of Threshold: L5_30", "RMS trend of Threshold: L5_30", "Active_Chip trend: L5_30"],
+            "varexp": ["Threshold_OL.mean[30]:ntreeentries", "Threshold_OL.stddev[30]:ntreeentries", "Threshold_OL.entries[30]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L5_31", "rms_of_Threshold_L5_31", "ActiveChips_of_L5_31"],
+            "title": ["Mean trend of Threshold: L5_31", "RMS trend of Threshold: L5_31", "Active_Chip trend: L5_31"],
+            "varexp": ["Threshold_OL.mean[31]:ntreeentries", "Threshold_OL.stddev[31]:ntreeentries", "Threshold_OL.entries[31]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L5_32", "rms_of_Threshold_L5_32", "ActiveChips_of_L5_32"],
+            "title": ["Mean trend of Threshold: L5_32", "RMS trend of Threshold: L5_32", "Active_Chip trend: L5_32"],
+            "varexp": ["Threshold_OL.mean[32]:ntreeentries", "Threshold_OL.stddev[32]:ntreeentries", "Threshold_OL.entries[32]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L5_33", "rms_of_Threshold_L5_33", "ActiveChips_of_L5_33"],
+            "title": ["Mean trend of Threshold: L5_33", "RMS trend of Threshold: L5_33", "Active_Chip trend: L5_33"],
+            "varexp": ["Threshold_OL.mean[33]:ntreeentries", "Threshold_OL.stddev[33]:ntreeentries", "Threshold_OL.entries[33]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L5_34", "rms_of_Threshold_L5_34", "ActiveChips_of_L5_34"],
+            "title": ["Mean trend of Threshold: L5_34", "RMS trend of Threshold: L5_34", "Active_Chip trend: L5_34"],
+            "varexp": ["Threshold_OL.mean[34]:ntreeentries", "Threshold_OL.stddev[34]:ntreeentries", "Threshold_OL.entries[34]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L5_35", "rms_of_Threshold_L5_35", "ActiveChips_of_L5_35"],
+            "title": ["Mean trend of Threshold: L5_35", "RMS trend of Threshold: L5_35", "Active_Chip trend: L5_35"],
+            "varexp": ["Threshold_OL.mean[35]:ntreeentries", "Threshold_OL.stddev[35]:ntreeentries", "Threshold_OL.entries[35]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L5_36", "rms_of_Threshold_L5_36", "ActiveChips_of_L5_36"],
+            "title": ["Mean trend of Threshold: L5_36", "RMS trend of Threshold: L5_36", "Active_Chip trend: L5_36"],
+            "varexp": ["Threshold_OL.mean[36]:ntreeentries", "Threshold_OL.stddev[36]:ntreeentries", "Threshold_OL.entries[36]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L5_37", "rms_of_Threshold_L5_37", "ActiveChips_of_L5_37"],
+            "title": ["Mean trend of Threshold: L5_37", "RMS trend of Threshold: L5_37", "Active_Chip trend: L5_37"],
+            "varexp": ["Threshold_OL.mean[37]:ntreeentries", "Threshold_OL.stddev[37]:ntreeentries", "Threshold_OL.entries[37]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L5_38", "rms_of_Threshold_L5_38", "ActiveChips_of_L5_38"],
+            "title": ["Mean trend of Threshold: L5_38", "RMS trend of Threshold: L5_38", "Active_Chip trend: L5_38"],
+            "varexp": ["Threshold_OL.mean[38]:ntreeentries", "Threshold_OL.stddev[38]:ntreeentries", "Threshold_OL.entries[38]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L5_39", "rms_of_Threshold_L5_39", "ActiveChips_of_L5_39"],
+            "title": ["Mean trend of Threshold: L5_39", "RMS trend of Threshold: L5_39", "Active_Chip trend: L5_39"],
+            "varexp": ["Threshold_OL.mean[39]:ntreeentries", "Threshold_OL.stddev[39]:ntreeentries", "Threshold_OL.entries[39]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L5_40", "rms_of_Threshold_L5_40", "ActiveChips_of_L5_40"],
+            "title": ["Mean trend of Threshold: L5_40", "RMS trend of Threshold: L5_40", "Active_Chip trend: L5_40"],
+            "varexp": ["Threshold_OL.mean[40]:ntreeentries", "Threshold_OL.stddev[40]:ntreeentries", "Threshold_OL.entries[40]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L5_41", "rms_of_Threshold_L5_41", "ActiveChips_of_L5_41"],
+            "title": ["Mean trend of Threshold: L5_41", "RMS trend of Threshold: L5_41", "Active_Chip trend: L5_41"],
+            "varexp": ["Threshold_OL.mean[41]:ntreeentries", "Threshold_OL.stddev[41]:ntreeentries", "Threshold_OL.entries[41]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+
+
+
+
+
+
+          {
+            "names": ["mean_of_Threshold_L6_00", "rms_of_Threshold_L6_00", "ActiveChips_of_L6_00"],
+            "title": ["Mean trend of Threshold: L6_00", "RMS trend of Threshold: L6_00", "Active_Chip trend: L6_00"],
+            "varexp": ["Threshold_OL.mean[42]:ntreeentries", "Threshold_OL.stddev[42]:ntreeentries", "Threshold_OL.entries[42]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_01", "rms_of_Threshold_L6_01", "ActiveChips_of_L6_01"],
+            "title": ["Mean trend of Threshold: L6_01", "RMS trend of Threshold: L6_01", "Active_Chip trend: L6_01"],
+            "varexp": ["Threshold_OL.mean[43]:ntreeentries", "Threshold_OL.stddev[43]:ntreeentries", "Threshold_OL.entries[43]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_02", "rms_of_Threshold_L6_02", "ActiveChips_of_L6_02"],
+            "title": ["Mean trend of Threshold: L6_02", "RMS trend of Threshold: L6_02", "Active_Chip trend: L6_02"],
+            "varexp": ["Threshold_OL.mean[44]:ntreeentries", "Threshold_OL.stddev[44]:ntreeentries", "Threshold_OL.entries[44]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_03", "rms_of_Threshold_L6_03", "ActiveChips_of_L6_03"],
+            "title": ["Mean trend of Threshold: L6_03", "RMS trend of Threshold: L6_03", "Active_Chip trend: L6_03"],
+            "varexp": ["Threshold_OL.mean[45]:ntreeentries", "Threshold_OL.stddev[45]:ntreeentries", "Threshold_OL.entries[45]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_04", "rms_of_Threshold_L6_04", "ActiveChips_of_L6_04"],
+            "title": ["Mean trend of Threshold: L6_04", "RMS trend of Threshold: L6_04", "Active_Chip trend: L6_04"],
+            "varexp": ["Threshold_OL.mean[46]:ntreeentries", "Threshold_OL.stddev[46]:ntreeentries", "Threshold_OL.entries[46]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_05", "rms_of_Threshold_L6_05", "ActiveChips_of_L6_05"],
+            "title": ["Mean trend of Threshold: L6_05", "RMS trend of Threshold: L6_05", "Active_Chip trend: L6_05"],
+            "varexp": ["Threshold_OL.mean[47]:ntreeentries", "Threshold_OL.stddev[47]:ntreeentries", "Threshold_OL.entries[47]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_06", "rms_of_Threshold_L6_06", "ActiveChips_of_L6_06"],
+            "title": ["Mean trend of Threshold: L6_06", "RMS trend of Threshold: L6_06", "Active_Chip trend: L6_06"],
+            "varexp": ["Threshold_OL.mean[48]:ntreeentries", "Threshold_OL.stddev[48]:ntreeentries", "Threshold_OL.entries[48]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_07", "rms_of_Threshold_L6_07", "ActiveChips_of_L6_07"],
+            "title": ["Mean trend of Threshold: L6_07", "RMS trend of Threshold: L6_07", "Active_Chip trend: L6_07"],
+            "varexp": ["Threshold_OL.mean[49]:ntreeentries", "Threshold_OL.stddev[49]:ntreeentries", "Threshold_OL.entries[49]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_08", "rms_of_Threshold_L6_08", "ActiveChips_of_L6_08"],
+            "title": ["Mean trend of Threshold: L6_08", "RMS trend of Threshold: L6_08", "Active_Chip trend: L6_08"],
+            "varexp": ["Threshold_OL.mean[50]:ntreeentries", "Threshold_OL.stddev[50]:ntreeentries", "Threshold_OL.entries[50]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_09", "rms_of_Threshold_L6_09", "ActiveChips_of_L6_09"],
+            "title": ["Mean trend of Threshold: L6_09", "RMS trend of Threshold: L6_09", "Active_Chip trend: L6_09"],
+            "varexp": ["Threshold_OL.mean[51]:ntreeentries", "Threshold_OL.stddev[51]:ntreeentries", "Threshold_OL.entries[51]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_10", "rms_of_Threshold_L6_10", "ActiveChips_of_L6_10"],
+            "title": ["Mean trend of Threshold: L6_10", "RMS trend of Threshold: L6_10", "Active_Chip trend: L6_10"],
+            "varexp": ["Threshold_OL.mean[52]:ntreeentries", "Threshold_OL.stddev[52]:ntreeentries", "Threshold_OL.entries[52]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_11", "rms_of_Threshold_L6_11", "ActiveChips_of_L6_11"],
+            "title": ["Mean trend of Threshold: L6_11", "RMS trend of Threshold: L6_11", "Active_Chip trend: L6_11"],
+            "varexp": ["Threshold_OL.mean[53]:ntreeentries", "Threshold_OL.stddev[53]:ntreeentries", "Threshold_OL.entries[53]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_12", "rms_of_Threshold_L6_12", "ActiveChips_of_L6_12"],
+            "title": ["Mean trend of Threshold: L6_12", "RMS trend of Threshold: L6_12", "Active_Chip trend: L6_12"],
+            "varexp": ["Threshold_OL.mean[54]:ntreeentries", "Threshold_OL.stddev[54]:ntreeentries", "Threshold_OL.entries[54]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_13", "rms_of_Threshold_L6_13", "ActiveChips_of_L6_13"],
+            "title": ["Mean trend of Threshold: L6_13", "RMS trend of Threshold: L6_13", "Active_Chip trend: L6_13"],
+            "varexp": ["Threshold_OL.mean[55]:ntreeentries", "Threshold_OL.stddev[55]:ntreeentries", "Threshold_OL.entries[55]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_14", "rms_of_Threshold_L6_14", "ActiveChips_of_L6_14"],
+            "title": ["Mean trend of Threshold: L6_14", "RMS trend of Threshold: L6_14", "Active_Chip trend: L6_14"],
+            "varexp": ["Threshold_OL.mean[56]:ntreeentries", "Threshold_OL.stddev[56]:ntreeentries", "Threshold_OL.entries[56]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_15", "rms_of_Threshold_L6_15", "ActiveChips_of_L6_15"],
+            "title": ["Mean trend of Threshold: L6_15", "RMS trend of Threshold: L6_15", "Active_Chip trend: L6_15"],
+            "varexp": ["Threshold_OL.mean[57]:ntreeentries", "Threshold_OL.stddev[57]:ntreeentries", "Threshold_OL.entries[57]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_16", "rms_of_Threshold_L6_16", "ActiveChips_of_L6_16"],
+            "title": ["Mean trend of Threshold: L6_16", "RMS trend of Threshold: L6_16", "Active_Chip trend: L6_16"],
+            "varexp": ["Threshold_OL.mean[58]:ntreeentries", "Threshold_OL.stddev[58]:ntreeentries", "Threshold_OL.entries[58]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_17", "rms_of_Threshold_L6_17", "ActiveChips_of_L6_17"],
+            "title": ["Mean trend of Threshold: L6_17", "RMS trend of Threshold: L6_17", "Active_Chip trend: L6_17"],
+            "varexp": ["Threshold_OL.mean[59]:ntreeentries", "Threshold_OL.stddev[59]:ntreeentries", "Threshold_OL.entries[59]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_18", "rms_of_Threshold_L6_18", "ActiveChips_of_L6_18"],
+            "title": ["Mean trend of Threshold: L6_18", "RMS trend of Threshold: L6_18", "Active_Chip trend: L6_18"],
+            "varexp": ["Threshold_OL.mean[60]:ntreeentries", "Threshold_OL.stddev[60]:ntreeentries", "Threshold_OL.entries[60]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_19", "rms_of_Threshold_L6_19", "ActiveChips_of_L6_19"],
+            "title": ["Mean trend of Threshold: L6_19", "RMS trend of Threshold: L6_19", "Active_Chip trend: L6_19"],
+            "varexp": ["Threshold_OL.mean[61]:ntreeentries", "Threshold_OL.stddev[61]:ntreeentries", "Threshold_OL.entries[61]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_20", "rms_of_Threshold_L6_20", "ActiveChips_of_L6_20"],
+            "title": ["Mean trend of Threshold: L6_20", "RMS trend of Threshold: L6_20", "Active_Chip trend: L6_20"],
+            "varexp": ["Threshold_OL.mean[62]:ntreeentries", "Threshold_OL.stddev[62]:ntreeentries", "Threshold_OL.entries[62]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_21", "rms_of_Threshold_L6_21", "ActiveChips_of_L6_21"],
+            "title": ["Mean trend of Threshold: L6_21", "RMS trend of Threshold: L6_21", "Active_Chip trend: L6_21"],
+            "varexp": ["Threshold_OL.mean[63]:ntreeentries", "Threshold_OL.stddev[63]:ntreeentries", "Threshold_OL.entries[63]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_22", "rms_of_Threshold_L6_22", "ActiveChips_of_L6_22"],
+            "title": ["Mean trend of Threshold: L6_22", "RMS trend of Threshold: L6_22", "Active_Chip trend: L6_22"],
+            "varexp": ["Threshold_OL.mean[64]:ntreeentries", "Threshold_OL.stddev[64]:ntreeentries", "Threshold_OL.entries[64]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_23", "rms_of_Threshold_L6_23", "ActiveChips_of_L6_23"],
+            "title": ["Mean trend of Threshold: L6_23", "RMS trend of Threshold: L6_23", "Active_Chip trend: L6_23"],
+            "varexp": ["Threshold_OL.mean[65]:ntreeentries", "Threshold_OL.stddev[65]:ntreeentries", "Threshold_OL.entries[65]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_24", "rms_of_Threshold_L6_24", "ActiveChips_of_L6_24"],
+            "title": ["Mean trend of Threshold: L6_24", "RMS trend of Threshold: L6_24", "Active_Chip trend: L6_24"],
+            "varexp": ["Threshold_OL.mean[66]:ntreeentries", "Threshold_OL.stddev[66]:ntreeentries", "Threshold_OL.entries[66]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_25", "rms_of_Threshold_L6_25", "ActiveChips_of_L6_25"],
+            "title": ["Mean trend of Threshold: L6_25", "RMS trend of Threshold: L6_25", "Active_Chip trend: L6_25"],
+            "varexp": ["Threshold_OL.mean[67]:ntreeentries", "Threshold_OL.stddev[67]:ntreeentries", "Threshold_OL.entries[67]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_26", "rms_of_Threshold_L6_26", "ActiveChips_of_L6_26"],
+            "title": ["Mean trend of Threshold: L6_26", "RMS trend of Threshold: L6_26", "Active_Chip trend: L6_26"],
+            "varexp": ["Threshold_OL.mean[68]:ntreeentries", "Threshold_OL.stddev[68]:ntreeentries", "Threshold_OL.entries[68]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_27", "rms_of_Threshold_L6_27", "ActiveChips_of_L6_27"],
+            "title": ["Mean trend of Threshold: L6_27", "RMS trend of Threshold: L6_27", "Active_Chip trend: L6_27"],
+            "varexp": ["Threshold_OL.mean[69]:ntreeentries", "Threshold_OL.stddev[69]:ntreeentries", "Threshold_OL.entries[69]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_28", "rms_of_Threshold_L6_28", "ActiveChips_of_L6_28"],
+            "title": ["Mean trend of Threshold: L6_28", "RMS trend of Threshold: L6_28", "Active_Chip trend: L6_28"],
+            "varexp": ["Threshold_OL.mean[70]:ntreeentries", "Threshold_OL.stddev[70]:ntreeentries", "Threshold_OL.entries[70]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_29", "rms_of_Threshold_L6_29", "ActiveChips_of_L6_29"],
+            "title": ["Mean trend of Threshold: L6_29", "RMS trend of Threshold: L6_29", "Active_Chip trend: L6_29"],
+            "varexp": ["Threshold_OL.mean[71]:ntreeentries", "Threshold_OL.stddev[71]:ntreeentries", "Threshold_OL.entries[71]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_30", "rms_of_Threshold_L6_30", "ActiveChips_of_L6_30"],
+            "title": ["Mean trend of Threshold: L6_30", "RMS trend of Threshold: L6_30", "Active_Chip trend: L6_30"],
+            "varexp": ["Threshold_OL.mean[72]:ntreeentries", "Threshold_OL.stddev[72]:ntreeentries", "Threshold_OL.entries[72]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_31", "rms_of_Threshold_L6_31", "ActiveChips_of_L6_31"],
+            "title": ["Mean trend of Threshold: L6_31", "RMS trend of Threshold: L6_31", "Active_Chip trend: L6_31"],
+            "varexp": ["Threshold_OL.mean[73]:ntreeentries", "Threshold_OL.stddev[73]:ntreeentries", "Threshold_OL.entries[73]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_32", "rms_of_Threshold_L6_32", "ActiveChips_of_L6_32"],
+            "title": ["Mean trend of Threshold: L6_32", "RMS trend of Threshold: L6_32", "Active_Chip trend: L6_32"],
+            "varexp": ["Threshold_OL.mean[74]:ntreeentries", "Threshold_OL.stddev[74]:ntreeentries", "Threshold_OL.entries[74]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_33", "rms_of_Threshold_L6_33", "ActiveChips_of_L6_33"],
+            "title": ["Mean trend of Threshold: L6_33", "RMS trend of Threshold: L6_33", "Active_Chip trend: L6_33"],
+            "varexp": ["Threshold_OL.mean[75]:ntreeentries", "Threshold_OL.stddev[75]:ntreeentries", "Threshold_OL.entries[75]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_34", "rms_of_Threshold_L6_34", "ActiveChips_of_L6_34"],
+            "title": ["Mean trend of Threshold: L6_34", "RMS trend of Threshold: L6_34", "Active_Chip trend: L6_34"],
+            "varexp": ["Threshold_OL.mean[76]:ntreeentries", "Threshold_OL.stddev[76]:ntreeentries", "Threshold_OL.entries[76]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_35", "rms_of_Threshold_L6_35", "ActiveChips_of_L6_35"],
+            "title": ["Mean trend of Threshold: L6_35", "RMS trend of Threshold: L6_35", "Active_Chip trend: L6_35"],
+            "varexp": ["Threshold_OL.mean[77]:ntreeentries", "Threshold_OL.stddev[77]:ntreeentries", "Threshold_OL.entries[77]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_36", "rms_of_Threshold_L6_36", "ActiveChips_of_L6_36"],
+            "title": ["Mean trend of Threshold: L6_36", "RMS trend of Threshold: L6_36", "Active_Chip trend: L6_36"],
+            "varexp": ["Threshold_OL.mean[78]:ntreeentries", "Threshold_OL.stddev[78]:ntreeentries", "Threshold_OL.entries[78]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_37", "rms_of_Threshold_L6_37", "ActiveChips_of_L6_37"],
+            "title": ["Mean trend of Threshold: L6_37", "RMS trend of Threshold: L6_37", "Active_Chip trend: L6_37"],
+            "varexp": ["Threshold_OL.mean[79]:ntreeentries", "Threshold_OL.stddev[79]:ntreeentries", "Threshold_OL.entries[79]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_38", "rms_of_Threshold_L6_38", "ActiveChips_of_L6_38"],
+            "title": ["Mean trend of Threshold: L6_38", "RMS trend of Threshold: L6_38", "Active_Chip trend: L6_38"],
+            "varexp": ["Threshold_OL.mean[80]:ntreeentries", "Threshold_OL.stddev[80]:ntreeentries", "Threshold_OL.entries[80]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_39", "rms_of_Threshold_L6_39", "ActiveChips_of_L6_39"],
+            "title": ["Mean trend of Threshold: L6_39", "RMS trend of Threshold: L6_39", "Active_Chip trend: L6_39"],
+            "varexp": ["Threshold_OL.mean[81]:ntreeentries", "Threshold_OL.stddev[81]:ntreeentries", "Threshold_OL.entries[81]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_40", "rms_of_Threshold_L6_40", "ActiveChips_of_L6_40"],
+            "title": ["Mean trend of Threshold: L6_40", "RMS trend of Threshold: L6_40", "Active_Chip trend: L6_40"],
+            "varexp": ["Threshold_OL.mean[82]:ntreeentries", "Threshold_OL.stddev[82]:ntreeentries", "Threshold_OL.entries[82]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_41", "rms_of_Threshold_L6_41", "ActiveChips_of_L6_41"],
+            "title": ["Mean trend of Threshold: L6_41", "RMS trend of Threshold: L6_41", "Active_Chip trend: L6_41"],
+            "varexp": ["Threshold_OL.mean[83]:ntreeentries", "Threshold_OL.stddev[83]:ntreeentries", "Threshold_OL.entries[83]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_42", "rms_of_Threshold_L6_42", "ActiveChips_of_L6_42"],
+            "title": ["Mean trend of Threshold: L6_42", "RMS trend of Threshold: L6_42", "Active_Chip trend: L6_42"],
+            "varexp": ["Threshold_OL.mean[84]:ntreeentries", "Threshold_OL.stddev[84]:ntreeentries", "Threshold_OL.entries[84]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_43", "rms_of_Threshold_L6_43", "ActiveChips_of_L6_43"],
+            "title": ["Mean trend of Threshold: L6_43", "RMS trend of Threshold: L6_43", "Active_Chip trend: L6_43"],
+            "varexp": ["Threshold_OL.mean[85]:ntreeentries", "Threshold_OL.stddev[85]:ntreeentries", "Threshold_OL.entries[85]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_44", "rms_of_Threshold_L6_44", "ActiveChips_of_L6_44"],
+            "title": ["Mean trend of Threshold: L6_44", "RMS trend of Threshold: L6_44", "Active_Chip trend: L6_44"],
+            "varexp": ["Threshold_OL.mean[86]:ntreeentries", "Threshold_OL.stddev[86]:ntreeentries", "Threshold_OL.entries[86]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_45", "rms_of_Threshold_L6_45", "ActiveChips_of_L6_45"],
+            "title": ["Mean trend of Threshold: L6_45", "RMS trend of Threshold: L6_45", "Active_Chip trend: L6_45"],
+            "varexp": ["Threshold_OL.mean[87]:ntreeentries", "Threshold_OL.stddev[87]:ntreeentries", "Threshold_OL.entries[87]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_46", "rms_of_Threshold_L6_46", "ActiveChips_of_L6_46"],
+            "title": ["Mean trend of Threshold: L6_46", "RMS trend of Threshold: L6_46", "Active_Chip trend: L6_46"],
+            "varexp": ["Threshold_OL.mean[88]:ntreeentries", "Threshold_OL.stddev[88]:ntreeentries", "Threshold_OL.entries[88]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L6_47", "rms_of_Threshold_L6_47", "ActiveChips_of_L6_47"],
+            "title": ["Mean trend of Threshold: L6_47", "RMS trend of Threshold: L6_47", "Active_Chip trend: L6_47"],
+            "varexp": ["Threshold_OL.mean[89]:ntreeentries", "Threshold_OL.stddev[89]:ntreeentries", "Threshold_OL.entries[89]:ntreeentries"],
             "selection": "",
             "option": "PL"
           }
         ],
         "initTrigger": [
-          "userorcontrol"
-        ],
-        "updateTrigger": [
-          "10 seconds"
-        ],
-        "stopTrigger": [
-          "userorcontrol"
+                  "userorcontrol"
+                ],
+                "updateTrigger": [
+                  "foreachlatest:qcdb:ITS/MO/ITSThresholdCalibrationTask/THRChipAverageOL"
+                ],
+                "stopTrigger": [
+                  "userorcontrol", "10 minutes"
         ]
       }
     }

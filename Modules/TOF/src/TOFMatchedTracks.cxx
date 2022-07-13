@@ -35,6 +35,8 @@
 #include "DetectorsBase/Propagator.h"
 #include "DetectorsBase/GeometryManager.h"
 
+#include "TOF/Utils.h"
+
 using GTrackID = o2::dataformats::GlobalTrackID;
 
 namespace o2::quality_control_modules::tof
@@ -70,8 +72,8 @@ void TOFMatchedTracks::initialize(o2::framework::InitContext& /*ctx*/)
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
 
-  parseBooleanParameter("isMC", mUseMC);
-  parseBooleanParameter("verbose", mVerbose);
+  utils::parseBooleanParameter(mCustomParameters, "isMC", mUseMC);
+  utils::parseBooleanParameter(mCustomParameters, "verbose", mVerbose);
 
   // for track selection
   if (auto param = mCustomParameters.find("minPtCut"); param != mCustomParameters.end()) {

@@ -66,7 +66,6 @@ class RawData final : public TaskInterface
   std::array<TH2F*, 10> mLinkErrors;
   std::array<TH2F*, o2::trd::ParsingErrors::TRDLastParsingError> mParsingErrors2d;
 
-  std::array<TH1F*, 540> fClusterChamberAmplitude;
 };
 
 } // namespace o2::quality_control_modules::trd

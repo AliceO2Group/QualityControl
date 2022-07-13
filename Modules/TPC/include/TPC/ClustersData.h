@@ -10,7 +10,7 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   Clusters.h
+/// \file   ClustersData.h
 /// \author Jens Wiechula
 /// \author Thomas Klemenz
 ///
@@ -27,7 +27,6 @@
 #include "TPCQC/Clusters.h"
 
 using o2::mergers::MergeInterface;
-using o2::tpc::qc::Clusters;
 
 namespace o2::quality_control_modules::tpc
 {
@@ -49,14 +48,14 @@ class ClustersData final : public TObject, public MergeInterface
 
   virtual void merge(MergeInterface* other) final;
 
-  Clusters& getClusters() { return mClusters; }
+  o2::tpc::qc::Clusters& getClusters() { return mClusters; }
 
   void setName(std::string_view name) { mName = name.data(); }
 
   virtual const char* GetName() const override { return mName.data(); }
 
  private:
-  Clusters mClusters;
+  o2::tpc::qc::Clusters mClusters;
   std::string mName;
 
   ClassDefOverride(ClustersData, 1);

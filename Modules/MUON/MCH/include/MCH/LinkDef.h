@@ -14,11 +14,12 @@
 #pragma link C++ class o2::quality_control_modules::muonchambers::PhysicsOccupancyCheck + ;
 #pragma link C++ class o2::quality_control_modules::muonchambers::PhysicsPreclustersCheck + ;
 #pragma link C++ class o2::quality_control_modules::muonchambers::TH1MCHReductor + ;
-#pragma link C++ class o2::quality_control_modules::muonchambers::MergeableTH1OccupancyPerDE + ;
-#pragma link C++ class o2::quality_control_modules::muonchambers::MergeableTH1OccupancyPerDECycle + ;
 #pragma link C++ class o2::quality_control_modules::muonchambers::MergeableTH1PseudoEfficiencyPerDE + ;
 #pragma link C++ class o2::quality_control_modules::muonchambers::MergeableTH1PseudoEfficiencyPerDECycle + ;
 #pragma link C++ class o2::quality_control_modules::muonchambers::MergeableTH1MPVPerDECycle + ;
 #pragma link C++ class o2::quality_control_modules::muonchambers::TracksTask + ;
+// Trending
+#pragma link C++ class o2::quality_control_modules::muonchambers::TrendingFECHistRatio + ;
+#pragma link C++ class o2::quality_control_modules::muonchambers::TrendingTracks + ;
 
 #endif

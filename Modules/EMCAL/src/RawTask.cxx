@@ -44,9 +44,9 @@ namespace o2::quality_control_modules::emcal
 
 RawTask::~RawTask()
 {
-  if (mPayloadSize) {
-    delete mPayloadSize;
-  }
+  // if (mPayloadSize) {
+  //  delete mPayloadSize;
+  // }
   if (mPayloadSizePerDDL) {
     delete mPayloadSizePerDDL;
   }
@@ -62,12 +62,12 @@ RawTask::~RawTask()
   if (mMessageCounter) {
     delete mMessageCounter;
   }
-  if (mPageCounter) {
-    delete mPageCounter;
-  }
-  if (mSuperpageCounter) {
-    delete mSuperpageCounter;
-  }
+  //if (mPageCounter) {
+  //  delete mPageCounter;
+  // }
+  //if (mSuperpageCounter) {
+  //  delete mSuperpageCounter;
+  //}
   if (mNumberOfPagesPerMessage) {
     delete mNumberOfPagesPerMessage;
   }
@@ -151,28 +151,28 @@ RawTask::~RawTask()
       delete h;
     }
   }
-  for (auto& histos : mRMSBunchADCRCSM) {
-    for (auto h : histos.second) {
-      delete h;
-    }
-  }
+  //for (auto& histos : mRMSBunchADCRCSM) {
+  //  for (auto h : histos.second) {
+  //    delete h;
+  //  }
+  //}
 
-  for (auto& histos : mMeanBunchADCRCSM) {
-    for (auto h : histos.second) {
-      delete h;
-    }
-  }
+  //for (auto& histos : mMeanBunchADCRCSM) {
+  //  for (auto h : histos.second) {
+  //    delete h;
+  //  }
+  //}
 
-  for (auto& histos : mMaxChannelADCRCSM) {
-    for (auto h : histos.second) {
-      delete h;
-    }
-  }
-  for (auto& histos : mMinChannelADCRCSM) {
-    for (auto h : histos.second) {
-      delete h;
-    }
-  }
+  //for (auto& histos : mMaxChannelADCRCSM) {
+  //  for (auto h : histos.second) {
+  //    delete h;
+  ////  }
+  //}
+  //for (auto& histos : mMinChannelADCRCSM) {
+  //  for (auto h : histos.second) {
+  //    delete h;
+  //  }
+  //}
 }
 void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
@@ -191,26 +191,19 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
   mMappings = std::unique_ptr<o2::emcal::MappingHandler>(new o2::emcal::MappingHandler); //initialize the unique pointer to Mapper
 
   // Statistics histograms
-  mMessageCounter = new TH1F("NumberOfMessages", "Number of messages in time interval", 1, 0.5, 1.5);
-  mMessageCounter->GetXaxis()->SetTitle("MonitorData");
-  mMessageCounter->GetYaxis()->SetTitle("Number of messages");
+  mMessageCounter = new TH1F("NumberOfMessages", "Number of messages", 3, 0.5, 3.5);
+  //  mMessageCounter->GetXaxis()->SetTitle("MonitorData");
+  mMessageCounter->GetXaxis()->SetBinLabel(1, "Number of message/time");
+  mMessageCounter->GetXaxis()->SetBinLabel(2, "Number of super pages/time");
+  mMessageCounter->GetXaxis()->SetBinLabel(3, "Number of pages/time");
+  mMessageCounter->GetYaxis()->SetTitle("Number of objects");
   getObjectsManager()->startPublishing(mMessageCounter);
-
-  mSuperpageCounter = new TH1F("NumberOfSuperpages", "Number of superpages in time interval", 1, 0.5, 1.5);
-  mSuperpageCounter->GetXaxis()->SetTitle("MonitorData");
-  mSuperpageCounter->GetYaxis()->SetTitle("Number of superpages");
-  getObjectsManager()->startPublishing(mSuperpageCounter);
 
   mTFerrorCounter = new TH1F("NumberOfTFerror", "Number of TFbuilder errors", 2, 0.5, 2.5);
   mTFerrorCounter->GetYaxis()->SetTitle("Time Frame Builder Error");
   mTFerrorCounter->GetXaxis()->SetBinLabel(1, "empty");
   mTFerrorCounter->GetXaxis()->SetBinLabel(2, "filled");
   getObjectsManager()->startPublishing(mTFerrorCounter);
-
-  mPageCounter = new TH1F("NumberOfPages", "Number of pages in time interval", 1, 0.5, 1.5);
-  mPageCounter->GetXaxis()->SetTitle("MonitorData");
-  mPageCounter->GetYaxis()->SetTitle("Number of pages");
-  getObjectsManager()->startPublishing(mPageCounter);
 
   mNumberOfSuperpagesPerMessage = new TH1F("NumberOfSuperpagesPerMessage", "Number of superpages per message", 40., 0., 40.);
   mNumberOfSuperpagesPerMessage->GetXaxis()->SetTitle("Number of superpages");
@@ -252,13 +245,13 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
   mPayloadSizeTFPerDDL_1D->SetStats(0);
   getObjectsManager()->startPublishing(mPayloadSizeTFPerDDL_1D);
 
-  mPayloadSize = new TH1F("PayloadSize", "PayloadSize", 20, 0, 60000000); //
-  mPayloadSize->GetXaxis()->SetTitle("bytes");
-  mPayloadSize->GetYaxis()->SetTitle("Counts");
-  mPayloadSize->SetStats(0);
-  getObjectsManager()->startPublishing(mPayloadSize);
+  //mPayloadSize = new TH1F("PayloadSize", "PayloadSize", 20, 0, 60000000); //not needed markus cri: remove
+  //mPayloadSize->GetXaxis()->SetTitle("bytes");
+  //mPayloadSize->GetYaxis()->SetTitle("Counts");
+  //mPayloadSize->SetStats(0);
+  //getObjectsManager()->startPublishing(mPayloadSize);
 
-  mErrorTypeAltro = new TH2F("ErrorTypePerSM", "ErrorTypeForSM", 40, 0, 40, 10, 0, 10);
+  mErrorTypeAltro = new TH2F("ErrorTypePerSM", "ErrorTypeForSM", 40, 0, 40, 10, 0, 10); // optional? OFFLINE
   mErrorTypeAltro->GetXaxis()->SetTitle("SM");
   mErrorTypeAltro->GetYaxis()->SetTitle("Error Type");
   mErrorTypeAltro->GetYaxis()->SetBinLabel(1, "RCU Trailer");
@@ -294,13 +287,13 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
   mFECmaxCountperSM->GetXaxis()->SetTitle("SM");
   mFECmaxCountperSM->GetYaxis()->SetTitle("max channel count");
   mFECmaxCountperSM->SetStats(0);
-  getObjectsManager()->startPublishing(mFECmaxCountperSM);
+  getObjectsManager()->startPublishing(mFECmaxCountperSM); //work on it, keep them
 
   mFECmaxIDperSM = new TH2F("FECidMaxChWithInput_perSM", "FECidMaxChWithInput_perSM", 20, 0, 20, 40, 0, 40);
   mFECmaxIDperSM->GetXaxis()->SetTitle("SM");
   mFECmaxIDperSM->GetYaxis()->SetTitle("FEC id");
   mFECmaxIDperSM->SetStats(0);
-  getObjectsManager()->startPublishing(mFECmaxIDperSM);
+  getObjectsManager()->startPublishing(mFECmaxIDperSM); // work on it, keep them
 
   //histos per SM
   for (auto ism = 0; ism < 20; ism++) {
@@ -308,13 +301,13 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
     mFECmaxCount[ism]->GetXaxis()->SetTitle("max FEC count");
     mFECmaxCount[ism]->GetYaxis()->SetTitle("maximum occupancy");
     mFECmaxCount[ism]->SetStats(0);
-    getObjectsManager()->startPublishing(mFECmaxCount[ism]);
+    getObjectsManager()->startPublishing(mFECmaxCount[ism]); //do we need them? martin has them in his gui. they are the projections of the previous two
 
     mFECmaxID[ism] = new TH1F(Form("IDFECMaxChWithInputSM_%d", ism), Form("ID FEC Max Number of Channels with input %d", ism), 40, -0.5, 39.5);
     mFECmaxID[ism]->GetXaxis()->SetTitle("FEC id");
     mFECmaxID[ism]->GetYaxis()->SetTitle("maximum occupancy");
     mFECmaxID[ism]->SetStats(0);
-    getObjectsManager()->startPublishing(mFECmaxID[ism]);
+    getObjectsManager()->startPublishing(mFECmaxID[ism]); //martin has them in his gui. they are the projections of the previous two
   }
 
   //histos per SM and Trigger
@@ -331,24 +324,24 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
     histosRawAmplRmsRC->GetXaxis()->SetTitle("col");
     histosRawAmplRmsRC->GetYaxis()->SetTitle("row");
     histosRawAmplRmsRC->SetStats(0);
-    getObjectsManager()->startPublishing(histosRawAmplRmsRC);
+    getObjectsManager()->startPublishing(histosRawAmplRmsRC); // markus/martin full emcal not so big
 
     histosRawAmplMeanRC = new TProfile2D(Form("MeanADC_EMCAL_%s", histoStr[trg].Data()), Form("Bunch ADC mean (%s)", histoStr[trg].Data()), 96, -0.5, 95.5, 208, -0.5, 207.5);
     histosRawAmplMeanRC->GetXaxis()->SetTitle("col");
     histosRawAmplMeanRC->GetYaxis()->SetTitle("row");
-    getObjectsManager()->startPublishing(histosRawAmplMeanRC);
+    getObjectsManager()->startPublishing(histosRawAmplMeanRC); // markus/martin full emcal not so big
 
     histosRawAmplMaxRC = new TProfile2D(Form("MaxADC_EMCAL_%s", histoStr[trg].Data()), Form("Channel ADC max (%s)", histoStr[trg].Data()), 96, -0.5, 95.5, 208, -0.5, 207.5);
     histosRawAmplMaxRC->GetXaxis()->SetTitle("col");
     histosRawAmplMaxRC->GetYaxis()->SetTitle("row");
     histosRawAmplMaxRC->SetStats(0);
-    getObjectsManager()->startPublishing(histosRawAmplMaxRC);
+    getObjectsManager()->startPublishing(histosRawAmplMaxRC); // markus/martin full emcal not so big
 
     histosRawAmplMinRC = new TProfile2D(Form("MinADC_EMCAL_%s", histoStr[trg].Data()), Form("Channel ADC min (%s)", histoStr[trg].Data()), 96, -0.5, 95.5, 208, -0.5, 207.5);
     histosRawAmplMinRC->GetXaxis()->SetTitle("col");
     histosRawAmplMinRC->GetYaxis()->SetTitle("raw");
     histosRawAmplMinRC->SetStats(0);
-    getObjectsManager()->startPublishing(histosRawAmplMinRC);
+    getObjectsManager()->startPublishing(histosRawAmplMinRC); // markus/martin full emcal not so big
 
     TH1D* histosRawMinFull;
     TH1D* histosRawMinEMCAL;
@@ -387,59 +380,60 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
       histosMaxSMAmpSM[ism]->GetXaxis()->SetTitle("Max raw amplitude (ADC)");
       histosMaxSMAmpSM[ism]->GetYaxis()->SetTitle("Counts");
       histosMaxSMAmpSM[ism]->SetStats(0);
-      getObjectsManager()->startPublishing(histosMaxSMAmpSM[ism]);
+      getObjectsManager()->startPublishing(histosMaxSMAmpSM[ism]); // do we need it for two triggers? not needed for calibration
 
       histosMinSMAmpSM[ism] = new TH1F(Form("SMMinRawAmplitude_SM%d_%s", ism, histoStr[trg].Data()), Form("Min SM raw amplitude SM%d (%s)", ism, histoStr[trg].Data()), 100, 0., 100.);
       histosMinSMAmpSM[ism]->GetXaxis()->SetTitle("Min raw amplitude (ADC)");
       histosMinSMAmpSM[ism]->GetYaxis()->SetTitle("Counts");
       histosMinSMAmpSM[ism]->SetStats(0);
-      getObjectsManager()->startPublishing(histosMinSMAmpSM[ism]);
+      getObjectsManager()->startPublishing(histosMinSMAmpSM[ism]); // do we need it for two triggers? not needed for calibration
 
       histosMaxBunchAmpSM[ism] = new TH1F(Form("BunchMaxRawAmplitude_SM%d_%s", ism, histoStr[trg].Data()), Form("Max bunch raw amplitude SM%d (%s)", ism, histoStr[trg].Data()), 500, 0., 500.);
       histosMaxBunchAmpSM[ism]->GetXaxis()->SetTitle("Max Raw Amplitude (ADC)");
       histosMaxBunchAmpSM[ism]->GetYaxis()->SetTitle("Counts");
       histosMaxBunchAmpSM[ism]->SetStats(0);
-      getObjectsManager()->startPublishing(histosMaxBunchAmpSM[ism]);
+      getObjectsManager()->startPublishing(histosMaxBunchAmpSM[ism]); // do we need it for two triggers? not needed for calibration
 
       histosMinBunchAmpSM[ism] = new TH1F(Form("BunchMinRawAmplitude_SM%d_%s", ism, histoStr[trg].Data()), Form("Min bunch raw amplitude SM%d (%s)", ism, histoStr[trg].Data()), 100, 0., 100.);
       histosMinBunchAmpSM[ism]->GetXaxis()->SetTitle("Min Raw Amplitude (ADC)");
       histosMinBunchAmpSM[ism]->GetYaxis()->SetTitle("Counts");
       histosMinBunchAmpSM[ism]->SetStats(0);
-      getObjectsManager()->startPublishing(histosMinBunchAmpSM[ism]);
+      getObjectsManager()->startPublishing(histosMinBunchAmpSM[ism]); // do we need it for two triggers? not needed for calibration
 
-      histosBunchRawAmplRmsRC[ism] = new TProfile2D(Form("BunchRCRMSAmplitudeSM%d_%s", ism, histoStr[trg].Data()), Form("Bunch ADC RMS SM%d (%s)", ism, histoStr[trg].Data()), 48, -0.5, 47.5, 24, -0.5, 23.5);
+      /*histosBunchRawAmplRmsRC[ism] = new TProfile2D(Form("BunchRCRMSAmplitudeSM%d_%s", ism, histoStr[trg].Data()), Form("Bunch ADC RMS SM%d (%s)", ism, histoStr[trg].Data()), 48, -0.5, 47.5, 24, -0.5, 23.5);
       histosBunchRawAmplRmsRC[ism]->GetXaxis()->SetTitle("col");
       histosBunchRawAmplRmsRC[ism]->GetYaxis()->SetTitle("row");
       histosBunchRawAmplRmsRC[ism]->SetStats(0);
-      getObjectsManager()->startPublishing(histosBunchRawAmplRmsRC[ism]);
+      getObjectsManager()->startPublishing(histosBunchRawAmplRmsRC[ism]); //redundant markus/martin
 
       histosBunchRawAmplMeanRC[ism] = new TProfile2D(Form("BunchRCMeanAmplitudeSM%d_%s", ism, histoStr[trg].Data()), Form("Bunch ADC mean SM%d (%s)", ism, histoStr[trg].Data()), 48, -0.5, 47.5, 24, -0.5, 23.5);
       histosBunchRawAmplMeanRC[ism]->GetXaxis()->SetTitle("col");
       histosBunchRawAmplMeanRC[ism]->GetYaxis()->SetTitle("row");
       histosBunchRawAmplMeanRC[ism]->SetStats(0);
-      getObjectsManager()->startPublishing(histosBunchRawAmplMeanRC[ism]);
+      getObjectsManager()->startPublishing(histosBunchRawAmplMeanRC[ism]); //redundant markus/martin
 
       histosMaxChannelRawAmplRC[ism] = new TProfile2D(Form("ChannelRCMaxAmplitudeSM%d_%s", ism, histoStr[trg].Data()), Form("Channel ADC max SM%d (%s)", ism, histoStr[trg].Data()), 48, -0.5, 47.5, 24, -0.5, 23.5);
       histosMaxChannelRawAmplRC[ism]->GetXaxis()->SetTitle("col");
       histosMaxChannelRawAmplRC[ism]->GetYaxis()->SetTitle("row");
       histosMaxChannelRawAmplRC[ism]->SetStats(0);
-      getObjectsManager()->startPublishing(histosMaxChannelRawAmplRC[ism]);
+      getObjectsManager()->startPublishing(histosMaxChannelRawAmplRC[ism]); //redundant markus/martin
 
       histosMinChannelRawAmpRC[ism] = new TProfile2D(Form("ChannelRCMinAmplitudeSM%d_%s", ism, histoStr[trg].Data()), Form("Channel ADC min SM%d (%s)", ism, histoStr[trg].Data()), 48, -0.5, 47.5, 24, -0.5, 23.5);
       histosMinChannelRawAmpRC[ism]->GetXaxis()->SetTitle("col");
       histosMinChannelRawAmpRC[ism]->GetYaxis()->SetTitle("raw");
       histosMinChannelRawAmpRC[ism]->SetStats(0);
-      getObjectsManager()->startPublishing(histosMinChannelRawAmpRC[ism]);
+      getObjectsManager()->startPublishing(histosMinChannelRawAmpRC[ism]); //redundant markus/martin
+*/
     } //loop SM
     mMaxSMRawAmplSM[triggers[trg]] = histosMaxSMAmpSM;
     mMinSMRawAmplSM[triggers[trg]] = histosMinSMAmpSM;
     mMaxBunchRawAmplSM[triggers[trg]] = histosMaxBunchAmpSM;
     mMinBunchRawAmplSM[triggers[trg]] = histosMinBunchAmpSM;
 
-    mRMSBunchADCRCSM[triggers[trg]] = histosBunchRawAmplRmsRC;
-    mMeanBunchADCRCSM[triggers[trg]] = histosBunchRawAmplMeanRC;
-    mMaxChannelADCRCSM[triggers[trg]] = histosMaxChannelRawAmplRC;
-    mMinChannelADCRCSM[triggers[trg]] = histosMinChannelRawAmpRC;
+    //mRMSBunchADCRCSM[triggers[trg]] = histosBunchRawAmplRmsRC;
+    //mMeanBunchADCRCSM[triggers[trg]] = histosBunchRawAmplMeanRC;
+    //mMaxChannelADCRCSM[triggers[trg]] = histosMaxChannelRawAmplRC;
+    //mMinChannelADCRCSM[triggers[trg]] = histosMinChannelRawAmpRC;
 
     mRMSBunchADCRCFull[triggers[trg]] = histosRawAmplRmsRC;
     mMeanBunchADCRCFull[triggers[trg]] = histosRawAmplMeanRC;
@@ -495,7 +489,7 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
   Int_t nPagesMessage = 0, nSuperpagesMessage = 0;
   ILOG(Debug, Support) << " Processing message " << mNumberOfMessages << ENDM;
   mNumberOfMessages++;
-  mMessageCounter->Fill(1); //for expert
+  mMessageCounter->Fill(0); //for expert fill bin 1 with number of messages
 
   const int NUMBERSM = 20;
   const int NFEESM = 40; //number of fee per sm
@@ -519,11 +513,12 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
       ILOG(Debug, Support) << "Processing superpage " << mNumberOfSuperpages << ENDM;
       mNumberOfSuperpages++;
       nSuperpagesMessage++;
-      mSuperpageCounter->Fill(1); //for expert
+      //mSuperpageCounter->Fill(1); //for expert
+      mMessageCounter->Fill(1); //fill bin 2 with mSuperpageCounter
       ILOG(Debug, Support) << " EMCAL Reading Payload size: " << payloadSize << " for " << header->dataOrigin << ENDM;
 
       //fill the histogram with payload sizes
-      mPayloadSize->Fill(payloadSize);         //for expert
+      //mPayloadSize->Fill(payloadSize);         //for expert
       mTotalDataVolume->Fill(1., payloadSize); //for expert
 
       // Skip SOX headers
@@ -542,7 +537,8 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
         ILOG(Debug, Support) << " Processing page " << mNumberOfPages << ENDM;
         mNumberOfPages++;
         nPagesMessage++;
-        mPageCounter->Fill(1); //expert
+        //mPageCounter->Fill(1); //expert
+        mMessageCounter->Fill(2); //fill bin 3 with PageCounter
         rawreader.next();
         auto rawSize = rawreader.getPayloadSize(); //payloadsize in byte;
 
@@ -715,26 +711,26 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
             meanADC = TMath::Mean(adcs.begin(), adcs.end());
             rmsADC = TMath::RMS(adcs.begin(), adcs.end());
 
-            mRMSBunchADCRCFull[evtype]->Fill(globCol, globRow, rmsADC);      //for  shifter
-            mRMSBunchADCRCSM[evtype][supermoduleID]->Fill(col, row, rmsADC); // no shifter
+            mRMSBunchADCRCFull[evtype]->Fill(globCol, globRow, rmsADC); //for  shifter
+            //mRMSBunchADCRCSM[evtype][supermoduleID]->Fill(col, row, rmsADC); // no shifter
 
-            mMeanBunchADCRCFull[evtype]->Fill(globCol, globRow, meanADC);      //for shifter
-            mMeanBunchADCRCSM[evtype][supermoduleID]->Fill(col, row, meanADC); // no shifter
+            mMeanBunchADCRCFull[evtype]->Fill(globCol, globRow, meanADC); //for shifter
+            //mMeanBunchADCRCSM[evtype][supermoduleID]->Fill(col, row, meanADC); // no shifter
           }
           mNofADCsamples->Fill(numberOfADCsamples); // number of bunches per channel
 
           if (maxADC > maxADCSMEvent->second[supermoduleID])
             maxADCSMEvent->second[supermoduleID] = maxADC;
 
-          if (maxADC > thresholdMaxADCocc)
-            mMaxChannelADCRCSM[evtype][supermoduleID]->Fill(col, row, maxADC); //max col,row, per SM
+          //if (maxADC > thresholdMaxADCocc)
+          //mMaxChannelADCRCSM[evtype][supermoduleID]->Fill(col, row, maxADC); //max col,row, per SM
           if (maxADC > thresholdMaxADCocc)
             mMaxChannelADCRCFull[evtype]->Fill(globCol, globRow, maxADC); //for shifter
 
           if (minADC < minADCSMEvent->second[supermoduleID])
             minADCSMEvent->second[supermoduleID] = minADC;
-          if (minADC > thresholdMinADCocc)
-            mMinChannelADCRCSM[evtype][supermoduleID]->Fill(col, row, minADC); //min col,row, per SM
+          //if (minADC > thresholdMinADCocc)
+          //mMinChannelADCRCSM[evtype][supermoduleID]->Fill(col, row, minADC); //min col,row, per SM
           if (minADC > thresholdMinADCocc)
             mMinChannelADCRCFull[evtype]->Fill(globCol, globRow, minADC); //for shifter
         }                                                                 //channels
@@ -822,17 +818,17 @@ void RawTask::reset()
       mMinSMRawAmplSM[trg][ism]->Reset();
       mMaxBunchRawAmplSM[trg][ism]->Reset();
       mMinBunchRawAmplSM[trg][ism]->Reset();
-      mRMSBunchADCRCSM[trg][ism]->Reset();
-      mMeanBunchADCRCSM[trg][ism]->Reset();
-      mMaxChannelADCRCSM[trg][ism]->Reset();
-      mMinChannelADCRCSM[trg][ism]->Reset();
+      //mRMSBunchADCRCSM[trg][ism]->Reset();
+      //mMeanBunchADCRCSM[trg][ism]->Reset();
+      //mMaxChannelADCRCSM[trg][ism]->Reset();
+      //mMinChannelADCRCSM[trg][ism]->Reset();
     }
   }
   mPayloadSizePerDDL->Reset();
   mPayloadSizePerDDL_1D->Reset();
   mPayloadSizeTFPerDDL->Reset();
   mPayloadSizeTFPerDDL_1D->Reset();
-  mPayloadSize->Reset();
+  //mPayloadSize->Reset();
   mErrorTypeAltro->Reset();
   mNbunchPerChan->Reset();
   mNofADCsamples->Reset();

@@ -78,8 +78,8 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
     "Digit Chip Occupancy;Chip ID;#Entries per ROF",
     936, -0.5, 935.5);
   mDigitChipOccupancy->SetStats(0);
-  mDigitChipOccupancy->SetOption("hist");
   getObjectsManager()->startPublishing(mDigitChipOccupancy.get());
+  getObjectsManager()->setDefaultDrawOptions(mDigitChipOccupancy.get(), "hist");
 
   if (mNoiseScan == 1) { // to be executed only for special runs
     mDigitChipStdDev = std::make_unique<TH1F>(
@@ -112,9 +112,9 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
   mDigitOccupancySummary->GetYaxis()->SetBinLabel(6, "h1-z1");
   mDigitOccupancySummary->GetYaxis()->SetBinLabel(7, "h1-z2");
   mDigitOccupancySummary->GetYaxis()->SetBinLabel(8, "h1-z3");
-  mDigitOccupancySummary->SetOption("colz");
   mDigitOccupancySummary->SetStats(0);
   getObjectsManager()->startPublishing(mDigitOccupancySummary.get());
+  getObjectsManager()->setDefaultDrawOptions(mDigitOccupancySummary.get(), "colz");
 
   // --Ladder occupancy maps
   //==============================================
@@ -127,9 +127,9 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
     for (int iBin = 0; iBin < mChipsInLadder[i]; iBin++)
       ladderHistogram->GetYaxis()->SetBinLabel(iBin + 1, Form("%d", iBin));
     ladderHistogram->SetStats(0);
-    ladderHistogram->SetOption("colz");
     mDigitLadderDoubleColumnOccupancyMap.push_back(std::move(ladderHistogram));
     getObjectsManager()->startPublishing(mDigitLadderDoubleColumnOccupancyMap[i].get());
+    getObjectsManager()->setDefaultDrawOptions(mDigitLadderDoubleColumnOccupancyMap[i].get(), "colz");
   }
 
   // --Chip hit maps
@@ -153,9 +153,9 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
       MFTTable.mNumberOfBinsInOccupancyMaps[iOccupancyMapIndex][4],
       MFTTable.mNumberOfBinsInOccupancyMaps[iOccupancyMapIndex][5]);
     chiphitmap->SetStats(0);
-    chiphitmap->SetOption("colz");
     mDigitChipOccupancyMap.push_back(std::move(chiphitmap));
     getObjectsManager()->startPublishing(mDigitChipOccupancyMap[iVectorOccupancyMapIndex].get());
+    getObjectsManager()->setDefaultDrawOptions(mDigitChipOccupancyMap[iVectorOccupancyMapIndex].get(), "colz");
   }
 
   // --Pixel hit maps
@@ -183,9 +183,9 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
         minBinPixelOccupancyMap - shiftPixelOccupancyMap,
         maxBinYPixelOccupancyMap - shiftPixelOccupancyMap);
       pixelhitmap->SetStats(0);
-      pixelhitmap->SetOption("colz");
       mDigitPixelOccupancyMap.push_back(std::move(pixelhitmap));
       getObjectsManager()->startPublishing(mDigitPixelOccupancyMap[iVectorIndex].get());
+      getObjectsManager()->setDefaultDrawOptions(mDigitPixelOccupancyMap[iVectorIndex].get(), "colz");
     }
   }
 }

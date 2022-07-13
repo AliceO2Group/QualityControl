@@ -76,7 +76,7 @@
              "id" : "tracks",
              "active" : "true",
              "machines" : [],
-             "query" : "Vertices:ITS/VERTICES/0;tracks:ITS/TRACKS/0;rofs:ITS/ITSTrackROF/0;clustersrof:ITS/CLUSTERSROF/0;compclus:ITS/COMPCLUSTERS/0;patterns:ITS/PATTERNS/0;clusteridx:ITS/TRACKCLSID/0",
+             "query" : "Verticesrof:ITS/VERTICESROF/0;Vertices:ITS/VERTICES/0;tracks:ITS/TRACKS/0;rofs:ITS/ITSTrackROF/0;clustersrof:ITS/CLUSTERSROF/0;compclus:ITS/COMPCLUSTERS/0;patterns:ITS/PATTERNS/0;clusteridx:ITS/TRACKCLSID/0",
              "samplingConditions" : [
                {
                  "condition" : "random",
