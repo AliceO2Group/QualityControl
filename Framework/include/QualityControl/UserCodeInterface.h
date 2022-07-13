@@ -67,7 +67,7 @@ class UserCodeInterface
 
 template <typename T>
 T* UserCodeInterface::retrieveConditionAny(std::string const& path, std::map<std::string, std::string> const& metadata,
-                                         long timestamp)
+                                           long timestamp)
 {
   if (!mCcdbApi) {
     loadCcdb();
