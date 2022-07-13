@@ -20,6 +20,7 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/Reductor.h"
+#include "QualityControl/ObjectMetadataKeys.h"
 #include <TCanvas.h>
 #include <TH1.h>
 #include <TDatime.h>
@@ -27,6 +28,7 @@
 using namespace o2::quality_control;
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;
+using namespace o2::quality_control::repository;
 
 void TrendingTaskITSThr::configure(std::string name,
                                    const boost::property_tree::ptree& config)
@@ -106,7 +108,7 @@ void TrendingTaskITSThr::trendValues(const Trigger& t, repository::DatabaseInter
       auto mo = qcdb.retrieveMO(dataSource.path, "", t.timestamp, t.activity);
       if (!count) {
         std::map<std::string, std::string> entryMetadata = mo->getMetadataMap(); // full list of metadata as a map
-        mMetaData.runNumber = std::stoi(entryMetadata["RunNumber"]);             // get and set run number
+        mMetaData.runNumber = std::stoi(entryMetadata[metadata_keys::runNumber]); // get and set run number
         ntreeentries = (Int_t)mTrend->GetEntries() + 1;
         runlist.push_back(std::to_string(mMetaData.runNumber));
       }

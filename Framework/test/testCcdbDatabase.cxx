@@ -28,6 +28,7 @@
 #include <TH1F.h>
 #include "QualityControl/RepoPathUtils.h"
 #include "QualityControl/testUtils.h"
+#include "QualityControl/ObjectMetadataKeys.h"
 #include <DataFormatsQualityControl/TimeRangeFlagCollection.h>
 #include <TROOT.h>
 
@@ -161,9 +162,9 @@ BOOST_AUTO_TEST_CASE(ccdb_store_for_future_tests)
   TH1F* h1 = new TH1F("to_be_kept", "asdf", 100, 0, 99);
   h1->FillRandom("gaus", 12345);
   shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "TestClass", "task", "TST_KEEP");
-  mo1->addMetadata("RunNumber", o2::quality_control::core::Version::GetQcVersion().getString());
+  mo1->addMetadata(metadata_keys::runNumber, o2::quality_control::core::Version::GetQcVersion().getString());
   shared_ptr<QualityObject> qo1 = make_shared<QualityObject>(Quality::Bad, "check", "TST_KEEP", "OnAll", vector{ string("input1"), string("input2") });
-  qo1->addMetadata("RunNumber", o2::quality_control::core::Version::GetQcVersion().getString());
+  qo1->addMetadata(metadata_keys::runNumber, o2::quality_control::core::Version::GetQcVersion().getString());
 
   f.backend->storeMO(mo1);
   f.backend->storeQO(qo1);

@@ -18,6 +18,7 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/ObjectMetadataKeys.h"
 // ROOT
 #include <TH1.h>
 #include <TH2.h>
@@ -25,6 +26,7 @@
 #include <TList.h>
 
 using namespace std;
+using namespace o2::quality_control::repository;
 
 namespace o2::quality_control_modules::cpv
 {
@@ -287,7 +289,7 @@ int PedestalCheck::getRunNumberFromMO(std::shared_ptr<MonitorObject> mo)
   for (auto [key, value] : metaData) {
     ILOG(Info, Support) << "key = " << key << "; value = " << value << ENDM;
   }
-  auto foundRN = metaData.find("RunNumber");
+  auto foundRN = metaData.find(metadata_keys::runNumber);
   if (foundRN != metaData.end()) {
     runNumber = std::stoi(foundRN->second);
     ILOG(Info, Support) << "PedestalCheck::check() : I found in metadata RunNumber = " << foundRN->second << ENDM;
