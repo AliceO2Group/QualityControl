@@ -39,15 +39,10 @@ class UserCodeInterface
 
   void setCustomParameters(const std::unordered_map<std::string, std::string>& parameters);
 
-  /// \brief Configure the aggregator based on its name.
+  /// \brief Configure the object.
   ///
-  /// The configuration of the object can't be done in the constructor because
-  /// ROOT needs an argument-less constructor when streaming it. Users can use
-  /// this method to configure their object. The name might be used to ask the configuration system
-  /// for specific parameters.
-  /// It is called each time mCustomParameters is updated.
-  ///
-  /// \param name The name of the task/aggregator/check.
+  /// Users can use this method to configure their object.
+  /// It is called each time mCustomParameters is updated, including the first time it is read.
   virtual void configure() = 0;
 
   void loadCcdb();
