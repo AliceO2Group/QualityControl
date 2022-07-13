@@ -30,7 +30,7 @@
 #include "QualityControl/Activity.h"
 #include "QualityControl/ObjectsManager.h"
 #include "QualityControl/QcInfoLogger.h"
-#include "QualityControl/CommonInterface.h"
+#include "QualityControl/UserCodeInterface.h"
 
 namespace o2::ccdb
 {
@@ -52,7 +52,7 @@ namespace o2::quality_control::core
 ///
 /// \author Barthelemy von Haller
 /// \author Piotr Konopka
-class TaskInterface : public CommonInterface
+class TaskInterface : public UserCodeInterface
 {
  public:
   /// \brief Constructor

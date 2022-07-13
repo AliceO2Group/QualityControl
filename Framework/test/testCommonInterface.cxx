@@ -14,7 +14,7 @@
 /// \author  Barthelemy von Haller
 ///
 
-#include "QualityControl/CommonInterface.h"
+#include "QualityControl/UserCodeInterface.h"
 
 #define BOOST_TEST_MODULE CommonInterface test
 #define BOOST_TEST_MAIN
@@ -33,7 +33,7 @@ namespace o2::quality_control
 namespace test
 {
 
-class TestInterface : public core::CommonInterface
+class TestInterface : public core::UserCodeInterface
 {
  public:
   /// Default constructor

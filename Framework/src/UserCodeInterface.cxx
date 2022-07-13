@@ -14,20 +14,20 @@
 /// \author Barthelemy von Haller
 ///
 
-#include "QualityControl/CommonInterface.h"
+#include "QualityControl/UserCodeInterface.h"
 
 using namespace o2::ccdb;
 
 namespace o2::quality_control::core
 {
 
-void CommonInterface::setCustomParameters(const std::unordered_map<std::string, std::string>& parameters)
+void UserCodeInterface::setCustomParameters(const std::unordered_map<std::string, std::string>& parameters)
 {
   mCustomParameters = parameters;
   configure();
 }
 
-void CommonInterface::loadCcdb()
+void UserCodeInterface::loadCcdb()
 {
   if (!mCcdbApi) {
     mCcdbApi = std::make_shared<CcdbApi>();
@@ -39,13 +39,13 @@ void CommonInterface::loadCcdb()
   }
 }
 
-void CommonInterface::setCcdbUrl(const std::string& url)
+void UserCodeInterface::setCcdbUrl(const std::string& url)
 {
   mCcdbUrl = url;
 }
 
-const std::string& CommonInterface::getName() const { return mName; }
+const std::string& UserCodeInterface::getName() const { return mName; }
 
-void CommonInterface::setName(const std::string& name) { mName = name; }
+void UserCodeInterface::setName(const std::string& name) { mName = name; }
 
 } // namespace o2::quality_control::core

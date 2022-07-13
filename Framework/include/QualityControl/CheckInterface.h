@@ -19,7 +19,7 @@
 
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
-#include "QualityControl/CommonInterface.h"
+#include "QualityControl/UserCodeInterface.h"
 
 using namespace o2::quality_control::core;
 
@@ -29,7 +29,7 @@ namespace o2::quality_control::checker
 /// \brief  Skeleton of a check.
 ///
 /// \author Barthelemy von Haller
-class CheckInterface : public CommonInterface
+class CheckInterface : public UserCodeInterface
 {
  public:
   /// Default constructor

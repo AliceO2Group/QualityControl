@@ -14,8 +14,8 @@
 /// \author Barthelemy von Haller
 ///
 
-#ifndef QUALITYCONTROL_COMMONINTERFACE_H
-#define QUALITYCONTROL_COMMONINTERFACE_H
+#ifndef QUALITYCONTROL_USERCODEINTERFACE_H
+#define QUALITYCONTROL_USERCODEINTERFACE_H
 
 #include <unordered_map>
 #include <Rtypes.h>
@@ -29,13 +29,13 @@ namespace o2::quality_control::core
 /// \brief  Common interface for Check and Task Interfaces.
 ///
 /// \author Barthelemy von Haller
-class CommonInterface
+class UserCodeInterface
 {
  public:
   /// Default constructor
-  CommonInterface() = default;
+  UserCodeInterface() = default;
   /// Destructor
-  virtual ~CommonInterface() = default;
+  virtual ~UserCodeInterface() = default;
 
   void setCustomParameters(const std::unordered_map<std::string, std::string>& parameters);
 
@@ -67,11 +67,11 @@ class CommonInterface
   std::shared_ptr<o2::ccdb::CcdbApi> mCcdbApi;
   std::string mCcdbUrl; // we need to keep the url in addition to the ccdbapi because we don't initialize the latter before the first call
 
-  ClassDef(CommonInterface, 1)
+  ClassDef(UserCodeInterface, 1)
 };
 
 template <typename T>
-T* CommonInterface::retrieveConditionAny(std::string const& path, std::map<std::string, std::string> const& metadata,
+T* UserCodeInterface::retrieveConditionAny(std::string const& path, std::map<std::string, std::string> const& metadata,
                                          long timestamp)
 {
   if (!mCcdbApi) {
@@ -83,4 +83,4 @@ T* CommonInterface::retrieveConditionAny(std::string const& path, std::map<std::
 
 } // namespace o2::quality_control::core
 
-#endif // QUALITYCONTROL_COMMONINTERFACE_H
+#endif // QUALITYCONTROL_USERCODEINTERFACE_H
