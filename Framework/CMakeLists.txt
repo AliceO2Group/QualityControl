@@ -242,7 +242,7 @@ set(TEST_SRCS
     test/testRepoPathUtils.cxx
     test/testPolicyManager.cxx
     test/testQualitiesToTRFCollectionConverter.cxx
-    test/testCommonInterface.cxx
+    test/testUserCodeInterface.cxx
   )
 
 set(TEST_ARGS
