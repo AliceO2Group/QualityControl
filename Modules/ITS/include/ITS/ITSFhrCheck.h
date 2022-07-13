@@ -13,6 +13,7 @@
 /// \file   ITSFhrCheck.h
 /// \author Liang Zhang
 /// \author Jian Liu
+/// \author Zhen Zhang
 ///
 
 #ifndef QC_MODULE_ITS_ITSFHRCHECK_H

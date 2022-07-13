@@ -14,6 +14,7 @@
 /// \auhtor Liang Zhang
 /// \author Jian Liu
 /// \author Antonio Palasciano
+/// \author Zhen Zhang
 ///
 
 #ifndef QC_MODULE_ITS_ITSFEECHECK_H

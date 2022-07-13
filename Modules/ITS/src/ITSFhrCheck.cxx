@@ -13,6 +13,7 @@
 /// \file   ITSFhrCheck.cxx
 /// \author Liang Zhang
 /// \author Jian Liu
+/// \author Zhen Zhang
 ///
 
 #include "ITS/ITSFhrCheck.h"

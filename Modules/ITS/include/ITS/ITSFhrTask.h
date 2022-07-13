@@ -13,6 +13,7 @@
 /// \file   ITSFhrTask.h
 /// \author Liang Zhang
 /// \author Jian Liu
+/// \author Zhen Zhang
 ///
 
 #ifndef QC_MODULE_ITS_ITSFHRTASK_H
@@ -145,7 +146,6 @@ class ITSFhrTask final : public TaskInterface
 
   // General plots
   TH1F* mTFInfo; // count vs TF ID
-  TH1D* mErrorPlots;
   TH2I* mErrorVsFeeid;
   TH2Poly* mGeneralOccupancy;  // Max Occuapncy(chip/hic) in one stave
   TH2Poly* mGeneralNoisyPixel; // Noisy pixel number in one stave

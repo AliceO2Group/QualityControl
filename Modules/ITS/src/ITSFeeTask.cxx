@@ -15,16 +15,19 @@
 /// \author Liang Zhang
 /// \author Pietro Fecchio
 /// \author Antonio Palasciano
+/// \author Zhen Zhang
 ///
 
 #include "ITS/ITSFeeTask.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "ITSMFTReconstruction/DecodingStat.h"
 
 #include <DPLUtils/RawParser.h>
 #include <DPLUtils/DPLRawParser.h>
 #include <iostream>
 
 using namespace o2::framework;
+using namespace o2::itsmft;
 using namespace o2::header;
 
 namespace o2::quality_control_modules::its
@@ -39,8 +42,10 @@ ITSFeeTask::~ITSFeeTask()
 {
   delete mTFInfo;
   delete mTrigger;
+  delete mDecoder;
   delete mTriggerVsFeeId;
   delete mLaneInfo;
+  delete mErrorPlots;
   delete mFlag1Check;
   delete mIndexCheck;
   delete mIdCheck;
@@ -49,6 +54,8 @@ ITSFeeTask::~ITSFeeTask()
   delete mLaneStatusSummaryIB;
   delete mLaneStatusSummaryML;
   delete mLaneStatusSummaryOL;
+  delete mLinkErrorVsFeeid;
+  delete mChipErrorVsFeeid;
   delete mLaneStatusSummaryGlobal;
   for (int i = 0; i < NFlags; i++) {
     delete mLaneStatus[i];
@@ -59,6 +66,22 @@ ITSFeeTask::~ITSFeeTask()
   for (int i = 0; i < NLayer; i++) {
     delete mLaneStatusSummary[i];
   }
+  for (int ilayer = 0; ilayer < NLayer; ilayer++) {
+    int maxlink = ilayer < NLayerIB ? 3 : 2;
+    for (int istave = 0; istave < NStaves[ilayer]; istave++) {
+      for(int ilink = 0; ilink < maxlink; ilink++) {
+      	delete[] mLinkErrorCount[ilayer][istave][ilink];
+      	delete[] mChipErrorCount[ilayer][istave][ilink];
+      }
+	
+    delete[] mLinkErrorCount[ilayer][istave];
+    delete[] mChipErrorCount[ilayer][istave];
+    }
+    delete[] mLinkErrorCount[ilayer];
+    delete[] mChipErrorCount[ilayer];
+  }
+  delete[] mLinkErrorCount;
+  delete[] mChipErrorCount;
 
   // delete mInfoCanvas;
 }
@@ -69,6 +92,37 @@ void ITSFeeTask::initialize(o2::framework::InitContext& /*ctx*/)
   getParameters();
   createFeePlots();
   setPlotsFormat();
+
+  mDecoder = new o2::itsmft::RawPixelDecoder<o2::itsmft::ChipMappingITS>();
+  mDecoder->init();
+  mDecoder->setNThreads(mNThreads);
+  mDecoder->setFormat(GBTLink::NewFormat);               // Using RDHv6 (NewFormat)
+  mDecoder->setUserDataOrigin(header::DataOrigin("DS")); // set user data origin in dpl
+  mDecoder->setUserDataDescription(header::DataDescription("RAWDATA0"));
+
+  
+  mLinkErrorCount = new int***[NLayer];
+  mChipErrorCount = new int***[NLayer];
+  for (int ilayer = 0; ilayer < NLayer; ilayer++) {
+    mLinkErrorCount[ilayer] = new int**[NStaves[ilayer]];
+    mChipErrorCount[ilayer] = new int**[NStaves[ilayer]];
+    int maxlink = ilayer < NLayerIB ? 3 : 2;
+    for (int istave = 0; istave < NStaves[ilayer]; istave++) {
+      mLinkErrorCount[ilayer][istave] = new int*[maxlink];
+      mChipErrorCount[ilayer][istave] = new int*[maxlink];
+	// for link statistic
+      for (int ilink = 0; ilink < maxlink; ilink++) {
+	mLinkErrorCount[ilayer][istave][ilink] = new int[o2::itsmft::GBTLinkDecodingStat::NErrorsDefined];
+	mChipErrorCount[ilayer][istave][ilink] = new int[o2::itsmft::ChipStat::NErrorsDefined];
+	for (int ierror = 0; ierror < o2::itsmft::GBTLinkDecodingStat::NErrorsDefined; ierror++) {
+	  mLinkErrorCount[ilayer][istave][ilink][ierror] = 0;
+	}
+	for (int ierror = 0; ierror < o2::itsmft::ChipStat::NErrorsDefined; ierror++) {
+	  mChipErrorCount[ilayer][istave][ilink][ierror] = 0;
+	}
+      }
+    }
+  }
 }
 
 void ITSFeeTask::createFeePlots()
@@ -87,6 +141,21 @@ void ITSFeeTask::createFeePlots()
 
   mTriggerVsFeeId = new TH2I("TriggerVsFeeid", "Trigger count vs Trigger ID and Fee ID", NFees, 0, NFees, NTrigger, 0.5, NTrigger + 0.5);
   getObjectsManager()->startPublishing(mTriggerVsFeeId); // mTriggervsFeeId
+
+  mLinkErrorVsFeeid = new TH2I("General/LinkErrorVsFeeid", "Error count vs Error id and Fee id", (3 * StaveBoundary[3]) + (2 * (StaveBoundary[7] - StaveBoundary[3])), 0, (3 * StaveBoundary[3]) + (2 * (StaveBoundary[7] - StaveBoundary[3])), o2::itsmft::GBTLinkDecodingStat::NErrorsDefined, 0.5, o2::itsmft::GBTLinkDecodingStat::NErrorsDefined + 0.5);
+  mLinkErrorVsFeeid->SetMinimum(0);
+  mLinkErrorVsFeeid->SetStats(0);
+  getObjectsManager()->startPublishing(mLinkErrorVsFeeid);
+  
+  mChipErrorVsFeeid = new TH2I("General/ChipErrorVsFeeid", "Error count vs Error id and Fee id", (3 * StaveBoundary[3]) + (2 * (StaveBoundary[7] - StaveBoundary[3])), 0, (3 * StaveBoundary[3]) + (2 * (StaveBoundary[7] - StaveBoundary[3])), o2::itsmft::ChipStat::NErrorsDefined, 0.5, o2::itsmft::ChipStat::NErrorsDefined + 0.5);
+  mChipErrorVsFeeid->SetMinimum(0);
+  mChipErrorVsFeeid->SetStats(0);
+  getObjectsManager()->startPublishing(mChipErrorVsFeeid);
+
+  mErrorPlots = new TH1D("General/ErrorPlots", "Decoding Errors", o2::itsmft::GBTLinkDecodingStat::NErrorsDefined, 0.5, o2::itsmft::GBTLinkDecodingStat::NErrorsDefined + 0.5);
+  mErrorPlots->SetMinimum(0);
+  mErrorPlots->SetFillColor(kRed);
+  getObjectsManager()->startPublishing(mErrorPlots); // mErrorPlots
 
   for (int i = 0; i < NFlags; i++) {
     mLaneStatus[i] = new TH2I(Form("LaneStatus/laneStatusFlag%s", mLaneStatusFlag[i].c_str()), Form("Lane Status Flag : %s", mLaneStatusFlag[i].c_str()), NFees, 0, NFees, NLanesMax, 0, NLanesMax);
@@ -178,6 +247,16 @@ void ITSFeeTask::setPlotsFormat()
 
   if (mProcessingTime) {
     setAxisTitle(mProcessingTime, "STF", "Time (us)");
+  }
+  if (mLinkErrorVsFeeid) {
+    setAxisTitle(mLinkErrorVsFeeid, "FeeID", "Error ID");
+  }
+  if (mChipErrorVsFeeid) {
+    setAxisTitle(mChipErrorVsFeeid, "FeeID", "Error ID");
+  }
+
+  if (mErrorPlots) {
+    setAxisTitle(mErrorPlots, "Error ID", "Counts");
   }
 
   // Defining RDH summary histogram
@@ -311,7 +390,11 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
   rawDataFilter.push_back(InputSpec{ "", ConcreteDataTypeMatcher{ "ITS", "RAWDATA" }, Lifetime::Timeframe });
   DPLRawParser parser(ctx.inputs(), rawDataFilter);
 
+  mDecoder->startNewTF(ctx.inputs());
+  mDecoder->setDecodeNextAuto(true);
+
   for (auto it = parser.begin(), end = parser.end(); it != end; ++it) {
+   
     auto const* rdh = it.get_if<o2::header::RAWDataHeaderV6>();
     // Decoding data format (RDHv6)
     int istave = (int)(rdh->feeId & 0x00ff);
@@ -323,6 +406,39 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
 
     payloadTot[ifee] += memorysize - headersize;
     bool clockEvt = false;
+    auto const* DecoderTmp = mDecoder;
+    int RUid = StaveBoundary[ilayer] + istave;
+    const o2::itsmft::RUDecodeData* RUdecode = DecoderTmp->getRUDecode(RUid);
+    if (!RUdecode) {
+      continue;
+    }
+    
+    auto const* GBTLinkInfo = DecoderTmp->getGBTLink(RUdecode->links[ilink]);
+    if (!GBTLinkInfo) {
+      continue;
+    }
+
+    for (int ierror = 0; ierror < o2::itsmft::GBTLinkDecodingStat::NErrorsDefined; ierror++) {
+      if (GBTLinkInfo->statistics.errorCounts[ierror] <= 0) {
+        continue;
+      }
+      mLinkErrorCount[ilayer][istave][ilink][ierror] = GBTLinkInfo->statistics.errorCounts[ierror];
+      if (mLinkErrorVsFeeid && (mLinkErrorCount[ilayer][istave][ilink][ierror] != 0)) {
+        mLinkErrorVsFeeid->SetBinContent(ifee + 1, ierror + 1, mLinkErrorCount[ilayer][istave][ilink][ierror]);
+      }
+    }
+    for (int ierror = 0; ierror < o2::itsmft::ChipStat::NErrorsDefined; ierror++) {
+      if (GBTLinkInfo->chipStat.errorCounts[ierror] <= 0) {
+        continue;
+      }
+      mChipErrorCount[ilayer][istave][ilink][ierror] = GBTLinkInfo->chipStat.errorCounts[ierror];
+      if (mChipErrorVsFeeid && (mChipErrorCount[ilayer][istave][ilink][ierror] != 0)) {
+        mChipErrorVsFeeid->SetBinContent(ifee + 1, ierror + 1, mChipErrorCount[ilayer][istave][ilink][ierror]);
+      }
+    }
+
+
+
 
     // RDHSummaryPlot
     //  get detector field
@@ -407,6 +523,12 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
     }
   }
+  
+  for (int ierror = 0; ierror < o2::itsmft::GBTLinkDecodingStat::NErrorsDefined; ierror++) {
+    int feeError = mLinkErrorVsFeeid->Integral(1, mLinkErrorVsFeeid->GetXaxis()->GetNbins(), ierror + 1, ierror + 1);
+    mErrorPlots->SetBinContent(ierror + 1, feeError);
+  }
+
 
   // Filling histograms: loop over mStatusFlagNumber[ilayer][istave][ilane][iflag]
   int counterSummary[4][3] = { { 0 } };
@@ -503,11 +625,16 @@ void ITSFeeTask::resetGeneralPlots()
   mTFInfo->Reset();
   mTriggerVsFeeId->Reset();
   mTrigger->Reset();
+  mLinkErrorVsFeeid->Reset(); 
+  mChipErrorVsFeeid->Reset(); 
+  mErrorPlots->Reset();
+
 }
 
 void ITSFeeTask::reset()
 {
   resetGeneralPlots();
+  mDecoder->clearStat();
   ILOG(Info, Support) << "Reset" << ENDM;
 }
 

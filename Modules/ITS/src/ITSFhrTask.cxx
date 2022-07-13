@@ -43,7 +43,6 @@ ITSFhrTask::~ITSFhrTask()
   delete mDecoder;
   delete mChipDataBuffer;
   delete mTFInfo;
-  delete mErrorPlots;
   delete mErrorVsFeeid;
   delete mChipStaveOccupancy;
   delete mChipStaveEventHitCheck;
@@ -234,18 +233,10 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 }
 
-void ITSFhrTask::createErrorTriggerPlots()
-{
-  mErrorPlots = new TH1D("General/ErrorPlots", "Decoding Errors", mNError, 0.5, mNError + 0.5);
-  mErrorPlots->SetMinimum(0);
-  mErrorPlots->SetFillColor(kRed);
-  getObjectsManager()->startPublishing(mErrorPlots); // mErrorPlots
-}
 
 void ITSFhrTask::createGeneralPlots()
 {
 
-  createErrorTriggerPlots();
 
   mTFInfo = new TH1F("General/TFInfo", "TF vs count", 15000, 0, 15000);
   getObjectsManager()->startPublishing(mTFInfo); // mTFInfo
@@ -345,9 +336,6 @@ void ITSFhrTask::setAxisTitle(TH1* object, const char* xTitle, const char* yTitl
 void ITSFhrTask::setPlotsFormat()
 {
   // set general plots format
-  if (mErrorPlots) {
-    setAxisTitle(mErrorPlots, "Error ID", "Counts");
-  }
   if (mTFInfo) {
     setAxisTitle(mTFInfo, "TF ID", "Counts");
   }
@@ -525,7 +513,6 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
 
   // Reset Error plots
-  mErrorPlots->Reset();
   mErrorVsFeeid->Reset(); // Error is   statistic by decoder so if we didn't reset decoder, then we need reset Error plots, and use TH::SetBinContent function
   mOccupancyPlot->Reset();
 
@@ -693,10 +680,6 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
       mGeneralNoisyPixel->SetBinContent(istave + 1 + StaveBoundary[mLayer], mNoisyPixelNumber[mLayer][istave]);
     }
   }
-  for (int ierror = 0; ierror < o2::itsmft::GBTLinkDecodingStat::NErrorsDefined; ierror++) {
-    int feeError = mErrorVsFeeid->Integral(1, mErrorVsFeeid->GetXaxis()->GetNbins(), ierror + 1, ierror + 1);
-    mErrorPlots->SetBinContent(ierror + 1, feeError);
-  }
 
   // delete pointor in monitorData()
   for (int istave = 0; istave < NStaves[mLayer]; istave++) {
@@ -749,7 +732,6 @@ void ITSFhrTask::endOfActivity(Activity& /*activity*/)
 void ITSFhrTask::resetGeneralPlots()
 {
   resetObject(mTFInfo);
-  resetObject(mErrorPlots);
   resetObject(mErrorVsFeeid);
 }
 

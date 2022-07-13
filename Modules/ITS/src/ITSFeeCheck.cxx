@@ -14,6 +14,7 @@
 /// \author LiAng Zhang
 /// \author Jian Liu
 /// \author Antonio Palasciano
+/// \author Zhen Zhang
 ///
 
 #include "ITS/ITSFeeCheck.h"
@@ -37,6 +38,13 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
 
   for (auto& [moName, mo] : *moMap) {
     (void)moName;
+    if (mo->getName() == "General/ErrorPlots") {
+      result = Quality::Good;
+      auto* h = dynamic_cast<TH1D*>(mo->getObject());
+      if (h->GetMaximum() > 0) {
+        result.set(Quality::Bad);
+      }
+    } 
     for (int iflag = 0; iflag < NFlags; iflag++) {
       if (mo->getName() == Form("LaneStatus/laneStatusFlag%s", mLaneStatusFlag[iflag].c_str())) {
         result = Quality::Good;
@@ -138,7 +146,32 @@ void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
 {
   TString status;
   int textColor;
+  TLatex* text[5];
 
+  if (mo->getName() == "General/ErrorPlots") {
+    auto* h = dynamic_cast<TH1D*>(mo->getObject());
+    if (checkResult == Quality::Good) {
+      text[0] = new TLatex(10, 0.6, "Quality::Good");
+      text[1] = new TLatex(10, 0.4, "There is no Error found");
+      for (int i = 0; i < 2; ++i) {
+        text[i]->SetTextAlign(23);
+        text[i]->SetTextSize(0.08);
+        text[i]->SetTextColor(kGreen);
+        h->GetListOfFunctions()->Add(text[i]);
+      }
+    } else if (checkResult == Quality::Bad) {
+      text[0] = new TLatex(10, 0.7, "Quality::Bad");
+      text[1] = new TLatex(10, 0.5, "Decoding ERROR detected");
+      text[2] = new TLatex(10, 0.3, "Please Call Expert");
+      for (int i = 0; i < 3; ++i) {
+        text[i]->SetTextAlign(23);
+        text[i]->SetTextSize(0.08);
+        text[i]->SetTextColor(kRed);
+        h->GetListOfFunctions()->Add(text[i]);
+      }
+    }
+  }	
+  
   for (int iflag = 0; iflag < NFlags; iflag++) {
     if (mo->getName() == Form("LaneStatus/laneStatusFlag%s", mLaneStatusFlag[iflag].c_str())) {
       auto* h = dynamic_cast<TH2I*>(mo->getObject());

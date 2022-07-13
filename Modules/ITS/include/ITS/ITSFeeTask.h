@@ -15,12 +15,18 @@
 /// \author Liang Zhang
 /// \author Pietro Fecchio
 /// \author Antonio Palasciano
+/// \author Zhen Zhang
 ///
 
 #ifndef QC_MODULE_ITS_ITSFEETASK_H
 #define QC_MODULE_ITS_ITSFEETASK_H
 
 #include "QualityControl/TaskInterface.h"
+#include <ITSMFTReconstruction/ChipMappingITS.h>
+#include <ITSMFTReconstruction/PixelData.h>
+#include <ITSBase/GeometryTGeo.h>
+#include <ITSMFTReconstruction/RawPixelDecoder.h>
+
 
 #include <TH1.h>
 #include <TH2.h>
@@ -110,12 +116,19 @@ class ITSFeeTask final : public TaskInterface
   int mStatusFlagNumber[7][48][28][3] = { { { 0 } } }; //[iLayer][iStave][iLane][iLaneStatusFlag]
   int mStatusSummaryLayerNumber[7][3] = { { 0 } };     //[iLayer][iflag]
   int mStatusSummaryNumber[4][3] = { { 0 } };          //[summary][iflag] ---> Global, IB, ML, OL
+  int**** mLinkErrorCount /* = new int***[NStaves[lay]]*/;        //  errorcount[layer][stave][FEE][errorid]
+  int**** mChipErrorCount /* = new int***[NStaves[lay]]*/;        //  errorcount[layer][stave][FEE][errorid]
 
+  o2::itsmft::RawPixelDecoder<o2::itsmft::ChipMappingITS>* mDecoder;
   // parameters taken from the .json
   int mNPayloadSizeBins = 0;
+  int mNThreads = 0;
 
   TH1I* mTFInfo; // count vs TF ID
   TH2I* mTriggerVsFeeId;
+  TH1D* mErrorPlots;
+  TH2I* mLinkErrorVsFeeid;		//link ErrorVsFeeid
+  TH2I* mChipErrorVsFeeid;		//chip ErrorVsFeeid
   TH1I* mTrigger;
   TH2I* mLaneInfo;
   TH2I* mFlag1Check; // include transmission_timeout, packet_overflow, lane_starts_violation
