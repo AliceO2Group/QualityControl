@@ -125,7 +125,7 @@ void SliceTrendingTask::trendValues(const Trigger& t,
                                     repository::DatabaseInterface& qcdb)
 {
   mTime = t.timestamp / 1000; // ROOT expects seconds since epoch.
-  mMetaData.runNumber = -1;
+  mMetaData.runNumber = t.activity.mId;
 
   for (auto& dataSource : mConfig.dataSources) {
     mNumberPads[dataSource.name] = 0;
