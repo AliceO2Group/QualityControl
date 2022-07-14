@@ -539,5 +539,7 @@ void SliceTrendingTask::beautifyGraph(T& graph, const SliceTrendingTaskConfig::P
     graph->GetXaxis()->SetTimeOffset(0.0);
     graph->GetXaxis()->SetLabelOffset(0.02);
     graph->GetXaxis()->SetTimeFormat("#splitline{%d.%m.%y}{%H:%M}");
+  } else if (plotconfig.varexp.find(":meta.runNumber") != std::string::npos) {
+    graph->GetXaxis()->SetNoExponent(true);
   }
 }
