@@ -150,7 +150,7 @@ void TrendingTask::generatePlots()
     // we have to delete the graph errors after the plot is saved, unfortunately the canvas does not take its ownership
     TGraphErrors* graphErrors = nullptr;
 
-    TCanvas* c = new TCanvas();
+    auto* c = new TCanvas();
 
     mTrend->Draw(plot.varexp.c_str(), plot.selection.c_str(), plot.option.c_str());
 
