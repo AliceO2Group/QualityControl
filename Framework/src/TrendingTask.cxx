@@ -203,6 +203,8 @@ void TrendingTask::generatePlots()
         // Without this it would show dates in order of 2044-12-18 on the day of 2019-12-19.
         histo->GetXaxis()->SetTimeOffset(0.0);
         histo->GetXaxis()->SetTimeFormat("%Y-%m-%d %H:%M");
+      } else if (plot.varexp.find(":meta.runNumber") != std::string::npos) {
+        histo->GetXaxis()->SetNoExponent(true);
       }
       // QCG doesn't empty the buffers before visualizing the plot, nor does ROOT when saving the file,
       // so we have to do it here.
