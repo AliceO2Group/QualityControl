@@ -43,7 +43,7 @@ Interfaces to databases and other services are accesible via `ServiceRegistry`, 
  * Periodic - triggers when a specified period of time passes 
  * New Object - triggers when an object in QCDB is updated
  * For Each Object - triggers for each object in QCDB which matches an Activity
- * For Each Latest - trggers for the latest object in QCDB for each matching Activity
+ * For Each Latest - trggers for the latest object in QCDB for each matching Activity, sorted by Period, Pass and Run
  * Once - triggers only first time it is checked
  * Always - triggers each time it is checked
 
@@ -148,7 +148,9 @@ Each of the three methods can be invoked by one or more triggers. Below are list
  * `"<x><sec/min/hour>"` - Periodic - triggers when a specified period of time passes. For example: "5min", "0.001 seconds", "10sec", "2hours".
  * `"newobject:[qcdb/ccdb]:<path>"` - New Object - triggers when an object in QCDB or CCDB is updated (applicable for synchronous processing). For example: `"newobject:qcdb:qc/TST/MO/QcTask/Example"`
  * `"foreachobject:[qcdb/ccdb]:<path>"` - For Each Object - triggers for each object in QCDB or CCDB which matches the activity indicated in the QC config file (applicable for asynchronous processing).
- * `"foreachlatest:[qcdb/ccdb]:<path>"` - For Each Latest - triggers for the latest object version in QCDB or CCDB for each matching activity (applicable for asynchronous processing).
+ * `"foreachlatest:[qcdb/ccdb]:<path>"` - For Each Latest - triggers for the latest object version in QCDB or CCDB 
+   for each matching activity (applicable for asynchronous processing). It sorts objects in ascending order by period, 
+   pass and run.
  * `"once"` - Once - triggers only first time it is checked
  * `"always"` - Always - triggers each time it is checked
 

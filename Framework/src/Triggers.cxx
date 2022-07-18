@@ -24,6 +24,7 @@
 #include <Common/Timer.h>
 #include <chrono>
 #include <ostream>
+#include <tuple>
 
 using namespace std::chrono;
 using namespace o2::quality_control::core;
@@ -249,7 +250,8 @@ TriggerFcn ForEachLatest(std::string databaseUrl, std::string databaseType, std:
   ILOG(Debug, Devel) << "Filter activity: " << activity << ENDM;
 
   // As for today, we receive objects in the order of the newest to the oldest.
-  // We prefer the other order here.
+  // The inverse order is more likely to follow what we want (ascending by period/pass/run),
+  // thus sorting may take less time.
   for (auto rit = objects.rbegin(); rit != objects.rend(); ++rit) {
     auto objectActivity = repository::database_helpers::asActivity(rit->second, activity.mProvenance);
     ILOG(Debug, Trace) << "Matching the filter with object's activity: " << objectActivity << ENDM;
@@ -268,10 +270,16 @@ TriggerFcn ForEachLatest(std::string databaseUrl, std::string databaseType, std:
   }
   ILOG(Info, Support) << filteredObjects->size() << " objects matched the specified activity" << ENDM;
 
-  // we make sure it is sorted. If it is already, it shouldn't cost much.
+  // Since we select concrete objects per each combination of run/pass/period,
+  // we sort the entries in the ascending order by period, pass and run.
   std::sort(filteredObjects->begin(), filteredObjects->end(),
             [](const std::pair<Activity, boost::property_tree::ptree>& a, const std::pair<Activity, boost::property_tree::ptree>& b) {
-              return a.second.get<int64_t>(timestampKey) < b.second.get<int64_t>(timestampKey);
+              return std::forward_as_tuple(a.second.get<std::string>(metadata_keys::periodName, ""),
+                                           a.second.get<std::string>(metadata_keys::passName, ""),
+                                           a.second.get<int64_t>(metadata_keys::runNumber, 0)) <
+                     std::forward_as_tuple(b.second.get<std::string>(metadata_keys::periodName, ""),
+                                           b.second.get<std::string>(metadata_keys::passName, ""),
+                                           b.second.get<int64_t>(metadata_keys::runNumber, 0));
             });
 
   return [filteredObjects, activity, currentObject = filteredObjects->begin()]() mutable -> Trigger {
