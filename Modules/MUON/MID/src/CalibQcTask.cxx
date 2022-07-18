@@ -243,7 +243,7 @@ void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   for (const auto& noiserof : noiserofs) { // loop noiseROFs //
     printf("========================================================== \n");
-    printf("%05d ROF with first entry %05zu and nentries %02zu , BC %05d, ORB %05d , EventType %02d\n", noiseROF, noiserof.firstEntry, noiserof.nEntries, noiserof.interactionRecord.bc, noiserof.interactionRecord.orbit, noiserof.eventType);
+    printf("%05d ROF with first entry %05zu and nentries %02zu , BC %05d, ORB %05d , EventType %02d\n", noiseROF, noiserof.firstEntry, noiserof.nEntries, noiserof.interactionRecord.bc, noiserof.interactionRecord.orbit, (int)noiserof.eventType);
     //   eventType::  Standard = 0, Calib = 1, FET = 2
     noiseROF++;
     multNoiseMT11B = 0;
@@ -406,7 +406,7 @@ void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   for (const auto& deadrof : deadrofs) { // loop deadROFs //
     printf("========================================================== \n");
-    printf("%05d deadROF with first entry %05zu and nentries %02zu , BC %05d, ORB %05d , EventType %02d\n", deadROF, deadrof.firstEntry, deadrof.nEntries, deadrof.interactionRecord.bc, deadrof.interactionRecord.orbit, deadrof.eventType);
+    printf("%05d deadROF with first entry %05zu and nentries %02zu , BC %05d, ORB %05d , EventType %02d\n", deadROF, deadrof.firstEntry, deadrof.nEntries, deadrof.interactionRecord.bc, deadrof.interactionRecord.orbit, (int)deadrof.eventType);
     //  eventType::  Standard = 0, Calib = 1, FET = 2
     deadROF++;
 
