@@ -23,7 +23,7 @@ using namespace o2::quality_control::core;
 namespace o2::quality_control_modules::skeleton
 {
 
-void SkeletonAggregator::configure(std::string) {}
+void SkeletonAggregator::configure() {}
 
 std::map<std::string, Quality> SkeletonAggregator::aggregate(QualityObjectsMapType& qoMap)
 {

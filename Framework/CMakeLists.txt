@@ -54,6 +54,7 @@ add_library(O2QualityControl
   src/TaskRunner.cxx
   src/TaskRunnerFactory.cxx
   src/TaskInterface.cxx
+  src/UserCodeInterface.cxx
   src/RepositoryBenchmark.cxx
   src/InfrastructureGenerator.cxx
   src/InfrastructureSpecReader.cxx
@@ -121,6 +122,7 @@ add_root_dictionary(O2QualityControl
   HEADERS
   include/QualityControl/CheckInterface.h
   include/QualityControl/TaskInterface.h
+  include/QualityControl/UserCodeInterface.h
   include/QualityControl/AggregatorInterface.h
   include/QualityControl/PostProcessingInterface.h
   include/QualityControl/TrendingTask.h
@@ -240,6 +242,7 @@ set(TEST_SRCS
     test/testRepoPathUtils.cxx
     test/testPolicyManager.cxx
     test/testQualitiesToTRFCollectionConverter.cxx
+    test/testUserCodeInterface.cxx
   )
 
 set(TEST_ARGS
@@ -269,6 +272,7 @@ set(TEST_ARGS
     ""
     "-b --run"
     "-b --run"
+    ""
     ""
     ""
     ""
@@ -342,12 +346,6 @@ add_test(NAME batch_test COMMAND o2-qc-batch-test.sh)
 set_tests_properties(batch_test PROPERTIES ENVIRONMENT "JSON_DIR=${CMAKE_BINARY_DIR}/tests;UNIQUE_ID=${UNIQUE_ID}")
 set_property(TEST batch_test PROPERTY LABELS slow)
 set_property(TEST batch_test PROPERTY TIMEOUT 45)
-
-# disable some tests in the CI to avoid un-expected failures.
-# to be removed when it is fixed / understood
-#set_property(TEST functional_test PROPERTY LABELS manual)
-#set_property(TEST testWorkflow PROPERTY LABELS manual)
-#set_property(TEST testCheckWorkflow PROPERTY LABELS manual)
 
 # ---- Install ---- 
 

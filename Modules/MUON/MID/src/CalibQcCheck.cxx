@@ -29,8 +29,6 @@ using namespace o2::quality_control;
 namespace o2::quality_control_modules::mid
 {
 
-void CalibQcCheck::configure() {}
-
 Quality CalibQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
   Quality result = Quality::Null;
