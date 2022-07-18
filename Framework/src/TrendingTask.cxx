@@ -168,12 +168,6 @@ void TrendingTask::generatePlots()
         graphErrors = new TGraphErrors(mTrend->GetSelectedRows(), mTrend->GetVal(1), mTrend->GetVal(0), mTrend->GetVal(2), mTrend->GetVal(3));
         // We draw on the same plot as the main graph, but only error bars
         graphErrors->Draw("SAME E");
-        // We try to convince ROOT to delete graphErrors together with the rest of the canvas.
-        if (auto* pad = c->GetPad(0)) {
-          if (auto* primitives = pad->GetListOfPrimitives()) {
-            primitives->Add(graphErrors);
-          }
-        }
       }
     }
 
