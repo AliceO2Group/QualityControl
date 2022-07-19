@@ -23,9 +23,8 @@ using namespace o2::quality_control;
 namespace o2::quality_control_modules::common
 {
 
-void WorstOfAllAggregator::configure(std::string name)
+void WorstOfAllAggregator::configure()
 {
-  mName = name;
 }
 
 std::map<std::string, Quality> WorstOfAllAggregator::aggregate(QualityObjectsMapType& qoMap)

@@ -15,11 +15,12 @@
 /// PostProcessing task which finds collisions not compatible with BC pattern
 
 #include "CommonDataFormat/BunchFilling.h"
+#include "DataFormatsParameters/GRPLHCIFData.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/DatabaseInterface.h"
 #include "FV0/OutOfBunchCollTask.h"
-
 #include "DataFormatsFIT/Triggers.h"
+
 #include <TH1F.h>
 #include <TH2.h>
 #include <typeinfo>
@@ -45,13 +46,13 @@ void OutOfBunchCollTask::configure(std::string, const boost::property_tree::ptre
     ILOG(Info, Support) << "configure() : using default pathDigitQcTask = \"" << mPathDigitQcTask << "\"" << ENDM;
   }
 
-  node = config.get_child_optional(Form("%s.custom.pathBunchFilling", configPath));
+  node = config.get_child_optional(Form("%s.custom.pathGrpLhcIf", configPath));
   if (node) {
-    mPathBunchFilling = node.get_ptr()->get_child("").get_value<std::string>();
-    ILOG(Info, Support) << "configure() : using pathBunchFilling = \"" << mPathBunchFilling << "\"" << ENDM;
+    mPathGrpLhcIf = node.get_ptr()->get_child("").get_value<std::string>();
+    ILOG(Info, Support) << "configure() : using pathBunchFilling = \"" << mPathGrpLhcIf << "\"" << ENDM;
   } else {
-    mPathBunchFilling = "GLO/GRP/BunchFilling";
-    ILOG(Info, Support) << "configure() : using default pathBunchFilling = \"" << mPathBunchFilling << "\"" << ENDM;
+    mPathGrpLhcIf = "GLO/Config/GRPLHCIF";
+    ILOG(Info, Support) << "configure() : using default pathBunchFilling = \"" << mPathGrpLhcIf << "\"" << ENDM;
   }
 }
 
@@ -85,16 +86,26 @@ void OutOfBunchCollTask::update(Trigger t, framework::ServiceRegistry&)
 {
   std::map<std::string, std::string> metadata;
   std::map<std::string, std::string> headers;
-  const auto* bcPattern = mCcdbApi.retrieveFromTFileAny<o2::BunchFilling>(mPathBunchFilling, metadata, -1, &headers);
-  if (!bcPattern) {
-    ILOG(Error, Support) << "object \"" << mPathBunchFilling << "\" NOT retrieved!!!" << ENDM;
+  auto* lhcIf = mCcdbApi.retrieveFromTFileAny<o2::parameters::GRPLHCIFData>(mPathGrpLhcIf, metadata, -1, &headers);
+  if (!lhcIf) {
+    ILOG(Error, Support) << "object \"" << mPathGrpLhcIf << "\" NOT retrieved!!!" << ENDM;
     return;
   }
+  const std::string bcName = lhcIf->getInjectionScheme();
+  if (bcName.size() == 8) {
+    if (bcName.compare("no_value")) {
+      ILOG(Warning) << "Filling scheme not set. OutOfBunchColTask will not produce valid QC plots." << ENDM;
+    }
+  } else {
+    ILOG(Info, Support) << "Filling scheme: " << bcName.c_str() << ENDM;
+  }
+  auto bcPattern = lhcIf->getBunchFilling();
+
   const int nBc = 3564;
   mHistBcPattern->Reset();
   for (int i = 0; i < nBc + 1; i++) {
     for (int j = 0; j < mMapDigitTrgNames.size() + 1; j++) {
-      mHistBcPattern->SetBinContent(i + 1, j + 1, bcPattern->testBC(i));
+      mHistBcPattern->SetBinContent(i + 1, j + 1, bcPattern.testBC(i));
     }
   }
   auto mo = mDatabase->retrieveMO(mPathDigitQcTask, "BCvsTriggers", t.timestamp, t.activity);

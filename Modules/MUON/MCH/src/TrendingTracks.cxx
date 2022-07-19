@@ -118,9 +118,7 @@ void TrendingTracks::finalize(Trigger t, framework::ServiceRegistry&)
 void TrendingTracks::trendValues(const Trigger& t, repository::DatabaseInterface& qcdb)
 {
   mTime = t.timestamp / 1000; // ROOT expects seconds since epoch
-  // todo get run number when it is available. consider putting it inside monitor object's metadata (this might be not
-  //  enough if we trend across runs).
-  mMetaData.runNumber = -1;
+  mMetaData.runNumber = t.activity.mId;
 
   std::shared_ptr<o2::quality_control::core::MonitorObject> moClusPerChamber = nullptr;
 

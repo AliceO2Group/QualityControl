@@ -63,8 +63,20 @@ void RawErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info, Support) << "initialize RawErrorTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
+  mErrorTypeAll = new TH2F("RawDataErrors", "Raw data errors", 40, 0, 40, 6, -0.5, 5.5);
+  mErrorTypeAll->GetXaxis()->SetTitle("Link");
+  mErrorTypeAll->GetYaxis()->SetTitle("Error type");
+  mErrorTypeAll->GetYaxis()->SetBinLabel(1, "Page");
+  mErrorTypeAll->GetYaxis()->SetBinLabel(2, "Major ALTRO");
+  mErrorTypeAll->GetYaxis()->SetBinLabel(3, "Minor ALTRO");
+  mErrorTypeAll->GetYaxis()->SetBinLabel(4, "Fit");
+  mErrorTypeAll->GetYaxis()->SetBinLabel(5, "Geometry");
+  mErrorTypeAll->GetYaxis()->SetBinLabel(6, "Gain");
+  mErrorTypeAll->SetStats(0);
+  getObjectsManager()->startPublishing(mErrorTypeAll);
+
   mErrorTypeAltro = new TH2F("MajorAltroErrors", "Major ALTRO decoding errors", 40, 0, 40, 10, 0, 10);
-  mErrorTypeAltro->GetXaxis()->SetTitle("SM");
+  mErrorTypeAltro->GetXaxis()->SetTitle("Link");
   mErrorTypeAltro->GetYaxis()->SetTitle("Error Type");
   mErrorTypeAltro->GetYaxis()->SetBinLabel(1, "RCU Trailer");
   mErrorTypeAltro->GetYaxis()->SetBinLabel(2, "RCU Version");
@@ -81,7 +93,7 @@ void RawErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
     ->startPublishing(mErrorTypeAltro);
 
   mErrorTypePage = new TH2F("PageErrors", "DMA page decoding errors", 40, 0, 40, 7, 0, 7);
-  mErrorTypePage->GetXaxis()->SetTitle("SM");
+  mErrorTypePage->GetXaxis()->SetTitle("Link");
   mErrorTypePage->GetYaxis()->SetTitle("Page Error Type");
   mErrorTypePage->GetYaxis()->SetBinLabel(1, "Page not found");
   mErrorTypePage->GetYaxis()->SetBinLabel(2, "Header decoding");
@@ -95,7 +107,7 @@ void RawErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
     ->startPublishing(mErrorTypePage);
 
   mErrorTypeMinAltro = new TH2F("MinorAltroError", "Minor ALTRO decoding error", 40, 0, 40, 3, 0, 3);
-  mErrorTypeMinAltro->GetXaxis()->SetTitle("SM");
+  mErrorTypeMinAltro->GetXaxis()->SetTitle("Link");
   mErrorTypeMinAltro->GetYaxis()->SetTitle("MinorAltro Error Type");
   mErrorTypeMinAltro->GetYaxis()->SetBinLabel(1, "Bunch header null");
   mErrorTypeMinAltro->GetYaxis()->SetBinLabel(2, "Channel end unexpected");
@@ -105,7 +117,7 @@ void RawErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
     ->startPublishing(mErrorTypeMinAltro);
 
   mErrorTypeFit = new TH2F("RawFitError", "Error in raw fitting ", 40, 0, 40, 4, 0, 4);
-  mErrorTypeFit->GetXaxis()->SetTitle("SM");
+  mErrorTypeFit->GetXaxis()->SetTitle("Link");
   mErrorTypeFit->GetYaxis()->SetTitle("Fit Error Type");
   mErrorTypeFit->GetYaxis()->SetBinLabel(1, "sample uninitalized");
   mErrorTypeFit->GetYaxis()->SetBinLabel(2, "No convergence");
@@ -117,7 +129,7 @@ void RawErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
     ->startPublishing(mErrorTypeFit);
 
   mErrorTypeGeometry = new TH2F("GeometryError", "Geometry error", 40, 0, 40, 2, 0, 2);
-  mErrorTypeGeometry->GetXaxis()->SetTitle("SM");
+  mErrorTypeGeometry->GetXaxis()->SetTitle("Link");
   mErrorTypeGeometry->GetYaxis()->SetTitle("Geometry Error Type");
   mErrorTypeGeometry->GetYaxis()->SetBinLabel(1, "Cell ID outside range");
   mErrorTypeGeometry->GetYaxis()->SetBinLabel(2, "Cell ID corrupted");
@@ -126,7 +138,7 @@ void RawErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
     ->startPublishing(mErrorTypeGeometry);
 
   mErrorTypeGain = new TH2F("GainTypeError", "Gain type error", 40, 0, 40, 2, 0, 2);
-  mErrorTypeGain->GetXaxis()->SetTitle("SM");
+  mErrorTypeGain->GetXaxis()->SetTitle("Link");
   mErrorTypeGain->GetYaxis()->SetTitle("Gain Error Type");
   mErrorTypeGain->GetYaxis()->SetBinLabel(1, "High Gain missing");
   mErrorTypeGain->GetYaxis()->SetBinLabel(2, "Low Gain missing");
@@ -136,13 +148,13 @@ void RawErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   mErrorGainLow = new TH2F("NoHGPerDDL", "High Gain bunch missing", 40, 0, 40, 40, 0, 40);
   mErrorGainLow->GetYaxis()->SetTitle("FECid");
-  mErrorGainLow->GetXaxis()->SetTitle("DDL");
+  mErrorGainLow->GetXaxis()->SetTitle("Link");
   mErrorGainLow->SetStats(0);
   getObjectsManager()->startPublishing(mErrorGainLow);
 
   mErrorGainHigh = new TH2F("NoLGPerDDL", "Low Gain bunch missing for saturated High Gain", 40, 0, 40, 40, 0, 40);
   mErrorGainHigh->GetYaxis()->SetTitle("FECid");
-  mErrorGainHigh->GetXaxis()->SetTitle("DDL");
+  mErrorGainHigh->GetXaxis()->SetTitle("Link");
   mErrorGainHigh->SetStats(0);
   getObjectsManager()->startPublishing(mErrorGainHigh);
 }
@@ -170,6 +182,7 @@ void RawErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
     LOG(debug) << "Received " << errorcont.size() << " errors";
     for (auto& error : errorcont) {
       auto feeid = error.getFEEID();
+      mErrorTypeAll->Fill(feeid, error.getErrorType());
       auto errorCode = error.getErrorCode();
       TH2* errorhist = nullptr;
       switch (error.getErrorType()) {
@@ -202,9 +215,9 @@ void RawErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
       if (o2::emcal::ErrorTypeFEE::ErrorSource_t::GAIN_ERROR) {
         auto FECid = error.getSubspecification();
         if (errorCode == 0)
-          mErrorGainLow->Fill(feeid, FECid); //error 0
+          mErrorGainLow->Fill(feeid, FECid); // error 0
         else
-          mErrorGainHigh->Fill(feeid, FECid); //error 1
+          mErrorGainHigh->Fill(feeid, FECid); // error 1
       }
 
     } // end for error in errorcont

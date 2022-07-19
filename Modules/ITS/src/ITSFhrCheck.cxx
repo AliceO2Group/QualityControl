@@ -30,8 +30,6 @@
 namespace o2::quality_control_modules::its
 {
 
-void ITSFhrCheck::configure() {}
-
 Quality ITSFhrCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
   Quality result = Quality::Null;

@@ -34,8 +34,6 @@ using namespace std;
 namespace o2::quality_control_modules::emcal
 {
 
-void CellCheck::configure() {}
-
 Quality CellCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
   auto mo = moMap->begin()->second;

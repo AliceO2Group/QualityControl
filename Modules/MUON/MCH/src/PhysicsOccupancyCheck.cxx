@@ -43,9 +43,6 @@ PhysicsOccupancyCheck::PhysicsOccupancyCheck()
 
 PhysicsOccupancyCheck::~PhysicsOccupancyCheck() {}
 
-void PhysicsOccupancyCheck::configure()
-{
-}
 
 Quality PhysicsOccupancyCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {

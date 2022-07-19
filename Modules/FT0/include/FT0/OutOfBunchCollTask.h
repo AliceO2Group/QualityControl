@@ -17,7 +17,6 @@
 #ifndef QC_MODULE_FT0_OUTOFBUNCHCOLLTASK_H
 #define QC_MODULE_FT0_OUTOFBUNCHCOLLTASK_H
 
-#include "CommonDataFormat/BunchFilling.h"
 #include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/DatabaseInterface.h"
 #include "CCDB/CcdbApi.h"
@@ -45,7 +44,7 @@ class OutOfBunchCollTask final : public quality_control::postprocessing::PostPro
 
  private:
   std::string mPathDigitQcTask;
-  std::string mPathBunchFilling;
+  std::string mPathGrpLhcIf;
   o2::quality_control::repository::DatabaseInterface* mDatabase = nullptr;
   std::string mCcdbUrl;
   o2::ccdb::CcdbApi mCcdbApi;

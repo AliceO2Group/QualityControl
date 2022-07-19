@@ -29,8 +29,6 @@
 namespace o2::quality_control_modules::its
 {
 
-void ITSClusterCheck::configure() {}
-
 Quality ITSClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
   Quality result = Quality::Null;

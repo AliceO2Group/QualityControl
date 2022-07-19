@@ -313,7 +313,7 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     const o2::InteractionRecord& firstIR = digits[0].getIntRecord();
     const o2::InteractionRecord& lastIR = digits[digits.size() - 1].getIntRecord();
     auto timeMinNS = firstIR.bc2ns();
-    auto timeMaxNS = firstIR.bc2ns();
+    auto timeMaxNS = lastIR.bc2ns();
     mTimeMinNS = std::min(mTimeMinNS, timeMinNS); // to be sure if somehow TFID is unordered
     mTimeMaxNS = std::max(mTimeMaxNS, timeMaxNS);
     mTimeSum += timeMaxNS - timeMinNS;

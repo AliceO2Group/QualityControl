@@ -25,8 +25,6 @@
 namespace o2::quality_control_modules::its
 {
 
-void ITSThresholdCalibrationCheck::configure() {}
-
 Quality ITSThresholdCalibrationCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
   Quality result = Quality::Null;

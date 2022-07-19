@@ -10,37 +10,41 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   CellCheck.h
-/// \author Cristina Terrevoli
+/// \file   RawErrorCheck.h
+/// \author Markus Fasel
 ///
 
-#ifndef QC_MODULE_EMCAL_EMCALCELLCHECK_HH
-#define QC_MODULE_EMCAL_EMCALCELLCHECK_HH
+#ifndef QC_MODULE_EMCAL_EMCALRAWERRORCHECK_H
+#define QC_MODULE_EMCAL_EMCALRAWERRORCHECK_H
 
 #include "QualityControl/CheckInterface.h"
 
 namespace o2::quality_control_modules::emcal
 {
 
-/// \brief  Check whether a plot is empty or not.
+/// \class RawErrorCheck
+/// \brief Checker for histograms with error code published by the RawErrorTask
+/// \author Markus Fasel
 ///
-/// \author Barthelemy von Haller
-class CellCheck : public o2::quality_control::checker::CheckInterface
+/// Checking for presence of an error code. Any presence of error code (non-0 entry)
+/// will define data as bad.
+class RawErrorCheck : public o2::quality_control::checker::CheckInterface
 {
  public:
   /// Default constructor
-  CellCheck() = default;
+  RawErrorCheck() = default;
   /// Destructor
-  ~CellCheck() override = default;
+  ~RawErrorCheck() override = default;
 
   // Override interface
+  void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
 
-  ClassDefOverride(CellCheck, 1);
+  ClassDefOverride(RawErrorCheck, 2);
 };
 
 } // namespace o2::quality_control_modules::emcal
 
-#endif // QC_MODULE_EMCAL_EMCALCELLCHECK_HH
+#endif // QC_MODULE_EMCAL_EMCALRAWERRORCHECK_H
