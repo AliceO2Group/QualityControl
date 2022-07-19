@@ -57,6 +57,7 @@ void Check::init()
 {
   try {
     mCheckInterface = root_class_factory::create<CheckInterface>(mCheckConfig.moduleName, mCheckConfig.className);
+    mCheckInterface->setName(mCheckConfig.name);
     mCheckInterface->setCustomParameters(mCheckConfig.customParameters);
   } catch (...) {
     std::string diagnostic = boost::current_exception_diagnostic_information();

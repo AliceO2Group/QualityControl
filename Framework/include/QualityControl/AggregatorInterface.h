@@ -21,6 +21,7 @@
 #include <map>
 
 #include "QualityControl/QualityObject.h"
+#include "QualityControl/UserCodeInterface.h"
 #include "QualityControl/Quality.h"
 
 namespace o2::quality_control::checker
@@ -29,7 +30,7 @@ namespace o2::quality_control::checker
 /// \brief  Skeleton of a quality aggregator user algorithm.
 ///
 /// \author Barthelemy von Haller
-class AggregatorInterface
+class AggregatorInterface : public o2::quality_control::core::UserCodeInterface
 {
  public:
   /// Default constructor
@@ -37,34 +38,14 @@ class AggregatorInterface
   /// Destructor
   virtual ~AggregatorInterface() = default;
 
-  /// \brief Configure the aggregator based on its name.
-  ///
-  /// The configuration of the object can't be done in the constructor because
-  /// ROOT needs an argument-less constructor when streaming it. We use this method
-  /// to configure the object. The name might be used to ask the configuration system
-  /// for specific parameters.
-  ///
-  /// \param name The name of the aggregator.
-  virtual void configure(std::string name) = 0;
-
   /// \brief Returns new qualities (usually fewer) based on the input qualities
   ///
   /// @param qoMap A map of the the QualityObjects to aggregate and their full names.
   /// @return The new qualities, associated with a name.
   virtual std::map<std::string, o2::quality_control::core::Quality> aggregate(std::map<std::string, std::shared_ptr<const o2::quality_control::core::QualityObject>>& qoMap) = 0;
 
-  /// \brief Set the custom parameters for this aggregator.
-  /// Set the custom parameters for this aggregator. It is usually the ones defined in the configuration.
-  /// \param parameters
-  void setCustomParameters(const std::unordered_map<std::string, std::string>& parameters)
-  {
-    mCustomParameters = parameters;
-  }
-
  protected:
-  std::unordered_map<std::string, std::string> mCustomParameters;
-
-  ClassDef(AggregatorInterface, 1)
+  ClassDef(AggregatorInterface, 2)
 };
 
 } // namespace o2::quality_control::checker

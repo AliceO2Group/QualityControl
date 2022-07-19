@@ -52,14 +52,15 @@ class RawErrorTask final : public TaskInterface
   void reset() override;
 
  private:
-  TH2* mErrorTypeAltro = nullptr;    ///< Error from
-  TH2* mErrorTypePage = nullptr;     ///< Error from
-  TH2* mErrorTypeMinAltro = nullptr; ///< Error from
-  TH2* mErrorTypeFit = nullptr;      ///< Error from
-  TH2* mErrorTypeGeometry = nullptr; ///< Error from
-  TH2* mErrorTypeGain = nullptr;     ///< Error from
-  TH2* mErrorGainLow = nullptr;      ///< Error per SM
-  TH2* mErrorGainHigh = nullptr;     ///< Error per SM
+  TH2* mErrorTypeAll = nullptr;      ///< Base histogram any raw data error
+  TH2* mErrorTypeAltro = nullptr;    ///< Major ALTRO payload decoding errors
+  TH2* mErrorTypePage = nullptr;     ///< DMA page decoding errors
+  TH2* mErrorTypeMinAltro = nullptr; ///< Minor ALTRO payload decoding errors
+  TH2* mErrorTypeFit = nullptr;      ///< Raw fit errors
+  TH2* mErrorTypeGeometry = nullptr; ///< Geometry errors
+  TH2* mErrorTypeGain = nullptr;     ///< Gain type errors
+  TH2* mErrorGainLow = nullptr;      ///< FEC with LGnoHG error
+  TH2* mErrorGainHigh = nullptr;     ///< FEC with HGnoLG error
 
   o2::emcal::Geometry* mGeometry = nullptr; ///< EMCAL geometry
 };
