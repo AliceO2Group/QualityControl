@@ -27,7 +27,6 @@
 #include <ITSBase/GeometryTGeo.h>
 #include <ITSMFTReconstruction/RawPixelDecoder.h>
 
-
 #include <TH1.h>
 #include <TH2.h>
 #include <TH2Poly.h>
@@ -113,11 +112,11 @@ class ITSFeeTask final : public TaskInterface
   TString mTriggerType[NTrigger] = { "ORBIT", "HB", "HBr", "HC", "PHYSICS", "PP", "CAL", "SOT", "EOT", "SOC", "EOC", "TF", "INT" };
   std::string mLaneStatusFlag[NFlags] = { "WARNING", "ERROR", "FAULT" }; // b00 OK, b01 WARNING, b10 ERROR, b11 FAULT
 
-  int mStatusFlagNumber[7][48][28][3] = { { { 0 } } }; //[iLayer][iStave][iLane][iLaneStatusFlag]
-  int mStatusSummaryLayerNumber[7][3] = { { 0 } };     //[iLayer][iflag]
-  int mStatusSummaryNumber[4][3] = { { 0 } };          //[summary][iflag] ---> Global, IB, ML, OL
-  int**** mLinkErrorCount /* = new int***[NStaves[lay]]*/;        //  errorcount[layer][stave][FEE][errorid]
-  int**** mChipErrorCount /* = new int***[NStaves[lay]]*/;        //  errorcount[layer][stave][FEE][errorid]
+  int mStatusFlagNumber[7][48][28][3] = { { { 0 } } };     //[iLayer][iStave][iLane][iLaneStatusFlag]
+  int mStatusSummaryLayerNumber[7][3] = { { 0 } };         //[iLayer][iflag]
+  int mStatusSummaryNumber[4][3] = { { 0 } };              //[summary][iflag] ---> Global, IB, ML, OL
+  int**** mLinkErrorCount /* = new int***[NStaves[lay]]*/; //  errorcount[layer][stave][FEE][errorid]
+  int**** mChipErrorCount /* = new int***[NStaves[lay]]*/; //  errorcount[layer][stave][FEE][errorid]
 
   o2::itsmft::RawPixelDecoder<o2::itsmft::ChipMappingITS>* mDecoder;
   // parameters taken from the .json
@@ -126,9 +125,10 @@ class ITSFeeTask final : public TaskInterface
 
   TH1I* mTFInfo; // count vs TF ID
   TH2I* mTriggerVsFeeId;
-  TH1D* mErrorPlots;
-  TH2I* mLinkErrorVsFeeid;		//link ErrorVsFeeid
-  TH2I* mChipErrorVsFeeid;		//chip ErrorVsFeeid
+  TH1D* mLinkErrorPlots;
+  TH1D* mChipErrorPlots;
+  TH2I* mLinkErrorVsFeeid; // link ErrorVsFeeid
+  TH2I* mChipErrorVsFeeid; // chip ErrorVsFeeid
   TH1I* mTrigger;
   TH2I* mLaneInfo;
   TH2I* mFlag1Check; // include transmission_timeout, packet_overflow, lane_starts_violation

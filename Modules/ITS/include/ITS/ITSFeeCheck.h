@@ -60,6 +60,8 @@ class ITSFeeCheck : public o2::quality_control::checker::CheckInterface
   const int laneMax[NLayer] = { 108, 144, 180, 384, 480, 1176, 1344 };
 
   std::shared_ptr<TLatex> tInfo;
+  std::shared_ptr<TLatex> tInfoLinkErr;
+  std::shared_ptr<TLatex> tInfoChipErr;
   std::shared_ptr<TLatex> tInfoLayers[7];
   std::shared_ptr<TLatex> tInfoIB;
   std::shared_ptr<TLatex> tInfoML;

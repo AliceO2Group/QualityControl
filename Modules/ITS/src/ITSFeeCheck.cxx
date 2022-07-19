@@ -38,13 +38,20 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
 
   for (auto& [moName, mo] : *moMap) {
     (void)moName;
-    if (mo->getName() == "General/ErrorPlots") {
+    if (mo->getName() == "General/LinkErrorPlots") {
       result = Quality::Good;
       auto* h = dynamic_cast<TH1D*>(mo->getObject());
       if (h->GetMaximum() > 0) {
         result.set(Quality::Bad);
       }
-    } 
+    }
+    if (mo->getName() == "General/ChipErrorPlots") {
+      result = Quality::Good;
+      auto* h = dynamic_cast<TH1D*>(mo->getObject());
+      if (h->GetMaximum() > 0) {
+        result.set(Quality::Bad);
+      }
+    }
     for (int iflag = 0; iflag < NFlags; iflag++) {
       if (mo->getName() == Form("LaneStatus/laneStatusFlag%s", mLaneStatusFlag[iflag].c_str())) {
         result = Quality::Good;
@@ -146,32 +153,38 @@ void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
 {
   TString status;
   int textColor;
-  TLatex* text[5];
 
-  if (mo->getName() == "General/ErrorPlots") {
+  if (mo->getName() == "General/LinkErrorPlots") {
     auto* h = dynamic_cast<TH1D*>(mo->getObject());
     if (checkResult == Quality::Good) {
-      text[0] = new TLatex(10, 0.6, "Quality::Good");
-      text[1] = new TLatex(10, 0.4, "There is no Error found");
-      for (int i = 0; i < 2; ++i) {
-        text[i]->SetTextAlign(23);
-        text[i]->SetTextSize(0.08);
-        text[i]->SetTextColor(kGreen);
-        h->GetListOfFunctions()->Add(text[i]);
-      }
+      status = "Quality::Good";
+      textColor = kGreen;
     } else if (checkResult == Quality::Bad) {
-      text[0] = new TLatex(10, 0.7, "Quality::Bad");
-      text[1] = new TLatex(10, 0.5, "Decoding ERROR detected");
-      text[2] = new TLatex(10, 0.3, "Please Call Expert");
-      for (int i = 0; i < 3; ++i) {
-        text[i]->SetTextAlign(23);
-        text[i]->SetTextSize(0.08);
-        text[i]->SetTextColor(kRed);
-        h->GetListOfFunctions()->Add(text[i]);
-      }
+      status = "Quality::BAD (call expert)";
     }
-  }	
-  
+    tInfoLinkErr = std::make_shared<TLatex>(0.12, 0.835, Form("#bf{%s}", status.Data()));
+    tInfoLinkErr->SetTextColor(textColor);
+    tInfoLinkErr->SetTextSize(0.08);
+    tInfoLinkErr->SetTextFont(23);
+    tInfoLinkErr->SetNDC();
+    h->GetListOfFunctions()->Add(tInfoLinkErr->Clone());
+  }
+  if (mo->getName() == "General/ChipErrorPlots") {
+    auto* h = dynamic_cast<TH1D*>(mo->getObject());
+    if (checkResult == Quality::Good) {
+      status = "Quality::Good";
+      textColor = kGreen;
+    } else if (checkResult == Quality::Bad) {
+      status = "Quality::BAD (call expert)";
+    }
+    tInfoChipErr = std::make_shared<TLatex>(0.12, 0.835, Form("#bf{%s}", status.Data()));
+    tInfoChipErr->SetTextColor(textColor);
+    tInfoChipErr->SetTextSize(0.08);
+    tInfoChipErr->SetTextFont(23);
+    tInfoChipErr->SetNDC();
+    h->GetListOfFunctions()->Add(tInfoChipErr->Clone());
+  }
+
   for (int iflag = 0; iflag < NFlags; iflag++) {
     if (mo->getName() == Form("LaneStatus/laneStatusFlag%s", mLaneStatusFlag[iflag].c_str())) {
       auto* h = dynamic_cast<TH2I*>(mo->getObject());

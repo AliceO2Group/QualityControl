@@ -38,13 +38,8 @@ Quality ITSFhrCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
 
   for (auto& [moName, mo] : *moMap) {
     (void)moName;
-    if (mo->getName() == "General/ErrorPlots") {
-      result = Quality::Good;
-      auto* h = dynamic_cast<TH1D*>(mo->getObject());
-      if (h->GetMaximum() > 0) {
-        result.set(Quality::Bad);
-      }
-    } else if (mo->getName() == "General/General_Occupancy") {
+    result = Quality::Good;
+    if (mo->getName() == "General/General_Occupancy") {
       auto* h = dynamic_cast<TH2Poly*>(mo->getObject());
       result.addMetadata("Gen_Occu", "good");
       for (int ibin = 0; ibin < h->GetNumberOfBins(); ++ibin) {
@@ -107,29 +102,7 @@ std::string ITSFhrCheck::getAcceptedType() { return "TH1"; }
 void ITSFhrCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   TLatex* text[5];
-  if (mo->getName() == "General/ErrorPlots") {
-    auto* h = dynamic_cast<TH1D*>(mo->getObject());
-    if (checkResult == Quality::Good) {
-      text[0] = new TLatex(10, 0.6, "Quality::Good");
-      text[1] = new TLatex(10, 0.4, "There is no Error found");
-      for (int i = 0; i < 2; ++i) {
-        text[i]->SetTextAlign(23);
-        text[i]->SetTextSize(0.08);
-        text[i]->SetTextColor(kGreen);
-        h->GetListOfFunctions()->Add(text[i]);
-      }
-    } else if (checkResult == Quality::Bad) {
-      text[0] = new TLatex(10, 0.7, "Quality::Bad");
-      text[1] = new TLatex(10, 0.5, "Decoding ERROR detected");
-      text[2] = new TLatex(10, 0.3, "Please Call Expert");
-      for (int i = 0; i < 3; ++i) {
-        text[i]->SetTextAlign(23);
-        text[i]->SetTextSize(0.08);
-        text[i]->SetTextColor(kRed);
-        h->GetListOfFunctions()->Add(text[i]);
-      }
-    }
-  } else if (mo->getName() == "General/General_Occupancy") {
+  if (mo->getName() == "General/General_Occupancy") {
     auto* h = dynamic_cast<TH2Poly*>(mo->getObject());
     if (strcmp(checkResult.getMetadata("Gen_Occu").c_str(), "good") == 0) {
       text[0] = new TLatex(0, 0, "Quality::Good");
