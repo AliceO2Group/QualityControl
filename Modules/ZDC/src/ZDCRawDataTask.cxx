@@ -14,6 +14,7 @@
 /// \author Carlo Puggioni
 ///
 
+// OK Ieri
 #include <TCanvas.h>
 #include <TH1.h>
 
@@ -207,7 +208,8 @@ void ZDCRawDataTask::initHisto()
   setNameChannel(7, 2, "ZPC_T3");
   setNameChannel(7, 3, "ZPC_T4");
   // Histograms Baseline
-  setBinHisto1D(16378, -0.125, o2::zdc::ADCMax + 0.125);
+  // setBinHisto1D(16378, -0.125, o2::zdc::ADCMax + 0.125);
+  setBinHisto1D(4096, -2048.5, 2047.5);
   addNewHisto("BASELINE", "hped-ZNA_TC_TR", "Baseline ZNA TC", "ZNA_TC_TR", "LBC");
   addNewHisto("BASELINE", "hped-ZNA_T1", "Baseline ZNA T1", "ZNA_T1", "LBC");
   addNewHisto("BASELINE", "hped-ZNA_T2", "Baseline ZNA T2", "ZNA_T2", "LBC");
@@ -241,7 +243,7 @@ void ZDCRawDataTask::initHisto()
 
   // Histograms Counts
   // setBinHisto1D(o2::constants::lhc::LHCMaxBunches + 6, -5.5, o2::constants::lhc::LHCMaxBunches+0.5);
-  setBinHisto1D(15, -5.5, 9.5);
+  setBinHisto1D(10, -0.5, 9.5);
   addNewHisto("COUNTS", "hcounts-ZNA_TC_TR", "Counts ZNA TC", "ZNA_TC_TR", "LBC");
   addNewHisto("COUNTS", "hcounts-ZNA_T1", "Counts ZNA T1", "ZNA_T1", "LBC");
   addNewHisto("COUNTS", "hcounts-ZNA_T2", "Counts ZNA T2", "ZNA_T2", "LBC");
@@ -277,8 +279,8 @@ void ZDCRawDataTask::initHisto()
   int nbx = (nBCAheadTrig + 1 + 12) * o2::zdc::NTimeBinsPerBC;
   double xmin = -nBCAheadTrig * o2::zdc::NTimeBinsPerBC - 0.5;
   double xmax = o2::zdc::NTimeBinsPerBC - 0.5 + 12;
-  setBinHisto2D(nbx, xmin, xmax, o2::zdc::ADCRange, o2::zdc::ADCMin - 0.5, o2::zdc::ADCMax + 0.5);
-
+  // setBinHisto2D(nbx, xmin, xmax, o2::zdc::ADCRange, o2::zdc::ADCMin - 0.5, o2::zdc::ADCMax + 0.5);
+  setBinHisto2D(60, -36.5, 23.5, 4096, -2048.5, 2047.5);
   // Alice Trigger Or Auto Trigger
   addNewHisto("SIGNAL", "hsignal-ZNA_TC_TR_AoT", "Signal ZNA TC Trigger Alice OR Auto Trigger", "ZNA_TC_TR", "AoT");
   addNewHisto("SIGNAL", "hsignal-ZNA_T1_AoT", "Signal ZNA T1 Trigger Alice OR Auto Trigger", "ZNA_T1", "AoT");
@@ -311,70 +313,6 @@ void ZDCRawDataTask::initHisto()
   addNewHisto("SIGNAL", "hsignal-ZEM1_TR_AoT", "Signal ZEM1 Trigger Alice OR Auto Trigger", "ZEM1_TR", "AoT");
   addNewHisto("SIGNAL", "hsignal-ZEM2_TR_AoT", "Signal ZEM2 Trigger Alice OR Auto Trigger", "ZEM2_TR", "AoT");
 
-  // Alice Trigger
-  addNewHisto("SIGNAL", "hsignal-ZNA_TC_TR_A", "Signal ZNA TC Trigger Alice", "ZNA_TC_TR", "A");
-  addNewHisto("SIGNAL", "hsignal-ZNA_T1_A", "Signal ZNA T1 Trigger Alice", "ZNA_T1", "A");
-  addNewHisto("SIGNAL", "hsignal-ZNA_T2_A", "Signal ZNA T2 Trigger Alice", "ZNA_T2", "A");
-  addNewHisto("SIGNAL", "hsignal-ZNA_T3_A", "Signal ZNA T3 Trigger Alice", "ZNA_T3", "A");
-  addNewHisto("SIGNAL", "hsignal-ZNA_T4_A", "Signal ZNA T4Trigger Alice", "ZNA_T4", "A");
-  addNewHisto("SIGNAL", "hsignal-ZNA_SUM_A", "Signal ZNA SUM Trigger Alice", "ZNA_SUM", "A");
-
-  addNewHisto("SIGNAL", "hsignal-ZNC_TC_TR_A", "Signal ZNC TC Trigger Alice", "ZNC_TC_TR", "A");
-  addNewHisto("SIGNAL", "hsignal-ZNC_T1_A", "Signal ZNC T1 Trigger Alice", "ZNC_T1", "A");
-  addNewHisto("SIGNAL", "hsignal-ZNC_T2_A", "Signal ZNC T2 Trigger Alice", "ZNC_T2", "A");
-  addNewHisto("SIGNAL", "hsignal-ZNC_T3_A", "Signal ZNC T3 Trigger Alice", "ZNC_T3", "A");
-  addNewHisto("SIGNAL", "hsignal-ZNC_T4_A", "Signal ZNC T4 Trigger Alice", "ZNC_T4", "A");
-  addNewHisto("SIGNAL", "hsignal-ZNC_SUM_A", "Signal ZNC SUM Trigger Alice", "ZNC_SUM", "A");
-
-  addNewHisto("SIGNAL", "hsignal-ZPA_TC_TR_A", "Signal ZPA TC Trigger Alice", "ZPA_TC_TR", "A");
-  addNewHisto("SIGNAL", "hsignal-ZPA_T1_A", "Signal ZPA T1 Trigger Alice", "ZPA_T1", "A");
-  addNewHisto("SIGNAL", "hsignal-ZPA_T2_A", "Signal ZPA T2 Trigger Alice", "ZPA_T2", "A");
-  addNewHisto("SIGNAL", "hsignal-ZPA_T3_A", "Signal ZPA T3 Trigger Alice", "ZPA_T3", "A");
-  addNewHisto("SIGNAL", "hsignal-ZPA_T4_A", "Signal ZPA T4 Trigger Alice", "ZPA_T4", "A");
-  addNewHisto("SIGNAL", "hsignal-ZPA_SUM_A", "Signal ZPA SUM Trigger Alice", "ZPA_SUM", "A");
-
-  addNewHisto("SIGNAL", "hsignal-ZPC_TC_TR_A", "Signal ZPC TC Trigger Alice", "ZPC_TC_TR", "A");
-  addNewHisto("SIGNAL", "hsignal-ZPC_T1_A", "Signal ZPC T1 Trigger Alice", "ZPC_T1", "A");
-  addNewHisto("SIGNAL", "hsignal-ZPC_T2_A", "Signal ZPC T2 Trigger Alice", "ZPC_T2", "A");
-  addNewHisto("SIGNAL", "hsignal-ZPC_T3_A", "Signal ZPC T3 Trigger Alice", "ZPC_T3", "A");
-  addNewHisto("SIGNAL", "hsignal-ZPC_T4_A", "Signal ZPC T4 Trigger Alice", "ZPC_T4", "A");
-  addNewHisto("SIGNAL", "hsignal-ZPC_SUM_A", "Signal ZPC SUM Trigger Alice", "ZPC_SUM", "A");
-
-  addNewHisto("SIGNAL", "hsignal-ZEM1_TR_A", "Signal ZEM1 Trigger Alice", "ZEM1_TR", "A");
-  addNewHisto("SIGNAL", "hsignal-ZEM2_TR_A", "Signal ZEM2 Trigger Alice", "ZEM2_TR", "A");
-
-  // Auto Trigger
-  addNewHisto("SIGNAL", "hsignal-ZNA_TC_TR_T", "Signal ZNA TC Auto Trigger", "ZNA_TC_TR", "T");
-  addNewHisto("SIGNAL", "hsignal-ZNA_T1_T", "Signal ZNA T1 Auto Trigger", "ZNA_T1", "T");
-  addNewHisto("SIGNAL", "hsignal-ZNA_T2_T", "Signal ZNA T2 Auto Trigger", "ZNA_T2", "T");
-  addNewHisto("SIGNAL", "hsignal-ZNA_T3_T", "Signal ZNA T3 Auto Trigger", "ZNA_T3", "T");
-  addNewHisto("SIGNAL", "hsignal-ZNA_T4_T", "Signal ZNA T4Auto Trigger", "ZNA_T4", "T");
-  addNewHisto("SIGNAL", "hsignal-ZNA_SUM_T", "Signal ZNA SUM Auto Trigger", "ZNA_SUM", "T");
-
-  addNewHisto("SIGNAL", "hsignal-ZNC_TC_TR_T", "Signal ZNC TC Auto Trigger", "ZNC_TC_TR", "T");
-  addNewHisto("SIGNAL", "hsignal-ZNC_T1_T", "Signal ZNC T1 Auto Trigger", "ZNC_T1", "T");
-  addNewHisto("SIGNAL", "hsignal-ZNC_T2_T", "Signal ZNC T2 Auto Trigger", "ZNC_T2", "T");
-  addNewHisto("SIGNAL", "hsignal-ZNC_T3_T", "Signal ZNC T3 Auto Trigger", "ZNC_T3", "T");
-  addNewHisto("SIGNAL", "hsignal-ZNC_T4_T", "Signal ZNC T4 Auto Trigger", "ZNC_T4", "T");
-  addNewHisto("SIGNAL", "hsignal-ZNC_SUM_T", "Signal ZNC SUM Auto Trigger", "ZNC_SUM", "T");
-
-  addNewHisto("SIGNAL", "hsignal-ZPA_TC_TR_T", "Signal ZPA TC Auto Trigger", "ZPA_TC_TR", "T");
-  addNewHisto("SIGNAL", "hsignal-ZPA_T1_T", "Signal ZPA T1 Auto Trigger", "ZPA_T1", "T");
-  addNewHisto("SIGNAL", "hsignal-ZPA_T2_T", "Signal ZPA T2 Auto Trigger", "ZPA_T2", "T");
-  addNewHisto("SIGNAL", "hsignal-ZPA_T3_T", "Signal ZPA T3 Auto Trigger", "ZPA_T3", "T");
-  addNewHisto("SIGNAL", "hsignal-ZPA_T4_T", "Signal ZPA T4 Auto Trigger", "ZPA_T4", "T");
-  addNewHisto("SIGNAL", "hsignal-ZPA_SUM_T", "Signal ZPA SUM Auto Trigger", "ZPA_SUM", "T");
-
-  addNewHisto("SIGNAL", "hsignal-ZPC_TC_TR_T", "Signal ZPC TC Auto Trigger", "ZPC_TC_TR", "T");
-  addNewHisto("SIGNAL", "hsignal-ZPC_T1_T", "Signal ZPC T1 Auto Trigger", "ZPC_T1", "T");
-  addNewHisto("SIGNAL", "hsignal-ZPC_T2_T", "Signal ZPC T2 Auto Trigger", "ZPC_T2", "T");
-  addNewHisto("SIGNAL", "hsignal-ZPC_T3_T", "Signal ZPC T3 Auto Trigger", "ZPC_T3", "T");
-  addNewHisto("SIGNAL", "hsignal-ZPC_T4_T", "Signal ZPC T4 Auto Trigger", "ZPC_T4", "T");
-  addNewHisto("SIGNAL", "hsignal-ZPC_SUM_T", "Signal ZPC SUM Auto Trigger", "ZPC_SUM", "T");
-
-  addNewHisto("SIGNAL", "hsignal-ZEM1_TR_T", "Signal ZEM1 Auto Trigger", "ZEM1_TR", "T");
-  addNewHisto("SIGNAL", "hsignal-ZEM2_TR_T", "Signal ZEM2 Auto Trigger", "ZEM2_TR", "T");
-
   // Histograms Bunch Crossing Maps
   setBinHisto2D(100, -0.5, 99.5, 36, -35.5, 0.5);
   addNewHisto("BUNCH", "hbunch-ZNA_TC_TR_A0oT0", "Bunch ZNA TC Ali Trigger OR AutoTrigger", "ZNA_TC_TR", "A0oT0");
@@ -406,7 +344,7 @@ void ZDCRawDataTask::initHisto()
   setBinHisto2D(8, -0.5, 7.5, 4, -0.5, 3.5);
   addNewHisto("TRASMITTEDCHANNEL", "hchTrasmitted", "Channels Trasmitted", "NONE", "ALL");
   // addNewHisto("FIRECHANNEL", "hchFired", "Channels Fired", "NONE", "ALL");
-  setBinHisto1D(26, -0.5, 26 - 0.5);
+  setBinHisto1D(26, -0.5, 25.5);
   addNewHisto("SUMMARYBASELINE", "hpedSummary", "Baseline Summary", "NONE", "LBC");
 }
 
@@ -418,7 +356,7 @@ void ZDCRawDataTask::init()
   mCh.f.fixed_0 = o2::zdc::Id_wn;
   mCh.f.fixed_1 = o2::zdc::Id_wn;
   mCh.f.fixed_2 = o2::zdc::Id_wn;
-  DumpHistoStructure();
+  // DumpHistoStructure();
 }
 
 inline int ZDCRawDataTask::getHPos(uint32_t board, uint32_t ch, int matrix[o2::zdc::NModules][o2::zdc::NChPerModule])
@@ -496,137 +434,50 @@ int ZDCRawDataTask::process(const o2::zdc::EventChData& ch)
   // if (f.hit == 1) fFireChannel->Fill(f.board,f.ch);
   fTrasmChannel->Fill(f.board, f.ch);
 
-  for (int32_t i = 0; i < 12; i++) {
-    if (us[i] > o2::zdc::ADCMax) {
-      s[i] = us[i] - o2::zdc::ADCRange;
-    } else {
-      s[i] = us[i];
-    }
-  }
-  if (f.Auto_3) {
+  if (f.Alice_0 || f.Auto_0 || f.Alice_1 || f.Auto_1 || f.Alice_2 || f.Auto_2 || f.Alice_3 || f.Auto_3) {
     for (int j = 0; j < (int)fMatrixHistoSignal[f.board][f.ch].size(); j++) {
       for (int32_t i = 0; i < 12; i++) {
-        if (fMatrixHistoSignal[f.board][f.ch].at(j).condHisto.at(0).compare("T") == 0)
+        if (us[i] > o2::zdc::ADCMax) {
+          s[i] = us[i] - o2::zdc::ADCRange;
+        } else {
+          s[i] = us[i];
+        }
+        if ((fMatrixHistoSignal[f.board][f.ch].at(j).condHisto.at(0).compare("AoT") == 0) && (f.Alice_3 || f.Auto_3)) {
           fMatrixHistoSignal[f.board][f.ch].at(j).histo->Fill(i - 36., double(s[i]));
-      }
-    }
-  }
-  if (f.Auto_2) {
-    for (int j = 0; j < (int)fMatrixHistoSignal[f.board][f.ch].size(); j++) {
-      for (int32_t i = 0; i < 12; i++) {
-        if (fMatrixHistoSignal[f.board][f.ch].at(j).condHisto.at(0).compare("T") == 0)
+        }
+        if ((fMatrixHistoSignal[f.board][f.ch].at(j).condHisto.at(0).compare("AoT") == 0) && (f.Alice_2 || f.Auto_2)) {
           fMatrixHistoSignal[f.board][f.ch].at(j).histo->Fill(i - 24., double(s[i]));
-      }
-    }
-  }
-  if (f.Auto_1) {
-    for (int j = 0; j < (int)fMatrixHistoSignal[f.board][f.ch].size(); j++) {
-      for (int32_t i = 0; i < 12; i++) {
-        if (fMatrixHistoSignal[f.board][f.ch].at(j).condHisto.at(0).compare("T") == 0)
+        }
+        if ((fMatrixHistoSignal[f.board][f.ch].at(j).condHisto.at(0).compare("AoT") == 0) && (f.Alice_1 || f.Auto_1)) {
           fMatrixHistoSignal[f.board][f.ch].at(j).histo->Fill(i - 12., double(s[i]));
-      }
-    }
-  }
-  if (f.Auto_0) {
-    for (int j = 0; j < (int)fMatrixHistoSignal[f.board][f.ch].size(); j++) {
-      for (int32_t i = 0; i < 12; i++) {
-        if (fMatrixHistoSignal[f.board][f.ch].at(j).condHisto.at(0).compare("T") == 0)
+        }
+        if ((fMatrixHistoSignal[f.board][f.ch].at(j).condHisto.at(0).compare("AoT") == 0) && (f.Alice_0 || f.Auto_0)) {
           fMatrixHistoSignal[f.board][f.ch].at(j).histo->Fill(i + 0., double(s[i]));
+        }
       }
     }
   }
-  if (f.Alice_3) {
-    for (int j = 0; j < (int)fMatrixHistoSignal[f.board][f.ch].size(); j++) {
-      for (int32_t i = 0; i < 12; i++) {
-        if (fMatrixHistoSignal[f.board][f.ch].at(j).condHisto.at(0).compare("A") == 0)
-          fMatrixHistoSignal[f.board][f.ch].at(j).histo->Fill(i - 36., double(s[i]));
-      }
-    }
-  }
-  if (f.Alice_2) {
-    for (int j = 0; j < (int)fMatrixHistoSignal[f.board][f.ch].size(); j++) {
-      for (int32_t i = 0; i < 12; i++) {
-        if (fMatrixHistoSignal[f.board][f.ch].at(j).condHisto.at(0).compare("A") == 0)
-          fMatrixHistoSignal[f.board][f.ch].at(j).histo->Fill(i - 24., double(s[i]));
-      }
-    }
-  }
-  if (f.Alice_1) {
-    for (int j = 0; j < (int)fMatrixHistoSignal[f.board][f.ch].size(); j++) {
-      for (int32_t i = 0; i < 12; i++) {
-        if (fMatrixHistoSignal[f.board][f.ch].at(j).condHisto.at(0).compare("A") == 0)
-          fMatrixHistoSignal[f.board][f.ch].at(j).histo->Fill(i - 12., double(s[i]));
-      }
-    }
-  }
-  if (f.Alice_0) {
-    for (int j = 0; j < (int)fMatrixHistoSignal[f.board][f.ch].size(); j++) {
-      for (int32_t i = 0; i < 12; i++) {
-        if (fMatrixHistoSignal[f.board][f.ch].at(j).condHisto.at(0).compare("A") == 0)
-          fMatrixHistoSignal[f.board][f.ch].at(j).histo->Fill(i + 0., double(s[i]));
-      }
-    }
-  }
-  if (f.Alice_3 || f.Auto_3) {
-    for (int j = 0; j < (int)fMatrixHistoSignal[f.board][f.ch].size(); j++) {
-      for (int32_t i = 0; i < 12; i++) {
-        if (fMatrixHistoSignal[f.board][f.ch].at(j).condHisto.at(0).compare("AoT") == 0)
-          fMatrixHistoSignal[f.board][f.ch].at(j).histo->Fill(i - 36., double(s[i]));
-      }
-    }
-  }
-  if (f.Alice_2 || f.Auto_2) {
-    for (int j = 0; j < (int)fMatrixHistoSignal[f.board][f.ch].size(); j++) {
-      for (int32_t i = 0; i < 12; i++) {
-        if (fMatrixHistoSignal[f.board][f.ch].at(j).condHisto.at(0).compare("AoT") == 0)
-          fMatrixHistoSignal[f.board][f.ch].at(j).histo->Fill(i - 24., double(s[i]));
-      }
-    }
-  }
-  if (f.Alice_1 || f.Auto_1) {
-    for (int j = 0; j < (int)fMatrixHistoSignal[f.board][f.ch].size(); j++) {
-      for (int32_t i = 0; i < 12; i++) {
-        if (fMatrixHistoSignal[f.board][f.ch].at(j).condHisto.at(0).compare("AoT") == 0)
-          fMatrixHistoSignal[f.board][f.ch].at(j).histo->Fill(i - 12., double(s[i]));
-      }
-    }
-  }
+  // Bunch
   if (f.Alice_0 || f.Auto_0) {
-    for (int j = 0; j < (int)fMatrixHistoSignal[f.board][f.ch].size(); j++) {
-      for (int32_t i = 0; i < 12; i++) {
-        if (fMatrixHistoSignal[f.board][f.ch].at(j).condHisto.at(0).compare("AoT") == 0)
-          fMatrixHistoSignal[f.board][f.ch].at(j).histo->Fill(i + 0., double(s[i]));
-      }
-    }
     double bc_d = uint32_t(f.bc / 100);
     double bc_m = uint32_t(f.bc % 100);
     for (int i = 0; i < (int)fMatrixHistoBunch[f.board][f.ch].size(); i++) {
       if (fMatrixHistoBunch[f.board][f.ch].at(i).condHisto.at(0).compare("A0oT0") == 0)
         fMatrixHistoBunch[f.board][f.ch].at(i).histo->Fill(bc_m, -bc_d);
-    }
-  }
-  if (f.Alice_0) {
-    double bc_d = uint32_t(f.bc / 100);
-    double bc_m = uint32_t(f.bc % 100);
-    // Fill Bunch
-    for (int i = 0; i < (int)fMatrixHistoBunch[f.board][f.ch].size(); i++) {
-      if (fMatrixHistoBunch[f.board][f.ch].at(i).condHisto.at(0).compare("A0") == 0)
+      if (f.Alice_0 && fMatrixHistoBunch[f.board][f.ch].at(i).condHisto.at(0).compare("A0") == 0)
         fMatrixHistoBunch[f.board][f.ch].at(i).histo->Fill(bc_m, -bc_d);
-    }
-  }
-  if (f.Auto_0) {
-    double bc_d = uint32_t(f.bc / 100);
-    double bc_m = uint32_t(f.bc % 100);
-    // Fill Bunch
-    for (int i = 0; i < (int)fMatrixHistoBunch[f.board][f.ch].size(); i++) {
-      if (fMatrixHistoBunch[f.board][f.ch].at(i).condHisto.at(0).compare("T0") == 0)
+      if (f.Auto_0 && fMatrixHistoBunch[f.board][f.ch].at(i).condHisto.at(0).compare("T0") == 0)
         fMatrixHistoBunch[f.board][f.ch].at(i).histo->Fill(bc_m, -bc_d);
     }
   }
   if (f.bc == last_bc) {
     // Fill Baseline
-    int32_t offset = f.offset - 32768;
-    double foffset = offset / 8.;
+    int32_t offset = 0;
+    if (f.offset > 32768)
+      offset = f.offset - 32768;
+    else
+      offset = f.offset;
+    double foffset = offset / 12.;
     for (int i = 0; i < (int)fMatrixHistoBaseline[f.board][f.ch].size(); i++) {
       fMatrixHistoBaseline[f.board][f.ch].at(i).histo->Fill(foffset);
     }
@@ -726,8 +577,6 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
       // Check if Histogram Exist
       if (std::find(fNameHisto.begin(), fNameHisto.end(), name) == fNameHisto.end()) {
         fNameHisto.push_back(name);
-        ih = fMapBinNameIdSummaryHisto.size();
-        fMapBinNameIdSummaryHisto.insert(std::pair<std::string, int>(chName, ih));
         h1d.histo = new TH1F(hname, htit, fNumBinX, fMinBinX, fMaxBinX);
         h1d.condHisto.push_back(condition);
         ih = (int)fMatrixHistoBaseline[mod][ch].size();
@@ -885,8 +734,7 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
           } else {
             i++;
             fSummaryPedestal->GetXaxis()->SetBinLabel(i, TString::Format("%s", getNameChannel(imod, ich).c_str()));
-            // fMapBinNameIdSummaryHisto.insert(std::pair<std::string,int>(chName,i));
-            // ILOG(Info, Support) << TString::Format("{%d}[%d][%d] %s ",i,imod,ich,chName.c_str()) << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+            fMapBinNameIdSummaryHisto.insert(std::pair<std::string, int>(chName, i));
           }
         }
       }
@@ -1113,10 +961,10 @@ bool ZDCRawDataTask::decodeSummaryBaseline(std::vector<std::string> TokenString,
 
 bool ZDCRawDataTask::checkCondition(std::string cond)
 {
-  if (cond.compare("A") == 0)
-    return true; // All Alice trigger (A0, A1,A2,A3)
-  if (cond.compare("T") == 0)
-    return true; // All Auto trigger (A0, A1,A2,A3)
+  /* if (cond.compare("A") == 0)
+     return true; // All Alice trigger (A0, A1,A2,A3)
+   if (cond.compare("T") == 0)
+     return true; // All Auto trigger (A0, A1,A2,A3)*/
   if (cond.compare("A0") == 0)
     return true; // Alice Trigger 0
   if (cond.compare("T0") == 0)
