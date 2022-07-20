@@ -52,7 +52,8 @@
                         "type": "Task",
                         "name": "ITSFEE",
                         "MOs": [
-			    "General/ErrorPlots",
+			    "General/LinkErrorPlots",
+			    "General/ChipErrorPlots",
                             "LaneStatus/laneStatusFlagFAULT",
                             "LaneStatus/laneStatusFlagERROR",
                             "LaneStatus/laneStatusFlagWARNING",

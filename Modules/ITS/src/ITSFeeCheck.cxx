@@ -159,6 +159,7 @@ void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
       textColor = kGreen;
     } else if (checkResult == Quality::Bad) {
       status = "Quality::BAD (call expert)";
+      textColor = kRed;
     }
     tInfoLinkErr = std::make_shared<TLatex>(0.12, 0.835, Form("#bf{%s}", status.Data()));
     tInfoLinkErr->SetTextColor(textColor);
@@ -174,6 +175,7 @@ void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
       textColor = kGreen;
     } else if (checkResult == Quality::Bad) {
       status = "Quality::BAD (call expert)";
+      textColor = kRed;
     }
     tInfoChipErr = std::make_shared<TLatex>(0.12, 0.835, Form("#bf{%s}", status.Data()));
     tInfoChipErr->SetTextColor(textColor);

@@ -43,8 +43,6 @@ ITSFhrTask::~ITSFhrTask()
   delete mDecoder;
   delete mChipDataBuffer;
   delete mTFInfo;
-  //  delete mErrorPlots;
-  delete mErrorVsFeeid;
   delete mChipStaveOccupancy;
   delete mChipStaveEventHitCheck;
   delete mOccupancyPlot;
@@ -234,14 +232,6 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 }
 
-/*void ITSFhrTask::createErrorTriggerPlots()
-{
-  mErrorPlots = new TH1D("General/ErrorPlots", "Decoding Errors", mNError, 0.5, mNError + 0.5);
-  mErrorPlots->SetMinimum(0);
-  mErrorPlots->SetFillColor(kRed);
-  getObjectsManager()->startPublishing(mErrorPlots); // mErrorPlots
-}*/
-
 void ITSFhrTask::createGeneralPlots()
 {
 
@@ -249,11 +239,6 @@ void ITSFhrTask::createGeneralPlots()
 
   mTFInfo = new TH1F("General/TFInfo", "TF vs count", 15000, 0, 15000);
   getObjectsManager()->startPublishing(mTFInfo); // mTFInfo
-
-  mErrorVsFeeid = new TH2I("General/ErrorVsFeeid", "Error count vs Error id and Fee id", (3 * StaveBoundary[3]) + (2 * (StaveBoundary[7] - StaveBoundary[3])), 0, (3 * StaveBoundary[3]) + (2 * (StaveBoundary[7] - StaveBoundary[3])), o2::itsmft::GBTLinkDecodingStat::NErrorsDefined, 0.5, o2::itsmft::GBTLinkDecodingStat::NErrorsDefined + 0.5);
-  mErrorVsFeeid->SetMinimum(0);
-  mErrorVsFeeid->SetStats(0);
-  getObjectsManager()->startPublishing(mErrorVsFeeid);
 }
 
 void ITSFhrTask::createOccupancyPlots() // create general plots like error, trigger, TF id plots and so on....
@@ -345,14 +330,8 @@ void ITSFhrTask::setAxisTitle(TH1* object, const char* xTitle, const char* yTitl
 void ITSFhrTask::setPlotsFormat()
 {
   // set general plots format
-  /*  if (mErrorPlots) {
-      setAxisTitle(mErrorPlots, "Error ID", "Counts");
-    }*/
   if (mTFInfo) {
     setAxisTitle(mTFInfo, "TF ID", "Counts");
-  }
-  if (mErrorVsFeeid) {
-    setAxisTitle(mErrorVsFeeid, "FeeID", "Error ID");
   }
   if (mTotalDeadChipPos) {
     setAxisTitle(mTotalDeadChipPos, "ChipEta", "ChipPhi");
@@ -524,9 +503,6 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
   }
 
-  // Reset Error plots
-  //  mErrorPlots->Reset();
-  mErrorVsFeeid->Reset(); // Error is   statistic by decoder so if we didn't reset decoder, then we need reset Error plots, and use TH::SetBinContent function
   mOccupancyPlot->Reset();
 
   // define tmp occupancy plot, which will use for multiple threads
@@ -656,11 +632,6 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
           mTotalDeadChipPos->SetBinContent(mTotalDeadChipPos->GetXaxis()->FindBin(mChipEta[istave][ichip] + 0.009), mTotalDeadChipPos->GetYaxis()->FindBin(mChipPhi[istave][ichip] + 0.001), 0); // not dead
         }
         int ilink = ichip / 3;
-        for (int ierror = 0; ierror < o2::itsmft::GBTLinkDecodingStat::NErrorsDefined; ierror++) {
-          if (mErrorVsFeeid && (mErrorCount[istave][ilink][ierror] != 0)) {
-            mErrorVsFeeid->SetBinContent(((istave + StaveBoundary[mLayer]) * 3) + ilink + 1, ierror + 1, mErrorCount[istave][ilink][ierror]);
-          }
-        }
       }
       mGeneralOccupancy->SetBinContent(istave + 1 + StaveBoundary[mLayer], *(std::max_element(mOccupancyLane[istave], mOccupancyLane[istave] + nChipsPerHic[mLayer])));
       mGeneralNoisyPixel->SetBinContent(istave + 1 + StaveBoundary[mLayer], mNoisyPixelNumber[mLayer][istave]);
@@ -681,40 +652,30 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
         int ilink = ihic / (nHicPerStave[mLayer] / 2);
         mChipStaveOccupancy->SetBinContent(2 * ihic + 1, istave + 1, mOccupancyLane[istave][2 * ihic]);
         mChipStaveOccupancy->SetBinContent(2 * ihic + 2, istave + 1, mOccupancyLane[istave][2 * ihic + 1]);
-        if (ihic == 0 || ihic == 7) {
-          for (int ierror = 0; ierror < o2::itsmft::GBTLinkDecodingStat::NErrorsDefined; ierror++) {
-            if (mErrorVsFeeid && (mErrorCount[istave][ilink][ierror] != 0)) {
-              mErrorVsFeeid->SetBinContent((3 * StaveBoundary[3]) + ((StaveBoundary[mLayer] - StaveBoundary[NLayerIB] + istave) * 2) + ilink + 1, ierror + 1, mErrorCount[istave][ilink][ierror]);
-            }
-          }
-        }
       }
-      mGeneralOccupancy->SetBinContent(istave + 1 + StaveBoundary[mLayer], *(std::max_element(mOccupancyLane[istave], mOccupancyLane[istave] + nHicPerStave[mLayer] * 2)));
-      mGeneralNoisyPixel->SetBinContent(istave + 1 + StaveBoundary[mLayer], mNoisyPixelNumber[mLayer][istave]);
     }
+    mGeneralOccupancy->SetBinContent(istave + 1 + StaveBoundary[mLayer], *(std::max_element(mOccupancyLane[istave], mOccupancyLane[istave] + nHicPerStave[mLayer] * 2)));
+    mGeneralNoisyPixel->SetBinContent(istave + 1 + StaveBoundary[mLayer], mNoisyPixelNumber[mLayer][istave]);
   }
-  /*for (int ierror = 0; ierror < o2::itsmft::GBTLinkDecodingStat::NErrorsDefined; ierror++) {
-    int feeError = mErrorVsFeeid->Integral(1, mErrorVsFeeid->GetXaxis()->GetNbins(), ierror + 1, ierror + 1);
-    mErrorPlots->SetBinContent(ierror + 1, feeError);
-  }*/
+}
 
-  // delete pointor in monitorData()
-  for (int istave = 0; istave < NStaves[mLayer]; istave++) {
-    delete[] digVec[istave];
-  }
-  delete[] digVec;
-  for (int i = 0; i < (int)activeStaves.size(); i++) {
-    delete occupancyPlotTmp[i];
-  }
-  delete[] occupancyPlotTmp;
-  // temporarily reverting to get TFId by querying binding
-  //   mTimeFrameId = ctx.inputs().get<int>("G");
-  // Timer LOG
-  mTFInfo->Fill(mTimeFrameId);
-  end = std::chrono::high_resolution_clock::now();
-  difference = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-  mAverageProcessTime += difference;
-  mTFCount++;
+// delete pointor in monitorData()
+for (int istave = 0; istave < NStaves[mLayer]; istave++) {
+  delete[] digVec[istave];
+}
+delete[] digVec;
+for (int i = 0; i < (int)activeStaves.size(); i++) {
+  delete occupancyPlotTmp[i];
+}
+delete[] occupancyPlotTmp;
+// temporarily reverting to get TFId by querying binding
+//   mTimeFrameId = ctx.inputs().get<int>("G");
+// Timer LOG
+mTFInfo->Fill(mTimeFrameId);
+end = std::chrono::high_resolution_clock::now();
+difference = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+mAverageProcessTime += difference;
+mTFCount++;
 }
 
 void ITSFhrTask::getParameters()
@@ -749,8 +710,6 @@ void ITSFhrTask::endOfActivity(Activity& /*activity*/)
 void ITSFhrTask::resetGeneralPlots()
 {
   resetObject(mTFInfo);
-  //  resetObject(mErrorPlots);
-  resetObject(mErrorVsFeeid);
 }
 
 void ITSFhrTask::resetOccupancyPlots()

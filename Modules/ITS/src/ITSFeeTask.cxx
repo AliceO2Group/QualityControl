@@ -152,7 +152,7 @@ void ITSFeeTask::createFeePlots()
   mChipErrorVsFeeid->SetStats(0);
   getObjectsManager()->startPublishing(mChipErrorVsFeeid);
 
-  mLinkErrorPlots = new TH1D("General/LinkErrorPlots", "GBTLink decodeing Errors", o2::itsmft::GBTLinkDecodingStat::NErrorsDefined, 0.5, o2::itsmft::GBTLinkDecodingStat::NErrorsDefined + 0.5);
+  mLinkErrorPlots = new TH1D("General/LinkErrorPlots", "GBTLink decoding Errors", o2::itsmft::GBTLinkDecodingStat::NErrorsDefined, 0.5, o2::itsmft::GBTLinkDecodingStat::NErrorsDefined + 0.5);
   mLinkErrorPlots->SetMinimum(0);
   mLinkErrorPlots->SetFillColor(kRed);
   getObjectsManager()->startPublishing(mLinkErrorPlots); // mLinkErrorPlots
