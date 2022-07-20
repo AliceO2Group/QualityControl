@@ -340,9 +340,9 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
       mRDHSummary->Fill(ifee, 4); // clock evt
       clockEvt = true;
     }
-    if (summaryLaneStatus & (1 << 26))
-      mRDHSummary->Fill(ifee, 5); // Timebase evt
     if (summaryLaneStatus & (1 << 25))
+      mRDHSummary->Fill(ifee, 5); // Timebase evt
+    if (summaryLaneStatus & (1 << 24))
       mRDHSummary->Fill(ifee, 6); // Timebase Unsync evt
 
     if ((int)(rdh->stop) && it.size()) { // looking into the DDW0 from the closing packet
