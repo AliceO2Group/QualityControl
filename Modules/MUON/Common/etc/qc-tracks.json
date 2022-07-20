@@ -23,14 +23,14 @@
         "className": "o2::quality_control_modules::muon::TracksTask",
         "moduleName": "QcMuonCommon",
         "detectorName": "GLO",
-        "cycleDurationSeconds": "120",
+        "cycleDurationSeconds": "36000",
         "maxNumberCycles": "-1",
         "dataSource": {
           "type": "direct",
-          "query": "mchtracks:MCH/TRACKS;mchtrackrofs:MCH/TRACKROFS;mchtrackclusters:MCH/TRACKCLUSTERS;mchtrackdigits:MCH/CLUSTERDIGITS;muontracks:GLO/MTC_MCHMID"
+          "query": "mchtracks:MCH/TRACKS;mchtrackrofs:MCH/TRACKROFS;mchtrackclusters:MCH/TRACKCLUSTERS;mchtrackdigits:MCH/TRACKDIGITS;muontracks:GLO/MTC_MCHMID"
         },
         "taskParameters": {
-          "maxTracksPerTF": "100",
+          "maxTracksPerTF": "600",
           "standaloneMCHTracks": true,
           "matchedMCHMIDTracks": true
         },
@@ -41,32 +41,32 @@
         "className": "o2::quality_control_modules::muon::TracksTask",
         "moduleName": "QcMuonCommon",
         "detectorName": "GLO",
-        "cycleDurationSeconds": "120",
+        "cycleDurationSeconds": "36000",
         "maxNumberCycles": "-1",
         "dataSource": {
           "type": "direct",
-          "query": "mchtracks:MCH/TRACKS;mchtrackrofs:MCH/TRACKROFS;mchtrackclusters:MCH/TRACKCLUSTERS;mchtrackdigits:MCH/CLUSTERDIGITS"
+          "query": "mchtracks:MCH/TRACKS;mchtrackrofs:MCH/TRACKROFS;mchtrackclusters:MCH/TRACKCLUSTERS;mchtrackdigits:MCH/TRACKDIGITS"
         },
         "taskParameters": {
-          "maxTracksPerTF": "100",
+          "maxTracksPerTF": "600",
           "standaloneMCHTracks": true,
           "matchedMCHMIDTracks": false
         },
         "location": "remote"
       },
       "MCHTracks": {
-        "active": "true",
+        "active": "false",
         "className": "o2::quality_control_modules::muonchambers::TracksTask",
         "moduleName": "QcMuonChambers",
         "detectorName": "MCH",
-        "cycleDurationSeconds": "120",
+        "cycleDurationSeconds": "60",
         "maxNumberCycles": "-1",
         "dataSource": {
           "type": "direct",
           "query": "tracks:MCH/TRACKS;trackrofs:MCH/TRACKROFS;trackclusters:MCH/TRACKCLUSTERS;trackdigits:MCH/CLUSTERDIGITS"
         },
         "taskParameters": {
-          "maxTracksPerTF": "100"
+          "maxTracksPerTF": "600"
         },
         "location": "remote"
       }

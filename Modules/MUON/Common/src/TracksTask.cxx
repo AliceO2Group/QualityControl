@@ -145,7 +145,8 @@ void TracksTask::endOfActivity(Activity& /*activity*/)
 
 void TracksTask::reset()
 {
-  ILOG(Warning, Support) << "resetting the histograms is not implemented" << ENDM;
+  ILOG(Info, Support) << "reset" << ENDM;
+  mTrackPlotter->reset();
 }
 
 } // namespace o2::quality_control_modules::muon

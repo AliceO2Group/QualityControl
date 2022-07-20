@@ -65,6 +65,9 @@ class TrackPlotter
 
   const std::vector<HistInfo>& histograms() const { return mHistograms; }
 
+  /** reset all histograms */
+  void reset();
+
  private:
   void fill(gsl::span<const o2::mch::ROFRecord> rofs,
             gsl::span<const o2::mch::TrackMCH> tracks,

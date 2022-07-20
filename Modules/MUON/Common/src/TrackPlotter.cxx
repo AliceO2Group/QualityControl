@@ -367,4 +367,11 @@ void TrackPlotter::fill(gsl::span<const o2::mch::ROFRecord> rofs,
   }
 }
 
+void TrackPlotter::reset()
+{
+  for (auto hinfo : mHistograms) {
+    hinfo.histo->Reset();
+  }
+}
+
 } // namespace o2::quality_control_modules::muon
