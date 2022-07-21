@@ -62,7 +62,7 @@ class MergeableTH2Ratio : public TH2F, public o2::mergers::MergeInterface
 
   void beautify();
 
-  void Reset(Option_t* option = "");
+  void Reset(Option_t* option = "") override;
 
  private:
   TH2F* mHistoNum{ nullptr };
@@ -70,7 +70,7 @@ class MergeableTH2Ratio : public TH2F, public o2::mergers::MergeInterface
   std::string mTreatMeAs{ "TH2F" };
   bool mShowZeroBins{ false };
 
-  ClassDefOverride(MergeableTH2Ratio, 1);
+  ClassDefOverride(MergeableTH2Ratio, 2);
 };
 
 } // namespace o2::quality_control_modules::muon
