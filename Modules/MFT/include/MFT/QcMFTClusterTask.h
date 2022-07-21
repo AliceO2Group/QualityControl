@@ -58,6 +58,7 @@ class QcMFTClusterTask /*final*/ : public TaskInterface // todo add back the "fi
   std::unique_ptr<TH1F> mClusterOccupancy = nullptr;
   std::unique_ptr<TH1F> mClusterPatternIndex = nullptr;
   std::unique_ptr<TH1F> mClusterSizeSummary = nullptr;
+  std::unique_ptr<TH1F> mGroupedClusterSizeSummary = nullptr;
   std::unique_ptr<TH2F> mClusterOccupancySummary = nullptr;
 
   std::unique_ptr<TH2F> mClusterPatternSensorIndices = nullptr;
@@ -87,7 +88,7 @@ class QcMFTClusterTask /*final*/ : public TaskInterface // todo add back the "fi
   // internal functions
   void getChipMapData();
 
-  // cluster size in pixels 
+  // cluster size in pixels
   int mClusterSize = { 0 };
 
   // dictionary

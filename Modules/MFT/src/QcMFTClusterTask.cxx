@@ -27,6 +27,7 @@
 #include <DataFormatsITSMFT/CompCluster.h>
 #include <Framework/InputRecord.h>
 #include <DataFormatsITSMFT/ROFRecord.h>
+#include <DataFormatsITSMFT/ClusterTopology.h>
 #include <ITSMFTReconstruction/ChipMappingMFT.h>
 #include "CCDB/BasicCCDBManager.h"
 #include "CCDB/CCDBTimeStampUtils.h"
@@ -102,6 +103,11 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   mClusterSizeSummary->SetStats(0);
   getObjectsManager()->startPublishing(mClusterSizeSummary.get());
   getObjectsManager()->setDisplayHint(mClusterSizeSummary.get(), "logy");
+
+  mGroupedClusterSizeSummary = std::make_unique<TH1F>("mGroupedClusterSizeSummary", "Grouped Cluster Size Summary; Grouped Cluster Size (pixels);#Entries", 100, 0.5, 100.5);
+  mGroupedClusterSizeSummary->SetStats(0);
+  getObjectsManager()->startPublishing(mGroupedClusterSizeSummary.get());
+  getObjectsManager()->setDisplayHint(mGroupedClusterSizeSummary.get(), "logy");
 
   mClusterPatternSensorIndices = std::make_unique<TH2F>("mClusterPatternSensorIndices",
                                                         "Cluster Pattern ID vs Chip ID;Chip ID;Pattern ID",
@@ -204,6 +210,11 @@ void QcMFTClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   // get the clusters
   const auto clusters = ctx.inputs().get<gsl::span<o2::itsmft::CompClusterExt>>("randomcluster");
+
+  // get cluster patterns and iterator
+  auto clustersPattern = ctx.inputs().get<gsl::span<unsigned char>>("patterns");
+  auto patternIt = clustersPattern.begin();
+
   if (clusters.size() < 1)
     return;
 
@@ -218,7 +229,14 @@ void QcMFTClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
     mClusterPatternSensorIndices->Fill(sensorID,
                                        oneCluster.getPatternID());
 
-    mClusterSizeSummary->Fill(mDict->getNpixels(oneCluster.getPatternID()));
+    // mClusterSizeSummary->Fill(mDict->getNpixels(oneCluster.getPatternID()));
+
+    if (oneCluster.getPatternID() != o2::itsmft::CompCluster::InvalidPatternID && !mDict->isGroup(oneCluster.getPatternID())) {
+      mClusterSizeSummary->Fill(mDict->getNpixels(oneCluster.getPatternID()));
+    } else {
+      o2::itsmft::ClusterPattern patt(patternIt);
+      mGroupedClusterSizeSummary->Fill(patt.getNPixels());
+    }
 
     // fill occupancy maps
     int idx = layerID + (10 * mHalf[sensorID]);
@@ -253,6 +271,7 @@ void QcMFTClusterTask::reset()
   mClusterPatternIndex->Reset();
   mClusterPatternSensorIndices->Reset();
   mClusterSizeSummary->Reset();
+  mGroupedClusterSizeSummary->Reset();
   mClusterLayerIndexH0->Reset();
   mClusterLayerIndexH1->Reset();
   mClusterOccupancySummary->Reset();
