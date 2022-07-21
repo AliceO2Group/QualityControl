@@ -19,6 +19,7 @@
 
 #include "QualityControl/TaskInterface.h"
 #include <array>
+#include <memory>
 #include <string_view>
 
 class TH2;
@@ -28,7 +29,8 @@ using namespace o2::quality_control::core;
 namespace o2::emcal
 {
 class Geometry;
-}
+class MappingHandler;
+} // namespace o2::emcal
 namespace o2::quality_control_modules::emcal
 {
 
@@ -61,8 +63,11 @@ class RawErrorTask final : public TaskInterface
   TH2* mErrorTypeGain = nullptr;     ///< Gain type errors
   TH2* mErrorGainLow = nullptr;      ///< FEC with LGnoHG error
   TH2* mErrorGainHigh = nullptr;     ///< FEC with HGnoLG error
+  TH2* mChannelGainLow = nullptr;    ///< Tower with LGnoHG error
+  TH2* mChannelGainHigh = nullptr;   ///< Tower with HGnoLG error
 
-  o2::emcal::Geometry* mGeometry = nullptr; ///< EMCAL geometry
+  o2::emcal::Geometry* mGeometry = nullptr;           ///< EMCAL geometry
+  std::unique_ptr<o2::emcal::MappingHandler> mMapper; ///< EMCAL mapper
 };
 
 } // namespace o2::quality_control_modules::emcal

@@ -20,6 +20,7 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "EMCAL/RawErrorTask.h"
 #include "EMCALBase/Geometry.h"
+#include "EMCALBase/Mapper.h"
 #include "EMCALReconstruction/AltroDecoder.h"
 #include "DataFormatsEMCAL/ErrorTypeFEE.h"
 #include <Framework/InputRecord.h>
@@ -157,6 +158,21 @@ void RawErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
   mErrorGainHigh->GetXaxis()->SetTitle("Link");
   mErrorGainHigh->SetStats(0);
   getObjectsManager()->startPublishing(mErrorGainHigh);
+
+  mChannelGainLow = new TH2F("ChannelLGnoHG", "Channel with HG bunch missing", 96, -0.5, 96.5, 208, -0.5, 207.5);
+  mChannelGainLow->GetXaxis()->SetTitle("Column");
+  mChannelGainLow->GetYaxis()->SetTitle("Row");
+  mChannelGainLow->SetStats(0);
+  getObjectsManager()->startPublishing(mChannelGainLow);
+
+  mChannelGainHigh = new TH2F("ChannelHGnoLG", "Channel with LG bunch missing", 96, -0.5, 96.5, 208, -0.5, 207.5);
+  mChannelGainHigh->GetXaxis()->SetTitle("Column");
+  mChannelGainHigh->GetYaxis()->SetTitle("Row");
+  mChannelGainHigh->SetStats(0);
+  getObjectsManager()->startPublishing(mChannelGainHigh);
+
+  mGeometry = o2::emcal::Geometry::GetInstanceFromRunNumber(300000);
+  mMapper = std::make_unique<o2::emcal::MappingHandler>();
 }
 
 void RawErrorTask::startOfActivity(Activity& activity)
@@ -172,7 +188,6 @@ void RawErrorTask::startOfCycle()
 
 void RawErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-
   constexpr auto originEMC = o2::header::gDataOriginEMC;
 
   std::vector<framework::InputSpec> filter{ { "filter", framework::ConcreteDataTypeMatcher(originEMC, "DECODERERR") } };
@@ -213,13 +228,37 @@ void RawErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
       errorhist->Fill(feeid, errorCode);
 
       if (o2::emcal::ErrorTypeFEE::ErrorSource_t::GAIN_ERROR) {
+        // Fill Histogram with FEC ID
         auto FECid = error.getSubspecification();
-        if (errorCode == 0)
-          mErrorGainLow->Fill(feeid, FECid); // error 0
-        else
-          mErrorGainHigh->Fill(feeid, FECid); // error 1
+        if (errorCode == 0) {
+          mErrorGainLow->Fill(feeid, FECid); // LGnoHG
+        } else {
+          mErrorGainHigh->Fill(feeid, FECid); // HGnoLG
+        }
+        // Fill histogram with tower position
+        if (error.getHarwareAddress() >= 0) {
+          auto supermoduleID = feeid / 2;
+          try {
+            auto& mapping = mMapper->getMappingForDDL(feeid);
+            auto colOnline = mapping.getColumn(error.getHarwareAddress());
+            auto rowOnline = mapping.getRow(error.getHarwareAddress());
+            auto [rowCorrected, colCorrected] = mGeometry->ShiftOnlineToOfflineCellIndexes(supermoduleID, rowOnline, colOnline);
+            auto cellID = mGeometry->GetAbsCellIdFromCellIndexes(supermoduleID, rowCorrected, colCorrected);
+            auto [globalRow, globalColumn] = mGeometry->GlobalRowColFromIndex(cellID);
+            if (errorCode == 0) {
+              mChannelGainLow->Fill(globalColumn, globalRow); // LGnoHG
+            } else {
+              mChannelGainHigh->Fill(globalColumn, globalRow); // HGnoLG
+            }
+          } catch (o2::emcal::MappingHandler::DDLInvalid& e) {
+            ILOG(Warning, Support) << e.what() << ENDM;
+          } catch (o2::emcal::Mapper::AddressNotFoundException& e) {
+            ILOG(Warning, Support) << e.what() << ENDM;
+          } catch (o2::emcal::InvalidCellIDException& e) {
+            ILOG(Warning, Support) << e.what() << ENDM;
+          }
+        }
       }
-
     } // end for error in errorcont
   }   // end of loop on raw error data
 } // end of monitorData
