@@ -198,7 +198,6 @@ Quality PhysicsPreclustersCheck::check(std::map<std::string, std::shared_ptr<Mon
       // into the histogram bins in the beutify() method
       for (int i = 0; i < 2; i++) {
         for (size_t de = 0; de < dePseudoeffDen[i].size(); de++) {
-          std::cout << fmt::format("xxxx DE{}  num {}  den {}", de, dePseudoeffNum[i][de], dePseudoeffDen[i][de]) << std::endl;
           if (dePseudoeffDen[i][de] > 0) {
             mDePseudoeff[i][de] = dePseudoeffNum[i][de] / dePseudoeffDen[i][de];
           } else {

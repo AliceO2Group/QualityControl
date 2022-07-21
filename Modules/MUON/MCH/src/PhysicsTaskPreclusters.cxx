@@ -578,7 +578,7 @@ void PhysicsTaskPreclusters::reset()
   ILOG(Info, Support) << "Reseting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
 
   for (auto h : mAllHistograms) {
-    h->Reset();
+    h->Reset("ICES");
   }
 }
 

@@ -181,9 +181,6 @@ Quality PhysicsCheck::processFecOccupancy(MergeableTH2Ratio* hr, std::vector<dou
     // integrated occupancies
     if (deOccupancyDen[de] > 0) {
       deOccupancy[de] = deOccupancyNum[de] / deOccupancyDen[de];
-      if (de == 10) {
-        std::cout << fmt::format("xxxx occupancy: {} = {} / {}", deOccupancy[de], deOccupancyNum[de], deOccupancyDen[de]) << std::endl;
-      }
     } else {
       deOccupancy[de] = 0;
     }
@@ -211,15 +208,11 @@ Quality PhysicsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
         mHistogramOccupancyFecPrevCycle = std::make_shared<MergeableTH2Ratio>(*hr);
         mHistogramOccupancyFecPrevCycle->SetName("mHistogramOccupancyFecPrevCycle");
         mHistogramOccupancyFecPrevCycle->Reset();
-        mHistogramOccupancyFecPrevCycle->getNum()->Reset();
-        mHistogramOccupancyFecPrevCycle->getDen()->Reset();
       }
 
       MergeableTH2Ratio hdiff(*hr);
       hdiff.SetName("mHistogramOccupancyFecOnCycle");
       hdiff.Reset();
-      hdiff.getNum()->Reset();
-      hdiff.getDen()->Reset();
 
       hdiff.getNum()->Add(hr->getNum());
       hdiff.getNum()->Add(mHistogramOccupancyFecPrevCycle->getNum(), -1);
@@ -231,8 +224,6 @@ Quality PhysicsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
 
       // update previous cycle plot
       mHistogramOccupancyFecPrevCycle->Reset();
-      mHistogramOccupancyFecPrevCycle->getNum()->Reset();
-      mHistogramOccupancyFecPrevCycle->getDen()->Reset();
       mHistogramOccupancyFecPrevCycle->getNum()->Add(hr->getNum());
       mHistogramOccupancyFecPrevCycle->getDen()->Add(hr->getDen());
     }

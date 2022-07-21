@@ -67,6 +67,7 @@ class PhysicsTaskDigits /*final*/ : public TaskInterface // todo add back the "f
   void addDefaultOrbitsInTF();
   void plotDigit(const o2::mch::Digit& digit);
   void updateOrbits();
+  void resetOrbits();
 
   template <typename T>
   void publishObject(std::shared_ptr<T> histo, std::string drawOption, bool statBox, bool isExpert)

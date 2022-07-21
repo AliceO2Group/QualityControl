@@ -93,7 +93,7 @@ void MergeableTH1Ratio::update()
   const char* name = this->GetName();
   const char* title = this->GetTitle();
 
-  Reset();
+  TH1F::Reset();
   GetXaxis()->Set(mHistoNum->GetXaxis()->GetNbins(), mHistoNum->GetXaxis()->GetXmin(), mHistoNum->GetXaxis()->GetXmax());
   SetBinsLength();
 
@@ -113,6 +113,13 @@ void MergeableTH1Ratio::update()
   if (mScalingFactor != 1.) {
     Scale(mScalingFactor);
   }
+}
+
+void MergeableTH1Ratio::Reset(Option_t*  option)
+{
+  getNum()->Reset(option);
+  getDen()->Reset(option);
+  TH1F::Reset(option);
 }
 
 } // namespace o2::quality_control_modules::muon
