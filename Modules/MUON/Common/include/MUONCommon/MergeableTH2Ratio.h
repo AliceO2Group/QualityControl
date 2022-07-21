@@ -70,7 +70,7 @@ class MergeableTH2Ratio : public TH2F, public o2::mergers::MergeInterface
   std::string mTreatMeAs{ "TH2F" };
   bool mShowZeroBins{ false };
 
-  ClassDefOverride(MergeableTH2Ratio, 2);
+  ClassDefOverride(MergeableTH2Ratio, 1);
 };
 
 } // namespace o2::quality_control_modules::muon

@@ -68,7 +68,7 @@ class MergeableTH1Ratio : public TH1F, public o2::mergers::MergeInterface
   std::string mTreatMeAs = "TH1F";
   double mScalingFactor = 1.;
 
-  ClassDefOverride(MergeableTH1Ratio, 2);
+  ClassDefOverride(MergeableTH1Ratio, 1);
 };
 
 } // namespace o2::quality_control_modules::muon
