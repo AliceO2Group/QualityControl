@@ -148,7 +148,6 @@ void TrendingFECHistRatio::computeMCHFECHistRatios(TH2F* hNum, TH2F* hDen)
 
   int nbinsx = hDiffNum.GetXaxis()->GetNbins();
   int nbinsy = hDiffNum.GetYaxis()->GetNbins();
-  std::cout << fmt::format("xxxx bins {} {}", nbinsx, nbinsy) << std::endl;
   int ngood = 0;
   int npads = 0;
   for (int i = 1; i <= nbinsx; i++) {
@@ -177,19 +176,16 @@ void TrendingFECHistRatio::computeMCHFECHistRatios(TH2F* hNum, TH2F* hDen)
       chamberDen[chamber] += 1;
     }
   }
-  std::cout << "xxxx Processing of FEC plot finished" << std::endl;
 
   // compute and store average rate for each detection element
   for (auto de : o2::mch::raw::deIdsForAllMCH) {
     double ratio = (deDen[de] > 0) ? (deNum[de] / deDen[de]) : 0;
-    std::cout << fmt::format("xxxx DE{}  ratio {} / {} = {}", de, deNum[de], deDen[de], ratio) << std::endl;
     mTrendDE[de] = ratio;
   }
 
   // compute and store average rate for each chamber
   for (int ch = 0; ch < 10; ch++) {
     double ratio = (chamberDen[ch] > 0) ? (chamberNum[ch] / chamberDen[ch]) : 0;
-    std::cout << fmt::format("xxxx CH{}  ratio {} / {} = {}", ch + 1, chamberNum[ch], chamberDen[ch], ratio) << std::endl;
     mTrendCH[ch] = ratio;
   }
 
@@ -277,7 +273,6 @@ void TrendingFECHistRatio::trendValues(const Trigger& t, repository::DatabaseInt
     ILOG(Info, Support) << "Cannot cast histogramRates, can't compute rates";
     return;
   }
-  std::cout << fmt::format("xxxx calling computeMCHFECHistRatios()") << std::endl;
   computeMCHFECHistRatios(hr->getNum(), hr->getDen());
 
   mTrend->Fill();
