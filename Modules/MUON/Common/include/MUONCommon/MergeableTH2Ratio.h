@@ -62,7 +62,7 @@ class MergeableTH2Ratio : public TH2F, public o2::mergers::MergeInterface
 
   void beautify();
 
-  void Reset(Option_t*  option = "");
+  void Reset(Option_t* option = "");
 
  private:
   TH2F* mHistoNum{ nullptr };

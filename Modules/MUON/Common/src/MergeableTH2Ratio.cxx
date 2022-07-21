@@ -123,7 +123,7 @@ void MergeableTH2Ratio::beautify()
   }
 }
 
-void MergeableTH2Ratio::Reset(Option_t*  option)
+void MergeableTH2Ratio::Reset(Option_t* option)
 {
   getNum()->Reset(option);
   getDen()->Reset(option);

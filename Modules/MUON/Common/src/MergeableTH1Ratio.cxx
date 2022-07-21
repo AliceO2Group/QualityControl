@@ -115,7 +115,7 @@ void MergeableTH1Ratio::update()
   }
 }
 
-void MergeableTH1Ratio::Reset(Option_t*  option)
+void MergeableTH1Ratio::Reset(Option_t* option)
 {
   getNum()->Reset(option);
   getDen()->Reset(option);
