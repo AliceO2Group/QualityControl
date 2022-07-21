@@ -73,6 +73,10 @@ MergeableTH2Ratio::~MergeableTH2Ratio()
 
 void MergeableTH2Ratio::merge(MergeInterface* const other)
 {
+  if (!mHistoNum || !mHistoDen) {
+    return;
+  }
+
   mHistoNum->Add(dynamic_cast<const MergeableTH2Ratio* const>(other)->getNum());
   mHistoDen->Add(dynamic_cast<const MergeableTH2Ratio* const>(other)->getDen());
   update();
@@ -80,6 +84,10 @@ void MergeableTH2Ratio::merge(MergeInterface* const other)
 
 void MergeableTH2Ratio::update()
 {
+  if (!mHistoNum || !mHistoDen) {
+    return;
+  }
+
   const char* name = this->GetName();
   const char* title = this->GetTitle();
 
@@ -113,7 +121,10 @@ void MergeableTH2Ratio::update()
 
 void MergeableTH2Ratio::beautify()
 {
-  SetOption("colz");
+  if (!mHistoNum) {
+    return;
+  }
+
   GetListOfFunctions()->RemoveAll();
 
   TList* functions = (TList*)mHistoNum->GetListOfFunctions()->Clone();
@@ -125,8 +136,14 @@ void MergeableTH2Ratio::beautify()
 
 void MergeableTH2Ratio::Reset(Option_t* option)
 {
-  getNum()->Reset(option);
-  getDen()->Reset(option);
+  if (mHistoNum) {
+    mHistoNum->Reset(option);
+  }
+
+  if (mHistoDen) {
+    mHistoDen->Reset(option);
+  }
+
   TH2F::Reset(option);
 }
 

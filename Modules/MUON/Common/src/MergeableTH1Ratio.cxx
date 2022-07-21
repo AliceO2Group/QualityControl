@@ -32,6 +32,10 @@ MergeableTH1Ratio::MergeableTH1Ratio(MergeableTH1Ratio const& copymerge)
   mHistoDen = (TH1D*)copymerge.getDen()->Clone();
   TH1::AddDirectory(bStatus);
 
+  if (!mHistoNum || !mHistoDen) {
+    return;
+  }
+
   mHistoNum->Sumw2();
   mHistoDen->Sumw2();
 }
@@ -46,6 +50,10 @@ MergeableTH1Ratio::MergeableTH1Ratio(const char* name, const char* title, int nb
   mHistoNum = new TH1D("num", "num", nbinsx, xmin, xmax);
   mHistoDen = new TH1D("den", "den", nbinsx, xmin, xmax);
   TH1::AddDirectory(bStatus);
+
+  if (!mHistoNum || !mHistoDen) {
+    return;
+  }
 
   mHistoNum->Sumw2();
   mHistoDen->Sumw2();
@@ -63,6 +71,10 @@ MergeableTH1Ratio::MergeableTH1Ratio(const char* name, const char* title, double
   mHistoNum = new TH1D("num", "num", 10, 0, 10);
   mHistoDen = new TH1D("den", "den", 10, 0, 10);
   TH1::AddDirectory(bStatus);
+
+  if (!mHistoNum || !mHistoDen) {
+    return;
+  }
 
   mHistoNum->Sumw2();
   mHistoDen->Sumw2();
@@ -83,6 +95,10 @@ MergeableTH1Ratio::~MergeableTH1Ratio()
 
 void MergeableTH1Ratio::merge(MergeInterface* const other)
 {
+  if (!mHistoNum || !mHistoDen) {
+    return;
+  }
+
   mHistoNum->Add(dynamic_cast<const MergeableTH1Ratio* const>(other)->getNum());
   mHistoDen->Add(dynamic_cast<const MergeableTH1Ratio* const>(other)->getDen());
   update();
@@ -90,6 +106,10 @@ void MergeableTH1Ratio::merge(MergeInterface* const other)
 
 void MergeableTH1Ratio::update()
 {
+  if (!mHistoNum || !mHistoDen) {
+    return;
+  }
+
   const char* name = this->GetName();
   const char* title = this->GetTitle();
 
@@ -117,8 +137,14 @@ void MergeableTH1Ratio::update()
 
 void MergeableTH1Ratio::Reset(Option_t* option)
 {
-  getNum()->Reset(option);
-  getDen()->Reset(option);
+  if (mHistoNum) {
+    mHistoNum->Reset(option);
+  }
+
+  if (mHistoDen) {
+    mHistoDen->Reset(option);
+  }
+
   TH1F::Reset(option);
 }
 
