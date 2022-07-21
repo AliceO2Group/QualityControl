@@ -207,6 +207,8 @@ void QcMFTClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
   mClusterOccupancySummary->Fill(-1, -1);
   mClusterOccupancy->Fill(-1);
   mClusterPatternIndex->Fill(-1);
+  mClusterSizeSummary->Fill(-1);
+  mGroupedClusterSizeSummary->Fill(-1);
 
   // get the clusters
   const auto clusters = ctx.inputs().get<gsl::span<o2::itsmft::CompClusterExt>>("randomcluster");

@@ -47,7 +47,7 @@
         "dataSource" : [ {
           "type" : "Task",
           "name" : "MFTClusterTask",
-          "MOs" : ["mClusterOccupancy","mClusterPatternIndex","mClusterOccupancySummary"]
+          "MOs" : ["mClusterOccupancy","mClusterPatternIndex","mClusterSizeSummary", "mGroupedClusterSizeSummary", "mClusterOccupancySummary"]
         } ],
         "className" : "o2::quality_control_modules::mft::QcMFTClusterCheck",
         "moduleName" : "QcMFT",
