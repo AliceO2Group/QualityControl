@@ -9,14 +9,10 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
-///
-/// \file   RawErrorCheck.cxx
-/// \author My Name
-///
-
 #include <algorithm>
 #include <array>
 #include <string>
+#include <boost/algorithm/string.hpp>
 
 #include "EMCALBase/Geometry.h"
 
@@ -41,6 +37,16 @@ namespace o2::quality_control_modules::emcal
 void RawErrorCheck::configure()
 {
   mGeometry = o2::emcal::Geometry::GetInstanceFromRunNumber(300000);
+
+  // switch on/off messages on the infoLogger
+  auto switchNotifyIL = mCustomParameters.find("NotifyInfologger");
+  if (switchNotifyIL != mCustomParameters.end()) {
+    try {
+      mNotifyInfologger = decodeBool(switchNotifyIL->second);
+    } catch (std::exception& e) {
+      ILOG(Error, Support) << e.what() << ENDM;
+    }
+  }
 }
 
 Quality RawErrorCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
@@ -137,9 +143,24 @@ void RawErrorCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     h->GetListOfFunctions()->Add(msg);
     msg->Draw();
     // Notify about found errors on the infoLogger:
-    for (const auto& reason : checkResult.getReasons())
-      ILOG(Warning, Support) << "Raw Error in " << mo->GetName() << " found: " << reason.second << ENDM;
+    if (mNotifyInfologger) {
+      for (const auto& reason : checkResult.getReasons()) {
+        ILOG(Warning, Support) << "Raw Error in " << mo->GetName() << " found: " << reason.second << ENDM;
+      }
+    }
   }
+}
+
+bool RawErrorCheck::decodeBool(std::string value) const
+{
+  boost::algorithm::to_lower_copy(value);
+  if (value == "true") {
+    return true;
+  }
+  if (value == "false") {
+    return false;
+  }
+  throw std::runtime_error(fmt::format("Value {} not a boolean", value.data()).data());
 }
 
 } // namespace o2::quality_control_modules::emcal

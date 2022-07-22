@@ -50,7 +50,14 @@ class RawErrorCheck : public o2::quality_control::checker::CheckInterface
   ClassDefOverride(RawErrorCheck, 2);
 
  private:
-  o2::emcal::Geometry* mGeometry;
+  /// \brief Decode key of a configurable parameter as boolean
+  /// \param value Value to be decoded (true or false, case-insensitive)
+  /// \return Boolean representation of the value
+  /// \throw std::runtime_error in case value is not a boolean value
+  bool decodeBool(std::string value) const;
+
+  o2::emcal::Geometry* mGeometry; ///< Geometry for mapping position between SM and full EMCAL
+  bool mNotifyInfologger = true;  ///< Switch for notification to infologger
 };
 
 } // namespace o2::quality_control_modules::emcal
