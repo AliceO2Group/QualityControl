@@ -19,6 +19,11 @@
 
 #include "QualityControl/CheckInterface.h"
 
+namespace o2::emcal
+{
+class Geometry;
+}
+
 namespace o2::quality_control_modules::emcal
 {
 
@@ -43,6 +48,9 @@ class RawErrorCheck : public o2::quality_control::checker::CheckInterface
   std::string getAcceptedType() override;
 
   ClassDefOverride(RawErrorCheck, 2);
+
+ private:
+  o2::emcal::Geometry* mGeometry;
 };
 
 } // namespace o2::quality_control_modules::emcal
