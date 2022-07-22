@@ -385,7 +385,7 @@ void InfrastructureGenerator::generateDataSamplingPolicyRemoteProxyConnect(frame
   const std::string& proxyName = channelName; // channel name has to match proxy name
 
   std::string channelConfig = "name=" + channelName + ",type=sub,method=connect,address=tcp://" +
-                              localMachine + ":" + localPort + ",rateLogging=60,transport=zeromq,rcvBufSize=32";
+                              localMachine + ":" + localPort + ",rateLogging=60,transport=zeromq,rcvBufSize=1";
 
   workflow.emplace_back(specifyExternalFairMQDeviceProxy(
     proxyName.c_str(),
@@ -428,7 +428,7 @@ void InfrastructureGenerator::generateDataSamplingPolicyRemoteProxyBind(framewor
   std::string channelName = policyName;
   const std::string& proxyName = channelName; // channel name has to match proxy name
 
-  std::string channelConfig = "name=" + channelName + ",type=sub,method=bind,address=tcp://*:" + remotePort + ",rateLogging=60,transport=zeromq,rcvBufSize=32";
+  std::string channelConfig = "name=" + channelName + ",type=sub,method=bind,address=tcp://*:" + remotePort + ",rateLogging=60,transport=zeromq,rcvBufSize=1";
 
   workflow.emplace_back(specifyExternalFairMQDeviceProxy(
     proxyName.c_str(),
@@ -471,7 +471,7 @@ void InfrastructureGenerator::generateLocalTaskRemoteProxy(framework::WorkflowSp
   }
 
   std::string channelConfig = "name=" + channelName + ",type=sub,method=bind,address=tcp://*:" + remotePort +
-                              ",rateLogging=60,transport=zeromq,rcvBufSize=32";
+                              ",rateLogging=60,transport=zeromq,rcvBufSize=1";
 
   workflow.emplace_back(specifyExternalFairMQDeviceProxy(
     proxyName.c_str(),
