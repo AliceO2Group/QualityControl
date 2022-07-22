@@ -231,8 +231,6 @@ void QcMFTClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
     mClusterPatternSensorIndices->Fill(sensorID,
                                        oneCluster.getPatternID());
 
-    // mClusterSizeSummary->Fill(mDict->getNpixels(oneCluster.getPatternID()));
-
     if (oneCluster.getPatternID() != o2::itsmft::CompCluster::InvalidPatternID && !mDict->isGroup(oneCluster.getPatternID())) {
       mClusterSizeSummary->Fill(mDict->getNpixels(oneCluster.getPatternID()));
     } else {
