@@ -73,6 +73,10 @@ MergeableTH2Ratio::~MergeableTH2Ratio()
 
 void MergeableTH2Ratio::merge(MergeInterface* const other)
 {
+  if (!mHistoNum || !mHistoDen) {
+    return;
+  }
+
   mHistoNum->Add(dynamic_cast<const MergeableTH2Ratio* const>(other)->getNum());
   mHistoDen->Add(dynamic_cast<const MergeableTH2Ratio* const>(other)->getDen());
   update();
@@ -80,18 +84,22 @@ void MergeableTH2Ratio::merge(MergeInterface* const other)
 
 void MergeableTH2Ratio::update()
 {
+  if (!mHistoNum || !mHistoDen) {
+    return;
+  }
+
   const char* name = this->GetName();
   const char* title = this->GetTitle();
 
-  Reset();
-  beautify();
+  TH2F::Reset();
 
+  SetNameTitle(name, title);
   GetXaxis()->Set(mHistoNum->GetXaxis()->GetNbins(), mHistoNum->GetXaxis()->GetXmin(), mHistoNum->GetXaxis()->GetXmax());
   GetYaxis()->Set(mHistoNum->GetYaxis()->GetNbins(), mHistoNum->GetYaxis()->GetXmin(), mHistoNum->GetYaxis()->GetXmax());
   SetBinsLength();
+  beautify();
 
   Divide(mHistoNum, mHistoDen);
-  SetNameTitle(name, title);
 
   if (mShowZeroBins) {
     // bins which have zero numerators are plotted in white when using the "col" and "colz" options, regardless of
@@ -113,7 +121,10 @@ void MergeableTH2Ratio::update()
 
 void MergeableTH2Ratio::beautify()
 {
-  SetOption("colz");
+  if (!mHistoNum) {
+    return;
+  }
+
   GetListOfFunctions()->RemoveAll();
 
   TList* functions = (TList*)mHistoNum->GetListOfFunctions()->Clone();
@@ -121,6 +132,19 @@ void MergeableTH2Ratio::beautify()
     GetListOfFunctions()->AddAll(functions);
     delete functions;
   }
+}
+
+void MergeableTH2Ratio::Reset(Option_t* option)
+{
+  if (mHistoNum) {
+    mHistoNum->Reset(option);
+  }
+
+  if (mHistoDen) {
+    mHistoDen->Reset(option);
+  }
+
+  TH2F::Reset(option);
 }
 
 } // namespace o2::quality_control_modules::muon

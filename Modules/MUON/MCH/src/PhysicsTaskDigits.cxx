@@ -106,11 +106,7 @@ void PhysicsTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
 
   const uint32_t nElecXbins = PhysicsTaskDigits::sMaxFeeId * PhysicsTaskDigits::sMaxLinkId * PhysicsTaskDigits::sMaxDsId;
 
-  for (int fee = 0; fee < PhysicsTaskDigits::sMaxFeeId; fee++) {
-    for (int link = 0; link < PhysicsTaskDigits::sMaxLinkId; link++) {
-      mNOrbits[fee][link] = mLastOrbitSeen[fee][link] = 0;
-    }
-  }
+  resetOrbits();
 
   // Histograms in electronics coordinates
   mHistogramOccupancyElec = std::make_shared<MergeableTH2Ratio>("Occupancy_Elec", "Occupancy", nElecXbins, 0, nElecXbins, 64, 0, 64);
@@ -401,6 +397,15 @@ void PhysicsTaskDigits::updateOrbits()
   }
 }
 
+void PhysicsTaskDigits::resetOrbits()
+{
+  for (int fee = 0; fee < PhysicsTaskDigits::sMaxFeeId; fee++) {
+    for (int link = 0; link < PhysicsTaskDigits::sMaxLinkId; link++) {
+      mNOrbits[fee][link] = mLastOrbitSeen[fee][link] = 0;
+    }
+  }
+}
+
 void PhysicsTaskDigits::endOfCycle()
 {
   // copy bin contents from src to dst
@@ -486,10 +491,12 @@ void PhysicsTaskDigits::endOfActivity(Activity& /*activity*/)
 void PhysicsTaskDigits::reset()
 {
   // clean all the monitor objects here
-  ILOG(Info, Support) << "Reseting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "Resetting the histograms" << AliceO2::InfoLogger::InfoLogger::endm;
+
+  resetOrbits();
 
   for (auto h : mAllHistograms) {
-    h->Reset();
+    h->Reset("ICES");
   }
 }
 
