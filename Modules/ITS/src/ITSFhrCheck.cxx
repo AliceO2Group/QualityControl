@@ -30,6 +30,8 @@
 namespace o2::quality_control_modules::its
 {
 
+void ITSFhrCheck::configure() {}
+
 Quality ITSFhrCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
   Quality result = Quality::Null;
@@ -99,65 +101,45 @@ std::string ITSFhrCheck::getAcceptedType() { return "TH1"; }
 
 void ITSFhrCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  TLatex* text[5];
+  TString status;
+  int textColor;
   if (mo->getName() == "General/General_Occupancy") {
     auto* h = dynamic_cast<TH2Poly*>(mo->getObject());
     if (strcmp(checkResult.getMetadata("Gen_Occu").c_str(), "good") == 0) {
-      text[0] = new TLatex(0, 0, "Quality::Good");
-      text[0]->SetTextAlign(23);
-      text[0]->SetTextSize(0.08);
-      text[0]->SetTextColor(kGreen);
-      h->GetListOfFunctions()->Add(text[0]);
+      status = "Quality::Good";
+      textColor = kGreen;
     } else if (strcmp(checkResult.getMetadata("Gen_Occu").c_str(), "bad") == 0) {
-      text[0] = new TLatex(0, 100, "Quality::Bad");
-      text[1] = new TLatex(0, 0, "Max Occupancy over 10^{-5}");
-      text[2] = new TLatex(0, -100, "Please Call Expert");
-      for (int i = 0; i < 3; ++i) {
-        text[i]->SetTextAlign(23);
-        text[i]->SetTextSize(0.08);
-        text[i]->SetTextColor(kRed);
-        h->GetListOfFunctions()->Add(text[i]);
-      }
+      status = "Quality::BAD (call expert)";
+      textColor = kRed;
     } else if (strcmp(checkResult.getMetadata("Gen_Occu").c_str(), "medium") == 0) {
-      text[0] = new TLatex(0, 0, "Quality::Medium");
-      text[1] = new TLatex(0, -100, "Max Occupancy over 10^{-6}");
-      text[2] = new TLatex(0, -100, "Please Notify Expert On MM");
-      for (int i = 0; i < 2; ++i) {
-        text[i]->SetTextAlign(23);
-        text[i]->SetTextSize(0.08);
-        text[i]->SetTextColor(46);
-        h->GetListOfFunctions()->Add(text[i]);
-      }
+      status = "Quality::Medium (Notify Expert)";
+      textColor = kBlue;
     }
+    tInfoOccu = std::make_shared<TLatex>(0.12, 0.835, Form("#bf{%s}", status.Data()));
+    tInfoOccu->SetTextColor(textColor);
+    tInfoOccu->SetTextSize(0.08);
+    tInfoOccu->SetTextFont(23);
+    tInfoOccu->SetNDC();
+    h->GetListOfFunctions()->Add(tInfoOccu->Clone());
+
   } else if (mo->getName() == "General/Noisy_Pixel") {
     auto* h = dynamic_cast<TH2Poly*>(mo->getObject());
     if (strcmp(checkResult.getMetadata("Noi_Pix").c_str(), "good") == 0) {
-      text[0] = new TLatex(0, 0, "Quality::Good");
-      text[0]->SetTextAlign(23);
-      text[0]->SetTextSize(0.08);
-      text[0]->SetTextColor(kGreen);
-      h->GetListOfFunctions()->Add(text[0]);
+      status = "Quality::Good";
+      textColor = kGreen;
     } else if (strcmp(checkResult.getMetadata("Noi_Pix").c_str(), "bad") == 0) {
-      text[0] = new TLatex(0, 100, "Quality::Bad");
-      text[1] = new TLatex(0, 0, "Noisy Pixel over 0.01%");
-      text[2] = new TLatex(0, -100, "Please Call Expert");
-      for (int i = 0; i < 3; ++i) {
-        text[i]->SetTextAlign(23);
-        text[i]->SetTextSize(0.08);
-        text[i]->SetTextColor(kRed);
-        h->GetListOfFunctions()->Add(text[i]);
-      }
+      status = "Quality::BAD (call expert)";
+      textColor = kRed;
     } else if (strcmp(checkResult.getMetadata("Noi_Pix").c_str(), "medium") == 0) {
-      text[0] = new TLatex(0, 100, "Quality::Medium");
-      text[1] = new TLatex(0, 0, "Noisy Pixel over 0.005%");
-      text[2] = new TLatex(0, -100, "Please Notify Expert On MM");
-      for (int i = 0; i < 3; ++i) {
-        text[i]->SetTextAlign(23);
-        text[i]->SetTextSize(0.08);
-        text[i]->SetTextColor(46);
-        h->GetListOfFunctions()->Add(text[i]);
-      }
+      status = "Quality::Medium (Notify Expert)";
+      textColor = kBlue;
     }
+    tInfoNoisy = std::make_shared<TLatex>(0.12, 0.835, Form("#bf{%s}", status.Data()));
+    tInfoNoisy->SetTextColor(textColor);
+    tInfoNoisy->SetTextSize(0.08);
+    tInfoNoisy->SetTextFont(23);
+    tInfoNoisy->SetNDC();
+    h->GetListOfFunctions()->Add(tInfoNoisy->Clone());
   }
   TString objectName = mo->getName();
   if (objectName.Contains("ChipStave")) {
@@ -165,39 +147,21 @@ void ITSFhrCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
     int layer = layerString.Atoi();
     auto* h = dynamic_cast<TH2D*>(mo->getObject());
     if (strcmp(checkResult.getMetadata(Form("Layer%d", layer)).c_str(), "good") == 0) {
-      text[0] = new TLatex(0.5, 0.6, "Quality::Good");
-      text[0]->SetNDC();
-      text[0]->SetTextAlign(23);
-      text[0]->SetTextSize(0.08);
-      text[0]->SetTextColor(kGreen);
-      h->GetListOfFunctions()->Add(text[0]);
+      status = "Quality::Good";
+      textColor = kGreen;
     } else if (strcmp(checkResult.getMetadata(Form("Layer%d", layer)).c_str(), "medium") == 0) {
-      text[0] = new TLatex(0.5, 0.73, "Quality::Medium");
-      text[0]->SetNDC();
-      text[1] = new TLatex(0.5, 0.6, "Max Chip Occupancy Over 10^{-6}");
-      text[1]->SetNDC();
-      text[2] = new TLatex(0.5, 0.47, "Please Notify Expert On MM");
-      text[2]->SetNDC();
-      for (int i = 0; i < 3; ++i) {
-        text[i]->SetTextAlign(23);
-        text[i]->SetTextSize(0.08);
-        text[i]->SetTextColor(46);
-        h->GetListOfFunctions()->Add(text[i]);
-      }
+      status = "Quality::Medium (Notify Expert)";
+      textColor = kBlue;
     } else if (strcmp(checkResult.getMetadata(Form("Layer%d", layer)).c_str(), "bad") == 0) {
-      text[0] = new TLatex(0.5, 0.73, "Quality::Bad");
-      text[0]->SetNDC();
-      text[1] = new TLatex(0.5, 0.6, "Max Chip Occupancy Over 10^{-5}");
-      text[1]->SetNDC();
-      text[2] = new TLatex(0.5, 0.47, "Please Call Expert");
-      text[2]->SetNDC();
-      for (int i = 0; i < 3; ++i) {
-        text[i]->SetTextAlign(23);
-        text[i]->SetTextSize(0.08);
-        text[i]->SetTextColor(kRed);
-        h->GetListOfFunctions()->Add(text[i]);
-      }
+      status = "Quality::BAD (call expert)";
+      textColor = kRed;
     }
+    tInfoChip = std::make_shared<TLatex>(0.12, 0.835, Form("#bf{%s}", status.Data()));
+    tInfoChip->SetTextColor(textColor);
+    tInfoChip->SetTextSize(0.08);
+    tInfoChip->SetTextFont(23);
+    tInfoChip->SetNDC();
+    h->GetListOfFunctions()->Add(tInfoChip->Clone());
   }
 }
 

@@ -13,13 +13,13 @@
 /// \file   ITSFhrCheck.h
 /// \author Liang Zhang
 /// \author Jian Liu
-/// \author Zhen Zhang
 ///
 
 #ifndef QC_MODULE_ITS_ITSFHRCHECK_H
 #define QC_MODULE_ITS_ITSFHRCHECK_H
 
 #include "QualityControl/CheckInterface.h"
+#include <TLatex.h>
 
 namespace o2::quality_control_modules::its
 {
@@ -36,12 +36,18 @@ class ITSFhrCheck : public o2::quality_control::checker::CheckInterface
   ~ITSFhrCheck() override = default;
 
   // Override interface
+  void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
 
  private:
   int mNPixelPerStave[3] = { 4718592, 58720256, 102760448 }; // IB, ML, OL
+
+  std::shared_ptr<TLatex> tInfoOccu;
+  std::shared_ptr<TLatex> tInfoNoisy;
+  std::shared_ptr<TLatex> tInfoChip;
+
   ClassDefOverride(ITSFhrCheck, 2);
 };
 
