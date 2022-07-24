@@ -26,9 +26,9 @@
 
 #include <TH2.h>
 #include <TCanvas.h>
+#include <TGraph.h>
 
 class TH1F;
-class TGraph;
 class TCanvas;
 class TLegend;
 class TProfile;

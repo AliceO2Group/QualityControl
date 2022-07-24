@@ -9,9 +9,7 @@ target_sources(O2QcFV0 PRIVATE src/TH1ReductorLaser.cxx
                                src/BasicPPTask.cxx
                                src/OutOfBunchCollTask.cxx
                                src/OutOfBunchCollCheck.cxx
-                               src/TriggerQcTask.cxx
-                               src/CalibrationTask.cxx
-                               src/ChannelTimeCalibrationCheck.cxx)
+                               src/TriggerQcTask.cxx)
 
 target_include_directories(
   O2QcFV0
@@ -34,8 +32,6 @@ add_root_dictionary(O2QcFV0
   HEADERS include/FV0/TH1ReductorLaser.h
           include/FV0/DigitQcTaskLaser.h
           include/FV0/DigitQcTask.h
-          include/FV0/CalibrationTask.h
-          include/FV0/ChannelTimeCalibrationCheck.h
           include/FV0/BasicPPTask.h
           include/FV0/OutOfBunchCollTask.h
           include/FV0/CFDEffCheck.h
