@@ -93,6 +93,11 @@ void TrendingRate::computeTOFRates(TH2F* h, std::vector<int>& bcInt, std::vector
   mPreviousPlot->Reset();
   mPreviousPlot->Add(h);
 
+  if (nb == 0) { // threshold too high? return since hback was not created
+    ILOG(Warning, Support) << "Counted 0 background events, threshold might be too high!" << ENDM;
+    delete hpdiff;
+    return;
+  }
   if (hback->Integral() < 0) {
     return;
   }
@@ -123,10 +128,6 @@ void TrendingRate::computeTOFRates(TH2F* h, std::vector<int>& bcInt, std::vector
       const int bcmax = ibc * 18;
       TH1D* hs = hDiffGlobal.ProjectionY(Form("sign_%d_%d", bcmin, bcmax), ibc, ibc);
       hs->SetTitle(Form("%d < BC < %d", bcmin, bcmax));
-      if (hb->GetBinContent(1) <= 0.) {
-        ILOG(Warning, Support) << "Background bin content is zero, cannot normalize histogram" << ENDM;
-        continue;
-      }
       hb->Scale(hs->GetBinContent(1) / hb->GetBinContent(1));
       const float overall = hs->Integral();
       if (overall <= 0.f) {
