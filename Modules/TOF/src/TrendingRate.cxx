@@ -98,12 +98,7 @@ void TrendingRate::computeTOFRates(TH2F* h, std::vector<int>& bcInt, std::vector
   }
 
   if (mActiveChannels > 0.f) {
-    if (orbit_lenght > 0.f) {
-      mNoiseRatePerChannel = (hback->GetMean() - 0.5) / orbit_lenght * h->GetNbinsX() / mActiveChannels;
-    } else {
-      ILOG(Warning, Support) << "Unphysical orbit_lenght " << orbit_lenght << ", setting noise rate per channel to 0" << ENDM;
-      mNoiseRatePerChannel = 0.f;
-    }
+    mNoiseRatePerChannel = (hback->GetMean() - 0.5) / orbit_lenght * h->GetNbinsX() / mActiveChannels;
   }
 
   std::vector<int> signals;
@@ -149,10 +144,6 @@ void TrendingRate::computeTOFRates(TH2F* h, std::vector<int>& bcInt, std::vector
         continue;
       }
       const float mu = TMath::Log(1.f / (1.f - prob));
-      if (orbit_lenght <= 0.f) {
-        ILOG(Warning, Support) << "Unphysical orbit_lenght, cannot compute rate" << orbit_lenght << ENDM;
-        continue;
-      }
       const float rate = mu / orbit_lenght;
       bcInt.push_back(ibc);
       bcRate.push_back(rate);
