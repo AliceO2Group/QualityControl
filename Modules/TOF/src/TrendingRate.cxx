@@ -97,7 +97,7 @@ void TrendingRate::computeTOFRates(TH2F* h, std::vector<int>& bcInt, std::vector
     return;
   }
 
-  if (mActiveChannels > 0.f) {
+  if (mActiveChannels > 0) {
     mNoiseRatePerChannel = (hback->GetMean() - 0.5) / orbit_lenght * h->GetNbinsX() / mActiveChannels;
   }
 
