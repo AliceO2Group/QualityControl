@@ -97,8 +97,13 @@ void TrendingRate::computeTOFRates(TH2F* h, std::vector<int>& bcInt, std::vector
     return;
   }
 
-  if (mActiveChannels) {
-    mNoiseRatePerChannel = (hback->GetMean() - 0.5) / orbit_lenght * h->GetNbinsX() / mActiveChannels;
+  if (mActiveChannels > 0.f) {
+    if (orbit_lenght > 0.f) {
+      mNoiseRatePerChannel = (hback->GetMean() - 0.5) / orbit_lenght * h->GetNbinsX() / mActiveChannels;
+    } else {
+      ILOG(Warning, Support) << "Unphysical orbit_lenght " << orbit_lenght << ", setting noise rate per channel to 0" << ENDM;
+      mNoiseRatePerChannel = 0.f;
+    }
   }
 
   std::vector<int> signals;
@@ -123,29 +128,43 @@ void TrendingRate::computeTOFRates(TH2F* h, std::vector<int>& bcInt, std::vector
       const int bcmax = ibc * 18;
       TH1D* hs = hDiffGlobal.ProjectionY(Form("sign_%d_%d", bcmin, bcmax), ibc, ibc);
       hs->SetTitle(Form("%d < BC < %d", bcmin, bcmax));
+      if (hb->GetBinContent(1) <= 0.) {
+        ILOG(Warning, Support) << "Background bin content is zero, cannot normalize histogram" << ENDM;
+        continue;
+      }
       hb->Scale(hs->GetBinContent(1) / hb->GetBinContent(1));
       const float overall = hs->Integral();
-      if (overall <= 0) {
+      if (overall <= 0.f) {
         ILOG(Info, Support) << "no signal for BC index " << ibc << ENDM;
         continue;
       }
       const float background = hb->Integral();
-      if (background <= 0) {
+      if (background <= 0.f) {
         ILOG(Info, Support) << "no background for BC index " << ibc << ENDM;
         continue;
       }
       const float prob = (overall - background) / overall;
+      if ((1.f - prob) < 0.f) {
+        ILOG(Info, Support) << "Probability is 1, can't comute mu" << ENDM;
+        continue;
+      }
       const float mu = TMath::Log(1.f / (1.f - prob));
+      if (orbit_lenght <= 0.f) {
+        ILOG(Warning, Support) << "Unphysical orbit_lenght, cannot compute rate" << orbit_lenght << ENDM;
+        continue;
+      }
       const float rate = mu / orbit_lenght;
       bcInt.push_back(ibc);
       bcRate.push_back(rate);
+      if (prob <= 0.f) {
+        ILOG(Warning, Support) << "Probability is 0, can't compute pileup" << ENDM;
+        continue;
+      }
       bcPileup.push_back(mu / prob);
       sumw += rate;
       pilup += mu / prob * rate;
       ratetot += rate;
-      if (prob > 0.f) {
-        ILOG(Info, Support) << "interaction prob = " << mu << ", rate=" << rate << " Hz, mu=" << mu / prob << ENDM;
-      }
+      ILOG(Info, Support) << "interaction prob = " << mu << ", rate=" << rate << " Hz, mu=" << mu / prob << ENDM;
       delete hb;
       delete hs;
     }
