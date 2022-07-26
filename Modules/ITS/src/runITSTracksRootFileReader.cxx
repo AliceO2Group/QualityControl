@@ -64,6 +64,7 @@ class ITSTracksRootFileReader : public o2::framework::Task
     mTreeTracks->SetBranchAddress("ITSTrack", &ptracks);
     mTreeTracks->SetBranchAddress("ITSTracksROF", &ptrackRofs);
     mTreeTracks->SetBranchAddress("Vertices", &pvertices);
+    mTreeTracks->SetBranchAddress("VerticesROF", &pverticesRof);
     mTreeTracks->SetBranchAddress("ITSTrackClusIdx", &ptrackclsID);
 
     // Clusters
@@ -128,6 +129,9 @@ class ITSTracksRootFileReader : public o2::framework::Task
     std::vector<o2::dataformats::Vertex<o2::dataformats::TimeStamp<int>>>* vertexArr = new std::vector<o2::dataformats::Vertex<o2::dataformats::TimeStamp<int>>>();
     std::copy(vertices.begin(), vertices.end(), std::back_inserter(*vertexArr));
 
+    std::vector<o2::itsmft::ROFRecord>* vertexRofArr = new std::vector<o2::itsmft::ROFRecord>();
+    std::copy(verticesRof.begin(), verticesRof.end(), std::back_inserter(*vertexRofArr));
+
     std::vector<int>* clusIdx = new std::vector<int>();
     std::copy(trackclsID.begin(), trackclsID.end(), std::back_inserter(*clusIdx));
 
@@ -145,6 +149,7 @@ class ITSTracksRootFileReader : public o2::framework::Task
     pc.outputs().snapshot(Output{ "ITS", "ITSTrackROF", 0, Lifetime::Timeframe }, *trackRofArr);
     pc.outputs().snapshot(Output{ "ITS", "TRACKS", 0, Lifetime::Timeframe }, *trackArr);
     pc.outputs().snapshot(Output{ "ITS", "VERTICES", 0, Lifetime::Timeframe }, *vertexArr);
+    pc.outputs().snapshot(Output{ "ITS", "VERTICESROF", 0, Lifetime::Timeframe }, *vertexRofArr);
     pc.outputs().snapshot(Output{ "ITS", "TRACKCLSID", 0, Lifetime::Timeframe }, *clusIdx);
 
     pc.outputs().snapshot(Output{ "ITS", "CLUSTERSROF", 0, Lifetime::Timeframe }, *clusRofArr);
@@ -165,6 +170,7 @@ class ITSTracksRootFileReader : public o2::framework::Task
   std::vector<o2::itsmft::ROFRecord> trackRofs, *ptrackRofs = &trackRofs;                                 // pointer to TracksROF branch
   std::vector<o2::its::TrackITS> tracks, *ptracks = &tracks;                                              // pointer to Track branch
   std::vector<o2::dataformats::Vertex<o2::dataformats::TimeStamp<int>>> vertices, *pvertices = &vertices; // pointer to Vertices branch
+  std::vector<o2::itsmft::ROFRecord> verticesRof, *pverticesRof = &verticesRof;                           // pointer to VerticesRof branch
   std::vector<int> trackclsID, *ptrackclsID = &trackclsID;                                                // pointer to TrackClusIdx branch
 
   // Clusters
@@ -186,6 +192,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext&)
   outputs.emplace_back("ITS", "ITSTrackROF", 0, Lifetime::Timeframe);
   outputs.emplace_back("ITS", "TRACKS", 0, Lifetime::Timeframe);
   outputs.emplace_back("ITS", "VERTICES", 0, Lifetime::Timeframe);
+  outputs.emplace_back("ITS", "VERTICESROF", 0, Lifetime::Timeframe);
   outputs.emplace_back("ITS", "TRACKCLSID", 0, Lifetime::Timeframe);
 
   outputs.emplace_back("ITS", "CLUSTERSROF", 0, Lifetime::Timeframe);
