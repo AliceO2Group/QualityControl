@@ -20,7 +20,6 @@
 
 #include <TH1F.h>
 #include <TH2F.h>
-#include <TGraph.h>
 #include <TCanvas.h>
 #include <TPad.h>
 #include <TLegend.h>
