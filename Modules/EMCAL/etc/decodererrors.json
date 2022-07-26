@@ -1,0 +1,67 @@
+{
+    "qc": {
+        "config": {
+            "database": {
+                "implementation": "CCDB",
+                "host": "ccdb-test.cern.ch:8080",
+                "username": "not_applicable",
+                "password": "not_applicable",
+                "name": "not_applicable"
+            },
+            "Activity": {
+                "number": "42",
+                "type": "2"
+            },
+            "consul": {
+                "url": "http://consul-test.cern.ch:8500"
+            },
+            "conditionDB": {
+                "url": "ccdb-test.cern.ch:8080"
+            }
+        },
+        "tasks": {
+            "RawErrors": {
+                "active": "true",
+                "className": "o2::quality_control_modules::emcal::RawErrorTask",
+                "moduleName": "QcEMCAL",
+                "detectorName": "EMC",
+                "cycleDurationSeconds": "60",
+                "maxNumberCycles": "-1",
+                "dataSource": {
+                    "type": "direct",
+                    "query": "rawerrors:EMC/DECODERERR"
+                },
+                "location": "remote"
+            }
+        },
+        "checks": {
+            "RawErrorsCheck": {
+                "active": "true",
+                "className": "o2::quality_control_modules::emcal::RawErrorCheck",
+                "moduleName": "QcEMCAL",
+                "policy": "OnEachSeparately",
+                "detectorName": "EMC",
+                "dataSource": [
+                    {
+                        "type": "Task",
+                        "name": "RawErrors",
+                        "MOs": [
+                            "RawDataErrors",
+                            "PageErrors",
+                            "MajorAltroErrors",
+                            "MinorAltroError",
+                            "RawFitError",
+                            "GeometryError",
+                            "GainTypeError",
+                            "NoHGPerDDL",
+                            "NoLGPerDDL",
+                            "ChannelLGnoHG",
+                            "ChannelHGnoLG"
+                        ]
+                    }
+                ]
+            }
+        }
+    },
+    "dataSamplingPolicies": []
+}
