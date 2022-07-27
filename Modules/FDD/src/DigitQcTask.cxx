@@ -305,6 +305,10 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   int mPMChargeTotalAside, mPMChargeTotalCside;
   for (auto& digit : digits) {
+    // Exclude all BCs, in which laser signals are expected (and trigger outputs are blocked)
+    if (digit.mTriggers.getOutputsAreBlocked()) {
+      continue;
+    }
     mPMChargeTotalAside = 0;
     mPMChargeTotalCside = 0;
     const auto& vecChData = digit.getBunchChannelData(channels);
@@ -338,7 +342,7 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     mHistOrbit2BC->Fill(digit.getIntRecord().orbit % sOrbitsPerTF, digit.getIntRecord().bc);
     mHistBC->Fill(digit.getIntRecord().bc);
 
-    if (isTCM && !digit.mTriggers.getLaser()) {
+    if (isTCM && digit.mTriggers.getDataIsValid() && !digit.mTriggers.getOutputsAreBlocked()) {
       // mHistNchA->Fill(digit.mTriggers.nChanA); ak
       mHistNchA->Fill(digit.mTriggers.getNChanA());
       mHistNchC->Fill(digit.mTriggers.getNChanC());

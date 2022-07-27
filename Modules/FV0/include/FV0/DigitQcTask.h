@@ -12,7 +12,7 @@
 ///
 /// \file   DigitQcTask.h
 /// \author Artur Furs afurs@cern.ch
-///
+/// \brief Quality Control DPL Task for FV0's digit visualization
 
 #ifndef QC_MODULE_FV0_FV0DIGITQCTASK_H
 #define QC_MODULE_FV0_FV0DIGITQCTASK_H
@@ -42,8 +42,6 @@ using namespace o2::quality_control::core;
 
 namespace o2::quality_control_modules::fv0
 {
-/// \brief Quality Control DPL Task for FV0's digit visualization
-/// \author Artur Furs afurs@cern.ch
 class DigitQcTask final : public TaskInterface
 {
  public:

@@ -242,7 +242,7 @@ void DigitQcTaskLaser::monitorData(o2::framework::ProcessingContext& ctx)
   uint32_t firstOrbit;
 
   for (auto& digit : digits) {
-    // Exclude all BCs, in which laser signals are not expected (and trigger outputs are not blocked)
+    // Exclude all BCs, in which laser signals are NOT expected (and trigger outputs are NOT blocked)
     if (!digit.mTriggers.getOutputsAreBlocked()) {
       continue;
     }

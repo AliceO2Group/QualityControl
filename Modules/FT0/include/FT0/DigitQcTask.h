@@ -12,8 +12,7 @@
 ///
 /// \file   DigitQcTask.h
 /// \author Artur Furs afurs@cern.ch
-/// modified by Sebastin Bysiak sbysiak@cern.ch
-/// QC Task for FT0 detector, mostly for data visualisation during FEE tests
+/// \brief Quality Control DPL Task for FT0's digit visualization for non-laser events only
 
 #ifndef QC_MODULE_FT0_FT0DIGITQCTASK_H
 #define QC_MODULE_FT0_FT0DIGITQCTASK_H
@@ -43,7 +42,6 @@ using namespace o2::quality_control::core;
 
 namespace o2::quality_control_modules::ft0
 {
-
 class DigitQcTask final : public TaskInterface
 {
  public:
@@ -59,6 +57,7 @@ class DigitQcTask final : public TaskInterface
   void endOfCycle() override;
   void endOfActivity(Activity& activity) override;
   void reset() override;
+  constexpr static std::size_t sNCHANNELS_PM = o2::ft0::Constants::sNCHANNELS_PM;
   constexpr static std::size_t sOrbitsPerTF = 256;
   constexpr static std::size_t sBCperOrbit = 3564;
 
@@ -100,9 +99,9 @@ class DigitQcTask final : public TaskInterface
 
   TList* mListHistGarbage;
   std::set<unsigned int> mSetAllowedChIDs;
-  std::array<o2::InteractionRecord, o2::ft0::Constants::sNCHANNELS_PM> mStateLastIR2Ch;
-  std::array<uint8_t, o2::ft0::Constants::sNCHANNELS_PM> mChID2PMhash; // map chID->hashed PM value
-  uint8_t mTCMhash;                                                    // hash value for TCM, and bin position in hist
+  std::array<o2::InteractionRecord, sNCHANNELS_PM> mStateLastIR2Ch;
+  std::array<uint8_t, sNCHANNELS_PM> mChID2PMhash; // map chID->hashed PM value
+  uint8_t mTCMhash;                                // hash value for TCM, and bin position in hist
   std::map<int, std::string> mMapDigitTrgNames;
   std::map<o2::ft0::ChannelData::EEventDataBit, std::string> mMapChTrgNames;
   std::unique_ptr<TH1F> mHistNumADC;
@@ -138,11 +137,12 @@ class DigitQcTask final : public TaskInterface
   std::unique_ptr<TH2F> mHistOrbitVsFEEmodules;
 
   // Hashed maps
-  const std::array<std::vector<double>, 256> mHashedBitBinPos;                        // map with bit position for 1 byte trg signal, for 1 Dim hists;
-  const std::array<std::vector<std::pair<double, double>>, 256> mHashedPairBitBinPos; // map with paired bit position for 1 byte trg signal, for 1 Dim hists;
-  static std::array<std::vector<double>, 256> fillHashedBitBinPos()
+  static const size_t mapSize = 256;
+  const std::array<std::vector<double>, mapSize> mHashedBitBinPos;                        // map with bit position for 1 byte trg signal, for 1 Dim hists;
+  const std::array<std::vector<std::pair<double, double>>, mapSize> mHashedPairBitBinPos; // map with paired bit position for 1 byte trg signal, for 1 Dim hists;
+  static std::array<std::vector<double>, mapSize> fillHashedBitBinPos()
   {
-    std::array<std::vector<double>, 256> hashedBitBinPos{};
+    std::array<std::vector<double>, mapSize> hashedBitBinPos{};
     for (int iByteValue = 0; iByteValue < hashedBitBinPos.size(); iByteValue++) {
       auto& vec = hashedBitBinPos[iByteValue];
       for (int iBit = 0; iBit < 8; iBit++) {
@@ -153,10 +153,10 @@ class DigitQcTask final : public TaskInterface
     }
     return hashedBitBinPos;
   }
-  static std::array<std::vector<std::pair<double, double>>, 256> fillHashedPairBitBinPos()
+  static std::array<std::vector<std::pair<double, double>>, mapSize> fillHashedPairBitBinPos()
   {
-    const std::array<std::vector<double>, 256> hashedBitBinPos = fillHashedBitBinPos();
-    std::array<std::vector<std::pair<double, double>>, 256> hashedPairBitBinPos{};
+    const std::array<std::vector<double>, mapSize> hashedBitBinPos = fillHashedBitBinPos();
+    std::array<std::vector<std::pair<double, double>>, mapSize> hashedPairBitBinPos{};
     for (int iByteValue = 0; iByteValue < hashedBitBinPos.size(); iByteValue++) {
       const auto& vecBits = hashedBitBinPos[iByteValue];
       auto& vecPairBits = hashedPairBitBinPos[iByteValue];
@@ -172,4 +172,4 @@ class DigitQcTask final : public TaskInterface
 
 } // namespace o2::quality_control_modules::ft0
 
-#endif // QC_MODULE_FT0_FT0DigitQcTask_H
+#endif // QC_MODULE_FT0_FT0DIGITQCTASK_H
