@@ -220,7 +220,7 @@ void DecodingErrorsTask::plotError(int solarId, int dsAddr, int chip, uint32_t e
       chamberId = deId / 100;
     }
   } catch (const std::exception& e) {
-    ILOG(Warning, Support) << e.what() << ENDM;
+    ILOG(Warning, Support) << e.what() << "  SOLAR" << solarId << "  DS" << dsAddr << "  CHIP" << chip << "  ERROR " << error << ENDM;
   }
 
   if (feeId < 0 || chamberId < 0) {
