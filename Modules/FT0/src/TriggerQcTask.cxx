@@ -235,7 +235,7 @@ void TriggerQcTask::monitorData(o2::framework::ProcessingContext& ctx)
         mHistTriggersSw->Fill(entry.first);
 
     for (const auto& entry : mMapTrgSoftware) {
-      bool isTCMFired = digit.mTriggers.triggersignals & (1 << entry.first);
+      bool isTCMFired = digit.mTriggers.getTriggersignals() & (1 << entry.first);
       bool isSwFired = entry.second;
       if (!isTCMFired && isSwFired)
         mHistTriggersSoftwareVsTCM->Fill(entry.first, ComparisonResult::kSWonly);
@@ -262,12 +262,12 @@ void TriggerQcTask::monitorData(o2::framework::ProcessingContext& ctx)
                          vertexPos  = -- / %d",
           mMapDigitTrgNames[entry.first].c_str(),
           isTCMFired, isSwFired,
-          digit.mTriggers.nChanA, nFiredChannelsA,
-          digit.mTriggers.nChanC, nFiredChannelsC,
-          digit.mTriggers.amplA, int(sumAmplA / 8),
-          digit.mTriggers.amplC, int(sumAmplC / 8),
-          digit.mTriggers.timeA, avgTimeA,
-          digit.mTriggers.timeC, avgTimeC, vtxPos);
+          digit.mTriggers.getNChanA(), nFiredChannelsA,
+          digit.mTriggers.getNChanC(), nFiredChannelsC,
+          digit.mTriggers.getAmplA(), int(sumAmplA / 8),
+          digit.mTriggers.getAmplC(), int(sumAmplC / 8),
+          digit.mTriggers.getTimeA(), avgTimeA,
+          digit.mTriggers.getTimeC(), avgTimeC, vtxPos);
         ILOG(Debug, Support) << msg << ENDM;
       }
     }
