@@ -203,7 +203,7 @@ void QcMFTClusterTask::startOfCycle()
 
 void QcMFTClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  // normalisation for the Summary histogram to TF
+  // normalisation for the summary histogram to TF
   mClusterOccupancySummary->Fill(-1, -1);
   mClusterOccupancy->Fill(-1);
   mClusterPatternIndex->Fill(-1);
