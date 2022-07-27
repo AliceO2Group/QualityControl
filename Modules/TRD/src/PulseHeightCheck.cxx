@@ -23,7 +23,7 @@
 #include <TLine.h>
 #include <TMath.h>
 #include <TPaveText.h>
-
+#include <bitset>
 #include <DataFormatsQualityControl/FlagReasons.h>
 
 #include "CCDB/BasicCCDBManager.h"
@@ -76,6 +76,20 @@ void PulseHeightCheck::configure()
     mPulseHeightPeakRegion.second = 5.0;
     ILOG(Info, Support) << "configure() : using default peak region end = " << mPulseHeightPeakRegion.second << ENDM;
   }
+  if (auto param = mCustomParameters.find("pulseheightminsum"); param != mCustomParameters.end()) {
+    mPulseHeightMinSum = stoi(param->second);
+    ILOG(Info, Support) << "configure() : using pulseheight min sum before checking = " << mPulseHeightMinSum << ENDM;
+  } else {
+    mPulseHeightMinSum = 1500;
+    ILOG(Info, Support) << "configure() : using pulseheight min sum before checking = " << mPulseHeightMinSum << ENDM;
+  }
+  if (auto param = mCustomParameters.find("pulseheightratio"); param != mCustomParameters.end()) {
+    mPulseHeightRatio = stoi(param->second);
+    ILOG(Info, Support) << "configure() : using pulseheight ratio, peak/drift = " << mPulseHeightRatio << ENDM;
+  } else {
+    mPulseHeightRatio = 1.1;
+    ILOG(Info, Support) << "configure() : using pulseheight ratio, peak/drift = " << mPulseHeightRatio << ENDM;
+  }
 }
 
 Quality PulseHeightCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
@@ -85,24 +99,55 @@ Quality PulseHeightCheck::check(std::map<std::string, std::shared_ptr<MonitorObj
   for (auto& [moName, mo] : *moMap) {
 
     (void)moName;
-    if (mo->getName() == "pulseheightscaled") {
+    if (mo->getName() == "PulseHeight/mPulseHeight") {
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
 
       result = Quality::Good;
 
-      for (int i = 2; i < 6; ++i) {
-        if (i > 0 && i < 8 && h->GetBinContent(i) < 50 && h->GetSum() > 100) {
-          result = Quality::Bad;
-          result.addReason(FlagReasonFactory::Unknown(),
-                           "Peak missing " + std::to_string(i));
-          break;
-        } else if (i > 0 && i < 8 && h->GetBinContent(i) < 100 && h->GetSum() > 100) {
+      //check max bin is in the spike on left.
+      auto max = h->GetMaximum();
+      auto maxbin = h->GetMaximumBin();
+      auto average = 0.0;
+      for (int i = (int)mDriftRegion.first; i < (int)mDriftRegion.second; ++i) {
+        average += h->GetBinContent(i);
+      }
+      if (mDriftRegion.first != mDriftRegion.second) {
+        average = average / (mDriftRegion.second - mDriftRegion.first);
+      }
+
+      if (maxbin < mPulseHeightPeakRegion.first || maxbin > mPulseHeightPeakRegion.second) {
+        // is the peak in the peak region.
+        result = Quality::Bad;
+        result.addReason(FlagReasonFactory::Invalid(),
+                         "Peak is in the wrong position " + std::to_string(maxbin));
+        return result;
+      }
+
+      // check the drift region is suffuciently below the lefth hand peak.
+      if (average > 0) {
+        if (max / average > mPulseHeightRatio) {
+          // peak is sufficiently high relative to the drift region.
+          result = Quality::Good;
+          return result;
+        } else {
+
           result = Quality::Medium;
-          result.addReason(FlagReasonFactory::Unknown(),
-                           "Peak rather low " + std::to_string(i) + " is not empty");
-          result.addReason(FlagReasonFactory::BadTracking(),
-                           "This is to demonstrate that we can assign more than one Reason to a Quality");
+          result.addReason(FlagReasonFactory::Invalid(),
+                           "Peak is too low relative to the drift region max : " + std::to_string(max) + " average of drift:" + std::to_string(average));
+          return result;
         }
+        if (max < average) {
+          //if the peak maximum is below the average height of the drift region, we have a problem.
+          result = Quality::Bad;
+          result.addReason(FlagReasonFactory::Invalid(),
+                           "Peak is below the drift region average  peak : " + std::to_string(max) + " average of drift:" + std::to_string(average));
+          return result;
+        }
+      } else {
+        result = Quality::Medium;
+        result.addReason(FlagReasonFactory::Invalid(),
+                         "Drift region average is " + std::to_string(average));
+        return result;
       }
     }
   }

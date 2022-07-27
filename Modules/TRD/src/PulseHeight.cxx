@@ -72,10 +72,10 @@ void PulseHeight::buildHistograms()
   mPulseHeightScaled2.reset(new TH1F("mPulseHeightScaled2", "Scaled Pulse height plot", 30, -0.5, 29.5));
   getObjectsManager()->startPublishing(mPulseHeightScaled2.get());
 
-  mTotalPulseHeight2D.reset(new TH2F("TotalPulseHeight", "Total Pulse Height", 30, 0., 30., 200, 0., 200.));
+  mTotalPulseHeight2D.reset(new TH2F("TotalPulseHeight", "Total Pulse Height", 30, 0., 30., 300, 0., 200.));
   getObjectsManager()->startPublishing(mTotalPulseHeight2D.get());
   getObjectsManager()->setDefaultDrawOptions(mTotalPulseHeight2D->GetName(), "COLZ");
-  mTotalPulseHeight2D2.reset(new TH2F("TotalPulseHeight2", "Total Pulse Height", 30, 0., 30., 200, 0., 200.));
+  mTotalPulseHeight2D2.reset(new TH2F("TotalPulseHeight2", "Total Pulse Height", 30, 0., 30., 300, 0., 200.));
   getObjectsManager()->startPublishing(mTotalPulseHeight2D2.get());
   getObjectsManager()->setDefaultDrawOptions(mTotalPulseHeight2D2->GetName(), "COLZ");
 
