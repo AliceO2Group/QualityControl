@@ -159,13 +159,13 @@ void RawErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
   mErrorGainHigh->SetStats(0);
   getObjectsManager()->startPublishing(mErrorGainHigh);
 
-  mChannelGainLow = new TH2F("ChannelLGnoHG", "Channel with HG bunch missing", 96, -0.5, 96.5, 208, -0.5, 207.5);
+  mChannelGainLow = new TH2F("ChannelLGnoHG", "Channel with HG bunch missing", 96, -0.5, 95.5, 208, -0.5, 207.5);
   mChannelGainLow->GetXaxis()->SetTitle("Column");
   mChannelGainLow->GetYaxis()->SetTitle("Row");
   mChannelGainLow->SetStats(0);
   getObjectsManager()->startPublishing(mChannelGainLow);
 
-  mChannelGainHigh = new TH2F("ChannelHGnoLG", "Channel with LG bunch missing", 96, -0.5, 96.5, 208, -0.5, 207.5);
+  mChannelGainHigh = new TH2F("ChannelHGnoLG", "Channel with LG bunch missing", 96, -0.5, 95.5, 208, -0.5, 207.5);
   mChannelGainHigh->GetXaxis()->SetTitle("Column");
   mChannelGainHigh->GetYaxis()->SetTitle("Row");
   mChannelGainHigh->SetStats(0);
