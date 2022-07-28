@@ -85,6 +85,8 @@ class ITSTrackTask : public TaskInterface
   int nBCbins;
   long int mTimestamp;
   int nVertices = 0;
+  double mChipBins[2125]; // x bins for cos(lambda) plot
+  double mCoslBins[25];   // y bins for cos(lambda) plot
 
   const int NROFOCCUPANCY = 100;
   Int_t mNClusters = 0;
