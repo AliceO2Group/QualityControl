@@ -572,7 +572,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
               mNoisyPixelNumber[mLayer][istave]++; // count only in 10000 events as soon as nTriggers is 1e6
             }
             int pixelPos[2] = { (int)(iter->first / 1000) + (1024 * ichip) + 1, (int)(iter->first % 1000) + 1 };
-            if ( mTFCount < mCutTFForSparse) {
+            if (mTFCount < mCutTFForSparse) {
               mStaveHitmap[istave]->SetBinContent(pixelPos, (double)iter->second);
             }
             totalhit += (int)iter->second;
