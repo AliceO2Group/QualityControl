@@ -610,12 +610,12 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
                 occupancyPlotTmp[i]->Fill(log10(pixelOccupancy / GBTLinkInfo->statistics.nTriggers));
                 if (ichip < 7) {
                   int pixelPos[2] = { (ihic * ((nChipsPerHic[mLayer] / 2) * NCols)) + ichip * NCols + (int)(iter->first / 1000) + 1, NRows - ((int)iter->first % 1000) - 1 + (1024 * ilink) + 1 };
-                  if (mTFCount <= mCutTFForSparse) {
+                  if (mTFCount < mCutTFForSparse) {
                     mStaveHitmap[istave]->SetBinContent(pixelPos, pixelOccupancy);
                   }
                 } else {
                   int pixelPos[2] = { (ihic * ((nChipsPerHic[mLayer] / 2) * NCols)) + (nChipsPerHic[mLayer] / 2) * NCols - (ichip - 7) * NCols - ((int)iter->first / 1000), NRows + ((int)iter->first % 1000) + (1024 * ilink) + 1 };
-                  if (mTFCount <= mCutTFForSparse) {
+                  if (mTFCount < mCutTFForSparse) {
                     mStaveHitmap[istave]->SetBinContent(pixelPos, pixelOccupancy);
                   }
                 }
