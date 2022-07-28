@@ -35,9 +35,9 @@ class MergeableTH2Ratio : public TH2F, public o2::mergers::MergeInterface
 
   MergeableTH2Ratio(MergeableTH2Ratio const& copymerge);
 
-  MergeableTH2Ratio(const char* name, const char* title, int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax, double scaling = 1., bool showZeroBins = false);
+  MergeableTH2Ratio(const char* name, const char* title, int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax, bool showZeroBins = false);
 
-  MergeableTH2Ratio(const char* name, const char* title, double scaling = 1., bool showZeroBins = false);
+  MergeableTH2Ratio(const char* name, const char* title, bool showZeroBins = false);
 
   ~MergeableTH2Ratio();
 
@@ -53,11 +53,6 @@ class MergeableTH2Ratio : public TH2F, public o2::mergers::MergeInterface
     return mHistoDen;
   }
 
-  double getScalingFactor() const
-  {
-    return mScalingFactor;
-  }
-
   bool getShowZeroBins() const
   {
     return mShowZeroBins;
@@ -67,11 +62,12 @@ class MergeableTH2Ratio : public TH2F, public o2::mergers::MergeInterface
 
   void beautify();
 
+  void Reset(Option_t* option = "") override;
+
  private:
   TH2F* mHistoNum{ nullptr };
   TH2F* mHistoDen{ nullptr };
   std::string mTreatMeAs{ "TH2F" };
-  double mScalingFactor{ 1. };
   bool mShowZeroBins{ false };
 
   ClassDefOverride(MergeableTH2Ratio, 1);

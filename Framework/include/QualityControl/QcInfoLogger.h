@@ -61,16 +61,17 @@ class QcInfoLogger
   static void init(const std::string& facility,
                    bool discardDebug = false,
                    int discardFromLevel = 21 /* Discard Trace */,
+                   const std::string& filterDiscardFile = "",
                    AliceO2::InfoLogger::InfoLogger* dplInfoLogger = nullptr,
                    AliceO2::InfoLogger::InfoLoggerContext* dplContext = nullptr,
                    int run = -1,
-                   std::string partitionName = "");
+                   const std::string& partitionName = "");
   static void init(const std::string& facility,
                    const boost::property_tree::ptree& config,
                    AliceO2::InfoLogger::InfoLogger* dplInfoLogger = nullptr,
                    AliceO2::InfoLogger::InfoLoggerContext* dplContext = nullptr,
                    int run = -1,
-                   std::string partitionName = "");
+                   const std::string& partitionName = "");
 
   // build a default infologger
   static class _init

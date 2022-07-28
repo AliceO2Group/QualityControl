@@ -105,6 +105,7 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
     resetAfterCycles.value_or(taskSpec.resetAfterCycles),
     globalConfig.infologgerFilterDiscardDebug,
     globalConfig.infologgerDiscardLevel,
+    globalConfig.infologgerDiscardFile,
     globalConfig.activityType,
     globalConfig.activityPeriodName,
     globalConfig.activityPassName,

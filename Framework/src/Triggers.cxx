@@ -18,14 +18,18 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/DatabaseHelpers.h"
 #include "QualityControl/CcdbDatabase.h"
+#include "QualityControl/ObjectMetadataKeys.h"
 
 #include <CCDB/CcdbApi.h>
 #include <Common/Timer.h>
 #include <chrono>
 #include <ostream>
+#include <tuple>
 
 using namespace std::chrono;
 using namespace o2::quality_control::core;
+using namespace o2::quality_control::repository;
+
 namespace o2::quality_control::postprocessing
 {
 
@@ -140,8 +144,7 @@ TriggerFcn Periodic(double seconds, const Activity& activity)
 TriggerFcn NewObject(std::string databaseUrl, std::string databaseType, std::string objectPath, const Activity& activity)
 {
   // Key names in the header map.
-  constexpr auto md5key = "Content-MD5";
-  constexpr auto timestampKey = "Valid-From";
+  constexpr auto timestampKey = metadata_keys::validFrom;
   auto fullObjectPath = (databaseType == "qcdb" ? activity.mProvenance + "/" : "") + objectPath;
 
   ILOG(Debug, Support) << "Initializing newObject trigger for the object '" << fullObjectPath << "' and Activity '" << activity << "'" << ENDM;
@@ -156,8 +159,8 @@ TriggerFcn NewObject(std::string databaseUrl, std::string databaseType, std::str
   // If someone reuploaded an old object, it should not have an influence.
   std::string lastMD5;
   auto metadata = repository::database_helpers::asDatabaseMetadata(activity, false);
-  if (auto headers = db->retrieveHeaders(fullObjectPath, metadata); headers.count(md5key)) {
-    lastMD5 = headers[md5key];
+  if (auto headers = db->retrieveHeaders(fullObjectPath, metadata); headers.count(metadata_keys::md5sum)) {
+    lastMD5 = headers[metadata_keys::md5sum];
   } else {
     // We don't make a fuss over it, because we might be just waiting for the first version of such object.
     // It should not happen often though, so having a warning makes sense.
@@ -165,8 +168,8 @@ TriggerFcn NewObject(std::string databaseUrl, std::string databaseType, std::str
   }
 
   return [db, databaseUrl = std::move(databaseUrl), fullObjectPath = std::move(fullObjectPath), lastMD5, activity, metadata]() mutable -> Trigger {
-    if (auto headers = db->retrieveHeaders(fullObjectPath, metadata); headers.count(md5key)) {
-      auto newMD5 = headers[md5key];
+    if (auto headers = db->retrieveHeaders(fullObjectPath, metadata); headers.count(metadata_keys::md5sum)) {
+      auto newMD5 = headers[metadata_keys::md5sum];
       if (lastMD5 != newMD5) {
         lastMD5 = newMD5;
         return { TriggerType::NewObject, false, activity, std::stoull(headers[timestampKey]) };
@@ -184,8 +187,7 @@ TriggerFcn NewObject(std::string databaseUrl, std::string databaseType, std::str
 TriggerFcn ForEachObject(std::string databaseUrl, std::string databaseType, std::string objectPath, const Activity& activity)
 {
   // Key names in the header map.
-  constexpr auto md5key = "Content-MD5";
-  constexpr auto timestampKey = "Valid-From";
+  constexpr auto timestampKey = metadata_keys::validFrom;
   auto fullObjectPath = (databaseType == "qcdb" ? activity.mProvenance + "/" : "") + objectPath;
 
   // We support only CCDB here.
@@ -202,7 +204,8 @@ TriggerFcn ForEachObject(std::string databaseUrl, std::string databaseType, std:
   // As for today, we receive objects in the order of the newest to the oldest.
   // We prefer the other order here.
   for (auto rit = objects.rbegin(); rit != objects.rend(); ++rit) {
-    auto objectActivity = repository::database_helpers::asActivity(rit->second);
+    auto objectActivity = repository::database_helpers::asActivity(rit->second, activity.mProvenance);
+    ILOG(Debug, Trace) << "Matching the filter with object's activity: " << objectActivity << ENDM;
     if (filter.matches(objectActivity)) {
       filteredObjects->emplace_back(rit->second);
       ILOG(Debug, Devel) << "Matched an object with activity: " << activity << ENDM;
@@ -232,8 +235,7 @@ TriggerFcn ForEachObject(std::string databaseUrl, std::string databaseType, std:
 TriggerFcn ForEachLatest(std::string databaseUrl, std::string databaseType, std::string objectPath, const Activity& activity)
 {
   // Key names in the header map.
-  constexpr auto md5key = "Content-MD5";
-  constexpr auto timestampKey = "Created";
+  constexpr auto timestampKey = metadata_keys::created;
   auto fullObjectPath = (databaseType == "qcdb" ? activity.mProvenance + "/" : "") + objectPath;
 
   // We support only CCDB here.
@@ -248,9 +250,11 @@ TriggerFcn ForEachLatest(std::string databaseUrl, std::string databaseType, std:
   ILOG(Debug, Devel) << "Filter activity: " << activity << ENDM;
 
   // As for today, we receive objects in the order of the newest to the oldest.
-  // We prefer the other order here.
+  // The inverse order is more likely to follow what we want (ascending by period/pass/run),
+  // thus sorting may take less time.
   for (auto rit = objects.rbegin(); rit != objects.rend(); ++rit) {
-    auto objectActivity = repository::database_helpers::asActivity(rit->second);
+    auto objectActivity = repository::database_helpers::asActivity(rit->second, activity.mProvenance);
+    ILOG(Debug, Trace) << "Matching the filter with object's activity: " << objectActivity << ENDM;
     if (filter.matches(objectActivity)) {
       auto latestObject = std::find_if(filteredObjects->begin(), filteredObjects->end(), [&](const std::pair<Activity, boost::property_tree::ptree>& entry) {
         return entry.first.same(objectActivity);
@@ -266,10 +270,16 @@ TriggerFcn ForEachLatest(std::string databaseUrl, std::string databaseType, std:
   }
   ILOG(Info, Support) << filteredObjects->size() << " objects matched the specified activity" << ENDM;
 
-  // we make sure it is sorted. If it is already, it shouldn't cost much.
+  // Since we select concrete objects per each combination of run/pass/period,
+  // we sort the entries in the ascending order by period, pass and run.
   std::sort(filteredObjects->begin(), filteredObjects->end(),
             [](const std::pair<Activity, boost::property_tree::ptree>& a, const std::pair<Activity, boost::property_tree::ptree>& b) {
-              return a.second.get<int64_t>(timestampKey) < b.second.get<int64_t>(timestampKey);
+              return std::forward_as_tuple(a.second.get<std::string>(metadata_keys::periodName, ""),
+                                           a.second.get<std::string>(metadata_keys::passName, ""),
+                                           a.second.get<int64_t>(metadata_keys::runNumber, 0)) <
+                     std::forward_as_tuple(b.second.get<std::string>(metadata_keys::periodName, ""),
+                                           b.second.get<std::string>(metadata_keys::passName, ""),
+                                           b.second.get<int64_t>(metadata_keys::runNumber, 0));
             });
 
   return [filteredObjects, activity, currentObject = filteredObjects->begin()]() mutable -> Trigger {

@@ -110,10 +110,18 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
   auto clusRofArr = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("clustersrof");
   auto clusArr = ctx.inputs().get<gsl::span<o2::itsmft::CompClusterExt>>("compclus");
   auto vertexArr = ctx.inputs().get<gsl::span<o2::dataformats::Vertex<o2::dataformats::TimeStamp<int>>>>("Vertices");
+  auto vertexRofArr = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("Verticesrof");
 
   auto clusIdx = ctx.inputs().get<gsl::span<int>>("clusteridx");
   auto clusPatternArr = ctx.inputs().get<gsl::span<unsigned char>>("patterns");
   auto pattIt = clusPatternArr.begin();
+
+  // multiply angular distributions before re-filling
+  hTrackEta->Scale((double)nVertices);
+  hTrackPhi->Scale((double)nVertices);
+  hAngularDistribution->Scale((double)nVertices);
+  hNClustersPerTrackEta->Scale((double)nVertices);
+
   std::vector<int> clSize;
   for (const auto& clus : clusArr) {
     auto ClusterID = clus.getPatternID();
@@ -126,13 +134,34 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
 
   for (const auto& vertex : vertexArr) {
-
     hVertexCoordinates->Fill(vertex.getX(), vertex.getY());
     hVertexRvsZ->Fill(vertex.getZ(), sqrt(vertex.getX() * vertex.getX() + vertex.getY() * vertex.getY()));
     hVertexZ->Fill(vertex.getZ());
     hVertexContributors->Fill(vertex.getNContributors());
   }
 
+  // loop on vertices per ROF
+  for (int iROF = 0; iROF < vertexRofArr.size(); iROF++) {
+
+    int start = vertexRofArr[iROF].getFirstEntry();
+    int end = start + vertexRofArr[iROF].getNEntries();
+    int nvtxROF = 0;
+    int nvtxROF_nocut = vertexRofArr[iROF].getNEntries();
+    for (int ivtx = start; ivtx < end; ivtx++) {
+      auto& vertex = vertexArr[ivtx];
+      if (vertex.getNContributors() > 0) { // TODO: for now no cut on contributors
+        nvtxROF++;
+      }
+      if (vertex.getNContributors() > 2) { // Apply cut for normalization
+        nVertices++;
+      } else if (nvtxROF_nocut == 1 && vertex.getNContributors() == 2) {
+        nVertices++;
+      }
+    }
+    hVerticesRof->Fill(nvtxROF);
+  }
+
+  // loop on tracks per ROF
   for (int iROF = 0; iROF < trackRofArr.size(); iROF++) {
 
     vMap.clear();
@@ -188,7 +217,7 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
 
     if (mDoTTree)
       tClusterMap->Fill();
-  }
+  } // end loop on ROFs
 
   mNTracks += trackArr.size();
   mNClusters += clusArr.size();
@@ -217,6 +246,14 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
     }
   }
+
+  // Scale angular distributions by latest number of vertices
+  if (nVertices > 0) {
+    hAngularDistribution->Scale(1. / (double)nVertices);
+    hTrackEta->Scale(1. / (double)nVertices);
+    hTrackPhi->Scale(1. / (double)nVertices);
+    hNClustersPerTrackEta->Scale(1. / (double)nVertices);
+  }
 }
 
 void ITSTrackTask::endOfCycle()
@@ -236,6 +273,8 @@ void ITSTrackTask::reset()
   hNClusters->Reset();
   hTrackPhi->Reset();
   hTrackEta->Reset();
+  hVerticesRof->Reset();
+  nVertices = 0;
 
   hVertexCoordinates->Reset();
   hVertexRvsZ->Reset();
@@ -261,7 +300,8 @@ void ITSTrackTask::createAllHistos()
   if (mDoTTree)
     addObject(tClusterMap);
 
-  hAngularDistribution = new TH2D("AngularDistribution", "AngularDistribution", 30, -1.5, 1.5, 60, 0, TMath::TwoPi());
+  hAngularDistribution = new TH2D("AngularDistribution", "AngularDistribution", 40, -2.0, 2.0, 60, 0, TMath::TwoPi());
+  hAngularDistribution->SetBit(TH1::kIsAverage);
   hAngularDistribution->SetTitle("AngularDistribution");
   addObject(hAngularDistribution);
   formatAxes(hAngularDistribution, "#eta", "#phi", 1, 1.10);
@@ -273,18 +313,26 @@ void ITSTrackTask::createAllHistos()
   formatAxes(hNClusters, "Number of clusters per Track", "Counts", 1, 1.10);
   hNClusters->SetStats(0);
 
-  hTrackEta = new TH1D("EtaDistribution", "EtaDistribution", 30, -1.5, 1.5);
-  hTrackEta->SetTitle("Eta Distribution of tracks");
+  hTrackEta = new TH1D("EtaDistribution", "EtaDistribution", 40, -2.0, 2.0);
+  hTrackEta->SetBit(TH1::kIsAverage);
+  hTrackEta->SetTitle("Eta Distribution of tracks / n_vertices with at least 3 contrib");
+  hTrackEta->SetMinimum(0);
   addObject(hTrackEta);
-  formatAxes(hTrackEta, "#eta", "counts", 1, 1.10);
+  formatAxes(hTrackEta, "#eta", "Counts / n_vertices", 1, 1.10);
   hTrackEta->SetStats(0);
 
-  hTrackPhi = new TH1D("PhiDistribution", "PhiDistribution", 60, 0, TMath::TwoPi());
-  hTrackPhi->SetTitle("Phi Distribution of tracks");
+  hTrackPhi = new TH1D("PhiDistribution", "PhiDistribution", 65, -0.1, TMath::TwoPi());
+  hTrackPhi->SetBit(TH1::kIsAverage);
+  hTrackPhi->SetTitle("Phi Distribution of tracks / n_vertices with at least 3 contrib");
   hTrackPhi->SetMinimum(0);
   addObject(hTrackPhi);
-  formatAxes(hTrackPhi, "#phi", "counts", 1, 1.10);
+  formatAxes(hTrackPhi, "#phi", "Counts / n_vertices", 1, 1.10);
   hTrackPhi->SetStats(0);
+
+  hVerticesRof = new TH1D("VerticesRof", "VerticesRof", 51, -0.5, 50.5);
+  hVerticesRof->SetTitle("Distribution n_vertices / ROF");
+  addObject(hVerticesRof);
+  formatAxes(hVerticesRof, "vertices / ROF", "Counts", 1, 1.10);
 
   hVertexCoordinates = new TH2D("VertexCoordinates", "VertexCoordinates", (int)(mVertexXYsize * 2 / 0.01), -1. * mVertexXYsize, mVertexXYsize, (int)(mVertexXYsize * 2 / 0.01), -1 * mVertexXYsize, mVertexXYsize);
   hVertexCoordinates->SetTitle("Coordinates of track vertex");
@@ -322,7 +370,8 @@ void ITSTrackTask::createAllHistos()
   formatAxes(hNtracks, "# tracks", "Counts", 1, 1.10);
   hNtracks->SetStats(0);
 
-  hNClustersPerTrackEta = new TH2D("NClustersPerTrackEta", "NClustersPerTrackEta", 300, -1.5, 1.5, 15, -0.5, 14.5);
+  hNClustersPerTrackEta = new TH2D("NClustersPerTrackEta", "NClustersPerTrackEta", 400, -2.0, 2.0, 15, -0.5, 14.5);
+  hNClustersPerTrackEta->SetBit(TH1::kIsAverage);
   hNClustersPerTrackEta->SetTitle("Eta vs NClusters Per Track");
   addObject(hNClustersPerTrackEta);
   formatAxes(hNClustersPerTrackEta, "#eta", "# of Clusters per Track", 1, 1.10);

@@ -43,7 +43,7 @@ Interfaces to databases and other services are accesible via `ServiceRegistry`, 
  * Periodic - triggers when a specified period of time passes 
  * New Object - triggers when an object in QCDB is updated
  * For Each Object - triggers for each object in QCDB which matches an Activity
- * For Each Latest - trggers for the latest object in QCDB for each matching Activity
+ * For Each Latest - trggers for the latest object in QCDB for each matching Activity, sorted by Period, Pass and Run
  * Once - triggers only first time it is checked
  * Always - triggers each time it is checked
 
@@ -148,7 +148,9 @@ Each of the three methods can be invoked by one or more triggers. Below are list
  * `"<x><sec/min/hour>"` - Periodic - triggers when a specified period of time passes. For example: "5min", "0.001 seconds", "10sec", "2hours".
  * `"newobject:[qcdb/ccdb]:<path>"` - New Object - triggers when an object in QCDB or CCDB is updated (applicable for synchronous processing). For example: `"newobject:qcdb:qc/TST/MO/QcTask/Example"`
  * `"foreachobject:[qcdb/ccdb]:<path>"` - For Each Object - triggers for each object in QCDB or CCDB which matches the activity indicated in the QC config file (applicable for asynchronous processing).
- * `"foreachlatest:[qcdb/ccdb]:<path>"` - For Each Latest - triggers for the latest object version in QCDB or CCDB for each matching activity (applicable for asynchronous processing).
+ * `"foreachlatest:[qcdb/ccdb]:<path>"` - For Each Latest - triggers for the latest object version in QCDB or CCDB 
+   for each matching activity (applicable for asynchronous processing). It sorts objects in ascending order by period, 
+   pass and run.
  * `"once"` - Once - triggers only first time it is checked
  * `"always"` - Always - triggers each time it is checked
 
@@ -229,7 +231,8 @@ The TTree is stored back to the **QC database** each time it is updated. In addi
 
 #### Configuration
 
-As this class is a post-processing task, it inherits also its configuration JSON template. It extends it, though, with two additional lists - `"dataSources"` and `"plots"`:
+As this class is a post-processing task, it inherits also its configuration JSON template. It extends it, though, 
+some additional parameters.
 
 ``` json
 {
@@ -241,6 +244,8 @@ As this class is a post-processing task, it inherits also its configuration JSON
         "className": "o2::quality_control::postprocessing::TrendingTask",
         "moduleName": "QualityControl",
         "detectorName": "TST",
+        "resumeTrend": "false",
+        "producePlotsOnUpdate": "true",
         "dataSources": [],
         "plots": [],
         "initTrigger": [ "once" ],
@@ -311,6 +316,12 @@ The `"name"` and `"varexp"` are the only compulsory arguments, others can be omi
         ...
 }
 ```
+
+To decide whether plots should be generated during each update or just during finalization, 
+use the boolean flag `"producePlotsOnUpdate"`.
+
+To pick up the last existing trend which matches the specified Activity, set `"resumeTrend"` to `"true"`.
+
 ### The SliceTrendingTask class
 The `SliceTrendingTask` is a complementary task to the standard `TrendingTask`. This task allows the trending of canvas objects that hold multiple histograms (which have to be of the same dimension, e.g. TH1) and the slicing of histograms. The latter option allows the user to divide a histogram into multiple subsections along one or two dimensions which are trended in parallel to each other. The task has specific reductors for `TH1` and `TH2` objects which are `o2::quality_control_modules::common::TH1SliceReductor` and `o2::quality_control_modules::common::TH2SliceReductor`.
 

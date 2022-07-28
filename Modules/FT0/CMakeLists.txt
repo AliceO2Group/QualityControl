@@ -2,21 +2,20 @@
 
 add_library(O2QcFT0)
 
-target_sources(O2QcFT0 PRIVATE src/TH1ReductorLaser.cxx  src/DigitQcTaskLaser.cxx   src/BasicDigitQcTask.cxx
-                             src/DigitQcTask.cxx
-                             src/ChannelsCheck.cxx
-                             src/DigitsCheck.cxx
-                             src/MergedTreeCheck.cxx
-                             src/TreeReaderPostProcessing.cxx
-                             src/CalibrationTask.cxx
-                             src/ChannelTimeCalibrationCheck.cxx
-                             src/BasicPPTask.cxx
-                             src/OutOfBunchCollTask.cxx
-                             src/CFDEffCheck.cxx
-                             src/TriggerQcTask.cxx
-                             src/OutOfBunchCollCheck.cxx
-                             src/RecPointsQcTask.cxx
-                            )
+target_sources(O2QcFT0 PRIVATE src/TH1ReductorLaser.cxx
+                               src/DigitQcTaskLaser.cxx
+                               src/DigitQcTask.cxx
+                               src/CFDEffCheck.cxx
+                               src/BasicPPTask.cxx
+                               src/OutOfBunchCollTask.cxx
+                               src/OutOfBunchCollCheck.cxx
+                               src/TriggerQcTask.cxx
+                               src/BasicDigitQcTask.cxx
+                               src/ChannelsCheck.cxx
+                               src/DigitsCheck.cxx
+                               src/MergedTreeCheck.cxx
+                               src/TreeReaderPostProcessing.cxx
+                               src/RecPointsQcTask.cxx)
 
 target_include_directories(
   O2QcFT0
@@ -24,34 +23,34 @@ target_include_directories(
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-target_link_libraries(O2QcFT0 PUBLIC O2QualityControl O2::DataFormatsFT0 O2::FT0Base O2::FITCalibration)
+target_link_libraries(O2QcFT0 PUBLIC O2QualityControl
+                                     O2::DataFormatsFT0
+                                     O2::FT0Base
+                                     O2::DataFormatsParameters)
 
 install(TARGETS O2QcFT0
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-
 add_root_dictionary(O2QcFT0
-        HEADERS include/FT0/BasicDigitQcTask.h
-  include/FT0/TH1ReductorLaser.h
-  include/FT0/DigitQcTaskLaser.h
-                include/FT0/DigitQcTask.h
-                include/FT0/ChannelsCheck.h
-                include/FT0/DigitsCheck.h
-                include/FT0/Utilities.h
-                include/FT0/MergedTreeCheck.h
-                include/FT0/TreeReaderPostProcessing.h
-                include/FT0/CalibrationTask.h
-                include/FT0/ChannelTimeCalibrationCheck.h
-                include/FT0/BasicPPTask.h
-                include/FT0/OutOfBunchCollTask.h
-                include/FT0/CFDEffCheck.h
-                include/FT0/TriggerQcTask.h
-                include/FT0/OutOfBunchCollCheck.h
-                include/FT0/RecPointsQcTask.h
-        LINKDEF include/FT0/LinkDef.h
-        BASENAME O2QcFT0)
+  HEADERS include/FT0/TH1ReductorLaser.h
+          include/FT0/DigitQcTaskLaser.h
+          include/FT0/DigitQcTask.h
+          include/FT0/BasicPPTask.h
+          include/FT0/OutOfBunchCollTask.h
+          include/FT0/CFDEffCheck.h
+          include/FT0/TriggerQcTask.h
+          include/FT0/OutOfBunchCollCheck.h
+          include/FT0/BasicDigitQcTask.h
+          include/FT0/ChannelsCheck.h
+          include/FT0/DigitsCheck.h
+          include/FT0/Utilities.h
+          include/FT0/MergedTreeCheck.h
+          include/FT0/TreeReaderPostProcessing.h
+          include/FT0/RecPointsQcTask.h
+  LINKDEF include/FT0/LinkDef.h
+  BASENAME O2QcFT0)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/FT0
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")

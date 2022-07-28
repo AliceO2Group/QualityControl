@@ -20,7 +20,6 @@
 
 #include <TH1F.h>
 #include <TH2F.h>
-#include <TGraph.h>
 #include <TCanvas.h>
 #include <TPad.h>
 #include <TLegend.h>
@@ -73,42 +72,82 @@ void BasicPPTask::initialize(Trigger, framework::ServiceRegistry& services)
 {
   mDatabase = &services.get<o2::quality_control::repository::DatabaseInterface>();
 
-  mRateMinBias = std::make_unique<TGraph>(0);
-  mRateOuterRing = std::make_unique<TGraph>(0);
-  mRateNChannels = std::make_unique<TGraph>(0);
-  mRateCharge = std::make_unique<TGraph>(0);
-  mRateInnerRing = std::make_unique<TGraph>(0);
+  mRateOrA = std::make_unique<TGraph>(0);
+  mRateOrAout = std::make_unique<TGraph>(0);
+  mRateOrAin = std::make_unique<TGraph>(0);
+  mRateTrgCharge = std::make_unique<TGraph>(0);
+  mRateTrgNchan = std::make_unique<TGraph>(0);
   mRatesCanv = std::make_unique<TCanvas>("cRates", "trigger rates");
   mAmpl = new TProfile("MeanAmplPerChannel", "mean ampl per channel;Channel;Ampl #mu #pm #sigma", sNCHANNELS_PM, 0, sNCHANNELS_PM);
   mTime = new TProfile("MeanTimePerChannel", "mean time per channel;Channel;Time #mu #pm #sigma", sNCHANNELS_PM, 0, sNCHANNELS_PM);
 
-  mRateMinBias->SetNameTitle("rateMinBias", "trg rate: MinBias;cycle;rate [kHz]");
-  mRateOuterRing->SetNameTitle("rateOuterRing", "trg rate: OuterRing;cycle;rate [kHz]");
-  mRateNChannels->SetNameTitle("rateNChannels", "trg rate: NChannels;cycle;rate [kHz]");
-  mRateCharge->SetNameTitle("rateCharge", "trg rate: Charge;cycle;rate [kHz]");
-  mRateInnerRing->SetNameTitle("rateInnerRing", "trg rate: InnerRing;cycle;rate [kHz]");
+  mRateOrA->SetNameTitle("rateOrA", "trg rate: OrA;cycle;rate [kHz]");
+  mRateOrAout->SetNameTitle("rateOrAout", "trg rate: OrAout;cycle;rate [kHz]");
+  mRateOrAin->SetNameTitle("rateOrAin", "trg rate: OrAin;cycle;rate [kHz]");
+  mRateTrgCharge->SetNameTitle("rateTrgCharge", "trg rate: TrgCharge;cycle;rate [kHz]");
+  mRateTrgNchan->SetNameTitle("rateTrgNchan", "trg rate: TrgNchan;cycle;rate [kHz]");
 
-  mRateMinBias->SetMarkerStyle(24);
-  mRateOuterRing->SetMarkerStyle(25);
-  mRateNChannels->SetMarkerStyle(26);
-  mRateCharge->SetMarkerStyle(27);
-  mRateInnerRing->SetMarkerStyle(28);
-  mRateMinBias->SetMarkerColor(kOrange);
-  mRateOuterRing->SetMarkerColor(kMagenta);
-  mRateNChannels->SetMarkerColor(kBlack);
-  mRateCharge->SetMarkerColor(kBlue);
-  mRateInnerRing->SetMarkerColor(kOrange);
-  mRateMinBias->SetLineColor(kOrange);
-  mRateOuterRing->SetLineColor(kMagenta);
-  mRateNChannels->SetLineColor(kBlack);
-  mRateCharge->SetLineColor(kBlue);
-  mRateInnerRing->SetLineColor(kOrange);
+  mRateOrA->SetMarkerStyle(24);
+  mRateOrAout->SetMarkerStyle(25);
+  mRateOrAin->SetMarkerStyle(26);
+  mRateTrgCharge->SetMarkerStyle(27);
+  mRateTrgNchan->SetMarkerStyle(28);
+  mRateOrA->SetMarkerColor(kOrange);
+  mRateOrAout->SetMarkerColor(kMagenta);
+  mRateOrAin->SetMarkerColor(kBlack);
+  mRateTrgCharge->SetMarkerColor(kBlue);
+  mRateTrgNchan->SetMarkerColor(kOrange);
+  mRateOrA->SetLineColor(kOrange);
+  mRateOrAout->SetLineColor(kMagenta);
+  mRateOrAin->SetLineColor(kBlack);
+  mRateTrgCharge->SetLineColor(kBlue);
+  mRateTrgNchan->SetLineColor(kOrange);
 
-  getObjectsManager()->startPublishing(mRateMinBias.get());
-  getObjectsManager()->startPublishing(mRateOuterRing.get());
-  getObjectsManager()->startPublishing(mRateNChannels.get());
-  getObjectsManager()->startPublishing(mRateCharge.get());
-  getObjectsManager()->startPublishing(mRateInnerRing.get());
+  mMapChTrgNames.insert({ o2::fv0::ChannelData::kNumberADC, "NumberADC" });
+  mMapChTrgNames.insert({ o2::fv0::ChannelData::kIsDoubleEvent, "IsDoubleEvent" });
+  mMapChTrgNames.insert({ o2::fv0::ChannelData::kIsTimeInfoNOTvalid, "IsTimeInfoNOTvalid" });
+  mMapChTrgNames.insert({ o2::fv0::ChannelData::kIsCFDinADCgate, "IsCFDinADCgate" });
+  mMapChTrgNames.insert({ o2::fv0::ChannelData::kIsTimeInfoLate, "IsTimeInfoLate" });
+  mMapChTrgNames.insert({ o2::fv0::ChannelData::kIsAmpHigh, "IsAmpHigh" });
+  mMapChTrgNames.insert({ o2::fv0::ChannelData::kIsEventInTVDC, "IsEventInTVDC" });
+  mMapChTrgNames.insert({ o2::fv0::ChannelData::kIsTimeInfoLost, "IsTimeInfoLost" });
+
+  mHistChDataNegBits = std::make_unique<TH2F>("ChannelDataNegBits", "ChannelData negative bits per ChannelID;Channel;Negative bit", sNCHANNELS_PM, 0, sNCHANNELS_PM, mMapChTrgNames.size(), 0, mMapChTrgNames.size());
+  for (const auto& entry : mMapChTrgNames) {
+    std::string stBitName = "! " + entry.second;
+    mHistChDataNegBits->GetYaxis()->SetBinLabel(entry.first + 1, stBitName.c_str());
+  }
+  getObjectsManager()->startPublishing(mHistChDataNegBits.get());
+  getObjectsManager()->setDefaultDrawOptions(mHistChDataNegBits.get(), "COLZ");
+
+  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitA, "OrA" });
+  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitAOut, "OrAout" });
+  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitAIn, "OrAin" });
+  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitTrgCharge, "TrgCharge" });
+  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitTrgNchan, "TrgNchan" });
+  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitLaser, "Laser" });
+  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitOutputsAreBlocked, "OutputsAreBlocked" });
+  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitDataIsValid, "DataIsValid" });
+  mHistTriggers = std::make_unique<TH1F>("Triggers", "Triggers from TCM", mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
+  for (const auto& entry : mMapDigitTrgNames) {
+    mHistTriggers->GetXaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
+  }
+  getObjectsManager()->startPublishing(mHistTriggers.get());
+
+  mHistTimeUpperFraction = std::make_unique<TH1F>("TimeUpperFraction", "Fraction of events under time window(-+190 channels);ChID;Fraction", sNCHANNELS_PM, 0, sNCHANNELS_PM);
+  getObjectsManager()->startPublishing(mHistTimeUpperFraction.get());
+
+  mHistTimeLowerFraction = std::make_unique<TH1F>("TimeLowerFraction", "Fraction of events below time window(-+190 channels);ChID;Fraction", sNCHANNELS_PM, 0, sNCHANNELS_PM);
+  getObjectsManager()->startPublishing(mHistTimeLowerFraction.get());
+
+  mHistTimeInWindow = std::make_unique<TH1F>("TimeInWindowFraction", "Fraction of events within time window(-+190 channels);ChID;Fraction", sNCHANNELS_PM, 0, sNCHANNELS_PM);
+  getObjectsManager()->startPublishing(mHistTimeInWindow.get());
+
+  getObjectsManager()->startPublishing(mRateOrA.get());
+  getObjectsManager()->startPublishing(mRateOrAout.get());
+  getObjectsManager()->startPublishing(mRateOrAin.get());
+  getObjectsManager()->startPublishing(mRateTrgCharge.get());
+  getObjectsManager()->startPublishing(mRateTrgNchan.get());
   getObjectsManager()->startPublishing(mRatesCanv.get());
   getObjectsManager()->startPublishing(mAmpl);
   getObjectsManager()->startPublishing(mTime);
@@ -116,19 +155,57 @@ void BasicPPTask::initialize(Trigger, framework::ServiceRegistry& services)
 
 void BasicPPTask::update(Trigger t, framework::ServiceRegistry&)
 {
-  auto mo = mDatabase->retrieveMO(mPathDigitQcTask, "Triggers", t.timestamp, t.activity);
-  auto hTriggers = mo ? (TH1F*)mo->getObject() : nullptr;
-  if (!hTriggers) {
-    ILOG(Error, Support) << "MO \"Triggers\" NOT retrieved!!!" << ENDM;
+  auto mo = mDatabase->retrieveMO(mPathDigitQcTask, "TriggersCorrelation", t.timestamp, t.activity);
+  auto hTrgCorr = mo ? (TH2F*)mo->getObject() : nullptr;
+  mHistTriggers->Reset();
+  auto getBinContent2Ddiag = [](TH2* hist, const std::string& binName) {
+    return hist->GetBinContent(hist->GetXaxis()->FindBin(binName.c_str()), hist->GetYaxis()->FindBin(binName.c_str()));
+  };
+  if (!hTrgCorr) {
+    ILOG(Error) << "MO \"TriggersCorrelation\" NOT retrieved!!!" << ENDM;
+  } else {
+    double totalStat{ 0 };
+    for (int iBin = 1; iBin < mHistTriggers->GetXaxis()->GetNbins() + 1; iBin++) {
+      std::string binName{ mHistTriggers->GetXaxis()->GetBinLabel(iBin) };
+      const auto binContent = getBinContent2Ddiag(hTrgCorr, binName);
+      mHistTriggers->SetBinContent(iBin, getBinContent2Ddiag(hTrgCorr, binName));
+      totalStat += binContent;
+    }
+    mHistChDataNegBits->SetEntries(totalStat);
+  }
+
+  auto moChDataBits = mDatabase->retrieveMO(mPathDigitQcTask, "ChannelDataBits", t.timestamp, t.activity);
+  auto hChDataBits = moChDataBits ? (TH2F*)moChDataBits->getObject() : nullptr;
+  if (!hChDataBits) {
+    ILOG(Error) << "MO \"ChannelDataBits\" NOT retrieved!!!" << ENDM;
+  }
+  auto moStatChannelID = mDatabase->retrieveMO(mPathDigitQcTask, "StatChannelID", t.timestamp, t.activity);
+  auto hStatChannelID = moStatChannelID ? (TH2F*)moStatChannelID->getObject() : nullptr;
+  if (!hStatChannelID) {
+    ILOG(Error) << "MO \"StatChannelID\" NOT retrieved!!!" << ENDM;
+  }
+  mHistChDataNegBits->Reset();
+  if (hChDataBits != nullptr && hStatChannelID != nullptr) {
+    double totalStat{ 0 };
+    for (int iBinX = 1; iBinX < hChDataBits->GetXaxis()->GetNbins() + 1; iBinX++) {
+      for (int iBinY = 1; iBinY < hChDataBits->GetYaxis()->GetNbins() + 1; iBinY++) {
+        const double nStatTotal = hStatChannelID->GetBinContent(iBinX);
+        const double nStatPMbit = hChDataBits->GetBinContent(iBinX, iBinY);
+        const double nStatNegPMbit = nStatTotal - nStatPMbit;
+        totalStat += nStatNegPMbit;
+        mHistChDataNegBits->SetBinContent(iBinX, iBinY, nStatNegPMbit);
+      }
+    }
+    mHistChDataNegBits->SetEntries(totalStat);
   }
 
   auto mo2 = mDatabase->retrieveMO(mPathDigitQcTask, mCycleDurationMoName, t.timestamp, t.activity);
   auto hCycleDuration = mo2 ? (TH1D*)mo2->getObject() : nullptr;
   if (!hCycleDuration) {
-    ILOG(Error, Support) << "MO \"" << mCycleDurationMoName << "\" NOT retrieved!!!" << ENDM;
+    ILOG(Error) << "MO \"" << mCycleDurationMoName << "\" NOT retrieved!!!" << ENDM;
   }
 
-  if (hTriggers && hCycleDuration) {
+  if (hTrgCorr && hCycleDuration) {
     double cycleDurationMS = 0;
     if (mCycleDurationMoName == "CycleDuration" || mCycleDurationMoName == "CycleDurationRange")
       // assume MO stores cycle duration in ns
@@ -137,24 +214,24 @@ void BasicPPTask::update(Trigger t, framework::ServiceRegistry&)
       // assume MO stores cycle duration in number of TF
       cycleDurationMS = hCycleDuration->GetBinContent(1) * mNumOrbitsInTF * o2::constants::lhc::LHCOrbitNS / 1e6; // ns ->ms
 
-    int n = mRateMinBias->GetN();
+    int n = mRateOrA->GetN();
 
     double eps = 1e-8;
     if (cycleDurationMS < eps) {
-      ILOG(Warning, Support) << "cycle duration = " << cycleDurationMS << " ms, almost zero - cannot compute trigger rates!" << ENDM;
+      ILOG(Warning) << "cycle duration = " << cycleDurationMS << " ms, almost zero - cannot compute trigger rates!" << ENDM;
     } else {
-      mRateMinBias->SetPoint(n, n, hTriggers->GetBinContent(hTriggers->GetXaxis()->FindBin("MinBias")) / cycleDurationMS);
-      mRateOuterRing->SetPoint(n, n, hTriggers->GetBinContent(hTriggers->GetXaxis()->FindBin("OuterRing")) / cycleDurationMS);
-      mRateNChannels->SetPoint(n, n, hTriggers->GetBinContent(hTriggers->GetXaxis()->FindBin("NChannels")) / cycleDurationMS);
-      mRateCharge->SetPoint(n, n, hTriggers->GetBinContent(hTriggers->GetXaxis()->FindBin("Charge")) / cycleDurationMS);
-      mRateInnerRing->SetPoint(n, n, hTriggers->GetBinContent(hTriggers->GetXaxis()->FindBin("InnerRing")) / cycleDurationMS);
+      mRateOrA->SetPoint(n, n, getBinContent2Ddiag(hTrgCorr, "OrA") / cycleDurationMS);
+      mRateOrAout->SetPoint(n, n, getBinContent2Ddiag(hTrgCorr, "OrAout") / cycleDurationMS);
+      mRateOrAin->SetPoint(n, n, getBinContent2Ddiag(hTrgCorr, "OrAin") / cycleDurationMS);
+      mRateTrgCharge->SetPoint(n, n, getBinContent2Ddiag(hTrgCorr, "TrgCharge") / cycleDurationMS);
+      mRateTrgNchan->SetPoint(n, n, getBinContent2Ddiag(hTrgCorr, "TrgNchan") / cycleDurationMS);
     }
 
     mRatesCanv->cd();
-    float vmin = std::min({ mRateMinBias->GetYaxis()->GetXmin(), mRateOuterRing->GetYaxis()->GetXmin(), mRateNChannels->GetYaxis()->GetXmin(), mRateCharge->GetYaxis()->GetXmin(), mRateInnerRing->GetYaxis()->GetXmin() });
-    float vmax = std::max({ mRateMinBias->GetYaxis()->GetXmax(), mRateOuterRing->GetYaxis()->GetXmax(), mRateNChannels->GetYaxis()->GetXmax(), mRateCharge->GetYaxis()->GetXmax(), mRateInnerRing->GetYaxis()->GetXmax() });
+    float vmin = std::min({ mRateOrA->GetYaxis()->GetXmin(), mRateOrAout->GetYaxis()->GetXmin(), mRateOrAin->GetYaxis()->GetXmin(), mRateTrgCharge->GetYaxis()->GetXmin(), mRateTrgNchan->GetYaxis()->GetXmin() });
+    float vmax = std::max({ mRateOrA->GetYaxis()->GetXmax(), mRateOrAout->GetYaxis()->GetXmax(), mRateOrAin->GetYaxis()->GetXmax(), mRateTrgCharge->GetYaxis()->GetXmax(), mRateTrgNchan->GetYaxis()->GetXmax() });
 
-    auto hAxis = mRateMinBias->GetHistogram();
+    auto hAxis = mRateOrA->GetHistogram();
     hAxis->GetYaxis()->SetTitleOffset(1.4);
     hAxis->SetMinimum(vmin);
     hAxis->SetMaximum(vmax * 1.1);
@@ -162,11 +239,11 @@ void BasicPPTask::update(Trigger t, framework::ServiceRegistry&)
     hAxis->SetLineWidth(0);
     hAxis->Draw("AXIS");
 
-    mRateMinBias->Draw("PL,SAME");
-    mRateOuterRing->Draw("PL,SAME");
-    mRateNChannels->Draw("PL,SAME");
-    mRateCharge->Draw("PL,SAME");
-    mRateInnerRing->Draw("PL,SAME");
+    mRateOrA->Draw("PL,SAME");
+    mRateOrAout->Draw("PL,SAME");
+    mRateOrAin->Draw("PL,SAME");
+    mRateTrgCharge->Draw("PL,SAME");
+    mRateTrgNchan->Draw("PL,SAME");
     TLegend* leg = gPad->BuildLegend();
     leg->SetFillStyle(1);
   }
@@ -174,15 +251,28 @@ void BasicPPTask::update(Trigger t, framework::ServiceRegistry&)
   auto mo3 = mDatabase->retrieveMO(mPathDigitQcTask, "AmpPerChannel", t.timestamp, t.activity);
   auto hAmpPerChannel = mo3 ? (TH2D*)mo3->getObject() : nullptr;
   if (!hAmpPerChannel) {
-    ILOG(Error, Support) << "MO \"AmpPerChannel\" NOT retrieved!!!"
-                         << ENDM;
+    ILOG(Error) << "MO \"AmpPerChannel\" NOT retrieved!!!"
+                << ENDM;
   }
   auto mo4 = mDatabase->retrieveMO(mPathDigitQcTask, "TimePerChannel", t.timestamp, t.activity);
   auto hTimePerChannel = mo4 ? (TH2D*)mo4->getObject() : nullptr;
   if (!hTimePerChannel) {
-    ILOG(Error, Support) << "MO \"TimePerChannel\" NOT retrieved!!!"
-                         << ENDM;
+    ILOG(Error) << "MO \"TimePerChannel\" NOT retrieved!!!"
+                << ENDM;
+  } else {
+    auto projLower = hTimePerChannel->ProjectionX("projLower", 0, hTimePerChannel->GetYaxis()->FindBin(-190.));
+    auto projUpper = hTimePerChannel->ProjectionX("projUpper", hTimePerChannel->GetYaxis()->FindBin(190.), -1);
+    auto projInWindow = hTimePerChannel->ProjectionX("projInWindow", hTimePerChannel->GetYaxis()->FindBin(-190.), hTimePerChannel->GetYaxis()->FindBin(190.));
+    auto projFull = hTimePerChannel->ProjectionX("projFull");
+    mHistTimeUpperFraction->Divide(projUpper, projFull);
+    mHistTimeLowerFraction->Divide(projLower, projFull);
+    mHistTimeInWindow->Divide(projInWindow, projFull);
+    delete projLower;
+    delete projUpper;
+    delete projInWindow;
+    delete projFull;
   }
+
   if (hAmpPerChannel && hTimePerChannel) {
     mAmpl = hAmpPerChannel->ProfileX("MeanAmplPerChannel");
     mTime = hTimePerChannel->ProfileX("MeanTimePerChannel");

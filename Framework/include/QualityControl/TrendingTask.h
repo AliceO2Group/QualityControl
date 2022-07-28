@@ -53,15 +53,18 @@ class TrendingTask : public PostProcessingInterface
   void finalize(Trigger, framework::ServiceRegistry&) override;
 
  private:
-  struct MetaData {
-    Int_t runNumber = 0;
-  };
+  struct {
+    Long64_t runNumber = 0;
+    static const char* getBranchLeafList()
+    {
+      return "runNumber/L";
+    }
+  } mMetaData;
 
   void trendValues(const Trigger& t, repository::DatabaseInterface&);
   void generatePlots();
 
   TrendingTaskConfig mConfig;
-  MetaData mMetaData;
   UInt_t mTime;
   std::unique_ptr<TTree> mTrend;
   std::map<std::string, TObject*> mPlots;

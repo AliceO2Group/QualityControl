@@ -34,8 +34,6 @@ using namespace std;
 namespace o2::quality_control_modules::mft
 {
 
-void QcMFTDigitCheck::configure() {}
-
 Quality QcMFTDigitCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
   Quality result = Quality::Null;
@@ -50,6 +48,9 @@ Quality QcMFTDigitCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
       float den = hChipOccupancy->GetBinContent(0); // normalisation stored in the uderflow bin
 
       for (int iBin = 0; iBin < hChipOccupancy->GetNbinsX(); iBin++) {
+        if (hChipOccupancy->GetBinContent(iBin + 1) == 0) {
+          hChipOccupancy->Fill(937); // number of chips with zero digits stored in the overflow bin
+        }
         float num = hChipOccupancy->GetBinContent(iBin + 1);
         float ratio = (den > 0) ? (num / den) : 0.0;
         hChipOccupancy->SetBinContent(iBin + 1, ratio);

@@ -13,6 +13,8 @@
 /// \file   TracksQcCheck.h
 /// \author Valerie Ramillien
 ///
+/// \file   TracksQcCheck.h
+/// \author Valerie Ramillien
 
 #ifndef QC_MODULE_MID_MIDTRACKSQCCHECK_H
 #define QC_MODULE_MID_MIDTRACKSQCCHECK_H
@@ -22,8 +24,6 @@
 namespace o2::quality_control_modules::mid
 {
 
-/// \brief  Example QC Check
-/// \author My Name
 class TracksQcCheck : public o2::quality_control::checker::CheckInterface
 {
  public:
@@ -37,6 +37,9 @@ class TracksQcCheck : public o2::quality_control::checker::CheckInterface
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
+
+ private:
+  double mRatio44Threshold;
 
   ClassDefOverride(TracksQcCheck, 2);
 };

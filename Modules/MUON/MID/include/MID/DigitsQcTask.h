@@ -30,6 +30,7 @@
 
 class TH1F;
 class TH2F;
+class TProfile;
 
 using namespace o2::quality_control::core;
 
@@ -96,6 +97,7 @@ class DigitsQcTask final : public TaskInterface
   std::shared_ptr<TH2F> mNBendHitsMap22{ nullptr };
 
   std::shared_ptr<TH1F> mDigitBCCounts{ nullptr };
+  // std::shared_ptr<TProfile> mDigitBCCounts{ nullptr };
 };
 
 } // namespace o2::quality_control_modules::mid

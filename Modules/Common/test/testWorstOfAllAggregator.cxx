@@ -34,7 +34,8 @@ namespace o2::quality_control_modules::common
 BOOST_AUTO_TEST_CASE(test_WorstOfAllAggregator)
 {
   WorstOfAllAggregator agg1;
-  agg1.configure("agg1");
+  agg1.configure();
+  agg1.setName("agg1");
 
   // prepare data
   std::shared_ptr<QualityObject> qoNull = std::make_shared<QualityObject>(Quality::Null, "testCheckNull", "TST");

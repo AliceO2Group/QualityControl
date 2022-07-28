@@ -93,11 +93,16 @@ void TrendingRate::computeTOFRates(TH2F* h, std::vector<int>& bcInt, std::vector
   mPreviousPlot->Reset();
   mPreviousPlot->Add(h);
 
+  if (nb == 0) { // threshold too high? return since hback was not created
+    ILOG(Warning, Support) << "Counted 0 background events, threshold might be too high!" << ENDM;
+    delete hpdiff;
+    return;
+  }
   if (hback->Integral() < 0) {
     return;
   }
 
-  if (mActiveChannels) {
+  if (mActiveChannels > 0) {
     mNoiseRatePerChannel = (hback->GetMean() - 0.5) / orbit_lenght * h->GetNbinsX() / mActiveChannels;
   }
 
@@ -125,27 +130,33 @@ void TrendingRate::computeTOFRates(TH2F* h, std::vector<int>& bcInt, std::vector
       hs->SetTitle(Form("%d < BC < %d", bcmin, bcmax));
       hb->Scale(hs->GetBinContent(1) / hb->GetBinContent(1));
       const float overall = hs->Integral();
-      if (overall <= 0) {
+      if (overall <= 0.f) {
         ILOG(Info, Support) << "no signal for BC index " << ibc << ENDM;
         continue;
       }
       const float background = hb->Integral();
-      if (background <= 0) {
+      if (background <= 0.f) {
         ILOG(Info, Support) << "no background for BC index " << ibc << ENDM;
         continue;
       }
       const float prob = (overall - background) / overall;
+      if ((1.f - prob) < 0.f) {
+        ILOG(Info, Support) << "Probability is 1, can't comute mu" << ENDM;
+        continue;
+      }
       const float mu = TMath::Log(1.f / (1.f - prob));
       const float rate = mu / orbit_lenght;
       bcInt.push_back(ibc);
       bcRate.push_back(rate);
+      if (prob <= 0.f) {
+        ILOG(Warning, Support) << "Probability is 0, can't compute pileup" << ENDM;
+        continue;
+      }
       bcPileup.push_back(mu / prob);
       sumw += rate;
       pilup += mu / prob * rate;
       ratetot += rate;
-      if (prob > 0.f) {
-        ILOG(Info, Support) << "interaction prob = " << mu << ", rate=" << rate << " Hz, mu=" << mu / prob << ENDM;
-      }
+      ILOG(Info, Support) << "interaction prob = " << mu << ", rate=" << rate << " Hz, mu=" << mu / prob << ENDM;
       delete hb;
       delete hs;
     }
@@ -200,9 +211,7 @@ void TrendingRate::finalize(Trigger t, framework::ServiceRegistry&)
 void TrendingRate::trendValues(const Trigger& t, repository::DatabaseInterface& qcdb)
 {
   mTime = t.timestamp / 1000; // ROOT expects seconds since epoch
-  // todo get run number when it is available. consider putting it inside monitor object's metadata (this might be not
-  //  enough if we trend across runs).
-  mMetaData.runNumber = -1;
+  mMetaData.runNumber = t.activity.mId;
 
   mActiveChannels = o2::tof::Geo::NCHANNELS;
   std::shared_ptr<o2::quality_control::core::MonitorObject> moHistogramMultVsBC = nullptr;

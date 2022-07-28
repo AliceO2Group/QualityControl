@@ -20,9 +20,11 @@
 #include "QualityControl/TaskInterface.h"
 #include "QualityControl/DatabaseInterface.h"
 #include "DataFormatsTRD/NoiseCalibration.h"
+#include "TRDQC/StatusHelper.h"
 
 class TH1F;
 class TH2F;
+class TCanvas;
 
 using namespace o2::quality_control::core;
 
@@ -50,6 +52,10 @@ class TrackletsTask final : public TaskInterface
   void buildHistograms();
   void retrieveCCDBSettings();
   void drawLinesMCM(TH2F* histo);
+  void drawTrdLayersGrid(TH2F* hist);
+  void buildTrackletLayers();
+  void drawHashedOnHistsPerLayer(int layer); //, int hcid, int rowstart, int rowend);
+  void drawHashOnLayers(int layer, int hcid, int rowstart, int rowend);
 
  private:
   long int mTimestamp;
@@ -67,7 +73,17 @@ class TrackletsTask final : public TaskInterface
   std::shared_ptr<TH1F> mTrackletPositionn = nullptr;
   std::shared_ptr<TH1F> mTrackletPositionRawn = nullptr;
   std::shared_ptr<TH1F> mTrackletsPerEventn = nullptr;
+  std::shared_ptr<TH1F> mTrackletsPerTimeFrame = nullptr;
+  std::shared_ptr<TH1F> mTrackletsPerTimeFrameCycled = nullptr;
+  std::shared_ptr<TCanvas> mCanvas = nullptr;
+  std::array<std::shared_ptr<TH2F>, 6> mLayers;
+
+  int mMarkerSize;
+  int mMarkerStyle;
+
+  // data to pull from CCDB
   o2::trd::NoiseStatusMCM* mNoiseMap = nullptr;
+  o2::trd::HalfChamberStatusQC* mChamberStatus = nullptr;
 };
 
 } // namespace o2::quality_control_modules::trd

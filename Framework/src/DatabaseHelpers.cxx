@@ -16,6 +16,7 @@
 
 #include "QualityControl/DatabaseHelpers.h"
 #include <boost/property_tree/ptree.hpp>
+#include "QualityControl/ObjectMetadataKeys.h"
 
 namespace o2::quality_control::repository::database_helpers
 {
@@ -26,16 +27,16 @@ std::map<std::string, std::string> asDatabaseMetadata(const core::Activity& acti
   if (putDefault || activity.mType != 0) {
     // TODO should we really treat 0 as none?
     //  we could consider making Activity use std::optional to be clear about this
-    metadata["RunType"] = std::to_string(activity.mType);
+    metadata[metadata_keys::runType] = std::to_string(activity.mType);
   }
   if (putDefault || activity.mId != 0) {
-    metadata["RunNumber"] = std::to_string(activity.mId);
+    metadata[metadata_keys::runNumber] = std::to_string(activity.mId);
   }
   if (putDefault || !activity.mPassName.empty()) {
-    metadata["PassName"] = activity.mPassName;
+    metadata[metadata_keys::passName] = activity.mPassName;
   }
   if (putDefault || !activity.mPeriodName.empty()) {
-    metadata["PeriodName"] = activity.mPeriodName;
+    metadata[metadata_keys::periodName] = activity.mPeriodName;
   }
   return metadata;
 }
@@ -43,22 +44,22 @@ std::map<std::string, std::string> asDatabaseMetadata(const core::Activity& acti
 core::Activity asActivity(const std::map<std::string, std::string>& metadata, const std::string& provenance)
 {
   core::Activity activity;
-  if (auto runType = metadata.find("RunType"); runType != metadata.end()) {
+  if (auto runType = metadata.find(metadata_keys::runType); runType != metadata.end()) {
     activity.mType = std::strtol(runType->second.c_str(), nullptr, 10);
   }
-  if (auto runNumber = metadata.find("RunNumber"); runNumber != metadata.end()) {
+  if (auto runNumber = metadata.find(metadata_keys::runNumber); runNumber != metadata.end()) {
     activity.mId = std::strtol(runNumber->second.c_str(), nullptr, 10);
   }
-  if (auto passName = metadata.find("PassName"); passName != metadata.end()) {
+  if (auto passName = metadata.find(metadata_keys::passName); passName != metadata.end()) {
     activity.mPassName = passName->second;
   }
-  if (auto periodName = metadata.find("PeriodName"); periodName != metadata.end()) {
+  if (auto periodName = metadata.find(metadata_keys::periodName); periodName != metadata.end()) {
     activity.mPeriodName = periodName->second;
   }
-  if (auto validFrom = metadata.find("Valid-From"); validFrom != metadata.end()) {
+  if (auto validFrom = metadata.find(metadata_keys::validFrom); validFrom != metadata.end()) {
     activity.mValidity.setMin(std::stoull(validFrom->second));
   }
-  if (auto validUntil = metadata.find("Valid-Until"); validUntil != metadata.end()) {
+  if (auto validUntil = metadata.find(metadata_keys::validUntil); validUntil != metadata.end()) {
     activity.mValidity.setMax(std::stoull(validUntil->second));
   }
   activity.mProvenance = provenance;
@@ -68,22 +69,22 @@ core::Activity asActivity(const std::map<std::string, std::string>& metadata, co
 core::Activity asActivity(const boost::property_tree::ptree& tree, const std::string& provenance)
 {
   core::Activity activity;
-  if (auto runType = tree.get_optional<int>("RunType"); runType.has_value()) {
+  if (auto runType = tree.get_optional<int>(metadata_keys::runType); runType.has_value()) {
     activity.mType = runType.value();
   }
-  if (auto runNumber = tree.get_optional<int>("RunNumber"); runNumber.has_value()) {
+  if (auto runNumber = tree.get_optional<int>(metadata_keys::runNumber); runNumber.has_value()) {
     activity.mId = runNumber.value();
   }
-  if (auto passName = tree.get_optional<std::string>("PassName"); passName.has_value()) {
+  if (auto passName = tree.get_optional<std::string>(metadata_keys::passName); passName.has_value()) {
     activity.mPassName = passName.value();
   }
-  if (auto periodName = tree.get_optional<std::string>("PeriodName"); periodName.has_value()) {
+  if (auto periodName = tree.get_optional<std::string>(metadata_keys::periodName); periodName.has_value()) {
     activity.mPeriodName = periodName.value();
   }
-  if (auto validFrom = tree.get_optional<core::validity_time_t>("Valid-From"); validFrom.has_value()) {
+  if (auto validFrom = tree.get_optional<core::validity_time_t>(metadata_keys::validFrom); validFrom.has_value()) {
     activity.mValidity.setMin(validFrom.value());
   }
-  if (auto validUntil = tree.get_optional<core::validity_time_t>("Valid-Until"); validUntil.has_value()) {
+  if (auto validUntil = tree.get_optional<core::validity_time_t>(metadata_keys::validUntil); validUntil.has_value()) {
     activity.mValidity.setMax(validUntil.value());
   }
   activity.mProvenance = provenance;

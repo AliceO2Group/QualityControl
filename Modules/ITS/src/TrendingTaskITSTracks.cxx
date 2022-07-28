@@ -20,6 +20,7 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/Reductor.h"
+#include "QualityControl/ObjectMetadataKeys.h"
 #include <TCanvas.h>
 #include <TH1.h>
 #include <TDatime.h>
@@ -27,6 +28,7 @@
 using namespace o2::quality_control;
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;
+using namespace o2::quality_control::repository;
 
 void TrendingTaskITSTracks::configure(std::string name,
                                       const boost::property_tree::ptree& config)
@@ -93,22 +95,19 @@ void TrendingTaskITSTracks::trendValues(const Trigger& t, repository::DatabaseIn
   // timestamps in the end, but this would become ambiguous if there is more
   // than one data source.
   mTime = TDatime().Convert();
-  // todo get run number when it is available. consider putting it inside
-  // monitor object's metadata (this might be not
-  //  enough if we trend across runs).
-  mMetaData.runNumber = 0;
+  mMetaData.runNumber = t.activity.mId;
   int count = 0;
 
   for (auto& dataSource : mConfig.dataSources) {
-    //std::cout<<"TrendingTaskITSTracks dataSource type "<<dataSource.name<<" "<<dataSource.type<<std::endl;
-    // todo: make it agnostic to MOs, QOs or other objects. Let the reductor
-    // cast to whatever it needs.
+    // std::cout<<"TrendingTaskITSTracks dataSource type "<<dataSource.name<<" "<<dataSource.type<<std::endl;
+    //  todo: make it agnostic to MOs, QOs or other objects. Let the reductor
+    //  cast to whatever it needs.
     if (dataSource.type == "repository") {
       // auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name);
       auto mo = qcdb.retrieveMO(dataSource.path, "", t.timestamp, t.activity);
       if (!count) {
-        std::map<std::string, std::string> entryMetadata = mo->getMetadataMap(); //full list of metadata as a map
-        mMetaData.runNumber = std::stoi(entryMetadata["RunNumber"]);             //get and set run number
+        std::map<std::string, std::string> entryMetadata = mo->getMetadataMap(); // full list of metadata as a map
+        mMetaData.runNumber = std::stoi(entryMetadata[metadata_keys::runNumber]); // get and set run number
         ntreeentries = (Int_t)mTrend->GetEntries() + 1;
         runlist.push_back(std::to_string(mMetaData.runNumber));
       }
@@ -140,17 +139,70 @@ void TrendingTaskITSTracks::storePlots(repository::DatabaseInterface& qcdb)
   int ilay = 0;
   for (const auto& plot : mConfig.plots) {
 
-    int add = 0;
-    double ymin = -10.;
-    double ymax = +10.;
+    int class1 = 0;
+    double ymin = 0.;
+    double ymax = 1.;
     if (plot.name.find("mean") != std::string::npos) {
-      add = 0;
-      ymin = 0.;
-      ymax = 15.;
+      if (plot.name.find("NCluster") != std::string::npos) {
+        class1 = 0;
+        ymin = 0.;
+        ymax = 15.;
+      } else if (plot.name.find("EtaDistribution") != std::string::npos) {
+        class1 = 0;
+        ymin = -1.5;
+        ymax = 1.5;
+      } else if (plot.name.find("PhiDistribution") != std::string::npos) {
+        class1 = 0;
+        ymin = 0.;
+        ymax = 2 * TMath::TwoPi();
+      } else if (plot.name.find("VertexZ") != std::string::npos) {
+        class1 = 0;
+        ymin = -15.;
+        ymax = 15.;
+      } else if (plot.name.find("NVertexContributors") != std::string::npos) {
+        class1 = 0;
+        ymin = 0.;
+        ymax = 50.;
+      } else if (plot.name.find("AssociatedClusterFraction") != std::string::npos) {
+        class1 = 0;
+        ymin = 0.;
+        ymax = 1.;
+      } else if (plot.name.find("Ntracks") != std::string::npos) {
+        class1 = 0;
+        ymin = 0.;
+        ymax = 100.;
+      } else if (plot.name.find("VertexX") != std::string::npos) {
+        class1 = 0;
+        ymin = -1.;
+        ymax = 1.;
+      } else if (plot.name.find("VertexY") != std::string::npos) {
+        class1 = 2;
+        ymin = -1.;
+        ymax = 1.;
+      }
+
     } else if (plot.name.find("stddev") != std::string::npos) {
-      add = 1;
+      if (plot.name.find("NCluster") != std::string::npos) {
+        class1 = 1;
+      } else if (plot.name.find("EtaDistribution") != std::string::npos) {
+        class1 = 1;
+      } else if (plot.name.find("PhiDistribution") != std::string::npos) {
+        class1 = 1;
+      } else if (plot.name.find("VertexZ") != std::string::npos) {
+        class1 = 1;
+      } else if (plot.name.find("NVertexContributors") != std::string::npos) {
+        class1 = 1;
+      } else if (plot.name.find("AssociatedClusterFraction") != std::string::npos) {
+        class1 = 1;
+      } else if (plot.name.find("Ntracks") != std::string::npos) {
+        class1 = 1;
+      } else if (plot.name.find("VertexX") != std::string::npos) {
+        class1 = 1;
+      } else if (plot.name.find("VertexY") != std::string::npos) {
+        class1 = 3;
+      }
       ymin = 0.;
-      ymax = 5.;
+      ymax = 10.;
     }
 
     bool isrun = plot.varexp.find("ntreeentries") != std::string::npos ? true : false; // vs run or vs time
@@ -162,9 +214,9 @@ void TrendingTaskITSTracks::storePlots(repository::DatabaseInterface& qcdb)
 
     // post processing plot
     TGraph* g = new TGraph(n, x, y);
-    SetGraphStyle(g, col[add], mkr[add]);
+    SetGraphStyle(g, col[(int)class1 % 2], mkr[(int)class1 % 2]);
 
-    SetGraphNameAndAxes(g, plot.name, plot.title, isrun ? "run" : "time", ytitles[add], ymin,
+    SetGraphNameAndAxes(g, plot.name, plot.title, isrun ? "run" : "time", plot.title, ymin,
                         ymax, runlist);
     ILOG(Info, Support) << " Saving " << plot.name << " to CCDB " << ENDM;
     auto mo = std::make_shared<MonitorObject>(g, mConfig.taskName, "o2::quality_control_modules::its::TrendingTaskITSTracks",

@@ -19,6 +19,8 @@
 #include "QualityControl/CheckInterface.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
+#include "MCHRawCommon/DataFormats.h"
+#include "MCHRawElecMap/Mapper.h"
 #include <string>
 
 namespace o2::quality_control_modules::muonchambers
@@ -42,9 +44,23 @@ class PhysicsPreclustersCheck : public o2::quality_control::checker::CheckInterf
   std::string getAcceptedType() override;
 
  private:
+  int checkPadMapping(uint16_t feeId, uint8_t linkId, uint8_t eLinkId, o2::mch::raw::DualSampaChannelId channel, int& cathode);
+
   double mMinPseudoeff;
   double mMaxPseudoeff;
-  ClassDefOverride(PhysicsPreclustersCheck, 3);
+  double mMinGoodFraction;
+  double mPseudoeffPlotScaleMin;
+  double mPseudoeffPlotScaleMax;
+  bool mVerbose;
+
+  std::vector<double> mDePseudoeff[2];
+
+  o2::mch::raw::Elec2DetMapper mElec2DetMapper;
+  o2::mch::raw::Det2ElecMapper mDet2ElecMapper;
+  o2::mch::raw::FeeLink2SolarMapper mFeeLink2SolarMapper;
+  o2::mch::raw::Solar2FeeLinkMapper mSolar2FeeLinkMapper;
+
+  ClassDefOverride(PhysicsPreclustersCheck, 4);
 };
 
 } // namespace o2::quality_control_modules::muonchambers

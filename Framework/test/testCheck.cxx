@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE(test_check_specs)
 class TestCheck : public CheckInterface
 {
  public:
-  TestCheck() {}
+  TestCheck() = default;
   void configure()
   {
   }

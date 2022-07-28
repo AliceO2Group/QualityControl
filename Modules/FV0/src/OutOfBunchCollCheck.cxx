@@ -18,6 +18,8 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
+
+#include "DataFormatsFIT/Triggers.h"
 // ROOT
 #include <TH1.h>
 #include <TH2.h>
@@ -49,6 +51,14 @@ void OutOfBunchCollCheck::configure()
     mThreshError = 0.1;
     ILOG(Info, Support) << "configure() : using default thresholdError = " << mThreshError << ENDM;
   }
+
+  if (auto param = mCustomParameters.find("binPos"); param != mCustomParameters.end()) {
+    mBinPos = stoi(param->second);
+    ILOG(Info, Support) << "configure() : using binPos = " << mBinPos << ENDM;
+  } else {
+    mBinPos = int(o2::fit::Triggers::bitA) + 1;
+    ILOG(Info, Support) << "configure() : using default binPos = " << mBinPos << ENDM;
+  }
 }
 
 Quality OutOfBunchCollCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
@@ -58,7 +68,7 @@ Quality OutOfBunchCollCheck::check(std::map<std::string, std::shared_ptr<Monitor
   float integralBcOrbitMap = 0;
   float integralOutOfBunchColl = 0;
   bool metadataFound = false;
-  std::string metadataKey = "BcOrbitMapIntegral";
+  const std::string metadataKey = "BcVsTrgIntegralBin" + std::to_string(mBinPos);
 
   for (auto& [moName, mo] : *moMap) {
     (void)moName;
@@ -90,7 +100,7 @@ Quality OutOfBunchCollCheck::check(std::map<std::string, std::shared_ptr<Monitor
   mFractionOutOfBunchColl = 0;
   mNumNonEmptyBins = 0;
 
-  integralOutOfBunchColl = hOutOfBunchColl->Integral();
+  integralOutOfBunchColl = hOutOfBunchColl->Integral(1, 3564, mBinPos, mBinPos);
   mFractionOutOfBunchColl = integralOutOfBunchColl / integralBcOrbitMap;
 
   ILOG(Debug, Support) << "in checker: integralBcOrbitMap:" << integralBcOrbitMap << " integralOutOfBunchColl: " << integralOutOfBunchColl << " -> fraction: " << mFractionOutOfBunchColl << ENDM;

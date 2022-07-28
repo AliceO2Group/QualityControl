@@ -45,6 +45,7 @@ class OutOfBunchCollCheck : public o2::quality_control::checker::CheckInterface
   int mNumNonEmptyBins;
   float mThreshWarning;
   float mThreshError;
+  int mBinPos;
   std::string mTrgName;
 };
 

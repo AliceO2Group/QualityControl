@@ -9,13 +9,13 @@
 #include "QualityControl/QcInfoLogger.h"
 // ROOT
 #include <TH1.h>
+#include <TH2.h>
+#include <TLine.h>
 
 using namespace std;
 
 namespace o2::quality_control_modules::trd
 {
-
-void DigitsCheck::configure() {}
 
 Quality DigitsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {

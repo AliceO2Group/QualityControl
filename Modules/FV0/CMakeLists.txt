@@ -2,15 +2,14 @@
 
 add_library(O2QcFV0)
 
-target_sources(O2QcFV0 PRIVATE src/TH1ReductorLaser.cxx  src/DigitQcTaskLaser.cxx   src/DigitQcTask.cxx
-                                src/CFDEffCheck.cxx
-                                src/BasicPPTask.cxx
-                                src/OutOfBunchCollTask.cxx
-                                src/OutOfBunchCollCheck.cxx
-				src/TriggerQcTask.cxx
-                                src/CalibrationTask.cxx
-                                src/ChannelTimeCalibrationCheck.cxx
-                                )
+target_sources(O2QcFV0 PRIVATE src/TH1ReductorLaser.cxx
+                               src/DigitQcTaskLaser.cxx
+                               src/DigitQcTask.cxx
+                               src/CFDEffCheck.cxx
+                               src/BasicPPTask.cxx
+                               src/OutOfBunchCollTask.cxx
+                               src/OutOfBunchCollCheck.cxx
+                               src/TriggerQcTask.cxx)
 
 target_include_directories(
   O2QcFV0
@@ -18,7 +17,11 @@ target_include_directories(
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-target_link_libraries(O2QcFV0 PUBLIC O2QualityControl O2::DataFormatsFV0)
+target_link_libraries(O2QcFV0 PUBLIC O2QualityControl
+                                     O2::DataFormatsFV0
+                                     O2::FV0Base
+                                     O2::DataFormatsParameters
+                                     )
 
 install(TARGETS O2QcFV0
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -26,19 +29,16 @@ install(TARGETS O2QcFV0
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 add_root_dictionary(O2QcFV0
-                    HEADERS
-  include/FV0/TH1ReductorLaser.h
-  include/FV0/DigitQcTaskLaser.h
-  include/FV0/DigitQcTask.h
-  include/FV0/CFDEffCheck.h
-  include/FV0/BasicPPTask.h
-  include/FV0/OutOfBunchCollTask.h
-  include/FV0/OutOfBunchCollCheck.h
-  include/FV0/TriggerQcTask.h
-  include/FV0/CalibrationTask.h
-  include/FV0/ChannelTimeCalibrationCheck.h
-                    LINKDEF include/FV0/LinkDef.h
-                    BASENAME O2QcFV0)
+  HEADERS include/FV0/TH1ReductorLaser.h
+          include/FV0/DigitQcTaskLaser.h
+          include/FV0/DigitQcTask.h
+          include/FV0/BasicPPTask.h
+          include/FV0/OutOfBunchCollTask.h
+          include/FV0/CFDEffCheck.h
+          include/FV0/TriggerQcTask.h
+          include/FV0/OutOfBunchCollCheck.h
+  LINKDEF include/FV0/LinkDef.h
+  BASENAME O2QcFV0)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/FV0
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")

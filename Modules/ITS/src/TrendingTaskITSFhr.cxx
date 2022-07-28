@@ -20,6 +20,7 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/Reductor.h"
+#include "QualityControl/ObjectMetadataKeys.h"
 #include "ITS/TH2XlineReductor.h"
 #include <TCanvas.h>
 #include <TH1.h>
@@ -30,6 +31,7 @@
 using namespace o2::quality_control;
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;
+using namespace o2::quality_control::repository;
 using namespace o2::quality_control_modules::its;
 
 void TrendingTaskITSFhr::configure(std::string name,
@@ -95,10 +97,7 @@ void TrendingTaskITSFhr::trendValues(const Trigger& t, repository::DatabaseInter
   // timestamps in the end, but this would become ambiguous if there is more
   // than one data source.
   mTime = TDatime().Convert();
-  // todo get run number when it is available. consider putting it inside
-  // monitor object's metadata (this might be not
-  //  enough if we trend across runs).
-  mMetaData.runNumber = 0;
+  mMetaData.runNumber = t.activity.mId;
   int count = 0;
   for (auto& dataSource : mConfig.dataSources) {
 
@@ -109,7 +108,7 @@ void TrendingTaskITSFhr::trendValues(const Trigger& t, repository::DatabaseInter
       auto mo = qcdb.retrieveMO(dataSource.path, "", t.timestamp, t.activity);
       if (!count) {
         std::map<std::string, std::string> entryMetadata = mo->getMetadataMap(); // full list of metadata as a map
-        mMetaData.runNumber = std::stoi(entryMetadata["RunNumber"]);             // get and set run number
+        mMetaData.runNumber = std::stoi(entryMetadata[metadata_keys::runNumber]); // get and set run number
         ntreeentries = (Int_t)mTrend->GetEntries() + 1;
         runlist.push_back(std::to_string(mMetaData.runNumber));
       }

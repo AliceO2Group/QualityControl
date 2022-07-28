@@ -18,6 +18,7 @@
 #include <TCanvas.h>
 #include <TH1.h>
 #include <TH2.h>
+#include <TProfile.h>
 #include <TFile.h>
 
 #include <iostream>
@@ -198,10 +199,11 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mNBendHitsMap22->SetOption("colz");
   mNBendHitsMap22->SetStats(0);
 
-  mDigitBCCounts = std::make_shared<TH1F>("DigitBCCounts", "Digit Bunch Crossing Counts", o2::constants::lhc::LHCMaxBunches, 0., o2::constants::lhc::LHCMaxBunches);
+  mDigitBCCounts = std::make_shared<TH1F>("DigitBCCounts", "Digits Bunch Crossing Counts", o2::constants::lhc::LHCMaxBunches, 0., o2::constants::lhc::LHCMaxBunches);
+  // mDigitBCCounts = std::make_shared<TProfile>("DigitBCCounts", "Mean Digits Bunch Crossing Counts", o2::constants::lhc::LHCMaxBunches, 0., o2::constants::lhc::LHCMaxBunches);
   getObjectsManager()->startPublishing(mDigitBCCounts.get());
   mDigitBCCounts->GetXaxis()->SetTitle("BC");
-  mDigitBCCounts->GetYaxis()->SetTitle("Entry");
+  mDigitBCCounts->GetYaxis()->SetTitle("Entry (Ko)");
 }
 
 void DigitsQcTask::startOfActivity(Activity& /*activity*/)
@@ -272,6 +274,9 @@ static std::pair<uint32_t, uint32_t> getROFSize(const o2::mid::ROFRecord& rof, g
 
 void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
+  // auto digits = ctx.inputs().get<gsl::span<o2::mid::ColumnData>>("digits");
+  // auto rofs = ctx.inputs().get<gsl::span<o2::mid::ROFRecord>>("digitrofs");
+
   auto digits = o2::mid::specs::getData(ctx, "digits", o2::mid::EventType::Standard);
   auto rofs = o2::mid::specs::getRofs(ctx, "digits", o2::mid::EventType::Standard);
 
@@ -324,7 +329,7 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   for (const auto& rofRecord : rofs) { // loop ROFRecords //
     // printf("========================================================== \n");
-    // printf("%05d ROF with first entry %05zu and nentries %02zu , BC %05d, ORB %05d , EventType %02d\n", nROF, rofRecord.firstEntry, rofRecord.nEntries, rofRecord.interactionRecord.bc, rofRecord.interactionRecord.orbit,rofRecord.eventType);
+    // printf("Digits :: %05d ROF with first entry %05zu and nentries %02zu , BC %05d, ORB %05d , EventType %02d\n", nROF, rofRecord.firstEntry, rofRecord.nEntries, rofRecord.interactionRecord.bc, rofRecord.interactionRecord.orbit,rofRecord.eventType);
     //  eventType::  Standard = 0, Calib = 1, FET = 2
     nROF++;
     multHitMT11B = 0;
@@ -335,7 +340,8 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     multHitMT12NB = 0;
     multHitMT21NB = 0;
     multHitMT22NB = 0;
-    mDigitBCCounts->Fill(rofRecord.interactionRecord.bc);
+
+    mDigitBCCounts->Fill(rofRecord.interactionRecord.bc, float(rofRecord.nEntries) * 12. / 1000.); // 1 digit = 12 octets
 
     // loadStripPatterns (ColumnData)
     for (auto& digit : digits.subspan(rofRecord.firstEntry, rofRecord.nEntries)) { // loop DE //
@@ -525,6 +531,10 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     mMultHitMT21NB->Fill(multHitMT21NB);
     mMultHitMT22NB->Fill(multHitMT22NB);
   } //  ROFRecords //
+  // float sc=1/nROF;
+  // std::cout << "************************  nROF =>>  " << nROF  <<" scale =>>  " << sc << std::endl;
+  // mLocalBoardsMap->Divide(mLocalBoardsMapBC);
+  // mLocalBoardsMap->Scale(sc);
 }
 
 void DigitsQcTask::endOfCycle()

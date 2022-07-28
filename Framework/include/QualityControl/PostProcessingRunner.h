@@ -86,9 +86,9 @@ class PostProcessingRunner
   static PostProcessingRunnerConfig extractConfig(const core::CommonSpec& commonSpec, const PostProcessingTaskSpec& ppTaskSpec);
 
  private:
-  void doInitialize(Trigger trigger);
-  void doUpdate(Trigger trigger);
-  void doFinalize(Trigger trigger);
+  void doInitialize(const Trigger& trigger);
+  void doUpdate(const Trigger& trigger);
+  void doFinalize(const Trigger& trigger);
 
   enum class TaskState {
     INVALID,
@@ -105,7 +105,7 @@ class PostProcessingRunner
   framework::ServiceRegistry mServices;
   std::shared_ptr<o2::quality_control::core::ObjectsManager> mObjectManager;
   // TODO in a longer run, we should store from/to in the MonitorObject itself and use them.
-  std::function<void(const o2::quality_control::core::MonitorObjectCollection*, long /*from*/, long /*to*/)> mPublicationCallback = nullptr;
+  std::function<void(const o2::quality_control::core::MonitorObjectCollection*, uint64_t /*from*/, uint64_t /*to*/)> mPublicationCallback = nullptr;
 
   std::string mName{};
   PostProcessingConfig mTaskConfig;

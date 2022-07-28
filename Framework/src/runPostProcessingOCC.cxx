@@ -51,6 +51,9 @@ class PostProcessingOCCStateMachine : public RuntimeControlledObject
     try {
       auto config = properties.count(qcConfigurationKey) > 0 ? properties.get_child(qcConfigurationKey) : properties;
       mRunner->init(config);
+    } catch (const boost::exception& ex) {
+      ILOG(Error, Support) << "Exception caught: " << boost::current_exception_diagnostic_information(true) << ENDM;
+      success = false;
     } catch (const std::exception& ex) {
       ILOG(Error, Support) << "Exception caught: " << ex.what() << ENDM;
       success = false;

@@ -60,12 +60,13 @@ class TracksQcTask final : public TaskInterface
   std::shared_ptr<TH1F> mTrackPhi{ nullptr };
   std::shared_ptr<TH1F> mTrackThetaD{ nullptr };
   std::shared_ptr<TH1F> mTrackPT{ nullptr };
-  std::shared_ptr<TH1F> mTrackRatio44{ nullptr };
+
+  std::shared_ptr<TProfile> mTrackRatio44{ nullptr };
   std::shared_ptr<TH1F> mTrackBDetRatio44{ nullptr };
   std::shared_ptr<TH1F> mTrackNBDetRatio44{ nullptr };
   std::shared_ptr<TH1F> mTrackBLocRatio44{ nullptr };
   std::shared_ptr<TH1F> mTrackNBLocRatio44{ nullptr };
-  std::shared_ptr<TH1F> mTrackBCCounts{ nullptr };
+  std::shared_ptr<TProfile> mTrackBCCounts{ nullptr };
 
   std::shared_ptr<TH2F> mTrackDetRatio44Map11{ nullptr };
   std::shared_ptr<TH2F> mTrackDetRatio44Map12{ nullptr };

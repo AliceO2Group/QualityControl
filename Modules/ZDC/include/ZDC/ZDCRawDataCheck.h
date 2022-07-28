@@ -32,9 +32,6 @@ class ZDCRawDataCheck : public o2::quality_control::checker::CheckInterface
   /// Destructor
   ~ZDCRawDataCheck() override = default;
 
-  // Override interface
-  void configure() override;
-  // void configure();
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;

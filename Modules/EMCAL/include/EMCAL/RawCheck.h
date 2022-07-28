@@ -43,6 +43,41 @@ class RawCheck final : public o2::quality_control::checker::CheckInterface
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
 
+ private:
+  /// \brief Decode key of a configurable parameter as boolean
+  /// \param value Value to be decoded (true or false, case-insensitive)
+  /// \return Boolean representation of the value
+  /// \throw std::runtime_error in case value is not a boolean value
+  bool decodeBool(std::string value) const;
+
+  /// \brief Decode key of a configurable parameter as integer
+  /// \param value Value to be decoded
+  /// \return Integer representation of the value
+  /// \throw std::runtime_error in case value is not a integer value
+  int decodeInt(std::string value) const;
+
+  /// \brief Decode key of a configurable parameter as double
+  /// \param value Value to be decoded
+  /// \return Double representation of the value
+  /// \throw std::runtime_error in case value is not a double value
+  double decodeDouble(std::string value) const;
+
+  /************************************************
+   * Switches for InfoLogger Messages             *
+   ************************************************/
+  bool mIlMessageBunchMinAmpCheckSM = false;       ///< Switch for IL message for Bunch Min. amplitude check at supermodule level
+  bool mIlMessageBunchMinAmpCheckDetector = false; ///< Switch for IL message for Bunch Min. amplitude check at subdetector level
+  bool mIlMessageBunchMinAmpCheckFull = false;     ///< Switch for IL message for Bunch Min. amplitude check at full detector level
+  bool mILMessageRawErrorCheck = false;            ///< Switch for IL message for error code
+  bool mILMessageNoisyFECCheck = false;            ///< Switch for IL message for noisy FEC
+  bool mILMessagePayloadSizeCheck = false;         ///< Switch for IL message for large payload size
+
+  /************************************************
+   * sigma cuts                                   *
+   ************************************************/
+  double mNsigmaFECMaxPayload = 2.; ///< Number of sigmas used in the FEC max payload check
+  double mNsigmaPayloadSize = 2.;   ///< Number of sigmas used in the payload size check
+
   ClassDefOverride(RawCheck, 2);
 };
 

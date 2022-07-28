@@ -20,6 +20,7 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Reductor.h"
 #include "QualityControl/RootClassFactory.h"
+#include "QualityControl/RepoPathUtils.h"
 #include <boost/property_tree/ptree.hpp>
 #include <TH1.h>
 #include <TCanvas.h>
@@ -37,18 +38,43 @@ void TrendingTask::configure(std::string name, const boost::property_tree::ptree
   mConfig = TrendingTaskConfig(name, config);
 }
 
-void TrendingTask::initialize(Trigger, framework::ServiceRegistry&)
+void TrendingTask::initialize(Trigger, framework::ServiceRegistry& services)
 {
   // Preparing data structure of TTree
-  mTrend = std::make_unique<TTree>(); // todo: retrieve last TTree, so we continue trending. maybe do it optionally?
-  mTrend->SetName(PostProcessingInterface::getName().c_str());
-  mTrend->Branch("meta", &mMetaData, "runNumber/I");
-  mTrend->Branch("time", &mTime);
-
+  if (mConfig.resumeTrend) {
+    ILOG(Info, Support) << "Trying to retrieve an existing TTree for this task to continue the trend." << ENDM;
+    auto& qcdb = services.get<repository::DatabaseInterface>();
+    auto path = RepoPathUtils::getMoPath(mConfig.detectorName, PostProcessingInterface::getName(), "", "", false);
+    auto mo = qcdb.retrieveMO(path, PostProcessingInterface::getName(), -1, mConfig.activity);
+    if (mo && mo->getObject()) {
+      auto tree = dynamic_cast<TTree*>(mo->getObject());
+      if (tree) {
+        mTrend = std::unique_ptr<TTree>(tree);
+        mo->setIsOwner(false);
+      }
+    } else {
+      ILOG(Warning, Support) << "Could not retrieve an existing TTree for this task, maybe there is none which match these Activity settings" << ENDM;
+    }
+  }
   for (const auto& source : mConfig.dataSources) {
-    std::unique_ptr<Reductor> reductor(root_class_factory::create<Reductor>(source.moduleName, source.reductorName));
-    mTrend->Branch(source.name.c_str(), reductor->getBranchAddress(), reductor->getBranchLeafList());
-    mReductors[source.name] = std::move(reductor);
+    mReductors.emplace(source.name, root_class_factory::create<Reductor>(source.moduleName, source.reductorName));
+  }
+
+  if (mTrend == nullptr) {
+    mTrend = std::make_unique<TTree>();
+    mTrend->SetName(PostProcessingInterface::getName().c_str());
+
+    mTrend->Branch("meta", &mMetaData, mMetaData.getBranchLeafList());
+    mTrend->Branch("time", &mTime);
+    for (const auto& [sourceName, reductor] : mReductors) {
+      mTrend->Branch(sourceName.c_str(), reductor->getBranchAddress(), reductor->getBranchLeafList());
+    }
+  } else {
+    mTrend->SetBranchAddress("meta", &mMetaData);
+    mTrend->SetBranchAddress("time", &mTime);
+    for (const auto& [sourceName, reductor] : mReductors) {
+      mTrend->SetBranchAddress(sourceName.c_str(), reductor->getBranchAddress());
+    }
   }
   if (mConfig.producePlotsOnUpdate) {
     getObjectsManager()->startPublishing(mTrend.get());
@@ -76,10 +102,8 @@ void TrendingTask::finalize(Trigger, framework::ServiceRegistry&)
 
 void TrendingTask::trendValues(const Trigger& t, repository::DatabaseInterface& qcdb)
 {
-  mTime = t.timestamp / 1000; // ROOT expects seconds since epoch
-  // todo get run number when it is available. consider putting it inside monitor object's metadata (this might be not
-  //  enough if we trend across runs).
-  mMetaData.runNumber = -1;
+  mTime = t.timestamp / 1000; // ROOT expects seconds since epoch.
+  mMetaData.runNumber = t.activity.mId;
 
   for (auto& dataSource : mConfig.dataSources) {
 
@@ -126,7 +150,7 @@ void TrendingTask::generatePlots()
     // we have to delete the graph errors after the plot is saved, unfortunately the canvas does not take its ownership
     TGraphErrors* graphErrors = nullptr;
 
-    TCanvas* c = new TCanvas();
+    auto* c = new TCanvas();
 
     mTrend->Draw(plot.varexp.c_str(), plot.selection.c_str(), plot.option.c_str());
 
@@ -144,12 +168,6 @@ void TrendingTask::generatePlots()
         graphErrors = new TGraphErrors(mTrend->GetSelectedRows(), mTrend->GetVal(1), mTrend->GetVal(0), mTrend->GetVal(2), mTrend->GetVal(3));
         // We draw on the same plot as the main graph, but only error bars
         graphErrors->Draw("SAME E");
-        // We try to convince ROOT to delete graphErrors together with the rest of the canvas.
-        if (auto* pad = c->GetPad(0)) {
-          if (auto* primitives = pad->GetListOfPrimitives()) {
-            primitives->Add(graphErrors);
-          }
-        }
       }
     }
 
@@ -179,6 +197,8 @@ void TrendingTask::generatePlots()
         // Without this it would show dates in order of 2044-12-18 on the day of 2019-12-19.
         histo->GetXaxis()->SetTimeOffset(0.0);
         histo->GetXaxis()->SetTimeFormat("%Y-%m-%d %H:%M");
+      } else if (plot.varexp.find(":meta.runNumber") != std::string::npos) {
+        histo->GetXaxis()->SetNoExponent(true);
       }
       // QCG doesn't empty the buffers before visualizing the plot, nor does ROOT when saving the file,
       // so we have to do it here.

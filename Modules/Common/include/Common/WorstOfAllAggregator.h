@@ -31,14 +31,11 @@ class WorstOfAllAggregator : public o2::quality_control::checker::AggregatorInte
 {
  public:
   // Override interface
-  void configure(std::string name) override;
+  void configure() override;
   std::map<std::string, o2::quality_control::core::Quality>
     aggregate(o2::quality_control::core::QualityObjectsMapType& qoMap) override;
 
   ClassDefOverride(WorstOfAllAggregator, 1);
-
- private:
-  std::string mName;
 };
 
 } // namespace o2::quality_control_modules::common

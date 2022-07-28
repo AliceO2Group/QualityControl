@@ -66,7 +66,7 @@ void PostProcessingRunner::init(const PostProcessingRunnerConfig& runnerConfig, 
   mRunnerConfig = runnerConfig;
   mTaskConfig = taskConfig;
 
-  QcInfoLogger::init("post/" + mName, runnerConfig.infologgerFilterDiscardDebug, runnerConfig.infologgerDiscardLevel);
+  QcInfoLogger::init("post/" + mName, runnerConfig.infologgerFilterDiscardDebug, runnerConfig.infologgerDiscardLevel, runnerConfig.infologgerDiscardFile);
   ILOG(Info, Support) << "Initializing PostProcessingRunner" << ENDM;
 
   root_class_factory::loadLibrary(mTaskConfig.moduleName);
@@ -82,6 +82,7 @@ void PostProcessingRunner::init(const PostProcessingRunnerConfig& runnerConfig, 
   ILOG(Info, Support) << ">> Host : " << mRunnerConfig.database.at("host") << ENDM;
 
   mObjectManager = std::make_shared<ObjectsManager>(mTaskConfig.taskName, mTaskConfig.className, mTaskConfig.detectorName, mRunnerConfig.consulUrl);
+  mObjectManager->setActivity(mTaskConfig.activity);
   mServices.registerService<DatabaseInterface>(mDatabase.get());
   if (mPublicationCallback == nullptr) {
     mPublicationCallback = publishToRepository(*mDatabase);
@@ -110,16 +111,20 @@ bool PostProcessingRunner::run()
   if (mTaskState == TaskState::Created) {
     if (Trigger trigger = trigger_helpers::tryTrigger(mInitTriggers)) {
       doInitialize(trigger);
+      return true;
     }
   }
   if (mTaskState == TaskState::Running) {
     if (Trigger trigger = trigger_helpers::tryTrigger(mUpdateTriggers)) {
       doUpdate(trigger);
+      return true;
     }
     if (mUpdateTriggers.empty()) {
       doFinalize({ TriggerType::UserOrControl, true, mTaskConfig.activity });
+      return false;
     } else if (Trigger trigger = trigger_helpers::tryTrigger(mStopTriggers)) {
       doFinalize(trigger);
+      return false;
     }
   }
   if (mTaskState == TaskState::Finished) {
@@ -204,7 +209,7 @@ void PostProcessingRunner::reset()
   mStopTriggers.clear();
 }
 
-void PostProcessingRunner::doInitialize(Trigger trigger)
+void PostProcessingRunner::doInitialize(const Trigger& trigger)
 {
   ILOG(Info, Support) << "Initializing the user task due to trigger '" << trigger << "'" << ENDM;
 
@@ -216,14 +221,14 @@ void PostProcessingRunner::doInitialize(Trigger trigger)
   mStopTriggers = trigger_helpers::createTriggers(mTaskConfig.stopTriggers, mTaskConfig);
 }
 
-void PostProcessingRunner::doUpdate(Trigger trigger)
+void PostProcessingRunner::doUpdate(const Trigger& trigger)
 {
   ILOG(Info, Support) << "Updating the user task due to trigger '" << trigger << "'" << ENDM;
   mTask->update(trigger, mServices);
   mPublicationCallback(mObjectManager->getNonOwningArray(), trigger.timestamp, trigger.timestamp + objectValidity);
 }
 
-void PostProcessingRunner::doFinalize(Trigger trigger)
+void PostProcessingRunner::doFinalize(const Trigger& trigger)
 {
   ILOG(Info, Support) << "Finalizing the user task due to trigger '" << trigger << "'" << ENDM;
   mTask->finalize(trigger, mServices);
@@ -243,6 +248,7 @@ PostProcessingRunnerConfig PostProcessingRunner::extractConfig(const CommonSpec&
     commonSpec.consulUrl,
     commonSpec.infologgerFilterDiscardDebug,
     commonSpec.infologgerDiscardLevel,
+    commonSpec.infologgerDiscardFile,
     commonSpec.postprocessingPeriod,
     "",
     ppTaskSpec.tree
@@ -251,7 +257,7 @@ PostProcessingRunnerConfig PostProcessingRunner::extractConfig(const CommonSpec&
 
 MOCPublicationCallback publishToDPL(framework::DataAllocator& allocator, std::string outputBinding)
 {
-  return [&allocator = allocator, outputBinding = std::move(outputBinding)](const MonitorObjectCollection* moc, long, long) {
+  return [&allocator = allocator, outputBinding = std::move(outputBinding)](const MonitorObjectCollection* moc, uint64_t, uint64_t) {
     // TODO pass timestamps to objects, so they are later stored correctly.
     allocator.snapshot(framework::OutputRef{ outputBinding }, *moc);
   };
@@ -259,7 +265,7 @@ MOCPublicationCallback publishToDPL(framework::DataAllocator& allocator, std::st
 
 MOCPublicationCallback publishToRepository(o2::quality_control::repository::DatabaseInterface& repository)
 {
-  return [&](const MonitorObjectCollection* collection, long from, long to) {
+  return [&](const MonitorObjectCollection* collection, uint64_t from, uint64_t to) {
     for (const TObject* mo : *collection) {
       // We have to copy the object so we can pass a shared_ptr.
       // This is not ideal, but MySQL interface requires shared ptrs to queue the objects.

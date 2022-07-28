@@ -16,6 +16,7 @@
 #include <TCanvas.h>
 #include <TH1.h>
 #include <TH2.h>
+#include <TProfile.h>
 #include <TFile.h>
 
 #include <iostream>
@@ -32,6 +33,7 @@
 #include "DataFormatsMID/ROFRecord.h"
 #include "MIDBase/DetectorParameters.h"
 #include "MIDBase/GeometryParameters.h"
+#include "MIDWorkflow/ColumnDataSpecsUtils.h"
 
 #define MID_NDE 72
 #define DZpos 10
@@ -85,10 +87,11 @@ void ClustQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mClusterMap22->SetOption("colz");
   mClusterMap22->SetStats(0);
 
-  mClustBCCounts = std::make_shared<TH1F>("ClustBCCounts", "Cluster Bunch Crossing Counts", o2::constants::lhc::LHCMaxBunches, 0., o2::constants::lhc::LHCMaxBunches);
+  // mClustBCCounts = std::make_shared<TH1F>("ClustBCCounts", "Cluster Bunch Crossing Counts", o2::constants::lhc::LHCMaxBunches, 0., o2::constants::lhc::LHCMaxBunches);
+  mClustBCCounts = std::make_shared<TProfile>("ClustBCCounts", "Mean Clusters in Bunch Crossing", o2::constants::lhc::LHCMaxBunches, 0., o2::constants::lhc::LHCMaxBunches);
   getObjectsManager()->startPublishing(mClustBCCounts.get());
   mClustBCCounts->GetXaxis()->SetTitle("BC");
-  mClustBCCounts->GetYaxis()->SetTitle("Entry");
+  mClustBCCounts->GetYaxis()->SetTitle("Mean Clusters nb");
 
   mClustResX = std::make_shared<TH1F>("ClustResX", "Cluster X Resolution ", 300, 0, 30);
   getObjectsManager()->startPublishing(mClustResX.get());
@@ -130,6 +133,9 @@ void ClustQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   auto clusters = ctx.inputs().get<gsl::span<o2::mid::Cluster>>("clusters");
   auto rofs = ctx.inputs().get<gsl::span<o2::mid::ROFRecord>>("clusterrofs");
 
+  // auto clusters = o2::mid::specs::getData(ctx, "clusters", o2::mid::EventType::Standard);
+  // auto rofs = o2::mid::specs::getRofs(ctx, "clusters", o2::mid::EventType::Standard);
+
   int multClusterMT11 = 0;
   int multClusterMT12 = 0;
   int multClusterMT21 = 0;
@@ -140,7 +146,7 @@ void ClustQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   for (const auto& rofRecord : rofs) { // loop ROFRecords == Events //
     // printf("========================================================== \n");
-    // printf("%05d ROF with first entry %05zu and nentries %02zu , BC %05d, ORB %05d , EventType %02d\n", nROF, rofRecord.firstEntry, rofRecord.nEntries, rofRecord.interactionRecord.bc, rofRecord.interactionRecord.orbit,rofRecord.eventType);
+    // printf("Clusters :: %05d ROF with first entry %05zu and nentries %02zu , BC %05d, ORB %05d , EventType %02d\n", nROF, rofRecord.firstEntry, rofRecord.nEntries, rofRecord.interactionRecord.bc, rofRecord.interactionRecord.orbit,rofRecord.eventType);
     //   eventType::  Standard = 0, Calib = 1, FET = 2
     multClusterMT11 = 0;
     multClusterMT12 = 0;
@@ -149,7 +155,7 @@ void ClustQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     nROF++;
 
     for (auto& cluster : clusters.subspan(rofRecord.firstEntry, rofRecord.nEntries)) { // loop Cluster in ROF//
-      mClustBCCounts->Fill(rofRecord.interactionRecord.bc);
+      mClustBCCounts->Fill(rofRecord.interactionRecord.bc, rofRecord.nEntries);
       // std::cout << "  =>>  " << cluster << std::endl;
       mClustResX->Fill(cluster.getEX());
       mClustResXDetId->Fill(cluster.deId, cluster.getEX());
