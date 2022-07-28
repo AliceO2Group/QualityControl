@@ -260,7 +260,7 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
       double bine = hNClusterVsChipITS->GetBinError(ix, iy);
       hNClusterVsChipITS->SetBinContent(ix, iy, binc / integral);
-      hNClusterVsChipITS->SetBinError(ix, iy, binc * std::sqrt((bine / binc) * (bine / binc) + (std::sqrt(integral) / integral) * (std::sqrt(integral) / integral)));
+      hNClusterVsChipITS->SetBinError(ix, iy, (binc / integral) * std::sqrt((bine / binc) * (bine / binc) + (std::sqrt(integral) / integral) * (std::sqrt(integral) / integral)));
     }
   }
 }
