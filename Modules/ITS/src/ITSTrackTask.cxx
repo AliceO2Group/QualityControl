@@ -350,7 +350,6 @@ void ITSTrackTask::createAllHistos()
   hVertexRvsZ->SetTitle("Distance to primary vertex vs Z");
   addObject(hVertexRvsZ);
   formatAxes(hVertexRvsZ, "Z coordinate (cm)", "R (cm)", 1, 1.10);
-  hVertexRvsZ->SetStats(0);
 
   hVertexZ = new TH1D("VertexZ", "VertexZ", (int)(mVertexZsize * 2 / 0.01), -mVertexZsize, mVertexZsize);
   hVertexZ->SetTitle("Z coordinate of vertex");
