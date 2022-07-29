@@ -27,7 +27,10 @@
 #include <DataFormatsITSMFT/CompCluster.h>
 #include <Framework/InputRecord.h>
 #include <DataFormatsITSMFT/ROFRecord.h>
+#include <DataFormatsITSMFT/ClusterTopology.h>
 #include <ITSMFTReconstruction/ChipMappingMFT.h>
+#include "CCDB/BasicCCDBManager.h"
+#include "CCDB/CCDBTimeStampUtils.h"
 
 // Quality Control
 #include "QualityControl/QcInfoLogger.h"
@@ -96,6 +99,16 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mClusterPatternIndex.get());
   getObjectsManager()->setDisplayHint(mClusterPatternIndex.get(), "logy");
 
+  mClusterSizeSummary = std::make_unique<TH1F>("mClusterSizeSummary", "Cluster Size Summary; Cluster Size (pixels);#Entries", 100, 0.5, 100.5);
+  mClusterSizeSummary->SetStats(0);
+  getObjectsManager()->startPublishing(mClusterSizeSummary.get());
+  getObjectsManager()->setDisplayHint(mClusterSizeSummary.get(), "logy");
+
+  mGroupedClusterSizeSummary = std::make_unique<TH1F>("mGroupedClusterSizeSummary", "Grouped Cluster Size Summary; Grouped Cluster Size (pixels);#Entries", 100, 0.5, 100.5);
+  mGroupedClusterSizeSummary->SetStats(0);
+  getObjectsManager()->startPublishing(mGroupedClusterSizeSummary.get());
+  getObjectsManager()->setDisplayHint(mGroupedClusterSizeSummary.get(), "logy");
+
   mClusterPatternSensorIndices = std::make_unique<TH2F>("mClusterPatternSensorIndices",
                                                         "Cluster Pattern ID vs Chip ID;Chip ID;Pattern ID",
                                                         936, -0.5, 935.5, 100, -0.5, 99.5);
@@ -126,6 +139,14 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   mClusterOccupancySummary->SetStats(0);
   getObjectsManager()->startPublishing(mClusterOccupancySummary.get());
   getObjectsManager()->setDefaultDrawOptions(mClusterOccupancySummary.get(), "colz");
+
+  // get dict from ccdb
+  long int ts = o2::ccdb::getCurrentTimestamp();
+  ILOG(Info, Support) << "Getting dictionary from ccdb - timestamp: " << ts << ENDM;
+  auto& mgr = o2::ccdb::BasicCCDBManager::instance();
+  mgr.setTimestamp(ts);
+  mDict = mgr.get<o2::itsmft::TopologyDictionary>("MFT/Calib/ClusterDictionary");
+  ILOG(Info, Support) << "Dictionary size: " << mDict->getSize() << ENDM;
 
   // --Ladder occupancy maps
   //==============================================
@@ -182,13 +203,20 @@ void QcMFTClusterTask::startOfCycle()
 
 void QcMFTClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  // normalisation for the Summary histogram to TF
+  // normalisation for the summary histogram to TF
   mClusterOccupancySummary->Fill(-1, -1);
   mClusterOccupancy->Fill(-1);
   mClusterPatternIndex->Fill(-1);
+  mClusterSizeSummary->Fill(-1);
+  mGroupedClusterSizeSummary->Fill(-1);
 
   // get the clusters
   const auto clusters = ctx.inputs().get<gsl::span<o2::itsmft::CompClusterExt>>("randomcluster");
+
+  // get cluster patterns and iterator
+  auto clustersPattern = ctx.inputs().get<gsl::span<unsigned char>>("patterns");
+  auto patternIt = clustersPattern.begin();
+
   if (clusters.size() < 1)
     return;
 
@@ -202,6 +230,13 @@ void QcMFTClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
     mClusterPatternIndex->Fill(oneCluster.getPatternID());
     mClusterPatternSensorIndices->Fill(sensorID,
                                        oneCluster.getPatternID());
+
+    if (oneCluster.getPatternID() != o2::itsmft::CompCluster::InvalidPatternID && !mDict->isGroup(oneCluster.getPatternID())) {
+      mClusterSizeSummary->Fill(mDict->getNpixels(oneCluster.getPatternID()));
+    } else {
+      o2::itsmft::ClusterPattern patt(patternIt);
+      mGroupedClusterSizeSummary->Fill(patt.getNPixels());
+    }
 
     // fill occupancy maps
     int idx = layerID + (10 * mHalf[sensorID]);
@@ -235,6 +270,8 @@ void QcMFTClusterTask::reset()
   mClusterOccupancy->Reset();
   mClusterPatternIndex->Reset();
   mClusterPatternSensorIndices->Reset();
+  mClusterSizeSummary->Reset();
+  mGroupedClusterSizeSummary->Reset();
   mClusterLayerIndexH0->Reset();
   mClusterLayerIndexH1->Reset();
   mClusterOccupancySummary->Reset();

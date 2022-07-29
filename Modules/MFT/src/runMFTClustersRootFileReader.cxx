@@ -66,6 +66,7 @@ class MFTClustersRootFileReader : public o2::framework::Task
     mTree = (TTree*)mFile->Get("o2sim");
     mTree->SetBranchAddress("MFTClusterComp", &pclusters);
     mTree->SetBranchAddress("MFTClustersROF", &profs);
+    mTree->SetBranchAddress("MFTClusterPatt", &ppatterns);
 
     // check that it has entries
     mNumberOfTF = mTree->GetEntries();
@@ -109,9 +110,14 @@ class MFTClustersRootFileReader : public o2::framework::Task
     std::vector<o2::itsmft::CompClusterExt>* clustersInROF = new std::vector<o2::itsmft::CompClusterExt>();
     std::copy(clusters.begin() + index, clusters.begin() + lastIndex, std::back_inserter(*clustersInROF));
 
+    // prepare and fill vector with cluster patterns for all ROFs
+    std::vector<unsigned char>* clusPatternArr = new std::vector<unsigned char>();
+    std::copy(patterns.begin(), patterns.end(), std::back_inserter(*clusPatternArr));
+
     // fill in the message
     pc.outputs().snapshot(Output{ "MFT", "COMPCLUSTERS", 0, Lifetime::Timeframe }, *clustersInROF);
     pc.outputs().snapshot(Output{ "MFT", "CLUSTERSROF", 0, Lifetime::Timeframe }, *oneROFvec);
+    pc.outputs().snapshot(Output{ "MFT", "PATTERNS", 0, Lifetime::Timeframe }, *clusPatternArr);
 
     //  update the ROF counter
     mCurrentROF++;
@@ -128,6 +134,7 @@ class MFTClustersRootFileReader : public o2::framework::Task
   TTree* mTree = nullptr;                                                   // tree inside the file
   std::vector<o2::itsmft::ROFRecord> rofs, *profs = &rofs;                  // pointer to ROF branch
   std::vector<o2::itsmft::CompClusterExt> clusters, *pclusters = &clusters; // pointer to cluster branch
+  std::vector<unsigned char> patterns, *ppatterns = &patterns;              // pointer to pattern branch
 
   unsigned long mNumberOfTF = 0;  // number of TF
   unsigned long mNumberOfROF = 0; // number of ROFs in current TF
@@ -144,6 +151,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext&)
   std::vector<OutputSpec> outputs;
   outputs.emplace_back("MFT", "COMPCLUSTERS", 0, Lifetime::Timeframe);
   outputs.emplace_back("MFT", "CLUSTERSROF", 0, Lifetime::Timeframe);
+  outputs.emplace_back("MFT", "PATTERNS", 0, Lifetime::Timeframe);
 
   // The producer to generate some data in the workflow
   DataProcessorSpec producer{

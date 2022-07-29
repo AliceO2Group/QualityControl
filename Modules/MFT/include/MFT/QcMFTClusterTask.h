@@ -21,6 +21,7 @@
 #define QC_MFT_CLUSTER_TASK_H
 #include <TH1F.h>
 #include <TH2F.h>
+#include <DataFormatsITSMFT/TopologyDictionary.h>
 
 // Quality Control
 #include "QualityControl/TaskInterface.h"
@@ -56,6 +57,8 @@ class QcMFTClusterTask /*final*/ : public TaskInterface // todo add back the "fi
 
   std::unique_ptr<TH1F> mClusterOccupancy = nullptr;
   std::unique_ptr<TH1F> mClusterPatternIndex = nullptr;
+  std::unique_ptr<TH1F> mClusterSizeSummary = nullptr;
+  std::unique_ptr<TH1F> mGroupedClusterSizeSummary = nullptr;
   std::unique_ptr<TH2F> mClusterOccupancySummary = nullptr;
 
   std::unique_ptr<TH2F> mClusterPatternSensorIndices = nullptr;
@@ -84,6 +87,12 @@ class QcMFTClusterTask /*final*/ : public TaskInterface // todo add back the "fi
 
   // internal functions
   void getChipMapData();
+
+  // cluster size in pixels
+  int mClusterSize = { 0 };
+
+  // dictionary
+  o2::itsmft::TopologyDictionary* mDict;
 };
 
 } // namespace o2::quality_control_modules::mft
