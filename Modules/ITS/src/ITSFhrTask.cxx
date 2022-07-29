@@ -572,7 +572,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
               mNoisyPixelNumber[mLayer][istave]++; // count only in 10000 events as soon as nTriggers is 1e6
             }
             int pixelPos[2] = { (int)(iter->first / 1000) + (1024 * ichip) + 1, (int)(iter->first % 1000) + 1 };
-            if ((double)GBTLinkInfo->statistics.nTriggers <= mCutTrgForSparse) {
+            if (mTFCount < mCutTFForSparse) {
               mStaveHitmap[istave]->SetBinContent(pixelPos, (double)iter->second);
             }
             totalhit += (int)iter->second;
@@ -610,12 +610,12 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
                 occupancyPlotTmp[i]->Fill(log10(pixelOccupancy / GBTLinkInfo->statistics.nTriggers));
                 if (ichip < 7) {
                   int pixelPos[2] = { (ihic * ((nChipsPerHic[mLayer] / 2) * NCols)) + ichip * NCols + (int)(iter->first / 1000) + 1, NRows - ((int)iter->first % 1000) - 1 + (1024 * ilink) + 1 };
-                  if ((double)GBTLinkInfo->statistics.nTriggers <= mCutTrgForSparse) {
+                  if (mTFCount < mCutTFForSparse) {
                     mStaveHitmap[istave]->SetBinContent(pixelPos, pixelOccupancy);
                   }
                 } else {
                   int pixelPos[2] = { (ihic * ((nChipsPerHic[mLayer] / 2) * NCols)) + (nChipsPerHic[mLayer] / 2) * NCols - (ichip - 7) * NCols - ((int)iter->first / 1000), NRows + ((int)iter->first % 1000) + (1024 * ilink) + 1 };
-                  if ((double)GBTLinkInfo->statistics.nTriggers <= mCutTrgForSparse) {
+                  if (mTFCount < mCutTFForSparse) {
                     mStaveHitmap[istave]->SetBinContent(pixelPos, pixelOccupancy);
                   }
                 }
@@ -732,7 +732,7 @@ void ITSFhrTask::getParameters()
   mMinGeneralNoisyAxisRange = std::stof(mCustomParameters["MinGeneralNoisyAxisRange"]);
   mPhibins = std::stoi(mCustomParameters["Phibins"]);
   mEtabins = std::stoi(mCustomParameters["Etabins"]);
-  mCutTrgForSparse = std::stod(mCustomParameters["CutSparseTriggers"]);
+  mCutTFForSparse = std::stod(mCustomParameters["CutSparseTF"]);
 }
 
 void ITSFhrTask::endOfCycle()
