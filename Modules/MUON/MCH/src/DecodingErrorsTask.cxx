@@ -205,17 +205,26 @@ void DecodingErrorsTask::processErrors(framework::ProcessingContext& pc)
 void DecodingErrorsTask::plotError(int solarId, int dsAddr, int chip, uint32_t error)
 {
   int feeId{ -1 };
-  std::optional<FeeLinkId> feeLinkId = mSolar2Fee(solarId);
-  if (feeLinkId) {
-    feeId = feeLinkId->feeId();
+  int chamberId{ -1 };
+
+  try {
+    std::optional<FeeLinkId> feeLinkId = mSolar2Fee(solarId);
+    if (feeLinkId) {
+      feeId = feeLinkId->feeId();
+    }
+
+    DsElecId dsElecId{ uint16_t(solarId), uint8_t(dsAddr / 5), uint8_t(dsAddr % 5) };
+    if (auto opt = mElec2Det(dsElecId); opt.has_value()) {
+      DsDetId dsDetId = opt.value();
+      int deId = dsDetId.deId();
+      chamberId = deId / 100;
+    }
+  } catch (const std::exception& e) {
+    ILOG(Warning, Support) << e.what() << "  SOLAR" << solarId << "  DS" << dsAddr << "  CHIP" << chip << "  ERROR " << error << ENDM;
   }
 
-  DsElecId dsElecId{ uint16_t(solarId), uint8_t(dsAddr / 5), uint8_t(dsAddr % 5) };
-  int chamberId{ -1 };
-  if (auto opt = mElec2Det(dsElecId); opt.has_value()) {
-    DsDetId dsDetId = opt.value();
-    int deId = dsDetId.deId();
-    chamberId = deId / 100;
+  if (feeId < 0 || chamberId < 0) {
+    return;
   }
 
   uint32_t errMask = 1;
