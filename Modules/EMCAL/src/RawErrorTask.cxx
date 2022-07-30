@@ -107,12 +107,13 @@ void RawErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()
     ->startPublishing(mErrorTypePage);
 
-  mErrorTypeMinAltro = new TH2F("MinorAltroError", "Minor ALTRO decoding error", 40, 0, 40, 3, 0, 3);
+  mErrorTypeMinAltro = new TH2F("MinorAltroError", "Minor ALTRO decoding error", 40, 0, 40, 4, 0, 4);
   mErrorTypeMinAltro->GetXaxis()->SetTitle("Link");
   mErrorTypeMinAltro->GetYaxis()->SetTitle("MinorAltro Error Type");
-  mErrorTypeMinAltro->GetYaxis()->SetBinLabel(1, "Bunch header null");
-  mErrorTypeMinAltro->GetYaxis()->SetBinLabel(2, "Channel end unexpected");
-  mErrorTypeMinAltro->GetYaxis()->SetBinLabel(3, "Channel exceed");
+  mErrorTypeMinAltro->GetYaxis()->SetBinLabel(1, "Channel end unexpected");
+  mErrorTypeMinAltro->GetYaxis()->SetBinLabel(2, "Channel exceed");
+  mErrorTypeMinAltro->GetYaxis()->SetBinLabel(3, "Bunch header null");
+  mErrorTypeMinAltro->GetYaxis()->SetBinLabel(4, "Bunch length exceed");
   mErrorTypeMinAltro->SetStats(0);
   getObjectsManager()
     ->startPublishing(mErrorTypeMinAltro);
