@@ -234,7 +234,6 @@ Quality RawCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* m
       }
     }
   }
-  std::cout << " result " << result << std::endl;
   return result;
 }
 
