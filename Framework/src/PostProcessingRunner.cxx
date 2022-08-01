@@ -259,6 +259,7 @@ MOCPublicationCallback publishToDPL(framework::DataAllocator& allocator, std::st
 {
   return [&allocator = allocator, outputBinding = std::move(outputBinding)](const MonitorObjectCollection* moc, uint64_t, uint64_t) {
     // TODO pass timestamps to objects, so they are later stored correctly.
+    ILOG(Info, Support) << "Publishing " << moc->GetEntries() << " MonitorObjects" << ENDM;
     allocator.snapshot(framework::OutputRef{ outputBinding }, *moc);
   };
 }
@@ -266,6 +267,7 @@ MOCPublicationCallback publishToDPL(framework::DataAllocator& allocator, std::st
 MOCPublicationCallback publishToRepository(o2::quality_control::repository::DatabaseInterface& repository)
 {
   return [&](const MonitorObjectCollection* collection, uint64_t from, uint64_t to) {
+    ILOG(Info, Support) << "Publishing " << collection->GetEntries() << " MonitorObjects" << ENDM;
     for (const TObject* mo : *collection) {
       // We have to copy the object so we can pass a shared_ptr.
       // This is not ideal, but MySQL interface requires shared ptrs to queue the objects.
