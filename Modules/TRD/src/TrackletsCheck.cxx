@@ -61,7 +61,7 @@ void TrackletsCheck::retrieveCCDBSettings()
     mZeroBinRatioThreshold = std::stol(mCustomParameters["zerobinratiothreshold"]);
     ILOG(Info, Support) << "configure() : using ratio threshold = " << mZeroBinRatioThreshold << ENDM;
   } else {
-    mZeroBinRatioThreshold = 0.9; // 90% of counts must be above the threshold
+    mZeroBinRatioThreshold = 0.01; // 1% of counts can be in this bin
     ILOG(Info, Support) << "configure() : using default ratio threshold of = " << mZeroBinRatioThreshold << ENDM;
   }
 }
@@ -85,30 +85,25 @@ Quality TrackletsCheck::check(std::map<std::string, std::shared_ptr<MonitorObjec
 
       result = Quality::Good;
       float ratioabove;
-      if (h->Integral(0, mIntegralThreshold) > 0 && h->Integral(mIntegralThreshold, 1000) > 0) {
-        ratioabove = h->Integral(0, 100) / h->Integral(100, 1000);
+      if (h->Integral(0, mIntegralThreshold) > 0 && h->Integral(mIntegralThreshold, h->GetXaxis()->GetXmax()) > 0) {
+        ratioabove = h->Integral(0, mIntegralThreshold) / h->Integral(mIntegralThreshold, h->GetXaxis()->GetXmax());
       }
-      if (ratioabove > mRatioThreshold) {
+      if (ratioabove < mRatioThreshold) {
         result = Quality::Good;
       } else {
         result = Quality::Bad;
         result.addReason(FlagReasonFactory::Unknown(),
-                         "The Ratio of tracklet counts above " + std::to_string(mIntegralThreshold) + " is too low " + std::to_string(mRatioThreshold) + " %");
+                         "The Ratio of tracklet counts below the threshold of " + std::to_string(mIntegralThreshold) + " is too high " + std::to_string(mRatioThreshold) + " %");
       }
-
-      for (int i = 0; i < h->GetNbinsX(); i++) {
-        if (i > 0 && i < 8 && h->GetBinContent(i) == 0) {
-          result = Quality::Bad;
-          result.addReason(FlagReasonFactory::Unknown(),
-                           "It is bad because there is nothing in bin " + std::to_string(i));
-          break;
-        } else if ((i == 0 || i > 7) && h->GetBinContent(i) > 0) {
-          result = Quality::Medium;
-          result.addReason(FlagReasonFactory::Unknown(),
-                           "It is medium because bin " + std::to_string(i) + " is not empty");
-          result.addReason(FlagReasonFactory::BadTracking(),
-                           "This is to demonstrate that we can assign more than one Reason to a Quality");
-        }
+      auto integral = h->Integral(1, h->GetXaxis()->GetXmax());
+      if (integral <= 0.0) {
+        integral = 1;
+      }
+      if (h->GetBinContent(0) / integral < mZeroBinRatioThreshold) {
+        // too many counts in 0 bin.
+        result = Quality::Bad;
+        result.addReason(FlagReasonFactory::Unknown(),
+                         "The Ratio of tracklet counts in bin zero is too high, ratio : " + std::to_string((h->GetBinContent(0) / integral < mZeroBinRatioThreshold)) + " threshold of " + std::to_string(mIntegralThreshold) + " %");
       }
     }
   }

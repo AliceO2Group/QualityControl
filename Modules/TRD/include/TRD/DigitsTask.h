@@ -60,10 +60,13 @@ class DigitsTask final : public TaskInterface
   void drawLinesOnPulseHeight(TH1F* h);
   void fillLinesOnHistsPerLayer(int iLayer);
   void drawHashOnLayers(int layer, int hcid, int col, int rowstart, int rowend);
+  void buildChamberIgnoreBP();
+  bool isChamberToBeIgnored(unsigned int sm, unsigned int stack, unsigned int layer);
 
  private:
   // limits
   bool mSkipSharedDigits;
+  unsigned int mPulseHeightThreshold;
   std::pair<float, float> mDriftRegion;
   std::pair<float, float> mPulseHeightPeakRegion;
   long int mTimestamp;
@@ -93,7 +96,6 @@ class DigitsTask final : public TaskInterface
   std::array<std::shared_ptr<TH2F>, 18> mClsDetAmp;
   std::shared_ptr<TH2F> mClsSector;
   std::shared_ptr<TH2F> mClsStack;
-  std::array<std::shared_ptr<TH2F>, 18> mClsDetTime;
   std::shared_ptr<TH1F> mClsChargeTbTigg;
   std::shared_ptr<TH2F> mClsChargeTbTrigHM;
   std::shared_ptr<TH2F> mClsChargeTbTrigMinBias;
@@ -106,11 +108,13 @@ class DigitsTask final : public TaskInterface
   std::shared_ptr<TH1F> mPulseHeightn = nullptr;
   std::shared_ptr<TProfile> mPulseHeightpro = nullptr;
   std::shared_ptr<TProfile2D> mPulseHeightperchamber = nullptr;
-  std::array<std::shared_ptr<TH1F>, 540> mPulseHeightPerChamber_1D; // ph2DSM;
+  //  std::array<std::shared_ptr<TH1F>, 540> mPulseHeightPerChamber_1D; // ph2DSM;
   std::vector<TH2F*> mLayers;
   // information pulled from ccdb
   o2::trd::NoiseStatusMCM* mNoiseMap = nullptr;
   o2::trd::HalfChamberStatusQC* mChamberStatus = nullptr;
+  std::string mChambersToIgnore;
+  std::bitset<o2::trd::constants::MAXCHAMBER> mChambersToIgnoreBP;
 };
 
 } // namespace o2::quality_control_modules::trd

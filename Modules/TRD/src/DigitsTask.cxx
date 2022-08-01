@@ -48,8 +48,35 @@ void DigitsTask::retrieveCCDBSettings()
   if (mChamberStatus == nullptr) {
     ILOG(Info, Support) << "mChamberStatus is null, no chamber status to display" << ENDM;
   }
-  if (mChamberStatus == nullptr) {
-    ILOG(Info, Support) << "mChamberStatus is null, no chamber status plotting" << ENDM;
+}
+
+void DigitsTask::buildChamberIgnoreBP()
+{
+  mChambersToIgnoreBP.reset();
+  // Vector of string to save tokens
+  std::vector<std::string> tokens;
+  // stringstream class check1
+  std::stringstream check1(mChambersToIgnore);
+  std::string intermediate;
+  // Tokenizing w.r.t. space ','
+  while (getline(check1, intermediate, ',')) {
+    tokens.push_back(intermediate);
+  }
+  // Printing the token vector
+  for (auto& token : tokens) {
+    //token now holds something like 16_3_0
+    std::vector<std::string> parts;
+    std::stringstream indexcheck(token);
+    std::string tokenpart;
+    // Tokenizing w.r.t. space ','
+    while (getline(indexcheck, tokenpart, '_')) {
+      parts.push_back(tokenpart);
+    }
+    // now flip the bit related to the sector:stack:layer stored in parts.
+    int sector = std::stoi(parts[0]);
+    int stack = std::stoi(parts[1]);
+    int layer = std::stoi(parts[2]);
+    mChambersToIgnoreBP.set(sector * o2::trd::constants::NSTACK * o2::trd::constants::NLAYER + stack * o2::trd::constants::NLAYER + layer);
   }
 }
 
@@ -187,7 +214,7 @@ void DigitsTask::buildHistograms()
   mDigitsPerEvent.reset(new TH1F("digitsperevent", "Digits per Event", 10000, 0, 10000));
   getObjectsManager()->startPublishing(mDigitsPerEvent.get());
 
-  mDigitsSizevsTrackletSize.reset(new TH2F("digitsvstracklets", "Tracklets Count vs Digits Count; Number of Tracklets;Number Of Digits", 2500, 0, 25000, 2500, 0, 2500));
+  mDigitsSizevsTrackletSize.reset(new TH2F("digitsvstracklets", "Tracklets Count vs Digits Count per event; Number of Tracklets;Number Of Digits", 2500, 0, 2500, 2500, 0, 2500));
   getObjectsManager()->startPublishing(mDigitsSizevsTrackletSize.get());
 
   mClsAmpCh.reset(new TH1F("Cluster/ClsAmpCh", "Reconstructed mean amplitude;Amplitude (ADC);# chambers", 100, 25, 125));
@@ -269,11 +296,6 @@ void DigitsTask::buildHistograms()
     getObjectsManager()->startPublishing(mClsTbSM[iSM].get());
     getObjectsManager()->setDefaultDrawOptions(mClsTbSM[iSM]->GetName(), "COLZ");
 
-    label = fmt::format("Cluster/ClsDetTime_{0}", iSM);
-    title = fmt::format("Cluster amplitude chamberwise for sector {0};Chamber;Timebin", iSM);
-    mClsDetTime[iSM].reset(new TH2F(label.c_str(), title.c_str(), 30, -0.5, 29.5, 30, -0.5, 29.5));
-    getObjectsManager()->startPublishing(mClsDetTime[iSM].get());
-    getObjectsManager()->setDefaultDrawOptions(mClsDetTime[iSM]->GetName(), "COLZ");
   }
 
   mNCls.reset(new TH1F("Cluster/NCls", "Total number of clusters per sector", 18, -0.5, 17.5));
@@ -306,7 +328,7 @@ void DigitsTask::buildHistograms()
   mClsChargeTbTigg.reset(new TH1F("Cluster/ClsChargeTbTrgg", "Total charge vs. time bin;timebin; totalcharge", 30, -0.5, 29.5));
   getObjectsManager()->startPublishing(mClsChargeTbTigg.get());
 
-  mPulseHeight.reset(new TH1F("PulseHeight/mPulseHeight", "Pulse height plot", 30, -0.5, 29.5));
+  mPulseHeight.reset(new TH1F("PulseHeight/mPulseHeight", Form("Pulse height plot threshold:%i;Timebins;Counts", mPulseHeightThreshold), 30, -0.5, 29.5));
   drawLinesOnPulseHeight(mPulseHeight.get());
   getObjectsManager()->startPublishing(mPulseHeight.get());
   mPulseHeight.get()->GetYaxis()->SetTickSize(0.01);
@@ -340,7 +362,7 @@ void DigitsTask::buildHistograms()
     getObjectsManager()->startPublishing(h);
   }
 
-  int cn = 0;
+  /*  int cn = 0;
   int sm = 0;
 
   for (int count = 0; count < 540; ++count) {
@@ -354,7 +376,7 @@ void DigitsTask::buildHistograms()
     if (cn > 29)
       cn = 0;
   }
-
+*/
   for (int iLayer = 0; iLayer < 6; ++iLayer) {
     mLayers.push_back(new TH2F(Form("DigitsPerLayer/layer%i", iLayer), Form("Digit count per pad in layer %i;stack;sector", iLayer), 76, -0.5, 75.5, 2592, -0.5, 2591.5));
     auto xax = mLayers.back()->GetXaxis();
@@ -409,7 +431,7 @@ void DigitsTask::initialize(o2::framework::InitContext& /*ctx*/)
     mPulseHeightPeakRegion.first = stof(param->second);
     ILOG(Info, Support) << "configure() : using pulsehheightlower	= " << mPulseHeightPeakRegion.first << ENDM;
   } else {
-    mPulseHeightPeakRegion.first = 1.0;
+    mPulseHeightPeakRegion.first = 0.0;
     ILOG(Info, Support) << "configure() : using default pulseheightlower = " << mPulseHeightPeakRegion.first << ENDM;
   }
   if (auto param = mCustomParameters.find("pulseheightpeakupper"); param != mCustomParameters.end()) {
@@ -426,6 +448,21 @@ void DigitsTask::initialize(o2::framework::InitContext& /*ctx*/)
     mSkipSharedDigits = false;
     ILOG(Info, Support) << "configure() : using default skip shared digits = " << mSkipSharedDigits << ENDM;
   }
+  if (auto param = mCustomParameters.find("pulseheightthreshold"); param != mCustomParameters.end()) {
+    mPulseHeightThreshold = stod(param->second);
+    ILOG(Info, Support) << "configure() : using skip shared digits 	= " << mPulseHeightThreshold << ENDM;
+  } else {
+    mPulseHeightThreshold = 400;
+    ILOG(Info, Support) << "configure() : using default skip shared digits = " << mPulseHeightThreshold << ENDM;
+  }
+  if (auto param = mCustomParameters.find("chamberstoignore"); param != mCustomParameters.end()) {
+    mChambersToIgnore = param->second;
+    ILOG(Info, Support) << "configure() : chamberstoignore = " << mChambersToIgnore << ENDM;
+  } else {
+    mChambersToIgnore = "16_3_0";
+    ILOG(Info, Support) << "configure() : chambers to ignore for pulseheight calculations = " << mChambersToIgnore << ENDM;
+  }
+  buildChamberIgnoreBP();
 
   retrieveCCDBSettings();
   buildHistograms();
@@ -464,6 +501,11 @@ bool digitIndexCompare(unsigned int A, unsigned int B, const std::vector<o2::trd
     return 1;
   }
   return 0;
+}
+bool DigitsTask::isChamberToBeIgnored(unsigned int sm, unsigned int stack, unsigned int layer)
+{
+  // just to make the calling method a bit cleaner
+  return mChambersToIgnoreBP.test(sm * o2::trd::constants::NLAYER * o2::trd::constants::NSTACK + stack * o2::trd::constants::NLAYER + layer);
 }
 
 void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -521,6 +563,12 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
           if (digits[digitsIndex[currentdigit]].getChannel() > 21)
             continue;
           int detector = digits[digitsIndex[currentdigit]].getDetector();
+          if (detector < 0 || detector >= 540) {
+            // for some reason online the sm value causes an error below and digittrask crashes.
+            // the only possibility is detector number is invalid
+            ILOG(Info) << "Bad detector number from digit : " << detector << " for digit index of " << digitsIndex[currentdigit] << ENDM;
+            continue;
+          }
           int sm = detector / 30;
           int detLoc = detector % 30;
           int layer = detector % 6;
@@ -632,12 +680,6 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
                 mClsSector->Fill(sm, sum);
                 mClsStack->Fill(stack, sum);
 
-                // chamber by chamber drift time
-                if (sum > 10) // && sum < clsCutoff)
-                {
-                  mClsDetTime[sm]->Fill(detLoc, time, sum);
-                  // mClsDetTimeN[idSM]->Fill(iChamber, k);
-                }
 
                 // This is pulseheight lifted from run2, probably not what was used.
                 mClsChargeTbTigg->Fill(time, sum);
@@ -652,53 +694,54 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
           uint32_t suma = before->getADCsum();
           uint32_t sumb = mid->getADCsum();
           uint32_t sumc = after->getADCsum();
-          if (det1 == det2 && det2 == det3 && row1 == row2 && row2 == row3 && col1 + 1 == col2 && col2 + 1 == col3) {
-            if (sumb > suma && sumb > sumc) {
-              if (suma > sumc) {
-                tbmax = sumb;
-                tbhi = suma;
-                tblo = sumc;
-                if (tblo > 400) {
-                  int phVal = 0;
-                  for (int tb = 0; tb < 30; tb++) {
-                    phVal = (mid->getADC()[tb] + before->getADC()[tb] + after->getADC()[tb]);
-                    // TODO do we have a corresponding tracklet?
-                    mPulseHeight->Fill(tb, phVal);
-                    mTotalPulseHeight2D->Fill(tb, phVal);
-                    mPulseHeight2DperSM[sector]->Fill(tb, phVal);
-                    mPulseHeightpro->Fill(tb, phVal);
-                    mPulseHeight2DperSM[sector]->Fill(tb, phVal);
-                    mPulseHeightperchamber->Fill(tb, det1, phVal);
-                    mPulseHeightPerChamber_1D[det1]->Fill(tb, phVal);
-                    if (mNoiseMap != nullptr && !mNoiseMap->getIsNoisy(mid->getHCId(), mid->getROB(), mid->getMCM()))
-                      mPulseHeightn->Fill(tb, phVal);
+          if (!isChamberToBeIgnored(sm, stack, layer)) {
+            if (det1 == det2 && det2 == det3 && row1 == row2 && row2 == row3 && col1 + 1 == col2 && col2 + 1 == col3) {
+              if (sumb > suma && sumb > sumc) {
+                if (suma > sumc) {
+                  tbmax = sumb;
+                  tbhi = suma;
+                  tblo = sumc;
+                  if (tblo > mPulseHeightThreshold) {
+                    int phVal = 0;
+                    for (int tb = 0; tb < 30; tb++) {
+                      phVal = (mid->getADC()[tb] + before->getADC()[tb] + after->getADC()[tb]);
+                      // TODO do we have a corresponding tracklet?
+                      mPulseHeight->Fill(tb, phVal);
+                      mTotalPulseHeight2D->Fill(tb, phVal);
+                      mPulseHeight2DperSM[sector]->Fill(tb, phVal);
+                      mPulseHeightpro->Fill(tb, phVal);
+                      mPulseHeight2DperSM[sector]->Fill(tb, phVal);
+                      mPulseHeightperchamber->Fill(tb, det1, phVal);
+                      //mPulseHeightPerChamber_1D[det1]->Fill(tb, phVal);
+                      if (mNoiseMap != nullptr && !mNoiseMap->getIsNoisy(mid->getHCId(), mid->getROB(), mid->getMCM()))
+                        mPulseHeightn->Fill(tb, phVal);
+                    }
+                  }
+                } else {
+                  tbmax = sumb;
+                  tblo = suma;
+                  tbhi = sumc;
+                  if (tblo > mPulseHeightThreshold) {
+                    int phVal = 0;
+                    for (int tb = 0; tb < 30; tb++) {
+                      phVal = (mid->getADC()[tb] + before->getADC()[tb] + after->getADC()[tb]);
+                      mPulseHeight->Fill(tb, phVal);
+                      mTotalPulseHeight2D->Fill(tb, phVal);
+                      mPulseHeight2DperSM[sector]->Fill(tb, phVal);
+                      mPulseHeightpro->Fill(tb, phVal);
+                      mPulseHeight2DperSM[sector]->Fill(tb, phVal);
+                      mPulseHeightperchamber->Fill(tb, det1, phVal);
+                      //mPulseHeightPerChamber_1D[det1]->Fill(tb, phVal);
+                      if (mNoiseMap != nullptr && !mNoiseMap->getIsNoisy(mid->getHCId(), mid->getROB(), mid->getMCM()))
+                        mPulseHeightn->Fill(tb, phVal);
+                    }
                   }
                 }
-              } else {
-                tbmax = sumb;
-                tblo = suma;
-                tbhi = sumc;
-                if (tblo > 400) {
-                  int phVal = 0;
-                  for (int tb = 0; tb < 30; tb++) {
-                    phVal = (mid->getADC()[tb] + before->getADC()[tb] + after->getADC()[tb]);
-                    mPulseHeight->Fill(tb, phVal);
-                    mTotalPulseHeight2D->Fill(tb, phVal);
-                    mPulseHeight2DperSM[sector]->Fill(tb, phVal);
-                    mPulseHeightpro->Fill(tb, phVal);
-                    mPulseHeight2DperSM[sector]->Fill(tb, phVal);
-                    mPulseHeightperchamber->Fill(tb, det1, phVal);
-                    mPulseHeightPerChamber_1D[det1]->Fill(tb, phVal);
-                    if (mNoiseMap != nullptr && !mNoiseMap->getIsNoisy(mid->getHCId(), mid->getROB(), mid->getMCM()))
-                      mPulseHeightn->Fill(tb, phVal);
-                  }
-                }
-              }
-            } // end else
-          }   // end if 3 pads next to each other
-        }     // end for c
+              } // end else
+            }   // end if 3 pads next to each other
+          }     // end for c
+        }
     }       // end for r
-    // std::cout << " finished updating second ... " << std::endl;
   } // end for d
   } // for loop over digits
 } // loop over triggers
@@ -735,24 +778,24 @@ void DigitsTask::reset()
   mDigitHCID.get()->Reset();
   mClusterAmplitudeChamber.get()->Reset();
   for (auto& h : mNClsLayer) {
-    h->Reset();
+    h.get()->Reset();
   }
   mADCvalue.get()->Reset();
   for (auto& h : mADC) {
-    h->Reset();
+    h.get()->Reset();
   }
   for (auto& h : mADCTB) {
-    h->Reset();
+    h.get()->Reset();
   }
   for (auto& h : mADCTBfull) {
-    h->Reset();
+    h.get()->Reset();
   }
   mNCls.get()->Reset();
   for (auto& h : mHCMCM) {
-    h->Reset();
+    h.get()->Reset();
   }
   for (auto& h : mClsSM) {
-    h->Reset();
+    h.get()->Reset();
   }
   mClsTb.get()->Reset();
   mClsChargeFirst.get()->Reset();
@@ -765,16 +808,13 @@ void DigitsTask::reset()
   mClsAmpTb.get()->Reset();
   mClsAmpCh.get()->Reset();
   for (auto& h : mClsDetAmp) {
-    h->Reset();
+    h.get()->Reset();
   }
   mClsSector.get()->Reset();
   mClsStack.get()->Reset();
-  for (auto& h : mClsDetTime) {
-    h->Reset();
-  }
   mClsChargeTbTigg.get()->Reset();
   for (auto& h : mClsTbSM) {
-    h->Reset();
+    h.get()->Reset();
   }
   mPulseHeight.get()->Reset();
   mPulseHeightScaled.get()->Reset();
@@ -782,13 +822,8 @@ void DigitsTask::reset()
   mPulseHeightn.get()->Reset();
   mPulseHeightpro.get()->Reset();
   mPulseHeightperchamber.get()->Reset();
-  for (auto& h : mPulseHeightPerChamber_1D) {
-    h->Reset();
-  }; // ph2DSM;
-
-  for (auto layer : mLayers) {
-    layer->Reset();
-    drawTrdLayersGrid(layer);
-  }
+  //  for (auto& h : mPulseHeightPerChamber_1D) {
+  //j    h->Reset();
+  //  }; // ph2DSM;
 }
 } // namespace o2::quality_control_modules::trd
