@@ -169,8 +169,8 @@ void RecPointsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   uint32_t firstOrbit;
 
   for (auto& recpoint : recpoints) {
-    int time[208] = { 0 };
-    int amp[208] = { 0 };
+    int time[o2::ft0::Constants::sNCHANNELS_PM] = { 0 };
+    int amp[o2::ft0::Constants::sNCHANNELS_PM] = { 0 };
     o2::ft0::Triggers triggersignals = recpoint.getTrigger();
     bool vertexTrigger = triggersignals.getVertex();
     auto channels = recpoint.getBunchChannelData(chan);
