@@ -61,21 +61,21 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
               // Check if there are staves in the IB with lane in Bad (bins are filled with %)
               if (hp->GetBinContent(ibin) > std::stod(mCustomParameters["maxbadchipsIB"]) / 9.) {
                 badStaveIB = true;
-                result.updateMetadata("IB", "bad");
+                result.updateMetadata("IB", "medium");
                 countStave++;
               }
             } else if (ibin <= StaveBoundary[5]) {
               // Check if there are staves in the MLs with at least 4 lanes in Bad (bins are filled with %)
               if (hp->GetBinContent(ibin) > std::stod(mCustomParameters["maxbadlanesML"]) / NLanePerStaveLayer[ilayer]) {
                 badStaveML = true;
-                result.updateMetadata("ML", "bad");
+                result.updateMetadata("ML", "medium");
                 countStave++;
               }
             } else if (ibin <= StaveBoundary[7]) {
               // Check if there are staves in the OLs with at least 7 lanes in Bad (bins are filled with %)
               if (hp->GetBinContent(ibin) > std::stod(mCustomParameters["maxbadlanesOL"]) / NLanePerStaveLayer[ilayer]) {
                 badStaveOL = true;
-                result.updateMetadata("OL", "bad");
+                result.updateMetadata("OL", "medium");
                 countStave++;
               }
             }
@@ -88,7 +88,10 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
             result.updateMetadata(Form("Layer%d", ilayer), "bad");
           }
         } // end loop over layers
-        if (badStaveIB || badStaveML || badStaveOL || badStaveCount) {
+        if (badStaveIB || badStaveML || badStaveOL) {
+          result.set(Quality::Medium);
+        }
+        if (badStaveCount) {
           result.set(Quality::Bad);
         }
       } // end lanestatusOverview
@@ -201,43 +204,50 @@ void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
       } else if (checkResult == Quality::Bad) {
         status = "Quality::BAD (call expert)";
         textColor = kRed;
+        if (strcmp(checkResult.getMetadata("IB").c_str(), "medium") == 0) {
+          status = "Quality::Medium (do not call, inform expert on MM)";
+          textColor = kOrange;
+          tInfoIB = std::make_shared<TLatex>(0.40, 0.55, Form("Inner Barrel has stave(s) with >%s chips in %s", mCustomParameters["maxbadchipsIB"].c_str(), mLaneStatusFlag[iflag].c_str()));
+          tInfoIB->SetTextColor(kOrange);
+          tInfoIB->SetTextSize(0.03);
+          tInfoIB->SetTextFont(43);
+          tInfoIB->SetNDC();
+          hp->GetListOfFunctions()->Add(tInfoIB->Clone());
+        }
+        if (strcmp(checkResult.getMetadata("ML").c_str(), "medium") == 0) {
+          status = "Quality::Medium (do not call, inform expert on MM)";
+          textColor = kOrange;
+          tInfoML = std::make_shared<TLatex>(0.42, 0.62, Form("ML have stave(s) with >%s lanes in %s", mCustomParameters["maxbadlanesML"].c_str(), mLaneStatusFlag[iflag].c_str()));
+          tInfoML->SetTextColor(kOrange);
+          tInfoML->SetTextSize(0.03);
+          tInfoML->SetTextFont(43);
+          tInfoML->SetNDC();
+          hp->GetListOfFunctions()->Add(tInfoML->Clone());
+        }
+        if (strcmp(checkResult.getMetadata("OL").c_str(), "medium") == 0) {
+          status = "Quality::Medium (do not call, inform expert on MM)";
+          textColor = kOrange;
+          tInfoOL = std::make_shared<TLatex>(0.415, 0.78, Form("OL have staves with >%s lanes in %s", mCustomParameters["maxbadlanesOL"].c_str(), mLaneStatusFlag[iflag].c_str()));
+          tInfoOL->SetTextColor(kOrange);
+          tInfoOL->SetTextSize(0.03);
+          tInfoOL->SetTextFont(43);
+          tInfoOL->SetNDC();
+          hp->GetListOfFunctions()->Add(tInfoOL->Clone());
+        }
         for (int ilayer = 0; ilayer < NLayer; ilayer++) {
           if (strcmp(checkResult.getMetadata(Form("Layer%d", ilayer)).c_str(), "bad") == 0) {
-            // tInfoLayers[ilayer] = std::make_shared<TLatex>();
+            status = "Quality::Bad (call expert)";
+            textColor = kRed;
             std::string cut = ilayer < 3 ? mCustomParameters["maxbadchipsIB"] : ilayer < 5 ? mCustomParameters["maxbadlanesML"]
                                                                                            : mCustomParameters["maxbadlanesOL"];
             tInfoLayers[ilayer] = std::make_shared<TLatex>(0.37, minTextPosY[ilayer], Form("Layer %d has > 25%% staves with >%s %s in %s", ilayer, cut.c_str(), ilayer < 3 ? "chips" : "lanes", mLaneStatusFlag[iflag].c_str()));
-            tInfoLayers[ilayer]->SetTextColor(kRed + 1);
+            tInfoLayers[ilayer]->SetTextColor(kRed);
             tInfoLayers[ilayer]->SetTextSize(0.03);
             tInfoLayers[ilayer]->SetTextFont(43);
             tInfoLayers[ilayer]->SetNDC();
             hp->GetListOfFunctions()->Add(tInfoLayers[ilayer]->Clone());
           } // end check result over layer
         }   // end of loop over layers
-        if (strcmp(checkResult.getMetadata("IB").c_str(), "bad") == 0) {
-          tInfoIB = std::make_shared<TLatex>(0.40, 0.55, Form("Inner Barrel has stave(s) with >%s chips in %s", mCustomParameters["maxbadchipsIB"].c_str(), mLaneStatusFlag[iflag].c_str()));
-          tInfoIB->SetTextColor(kRed + 1);
-          tInfoIB->SetTextSize(0.03);
-          tInfoIB->SetTextFont(43);
-          tInfoIB->SetNDC();
-          hp->GetListOfFunctions()->Add(tInfoIB->Clone());
-        }
-        if (strcmp(checkResult.getMetadata("ML").c_str(), "bad") == 0) {
-          tInfoML = std::make_shared<TLatex>(0.42, 0.62, Form("ML have stave(s) with >%s lanes in %s", mCustomParameters["maxbadlanesML"].c_str(), mLaneStatusFlag[iflag].c_str()));
-          tInfoML->SetTextColor(kRed + 1);
-          tInfoML->SetTextSize(0.03);
-          tInfoML->SetTextFont(43);
-          tInfoML->SetNDC();
-          hp->GetListOfFunctions()->Add(tInfoML->Clone());
-        }
-        if (strcmp(checkResult.getMetadata("OL").c_str(), "bad") == 0) {
-          tInfoOL = std::make_shared<TLatex>(0.415, 0.78, Form("OL have staves with >%s lanes in %s", mCustomParameters["maxbadlanesOL"].c_str(), mLaneStatusFlag[iflag].c_str()));
-          tInfoOL->SetTextColor(kRed + 1);
-          tInfoOL->SetTextSize(0.03);
-          tInfoOL->SetTextFont(43);
-          tInfoOL->SetNDC();
-          hp->GetListOfFunctions()->Add(tInfoOL->Clone());
-        }
       }
       tInfo = std::make_shared<TLatex>(0.12, 0.835, Form("#bf{%s}", status.Data()));
       tInfo->SetTextColor(textColor);
