@@ -2,7 +2,7 @@
 
 add_library(O2QcEMCAL)
 
-target_sources(O2QcEMCAL PRIVATE src/RawErrorCheck.cxx src/RawTask.cxx src/RawCheck.cxx src/CellTask.cxx src/CellCheck.cxx src/DigitsQcTask.cxx src/DigitCheck.cxx src/DigitOccupancyReductor.cxx src/ClusterTask.cxx src/RawErrorTask.cxx)
+target_sources(O2QcEMCAL PRIVATE src/RawErrorCheck.cxx  src/RawTask.cxx src/RawCheck.cxx src/CellTask.cxx src/CellCheck.cxx src/DigitsQcTask.cxx src/DigitCheck.cxx src/DigitOccupancyReductor.cxx src/ClusterTask.cxx src/RawErrorTask.cxx src/CalibMonitoringTask.cxx)
 
 target_include_directories(
   O2QcEMCAL
@@ -23,7 +23,8 @@ add_root_dictionary(O2QcEMCAL
   include/EMCAL/ClusterTask.h
   include/EMCAL/RawErrorTask.h
   include/EMCAL/RawErrorCheck.h
-  LINKDEF include/EMCAL/LinkDef.h
+  include/EMCAL/CalibMonitoringTask.h
+        LINKDEF include/EMCAL/LinkDef.h
   BASENAME O2QcEMCAL)
 
 install(TARGETS O2QcEMCAL
