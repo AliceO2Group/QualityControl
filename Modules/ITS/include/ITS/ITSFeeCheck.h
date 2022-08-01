@@ -54,6 +54,7 @@ class ITSFeeCheck : public o2::quality_control::checker::CheckInterface
   const int NLanePerStaveLayer[NLayer] = { 9, 9, 9, 16, 16, 28, 28 };
   const int NStaves[NLayer] = { 12, 16, 20, 24, 30, 42, 48 };
   static constexpr int NFlags = 3;
+  static constexpr int NTrg = 13;
   const double minTextPosY[NLayer] = { 0.45, 0.41, 0.37, 0.23, 0.20, 0.16, 0.13 }; // Text y coordinates in TH2Poly
   std::string mLaneStatusFlag[NFlags] = { "WARNING", "ERROR", "FAULT" };
   const int laneMax[NLayer] = { 108, 144, 180, 384, 480, 1176, 1344 };

@@ -114,8 +114,8 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
     if (mo->getName() == "TriggerVsFeeid") {
       result.set(Quality::Good);
       auto* h = dynamic_cast<TH2I*>(mo->getObject());
-      int counttrgflags[h->GetNbinsY()] = { 0 };
-      int cutvalue[h->GetNbinsY()] = { 432, 432, 0, 0, 432, 0, 0, 0, 0, 432, 0, 432, 0 };
+      int counttrgflags[NTrg] = { 0 };
+      int cutvalue[NTrg] = { 432, 432, 0, 0, 432, 0, 0, 0, 0, 432, 0, 432, 0 };
       std::vector<int> skipbins = convertToIntArray(mCustomParameters["skipbinstrg"]);
       std::vector<int> skipfeeid = convertToIntArray(mCustomParameters["skipfeeids"]);
       for (int itrg = 1; itrg <= h->GetNbinsY(); itrg++) {
