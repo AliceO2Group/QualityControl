@@ -54,17 +54,23 @@ class RawErrorTask final : public TaskInterface
   void reset() override;
 
  private:
-  TH2* mErrorTypeAll = nullptr;      ///< Base histogram any raw data error
-  TH2* mErrorTypeAltro = nullptr;    ///< Major ALTRO payload decoding errors
-  TH2* mErrorTypePage = nullptr;     ///< DMA page decoding errors
-  TH2* mErrorTypeMinAltro = nullptr; ///< Minor ALTRO payload decoding errors
-  TH2* mErrorTypeFit = nullptr;      ///< Raw fit errors
-  TH2* mErrorTypeGeometry = nullptr; ///< Geometry errors
-  TH2* mErrorTypeGain = nullptr;     ///< Gain type errors
-  TH2* mErrorGainLow = nullptr;      ///< FEC with LGnoHG error
-  TH2* mErrorGainHigh = nullptr;     ///< FEC with HGnoLG error
-  TH2* mChannelGainLow = nullptr;    ///< Tower with LGnoHG error
-  TH2* mChannelGainHigh = nullptr;   ///< Tower with HGnoLG error
+  std::string getConfigValue(const std::string_view key);
+  std::string getConfigValueLower(const std::string_view key);
+
+  TH2* mErrorTypeAll = nullptr;         ///< Base histogram any raw data error
+  TH2* mErrorTypeAltro = nullptr;       ///< Major ALTRO payload decoding errors
+  TH2* mErrorTypePage = nullptr;        ///< DMA page decoding errors
+  TH2* mErrorTypeMinAltro = nullptr;    ///< Minor ALTRO payload decoding errors
+  TH2* mErrorTypeFit = nullptr;         ///< Raw fit errors
+  TH2* mErrorTypeGeometry = nullptr;    ///< Geometry errors
+  TH2* mErrorTypeGain = nullptr;        ///< Gain type errors
+  TH2* mErrorGainLow = nullptr;         ///< FEC with LGnoHG error
+  TH2* mErrorGainHigh = nullptr;        ///< FEC with HGnoLG error
+  TH2* mChannelGainLow = nullptr;       ///< Tower with LGnoHG error
+  TH2* mChannelGainHigh = nullptr;      ///< Tower with HGnoLG error
+  TH2* mFecIdMinorAltroError = nullptr; ///< Minor Altro Error  per DDL
+
+  bool mExcludeGainErrorsFromOverview; ///< exclude gain error from global overview panel
 
   o2::emcal::Geometry* mGeometry = nullptr;           ///< EMCAL geometry
   std::unique_ptr<o2::emcal::MappingHandler> mMapper; ///< EMCAL mapper
