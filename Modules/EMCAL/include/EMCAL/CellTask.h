@@ -59,9 +59,20 @@ namespace emcal
 class CellTask final : public TaskInterface
 {
  public:
+  struct TaskSettings {
+    bool mHasAmpVsCellID;
+    bool mHasTimeVsCellID;
+    bool mHasHistosCalib2D;
+
+    double mAmpThresholdTimePhys = 0.15;
+    double mAmpThresholdTimeCalib = 0.3;
+    double mThresholdPHYS = 0.2;
+    double mThresholdCAL = 0.5;
+  };
   struct CellHistograms {
     o2::emcal::Geometry* mGeometry;
-    double mCellThreshold = 0; //
+    double mCellThreshold;
+    double mAmplitudeThresholdTime;
     // std::array<TH2*, 2> mCellAmplitude;      ///< Cell amplitude
     TH2* mCellAmplitude = nullptr; ///< Cell amplitude
                                    //    std::array<TH2*, 2> mCellTime;           ///< Cell time
@@ -91,7 +102,7 @@ class CellTask final : public TaskInterface
     std::array<TH1*, 2> mCellTimeSupermoduleEMCAL_Gain;        ///< Cell  time in EMCAL per high low Gain
     std::array<TH1*, 2> mCellTimeSupermoduleDCAL_Gain;         ///< Digit time in DCAL per high low Gain
 
-    void initForTrigger(const std::string trigger, bool hasAmpVsCellID, bool hasTimeVsCellID, bool hasHistosCalib2D);
+    void initForTrigger(const std::string trigger, const TaskSettings& settings);
     void startPublishing(o2::quality_control::core::ObjectsManager& manager);
     void reset();
     void clean();
@@ -144,6 +155,7 @@ class CellTask final : public TaskInterface
     };
   };
   std::vector<CombinedEvent> buildCombinedEvents(const std::unordered_map<header::DataHeader::SubSpecificationType, gsl::span<const o2::emcal::TriggerRecord>>& triggerrecords) const;
+  TaskSettings mTaskSettings;                                ///< Settings of the task steered via task parameters
   Bool_t mIgnoreTriggerTypes = false;                        ///< Do not differenciate between trigger types, treat all triggers as phys. triggers
   std::map<std::string, CellHistograms> mHistogramContainer; ///< Container with histograms per trigger class
   o2::emcal::Geometry* mGeometry = nullptr;                  ///< EMCAL geometry
@@ -157,7 +169,6 @@ class CellTask final : public TaskInterface
   TH1* mTFPerCyclesTOT = nullptr;   ///< Number of Time Frame per cycles TOT
   TH1* mTFPerCycles = nullptr;      ///< Number of Time Frame per cycles per MonitorData
   TH1* mCellsMaxSM = nullptr;       ///< Supermodule with the largest amount of cells
-  double mCellThreshold = 0;        ///< Number of cells with Threshold
 
   TH2* mCells_ev_sm = nullptr;          ///< Number of Cells per events per supermodule
   TH2* mCells_ev_smThr = nullptr;       ///< Number of Cells with Threshold per events per supermodule
