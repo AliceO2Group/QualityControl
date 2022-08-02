@@ -24,6 +24,7 @@
 #include <TPaveText.h>
 #include <TLatex.h>
 #include <TList.h>
+#include <TLine.h>
 #include <TRobustEstimator.h>
 #include <ROOT/TSeq.hxx>
 #include <iostream>
@@ -192,6 +193,62 @@ void CellCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
       msg->Draw();
     }
     h->SetLineColor(kBlack);
+  }
+  if (mo->getName().find("cellOccupancy") != std::string::npos) {
+    auto* h2D = dynamic_cast<TH2*>(mo->getObject());
+    // orizontal
+    TLine* l1 = new TLine(-0.5, 24, 95.5, 24);
+    TLine* l2 = new TLine(-0.5, 48, 95.5, 48);
+    TLine* l3 = new TLine(-0.5, 72, 95.5, 72);
+    TLine* l4 = new TLine(-0.5, 96, 95.5, 96);
+    TLine* l5 = new TLine(-0.5, 120, 95.5, 120);
+    TLine* l6 = new TLine(-0.5, 128, 95.5, 128);
+
+    TLine* l7 = new TLine(-0.5, 152, 31.5, 152);
+    TLine* l8 = new TLine(63.5, 152, 95.5, 152);
+
+    TLine* l9 = new TLine(-0.5, 176, 31.5, 176);
+    TLine* l10 = new TLine(63.5, 176, 95.5, 176);
+
+    TLine* l11 = new TLine(-0.5, 200, 95.5, 200);
+    TLine* l12 = new TLine(47.5, 200, 47.5, 207.5);
+
+    //vertical
+    TLine* l13 = new TLine(47.5, -0.5, 47.5, 128);
+    TLine* l14 = new TLine(31.5, 128, 31.5, 200);
+    TLine* l15 = new TLine(63.5, 128, 63.5, 200);
+
+    h2D->GetListOfFunctions()->Add(l1);
+    h2D->GetListOfFunctions()->Add(l2);
+    h2D->GetListOfFunctions()->Add(l3);
+    h2D->GetListOfFunctions()->Add(l4);
+    h2D->GetListOfFunctions()->Add(l5);
+    h2D->GetListOfFunctions()->Add(l6);
+    h2D->GetListOfFunctions()->Add(l7);
+    h2D->GetListOfFunctions()->Add(l8);
+    h2D->GetListOfFunctions()->Add(l9);
+    h2D->GetListOfFunctions()->Add(l10);
+    h2D->GetListOfFunctions()->Add(l11);
+    h2D->GetListOfFunctions()->Add(l12);
+    h2D->GetListOfFunctions()->Add(l13);
+    h2D->GetListOfFunctions()->Add(l14);
+    h2D->GetListOfFunctions()->Add(l15);
+
+    l1->Draw();
+    l2->Draw();
+    l3->Draw();
+    l4->Draw();
+    l5->Draw();
+    l6->Draw();
+    l7->Draw();
+    l8->Draw();
+    l9->Draw();
+    l10->Draw();
+    l11->Draw();
+    l12->Draw();
+    l13->Draw();
+    l14->Draw();
+    l15->Draw();
   }
 }
 } // namespace o2::quality_control_modules::emcal
