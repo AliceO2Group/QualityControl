@@ -40,8 +40,7 @@
           "MaxTrackROFSize" : "1000",
           "MaxClusterROFSize" : "5000",
           "MaxDuration" : "60000",
-          "TimeBinSize" : "0.1",
-          "RefOrbit" : "0"
+          "TimeBinSize" : "0.1"
         },
         "location" : "remote"
       }
