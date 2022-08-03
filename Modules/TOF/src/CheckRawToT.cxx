@@ -19,6 +19,7 @@
 #include "TOF/CheckRawToT.h"
 #include "TOF/Utils.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/MonitorObject.h"
 
 #include <DataFormatsQualityControl/FlagReasons.h>
 

@@ -16,6 +16,7 @@
 
 #include "QualityControl/CheckRunnerFactory.h"
 #include "QualityControl/CheckRunner.h"
+#include "QualityControl/CommonSpec.h"
 
 #define BOOST_TEST_MODULE CheckRunner test
 #define BOOST_TEST_MAIN

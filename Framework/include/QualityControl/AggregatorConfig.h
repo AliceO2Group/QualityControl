@@ -17,6 +17,7 @@
 #ifndef QC_CORE_AGGREGATORCONFIG_H
 #define QC_CORE_AGGREGATORCONFIG_H
 
+#include <vector>
 #include <string>
 #include <unordered_map>
 

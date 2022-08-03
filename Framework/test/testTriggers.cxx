@@ -25,6 +25,7 @@
 #include "QualityControl/CcdbDatabase.h"
 #include "QualityControl/RepoPathUtils.h"
 
+#include <CCDB/CcdbApi.h>
 #include <boost/test/unit_test.hpp>
 #include <TH1F.h>
 #include <cstdlib>

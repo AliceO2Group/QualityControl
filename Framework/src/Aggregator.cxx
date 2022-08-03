@@ -14,8 +14,8 @@
 /// \author Barthelemy von Haller
 ///
 
-#include <Configuration/ConfigurationInterface.h>
 #include "QualityControl/Aggregator.h"
+#include "QualityControl/AggregatorSpec.h"
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/AggregatorInterface.h"
 #include "QualityControl/UpdatePolicyType.h"

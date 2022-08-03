@@ -17,10 +17,15 @@
 #ifndef QC_REPOSITORY_CCDBDATABASE_H
 #define QC_REPOSITORY_CCDBDATABASE_H
 
-#include <CCDB/CcdbApi.h>
-
 #include "QualityControl/DatabaseInterface.h"
 #include <Common/Timer.h>
+#include <memory>
+#include <string>
+
+namespace o2::ccdb
+{
+class CcdbApi;
+}
 
 namespace o2::quality_control::repository
 {
@@ -52,7 +57,7 @@ namespace o2::quality_control::repository
 class CcdbDatabase : public DatabaseInterface
 {
  public:
-  CcdbDatabase() = default;
+  CcdbDatabase();
   virtual ~CcdbDatabase();
 
   void connect(std::string host, std::string database, std::string username, std::string password) override;
@@ -75,7 +80,7 @@ class CcdbDatabase : public DatabaseInterface
   // retrieval - QO - deprecated
   std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string qoPath, long timestamp = -1, const core::Activity& activity = {}) override;
   std::shared_ptr<o2::quality_control::TimeRangeFlagCollection> retrieveTRFC(const std::string& name, const std::string& detector, int runNumber = 0,
-                                                                             const string& passName = "", const string& periodName = "",
+                                                                             const std::string& passName = "", const std::string& periodName = "",
                                                                              const std::string& provenance = "", long timestamp = -1) override;
 
   // retrieval - general
@@ -135,7 +140,7 @@ class CcdbDatabase : public DatabaseInterface
    * @param path
    * @param result
    */
-  void handleStorageError(const string& path, int result);
+  void handleStorageError(const std::string& path, int result);
 
   /**
    * Check whether the database has encountered a failure previously and if we are still in the
@@ -144,7 +149,7 @@ class CcdbDatabase : public DatabaseInterface
    */
   bool isDbInFailure();
 
-  o2::ccdb::CcdbApi ccdbApi;
+  std::unique_ptr<o2::ccdb::CcdbApi> ccdbApi;
   std::string mUrl;
   size_t mMaxObjectSize = 2097152; // 2MB by default
   int mFailureDelay = 60;          // 60 seconds delay between attempts to store things in the database

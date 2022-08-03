@@ -17,7 +17,6 @@
 #ifndef QC_CORE_ACTIVITY_H
 #define QC_CORE_ACTIVITY_H
 
-#include <map>
 #include <string>
 #include <iosfwd>
 #include "QualityControl/ValidityInterval.h"
