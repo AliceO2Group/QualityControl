@@ -54,9 +54,6 @@ ITSTrackTask::~ITSTrackTask()
   delete hNtracks;
   delete hNClustersPerTrackEta;
   delete hClusterVsBunchCrossing;
-  for (int l = 0; l < NLayer; l++) {
-    delete hNClusterVsChip[l];
-  }
   delete hNClusterVsChipITS;
 }
 
@@ -121,6 +118,22 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
   hTrackPhi->Scale((double)nVertices);
   hAngularDistribution->Scale((double)nVertices);
   hNClustersPerTrackEta->Scale((double)nVertices);
+
+  // Multiply cos(lambda) plot before refilling
+  for (int ix = 1; ix <= hNClusterVsChipITS->GetNbinsX(); ix++) {
+    double integral = hNClusterVsChipITS->Integral(ix, ix, 0, -1);
+    if (integral < 1e-15) {
+      continue;
+    }
+    for (int iy = 1; iy <= hNClusterVsChipITS->GetNbinsY(); iy++) {
+      double binc = hNClusterVsChipITS->GetBinContent(ix, iy);
+      if (binc < 1e-15) {
+        continue;
+      }
+      hNClusterVsChipITS->SetBinContent(ix, iy, binc * integral);
+      hNClusterVsChipITS->SetBinError(ix, iy, std::sqrt(binc * integral));
+    }
+  }
 
   std::vector<int> clSize;
   for (const auto& clus : clusArr) {
@@ -198,11 +211,8 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
           layer++;
         layer--;
 
-        double clusterSizeWithCorrection = (double)clSize[index] * cos(std::atan(out.getTgl()));
-        hNClusterVsChip[layer]->Fill(ChipID, clusterSizeWithCorrection);
-        hNClusterVsChip[layer]->SetBinError(hNClusterVsChip[layer]->FindBin(ChipID), hNClusterVsChip[layer]->FindBin(clusterSizeWithCorrection), 1e-15);
-        hNClusterVsChipITS->Fill(ChipID, clusterSizeWithCorrection);
-        hNClusterVsChipITS->SetBinError(hNClusterVsChipITS->FindBin(ChipID), hNClusterVsChipITS->FindBin(clusterSizeWithCorrection), 1e-15);
+        double clusterSizeWithCorrection = (double)clSize[index] * (std::cos(std::atan(out.getTgl())));
+        hNClusterVsChipITS->Fill(ChipID + 1, clusterSizeWithCorrection);
       }
     }
 
@@ -229,30 +239,29 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
     mNClusters = 0;
   }
 
-  // set error of TH2 with cluster size x cos(lambda) --> for the merger operations
-  for (int ilay = 0; ilay < NLayer; ilay++) {
-    for (int ix = 1; ix <= hNClusterVsChip[ilay]->GetNbinsX(); ix++) {
-      for (int iy = 1; iy <= hNClusterVsChip[ilay]->GetNbinsY(); iy++) {
-        if (hNClusterVsChip[ilay]->GetBinContent(ix, iy) < 1e-15) {
-          hNClusterVsChip[ilay]->SetBinError(ix, iy, 1e-15);
-        }
-      }
-    }
-  }
-  for (int ix = 1; ix <= hNClusterVsChipITS->GetNbinsX(); ix++) {
-    for (int iy = 1; iy <= hNClusterVsChipITS->GetNbinsY(); iy++) {
-      if (hNClusterVsChipITS->GetBinContent(ix, iy) < 1e-15) {
-        hNClusterVsChipITS->SetBinError(ix, iy, 1e-15);
-      }
-    }
-  }
-
   // Scale angular distributions by latest number of vertices
   if (nVertices > 0) {
     hAngularDistribution->Scale(1. / (double)nVertices);
     hTrackEta->Scale(1. / (double)nVertices);
     hTrackPhi->Scale(1. / (double)nVertices);
     hNClustersPerTrackEta->Scale(1. / (double)nVertices);
+  }
+
+  // Normalize hNClusterVsChipITS to the clusters per chip
+  for (int ix = 1; ix <= hNClusterVsChipITS->GetNbinsX(); ix++) {
+    double integral = hNClusterVsChipITS->Integral(ix, ix, 0, -1);
+    if (integral < 1e-15) {
+      continue;
+    }
+    for (int iy = 1; iy <= hNClusterVsChipITS->GetNbinsY(); iy++) {
+      double binc = hNClusterVsChipITS->GetBinContent(ix, iy);
+      if (binc < 1e-15) {
+        continue;
+      }
+      double bine = hNClusterVsChipITS->GetBinError(ix, iy);
+      hNClusterVsChipITS->SetBinContent(ix, iy, binc / integral);
+      hNClusterVsChipITS->SetBinError(ix, iy, (binc / integral) * std::sqrt((bine / binc) * (bine / binc) + (std::sqrt(integral) / integral) * (std::sqrt(integral) / integral)));
+    }
   }
 }
 
@@ -285,9 +294,6 @@ void ITSTrackTask::reset()
   hNtracks->Reset();
   hNClustersPerTrackEta->Reset();
   hClusterVsBunchCrossing->Reset();
-  for (int l = 0; l < NLayer; l++) {
-    hNClusterVsChip[l]->Reset();
-  }
   hNClusterVsChipITS->Reset();
 }
 
@@ -344,7 +350,6 @@ void ITSTrackTask::createAllHistos()
   hVertexRvsZ->SetTitle("Distance to primary vertex vs Z");
   addObject(hVertexRvsZ);
   formatAxes(hVertexRvsZ, "Z coordinate (cm)", "R (cm)", 1, 1.10);
-  hVertexRvsZ->SetStats(0);
 
   hVertexZ = new TH1D("VertexZ", "VertexZ", (int)(mVertexZsize * 2 / 0.01), -mVertexZsize, mVertexZsize);
   hVertexZ->SetTitle("Z coordinate of vertex");
@@ -383,21 +388,30 @@ void ITSTrackTask::createAllHistos()
   formatAxes(hClusterVsBunchCrossing, "Bunch Crossing ID", "Fraction of clusters in tracks", 1, 1.10);
   hClusterVsBunchCrossing->SetStats(0);
 
-  for (int l = 0; l < NLayer; l++) {
-    hNClusterVsChip[l] = new TH2D(Form("NClusterVsChipInLayer%d", l), Form("NClusterVsChipInLayer%d", l), (int)(ChipBoundary[l + 1] - ChipBoundary[l]), ChipBoundary[l], ChipBoundary[l + 1], 20, 0, 15);
-    hNClusterVsChip[l]->SetTitle(Form("Corrected cluster size for track clusters vs Chip in layer %d", l));
-    addObject(hNClusterVsChip[l]);
-    formatAxes(hNClusterVsChip[l], "chipID", "cluster size x cos(#lambda)", 1, 1.10);
-    hNClusterVsChip[l]->SetStats(0);
-    hNClusterVsChip[l]->SetBit(TH1::kIsAverage);
+  for (int i = 0; i < 2125; i++) {
+    if (i <= 432) {
+      mChipBins[i] = i + 1;
+    } else {
+      mChipBins[i] = i + 1 + 13 * (i - 432);
+    }
+  }
+  mCoslBins[0] = 0;
+  for (int i = 1; i < 25; i++) {
+    if (mCoslBins[i - 1] + 0.5 < 6.05) {
+      mCoslBins[i] = mCoslBins[i - 1] + 0.5;
+    } else {
+      mCoslBins[i] = mCoslBins[i - 1] + 0.75;
+    }
   }
 
-  hNClusterVsChipITS = new TH2D(Form("NClusterVsChipITS"), Form("NClusterVsChipITS"), (int)ChipBoundary[NLayer], 0, ChipBoundary[NLayer], 20, 0, 15);
+  hNClusterVsChipITS = new TH2D(Form("NClusterVsChipITS"), Form("NClusterVsChipITS"), 2124, mChipBins, 24, mCoslBins);
   hNClusterVsChipITS->SetTitle(Form("Corrected cluster size for track clusters vs Chip Full Detector"));
-  addObject(hNClusterVsChipITS);
-  formatAxes(hNClusterVsChipITS, "chipID", "cluster size x cos(#lambda)", 1, 1.10);
-  hNClusterVsChipITS->SetStats(0);
   hNClusterVsChipITS->SetBit(TH1::kIsAverage);
+  addObject(hNClusterVsChipITS);
+  formatAxes(hNClusterVsChipITS, "ChipID + 1", "(Cluster size x cos(#lambda)) / n_clusters", 1, 1.10);
+  hNClusterVsChipITS->SetStats(0);
+  hNClusterVsChipITS->SetMaximum(1);
+
   // NClusterVsChip Full Detector distinguishable
   for (int l = 0; l < NLayer + 1; l++) {
     auto line = new TLine(ChipBoundary[l], 0, ChipBoundary[l], 15);

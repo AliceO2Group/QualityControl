@@ -1,16 +1,16 @@
-# ---- Library ---- 
+# ---- Library ----
 
 add_library(O2QcEMCAL)
 
-target_sources(O2QcEMCAL PRIVATE src/RawErrorCheck.cxx  src/RawTask.cxx src/RawCheck.cxx src/CellTask.cxx src/CellCheck.cxx src/DigitsQcTask.cxx src/DigitCheck.cxx src/DigitOccupancyReductor.cxx src/ClusterTask.cxx src/RawErrorTask.cxx)
+target_sources(O2QcEMCAL PRIVATE src/RawErrorCheck.cxx  src/RawTask.cxx src/RawCheck.cxx src/CellTask.cxx src/CellCheck.cxx src/DigitsQcTask.cxx src/DigitCheck.cxx src/DigitOccupancyReductor.cxx src/ClusterTask.cxx src/RawErrorTask.cxx src/CalibMonitoringTask.cxx)
 
 target_include_directories(
   O2QcEMCAL
   PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
-  )
+)
 
-target_link_libraries(O2QcEMCAL PUBLIC O2QualityControl O2::EMCALBase O2::EMCALReconstruction O2::CCDB O2::EMCALCalib)
+target_link_libraries(O2QcEMCAL PUBLIC O2QualityControl O2::DetectorsBase O2::EMCALBase O2::EMCALReconstruction O2::CCDB O2::EMCALCalib)
 
 add_root_dictionary(O2QcEMCAL
   HEADERS include/EMCAL/DigitsQcTask.h
@@ -22,7 +22,8 @@ add_root_dictionary(O2QcEMCAL
   include/EMCAL/DigitOccupancyReductor.h
   include/EMCAL/ClusterTask.h
   include/EMCAL/RawErrorTask.h
-      include/EMCAL/RawErrorCheck.h
+  include/EMCAL/RawErrorCheck.h
+  include/EMCAL/CalibMonitoringTask.h
         LINKDEF include/EMCAL/LinkDef.h
   BASENAME O2QcEMCAL)
 
@@ -31,7 +32,7 @@ install(TARGETS O2QcEMCAL
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-install (
+install(
   DIRECTORY etc DESTINATION Modules/EMCAL
 )
 
@@ -41,10 +42,9 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/EMCAL
 # ---- Executables ----
 
 # ---- Tests ----
-
 set(
   TEST_SRCS
-  )
+)
 
 foreach(test ${TEST_SRCS})
   get_filename_component(test_name ${test} NAME)

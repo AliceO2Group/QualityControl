@@ -49,7 +49,7 @@
 		    "Etabins": "130",
                     "Phibins": "240",
 		    "geomPath": "./",
-		    "CutSparseTriggers": "1000"
+		    "CutSparseTF": "1"
                 }
             }
         },

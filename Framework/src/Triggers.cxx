@@ -177,7 +177,8 @@ TriggerFcn NewObject(std::string databaseUrl, std::string databaseType, std::str
     } else {
       // We don't make a fuss over it, because we might be just waiting for the first version of such object.
       // It should not happen often though, so having a warning makes sense.
-      ILOG(Warning, Support) << "Could not find the file '" << fullObjectPath << "' in the db '" << databaseUrl << "' for given Activity settings." << ENDM;
+      ILOG(Warning, Support) << "Could not find the file '" << fullObjectPath << "' in the db '"
+                             << databaseUrl << "' for given Activity settings (" << activity << ")" << ENDM;
     }
 
     return { TriggerType::No, false };

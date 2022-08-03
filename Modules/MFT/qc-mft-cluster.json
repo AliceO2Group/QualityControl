@@ -47,7 +47,7 @@
         "dataSource" : [ {
           "type" : "Task",
           "name" : "MFTClusterTask",
-          "MOs" : ["mClusterOccupancy","mClusterPatternIndex","mClusterOccupancySummary"]
+          "MOs" : ["mClusterOccupancy","mClusterPatternIndex","mClusterSizeSummary", "mGroupedClusterSizeSummary", "mClusterOccupancySummary"]
         } ],
         "className" : "o2::quality_control_modules::mft::QcMFTClusterCheck",
         "moduleName" : "QcMFT",
@@ -61,7 +61,7 @@
              "id" : "mft-clusters",
              "active" : "true",
              "machines" : [],
-             "query" : "randomcluster:MFT/COMPCLUSTERS/0;clustersrof:MFT/CLUSTERSROF/0",
+             "query" : "randomcluster:MFT/COMPCLUSTERS/0;clustersrof:MFT/CLUSTERSROF/0;patterns:MFT/PATTERNS/0",
              "samplingConditions" : [
                {
                  "condition" : "random",

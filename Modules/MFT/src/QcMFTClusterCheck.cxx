@@ -68,6 +68,30 @@ Quality QcMFTClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorOb
       }
     }
 
+    if (mo->getName() == "mClusterSizeSummary") {
+      auto* hClusterSizePixels = dynamic_cast<TH1F*>(mo->getObject());
+
+      float den = hClusterSizePixels->GetBinContent(0); // normalisation stored in the uderflow bin
+
+      for (int iBin = 0; iBin < hClusterSizePixels->GetNbinsX(); iBin++) {
+        float num = hClusterSizePixels->GetBinContent(iBin + 1);
+        float ratio = (den > 0) ? (num / den) : 0.0;
+        hClusterSizePixels->SetBinContent(iBin + 1, ratio);
+      }
+    }
+
+    if (mo->getName() == "mGroupedClusterSizeSummary") {
+      auto* hGroupedClusterSizePixels = dynamic_cast<TH1F*>(mo->getObject());
+
+      float den = hGroupedClusterSizePixels->GetBinContent(0); // normalisation stored in the uderflow bin
+
+      for (int iBin = 0; iBin < hGroupedClusterSizePixels->GetNbinsX(); iBin++) {
+        float num = hGroupedClusterSizePixels->GetBinContent(iBin + 1);
+        float ratio = (den > 0) ? (num / den) : 0.0;
+        hGroupedClusterSizePixels->SetBinContent(iBin + 1, ratio);
+      }
+    }
+
     if (mo->getName() == "mClusterOccupancySummary") {
       auto* histogram = dynamic_cast<TH2F*>(mo->getObject());
 

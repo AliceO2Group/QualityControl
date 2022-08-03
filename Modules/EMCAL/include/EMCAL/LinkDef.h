@@ -21,6 +21,8 @@
 
 #pragma link C++ class o2::quality_control_modules::emcal::RawErrorTask + ;
 
-      #pragma link C++ class o2::quality_control_modules::emcal::RawErrorCheck+;
-      
+#pragma link C++ class o2::quality_control_modules::emcal::RawErrorCheck + ;
+
+#pragma link C++ class o2::quality_control_modules::emcal::CalibMonitoringTask + ;
+
       #endif
