@@ -83,7 +83,7 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/TPC
 
 # ---- Test(s) ----
 
-set(TEST_SRCS test/testQcTPC.cxx)
+#set(TEST_SRCS test/testQcTPC.cxx) # uncomment to reenable the test which was empty
 
 foreach(test ${TEST_SRCS})
   get_filename_component(test_name ${test} NAME)

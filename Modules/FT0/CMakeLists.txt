@@ -80,7 +80,7 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/FT0
 
 # ---- Test(s) ----
 
-set(TEST_SRCS test/testQcFT0.cxx)
+#set(TEST_SRCS test/testQcFT0.cxx) # uncomment to reenable the test which was empty
 
 foreach(test ${TEST_SRCS})
   get_filename_component(test_name ${test} NAME)
