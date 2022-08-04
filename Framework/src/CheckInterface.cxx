@@ -15,6 +15,7 @@
 ///
 
 #include "QualityControl/CheckInterface.h"
+#include "QualityControl/MonitorObject.h"
 
 #include <TClass.h>
 

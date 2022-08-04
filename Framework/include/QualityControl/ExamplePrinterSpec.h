@@ -52,7 +52,7 @@ class ExamplePrinterSpec : public framework::Task
     }
 
     // get the object
-    auto* mo = dynamic_cast<MonitorObject*>(moArray->At(0));
+    auto* mo = dynamic_cast<core::MonitorObject*>(moArray->At(0));
     if (mo == nullptr) {
       LOG(info) << "First element is not a MonitorObject";
       return;
@@ -82,7 +82,7 @@ class ExampleQualityPrinterSpec : public framework::Task
  public:
   void run(ProcessingContext& processingContext) final
   {
-    auto qo = processingContext.inputs().get<QualityObject*>("checked-mo");
+    auto qo = processingContext.inputs().get<core::QualityObject*>("checked-mo");
 
     LOG(info) << "Received Quality: " << qo->getQuality();
   }

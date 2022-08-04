@@ -17,10 +17,15 @@
 #ifndef QC_CHECKER_CHECKINTERFACE_H
 #define QC_CHECKER_CHECKINTERFACE_H
 
-#include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/UserCodeInterface.h"
 
+namespace o2::quality_control::core
+{
+class MonitorObject;
+}
+
+// todo: do not expose other namespaces in headers
 using namespace o2::quality_control::core;
 
 namespace o2::quality_control::checker
@@ -41,7 +46,7 @@ class CheckInterface : public UserCodeInterface
   ///
   /// @param moMap A map of the the MonitorObjects to check and their full names.
   /// @return The quality associated with these objects.
-  virtual Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) = 0;
+  virtual core::Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) = 0;
 
   /// \brief Modify the aspect of the plot.
   ///
@@ -52,7 +57,7 @@ class CheckInterface : public UserCodeInterface
   /// @param checkResult The quality returned by the check. It is not the same as the quality of the mo
   ///                    as the latter represents the combination of all the checks the mo passed. This
   ///                    parameter is to be used to pass the result of the check of the same class.
-  virtual void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult) = 0;
+  virtual void beautify(std::shared_ptr<core::MonitorObject> mo, core::Quality checkResult) = 0;
 
   /// \brief Returns the name of the class that can be treated by this check.
   ///
@@ -64,8 +69,8 @@ class CheckInterface : public UserCodeInterface
   /// \author Barthelemy von Haller
   virtual std::string getAcceptedType();
 
-  bool isObjectCheckable(const std::shared_ptr<MonitorObject> mo);
-  bool isObjectCheckable(const MonitorObject* mo);
+  bool isObjectCheckable(const std::shared_ptr<core::MonitorObject> mo);
+  bool isObjectCheckable(const core::MonitorObject* mo);
 
  protected:
   /// \brief Called each time mCustomParameters is updated.

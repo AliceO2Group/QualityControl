@@ -28,22 +28,23 @@
 // O2
 #include <Common/Timer.h>
 #include <Framework/Task.h>
-#include <Headers/DataHeader.h>
-#include <Monitoring/MonitoringFactory.h>
-#include <Configuration/ConfigurationInterface.h>
 #include <Framework/DataProcessorSpec.h>
 // QC
-#include "QualityControl/CheckInterface.h"
-#include "QualityControl/DatabaseInterface.h"
-#include "QualityControl/MonitorObject.h"
-#include "QualityControl/Check.h"
-#include "QualityControl/UpdatePolicyManager.h"
 #include "QualityControl/Activity.h"
 #include "QualityControl/CheckRunnerConfig.h"
+#include "QualityControl/Check.h"
+#include "QualityControl/MonitorObject.h"
+#include "QualityControl/QualityObject.h"
+#include "QualityControl/UpdatePolicyManager.h"
 
 namespace o2::quality_control::core
 {
 class ServiceDiscovery;
+}
+
+namespace o2::quality_control::repository
+{
+class DatabaseInterface;
 }
 
 namespace o2::framework
@@ -59,6 +60,9 @@ class Monitoring;
 }
 
 class TClass;
+
+// todo: do not expose other namespaces in headers
+using namespace o2::quality_control::core;
 
 namespace o2::quality_control::checker
 {

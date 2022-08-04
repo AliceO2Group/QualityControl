@@ -13,24 +13,26 @@
 #define QC_CHECKER_CHECK_H
 
 // std
-#include <functional>
 #include <map>
 #include <vector>
 #include <memory>
-#include <unordered_map>
 // O2
 #include <Framework/DataProcessorSpec.h>
 // QC
-#include "QualityControl/Quality.h"
 #include "QualityControl/QualityObject.h"
-#include "QualityControl/MonitorObject.h"
-#include "QualityControl/CheckInterface.h"
 #include "QualityControl/CheckConfig.h"
-#include "QualityControl/CommonSpec.h"
-#include "QualityControl/CheckSpec.h"
+
+namespace o2::quality_control::core
+{
+class MonitorObject;
+class Quality;
+struct CommonSpec;
+} // namespace o2::quality_control::core
 
 namespace o2::quality_control::checker
 {
+class CheckInterface;
+struct CheckSpec;
 
 /// \brief The class in charge of providing single check for a given map of MonitorObjects.
 ///
@@ -58,7 +60,7 @@ class Check
    */
   void init();
 
-  QualityObjectsType check(std::map<std::string, std::shared_ptr<o2::quality_control::core::MonitorObject>>& moMap);
+  core::QualityObjectsType check(std::map<std::string, std::shared_ptr<o2::quality_control::core::MonitorObject>>& moMap);
 
   const std::string& getName() const { return mCheckConfig.name; };
   o2::framework::OutputSpec getOutputSpec() const { return mCheckConfig.qoSpec; };
@@ -77,11 +79,11 @@ class Check
   bool getAllObjectsOption() const;
 
   // todo: probably make CheckFactory
-  static CheckConfig extractConfig(const CommonSpec&, const CheckSpec&);
+  static CheckConfig extractConfig(const core::CommonSpec&, const CheckSpec&);
   static framework::OutputSpec createOutputSpec(const std::string& checkName);
 
  private:
-  void beautify(std::map<std::string, std::shared_ptr<MonitorObject>>& moMap, Quality quality);
+  void beautify(std::map<std::string, std::shared_ptr<core::MonitorObject>>& moMap, const core::Quality& quality);
 
   CheckConfig mCheckConfig;
   CheckInterface* mCheckInterface = nullptr;

@@ -19,6 +19,7 @@
 
 #include <unordered_map>
 #include <string>
+#include <Framework/DataProcessorSpec.h>
 
 namespace o2::quality_control::checker
 {
