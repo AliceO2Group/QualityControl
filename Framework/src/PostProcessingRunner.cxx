@@ -23,7 +23,6 @@
 #include "QualityControl/runnerUtils.h"
 #include "QualityControl/ConfigParamGlo.h"
 
-#include <boost/property_tree/ptree.hpp>
 #include <utility>
 #include <Framework/DataAllocator.h>
 #include <CommonUtils/ConfigurableParam.h>

@@ -188,7 +188,7 @@ void ObjectsManager::setActivity(const Activity& activity)
   mActivity = activity;
   // update the activity of all the objects
   for (auto tobj : *mMonitorObjects) {
-    MonitorObject* mo = dynamic_cast<MonitorObject*>(tobj);
+    auto* mo = dynamic_cast<MonitorObject*>(tobj);
     mo->setActivity(activity);
   }
 }
