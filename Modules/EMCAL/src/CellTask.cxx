@@ -100,23 +100,31 @@ void CellTask::initialize(o2::framework::InitContext& /*ctx*/)
     return result;
   };
 
-  auto hasAmpVsCell = get_bool(getConfigValueLower("hasAmpVsCell")),
-       hasTimeVsCell = get_bool(getConfigValueLower("hasTimeVsCell")),
-       hasCalib2D = get_bool(getConfigValueLower("hasHistValibVsCell"));
+  mTaskSettings.mHasAmpVsCellID = get_bool(getConfigValueLower("hasAmpVsCell")),
+  mTaskSettings.mHasTimeVsCellID = get_bool(getConfigValueLower("hasTimeVsCell")),
+  mTaskSettings.mHasHistosCalib2D = get_bool(getConfigValueLower("hasHistValibVsCell"));
+  if (hasConfigValue("thresholdTimePhys"))
+    mTaskSettings.mAmpThresholdTimePhys = get_double(getConfigValue("thresholdTimePhys"));
+  if (hasConfigValue("thresholdTimeCalib"))
+    mTaskSettings.mAmpThresholdTimeCalib = get_double(getConfigValue("thresholdTimeCalib"));
+  if (hasConfigValue("thresholdCAL"))
+    mTaskSettings.mThresholdCAL = get_double(getConfigValue("thresholdCAL"));
+  if (hasConfigValue("thresholdPHYS"))
+    mTaskSettings.mThresholdPHYS = get_double(getConfigValue("thresholdPHYS"));
+  ILOG(Info, Support) << "Amplitude cut time histograms (PhysTrigger) " << mTaskSettings.mAmpThresholdTimePhys << ENDM;
+  ILOG(Info, Support) << "Amplitude cut time histograms (CalibTrigger) " << mTaskSettings.mAmpThresholdTimeCalib << ENDM;
+  ILOG(Info, Support) << "Amplitude cut occupancy histograms (PhysTrigger) " << mTaskSettings.mThresholdPHYS << ENDM;
+  ILOG(Info, Support) << "Amplitude cut occupancy histograms (CalibTrigger) " << mTaskSettings.mThresholdCAL << ENDM;
 
   mIgnoreTriggerTypes = get_bool(getConfigValue("ignoreTriggers"));
-  // add a second threshold
-  double thresholdCAL = hasConfigValue("thresholdCAL") ? get_double(getConfigValue("thresholdCAL")) : 0.5;
-  double thresholdPHYS = hasConfigValue("thresholdPHYS") ? get_double(getConfigValue("thresholdPHYS")) : 0.2;
-  mCellThreshold = thresholdPHYS;
 
-  if (hasAmpVsCell) {
+  if (mTaskSettings.mHasAmpVsCellID) {
     ILOG(Debug, Support) << "Enabling histograms : Amplitude vs. cellID" << ENDM;
   }
-  if (hasTimeVsCell) {
+  if (mTaskSettings.mHasTimeVsCellID) {
     ILOG(Debug, Support) << "Enabling histograms : Time vs. cellID" << ENDM;
   }
-  if (hasCalib2D) {
+  if (mTaskSettings.mHasHistosCalib2D) {
     ILOG(Debug, Support) << "Enabling calibrated histograms" << ENDM;
   }
 
@@ -127,9 +135,8 @@ void CellTask::initialize(o2::framework::InitContext& /*ctx*/)
   std::array<std::string, 2> triggers = { { "CAL", "PHYS" } };
   for (const auto& trg : triggers) {
     CellHistograms histos;
-    histos.mCellThreshold = (trg == "CAL") ? thresholdCAL : thresholdPHYS;
     histos.mGeometry = mGeometry;
-    histos.initForTrigger(trg.data(), hasAmpVsCell, hasTimeVsCell, hasCalib2D);
+    histos.initForTrigger(trg.data(), mTaskSettings);
     histos.startPublishing(*getObjectsManager());
     mHistogramContainer[trg] = histos;
   } // trigger type
@@ -323,7 +330,7 @@ void CellTask::monitorData(o2::framework::ProcessingContext& ctx)
           if (isPhysTrigger) {
             auto [sm, mod, iphi, ieta] = mGeometry->GetCellIndex(cell.getTower());
             numCellsSM[sm]++;
-            if (cell.getEnergy() > mCellThreshold)
+            if (cell.getEnergy() > mTaskSettings.mThresholdPHYS)
               numCellsSM_Thres[sm]++;
           }
         }
@@ -480,8 +487,15 @@ std::string CellTask::getConfigValueLower(const std::string_view key)
   return result;
 }
 
-void CellTask::CellHistograms::initForTrigger(const std::string trigger, bool hasAmpVsCellID, bool hasTimeVsCellID, bool hasHistosCalib2D)
-{
+void CellTask::CellHistograms::initForTrigger(const std::string trigger, const TaskSettings& settings)
+{ // hasAmpVsCellID, bool hasTimeVsCellID, bool hasHistosCalib2D)
+  if (trigger == "PYHS") {
+    mCellThreshold = settings.mThresholdPHYS;
+    mAmplitudeThresholdTime = settings.mAmpThresholdTimePhys;
+  } else {
+    mCellThreshold = settings.mThresholdCAL;
+    mAmplitudeThresholdTime = settings.mAmpThresholdTimeCalib;
+  }
   auto histBuilder1D = [trigger](const std::string name, const std::string title, int nbinsx, double xmin, double xmax) -> TH1* {
     std::string histname = name + "_" + trigger,
                 histtitle = title + " " + trigger;
@@ -500,21 +514,21 @@ void CellTask::CellHistograms::initForTrigger(const std::string trigger, bool ha
 
   bool isPhysTrigger = trigger == "PHYS";
   if (isPhysTrigger) {
-    if (hasAmpVsCellID) {
+    if (settings.mHasAmpVsCellID) {
       mCellAmplitude = histBuilder2D("cellAmplitudeHG", "Cell Amplitude (High gain)", 80, 0, 16, 17664, -0.5, 17663.5, false);
       mCellAmplitude->SetStats(0);
       // mCellAmplitude[1] = histBuilder2D("cellAmplitudeLG", "Cell Amplitude (Low gain)", 100, 0, 100, 17664, -0.5, 17663.5, false);
-      if (hasHistosCalib2D) {
+      if (settings.mHasHistosCalib2D) {
         mCellAmplitudeCalib = histBuilder2D("cellAmplitudeHGCalib", "Cell Amplitude (High gain)", 80, 0, 16, 17664, -0.5, 17663.5, false);
         mCellAmplitudeCalib->SetStats(0);
         // mCellAmplitudeCalib[1] = histBuilder2D("cellAmplitudeLGCalib", "Cell Amplitude (Low gain)", 100, 0, 100, 17664, -0.5, 17663.5, false);
       }
     }
-    if (hasTimeVsCellID) {
-      mCellTime = histBuilder2D("cellTimeHG", "Cell Time (High gain)", 400, -200, 200, 17664, -0.5, 17663.5, false);
+    if (settings.mHasTimeVsCellID) {
+      mCellTime = histBuilder2D("cellTimeHG", "Cell Time (High gain)", 400, -200, 200, 17664, -0.5, 17663.5, false); //all cell time histo: 2D? both for CAL and Phys? CRI
       mCellTime->SetStats(0);
       // mCellTime[1] = histBuilder2D("cellTimeLG", "Cell Time (Low gain)", 400, -200, 200, 17664, -0.5, 17663.5, false);
-      if (hasHistosCalib2D) {
+      if (settings.mHasHistosCalib2D) {
         mCellTimeCalib = histBuilder2D("cellTimeHGCalib", "Cell Time Calib (High gain)", 400, -200, 200, 17664, -0.5, 17663.5, false);
         mCellTimeCalib->SetStats(0);
         // mCellTimeCalib[1] = histBuilder2D("cellTimeLGCalib", "Cell Time Calib (Low gain)", 400, -200, 200, 17664, -0.5, 17663.5, false);
@@ -526,7 +540,7 @@ void CellTask::CellHistograms::initForTrigger(const std::string trigger, bool ha
     mCellTimeSupermodule = histBuilder2D("cellTimeSupermodule", "Cell Time vs. supermodule ID ", 600, -400, 800, 20, -0.5, 19.5, false);
     mCellTimeSupermodule->SetStats(0);
 
-    if (hasHistosCalib2D) {
+    if (settings.mHasHistosCalib2D) {
       mCellAmpSupermoduleCalib = histBuilder2D("cellAmplitudeSupermoduleCalib", "Cell amplitude (Calib) vs. supermodule ID ", 4 * static_cast<int>(maxAmp), 0., maxAmp, 20, -0.5, 19.5, false);
       mCellAmpSupermoduleCalib->SetStats(0);
       mCellTimeSupermoduleCalib = histBuilder2D("cellTimeSupermoduleCalib", "Cell Time (Calib) vs. supermodule ID (High gain)", 600, -400, 800, 20, -0.5, 19.5, false);
@@ -621,33 +635,33 @@ void CellTask::CellHistograms::fillHistograms(const o2::emcal::Cell& cell, bool 
     auto cellindices = mGeometry->GetCellIndex(cell.getTower());
     auto supermoduleID = std::get<0>(cellindices);
     fillOptional2D(mCellAmpSupermodule, cell.getEnergy(), supermoduleID);
-    if (cell.getEnergy() > 0.3)
+    if (cell.getEnergy() > mAmplitudeThresholdTime)
       fillOptional2D(mCellTimeSupermodule, cell.getTimeStamp(), supermoduleID);
     if (goodCell) {
       fillOptional2D(mCellAmpSupermoduleCalib, cell.getEnergy(), supermoduleID);
-      if (cell.getEnergy() > 0.3)
+      if (cell.getEnergy() > mAmplitudeThresholdTime)
         fillOptional2D(mCellTimeSupermoduleCalib, cell.getTimeStamp() - timecalib, supermoduleID);
     }
     fillOptional1D(mCellAmplitude_tot, cell.getEnergy()); // EMCAL+DCAL, shifter
-    if (cell.getEnergy() > 0.15)
+    if (cell.getEnergy() > mAmplitudeThresholdTime)
       fillOptional1D(mCellTimeSupermodule_tot, cell.getTimeStamp()); // EMCAL+DCAL shifter
     //check Gain
     int index = cell.getHighGain() ? 0 : 1; //(0=highGain, 1 = lowGain)
     if (supermoduleID < 12) {               //EMCAL
-      if (cell.getEnergy() > 0.15) {
+      if (cell.getEnergy() > mAmplitudeThresholdTime) {
         fillOptional1D(mCellTimeSupermoduleEMCAL, cell.getTimeStamp());
         fillOptional1D(mCellTimeSupermoduleEMCAL_Gain[index], cell.getTimeStamp());
       }
       fillOptional1D(mCellAmplitudeEMCAL, cell.getEnergy());
     } else {
       fillOptional1D(mCellAmplitudeDCAL, cell.getEnergy());
-      if (cell.getEnergy() > 0.15) {
+      if (cell.getEnergy() > mAmplitudeThresholdTime) {
         fillOptional1D(mCellTimeSupermoduleDCAL, cell.getTimeStamp());
         fillOptional1D(mCellTimeSupermoduleDCAL_Gain[index], cell.getTimeStamp());
       }
     }
     // bc phase histograms
-    if (cell.getEnergy() > 0.15) {
+    if (cell.getEnergy() > mAmplitudeThresholdTime) {
       auto bchistos = mCellTimeBC.find(bcphase);
       if (bchistos != mCellTimeBC.end()) {
         auto histcontainer = bchistos->second;
