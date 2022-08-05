@@ -22,6 +22,7 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <DataFormatsITSMFT/TopologyDictionary.h>
+#include "ReconstructionDataFormats/BaseCluster.h"
 
 // Quality Control
 #include "QualityControl/TaskInterface.h"
@@ -64,6 +65,10 @@ class QcMFTClusterTask /*final*/ : public TaskInterface // todo add back the "fi
   std::unique_ptr<TH2F> mClusterPatternSensorIndices = nullptr;
   std::vector<std::unique_ptr<TH2F>> mClusterChipOccupancyMap;
   std::vector<std::unique_ptr<TH2F>> mClusterLadderPatternSensorMap;
+
+  std::unique_ptr<TH1F> mClusterZ = nullptr;
+  
+  std::vector<o2::BaseCluster<float>> mClustersGlobal;
 
   // needed to construct the name and path of some histograms
   int mHalf[936] = { 0 };

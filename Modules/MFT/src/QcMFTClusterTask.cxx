@@ -31,6 +31,7 @@
 #include <ITSMFTReconstruction/ChipMappingMFT.h>
 #include "CCDB/BasicCCDBManager.h"
 #include "CCDB/CCDBTimeStampUtils.h"
+#include "MFTTracking/IOUtils.h"
 
 // Quality Control
 #include "QualityControl/QcInfoLogger.h"
@@ -39,6 +40,8 @@
 
 // C++
 #include <fstream>
+
+using namespace o2::mft;
 
 namespace o2::quality_control_modules::mft
 {
@@ -140,6 +143,10 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mClusterOccupancySummary.get());
   getObjectsManager()->setDefaultDrawOptions(mClusterOccupancySummary.get(), "colz");
 
+  mClusterZ = std::make_unique<TH1F>("mClusterZ", "Z position of clusters; Z (cm); #Entries", 400, -80, -40);
+  mClusterZ->SetStats(0);
+  getObjectsManager()->startPublishing(mClusterZ.get());
+
   // get dict from ccdb
   long int ts = o2::ccdb::getCurrentTimestamp();
   ILOG(Info, Support) << "Getting dictionary from ccdb - timestamp: " << ts << ENDM;
@@ -217,6 +224,11 @@ void QcMFTClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
   auto clustersPattern = ctx.inputs().get<gsl::span<unsigned char>>("patterns");
   auto patternIt = clustersPattern.begin();
 
+  // get clusters with global xy position 
+  mClustersGlobal.clear();
+  mClustersGlobal.reserve(clusters.size()); 
+  o2::mft::ioutils::convertCompactClusters(clusters, patternIt, mClustersGlobal, mDict);
+
   if (clusters.size() < 1)
     return;
 
@@ -250,6 +262,11 @@ void QcMFTClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
     // fill ladder histogram
     mClusterLadderPatternSensorMap[mChipLadder[sensorID]]->Fill(oneCluster.getPatternID() >> 1, mChipPositionInLadder[sensorID]);
   }
+
+    // fill the histograms that use global position of cluster
+  for (auto& oneGlobalCluster : mClustersGlobal) {
+    mClusterZ->Fill(oneGlobalCluster.getZ());
+  }
 }
 
 void QcMFTClusterTask::endOfCycle()
@@ -275,6 +292,7 @@ void QcMFTClusterTask::reset()
   mClusterLayerIndexH0->Reset();
   mClusterLayerIndexH1->Reset();
   mClusterOccupancySummary->Reset();
+  mClusterZ->Reset();
   for (int i = 0; i < 20; i++) {
     mClusterChipOccupancyMap[i]->Reset();
   }
