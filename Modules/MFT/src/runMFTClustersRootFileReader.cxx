@@ -145,7 +145,7 @@ class MFTClustersRootFileReader : public o2::framework::Task
 
 WorkflowSpec defineDataProcessing(const ConfigContext&)
 {
-  WorkflowSpec specs; // to return the work flow
+  WorkflowSpec specs; // to return the work
 
   // define the outputs
   std::vector<OutputSpec> outputs;

@@ -87,19 +87,10 @@ class QcMFTDigitTask final : public TaskInterface
   std::unique_ptr<TH1F> mDigitChipOccupancy = nullptr;
   std::unique_ptr<TH1F> mDigitChipStdDev = nullptr;
   std::unique_ptr<TH2F> mDigitOccupancySummary = nullptr;
+  std::unique_ptr<TH2F> mDigitDoubleColumnSensorIndices = nullptr;
 
   std::vector<std::unique_ptr<TH2F>> mDigitChipOccupancyMap;
   std::vector<std::unique_ptr<TH2F>> mDigitPixelOccupancyMap;
-
-  // new ladder vs double column histrograms
-  int mChipLadder[936] = { 0 };
-  int mChipPositionInLadder[936] = { 0 };
-  int mChipsInLadder[280] = { 0 };
-  int mHalfLadder[280] = { 0 };
-  int mDiskLadder[280] = { 0 };
-  int mFaceLadder[280] = { 0 };
-  int mZoneLadder[280] = { 0 };
-  std::vector<std::unique_ptr<TH2F>> mDigitLadderDoubleColumnOccupancyMap;
 
   //  functions
   int getVectorIndexChipOccupancyMap(int chipIndex);

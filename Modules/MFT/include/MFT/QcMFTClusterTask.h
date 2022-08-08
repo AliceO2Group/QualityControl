@@ -23,6 +23,7 @@
 #include <TH2F.h>
 #include <DataFormatsITSMFT/TopologyDictionary.h>
 #include "ReconstructionDataFormats/BaseCluster.h"
+#include "MFTBase/GeometryTGeo.h"
 
 // Quality Control
 #include "QualityControl/TaskInterface.h"
@@ -38,7 +39,7 @@ class QcMFTClusterTask /*final*/ : public TaskInterface // todo add back the "fi
 {
  public:
   /// \brief Constructor
-  QcMFTClusterTask() = default;
+  QcMFTClusterTask();
   /// Destructor
   ~QcMFTClusterTask() override;
 
@@ -64,10 +65,10 @@ class QcMFTClusterTask /*final*/ : public TaskInterface // todo add back the "fi
 
   std::unique_ptr<TH2F> mClusterPatternSensorIndices = nullptr;
   std::vector<std::unique_ptr<TH2F>> mClusterChipOccupancyMap;
-  std::vector<std::unique_ptr<TH2F>> mClusterLadderPatternSensorMap;
 
   std::unique_ptr<TH1F> mClusterZ = nullptr;
-  
+  std::vector<std::unique_ptr<TH2F>> mClusterXYinLayer;
+
   std::vector<o2::BaseCluster<float>> mClustersGlobal;
 
   // needed to construct the name and path of some histograms
@@ -81,15 +82,6 @@ class QcMFTClusterTask /*final*/ : public TaskInterface // todo add back the "fi
   float mX[936] = { 0 };
   float mY[936] = { 0 };
 
-  // ladder vs Pattern ID histrograms
-  int mChipLadder[936] = { 0 };
-  int mChipPositionInLadder[936] = { 0 };
-  int mChipsInLadder[280] = { 0 };
-  int mHalfLadder[280] = { 0 };
-  int mDiskLadder[280] = { 0 };
-  int mFaceLadder[280] = { 0 };
-  int mZoneLadder[280] = { 0 };
-
   // internal functions
   void getChipMapData();
 
@@ -98,6 +90,9 @@ class QcMFTClusterTask /*final*/ : public TaskInterface // todo add back the "fi
 
   // dictionary
   o2::itsmft::TopologyDictionary* mDict;
+
+  // where the geometry file is stored
+  std::string mGeomPath;
 };
 
 } // namespace o2::quality_control_modules::mft
