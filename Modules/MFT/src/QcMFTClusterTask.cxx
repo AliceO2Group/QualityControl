@@ -228,6 +228,9 @@ void QcMFTClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
   // get the clusters
   const auto clusters = ctx.inputs().get<gsl::span<o2::itsmft::CompClusterExt>>("randomcluster");
 
+  if (clusters.size() < 1)
+    return;
+
   // get cluster patterns and iterator
   auto clustersPattern = ctx.inputs().get<gsl::span<unsigned char>>("patterns");
   auto patternIt = clustersPattern.begin();
@@ -236,9 +239,6 @@ void QcMFTClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
   mClustersGlobal.clear();
   mClustersGlobal.reserve(clusters.size());
   o2::mft::ioutils::convertCompactClusters(clusters, patternIt, mClustersGlobal, mDict);
-
-  if (clusters.size() < 1)
-    return;
 
   // fill the histograms
   for (auto& oneCluster : clusters) {
