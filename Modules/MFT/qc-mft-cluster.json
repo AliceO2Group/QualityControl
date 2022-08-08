@@ -37,7 +37,7 @@
         },
         "taskParameters" : {
           "myOwnKey" : "myOwnValue",
-          "geomFileName" : "o2sim_geometry-aligned.root"
+          "geomFileName" : "/home/epn/odc/files/o2sim_geometry-aligned.root"
         },
         "location" : "remote"
       }
