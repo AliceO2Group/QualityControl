@@ -81,6 +81,13 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mDigitChipOccupancy.get());
   getObjectsManager()->setDefaultDrawOptions(mDigitChipOccupancy.get(), "hist");
 
+  mDigitDoubleColumnSensorIndices = std::make_unique<TH2F>("mDigitDoubleColumnSensorIndices",
+                                                           "Double Column vs Chip ID;Double Column;Chip ID",
+                                                           512, -0.5, 511.5, 936, -0.5, 935.5);
+  mDigitDoubleColumnSensorIndices->SetStats(0);
+  getObjectsManager()->startPublishing(mDigitDoubleColumnSensorIndices.get());
+  getObjectsManager()->setDefaultDrawOptions(mDigitDoubleColumnSensorIndices.get(), "colz");
+
   if (mNoiseScan == 1) { // to be executed only for special runs
     mDigitChipStdDev = std::make_unique<TH1F>(
       "mDigitChipStdDev",
@@ -115,22 +122,6 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
   mDigitOccupancySummary->SetStats(0);
   getObjectsManager()->startPublishing(mDigitOccupancySummary.get());
   getObjectsManager()->setDefaultDrawOptions(mDigitOccupancySummary.get(), "colz");
-
-  // --Ladder occupancy maps
-  //==============================================
-  for (int i = 0; i < 280; i++) { // there are 280 ladders
-    auto ladderHistogram = std::make_unique<TH2F>(
-      Form("LadderMaps/h%d-d%d-f%d-z%d-l%d", mHalfLadder[i], mDiskLadder[i], mFaceLadder[i], mZoneLadder[i], i),
-      Form("Digit Occupancy h%d-d%d-f%d-z%d-l%d; Double column; Chip", mHalfLadder[i], mDiskLadder[i], mFaceLadder[i], mZoneLadder[i], i),
-      512, -0.5, 511.5, // double columns per chip
-      mChipsInLadder[i], -0.5, mChipsInLadder[i] - 0.5);
-    for (int iBin = 0; iBin < mChipsInLadder[i]; iBin++)
-      ladderHistogram->GetYaxis()->SetBinLabel(iBin + 1, Form("%d", iBin));
-    ladderHistogram->SetStats(0);
-    mDigitLadderDoubleColumnOccupancyMap.push_back(std::move(ladderHistogram));
-    getObjectsManager()->startPublishing(mDigitLadderDoubleColumnOccupancyMap[i].get());
-    getObjectsManager()->setDefaultDrawOptions(mDigitLadderDoubleColumnOccupancyMap[i].get(), "colz");
-  }
 
   // --Chip hit maps
   //==============================================
@@ -225,12 +216,12 @@ void QcMFTDigitTask::monitorData(o2::framework::ProcessingContext& ctx)
 
     int chipIndex = oneDigit.getChipIndex();
 
-    // fill ladder histogram
-    mDigitLadderDoubleColumnOccupancyMap[mChipLadder[chipIndex]]->Fill(oneDigit.getColumn() >> 1, mChipPositionInLadder[chipIndex]);
-
     int vectorIndex = getVectorIndexPixelOccupancyMap(chipIndex);
     if (vectorIndex < 0) // if the chip is not from wanted FLP, the array will give -1
       continue;
+
+    // fill double column histogram
+    mDigitDoubleColumnSensorIndices->Fill(oneDigit.getColumn() >> 1, oneDigit.getChipIndex());
 
     // fill info into the summary histo
     int xBin = mDisk[chipIndex] * 2 + mFace[chipIndex];
@@ -271,14 +262,10 @@ void QcMFTDigitTask::reset()
 
   mMergerTest->Reset();
   mDigitChipOccupancy->Reset();
+  mDigitDoubleColumnSensorIndices->Reset();
   if (mNoiseScan == 1)
     mDigitChipStdDev->Reset();
   mDigitOccupancySummary->Reset();
-
-  // ladder histograms
-  for (int i = 0; i < 280; i++) { // there are 280 ladders
-    mDigitLadderDoubleColumnOccupancyMap[i]->Reset();
-  }
 
   // maps
   for (int iVectorOccupancyMapIndex = 0; iVectorOccupancyMapIndex < 4; iVectorOccupancyMapIndex++) {
@@ -330,15 +317,6 @@ void QcMFTDigitTask::getChipMapData()
     mLadder[i] = MFTTable.mLadder[i];
     mX[i] = MFTTable.mX[i];
     mY[i] = MFTTable.mY[i];
-    // info needed for ladder histograms
-    mChipLadder[i] = chipMapData[i].module;
-    mChipPositionInLadder[i] = chipMapData[i].chipOnModule;
-    if (mChipsInLadder[mChipLadder[i]] < (mChipPositionInLadder[i] + 1))
-      mChipsInLadder[mChipLadder[i]]++;
-    mHalfLadder[mChipLadder[i]] = mHalf[i];
-    mDiskLadder[mChipLadder[i]] = mDisk[i];
-    mFaceLadder[mChipLadder[i]] = mFace[i];
-    mZoneLadder[mChipLadder[i]] = mZone[i];
   }
 }
 

@@ -36,7 +36,8 @@
           "name" : "mft-clusters"
         },
         "taskParameters" : {
-          "myOwnKey" : "myOwnValue"
+          "myOwnKey" : "myOwnValue",
+          "geomFileName" : "/home/epn/odc/files/o2sim_geometry-aligned.root"
         },
         "location" : "remote"
       }
