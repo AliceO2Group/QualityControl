@@ -24,8 +24,13 @@
 #include <TObject.h>
 #include <string>
 #include <TROOT.h>
+#include <TH1F.h>
+
+#include <QualityControl/CcdbDatabase.h>
 
 using namespace std;
+using namespace o2::quality_control::repository;
+using namespace o2::quality_control::core;
 
 namespace o2::quality_control
 {
@@ -55,11 +60,29 @@ class TestInterface : public core::UserCodeInterface
   bool configured = false;
 };
 
+struct MyGlobalFixture {
+  void teardown()
+  {
+    auto backend = std::make_unique<CcdbDatabase>();
+    backend->connect("ccdb-test.cern.ch:8080", "", "", "");
+    backend->truncate("qc/TST/MO/Test/pid" + std::to_string(getpid()), "*");
+  }
+};
+BOOST_TEST_GLOBAL_FIXTURE(MyGlobalFixture);
+
 BOOST_AUTO_TEST_CASE(test_invoke_all_methods)
 {
   test::TestInterface testInterface;
 
   BOOST_CHECK_EQUAL(testInterface.configured, false);
+
+  TH1F* h1 = new TH1F("asdf", "asdf", 100, 0, 99);
+  auto pid = std::to_string(getpid());
+  auto taskName = "Test/pid" + pid;
+  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, taskName, "task", "TST");
+  auto backend = std::make_unique<CcdbDatabase>();
+  backend->connect("ccdb-test.cern.ch:8080", "", "", "");
+  backend->storeMO(mo1);
 
   // setting custom parameters should configure
   std::unordered_map<std::string, std::string> customParameters;
@@ -69,7 +92,7 @@ BOOST_AUTO_TEST_CASE(test_invoke_all_methods)
   BOOST_CHECK_EQUAL(testInterface.get("test"), "asdf");
 
   testInterface.setCcdbUrl("ccdb-test.cern.ch:8080");
-  auto obj = testInterface.retrieveConditionAny<TObject>("qc/TST/MO/QcTask/example");
+  auto obj = testInterface.retrieveConditionAny<TObject>("qc/TST/MO/" + taskName + "/asdf");
   BOOST_CHECK_NE(obj, nullptr);
 }
 } /* namespace test */
