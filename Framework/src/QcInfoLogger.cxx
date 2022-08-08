@@ -22,6 +22,7 @@ namespace o2::quality_control::core
 
 AliceO2::InfoLogger::InfoLogger* QcInfoLogger::instance;
 AliceO2::InfoLogger::InfoLoggerContext* QcInfoLogger::mContext;
+QcInfoLogger::_init QcInfoLogger::_initializer;
 
 void QcInfoLogger::setFacility(const std::string& facility)
 {
