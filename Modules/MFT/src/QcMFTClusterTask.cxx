@@ -51,7 +51,6 @@ namespace o2::quality_control_modules::mft
 QcMFTClusterTask::QcMFTClusterTask()
   : TaskInterface()
 {
-  // o2::base::GeometryManager::loadGeometry();
 }
 
 QcMFTClusterTask::~QcMFTClusterTask()
