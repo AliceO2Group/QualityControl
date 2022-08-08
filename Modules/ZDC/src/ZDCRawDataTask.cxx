@@ -52,6 +52,14 @@ ZDCRawDataTask::~ZDCRawDataTask()
     delete fTrasmChannel;
   if (fSummaryPedestal)
     delete fSummaryPedestal;
+  if (fTriggerBits)
+    delete fTriggerBits;
+  if (fTriggerBitsHits)
+    delete fTriggerBitsHits;
+  if (fDataLoss)
+    delete fDataLoss;
+  if (fOverBc)
+    delete fOverBc;
 }
 
 void ZDCRawDataTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -141,6 +149,14 @@ void ZDCRawDataTask::reset()
     fTrasmChannel->Reset();
   if (fSummaryPedestal)
     fSummaryPedestal->Reset();
+  if (fTriggerBits)
+    fTriggerBits->Reset();
+  if (fTriggerBitsHits)
+    fTriggerBitsHits->Reset();
+  if (fDataLoss)
+    fDataLoss->Reset();
+  if (fOverBc)
+    fOverBc->Reset();
 }
 
 void ZDCRawDataTask::setStat(TH1* h)
@@ -343,7 +359,13 @@ void ZDCRawDataTask::initHisto()
   addNewHisto("BUNCH", "hbunch-ZPC_SUM_T0", "Bunch ZPC SUM  Auto Trigger", "ZPC_SUM", "T0");
   setBinHisto2D(8, -0.5, 7.5, 4, -0.5, 3.5);
   addNewHisto("TRASMITTEDCHANNEL", "hchTrasmitted", "Channels Trasmitted", "NONE", "ALL");
-  // addNewHisto("FIRECHANNEL", "hchFired", "Channels Fired", "NONE", "ALL");
+  addNewHisto("FIRECHANNEL", "hchFired", "Channels Fired", "NONE", "ALL");
+  addNewHisto("DATALOSS", "hchDataLoss", "Data Loss", "NONE", "ALL");
+  setBinHisto2D(32, -0.5, 31.5, 10, -0.5, 9.5);
+  addNewHisto("TRIGGER_BIT", "hchTriggerBits", "Trigger Bits", "NONE", "ALL");
+  addNewHisto("TRIGGER_BIT_HIT", "hchTriggerBitsHits", "Trigger Bits Hit", "NONE", "ALL");
+  setBinHisto1D(32, -0.5, 31.5);
+  addNewHisto("OVER_BC", "hbcOver", "BC Overflow", "NONE", "ALL");
   setBinHisto1D(26, -0.5, 25.5);
   addNewHisto("SUMMARYBASELINE", "hpedSummary", "Baseline Summary", "NONE", "LBC");
 }
@@ -414,6 +436,10 @@ int ZDCRawDataTask::processWord(const uint32_t* word)
 int ZDCRawDataTask::process(const o2::zdc::EventChData& ch)
 {
   static constexpr int last_bc = o2::constants::lhc::LHCMaxBunches - 1;
+  union {
+    uint16_t uns;
+    int16_t sig;
+  } word16;
   // Not empty event
   auto f = ch.f;
   uint16_t us[12];
@@ -430,9 +456,11 @@ int ZDCRawDataTask::process(const o2::zdc::EventChData& ch)
   us[9] = f.s09;
   us[10] = f.s10;
   us[11] = f.s11;
-
-  // if (f.hit == 1) fFireChannel->Fill(f.board,f.ch);
-  fTrasmChannel->Fill(f.board, f.ch);
+  int itb = 4 * (int)f.board + (int)f.ch;
+  if (f.Hit == 1 && fFireChannel)
+    fFireChannel->Fill(f.board, f.ch);
+  if (fTrasmChannel)
+    fTrasmChannel->Fill(f.board, f.ch);
 
   if (f.Alice_0 || f.Auto_0 || f.Alice_1 || f.Auto_1 || f.Alice_2 || f.Auto_2 || f.Alice_3 || f.Auto_3) {
     for (int j = 0; j < (int)fMatrixHistoSignal[f.board][f.ch].size(); j++) {
@@ -457,7 +485,74 @@ int ZDCRawDataTask::process(const o2::zdc::EventChData& ch)
       }
     }
   }
+  if ((f.Alice_0 || f.Auto_0 || f.Alice_1 || f.Auto_1 || f.Alice_2 || f.Auto_2 || f.Alice_3 || f.Auto_3 || f.Auto_m) && fTriggerBits && fTriggerBitsHits) {
+    if (f.Alice_3) {
+      fTriggerBits->Fill(itb, 9);
+      if (f.Hit) {
+        if (f.Hit)
+          fTriggerBitsHits->Fill(itb, 9);
+      }
+    }
+    if (f.Alice_2) {
+      fTriggerBits->Fill(itb, 8);
+      if (f.Hit) {
+        fTriggerBitsHits->Fill(itb, 8);
+      }
+    }
+    if (f.Alice_1) {
+      fTriggerBits->Fill(itb, 7);
+      if (f.Hit) {
+        fTriggerBitsHits->Fill(itb, 7);
+      }
+    }
+    if (f.Alice_0) {
+      fTriggerBits->Fill(itb, 6);
+      if (f.Hit) {
+        fTriggerBitsHits->Fill(itb, 6);
+      }
+    }
+    if (f.Auto_3) {
+      fTriggerBits->Fill(itb, 5);
+      if (f.Hit) {
+        fTriggerBitsHits->Fill(itb, 5);
+      }
+    }
+    if (f.Auto_2) {
+      fTriggerBits->Fill(itb, 4);
+      if (f.Hit) {
+        fTriggerBitsHits->Fill(itb, 4);
+      }
+    }
+    if (f.Auto_1) {
+      fTriggerBits->Fill(itb, 3);
+      if (f.Hit) {
+        fTriggerBitsHits->Fill(itb, 3);
+      }
+    }
+    if (f.Auto_0) {
+      fTriggerBits->Fill(itb, 2);
+      if (f.Hit) {
+        fTriggerBitsHits->Fill(itb, 2);
+      }
+    }
+    if (f.Auto_m) {
+      fTriggerBits->Fill(itb, 1);
+      if (f.Hit) {
+        fTriggerBitsHits->Fill(itb, 1);
+      }
+    }
+  }
+  if (!(f.Alice_3 || f.Alice_2 || f.Alice_1 || f.Alice_0 || f.Alice_1 || f.Auto_3 || f.Auto_2 || f.Auto_1 || f.Auto_0 || f.Auto_m)) {
+    if (fTriggerBits && fTriggerBitsHits) {
+      fTriggerBits->Fill(itb, 0);
+      if (f.Hit)
+        fTriggerBitsHits->Fill(itb, 0);
+    }
+  }
   // Bunch
+  if ((fOverBc) && f.bc >= o2::constants::lhc::LHCMaxBunches) {
+    fOverBc->Fill(itb);
+  }
   if (f.Alice_0 || f.Auto_0) {
     double bc_d = uint32_t(f.bc / 100);
     double bc_m = uint32_t(f.bc % 100);
@@ -472,26 +567,30 @@ int ZDCRawDataTask::process(const o2::zdc::EventChData& ch)
   }
   if (f.bc == last_bc) {
     // Fill Baseline
-    int32_t offset = 0;
-    if (f.offset > 32768)
-      offset = f.offset - 32768;
-    else
-      offset = f.offset;
-    double foffset = offset / 12.;
+    // int32_t offset =(int32_t) f.offset;
+    // if (offset > 32768) offset = offset - 32768;
+    word16.uns = f.offset;
+    // if (word16.sig < 0) word16.sig = word16.sig + 32768;
     for (int i = 0; i < (int)fMatrixHistoBaseline[f.board][f.ch].size(); i++) {
-      fMatrixHistoBaseline[f.board][f.ch].at(i).histo->Fill(foffset);
+      fMatrixHistoBaseline[f.board][f.ch].at(i).histo->Fill(word16.sig / 12.);
     }
 
     // Fill Counts
+
+    if (fDataLoss && (f.hits & 0x8000))
+      fDataLoss->Fill(f.board, f.ch);
+
     for (int i = 0; i < (int)fMatrixHistoCounts[f.board][f.ch].size(); i++) {
-      fMatrixHistoCounts[f.board][f.ch].at(i).histo->Fill(f.hits);
+      fMatrixHistoCounts[f.board][f.ch].at(i).histo->Fill(f.hits & 0xfff);
     }
 
     // Fill Summary
     if (fMapBinNameIdSummaryHisto.find(getNameChannel(f.board, f.ch)) != fMapBinNameIdSummaryHisto.end()) {
       if (fMatrixHistoBaseline[f.board][f.ch].size() > 0) {
-        fSummaryPedestal->SetBinContent(fMapBinNameIdSummaryHisto[getNameChannel(f.board, f.ch)], fMatrixHistoBaseline[f.board][f.ch].at(0).histo->GetMean());
-        fSummaryPedestal->SetBinError(fMapBinNameIdSummaryHisto[getNameChannel(f.board, f.ch)], fMatrixHistoBaseline[f.board][f.ch].at(0).histo->GetMeanError());
+        if (fSummaryPedestal && fMatrixHistoBaseline[f.board][f.ch].at(0).histo) {
+          fSummaryPedestal->SetBinContent(fMapBinNameIdSummaryHisto[getNameChannel(f.board, f.ch)], fMatrixHistoBaseline[f.board][f.ch].at(0).histo->GetMean());
+          fSummaryPedestal->SetBinError(fMapBinNameIdSummaryHisto[getNameChannel(f.board, f.ch)], fMatrixHistoBaseline[f.board][f.ch].at(0).histo->GetMeanError());
+        }
       }
     }
   }
@@ -708,7 +807,17 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
         return false;
       }
     }
-
+    if (type.compare("DATALOSS") == 0) {
+      fDataLoss = new TH2F(hname, htit, fNumBinX, fMinBinX, fMaxBinX, fNumBinY, fMinBinY, fMaxBinY);
+      getObjectsManager()->startPublishing(fDataLoss);
+      try {
+        getObjectsManager()->addMetadata(fDataLoss->GetName(), fDataLoss->GetName(), "34");
+        return true;
+      } catch (...) {
+        ILOG(Warning, Support) << "Metadata could not be added to " << fDataLoss->GetName() << ENDM;
+        return false;
+      }
+    }
     if (type.compare("TRASMITTEDCHANNEL") == 0) {
       fTrasmChannel = new TH2F(hname, htit, fNumBinX, fMinBinX, fMaxBinX, fNumBinY, fMinBinY, fMaxBinY);
       getObjectsManager()->startPublishing(fTrasmChannel);
@@ -720,7 +829,74 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
         return false;
       }
     }
-
+    if (type.compare("TRIGGER_BIT") == 0) {
+      fTriggerBits = new TH2F(hname, htit, fNumBinX, fMinBinX, fMaxBinX, fNumBinY, fMinBinY, fMaxBinY);
+      fTriggerBits->GetYaxis()->SetBinLabel(10, "Alice_3");
+      fTriggerBits->GetYaxis()->SetBinLabel(9, "Alice_2");
+      fTriggerBits->GetYaxis()->SetBinLabel(8, "Alice_1");
+      fTriggerBits->GetYaxis()->SetBinLabel(7, "Alice_0");
+      fTriggerBits->GetYaxis()->SetBinLabel(6, "Auto_3");
+      fTriggerBits->GetYaxis()->SetBinLabel(5, "Auto_2");
+      fTriggerBits->GetYaxis()->SetBinLabel(4, "Auto_1");
+      fTriggerBits->GetYaxis()->SetBinLabel(3, "Auto_0");
+      fTriggerBits->GetYaxis()->SetBinLabel(2, "Auto_m");
+      fTriggerBits->GetYaxis()->SetBinLabel(1, "None");
+      for (int im = 0; im < o2::zdc::NModules; im++) {
+        for (int ic = 0; ic < o2::zdc::NChPerModule; ic++) {
+          fTriggerBits->GetXaxis()->SetBinLabel(im * o2::zdc::NChPerModule + ic + 1, TString::Format("%d%d", im, ic));
+        }
+      }
+      getObjectsManager()->startPublishing(fTriggerBits);
+      try {
+        getObjectsManager()->addMetadata(fTriggerBits->GetName(), fTriggerBits->GetName(), "34");
+        return true;
+      } catch (...) {
+        ILOG(Warning, Support) << "Metadata could not be added to " << fTriggerBits->GetName() << ENDM;
+        return false;
+      }
+    }
+    if (type.compare("TRIGGER_BIT_HIT") == 0) {
+      fTriggerBitsHits = new TH2F(hname, htit, fNumBinX, fMinBinX, fMaxBinX, fNumBinY, fMinBinY, fMaxBinY);
+      fTriggerBitsHits->GetYaxis()->SetBinLabel(10, "Alice_3");
+      fTriggerBitsHits->GetYaxis()->SetBinLabel(9, "Alice_2");
+      fTriggerBitsHits->GetYaxis()->SetBinLabel(8, "Alice_1");
+      fTriggerBitsHits->GetYaxis()->SetBinLabel(7, "Alice_0");
+      fTriggerBitsHits->GetYaxis()->SetBinLabel(6, "Auto_3");
+      fTriggerBitsHits->GetYaxis()->SetBinLabel(5, "Auto_2");
+      fTriggerBitsHits->GetYaxis()->SetBinLabel(4, "Auto_1");
+      fTriggerBitsHits->GetYaxis()->SetBinLabel(3, "Auto_0");
+      fTriggerBitsHits->GetYaxis()->SetBinLabel(2, "Auto_m");
+      fTriggerBitsHits->GetYaxis()->SetBinLabel(1, "None");
+      for (int im = 0; im < o2::zdc::NModules; im++) {
+        for (int ic = 0; ic < o2::zdc::NChPerModule; ic++) {
+          fTriggerBitsHits->GetXaxis()->SetBinLabel(im * o2::zdc::NChPerModule + ic + 1, TString::Format("%d%d", im, ic));
+        }
+      }
+      getObjectsManager()->startPublishing(fTriggerBitsHits);
+      try {
+        getObjectsManager()->addMetadata(fTriggerBitsHits->GetName(), fTriggerBitsHits->GetName(), "34");
+        return true;
+      } catch (...) {
+        ILOG(Warning, Support) << "Metadata could not be added to " << fTriggerBitsHits->GetName() << ENDM;
+        return false;
+      }
+    }
+    if (type.compare("OVER_BC") == 0) {
+      fOverBc = new TH1F(hname, htit, fNumBinX, fMinBinX, fMaxBinX);
+      for (int im = 0; im < o2::zdc::NModules; im++) {
+        for (int ic = 0; ic < o2::zdc::NChPerModule; ic++) {
+          fOverBc->GetXaxis()->SetBinLabel(im * o2::zdc::NChPerModule + ic + 1, TString::Format("%d%d", im, ic));
+        }
+      }
+      getObjectsManager()->startPublishing(fOverBc);
+      try {
+        getObjectsManager()->addMetadata(fOverBc->GetName(), fOverBc->GetName(), "34");
+        return true;
+      } catch (...) {
+        ILOG(Warning, Support) << "Metadata could not be added to " << fOverBc->GetName() << ENDM;
+        return false;
+      }
+    }
     if (type.compare("SUMMARYBASELINE") == 0) {
       fSummaryPedestal = new TH1F(hname, htit, fNumBinX, fMinBinX, fMaxBinX);
       fSummaryPedestal->GetXaxis()->LabelsOption("v");
@@ -839,6 +1015,18 @@ bool ZDCRawDataTask::decodeConfLine(std::vector<std::string> TokenString, int Li
   if (TokenString.at(0).compare("FIRECHANNEL") == 0) {
     return decodeFireChannel(TokenString, LineNumber);
   }
+  if (TokenString.at(0).compare("DATALOSS") == 0) {
+    return decodeDataLoss(TokenString, LineNumber);
+  }
+  if (TokenString.at(0).compare("TRIGGER_BIT") == 0) {
+    return decodeTriggerBitChannel(TokenString, LineNumber);
+  }
+  if (TokenString.at(0).compare("TRIGGER_BIT_HIT") == 0) {
+    return decodeTriggerBitHitChannel(TokenString, LineNumber);
+  }
+  if (TokenString.at(0).compare("OVER_BC") == 0) {
+    return decodeOverBc(TokenString, LineNumber);
+  }
   if (TokenString.at(0).compare("SUMMARYBASELINE") == 0) {
     return decodeSummaryBaseline(TokenString, LineNumber);
   }
@@ -937,7 +1125,49 @@ bool ZDCRawDataTask::decodeFireChannel(std::vector<std::string> TokenString, int
   return false;
 }
 
+bool ZDCRawDataTask::decodeDataLoss(std::vector<std::string> TokenString, int LineNumber)
+{
+  if (TokenString.size() == 5) {
+    return addNewHisto(TokenString.at(0), TokenString.at(1), TokenString.at(2), TokenString.at(3), TokenString.at(4));
+  }
+  ILOG(Error, Support) << TString::Format("ERROR Line number %d not correct number of paramiter", LineNumber) << ENDM;
+  if (checkCondition(TokenString.at(4)) == false)
+    ILOG(Error, Support) << TString::Format("ERROR Line number %d the condition specified don't exist", LineNumber) << ENDM;
+  return false;
+}
+bool ZDCRawDataTask::decodeOverBc(std::vector<std::string> TokenString, int LineNumber)
+{
+  if (TokenString.size() == 5) {
+    return addNewHisto(TokenString.at(0), TokenString.at(1), TokenString.at(2), TokenString.at(3), TokenString.at(4));
+  }
+  ILOG(Error, Support) << TString::Format("ERROR Line number %d not correct number of paramiter", LineNumber) << ENDM;
+  if (checkCondition(TokenString.at(4)) == false)
+    ILOG(Error, Support) << TString::Format("ERROR Line number %d the condition specified don't exist", LineNumber) << ENDM;
+  return false;
+}
 bool ZDCRawDataTask::decodeTrasmittedChannel(std::vector<std::string> TokenString, int LineNumber)
+{
+  if (TokenString.size() == 5) {
+    return addNewHisto(TokenString.at(0), TokenString.at(1), TokenString.at(2), TokenString.at(3), TokenString.at(4));
+  }
+  ILOG(Error, Support) << TString::Format("ERROR Line number %d not correct number of paramiter", LineNumber) << ENDM;
+  if (checkCondition(TokenString.at(4)) == false)
+    ILOG(Error, Support) << TString::Format("ERROR Line number %d the condition specified don't exist", LineNumber) << ENDM;
+  return false;
+}
+
+bool ZDCRawDataTask::decodeTriggerBitChannel(std::vector<std::string> TokenString, int LineNumber)
+{
+  if (TokenString.size() == 5) {
+    return addNewHisto(TokenString.at(0), TokenString.at(1), TokenString.at(2), TokenString.at(3), TokenString.at(4));
+  }
+  ILOG(Error, Support) << TString::Format("ERROR Line number %d not correct number of paramiter", LineNumber) << ENDM;
+  if (checkCondition(TokenString.at(4)) == false)
+    ILOG(Error, Support) << TString::Format("ERROR Line number %d the condition specified don't exist", LineNumber) << ENDM;
+  return false;
+}
+
+bool ZDCRawDataTask::decodeTriggerBitHitChannel(std::vector<std::string> TokenString, int LineNumber)
 {
   if (TokenString.size() == 5) {
     return addNewHisto(TokenString.at(0), TokenString.at(1), TokenString.at(2), TokenString.at(3), TokenString.at(4));
