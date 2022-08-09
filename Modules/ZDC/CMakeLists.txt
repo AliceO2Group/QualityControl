@@ -29,7 +29,7 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ZDC
 
 # ---- Test(s) ----
 
-set(TEST_SRCS test/testQcZDC.cxx)
+#set(TEST_SRCS test/testQcZDC.cxx) # uncomment to reenable the test which was empty
 
 foreach(test ${TEST_SRCS})
   get_filename_component(test_name ${test} NAME)

@@ -80,7 +80,7 @@ install(
 
 # ---- Test(s) ----
 
-set(TEST_SRCS test/testQcMFT.cxx)
+#set(TEST_SRCS test/testQcMFT.cxx) # uncomment to reenable the test which was empty
 
 foreach(test ${TEST_SRCS})
   get_filename_component(test_name ${test} NAME)

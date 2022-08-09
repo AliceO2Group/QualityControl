@@ -73,14 +73,19 @@ add_root_dictionary(O2QcITS
 
 # ---- Test(s) ----
 
-add_executable(testQcITS test/testITS.cxx)
-target_link_libraries(testQcITS PRIVATE O2QcITS Boost::unit_test_framework O2::ITSMFTReconstruction O2::ITSBase O2::DetectorsBase O2QualityControl)
-add_test(NAME testQcITS COMMAND testQcITS)
-set_tests_properties(testQcITS PROPERTIES TIMEOUT 60)
-install(
-  TARGETS testQcITS
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
+#add_executable(testQcITS test/testITS.cxx) # uncomment to reenable the test which was empty
+foreach(test ${TEST_SRCS})
+  get_filename_component(test_name ${test} NAME)
+  string(REGEX REPLACE ".cxx" "" test_name ${test_name})
+
+  add_executable(${test_name} ${test})
+  target_link_libraries(${test_name}
+    PRIVATE O2QcCPV Boost::unit_test_framework)
+  add_test(NAME ${test_name} COMMAND ${test_name})
+  set_property(TARGET ${test_name}
+    PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
+  set_tests_properties(${test_name} PROPERTIES TIMEOUT 20)
+endforeach()
 
 # ---- Executables ----
 
