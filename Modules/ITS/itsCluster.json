@@ -54,6 +54,17 @@
         "moduleName": "QcITS",
         "policy": "OnEachSeparately",
         "detectorName": "ITS",
+        "checkParameters": {
+          "maxcluoccL0" : "5",
+          "maxcluoccL1" : "4",
+          "maxcluoccL2" : "3",
+          "maxcluoccL3" : "2",
+          "maxcluoccL4" : "1",
+          "maxcluoccL5" : "1",
+          "maxcluoccL6" : "1",
+          "skipxbinsoccupancy" : "",
+          "skipybinsoccupancy" : ""
+        },
         "dataSource": [{
           "type": "Task",
           "name": "ITSClusterTask",

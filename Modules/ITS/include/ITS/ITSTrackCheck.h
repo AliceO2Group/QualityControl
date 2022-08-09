@@ -19,6 +19,7 @@
 #define QC_MODULE_ITS_ITSTRACKCHECK_H
 
 #include "QualityControl/CheckInterface.h"
+#include <TLatex.h>
 
 namespace o2::quality_control_modules::its
 {
@@ -41,6 +42,8 @@ class ITSTrackCheck : public o2::quality_control::checker::CheckInterface
   int getDigit(int number, int digit);
 
  private:
+  std::shared_ptr<TLatex> tInfo;
+  std::shared_ptr<TLatex> tMessage[10];
   ClassDefOverride(ITSTrackCheck, 2);
 };
 
