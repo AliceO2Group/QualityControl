@@ -199,7 +199,7 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   mNOfClustersTime->SetMinimum(0.1);
   getObjectsManager()->startPublishing(mNOfClustersTime.get());
 
-  mClustersBC = std::make_unique<TH1F>("mClustersBC", "Tracks per BC (sum over orbits); BCid; #Entries", ROFsPerOrbit, 0, o2::constants::lhc::LHCMaxBunches);
+  mClustersBC = std::make_unique<TH1F>("mClustersBC", "Clusters per BC (sum over orbits); BCid; #Entries", ROFsPerOrbit, 0, o2::constants::lhc::LHCMaxBunches);
   mClustersBC->SetMinimum(0.1);
   getObjectsManager()->startPublishing(mClustersBC.get());
 
