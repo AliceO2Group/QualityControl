@@ -24,6 +24,7 @@
 #include <DataFormatsITSMFT/TopologyDictionary.h>
 #include "ReconstructionDataFormats/BaseCluster.h"
 #include "MFTBase/GeometryTGeo.h"
+#include <CommonConstants/LHCConstants.h>
 
 // Quality Control
 #include "QualityControl/TaskInterface.h"
@@ -52,6 +53,11 @@ class QcMFTClusterTask /*final*/ : public TaskInterface // todo add back the "fi
   void endOfActivity(Activity& activity) override;
   void reset() override;
 
+  double orbitToSeconds(uint32_t orbit, uint32_t refOrbit)
+  {
+    return (orbit - refOrbit) * o2::constants::lhc::LHCOrbitNS / 1E9;
+  }
+
  private:
   std::unique_ptr<TH1F> mClusterLayerIndexH0 = nullptr;
   std::unique_ptr<TH1F> mClusterLayerIndexH1 = nullptr;
@@ -68,6 +74,10 @@ class QcMFTClusterTask /*final*/ : public TaskInterface // todo add back the "fi
 
   std::unique_ptr<TH1F> mClusterZ = nullptr;
   std::vector<std::unique_ptr<TH2F>> mClusterXYinLayer;
+
+  std::unique_ptr<TH1F> mClustersROFSize = nullptr;
+  std::unique_ptr<TH1F> mNOfClustersTime = nullptr;
+  std::unique_ptr<TH1F> mClustersBC = nullptr;
 
   std::vector<o2::BaseCluster<float>> mClustersGlobal;
 
@@ -93,6 +103,9 @@ class QcMFTClusterTask /*final*/ : public TaskInterface // todo add back the "fi
 
   // where the geometry file is stored
   std::string mGeomPath;
+
+  // reference orbit used in relative time calculation
+  uint32_t mRefOrbit = 0;
 };
 
 } // namespace o2::quality_control_modules::mft

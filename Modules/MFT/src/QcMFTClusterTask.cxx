@@ -26,6 +26,7 @@
 #include <DataFormatsITSMFT/Cluster.h>
 #include <DataFormatsITSMFT/CompCluster.h>
 #include <Framework/InputRecord.h>
+#include <Framework/TimingInfo.h>
 #include <DataFormatsITSMFT/ROFRecord.h>
 #include <DataFormatsITSMFT/ClusterTopology.h>
 #include <ITSMFTReconstruction/ChipMappingMFT.h>
@@ -68,6 +69,34 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {
     ILOG(Info, Support) << "Custom parameter - myOwnKey: " << param->second << ENDM;
   }
+
+  // loading custom parameters
+  auto maxClusterROFSize = 5000;
+  if (auto param = mCustomParameters.find("maxClusterROFSize"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - maxClusterROFSize: " << param->second << ENDM;
+    maxClusterROFSize = stoi(param->second);
+  }
+
+  auto maxDuration = 60.f;
+  if (auto param = mCustomParameters.find("maxDuration"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - maxDuration: " << param->second << ENDM;
+    maxDuration = stof(param->second);
+  }
+
+  auto timeBinSize = 0.01f;
+  if (auto param = mCustomParameters.find("timeBinSize"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - timeBinSize: " << param->second << ENDM;
+    timeBinSize = stof(param->second);
+  }
+
+  auto NofTimeBins = static_cast<int>(maxDuration / timeBinSize);
+
+  auto ROFLengthInBC = 198;
+  if (auto param = mCustomParameters.find("ROFLengthInBC"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - ROFLengthInBC: " << param->second << ENDM;
+    ROFLengthInBC = stoi(param->second);
+  }
+  auto ROFsPerOrbit = o2::constants::lhc::LHCMaxBunches / ROFLengthInBC;
 
   if (auto param = mCustomParameters.find("geomFileName"); param != mCustomParameters.end()) {
     ILOG(Info, Devel) << "Custom parameter - geometry filename: " << param->second << ENDM;
@@ -161,6 +190,19 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   mClusterZ->SetStats(0);
   getObjectsManager()->startPublishing(mClusterZ.get());
 
+  mClustersROFSize = std::make_unique<TH1F>("mClustersROFSize", "Cluster ROFs size; ROF Size (#Clusters); #Entries", maxClusterROFSize, 0, maxClusterROFSize);
+  mClustersROFSize->SetStats(0);
+  getObjectsManager()->startPublishing(mClustersROFSize.get());
+  getObjectsManager()->setDisplayHint(mClustersROFSize.get(), "logx logy");
+
+  mNOfClustersTime = std::make_unique<TH1F>("mNOfClustersTime", "Number of clusters per time bin; time (s); #Entries", NofTimeBins, 0, maxDuration);
+  mNOfClustersTime->SetMinimum(0.1);
+  getObjectsManager()->startPublishing(mNOfClustersTime.get());
+
+  mClustersBC = std::make_unique<TH1F>("mClustersBC", "Clusters per BC (sum over orbits); BCid; #Entries", ROFsPerOrbit, 0, o2::constants::lhc::LHCMaxBunches);
+  mClustersBC->SetMinimum(0.1);
+  getObjectsManager()->startPublishing(mClustersBC.get());
+
   // get dict from ccdb
   long int ts = o2::ccdb::getCurrentTimestamp();
   ILOG(Info, Support) << "Getting dictionary from ccdb - timestamp: " << ts << ENDM;
@@ -227,6 +269,7 @@ void QcMFTClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   // get the clusters
   const auto clusters = ctx.inputs().get<gsl::span<o2::itsmft::CompClusterExt>>("randomcluster");
+  const auto clustersROFs = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("clustersrof");
 
   if (clusters.size() < 1)
     return;
@@ -240,7 +283,18 @@ void QcMFTClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
   mClustersGlobal.reserve(clusters.size());
   o2::mft::ioutils::convertCompactClusters(clusters, patternIt, mClustersGlobal, mDict);
 
-  // fill the histograms
+  // get correct timing info of the first TF orbit
+  mRefOrbit = ctx.services().get<o2::framework::TimingInfo>().firstTForbit;
+
+  // fill the clusters time histograms
+  for (const auto& rof : clustersROFs) {
+    mClustersROFSize->Fill(rof.getNEntries());
+    float seconds = orbitToSeconds(rof.getBCData().orbit, mRefOrbit) + rof.getBCData().bc * o2::constants::lhc::LHCBunchSpacingNS * 1e-9;
+    mNOfClustersTime->Fill(seconds, rof.getNEntries());
+    mClustersBC->Fill(rof.getBCData().bc, rof.getNEntries());
+  }
+
+  // fill all other histograms
   for (auto& oneCluster : clusters) {
     int sensorID = oneCluster.getSensorID();
     int layerID = mDisk[sensorID] * 2 + mFace[sensorID];
@@ -301,6 +355,9 @@ void QcMFTClusterTask::reset()
   mClusterLayerIndexH1->Reset();
   mClusterOccupancySummary->Reset();
   mClusterZ->Reset();
+  mClustersROFSize->Reset();
+  mNOfClustersTime->Reset();
+  mClustersBC->Reset();
   for (int i = 0; i < 20; i++) {
     mClusterChipOccupancyMap[i]->Reset();
   }
