@@ -19,8 +19,6 @@
 #include "QualityControl/TaskRunner.h"
 #include "QualityControl/TaskRunnerFactory.h"
 #include "QualityControl/AggregatorRunnerFactory.h"
-#include "QualityControl/Aggregator.h"
-#include "QualityControl/CheckRunner.h"
 #include "QualityControl/Check.h"
 #include "QualityControl/CheckRunnerFactory.h"
 #include "QualityControl/PostProcessingDevice.h"
@@ -32,7 +30,6 @@
 #include "QualityControl/RootFileSink.h"
 #include "QualityControl/RootFileSource.h"
 
-#include <Configuration/ConfigurationFactory.h>
 #include <Framework/DataSpecUtils.h>
 #include <Framework/ExternalFairMQDeviceProxy.h>
 #include <Framework/DataDescriptorQueryBuilder.h>

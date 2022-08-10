@@ -27,6 +27,7 @@
 #include <Framework/ConfigParamRegistry.h>
 
 #include <utility>
+#include <TSystem.h>
 
 // QC
 #include "QualityControl/DatabaseFactory.h"

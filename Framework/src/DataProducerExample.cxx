@@ -15,13 +15,9 @@
 ///
 #include "QualityControl/DataProducerExample.h"
 
-#include <random>
-#include <Common/Timer.h>
-
 using namespace o2::framework;
 
 using SubSpec = o2::header::DataHeader::SubSpecificationType;
-using namespace AliceO2::Common;
 
 namespace o2::quality_control::core
 {

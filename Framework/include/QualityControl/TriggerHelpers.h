@@ -17,8 +17,13 @@
 #define QUALITYCONTROL_TRIGGERHELPERS_H
 
 #include "QualityControl/Triggers.h"
-#include "QualityControl/PostProcessingConfig.h"
+#include <vector>
+#include <string>
 
+namespace o2::quality_control::postprocessing
+{
+class PostProcessingConfig;
+}
 namespace o2::quality_control::postprocessing::trigger_helpers
 {
 

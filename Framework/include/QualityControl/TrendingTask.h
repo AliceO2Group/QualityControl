@@ -18,8 +18,8 @@
 #define QUALITYCONTROL_TRENDINGTASK_H
 
 #include "QualityControl/PostProcessingInterface.h"
-#include "QualityControl/TrendingTaskConfig.h"
 #include "QualityControl/Reductor.h"
+#include "QualityControl/TrendingTaskConfig.h"
 
 #include <memory>
 #include <unordered_map>

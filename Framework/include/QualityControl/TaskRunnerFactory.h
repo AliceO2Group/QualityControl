@@ -17,12 +17,10 @@
 #ifndef QC_CORE_TASKRUNNERFACTORY_H
 #define QC_CORE_TASKRUNNERFACTORY_H
 
-#include <string>
 #include <vector>
+#include <optional>
 
 #include <Framework/DataProcessorSpec.h>
-#include "QualityControl/CommonSpec.h"
-#include "QualityControl/TaskSpec.h"
 
 namespace o2::framework
 {
@@ -32,7 +30,9 @@ class CompletionPolicy;
 namespace o2::quality_control::core
 {
 
+struct TaskSpec;
 struct TaskRunnerConfig;
+struct CommonSpec;
 
 /// \brief Factory in charge of creating DataProcessorSpec of QC task
 class TaskRunnerFactory

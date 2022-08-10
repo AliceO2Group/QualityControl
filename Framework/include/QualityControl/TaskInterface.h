@@ -18,26 +18,19 @@
 #ifndef QC_CORE_TASKINTERFACE_H
 #define QC_CORE_TASKINTERFACE_H
 
-#include <map>
 #include <memory>
-#include <string>
-#include <unordered_map>
 // O2
 #include <Framework/InitContext.h>
 #include <Framework/ProcessingContext.h>
-#include <Monitoring/Monitoring.h>
 // QC
 #include "QualityControl/Activity.h"
 #include "QualityControl/ObjectsManager.h"
-#include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/UserCodeInterface.h"
 
-namespace o2::ccdb
+namespace o2::monitoring
 {
-class CcdbApi;
+class Monitoring;
 }
-
-class TObject;
 
 namespace o2::quality_control::core
 {
