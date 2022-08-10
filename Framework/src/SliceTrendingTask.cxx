@@ -339,7 +339,11 @@ void SliceTrendingTask::drawCanvasMO(TCanvas* thisCanvas, const std::string& var
 
       const std::string_view title = (dataRetrieveVector->at(p)).title;
       const auto posDivider = title.find("RangeX");
-      gr->SetName(title.substr(posDivider, -1).data());
+      if(posDivider != title.npos){
+        gr->SetName(title.substr(posDivider, -1).data());
+      } else {
+        gr->SetName(title.data());
+      }
 
       myReader.Restart();
       multigraph->Add(gr);
