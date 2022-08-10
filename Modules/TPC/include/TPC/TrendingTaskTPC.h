@@ -61,9 +61,13 @@ class TrendingTaskTPC : public PostProcessingInterface
   void finalize(Trigger, framework::ServiceRegistry&) final;
 
  private:
-  struct MetaData {
-    Int_t runNumber = 0;
-  };
+  struct {
+    Long64_t runNumber = 0;
+    static const char* getBranchLeafList()
+    {
+      return "runNumber/L";
+    }
+  } mMetaData;
 
   /// \brief Methods specific to the trending itself.
   void trendValues(const Trigger& t, o2::quality_control::repository::DatabaseInterface&);
@@ -81,7 +85,6 @@ class TrendingTaskTPC : public PostProcessingInterface
   void beautifyGraph(T& graph, const TrendingTaskConfigTPC::Plot& plotconfig, TCanvas* canv); // beautify function for TGraphs and TMultiGraphs
 
   TrendingTaskConfigTPC mConfig;
-  MetaData mMetaData;
   UInt_t mTime;
   std::unique_ptr<TTree> mTrend;
   std::map<std::string, TObject*> mPlots;
