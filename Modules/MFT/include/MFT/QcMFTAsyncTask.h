@@ -78,14 +78,8 @@ class QcMFTAsyncTask /*final*/ : public TaskInterface // todo add back the "fina
   std::unique_ptr<TH1F> mTrackTanl = nullptr;
 
   std::unique_ptr<TH1F> mTrackROFNEntries = nullptr;
-  std::unique_ptr<TH1F> mClusterROFNEntries = nullptr;
   std::unique_ptr<TH1F> mTracksBC = nullptr;
-
   std::unique_ptr<TH1F> mNOfTracksTime = nullptr;
-  std::unique_ptr<TH1F> mNOfClustersTime = nullptr;
-
-  std::unique_ptr<TH1F> mClusterSensorIndex = nullptr;
-  std::unique_ptr<TH1F> mClusterPatternIndex = nullptr;
 
   uint32_t mRefOrbit = 0; // Reference orbit used in relative time calculation
 
