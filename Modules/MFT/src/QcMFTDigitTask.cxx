@@ -25,6 +25,7 @@
 #include <DataFormatsITSMFT/Digit.h>
 #include <DataFormatsITSMFT/ROFRecord.h>
 #include <Framework/InputRecord.h>
+#include <Framework/TimingInfo.h>
 #include <ITSMFTReconstruction/ChipMappingMFT.h>
 // Quality Control
 #include "QualityControl/QcInfoLogger.h"
@@ -52,10 +53,39 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
     ILOG(Info, Support) << "Custom parameter - FLP: " << param->second << ENDM;
     mCurrentFLP = stoi(param->second);
   }
+
+  // loading custom parameters
   if (auto param = mCustomParameters.find("NoiseScan"); param != mCustomParameters.end()) {
     ILOG(Info, Support) << "Custom parameter - NoiseScan: " << param->second << ENDM;
     mNoiseScan = stoi(param->second);
   }
+
+  auto maxDigitROFSize = 5000;
+  if (auto param = mCustomParameters.find("maxDigitROFSize"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - maxDigitROFSize: " << param->second << ENDM;
+    maxDigitROFSize = stoi(param->second);
+  }
+
+  auto maxDuration = 60.f;
+  if (auto param = mCustomParameters.find("maxDuration"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - maxDuration: " << param->second << ENDM;
+    maxDuration = stof(param->second);
+  }
+
+  auto timeBinSize = 0.01f;
+  if (auto param = mCustomParameters.find("timeBinSize"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - timeBinSize: " << param->second << ENDM;
+    timeBinSize = stof(param->second);
+  }
+
+  auto NofTimeBins = static_cast<int>(maxDuration / timeBinSize);
+
+  auto ROFLengthInBC = 198;
+  if (auto param = mCustomParameters.find("ROFLengthInBC"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - ROFLengthInBC: " << param->second << ENDM;
+    ROFLengthInBC = stoi(param->second);
+  }
+  auto ROFsPerOrbit = o2::constants::lhc::LHCMaxBunches / ROFLengthInBC;
 
   getChipMapData();
 
@@ -122,6 +152,19 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
   mDigitOccupancySummary->SetStats(0);
   getObjectsManager()->startPublishing(mDigitOccupancySummary.get());
   getObjectsManager()->setDefaultDrawOptions(mDigitOccupancySummary.get(), "colz");
+
+  mDigitsROFSize = std::make_unique<TH1F>("mDigitsROFSize", "Digits ROFs size; ROF Size (#Digits); #Entries", maxDigitROFSize, 0, maxDigitROFSize);
+  mDigitsROFSize->SetStats(0);
+  getObjectsManager()->startPublishing(mDigitsROFSize.get());
+  getObjectsManager()->setDisplayHint(mDigitsROFSize.get(), "logx logy");
+
+  mNOfDigitsTime = std::make_unique<TH1F>("mNOfDigitsTime", "Number of Digits per time bin; time (s); #Entries", NofTimeBins, 0, maxDuration);
+  mNOfDigitsTime->SetMinimum(0.1);
+  getObjectsManager()->startPublishing(mNOfDigitsTime.get());
+
+  mDigitsBC = std::make_unique<TH1F>("mDigitsBC", "Digits per BC (sum over orbits); BCid; #Entries", ROFsPerOrbit, 0, o2::constants::lhc::LHCMaxBunches);
+  mDigitsBC->SetMinimum(0.1);
+  getObjectsManager()->startPublishing(mDigitsBC.get());
 
   // --Chip hit maps
   //==============================================
@@ -211,6 +254,17 @@ void QcMFTDigitTask::monitorData(o2::framework::ProcessingContext& ctx)
   mDigitChipOccupancy->Fill(-1, nROFs);
   mDigitOccupancySummary->Fill(-1, -1, nROFs);
 
+  // get correct timing info of the first TF orbit
+  mRefOrbit = ctx.services().get<o2::framework::TimingInfo>().firstTForbit;
+
+  // fill the digits time histograms
+  for (const auto& rof : rofs) {
+    mDigitsROFSize->Fill(rof.getNEntries());
+    float seconds = orbitToSeconds(rof.getBCData().orbit, mRefOrbit) + rof.getBCData().bc * o2::constants::lhc::LHCBunchSpacingNS * 1e-9;
+    mNOfDigitsTime->Fill(seconds, rof.getNEntries());
+    mDigitsBC->Fill(rof.getBCData().bc, rof.getNEntries());
+  }
+
   // fill the pixel hit maps and overview histograms
   for (auto& oneDigit : digits) {
 
@@ -266,6 +320,9 @@ void QcMFTDigitTask::reset()
   if (mNoiseScan == 1)
     mDigitChipStdDev->Reset();
   mDigitOccupancySummary->Reset();
+  mDigitsROFSize->Reset();
+  mNOfDigitsTime->Reset();
+  mDigitsBC->Reset();
 
   // maps
   for (int iVectorOccupancyMapIndex = 0; iVectorOccupancyMapIndex < 4; iVectorOccupancyMapIndex++) {
