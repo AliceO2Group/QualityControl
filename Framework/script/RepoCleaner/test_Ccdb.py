@@ -2,11 +2,9 @@ import logging
 import unittest
 import requests
 import responses
-# import yaml
 
-from Ccdb import Ccdb
-import repoCleaner
-from repoCleaner import parseConfig, Rule, findMatchingRule
+from Ccdb import Ccdb, ObjectVersion
+from rules import production
 
 class TestCcdb(unittest.TestCase):
     

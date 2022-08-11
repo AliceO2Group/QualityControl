@@ -107,6 +107,7 @@ class Ccdb:
             # print(f"\n***object_path : {object_path}")
             version = ObjectVersion(path=object_path['path'], uuid=object_path['id'], validFrom=object_path['validFrom'], validTo=object_path['validUntil'], metadata=object_path)
             versions.insert(0, version)
+        versions.sort(key=lambda v: v.validFrom, reverse=False)
         return versions
 
     @dryable.Dryable()
@@ -122,10 +123,10 @@ class Ccdb:
             r = requests.delete(url_delete, headers=headers)
             r.raise_for_status()
             self.counter_deleted += 1
-        except requests.exceptions.RequestException as e:  
+        except requests.exceptions.RequestException as e:
             print(e)
-            sys.exit(1)  # really ? 
-        
+            sys.exit(1)  # really ?
+
     @dryable.Dryable()
     def updateValidity(self, version: ObjectVersion, valid_from: int, valid_to: int, metadata=None):
         '''
