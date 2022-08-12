@@ -10,12 +10,12 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   BasicPPTask.h
+/// \file   PostProcTask.h
 /// \author Sebastian Bysiak sbysiak@cern.ch
 ///
 
-#ifndef QC_MODULE_FT0_BASICPPTASK_H
-#define QC_MODULE_FT0_BASICPPTASK_H
+#ifndef QC_MODULE_FT0_POSTPROCTASK_H
+#define QC_MODULE_FT0_POSTPROCTASK_H
 
 #include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/DatabaseInterface.h"
@@ -39,11 +39,11 @@ namespace o2::quality_control_modules::ft0
 
 /// \brief Basic Postprocessing Task for FT0, computes among others the trigger rates
 /// \author Sebastian Bysiak sbysiak@cern.ch
-class BasicPPTask final : public quality_control::postprocessing::PostProcessingInterface
+class PostProcTask final : public quality_control::postprocessing::PostProcessingInterface
 {
  public:
-  BasicPPTask() = default;
-  ~BasicPPTask() override;
+  PostProcTask() = default;
+  ~PostProcTask() override;
   void configure(std::string, const boost::property_tree::ptree&) override;
   void initialize(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
   void update(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
@@ -86,4 +86,4 @@ class BasicPPTask final : public quality_control::postprocessing::PostProcessing
 
 } // namespace o2::quality_control_modules::ft0
 
-#endif // QC_MODULE_FT0_BASICPPTASK_H
+#endif // QC_MODULE_FT0_POSTPROCTASK_H

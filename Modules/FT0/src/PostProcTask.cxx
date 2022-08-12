@@ -10,11 +10,11 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   BasicPPTask.cxx
+/// \file   PostProcTask.cxx
 /// \author Sebastian Bysiak sbysiak@cern.ch
 ///
 
-#include "FT0/BasicPPTask.h"
+#include "FT0/PostProcTask.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "CommonConstants/LHCConstants.h"
 // #include "CommonDataFormat/BunchFilling.h"
@@ -32,13 +32,13 @@ using namespace o2::quality_control::postprocessing;
 namespace o2::quality_control_modules::ft0
 {
 
-BasicPPTask::~BasicPPTask()
+PostProcTask::~PostProcTask()
 {
   delete mAmpl;
   delete mTime;
 }
 
-void BasicPPTask::configure(std::string, const boost::property_tree::ptree& config)
+void PostProcTask::configure(std::string, const boost::property_tree::ptree& config)
 {
   mCcdbUrl = config.get_child("qc.config.conditionDB.url").get_value<std::string>();
 
@@ -82,7 +82,7 @@ void BasicPPTask::configure(std::string, const boost::property_tree::ptree& conf
   }
 }
 
-void BasicPPTask::initialize(Trigger, framework::ServiceRegistry& services)
+void PostProcTask::initialize(Trigger, framework::ServiceRegistry& services)
 {
   mDatabase = &services.get<o2::quality_control::repository::DatabaseInterface>();
   mCcdbApi.init(mCcdbUrl);
@@ -176,7 +176,7 @@ void BasicPPTask::initialize(Trigger, framework::ServiceRegistry& services)
   getObjectsManager()->startPublishing(mTime);
 }
 
-void BasicPPTask::update(Trigger t, framework::ServiceRegistry&)
+void PostProcTask::update(Trigger t, framework::ServiceRegistry&)
 {
   auto mo = mDatabase->retrieveMO(mPathDigitQcTask, "TriggersCorrelation", t.timestamp, t.activity);
   auto hTrgCorr = mo ? (TH2F*)mo->getObject() : nullptr;
@@ -371,7 +371,7 @@ void BasicPPTask::update(Trigger t, framework::ServiceRegistry&)
   }
 }
 
-void BasicPPTask::finalize(Trigger t, framework::ServiceRegistry&)
+void PostProcTask::finalize(Trigger t, framework::ServiceRegistry&)
 {
 }
 
