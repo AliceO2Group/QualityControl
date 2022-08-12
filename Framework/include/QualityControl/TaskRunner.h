@@ -23,13 +23,9 @@
 #include <Framework/Task.h>
 #include <Framework/DataProcessorSpec.h>
 #include <Framework/CompletionPolicy.h>
-#include <Framework/EndOfStreamContext.h>
-#include <Framework/InputSpan.h>
 #include <Headers/DataHeader.h>
-#include <Framework/InitContext.h>
 // QC
 #include "QualityControl/TaskRunnerConfig.h"
-#include "QualityControl/TaskInterface.h"
 
 namespace o2::configuration
 {
@@ -41,8 +37,19 @@ namespace o2::monitoring
 class Monitoring;
 }
 
+namespace o2::framework
+{
+class EndOfStreamContext;
+class InputSpan;
+class InitContext;
+class ProcessingContext;
+} // namespace o2::framework
+
 namespace o2::quality_control::core
 {
+
+class TaskInterface;
+class ObjectsManager;
 
 /// \brief A class driving the execution of a QC task inside DPL.
 ///

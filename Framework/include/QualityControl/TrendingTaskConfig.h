@@ -48,8 +48,8 @@ struct TrendingTaskConfig : PostProcessingConfig {
     std::string moduleName;
   };
 
-  bool producePlotsOnUpdate;
-  bool resumeTrend;
+  bool producePlotsOnUpdate{};
+  bool resumeTrend{};
   std::vector<Plot> plots;
   std::vector<DataSource> dataSources;
 };

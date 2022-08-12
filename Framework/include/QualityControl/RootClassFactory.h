@@ -22,14 +22,8 @@
 #include <Common/Exceptions.h>
 // ROOT
 #include <TClass.h>
-#include <TROOT.h>
-#include <TSystem.h>
-// Boost
-#include <boost/filesystem/path.hpp>
 // QC
 #include "QualityControl/QcInfoLogger.h"
-
-namespace bfs = boost::filesystem;
 
 namespace o2::quality_control::core
 {

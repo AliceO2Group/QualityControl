@@ -18,6 +18,7 @@
 #include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/PostProcessingFactory.h"
 #include <Configuration/ConfigurationFactory.h>
+#include <Framework/ServiceRegistry.h>
 
 #define BOOST_TEST_MODULE PostProcessingRunner test
 #define BOOST_TEST_MAIN

@@ -11,8 +11,10 @@
 
 #include "QualityControl/PostProcessingRunner.h"
 
+#include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/PostProcessingFactory.h"
 #include "QualityControl/PostProcessingConfig.h"
+#include "QualityControl/PostProcessingTaskSpec.h"
 #include "QualityControl/TriggerHelpers.h"
 #include "QualityControl/DatabaseFactory.h"
 #include "QualityControl/QcInfoLogger.h"
@@ -22,6 +24,7 @@
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/runnerUtils.h"
 #include "QualityControl/ConfigParamGlo.h"
+#include "QualityControl/MonitorObjectCollection.h"
 
 #include <utility>
 #include <Framework/DataAllocator.h>

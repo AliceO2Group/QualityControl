@@ -17,12 +17,11 @@
 #ifndef QUALITYCONTROL_POSTPROCESSINGFACTORY_H
 #define QUALITYCONTROL_POSTPROCESSINGFACTORY_H
 
-#include "QualityControl/PostProcessingConfig.h"
-
 namespace o2::quality_control::postprocessing
 {
 
 class PostProcessingInterface;
+class PostProcessingConfig;
 
 /// \brief Factory in charge of creating post-processing tasks
 ///

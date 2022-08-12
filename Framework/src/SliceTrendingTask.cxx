@@ -16,18 +16,14 @@
 /// \author   Based on the work from Piotr Konopka
 ///
 
+#include "QualityControl/SliceTrendingTask.h"
 #include "QualityControl/DatabaseInterface.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/QcInfoLogger.h"
-#include "QualityControl/SliceTrendingTask.h"
 #include "QualityControl/RepoPathUtils.h"
 
-#include <boost/property_tree/ptree.hpp>
-#include <boost/algorithm/string.hpp>
 #include <string>
-#include <TDatime.h>
-#include <TGraph.h>
 #include <TGraphErrors.h>
 #include <TTreeReader.h>
 #include <TTreeReaderValue.h>

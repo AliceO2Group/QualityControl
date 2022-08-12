@@ -19,6 +19,7 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 #include "QualityControl/DataSourceSpec.h"
 

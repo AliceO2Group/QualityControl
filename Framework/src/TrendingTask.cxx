@@ -21,11 +21,10 @@
 #include "QualityControl/Reductor.h"
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/RepoPathUtils.h"
-#include <boost/property_tree/ptree.hpp>
+
 #include <TH1.h>
 #include <TCanvas.h>
 #include <TPaveText.h>
-#include <TDatime.h>
 #include <TGraphErrors.h>
 #include <TPoint.h>
 
