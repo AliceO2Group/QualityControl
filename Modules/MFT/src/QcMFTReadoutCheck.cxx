@@ -146,6 +146,34 @@ Quality QcMFTReadoutCheck::check(std::map<std::string, std::shared_ptr<MonitorOb
       result = checkQualityStatus(hWarning, mVectorOfWarningBins);
     }
 
+    if (mo->getName() == "mZoneSummaryChipError") {
+      auto* hErrorSummary = dynamic_cast<TH2F*>(mo->getObject());
+
+      float den = hErrorSummary->GetBinContent(0, 0); // normalisation stored in the underflow bin
+
+      for (int iBinX = 0; iBinX < hErrorSummary->GetNbinsX(); iBinX++) {
+        for (int iBinY = 0; iBinY < hErrorSummary->GetNbinsY(); iBinY++) {
+          float num = hErrorSummary->GetBinContent(iBinX + 1, iBinY + 1);
+          float ratio = (den > 0) ? (num / den) : 0.0;
+          hErrorSummary->SetBinContent(iBinX + 1, iBinY + 1, ratio);
+        }
+      }
+    }
+
+    if (mo->getName() == "mZoneSummaryChipFault") {
+      auto* hFaultSummary = dynamic_cast<TH2F*>(mo->getObject());
+
+      float den = hFaultSummary->GetBinContent(0, 0); // normalisation stored in the underflow bin
+
+      for (int iBinX = 0; iBinX < hFaultSummary->GetNbinsX(); iBinX++) {
+        for (int iBinY = 0; iBinY < hFaultSummary->GetNbinsY(); iBinY++) {
+          float num = hFaultSummary->GetBinContent(iBinX + 1, iBinY + 1);
+          float ratio = (den > 0) ? (num / den) : 0.0;
+          hFaultSummary->SetBinContent(iBinX + 1, iBinY + 1, ratio);
+        }
+      }
+    }
+
     if (mo->getName() == "mRDHSummary") {
       auto* hSLS = dynamic_cast<TH1F*>(mo->getObject());
       float den = hSLS->GetBinContent(0); // normalisation stored in the uderflow bin
