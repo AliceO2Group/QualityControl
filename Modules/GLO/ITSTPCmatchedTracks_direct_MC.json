@@ -28,7 +28,7 @@
                        "" : "Message at this level or above are discarded (default: 21 - Trace)" }
     },
     "tasks" : {
-      "MTCITSTPC" : {
+      "MatchedTracksITSTPC" : {
         "active" : "true",
         "className" : "o2::quality_control_modules::glo::ITSTPCMatchingTask",
         "moduleName" : "QcGLO",
@@ -36,41 +36,42 @@
         "cycleDurationSeconds" : "3600",
         "maxNumberCycles" : "-1",
         "dataSource" : {
-          "type" : "dataSamplingPolicy",
-          "name" : "ITSTPCmatchSamp"
+          "type" : "direct",
+          "query_comment" : "checking every matched track",
+          "query" : "trackITSTPC:GLO/TPCITS/0;trackITSTPCABREFS:GLO/TPCITSAB_REFS/0;trackITSTPCABCLID:GLO/TPCITSAB_CLID/0;trackTPC:TPC/TRACKS;trackTPCClRefs:TPC/CLUSREFS;trackTPCMCTR:TPC/TRACKSMCLBL;trackITSTPCMCTR:GLO/TPCITS_MC;trackITSTPCABMCTR:GLO/TPCITSAB_MC"
         },
         "taskParameters" : {
           "GID" : "ITS-TPC,ITS",
           "verbose" : "false",
           "minPtCut" : "0.1f",
           "etaCut" : "1.4f",
-          "minNTPCClustersCut" : "60",
+          "minNTPCClustersCut" : "40",
           "minDCACut" : "100.f",
           "minDCACutY" : "10.f",
           "grpFileName" : "o2sim_grp.root",
-          "geomFileName" : "o2sim_geometry-aligned.root"
+          "geomFileName" : "o2sim_geometry.root",
+          "isMC" : "true"
         },
         "location" : "remote",
         "saveObjectsToFile" : "ITSTPCmatched.root",
         "" : "For debugging, path to the file where to save. If empty or missing it won't save."
       }
+    },
+    "checks" : {
+      "QcCheck" : {
+        "active" : "false",
+        "className" : "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName" : "QcSkeleton",
+        "policy" : "OnAny",
+        "detectorName" : "TOF",
+        "dataSource" : [ {
+          "type" : "Task",
+          "name" : "QcTask",
+          "MOs" : ["example"]
+        } ]
+      }
     }
   },
          "dataSamplingPolicies" : [
-           {
-             "id" : "ITSTPCmatchSamp",
-             "active" : "true",
-             "machines" : [],
-             "query_comment" : "checking every 10% matched track",
-             "query" : "trackITSTPC:GLO/TPCITS/0;trackITSTPCABREFS:GLO/TPCITSAB_REFS/0;trackITSTPCABCLID:GLO/TPCITSAB_CLID/0;trackTPC:TPC/TRACKS;trackTPCClRefs:TPC/CLUSREFS",
-             "samplingConditions" : [
-               {
-                 "condition" : "random",
-                 "fraction" : "0.1",
-                 "seed" : "1234"
-               }
-             ],
-             "blocking" : "false"
-           }
          ]
 }
