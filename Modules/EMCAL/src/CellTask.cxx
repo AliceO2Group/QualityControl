@@ -77,6 +77,10 @@ CellTask::~CellTask()
     delete mCells_ev_DCAL;
   if (mCells_ev_DCAL_Thres)
     delete mCells_ev_DCAL_Thres;
+  if (mFracGoodCellsEvent)
+    delete mFracGoodCellsEvent;
+  if (mFracGoodCellsSM)
+    delete mFracGoodCellsSM;
 }
 
 void CellTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -102,7 +106,7 @@ void CellTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   mTaskSettings.mHasAmpVsCellID = get_bool(getConfigValueLower("hasAmpVsCell")),
   mTaskSettings.mHasTimeVsCellID = get_bool(getConfigValueLower("hasTimeVsCell")),
-  mTaskSettings.mHasHistosCalib2D = get_bool(getConfigValueLower("hasHistValibVsCell"));
+  mTaskSettings.mHasHistosCalib2D = get_bool(getConfigValueLower("hasHistCalib2D"));
   if (hasConfigValue("thresholdTimePhys"))
     mTaskSettings.mAmpThresholdTimePhys = get_double(getConfigValue("thresholdTimePhys"));
   if (hasConfigValue("thresholdTimeCalib"))
@@ -212,6 +216,20 @@ void CellTask::initialize(o2::framework::InitContext& /*ctx*/)
   mCells_ev_DCAL_Thres->GetXaxis()->SetTitle("ncellsperEvent");
   mCells_ev_DCAL_Thres->SetStats(0);
   getObjectsManager()->startPublishing(mCells_ev_DCAL_Thres);
+
+  mFracGoodCellsEvent = new TH2D("fractionGoodCellsEvent", "Fraction of good cells / event", 3, -0.5, 2.5, 11, 0., 1.1);
+  mFracGoodCellsEvent->GetXaxis()->SetBinLabel(1, "All");
+  mFracGoodCellsEvent->GetXaxis()->SetBinLabel(2, "EMCAL");
+  mFracGoodCellsEvent->GetXaxis()->SetBinLabel(3, "DCAL");
+  mFracGoodCellsEvent->GetYaxis()->SetTitle("Fraction good");
+  mFracGoodCellsEvent->SetStats(0);
+  getObjectsManager()->startPublishing(mFracGoodCellsEvent);
+
+  mFracGoodCellsSM = new TH2D("fractionGoodCellsSupermodule", "Fraction of good cells / supermodule", 20, -0.5, 19.5, 11, 0., 1.1);
+  mFracGoodCellsSM->GetXaxis()->SetTitle("Supermodule ID");
+  mFracGoodCellsSM->GetYaxis()->SetTitle("Fraction good");
+  mFracGoodCellsSM->SetStats(0);
+  getObjectsManager()->startPublishing(mFracGoodCellsSM);
 }
 
 void CellTask::startOfActivity(Activity& /*activity*/)
@@ -281,6 +299,8 @@ void CellTask::monitorData(o2::framework::ProcessingContext& ctx)
   int eventcounterPHYS = 0;
   std::array<int, 20> numCellsSM;
   std::array<int, 20> numCellsSM_Thres;
+  std::array<int, 20> numCellsGood;
+  std::array<int, 20> numCellsBad;
   std::fill(numCellsSM.begin(), numCellsSM.end(), 0);
   std::fill(numCellsSM_Thres.begin(), numCellsSM_Thres.end(), 0);
   for (auto trg : combinedEvents) {
@@ -309,6 +329,8 @@ void CellTask::monitorData(o2::framework::ProcessingContext& ctx)
     auto histos = mHistogramContainer[trgClass];
     std::fill(numCellsSM.begin(), numCellsSM.end(), 0);
     std::fill(numCellsSM_Thres.begin(), numCellsSM_Thres.end(), 0);
+    std::fill(numCellsGood.begin(), numCellsGood.end(), 0);
+    std::fill(numCellsBad.begin(), numCellsBad.end(), 0);
 
     // iterate over subevents
     for (auto& subev : trg.mSubevents) {
@@ -332,6 +354,11 @@ void CellTask::monitorData(o2::framework::ProcessingContext& ctx)
             numCellsSM[sm]++;
             if (cell.getEnergy() > mTaskSettings.mThresholdPHYS)
               numCellsSM_Thres[sm]++;
+            if (goodcell) {
+              numCellsGood[sm]++;
+            } else {
+              numCellsBad[sm]++;
+            }
           }
         }
       }
@@ -342,21 +369,32 @@ void CellTask::monitorData(o2::framework::ProcessingContext& ctx)
       auto maxSM = std::max_element(numCellsSM.begin(), numCellsSM.end());
       auto indexMaxSM = maxSM - numCellsSM.begin();
       mCellsMaxSM->Fill(indexMaxSM);
-      //fill histo 1)
+      // fill histo 1)
       int mCell_all = 0, mCell_EMCAL = 0, mCell_DCAL = 0;
       int mCell_all_Thres = 0, mCell_EMCAL_Thres = 0, mCell_DCAL_Thres = 0;
+      // make statistics good cells
+      int nGoodAll = 0, nGoodEMCAL = 0, nGoodDCAL = 0, nBadAll = 0, nBadEMCAL = 0, nBadDCAL = 0;
       for (int ism = 0; ism < 20; ism++) {
-        mCells_ev_sm->Fill(numCellsSM[ism], ism);          //for experts
-        mCells_ev_smThr->Fill(numCellsSM_Thres[ism], ism); //for experts
+        mCells_ev_sm->Fill(numCellsSM[ism], ism);          // for experts
+        mCells_ev_smThr->Fill(numCellsSM_Thres[ism], ism); // for experts
 
         mCell_all += numCellsSM[ism];
         mCell_all_Thres += numCellsSM_Thres[ism];
+        nGoodAll += numCellsGood[ism];
+        nBadAll += numCellsBad[ism];
         if (ism < 12) {
           mCell_EMCAL += numCellsSM[ism];
           mCell_EMCAL_Thres += numCellsSM_Thres[ism];
+          nGoodEMCAL += numCellsGood[ism];
+          nBadEMCAL += numCellsBad[ism];
         } else {
           mCell_DCAL += numCellsSM[ism];
           mCell_DCAL_Thres += numCellsSM_Thres[ism];
+          nGoodDCAL += numCellsGood[ism];
+          nBadDCAL += numCellsBad[ism];
+        }
+        if (numCellsGood[ism] + numCellsBad[ism]) {
+          mFracGoodCellsSM->Fill(ism, static_cast<double>(numCellsGood[ism]) / static_cast<double>(numCellsGood[ism] + numCellsBad[ism]));
         }
       }
       mCells_ev->Fill(mCell_all);
@@ -366,6 +404,16 @@ void CellTask::monitorData(o2::framework::ProcessingContext& ctx)
       mCells_ev_Thres->Fill(mCell_all_Thres);
       mCells_ev_EMCAL_Thres->Fill(mCell_EMCAL_Thres);
       mCells_ev_DCAL_Thres->Fill(mCell_DCAL_Thres);
+
+      if (nGoodAll + nBadAll) {
+        mFracGoodCellsEvent->Fill(0., static_cast<double>(nGoodAll) / static_cast<double>(nGoodAll + nBadAll));
+      }
+      if (nGoodEMCAL + nBadEMCAL) {
+        mFracGoodCellsEvent->Fill(1., static_cast<double>(nGoodEMCAL) / static_cast<double>(nGoodEMCAL + nBadEMCAL));
+      }
+      if (nGoodDCAL + nBadDCAL) {
+        mFracGoodCellsEvent->Fill(2., static_cast<double>(nGoodDCAL) / static_cast<double>(nGoodDCAL + nBadDCAL));
+      }
     }
 
     eventcounter++;
@@ -525,7 +573,7 @@ void CellTask::CellHistograms::initForTrigger(const std::string trigger, const T
       }
     }
     if (settings.mHasTimeVsCellID) {
-      mCellTime = histBuilder2D("cellTimeHG", "Cell Time (High gain)", 400, -200, 200, 17664, -0.5, 17663.5, false); //all cell time histo: 2D? both for CAL and Phys? CRI
+      mCellTime = histBuilder2D("cellTimeHG", "Cell Time (High gain)", 400, -200, 200, 17664, -0.5, 17663.5, false); // all cell time histo: 2D? both for CAL and Phys? CRI
       mCellTime->SetStats(0);
       // mCellTime[1] = histBuilder2D("cellTimeLG", "Cell Time (Low gain)", 400, -200, 200, 17664, -0.5, 17663.5, false);
       if (settings.mHasHistosCalib2D) {
@@ -545,6 +593,12 @@ void CellTask::CellHistograms::initForTrigger(const std::string trigger, const T
       mCellAmpSupermoduleCalib->SetStats(0);
       mCellTimeSupermoduleCalib = histBuilder2D("cellTimeSupermoduleCalib", "Cell Time (Calib) vs. supermodule ID (High gain)", 600, -400, 800, 20, -0.5, 19.5, false);
       mCellTimeSupermoduleCalib->SetStats(0);
+      mCellAmpSupermoduleBad = histBuilder2D("cellAmplitudeSupermoduleBad", "Cell amplitude (bad cells) vs. supermodule ID", 4 * static_cast<int>(maxAmp), 0., maxAmp, 20, -0.5, 19.5, false);
+      mCellAmpSupermoduleBad->SetStats(0);
+      mCellOccupancyGood = histBuilder2D("cellOccupancyGood", "Cell occupancy good cells", 96, -0.5, 95.5, 208, -0.5, 207.5, false);
+      mCellOccupancyGood->SetStats(0);
+      mCellOccupancyBad = histBuilder2D("cellOccupancyBad", "Cell occupancy bad cells", 96, -0.5, 95.5, 208, -0.5, 207.5, false);
+      mCellOccupancyBad->SetStats(0);
     }
   }
 
@@ -624,6 +678,11 @@ void CellTask::CellHistograms::fillHistograms(const o2::emcal::Cell& cell, bool 
     } else {
       fillOptional2D(mCellOccupancyThrBelow, col, row);
     }
+    if (goodCell) {
+      fillOptional2D(mCellOccupancyGood, col, row);
+    } else {
+      fillOptional2D(mCellOccupancyBad, col, row);
+    }
 
     fillOptional2D(mIntegratedOccupancy, col, row, cell.getEnergy());
 
@@ -641,13 +700,15 @@ void CellTask::CellHistograms::fillHistograms(const o2::emcal::Cell& cell, bool 
       fillOptional2D(mCellAmpSupermoduleCalib, cell.getEnergy(), supermoduleID);
       if (cell.getEnergy() > mAmplitudeThresholdTime)
         fillOptional2D(mCellTimeSupermoduleCalib, cell.getTimeStamp() - timecalib, supermoduleID);
+    } else {
+      fillOptional2D(mCellAmpSupermoduleBad, cell.getEnergy(), supermoduleID);
     }
     fillOptional1D(mCellAmplitude_tot, cell.getEnergy()); // EMCAL+DCAL, shifter
     if (cell.getEnergy() > mAmplitudeThresholdTime)
       fillOptional1D(mCellTimeSupermodule_tot, cell.getTimeStamp()); // EMCAL+DCAL shifter
-    //check Gain
+    // check Gain
     int index = cell.getHighGain() ? 0 : 1; //(0=highGain, 1 = lowGain)
-    if (supermoduleID < 12) {               //EMCAL
+    if (supermoduleID < 12) {               // EMCAL
       if (cell.getEnergy() > mAmplitudeThresholdTime) {
         fillOptional1D(mCellTimeSupermoduleEMCAL, cell.getTimeStamp());
         fillOptional1D(mCellTimeSupermoduleEMCAL_Gain[index], cell.getTimeStamp());
@@ -691,6 +752,7 @@ void CellTask::CellHistograms::startPublishing(o2::quality_control::core::Object
   publishOptional(mCellAmplitudeCalib);
   publishOptional(mCellAmpSupermodule);
   publishOptional(mCellAmpSupermoduleCalib);
+  publishOptional(mCellAmpSupermoduleBad);
   publishOptional(mCellTimeSupermodule);
   publishOptional(mCellTimeSupermodule_tot);
   publishOptional(mCellTimeSupermoduleEMCAL);
@@ -702,6 +764,8 @@ void CellTask::CellHistograms::startPublishing(o2::quality_control::core::Object
   publishOptional(mCellOccupancy);
   publishOptional(mCellOccupancyThr);
   publishOptional(mCellOccupancyThrBelow);
+  publishOptional(mCellOccupancyGood);
+  publishOptional(mCellOccupancyBad);
   publishOptional(mIntegratedOccupancy);
   publishOptional(mnumberEvents);
 
@@ -749,6 +813,7 @@ void CellTask::CellHistograms::reset()
   resetOptional(mCellAmplitudeCalib);
   resetOptional(mCellAmpSupermodule);
   resetOptional(mCellAmpSupermoduleCalib);
+  resetOptional(mCellAmpSupermoduleBad);
   resetOptional(mCellTimeSupermodule);
   resetOptional(mCellTimeSupermodule_tot);
   resetOptional(mCellTimeSupermoduleEMCAL);
@@ -760,6 +825,8 @@ void CellTask::CellHistograms::reset()
   resetOptional(mCellOccupancy);
   resetOptional(mCellOccupancyThr);
   resetOptional(mCellOccupancyThrBelow);
+  resetOptional(mCellOccupancyGood);
+  resetOptional(mCellOccupancyBad);
   resetOptional(mIntegratedOccupancy);
   resetOptional(mnumberEvents);
 
@@ -806,6 +873,7 @@ void CellTask::CellHistograms::clean()
   cleanOptional(mCellAmplitudeCalib);
   cleanOptional(mCellAmpSupermodule);
   cleanOptional(mCellAmpSupermoduleCalib);
+  cleanOptional(mCellAmpSupermoduleBad);
   cleanOptional(mCellTimeSupermodule);
   cleanOptional(mCellTimeSupermodule_tot);
   cleanOptional(mCellTimeSupermoduleEMCAL);
@@ -817,6 +885,8 @@ void CellTask::CellHistograms::clean()
   cleanOptional(mCellOccupancy);
   cleanOptional(mCellOccupancyThr);
   cleanOptional(mCellOccupancyThrBelow);
+  cleanOptional(mCellOccupancyGood);
+  cleanOptional(mCellOccupancyBad);
   cleanOptional(mIntegratedOccupancy);
   cleanOptional(mnumberEvents);
 

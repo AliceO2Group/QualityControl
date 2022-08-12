@@ -82,14 +82,17 @@ class CellTask final : public TaskInterface
                                         //  std::array<TH2*, 2> mCellTimeCalib;      ///< Cell time calibrated
     TH2* mCellTimeCalib = nullptr;      ///< Cell time calibrated
 
-    TH2* mCellAmpSupermodule = nullptr;
-    TH2* mCellAmpSupermoduleCalib = nullptr;
-    TH2* mCellTimeSupermodule = nullptr;
-    TH2* mCellTimeSupermoduleCalib = nullptr;
+    TH2* mCellAmpSupermodule = nullptr;       ///< Cell amplitude all cells versus supermodule
+    TH2* mCellAmpSupermoduleCalib = nullptr;  ///< Cell amplitude good cells versus supermodule
+    TH2* mCellTimeSupermodule = nullptr;      ///< Uncalibrated cell time versus supermodule
+    TH2* mCellTimeSupermoduleCalib = nullptr; ///< Calibrated cell time (good cells) versus supermodule
+    TH2* mCellAmpSupermoduleBad = nullptr;    ///< Cell amplitude bad cells versus supermodule
 
     TH2* mCellOccupancy = nullptr;                             ///< Cell occupancy EMCAL and DCAL
     TH2* mCellOccupancyThr = nullptr;                          ///< Cell occupancy EMCAL and DCAL with Energy trheshold
     TH2* mCellOccupancyThrBelow = nullptr;                     ///< Cell occupancy EMCAL and DCAL with Energy trheshold
+    TH2* mCellOccupancyGood = nullptr;                         ///< Cell occupancy EMCAL and DCAL good cells
+    TH2* mCellOccupancyBad = nullptr;                          ///< Cell occupancy EMCAL and DCAL bad cells
     TH2* mIntegratedOccupancy = nullptr;                       ///< Cell integrated occupancy
     TH1* mCellAmplitude_tot = nullptr;                         ///< Cell amplitude in EMCAL,DCAL
     TH1* mCellAmplitudeEMCAL = nullptr;                        ///< Cell amplitude in EMCAL
@@ -178,6 +181,8 @@ class CellTask final : public TaskInterface
   TH1* mCells_ev_EMCAL_Thres = nullptr; ///< Number of Cells with Threshold per events for EMCAL
   TH1* mCells_ev_DCAL = nullptr;        ///< Number of Cells per events for DCAL
   TH1* mCells_ev_DCAL_Thres = nullptr;  ///< Number of Cells per events with Threshold  for DCAL
+  TH2* mFracGoodCellsEvent = nullptr;   ///< Fraction of good cells / event (all / EMCAL / DCAL)
+  TH2* mFracGoodCellsSM = nullptr;      ///< Fraction of good cells / supermodule
 };
 
 } // namespace emcal
