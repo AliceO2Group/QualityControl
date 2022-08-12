@@ -19,6 +19,7 @@
 
 #include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/DatabaseInterface.h"
+#include "CCDB/CcdbApi.h"
 
 #include "FT0Base/Constants.h"
 #include "DataFormatsFT0/ChannelData.h"
@@ -49,14 +50,18 @@ class BasicPPTask final : public quality_control::postprocessing::PostProcessing
   void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
 
  private:
+  std::string mPathGrpLhcIf;
   std::string mPathDigitQcTask;
   std::string mCycleDurationMoName;
+  std::string mCcdbUrl;
   int mNumOrbitsInTF;
 
   std::map<o2::ft0::ChannelData::EEventDataBit, std::string> mMapChTrgNames;
   std::map<int, std::string> mMapDigitTrgNames;
 
   o2::quality_control::repository::DatabaseInterface* mDatabase = nullptr;
+  o2::ccdb::CcdbApi mCcdbApi;
+
   std::unique_ptr<TGraph> mRateOrA;
   std::unique_ptr<TGraph> mRateOrC;
   std::unique_ptr<TGraph> mRateVertex;
@@ -72,6 +77,11 @@ class BasicPPTask final : public quality_control::postprocessing::PostProcessing
   std::unique_ptr<TCanvas> mRatesCanv;
   TProfile* mAmpl = nullptr;
   TProfile* mTime = nullptr;
+
+  // if storage size matters it can be replaced with TH1
+  // and TH2 can be created based on it on the fly, but only TH1 would be stored
+  std::unique_ptr<TH2F> mHistBcPattern;
+  std::unique_ptr<TH2F> mHistBcTrgOutOfBunchColl;
 };
 
 } // namespace o2::quality_control_modules::ft0

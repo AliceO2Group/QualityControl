@@ -96,6 +96,8 @@ class DigitQcTask final : public TaskInterface
   }
 
   void rebinFromConfig();
+  unsigned int getModeParameter(std::string, unsigned int, std::map<unsigned int, std::string>);
+  int getNumericalParameter(std::string, int);
 
   TList* mListHistGarbage;
   std::set<unsigned int> mSetAllowedChIDs;
@@ -106,6 +108,37 @@ class DigitQcTask final : public TaskInterface
   std::map<o2::ft0::ChannelData::EEventDataBit, std::string> mMapChTrgNames;
   std::unique_ptr<TH1F> mHistNumADC;
   std::unique_ptr<TH1F> mHistNumCFD;
+
+  std::map<int, bool> mMapTrgSoftware;
+  enum TrgModeSide { kAplusC,
+                     kAandC,
+                     kA,
+                     kC
+  };
+  enum TrgModeThresholdVar { kAmpl,
+                             kNchannels
+  };
+  enum TrgComparisonResult { kSWonly,
+                             kTCMonly,
+                             kNone,
+                             kBoth
+  };
+  const int mNChannelsA = 96;
+  // trigger parameters:
+  // - modes
+  unsigned int mTrgModeThresholdVar;
+  unsigned int mTrgModeSide;
+  // - time window for vertex trigger
+  int mTrgThresholdTimeLow;
+  int mTrgThresholdTimeHigh;
+  // - parameters for (Semi)Central triggers
+  //   same parameters re-used for both Ampl and Nchannels thresholds
+  int mTrgThresholdCenA;
+  int mTrgThresholdCenC;
+  int mTrgThresholdCenSum;
+  int mTrgThresholdSCenA;
+  int mTrgThresholdSCenC;
+  int mTrgThresholdSCenSum;
 
   // Objects which will be published
   std::unique_ptr<TH2F> mHistAmp2Ch;
@@ -135,6 +168,8 @@ class DigitQcTask final : public TaskInterface
   std::unique_ptr<TH2F> mHistBCvsFEEmodules;
   std::unique_ptr<TH2F> mHistOrbitVsTrg;
   std::unique_ptr<TH2F> mHistOrbitVsFEEmodules;
+  std::unique_ptr<TH1F> mHistTriggersSw;
+  std::unique_ptr<TH2F> mHistTriggersSoftwareVsTCM;
 
   // Hashed maps
   static const size_t mapSize = 256;
