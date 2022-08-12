@@ -55,7 +55,12 @@ DigitsQcTask::~DigitsQcTask()
 void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info, Support) << "initialize DigitsQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
-  printf(" =================== > test initialize Digits \n");
+  // printf(" =================== > test initialize Digits \n");
+
+  double paramExemple = 400; /// param from json
+  if (auto param = mCustomParameters.find("paramExemple"); param != mCustomParameters.end()) {
+    paramExemple = std::stof(param->second);
+  }
 
   mHitsMapB = std::make_shared<TH2F>("HitsMapB", "Hits Map - bending plane", MID_NDE, 0, MID_NDE, MID_NCOL, 0, MID_NCOL);
   getObjectsManager()->startPublishing(mHitsMapB.get());
@@ -210,13 +215,13 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 void DigitsQcTask::startOfActivity(Activity& /*activity*/)
 {
   ILOG(Info, Support) << "startOfActivity" << ENDM;
-  printf(" =================== > test startOfActivity Digits \n");
+  // printf(" =================== > test startOfActivity Digits \n");
 }
 
 void DigitsQcTask::startOfCycle()
 {
   // ILOG(Info, Support) << "startOfCycle" << ENDM;
-  printf(" =================== > test startOfCycle Digits \n");
+  // printf(" =================== > test startOfCycle Digits \n");
 }
 
 static int countColumnDataHits(const o2::mid::ColumnData& digit, int id)
@@ -277,9 +282,9 @@ static std::pair<uint32_t, uint32_t> getROFSize(const o2::mid::ROFRecord& rof, g
 
 void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  printf(" =================== > test monitorData Digits \n");
-  // auto digits = ctx.inputs().get<gsl::span<o2::mid::ColumnData>>("digits");
-  // auto rofs = ctx.inputs().get<gsl::span<o2::mid::ROFRecord>>("digitrofs");
+  // printf(" =================== > test monitorData Digits \n");
+  //  auto digits = ctx.inputs().get<gsl::span<o2::mid::ColumnData>>("digits");
+  //  auto rofs = ctx.inputs().get<gsl::span<o2::mid::ROFRecord>>("digitrofs");
 
   auto digits = o2::mid::specs::getData(ctx, "digits", o2::mid::EventType::Standard);
   auto rofs = o2::mid::specs::getRofs(ctx, "digits", o2::mid::EventType::Standard);
@@ -544,13 +549,13 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 void DigitsQcTask::endOfCycle()
 {
   // ILOG(Info, Support) << "endOfCycle" << ENDM;
-  printf(" =================== > test endOfCycle Digits \n");
+  // printf(" =================== > test endOfCycle Digits \n");
 }
 
 void DigitsQcTask::endOfActivity(Activity& /*activity*/)
 {
   // ILOG(Info, Support) << "endOfActivity" << ENDM;
-  printf(" =================== > test endOfActivity Digits \n");
+  // printf(" =================== > test endOfActivity Digits \n");
 }
 
 void DigitsQcTask::reset()
@@ -558,7 +563,7 @@ void DigitsQcTask::reset()
   // clean all the monitor objects here
 
   // ILOG(Info, Support) << "Resetting the histogram" << ENDM;
-  printf(" =================== > test reset Digits \n");
+  // printf(" =================== > test reset Digits \n");
 
   mHitsMapB->Reset();
   mHitsMapNB->Reset();
