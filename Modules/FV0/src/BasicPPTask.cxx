@@ -17,6 +17,7 @@
 #include "FV0/BasicPPTask.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "CommonConstants/LHCConstants.h"
+#include "DataFormatsParameters/GRPLHCIFData.h"
 
 #include <TH1F.h>
 #include <TH2F.h>
@@ -38,9 +39,21 @@ BasicPPTask::~BasicPPTask()
 
 void BasicPPTask::configure(std::string, const boost::property_tree::ptree& config)
 {
+  mCcdbUrl = config.get_child("qc.config.conditionDB.url").get_value<std::string>();
+
   const char* configPath = Form("qc.postprocessing.%s", getName().c_str());
   ILOG(Info, Support) << "configPath = " << configPath << ENDM;
-  auto node = config.get_child_optional(Form("%s.custom.numOrbitsInTF", configPath));
+
+  auto node = config.get_child_optional(Form("%s.custom.pathGrpLhcIf", configPath));
+  if (node) {
+    mPathGrpLhcIf = node.get_ptr()->get_child("").get_value<std::string>();
+    ILOG(Info, Support) << "configure() : using pathBunchFilling = \"" << mPathGrpLhcIf << "\"" << ENDM;
+  } else {
+    mPathGrpLhcIf = "GLO/Config/GRPLHCIF";
+    ILOG(Info, Support) << "configure() : using default pathBunchFilling = \"" << mPathGrpLhcIf << "\"" << ENDM;
+  }
+
+  node = config.get_child_optional(Form("%s.custom.numOrbitsInTF", configPath));
   if (node) {
     mNumOrbitsInTF = std::stoi(node.get_ptr()->get_child("").get_value<std::string>());
     ILOG(Info, Support) << "configure() : using numOrbitsInTF = " << mNumOrbitsInTF << ENDM;
@@ -71,6 +84,7 @@ void BasicPPTask::configure(std::string, const boost::property_tree::ptree& conf
 void BasicPPTask::initialize(Trigger, framework::ServiceRegistry& services)
 {
   mDatabase = &services.get<o2::quality_control::repository::DatabaseInterface>();
+  mCcdbApi.init(mCcdbUrl);
 
   mRateOrA = std::make_unique<TGraph>(0);
   mRateOrAout = std::make_unique<TGraph>(0);
@@ -129,10 +143,18 @@ void BasicPPTask::initialize(Trigger, framework::ServiceRegistry& services)
   mMapDigitTrgNames.insert({ o2::fit::Triggers::bitOutputsAreBlocked, "OutputsAreBlocked" });
   mMapDigitTrgNames.insert({ o2::fit::Triggers::bitDataIsValid, "DataIsValid" });
   mHistTriggers = std::make_unique<TH1F>("Triggers", "Triggers from TCM", mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
+  mHistBcPattern = std::make_unique<TH2F>("bcPattern", "BC pattern", 3564, 0, 3564, mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
+  mHistBcTrgOutOfBunchColl = std::make_unique<TH2F>("OutOfBunchColl_BCvsTrg", "BC vs Triggers for out-of-bunch collisions;BC;Triggers", 3564, 0, 3564, mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
   for (const auto& entry : mMapDigitTrgNames) {
     mHistTriggers->GetXaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
+    mHistBcPattern->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
+    mHistBcTrgOutOfBunchColl->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
   }
   getObjectsManager()->startPublishing(mHistTriggers.get());
+  getObjectsManager()->startPublishing(mHistBcPattern.get());
+  getObjectsManager()->setDefaultDrawOptions(mHistBcPattern.get(), "COLZ");
+  getObjectsManager()->startPublishing(mHistBcTrgOutOfBunchColl.get());
+  getObjectsManager()->setDefaultDrawOptions(mHistBcTrgOutOfBunchColl.get(), "COLZ");
 
   mHistTimeUpperFraction = std::make_unique<TH1F>("TimeUpperFraction", "Fraction of events under time window(-+190 channels);ChID;Fraction", sNCHANNELS_PM, 0, sNCHANNELS_PM);
   getObjectsManager()->startPublishing(mHistTimeUpperFraction.get());
@@ -289,6 +311,55 @@ void BasicPPTask::update(Trigger t, framework::ServiceRegistry&)
     mTime->GetXaxis()->SetTitleOffset(1);
     mAmpl->GetYaxis()->SetTitleOffset(1);
     mTime->GetYaxis()->SetTitleOffset(1);
+  }
+
+  std::map<std::string, std::string> metadata;
+  std::map<std::string, std::string> headers;
+  auto* lhcIf = mCcdbApi.retrieveFromTFileAny<o2::parameters::GRPLHCIFData>(mPathGrpLhcIf, metadata, -1, &headers);
+  if (!lhcIf) {
+    ILOG(Error, Support) << "object \"" << mPathGrpLhcIf << "\" NOT retrieved!!!" << ENDM;
+    return;
+  }
+  const std::string bcName = lhcIf->getInjectionScheme();
+  if (bcName.size() == 8) {
+    if (bcName.compare("no_value")) {
+      ILOG(Warning) << "Filling scheme not set. OutOfBunchColTask will not produce valid QC plots." << ENDM;
+    }
+  } else {
+    ILOG(Info, Support) << "Filling scheme: " << bcName.c_str() << ENDM;
+  }
+  auto bcPattern = lhcIf->getBunchFilling();
+
+  const int nBc = 3564;
+  mHistBcPattern->Reset();
+  for (int i = 0; i < nBc + 1; i++) {
+    for (int j = 0; j < mMapDigitTrgNames.size() + 1; j++) {
+      mHistBcPattern->SetBinContent(i + 1, j + 1, bcPattern.testBC(i));
+    }
+  }
+  auto moBCvsTriggers = mDatabase->retrieveMO(mPathDigitQcTask, "BCvsTriggers", t.timestamp, t.activity);
+  auto hBcVsTrg = moBCvsTriggers ? (TH2F*)moBCvsTriggers->getObject() : nullptr;
+  if (!hBcVsTrg) {
+    ILOG(Error, Support) << "MO \"BCvsTriggers\" NOT retrieved!!!" << ENDM;
+    return;
+  }
+
+  mHistBcTrgOutOfBunchColl->Reset();
+  float vmax = hBcVsTrg->GetBinContent(hBcVsTrg->GetMaximumBin());
+  mHistBcTrgOutOfBunchColl->Add(hBcVsTrg, mHistBcPattern.get(), 1, -1 * vmax);
+  for (int i = 0; i < nBc + 1; i++) {
+    for (int j = 0; j < mMapDigitTrgNames.size() + 1; j++) {
+      if (mHistBcTrgOutOfBunchColl->GetBinContent(i + 1, j + 1) < 0) {
+        mHistBcTrgOutOfBunchColl->SetBinContent(i + 1, j + 1, 0); // is it too slow?
+      }
+    }
+  }
+  mHistBcTrgOutOfBunchColl->SetEntries(mHistBcTrgOutOfBunchColl->Integral(1, nBc, 1, mMapDigitTrgNames.size()));
+  for (int iBin = 1; iBin < mMapDigitTrgNames.size() + 1; iBin++) {
+    const std::string metadataKey = "BcVsTrgIntegralBin" + std::to_string(iBin);
+    const std::string metadataValue = std::to_string(hBcVsTrg->Integral(1, nBc, iBin, iBin));
+    getObjectsManager()->getMonitorObject(mHistBcTrgOutOfBunchColl->GetName())->addOrUpdateMetadata(metadataKey, metadataValue);
+    ILOG(Info, Support) << metadataKey << ":" << metadataValue << ENDM;
   }
 }
 
