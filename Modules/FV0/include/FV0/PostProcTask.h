@@ -1,4 +1,4 @@
-// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+PostProcTask// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
 // See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
 // All rights not expressly granted are reserved.
 //
@@ -10,12 +10,12 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   BasicPPTask.h
+/// \file   PostProcTask.h
 /// \author Sebastian Bysiak sbysiak@cern.ch
 ///
 
-#ifndef QC_MODULE_FV0_BASICPPTASK_H
-#define QC_MODULE_FV0_BASICPPTASK_H
+#ifndef QC_MODULE_FV0_POSTPROCTASK_H
+#define QC_MODULE_FV0_POSTPROCTASK_H
 
 #include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/DatabaseInterface.h"
@@ -39,11 +39,11 @@ namespace o2::quality_control_modules::fv0
 
 /// \brief Basic Postprocessing Task for FV0, computes among others the trigger rates
 /// \author Sebastian Bysiak sbysiak@cern.ch
-class BasicPPTask final : public quality_control::postprocessing::PostProcessingInterface
+class PostProcTask final : public quality_control::postprocessing::PostProcessingInterface
 {
  public:
-  BasicPPTask() = default;
-  ~BasicPPTask() override;
+  PostProcTask() = default;
+  ~PostProcTask() override;
   void configure(std::string, const boost::property_tree::ptree&) override;
   void initialize(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
   void update(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
@@ -88,4 +88,4 @@ class BasicPPTask final : public quality_control::postprocessing::PostProcessing
 
 } // namespace o2::quality_control_modules::fv0
 
-#endif // QC_MODULE_FV0_BASICPPTASK_H
+#endif // QC_MODULE_FV0_POSTPROCTASK_H
