@@ -20,8 +20,8 @@
 #include "QualityControl/QcInfoLogger.h"
 // ROOT
 #include <TH1.h>
+#include <TProfile.h>
 #include <TList.h>
-#include <TText.h>
 #include <TPaveText.h>
 #include <TLatex.h>
 
@@ -45,22 +45,18 @@ void TracksQcCheck::configure()
 Quality TracksQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
   Quality result = Quality::Null;
-
   for (auto& [moName, mo] : *moMap) {
-
     (void)moName;
     if (mo->getName() == "TrackRatio44") {
-      auto* h = dynamic_cast<TH1F*>(mo->getObject());
-
+      auto* h = dynamic_cast<TProfile*>(mo->getObject());
       result = Quality::Good;
-
       for (int i = 1; i < h->GetNbinsX(); i++) {
-        if (i == 1 && h->GetBinContent(i) < mRatio44Threshold) {
+        if ((i == 1) && (h->GetBinContent(i) < mRatio44Threshold)) {
           result = Quality::Bad;
           result.addReason(FlagReasonFactory::Unknown(),
                            "Global Ratio44 too high in bin " + std::to_string(i));
           break;
-        } else if (i > 1 && i < 10 && h->GetBinContent(i) < mRatio44Threshold) {
+        } else if ((i > 1) && (i < 10) && (h->GetBinContent(i) < mRatio44Threshold)) {
           result = Quality::Medium;
           result.addReason(FlagReasonFactory::Unknown(),
                            "Ratio44 too high in bin " + std::to_string(i));
