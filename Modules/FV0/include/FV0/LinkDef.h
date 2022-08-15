@@ -4,7 +4,7 @@
 #pragma link off all functions;
 
 #pragma link C++ class o2::quality_control_modules::fv0::DigitQcTask + ;
-#pragma link C++ class o2::quality_control_modules::fv0::BasicPPTask + ;
+#pragma link C++ class o2::quality_control_modules::fv0::PostProcTask + ;
 #pragma link C++ class o2::quality_control_modules::fv0::CFDEffCheck + ;
 #pragma link C++ class o2::quality_control_modules::fv0::OutOfBunchCollCheck + ;
 //#pragma link C++ class o2::quality_control_modules::fv0::CalibrationTask + ;

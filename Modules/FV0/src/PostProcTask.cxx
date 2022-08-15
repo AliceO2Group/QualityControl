@@ -135,10 +135,10 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistry& services)
   getObjectsManager()->setDefaultDrawOptions(mHistChDataNegBits.get(), "COLZ");
 
   mMapDigitTrgNames.insert({ o2::fit::Triggers::bitA, "OrA" });
-  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitAOut, "OrAout" });
-  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitAIn, "OrAin" });
+  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitAOut, "OrAOut" });
+  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitAIn, "OrAIn" });
   mMapDigitTrgNames.insert({ o2::fit::Triggers::bitTrgCharge, "TrgCharge" });
-  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitTrgNchan, "TrgNchan" });
+  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitTrgNchan, "TrgNChan" });
   mMapDigitTrgNames.insert({ o2::fit::Triggers::bitLaser, "Laser" });
   mMapDigitTrgNames.insert({ o2::fit::Triggers::bitOutputsAreBlocked, "OutputsAreBlocked" });
   mMapDigitTrgNames.insert({ o2::fit::Triggers::bitDataIsValid, "DataIsValid" });
@@ -243,10 +243,10 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistry&)
       ILOG(Warning) << "cycle duration = " << cycleDurationMS << " ms, almost zero - cannot compute trigger rates!" << ENDM;
     } else {
       mRateOrA->SetPoint(n, n, getBinContent2Ddiag(hTrgCorr, "OrA") / cycleDurationMS);
-      mRateOrAout->SetPoint(n, n, getBinContent2Ddiag(hTrgCorr, "OrAout") / cycleDurationMS);
-      mRateOrAin->SetPoint(n, n, getBinContent2Ddiag(hTrgCorr, "OrAin") / cycleDurationMS);
+      mRateOrAout->SetPoint(n, n, getBinContent2Ddiag(hTrgCorr, "OrAOut") / cycleDurationMS);
+      mRateOrAin->SetPoint(n, n, getBinContent2Ddiag(hTrgCorr, "OrAIn") / cycleDurationMS);
       mRateTrgCharge->SetPoint(n, n, getBinContent2Ddiag(hTrgCorr, "TrgCharge") / cycleDurationMS);
-      mRateTrgNchan->SetPoint(n, n, getBinContent2Ddiag(hTrgCorr, "TrgNchan") / cycleDurationMS);
+      mRateTrgNchan->SetPoint(n, n, getBinContent2Ddiag(hTrgCorr, "TrgNChan") / cycleDurationMS);
     }
 
     mRatesCanv->cd();
