@@ -290,8 +290,12 @@ header::DataDescription TaskRunner::createTimerDataDescription(const std::string
 
 void TaskRunner::endOfStream(framework::EndOfStreamContext& eosContext)
 {
-  ILOG(Info, Support) << "Received an EndOfStream, finishing the current cycle" << ENDM;
-  finishCycle(eosContext.outputs());
+  if (!mCycleOn && mCycleNumber == 0) {
+    ILOG(Error, Support) << "An EndOfStream was received before TaskRunner could start the first cycle, probably the device was not started. Something is wrong, doing nothing." << ENDM;
+  } else {
+    ILOG(Info, Support) << "Received an EndOfStream, finishing the current cycle" << ENDM;
+    finishCycle(eosContext.outputs());
+  }
   mNoMoreCycles = true;
 }
 
