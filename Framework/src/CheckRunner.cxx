@@ -237,14 +237,27 @@ void CheckRunner::init(framework::InitContext& iCtx)
   }
 }
 
+long getCurrentTimestamp()
+{
+  auto now = std::chrono::system_clock::now();
+  auto now_ms = std::chrono::time_point_cast<std::chrono::milliseconds>(now);
+  auto epoch = now_ms.time_since_epoch();
+  auto value = std::chrono::duration_cast<std::chrono::milliseconds>(epoch);
+  return value.count();
+}
+
 void CheckRunner::run(framework::ProcessingContext& ctx)
 {
   prepareCacheData(ctx.inputs());
 
   auto qualityObjects = check();
 
-  store(qualityObjects);
-  store(mMonitorObjectStoreVector);
+  // we want all objects that we are going to store to have the same validFrom values.
+  // ideally it should be SOR or the moving window start, but before GUI allows for this,
+  // we have to put the current timestamp.
+  auto now = getCurrentTimestamp();
+  store(qualityObjects, now);
+  store(mMonitorObjectStoreVector, now);
 
   send(qualityObjects, ctx.outputs());
 
@@ -357,13 +370,13 @@ QualityObjectsType CheckRunner::check()
   return allQOs;
 }
 
-void CheckRunner::store(QualityObjectsType& qualityObjects)
+void CheckRunner::store(QualityObjectsType& qualityObjects, long validFrom)
 {
   ILOG(Info, Support) << "Storing " << qualityObjects.size() << " QualityObjects" << ENDM;
   try {
     for (auto& qo : qualityObjects) {
       qo->setActivity(mActivity);
-      mDatabase->storeQO(qo);
+      mDatabase->storeQO(qo, validFrom);
       mTotalNumberQOStored++;
       mNumberQOStored++;
     }
@@ -372,13 +385,13 @@ void CheckRunner::store(QualityObjectsType& qualityObjects)
   }
 }
 
-void CheckRunner::store(std::vector<std::shared_ptr<MonitorObject>>& monitorObjects)
+void CheckRunner::store(std::vector<std::shared_ptr<MonitorObject>>& monitorObjects, long validFrom)
 {
   ILOG(Info, Support) << "Storing " << monitorObjects.size() << " MonitorObjects" << ENDM;
   try {
     for (auto& mo : monitorObjects) {
       mo->setActivity(mActivity);
-      mDatabase->storeMO(mo);
+      mDatabase->storeMO(mo, validFrom);
       mTotalNumberMOStored++;
       mNumberMOStored++;
     }
