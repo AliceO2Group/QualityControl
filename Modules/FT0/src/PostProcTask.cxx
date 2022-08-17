@@ -17,7 +17,6 @@
 #include "FT0/PostProcTask.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "CommonConstants/LHCConstants.h"
-// #include "CommonDataFormat/BunchFilling.h"
 #include "DataFormatsParameters/GRPLHCIFData.h"
 
 #include <TH1F.h>
@@ -248,13 +247,6 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistry&)
       mRateVertex->SetPoint(n, n, getBinContent2Ddiag(hTrgCorr, "Vertex") / cycleDurationMS);
       mRateCentral->SetPoint(n, n, getBinContent2Ddiag(hTrgCorr, "Central") / cycleDurationMS);
       mRateSemiCentral->SetPoint(n, n, getBinContent2Ddiag(hTrgCorr, "SemiCentral") / cycleDurationMS);
-      /*
-      mRateOrA->SetPoint(n, n, hTriggers->GetBinContent(hTriggers->GetXaxis()->FindBin("OrA")) / cycleDurationMS);
-      mRateOrC->SetPoint(n, n, hTriggers->GetBinContent(hTriggers->GetXaxis()->FindBin("OrC")) / cycleDurationMS);
-      mRateVertex->SetPoint(n, n, hTriggers->GetBinContent(hTriggers->GetXaxis()->FindBin("Vertex")) / cycleDurationMS);
-      mRateCentral->SetPoint(n, n, hTriggers->GetBinContent(hTriggers->GetXaxis()->FindBin("Central")) / cycleDurationMS);
-      mRateSemiCentral->SetPoint(n, n, hTriggers->GetBinContent(hTriggers->GetXaxis()->FindBin("SemiCentral")) / cycleDurationMS);
-      */
     }
 
     mRatesCanv->cd();

@@ -423,7 +423,6 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
     }
     std::set<uint8_t> setFEEmodules{};
-
     // reset triggers
     for (auto& entry : mMapTrgSoftware) {
       mMapTrgSoftware[entry.first] = false;
@@ -457,9 +456,6 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
 
       setFEEmodules.insert(mChID2PMhash[chData.ChId]);
-
-      if (chData.QTCAmpl <= 0)
-        continue;
 
       if (chData.ChId >= sNCHANNELS_FV0) { // skip reference PMT
         continue;

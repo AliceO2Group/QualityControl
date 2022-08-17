@@ -377,9 +377,6 @@ void DigitQcTaskLaser::monitorData(o2::framework::ProcessingContext& ctx)
 
       setFEEmodules.insert(mChID2PMhash[chData.ChId]);
 
-      if (chData.QTCAmpl <= 0)
-        continue;
-
       if (chData.ChId >= sNCHANNELS_FV0) { // skip reference PMT
         continue;
       }

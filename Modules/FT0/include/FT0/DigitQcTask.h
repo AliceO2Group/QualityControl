@@ -35,6 +35,7 @@
 #include "QualityControl/QcInfoLogger.h"
 
 #include "FT0Base/Constants.h"
+#include "FT0Base/Geometry.h"
 #include "DataFormatsFT0/Digit.h"
 #include "DataFormatsFT0/ChannelData.h"
 
@@ -58,6 +59,8 @@ class DigitQcTask final : public TaskInterface
   void endOfActivity(Activity& activity) override;
   void reset() override;
   constexpr static std::size_t sNCHANNELS_PM = o2::ft0::Constants::sNCHANNELS_PM;
+  constexpr static std::size_t sNCHANNELS_A = o2::ft0::Geometry::NCellsA * 4;
+  constexpr static std::size_t sNCHANNELS_C = o2::ft0::Geometry::NCellsC * 4;
   constexpr static std::size_t sOrbitsPerTF = 256;
   constexpr static std::size_t sBCperOrbit = 3564;
 
@@ -123,7 +126,6 @@ class DigitQcTask final : public TaskInterface
                              kNone,
                              kBoth
   };
-  const int mNChannelsA = 96;
   // trigger parameters:
   // - modes
   unsigned int mTrgModeThresholdVar;

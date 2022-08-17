@@ -88,7 +88,7 @@ unsigned int DigitQcTaskLaser::getModeParameter(std::string paramName, unsigned 
     // if parameter was provided check which option was chosen
     for (const auto& choice : choices) {
       if (param->second == choice.second) {
-        ILOG(Debug) << "Setting \"" << paramName << "\" to: \"" << choice.second << "\"" << ENDM;
+        ILOG(Debug, Support) << "setting \"" << paramName << "\" to: \"" << choice.second << "\"" << ENDM;
         return choice.first;
       }
     }
@@ -99,11 +99,11 @@ unsigned int DigitQcTaskLaser::getModeParameter(std::string paramName, unsigned 
       allowedValues += choice.second;
       allowedValues += "\", ";
     }
-    ILOG(Warning) << "Provided value (\"" << param->second << "\") for parameter \"" << paramName << "\" is not allowed. Allowed values are: " << allowedValues << " setting \"" << paramName << "\" to default value: \"" << choices[defaultVal] << "\"" << ENDM;
+    ILOG(Warning, Support) << "Provided value (\"" << param->second << "\") for parameter \"" << paramName << "\" is not allowed. Allowed values are: " << allowedValues << " setting \"" << paramName << "\" to default value: \"" << choices[defaultVal] << "\"" << ENDM;
     return defaultVal;
   } else {
     // param not provided - use default
-    ILOG(Debug) << "Setting \"" << paramName << "\" to default value: \"" << choices[defaultVal] << "\"" << ENDM;
+    ILOG(Debug, Support) << "Setting \"" << paramName << "\" to default value: \"" << choices[defaultVal] << "\"" << ENDM;
     return defaultVal;
   }
 }
@@ -112,7 +112,7 @@ int DigitQcTaskLaser::getNumericalParameter(std::string paramName, int defaultVa
 {
   if (auto param = mCustomParameters.find(paramName); param != mCustomParameters.end()) {
     float val = stoi(param->second);
-    ILOG(Debug) << "Setting \"" << paramName << "\" to: " << val << ENDM;
+    ILOG(Debug, Support) << "Setting \"" << paramName << "\" to: " << val << ENDM;
     return val;
   } else {
     ILOG(Debug) << "Setting \"" << paramName << "\" to default value: " << defaultVal << ENDM;
@@ -234,7 +234,9 @@ void DigitQcTaskLaser::initialize(o2::framework::InitContext& /*ctx*/)
     mHistOrbitVsFEEmodules->GetYaxis()->SetBinLabel(entry.second + 1, entry.first.c_str());
   }
 
-  mHistTimeSum2Diff = std::make_unique<TH2F>("timeSumVsDiff", "time A/C side: sum VS diff;(TOC-TOA)/2 [ns];(TOA+TOC)/2 [ns]", 400, -52.08, 52.08, 400, -52.08, 52.08); // range of 52.08 ns = 4000*13.02ps = 4000 channels
+  mHistTimeSum2Diff = std::make_unique<TH2F>("timeSumVsDiff", "time A/C side: sum VS diff;(TOC-TOA)/2 [ns];(TOA+TOC)/2 [ns]", 2000, -52.08, 52.08, 2000, -52.08, 52.08); // range of 52.08 ns = 4000*13.02ps = 4000 channels
+  mHistTimeSum2Diff->GetXaxis()->SetRangeUser(-5, 5);
+  mHistTimeSum2Diff->GetYaxis()->SetRangeUser(-5, 5);
   mHistNumADC = std::make_unique<TH1F>("HistNumADC", "HistNumADC", sNCHANNELS_PM, 0, sNCHANNELS_PM);
   mHistNumCFD = std::make_unique<TH1F>("HistNumCFD", "HistNumCFD", sNCHANNELS_PM, 0, sNCHANNELS_PM);
   mHistCFDEff = std::make_unique<TH1F>("CFD_efficiency", "CFD efficiency;ChannelID;efficiency", sNCHANNELS_PM, 0, sNCHANNELS_PM);
@@ -391,14 +393,11 @@ void DigitQcTaskLaser::monitorData(o2::framework::ProcessingContext& ctx)
 
       setFEEmodules.insert(mChID2PMhash[chData.ChId]);
 
-      if (chData.QTCAmpl <= 0)
-        continue;
-
-      if (chData.ChId < mNChannelsA) {
+      if (chData.ChId < sNCHANNELS_A) {
         sumAmplA += chData.QTCAmpl;
         sumTimeA += chData.CFDTime;
         nFiredChannelsA++;
-      } else {
+      } else if (chData.ChId < sNCHANNELS_A + sNCHANNELS_C) {
         sumAmplC += chData.QTCAmpl;
         sumTimeC += chData.CFDTime;
         nFiredChannelsC++;
@@ -433,7 +432,7 @@ void DigitQcTaskLaser::monitorData(o2::framework::ProcessingContext& ctx)
         } else if (mTrgModeThresholdVar == TrgModeThresholdVar::kNchannels) {
           if (nFiredChannelsA + nFiredChannelsC >= mTrgThresholdCenSum)
             mMapTrgSoftware[o2::ft0::Triggers::bitCen] = true;
-          if (nFiredChannelsA + nFiredChannelsA >= mTrgThresholdSCenSum)
+          if (nFiredChannelsA + nFiredChannelsC >= mTrgThresholdSCenSum)
             mMapTrgSoftware[o2::ft0::Triggers::bitSCen] = true;
         }
         break;
