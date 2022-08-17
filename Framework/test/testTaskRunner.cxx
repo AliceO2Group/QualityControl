@@ -25,6 +25,7 @@
 #include <Framework/InitContext.h>
 #include <Framework/ConfigParamRegistry.h>
 #include <Framework/ConfigParamStore.h>
+#include <Common/Exceptions.h>
 
 #define BOOST_TEST_MODULE TaskRunner test
 #define BOOST_TEST_MAIN

@@ -17,9 +17,11 @@
 #ifndef QC_CHECKER_AGGREGATORRUNNER_H
 #define QC_CHECKER_AGGREGATORRUNNER_H
 
+// stl
+#include <vector>
+#include <string>
 // O2
 #include <Framework/Task.h>
-#include <Framework/DataProcessorSpec.h>
 #include <Common/Timer.h>
 // QC
 #include "QualityControl/QualityObject.h"
@@ -43,11 +45,6 @@ class Monitoring;
 namespace o2::configuration
 {
 class ConfigurationInterface;
-}
-
-namespace AliceO2::Common
-{
-class Timer;
 }
 
 namespace o2::quality_control

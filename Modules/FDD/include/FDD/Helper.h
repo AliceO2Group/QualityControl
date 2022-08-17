@@ -25,29 +25,6 @@ namespace o2::quality_control_modules::fdd
 {
 namespace helper
 { //helper for soft fixes in case of DataFormatsFDD's modifications
-namespace digit
-{
-template <typename T>
-auto getTriggerBits(const T& digit) -> std::enable_if_t<std::is_same<decltype(std::declval<T>().mTriggers.triggersignals), uint8_t>::value, const decltype(std::declval<T>().mTriggers.triggersignals)&>
-{
-  return digit.mTriggers.triggersignals;
-}
-template <typename T>
-auto getTriggerBits(const T& digit) -> std::enable_if_t<!std::is_same<decltype(std::declval<T>().mTriggers.triggersignals), uint8_t>::value, const decltype(std::declval<T>().mTriggers.triggersignals)&>
-{
-  return digit.mTriggers.triggersignals;
-}
-template <typename T>
-auto getTriggerBits(const T& digit) -> std::enable_if_t<std::is_same<decltype(std::declval<T>().mTriggers.triggerSignals), uint8_t>::value, const decltype(std::declval<T>().mTriggers.triggerSignals)&>
-{
-  return digit.mTriggers.triggerSignals;
-}
-template <typename T>
-auto getTriggerBits(const T& digit) -> std::enable_if_t<!std::is_same<decltype(std::declval<T>().mTriggers.triggerSignals), uint8_t>::value, const decltype(std::declval<T>().mTriggers.triggerSignals)&>
-{
-  return digit.mTriggers.triggerSignals;
-}
-} //namespace digit
 namespace channel_data
 { //ChannelData section
 //ChannelID section

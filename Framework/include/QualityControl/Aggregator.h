@@ -19,27 +19,28 @@
 
 // std
 #include <string>
+#include <vector>
 // QC
 #include "QualityControl/QualityObject.h"
 #include "QualityControl/AggregatorConfig.h"
-#include "QualityControl/UpdatePolicyType.h"
-#include "QualityControl/CommonSpec.h"
-#include "QualityControl/AggregatorSpec.h"
-#include "QualityControl/DataSourceSpec.h"
 #include "QualityControl/AggregatorSource.h"
-// config
-#include <boost/property_tree/ptree_fwd.hpp>
-#include <utility>
+#include "QualityControl/UpdatePolicyType.h"
 
 namespace o2::configuration
 {
 class ConfigurationInterface;
 }
 
+namespace o2::quality_control::core
+{
+struct CommonSpec;
+}
+
 namespace o2::quality_control::checker
 {
 
 class AggregatorInterface;
+struct AggregatorSpec;
 
 /// \brief An aggregator as found in the configuration.
 ///

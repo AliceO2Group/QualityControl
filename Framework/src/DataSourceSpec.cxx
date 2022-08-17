@@ -14,12 +14,9 @@
 ///
 
 #include "QualityControl/DataSourceSpec.h"
-#include <utility>
 
 namespace o2::quality_control::core
 {
-
-// todo make DataSourceUtils
 
 DataSourceSpec::DataSourceSpec(DataSourceType type)
   : type(type)

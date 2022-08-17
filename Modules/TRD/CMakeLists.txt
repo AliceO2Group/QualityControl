@@ -32,7 +32,7 @@ add_root_dictionary(O2QcTRD
 
 # ---- Test(s) ----
 
-set(TEST_SRCS test/testQcTRD.cxx)
+#set(TEST_SRCS test/testQcTRD.cxx) # uncomment to reenable the test which was empty
 
 foreach(test ${TEST_SRCS})
 

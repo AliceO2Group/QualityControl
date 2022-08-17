@@ -18,6 +18,7 @@
 #define QC_CORE_OBJECTMANAGER_H
 
 // QC
+#include "QualityControl/Activity.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/MonitorObjectCollection.h"
 // stl

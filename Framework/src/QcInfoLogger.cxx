@@ -83,7 +83,7 @@ void QcInfoLogger::init(const std::string& facility,
   ILOG(Debug, Ops) << "QC infologger initialized" << ENDM;
   ILOG(Debug, Support) << "   Discard debug ? " << discardDebug << ENDM;
   ILOG(Debug, Support) << "   Discard from level ? " << discardFromLevel << ENDM;
-  ILOG(Debug, Support) << "   Discard to file ? " << ((discardToFile != "") ? discardToFile : "No") << ENDM;
+  ILOG(Debug, Support) << "   Discard to file ? " << (!discardToFile.empty() ? discardToFile : "No") << ENDM;
 
   setFacility(facility);
   setRun(run);
@@ -98,7 +98,7 @@ void QcInfoLogger::init(const std::string& facility,
                         const std::string& partitionName)
 {
   std::string discardDebugStr = config.get<std::string>("qc.config.infologger.filterDiscardDebug", "false");
-  bool discardDebug = discardDebugStr == "true" ? 1 : 0;
+  bool discardDebug = discardDebugStr == "true";
   int discardLevel = config.get<int>("qc.config.infologger.filterDiscardLevel", 21 /* Discard Trace */);
   std::string discardToFile = config.get<std::string>("qc.config.infologger.filterDiscardFile", "");
   init(facility, discardDebug, discardLevel, discardToFile, dplInfoLogger, dplContext, run, partitionName);

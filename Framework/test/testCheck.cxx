@@ -14,7 +14,9 @@
 /// \author  Rafal Pacholek
 ///
 
+#include "QualityControl/CheckInterface.h"
 #include "QualityControl/CheckRunnerFactory.h"
+#include "QualityControl/CommonSpec.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/InfrastructureSpecReader.h"
 #include "getTestDataDirectory.h"

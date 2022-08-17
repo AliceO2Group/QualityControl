@@ -29,6 +29,10 @@ namespace o2::framework
 struct DataProcessorSpec;
 }
 
+namespace o2::quality_control::core
+{
+struct CommonSpec;
+}
 namespace o2::quality_control::checker
 {
 
@@ -51,7 +55,7 @@ class CheckRunnerFactory
    */
   static framework::DataProcessorSpec createSinkDevice(CheckRunnerConfig checkRunnerConfig, o2::framework::InputSpec input);
 
-  static CheckRunnerConfig extractConfig(const CommonSpec&);
+  static CheckRunnerConfig extractConfig(const core::CommonSpec&);
 
   static void customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies);
 };

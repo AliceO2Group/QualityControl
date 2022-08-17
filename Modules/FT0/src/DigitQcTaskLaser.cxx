@@ -261,13 +261,13 @@ void DigitQcTaskLaser::monitorData(o2::framework::ProcessingContext& ctx)
     }
     const auto& vecChData = digit.getBunchChannelData(channels);
     bool isTCM = true;
-    if (digit.mTriggers.timeA == o2::fit::Triggers::DEFAULT_TIME && digit.mTriggers.timeC == o2::fit::Triggers::DEFAULT_TIME) {
+    if (digit.mTriggers.getTimeA() == o2::fit::Triggers::DEFAULT_TIME && digit.mTriggers.getTimeC() == o2::fit::Triggers::DEFAULT_TIME) {
       isTCM = false;
     }
     mHistBC->Fill(digit.getBC());
     if (isTCM && digit.mTriggers.getDataIsValid() && digit.mTriggers.getOutputsAreBlocked()) {
-      mHistTimeSum2Diff->Fill((digit.mTriggers.timeC - digit.mTriggers.timeA) * sCFDChannel2NS / 2, (digit.mTriggers.timeC + digit.mTriggers.timeA) * sCFDChannel2NS / 2);
-      for (const auto& binPos : mHashedBitBinPos[digit.mTriggers.triggersignals]) {
+      mHistTimeSum2Diff->Fill((digit.mTriggers.getTimeC() - digit.mTriggers.getTimeA()) * sCFDChannel2NS / 2, (digit.mTriggers.getTimeC() + digit.mTriggers.getTimeA()) * sCFDChannel2NS / 2);
+      for (const auto& binPos : mHashedBitBinPos[digit.mTriggers.getTriggersignals()]) {
         mHistOrbitVsTrg->Fill(digit.getIntRecord().orbit % sOrbitsPerTF, binPos);
       }
     }

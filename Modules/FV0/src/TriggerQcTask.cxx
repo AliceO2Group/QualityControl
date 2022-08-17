@@ -167,7 +167,7 @@ void TriggerQcTask::monitorData(o2::framework::ProcessingContext& ctx)
         mHistTriggersSw->Fill(entry.first);
 
     for (const auto& entry : mMapTrgSoftware) {
-      bool isTCMFired = digit.mTriggers.triggersignals & (1 << entry.first);
+      bool isTCMFired = digit.mTriggers.getTriggersignals() & (1 << entry.first);
       bool isSwFired = entry.second;
       if (!isTCMFired && isSwFired)
         mHistTriggersSoftwareVsTCM->Fill(entry.first, ComparisonResult::kSWonly);
@@ -192,10 +192,10 @@ void TriggerQcTask::monitorData(o2::framework::ProcessingContext& ctx)
                          sumAmplOuter   = -- / %d \n",
           mMapDigitTrgNames[entry.first].c_str(),
           isTCMFired, isSwFired,
-          digit.mTriggers.nChanA, nFiredChannelsInner + nFiredChannelsOuter,
+          digit.mTriggers.getNChanA(), nFiredChannelsInner + nFiredChannelsOuter,
           nFiredChannelsInner,
           nFiredChannelsOuter,
-          digit.mTriggers.amplA, int(sumAmplInner + sumAmplOuter),
+          digit.mTriggers.getAmplA(), int(sumAmplInner + sumAmplOuter),
           int(sumAmplInner),
           int(sumAmplOuter));
         ILOG(Debug, Support) << msg << ENDM;

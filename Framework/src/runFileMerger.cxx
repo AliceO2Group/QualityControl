@@ -42,14 +42,11 @@ int main(int argc, const char* argv[])
       ("exit-on-error", bpo::bool_switch()->default_value(false), "Makes the executable exit if any of the input files could not be read.")                                    //
       ("output-file", bpo::value<std::string>()->default_value("merged.root"), "File path to store the merged results, if the file exists, it will be merged with new files.") //
       ("input-files-list", bpo::value<std::string>()->default_value(""), "Path to a file containing a list of input files (row by row)")                                       //
-      ("input-files", bpo::value<std::vector<std::string>>()->composing(),
-       "Space-separated file paths which should be merged.");
-
-    bpo::positional_options_description positionalArgs;
-    positionalArgs.add("input-files", -1);
+      ("input-files", bpo::value<std::vector<std::string>>()->multitoken(), "Space-separated file paths which should be merged.")                                              //
+      ("exclude-directories", bpo::value<std::vector<std::string>>()->multitoken(), "Space-separated directories which should be excluded when merging files.");
 
     bpo::variables_map vm;
-    store(bpo::command_line_parser(argc, argv).options(desc).positional(positionalArgs).run(), vm);
+    store(bpo::command_line_parser(argc, argv).options(desc).run(), vm);
     notify(vm);
 
     QcInfoLogger::setFacility("runFileMerger");
@@ -90,6 +87,15 @@ int main(int argc, const char* argv[])
       TGrid::Connect("alien:");
     }
 
+    auto excludedDirectories = vm.count("exclude-directories") > 0 ? vm["exclude-directories"].as<std::vector<std::string>>() : std::vector<std::string>();
+    if (!excludedDirectories.empty()) {
+      ILOG(Info, Support) << "Will skip the following directories inside input files:";
+      for (const auto& dir : excludedDirectories) {
+        ILOG(Info, Support) << " " << dir;
+      }
+      ILOG(Info, Support) << ENDM;
+    }
+
     auto handleError = vm["exit-on-error"].as<bool>()
                          ? [](const std::string& message) { throw std::runtime_error(message); }
                          : [](const std::string& message) { ILOG(Error, Support) << message << ENDM; };
@@ -127,6 +133,9 @@ int main(int argc, const char* argv[])
       TIter next(file->GetListOfKeys());
       TKey* key;
       while ((key = (TKey*)next())) {
+        if (std::find(excludedDirectories.begin(), excludedDirectories.end(), key->GetName()) != excludedDirectories.end()) {
+          continue;
+        }
         auto inputTObj = file->Get(key->GetName());
         if (inputTObj != nullptr) {
           auto inputMOC = dynamic_cast<MonitorObjectCollection*>(inputTObj);

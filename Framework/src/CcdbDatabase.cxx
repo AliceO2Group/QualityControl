@@ -22,9 +22,10 @@
 #include "QualityControl/DatabaseHelpers.h"
 #include "QualityControl/ObjectMetadataKeys.h"
 
+// O2
 #include <DataFormatsQualityControl/TimeRangeFlagCollection.h>
 #include <Common/Exceptions.h>
-// O2
+#include <CCDB/CcdbApi.h>
 #include <CommonUtils/MemFileHelper.h>
 // ROOT
 #include <TBufferJSON.h>
@@ -57,6 +58,9 @@ using namespace rapidjson;
 
 namespace o2::quality_control::repository
 {
+CcdbDatabase::CcdbDatabase() : ccdbApi(new o2::ccdb::CcdbApi())
+{
+}
 
 CcdbDatabase::~CcdbDatabase() { disconnect(); }
 
@@ -113,7 +117,7 @@ void CcdbDatabase::connect(const std::unordered_map<std::string, std::string>& c
 
 void CcdbDatabase::init()
 {
-  ccdbApi.init(mUrl);
+  ccdbApi->init(mUrl);
   loadDeprecatedStreamerInfos();
 }
 
@@ -183,7 +187,7 @@ void CcdbDatabase::storeAny(const void* obj, std::type_info const& typeInfo, std
   }
 
   ILOG(Debug, Support) << "Storing object " << path << " of type " << fullMetadata[metadata_keys::objectType] << ENDM;
-  int result = ccdbApi.storeAsTFile_impl(obj, typeInfo, path, fullMetadata, from, to, mMaxObjectSize);
+  int result = ccdbApi->storeAsTFile_impl(obj, typeInfo, path, fullMetadata, from, to, mMaxObjectSize);
 
   handleStorageError(path, result);
 }
@@ -233,7 +237,7 @@ void CcdbDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::Moni
   }
 
   ILOG(Debug, Support) << "Storing MonitorObject " << path << ENDM;
-  int result = ccdbApi.storeAsTFileAny<TObject>(obj, path, metadata, from, to, mMaxObjectSize);
+  int result = ccdbApi->storeAsTFileAny<TObject>(obj, path, metadata, from, to, mMaxObjectSize);
 
   handleStorageError(path, result);
 }
@@ -268,7 +272,7 @@ void CcdbDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::Qual
   }
 
   ILOG(Debug, Support) << "Storing quality object " << path << " (" << qo->getName() << ")" << ENDM;
-  int result = ccdbApi.storeAsTFileAny<QualityObject>(qo.get(), path, metadata, from, to);
+  int result = ccdbApi->storeAsTFileAny<QualityObject>(qo.get(), path, metadata, from, to);
 
   handleStorageError(path, result);
 }
@@ -296,7 +300,7 @@ void CcdbDatabase::storeTRFC(std::shared_ptr<const o2::quality_control::TimeRang
   std::stringstream buffer;
   trfc->streamTo(buffer);
   ILOG(Debug, Support) << "Storing TimeRangeFlagCollection at " << path << " (" << trfc->getName() << ")" << ENDM;
-  auto result = ccdbApi.storeAsBinaryFile(buffer.str().c_str(), buffer.str().size(), trfc->getName(), trfc->IsA()->GetName(), path, metadata, from, to);
+  auto result = ccdbApi->storeAsBinaryFile(buffer.str().c_str(), buffer.str().size(), trfc->getName(), trfc->IsA()->GetName(), path, metadata, from, to);
   if (result != 0) {
     ILOG(Error, Support) << "TRFC '" + trfc->getName() + "' could not be stored in CCDB, error: " + std::to_string(result) << ENDM;
   }
@@ -305,7 +309,7 @@ void CcdbDatabase::storeTRFC(std::shared_ptr<const o2::quality_control::TimeRang
 TObject* CcdbDatabase::retrieveTObject(std::string path, std::map<std::string, std::string> const& metadata, long timestamp, std::map<std::string, std::string>* headers)
 {
   // we try first to load a TFile
-  auto* object = ccdbApi.retrieveFromTFileAny<TObject>(path, metadata, timestamp, headers);
+  auto* object = ccdbApi->retrieveFromTFileAny<TObject>(path, metadata, timestamp, headers);
   if (object == nullptr) {
     ILOG(Error, Support) << "We could NOT retrieve the object " << path << " with timestamp " << timestamp << "." << ENDM;
     return nullptr;
@@ -316,7 +320,7 @@ TObject* CcdbDatabase::retrieveTObject(std::string path, std::map<std::string, s
 
 void* CcdbDatabase::retrieveAny(const type_info& tinfo, const string& path, const map<std::string, std::string>& metadata, long timestamp, std::map<std::string, std::string>* headers, const string& createdNotAfter, const string& createdNotBefore)
 {
-  auto* object = ccdbApi.retrieveFromTFile(tinfo, path, metadata, timestamp, headers, "", createdNotAfter, createdNotBefore);
+  auto* object = ccdbApi->retrieveFromTFile(tinfo, path, metadata, timestamp, headers, "", createdNotAfter, createdNotBefore);
   if (object == nullptr) {
     ILOG(Error, Support) << "We could NOT retrieve the object " << path << " with timestamp " << timestamp << "." << ENDM;
     return nullptr;
@@ -405,7 +409,7 @@ std::shared_ptr<o2::quality_control::TimeRangeFlagCollection> CcdbDatabase::retr
     return nullptr;
   }
 
-  auto resultMetadata = ccdbApi.retrieveHeaders(trfcPath, metadata, timestamp);
+  auto resultMetadata = ccdbApi->retrieveHeaders(trfcPath, metadata, timestamp);
   if (resultMetadata.empty()) {
     ILOG(Error, Support) << "Could not extract headers of TRFC at '" << trfcPath << "' with the metadata: " << ENDM; // TODO
     ILOG(Error, Support) << " - RunNumber  : " << metadata[metadata_keys::runNumber] << ENDM;
@@ -414,7 +418,7 @@ std::shared_ptr<o2::quality_control::TimeRangeFlagCollection> CcdbDatabase::retr
     return nullptr;
   }
 
-  auto success = ccdbApi.retrieveBlob(trfcPath, localFileDir, metadata, timestamp, false, localFileName);
+  auto success = ccdbApi->retrieveBlob(trfcPath, localFileDir, metadata, timestamp, false, localFileName);
   if (!success) {
     ILOG(Error, Support) << "Could not retrieve the TRFC at '" << trfcPath << "' with the metadata: " << ENDM; // TODO
     ILOG(Error, Support) << " - RunNumber  : " << metadata[metadata_keys::runNumber] << ENDM;
@@ -505,7 +509,7 @@ void CcdbDatabase::prepareTaskDataContainer(std::string /*taskName*/)
 
 std::string CcdbDatabase::getListingAsString(std::string subpath, std::string accept)
 {
-  std::string tempString = ccdbApi.list(subpath, false, accept);
+  std::string tempString = ccdbApi->list(subpath, false, accept);
 
   return tempString;
 }
@@ -575,7 +579,7 @@ std::vector<uint64_t> CcdbDatabase::getTimestampsForObject(std::string path)
 std::vector<std::string> CcdbDatabase::getPublishedObjectNames(std::string taskName)
 {
   std::vector<string> result;
-  string listing = ccdbApi.list(taskName + "/.*", true, "Application/JSON");
+  string listing = ccdbApi->list(taskName + "/.*", true, "Application/JSON");
 
   boost::property_tree::ptree pt;
   stringstream ss;
@@ -615,7 +619,7 @@ void CcdbDatabase::truncate(std::string taskName, std::string objectName)
 {
   ILOG(Info, Support) << "Truncating data for " << taskName << "/" << objectName << ENDM;
 
-  ccdbApi.truncate(taskName + "/" + objectName);
+  ccdbApi->truncate(taskName + "/" + objectName);
 }
 
 void CcdbDatabase::storeStreamerInfosToFile(std::string filename)

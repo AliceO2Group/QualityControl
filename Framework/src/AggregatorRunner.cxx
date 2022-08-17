@@ -18,15 +18,15 @@
 
 // O2
 #include <Common/Exceptions.h>
-#include <Configuration/ConfigurationFactory.h>
-#include <Framework/DataSpecUtils.h>
 #include <Monitoring/MonitoringFactory.h>
 #include <Monitoring/Monitoring.h>
 #include <Framework/InputRecordWalker.h>
 #include <CommonUtils/ConfigurableParam.h>
+#include <Framework/DataProcessorSpec.h>
+#include <Framework/InitContext.h>
+#include <Framework/ConfigParamRegistry.h>
 
 #include <utility>
-
 #include <TSystem.h>
 
 // QC

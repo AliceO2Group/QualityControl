@@ -18,10 +18,14 @@
 #define QUALITYCONTROL_POSTPROCESSINTERFACE_H
 
 #include <string>
-#include <Framework/ServiceRegistry.h>
 #include <boost/property_tree/ptree_fwd.hpp>
 #include "QualityControl/Triggers.h"
 #include "QualityControl/ObjectsManager.h"
+
+namespace o2::framework
+{
+class ServiceRegistry;
+}
 
 namespace o2::quality_control::postprocessing
 {

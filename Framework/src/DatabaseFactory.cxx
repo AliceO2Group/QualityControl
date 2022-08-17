@@ -14,13 +14,13 @@
 /// \author Barthelemy von Haller
 ///
 
-// ROOT
-#include <QualityControl/CcdbDatabase.h>
+#include "QualityControl/DatabaseFactory.h"
+
 // O2
 #include <Common/Exceptions.h>
 // QC
+#include "QualityControl/CcdbDatabase.h"
 #include "QualityControl/DummyDatabase.h"
-#include "QualityControl/DatabaseFactory.h"
 #include "QualityControl/QcInfoLogger.h"
 #ifdef _WITH_MYSQL
 #include "QualityControl/MySqlDatabase.h"

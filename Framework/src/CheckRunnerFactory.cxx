@@ -25,6 +25,7 @@
 
 #include "QualityControl/CheckRunner.h"
 #include "QualityControl/CheckRunnerFactory.h"
+#include "QualityControl/CommonSpec.h"
 
 namespace o2::quality_control::checker
 {

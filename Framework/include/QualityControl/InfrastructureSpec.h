@@ -35,7 +35,6 @@ struct InfrastructureSpec {
   std::vector<checker::AggregatorSpec> aggregators;
   std::vector<postprocessing::PostProcessingTaskSpec> postProcessingTasks;
   std::vector<ExternalTaskSpec> externalTasks;
-  // todo: add other actors
 };
 
 } // namespace o2::quality_control::core

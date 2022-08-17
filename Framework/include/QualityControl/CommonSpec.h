@@ -18,7 +18,6 @@
 
 #include <string>
 #include <unordered_map>
-#include <boost/property_tree/ptree_fwd.hpp>
 
 namespace o2::quality_control::core
 {
