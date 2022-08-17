@@ -337,6 +337,11 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->setDefaultDrawOptions(mHistTriggersCorrelation.get(), "COLZ");
   getObjectsManager()->startPublishing(mHistTriggersSoftwareVsTCM.get());
   getObjectsManager()->setDefaultDrawOptions(mHistTriggersSoftwareVsTCM.get(), "COLZ");
+
+  for (int i = 0; i < getObjectsManager()->getNumberPublishedObjects(); i++) {
+    TH1* obj = (TH1*)getObjectsManager()->getMonitorObject(i)->getObject();
+    obj->SetTitle((string("FT0 ") + obj->GetTitle()).c_str());
+  }
 }
 
 void DigitQcTask::startOfActivity(Activity& activity)

@@ -299,6 +299,11 @@ void DigitQcTaskLaser::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->setDefaultDrawOptions(mHistTimeSum2Diff.get(), "COLZ");
   getObjectsManager()->startPublishing(mHistTriggersSoftwareVsTCM.get());
   getObjectsManager()->setDefaultDrawOptions(mHistTriggersSoftwareVsTCM.get(), "COLZ");
+
+  for (int i = 0; i < getObjectsManager()->getNumberPublishedObjects(); i++) {
+    TH1* obj = (TH1*)getObjectsManager()->getMonitorObject(i)->getObject();
+    obj->SetTitle((string("FT0 Laser ") + obj->GetTitle()).c_str());
+  }
 }
 
 void DigitQcTaskLaser::startOfActivity(Activity& activity)

@@ -235,6 +235,11 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->setDefaultDrawOptions(mHistOrbitVsTrg.get(), "COLZ");
   getObjectsManager()->startPublishing(mHistOrbitVsFEEmodules.get());
   getObjectsManager()->setDefaultDrawOptions(mHistOrbitVsFEEmodules.get(), "COLZ");
+
+  for (int i = 0; i < getObjectsManager()->getNumberPublishedObjects(); i++) {
+    TH1* obj = (TH1*)getObjectsManager()->getMonitorObject(i)->getObject();
+    obj->SetTitle((string("FDD ") + obj->GetTitle()).c_str());
+  }
 }
 
 void DigitQcTask::startOfActivity(Activity& activity)

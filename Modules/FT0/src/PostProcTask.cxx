@@ -173,6 +173,11 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistry& services)
   getObjectsManager()->startPublishing(mRatesCanv.get());
   getObjectsManager()->startPublishing(mAmpl);
   getObjectsManager()->startPublishing(mTime);
+
+  for (int i = 0; i < getObjectsManager()->getNumberPublishedObjects(); i++) {
+    TH1* obj = (TH1*)getObjectsManager()->getMonitorObject(i)->getObject();
+    obj->SetTitle((string("FT0 ") + obj->GetTitle()).c_str());
+  }
 }
 
 void PostProcTask::update(Trigger t, framework::ServiceRegistry&)
