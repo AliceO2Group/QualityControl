@@ -65,10 +65,10 @@ class CFDEffCheck : public o2::quality_control::checker::CheckInterface
     }
     return vecResult;
   }
-  
+
   constexpr static std::size_t sNCHANNELS = o2::fv0::Constants::nFv0Channels;
   std::vector<unsigned int> mDeadChannelMap;
-  std::string mDeadChannelMapStr;  
+  std::string mDeadChannelMapStr;
   float mThreshWarning;
   float mThreshError;
   int mNumWarnings;
