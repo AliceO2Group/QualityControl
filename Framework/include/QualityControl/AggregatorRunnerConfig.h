@@ -20,6 +20,7 @@
 #include <unordered_map>
 #include <string>
 #include <Framework/DataProcessorSpec.h>
+#include "QualityControl/Activity.h"
 
 namespace o2::quality_control::checker
 {
@@ -31,11 +32,7 @@ struct AggregatorRunnerConfig {
   bool infologgerFilterDiscardDebug = false;
   int infologgerDiscardLevel = 21;
   std::string infologgerDiscardFile{};
-  int fallbackRunNumber = 0;
-  int fallbackRunType = 0;
-  std::string fallbackPeriodName{};
-  std::string fallbackPassName{};
-  std::string fallbackProvenance{};
+  core::Activity fallbackActivity;
   framework::Options options{};
 };
 
