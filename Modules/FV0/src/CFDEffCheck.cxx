@@ -38,7 +38,7 @@ void CFDEffCheck::configure()
     mThreshWarning = stof(param->second);
     ILOG(Info, Support) << "configure() : using thresholdWarning = " << mThreshWarning << ENDM;
   } else {
-    mThreshWarning = 0.999;
+    mThreshWarning = 0.9;
     ILOG(Info, Support) << "configure() : using default thresholdWarning = " << mThreshWarning << ENDM;
   }
 
@@ -46,8 +46,27 @@ void CFDEffCheck::configure()
     mThreshError = stof(param->second);
     ILOG(Info, Support) << "configure() : using thresholdError = " << mThreshError << ENDM;
   } else {
-    mThreshError = 0.9;
+    mThreshError = 0.8;
     ILOG(Info, Support) << "configure() : using default thresholdError = " << mThreshError << ENDM;
+  }
+
+  if (auto param = mCustomParameters.find("deadChannelMap"); param != mCustomParameters.end()) {
+    const auto chIDs = param->second;
+    const std::string del = ",";
+    mDeadChannelMap = parseParameters<unsigned int>(chIDs, del);
+    if (mDeadChannelMap.size())
+      mDeadChannelMapStr = std::accumulate(++mDeadChannelMap.begin(), mDeadChannelMap.end(), std::to_string(mDeadChannelMap[0]),
+                                           [](const std::string& a, int b) {
+                                             return a + ", " + std::to_string(b);
+                                           });
+    else
+      mDeadChannelMapStr = "EMPTY";
+
+    ILOG(Info, Support) << "configure() : using deadChannelMap = " << mDeadChannelMapStr << ENDM;
+  } else {
+    mDeadChannelMap = {};
+    mDeadChannelMapStr = "EMPTY";
+    ILOG(Info, Support) << "configure() : using default deadChannelMap = " << mDeadChannelMapStr << ENDM;
   }
 }
 
@@ -63,25 +82,29 @@ Quality CFDEffCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
       result = Quality::Good;
       mNumErrors = 0;
       mNumWarnings = 0;
-      for (int i = 1; i < sNCHANNELS_PM + 1; i++) {
-        if (h->GetBinContent(i) < mThreshError) {
+      for (unsigned int iBin = 1; iBin < h->GetNbinsX() + 1; iBin++) {
+        unsigned int chId = iBin - 1;
+        if (chId >= sNCHANNELS)
+          continue;
+        if (std::find(mDeadChannelMap.begin(), mDeadChannelMap.end(), chId) != mDeadChannelMap.end()) {
+          continue;
+        }
+        if (h->GetBinContent(iBin) < mThreshError) {
           if (result.isBetterThan(Quality::Bad))
             // result = Quality::Bad; // setting quality like this clears reasons
             result.set(Quality::Bad);
           mNumErrors++;
-          // keep reasons short because they will be displayed on plot
-          // long reasons make font size too small
           result.addReason(FlagReasonFactory::Unknown(),
-                           "CFD eff. < \"Error\" threshold in channel " + std::to_string(i));
+                           "CFD eff. < \"Error\" threshold in channel " + std::to_string(chId));
           // no need to check medium threshold
           // but don't `break` because we want to add other reasons
           continue;
-        } else if (h->GetBinContent(i) < mThreshWarning) {
+        } else if (h->GetBinContent(iBin) < mThreshWarning) {
           if (result.isBetterThan(Quality::Medium))
             result.set(Quality::Medium);
           mNumWarnings++;
           result.addReason(FlagReasonFactory::Unknown(),
-                           "CFD eff. < \"Warning\" threshold in channel " + std::to_string(i));
+                           "CFD eff. < \"Warning\" threshold in channel " + std::to_string(chId));
         }
       }
     }
@@ -98,12 +121,14 @@ void CFDEffCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
   if (mo->getName() == "CFD_efficiency") {
     auto* h = dynamic_cast<TH1F*>(mo->getObject());
 
-    TPaveText* msg = new TPaveText(0.15, 0.15, 0.85, 0.4, "NDC");
+    TPaveText* msg = new TPaveText(0.15, 0.2, 0.85, 0.45, "NDC");
     h->GetListOfFunctions()->Add(msg);
     msg->SetName(Form("%s_msg", mo->GetName()));
     msg->Clear();
-    msg->AddText("CFDEffCheck");
-    msg->AddText(Form("(Warning < %.6f, Error < %.6f)", mThreshWarning, mThreshError));
+    if (mDeadChannelMap.size())
+      msg->AddText(("Dead channel IDs: " + mDeadChannelMapStr).c_str());
+    msg->AddText(Form("N channels with warning (< %.3f) = %d", mThreshWarning, mNumWarnings));
+    msg->AddText(Form("N channels with error   (< %.3f) = %d", mThreshError, mNumErrors));
 
     if (checkResult == Quality::Good) {
       msg->AddText(">> Quality::Good <<");
@@ -111,21 +136,11 @@ void CFDEffCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
     } else if (checkResult == Quality::Bad) {
       auto reasons = checkResult.getReasons();
       msg->SetFillColor(kRed);
-      msg->SetY2(std::min(0.7, 0.4 + reasons.size() * 0.01));
       msg->AddText(">> Quality::Bad <<");
-      msg->AddText(("N channels with errors = " + checkResult.getMetadata("nErrors")).c_str());
-      msg->AddText(("N channels with warnings = " + checkResult.getMetadata("nWarnings")).c_str());
-      for (int i = 0; i < int(reasons.size()); i++)
-        msg->AddText((reasons[i].first.getName() + ": " + reasons[i].second).c_str());
     } else if (checkResult == Quality::Medium) {
       auto reasons = checkResult.getReasons();
       msg->SetFillColor(kOrange);
-      msg->SetY2(std::min(0.7, 0.4 + reasons.size() * 0.01));
       msg->AddText(">> Quality::Medium <<");
-      msg->AddText(("N channels with errors = " + checkResult.getMetadata("nErrors")).c_str());
-      msg->AddText(("N channels with warnings = " + checkResult.getMetadata("nWarnings")).c_str());
-      for (int i = 0; i < int(reasons.size()); i++)
-        msg->AddText((reasons[i].first.getName() + ": " + reasons[i].second).c_str());
     } else if (checkResult == Quality::Null) {
       msg->AddText(">> Quality::Null <<");
       msg->SetFillColor(kGray);
@@ -135,14 +150,15 @@ void CFDEffCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
     Double_t xMax = h->GetXaxis()->GetXmax();
     auto* lineError = new TLine(xMin, mThreshError, xMax, mThreshError);
     auto* lineWarning = new TLine(xMin, mThreshWarning, xMax, mThreshWarning);
-    lineError->SetLineWidth(2);
-    lineWarning->SetLineWidth(2);
-    lineError->SetLineStyle(2);
-    lineWarning->SetLineStyle(2);
+    lineError->SetLineWidth(3);
+    lineWarning->SetLineWidth(3);
+    lineError->SetLineStyle(kDashed);
+    lineWarning->SetLineStyle(kDashed);
     lineError->SetLineColor(kRed);
-    lineWarning->SetLineStyle(kOrange);
+    lineWarning->SetLineColor(kOrange);
     h->GetListOfFunctions()->Add(lineError);
     h->GetListOfFunctions()->Add(lineWarning);
+    h->SetStats(0);
   }
 }
 
