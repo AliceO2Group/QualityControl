@@ -119,10 +119,7 @@ void TrackletsTask::retrieveCCDBSettings()
   if (mChamberStatus == nullptr) {
     ILOG(Info, Support) << "mChamberStatus is null, no chamber status to display" << ENDM;
   }
-  // j  else{
-  //    drawHashedOnHistsPerLayer();
-  //   }
-}
+  }
 
 void TrackletsTask::buildHistograms()
 {
@@ -172,11 +169,10 @@ void TrackletsTask::buildHistograms()
   mTrackletsPerTimeFrameCycled.reset(new TH1F("trackletspertimeframecycled", "Number of Tracklets per timeframe, this cycle;Tracklets in TimeFrame;Counts", 25000, 0, 500000));
   getObjectsManager()->startPublishing(mTrackletsPerTimeFrameCycled.get());
 
-  //=====================newly added lines=================
   mTriggersPerTimeFrame.reset(new TH1F("triggerspertimeframe", "Number of Triggers per timeframe;Triggers in TimeFrame;Counts", 100, 0, 100));
   getObjectsManager()->startPublishing(mTriggersPerTimeFrame.get());
 
-  //===============================================================
+
   buildTrackletLayers();
 }
 
@@ -195,13 +191,13 @@ void TrackletsTask::drawHashOnLayers(int layer, int hcid, int rowstart, int rowe
   topright.second = (sec * 2 + side) * 4 + 4 - 0.5;
 
   // LOG(info) << "Box for layer : " << layer << " hcid : " << hcid << ": " << bottomleft.first << ":" << bottomleft.second << " -- " << topright.first << ":" << topright.second;
-  boxlines[0] = new TLine(bottomleft.first, bottomleft.second, topright.first, bottomleft.second);                                                                                         // bottom
-  boxlines[1] = new TLine(bottomleft.first, topright.second, topright.first, topright.second);                                                                                             // top
-  boxlines[2] = new TLine(bottomleft.first, bottomleft.second, bottomleft.first, topright.second);                                                                                         // left
-  boxlines[3] = new TLine(topright.first, bottomleft.second, topright.first, topright.second);                                                                                             // right
+  boxlines[0] = new TLine(bottomleft.first, bottomleft.second, topright.first, bottomleft.second);               // bottom
+  boxlines[1] = new TLine(bottomleft.first, topright.second, topright.first, topright.second);                   // top
+  boxlines[2] = new TLine(bottomleft.first, bottomleft.second, bottomleft.first, topright.second);              // left
+  boxlines[3] = new TLine(topright.first, bottomleft.second, topright.first, topright.second);                  // right
   boxlines[4] = new TLine(bottomleft.first, topright.second - (topright.second - bottomleft.second) / 2, topright.first, topright.second - (topright.second - bottomleft.second) / 2);     // horizontal middle
-  boxlines[5] = new TLine(topright.first, bottomleft.second, bottomleft.first, topright.second);                                                                                           // backslash
-  boxlines[6] = new TLine(bottomleft.first, bottomleft.second, topright.first, topright.second);                                                                                           // forwardslash
+  boxlines[5] = new TLine(topright.first, bottomleft.second, bottomleft.first, topright.second);              //backslash
+  boxlines[6] = new TLine(bottomleft.first, bottomleft.second, topright.first, topright.second);              // forwardslash
   boxlines[7] = new TLine(bottomleft.first + (topright.first - bottomleft.first) / 2, bottomleft.second, bottomleft.first + (topright.first - bottomleft.first) / 2, topright.second);     // vertical middle
   boxlines[8] = new TLine(bottomleft.first, bottomleft.second + (topright.second - bottomleft.second) / 2, topright.first, bottomleft.second + (topright.second - bottomleft.second) / 2); // bottom
   for (int line = 0; line < 9; ++line) {

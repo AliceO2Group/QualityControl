@@ -74,7 +74,7 @@ class TrackletsTask final : public TaskInterface
   std::shared_ptr<TH1F> mTrackletPositionRawn = nullptr;
   std::shared_ptr<TH1F> mTrackletsPerEventn = nullptr;
   std::shared_ptr<TH1F> mTrackletsPerTimeFrame = nullptr;
-  std::shared_ptr<TH1F> mTriggersPerTimeFrame = nullptr; // new addition
+  std::shared_ptr<TH1F> mTriggersPerTimeFrame = nullptr; 
   std::shared_ptr<TH1F> mTrackletsPerTimeFrameCycled = nullptr;
   std::shared_ptr<TCanvas> mCanvas = nullptr;
   std::array<std::shared_ptr<TH2F>, 6> mLayers;
