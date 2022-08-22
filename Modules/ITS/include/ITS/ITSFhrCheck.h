@@ -19,6 +19,10 @@
 #define QC_MODULE_ITS_ITSFHRCHECK_H
 
 #include "QualityControl/CheckInterface.h"
+#include <string>
+#include <vector>
+#include <sstream>
+#include <TLatex.h>
 
 namespace o2::quality_control_modules::its
 {
@@ -38,9 +42,11 @@ class ITSFhrCheck : public o2::quality_control::checker::CheckInterface
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
+  std::vector<int> convertToIntArray(std::string input);
 
  private:
   int mNPixelPerStave[3] = { 4718592, 58720256, 102760448 }; // IB, ML, OL
+  std::shared_ptr<TLatex> tInfo[5];
   ClassDefOverride(ITSFhrCheck, 2);
 };
 

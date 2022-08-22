@@ -22,6 +22,9 @@
 #include "QualityControl/CheckInterface.h"
 #include <TLatex.h>
 #include <TH2Poly.h>
+#include <vector>
+#include <string>
+#include <sstream>
 
 namespace o2::quality_control_modules::its
 {
@@ -41,11 +44,14 @@ class ITSClusterCheck : public o2::quality_control::checker::CheckInterface
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
+  std::vector<int> convertToIntArray(std::string input);
 
  private:
   ClassDefOverride(ITSClusterCheck, 2);
 
   std::shared_ptr<TLatex> msg;
+  std::shared_ptr<TLatex> text[14];
+  std::shared_ptr<TLatex> text2[14];
   static constexpr int NLayer = 7;
   const int mNStaves[NLayer] = { 12, 16, 20, 24, 30, 42, 48 };
   const int StaveBoundary[NLayer + 1] = { 0, 12, 28, 48, 72, 102, 144, 192 };

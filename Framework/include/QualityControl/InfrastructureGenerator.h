@@ -26,7 +26,6 @@ namespace o2::framework
 class CompletionPolicy;
 }
 #include <Framework/WorkflowSpec.h>
-#include <Framework/DataProcessorSpec.h>
 
 namespace o2::quality_control
 {

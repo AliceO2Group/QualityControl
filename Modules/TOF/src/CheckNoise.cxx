@@ -18,6 +18,7 @@
 // QC
 #include "TOF/CheckNoise.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/MonitorObject.h"
 
 using namespace std;
 

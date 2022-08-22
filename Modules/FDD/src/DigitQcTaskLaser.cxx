@@ -267,7 +267,7 @@ void DigitQcTaskLaser::monitorData(o2::framework::ProcessingContext& ctx)
     if (mTimeCurNS > curTfTimeMax)
       curTfTimeMax = mTimeCurNS;
 
-    if (digit.mTriggers.timeA == o2::fit::Triggers::DEFAULT_TIME && digit.mTriggers.timeC == o2::fit::Triggers::DEFAULT_TIME) {
+    if (digit.mTriggers.getTimeA() == o2::fit::Triggers::DEFAULT_TIME && digit.mTriggers.getTimeC() == o2::fit::Triggers::DEFAULT_TIME) {
       isTCM = false;
     }
     mHistOrbit2BC->Fill(digit.getIntRecord().orbit % sOrbitsPerTF, digit.getIntRecord().bc);

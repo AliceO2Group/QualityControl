@@ -17,20 +17,23 @@
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/algorithm/copy.hpp>
 #include <utility>
-// ROOT
-#include <TClass.h>
 // O2
 #include <Common/Exceptions.h>
-#include <Framework/DataDescriptorQueryBuilder.h>
 // QC
+#include "QualityControl/CheckInterface.h"
+#include "QualityControl/CheckSpec.h"
+#include "QualityControl/CommonSpec.h"
 #include "QualityControl/InputUtils.h"
+#include "QualityControl/MonitorObject.h"
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/Quality.h"
 
 using namespace AliceO2::Common;
 using namespace AliceO2::InfoLogger;
 
 using namespace o2::quality_control::checker;
+using namespace o2::quality_control::core;
 using namespace std;
 
 namespace o2::quality_control::checker
@@ -148,7 +151,7 @@ QualityObjectsType Check::check(std::map<std::string, std::shared_ptr<MonitorObj
   return qualityObjects;
 }
 
-void Check::beautify(std::map<std::string, std::shared_ptr<MonitorObject>>& moMap, Quality quality)
+void Check::beautify(std::map<std::string, std::shared_ptr<MonitorObject>>& moMap, const Quality& quality)
 {
   if (!mCheckConfig.allowBeautify) {
     return;

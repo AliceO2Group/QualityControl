@@ -16,8 +16,6 @@
 ///
 
 #include "QualityControl/TaskInterface.h"
-#include "QualityControl/stringUtils.h"
-#include <CCDB/CcdbApi.h>
 
 namespace o2::quality_control::core
 {

@@ -113,7 +113,7 @@ std::string QualityObject::getPath() const
   try {
     path = RepoPathUtils::getQoPath(this);
   } catch (FatalException& fe) {
-    fe << errinfo_details("Only one MO should be assigned to one QO With the policy OnEachSeparatety"); // update error info
+    fe << errinfo_details("Only one MO should be assigned to one QO With the policy OnEachSeparately"); // update error info
     throw;
   }
   return path;

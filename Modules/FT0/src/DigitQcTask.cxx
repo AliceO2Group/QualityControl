@@ -329,27 +329,27 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
     const auto& vecChData = digit.getBunchChannelData(channels);
     bool isTCM = true;
-    if (digit.mTriggers.timeA == o2::fit::Triggers::DEFAULT_TIME && digit.mTriggers.timeC == o2::fit::Triggers::DEFAULT_TIME) {
+    if (digit.mTriggers.getTimeA() == o2::fit::Triggers::DEFAULT_TIME && digit.mTriggers.getTimeC() == o2::fit::Triggers::DEFAULT_TIME) {
       isTCM = false;
     }
     mHistOrbit2BC->Fill(digit.getIntRecord().orbit % sOrbitsPerTF, digit.getIntRecord().bc);
     mHistBC->Fill(digit.getBC());
     if (isTCM && digit.mTriggers.getDataIsValid() && !digit.mTriggers.getOutputsAreBlocked()) {
-      if (digit.mTriggers.nChanA > 0) {
-        mHistNchA->Fill(digit.mTriggers.nChanA);
-        mHistSumAmpA->Fill(digit.mTriggers.amplA);
-        mHistAverageTimeA->Fill(digit.mTriggers.timeA);
+      if (digit.mTriggers.getNChanA() > 0) {
+        mHistNchA->Fill(digit.mTriggers.getNChanA());
+        mHistSumAmpA->Fill(digit.mTriggers.getAmplA());
+        mHistAverageTimeA->Fill(digit.mTriggers.getTimeA());
       }
-      if (digit.mTriggers.nChanC > 0) {
-        mHistNchC->Fill(digit.mTriggers.nChanC);
-        mHistSumAmpC->Fill(digit.mTriggers.amplC);
-        mHistAverageTimeC->Fill(digit.mTriggers.timeC);
+      if (digit.mTriggers.getNChanC() > 0) {
+        mHistNchC->Fill(digit.mTriggers.getNChanC());
+        mHistSumAmpC->Fill(digit.mTriggers.getAmplC());
+        mHistAverageTimeC->Fill(digit.mTriggers.getTimeC());
       }
-      mHistTimeSum2Diff->Fill((digit.mTriggers.timeC - digit.mTriggers.timeA) * sCFDChannel2NS / 2, (digit.mTriggers.timeC + digit.mTriggers.timeA) * sCFDChannel2NS / 2);
-      for (const auto& binPos : mHashedPairBitBinPos[digit.mTriggers.triggersignals]) {
+      mHistTimeSum2Diff->Fill((digit.mTriggers.getTimeC() - digit.mTriggers.getTimeA()) * sCFDChannel2NS / 2, (digit.mTriggers.getTimeC() + digit.mTriggers.getTimeA()) * sCFDChannel2NS / 2);
+      for (const auto& binPos : mHashedPairBitBinPos[digit.mTriggers.getTriggersignals()]) {
         mHistTriggersCorrelation->Fill(binPos.first, binPos.second);
       }
-      for (const auto& binPos : mHashedBitBinPos[digit.mTriggers.triggersignals]) {
+      for (const auto& binPos : mHashedBitBinPos[digit.mTriggers.getTriggersignals()]) {
         mHistBCvsTrg->Fill(digit.getIntRecord().bc, binPos);
         mHistOrbitVsTrg->Fill(digit.getIntRecord().orbit % sOrbitsPerTF, binPos);
       }

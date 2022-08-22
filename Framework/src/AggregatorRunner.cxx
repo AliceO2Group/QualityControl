@@ -18,15 +18,15 @@
 
 // O2
 #include <Common/Exceptions.h>
-#include <Configuration/ConfigurationFactory.h>
-#include <Framework/DataSpecUtils.h>
 #include <Monitoring/MonitoringFactory.h>
 #include <Monitoring/Monitoring.h>
 #include <Framework/InputRecordWalker.h>
 #include <CommonUtils/ConfigurableParam.h>
+#include <Framework/DataProcessorSpec.h>
+#include <Framework/InitContext.h>
+#include <Framework/ConfigParamRegistry.h>
 
 #include <utility>
-
 #include <TSystem.h>
 
 // QC
@@ -398,11 +398,7 @@ void AggregatorRunner::sendPeriodicMonitoring()
 
 void AggregatorRunner::start(const ServiceRegistry& services)
 {
-  mActivity.mId = computeRunNumber(services, mRunnerConfig.fallbackRunNumber);
-  mActivity.mType = computeRunType(services, mRunnerConfig.fallbackRunType);
-  mActivity.mPeriodName = computePeriodName(services, mRunnerConfig.fallbackPeriodName);
-  mActivity.mPassName = computePassName(mRunnerConfig.fallbackPassName);
-  mActivity.mProvenance = computeProvenance(mRunnerConfig.fallbackProvenance);
+  mActivity = computeActivity(services, mRunnerConfig.fallbackActivity);
   mTimerTotalDurationActivity.reset();
   string partitionName = computePartitionName(services);
   QcInfoLogger::setRun(mActivity.mId);

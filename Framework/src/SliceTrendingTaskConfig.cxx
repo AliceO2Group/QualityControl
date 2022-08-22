@@ -18,7 +18,6 @@
 
 #include "QualityControl/SliceTrendingTaskConfig.h"
 #include <boost/property_tree/ptree.hpp>
-#include <typeinfo>
 
 namespace o2::quality_control::postprocessing
 {

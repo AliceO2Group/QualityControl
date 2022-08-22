@@ -320,9 +320,19 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
         bcCorr += o2::constants::lhc::LHCMaxBunches;
       }
 
-      ndigitsPerBC[row.mFirstIR.orbit % nOrbits][bcCorr / 18]++;
+      int ech = o2::tof::Geo::getECHFromCH(digit.getChannel());
+      int crateECH = o2::tof::Geo::getCrateFromECH(ech);
+      int slotECH = o2::tof::Geo::getTRMFromECH(ech);
+      int chainECH = o2::tof::Geo::getChainFromECH(ech);
+      int tdcECH = o2::tof::Geo::getTDCFromECH(ech);
+      int bcCorrCable = bcCorr - (o2::tof::Geo::getCableTimeShiftBin(crateECH, slotECH, chainECH, tdcECH) - digit.getTDC()) / 1024;
+      if (bcCorrCable < 0) {
+        bcCorrCable += o2::constants::lhc::LHCMaxBunches;
+      }
 
-      ndigitsPerCrate[o2::tof::Geo::getCrateFromECH(o2::tof::Geo::getECHFromCH(digit.getChannel())) /*crate index*/]++;
+      ndigitsPerBC[row.mFirstIR.orbit % nOrbits][bcCorrCable]++;
+
+      ndigitsPerCrate[crateECH]++;
       mCounterHitsPerStripNoiseFiltered[strip].Count(det[0] * 4 + det[4] / 12);
       mCounterHitsPerChannel.Count(digit.getChannel());
       // TDC time and ToT time
@@ -383,8 +393,8 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
 
   for (int iorb = 0; iorb < nOrbits; iorb++) {
     for (int ibc = 0; ibc < mBinsBCForMultiplicity; ibc++) {
-      mHitMultiplicityVsBC->Fill(ibc * 18 + 1, ndigitsPerBC[iorb][ibc]);
-      mHitMultiplicityVsBCpro->Fill(ibc * 18 + 1, ndigitsPerBC[iorb][ibc]);
+      mHitMultiplicityVsBC->Fill(ibc + 1, ndigitsPerBC[iorb][ibc]);
+      mHitMultiplicityVsBCpro->Fill(ibc + 1, ndigitsPerBC[iorb][ibc]);
     }
   }
 

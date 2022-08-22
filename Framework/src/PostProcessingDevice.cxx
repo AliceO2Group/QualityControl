@@ -18,6 +18,7 @@
 
 #include "QualityControl/PostProcessingRunner.h"
 #include "QualityControl/PostProcessingConfig.h"
+#include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/PostProcessingRunnerConfig.h"
 #include "QualityControl/QcInfoLogger.h"
 

@@ -47,8 +47,8 @@ ClustQcTask::~ClustQcTask()
 
 void ClustQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize ClusterQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
-  /////////////////
+  // ILOG(Info, Support) << "initialize ClusterQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  // printf(" =================== > test initialise Clust \n");
 
   mMultClust11 = std::make_shared<TH1F>("MultClust11", "Multiplicity Clusters - MT11 ", 100, 0, 100);
   getObjectsManager()->startPublishing(mMultClust11.get());
@@ -121,15 +121,19 @@ void ClustQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 void ClustQcTask::startOfActivity(Activity& /*activity*/)
 {
   ILOG(Info, Support) << "startOfActivity" << ENDM;
+  // printf(" =================== > test startOfActivity Clust \n");
 }
 
 void ClustQcTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  // ILOG(Info, Support) << "startOfCycle" << ENDM;
+  // printf(" =================== > test startOfCycle Clust \n");
 }
 
 void ClustQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
+  // printf(" =================== > test monitorData Clust \n");
+
   auto clusters = ctx.inputs().get<gsl::span<o2::mid::Cluster>>("clusters");
   auto rofs = ctx.inputs().get<gsl::span<o2::mid::ROFRecord>>("clusterrofs");
 
@@ -189,19 +193,22 @@ void ClustQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void ClustQcTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  // ILOG(Info, Support) << "endOfCycle" << ENDM;
+  // printf(" =================== > test endOfCycle Clust \n");
 }
 
 void ClustQcTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  // ILOG(Info, Support) << "endOfActivity" << ENDM;
+  // printf(" =================== > test endOfActivity Clust \n");
 }
 
 void ClustQcTask::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  // ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  // printf(" =================== > test reset Clust \n");
 
   mClusterMap11->Reset();
   mClusterMap12->Reset();

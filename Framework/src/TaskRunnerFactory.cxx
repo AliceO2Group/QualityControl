@@ -14,18 +14,17 @@
 /// \author Piotr Konopka
 ///
 
+#include "QualityControl/CommonSpec.h"
 #include "QualityControl/TaskRunnerFactory.h"
 #include "QualityControl/TaskRunner.h"
 #include "QualityControl/TaskRunnerConfig.h"
+#include "QualityControl/TaskSpec.h"
 #include "QualityControl/InfrastructureSpecReader.h"
+#include "QualityControl/QcInfoLogger.h"
 
 #include <Framework/DeviceSpec.h>
 #include <Framework/CompletionPolicy.h>
 #include <Headers/DataHeader.h>
-#include <Framework/ConfigParamSpec.h>
-#include <Framework/TimesliceIndex.h>
-#include <Framework/DataSpecUtils.h>
-#include <Framework/InputSpan.h>
 #include <Framework/O2ControlLabels.h>
 #include <Framework/DataProcessorLabel.h>
 
@@ -85,6 +84,15 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
     { "qcConfiguration", VariantType::Dict, emptyDict(), { "Some dictionary configuration" } }
   };
 
+  Activity fallbackActivity{
+    globalConfig.activityNumber,
+    globalConfig.activityType,
+    globalConfig.activityPeriodName,
+    globalConfig.activityPassName,
+    globalConfig.activityProvenance,
+    { globalConfig.activityStart, globalConfig.activityEnd }
+  };
+
   return {
     deviceName,
     taskSpec.taskName,
@@ -106,11 +114,7 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
     globalConfig.infologgerFilterDiscardDebug,
     globalConfig.infologgerDiscardLevel,
     globalConfig.infologgerDiscardFile,
-    globalConfig.activityType,
-    globalConfig.activityPeriodName,
-    globalConfig.activityPassName,
-    globalConfig.activityProvenance,
-    globalConfig.activityNumber
+    fallbackActivity
   };
 }
 

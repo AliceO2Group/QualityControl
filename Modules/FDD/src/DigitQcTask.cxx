@@ -343,7 +343,7 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     mHistBC->Fill(digit.getIntRecord().bc);
 
     if (isTCM && digit.mTriggers.getDataIsValid() && !digit.mTriggers.getOutputsAreBlocked()) {
-      // mHistNchA->Fill(digit.mTriggers.nChanA); ak
+      // mHistNchA->Fill(digit.mTriggers.getNChanA()); ak
       mHistNchA->Fill(digit.mTriggers.getNChanA());
       mHistNchC->Fill(digit.mTriggers.getNChanC());
       mHistSumAmpA->Fill(digit.mTriggers.getAmplA());
@@ -351,12 +351,12 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       mHistAverageTimeA->Fill(digit.mTriggers.getTimeA() * mCFDChannel2NS);
       mHistAverageTimeC->Fill(digit.mTriggers.getTimeC() * mCFDChannel2NS);
       for (const auto& entry : mMapDigitTrgNames) {
-        if (helper::digit::getTriggerBits(digit) & (1 << entry.first)) {
+        if (digit.mTriggers.getTriggersignals() & (1 << entry.first)) {
           mHistTriggers->Fill(static_cast<Double_t>(entry.first));
         }
       }
 
-      for (const auto& binPos : mHashedBitBinPos[digit.mTriggers.triggersignals]) {
+      for (const auto& binPos : mHashedBitBinPos[digit.mTriggers.getTriggersignals()]) {
         mHistBCvsTrg->Fill(digit.getIntRecord().bc, binPos);
         mHistOrbitVsTrg->Fill(digit.getIntRecord().orbit % sOrbitsPerTF, binPos);
       }

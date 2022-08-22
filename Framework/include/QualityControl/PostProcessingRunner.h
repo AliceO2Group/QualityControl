@@ -21,14 +21,11 @@
 #include <functional>
 #include <Framework/ServiceRegistry.h>
 #include <boost/property_tree/ptree_fwd.hpp>
-#include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/PostProcessingConfig.h"
+#include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/PostProcessingRunnerConfig.h"
-#include "QualityControl/PostProcessingTaskSpec.h"
 #include "QualityControl/Triggers.h"
 #include "QualityControl/DatabaseInterface.h"
-#include "QualityControl/ObjectsManager.h"
-#include "QualityControl/MonitorObjectCollection.h"
 
 namespace o2::framework
 {
@@ -39,11 +36,19 @@ namespace o2::quality_control::core
 {
 struct CommonSpec;
 class Activity;
+class ObjectsManager;
+class MonitorObjectCollection;
+} // namespace o2::quality_control::core
+
+namespace o2::quality_control::repository
+{
+class DatabaseInterface;
 }
 
 namespace o2::quality_control::postprocessing
 {
 
+class PostProcessingTaskSpec;
 using MOCPublicationCallback = std::function<void(const o2::quality_control::core::MonitorObjectCollection*, long from, long to)>;
 
 /// \brief A class driving the execution of a post-processing task
@@ -55,7 +60,7 @@ using MOCPublicationCallback = std::function<void(const o2::quality_control::cor
 class PostProcessingRunner
 {
  public:
-  PostProcessingRunner(std::string name);
+  explicit PostProcessingRunner(std::string name);
   ~PostProcessingRunner() = default;
 
   /// \brief Initialization. Creates configuration structures out of the ptree. Throws on errors.

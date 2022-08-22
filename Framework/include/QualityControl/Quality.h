@@ -21,6 +21,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <utility>
 #include <DataFormatsQualityControl/FlagReasons.h>
 
 namespace o2::quality_control::core

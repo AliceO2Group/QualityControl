@@ -59,25 +59,31 @@ class TrackletsTask final : public TaskInterface
 
  private:
   long int mTimestamp;
-  std::array<std::shared_ptr<TH2F>, 18> moHCMCM;
-  std::shared_ptr<TH1F> mTrackletSlope = nullptr;
-  std::shared_ptr<TH1F> mTrackletSlopeRaw = nullptr;
-  std::shared_ptr<TH1F> mTrackletHCID = nullptr;
-  std::shared_ptr<TH1F> mTrackletPosition = nullptr;
-  std::shared_ptr<TH1F> mTrackletPositionRaw = nullptr;
-  std::shared_ptr<TH1F> mTrackletsPerEvent = nullptr;
-  std::array<std::shared_ptr<TH2F>, 18> moHCMCMn;
-  std::shared_ptr<TH1F> mTrackletSlopen = nullptr;
-  std::shared_ptr<TH1F> mTrackletSlopeRawn = nullptr;
-  std::shared_ptr<TH1F> mTrackletHCIDn = nullptr;
-  std::shared_ptr<TH1F> mTrackletPositionn = nullptr;
-  std::shared_ptr<TH1F> mTrackletPositionRawn = nullptr;
-  std::shared_ptr<TH1F> mTrackletsPerEventn = nullptr;
-  std::shared_ptr<TH1F> mTrackletsPerTimeFrame = nullptr;
-  std::shared_ptr<TH1F> mTriggersPerTimeFrame = nullptr; 
-  std::shared_ptr<TH1F> mTrackletsPerTimeFrameCycled = nullptr;
-  std::shared_ptr<TCanvas> mCanvas = nullptr;
-  std::array<std::shared_ptr<TH2F>, 6> mLayers;
+
+
+  std::array<TH2F*, 18> moHCMCM;
+  std::array<TH1F*, 18> mTrackletQ0perSector;
+  std::array<TH1F*, 18> mTrackletQ1perSector;
+  std::array<TH1F*, 18> mTrackletQ2perSector;
+  std::array<TH1F*, 3> mTrackletQ;
+  TH1F* mTrackletSlope = nullptr;
+  TH1F* mTrackletSlopeRaw = nullptr;
+  TH1F* mTrackletHCID = nullptr;
+  TH1F* mTrackletPosition = nullptr;
+  TH1F* mTrackletPositionRaw = nullptr;
+  TH1F* mTrackletsPerEvent = nullptr;
+  std::array<TH2F*, 18> moHCMCMn;
+  TH1F* mTrackletSlopen = nullptr;
+  TH1F* mTrackletSlopeRawn = nullptr;
+  TH1F* mTrackletHCIDn = nullptr;
+  TH1F* mTrackletPositionn = nullptr;
+  TH1F* mTrackletPositionRawn = nullptr;
+  TH1F* mTrackletsPerEventn = nullptr;
+  TH1F* mTrackletsPerTimeFrame = nullptr;
+  TH1F* mTriggersPerTimeFrame = nullptr;
+  TH1F* mTrackletsPerTimeFrameCycled = nullptr;
+  std::array<TH2F*, 6> mLayers;
+
 
   int mMarkerSize;
   int mMarkerStyle;

@@ -21,7 +21,7 @@ target_include_directories(
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-target_link_libraries(O2QcMFT PUBLIC O2QualityControl O2::DataFormatsITSMFT O2::ITSMFTReconstruction)
+target_link_libraries(O2QcMFT PUBLIC O2QualityControl O2::DataFormatsITSMFT O2::ITSMFTReconstruction O2::MFTTracking O2::MFTBase O2::ITSMFTBase O2::DetectorsBase)
 
 install(TARGETS O2QcMFT
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -80,7 +80,7 @@ install(
 
 # ---- Test(s) ----
 
-set(TEST_SRCS test/testQcMFT.cxx)
+#set(TEST_SRCS test/testQcMFT.cxx) # uncomment to reenable the test which was empty
 
 foreach(test ${TEST_SRCS})
   get_filename_component(test_name ${test} NAME)

@@ -26,6 +26,7 @@
 #include <TH2.h>
 // O2
 #include <ITSMFTReconstruction/ChipMappingMFT.h>
+#include <CommonConstants/LHCConstants.h>
 // Quality Control
 #include "QualityControl/TaskInterface.h"
 
@@ -52,6 +53,11 @@ class QcMFTDigitTask final : public TaskInterface
   void endOfCycle() override;
   void endOfActivity(Activity& activity) override;
   void reset() override;
+
+  double orbitToSeconds(uint32_t orbit, uint32_t refOrbit)
+  {
+    return (orbit - refOrbit) * o2::constants::lhc::LHCOrbitNS / 1E9;
+  }
 
  private:
   //  variables
@@ -87,19 +93,17 @@ class QcMFTDigitTask final : public TaskInterface
   std::unique_ptr<TH1F> mDigitChipOccupancy = nullptr;
   std::unique_ptr<TH1F> mDigitChipStdDev = nullptr;
   std::unique_ptr<TH2F> mDigitOccupancySummary = nullptr;
+  std::unique_ptr<TH2F> mDigitDoubleColumnSensorIndices = nullptr;
+
+  std::unique_ptr<TH1F> mDigitsROFSize = nullptr;
+  std::unique_ptr<TH1F> mNOfDigitsTime = nullptr;
+  std::unique_ptr<TH1F> mDigitsBC = nullptr;
 
   std::vector<std::unique_ptr<TH2F>> mDigitChipOccupancyMap;
   std::vector<std::unique_ptr<TH2F>> mDigitPixelOccupancyMap;
 
-  // new ladder vs double column histrograms
-  int mChipLadder[936] = { 0 };
-  int mChipPositionInLadder[936] = { 0 };
-  int mChipsInLadder[280] = { 0 };
-  int mHalfLadder[280] = { 0 };
-  int mDiskLadder[280] = { 0 };
-  int mFaceLadder[280] = { 0 };
-  int mZoneLadder[280] = { 0 };
-  std::vector<std::unique_ptr<TH2F>> mDigitLadderDoubleColumnOccupancyMap;
+  // reference orbit used in relative time calculation
+  uint32_t mRefOrbit = 0;
 
   //  functions
   int getVectorIndexChipOccupancyMap(int chipIndex);

@@ -14,6 +14,8 @@
 
 // std
 #include <map>
+#include <string>
+#include <vector>
 // ROOT
 #include <TObject.h>
 // O2

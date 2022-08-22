@@ -28,22 +28,23 @@
 // O2
 #include <Common/Timer.h>
 #include <Framework/Task.h>
-#include <Headers/DataHeader.h>
-#include <Monitoring/MonitoringFactory.h>
-#include <Configuration/ConfigurationInterface.h>
 #include <Framework/DataProcessorSpec.h>
 // QC
-#include "QualityControl/CheckInterface.h"
-#include "QualityControl/DatabaseInterface.h"
-#include "QualityControl/MonitorObject.h"
-#include "QualityControl/Check.h"
-#include "QualityControl/UpdatePolicyManager.h"
 #include "QualityControl/Activity.h"
 #include "QualityControl/CheckRunnerConfig.h"
+#include "QualityControl/Check.h"
+#include "QualityControl/MonitorObject.h"
+#include "QualityControl/QualityObject.h"
+#include "QualityControl/UpdatePolicyManager.h"
 
 namespace o2::quality_control::core
 {
 class ServiceDiscovery;
+}
+
+namespace o2::quality_control::repository
+{
+class DatabaseInterface;
 }
 
 namespace o2::framework
@@ -59,6 +60,9 @@ class Monitoring;
 }
 
 class TClass;
+
+// todo: do not expose other namespaces in headers
+using namespace o2::quality_control::core;
 
 namespace o2::quality_control::checker
 {
@@ -143,14 +147,14 @@ class CheckRunner : public framework::Task
    *
    * @param qualityObjects QOs to be stored in DB.
    */
-  void store(QualityObjectsType& qualityObjects);
+  void store(QualityObjectsType& qualityObjects, long validFrom);
 
   /**
    * \brief Store the MonitorObjects in the database.
    *
    * @param monitorObjects MOs to be stored in DB.
    */
-  void store(std::vector<std::shared_ptr<MonitorObject>>& monitorObjects);
+  void store(std::vector<std::shared_ptr<MonitorObject>>& monitorObjects, long validFrom);
 
   /**
    * \brief Send the QualityObjects on the DataProcessor output channel.

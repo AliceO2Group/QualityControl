@@ -19,6 +19,7 @@
 #include "TOF/CheckHitMap.h"
 #include "TOF/Utils.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/MonitorObject.h"
 #include "CCDB/BasicCCDBManager.h"
 #include "DataFormatsTOF/TOFFEElightInfo.h"
 #include "TOFBase/Geo.h"

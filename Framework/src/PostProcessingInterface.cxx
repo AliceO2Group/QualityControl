@@ -15,6 +15,7 @@
 ///
 
 #include "QualityControl/PostProcessingInterface.h"
+#include "QualityControl/ObjectsManager.h"
 
 namespace o2::quality_control::postprocessing
 {
@@ -33,7 +34,7 @@ void PostProcessingInterface::configure(std::string name, const boost::property_
 
 void PostProcessingInterface::setObjectsManager(std::shared_ptr<core::ObjectsManager> objectsManager)
 {
-  mObjectsManager = objectsManager;
+  mObjectsManager = std::move(objectsManager);
 }
 
 std::shared_ptr<core::ObjectsManager> PostProcessingInterface::getObjectsManager()

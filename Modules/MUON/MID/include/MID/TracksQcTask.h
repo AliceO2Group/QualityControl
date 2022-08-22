@@ -19,12 +19,15 @@
 
 #include "QualityControl/TaskInterface.h"
 #include "MIDBase/Mapping.h"
+#include "MUONCommon/MergeableTH2Ratio.h"
 
 class TH1F;
 class TH2F;
 class TProfile;
+class TProfile2D;
 
 using namespace o2::quality_control::core;
+using namespace o2::quality_control_modules::muon;
 
 namespace o2::quality_control_modules::mid
 {
@@ -62,20 +65,26 @@ class TracksQcTask final : public TaskInterface
   std::shared_ptr<TH1F> mTrackPT{ nullptr };
 
   std::shared_ptr<TProfile> mTrackRatio44{ nullptr };
-  std::shared_ptr<TH1F> mTrackBDetRatio44{ nullptr };
-  std::shared_ptr<TH1F> mTrackNBDetRatio44{ nullptr };
-  std::shared_ptr<TH1F> mTrackBLocRatio44{ nullptr };
-  std::shared_ptr<TH1F> mTrackNBLocRatio44{ nullptr };
+  std::shared_ptr<TProfile> mTrackBDetRatio44{ nullptr };
+  std::shared_ptr<TProfile> mTrackNBDetRatio44{ nullptr };
+  std::shared_ptr<TProfile> mTrackBLocRatio44{ nullptr };
+  std::shared_ptr<TProfile> mTrackNBLocRatio44{ nullptr };
+
   std::shared_ptr<TProfile> mTrackBCCounts{ nullptr };
 
-  std::shared_ptr<TH2F> mTrackDetRatio44Map11{ nullptr };
-  std::shared_ptr<TH2F> mTrackDetRatio44Map12{ nullptr };
-  std::shared_ptr<TH2F> mTrackDetRatio44Map21{ nullptr };
-  std::shared_ptr<TH2F> mTrackDetRatio44Map22{ nullptr };
+  // std::shared_ptr<MergeableTH2Ratio> mmTrackDetRatio44Map11{ nullptr };
+  // TH2F* mTrackDet44Map11;
+  // TH2F* mTrackDetAllMap11;
 
-  std::shared_ptr<TH2F> mTrackLocalBoardsRatio44Map{ nullptr };
-  std::shared_ptr<TH2F> mTrackLocalBoardsBRatio44Map{ nullptr };
-  std::shared_ptr<TH2F> mTrackLocalBoardsNBRatio44Map{ nullptr };
+  // std::shared_ptr<TH2F> mTrackDetRatio44Map11{ nullptr };
+  std::shared_ptr<TProfile2D> mTrackDetRatio44Map11{ nullptr };
+  std::shared_ptr<TProfile2D> mTrackDetRatio44Map12{ nullptr };
+  std::shared_ptr<TProfile2D> mTrackDetRatio44Map21{ nullptr };
+  std::shared_ptr<TProfile2D> mTrackDetRatio44Map22{ nullptr };
+
+  std::shared_ptr<TProfile2D> mTrackLocalBoardsRatio44Map{ nullptr };
+  std::shared_ptr<TProfile2D> mTrackLocalBoardsBRatio44Map{ nullptr };
+  std::shared_ptr<TProfile2D> mTrackLocalBoardsNBRatio44Map{ nullptr };
 
   ///////////////////////////
   o2::mid::Mapping mMapping; ///< Mapping
