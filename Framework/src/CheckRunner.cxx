@@ -507,11 +507,7 @@ void CheckRunner::initLibraries()
 
 void CheckRunner::start(const ServiceRegistry& services)
 {
-  mActivity.mId = computeRunNumber(services, mConfig.fallbackRunNumber);
-  mActivity.mType = computeRunType(services, mConfig.fallbackRunType);
-  mActivity.mPeriodName = computePeriodName(services, mConfig.fallbackPeriodName);
-  mActivity.mPassName = computePassName(mConfig.fallbackPassName);
-  mActivity.mProvenance = computeProvenance(mConfig.fallbackProvenance);
+  mActivity = computeActivity(services, mConfig.fallbackActivity);
   string partitionName = computePartitionName(services);
   QcInfoLogger::setRun(mActivity.mId);
   QcInfoLogger::setPartition(partitionName);

@@ -84,6 +84,15 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
     { "qcConfiguration", VariantType::Dict, emptyDict(), { "Some dictionary configuration" } }
   };
 
+  Activity fallbackActivity{
+    globalConfig.activityNumber,
+    globalConfig.activityType,
+    globalConfig.activityPeriodName,
+    globalConfig.activityPassName,
+    globalConfig.activityProvenance,
+    { globalConfig.activityStart, globalConfig.activityEnd }
+  };
+
   return {
     deviceName,
     taskSpec.taskName,
@@ -105,11 +114,7 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
     globalConfig.infologgerFilterDiscardDebug,
     globalConfig.infologgerDiscardLevel,
     globalConfig.infologgerDiscardFile,
-    globalConfig.activityType,
-    globalConfig.activityPeriodName,
-    globalConfig.activityPassName,
-    globalConfig.activityProvenance,
-    globalConfig.activityNumber
+    fallbackActivity
   };
 }
 

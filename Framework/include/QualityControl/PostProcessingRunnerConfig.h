@@ -30,7 +30,7 @@ struct PostProcessingRunnerConfig {
   std::string consulUrl{};
   bool infologgerFilterDiscardDebug = false;
   int infologgerDiscardLevel = 21;
-  std::string infologgerDiscardFile = "";
+  std::string infologgerDiscardFile{};
   double periodSeconds = 10.0;
   std::string configKeyValues; // These are for ConfigurableParams, not for override-values!
   boost::property_tree::ptree configTree{};
