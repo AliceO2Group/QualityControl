@@ -46,7 +46,7 @@ Rules:
     policy: none_kept
   - object_path: qc_mc/.*
     delay: 1440
-    policy: 1_per_hour
+    policy: skip
   - object_path: .*
     delay: 1440
     policy: skip
