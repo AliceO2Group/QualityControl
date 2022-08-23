@@ -495,11 +495,9 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       mMapTrgSoftware[o2::fit::Triggers::bitAOut] = nFiredChannelsOuter >= mTrgThresholdNChannelsOuter;
     }
 
-    for (const auto& entry : mMapTrgSoftware)
+    for (const auto& entry : mMapTrgSoftware) {
       if (entry.second)
         mHistTriggersSw->Fill(entry.first);
-
-    for (const auto& entry : mMapTrgSoftware) {
       bool isTCMFired = digit.mTriggers.getTriggersignals() & (1 << entry.first);
       bool isSwFired = entry.second;
       if (!isTCMFired && isSwFired)
