@@ -196,6 +196,8 @@ void TrackletsTask::buildHistograms()
   getObjectsManager()->startPublishing(mTrackletsPerTimeFrame);
   mTrackletsPerTimeFrameCycled = new TH1F("trackletspertimeframecycled", "Number of Tracklets per timeframe, this cycle;Tracklets in TimeFrame;Counts", 25000, 0, 500000);
   getObjectsManager()->startPublishing(mTrackletsPerTimeFrameCycled);
+  mTriggersPerTimeFrame = new TH1F("triggerspertimeframe", "Number of Triggers per timeframe;Triggers in TimeFrame;Counts", 100, 0, 100);
+  getObjectsManager()->startPublishing(mTriggersPerTimeFrame);
 
   buildTrackletLayers();
 }
@@ -337,6 +339,7 @@ void TrackletsTask::monitorData(o2::framework::ProcessingContext& ctx)
       //std::cout << "Tracklets per time frame: " << tracklets.size();
       mTrackletsPerTimeFrame->Fill(tracklets.size());
       mTrackletsPerTimeFrameCycled->Fill(tracklets.size());
+      mTriggersPerTimeFrame->Fill(triggerrecords.size());
       for (auto& trigger : triggerrecords) {
         mTrackletsPerEvent->Fill(trigger.getNumberOfTracklets());
         if (trigger.getNumberOfTracklets() == 0) {
