@@ -79,7 +79,7 @@ class ITSDecodingErrorTask final : public TaskInterface
  private:
   void getParameters(); // get Task parameters from json file
   void setAxisTitle(TH1* object, const char* xTitle, const char* yTitle);
-  void createFeePlots();
+  void createDecodingPlots();
   void getStavePoint(int layer, int stave, double* px, double* py); // prepare for fill TH2Poly, get all point for add TH2Poly bin
   void setPlotsFormat();
   void resetGeneralPlots();

@@ -196,13 +196,13 @@ void ITSDecodingErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
 
     auto linkErrors = ctx.inputs().get<gsl::span<o2::itsmft::GBTLinkDecodingStat>>("linkerrors");
-    auto detErrors = ctx.inputs().get<gsl::span<o2::itsmft::ChipError>>("decerrors");
+    auto decErrors = ctx.inputs().get<gsl::span<o2::itsmft::ChipError>>("decerrors");
     for (const auto& le : linkErrors) {
       for (int ierror = 0; ierror < o2::itsmft::GBTLinkDecodingStat::NErrorsDefined; ierror++) {
-        if (linkErrors.statistics.errorCounts[ierror] <= 0) {
+        if (le.errorCounts[ierror] <= 0) {
 	  continue;
         }
-        mLinkErrorCount[ilayer][istave][ilink][ierror]=linkErrors.statistics.errorCounts[ierror];
+        mLinkErrorCount[ilayer][istave][ilink][ierror]=le.errorCounts[ierror];
         if (mLinkErrorVsFeeid && (mLinkErrorCount[ilayer][istave][ilink][ierror] != 0)) {
           mLinkErrorVsFeeid->SetBinContent(ifee + 1, ierror + 1, mLinkErrorCount[ilayer][istave][ilink][ierror]);
         }
@@ -211,10 +211,10 @@ void ITSDecodingErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
     for (const auto& de : decErrors) {
       LOGP(info, "err in FeeID:{:#x} Chip:{} ErrorBits {:#b}, {} errors in TF", de.getFEEID(), de.getChipID(), de.errors, de.nerrors);
       for (int ierror = 0; ierror < o2::itsmft::ChipStat::NErrorsDefined; ierror++) {
-        if (de.chipStat.errorCounts[ierror] <= 0) {
+        if (de.nerrors <= 0) {
           continue;
         }
-        mChipErrorCount[ilayer][istave][ilink][ierror] = de.chipStat.errorCounts[ierror];
+        mChipErrorCount[ilayer][istave][ilink][ierror] = de.nerrors;
         if (mChipErrorVsFeeid && (mChipErrorCount[ilayer][istave][ilink][ierror] != 0)) {
           mChipErrorVsFeeid->SetBinContent(ifee + 1, ierror + 1, mChipErrorCount[ilayer][istave][ilink][ierror]);
         }
@@ -232,9 +232,6 @@ void ITSDecodingErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
 
   // Filling histograms: loop over mStatusFlagNumber[ilayer][istave][ilane][iflag]
-
-
-  mTimeFrameId = ctx.inputs().get<int>("G");
 
   end = std::chrono::high_resolution_clock::now();
   difference = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
