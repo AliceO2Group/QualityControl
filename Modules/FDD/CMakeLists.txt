@@ -6,6 +6,9 @@ target_sources(O2QcFDD PRIVATE
                                src/DigitQcTaskLaser.cxx
                                src/DigitQcTask.cxx
                                src/RecPointsQcTask.cxx
+                               src/PostProcTask.cxx
+                               src/CFDEffCheck.cxx
+                               src/OutOfBunchCollCheck.cxx
                                )
 
 target_include_directories(
@@ -27,6 +30,9 @@ add_root_dictionary(O2QcFDD
           include/FDD/DigitQcTask.h
           include/FDD/RecPointsQcTask.h
           include/FDD/Helper.h
+          include/FDD/PostProcTask.h
+          include/FDD/CFDEffCheck.h
+          include/FDD/OutOfBunchCollCheck.h
   LINKDEF include/FDD/LinkDef.h
   BASENAME O2QcFDD)
 
