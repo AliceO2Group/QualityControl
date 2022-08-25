@@ -216,7 +216,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   /// ak1
   mHist2CorrTCMchAndPMch = std::make_unique<TH2F>("CorrTCMchAndPMch", "TCM charge  - (PM totalCh/8);TCM charge;TCM - PM/8 totalCh;", 1100, 0, 6600, 301, -150.5, 150.5);
-  mHist2CorrTCMchAndPMch->SetOption("colz");
+  mHist2CorrTCMchAndPMch->GetYaxis()->SetRangeUser(-8, 8);
 
   std::map<std::string, uint8_t> mapFEE2hash;
   const auto& lut = o2::fdd::SingleLUT::Instance().getVecMetadataFEE();
@@ -257,10 +257,10 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistNumADC = std::make_unique<TH1F>("HistNumADC", "HistNumADC", sNCHANNELS_PM, 0, sNCHANNELS_PM);
   mHistNumCFD = std::make_unique<TH1F>("HistNumCFD", "HistNumCFD", sNCHANNELS_PM, 0, sNCHANNELS_PM);
   mHistCFDEff = std::make_unique<TH1F>("CFD_efficiency", "CFD efficiency;ChannelID;efficiency", sNCHANNELS_PM, 0, sNCHANNELS_PM);
-  mHistNchA = std::make_unique<TH1F>("NumChannelsA", "Number of channels(TCM), side A;Nch", sNCHANNELS_PM, 0, sNCHANNELS_PM);
-  mHistNchC = std::make_unique<TH1F>("NumChannelsC", "Number of channels(TCM), side C;Nch", sNCHANNELS_PM, 0, sNCHANNELS_PM);
-  mHistSumAmpA = std::make_unique<TH1F>("SumAmpA", "Sum of amplitudes(TCM), side A;", 1e4, 0, 1e4);
-  mHistSumAmpC = std::make_unique<TH1F>("SumAmpC", "Sum of amplitudes(TCM), side C;", 1e4, 0, 1e4);
+  mHistNchA = std::make_unique<TH1F>("NumChannelsA", "Number of channels(TCM), side A;Nch", sNCHANNELS_A, 0, sNCHANNELS_A);
+  mHistNchC = std::make_unique<TH1F>("NumChannelsC", "Number of channels(TCM), side C;Nch", sNCHANNELS_C, 0, sNCHANNELS_C);
+  mHistSumAmpA = std::make_unique<TH1F>("SumAmpA", "Sum of amplitudes(TCM), side A;", 5e3, 0, 5e3);
+  mHistSumAmpC = std::make_unique<TH1F>("SumAmpC", "Sum of amplitudes(TCM), side C;", 5e3, 0, 5e3);
   mHistAverageTimeA = std::make_unique<TH1F>("AverageTimeA", "Average time(TCM), side A", 4100, -2050, 2050);
   mHistAverageTimeC = std::make_unique<TH1F>("AverageTimeC", "Average time(TCM), side C", 4100, -2050, 2050);
   mHistChannelID = std::make_unique<TH1F>("StatChannelID", "ChannelID statistics;ChannelID", sNCHANNELS_PM, 0, sNCHANNELS_PM);
@@ -450,12 +450,12 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       if (digit.mTriggers.getNChanA() > 0) {
         mHistNchA->Fill(digit.mTriggers.getNChanA());
         mHistSumAmpA->Fill(digit.mTriggers.getAmplA());
-        mHistAverageTimeA->Fill(digit.mTriggers.getTimeA() * sCFDChannel2NS);
+        mHistAverageTimeA->Fill(digit.mTriggers.getTimeA());
       }
       if (digit.mTriggers.getNChanC() > 0) {
         mHistNchC->Fill(digit.mTriggers.getNChanC());
         mHistSumAmpC->Fill(digit.mTriggers.getAmplC());
-        mHistAverageTimeC->Fill(digit.mTriggers.getTimeC() * sCFDChannel2NS);
+        mHistAverageTimeC->Fill(digit.mTriggers.getTimeC());
       }
       mHistTimeSum2Diff->Fill((digit.mTriggers.getTimeC() - digit.mTriggers.getTimeA()) * sCFDChannel2NS / 2, (digit.mTriggers.getTimeC() + digit.mTriggers.getTimeA()) * sCFDChannel2NS / 2);
       for (const auto& binPos : mHashedPairBitBinPos[digit.mTriggers.getTriggersignals()]) {
