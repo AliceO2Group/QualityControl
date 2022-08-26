@@ -63,7 +63,7 @@ class DigitQcTask final : public TaskInterface
   void endOfCycle() override;
   void endOfActivity(Activity& activity) override;
   void reset() override;
-  constexpr static std::size_t sNCHANNELS_PM = 24;
+  constexpr static std::size_t sNCHANNELS_PM = 20;
   constexpr static std::size_t sNCHANNELS_A = 8;
   constexpr static std::size_t sNCHANNELS_C = 8;
   constexpr static std::size_t sOrbitsPerTF = 256;

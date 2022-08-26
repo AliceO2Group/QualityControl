@@ -49,7 +49,7 @@ class PostProcTask final : public quality_control::postprocessing::PostProcessin
   void update(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
   void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
 
-  constexpr static std::size_t sNCHANNELS_PM = 24;
+  constexpr static std::size_t sNCHANNELS_PM = 20;
 
  private:
   std::string mPathGrpLhcIf;
