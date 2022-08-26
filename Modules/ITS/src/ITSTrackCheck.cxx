@@ -140,7 +140,7 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
 
     if (iter->second->getName() == "VertexZ") {
       auto* h = dynamic_cast<TH1D*>(iter->second->getObject());
-      result.set(Quality::Bad);
+      result.set(Quality::Good);
       result.addMetadata("CheckZVertexEmpty", "good");
       result.addMetadata("CheckZVertexMeanMed", "good");
       result.addMetadata("CheckZVertexMeanBad", "good");
