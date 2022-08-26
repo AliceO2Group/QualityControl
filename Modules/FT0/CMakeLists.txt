@@ -6,10 +6,8 @@ target_sources(O2QcFT0 PRIVATE src/TH1ReductorLaser.cxx
                                src/DigitQcTaskLaser.cxx
                                src/DigitQcTask.cxx
                                src/CFDEffCheck.cxx
-                               src/BasicPPTask.cxx
-                               src/OutOfBunchCollTask.cxx
+                               src/PostProcTask.cxx
                                src/OutOfBunchCollCheck.cxx
-                               src/TriggerQcTask.cxx
                                src/BasicDigitQcTask.cxx
                                src/ChannelsCheck.cxx
                                src/DigitsCheck.cxx
@@ -37,10 +35,8 @@ add_root_dictionary(O2QcFT0
   HEADERS include/FT0/TH1ReductorLaser.h
           include/FT0/DigitQcTaskLaser.h
           include/FT0/DigitQcTask.h
-          include/FT0/BasicPPTask.h
-          include/FT0/OutOfBunchCollTask.h
+          include/FT0/PostProcTask.h
           include/FT0/CFDEffCheck.h
-          include/FT0/TriggerQcTask.h
           include/FT0/OutOfBunchCollCheck.h
           include/FT0/BasicDigitQcTask.h
           include/FT0/ChannelsCheck.h

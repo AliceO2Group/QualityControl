@@ -82,6 +82,44 @@ void DigitQcTask::rebinFromConfig()
   }
 }
 
+unsigned int DigitQcTask::getModeParameter(std::string paramName, unsigned int defaultVal, std::map<unsigned int, std::string> choices)
+{
+  if (auto param = mCustomParameters.find(paramName); param != mCustomParameters.end()) {
+    // if parameter was provided check which option was chosen
+    for (const auto& choice : choices) {
+      if (param->second == choice.second) {
+        ILOG(Debug, Support) << "setting \"" << paramName << "\" to: \"" << choice.second << "\"" << ENDM;
+        return choice.first;
+      }
+    }
+    // param value not allowed - use default but with warning
+    std::string allowedValues;
+    for (const auto& choice : choices) {
+      allowedValues += "\"";
+      allowedValues += choice.second;
+      allowedValues += "\", ";
+    }
+    ILOG(Warning, Support) << "Provided value (\"" << param->second << "\") for parameter \"" << paramName << "\" is not allowed. Allowed values are: " << allowedValues << " setting \"" << paramName << "\" to default value: \"" << choices[defaultVal] << "\"" << ENDM;
+    return defaultVal;
+  } else {
+    // param not provided - use default
+    ILOG(Debug, Support) << "Setting \"" << paramName << "\" to default value: \"" << choices[defaultVal] << "\"" << ENDM;
+    return defaultVal;
+  }
+}
+
+int DigitQcTask::getNumericalParameter(std::string paramName, int defaultVal)
+{
+  if (auto param = mCustomParameters.find(paramName); param != mCustomParameters.end()) {
+    float val = stoi(param->second);
+    ILOG(Debug, Support) << "Setting \"" << paramName << "\" to: " << val << ENDM;
+    return val;
+  } else {
+    ILOG(Debug, Support) << "Setting \"" << paramName << "\" to default value: " << defaultVal << ENDM;
+    return defaultVal;
+  }
+}
+
 void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info) << "initialize DigitQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
@@ -103,6 +141,23 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mMapDigitTrgNames.insert({ o2::fit::Triggers::bitLaser, "Laser" });
   mMapDigitTrgNames.insert({ o2::fit::Triggers::bitOutputsAreBlocked, "OutputsAreBlocked" });
   mMapDigitTrgNames.insert({ o2::fit::Triggers::bitDataIsValid, "DataIsValid" });
+
+  mTrgModeInnerOuterThresholdVar = getModeParameter("trgModeInnerOuterThresholdVar",
+                                                    TrgModeThresholdVar::kNchannels,
+                                                    { { TrgModeThresholdVar::kAmpl, "Ampl" },
+                                                      { TrgModeThresholdVar::kNchannels, "Nchannels" } });
+
+  mTrgThresholdCharge = getNumericalParameter("trgThresholdCharge", 498 * 3);
+  mTrgThresholdNChannels = getNumericalParameter("trgThresholdNChannels", 10);
+
+  if (mTrgModeInnerOuterThresholdVar == TrgModeThresholdVar::kAmpl) {
+    mTrgThresholdChargeInner = getNumericalParameter("trgThresholdChargeInner", 50);
+    mTrgThresholdChargeOuter = getNumericalParameter("trgThresholdChargeOuter", 50);
+  } else if (mTrgModeInnerOuterThresholdVar == TrgModeThresholdVar::kNchannels) {
+    mTrgThresholdNChannelsInner = getNumericalParameter("trgThresholdNChannelsInner", 1);
+    mTrgThresholdNChannelsOuter = getNumericalParameter("trgThresholdNChannelsOuter", 1);
+  }
+
   mHistTime2Ch = std::make_unique<TH2F>("TimePerChannel", "Time vs Channel;Channel;Time", sNCHANNELS_PM, 0, sNCHANNELS_PM, 4100, -2050, 2050);
   mHistTime2Ch->SetOption("colz");
   mHistAmp2Ch = std::make_unique<TH2F>("AmpPerChannel", "Amplitude vs Channel;Channel;Amp", sNCHANNELS_PM, 0, sNCHANNELS_PM, 4200, -100, 4100);
@@ -123,12 +178,25 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistTriggersCorrelation->SetOption("colz");
   mHistBCvsTrg = std::make_unique<TH2F>("BCvsTriggers", "BC vs Triggers;BC;Trg", sBCperOrbit, 0, sBCperOrbit, mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
   mHistBCvsTrg->SetOption("colz");
+  mHistTriggersSw = std::make_unique<TH1F>("TriggersSoftware", "Triggers from software", mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
+  mHistTriggersSoftwareVsTCM = std::make_unique<TH2F>("TriggersSoftwareVsTCM", "Comparison of triggers from software and TCM;;Trigger name", mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size(), 4, 0, 4);
+  mHistTriggersSoftwareVsTCM->SetOption("colz");
+  mHistTriggersSoftwareVsTCM->SetStats(0);
   for (const auto& entry : mMapDigitTrgNames) {
     mHistOrbitVsTrg->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
     mHistTriggersCorrelation->GetXaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
     mHistTriggersCorrelation->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
     mHistBCvsTrg->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
+    mHistTriggersSw->GetXaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
+    mHistTriggersSoftwareVsTCM->GetXaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
   }
+  mHistTriggersSw->GetXaxis()->SetRange(1, 5);
+  mHistTriggersSoftwareVsTCM->GetXaxis()->SetRange(1, 5);
+  mHistTriggersSoftwareVsTCM->GetYaxis()->SetBinLabel(TrgComparisonResult::kSWonly + 1, "Sw only");
+  mHistTriggersSoftwareVsTCM->GetYaxis()->SetBinLabel(TrgComparisonResult::kTCMonly + 1, "TCM only");
+  mHistTriggersSoftwareVsTCM->GetYaxis()->SetBinLabel(TrgComparisonResult::kNone + 1, "neither TCM nor Sw");
+  mHistTriggersSoftwareVsTCM->GetYaxis()->SetBinLabel(TrgComparisonResult::kBoth + 1, "both TCM and Sw");
+
   mListHistGarbage = new TList();
   mListHistGarbage->SetOwner(kTRUE);
 
@@ -230,6 +298,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mHistCycleDuration.get());
   getObjectsManager()->startPublishing(mHistCycleDurationNTF.get());
   getObjectsManager()->startPublishing(mHistCycleDurationRange.get());
+  getObjectsManager()->startPublishing(mHistTriggersSw.get());
   // 2-dim hists
   getObjectsManager()->startPublishing(mHistTime2Ch.get());
   getObjectsManager()->setDefaultDrawOptions(mHistTime2Ch.get(), "COLZ");
@@ -253,6 +322,13 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->setDefaultDrawOptions(mHistEventDensity2Ch.get(), "COLZ");
   getObjectsManager()->startPublishing(mHistTriggersCorrelation.get());
   getObjectsManager()->setDefaultDrawOptions(mHistTriggersCorrelation.get(), "COLZ");
+  getObjectsManager()->startPublishing(mHistTriggersSoftwareVsTCM.get());
+  getObjectsManager()->setDefaultDrawOptions(mHistTriggersSoftwareVsTCM.get(), "COLZ");
+
+  for (int i = 0; i < getObjectsManager()->getNumberPublishedObjects(); i++) {
+    TH1* obj = (TH1*)getObjectsManager()->getMonitorObject(i)->getObject();
+    obj->SetTitle((string("FV0 ") + obj->GetTitle()).c_str());
+  }
 }
 
 void DigitQcTask::startOfActivity(Activity& activity)
@@ -283,6 +359,8 @@ void DigitQcTask::startOfActivity(Activity& activity)
   mHistAverageTimeA->Reset();
   // mHistAverageTimeC->Reset();
   mHistChannelID->Reset();
+  mHistTriggersSw->Reset();
+  mHistTriggersSoftwareVsTCM->Reset();
   for (auto& entry : mMapHistAmp1D) {
     entry.second->Reset();
   }
@@ -350,6 +428,14 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
     }
     std::set<uint8_t> setFEEmodules{};
+    // reset triggers
+    for (auto& entry : mMapTrgSoftware) {
+      mMapTrgSoftware[entry.first] = false;
+    }
+    float sumAmplInner = 0;
+    float sumAmplOuter = 0;
+    int nFiredChannelsInner = 0;
+    int nFiredChannelsOuter = 0;
     for (const auto& chData : vecChData) {
       mHistTime2Ch->Fill(static_cast<Double_t>(chData.ChId), static_cast<Double_t>(chData.CFDTime));
       mHistAmp2Ch->Fill(static_cast<Double_t>(chData.ChId), static_cast<Double_t>(chData.QTCAmpl));
@@ -375,6 +461,18 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
 
       setFEEmodules.insert(mChID2PMhash[chData.ChId]);
+
+      if (chData.ChId >= sNCHANNELS_FV0) { // skip reference PMT
+        continue;
+      }
+
+      if (chData.ChId < sNCHANNELS_FV0_INNER) {
+        sumAmplInner += chData.QTCAmpl;
+        nFiredChannelsInner++;
+      } else {
+        sumAmplOuter += chData.QTCAmpl;
+        nFiredChannelsOuter++;
+      }
     }
     if (isTCM) {
       setFEEmodules.insert(mTCMhash);
@@ -383,6 +481,58 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       mHistBCvsFEEmodules->Fill(static_cast<double>(digit.getIntRecord().bc), static_cast<double>(feeHash));
       mHistOrbitVsFEEmodules->Fill(static_cast<double>(digit.getIntRecord().orbit % sOrbitsPerTF), static_cast<double>(feeHash));
     }
+
+    // triggers re-computation
+    mMapTrgSoftware[o2::fit::Triggers::bitA] = nFiredChannelsInner + nFiredChannelsOuter >= 1;
+    mMapTrgSoftware[o2::fit::Triggers::bitTrgNchan] = nFiredChannelsInner + nFiredChannelsOuter > mTrgThresholdNChannels;
+    mMapTrgSoftware[o2::fit::Triggers::bitTrgCharge] = sumAmplInner + sumAmplOuter > mTrgThresholdCharge;
+
+    if (mTrgModeInnerOuterThresholdVar == TrgModeThresholdVar::kAmpl) {
+      mMapTrgSoftware[o2::fit::Triggers::bitAIn] = sumAmplInner >= mTrgThresholdChargeInner;
+      mMapTrgSoftware[o2::fit::Triggers::bitAOut] = sumAmplOuter >= mTrgThresholdChargeOuter;
+    } else if (mTrgModeInnerOuterThresholdVar == TrgModeThresholdVar::kNchannels) {
+      mMapTrgSoftware[o2::fit::Triggers::bitAIn] = nFiredChannelsInner >= mTrgThresholdNChannelsInner;
+      mMapTrgSoftware[o2::fit::Triggers::bitAOut] = nFiredChannelsOuter >= mTrgThresholdNChannelsOuter;
+    }
+
+    for (const auto& entry : mMapTrgSoftware) {
+      if (entry.second)
+        mHistTriggersSw->Fill(entry.first);
+      bool isTCMFired = digit.mTriggers.getTriggersignals() & (1 << entry.first);
+      bool isSwFired = entry.second;
+      if (!isTCMFired && isSwFired)
+        mHistTriggersSoftwareVsTCM->Fill(entry.first, TrgComparisonResult::kSWonly);
+      else if (isTCMFired && !isSwFired)
+        mHistTriggersSoftwareVsTCM->Fill(entry.first, TrgComparisonResult::kTCMonly);
+      else if (!isTCMFired && !isSwFired)
+        mHistTriggersSoftwareVsTCM->Fill(entry.first, TrgComparisonResult::kNone);
+      else if (isTCMFired && isSwFired)
+        mHistTriggersSoftwareVsTCM->Fill(entry.first, TrgComparisonResult::kBoth);
+
+      if (isTCMFired != isSwFired) {
+        auto msg = Form(
+          "Software does not reproduce TCM decision! \n \
+                         trigger name: %s\n \
+                         TCM / SW: \n \
+                         hasFired       = %d / %d \n \
+                         nChannelsA     = %d / %d \n \
+                         nChannelsInner = -- / %d \n \
+                         nChannelsOuter = -- / %d \n \
+                         sumAmplA       = %d / %d \n \
+                         sumAmplInner   = -- / %d \n \
+                         sumAmplOuter   = -- / %d \n",
+          mMapDigitTrgNames[entry.first].c_str(),
+          isTCMFired, isSwFired,
+          digit.mTriggers.getNChanA(), nFiredChannelsInner + nFiredChannelsOuter,
+          nFiredChannelsInner,
+          nFiredChannelsOuter,
+          digit.mTriggers.getAmplA(), int(sumAmplInner + sumAmplOuter),
+          int(sumAmplInner),
+          int(sumAmplOuter));
+        ILOG(Debug, Support) << msg << ENDM;
+      }
+    }
+    // end of triggers re-computation
   }
 }
 
@@ -434,7 +584,8 @@ void DigitQcTask::reset()
   mHistBCvsFEEmodules->Reset();
   mHistOrbitVsTrg->Reset();
   mHistOrbitVsFEEmodules->Reset();
-
+  mHistTriggersSw->Reset();
+  mHistTriggersSoftwareVsTCM->Reset();
   for (auto& entry : mMapHistAmp1D) {
     entry.second->Reset();
   }

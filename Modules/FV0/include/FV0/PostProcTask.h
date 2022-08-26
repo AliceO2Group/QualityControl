@@ -10,19 +10,20 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   BasicPPTask.h
+/// \file   PostProcTask.h
 /// \author Sebastian Bysiak sbysiak@cern.ch
 ///
 
-#ifndef QC_MODULE_FT0_BASICPPTASK_H
-#define QC_MODULE_FT0_BASICPPTASK_H
+#ifndef QC_MODULE_FV0_POSTPROCTASK_H
+#define QC_MODULE_FV0_POSTPROCTASK_H
 
 #include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/DatabaseInterface.h"
+#include "CCDB/CcdbApi.h"
 
-#include "FT0Base/Constants.h"
-#include "DataFormatsFT0/ChannelData.h"
-#include "DataFormatsFT0/Digit.h"
+#include "FV0Base/Constants.h"
+#include "DataFormatsFV0/ChannelData.h"
+#include "DataFormatsFV0/Digit.h"
 
 #include <TH2.h>
 #include <TCanvas.h>
@@ -33,35 +34,41 @@ class TCanvas;
 class TLegend;
 class TProfile;
 
-namespace o2::quality_control_modules::ft0
+namespace o2::quality_control_modules::fv0
 {
 
-/// \brief Basic Postprocessing Task for FT0, computes among others the trigger rates
+/// \brief Basic Postprocessing Task for FV0, computes among others the trigger rates
 /// \author Sebastian Bysiak sbysiak@cern.ch
-class BasicPPTask final : public quality_control::postprocessing::PostProcessingInterface
+class PostProcTask final : public quality_control::postprocessing::PostProcessingInterface
 {
  public:
-  BasicPPTask() = default;
-  ~BasicPPTask() override;
+  PostProcTask() = default;
+  ~PostProcTask() override;
   void configure(std::string, const boost::property_tree::ptree&) override;
   void initialize(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
   void update(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
   void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
 
+  constexpr static std::size_t sNCHANNELS_PM = o2::fv0::Constants::nPms * o2::fv0::Constants::nChannelsPerPm;
+
  private:
+  std::string mPathGrpLhcIf;
   std::string mPathDigitQcTask;
   std::string mCycleDurationMoName;
+  std::string mCcdbUrl;
   int mNumOrbitsInTF;
 
-  std::map<o2::ft0::ChannelData::EEventDataBit, std::string> mMapChTrgNames;
+  std::map<o2::fv0::ChannelData::EEventDataBit, std::string> mMapChTrgNames;
   std::map<int, std::string> mMapDigitTrgNames;
 
   o2::quality_control::repository::DatabaseInterface* mDatabase = nullptr;
+  o2::ccdb::CcdbApi mCcdbApi;
+
   std::unique_ptr<TGraph> mRateOrA;
-  std::unique_ptr<TGraph> mRateOrC;
-  std::unique_ptr<TGraph> mRateVertex;
-  std::unique_ptr<TGraph> mRateCentral;
-  std::unique_ptr<TGraph> mRateSemiCentral;
+  std::unique_ptr<TGraph> mRateOrAout;
+  std::unique_ptr<TGraph> mRateOrAin;
+  std::unique_ptr<TGraph> mRateTrgCharge;
+  std::unique_ptr<TGraph> mRateTrgNchan;
   std::unique_ptr<TH2F> mHistChDataNegBits;
   std::unique_ptr<TH1F> mHistTriggers;
 
@@ -72,8 +79,13 @@ class BasicPPTask final : public quality_control::postprocessing::PostProcessing
   std::unique_ptr<TCanvas> mRatesCanv;
   TProfile* mAmpl = nullptr;
   TProfile* mTime = nullptr;
+
+  // if storage size matters it can be replaced with TH1
+  // and TH2 can be created based on it on the fly, but only TH1 would be stored
+  std::unique_ptr<TH2F> mHistBcPattern;
+  std::unique_ptr<TH2F> mHistBcTrgOutOfBunchColl;
 };
 
-} // namespace o2::quality_control_modules::ft0
+} // namespace o2::quality_control_modules::fv0
 
-#endif // QC_MODULE_FT0_BASICPPTASK_H
+#endif // QC_MODULE_FV0_POSTPROCTASK_H
