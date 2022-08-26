@@ -217,12 +217,12 @@ void ZDCRawDataTask::initHisto()
   setNameChannel(5, 3, "ZPA_T4");
   setNameChannel(6, 0, "ZPC_TC_TR");
   setNameChannel(6, 1, "ZEM2_TR");
-  setNameChannel(6, 2, "ZPC_T1");
-  setNameChannel(6, 3, "ZPC_T2");
+  setNameChannel(6, 2, "ZPC_T3");
+  setNameChannel(6, 3, "ZPC_T4");
   setNameChannel(7, 0, "ZPC_TC_OTR");
   setNameChannel(7, 1, "ZPC_SUM");
-  setNameChannel(7, 2, "ZPC_T3");
-  setNameChannel(7, 3, "ZPC_T4");
+  setNameChannel(7, 2, "ZPC_T1");
+  setNameChannel(7, 3, "ZPC_T2");
   // Histograms Baseline
   // setBinHisto1D(16378, -0.125, o2::zdc::ADCMax + 0.125);
   setBinHisto1D(4096, -2048.5, 2047.5);
