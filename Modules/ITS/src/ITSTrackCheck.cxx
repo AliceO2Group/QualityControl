@@ -38,13 +38,13 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
   for (iter = moMap->begin(); iter != moMap->end(); ++iter) {
 
     if (iter->second->getName() == "NClusters") {
+      auto* h = dynamic_cast<TH1D*>(iter->second->getObject());
       result.set(Quality::Good);
       result.addMetadata("CheckTracks4", "good");
       result.addMetadata("CheckTracks5", "good");
       result.addMetadata("CheckTracks6", "good");
       result.addMetadata("CheckTracks7", "good");
       result.addMetadata("CheckEmpty", "good");
-      auto* h = dynamic_cast<TH1D*>(iter->second->getObject());
       if (h->GetBinContent(h->FindBin(4)) < 1e-15) {
         result.updateMetadata("CheckTracks4", "bad");
         result.set(Quality::Bad);
@@ -67,38 +67,32 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
       }
     }
 
-    if (iter->second->getName() == "PhiDistribution") {
-      auto* h = dynamic_cast<TH1D*>(iter->second->getObject());
-      Double_t ratio = abs(h->Integral(h->FindBin(0), h->FindBin(TMath::Pi())) / h->Integral(h->FindBin(TMath::Pi()), h->FindBin(TMath::TwoPi())) - 1);
-      if (ratio > 0.3)
-        result = result.getLevel() + 10;
-    }
-
     if (iter->second->getName() == "AngularDistribution") {
       auto* hAngular = dynamic_cast<TH2D*>(iter->second->getObject());
-      TH1D* projectPhi = hAngular->ProjectionY();
-      Double_t ratio = abs(projectPhi->Integral(projectPhi->FindBin(0), projectPhi->FindBin(TMath::Pi())) / projectPhi->Integral(projectPhi->FindBin(TMath::Pi()), projectPhi->FindBin(TMath::TwoPi())) - 1);
       result.set(Quality::Good);
-      result.addMetadata("CheckAsymmPhi", "good");
       result.addMetadata("CheckAngEmpty", "good");
-      if (ratio > 0.3) {
-        result.updateMetadata("CheckAsymmPhi", "bad");
-        result.set(Quality::Bad);
-      }
+      result.addMetadata("CheckAsymmEta", "good");
+      result.addMetadata("CheckAsymmPhi", "good");
+      TH1D* projectEta = hAngular->ProjectionX();
+      Double_t ratioEta = abs(1. - (projectEta->Integral(1, projectEta->FindBin(0)) / projectEta->Integral(projectEta->FindBin(0), projectEta->GetNbinsX())));
+      TH1D* projectPhi = hAngular->ProjectionY();
+      Double_t ratioPhi = abs(projectPhi->Integral(projectPhi->FindBin(0), projectPhi->FindBin(TMath::Pi())) / projectPhi->Integral(projectPhi->FindBin(TMath::Pi()), projectPhi->FindBin(TMath::TwoPi())) - 1);
       if (hAngular->GetEntries() < 1e-15) {
         result.updateMetadata("CheckAngEmpty", "bad");
         result.set(Quality::Bad);
       }
-    }
-
-    if (iter->second->getName() == "EtaDistribution") {
-      auto* h = dynamic_cast<TH1D*>(iter->second->getObject());
-      if (abs(1. - (h->Integral(1, h->FindBin(0)) / h->Integral(h->FindBin(0), h->GetNbinsX()))) > 0.3)
-        result = result.getLevel() + 1e4;
+      if (ratioEta > 0.3) {
+        result.updateMetadata("CheckAsymmEta", "bad");
+        result.set(Quality::Bad);
+      }
+      if (ratioPhi > 0.3) {
+        result.updateMetadata("CheckAsymmPhi", "bad");
+        result.set(Quality::Bad);
+      }
     }
 
     if (iter->second->getName() == "VertexCoordinates") {
-      TH2D* h = dynamic_cast<TH2D*>(iter->second->getObject());
+      auto* h = dynamic_cast<TH2D*>(iter->second->getObject());
       result.set(Quality::Good);
       result.addMetadata("CheckXYVertexEmpty", "good");
       result.addMetadata("CheckXVertexMean", "good");
@@ -129,18 +123,24 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
 
     if (iter->second->getName() == "VertexRvsZ") {
       auto* h = dynamic_cast<TH2D*>(iter->second->getObject());
-      TH1D* projectZ = h->ProjectionY();
-      if ((projectZ->Integral(1, projectZ->FindBin(-10)) > 0) || (projectZ->Integral(projectZ->FindBin(10), projectZ->GetNbinsX()) > 0))
-        result = result.getLevel() + 1e6;
-
+      result.set(Quality::Good);
+      result.addMetadata("CheckRZVertexRDisplacedBad", "good");
+      result.addMetadata("CheckRZVertexZDisplacedBad", "good");
       TH1D* projectR = h->ProjectionX();
-      if (projectR->Integral(projectR->FindBin(0.3), projectR->GetNbinsX()) > 0)
-        result = result.getLevel() + 2e6;
+      TH1D* projectZ = h->ProjectionY();
+      if (projectR->Integral(projectR->FindBin(0.3), projectR->GetNbinsX()) > 0) {
+        result.addMetadata("CheckRZVertexRDisplacedBad", "bad");
+        result.set(Quality::Bad);
+      }
+      if ((projectZ->Integral(1, projectZ->FindBin(-10)) > 0) || (projectZ->Integral(projectZ->FindBin(10), projectZ->GetNbinsX()) > 0)) {
+        result.updateMetadata("CheckRZVertexZDisplacedBad", "bad");
+        result.set(Quality::Bad);
+      }
     }
 
     if (iter->second->getName() == "VertexZ") {
       auto* h = dynamic_cast<TH1D*>(iter->second->getObject());
-      result.set(Quality::Bad);
+      result.set(Quality::Good);
       result.addMetadata("CheckZVertexEmpty", "good");
       result.addMetadata("CheckZVertexMeanMed", "good");
       result.addMetadata("CheckZVertexMeanBad", "good");
@@ -157,7 +157,6 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
         result.updateMetadata("CheckZVertexRms", "medium");
         result.set(Quality::Medium);
       }
-      bool checkline = true;
       if (h->GetEntries() < 1e-15 || h->Integral(h->FindBin(0) + 1, h->FindBin(10)) < 1e-15) {
         result.updateMetadata("CheckZVertexEmpty", "bad");
         result.set(Quality::Bad);
@@ -225,32 +224,13 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
         h->GetListOfFunctions()->Add(tMessage[4]->Clone());
       }
     }
+
     tInfo = std::make_shared<TLatex>(0.12, 0.75, Form("#bf{%s}", status.Data()));
     tInfo->SetTextFont(43);
     tInfo->SetTextSize(0.04);
     tInfo->SetTextColor(textColor);
     tInfo->SetNDC();
     h->GetListOfFunctions()->Add(tInfo->Clone());
-  }
-
-  if (mo->getName() == "PhiDistribution") {
-    auto* h = dynamic_cast<TH1D*>(mo->getObject());
-    int histoQuality = getDigit(checkResult.getLevel(), 2);
-    if (histoQuality == 0) {
-      text[0] = "Quality::GOOD";
-      textColor = kGreen;
-    } else {
-      text[0] = "INFO: distribution asymmetric in phi";
-      text[1] = "call expert";
-      textColor = kRed;
-    }
-
-    auto* msg = new TLatex(0.15, 0.25, histoQuality == 0 ? text[0].Data() : Form("#bf{#splitline{%s}{%s}}", text[0].Data(), text[1].Data()));
-    msg->SetTextColor(textColor);
-    msg->SetTextSize(0.08);
-    msg->SetTextFont(43);
-    msg->SetNDC();
-    h->GetListOfFunctions()->Add(msg);
   }
 
   if (mo->getName() == "AngularDistribution") {
@@ -259,25 +239,31 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       status = "Quality::GOOD";
       textColor = kGreen;
     } else {
-
       status = "Quality::BAD (call expert)";
       textColor = kRed;
       if (strcmp(checkResult.getMetadata("CheckAngEmpty").c_str(), "bad") == 0) {
-        tMessage[0] = std::make_shared<TLatex>(0.12, 0.6, "NO ITS TRACKS");
+        tMessage[0] = std::make_shared<TLatex>(0.12, 0.65, "NO ITS TRACKS");
         tMessage[0]->SetTextFont(43);
         tMessage[0]->SetTextSize(0.04);
         tMessage[0]->SetTextColor(kRed);
         tMessage[0]->SetNDC();
         h->GetListOfFunctions()->Add(tMessage[0]->Clone());
       }
-
-      if (strcmp(checkResult.getMetadata("CheckAsymmPhi").c_str(), "bad") == 0) {
-        tMessage[1] = std::make_shared<TLatex>(0.12, 0.55, "Asymmetric Phi distribution (OK if there are disabled ITS sectors)");
+      if (strcmp(checkResult.getMetadata("CheckAsymmEta").c_str(), "bad") == 0) {
+        tMessage[1] = std::make_shared<TLatex>(0.12, 0.6, "Asymmetric Eta distribution");
         tMessage[1]->SetTextFont(43);
         tMessage[1]->SetTextSize(0.04);
         tMessage[1]->SetTextColor(kRed);
         tMessage[1]->SetNDC();
         h->GetListOfFunctions()->Add(tMessage[1]->Clone());
+      }
+      if (strcmp(checkResult.getMetadata("CheckAsymmPhi").c_str(), "bad") == 0) {
+        tMessage[2] = std::make_shared<TLatex>(0.12, 0.55, "Asymmetric Phi distribution (OK if there are disabled ITS sectors)");
+        tMessage[2]->SetTextFont(43);
+        tMessage[2]->SetTextSize(0.04);
+        tMessage[2]->SetTextColor(kRed);
+        tMessage[2]->SetNDC();
+        h->GetListOfFunctions()->Add(tMessage[2]->Clone());
       }
     }
 
@@ -287,25 +273,6 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     tInfo->SetTextColor(textColor);
     tInfo->SetNDC();
     h->GetListOfFunctions()->Add(tInfo->Clone());
-  }
-
-  if (mo->getName() == "EtaDistribution") {
-    auto* h = dynamic_cast<TH1D*>(mo->getObject());
-    int histoQuality = getDigit(checkResult.getLevel(), 5);
-    if (histoQuality == 0) {
-      text[0] = "Quality::GOOD";
-      textColor = kGreen;
-    } else {
-      text[0] = "INFO: distribution asymmetric in eta";
-      text[1] = "call expert";
-      textColor = kRed;
-    }
-    auto* msg = new TLatex(0.15, 0.2, histoQuality == 0 ? text[0].Data() : Form("#bf{#splitline{%s}{%s}}", text[0].Data(), text[1].Data()));
-    msg->SetTextColor(textColor);
-    msg->SetTextSize(0.08);
-    msg->SetTextFont(43);
-    msg->SetNDC();
-    h->GetListOfFunctions()->Add(msg);
   }
 
   if (mo->getName() == "VertexCoordinates") {
@@ -315,7 +282,6 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       status = "Quality::GOOD";
       textColor = kGreen;
     } else {
-
       if (strcmp(checkResult.getMetadata("CheckXVertexMean").c_str(), "medium") == 0) {
         status = "Quality::Medium (do not call, inform expert on MM if run is ongoing since >5min)";
         textColor = kOrange;
@@ -379,29 +345,36 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
 
   if (mo->getName() == "VertexRvsZ") {
     auto* h = dynamic_cast<TH2D*>(mo->getObject());
-    int histoQuality = getDigit(checkResult.getLevel(), 7);
-
-    if (histoQuality == 0) {
-      text[0] = "Quality::GOOD";
+    if (checkResult == Quality::Good) {
+      status = "Quality:GOOD";
       textColor = kGreen;
     } else {
-
-      if (histoQuality == 1) {
-        text[0] = "INFO: vertex distance on XY plane > 3 mm";
-      } else if (histoQuality == 2) {
-        text[0] = "INFO: vertex Z displaced > 10 cm";
-      } else if (histoQuality == 3) {
-        text[0] = "INFO: vertex Z displaced > 10 cm, XY > 3 mm";
-      }
-      text[1] = "Inform expert on MM";
+      status = "Quality::Bad (call expert)";
       textColor = kRed;
+      if (strcmp(checkResult.getMetadata("CheckRZVertexRDisplacedBad").c_str(), "bad") == 0) {
+        tMessage[0] = std::make_shared<TLatex>(0.12, 0.65, Form("INFO: vertex distance on XY plane > 3 mm"));
+        tMessage[0]->SetTextFont(43);
+        tMessage[0]->SetTextSize(0.04);
+        tMessage[0]->SetTextColor(kRed);
+        tMessage[0]->SetNDC();
+        h->GetListOfFunctions()->Add(tMessage[0]->Clone());
+      }
+      if (strcmp(checkResult.getMetadata("CheckRZVertexZDisplacedBad").c_str(), "bad") == 0) {
+        tMessage[1] = std::make_shared<TLatex>(0.12, 0.6, Form("INFO: vertex Z displaced > 10 cm"));
+        tMessage[1]->SetTextFont(43);
+        tMessage[1]->SetTextSize(0.04);
+        tMessage[1]->SetTextColor(kRed);
+        tMessage[1]->SetNDC();
+        h->GetListOfFunctions()->Add(tMessage[1]->Clone());
+      }
     }
-    auto* msg = new TLatex(0.15, 0.7, histoQuality == 0 ? text[0].Data() : Form("#bf{#splitline{%s}{%s}}", text[0].Data(), text[1].Data()));
-    msg->SetTextColor(textColor);
-    msg->SetTextSize(0.08);
-    msg->SetTextFont(43);
-    msg->SetNDC();
-    h->GetListOfFunctions()->Add(msg);
+
+    tInfo = std::make_shared<TLatex>(0.12, 0.75, Form("#bf{%s}", status.Data()));
+    tInfo->SetTextFont(43);
+    tInfo->SetTextSize(0.04);
+    tInfo->SetTextColor(textColor);
+    tInfo->SetNDC();
+    h->GetListOfFunctions()->Add(tInfo->Clone());
   }
 
   if (mo->getName() == "VertexZ") {
@@ -410,7 +383,6 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       status = "Quality:GOOD";
       textColor = kGreen;
     } else {
-
       if (strcmp(checkResult.getMetadata("CheckZVertexMeanMed").c_str(), "medium") == 0) {
         status = "Quality::Medium (do not call, inform expert on MM if run is ongoing since >5min)";
         textColor = kOrange;
