@@ -138,6 +138,7 @@ void ITSDecodingErrorTask::setPlotsFormat()
   if (mLinkErrorVsFeeid) {
     setAxisTitle(mLinkErrorVsFeeid, "FeeID", "Error ID");
   }
+
   if (mChipErrorVsFeeid) {
     setAxisTitle(mChipErrorVsFeeid, "FeeID", "Error ID");
   }
@@ -145,6 +146,7 @@ void ITSDecodingErrorTask::setPlotsFormat()
   if (mLinkErrorPlots) {
     setAxisTitle(mLinkErrorPlots, "LinkError ID", "Counts");
   }
+
   if (mChipErrorPlots) {
     setAxisTitle(mChipErrorPlots, "ChipError ID", "Counts");
   }
@@ -164,7 +166,7 @@ void ITSDecodingErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
   // set timer
   std::chrono::time_point<std::chrono::high_resolution_clock> start;
   std::chrono::time_point<std::chrono::high_resolution_clock> end;
-  int difference;
+  //int difference;
   start = std::chrono::high_resolution_clock::now();
 
   std::vector<InputSpec> rawDataFilter{ InputSpec{ "", ConcreteDataTypeMatcher{ "DS", "RAWDATA0" }, Lifetime::Timeframe } };
@@ -175,8 +177,11 @@ void ITSDecodingErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
   mDecoder->startNewTF(ctx.inputs());
   mDecoder->setDecodeNextAuto(true);
   
+	LOGP(info,"zz out begin");
+std::cout<<"zz out"<<std::endl;
 
   for (auto it = parser.begin(), end = parser.end(); it != end; ++it) {
+	LOGP(info,"zz in begin");
 
     auto const* rdh = it.get_if<o2::header::RAWDataHeaderV6>();
     // Decoding data format (RDHv6)
@@ -197,6 +202,7 @@ void ITSDecodingErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
 
     auto linkErrors = ctx.inputs().get<gsl::span<o2::itsmft::GBTLinkDecodingStat>>("linkerrors");
     auto decErrors = ctx.inputs().get<gsl::span<o2::itsmft::ChipError>>("decerrors");
+	LOGP(info,"zz in auto");
     for (const auto& le : linkErrors) {
       for (int ierror = 0; ierror < o2::itsmft::GBTLinkDecodingStat::NErrorsDefined; ierror++) {
         if (le.errorCounts[ierror] <= 0) {
@@ -223,6 +229,7 @@ void ITSDecodingErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
 
   for (int ierror = 0; ierror < o2::itsmft::GBTLinkDecodingStat::NErrorsDefined; ierror++) {
+LOGP(info,"zz in the end");
     int feeLinkError = mLinkErrorVsFeeid->Integral(1, mLinkErrorVsFeeid->GetXaxis()->GetNbins(), ierror + 1, ierror + 1);
     mLinkErrorPlots->SetBinContent(ierror + 1, feeLinkError);
   }
@@ -234,7 +241,7 @@ void ITSDecodingErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
   // Filling histograms: loop over mStatusFlagNumber[ilayer][istave][ilane][iflag]
 
   end = std::chrono::high_resolution_clock::now();
-  difference = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+ // difference = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 }
 
 void ITSDecodingErrorTask::getParameters()
