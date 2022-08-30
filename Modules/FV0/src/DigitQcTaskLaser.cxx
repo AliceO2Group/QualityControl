@@ -236,12 +236,20 @@ void DigitQcTaskLaser::initialize(o2::framework::InitContext& /*ctx*/)
   for (const auto& entry : vecChannelIDs) {
     mSetAllowedChIDs.insert(entry);
   }
+  std::vector<unsigned int> vecChannelIDsAmpVsTime;
+  if (auto param = mCustomParameters.find("ChannelIDsAmpVsTime"); param != mCustomParameters.end()) {
+    const auto chIDs = param->second;
+    const std::string del = ",";
+    vecChannelIDsAmpVsTime = parseParameters<unsigned int>(chIDs, del);
+  }
+  for (const auto& entry : vecChannelIDsAmpVsTime) {
+    mSetAllowedChIDsAmpVsTime.insert(entry);
+  }
 
   for (const auto& chID : mSetAllowedChIDs) {
     auto pairHistAmp = mMapHistAmp1D.insert({ chID, new TH1F(Form("Amp_channel%i", chID), Form("Amplitude, channel %i", chID), 4200, -100, 4100) });
     auto pairHistTime = mMapHistTime1D.insert({ chID, new TH1F(Form("Time_channel%i", chID), Form("Time, channel %i", chID), 4100, -2050, 2050) });
     auto pairHistBits = mMapHistPMbits.insert({ chID, new TH1F(Form("Bits_channel%i", chID), Form("Bits, channel %i", chID), mMapChTrgNames.size(), 0, mMapChTrgNames.size()) });
-    auto pairHistAmpVsTime = mMapHistAmpVsTime.insert({ chID, new TH2F(Form("Amp_vs_time_channel%i", chID), Form("Amplitude vs time, channel %i;Amp;Time", chID), 420, -100, 4100, 410, -2050, 2050) });
     for (const auto& entry : mMapChTrgNames) {
       pairHistBits.first->second->GetXaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
     }
@@ -257,6 +265,9 @@ void DigitQcTaskLaser::initialize(o2::framework::InitContext& /*ctx*/)
       mListHistGarbage->Add(pairHistBits.first->second);
       getObjectsManager()->startPublishing(pairHistBits.first->second);
     }
+  }
+  for (const auto& chID : mSetAllowedChIDsAmpVsTime) {
+    auto pairHistAmpVsTime = mMapHistAmpVsTime.insert({ chID, new TH2F(Form("Amp_vs_time_channel%i", chID), Form("Amplitude vs time, channel %i;Amp;Time", chID), 420, -100, 4100, 410, -2050, 2050) });
     if (pairHistAmpVsTime.second) {
       mListHistGarbage->Add(pairHistAmpVsTime.first->second);
       getObjectsManager()->startPublishing(pairHistAmpVsTime.first->second);
@@ -369,12 +380,14 @@ void DigitQcTaskLaser::monitorData(o2::framework::ProcessingContext& ctx)
       if (mSetAllowedChIDs.size() != 0 && mSetAllowedChIDs.find(static_cast<unsigned int>(chData.ChId)) != mSetAllowedChIDs.end()) {
         mMapHistAmp1D[chData.ChId]->Fill(chData.QTCAmpl);
         mMapHistTime1D[chData.ChId]->Fill(chData.CFDTime);
-        mMapHistAmpVsTime[chData.ChId]->Fill(chData.QTCAmpl, chData.CFDTime);
         for (const auto& entry : mMapChTrgNames) {
           if ((chData.ChainQTC & (1 << entry.first))) {
             mMapHistPMbits[chData.ChId]->Fill(entry.first);
           }
         }
+      }
+      if (mSetAllowedChIDsAmpVsTime.size() != 0 && mSetAllowedChIDsAmpVsTime.find(static_cast<unsigned int>(chData.ChId)) != mSetAllowedChIDsAmpVsTime.end()) {
+        mMapHistAmpVsTime[chData.ChId]->Fill(chData.QTCAmpl, chData.CFDTime);
       }
       for (const auto& binPos : mHashedBitBinPos[chData.ChainQTC]) {
         mHistChDataBits->Fill(chData.ChId, binPos);

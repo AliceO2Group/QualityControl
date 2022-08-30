@@ -94,6 +94,7 @@ class DigitQcTaskLaser final : public TaskInterface
 
   TList* mListHistGarbage;
   std::set<unsigned int> mSetAllowedChIDs;
+  std::set<unsigned int> mSetAllowedChIDsAmpVsTime;
   std::array<o2::InteractionRecord, sNCHANNELS_PM> mStateLastIR2Ch;
   std::array<uint8_t, sNCHANNELS_PM> mChID2PMhash; // map chID->hashed PM value
   uint8_t mTCMhash;                                // hash value for TCM, and bin position in hist

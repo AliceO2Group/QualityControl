@@ -277,13 +277,21 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   for (const auto& entry : vecChannelIDs) {
     mSetAllowedChIDs.insert(entry);
   }
+  std::vector<unsigned int> vecChannelIDsAmpVsTime;
+  if (auto param = mCustomParameters.find("ChannelIDsAmpVsTime"); param != mCustomParameters.end()) {
+    const auto chIDs = param->second;
+    const std::string del = ",";
+    vecChannelIDsAmpVsTime = parseParameters<unsigned int>(chIDs, del);
+  }
+  for (const auto& entry : vecChannelIDsAmpVsTime) {
+    mSetAllowedChIDsAmpVsTime.insert(entry);
+  }
 
   for (const auto& chID : mSetAllowedChIDs) {
     auto pairHistAmp = mMapHistAmp1D.insert({ chID, new TH1F(Form("Amp_channel%i", chID), Form("Amplitude, channel %i", chID), 4200, -100, 4100) });
     auto pairHistAmpCoincidence = mMapHistAmp1DCoincidence.insert({ chID, new TH1F(Form("Amp_channelCoincidence%i", chID), Form("AmplitudeCoincidence, channel %i", chID), 4200, -100, 4100) });
     auto pairHistTime = mMapHistTime1D.insert({ chID, new TH1F(Form("Time_channel%i", chID), Form("Time, channel %i", chID), 4100, -2050, 2050) });
     auto pairHistBits = mMapHistPMbits.insert({ chID, new TH1F(Form("Bits_channel%i", chID), Form("Bits, channel %i", chID), mMapChTrgNames.size(), 0, mMapChTrgNames.size()) });
-    auto pairHistAmpVsTime = mMapHistAmpVsTime.insert({ chID, new TH2F(Form("Amp_vs_time_channel%i", chID), Form("Amplitude vs time, channel %i;Amp;Time", chID), 420, -100, 4100, 410, -2050, 2050) });
     for (const auto& entry : mMapChTrgNames) {
       pairHistBits.first->second->GetXaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
     }
@@ -303,6 +311,9 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
       mListHistGarbage->Add(pairHistBits.first->second);
       getObjectsManager()->startPublishing(pairHistBits.first->second);
     }
+  }
+  for (const auto& chID : mSetAllowedChIDsAmpVsTime) {
+    auto pairHistAmpVsTime = mMapHistAmpVsTime.insert({ chID, new TH2F(Form("Amp_vs_time_channel%i", chID), Form("Amplitude vs time, channel %i;Amp;Time", chID), 420, -100, 4100, 410, -2050, 2050) });
     if (pairHistAmpVsTime.second) {
       mListHistGarbage->Add(pairHistAmpVsTime.first->second);
       getObjectsManager()->startPublishing(pairHistAmpVsTime.first->second);
@@ -506,9 +517,7 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       mHistNumCFD->Fill(chData.mPMNumber);
       if (mSetAllowedChIDs.size() != 0 && mSetAllowedChIDs.find(static_cast<unsigned int>(chData.mPMNumber)) != mSetAllowedChIDs.end()) {
         mMapHistAmp1D[chData.mPMNumber]->Fill(chData.mChargeADC);
-
         mMapHistTime1D[chData.mPMNumber]->Fill(chData.mTime);
-        mMapHistAmpVsTime[chData.mPMNumber]->Fill(chData.mChargeADC, chData.mTime);
         for (const auto& entry : mMapChTrgNames) {
           if ((chData.mFEEBits & (1 << entry.first))) {
             mMapHistPMbits[chData.mPMNumber]->Fill(entry.first);
@@ -563,6 +572,9 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
         if (static_cast<int>(chData.mPMNumber) == 15 && hasData[11]) {
           mMapHistAmp1DCoincidence[15]->Fill(chData.mChargeADC);
         }
+      }
+      if (mSetAllowedChIDsAmpVsTime.size() != 0 && mSetAllowedChIDsAmpVsTime.find(static_cast<unsigned int>(chData.mPMNumber)) != mSetAllowedChIDsAmpVsTime.end()) {
+        mMapHistAmpVsTime[chData.mPMNumber]->Fill(chData.mChargeADC, chData.mTime);
       }
       for (const auto& binPos : mHashedBitBinPos[chData.mFEEBits]) {
         mHistChDataBits->Fill(chData.mPMNumber, binPos);
