@@ -68,6 +68,16 @@ struct DataSamplingPolicySpec {
   std::string remoteMachine;
 };
 
+void enableDraining(framework::Options& options)
+{
+  if (auto readyStatePolicy = std::find_if(options.begin(), options.end(), [](const auto& option) { return option.name == "ready-state-policy"; });
+      readyStatePolicy != options.end()) {
+    readyStatePolicy->defaultValue = "drain";
+  } else {
+    ILOG(Error) << "Could not find 'ready-state-policy' option to enable draining in READY" << ENDM;
+  }
+}
+
 framework::WorkflowSpec InfrastructureGenerator::generateStandaloneInfrastructure(const boost::property_tree::ptree& configurationTree)
 {
   printVersion();
@@ -385,12 +395,15 @@ void InfrastructureGenerator::generateDataSamplingPolicyRemoteProxyConnect(frame
   std::string channelConfig = "name=" + channelName + ",type=sub,method=connect,address=tcp://" +
                               localMachine + ":" + localPort + ",rateLogging=60,transport=zeromq,rcvBufSize=1";
 
-  workflow.emplace_back(specifyExternalFairMQDeviceProxy(
+  auto proxy = specifyExternalFairMQDeviceProxy(
     proxyName.c_str(),
     outputSpecs,
     channelConfig.c_str(),
-    dplModelAdaptor()));
-  workflow.back().labels.emplace_back(control == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
+    dplModelAdaptor());
+  proxy.labels.emplace_back(control == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
+  // if not in RUNNING, we should drop all the incoming messages, we set the corresponding proxy option.
+  enableDraining(proxy.options);
+  workflow.emplace_back(std::move(proxy));
 }
 
 void InfrastructureGenerator::generateDataSamplingPolicyLocalProxyConnect(framework::WorkflowSpec& workflow,
@@ -428,12 +441,15 @@ void InfrastructureGenerator::generateDataSamplingPolicyRemoteProxyBind(framewor
 
   std::string channelConfig = "name=" + channelName + ",type=sub,method=bind,address=tcp://*:" + remotePort + ",rateLogging=60,transport=zeromq,rcvBufSize=1";
 
-  workflow.emplace_back(specifyExternalFairMQDeviceProxy(
+  auto proxy = specifyExternalFairMQDeviceProxy(
     proxyName.c_str(),
     outputSpecs,
     channelConfig.c_str(),
-    dplModelAdaptor()));
-  workflow.back().labels.emplace_back(control == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
+    dplModelAdaptor());
+  proxy.labels.emplace_back(control == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
+  // if not in RUNNING, we should drop all the incoming messages, we set the corresponding proxy option.
+  enableDraining(proxy.options);
+  workflow.emplace_back(std::move(proxy));
 }
 
 void InfrastructureGenerator::generateLocalTaskLocalProxy(framework::WorkflowSpec& workflow, size_t id,
@@ -471,14 +487,16 @@ void InfrastructureGenerator::generateLocalTaskRemoteProxy(framework::WorkflowSp
   std::string channelConfig = "name=" + channelName + ",type=sub,method=bind,address=tcp://*:" + remotePort +
                               ",rateLogging=60,transport=zeromq,rcvBufSize=1";
 
-  workflow.emplace_back(specifyExternalFairMQDeviceProxy(
+  auto proxy = specifyExternalFairMQDeviceProxy(
     proxyName.c_str(),
     proxyOutputs,
     channelConfig.c_str(),
-    dplModelAdaptor()));
-  workflow.back().labels.emplace_back(taskSpec.localControl == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
+    dplModelAdaptor());
+  proxy.labels.emplace_back(taskSpec.localControl == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
+  // if not in RUNNING, we should drop all the incoming messages, we set the corresponding proxy option.
+  enableDraining(proxy.options);
+  workflow.emplace_back(std::move(proxy));
 }
-
 void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow, std::string taskName,
                                               size_t numberOfLocalMachines, double cycleDurationSeconds,
                                               std::string mergingMode, size_t resetAfterCycles, std::string monitoringUrl,
