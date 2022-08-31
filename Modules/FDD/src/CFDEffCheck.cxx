@@ -14,7 +14,7 @@
 /// \author Sebastian Bysiak sbysiak@cern.ch
 ///
 
-#include "FT0/CFDEffCheck.h"
+#include "FDD/CFDEffCheck.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
@@ -29,7 +29,7 @@
 using namespace std;
 using namespace o2::quality_control;
 
-namespace o2::quality_control_modules::ft0
+namespace o2::quality_control_modules::fdd
 {
 
 void CFDEffCheck::configure()
@@ -162,4 +162,4 @@ void CFDEffCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
   }
 }
 
-} // namespace o2::quality_control_modules::ft0
+} // namespace o2::quality_control_modules::fdd

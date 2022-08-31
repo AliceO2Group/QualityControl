@@ -442,7 +442,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
   for (int i = 0; i < NFees; i++) {
     if (nStops[i]) {
       float payloadAvg = (float)payloadTot[i] / nStops[i];
-      mPayloadSize->Fill(i + 1, payloadAvg);
+      mPayloadSize->Fill(i, payloadAvg);
     }
   }
 

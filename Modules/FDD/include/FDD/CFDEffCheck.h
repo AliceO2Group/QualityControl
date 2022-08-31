@@ -14,17 +14,18 @@
 /// \author Sebastian Bysiak sbysiak@cern.ch
 ///
 
-#ifndef QC_MODULE_FV0_FV0CFDEFFCHECK_H
-#define QC_MODULE_FV0_FV0CFDEFFCHECK_H
+#ifndef QC_MODULE_FDD_FDDCFDEFFCHECK_H
+#define QC_MODULE_FDD_FDDCFDEFFCHECK_H
 
 #include <regex>
 #include <numeric>
 
 #include "QualityControl/CheckInterface.h"
 
-#include "FV0Base/Constants.h"
+#include "FDDBase/Geometry.h"
+#include "FDDBase/Constants.h"
 
-namespace o2::quality_control_modules::fv0
+namespace o2::quality_control_modules::fdd
 {
 
 /// \brief checks if CFD efficiency is below threshold
@@ -66,7 +67,7 @@ class CFDEffCheck : public o2::quality_control::checker::CheckInterface
     return vecResult;
   }
 
-  constexpr static std::size_t sNCHANNELS = o2::fv0::Constants::nFv0Channels;
+  constexpr static std::size_t sNCHANNELS = o2::fdd::Nchannels;
   std::vector<unsigned int> mDeadChannelMap;
   std::string mDeadChannelMapStr;
   float mThreshWarning;
@@ -75,6 +76,6 @@ class CFDEffCheck : public o2::quality_control::checker::CheckInterface
   int mNumErrors;
 };
 
-} // namespace o2::quality_control_modules::fv0
+} // namespace o2::quality_control_modules::fdd
 
-#endif // QC_MODULE_FV0_FV0CFDEFFCHECK_H
+#endif // QC_MODULE_FDD_FDDCFDEFFCHECK_H

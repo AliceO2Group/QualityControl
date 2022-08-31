@@ -10,45 +10,74 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   OutOfBunchCollTask.h
+/// \file   PostProcTask.h
 /// \author Sebastian Bysiak sbysiak@cern.ch
 ///
 
-#ifndef QC_MODULE_FT0_OUTOFBUNCHCOLLTASK_H
-#define QC_MODULE_FT0_OUTOFBUNCHCOLLTASK_H
+#ifndef QC_MODULE_FT0_POSTPROCTASK_H
+#define QC_MODULE_FT0_POSTPROCTASK_H
 
 #include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/DatabaseInterface.h"
 #include "CCDB/CcdbApi.h"
 
-#include "TList.h"
-#include "Rtypes.h"
+#include "FT0Base/Constants.h"
+#include "DataFormatsFT0/ChannelData.h"
+#include "DataFormatsFT0/Digit.h"
+
+#include <TH2.h>
+#include <TCanvas.h>
+#include <TGraph.h>
 
 class TH1F;
-class TH2F;
+class TCanvas;
+class TLegend;
+class TProfile;
 
 namespace o2::quality_control_modules::ft0
 {
 
-/// \brief PostProcessing task which finds collisions not compatible with BC pattern
+/// \brief Basic Postprocessing Task for FT0, computes among others the trigger rates
 /// \author Sebastian Bysiak sbysiak@cern.ch
-class OutOfBunchCollTask final : public quality_control::postprocessing::PostProcessingInterface
+class PostProcTask final : public quality_control::postprocessing::PostProcessingInterface
 {
  public:
-  OutOfBunchCollTask() = default;
-  ~OutOfBunchCollTask() override = default;
+  PostProcTask() = default;
+  ~PostProcTask() override;
+  void configure(std::string, const boost::property_tree::ptree&) override;
   void initialize(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
   void update(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
   void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
-  void configure(std::string, const boost::property_tree::ptree&) override;
 
  private:
-  std::string mPathDigitQcTask;
   std::string mPathGrpLhcIf;
-  o2::quality_control::repository::DatabaseInterface* mDatabase = nullptr;
+  std::string mPathDigitQcTask;
+  std::string mCycleDurationMoName;
   std::string mCcdbUrl;
-  o2::ccdb::CcdbApi mCcdbApi;
+  int mNumOrbitsInTF;
+
+  std::map<o2::ft0::ChannelData::EEventDataBit, std::string> mMapChTrgNames;
   std::map<int, std::string> mMapDigitTrgNames;
+
+  o2::quality_control::repository::DatabaseInterface* mDatabase = nullptr;
+  o2::ccdb::CcdbApi mCcdbApi;
+
+  std::unique_ptr<TGraph> mRateOrA;
+  std::unique_ptr<TGraph> mRateOrC;
+  std::unique_ptr<TGraph> mRateVertex;
+  std::unique_ptr<TGraph> mRateCentral;
+  std::unique_ptr<TGraph> mRateSemiCentral;
+  std::unique_ptr<TH2F> mHistChDataNegBits;
+  std::unique_ptr<TH1F> mHistTriggers;
+
+  std::unique_ptr<TH1F> mHistTimeUpperFraction;
+  std::unique_ptr<TH1F> mHistTimeLowerFraction;
+  std::unique_ptr<TH1F> mHistTimeInWindow;
+
+  std::unique_ptr<TCanvas> mRatesCanv;
+  TProfile* mAmpl = nullptr;
+  TProfile* mTime = nullptr;
+
   // if storage size matters it can be replaced with TH1
   // and TH2 can be created based on it on the fly, but only TH1 would be stored
   std::unique_ptr<TH2F> mHistBcPattern;
@@ -57,4 +86,4 @@ class OutOfBunchCollTask final : public quality_control::postprocessing::PostPro
 
 } // namespace o2::quality_control_modules::ft0
 
-#endif // QC_MODULE_FT0_OUTOFBUNCHCOLLTASK_H
+#endif // QC_MODULE_FT0_POSTPROCTASK_H

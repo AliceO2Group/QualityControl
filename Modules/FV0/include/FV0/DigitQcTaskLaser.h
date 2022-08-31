@@ -58,6 +58,8 @@ class DigitQcTaskLaser final : public TaskInterface
   void endOfActivity(Activity& activity) override;
   void reset() override;
   constexpr static std::size_t sNCHANNELS_PM = o2::fv0::Constants::nPms * o2::fv0::Constants::nChannelsPerPm;
+  constexpr static std::size_t sNCHANNELS_FV0 = o2::fv0::Constants::nFv0Channels;
+  constexpr static std::size_t sNCHANNELS_FV0_INNER = 24; // "Inner" = 3 inner rings  = first 24 channels
   constexpr static std::size_t sOrbitsPerTF = 256;
   constexpr static std::size_t sBCperOrbit = 3564;
 
@@ -86,6 +88,8 @@ class DigitQcTaskLaser final : public TaskInterface
   }
 
   void rebinFromConfig();
+  unsigned int getModeParameter(std::string, unsigned int, std::map<unsigned int, std::string>);
+  int getNumericalParameter(std::string, int);
 
   TList* mListHistGarbage;
   std::set<unsigned int> mSetAllowedChIDs;
@@ -96,6 +100,27 @@ class DigitQcTaskLaser final : public TaskInterface
   std::map<o2::fv0::ChannelData::EEventDataBit, std::string> mMapChTrgNames;
   std::unique_ptr<TH1F> mHistNumADC;
   std::unique_ptr<TH1F> mHistNumCFD;
+
+  std::map<int, bool> mMapTrgSoftware;
+  // only for Inner/Outer trigger
+  enum TrgModeThresholdVar { kAmpl,
+                             kNchannels
+  };
+  enum TrgComparisonResult { kSWonly,
+                             kTCMonly,
+                             kNone,
+                             kBoth
+  };
+
+  unsigned int mTrgModeInnerOuterThresholdVar;
+  // full set of possible parameters:
+  // to be eliminated after decision about Inner/Outer trigger type
+  int mTrgThresholdCharge;
+  int mTrgThresholdChargeOuter;
+  int mTrgThresholdChargeInner;
+  int mTrgThresholdNChannels;
+  int mTrgThresholdNChannelsOuter;
+  int mTrgThresholdNChannelsInner;
 
   // Objects which will be published
   std::unique_ptr<TH2F> mHistAmp2Ch;
@@ -111,6 +136,8 @@ class DigitQcTaskLaser final : public TaskInterface
   std::unique_ptr<TH2F> mHistBCvsFEEmodules;
   std::unique_ptr<TH2F> mHistOrbitVsTrg;
   std::unique_ptr<TH2F> mHistOrbitVsFEEmodules;
+  std::unique_ptr<TH1F> mHistTriggersSw;
+  std::unique_ptr<TH2F> mHistTriggersSoftwareVsTCM;
 
   // Hashed maps
   static const size_t mapSize = 256;

@@ -182,10 +182,11 @@ added:
           "localnode1",
           "localnode2"
         ],
-        "remoteMachine": "qcnode",   "":"not needed with FLP+QC, needed with EPN+QC",
-        "remotePort": "30132",       "":"not needed with FLP+QC, needed with EPN+QC",
-        "localControl": "aliecs",    "":"if absent, aliecs is default",
-        "mergingMode": "delta",      "":"if absent, delta is default"
+        "remoteMachine": "qcnode",     "":"not needed with FLP+QC, needed with EPN+QC",
+        "remotePort": "30132",         "":"not needed with FLP+QC, needed with EPN+QC",
+        "localControl": "aliecs",      "":"if absent, aliecs is default",
+        "mergingMode": "delta",        "":"if absent, delta is default",
+        "mergersPerLayer": ["3", "1"], "":"if absent, one Merger is used" 
       }
     },
 ```
@@ -200,6 +201,8 @@ One also may choose the merging mode - `delta` is the default and recommended (t
  always send entire objects and the latest versions are combined in Mergers.
  With the `delta` mode, one can cheat by specifying just one local machine name and using only that one during execution.
  This is not possible with `entire` mode, because then Mergers need identifiable data sources to merge objects correctly.
+ If one merger process is not enough to sustain the input data throughput, one may define multiple Merger layers with
+ `mergersPerLayer` option.
 
 In case of a remote task, choosing `"remote"` option for the `"location"` parameter is needed. In standalone setups
 and those controlled by ODC, one should also specify the `"remoteMachine"`, so sampled data reaches the right node.
@@ -952,6 +955,7 @@ the "tasks" path.
                                                  "Needed only for multi-node setups."],
         "mergingMode": "delta",             "": "Merging mode, \"delta\" (default) or \"entire\" objects are expected",
         "mergerCycleMultiplier": "1",       "": "Multiplies the Merger cycle duration with respect to the QC Task cycle"
+        "mergersPerLayer": [ "3", "1" ],    "": "Defines the number of Mergers per layer, the default is [\"1\"]"
       }
     }
   }

@@ -71,6 +71,15 @@ AggregatorRunnerConfig AggregatorRunnerFactory::extractRunnerConfig(const core::
     { "qcConfiguration", VariantType::Dict, emptyDict(), { "Some dictionary configuration" } }
   };
 
+  core::Activity fallbackActivity{
+    commonSpec.activityNumber,
+    commonSpec.activityType,
+    commonSpec.activityPeriodName,
+    commonSpec.activityPassName,
+    commonSpec.activityProvenance,
+    { commonSpec.activityStart, commonSpec.activityEnd }
+  };
+
   return {
     commonSpec.database,
     commonSpec.consulUrl,
@@ -78,11 +87,7 @@ AggregatorRunnerConfig AggregatorRunnerFactory::extractRunnerConfig(const core::
     commonSpec.infologgerFilterDiscardDebug,
     commonSpec.infologgerDiscardLevel,
     commonSpec.infologgerDiscardFile,
-    commonSpec.activityNumber,
-    commonSpec.activityType,
-    commonSpec.activityPeriodName,
-    commonSpec.activityPassName,
-    commonSpec.activityProvenance,
+    fallbackActivity,
     options
   };
 }
