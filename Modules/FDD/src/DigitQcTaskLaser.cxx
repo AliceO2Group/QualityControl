@@ -116,9 +116,9 @@ void DigitQcTaskLaser::initialize(o2::framework::InitContext& /*ctx*/)
   mHistTime2Ch->SetOption("colz");
   mHistAmp2Ch = std::make_unique<TH2F>("AmpPerChannel", "Amplitude vs Channel;Channel;Amp", sNCHANNELS_PM, 0, sNCHANNELS_PM, 4200, -100, 4100);
   mHistAmp2Ch->SetOption("colz");
-  mHistOrbit2BC = std::make_unique<TH2F>("OrbitPerBC", "BC-Orbit map;Orbit;BC;", 256, 0, 256, 3564, 0, 3564);
+  mHistOrbit2BC = std::make_unique<TH2F>("OrbitPerBC", "BC-Orbit map;Orbit;BC;", 256, 0, 256, sBCperOrbit, 0, sBCperOrbit);
   mHistOrbit2BC->SetOption("colz");
-  mHistBC = std::make_unique<TH1F>("BC", "BC;BC;counts;", 3564, 0, 3564);
+  mHistBC = std::make_unique<TH1F>("BC", "BC;BC;counts;", sBCperOrbit, 0, sBCperOrbit);
 
   mHistChDataBits = std::make_unique<TH2F>("ChannelDataBits", "ChannelData bits per ChannelID;Channel;Bit", sNCHANNELS_PM, 0, sNCHANNELS_PM, mMapChTrgNames.size(), 0, mMapChTrgNames.size());
   mHistChDataBits->SetOption("colz");
@@ -155,7 +155,7 @@ void DigitQcTaskLaser::initialize(o2::framework::InitContext& /*ctx*/)
   }
 
   for (const auto& entry : mMapPmModuleChannels) {
-    auto pairModuleBcOrbit = mMapPmModuleBcOrbit.insert({ entry.first, new TH2F(Form("BcOrbitMap_%s", entry.first.c_str()), Form("BC-orbit map for %s;Orbit;BC", entry.first.c_str()), 256, 0, 256, 3564, 0, 3564) });
+    auto pairModuleBcOrbit = mMapPmModuleBcOrbit.insert({ entry.first, new TH2F(Form("BcOrbitMap_%s", entry.first.c_str()), Form("BC-orbit map for %s;Orbit;BC", entry.first.c_str()), 256, 0, 256, sBCperOrbit, 0, sBCperOrbit) });
   }
 
   mHistNumADC = std::make_unique<TH1F>("HistNumADC", "HistNumADC", sNCHANNELS_PM, 0, sNCHANNELS_PM);

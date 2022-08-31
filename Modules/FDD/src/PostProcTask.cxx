@@ -143,8 +143,8 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistry& services)
   mMapDigitTrgNames.insert({ o2::fdd::Triggers::bitOutputsAreBlocked, "OutputsAreBlocked" });
   mMapDigitTrgNames.insert({ o2::fdd::Triggers::bitDataIsValid, "DataIsValid" });
   mHistTriggers = std::make_unique<TH1F>("Triggers", "Triggers from TCM", mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
-  mHistBcPattern = std::make_unique<TH2F>("bcPattern", "BC pattern", 3564, 0, 3564, mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
-  mHistBcTrgOutOfBunchColl = std::make_unique<TH2F>("OutOfBunchColl_BCvsTrg", "BC vs Triggers for out-of-bunch collisions;BC;Triggers", 3564, 0, 3564, mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
+  mHistBcPattern = std::make_unique<TH2F>("bcPattern", "BC pattern", sBCperOrbit, 0, sBCperOrbit, mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
+  mHistBcTrgOutOfBunchColl = std::make_unique<TH2F>("OutOfBunchColl_BCvsTrg", "BC vs Triggers for out-of-bunch collisions;BC;Triggers", sBCperOrbit, 0, sBCperOrbit, mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
   for (const auto& entry : mMapDigitTrgNames) {
     mHistTriggers->GetXaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
     mHistBcPattern->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
@@ -335,9 +335,8 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistry&)
   }
   auto bcPattern = lhcIf->getBunchFilling();
 
-  const int nBc = 3564;
   mHistBcPattern->Reset();
-  for (int i = 0; i < nBc + 1; i++) {
+  for (int i = 0; i < sBCperOrbit + 1; i++) {
     for (int j = 0; j < mMapDigitTrgNames.size() + 1; j++) {
       mHistBcPattern->SetBinContent(i + 1, j + 1, bcPattern.testBC(i));
     }
@@ -352,17 +351,17 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistry&)
   mHistBcTrgOutOfBunchColl->Reset();
   float vmax = hBcVsTrg->GetBinContent(hBcVsTrg->GetMaximumBin());
   mHistBcTrgOutOfBunchColl->Add(hBcVsTrg, mHistBcPattern.get(), 1, -1 * vmax);
-  for (int i = 0; i < nBc + 1; i++) {
+  for (int i = 0; i < sBCperOrbit + 1; i++) {
     for (int j = 0; j < mMapDigitTrgNames.size() + 1; j++) {
       if (mHistBcTrgOutOfBunchColl->GetBinContent(i + 1, j + 1) < 0) {
         mHistBcTrgOutOfBunchColl->SetBinContent(i + 1, j + 1, 0); // is it too slow?
       }
     }
   }
-  mHistBcTrgOutOfBunchColl->SetEntries(mHistBcTrgOutOfBunchColl->Integral(1, nBc, 1, mMapDigitTrgNames.size()));
+  mHistBcTrgOutOfBunchColl->SetEntries(mHistBcTrgOutOfBunchColl->Integral(1, sBCperOrbit, 1, mMapDigitTrgNames.size()));
   for (int iBin = 1; iBin < mMapDigitTrgNames.size() + 1; iBin++) {
     const std::string metadataKey = "BcVsTrgIntegralBin" + std::to_string(iBin);
-    const std::string metadataValue = std::to_string(hBcVsTrg->Integral(1, nBc, iBin, iBin));
+    const std::string metadataValue = std::to_string(hBcVsTrg->Integral(1, sBCperOrbit, iBin, iBin));
     getObjectsManager()->getMonitorObject(mHistBcTrgOutOfBunchColl->GetName())->addOrUpdateMetadata(metadataKey, metadataValue);
     ILOG(Info, Support) << metadataKey << ":" << metadataValue << ENDM;
   }

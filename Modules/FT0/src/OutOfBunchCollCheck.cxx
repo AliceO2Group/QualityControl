@@ -98,7 +98,7 @@ Quality OutOfBunchCollCheck::check(std::map<std::string, std::shared_ptr<Monitor
   mFractionOutOfBunchColl = 0;
   mNumNonEmptyBins = 0;
 
-  integralOutOfBunchColl = hOutOfBunchColl->Integral(1, 3564, mBinPos, mBinPos);
+  integralOutOfBunchColl = hOutOfBunchColl->Integral(1, sBCperOrbit, mBinPos, mBinPos);
   mFractionOutOfBunchColl = integralOutOfBunchColl / integralBcOrbitMap;
 
   ILOG(Debug, Support) << "in checker: integralBcOrbitMap:" << integralBcOrbitMap << " integralOutOfBunchColl: " << integralOutOfBunchColl << " -> fraction: " << mFractionOutOfBunchColl << ENDM;

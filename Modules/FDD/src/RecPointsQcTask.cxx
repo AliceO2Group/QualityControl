@@ -94,10 +94,10 @@ void RecPointsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistAmp2Ch->SetOption("colz");
   mHistCollTimeA = std::make_unique<TH1F>("CollTimeA", "T0A;Time [ns]", 4100, -20.5, 20.5);
   mHistCollTimeC = std::make_unique<TH1F>("CollTimeC", "T0C;Time [ns]", 4100, -20.5, 20.5);
-  mHistBC = std::make_unique<TH1F>("BC", "BC;BC;counts;", 3564, 0, 3564);
-  mHistBCTCM = std::make_unique<TH1F>("BCTCM", "BC TCM;BC;counts;", 3564, 0, 3564);
-  mHistBCorA = std::make_unique<TH1F>("BCorA", "BC orA;BC;counts;", 3564, 0, 3564);
-  mHistBCorC = std::make_unique<TH1F>("BCorC", "BC orC;BC;counts;", 3564, 0, 3564);
+  mHistBC = std::make_unique<TH1F>("BC", "BC;BC;counts;", sBCperOrbit, 0, sBCperOrbit);
+  mHistBCTCM = std::make_unique<TH1F>("BCTCM", "BC TCM;BC;counts;", sBCperOrbit, 0, sBCperOrbit);
+  mHistBCorA = std::make_unique<TH1F>("BCorA", "BC orA;BC;counts;", sBCperOrbit, 0, sBCperOrbit);
+  mHistBCorC = std::make_unique<TH1F>("BCorC", "BC orC;BC;counts;", sBCperOrbit, 0, sBCperOrbit);
   mListHistGarbage = new TList();
   mListHistGarbage->SetOwner(kTRUE);
 

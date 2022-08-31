@@ -20,6 +20,7 @@
 #include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/DatabaseInterface.h"
 #include "CCDB/CcdbApi.h"
+#include "CommonConstants/LHCConstants.h"
 
 #include "FDDBase/Constants.h"
 #include "DataFormatsFDD/ChannelData.h"
@@ -49,6 +50,7 @@ class PostProcTask final : public quality_control::postprocessing::PostProcessin
   void update(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
   void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
 
+  constexpr static std::size_t sBCperOrbit = o2::constants::lhc::LHCMaxBunches;
   constexpr static std::size_t sNCHANNELS_PM = 20;
 
  private:

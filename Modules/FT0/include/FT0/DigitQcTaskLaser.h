@@ -31,6 +31,8 @@
 #include "TList.h"
 #include "Rtypes.h"
 
+#include "CommonConstants/LHCConstants.h"
+
 #include "QualityControl/TaskInterface.h"
 #include "QualityControl/QcInfoLogger.h"
 
@@ -62,7 +64,7 @@ class DigitQcTaskLaser final : public TaskInterface
   constexpr static std::size_t sNCHANNELS_A = o2::ft0::Geometry::NCellsA * 4;
   constexpr static std::size_t sNCHANNELS_C = o2::ft0::Geometry::NCellsC * 4;
   constexpr static std::size_t sOrbitsPerTF = 256;
-  constexpr static std::size_t sBCperOrbit = 3564;
+  constexpr static std::size_t sBCperOrbit = o2::constants::lhc::LHCMaxBunches;
 
   constexpr static float sCFDChannel2NS = 0.01302; // CFD channel width in ns
 

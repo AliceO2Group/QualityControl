@@ -32,6 +32,8 @@
 #include "FDD/Helper.h"
 #include "Rtypes.h"
 
+#include "CommonConstants/LHCConstants.h"
+
 #include <Framework/InputRecord.h>
 #include "QualityControl/QcInfoLogger.h"
 #include "DataFormatsFDD/Digit.h"
@@ -67,7 +69,7 @@ class DigitQcTask final : public TaskInterface
   constexpr static std::size_t sNCHANNELS_A = 8;
   constexpr static std::size_t sNCHANNELS_C = 8;
   constexpr static std::size_t sOrbitsPerTF = 256;
-  constexpr static std::size_t sBCperOrbit = 3564;
+  constexpr static std::size_t sBCperOrbit = o2::constants::lhc::LHCMaxBunches;
 
   constexpr static float sCFDChannel2NS = o2::fdd::timePerTDC; // CFD channel width in ns
 
