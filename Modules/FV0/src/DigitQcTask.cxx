@@ -45,6 +45,10 @@ void DigitQcTask::rebinFromConfig()
      "binning_Amp_channel2": "5,-10,90" ...
   */
   auto rebinHisto = [](std::string hName, std::string binning) {
+    if (!gROOT->FindObject(hName.data())) {
+      ILOG(Warning) << "config: histogram named \"" << hName << "\" not found" << ENDM;
+      return;
+    }
     std::vector<std::string> tokenizedBinning;
     boost::split(tokenizedBinning, binning, boost::is_any_of(","));
     if (tokenizedBinning.size() == 3) { // TH1
@@ -73,9 +77,6 @@ void DigitQcTask::rebinFromConfig()
         std::string hNameCur = hName.substr(0, hName.find(channelIdPlaceholder)) + std::to_string(chID) + hName.substr(hName.find(channelIdPlaceholder) + 1);
         rebinHisto(hNameCur, binning);
       }
-    } else if (!gROOT->FindObject(hName.data())) {
-      ILOG(Warning) << "config: histogram named \"" << hName << "\" not found" << ENDM;
-      continue;
     } else {
       rebinHisto(hName, binning);
     }
