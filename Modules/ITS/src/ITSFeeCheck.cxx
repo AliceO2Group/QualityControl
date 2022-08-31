@@ -310,7 +310,7 @@ void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
       for (int itrg = 1; itrg <= h->GetNbinsY(); itrg++) {
         LOG(info) << checkResult.getMetadata(h->GetYaxis()->GetBinLabel(itrg)).c_str();
         if (strcmp(checkResult.getMetadata(h->GetYaxis()->GetBinLabel(itrg)).c_str(), "bad") == 0) {
-          std::string extraText = (h->GetYaxis()->GetBinLabel(itrg) == "PHYSICS") ? "(OK if it's COSMICS/SYNTHETIC)" : "";
+          std::string extraText = (!strcmp(h->GetYaxis()->GetBinLabel(itrg), "PHYSICS")) ? "(OK if it's COSMICS/SYNTHETIC)" : "";
           tInfoTrg[itrg - 1] = std::make_shared<TLatex>(0.3, 0.1 + 0.05 * (itrg - 1), Form("Trigger flag %s of bad quality %s", h->GetYaxis()->GetBinLabel(itrg), extraText.c_str()));
           tInfoTrg[itrg - 1]->SetTextColor(kRed);
           tInfoTrg[itrg - 1]->SetTextSize(0.03);
