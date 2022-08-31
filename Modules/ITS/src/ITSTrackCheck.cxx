@@ -124,14 +124,8 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
     if (iter->second->getName() == "VertexRvsZ") {
       auto* h = dynamic_cast<TH2D*>(iter->second->getObject());
       result.set(Quality::Good);
-      result.addMetadata("CheckRZVertexRDisplacedBad", "good");
       result.addMetadata("CheckRZVertexZDisplacedBad", "good");
-      TH1D* projectR = h->ProjectionX();
       TH1D* projectZ = h->ProjectionY();
-      if (projectR->Integral(projectR->FindBin(0.3), projectR->GetNbinsX()) > 0) {
-        result.addMetadata("CheckRZVertexRDisplacedBad", "bad");
-        result.set(Quality::Bad);
-      }
       if ((projectZ->Integral(1, projectZ->FindBin(-10)) > 0) || (projectZ->Integral(projectZ->FindBin(10), projectZ->GetNbinsX()) > 0)) {
         result.updateMetadata("CheckRZVertexZDisplacedBad", "bad");
         result.set(Quality::Bad);
@@ -250,7 +244,7 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
         h->GetListOfFunctions()->Add(tMessage[0]->Clone());
       }
       if (strcmp(checkResult.getMetadata("CheckAsymmEta").c_str(), "bad") == 0) {
-        tMessage[1] = std::make_shared<TLatex>(0.12, 0.6, "Asymmetric Eta distribution");
+        tMessage[1] = std::make_shared<TLatex>(0.12, 0.6, "Asymmetric Eta distribution (OK if there are disabled ITS sectors)");
         tMessage[1]->SetTextFont(43);
         tMessage[1]->SetTextSize(0.04);
         tMessage[1]->SetTextColor(kRed);
@@ -351,21 +345,13 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     } else {
       status = "Quality::Bad (call expert)";
       textColor = kRed;
-      if (strcmp(checkResult.getMetadata("CheckRZVertexRDisplacedBad").c_str(), "bad") == 0) {
-        tMessage[0] = std::make_shared<TLatex>(0.12, 0.65, Form("INFO: vertex distance on XY plane > 3 mm"));
+      if (strcmp(checkResult.getMetadata("CheckRZVertexZDisplacedBad").c_str(), "bad") == 0) {
+        tMessage[0] = std::make_shared<TLatex>(0.12, 0.65, Form("INFO: vertex Z displaced > 10 cm"));
         tMessage[0]->SetTextFont(43);
         tMessage[0]->SetTextSize(0.04);
         tMessage[0]->SetTextColor(kRed);
         tMessage[0]->SetNDC();
         h->GetListOfFunctions()->Add(tMessage[0]->Clone());
-      }
-      if (strcmp(checkResult.getMetadata("CheckRZVertexZDisplacedBad").c_str(), "bad") == 0) {
-        tMessage[1] = std::make_shared<TLatex>(0.12, 0.6, Form("INFO: vertex Z displaced > 10 cm"));
-        tMessage[1]->SetTextFont(43);
-        tMessage[1]->SetTextSize(0.04);
-        tMessage[1]->SetTextColor(kRed);
-        tMessage[1]->SetNDC();
-        h->GetListOfFunctions()->Add(tMessage[1]->Clone());
       }
     }
 
