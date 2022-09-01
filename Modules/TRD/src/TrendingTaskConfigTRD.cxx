@@ -23,7 +23,7 @@ namespace o2::quality_control::postprocessing
 TrendingTaskConfigTRD::TrendingTaskConfigTRD(std::string name, const boost::property_tree::ptree& config)
   : PostProcessingConfig(name, config)
 {
- 
+
   for (const auto& plotConfig : config.get_child("qc.postprocessing." + name + ".plots")) {
 
     if (const auto& sourceNames = plotConfig.second.get_child_optional("names");

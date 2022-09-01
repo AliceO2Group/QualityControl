@@ -47,7 +47,7 @@ class TRDTrending : public PostProcessingInterface
  private:
   struct {
     Long64_t runNumber = 0;
-    
+
   } mMetaData;
 
   void trendValues(const Trigger& t, repository::DatabaseInterface& qcdb);
