@@ -79,6 +79,23 @@ void PostProcTask::configure(std::string, const boost::property_tree::ptree& con
     mPathDigitQcTask = "FV0/MO/DigitQcTask/";
     ILOG(Info, Support) << "configure() : using default pathDigitQcTask = \"" << mPathDigitQcTask << "\"" << ENDM;
   }
+
+  node = config.get_child_optional(Form("%s.custom.timestampSourceLhcIf", configPath));
+  if (node) {
+    mTimestampSourceLhcIf = node.get_ptr()->get_child("").get_value<std::string>();
+    if (mTimestampSourceLhcIf == "last" || mTimestampSourceLhcIf == "trigger" || mTimestampSourceLhcIf == "metadata") {
+      ILOG(Info, Support) << "configure() : using timestampSourceLhcIf = \"" << mTimestampSourceLhcIf << "\"" << ENDM;
+    } else {
+      auto prev = mTimestampSourceLhcIf;
+      mTimestampSourceLhcIf = "trigger";
+      ILOG(Warning, Support) << "configure() : invalid value for timestampSourceLhcIf = \"" << prev
+                             << "\"\n available options are \"last\", \"trigger\" or \"metadata\""
+                             << "\n fallback to default: \"" << mTimestampSourceLhcIf << "\"" << ENDM;
+    }
+  } else {
+    mTimestampSourceLhcIf = "trigger";
+    ILOG(Info, Support) << "configure() : using default timestampSourceLhcIf = \"" << mTimestampSourceLhcIf << "\"" << ENDM;
+  }
 }
 
 void PostProcTask::initialize(Trigger, framework::ServiceRegistry& services)
@@ -318,17 +335,45 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistry&)
     mTime->GetYaxis()->SetTitleOffset(1);
   }
 
+  auto moBCvsTriggers = mDatabase->retrieveMO(mPathDigitQcTask, "BCvsTriggers", t.timestamp, t.activity);
+  auto hBcVsTrg = moBCvsTriggers ? (TH2F*)moBCvsTriggers->getObject() : nullptr;
+  if (!hBcVsTrg) {
+    ILOG(Error, Support) << "MO \"BCvsTriggers\" NOT retrieved!!!" << ENDM;
+    return;
+  }
+
+  long ts = 999;
+  if (mTimestampSourceLhcIf == "last") {
+    ts = -1;
+  } else if (mTimestampSourceLhcIf == "trigger") {
+    ts = t.timestamp;
+  } else if (mTimestampSourceLhcIf == "metadata") {
+    for (auto metainfo : moBCvsTriggers->getMetadataMap()) {
+      if (metainfo.first == "TFcreationTime")
+        ts = std::stol(metainfo.second);
+    }
+    if (ts > 1651500000000 && ts < 1651700000000)
+      ILOG(Warning, Support) << "timestamp (read from TF via metadata) points to 02-04 May 2022"
+                                " - make sure this is the data we are processing and not the default timestamp "
+                                "(it may appear when running on digits w/o providing \"--hbfutils-config o2_tfidinfo.root\")"
+                             << ENDM;
+    if (ts == 999) {
+      ILOG(Error) << "\"TFcreationTime\" not found in metadata, fallback to ts from trigger " << ENDM;
+      ts = t.timestamp;
+    }
+  }
+
   std::map<std::string, std::string> metadata;
   std::map<std::string, std::string> headers;
-  auto* lhcIf = mCcdbApi.retrieveFromTFileAny<o2::parameters::GRPLHCIFData>(mPathGrpLhcIf, metadata, -1, &headers);
+  auto* lhcIf = mCcdbApi.retrieveFromTFileAny<o2::parameters::GRPLHCIFData>(mPathGrpLhcIf, metadata, ts, &headers);
   if (!lhcIf) {
-    ILOG(Error, Support) << "object \"" << mPathGrpLhcIf << "\" NOT retrieved!!!" << ENDM;
+    ILOG(Error, Support) << "object \"" << mPathGrpLhcIf << "\" NOT retrieved. OutOfBunchColTask will not produce valid QC plots." << ENDM;
     return;
   }
   const std::string bcName = lhcIf->getInjectionScheme();
   if (bcName.size() == 8) {
     if (bcName.compare("no_value")) {
-      ILOG(Warning) << "Filling scheme not set. OutOfBunchColTask will not produce valid QC plots." << ENDM;
+      ILOG(Error, Support) << "Filling scheme not set. OutOfBunchColTask will not produce valid QC plots." << ENDM;
     }
   } else {
     ILOG(Info, Support) << "Filling scheme: " << bcName.c_str() << ENDM;
@@ -340,12 +385,6 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistry&)
     for (int j = 0; j < mMapDigitTrgNames.size() + 1; j++) {
       mHistBcPattern->SetBinContent(i + 1, j + 1, bcPattern.testBC(i));
     }
-  }
-  auto moBCvsTriggers = mDatabase->retrieveMO(mPathDigitQcTask, "BCvsTriggers", t.timestamp, t.activity);
-  auto hBcVsTrg = moBCvsTriggers ? (TH2F*)moBCvsTriggers->getObject() : nullptr;
-  if (!hBcVsTrg) {
-    ILOG(Error, Support) << "MO \"BCvsTriggers\" NOT retrieved!!!" << ENDM;
-    return;
   }
 
   mHistBcTrgOutOfBunchColl->Reset();

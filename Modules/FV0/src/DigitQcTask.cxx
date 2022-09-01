@@ -22,6 +22,7 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "DataFormatsFIT/Triggers.h"
 #include "Framework/InputRecord.h"
+#include "Framework/TimingInfo.h"
 #include "DataFormatsFV0/LookUpTable.h"
 
 namespace o2::quality_control_modules::fv0
@@ -399,6 +400,8 @@ void DigitQcTask::startOfCycle()
 
 void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
+  mTFcreationTime = ctx.services().get<o2::framework::TimingInfo>().creation;
+
   mTfCounter++;
   auto channels = ctx.inputs().get<gsl::span<o2::fv0::ChannelData>>("channels");
   auto digits = ctx.inputs().get<gsl::span<o2::fv0::Digit>>("digits");
@@ -553,6 +556,10 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 void DigitQcTask::endOfCycle()
 {
   ILOG(Info) << "endOfCycle" << ENDM;
+  // add TF creation time for further match with filling scheme in PP in case of offline running
+  ILOG(Debug, Support) << "adding last TF creation time: " << mTFcreationTime << ENDM;
+  getObjectsManager()->getMonitorObject(mHistBCvsTrg->GetName())->addOrUpdateMetadata("TFcreationTime", std::to_string(mTFcreationTime));
+
   // one has to set num. of entries manually because
   // default TH1Reductor gets only mean,stddev and entries (no integral)
   mHistCFDEff->Divide(mHistNumADC.get(), mHistNumCFD.get());

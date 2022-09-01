@@ -22,6 +22,7 @@
 #include "DataFormatsFIT/Triggers.h"
 #include "Framework/InputRecord.h"
 #include "Framework/InputRecordWalker.h"
+#include "Framework/TimingInfo.h"
 #include "DataFormatsFDD/LookUpTable.h"
 #include "DataFormatsFDD/ChannelData.h"
 #include "DataFormatsFDD/Digit.h"
@@ -430,6 +431,8 @@ void DigitQcTask::startOfCycle()
 
 void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
+  mTFcreationTime = ctx.services().get<o2::framework::TimingInfo>().creation;
+
   mTfCounter++;
   auto channels = ctx.inputs().get<gsl::span<o2::fdd::ChannelData>>("channels");
   auto digits = ctx.inputs().get<gsl::span<o2::fdd::Digit>>("digits");
@@ -719,7 +722,11 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void DigitQcTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Info) << "endOfCycle" << ENDM;
+  // add TF creation time for further match with filling scheme in PP in case of offline running
+  ILOG(Debug, Support) << "adding last TF creation time: " << mTFcreationTime << ENDM;
+  getObjectsManager()->getMonitorObject(mHistBCvsTrg->GetName())->addOrUpdateMetadata("TFcreationTime", std::to_string(mTFcreationTime));
+
   // one has to set num. of entries manually because
   // default TH1Reductor gets only mean,stddev and entries (no integral)
   mHistCFDEff->Divide(mHistNumADC.get(), mHistNumCFD.get());

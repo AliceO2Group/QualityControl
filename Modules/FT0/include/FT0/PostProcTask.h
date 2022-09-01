@@ -57,6 +57,7 @@ class PostProcTask final : public quality_control::postprocessing::PostProcessin
   std::string mPathDigitQcTask;
   std::string mCycleDurationMoName;
   std::string mCcdbUrl;
+  std::string mTimestampSourceLhcIf;
   int mNumOrbitsInTF;
 
   std::map<o2::ft0::ChannelData::EEventDataBit, std::string> mMapChTrgNames;
