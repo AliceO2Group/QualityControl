@@ -226,6 +226,8 @@ void TracksQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mTrackDetRatio44Map22.get());
   mTrackDetRatio44Map22->GetXaxis()->SetTitle("Column");
   mTrackDetRatio44Map22->GetYaxis()->SetTitle("Line");
+  mTrackDetRatio44Map22->SetMinimum(0.);
+  mTrackDetRatio44Map22->SetMaximum(1.);
   mTrackDetRatio44Map22->SetOption("colz");
   mTrackDetRatio44Map22->SetStats(0);
 
