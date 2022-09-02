@@ -19,6 +19,8 @@
 #include <TH1.h>
 #include <TH2.h>
 #include <TProfile.h>
+#include <TProfile2D.h>
+#include "MUONCommon/MergeableTH2Ratio.h"
 
 #include <iostream>
 #include <fstream>
@@ -50,7 +52,8 @@ TracksQcTask::~TracksQcTask()
 
 void TracksQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize TracksQcTask" << ENDM;
+  // ILOG(Info, Support) << "initialize TracksQcTask" << ENDM;
+  // printf(" =================== > test  initialize Tracks \n");
 
   multTracksTot = 0;
   multTracks44Tot = 0;
@@ -169,80 +172,105 @@ void TracksQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mTrackRatio44->GetXaxis()->SetBinLabel(8, "MT21 NBend");
   mTrackRatio44->GetXaxis()->SetBinLabel(9, "MT22 NBend");
   mTrackRatio44->GetYaxis()->SetTitle("Track 44/all");
+  mTrackRatio44->SetMinimum(0.);
+  mTrackRatio44->SetMaximum(1.);
   mTrackRatio44->SetStats(0);
 
-  mTrackBDetRatio44 = std::make_shared<TH1F>("TrackBDetRatio44", "Bend Track 44/all vs DetId", MID_NDE, 0., MID_NDE);
+  mTrackBDetRatio44 = std::make_shared<TProfile>("TrackBDetRatio44", "Bend Track 44/all vs DetId", MID_NDE, 0., MID_NDE);
   mTrackBDetRatio44->GetXaxis()->SetTitle("DetId");
   mTrackBDetRatio44->GetYaxis()->SetTitle("Track 44/all");
+  mTrackBDetRatio44->SetMinimum(0.);
+  mTrackBDetRatio44->SetMaximum(1.);
   getObjectsManager()->startPublishing(mTrackBDetRatio44.get());
   mTrackBDetRatio44->SetStats(0);
 
-  mTrackNBDetRatio44 = std::make_shared<TH1F>("TrackNBDetRatio44", "Non-Bend Track 44/all vs DetId", MID_NDE, 0., MID_NDE);
+  mTrackNBDetRatio44 = std::make_shared<TProfile>("TrackNBDetRatio44", "Non-Bend Track 44/all vs DetId", MID_NDE, 0., MID_NDE);
   mTrackNBDetRatio44->GetXaxis()->SetTitle("DetId");
   mTrackNBDetRatio44->GetYaxis()->SetTitle("Track 44/all");
+  mTrackNBDetRatio44->SetMinimum(0.);
+  mTrackNBDetRatio44->SetMaximum(1.);
   getObjectsManager()->startPublishing(mTrackNBDetRatio44.get());
   mTrackNBDetRatio44->SetStats(0);
 
   Double_t xEdges[4] = { -7., -0.2, 0.2, 7. };
   Double_t yEdges[10] = { 0., 1., 2., 3., 4., 5., 6., 7., 8., 9. };
-  mTrackDetRatio44Map11 = std::make_shared<TH2F>("TrackDetRatio44Map11", "MT11 Detector Track 44/all Map", 3, xEdges, 9, yEdges);
+
+  mTrackDetRatio44Map11 = std::make_shared<TProfile2D>("TrackDetRatio44Map11", "MT11 Detector Track 44/all Map", 3, xEdges, 9, yEdges);
   getObjectsManager()->startPublishing(mTrackDetRatio44Map11.get());
   mTrackDetRatio44Map11->GetXaxis()->SetTitle("Column");
   mTrackDetRatio44Map11->GetYaxis()->SetTitle("Line");
+  mTrackDetRatio44Map11->SetMinimum(0.);
+  mTrackDetRatio44Map11->SetMaximum(1.);
   mTrackDetRatio44Map11->SetOption("colz");
   mTrackDetRatio44Map11->SetStats(0);
 
-  mTrackDetRatio44Map12 = std::make_shared<TH2F>("TrackDetRatio44Map12", "MT12 Detector Track 44/all Map", 3, xEdges, 9, yEdges);
+  mTrackDetRatio44Map12 = std::make_shared<TProfile2D>("TrackDetRatio44Map12", "MT12 Detector Track 44/all Map", 3, xEdges, 9, yEdges);
   getObjectsManager()->startPublishing(mTrackDetRatio44Map12.get());
   mTrackDetRatio44Map12->GetXaxis()->SetTitle("Column");
   mTrackDetRatio44Map12->GetYaxis()->SetTitle("Line");
+  mTrackDetRatio44Map12->SetMinimum(0.);
+  mTrackDetRatio44Map12->SetMaximum(1.);
   mTrackDetRatio44Map12->SetOption("colz");
   mTrackDetRatio44Map12->SetStats(0);
 
-  mTrackDetRatio44Map21 = std::make_shared<TH2F>("TrackDetRatio44Map21", "MT21 Detector Track 44/all Map", 3, xEdges, 9, yEdges);
+  mTrackDetRatio44Map21 = std::make_shared<TProfile2D>("TrackDetRatio44Map21", "MT21 Detector Track 44/all Map", 3, xEdges, 9, yEdges);
   getObjectsManager()->startPublishing(mTrackDetRatio44Map21.get());
   mTrackDetRatio44Map21->GetXaxis()->SetTitle("Column");
   mTrackDetRatio44Map21->GetYaxis()->SetTitle("Line");
+  mTrackDetRatio44Map21->SetMinimum(0.);
+  mTrackDetRatio44Map21->SetMaximum(1.);
   mTrackDetRatio44Map21->SetOption("colz");
   mTrackDetRatio44Map21->SetStats(0);
 
-  mTrackDetRatio44Map22 = std::make_shared<TH2F>("TrackDetRatio44Map22", "MT22 Detector Track 44/all Map", 3, xEdges, 9, yEdges);
+  mTrackDetRatio44Map22 = std::make_shared<TProfile2D>("TrackDetRatio44Map22", "MT22 Detector Track 44/all Map", 3, xEdges, 9, yEdges);
   getObjectsManager()->startPublishing(mTrackDetRatio44Map22.get());
   mTrackDetRatio44Map22->GetXaxis()->SetTitle("Column");
   mTrackDetRatio44Map22->GetYaxis()->SetTitle("Line");
+  mTrackDetRatio44Map22->SetMinimum(0.);
+  mTrackDetRatio44Map22->SetMaximum(1.);
   mTrackDetRatio44Map22->SetOption("colz");
   mTrackDetRatio44Map22->SetStats(0);
 
-  mTrackBLocRatio44 = std::make_shared<TH1F>("TrackBLocRatio44", "Bend Track 44/all vs LocId", MID_NLOC, 0., MID_NLOC);
+  mTrackBLocRatio44 = std::make_shared<TProfile>("TrackBLocRatio44", "Bend Track 44/all vs LocId", MID_NLOC, 0., MID_NLOC);
   mTrackBLocRatio44->GetXaxis()->SetTitle("LocId");
   mTrackBLocRatio44->GetYaxis()->SetTitle("Track 44/all");
+  mTrackBLocRatio44->SetMinimum(0.);
+  mTrackBLocRatio44->SetMaximum(1.);
   getObjectsManager()->startPublishing(mTrackBLocRatio44.get());
   mTrackBLocRatio44->SetStats(0);
 
-  mTrackNBLocRatio44 = std::make_shared<TH1F>("TrackNBLocRatio44", "Non-Bend Track 44/all vs LocId", MID_NLOC, 0., MID_NLOC);
+  mTrackNBLocRatio44 = std::make_shared<TProfile>("TrackNBLocRatio44", "Non-Bend Track 44/all vs LocId", MID_NLOC, 0., MID_NLOC);
   mTrackNBLocRatio44->GetXaxis()->SetTitle("DetId");
   mTrackNBLocRatio44->GetYaxis()->SetTitle("Track 44/all");
+  mTrackNBLocRatio44->SetMinimum(0.);
+  mTrackNBLocRatio44->SetMaximum(1.);
   getObjectsManager()->startPublishing(mTrackNBLocRatio44.get());
   mTrackNBLocRatio44->SetStats(0);
 
-  mTrackLocalBoardsRatio44Map = std::make_shared<TH2F>("TrackLocalBoardsRatio44Map", "Local boards Track 44/all Map", 14, -7, 7, 36, 0, 9);
+  mTrackLocalBoardsRatio44Map = std::make_shared<TProfile2D>("TrackLocalBoardsRatio44Map", "Local boards Track 44/all Map", 14, -7, 7, 36, 0, 9);
   getObjectsManager()->startPublishing(mTrackLocalBoardsRatio44Map.get());
   mTrackLocalBoardsRatio44Map->GetXaxis()->SetTitle("Column");
   mTrackLocalBoardsRatio44Map->GetYaxis()->SetTitle("Line");
+  mTrackLocalBoardsRatio44Map->SetMinimum(0.);
+  mTrackLocalBoardsRatio44Map->SetMaximum(1.);
   mTrackLocalBoardsRatio44Map->SetOption("colz");
   mTrackLocalBoardsRatio44Map->SetStats(0);
 
-  mTrackLocalBoardsBRatio44Map = std::make_shared<TH2F>("TrackLocalBoardsBRatio44Map", "Local boards Bend Track 44/all Map", 14, -7, 7, 36, 0, 9);
+  mTrackLocalBoardsBRatio44Map = std::make_shared<TProfile2D>("TrackLocalBoardsBRatio44Map", "Local boards Bend Track 44/all Map", 14, -7, 7, 36, 0, 9);
   getObjectsManager()->startPublishing(mTrackLocalBoardsBRatio44Map.get());
   mTrackLocalBoardsBRatio44Map->GetXaxis()->SetTitle("Column");
   mTrackLocalBoardsBRatio44Map->GetYaxis()->SetTitle("Line");
+  mTrackLocalBoardsBRatio44Map->SetMinimum(0.);
+  mTrackLocalBoardsBRatio44Map->SetMaximum(1.);
   mTrackLocalBoardsBRatio44Map->SetOption("colz");
   mTrackLocalBoardsBRatio44Map->SetStats(0);
 
-  mTrackLocalBoardsNBRatio44Map = std::make_shared<TH2F>("TrackLocalBoardsNBRatio44Map", "Local boards Non-Bend Track 44/all Map", 14, -7, 7, 36, 0, 9);
+  mTrackLocalBoardsNBRatio44Map = std::make_shared<TProfile2D>("TrackLocalBoardsNBRatio44Map", "Local boards Non-Bend Track 44/all Map", 14, -7, 7, 36, 0, 9);
   getObjectsManager()->startPublishing(mTrackLocalBoardsNBRatio44Map.get());
   mTrackLocalBoardsNBRatio44Map->GetXaxis()->SetTitle("Column");
   mTrackLocalBoardsNBRatio44Map->GetYaxis()->SetTitle("Line");
+  mTrackLocalBoardsNBRatio44Map->SetMinimum(0.);
+  mTrackLocalBoardsNBRatio44Map->SetMaximum(1.);
   mTrackLocalBoardsNBRatio44Map->SetOption("colz");
   mTrackLocalBoardsNBRatio44Map->SetStats(0);
 }
@@ -250,16 +278,21 @@ void TracksQcTask::startOfActivity(Activity& activity)
 {
   // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
   ILOG(Info, Support) << "startOfActivity " << activity.mId << ENDM;
+  // printf(" =================== > test startOfActivity Tracks \n");
 }
 
 void TracksQcTask::startOfCycle()
 {
   // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  // ILOG(Info, Support) << "startOfCycle" << ENDM;
+  // printf(" =================== > test startOfCycle Tracks \n");
 }
 
 void TracksQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
+  // ILOG(Info, Support) << "monitorData" << ENDM;
+  // printf(" =================== > test monitorData Tracks\n");
+
   auto tracks = ctx.inputs().get<gsl::span<o2::mid::Track>>("tracks");
   auto rofs = ctx.inputs().get<gsl::span<o2::mid::ROFRecord>>("trackrofs");
 
@@ -291,7 +324,6 @@ void TracksQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       int rpcLine = o2::mid::detparams::getRPCLine(track.getFiredDeId());
       int colId = LocColMap[track.getFiredLocalBoard()];
 
-      // std::cout << "  =>>  " << track << std::endl;
       mTrackMapXY->Fill(track.getPositionX(), track.getPositionY(), 1);
       mTrackDevX->Fill(track.getDirectionX() * DeltaZ);
       mTrackDevY->Fill(track.getDirectionY() * DeltaZ);
@@ -340,112 +372,165 @@ void TracksQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       uint8_t HitMap = track.getHitMap();
       float BDetEff = 0.;
       float NBDetEff = 0.;
+      float DetEff = 0.;
       if (EffFlag > 0) {
-        if (HitMap == 0xFF)
-          multTracks44Tot++;
         multTracksTot++;
-        uint8_t HitMapB = HitMap & 0xF;
-        if (HitMapB == 0xF)
-          multTracksBend44++;
-        uint8_t HitMapNB = (HitMap >> 4) & 0xF;
-        if (HitMapNB == 0xF)
-          multTracksNBend44++;
+        if (HitMap == 0xFF)
+          mTrackRatio44->Fill(0.5, 1.); // multTracks44Tot++;
+        else
+          mTrackRatio44->Fill(0.5, 0.);
 
         // track.isFiredChamber(i,j) :: i=0->3 (MT11->MT22) ; j=0->1 (BP->NBP)
+        uint8_t HitMapB = HitMap & 0xF;
         if (track.isFiredChamber(0, 0))
-          multTraksB34MT11++;
-        else if (track.isFiredChamber(1, 0))
-          multTraksB34MT12++;
-        else if (track.isFiredChamber(2, 0))
-          multTraksB34MT21++;
-        else if (track.isFiredChamber(3, 0))
-          multTraksB34MT22++;
+          mTrackRatio44->Fill(1.5, 1.);
+        else
+          mTrackRatio44->Fill(1.5, 0.);
+        if (track.isFiredChamber(1, 0))
+          mTrackRatio44->Fill(2.5, 1.);
+        else
+          mTrackRatio44->Fill(2.5, 0.);
+        if (track.isFiredChamber(2, 0))
+          mTrackRatio44->Fill(3.5, 1.);
+        else
+          mTrackRatio44->Fill(3.5, 0.);
+        if (track.isFiredChamber(3, 0))
+          mTrackRatio44->Fill(4.5, 1.);
+        else
+          mTrackRatio44->Fill(4.5, 0.);
+
+        uint8_t HitMapNB = (HitMap >> 4) & 0xF;
         if (track.isFiredChamber(0, 1))
-          multTraksNB34MT11++;
-        else if (track.isFiredChamber(1, 1))
-          multTraksNB34MT12++;
-        else if (track.isFiredChamber(2, 1))
-          multTraksNB34MT21++;
-        else if (track.isFiredChamber(3, 1))
-          multTraksNB34MT22++;
+          mTrackRatio44->Fill(5.5, 1.);
+        else
+          mTrackRatio44->Fill(5.5, 0.);
+        if (track.isFiredChamber(1, 1))
+          mTrackRatio44->Fill(6.5, 1.);
+        else
+          mTrackRatio44->Fill(6.5, 0.);
+        if (track.isFiredChamber(2, 1))
+          mTrackRatio44->Fill(7.5, 1.);
+        else
+          mTrackRatio44->Fill(7.5, 0.);
+        if (track.isFiredChamber(3, 1))
+          mTrackRatio44->Fill(8.5, 1.);
+        else
+          mTrackRatio44->Fill(8.5, 0.);
 
         if (EffFlag > 1) { // RPCeff
           int DetId0 = track.getFiredDeId();
           int chamb = o2::mid::detparams::getChamber(track.getFiredDeId());
-          // if (HitMap != 0xFF) printf("DetId0 = %i, chamb = %i , HitMap = %X   \n",DetId0,chamb,HitMap);
 
           if (chamb == 1)
             DetId0 = DetId0 - 9; // if MT11 not fired
 
-          int mask = 1;
+          // if (DetId0==0) printf("************  DetId0 = %i, chamb = %i , HitMap = %X   \n",DetId0,chamb,HitMap);
           for (int i = 0; i < 4; i++) {
-            auto& DetTrack = DetTracks[DetId0 + 9 * i]; // DetTrack: {Bnb34,Bnb44,NBnb34,NBnb44} //vect
-            if ((HitMapB & mask) != 0)
-              DetTrack[1]++; // 4 planes
+
+            if (track.isFiredChamber(i, 0))
+              mTrackBDetRatio44->Fill(DetId0 + 9 * i, 1.); // fired
             else
-              DetTrack[0]++;
-            if ((HitMapNB & mask) != 0)
-              DetTrack[3]++; // 4 planes
+              mTrackBDetRatio44->Fill(DetId0 + 9 * i, 0.);
+
+            if (track.isFiredChamber(i, 1))
+              mTrackNBDetRatio44->SetBinContent(DetId0 + 9 * i, 1.); // fired
             else
-              DetTrack[2]++;
+              mTrackNBDetRatio44->Fill(DetId0 + 9 * i, 0.);
 
-            // if ((i==0)&&(DetId0<10))printf("\n mask = %X , HitMapB = %X :: Bnb34 = %i, Bnb44 = %i \n",mask,HitMapB,DetTrack[0],DetTrack[1]);
-
-            mask <<= 1;
-            DetTracks[DetId0 + 9 * i] = DetTrack; // map of vect
-            if ((DetTrack[0] + DetTrack[1]) > 0)
-              BDetEff = float(DetTrack[1]) / float(DetTrack[0] + DetTrack[1]);
-            // if ((i==0)&&(DetId0<10))printf(" detId = %i ====>  BDetEff = %f \n",DetId0+9*i, BDetEff);
-
-            if ((DetTrack[2] + DetTrack[3]) > 0)
-              NBDetEff = float(DetTrack[3]) / float(DetTrack[2] + DetTrack[3]);
-
-            mTrackBDetRatio44->SetBinContent(DetId0 + 9 * i, BDetEff);
-            mTrackNBDetRatio44->SetBinContent(DetId0 + 9 * i, NBDetEff);
-
-            if (i == 0) {
-              if (isRightSide == 0)
-                mTrackDetRatio44Map11->SetBinContent(1, rpcLine + 1, BDetEff * NBDetEff);
-              else
-                mTrackDetRatio44Map11->SetBinContent(3, rpcLine + 1, BDetEff * NBDetEff);
-            } else if (i == 1) {
-              if (isRightSide == 0)
-                mTrackDetRatio44Map12->SetBinContent(1, rpcLine + 1, BDetEff * NBDetEff);
-              else
-                mTrackDetRatio44Map12->SetBinContent(3, rpcLine + 1, BDetEff * NBDetEff);
-            } else if (i == 2) {
-              if (isRightSide == 0)
-                mTrackDetRatio44Map21->SetBinContent(1, rpcLine + 1, BDetEff * NBDetEff);
-              else
-                mTrackDetRatio44Map21->SetBinContent(3, rpcLine + 1, BDetEff * NBDetEff);
-            } else if (i == 3) {
-              if (isRightSide == 0)
-                mTrackDetRatio44Map22->SetBinContent(1, rpcLine + 1, BDetEff * NBDetEff);
-              else
-                mTrackDetRatio44Map22->SetBinContent(3, rpcLine + 1, BDetEff * NBDetEff);
+            if (i == 0) { // MT11
+              if (isRightSide == 0) {
+                if (track.isFiredChamber(i, 0))
+                  mTrackDetRatio44Map11->Fill(-1, rpcLine, 1.); // Fired
+                else
+                  mTrackDetRatio44Map11->Fill(-1, rpcLine, 0.);
+                if (track.isFiredChamber(i, 1))
+                  mTrackDetRatio44Map11->Fill(-1, rpcLine, 1.); // Fired
+                else
+                  mTrackDetRatio44Map11->Fill(-1, rpcLine, 0.);
+              } else { // LeftSide
+                if (track.isFiredChamber(i, 0))
+                  mTrackDetRatio44Map11->Fill(1, rpcLine, 1.); // Fired
+                else
+                  mTrackDetRatio44Map11->Fill(1, rpcLine, 0.);
+                if (track.isFiredChamber(i, 1))
+                  mTrackDetRatio44Map11->Fill(1, rpcLine, 1.); // Fired
+                else
+                  mTrackDetRatio44Map11->Fill(1, rpcLine, 0.);
+              }
+            } else if (i == 1) { // MT12
+              if (isRightSide == 0) {
+                if (track.isFiredChamber(i, 0))
+                  mTrackDetRatio44Map12->Fill(-1, rpcLine, 1.); // Fired
+                else
+                  mTrackDetRatio44Map12->Fill(-1, rpcLine, 0.);
+                if (track.isFiredChamber(i, 1))
+                  mTrackDetRatio44Map12->Fill(-1, rpcLine, 1.); // Fired
+                else
+                  mTrackDetRatio44Map12->Fill(-1, rpcLine, 0.);
+              } else { // LeftSide
+                if (track.isFiredChamber(i, 0))
+                  mTrackDetRatio44Map12->Fill(1, rpcLine, 1.); // Fired
+                else
+                  mTrackDetRatio44Map12->Fill(1, rpcLine, 0.);
+                if (track.isFiredChamber(i, 1))
+                  mTrackDetRatio44Map12->Fill(1, rpcLine, 1.); // Fired
+                else
+                  mTrackDetRatio44Map12->Fill(1, rpcLine, 0.);
+              }
+            } else if (i == 2) { // MT21
+              if (isRightSide == 0) {
+                if (track.isFiredChamber(i, 0))
+                  mTrackDetRatio44Map21->Fill(-1, rpcLine, 1.); // Fired
+                else
+                  mTrackDetRatio44Map21->Fill(-1, rpcLine, 0.);
+                if (track.isFiredChamber(i, 1))
+                  mTrackDetRatio44Map21->Fill(-1, rpcLine, 1.); // Fired
+                else
+                  mTrackDetRatio44Map21->Fill(-1, rpcLine, 0.);
+              } else { // LeftSide
+                if (track.isFiredChamber(i, 0))
+                  mTrackDetRatio44Map21->Fill(1, rpcLine, 1.); // Fired
+                else
+                  mTrackDetRatio44Map21->Fill(1, rpcLine, 0.);
+                if (track.isFiredChamber(i, 1))
+                  mTrackDetRatio44Map21->Fill(1, rpcLine, 1.); // Fired
+                else
+                  mTrackDetRatio44Map21->Fill(1, rpcLine, 0.);
+              }
+            } else if (i == 3) { // MT22
+              if (isRightSide == 0) {
+                if (track.isFiredChamber(i, 0))
+                  mTrackDetRatio44Map22->Fill(-1, rpcLine, 1.); // Fired
+                else
+                  mTrackDetRatio44Map22->Fill(-1, rpcLine, 0.);
+                if (track.isFiredChamber(i, 1))
+                  mTrackDetRatio44Map22->Fill(-1, rpcLine, 1.); // Fired
+                else
+                  mTrackDetRatio44Map22->Fill(-1, rpcLine, 0.);
+              } else { // LeftSide
+                if (track.isFiredChamber(i, 0))
+                  mTrackDetRatio44Map22->Fill(1, rpcLine, 1.); // Fired
+                else
+                  mTrackDetRatio44Map22->Fill(1, rpcLine, 0.);
+                if (track.isFiredChamber(i, 1))
+                  mTrackDetRatio44Map22->Fill(1, rpcLine, 1.); // Fired
+                else
+                  mTrackDetRatio44Map22->Fill(1, rpcLine, 0.);
+              }
             }
           }
 
-          if (EffFlag > 2) {                                        // LocBoardeff
-            auto& LocTrack = LocTracks[track.getFiredLocalBoard()]; // DetTrack: {Bnb34,Bnb44,NBnb34,NBnb44} //vect
-            if (HitMapB == 0xF)
-              LocTrack[1]++;
-            else
-              LocTrack[0]++;
-            if (HitMapNB == 0xF)
-              LocTrack[3]++;
-            else
-              LocTrack[2]++;
-            // LocTracks[track.getFiredLocalBoard()] = LocTrack; // map of vect
+          if (EffFlag > 2) { // LocBoardeff
 
-            float BLocEff = 0.;
-            float NBLocEff = 0.;
-            if ((LocTrack[0] + LocTrack[1]) > 0)
-              BLocEff = float(LocTrack[1]) / float(LocTrack[0] + LocTrack[1]);
-            if ((LocTrack[2] + LocTrack[3]) > 0)
-              NBLocEff = float(LocTrack[3]) / float(LocTrack[2] + LocTrack[3]);
-            mTrackBLocRatio44->SetBinContent(track.getFiredLocalBoard() + 1, BLocEff);
-            mTrackNBLocRatio44->SetBinContent(track.getFiredLocalBoard() + 1, NBLocEff);
+            if (HitMapB == 0xF)
+              mTrackBLocRatio44->Fill(track.getFiredLocalBoard(), 1.);
+            else
+              mTrackBLocRatio44->Fill(track.getFiredLocalBoard(), 0.);
+
+            if (HitMapNB == 0xF)
+              mTrackNBLocRatio44->Fill(track.getFiredLocalBoard(), 1.);
+            else
+              mTrackNBLocRatio44->Fill(track.getFiredLocalBoard(), 0.);
 
             //// Local Boards Display::
 
@@ -457,67 +542,63 @@ void TracksQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
             for (int board = mMapping.getFirstBoardBP(colId, deIndex), lastBoard = mMapping.getLastBoardBP(colId, deIndex); board <= lastBoard; board++) {
               // These are the existing bend boards for this column Id (board = n°board in the column) + 1 (for non-bend)
+              int Fired = 0;
+              int BFired = 0;
+              int NBFired = 0;
               if (mMapping.getBoardId(board, colId, deIndex) == track.getFiredLocalBoard()) {
-                double linePos0 = rpcLine;
-                linePos0 = rpcLine + 0.25 * board;
-                if ((nZoneHistoX == 2) && (board == 1))
-                  linePos0 += 0.25;
-                for (int ib = 0; ib < nZoneHistoX; ib++) {
-                  double linePos = linePos0 + (0.25 * ib);
-                  int lineBin = TMath::Floor(linePos * 36 / 9) + 1;
-                  if (isRightSide) {
-                    int colBin = colId + 8;
-                    mTrackLocalBoardsRatio44Map->SetBinContent(colBin, lineBin, BLocEff * NBLocEff);
-                    mTrackLocalBoardsBRatio44Map->SetBinContent(colBin, lineBin, BLocEff);
-                    mTrackLocalBoardsNBRatio44Map->SetBinContent(colBin, lineBin, NBLocEff);
-                  } else {
-                    int colBin = -colId + 7;
-                    mTrackLocalBoardsRatio44Map->SetBinContent(colBin, lineBin, BLocEff * NBLocEff);
-                    mTrackLocalBoardsBRatio44Map->SetBinContent(colBin, lineBin, BLocEff);
-                    mTrackLocalBoardsNBRatio44Map->SetBinContent(colBin, lineBin, NBLocEff);
-                  }
-                } // board in line loop
-              }   // board fired
-            }     // board loop
-          }       //(EffFlag>2)
-        }         //(EffFlag>1)
-      }           // Efficiency part (EffFlag>0)
-    }             // tracks in ROF
+                // printf(" Loc %i ====> Fired ; col %i, rpcLine %i nZoneX %i\n", mMapping.getBoardId(board, colId, deIndex), colId, rpcLine, nZoneHistoX);
+                if (HitMap == 0xFF)
+                  Fired = 1;
+                if (HitMapB == 0xF)
+                  BFired = 1;
+                if (HitMapNB == 0xF)
+                  NBFired = 1;
+              }
+              double linePos0 = rpcLine;
+              linePos0 = rpcLine + 0.25 * board;
+              if ((nZoneHistoX == 2) && (board == 1))
+                linePos0 += 0.25;
+              for (int ib = 0; ib < nZoneHistoX; ib++) {
+                double linePos = linePos0 + (0.25 * ib);
+                // int lineBin = TMath::Floor(linePos * 36 / 9) + 1;
+                if (isRightSide == 1) {
+                  // int colBin = colId + 8;
+                  mTrackLocalBoardsRatio44Map->Fill(colId + 0.5, linePos, Fired);
+                  mTrackLocalBoardsBRatio44Map->Fill(colId + 0.5, linePos, BFired);
+                  mTrackLocalBoardsNBRatio44Map->Fill(colId + 0.5, linePos, NBFired);
+                  // printf(" Loc %i ====> right  Fired = %i B: %i NB: %i \n", mMapping.getBoardId(board, colId, deIndex), Fired, BFired, NBFired);
+                  // printf("        ====> ib %i:  col %i, rpcLine %f \n",ib, colId, linePos);
+                } else {
+                  // int colBin = -colId + 7;
+                  mTrackLocalBoardsRatio44Map->Fill(-colId - 0.5, linePos, Fired);
+                  mTrackLocalBoardsBRatio44Map->Fill(-colId - 0.5, linePos, BFired);
+                  mTrackLocalBoardsNBRatio44Map->Fill(-colId - 0.5, linePos, NBFired);
+                  // printf(" Loc %i ====> left Fired = %i B: %i NB: %i \n", mMapping.getBoardId(board, colId, deIndex), Fired, BFired, NBFired);
+                  // printf("        ====> ib %i:  col %i, rpcLine %f \n",ib , colId, linePos);
+                }
+              } // board in line loop
+            }   // board loop
+          }     //(EffFlag>2)
+        }       //(EffFlag>1)
+      }         // Efficiency part (EffFlag>0)
+    }           // tracks in ROF
     mMultTracks->Fill(multTracks);
 
-    /// Efficiency part
-    if (multTracksTot > 0) {
-      globEff = float(multTracks44Tot) / float(multTracksTot);
-      // mTrackRatio44->SetBinContent(1, float(multTracks44Tot) / float(multTracksTot));
-      mTrackRatio44->Fill(0., float(multTracks44Tot) / float(multTracksTot));
-      globBendEff = float(multTracksBend44) / float(multTracksTot);
-      globNBendEff = float(multTracksNBend44) / float(multTracksTot);
-      if (multTracksBend44 > 0) {
-        mTrackRatio44->Fill(1, float(multTracksBend44) / float(multTracksBend44 + multTraksB34MT11));
-        mTrackRatio44->Fill(2, float(multTracksBend44) / float(multTracksBend44 + multTraksB34MT12));
-        mTrackRatio44->Fill(3, float(multTracksBend44) / float(multTracksBend44 + multTraksB34MT21));
-        mTrackRatio44->Fill(4, float(multTracksBend44) / float(multTracksBend44 + multTraksB34MT22));
-      }
-      if (multTracksNBend44 > 0) {
-        mTrackRatio44->Fill(5, float(multTracksNBend44) / float(multTracksNBend44 + multTraksNB34MT11));
-        mTrackRatio44->Fill(6, float(multTracksNBend44) / float(multTracksNBend44 + multTraksNB34MT12));
-        mTrackRatio44->Fill(7, float(multTracksNBend44) / float(multTracksNBend44 + multTraksNB34MT21));
-        mTrackRatio44->Fill(8, float(multTracksNBend44) / float(multTracksNBend44 + multTraksNB34MT22));
-      }
-    }
   } //  ROFRecords //
 }
 
 void TracksQcTask::endOfCycle()
 {
   // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  // ILOG(Info, Support) << "endOfCycle" << ENDM;
+  // printf(" =================== > test endOfCycle Tracks \n");
 }
 
 void TracksQcTask::endOfActivity(Activity& /*activity*/)
 {
   // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
   ILOG(Info, Support) << "endOfActivity" << ENDM;
+  // printf(" =================== > test endOfActivity Tracks \n");
 }
 
 void TracksQcTask::reset()
@@ -527,6 +608,8 @@ void TracksQcTask::reset()
   // clean all the monitor objects here
 
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  // printf(" =================== > test reset Tracks \n");
+
   mTrackMapXY->Reset();
   mTrackDevX->Reset();
   mTrackDevY->Reset();
@@ -547,6 +630,7 @@ void TracksQcTask::reset()
   mTrackLocalBoardsRatio44Map->Reset();
   mTrackLocalBoardsBRatio44Map->Reset();
   mTrackLocalBoardsNBRatio44Map->Reset();
+
   mTrackDetRatio44Map11->Reset();
   mTrackDetRatio44Map12->Reset();
   mTrackDetRatio44Map21->Reset();

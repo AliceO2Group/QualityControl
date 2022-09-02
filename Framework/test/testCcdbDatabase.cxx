@@ -31,6 +31,7 @@
 #include "QualityControl/ObjectMetadataKeys.h"
 #include <DataFormatsQualityControl/TimeRangeFlagCollection.h>
 #include <TROOT.h>
+#include <CCDB/CcdbApi.h>
 
 namespace utf = boost::unit_test;
 

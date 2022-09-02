@@ -17,6 +17,8 @@
 #ifndef QC_MODULE_FDD_FDDDIGITQCTASKLASER_H
 #define QC_MODULE_FDD_FDDDIGITQCTASKLASER_H
 
+#include "CommonConstants/LHCConstants.h"
+
 #include <Framework/InputRecord.h>
 
 #include "QualityControl/QcInfoLogger.h"
@@ -55,7 +57,7 @@ class DigitQcTaskLaser final : public TaskInterface
   void reset() override;
   constexpr static std::size_t sNCHANNELS_PM = 19;
   constexpr static std::size_t sOrbitsPerTF = 256;
-  constexpr static std::size_t sBCperOrbit = 3564;
+  constexpr static std::size_t sBCperOrbit = o2::constants::lhc::LHCMaxBunches;
 
  private:
   // three ways of computing cycle duration:

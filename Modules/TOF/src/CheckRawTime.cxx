@@ -19,6 +19,7 @@
 #include "TOF/CheckRawTime.h"
 #include "TOF/Utils.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/MonitorObject.h"
 #include <DataFormatsQualityControl/FlagReasons.h>
 
 using namespace std;

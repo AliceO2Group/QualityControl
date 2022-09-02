@@ -17,24 +17,29 @@
 #ifndef QC_MODULE_FDD_FDDDIGITQCTASK_H
 #define QC_MODULE_FDD_FDDDIGITQCTASK_H
 
-#include <Framework/InputRecord.h>
-#include "QualityControl/QcInfoLogger.h"
-#include "DataFormatsFDD/Digit.h"
-#include "DataFormatsFDD/ChannelData.h"
-#include "QualityControl/TaskInterface.h"
 #include <memory>
 #include <regex>
 #include <type_traits>
+#include <set>
+#include <map>
+#include <vector>
+#include <array>
+#include <boost/algorithm/string.hpp>
+
 #include "TH1.h"
 #include "TH2.h"
 #include "TList.h"
 #include "FDD/Helper.h"
 #include "Rtypes.h"
 
-#include <set>
-#include <map>
-#include <vector>
-#include <array>
+#include "CommonConstants/LHCConstants.h"
+
+#include <Framework/InputRecord.h>
+#include "QualityControl/QcInfoLogger.h"
+#include "DataFormatsFDD/Digit.h"
+#include "DataFormatsFDD/ChannelData.h"
+#include "QualityControl/TaskInterface.h"
+#include "FDDBase/Constants.h"
 
 using namespace o2::quality_control::core;
 
@@ -60,10 +65,13 @@ class DigitQcTask final : public TaskInterface
   void endOfCycle() override;
   void endOfActivity(Activity& activity) override;
   void reset() override;
-  constexpr static std::size_t sNCHANNELS_PM = 20; // 16(for PM) + 12 (just in case for possible PM-LCS)
+  constexpr static std::size_t sNCHANNELS_PM = 20;
+  constexpr static std::size_t sNCHANNELS_A = 8;
+  constexpr static std::size_t sNCHANNELS_C = 8;
   constexpr static std::size_t sOrbitsPerTF = 256;
-  constexpr static std::size_t sBCperOrbit = 3564;
-  const float mCFDChannel2NS = 0.01302; // CFD channel width in ns
+  constexpr static std::size_t sBCperOrbit = o2::constants::lhc::LHCMaxBunches;
+
+  constexpr static float sCFDChannel2NS = o2::fdd::timePerTDC; // CFD channel width in ns
 
  private:
   // three ways of computing cycle duration:
@@ -77,10 +85,11 @@ class DigitQcTask final : public TaskInterface
   int mTfCounter = 0;
   double mTimeSum = 0.;
 
+  long mTFcreationTime = 0;
+
   template <typename Param_t,
             typename = typename std::enable_if<std::is_floating_point<Param_t>::value ||
-                                               std::is_same<std::string, Param_t>::value ||
-                                               (std::is_integral<Param_t>::value && !std::is_same<bool, Param_t>::value)>::type>
+                                               std::is_same<std::string, Param_t>::value || (std::is_integral<Param_t>::value && !std::is_same<bool, Param_t>::value)>::type>
   auto parseParameters(const std::string& param, const std::string& del)
   {
     std::regex reg(del);
@@ -98,25 +107,61 @@ class DigitQcTask final : public TaskInterface
     return vecResult;
   }
 
+  void rebinFromConfig();
+  unsigned int getModeParameter(std::string, unsigned int, std::map<unsigned int, std::string>);
+  int getNumericalParameter(std::string, int);
+
   TList* mListHistGarbage;
   std::set<unsigned int> mSetAllowedChIDs;
+  std::set<unsigned int> mSetAllowedChIDsAmpVsTime;
   std::array<o2::InteractionRecord, sNCHANNELS_PM> mStateLastIR2Ch;
-  ///
   std::array<uint8_t, sNCHANNELS_PM> mChID2PMhash; // map chID->hashed PM value
   uint8_t mTCMhash;                                // hash value for TCM, and bin position in hist
-  ///
-  std::map<int, std::string> mMapChTrgNames;
   std::map<int, std::string> mMapDigitTrgNames;
+  std::map<o2::fdd::ChannelData::EEventDataBit, std::string> mMapChTrgNames;
+  std::unique_ptr<TH1F> mHistNumADC;
+  std::unique_ptr<TH1F> mHistNumCFD;
+
+  std::map<int, bool> mMapTrgSoftware;
+  enum TrgModeSide { kAplusC,
+                     kAandC,
+                     kA,
+                     kC
+  };
+  enum TrgModeThresholdVar { kAmpl,
+                             kNchannels
+  };
+  enum TrgComparisonResult { kSWonly,
+                             kTCMonly,
+                             kNone,
+                             kBoth
+  };
+  // trigger parameters:
+  // - modes
+  unsigned int mTrgModeThresholdVar;
+  unsigned int mTrgModeSide;
+  // - time window for vertex trigger
+  int mTrgThresholdTimeLow;
+  int mTrgThresholdTimeHigh;
+  // - parameters for (Semi)Central triggers
+  //   same parameters re-used for both Ampl and Nchannels thresholds
+  int mTrgThresholdCenA;
+  int mTrgThresholdCenC;
+  int mTrgThresholdCenSum;
+  int mTrgThresholdSCenA;
+  int mTrgThresholdSCenC;
+  int mTrgThresholdSCenSum;
 
   // Object which will be published
   std::unique_ptr<TH2F> mHist2CorrTCMchAndPMch;
+  std::map<unsigned int, TH1F*> mMapHistAmp1DCoincidence;
+  std::map<std::string, TH2F*> mMapPmModuleBcOrbit;
   std::unique_ptr<TH2F> mHistAmp2Ch;
   std::unique_ptr<TH2F> mHistTime2Ch;
   std::unique_ptr<TH2F> mHistEventDensity2Ch;
+  std::unique_ptr<TH2F> mHistChDataBits;
   std::unique_ptr<TH2F> mHistOrbit2BC;
   std::unique_ptr<TH1F> mHistBC;
-  std::unique_ptr<TH2F> mHistChDataBits;
-  std::unique_ptr<TH1F> mHistTriggers;
   std::unique_ptr<TH1F> mHistNchA;
   std::unique_ptr<TH1F> mHistNchC;
   std::unique_ptr<TH1F> mHistSumAmpA;
@@ -124,29 +169,30 @@ class DigitQcTask final : public TaskInterface
   std::unique_ptr<TH1F> mHistAverageTimeA;
   std::unique_ptr<TH1F> mHistAverageTimeC;
   std::unique_ptr<TH1F> mHistChannelID;
-
+  std::unique_ptr<TH1F> mHistCFDEff;
+  std::unique_ptr<TH2F> mHistTimeSum2Diff;
+  std::unique_ptr<TH2F> mHistTriggersCorrelation;
   std::unique_ptr<TH1D> mHistCycleDuration;
   std::unique_ptr<TH1D> mHistCycleDurationNTF;
   std::unique_ptr<TH1D> mHistCycleDurationRange;
-
   std::map<unsigned int, TH1F*> mMapHistAmp1D;
-  std::map<unsigned int, TH1F*> mMapHistAmp1DCoincidence;
   std::map<unsigned int, TH1F*> mMapHistTime1D;
   std::map<unsigned int, TH1F*> mMapHistPMbits;
   std::map<unsigned int, TH2F*> mMapHistAmpVsTime;
-  std::map<std::string, TH2F*> mMapPmModuleBcOrbit;
-  /// ak
   std::unique_ptr<TH2F> mHistBCvsTrg;
   std::unique_ptr<TH2F> mHistBCvsFEEmodules;
   std::unique_ptr<TH2F> mHistOrbitVsTrg;
   std::unique_ptr<TH2F> mHistOrbitVsFEEmodules;
+  std::unique_ptr<TH1F> mHistTriggersSw;
+  std::unique_ptr<TH2F> mHistTriggersSoftwareVsTCM;
 
   // Hashed maps
-  const std::array<std::vector<double>, 256> mHashedBitBinPos;                        // map with bit position for 1 byte trg signal, for 1 Dim hists;
-  const std::array<std::vector<std::pair<double, double>>, 256> mHashedPairBitBinPos; // map with paired bit position for 1 byte trg signal, for 1 Dim hists;
-  static std::array<std::vector<double>, 256> fillHashedBitBinPos()
+  static const size_t mapSize = 256;
+  const std::array<std::vector<double>, mapSize> mHashedBitBinPos;                        // map with bit position for 1 byte trg signal, for 1 Dim hists;
+  const std::array<std::vector<std::pair<double, double>>, mapSize> mHashedPairBitBinPos; // map with paired bit position for 1 byte trg signal, for 1 Dim hists;
+  static std::array<std::vector<double>, mapSize> fillHashedBitBinPos()
   {
-    std::array<std::vector<double>, 256> hashedBitBinPos{};
+    std::array<std::vector<double>, mapSize> hashedBitBinPos{};
     for (int iByteValue = 0; iByteValue < hashedBitBinPos.size(); iByteValue++) {
       auto& vec = hashedBitBinPos[iByteValue];
       for (int iBit = 0; iBit < 8; iBit++) {
@@ -157,10 +203,10 @@ class DigitQcTask final : public TaskInterface
     }
     return hashedBitBinPos;
   }
-  static std::array<std::vector<std::pair<double, double>>, 256> fillHashedPairBitBinPos()
+  static std::array<std::vector<std::pair<double, double>>, mapSize> fillHashedPairBitBinPos()
   {
-    const std::array<std::vector<double>, 256> hashedBitBinPos = fillHashedBitBinPos();
-    std::array<std::vector<std::pair<double, double>>, 256> hashedPairBitBinPos{};
+    const std::array<std::vector<double>, mapSize> hashedBitBinPos = fillHashedBitBinPos();
+    std::array<std::vector<std::pair<double, double>>, mapSize> hashedPairBitBinPos{};
     for (int iByteValue = 0; iByteValue < hashedBitBinPos.size(); iByteValue++) {
       const auto& vecBits = hashedBitBinPos[iByteValue];
       auto& vecPairBits = hashedPairBitBinPos[iByteValue];
@@ -172,7 +218,6 @@ class DigitQcTask final : public TaskInterface
     }
     return hashedPairBitBinPos;
   }
-  /// ak
 };
 
 } // namespace o2::quality_control_modules::fdd

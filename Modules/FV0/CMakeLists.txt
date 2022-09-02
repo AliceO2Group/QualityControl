@@ -5,11 +5,10 @@ add_library(O2QcFV0)
 target_sources(O2QcFV0 PRIVATE src/TH1ReductorLaser.cxx
                                src/DigitQcTaskLaser.cxx
                                src/DigitQcTask.cxx
+                               src/GenericCheck.cxx
                                src/CFDEffCheck.cxx
-                               src/BasicPPTask.cxx
-                               src/OutOfBunchCollTask.cxx
-                               src/OutOfBunchCollCheck.cxx
-                               src/TriggerQcTask.cxx)
+                               src/PostProcTask.cxx
+                               src/OutOfBunchCollCheck.cxx)
 
 target_include_directories(
   O2QcFV0
@@ -32,11 +31,10 @@ add_root_dictionary(O2QcFV0
   HEADERS include/FV0/TH1ReductorLaser.h
           include/FV0/DigitQcTaskLaser.h
           include/FV0/DigitQcTask.h
-          include/FV0/BasicPPTask.h
-          include/FV0/OutOfBunchCollTask.h
+          include/FV0/PostProcTask.h
           include/FV0/CFDEffCheck.h
-          include/FV0/TriggerQcTask.h
           include/FV0/OutOfBunchCollCheck.h
+          include/FV0/GenericCheck.h
   LINKDEF include/FV0/LinkDef.h
   BASENAME O2QcFV0)
 
@@ -45,7 +43,7 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/FV0
 
 # ---- Test(s) ----
 
-set(TEST_SRCS test/testQcFV0.cxx)
+#set(TEST_SRCS test/testQcFV0.cxx) # uncomment to reenable the test which was empty
 
 foreach(test ${TEST_SRCS})
   get_filename_component(test_name ${test} NAME)

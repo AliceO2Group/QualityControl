@@ -50,6 +50,7 @@ ITSFeeTask::~ITSFeeTask()
   delete mLaneStatusSummaryML;
   delete mLaneStatusSummaryOL;
   delete mLaneStatusSummaryGlobal;
+  delete mRDHSummary;
   for (int i = 0; i < NFlags; i++) {
     delete mLaneStatus[i];
   }
@@ -134,7 +135,7 @@ void ITSFeeTask::setAxisTitle(TH1* object, const char* xTitle, const char* yTitl
   object->GetYaxis()->SetTitle(yTitle);
 }
 
-void ITSFeeTask::drawLayerName(TH2I* histo2D)
+void ITSFeeTask::drawLayerName(TH2* histo2D)
 {
   TLatex* t[NLayer];
   double minTextPosX[NLayer] = { 1, 42, 92, 150, 205, 275, 370 };
@@ -280,6 +281,7 @@ void ITSFeeTask::setPlotsFormat()
   if (mPayloadSize) {
     setAxisTitle(mPayloadSize, "FEEID", "Avg. Payload size");
     mPayloadSize->SetStats(0);
+    drawLayerName(mPayloadSize);
   }
 
   if (mIdCheck) {
@@ -310,6 +312,10 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   rawDataFilter.push_back(InputSpec{ "", ConcreteDataTypeMatcher{ "ITS", "RAWDATA" }, Lifetime::Timeframe });
   DPLRawParser parser(ctx.inputs(), rawDataFilter);
+
+  if (mEnableAutoreco) { // reset plots if lane autorecovery is enabled in DCS
+    resetLanePlotsAndCounters();
+  }
 
   for (auto it = parser.begin(), end = parser.end(); it != end; ++it) {
     auto const* rdh = it.get_if<o2::header::RAWDataHeaderV6>();
@@ -426,6 +432,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
             } else {
               counterSummary[3][iflag]++;
             }
+            layerSummary[ilayer][iflag]++;
           }
         }
         mLaneStatusOverview[iflag]->SetBinContent(istave + 1 + StaveBoundary[ilayer], (float)(flagCount) / (float)(NLanePerStaveLayer[ilayer]));
@@ -442,7 +449,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
   for (int i = 0; i < NFees; i++) {
     if (nStops[i]) {
       float payloadAvg = (float)payloadTot[i] / nStops[i];
-      mPayloadSize->Fill(i + 1, payloadAvg);
+      mPayloadSize->Fill(i, payloadAvg);
     }
   }
 
@@ -457,6 +464,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
 void ITSFeeTask::getParameters()
 {
   mNPayloadSizeBins = std::stoi(mCustomParameters["NPayloadSizeBins"]);
+  mEnableAutoreco = std::stoi(mCustomParameters["EnableAutoreco"]);
 }
 
 void ITSFeeTask::getStavePoint(int layer, int stave, double* px, double* py)
@@ -503,6 +511,28 @@ void ITSFeeTask::resetGeneralPlots()
   mTFInfo->Reset();
   mTriggerVsFeeId->Reset();
   mTrigger->Reset();
+}
+
+void ITSFeeTask::resetLanePlotsAndCounters()
+{
+  mRDHSummary->Reset("ICES"); // option ICES is to not remove layer lines and labels
+  mFlag1Check->Reset();
+  mIndexCheck->Reset();
+  mIdCheck->Reset();
+  mPayloadSize->Reset("ICES");
+  mLaneStatusSummaryIB->Reset();
+  mLaneStatusSummaryML->Reset();
+  mLaneStatusSummaryOL->Reset();
+  mLaneStatusSummaryGlobal->Reset();
+  for (int i = 0; i < NFlags; i++) {
+    mLaneStatus[i]->Reset("ICES");
+    mLaneStatusOverview[i]->Reset("content");
+  }
+  for (int i = 0; i < NLayer; i++) {
+    mLaneStatusSummary[i]->Reset();
+  }
+
+  memset(mStatusFlagNumber, 0, sizeof(mStatusFlagNumber)); // reset counters
 }
 
 void ITSFeeTask::reset()

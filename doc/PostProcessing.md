@@ -12,6 +12,8 @@
    * [Convenience classes](#convenience-classes)
       * [The TrendingTask class](#the-trendingtask-class)
          * [Configuration](#configuration-1)
+      * [The SliceTrendingTask class](#the-slicetrendingtask-class)
+         * [Configuration](#configuration-2)
       * [The TRFCollectionTask class](#the-trfcollectiontask-class)
    * [More examples](#more-examples)
 <!--te-->

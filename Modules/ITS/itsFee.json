@@ -3,7 +3,7 @@
         "config": {
             "database": {
                 "implementation": "CCDB",
-                "host": "ccdb-test.cern.ch:8080",
+                "host": "188.184.2.55:8080",
                 "username": "not_applicable",
                 "password": "not_applicable",
                 "name": "not_applicable"
@@ -19,7 +19,7 @@
                 "url": ""
             },
             "conditionDB": {
-                "url": "ccdb-test.cern.ch:8080"
+                "url": "188.184.2.55:8080"
             }
         },
         "tasks": {
@@ -36,7 +36,8 @@
                 },
                 "location": "local",
                 "taskParameters": {
-                    "NPayloadSizeBins": "4096"
+                    "NPayloadSizeBins": "4096",
+                    "EnableAutoreco": "1"
                 }
             }
         },
@@ -47,6 +48,14 @@
                 "moduleName": "QcITS",
                 "policy": "OnEachSeparately",
                 "detectorName": "ITS",
+                "checkParameters": {
+                  "skipbinstrg": "",
+                  "skipfeeids": "",
+                  "maxbadchipsIB": "2",
+                  "maxbadlanesML": "4",
+                  "maxbadlanesOL": "7",
+                  "maxfractionbadlanes": "0.1"
+                },
                 "dataSource": [
                     {
                         "type": "Task",
@@ -59,10 +68,9 @@
                             "LaneStatus/laneStatusOverviewFlagERROR",
                             "LaneStatus/laneStatusOverviewFlagWARNING",
                             "LaneStatusSummary/LaneStatusSummaryGlobal",
-                            "LaneStatusSummary/LaneStatusSummaryIB",
-                            "LaneStatusSummary/LaneStatusSummaryML",
-                            "LaneStatusSummary/LaneStatusSummaryOL",
-                            "RDHSummary"
+                            "RDHSummary",
+                            "TriggerVsFeeid",
+                            "PayloadSize"
                         ]
                     }
                 ]

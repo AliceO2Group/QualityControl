@@ -37,7 +37,7 @@
         "maxNumberCycles" : "-1",
         "dataSource" : {
           "type" : "dataSamplingPolicy",
-          "name" : "ITSTPCmatchingSampling"
+          "name" : "ITSTPCmatchSamp"
         },
         "taskParameters" : {
           "GID" : "ITS-TPC,ITS",
@@ -58,7 +58,7 @@
   },
          "dataSamplingPolicies" : [
            {
-             "id" : "ITSTPCmatchingSampling",
+             "id" : "ITSTPCmatchSamp",
              "active" : "true",
              "machines" : [],
              "query_comment" : "checking every 10% matched track",

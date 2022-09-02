@@ -20,6 +20,8 @@
 #define BOOST_TEST_MODULE MO test
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
+
+#include "QualityControl/MonitorObject.h"
 #include <TH1F.h>
 #include <TList.h>
 #include <boost/test/unit_test.hpp>

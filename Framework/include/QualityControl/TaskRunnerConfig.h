@@ -19,9 +19,9 @@
 
 #include <string>
 #include <unordered_map>
-#include <vector>
 
 #include <Framework/DataProcessorSpec.h>
+#include "QualityControl/Activity.h"
 
 namespace o2::quality_control::core
 {
@@ -48,11 +48,7 @@ struct TaskRunnerConfig {
   bool infologgerFilterDiscardDebug = false;
   int infologgerDiscardLevel = 21;
   std::string infologgerDiscardFile = "";
-  int activityType = 0;
-  std::string activityPeriodName = "";
-  std::string activityPassName = "";
-  std::string activityProvenance = "qc";
-  int fallbackRunNumber = 0;
+  Activity fallbackActivity;
 };
 
 } // namespace o2::quality_control::core

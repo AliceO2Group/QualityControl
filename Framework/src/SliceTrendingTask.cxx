@@ -16,18 +16,14 @@
 /// \author   Based on the work from Piotr Konopka
 ///
 
+#include "QualityControl/SliceTrendingTask.h"
 #include "QualityControl/DatabaseInterface.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/QcInfoLogger.h"
-#include "QualityControl/SliceTrendingTask.h"
 #include "QualityControl/RepoPathUtils.h"
 
-#include <boost/property_tree/ptree.hpp>
-#include <boost/algorithm/string.hpp>
 #include <string>
-#include <TDatime.h>
-#include <TGraph.h>
 #include <TGraphErrors.h>
 #include <TTreeReader.h>
 #include <TTreeReaderValue.h>
@@ -339,7 +335,11 @@ void SliceTrendingTask::drawCanvasMO(TCanvas* thisCanvas, const std::string& var
 
       const std::string_view title = (dataRetrieveVector->at(p)).title;
       const auto posDivider = title.find("RangeX");
-      gr->SetName(title.substr(posDivider, -1).data());
+      if (posDivider != title.npos) {
+        gr->SetName(title.substr(posDivider, -1).data());
+      } else {
+        gr->SetName(title.data());
+      }
 
       myReader.Restart();
       multigraph->Add(gr);

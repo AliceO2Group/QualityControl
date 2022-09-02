@@ -17,7 +17,9 @@
 #ifndef QUALITYCONTROL_USERCODEINTERFACE_H
 #define QUALITYCONTROL_USERCODEINTERFACE_H
 
+#include <string>
 #include <unordered_map>
+#include <map>
 #include <Rtypes.h>
 #include <CCDB/CcdbApi.h>
 

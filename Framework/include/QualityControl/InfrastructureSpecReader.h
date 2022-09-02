@@ -27,7 +27,7 @@
 namespace o2::quality_control::core
 {
 
-// If have to increase the performance of reading,
+// If we have to increase the performance of reading,
 // we can probably improve it by writing a proper parser like for WorkflowSerializationHelpers in O2
 // Also, move operators could be implemented.
 

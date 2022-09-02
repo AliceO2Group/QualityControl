@@ -11,8 +11,10 @@
 
 #include "QualityControl/PostProcessingRunner.h"
 
+#include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/PostProcessingFactory.h"
 #include "QualityControl/PostProcessingConfig.h"
+#include "QualityControl/PostProcessingTaskSpec.h"
 #include "QualityControl/TriggerHelpers.h"
 #include "QualityControl/DatabaseFactory.h"
 #include "QualityControl/QcInfoLogger.h"
@@ -22,8 +24,8 @@
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/runnerUtils.h"
 #include "QualityControl/ConfigParamGlo.h"
+#include "QualityControl/MonitorObjectCollection.h"
 
-#include <boost/property_tree/ptree.hpp>
 #include <utility>
 #include <Framework/DataAllocator.h>
 #include <CommonUtils/ConfigurableParam.h>
@@ -164,7 +166,10 @@ void PostProcessingRunner::start(const framework::ServiceRegistry* dplServices)
     mTaskConfig.activity.mPeriodName = computePeriodName(*dplServices, mTaskConfig.activity.mPeriodName);
     mTaskConfig.activity.mPassName = computePassName(mTaskConfig.activity.mPassName);
     mTaskConfig.activity.mProvenance = computeProvenance(mTaskConfig.activity.mProvenance);
+    auto partitionName = computePartitionName(*dplServices);
+    QcInfoLogger::setPartition(partitionName);
   }
+  QcInfoLogger::setRun(mTaskConfig.activity.mId);
 
   if (mTaskState == TaskState::Created || mTaskState == TaskState::Finished) {
     mInitTriggers = trigger_helpers::createTriggers(mTaskConfig.initTriggers, mTaskConfig);

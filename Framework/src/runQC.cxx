@@ -26,13 +26,11 @@
 /// Similarly, to generate only the remote part (running on QC servers) add '--remote'. By default, the executable
 /// generates both local and remote topologies, as it is the usual use-case for local development.
 
-#include <string>
 #include <vector>
 #include <utility>
 #include <boost/asio/ip/host_name.hpp>
 #include <DataSampling/DataSampling.h>
 #include <Configuration/ConfigurationFactory.h>
-#include <Configuration/ConfigurationInterface.h>
 #include "QualityControl/runnerUtils.h"
 #include "QualityControl/InfrastructureGenerator.h"
 #include "QualityControl/QcInfoLogger.h"

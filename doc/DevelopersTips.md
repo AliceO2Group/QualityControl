@@ -295,9 +295,19 @@ Dload  Upload   Total   Spent    Left  Speed
 "128.141.19.252"
 ```
 
-## ControlWorkflows
+### Remove empty folders in QCDB
 
-### Parameter `qcConfiguration` in tasks
+```bash
+psql -h localhost ccdb ccdb_user -c "delete from ccdb_paths where pathid in (select pathid from ccdb_stats where object_count=0);"
+```
+
+### Count number of objects (not versions) in a path
+
+`curl -s 'http://ali-qcdb-gpn.cern.ch:8083/latest/qc/EMC.*' | grep -c ^Path:`
+
+### ControlWorkflows
+
+#### Parameter `qcConfiguration` in tasks
 
 This parameter is used to point to the config file in consul that should be loaded and passed to the task, check
 and aggregator runners upon the Start transition. It looks like:
@@ -317,7 +327,7 @@ qcConfiguration: {{ ToPtree(Dump(GetConfigLegacy('qc/ANY/any/stfb_to_daqtask-ali
 
 Related issue: QC-310
 
-## ccdb-test connection
+### ccdb-test connection
 
 Ask Costin to put your key on the server. 
 
@@ -325,7 +335,7 @@ Address: root@alicdb1
 So the file repo is in the default location, `/root/QC`, but the database is also there. Careful.
 
 
-## Config file on EPNs
+### Config file on EPNs
 
 The config files on EPNs are merged to build a humongous config file used for the whole workflow. 
 The common part is stored here: https://github.com/AliceO2Group/O2DPG/blob/master/DATA/production/qc-sync/qc-global.json
@@ -361,3 +371,5 @@ o2-qc --config json://${JSON_DIR}/multinode-test.json -b --remote --run
    ```
 - The name and path of the files must be : $HOME/.globus/host{cert,key}.pem
   
+=======
+```

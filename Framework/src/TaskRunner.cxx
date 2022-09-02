@@ -22,15 +22,14 @@
 // O2
 #include <Common/Exceptions.h>
 #include <Monitoring/MonitoringFactory.h>
-#include <DataSampling/DataSampling.h>
 
 #include <Framework/CallbackService.h>
 #include <Framework/CompletionPolicyHelpers.h>
-#include <Framework/TimesliceIndex.h>
 #include <Framework/DataSpecUtils.h>
 #include <Framework/InputRecordWalker.h>
 #include <Framework/InputSpan.h>
 #include <Framework/DataRefUtils.h>
+#include <Framework/EndOfStreamContext.h>
 #include <CommonUtils/ConfigurableParam.h>
 
 #include "QualityControl/QcInfoLogger.h"
@@ -39,6 +38,7 @@
 #include "QualityControl/InfrastructureSpecReader.h"
 #include "QualityControl/TaskRunnerFactory.h"
 #include "QualityControl/ConfigParamGlo.h"
+#include "QualityControl/ObjectsManager.h"
 
 #include <string>
 #include <TFile.h>
@@ -56,7 +56,6 @@ using namespace o2::framework;
 using namespace o2::header;
 using namespace o2::configuration;
 using namespace o2::monitoring;
-using namespace o2::utilities;
 using namespace std::chrono;
 using namespace AliceO2::Common;
 
@@ -291,14 +290,18 @@ header::DataDescription TaskRunner::createTimerDataDescription(const std::string
 
 void TaskRunner::endOfStream(framework::EndOfStreamContext& eosContext)
 {
-  ILOG(Info, Support) << "Received an EndOfStream, finishing the current cycle" << ENDM;
-  finishCycle(eosContext.outputs());
+  if (!mCycleOn && mCycleNumber == 0) {
+    ILOG(Error, Support) << "An EndOfStream was received before TaskRunner could start the first cycle, probably the device was not started. Something is wrong, doing nothing." << ENDM;
+  } else {
+    ILOG(Info, Support) << "Received an EndOfStream, finishing the current cycle" << ENDM;
+    finishCycle(eosContext.outputs());
+  }
   mNoMoreCycles = true;
 }
 
 void TaskRunner::start(const ServiceRegistry& services)
 {
-  mRunNumber = o2::quality_control::core::computeRunNumber(services, mTaskConfig.fallbackRunNumber);
+  mRunNumber = o2::quality_control::core::computeRunNumber(services, mTaskConfig.fallbackActivity.mId);
   QcInfoLogger::setRun(mRunNumber);
   string partitionName = computePartitionName(services);
   QcInfoLogger::setPartition(partitionName);
@@ -396,7 +399,8 @@ void TaskRunner::startOfActivity()
   mTotalNumberObjectsPublished = 0;
 
   // Start activity in module's stask and update objectsManager
-  Activity activity(mRunNumber, mTaskConfig.activityType, mTaskConfig.activityPeriodName, mTaskConfig.activityPassName, mTaskConfig.activityProvenance);
+  Activity activity = mTaskConfig.fallbackActivity;
+  activity.mId = mRunNumber;
   ILOG(Info, Ops) << "Starting run " << mRunNumber << ENDM;
   mObjectsManager->setActivity(activity);
   mCollector->setRunNumber(mRunNumber);
@@ -406,7 +410,8 @@ void TaskRunner::startOfActivity()
 
 void TaskRunner::endOfActivity()
 {
-  Activity activity(mRunNumber, mTaskConfig.activityType, mTaskConfig.activityPeriodName, mTaskConfig.activityPassName, mTaskConfig.activityProvenance);
+  Activity activity = mTaskConfig.fallbackActivity;
+  activity.mId = mRunNumber;
   ILOG(Info, Ops) << "Stopping run " << mRunNumber << ENDM;
   mTask->endOfActivity(activity);
   mObjectsManager->removeAllFromServiceDiscovery();

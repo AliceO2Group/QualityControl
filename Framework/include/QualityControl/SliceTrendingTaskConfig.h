@@ -21,6 +21,8 @@
 
 #include "QualityControl/PostProcessingConfig.h"
 
+#include <boost/property_tree/ptree.hpp>
+
 namespace o2::quality_control::postprocessing
 {
 /// \brief  SliceTrendingTask configuration structure

@@ -19,6 +19,7 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 #include "QualityControl/DataSourceSpec.h"
 
@@ -68,6 +69,7 @@ struct TaskSpec {
   std::string localControl = "aliecs";
   std::string mergingMode = "delta"; // todo as enum?
   int mergerCycleMultiplier = 1;
+  std::vector<size_t> mergersPerLayer{ 1 };
 };
 
 } // namespace o2::quality_control::core

@@ -22,6 +22,9 @@
 #include "QualityControl/CheckInterface.h"
 #include <TH2Poly.h>
 #include <TLatex.h>
+#include <string>
+#include <vector>
+#include <sstream>
 
 namespace o2::quality_control_modules::its
 {
@@ -41,6 +44,7 @@ class ITSFeeCheck : public o2::quality_control::checker::CheckInterface
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
+  std::vector<int> convertToIntArray(std::string input);
 
  private:
   ClassDefOverride(ITSFeeCheck, 2);
@@ -50,11 +54,9 @@ class ITSFeeCheck : public o2::quality_control::checker::CheckInterface
   const int NLanePerStaveLayer[NLayer] = { 9, 9, 9, 16, 16, 28, 28 };
   const int NStaves[NLayer] = { 12, 16, 20, 24, 30, 42, 48 };
   static constexpr int NFlags = 3;
+  static constexpr int NTrg = 13;
   const double minTextPosY[NLayer] = { 0.45, 0.41, 0.37, 0.23, 0.20, 0.16, 0.13 }; // Text y coordinates in TH2Poly
   std::string mLaneStatusFlag[NFlags] = { "WARNING", "ERROR", "FAULT" };
-  static constexpr int NSummary = 4;
-  std::string mSummaryPlots[NSummary] = { "Global", "IB", "ML", "OL" };
-  const int laneMaxSummaryPlots[NSummary] = { 3816, 1, 864, 2520 };
   const int laneMax[NLayer] = { 108, 144, 180, 384, 480, 1176, 1344 };
 
   std::shared_ptr<TLatex> tInfo;
@@ -62,7 +64,9 @@ class ITSFeeCheck : public o2::quality_control::checker::CheckInterface
   std::shared_ptr<TLatex> tInfoIB;
   std::shared_ptr<TLatex> tInfoML;
   std::shared_ptr<TLatex> tInfoOL;
-  std::shared_ptr<TLatex> tInfoSummary[4];
+  std::shared_ptr<TLatex> tInfoPL[10];
+  std::shared_ptr<TLatex> tInfoSummary;
+  std::shared_ptr<TLatex> tInfoTrg[13];
 };
 
 } // namespace o2::quality_control_modules::its

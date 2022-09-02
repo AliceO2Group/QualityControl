@@ -48,7 +48,7 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/MID DESTINATION "${CMAKE_I
 
 # ---- Test(s) ----
 
-set(TEST_SRCS test/testQcMID.cxx)
+#set(TEST_SRCS test/testQcMID.cxx) # uncomment to reenable the test which was empty
 
 foreach(test ${TEST_SRCS})
   get_filename_component(test_name ${test} NAME)
