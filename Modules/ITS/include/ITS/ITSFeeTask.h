@@ -81,8 +81,9 @@ class ITSFeeTask final : public TaskInterface
   void createFeePlots();
   void getStavePoint(int layer, int stave, double* px, double* py); // prepare for fill TH2Poly, get all point for add TH2Poly bin
   void setPlotsFormat();
-  void drawLayerName(TH2I* laneStatus);
+  void drawLayerName(TH2* histo2D);
   void resetGeneralPlots();
+  void resetLanePlotsAndCounters();
   static constexpr int NLayer = 7;
   const int NStaves[NLayer] = { 12, 16, 20, 24, 30, 42, 48 };
   static constexpr int NLayerIB = 3;
@@ -113,6 +114,7 @@ class ITSFeeTask final : public TaskInterface
 
   // parameters taken from the .json
   int mNPayloadSizeBins = 0;
+  bool mEnableAutoreco = false;
 
   TH1I* mTFInfo; // count vs TF ID
   TH2I* mTriggerVsFeeId;
