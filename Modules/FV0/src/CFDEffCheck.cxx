@@ -84,7 +84,7 @@ Quality CFDEffCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
       mNumWarnings = 0;
       for (unsigned int iBin = 1; iBin < h->GetNbinsX() + 1; iBin++) {
         unsigned int chId = iBin - 1;
-        if (chId >= sNCHANNELS)
+        if (chId >= sNCHANNELS_FV0)
           continue;
         if (std::find(mDeadChannelMap.begin(), mDeadChannelMap.end(), chId) != mDeadChannelMap.end()) {
           continue;

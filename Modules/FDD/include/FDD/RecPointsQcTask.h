@@ -17,6 +17,8 @@
 #ifndef QC_MODULE_FDD_FDDRECOQCTASK_H
 #define QC_MODULE_FDD_FDDRECOQCTASK_H
 
+#include "CommonConstants/LHCConstants.h"
+
 #include <Framework/InputRecord.h>
 
 #include "QualityControl/QcInfoLogger.h"
@@ -58,6 +60,7 @@ class RecPointsQcTask final : public TaskInterface
   constexpr static std::size_t sOrbitsPerTF = 256;
   constexpr static uint8_t sDataIsValidBitPos = 7;
   constexpr static std::size_t sNCHANNELS_PM = 19;
+  constexpr static std::size_t sBCperOrbit = o2::constants::lhc::LHCMaxBunches;
 
  private:
   // three ways of computing cycle duration:

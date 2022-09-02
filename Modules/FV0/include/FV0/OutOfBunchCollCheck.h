@@ -18,6 +18,7 @@
 #define QC_MODULE_FV0_FV0OUTOFBUNCHCOLLCHECK_H
 
 #include "QualityControl/CheckInterface.h"
+#include "CommonConstants/LHCConstants.h"
 
 namespace o2::quality_control_modules::fv0
 {
@@ -37,6 +38,8 @@ class OutOfBunchCollCheck : public o2::quality_control::checker::CheckInterface
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
+
+  constexpr static std::size_t sBCperOrbit = o2::constants::lhc::LHCMaxBunches;
 
   ClassDefOverride(OutOfBunchCollCheck, 2);
 

@@ -40,6 +40,8 @@ class CFDEffCheck : public o2::quality_control::checker::CheckInterface
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
 
+  constexpr static std::size_t sNCHANNELS_FV0 = o2::fv0::Constants::nFv0Channels;
+
   ClassDefOverride(CFDEffCheck, 2);
 
  private:
@@ -66,7 +68,6 @@ class CFDEffCheck : public o2::quality_control::checker::CheckInterface
     return vecResult;
   }
 
-  constexpr static std::size_t sNCHANNELS = o2::fv0::Constants::nFv0Channels;
   std::vector<unsigned int> mDeadChannelMap;
   std::string mDeadChannelMapStr;
   float mThreshWarning;
