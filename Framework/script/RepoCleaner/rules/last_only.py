@@ -37,9 +37,6 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
             earliest = v
     logger.debug(f"earliest : {earliest}")
 
-    logger.debug(f"{from_timestamp}")
-    logger.debug(f"{to_timestamp}")
-
     # delete the non-earliest if we are not in the grace period
     for v in versions:
         logger.debug(f"{v} - {v.validFrom}")

@@ -347,4 +347,17 @@ export JSON_DIR=${PWD}/tests
 export UNIQUE_PORT_1=12345
 export UNIQUE_PORT_2=12346
 o2-qc --config json://${JSON_DIR}/multinode-test.json -b --remote --run
-```
+
+## Notes on the host certificate for qcdb
+
+- It must be a "grid host certificate", not a "cern host certificate". 
+- subject must be `alio2-cr1-hv-qcdb-gpn.cern.ch`
+- no password
+- SAN: don't forget to add the alias: `ali-qcdb-gpn.cern.ch`
+- Convert the p12 to the pem:
+   ```
+   openssl pkcs12 -in alio2-cr1-hv-qcdb-gpn.p12 -out alio2-cr1-hv-qcdb-gpn.crt.pem -clcerts -nokeys
+   openssl pkcs12 -in alio2-cr1-hv-qcdb-gpn.p12 -out alio2-cr1-hv-qcdb-gpn.key.pem -nocerts -nodes
+   ```
+- The name and path of the files must be : $HOME/.globus/host{cert,key}.pem
+  

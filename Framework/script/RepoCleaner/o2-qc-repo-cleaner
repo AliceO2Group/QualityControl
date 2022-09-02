@@ -128,7 +128,7 @@ def parseConfig(config_file_path):
         if "to_timestamp" in rule_yaml:
             to_timestamp = rule_yaml["to_timestamp"]
         else:
-            to_timestamp = 1975323342000  # 2033
+            to_timestamp = 2785655701000  # 2058
 
         rule = Rule(rule_yaml["object_path"], rule_yaml["delay"], rule_yaml["policy"],
                     from_timestamp, to_timestamp, rule_yaml)
