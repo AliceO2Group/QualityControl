@@ -267,7 +267,7 @@ void QcMFTClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
     ILOG(Info, Support) << "Getting dictionary from ccdb" << ENDM;
     initOnceDone = true;
     auto clusDict = ctx.inputs().get<o2::itsmft::TopologyDictionary*>("cldict");
-    mDict = clusDict.get();
+    mDict = clusDict;
     std::cout << "Dictionary loaded with size" << mDict->getSize() << std::endl;
     ILOG(Info, Support) << "Dictionary size: " << mDict->getSize() << ENDM;
   }
