@@ -101,7 +101,6 @@ class QcMFTClusterTask /*final*/ : public TaskInterface // todo add back the "fi
   int mClusterSize = { 0 };
 
   // dictionary
-  //std::unique_ptr<o2::itsmft::TopologyDictionary> mDict = nullptr;
   const o2::itsmft::TopologyDictionary* mDict = nullptr;
 
   // where the geometry file is stored

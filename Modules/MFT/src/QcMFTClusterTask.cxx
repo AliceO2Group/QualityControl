@@ -261,13 +261,11 @@ void QcMFTClusterTask::startOfCycle()
 
 void QcMFTClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  static bool initOnceDone = false;
-  if (!initOnceDone) { // the dictionary needs to be queried only once
+  if (mDict == nullptr){
     std::cout << "Getting dictionary from CCDB" << std::endl;
     ILOG(Info, Support) << "Getting dictionary from ccdb" << ENDM;
-    initOnceDone = true;
-    auto clusDict = ctx.inputs().get<o2::itsmft::TopologyDictionary*>("cldict");
-    mDict = clusDict;
+    auto mDictPtr = ctx.inputs().get<o2::itsmft::TopologyDictionary*>("cldict");
+    mDict = mDictPtr.get();
     std::cout << "Dictionary loaded with size" << mDict->getSize() << std::endl;
     ILOG(Info, Support) << "Dictionary size: " << mDict->getSize() << ENDM;
   }
@@ -320,7 +318,8 @@ void QcMFTClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (oneCluster.getPatternID() != o2::itsmft::CompCluster::InvalidPatternID && !mDict->isGroup(oneCluster.getPatternID())) {
       mClusterSizeSummary->Fill(mDict->getNpixels(oneCluster.getPatternID()));
     } else {
-      o2::itsmft::ClusterPattern patt(patternIt);
+      auto patternIt2 = clustersPattern.begin();
+      o2::itsmft::ClusterPattern patt(patternIt2);
       mGroupedClusterSizeSummary->Fill(patt.getNPixels());
     }
 
