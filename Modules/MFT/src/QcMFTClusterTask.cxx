@@ -285,6 +285,9 @@ void QcMFTClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
   // get correct timing info of the first TF orbit
   mRefOrbit = ctx.services().get<o2::framework::TimingInfo>().firstTForbit;
 
+  // reset the cluster pattern iterator which will be used later
+  patternIt = clustersPattern.begin();
+
   // fill the clusters time histograms
   for (const auto& rof : clustersROFs) {
     mClustersROFSize->Fill(rof.getNEntries());
@@ -307,8 +310,7 @@ void QcMFTClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (oneCluster.getPatternID() != o2::itsmft::CompCluster::InvalidPatternID && !mDict->isGroup(oneCluster.getPatternID())) {
       mClusterSizeSummary->Fill(mDict->getNpixels(oneCluster.getPatternID()));
     } else {
-      auto patternIt2 = clustersPattern.begin();
-      o2::itsmft::ClusterPattern patt(patternIt2);
+      o2::itsmft::ClusterPattern patt(patternIt);
       mGroupedClusterSizeSummary->Fill(patt.getNPixels());
     }
 
