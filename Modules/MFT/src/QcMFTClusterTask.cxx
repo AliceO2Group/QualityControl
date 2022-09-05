@@ -203,14 +203,6 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   mClustersBC->SetMinimum(0.1);
   getObjectsManager()->startPublishing(mClustersBC.get());
 
-  // get dict from ccdb
-  long int ts = o2::ccdb::getCurrentTimestamp();
-  ILOG(Info, Support) << "Getting dictionary from ccdb - timestamp: " << ts << ENDM;
-  auto& mgr = o2::ccdb::BasicCCDBManager::instance();
-  mgr.setTimestamp(ts);
-  mDict = mgr.get<o2::itsmft::TopologyDictionary>("MFT/Calib/ClusterDictionary");
-  ILOG(Info, Support) << "Dictionary size: " << mDict->getSize() << ENDM;
-
   // define chip occupancy maps
   QcMFTUtilTables MFTTable;
   for (int iHalf = 0; iHalf < 2; iHalf++) {
@@ -260,6 +252,13 @@ void QcMFTClusterTask::startOfCycle()
 
 void QcMFTClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
+  if (mDict == nullptr) {
+    ILOG(Info, Support) << "Getting dictionary from ccdb" << ENDM;
+    auto mDictPtr = ctx.inputs().get<o2::itsmft::TopologyDictionary*>("cldict");
+    mDict = mDictPtr.get();
+    ILOG(Info, Support) << "Dictionary loaded with size: " << mDict->getSize() << ENDM;
+  }
+
   // normalisation for the summary histogram to TF
   mClusterOccupancySummary->Fill(-1, -1);
   mClusterOccupancy->Fill(-1);
@@ -285,6 +284,9 @@ void QcMFTClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   // get correct timing info of the first TF orbit
   mRefOrbit = ctx.services().get<o2::framework::TimingInfo>().firstTForbit;
+
+  // reset the cluster pattern iterator which will be used later
+  patternIt = clustersPattern.begin();
 
   // fill the clusters time histograms
   for (const auto& rof : clustersROFs) {
