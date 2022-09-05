@@ -53,8 +53,6 @@ class QcMFTClusterTask /*final*/ : public TaskInterface // todo add back the "fi
   void endOfActivity(Activity& activity) override;
   void reset() override;
 
-  // void setClusterDictionary(const o2::itsmft::TopologyDictionary* d) { mDict = d; }
-
   double orbitToSeconds(uint32_t orbit, uint32_t refOrbit)
   {
     return (orbit - refOrbit) * o2::constants::lhc::LHCOrbitNS / 1E9;
