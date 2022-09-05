@@ -1,7 +1,28 @@
 import unittest
 import yaml
 
-from repoCleaner import parseConfig, Rule, findMatchingRule
+import importlib
+from importlib.util import spec_from_loader, module_from_spec
+from importlib.machinery import SourceFileLoader
+import os
+import sys
+
+def import_path(path):  # needed because o2-qc-repo-cleaner has no suffix
+    module_name = os.path.basename(path).replace('-', '_')
+    spec = importlib.util.spec_from_loader(
+        module_name,
+        importlib.machinery.SourceFileLoader(module_name, path)
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    sys.modules[module_name] = module
+    return module
+
+
+repoCleaner = import_path("o2-qc-repo-cleaner")
+parseConfig = repoCleaner.parseConfig
+Rule = repoCleaner.Rule
+findMatchingRule = repoCleaner.findMatchingRule
 
 
 class TestRepoCleaner(unittest.TestCase):
@@ -10,7 +31,7 @@ class TestRepoCleaner(unittest.TestCase):
         args = parseConfig("config-test.yaml")
         self.assertEqual(args['ccdb_url'], "http://ccdb-test.cern.ch:8080")
         rules = args['rules']
-        self.assertEqual(len(rules), 2)
+        self.assertEqual(len(rules), 3)
          
     def test_parseConfigFault(self):
         document = """

@@ -4,7 +4,7 @@ import logging
 from collections import defaultdict
 from Ccdb import Ccdb, ObjectVersion
 import dryable
-from typing import Dict
+from typing import Dict, List
 
 
 logger = logging  # default logger
@@ -14,7 +14,7 @@ def in_grace_period(version: ObjectVersion, delay: int):
     return not (version.validFromAsDt < datetime.now() - timedelta(minutes=delay))
 
 
-def process(ccdb: Ccdb, object_path: str, delay: int, extra_params: Dict[str, str]):
+def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_timestamp: int, extra_params: Dict[str, str]):
     '''
     Process this deletion rule on the object. We use the CCDB passed by argument.
     Objects which have been created recently are spared (delay is expressed in minutes).
@@ -30,6 +30,8 @@ def process(ccdb: Ccdb, object_path: str, delay: int, extra_params: Dict[str, st
     :param ccdb: the ccdb in which objects are cleaned up.
     :param object_path: path to the object, or pattern, to which a rule will apply.
     :param delay: the grace period during which a new object is never deleted.
+    :param from_timestamp: only objects created after this timestamp are considered.
+    :param to_timestamp: only objects created before this timestamp are considered.
     :param extra_params: a dictionary containing extra parameters for this rule.
     :return a dictionary with the number of deleted, preserved and updated versions. Total = deleted+preserved.
     '''
@@ -68,7 +70,6 @@ def process(ccdb: Ccdb, object_path: str, delay: int, extra_params: Dict[str, st
 
         freshest: ObjectVersion = None
         for v in run_versions:
-            # logger.debug(f"  - version {v}")
             if freshest is None or freshest.validFromAsDt < v.validFromAsDt:
                 if freshest is not None:
                     if in_grace_period(freshest, delay):
@@ -83,9 +84,16 @@ def process(ccdb: Ccdb, object_path: str, delay: int, extra_params: Dict[str, st
                     deletion_list.append(v)
         preservation_list.append(freshest)
 
-    # actual deletion
-    for d in deletion_list:
-        ccdb.deleteVersion(d)
+    # Actual deletion
+    logger.debug(f"Delete but preserve versions that are not in the period passed to the policy")
+    temp_deletion_list: List[ObjectVersion] = []
+    for v in deletion_list:
+        if from_timestamp < v.validFrom < to_timestamp:  # in the allowed period
+            temp_deletion_list.append(v)   # we will delete any ways
+            ccdb.deleteVersion(v)
+        else:
+            preservation_list.append(v)    # we preserve
+    deletion_list = temp_deletion_list
 
     logger.debug(f"deleted ({len(deletion_list)}) : ")
     for v in deletion_list:
