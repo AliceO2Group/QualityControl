@@ -14,18 +14,32 @@ def in_grace_period(version: ObjectVersion, delay: int):
     return not (version.validFromAsDt < datetime.now() - timedelta(minutes=delay))
 
 
+def get_run(v: ObjectVersion) -> str:
+    run = "none"
+    if "Run" in v.metadata:
+        run = str(v.metadata['Run'])
+    elif "RunNumber" in v.metadata:
+        run = str(v.metadata['RunNumber'])
+    return run
+
+
 def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_timestamp: int, extra_params: Dict[str, str]):
     '''
     Process this deletion rule on the object. We use the CCDB passed by argument.
     Objects which have been created recently are spared (delay is expressed in minutes).
     This specific policy, 1_per_run, keeps only the most recent version for a given run based on the validity_from.
 
-    It is implemented like this :
-    Go through all objects: if a run is set, add the object to the corresponding map element.
-    Go through the map: for each run keep the most recent object and delete the rest.
-    Files without runs are preserved if delete_when_no_run is set to false. Otherwise only the last one is preserved.
+    Config Parameters:
+    - period_pass: Keep 1 version for a combination of run+pass+period if true.
+    - delete_when_no_run: Versions without runs are preserved if delete_when_no_run is set to false (default).
+      Otherwise only the last one is preserved.
+    THEY CANNOT BE BOTH TRUE AT THE SAME TIME
 
-    TODO: how to handle the validity period ?
+    It is implemented like this :
+    Map of buckets: run[+pass+period] -> list of versions
+    Go through all objects: Add the object to the corresponding key (run[+pass+period])
+    If delete_when_no_run is false, remove the versions without run from the map
+    Go through the map: for each run (resp. run+pass+period) keep the most recent object and delete the rest.
 
     :param ccdb: the ccdb in which objects are cleaned up.
     :param object_path: path to the object, or pattern, to which a rule will apply.
@@ -41,31 +55,37 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
     preservation_list: List[ObjectVersion] = []
     deletion_list: List[ObjectVersion] = []
     update_list: List[ObjectVersion] = []
-    runs_dict: DefaultDict[str, List[ObjectVersion]] = defaultdict(list)
+    versions_buckets_dict: DefaultDict[str, List[ObjectVersion]] = defaultdict(list)
 
+    # config parameters
     delete_when_no_run = (extra_params.get("delete_when_no_run", False) == True)
     logger.debug(f"delete_when_no_run : {delete_when_no_run}")
+    period_pass = (extra_params.get("period_pass", False) == True)
+    logger.debug(f"period_pass : {period_pass}")
+    if delete_when_no_run == True and period_pass == True:
+        logger.error(f"1_per_run does not allow both delete_when_no_run and period_pass to be on at the same time")
+        return {"deleted": 0, "preserved": 0, "updated": 0}
 
-    # Find all the runs and group the versions
+    # Find all the runs and group the versions (by run or by a combination of multiple attributes)
     versions = ccdb.getVersionsList(object_path)
     for v in versions:
-        logger.debug(f"Processing {v}")
-        if "Run" in v.metadata:
-            runs_dict[v.metadata['Run']].append(v)
-        elif "RunNumber" in v.metadata:
-            runs_dict[v.metadata['RunNumber']].append(v)
-        else:
-            runs_dict[-1].append(v) # the ones with no run specified
+        logger.debug(f"Assigning {v} to a bucket")
+        run = get_run(v)
+        period_name = v.metadata.get("PeriodName") or ""
+        pass_name = v.metadata.get("PassName") or ""
+        key = run+period_name+pass_name if period_pass else run
+        versions_buckets_dict[key].append(v)
 
-    logger.debug(f"Number of runs : {len(runs_dict)}")
-    logger.debug(f"Number of versions without runs : {len(runs_dict[-1])}")
+    logger.debug(f"Number of buckets : {len(versions_buckets_dict)}")
+    if not period_pass:
+        logger.debug(f"Number of versions without runs : {len(versions_buckets_dict['none'])}")
 
     # if we should not touch the files with no runs, let's just remove them from the map
     if not delete_when_no_run:
-        del runs_dict[-1]
+        del versions_buckets_dict['none']
 
     # Dispatch the versions to deletion and preservation lists
-    for r, run_versions in runs_dict.items():
+    for bucket, run_versions in versions_buckets_dict.items():
         # logger.debug(f"- run {r}")
 
         freshest: ObjectVersion = None
