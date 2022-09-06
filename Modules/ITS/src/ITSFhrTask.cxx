@@ -567,7 +567,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
         for (int ichip = 0 + (ilink * 3); ichip < (ilink * 3) + 3; ichip++) {
           std::unordered_map<unsigned int, int>::iterator iter;
 
-          if (mDoHitmapFilter == 1 && mTFCount > mCutTFForSparse) {  
+          if (mDoHitmapFilter == 1 && mTFCount > mCutTFForSparse) {
             for (auto iter = mHitPixelID_InStave[istave][0][ichip].begin(); iter != mHitPixelID_InStave[istave][0][ichip].end();) {
               if ((double)iter->second / GBTLinkInfo->statistics.nTriggers < 1.7e-3) { // 40 hits/cm^2 * 5 pixels/hits * 4.5 cm^2 / 1024 / 512 = 1.7e-3/pixel/event for physics
                 mHitPixelID_InStave[istave][0][ichip].erase(iter++);
