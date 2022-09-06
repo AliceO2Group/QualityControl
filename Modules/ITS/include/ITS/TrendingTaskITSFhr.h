@@ -24,6 +24,7 @@
 #include <TAxis.h>
 #include <TColor.h>
 #include <TGraph.h>
+#include <TMultiGraph.h>
 #include <TLegend.h>
 #include <TTree.h>
 #include <memory>
@@ -68,7 +69,7 @@ class TrendingTaskITSFhr : public PostProcessingInterface
   // other functions (mainly style)
   void SetLegendStyle(TLegend* leg);
   void SetGraphStyle(TGraph* g, int col, int mkr);
-  void SetGraphNameAndAxes(TGraph* g, std::string name, std::string title,
+  void SetGraphNameAndAxes(TMultiGraph* g, std::string title,
                            std::string xtitle, std::string ytitle, double ymin,
                            double ymax, std::vector<std::string> runlist);
   void PrepareLegend(TLegend* leg, int layer);
