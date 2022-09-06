@@ -75,6 +75,7 @@ class CalibMonitoringTask final : public quality_control::postprocessing::PostPr
  public:
   std::vector<std::string> mCalibObjects;       ///< list of vectors of parm objects to be processed
   TH1* mTimeCalibParamHisto = nullptr;          ///< Monitor Time Calib Param
+  TH2* mTimeCalibParamPosition = nullptr;       ///< Monitor time calib param as function of the position in EMCAL
   TH2* mBadChannelMapHisto = nullptr;           ///< Monitor Bad channel map
   std::unique_ptr<o2::emcal::CalibDB> mCalibDB; ///< EMCAL calibration DB handler
   o2::emcal::BadChannelMap* mBadChannelMap;     ///< EMCAL channel map
@@ -86,4 +87,4 @@ class CalibMonitoringTask final : public quality_control::postprocessing::PostPr
 
 } // namespace o2::quality_control_modules::emcal
 
-#endif //QUALITYCONTROL_CALIBMONITORINGTASK_H
+#endif // QUALITYCONTROL_CALIBMONITORINGTASK_H
