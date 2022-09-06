@@ -14,7 +14,6 @@
 /// \author Carlo Puggioni
 ///
 
-// OK Ieri
 #include <TCanvas.h>
 #include <TH1.h>
 

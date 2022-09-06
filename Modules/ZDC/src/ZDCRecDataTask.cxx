@@ -110,7 +110,7 @@ void ZDCRecDataTask::init()
   initVecCh();
   initVecType();
   initHisto();
-  dumpHistoStructure();
+  // dumpHistoStructure();
 }
 
 void ZDCRecDataTask::initVecCh()
