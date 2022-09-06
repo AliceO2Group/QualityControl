@@ -306,15 +306,11 @@ void TaskRunner::start(const ServiceRegistry& services)
   string partitionName = computePartitionName(services);
   QcInfoLogger::setPartition(partitionName);
 
+  mNoMoreCycles = false;
+  mCycleNumber = 0;
+
   try {
     startOfActivity();
-
-    if (mNoMoreCycles) {
-      ILOG(Info, Support) << "The maximum number of cycles (" << mTaskConfig.maxNumberCycles << ") has been reached"
-                          << " or the device has received an EndOfStream signal. Won't start a new cycle." << ENDM;
-      return;
-    }
-
     startCycle();
   } catch (...) {
     // we catch here because we don't know where it will go in DPL's CallbackService
