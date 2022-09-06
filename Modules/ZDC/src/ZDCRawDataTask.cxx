@@ -771,6 +771,7 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
         fNameHisto.push_back(name);
         h2d.histo = new TH2F(hname, htit, fNumBinX, fMinBinX, fMaxBinX, fNumBinY, fMinBinY, fMaxBinY);
         h2d.condHisto.push_back(condition);
+        h2d.histo->SetStats(0);
         ih = (int)fMatrixHistoBunch[mod][ch].size();
         fMatrixHistoBunch[mod][ch].push_back(h2d);
 
@@ -791,6 +792,7 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
       } else {
         for (int i = 0; i < (int)fMatrixHistoBunch[mod][ch].size(); i++) {
           fMatrixHistoBunch[mod][ch].at(i).histo->Reset();
+          fMatrixHistoBunch[mod][ch].at(i).histo->SetStats(0);
         }
         return true;
       }
@@ -798,6 +800,7 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
 
     if (type.compare("FIRECHANNEL") == 0) {
       fFireChannel = new TH2F(hname, htit, fNumBinX, fMinBinX, fMaxBinX, fNumBinY, fMinBinY, fMaxBinY);
+      fFireChannel->SetStats(0);
       getObjectsManager()->startPublishing(fFireChannel);
       try {
         getObjectsManager()->addMetadata(fFireChannel->GetName(), fFireChannel->GetName(), "34");
@@ -820,6 +823,7 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
     }
     if (type.compare("TRASMITTEDCHANNEL") == 0) {
       fTrasmChannel = new TH2F(hname, htit, fNumBinX, fMinBinX, fMaxBinX, fNumBinY, fMinBinY, fMaxBinY);
+      fTrasmChannel->SetStats(0);
       getObjectsManager()->startPublishing(fTrasmChannel);
       try {
         getObjectsManager()->addMetadata(fTrasmChannel->GetName(), fTrasmChannel->GetName(), "34");
@@ -846,6 +850,7 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
           fTriggerBits->GetXaxis()->SetBinLabel(im * o2::zdc::NChPerModule + ic + 1, TString::Format("%d%d", im, ic));
         }
       }
+      fTriggerBits->SetStats(0);
       getObjectsManager()->startPublishing(fTriggerBits);
       try {
         getObjectsManager()->addMetadata(fTriggerBits->GetName(), fTriggerBits->GetName(), "34");
@@ -867,6 +872,7 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
       fTriggerBitsHits->GetYaxis()->SetBinLabel(3, "Auto_0");
       fTriggerBitsHits->GetYaxis()->SetBinLabel(2, "Auto_m");
       fTriggerBitsHits->GetYaxis()->SetBinLabel(1, "None");
+      fTriggerBitsHits->SetStats(0);
       for (int im = 0; im < o2::zdc::NModules; im++) {
         for (int ic = 0; ic < o2::zdc::NChPerModule; ic++) {
           fTriggerBitsHits->GetXaxis()->SetBinLabel(im * o2::zdc::NChPerModule + ic + 1, TString::Format("%d%d", im, ic));
@@ -888,6 +894,7 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
           fOverBc->GetXaxis()->SetBinLabel(im * o2::zdc::NChPerModule + ic + 1, TString::Format("%d%d", im, ic));
         }
       }
+      fOverBc->SetStats(0);
       getObjectsManager()->startPublishing(fOverBc);
       try {
         getObjectsManager()->addMetadata(fOverBc->GetName(), fOverBc->GetName(), "34");
@@ -900,7 +907,7 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
     if (type.compare("SUMMARYBASELINE") == 0) {
       fSummaryPedestal = new TH1F(hname, htit, fNumBinX, fMinBinX, fMaxBinX);
       fSummaryPedestal->GetXaxis()->LabelsOption("v");
-
+      fSummaryPedestal->SetStats(0);
       int i = 0;
       for (uint32_t imod = 0; imod < o2::zdc::NModules; imod++) {
         for (uint32_t ich = 0; ich < o2::zdc::NChPerModule; ich++) {
