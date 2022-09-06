@@ -626,22 +626,16 @@ void CellTask::CellHistograms::initForTrigger(const std::string trigger, const T
   mCellAmplitudeEMCAL = histBuilder1D("cellAmplitudeEMCAL", "Cell amplitude in EMCAL", 4 * static_cast<int>(maxAmp), 0., maxAmp);
   mCellAmplitudeDCAL = histBuilder1D("cellAmplitudeDCAL", "Cell amplitude in DCAL", 4 * static_cast<int>(maxAmp), 0., maxAmp);
   mnumberEvents = histBuilder1D("NumberOfEvents", "Number Of Events", 1, 0.5, 1.5);
+
+  std::fill(mCellTimeBC.begin(), mCellTimeBC.end(), nullptr);
   if (isPhysTrigger) {
     // Phys. trigger: monitor all bunch crossings
     for (auto bcID = 0; bcID < 4; bcID++) {
-      std::array<TH1*, 20> cellTimeBCSM;
-      for (auto smID = 0; smID < 20; smID++) {
-        cellTimeBCSM[smID] = histBuilder1D(Form("cellTimeBC%dSM%d", bcID, smID), Form("Cell Time BC%d SM%d", bcID, smID), 600, -400, 800);
-      }
-      mCellTimeBC[bcID] = cellTimeBCSM;
+      mCellTimeBC[bcID] = histBuilder1D(Form("cellTimeBC%d", bcID), Form("Cell Time BC%d", bcID), 600, -400, 800);
     }
   } else {
     // Calib trigger: Only bc0;
-    std::array<TH1*, 20> cellTimeBCSM;
-    for (auto smID = 0; smID < 20; smID++) {
-      cellTimeBCSM[smID] = histBuilder1D(Form("cellTimeBC0SM%d", smID), Form("Cell Time BC0 SM%d", smID), 600, -400, 800);
-    }
-    mCellTimeBC[0] = cellTimeBCSM;
+    mCellTimeBC[0] = histBuilder1D("cellTimeBC0", "Cell Time BC0", 600, -400, 800);
   }
 }
 
@@ -723,11 +717,9 @@ void CellTask::CellHistograms::fillHistograms(const o2::emcal::Cell& cell, bool 
     }
     // bc phase histograms
     if (cell.getEnergy() > mAmplitudeThresholdTime) {
-      auto bchistos = mCellTimeBC.find(bcphase);
-      if (bchistos != mCellTimeBC.end()) {
-        auto histcontainer = bchistos->second;
-        histcontainer[supermoduleID]->Fill(cell.getTimeStamp());
-      }
+      auto bchistos = mCellTimeBC[bcphase];
+      auto histcontainer = bchistos;
+      histcontainer->Fill(cell.getTimeStamp());
     }
   } catch (o2::emcal::InvalidCellIDException& e) {
     ILOG(Info, Support) << "Invalid cell ID: " << e.getCellID() << ENDM;
@@ -776,9 +768,8 @@ void CellTask::CellHistograms::startPublishing(o2::quality_control::core::Object
     publishOptional(histos);
   }
 
-  for (auto& [bcID, histos] : mCellTimeBC) {
-    for (auto hist : histos)
-      publishOptional(hist);
+  for (auto histos : mCellTimeBC) {
+    publishOptional(histos);
   }
   //  publishOptional(mEvCounterTF);
   //  publishOptional(mEvCounterTFPHYS);
@@ -837,9 +828,9 @@ void CellTask::CellHistograms::reset()
     resetOptional(histos);
   }
 
-  for (auto& [bcID, histos] : mCellTimeBC) {
-    for (auto hist : histos)
-      resetOptional(hist);
+  for (auto histos : mCellTimeBC) {
+    //for (auto hist : histos)
+    resetOptional(histos);
   }
   //  resetOptional(mEvCounterTF);
   //  resetOptional(mEvCounterTFPHYS);
@@ -896,9 +887,9 @@ void CellTask::CellHistograms::clean()
   for (auto histos : mCellTimeSupermoduleDCAL_Gain) {
     cleanOptional(histos);
   }
-  for (auto& [bcID, histos] : mCellTimeBC) {
-    for (auto hist : histos)
-      cleanOptional(hist);
+  for (auto histos : mCellTimeBC) {
+    //for (auto hist : histos)
+    cleanOptional(histos);
   }
   //  cleanOptional(mEvCounterTF);
   //  cleanOptional(mEvCounterTFPHYS);
