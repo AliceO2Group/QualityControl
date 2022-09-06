@@ -186,6 +186,7 @@ void TrendingTaskITSFhr::storePlots(repository::DatabaseInterface& qcdb)
     PrepareLegend(legstaves[ilay], ilay);
   }
   ilay = 0;
+
   for (const auto& plot : mConfig.plots) {
 
     int colidx = countplots % 7;
@@ -201,12 +202,7 @@ void TrendingTaskITSFhr::storePlots(repository::DatabaseInterface& qcdb)
       index = 0;
 
     bool isrun = plot.varexp.find("ntreeentries") != std::string::npos ? true : false; // vs run or vs time
-    c[ilay * NTRENDSFHR + index]->SetTickx();
-    c[ilay * NTRENDSFHR + index]->SetTicky();
-    if (index != 2)
-      c[ilay * NTRENDSFHR + index]->SetLogy();
-    long int n =
-      mTrend->Draw(plot.varexp.c_str(), plot.selection.c_str(), "goff");
+    long int n = mTrend->Draw(plot.varexp.c_str(), plot.selection.c_str(), "goff");
     // post processing plot
     ILOG(Info, Support) << " Drawing " << plot.name << ENDM;
     TGraph* g = new TGraph(n, mTrend->GetV2(), mTrend->GetV1());
@@ -217,47 +213,42 @@ void TrendingTaskITSFhr::storePlots(repository::DatabaseInterface& qcdb)
 
    if (plot.name.find("occ") != std::string::npos)
       countplots++;
-
-
-   TH1F* hfake;
+   
     if (countplots > nStaves[ilay] - 1) {
+      std::cout<<"Time to draw plots!"<<std::endl;
       for (int id = 0; id < 4;id++){
          c[ilay * NTRENDSFHR + id]->cd();
+         c[ilay * NTRENDSFHR + id]->SetTickx();
+         c[ilay * NTRENDSFHR + id]->SetTicky();
+         if (id != 2)
+            c[ilay * NTRENDSFHR + id]->SetLogy();
 
+        int npoints = (int)runlist.size();
+        TH1F* hfake = new TH1F("hfake", Form("%s; %s; %s", gTrendsAll[ilay * NTRENDSFHR + id]->GetTitle(), gTrendsAll[ilay * NTRENDSFHR + id]->GetXaxis()->GetTitle(), gTrendsAll[ilay * NTRENDSFHR + id]->GetYaxis()->GetTitle()), npoints, 0.5, (double)npoints + 0.5);
+        hfake->GetXaxis()->SetNdivisions(505);
+        for (int ir = 0; ir < (int)runlist.size(); ir++)
+          hfake->GetXaxis()->SetBinLabel(ir + 1, runlist[ir].c_str());          
 
          if (ilay < 3) {
          SetGraphNameAndAxes(gTrendsAll[ilay * NTRENDSFHR + id],
                           Form("L%d - %s trends", ilay, trendtitlesIB[id].c_str()),
                           isrun ? "run" : "time", ytitlesIB[id], ymin[id], ymaxIB[id], runlist);  
-
-        int npoints = (int)runlist.size();
-        hfake = new TH1F("hfake", Form("%s; %s; %s", gTrendsAll[ilay * NTRENDSFHR + id]->GetTitle(), gTrendsAll[ilay * NTRENDSFHR + id]->GetXaxis()->GetTitle(), gTrendsAll[ilay * NTRENDSFHR + id]->GetYaxis()->GetTitle()), npoints, 0.5, (double)npoints + 0.5);
         hfake->GetYaxis()->SetRangeUser(ymin[id], ymaxIB[id]);
-        hfake->GetXaxis()->SetNdivisions(505);
-        for (int ir = 0; ir < (int)runlist.size(); ir++)
-          hfake->GetXaxis()->SetBinLabel(ir + 1, runlist[ir].c_str());
-        hfake->Draw();
-
- 
     } else {
       SetGraphNameAndAxes(gTrendsAll[ilay * NTRENDSFHR + id],
                           Form("L%d - %s trends", ilay, trendtitlesOB[id].c_str()),
                            isrun ? "run" : "time", ytitlesOB[id], ymin[id], ymaxOB[id], runlist);
-       int npoints = (int)runlist.size(); 
-       hfake = new TH1F("hfake", Form("%s; %s; %s", gTrendsAll[ilay * NTRENDSFHR + id]->GetTitle(), gTrendsAll[ilay * NTRENDSFHR + id]->GetXaxis()->GetTitle(), gTrendsAll[ilay * NTRENDSFHR + id]->GetYaxis()->GetTitle()), npoints, 0.5, (double)npoints + 0.5);
         hfake->GetYaxis()->SetRangeUser(ymin[id], ymaxOB[id]);
-        hfake->GetXaxis()->SetNdivisions(505);
-        for (int ir = 0; ir < (int)runlist.size(); ir++)
-          hfake->GetXaxis()->SetBinLabel(ir + 1, runlist[ir].c_str());
-        hfake->Draw();
 
 
      }
 
-
+         hfake->Draw();
          gTrendsAll[ilay * NTRENDSFHR + id]->Draw(); 
          legstaves[ilay]->Draw("same");
-     
+         
+         ILOG(Info, Support) << " Saving canvas for layer " << ilay << " to CCDB "
+                       << ENDM; 
          auto mo = std::make_shared<MonitorObject>(c[ilay * NTRENDSFHR + id], mConfig.taskName, "o2::quality_control_modules::its::TrendingTaskITSFhr",
                                               mConfig.detectorName);
          mo->setIsOwner(false);
@@ -265,6 +256,7 @@ void TrendingTaskITSFhr::storePlots(repository::DatabaseInterface& qcdb)
          delete c[ilay * NTRENDSFHR + id];
          delete gTrendsAll[ilay * NTRENDSFHR + id];
          delete hfake;
+ //        delete legstaves[ilay];
       }
 
 
@@ -272,12 +264,13 @@ void TrendingTaskITSFhr::storePlots(repository::DatabaseInterface& qcdb)
       ilay++;
     }
   } // end loop on plots
-  for (int idx = 0; idx < NLAYERS * NTRENDSFHR; idx++) {
-    ILOG(Info, Support) << " Saving canvas for layer " << idx / NTRENDSFHR << " to CCDB "
-                       << ENDM;
-     if (idx % NTRENDSFHR == NTRENDSFHR - 1)
+ 
+    for (int idx = 0; idx < NLAYERS * NTRENDSFHR; idx++) {
+    if (idx % NTRENDSFHR == NTRENDSFHR - 1)
       delete legstaves[idx / NTRENDSFHR];
   }
+
+
 }
 
 void TrendingTaskITSFhr::SetLegendStyle(TLegend* leg)
