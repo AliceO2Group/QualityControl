@@ -52,12 +52,22 @@ class IntensiveTH2F : public TH2F, public o2::mergers::MergeInterface
   }
 
   void setCycleNumber(uint32_t cycleNumber) { mCycleNumber = cycleNumber; }
+  uint32_t getCylceNumber() { return mCycleNumber; }
 
   void merge(MergeInterface* const other) override
   {
-    if (mCycleNumber < dynamic_cast<IntensiveTH2F*>(other)->mCycleNumber) {
-      LOG(info) << "IntensiveTH2F::merge() :" << GetName() << "is updating!";
-      *this = *(dynamic_cast<IntensiveTH2F*>(other));
+    if (IntensiveTH2F* cast = dynamic_cast<IntensiveTH2F*>(other); cast != nullptr) {
+      if (mCycleNumber < cast->mCycleNumber) {
+        mCycleNumber = cast->mCycleNumber;
+        for (int iX = 1; iX <= GetNbinsX(); iX++) {
+          for (int iY = 1; iY <= GetNbinsY(); iY++) {
+            SetBinContent(iX, iY, cast->GetBinContent(iX, iY));
+          }
+        }
+      }
+    } else {
+      LOG(warn) << "IntensiveTH2F::merge() : problem occured while dynamic_cast<IntensiveTH2F*>(other) for "
+                << GetName() << ". Result is nullptr. Do nothing this time.";
     }
   }
 
@@ -157,10 +167,11 @@ class PhysicsTask final : public TaskInterface
   static constexpr short kNChannels = 23040;
   int mNEventsTotal = 0;
   int mCcdbCheckIntervalInMinutes = 1;
+  uint32_t mCycleNumber = 0;
+  bool mJustWasReset = false;
   std::array<TH1F*, kNHist1D> mHist1D = { nullptr };                            ///< Array of 1D histograms
   std::array<TH2F*, kNHist2D> mHist2D = { nullptr };                            ///< Array of 2D histograms
-  std::array<IntensiveTH2F*, kNIntensiveHist2D> mIntensiveHist2D = { nullptr }; ///< Array of 2D histograms
-  uint32_t mCycleNumber = 0;
+  std::array<IntensiveTH2F*, kNIntensiveHist2D> mIntensiveHist2D = { nullptr }; ///< Array of IntensiveTH2F histograms
 };
 
 } // namespace o2::quality_control_modules::cpv
