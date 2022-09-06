@@ -215,7 +215,6 @@ void TrendingTaskITSFhr::storePlots(repository::DatabaseInterface& qcdb)
       countplots++;
    
     if (countplots > nStaves[ilay] - 1) {
-      std::cout<<"Time to draw plots!"<<std::endl;
       for (int id = 0; id < 4;id++){
          c[ilay * NTRENDSFHR + id]->cd();
          c[ilay * NTRENDSFHR + id]->SetTickx();
@@ -224,24 +223,18 @@ void TrendingTaskITSFhr::storePlots(repository::DatabaseInterface& qcdb)
             c[ilay * NTRENDSFHR + id]->SetLogy();
 
         int npoints = (int)runlist.size();
-        TH1F* hfake = new TH1F("hfake", Form("%s; %s; %s", gTrendsAll[ilay * NTRENDSFHR + id]->GetTitle(), gTrendsAll[ilay * NTRENDSFHR + id]->GetXaxis()->GetTitle(), gTrendsAll[ilay * NTRENDSFHR + id]->GetYaxis()->GetTitle()), npoints, 0.5, (double)npoints + 0.5);
-        hfake->GetXaxis()->SetNdivisions(505);
-        for (int ir = 0; ir < (int)runlist.size(); ir++)
-          hfake->GetXaxis()->SetBinLabel(ir + 1, runlist[ir].c_str());          
-
-         if (ilay < 3) {
-         SetGraphNameAndAxes(gTrendsAll[ilay * NTRENDSFHR + id],
+        TH1F* hfake = new TH1F("hfake", "hfake", npoints, 0.5, (double)npoints + 0.5);
+        if (ilay < 3) {
+         SetGraphNameAndAxes(hfake,
                           Form("L%d - %s trends", ilay, trendtitlesIB[id].c_str()),
                           isrun ? "run" : "time", ytitlesIB[id], ymin[id], ymaxIB[id], runlist);  
-        hfake->GetYaxis()->SetRangeUser(ymin[id], ymaxIB[id]);
     } else {
-      SetGraphNameAndAxes(gTrendsAll[ilay * NTRENDSFHR + id],
+      SetGraphNameAndAxes(hfake,
                           Form("L%d - %s trends", ilay, trendtitlesOB[id].c_str()),
                            isrun ? "run" : "time", ytitlesOB[id], ymin[id], ymaxOB[id], runlist);
-        hfake->GetYaxis()->SetRangeUser(ymin[id], ymaxOB[id]);
-
-
      }
+
+
 
          hfake->Draw();
          gTrendsAll[ilay * NTRENDSFHR + id]->Draw(); 
@@ -256,18 +249,14 @@ void TrendingTaskITSFhr::storePlots(repository::DatabaseInterface& qcdb)
          delete c[ilay * NTRENDSFHR + id];
          delete gTrendsAll[ilay * NTRENDSFHR + id];
          delete hfake;
- //        delete legstaves[ilay];
       }
-
-
       countplots = 0;
       ilay++;
     }
   } // end loop on plots
  
-    for (int idx = 0; idx < NLAYERS * NTRENDSFHR; idx++) {
-    if (idx % NTRENDSFHR == NTRENDSFHR - 1)
-      delete legstaves[idx / NTRENDSFHR];
+    for (int idx = 0; idx < NLAYERS ; idx++) {
+      delete legstaves[idx];
   }
 
 
@@ -287,11 +276,12 @@ void TrendingTaskITSFhr::SetGraphStyle(TGraph* g, int col, int mkr)
   g->SetMarkerColor(col);
 }
 
-void TrendingTaskITSFhr::SetGraphNameAndAxes(TMultiGraph* g,
+void TrendingTaskITSFhr::SetGraphNameAndAxes(TH1* g,
                                              std::string title, std::string xtitle,
                                              std::string ytitle, double ymin,
                                              double ymax, std::vector<std::string> runlist)
-{ 
+{
+  g->SetStats(0); 
   g->SetTitle(title.c_str());
   g->GetXaxis()->SetTitle(xtitle.c_str());
   g->GetYaxis()->SetTitle(ytitle.c_str());

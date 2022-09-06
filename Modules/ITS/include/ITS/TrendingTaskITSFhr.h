@@ -69,7 +69,7 @@ class TrendingTaskITSFhr : public PostProcessingInterface
   // other functions (mainly style)
   void SetLegendStyle(TLegend* leg);
   void SetGraphStyle(TGraph* g, int col, int mkr);
-  void SetGraphNameAndAxes(TMultiGraph* g, std::string title,
+  void SetGraphNameAndAxes(TH1* g, std::string title,
                            std::string xtitle, std::string ytitle, double ymin,
                            double ymax, std::vector<std::string> runlist);
   void PrepareLegend(TLegend* leg, int layer);
