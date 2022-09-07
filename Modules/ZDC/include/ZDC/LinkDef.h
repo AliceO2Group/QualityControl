@@ -5,4 +5,5 @@
 
 #pragma link C++ class o2::quality_control_modules::zdc::ZDCRawDataTask+;
 #pragma link C++ class o2::quality_control_modules::zdc::ZDCRawDataCheck+;
+#pragma link C++ class o2::quality_control_modules::zdc::ZDCRecDataTask+;
 #endif
