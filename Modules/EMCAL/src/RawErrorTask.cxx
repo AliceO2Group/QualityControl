@@ -71,7 +71,7 @@ void RawErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
   auto get_bool = [](const std::string_view input) -> bool {
     return input == "true";
   };
-  auto mExcludeGainErrorsFromOverview = get_bool(getConfigValueLower("hasAmpVsCell"));
+  auto mExcludeGainErrorsFromOverview = get_bool(getConfigValueLower("excludeGainErrorFromSummary"));
 
   mErrorTypeAll = new TH2F("RawDataErrors", "Raw data errors", 40, 0, 40, 6, -0.5, 5.5);
   mErrorTypeAll->GetXaxis()->SetTitle("Link");
@@ -244,7 +244,7 @@ void RawErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
       }; // switch errorCode
       errorhist->Fill(feeid, errorCode);
 
-      if (o2::emcal::ErrorTypeFEE::ErrorSource_t::GAIN_ERROR) {
+      if (error.getErrorType() == o2::emcal::ErrorTypeFEE::ErrorSource_t::GAIN_ERROR) {
         // Fill Histogram with FEC ID
         auto fecID = error.getSubspecification();
         if (errorCode == 0) {
@@ -276,7 +276,7 @@ void RawErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
           }
         }
       }
-      if (o2::emcal::ErrorTypeFEE::ErrorSource_t::MINOR_ALTRO_ERROR) {
+      if (error.getErrorType() == o2::emcal::ErrorTypeFEE::ErrorSource_t::MINOR_ALTRO_ERROR) {
         auto fecID = error.getSubspecification(); // check: hardware address, or tower id (after markus implementation)
         mFecIdMinorAltroError->Fill(feeid, fecID);
       }
