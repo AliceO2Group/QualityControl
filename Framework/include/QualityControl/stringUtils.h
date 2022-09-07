@@ -22,6 +22,7 @@
 #include <vector>
 #include <iomanip>
 #include <bitset>
+#include <Common/Exceptions.h>
 
 namespace o2::quality_control::core
 {
@@ -56,23 +57,34 @@ std::vector<std::string> getHexRepresentation(unsigned char* data, size_t size)
   return result;
 }
 
-/// Utility methods to fetch boolean otpions from the custom parameters.
+/// \brief Decode key of a configurable parameter as boolean
+/// \param value Value to be decoded (true or false, case-insensitive)
+/// \return Boolean representation of the value
+/// \throw std::runtime_error in case value is not a boolean value
+bool decodeBool(const std::string& value)
+{
+  if (value == "true" || value == "True" || value == "TRUE" || value == "1") {
+    return true;
+  }
+  if (value == "false" || value == "False" || value == "FALSE" || value == "0") {
+    return false;
+  }
+  throw std::runtime_error(fmt::format("Value {} not a boolean", value.data()));
+}
+
+/// Utility methods to fetch boolean options from the custom parameters.
 /// @param name name of the option as in the mCustomParameters and JSON file
-/// @param flag will be set accordingly if the 'name' element is in mCustomParameters
-/// @return true if the option was found, false otherwise
-bool parseBooleanParam(std::unordered_map<std::string, std::string> customParameters, const std::string& name,
-                       bool& flag)
+/// @return true if the option was found in the config and it was set to true, false if it was set to false
+/// @throw AliceO2::Common::ObjectNotFoundError if 'name' is not found in mCustomParameters
+/// @throw std::runtime_error the value is not a bool
+bool parseBoolParam(std::unordered_map<std::string, std::string> customParameters, const std::string& name)
 {
   if (auto param = customParameters.find(name); param != customParameters.end()) {
     ILOG(Info, Devel) << "Custom parameter - " << name << " " << param->second << ENDM;
-    if (param->second == "true" || param->second == "True" || param->second == "TRUE" || param->second == "1") {
-      flag = true;
-    } else if (param->second == "false" || param->second == "False" || param->second == "FALSE" || param->second == "0") {
-      flag = false;
-    }
-    return true;
+    return decodeBool(param->second);
+  } else {
+    BOOST_THROW_EXCEPTION(AliceO2::Common::ObjectNotFoundError() << AliceO2::Common::errinfo_object_name(name));
   }
-  return false;
 }
 
 } // namespace o2::quality_control::core
