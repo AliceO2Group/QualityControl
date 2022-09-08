@@ -210,7 +210,6 @@ void TrendingTaskITSFhr::storePlots(repository::DatabaseInterface& qcdb)
     gTrendsAll[ilay * NTRENDSFHR + index]->Add( (TGraph*)g->Clone());
     delete g;
 
-
    if (plot.name.find("occ") != std::string::npos)
       countplots++;
    

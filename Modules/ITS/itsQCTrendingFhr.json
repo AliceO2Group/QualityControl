@@ -1789,7 +1789,7 @@
           "userorcontrol"
         ],
         "updateTrigger": [
-          "10sec"
+          "newobject:qcdb:ITS/MO/ITSFHR/FinishedObjects/General/ErrorPlots"
         ],
         "stopTrigger": [
           "userorcontrol"
