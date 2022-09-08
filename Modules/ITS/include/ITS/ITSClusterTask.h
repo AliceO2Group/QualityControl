@@ -91,6 +91,7 @@ class ITSClusterTask : public TaskInterface
   TH2D* mGeneralOccupancy;
 
   const int mOccUpdateFrequency = 100000;
+  int mDoPublish1DSummary=0;
   int mNThreads = 1;
   int mNRofs = 0;
   int mNRofsMonitor = 0;
