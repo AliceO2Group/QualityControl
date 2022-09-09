@@ -201,7 +201,7 @@ void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
       if (checkResult == Quality::Good) {
         status = "Quality::GOOD";
         textColor = kGreen;
-      } else if (checkResult == Quality::Bad) {
+      } else if (checkResult == Quality::Bad || checkResult == Quality::Medium) {
         status = "Quality::BAD (call expert)";
         textColor = kRed;
         if (strcmp(checkResult.getMetadata("IB").c_str(), "medium") == 0) {
