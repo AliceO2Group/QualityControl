@@ -35,6 +35,11 @@ class CalibQcCheck : public o2::quality_control::checker::CheckInterface
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
 
+ private:
+  ///////////////////////////
+  int nTF = 0;
+  float scaleTime = 0.0114048; // 128 orb/TF * 3564 BC/orb * 25ns
+
   ClassDefOverride(CalibQcCheck, 2);
 };
 

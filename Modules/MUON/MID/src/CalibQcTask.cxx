@@ -51,6 +51,8 @@ void CalibQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   ILOG(Info, Support) << "initialize CalibQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
   // std::cout << "!!!! START initialize CalibQcTask !!!! " << std::endl;
   /////////////////
+  mNbTimeFrame = std::make_shared<TH1F>("NbTimeFrame", "NbTimeFrame", 1, 0, 1.);
+  getObjectsManager()->startPublishing(mNbTimeFrame.get());
   /// Noise strips Histograms ::
 
   mMultNoiseMT11B = std::make_shared<TH1F>("MultNoiseMT11B", "Multiplicity Noise strips - MT11 bending plane", 300, 0, 3000);
@@ -215,6 +217,9 @@ void CalibQcTask::startOfCycle()
 void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   // std::cout << "!!!! START monitorData CalibQcTask !!!! " << std::endl;
+  nTF++;
+  // printf("----------------> %05d TF ",nTF);
+  mNbTimeFrame->Fill(0.5, 1.);
 
   auto noises = ctx.inputs().get<gsl::span<o2::mid::ColumnData>>("noise");
   auto noiserofs = ctx.inputs().get<gsl::span<o2::mid::ROFRecord>>("noiserofs");
@@ -243,7 +248,7 @@ void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   for (const auto& noiserof : noiserofs) { // loop noiseROFs //
     // printf("========================================================== \n");
-    // printf("%05d ROF with first entry %05zu and nentries %02zu , BC %05d, ORB %05d , EventType %02d\n", noiseROF, noiserof.firstEntry, noiserof.nEntries, noiserof.interactionRecord.bc, noiserof.interactionRecord.orbit, (int)noiserof.eventType);
+    // printf("%05d noiseROF with first entry %05zu and nentries %02zu , BC %05d, ORB %05d , EventType %02d\n", noiseROF, noiserof.firstEntry, noiserof.nEntries, noiserof.interactionRecord.bc, noiserof.interactionRecord.orbit, (int)noiserof.eventType);
     //    eventType::  Standard = 0, Calib = 1, FET = 2
     noiseROF++;
     multNoiseMT11B = 0;
@@ -420,8 +425,8 @@ void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     multDeadMT22NB = 0;
 
     // printf(" deadROF =%i ;EventType %02d   ;  \n", deadROF, deadrof.eventType);
-    if (deadROF != 1)
-      continue; /// TEST ONE FET EVENT ONLY !!!
+    // if (deadROF != 1)
+    //  continue; /// TEST ONE FET EVENT ONLY !!!
 
     int Ntest = 0;
     // loadStripPatterns (ColumnData)
