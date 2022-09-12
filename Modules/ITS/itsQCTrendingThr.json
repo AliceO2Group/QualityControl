@@ -1432,7 +1432,7 @@
                   "userorcontrol"
                 ],
                 "updateTrigger": [
-                  "foreachlatest:qcdb:ITS/MO/ITSThresholdCalibrationTask/THRChipAverageOL"
+                  "10sec"
                 ],
                 "stopTrigger": [
                   "userorcontrol", "10 minutes"
