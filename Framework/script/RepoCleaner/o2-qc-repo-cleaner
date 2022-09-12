@@ -39,6 +39,7 @@ from datetime import datetime
 
 from Ccdb import Ccdb
 from pidfile import PIDFile, AlreadyRunningError
+import traceback
 
 class Rule:
     """A class to hold information about a "rule" defined in the config file."""
@@ -304,6 +305,13 @@ def read_config(args):
     ccdb_url = config['ccdb_url']
     return ccdb_url, rules
 
+def process_object_wrapped(object_path, rules, ccdb, args):
+    '''avoid getting blocked in parallel processing due to exceptions'''
+    try:
+        process_object(object_path, rules, ccdb, args)
+    except:
+        logging.error(f"Exception in process_object: {traceback.format_exc()}")
+
 # @log_sparse
 def process_object(object_path, rules, ccdb, args):
     logger = create_parallel_logger()
@@ -346,7 +354,7 @@ def run(args, ccdb_url, rules):
 
     logging.info(f"workers: {args.workers}")
     pool = mp.Pool(processes=int(args.workers))
-    [pool.apply_async(process_object, args=(object_path, rules, ccdb, args)) for object_path in paths]
+    [pool.apply_async(process_object_wrapped, args=(object_path, rules, ccdb, args)) for object_path in paths]
     pool.close()
     pool.join()
 

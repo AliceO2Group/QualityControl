@@ -1,6 +1,7 @@
 import datetime
 import logging
 import sys
+import traceback
 from typing import List
 
 import dryable
@@ -104,7 +105,6 @@ class Ccdb:
             exit(1)
         versions = []
         for object_path in json_result['objects']:
-            # print(f"\n***object_path : {object_path}")
             version = ObjectVersion(path=object_path['path'], uuid=object_path['id'], validFrom=object_path['validFrom'], validTo=object_path['validUntil'], metadata=object_path)
             versions.insert(0, version)
         versions.sort(key=lambda v: v.validFrom, reverse=False)
@@ -124,8 +124,7 @@ class Ccdb:
             r.raise_for_status()
             self.counter_deleted += 1
         except requests.exceptions.RequestException as e:
-            print(e)
-            sys.exit(1)  # really ?
+            logging.error(f"Exception in process_object: {traceback.format_exc()}")
 
     @dryable.Dryable()
     def updateValidity(self, version: ObjectVersion, valid_from: int, valid_to: int, metadata=None):
