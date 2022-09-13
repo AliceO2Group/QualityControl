@@ -33,6 +33,7 @@ struct CheckRunnerConfig {
   std::string infologgerDiscardFile{};
   core::Activity fallbackActivity;
   framework::Options options{};
+  std::string detectorName = "MISC"; // intended to be the 3 letters code
 };
 
 } // namespace o2::quality_control::checker

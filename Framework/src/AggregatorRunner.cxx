@@ -21,6 +21,7 @@
 #include <Monitoring/MonitoringFactory.h>
 #include <Monitoring/Monitoring.h>
 #include <Framework/InputRecordWalker.h>
+#include <Framework/DeviceSpec.h>
 #include <CommonUtils/ConfigurableParam.h>
 #include <Framework/DataProcessorSpec.h>
 #include <Framework/InitContext.h>
@@ -299,6 +300,8 @@ void AggregatorRunner::initAggregators()
 
 void AggregatorRunner::initInfoLogger(InitContext& iCtx)
 {
+  // TODO : the method should be merged with the other, similar, methods in *Runners
+
   InfoLoggerContext* ilContext = nullptr;
   AliceO2::InfoLogger::InfoLogger* il = nullptr;
   try {
@@ -307,7 +310,15 @@ void AggregatorRunner::initInfoLogger(InitContext& iCtx)
   } catch (const RuntimeErrorRef& err) {
     ILOG(Error) << "Could not find the DPL InfoLogger." << ENDM;
   }
-  QcInfoLogger::init("aggregator", mRunnerConfig.infologgerFilterDiscardDebug, mRunnerConfig.infologgerDiscardLevel, mRunnerConfig.infologgerDiscardFile, il, ilContext);
+
+  // template the param infologgerDiscardFile (_ID_->[device-id])
+  mRunnerConfig.infologgerDiscardFile = templateILDiscardFile(mRunnerConfig.infologgerDiscardFile, iCtx);
+  QcInfoLogger::init("aggregator",
+                     mRunnerConfig.infologgerFilterDiscardDebug,
+                     mRunnerConfig.infologgerDiscardLevel,
+                     mRunnerConfig.infologgerDiscardFile,
+                     il,
+                     ilContext);
 }
 
 void AggregatorRunner::initLibraries()

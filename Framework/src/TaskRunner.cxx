@@ -31,6 +31,7 @@
 #include <Framework/DataRefUtils.h>
 #include <Framework/EndOfStreamContext.h>
 #include <CommonUtils/ConfigurableParam.h>
+#include <Framework/DeviceSpec.h>
 
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/TaskFactory.h"
@@ -44,6 +45,7 @@
 #include <TFile.h>
 #include <boost/property_tree/ptree.hpp>
 #include <TSystem.h>
+#include <regex>
 
 using namespace std;
 
@@ -105,6 +107,8 @@ void TaskRunner::refreshConfig(InitContext& iCtx)
 
 void TaskRunner::initInfologger(InitContext& iCtx)
 {
+  // TODO : the method should be merged with the other, similar, methods in *Runners
+
   AliceO2::InfoLogger::InfoLoggerContext* ilContext = nullptr;
   AliceO2::InfoLogger::InfoLogger* il = nullptr;
   try {
@@ -113,6 +117,9 @@ void TaskRunner::initInfologger(InitContext& iCtx)
   } catch (const RuntimeErrorRef& err) {
     ILOG(Error, Devel) << "Could not find the DPL InfoLogger" << ENDM;
   }
+
+  // template the param infologgerDiscardFile (_ID_->[device-id])
+  mTaskConfig.infologgerDiscardFile = templateILDiscardFile(mTaskConfig.infologgerDiscardFile, iCtx);
   QcInfoLogger::init("task/" + mTaskConfig.taskName,
                      mTaskConfig.infologgerFilterDiscardDebug,
                      mTaskConfig.infologgerDiscardLevel,
