@@ -118,7 +118,6 @@ void TaskRunner::initInfologger(InitContext& iCtx)
     ILOG(Error, Devel) << "Could not find the DPL InfoLogger" << ENDM;
   }
 
-  // template the param infologgerDiscardFile (_ID_->[device-id])
   mTaskConfig.infologgerDiscardFile = templateILDiscardFile(mTaskConfig.infologgerDiscardFile, iCtx);
   QcInfoLogger::init("task/" + mTaskConfig.taskName,
                      mTaskConfig.infologgerFilterDiscardDebug,

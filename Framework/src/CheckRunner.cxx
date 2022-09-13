@@ -489,7 +489,6 @@ void CheckRunner::initInfologger(framework::InitContext& iCtx)
     ILOG(Error) << "Could not find the DPL InfoLogger." << ENDM;
   }
 
-  // template the param infologgerDiscardFile (_ID_->[device-id])
   mConfig.infologgerDiscardFile = templateILDiscardFile(mConfig.infologgerDiscardFile, iCtx);
   QcInfoLogger::init(createCheckRunnerFacility(mDeviceName),
                      mConfig.infologgerFilterDiscardDebug,
