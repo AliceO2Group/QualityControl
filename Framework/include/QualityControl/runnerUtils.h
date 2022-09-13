@@ -192,11 +192,11 @@ inline void overrideValues(boost::property_tree::ptree& tree, std::vector<std::p
  * @param iCtx
  * @return
  */
- using namespace std;
+using namespace std;
 inline std::string templateILDiscardFile(std::string& originalFile, framework::InitContext& iCtx)
 {
   try {
-    auto &deviceSpec = iCtx.services().get<o2::framework::DeviceSpec const>();
+    auto& deviceSpec = iCtx.services().get<o2::framework::DeviceSpec const>();
     return std::regex_replace(originalFile, std::regex("_ID_"), deviceSpec.id);
   } catch (...) {
     cout << "exception caught and swallowed in templateILDiscardFile : " << boost::current_exception_diagnostic_information() << endl;
