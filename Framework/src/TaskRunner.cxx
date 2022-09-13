@@ -31,7 +31,6 @@
 #include <Framework/DataRefUtils.h>
 #include <Framework/EndOfStreamContext.h>
 #include <CommonUtils/ConfigurableParam.h>
-#include <Framework/DeviceSpec.h>
 
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/TaskFactory.h"

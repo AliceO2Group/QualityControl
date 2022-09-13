@@ -21,7 +21,6 @@
 #include <Monitoring/MonitoringFactory.h>
 #include <Monitoring/Monitoring.h>
 #include <Framework/InputRecordWalker.h>
-#include <Framework/DeviceSpec.h>
 #include <CommonUtils/ConfigurableParam.h>
 #include <Framework/DataProcessorSpec.h>
 #include <Framework/InitContext.h>

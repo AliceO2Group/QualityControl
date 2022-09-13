@@ -21,7 +21,6 @@
 // O2
 #include <Common/Exceptions.h>
 #include <Framework/DataSpecUtils.h>
-#include <Framework/DeviceSpec.h>
 #include <Monitoring/MonitoringFactory.h>
 #include <Monitoring/Monitoring.h>
 #include <CommonUtils/ConfigurableParam.h>
