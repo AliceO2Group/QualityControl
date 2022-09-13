@@ -36,7 +36,7 @@ void IncreasingEntries::configure()
 {
   try {
     mMustIncrease = parseBoolParam(mCustomParameters, "mustIncrease");
-  } catch(AliceO2::Common::ObjectNotFoundError& exc) {
+  } catch (AliceO2::Common::ObjectNotFoundError& exc) {
     mMustIncrease = true; // if not there, default behaviour
   }
   ILOG(Debug, Support) << "mustIncrease: " << mMustIncrease << ENDM;
