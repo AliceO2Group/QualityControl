@@ -497,7 +497,6 @@ void CheckRunner::initInfologger(framework::InitContext& iCtx)
                      mConfig.infologgerDiscardFile,
                      il,
                      ilContext);
-
 }
 
 void CheckRunner::initLibraries()

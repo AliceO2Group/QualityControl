@@ -194,7 +194,7 @@ inline void overrideValues(boost::property_tree::ptree& tree, std::vector<std::p
  */
 inline std::string templateILDiscardFile(std::string& originalFile, framework::InitContext& iCtx)
 {
-  auto &deviceSpec = iCtx.services().get<o2::framework::DeviceSpec const>();
+  auto& deviceSpec = iCtx.services().get<o2::framework::DeviceSpec const>();
   return std::regex_replace(originalFile, std::regex("_ID_"), deviceSpec.id);
 }
 
