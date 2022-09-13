@@ -44,7 +44,6 @@
 #include <TFile.h>
 #include <boost/property_tree/ptree.hpp>
 #include <TSystem.h>
-#include <regex>
 
 using namespace std;
 
