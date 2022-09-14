@@ -517,10 +517,9 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
         int chip = digit.getChipIndex() % 9;
         mHitPixelID_InStave[istave][0][chip][1000 * digit.getColumn() + digit.getRow()]++;
         if (mTFCount <= mCutTFForSparse) {
-              int pixelPos[2] = { digit.getColumn() + (1024 * chip) + 1, digit.getRow() + 1 };
-              int BinContent;
-              mStaveHitmap[istave]->GetBinContent(mStaveHitmap[istave]->GetBin(pixelPos),&BinContent); 
-              mStaveHitmap[istave]->SetBinContent(pixelPos,BinContent+1);
+          int pixelPos[2] = { digit.getColumn() + (1024 * chip) + 1, digit.getRow() + 1 };
+          int BinContent = mStaveHitmap[istave]->GetBinContent(mStaveHitmap[istave]->GetBin(pixelPos));
+          mStaveHitmap[istave]->SetBinContent(pixelPos, BinContent + 1);
         }
       }
     } else {
@@ -529,20 +528,17 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
           int chip = ((digit.getChipIndex() - ChipBoundary[mLayer]) % (14 * nHicPerStave[mLayer])) % 14;
           mHitPixelID_InStave[istave][ihic][chip][1000 * digit.getColumn() + digit.getRow()]++;
           int ilink = ihic / (nHicPerStave[mLayer] / 2);
-          if (mTFCount <= mCutTFForSparse){
-          if (chip < 7) {
-                  int pixelPos[2] = { (ihic % (nHicPerStave[mLayer] / NSubStave[mLayer]) * ((nChipsPerHic[mLayer] / 2) * NCols)) + chip * NCols + digit.getColumn() + 1, NRows - digit.getRow() - 1 + (1024 * ilink) + 1 };
-                  int BinContent;
-                  mStaveHitmap[istave]->GetBinContent(mStaveHitmap[istave]->GetBin(pixelPos),&BinContent); 
-                  mStaveHitmap[istave]->SetBinContent(pixelPos,BinContent+1);
-          } else {
-                  int pixelPos[2] = { (ihic % (nHicPerStave[mLayer] / NSubStave[mLayer]) * ((nChipsPerHic[mLayer] / 2) * NCols)) + (nChipsPerHic[mLayer] / 2) * NCols - (chip - 7) * NCols - digit.getColumn(), NRows + digit.getRow() + (1024 * ilink) + 1 };
-              int BinContent;    
-              mStaveHitmap[istave]->GetBinContent(mStaveHitmap[istave]->GetBin(pixelPos),&BinContent); 
-              mStaveHitmap[istave]->SetBinContent(pixelPos,BinContent+1);   
-             }
-         }
-
+          if (mTFCount <= mCutTFForSparse) {
+            if (chip < 7) {
+              int pixelPos[2] = { (ihic % (nHicPerStave[mLayer] / NSubStave[mLayer]) * ((nChipsPerHic[mLayer] / 2) * NCols)) + chip * NCols + digit.getColumn() + 1, NRows - digit.getRow() - 1 + (1024 * ilink) + 1 };
+              int BinContent = mStaveHitmap[istave]->GetBinContent(mStaveHitmap[istave]->GetBin(pixelPos));
+              mStaveHitmap[istave]->SetBinContent(pixelPos, BinContent + 1);
+            } else {
+              int pixelPos[2] = { (ihic % (nHicPerStave[mLayer] / NSubStave[mLayer]) * ((nChipsPerHic[mLayer] / 2) * NCols)) + (nChipsPerHic[mLayer] / 2) * NCols - (chip - 7) * NCols - digit.getColumn(), NRows + digit.getRow() + (1024 * ilink) + 1 };
+              int BinContent = mStaveHitmap[istave]->GetBinContent(mStaveHitmap[istave]->GetBin(pixelPos));
+              mStaveHitmap[istave]->SetBinContent(pixelPos, BinContent + 1);
+            }
+          }
         }
       }
     }
@@ -583,7 +579,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
           continue;
         }
 
-        mNoisyPixelNumber[mLayer][istave] = 0;        
+        mNoisyPixelNumber[mLayer][istave] = 0;
         for (int ichip = 0 + (ilink * 3); ichip < (ilink * 3) + 3; ichip++) {
           std::unordered_map<unsigned int, int>::iterator iter;
 
@@ -603,7 +599,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
               occupancyPlotTmp[i]->Fill(log10((double)iter->second / GBTLinkInfo->statistics.nTriggers));
             }
 
-           totalhit += (int)iter->second;
+            totalhit += (int)iter->second;
           }
 
           mOccupancyLane[istave][ichip] = mHitnumberLane[istave][ichip] / (GBTLinkInfo->statistics.nTriggers * 1024. * 512.);
@@ -636,18 +632,15 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
                     ++iter;
                 }
               }
-          //    std::cout<<"new chip: "<<ichip << " ihic " <<ihic<< " istave " << istave << " ilink: "<<ilink<<std::endl;
               for (auto iter = mHitPixelID_InStave[istave][ihic + ilink * ((nHicPerStave[mLayer] / NSubStave[mLayer]))][ichip].begin(); iter != mHitPixelID_InStave[istave][ihic + ilink * ((nHicPerStave[mLayer] / NSubStave[mLayer]))][ichip].end(); iter++) {
                 if ((iter->second > mHitCutForNoisyPixel) &&
                     (iter->second / (double)GBTLinkInfo->statistics.nTriggers) > mOccupancyCutForNoisyPixel) {
                   mNoisyPixelNumber[mLayer][istave]++;
                   occupancyPlotTmp[i]->Fill(log10((double)iter->second / GBTLinkInfo->statistics.nTriggers));
                 }
- 
-                }
               }
             }
-          
+          }
 
           if (mLayer == 3 || mLayer == 4) {
             mOccupancyLane[istave][2 * (ihic + (ilink * 4))] = mHitnumberLane[istave][2 * (ihic + (ilink * 4))] / (GBTLinkInfo->statistics.nTriggers * 1024. * 512. * nChipsPerHic[mLayer] / 2);
@@ -768,7 +761,6 @@ void ITSFhrTask::getParameters()
   mDoHitmapFilter = std::stoi(mCustomParameters["DoHitmapFilter"]);
   mPhysicalOccupancyIB = std::stof(mCustomParameters["PhysicalOccupancyIB"]);
   mPhysicalOccupancyOB = std::stof(mCustomParameters["PhysicalOccupancyOB"]);
-
 }
 
 void ITSFhrTask::endOfCycle()

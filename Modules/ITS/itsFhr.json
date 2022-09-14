@@ -36,7 +36,7 @@
                 },
                 "location": "remote",
                 "taskParameters": {
-                    "Layer": "1",
+                    "Layer": "3",
 		    "HitNumberCut": "0",
                     "GetTFFromBinding": "0",
                     "decoderThreads": "8",
