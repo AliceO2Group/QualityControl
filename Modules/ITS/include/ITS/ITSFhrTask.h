@@ -112,6 +112,8 @@ class ITSFhrTask final : public TaskInterface
   int mGetTFFromBinding = 0;
   int mHitCutForNoisyPixel = 1024;        // Hit number cut for noisy pixel, this number should be define according how many TF will be accumulated before reset(one can reference the cycle time)
   float mOccupancyCutForNoisyPixel = 0.1; // Occupancy cut for noisy pixel. check if the hit/event value over this cut. similar with mHitCutForNoisyPixel
+  float mPhysicalOccupancyIB = 1.7e-3;
+  float mPhysicalOccupancyOB = 4.3e-5;
   double mCutTFForSparse = 1;             // cut to stop THnSparse filling after mCutTrgForSparse triggers
   int mDoHitmapFilter;                    // do filtering of noise pixel vector
   std::unordered_map<unsigned int, int>*** mHitPixelID_InStave /* = new std::unordered_map<unsigned int, int>**[NStaves[lay]]*/;

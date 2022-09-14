@@ -36,7 +36,7 @@
                 },
                 "location": "remote",
                 "taskParameters": {
-                    "Layer": "2",
+                    "Layer": "1",
 		    "HitNumberCut": "0",
                     "GetTFFromBinding": "0",
                     "decoderThreads": "8",
@@ -50,7 +50,9 @@
                     "Phibins": "240",
 		    "geomPath": "./",
 		    "CutSparseTF": "1",
-                    "DoHitmapFilter": "1"
+                    "DoHitmapFilter": "1",
+                    "PhysicalOccupancyIB": "1.7e-3",
+                    "PhysicalOccupancyOB": "4.3e-5"
                 }
             }
         },
