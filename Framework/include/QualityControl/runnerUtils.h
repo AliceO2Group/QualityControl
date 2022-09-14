@@ -198,7 +198,7 @@ inline std::string templateILDiscardFile(std::string& originalFile, framework::I
     auto& deviceSpec = iCtx.services().get<o2::framework::DeviceSpec const>();
     return std::regex_replace(originalFile, std::regex("_ID_"), deviceSpec.id);
   } catch (...) {
-    cout << "exception caught and swallowed in templateILDiscardFile : " << boost::current_exception_diagnostic_information() << endl;
+    ILOG(Error, Devel) << "exception caught and swallowed in templateILDiscardFile : " << boost::current_exception_diagnostic_information() << ENDM;
   }
   return originalFile;
 }
