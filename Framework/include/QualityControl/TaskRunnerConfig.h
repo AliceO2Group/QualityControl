@@ -47,7 +47,7 @@ struct TaskRunnerConfig {
   int resetAfterCycles = 0;
   bool infologgerFilterDiscardDebug = false;
   int infologgerDiscardLevel = 21;
-  std::string infologgerDiscardFile = "";
+  std::string infologgerDiscardFile{};
   Activity fallbackActivity;
 };
 

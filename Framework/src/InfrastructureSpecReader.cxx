@@ -22,7 +22,6 @@
 
 #include <DataSampling/DataSampling.h>
 #include <Framework/DataDescriptorQueryBuilder.h>
-#include <boost/property_tree/ptree.hpp>
 
 using namespace o2::utilities;
 using namespace o2::framework;
