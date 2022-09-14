@@ -91,9 +91,9 @@ std::string IncreasingEntries::getAcceptedType() { return "TH1"; }
 void IncreasingEntries::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   // only add the pavetext on the faulty plots
-  if(std::count(mFaultyObjectsNames.begin(), mFaultyObjectsNames.end(), mo->getName())) {
+  if (std::count(mFaultyObjectsNames.begin(), mFaultyObjectsNames.end(), mo->getName())) {
     TH1* histo = dynamic_cast<TH1*>(mo->getObject());
-    if(histo) {
+    if (histo) {
       histo->GetListOfFunctions()->Add(mPaveText->Clone());
     }
   }
