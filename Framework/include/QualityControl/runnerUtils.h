@@ -192,7 +192,6 @@ inline void overrideValues(boost::property_tree::ptree& tree, std::vector<std::p
  * @param iCtx
  * @return
  */
-using namespace std;
 inline std::string templateILDiscardFile(std::string& originalFile, framework::InitContext& iCtx)
 {
   try {
