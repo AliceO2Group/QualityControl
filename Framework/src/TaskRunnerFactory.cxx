@@ -129,9 +129,9 @@ void TaskRunnerFactory::customizeInfrastructure(std::vector<framework::Completio
   policies.push_back(taskRunnerCompletionPolicy);
 }
 
-bool TaskRunnerFactory::computeResetAfterCycles(const TaskSpec& taskSpec)
+int TaskRunnerFactory::computeResetAfterCycles(const TaskSpec& taskSpec, bool runningWithMergers)
 {
-  return taskSpec.mergingMode == "delta" ? 1 : (int)taskSpec.resetAfterCycles;
+  return (runningWithMergers && taskSpec.mergingMode == "delta") ? 1 : (int)taskSpec.resetAfterCycles;
 }
 
 } // namespace o2::quality_control::core
