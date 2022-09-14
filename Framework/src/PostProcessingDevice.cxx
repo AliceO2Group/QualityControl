@@ -123,7 +123,7 @@ framework::Inputs PostProcessingDevice::getInputsSpecs()
 
 framework::Outputs PostProcessingDevice::getOutputSpecs()
 {
-  return { { { outputBinding }, createPostProcessingDataOrigin(), createPostProcessingDataDescription(mRunner->getName()), 0 } };
+  return { { { outputBinding }, createPostProcessingDataOrigin(), createPostProcessingDataDescription(mRunner->getName()), 0, Lifetime::Sporadic } };
 }
 
 framework::Options PostProcessingDevice::getOptions()
