@@ -14,7 +14,6 @@
 /// \author Carlo Puggioni
 ///
 
-// OK Ieri
 #include <TCanvas.h>
 #include <TH1.h>
 
@@ -339,6 +338,8 @@ void ZDCRawDataTask::initHisto()
   addNewHisto("BUNCH", "hbunch-ZPA_SUM_A0oT0", "Bunch ZPA SUM  Ali Trigger OR AutoTrigger", "ZPA_SUM", "A0oT0");
   addNewHisto("BUNCH", "hbunch-ZPC_TC_TR_A0oT0", "Bunch ZPC TC Ali Trigger OR AutoTrigger", "ZPC_TC_TR", "A0oT0");
   addNewHisto("BUNCH", "hbunch-ZPC_SUM_A0oT0", "Bunch ZPC SUM  Ali Trigger OR AutoTrigger", "ZPC_SUM", "A0oT0");
+  addNewHisto("BUNCH", "hbunch-ZEM1_A0oT0", "Bunch ZEM1  Ali Trigger OR AutoTrigger", "ZEM1_TR", "A0oT0");
+  addNewHisto("BUNCH", "hbunch-ZEM2_A0oT0", "Bunch ZEM2  Ali Trigger OR AutoTrigger", "ZEM2_TR", "A0oT0");
 
   addNewHisto("BUNCH", "hbunch-ZNA_TC_TR_A0", "Bunch ZNA TC Trigger Alice", "ZNA_TC_TR", "A0");
   addNewHisto("BUNCH", "hbunch-ZNA_SUM_A0", "Bunch ZNA SUM Trigger Alice", "ZNA_SUM", "A0");
@@ -348,6 +349,8 @@ void ZDCRawDataTask::initHisto()
   addNewHisto("BUNCH", "hbunch-ZPA_SUM_A0", "Bunch ZPA SUM  Trigger Alice", "ZPA_SUM", "A0");
   addNewHisto("BUNCH", "hbunch-ZPC_TC_TR_A0", "Bunch ZPC TC Trigger Alice", "ZPC_TC_TR", "A0");
   addNewHisto("BUNCH", "hbunch-ZPC_SUM_A0", "Bunch ZPC SUM  Trigger Alice", "ZPC_SUM", "A0");
+  addNewHisto("BUNCH", "hbunch-ZEM1_A0", "Bunch ZEM1  Trigger Alice", "ZEM1_TR", "A0");
+  addNewHisto("BUNCH", "hbunch-ZEM2_A0", "Bunch ZEM2  Trigger Alice", "ZEM2_TR", "A0");
 
   addNewHisto("BUNCH", "hbunch-ZNA_TC_TR_T0", "Bunch ZNA TC  Auto Trigger", "ZNA_TC_TR", "T0");
   addNewHisto("BUNCH", "hbunch-ZNA_SUM_T0", "Bunch ZNA SUM  Auto Trigger", "ZNA_SUM", "T0");
@@ -357,6 +360,9 @@ void ZDCRawDataTask::initHisto()
   addNewHisto("BUNCH", "hbunch-ZPA_SUM_T0", "Bunch ZPA SUM  Auto Trigger", "ZPA_SUM", "T0");
   addNewHisto("BUNCH", "hbunch-ZPC_TC_TR_T0", "Bunch ZPC TC  Auto Trigger", "ZPC_TC_TR", "T0");
   addNewHisto("BUNCH", "hbunch-ZPC_SUM_T0", "Bunch ZPC SUM  Auto Trigger", "ZPC_SUM", "T0");
+  addNewHisto("BUNCH", "hbunch-ZEM1_T0", "Bunch ZEM1  Auto Trigger", "ZEM1_TR", "T0");
+  addNewHisto("BUNCH", "hbunch-ZEM2_T0", "Bunch ZEM2  Auto Trigger", "ZEM2_TR", "T0");
+
   setBinHisto2D(8, -0.5, 7.5, 4, -0.5, 3.5);
   addNewHisto("TRASMITTEDCHANNEL", "hchTrasmitted", "Channels Trasmitted", "NONE", "ALL");
   addNewHisto("FIRECHANNEL", "hchFired", "Channels Fired", "NONE", "ALL");
@@ -771,6 +777,7 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
         fNameHisto.push_back(name);
         h2d.histo = new TH2F(hname, htit, fNumBinX, fMinBinX, fMaxBinX, fNumBinY, fMinBinY, fMaxBinY);
         h2d.condHisto.push_back(condition);
+        h2d.histo->SetStats(0);
         ih = (int)fMatrixHistoBunch[mod][ch].size();
         fMatrixHistoBunch[mod][ch].push_back(h2d);
 
@@ -791,6 +798,7 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
       } else {
         for (int i = 0; i < (int)fMatrixHistoBunch[mod][ch].size(); i++) {
           fMatrixHistoBunch[mod][ch].at(i).histo->Reset();
+          fMatrixHistoBunch[mod][ch].at(i).histo->SetStats(0);
         }
         return true;
       }
@@ -798,6 +806,7 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
 
     if (type.compare("FIRECHANNEL") == 0) {
       fFireChannel = new TH2F(hname, htit, fNumBinX, fMinBinX, fMaxBinX, fNumBinY, fMinBinY, fMaxBinY);
+      fFireChannel->SetStats(0);
       getObjectsManager()->startPublishing(fFireChannel);
       try {
         getObjectsManager()->addMetadata(fFireChannel->GetName(), fFireChannel->GetName(), "34");
@@ -820,6 +829,7 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
     }
     if (type.compare("TRASMITTEDCHANNEL") == 0) {
       fTrasmChannel = new TH2F(hname, htit, fNumBinX, fMinBinX, fMaxBinX, fNumBinY, fMinBinY, fMaxBinY);
+      fTrasmChannel->SetStats(0);
       getObjectsManager()->startPublishing(fTrasmChannel);
       try {
         getObjectsManager()->addMetadata(fTrasmChannel->GetName(), fTrasmChannel->GetName(), "34");
@@ -846,6 +856,7 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
           fTriggerBits->GetXaxis()->SetBinLabel(im * o2::zdc::NChPerModule + ic + 1, TString::Format("%d%d", im, ic));
         }
       }
+      fTriggerBits->SetStats(0);
       getObjectsManager()->startPublishing(fTriggerBits);
       try {
         getObjectsManager()->addMetadata(fTriggerBits->GetName(), fTriggerBits->GetName(), "34");
@@ -867,6 +878,7 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
       fTriggerBitsHits->GetYaxis()->SetBinLabel(3, "Auto_0");
       fTriggerBitsHits->GetYaxis()->SetBinLabel(2, "Auto_m");
       fTriggerBitsHits->GetYaxis()->SetBinLabel(1, "None");
+      fTriggerBitsHits->SetStats(0);
       for (int im = 0; im < o2::zdc::NModules; im++) {
         for (int ic = 0; ic < o2::zdc::NChPerModule; ic++) {
           fTriggerBitsHits->GetXaxis()->SetBinLabel(im * o2::zdc::NChPerModule + ic + 1, TString::Format("%d%d", im, ic));
@@ -888,6 +900,7 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
           fOverBc->GetXaxis()->SetBinLabel(im * o2::zdc::NChPerModule + ic + 1, TString::Format("%d%d", im, ic));
         }
       }
+      fOverBc->SetStats(0);
       getObjectsManager()->startPublishing(fOverBc);
       try {
         getObjectsManager()->addMetadata(fOverBc->GetName(), fOverBc->GetName(), "34");
@@ -900,7 +913,7 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
     if (type.compare("SUMMARYBASELINE") == 0) {
       fSummaryPedestal = new TH1F(hname, htit, fNumBinX, fMinBinX, fMaxBinX);
       fSummaryPedestal->GetXaxis()->LabelsOption("v");
-
+      fSummaryPedestal->SetStats(0);
       int i = 0;
       for (uint32_t imod = 0; imod < o2::zdc::NModules; imod++) {
         for (uint32_t ich = 0; ich < o2::zdc::NChPerModule; ich++) {
