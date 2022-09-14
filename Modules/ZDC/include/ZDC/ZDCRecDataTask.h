@@ -40,7 +40,7 @@ using namespace o2::quality_control::core;
 namespace o2::quality_control_modules::zdc
 {
 
-/// \brief Example Quality Control DPL Task
+/// \brief Quality Control ZDC Rec Task
 /// \author My Name
 class ZDCRecDataTask final : public TaskInterface
 {
@@ -102,6 +102,7 @@ class ZDCRecDataTask final : public TaskInterface
   void dumpHistoStructure();
   int process(const gsl::span<const o2::zdc::BCRecData>& RecBC, const gsl::span<const o2::zdc::ZDCEnergy>& Energy, const gsl::span<const o2::zdc::ZDCTDCData>& TDCData, const gsl::span<const uint16_t>& Info);
   bool FillTDCValueHisto();
+  std::vector<std::string> tokenLine(std::string Line, std::string Delimiter);
 
  private:
   std::vector<std::string> mVecCh;

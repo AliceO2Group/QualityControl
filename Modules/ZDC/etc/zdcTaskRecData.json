@@ -36,7 +36,18 @@
           "name": "zdc-rec"
         },
         "taskParameters": {
-          "myOwnKey": "myOwnValue"
+          "ADC": "3025;-100;12000",
+          "ADCH": "3025;-100;12000",
+          "TDCT": "2400;-25;25",
+          "TDCA": "2000;-0.5;3999.5",
+          "ADCSUMvsTC": "1210;-100;12000;1210;-100;12000",
+          "ADCvsTDCT": "240;-25;25;1210;-100;12000",
+          "TDCDIFF": "240;-25;25;240;-25;25",
+          "TDCAvsTDCT": "240;-25;25;1000;-0.5;3999.5",
+          "CENTR_ZNA": "200;-2;2;200;-2;2",
+          "CENTR_ZNC": "200;-2;2;200;-2;2",
+          "CENTR_ZPA": "2240;0;22.4",
+          "CENTR_ZPC": "2240;-22.4;0"      
         },
         "location": "remote",
         "saveObjectsToFile": "QcZDCRecData.root",      "": "For debugging, path to the file where to save. If empty it won't save."
