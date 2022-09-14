@@ -117,36 +117,12 @@ void ServiceDiscovery::runHealthServer(unsigned int port)
   context.setField(infoContext::FieldName::System, "QC");
   threadInfoLogger.setContext(context);
 
-  // temporary switch to test the fix for the online mode
-  const char* env_var = std::getenv("QC_TEST_FIX_ONLINE");
-  bool testFixOnline = env_var && strlen(env_var) > 0;
-  if (testFixOnline) {
-    threadInfoLogger << "QC_TEST_FIX_ONLINE set" << ENDM;
-  }
-
   try {
     boost::asio::io_service io_service;
     tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), port));
-    boost::asio::deadline_timer timer(io_service);
     while (mThreadRunning) {
-      io_service.reset();
-      timer.expires_from_now(boost::posix_time::seconds(1));
-      timer.async_wait([&](boost::system::error_code ec) {
-        if (ec.failed()) {
-          threadInfoLogger << "async_accept error: " << ec.message() << ENDM;
-          acceptor.cancel();
-        }
-      });
       tcp::socket socket(io_service);
-      acceptor.async_accept(socket, [&](boost::system::error_code ec) {
-        if (ec.failed()) {
-          threadInfoLogger << "async_accept error: " << ec.message() << ENDM;
-          timer.cancel();
-        }
-      });
-      if (testFixOnline) {
-        io_service.run();
-      }
+      acceptor.accept(socket);
       std::this_thread::sleep_for(std::chrono::seconds(1));
     }
   } catch (std::exception& e) {
