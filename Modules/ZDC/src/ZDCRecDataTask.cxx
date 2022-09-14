@@ -155,7 +155,7 @@ void ZDCRecDataTask::initVecCh()
   insertChVec("CXZNC");
   insertChVec("CYZNC");
   insertChVec("CXZPA");
-  insertChVec("CXZPC"); 
+  insertChVec("CXZPC");
 }
 
 void ZDCRecDataTask::initVecType()
@@ -229,13 +229,13 @@ void ZDCRecDataTask::initHisto()
 {
   ILOG(Info, Support) << "initialize ZDC REC DATA HISTOGRAMS" << ENDM;
   std::vector<std::string> tokenString;
-  
+
   if (auto param = mCustomParameters.find("ADC"); param != mCustomParameters.end()) {
     ILOG(Info, Devel) << "Custom parameter - ADC: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto1D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()));
-  }
-  else setBinHisto1D(1051, -202.5, 4002.5);
+  } else
+    setBinHisto1D(1051, -202.5, 4002.5);
   addNewHisto("ADC1D", "h_ADC_ZNA_TC", "ADC ZNA TC (Gev)", "ADC", "ZNAC", "", "");
   addNewHisto("ADC1D", "h_ADC_ZNA_T1", "ADC ZNA T1 (Gev)", "ADC", "ZNA1", "", "");
   addNewHisto("ADC1D", "h_ADC_ZNA_T2", "ADC ZNA T2 (Gev)", "ADC", "ZNA2", "", "");
@@ -266,13 +266,13 @@ void ZDCRecDataTask::initHisto()
 
   addNewHisto("ADC1D", "h_ADC_ZEM1", "ADC ZPC ZEM1 (Gev)", "ADC", "ZEM1", "", "");
   addNewHisto("ADC1D", "h_ADC_ZEM2", "ADC ZPC ZEM2 (Gev)", "ADC", "ZEM2", "", "");
-  
+
   if (auto param = mCustomParameters.find("ADCH"); param != mCustomParameters.end()) {
     ILOG(Info, Devel) << "Custom parameter - ADCH: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto1D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()));
-  }
-  else setBinHisto1D(1051, -202.5, 4002.5);
+  } else
+    setBinHisto1D(1051, -202.5, 4002.5);
   addNewHisto("ADC1D", "h_ADC_ZNA_TC_H", "ADC ZNA TC (Gev) ZOOM", "ADC", "ZNAC", "", "");
   addNewHisto("ADC1D", "h_ADC_ZNA_SUM_H", "ADC ZNA SUM (Gev) ZOOM", "ADC", "ZNAS", "", "");
   addNewHisto("ADC1D", "h_ADC_ZPA_TC_H", "ADC ZPA TC (Gev) ZOOM", "ADC", "ZPAC", "", "");
@@ -281,13 +281,13 @@ void ZDCRecDataTask::initHisto()
   addNewHisto("ADC1D", "h_ADC_ZNC_SUM_H", "ADC ZNC SUM (Gev) ZOOM", "ADC", "ZNCS", "", "");
   addNewHisto("ADC1D", "h_ADC_ZPC_TC_H", "ADC ZPC TC (Gev) ZOOM", "ADC", "ZPCC", "", "");
   addNewHisto("ADC1D", "h_ADC_ZPC_SUM_H", "ADC ZPC SUM (Gev) ZOOM", "ADC", "ZPCS", "", "");
-  
+
   if (auto param = mCustomParameters.find("TDCT"); param != mCustomParameters.end()) {
     ILOG(Info, Devel) << "Custom parameter - TDCT: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto1D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()));
-  }
-  else setBinHisto1D(2500, -5.5, 245.5);
+  } else
+    setBinHisto1D(2500, -5.5, 245.5);
   addNewHisto("TDC1D", "h_TDC_ZNA_TC_V", "TDC Time (ns) ZNA TC", "TDCV", "ZNAC", "", "");
   addNewHisto("TDC1D", "h_TDC_ZNA_SUM_V", "TDC Time (ns) ZNA SUM", "TDCV", "ZNAS", "", "");
   addNewHisto("TDC1D", "h_TDC_ZPA_TC_V", "TDC Time (ns) ZPA TC", "TDCV", "ZPAC", "", "");
@@ -298,13 +298,13 @@ void ZDCRecDataTask::initHisto()
   addNewHisto("TDC1D", "h_TDC_ZPC_SUM_V", "TDC Time (ns) ZPC SUM", "TDCV", "ZPCS", "", "");
   addNewHisto("TDC1D", "h_TDC_ZEM1_V", "TDC Time (ns) ZPC ZEM1", "TDCV", "ZEM1", "", "");
   addNewHisto("TDC1D", "h_TDC_ZEM2_V", "TDC Time (ns) ZPC ZEM2", "TDCV", "ZEM2", "", "");
-    
+
   if (auto param = mCustomParameters.find("TDCA"); param != mCustomParameters.end()) {
     ILOG(Info, Devel) << "Custom parameter - TDCA: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto1D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()));
-  }
-  else setBinHisto1D(2000, -0.5, 3999.5);
+  } else
+    setBinHisto1D(2000, -0.5, 3999.5);
   addNewHisto("TDC1D", "h_TDC_ZNA_TC_A", "TDC Amplitude ZNA TC", "TDCA", "ZNAC", "", "");
   addNewHisto("TDC1D", "h_TDC_ZNA_SUM_A", "TDC Amplitude ZNA SUM", "TDCA", "ZNAS", "", "");
   addNewHisto("TDC1D", "h_TDC_ZPA_TC_A", "TDC Amplitude ZPA TC", "TDCA", "ZPAC", "", "");
@@ -320,26 +320,26 @@ void ZDCRecDataTask::initHisto()
     ILOG(Info, Devel) << "Custom parameter - CENTR_ZPA: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto1D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()));
-  }
-  else setBinHisto1D(2240, 0, 22.4);
+  } else
+    setBinHisto1D(2240, 0, 22.4);
   addNewHisto("CENTR_ZPA", "h_CENTR_ZPA", "ZPA Centroid (cm)", "ADC", "CXZPA", "", "");
   // Centroid ZPA
   if (auto param = mCustomParameters.find("CENTR_ZPC"); param != mCustomParameters.end()) {
     ILOG(Info, Devel) << "Custom parameter - CENTR_ZPC: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto1D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()));
-  }
-  else setBinHisto1D(2240, -22.4, 0);
+  } else
+    setBinHisto1D(2240, -22.4, 0);
   addNewHisto("CENTR_ZPC", "h_CENTR_ZPC", "ZPC Centroid (cm)", "ADC", "CXZPC", "", "");
 
   // 2D Histos
-  
+
   if (auto param = mCustomParameters.find("ADCSUMvsTC"); param != mCustomParameters.end()) {
     ILOG(Info, Devel) << "Custom parameter - ADCSUMvsTC: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
-  }
-  else setBinHisto2D(1051, -202.5, 4002.5, 1051, -202.5, 4002.5);
+  } else
+    setBinHisto2D(1051, -202.5, 4002.5, 1051, -202.5, 4002.5);
   addNewHisto("ADCSUMvsTC", "h_ADC_ZNAS_ZNAC", "ADC (Gev) ZNA SUM vs ADC (Gev) ZNA TC", "ADC", "ZNAC", "ADC", "ZNAS");
   addNewHisto("ADCSUMvsTC", "h_ADC_ZPAS_ZPAC", "ADC (Gev) ZPA SUM vs ADC (Gev) ZPA TC", "ADC", "ZPAC", "ADC", "ZPAS");
   addNewHisto("ADCSUMvsTC", "h_ADC_ZNCS_ZNCC", "ADC (Gev) ZNC SUM vs ADC (Gev) ZNC TC", "ADC", "ZNCC", "ADC", "ZNCS");
@@ -349,8 +349,8 @@ void ZDCRecDataTask::initHisto()
     ILOG(Info, Devel) << "Custom parameter - ADCvsTDCT: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
-  }
-  else setBinHisto2D(250, -5.5, 24.5, 1051, -202.5, 4002.5);
+  } else
+    setBinHisto2D(250, -5.5, 24.5, 1051, -202.5, 4002.5);
   addNewHisto("ADCvsTDC", "h_ADC_TDC_ZNAC", "ADC (Gev) ZNA TC vs TDC Time (ns)  ZNA TC", "TDCV", "ZNAC", "ADC", "ZNAC");
   addNewHisto("ADCvsTDC", "h_ADC_TDC_ZNAS", "ADC (Gev) ZNA SUM vs TDC Time (ns) ZNA SUM", "TDCV", "ZNAS", "ADC", "ZNAS");
   addNewHisto("ADCvsTDC", "h_ADC_TDC_ZPAC", "ADC (Gev) ZPA TC vs TDC Time (ns) ZPA TC", "TDCV", "ZPAC", "ADC", "ZPAC");
@@ -366,16 +366,16 @@ void ZDCRecDataTask::initHisto()
     ILOG(Info, Devel) << "Custom parameter - TDCDIFF: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
-  }
-  else setBinHisto2D(100, -10.5, 10.5, 100, -10.5, 10.5);
+  } else
+    setBinHisto2D(100, -10.5, 10.5, 100, -10.5, 10.5);
   addNewHisto("TDC-DIFF", "h_TDC_ZNC_DIFF_ZNA_ZNC_SUM_ZNA_V", "TDC Time (ns) ZNC - ZNA vs TDC ZNC + ZNA", "TDCV", "ZNC-ZNA", "TDCV", "ZNC+ZNA");
 
   if (auto param = mCustomParameters.find("TDCAvsTDCT"); param != mCustomParameters.end()) {
     ILOG(Info, Devel) << "Custom parameter - TDCAvsTDCT: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
-  }
-  else setBinHisto2D(250, -5.5, 24.5, 2000, -0.5, 3999.5);
+  } else
+    setBinHisto2D(250, -5.5, 24.5, 2000, -0.5, 3999.5);
   addNewHisto("TDC_T_A", "h_TDC_ZNAC_V_A", "ZNA TC TDC amplitude vs time (ns)", "TDCV", "ZNAC", "TDCA", "ZNAC");
   addNewHisto("TDC_T_A", "h_TDC_ZPAC_V_A", "ZPA TC TDC amplitude vs time (ns)", "TDCV", "ZPAC", "TDCA", "ZPAC");
   addNewHisto("TDC_T_A", "h_TDC_ZNCC_V_A", "ZNC TC TDC amplitude vs time (ns)", "TDCV", "ZNCC", "TDCA", "ZNCC");
@@ -387,36 +387,35 @@ void ZDCRecDataTask::initHisto()
   addNewHisto("TDC_T_A", "h_TDC_ZEM1_V_A", "ZEM1 TDC amplitude vs time (ns)", "TDCV", "ZEM1", "TDCA", "ZEM1");
   addNewHisto("TDC_T_A", "h_TDC_ZEM2_V_A", "ZEM2 TDC amplitude vs time (ns)", "TDCV", "ZEM2", "TDCA", "ZEM2");
 
- // msg histo 
-  setBinHisto2D(o2::zdc::NChannels,-0.5, o2::zdc::NChannels - 0.5, o2::zdc::MsgEnd, -0.5, o2::zdc::MsgEnd - 0.5);
+  // msg histo
+  setBinHisto2D(o2::zdc::NChannels, -0.5, o2::zdc::NChannels - 0.5, o2::zdc::MsgEnd, -0.5, o2::zdc::MsgEnd - 0.5);
   addNewHisto("MSG_REC", "h_msg", "Reconstruction messages", "INFO", "CH", "INFO", "MSG");
-  int idh =  (int)mHisto2D.size() -1;
+  int idh = (int)mHisto2D.size() - 1;
 
-  for(int ibx = 1; ibx <= o2::zdc::NChannels; ibx++){
-    mHisto2D.at(idh).histo->GetXaxis()->SetBinLabel(ibx, o2::zdc::ChannelNames[ibx-1].data());
+  for (int ibx = 1; ibx <= o2::zdc::NChannels; ibx++) {
+    mHisto2D.at(idh).histo->GetXaxis()->SetBinLabel(ibx, o2::zdc::ChannelNames[ibx - 1].data());
   }
-  for(int iby = 1; iby <= o2::zdc::MsgEnd; iby++){
-    mHisto2D.at(idh).histo->GetYaxis()->SetBinLabel(iby, o2::zdc::MsgText[iby-1].data());
+  for (int iby = 1; iby <= o2::zdc::MsgEnd; iby++) {
+    mHisto2D.at(idh).histo->GetYaxis()->SetBinLabel(iby, o2::zdc::MsgText[iby - 1].data());
   }
   mHisto2D.at(idh).histo->SetStats(0);
-// Centroid ZNA
+  // Centroid ZNA
   if (auto param = mCustomParameters.find("CENTR_ZNA"); param != mCustomParameters.end()) {
     ILOG(Info, Devel) << "Custom parameter - CENTR_ZNA: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
-  }
-  else setBinHisto2D(200,-2,2,200,-2,2);
-addNewHisto("CENTR_ZNA", "h_CENTR_ZNA", "ZNA Centroid (cm)", "ADC", "CXZNA", "ADC", "CYZNA");
-// Centroid ZNC
+  } else
+    setBinHisto2D(200, -2, 2, 200, -2, 2);
+  addNewHisto("CENTR_ZNA", "h_CENTR_ZNA", "ZNA Centroid (cm)", "ADC", "CXZNA", "ADC", "CYZNA");
+  // Centroid ZNC
   if (auto param = mCustomParameters.find("CENTR_ZNC"); param != mCustomParameters.end()) {
     ILOG(Info, Devel) << "Custom parameter - CENTR_ZNC: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
-  }
-  else setBinHisto2D(200,-2,2,200,-2,2);
+  } else
+    setBinHisto2D(200, -2, 2, 200, -2, 2);
   addNewHisto("CENTR_ZNC", "h_CENTR_ZNC", "ZNC Centroid (cm)", "ADC", "CXZNC", "ADC", "CYZNC");
 }
-
 
 bool ZDCRecDataTask::add1DHisto(std::string typeH, std::string name, std::string title, std::string typeCh1, std::string ch1)
 {
@@ -488,7 +487,7 @@ bool ZDCRecDataTask::addNewHisto(std::string typeH, std::string name, std::strin
   if (std::find(mNameHisto.begin(), mNameHisto.end(), name) == mNameHisto.end()) {
 
     // ADC 1D (ENERGY) OR TDC 1D
-    if (typeH.compare("ADC1D") == 0 || typeH.compare("TDC1D") == 0  || typeH.compare("CENTR_ZPA") == 0  || typeH.compare("CENTR_ZPC") == 0) {
+    if (typeH.compare("ADC1D") == 0 || typeH.compare("TDC1D") == 0 || typeH.compare("CENTR_ZPA") == 0 || typeH.compare("CENTR_ZPC") == 0) {
       if (add1DHisto(typeH, name, title, typeCh1, ch1))
         return true;
       else
@@ -513,7 +512,7 @@ int ZDCRecDataTask::process(const gsl::span<const o2::zdc::BCRecData>& RecBC,
                             const gsl::span<const uint16_t>& Info)
 {
   LOG(info) << "o2::zdc::InterCalibEPN processing " << RecBC.size();
-  float x,y;
+  float x, y;
   mEv.init(RecBC, Energy, TDCData, Info);
   while (mEv.next()) {
     // Histo 1D
@@ -521,21 +520,21 @@ int ZDCRecDataTask::process(const gsl::span<const o2::zdc::BCRecData>& RecBC,
       // Fill ADC 1D
       if (mHisto1D.at(i).typeh.compare("ADC1D") == 0 && mHisto1D.at(i).typech.compare("ADC") == 0)
         mHisto1D.at(i).histo->Fill(getADCRecValue(mHisto1D.at(i).typech, mHisto1D.at(i).ch));
-        
+
       // Fill TDC 1D
       if (mHisto1D.at(i).typeh.compare("TDC1D") == 0 && (mHisto1D.at(i).typech.compare("TDCV") == 0 || mHisto1D.at(i).typech.compare("TDCA") == 0)) {
         int tdcid = getIdTDCch(mHisto1D.at(i).typech, mHisto1D.at(i).ch);
         auto nhitv = mEv.NtdcV(tdcid);
         if (mEv.NtdcA(tdcid) == nhitv && nhitv > 0) {
           for (int ihit = 0; ihit < nhitv; ihit++) {
-            if (mHisto1D.at(i).typech.compare("TDCV") == 0 ) 
+            if (mHisto1D.at(i).typech.compare("TDCV") == 0)
               mHisto1D.at(i).histo->Fill(mEv.tdcV(tdcid, ihit));
-            if (mHisto1D.at(i).typech.compare("TDCA") == 0 ) 
+            if (mHisto1D.at(i).typech.compare("TDCA") == 0)
               mHisto1D.at(i).histo->Fill(mEv.tdcA(tdcid, ihit));
           }
         }
       }
-       // Fill CENTROID ZP
+      // Fill CENTROID ZP
       if (mHisto1D.at(i).typeh.compare("CENTR_ZPA") == 0 && mHisto1D.at(i).typech.compare("ADC") == 0)
         mHisto1D.at(i).histo->Fill(mEv.xZPA());
       if (mHisto1D.at(i).typeh.compare("CENTR_ZPC") == 0 && mHisto1D.at(i).typech.compare("ADC") == 0)
@@ -574,21 +573,22 @@ int ZDCRecDataTask::process(const gsl::span<const o2::zdc::BCRecData>& RecBC,
           }
         }
       }
-      if (mEv.getNInfo() > 0  && mHisto2D.at(i).typech1.compare("INFO") == 0) {
+      if (mEv.getNInfo() > 0 && mHisto2D.at(i).typech1.compare("INFO") == 0) {
         auto& decodedInfo = mEv.getDecodedInfo();
         for (uint16_t info : decodedInfo) {
           uint8_t ch = (info >> 10) & 0x1f;
-          uint16_t code = info & 0x03ff;;
-         mHisto2D.at(i).histo->Fill(ch, code);
+          uint16_t code = info & 0x03ff;
+          ;
+          mHisto2D.at(i).histo->Fill(ch, code);
         }
       }
-      if (mHisto2D.at(i).typeh.compare("CENTR_ZNA") == 0 && mHisto2D.at(i).typech1.compare("ADC") == 0 && mHisto2D.at(i).typech2.compare("ADC") == 0){
-        mEv.centroidZNA(x,y);
-        mHisto2D.at(i).histo->Fill(x,y);
+      if (mHisto2D.at(i).typeh.compare("CENTR_ZNA") == 0 && mHisto2D.at(i).typech1.compare("ADC") == 0 && mHisto2D.at(i).typech2.compare("ADC") == 0) {
+        mEv.centroidZNA(x, y);
+        mHisto2D.at(i).histo->Fill(x, y);
       }
-      if (mHisto2D.at(i).typeh.compare("CENTR_ZNC") == 0 && mHisto2D.at(i).typech1.compare("ADC") == 0 && mHisto2D.at(i).typech2.compare("ADC") == 0){
-        mEv.centroidZNC(x,y);
-        mHisto2D.at(i).histo->Fill(x,y);
+      if (mHisto2D.at(i).typeh.compare("CENTR_ZNC") == 0 && mHisto2D.at(i).typech1.compare("ADC") == 0 && mHisto2D.at(i).typech2.compare("ADC") == 0) {
+        mEv.centroidZNC(x, y);
+        mHisto2D.at(i).histo->Fill(x, y);
       }
     } // for histo 2D
   }   // while
