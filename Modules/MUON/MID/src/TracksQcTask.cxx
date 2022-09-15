@@ -15,12 +15,10 @@
 ///
 
 #include <TMath.h>
-#include <TCanvas.h>
 #include <TH1.h>
 #include <TH2.h>
 #include <TProfile.h>
 #include <TProfile2D.h>
-#include "MUONCommon/MergeableTH2Ratio.h"
 
 #include <iostream>
 #include <fstream>
@@ -67,24 +65,6 @@ void TracksQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   multTraksNB34MT21 = 0;
   multTraksB34MT22 = 0;
   multTraksNB34MT22 = 0;
-
-  for (int i = 0; i <= MID_NDE; i++)
-    DetTracks[i] = { 0, 0, 0, 0 };
-  for (int i = 0; i <= MID_NLOC; i++)
-    LocTracks[i] = { 0, 0, 0, 0 };
-
-  for (int deId = 0; deId <= MID_NDE; deId++) {
-    for (int locId = 0; locId <= MID_NLOC; locId++) {
-      for (int icol = mMapping.getFirstColumn(deId); icol < 7; ++icol) {
-        for (int ib = mMapping.getFirstBoardBP(icol, deId); ib <= mMapping.getLastBoardBP(icol, deId); ++ib) {
-          if (mMapping.getBoardId(ib, icol, deId) == locId) {
-            LocColMap[locId] = icol;
-            break;
-          }
-        }
-      }
-    }
-  }
 
   // mTrackBCCounts = std::make_shared<TH1F>("TrackBCCounts", "Tracks Bunch Crossing Counts;BC;Entry (tracks nb)", o2::constants::lhc::LHCMaxBunches, 0., o2::constants::lhc::LHCMaxBunches);
   mTrackBCCounts = std::make_shared<TProfile>("TrackBCCounts", "Mean Tracks in Bunch Crossing ; BC ; Mean Tracks nb", o2::constants::lhc::LHCMaxBunches, 0., o2::constants::lhc::LHCMaxBunches);
@@ -319,10 +299,11 @@ void TracksQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
     for (auto& track : tracks.subspan(rofRecord.firstEntry, rofRecord.nEntries)) { // loop Tracks in ROF//
       multTracks += 1;
-      auto isRightSide = o2::mid::detparams::isRightSide(track.getFiredDeId());
-      int deIndex = track.getFiredDeId();
-      int rpcLine = o2::mid::detparams::getRPCLine(track.getFiredDeId());
-      int colId = LocColMap[track.getFiredLocalBoard()];
+      auto isRightSide = o2::mid::detparams::isRightSide(track.getFiredDEId());
+      int deIndex = track.getFiredDEId();
+      int rpcLine = o2::mid::detparams::getRPCLine(track.getFiredDEId());
+      int colId = track.getFiredColumnId();
+      int lineId = track.getFiredLineId();
 
       mTrackMapXY->Fill(track.getPositionX(), track.getPositionY(), 1);
       mTrackDevX->Fill(track.getDirectionX() * DeltaZ);
@@ -418,8 +399,8 @@ void TracksQcTask::monitorData(o2::framework::ProcessingContext& ctx)
           mTrackRatio44->Fill(8.5, 0.);
 
         if (EffFlag > 1) { // RPCeff
-          int DetId0 = track.getFiredDeId();
-          int chamb = o2::mid::detparams::getChamber(track.getFiredDeId());
+          int DetId0 = track.getFiredDEId();
+          int chamb = o2::mid::detparams::getChamber(track.getFiredDEId());
 
           if (chamb == 1)
             DetId0 = DetId0 - 9; // if MT11 not fired
@@ -521,16 +502,17 @@ void TracksQcTask::monitorData(o2::framework::ProcessingContext& ctx)
           }
 
           if (EffFlag > 2) { // LocBoardeff
+            auto localBoard = mMapping.getBoardId(lineId, colId, deIndex);
 
             if (HitMapB == 0xF)
-              mTrackBLocRatio44->Fill(track.getFiredLocalBoard(), 1.);
+              mTrackBLocRatio44->Fill(localBoard, 1.);
             else
-              mTrackBLocRatio44->Fill(track.getFiredLocalBoard(), 0.);
+              mTrackBLocRatio44->Fill(localBoard, 0.);
 
             if (HitMapNB == 0xF)
-              mTrackNBLocRatio44->Fill(track.getFiredLocalBoard(), 1.);
+              mTrackNBLocRatio44->Fill(localBoard, 1.);
             else
-              mTrackNBLocRatio44->Fill(track.getFiredLocalBoard(), 0.);
+              mTrackNBLocRatio44->Fill(localBoard, 0.);
 
             //// Local Boards Display::
 
@@ -545,7 +527,7 @@ void TracksQcTask::monitorData(o2::framework::ProcessingContext& ctx)
               int Fired = 0;
               int BFired = 0;
               int NBFired = 0;
-              if (mMapping.getBoardId(board, colId, deIndex) == track.getFiredLocalBoard()) {
+              if (board == lineId) {
                 // printf(" Loc %i ====> Fired ; col %i, rpcLine %i nZoneX %i\n", mMapping.getBoardId(board, colId, deIndex), colId, rpcLine, nZoneHistoX);
                 if (HitMap == 0xFF)
                   Fired = 1;
