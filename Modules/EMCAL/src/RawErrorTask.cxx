@@ -71,7 +71,7 @@ void RawErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
   auto get_bool = [](const std::string_view input) -> bool {
     return input == "true";
   };
-  auto mExcludeGainErrorsFromOverview = get_bool(getConfigValueLower("excludeGainErrorFromSummary"));
+  mExcludeGainErrorsFromOverview = get_bool(getConfigValueLower("excludeGainErrorFromSummary"));
 
   mErrorTypeAll = new TH2F("RawDataErrors", "Raw data errors", 40, 0, 40, 6, -0.5, 5.5);
   mErrorTypeAll->GetXaxis()->SetTitle("Link");
