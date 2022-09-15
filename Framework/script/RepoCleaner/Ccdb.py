@@ -80,21 +80,25 @@ class Ccdb:
             paths.append(item['path'])
         return paths
 
-    def getVersionsList(self, object_path: str, from_ts: str = "", to_ts: str = "") -> List[ObjectVersion]:
+    def getVersionsList(self, object_path: str, from_ts: str = "", to_ts: str = "", run: int = -1) \
+            -> List[ObjectVersion]:
         '''
         Get the list of all versions for a given object.
+        :param run: only objects for this run (based on metadata)
         :param object_path: Path to the object for which we want the list of versions.
         :param from_ts: only objects created at or after this timestamp
         :param to_ts: only objects created before or at this timestamp
         :return A list of ObjectVersion.
         '''
         url_browse_all_versions = self.url + '/browse/' + object_path
-        logger.debug(f"Ccdb::getVersionsList -> {url_browse_all_versions}")
         headers = {'Accept': 'application/json', 'Connection': 'close'}
         if from_ts != "":
             headers["If-Not-Before"] = from_ts
         if to_ts != "":
             headers["If-Not-After"] = to_ts
+        if run != -1:
+            url_browse_all_versions += '/RunNumber=' + run
+        logger.debug(f"Ccdb::getVersionsList -> {url_browse_all_versions}")
         logger.debug(f"{headers}")
         r = requests.get(url_browse_all_versions, headers=headers)
         r.raise_for_status()

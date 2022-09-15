@@ -10,7 +10,7 @@ import sys
 def parseArgs():
     """Parse the arguments passed to the script."""
     logging.info("Parsing arguments")
-    parser = argparse.ArgumentParser(description='Clean the QC database.')
+    parser = argparse.ArgumentParser(description='Remove all the objects in a given period in a given path')
     parser.add_argument('--url', dest='url', action='store', help='URL of the CCDB, with http[s]://', required=True)
     parser.add_argument('--log-level', dest='log_level', action='store', default="20",
                         help='Log level (CRITICAL->50, ERROR->40, WARNING->30, INFO->20,DEBUG->10)')
