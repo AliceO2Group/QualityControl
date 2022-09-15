@@ -30,19 +30,20 @@ namespace o2::quality_control_modules::common
 /// \param name Name of the taskParameter
 /// \return taskParameter converted to bool, int, float, double or std::string depending on the template type
 template <typename T>
-T getFromConfig(const std::unordered_map<std::string, std::string>& params, const std::string_view name)
+T getFromConfig(const std::unordered_map<std::string, std::string>& params, const std::string_view name, T retVal = T{})
 {
   const auto last = params.end();
   const auto itParam = params.find(name.data());
-  T retVal{};
 
   if (itParam == last) {
     LOGP(warning, "missing parameter {}", name.data());
-    LOGP(warning, "Please add '{}': '<value>' to the 'taskParameters'.", name.data());
+    LOGP(warning, "Please add '{}': '<value>' to the 'taskParameters'. Using default value {}.", name.data(), retVal);
   } else {
     const auto& param = itParam->second;
     if constexpr (std::is_same<int, T>::value) {
       retVal = std::stoi(param);
+    } else if constexpr (std::is_same<std::string, T>::value) {
+      retVal = param;
     } else if constexpr (std::is_same<float, T>::value) {
       retVal = std::stof(param);
     } else if constexpr (std::is_same<double, T>::value) {
