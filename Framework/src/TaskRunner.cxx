@@ -86,7 +86,8 @@ void TaskRunner::refreshConfig(InitContext& iCtx)
                                   infrastructureSpec.tasks.end(),
                                   [this](const TaskSpec& ts) { return ts.taskName == mTaskConfig.taskName; });
       if (taskSpecIter != infrastructureSpec.tasks.end()) {
-        int resetAfterCycles = TaskRunnerFactory::computeResetAfterCycles(*taskSpecIter);
+        bool runningWithMergers = mTaskConfig.parallelTaskID != 0; // it is 0 when we are the one and only task instance.
+        int resetAfterCycles = TaskRunnerFactory::computeResetAfterCycles(*taskSpecIter, runningWithMergers);
         mTaskConfig = TaskRunnerFactory::extractConfig(infrastructureSpec.common, *taskSpecIter, mTaskConfig.parallelTaskID, resetAfterCycles);
         ILOG(Debug, Devel) << "Configuration refreshed" << ENDM;
       } else {
