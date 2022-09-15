@@ -26,8 +26,11 @@
 #include "SimulationDataFormat/MCCompLabel.h"
 #include "DataFormatsTPC/TrackTPC.h"
 #include "ReconstructionDataFormats/TrackTPCITS.h"
+#include "DataFormatsTRD/TrackTRD.h"
+#include "TOFBase/Geo.h"
 
 class TH1F;
+class TH1I;
 class TH2F;
 
 namespace o2::quality_control_modules::pid
@@ -96,13 +99,20 @@ class TaskFT0TOF final : public TaskInterface
   std::shared_ptr<o2::globaltracking::DataRequest> mDataRequest;
   o2::globaltracking::RecoContainer mRecoCont;
   GID::mask_t mSrc = GID::getSourcesMask("ITS-TPC");
-  GID::mask_t mAllowedSources = GID::getSourcesMask("TPC,ITS-TPC,TPC-TOF,ITS-TPC-TOF");
+  GID::mask_t mAllowedSources = GID::getSourcesMask("TPC,TPC-TOF,ITS-TPC,ITS-TPC-TOF,TPC-TRD,TPC-TRD-TOF,ITS-TPC-TRD,ITS-TPC-TRD-TOF");
   // TPC-TOF
   gsl::span<const o2::tpc::TrackTPC> mTPCTracks;
   gsl::span<const o2::dataformats::MatchInfoTOF> mTPCTOFMatches;
   // ITS-TPC-TOF
   gsl::span<const o2::dataformats::TrackTPCITS> mITSTPCTracks;
   gsl::span<const o2::dataformats::MatchInfoTOF> mITSTPCTOFMatches;
+  // TPC-TRD-TOF
+  gsl::span<const o2::trd::TrackTRD> mTPCTRDTracks;
+  gsl::span<const o2::dataformats::MatchInfoTOF> mTPCTRDTOFMatches;
+  // TPC-TRD-TOF
+  gsl::span<const o2::trd::TrackTRD> mITSTPCTRDTracks;
+  gsl::span<const o2::dataformats::MatchInfoTOF> mITSTPCTRDTOFMatches;
+  //
   std::vector<MyTrack> mMyTracks;
 
   // for track selection
@@ -125,9 +135,10 @@ class TaskFT0TOF final : public TaskInterface
   TH2F* mHistDeltatPrPt;
   TH1F* mHistMass;
   TH2F* mHistBetavsP;
-  TH2F* mHistDeltatPiEvtimeRes;
+  TH2F* mHistDeltatPiEvTimeRes;
   TH2F* mHistDeltatPiEvTimeMult;
-  TH2F* mHistT0ResEvTimeMult;
+  TH2F* mHistEvTimeResEvTimeMult;
+  TH1F* mHistEvTimeTOF;
 };
 
 } // namespace o2::quality_control_modules::pid
