@@ -32,7 +32,6 @@ using namespace o2::quality_control::core;
 
 namespace o2::quality_control_modules::zdc
 {
-
 /// \brief Quality Control Raw Data Task
 /// \author Carlo Puggioni
 class ZDCRawDataTask final : public TaskInterface

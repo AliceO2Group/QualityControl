@@ -5,7 +5,8 @@ It is `o2-qc-repo-cleaner`. See the long comment at the beginning.
 
 ## Usage
 ```
-./o2-qc-repo-cleaner [--dry-run] [--log-level 10] [--config config.yaml]
+usage: o2-qc-repo-cleaner [-h] [--config CONFIG] [--config-git] [--config-consul CONFIG_CONSUL] [--log-level LOG_LEVEL] 
+                          [--dry-run] [--only-path ONLY_PATH] [--workers WORKERS]
 ```
 
 ## Configuration
@@ -25,6 +26,8 @@ There can be any number of these rules. The order is important as we use the fir
    - `last_only`: keep only the last version, remove everything else.
    - `none_kept`: keep none, remove everything
    - `skip`: keep everything
+- `from_timestamp`: the rule only applies to versions whose `valid_from` is older than this timestamp
+- `to_timestamp`: the rule only applies to versions whose `valid_from` is younger than this timestamp
 - `xyz`: any extra argument necessary for a given policy. This is the case of the argument `delete_when_no_run` required by the policy `1_per_run`. 
 
 The configuration for ccdb-test is described [here](../../../doc/DevelopersTips.md). 

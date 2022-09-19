@@ -1,8 +1,13 @@
 Rules:
-  - object_path: qc/TST/MO/barth/hello_0
-    delay: 240
-    policy: 1_per_hour
-    migration: True
+  - object_path: qc/TST/MO/QcTask-barth/example3[/.*]{0,1}
+    delay: 0
+    policy: none_kept
+    from_timestamp: 1636091494278
+  - object_path: qc/TST/MO/QcTask-barth/example3[/.*]{0,1}
+    delay: 0
+    policy: none_kept
+    from_timestamp: 1636054889780
+    to_timestamp:  1636095558142
 #  - object_path: qc/ITS/.*
 #    delay: 240
 #    policy: 1_per_run
@@ -55,4 +60,4 @@ Rules:
 #    policy: 1_per_hour
 
 Ccdb:
-  Url: http://ccdb-test.cern.ch:8080
+  Url: http://137.138.47.222:8080

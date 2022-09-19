@@ -5,6 +5,7 @@ add_library(O2QcFDD)
 target_sources(O2QcFDD PRIVATE
                                src/DigitQcTaskLaser.cxx
                                src/DigitQcTask.cxx
+                               src/GenericCheck.cxx
                                src/RecPointsQcTask.cxx
                                src/PostProcTask.cxx
                                src/CFDEffCheck.cxx
@@ -28,6 +29,7 @@ add_root_dictionary(O2QcFDD
   HEADERS
           include/FDD/DigitQcTaskLaser.h
           include/FDD/DigitQcTask.h
+          include/FDD/GenericCheck.h
           include/FDD/RecPointsQcTask.h
           include/FDD/Helper.h
           include/FDD/PostProcTask.h

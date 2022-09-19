@@ -477,6 +477,8 @@ void CheckRunner::initServiceDiscovery()
 
 void CheckRunner::initInfologger(framework::InitContext& iCtx)
 {
+  // TODO : the method should be merged with the other, similar, methods in *Runners
+
   InfoLoggerContext* ilContext = nullptr;
   AliceO2::InfoLogger::InfoLogger* il = nullptr;
   try {
@@ -485,6 +487,8 @@ void CheckRunner::initInfologger(framework::InitContext& iCtx)
   } catch (const RuntimeErrorRef& err) {
     ILOG(Error) << "Could not find the DPL InfoLogger." << ENDM;
   }
+
+  mConfig.infologgerDiscardFile = templateILDiscardFile(mConfig.infologgerDiscardFile, iCtx);
   QcInfoLogger::init(createCheckRunnerFacility(mDeviceName),
                      mConfig.infologgerFilterDiscardDebug,
                      mConfig.infologgerDiscardLevel,

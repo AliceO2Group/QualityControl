@@ -79,6 +79,23 @@ void PostProcTask::configure(std::string, const boost::property_tree::ptree& con
     mPathDigitQcTask = "FT0/MO/DigitQcTask/";
     ILOG(Info, Support) << "configure() : using default pathDigitQcTask = \"" << mPathDigitQcTask << "\"" << ENDM;
   }
+
+  node = config.get_child_optional(Form("%s.custom.timestampSourceLhcIf", configPath));
+  if (node) {
+    mTimestampSourceLhcIf = node.get_ptr()->get_child("").get_value<std::string>();
+    if (mTimestampSourceLhcIf == "last" || mTimestampSourceLhcIf == "trigger" || mTimestampSourceLhcIf == "metadata") {
+      ILOG(Info, Support) << "configure() : using timestampSourceLhcIf = \"" << mTimestampSourceLhcIf << "\"" << ENDM;
+    } else {
+      auto prev = mTimestampSourceLhcIf;
+      mTimestampSourceLhcIf = "trigger";
+      ILOG(Warning, Support) << "configure() : invalid value for timestampSourceLhcIf = \"" << prev
+                             << "\"\n available options are \"last\", \"trigger\" or \"metadata\""
+                             << "\n fallback to default: \"" << mTimestampSourceLhcIf << "\"" << ENDM;
+    }
+  } else {
+    mTimestampSourceLhcIf = "trigger";
+    ILOG(Info, Support) << "configure() : using default timestampSourceLhcIf = \"" << mTimestampSourceLhcIf << "\"" << ENDM;
+  }
 }
 
 void PostProcTask::initialize(Trigger, framework::ServiceRegistry& services)
@@ -143,8 +160,8 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistry& services)
   mMapDigitTrgNames.insert({ o2::ft0::Triggers::bitOutputsAreBlocked, "OutputsAreBlocked" });
   mMapDigitTrgNames.insert({ o2::ft0::Triggers::bitDataIsValid, "DataIsValid" });
   mHistTriggers = std::make_unique<TH1F>("Triggers", "Triggers from TCM", mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
-  mHistBcPattern = std::make_unique<TH2F>("bcPattern", "BC pattern", 3564, 0, 3564, mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
-  mHistBcTrgOutOfBunchColl = std::make_unique<TH2F>("OutOfBunchColl_BCvsTrg", "BC vs Triggers for out-of-bunch collisions;BC;Triggers", 3564, 0, 3564, mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
+  mHistBcPattern = std::make_unique<TH2F>("bcPattern", "BC pattern", sBCperOrbit, 0, sBCperOrbit, mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
+  mHistBcTrgOutOfBunchColl = std::make_unique<TH2F>("OutOfBunchColl_BCvsTrg", "BC vs Triggers for out-of-bunch collisions;BC;Triggers", sBCperOrbit, 0, sBCperOrbit, mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
   for (const auto& entry : mMapDigitTrgNames) {
     mHistTriggers->GetXaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
     mHistBcPattern->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
@@ -318,30 +335,6 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistry&)
     mTime->GetYaxis()->SetTitleOffset(1);
   }
 
-  std::map<std::string, std::string> metadata;
-  std::map<std::string, std::string> headers;
-  auto* lhcIf = mCcdbApi.retrieveFromTFileAny<o2::parameters::GRPLHCIFData>(mPathGrpLhcIf, metadata, -1, &headers);
-  if (!lhcIf) {
-    ILOG(Error, Support) << "object \"" << mPathGrpLhcIf << "\" NOT retrieved!!!" << ENDM;
-    return;
-  }
-  const std::string bcName = lhcIf->getInjectionScheme();
-  if (bcName.size() == 8) {
-    if (bcName.compare("no_value")) {
-      ILOG(Warning) << "Filling scheme not set. OutOfBunchColTask will not produce valid QC plots." << ENDM;
-    }
-  } else {
-    ILOG(Info, Support) << "Filling scheme: " << bcName.c_str() << ENDM;
-  }
-  auto bcPattern = lhcIf->getBunchFilling();
-
-  const int nBc = 3564;
-  mHistBcPattern->Reset();
-  for (int i = 0; i < nBc + 1; i++) {
-    for (int j = 0; j < mMapDigitTrgNames.size() + 1; j++) {
-      mHistBcPattern->SetBinContent(i + 1, j + 1, bcPattern.testBC(i));
-    }
-  }
   auto moBCvsTriggers = mDatabase->retrieveMO(mPathDigitQcTask, "BCvsTriggers", t.timestamp, t.activity);
   auto hBcVsTrg = moBCvsTriggers ? (TH2F*)moBCvsTriggers->getObject() : nullptr;
   if (!hBcVsTrg) {
@@ -349,20 +342,65 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistry&)
     return;
   }
 
+  long ts = 999;
+  if (mTimestampSourceLhcIf == "last") {
+    ts = -1;
+  } else if (mTimestampSourceLhcIf == "trigger") {
+    ts = t.timestamp;
+  } else if (mTimestampSourceLhcIf == "metadata") {
+    for (auto metainfo : moBCvsTriggers->getMetadataMap()) {
+      if (metainfo.first == "TFcreationTime")
+        ts = std::stol(metainfo.second);
+    }
+    if (ts > 1651500000000 && ts < 1651700000000)
+      ILOG(Warning, Support) << "timestamp (read from TF via metadata) points to 02-04 May 2022"
+                                " - make sure this is the data we are processing and not the default timestamp "
+                                "(it may appear when running on digits w/o providing \"--hbfutils-config o2_tfidinfo.root\")"
+                             << ENDM;
+    if (ts == 999) {
+      ILOG(Error) << "\"TFcreationTime\" not found in metadata, fallback to ts from trigger " << ENDM;
+      ts = t.timestamp;
+    }
+  }
+
+  std::map<std::string, std::string> metadata;
+  std::map<std::string, std::string> headers;
+  auto* lhcIf = mCcdbApi.retrieveFromTFileAny<o2::parameters::GRPLHCIFData>(mPathGrpLhcIf, metadata, ts, &headers);
+  if (!lhcIf) {
+    ILOG(Error, Support) << "object \"" << mPathGrpLhcIf << "\" NOT retrieved. OutOfBunchColTask will not produce valid QC plots." << ENDM;
+    return;
+  }
+  const std::string bcName = lhcIf->getInjectionScheme();
+  if (bcName.size() == 8) {
+    if (bcName.compare("no_value")) {
+      ILOG(Error, Support) << "Filling scheme not set. OutOfBunchColTask will not produce valid QC plots." << ENDM;
+    }
+  } else {
+    ILOG(Info, Support) << "Filling scheme: " << bcName.c_str() << ENDM;
+  }
+  auto bcPattern = lhcIf->getBunchFilling();
+
+  mHistBcPattern->Reset();
+  for (int i = 0; i < sBCperOrbit + 1; i++) {
+    for (int j = 0; j < mMapDigitTrgNames.size() + 1; j++) {
+      mHistBcPattern->SetBinContent(i + 1, j + 1, bcPattern.testBC(i));
+    }
+  }
+
   mHistBcTrgOutOfBunchColl->Reset();
   float vmax = hBcVsTrg->GetBinContent(hBcVsTrg->GetMaximumBin());
   mHistBcTrgOutOfBunchColl->Add(hBcVsTrg, mHistBcPattern.get(), 1, -1 * vmax);
-  for (int i = 0; i < nBc + 1; i++) {
+  for (int i = 0; i < sBCperOrbit + 1; i++) {
     for (int j = 0; j < mMapDigitTrgNames.size() + 1; j++) {
       if (mHistBcTrgOutOfBunchColl->GetBinContent(i + 1, j + 1) < 0) {
         mHistBcTrgOutOfBunchColl->SetBinContent(i + 1, j + 1, 0); // is it too slow?
       }
     }
   }
-  mHistBcTrgOutOfBunchColl->SetEntries(mHistBcTrgOutOfBunchColl->Integral(1, nBc, 1, mMapDigitTrgNames.size()));
+  mHistBcTrgOutOfBunchColl->SetEntries(mHistBcTrgOutOfBunchColl->Integral(1, sBCperOrbit, 1, mMapDigitTrgNames.size()));
   for (int iBin = 1; iBin < mMapDigitTrgNames.size() + 1; iBin++) {
     const std::string metadataKey = "BcVsTrgIntegralBin" + std::to_string(iBin);
-    const std::string metadataValue = std::to_string(hBcVsTrg->Integral(1, nBc, iBin, iBin));
+    const std::string metadataValue = std::to_string(hBcVsTrg->Integral(1, sBCperOrbit, iBin, iBin));
     getObjectsManager()->getMonitorObject(mHistBcTrgOutOfBunchColl->GetName())->addOrUpdateMetadata(metadataKey, metadataValue);
     ILOG(Info, Support) << metadataKey << ":" << metadataValue << ENDM;
   }

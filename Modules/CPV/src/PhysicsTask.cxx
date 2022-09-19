@@ -241,7 +241,7 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   static auto startTime = std::chrono::system_clock::now(); // remember time when we first time checked ccdb
   static int minutesPassed = 0;                             // count how much minutes passed from 1st ccdb check
-  bool checkCcdbEntries = isFirstTime;                      // check at first time or when  mCcdbCheckIntervalInMinutes passed
+  bool checkCcdbEntries = isFirstTime || mJustWasReset;     // check at first time or when  mCcdbCheckIntervalInMinutes passed
   auto now = std::chrono::system_clock::now();
   if (((now - startTime) / std::chrono::minutes(1)) > minutesPassed) {
     minutesPassed = (now - startTime) / std::chrono::minutes(1);
@@ -252,6 +252,7 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
 
   if (checkCcdbEntries) {
+    mJustWasReset = false;
     // retrieve gains
     const o2::cpv::CalibParams* gains = nullptr;
     if (hasGains) {
@@ -359,9 +360,10 @@ void PhysicsTask::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Info, Support) << "PhysicsTask::reset() : resetting the histograms" << ENDM;
   resetHistograms();
   mNEventsTotal = 0;
+  mJustWasReset = true;
 }
 
 void PhysicsTask::initHistograms()
@@ -637,6 +639,8 @@ void PhysicsTask::initHistograms()
       getObjectsManager()->startPublishing(mIntensiveHist2D[H2DPedestalValueM2 + mod]);
     } else {
       mIntensiveHist2D[H2DPedestalValueM2 + mod]->Reset();
+      mIntensiveHist2D[H2DPedestalValueM2 + mod]->setCycleNumber(0);
+      mJustWasReset = true;
     }
 
     // pedestal sigma map
@@ -653,6 +657,8 @@ void PhysicsTask::initHistograms()
       getObjectsManager()->startPublishing(mIntensiveHist2D[H2DPedestalSigmaM2 + mod]);
     } else {
       mIntensiveHist2D[H2DPedestalSigmaM2 + mod]->Reset();
+      mIntensiveHist2D[H2DPedestalSigmaM2 + mod]->setCycleNumber(0);
+      mJustWasReset = true;
     }
 
     // bad channel map
@@ -669,6 +675,8 @@ void PhysicsTask::initHistograms()
       getObjectsManager()->startPublishing(mIntensiveHist2D[H2DBadChannelMapM2 + mod]);
     } else {
       mIntensiveHist2D[H2DBadChannelMapM2 + mod]->Reset();
+      mIntensiveHist2D[H2DBadChannelMapM2 + mod]->setCycleNumber(0);
+      mJustWasReset = true;
     }
 
     // gains map
@@ -685,6 +693,8 @@ void PhysicsTask::initHistograms()
       getObjectsManager()->startPublishing(mIntensiveHist2D[H2DGainsM2 + mod]);
     } else {
       mIntensiveHist2D[H2DGainsM2 + mod]->Reset();
+      mIntensiveHist2D[H2DGainsM2 + mod]->setCycleNumber(0);
+      mJustWasReset = true;
     }
   }
 }
@@ -711,8 +721,10 @@ void PhysicsTask::resetHistograms()
   for (int itIntHist2D = 0; itIntHist2D < kNIntensiveHist2D; itIntHist2D++) {
     if (mIntensiveHist2D[itIntHist2D]) {
       mIntensiveHist2D[itIntHist2D]->Reset();
+      mIntensiveHist2D[itIntHist2D]->setCycleNumber(0);
     }
   }
+  mJustWasReset = true;
 }
 
 } // namespace o2::quality_control_modules::cpv

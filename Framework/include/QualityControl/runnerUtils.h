@@ -21,12 +21,14 @@
 #include <Configuration/ConfigurationFactory.h>
 #include <Common/Exceptions.h>
 #include <Framework/RawDeviceService.h>
+#include <Framework/DeviceSpec.h>
 #include <fairmq/Device.h>
 #include <Framework/ConfigParamRegistry.h>
 #include <QualityControl/QcInfoLogger.h>
 #include <boost/property_tree/json_parser.hpp>
 #include <CommonUtils/StringUtils.h>
 #include "QualityControl/Activity.h"
+#include <regex>
 
 namespace o2::quality_control::core
 {
@@ -182,6 +184,23 @@ inline void overrideValues(boost::property_tree::ptree& tree, std::vector<std::p
   for (const auto& [key, value] : keyValues) {
     tree.put(key, value);
   }
+}
+
+/**
+ * template the param infologgerDiscardFile (_ID_->[device-id])
+ * @param originalFile
+ * @param iCtx
+ * @return
+ */
+inline std::string templateILDiscardFile(std::string& originalFile, framework::InitContext& iCtx)
+{
+  try {
+    auto& deviceSpec = iCtx.services().get<o2::framework::DeviceSpec const>();
+    return std::regex_replace(originalFile, std::regex("_ID_"), deviceSpec.id);
+  } catch (...) {
+    ILOG(Error, Devel) << "exception caught and swallowed in templateILDiscardFile : " << boost::current_exception_diagnostic_information() << ENDM;
+  }
+  return originalFile;
 }
 
 } // namespace o2::quality_control::core

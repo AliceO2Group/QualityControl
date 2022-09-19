@@ -15,13 +15,14 @@
 ///
 
 #include "CCDB/CCDBTimeStampUtils.h"
+#include "EMCALBase/Geometry.h"
 #include "EMCALCalib/BadChannelMap.h"
 #include "EMCALCalib/TimeCalibrationParams.h"
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
 #include "EMCAL/CalibMonitoringTask.h"
 
-//root includes
+// root includes
 #include "TCanvas.h"
 #include "TPaveText.h"
 #include "TH1D.h"
@@ -46,13 +47,18 @@ void CalibMonitoringTask::initialize(Trigger, framework::ServiceRegistry&)
 {
   QcInfoLogger::setDetector("EMC");
   ILOG(Info, Support) << "initialize CalibTask" << ENDM;
-  //initialize histograms to be monitored as data member
+  // initialize histograms to be monitored as data member
   for (const auto& obj : mCalibObjects) {
     if (obj == "TimeCalibParams") {
       mTimeCalibParamHisto = new TH1D("timeCalibCoeff", "Time Calib Coeff", 17644, -0.5, 17643.5); //
       mTimeCalibParamHisto->GetXaxis()->SetTitle("Cell Id");
       mTimeCalibParamHisto->GetYaxis()->SetTitle("Time (ns)");
       getObjectsManager()->startPublishing(mTimeCalibParamHisto);
+
+      mTimeCalibParamPosition = new TH2D("timeCalibPosition", "Time Calib Coeff in 2D", 96, -0.5, 95.5, 208, -0.5, 207.5);
+      mTimeCalibParamPosition->GetXaxis()->SetTitle("column (#eta)");
+      mTimeCalibParamPosition->GetYaxis()->SetTitle("row (#phi)");
+      getObjectsManager()->startPublishing(mTimeCalibParamPosition);
     }
     if (obj == "BadChannelMap") {
       mBadChannelMapHisto = new TH2D("badChannelMap", "Pos. of Bad Channel", 96, -0.5, 95.5, 208, -0.5, 207.5);
@@ -61,10 +67,12 @@ void CalibMonitoringTask::initialize(Trigger, framework::ServiceRegistry&)
       getObjectsManager()->startPublishing(mBadChannelMapHisto);
     }
   }
+  o2::emcal::Geometry::GetInstanceFromRunNumber(300000);
 }
 
 void CalibMonitoringTask::update(Trigger t, framework::ServiceRegistry&)
 {
+  auto geo = o2::emcal::Geometry::GetInstance();
   std::map<std::string, std::string> metadata;
   reset();
   for (const auto& obj : mCalibObjects) {
@@ -86,9 +94,11 @@ void CalibMonitoringTask::update(Trigger t, framework::ServiceRegistry&)
       if (!mTimeCalib)
         ILOG(Info, Support) << " No Time Calib object " << ENDM;
       TH1* hist_temp = 0x0;
-      hist_temp = mTimeCalib->getHistogramRepresentation(false); //we monitor for the moment only the high gain
+      hist_temp = mTimeCalib->getHistogramRepresentation(false); // we monitor for the moment only the high gain
       for (Int_t i = 0; i < hist_temp->GetNbinsX(); i++) {
         mTimeCalibParamHisto->SetBinContent(i, hist_temp->GetBinContent(i + 1));
+        auto [row, column] = geo->GlobalRowColFromIndex(i);
+        mTimeCalibParamPosition->SetBinContent(column + 1, row + 1, hist_temp->GetBinContent(i + 1));
       }
     }
   }
@@ -102,6 +112,7 @@ void CalibMonitoringTask::finalize(Trigger t, framework::ServiceRegistry&)
     }
     if (obj == "TimeCalibParams") {
       getObjectsManager()->stopPublishing(mTimeCalibParamHisto);
+      getObjectsManager()->stopPublishing(mTimeCalibParamPosition);
     }
   }
 }

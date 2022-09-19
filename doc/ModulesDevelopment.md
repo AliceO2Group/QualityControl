@@ -334,7 +334,7 @@ void beautify(std::shared_ptr<MonitorObject> mo, Quality = Quality::Null) {}
 
 The `check` function is called whenever the _policy_ is satisfied. It gets a map with all declared MonitorObjects. It is expected to return Quality of the given MonitorObjects.
 
-The `beautify` function is called after the `check` function if there is a single `dataSource` of type `Task` in the configuration of the check. If there is more than one, the `beautify()` is not called in this check. 
+The `beautify` function is called after the `check` function if there is a single `dataSource` in the configuration of the check. If there is more than one, the `beautify()` is not called in this check. 
 
 ## Quality Aggregation
 

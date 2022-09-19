@@ -86,7 +86,8 @@ void TaskRunner::refreshConfig(InitContext& iCtx)
                                   infrastructureSpec.tasks.end(),
                                   [this](const TaskSpec& ts) { return ts.taskName == mTaskConfig.taskName; });
       if (taskSpecIter != infrastructureSpec.tasks.end()) {
-        int resetAfterCycles = TaskRunnerFactory::computeResetAfterCycles(*taskSpecIter);
+        bool runningWithMergers = mTaskConfig.parallelTaskID != 0; // it is 0 when we are the one and only task instance.
+        int resetAfterCycles = TaskRunnerFactory::computeResetAfterCycles(*taskSpecIter, runningWithMergers);
         mTaskConfig = TaskRunnerFactory::extractConfig(infrastructureSpec.common, *taskSpecIter, mTaskConfig.parallelTaskID, resetAfterCycles);
         ILOG(Debug, Devel) << "Configuration refreshed" << ENDM;
       } else {
@@ -105,6 +106,8 @@ void TaskRunner::refreshConfig(InitContext& iCtx)
 
 void TaskRunner::initInfologger(InitContext& iCtx)
 {
+  // TODO : the method should be merged with the other, similar, methods in *Runners
+
   AliceO2::InfoLogger::InfoLoggerContext* ilContext = nullptr;
   AliceO2::InfoLogger::InfoLogger* il = nullptr;
   try {
@@ -113,6 +116,8 @@ void TaskRunner::initInfologger(InitContext& iCtx)
   } catch (const RuntimeErrorRef& err) {
     ILOG(Error, Devel) << "Could not find the DPL InfoLogger" << ENDM;
   }
+
+  mTaskConfig.infologgerDiscardFile = templateILDiscardFile(mTaskConfig.infologgerDiscardFile, iCtx);
   QcInfoLogger::init("task/" + mTaskConfig.taskName,
                      mTaskConfig.infologgerFilterDiscardDebug,
                      mTaskConfig.infologgerDiscardLevel,
@@ -306,15 +311,11 @@ void TaskRunner::start(const ServiceRegistry& services)
   string partitionName = computePartitionName(services);
   QcInfoLogger::setPartition(partitionName);
 
+  mNoMoreCycles = false;
+  mCycleNumber = 0;
+
   try {
     startOfActivity();
-
-    if (mNoMoreCycles) {
-      ILOG(Info, Support) << "The maximum number of cycles (" << mTaskConfig.maxNumberCycles << ") has been reached"
-                          << " or the device has received an EndOfStream signal. Won't start a new cycle." << ENDM;
-      return;
-    }
-
     startCycle();
   } catch (...) {
     // we catch here because we don't know where it will go in DPL's CallbackService

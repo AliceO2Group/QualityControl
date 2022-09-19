@@ -3,7 +3,7 @@
 add_library(O2QcTRD)
 
 target_sources(O2QcTRD PRIVATE src/TrackletsCheck.cxx  src/TrackletsTask.cxx  src/PulseHeightCheck.cxx  src/PulseHeight.cxx  src/RawData.cxx  src/DigitsTask.cxx
-                             src/DigitsCheck.cxx)
+                             src/DigitsCheck.cxx src/TRDTrending.cxx src/TrendingTaskConfigTRD.cxx)
 
 target_include_directories(
   O2QcTRD
@@ -27,6 +27,8 @@ add_root_dictionary(O2QcTRD
   include/TRD/RawData.h
                             include/TRD/DigitsTask.h
                             include/TRD/DigitsCheck.h
+                            include/TRD/TRDTrending.h
+                            include/TRD/TrendingTaskConfigTRD.h
                     LINKDEF include/TRD/LinkDef.h
                     BASENAME O2QcTRD)
 

@@ -24,6 +24,7 @@
 #include <TList.h>
 
 #include <DataFormatsQualityControl/FlagReasons.h>
+#include <Common/Exceptions.h>
 
 using namespace std;
 using namespace o2::quality_control;
@@ -33,8 +34,11 @@ namespace o2::quality_control_modules::common
 
 void IncreasingEntries::configure()
 {
-  parseBooleanParam(mCustomParameters, "mustIncrease", mMustIncrease);
-
+  try {
+    mMustIncrease = parseBoolParam(mCustomParameters, "mustIncrease");
+  } catch (AliceO2::Common::ObjectNotFoundError& exc) {
+    mMustIncrease = true; // if not there, default behaviour
+  }
   ILOG(Debug, Support) << "mustIncrease: " << mMustIncrease << ENDM;
 
   if (mMustIncrease) {

@@ -437,12 +437,14 @@ void ITSClusterTask::createAllHistos()
         for (Int_t iChip = 0; iChip < mNChipsPerHic[iLayer]; iChip++) {
           hGroupedClusterSizeSummaryIB[iLayer][iStave][iChip] = new TH1D(Form("Layer%d/Stave%d/CHIP%d/ClusterSizeGrouped", iLayer, iStave, iChip), Form("Layer%dStave%dCHIP%dClusterSizeGroped", iLayer, iStave, iChip), 100, 0, 100);
           hGroupedClusterSizeSummaryIB[iLayer][iStave][iChip]->SetTitle(Form("Cluster Size for grouped topologies on Layer %d Stave %d Chip %d", iLayer, iStave, iChip));
-          addObject(hGroupedClusterSizeSummaryIB[iLayer][iStave][iChip]);
+          if (mDoPublish1DSummary == 1)
+            addObject(hGroupedClusterSizeSummaryIB[iLayer][iStave][iChip]);
           formatAxes(hGroupedClusterSizeSummaryIB[iLayer][iStave][iChip], "Cluster size (Pixel)", "Counts", 1, 1.10);
 
           hClusterTopologySummaryIB[iLayer][iStave][iChip] = new TH1D(Form("Layer%d/Stave%d/CHIP%d/ClusterTopology", iLayer, iStave, iChip), Form("Layer%dStave%dCHIP%dClusterTopology", iLayer, iStave, iChip), 300, 0, 300);
           hClusterTopologySummaryIB[iLayer][iStave][iChip]->SetTitle(Form("Cluster Topology on Layer %d Stave %d Chip %d", iLayer, iStave, iChip));
-          addObject(hClusterTopologySummaryIB[iLayer][iStave][iChip]);
+          if (mDoPublish1DSummary == 1)
+            addObject(hClusterTopologySummaryIB[iLayer][iStave][iChip]);
           formatAxes(hClusterTopologySummaryIB[iLayer][iStave][iChip], "Cluster topology (ID)", "Counts", 1, 1.10);
 
           hAverageClusterSizeSummaryIB[iLayer]->GetXaxis()->SetBinLabel(iChip + 1, Form("Chip %i", iChip));
@@ -499,17 +501,20 @@ void ITSClusterTask::createAllHistos()
 
         hClusterSizeSummaryOB[iLayer][iStave] = new TH1D(Form("Layer%d/Stave%d/ClusterSize", iLayer, iStave), Form("Layer%dStave%dClusterSize", iLayer, iStave), 100, 0, 100);
         hClusterSizeSummaryOB[iLayer][iStave]->SetTitle(Form("Cluster Size summary for Layer %d Stave %d", iLayer, iStave));
-        addObject(hClusterSizeSummaryOB[iLayer][iStave]);
+        if (mDoPublish1DSummary == 1)
+          addObject(hClusterSizeSummaryOB[iLayer][iStave]);
         formatAxes(hClusterSizeSummaryOB[iLayer][iStave], "Cluster size (Pixel)", "Counts", 1, 1.10);
 
         hGroupedClusterSizeSummaryOB[iLayer][iStave] = new TH1D(Form("Layer%d/Stave%d/GroupedClusterSize", iLayer, iStave), Form("Layer%dStave%dGroupedClusterSize", iLayer, iStave), 100, 0, 100);
         hGroupedClusterSizeSummaryOB[iLayer][iStave]->SetTitle(Form("Grouped Cluster Size summary for Layer %d Stave %d", iLayer, iStave));
-        addObject(hGroupedClusterSizeSummaryOB[iLayer][iStave]);
+        if (mDoPublish1DSummary == 1)
+          addObject(hGroupedClusterSizeSummaryOB[iLayer][iStave]);
         formatAxes(hGroupedClusterSizeSummaryOB[iLayer][iStave], "Cluster size (Pixel)", "Counts", 1, 1.10);
 
         hClusterTopologySummaryOB[iLayer][iStave] = new TH1D(Form("Layer%d/Stave%d/ClusterTopology", iLayer, iStave), Form("Layer%dStave%dClusterTopology", iLayer, iStave), 300, 0, 300);
         hClusterTopologySummaryOB[iLayer][iStave]->SetTitle(Form("Cluster Toplogy summary for Layer %d Stave %d", iLayer, iStave));
-        addObject(hClusterTopologySummaryOB[iLayer][iStave]);
+        if (mDoPublish1DSummary == 1)
+          addObject(hClusterTopologySummaryOB[iLayer][iStave]);
         formatAxes(hClusterTopologySummaryOB[iLayer][iStave], "Cluster toplogy (ID)", "Counts", 1, 1.10);
 
         hAverageClusterSizeSummaryOB[iLayer]->GetYaxis()->SetBinLabel(iStave + 1, Form("Stave %i", iStave));
@@ -533,7 +538,7 @@ void ITSClusterTask::getJsonParameters()
   mNThreads = stoi(mCustomParameters.find("nThreads")->second);
   nBCbins = stoi(mCustomParameters.find("nBCbins")->second);
   mGeomPath = mCustomParameters["geomPath"];
-
+  mDoPublish1DSummary = stoi(mCustomParameters.find("publishSummary1D")->second);
   for (int ilayer = 0; ilayer < NLayer; ilayer++) {
 
     if (mCustomParameters["layer"][ilayer] != '0') {

@@ -25,4 +25,6 @@
 
 #pragma link C++ class o2::quality_control_modules::emcal::CalibMonitoringTask + ;
 
+#pragma link C++ class o2::quality_control_modules::emcal::SupermoduleProjectorTask + ;
+
       #endif

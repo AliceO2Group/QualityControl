@@ -3,7 +3,7 @@
         "config": {
             "database": {
                 "implementation": "CCDB",
-                "host": ":188.184.2.55:8080",
+                "host": "188.184.2.55:8080",
                 "username": "not_applicable",
                 "password": "not_applicable",
                 "name": "not_applicable"
@@ -36,7 +36,8 @@
                 },
                 "location": "local",
                 "taskParameters": {
-                    "NPayloadSizeBins": "4096"
+                    "NPayloadSizeBins": "4096",
+                    "EnableAutoreco": "1"
                 }
             }
         },

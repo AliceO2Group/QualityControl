@@ -88,22 +88,22 @@ class CellTask final : public TaskInterface
     TH2* mCellTimeSupermoduleCalib = nullptr; ///< Calibrated cell time (good cells) versus supermodule
     TH2* mCellAmpSupermoduleBad = nullptr;    ///< Cell amplitude bad cells versus supermodule
 
-    TH2* mCellOccupancy = nullptr;                             ///< Cell occupancy EMCAL and DCAL
-    TH2* mCellOccupancyThr = nullptr;                          ///< Cell occupancy EMCAL and DCAL with Energy trheshold
-    TH2* mCellOccupancyThrBelow = nullptr;                     ///< Cell occupancy EMCAL and DCAL with Energy trheshold
-    TH2* mCellOccupancyGood = nullptr;                         ///< Cell occupancy EMCAL and DCAL good cells
-    TH2* mCellOccupancyBad = nullptr;                          ///< Cell occupancy EMCAL and DCAL bad cells
-    TH2* mIntegratedOccupancy = nullptr;                       ///< Cell integrated occupancy
-    TH1* mCellAmplitude_tot = nullptr;                         ///< Cell amplitude in EMCAL,DCAL
-    TH1* mCellAmplitudeEMCAL = nullptr;                        ///< Cell amplitude in EMCAL
-    std::unordered_map<int, std::array<TH1*, 20>> mCellTimeBC; ///< Cell amplitude in EMCAL if bc==0
-    TH1* mCellAmplitudeDCAL = nullptr;                         ///< Cell amplitude in DCAL
-    TH1* mCellTimeSupermodule_tot = nullptr;                   ///< Cell time in EMCAL,DCAL per SuperModule
-    TH1* mCellTimeSupermoduleEMCAL = nullptr;                  ///< Cell time in EMCAL per SuperModule
-    TH1* mCellTimeSupermoduleDCAL = nullptr;                   ///< Cell time in DCAL per SuperModule
-    TH1* mnumberEvents = nullptr;                              ///< Number of Events for normalization
-    std::array<TH1*, 2> mCellTimeSupermoduleEMCAL_Gain;        ///< Cell  time in EMCAL per high low Gain
-    std::array<TH1*, 2> mCellTimeSupermoduleDCAL_Gain;         ///< Digit time in DCAL per high low Gain
+    TH2* mCellOccupancy = nullptr;                      ///< Cell occupancy EMCAL and DCAL
+    TH2* mCellOccupancyThr = nullptr;                   ///< Cell occupancy EMCAL and DCAL with Energy trheshold
+    TH2* mCellOccupancyThrBelow = nullptr;              ///< Cell occupancy EMCAL and DCAL with Energy trheshold
+    TH2* mCellOccupancyGood = nullptr;                  ///< Cell occupancy EMCAL and DCAL good cells
+    TH2* mCellOccupancyBad = nullptr;                   ///< Cell occupancy EMCAL and DCAL bad cells
+    TH2* mIntegratedOccupancy = nullptr;                ///< Cell integrated occupancy
+    TH1* mCellAmplitude_tot = nullptr;                  ///< Cell amplitude in EMCAL,DCAL
+    TH1* mCellAmplitudeEMCAL = nullptr;                 ///< Cell amplitude in EMCAL
+    std::array<TH1*, 4> mCellTimeBC;                    ///< Cell amplitude in EMCAL for each bc
+    TH1* mCellAmplitudeDCAL = nullptr;                  ///< Cell amplitude in DCAL
+    TH1* mCellTimeSupermodule_tot = nullptr;            ///< Cell time in EMCAL,DCAL per SuperModule
+    TH1* mCellTimeSupermoduleEMCAL = nullptr;           ///< Cell time in EMCAL per SuperModule
+    TH1* mCellTimeSupermoduleDCAL = nullptr;            ///< Cell time in DCAL per SuperModule
+    TH1* mnumberEvents = nullptr;                       ///< Number of Events for normalization
+    std::array<TH1*, 2> mCellTimeSupermoduleEMCAL_Gain; ///< Cell  time in EMCAL per high low Gain
+    std::array<TH1*, 2> mCellTimeSupermoduleDCAL_Gain;  ///< Digit time in DCAL per high low Gain
 
     void initForTrigger(const std::string trigger, const TaskSettings& settings);
     void startPublishing(o2::quality_control::core::ObjectsManager& manager);

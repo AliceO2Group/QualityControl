@@ -20,6 +20,7 @@
 #include "QualityControl/QcInfoLogger.h"
 // ROOT
 #include <TH1.h>
+#include <TH2.h>
 
 #include <DataFormatsQualityControl/FlagReasons.h>
 
@@ -31,28 +32,19 @@ namespace o2::quality_control_modules::mid
 
 Quality CalibQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
+  // printf("\n*********** CalibQcCheck ****** check \n");
   Quality result = Quality::Null;
 
   for (auto& [moName, mo] : *moMap) {
 
     (void)moName;
-    if (mo->getName() == "example") {
+    if (mo->getName() == "NbTimeFrame") {
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
-
-      result = Quality::Good;
-
-      for (int i = 0; i < h->GetNbinsX(); i++) {
-        if (i > 0 && i < 8 && h->GetBinContent(i) == 0) {
-          result = Quality::Bad;
-          result.addReason(FlagReasonFactory::Unknown(),
-                           "It is bad because there is nothing in bin " + std::to_string(i));
-          break;
-        } else if ((i == 0 || i > 7) && h->GetBinContent(i) > 0) {
-          result = Quality::Medium;
-          result.addReason(FlagReasonFactory::Unknown(),
-                           "It is medium because bin " + std::to_string(i) + " is not empty");
-        }
-      }
+      nTF = h->GetBinContent(1);
+      if (nTF > 0)
+        result = Quality::Good;
+      else
+        result = Quality::Bad;
     }
   }
   return result;
@@ -60,21 +52,106 @@ Quality CalibQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
 
 std::string CalibQcCheck::getAcceptedType() { return "TH1"; }
 
+static void updateTitle(TH1* hist, std::string suffix)
+{
+  if (!hist) {
+    return;
+  }
+  TString title = hist->GetTitle();
+  title.Append(" (Hz) ");
+  title.Append(suffix.c_str());
+  hist->SetTitle(title);
+}
+
+static std::string getCurrentTime()
+{
+  time_t t;
+  time(&t);
+
+  struct tm* tmp;
+  tmp = localtime(&t);
+
+  char timestr[500];
+  strftime(timestr, sizeof(timestr), "(%x - %X)", tmp);
+
+  std::string result = timestr;
+  return result;
+}
+
 void CalibQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  if (mo->getName() == "example") {
-    auto* h = dynamic_cast<TH1F*>(mo->getObject());
-
-    if (checkResult == Quality::Good) {
-      h->SetFillColor(kGreen);
-    } else if (checkResult == Quality::Bad) {
-      ILOG(Info, Support) << "Quality::Bad, setting to red" << ENDM;
-      h->SetFillColor(kRed);
-    } else if (checkResult == Quality::Medium) {
-      ILOG(Info, Support) << "Quality::medium, setting to orange" << ENDM;
-      h->SetFillColor(kOrange);
+  // printf("\n*********** CalibQcCheck ****** beautify \n");
+  auto currentTime = getCurrentTime();
+  updateTitle(dynamic_cast<TH1*>(mo->getObject()), currentTime);
+  // printf("\n*********** CalibQcCheck ****** nTF = %d\n",nTF);
+  if (checkResult == Quality::Good) {
+    float scale = 1 / (nTF * scaleTime);
+    /// Scale Noise Maps ::
+    if (mo->getName() == "BendNoiseMap11") {
+      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      h2->Scale(scale);
     }
-    h->SetLineColor(kBlack);
+    if (mo->getName() == "BendNoiseMap12") {
+      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      h2->Scale(scale);
+    }
+    if (mo->getName() == "BendNoiseMap21") {
+      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      h2->Scale(scale);
+    }
+    if (mo->getName() == "BendNoiseMap22") {
+      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      h2->Scale(scale);
+    }
+    if (mo->getName() == "NBendNoiseMap11") {
+      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      h2->Scale(scale);
+    }
+    if (mo->getName() == "NBendNoiseMap12") {
+      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      h2->Scale(scale);
+    }
+    if (mo->getName() == "NBendNoiseMap21") {
+      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      h2->Scale(scale);
+    }
+    if (mo->getName() == "NBendNoiseMap22") {
+      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      h2->Scale(scale);
+    }
+    /// Scale Dead Maps ::
+    if (mo->getName() == "BendDeadMap11") {
+      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      h2->Scale(scale);
+    }
+    if (mo->getName() == "BendDeadMap12") {
+      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      h2->Scale(scale);
+    }
+    if (mo->getName() == "BendDeadMap21") {
+      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      h2->Scale(scale);
+    }
+    if (mo->getName() == "BendDeadMap22") {
+      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      h2->Scale(scale);
+    }
+    if (mo->getName() == "NBendDeadMap11") {
+      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      h2->Scale(scale);
+    }
+    if (mo->getName() == "NBendDeadMap12") {
+      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      h2->Scale(scale);
+    }
+    if (mo->getName() == "NBendDeadMap21") {
+      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      h2->Scale(scale);
+    }
+    if (mo->getName() == "NBendDeadMap22") {
+      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      h2->Scale(scale);
+    }
   }
 }
 

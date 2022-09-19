@@ -20,6 +20,7 @@
 #include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/DatabaseInterface.h"
 #include "CCDB/CcdbApi.h"
+#include "CommonConstants/LHCConstants.h"
 
 #include "FV0Base/Constants.h"
 #include "DataFormatsFV0/ChannelData.h"
@@ -49,13 +50,15 @@ class PostProcTask final : public quality_control::postprocessing::PostProcessin
   void update(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
   void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
 
-  constexpr static std::size_t sNCHANNELS_PM = o2::fv0::Constants::nPms * o2::fv0::Constants::nChannelsPerPm;
+  constexpr static std::size_t sBCperOrbit = o2::constants::lhc::LHCMaxBunches;
+  constexpr static std::size_t sNCHANNELS_FV0_PLUSREF = o2::fv0::Constants::nFv0ChannelsPlusRef;
 
  private:
   std::string mPathGrpLhcIf;
   std::string mPathDigitQcTask;
   std::string mCycleDurationMoName;
   std::string mCcdbUrl;
+  std::string mTimestampSourceLhcIf;
   int mNumOrbitsInTF;
 
   std::map<o2::fv0::ChannelData::EEventDataBit, std::string> mMapChTrgNames;

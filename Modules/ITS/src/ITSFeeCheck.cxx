@@ -201,7 +201,7 @@ void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
       if (checkResult == Quality::Good) {
         status = "Quality::GOOD";
         textColor = kGreen;
-      } else if (checkResult == Quality::Bad) {
+      } else if (checkResult == Quality::Bad || checkResult == Quality::Medium) {
         status = "Quality::BAD (call expert)";
         textColor = kRed;
         if (strcmp(checkResult.getMetadata("IB").c_str(), "medium") == 0) {
@@ -310,7 +310,8 @@ void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
       for (int itrg = 1; itrg <= h->GetNbinsY(); itrg++) {
         LOG(info) << checkResult.getMetadata(h->GetYaxis()->GetBinLabel(itrg)).c_str();
         if (strcmp(checkResult.getMetadata(h->GetYaxis()->GetBinLabel(itrg)).c_str(), "bad") == 0) {
-          tInfoTrg[itrg - 1] = std::make_shared<TLatex>(0.3, 0.1 + 0.05 * (itrg - 1), Form("Trigger flag %s of bad quality", h->GetYaxis()->GetBinLabel(itrg)));
+          std::string extraText = (!strcmp(h->GetYaxis()->GetBinLabel(itrg), "PHYSICS")) ? "(OK if it's COSMICS/SYNTHETIC)" : "";
+          tInfoTrg[itrg - 1] = std::make_shared<TLatex>(0.3, 0.1 + 0.05 * (itrg - 1), Form("Trigger flag %s of bad quality %s", h->GetYaxis()->GetBinLabel(itrg), extraText.c_str()));
           tInfoTrg[itrg - 1]->SetTextColor(kRed);
           tInfoTrg[itrg - 1]->SetTextSize(0.03);
           tInfoTrg[itrg - 1]->SetTextFont(43);

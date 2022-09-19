@@ -32,6 +32,8 @@
 #include "FDD/Helper.h"
 #include "Rtypes.h"
 
+#include "CommonConstants/LHCConstants.h"
+
 #include <Framework/InputRecord.h>
 #include "QualityControl/QcInfoLogger.h"
 #include "DataFormatsFDD/Digit.h"
@@ -67,7 +69,7 @@ class DigitQcTask final : public TaskInterface
   constexpr static std::size_t sNCHANNELS_A = 8;
   constexpr static std::size_t sNCHANNELS_C = 8;
   constexpr static std::size_t sOrbitsPerTF = 256;
-  constexpr static std::size_t sBCperOrbit = 3564;
+  constexpr static std::size_t sBCperOrbit = o2::constants::lhc::LHCMaxBunches;
 
   constexpr static float sCFDChannel2NS = o2::fdd::timePerTDC; // CFD channel width in ns
 
@@ -82,6 +84,8 @@ class DigitQcTask final : public TaskInterface
   double mTimeCurNS = 0.;
   int mTfCounter = 0;
   double mTimeSum = 0.;
+
+  long mTFcreationTime = 0;
 
   template <typename Param_t,
             typename = typename std::enable_if<std::is_floating_point<Param_t>::value ||
@@ -109,6 +113,7 @@ class DigitQcTask final : public TaskInterface
 
   TList* mListHistGarbage;
   std::set<unsigned int> mSetAllowedChIDs;
+  std::set<unsigned int> mSetAllowedChIDsAmpVsTime;
   std::array<o2::InteractionRecord, sNCHANNELS_PM> mStateLastIR2Ch;
   std::array<uint8_t, sNCHANNELS_PM> mChID2PMhash; // map chID->hashed PM value
   uint8_t mTCMhash;                                // hash value for TCM, and bin position in hist
