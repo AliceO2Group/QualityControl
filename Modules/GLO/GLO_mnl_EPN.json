@@ -1,0 +1,118 @@
+{
+  "qc" : {
+    "config" : {
+      "database" : {
+        "implementation" : "CCDB",
+        "host" : "ali-qcdb.cern.ch:8083",
+        "username" : "not_applicable",
+        "password" : "not_applicable",
+        "name" : "not_applicable"
+      },
+      "Activity" : {
+        "number" : "42",
+        "type" : "2"
+      },
+      "monitoring" : {
+        "url" : "influxdb-unix:///tmp/telegraf.sock"
+      },
+      "consul" : {
+        "url" : "http://ali-consul.cern.ch:8500"
+      },
+      "conditionDB" : {
+        "url" : "http://localhost:8084"
+      },
+      "infologger" : { "" : "Configuration of the Infologger (optional).",
+                       "filterDiscardDebug" : "1",
+                       "" : "Set to true to discard debug and trace messages (default: false)",
+                       "filterDiscardLevel" : "21",
+                       "" : "Message at this level or above are discarded (default: 21 - Trace)" }
+    },
+    "tasks" : {
+      "Vertexing" : {
+        "active" : "true",
+        "className" : "o2::quality_control_modules::glo::VertexingQcTask",
+        "moduleName" : "QcGLO",
+        "detectorName" : "GLO",
+        "cycleDurationSeconds" : "600",
+        "maxNumberCycles" : "-1",
+        "dataSource" : {
+          "type" : "dataSamplingPolicy",
+          "name" : "VtxSampling"
+        },
+	"taskParameters" : {
+          "isMC": "false"
+        },
+        "location" : "local",
+	"localMachines": [
+            "epn",
+	    "localhost"
+        ],
+        "remoteMachine": "alio2-cr1-qc03.cern.ch",
+	"remotePort": "46000",
+	"localControl": "odc"
+      }
+    },
+    "MTCITSTPC" : {
+      "active" : "true",
+      "className" : "o2::quality_control_modules::glo::ITSTPCMatchingTask",
+      "moduleName" : "QcGLO",
+      "detectorName" : "GLO",
+      "cycleDurationSeconds" : "600",
+      "maxNumberCycles" : "-1",
+      "dataSource" : {
+        "type" : "dataSamplingPolicy",
+        "name" : "ITSTPCmSamp"
+      },
+      "taskParameters" : {
+        "GID" : "ITS-TPC,ITS",
+        "verbose" : "false",
+        "minPtCut" : "0.1f",
+        "etaCut" : "1.4f",
+        "minNTPCClustersCut" : "60",
+        "minDCACut" : "100.f",
+        "minDCACutY" : "10.f",
+        "grpFileName" : "o2sim_grp.root",
+        "geomFileName" : "o2sim_geometry-aligned.root"
+      },
+      "location" : "local",
+	"localMachines": [
+            "epn",
+	    "localhost"
+        ],
+        "remoteMachine": "alio2-cr1-qc03.cern.ch",
+	"remotePort": "46001",
+	"localControl": "odc"
+    }
+  },
+  "dataSamplingPolicies" : [
+    {
+      "id" : "VtxSampling",
+      "active" : "true",
+      "machines" : [],
+      "query" : "pvtx:GLO/PVTX/0",
+      "samplingConditions" : [
+         {
+           "condition" : "random",
+           "fraction" : "0.1",
+           "seed" : "1234"
+          }
+       ],
+         "blocking" : "false"
+    },
+    {
+      "id" : "ITSTPCmSamp",
+      "active" : "true",
+      "machines" : [],
+      "query_comment" : "checking every 10% matched track",
+      "query" : "trackITSTPC:GLO/TPCITS/0;trackITSTPCABREFS:GLO/TPCITSAB_REFS/0;trackITSTPCABCLID:GLO/TPCITSAB_CLID/0;trackTPC:TPC/TRACKS;trackTPCClRefs:TPC/CLUSREFS",
+      "samplingConditions" : [
+         {
+           "condition" : "random",
+           "fraction" : "0.1",
+           "seed" : "1234"
+          }
+      ],
+      "blocking" : "false"
+    }
+  ]
+}
