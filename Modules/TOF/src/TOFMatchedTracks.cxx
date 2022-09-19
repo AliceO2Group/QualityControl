@@ -36,6 +36,8 @@
 #include "DetectorsBase/GeometryManager.h"
 
 #include "TOF/Utils.h"
+#include "TOFBase/Geo.h"
+#include "DataFormatsTOF/Cluster.h"
 
 using GTrackID = o2::dataformats::GlobalTrackID;
 
@@ -63,6 +65,9 @@ TOFMatchedTracks::~TOFMatchedTracks()
     delete mDeltaXEta[i];
     delete mDeltaXPhi[i];
     delete mTOFChi2[i];
+  }
+  for (int isec = 0; isec < 18; isec++) {
+    delete mDTimeTrk[isec];
   }
 }
 
@@ -154,6 +159,11 @@ void TOFMatchedTracks::initialize(o2::framework::InitContext& /*ctx*/)
     mDeltaXEta[i] = new TH2F(Form("mDeltaXEta%s", title[i].c_str()), Form("mDeltaXEta (matchType: %s); #eta; #Delta x (cm); counts", title[i].c_str()), 100, -1.0f, 1.0f, 100, -10.f, 10.f);
     mDeltaXPhi[i] = new TH2F(Form("mDeltaXPhi%s", title[i].c_str()), Form("mDeltaXPhi (matchType: %s); #phi; #Delta x (cm); counts", title[i].c_str()), 100, .0f, 6.3f, 100, -10.f, 10.f);
     mTOFChi2[i] = new TH1F(Form("mTOFChi2%s", title[i].c_str()), Form("mTOFChi2 (matchType: %s); #chi^{2}; counts", title[i].c_str()), 100, 0.f, 10.f);
+  }
+
+  for (int isec = 0; isec < 18; isec++) {
+    mDTimeTrk[isec] = new TH2F(Form("DTimeTrk_sec%02d", isec), Form("Sector %d: ITS-TPC track-tof #Deltat vs #eta; #eta; #Deltat (# BC)", isec), 100, -1.0f, 1.0f, 1000, -50, 50);
+    getObjectsManager()->startPublishing(mDTimeTrk[isec]);
   }
 
   // initialize B field and geometry for track selection
@@ -251,6 +261,9 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
   LOG(debug) << " ************************ ";
   mRecoCont.collectData(ctx, *mDataRequest.get());
 
+  // TOF
+  gsl::span<const o2::tof::Cluster> tofClusArray = mRecoCont.getTOFClusters();
+
   // TPC
   if (mRecoCont.isTrackSourceLoaded(GID::TPC) || mRecoCont.isTrackSourceLoaded(GID::TPCTOF)) { // this is enough to know that also TPC was loades, see "initialize"
     mTPCTracks = mRecoCont.getTPCTracks();
@@ -316,6 +329,17 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
       LOG(debug) << "NUM ITSTPC CONSTR: track with eta " << trkTPC.getEta() << " and pT " << trkTPC.getPt() << " ACCEPTED for numerator, ITSTPC CONSTR"
                  << " gid: " << gTrackId << " TPC gid =" << trk.getRefTPC();
       mMatchedTracksPt[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getPt());
+
+      if (trkTPC.getPt() > 1.0) {
+        const double bcTimeInvInMus = o2::tof::Geo::BC_TIME_INV * 1E3;
+        float deltaTrackTimeInBC = -matchTOF.getDeltaT() * bcTimeInvInMus; // track time - tof time in number of BC
+        auto& tofCl = tofClusArray[matchTOF.getTOFClIndex()];
+        int isec = tofCl.getMainContributingChannel() / 8736;
+        if (isec >= 0 && isec < 18) {
+          mDTimeTrk[isec]->Fill(trkTPC.getEta(), deltaTrackTimeInBC);
+        }
+      }
+
       mMatchedTracksEta[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getEta());
       mMatchedTracks2DPtEta[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getPt(), trkTPC.getEta());
       mDeltaZEta[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getEta(), trkDz);
@@ -673,6 +697,10 @@ void TOFMatchedTracks::reset()
     mDeltaXEta[i]->Reset();
     mDeltaXPhi[i]->Reset();
     mTOFChi2[i]->Reset();
+  }
+
+  for (int isec = 0; isec < 18; isec++) {
+    mDTimeTrk[isec]->Reset();
   }
 }
 

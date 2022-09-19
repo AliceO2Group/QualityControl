@@ -106,6 +106,8 @@ class TOFMatchedTracks final : public TaskInterface
   TH2F* mDeltaXEta[matchType::SIZE] = {};
   TH2F* mDeltaXPhi[matchType::SIZE] = {};
   TH1F* mTOFChi2[matchType::SIZE] = {};
+  TH2F* mDTimeTrk[18] = {};
+
   TEfficiency* mEffPt[matchType::SIZE] = {};
   TEfficiency* mEffEta[matchType::SIZE] = {};
   TEfficiency* mEff2DPtEta[matchType::SIZE] = {};
