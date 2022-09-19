@@ -891,7 +891,7 @@ should not be present in real configuration files.
                                                "https://github.com/AliceO2Group/Monitoring#monitoring-instance"]
       },
       "consul": {                         "": "Configuration of the Consul library (used for Service Discovery).",
-        "url": "http://consul-test.cern.ch:8500", "": "URL of the Consul backend"
+        "url": "",                        "": "URL of the Consul backend"
       },
       "conditionDB": {                    "": ["Configuration of the Conditions and Calibration DataBase (CCDB).",
                                                "Do not mistake with the CCDB which is used as QC repository."],
