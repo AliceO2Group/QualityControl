@@ -47,8 +47,8 @@
             "epn",
 	    "localhost"
         ],
-        "remoteMachine": "alio2-cr1-qc03.cern.ch",
-	"remotePort": "46000",
+        "remoteMachine": "alio2-cr1-qc07.cern.ch",
+	"remotePort": "47760",
 	"localControl": "odc"
       }
     },
@@ -79,8 +79,8 @@
             "epn",
 	    "localhost"
         ],
-        "remoteMachine": "alio2-cr1-qc03.cern.ch",
-	"remotePort": "46001",
+        "remoteMachine": "alio2-cr1-qc07.cern.ch",
+	"remotePort": "47761",
 	"localControl": "odc"
     }
   },
