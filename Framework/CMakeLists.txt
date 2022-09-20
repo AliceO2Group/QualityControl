@@ -424,7 +424,8 @@ install(FILES example-default.json
         DESTINATION etc)
 
 install(PROGRAMS script/RepoCleaner/o2-qc-repo-cleaner
-                 script/RepoCleaner/o2-qc-repo-deletion
+                 script/RepoCleaner/o2-qc-repo-delete-runs
+                 script/RepoCleaner/o2-qc-repo-delete-period
                  script/o2-qc-functional-test.sh
                  script/o2-qc-multinode-test.sh
                  script/o2-qc-batch-test.sh
