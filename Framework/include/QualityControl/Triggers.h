@@ -47,9 +47,11 @@ enum TriggerType {
 struct Trigger {
 
   /// \brief Constructor. Timestamp is generated from the time of construction.
-  Trigger(TriggerType triggerType, bool last = false, core::Activity activity = {}) : triggerType(triggerType), last(last), activity(std::move(activity)), timestamp(msSinceEpoch()){};
+  Trigger(TriggerType triggerType, bool last = false, core::Activity activity = {})
+    : triggerType(triggerType), last(last), activity(std::move(activity)), timestamp(msSinceEpoch()){};
   /// \brief Constructor.
-  Trigger(TriggerType triggerType, bool last, core::Activity activity, uint64_t timestamp) : triggerType(triggerType), last(last), activity(std::move(activity)), timestamp(timestamp){};
+  Trigger(TriggerType triggerType, bool last, core::Activity activity, uint64_t timestamp, std::string config = {})
+    : triggerType(triggerType), last(last), activity(std::move(activity)), timestamp(timestamp), config(std::move(config)){};
   /// \brief Constructor.
   Trigger(TriggerType triggerType, bool last, uint64_t timestamp) : triggerType(triggerType), last(last), activity(), timestamp(timestamp){};
 
@@ -66,6 +68,7 @@ struct Trigger {
   bool last;
   core::Activity activity;
   uint64_t timestamp;
+  std::string config{};
 };
 
 using TriggerFcn = std::function<Trigger()>;
@@ -82,13 +85,13 @@ TriggerFcn StartOfFill(const core::Activity& = {});
 /// \brief Triggers when it detects an event dump during its uptime (once per each)
 TriggerFcn EndOfFill(const core::Activity& = {});
 /// \brief Triggers when a period of time passes
-TriggerFcn Periodic(double seconds, const core::Activity& = {});
+TriggerFcn Periodic(double seconds, const core::Activity& = {}, std::string config = {});
 /// \brief Triggers when it detect a new object in QC repository with given name
-TriggerFcn NewObject(std::string databaseUrl, std::string databaseType, std::string objectPath, const core::Activity& = {});
+TriggerFcn NewObject(std::string databaseUrl, std::string databaseType, std::string objectPath, const core::Activity& = {}, std::string config = {});
 /// \brief Triggers for each object version in the path which match the activity. It retrieves the available list only once!
-TriggerFcn ForEachObject(std::string databaseUrl, std::string databaseType, std::string objectPath, const core::Activity& = {});
+TriggerFcn ForEachObject(std::string databaseUrl, std::string databaseType, std::string objectPath, const core::Activity& = {}, std::string config = {});
 /// \brief Triggers for the latest object version for each distinct activity. It retrieves the available list only once!
-TriggerFcn ForEachLatest(std::string databaseUrl, std::string databaseType, std::string objectPath, const core::Activity& = {});
+TriggerFcn ForEachLatest(std::string databaseUrl, std::string databaseType, std::string objectPath, const core::Activity& = {}, std::string config = {});
 /// \brief Triggers only first time it is executed
 TriggerFcn Once(const core::Activity& = {});
 /// \brief Triggers always
