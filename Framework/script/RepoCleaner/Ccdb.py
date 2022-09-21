@@ -19,7 +19,7 @@ class ObjectVersion:
     This class represents a single version. 
     '''
 
-    def __init__(self, path, validFrom, validTo, uuid=None, metadata=None):
+    def __init__(self, path: str, validFrom, validTo, uuid=None, metadata=None):
         '''
         Construct an ObjectVersion.
         :param path: path to the object
@@ -124,7 +124,24 @@ class Ccdb:
             r.raise_for_status()
             self.counter_deleted += 1
         except requests.exceptions.RequestException as e:
-            logging.error(f"Exception in process_object: {traceback.format_exc()}")
+            logging.error(f"Exception in deleteVersion: {traceback.format_exc()}")
+
+    @dryable.Dryable()
+    def moveVersion(self, version: ObjectVersion, to_path: str):
+        '''
+        Move the version to a different path.
+        :param version: The version of the object to move, as an instance of ObjectVersion.
+        :param to_path: The destination path
+        '''
+        url_move = self.url + '/' + version.path + '/' + str(version.validFrom) + '/' + version.uuid
+        logger.debug(f"Move version at url {url_move} to {to_path}")
+        headers = {'Connection': 'close', 'Destination': to_path}
+        try:
+            r = requests.request("MOVE", url_move, headers=headers)
+            r.raise_for_status()
+            self.counter_deleted += 1
+        except requests.exceptions.RequestException as e:
+            logging.error(f"Exception in moveVersion: {traceback.format_exc()}")
 
     @dryable.Dryable()
     def updateValidity(self, version: ObjectVersion, valid_from: int, valid_to: int, metadata=None):
