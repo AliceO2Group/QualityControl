@@ -275,7 +275,7 @@ Once done, recompile it (see section above, `make -j8 install` in the build dire
 
 ## Check
 
-A Check is a function that determines the quality of the Monitor Objects produced in the previous step - Task. It can receive multiple Monitor Objects from several Tasks.
+A Check is a function (actually `Check::check()`) that determines the quality of the Monitor Objects produced in the previous step (the Task). It can receive multiple Monitor Objects from several Tasks. Along with the `check()` method, the `beautify()` method is a function that can modify the MO itself. It is typically used to add colors or texts on the object to express the quality. 
 
 ### Configuration
 
@@ -332,9 +332,11 @@ void beautify(std::shared_ptr<MonitorObject> mo, Quality = Quality::Null) {}
 
 ```
 
-The `check` function is called whenever the _policy_ is satisfied. It gets a map with all declared MonitorObjects. It is expected to return Quality of the given MonitorObjects.
+The `check()` function is called whenever the _policy_ is satisfied. It gets a map with all declared MonitorObjects. It is expected to return Quality of the given MonitorObjects.
 
-The `beautify` function is called after the `check` function if there is a single `dataSource` in the configuration of the check. If there is more than one, the `beautify()` is not called in this check. 
+For each MO or group of MOs, `beautify()` is invoked after `check()` if
+1. the check() did not raise an exception
+2. there is a single `dataSource` in the configuration of the check
 
 ## Quality Aggregation
 

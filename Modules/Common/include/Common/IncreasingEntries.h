@@ -45,6 +45,8 @@ class IncreasingEntries : public o2::quality_control::checker::CheckInterface
   std::map<std::string, double> mLastEntries;
   std::shared_ptr<TPaveText> mPaveText;
   bool mMustIncrease = true;
+  // store the faults to beautify them later
+  std::vector<std::string> mFaultyObjectsNames;
 
   ClassDefOverride(IncreasingEntries, 2);
 };
