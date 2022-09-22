@@ -57,8 +57,6 @@ def run(args):
     if args.print_list:
         exit(0)
 
-    # HOW TO preserve sub directory structure
-
     logging.warning("****** ARE YOU ABSOLUTELY SURE YOU WANT TO CONTINUE ? ******")
     answer = input("Yes/No \n  ")
     if answer.lower() not in ["y", "yes"]:
