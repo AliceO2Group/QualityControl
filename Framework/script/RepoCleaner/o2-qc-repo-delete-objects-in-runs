@@ -56,6 +56,7 @@ def run(args):
     file = open(args.runs_file)
     csvreader = csv.DictReader(file)
     for row in csvreader:
+        nb_deleted = 0
         run_number = row["runNumber"]
         logging.debug(f"run : {run_number}")
 
@@ -79,17 +80,17 @@ def run(args):
                 answer = input("  Continue? y/n\n  ")
                 if answer.lower() in ["y", "yes"]:
                     ccdb.deleteVersion(v)
-                    logging.debug("")
+                    nb_deleted += 1
                 elif answer.lower() in ["n", "no"]:
                     logging.info("   skipping")
                 else:
                     logging.error("   wrong input, skipping")
             else:
                 ccdb.deleteVersion(v)
-                logging.debug("")
+                nb_deleted += 1
 
-        logging.info(f"Deleted items: {len(versions)}")
-        total_deleted += len(versions)
+        logging.info(f"Deleted items: {nb_deleted}")
+        total_deleted += nb_deleted
 
     logging.info(f"Total deleted items: {total_deleted}")
 
