@@ -1,13 +1,16 @@
-﻿# ---- Library ----
+﻿
+# ---- Library ----
 
 add_library(O2QcITS
             src/ITSRawTask.cxx
             src/TrendingTaskITSThr.cxx
             src/TrendingTaskITSFhr.cxx
+	    src/TrendingTaskITSFEE.cxx
             src/TrendingTaskITSCluster.cxx
             src/TrendingTaskITSTracks.cxx
             src/TrendingTaskConfigITS.cxx
             src/TH2XlineReductor.cxx
+	    src/ReductorBinContent.cxx
             src/ITSFhrTask.cxx
             src/ITSFeeTask.cxx
             src/ITSClusterTask.cxx
@@ -22,7 +25,9 @@ add_library(O2QcITS
             src/ITSThresholdCalibrationCheck.cxx 
             )
 
-target_sources(O2QcITS PRIVATE src/TH2XlineReductor.cxx)
+target_sources(O2QcITS PRIVATE
+               src/TH2XlineReductor.cxx
+               src/ReductorBinContent.cxx)
 
 target_include_directories(
   O2QcITS
@@ -53,9 +58,11 @@ add_root_dictionary(O2QcITS
                     HEADERS include/ITS/ITSRawTask.h
                             include/ITS/TrendingTaskITSThr.h
                             include/ITS/TrendingTaskITSFhr.h
+			    include/ITS/TrendingTaskITSFEE.h
                             include/ITS/TrendingTaskITSCluster.h
                             include/ITS/TrendingTaskITSTracks.h
                             include/ITS/TH2XlineReductor.h
+			    include/ITS/ReductorBinContent.h
                             include/ITS/ITSFhrTask.h
                             include/ITS/ITSFeeTask.h
                             include/ITS/ITSClusterTask.h
@@ -119,6 +126,7 @@ install(FILES
         its.json
         itsQCTrendingThr.json
         itsQCTrendingFhr.json
+	itsQCTrendingFEE.json
         itsQCTrendingCluster.json
         itsQCTrendingTracks.json
         itsFhr.json
