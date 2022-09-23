@@ -1,0 +1,214 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "2"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": ""
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      }
+    },
+    "postprocessing": {
+      "ITSqcTrendingFEE": {
+        "active": "true",
+        "className": "o2::quality_control::postprocessing::TrendingTaskITSFEE",
+        "moduleName": "QualityControl",
+        "detectorName": "ITS",
+        "dataSources": [
+          {
+            "type": "repository",
+            "paths": [ "ITS/MO/ITSFEE/LaneStatusSummary",
+                       "ITS/MO/ITSFEE/LaneStatusSummary",
+                       "ITS/MO/ITSFEE/LaneStatusSummary",
+                       "ITS/MO/ITSFEE" ],
+            "names": [ "LaneStatusSummaryIB",
+                       "LaneStatusSummaryML",
+                       "LaneStatusSummaryOL",
+                       "TriggerVsFeeid" ],
+            "reductorName": "o2::quality_control_modules::its::ReductorBinContent",
+            "moduleName": "QcITS"
+          }
+        ],
+        "plots": [
+          {
+            "names": [ "Number of \"Warnings\"" ],
+            "title": [ "Number of WARNINGS trend in IB" ],
+            "varexp": [ "LaneStatusSummaryIB.binContent[0]" ],
+            "selection": "Time",
+            "option": "PL"
+          },
+          {
+             "names": [ "Number of \"Errors\"" ],
+             "title": [ "Number of ERRORS trend in IB" ],
+             "varexp": [ "LaneStatusSummaryIB.binContent[1]" ],
+             "selection": "",
+             "option": "PL"
+          },
+          {
+             "names": [ "Number of \"Faults\"" ],
+             "title": [ "Number of FAULTS trend in IB" ],
+             "varexp": [ "LaneStatusSummaryIB.binContent[2]" ],
+             "selection": "",
+             "option": "PL"
+          },
+          {
+            "names": [ "Number of \"Warnings\"" ],
+            "title": [ "Number of WARNINGS trend in ML" ],
+            "varexp": [ "LaneStatusSummaryML.binContent[0]" ],
+            "selection": "Time",
+            "option": "PL"
+          },
+          {
+             "names": [ "Number of \"Errors\"" ],
+             "title": [ "Number of ERRORS trend in ML" ],
+             "varexp": [ "LaneStatusSummaryML.binContent[1]" ],
+             "selection": "",
+             "option": "PL"
+          },
+          {
+             "names": [ "Number of \"Faults\"" ],
+             "title": [ "Number of FAULTS trend in ML" ],
+             "varexp": [ "LaneStatusSummaryML.binContent[2]" ],
+             "selection": "",
+             "option": "PL"
+          },
+          {
+             "names": [ "Number of \"Warnings\"" ],
+             "title": [ "Number of WARNINGS trend in OL" ],
+             "varexp": [ "LaneStatusSummaryOL.binContent[0]" ],
+             "selection": "Time",
+             "option": "PL"
+          },
+          {
+             "names": [ "Number of \"Errors\"" ],
+             "title": [ "Number of ERRORS trend in OL" ],
+             "varexp": [ "LaneStatusSummaryOL.binContent[1]" ],
+             "selection": "",
+             "option": "PL"
+          },
+          {
+             "names": [ "Number of \"Faults\"" ],
+             "title": [ "Number of FAULTS trend in OL" ],
+             "varexp": [ "LaneStatusSummaryOL.binContent[2]" ],
+             "selection": "",
+             "option": "PL"
+          },
+          {
+             "names": [ "Trig. ORBIT" ],
+             "title": [ "Trig. \"ORBIT\" count through all FEE" ],
+             "varexp": [ "TriggerVsFeeid.integral[0]" ],
+             "selection": "Time",
+             "option": "PL"
+          },
+          {
+             "names": [ "Trig. HB" ],
+             "title": [ "Trig. \"HB\" count through all FEE" ],
+             "varexp": [ "TriggerVsFeeid.integral[1]" ],
+             "selection": "",
+             "option": "PL"
+          },
+          {
+             "names": [ "Trig. HBr" ],
+             "title": [ "Trig. \"HBr\" count through all FEE" ],
+             "varexp": [ "TriggerVsFeeid.integral[2]" ],
+             "selection": "",
+             "option": "PL"
+          },
+          {
+             "names": [ "Trig. HC" ],
+             "title": [ "Trig. \"HC\" count through all FEE" ],
+             "varexp": [ "TriggerVsFeeid.integral[3]" ],
+             "selection": "",
+             "option": "PL"
+          },
+          {
+             "names": [ "Trig. PHYSICS" ],
+             "title": [ "Trig. \"PHYSICS\" count through all FEE" ],
+             "varexp": [ "TriggerVsFeeid.integral[4]" ],
+             "selection": "",
+             "option": "PL"
+          },
+          {
+             "names": [ "Trig. PP" ],
+             "title": [ "Trig. \"PP\" count through all FEE" ],
+             "varexp": [ "TriggerVsFeeid.integral[5]" ],
+             "selection": "",
+             "option": "PL"
+          },
+          {
+             "names": [ "Trig. CAL" ],
+             "title": [ "Trig. \"CAL\" count through all FEE" ],
+             "varexp": [ "TriggerVsFeeid.integral[6]" ],
+             "selection": "",
+             "option": "PL"
+          },
+          {
+             "names": [ "Trig. SOT" ],
+             "title": [ "Trig. \"SOT\" count through all FEE" ],
+             "varexp": [ "TriggerVsFeeid.integral[7]" ],
+             "selection": "",
+             "option": "PL"
+          },
+          {
+             "names": [ "Trig. EOT" ],
+             "title": [ "Trig. \"EOT\" count through all FEE" ],
+             "varexp": [ "TriggerVsFeeid.integral[8]" ],
+             "selection": "",
+             "option": "PL"
+          },
+          {
+             "names": [ "Trig. SOC" ],
+             "title": [ "Trig. \"SOC\" count through all FEE" ],
+             "varexp": [ "TriggerVsFeeid.integral[9]" ],
+             "selection": "",
+             "option": "PL"
+          },
+          {
+             "names": [ "Trig. EOC" ],
+             "title": [ "Trig. \"EOC\" count through all FEE" ],
+             "varexp": [ "TriggerVsFeeid.integral[10]" ],
+             "selection": "",
+             "option": "PL"
+          },
+          {
+             "names": [ "Trig. TF" ],
+             "title": [ "Trig. \"TF\" count through all FEE" ],
+             "varexp": [ "TriggerVsFeeid.integral[11]" ],
+             "selection": "",
+             "option": "PL"
+          },
+          {
+             "names": [ "Trig. INT" ],
+             "title": [ "Trig. \"INT\" count through all FEE" ],
+             "varexp": [ "TriggerVsFeeid.integral[12]" ],
+             "selection": "",
+             "option": "PL"
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "60 seconds"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      }
+    }
+  }
+}
