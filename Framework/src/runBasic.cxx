@@ -96,7 +96,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
   auto infologgerDiscardFile = configTree.get<std::string>("qc.config.infologger.filterDiscardFile", "");
   ILOG_INST.filterDiscardDebug(infologgerFilterDiscardDebug);
   ILOG_INST.filterDiscardLevel(infologgerDiscardLevel);
-  ILOG_INST.filterDiscardSetFile(infologgerDiscardFile.c_str());
+  ILOG_INST.filterDiscardSetFile(infologgerDiscardFile.c_str(), 0, 0, 0, true /*Do not store Debug messages in file*/);
   QcInfoLogger::setFacility("runBasic");
 
   // The producer to generate some data in the workflow
