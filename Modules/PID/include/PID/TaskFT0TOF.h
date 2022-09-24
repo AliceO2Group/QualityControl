@@ -28,6 +28,7 @@
 #include "ReconstructionDataFormats/TrackTPCITS.h"
 #include "DataFormatsTRD/TrackTRD.h"
 #include "TOFBase/Geo.h"
+#include "DataFormatsFT0/RecPoints.h"
 
 class TH1F;
 class TH1I;
@@ -81,7 +82,7 @@ class TaskFT0TOF final : public TaskInterface
   void endOfActivity(Activity& activity) override;
   void reset() override;
 
-  void processEvent(const std::vector<MyTrack>& tracks);
+  void processEvent(const std::vector<MyTrack>& tracks, const std::vector<o2::ft0::RecPoints>& ft0Cand);
   // track selection
   bool selectTrack(o2::tpc::TrackTPC const& track);
   void setMinPtCut(float v) { mMinPtCut = v; }
@@ -126,6 +127,7 @@ class TaskFT0TOF final : public TaskInterface
   float mBz = 0; ///< nominal Bz
   int mTF = -1;  // to count the number of processed TFs
   const float cinv = 33.35641;
+  bool mUseFT0 = false;
 
   TH1F* mHistDeltatPi;
   TH1F* mHistDeltatKa;

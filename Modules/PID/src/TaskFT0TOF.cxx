@@ -34,7 +34,7 @@
 #include "DetectorsBase/GeometryManager.h"
 #include "TOFBase/EventTimeMaker.h"
 #include "GlobalTrackingWorkflow/TOFEventTimeChecker.h"
-#include "DataFormatsFT0/RecPoints.h"
+#include "DetectorsRaw/HBFUtils.h"
 
 // from TOF
 #include "TOFBase/Geo.h"
@@ -93,6 +93,12 @@ void TaskFT0TOF::initialize(o2::framework::InitContext& /*ctx*/)
   if (auto param = mCustomParameters.find("minDCACutY"); param != mCustomParameters.end()) {
     ILOG(Info, Devel) << "Custom parameter - minDCACutY (for track selection): " << param->second << ENDM;
     setMinDCAtoBeamPipeYCut(atof(param->second.c_str()));
+  }
+  if (auto param = mCustomParameters.find("useFT0"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - useFT0: " << param->second << ENDM;
+    if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
+      mUseFT0 = true;
+    }
   }
 
   // for track type selection
@@ -182,6 +188,21 @@ void TaskFT0TOF::monitorData(o2::framework::ProcessingContext& ctx)
   mRecoCont.collectData(ctx, *mDataRequest.get());
 
   mMyTracks.clear();
+
+  // Get FT0 RecPointss
+//  const gsl::span<o2::ft0::RecPoints>* ft0rec = nullptr;
+  const std::vector<o2::ft0::RecPoints>* ft0rec = nullptr;
+  if(mUseFT0){
+    auto& obj = ctx.inputs().get<const std::vector<o2::ft0::RecPoints>>("recpoints");
+//    const auto& obj = mRecoCont.getFT0RecPoints();
+    ft0rec = &obj;
+  }
+
+  if(mUseFT0){
+    ILOG(Info, Support) << "FT0 rec points loaded, size = " << ft0rec->size() << ENDM;
+  } else {
+    ILOG(Info, Support) << "FT0 rec points NOT available" << ENDM;
+  }
 
   // TPC-TOF
   if (mRecoCont.isTrackSourceLoaded(GID::TPCTOF)) { // if track is TPC
@@ -276,13 +297,26 @@ void TaskFT0TOF::monitorData(o2::framework::ProcessingContext& ctx)
   }   // END if track is TPC-TRD-TOF
 
   std::vector<MyTrack> tracks;
+  std::vector<o2::ft0::RecPoints> ft0Sorted = *ft0rec;
+  std::vector<o2::ft0::RecPoints> ft0Cand;
 
   // sorting matching in time
   std::sort(mMyTracks.begin(), mMyTracks.end(),
             [](MyTrack a, MyTrack b) { return a.tofSignalDouble() < b.tofSignalDouble(); });
 
+  std::sort(ft0Sorted.begin(), ft0Sorted.end(),
+            [](o2::ft0::RecPoints a, o2::ft0::RecPoints b) { return a.getInteractionRecord().bc2ns() < b.getInteractionRecord().bc2ns(); });
+
+  int ift0 = 0;
+
+  uint32_t ft0firstOrbit = ctx.services().get<o2::framework::TimingInfo>().firstTForbit;
+
+//  ILOG(Info, Support) << "ft0firstOrbit = " << ft0firstOrbit << " - BC = " <<  mRecoCont.startIR.bc <<ENDM;
+
   for (int i = 0; i < mMyTracks.size(); i++) { // loop looking for interaction candidates
     tracks.clear();
+    ft0Cand.clear();
+
     int ntrk = 1;
     double time = mMyTracks[i].tofSignalDouble();
     tracks.emplace_back(mMyTracks[i]);
@@ -296,7 +330,34 @@ void TaskFT0TOF::monitorData(o2::framework::ProcessingContext& ctx)
       ntrk++;
     }
     if (ntrk > 0) { // good candidate with time
-      processEvent(tracks);
+
+      // select FT0 candidates within 8 BCs
+      if(mUseFT0){
+	double firstTime = tracks[0].tofSignalDouble() - 8*o2::tof::Geo::BC_TIME_INPS;
+	double lastTime = tracks[ntrk - 1].tofSignalDouble() + 8*o2::tof::Geo::BC_TIME_INPS;
+	for(int j=ift0; j < ft0Sorted.size(); j++){
+	  auto& obj = ft0Sorted[j];
+	  uint32_t orbit = obj.getInteractionRecord().orbit - ft0firstOrbit;
+	  double BCtimeFT0 = ((orbit)*o2::constants::lhc::LHCMaxBunches + obj.getInteractionRecord().bc)  * o2::tof::Geo::BC_TIME_INPS;
+
+	  if(BCtimeFT0 < firstTime){
+	    ift0 = j+1;
+	    continue;
+	  }
+	  if(BCtimeFT0 > lastTime){
+	    break;
+	  }
+//          ILOG(Info, Support) << " TOF first=" << firstTime << " < " << BCtimeFT0 << " < TOF last=" << lastTime << ENDM;
+//          ILOG(Info, Support) << " orbit=" << obj.getInteractionRecord().orbit << " " << obj.getInteractionRecord().orbit - ft0firstOrbit << " BC=" << obj.getInteractionRecord().bc << ENDM;
+
+          std::array<short, 4> collTimes = {obj.getCollisionTime(0), obj.getCollisionTime(1), obj.getCollisionTime(2), obj.getCollisionTime(3)};
+
+          int pos = ft0Cand.size();
+	  ft0Cand.emplace_back(collTimes, 0, 0, o2::InteractionRecord{obj.getInteractionRecord().bc, orbit}, obj.getTrigger());
+	}
+      }
+
+      processEvent(tracks, ft0Cand);
     }
   }
 
@@ -332,10 +393,23 @@ void TaskFT0TOF::reset()
   mHistEvTimeTOF->Reset();
 }
 
-void TaskFT0TOF::processEvent(const std::vector<MyTrack>& tracks)
+void TaskFT0TOF::processEvent(const std::vector<MyTrack>& tracks, const std::vector<o2::ft0::RecPoints>& ft0Cand)
 {
 
   auto evtime = o2::tof::evTimeMaker<std::vector<MyTrack>, MyTrack, MyFilter>(tracks);
+  bool isTOFst = evtime.mEventTimeError < 150;
+  int nBC = (evtime.mEventTime + 5000.) * o2::tof::Geo::BC_TIME_INPS_INV;  // 5 ns offset to get the correct number of BC (int)
+
+  for(auto& obj: ft0Cand){ // fill histo for FT0
+    bool isAC = obj.isValidTime(0);
+    bool isA = obj.isValidTime(1);
+    bool isC = obj.isValidTime(2);
+    float times[4] = {evtime.mEventTime - nBC*o2::tof::Geo::BC_TIME_INPS, isAC ? obj.getCollisionTime(0) : 0.f, isC ? obj.getCollisionTime(1) : 0.f, isC ? obj.getCollisionTime(2) : 0.f}; // TOF, FT0-AC, FT0-A, FT0-C
+    if(isTOFst){
+      ILOG(Info, Support) << " TOF Orbit: " << nBC / o2::constants::lhc::LHCMaxBunches << " BC: " << nBC % o2::constants::lhc::LHCMaxBunches << " FTO Orbit: " << obj.getInteractionRecord().orbit<< " BC: " << obj.getInteractionRecord().bc << ENDM;
+      ILOG(Info, Support) << " Time: TOF=" << times[0] << ", FT0-AC=" << times[1] << ", FT0-A=" << times[2] << ", FT0-C=" << times[3] << ENDM;
+    }
+  }
 
   int nt = 0;
   for (auto& track : tracks) {
@@ -357,7 +431,6 @@ void TaskFT0TOF::processEvent(const std::vector<MyTrack>& tracks)
     // Mass
     const float mass = track.getP() / beta * TMath::Sqrt(TMath::Abs(1 - beta * beta));
     // T0 - number of BC
-    int nBC = (mEvTime + 5000.) * o2::tof::Geo::BC_TIME_INPS_INV;  // 5 ns offset to get the correct number of BC (int)
     float mEvTime_BC = mEvTime - nBC * o2::tof::Geo::BC_TIME_INPS; // Event time in ps wrt BC
 
     mHistDeltatPi->Fill(deltatpi);
