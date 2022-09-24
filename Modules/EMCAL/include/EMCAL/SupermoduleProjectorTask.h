@@ -23,6 +23,7 @@
 #include <memory>
 #include <vector>
 #include <string>
+#include <cfloat>
 
 class TCanvas;
 class TPaveText;
