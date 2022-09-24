@@ -198,7 +198,11 @@ void TrackletsTask::buildHistograms()
   getObjectsManager()->startPublishing(mTrackletsPerTimeFrameCycled);
   mTriggersPerTimeFrame = new TH1F("triggerspertimeframe", "Number of Triggers per timeframe;Triggers in TimeFrame;Counts", 100, 0, 100);
   getObjectsManager()->startPublishing(mTriggersPerTimeFrame);
-
+  mEventsPerTimeFrame = new TH1F("eventswithdigitspertimeframe", "Number of Events with Digits per Time Frame;Event with digits in Time Frame;Counts", 100, 0, 100);
+  getObjectsManager()->startPublishing(mEventsPerTimeFrame);  
+  
+  mDigitsPerEvent = new TH1F("digitsperevent", "Number of Digits per event;Digits in Event;Counts", 100, 0, 50000);
+  getObjectsManager()->startPublishing(mDigitsPerEvent); 
   buildTrackletLayers();
 }
 
@@ -345,8 +349,10 @@ void TrackletsTask::monitorData(o2::framework::ProcessingContext& ctx)
       mTrackletsPerTimeFrame->Fill(tracklets.size());
       mTrackletsPerTimeFrameCycled->Fill(tracklets.size());
       mTriggersPerTimeFrame->Fill(triggerrecords.size());
+        if (!digits.size() == 0)  mEventsPerTimeFrame->Fill(triggerrecords.size());           
       for (auto& trigger : triggerrecords) {
         mTrackletsPerEvent->Fill(trigger.getNumberOfTracklets());
+       if (!trigger.getNumberOfDigits() == 0)    mDigitsPerEvent->Fill(trigger.getNumberOfDigits());      
         if (trigger.getNumberOfTracklets() == 0) {
           continue; // bail if we have no digits in this trigger
         }

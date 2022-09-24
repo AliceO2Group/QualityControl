@@ -79,6 +79,8 @@ class TrackletsTask final : public TaskInterface
   TH1F* mTrackletsPerEventn = nullptr;
   TH1F* mTrackletsPerTimeFrame = nullptr;
   TH1F* mTriggersPerTimeFrame = nullptr;
+  TH1F* mEventsPerTimeFrame = nullptr;
+  TH1F* mDigitsPerEvent = nullptr;
   TH1F* mTrackletsPerTimeFrameCycled = nullptr;
   std::array<TH2F*, 6> mLayers;
 
