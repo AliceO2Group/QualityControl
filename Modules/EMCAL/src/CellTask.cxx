@@ -346,7 +346,7 @@ void CellTask::monitorData(o2::framework::ProcessingContext& ctx)
           auto timeoffset = mTimeCalib ? mTimeCalib->getTimeCalibParam(cell.getTower(), cell.getLowGain()) : 0.;
           bool goodcell = true;
           if (mBadChannelMap) {
-            goodcell = mBadChannelMap->getChannelStatus(cell.getTower()) != MaskType_t::GOOD_CELL;
+            goodcell = mBadChannelMap->getChannelStatus(cell.getTower()) == MaskType_t::GOOD_CELL;
           }
           histos.fillHistograms(cell, goodcell, timeoffset, bcphase);
           if (isPhysTrigger) {
@@ -828,7 +828,7 @@ void CellTask::CellHistograms::reset()
   }
 
   for (auto histos : mCellTimeBC) {
-    //for (auto hist : histos)
+    // for (auto hist : histos)
     resetOptional(histos);
   }
   //  resetOptional(mEvCounterTF);
@@ -887,7 +887,7 @@ void CellTask::CellHistograms::clean()
     cleanOptional(histos);
   }
   for (auto histos : mCellTimeBC) {
-    //for (auto hist : histos)
+    // for (auto hist : histos)
     cleanOptional(histos);
   }
   //  cleanOptional(mEvCounterTF);
