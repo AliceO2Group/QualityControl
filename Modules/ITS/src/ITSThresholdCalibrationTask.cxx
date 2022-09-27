@@ -25,7 +25,6 @@
 #include "TLatex.h"
 #include <Framework/DataSpecUtils.h>
 #include "Framework/InputRecordWalker.h"
-#include "ITSMFTReconstruction/ChipMappingITS.h"
 
 using namespace o2::itsmft;
 using namespace o2::its;
@@ -228,7 +227,6 @@ ITSThresholdCalibrationTask::CalibrationResStruct ITSThresholdCalibrationTask::C
 {
   CalibrationResStruct result;
   auto StaveINFO = splitString(input, ",");
-  o2::itsmft::ChipMappingITS mp;
   for (string info : StaveINFO) {
     if (info.size() == 0)
       continue;

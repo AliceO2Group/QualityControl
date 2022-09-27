@@ -22,6 +22,7 @@
 #include <TH2D.h>
 #include <ITSBase/GeometryTGeo.h>
 #include <TTree.h>
+#include "ITSMFTReconstruction/ChipMappingITS.h"
 
 class TH1D;
 class TH2D;
@@ -105,7 +106,8 @@ class ITSThresholdCalibrationTask : public TaskInterface
   TH1F* hSuccessRate;
   TH1F *hCalibrationLayer[7][3], *hCalibrationRMSLayer[7][3];
   TH1F *hCalibrationThrNoiseLayer[7], *hCalibrationThrNoiseRMSLayer[7];
-
+  
+  o2::itsmft::ChipMappingITS mp;
   Int_t SuccessStatus[7], TotalStatus[7];
 };
 } // namespace o2::quality_control_modules::its
