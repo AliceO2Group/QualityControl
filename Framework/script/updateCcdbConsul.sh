@@ -16,8 +16,9 @@ HEAD_NODES=(
 #  alio2-cr1-hv-head01
 #  alio2-cr1-flp166
 #  alio2-cr1-flp181
-#  alio2-cr1-mvs01
+#  alio2-cr1-mvs03
   barth-test-cc7.cern.ch
+#ali-consul.cern.ch
 )
 echo "Number of nodes: ${#HEAD_NODES[@]}"
 
@@ -40,26 +41,35 @@ for ((nodeIndex = 0; nodeIndex < ${#HEAD_NODES[@]}; nodeIndex++)); do
   list_files=$(curl -s ${node}:8500/v1/kv/o2/components/qc/ANY/any?keys=true | jq -c -r '.[]')
   IFS=$'\n' read -rd '' -a array_files <<<"$list_files"
 
+  # backup folder
+  backup_dir_name="backup-consul-`date +%Y.%m.%d`"
+  mkdir $backup_dir_name
+  cd $backup_dir_name
+
   # for each file
   for file in "${array_files[@]}"; do
     echo "file: $file"
+
     # download
-    consul kv get "$file" >/tmp/consul.json
+    local_file=$(basename $file)
+    consul kv get "$file" >$local_file
 
     # if we need to check the value before modifying :
-#    current=$(cat /tmp/consul.json | jq  '.qc.config.infologger.filterDiscardLevel')
-#    current=$(echo $current| tr -d '"') # remove quotes
-#    echo "current: $current"
+    current=$(cat $local_file | jq  '.qc.config.conditionDB.url')
+    current=$(echo $current| tr -d '"') # remove quotes
+    echo "current: $current"
 #    unset new_content
 #    if (( $current != null && $current < 11 )); then
 #      # modify
-#      new_content=$(cat /tmp/consul.json | jq  '.qc.config.infologger.filterDiscardLevel |= "11"')
+#      new_content=$(cat $local_file | jq  '.qc.config.conditionDB.url |= "11"')
 #      echo $new_content
 #      consul kv put "$file" "$new_content"
 #    fi
 
     # or simply modify :
-    new_content=$(cat /tmp/consul.json | jq  '.qc.config.infologger.filterDiscardLevel |= "21"')
+    #new_content=$(sed 's/http:\/\/localhost:8084/o2-ccdb.internal/g' $local_file)
+    new_content=$(cat $local_file | jq  '.qc.config.infologger.filterDiscardLevel |= "21"')
+    echo "new_content: $new_content"
     # upload (uncomment)
 #    consul kv put "$file" "$new_content"
   done
