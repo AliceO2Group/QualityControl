@@ -53,13 +53,13 @@ void Aggregator::init()
   }
 
   // Print setting
-  ILOG(Info, Ops) << mAggregatorConfig.name << ": Module " << mAggregatorConfig.moduleName << AliceO2::InfoLogger::InfoLogger::endm;
-  ILOG(Info, Ops) << mAggregatorConfig.name << ": Class " << mAggregatorConfig.className << AliceO2::InfoLogger::InfoLogger::endm;
-  ILOG(Info, Ops) << mAggregatorConfig.name << ": Detector " << mAggregatorConfig.detectorName << AliceO2::InfoLogger::InfoLogger::endm;
-  ILOG(Info, Ops) << mAggregatorConfig.name << ": Policy " << UpdatePolicyTypeUtils::ToString(mAggregatorConfig.policyType) << AliceO2::InfoLogger::InfoLogger::endm;
-  ILOG(Info, Ops) << mAggregatorConfig.name << ": QualityObjects : " << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << mAggregatorConfig.name << ": Module " << mAggregatorConfig.moduleName << ENDM;
+  ILOG(Info, Support) << mAggregatorConfig.name << ": Class " << mAggregatorConfig.className << ENDM;
+  ILOG(Info, Support) << mAggregatorConfig.name << ": Detector " << mAggregatorConfig.detectorName << ENDM;
+  ILOG(Info, Support) << mAggregatorConfig.name << ": Policy " << UpdatePolicyTypeUtils::ToString(mAggregatorConfig.policyType) << ENDM;
+  ILOG(Info, Support) << mAggregatorConfig.name << ": QualityObjects : " << ENDM;
   for (const auto& moname : mAggregatorConfig.objectNames) {
-    ILOG(Info, Ops) << mAggregatorConfig.name << "   - " << moname << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Info, Support) << mAggregatorConfig.name << "   - " << moname << ENDM;
   }
 }
 
