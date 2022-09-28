@@ -38,6 +38,7 @@ ObjectsManager::ObjectsManager(std::string taskName, std::string taskClass, std:
   mMonitorObjects = std::make_unique<MonitorObjectCollection>();
   mMonitorObjects->SetOwner(true);
   mMonitorObjects->SetName(taskName.c_str());
+  mMonitorObjects->setDetector(detectorName);
 
   // register with the discovery service
   if (!noDiscovery && !consulUrl.empty()) {
