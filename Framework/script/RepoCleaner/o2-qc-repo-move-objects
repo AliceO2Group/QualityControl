@@ -17,9 +17,9 @@ def parseArgs():
     parser.add_argument('--dry-run', action='store_true',
                         help='Dry run, no actual deletion nor modification to the CCDB.')
     parser.add_argument('--path', dest='path', action='store', default="",
-                        help='Origin path.', required=True)
+                        help='Origin path without initial slash and without .* at the end (e.g. qc/TST/MO/Bob).', required=True)
     parser.add_argument('--new-path', dest='new_path', action='store', default="",
-                        help='New path.', required=True)
+                        help='New path without initial slash and without .* at the end (e.g. qc/TST2/MO/Bob).', required=True)
     parser.add_argument('--one-by-one', action='store_true', help='Ask confirmation for each deletion')
     parser.add_argument('--print-list', action='store_true', help='Only print the list of objects that would be deleted')
     args = parser.parse_args()
