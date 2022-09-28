@@ -64,7 +64,7 @@ def run(args):
 
     for v in versions:
         logging.info(f"Ready to move {v}")
-        # here we need to make sure that we preserve the subdirectory structure and replace the only the matching part
+        # here we need to make sure that we preserve the subdirectory structure and replace only the matching part
         version_new_path = re.sub("^" + args.path, args.new_path, v.path, count=0, flags=0)
         if args.one_by_one:
             answer = input("  Continue? y/n\n  ")
