@@ -468,7 +468,7 @@ void CheckRunner::initServiceDiscovery()
 {
   if (mConfig.consulUrl.empty()) {
     mServiceDiscovery = nullptr;
-    ILOG(Warning, Ops) << "Service Discovery disabled" << ENDM;
+    ILOG(Warning, Support) << "Service Discovery disabled" << ENDM;
     return;
   }
   mServiceDiscovery = std::make_shared<ServiceDiscovery>(mConfig.consulUrl, mDeviceName, mDeviceName);
@@ -515,20 +515,20 @@ void CheckRunner::start(const ServiceRegistry& services)
   string partitionName = computePartitionName(services);
   QcInfoLogger::setRun(mActivity.mId);
   QcInfoLogger::setPartition(partitionName);
-  ILOG(Info, Ops) << "Starting run " << mActivity.mId << ":"
-                  << "\n   - period: " << mActivity.mPeriodName << "\n   - pass type: " << mActivity.mPassName << "\n   - provenance: " << mActivity.mProvenance << ENDM;
+  ILOG(Info, Support) << "Starting run " << mActivity.mId << ":"
+                      << "\n   - period: " << mActivity.mPeriodName << "\n   - pass type: " << mActivity.mPassName << "\n   - provenance: " << mActivity.mProvenance << ENDM;
   mTimerTotalDurationActivity.reset();
   mCollector->setRunNumber(mActivity.mId);
 }
 
 void CheckRunner::stop()
 {
-  ILOG(Info, Ops) << "Stopping run " << mActivity.mId << ENDM;
+  ILOG(Info, Support) << "Stopping run " << mActivity.mId << ENDM;
 }
 
 void CheckRunner::reset()
 {
-  ILOG(Info, Ops) << "Reset" << ENDM;
+  ILOG(Info, Support) << "Reset" << ENDM;
 
   try {
     mCollector.reset();

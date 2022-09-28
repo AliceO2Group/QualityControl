@@ -252,10 +252,10 @@ header::DataOrigin TaskRunner::createTaskDataOrigin(const std::string& detectorC
   // However, to avoid colliding with data marked as e.g. TPC/CLUSTERS, we add 'Q' to the data origin, so it is Q<det>.
   std::string originStr = "Q";
   if (detectorCode.empty()) {
-    ILOG(Warning, Ops) << "empty detector code for a task data origin, trying to survive with: DET" << ENDM;
+    ILOG(Warning, Support) << "empty detector code for a task data origin, trying to survive with: DET" << ENDM;
     originStr += "DET";
   } else if (detectorCode.size() > 3) {
-    ILOG(Warning, Ops) << "too long detector code for a task data origin: " + detectorCode + ", trying to survive with: " + detectorCode.substr(0, 3) << ENDM;
+    ILOG(Warning, Support) << "too long detector code for a task data origin: " + detectorCode + ", trying to survive with: " + detectorCode.substr(0, 3) << ENDM;
     originStr += detectorCode.substr(0, 3);
   } else {
     originStr += detectorCode;
@@ -402,7 +402,7 @@ void TaskRunner::startOfActivity()
   // Start activity in module's stask and update objectsManager
   Activity activity = mTaskConfig.fallbackActivity;
   activity.mId = mRunNumber;
-  ILOG(Info, Ops) << "Starting run " << mRunNumber << ENDM;
+  ILOG(Info, Support) << "Starting run " << mRunNumber << ENDM;
   mObjectsManager->setActivity(activity);
   mCollector->setRunNumber(mRunNumber);
   mTask->startOfActivity(activity);
@@ -413,7 +413,7 @@ void TaskRunner::endOfActivity()
 {
   Activity activity = mTaskConfig.fallbackActivity;
   activity.mId = mRunNumber;
-  ILOG(Info, Ops) << "Stopping run " << mRunNumber << ENDM;
+  ILOG(Info, Support) << "Stopping run " << mRunNumber << ENDM;
   mTask->endOfActivity(activity);
   mObjectsManager->removeAllFromServiceDiscovery();
 
@@ -423,7 +423,7 @@ void TaskRunner::endOfActivity()
 
 void TaskRunner::startCycle()
 {
-  ILOG(Debug, Ops) << "Start cycle " << mCycleNumber << ENDM;
+  ILOG(Debug, Support) << "Start cycle " << mCycleNumber << ENDM;
   mTask->startOfCycle();
   mNumberMessagesReceivedInCycle = 0;
   mNumberObjectsPublishedInCycle = 0;
@@ -434,7 +434,7 @@ void TaskRunner::startCycle()
 
 void TaskRunner::finishCycle(DataAllocator& outputs)
 {
-  ILOG(Debug, Ops) << "Finish cycle " << mCycleNumber << ENDM;
+  ILOG(Debug, Support) << "Finish cycle " << mCycleNumber << ENDM;
   mTask->endOfCycle();
 
   mNumberObjectsPublishedInCycle += publish(outputs);

@@ -103,7 +103,7 @@ void RootFileSink::run(framework::ProcessingContext& pctx)
       if (storedTObj != nullptr) {
         auto storedMOC = dynamic_cast<MonitorObjectCollection*>(storedTObj);
         if (storedMOC == nullptr) {
-          ILOG(Error, Ops) << "Could not cast the stored object to MonitorObjectCollection, skipping." << ENDM;
+          ILOG(Error, Support) << "Could not cast the stored object to MonitorObjectCollection, skipping." << ENDM;
           delete storedTObj;
           continue;
         }

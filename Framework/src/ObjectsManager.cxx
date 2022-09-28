@@ -44,7 +44,7 @@ ObjectsManager::ObjectsManager(std::string taskName, std::string taskClass, std:
     std::string uniqueTaskID = taskName + "_" + std::to_string(parallelTaskID);
     mServiceDiscovery = std::make_unique<ServiceDiscovery>(consulUrl, taskName, uniqueTaskID);
   } else {
-    ILOG(Warning, Ops) << "Service Discovery disabled" << ENDM;
+    ILOG(Warning, Support) << "Service Discovery disabled" << ENDM;
     mServiceDiscovery = nullptr;
   }
 }
@@ -113,7 +113,7 @@ MonitorObject* ObjectsManager::getMonitorObject(std::string objectName)
 {
   TObject* object = mMonitorObjects->FindObject(objectName.c_str());
   if (object == nullptr) {
-    ILOG(Error, Ops) << "ObjectsManager: Unable to find object \"" << objectName << "\"" << ENDM;
+    ILOG(Error, Support) << "ObjectsManager: Unable to find object \"" << objectName << "\"" << ENDM;
     BOOST_THROW_EXCEPTION(ObjectNotFoundError() << errinfo_object_name(objectName));
   }
   return dynamic_cast<MonitorObject*>(object);
@@ -123,7 +123,7 @@ MonitorObject* ObjectsManager::getMonitorObject(size_t index)
 {
   TObject* object = mMonitorObjects->At(index);
   if (object == nullptr) {
-    ILOG(Error, Ops) << "ObjectsManager: Unable to find object at index \"" << index << "\"" << ENDM;
+    ILOG(Error, Support) << "ObjectsManager: Unable to find object at index \"" << index << "\"" << ENDM;
     string fakeName = "at index " + to_string(index);
     BOOST_THROW_EXCEPTION(ObjectNotFoundError() << errinfo_object_name(fakeName));
   }

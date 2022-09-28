@@ -412,18 +412,18 @@ void AggregatorRunner::start(const ServiceRegistry& services)
   string partitionName = computePartitionName(services);
   QcInfoLogger::setRun(mActivity.mId);
   QcInfoLogger::setPartition(partitionName);
-  ILOG(Info, Ops) << "Starting run " << mActivity.mId << ":"
-                  << "\n   - period: " << mActivity.mPeriodName << "\n   - pass type: " << mActivity.mPassName << "\n   - provenance: " << mActivity.mProvenance << ENDM;
+  ILOG(Info, Support) << "Starting run " << mActivity.mId << ":"
+                      << "\n   - period: " << mActivity.mPeriodName << "\n   - pass type: " << mActivity.mPassName << "\n   - provenance: " << mActivity.mProvenance << ENDM;
 }
 
 void AggregatorRunner::stop()
 {
-  ILOG(Info, Ops) << "Stopping run " << mActivity.mId << ENDM;
+  ILOG(Info, Support) << "Stopping run " << mActivity.mId << ENDM;
 }
 
 void AggregatorRunner::reset()
 {
-  ILOG(Info, Ops) << "Reset" << ENDM;
+  ILOG(Info, Support) << "Reset" << ENDM;
 
   try {
     mCollector.reset();
