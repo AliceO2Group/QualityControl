@@ -68,7 +68,24 @@
         "stopTrigger": [
            "usercontrol"
         ]
-      }
-          }
+	},
+         "PulseHeightPerChamber2D": {
+	    "active": "true",
+        "className": "o2::quality_control::postprocessing::PulseHeightPostProcessing",
+        "moduleName": "QualityControl",
+        "detectorName": "TRD",
+	    "path": "qc/TRD/MO/DigitTask/PulseHeight/mPulseHeightperchamber",
+	    "timestamps":"-1",
+	     "initTrigger": [
+          "usercontrol"
+        ],
+        "updateTrigger": [
+            "once"
+        ],
+        "stopTrigger": [
+           "usercontrol"
+        ]
+        }
+    }
   }
 }
