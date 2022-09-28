@@ -171,7 +171,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
     ILOG_INST.filterDiscardSetFile(infologgerDiscardFile.c_str());
     o2::quality_control::core::QcInfoLogger::setFacility("runQC");
 
-    ILOG(Info, Ops) << "Using config file '" << qcConfigurationSource << "'" << ENDM;
+    ILOG(Info, Support) << "Using config file '" << qcConfigurationSource << "'" << ENDM;
     auto keyValuesToOverride = quality_control::core::parseOverrideValues(config.options().get<std::string>("override-values"));
     quality_control::core::overrideValues(configTree, keyValuesToOverride);
 
