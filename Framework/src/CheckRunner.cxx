@@ -516,7 +516,7 @@ void CheckRunner::start(const ServiceRegistry& services)
   QcInfoLogger::setRun(mActivity.mId);
   QcInfoLogger::setPartition(partitionName);
   ILOG(Info, Support) << "Starting run " << mActivity.mId << ":"
-                  << "\n   - period: " << mActivity.mPeriodName << "\n   - pass type: " << mActivity.mPassName << "\n   - provenance: " << mActivity.mProvenance << ENDM;
+                      << "\n   - period: " << mActivity.mPeriodName << "\n   - pass type: " << mActivity.mPassName << "\n   - provenance: " << mActivity.mProvenance << ENDM;
   mTimerTotalDurationActivity.reset();
   mCollector->setRunNumber(mActivity.mId);
 }
