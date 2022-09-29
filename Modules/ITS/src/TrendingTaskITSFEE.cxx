@@ -24,6 +24,9 @@
 #include "QualityControl/Reductor.h"
 #include "QualityControl/ObjectMetadataKeys.h"
 
+#include <TList.h>
+#include <TObject.h>
+#include <TLegendEntry.h>
 #include <TCanvas.h>
 #include <TH1.h>
 #include <TGraph.h>
@@ -54,7 +57,8 @@ void TrendingTaskITSFEE::initialize(Trigger, framework::ServiceRegistry&)
   mTrend = std::make_unique<TTree>();
   mTrend->SetName(PostProcessingInterface::getName().c_str());
   mTrend->Branch("runNumber", &mMetaData.runNumber);
-  mTrend->Branch("time", &mTime);
+  mTrend->Branch("Time", &mTime);
+  mTrend->Branch("Entries", &nEntries);
 
   for (const auto& source : mConfig.dataSources) {
     std::unique_ptr<Reductor> reductor(root_class_factory::create<Reductor>(source.moduleName, source.reductorName));
@@ -84,7 +88,7 @@ void TrendingTaskITSFEE::finalize(Trigger t, framework::ServiceRegistry& service
 void TrendingTaskITSFEE::storeTrend(repository::DatabaseInterface& qcdb)
 {
   auto mo = std::make_shared<core::MonitorObject>(mTrend.get(), getName(), "o2::quality_control_modules::its::TrendingTaskITSFEE",
-                                                  mConfig.detectorName);
+                                                  mConfig.detectorName, mMetaData.runNumber); // IVAN TEST
   mo->setIsOwner(false);
   qcdb.storeMO(mo);
 }
@@ -109,6 +113,7 @@ void TrendingTaskITSFEE::trendValues(const Trigger& t, repository::DatabaseInter
         std::map<std::string, std::string> entryMetadata = mo->getMetadataMap();  // full list of metadata as a map
         mMetaData.runNumber = std::stoi(entryMetadata[metadata_keys::runNumber]); // get and set run number
         runlist.push_back(std::to_string(mMetaData.runNumber));
+        nEntries = (Int_t)mTrend->GetEntriesFast() + 1;
       }
       TObject* obj = mo ? mo->getObject() : nullptr;
       if (obj)
@@ -128,22 +133,11 @@ void TrendingTaskITSFEE::storePlots(repository::DatabaseInterface& qcdb)
   int countplots = 0;
   int countITSpart = 0;
   bool isRun = false;
-
-  // Define output canvas and legend
-  TCanvas* canvas;
-  TLegend* legend;
-
-  TMultiGraph* multi_trend;
-  TGraph* trend_plot_Flags[nFlags];
-
-  // Retrieve X-axis for trend plot. Two options: "Time" or "Run"
+  std::string name_Xaxis;
   long int numberOfEntries = mTrend->GetEntriesFast();
-  mTrend->Draw("time", "", "goff");
-  std::vector<double> retrieveTime(mTrend->GetV1(), mTrend->GetV1() + mTrend->GetSelectedRows() % mTrend->GetEstimate());
 
-  std::vector<double> retrieveRunNumber;
-  for (int j = 1; j <= numberOfEntries; j++)
-    retrieveRunNumber.push_back((double)j);
+  // Define output graphs
+  TMultiGraph* multi_trend;
 
   // Lane status summary plots
   for (const auto& plot : mConfig.plots) {
@@ -157,27 +151,21 @@ void TrendingTaskITSFEE::storePlots(repository::DatabaseInterface& qcdb)
       countITSpart++;
     }
 
-    // Retrieve data for trend plot
-    mTrend->Draw(plot.varexp.c_str(), "", "goff");
-    std::vector<double> dataRetrieve(mTrend->GetV1(), mTrend->GetV1() + mTrend->GetSelectedRows() % mTrend->GetEstimate());
-
     // Initialize MultiGraph and Legend
     if (countplots == 0) {
       multi_trend = new TMultiGraph();
       SetGraphName(multi_trend, plot.name, Form("Lane status summary trend %s", itsParts[countITSpart].c_str()));
 
-      legend = new TLegend(0.93, 0.55, 1.0, 0.9);
-      SetLegendStyle(legend, Form("LaneStatusSummary_%s_legend", itsParts[countITSpart].c_str()));
-
-      isRun = plot.selection.find("Run") != std::string::npos ? true : false;
+      isRun = plot.selection.find("Entries") != std::string::npos ? true : false;
+      name_Xaxis = plot.selection.c_str();
     }
 
-    trend_plot_Flags[countplots] = new TGraph(numberOfEntries, isRun ? &retrieveRunNumber[0] : &retrieveTime[0], &dataRetrieve[0]);
-    trend_plot_Flags[countplots]->SetName(plot.name.c_str());
-    SetGraphStyle(trend_plot_Flags[countplots], colors[countplots], markers[countplots]);
-    multi_trend->Add(trend_plot_Flags[countplots], plot.option.c_str());
-
-    legend->AddEntry(trend_plot_Flags[countplots], Form("%s", trend_titles[countplots].c_str()), "pl");
+    // Retrieve data for trend plot
+    mTrend->Draw(Form("%s:%s", name_Xaxis.c_str(), plot.varexp.c_str()), "", "goff");
+    TGraph* trend_plot = new TGraph(numberOfEntries, mTrend->GetV1(), mTrend->GetV2());
+    SetGraphStyle(trend_plot, plot.name, trend_titles[countplots], colors[countplots], markers[countplots]);
+    multi_trend->Add((TGraph*)trend_plot->Clone(), plot.option.c_str());
+    delete trend_plot;
 
     // Create and save plots
     if (countplots == nFlags - 1) {
@@ -186,7 +174,7 @@ void TrendingTaskITSFEE::storePlots(repository::DatabaseInterface& qcdb)
 
       // Canvas settings
       std::string name = "LaneStatusSummary_" + itsParts[countITSpart] + "_Trends";
-      canvas = new TCanvas(Form("%s", name.c_str()), Form("%s", name.c_str()));
+      TCanvas* canvas = new TCanvas(Form("%s", name.c_str()), Form("%s", name.c_str()));
       SetCanvasSettings(canvas);
 
       // Plot as a function of run number requires a dummy TH1 histogram
@@ -200,10 +188,13 @@ void TrendingTaskITSFEE::storePlots(repository::DatabaseInterface& qcdb)
       if (hDummy)
         hDummy->Draw();
       multi_trend->Draw(Form("%s", hDummy ? "" : "a"));
+
+      TLegend* legend = (TLegend*)canvas->BuildLegend(0.93, 0.55, 1.0, 0.9);
+      SetLegendStyle(legend, Form("LaneStatusSummary_%s_legend", itsParts[countITSpart].c_str()), isRun);
       legend->Draw("SAME");
 
       // Upload plots
-      auto mo = std::make_shared<MonitorObject>(canvas, mConfig.taskName, "o2::quality_control_modules::its::TrendingTaskITSFEE", mConfig.detectorName);
+      auto mo = std::make_shared<MonitorObject>(canvas, mConfig.taskName, "o2::quality_control_modules::its::TrendingTaskITSFEE", mConfig.detectorName, mMetaData.runNumber);
       mo->setIsOwner(false);
       qcdb.storeMO(mo);
 
@@ -213,12 +204,10 @@ void TrendingTaskITSFEE::storePlots(repository::DatabaseInterface& qcdb)
       delete hDummy;
     }
     countplots++;
-    dataRetrieve.clear();
   } // end loop on plots
 
   //___________________________________________________________________________
   // Trigger Count trending plot
-  TGraph* trend_plot_Triggers[nTriggers];
   countplots = 0;
 
   for (const auto& plot : mConfig.plots) {
@@ -226,32 +215,28 @@ void TrendingTaskITSFEE::storePlots(repository::DatabaseInterface& qcdb)
     if (plot.varexp.find("integral") == std::string::npos)
       continue;
 
-    // Retrieve data for trend plot
-    mTrend->Draw(plot.varexp.c_str(), "", "goff");
-    std::vector<double> dataRetrieve(mTrend->GetV1(), mTrend->GetV1() + mTrend->GetSelectedRows() % mTrend->GetEstimate());
-
     // Initialize MultiGraph and Legend
     if (countplots == 0) {
       multi_trend = new TMultiGraph();
       SetGraphName(multi_trend, plot.name, "Trigger count trend");
 
-      legend = new TLegend(0.93, 0.15, 1.0, 0.9);
-      SetLegendStyle(legend, "Trigger_count_trend");
-      isRun = plot.selection.find("Run") != std::string::npos ? true : false;
+      isRun = plot.selection.find("Entries") != std::string::npos ? true : false;
+      name_Xaxis = plot.selection.c_str();
     }
 
-    trend_plot_Triggers[countplots] = new TGraph(numberOfEntries, isRun ? &retrieveRunNumber[0] : &retrieveTime[0], &dataRetrieve[0]);
-    trend_plot_Triggers[countplots]->SetName(plot.name.c_str());
-    SetGraphStyle(trend_plot_Triggers[countplots], colors[countplots], markers[countplots]);
-    multi_trend->Add(trend_plot_Triggers[countplots], plot.option.c_str());
+    // Retrieve data for trend plot
+    mTrend->Draw(Form("%s:%s", name_Xaxis.c_str(), plot.varexp.c_str()), "", "goff");
+    TGraph* trend_plot = new TGraph(numberOfEntries, mTrend->GetV1(), mTrend->GetV2());
+    SetGraphStyle(trend_plot, plot.name, mTriggerType[countplots], colors[countplots], markers[countplots]);
+    multi_trend->Add((TGraph*)trend_plot->Clone(), plot.option.c_str());
+    delete trend_plot;
 
-    legend->AddEntry(trend_plot_Triggers[countplots], Form("%s", mTriggerType[countplots].c_str()), "pl");
     if (countplots == nTriggers - 1) {
 
-      SetGraphAxes(multi_trend, Form("%s", isRun ? "Run" : "Time"), "Integral over all FEE", !isRun);
+      SetGraphAxes(multi_trend, Form("%s", isRun ? "Run" : "Time"), "Sum over all FEE", !isRun);
 
       // Canvas settings
-      canvas = new TCanvas("Trigger_count_trend", "Trigger_count_trend");
+      TCanvas* canvas = new TCanvas("Trigger_count_trend", "Trigger_count_trend");
       SetCanvasSettings(canvas);
 
       // Plot as a function of run number requires a dummy TH1 histogram
@@ -265,10 +250,13 @@ void TrendingTaskITSFEE::storePlots(repository::DatabaseInterface& qcdb)
       if (hDummy)
         hDummy->Draw();
       multi_trend->Draw(Form("%s", hDummy ? "" : "a"));
+
+      TLegend* legend = (TLegend*)canvas->BuildLegend(0.93, 0.15, 1.0, 0.9);
+      SetLegendStyle(legend, "Trigger_count_trend", isRun);
       legend->Draw("SAME");
 
       // Upload plots
-      auto mo = std::make_shared<MonitorObject>(canvas, mConfig.taskName, "o2::quality_control_modules::its::TrendingTaskITSFEE", mConfig.detectorName);
+      auto mo = std::make_shared<MonitorObject>(canvas, mConfig.taskName, "o2::quality_control_modules::its::TrendingTaskITSFEE", mConfig.detectorName, mMetaData.runNumber);
       mo->setIsOwner(false);
       qcdb.storeMO(mo);
 
@@ -278,13 +266,10 @@ void TrendingTaskITSFEE::storePlots(repository::DatabaseInterface& qcdb)
       delete hDummy;
     }
     countplots++;
-    dataRetrieve.clear();
   } // end loop on plots
-  retrieveTime.clear();
-  retrieveRunNumber.clear();
 }
 
-void TrendingTaskITSFEE::SetLegendStyle(TLegend* legend, const std::string& name)
+void TrendingTaskITSFEE::SetLegendStyle(TLegend* legend, const std::string& name, bool isRun)
 {
   legend->SetTextFont(42);
   legend->SetLineColor(kWhite);
@@ -292,6 +277,8 @@ void TrendingTaskITSFEE::SetLegendStyle(TLegend* legend, const std::string& name
   legend->SetName(Form("%s_legend", name.c_str()));
   legend->SetFillStyle(0);
   legend->SetBorderSize(0);
+  if (isRun)
+    legend->GetListOfPrimitives()->Remove((TLegendEntry*)legend->GetListOfPrimitives()->First()); // Delete entry from dummy histogram
 }
 
 void TrendingTaskITSFEE::SetCanvasSettings(TCanvas* canvas)
@@ -302,8 +289,10 @@ void TrendingTaskITSFEE::SetCanvasSettings(TCanvas* canvas)
   canvas->SetRightMargin(0.07);
 }
 
-void TrendingTaskITSFEE::SetGraphStyle(TGraph* graph, int col, int mkr)
+void TrendingTaskITSFEE::SetGraphStyle(TGraph* graph, const std::string& name, const std::string& title, int col, int mkr)
 {
+  graph->SetName(Form("%s", name.c_str()));
+  graph->SetTitle(Form("%s", title.c_str()));
   graph->SetLineColor(col);
   graph->SetMarkerStyle(mkr);
   graph->SetMarkerColor(col);
@@ -311,14 +300,14 @@ void TrendingTaskITSFEE::SetGraphStyle(TGraph* graph, int col, int mkr)
   graph->SetLineWidth(1);
 }
 
-void TrendingTaskITSFEE::SetGraphName(TMultiGraph* graph, std::string name, std::string title)
+void TrendingTaskITSFEE::SetGraphName(TMultiGraph* graph, const std::string& name, const std::string& title)
 {
   graph->SetTitle(title.c_str());
   graph->SetName(name.c_str());
 }
 
-void TrendingTaskITSFEE::SetGraphAxes(TMultiGraph* graph, std::string xtitle,
-                                      std::string ytitle, bool isTime)
+void TrendingTaskITSFEE::SetGraphAxes(TMultiGraph* graph, const std::string& xtitle,
+                                      const std::string& ytitle, bool isTime)
 {
   graph->GetXaxis()->SetTitle(xtitle.c_str());
   graph->GetXaxis()->SetTitleSize(0.045);
@@ -337,7 +326,7 @@ void TrendingTaskITSFEE::SetGraphAxes(TMultiGraph* graph, std::string xtitle,
   }
 }
 
-void TrendingTaskITSFEE::SetHistoAxes(TH1* hist, std::vector<std::string> runlist,
+void TrendingTaskITSFEE::SetHistoAxes(TH1* hist, const std::vector<std::string>& runlist,
                                       const double& Ymin, const double& Ymax)
 {
   hist->SetStats(0);

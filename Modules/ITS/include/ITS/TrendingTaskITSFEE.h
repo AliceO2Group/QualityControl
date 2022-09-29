@@ -67,13 +67,13 @@ class TrendingTaskITSFEE : public PostProcessingInterface
 
  private:
   // other functions; mainly style of plots
-  void SetLegendStyle(TLegend* legend, const std::string& name);
+  void SetLegendStyle(TLegend* legend, const std::string& name, bool isRun);
   void SetCanvasSettings(TCanvas* canvas);
-  void SetGraphStyle(TGraph* graph, int col, int mkr);
-  void SetGraphName(TMultiGraph* graph, std::string name, std::string title);
-  void SetGraphAxes(TMultiGraph* graph, std::string xtitle,
-                    std::string ytitle, bool isTime);
-  void SetHistoAxes(TH1* hist, std::vector<std::string> runlist,
+  void SetGraphStyle(TGraph* graph, const std::string& name, const std::string& title, int col, int mkr);
+  void SetGraphName(TMultiGraph* graph, const std::string& name, const std::string& title);
+  void SetGraphAxes(TMultiGraph* graph, const std::string& xtitle,
+                    const std::string& ytitle, bool isTime);
+  void SetHistoAxes(TH1* hist, const std::vector<std::string>& runlist,
                     const double& Ymin, const double& Ymax);
 
   struct MetaData {
@@ -87,6 +87,7 @@ class TrendingTaskITSFEE : public PostProcessingInterface
   TrendingTaskConfigITS mConfig;
   MetaData mMetaData;
   UInt_t mTime;
+  Int_t nEntries = 0;
 
   std::vector<std::string> runlist;
   std::unique_ptr<TTree> mTrend;
@@ -96,12 +97,12 @@ class TrendingTaskITSFEE : public PostProcessingInterface
   const int markers[14] = { 20, 21, 22, 24, 25, 26, 27, 29, 30, 32, 33, 34, 43, 47 };
 
   static constexpr int nFlags = 3;
-  static constexpr int nITSparts = 3;
+  static constexpr int nITSparts = 4;
   static constexpr int nTriggers = 13;
 
   const std::string mTriggerType[nTriggers] = { "ORBIT", "HB", "HBr", "HC", "PHYSICS", "PP", "CAL", "SOT", "EOT", "SOC", "EOC", "TF", "INT" };
   const std::string trend_titles[nFlags] = { "Warnings", "Errors", "Faults" };
-  const std::string itsParts[nITSparts] = { "IB", "ML", "OL" };
+  const std::string itsParts[nITSparts] = { "IB", "ML", "OL", "Global" };
 };
 } // namespace o2::quality_control::postprocessing
 #endif // QUALITYCONTROL_TRENDINGTASKITSFEE_H
