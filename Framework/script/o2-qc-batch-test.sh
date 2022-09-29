@@ -25,7 +25,9 @@ function delete_data() {
   curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/MO/BatchTestTask${UNIQUE_ID}*
   curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/QO/BatchTestCheck${UNIQUE_ID}*
 
-  rm -f /tmp/batch_test_merged${UNIQUE_ID}.root
+  rm -f /tmp/batch_test_mergedA${UNIQUE_ID}.root
+  rm -f /tmp/batch_test_mergedB${UNIQUE_ID}.root
+  rm -f /tmp/batch_test_mergedC${UNIQUE_ID}.root
   rm -f /tmp/batch_test_obj${UNIQUE_ID}.root
   rm -f /tmp/batch_test_check${UNIQUE_ID}.root
 }
@@ -52,11 +54,14 @@ fi
 
 delete_data
 
-# Run the Tasks 3 times, merge results into the file.
-o2-qc-run-producer --message-amount 100 --message-rate 100 | o2-qc --config json:/${JSON_DIR}/batch-test.json --local-batch /tmp/batch_test_merged${UNIQUE_ID}.root --run
-o2-qc-run-producer --message-amount 100 --message-rate 100 | o2-qc --config json:/${JSON_DIR}/batch-test.json --local-batch /tmp/batch_test_merged${UNIQUE_ID}.root --run
+# Run the Tasks 3 times, including twice with the same file.
+o2-qc-run-producer --message-amount 100 --message-rate 100 | o2-qc --config json:/${JSON_DIR}/batch-test.json --local-batch /tmp/batch_test_mergedA${UNIQUE_ID}.root --run
+o2-qc-run-producer --message-amount 100 --message-rate 100 | o2-qc --config json:/${JSON_DIR}/batch-test.json --local-batch /tmp/batch_test_mergedA${UNIQUE_ID}.root --run
+o2-qc-run-producer --message-amount 100 --message-rate 100 | o2-qc --config json:/${JSON_DIR}/batch-test.json --local-batch /tmp/batch_test_mergedB${UNIQUE_ID}.root --run
+# Run the file merger to produce the complete result
+o2-qc-file-merger --input-files /tmp/batch_test_mergedA${UNIQUE_ID}.root /tmp/batch_test_mergedB${UNIQUE_ID}.root --output-file /tmp/batch_test_mergedC${UNIQUE_ID}.root
 # Run Checks and Aggregators, publish results to QCDB
-o2-qc --config json:/${JSON_DIR}/batch-test.json --remote-batch /tmp/batch_test_merged${UNIQUE_ID}.root --run
+o2-qc --config json:/${JSON_DIR}/batch-test.json --remote-batch /tmp/batch_test_mergedC${UNIQUE_ID}.root --run
 
 # check MonitorObject
 # first the return code must be 200
@@ -75,9 +80,9 @@ if (( $? != 0 )); then
 fi
 # try if it is a non empty histogram
 entries=`root -b -l -q -e 'TFile f("/tmp/batch_test_obj${UNIQUE_ID}.root"); TH1F *h = (TH1F*)f.Get("ccdb_object"); cout << h->GetEntries() << endl;' | tail -n 1`
-if [ $entries -lt 150 ] 2>/dev/null
+if [ $entries -lt 225 ] 2>/dev/null
 then
-  echo "The histogram of the QC Task has less than 150 (75%) of expected samples."
+  echo "The histogram of the QC Task has less than 225 (75%) of expected samples."
   delete_data
   exit 5
 fi
@@ -91,5 +96,5 @@ if (( $code != 200 )); then
   exit 6
 fi
 
-echo "Batch test was passed."
+echo "Batch test passed."
 delete_data

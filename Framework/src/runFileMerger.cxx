@@ -22,14 +22,31 @@
 #include <string>
 #include <unordered_map>
 #include <fstream>
+#include <filesystem>
 #include <boost/program_options.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <TFile.h>
 #include <TKey.h>
 #include <TGrid.h>
+#include <variant>
 
 namespace bpo = boost::program_options;
 using namespace o2::quality_control::core;
+
+template <class... Ts>
+struct overloaded : Ts... {
+  using Ts::operator()...;
+};
+template <class... Ts>
+overloaded(Ts...) -> overloaded<Ts...>;
+
+struct Node {
+  std::string pathTo{};
+  std::string name{};
+  std::map<std::string, std::variant<Node, MonitorObjectCollection*>> children = {};
+
+  std::string getFullPath() const { return pathTo + std::filesystem::path::preferred_separator + name; }
+};
 
 int main(int argc, const char* argv[])
 {
@@ -113,7 +130,14 @@ int main(int argc, const char* argv[])
     }
     ILOG(Debug) << "Output file '" << outputFilePath << "' successfully open." << ENDM;
 
-    std::unordered_map<std::string, MonitorObjectCollection*> mergedMocMap;
+    // Unlike in RootFileSink and RootFileSource, where we assume that the latter only supports the output of the first,
+    // here we have more relaxed assumptions and try to recursively merge everything, regardless of the directory structure.
+    // This is because we might have to change the structure again when we support moving windows, so we might save some work
+    // in the future.
+    // We choose to keep the merged file structure in memory and merge everything we can before storing in a file.
+    // If this becomes too memory-hungry, it could be rewritten to store anything merge immediately at the cost of
+    // more I/O operations.
+    Node mergedTree;
     for (const auto& inputFilePath : inputFilePaths) {
       auto* file = TFile::Open(inputFilePath.c_str(), "READ");
       if (file == nullptr) {
@@ -130,65 +154,113 @@ int main(int argc, const char* argv[])
       }
       ILOG(Debug) << "Input file '" << inputFilePath << "' successfully open." << ENDM;
 
-      TIter next(file->GetListOfKeys());
-      TKey* key;
-      while ((key = (TKey*)next())) {
-        if (std::find(excludedDirectories.begin(), excludedDirectories.end(), key->GetName()) != excludedDirectories.end()) {
-          continue;
+      std::function<void(TDirectory*, Node&, const std::vector<std::string>&)> mergeRecursively;
+      mergeRecursively = [&](TDirectory* fileNode, Node& memoryNode, const std::vector<std::string>& excludedDirectories = {}) {
+        if (fileNode == nullptr) {
+          ILOG(Error) << "Provided parentNode pointer is null, skipping." << ENDM;
+          return;
         }
-        auto inputTObj = file->Get(key->GetName());
-        if (inputTObj != nullptr) {
-          auto inputMOC = dynamic_cast<MonitorObjectCollection*>(inputTObj);
-          if (inputMOC == nullptr) {
-            handleError("Could not cast the input object to MonitorObjectCollection.");
-            delete inputTObj;
+        TIter next(fileNode->GetListOfKeys());
+        TKey* key;
+        while ((key = (TKey*)next())) {
+          // we look for exact matches here. we skip if there are no subdirectories
+          if (std::find(excludedDirectories.begin(), excludedDirectories.end(), key->GetName()) != excludedDirectories.end()) {
+            ILOG(Info, Support) << "Skipping '" << key->GetName() << "' as requested in the input arguments" << ENDM;
             continue;
           }
-
-          inputMOC->postDeserialization();
-
-          if (mergedMocMap.count(inputMOC->GetName()) == 0) {
-            auto mergedTObj = outputFile->Get(key->GetName());
-            if (mergedTObj != nullptr) {
-              auto mergedMOC = dynamic_cast<MonitorObjectCollection*>(mergedTObj);
-              if (mergedMOC == nullptr) {
-                handleError("Could not cast the merged object to MonitorObjectCollection, skipping.");
-                delete mergedMOC;
+          // we check if we have to skip any subdirectories wrt where we are
+          std::vector<std::string> excludedSubdirectories;
+          for (const auto& excludedDirectory : excludedDirectories) {
+            auto match = std::string(key->GetName()) + '/';
+            if (excludedDirectory.find(match) == 0) {
+              if (excludedDirectory.size() < match.size()) {
+                ILOG(Warning, Support) << "Invalid exclusion path '" << excludedDirectory << "'" << ENDM;
                 continue;
               }
-              mergedMOC->postDeserialization();
-              mergedMocMap[mergedMOC->GetName()] = mergedMOC;
-              ILOG(Info) << "Read merged object '" << mergedMOC->GetName() << "'" << ENDM;
+              excludedSubdirectories.push_back(excludedDirectory.substr(match.size()));
             }
           }
 
-          if (mergedMocMap.count(inputMOC->GetName())) {
-            try {
-              mergedMocMap[inputMOC->GetName()]->merge(inputMOC);
-            } catch (...) {
-              if (vm["exit-on-error"].as<bool>()) {
-                throw;
-              } else {
-                ILOG(Error, Ops) << "Exception caught: " << boost::current_exception_diagnostic_information(true) << ENDM;
-                ILOG(Error, Ops) << "Failed to merge the Monitor Object Collection, but will try to continue." << ENDM;
+          ILOG(Debug, Devel) << "Getting the value for key '" << key->GetName() << "'" << ENDM;
+          auto* value = fileNode->Get(key->GetName());
+          if (value == nullptr) {
+            ILOG(Error) << "Could not get the value '" << key->GetName() << "', skipping." << ENDM;
+            continue;
+          }
+          if (auto inputMOC = dynamic_cast<MonitorObjectCollection*>(value)) {
+            inputMOC->postDeserialization();
+
+            if (memoryNode.children.count(inputMOC->GetName()) == 0) {
+              std::string mocPath = memoryNode.getFullPath() + std::filesystem::path::preferred_separator + key->GetName();
+
+              auto mergedTObj = outputFile->Get(mocPath.c_str());
+              if (mergedTObj != nullptr) {
+                auto mergedMOC = dynamic_cast<MonitorObjectCollection*>(mergedTObj);
+                if (mergedMOC == nullptr) {
+                  handleError("Could not cast the merged object to MonitorObjectCollection, skipping.");
+                  delete mergedMOC;
+                  continue;
+                }
+                mergedMOC->postDeserialization();
+                memoryNode.children[mergedMOC->GetName()] = mergedMOC;
+                ILOG(Info) << "Read merged object '" << mergedMOC->GetName() << "'" << ENDM;
               }
             }
-            delete inputMOC;
+
+            if (memoryNode.children.count(inputMOC->GetName())) {
+              try {
+                std::get<MonitorObjectCollection*>(memoryNode.children[inputMOC->GetName()])->merge(inputMOC);
+              } catch (...) {
+                handleError("Failed to merge the Monitor Object Collection. Exception caught: " + boost::current_exception_diagnostic_information(true));
+              }
+              delete inputMOC;
+            } else {
+              memoryNode.children[inputMOC->GetName()] = inputMOC;
+            }
+          } else if (auto dir = dynamic_cast<TDirectory*>(value)) {
+            auto name = dir->GetName();
+            if (memoryNode.children.count(name) == 0) {
+              memoryNode.children[name] = Node{ memoryNode.getFullPath(), name };
+            }
+            mergeRecursively(dir, std::get<Node>(memoryNode.children[name]), excludedSubdirectories);
           } else {
-            mergedMocMap[inputMOC->GetName()] = inputMOC;
+            handleError("Could not cast the node to MonitorObjectCollection nor TDirectory.");
+            delete value;
+            continue;
           }
         }
-      }
+      };
+
+      mergeRecursively(file, mergedTree, excludedDirectories);
       file->Close();
       delete file;
-
       filesRead++;
     }
 
-    for (auto& [mocName, moc] : mergedMocMap) {
-      outputFile->WriteObject(moc, mocName.c_str(), "Overwrite");
-      delete moc;
-    }
+    std::function<void(TDirectory*, const Node&)> storeRecursively;
+    storeRecursively = [&](TDirectory* fout, const Node& memoryNode) {
+      for (const auto& [name, value] : memoryNode.children) {
+        std::visit(overloaded{
+                     [&](const Node& node) {
+                       auto* dir = fout->GetDirectory(node.name.c_str());
+                       if (dir == nullptr) {
+                         fout->mkdir(node.name.c_str());
+                       }
+                       dir = fout->GetDirectory(node.name.c_str());
+                       if (dir == nullptr) {
+                         handleError("Could not create directory '" + node.name + "' in path '" + node.pathTo + "'");
+                       } else {
+                         storeRecursively(dir, node);
+                       }
+                     },
+                     [&](const MonitorObjectCollection* moc) {
+                       fout->WriteObject(moc, moc->GetName(), "Overwrite");
+                       delete moc;
+                     } },
+                   value);
+      }
+    };
+    storeRecursively(outputFile, mergedTree);
     outputFile->Close();
 
   } catch (const bpo::error& ex) {

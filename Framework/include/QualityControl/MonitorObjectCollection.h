@@ -17,6 +17,7 @@
 #ifndef QUALITYCONTROL_MONITOROBJECTCOLLECTION_H
 #define QUALITYCONTROL_MONITOROBJECTCOLLECTION_H
 
+#include <string>
 #include <TObjArray.h>
 #include <Mergers/MergeInterface.h>
 
@@ -33,7 +34,13 @@ class MonitorObjectCollection : public TObjArray, public mergers::MergeInterface
 
   void postDeserialization() override;
 
-  ClassDefOverride(MonitorObjectCollection, 0);
+  void setDetector(const std::string&);
+  const std::string& getDetector() const;
+
+ private:
+  std::string mDetector = "TST";
+
+  ClassDefOverride(MonitorObjectCollection, 1);
 };
 
 } // namespace o2::quality_control::core
