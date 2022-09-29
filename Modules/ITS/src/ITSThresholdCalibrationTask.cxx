@@ -87,12 +87,25 @@ void ITSThresholdCalibrationTask::startOfCycle()
 void ITSThresholdCalibrationTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
 
-  const auto tunString = ctx.inputs().get<gsl::span<char>>("tunestring");
-  const auto chipDoneString = ctx.inputs().get<gsl::span<char>>("chipdonestring");
-  const auto scanType = ctx.inputs().get<char>("scantype");
+  string inStringChipDone, inString;
+  char scanType;
+  for (auto&& input : o2::framework::InputRecordWalker(ctx.inputs())) {
+    if (input.header != nullptr && input.payload != nullptr) {
+      const auto* header = o2::framework::DataRefUtils::getHeader<header::DataHeader*>(input);
 
-  string inString(tunString.begin(), tunString.end());
-  string inStringChipDone(chipDoneString.begin(), chipDoneString.end());
+      if ((strcmp(header->dataOrigin.str, "ITS") == 0) && (strcmp(header->dataDescription.str, "TSTR") == 0)) {
+        const auto tmpstring = ctx.inputs().get<gsl::span<char>>(input);
+        std::copy(tmpstring.begin(), tmpstring.end(), std::back_inserter(inString));
+      }
+      if ((strcmp(header->dataOrigin.str, "ITS") == 0) && (strcmp(header->dataDescription.str, "QCSTR") == 0)) {
+        const auto tmpstring = ctx.inputs().get<gsl::span<char>>(input);
+        std::copy(tmpstring.begin(), tmpstring.end(), std::back_inserter(inStringChipDone));
+      }
+      if ((strcmp(header->dataOrigin.str, "ITS") == 0) && (strcmp(header->dataDescription.str, "SCANT") == 0)) {
+        scanType = ctx.inputs().get<char>(input);
+      }
+    }
+  }
 
   Int_t iScan;
   Double_t calibrationValue;
@@ -104,17 +117,17 @@ void ITSThresholdCalibrationTask::monitorData(o2::framework::ProcessingContext& 
     iScan = 2;
   else if (scanType == 'A' || scanType == 'D')
     iScan = 3;
-  auto splitRes = splitString(inString, "Stave:");
-  auto splitResChipDone = splitString(inStringChipDone, "Stave:");
+  auto splitRes = splitString(inString, "O2");
+  auto splitResChipDone = splitString(inStringChipDone, "O2");
 
   for (auto StaveStr : splitRes) {
+
     if (StaveStr.size() > 0) {
       CalibrationResStruct result = CalibrationParser(StaveStr);
 
       int currentStave = StaveBoundary[result.Layer] + result.Stave + 1;
       int iBarrel = getBarrel(result.Layer);
       int currentChip = getCurrentChip(iBarrel, result.ChipID, result.HIC, result.Hs);
-
       if (iScan < 3) {
 
         if (scanType == 'V') {
@@ -214,7 +227,6 @@ ITSThresholdCalibrationTask::CalibrationResStruct ITSThresholdCalibrationTask::C
 {
   CalibrationResStruct result;
   auto StaveINFO = splitString(input, ",");
-
   for (string info : StaveINFO) {
     if (info.size() == 0)
       continue;
@@ -226,12 +238,15 @@ ITSThresholdCalibrationTask::CalibrationResStruct ITSThresholdCalibrationTask::C
 
       std::string name = splitString(info, ":")[0];
       string data = splitString(info, ":")[1];
-      if (name == "Hs_pos") {
-        result.Hs = std::stod(data);
-      } else if (name == "Hic_Pos") {
-        result.HIC = std::stod(data);
-      } else if (name == "ChipID") {
-        result.ChipID = std::stod(data);
+      if (name == "ChipID") {
+        int o2chipid = std::stod(data);
+        int Hs, HIC, ChipID, Layer, Stave;
+        mp.expandChipInfoHW(o2chipid, Layer, Stave, Hs, HIC, ChipID);
+        result.Hs = Hs;
+        result.HIC = HIC;
+        result.Layer = Layer;
+        result.Stave = Stave;
+        result.ChipID = ChipID;
       } else if (name == "VCASN") {
         result.VCASN = std::stof(data);
       } else if (name == "Rms") {
