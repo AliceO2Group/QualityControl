@@ -297,7 +297,10 @@ void TaskFT0TOF::monitorData(o2::framework::ProcessingContext& ctx)
   }   // END if track is TPC-TRD-TOF
 
   std::vector<MyTrack> tracks;
-  std::vector<o2::ft0::RecPoints> ft0Sorted = *ft0rec;
+  std::vector<o2::ft0::RecPoints> ft0Sorted;
+  if(mUseFT0){
+     ft0Sorted = *ft0rec;
+  }
   std::vector<o2::ft0::RecPoints> ft0Cand;
 
   // sorting matching in time
