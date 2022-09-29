@@ -84,7 +84,7 @@ void TrendingTaskITSFhr::storeTrend(repository::DatabaseInterface& qcdb)
   ILOG(Info, Support) << "Storing the trend, entries: " << mTrend->GetEntries() << ENDM;
 
   auto mo = std::make_shared<core::MonitorObject>(mTrend.get(), getName(), "o2::quality_control_modules::its::TrendingTaskITSFhr",
-                                                  mConfig.detectorName);
+                                                  mConfig.detectorName, mMetaData.runNumber);
   mo->setIsOwner(false);
   qcdb.storeMO(mo);
 }
@@ -240,7 +240,7 @@ void TrendingTaskITSFhr::storePlots(repository::DatabaseInterface& qcdb)
         ILOG(Info, Support) << " Saving canvas for layer " << ilay << " to CCDB "
                             << ENDM;
         auto mo = std::make_shared<MonitorObject>(c[ilay * NTRENDSFHR + id], mConfig.taskName, "o2::quality_control_modules::its::TrendingTaskITSFhr",
-                                                  mConfig.detectorName);
+                                                  mConfig.detectorName, mMetaData.runNumber);
         mo->setIsOwner(false);
         qcdb.storeMO(mo);
         delete c[ilay * NTRENDSFHR + id];

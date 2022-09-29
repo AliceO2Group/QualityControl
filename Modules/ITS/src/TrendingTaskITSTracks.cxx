@@ -83,7 +83,8 @@ void TrendingTaskITSTracks::storeTrend(repository::DatabaseInterface& qcdb)
 
   auto mo = std::make_shared<core::MonitorObject>(mTrend.get(), getName(),
                                                   mConfig.className,
-                                                  mConfig.detectorName);
+                                                  mConfig.detectorName,
+                                                  mMetaData.runNumber);
   mo->setIsOwner(false);
   qcdb.storeMO(mo);
 }
@@ -106,7 +107,7 @@ void TrendingTaskITSTracks::trendValues(const Trigger& t, repository::DatabaseIn
       // auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name);
       auto mo = qcdb.retrieveMO(dataSource.path, "", t.timestamp, t.activity);
       if (!count) {
-        std::map<std::string, std::string> entryMetadata = mo->getMetadataMap(); // full list of metadata as a map
+        std::map<std::string, std::string> entryMetadata = mo->getMetadataMap();  // full list of metadata as a map
         mMetaData.runNumber = std::stoi(entryMetadata[metadata_keys::runNumber]); // get and set run number
         ntreeentries = (Int_t)mTrend->GetEntries() + 1;
         runlist.push_back(std::to_string(mMetaData.runNumber));
@@ -220,7 +221,7 @@ void TrendingTaskITSTracks::storePlots(repository::DatabaseInterface& qcdb)
                         ymax, runlist);
     ILOG(Info, Support) << " Saving " << plot.name << " to CCDB " << ENDM;
     auto mo = std::make_shared<MonitorObject>(g, mConfig.taskName, "o2::quality_control_modules::its::TrendingTaskITSTracks",
-                                              mConfig.detectorName);
+                                              mConfig.detectorName, mMetaData.runNumber);
     mo->setIsOwner(false);
     qcdb.storeMO(mo);
 
