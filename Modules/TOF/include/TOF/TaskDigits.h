@@ -22,6 +22,8 @@
 #include "Base/Counter.h"
 #include "TOF/TaskRaw.h"
 #include "CommonConstants/LHCConstants.h"
+#include "DataFormatsTOF/CalibTimeSlewingParamTOF.h"
+#include "DataFormatsTOF/CalibLHCphaseTOF.h"
 
 class TH1F;
 class TH2F;
@@ -99,6 +101,10 @@ class TaskDigits final : public TaskInterface
   ////////////////
 
   int mNoiseClassSelection = -1; /// Index to discard classes of noisy channels -1 no discarding, 0 first class are discarded, 1 second class, 2 third class
+
+  o2::dataformats::CalibTimeSlewingParamTOF* mCalChannel = nullptr;
+  o2::dataformats::CalibLHCphaseTOF* mLHCphase = nullptr;
+  bool mApplyCalib = false;
 
   ////////////////
   // Histograms //
