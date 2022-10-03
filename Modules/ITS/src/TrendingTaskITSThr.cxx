@@ -82,7 +82,7 @@ void TrendingTaskITSThr::storeTrend(repository::DatabaseInterface& qcdb)
 
   auto mo = std::make_shared<core::MonitorObject>(mTrend.get(), getName(),
                                                   mConfig.className,
-                                                  mConfig.detectorName);
+                                                  mConfig.detectorName, mMetaData.runNumber);
   mo->setIsOwner(false);
   qcdb.storeMO(mo);
 }
