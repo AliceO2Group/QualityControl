@@ -175,8 +175,6 @@ void ClusterTask::startOfCycle()
     TaskInterface::retrieveConditionAny<TObject>("GLO/Config/Geometry");
     ILOG(Info, Support) << "Geometry loaded" << ENDM;
   }
-
-  resetHistograms();
 }
 
 void ClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -320,13 +318,12 @@ void ClusterTask::findClustersInternal(const gsl::span<const o2::emcal::Cell>& c
   int currentStartClusters = 0; // clusters->size();  //svk
   int currentStartIndices = 0;  // clusterIndices->size();  //svk
 
-  for (auto iTrgRcrd : cellTriggerRecords) {
+  for (const auto& iTrgRcrd : cellTriggerRecords) {
     LOG(debug) << " findClustersInternal loop over iTrgRcrd  " << ENDM;
 
     mClusterizer->clear();
     if (cells.size() && iTrgRcrd.getNumberOfObjects()) {
       LOG(debug) << " Number of cells put in " << cells.size() << ENDM;
-
       mClusterizer->findClusters(gsl::span<const o2::emcal::Cell>(cells.data() + iTrgRcrd.getFirstEntry(), iTrgRcrd.getNumberOfObjects())); // Find clusters on cells/digits (pass by ref)
     }
 
