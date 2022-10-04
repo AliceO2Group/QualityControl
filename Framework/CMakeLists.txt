@@ -101,6 +101,7 @@ target_link_libraries(O2QualityControl
                              FairLogger::FairLogger
                              FairMQ::FairMQ
                              ROOT::Hist
+                             ROOT::TreePlayer
                              AliceO2::Common
                              AliceO2::InfoLogger
                              AliceO2::Monitoring
