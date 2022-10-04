@@ -17,7 +17,7 @@ def parseArgs():
     parser.add_argument('--dry-run', action='store_true',
                         help='Dry run, no actual deletion nor modification to the CCDB.')
     parser.add_argument('--path', dest='path', action='store', default="",
-                        help='Clean this path.', required=True)
+                        help='Clean this path (without initial slash and without .* at the end, e.g. qc/TST/MO/Bob).', required=True)
     parser.add_argument('--from', dest='from_ts', action='store', help='From this timestamp.', required=True)
     parser.add_argument('--to', dest='to_ts', action='store', help='To this timestamp.', required=True)
     parser.add_argument('--one-by-one', action='store_true', help='Ask confirmation for each deletion')
@@ -45,7 +45,7 @@ def prepare_main_logger():
 
 def run(args):
     ccdb = Ccdb(args.url)
-    versions = ccdb.getVersionsList(args.path, args.from_ts, args.to_ts)
+    versions = ccdb.getVersionsList(args.path + "/.*", args.from_ts, args.to_ts)
     logging.debug(versions)
     logging.info("Here are the objects that are going to be deleted: ")
 
