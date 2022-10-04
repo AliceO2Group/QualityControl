@@ -27,8 +27,7 @@ typedef AliceO2::InfoLogger::InfoLoggerContext infoContext;
 namespace o2::quality_control::core
 {
 
-struct DiscardFileParameters
-{
+struct DiscardFileParameters {
   bool debug = false;
   int fromLevel = 21 /* Discard Trace */;
   std::string discardFile;
