@@ -22,6 +22,7 @@
 
 #include <Framework/DataProcessorSpec.h>
 #include "QualityControl/Activity.h"
+#include "QualityControl/QcInfoLogger.h"
 
 namespace o2::quality_control::core
 {
@@ -45,9 +46,7 @@ struct TaskRunnerConfig {
   int parallelTaskID = 0;            // ID to differentiate parallel local Tasks from one another. 0 means this is the only one.
   std::string saveToFile{};
   int resetAfterCycles = 0;
-  bool infologgerFilterDiscardDebug = false;
-  int infologgerDiscardLevel = 21;
-  std::string infologgerDiscardFile{};
+  core::DiscardFileParameters infologgerDiscardParameters;
   Activity fallbackActivity;
 };
 

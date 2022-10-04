@@ -92,7 +92,7 @@ BOOST_AUTO_TEST_CASE(qc_info_logger_dplil)
   auto dplContext = new AliceO2::InfoLogger::InfoLoggerContext();
   dplContext->setField(infoContext::FieldName::Facility, "dplfacility");
   dplContext->setField(infoContext::FieldName::System, "dplsystem");
-  QcInfoLogger::init("facility", false, 21, "", &dplInfoLogger, dplContext);
+  QcInfoLogger::init("facility", {false, 21, ""}, &dplInfoLogger, dplContext);
 }
 
 } // namespace o2::quality_control::core

@@ -310,11 +310,9 @@ void AggregatorRunner::initInfoLogger(InitContext& iCtx)
     ILOG(Error) << "Could not find the DPL InfoLogger." << ENDM;
   }
 
-  mRunnerConfig.infologgerDiscardFile = templateILDiscardFile(mRunnerConfig.infologgerDiscardFile, iCtx);
+  mRunnerConfig.infologgerDiscardParameters.discardFile = templateILDiscardFile(mRunnerConfig.infologgerDiscardParameters.discardFile, iCtx);
   QcInfoLogger::init("aggregator",
-                     mRunnerConfig.infologgerFilterDiscardDebug,
-                     mRunnerConfig.infologgerDiscardLevel,
-                     mRunnerConfig.infologgerDiscardFile,
+                     mRunnerConfig.infologgerDiscardParameters,
                      il,
                      ilContext);
 }

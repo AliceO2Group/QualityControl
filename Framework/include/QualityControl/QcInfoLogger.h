@@ -27,6 +27,15 @@ typedef AliceO2::InfoLogger::InfoLoggerContext infoContext;
 namespace o2::quality_control::core
 {
 
+struct DiscardFileParameters
+{
+  bool debug = false;
+  int fromLevel = 21 /* Discard Trace */;
+  std::string discardFile;
+  unsigned long rotateMaxBytes = 0;
+  unsigned int rotateMaxFiles = 0;
+};
+
 /// \brief  Singleton class that any class in the QC can use to log.
 ///
 /// The aim of this class is to avoid every class in the package to define
@@ -59,9 +68,7 @@ class QcInfoLogger
   static void setRun(int run);
   static void setPartition(const std::string& partitionName);
   static void init(const std::string& facility,
-                   bool discardDebug = false,
-                   int discardFromLevel = 21 /* Discard Trace */,
-                   const std::string& filterDiscardFile = "",
+                   const DiscardFileParameters& discardFileParameters,
                    AliceO2::InfoLogger::InfoLogger* dplInfoLogger = nullptr,
                    AliceO2::InfoLogger::InfoLoggerContext* dplContext = nullptr,
                    int run = -1,

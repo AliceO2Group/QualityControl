@@ -94,9 +94,7 @@ CheckRunnerConfig CheckRunnerFactory::extractConfig(const CommonSpec& commonSpec
     commonSpec.database,
     commonSpec.consulUrl,
     commonSpec.monitoringUrl,
-    commonSpec.infologgerFilterDiscardDebug,
-    commonSpec.infologgerDiscardLevel,
-    commonSpec.infologgerDiscardFile,
+    commonSpec.infologgerDiscardParameters,
     fallbackActivity,
     options
   };
