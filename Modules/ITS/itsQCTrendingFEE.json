@@ -1,0 +1,237 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "2"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": ""
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      }
+    },
+    "postprocessing": {
+      "ITSqcTrendingFEE": {
+        "active": "true",
+        "className": "o2::quality_control::postprocessing::TrendingTaskITSFEE",
+        "moduleName": "QualityControl",
+        "detectorName": "ITS",
+        "dataSources": [
+          {
+            "type": "repository",
+            "paths": [ "ITS/MO/ITSFEE/LaneStatusSummary",
+                       "ITS/MO/ITSFEE/LaneStatusSummary",
+                       "ITS/MO/ITSFEE/LaneStatusSummary",
+                       "ITS/MO/ITSFEE/LaneStatusSummary",
+                       "ITS/MO/ITSFEE" ],
+            "names": [ "LaneStatusSummaryIB",
+                       "LaneStatusSummaryML",
+                       "LaneStatusSummaryOL",
+                       "LaneStatusSummaryGlobal",
+                       "TriggerVsFeeid" ],
+            "reductorName": "o2::quality_control_modules::its::ReductorBinContent",
+            "moduleName": "QcITS"
+          }
+        ],
+        "plots": [
+          {
+            "names": [ "# of lanes in WARNING" ],
+            "title": [ "IB - Trend of number of lanes in WARNING" ],
+            "varexp": [ "LaneStatusSummaryIB.binContent[0]" ],
+            "selection": "Time",
+            "option": "PL"
+          },
+          {
+             "names": [ "# of lanes in ERROR" ],
+             "title": [ "IB - Trend of number of lanes in ERROR" ],
+             "varexp": [ "LaneStatusSummaryIB.binContent[1]" ],
+             "selection": "",
+             "option": "PL"
+          },
+          {
+             "names": [ "# of lanes in FAULT" ],
+             "title": [ "IB - Trend of number of lanes in FAULT" ],
+             "varexp": [ "LaneStatusSummaryIB.binContent[2]" ],
+             "selection": "",
+             "option": "PL"
+          },
+          {
+            "names": [ "# of lanes in WARNING" ],
+            "title": [ "ML - Trend of number of lanes in WARNING" ],
+            "varexp": [ "LaneStatusSummaryML.binContent[0]" ],
+            "selection": "Time",
+            "option": "PL"
+          },
+          {
+             "names": [ "# of lanes in ERROR" ],
+             "title": [ "ML - Trend of number of lanes in ERROR" ],
+             "varexp": [ "LaneStatusSummaryML.binContent[1]" ],
+             "selection": "",
+             "option": "PL"
+          },
+          {
+             "names": [ "# of lanes in FAULT" ],
+             "title": [ "ML - Trend of number of lanes in FAULT" ],
+             "varexp": [ "LaneStatusSummaryML.binContent[2]" ],
+             "selection": "",
+             "option": "PL"
+          },
+          {
+             "names": [ "# of lanes in WARNING" ],
+             "title": [ "OL - Trend of number of lanes in WARNING" ],
+             "varexp": [ "LaneStatusSummaryOL.binContent[0]" ],
+             "selection": "Time",
+             "option": "PL"
+          },
+          {
+             "names": [ "# of lanes in ERROR" ],
+             "title": [ "OL - Trend of number of lanes in ERROR" ],
+             "varexp": [ "LaneStatusSummaryOL.binContent[1]" ],
+             "selection": "",
+             "option": "PL"
+          },
+          {
+             "names": [ "# of lanes in FAULT" ],
+             "title": [ "OL - Trend of number of lanes in FAULT" ],
+             "varexp": [ "LaneStatusSummaryOL.binContent[2]" ],
+             "selection": "",
+             "option": "PL"
+          },
+          {
+             "names": [ "# of lanes in WARNING" ],
+             "title": [ "Global - Trend of number of lanes in WARNING" ],
+             "varexp": [ "LaneStatusSummaryGlobal.binContent[0]" ],
+             "selection": "Time",
+             "option": "PL"
+          },
+          {
+             "names": [ "# of lanes in ERROR" ],
+             "title": [ "Global - Trend of number of lanes in ERROR" ],
+             "varexp": [ "LaneStatusSummaryGlobal.binContent[1]" ],
+             "selection": "",
+             "option": "PL"
+          },
+          {
+             "names": [ "# of lanes in FAULT" ],
+             "title": [ "Global - Trend of number of lanes in FAULT" ],
+             "varexp": [ "LaneStatusSummaryGlobal.binContent[2]" ],
+             "selection": "",
+             "option": "PL"
+          },
+          {
+             "names": [ "Trig. ORBIT" ],
+             "title": [ "Trig. \"ORBIT\" count through all FEE" ],
+             "varexp": [ "TriggerVsFeeid.integral[0]" ],
+             "selection": "Time",
+             "option": "PL"
+          },
+          {
+             "names": [ "Trig. HB" ],
+             "title": [ "Trig. \"HB\" count through all FEE" ],
+             "varexp": [ "TriggerVsFeeid.integral[1]" ],
+             "selection": "",
+             "option": "PL"
+          },
+          {
+             "names": [ "Trig. HBr" ],
+             "title": [ "Trig. \"HBr\" count through all FEE" ],
+             "varexp": [ "TriggerVsFeeid.integral[2]" ],
+             "selection": "",
+             "option": "PL"
+          },
+          {
+             "names": [ "Trig. HC" ],
+             "title": [ "Trig. \"HC\" count through all FEE" ],
+             "varexp": [ "TriggerVsFeeid.integral[3]" ],
+             "selection": "",
+             "option": "PL"
+          },
+          {
+             "names": [ "Trig. PHYSICS" ],
+             "title": [ "Trig. \"PHYSICS\" count through all FEE" ],
+             "varexp": [ "TriggerVsFeeid.integral[4]" ],
+             "selection": "",
+             "option": "PL"
+          },
+          {
+             "names": [ "Trig. PP" ],
+             "title": [ "Trig. \"PP\" count through all FEE" ],
+             "varexp": [ "TriggerVsFeeid.integral[5]" ],
+             "selection": "",
+             "option": "PL"
+          },
+          {
+             "names": [ "Trig. CAL" ],
+             "title": [ "Trig. \"CAL\" count through all FEE" ],
+             "varexp": [ "TriggerVsFeeid.integral[6]" ],
+             "selection": "",
+             "option": "PL"
+          },
+          {
+             "names": [ "Trig. SOT" ],
+             "title": [ "Trig. \"SOT\" count through all FEE" ],
+             "varexp": [ "TriggerVsFeeid.integral[7]" ],
+             "selection": "",
+             "option": "PL"
+          },
+          {
+             "names": [ "Trig. EOT" ],
+             "title": [ "Trig. \"EOT\" count through all FEE" ],
+             "varexp": [ "TriggerVsFeeid.integral[8]" ],
+             "selection": "",
+             "option": "PL"
+          },
+          {
+             "names": [ "Trig. SOC" ],
+             "title": [ "Trig. \"SOC\" count through all FEE" ],
+             "varexp": [ "TriggerVsFeeid.integral[9]" ],
+             "selection": "",
+             "option": "PL"
+          },
+          {
+             "names": [ "Trig. EOC" ],
+             "title": [ "Trig. \"EOC\" count through all FEE" ],
+             "varexp": [ "TriggerVsFeeid.integral[10]" ],
+             "selection": "",
+             "option": "PL"
+          },
+          {
+             "names": [ "Trig. TF" ],
+             "title": [ "Trig. \"TF\" count through all FEE" ],
+             "varexp": [ "TriggerVsFeeid.integral[11]" ],
+             "selection": "",
+             "option": "PL"
+          },
+          {
+             "names": [ "Trig. INT" ],
+             "title": [ "Trig. \"INT\" count through all FEE" ],
+             "varexp": [ "TriggerVsFeeid.integral[12]" ],
+             "selection": "",
+             "option": "PL"
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "60 seconds"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      }
+    }
+  }
+}
