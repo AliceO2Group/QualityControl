@@ -34,6 +34,10 @@
 #include "DataFormatsEMCAL/TriggerRecord.h"
 #include "DetectorsBase/GeometryManager.h"
 #include "EMCALBase/Geometry.h"
+#include "EMCALCalib/CalibDB.h"
+#include "EMCALCalib/BadChannelMap.h"
+#include "EMCALCalib/GainCalibrationFactors.h"
+#include "EMCALCalib/TimeCalibrationParams.h"
 #include "Framework/ControlService.h"
 #include "Framework/Logger.h"
 #include <TGeoManager.h>
@@ -50,37 +54,37 @@ namespace o2::quality_control_modules::emcal
 
 ClusterTask::~ClusterTask()
 {
+  auto conditionalDelete = [](auto obj) {
+    if (obj) {
+      delete obj;
+    }
+  };
 
-  delete mHistNclustPerTF;  // svk
-  delete mHistNclustPerEvt; // svk
-  delete mHistClustEtaPhi;  // svk
+  conditionalDelete(mHistNclustPerTF);
+  conditionalDelete(mHistNclustPerEvt);
+  conditionalDelete(mHistClustEtaPhi);
 
-  delete mHistTime_EMCal; // svk
-  delete mHistClustE_EMCal;
-  delete mHistNCells_EMCal;
-  delete mHistM02_EMCal;
-  delete mHistM20_EMCal;
-  delete mHistM02VsClustE__EMCal; // svk
-  delete mHistM20VsClustE__EMCal; // svk
+  conditionalDelete(mHistTime_EMCal);
+  conditionalDelete(mHistClustE_EMCal);
+  conditionalDelete(mHistNCells_EMCal);
+  conditionalDelete(mHistM02_EMCal);
+  conditionalDelete(mHistM20_EMCal);
+  conditionalDelete(mHistM02VsClustE__EMCal);
+  conditionalDelete(mHistM20VsClustE__EMCal);
 
-  delete mHistTime_DCal; // svk
-  delete mHistClustE_DCal;
-  delete mHistNCells_DCal;
-  delete mHistM02_DCal;
-  delete mHistM20_DCal;
-  delete mHistM02VsClustE__DCal; // svk
-  delete mHistM20VsClustE__DCal; // svk
+  conditionalDelete(mHistTime_DCal);
+  conditionalDelete(mHistClustE_DCal);
+  conditionalDelete(mHistNCells_DCal);
+  conditionalDelete(mHistM02_DCal);
+  conditionalDelete(mHistM20_DCal);
+  conditionalDelete(mHistM02VsClustE__DCal);
+  conditionalDelete(mHistM20VsClustE__DCal);
 }
 
 void ClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   QcInfoLogger::setDetector("EMC");                        // svk
   ILOG(Info, Support) << "initialize ClusterTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
-
-  // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
-  if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - myOwnKey: " << param->second << ENDM;
-  }
 
   auto get_bool = [](const std::string_view input) -> bool { // svk
     return input == "true";
@@ -90,6 +94,16 @@ void ClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
     mInternalClusterizer = get_bool(getConfigValueLower("useInternalClusterizer"));
     if (mInternalClusterizer) {
       ILOG(Info, Support) << "Enabling internal clusterizer . . . " << ENDM;
+      // Check whether we want to run the calibration before (only in case we run the internal clusterizer)
+      if (hasConfigValue("calibrateCells")) {
+        mCalibrate = get_bool(getConfigValueLower("calibrateCells"));
+        if (mCalibrate) {
+          ILOG(Info, Support) << "Calibrate cells before clusterization" << ENDM;
+        }
+      }
+
+      /// Configure clusterizer settings
+      configureClusterizerSettings();
     }
   }
 
@@ -175,6 +189,25 @@ void ClusterTask::startOfCycle()
     TaskInterface::retrieveConditionAny<TObject>("GLO/Config/Geometry");
     ILOG(Info, Support) << "Geometry loaded" << ENDM;
   }
+
+  // Loading EMCAL calibration objects
+  if (mCalibrate) {
+    std::map<std::string, std::string> metadata;
+    mBadChannelMap = retrieveConditionAny<o2::emcal::BadChannelMap>(o2::emcal::CalibDB::getCDBPathBadChannelMap(), metadata);
+    if (!mBadChannelMap) {
+      ILOG(Error, Support) << "No bad channel map - bad channel removal before recalibration will not be possible " << ENDM;
+    }
+
+    mTimeCalib = retrieveConditionAny<o2::emcal::TimeCalibrationParams>(o2::emcal::CalibDB::getCDBPathTimeCalibrationParams(), metadata);
+    if (!mTimeCalib) {
+      ILOG(Info, Support) << " No time calibration params - time recalibration before clusterization will not be possible " << ENDM;
+    }
+
+    mEnergyCalib = retrieveConditionAny<o2::emcal::GainCalibrationFactors>(o2::emcal::CalibDB::getCDBPathGainCalibrationParams(), metadata);
+    if (!mEnergyCalib) {
+      ILOG(Error, Support) << "No energy calibration params - energy recalibration before clusterization will not be possible" << ENDM;
+    }
+  }
 }
 
 void ClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -190,13 +223,33 @@ void ClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
     std::vector<int> cellIndex;
     std::vector<o2::emcal::TriggerRecord> clusterTR, cellIndexTR;
 
-    findClustersInternal(cell, cellTR, cluster, clusterTR, cellIndex, cellIndexTR); // do internal clustering here
-    LOG(debug) << "Found  " << cluster.size() << " CLusters  " << ENDM;
-    LOG(debug) << "Found  " << clusterTR.size() << " Cluster Trigger Records  " << ENDM;
-    LOG(debug) << "Found  " << cellIndex.size() << " Cell Index  " << ENDM;
-    LOG(debug) << "Found  " << cellIndexTR.size() << " Cell Index Records " << ENDM;
+    // prepare optional recalibration before clusterization
+    std::vector<o2::emcal::Cell> calibratedCells;
+    std::vector<o2::emcal::TriggerRecord> calibratedTriggerRecords;
+    gsl::span<const o2::emcal::Cell> inputcells;
+    gsl::span<const o2::emcal::TriggerRecord> inputTriggerRecords;
+    if (mCalibrate) {
+      // build recalibrated cell collection;
+      ILOG(Debug, Support) << "Calibrate cells" << ENDM;
+      getCalibratedCells(cell, cellTR, calibratedCells, calibratedTriggerRecords);
+      inputcells = gsl::span<const o2::emcal::Cell>(calibratedCells);
+      inputTriggerRecords = gsl::span<const o2::emcal::TriggerRecord>(calibratedTriggerRecords);
+    } else {
+      // No calibration performed, forward external cell collection
+      ILOG(Debug, Support) << "No calibration performed - forward containers" << ENDM;
+      inputcells = cell;
+      inputTriggerRecords = cellTR;
+    }
 
-    analyseTimeframe(cell, cellTR, cluster, clusterTR, cellIndex, cellIndexTR); // Fill histos
+    ILOG(Debug, Support) << "Received " << cell.size() << " cells from " << cellTR.size() << " triggers, " << inputcells.size() << " cells from " << inputTriggerRecords.size() << " triggers to clusterizer" << ENDM;
+
+    findClustersInternal(inputcells, inputTriggerRecords, cluster, clusterTR, cellIndex, cellIndexTR); // do internal clustering here
+    ILOG(Debug, Support) << "Found  " << cluster.size() << " CLusters  " << ENDM;
+    ILOG(Debug, Support) << "Found  " << clusterTR.size() << " Cluster Trigger Records  " << ENDM;
+    ILOG(Debug, Support) << "Found  " << cellIndex.size() << " Cell Index  " << ENDM;
+    ILOG(Debug, Support) << "Found  " << cellIndexTR.size() << " Cell Index Records " << ENDM;
+
+    analyseTimeframe(inputcells, inputTriggerRecords, cluster, clusterTR, cellIndex, cellIndexTR); // Fill histos
 
   } else {
 
@@ -304,10 +357,9 @@ void ClusterTask::findClustersInternal(const gsl::span<const o2::emcal::Cell>& c
     ILOG(Info, Support) << "Internal clusterizer initialized" << ENDM;
     mClusterizer->setGeometry(mGeometry); // svk - set geometry for clusterizer
 
-    double timeCut = 10000, timeMin = 0, timeMax = 10000, gradientCut = 0.03, thresholdSeedEnergy = 0.1, thresholdCellEnergy = 0.05; // svk kept constant
-    bool doEnergyGradientCut = true;
-    // Initialize clusterizer
-    mClusterizer->initialize(timeCut, timeMin, timeMax, gradientCut, doEnergyGradientCut, thresholdSeedEnergy, thresholdCellEnergy);
+    // Initialize clusterizer from clusterizer params
+    ILOG(Info, Support) << mClusterizerSettings << ENDM;
+    mClusterizer->initialize(mClusterizerSettings.mMaxTimeDeltaCells, mClusterizerSettings.mMinCellTime, mClusterizerSettings.mMaxCellTime, mClusterizerSettings.mGradientCut, mClusterizerSettings.mDoEnergyGradientCut, mClusterizerSettings.mSeedThreshold, mClusterizerSettings.mCellThreshold);
   }
 
   clusters.clear();
@@ -345,30 +397,97 @@ void ClusterTask::findClustersInternal(const gsl::span<const o2::emcal::Cell>& c
   // mTimer.Stop();
 }
 
+void ClusterTask::getCalibratedCells(const gsl::span<const o2::emcal::Cell>& cells, const gsl::span<const o2::emcal::TriggerRecord>& triggerRecords, std::vector<o2::emcal::Cell>& calibratedCells, std::vector<o2::emcal::TriggerRecord>& calibratedTriggerRecords)
+{
+  int currentlast = 0;
+  for (const auto& trg : triggerRecords) {
+    if (!trg.getNumberOfObjects()) {
+      // No EMCAL cells in event - post empty trigger record
+      o2::emcal::TriggerRecord nexttrigger(trg.getBCData(), currentlast, 0);
+      nexttrigger.setTriggerBits(trg.getTriggerBits());
+      calibratedTriggerRecords.push_back(nexttrigger);
+      continue;
+    }
+    for (const auto& inputcell : gsl::span<const o2::emcal::Cell>(cells.data() + trg.getFirstEntry(), trg.getNumberOfObjects())) {
+      if (mBadChannelMap) {
+        if (mBadChannelMap->getChannelStatus(inputcell.getTower()) != o2::emcal::BadChannelMap::MaskType_t::GOOD_CELL) {
+          // Cell marked as bad or warm, continue
+          continue;
+        }
+      }
+      auto cellamplitude = inputcell.getAmplitude();
+      auto celltime = inputcell.getTimeStamp();
+      if (mTimeCalib) {
+        celltime -= mTimeCalib->getTimeCalibParam(inputcell.getTower(), inputcell.getLowGain());
+      }
+      if (mEnergyCalib) {
+        cellamplitude *= mEnergyCalib->getGainCalibFactors(inputcell.getTower());
+      }
+      calibratedCells.emplace_back(inputcell.getTower(), cellamplitude, celltime, inputcell.getType());
+    }
+    int ncellsEvent = calibratedCells.size() - currentlast;
+    o2::emcal::TriggerRecord nexttrigger(trg.getBCData(), currentlast, ncellsEvent);
+    nexttrigger.setTriggerBits(trg.getTriggerBits());
+    calibratedTriggerRecords.push_back(nexttrigger);
+  }
+}
+
+void ClusterTask::configureClusterizerSettings()
+{
+  auto get_bool = [](const std::string_view input) -> bool {
+    return input == "true";
+  };
+  if (hasConfigValue("clusterizerMinTime")) {
+    mClusterizerSettings.mMinCellTime = std::stod(getConfigValue("clusterizerMinTime"));
+  }
+  if (hasConfigValue("clusterizerMaxTime")) {
+    mClusterizerSettings.mMaxCellTime = std::stod(getConfigValue("clusterizerMaxTime"));
+  }
+  if (hasConfigValue("clusterizerMaxTimeDelta")) {
+    mClusterizerSettings.mMaxTimeDeltaCells = std::stod(getConfigValue("clusterizerMaxTimeDelta"));
+  }
+  if (hasConfigValue("clusterizerSeedThreshold")) {
+    mClusterizerSettings.mSeedThreshold = std::stof(getConfigValue("clusterizerSeedThreshold"));
+  }
+  if (hasConfigValue("clusterizerCellTreshold")) {
+    mClusterizerSettings.mCellThreshold = std::stof(getConfigValue("clusterizerCellTreshold"));
+  }
+  if (hasConfigValue("clusterizerDoGradientCut")) {
+    mClusterizerSettings.mDoEnergyGradientCut = get_bool(getConfigValueLower("clusterizerDoGradientCut"));
+  }
+  if (hasConfigValue("clusterizerGradientCut")) {
+    mClusterizerSettings.mGradientCut = std::stof(getConfigValue("clusterizerGradientCut"));
+  }
+}
+
 void ClusterTask::resetHistograms()
 {
-  // clean all the monitor objects here
+  auto conditionalReset = [](auto obj) {
+    if (obj) {
+      obj->Reset();
+    }
+  };
 
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
 
-  mHistNclustPerTF->Reset();  // svk
-  mHistNclustPerEvt->Reset(); // svk
-  mHistClustEtaPhi->Reset();  // svk
+  conditionalReset(mHistNclustPerTF);
+  conditionalReset(mHistNclustPerEvt);
+  conditionalReset(mHistClustEtaPhi);
 
-  mHistTime_EMCal->Reset(); // svk
-  mHistClustE_EMCal->Reset();
-  mHistNCells_EMCal->Reset();
-  mHistM02_EMCal->Reset();
-  mHistM20_EMCal->Reset();
-  mHistM02VsClustE__EMCal->Reset(); // svk
-  mHistM20VsClustE__EMCal->Reset(); // svk
+  conditionalReset(mHistTime_EMCal);
+  conditionalReset(mHistClustE_EMCal);
+  conditionalReset(mHistNCells_EMCal);
+  conditionalReset(mHistM02_EMCal);
+  conditionalReset(mHistM20_EMCal);
+  conditionalReset(mHistM02VsClustE__EMCal);
+  conditionalReset(mHistM20VsClustE__EMCal);
 
-  mHistClustE_DCal->Reset();
-  mHistNCells_DCal->Reset();
-  mHistM02_DCal->Reset();
-  mHistM20_DCal->Reset();
-  mHistM02VsClustE__DCal->Reset(); // svk
-  mHistM20VsClustE__DCal->Reset(); // svk
+  conditionalReset(mHistClustE_DCal);
+  conditionalReset(mHistNCells_DCal);
+  conditionalReset(mHistM02_DCal);
+  conditionalReset(mHistM20_DCal);
+  conditionalReset(mHistM02VsClustE__DCal);
+  conditionalReset(mHistM20VsClustE__DCal);
 }
 
 bool ClusterTask::hasConfigValue(const std::string_view key)
@@ -396,6 +515,25 @@ std::string ClusterTask::getConfigValueLower(const std::string_view key)
     result = boost::algorithm::to_lower_copy(input);
   }
   return result;
+}
+
+void ClusterTask::ClusterizerParams::print(std::ostream& stream) const
+{
+  stream << "Clusterizer Parameters: \n"
+         << "=============================================\n"
+         << "Min. time:                           " << mMinCellTime << " ns\n"
+         << "Max. time:                           " << mMaxCellTime << " ns\n"
+         << "Max. time difference between cells:  " << mMaxTimeDeltaCells << " ns\n"
+         << "Seed threshold:                      " << mSeedThreshold << " GeV\n"
+         << "Cell threshold:                      " << mCellThreshold << " GeV\n"
+         << "Perform gradient cut:                " << (mDoEnergyGradientCut ? "yes" : "no") << "\n"
+         << "Gradient cut:                        " << mGradientCut << "\n";
+}
+
+std::ostream& operator<<(std::ostream& stream, const ClusterTask::ClusterizerParams& params)
+{
+  params.print(stream);
+  return stream;
 }
 
 } // namespace o2::quality_control_modules::emcal
