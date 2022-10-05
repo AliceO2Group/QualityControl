@@ -62,7 +62,7 @@ class ClusterTask final : public TaskInterface
   void findClustersInternal(const gsl::span<const o2::emcal::Cell>& cells, const gsl::span<const o2::emcal::TriggerRecord>& cellTriggerRecords, std::vector<o2::emcal::Cluster>& clusters, std::vector<o2::emcal::TriggerRecord>& clusterTriggerRecords, std::vector<int>& clusterIndices, std::vector<o2::emcal::TriggerRecord>& clusterIndexTriggerRecords); //svk
 
  private:
-  o2::emcal::Geometry* mGeometry;
+  o2::emcal::Geometry* mGeometry = nullptr;
   std::unique_ptr<o2::emcal::EventHandler<o2::emcal::Cell>> mEventHandler;
   std::unique_ptr<o2::emcal::ClusterFactory<o2::emcal::Cell>> mClusterFactory;
   std::unique_ptr<o2::emcal::Clusterizer<o2::emcal::Cell>> mClusterizer; //svk
