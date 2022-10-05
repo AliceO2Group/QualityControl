@@ -1147,6 +1147,12 @@ The behaviour of the check can be inverted by setting the customparameter "mustI
         }
 ```
 
+## Update the shmem segment size of a detector
+
+In consul go to `o2/runtime/aliecs/defaults` and modify the file corresponding to the detector: [det]_qc_shm_segment_size
+
+
+
 
 ---
 
