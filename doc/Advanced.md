@@ -935,7 +935,8 @@ should not be present in real configuration files.
         "filterDiscardDebug": "false",    "": "Set to 1 to discard debug and trace messages (default: false)",
         "filterDiscardLevel": "2",        "": "Message at this level or above are discarded (default: 21 - Trace)",
         "filterDiscardFile": "",          "": ["If set, the discarded messages will go to this file (default: <none>)",
-                                              "The keyword _ID_, if used, is replaced by the device ID."]
+                                              "The keyword _ID_, if used, is replaced by the device ID.", 
+                                              "Discarded Debug messages don't go there."]
       },
       "postprocessing": {                 "": "Configuration parameters for post-processing",
         "periodSeconds": 10.0,            "": "Sets the interval of checking all the triggers. One can put a very small value",

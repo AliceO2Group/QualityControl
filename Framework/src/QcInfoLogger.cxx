@@ -78,7 +78,7 @@ void QcInfoLogger::init(const std::string& facility,
   ILOG_INST.filterDiscardDebug(discardDebug);
   ILOG_INST.filterDiscardLevel(discardFromLevel);
   if (!discardToFile.empty()) {
-    ILOG_INST.filterDiscardSetFile(discardToFile.c_str(), 1000000000, 10);
+    ILOG_INST.filterDiscardSetFile(discardToFile.c_str(), 1000000000, 10, 0, true /*Do not store Debug messages in file*/);
   }
   ILOG(Debug, Ops) << "QC infologger initialized" << ENDM;
   ILOG(Debug, Support) << "   Discard debug ? " << discardDebug << ENDM;
