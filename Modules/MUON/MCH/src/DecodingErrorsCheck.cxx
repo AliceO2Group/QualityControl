@@ -158,7 +158,6 @@ void DecodingErrorsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
     h->SetLineColor(kBlack);
   }
 
-
   if (mo->getName().find("SynchErrorsPerDE") != std::string::npos) {
     auto* h = dynamic_cast<TH1F*>(mo->getObject());
 
