@@ -28,17 +28,16 @@
         "className": "o2::quality_control_modules::tpc::CalDetPublisher",
         "moduleName": "QcTPC",
         "detectorName": "TPC",
+        "dataSourceURL": "ccdb-test.cern.ch:8080",
         "outputCalPadMaps_comment" : [ "CalDet objects that are stored in std::unordered_map<std::string, o2::tpc::CalDet<float>> need to go here.",
                                        "This needs to be the last part of the CCDB path, e.g. Pulser or CE." ],
         "outputCalPadMaps": [
           "CE",
-          "Pulser"
+          "PedestalNoise"
         ],
         "outputCalPads_comment" : [ "CalDet objects that are stored as plain o2::tpc::CalDet<float> objects need to go here.",
                                     "This needs to be the last part of the CCDB path, e.g. Pedestal or Noise." ],
         "outputCalPads": [
-          "Pedestal",
-          "Noise"
         ],
         "timestamps_comment": [ "Put the timestamp of the corresponding file you want to look for in the timestamps array.",
                                 "You can either put a timestamp for every object or leave the array empty to take the latest file from the CCDB.",
@@ -78,18 +77,13 @@
         "histogramRanges": [
           { "Pedestals" :   [ "240", "0",   "120" ] },
           { "Noise" :       [ "200", "0",   "2"   ] },
-          { "PulserQtot" :  [ "600", "0",   "300" ] },
-          { "PulserT0" :    [ "100", "239", "240" ] },
-          { "PulserWidth" : [ "100", "0",   "1"   ] },
-          { "CEQtot" :      [ "600", "0",   "300" ] },
-          { "CET0" :        [ "200", "400", "500" ] },
-          { "CEWidth" :     [ "100", "0",   "1"   ] }
+          { "Qtot" :  [ "600", "0",   "300" ] },
+          { "T0" :    [ "100", "239", "240" ] },
+          { "Width" : [ "100", "0",   "1"   ] }
         ],
         "checkZSCalibration": {
           "check": "false",
-          "initRefCalibTimestamp": "-1",
-          "initRefPedestalTimestamp": "-1",
-          "initRefNoiseTimestamp": "-1"
+          "initRefCalibTimestamp": "-1"
         },
         "initTrigger": [
           "once"

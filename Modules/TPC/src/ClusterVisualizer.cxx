@@ -25,7 +25,7 @@
 #include "TPC/Utility.h"
 #include "TPC/ClustersData.h"
 
-//root includes
+// root includes
 #include "TCanvas.h"
 #include "TPaveText.h"
 
@@ -66,7 +66,7 @@ void ClusterVisualizer::configure(std::string name, const boost::property_tree::
       }
     }
     if (keyVec.size() != valueVec.size()) {
-      throw std::runtime_error("Number of keys and values for lookupMetaData are not matching");
+      ILOG(Error, Support) << "Number of keys and values for lookupMetaData are not matching" << ENDM;
     }
     keyVec.clear();
     valueVec.clear();
@@ -92,7 +92,7 @@ void ClusterVisualizer::configure(std::string name, const boost::property_tree::
       }
     }
     if (keyVec.size() != valueVec.size()) {
-      throw std::runtime_error("Number of keys and values for storeMetaData are not matching");
+      ILOG(Error, Support) << "Number of keys and values for storeMetaData are not matching" << ENDM;
     }
     keyVec.clear();
     valueVec.clear();
@@ -107,7 +107,7 @@ void ClusterVisualizer::configure(std::string name, const boost::property_tree::
   }
 
   mPath = config.get<std::string>("qc.postprocessing." + name + ".path");
-  mHost = config.get<std::string>("qc.config.conditionDB.url");
+  mHost = config.get<std::string>("qc.postprocessing." + name + ".dataSourceURL");
 
   const auto type = config.get<std::string>("qc.postprocessing." + name + ".dataType");
   if (type == "clusters") {
@@ -128,7 +128,7 @@ void ClusterVisualizer::configure(std::string name, const boost::property_tree::
       "Time_Bin"
     };
   } else {
-    throw std::runtime_error("No valid data type given. 'dataType' has to be either 'clusters' or 'raw'.");
+    ILOG(Error, Support) << "No valid data type given. 'dataType' has to be either 'clusters' or 'raw'." << ENDM;
   }
 }
 
