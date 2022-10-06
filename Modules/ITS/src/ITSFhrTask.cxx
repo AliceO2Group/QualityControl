@@ -236,7 +236,7 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void ITSFhrTask::createErrorTriggerPlots()
 {
-  mErrorPlots = new TH1D("General/ErrorPlots", "Decoding Errors", mNError, 0.5, mNError + 0.5);
+  mErrorPlots = new TH1D("General/ErrorPlots", "Decoding Errors", o2::itsmft::GBTLinkDecodingStat::NErrorsDefined, 0.5, o2::itsmft::GBTLinkDecodingStat::NErrorsDefined + 0.5);
   mErrorPlots->SetMinimum(0);
   mErrorPlots->SetFillColor(kRed);
   getObjectsManager()->startPublishing(mErrorPlots); // mErrorPlots

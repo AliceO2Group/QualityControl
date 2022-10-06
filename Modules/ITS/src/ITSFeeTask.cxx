@@ -53,6 +53,7 @@ ITSFeeTask::~ITSFeeTask()
   delete mRDHSummary;
   for (int i = 0; i < NFlags; i++) {
     delete mLaneStatus[i];
+    delete mLaneStatusCumulative[i];
   }
   for (int i = 0; i < NFlags; i++) {
     delete mLaneStatusOverview[i];
@@ -90,8 +91,10 @@ void ITSFeeTask::createFeePlots()
   getObjectsManager()->startPublishing(mTriggerVsFeeId); // mTriggervsFeeId
 
   for (int i = 0; i < NFlags; i++) {
-    mLaneStatus[i] = new TH2I(Form("LaneStatus/laneStatusFlag%s", mLaneStatusFlag[i].c_str()), Form("Lane Status Flag : %s", mLaneStatusFlag[i].c_str()), NFees, 0, NFees, NLanesMax, 0, NLanesMax);
-    getObjectsManager()->startPublishing(mLaneStatus[i]); // mlaneStatus
+    mLaneStatus[i] = new TH2I(Form("LaneStatus/laneStatusFlag%s", mLaneStatusFlag[i].c_str()), Form("Lane Status Flag: %s", mLaneStatusFlag[i].c_str()), NFees, 0, NFees, NLanesMax, 0, NLanesMax);
+    mLaneStatusCumulative[i] = new TH2I(Form("LaneStatus/laneStatusFlagCumulative%s", mLaneStatusFlag[i].c_str()), Form("Lane Status Flags since SOX: %s", mLaneStatusFlag[i].c_str()), NFees, 0, NFees, NLanesMax, 0, NLanesMax);
+    getObjectsManager()->startPublishing(mLaneStatus[i]);           // mlaneStatus
+    getObjectsManager()->startPublishing(mLaneStatusCumulative[i]); // mlaneStatus
   }
 
   for (int i = 0; i < NFlags; i++) {
@@ -200,6 +203,9 @@ void ITSFeeTask::setPlotsFormat()
       setAxisTitle(mLaneStatus[i], "FEEID", "Lane");
       mLaneStatus[i]->SetStats(0);
       drawLayerName(mLaneStatus[i]);
+      setAxisTitle(mLaneStatusCumulative[i], "FEEID", "Lane");
+      mLaneStatusCumulative[i]->SetStats(0);
+      drawLayerName(mLaneStatusCumulative[i]);
     }
   }
 
@@ -313,9 +319,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
   rawDataFilter.push_back(InputSpec{ "", ConcreteDataTypeMatcher{ "ITS", "RAWDATA" }, Lifetime::Timeframe });
   DPLRawParser parser(ctx.inputs(), rawDataFilter);
 
-  if (mEnableAutoreco) { // reset plots if lane autorecovery is enabled in DCS
-    resetLanePlotsAndCounters();
-  }
+  resetLanePlotsAndCounters(); // action taken depending on mResetLaneStatus and mResetPayload
 
   for (auto it = parser.begin(), end = parser.end(); it != end; ++it) {
     auto const* rdh = it.get_if<o2::header::RAWDataHeaderV6>();
@@ -386,6 +390,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
         if (laneValue) {
           mStatusFlagNumber[ilayer][istave][i][laneValue - 1]++;
           mLaneStatus[laneValue - 1]->Fill(ifee, i);
+          mLaneStatusCumulative[laneValue - 1]->Fill(ifee, i);
         }
       }
 
@@ -395,6 +400,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
           int startingLane = (feeInStave - 1) * lanesPerFeeId[ilayer];
           for (int indexLaneFee = indexFeeLow[ilayer]; indexLaneFee < indexFeeUp[ilayer]; indexLaneFee++) {
             mLaneStatus[iflag]->Fill(ifee, indexLaneFee);
+            mLaneStatusCumulative[iflag]->Fill(ifee, indexLaneFee);
           }
           for (int indexLane = startingLane; indexLane < (startingLane + lanesPerFeeId[ilayer]); indexLane++) {
             mStatusFlagNumber[ilayer][istave][indexLane][iflag]++;
@@ -464,7 +470,8 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
 void ITSFeeTask::getParameters()
 {
   mNPayloadSizeBins = std::stoi(mCustomParameters["NPayloadSizeBins"]);
-  mEnableAutoreco = std::stoi(mCustomParameters["EnableAutoreco"]);
+  mResetLaneStatus = std::stoi(mCustomParameters["ResetLaneStatus"]);
+  mResetPayload = std::stoi(mCustomParameters["ResetPayload"]);
 }
 
 void ITSFeeTask::getStavePoint(int layer, int stave, double* px, double* py)
@@ -515,24 +522,28 @@ void ITSFeeTask::resetGeneralPlots()
 
 void ITSFeeTask::resetLanePlotsAndCounters()
 {
-  mRDHSummary->Reset("ICES"); // option ICES is to not remove layer lines and labels
-  mFlag1Check->Reset();
-  mIndexCheck->Reset();
-  mIdCheck->Reset();
-  mPayloadSize->Reset("ICES");
-  mLaneStatusSummaryIB->Reset();
-  mLaneStatusSummaryML->Reset();
-  mLaneStatusSummaryOL->Reset();
-  mLaneStatusSummaryGlobal->Reset();
-  for (int i = 0; i < NFlags; i++) {
-    mLaneStatus[i]->Reset("ICES");
-    mLaneStatusOverview[i]->Reset("content");
-  }
-  for (int i = 0; i < NLayer; i++) {
-    mLaneStatusSummary[i]->Reset();
-  }
+  if (mResetLaneStatus) {
+    mRDHSummary->Reset("ICES"); // option ICES is to not remove layer lines and labels
+    mFlag1Check->Reset();
+    mIndexCheck->Reset();
+    mIdCheck->Reset();
+    mLaneStatusSummaryIB->Reset();
+    mLaneStatusSummaryML->Reset();
+    mLaneStatusSummaryOL->Reset();
+    mLaneStatusSummaryGlobal->Reset();
+    for (int i = 0; i < NFlags; i++) {
+      mLaneStatus[i]->Reset("ICES");
+      mLaneStatusOverview[i]->Reset("content");
+    }
+    for (int i = 0; i < NLayer; i++) {
+      mLaneStatusSummary[i]->Reset();
+    }
 
-  memset(mStatusFlagNumber, 0, sizeof(mStatusFlagNumber)); // reset counters
+    memset(mStatusFlagNumber, 0, sizeof(mStatusFlagNumber)); // reset counters
+  }
+  if (mResetPayload) {
+    mPayloadSize->Reset("ICES");
+  }
 }
 
 void ITSFeeTask::reset()
