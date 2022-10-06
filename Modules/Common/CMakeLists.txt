@@ -50,8 +50,7 @@ add_root_dictionary(O2QcCommon
                             include/Common/IncreasingEntries.h
                             include/Common/TH1SliceReductor.h
                             include/Common/TH2SliceReductor.h
-                    LINKDEF include/Common/LinkDef.h
-                    BASENAME O2QcCommon)
+                    LINKDEF include/Common/LinkDef.h)
 
 install(FILES etc/trfcollection-example.json
   DESTINATION Modules/Common)

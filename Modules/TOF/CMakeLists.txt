@@ -78,8 +78,7 @@ add_root_dictionary(O2QcTOF
                             # Utilities
                             include/Base/Counter.h
                             include/Base/MessagePad.h
-                    LINKDEF include/TOF/LinkDef.h
-                    BASENAME O2QcTOF)
+                    LINKDEF include/TOF/LinkDef.h)
 
 # ---- Test(s) ----
 

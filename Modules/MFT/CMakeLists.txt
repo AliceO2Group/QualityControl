@@ -35,27 +35,26 @@ add_root_dictionary(O2QcMFT
                     include/MFT/QcMFTClusterCheck.h
                     include/MFT/QcMFTClusterTask.h
                     include/MFT/QcMFTTrackCheck.h
-                    include/MFT/QcMFTTrackTask.h 
+                    include/MFT/QcMFTTrackTask.h
                     include/MFT/QcMFTAsyncTask.h
                     include/MFT/QcMFTReadoutCheck.h
                     include/MFT/QcMFTReadoutTask.h
                     include/MFT/QcMFTReadoutTrend.h
                     include/MFT/QcMFTUtilTables.h
                     include/MFT/QcMFTOccupancyTrend.h
-                    LINKDEF include/MFT/LinkDef.h
-                    BASENAME O2QcMFT)
+                    LINKDEF include/MFT/LinkDef.h)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/MFT
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")
-                    
+
 # ---- Executables ----
 
-set(EXE_SRCS 
-     src/runMFTDigitsRootFileReader.cxx 
-     src/runMFTDigitsHotPixelRootFileReader.cxx 
+set(EXE_SRCS
+     src/runMFTDigitsRootFileReader.cxx
+     src/runMFTDigitsHotPixelRootFileReader.cxx
      src/runMFTClustersRootFileReader.cxx
      src/runMFTTracksRootFileReader.cxx)
-set(EXE_NAMES 
+set(EXE_NAMES
      o2-qc-mft-digits-root-file-reader
      o2-qc-mft-digits-hot-pixel-root-file-reader
      o2-qc-mft-clusters-root-file-reader
@@ -76,7 +75,7 @@ install(
           o2-qc-mft-clusters-root-file-reader
           o2-qc-mft-tracks-root-file-reader
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-)   
+)
 
 # ---- Test(s) ----
 

@@ -21,8 +21,8 @@ add_library(O2QcITS
             src/ITSClusterCheck.cxx
             src/ITSTrackCheck.cxx
             src/ITSFeeCheck.cxx
-	    src/ITSTrackSimTask.cxx 
-            src/ITSThresholdCalibrationCheck.cxx 
+	    src/ITSTrackSimTask.cxx
+            src/ITSThresholdCalibrationCheck.cxx
             )
 
 target_sources(O2QcITS PRIVATE
@@ -73,10 +73,9 @@ add_root_dictionary(O2QcITS
                             include/ITS/ITSClusterCheck.h
                             include/ITS/ITSTrackCheck.h
                             include/ITS/ITSFeeCheck.h
-			    include/ITS/ITSTrackSimTask.h 
-                            include/ITS/ITSThresholdCalibrationCheck.h 
-                    LINKDEF include/ITS/LinkDef.h
-                    BASENAME O2QcITS)
+			    include/ITS/ITSTrackSimTask.h
+                            include/ITS/ITSThresholdCalibrationCheck.h
+                    LINKDEF include/ITS/LinkDef.h)
 
 # ---- Test(s) ----
 
@@ -135,7 +134,7 @@ install(FILES
 	itsTrack.json
         itsNoisyPixel.json
 	itsTrackSim.json
-        itsThresholdCalibration.json	
+        itsThresholdCalibration.json
         DESTINATION etc)
 
 get_property(dirs

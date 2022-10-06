@@ -30,8 +30,7 @@ add_root_dictionary(O2QcTRD
                             include/TRD/DigitsCheck.h
                             include/TRD/TRDTrending.h
                             include/TRD/TrendingTaskConfigTRD.h
-                    LINKDEF include/TRD/LinkDef.h
-                    BASENAME O2QcTRD)
+                    LINKDEF include/TRD/LinkDef.h)
 
 # ---- Test(s) ----
 

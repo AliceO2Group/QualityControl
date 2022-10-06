@@ -28,8 +28,7 @@ add_root_dictionary(O2QcSkeleton
                             include/Skeleton/SkeletonCheck.h
                             include/Skeleton/SkeletonAggregator.h
                             include/Skeleton/SkeletonPostProcessing.h
-                    LINKDEF "include/Skeleton/LinkDef.h"
-                    BASENAME O2QcSkeleton)
+                    LINKDEF "include/Skeleton/LinkDef.h")
 
 # ---- Tests ----
 
