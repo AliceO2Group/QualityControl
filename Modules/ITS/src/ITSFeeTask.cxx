@@ -211,7 +211,7 @@ void ITSFeeTask::setPlotsFormat()
 
   for (int i = 0; i < NFlags; i++) {
     TString title = Form("Fraction of lanes into %s", mLaneStatusFlag[i].c_str());
-    title += ";mm;mm";
+    title += ";mm (IB 3x);mm (IB 3x)";
     mLaneStatusOverview[i]->SetTitle(title);
     mLaneStatusOverview[i]->SetStats(0);
     mLaneStatusOverview[i]->SetOption("lcolz");
@@ -223,6 +223,12 @@ void ITSFeeTask::setPlotsFormat()
         double* px = new double[4];
         double* py = new double[4];
         getStavePoint(ilayer, istave, px, py);
+        if (ilayer < 3) {
+          for (int icoo = 0; icoo < 4; icoo++) {
+            px[icoo] *= 3.;
+            py[icoo] *= 3.;
+          }
+        }
         mLaneStatusOverview[i]->AddBin(4, px, py);
       }
     }

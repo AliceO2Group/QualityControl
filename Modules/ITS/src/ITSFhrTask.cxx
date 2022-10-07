@@ -89,14 +89,14 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
   int numOfChips = mGeom->getNumberOfChips();
 
   mGeneralOccupancy = new TH2Poly();
-  mGeneralOccupancy->SetTitle("General Occupancy;mm;mm");
+  mGeneralOccupancy->SetTitle("General Occupancy;mm (IB 3x);mm (IB 3x)");
   mGeneralOccupancy->SetName("General/General_Occupancy");
   mGeneralOccupancy->SetStats(0);
   mGeneralOccupancy->SetMinimum(pow(10, mMinGeneralAxisRange));
   mGeneralOccupancy->SetMaximum(pow(10, mMaxGeneralAxisRange));
 
   mGeneralNoisyPixel = new TH2Poly();
-  mGeneralNoisyPixel->SetTitle("Noisy Pixel Number;mm;mm");
+  mGeneralNoisyPixel->SetTitle("Noisy Pixel Number;mm (IB 3x);mm (IB 3x)");
   mGeneralNoisyPixel->SetName("General/Noisy_Pixel");
   mGeneralNoisyPixel->SetStats(0);
   mGeneralNoisyPixel->SetMinimum(mMinGeneralNoisyAxisRange);
@@ -131,6 +131,12 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
         double* px = new double[4];
         double* py = new double[4];
         getStavePoint(ilayer, istave, px, py);
+        if (ilayer < 3) {
+          for (int icoo = 0; icoo < 4; icoo++) {
+            px[icoo] *= 3.;
+            py[icoo] *= 3.;
+          }
+        }
         mGeneralOccupancy->AddBin(4, px, py);
         mGeneralNoisyPixel->AddBin(4, px, py);
       }
