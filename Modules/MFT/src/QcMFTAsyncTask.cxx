@@ -146,13 +146,13 @@ void QcMFTAsyncTask::initialize(o2::framework::InitContext& /*ctx*/)
   mTrackTanl = std::make_unique<TH1F>("tracks/mMFTTrackTanl", "Track tan #lambda; tan #lambda; # entries", 100, -25, 0);
   getObjectsManager()->startPublishing(mTrackTanl.get());
 
-  mClusterROFNEntries = std::make_unique<TH1F>("clusters/mMFTClustersROFSize", "MFT Cluster ROFs size; ROF Size; # entries", MaxClusterROFSize, 0, MaxClusterROFSize);
+  mClusterROFNEntries = std::make_unique<TH1F>("clusters/mMFTClustersROFSize", "ROF size in #clusters; ROF Size; # entries", MaxClusterROFSize, 0, MaxClusterROFSize);
   getObjectsManager()->startPublishing(mClusterROFNEntries.get());
 
-  mTrackROFNEntries = std::make_unique<TH1F>("tracks/mMFTTrackROFSize", "MFT Track ROFs size; ROF Size; # entries", MaxTrackROFSize, 0, MaxTrackROFSize);
+  mTrackROFNEntries = std::make_unique<TH1F>("tracks/mMFTTrackROFSize", "ROF size in #tracks; ROF Size (# tracks); # entries", MaxTrackROFSize, 0, MaxTrackROFSize);
   getObjectsManager()->startPublishing(mTrackROFNEntries.get());
 
-  mTracksBC = std::make_unique<TH1F>("tracks/mMFTTracksBC", "Tracks per BC (sum over orbits); BCid; # entries", ROFsPerOrbit, 0, o2::constants::lhc::LHCMaxBunches);
+  mTracksBC = std::make_unique<TH1F>("tracks/mMFTTracksBC", "Tracks per BC; BCid; # entries", o2::constants::lhc::LHCMaxBunches, 0, o2::constants::lhc::LHCMaxBunches);
   mTracksBC->SetMinimum(0.1);
   getObjectsManager()->startPublishing(mTracksBC.get());
 
@@ -195,7 +195,9 @@ void QcMFTAsyncTask::monitorData(o2::framework::ProcessingContext& ctx)
   const auto clustersrofs = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("clustersrofs");
 
   // get correct timing info of the first TF orbit
-  mRefOrbit = ctx.services().get<o2::framework::TimingInfo>().firstTForbit;
+  if (mRefOrbit == -1) {
+    mRefOrbit = ctx.services().get<o2::framework::TimingInfo>().firstTForbit;
+  }
 
   // Fill the clusters histograms
   for (const auto& rof : clustersrofs) {

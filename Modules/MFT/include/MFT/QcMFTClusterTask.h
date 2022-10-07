@@ -105,7 +105,7 @@ class QcMFTClusterTask /*final*/ : public TaskInterface // todo add back the "fi
   std::string mGeomPath;
 
   // reference orbit used in relative time calculation
-  uint32_t mRefOrbit = 0;
+  uint32_t mRefOrbit = -1;
 };
 
 } // namespace o2::quality_control_modules::mft

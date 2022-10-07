@@ -87,7 +87,7 @@ class QcMFTAsyncTask /*final*/ : public TaskInterface // todo add back the "fina
   std::unique_ptr<TH1F> mClusterSensorIndex = nullptr;
   std::unique_ptr<TH1F> mClusterPatternIndex = nullptr;
 
-  uint32_t mRefOrbit = 0; // Reference orbit used in relative time calculation
+  uint32_t mRefOrbit = -1; // Reference orbit used in relative time calculation
 
   static constexpr array<short, 7> sMinNClustersList = { 4, 5, 6, 7, 8, 9, 10 };
 };
