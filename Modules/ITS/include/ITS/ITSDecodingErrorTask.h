@@ -87,9 +87,10 @@ class ITSDecodingErrorTask final : public TaskInterface
   const int NStaves[NLayer] = { 12, 16, 20, 24, 30, 42, 48 };
   static constexpr int NLayerIB = 3;
   const int StaveBoundary[NLayer + 1] = { 0, 12, 28, 48, 72, 102, 144, 192 };
+  static constexpr int NFees = 48 * 3 + 144 * 2;
 
-  int**** mLinkErrorCount /* = new int***[NStaves[lay]]*/; //  errorcount[layer][stave][FEE][errorid]
-  int**** mChipErrorCount /* = new int***[NStaves[lay]]*/; //  errorcount[layer][stave][FEE][errorid]
+  int** mLinkErrorCount /* = new int*[fee[ierror]]*/; //  errorcount[FEE][errorid]
+  int** mChipErrorCount /* = new int*[fee[ierror]]*/; //  errorcount[FEE][errorid]
 
   o2::itsmft::RawPixelDecoder<o2::itsmft::ChipMappingITS>* mDecoder;
   // parameters taken from the .json

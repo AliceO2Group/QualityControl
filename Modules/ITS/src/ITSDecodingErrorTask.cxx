@@ -21,6 +21,8 @@
 #include <DPLUtils/RawParser.h>
 #include <DPLUtils/DPLRawParser.h>
 #include <iostream>
+#include <Framework/InputRecord.h>
+#include <ITSMFTReconstruction/ChipMappingITS.h>
 
 using namespace o2::framework;
 using namespace o2::itsmft;
@@ -36,24 +38,14 @@ ITSDecodingErrorTask::ITSDecodingErrorTask()
 
 ITSDecodingErrorTask::~ITSDecodingErrorTask()
 {
-  delete mDecoder;
+  // delete mDecoder;
   delete mLinkErrorPlots;
   delete mChipErrorPlots;
   delete mLinkErrorVsFeeid;
   delete mChipErrorVsFeeid;
-  for (int ilayer = 0; ilayer < NLayer; ilayer++) {
-    int maxlink = ilayer < NLayerIB ? 3 : 2;
-    for (int istave = 0; istave < NStaves[ilayer]; istave++) {
-      for (int ilink = 0; ilink < maxlink; ilink++) {
-        delete[] mLinkErrorCount[ilayer][istave][ilink];
-        delete[] mChipErrorCount[ilayer][istave][ilink];
-      }
-
-      delete[] mLinkErrorCount[ilayer][istave];
-      delete[] mChipErrorCount[ilayer][istave];
-    }
-    delete[] mLinkErrorCount[ilayer];
-    delete[] mChipErrorCount[ilayer];
+  for (int ifee = 0; ifee < NFees; ifee++) {
+    delete[] mLinkErrorCount[ifee];
+    delete[] mChipErrorCount[ifee];
   }
   delete[] mLinkErrorCount;
   delete[] mChipErrorCount;
@@ -67,34 +59,25 @@ void ITSDecodingErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
   getParameters();
   createDecodingPlots();
   setPlotsFormat();
-
-  mDecoder = new o2::itsmft::RawPixelDecoder<o2::itsmft::ChipMappingITS>();
-  mDecoder->init();
-  mDecoder->setNThreads(mNThreads);
-  mDecoder->setFormat(GBTLink::NewFormat);               // Using RDHv6 (NewFormat)
-  mDecoder->setUserDataOrigin(header::DataOrigin("DS")); // set user data origin in dpl
-  mDecoder->setUserDataDescription(header::DataDescription("RAWDATA0"));
-
-  mLinkErrorCount = new int***[NLayer];
-  mChipErrorCount = new int***[NLayer];
-  for (int ilayer = 0; ilayer < NLayer; ilayer++) {
-    mLinkErrorCount[ilayer] = new int**[NStaves[ilayer]];
-    mChipErrorCount[ilayer] = new int**[NStaves[ilayer]];
-    int maxlink = ilayer < NLayerIB ? 3 : 2;
-    for (int istave = 0; istave < NStaves[ilayer]; istave++) {
-      mLinkErrorCount[ilayer][istave] = new int*[maxlink];
-      mChipErrorCount[ilayer][istave] = new int*[maxlink];
-      // for link statistic
-      for (int ilink = 0; ilink < maxlink; ilink++) {
-        mLinkErrorCount[ilayer][istave][ilink] = new int[o2::itsmft::GBTLinkDecodingStat::NErrorsDefined];
-        mChipErrorCount[ilayer][istave][ilink] = new int[o2::itsmft::ChipStat::NErrorsDefined];
-        for (int ierror = 0; ierror < o2::itsmft::GBTLinkDecodingStat::NErrorsDefined; ierror++) {
-          mLinkErrorCount[ilayer][istave][ilink][ierror] = 0;
-        }
-        for (int ierror = 0; ierror < o2::itsmft::ChipStat::NErrorsDefined; ierror++) {
-          mChipErrorCount[ilayer][istave][ilink][ierror] = 0;
-        }
-      }
+  /*
+    mDecoder = new o2::itsmft::RawPixelDecoder<o2::itsmft::ChipMappingITS>();
+    mDecoder->init();
+    mDecoder->setNThreads(mNThreads);
+    mDecoder->setFormat(GBTLink::NewFormat);               // Using RDHv6 (NewFormat)
+    mDecoder->setUserDataOrigin(header::DataOrigin("DS")); // set user data origin in dpl
+    mDecoder->setUserDataDescription(header::DataDescription("RAWDATA0"));
+  */
+  mLinkErrorCount = new int*[NFees];
+  mChipErrorCount = new int*[NFees];
+  for (int ifee = 0; ifee < NFees; ifee++) {
+    // for link statistic
+    mLinkErrorCount[ifee] = new int[o2::itsmft::GBTLinkDecodingStat::NErrorsDefined];
+    mChipErrorCount[ifee] = new int[o2::itsmft::ChipStat::NErrorsDefined];
+    for (int ierror = 0; ierror < o2::itsmft::GBTLinkDecodingStat::NErrorsDefined; ierror++) {
+      mLinkErrorCount[ifee][ierror] = 0;
+    }
+    for (int ierror = 0; ierror < o2::itsmft::ChipStat::NErrorsDefined; ierror++) {
+      mChipErrorCount[ifee][ierror] = 0;
     }
   }
 }
@@ -102,13 +85,12 @@ void ITSDecodingErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
 void ITSDecodingErrorTask::createDecodingPlots()
 {
 
-
-  mLinkErrorVsFeeid = new TH2I("General/LinkErrorVsFeeid", "GBTLink errors per FeeId", (3 * StaveBoundary[3]) + (2 * (StaveBoundary[7] - StaveBoundary[3])), 0, (3 * StaveBoundary[3]) + (2 * (StaveBoundary[7] - StaveBoundary[3])), o2::itsmft::GBTLinkDecodingStat::NErrorsDefined, 0.5, o2::itsmft::GBTLinkDecodingStat::NErrorsDefined + 0.5);
+  mLinkErrorVsFeeid = new TH2I("General/LinkErrorVsFeeid", "GBTLink errors per FeeId", NFees, 0, NFees, o2::itsmft::GBTLinkDecodingStat::NErrorsDefined, 0.5, o2::itsmft::GBTLinkDecodingStat::NErrorsDefined + 0.5);
   mLinkErrorVsFeeid->SetMinimum(0);
   mLinkErrorVsFeeid->SetStats(0);
   getObjectsManager()->startPublishing(mLinkErrorVsFeeid);
 
-  mChipErrorVsFeeid = new TH2I("General/ChipErrorVsFeeid", "Chip decoding errors per FeeId", (3 * StaveBoundary[3]) + (2 * (StaveBoundary[7] - StaveBoundary[3])), 0, (3 * StaveBoundary[3]) + (2 * (StaveBoundary[7] - StaveBoundary[3])), o2::itsmft::ChipStat::NErrorsDefined, 0.5, o2::itsmft::ChipStat::NErrorsDefined + 0.5);
+  mChipErrorVsFeeid = new TH2I("General/ChipErrorVsFeeid", "Chip decoding errors per FeeId", NFees, 0, NFees, o2::itsmft::ChipStat::NErrorsDefined, 0.5, o2::itsmft::ChipStat::NErrorsDefined + 0.5);
   mChipErrorVsFeeid->SetMinimum(0);
   mChipErrorVsFeeid->SetStats(0);
   getObjectsManager()->startPublishing(mChipErrorVsFeeid);
@@ -122,7 +104,6 @@ void ITSDecodingErrorTask::createDecodingPlots()
   mChipErrorPlots->SetMinimum(0);
   mChipErrorPlots->SetFillColor(kRed);
   getObjectsManager()->startPublishing(mChipErrorPlots); // mChipErrorPlots
-
 }
 
 void ITSDecodingErrorTask::setAxisTitle(TH1* object, const char* xTitle, const char* yTitle)
@@ -130,7 +111,6 @@ void ITSDecodingErrorTask::setAxisTitle(TH1* object, const char* xTitle, const c
   object->GetXaxis()->SetTitle(xTitle);
   object->GetYaxis()->SetTitle(yTitle);
 }
-
 
 void ITSDecodingErrorTask::setPlotsFormat()
 {
@@ -150,7 +130,6 @@ void ITSDecodingErrorTask::setPlotsFormat()
   if (mChipErrorPlots) {
     setAxisTitle(mChipErrorPlots, "ChipError ID", "Counts");
   }
-
 }
 
 void ITSDecodingErrorTask::startOfActivity(Activity& activity)
@@ -164,9 +143,10 @@ void ITSDecodingErrorTask::startOfCycle() { ILOG(Info, Support) << "startOfCycle
 void ITSDecodingErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   // set timer
+  //
   std::chrono::time_point<std::chrono::high_resolution_clock> start;
   std::chrono::time_point<std::chrono::high_resolution_clock> end;
-  //int difference;
+  // int difference;
   start = std::chrono::high_resolution_clock::now();
 
   std::vector<InputSpec> rawDataFilter{ InputSpec{ "", ConcreteDataTypeMatcher{ "DS", "RAWDATA0" }, Lifetime::Timeframe } };
@@ -174,62 +154,55 @@ void ITSDecodingErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
   rawDataFilter.push_back(InputSpec{ "", ConcreteDataTypeMatcher{ "ITS", "RAWDATA" }, Lifetime::Timeframe });
   DPLRawParser parser(ctx.inputs(), rawDataFilter);
 
-  mDecoder->startNewTF(ctx.inputs());
-  mDecoder->setDecodeNextAuto(true);
-  
-	LOGP(info,"zz out begin");
-std::cout<<"zz out"<<std::endl;
+  // mDecoder->startNewTF(ctx.inputs());
+  // mDecoder->setDecodeNextAuto(true);
+  auto linkErrors = ctx.inputs().get<gsl::span<o2::itsmft::GBTLinkDecodingStat>>("linkerrors");
+  auto decErrors = ctx.inputs().get<gsl::span<o2::itsmft::ChipError>>("decerrors");
+  std::cout << " linkerrors size: " << linkErrors.size() << " chip error size: " << decErrors.size() << std::endl;
+  for (const auto& le : linkErrors) {
 
-  for (auto it = parser.begin(), end = parser.end(); it != end; ++it) {
-	LOGP(info,"zz in begin");
-
-    auto const* rdh = it.get_if<o2::header::RAWDataHeaderV6>();
-    // Decoding data format (RDHv6)
-    int istave = (int)(rdh->feeId & 0x00ff);
-    int ilink = (int)((rdh->feeId & 0x0f00) >> 8);
-    int ilayer = (int)((rdh->feeId & 0xf000) >> 12);
+    int istave = (int)(le.feeID & 0x00ff);
+    int ilink = (int)((le.feeID & 0x0f00) >> 8);
+    int ilayer = (int)((le.feeID & 0xf000) >> 12);
     int ifee = 3 * StaveBoundary[ilayer] - (StaveBoundary[ilayer] - StaveBoundary[NLayerIB]) * (ilayer >= NLayerIB) + istave * (3 - (ilayer >= NLayerIB)) + ilink;
-    int memorysize = (int)(rdh->memorySize);
-    int headersize = (int)(rdh->headerSize);
 
-    bool clockEvt = false;
-    auto const* DecoderTmp = mDecoder;
-    int RUid = StaveBoundary[ilayer] + istave;
-    const o2::itsmft::RUDecodeData* RUdecode = DecoderTmp->getRUDecode(RUid);
-    if (!RUdecode) {
-      continue;
+    for (int ierror = 0; ierror < o2::itsmft::GBTLinkDecodingStat::NErrorsDefined; ierror++) {
+      if (le.errorCounts[ierror] <= 0) {
+        continue;
+      }
+      mLinkErrorCount[ifee][ierror] = le.errorCounts[ierror];
+      /*if (mLinkErrorVsFeeid && (mLinkErrorCount[ifee][ierror] != 0)) {
+        mLinkErrorVsFeeid->SetBinContent(ifee + 1, ierror + 1, mLinkErrorCount[ifee][ierror]);
+      }*/
     }
+  }
 
-    auto linkErrors = ctx.inputs().get<gsl::span<o2::itsmft::GBTLinkDecodingStat>>("linkerrors");
-    auto decErrors = ctx.inputs().get<gsl::span<o2::itsmft::ChipError>>("decerrors");
-	LOGP(info,"zz in auto");
-    for (const auto& le : linkErrors) {
-      for (int ierror = 0; ierror < o2::itsmft::GBTLinkDecodingStat::NErrorsDefined; ierror++) {
-        if (le.errorCounts[ierror] <= 0) {
-	  continue;
-        }
-        mLinkErrorCount[ilayer][istave][ilink][ierror]=le.errorCounts[ierror];
-        if (mLinkErrorVsFeeid && (mLinkErrorCount[ilayer][istave][ilink][ierror] != 0)) {
-          mLinkErrorVsFeeid->SetBinContent(ifee + 1, ierror + 1, mLinkErrorCount[ilayer][istave][ilink][ierror]);
-        }
+  for (int ifee = 0; ifee < NFees; ifee++) {
+    for (int ierror = 0; ierror < o2::itsmft::GBTLinkDecodingStat::NErrorsDefined; ierror++) {
+      if (mLinkErrorVsFeeid && (mLinkErrorCount[ifee][ierror] != 0)) {
+        mLinkErrorVsFeeid->SetBinContent(ifee + 1, ierror + 1, mLinkErrorCount[ifee][ierror]);
       }
     }
-    for (const auto& de : decErrors) {
-      LOGP(info, "err in FeeID:{:#x} Chip:{} ErrorBits {:#b}, {} errors in TF", de.getFEEID(), de.getChipID(), de.errors, de.nerrors);
-      for (int ierror = 0; ierror < o2::itsmft::ChipStat::NErrorsDefined; ierror++) {
-        if (de.nerrors <= 0) {
-          continue;
-        }
-        mChipErrorCount[ilayer][istave][ilink][ierror] = de.nerrors;
-        if (mChipErrorVsFeeid && (mChipErrorCount[ilayer][istave][ilink][ierror] != 0)) {
-          mChipErrorVsFeeid->SetBinContent(ifee + 1, ierror + 1, mChipErrorCount[ilayer][istave][ilink][ierror]);
-        }
+  }
+
+  for (const auto& de : decErrors) {
+    LOGP(info, "err in FeeID:{:#x} Chip:{} ErrorBits {:#b}, {} errors in TF", de.getFEEID(), de.getChipID(), de.errors, de.nerrors);
+    int istave = (int)(de.getFEEID() & 0x00ff);
+    int ilink = (int)((de.getFEEID() & 0x0f00) >> 8);
+    int ilayer = (int)((de.getFEEID() & 0xf000) >> 12);
+    int ifee = 3 * StaveBoundary[ilayer] - (StaveBoundary[ilayer] - StaveBoundary[NLayerIB]) * (ilayer >= NLayerIB) + istave * (3 - (ilayer >= NLayerIB)) + ilink;
+
+    std::cout << "stave:" << istave << std::endl;
+    std::cout << "link:" << ilink << std::endl;
+    std::cout << "layer:" << ilayer << std::endl;
+    for (int ierror = 0; ierror < o2::itsmft::ChipStat::NErrorsDefined; ierror++) {
+      if ((de.errors >> ierror) % 2) {
+        mChipErrorVsFeeid->Fill(ifee + 1, ierror + 1);
       }
     }
   }
 
   for (int ierror = 0; ierror < o2::itsmft::GBTLinkDecodingStat::NErrorsDefined; ierror++) {
-LOGP(info,"zz in the end");
     int feeLinkError = mLinkErrorVsFeeid->Integral(1, mLinkErrorVsFeeid->GetXaxis()->GetNbins(), ierror + 1, ierror + 1);
     mLinkErrorPlots->SetBinContent(ierror + 1, feeLinkError);
   }
@@ -241,14 +214,13 @@ LOGP(info,"zz in the end");
   // Filling histograms: loop over mStatusFlagNumber[ilayer][istave][ilane][iflag]
 
   end = std::chrono::high_resolution_clock::now();
- // difference = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+  // difference = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 }
 
 void ITSDecodingErrorTask::getParameters()
 {
   mNPayloadSizeBins = std::stoi(mCustomParameters["NPayloadSizeBins"]);
 }
-
 
 void ITSDecodingErrorTask::endOfCycle()
 {
@@ -271,7 +243,7 @@ void ITSDecodingErrorTask::resetGeneralPlots()
 void ITSDecodingErrorTask::reset()
 {
   resetGeneralPlots();
-  mDecoder->clearStat();
+  // mDecoder->clearStat();
   ILOG(Info, Support) << "Reset" << ENDM;
 }
 

@@ -21,4 +21,5 @@
 #pragma link C++ class o2::quality_control_modules::its::ITSFeeCheck + ;
 #pragma link C++ class o2::quality_control_modules::its::ITSTrackSimTask + ;
 #pragma link C++ class o2::quality_control_modules::its::ITSThresholdCalibrationCheck + ;
+#pragma link C++ class o2::quality_control_modules::its::ITSDecodingErrorTask + ;
 #endif
