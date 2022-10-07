@@ -43,25 +43,6 @@ namespace o2::quality_control_modules::its
 /// \brief ITS FEE task aiming at 100% online data integrity checking
 class ITSDecodingErrorTask final : public TaskInterface
 {
-  struct GBTDiagnosticWord { // GBT diagnostic word
-    union {
-      uint64_t word0 = 0x0;
-      struct {
-        uint64_t laneStatus : 56;
-        uint16_t zero0 : 8;
-      } laneBits;
-    } laneWord;
-    union {
-      uint64_t word1 = 0x0;
-      struct {
-        uint8_t flag1 : 4;
-        uint8_t index : 4;
-        uint8_t id : 8;
-        uint64_t padding : 48;
-      } indexBits;
-    } indexWord;
-  };
-
  public:
   /// \brief Constructor
   ITSDecodingErrorTask();
@@ -84,7 +65,6 @@ class ITSDecodingErrorTask final : public TaskInterface
   void setPlotsFormat();
   void resetGeneralPlots();
   static constexpr int NLayer = 7;
-  const int NStaves[NLayer] = { 12, 16, 20, 24, 30, 42, 48 };
   static constexpr int NLayerIB = 3;
   const int StaveBoundary[NLayer + 1] = { 0, 12, 28, 48, 72, 102, 144, 192 };
   static constexpr int NFees = 48 * 3 + 144 * 2;
