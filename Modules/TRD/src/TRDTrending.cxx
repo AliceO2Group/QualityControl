@@ -43,7 +43,7 @@ void TRDTrending::configure(std::string name, const boost::property_tree::ptree&
   mConfig = TrendingTaskConfigTRD(name, config);
 }
 
-void TRDTrending::initialize(Trigger, framework::ServiceRegistry& services)
+void TRDTrending::initialize(Trigger, framework::ServiceRegistryRef services)
 {
   // Preparing data structure of TTree
   mTrend = std::make_unique<TTree>();
@@ -62,14 +62,14 @@ void TRDTrending::initialize(Trigger, framework::ServiceRegistry& services)
 }
 
 // todo: see if OptimizeBaskets() indeed helps after some time
-void TRDTrending::update(Trigger t, framework::ServiceRegistry& services)
+void TRDTrending::update(Trigger t, framework::ServiceRegistryRef services)
 {
   auto& qcdb = services.get<repository::DatabaseInterface>();
   trendValues(t, qcdb);
   generatePlots(qcdb);
 }
 
-void TRDTrending::finalize(Trigger, framework::ServiceRegistry& services)
+void TRDTrending::finalize(Trigger, framework::ServiceRegistryRef services)
 {
 
   auto& qcdb = services.get<repository::DatabaseInterface>();

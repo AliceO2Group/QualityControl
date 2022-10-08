@@ -89,9 +89,9 @@ header::DataDescription PostProcessingDevice::createPostProcessingDataDescriptio
   return description;
 }
 
-void PostProcessingDevice::start(const ServiceRegistry& services)
+void PostProcessingDevice::start(ServiceRegistryRef services)
 {
-  mRunner->start(&services);
+  mRunner->start(services);
 }
 
 void PostProcessingDevice::stop()

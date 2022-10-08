@@ -304,7 +304,7 @@ void TaskRunner::endOfStream(framework::EndOfStreamContext& eosContext)
   mNoMoreCycles = true;
 }
 
-void TaskRunner::start(const ServiceRegistry& services)
+void TaskRunner::start(ServiceRegistryRef services)
 {
   mRunNumber = o2::quality_control::core::computeRunNumber(services, mTaskConfig.fallbackActivity.mId);
   QcInfoLogger::setRun(mRunNumber);

@@ -42,17 +42,17 @@ class TestTask : public PostProcessingInterface
   }
 
   // user gets to know what triggered the init
-  void initialize(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override
+  void initialize(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override
   {
     test = 2;
   }
   // user gets to know what triggered the processing
-  void update(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override
+  void update(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override
   {
     test = 3;
   }
   // user gets to know what triggered the end
-  void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override
+  void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override
   {
     test = 4;
   }

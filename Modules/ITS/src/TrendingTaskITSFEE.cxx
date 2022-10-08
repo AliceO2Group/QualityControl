@@ -51,7 +51,7 @@ void TrendingTaskITSFEE::configure(std::string name,
   mConfig = TrendingTaskConfigITS(name, config);
 }
 
-void TrendingTaskITSFEE::initialize(Trigger, framework::ServiceRegistry&)
+void TrendingTaskITSFEE::initialize(Trigger, framework::ServiceRegistryRef)
 {
   // Preparing data structure of TTree
   mTrend = std::make_unique<TTree>();
@@ -68,7 +68,7 @@ void TrendingTaskITSFEE::initialize(Trigger, framework::ServiceRegistry&)
 }
 
 // todo: see if OptimizeBaskets() indeed helps after some time
-void TrendingTaskITSFEE::update(Trigger t, framework::ServiceRegistry& services)
+void TrendingTaskITSFEE::update(Trigger t, framework::ServiceRegistryRef services)
 {
   auto& qcdb = services.get<repository::DatabaseInterface>();
 
@@ -77,7 +77,7 @@ void TrendingTaskITSFEE::update(Trigger t, framework::ServiceRegistry& services)
   storeTrend(qcdb);
 }
 
-void TrendingTaskITSFEE::finalize(Trigger t, framework::ServiceRegistry& services)
+void TrendingTaskITSFEE::finalize(Trigger t, framework::ServiceRegistryRef services)
 {
   auto& qcdb = services.get<repository::DatabaseInterface>();
 

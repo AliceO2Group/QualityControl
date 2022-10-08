@@ -405,7 +405,7 @@ void AggregatorRunner::sendPeriodicMonitoring()
   }
 }
 
-void AggregatorRunner::start(const ServiceRegistry& services)
+void AggregatorRunner::start(ServiceRegistryRef services)
 {
   mActivity = computeActivity(services, mRunnerConfig.fallbackActivity);
   mTimerTotalDurationActivity.reset();

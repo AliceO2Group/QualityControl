@@ -52,9 +52,9 @@ class TrendingTracks : public PostProcessingInterface
   ~TrendingTracks() override = default;
 
   void configure(std::string name, const boost::property_tree::ptree& config) override;
-  void initialize(Trigger, framework::ServiceRegistry&) override;
-  void update(Trigger, framework::ServiceRegistry&) override;
-  void finalize(Trigger, framework::ServiceRegistry&) override;
+  void initialize(Trigger, framework::ServiceRegistryRef) override;
+  void update(Trigger, framework::ServiceRegistryRef) override;
+  void finalize(Trigger, framework::ServiceRegistryRef) override;
 
   std::string nameTracksNum = "TracksPerTF";
   std::string nameClusPerTrack = "ClustersPerTrack";
