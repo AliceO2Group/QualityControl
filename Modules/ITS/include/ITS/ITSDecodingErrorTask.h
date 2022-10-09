@@ -18,18 +18,13 @@
 #define QC_MODULE_ITS_ITSDECODINGERRORTASK_H
 
 #include "QualityControl/TaskInterface.h"
-#include <ITSMFTReconstruction/ChipMappingITS.h>
-#include <ITSMFTReconstruction/PixelData.h>
-#include <ITSBase/GeometryTGeo.h>
-#include <ITSMFTReconstruction/RawPixelDecoder.h>
 
 #include <TH1.h>
 #include <TH2.h>
-#include <TH2Poly.h>
-#include "TMath.h"
-#include <TLine.h>
-#include <TText.h>
-#include <TLatex.h>
+//#include "TMath.h"
+//#include <TLine.h>
+//#include <TText.h>
+//#include <TLatex.h>
 
 class TH2I;
 class TH1I;
@@ -69,20 +64,10 @@ class ITSDecodingErrorTask final : public TaskInterface
   const int StaveBoundary[NLayer + 1] = { 0, 12, 28, 48, 72, 102, 144, 192 };
   static constexpr int NFees = 48 * 3 + 144 * 2;
 
-  int** mLinkErrorCount /* = new int*[fee[ierror]]*/; //  errorcount[FEE][errorid]
-  int** mChipErrorCount /* = new int*[fee[ierror]]*/; //  errorcount[FEE][errorid]
-
-  o2::itsmft::RawPixelDecoder<o2::itsmft::ChipMappingITS>* mDecoder;
-  // parameters taken from the .json
-  int mNPayloadSizeBins = 0;
-  int mNThreads = 0;
-
   TH1D* mLinkErrorPlots;
   TH1D* mChipErrorPlots;
   TH2I* mLinkErrorVsFeeid; // link ErrorVsFeeid
   TH2I* mChipErrorVsFeeid; // chip ErrorVsFeeid
-  std::string mRunNumberPath;
-  std::string mRunNumber = "000000";
 };
 
 } // namespace o2::quality_control_modules::its
