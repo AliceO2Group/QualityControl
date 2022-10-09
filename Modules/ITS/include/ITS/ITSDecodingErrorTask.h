@@ -21,10 +21,6 @@
 
 #include <TH1.h>
 #include <TH2.h>
-//#include "TMath.h"
-//#include <TLine.h>
-//#include <TText.h>
-//#include <TLatex.h>
 
 class TH2I;
 class TH1I;
