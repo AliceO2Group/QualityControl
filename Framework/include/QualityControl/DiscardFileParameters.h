@@ -17,6 +17,8 @@
 #ifndef QC_CORE_DISCARDFILEPARAMETERS_H
 #define QC_CORE_DISCARDFILEPARAMETERS_H
 
+#include <string>
+
 namespace o2::quality_control::core
 {
 
