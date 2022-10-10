@@ -101,6 +101,8 @@ void QcInfoLogger::init(const std::string& facility,
   discardFileParameters.debug = discardDebugStr == "true";
   discardFileParameters.fromLevel = config.get<int>("qc.config.infologger.filterDiscardLevel", 21 /* Discard Trace */);
   discardFileParameters.discardFile = config.get<std::string>("qc.config.infologger.filterDiscardFile", "");
+  discardFileParameters.rotateMaxBytes = config.get<u_long>("infologger.filterRotateMaxBytes", 0);
+  discardFileParameters.rotateMaxFiles = config.get<u_int>("infologger.filterRotateMaxFiles", 0);
   init(facility, discardFileParameters, dplInfoLogger, dplContext, run, partitionName);
 }
 
