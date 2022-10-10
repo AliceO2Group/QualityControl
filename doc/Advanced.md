@@ -22,6 +22,7 @@ Advanced topics
       * [Getting AODs in QC Tasks](#getting-aods-in-qc-tasks)
       * [Merging with other analysis workflows](#merging-with-other-analysis-workflows)
       * [Enabling a workflow to run on Hyperloop](#enabling-a-workflow-to-run-on-hyperloop)
+* [Solving performance issues](#solving-performance-issues)
 * [CCDB / QCDB](#ccdb--qcdb)
    * [Access run conditions and calibrations from the CCDB](#access-run-conditions-and-calibrations-from-the-ccdb)
    * [Custom metadata](#custom-metadata)
@@ -513,6 +514,39 @@ configure_file("etc/analysisDerived.json" "${CMAKE_INSTALL_PREFIX}/etc/analysisD
 o2_add_qc_workflow(WORKFLOW_NAME o2-qc-example-analysis-direct CONFIG_FILE_PATH ${CMAKE_INSTALL_PREFIX}/etc/analysisDirect.json)
 o2_add_qc_workflow(WORKFLOW_NAME o2-qc-example-analysis-derived CONFIG_FILE_PATH ${CMAKE_INSTALL_PREFIX}/etc/analysisDerived.json)
 ```
+
+# Solving performance issues
+
+Problems with performance in message passing systems like QC usually manifest in backpressure seen in input channels of processes which are too slow.
+QC processes usually use one worker thread, thus one can also observe that they use a full CPU core when struggling to consume incoming data.
+When observing performance issues with QC setups, consider the following actions to improve it.
+
+## Dispatcher
+
+Dispatcher will usually cause backpressure when it is requested to sample too much data.
+In particular, copying many small messages takes more time than less messages of equivalent size. 
+To improve the performance:
+- reduce the sampling rate
+- disable unused sampling policies
+- adapt the data format to pack data in fewer messages
+- when in need of 100% data, do not use Data Sampling, but connect to the data source directly
+
+## QC Tasks
+
+QC Tasks are implemented by the users, thus the maximum possible input data throughput largely depends on the task implementation.
+If a QC Task cannot cope with the input messages, consider:
+- sampling less data
+- using performance measurement tools (like `perf top`) to understand where the task spends the most time and optimize this part of code
+- if one task instance processes data, spawn one task per machine and merge the result objects instead
+
+## Mergers
+
+The performance of Mergers depends on the type of objects being merged, as well as their number and size.
+The following points might help avoid backpressure:
+- increase QC tasks cycle duration
+- use less or smaller objects
+- if an object has its custom Merge() method, check if it could be optimized
+- enable multi-layer Mergers to split the computations across multiple processes (config parameter "mergersPerLayer")
 
 # CCDB / QCDB
 
@@ -1114,6 +1148,12 @@ The behaviour of the check can be inverted by setting the customparameter "mustI
           "mustIncrease": "false"
         }
 ```
+
+## Update the shmem segment size of a detector
+
+In consul go to `o2/runtime/aliecs/defaults` and modify the file corresponding to the detector: [det]_qc_shm_segment_size
+
+
 
 
 ---

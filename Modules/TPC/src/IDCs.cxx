@@ -56,7 +56,7 @@ void IDCs::configure(std::string name, const boost::property_tree::ptree& config
       }
     }
     if (keyVec.size() != valueVec.size()) {
-      throw std::runtime_error("Number of keys and values for lookupMetaData are not matching");
+      ILOG(Error, Support) << "Number of keys and values for lookupMetaData are not matching" << ENDM;
     }
     keyVec.clear();
     valueVec.clear();
@@ -82,7 +82,7 @@ void IDCs::configure(std::string name, const boost::property_tree::ptree& config
       }
     }
     if (keyVec.size() != valueVec.size()) {
-      throw std::runtime_error("Number of keys and values for storeMetaData are not matching");
+      ILOG(Error, Support) << "Number of keys and values for storeMetaData are not matching" << ENDM;
     }
     keyVec.clear();
     valueVec.clear();
@@ -102,7 +102,7 @@ void IDCs::configure(std::string name, const boost::property_tree::ptree& config
     }
   }
 
-  mHost = config.get<std::string>("qc.config.conditionDB.url");
+  mHost = config.get<std::string>("qc.postprocessing." + name + ".dataSourceURL");
 }
 
 void IDCs::initialize(Trigger, framework::ServiceRegistry&)
@@ -154,17 +154,37 @@ void IDCs::update(Trigger, framework::ServiceRegistry&)
   mCCDBHelper.setFourierCoeffs(idcFFTA, Side::A);
   mCCDBHelper.setFourierCoeffs(idcFFTC, Side::C);
 
-  mCCDBHelper.drawIDCZeroRadialProfile(mIDCZeroRadialProf.get(), mRanges["IDCZero"].at(0), mRanges["IDCZero"].at(1), mRanges["IDCZero"].at(2));
-  mCCDBHelper.drawIDCZeroStackCanvas(mIDCZeroStacksA.get(), Side::A, "IDC0", mRanges["IDCZero"].at(0), mRanges["IDCZero"].at(1), mRanges["IDCZero"].at(2)); // rename this function to be more generic
-  mCCDBHelper.drawIDCZeroStackCanvas(mIDCZeroStacksC.get(), Side::C, "IDC0", mRanges["IDCZero"].at(0), mRanges["IDCZero"].at(1), mRanges["IDCZero"].at(2));
+  if (idcZeroA) {
+    mCCDBHelper.drawIDCZeroStackCanvas(mIDCZeroStacksA.get(), Side::A, "IDC0", mRanges["IDCZero"].at(0), mRanges["IDCZero"].at(1), mRanges["IDCZero"].at(2));
+  }
 
-  mCCDBHelper.drawIDCZeroStackCanvas(mIDCDeltaStacksA.get(), Side::A, "IDCDelta", mRanges["IDCDelta"].at(0), mRanges["IDCDelta"].at(1), mRanges["IDCDelta"].at(2));
-  mCCDBHelper.drawIDCZeroStackCanvas(mIDCDeltaStacksC.get(), Side::C, "IDCDelta", mRanges["IDCDelta"].at(0), mRanges["IDCDelta"].at(1), mRanges["IDCDelta"].at(2));
+  if (idcZeroC) {
+    mCCDBHelper.drawIDCZeroStackCanvas(mIDCZeroStacksC.get(), Side::C, "IDC0", mRanges["IDCZero"].at(0), mRanges["IDCZero"].at(1), mRanges["IDCZero"].at(2));
+  }
 
-  mCCDBHelper.drawIDCOneCanvas(mIDCOneSides1D.get(), mRanges["IDCOne"].at(0), mRanges["IDCOne"].at(1), mRanges["IDCOne"].at(2));
+  if (idcZeroA && idcZeroC) {
+    mCCDBHelper.drawIDCZeroRadialProfile(mIDCZeroRadialProf.get(), mRanges["IDCZero"].at(0), mRanges["IDCZero"].at(1), mRanges["IDCZero"].at(2));
+  }
 
-  mCCDBHelper.drawFourierCoeff(mFourierCoeffsA.get(), Side::A, mRanges["FourierCoeffs"].at(0), mRanges["FourierCoeffs"].at(1), mRanges["FourierCoeffs"].at(2));
-  mCCDBHelper.drawFourierCoeff(mFourierCoeffsC.get(), Side::C, mRanges["FourierCoeffs"].at(0), mRanges["FourierCoeffs"].at(1), mRanges["FourierCoeffs"].at(2));
+  if (idcDeltaA) {
+    mCCDBHelper.drawIDCZeroStackCanvas(mIDCDeltaStacksA.get(), Side::A, "IDCDelta", mRanges["IDCDelta"].at(0), mRanges["IDCDelta"].at(1), mRanges["IDCDelta"].at(2));
+  }
+
+  if (idcDeltaC) {
+    mCCDBHelper.drawIDCZeroStackCanvas(mIDCDeltaStacksC.get(), Side::C, "IDCDelta", mRanges["IDCDelta"].at(0), mRanges["IDCDelta"].at(1), mRanges["IDCDelta"].at(2));
+  }
+
+  if (idcOneA && idcOneC) {
+    mCCDBHelper.drawIDCOneCanvas(mIDCOneSides1D.get(), mRanges["IDCOne"].at(0), mRanges["IDCOne"].at(1), mRanges["IDCOne"].at(2));
+  }
+
+  if (idcFFTA) {
+    mCCDBHelper.drawFourierCoeff(mFourierCoeffsA.get(), Side::A, mRanges["FourierCoeffs"].at(0), mRanges["FourierCoeffs"].at(1), mRanges["FourierCoeffs"].at(2));
+  }
+
+  if (idcFFTC) {
+    mCCDBHelper.drawFourierCoeff(mFourierCoeffsC.get(), Side::C, mRanges["FourierCoeffs"].at(0), mRanges["FourierCoeffs"].at(1), mRanges["FourierCoeffs"].at(2));
+  }
 
   delete idcZeroA;
   delete idcZeroC;

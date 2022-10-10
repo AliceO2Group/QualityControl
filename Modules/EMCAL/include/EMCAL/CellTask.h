@@ -162,8 +162,8 @@ class CellTask final : public TaskInterface
   Bool_t mIgnoreTriggerTypes = false;                        ///< Do not differenciate between trigger types, treat all triggers as phys. triggers
   std::map<std::string, CellHistograms> mHistogramContainer; ///< Container with histograms per trigger class
   o2::emcal::Geometry* mGeometry = nullptr;                  ///< EMCAL geometry
-  o2::emcal::BadChannelMap* mBadChannelMap;                  ///< EMCAL channel map
-  o2::emcal::TimeCalibrationParams* mTimeCalib;              ///< EMCAL time calib
+  o2::emcal::BadChannelMap* mBadChannelMap = nullptr;        ///< EMCAL channel map
+  o2::emcal::TimeCalibrationParams* mTimeCalib = nullptr;    ///< EMCAL time calib
   int mTimeFramesPerCycles = 0;                              ///< TF per cycles
 
   TH1* mEvCounterTF = nullptr;      ///< Number of Events per timeframe

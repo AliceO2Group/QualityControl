@@ -24,7 +24,7 @@
 #include "TPC/CalDetPublisher.h"
 #include "TPC/Utility.h"
 
-//root includes
+// root includes
 #include "TCanvas.h"
 #include "TPaveText.h"
 
@@ -74,7 +74,7 @@ void CalDetPublisher::configure(std::string name, const boost::property_tree::pt
       }
     }
     if (keyVec.size() != valueVec.size()) {
-      throw std::runtime_error("Number of keys and values for lookupMetaData are not matching");
+      ILOG(Error, Support) << "Number of keys and values for lookupMetaData are not matching" << ENDM;
     }
     keyVec.clear();
     valueVec.clear();
@@ -100,18 +100,19 @@ void CalDetPublisher::configure(std::string name, const boost::property_tree::pt
       }
     }
     if (keyVec.size() != valueVec.size()) {
-      throw std::runtime_error("Number of keys and values for storeMetaData are not matching");
+      ILOG(Error, Support) << "Number of keys and values for storeMetaData are not matching" << ENDM;
     }
     keyVec.clear();
     valueVec.clear();
   }
 
   if ((mTimestamps.size() != mOutputList.size()) && (mTimestamps.size() > 0)) {
-    throw std::runtime_error("You need to set a timestamp for every CalPad object or none at all");
+    ILOG(Error, Support) << "You need to set a timestamp for every CalPad object or none at all" << ENDM;
   }
 
-  /// This needs to be put in when Pedestal and Noise are stored as unordered_map
-  //if(std::find(mOutputListMap.begin(), mOutputListMap.end(), "PedestalNoise") != mOutputListMap.end()) { mCheckZSPrereq = true; }
+  if (std::find(mOutputListMap.begin(), mOutputListMap.end(), "PedestalNoise") != mOutputListMap.end()) {
+    mCheckZSPrereq = true;
+  }
 
   for (const auto& entry : config.get_child("qc.postprocessing." + name + ".histogramRanges")) {
     for (const auto& type : entry.second) {
@@ -124,20 +125,16 @@ void CalDetPublisher::configure(std::string name, const boost::property_tree::pt
   std::string checkZSCalibration = config.get<std::string>("qc.postprocessing." + name + ".checkZSCalibration.check");
   if (checkZSCalibration == "true" && mCheckZSPrereq == true) {
     mCheckZSCalib = true;
-    /// This needs to be put in when Pedestal and Noise are stored as unordered_map
-    //mInitRefCalibTimestamp = std::stol(config.get<std::string>("qc.postprocessing." + name + ".checkZSCalibration.initRefCalibTimestamp"));
-    /// This will be removed when Pedestal and Noise are stored in a unordered_map
-    /// ===================================================================================================
-    mInitRefPedestalTimestamp = std::stol(config.get<std::string>("qc.postprocessing." + name + ".checkZSCalibration.initRefPedestalTimestamp"));
-    mInitRefNoiseTimestamp = std::stol(config.get<std::string>("qc.postprocessing." + name + ".checkZSCalibration.initRefNoiseTimestamp"));
-    /// ===================================================================================================
+    mInitRefCalibTimestamp = std::stol(config.get<std::string>("qc.postprocessing." + name + ".checkZSCalibration.initRefCalibTimestamp"));
   } else if (checkZSCalibration == "false") {
     mCheckZSCalib = false;
   } else if (checkZSCalibration == "true" && mCheckZSPrereq == false) {
-    throw std::runtime_error("'Pedestal' and 'Noise' need to be in the 'outputList' to make the Zero Suppression calibration check");
+    ILOG(Error, Support) << "'PedestalNoise' needs to be in the 'outputCalPadMaps' to make the Zero Suppression calibration check" << ENDM;
   } else {
-    throw std::runtime_error("No valid value for 'checkZSCalibration.check' set. Has to be 'true' or 'false'");
+    ILOG(Error, Support) << "No valid value for 'checkZSCalibration.check' set. Has to be 'true' or 'false'" << ENDM;
   }
+
+  o2::tpc::CDBInterface::instance().setURL(config.get<std::string>("qc.postprocessing." + name + ".dataSourceURL"));
 }
 
 void CalDetPublisher::initialize(Trigger, framework::ServiceRegistry&)
@@ -171,22 +168,11 @@ void CalDetPublisher::initialize(Trigger, framework::ServiceRegistry&)
   }
 
   if (mCheckZSCalib) {
-    /// This needs to be put in when Pedestal and Noise are stored as unordered_map
-    /*auto& calMap = o2::tpc::CDBInterface::instance().getSpecificObjectFromCDB<std::unordered_map<std::string,o2::tpc::CalDet<float>>>("TPC/Calib/PutProperPathHere",
-                                                                                                                                        mInitRefCalibTimestamp,
-                                                                                                                                        std::map<std::string, std::string>());
-    mRefPedestal = std::make_unique<o2::tpc::CalDet<float>>(calMap["Pedestal"]);
-    mRefNoise = std::make_unique<o2::tpc::CalDet<float>>(calMap["Noise"]);*/
-
-    /// This will be removed when Pedestal and Noise are stored in a unordered_map
-    /// ===================================================================================================
-    mRefPedestal = std::make_unique<o2::tpc::CalDet<float>>(o2::tpc::CDBInterface::instance().getSpecificObjectFromCDB<o2::tpc::CalDet<float>>("TPC/Calib/Pedestal",
-                                                                                                                                               mInitRefPedestalTimestamp,
-                                                                                                                                               std::map<std::string, std::string>()));
-    mRefNoise = std::make_unique<o2::tpc::CalDet<float>>(o2::tpc::CDBInterface::instance().getSpecificObjectFromCDB<o2::tpc::CalDet<float>>("TPC/Calib/Noise",
-                                                                                                                                            mInitRefPedestalTimestamp,
-                                                                                                                                            std::map<std::string, std::string>()));
-    /// ===================================================================================================
+    auto& calMap = o2::tpc::CDBInterface::instance().getSpecificObjectFromCDB<std::unordered_map<std::string, o2::tpc::CalDet<float>>>("TPC/Calib/PedestalNoise",
+                                                                                                                                       mInitRefCalibTimestamp,
+                                                                                                                                       std::map<std::string, std::string>());
+    mRefPedestal = std::make_unique<o2::tpc::CalDet<float>>(calMap["Pedestals"]);
+    mRefNoise = std::make_unique<o2::tpc::CalDet<float>>(calMap["Noise"]);
 
     mNewZSCalibMsg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
     mNewZSCalibMsg->AddText("Upload new calib data for ZS!");
@@ -212,12 +198,11 @@ void CalDetPublisher::update(Trigger t, framework::ServiceRegistry&)
     }
     calVecIter++;
 
-    /// This needs to be put in when Pedestal and Noise are stored as unordered_map
-    /*if (mCheckZSCalib) {
-      if (type == std::string("CalibVec")) {
-        if (o2::tpc::qc::helpers::newZSCalib(mRefPedestal.get(), mRefNoise.get(), &calMap["Pedestal"])) {
+    if (mCheckZSCalib) {
+      if (type == std::string("PedestalNoise")) {
+        if (o2::tpc::qc::helpers::newZSCalib(*(mRefPedestal.get()), *(mRefNoise.get()), calMap["Pedestals"])) {
           mRefPedestal.reset(nullptr);
-          mRefPedestal = std::make_unique<o2::tpc::CalDet<float>>(calMap["Pedestal"]);
+          mRefPedestal = std::make_unique<o2::tpc::CalDet<float>>(calMap["Pedestals"]);
           ILOG(Info, Support) << "New reference pedestal file set!" << ENDM;
           mRefNoise.reset(nullptr);
           mRefNoise = std::make_unique<o2::tpc::CalDet<float>>(calMap["Noise"]);
@@ -225,7 +210,7 @@ void CalDetPublisher::update(Trigger t, framework::ServiceRegistry&)
 
           for (const auto& canvasVec : mCalDetCanvasVec) {
             for (auto& canvas : canvasVec) {
-              if (canvas->GetName() == std::string("c_Sides_Pedestal")) {
+              if (canvas->GetName() == std::string("c_Sides_Pedestals")) {
                 canvas->cd(3);
                 mNewZSCalibMsg->Draw();
               }
@@ -233,7 +218,7 @@ void CalDetPublisher::update(Trigger t, framework::ServiceRegistry&)
           }
         }
       }
-    }*/
+    }
   }
 
   for (const auto& type : mOutputList) {
@@ -243,34 +228,6 @@ void CalDetPublisher::update(Trigger t, framework::ServiceRegistry&)
     auto vecPtr = toVector(mCalDetCanvasVec.at(calDetIter));
     o2::tpc::painter::makeSummaryCanvases(calDet, int(mRanges[calDet.getName()].at(0)), mRanges[calDet.getName()].at(1), mRanges[calDet.getName()].at(2), false, &vecPtr);
     calDetIter++;
-
-    /// This will be removed when Pedestal and Noise are stored in a unordered_map
-    /// ===================================================================================================
-    if (mCheckZSCalib) {
-      bool setNewRefNoise = false;
-      if (type == std::string("Pedestal")) {
-        if (o2::tpc::qc::helpers::newZSCalib(*(mRefPedestal.get()), *(mRefNoise.get()), calDet)) {
-          setNewRefNoise = true;
-          mRefPedestal.reset(nullptr);
-          mRefPedestal = std::make_unique<o2::tpc::CalDet<float>>(calDet);
-          ILOG(Info, Support) << "New reference pedestal file set!" << ENDM;
-        }
-      }
-      if (type == std::string("Noise") && setNewRefNoise) {
-        mRefNoise.reset(nullptr);
-        mRefNoise = std::make_unique<o2::tpc::CalDet<float>>(calDet);
-        ILOG(Info, Support) << "New reference noise file set!" << ENDM;
-        for (const auto& canvasVec : mCalDetCanvasVec) {
-          for (const auto& canvas : canvasVec) {
-            if (canvas->GetName() == std::string("c_Sides_Pedestal")) {
-              canvas->cd(3);
-              mNewZSCalibMsg->Draw();
-            }
-          }
-        }
-      }
-    }
-    /// ===================================================================================================
   }
 }
 

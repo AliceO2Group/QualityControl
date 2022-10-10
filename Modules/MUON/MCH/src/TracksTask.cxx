@@ -242,7 +242,7 @@ void TracksTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
 
   if (nok != tracks.size()) {
-    ILOG(Error, Support) << "Could only extrapolate " << nok << " tracks over " << tracks.size() << ENDM;
+    ILOG(Warning, Support) << "Could only extrapolate " << nok << " tracks over " << tracks.size() << ENDM;
   }
 
   for (const auto& rof : rofs) {
