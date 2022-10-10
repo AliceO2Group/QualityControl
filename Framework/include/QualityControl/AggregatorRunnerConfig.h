@@ -21,7 +21,7 @@
 #include <string>
 #include <Framework/DataProcessorSpec.h>
 #include "QualityControl/Activity.h"
-#include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/DiscardFileParameters.h"
 
 namespace o2::quality_control::checker
 {

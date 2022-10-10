@@ -20,7 +20,7 @@
 #include <unordered_map>
 #include <string>
 #include <boost/property_tree/ptree.hpp>
-#include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/DiscardFileParameters.h"
 
 namespace o2::quality_control::postprocessing
 {

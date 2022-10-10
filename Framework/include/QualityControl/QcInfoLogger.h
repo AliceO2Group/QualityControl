@@ -20,20 +20,13 @@
 #include <InfoLogger/InfoLogger.hxx>
 #include <InfoLogger/InfoLoggerMacros.hxx>
 #include <boost/property_tree/ptree_fwd.hpp>
+#include "QualityControl/DiscardFileParameters.h"
 
 typedef AliceO2::InfoLogger::InfoLogger infologger; // not to have to type the full stuff each time
 typedef AliceO2::InfoLogger::InfoLoggerContext infoContext;
 
 namespace o2::quality_control::core
 {
-
-struct DiscardFileParameters {
-  bool debug = false;
-  int fromLevel = 21 /* Discard Trace */;
-  std::string discardFile;
-  unsigned long rotateMaxBytes = 0;
-  unsigned int rotateMaxFiles = 0;
-};
 
 /// \brief  Singleton class that any class in the QC can use to log.
 ///
