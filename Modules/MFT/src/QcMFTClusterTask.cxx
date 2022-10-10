@@ -186,20 +186,20 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mClusterOccupancySummary.get());
   getObjectsManager()->setDefaultDrawOptions(mClusterOccupancySummary.get(), "colz");
 
-  mClusterZ = std::make_unique<TH1F>("mClusterZ", "Z position of clusters; Z (cm); #Entries", 400, -80, -40);
+  mClusterZ = std::make_unique<TH1F>("mClusterZ", "Z position of clusters; Z (cm); # entries", 400, -80, -40);
   mClusterZ->SetStats(0);
   getObjectsManager()->startPublishing(mClusterZ.get());
 
-  mClustersROFSize = std::make_unique<TH1F>("mClustersROFSize", "Cluster ROFs size; ROF Size (#Clusters); #Entries", maxClusterROFSize, 0, maxClusterROFSize);
+  mClustersROFSize = std::make_unique<TH1F>("mClustersROFSize", "ROF size in # clusters; ROF Size (# clusters); # entries", maxClusterROFSize, 0, maxClusterROFSize);
   mClustersROFSize->SetStats(0);
   getObjectsManager()->startPublishing(mClustersROFSize.get());
   getObjectsManager()->setDisplayHint(mClustersROFSize.get(), "logx logy");
 
-  mNOfClustersTime = std::make_unique<TH1F>("mNOfClustersTime", "Number of clusters per time bin; time (s); #Entries", NofTimeBins, 0, maxDuration);
+  mNOfClustersTime = std::make_unique<TH1F>("mNOfClustersTime", "Number of clusters per time bin; time (s); # entries", NofTimeBins, 0, maxDuration);
   mNOfClustersTime->SetMinimum(0.1);
   getObjectsManager()->startPublishing(mNOfClustersTime.get());
 
-  mClustersBC = std::make_unique<TH1F>("mClustersBC", "Clusters per BC (sum over orbits); BCid; #Entries", ROFsPerOrbit, 0, o2::constants::lhc::LHCMaxBunches);
+  mClustersBC = std::make_unique<TH1F>("mClustersBC", "Clusters per BC; BCid; # entries", o2::constants::lhc::LHCMaxBunches, 0, o2::constants::lhc::LHCMaxBunches);
   mClustersBC->SetMinimum(0.1);
   getObjectsManager()->startPublishing(mClustersBC.get());
 
@@ -283,7 +283,9 @@ void QcMFTClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
   o2::mft::ioutils::convertCompactClusters(clusters, patternIt, mClustersGlobal, mDict);
 
   // get correct timing info of the first TF orbit
-  mRefOrbit = ctx.services().get<o2::framework::TimingInfo>().firstTForbit;
+  if (mRefOrbit == -1) {
+    mRefOrbit = ctx.services().get<o2::framework::TimingInfo>().firstTForbit;
+  }
 
   // reset the cluster pattern iterator which will be used later
   patternIt = clustersPattern.begin();
