@@ -34,6 +34,7 @@
 #include "DetectorsBase/GeometryManager.h"
 #include "TOFBase/EventTimeMaker.h"
 #include "GlobalTrackingWorkflow/TOFEventTimeChecker.h"
+#include "DataFormatsFT0/RecPoints.h"
 
 // from TOF
 #include "TOFBase/Geo.h"
@@ -42,6 +43,7 @@
 #include "TOFBase/EventTimeMaker.h"
 
 using GTrackID = o2::dataformats::GlobalTrackID;
+using namespace o2::tof;
 
 namespace o2::quality_control_modules::pid
 {
@@ -62,9 +64,10 @@ TaskFT0TOF::~TaskFT0TOF()
   delete mHistDeltatPrPt;
   delete mHistMass;
   delete mHistBetavsP;
-  delete mHistDeltatPiEvtimeRes;
+  delete mHistDeltatPiEvTimeRes;
   delete mHistDeltatPiEvTimeMult;
-  delete mHistT0ResEvTimeMult;
+  delete mHistEvTimeResEvTimeMult;
+  delete mHistEvTimeTOF;
 }
 
 void TaskFT0TOF::initialize(o2::framework::InitContext& /*ctx*/)
@@ -100,13 +103,24 @@ void TaskFT0TOF::initialize(o2::framework::InitContext& /*ctx*/)
     ILOG(Info, Devel) << "Final requested sources = " << mSrc << ENDM;
   }
 
-  // For now only ITS-TPC tracks can be used
-  // if ((mSrc[GID::Source::TPCTOF] == 1 && mSrc[GID::Source::TPC] == 0) || (mSrc[GID::Source::TPCTOF] == 0 && mSrc[GID::Source::TPC] == 1)) {
-  //  ILOG(Fatal, Support) << "Check the requested sources: TPCTOF = " << mSrc[GID::Source::TPCTOF] << ", TPC = " << mSrc[GID::Source::TPC] << ENDM;
-  //}
-  //
+  // TPC tracks
+  if ((mSrc[GID::Source::TPCTOF] == 1 && mSrc[GID::Source::TPC] == 0) || (mSrc[GID::Source::TPCTOF] == 0 && mSrc[GID::Source::TPC] == 1)) {
+    ILOG(Fatal, Support) << "Check the requested sources: TPCTOF = " << mSrc[GID::Source::TPCTOF] << ", TPC = " << mSrc[GID::Source::TPC] << ENDM;
+  }
+
+  // ITS-TPC tracks
   if ((mSrc[GID::Source::ITSTPCTOF] == 1 && mSrc[GID::Source::ITSTPC] == 0) || (mSrc[GID::Source::ITSTPCTOF] == 0 && mSrc[GID::Source::ITSTPC] == 1)) {
     ILOG(Fatal, Support) << "Check the requested sources: ITSTPCTOF = " << mSrc[GID::Source::ITSTPCTOF] << ", ITSTPC = " << mSrc[GID::Source::ITSTPC] << ENDM;
+  }
+
+  // TPC-TRD tracks
+  if ((mSrc[GID::Source::TPCTRDTOF] == 1 && mSrc[GID::Source::TPCTRD] == 0) || (mSrc[GID::Source::TPCTRDTOF] == 0 && mSrc[GID::Source::TPCTRD] == 1)) {
+    ILOG(Fatal, Support) << "Check the requested sources: TPCTRDTOF = " << mSrc[GID::Source::TPCTRDTOF] << ", TPCTRD = " << mSrc[GID::Source::TPCTRD] << ENDM;
+  }
+
+  // ITS-TPC-TRD tracks
+  if ((mSrc[GID::Source::ITSTPCTRDTOF] == 1 && mSrc[GID::Source::ITSTPCTRD] == 0) || (mSrc[GID::Source::ITSTPCTRDTOF] == 0 && mSrc[GID::Source::ITSTPCTRD] == 1)) {
+    ILOG(Fatal, Support) << "Check the requested sources: ITSTPCTRDTOF = " << mSrc[GID::Source::ITSTPCTRDTOF] << ", ITSTPCTRD = " << mSrc[GID::Source::ITSTPCTRD] << ENDM;
   }
 
   // initialize histgrams
@@ -118,9 +132,10 @@ void TaskFT0TOF::initialize(o2::framework::InitContext& /*ctx*/)
   mHistDeltatPrPt = new TH2F("DeltatPr_Pt", ";#it{p}_{T} (GeV/#it{c});t_{TOF} - t_{exp}^{#pi} (ps)", 1000, 0., 20., 500, -5000, 5000);
   mHistMass = new TH1F("HadronMasses", ";M (GeV/#it{c}^{2})", 1000, 0, 3.);
   mHistBetavsP = new TH2F("BetavsP", ";#it{p} (GeV/#it{c});TOF #beta", 1000, 0., 5, 1000, 0., 1.5);
-  mHistDeltatPiEvtimeRes = new TH2F("DeltatPiEvtimeRes", "0.7 < p < 1.1 GeV/#it{c};TOF event time resolution (ps);t_{TOF} - t_{exp}^{#pi} (ps)", 200, 0., 200, 500, -5000, 5000);
+  mHistDeltatPiEvTimeRes = new TH2F("DeltatPiEvtimeRes", "0.7 < p < 1.1 GeV/#it{c};TOF event time resolution (ps);t_{TOF} - t_{exp}^{#pi} (ps)", 200, 0., 200, 500, -5000, 5000);
   mHistDeltatPiEvTimeMult = new TH2F("DeltatPiEvTimeMult", "0.7 < p < 1.1 GeV/#it{c};TOF multiplicity; t_{TOF} - t_{exp}^{#pi} (ps)", 100, 0., 100, 500, -5000, 5000);
-  mHistT0ResEvTimeMult = new TH2F("T0ResEvTimeMult", "0.7 < p < 1.1 GeV/#it{c};TOF multiplicity;TOF event time resolution (ps)", 100, 0., 100, 200, 0, 200);
+  mHistEvTimeResEvTimeMult = new TH2F("EvTimeResEvTimeMult", "0.7 < p < 1.1 GeV/#it{c};TOF multiplicity;TOF event time resolution (ps)", 100, 0., 100, 200, 0, 200);
+  mHistEvTimeTOF = new TH1F("EvTimeTOF", "t_{0}^{TOF};t_{0}^{TOF} (ps);Counts", 1000, -5000., +5000);
 
   // initialize B field and geometry for track selection
   o2::base::GeometryManager::loadGeometry(mGeomFileName);
@@ -137,9 +152,10 @@ void TaskFT0TOF::initialize(o2::framework::InitContext& /*ctx*/)
     getObjectsManager()->startPublishing(mHistDeltatPrPt);
     getObjectsManager()->startPublishing(mHistMass);
     getObjectsManager()->startPublishing(mHistBetavsP);
-    getObjectsManager()->startPublishing(mHistDeltatPiEvtimeRes);
+    getObjectsManager()->startPublishing(mHistDeltatPiEvTimeRes);
     getObjectsManager()->startPublishing(mHistDeltatPiEvTimeMult);
-    getObjectsManager()->startPublishing(mHistT0ResEvTimeMult);
+    getObjectsManager()->startPublishing(mHistEvTimeResEvTimeMult);
+    getObjectsManager()->startPublishing(mHistEvTimeTOF);
   }
   ILOG(Info, Support) << " Initialized!!!! " << ENDM;
 
@@ -165,13 +181,38 @@ void TaskFT0TOF::monitorData(o2::framework::ProcessingContext& ctx)
 
   mRecoCont.collectData(ctx, *mDataRequest.get());
 
+  mMyTracks.clear();
+
+  // TPC-TOF
+  if (mRecoCont.isTrackSourceLoaded(GID::TPCTOF)) { // if track is TPC
+
+    mTPCTracks = mRecoCont.getTPCTracks();
+    mTPCTOFMatches = mRecoCont.getTPCTOFMatches();
+
+    if (mRecoCont.getTPCTOFTracks().size() != mTPCTOFMatches.size()) {
+      ILOG(Fatal, Support) << "Number of TPCTOF tracks (" << mRecoCont.getTPCTOFTracks().size() << ") differs from number of TPCTOF matches (" << mTPCTOFMatches.size() << ")" << ENDM;
+    }
+
+    // loop over TOF MatchInfo
+    for (const auto& matchTOF : mTPCTOFMatches) {
+
+      GTrackID gTrackId = matchTOF.getTrackRef();
+      const auto& trk = mTPCTracks[gTrackId.getIndex()];
+
+      if (!selectTrack(trk)) { // Discard tracks according to configurable cuts
+        continue;
+      }
+
+      mMyTracks.push_back(MyTrack(matchTOF, trk));
+    } // END loop on TOF matches
+  }   // END if track is TPC-TOF
+
+  // ITS-TPC-TOF
   if (mRecoCont.isTrackSourceLoaded(GID::ITSTPCTOF)) { // if track is ITS+TPC
 
     mITSTPCTracks = mRecoCont.getTPCITSTracks();
     mITSTPCTOFMatches = mRecoCont.getITSTPCTOFMatches();
     mTPCTracks = mRecoCont.getTPCTracks();
-
-    mMyTracks.clear();
 
     // loop over TOF MatchInfo
     for (const auto& matchTOF : mITSTPCTOFMatches) {
@@ -180,7 +221,27 @@ void TaskFT0TOF::monitorData(o2::framework::ProcessingContext& ctx)
       const auto& trk = mITSTPCTracks[gTrackId.getIndex()];
       const auto& trkTPC = mTPCTracks[trk.getRefTPC()];
 
-      const o2::track::TrackLTIntegral& info = matchTOF.getLTIntegralOut();
+      if (!selectTrack(trkTPC)) { // Discard tracks according to configurable cuts
+        continue;
+      }
+
+      mMyTracks.push_back(MyTrack(matchTOF, trk));
+
+    } // END loop on TOF matches
+  }   // END if track is ITS-TPC-TOF
+
+  // TPC-TRD-TOF
+  if (mRecoCont.isTrackSourceLoaded(GID::TPCTRDTOF)) { // this is enough to know that also TPCTRD was loades, see "initialize"
+
+    mTPCTRDTracks = mRecoCont.getTPCTRDTracks<o2::trd::TrackTRD>();
+    mTPCTRDTOFMatches = mRecoCont.getTPCTRDTOFMatches();
+
+    // loop over TOF MatchInfo
+    for (const auto& matchTOF : mTPCTRDTOFMatches) {
+
+      GTrackID gTrackId = matchTOF.getTrackRef();
+      const auto& trk = mTPCTRDTracks[gTrackId.getIndex()];
+      const auto& trkTPC = mTPCTracks[trk.getRefGlobalTrackId()];
 
       if (!selectTrack(trkTPC)) { // Discard tracks according to configurable cuts
         continue;
@@ -189,32 +250,55 @@ void TaskFT0TOF::monitorData(o2::framework::ProcessingContext& ctx)
       mMyTracks.push_back(MyTrack(matchTOF, trk));
 
     } // END loop on TOF matches
+  }   // END if track is TPC-TRD-TOF
 
-    std::vector<MyTrack> tracks;
+  // ITS-TPC-TRD-TOF
+  if (mRecoCont.isTrackSourceLoaded(GID::ITSTPCTRDTOF)) { // this is enough to know that also ITSTPC was loades, see "initialize"
 
-    // sorting matching in time
-    std::sort(mMyTracks.begin(), mMyTracks.end(),
-              [](MyTrack a, MyTrack b) { return a.tofSignalDouble() < b.tofSignalDouble(); });
+    mITSTPCTRDTracks = mRecoCont.getITSTPCTRDTracks<o2::trd::TrackTRD>();
+    mITSTPCTRDTOFMatches = mRecoCont.getITSTPCTRDTOFMatches();
 
-    for (int i = 0; i < mMyTracks.size(); i++) { // loop looking for interaction candidates
-      tracks.clear();
-      int ntrk = 1;
-      double time = mMyTracks[i].tofSignalDouble();
+    // loop over TOF MatchInfo
+    for (const auto& matchTOF : mITSTPCTRDTOFMatches) {
+
+      GTrackID gTrackId = matchTOF.getTrackRef();
+      const auto& trk = mITSTPCTRDTracks[gTrackId.getIndex()];
+      const auto& trkITSTPC = mITSTPCTracks[trk.getRefGlobalTrackId()];
+      const auto& trkTPC = mTPCTracks[trkITSTPC.getRefTPC()];
+
+      if (!selectTrack(trkTPC)) { // Discard tracks according to configurable cuts
+        continue;
+      }
+
+      mMyTracks.push_back(MyTrack(matchTOF, trk));
+
+    } // END loop on TOF matches
+  }   // END if track is TPC-TRD-TOF
+
+  std::vector<MyTrack> tracks;
+
+  // sorting matching in time
+  std::sort(mMyTracks.begin(), mMyTracks.end(),
+            [](MyTrack a, MyTrack b) { return a.tofSignalDouble() < b.tofSignalDouble(); });
+
+  for (int i = 0; i < mMyTracks.size(); i++) { // loop looking for interaction candidates
+    tracks.clear();
+    int ntrk = 1;
+    double time = mMyTracks[i].tofSignalDouble();
+    tracks.emplace_back(mMyTracks[i]);
+    for (; i < mMyTracks.size(); i++) {
+      double timeCurrent = mMyTracks[i].tofSignalDouble();
+      if (timeCurrent - time > 100E3) {
+        i--;
+        break;
+      }
       tracks.emplace_back(mMyTracks[i]);
-      for (; i < mMyTracks.size(); i++) {
-        double timeCurrent = mMyTracks[i].tofSignalDouble();
-        if (timeCurrent - time > 100E3) {
-          i--;
-          break;
-        }
-        tracks.emplace_back(mMyTracks[i]);
-        ntrk++;
-      }
-      if (ntrk > 0) { // good candidate with time
-        processEvent(tracks);
-      }
+      ntrk++;
     }
-  } // END if track is ITS-TPC
+    if (ntrk > 0) { // good candidate with time
+      processEvent(tracks);
+    }
+  }
 
   ILOG(Info, Support) << " Processed! " << ENDM;
   return;
@@ -242,9 +326,10 @@ void TaskFT0TOF::reset()
   mHistDeltatPrPt->Reset();
   mHistMass->Reset();
   mHistBetavsP->Reset();
-  mHistDeltatPiEvtimeRes->Reset();
+  mHistDeltatPiEvTimeRes->Reset();
   mHistDeltatPiEvTimeMult->Reset();
-  mHistT0ResEvTimeMult->Reset();
+  mHistEvTimeResEvTimeMult->Reset();
+  mHistEvTimeTOF->Reset();
 }
 
 void TaskFT0TOF::processEvent(const std::vector<MyTrack>& tracks)
@@ -255,22 +340,25 @@ void TaskFT0TOF::processEvent(const std::vector<MyTrack>& tracks)
   int nt = 0;
   for (auto& track : tracks) {
 
-    float mT0 = evtime.mEventTime;
-    float mT0Res = evtime.mEventTimeError;
+    float mEvTime = evtime.mEventTime;
+    float mEvTimeRes = evtime.mEventTimeError;
     const auto mMultiplicity = evtime.mEventTimeMultiplicity;
     //
-    evtime.removeBias<MyTrack, MyFilter>(track, nt, mT0, mT0Res);
+    evtime.removeBias<MyTrack, MyFilter>(track, nt, mEvTime, mEvTimeRes);
 
     // Delta t Pion
-    const float deltatpi = track.tofSignal() - mT0 - track.tofExpSignalPi();
+    const float deltatpi = track.tofSignal() - mEvTime - track.tofExpSignalPi();
     // Delta t Kaon
-    const float deltatka = track.tofSignal() - mT0 - track.tofExpSignalKa();
+    const float deltatka = track.tofSignal() - mEvTime - track.tofExpSignalKa();
     // Delta t Proton
-    const float deltatpr = track.tofSignal() - mT0 - track.tofExpSignalPr();
+    const float deltatpr = track.tofSignal() - mEvTime - track.tofExpSignalPr();
     // Beta
-    const float beta = track.getL() / (track.tofSignal() - mT0) * cinv;
+    const float beta = track.getL() / (track.tofSignal() - mEvTime) * cinv;
     // Mass
     const float mass = track.getP() / beta * TMath::Sqrt(TMath::Abs(1 - beta * beta));
+    // T0 - number of BC
+    int nBC = (mEvTime + 5000.) * o2::tof::Geo::BC_TIME_INPS_INV;  // 5 ns offset to get the correct number of BC (int)
+    float mEvTime_BC = mEvTime - nBC * o2::tof::Geo::BC_TIME_INPS; // Event time in ps wrt BC
 
     mHistDeltatPi->Fill(deltatpi);
     mHistDeltatKa->Fill(deltatka);
@@ -280,11 +368,12 @@ void TaskFT0TOF::processEvent(const std::vector<MyTrack>& tracks)
     mHistDeltatPrPt->Fill(track.getPt(), deltatpr);
     mHistMass->Fill(mass);
     mHistBetavsP->Fill(track.getP(), beta);
+    mHistEvTimeTOF->Fill(mEvTime_BC);
 
     if (track.getP() > 0.7 && track.getP() < 1.1) {
-      mHistDeltatPiEvtimeRes->Fill(mT0Res, deltatpi);
+      mHistDeltatPiEvTimeRes->Fill(mEvTimeRes, deltatpi);
       mHistDeltatPiEvTimeMult->Fill(mMultiplicity, deltatpi);
-      mHistT0ResEvTimeMult->Fill(mMultiplicity, mT0Res);
+      mHistEvTimeResEvTimeMult->Fill(mMultiplicity, mEvTimeRes);
     }
   }
 }

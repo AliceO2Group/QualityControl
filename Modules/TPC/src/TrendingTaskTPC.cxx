@@ -74,7 +74,7 @@ void TrendingTaskTPC::initialize(Trigger, framework::ServiceRegistry& services)
     mTrend = std::make_unique<TTree>();
     mTrend->SetName(PostProcessingInterface::getName().c_str());
 
-    mTrend->Branch("meta", &mMetaData, "runNumber/I");
+    mTrend->Branch("meta", &mMetaData, mMetaData.getBranchLeafList());
     mTrend->Branch("time", &mTime);
     for (const auto& source : mConfig.dataSources) {
       mSources[source.name] = new std::vector<SliceInfo>();
@@ -85,8 +85,8 @@ void TrendingTaskTPC::initialize(Trigger, framework::ServiceRegistry& services)
         mTrend->Branch(source.name.c_str(), &mSourcesQuality[source.name]);
       }
     }
-  } else {                                                    // we picked up an older TTree
-    mTrend->SetBranchAddress("meta", &(mMetaData.runNumber)); // TO-DO: Find reason why simply &mMetaData does not work
+  } else { // we picked up an older TTree
+    mTrend->SetBranchAddress("meta", &mMetaData);
     mTrend->SetBranchAddress("time", &mTime);
     for (const auto& source : mConfig.dataSources) {
       mSources[source.name] = new std::vector<SliceInfo>();
@@ -142,7 +142,7 @@ void TrendingTaskTPC::trendValues(const Trigger& t,
                                   repository::DatabaseInterface& qcdb)
 {
   mTime = t.timestamp / 1000; // ROOT expects seconds since epoch.
-  mMetaData.runNumber = -1;
+  mMetaData.runNumber = t.activity.mId;
 
   for (auto& dataSource : mConfig.dataSources) {
     mNumberPads[dataSource.name] = 0;
@@ -366,7 +366,11 @@ void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
 
       const std::string_view title = (dataRetrieveVector->at(p)).title;
       const auto posDivider = title.find("RangeX");
-      gr->SetName(title.substr(posDivider, -1).data());
+      if (posDivider != title.npos) {
+        gr->SetName(title.substr(posDivider, -1).data());
+      } else {
+        gr->SetName(title.data());
+      }
 
       myReader.Restart();
       multigraph->Add(gr);

@@ -2,7 +2,15 @@
 
 add_library(O2QcFDD)
 
-target_sources(O2QcFDD PRIVATE src/DigitQcTask.cxx src/DigitQcTaskLaser.cxx src/RecPointsQcTask.cxx )
+target_sources(O2QcFDD PRIVATE
+                               src/DigitQcTaskLaser.cxx
+                               src/DigitQcTask.cxx
+                               src/GenericCheck.cxx
+                               src/RecPointsQcTask.cxx
+                               src/PostProcTask.cxx
+                               src/CFDEffCheck.cxx
+                               src/OutOfBunchCollCheck.cxx
+                               )
 
 target_include_directories(
   O2QcFDD
@@ -18,20 +26,24 @@ install(TARGETS O2QcFDD
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 add_root_dictionary(O2QcFDD
-                    HEADERS
-  include/FDD/DigitQcTask.h
-  include/FDD/DigitQcTaskLaser.h
-  include/FDD/RecPointsQcTask.h
-  include/FDD/Helper.h
-                    LINKDEF include/FDD/LinkDef.h
-                    BASENAME O2QcFDD)
+  HEADERS
+          include/FDD/DigitQcTaskLaser.h
+          include/FDD/DigitQcTask.h
+          include/FDD/GenericCheck.h
+          include/FDD/RecPointsQcTask.h
+          include/FDD/Helper.h
+          include/FDD/PostProcTask.h
+          include/FDD/CFDEffCheck.h
+          include/FDD/OutOfBunchCollCheck.h
+  LINKDEF include/FDD/LinkDef.h
+  BASENAME O2QcFDD)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/FDD
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")
 
 # ---- Test(s) ----
 
-set(TEST_SRCS test/testQcFDD.cxx)
+#set(TEST_SRCS test/testQcFDD.cxx) # uncomment to reenable the test which was empty
 
 foreach(test ${TEST_SRCS})
   get_filename_component(test_name ${test} NAME)
@@ -45,4 +57,3 @@ foreach(test ${TEST_SRCS})
     PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
   set_tests_properties(${test_name} PROPERTIES TIMEOUT 20)
 endforeach()
-

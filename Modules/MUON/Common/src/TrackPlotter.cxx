@@ -351,7 +351,7 @@ void TrackPlotter::fill(gsl::span<const o2::mch::ROFRecord> rofs,
   }
 
   if (nok != ntracks) {
-    std::cerr << "Could only extrapolate " << nok << " tracks over " << ntracks << "\n";
+    std::cout << "Could only extrapolate " << nok << " tracks over " << ntracks << "\n";
   }
 
   for (const auto& rof : rofs) {
@@ -364,6 +364,13 @@ void TrackPlotter::fill(gsl::span<const o2::mch::ROFRecord> rofs,
       }
       fillTrackPairHistos(rtracks);
     }
+  }
+}
+
+void TrackPlotter::reset()
+{
+  for (auto hinfo : mHistograms) {
+    hinfo.histo->Reset();
   }
 }
 

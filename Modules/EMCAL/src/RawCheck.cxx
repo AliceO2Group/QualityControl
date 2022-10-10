@@ -16,14 +16,13 @@
 
 #include <string>
 #include <exception>
-#include <boost/algorithm/string.hpp>
 
 #include <TCanvas.h>
 #include <TH1.h>
 #include <TH2.h>
-#include <TPaveText.h>
 #include <TLatex.h>
 #include <TList.h>
+#include <TLine.h>
 #include <TRobustEstimator.h>
 
 #include "QualityControl/QcInfoLogger.h"
@@ -31,6 +30,7 @@
 #include "QualityControl/Quality.h"
 #include <fairlogger/Logger.h>
 #include "EMCAL/RawCheck.h"
+#include "QualityControl/stringUtils.h"
 
 using namespace std;
 
@@ -45,7 +45,7 @@ void RawCheck::configure()
     try {
       mIlMessageBunchMinAmpCheckSM = decodeBool(switchBunchMinSM->second);
     } catch (std::exception& e) {
-      ILOG(Error, Support) << e.what() << AliceO2::InfoLogger::InfoLogger::endm;
+      ILOG(Error, Support) << e.what() << ENDM;
     }
   }
 
@@ -54,7 +54,7 @@ void RawCheck::configure()
     try {
       mIlMessageBunchMinAmpCheckDetector = decodeBool(switchBunchMinDetector->second);
     } catch (std::exception& e) {
-      ILOG(Error, Support) << e.what() << AliceO2::InfoLogger::InfoLogger::endm;
+      ILOG(Error, Support) << e.what() << ENDM;
     }
   }
 
@@ -63,7 +63,7 @@ void RawCheck::configure()
     try {
       mIlMessageBunchMinAmpCheckFull = decodeBool(switchBunchMinFull->second);
     } catch (std::exception& e) {
-      ILOG(Error, Support) << e.what() << AliceO2::InfoLogger::InfoLogger::endm;
+      ILOG(Error, Support) << e.what() << ENDM;
     }
   }
 
@@ -72,7 +72,7 @@ void RawCheck::configure()
     try {
       mILMessageRawErrorCheck = decodeBool(switchErrorCode->second);
     } catch (std::exception& e) {
-      ILOG(Error, Support) << e.what() << AliceO2::InfoLogger::InfoLogger::endm;
+      ILOG(Error, Support) << e.what() << ENDM;
     }
   }
 
@@ -81,7 +81,7 @@ void RawCheck::configure()
     try {
       mILMessageNoisyFECCheck = decodeBool(switchNoisyFEC->second);
     } catch (std::exception& e) {
-      ILOG(Error, Support) << e.what() << AliceO2::InfoLogger::InfoLogger::endm;
+      ILOG(Error, Support) << e.what() << ENDM;
     }
   }
 
@@ -90,7 +90,7 @@ void RawCheck::configure()
     try {
       mILMessagePayloadSizeCheck = decodeBool(switchPayloadSizeCheck->second);
     } catch (std::exception& e) {
-      ILOG(Error, Support) << e.what() << AliceO2::InfoLogger::InfoLogger::endm;
+      ILOG(Error, Support) << e.what() << ENDM;
     }
   }
 
@@ -98,17 +98,17 @@ void RawCheck::configure()
   auto nsigmaFECMaxPayload = mCustomParameters.find("SigmaFECMaxPayload");
   if (nsigmaFECMaxPayload != mCustomParameters.end()) {
     try {
-      mNsigmaFECMaxPayload = decodeDouble(nsigmaFECMaxPayload->second);
+      mNsigmaFECMaxPayload = std::stod(nsigmaFECMaxPayload->second);
     } catch (std::exception& e) {
-      ILOG(Error, Support) << e.what() << AliceO2::InfoLogger::InfoLogger::endm;
+      ILOG(Error, Support) << fmt::format("Value {} not a boolean", nsigmaFECMaxPayload->second.data()) << ENDM;
     }
   }
   auto nsigmaPayloadSize = mCustomParameters.find("SigmaPayloadSize");
   if (nsigmaPayloadSize != mCustomParameters.end()) {
     try {
-      mNsigmaPayloadSize = decodeDouble(nsigmaPayloadSize->second);
+      mNsigmaPayloadSize = std::stod(nsigmaPayloadSize->second);
     } catch (std::exception& e) {
-      ILOG(Error, Support) << e.what() << AliceO2::InfoLogger::InfoLogger::endm;
+      ILOG(Error, Support) << fmt::format("Value {} not a boolean", nsigmaFECMaxPayload->second.data()) << ENDM;
     }
   }
 }
@@ -234,7 +234,6 @@ Quality RawCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* m
       }
     }
   }
-  std::cout << " result " << result << std::endl;
   return result;
 }
 
@@ -256,7 +255,7 @@ void RawCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
       msg->Draw();
     } else if (checkResult == Quality::Bad) {
       if (mILMessageRawErrorCheck) {
-        ILOG(Error, Support) << " QualityBad:Presence of Error Code" << AliceO2::InfoLogger::InfoLogger::endm;
+        ILOG(Error, Support) << " QualityBad:Presence of Error Code" << ENDM;
       }
       TLatex* msg = new TLatex(0.2, 0.8, "#color[2]{Presence of Error Code: call EMCAL oncall}");
       msg->SetNDC();
@@ -292,7 +291,7 @@ void RawCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
         showMessage = true;
       }
       if (showMessage) {
-        ILOG(Error, Support) << " QualityBad:Bunch min Amplitude outside limits (" << mo->getName() << ")" << AliceO2::InfoLogger::InfoLogger::endm;
+        ILOG(Error, Support) << " QualityBad:Bunch min Amplitude outside limits (" << mo->getName() << ")" << ENDM;
       }
       TLatex* msg = new TLatex(0.2, 0.8, "#color[2]{Pedestal peak detected}");
       msg->SetNDC();
@@ -335,13 +334,13 @@ void RawCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
       TLatex* msg;
       if (mo->getName() == "FECidMaxChWithInput_perSM") {
         if (mILMessageNoisyFECCheck) {
-          ILOG(Error, Support) << "Noisy FEC detected" << AliceO2::InfoLogger::InfoLogger::endm;
+          ILOG(Error, Support) << "Noisy FEC detected" << ENDM;
         }
         msg = new TLatex(0.2, 0.8, "#color[2]{Noisy FEC detected}");
       }
       if (mo->getName().find("PayloadSize") != std::string::npos) {
         if (mILMessagePayloadSizeCheck) {
-          ILOG(Error, Support) << "Large payload in several DDLs" << AliceO2::InfoLogger::InfoLogger::endm;
+          ILOG(Error, Support) << "Large payload in several DDLs" << ENDM;
         }
         msg = new TLatex(0.2, 0.8, "#color[2]{Large payload in several DDLs}");
       }
@@ -370,35 +369,61 @@ void RawCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
     }
     h->SetLineColor(kBlack);
   }
-}
+  if (mo->getName().find("ADC_EMCAL") != std::string::npos) {
+    auto* h2D = dynamic_cast<TH2*>(mo->getObject());
+    // orizontal
+    TLine* l1 = new TLine(-0.5, 24, 95.5, 24);
+    TLine* l2 = new TLine(-0.5, 48, 95.5, 48);
+    TLine* l3 = new TLine(-0.5, 72, 95.5, 72);
+    TLine* l4 = new TLine(-0.5, 96, 95.5, 96);
+    TLine* l5 = new TLine(-0.5, 120, 95.5, 120);
+    TLine* l6 = new TLine(-0.5, 128, 95.5, 128);
 
-bool RawCheck::decodeBool(std::string value) const
-{
-  boost::algorithm::to_lower_copy(value);
-  if (value == "true") {
-    return true;
-  }
-  if (value == "false") {
-    return false;
-  }
-  throw std::runtime_error(fmt::format("Value {} not a boolean", value.data()).data());
-}
+    TLine* l7 = new TLine(-0.5, 152, 31.5, 152);
+    TLine* l8 = new TLine(63.5, 152, 95.5, 152);
 
-double RawCheck::decodeDouble(std::string value) const
-{
-  try {
-    return std::stod(value);
-  } catch (std::exception& e) {
-    throw std::runtime_error(fmt::format("Value {} not a double", value.data()).data());
-  }
-}
+    TLine* l9 = new TLine(-0.5, 176, 31.5, 176);
+    TLine* l10 = new TLine(63.5, 176, 95.5, 176);
 
-int RawCheck::decodeInt(std::string value) const
-{
-  try {
-    return std::stoi(value);
-  } catch (std::exception& e) {
-    throw std::runtime_error(fmt::format("Value {} not an integer", value.data()).data());
+    TLine* l11 = new TLine(-0.5, 200, 95.5, 200);
+    TLine* l12 = new TLine(47.5, 200, 47.5, 207.5);
+
+    //vertical
+    TLine* l13 = new TLine(47.5, -0.5, 47.5, 128);
+    TLine* l14 = new TLine(31.5, 128, 31.5, 200);
+    TLine* l15 = new TLine(63.5, 128, 63.5, 200);
+
+    h2D->GetListOfFunctions()->Add(l1);
+    h2D->GetListOfFunctions()->Add(l2);
+    h2D->GetListOfFunctions()->Add(l3);
+    h2D->GetListOfFunctions()->Add(l4);
+    h2D->GetListOfFunctions()->Add(l5);
+    h2D->GetListOfFunctions()->Add(l6);
+    h2D->GetListOfFunctions()->Add(l7);
+    h2D->GetListOfFunctions()->Add(l8);
+    h2D->GetListOfFunctions()->Add(l9);
+    h2D->GetListOfFunctions()->Add(l10);
+    h2D->GetListOfFunctions()->Add(l11);
+    h2D->GetListOfFunctions()->Add(l12);
+    h2D->GetListOfFunctions()->Add(l13);
+    h2D->GetListOfFunctions()->Add(l14);
+    h2D->GetListOfFunctions()->Add(l15);
+
+    l1->Draw();
+    l2->Draw();
+    l3->Draw();
+    l4->Draw();
+    l5->Draw();
+    l6->Draw();
+    l7->Draw();
+    l8->Draw();
+    l9->Draw();
+    l10->Draw();
+    l11->Draw();
+    l12->Draw();
+    l13->Draw();
+    l14->Draw();
+    l15->Draw();
   }
 }
 

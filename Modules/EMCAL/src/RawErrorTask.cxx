@@ -16,10 +16,12 @@
 #include <TCanvas.h>
 #include <TH1.h>
 #include <TH2.h>
+#include <boost/algorithm/string.hpp>
 
 #include "QualityControl/QcInfoLogger.h"
 #include "EMCAL/RawErrorTask.h"
 #include "EMCALBase/Geometry.h"
+#include "EMCALBase/Mapper.h"
 #include "EMCALReconstruction/AltroDecoder.h"
 #include "DataFormatsEMCAL/ErrorTypeFEE.h"
 #include <Framework/InputRecord.h>
@@ -55,6 +57,9 @@ RawErrorTask::~RawErrorTask()
   if (mErrorGainHigh)
     delete mErrorGainHigh;
 
+  if (mFecIdMinorAltroError)
+    delete mFecIdMinorAltroError;
+
   // histo per categoty with details
   // histo summary with error per category
 }
@@ -62,6 +67,11 @@ RawErrorTask::~RawErrorTask()
 void RawErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info, Support) << "initialize RawErrorTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+
+  auto get_bool = [](const std::string_view input) -> bool {
+    return input == "true";
+  };
+  mExcludeGainErrorsFromOverview = get_bool(getConfigValueLower("excludeGainErrorFromSummary"));
 
   mErrorTypeAll = new TH2F("RawDataErrors", "Raw data errors", 40, 0, 40, 6, -0.5, 5.5);
   mErrorTypeAll->GetXaxis()->SetTitle("Link");
@@ -106,12 +116,13 @@ void RawErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()
     ->startPublishing(mErrorTypePage);
 
-  mErrorTypeMinAltro = new TH2F("MinorAltroError", "Minor ALTRO decoding error", 40, 0, 40, 3, 0, 3);
+  mErrorTypeMinAltro = new TH2F("MinorAltroError", "Minor ALTRO decoding error", 40, 0, 40, 4, 0, 4);
   mErrorTypeMinAltro->GetXaxis()->SetTitle("Link");
   mErrorTypeMinAltro->GetYaxis()->SetTitle("MinorAltro Error Type");
-  mErrorTypeMinAltro->GetYaxis()->SetBinLabel(1, "Bunch header null");
-  mErrorTypeMinAltro->GetYaxis()->SetBinLabel(2, "Channel end unexpected");
-  mErrorTypeMinAltro->GetYaxis()->SetBinLabel(3, "Channel exceed");
+  mErrorTypeMinAltro->GetYaxis()->SetBinLabel(1, "Channel end unexpected");
+  mErrorTypeMinAltro->GetYaxis()->SetBinLabel(2, "Channel exceed");
+  mErrorTypeMinAltro->GetYaxis()->SetBinLabel(3, "Bunch header null");
+  mErrorTypeMinAltro->GetYaxis()->SetBinLabel(4, "Bunch length exceed");
   mErrorTypeMinAltro->SetStats(0);
   getObjectsManager()
     ->startPublishing(mErrorTypeMinAltro);
@@ -147,16 +158,37 @@ void RawErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
     ->startPublishing(mErrorTypeGain);
 
   mErrorGainLow = new TH2F("NoHGPerDDL", "High Gain bunch missing", 40, 0, 40, 40, 0, 40);
-  mErrorGainLow->GetYaxis()->SetTitle("FECid");
+  mErrorGainLow->GetYaxis()->SetTitle("fecID");
   mErrorGainLow->GetXaxis()->SetTitle("Link");
   mErrorGainLow->SetStats(0);
   getObjectsManager()->startPublishing(mErrorGainLow);
 
   mErrorGainHigh = new TH2F("NoLGPerDDL", "Low Gain bunch missing for saturated High Gain", 40, 0, 40, 40, 0, 40);
-  mErrorGainHigh->GetYaxis()->SetTitle("FECid");
+  mErrorGainHigh->GetYaxis()->SetTitle("fecID");
   mErrorGainHigh->GetXaxis()->SetTitle("Link");
   mErrorGainHigh->SetStats(0);
   getObjectsManager()->startPublishing(mErrorGainHigh);
+
+  mFecIdMinorAltroError = new TH2F("FecIDMinorAltroError", "FecID Minor Altro Error", 40, 0, 40, 40, 0, 40);
+  mFecIdMinorAltroError->GetYaxis()->SetTitle("fecID");
+  mFecIdMinorAltroError->GetXaxis()->SetTitle("Link");
+  mFecIdMinorAltroError->SetStats(0);
+  getObjectsManager()->startPublishing(mFecIdMinorAltroError);
+
+  mChannelGainLow = new TH2F("ChannelLGnoHG", "Channel with HG bunch missing", 96, -0.5, 95.5, 208, -0.5, 207.5);
+  mChannelGainLow->GetXaxis()->SetTitle("Column");
+  mChannelGainLow->GetYaxis()->SetTitle("Row");
+  mChannelGainLow->SetStats(0);
+  getObjectsManager()->startPublishing(mChannelGainLow);
+
+  mChannelGainHigh = new TH2F("ChannelHGnoLG", "Channel with LG bunch missing", 96, -0.5, 95.5, 208, -0.5, 207.5);
+  mChannelGainHigh->GetXaxis()->SetTitle("Column");
+  mChannelGainHigh->GetYaxis()->SetTitle("Row");
+  mChannelGainHigh->SetStats(0);
+  getObjectsManager()->startPublishing(mChannelGainHigh);
+
+  mGeometry = o2::emcal::Geometry::GetInstanceFromRunNumber(300000);
+  mMapper = std::make_unique<o2::emcal::MappingHandler>();
 }
 
 void RawErrorTask::startOfActivity(Activity& activity)
@@ -172,7 +204,6 @@ void RawErrorTask::startOfCycle()
 
 void RawErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-
   constexpr auto originEMC = o2::header::gDataOriginEMC;
 
   std::vector<framework::InputSpec> filter{ { "filter", framework::ConcreteDataTypeMatcher(originEMC, "DECODERERR") } };
@@ -182,7 +213,8 @@ void RawErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
     LOG(debug) << "Received " << errorcont.size() << " errors";
     for (auto& error : errorcont) {
       auto feeid = error.getFEEID();
-      mErrorTypeAll->Fill(feeid, error.getErrorType());
+      if (error.getErrorType() != o2::emcal::ErrorTypeFEE::ErrorSource_t::GAIN_ERROR || !mExcludeGainErrorsFromOverview)
+        mErrorTypeAll->Fill(feeid, error.getErrorType());
       auto errorCode = error.getErrorCode();
       TH2* errorhist = nullptr;
       switch (error.getErrorType()) {
@@ -212,14 +244,42 @@ void RawErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
       }; // switch errorCode
       errorhist->Fill(feeid, errorCode);
 
-      if (o2::emcal::ErrorTypeFEE::ErrorSource_t::GAIN_ERROR) {
-        auto FECid = error.getSubspecification();
-        if (errorCode == 0)
-          mErrorGainLow->Fill(feeid, FECid); // error 0
-        else
-          mErrorGainHigh->Fill(feeid, FECid); // error 1
+      if (error.getErrorType() == o2::emcal::ErrorTypeFEE::ErrorSource_t::GAIN_ERROR) {
+        // Fill Histogram with FEC ID
+        auto fecID = error.getSubspecification();
+        if (errorCode == 0) {
+          mErrorGainLow->Fill(feeid, fecID); // LGnoHG
+        } else {
+          mErrorGainHigh->Fill(feeid, fecID); // HGnoLG
+        }
+        // Fill histogram with tower position
+        if (error.getHarwareAddress() >= 0) {
+          auto supermoduleID = feeid / 2;
+          try {
+            auto& mapping = mMapper->getMappingForDDL(feeid);
+            auto colOnline = mapping.getColumn(error.getHarwareAddress());
+            auto rowOnline = mapping.getRow(error.getHarwareAddress());
+            auto [rowCorrected, colCorrected] = mGeometry->ShiftOnlineToOfflineCellIndexes(supermoduleID, rowOnline, colOnline);
+            auto cellID = mGeometry->GetAbsCellIdFromCellIndexes(supermoduleID, rowCorrected, colCorrected);
+            auto [globalRow, globalColumn] = mGeometry->GlobalRowColFromIndex(cellID);
+            if (errorCode == 0) {
+              mChannelGainLow->Fill(globalColumn, globalRow); // LGnoHG
+            } else {
+              mChannelGainHigh->Fill(globalColumn, globalRow); // HGnoLG
+            }
+          } catch (o2::emcal::MappingHandler::DDLInvalid& e) {
+            ILOG(Warning, Support) << e.what() << ENDM;
+          } catch (o2::emcal::Mapper::AddressNotFoundException& e) {
+            ILOG(Warning, Support) << e.what() << ENDM;
+          } catch (o2::emcal::InvalidCellIDException& e) {
+            ILOG(Warning, Support) << e.what() << ENDM;
+          }
+        }
       }
-
+      if (error.getErrorType() == o2::emcal::ErrorTypeFEE::ErrorSource_t::MINOR_ALTRO_ERROR) {
+        auto fecID = error.getSubspecification(); // check: hardware address, or tower id (after markus implementation)
+        mFecIdMinorAltroError->Fill(feeid, fecID);
+      }
     } // end for error in errorcont
   }   // end of loop on raw error data
 } // end of monitorData
@@ -247,6 +307,24 @@ void RawErrorTask::reset()
   mErrorTypeGain->Reset();
   mErrorGainLow->Reset();
   mErrorGainHigh->Reset();
+  mFecIdMinorAltroError->Reset();
+}
+std::string RawErrorTask::getConfigValue(const std::string_view key)
+{
+  std::string result;
+  if (auto param = mCustomParameters.find(key.data()); param != mCustomParameters.end()) {
+    result = param->second;
+  }
+  return result;
 }
 
+std::string RawErrorTask::getConfigValueLower(const std::string_view key)
+{
+  auto input = getConfigValue(key);
+  std::string result;
+  if (input.length()) {
+    result = boost::algorithm::to_lower_copy(input);
+  }
+  return result;
+}
 } // namespace o2::quality_control_modules::emcal

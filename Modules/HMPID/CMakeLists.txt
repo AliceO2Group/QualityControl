@@ -39,7 +39,7 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/HMPID
 
 # ---- Test(s) ----
 
-set(TEST_SRCS test/testQcHMPID.cxx)
+#set(TEST_SRCS test/testQcHMPID.cxx) # uncomment to reenable the test which was empty
 
 foreach(test ${TEST_SRCS})
   get_filename_component(test_name ${test} NAME)

@@ -18,15 +18,15 @@
 
 // O2
 #include <Common/Exceptions.h>
-#include <Configuration/ConfigurationFactory.h>
-#include <Framework/DataSpecUtils.h>
 #include <Monitoring/MonitoringFactory.h>
 #include <Monitoring/Monitoring.h>
 #include <Framework/InputRecordWalker.h>
 #include <CommonUtils/ConfigurableParam.h>
+#include <Framework/DataProcessorSpec.h>
+#include <Framework/InitContext.h>
+#include <Framework/ConfigParamRegistry.h>
 
 #include <utility>
-
 #include <TSystem.h>
 
 // QC
@@ -299,6 +299,8 @@ void AggregatorRunner::initAggregators()
 
 void AggregatorRunner::initInfoLogger(InitContext& iCtx)
 {
+  // TODO : the method should be merged with the other, similar, methods in *Runners
+
   InfoLoggerContext* ilContext = nullptr;
   AliceO2::InfoLogger::InfoLogger* il = nullptr;
   try {
@@ -307,7 +309,14 @@ void AggregatorRunner::initInfoLogger(InitContext& iCtx)
   } catch (const RuntimeErrorRef& err) {
     ILOG(Error) << "Could not find the DPL InfoLogger." << ENDM;
   }
-  QcInfoLogger::init("aggregator", mRunnerConfig.infologgerFilterDiscardDebug, mRunnerConfig.infologgerDiscardLevel, mRunnerConfig.infologgerDiscardFile, il, ilContext);
+
+  mRunnerConfig.infologgerDiscardFile = templateILDiscardFile(mRunnerConfig.infologgerDiscardFile, iCtx);
+  QcInfoLogger::init("aggregator",
+                     mRunnerConfig.infologgerFilterDiscardDebug,
+                     mRunnerConfig.infologgerDiscardLevel,
+                     mRunnerConfig.infologgerDiscardFile,
+                     il,
+                     ilContext);
 }
 
 void AggregatorRunner::initLibraries()
@@ -398,27 +407,23 @@ void AggregatorRunner::sendPeriodicMonitoring()
 
 void AggregatorRunner::start(const ServiceRegistry& services)
 {
-  mActivity.mId = computeRunNumber(services, mRunnerConfig.fallbackRunNumber);
-  mActivity.mType = computeRunType(services, mRunnerConfig.fallbackRunType);
-  mActivity.mPeriodName = computePeriodName(services, mRunnerConfig.fallbackPeriodName);
-  mActivity.mPassName = computePassName(mRunnerConfig.fallbackPassName);
-  mActivity.mProvenance = computeProvenance(mRunnerConfig.fallbackProvenance);
+  mActivity = computeActivity(services, mRunnerConfig.fallbackActivity);
   mTimerTotalDurationActivity.reset();
   string partitionName = computePartitionName(services);
   QcInfoLogger::setRun(mActivity.mId);
   QcInfoLogger::setPartition(partitionName);
-  ILOG(Info, Ops) << "Starting run " << mActivity.mId << ":"
-                  << "\n   - period: " << mActivity.mPeriodName << "\n   - pass type: " << mActivity.mPassName << "\n   - provenance: " << mActivity.mProvenance << ENDM;
+  ILOG(Info, Support) << "Starting run " << mActivity.mId << ":"
+                      << "\n   - period: " << mActivity.mPeriodName << "\n   - pass type: " << mActivity.mPassName << "\n   - provenance: " << mActivity.mProvenance << ENDM;
 }
 
 void AggregatorRunner::stop()
 {
-  ILOG(Info, Ops) << "Stopping run " << mActivity.mId << ENDM;
+  ILOG(Info, Support) << "Stopping run " << mActivity.mId << ENDM;
 }
 
 void AggregatorRunner::reset()
 {
-  ILOG(Info, Ops) << "Reset" << ENDM;
+  ILOG(Info, Support) << "Reset" << ENDM;
 
   try {
     mCollector.reset();

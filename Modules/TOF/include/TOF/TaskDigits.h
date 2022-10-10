@@ -22,6 +22,8 @@
 #include "Base/Counter.h"
 #include "TOF/TaskRaw.h"
 #include "CommonConstants/LHCConstants.h"
+#include "DataFormatsTOF/CalibTimeSlewingParamTOF.h"
+#include "DataFormatsTOF/CalibLHCphaseTOF.h"
 
 class TH1F;
 class TH2F;
@@ -73,10 +75,10 @@ class TaskDigits final : public TaskInterface
   static constexpr int mRangeMaxOrbitPerTimeFrame = 256;                        /// Number of bins for the OrbitPerTimeFrame axis.
   static constexpr int mBinsOrbitPerTimeFrame = mRangeMaxOrbitPerTimeFrame * 3; /// Max range in the OrbitPerTimeFrame axis. 3 orbits are recorded per time frame
   // Multiplicity
-  int mBinsMultiplicity = 2000;                      /// Number of bins in multiplicity plot
-  static constexpr int mRangeMinMultiplicity = 0;    /// Min range in multiplicity plot
-  int mRangeMaxMultiplicity = mBinsMultiplicity;     /// Max range in multiplicity plot
-  static constexpr int mBinsBCForMultiplicity = 198; /// Number of bins for the BC axis in the multiplicity vs BC plot
+  int mBinsMultiplicity = 2000;                              /// Number of bins in multiplicity plot
+  static constexpr int mRangeMinMultiplicity = 0;            /// Min range in multiplicity plot
+  int mRangeMaxMultiplicity = mBinsMultiplicity;             /// Max range in multiplicity plot
+  static constexpr int mBinsBCForMultiplicity = mRangeMaxBC; /// Number of bins for the BC axis in the multiplicity vs BC plot
   // Time
   int mBinsTime = 300;                                  /// Number of bins in time plot
   float fgkNbinsWidthTime = 2.44;                       /// Width of bins in time plot
@@ -99,6 +101,10 @@ class TaskDigits final : public TaskInterface
   ////////////////
 
   int mNoiseClassSelection = -1; /// Index to discard classes of noisy channels -1 no discarding, 0 first class are discarded, 1 second class, 2 third class
+
+  o2::dataformats::CalibTimeSlewingParamTOF* mCalChannel = nullptr;
+  o2::dataformats::CalibLHCphaseTOF* mLHCphase = nullptr;
+  bool mApplyCalib = false;
 
   ////////////////
   // Histograms //

@@ -1,0 +1,68 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "2"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": ""
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      }
+    },
+    "tasks": {
+      "QcZDCTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::zdc::ZDCRecDataTask",
+        "moduleName": "QcZDC",
+        "detectorName": "ZDC",
+        "cycleDurationSeconds": "10",
+        "maxNumberCycles": "-1",
+        "": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "zdc-rec"
+        },
+        "taskParameters": {
+          "ADC": "3025;-100;12000",
+          "ADCH": "3025;-100;12000",
+          "TDCT": "2400;-25;25",
+          "TDCA": "2000;-0.5;3999.5",
+          "ADCSUMvsTC": "1210;-100;12000;1210;-100;12000",
+          "ADCvsTDCT": "240;-25;25;1210;-100;12000",
+          "TDCDIFF": "240;-25;25;240;-25;25",
+          "TDCAvsTDCT": "240;-25;25;1000;-0.5;3999.5",
+          "CENTR_ZNA": "200;-2;2;200;-2;2",
+          "CENTR_ZNC": "200;-2;2;200;-2;2",
+          "CENTR_ZPA": "2240;0;22.4",
+          "CENTR_ZPC": "2240;-22.4;0"      
+        },
+        "location": "remote",
+        "saveObjectsToFile": "QcZDCRecData.root",      "": "For debugging, path to the file where to save. If empty it won't save."
+      }
+    }
+  },
+  "dataSamplingPolicies": [
+    {
+      "id": "zdc-rec",
+      "active": "true",
+      "machines": [],
+      "query": "zdc-bcrec:ZDC/BCREC/0;zdc-energyrec:ZDC/ENERGY/0;zdc-tdcrec:ZDC/TDCDATA/0;zdc-inforec:ZDC/INFO/0",
+      "samplingConditions": [      ],
+      "blocking": "false"
+    }
+  ]
+}
+

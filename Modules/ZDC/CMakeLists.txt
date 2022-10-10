@@ -2,7 +2,7 @@
 
 add_library(O2QcZDC)
 
-target_sources(O2QcZDC PRIVATE src/ZDCRawDataCheck.cxx  src/ZDCRawDataTask.cxx )
+target_sources(O2QcZDC PRIVATE src/ZDCRecDataTask.cxx  src/ZDCRawDataCheck.cxx  src/ZDCRawDataTask.cxx )
 
 target_include_directories(
   O2QcZDC
@@ -10,7 +10,7 @@ target_include_directories(
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-target_link_libraries(O2QcZDC PUBLIC O2QualityControl)
+target_link_libraries(O2QcZDC PUBLIC O2QualityControl O2::DataFormatsZDC)
 
 install(TARGETS O2QcZDC
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -19,6 +19,7 @@ install(TARGETS O2QcZDC
 
 add_root_dictionary(O2QcZDC
                     HEADERS
+  include/ZDC/ZDCRecDataTask.h
   include/ZDC/ZDCRawDataCheck.h
   include/ZDC/ZDCRawDataTask.h
                     LINKDEF include/ZDC/LinkDef.h
@@ -29,7 +30,7 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ZDC
 
 # ---- Test(s) ----
 
-set(TEST_SRCS test/testQcZDC.cxx)
+#set(TEST_SRCS test/testQcZDC.cxx) # uncomment to reenable the test which was empty
 
 foreach(test ${TEST_SRCS})
   get_filename_component(test_name ${test} NAME)

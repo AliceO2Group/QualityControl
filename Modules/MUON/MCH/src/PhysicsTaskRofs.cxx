@@ -177,7 +177,7 @@ void PhysicsTaskRofs::reset()
   ILOG(Info, Support) << "Resetting the histograms" << ENDM;
 
   for (auto h : mAllHistograms) {
-    h->Reset();
+    h->Reset("ICES");
   }
 }
 

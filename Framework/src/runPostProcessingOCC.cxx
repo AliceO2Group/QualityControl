@@ -16,6 +16,7 @@
 /// \brief This is an OCC executable to run postprocessing
 
 #include "QualityControl/PostProcessingRunner.h"
+#include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/QcInfoLogger.h"
 
 #include <OccInstance.h>

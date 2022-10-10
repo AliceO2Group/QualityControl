@@ -74,4 +74,4 @@ class LaserTracks final : public quality_control::postprocessing::PostProcessing
 
 } // namespace o2::quality_control_modules::tpc
 
-#endif //QUALITYCONTROL_LASERTRACKS_H
+#endif // QUALITYCONTROL_LASERTRACKS_H

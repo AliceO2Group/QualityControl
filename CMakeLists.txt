@@ -13,9 +13,9 @@ include(AddQCWorkflow)
 # ---- Project ----
 
 project(QualityControl
-        VERSION 1.66.0 
+        VERSION 1.77.0
         DESCRIPTION "O2 Data Quality Control Framework"
-        LANGUAGES CXX)
+        LANGUAGES C CXX)
 
 if(ONLYDOC)
   add_subdirectory(doc)

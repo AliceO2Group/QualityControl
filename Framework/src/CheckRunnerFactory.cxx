@@ -25,6 +25,7 @@
 
 #include "QualityControl/CheckRunner.h"
 #include "QualityControl/CheckRunnerFactory.h"
+#include "QualityControl/CommonSpec.h"
 
 namespace o2::quality_control::checker
 {
@@ -81,6 +82,14 @@ CheckRunnerConfig CheckRunnerFactory::extractConfig(const CommonSpec& commonSpec
     { "qcConfiguration", VariantType::Dict, emptyDict(), { "Some dictionary configuration" } }
   };
 
+  core::Activity fallbackActivity{
+    commonSpec.activityNumber,
+    commonSpec.activityType,
+    commonSpec.activityPeriodName,
+    commonSpec.activityPassName,
+    commonSpec.activityProvenance,
+    { commonSpec.activityStart, commonSpec.activityEnd }
+  };
   return {
     commonSpec.database,
     commonSpec.consulUrl,
@@ -88,11 +97,7 @@ CheckRunnerConfig CheckRunnerFactory::extractConfig(const CommonSpec& commonSpec
     commonSpec.infologgerFilterDiscardDebug,
     commonSpec.infologgerDiscardLevel,
     commonSpec.infologgerDiscardFile,
-    commonSpec.activityNumber,
-    commonSpec.activityType,
-    commonSpec.activityPeriodName,
-    commonSpec.activityPassName,
-    commonSpec.activityProvenance,
+    fallbackActivity,
     options
   };
 }

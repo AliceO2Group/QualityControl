@@ -16,6 +16,11 @@
 
 #include "QualityControl/RootClassFactory.h"
 
+#include <TSystem.h>
+#include <boost/filesystem/path.hpp>
+
+namespace bfs = boost::filesystem;
+
 namespace o2::quality_control::core::root_class_factory
 {
 

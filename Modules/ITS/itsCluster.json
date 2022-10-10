@@ -4,7 +4,7 @@
     "config": {
       "database": {
         "implementation": "CCDB",
-        "host": "188.184.2.55:8080",
+        "host": "ccdb-test.cern.ch:8080",
         "username": "not_applicable",
         "password": "not_applicable",
         "name": "not_applicable"
@@ -20,7 +20,7 @@
         "url": ""
       },
       "conditionDB": {
-        "url": "188.184.2.55:8080"
+        "url": "ccdb-test.cern.ch:8080"
       }
     },
    "tasks": {
@@ -42,7 +42,8 @@
               "nThreads": "1",
               "nBCbins" : "103",
 	      "dicttimestamp" : "0",
-	      "geomPath": "./"
+	      "geomPath": "./",
+              "publishSummary1D": "1"      
         }
  
       }
@@ -54,6 +55,17 @@
         "moduleName": "QcITS",
         "policy": "OnEachSeparately",
         "detectorName": "ITS",
+        "checkParameters": {
+          "maxcluoccL0" : "5",
+          "maxcluoccL1" : "4",
+          "maxcluoccL2" : "3",
+          "maxcluoccL3" : "2",
+          "maxcluoccL4" : "1",
+          "maxcluoccL5" : "1",
+          "maxcluoccL6" : "1",
+          "skipxbinsoccupancy" : "",
+          "skipybinsoccupancy" : ""
+        },
         "dataSource": [{
           "type": "Task",
           "name": "ITSClusterTask",

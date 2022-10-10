@@ -9,7 +9,7 @@ from Ccdb import Ccdb, ObjectVersion
 logger = logging  # default logger
 
 
-def process(ccdb: Ccdb, object_path: str, delay: int, #migration: bool,
+def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_timestamp: int,
             extra_params: Dict[str, str]):
     '''
     Process this deletion rule on the object. We use the CCDB passed by argument.
@@ -21,7 +21,8 @@ def process(ccdb: Ccdb, object_path: str, delay: int, #migration: bool,
     :param ccdb: the ccdb in which objects are cleaned up.
     :param object_path: path to the object, or pattern, to which a rule will apply.
     :param delay: the grace period during which a new object is never deleted.
-    :param migration: whether the objects that have not been deleted should be migrated to the Grid. It does not apply to the objects spared because they are recent (see delay).
+    :param from_timestamp: only objects created after this timestamp are considered.
+    :param to_timestamp: only objects created before this timestamp are considered.
     :param extra_params: a dictionary containing extra parameters for this rule.
     :return a dictionary with the number of deleted, preserved and updated versions. Total = deleted+preserved.
     '''
@@ -40,25 +41,28 @@ def process(ccdb: Ccdb, object_path: str, delay: int, #migration: bool,
             if last_preserved != None:
                 if last_preserved.validTo != int(v.validFrom) - 1:  # only update it if it is needed
                     ccdb.updateValidity(last_preserved, last_preserved.validFrom, str(int(v.validFrom) - 1))
-                update_list.append(last_preserved)
+                    update_list.append(last_preserved)
             last_preserved = v
+            preservation_list.append(last_preserved)
         else:
-            if v.validFromAsDt < datetime.now() - timedelta(minutes=delay):
-                deletion_list.append(v)
-                logger.debug(f"not in the grace period, we delete {v}")
-                ccdb.deleteVersion(v)
-            else:
-                preservation_list.append(v)
+            if v.validFromAsDt < datetime.now() - timedelta(minutes=delay):  # grace period
+                logger.debug(f"not in the grace period")
+                if from_timestamp < v.validFrom < to_timestamp:  # in the allowed period
+                    logger.debug(f"in the allowed period (from,to), we delete {v}")
+                    deletion_list.append(v)
+                    ccdb.deleteVersion(v)
+                    continue
+            preservation_list.append(v)
 
-    logger.debug("deleted : ")
+    logger.debug(f"deleted ({len(deletion_list)}) : ")
     for v in deletion_list:
         logger.debug(f"   {v}")
 
-    logger.debug("preserved : ")
+    logger.debug(f"preserved ({len(preservation_list)}) : ")
     for v in preservation_list:
         logger.debug(f"   {v}")
 
-    logger.debug("updated : ")
+    logger.debug(f"updated ({len(update_list)}) : ")
     for v in update_list:
         logger.debug(f"   {v}")
 

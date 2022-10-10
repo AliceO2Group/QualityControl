@@ -135,8 +135,15 @@ void DataCompressionQcTask::reset()
 
 void DataCompressionQcTask::processMessage(const o2::ctf::CTFIOSize& ctfEncRep, const std::string detector)
 {
-  const auto entropyCompression = float(ctfEncRep.ctfIn - ctfEncRep.ctfOut) / float(ctfEncRep.ctfIn);
-  const auto compression = float(ctfEncRep.rawIn - ctfEncRep.ctfOut) / float(ctfEncRep.rawIn);
+  float entropyCompression = 0;
+  float compression = 0;
+
+  if (ctfEncRep.ctfIn != 0) {
+    entropyCompression = float(ctfEncRep.ctfIn - ctfEncRep.ctfOut) / float(ctfEncRep.ctfIn);
+  }
+  if (ctfEncRep.rawIn != 0) {
+    compression = float(ctfEncRep.rawIn - ctfEncRep.ctfOut) / float(ctfEncRep.rawIn);
+  }
 
   mCompressionHists[detector][0]->Fill(entropyCompression);
   mCompressionHists[detector][1]->Fill(compression);

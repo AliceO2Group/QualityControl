@@ -14,6 +14,7 @@
 #include <TH1.h>
 #include <CommonDataFormat/BunchFilling.h>
 #include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/MonitorObject.h"
 #include "MUONCommon/Helpers.h"
 
 namespace o2::quality_control_modules::muon

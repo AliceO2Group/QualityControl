@@ -22,7 +22,6 @@
 
 #include <DataSampling/DataSampling.h>
 #include <Framework/DataDescriptorQueryBuilder.h>
-#include <boost/property_tree/ptree.hpp>
 
 using namespace o2::utilities;
 using namespace o2::framework;
@@ -128,6 +127,12 @@ TaskSpec InfrastructureSpecReader::readSpecEntry<TaskSpec>(std::string taskID, c
   ts.localControl = taskTree.get<std::string>("localControl", ts.localControl);
   ts.mergingMode = taskTree.get<std::string>("mergingMode", ts.mergingMode);
   ts.mergerCycleMultiplier = taskTree.get<int>("mergerCycleMultiplier", ts.mergerCycleMultiplier);
+  if (taskTree.count("mergersPerLayer") > 0) {
+    ts.mergersPerLayer.clear();
+    for (const auto& [key, value] : taskTree.get_child("mergersPerLayer")) {
+      ts.mergersPerLayer.emplace_back(value.get_value<uint64_t>());
+    }
+  }
 
   return ts;
 }

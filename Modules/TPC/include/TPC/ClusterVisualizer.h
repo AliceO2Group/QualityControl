@@ -17,7 +17,7 @@
 #ifndef QUALITYCONTROL_CLUSTERVISUALIZER_H
 #define QUALITYCONTROL_CLUSTERVISUALIZER_H
 
-//O2 includes
+// O2 includes
 #include "CCDB/CcdbApi.h"
 
 // QC includes
@@ -81,4 +81,4 @@ class ClusterVisualizer final : public quality_control::postprocessing::PostProc
 
 } // namespace o2::quality_control_modules::tpc
 
-#endif //QUALITYCONTROL_CLUSTERVISUALIZER_H
+#endif // QUALITYCONTROL_CLUSTERVISUALIZER_H

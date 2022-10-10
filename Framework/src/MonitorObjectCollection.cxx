@@ -81,4 +81,14 @@ void MonitorObjectCollection::postDeserialization()
   delete it;
 }
 
+void MonitorObjectCollection::setDetector(const std::string& detector)
+{
+  mDetector = detector;
+}
+
+const std::string& MonitorObjectCollection::getDetector() const
+{
+  return mDetector;
+}
+
 } // namespace o2::quality_control::core

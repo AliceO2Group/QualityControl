@@ -19,8 +19,6 @@
 #include "QualityControl/TaskRunner.h"
 #include "QualityControl/TaskRunnerFactory.h"
 #include "QualityControl/AggregatorRunnerFactory.h"
-#include "QualityControl/Aggregator.h"
-#include "QualityControl/CheckRunner.h"
 #include "QualityControl/Check.h"
 #include "QualityControl/CheckRunnerFactory.h"
 #include "QualityControl/PostProcessingDevice.h"
@@ -32,7 +30,6 @@
 #include "QualityControl/RootFileSink.h"
 #include "QualityControl/RootFileSource.h"
 
-#include <Configuration/ConfigurationFactory.h>
 #include <Framework/DataSpecUtils.h>
 #include <Framework/ExternalFairMQDeviceProxy.h>
 #include <Framework/DataDescriptorQueryBuilder.h>
@@ -70,6 +67,16 @@ struct DataSamplingPolicySpec {
   std::string control;
   std::string remoteMachine;
 };
+
+void enableDraining(framework::Options& options)
+{
+  if (auto readyStatePolicy = std::find_if(options.begin(), options.end(), [](const auto& option) { return option.name == "ready-state-policy"; });
+      readyStatePolicy != options.end()) {
+    readyStatePolicy->defaultValue = "drain";
+  } else {
+    ILOG(Error) << "Could not find 'ready-state-policy' option to enable draining in READY" << ENDM;
+  }
+}
 
 framework::WorkflowSpec InfrastructureGenerator::generateStandaloneInfrastructure(const boost::property_tree::ptree& configurationTree)
 {
@@ -132,7 +139,7 @@ WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(const boost::p
         if (machine == targetHost) {
           // If we use delta mergers, then the moving window is implemented by the last Merger layer.
           // The QC Tasks should always send a delta covering one cycle.
-          auto taskConfig = TaskRunnerFactory::extractConfig(infrastructureSpec.common, taskSpec, id, TaskRunnerFactory::computeResetAfterCycles(taskSpec));
+          auto taskConfig = TaskRunnerFactory::extractConfig(infrastructureSpec.common, taskSpec, id, TaskRunnerFactory::computeResetAfterCycles(taskSpec, true));
           // Generate QC Task Runner
           workflow.emplace_back(TaskRunnerFactory::create(taskConfig));
           // Generate an output proxy
@@ -208,7 +215,8 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
       size_t resetAfterCycles = taskSpec.mergingMode == "delta" ? taskSpec.resetAfterCycles : 0;
       auto cycleDurationSeconds = taskSpec.cycleDurationSeconds * taskSpec.mergerCycleMultiplier;
 
-      generateMergers(workflow, taskSpec.taskName, numberOfLocalMachines, cycleDurationSeconds, taskSpec.mergingMode, resetAfterCycles, infrastructureSpec.common.monitoringUrl, taskSpec.detectorName);
+      generateMergers(workflow, taskSpec.taskName, numberOfLocalMachines, cycleDurationSeconds, taskSpec.mergingMode,
+                      resetAfterCycles, infrastructureSpec.common.monitoringUrl, taskSpec.detectorName, taskSpec.mergersPerLayer);
 
     } else if (taskSpec.location == TaskLocationSpec::Remote) {
 
@@ -385,14 +393,17 @@ void InfrastructureGenerator::generateDataSamplingPolicyRemoteProxyConnect(frame
   const std::string& proxyName = channelName; // channel name has to match proxy name
 
   std::string channelConfig = "name=" + channelName + ",type=sub,method=connect,address=tcp://" +
-                              localMachine + ":" + localPort + ",rateLogging=60,transport=zeromq,rcvBufSize=32";
+                              localMachine + ":" + localPort + ",rateLogging=60,transport=zeromq,rcvBufSize=1";
 
-  workflow.emplace_back(specifyExternalFairMQDeviceProxy(
+  auto proxy = specifyExternalFairMQDeviceProxy(
     proxyName.c_str(),
     outputSpecs,
     channelConfig.c_str(),
-    dplModelAdaptor()));
-  workflow.back().labels.emplace_back(control == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
+    dplModelAdaptor());
+  proxy.labels.emplace_back(control == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
+  // if not in RUNNING, we should drop all the incoming messages, we set the corresponding proxy option.
+  enableDraining(proxy.options);
+  workflow.emplace_back(std::move(proxy));
 }
 
 void InfrastructureGenerator::generateDataSamplingPolicyLocalProxyConnect(framework::WorkflowSpec& workflow,
@@ -428,14 +439,17 @@ void InfrastructureGenerator::generateDataSamplingPolicyRemoteProxyBind(framewor
   std::string channelName = policyName;
   const std::string& proxyName = channelName; // channel name has to match proxy name
 
-  std::string channelConfig = "name=" + channelName + ",type=sub,method=bind,address=tcp://*:" + remotePort + ",rateLogging=60,transport=zeromq,rcvBufSize=32";
+  std::string channelConfig = "name=" + channelName + ",type=sub,method=bind,address=tcp://*:" + remotePort + ",rateLogging=60,transport=zeromq,rcvBufSize=1";
 
-  workflow.emplace_back(specifyExternalFairMQDeviceProxy(
+  auto proxy = specifyExternalFairMQDeviceProxy(
     proxyName.c_str(),
     outputSpecs,
     channelConfig.c_str(),
-    dplModelAdaptor()));
-  workflow.back().labels.emplace_back(control == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
+    dplModelAdaptor());
+  proxy.labels.emplace_back(control == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
+  // if not in RUNNING, we should drop all the incoming messages, we set the corresponding proxy option.
+  enableDraining(proxy.options);
+  workflow.emplace_back(std::move(proxy));
 }
 
 void InfrastructureGenerator::generateLocalTaskLocalProxy(framework::WorkflowSpec& workflow, size_t id,
@@ -471,20 +485,22 @@ void InfrastructureGenerator::generateLocalTaskRemoteProxy(framework::WorkflowSp
   }
 
   std::string channelConfig = "name=" + channelName + ",type=sub,method=bind,address=tcp://*:" + remotePort +
-                              ",rateLogging=60,transport=zeromq,rcvBufSize=32";
+                              ",rateLogging=60,transport=zeromq,rcvBufSize=1";
 
-  workflow.emplace_back(specifyExternalFairMQDeviceProxy(
+  auto proxy = specifyExternalFairMQDeviceProxy(
     proxyName.c_str(),
     proxyOutputs,
     channelConfig.c_str(),
-    dplModelAdaptor()));
-  workflow.back().labels.emplace_back(taskSpec.localControl == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
+    dplModelAdaptor());
+  proxy.labels.emplace_back(taskSpec.localControl == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
+  // if not in RUNNING, we should drop all the incoming messages, we set the corresponding proxy option.
+  enableDraining(proxy.options);
+  workflow.emplace_back(std::move(proxy));
 }
-
 void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow, std::string taskName,
                                               size_t numberOfLocalMachines, double cycleDurationSeconds,
                                               std::string mergingMode, size_t resetAfterCycles, std::string monitoringUrl,
-                                              std::string detectorName)
+                                              std::string detectorName, std::vector<size_t> mergersPerLayer)
 {
   Inputs mergerInputs;
   for (size_t id = 1; id <= numberOfLocalMachines; id++) {
@@ -507,9 +523,10 @@ void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow,
   mergerConfig.publicationDecision = { PublicationDecision::EachNSeconds, cycleDurationSeconds };
   mergerConfig.mergedObjectTimespan = { MergedObjectTimespan::NCycles, (int)resetAfterCycles };
   // for now one merger should be enough, multiple layers to be supported later
-  mergerConfig.topologySize = { TopologySize::NumberOfLayers, 1 };
+  mergerConfig.topologySize = { TopologySize::MergersPerLayer, mergersPerLayer };
   mergerConfig.monitoringUrl = monitoringUrl;
   mergerConfig.detectorName = detectorName;
+  mergerConfig.parallelismType = { (mergerConfig.inputObjectTimespan.value == InputObjectsTimespan::LastDifference) ? ParallelismType::RoundRobin : ParallelismType::SplitInputs };
   mergersBuilder.setConfig(mergerConfig);
 
   mergersBuilder.generateInfrastructure(workflow);

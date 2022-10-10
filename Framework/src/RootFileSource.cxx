@@ -19,6 +19,7 @@
 #include "QualityControl/MonitorObjectCollection.h"
 
 #include <Framework/ControlService.h>
+#include <Framework/DeviceSpec.h>
 #include <TFile.h>
 #include <TKey.h>
 
@@ -37,6 +38,12 @@ void RootFileSource::init(framework::InitContext&)
 
 void RootFileSource::run(framework::ProcessingContext& ctx)
 {
+  auto deviceSpec = ctx.services().get<DeviceSpec const>();
+  std::vector<framework::OutputLabel> allowedOutputs;
+  for (const auto& outputRoute : deviceSpec.outputs) {
+    allowedOutputs.push_back(outputRoute.matcher.binding);
+  }
+
   auto* file = new TFile(mFilePath.c_str(), "READ");
   if (file->IsZombie()) {
     throw std::runtime_error("File '" + mFilePath + "' is zombie.");
@@ -46,25 +53,46 @@ void RootFileSource::run(framework::ProcessingContext& ctx)
   }
   ILOG(Info) << "Input file '" << mFilePath << "' successfully open." << ENDM;
 
-  TIter next(file->GetListOfKeys());
-  TKey* key;
-  while ((key = (TKey*)next())) {
-    auto storedTObj = file->Get(key->GetName());
-    if (storedTObj != nullptr) {
-      auto storedMOC = dynamic_cast<MonitorObjectCollection*>(storedTObj);
-      if (storedMOC == nullptr) {
-        ILOG(Error) << "Could not cast the stored object to MonitorObjectCollection, skipping." << ENDM;
-        delete storedTObj;
-        continue;
-      }
-
-      // snapshot does a shallow copy, so we cannot let it delete elements in MOC when it deletes the MOC
-      storedMOC->SetOwner(false);
-      ctx.outputs().snapshot(OutputRef{ storedMOC->GetName(), 0 }, *storedMOC);
-      storedMOC->postDeserialization();
-      ILOG(Info) << "Read and published object '" << storedMOC->GetName() << "'" << ENDM;
+  TIter nextDetector(file->GetListOfKeys());
+  TKey* detectorKey;
+  while ((detectorKey = (TKey*)nextDetector())) {
+    ILOG(Debug, Devel) << "Going to directory '" << detectorKey->GetName() << "'" << ENDM;
+    auto detDir = file->GetDirectory(detectorKey->GetName());
+    if (detDir == nullptr) {
+      ILOG(Error) << "Could not get directory '" << detectorKey->GetName() << "', skipping." << ENDM;
+      continue;
     }
-    delete storedTObj;
+
+    TIter nextMOC(detDir->GetListOfKeys());
+    TKey* mocKey;
+    while ((mocKey = (TKey*)nextMOC())) {
+      auto storedTObj = detDir->Get(mocKey->GetName());
+      if (storedTObj != nullptr) {
+        auto storedMOC = dynamic_cast<MonitorObjectCollection*>(storedTObj);
+        if (storedMOC == nullptr) {
+          ILOG(Error) << "Could not cast the stored object to MonitorObjectCollection, skipping." << ENDM;
+          delete storedTObj;
+          continue;
+        }
+
+        if (std::find_if(allowedOutputs.begin(), allowedOutputs.end(),
+                         [name = storedMOC->GetName()](const auto& other) { return other.value == name; }) == allowedOutputs.end()) {
+          ILOG(Error) << "The input object name '" << storedMOC->GetName() << "' is not among declared output bindings: ";
+          for (const auto& output : allowedOutputs) {
+            ILOG(Error) << output.value << " ";
+          }
+          ILOG(Error) << ", skipping." << ENDM;
+          continue;
+        }
+
+        // snapshot does a shallow copy, so we cannot let it delete elements in MOC when it deletes the MOC
+        storedMOC->SetOwner(false);
+        ctx.outputs().snapshot(OutputRef{ storedMOC->GetName(), 0 }, *storedMOC);
+        storedMOC->postDeserialization();
+        ILOG(Info) << "Read and published object '" << storedMOC->GetName() << "'" << ENDM;
+      }
+      delete storedTObj;
+    }
   }
   file->Close();
   delete file;

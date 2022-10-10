@@ -19,7 +19,6 @@
 
 #include <DataFormatsQualityControl/TimeRangeFlag.h>
 #include <memory>
-#include <utility>
 #include <vector>
 
 namespace o2::quality_control

@@ -23,6 +23,7 @@
 #include <DataFormatsMFT/TrackMFT.h>
 #include <MFTTracking/TrackCA.h>
 #include <Framework/InputRecord.h>
+#include <Framework/TimingInfo.h>
 #include <DataFormatsITSMFT/ROFRecord.h>
 #include <DataFormatsITSMFT/Cluster.h>
 #include <DataFormatsITSMFT/CompCluster.h>
@@ -77,11 +78,6 @@ void QcMFTAsyncTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 
   auto NofTimeBins = static_cast<int>(MaxDuration / TimeBinSize);
-
-  if (auto param = mCustomParameters.find("RefOrbit"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - RefOrbit: " << param->second << ENDM;
-    mRefOrbit = static_cast<uint32_t>(stoi(param->second));
-  }
 
   // Creating histos
 
@@ -197,6 +193,9 @@ void QcMFTAsyncTask::monitorData(o2::framework::ProcessingContext& ctx)
   // get clusters
   const auto clusters = ctx.inputs().get<gsl::span<o2::itsmft::CompClusterExt>>("clusters");
   const auto clustersrofs = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("clustersrofs");
+
+  // get correct timing info of the first TF orbit
+  mRefOrbit = ctx.services().get<o2::framework::TimingInfo>().firstTForbit;
 
   // Fill the clusters histograms
   for (const auto& rof : clustersrofs) {

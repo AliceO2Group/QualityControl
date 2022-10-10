@@ -5,19 +5,16 @@ add_library(O2QcFT0)
 target_sources(O2QcFT0 PRIVATE src/TH1ReductorLaser.cxx
                                src/DigitQcTaskLaser.cxx
                                src/DigitQcTask.cxx
+                               src/GenericCheck.cxx
                                src/CFDEffCheck.cxx
-                               src/BasicPPTask.cxx
-                               src/OutOfBunchCollTask.cxx
+                               src/PostProcTask.cxx
                                src/OutOfBunchCollCheck.cxx
-                               src/TriggerQcTask.cxx
-                               src/CalibrationTask.cxx
                                src/BasicDigitQcTask.cxx
                                src/ChannelsCheck.cxx
                                src/DigitsCheck.cxx
                                src/MergedTreeCheck.cxx
                                src/TreeReaderPostProcessing.cxx
-                               src/RecPointsQcTask.cxx
-                               src/ChannelTimeCalibrationCheck.cxx)
+                               src/RecPointsQcTask.cxx)
 
 target_include_directories(
   O2QcFT0
@@ -28,8 +25,7 @@ target_include_directories(
 target_link_libraries(O2QcFT0 PUBLIC O2QualityControl
                                      O2::DataFormatsFT0
                                      O2::FT0Base
-                                     O2::DataFormatsParameters
-                                     O2::FITCalibration)
+                                     O2::DataFormatsParameters)
 
 install(TARGETS O2QcFT0
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -40,13 +36,10 @@ add_root_dictionary(O2QcFT0
   HEADERS include/FT0/TH1ReductorLaser.h
           include/FT0/DigitQcTaskLaser.h
           include/FT0/DigitQcTask.h
-          include/FT0/CalibrationTask.h
-          include/FT0/ChannelTimeCalibrationCheck.h
-          include/FT0/BasicPPTask.h
-          include/FT0/OutOfBunchCollTask.h
+          include/FT0/PostProcTask.h
           include/FT0/CFDEffCheck.h
-          include/FT0/TriggerQcTask.h
           include/FT0/OutOfBunchCollCheck.h
+          include/FT0/GenericCheck.h
           include/FT0/BasicDigitQcTask.h
           include/FT0/ChannelsCheck.h
           include/FT0/DigitsCheck.h
@@ -85,7 +78,7 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/FT0
 
 # ---- Test(s) ----
 
-set(TEST_SRCS test/testQcFT0.cxx)
+#set(TEST_SRCS test/testQcFT0.cxx) # uncomment to reenable the test which was empty
 
 foreach(test ${TEST_SRCS})
   get_filename_component(test_name ${test} NAME)

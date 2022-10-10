@@ -12,8 +12,7 @@
 ///
 /// \file   DigitQcTask.h
 /// \author Artur Furs afurs@cern.ch
-/// modified by Sebastin Bysiak sbysiak@cern.ch
-/// QC Task for FT0 detector, mostly for data visualisation during FEE tests
+/// \brief Quality Control DPL Task for FT0's digit visualization for non-laser events only
 
 #ifndef QC_MODULE_FT0_FT0DIGITQCTASK_H
 #define QC_MODULE_FT0_FT0DIGITQCTASK_H
@@ -32,10 +31,13 @@
 #include "TList.h"
 #include "Rtypes.h"
 
+#include "CommonConstants/LHCConstants.h"
+
 #include "QualityControl/TaskInterface.h"
 #include "QualityControl/QcInfoLogger.h"
 
 #include "FT0Base/Constants.h"
+#include "FT0Base/Geometry.h"
 #include "DataFormatsFT0/Digit.h"
 #include "DataFormatsFT0/ChannelData.h"
 
@@ -43,7 +45,6 @@ using namespace o2::quality_control::core;
 
 namespace o2::quality_control_modules::ft0
 {
-
 class DigitQcTask final : public TaskInterface
 {
  public:
@@ -59,8 +60,11 @@ class DigitQcTask final : public TaskInterface
   void endOfCycle() override;
   void endOfActivity(Activity& activity) override;
   void reset() override;
+  constexpr static std::size_t sNCHANNELS_PM = o2::ft0::Constants::sNCHANNELS_PM;
+  constexpr static std::size_t sNCHANNELS_A = o2::ft0::Geometry::NCellsA * 4;
+  constexpr static std::size_t sNCHANNELS_C = o2::ft0::Geometry::NCellsC * 4;
   constexpr static std::size_t sOrbitsPerTF = 256;
-  constexpr static std::size_t sBCperOrbit = 3564;
+  constexpr static std::size_t sBCperOrbit = o2::constants::lhc::LHCMaxBunches;
 
   constexpr static float sCFDChannel2NS = 0.01302; // CFD channel width in ns
 
@@ -75,6 +79,8 @@ class DigitQcTask final : public TaskInterface
   double mTimeCurNS = 0.;
   int mTfCounter = 0;
   double mTimeSum = 0.;
+
+  long mTFcreationTime = 0;
 
   template <typename Param_t,
             typename = typename std::enable_if<std::is_floating_point<Param_t>::value ||
@@ -97,16 +103,49 @@ class DigitQcTask final : public TaskInterface
   }
 
   void rebinFromConfig();
+  unsigned int getModeParameter(std::string, unsigned int, std::map<unsigned int, std::string>);
+  int getNumericalParameter(std::string, int);
 
   TList* mListHistGarbage;
   std::set<unsigned int> mSetAllowedChIDs;
-  std::array<o2::InteractionRecord, o2::ft0::Constants::sNCHANNELS_PM> mStateLastIR2Ch;
-  std::array<uint8_t, o2::ft0::Constants::sNCHANNELS_PM> mChID2PMhash; // map chID->hashed PM value
-  uint8_t mTCMhash;                                                    // hash value for TCM, and bin position in hist
+  std::set<unsigned int> mSetAllowedChIDsAmpVsTime;
+  std::array<o2::InteractionRecord, sNCHANNELS_PM> mStateLastIR2Ch;
+  std::array<uint8_t, sNCHANNELS_PM> mChID2PMhash; // map chID->hashed PM value
+  uint8_t mTCMhash;                                // hash value for TCM, and bin position in hist
   std::map<int, std::string> mMapDigitTrgNames;
   std::map<o2::ft0::ChannelData::EEventDataBit, std::string> mMapChTrgNames;
   std::unique_ptr<TH1F> mHistNumADC;
   std::unique_ptr<TH1F> mHistNumCFD;
+
+  std::map<int, bool> mMapTrgSoftware;
+  enum TrgModeSide { kAplusC,
+                     kAandC,
+                     kA,
+                     kC
+  };
+  enum TrgModeThresholdVar { kAmpl,
+                             kNchannels
+  };
+  enum TrgComparisonResult { kSWonly,
+                             kTCMonly,
+                             kNone,
+                             kBoth
+  };
+  // trigger parameters:
+  // - modes
+  unsigned int mTrgModeThresholdVar;
+  unsigned int mTrgModeSide;
+  // - time window for vertex trigger
+  int mTrgThresholdTimeLow;
+  int mTrgThresholdTimeHigh;
+  // - parameters for (Semi)Central triggers
+  //   same parameters re-used for both Ampl and Nchannels thresholds
+  int mTrgThresholdCenA;
+  int mTrgThresholdCenC;
+  int mTrgThresholdCenSum;
+  int mTrgThresholdSCenA;
+  int mTrgThresholdSCenC;
+  int mTrgThresholdSCenSum;
 
   // Objects which will be published
   std::unique_ptr<TH2F> mHistAmp2Ch;
@@ -136,13 +175,16 @@ class DigitQcTask final : public TaskInterface
   std::unique_ptr<TH2F> mHistBCvsFEEmodules;
   std::unique_ptr<TH2F> mHistOrbitVsTrg;
   std::unique_ptr<TH2F> mHistOrbitVsFEEmodules;
+  std::unique_ptr<TH1F> mHistTriggersSw;
+  std::unique_ptr<TH2F> mHistTriggersSoftwareVsTCM;
 
   // Hashed maps
-  const std::array<std::vector<double>, 256> mHashedBitBinPos;                        // map with bit position for 1 byte trg signal, for 1 Dim hists;
-  const std::array<std::vector<std::pair<double, double>>, 256> mHashedPairBitBinPos; // map with paired bit position for 1 byte trg signal, for 1 Dim hists;
-  static std::array<std::vector<double>, 256> fillHashedBitBinPos()
+  static const size_t mapSize = 256;
+  const std::array<std::vector<double>, mapSize> mHashedBitBinPos;                        // map with bit position for 1 byte trg signal, for 1 Dim hists;
+  const std::array<std::vector<std::pair<double, double>>, mapSize> mHashedPairBitBinPos; // map with paired bit position for 1 byte trg signal, for 1 Dim hists;
+  static std::array<std::vector<double>, mapSize> fillHashedBitBinPos()
   {
-    std::array<std::vector<double>, 256> hashedBitBinPos{};
+    std::array<std::vector<double>, mapSize> hashedBitBinPos{};
     for (int iByteValue = 0; iByteValue < hashedBitBinPos.size(); iByteValue++) {
       auto& vec = hashedBitBinPos[iByteValue];
       for (int iBit = 0; iBit < 8; iBit++) {
@@ -153,10 +195,10 @@ class DigitQcTask final : public TaskInterface
     }
     return hashedBitBinPos;
   }
-  static std::array<std::vector<std::pair<double, double>>, 256> fillHashedPairBitBinPos()
+  static std::array<std::vector<std::pair<double, double>>, mapSize> fillHashedPairBitBinPos()
   {
-    const std::array<std::vector<double>, 256> hashedBitBinPos = fillHashedBitBinPos();
-    std::array<std::vector<std::pair<double, double>>, 256> hashedPairBitBinPos{};
+    const std::array<std::vector<double>, mapSize> hashedBitBinPos = fillHashedBitBinPos();
+    std::array<std::vector<std::pair<double, double>>, mapSize> hashedPairBitBinPos{};
     for (int iByteValue = 0; iByteValue < hashedBitBinPos.size(); iByteValue++) {
       const auto& vecBits = hashedBitBinPos[iByteValue];
       auto& vecPairBits = hashedPairBitBinPos[iByteValue];
@@ -172,4 +214,4 @@ class DigitQcTask final : public TaskInterface
 
 } // namespace o2::quality_control_modules::ft0
 
-#endif // QC_MODULE_FT0_FT0DigitQcTask_H
+#endif // QC_MODULE_FT0_FT0DIGITQCTASK_H

@@ -16,7 +16,7 @@
         "url" : "infologger:///debug?qc"
       },
       "consul" : {
-        "url" : "http://consul-test.cern.ch:8500"
+        "url" : ""
       },
       "conditionDB" : {
         "url" : "ccdb-test.cern.ch:8080"
@@ -32,8 +32,8 @@
         "maxNumberCycles" : "-1",
         "dataSource_comment" : "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource" : {
-          "type" : "dataSamplingPolicy",
-          "name" : "thresholdcalibration"
+          "type" : "direct",
+          "query" : "tunestring:ITS/TSTR;runtype:ITS/RUNT;fittype:ITS/FITT;scantype:ITS/SCANT;chipdonestring:ITS/QCSTR;confdbv:ITS/CONFDBV;PixTypString:ITS/PIXTYP"
         },
         "location" : "remote",
         "taskParameters" : {}
@@ -44,21 +44,5 @@
 
  },
 
-         "dataSamplingPolicies" : [
-           {
-             "id" : "thresholdcalibration",
-             "active" : "true",
-             "machines" : [],
-             "query" : "tunestring:ITS/TSTR;chipdonestring:ITS/QCSTR;scantype:ITS/SCANT",
-             "samplingConditions" : [
-               {
-                 "condition" : "random",
-                 "fraction" : "1",
-                 "seed" : "1441"
-               }
-             ],
-
-             "blocking" : "false"
-           }
-         ]
+         "dataSamplingPolicies" : []
 }

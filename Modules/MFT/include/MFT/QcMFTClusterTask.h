@@ -21,6 +21,10 @@
 #define QC_MFT_CLUSTER_TASK_H
 #include <TH1F.h>
 #include <TH2F.h>
+#include <DataFormatsITSMFT/TopologyDictionary.h>
+#include "ReconstructionDataFormats/BaseCluster.h"
+#include "MFTBase/GeometryTGeo.h"
+#include <CommonConstants/LHCConstants.h>
 
 // Quality Control
 #include "QualityControl/TaskInterface.h"
@@ -36,7 +40,7 @@ class QcMFTClusterTask /*final*/ : public TaskInterface // todo add back the "fi
 {
  public:
   /// \brief Constructor
-  QcMFTClusterTask() = default;
+  QcMFTClusterTask();
   /// Destructor
   ~QcMFTClusterTask() override;
 
@@ -49,6 +53,11 @@ class QcMFTClusterTask /*final*/ : public TaskInterface // todo add back the "fi
   void endOfActivity(Activity& activity) override;
   void reset() override;
 
+  double orbitToSeconds(uint32_t orbit, uint32_t refOrbit)
+  {
+    return (orbit - refOrbit) * o2::constants::lhc::LHCOrbitNS / 1E9;
+  }
+
  private:
   std::unique_ptr<TH1F> mClusterLayerIndexH0 = nullptr;
   std::unique_ptr<TH1F> mClusterLayerIndexH1 = nullptr;
@@ -56,11 +65,21 @@ class QcMFTClusterTask /*final*/ : public TaskInterface // todo add back the "fi
 
   std::unique_ptr<TH1F> mClusterOccupancy = nullptr;
   std::unique_ptr<TH1F> mClusterPatternIndex = nullptr;
+  std::unique_ptr<TH1F> mClusterSizeSummary = nullptr;
+  std::unique_ptr<TH1F> mGroupedClusterSizeSummary = nullptr;
   std::unique_ptr<TH2F> mClusterOccupancySummary = nullptr;
 
   std::unique_ptr<TH2F> mClusterPatternSensorIndices = nullptr;
   std::vector<std::unique_ptr<TH2F>> mClusterChipOccupancyMap;
-  std::vector<std::unique_ptr<TH2F>> mClusterLadderPatternSensorMap;
+
+  std::unique_ptr<TH1F> mClusterZ = nullptr;
+  std::vector<std::unique_ptr<TH2F>> mClusterXYinLayer;
+
+  std::unique_ptr<TH1F> mClustersROFSize = nullptr;
+  std::unique_ptr<TH1F> mNOfClustersTime = nullptr;
+  std::unique_ptr<TH1F> mClustersBC = nullptr;
+
+  std::vector<o2::BaseCluster<float>> mClustersGlobal;
 
   // needed to construct the name and path of some histograms
   int mHalf[936] = { 0 };
@@ -73,17 +92,20 @@ class QcMFTClusterTask /*final*/ : public TaskInterface // todo add back the "fi
   float mX[936] = { 0 };
   float mY[936] = { 0 };
 
-  // ladder vs Pattern ID histrograms
-  int mChipLadder[936] = { 0 };
-  int mChipPositionInLadder[936] = { 0 };
-  int mChipsInLadder[280] = { 0 };
-  int mHalfLadder[280] = { 0 };
-  int mDiskLadder[280] = { 0 };
-  int mFaceLadder[280] = { 0 };
-  int mZoneLadder[280] = { 0 };
-
   // internal functions
   void getChipMapData();
+
+  // cluster size in pixels
+  int mClusterSize = { 0 };
+
+  // dictionary
+  const o2::itsmft::TopologyDictionary* mDict = nullptr;
+
+  // where the geometry file is stored
+  std::string mGeomPath;
+
+  // reference orbit used in relative time calculation
+  uint32_t mRefOrbit = 0;
 };
 
 } // namespace o2::quality_control_modules::mft

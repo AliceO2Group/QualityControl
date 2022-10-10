@@ -26,7 +26,6 @@ namespace o2::framework
 class CompletionPolicy;
 }
 #include <Framework/WorkflowSpec.h>
-#include <Framework/DataProcessorSpec.h>
 
 namespace o2::quality_control
 {
@@ -198,7 +197,8 @@ class InfrastructureGenerator
                               std::string mergingMode,
                               size_t resetAfterCycles,
                               std::string monitoringUrl,
-                              std::string detectorName);
+                              std::string detectorName,
+                              std::vector<size_t> mergersPerLayer);
   static void generateCheckRunners(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec);
   static void generateAggregator(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec);
   static void generatePostProcessing(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec);

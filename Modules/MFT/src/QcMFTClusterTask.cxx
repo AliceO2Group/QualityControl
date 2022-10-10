@@ -26,8 +26,15 @@
 #include <DataFormatsITSMFT/Cluster.h>
 #include <DataFormatsITSMFT/CompCluster.h>
 #include <Framework/InputRecord.h>
+#include <Framework/TimingInfo.h>
 #include <DataFormatsITSMFT/ROFRecord.h>
+#include <DataFormatsITSMFT/ClusterTopology.h>
 #include <ITSMFTReconstruction/ChipMappingMFT.h>
+#include "CCDB/BasicCCDBManager.h"
+#include "CCDB/CCDBTimeStampUtils.h"
+#include "MFTTracking/IOUtils.h"
+#include "MFTBase/GeometryTGeo.h"
+#include <DetectorsBase/GeometryManager.h>
 
 // Quality Control
 #include "QualityControl/QcInfoLogger.h"
@@ -37,8 +44,15 @@
 // C++
 #include <fstream>
 
+using namespace o2::mft;
+
 namespace o2::quality_control_modules::mft
 {
+
+QcMFTClusterTask::QcMFTClusterTask()
+  : TaskInterface()
+{
+}
 
 QcMFTClusterTask::~QcMFTClusterTask()
 {
@@ -55,6 +69,41 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {
     ILOG(Info, Support) << "Custom parameter - myOwnKey: " << param->second << ENDM;
   }
+
+  // loading custom parameters
+  auto maxClusterROFSize = 5000;
+  if (auto param = mCustomParameters.find("maxClusterROFSize"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - maxClusterROFSize: " << param->second << ENDM;
+    maxClusterROFSize = stoi(param->second);
+  }
+
+  auto maxDuration = 60.f;
+  if (auto param = mCustomParameters.find("maxDuration"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - maxDuration: " << param->second << ENDM;
+    maxDuration = stof(param->second);
+  }
+
+  auto timeBinSize = 0.01f;
+  if (auto param = mCustomParameters.find("timeBinSize"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - timeBinSize: " << param->second << ENDM;
+    timeBinSize = stof(param->second);
+  }
+
+  auto NofTimeBins = static_cast<int>(maxDuration / timeBinSize);
+
+  auto ROFLengthInBC = 198;
+  if (auto param = mCustomParameters.find("ROFLengthInBC"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - ROFLengthInBC: " << param->second << ENDM;
+    ROFLengthInBC = stoi(param->second);
+  }
+  auto ROFsPerOrbit = o2::constants::lhc::LHCMaxBunches / ROFLengthInBC;
+
+  if (auto param = mCustomParameters.find("geomFileName"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - geometry filename: " << param->second << ENDM;
+    mGeomPath = param->second;
+  }
+
+  o2::base::GeometryManager::loadGeometry(mGeomPath.c_str());
 
   getChipMapData();
 
@@ -91,14 +140,24 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   mClusterOccupancy->SetStats(0);
   getObjectsManager()->startPublishing(mClusterOccupancy.get());
 
-  mClusterPatternIndex = std::make_unique<TH1F>("mClusterPatternIndex", "Cluster Pattern ID;Pattern ID;#Entries per TF", 300, -0.5, 299.5);
+  mClusterPatternIndex = std::make_unique<TH1F>("mClusterPatternIndex", "Cluster Pattern ID;Pattern ID;#Entries per TF", 500, -0.5, 499.5);
   mClusterPatternIndex->SetStats(0);
   getObjectsManager()->startPublishing(mClusterPatternIndex.get());
   getObjectsManager()->setDisplayHint(mClusterPatternIndex.get(), "logy");
 
+  mClusterSizeSummary = std::make_unique<TH1F>("mClusterSizeSummary", "Cluster Size Summary; Cluster Size (pixels);#Entries", 100, 0.5, 100.5);
+  mClusterSizeSummary->SetStats(0);
+  getObjectsManager()->startPublishing(mClusterSizeSummary.get());
+  getObjectsManager()->setDisplayHint(mClusterSizeSummary.get(), "logy");
+
+  mGroupedClusterSizeSummary = std::make_unique<TH1F>("mGroupedClusterSizeSummary", "Grouped Cluster Size Summary; Grouped Cluster Size (pixels);#Entries", 100, 0.5, 100.5);
+  mGroupedClusterSizeSummary->SetStats(0);
+  getObjectsManager()->startPublishing(mGroupedClusterSizeSummary.get());
+  getObjectsManager()->setDisplayHint(mGroupedClusterSizeSummary.get(), "logy");
+
   mClusterPatternSensorIndices = std::make_unique<TH2F>("mClusterPatternSensorIndices",
                                                         "Cluster Pattern ID vs Chip ID;Chip ID;Pattern ID",
-                                                        936, -0.5, 935.5, 100, -0.5, 99.5);
+                                                        936, -0.5, 935.5, 500, -0.5, 499.5);
   mClusterPatternSensorIndices->SetStats(0);
   getObjectsManager()->startPublishing(mClusterPatternSensorIndices.get());
   getObjectsManager()->setDefaultDrawOptions(mClusterPatternSensorIndices.get(), "colz");
@@ -127,21 +186,22 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mClusterOccupancySummary.get());
   getObjectsManager()->setDefaultDrawOptions(mClusterOccupancySummary.get(), "colz");
 
-  // --Ladder occupancy maps
-  //==============================================
-  for (int i = 0; i < 280; i++) { // there are 280 ladders
-    auto ladderHistogram = std::make_unique<TH2F>(
-      Form("LadderClusterSensorMaps/Ladder%d-h%d-d%d-f%d-z%d", i, mHalfLadder[i], mDiskLadder[i], mFaceLadder[i], mZoneLadder[i]),
-      Form("Cluster sensor map ladder%d-h%d-d%d-f%d-z%d; Pattern ID; Chip", i, mHalfLadder[i], mDiskLadder[i], mFaceLadder[i], mZoneLadder[i]),
-      100, 0, 100, // Pattern ID per chip
-      mChipsInLadder[i], 0, mChipsInLadder[i]);
-    for (int iBin = 0; iBin < mChipsInLadder[i]; iBin++)
-      ladderHistogram->GetYaxis()->SetBinLabel(iBin + 1, Form("%d", iBin));
-    ladderHistogram->SetStats(0);
-    mClusterLadderPatternSensorMap.push_back(std::move(ladderHistogram));
-    getObjectsManager()->startPublishing(mClusterLadderPatternSensorMap[i].get());
-    getObjectsManager()->setDefaultDrawOptions(mClusterLadderPatternSensorMap[i].get(), "colz");
-  }
+  mClusterZ = std::make_unique<TH1F>("mClusterZ", "Z position of clusters; Z (cm); #Entries", 400, -80, -40);
+  mClusterZ->SetStats(0);
+  getObjectsManager()->startPublishing(mClusterZ.get());
+
+  mClustersROFSize = std::make_unique<TH1F>("mClustersROFSize", "Cluster ROFs size; ROF Size (#Clusters); #Entries", maxClusterROFSize, 0, maxClusterROFSize);
+  mClustersROFSize->SetStats(0);
+  getObjectsManager()->startPublishing(mClustersROFSize.get());
+  getObjectsManager()->setDisplayHint(mClustersROFSize.get(), "logx logy");
+
+  mNOfClustersTime = std::make_unique<TH1F>("mNOfClustersTime", "Number of clusters per time bin; time (s); #Entries", NofTimeBins, 0, maxDuration);
+  mNOfClustersTime->SetMinimum(0.1);
+  getObjectsManager()->startPublishing(mNOfClustersTime.get());
+
+  mClustersBC = std::make_unique<TH1F>("mClustersBC", "Clusters per BC (sum over orbits); BCid; #Entries", ROFsPerOrbit, 0, o2::constants::lhc::LHCMaxBunches);
+  mClustersBC->SetMinimum(0.1);
+  getObjectsManager()->startPublishing(mClustersBC.get());
 
   // define chip occupancy maps
   QcMFTUtilTables MFTTable;
@@ -165,6 +225,16 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
       } // loop over faces
     }   // loop over disks
   }     // loop over halfs
+
+  for (auto nMFTLayer = 0; nMFTLayer < 10; nMFTLayer++) {
+    auto clusterXY = std::make_unique<TH2F>(
+      Form("ClusterXYinLayer/mClusterXYinLayer%d", nMFTLayer),
+      Form("Cluster Position in Layer %d; x (cm); y (cm)", nMFTLayer), 400, -20, 20, 400, -20, 20);
+    clusterXY->SetStats(0);
+    mClusterXYinLayer.push_back(std::move(clusterXY));
+    getObjectsManager()->startPublishing(mClusterXYinLayer[nMFTLayer].get());
+    getObjectsManager()->setDefaultDrawOptions(mClusterXYinLayer[nMFTLayer].get(), "colz");
+  }
 }
 
 void QcMFTClusterTask::startOfActivity(Activity& /*activity*/)
@@ -182,17 +252,51 @@ void QcMFTClusterTask::startOfCycle()
 
 void QcMFTClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  // normalisation for the Summary histogram to TF
+  if (mDict == nullptr) {
+    ILOG(Info, Support) << "Getting dictionary from ccdb" << ENDM;
+    auto mDictPtr = ctx.inputs().get<o2::itsmft::TopologyDictionary*>("cldict");
+    mDict = mDictPtr.get();
+    ILOG(Info, Support) << "Dictionary loaded with size: " << mDict->getSize() << ENDM;
+  }
+
+  // normalisation for the summary histogram to TF
   mClusterOccupancySummary->Fill(-1, -1);
   mClusterOccupancy->Fill(-1);
   mClusterPatternIndex->Fill(-1);
+  mClusterSizeSummary->Fill(-1);
+  mGroupedClusterSizeSummary->Fill(-1);
 
   // get the clusters
   const auto clusters = ctx.inputs().get<gsl::span<o2::itsmft::CompClusterExt>>("randomcluster");
+  const auto clustersROFs = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("clustersrof");
+
   if (clusters.size() < 1)
     return;
 
-  // fill the histograms
+  // get cluster patterns and iterator
+  auto clustersPattern = ctx.inputs().get<gsl::span<unsigned char>>("patterns");
+  auto patternIt = clustersPattern.begin();
+
+  // get clusters with global xy position
+  mClustersGlobal.clear();
+  mClustersGlobal.reserve(clusters.size());
+  o2::mft::ioutils::convertCompactClusters(clusters, patternIt, mClustersGlobal, mDict);
+
+  // get correct timing info of the first TF orbit
+  mRefOrbit = ctx.services().get<o2::framework::TimingInfo>().firstTForbit;
+
+  // reset the cluster pattern iterator which will be used later
+  patternIt = clustersPattern.begin();
+
+  // fill the clusters time histograms
+  for (const auto& rof : clustersROFs) {
+    mClustersROFSize->Fill(rof.getNEntries());
+    float seconds = orbitToSeconds(rof.getBCData().orbit, mRefOrbit) + rof.getBCData().bc * o2::constants::lhc::LHCBunchSpacingNS * 1e-9;
+    mNOfClustersTime->Fill(seconds, rof.getNEntries());
+    mClustersBC->Fill(rof.getBCData().bc, rof.getNEntries());
+  }
+
+  // fill all other histograms
   for (auto& oneCluster : clusters) {
     int sensorID = oneCluster.getSensorID();
     int layerID = mDisk[sensorID] * 2 + mFace[sensorID];
@@ -203,6 +307,13 @@ void QcMFTClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
     mClusterPatternSensorIndices->Fill(sensorID,
                                        oneCluster.getPatternID());
 
+    if (oneCluster.getPatternID() != o2::itsmft::CompCluster::InvalidPatternID && !mDict->isGroup(oneCluster.getPatternID())) {
+      mClusterSizeSummary->Fill(mDict->getNpixels(oneCluster.getPatternID()));
+    } else {
+      o2::itsmft::ClusterPattern patt(patternIt);
+      mGroupedClusterSizeSummary->Fill(patt.getNPixels());
+    }
+
     // fill occupancy maps
     int idx = layerID + (10 * mHalf[sensorID]);
     mClusterChipOccupancyMap[idx]->Fill(mX[sensorID], mY[sensorID]);
@@ -211,9 +322,14 @@ void QcMFTClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
     int xBin = mDisk[sensorID] * 2 + mFace[sensorID];
     int yBin = mZone[sensorID] + mHalf[sensorID] * 4;
     mClusterOccupancySummary->Fill(xBin, yBin);
+  }
 
-    // fill ladder histogram
-    mClusterLadderPatternSensorMap[mChipLadder[sensorID]]->Fill(oneCluster.getPatternID() >> 1, mChipPositionInLadder[sensorID]);
+  // fill the histograms that use global position of cluster
+  for (auto& oneGlobalCluster : mClustersGlobal) {
+    mClusterZ->Fill(oneGlobalCluster.getZ());
+    int sensorID = oneGlobalCluster.getSensorID();
+    int layerID = mDisk[sensorID] * 2 + mFace[sensorID];
+    mClusterXYinLayer[layerID]->Fill(oneGlobalCluster.getX(), oneGlobalCluster.getY());
   }
 }
 
@@ -235,15 +351,21 @@ void QcMFTClusterTask::reset()
   mClusterOccupancy->Reset();
   mClusterPatternIndex->Reset();
   mClusterPatternSensorIndices->Reset();
+  mClusterSizeSummary->Reset();
+  mGroupedClusterSizeSummary->Reset();
   mClusterLayerIndexH0->Reset();
   mClusterLayerIndexH1->Reset();
   mClusterOccupancySummary->Reset();
+  mClusterZ->Reset();
+  mClustersROFSize->Reset();
+  mNOfClustersTime->Reset();
+  mClustersBC->Reset();
   for (int i = 0; i < 20; i++) {
     mClusterChipOccupancyMap[i]->Reset();
   }
-  // ladder histograms
-  for (int i = 0; i < 280; i++) { // there are 280 ladders
-    mClusterLadderPatternSensorMap[i]->Reset();
+  // layer histograms
+  for (auto nMFTLayer = 0; nMFTLayer < 10; nMFTLayer++) { // there are 10 layers
+    mClusterXYinLayer[nMFTLayer]->Reset();
   }
 }
 
@@ -263,15 +385,6 @@ void QcMFTClusterTask::getChipMapData()
     mLadder[i] = MFTTable.mLadder[i];
     mX[i] = MFTTable.mX[i];
     mY[i] = MFTTable.mY[i];
-    // info needed for ladder histograms
-    mChipLadder[i] = chipMapData[i].module;
-    mChipPositionInLadder[i] = chipMapData[i].chipOnModule;
-    if (mChipsInLadder[mChipLadder[i]] < (mChipPositionInLadder[i] + 1))
-      mChipsInLadder[mChipLadder[i]]++;
-    mHalfLadder[mChipLadder[i]] = mHalf[i];
-    mDiskLadder[mChipLadder[i]] = mDisk[i];
-    mFaceLadder[mChipLadder[i]] = mFace[i];
-    mZoneLadder[mChipLadder[i]] = mZone[i];
   }
 }
 

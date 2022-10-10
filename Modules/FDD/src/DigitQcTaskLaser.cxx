@@ -49,6 +49,10 @@ void DigitQcTaskLaser::rebinFromConfig()
      "binning_Amp_channel2": "5,-10,90" ...
   */
   auto rebinHisto = [](std::string hName, std::string binning) {
+    if (!gROOT->FindObject(hName.data())) {
+      ILOG(Warning) << "config: histogram named \"" << hName << "\" not found" << ENDM;
+      return;
+    }
     std::vector<std::string> tokenizedBinning;
     boost::split(tokenizedBinning, binning, boost::is_any_of(","));
     if (tokenizedBinning.size() == 3) { // TH1
@@ -81,9 +85,6 @@ void DigitQcTaskLaser::rebinFromConfig()
         std::string hNameCur = hName.substr(0, hName.find(channelIdPlaceholder)) + std::to_string(chID) + hName.substr(hName.find(channelIdPlaceholder) + 1);
         rebinHisto(hNameCur, binning);
       }
-    } else if (!gROOT->FindObject(hName.data())) {
-      ILOG(Warning) << "config: histogram named \"" << hName << "\" not found" << ENDM;
-      continue;
     } else {
       rebinHisto(hName, binning);
     }
@@ -116,9 +117,9 @@ void DigitQcTaskLaser::initialize(o2::framework::InitContext& /*ctx*/)
   mHistTime2Ch->SetOption("colz");
   mHistAmp2Ch = std::make_unique<TH2F>("AmpPerChannel", "Amplitude vs Channel;Channel;Amp", sNCHANNELS_PM, 0, sNCHANNELS_PM, 4200, -100, 4100);
   mHistAmp2Ch->SetOption("colz");
-  mHistOrbit2BC = std::make_unique<TH2F>("OrbitPerBC", "BC-Orbit map;Orbit;BC;", 256, 0, 256, 3564, 0, 3564);
+  mHistOrbit2BC = std::make_unique<TH2F>("OrbitPerBC", "BC-Orbit map;Orbit;BC;", 256, 0, 256, sBCperOrbit, 0, sBCperOrbit);
   mHistOrbit2BC->SetOption("colz");
-  mHistBC = std::make_unique<TH1F>("BC", "BC;BC;counts;", 3564, 0, 3564);
+  mHistBC = std::make_unique<TH1F>("BC", "BC;BC;counts;", sBCperOrbit, 0, sBCperOrbit);
 
   mHistChDataBits = std::make_unique<TH2F>("ChannelDataBits", "ChannelData bits per ChannelID;Channel;Bit", sNCHANNELS_PM, 0, sNCHANNELS_PM, mMapChTrgNames.size(), 0, mMapChTrgNames.size());
   mHistChDataBits->SetOption("colz");
@@ -155,7 +156,7 @@ void DigitQcTaskLaser::initialize(o2::framework::InitContext& /*ctx*/)
   }
 
   for (const auto& entry : mMapPmModuleChannels) {
-    auto pairModuleBcOrbit = mMapPmModuleBcOrbit.insert({ entry.first, new TH2F(Form("BcOrbitMap_%s", entry.first.c_str()), Form("BC-orbit map for %s;Orbit;BC", entry.first.c_str()), 256, 0, 256, 3564, 0, 3564) });
+    auto pairModuleBcOrbit = mMapPmModuleBcOrbit.insert({ entry.first, new TH2F(Form("BcOrbitMap_%s", entry.first.c_str()), Form("BC-orbit map for %s;Orbit;BC", entry.first.c_str()), 256, 0, 256, sBCperOrbit, 0, sBCperOrbit) });
   }
 
   mHistNumADC = std::make_unique<TH1F>("HistNumADC", "HistNumADC", sNCHANNELS_PM, 0, sNCHANNELS_PM);
@@ -200,6 +201,11 @@ void DigitQcTaskLaser::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mHistBC.get());
   getObjectsManager()->startPublishing(mHistCFDEff.get());
   getObjectsManager()->startPublishing(mHistCycleDuration.get());
+
+  for (int i = 0; i < getObjectsManager()->getNumberPublishedObjects(); i++) {
+    TH1* obj = (TH1*)getObjectsManager()->getMonitorObject(i)->getObject();
+    obj->SetTitle((string("FDD Laser ") + obj->GetTitle()).c_str());
+  }
 }
 
 void DigitQcTaskLaser::startOfActivity(Activity& activity)
@@ -242,7 +248,7 @@ void DigitQcTaskLaser::monitorData(o2::framework::ProcessingContext& ctx)
   uint32_t firstOrbit;
 
   for (auto& digit : digits) {
-    // Exclude all BCs, in which laser signals are not expected (and trigger outputs are not blocked)
+    // Exclude all BCs, in which laser signals are NOT expected (and trigger outputs are NOT blocked)
     if (!digit.mTriggers.getOutputsAreBlocked()) {
       continue;
     }
@@ -267,7 +273,7 @@ void DigitQcTaskLaser::monitorData(o2::framework::ProcessingContext& ctx)
     if (mTimeCurNS > curTfTimeMax)
       curTfTimeMax = mTimeCurNS;
 
-    if (digit.mTriggers.timeA == o2::fit::Triggers::DEFAULT_TIME && digit.mTriggers.timeC == o2::fit::Triggers::DEFAULT_TIME) {
+    if (digit.mTriggers.getTimeA() == o2::fit::Triggers::DEFAULT_TIME && digit.mTriggers.getTimeC() == o2::fit::Triggers::DEFAULT_TIME) {
       isTCM = false;
     }
     mHistOrbit2BC->Fill(digit.getIntRecord().orbit % sOrbitsPerTF, digit.getIntRecord().bc);

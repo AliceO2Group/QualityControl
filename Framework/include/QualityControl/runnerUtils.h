@@ -21,11 +21,14 @@
 #include <Configuration/ConfigurationFactory.h>
 #include <Common/Exceptions.h>
 #include <Framework/RawDeviceService.h>
+#include <Framework/DeviceSpec.h>
 #include <fairmq/Device.h>
 #include <Framework/ConfigParamRegistry.h>
 #include <QualityControl/QcInfoLogger.h>
 #include <boost/property_tree/json_parser.hpp>
 #include <CommonUtils/StringUtils.h>
+#include "QualityControl/Activity.h"
+#include <regex>
 
 namespace o2::quality_control::core
 {
@@ -125,18 +128,26 @@ inline std::string computePeriodName(const framework::ServiceRegistry& services,
 
 inline std::string computePassName(const std::string& fallbackPassName = "")
 {
-  std::string passName;
-  passName = fallbackPassName;
-  ILOG(Debug, Devel) << "Pass Name returned by computePassName : " << passName << ENDM;
-  return passName;
+  ILOG(Debug, Devel) << "Pass Name returned by computePassName : " << fallbackPassName << ENDM;
+  return fallbackPassName;
 }
 
 inline std::string computeProvenance(const std::string& fallbackProvenance = "")
 {
-  std::string provenance;
-  provenance = fallbackProvenance;
-  ILOG(Debug, Devel) << "Provenance returned by computeProvenance : " << provenance << ENDM;
-  return provenance;
+  ILOG(Debug, Devel) << "Provenance returned by computeProvenance : " << fallbackProvenance << ENDM;
+  return fallbackProvenance;
+}
+
+inline Activity computeActivity(const framework::ServiceRegistry& services, const Activity& fallbackActivity)
+{
+  return {
+    computeRunNumber(services, fallbackActivity.mId),
+    computeRunType(services, fallbackActivity.mType),
+    computePeriodName(services, fallbackActivity.mPeriodName),
+    computePassName(fallbackActivity.mPassName),
+    computeProvenance(fallbackActivity.mProvenance),
+    fallbackActivity.mValidity
+  };
 }
 
 inline std::string indentTree(int level)
@@ -173,6 +184,23 @@ inline void overrideValues(boost::property_tree::ptree& tree, std::vector<std::p
   for (const auto& [key, value] : keyValues) {
     tree.put(key, value);
   }
+}
+
+/**
+ * template the param infologgerDiscardFile (_ID_->[device-id])
+ * @param originalFile
+ * @param iCtx
+ * @return
+ */
+inline std::string templateILDiscardFile(std::string& originalFile, framework::InitContext& iCtx)
+{
+  try {
+    auto& deviceSpec = iCtx.services().get<o2::framework::DeviceSpec const>();
+    return std::regex_replace(originalFile, std::regex("_ID_"), deviceSpec.id);
+  } catch (...) {
+    ILOG(Error, Devel) << "exception caught and swallowed in templateILDiscardFile : " << boost::current_exception_diagnostic_information() << ENDM;
+  }
+  return originalFile;
 }
 
 } // namespace o2::quality_control::core

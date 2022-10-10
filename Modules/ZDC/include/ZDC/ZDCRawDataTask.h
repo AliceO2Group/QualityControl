@@ -32,7 +32,6 @@ using namespace o2::quality_control::core;
 
 namespace o2::quality_control_modules::zdc
 {
-
 /// \brief Quality Control Raw Data Task
 /// \author Carlo Puggioni
 class ZDCRawDataTask final : public TaskInterface
@@ -101,7 +100,11 @@ class ZDCRawDataTask final : public TaskInterface
   bool decodeSignal(std::vector<std::string> tokenString, int lineNumber);
   bool decodeBunch(std::vector<std::string> tokenString, int lineNumber);
   bool decodeFireChannel(std::vector<std::string> tokenString, int lineNumber);
+  bool decodeDataLoss(std::vector<std::string> tokenString, int lineNumber);
+  bool decodeOverBc(std::vector<std::string> tokenString, int lineNumber);
   bool decodeTrasmittedChannel(std::vector<std::string> tokenString, int lineNumber);
+  bool decodeTriggerBitChannel(std::vector<std::string> tokenString, int lineNumber);
+  bool decodeTriggerBitHitChannel(std::vector<std::string> tokenString, int lineNumber);
   bool decodeSummaryBaseline(std::vector<std::string> tokenString, int lineNumber);
   void DumpHistoStructure();
   void setVerbosity(int v)
@@ -123,7 +126,11 @@ class ZDCRawDataTask final : public TaskInterface
 
   TH2* fFireChannel;
   TH2* fTrasmChannel;
+  TH2* fDataLoss;
+  TH2* fTriggerBits;
+  TH2* fTriggerBitsHits;
   TH1* fSummaryPedestal;
+  TH1* fOverBc;
 
   std::vector<std::string> fNameHisto;
   std::map<std::string, int> fMapBinNameIdSummaryHisto;

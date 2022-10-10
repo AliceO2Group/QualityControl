@@ -17,12 +17,10 @@
 #ifndef QC_CORE_TASKRUNNERFACTORY_H
 #define QC_CORE_TASKRUNNERFACTORY_H
 
-#include <string>
 #include <vector>
+#include <optional>
 
 #include <Framework/DataProcessorSpec.h>
-#include "QualityControl/CommonSpec.h"
-#include "QualityControl/TaskSpec.h"
 
 namespace o2::framework
 {
@@ -32,7 +30,9 @@ class CompletionPolicy;
 namespace o2::quality_control::core
 {
 
+struct TaskSpec;
 struct TaskRunnerConfig;
+struct CommonSpec;
 
 /// \brief Factory in charge of creating DataProcessorSpec of QC task
 class TaskRunnerFactory
@@ -49,7 +49,7 @@ class TaskRunnerFactory
   /// \brief Knows how to create TaskConfig from Specs
   static TaskRunnerConfig extractConfig(const CommonSpec&, const TaskSpec&, std::optional<int> id = std::nullopt, std::optional<int> resetAfterCycles = std::nullopt);
 
-  static bool computeResetAfterCycles(const TaskSpec& taskSpec);
+  static int computeResetAfterCycles(const TaskSpec& taskSpec, bool runningWithMergers);
 
   /// \brief Provides necessary customization of the TaskRunners.
   ///

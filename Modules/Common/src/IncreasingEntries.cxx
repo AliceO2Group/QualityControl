@@ -24,6 +24,7 @@
 #include <TList.h>
 
 #include <DataFormatsQualityControl/FlagReasons.h>
+#include <Common/Exceptions.h>
 
 using namespace std;
 using namespace o2::quality_control;
@@ -33,8 +34,11 @@ namespace o2::quality_control_modules::common
 
 void IncreasingEntries::configure()
 {
-  parseBooleanParam(mCustomParameters, "mustIncrease", mMustIncrease);
-
+  try {
+    mMustIncrease = parseBoolParam(mCustomParameters, "mustIncrease");
+  } catch (AliceO2::Common::ObjectNotFoundError& exc) {
+    mMustIncrease = true; // if not there, default behaviour
+  }
   ILOG(Debug, Support) << "mustIncrease: " << mMustIncrease << ENDM;
 
   if (mMustIncrease) {
@@ -55,6 +59,7 @@ void IncreasingEntries::configure()
 Quality IncreasingEntries::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
   Quality result = Quality::Good;
+  mFaultyObjectsNames.clear();
 
   for (auto& [moName, mo] : *moMap) {
 
@@ -69,11 +74,11 @@ Quality IncreasingEntries::check(std::map<std::string, std::shared_ptr<MonitorOb
     if (mMustIncrease && previousNumberEntries == currentNumberEntries) {
       result = Quality::Bad;
       result.addReason(FlagReasonFactory::NoDetectorData(), "Number of entries stopped increasing.");
-      histo->GetListOfFunctions()->Add(mPaveText->Clone());
+      mFaultyObjectsNames.push_back(mo->getName());
     } else if (!mMustIncrease && previousNumberEntries != currentNumberEntries) {
       result = Quality::Bad;
       result.addReason(FlagReasonFactory::Unknown(), "Number of entries has increased.");
-      histo->GetListOfFunctions()->Add(mPaveText->Clone());
+      mFaultyObjectsNames.push_back(mo->getName());
     }
 
     mLastEntries[moName] = currentNumberEntries;
@@ -85,7 +90,13 @@ std::string IncreasingEntries::getAcceptedType() { return "TH1"; }
 
 void IncreasingEntries::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  // as we want to add the text on the faulty histo we cannot do it here.
+  // only add the pavetext on the faulty plots
+  if (std::count(mFaultyObjectsNames.begin(), mFaultyObjectsNames.end(), mo->getName())) {
+    TH1* histo = dynamic_cast<TH1*>(mo->getObject());
+    if (histo) {
+      histo->GetListOfFunctions()->Add(mPaveText->Clone());
+    }
+  }
 }
 
 } // namespace o2::quality_control_modules::common

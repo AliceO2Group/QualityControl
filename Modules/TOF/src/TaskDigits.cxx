@@ -32,6 +32,8 @@
 #include <Framework/InputRecord.h>
 #include "CommonConstants/LHCConstants.h"
 #include "DataFormatsTOF/Diagnostic.h"
+#include "CCDB/BasicCCDBManager.h"
+#include "Framework/TimingInfo.h"
 
 // Fairlogger includes
 #include <fairlogger/Logger.h>
@@ -67,6 +69,12 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
     if (mNoiseClassSelection < -1 || mNoiseClassSelection >= nNoiseClasses) {
       ILOG(Error, Support) << "Asked to discard noise class " << mNoiseClassSelection << " but it is invalid, use -1, 0, 1, 2. Setting it to -1 (no selection)" << ENDM;
       mNoiseClassSelection = -1;
+    }
+  }
+  if (auto param = mCustomParameters.find("applyCalib"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - applyCalib: " << param->second << ENDM;
+    if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
+      mApplyCalib = true;
     }
   }
   utils::parseBooleanParameter(mCustomParameters, "Diagnostic", mFlagEnableDiagnostic);
@@ -215,6 +223,12 @@ void TaskDigits::startOfCycle()
 
 void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
 {
+  if (mApplyCalib && !mCalChannel) {
+    auto creationTime = ctx.services().get<o2::framework::TimingInfo>().creation;
+    mCalChannel = o2::ccdb::BasicCCDBManager::instance().getForTimeStamp<o2::dataformats::CalibTimeSlewingParamTOF>("TOF/Calib/ChannelCalib", creationTime);
+    mLHCphase = o2::ccdb::BasicCCDBManager::instance().getForTimeStamp<o2::dataformats::CalibLHCphaseTOF>("TOF/Calib/LHCphase", creationTime);
+  }
+
   // Get TOF digits
   const auto& digits = ctx.inputs().get<gsl::span<o2::tof::Digit>>("tofdigits");
   // Get TOF Readout window
@@ -320,9 +334,29 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
         bcCorr += o2::constants::lhc::LHCMaxBunches;
       }
 
-      ndigitsPerBC[row.mFirstIR.orbit % nOrbits][bcCorr / 18]++;
+      int ech = o2::tof::Geo::getECHFromCH(digit.getChannel());
+      int crateECH = o2::tof::Geo::getCrateFromECH(ech);
+      int slotECH = o2::tof::Geo::getTRMFromECH(ech);
+      int chainECH = o2::tof::Geo::getChainFromECH(ech);
+      int tdcECH = o2::tof::Geo::getTDCFromECH(ech);
+      int bcCorrCable = bcCorr;
 
-      ndigitsPerCrate[o2::tof::Geo::getCrateFromECH(o2::tof::Geo::getECHFromCH(digit.getChannel())) /*crate index*/]++;
+      if (mCalChannel) {                                                              // calibration
+        float timeTDCcorr = digit.getTDC() * o2::tof::Geo::TDCBIN;                    // in ps
+        timeTDCcorr -= mCalChannel->evalTimeSlewing(digit.getChannel(), 0.0) + 10000; // subtract also 10 ns to take partially into account the time of flight
+        timeTDCcorr -= mLHCphase->getLHCphase(0);
+        bcCorrCable += int(timeTDCcorr * o2::tof::Geo::BC_TIME_INPS_INV);
+      } else {
+        bcCorrCable -= (o2::tof::Geo::getCableTimeShiftBin(crateECH, slotECH, chainECH, tdcECH) - digit.getTDC()) / 1024; // just cable length
+      }
+
+      if (bcCorrCable < 0) {
+        bcCorrCable += o2::constants::lhc::LHCMaxBunches;
+      }
+
+      ndigitsPerBC[row.mFirstIR.orbit % nOrbits][bcCorrCable]++;
+
+      ndigitsPerCrate[crateECH]++;
       mCounterHitsPerStripNoiseFiltered[strip].Count(det[0] * 4 + det[4] / 12);
       mCounterHitsPerChannel.Count(digit.getChannel());
       // TDC time and ToT time
@@ -383,8 +417,8 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
 
   for (int iorb = 0; iorb < nOrbits; iorb++) {
     for (int ibc = 0; ibc < mBinsBCForMultiplicity; ibc++) {
-      mHitMultiplicityVsBC->Fill(ibc * 18 + 1, ndigitsPerBC[iorb][ibc]);
-      mHitMultiplicityVsBCpro->Fill(ibc * 18 + 1, ndigitsPerBC[iorb][ibc]);
+      mHitMultiplicityVsBC->Fill(ibc + 1, ndigitsPerBC[iorb][ibc]);
+      mHitMultiplicityVsBCpro->Fill(ibc + 1, ndigitsPerBC[iorb][ibc]);
     }
   }
 

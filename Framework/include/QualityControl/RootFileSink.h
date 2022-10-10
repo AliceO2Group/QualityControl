@@ -29,7 +29,7 @@ class RootFileSink : public framework::Task
 {
  public:
   explicit RootFileSink(std::string filePath);
-  ~RootFileSink() override;
+  ~RootFileSink() override = default;
 
   void init(framework::InitContext& ictx) override;
   void run(framework::ProcessingContext& pctx) override;
@@ -40,9 +40,6 @@ class RootFileSink : public framework::Task
   }
 
   static void customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies);
-
- private:
-  void reset();
 
  private:
   std::string mFilePath;

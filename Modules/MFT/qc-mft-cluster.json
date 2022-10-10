@@ -36,7 +36,12 @@
           "name" : "mft-clusters"
         },
         "taskParameters" : {
-          "myOwnKey" : "myOwnValue"
+          "myOwnKey" : "myOwnValue",
+          "maxClusterROFSize" : "5000",
+          "maxDuration" : "60000",
+          "timeBinSize" : "0.1",
+          "ROFLengthInBC" : "198",
+          "geomFileName" : "/home/epn/odc/files/o2sim_geometry-aligned.root"
         },
         "location" : "remote"
       }
@@ -47,7 +52,7 @@
         "dataSource" : [ {
           "type" : "Task",
           "name" : "MFTClusterTask",
-          "MOs" : ["mClusterOccupancy","mClusterPatternIndex","mClusterOccupancySummary"]
+          "MOs" : ["mClusterOccupancy","mClusterPatternIndex","mClusterSizeSummary", "mGroupedClusterSizeSummary", "mClusterOccupancySummary"]
         } ],
         "className" : "o2::quality_control_modules::mft::QcMFTClusterCheck",
         "moduleName" : "QcMFT",
@@ -61,7 +66,7 @@
              "id" : "mft-clusters",
              "active" : "true",
              "machines" : [],
-             "query" : "randomcluster:MFT/COMPCLUSTERS/0;clustersrof:MFT/CLUSTERSROF/0",
+             "query" : "randomcluster:MFT/COMPCLUSTERS/0;clustersrof:MFT/CLUSTERSROF/0;patterns:MFT/PATTERNS/0;cldict:MFT/CLUSDICT/0?lifetime=condition&ccdb-path=MFT/Calib/ClusterDictionary",
              "samplingConditions" : [
                {
                  "condition" : "random",

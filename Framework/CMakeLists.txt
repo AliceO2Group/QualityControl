@@ -101,6 +101,7 @@ target_link_libraries(O2QualityControl
                              FairLogger::FairLogger
                              FairMQ::FairMQ
                              ROOT::Hist
+                             ROOT::TreePlayer
                              AliceO2::Common
                              AliceO2::InfoLogger
                              AliceO2::Monitoring
@@ -317,9 +318,12 @@ set_property(TEST testCheckWorkflow PROPERTY LABELS slow)
 set_property(TEST testObjectsManager PROPERTY TIMEOUT 30)
 set_property(TEST testObjectsManager PROPERTY LABELS slow)
 set_property(TEST testCcdbDatabase PROPERTY TIMEOUT 60)
-set_property(TEST testCcdbDatabase PROPERTY LABELS slow)
-set_property(TEST testCcdbDatabaseExtra PROPERTY LABELS manual)
+set_property(TEST testCcdbDatabase PROPERTY LABELS slow CCDB)
+set_property(TEST testCcdbDatabaseExtra PROPERTY LABELS manual CCDB)
 set_property(TEST testTrendingTask PROPERTY LABELS manual)
+set_property(TEST testDbFactory PROPERTY LABELS CCDB)
+set_property(TEST testUserCodeInterface PROPERTY LABELS CCDB)
+set_property(TEST testTaskInterface PROPERTY LABELS CCDB)
 
 # Add a functional test (QC-336) 
 string(RANDOM UNIQUE_ID)
@@ -421,7 +425,8 @@ install(FILES example-default.json
         DESTINATION etc)
 
 install(PROGRAMS script/RepoCleaner/o2-qc-repo-cleaner
-                 script/RepoCleaner/o2-qc-repo-deletion
+                 script/RepoCleaner/o2-qc-repo-delete-objects-in-runs
+                 script/RepoCleaner/o2-qc-repo-delete-time-interval
                  script/o2-qc-functional-test.sh
                  script/o2-qc-multinode-test.sh
                  script/o2-qc-batch-test.sh

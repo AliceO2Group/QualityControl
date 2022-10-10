@@ -25,6 +25,7 @@
 #include <DataFormatsITSMFT/Digit.h>
 #include <DataFormatsITSMFT/ROFRecord.h>
 #include <Framework/InputRecord.h>
+#include <Framework/TimingInfo.h>
 #include <ITSMFTReconstruction/ChipMappingMFT.h>
 // Quality Control
 #include "QualityControl/QcInfoLogger.h"
@@ -52,10 +53,39 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
     ILOG(Info, Support) << "Custom parameter - FLP: " << param->second << ENDM;
     mCurrentFLP = stoi(param->second);
   }
+
+  // loading custom parameters
   if (auto param = mCustomParameters.find("NoiseScan"); param != mCustomParameters.end()) {
     ILOG(Info, Support) << "Custom parameter - NoiseScan: " << param->second << ENDM;
     mNoiseScan = stoi(param->second);
   }
+
+  auto maxDigitROFSize = 5000;
+  if (auto param = mCustomParameters.find("maxDigitROFSize"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - maxDigitROFSize: " << param->second << ENDM;
+    maxDigitROFSize = stoi(param->second);
+  }
+
+  auto maxDuration = 60.f;
+  if (auto param = mCustomParameters.find("maxDuration"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - maxDuration: " << param->second << ENDM;
+    maxDuration = stof(param->second);
+  }
+
+  auto timeBinSize = 0.01f;
+  if (auto param = mCustomParameters.find("timeBinSize"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - timeBinSize: " << param->second << ENDM;
+    timeBinSize = stof(param->second);
+  }
+
+  auto NofTimeBins = static_cast<int>(maxDuration / timeBinSize);
+
+  auto ROFLengthInBC = 198;
+  if (auto param = mCustomParameters.find("ROFLengthInBC"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - ROFLengthInBC: " << param->second << ENDM;
+    ROFLengthInBC = stoi(param->second);
+  }
+  auto ROFsPerOrbit = o2::constants::lhc::LHCMaxBunches / ROFLengthInBC;
 
   getChipMapData();
 
@@ -80,6 +110,13 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
   mDigitChipOccupancy->SetStats(0);
   getObjectsManager()->startPublishing(mDigitChipOccupancy.get());
   getObjectsManager()->setDefaultDrawOptions(mDigitChipOccupancy.get(), "hist");
+
+  mDigitDoubleColumnSensorIndices = std::make_unique<TH2F>("mDigitDoubleColumnSensorIndices",
+                                                           "Double Column vs Chip ID;Double Column;Chip ID",
+                                                           512, -0.5, 511.5, 936, -0.5, 935.5);
+  mDigitDoubleColumnSensorIndices->SetStats(0);
+  getObjectsManager()->startPublishing(mDigitDoubleColumnSensorIndices.get());
+  getObjectsManager()->setDefaultDrawOptions(mDigitDoubleColumnSensorIndices.get(), "colz");
 
   if (mNoiseScan == 1) { // to be executed only for special runs
     mDigitChipStdDev = std::make_unique<TH1F>(
@@ -116,21 +153,18 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mDigitOccupancySummary.get());
   getObjectsManager()->setDefaultDrawOptions(mDigitOccupancySummary.get(), "colz");
 
-  // --Ladder occupancy maps
-  //==============================================
-  for (int i = 0; i < 280; i++) { // there are 280 ladders
-    auto ladderHistogram = std::make_unique<TH2F>(
-      Form("LadderMaps/h%d-d%d-f%d-z%d-l%d", mHalfLadder[i], mDiskLadder[i], mFaceLadder[i], mZoneLadder[i], i),
-      Form("Digit Occupancy h%d-d%d-f%d-z%d-l%d; Double column; Chip", mHalfLadder[i], mDiskLadder[i], mFaceLadder[i], mZoneLadder[i], i),
-      512, -0.5, 511.5, // double columns per chip
-      mChipsInLadder[i], -0.5, mChipsInLadder[i] - 0.5);
-    for (int iBin = 0; iBin < mChipsInLadder[i]; iBin++)
-      ladderHistogram->GetYaxis()->SetBinLabel(iBin + 1, Form("%d", iBin));
-    ladderHistogram->SetStats(0);
-    mDigitLadderDoubleColumnOccupancyMap.push_back(std::move(ladderHistogram));
-    getObjectsManager()->startPublishing(mDigitLadderDoubleColumnOccupancyMap[i].get());
-    getObjectsManager()->setDefaultDrawOptions(mDigitLadderDoubleColumnOccupancyMap[i].get(), "colz");
-  }
+  mDigitsROFSize = std::make_unique<TH1F>("mDigitsROFSize", "Digits ROFs size; ROF Size (#Digits); #Entries", maxDigitROFSize, 0, maxDigitROFSize);
+  mDigitsROFSize->SetStats(0);
+  getObjectsManager()->startPublishing(mDigitsROFSize.get());
+  getObjectsManager()->setDisplayHint(mDigitsROFSize.get(), "logx logy");
+
+  mNOfDigitsTime = std::make_unique<TH1F>("mNOfDigitsTime", "Number of Digits per time bin; time (s); #Entries", NofTimeBins, 0, maxDuration);
+  mNOfDigitsTime->SetMinimum(0.1);
+  getObjectsManager()->startPublishing(mNOfDigitsTime.get());
+
+  mDigitsBC = std::make_unique<TH1F>("mDigitsBC", "Digits per BC (sum over orbits); BCid; #Entries", ROFsPerOrbit, 0, o2::constants::lhc::LHCMaxBunches);
+  mDigitsBC->SetMinimum(0.1);
+  getObjectsManager()->startPublishing(mDigitsBC.get());
 
   // --Chip hit maps
   //==============================================
@@ -220,17 +254,28 @@ void QcMFTDigitTask::monitorData(o2::framework::ProcessingContext& ctx)
   mDigitChipOccupancy->Fill(-1, nROFs);
   mDigitOccupancySummary->Fill(-1, -1, nROFs);
 
+  // get correct timing info of the first TF orbit
+  mRefOrbit = ctx.services().get<o2::framework::TimingInfo>().firstTForbit;
+
+  // fill the digits time histograms
+  for (const auto& rof : rofs) {
+    mDigitsROFSize->Fill(rof.getNEntries());
+    float seconds = orbitToSeconds(rof.getBCData().orbit, mRefOrbit) + rof.getBCData().bc * o2::constants::lhc::LHCBunchSpacingNS * 1e-9;
+    mNOfDigitsTime->Fill(seconds, rof.getNEntries());
+    mDigitsBC->Fill(rof.getBCData().bc, rof.getNEntries());
+  }
+
   // fill the pixel hit maps and overview histograms
   for (auto& oneDigit : digits) {
 
     int chipIndex = oneDigit.getChipIndex();
 
-    // fill ladder histogram
-    mDigitLadderDoubleColumnOccupancyMap[mChipLadder[chipIndex]]->Fill(oneDigit.getColumn() >> 1, mChipPositionInLadder[chipIndex]);
-
     int vectorIndex = getVectorIndexPixelOccupancyMap(chipIndex);
     if (vectorIndex < 0) // if the chip is not from wanted FLP, the array will give -1
       continue;
+
+    // fill double column histogram
+    mDigitDoubleColumnSensorIndices->Fill(oneDigit.getColumn() >> 1, oneDigit.getChipIndex());
 
     // fill info into the summary histo
     int xBin = mDisk[chipIndex] * 2 + mFace[chipIndex];
@@ -271,14 +316,13 @@ void QcMFTDigitTask::reset()
 
   mMergerTest->Reset();
   mDigitChipOccupancy->Reset();
+  mDigitDoubleColumnSensorIndices->Reset();
   if (mNoiseScan == 1)
     mDigitChipStdDev->Reset();
   mDigitOccupancySummary->Reset();
-
-  // ladder histograms
-  for (int i = 0; i < 280; i++) { // there are 280 ladders
-    mDigitLadderDoubleColumnOccupancyMap[i]->Reset();
-  }
+  mDigitsROFSize->Reset();
+  mNOfDigitsTime->Reset();
+  mDigitsBC->Reset();
 
   // maps
   for (int iVectorOccupancyMapIndex = 0; iVectorOccupancyMapIndex < 4; iVectorOccupancyMapIndex++) {
@@ -330,15 +374,6 @@ void QcMFTDigitTask::getChipMapData()
     mLadder[i] = MFTTable.mLadder[i];
     mX[i] = MFTTable.mX[i];
     mY[i] = MFTTable.mY[i];
-    // info needed for ladder histograms
-    mChipLadder[i] = chipMapData[i].module;
-    mChipPositionInLadder[i] = chipMapData[i].chipOnModule;
-    if (mChipsInLadder[mChipLadder[i]] < (mChipPositionInLadder[i] + 1))
-      mChipsInLadder[mChipLadder[i]]++;
-    mHalfLadder[mChipLadder[i]] = mHalf[i];
-    mDiskLadder[mChipLadder[i]] = mDisk[i];
-    mFaceLadder[mChipLadder[i]] = mFace[i];
-    mZoneLadder[mChipLadder[i]] = mZone[i];
   }
 }
 

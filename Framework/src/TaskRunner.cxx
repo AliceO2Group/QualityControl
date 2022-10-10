@@ -22,15 +22,14 @@
 // O2
 #include <Common/Exceptions.h>
 #include <Monitoring/MonitoringFactory.h>
-#include <DataSampling/DataSampling.h>
 
 #include <Framework/CallbackService.h>
 #include <Framework/CompletionPolicyHelpers.h>
-#include <Framework/TimesliceIndex.h>
 #include <Framework/DataSpecUtils.h>
 #include <Framework/InputRecordWalker.h>
 #include <Framework/InputSpan.h>
 #include <Framework/DataRefUtils.h>
+#include <Framework/EndOfStreamContext.h>
 #include <CommonUtils/ConfigurableParam.h>
 
 #include "QualityControl/QcInfoLogger.h"
@@ -39,6 +38,7 @@
 #include "QualityControl/InfrastructureSpecReader.h"
 #include "QualityControl/TaskRunnerFactory.h"
 #include "QualityControl/ConfigParamGlo.h"
+#include "QualityControl/ObjectsManager.h"
 
 #include <string>
 #include <TFile.h>
@@ -56,7 +56,6 @@ using namespace o2::framework;
 using namespace o2::header;
 using namespace o2::configuration;
 using namespace o2::monitoring;
-using namespace o2::utilities;
 using namespace std::chrono;
 using namespace AliceO2::Common;
 
@@ -87,7 +86,8 @@ void TaskRunner::refreshConfig(InitContext& iCtx)
                                   infrastructureSpec.tasks.end(),
                                   [this](const TaskSpec& ts) { return ts.taskName == mTaskConfig.taskName; });
       if (taskSpecIter != infrastructureSpec.tasks.end()) {
-        int resetAfterCycles = TaskRunnerFactory::computeResetAfterCycles(*taskSpecIter);
+        bool runningWithMergers = mTaskConfig.parallelTaskID != 0; // it is 0 when we are the one and only task instance.
+        int resetAfterCycles = TaskRunnerFactory::computeResetAfterCycles(*taskSpecIter, runningWithMergers);
         mTaskConfig = TaskRunnerFactory::extractConfig(infrastructureSpec.common, *taskSpecIter, mTaskConfig.parallelTaskID, resetAfterCycles);
         ILOG(Debug, Devel) << "Configuration refreshed" << ENDM;
       } else {
@@ -106,6 +106,8 @@ void TaskRunner::refreshConfig(InitContext& iCtx)
 
 void TaskRunner::initInfologger(InitContext& iCtx)
 {
+  // TODO : the method should be merged with the other, similar, methods in *Runners
+
   AliceO2::InfoLogger::InfoLoggerContext* ilContext = nullptr;
   AliceO2::InfoLogger::InfoLogger* il = nullptr;
   try {
@@ -114,6 +116,8 @@ void TaskRunner::initInfologger(InitContext& iCtx)
   } catch (const RuntimeErrorRef& err) {
     ILOG(Error, Devel) << "Could not find the DPL InfoLogger" << ENDM;
   }
+
+  mTaskConfig.infologgerDiscardFile = templateILDiscardFile(mTaskConfig.infologgerDiscardFile, iCtx);
   QcInfoLogger::init("task/" + mTaskConfig.taskName,
                      mTaskConfig.infologgerFilterDiscardDebug,
                      mTaskConfig.infologgerDiscardLevel,
@@ -248,10 +252,10 @@ header::DataOrigin TaskRunner::createTaskDataOrigin(const std::string& detectorC
   // However, to avoid colliding with data marked as e.g. TPC/CLUSTERS, we add 'Q' to the data origin, so it is Q<det>.
   std::string originStr = "Q";
   if (detectorCode.empty()) {
-    ILOG(Warning, Ops) << "empty detector code for a task data origin, trying to survive with: DET" << ENDM;
+    ILOG(Warning, Support) << "empty detector code for a task data origin, trying to survive with: DET" << ENDM;
     originStr += "DET";
   } else if (detectorCode.size() > 3) {
-    ILOG(Warning, Ops) << "too long detector code for a task data origin: " + detectorCode + ", trying to survive with: " + detectorCode.substr(0, 3) << ENDM;
+    ILOG(Warning, Support) << "too long detector code for a task data origin: " + detectorCode + ", trying to survive with: " + detectorCode.substr(0, 3) << ENDM;
     originStr += detectorCode.substr(0, 3);
   } else {
     originStr += detectorCode;
@@ -291,27 +295,27 @@ header::DataDescription TaskRunner::createTimerDataDescription(const std::string
 
 void TaskRunner::endOfStream(framework::EndOfStreamContext& eosContext)
 {
-  ILOG(Info, Support) << "Received an EndOfStream, finishing the current cycle" << ENDM;
-  finishCycle(eosContext.outputs());
+  if (!mCycleOn && mCycleNumber == 0) {
+    ILOG(Error, Support) << "An EndOfStream was received before TaskRunner could start the first cycle, probably the device was not started. Something is wrong, doing nothing." << ENDM;
+  } else {
+    ILOG(Info, Support) << "Received an EndOfStream, finishing the current cycle" << ENDM;
+    finishCycle(eosContext.outputs());
+  }
   mNoMoreCycles = true;
 }
 
 void TaskRunner::start(const ServiceRegistry& services)
 {
-  mRunNumber = o2::quality_control::core::computeRunNumber(services, mTaskConfig.fallbackRunNumber);
+  mRunNumber = o2::quality_control::core::computeRunNumber(services, mTaskConfig.fallbackActivity.mId);
   QcInfoLogger::setRun(mRunNumber);
   string partitionName = computePartitionName(services);
   QcInfoLogger::setPartition(partitionName);
 
+  mNoMoreCycles = false;
+  mCycleNumber = 0;
+
   try {
     startOfActivity();
-
-    if (mNoMoreCycles) {
-      ILOG(Info, Support) << "The maximum number of cycles (" << mTaskConfig.maxNumberCycles << ") has been reached"
-                          << " or the device has received an EndOfStream signal. Won't start a new cycle." << ENDM;
-      return;
-    }
-
     startCycle();
   } catch (...) {
     // we catch here because we don't know where it will go in DPL's CallbackService
@@ -396,8 +400,9 @@ void TaskRunner::startOfActivity()
   mTotalNumberObjectsPublished = 0;
 
   // Start activity in module's stask and update objectsManager
-  Activity activity(mRunNumber, mTaskConfig.activityType, mTaskConfig.activityPeriodName, mTaskConfig.activityPassName, mTaskConfig.activityProvenance);
-  ILOG(Info, Ops) << "Starting run " << mRunNumber << ENDM;
+  Activity activity = mTaskConfig.fallbackActivity;
+  activity.mId = mRunNumber;
+  ILOG(Info, Support) << "Starting run " << mRunNumber << ENDM;
   mObjectsManager->setActivity(activity);
   mCollector->setRunNumber(mRunNumber);
   mTask->startOfActivity(activity);
@@ -406,8 +411,9 @@ void TaskRunner::startOfActivity()
 
 void TaskRunner::endOfActivity()
 {
-  Activity activity(mRunNumber, mTaskConfig.activityType, mTaskConfig.activityPeriodName, mTaskConfig.activityPassName, mTaskConfig.activityProvenance);
-  ILOG(Info, Ops) << "Stopping run " << mRunNumber << ENDM;
+  Activity activity = mTaskConfig.fallbackActivity;
+  activity.mId = mRunNumber;
+  ILOG(Info, Support) << "Stopping run " << mRunNumber << ENDM;
   mTask->endOfActivity(activity);
   mObjectsManager->removeAllFromServiceDiscovery();
 
@@ -417,7 +423,7 @@ void TaskRunner::endOfActivity()
 
 void TaskRunner::startCycle()
 {
-  ILOG(Debug, Ops) << "Start cycle " << mCycleNumber << ENDM;
+  ILOG(Debug, Support) << "Start cycle " << mCycleNumber << ENDM;
   mTask->startOfCycle();
   mNumberMessagesReceivedInCycle = 0;
   mNumberObjectsPublishedInCycle = 0;
@@ -428,7 +434,7 @@ void TaskRunner::startCycle()
 
 void TaskRunner::finishCycle(DataAllocator& outputs)
 {
-  ILOG(Debug, Ops) << "Finish cycle " << mCycleNumber << ENDM;
+  ILOG(Debug, Support) << "Finish cycle " << mCycleNumber << ENDM;
   mTask->endOfCycle();
 
   mNumberObjectsPublishedInCycle += publish(outputs);

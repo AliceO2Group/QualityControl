@@ -106,6 +106,12 @@ BOOST_AUTO_TEST_CASE(test_factory)
   BOOST_CHECK_THROW(trigger_helpers::triggerFactory("foreachlatest:nodb:qc/incorrect/db/speficied", configWithDBs), std::invalid_argument);
   BOOST_CHECK_THROW(trigger_helpers::triggerFactory("foreachlatest:ccdb:qc/too:many tokens", configWithDBs), std::invalid_argument);
 
+  // check if config string is propagated
+  BOOST_CHECK_EQUAL(trigger_helpers::triggerFactory("10sec", dummyConfig)().config, "10sec");
+  BOOST_CHECK_EQUAL(trigger_helpers::triggerFactory("newobject:qcdb:qc/asdf/vcxz", configWithDBs)().config, "newobject:qcdb:qc/asdf/vcxz");
+  BOOST_CHECK_EQUAL(trigger_helpers::triggerFactory("foreachobject:qcdb:qc/asdf/vcxz", configWithDBs)().config, "foreachobject:qcdb:qc/asdf/vcxz");
+  BOOST_CHECK_EQUAL(trigger_helpers::triggerFactory("foreachlatest:qcdb:qc/asdf/vcxz", configWithDBs)().config, "foreachlatest:qcdb:qc/asdf/vcxz");
+
   // fixme: this is treated as "123 seconds", do we want to be so defensive?
   BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("123 secure code", dummyConfig));
 }

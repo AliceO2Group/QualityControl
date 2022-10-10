@@ -1,0 +1,91 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "42",
+          "type": "2",
+	  "passName": "",
+          "periodName" : ""
+        	 
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": ""
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      }
+    },
+  
+    "postprocessing": {
+        "TRDTrending": {
+        "active": "true",
+        "className": "o2::quality_control::postprocessing::TRDTrending",
+        "moduleName": "QualityControl",
+        "detectorName": "TRD",
+        "dataSources": [
+          {
+            "type": "repository",
+              "path": "TRD/MO/TrackletsTask/",		       
+              "names": [ "trackletspertimeframe",
+			 "trackletsperevent" ],
+            "reductorName": "o2::quality_control_modules::common::TH1Reductor",
+            "moduleName": "QcTRD"
+          }
+        ],
+        "plots": [
+         
+	    {
+		"names": ["mean_distribution_trackletpertimeframe","mean_distribution_trackletperevent"],
+		"title": ["mean distribution of tracklet per timeframe","mean distribution of tracklet per event"],
+            "varexp": ["trackletspertimeframe.mean","trackletsperevent.mean"],
+            "selection": "",
+            "option": ""
+            },
+	     {
+              "names": ["mean_trend_trackletspertimeframe", "mean_trend_trackletperevent"],
+              "title": ["Mean trend of the Tracklet per time frame","Mean trend of tracklet per event"],
+              "varexp": ["trackletspertimeframe.mean:time","trackletsperevent.mean:time"],
+            "selection": "",
+            "option": "PL"
+          }
+        ],
+        "initTrigger": [
+          "usercontrol"
+        ],
+        "updateTrigger": [
+            "10 seconds"
+        ],
+        "stopTrigger": [
+           "usercontrol"
+        ]
+	},
+         "PulseHeightPerChamber2D": {
+	    "active": "true",
+        "className": "o2::quality_control::postprocessing::PulseHeightPostProcessing",
+        "moduleName": "QualityControl",
+        "detectorName": "TRD",
+	    "path": "qc/TRD/MO/DigitTask/PulseHeight/mPulseHeightperchamber",
+	    "timestamps":"-1",
+	     "initTrigger": [
+          "usercontrol"
+        ],
+        "updateTrigger": [
+            "once"
+        ],
+        "stopTrigger": [
+           "usercontrol"
+        ]
+        }
+    }
+  }
+}

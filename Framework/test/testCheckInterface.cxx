@@ -23,8 +23,10 @@
 #include <boost/test/unit_test.hpp>
 #include <TObjString.h>
 #include <string>
+#include "QualityControl/MonitorObject.h"
 
 using namespace o2::quality_control;
+using namespace o2::quality_control::core;
 using namespace std;
 
 namespace o2::quality_control

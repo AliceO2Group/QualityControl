@@ -17,6 +17,7 @@
 #ifndef QUALITYCONTROL_DATAPRODUCER_H
 #define QUALITYCONTROL_DATAPRODUCER_H
 
+#include <string>
 #include <Framework/DataProcessorSpec.h>
 
 namespace o2::quality_control::core

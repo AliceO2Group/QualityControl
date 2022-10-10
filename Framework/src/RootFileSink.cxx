@@ -60,10 +60,6 @@ void closeSinkFile(TFile* file)
   }
 }
 
-RootFileSink::~RootFileSink()
-{
-}
-
 void RootFileSink::customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies)
 {
   auto matcher = [label = RootFileSink::getLabel()](framework::DeviceSpec const& device) {
@@ -98,12 +94,24 @@ void RootFileSink::run(framework::ProcessingContext& pctx)
         continue;
       }
 
+      auto detector = moc->getDetector();
+      TDirectory* detDir = sinkFile->GetDirectory(detector.c_str());
+      if (detDir == nullptr) {
+        ILOG(Info, Devel) << "Creating a new directory '" << detector << "'." << ENDM;
+        sinkFile->mkdir(detector.c_str());
+        detDir = sinkFile->GetDirectory(detector.c_str());
+        if (detDir == nullptr) {
+          ILOG(Error, Support) << "Could not create directory '" << detector << "', skipping." << ENDM;
+          continue;
+        }
+      }
+
       ILOG(Info, Support) << "Checking for existing objects in the file." << ENDM;
-      auto storedTObj = sinkFile->Get(mocName);
+      auto storedTObj = detDir->Get(mocName);
       if (storedTObj != nullptr) {
         auto storedMOC = dynamic_cast<MonitorObjectCollection*>(storedTObj);
         if (storedMOC == nullptr) {
-          ILOG(Error, Ops) << "Could not cast the stored object to MonitorObjectCollection, skipping." << ENDM;
+          ILOG(Error, Support) << "Could not cast the stored object to MonitorObjectCollection, skipping." << ENDM;
           delete storedTObj;
           continue;
         }
@@ -113,7 +121,7 @@ void RootFileSink::run(framework::ProcessingContext& pctx)
       }
       delete storedTObj;
 
-      auto nbytes = sinkFile->WriteObject(moc, moc->GetName(), "Overwrite");
+      auto nbytes = detDir->WriteObject(moc, moc->GetName(), "Overwrite");
       ILOG(Info, Support) << "Object '" << moc->GetName() << "' has been stored in the file (" << nbytes << " bytes)." << ENDM;
       delete moc;
     }

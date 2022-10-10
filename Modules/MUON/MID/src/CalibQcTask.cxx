@@ -49,8 +49,10 @@ CalibQcTask::~CalibQcTask()
 void CalibQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info, Support) << "initialize CalibQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
-  std::cout << "!!!! START initialize CalibQcTask !!!! " << std::endl;
+  // std::cout << "!!!! START initialize CalibQcTask !!!! " << std::endl;
   /////////////////
+  mNbTimeFrame = std::make_shared<TH1F>("NbTimeFrame", "NbTimeFrame", 1, 0, 1.);
+  getObjectsManager()->startPublishing(mNbTimeFrame.get());
   /// Noise strips Histograms ::
 
   mMultNoiseMT11B = std::make_shared<TH1F>("MultNoiseMT11B", "Multiplicity Noise strips - MT11 bending plane", 300, 0, 3000);
@@ -214,7 +216,10 @@ void CalibQcTask::startOfCycle()
 
 void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  std::cout << "!!!! START monitorData CalibQcTask !!!! " << std::endl;
+  // std::cout << "!!!! START monitorData CalibQcTask !!!! " << std::endl;
+  nTF++;
+  // printf("----------------> %05d TF ",nTF);
+  mNbTimeFrame->Fill(0.5, 1.);
 
   auto noises = ctx.inputs().get<gsl::span<o2::mid::ColumnData>>("noise");
   auto noiserofs = ctx.inputs().get<gsl::span<o2::mid::ROFRecord>>("noiserofs");
@@ -239,12 +244,12 @@ void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   int multDeadMT12NB = 0;
   int multDeadMT21NB = 0;
   int multDeadMT22NB = 0;
-  printf("========================================================== \n");
+  // printf("========================================================== \n");
 
   for (const auto& noiserof : noiserofs) { // loop noiseROFs //
-    printf("========================================================== \n");
-    printf("%05d ROF with first entry %05zu and nentries %02zu , BC %05d, ORB %05d , EventType %02d\n", noiseROF, noiserof.firstEntry, noiserof.nEntries, noiserof.interactionRecord.bc, noiserof.interactionRecord.orbit, (int)noiserof.eventType);
-    //   eventType::  Standard = 0, Calib = 1, FET = 2
+    // printf("========================================================== \n");
+    // printf("%05d noiseROF with first entry %05zu and nentries %02zu , BC %05d, ORB %05d , EventType %02d\n", noiseROF, noiserof.firstEntry, noiserof.nEntries, noiserof.interactionRecord.bc, noiserof.interactionRecord.orbit, (int)noiserof.eventType);
+    //    eventType::  Standard = 0, Calib = 1, FET = 2
     noiseROF++;
     multNoiseMT11B = 0;
     multNoiseMT12B = 0;
@@ -402,12 +407,12 @@ void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   // auto deads = o2::mid::specs::getData(ctx, "digits", o2::mid::EventType::FET);
   // auto deadrofs = o2::mid::specs::getRofs(ctx, "digits", o2::mid::EventType::FET);
 
-  printf("========================================================== \n");
+  // printf("========================================================== \n");
 
   for (const auto& deadrof : deadrofs) { // loop deadROFs //
-    printf("========================================================== \n");
-    printf("%05d deadROF with first entry %05zu and nentries %02zu , BC %05d, ORB %05d , EventType %02d\n", deadROF, deadrof.firstEntry, deadrof.nEntries, deadrof.interactionRecord.bc, deadrof.interactionRecord.orbit, (int)deadrof.eventType);
-    //  eventType::  Standard = 0, Calib = 1, FET = 2
+    // printf("========================================================== \n");
+    // printf("%05d deadROF with first entry %05zu and nentries %02zu , BC %05d, ORB %05d , EventType %02d\n", deadROF, deadrof.firstEntry, deadrof.nEntries, deadrof.interactionRecord.bc, deadrof.interactionRecord.orbit, (int)deadrof.eventType);
+    //   eventType::  Standard = 0, Calib = 1, FET = 2
     deadROF++;
 
     multDeadMT11B = 0;
@@ -421,7 +426,7 @@ void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
     // printf(" deadROF =%i ;EventType %02d   ;  \n", deadROF, deadrof.eventType);
     // if (deadROF != 1)
-    // continue; /// TEST ONE FET EVENT ONLY !!!
+    //  continue; /// TEST ONE FET EVENT ONLY !!!
 
     int Ntest = 0;
     // loadStripPatterns (ColumnData)
@@ -570,9 +575,9 @@ void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     mMultDeadMT12NB->Fill(multDeadMT12NB);
     mMultDeadMT21NB->Fill(multDeadMT21NB);
     mMultDeadMT22NB->Fill(multDeadMT22NB);
-    std::cout << "!!!! END boards loop in ROF !!!! " << std::endl;
+    // std::cout << "!!!! END boards loop in ROF !!!! " << std::endl;
   } //  deadROFs //
-  std::cout << "!!!! END monitorData CalibQcTask !!!! " << std::endl;
+  // std::cout << "!!!! END monitorData CalibQcTask !!!! " << std::endl;
 }
 
 void CalibQcTask::endOfCycle()

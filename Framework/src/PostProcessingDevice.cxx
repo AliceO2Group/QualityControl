@@ -18,6 +18,7 @@
 
 #include "QualityControl/PostProcessingRunner.h"
 #include "QualityControl/PostProcessingConfig.h"
+#include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/PostProcessingRunnerConfig.h"
 #include "QualityControl/QcInfoLogger.h"
 
@@ -122,7 +123,7 @@ framework::Inputs PostProcessingDevice::getInputsSpecs()
 
 framework::Outputs PostProcessingDevice::getOutputSpecs()
 {
-  return { { { outputBinding }, createPostProcessingDataOrigin(), createPostProcessingDataDescription(mRunner->getName()), 0 } };
+  return { { { outputBinding }, createPostProcessingDataOrigin(), createPostProcessingDataDescription(mRunner->getName()), 0, Lifetime::Sporadic } };
 }
 
 framework::Options PostProcessingDevice::getOptions()

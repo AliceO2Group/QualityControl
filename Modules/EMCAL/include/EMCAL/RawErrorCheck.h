@@ -19,6 +19,11 @@
 
 #include "QualityControl/CheckInterface.h"
 
+namespace o2::emcal
+{
+class Geometry;
+}
+
 namespace o2::quality_control_modules::emcal
 {
 
@@ -43,6 +48,16 @@ class RawErrorCheck : public o2::quality_control::checker::CheckInterface
   std::string getAcceptedType() override;
 
   ClassDefOverride(RawErrorCheck, 2);
+
+ private:
+  /// \brief Decode key of a configurable parameter as boolean
+  /// \param value Value to be decoded (true or false, case-insensitive)
+  /// \return Boolean representation of the value
+  /// \throw std::runtime_error in case value is not a boolean value
+  bool decodeBool(std::string value) const;
+
+  o2::emcal::Geometry* mGeometry; ///< Geometry for mapping position between SM and full EMCAL
+  bool mNotifyInfologger = true;  ///< Switch for notification to infologger
 };
 
 } // namespace o2::quality_control_modules::emcal

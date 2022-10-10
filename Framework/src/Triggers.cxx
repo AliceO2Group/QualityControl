@@ -83,10 +83,10 @@ TriggerFcn Once(const Activity& activity)
 {
   return [hasTriggered = false, activity]() mutable -> Trigger {
     if (hasTriggered) {
-      return { TriggerType::No, true, activity };
+      return { TriggerType::No, true, activity, Trigger::msSinceEpoch(), "once" };
     } else {
       hasTriggered = true;
-      return { TriggerType::Once, true, activity };
+      return { TriggerType::Once, true, activity, Trigger::msSinceEpoch(), "once" };
     }
   };
 }
@@ -94,14 +94,14 @@ TriggerFcn Once(const Activity& activity)
 TriggerFcn Always(const Activity& activity)
 {
   return [activity]() mutable -> Trigger {
-    return { TriggerType::Always, false, activity };
+    return { TriggerType::Always, false, activity, Trigger::msSinceEpoch(), "always" };
   };
 }
 
 TriggerFcn Never(const Activity& activity)
 {
   return [activity]() mutable -> Trigger {
-    return { TriggerType::No, true, activity };
+    return { TriggerType::No, true, activity, Trigger::msSinceEpoch(), "never" };
   };
 }
 
@@ -120,12 +120,12 @@ TriggerFcn EndOfFill(const Activity&)
   return NotImplemented("EndOfFill");
 }
 
-TriggerFcn Periodic(double seconds, const Activity& activity)
+TriggerFcn Periodic(double seconds, const Activity& activity, std::string config)
 {
   AliceO2::Common::Timer timer;
   timer.reset(static_cast<int>(seconds * 1000000));
 
-  return [timer, activity]() mutable -> Trigger {
+  return [timer, activity, config]() mutable -> Trigger {
     if (timer.isTimeout()) {
       // We calculate the exact time when timer has passed
       uint64_t timestamp = Trigger::msSinceEpoch() + static_cast<int>(timer.getRemainingTime() * 1000);
@@ -134,14 +134,14 @@ TriggerFcn Periodic(double seconds, const Activity& activity)
       while (timer.isTimeout()) {
         timer.increment();
       }
-      return { TriggerType::Periodic, false, activity, timestamp };
+      return { TriggerType::Periodic, false, activity, timestamp, config };
     } else {
-      return { TriggerType::No, false };
+      return { TriggerType::No, false, activity, Trigger::msSinceEpoch(), config };
     }
   };
 }
 
-TriggerFcn NewObject(std::string databaseUrl, std::string databaseType, std::string objectPath, const Activity& activity)
+TriggerFcn NewObject(std::string databaseUrl, std::string databaseType, std::string objectPath, const Activity& activity, std::string config)
 {
   // Key names in the header map.
   constexpr auto timestampKey = metadata_keys::validFrom;
@@ -167,24 +167,25 @@ TriggerFcn NewObject(std::string databaseUrl, std::string databaseType, std::str
     ILOG(Warning, Support) << "Could not find the file '" << fullObjectPath << "' in the db '" << databaseUrl << "' for given Activity settings. It is fine at SOR." << ENDM;
   }
 
-  return [db, databaseUrl = std::move(databaseUrl), fullObjectPath = std::move(fullObjectPath), lastMD5, activity, metadata]() mutable -> Trigger {
+  return [db, databaseUrl = std::move(databaseUrl), fullObjectPath = std::move(fullObjectPath), lastMD5, activity, metadata, config]() mutable -> Trigger {
     if (auto headers = db->retrieveHeaders(fullObjectPath, metadata); headers.count(metadata_keys::md5sum)) {
       auto newMD5 = headers[metadata_keys::md5sum];
       if (lastMD5 != newMD5) {
         lastMD5 = newMD5;
-        return { TriggerType::NewObject, false, activity, std::stoull(headers[timestampKey]) };
+        return { TriggerType::NewObject, false, activity, std::stoull(headers[timestampKey]), config };
       }
     } else {
       // We don't make a fuss over it, because we might be just waiting for the first version of such object.
       // It should not happen often though, so having a warning makes sense.
-      ILOG(Warning, Support) << "Could not find the file '" << fullObjectPath << "' in the db '" << databaseUrl << "' for given Activity settings." << ENDM;
+      ILOG(Warning, Support) << "Could not find the file '" << fullObjectPath << "' in the db '"
+                             << databaseUrl << "' for given Activity settings (" << activity << ")" << ENDM;
     }
 
-    return { TriggerType::No, false };
+    return { TriggerType::No, false, activity, Trigger::msSinceEpoch(), config };
   };
 }
 
-TriggerFcn ForEachObject(std::string databaseUrl, std::string databaseType, std::string objectPath, const Activity& activity)
+TriggerFcn ForEachObject(std::string databaseUrl, std::string databaseType, std::string objectPath, const Activity& activity, std::string config)
 {
   // Key names in the header map.
   constexpr auto timestampKey = metadata_keys::validFrom;
@@ -219,7 +220,7 @@ TriggerFcn ForEachObject(std::string databaseUrl, std::string databaseType, std:
               return a.get<int64_t>(timestampKey) < b.get<int64_t>(timestampKey);
             });
 
-  return [filteredObjects, activity, currentObject = filteredObjects->begin()]() mutable -> Trigger {
+  return [filteredObjects, activity, currentObject = filteredObjects->begin(), config]() mutable -> Trigger {
     if (currentObject != filteredObjects->end()) {
       auto currentActivity = repository::database_helpers::asActivity(*currentObject);
       bool last = currentObject + 1 == filteredObjects->end();
@@ -227,12 +228,12 @@ TriggerFcn ForEachObject(std::string databaseUrl, std::string databaseType, std:
       ++currentObject;
       return trigger;
     } else {
-      return { TriggerType::No, true, activity };
+      return { TriggerType::No, true, activity, Trigger::msSinceEpoch(), config };
     }
   };
 }
 
-TriggerFcn ForEachLatest(std::string databaseUrl, std::string databaseType, std::string objectPath, const Activity& activity)
+TriggerFcn ForEachLatest(std::string databaseUrl, std::string databaseType, std::string objectPath, const Activity& activity, std::string config)
 {
   // Key names in the header map.
   constexpr auto timestampKey = metadata_keys::created;
@@ -282,16 +283,16 @@ TriggerFcn ForEachLatest(std::string databaseUrl, std::string databaseType, std:
                                            b.second.get<int64_t>(metadata_keys::runNumber, 0));
             });
 
-  return [filteredObjects, activity, currentObject = filteredObjects->begin()]() mutable -> Trigger {
+  return [filteredObjects, activity, currentObject = filteredObjects->begin(), config]() mutable -> Trigger {
     if (currentObject != filteredObjects->end()) {
       const auto& currentActivity = currentObject->first;
       const auto& currentPtree = currentObject->second;
       bool last = currentObject + 1 == filteredObjects->end();
-      Trigger trigger(TriggerType::ForEachLatest, last, currentActivity, currentPtree.get<int64_t>(timestampKey));
+      Trigger trigger(TriggerType::ForEachLatest, last, currentActivity, currentPtree.get<int64_t>(timestampKey), config);
       ++currentObject;
       return trigger;
     } else {
-      return { TriggerType::No, true, activity };
+      return { TriggerType::No, true, activity, Trigger::msSinceEpoch(), config };
     }
   };
 }
