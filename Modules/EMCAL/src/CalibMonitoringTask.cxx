@@ -43,7 +43,7 @@ void CalibMonitoringTask::configure(std::string name, const boost::property_tree
   }
 }
 
-void CalibMonitoringTask::initialize(Trigger, framework::ServiceRegistry&)
+void CalibMonitoringTask::initialize(Trigger, framework::ServiceRegistryRef)
 {
   QcInfoLogger::setDetector("EMC");
   ILOG(Info, Support) << "initialize CalibTask" << ENDM;
@@ -70,7 +70,7 @@ void CalibMonitoringTask::initialize(Trigger, framework::ServiceRegistry&)
   o2::emcal::Geometry::GetInstanceFromRunNumber(300000);
 }
 
-void CalibMonitoringTask::update(Trigger t, framework::ServiceRegistry&)
+void CalibMonitoringTask::update(Trigger t, framework::ServiceRegistryRef)
 {
   auto geo = o2::emcal::Geometry::GetInstance();
   std::map<std::string, std::string> metadata;
@@ -104,7 +104,7 @@ void CalibMonitoringTask::update(Trigger t, framework::ServiceRegistry&)
   }
 }
 
-void CalibMonitoringTask::finalize(Trigger t, framework::ServiceRegistry&)
+void CalibMonitoringTask::finalize(Trigger t, framework::ServiceRegistryRef)
 {
   for (const auto& obj : mCalibObjects) {
     if (obj == "BadChannelMap") {

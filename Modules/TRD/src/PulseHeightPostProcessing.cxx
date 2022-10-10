@@ -50,7 +50,7 @@ void PulseHeightPostProcessing::configure(std::string name, const boost::propert
   mTimestamps = config.get<long>("qc.postprocessing.PulseHeightPerChamber2D.timestamps");
 }
 
-void PulseHeightPostProcessing::initialize(Trigger, framework::ServiceRegistry& services)
+void PulseHeightPostProcessing::initialize(Trigger, framework::ServiceRegistryRef services)
 {
 
   mCdbph.init(mHost);
@@ -66,12 +66,12 @@ void PulseHeightPostProcessing::initialize(Trigger, framework::ServiceRegistry& 
 }
 
 // todo: see if OptimizeBaskets() indeed helps after some time
-void PulseHeightPostProcessing::update(Trigger t, framework::ServiceRegistry&)
+void PulseHeightPostProcessing::update(Trigger t, framework::ServiceRegistryRef)
 {
   PlotPulseHeightPerChamber();
 }
 
-void PulseHeightPostProcessing::finalize(Trigger, framework::ServiceRegistry& services)
+void PulseHeightPostProcessing::finalize(Trigger, framework::ServiceRegistryRef services)
 {
   for (Int_t sm = 0; sm < 18; sm++)
     getObjectsManager()->stopPublishing(cc[sm].get());

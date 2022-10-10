@@ -37,7 +37,7 @@ void TrendingTask::configure(std::string name, const boost::property_tree::ptree
   mConfig = TrendingTaskConfig(name, config);
 }
 
-void TrendingTask::initialize(Trigger, framework::ServiceRegistry& services)
+void TrendingTask::initialize(Trigger, framework::ServiceRegistryRef services)
 {
   // Preparing data structure of TTree
   if (mConfig.resumeTrend) {
@@ -81,7 +81,7 @@ void TrendingTask::initialize(Trigger, framework::ServiceRegistry& services)
 }
 
 //todo: see if OptimizeBaskets() indeed helps after some time
-void TrendingTask::update(Trigger t, framework::ServiceRegistry& services)
+void TrendingTask::update(Trigger t, framework::ServiceRegistryRef services)
 {
   auto& qcdb = services.get<repository::DatabaseInterface>();
 
@@ -91,7 +91,7 @@ void TrendingTask::update(Trigger t, framework::ServiceRegistry& services)
   }
 }
 
-void TrendingTask::finalize(Trigger, framework::ServiceRegistry&)
+void TrendingTask::finalize(Trigger, framework::ServiceRegistryRef)
 {
   if (!mConfig.producePlotsOnUpdate) {
     getObjectsManager()->startPublishing(mTrend.get());

@@ -36,7 +36,7 @@ void LaserTracks::configure(std::string name, const boost::property_tree::ptree&
   o2::tpc::CDBInterface::instance().setURL(config.get<std::string>("qc.postprocessing." + name + ".dataSourceURL"));
 }
 
-void LaserTracks::initialize(Trigger, framework::ServiceRegistry&)
+void LaserTracks::initialize(Trigger, framework::ServiceRegistryRef)
 {
   addAndPublish(getObjectsManager(),
                 mLaserTracksCanvasVec,
@@ -44,7 +44,7 @@ void LaserTracks::initialize(Trigger, framework::ServiceRegistry&)
                 mStoreMap);
 }
 
-void LaserTracks::update(Trigger t, framework::ServiceRegistry&)
+void LaserTracks::update(Trigger t, framework::ServiceRegistryRef)
 {
   ILOG(Info, Support) << "Trigger type is: " << t.triggerType << ", the timestamp is " << t.timestamp << ENDM;
 
@@ -54,7 +54,7 @@ void LaserTracks::update(Trigger t, framework::ServiceRegistry&)
   o2::tpc::painter::makeSummaryCanvases(calibData, &vecPtr);
 }
 
-void LaserTracks::finalize(Trigger t, framework::ServiceRegistry&)
+void LaserTracks::finalize(Trigger t, framework::ServiceRegistryRef)
 {
   for (const auto& canvas : mLaserTracksCanvasVec) {
     getObjectsManager()->stopPublishing(canvas.get());

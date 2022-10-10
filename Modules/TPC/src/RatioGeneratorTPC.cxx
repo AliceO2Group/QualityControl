@@ -54,14 +54,14 @@ void RatioGeneratorTPC::configure(std::string name,
   } // for (const auto& dataSourceConfig : config.get_child("qc.postprocessing." + name + ".ratioConfig"))
 }
 
-void RatioGeneratorTPC::update(Trigger t, framework::ServiceRegistry& services)
+void RatioGeneratorTPC::update(Trigger t, framework::ServiceRegistryRef services)
 {
   auto& qcdb = services.get<repository::DatabaseInterface>();
   generateRatios(t, qcdb);
   generatePlots();
 }
 
-void RatioGeneratorTPC::finalize(Trigger t, framework::ServiceRegistry&)
+void RatioGeneratorTPC::finalize(Trigger t, framework::ServiceRegistryRef)
 {
   generatePlots();
   for (const auto& source : mConfig) {

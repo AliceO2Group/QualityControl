@@ -18,6 +18,7 @@
 #include "QualityControl/PostProcessingRunner.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/runnerUtils.h"
+#include "Framework/ServiceRegistryRef.h"
 
 #include <Common/Timer.h>
 #include <boost/program_options.hpp>
@@ -27,6 +28,7 @@ using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;
 using namespace AliceO2::Common;
 using namespace o2::configuration;
+using o2::framework::ServiceRegistry;
 namespace bpo = boost::program_options;
 
 int main(int argc, const char* argv[])
@@ -80,8 +82,9 @@ int main(int argc, const char* argv[])
       // running the PP task on a set of timestamps
       runner.runOverTimestamps(vm["timestamps"].as<std::vector<uint64_t>>());
     } else {
+      ServiceRegistry registry;
       // running the PP task with an event loop
-      runner.start();
+      runner.start({ registry });
 
       Timer timer;
       timer.reset(periodUs);

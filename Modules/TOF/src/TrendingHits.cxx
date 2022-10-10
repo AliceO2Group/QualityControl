@@ -41,7 +41,7 @@ void TrendingHits::configure(std::string name, const boost::property_tree::ptree
   mConfig = TrendingConfigTOF(name, config);
 }
 
-void TrendingHits::initialize(Trigger, framework::ServiceRegistry&)
+void TrendingHits::initialize(Trigger, framework::ServiceRegistryRef)
 {
   // Preparing data structure of TTree
   mTrend = std::make_unique<TTree>(); // todo: retrieve last TTree, so we continue trending. maybe do it optionally?
@@ -59,7 +59,7 @@ void TrendingHits::initialize(Trigger, framework::ServiceRegistry&)
 }
 
 //todo: see if OptimizeBaskets() indeed helps after some time
-void TrendingHits::update(Trigger t, framework::ServiceRegistry& services)
+void TrendingHits::update(Trigger t, framework::ServiceRegistryRef services)
 {
   auto& qcdb = services.get<repository::DatabaseInterface>();
 
@@ -67,7 +67,7 @@ void TrendingHits::update(Trigger t, framework::ServiceRegistry& services)
   generatePlots();
 }
 
-void TrendingHits::finalize(Trigger t, framework::ServiceRegistry&)
+void TrendingHits::finalize(Trigger t, framework::ServiceRegistryRef)
 {
   generatePlots();
 }

@@ -53,7 +53,7 @@ void TrendingTracks::configure(std::string name, const boost::property_tree::ptr
   }
 }
 
-void TrendingTracks::initialize(Trigger, framework::ServiceRegistry&)
+void TrendingTracks::initialize(Trigger, framework::ServiceRegistryRef)
 {
   // Setting parameters
 
@@ -101,7 +101,7 @@ void TrendingTracks::computeClustersPerChamber(TProfile* p)
 }
 
 // todo: see if OptimizeBaskets() indeed helps after some time
-void TrendingTracks::update(Trigger t, framework::ServiceRegistry& services)
+void TrendingTracks::update(Trigger t, framework::ServiceRegistryRef services)
 {
   std::cout << "TrendingTracks::update()" << std::endl;
   auto& qcdb = services.get<repository::DatabaseInterface>();
@@ -110,7 +110,7 @@ void TrendingTracks::update(Trigger t, framework::ServiceRegistry& services)
   generatePlots();
 }
 
-void TrendingTracks::finalize(Trigger t, framework::ServiceRegistry&)
+void TrendingTracks::finalize(Trigger t, framework::ServiceRegistryRef)
 {
   generatePlots();
 }
