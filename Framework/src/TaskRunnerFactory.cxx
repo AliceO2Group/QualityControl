@@ -111,9 +111,7 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
     parallelTaskID,
     taskSpec.saveObjectsToFile,
     resetAfterCycles.value_or(taskSpec.resetAfterCycles),
-    globalConfig.infologgerFilterDiscardDebug,
-    globalConfig.infologgerDiscardLevel,
-    globalConfig.infologgerDiscardFile,
+    globalConfig.infologgerDiscardParameters,
     fallbackActivity
   };
 }
