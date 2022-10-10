@@ -84,9 +84,7 @@ AggregatorRunnerConfig AggregatorRunnerFactory::extractRunnerConfig(const core::
     commonSpec.database,
     commonSpec.consulUrl,
     commonSpec.monitoringUrl,
-    commonSpec.infologgerFilterDiscardDebug,
-    commonSpec.infologgerDiscardLevel,
-    commonSpec.infologgerDiscardFile,
+    commonSpec.infologgerDiscardParameters,
     fallbackActivity,
     options
   };

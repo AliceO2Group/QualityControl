@@ -68,7 +68,7 @@ void PostProcessingRunner::init(const PostProcessingRunnerConfig& runnerConfig, 
   mRunnerConfig = runnerConfig;
   mTaskConfig = taskConfig;
 
-  QcInfoLogger::init("post/" + mName, runnerConfig.infologgerFilterDiscardDebug, runnerConfig.infologgerDiscardLevel, runnerConfig.infologgerDiscardFile);
+  QcInfoLogger::init("post/" + mName, mRunnerConfig.infologgerDiscardParameters);
   ILOG(Info, Support) << "Initializing PostProcessingRunner" << ENDM;
 
   root_class_factory::loadLibrary(mTaskConfig.moduleName);
@@ -251,9 +251,7 @@ PostProcessingRunnerConfig PostProcessingRunner::extractConfig(const CommonSpec&
     ppTaskSpec.taskName,
     commonSpec.database,
     commonSpec.consulUrl,
-    commonSpec.infologgerFilterDiscardDebug,
-    commonSpec.infologgerDiscardLevel,
-    commonSpec.infologgerDiscardFile,
+    commonSpec.infologgerDiscardParameters,
     commonSpec.postprocessingPeriod,
     "",
     ppTaskSpec.tree

@@ -18,6 +18,8 @@
 #define QC_MODULE_CTP_CTPCOUNTERSQCTASK_H
 
 #include "QualityControl/TaskInterface.h"
+#include "DataFormatsCTP/Configuration.h"
+#include "TH1.h"
 
 class TH1F;
 class TH1D;
@@ -28,8 +30,12 @@ using namespace o2::quality_control::core;
 namespace o2::quality_control_modules::ctp
 {
 
-/// \brief Example Quality Control DPL Task
-/// \author My Name
+struct runCTP2QC {
+  int mRunNumber;
+  std::vector<int> mRunClasses;
+  int mPositionInCounters;
+};
+
 class CTPCountersTask final : public TaskInterface
 {
  public:
@@ -51,30 +57,52 @@ class CTPCountersTask final : public TaskInterface
   void SetIsFirstCycle(bool isFirstCycle = true) { mIsFirstCycle = isFirstCycle; }
   void SetFirstTimeStamp(double firstTimeStamp = 0) { mFirstTimeStamp = firstTimeStamp; }
   void SetPreviousTimeStamp(double previousTimeStamp = 0) { mPreviousTimeStamp = previousTimeStamp; }
-  void SetPreviousInput(unsigned long long int previousInput = 0) { mPreviousInput = previousInput; }
+  void SetRateHisto(TH1D* h, double ofs)
+  {
+    h->GetXaxis()->SetTimeDisplay(1);
+    h->GetXaxis()->SetTimeOffset(ofs);
+    h->GetXaxis()->SetTimeFormat("%H:%M");
+    h->GetXaxis()->SetNdivisions(808);
+  };
 
   // getters
-  bool GetIsFirstCycle() { return mIsFirstCycle; }
-  double GetFirstTimeStamp() { return mPreviousTimeStamp; }
+  bool IsFirstCycle() { return mIsFirstCycle; }
+  double GetFirstTimeStamp() { return mFirstTimeStamp; }
   double GetPreviousTimeStamp() { return mPreviousTimeStamp; }
-  unsigned long long int GetPreviousInput() { return mPreviousInput; }
 
  private:
   bool mIsFirstCycle = true;
   double mFirstTimeStamp = 0;
   double mPreviousTimeStamp = 0;
-  unsigned long long int mPreviousInput = 0;
   std::vector<double> mTime;
-  std::vector<double> mInputRate;
   std::vector<double> mPreviousTrgInput;
+  std::vector<double> mPreviousTrgClass;
+  std::vector<int> mPreviousRunNumbers;
+  runCTP2QC mNewRun = { 0 };
   std::vector<double> mTimes[48];
+  std::vector<double> mClassTimes[64];
   std::vector<double> mInputRates[48];
+  std::vector<double> mClassRates[64];
   TH1D* mInputCountsHist = nullptr;
+  TH1D* mDummyCountsHist = nullptr;
   TH1D* mInputRateHist = nullptr;
+  TH1D* mClassCountsHist = nullptr;
   TCanvas* mTCanvasInputs = nullptr;
   std::array<TH1D*, 48> mHistInputRate = { nullptr };
-  TCanvas* mTCanvasInputsTest = nullptr;
-  std::array<TH1D*, 4> mHistInputRateTest = { nullptr };
+  TCanvas* mTCanvasClasses = nullptr;
+  std::array<TH1D*, 64> mHistClassRate = { nullptr };
+  TCanvas* mTCanvasTotalCountsClasses = nullptr;
+  std::array<TH1D*, 6> mHistClassTotalCounts = { nullptr };
+  std::array<TCanvas*, 16> mTCanvasClassRates = { nullptr };
+};
+
+class CTPQcRunManager : public o2::ctp::CTPRunManager
+{
+ public:
+  /// \brief Constructor
+  CTPQcRunManager() = default;
+  /// Destructor
+  ~CTPQcRunManager(){};
 };
 
 } // namespace o2::quality_control_modules::ctp
