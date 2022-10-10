@@ -30,6 +30,6 @@ struct DiscardFileParameters {
   unsigned int rotateMaxFiles = 0;
 };
 
-}
+} // namespace o2::quality_control::core
 
 #endif // QC_CORE_DISCARDFILEPARAMETERS_H
