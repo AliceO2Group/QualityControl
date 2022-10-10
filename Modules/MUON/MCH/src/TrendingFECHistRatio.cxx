@@ -196,7 +196,7 @@ void TrendingFECHistRatio::computeMCHFECHistRatios(TH2F* hNum, TH2F* hDen)
   mPreviousDen->Add(hDen);
 }
 
-void TrendingFECHistRatio::initialize(Trigger, framework::ServiceRegistry&)
+void TrendingFECHistRatio::initialize(Trigger, framework::ServiceRegistryRef)
 {
   mElec2DetMapper = o2::mch::raw::createElec2DetMapper<o2::mch::raw::ElectronicMapperGenerated>();
   mDet2ElecMapper = o2::mch::raw::createDet2ElecMapper<o2::mch::raw::ElectronicMapperGenerated>();
@@ -227,7 +227,7 @@ void TrendingFECHistRatio::initialize(Trigger, framework::ServiceRegistry&)
 }
 
 // todo: see if OptimizeBaskets() indeed helps after some time
-void TrendingFECHistRatio::update(Trigger t, framework::ServiceRegistry& services)
+void TrendingFECHistRatio::update(Trigger t, framework::ServiceRegistryRef services)
 {
   std::cout << "TrendingFECHistRatio::update()" << std::endl;
   auto& qcdb = services.get<repository::DatabaseInterface>();
@@ -236,7 +236,7 @@ void TrendingFECHistRatio::update(Trigger t, framework::ServiceRegistry& service
   generatePlots();
 }
 
-void TrendingFECHistRatio::finalize(Trigger t, framework::ServiceRegistry&)
+void TrendingFECHistRatio::finalize(Trigger t, framework::ServiceRegistryRef)
 {
   generatePlots();
 }

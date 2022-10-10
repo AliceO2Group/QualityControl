@@ -65,7 +65,7 @@ void QualityObserver::configure(std::string name,
   } // for (const auto& dataSourceConfig : config.get_child("qc.postprocessing." + name + ".ratioConfig"))
 }
 
-void QualityObserver::initialize(Trigger, framework::ServiceRegistry&)
+void QualityObserver::initialize(Trigger, framework::ServiceRegistryRef)
 {
   for (const auto& config : mConfig) {
     mQualities[config.groupTitle] = std::vector<std::string>();
@@ -76,14 +76,14 @@ void QualityObserver::initialize(Trigger, framework::ServiceRegistry&)
   mColors[Quality::Null.getName()] = kGray + 2;
 }
 
-void QualityObserver::update(Trigger t, framework::ServiceRegistry& services)
+void QualityObserver::update(Trigger t, framework::ServiceRegistryRef services)
 {
   auto& qcdb = services.get<repository::DatabaseInterface>();
   getQualities(t, qcdb);
   generatePanel();
 }
 
-void QualityObserver::finalize(Trigger t, framework::ServiceRegistry&)
+void QualityObserver::finalize(Trigger t, framework::ServiceRegistryRef)
 {
   generatePanel();
   delete mCanvas;

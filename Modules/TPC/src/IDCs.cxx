@@ -105,7 +105,7 @@ void IDCs::configure(std::string name, const boost::property_tree::ptree& config
   mHost = config.get<std::string>("qc.postprocessing." + name + ".dataSourceURL");
 }
 
-void IDCs::initialize(Trigger, framework::ServiceRegistry&)
+void IDCs::initialize(Trigger, framework::ServiceRegistryRef)
 {
   mCdbApi.init(mHost);
 
@@ -134,7 +134,7 @@ void IDCs::initialize(Trigger, framework::ServiceRegistry&)
   getObjectsManager()->startPublishing(mFourierCoeffsC.get());
 }
 
-void IDCs::update(Trigger, framework::ServiceRegistry&)
+void IDCs::update(Trigger, framework::ServiceRegistryRef)
 {
   auto idcZeroA = mCdbApi.retrieveFromTFileAny<IDCZero>(CDBTypeMap.at(CDBType::CalIDC0A), std::map<std::string, std::string>{}, mTimestamps["IDCZero"]);
   auto idcZeroC = mCdbApi.retrieveFromTFileAny<IDCZero>(CDBTypeMap.at(CDBType::CalIDC0C), std::map<std::string, std::string>{}, mTimestamps["IDCZero"]);
@@ -205,7 +205,7 @@ void IDCs::update(Trigger, framework::ServiceRegistry&)
   mCCDBHelper.setFourierCoeffs(nullptr, Side::C);
 }
 
-void IDCs::finalize(Trigger, framework::ServiceRegistry&)
+void IDCs::finalize(Trigger, framework::ServiceRegistryRef)
 {
   getObjectsManager()->stopPublishing(mIDCZeroRadialProf.get());
   getObjectsManager()->stopPublishing(mIDCZeroStacksA.get());

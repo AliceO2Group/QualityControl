@@ -38,7 +38,7 @@ PostProcessDiagnosticPerCrate::~PostProcessDiagnosticPerCrate()
 {
 }
 
-void PostProcessDiagnosticPerCrate::initialize(Trigger, framework::ServiceRegistry& services)
+void PostProcessDiagnosticPerCrate::initialize(Trigger, framework::ServiceRegistryRef services)
 {
   int counter = 0;
   for (auto& i : mCrates) {
@@ -52,7 +52,7 @@ void PostProcessDiagnosticPerCrate::initialize(Trigger, framework::ServiceRegist
   mDatabase = &services.get<o2::quality_control::repository::DatabaseInterface>();
 }
 
-void PostProcessDiagnosticPerCrate::update(Trigger t, framework::ServiceRegistry&)
+void PostProcessDiagnosticPerCrate::update(Trigger t, framework::ServiceRegistryRef)
 {
   ILOG(Debug) << "UPDATING !" << ENDM;
   for (int slot = 0; slot < mNSlots; slot++) { // Loop over slots
@@ -85,7 +85,7 @@ void PostProcessDiagnosticPerCrate::update(Trigger t, framework::ServiceRegistry
   ILOG(Debug) << "DONE UPDATING !" << ENDM;
 }
 
-void PostProcessDiagnosticPerCrate::finalize(Trigger t, framework::ServiceRegistry&)
+void PostProcessDiagnosticPerCrate::finalize(Trigger t, framework::ServiceRegistryRef)
 {
   ILOG(Info) << "FINALIZING !" << ENDM;
 

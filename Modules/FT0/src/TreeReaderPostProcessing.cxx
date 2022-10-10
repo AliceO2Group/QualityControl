@@ -30,14 +30,14 @@ TreeReaderPostProcessing::~TreeReaderPostProcessing()
 {
 }
 
-void TreeReaderPostProcessing::initialize(Trigger, framework::ServiceRegistry& services)
+void TreeReaderPostProcessing::initialize(Trigger, framework::ServiceRegistryRef services)
 {
   mChargeHistogram = std::make_unique<TH1F>("ChargeHistogram", "ChargeHistogram", 100, 0, 200);
   getObjectsManager()->startPublishing(mChargeHistogram.get());
   mDatabase = &services.get<o2::quality_control::repository::DatabaseInterface>();
 }
 
-void TreeReaderPostProcessing::update(Trigger t, framework::ServiceRegistry&)
+void TreeReaderPostProcessing::update(Trigger t, framework::ServiceRegistryRef)
 {
   mChargeHistogram->Reset();
   auto mo = mDatabase->retrieveMO("FT0/MO/BasicDigitQcTask", "EventTree", t.timestamp, t.activity);
@@ -56,7 +56,7 @@ void TreeReaderPostProcessing::update(Trigger t, framework::ServiceRegistry&)
   }
 }
 
-void TreeReaderPostProcessing::finalize(Trigger t, framework::ServiceRegistry&)
+void TreeReaderPostProcessing::finalize(Trigger t, framework::ServiceRegistryRef)
 {
   getObjectsManager()->stopPublishing(mChargeHistogram.get());
 }

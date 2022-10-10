@@ -37,19 +37,19 @@ class EmptyPPTask final : public quality_control::postprocessing::PostProcessing
   /// registry with singleton interfaces.
   /// \param trigger  Trigger which caused the initialization, for example Trigger::SOR
   /// \param services Interface containing optional interfaces, for example DatabaseInterface
-  void initialize(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
+  void initialize(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
   /// \brief Update of a post-processing task.
   /// Update of a post-processing task. User receives a Trigger which caused the update and a service
   /// registry with singleton interfaces.
   /// \param trigger  Trigger which caused the initialization, for example Trigger::Period
   /// \param services Interface containing optional interfaces, for example DatabaseInterface
-  void update(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
+  void update(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
   /// \brief Finalization of a post-processing task.
   /// Finalization of a post-processing task. User receives a Trigger which caused the finalization and a service
   /// registry with singleton interfaces.
   /// \param trigger  Trigger which caused the initialization, for example Trigger::EOR
   /// \param services Interface containing optional interfaces, for example DatabaseInterface
-  void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
+  void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
 
  private:
 };

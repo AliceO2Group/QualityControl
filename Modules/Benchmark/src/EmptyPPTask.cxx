@@ -26,15 +26,15 @@ EmptyPPTask::~EmptyPPTask()
 {
 }
 
-void EmptyPPTask::initialize(Trigger, framework::ServiceRegistry&)
+void EmptyPPTask::initialize(Trigger, framework::ServiceRegistryRef)
 {
 }
 
-void EmptyPPTask::update(Trigger, framework::ServiceRegistry&)
+void EmptyPPTask::update(Trigger, framework::ServiceRegistryRef)
 {
 }
 
-void EmptyPPTask::finalize(Trigger, framework::ServiceRegistry&)
+void EmptyPPTask::finalize(Trigger, framework::ServiceRegistryRef)
 {
 }
 

@@ -51,7 +51,7 @@ void TrendingTaskTPC::configure(std::string name,
   mConfig = TrendingTaskConfigTPC(name, config);
 }
 
-void TrendingTaskTPC::initialize(Trigger, framework::ServiceRegistry& services)
+void TrendingTaskTPC::initialize(Trigger, framework::ServiceRegistryRef services)
 {
   // Prepare the data structure of the trending TTree.
   if (mConfig.resumeTrend) {
@@ -115,7 +115,7 @@ void TrendingTaskTPC::initialize(Trigger, framework::ServiceRegistry& services)
   }
 }
 
-void TrendingTaskTPC::update(Trigger t, framework::ServiceRegistry& services)
+void TrendingTaskTPC::update(Trigger t, framework::ServiceRegistryRef services)
 {
   auto& qcdb = services.get<repository::DatabaseInterface>();
   trendValues(t, qcdb);
@@ -124,7 +124,7 @@ void TrendingTaskTPC::update(Trigger t, framework::ServiceRegistry& services)
   }
 }
 
-void TrendingTaskTPC::finalize(Trigger t, framework::ServiceRegistry&)
+void TrendingTaskTPC::finalize(Trigger t, framework::ServiceRegistryRef)
 {
   if (!mConfig.producePlotsOnUpdate) {
     getObjectsManager()->startPublishing(mTrend.get());

@@ -79,7 +79,7 @@ void DCSPTemperature::configure(std::string name, const boost::property_tree::pt
   mHost = config.get<std::string>("qc.postprocessing." + name + ".dataSourceURL");
 }
 
-void DCSPTemperature::initialize(Trigger, framework::ServiceRegistry&)
+void DCSPTemperature::initialize(Trigger, framework::ServiceRegistryRef)
 {
   mCdbApi.init(mHost);
   mDCSPTemp.initializeCanvases();
@@ -92,7 +92,7 @@ void DCSPTemperature::initialize(Trigger, framework::ServiceRegistry&)
   }
 }
 
-void DCSPTemperature::update(Trigger, framework::ServiceRegistry&)
+void DCSPTemperature::update(Trigger, framework::ServiceRegistryRef)
 {
   std::vector<long> usedTimestamps = getDataTimestamps("TPC/Calib/Temperature", mNFiles, mTimestamp);
   for (auto& timestamp : usedTimestamps) {
@@ -102,7 +102,7 @@ void DCSPTemperature::update(Trigger, framework::ServiceRegistry&)
   mDCSPTemp.processData(mData);
 }
 
-void DCSPTemperature::finalize(Trigger, framework::ServiceRegistry&)
+void DCSPTemperature::finalize(Trigger, framework::ServiceRegistryRef)
 {
   for (auto& canv : mDCSPTemp.getCanvases()) {
     getObjectsManager()->stopPublishing(canv);

@@ -40,9 +40,9 @@ class TRFCollectionTask final : public quality_control::postprocessing::PostProc
   ~TRFCollectionTask() override;
 
   void configure(std::string name, const boost::property_tree::ptree& config) override;
-  void initialize(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
-  void update(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
-  void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
+  void initialize(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
+  void update(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
+  void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
 
  private:
   std::unique_ptr<quality_control::TimeRangeFlagCollection>
