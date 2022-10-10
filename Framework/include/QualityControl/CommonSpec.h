@@ -18,6 +18,7 @@
 
 #include <string>
 #include <unordered_map>
+#include "QualityControl/QcInfoLogger.h"
 
 namespace o2::quality_control::core
 {
@@ -36,9 +37,7 @@ struct CommonSpec {
   std::string monitoringUrl = "infologger:///debug?qc";
   std::string consulUrl;
   std::string conditionDBUrl = "http://ccdb-test.cern.ch:8080";
-  bool infologgerFilterDiscardDebug = false;
-  int infologgerDiscardLevel = 21;
-  std::string infologgerDiscardFile;
+  DiscardFileParameters infologgerDiscardParameters;
   double postprocessingPeriod = 10.0;
 };
 

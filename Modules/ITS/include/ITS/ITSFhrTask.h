@@ -102,7 +102,6 @@ class ITSFhrTask final : public TaskInterface
   int mHitNumberOfChip[7][48][2][14][14] = { { { { { 0 } } } } }; // layer, stave, substave, hic, chip
   unsigned int mTimeFrameId = 0;
 
-  int mNError = 19;
   int mNTrigger = 13;
   unsigned int mErrors[19] = { 0 };
   static constexpr int NTrigger = 13;
