@@ -82,10 +82,6 @@ void SkeletonTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   // Some examples:
 
-  ILOG(Debug, Support) << "DEBUG" << ENDM;
-  ILOG(Info, Trace) << "INFO trace" << ENDM;
-  ILOG(Info, Ops) << "INFO ops" << ENDM;
-
   // 1. In a loop
   for (auto&& input : framework::InputRecordWalker(ctx.inputs())) {
     // get message header
