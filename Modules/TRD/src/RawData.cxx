@@ -49,52 +49,11 @@ void RawData::buildHistograms()
                                                   "Links seen with out corrupted data during tf",
                                                   "Accepted Data volume on link",
                                                   "Rejected Data volume on link" };
-  std::array<std::string, 60> parsingerrortitle = {
-    "TRDParsingNoError",
-    "TRDParsingUnrecognisedVersion",
-    "TRDParsingBadDigt",
-    "TRDParsingBadTracklet",
-    "TRDParsingDigitEndMarkerWrongState",
-    "TRDParsingDigitMCMHeaderSanityCheckFailure",
-    "TRDParsingDigitROBDecreasing",
-    "TRDParsingDigitMCMNotIncreasing",
-    "TRDParsingDigitADCMaskMismatch",
-    "TRDParsingDigitADCMaskAdvanceToEnd",
-    "TRDParsingDigitMCMHeaderBypassButStateMCMHeader",
-    "TRDParsingDigitEndMarkerStateButReadingMCMADCData",
-    "TRDParsingDigitADCChannel21",
-    "TRDParsingDigitADCChannelGT22",
-    "TRDParsingDigitGT10ADCs",
-    "TRDParsingDigitSanityCheck",
-    "TRDParsingDigitExcessTimeBins",
-    "TRDParsingDigitParsingExitInWrongState",
-    "TRDParsingDigitStackMismatch",
-    "TRDParsingDigitLayerMismatch",
-    "TRDParsingDigitSectorMismatch",
-    "TRDParsingTrackletCRUPaddingWhileParsingTracklets",
-    "TRDParsingTrackletBit11NotSetInTrackletHCHeader",
-    "TRDParsingTrackletHCHeaderSanityCheckFailure",
-    "TRDParsingTrackletMCMHeaderSanityCheckFailure",
-    "TRDParsingTrackletMCMHeaderButParsingMCMData",
-    "TRDParsingTrackletStateMCMHeaderButParsingMCMData",
-    "TRDParsingTrackletTrackletCountGTThatDeclaredInMCMHeader",
-    "TRDParsingTrackletInvalidTrackletCount",
-    "TRDParsingTrackletPadRowIncreaseError",
-    "TRDParsingTrackletColIncreaseError",
-    "TRDParsingTrackletNoTrackletEndMarker",
-    "TRDParsingTrackletExitingNoTrackletEndMarker",
-    "TRDParsingDigitHeaderCountGT3",
-    "TRDParsingDigitHeaderWrong1",
-    "TRDParsingDigitHeaderWrong2",
-    "TRDParsingDigitHeaderWrong3",
-    "TRDParsingDigitHeaderWrong4",
-    "TRDParsingDigitDataStillOnLink",
-    "TRDParsingTrackletIgnoringDataTillEndMarker",
-    "TRDLastParsingError"
-  };
 
-  mDataAcceptance = new TH1F("dataacceptance", "Data Accepted and Rejected;Type;MBytes", 2, 0, 2);
+  mDataAcceptance = new TH1F("dataacceptance", "Data Accepted and Rejected;Type;MBytes", 2, -0.5, 1.5);
   getObjectsManager()->startPublishing(mDataAcceptance);
+  mDataAcceptance->GetXaxis()->SetBinLabel(1, "Accepted");
+  mDataAcceptance->GetXaxis()->SetBinLabel(2, "Rejected");
   mTimeFrameTime = new TH1F("timeframetime", "Time taken per time frame;Time taken [ms];Counts", 10000, 0, 10000);
   getObjectsManager()->startPublishing(mTimeFrameTime);
   mTrackletParsingTime = new TH1F("tracklettime", "Time taken per tracklet block;Time taken [ms];Counts", 1000, 0, 1000);
@@ -118,7 +77,7 @@ void RawData::buildHistograms()
   getObjectsManager()->setDisplayHint(mDataVolumePerHalfSectorCru->GetName(), "logz");
   for (int count = 0; count < o2::trd::TRDLastParsingError; ++count) {
     std::string label = fmt::format("parsingerrors_{0}", count);
-    std::string title = parsingerrortitle[count];
+    std::string title = ParsingErrorsString.at(count);
     TH2F* h = new TH2F(label.c_str(), title.c_str(), 36, 0, 36, 30, 0, 30);
     mParsingErrors2d[count] = h;
     getObjectsManager()->startPublishing(h);
@@ -136,7 +95,7 @@ void RawData::buildHistograms()
   }
 
   for (int i = 0; i < o2::trd::TRDLastParsingError; ++i) {
-    std::string label = fmt::format("{0}_{1}", parsingerrortitle[i], i);
+    std::string label = fmt::format("{0}_{1}", ParsingErrorsString.at(i), i);
     mParsingErrors->GetXaxis()->SetBinLabel(i + 1, label.c_str());
   }
   for (int count = 0; count < o2::trd::TRDLastParsingError; ++count) {
@@ -291,12 +250,14 @@ void RawData::monitorData(o2::framework::ProcessingContext& ctx)
         mLinkErrors[7]->Fill(sm, stacklayer);
       }
       if (rawdatastats.mLinkWordsRead[specoffset] != 0) { //"Accepted Data volume on link",
+        std::cout << "Accepted Data volume on link" << rawdatastats.mLinkWordsRejected[specoffset] << std::endl;
         mLinkErrors[8]->Fill(sm, stacklayer, rawdatastats.mLinkWordsRead[specoffset]);
-        mDataAcceptance->AddAt(((float)rawdatastats.mLinkWordsRead[specoffset]) / 1024.0 / 256.0, 0);
+        mDataAcceptance->AddAt(((float)rawdatastats.mLinkWordsRead[specoffset]) / 1024.0 / 256.0, 1); //256 as it its in 4 byte word counts
       }
-      if (rawdatastats.mLinkWordsRejected[specoffset] != 0) { // "Rejected Data volume on link"};
+      if (rawdatastats.mLinkWordsRejected[specoffset] != 0) {
+        std::cout << "Rejected Data volume on link" << rawdatastats.mLinkWordsRejected[specoffset] << std::endl;
         mLinkErrors[9]->Fill(sm, stacklayer, rawdatastats.mLinkWordsRejected[specoffset]);
-        mDataAcceptance->AddAt(((float)rawdatastats.mLinkWordsRead[specoffset]) / 1024.0 / 256.0, 1);
+        mDataAcceptance->AddAt(((float)rawdatastats.mLinkWordsRejected[specoffset]) / 1024.0 / 256.0, 2); //256 as it its in 4 byte word counts
       }
     }
   }
