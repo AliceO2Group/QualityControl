@@ -70,16 +70,23 @@ void ITSTPCMatchingTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   mMatchITSTPCQC.initDataRequest();
   mMatchITSTPCQC.init();
+  getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPt());
   getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPtTPC());
   getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatch());
-  getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPt());
-  getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoEta());
-  getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoChi2Matching());
-  getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoChi2Refit());
-  getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoTimeResVsPt());
   getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPhi());
   getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPhiTPC());
   getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatchPhi());
+  getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoEta());
+  getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoEtaTPC());
+  getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatchEta());
+
+  getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoResidualPt());
+  getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoResidualPhi());
+  getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoResidualEta());
+
+  getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoChi2Matching());
+  getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoChi2Refit());
+  getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoTimeResVsPt());
   if (mMatchITSTPCQC.getUseMC()) {
     getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPtPhysPrim());
     getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPtTPCPhysPrim());
@@ -87,6 +94,9 @@ void ITSTPCMatchingTask::initialize(o2::framework::InitContext& /*ctx*/)
     getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPhiPhysPrim());
     getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPhiTPCPhysPrim());
     getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatchPhiPhysPrim());
+    getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoEtaPhysPrim());
+    getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoEtaTPCPhysPrim());
+    getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatchEtaPhysPrim());
   }
 }
 
