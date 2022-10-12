@@ -20,7 +20,7 @@
 #include <unordered_map>
 
 #include "QualityControl/Activity.h"
-#include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/DiscardFileParameters.h"
 
 namespace o2::quality_control::checker
 {

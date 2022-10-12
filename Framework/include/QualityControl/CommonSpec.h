@@ -18,7 +18,7 @@
 
 #include <string>
 #include <unordered_map>
-#include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/DiscardFileParameters.h"
 
 namespace o2::quality_control::core
 {
