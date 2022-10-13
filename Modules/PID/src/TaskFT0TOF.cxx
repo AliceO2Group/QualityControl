@@ -456,14 +456,15 @@ void TaskFT0TOF::processEvent(const std::vector<MyTrack>& tracks, const std::vec
 
   auto evtime = o2::tof::evTimeMaker<std::vector<MyTrack>, MyTrack, MyFilter>(tracks);
   bool isTOFst = evtime.mEventTimeError < 150;
-  int nBC = (evtime.mEventTime + 5000.) * o2::tof::Geo::BC_TIME_INPS_INV; // 5 ns offset to get the correct number of BC (int)
+  int nBC = (evtime.mEventTime + 5000.) * o2::tof::Geo::BC_TIME_INPS_INV;  // 5 ns offset to get the correct number of BC (int)
+  float mEvTime_BC = evtime.mEventTime - nBC * o2::tof::Geo::BC_TIME_INPS; // Event time in ps wrt BC
 
   for (auto& obj : ft0Cand) { // fill histo for FT0
     bool isAC = obj.isValidTime(0);
     bool isA = obj.isValidTime(1);
     bool isC = obj.isValidTime(2);
     // t0 times w.r.t. BC
-    float times[4] = { evtime.mEventTime - nBC * o2::tof::Geo::BC_TIME_INPS, isAC ? obj.getCollisionTime(0) : 0.f, isC ? obj.getCollisionTime(1) : 0.f, isC ? obj.getCollisionTime(2) : 0.f }; // TOF, FT0-AC, FT0-A, FT0-C
+    float times[4] = { mEvTime_BC, isAC ? obj.getCollisionTime(0) : 0.f, isC ? obj.getCollisionTime(1) : 0.f, isC ? obj.getCollisionTime(2) : 0.f }; // TOF, FT0-AC, FT0-A, FT0-C
     if (isTOFst) {
       // no condition for same BC
       mHistEvTimeTOFVsFT0AC->Fill(times[0], times[1]);
@@ -508,7 +509,6 @@ void TaskFT0TOF::processEvent(const std::vector<MyTrack>& tracks, const std::vec
     // Mass
     const float mass = track.getP() / beta * TMath::Sqrt(TMath::Abs(1 - beta * beta));
     // T0 - number of BC
-    float mEvTime_BC = mEvTime - nBC * o2::tof::Geo::BC_TIME_INPS; // Event time in ps wrt BC
 
     mHistDeltatPi->Fill(deltatpi);
     mHistDeltatKa->Fill(deltatka);
