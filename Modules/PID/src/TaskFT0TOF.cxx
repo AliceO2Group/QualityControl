@@ -63,11 +63,25 @@ TaskFT0TOF::~TaskFT0TOF()
   delete mHistDeltatKaPt;
   delete mHistDeltatPrPt;
   delete mHistMass;
+  delete mHistMassvsP;
   delete mHistBetavsP;
   delete mHistDeltatPiEvTimeRes;
   delete mHistDeltatPiEvTimeMult;
   delete mHistEvTimeResEvTimeMult;
   delete mHistEvTimeTOF;
+  delete mHistEvTimeTOFVsFT0AC;
+  delete mHistEvTimeTOFVsFT0A;
+  delete mHistEvTimeTOFVsFT0C;
+  delete mHistDeltaEvTimeTOFVsFT0AC;
+  delete mHistDeltaEvTimeTOFVsFT0A;
+  delete mHistDeltaEvTimeTOFVsFT0C;
+  delete mHistEvTimeTOFVsFT0ACSameBC;
+  delete mHistEvTimeTOFVsFT0ASameBC;
+  delete mHistEvTimeTOFVsFT0CSameBC;
+  delete mHistDeltaEvTimeTOFVsFT0ACSameBC;
+  delete mHistDeltaEvTimeTOFVsFT0ASameBC;
+  delete mHistDeltaEvTimeTOFVsFT0CSameBC;
+  delete mHistDeltaBCTOFFT0;
 }
 
 void TaskFT0TOF::initialize(o2::framework::InitContext& /*ctx*/)
@@ -133,15 +147,29 @@ void TaskFT0TOF::initialize(o2::framework::InitContext& /*ctx*/)
   mHistDeltatPi = new TH1F("DeltatPi", ";t_{TOF} - t_{exp}^{#pi} (ps)", 500, -5000, 5000);
   mHistDeltatKa = new TH1F("DeltatKa", ";t_{TOF} - t_{exp}^{K} (ps)", 500, -5000, 5000);
   mHistDeltatPr = new TH1F("DeltatPr", ";t_{TOF} - t_{exp}^{p} (ps)", 500, -5000, 5000);
-  mHistDeltatPiPt = new TH2F("DeltatPi_Pt", ";#it{p}_{T} (GeV/#it{c});t_{TOF} - t_{exp}^{#pi} (ps)", 1000, 0., 20., 500, -5000, 5000);
+  mHistDeltatPiPt = new TH2F("DeltatPi_Pt", ";#it{p}_{T} (GeV/#it{c});t_{TOF} - t_{exp}^{#pi} (ps)", 5000, 0., 20., 500, -5000, 5000);
   mHistDeltatKaPt = new TH2F("DeltatKa_Pt", ";#it{p}_{T} (GeV/#it{c});t_{TOF} - t_{exp}^{#pi} (ps)", 1000, 0., 20., 500, -5000, 5000);
   mHistDeltatPrPt = new TH2F("DeltatPr_Pt", ";#it{p}_{T} (GeV/#it{c});t_{TOF} - t_{exp}^{#pi} (ps)", 1000, 0., 20., 500, -5000, 5000);
   mHistMass = new TH1F("HadronMasses", ";M (GeV/#it{c}^{2})", 1000, 0, 3.);
+  mHistMassvsP = new TH2F("HadronMassesvsP", ";#it{p} (GeV/#it{c});M (GeV/#it{c}^{2})", 1000, 0., 5, 1000, 0, 3.);
   mHistBetavsP = new TH2F("BetavsP", ";#it{p} (GeV/#it{c});TOF #beta", 1000, 0., 5, 1000, 0., 1.5);
   mHistDeltatPiEvTimeRes = new TH2F("DeltatPiEvtimeRes", "0.7 < p < 1.1 GeV/#it{c};TOF event time resolution (ps);t_{TOF} - t_{exp}^{#pi} (ps)", 200, 0., 200, 500, -5000, 5000);
   mHistDeltatPiEvTimeMult = new TH2F("DeltatPiEvTimeMult", "0.7 < p < 1.1 GeV/#it{c};TOF multiplicity; t_{TOF} - t_{exp}^{#pi} (ps)", 100, 0., 100, 500, -5000, 5000);
   mHistEvTimeResEvTimeMult = new TH2F("EvTimeResEvTimeMult", "0.7 < p < 1.1 GeV/#it{c};TOF multiplicity;TOF event time resolution (ps)", 100, 0., 100, 200, 0, 200);
   mHistEvTimeTOF = new TH1F("EvTimeTOF", "t_{0}^{TOF};t_{0}^{TOF} (ps);Counts", 1000, -5000., +5000);
+  mHistEvTimeTOFVsFT0AC = new TH2F("EvTimeTOFVsFT0AC", "t_{0}^{FT0AC} vs t_{0}^{TOF} w.r.t. BC;t_{0}^{TOF} w.r.t. BC (ps);t_{0}^{FT0AC} w.r.t. BC (ps)", 1000, -5000., +5000, 1000, -5000., +5000);
+  mHistEvTimeTOFVsFT0A = new TH2F("EvTimeTOFVsFT0A", "t_{0}^{FT0A} vs t_{0}^{TOF} w.r.t. BC;t_{0}^{TOF} w.r.t. BC (ps);t_{0}^{FT0A} w.r.t. BC (ps)", 1000, -5000., +5000, 1000, -5000., +5000);
+  mHistEvTimeTOFVsFT0C = new TH2F("EvTimeTOFVsFT0C", "t_{0}^{FT0C} vs t_{0}^{TOF} w.r.t. BC;t_{0}^{TOF} w.r.t. BC (ps);t_{0}^{FT0C} w.r.t. BC (ps)", 1000, -5000., +5000, 1000, -5000., +5000);
+  mHistDeltaEvTimeTOFVsFT0AC = new TH1F("DeltaEvTimeTOFVsFT0AC", ";t_{0}^{TOF} - t_{0}^{FT0AC} (ps)", 200, -2000., +2000);
+  mHistDeltaEvTimeTOFVsFT0A = new TH1F("DeltaEvTimeTOFVsFT0A", ";t_{0}^{TOF} - t_{0}^{FT0A} (ps)", 200, -2000., +2000);
+  mHistDeltaEvTimeTOFVsFT0C = new TH1F("DeltaEvTimeTOFVsFT0C", ";t_{0}^{TOF} - t_{0}^{FT0C} (ps)", 200, -2000., +2000);
+  mHistEvTimeTOFVsFT0ACSameBC = new TH2F("EvTimeTOFVsFT0ACSameBC", "t_{0}^{FT0AC} vs t_{0}^{TOF} w.r.t. BC;t_{0}^{TOF} w.r.t. BC (ps);t_{0}^{FT0AC} w.r.t. BC (ps)", 1000, -5000., +5000, 1000, -5000., +5000);
+  mHistEvTimeTOFVsFT0ASameBC = new TH2F("EvTimeTOFVsFT0ASameBC", "t_{0}^{FT0A} vs t_{0}^{TOF} w.r.t. BC;t_{0}^{TOF} w.r.t. BC (ps);t_{0}^{FT0A} w.r.t. BC (ps)", 1000, -5000., +5000, 1000, -5000., +5000);
+  mHistEvTimeTOFVsFT0CSameBC = new TH2F("EvTimeTOFVsFT0CSameBC", "t_{0}^{FT0C} vs t_{0}^{TOF} w.r.t. BC;t_{0}^{TOF} w.r.t. BC (ps);t_{0}^{FT0C} w.r.t. BC (ps)", 1000, -5000., +5000, 1000, -5000., +5000);
+  mHistDeltaEvTimeTOFVsFT0ACSameBC = new TH1F("DeltaEvTimeTOFVsFT0ACSameBC", ";t_{0}^{TOF} - t_{0}^{FT0AC} (ps)", 200, -2000., +2000);
+  mHistDeltaEvTimeTOFVsFT0ASameBC = new TH1F("DeltaEvTimeTOFVsFT0ASameBC", ";t_{0}^{TOF} - t_{0}^{FT0A} (ps)", 200, -2000., +2000);
+  mHistDeltaEvTimeTOFVsFT0CSameBC = new TH1F("DeltaEvTimeTOFVsFT0CSameBC", ";t_{0}^{TOF} - t_{0}^{FT0C} (ps)", 200, -2000., +2000);
+  mHistDeltaBCTOFFT0 = new TH1I("DeltaBCTOFFT0", "#Delta BC (TOF-FT0 evt time);#Delta BC", 16, -8, +8);
 
   // initialize B field and geometry for track selection
   o2::base::GeometryManager::loadGeometry(mGeomFileName);
@@ -158,10 +186,24 @@ void TaskFT0TOF::initialize(o2::framework::InitContext& /*ctx*/)
     getObjectsManager()->startPublishing(mHistDeltatPrPt);
     getObjectsManager()->startPublishing(mHistMass);
     getObjectsManager()->startPublishing(mHistBetavsP);
+    getObjectsManager()->startPublishing(mHistMassvsP);
     getObjectsManager()->startPublishing(mHistDeltatPiEvTimeRes);
     getObjectsManager()->startPublishing(mHistDeltatPiEvTimeMult);
     getObjectsManager()->startPublishing(mHistEvTimeResEvTimeMult);
     getObjectsManager()->startPublishing(mHistEvTimeTOF);
+    getObjectsManager()->startPublishing(mHistDeltaBCTOFFT0);
+    getObjectsManager()->startPublishing(mHistEvTimeTOFVsFT0AC);
+    getObjectsManager()->startPublishing(mHistEvTimeTOFVsFT0A);
+    getObjectsManager()->startPublishing(mHistEvTimeTOFVsFT0C);
+    getObjectsManager()->startPublishing(mHistDeltaEvTimeTOFVsFT0AC);
+    getObjectsManager()->startPublishing(mHistDeltaEvTimeTOFVsFT0A);
+    getObjectsManager()->startPublishing(mHistDeltaEvTimeTOFVsFT0C);
+    getObjectsManager()->startPublishing(mHistEvTimeTOFVsFT0ACSameBC);
+    getObjectsManager()->startPublishing(mHistEvTimeTOFVsFT0ASameBC);
+    getObjectsManager()->startPublishing(mHistEvTimeTOFVsFT0CSameBC);
+    getObjectsManager()->startPublishing(mHistDeltaEvTimeTOFVsFT0ACSameBC);
+    getObjectsManager()->startPublishing(mHistDeltaEvTimeTOFVsFT0ASameBC);
+    getObjectsManager()->startPublishing(mHistDeltaEvTimeTOFVsFT0CSameBC);
   }
   ILOG(Info, Support) << " Initialized!!!! " << ENDM;
 
@@ -190,15 +232,15 @@ void TaskFT0TOF::monitorData(o2::framework::ProcessingContext& ctx)
   mMyTracks.clear();
 
   // Get FT0 RecPointss
-//  const gsl::span<o2::ft0::RecPoints>* ft0rec = nullptr;
+  // const gsl::span<o2::ft0::RecPoints>* ft0rec = nullptr;
   const std::vector<o2::ft0::RecPoints>* ft0rec = nullptr;
-  if(mUseFT0){
+  if (mUseFT0) {
     auto& obj = ctx.inputs().get<const std::vector<o2::ft0::RecPoints>>("recpoints");
-//    const auto& obj = mRecoCont.getFT0RecPoints();
+    // const auto& obj = mRecoCont.getFT0RecPoints();
     ft0rec = &obj;
   }
 
-  if(mUseFT0){
+  if (mUseFT0) {
     ILOG(Info, Support) << "FT0 rec points loaded, size = " << ft0rec->size() << ENDM;
   } else {
     ILOG(Info, Support) << "FT0 rec points NOT available" << ENDM;
@@ -298,8 +340,8 @@ void TaskFT0TOF::monitorData(o2::framework::ProcessingContext& ctx)
 
   std::vector<MyTrack> tracks;
   std::vector<o2::ft0::RecPoints> ft0Sorted;
-  if(mUseFT0){
-     ft0Sorted = *ft0rec;
+  if (mUseFT0) {
+    ft0Sorted = *ft0rec;
   }
   std::vector<o2::ft0::RecPoints> ft0Cand;
 
@@ -314,7 +356,7 @@ void TaskFT0TOF::monitorData(o2::framework::ProcessingContext& ctx)
 
   uint32_t ft0firstOrbit = ctx.services().get<o2::framework::TimingInfo>().firstTForbit;
 
-//  ILOG(Info, Support) << "ft0firstOrbit = " << ft0firstOrbit << " - BC = " <<  mRecoCont.startIR.bc <<ENDM;
+  //  ILOG(Info, Support) << "ft0firstOrbit = " << ft0firstOrbit << " - BC = " <<  mRecoCont.startIR.bc <<ENDM;
 
   for (int i = 0; i < mMyTracks.size(); i++) { // loop looking for interaction candidates
     tracks.clear();
@@ -335,29 +377,29 @@ void TaskFT0TOF::monitorData(o2::framework::ProcessingContext& ctx)
     if (ntrk > 0) { // good candidate with time
 
       // select FT0 candidates within 8 BCs
-      if(mUseFT0){
-	double firstTime = tracks[0].tofSignalDouble() - 8*o2::tof::Geo::BC_TIME_INPS;
-	double lastTime = tracks[ntrk - 1].tofSignalDouble() + 8*o2::tof::Geo::BC_TIME_INPS;
-	for(int j=ift0; j < ft0Sorted.size(); j++){
-	  auto& obj = ft0Sorted[j];
-	  uint32_t orbit = obj.getInteractionRecord().orbit - ft0firstOrbit;
-	  double BCtimeFT0 = ((orbit)*o2::constants::lhc::LHCMaxBunches + obj.getInteractionRecord().bc)  * o2::tof::Geo::BC_TIME_INPS;
+      if (mUseFT0) {
+        double firstTime = tracks[0].tofSignalDouble() - 8 * o2::tof::Geo::BC_TIME_INPS;
+        double lastTime = tracks[ntrk - 1].tofSignalDouble() + 8 * o2::tof::Geo::BC_TIME_INPS;
+        for (int j = ift0; j < ft0Sorted.size(); j++) {
+          auto& obj = ft0Sorted[j];
+          uint32_t orbit = obj.getInteractionRecord().orbit - ft0firstOrbit;
+          double BCtimeFT0 = ((orbit)*o2::constants::lhc::LHCMaxBunches + obj.getInteractionRecord().bc) * o2::tof::Geo::BC_TIME_INPS;
 
-	  if(BCtimeFT0 < firstTime){
-	    ift0 = j+1;
-	    continue;
-	  }
-	  if(BCtimeFT0 > lastTime){
-	    break;
-	  }
-//          ILOG(Info, Support) << " TOF first=" << firstTime << " < " << BCtimeFT0 << " < TOF last=" << lastTime << ENDM;
-//          ILOG(Info, Support) << " orbit=" << obj.getInteractionRecord().orbit << " " << obj.getInteractionRecord().orbit - ft0firstOrbit << " BC=" << obj.getInteractionRecord().bc << ENDM;
+          if (BCtimeFT0 < firstTime) {
+            ift0 = j + 1;
+            continue;
+          }
+          if (BCtimeFT0 > lastTime) {
+            break;
+          }
+          //          ILOG(Info, Support) << " TOF first=" << firstTime << " < " << BCtimeFT0 << " < TOF last=" << lastTime << ENDM;
+          //          ILOG(Info, Support) << " orbit=" << obj.getInteractionRecord().orbit << " " << obj.getInteractionRecord().orbit - ft0firstOrbit << " BC=" << obj.getInteractionRecord().bc << ENDM;
 
-          std::array<short, 4> collTimes = {obj.getCollisionTime(0), obj.getCollisionTime(1), obj.getCollisionTime(2), obj.getCollisionTime(3)};
+          std::array<short, 4> collTimes = { obj.getCollisionTime(0), obj.getCollisionTime(1), obj.getCollisionTime(2), obj.getCollisionTime(3) };
 
           int pos = ft0Cand.size();
-	  ft0Cand.emplace_back(collTimes, 0, 0, o2::InteractionRecord{obj.getInteractionRecord().bc, orbit}, obj.getTrigger());
-	}
+          ft0Cand.emplace_back(collTimes, 0, 0, o2::InteractionRecord{ obj.getInteractionRecord().bc, orbit }, obj.getTrigger());
+        }
       }
 
       processEvent(tracks, ft0Cand);
@@ -390,10 +432,23 @@ void TaskFT0TOF::reset()
   mHistDeltatPrPt->Reset();
   mHistMass->Reset();
   mHistBetavsP->Reset();
+  mHistMassvsP->Reset();
   mHistDeltatPiEvTimeRes->Reset();
   mHistDeltatPiEvTimeMult->Reset();
   mHistEvTimeResEvTimeMult->Reset();
   mHistEvTimeTOF->Reset();
+  mHistEvTimeTOFVsFT0AC->Reset();
+  mHistEvTimeTOFVsFT0A->Reset();
+  mHistEvTimeTOFVsFT0C->Reset();
+  mHistDeltaEvTimeTOFVsFT0AC->Reset();
+  mHistDeltaEvTimeTOFVsFT0A->Reset();
+  mHistDeltaEvTimeTOFVsFT0C->Reset();
+  mHistEvTimeTOFVsFT0ACSameBC->Reset();
+  mHistEvTimeTOFVsFT0ASameBC->Reset();
+  mHistEvTimeTOFVsFT0CSameBC->Reset();
+  mHistDeltaEvTimeTOFVsFT0ACSameBC->Reset();
+  mHistDeltaEvTimeTOFVsFT0ASameBC->Reset();
+  mHistDeltaEvTimeTOFVsFT0CSameBC->Reset();
 }
 
 void TaskFT0TOF::processEvent(const std::vector<MyTrack>& tracks, const std::vector<o2::ft0::RecPoints>& ft0Cand)
@@ -401,16 +456,35 @@ void TaskFT0TOF::processEvent(const std::vector<MyTrack>& tracks, const std::vec
 
   auto evtime = o2::tof::evTimeMaker<std::vector<MyTrack>, MyTrack, MyFilter>(tracks);
   bool isTOFst = evtime.mEventTimeError < 150;
-  int nBC = (evtime.mEventTime + 5000.) * o2::tof::Geo::BC_TIME_INPS_INV;  // 5 ns offset to get the correct number of BC (int)
+  int nBC = (evtime.mEventTime + 5000.) * o2::tof::Geo::BC_TIME_INPS_INV; // 5 ns offset to get the correct number of BC (int)
 
-  for(auto& obj: ft0Cand){ // fill histo for FT0
+  for (auto& obj : ft0Cand) { // fill histo for FT0
     bool isAC = obj.isValidTime(0);
     bool isA = obj.isValidTime(1);
     bool isC = obj.isValidTime(2);
-    float times[4] = {evtime.mEventTime - nBC*o2::tof::Geo::BC_TIME_INPS, isAC ? obj.getCollisionTime(0) : 0.f, isC ? obj.getCollisionTime(1) : 0.f, isC ? obj.getCollisionTime(2) : 0.f}; // TOF, FT0-AC, FT0-A, FT0-C
-    if(isTOFst){
-      ILOG(Info, Support) << " TOF Orbit: " << nBC / o2::constants::lhc::LHCMaxBunches << " BC: " << nBC % o2::constants::lhc::LHCMaxBunches << " FTO Orbit: " << obj.getInteractionRecord().orbit<< " BC: " << obj.getInteractionRecord().bc << ENDM;
-      ILOG(Info, Support) << " Time: TOF=" << times[0] << ", FT0-AC=" << times[1] << ", FT0-A=" << times[2] << ", FT0-C=" << times[3] << ENDM;
+    // t0 times w.r.t. BC
+    float times[4] = { evtime.mEventTime - nBC * o2::tof::Geo::BC_TIME_INPS, isAC ? obj.getCollisionTime(0) : 0.f, isC ? obj.getCollisionTime(1) : 0.f, isC ? obj.getCollisionTime(2) : 0.f }; // TOF, FT0-AC, FT0-A, FT0-C
+    if (isTOFst) {
+      // no condition for same BC
+      mHistEvTimeTOFVsFT0AC->Fill(times[0], times[1]);
+      mHistEvTimeTOFVsFT0A->Fill(times[0], times[2]);
+      mHistEvTimeTOFVsFT0C->Fill(times[0], times[3]);
+      mHistDeltaEvTimeTOFVsFT0AC->Fill(times[0] - times[1]);
+      mHistDeltaEvTimeTOFVsFT0A->Fill(times[0] - times[2]);
+      mHistDeltaEvTimeTOFVsFT0C->Fill(times[0] - times[3]);
+
+      // if same BC
+      if (nBC % o2::constants::lhc::LHCMaxBunches == obj.getInteractionRecord().bc) {
+        // no need for condition on orbit we select FT0 candidates within 8 BCs
+        mHistEvTimeTOFVsFT0ACSameBC->Fill(times[0], times[1]);
+        mHistEvTimeTOFVsFT0ASameBC->Fill(times[0], times[2]);
+        mHistEvTimeTOFVsFT0CSameBC->Fill(times[0], times[3]);
+        mHistDeltaEvTimeTOFVsFT0ACSameBC->Fill(times[0] - times[1]);
+        mHistDeltaEvTimeTOFVsFT0ASameBC->Fill(times[0] - times[2]);
+        mHistDeltaEvTimeTOFVsFT0CSameBC->Fill(times[0] - times[3]);
+      }
+
+      mHistDeltaBCTOFFT0->Fill(nBC % o2::constants::lhc::LHCMaxBunches - obj.getInteractionRecord().bc);
     }
   }
 
@@ -444,6 +518,7 @@ void TaskFT0TOF::processEvent(const std::vector<MyTrack>& tracks, const std::vec
     mHistDeltatPrPt->Fill(track.getPt(), deltatpr);
     mHistMass->Fill(mass);
     mHistBetavsP->Fill(track.getP(), beta);
+    mHistMassvsP->Fill(track.getP(), mass);
     mHistEvTimeTOF->Fill(mEvTime_BC);
 
     if (track.getP() > 0.7 && track.getP() < 1.1) {

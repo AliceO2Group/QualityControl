@@ -137,10 +137,24 @@ class TaskFT0TOF final : public TaskInterface
   TH2F* mHistDeltatPrPt;
   TH1F* mHistMass;
   TH2F* mHistBetavsP;
+  TH2F* mHistMassvsP;
   TH2F* mHistDeltatPiEvTimeRes;
   TH2F* mHistDeltatPiEvTimeMult;
   TH2F* mHistEvTimeResEvTimeMult;
   TH1F* mHistEvTimeTOF;
+  TH2F* mHistEvTimeTOFVsFT0AC;
+  TH2F* mHistEvTimeTOFVsFT0A;
+  TH2F* mHistEvTimeTOFVsFT0C;
+  TH1F* mHistDeltaEvTimeTOFVsFT0AC;
+  TH1F* mHistDeltaEvTimeTOFVsFT0A;
+  TH1F* mHistDeltaEvTimeTOFVsFT0C;
+  TH2F* mHistEvTimeTOFVsFT0ACSameBC;
+  TH2F* mHistEvTimeTOFVsFT0ASameBC;
+  TH2F* mHistEvTimeTOFVsFT0CSameBC;
+  TH1F* mHistDeltaEvTimeTOFVsFT0ACSameBC;
+  TH1F* mHistDeltaEvTimeTOFVsFT0ASameBC;
+  TH1F* mHistDeltaEvTimeTOFVsFT0CSameBC;
+  TH1I* mHistDeltaBCTOFFT0;
 };
 
 } // namespace o2::quality_control_modules::pid
