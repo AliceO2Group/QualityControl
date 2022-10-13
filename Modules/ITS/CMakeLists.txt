@@ -23,6 +23,7 @@ add_library(O2QcITS
             src/ITSFeeCheck.cxx
 	    src/ITSTrackSimTask.cxx 
             src/ITSThresholdCalibrationCheck.cxx 
+            src/ITSDecodingErrorTask.cxx 
             )
 
 target_sources(O2QcITS PRIVATE
@@ -75,6 +76,7 @@ add_root_dictionary(O2QcITS
                             include/ITS/ITSFeeCheck.h
 			    include/ITS/ITSTrackSimTask.h 
                             include/ITS/ITSThresholdCalibrationCheck.h 
+                            include/ITS/ITSDecodingErrorTask.h 
                     LINKDEF include/ITS/LinkDef.h
                     BASENAME O2QcITS)
 
