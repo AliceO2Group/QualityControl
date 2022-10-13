@@ -70,7 +70,7 @@ inline bool hasChecks(std::string configSource)
   return config->getRecursive("qc").count("checks") > 0;
 }
 
-inline int computeRunNumber(const framework::ServiceRegistry& services, int fallbackRunNumber = 0)
+inline int computeRunNumber(framework::ServiceRegistryRef services, int fallbackRunNumber = 0)
 { // Determine run number
   int run = 0;
   try {
@@ -88,7 +88,7 @@ inline int computeRunNumber(const framework::ServiceRegistry& services, int fall
   return run;
 }
 
-inline int computeRunType(const framework::ServiceRegistry& services, int fallbackRunType = 0)
+inline int computeRunType(framework::ServiceRegistryRef services, int fallbackRunType = 0)
 { // Determine runType number
   int runType = 0;
   try {
@@ -106,7 +106,7 @@ inline int computeRunType(const framework::ServiceRegistry& services, int fallba
   return runType;
 }
 
-inline std::string computePartitionName(const framework::ServiceRegistry& services, const std::string& fallbackPartitionName = "")
+inline std::string computePartitionName(framework::ServiceRegistryRef services, const std::string& fallbackPartitionName = "")
 {
   std::string partitionName;
   partitionName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("environment_id", "unspecified");
@@ -116,7 +116,7 @@ inline std::string computePartitionName(const framework::ServiceRegistry& servic
   return partitionName;
 }
 
-inline std::string computePeriodName(const framework::ServiceRegistry& services, const std::string& fallbackPeriodName = "")
+inline std::string computePeriodName(framework::ServiceRegistryRef services, const std::string& fallbackPeriodName = "")
 { // Determine period
   std::string periodName;
   periodName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("periodName", "unspecified");
@@ -138,7 +138,7 @@ inline std::string computeProvenance(const std::string& fallbackProvenance = "")
   return fallbackProvenance;
 }
 
-inline Activity computeActivity(const framework::ServiceRegistry& services, const Activity& fallbackActivity)
+inline Activity computeActivity(framework::ServiceRegistryRef services, const Activity& fallbackActivity)
 {
   return {
     computeRunNumber(services, fallbackActivity.mId),

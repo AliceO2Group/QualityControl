@@ -58,13 +58,13 @@ void PostProcessHitMap::configure(std::string name, const boost::property_tree::
   }
 }
 
-void PostProcessHitMap::initialize(Trigger, framework::ServiceRegistry& services)
+void PostProcessHitMap::initialize(Trigger, framework::ServiceRegistryRef services)
 {
   // Setting up services
   mDatabase = &services.get<o2::quality_control::repository::DatabaseInterface>();
 }
 
-void PostProcessHitMap::update(Trigger t, framework::ServiceRegistry&)
+void PostProcessHitMap::update(Trigger t, framework::ServiceRegistryRef)
 {
   // Getting the hit map
   const auto mo = mDatabase->retrieveMO(mCCDBPath, "HitMap", t.timestamp, t.activity);
@@ -120,7 +120,7 @@ void PostProcessHitMap::update(Trigger t, framework::ServiceRegistry&)
   }
 }
 
-void PostProcessHitMap::finalize(Trigger t, framework::ServiceRegistry&)
+void PostProcessHitMap::finalize(Trigger t, framework::ServiceRegistryRef)
 {
   if (!mHistoRefHitMap) {
     ILOG(Warning, Support) << "mHistoRefHitMap undefined, can't finalize" << ENDM;

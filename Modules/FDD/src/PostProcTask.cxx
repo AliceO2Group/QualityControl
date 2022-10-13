@@ -98,7 +98,7 @@ void PostProcTask::configure(std::string, const boost::property_tree::ptree& con
   }
 }
 
-void PostProcTask::initialize(Trigger, framework::ServiceRegistry& services)
+void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
 {
   mDatabase = &services.get<o2::quality_control::repository::DatabaseInterface>();
   mCcdbApi.init(mCcdbUrl);
@@ -197,7 +197,7 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistry& services)
   }
 }
 
-void PostProcTask::update(Trigger t, framework::ServiceRegistry&)
+void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
 {
   auto mo = mDatabase->retrieveMO(mPathDigitQcTask, "TriggersCorrelation", t.timestamp, t.activity);
   auto hTrgCorr = mo ? (TH2F*)mo->getObject() : nullptr;
@@ -406,7 +406,7 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistry&)
   }
 }
 
-void PostProcTask::finalize(Trigger t, framework::ServiceRegistry&)
+void PostProcTask::finalize(Trigger t, framework::ServiceRegistryRef)
 {
 }
 

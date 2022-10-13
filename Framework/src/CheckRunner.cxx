@@ -507,7 +507,7 @@ void CheckRunner::initLibraries()
   }
 }
 
-void CheckRunner::start(const ServiceRegistry& services)
+void CheckRunner::start(ServiceRegistryRef services)
 {
   mActivity = computeActivity(services, mConfig.fallbackActivity);
   string partitionName = computePartitionName(services);

@@ -46,9 +46,9 @@ class PostProcTask final : public quality_control::postprocessing::PostProcessin
   PostProcTask() = default;
   ~PostProcTask() override;
   void configure(std::string, const boost::property_tree::ptree&) override;
-  void initialize(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
-  void update(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
-  void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
+  void initialize(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
+  void update(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
+  void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
 
   constexpr static std::size_t sBCperOrbit = o2::constants::lhc::LHCMaxBunches;
   constexpr static std::size_t sNCHANNELS_FV0_PLUSREF = o2::fv0::Constants::nFv0ChannelsPlusRef;

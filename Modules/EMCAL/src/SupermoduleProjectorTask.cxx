@@ -37,7 +37,7 @@ void SupermoduleProjectorTask::configure(std::string name, const boost::property
   mAttributeHandler = parseCustomizations(name, config);
 }
 
-void SupermoduleProjectorTask::initialize(Trigger, framework::ServiceRegistry&)
+void SupermoduleProjectorTask::initialize(Trigger, framework::ServiceRegistryRef)
 {
   QcInfoLogger::setDetector("EMC");
   ILOG(Info, Support) << "initialize SuperModuleProjectorTask" << ENDM;
@@ -52,7 +52,7 @@ void SupermoduleProjectorTask::initialize(Trigger, framework::ServiceRegistry&)
   }
 }
 
-void SupermoduleProjectorTask::update(Trigger t, framework::ServiceRegistry& services)
+void SupermoduleProjectorTask::update(Trigger t, framework::ServiceRegistryRef services)
 {
   auto& qcdb = services.get<quality_control::repository::DatabaseInterface>();
   for (auto& dataSource : mDataSources) {
@@ -69,7 +69,7 @@ void SupermoduleProjectorTask::update(Trigger t, framework::ServiceRegistry& ser
   }
 }
 
-void SupermoduleProjectorTask::finalize(Trigger t, framework::ServiceRegistry&)
+void SupermoduleProjectorTask::finalize(Trigger t, framework::ServiceRegistryRef)
 {
   for (auto& [datasource, plot] : mCanvasHandler) {
     getObjectsManager()->stopPublishing(plot);

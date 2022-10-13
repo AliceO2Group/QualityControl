@@ -21,11 +21,7 @@
 #include <boost/property_tree/ptree_fwd.hpp>
 #include "QualityControl/Triggers.h"
 #include "QualityControl/ObjectsManager.h"
-
-namespace o2::framework
-{
-class ServiceRegistry;
-}
+#include <Framework/ServiceRegistryRef.h>
 
 namespace o2::quality_control::postprocessing
 {
@@ -54,23 +50,23 @@ class PostProcessingInterface
   /// registry with singleton interfaces.
   /// \param trigger  Trigger which caused the initialization, for example Trigger::SOR
   /// \param services Interface containing optional interfaces, for example DatabaseInterface
-  virtual void initialize(Trigger trigger, framework::ServiceRegistry& services) = 0;
+  virtual void initialize(Trigger trigger, framework::ServiceRegistryRef services) = 0;
   /// \brief Update of a post-processing task.
   /// Update of a post-processing task. User receives a Trigger which caused the update and a service
   /// registry with singleton interfaces.
   /// \param trigger  Trigger which caused the initialization, for example Trigger::Period
   /// \param services Interface containing optional interfaces, for example DatabaseInterface
-  virtual void update(Trigger trigger, framework::ServiceRegistry& services) = 0;
+  virtual void update(Trigger trigger, framework::ServiceRegistryRef services) = 0;
   /// \brief Finalization of a post-processing task.
   /// Finalization of a post-processing task. User receives a Trigger which caused the finalization and a service
   /// registry with singleton interfaces.
   /// \param trigger  Trigger which caused the initialization, for example Trigger::EOR
   /// \param services Interface containing optional interfaces, for example DatabaseInterface
-  virtual void finalize(Trigger trigger, framework::ServiceRegistry& services) = 0;
+  virtual void finalize(Trigger trigger, framework::ServiceRegistryRef services) = 0;
 
   void setObjectsManager(std::shared_ptr<core::ObjectsManager> objectsManager);
   void setName(const std::string& name);
-  std::string getName() const;
+  [[nodiscard]] std::string getName() const;
 
  protected:
   std::shared_ptr<core::ObjectsManager> getObjectsManager();

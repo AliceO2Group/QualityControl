@@ -132,7 +132,7 @@ void ClusterVisualizer::configure(std::string name, const boost::property_tree::
   }
 }
 
-void ClusterVisualizer::initialize(Trigger, framework::ServiceRegistry&)
+void ClusterVisualizer::initialize(Trigger, framework::ServiceRegistryRef)
 {
   mCdbApi.init(mHost);
 
@@ -149,7 +149,7 @@ void ClusterVisualizer::initialize(Trigger, framework::ServiceRegistry&)
   }
 }
 
-void ClusterVisualizer::update(Trigger t, framework::ServiceRegistry&)
+void ClusterVisualizer::update(Trigger t, framework::ServiceRegistryRef)
 {
   ILOG(Info, Support) << "Trigger type is: " << t.triggerType << ", the timestamp is " << t.timestamp << ENDM;
 
@@ -194,7 +194,7 @@ void ClusterVisualizer::update(Trigger t, framework::ServiceRegistry&)
   calDetIter++;
 }
 
-void ClusterVisualizer::finalize(Trigger t, framework::ServiceRegistry&)
+void ClusterVisualizer::finalize(Trigger t, framework::ServiceRegistryRef)
 {
   for (const auto& calDetCanvasVec : mCalDetCanvasVec) {
     for (const auto& canvas : calDetCanvasVec) {

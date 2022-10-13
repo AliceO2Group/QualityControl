@@ -137,7 +137,7 @@ void CalDetPublisher::configure(std::string name, const boost::property_tree::pt
   o2::tpc::CDBInterface::instance().setURL(config.get<std::string>("qc.postprocessing." + name + ".dataSourceURL"));
 }
 
-void CalDetPublisher::initialize(Trigger, framework::ServiceRegistry&)
+void CalDetPublisher::initialize(Trigger, framework::ServiceRegistryRef)
 {
   auto calDetIter = 0;
   for (const auto& type : mOutputListMap) {
@@ -180,7 +180,7 @@ void CalDetPublisher::initialize(Trigger, framework::ServiceRegistry&)
   }
 }
 
-void CalDetPublisher::update(Trigger t, framework::ServiceRegistry&)
+void CalDetPublisher::update(Trigger t, framework::ServiceRegistryRef)
 {
   ILOG(Info, Support) << "Trigger type is: " << t.triggerType << ", the timestamp is " << t.timestamp << ENDM;
 
@@ -231,7 +231,7 @@ void CalDetPublisher::update(Trigger t, framework::ServiceRegistry&)
   }
 }
 
-void CalDetPublisher::finalize(Trigger t, framework::ServiceRegistry&)
+void CalDetPublisher::finalize(Trigger t, framework::ServiceRegistryRef)
 {
   for (const auto& calDetCanvasVec : mCalDetCanvasVec) {
     for (const auto& canvas : calDetCanvasVec) {

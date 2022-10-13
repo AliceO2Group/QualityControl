@@ -19,7 +19,7 @@
 
 #include <memory>
 #include <functional>
-#include <Framework/ServiceRegistry.h>
+#include <Framework/ServiceRegistryRef.h>
 #include <boost/property_tree/ptree_fwd.hpp>
 #include "QualityControl/PostProcessingConfig.h"
 #include "QualityControl/PostProcessingInterface.h"
@@ -70,7 +70,7 @@ class PostProcessingRunner
   /// \brief One iteration over the event loop. Throws on errors. Returns false when it can gracefully exit.
   bool run();
   /// \brief Start transition. Throws on errors.
-  void start(const framework::ServiceRegistry* dplServices = nullptr);
+  void start(framework::ServiceRegistryRef dplServices);
   /// \brief Stop transition. Throws on errors.
   void stop();
   /// \brief Reset transition. Throws on errors.

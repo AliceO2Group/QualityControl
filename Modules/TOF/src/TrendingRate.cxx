@@ -171,7 +171,7 @@ void TrendingRate::computeTOFRates(TH2F* h, std::vector<int>& bcInt, std::vector
   delete hpdiff;
 }
 
-void TrendingRate::initialize(Trigger, framework::ServiceRegistry&)
+void TrendingRate::initialize(Trigger, framework::ServiceRegistryRef)
 {
   // Setting parameters
 
@@ -195,7 +195,7 @@ void TrendingRate::initialize(Trigger, framework::ServiceRegistry&)
 }
 
 // todo: see if OptimizeBaskets() indeed helps after some time
-void TrendingRate::update(Trigger t, framework::ServiceRegistry& services)
+void TrendingRate::update(Trigger t, framework::ServiceRegistryRef services)
 {
   auto& qcdb = services.get<repository::DatabaseInterface>();
 
@@ -203,7 +203,7 @@ void TrendingRate::update(Trigger t, framework::ServiceRegistry& services)
   generatePlots();
 }
 
-void TrendingRate::finalize(Trigger t, framework::ServiceRegistry&)
+void TrendingRate::finalize(Trigger t, framework::ServiceRegistryRef)
 {
   generatePlots();
 }

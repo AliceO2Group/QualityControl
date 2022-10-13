@@ -18,6 +18,7 @@
 #include "QualityControl/PostProcessingRunner.h"
 #include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "Framework/ServiceRegistry.h"
 
 #include <OccInstance.h>
 #include <RuntimeControlledObject.h>
@@ -94,7 +95,8 @@ class PostProcessingOCCStateMachine : public RuntimeControlledObject
   {
     bool success = true;
     try {
-      mRunner->start();
+      o2::framework::ServiceRegistry registry;
+      mRunner->start(registry);
     } catch (const std::exception& ex) {
       ILOG(Error, Support) << "Exception caught: " << ex.what() << ENDM;
       success = false;
