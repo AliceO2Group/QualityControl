@@ -20,6 +20,7 @@
 #include <array>
 #include <iosfwd>
 #include <unordered_map>
+#include <string>
 #include <string_view>
 
 #include "QualityControl/TaskInterface.h"
@@ -65,6 +66,17 @@ class ClusterTask final : public TaskInterface
     /// \brief Print params to output stream
     /// \param stream Stream used for printing
     void print(std::ostream& stream) const;
+  };
+
+  /// \struct InputBindings
+  /// \brief Bindings of input containers used as task input
+  struct InputBindings {
+    std::string mCellBinding = "emcal-cells";                             ///< Binding of the cell input container
+    std::string mCellTriggerRecordBinding = "emcal-cellstriggerecords";   ///< Binding of the trigger record container connected to cell inputs
+    std::string mClusterBinding = "emcal-clusters";                       ///< Binding of the cluster input container (no internal clusterizer mode)
+    std::string mClusterTriggerRecordBinding = "";                        ///< Binding of the triger record container connected to clusters (no internal clusterizer mode)
+    std::string mCellIndexBinding = "emcal-cellindices";                  ///< Binding of the cell index container (no internal clusterizer mode)
+    std::string mCellIndexTriggerRecordBinding = "emcal-citriggerecords"; ///< Binding of the trigger record container connected to cell indices (no internal clusterizer mode)
   };
 
   ///< \struct MesonClusterSelection
@@ -178,6 +190,9 @@ class ClusterTask final : public TaskInterface
   /// \brief Configure clusterization settings for the internal clusterizer based on the task parameters
   void configureClusterizerSettings();
 
+  /// \brief configure bindings of input containers
+  void configureBindings();
+
   /// \brief Configure meson selection (cluster and pair cuts) for meson candidate histograms
   void configureMesonSelection();
 
@@ -202,6 +217,7 @@ class ClusterTask final : public TaskInterface
   std::unique_ptr<o2::emcal::ClusterFactory<o2::emcal::Cell>> mClusterFactory; ///< Cluster factory for cluster kinematics
   std::unique_ptr<o2::emcal::Clusterizer<o2::emcal::Cell>> mClusterizer;       ///< Internal clusterizer
   ClusterizerParams mClusterizerSettings;                                      ///< Settings for internal clusterizer
+  InputBindings mTaskInputBindings;                                            ///< Bindings for input containers
   MesonClusterSelection mMesonClusterCuts;                                     ///< Cuts used in the meson selection
   MesonSelection mMesonCuts;                                                   ///< Cuts applied in meson selection
 
