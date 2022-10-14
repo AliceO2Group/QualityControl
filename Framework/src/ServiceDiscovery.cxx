@@ -36,9 +36,9 @@ ServiceDiscovery::ServiceDiscovery(const std::string& url, const std::string& na
   if (mHealthUrl.find(':') == std::string::npos) {
     mHealthUrl = GetDefaultUrl();
   }
-
-  mHealthThread = std::thread([=] { runHealthServer(std::stoi(mHealthUrl.substr(mHealthUrl.find(":") + 1))); });
-  _register("");
+  if (_register("")) {
+    mHealthThread = std::thread([=] { runHealthServer(std::stoi(mHealthUrl.substr(mHealthUrl.find(":") + 1))); });
+  }
 }
 
 ServiceDiscovery::~ServiceDiscovery()
@@ -67,7 +67,7 @@ CURL* ServiceDiscovery::initCurl()
   return curl;
 }
 
-void ServiceDiscovery::_register(const std::string& objects)
+bool ServiceDiscovery::_register(const std::string& objects)
 {
   boost::property_tree::ptree pt;
   if (!objects.empty()) {
@@ -95,8 +95,8 @@ void ServiceDiscovery::_register(const std::string& objects)
   std::stringstream ss;
   boost::property_tree::json_parser::write_json(ss, pt);
 
-  send("/v1/agent/service/register", ss.str());
   ILOG(Info, Devel) << "Registration to ServiceDiscovery: " << objects << ENDM;
+  return send("/v1/agent/service/register", ss.str());
 }
 
 void ServiceDiscovery::deregister()
@@ -137,7 +137,7 @@ void ServiceDiscovery::deleteCurl(CURL* curl)
   curl_global_cleanup();
 }
 
-void ServiceDiscovery::send(const std::string& path, std::string&& post)
+bool ServiceDiscovery::send(const std::string& path, std::string&& post)
 {
   std::string uri = mConsulUrl + path;
   CURLcode response;
@@ -151,11 +151,14 @@ void ServiceDiscovery::send(const std::string& path, std::string&& post)
   if (response != CURLE_OK) {
     std::string s = std::string("ServiceDiscovery::send(...) ") + curl_easy_strerror(response) + "\n   URI: " + uri;
     ILOG_INST.log(msgLimit, "%s", s.c_str());
+    return false;
   }
   if (responseCode < 200 || responseCode > 206) {
     std::string s = std::string("ServiceDiscovery::send(...) Response code: ") + std::to_string(responseCode);
     ILOG_INST.log(msgLimit, "%s", s.c_str());
+    return false;
   }
+  return true;
 }
 
 // https://stackoverflow.com/questions/33358321/using-c-and-boost-or-not-to-check-if-a-specific-port-is-being-used

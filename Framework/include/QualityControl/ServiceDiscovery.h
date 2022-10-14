@@ -46,7 +46,8 @@ class ServiceDiscovery
 
   /// Registers list of online objects by sending HTTP PUT request to Consul server
   /// \param objects 		List of comma separated objects
-  void _register(const std::string& objects);
+  bool _register(const std::string& objects);
+
 
   /// Deregisters service
   void deregister();
@@ -83,7 +84,7 @@ class ServiceDiscovery
   CURL* initCurl();
 
   /// Sends PUT request
-  void send(const std::string& path, std::string&& request);
+  bool send(const std::string& path, std::string&& request);
 
   /// Health check thread loop
   void runHealthServer(unsigned int port);
