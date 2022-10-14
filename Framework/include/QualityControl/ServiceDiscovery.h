@@ -48,7 +48,6 @@ class ServiceDiscovery
   /// \param objects 		List of comma separated objects
   bool _register(const std::string& objects);
 
-
   /// Deregisters service
   void deregister();
 
