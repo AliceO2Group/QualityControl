@@ -202,6 +202,7 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   mClustersBC = std::make_unique<TH1F>("mClustersBC", "Clusters per BC; BCid; # entries", o2::constants::lhc::LHCMaxBunches, 0, o2::constants::lhc::LHCMaxBunches);
   mClustersBC->SetMinimum(0.1);
   getObjectsManager()->startPublishing(mClustersBC.get());
+  getObjectsManager()->setDisplayHint(mClustersBC.get(), "hist");
 
   // define chip occupancy maps
   QcMFTUtilTables MFTTable;

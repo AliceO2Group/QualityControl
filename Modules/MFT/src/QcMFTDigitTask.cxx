@@ -165,6 +165,7 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
   mDigitsBC = std::make_unique<TH1F>("mDigitsBC", "Digits per BC; BCid; # entries", o2::constants::lhc::LHCMaxBunches, 0, o2::constants::lhc::LHCMaxBunches);
   mDigitsBC->SetMinimum(0.1);
   getObjectsManager()->startPublishing(mDigitsBC.get());
+  getObjectsManager()->setDisplayHint(mDigitsBC.get(), "hist");
 
   // --Chip hit maps
   //==============================================
