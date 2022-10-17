@@ -22,6 +22,7 @@
 #include <Framework/InputRecord.h>
 #include <MCHGeometryTransformer/Transformations.h>
 #include <ReconstructionDataFormats/TrackMCHMID.h>
+#include <ReconstructionDataFormats/GlobalFwdTrack.h>
 #include <gsl/span>
 
 namespace o2::quality_control_modules::muon
@@ -47,11 +48,10 @@ void TracksTask::initialize(o2::framework::InitContext& /*ic*/)
 {
   ILOG(Info, Support) << "initialize TracksTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
+  ILOG(Info, Support) << "loading geometry" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
   if (!o2::base::GeometryManager::isGeometryLoaded()) {
     TaskInterface::retrieveConditionAny<TObject>("GLO/Config/Geometry");
   }
-
-  auto transformation = o2::mch::geo::transformationFromTGeoManager(*gGeoManager);
 
   double maxTracksPerTF = 400;
 
@@ -59,22 +59,36 @@ void TracksTask::initialize(o2::framework::InitContext& /*ic*/)
     maxTracksPerTF = std::stof(param->second);
   }
 
-  mUseMatchedMCHMIDTracks = getBooleanParam("matchedMCHMIDTracks");
-
-  mTrackPlotter = std::make_unique<muon::TrackPlotter>(transformation, maxTracksPerTF);
-
-  publish(*(mTrackPlotter.get()));
-}
-
-void TracksTask::publish(const TrackPlotter& tp)
-{
-  auto hinfos = tp.histograms();
-
-  for (auto hinfo : hinfos) {
-    getObjectsManager()->startPublishing(hinfo.histo);
-    getObjectsManager()->setDefaultDrawOptions(hinfo.histo, hinfo.drawOptions);
-    getObjectsManager()->setDisplayHint(hinfo.histo, hinfo.displayHints);
+  ILOG(Info, Support) << "loading sources" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  // For track type selection
+  if (auto param = mCustomParameters.find("GID"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "[TOTO] Custom parameter - GID (= sources by user): " << param->second << ENDM;
+    ILOG(Info, Devel) << "[TOTO] Allowed Sources  = " << mAllowedSources << ENDM;
+    mSrc = mAllowedSources & GID::getSourcesMask(param->second);
+    ILOG(Info, Devel) << "Final requested sources = " << mSrc << ENDM;
   }
+
+  ILOG(Info, Devel) << "[TOTO] Debug: Will do DataRequest" << ENDM;
+  auto srcFixed = mSrc;
+  if (srcFixed[GID::Source::MFTMCHMID] == 1) {
+    srcFixed.reset(GID::Source::MFTMCHMID);
+    srcFixed.set(GID::Source::MFTMCH);
+  }
+  mDataRequest = std::make_shared<o2::globaltracking::DataRequest>();
+  mDataRequest->requestTracks(srcFixed, false);
+
+  auto createPlotter = [&](GID::Source source, std::string path) {
+    if (mSrc[source] == 1) {
+      std::cout << "[TOTO] Creating plotter for path " << path << std::endl;
+      mTrackPlotters[source] = std::make_unique<muon::TrackPlotter>(maxTracksPerTF, source, path);
+      mTrackPlotters[source]->publish(getObjectsManager());
+    }
+  };
+
+  createPlotter(GID::Source::MCH, "MCH/");
+  createPlotter(GID::Source::MCHMID, "MCH-MID/");
+  createPlotter(GID::Source::MFTMCH, "MFT-MCH/");
+  createPlotter(GID::Source::MFTMCHMID, "MFT-MCH-MID/");
 }
 
 void TracksTask::startOfActivity(Activity& activity)
@@ -89,15 +103,15 @@ void TracksTask::startOfCycle()
 
 bool TracksTask::assertInputs(o2::framework::ProcessingContext& ctx)
 {
-  if (!ctx.inputs().isValid("mchtracks")) {
+  if (!ctx.inputs().isValid("trackMCH")) {
     ILOG(Info, Support) << "no mch tracks available on input" << ENDM;
     return false;
   }
-  if (!ctx.inputs().isValid("mchtrackrofs")) {
+  if (!ctx.inputs().isValid("trackMCHROF")) {
     ILOG(Info, Support) << "no mch track rofs available on input" << ENDM;
     return false;
   }
-  if (!ctx.inputs().isValid("mchtrackclusters")) {
+  if (!ctx.inputs().isValid("trackMCHTRACKCLUSTERS")) {
     ILOG(Info, Support) << "no mch track clusters available on input" << ENDM;
     return false;
   }
@@ -105,9 +119,21 @@ bool TracksTask::assertInputs(o2::framework::ProcessingContext& ctx)
     ILOG(Info, Support) << "no mch track digits available on input" << ENDM;
     return false;
   }
-  if (mUseMatchedMCHMIDTracks) {
-    if (!ctx.inputs().isValid("muontracks")) {
+  if (mSrc[GID::Source::MCHMID] == 1) {
+    if (!ctx.inputs().isValid("matchMCHMID")) {
       ILOG(Info, Support) << "no muon (mch+mid) track available on input" << ENDM;
+      return false;
+    }
+  }
+  if (mSrc[GID::Source::MFTMCH] == 1) {
+    if (!ctx.inputs().isValid("fwdtracks")) {
+      ILOG(Info, Support) << "no muon (mch+mft) track available on input" << ENDM;
+      return false;
+    }
+  }
+  if (mSrc[GID::Source::MFTMCHMID] == 1) {
+    if (!ctx.inputs().isValid("fwdtracks")) {
+      ILOG(Info, Support) << "no muon (mch+mft+mid) track available on input" << ENDM;
       return false;
     }
   }
@@ -116,20 +142,48 @@ bool TracksTask::assertInputs(o2::framework::ProcessingContext& ctx)
 
 void TracksTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
+  ILOG(Info, Devel) << "Debug: MonitorData" << ENDM;
+
+  mRecoCont.collectData(ctx, *mDataRequest.get());
+
+  ILOG(Info, Devel) << "Debug: Collected data" << ENDM;
+
   if (!assertInputs(ctx)) {
     return;
   }
 
-  auto tracks = ctx.inputs().get<gsl::span<o2::mch::TrackMCH>>("mchtracks");
-  auto rofs = ctx.inputs().get<gsl::span<o2::mch::ROFRecord>>("mchtrackrofs");
-  auto clusters = ctx.inputs().get<gsl::span<o2::mch::Cluster>>("mchtrackclusters");
+  ILOG(Info, Devel) << "Debug: Asserted inputs" << ENDM;
+
+  auto tracks = mRecoCont.getMCHTracks();
+  auto rofs = mRecoCont.getMCHTracksROFRecords();
+  auto clusters = mRecoCont.getMCHTrackClusters();
   auto digits = ctx.inputs().get<gsl::span<o2::mch::Digit>>("mchtrackdigits");
 
-  if (mUseMatchedMCHMIDTracks) {
-    auto muonTracks = ctx.inputs().get<gsl::span<o2::dataformats::TrackMCHMID>>("muontracks");
-    mTrackPlotter->fillHistograms(rofs, tracks, clusters, digits, muonTracks);
-  } else {
-    mTrackPlotter->fillHistograms(rofs, tracks, clusters, digits);
+  if (mSrc[GID::MCH] == 1) {
+    ILOG(Info, Devel) << "Debug: MCH requested" << ENDM;
+    if (true || mRecoCont.isTrackSourceLoaded(GID::MCH)) {
+      ILOG(Info, Devel) << "Debug: MCH source loaded" << ENDM;
+      mTrackPlotters[GID::MCH]->fillHistograms(mRecoCont);
+    }
+  }
+  if (mSrc[GID::MCHMID] == 1) {
+    ILOG(Info, Devel) << "Debug: MCHMID requested" << ENDM;
+    if (true || mRecoCont.isMatchSourceLoaded(GID::MCHMID)) {
+      ILOG(Info, Devel) << "Debug: MCHMID source loaded" << ENDM;
+      mTrackPlotters[GID::MCHMID]->fillHistograms(mRecoCont);
+    }
+  }
+  if (mSrc[GID::MFTMCH] == 1) {
+    ILOG(Info, Devel) << "Debug: MFTMCH requested" << ENDM;
+    if (true || mRecoCont.isTrackSourceLoaded(GID::MFTMCH)) {
+      mTrackPlotters[GID::MFTMCH]->fillHistograms(mRecoCont);
+    }
+  }
+  if (mSrc[GID::MFTMCHMID] == 1) {
+    ILOG(Info, Devel) << "Debug: MFTMCHMID requested" << ENDM;
+    if (true || mRecoCont.isTrackSourceLoaded(GID::MFTMCH)) {
+      mTrackPlotters[GID::MFTMCHMID]->fillHistograms(mRecoCont);
+    }
   }
 }
 
@@ -146,7 +200,9 @@ void TracksTask::endOfActivity(Activity& /*activity*/)
 void TracksTask::reset()
 {
   ILOG(Info, Support) << "reset" << ENDM;
-  mTrackPlotter->reset();
+  for (auto& p : mTrackPlotters) {
+    p.second->reset();
+  }
 }
 
 } // namespace o2::quality_control_modules::muon

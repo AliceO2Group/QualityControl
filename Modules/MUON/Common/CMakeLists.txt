@@ -6,6 +6,8 @@ set(SRCS
   src/Helpers.cxx
   src/MergeableTH1Ratio.cxx
   src/MergeableTH2Ratio.cxx
+  src/HistPlotter.cxx
+  src/MuonTrack.cxx
   src/TrackPlotter.cxx
   src/TracksCheck.cxx
   src/TracksTask.cxx
@@ -14,6 +16,8 @@ set(SRCS
 set(HEADERS
   include/MUONCommon/MergeableTH1Ratio.h
   include/MUONCommon/MergeableTH2Ratio.h
+  include/MUONCommon/HistPlotter.h
+  include/MUONCommon/MuonTrack.h
   include/MUONCommon/TrackCheck.h
   include/MUONCommon/TrackPlotter.h
   include/MUONCommon/TracksTask.h
@@ -29,7 +33,7 @@ target_include_directories(
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_link_libraries(${MODULE_NAME} PUBLIC O2QualityControl O2::MCHMappingImpl4 O2::DataFormatsMCH O2::MCHTracking O2::MCHRawElecMap O2::ReconstructionDataFormats O2::MCHGeometryTransformer)
+target_link_libraries(${MODULE_NAME} PUBLIC O2QualityControl O2::MCHMappingImpl4 O2::DataFormatsMCH O2::MCHTracking O2::MCHRawElecMap O2::ReconstructionDataFormats O2::MCHGeometryTransformer O2::DataFormatsGlobalTracking)
 
 # Digit.h is moving from MCHBase to DataFormatsMCH : let's handle both
 # gracefully for the moment...

@@ -1,0 +1,36 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "2"
+      }
+    },
+    "tasks": {
+      "MUONTracks": {
+        "active": "true",
+        "className": "o2::quality_control_modules::muon::TracksTask",
+        "moduleName": "QcMUONCommon",
+        "detectorName": "GLO",
+        "cycleDurationSeconds": "600",
+        "maxNumberCycles": "-1",
+        "dataSource": {
+          "type": "direct",
+          "query": "trackMCH:MCH/TRACKS;trackMCHROF:MCH/TRACKROFS;trackMCHTRACKCLUSTERS:MCH/TRACKCLUSTERS;mchtrackdigits:MCH/CLUSTERDIGITS;trackMID:MID/TRACKS;trackMIDROF:MID/TRACKROFS;trackMIDTRACKCLUSTERS:MID/TRACKCLUSTERS;trackClMIDROF:MID/TRCLUSROFS;matchMCHMID:GLO/MTC_MCHMID"
+        },
+        "taskParameters": {
+          "maxTracksPerTF": "600",
+          "GID" : "MCH,MID,MCH-MID"
+        },
+        "location": "remote"
+      }
+    }
+  }
+}
