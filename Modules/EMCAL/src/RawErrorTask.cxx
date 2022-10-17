@@ -51,6 +51,9 @@ RawErrorTask::~RawErrorTask()
   if (mErrorTypeGain)
     delete mErrorTypeGain;
 
+  if (mErrorTypeUnknown)
+    delete mErrorTypeUnknown;
+
   if (mErrorGainLow)
     delete mErrorGainLow;
 
@@ -187,6 +190,11 @@ void RawErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
   mChannelGainHigh->SetStats(0);
   getObjectsManager()->startPublishing(mChannelGainHigh);
 
+  mErrorTypeUnknown = new TH1F("UnknownErrorType", "Unknown error types", 40, 0., 40);
+  mErrorTypeUnknown->GetXaxis()->SetTitle("Link");
+  mErrorTypeUnknown->GetYaxis()->SetTitle("Number of errors");
+  getObjectsManager()->startPublishing(mErrorTypeUnknown);
+
   mGeometry = o2::emcal::Geometry::GetInstanceFromRunNumber(300000);
   mMapper = std::make_unique<o2::emcal::MappingHandler>();
 }
@@ -236,13 +244,16 @@ void RawErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
         case o2::emcal::ErrorTypeFEE::ErrorSource_t::GAIN_ERROR:
           errorhist = mErrorTypeGain;
           break;
-        // case UNDEFINED:
-        //   errorhist = mErrorTypeUndefined;
-        //     break;
         default:
+          // Error type is unknown - this should never happen
+          // In order to monitor such messages fill a dedicated
+          // counter histogram
+          mErrorTypeUnknown->Fill(feeid);
           break;
       }; // switch errorCode
-      errorhist->Fill(feeid, errorCode);
+      if (errorhist) {
+        errorhist->Fill(feeid, errorCode);
+      }
 
       if (error.getErrorType() == o2::emcal::ErrorTypeFEE::ErrorSource_t::GAIN_ERROR) {
         // Fill Histogram with FEC ID
@@ -299,12 +310,14 @@ void RawErrorTask::reset()
   // clean all the monitor objects here
 
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  mErrorTypeAll->Reset();
   mErrorTypeAltro->Reset();
   mErrorTypePage->Reset();
   mErrorTypeMinAltro->Reset();
   mErrorTypeFit->Reset();
   mErrorTypeGeometry->Reset();
   mErrorTypeGain->Reset();
+  mErrorTypeUnknown->Reset();
   mErrorGainLow->Reset();
   mErrorGainHigh->Reset();
   mFecIdMinorAltroError->Reset();

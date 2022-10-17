@@ -64,6 +64,7 @@ class RawErrorTask final : public TaskInterface
   TH2* mErrorTypeFit = nullptr;         ///< Raw fit errors
   TH2* mErrorTypeGeometry = nullptr;    ///< Geometry errors
   TH2* mErrorTypeGain = nullptr;        ///< Gain type errors
+  TH1* mErrorTypeUnknown = nullptr;     ///< Counter of defined error codes
   TH2* mErrorGainLow = nullptr;         ///< FEC with LGnoHG error
   TH2* mErrorGainHigh = nullptr;        ///< FEC with HGnoLG error
   TH2* mChannelGainLow = nullptr;       ///< Tower with LGnoHG error
