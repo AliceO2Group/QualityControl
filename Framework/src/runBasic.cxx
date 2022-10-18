@@ -148,7 +148,7 @@ std::string getConfigPath(const ConfigContext& config)
   std::string filename = !noDS ? "basic.json" : "basic-no-sampling.json";
   char* qcPath = getenv("QUALITYCONTROL_ROOT");
   // if the var is not set, we just bail because it is most probably not reasonable to guess.
-  if(qcPath == nullptr) {
+  if (qcPath == nullptr) {
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Env var QUALITYCONTROL_ROOT not set. We cannot continue."));
   }
   std::string defaultConfigPath = std::string(getenv("QUALITYCONTROL_ROOT")) + "/etc/" + filename;
