@@ -36,10 +36,12 @@
 
 #include <DataSampling/DataSampling.h>
 #include "QualityControl/InfrastructureGenerator.h"
+#include "Common/Exceptions.h"
 
 using namespace o2;
 using namespace o2::framework;
 using namespace o2::utilities;
+using namespace AliceO2::Common;
 
 // The customize() functions are used to declare the executable arguments and to specify custom completion and channel
 // configuration policies. They have to be above `#include "Framework/runDataProcessing.h"` - that header checks if
@@ -144,8 +146,13 @@ std::string getConfigPath(const ConfigContext& config)
   // Determine the default config file path and name (based on option no-data-sampling and the QC_ROOT path)
   bool noDS = config.options().get<bool>("no-data-sampling");
   std::string filename = !noDS ? "basic.json" : "basic-no-sampling.json";
-  std::string defaultConfigPath = getenv("QUALITYCONTROL_ROOT") != nullptr ? std::string(getenv("QUALITYCONTROL_ROOT")) + "/etc/" + filename : "$QUALITYCONTROL_ROOT undefined";
-  // The the optional one by the user
+  char* qcPath = getenv("QUALITYCONTROL_ROOT");
+  // if the var is not set, we just bail because it is most probably not reasonable to guess.
+  if(qcPath == nullptr) {
+    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Env var QUALITYCONTROL_ROOT not set. We cannot continue."));
+  }
+  std::string defaultConfigPath = std::string(getenv("QUALITYCONTROL_ROOT")) + "/etc/" + filename;
+  // The optional one by the user
   auto userConfigPath = config.options().get<std::string>("config-path");
   // Finally build the config path based on the default or the user-base one
   std::string path = std::string("json://") + (userConfigPath.empty() ? defaultConfigPath : userConfigPath);
