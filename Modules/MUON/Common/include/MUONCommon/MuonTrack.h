@@ -31,7 +31,7 @@ class MuonTrack
   MuonTrack(const o2::dataformats::TrackMCHMID* track, const o2::globaltracking::RecoContainer& recoCont);
   MuonTrack(const o2::dataformats::GlobalFwdTrack* track, const o2::globaltracking::RecoContainer& recoCont);
 
-  void init(const o2::globaltracking::RecoContainer& recoCont);
+  void init();
 
   ROOT::Math::PxPyPzMVector getMuonMomentum() const { return mMuonMomentum; }
   ROOT::Math::PxPyPzMVector getMuonMomentumAtVertex() const { return mMuonMomentumAtVertex; }
@@ -40,6 +40,7 @@ class MuonTrack
     return mMuonMomentum.P();
   }
   double getDCA() const { return mDCA; }
+  double getPDCAMCH() const { return mPDCAMCH; }
   double getRAbs() const { return mRAbs; }
   double getChi2OverNDF() const { return mChi2OverNDF; }
 
@@ -77,6 +78,7 @@ class MuonTrack
   ROOT::Math::PxPyPzMVector mMuonMomentumAtVertex;
 
   float mDCA{ 0 };
+  float mPDCAMCH{ 0 };
   float mRAbs{ 0 };
   float mChi2OverNDF{ 0 };
 

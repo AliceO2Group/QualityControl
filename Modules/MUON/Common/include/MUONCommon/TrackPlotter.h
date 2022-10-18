@@ -78,17 +78,17 @@ class TrackPlotter : public HistPlotter
   GID::Source mSrc;
   std::string mPath;
 
-  std::unique_ptr<TH1F> mNofTracksPerTF[3];   ///< number of tracks per TF
-  std::unique_ptr<TH1F> mTrackBC;             ///< BC associated to the track
-  std::unique_ptr<TH1F> mTrackBCWidth;        ///< BC width associated to the track
-  std::unique_ptr<TH1> mTrackDT;              ///< time difference between MFT/MCH/MID tracks segments
-  std::unique_ptr<TH1F> mTrackChi2OverNDF[3]; ///< chi2/ndf for the track
-  std::unique_ptr<TH1F> mTrackDCA[3];         ///< DCA (cm) of the track
-  std::unique_ptr<TH1F> mTrackEta[3];         ///< eta of the track
-  std::unique_ptr<TH1F> mTrackPDCA[3];        ///< p (GeV/c) x DCA (cm) of the track
-  std::unique_ptr<TH1F> mTrackPhi[3];         ///< phi (in degrees) of the track
-  std::unique_ptr<TH1F> mTrackPt[3];          ///< Pt (Gev/c^2) of the track
-  std::unique_ptr<TH1F> mTrackRAbs[3];        ///< R at absorber end of the track
+  std::unique_ptr<TH1F> mTrackBC;                         ///< BC associated to the track
+  std::unique_ptr<TH1F> mTrackBCWidth;                    ///< BC width associated to the track
+  std::unique_ptr<TH1> mTrackDT;                          ///< time difference between MFT/MCH/MID tracks segments
+  std::array<std::unique_ptr<TH1F>, 3> mNofTracksPerTF;   ///< number of tracks per TF
+  std::array<std::unique_ptr<TH1F>, 3> mTrackChi2OverNDF; ///< chi2/ndf for the track
+  std::array<std::unique_ptr<TH1F>, 3> mTrackDCA;         ///< DCA (cm) of the track
+  std::array<std::unique_ptr<TH1F>, 3> mTrackEta;         ///< eta of the track
+  std::array<std::unique_ptr<TH1F>, 3> mTrackPDCA;        ///< p (GeV/c) x DCA (cm) of the track
+  std::array<std::unique_ptr<TH1F>, 3> mTrackPhi;         ///< phi (in degrees) of the track
+  std::array<std::unique_ptr<TH1F>, 3> mTrackPt;          ///< Pt (Gev/c^2) of the track
+  std::array<std::unique_ptr<TH1F>, 3> mTrackRAbs;        ///< R at absorber end of the track
 
   std::unique_ptr<TH1F> mMinv; ///< invariant mass of unlike-sign track pairs
 };

@@ -157,12 +157,13 @@ bool TrackPlotter::fillTrackHistos(const MuonTrack& track)
       break;
   }
 
-  auto p = track.getP(); // uncorrected p
   double dca = track.getDCA();
   mTrackDCA[q]->Fill(dca);
   mTrackDCA[2]->Fill(dca);
-  mTrackPDCA[q]->Fill(p * dca);
-  mTrackPDCA[2]->Fill(p * dca);
+
+  double pdca = track.getPDCAMCH();
+  mTrackPDCA[q]->Fill(pdca);
+  mTrackPDCA[2]->Fill(pdca);
 
   auto muon = track.getMuonMomentumAtVertex();
 

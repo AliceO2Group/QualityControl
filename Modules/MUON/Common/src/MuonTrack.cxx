@@ -124,7 +124,7 @@ static InteractionRecord getGlobalFwdTrackIR(const GlobalFwdTrack* track, const 
   return InteractionRecord{};
 }
 
-static bool getParametersAtVertex(o2::mch::TrackParam& trackParamAtVertex, const o2::globaltracking::RecoContainer& recoCont, bool correctForMCS = true)
+static bool getParametersAtVertex(o2::mch::TrackParam& trackParamAtVertex, bool correctForMCS = true)
 {
   bool result = false;
   if (trackParamAtVertex.getZ() > o2::quality_control_modules::muon::MuonTrack::sAbsZBeg) {
@@ -144,10 +144,10 @@ static ROOT::Math::PxPyPzMVector getMuonMomentum(const o2::mch::TrackParam& par)
   return { par.px(), par.py(), par.pz(), muonMass };
 }
 
-static ROOT::Math::PxPyPzMVector getMuonMomentumAtVertex(const o2::mch::TrackParam& par, const o2::globaltracking::RecoContainer& recoCont)
+static ROOT::Math::PxPyPzMVector getMuonMomentumAtVertex(const o2::mch::TrackParam& par)
 {
   o2::mch::TrackParam trackParamAtVertex = par;
-  bool result = getParametersAtVertex(trackParamAtVertex, recoCont);
+  bool result = getParametersAtVertex(trackParamAtVertex);
   if (!result) {
     std::cerr << "Track extrap failed\n";
     return ROOT::Math::PxPyPzMVector();
@@ -159,10 +159,10 @@ static ROOT::Math::PxPyPzMVector getMuonMomentumAtVertex(const o2::mch::TrackPar
   return { px, py, pz, muonMass };
 }
 
-static float getDCA(const o2::mch::TrackParam& par, const o2::globaltracking::RecoContainer& recoCont)
+static float getDCA(const o2::mch::TrackParam& par)
 {
   o2::mch::TrackParam trackParamAtDCA = par;
-  bool result = getParametersAtVertex(trackParamAtDCA, recoCont, false);
+  bool result = getParametersAtVertex(trackParamAtDCA, false);
   if (!result) {
     std::cerr << "Track extrap failed\n";
     return 0;
@@ -171,6 +171,13 @@ static float getDCA(const o2::mch::TrackParam& par, const o2::globaltracking::Re
   double dcaX = trackParamAtDCA.getBendingCoor();
   double dcaY = trackParamAtDCA.getNonBendingCoor();
   return std::sqrt(dcaX * dcaX + dcaY * dcaY);
+}
+
+static float getPDCA(const o2::mch::TrackParam& par)
+{
+  auto p = par.p();
+  auto dca = getDCA(par);
+  return (p * dca);
 }
 
 static float getRAbsMCH(const o2::mch::TrackParam& par)
@@ -226,7 +233,7 @@ MuonTrack::MuonTrack(const o2::mch::TrackMCH* track, const o2::globaltracking::R
   mTrackParametersMCH.setZ(track->getZ());
   mTrackParametersMCH.setParameters(track->getParameters());
 
-  init(recoCont);
+  init();
 }
 
 MuonTrack::MuonTrack(const TrackMCHMID* track, const o2::globaltracking::RecoContainer& recoCont)
@@ -268,7 +275,7 @@ MuonTrack::MuonTrack(const TrackMCHMID* track, const o2::globaltracking::RecoCon
   mTrackParametersMCH.setZ(trackMCH.getZ());
   mTrackParametersMCH.setParameters(trackMCH.getParameters());
 
-  init(recoCont);
+  init();
 }
 
 MuonTrack::MuonTrack(const GlobalFwdTrack* track, const o2::globaltracking::RecoContainer& recoCont) : mTrackParameters(forwardTrackToMCHTrack(*track))
@@ -316,17 +323,18 @@ MuonTrack::MuonTrack(const GlobalFwdTrack* track, const o2::globaltracking::Reco
 
   mChi2OverNDF = track->getTrackChi2();
 
-  init(recoCont);
+  init();
 }
 
-void MuonTrack::init(const o2::globaltracking::RecoContainer& recoCont)
+void MuonTrack::init()
 {
   mSign = mTrackParameters.getCharge();
 
   mMuonMomentum = ::getMuonMomentum(mTrackParameters);
-  mMuonMomentumAtVertex = ::getMuonMomentumAtVertex(mTrackParameters, recoCont);
+  mMuonMomentumAtVertex = ::getMuonMomentumAtVertex(mTrackParameters);
 
-  mDCA = ::getDCA(mTrackParameters, recoCont);
+  mDCA = ::getDCA(mTrackParameters);
+  mPDCAMCH = ::getPDCA(mTrackParametersMCH);
   mRAbs = getRAbsMCH(mTrackParametersMCH);
 }
 
