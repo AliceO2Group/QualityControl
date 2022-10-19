@@ -26,6 +26,8 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/io_service.hpp>
 
+using boost::asio::ip::tcp;
+
 namespace o2::quality_control::core
 {
 
@@ -170,8 +172,6 @@ bool ServiceDiscovery::send(const std::string& path, std::string&& post)
 // https://stackoverflow.com/questions/33358321/using-c-and-boost-or-not-to-check-if-a-specific-port-is-being-used
 bool ServiceDiscovery::PortInUse(unsigned short port)
 {
-  using ip::tcp;
-
   boost::asio::io_service svc;
   tcp::acceptor a(svc);
 
