@@ -36,6 +36,7 @@
 #include <TGraphErrors.h>
 #include <TProfile.h>
 #include <TPoint.h>
+#include "MCHConstants/DetectionElements.h"
 
 using namespace o2::quality_control;
 using namespace o2::quality_control::core;
@@ -52,7 +53,7 @@ void TrendingFECHistRatio::configure(std::string name, const boost::property_tre
                               fmt::format("CH{}:time", chamber + 1),
                               "", "*L", "" });
   }
-  for (auto de : o2::mch::raw::deIdsForAllMCH) {
+  for (auto de : o2::mch::constants::deIdsForAllMCH) {
     mConfig.plots.push_back({ fmt::format("{}{}_{}", getHistoPath(de), mConfig.mConfigTrendingFECHistRatio.namePrefix, de),
                               fmt::format("{} DE{}", mConfig.mConfigTrendingFECHistRatio.namePrefix, de),
                               fmt::format("DE{}:time", de),
@@ -103,7 +104,7 @@ void TrendingFECHistRatio::computeMCHFECHistRatios(TH2F* hNum, TH2F* hDen)
   for (int chamber = 0; chamber < 10; chamber++) {
     mTrendCH[chamber] = 0;
   }
-  for (auto de : o2::mch::raw::deIdsForAllMCH) {
+  for (auto de : o2::mch::constants::deIdsForAllMCH) {
     mTrendDE[de] = 0;
   }
 
@@ -178,7 +179,7 @@ void TrendingFECHistRatio::computeMCHFECHistRatios(TH2F* hNum, TH2F* hDen)
   }
 
   // compute and store average rate for each detection element
-  for (auto de : o2::mch::raw::deIdsForAllMCH) {
+  for (auto de : o2::mch::constants::deIdsForAllMCH) {
     double ratio = (deDen[de] > 0) ? (deNum[de] / deDen[de]) : 0;
     mTrendDE[de] = ratio;
   }
@@ -214,7 +215,7 @@ void TrendingFECHistRatio::initialize(Trigger, framework::ServiceRegistryRef)
   for (int chamber = 0; chamber < 10; chamber++) {
     mTrend->Branch(fmt::format("CH{}", chamber + 1).c_str(), &mTrendCH[chamber]);
   }
-  for (auto de : o2::mch::raw::deIdsForAllMCH) {
+  for (auto de : o2::mch::constants::deIdsForAllMCH) {
     mTrend->Branch(fmt::format("DE{}", de).c_str(), &mTrendDE[de]);
   }
 
