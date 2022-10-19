@@ -239,15 +239,15 @@ void QcMFTReadoutTask::monitorData(o2::framework::ProcessingContext& ctx)
       uint16_t ddwIndex = ddw->indexWord.indexBits.id;
       if (ddwIndex == 0xE4) { // it is a diagnostic data word
         // fill histogram bin with #DDW
-        mDDWSummary->Fill(-1);                  // counter stored in the underflow bin!
-        mSummaryChipOk->Fill(-1);               // counter stored in the underflow bin!
-        mSummaryChipWarning->Fill(-1);          // counter stored in the underflow bin!
-        mSummaryChipError->Fill(-1);            // counter stored in the underflow bin!
-        mSummaryChipFault->Fill(-1);            // counter stored in the underflow bin!
-        mZoneSummaryChipWarning->Fill(-1, -1);  // counter stored in the underflow bin!
-        mZoneSummaryChipError->Fill(-1, -1);    // counter stored in the underflow bin!
-        mZoneSummaryChipFault->Fill(-1, -1);    // counter stored in the underflow bin!
-        mRDHSummary->Fill(-1);                  // counter stored in the underflow bin!
+        mDDWSummary->Fill(-1);                 // counter stored in the underflow bin!
+        mSummaryChipOk->Fill(-1);              // counter stored in the underflow bin!
+        mSummaryChipWarning->Fill(-1);         // counter stored in the underflow bin!
+        mSummaryChipError->Fill(-1);           // counter stored in the underflow bin!
+        mSummaryChipFault->Fill(-1);           // counter stored in the underflow bin!
+        mZoneSummaryChipWarning->Fill(-1, -1); // counter stored in the underflow bin!
+        mZoneSummaryChipError->Fill(-1, -1);   // counter stored in the underflow bin!
+        mZoneSummaryChipFault->Fill(-1, -1);   // counter stored in the underflow bin!
+        mRDHSummary->Fill(-1);                 // counter stored in the underflow bin!
         uint64_t ddwLaneStatus = ddw->laneWord.laneBits.laneStatus;
         uint16_t rdhFeeIndex = rdh->feeId;
         int RUindex = (rdhFeeIndex & 127); // look only at the rightmost 7 bits
