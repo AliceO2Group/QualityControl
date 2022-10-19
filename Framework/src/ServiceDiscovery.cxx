@@ -43,6 +43,7 @@ ServiceDiscovery::ServiceDiscovery(const std::string& url, const std::string& na
 
 ServiceDiscovery::~ServiceDiscovery()
 {
+  ILOG(Debug, Devel) << "ServiceDiscovery destructor" << ENDM;
   mThreadRunning = false;
   if (mHealthThread.joinable()) {
     mHealthThread.join();

@@ -65,6 +65,11 @@ TaskRunner::TaskRunner(const TaskRunnerConfig& config)
 {
 }
 
+TaskRunner::~TaskRunner()
+{
+  ILOG(Debug, Devel) << "TaskRunner destructor" << ENDM;
+}
+
 void TaskRunner::refreshConfig(InitContext& iCtx)
 {
   try {
