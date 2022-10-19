@@ -171,7 +171,6 @@ bool ServiceDiscovery::send(const std::string& path, std::string&& post)
 // https://stackoverflow.com/questions/33358321/using-c-and-boost-or-not-to-check-if-a-specific-port-is-being-used
 bool ServiceDiscovery::PortInUse(unsigned short port)
 {
-  using namespace boost::asio;
   using ip::tcp;
 
   boost::asio::io_service svc;
@@ -180,7 +179,7 @@ bool ServiceDiscovery::PortInUse(unsigned short port)
   boost::system::error_code ec;
   a.open(tcp::v4(), ec) || a.bind({ tcp::v4(), port }, ec);
 
-  return ec == error::address_in_use;
+  return ec == boost::asio::error::address_in_use;
 }
 
 size_t ServiceDiscovery::GetHealthPort()
