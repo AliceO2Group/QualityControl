@@ -53,7 +53,11 @@ void PostProcessingDevice::init(framework::InitContext& ctx)
   mRunner->init(mRunnerConfig, PostProcessingConfig{ mRunnerConfig.taskName, mRunnerConfig.configTree });
 
   // registering state machine callbacks
+#if __has_include(<Framework/Features.h>)
+  ctx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, services = ctx.services()]() mutable { start(services); });
+#else
   ctx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, &services = ctx.services()]() { start(services); });
+#endif
   ctx.services().get<CallbackService>().set(CallbackService::Id::Reset, [this]() { reset(); });
   ctx.services().get<CallbackService>().set(CallbackService::Id::Stop, [this]() { stop(); });
 }

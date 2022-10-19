@@ -166,7 +166,13 @@ void AggregatorRunner::init(framework::InitContext& iCtx)
 
   try {
     // registering state machine callbacks
+    // FIXME: this is a workaround until we get some O2 PR in.
+#if __has_include(<Framework/Features.h>)
+    iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, services = iCtx.services()]() mutable { start(services); });
+#else
     iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, &services = iCtx.services()]() { start(services); });
+#endif
+
     iCtx.services().get<CallbackService>().set(CallbackService::Id::Reset, [this]() { reset(); });
     iCtx.services().get<CallbackService>().set(CallbackService::Id::Stop, [this]() { stop(); });
   } catch (o2::framework::RuntimeErrorRef& ref) {
