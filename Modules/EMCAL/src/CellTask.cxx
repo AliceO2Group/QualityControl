@@ -46,41 +46,30 @@ namespace emcal
 
 CellTask::~CellTask()
 {
+  auto cleanOptional = [](auto* hist) {
+    if (hist) {
+      delete hist;
+    }
+  };
   for (auto en : mHistogramContainer) {
     en.second.clean();
   }
-  if (mEvCounterTF)
-    delete mEvCounterTF;
-  if (mEvCounterTFPHYS)
-    delete mEvCounterTFPHYS;
-  if (mEvCounterTFCALIB)
-    delete mEvCounterTFCALIB;
-  if (mTFPerCycles)
-    delete mTFPerCycles;
-  if (mTFPerCyclesTOT)
-    delete mTFPerCyclesTOT;
-  if (mCellsMaxSM)
-    delete mCellsMaxSM;
-  if (mCells_ev_sm)
-    delete mCells_ev_sm;
-  if (mCells_ev_smThr)
-    delete mCells_ev_smThr;
-  if (mCells_ev)
-    delete mCells_ev;
-  if (mCells_ev_Thres)
-    delete mCells_ev_Thres;
-  if (mCells_ev_EMCAL)
-    delete mCells_ev_EMCAL;
-  if (mCells_ev_EMCAL_Thres)
-    delete mCells_ev_EMCAL_Thres;
-  if (mCells_ev_DCAL)
-    delete mCells_ev_DCAL;
-  if (mCells_ev_DCAL_Thres)
-    delete mCells_ev_DCAL_Thres;
-  if (mFracGoodCellsEvent)
-    delete mFracGoodCellsEvent;
-  if (mFracGoodCellsSM)
-    delete mFracGoodCellsSM;
+  cleanOptional(mEvCounterTF);
+  cleanOptional(mEvCounterTFPHYS);
+  cleanOptional(mEvCounterTFCALIB);
+  cleanOptional(mTFPerCycles);
+  cleanOptional(mTFPerCyclesTOT);
+  cleanOptional(mCellsMaxSM);
+  cleanOptional(mCells_ev_sm);
+  cleanOptional(mCells_ev_smThr);
+  cleanOptional(mCells_ev);
+  cleanOptional(mCells_ev_Thres);
+  cleanOptional(mCells_ev_EMCAL);
+  cleanOptional(mCells_ev_EMCAL_Thres);
+  cleanOptional(mCells_ev_DCAL);
+  cleanOptional(mCells_ev_DCAL_Thres);
+  cleanOptional(mFracGoodCellsEvent);
+  cleanOptional(mFracGoodCellsSM);
 }
 
 void CellTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -443,32 +432,27 @@ void CellTask::reset()
   for (auto cont : mHistogramContainer) {
     cont.second.reset();
   }
-  if (mEvCounterTF)
-    mEvCounterTF->Reset();
-  if (mEvCounterTFPHYS)
-    mEvCounterTFPHYS->Reset();
-  if (mEvCounterTFCALIB)
-    mEvCounterTFCALIB->Reset();
-  if (mTFPerCycles)
-    mTFPerCycles->Reset();
-  if (mCellsMaxSM)
-    mCellsMaxSM->Reset();
-  if (mCells_ev_sm)
-    mCells_ev_sm->Reset();
-  if (mCells_ev_smThr)
-    mCells_ev_smThr->Reset();
-  if (mCells_ev)
-    mCells_ev->Reset();
-  if (mCells_ev_Thres)
-    mCells_ev_Thres->Reset();
-  if (mCells_ev_EMCAL)
-    mCells_ev_EMCAL->Reset();
-  if (mCells_ev_EMCAL_Thres)
-    mCells_ev_EMCAL_Thres->Reset();
-  if (mCells_ev_DCAL)
-    mCells_ev_DCAL->Reset();
-  if (mCells_ev_DCAL_Thres)
-    mCells_ev_DCAL_Thres->Reset();
+  auto resetOptional = [](auto* hist) {
+    if (hist) {
+      hist->Reset();
+    }
+  };
+  resetOptional(mEvCounterTF);
+  resetOptional(mEvCounterTFPHYS);
+  resetOptional(mEvCounterTFCALIB);
+  resetOptional(mTFPerCycles);
+  resetOptional(mTFPerCyclesTOT);
+  resetOptional(mCellsMaxSM);
+  resetOptional(mCells_ev_sm);
+  resetOptional(mCells_ev_smThr);
+  resetOptional(mCells_ev);
+  resetOptional(mCells_ev_Thres);
+  resetOptional(mCells_ev_EMCAL);
+  resetOptional(mCells_ev_EMCAL_Thres);
+  resetOptional(mCells_ev_DCAL);
+  resetOptional(mCells_ev_DCAL_Thres);
+  resetOptional(mFracGoodCellsEvent);
+  resetOptional(mFracGoodCellsSM);
 }
 
 std::vector<CellTask::CombinedEvent> CellTask::buildCombinedEvents(const std::unordered_map<header::DataHeader::SubSpecificationType, gsl::span<const o2::emcal::TriggerRecord>>& triggerrecords) const
@@ -770,28 +754,10 @@ void CellTask::CellHistograms::startPublishing(o2::quality_control::core::Object
   for (auto histos : mCellTimeBC) {
     publishOptional(histos);
   }
-  //  publishOptional(mEvCounterTF);
-  //  publishOptional(mEvCounterTFPHYS);
-  //  publishOptional(mEvCounterTFCALIB);
-  //  publishOptional(mTFPerCycles);
 }
 
 void CellTask::CellHistograms::reset()
 {
-
-  //  for (auto h : mCellAmplitude) {
-  //    h->Reset();
-  //  }
-  //  for (auto h : mCellTime) {
-  //    h->Reset();
-  //  }
-  //  for (auto h : mCellAmplitudeCalib) {
-  //    h->Reset();
-  //  }
-  //  for (auto h : mCellTimeCalib) {
-  //    h->Reset();
-  //  }
-
   auto resetOptional = [](TH1* hist) {
     if (hist)
       hist->Reset();
@@ -828,30 +794,12 @@ void CellTask::CellHistograms::reset()
   }
 
   for (auto histos : mCellTimeBC) {
-    // for (auto hist : histos)
     resetOptional(histos);
   }
-  //  resetOptional(mEvCounterTF);
-  //  resetOptional(mEvCounterTFPHYS);
-  //  resetOptional(mEvCounterTFCALIB);
-  //  resetOptional(mTFPerCycles);
 }
 
 void CellTask::CellHistograms::clean()
 {
-  // for (auto h : mCellAmplitude) {
-  //   delete h;
-  // }
-  //  for (auto h : mCellTime) {
-  //   delete h;
-  //  }
-  // for (auto h : mCellAmplitudeCalib) {
-  //   delete h;
-  // }
-  // for (auto h : mCellTimeCalib) {
-  //   delete h;
-  //  }
-
   auto cleanOptional = [](TObject* hist) {
     if (hist)
       delete hist;
@@ -887,14 +835,8 @@ void CellTask::CellHistograms::clean()
     cleanOptional(histos);
   }
   for (auto histos : mCellTimeBC) {
-    // for (auto hist : histos)
     cleanOptional(histos);
   }
-  //  cleanOptional(mEvCounterTF);
-  //  cleanOptional(mEvCounterTFPHYS);
-  //  cleanOptional(mEvCounterTFCALIB);
-  //  cleanOptional(mTFPerCycles);
-  //
 }
 
 } // namespace emcal
