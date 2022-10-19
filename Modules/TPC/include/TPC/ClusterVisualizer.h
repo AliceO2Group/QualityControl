@@ -17,7 +17,7 @@
 #ifndef QUALITYCONTROL_CLUSTERVISUALIZER_H
 #define QUALITYCONTROL_CLUSTERVISUALIZER_H
 
-//O2 includes
+// O2 includes
 #include "CCDB/CcdbApi.h"
 
 // QC includes
@@ -52,19 +52,19 @@ class ClusterVisualizer final : public quality_control::postprocessing::PostProc
   /// registry with singleton interfaces.
   /// \param trigger  Trigger which caused the initialization, for example Trigger::SOR
   /// \param services Interface containing optional interfaces, for example DatabaseInterface
-  void initialize(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
+  void initialize(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
   /// \brief Update of a post-processing task.
   /// Update of a post-processing task. User receives a Trigger which caused the update and a service
   /// registry with singleton interfaces.
   /// \param trigger  Trigger which caused the initialization, for example Trigger::Period
   /// \param services Interface containing optional interfaces, for example DatabaseInterface
-  void update(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
+  void update(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
   /// \brief Finalization of a post-processing task.
   /// Finalization of a post-processing task. User receives a Trigger which caused the finalization and a service
   /// registry with singleton interfaces.
   /// \param trigger  Trigger which caused the initialization, for example Trigger::EOR
   /// \param services Interface containing optional interfaces, for example DatabaseInterface
-  void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
+  void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
 
  private:
   o2::ccdb::CcdbApi mCdbApi;
@@ -81,4 +81,4 @@ class ClusterVisualizer final : public quality_control::postprocessing::PostProc
 
 } // namespace o2::quality_control_modules::tpc
 
-#endif //QUALITYCONTROL_CLUSTERVISUALIZER_H
+#endif // QUALITYCONTROL_CLUSTERVISUALIZER_H

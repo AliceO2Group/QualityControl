@@ -49,19 +49,19 @@ class CalDetPublisher final : public quality_control::postprocessing::PostProces
   /// registry with singleton interfaces.
   /// \param trigger  Trigger which caused the initialization, for example Trigger::SOR
   /// \param services Interface containing optional interfaces, for example DatabaseInterface
-  void initialize(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
+  void initialize(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
   /// \brief Update of a post-processing task.
   /// Update of a post-processing task. User receives a Trigger which caused the update and a service
   /// registry with singleton interfaces.
   /// \param trigger  Trigger which caused the initialization, for example Trigger::Period
   /// \param services Interface containing optional interfaces, for example DatabaseInterface
-  void update(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
+  void update(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
   /// \brief Finalization of a post-processing task.
   /// Finalization of a post-processing task. User receives a Trigger which caused the finalization and a service
   /// registry with singleton interfaces.
   /// \param trigger  Trigger which caused the initialization, for example Trigger::EOR
   /// \param services Interface containing optional interfaces, for example DatabaseInterface
-  void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
+  void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
 
  private:
   std::vector<std::string> mOutputList{};                                ///< list of CalDet objects to be processed
@@ -71,16 +71,14 @@ class CalDetPublisher final : public quality_control::postprocessing::PostProces
   std::vector<std::map<std::string, std::string>> mLookupMaps{};         ///< meta data to look for data in the CCDB
   std::vector<std::map<std::string, std::string>> mStoreMaps{};          ///< meta data to be stored with the output in the QCDB
   bool mCheckZSCalib;                                                    ///< shall the calib data used for ZS be compared to the latest pedestal and noise files
-  bool mCheckZSPrereq = true;                                            ///< is pedestal and noise in the outputList in the config file
+  bool mCheckZSPrereq = false;                                           ///< is pedestal and noise in the outputList in the config file
   std::unique_ptr<o2::tpc::CalDet<float>> mRefPedestal;                  ///< reference pedestal file used for ZS at the moment
   std::unique_ptr<o2::tpc::CalDet<float>> mRefNoise;                     ///< reference noise file used for ZS at the moment
-                                                                         //  long mInitRefCalibTimestamp;                                           ///< timestamp of the pedestal/noise map used at init of the task
-  long mInitRefPedestalTimestamp;                                        ///< timestamp of the pedestal data used at init of the task
-  long mInitRefNoiseTimestamp;                                           ///< timestamp of the noise data used at init of the task
+  long mInitRefCalibTimestamp;                                           ///< timestamp of the pedestal/noise map used at init of the task
   TPaveText* mNewZSCalibMsg = nullptr;                                   ///< badge to indicate the necessity to upload new calibration data for ZS
   std::unordered_map<std::string, std::vector<float>> mRanges;           ///< histogram ranges configurable via config file
 };
 
 } // namespace o2::quality_control_modules::tpc
 
-#endif //QUALITYCONTROL_CALDETPUBLISHER_H
+#endif // QUALITYCONTROL_CALDETPUBLISHER_H

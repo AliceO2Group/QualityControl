@@ -19,11 +19,13 @@
 #include <TH1.h>
 
 #include "QualityControl/QcInfoLogger.h"
+
 #include "CTP/CountersQcTask.h"
 #include "DetectorsRaw/RDHUtils.h"
 #include "Headers/RAWDataHeader.h"
 #include "DPLUtils/DPLRawParser.h"
 #include "DataFormatsCTP/Digits.h"
+#include "DataFormatsCTP/Configuration.h"
 #include <Framework/InputRecord.h>
 #include <Framework/InputRecordWalker.h>
 #include <Framework/DataRefUtils.h>
@@ -34,21 +36,17 @@ namespace o2::quality_control_modules::ctp
 
 CTPCountersTask::~CTPCountersTask()
 {
+  delete mDummyCountsHist;
   delete mInputCountsHist;
-  delete mInputRateHist;
 }
 
 void CTPCountersTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
   ILOG(Info, Support) << "initialize CountersQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
-  mInputCountsHist = new TH1D("InputCountsFix", "Trigger Input Counts", 48, 0, 48);
-  // gPad->SetLogy(mInputCountsHist->GetEntries()>0);
+  mInputCountsHist = new TH1D("TriggerInputCounts", "Total Trigger Input Counts", 48, 0, 48);
+  //  gPad->SetLogy(mInputCountsHist->GetEntries()>0);
   getObjectsManager()->startPublishing(mInputCountsHist);
-
-  mInputRateHist = new TH1D("InputRate", "Trigger Input Rate", 1, 0, 1);
-  getObjectsManager()->startPublishing(mInputRateHist);
 
   {
     mTCanvasInputs = new TCanvas("inputsRates", "inputsRates", 2000, 2500);
@@ -58,7 +56,7 @@ void CTPCountersTask::initialize(o2::framework::InitContext& /*ctx*/)
     for (size_t i = 0; i < 48; i++) {
       auto name = std::string("Rate_of_inp") + std::to_string(i);
       mHistInputRate[i] = new TH1D(name.c_str(), name.c_str(), 1, 0, 1);
-      mHistInputRate[i]->GetXaxis()->SetTitle("1bin = 10sec");
+      mHistInputRate[i]->GetXaxis()->SetTitle("Time");
       mHistInputRate[i]->GetYaxis()->SetTitle("Rate[Hz]");
       mTCanvasInputs->cd(i + 1);
       mHistInputRate[i]->Draw();
@@ -68,28 +66,87 @@ void CTPCountersTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 
   {
-    mTCanvasInputsTest = new TCanvas("inputsRatesTest", "inputsRatesTest", 1000, 1500);
-    mTCanvasInputsTest->Clear();
-    mTCanvasInputsTest->Divide(2, 2);
+    mTCanvasClasses = new TCanvas("classesRates", "classesRates", 2500, 2500);
+    mTCanvasClasses->Clear();
+    mTCanvasClasses->Divide(8, 8);
 
-    for (size_t i = 0; i < 4; i++) {
-      auto name = std::string("Rate_of_inp") + std::to_string(i);
-      mHistInputRateTest[i] = new TH1D(name.c_str(), name.c_str(), 1, 0, 1);
-      mHistInputRateTest[i]->GetXaxis()->SetTitle("1bin = 10sec");
-      mHistInputRateTest[i]->GetYaxis()->SetTitle("Rate[Hz]");
-      mTCanvasInputsTest->cd(i + 1);
-      mHistInputRateTest[i]->Draw();
-      mHistInputRateTest[i]->SetBit(TObject::kCanDelete);
+    for (size_t i = 0; i < 64; i++) {
+      auto name = std::string("Rate_of_class") + std::to_string(i);
+      mHistClassRate[i] = new TH1D(name.c_str(), name.c_str(), 1, 0, 1);
+      mHistClassRate[i]->GetXaxis()->SetTitle("Time");
+      mHistClassRate[i]->GetYaxis()->SetTitle("Rate[Hz]");
+      mTCanvasClasses->cd(i + 1);
+      mHistClassRate[i]->Draw();
+      mHistClassRate[i]->SetBit(TObject::kCanDelete);
     }
-    getObjectsManager()->startPublishing(mTCanvasInputsTest);
+    getObjectsManager()->startPublishing(mTCanvasClasses);
+  }
+
+  {
+    for (int j = 0; j < 16; j++) {
+      // auto name = std::string("Class rates in Run ") + std::to_string(mActiveRun[j]);
+      auto name = std::string("Class_rates_in_Run_position_in_payload:") + std::to_string(j);
+      mTCanvasClassRates[j] = new TCanvas(name.c_str(), name.c_str(), 2500, 2500);
+      mTCanvasClassRates[j]->Clear();
+      /*mTCanvasClassRates[j]->Divide(mXPad[j], mXPad[j]);
+
+      for (size_t i = 0; i < mNumberOfClasses[j]; i++) {
+        int k = mActiveClassInRun[i];
+        auto name = std::string("Rate_of_class") + std::to_string(k);
+        //mHistClassRate[k] = new TH1D(name.c_str(), name.c_str(), 1, 0, 1);
+        //mHistClassRate[k]->GetXaxis()->SetTitle("Time");
+        //mHistClassRate[k]->GetYaxis()->SetTitle("Rate[Hz]");
+        mTCanvasClassRates[j]->cd(i + 1);
+        mHistClassRate[k]->Draw();
+        mHistClassRate[k]->SetBit(TObject::kCanDelete);
+      }*/
+      getObjectsManager()->startPublishing(mTCanvasClassRates[j]);
+    }
+  }
+
+  {
+    mTCanvasTotalCountsClasses = new TCanvas("TotalCountsClasses", "Total Counts Classes", 2000, 500);
+    mTCanvasTotalCountsClasses->Clear();
+    mTCanvasTotalCountsClasses->Divide(3, 2);
+
+    for (size_t i = 0; i < 6; i++) {
+      auto name = std::string("Rate_of_classnew") + std::to_string(i);
+      if (i == 0) {
+        name = std::string("Trigger Class LMb Total Time Integrated Counts");
+      }
+      if (i == 1) {
+        name = std::string("Trigger Class L0b Total Time Integrated Counts");
+      }
+      if (i == 2) {
+        name = std::string("Trigger Class L1b Total Time Integrated Counts");
+      }
+      if (i == 3) {
+        name = std::string("Trigger Class LMa Total Time Integrated Counts");
+      }
+      if (i == 4) {
+        name = std::string("Trigger Class L0a Total Time Integrated Counts");
+      }
+      if (i == 5) {
+        name = std::string("Trigger Class L1a Total Time Integrated Counts");
+      }
+      mHistClassTotalCounts[i] = new TH1D(name.c_str(), name.c_str(), 64, 0, 64);
+      mHistClassTotalCounts[i]->GetXaxis()->SetTitle("Class");
+      mHistClassTotalCounts[i]->GetYaxis()->SetTitle("Total counts for run");
+      mTCanvasTotalCountsClasses->cd(i + 1);
+      mHistClassTotalCounts[i]->Draw();
+      mHistClassTotalCounts[i]->SetBit(TObject::kCanDelete);
+    }
+    getObjectsManager()->startPublishing(mTCanvasTotalCountsClasses);
   }
 }
 
 void CTPCountersTask::startOfActivity(Activity& activity)
 {
+  std::cout << "Start of all activitites ";
   ILOG(Info, Support) << "startOfActivity " << activity.mId << ENDM;
   mInputCountsHist->Reset();
-  mInputRateHist->Reset();
+  // mInputRateHist->Reset();
+  // mClassCountsHist->Reset();
   if (mTCanvasInputs) {
     for (const auto member : mHistInputRate) {
       if (member) {
@@ -97,13 +154,31 @@ void CTPCountersTask::startOfActivity(Activity& activity)
       }
     }
   }
-  if (mTCanvasInputsTest) {
-    for (const auto member : mHistInputRateTest) {
+  if (mTCanvasClasses) {
+    for (const auto member : mHistClassRate) {
       if (member) {
         member->Reset();
       }
     }
   }
+  if (mTCanvasTotalCountsClasses) {
+    for (const auto member : mHistClassTotalCounts) {
+      if (member) {
+        member->Reset();
+      }
+    }
+  }
+  /*
+  for (int j = 0; j < 16; j++) {
+    if (mTCanvasClassRates[j]) {
+      for (const auto member : mHistClassRate) {
+        if (member) {
+          member->Reset();
+        }
+      }
+    }
+  }
+  */
 }
 
 void CTPCountersTask::startOfCycle()
@@ -113,162 +188,329 @@ void CTPCountersTask::startOfCycle()
 
 void CTPCountersTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  // get the input
+  // dummy publishing
+  // mDummyCountsHist = new TH1D("DummyCounts", "Dummy counts", 1, 0, 1);
+  // getObjectsManager()->startPublishing(mDummyCountsHist);
+  //  get the input
+  // std::cout << "before data reading ";
   o2::framework::InputRecord& inputs = ctx.inputs();
-  o2::framework::DataRef ref = inputs.getByPos(1);
-  // printf("Address of ref is %p\n", (void *)ref);
-  // const char* ph = ref.header;
-  // if (!ph) {LOG(info) << "no header pointer ";}
+  o2::framework::DataRef ref = inputs.get("readout");
+
   const char* pp = ref.payload;
   if (!pp) {
     LOG(info) << "no payload pointer ";
   }
-  // LOG(info) << "header pointer adress: " << ref.header;
-  // LOG(info) << "payload pointer adress: " << pp;
+  // pyaload has 4 formats:
+  // ctpconfig with rcfg, sox with counters+rcfg, pcp with counters and eox with counters
   std::string spp = std::string(pp);
-  // LOG(info) << "a teraz toto: " << spp;
+  // LOG(info) << "the payload message: " << spp;
+  // std::cout << "the cout payload message: " << spp;
   std::vector<double> counter;
+  // fill the tokens with counters or rcfg
   std::vector<std::string> tokens = o2::utils::Str::tokenize(spp, ' ');
-  size_t ntokens = tokens.size();
-  for (int i = 1; i < tokens.size(); i++) {
-    // check if the received data are numbers
-    std::string sCheck = tokens[i];
-    bool notNumber = false;
-    for (int j = 0; j < sCheck.length(); j++) {
-      if (!isdigit(sCheck[j]))
-        notNumber = true;
+
+  // ctpconfig - add classes to newly loaded run
+  if (tokens[0] == "ctpconfig") {
+    LOG(info) << "CTP run configuration:";
+    // we have to get a rid of the first substring - ctpconfig to gain rcfg message
+    std::string subspp = "ctpconfig ";
+    std::string::size_type posInSpp = spp.find(subspp);
+    if (posInSpp != std::string::npos)
+      spp.erase(posInSpp, subspp.length());
+    std::string ctpConf = spp;
+    // LOG(info) << "Rcfg message:";
+    LOG(info) << ctpConf;
+    // get Trigger Class Mask for the run from the CTP configuration
+    o2::ctp::CTPConfiguration activeConf;
+    activeConf.loadConfigurationRun3(ctpConf);
+    activeConf.printStream(std::cout);
+    uint64_t runClassMask = activeConf.getTriggerClassMask();
+    LOG(info) << "Class Mask Qc: " << runClassMask;
+    std::vector<int> runClassList = activeConf.getTriggerClassList();
+    std::cout << "size of runClassList: " << runClassList.size() << std::endl;
+    for (auto i : runClassList) {
+      std::cout << " print class list: " << i << " ";
     }
-    if (notNumber)
-      continue;
-    double tempCounter = std::stod(tokens[i]);
-    counter.push_back(tempCounter);
+    uint32_t runNumber = activeConf.getRunNumber();
+    // runCTPQC mNewRun;
+    mNewRun.mRunNumber = runNumber;
+    mNewRun.mRunClasses = runClassList;
   }
 
-  double timeStamp = std::stod(tokens[0]);
-  // LOG(info) << "Time stamp = " << timeStamp;
-  // for(int i=0; i < counter.size(); i++) {
-  // std::cout << "i = " << i << " " << counter.at(i) << std::endl;
-  //}
-  std::vector<double> trgInput;
-  for (int i = 0; i < counter.size(); i++) {
-    if ((i >= 599) && (i < 647)) {
-      trgInput.push_back(counter[i]);
+  if (tokens[0] == "sox") {
+    for (int i = 2; i < 1040; i++) {
+      // check if the received data are numbers
+      std::string sCheck = tokens[i];
+      bool notNumber = false;
+      for (int j = 0; j < sCheck.length(); j++) {
+        if (!isdigit(sCheck[j]))
+          notNumber = true;
+      }
+      if (notNumber)
+        continue;
+      double tempCounter = std::stod(tokens[i]);
+      counter.push_back(tempCounter);
     }
-    // std::cout << counter.at(i) << std::endl;
-  }
-  // filling input histograms
-  for (int i = 0; i < trgInput.size(); i++) {
-    double trgInputDouble = trgInput[i];
-    mInputCountsHist->SetBinContent(i, trgInputDouble);
-    // std::cout << trgInput[i] << " ";
-  }
-  double recentInput = 0.;
-  double previousInput = 0.;
-  double countDiff = 0.;
-  double recentInputs[48] = { 0. };
-  double previousInputs[48] = { 0. };
-  double countDiffs[48] = { 0. };
+    for (int i = 0; i < 16; i++) {
+      int isNewRun = counter[i] - mPreviousRunNumbers[i];
+      if (isNewRun != 0) {
+        std::cout << "we have a new run!" << std::endl;
+        mNewRun.mPositionInCounters = i;
+        // auto name = std::string("Class Rates For Run ") + std::to_string(mNewRun.mRunNumber);
+        // mTCanvasClassRates[i] = new TCanvas(name.c_str(), name.c_str(), 2500, 2500);
+        // mTCanvasClassRates[i]->Clear();
+        // mTCanvasClassRates[i]->SetTitle(name.c_str());
+        int numberOfClasses = mNewRun.mRunClasses.size();
+        double numOfCl = numberOfClasses;
+        double xpad = std::ceil(sqrt(numOfCl));
+        mTCanvasClassRates[i]->Divide(xpad, xpad);
 
-  bool firstCycle = GetIsFirstCycle();
-  if (firstCycle) {
+        for (size_t j = 0; j < numberOfClasses; j++) {
+          int k = mNewRun.mRunClasses[j];
+          auto name = std::string("Run ") + std::to_string(mNewRun.mRunNumber) + std::string(" Rate_of_class") + std::to_string(k);
+          mTCanvasClassRates[i]->cd(j + 1);
+          mHistClassRate[k]->SetTitle(name.c_str());
+          mHistClassRate[k]->Draw();
+          mHistClassRate[k]->SetBit(TObject::kCanDelete);
+        }
+        // std::cout << "before publishing" << std::endl;
+        // LOG(info) << "before publishing with LOG";
+        // getObjectsManager()->startPublishing(mTCanvasClassRates[i]);
+        // std::cout << "after publishing" << std::endl;
+      }
+      mPreviousRunNumbers.clear();
+      mPreviousRunNumbers.push_back(counter[i]);
+      // LOG(info) << "Recent Runs = " << runNumbers[i] << " ";
+    }
+    mPreviousRunNumbers.clear();
+    for (int i = 0; i < 16; i++) {
+      mPreviousRunNumbers.push_back(counter[i]);
+      // LOG(info) << "Recent Runs = " << runNumbers[i] << " ";
+    }
+  }
+
+  if (tokens[0] == "eox") {
+    for (int i = 0; i < 16; i++) {
+      for (int i = 2; i < 1040; i++) {
+        // check if the received data are numbers
+        std::string sCheck = tokens[i];
+        bool notNumber = false;
+        for (int j = 0; j < sCheck.length(); j++) {
+          if (!isdigit(sCheck[j]))
+            notNumber = true;
+        }
+        if (notNumber)
+          continue;
+        double tempCounter = std::stod(tokens[i]);
+        counter.push_back(tempCounter);
+      }
+      int wasNewRun = counter[i] - mPreviousRunNumbers[i];
+      if (wasNewRun != 0) {
+        // std::cout << "before stopping publishing" << std::endl;
+        // getObjectsManager()->stopPublishing(mTCanvasClassRates[i]);
+        // std::cout << "after stopping publishing and before deleting" << std::endl;
+        // delete mTCanvasClassRates[i];
+        // std::cout << "after deleting" << std::endl;
+      }
+    }
+  }
+
+  if (tokens[0] == "pcp") {
+    // for (int i = 2; i < tokens.size(); i++) {
+    for (int i = 2; i < 1040; i++) {
+      // check if the received data are numbers
+      std::string sCheck = tokens[i];
+      bool notNumber = false;
+      for (int j = 0; j < sCheck.length(); j++) {
+        if (!isdigit(sCheck[j]))
+          notNumber = true;
+      }
+      if (notNumber)
+        continue;
+      double tempCounter = std::stod(tokens[i]);
+      counter.push_back(tempCounter);
+    }
+
+    LOG(info) << "The topic is = " << tokens[0];
+
+    double timeStamp = std::stod(tokens[1]);
+    // LOG(info) << "Time stamp = " << timeStamp;
+    for (int i = 0; i < counter.size(); i++) {
+      // std::cout << "i = " << i << " " << counter.at(i) << std::endl;
+    }
+    int RunNumber = counter[0];
+    std::vector<int> runNumbers;
+    mPreviousRunNumbers.clear();
+    for (int i = 0; i < 16; i++) {
+      runNumbers.push_back(counter[i]);
+      mPreviousRunNumbers.push_back(counter[i]);
+      // LOG(info) << "Recent Runs = " << runNumbers[i] << " ";
+    }
+
+    // 48 trigger inputs
+    std::vector<double> trgInput;
+    // 64 trigger classes after L1
+    std::vector<double> trgClass;
+    std::vector<double> trgClassMb;
+    std::vector<double> trgClassMa;
+    std::vector<double> trgClass0b;
+    std::vector<double> trgClass0a;
+    std::vector<double> trgClass1b;
+    std::vector<double> trgClass1a;
+    for (int i = 0; i < counter.size(); i++) {
+      if ((i >= 599) && (i < 647))
+        trgInput.push_back(counter[i]);
+      if ((i >= 967) && (i < 1031))
+        trgClass.push_back(counter[i]);
+
+      if ((i >= 647) && (i < 711))
+        trgClassMb.push_back(counter[i]);
+      if ((i >= 711) && (i < 775))
+        trgClassMa.push_back(counter[i]);
+      if ((i >= 775) && (i < 839))
+        trgClass0b.push_back(counter[i]);
+      if ((i >= 839) && (i < 903))
+        trgClass0a.push_back(counter[i]);
+      if ((i >= 903) && (i < 967))
+        trgClass1b.push_back(counter[i]);
+      if ((i >= 967) && (i < 1031))
+        trgClass1a.push_back(counter[i]);
+      // std::cout << counter.at(i) << std::endl;
+    }
+    // filling input histograms
+    for (int i = 0; i < trgInput.size(); i++) {
+      double trgInputDouble = trgInput[i];
+      mInputCountsHist->SetBinContent(i, trgInputDouble);
+      // std::cout << trgInput[i] << " ";
+    }
+    for (int i = 0; i < trgClassMb.size(); i++) {
+      double trgClassDouble = trgClassMb[i];
+      mHistClassTotalCounts[0]->SetBinContent(i, trgClassDouble);
+    }
+    for (int i = 0; i < trgClassMa.size(); i++) {
+      double trgClassDouble = trgClassMa[i];
+      mHistClassTotalCounts[3]->SetBinContent(i, trgClassDouble);
+    }
+    for (int i = 0; i < trgClass0b.size(); i++) {
+      double trgClassDouble = trgClass0b[i];
+      mHistClassTotalCounts[1]->SetBinContent(i, trgClassDouble);
+    }
+    for (int i = 0; i < trgClass0a.size(); i++) {
+      double trgClassDouble = trgClass0a[i];
+      mHistClassTotalCounts[4]->SetBinContent(i, trgClassDouble);
+    }
+    for (int i = 0; i < trgClass1b.size(); i++) {
+      double trgClassDouble = trgClass1b[i];
+      mHistClassTotalCounts[2]->SetBinContent(i, trgClassDouble);
+    }
+    for (int i = 0; i < trgClass1a.size(); i++) {
+      double trgClassDouble = trgClass1a[i];
+      mHistClassTotalCounts[5]->SetBinContent(i, trgClassDouble);
+    }
+
+    double recentInput = 0.;
+    double previousInput = 0.;
+    double countDiff = 0.;
+    double recentInputs[48] = { 0. };
+    double previousInputs[48] = { 0. };
+    double countInputDiffs[48] = { 0. };
+    double recentClasses[64] = { 0. };
+    double previousClasses[64] = { 0. };
+    double countClassDiffs[64] = { 0. };
+    // int previousRunNumbers[16] = {0};
+
+    bool firstCycle = IsFirstCycle();
+    if (firstCycle) {
+      SetIsFirstCycle(false);
+      SetFirstTimeStamp(timeStamp);
+      SetPreviousTimeStamp(timeStamp);
+      // SetPreviousInput(trgInput[1]);
+      for (int i = 0; i < 48; i++)
+        mPreviousTrgInput.push_back(trgInput[i]);
+      // mTime.push_back(0.);
+      mTime.push_back(timeStamp);
+      // mInputRate.push_back(0.);
+      for (int i = 0; i < 48; i++)
+        mTimes[i].push_back(0.);
+      for (int i = 0; i < 48; i++)
+        mInputRates[i].push_back(0.);
+      // class part
+      // SetPreviousClass(trgClass[1]);
+      for (int i = 0; i < 64; i++)
+        mPreviousTrgClass.push_back(trgClass[i]);
+      for (int i = 0; i < 64; i++)
+        mClassRates[i].push_back(0.);
+      for (int i = 0; i < 16; i++)
+        mPreviousRunNumbers.push_back(runNumbers[i]);
+    } else {
+
+      for (int i = 0; i < 48; i++) {
+        recentInputs[i] = trgInput[i];
+        previousInputs[i] = mPreviousTrgInput[i];
+        countInputDiffs[i] = recentInputs[i] - previousInputs[i]; // should not be negative - integration values
+        mInputRates[i].push_back(countInputDiffs[i]);
+      }
+
+      for (int i = 0; i < 64; i++) {
+        recentClasses[i] = trgClass[i];
+        previousClasses[i] = mPreviousTrgClass[i];
+        countClassDiffs[i] = recentClasses[i] - previousClasses[i]; // should not be negative - integration values
+        mClassRates[i].push_back(countClassDiffs[i]);
+      }
+
+      if (recentInputs[0] > previousInputs[0]) {
+        mTime.push_back(timeStamp);
+      }
+    }
     SetIsFirstCycle(false);
-    SetFirstTimeStamp(timeStamp);
     SetPreviousTimeStamp(timeStamp);
-    SetPreviousInput(trgInput[1]);
-    for (int i = 0; i < 48; i++)
+    mPreviousTrgInput.clear();
+    for (int i = 0; i < 48; i++) {
       mPreviousTrgInput.push_back(trgInput[i]);
-    mTime.push_back(0.);
-    mInputRate.push_back(0.);
-    for (int i = 0; i < 48; i++)
-      mTimes[i].push_back(0.);
-    for (int i = 0; i < 48; i++)
-      mInputRates[i].push_back(0.);
-  } else {
-
-    // get time from recent epoch timestamp
-    std::time_t recentTime = timeStamp;
-    struct tm* tmr = localtime(&recentTime);
-    int rh = tmr->tm_hour;
-    int rm = tmr->tm_min;
-    int rs = tmr->tm_sec;
-    // get time from previous epoch timestamp
-    std::time_t previousTime = GetPreviousTimeStamp();
-    struct tm* tmp = localtime(&previousTime);
-    int ph = tmp->tm_hour;
-    int pm = tmp->tm_min;
-    int ps = tmp->tm_sec;
-
-    // printf("Recent time: %02d:%02d:%02d\n", rh, rm, rs);
-    // printf("Previous time: %02d:%02d:%02d\n", ph, pm, ps);
-
-    // calculate rate
-    recentInput = trgInput[1];
-    previousInput = GetPreviousInput();
-    countDiff = recentInput - previousInput; // should not be negative - integration values
-    // std::cout << "recentinp: " << recentInput << " prevInp: " << previousInput << " diff: " << countDiff << std::endl;
-    //  counters are 32 bit integers - when 40 MHz - very often overflow 2^32, in that case:
-    for (int i = 0; i < 48; i++) {
-      recentInputs[i] = trgInput[i];
-      previousInputs[i] = mPreviousTrgInput[i];
-      countDiffs[i] = recentInputs[i] - previousInputs[i]; // should not be negative - integration values
+      // std::cout << "i = " << i << " trgInput = " << trgInput[i] << " prevrate = " << mPreviousTrgInput[i] << std::endl;
     }
-
-    if (recentInput > previousInput) {
-      int lastTimeIndex = mTime.size();
-      double timeBefore = mTime[lastTimeIndex - 1];
-      double timeNow = timeBefore + 10;
-      mTime.push_back(timeNow);
-      mInputRate.push_back(countDiff);
+    mPreviousTrgClass.clear();
+    for (int i = 0; i < 64; i++) {
+      mPreviousTrgClass.push_back(trgClass[i]);
+      // std::cout << "i = " << i << " trgInput = " << trgInput[i] << " prevrate = " << mPreviousTrgInput[i] << std::endl;
     }
-    for (int i = 0; i < 48; i++) {
-      if (recentInputs[i] > previousInputs[i]) {
-        int lastTimeIndexs = mTimes[i].size();
-        double timeBefores = mTimes[i][lastTimeIndexs - 1];
-        double timeNows = timeBefores + 10;
-        mTimes[i].push_back(timeNows);
-        mInputRates[i].push_back(countDiffs[i]);
+    mPreviousRunNumbers.clear();
+    for (int i = 0; i < 16; i++) {
+      mPreviousRunNumbers.push_back(runNumbers[i]);
+      // std::cout << "i = " << i << " trgInput = " << trgInput[i] << " prevrate = " << mPreviousTrgInput[i] << std::endl;
+    }
+    if (!firstCycle) {
+      // time in seconds
+      int nBinsTime = mTime.size();
+      double xMinTime = mTime[0];
+      double xMaxTime = mTime[nBinsTime - 1];
+      // std::cout << "nb = " << nBinsTime-1 << " xmin =" << xMinTime << " xmax =" << xMaxTime << std::endl;
+      for (int i = 0; i < 48; i++) {
+        mHistInputRate[i]->SetBins(nBinsTime - 1, 0, xMaxTime - xMinTime);
+        for (int j = 1; j < nBinsTime; j++) {
+          double tempInpRate = mInputRates[i][j];
+          // std::cout << "i = " << i << " j = " << j << " rate = " << tempInpRate << " nbins = " << nBinsTime << std::endl;
+          mHistInputRate[i]->SetBinContent(j, tempInpRate);
+          SetRateHisto(mHistInputRate[i], xMinTime);
+        }
       }
-    }
-  }
-  SetIsFirstCycle(false);
-  SetPreviousTimeStamp(timeStamp);
-  SetPreviousInput(trgInput.at(1));
-  mPreviousTrgInput.clear();
-  for (int i = 0; i < 48; i++) {
-    mPreviousTrgInput.push_back(trgInput[i]);
-    // std::cout << "i = " << i << " trgInput = " << trgInput[i] << " prevrate = " << mPreviousTrgInput[i] << std::endl;
-  }
-
-  // update rate histo
-  std::time_t firstTime = GetFirstTimeStamp();
-  struct tm* tmf = localtime(&firstTime);
-  int fh = tmf->tm_hour;
-  int fm = tmf->tm_min;
-  int fs = tmf->tm_sec;
-  if (!firstCycle) {
-    // time in seconds
-    int nBinsTime = mTime.size();
-    double xMinTime = mTime[0];
-    double xMaxTime = mTime[nBinsTime - 1];
-    // std::cout << "nb = " << nBinsTime-1 << " xmin =" << xMinTime << " xmax =" << xMaxTime << std::endl;
-    mInputRateHist->SetBins(nBinsTime - 1, xMinTime, xMaxTime);
-    for (int i = 0; i < 48; i++) {
-      mHistInputRate[i]->SetBins(nBinsTime - 1, xMinTime, xMaxTime);
-      for (int j = 1; j < nBinsTime; j++) {
-        double tempInpRate = mInputRates[i][j];
-        // std::cout << "i = " << i << " j = " << j << " rate = " << tempInpRate << std::endl;
-        mHistInputRate[i]->SetBinContent(j, tempInpRate);
+      // std::cout << "class rate histos.." << std::endl;
+      for (int i = 0; i < 64; i++) {
+        mHistClassRate[i]->SetBins(nBinsTime - 1, 0, xMaxTime - xMinTime);
+        for (int j = 1; j < nBinsTime; j++) {
+          double tempClassRate = mClassRates[i][j];
+          // std::cout << "i = " << i << " j = " << j  << " rate = " << tempClassRate << std::endl;
+          mHistClassRate[i]->SetBinContent(j, tempClassRate);
+          SetRateHisto(mHistClassRate[i], xMinTime);
+        }
       }
-    }
-    for (int i = 1; i < nBinsTime; i++) {
-      // std::cout << "i = " << i << " rate = " << mInputRate[i] << std::endl;
-      mInputRateHist->SetBinContent(i, mInputRate[i]);
     }
   }
 }
 
 void CTPCountersTask::endOfCycle()
 {
+  std::cout << "End of Cycle" << std::endl;
   ILOG(Info, Support) << "endOfCycle" << ENDM;
 }
 
@@ -281,7 +523,8 @@ void CTPCountersTask::reset()
 {
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
   mInputCountsHist->Reset();
-  mInputRateHist->Reset();
+  // mDummyCountsHist->Reset();
+  // mClassCountsHist->Reset();
   if (mTCanvasInputs) {
     for (const auto member : mHistInputRate) {
       if (member) {
@@ -289,8 +532,15 @@ void CTPCountersTask::reset()
       }
     }
   }
-  if (mTCanvasInputsTest) {
-    for (const auto member : mHistInputRateTest) {
+  if (mTCanvasClasses) {
+    for (const auto member : mHistClassRate) {
+      if (member) {
+        member->Reset();
+      }
+    }
+  }
+  if (mTCanvasTotalCountsClasses) {
+    for (const auto member : mHistClassTotalCounts) {
       if (member) {
         member->Reset();
       }
@@ -298,4 +548,12 @@ void CTPCountersTask::reset()
   }
 }
 
+/*void SetRateHisto(TH1D* h, double timeOffset)
+{
+  h->GetXaxis()->SetTimeOffset(timeOffset);
+  h->GetXaxis()->SetTimeDisplay(1);
+  h->GetXaxis()->SetTimeFormat("%H:%M");
+  h->GetXaxis()->SetNdivisions(808);
+}
+*/
 } // namespace o2::quality_control_modules::ctp

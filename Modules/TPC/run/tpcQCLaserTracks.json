@@ -28,6 +28,7 @@
         "className": "o2::quality_control_modules::tpc::LaserTracks",
         "moduleName": "QcTPC",
         "detectorName": "TPC",
+        "dataSourceURL": "ccdb-test.cern.ch:8080",
         "timestamps_comment": [ "Select specific timestamp, -1 is default."
         ],
         "timestamp": [

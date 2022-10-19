@@ -161,6 +161,7 @@ CheckRunner::CheckRunner(CheckRunnerConfig checkRunnerConfig, InputSpec input)
 
 CheckRunner::~CheckRunner()
 {
+  ILOG(Debug, Devel) << "CheckRunner destructor" << ENDM;
   if (mServiceDiscovery != nullptr) {
     mServiceDiscovery->deregister();
   }
@@ -220,7 +221,12 @@ void CheckRunner::init(framework::InitContext& iCtx)
       conf::ConfigurableParam::updateFromString(ConfigParamGlo::keyValues);
     }
     // registering state machine callbacks
+    // FIXME: this is a workaround until we get some O2 PR in.
+#if __has_include(<Framework/Features.h>)
+    iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, services = iCtx.services()]() mutable { start(services); });
+#else
     iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, &services = iCtx.services()]() { start(services); });
+#endif
     iCtx.services().get<CallbackService>().set(CallbackService::Id::Reset, [this]() { reset(); });
     iCtx.services().get<CallbackService>().set(CallbackService::Id::Stop, [this]() { stop(); });
 
@@ -488,11 +494,9 @@ void CheckRunner::initInfologger(framework::InitContext& iCtx)
     ILOG(Error) << "Could not find the DPL InfoLogger." << ENDM;
   }
 
-  mConfig.infologgerDiscardFile = templateILDiscardFile(mConfig.infologgerDiscardFile, iCtx);
+  mConfig.infologgerDiscardParameters.discardFile = templateILDiscardFile(mConfig.infologgerDiscardParameters.discardFile, iCtx);
   QcInfoLogger::init(createCheckRunnerFacility(mDeviceName),
-                     mConfig.infologgerFilterDiscardDebug,
-                     mConfig.infologgerDiscardLevel,
-                     mConfig.infologgerDiscardFile,
+                     mConfig.infologgerDiscardParameters,
                      il,
                      ilContext);
 }
@@ -509,7 +513,7 @@ void CheckRunner::initLibraries()
   }
 }
 
-void CheckRunner::start(const ServiceRegistry& services)
+void CheckRunner::start(ServiceRegistryRef services)
 {
   mActivity = computeActivity(services, mConfig.fallbackActivity);
   string partitionName = computePartitionName(services);

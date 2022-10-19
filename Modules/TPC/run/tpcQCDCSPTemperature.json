@@ -26,6 +26,7 @@
         "className": "o2::quality_control_modules::tpc::DCSPTemperature",
         "moduleName": "QcTPC",
         "detectorName": "TPC",
+        "dataSourceURL": "ccdb-test.cern.ch:8080",
         "timestamps_comment": [
           "Use the 'Valid from' timestamp",
           "The timestamp is used as a limit of how recent the files may be for visualization.",

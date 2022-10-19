@@ -29,19 +29,19 @@ SkeletonPostProcessing::~SkeletonPostProcessing()
   delete mHistogram;
 }
 
-void SkeletonPostProcessing::initialize(Trigger, framework::ServiceRegistry&)
+void SkeletonPostProcessing::initialize(Trigger, framework::ServiceRegistryRef)
 {
   mHistogram = new TH1F("example", "example", 20, 0, 30000);
   getObjectsManager()->startPublishing(mHistogram);
 }
 
-void SkeletonPostProcessing::update(Trigger t, framework::ServiceRegistry&)
+void SkeletonPostProcessing::update(Trigger t, framework::ServiceRegistryRef)
 {
   ILOG(Info, Support) << "Trigger type is: " << t.triggerType << ", the timestamp is " << t.timestamp << ENDM;
   mHistogram->Fill(t.timestamp % 30000);
 }
 
-void SkeletonPostProcessing::finalize(Trigger, framework::ServiceRegistry&)
+void SkeletonPostProcessing::finalize(Trigger, framework::ServiceRegistryRef)
 {
   // Only if you don't want it to be published after finalisation.
   getObjectsManager()->stopPublishing(mHistogram);

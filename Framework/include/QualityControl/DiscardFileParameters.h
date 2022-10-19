@@ -10,32 +10,26 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   PostProcessingInterface.cxx
-/// \author My Name
+/// @file    DiscardFileParameters.h
+/// @author  Barthelemy von Haller
 ///
 
-#include "Benchmark/EmptyPPTask.h"
-#include "QualityControl/QcInfoLogger.h"
+#ifndef QC_CORE_DISCARDFILEPARAMETERS_H
+#define QC_CORE_DISCARDFILEPARAMETERS_H
 
-using namespace o2::quality_control::postprocessing;
+#include <string>
 
-namespace o2::quality_control_modules::benchmark
+namespace o2::quality_control::core
 {
 
-EmptyPPTask::~EmptyPPTask()
-{
-}
+struct DiscardFileParameters {
+  bool debug = false;
+  int fromLevel = 21 /* Discard Trace */;
+  std::string discardFile;
+  unsigned long rotateMaxBytes = 0;
+  unsigned int rotateMaxFiles = 0;
+};
 
-void EmptyPPTask::initialize(Trigger, framework::ServiceRegistryRef)
-{
-}
+} // namespace o2::quality_control::core
 
-void EmptyPPTask::update(Trigger, framework::ServiceRegistryRef)
-{
-}
-
-void EmptyPPTask::finalize(Trigger, framework::ServiceRegistryRef)
-{
-}
-
-} // namespace o2::quality_control_modules::benchmark
+#endif // QC_CORE_DISCARDFILEPARAMETERS_H

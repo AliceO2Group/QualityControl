@@ -46,7 +46,7 @@ void SliceTrendingTask::configure(std::string name,
   mConfig = SliceTrendingTaskConfig(name, config);
 }
 
-void SliceTrendingTask::initialize(Trigger, framework::ServiceRegistry& services)
+void SliceTrendingTask::initialize(Trigger, framework::ServiceRegistryRef services)
 {
   // Prepare the data structure of the trending TTree.
   if (mConfig.resumeTrend) {
@@ -95,7 +95,7 @@ void SliceTrendingTask::initialize(Trigger, framework::ServiceRegistry& services
   }
 }
 
-void SliceTrendingTask::update(Trigger t, framework::ServiceRegistry& services)
+void SliceTrendingTask::update(Trigger t, framework::ServiceRegistryRef services)
 {
   auto& qcdb = services.get<repository::DatabaseInterface>();
   trendValues(t, qcdb);
@@ -104,7 +104,7 @@ void SliceTrendingTask::update(Trigger t, framework::ServiceRegistry& services)
   }
 }
 
-void SliceTrendingTask::finalize(Trigger t, framework::ServiceRegistry&)
+void SliceTrendingTask::finalize(Trigger t, framework::ServiceRegistryRef)
 {
   if (!mConfig.producePlotsOnUpdate) {
     getObjectsManager()->startPublishing(mTrend.get());

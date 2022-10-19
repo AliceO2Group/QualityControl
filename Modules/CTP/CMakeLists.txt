@@ -10,7 +10,7 @@ target_include_directories(
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-target_link_libraries(O2QcCTP PUBLIC O2QualityControl)
+target_link_libraries(O2QcCTP PUBLIC O2QualityControl O2::DataFormatsCTP)
 
 install(TARGETS O2QcCTP
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -28,7 +28,7 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/CTP
 
 # ---- Test(s) ----
 
-#set(TEST_SRCS test/testQcCTP.cxx) # uncomment to reenable the test which was empty
+set(TEST_SRCS test/testQcCTP.cxx)
 
 foreach(test ${TEST_SRCS})
   get_filename_component(test_name ${test} NAME)

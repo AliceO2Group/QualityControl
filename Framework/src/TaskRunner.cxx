@@ -65,6 +65,11 @@ TaskRunner::TaskRunner(const TaskRunnerConfig& config)
 {
 }
 
+TaskRunner::~TaskRunner()
+{
+  ILOG(Debug, Devel) << "TaskRunner destructor" << ENDM;
+}
+
 void TaskRunner::refreshConfig(InitContext& iCtx)
 {
   try {
@@ -117,11 +122,9 @@ void TaskRunner::initInfologger(InitContext& iCtx)
     ILOG(Error, Devel) << "Could not find the DPL InfoLogger" << ENDM;
   }
 
-  mTaskConfig.infologgerDiscardFile = templateILDiscardFile(mTaskConfig.infologgerDiscardFile, iCtx);
+  mTaskConfig.infologgerDiscardParameters.discardFile = templateILDiscardFile(mTaskConfig.infologgerDiscardParameters.discardFile, iCtx);
   QcInfoLogger::init("task/" + mTaskConfig.taskName,
-                     mTaskConfig.infologgerFilterDiscardDebug,
-                     mTaskConfig.infologgerDiscardLevel,
-                     mTaskConfig.infologgerDiscardFile,
+                     mTaskConfig.infologgerDiscardParameters,
                      il,
                      ilContext);
   QcInfoLogger::setDetector(mTaskConfig.detectorName);
@@ -137,7 +140,11 @@ void TaskRunner::init(InitContext& iCtx)
 
   // registering state machine callbacks
   try {
+#if __has_include(<Framework/Features.h>)
+    iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, services = iCtx.services()]() mutable { start(services); });
+#else
     iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, &services = iCtx.services()]() { start(services); });
+#endif
     iCtx.services().get<CallbackService>().set(CallbackService::Id::Reset, [this]() { reset(); });
     iCtx.services().get<CallbackService>().set(CallbackService::Id::Stop, [this]() { stop(); });
   } catch (o2::framework::RuntimeErrorRef& ref) {
@@ -304,7 +311,7 @@ void TaskRunner::endOfStream(framework::EndOfStreamContext& eosContext)
   mNoMoreCycles = true;
 }
 
-void TaskRunner::start(const ServiceRegistry& services)
+void TaskRunner::start(ServiceRegistryRef services)
 {
   mRunNumber = o2::quality_control::core::computeRunNumber(services, mTaskConfig.fallbackActivity.mId);
   QcInfoLogger::setRun(mRunNumber);

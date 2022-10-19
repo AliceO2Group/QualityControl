@@ -75,6 +75,8 @@ class QcMFTAsyncTask /*final*/ : public TaskInterface // todo add back the "fina
   std::array<unique_ptr<TH2F>, 7> mTrackEtaPhiNCls = { nullptr };
   std::unique_ptr<TH1F> mCATrackEta = nullptr;
   std::unique_ptr<TH1F> mLTFTrackEta = nullptr;
+  std::unique_ptr<TH1F> mCATrackPt = nullptr;
+  std::unique_ptr<TH1F> mLTFTrackPt = nullptr;
   std::unique_ptr<TH1F> mTrackTanl = nullptr;
 
   std::unique_ptr<TH1F> mTrackROFNEntries = nullptr;
@@ -87,7 +89,7 @@ class QcMFTAsyncTask /*final*/ : public TaskInterface // todo add back the "fina
   std::unique_ptr<TH1F> mClusterSensorIndex = nullptr;
   std::unique_ptr<TH1F> mClusterPatternIndex = nullptr;
 
-  uint32_t mRefOrbit = 0; // Reference orbit used in relative time calculation
+  uint32_t mRefOrbit = -1; // Reference orbit used in relative time calculation
 
   static constexpr array<short, 7> sMinNClustersList = { 4, 5, 6, 7, 8, 9, 10 };
 };

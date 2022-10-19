@@ -43,7 +43,7 @@ void TRFCollectionTask::configure(std::string name, const boost::property_tree::
   mConfig = TRFCollectionTaskConfig(name, config);
 }
 
-void TRFCollectionTask::initialize(Trigger t, framework::ServiceRegistry&)
+void TRFCollectionTask::initialize(Trigger t, framework::ServiceRegistryRef)
 {
   mLastTimestampLimitStart = t.timestamp;
 }
@@ -124,12 +124,12 @@ std::unique_ptr<quality_control::TimeRangeFlagCollection> TRFCollectionTask::tra
   return mainTrfCollection;
 }
 
-void TRFCollectionTask::update(Trigger, framework::ServiceRegistry&)
+void TRFCollectionTask::update(Trigger, framework::ServiceRegistryRef)
 {
   throw std::runtime_error("Only two timestamps should be given to the task");
 }
 
-void TRFCollectionTask::finalize(Trigger t, framework::ServiceRegistry& services)
+void TRFCollectionTask::finalize(Trigger t, framework::ServiceRegistryRef services)
 {
   auto timestampLimitEnd = t.timestamp;
 

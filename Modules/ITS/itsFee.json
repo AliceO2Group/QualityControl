@@ -37,7 +37,8 @@
                 "location": "local",
                 "taskParameters": {
                     "NPayloadSizeBins": "4096",
-                    "EnableAutoreco": "1"
+                    "ResetLaneStatus": "1",
+                    "ResetPayload": "0"
                 }
             }
         },

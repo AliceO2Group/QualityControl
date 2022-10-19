@@ -26,6 +26,8 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/io_service.hpp>
 
+using boost::asio::ip::tcp;
+
 namespace o2::quality_control::core
 {
 
@@ -36,13 +38,14 @@ ServiceDiscovery::ServiceDiscovery(const std::string& url, const std::string& na
   if (mHealthUrl.find(':') == std::string::npos) {
     mHealthUrl = GetDefaultUrl();
   }
-
-  mHealthThread = std::thread([=] { runHealthServer(std::stoi(mHealthUrl.substr(mHealthUrl.find(":") + 1))); });
-  _register("");
+  if (_register("")) {
+    mHealthThread = std::thread([=] { runHealthServer(std::stoi(mHealthUrl.substr(mHealthUrl.find(":") + 1))); });
+  }
 }
 
 ServiceDiscovery::~ServiceDiscovery()
 {
+  ILOG(Debug, Devel) << "ServiceDiscovery destructor" << ENDM;
   mThreadRunning = false;
   if (mHealthThread.joinable()) {
     mHealthThread.join();
@@ -67,7 +70,7 @@ CURL* ServiceDiscovery::initCurl()
   return curl;
 }
 
-void ServiceDiscovery::_register(const std::string& objects)
+bool ServiceDiscovery::_register(const std::string& objects)
 {
   boost::property_tree::ptree pt;
   if (!objects.empty()) {
@@ -95,8 +98,8 @@ void ServiceDiscovery::_register(const std::string& objects)
   std::stringstream ss;
   boost::property_tree::json_parser::write_json(ss, pt);
 
-  send("/v1/agent/service/register", ss.str());
   ILOG(Info, Devel) << "Registration to ServiceDiscovery: " << objects << ENDM;
+  return send("/v1/agent/service/register", ss.str());
 }
 
 void ServiceDiscovery::deregister()
@@ -120,10 +123,16 @@ void ServiceDiscovery::runHealthServer(unsigned int port)
   try {
     boost::asio::io_service io_service;
     tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), port));
+    boost::asio::deadline_timer timer(io_service);
     while (mThreadRunning) {
-      tcp::socket socket(io_service);
-      acceptor.accept(socket);
-      std::this_thread::sleep_for(std::chrono::seconds(1));
+      io_service.reset();
+      timer.expires_from_now(boost::posix_time::seconds(1));
+      acceptor.async_accept([this](boost::system::error_code ec, tcp::socket socket) {
+      });
+      timer.async_wait([&](boost::system::error_code ec) {
+        io_service.stop();
+      });
+      io_service.run();
     }
   } catch (std::exception& e) {
     mThreadRunning = false;
@@ -137,7 +146,7 @@ void ServiceDiscovery::deleteCurl(CURL* curl)
   curl_global_cleanup();
 }
 
-void ServiceDiscovery::send(const std::string& path, std::string&& post)
+bool ServiceDiscovery::send(const std::string& path, std::string&& post)
 {
   std::string uri = mConsulUrl + path;
   CURLcode response;
@@ -151,26 +160,26 @@ void ServiceDiscovery::send(const std::string& path, std::string&& post)
   if (response != CURLE_OK) {
     std::string s = std::string("ServiceDiscovery::send(...) ") + curl_easy_strerror(response) + "\n   URI: " + uri;
     ILOG_INST.log(msgLimit, "%s", s.c_str());
+    return false;
   }
   if (responseCode < 200 || responseCode > 206) {
     std::string s = std::string("ServiceDiscovery::send(...) Response code: ") + std::to_string(responseCode);
     ILOG_INST.log(msgLimit, "%s", s.c_str());
+    return false;
   }
+  return true;
 }
 
 // https://stackoverflow.com/questions/33358321/using-c-and-boost-or-not-to-check-if-a-specific-port-is-being-used
 bool ServiceDiscovery::PortInUse(unsigned short port)
 {
-  using namespace boost::asio;
-  using ip::tcp;
-
   boost::asio::io_service svc;
   tcp::acceptor a(svc);
 
   boost::system::error_code ec;
   a.open(tcp::v4(), ec) || a.bind({ tcp::v4(), port }, ec);
 
-  return ec == error::address_in_use;
+  return ec == boost::asio::error::address_in_use;
 }
 
 size_t ServiceDiscovery::GetHealthPort()

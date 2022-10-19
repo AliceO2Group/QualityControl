@@ -28,6 +28,7 @@
         "className": "o2::quality_control_modules::tpc::ClusterVisualizer",
         "moduleName": "QcTPC",
         "detectorName": "TPC",
+        "dataSourceURL": "ccdb-test.cern.ch:8080",
         "timestamps_comment": [ "Put the timestamp of the corresponding file you want to look for in the timestamps array.",
                                 "You can either put a timestamp for every object or leave the array empty to take the latest file from the CCDB.",
                                 "An empty array to get the the latest version will be the main use case.",

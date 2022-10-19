@@ -28,6 +28,7 @@
 #include "ReconstructionDataFormats/TrackTPCITS.h"
 #include "DataFormatsTRD/TrackTRD.h"
 #include "TOFBase/Geo.h"
+#include "DataFormatsFT0/RecPoints.h"
 
 class TH1F;
 class TH1I;
@@ -81,7 +82,7 @@ class TaskFT0TOF final : public TaskInterface
   void endOfActivity(Activity& activity) override;
   void reset() override;
 
-  void processEvent(const std::vector<MyTrack>& tracks);
+  void processEvent(const std::vector<MyTrack>& tracks, const std::vector<o2::ft0::RecPoints>& ft0Cand);
   // track selection
   bool selectTrack(o2::tpc::TrackTPC const& track);
   void setMinPtCut(float v) { mMinPtCut = v; }
@@ -126,6 +127,7 @@ class TaskFT0TOF final : public TaskInterface
   float mBz = 0; ///< nominal Bz
   int mTF = -1;  // to count the number of processed TFs
   const float cinv = 33.35641;
+  bool mUseFT0 = false;
 
   TH1F* mHistDeltatPi;
   TH1F* mHistDeltatKa;
@@ -135,10 +137,24 @@ class TaskFT0TOF final : public TaskInterface
   TH2F* mHistDeltatPrPt;
   TH1F* mHistMass;
   TH2F* mHistBetavsP;
+  TH2F* mHistMassvsP;
   TH2F* mHistDeltatPiEvTimeRes;
   TH2F* mHistDeltatPiEvTimeMult;
   TH2F* mHistEvTimeResEvTimeMult;
   TH1F* mHistEvTimeTOF;
+  TH2F* mHistEvTimeTOFVsFT0AC;
+  TH2F* mHistEvTimeTOFVsFT0A;
+  TH2F* mHistEvTimeTOFVsFT0C;
+  TH1F* mHistDeltaEvTimeTOFVsFT0AC;
+  TH1F* mHistDeltaEvTimeTOFVsFT0A;
+  TH1F* mHistDeltaEvTimeTOFVsFT0C;
+  TH2F* mHistEvTimeTOFVsFT0ACSameBC;
+  TH2F* mHistEvTimeTOFVsFT0ASameBC;
+  TH2F* mHistEvTimeTOFVsFT0CSameBC;
+  TH1F* mHistDeltaEvTimeTOFVsFT0ACSameBC;
+  TH1F* mHistDeltaEvTimeTOFVsFT0ASameBC;
+  TH1F* mHistDeltaEvTimeTOFVsFT0CSameBC;
+  TH1I* mHistDeltaBCTOFFT0;
 };
 
 } // namespace o2::quality_control_modules::pid

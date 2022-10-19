@@ -103,7 +103,7 @@ class QcMFTDigitTask final : public TaskInterface
   std::vector<std::unique_ptr<TH2F>> mDigitPixelOccupancyMap;
 
   // reference orbit used in relative time calculation
-  uint32_t mRefOrbit = 0;
+  uint32_t mRefOrbit = -1;
 
   //  functions
   int getVectorIndexChipOccupancyMap(int chipIndex);

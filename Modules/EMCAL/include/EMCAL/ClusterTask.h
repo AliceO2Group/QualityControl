@@ -20,29 +20,33 @@
 #include <array>
 #include <iosfwd>
 #include <unordered_map>
+#include <string>
 #include <string_view>
 
 #include "QualityControl/TaskInterface.h"
 #include <DataFormatsEMCAL/EventHandler.h>
 #include <EMCALBase/ClusterFactory.h>
-#include "EMCALBase/Geometry.h"
-#include <EMCALReconstruction/Clusterizer.h> //svk
+#include <EMCALReconstruction/Clusterizer.h>
 
 class TH1;
 class TH2;
+class TLorentzVector;
 
 using namespace o2::quality_control::core;
 
 namespace o2::emcal
 {
+class AnalysisCluster;
 class BadChannelMap;
-class TimeCalibrationParams;
 class GainCalibrationFactors;
+class Geometry;
+class TimeCalibrationParams;
 } // namespace o2::emcal
 
 namespace o2::quality_control_modules::emcal
 {
 
+/// \class ClusterTask
 /// \brief QC task analysing EMCAL clusters
 /// \author Vivek Kumar Singh
 class ClusterTask final : public TaskInterface
@@ -60,6 +64,50 @@ class ClusterTask final : public TaskInterface
     bool mDoEnergyGradientCut = false; ///< Switch on/off gradientCut
 
     /// \brief Print params to output stream
+    /// \param stream Stream used for printing
+    void print(std::ostream& stream) const;
+  };
+
+  /// \struct InputBindings
+  /// \brief Bindings of input containers used as task input
+  struct InputBindings {
+    std::string mCellBinding = "emcal-cells";                             ///< Binding of the cell input container
+    std::string mCellTriggerRecordBinding = "emcal-cellstriggerecords";   ///< Binding of the trigger record container connected to cell inputs
+    std::string mClusterBinding = "emcal-clusters";                       ///< Binding of the cluster input container (no internal clusterizer mode)
+    std::string mClusterTriggerRecordBinding = "";                        ///< Binding of the triger record container connected to clusters (no internal clusterizer mode)
+    std::string mCellIndexBinding = "emcal-cellindices";                  ///< Binding of the cell index container (no internal clusterizer mode)
+    std::string mCellIndexTriggerRecordBinding = "emcal-citriggerecords"; ///< Binding of the trigger record container connected to cell indices (no internal clusterizer mode)
+  };
+
+  ///< \struct MesonClusterSelection
+  ///< \brief Cluster selection for meson candidates
+  struct MesonClusterSelection {
+    double mMinE = 0.5;    ///< Min. Cluster E
+    double mMaxTime = 25.; ///< Max cluster time relative to 0
+    int mMinNCell = 2;     ///< Min. Number of cells in cluster
+    bool mRejectExotics;   ///< Reject exotic clusters
+
+    /// \brief Select cluster based on cluster cuts
+    /// \param cluster Cluster to be checked
+    /// \return true if the cluster is selected, false otherwise
+    bool isSelected(const o2::emcal::AnalysisCluster& cluster) const;
+
+    /// \brief Print cuts to output stream
+    /// \param stream Stream used for printing
+    void print(std::ostream& stream) const;
+  };
+
+  /// \struct MesonSelection
+  /// \brief Cuts applied in meson candidate selection
+  struct MesonSelection {
+    double mMinPt = 2.; ///< Min. meson candidate pt
+
+    /// \brief Select meson candidate based on topological and kinematic cuts
+    /// \param mesonCandidate Meson candidate to be checked
+    /// \return true if the meson candidate is selected, false otherwise
+    bool isSelected(const TLorentzVector& mesonCandidate) const;
+
+    /// \brief Print cuts to output stream
     /// \param stream Stream used for printing
     void print(std::ostream& stream) const;
   };
@@ -109,6 +157,25 @@ class ClusterTask final : public TaskInterface
   /// \param [out] clusterIndexTriggerRecords Trigger record of cluster-cell indices
   void findClustersInternal(const gsl::span<const o2::emcal::Cell>& cells, const gsl::span<const o2::emcal::TriggerRecord>& cellTriggerRecords, std::vector<o2::emcal::Cluster>& clusters, std::vector<o2::emcal::TriggerRecord>& clusterTriggerRecords, std::vector<int>& clusterIndices, std::vector<o2::emcal::TriggerRecord>& clusterIndexTriggerRecords);
 
+  /// \brief Build Pi0 mesons and fill histograms
+  ///
+  /// Function runs per event. Cluster selection is applied internally. Pi0 candidates
+  /// are created per subdetector (EMCAL and DCAL). Histograms monitoring the invariant
+  /// mass with respect to certain observables are filled internally.
+  ///
+  /// \param fullclusters List of all analysis clusters for the given event
+  /// \param isEMCAL Check whether the pi0 candidates are created in the EMCAL or DCAL acceptance
+  void buildAndAnalysePiOs(const gsl::span<const TLorentzVector> fullclusters, bool isEMCAL);
+
+  /// \brief Retrieve lorentz vector for cluster
+  ///
+  /// Vertex position unknown in the QC, assuming the vertex to be at
+  /// (0,0,0)
+  ///
+  /// \param fullcluster Full analysis cluster
+  /// \return Lorentz vector for cluster
+  TLorentzVector buildClusterVector(const o2::emcal::AnalysisCluster& fullcluster) const;
+
   /// \brief Perform calibration at cell level
   ///
   /// Calibrate cell energy and cell time using the CCDB objects cached in the task,
@@ -122,6 +189,12 @@ class ClusterTask final : public TaskInterface
 
   /// \brief Configure clusterization settings for the internal clusterizer based on the task parameters
   void configureClusterizerSettings();
+
+  /// \brief configure bindings of input containers
+  void configureBindings();
+
+  /// \brief Configure meson selection (cluster and pair cuts) for meson candidate histograms
+  void configureMesonSelection();
 
   /// \brief Check for config value in taskParameter list
   /// \param key Key to check
@@ -144,6 +217,9 @@ class ClusterTask final : public TaskInterface
   std::unique_ptr<o2::emcal::ClusterFactory<o2::emcal::Cell>> mClusterFactory; ///< Cluster factory for cluster kinematics
   std::unique_ptr<o2::emcal::Clusterizer<o2::emcal::Cell>> mClusterizer;       ///< Internal clusterizer
   ClusterizerParams mClusterizerSettings;                                      ///< Settings for internal clusterizer
+  InputBindings mTaskInputBindings;                                            ///< Bindings for input containers
+  MesonClusterSelection mMesonClusterCuts;                                     ///< Cuts used in the meson selection
+  MesonSelection mMesonCuts;                                                   ///< Cuts applied in meson selection
 
   ///////////////////////////////////////////////////////////////////////////////
   /// Calibration objects (for recalibration in case of interal clusterizer)  ///
@@ -154,6 +230,7 @@ class ClusterTask final : public TaskInterface
 
   bool mInternalClusterizer = false; ///< Use run internal clusterizer, do not subscribe to external cluster collection
   bool mCalibrate = false;           ///< Perform recalibration
+  bool mFillInvMassMeson = false;    ///< Fill invariant mass of meson candidates
 
   TH1* mHistNclustPerTF = nullptr;  ///< Histogram number of clusters per timeframe
   TH1* mHistNclustPerEvt = nullptr; ///< Histogram number of clusters per event
@@ -174,6 +251,11 @@ class ClusterTask final : public TaskInterface
   TH1* mHistM20_DCal = nullptr;          ///< Histogram M20 per cluster for DCAL clusters
   TH2* mHistM02VsClustE__DCal = nullptr; ///< Histogram M02 vs. cluster energy for DCAL clusters
   TH2* mHistM20VsClustE__DCal = nullptr; ///< Histogram M20 vs. cluster energy for DCAL clusters
+
+  TH1* mHistMassDiphoton_EMCAL = nullptr;   ///< Histogram diphoton mass integrated for meson candidates in EMCAL
+  TH1* mHistMassDiphoton_DCAL = nullptr;    ///< Histogram diphoton mass integrated for meson candidates in DCAL
+  TH2* mHistMassDiphotonPt_EMCAL = nullptr; ///< Histogram diphoton mass integrated vs. pt for meson candidates in EMCAL
+  TH2* mHistMassDiphotonPt_DCAL = nullptr;  ///< Histogram diphoton mass integrated vs. pt for meson candidates in DCAL
 };
 
 /// \brief Output stream operator for clusterizer parameters in the ClusterTask
@@ -181,6 +263,18 @@ class ClusterTask final : public TaskInterface
 /// \param params ClusterizerParams to be printed
 /// \return Stream after printing the params
 std::ostream& operator<<(std::ostream& stream, const ClusterTask::ClusterizerParams& params);
+
+/// \brief Output stream operator for meson cluster selection cuts in the ClusterTask
+/// \param stream Stream used for printing the meson cluster selection cuts object
+/// \param cuts Meson cluster cuts to be printed
+/// \return Stream after printing the cuts
+std::ostream& operator<<(std::ostream& stream, const ClusterTask::MesonClusterSelection& cuts);
+
+/// \brief Output stream operator for meson candidate selection cuts in the ClusterTask
+/// \param stream Stream used for printing the meson candidate selecton cuts object
+/// \param cuts Meson candidate cuts to be printed
+/// \return Stream after printing the cuts
+std::ostream& operator<<(std::ostream& stream, const ClusterTask::MesonSelection& cuts);
 
 } // namespace o2::quality_control_modules::emcal
 

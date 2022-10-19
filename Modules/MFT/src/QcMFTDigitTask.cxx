@@ -153,18 +153,19 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mDigitOccupancySummary.get());
   getObjectsManager()->setDefaultDrawOptions(mDigitOccupancySummary.get(), "colz");
 
-  mDigitsROFSize = std::make_unique<TH1F>("mDigitsROFSize", "Digits ROFs size; ROF Size (#Digits); #Entries", maxDigitROFSize, 0, maxDigitROFSize);
+  mDigitsROFSize = std::make_unique<TH1F>("mDigitsROFSize", "ROF size in # digits; ROF Size (# digits); # entries", maxDigitROFSize, 0, maxDigitROFSize);
   mDigitsROFSize->SetStats(0);
   getObjectsManager()->startPublishing(mDigitsROFSize.get());
   getObjectsManager()->setDisplayHint(mDigitsROFSize.get(), "logx logy");
 
-  mNOfDigitsTime = std::make_unique<TH1F>("mNOfDigitsTime", "Number of Digits per time bin; time (s); #Entries", NofTimeBins, 0, maxDuration);
+  mNOfDigitsTime = std::make_unique<TH1F>("mNOfDigitsTime", "Number of Digits per time bin; time (s); # entries", NofTimeBins, 0, maxDuration);
   mNOfDigitsTime->SetMinimum(0.1);
   getObjectsManager()->startPublishing(mNOfDigitsTime.get());
 
-  mDigitsBC = std::make_unique<TH1F>("mDigitsBC", "Digits per BC (sum over orbits); BCid; #Entries", ROFsPerOrbit, 0, o2::constants::lhc::LHCMaxBunches);
+  mDigitsBC = std::make_unique<TH1F>("mDigitsBC", "Digits per BC; BCid; # entries", o2::constants::lhc::LHCMaxBunches, 0, o2::constants::lhc::LHCMaxBunches);
   mDigitsBC->SetMinimum(0.1);
   getObjectsManager()->startPublishing(mDigitsBC.get());
+  getObjectsManager()->setDisplayHint(mDigitsBC.get(), "hist");
 
   // --Chip hit maps
   //==============================================
@@ -255,7 +256,9 @@ void QcMFTDigitTask::monitorData(o2::framework::ProcessingContext& ctx)
   mDigitOccupancySummary->Fill(-1, -1, nROFs);
 
   // get correct timing info of the first TF orbit
-  mRefOrbit = ctx.services().get<o2::framework::TimingInfo>().firstTForbit;
+  if (mRefOrbit == -1) {
+    mRefOrbit = ctx.services().get<o2::framework::TimingInfo>().firstTForbit;
+  }
 
   // fill the digits time histograms
   for (const auto& rof : rofs) {

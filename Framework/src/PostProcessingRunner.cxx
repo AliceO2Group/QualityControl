@@ -28,6 +28,7 @@
 
 #include <utility>
 #include <Framework/DataAllocator.h>
+#include <Framework/DataTakingContext.h>
 #include <CommonUtils/ConfigurableParam.h>
 
 using namespace o2::quality_control::core;
@@ -68,7 +69,7 @@ void PostProcessingRunner::init(const PostProcessingRunnerConfig& runnerConfig, 
   mRunnerConfig = runnerConfig;
   mTaskConfig = taskConfig;
 
-  QcInfoLogger::init("post/" + mName, runnerConfig.infologgerFilterDiscardDebug, runnerConfig.infologgerDiscardLevel, runnerConfig.infologgerDiscardFile);
+  QcInfoLogger::init("post/" + mName, mRunnerConfig.infologgerDiscardParameters);
   ILOG(Info, Support) << "Initializing PostProcessingRunner" << ENDM;
 
   root_class_factory::loadLibrary(mTaskConfig.moduleName);
@@ -158,15 +159,15 @@ void PostProcessingRunner::runOverTimestamps(const std::vector<uint64_t>& timest
   doFinalize({ TriggerType::UserOrControl, false, mTaskConfig.activity, timestamps.back() });
 }
 
-void PostProcessingRunner::start(const framework::ServiceRegistry* dplServices)
+void PostProcessingRunner::start(framework::ServiceRegistryRef dplServices)
 {
-  if (dplServices != nullptr) {
-    mTaskConfig.activity.mId = computeRunNumber(*dplServices, mTaskConfig.activity.mId);
-    mTaskConfig.activity.mType = computeRunType(*dplServices, mTaskConfig.activity.mType);
-    mTaskConfig.activity.mPeriodName = computePeriodName(*dplServices, mTaskConfig.activity.mPeriodName);
+  if (dplServices.active<framework::RawDeviceService>()) {
+    mTaskConfig.activity.mId = computeRunNumber(dplServices, mTaskConfig.activity.mId);
+    mTaskConfig.activity.mType = computeRunType(dplServices, mTaskConfig.activity.mType);
+    mTaskConfig.activity.mPeriodName = computePeriodName(dplServices, mTaskConfig.activity.mPeriodName);
     mTaskConfig.activity.mPassName = computePassName(mTaskConfig.activity.mPassName);
     mTaskConfig.activity.mProvenance = computeProvenance(mTaskConfig.activity.mProvenance);
-    auto partitionName = computePartitionName(*dplServices);
+    auto partitionName = computePartitionName(dplServices);
     QcInfoLogger::setPartition(partitionName);
   }
   QcInfoLogger::setRun(mTaskConfig.activity.mId);
@@ -251,9 +252,7 @@ PostProcessingRunnerConfig PostProcessingRunner::extractConfig(const CommonSpec&
     ppTaskSpec.taskName,
     commonSpec.database,
     commonSpec.consulUrl,
-    commonSpec.infologgerFilterDiscardDebug,
-    commonSpec.infologgerDiscardLevel,
-    commonSpec.infologgerDiscardFile,
+    commonSpec.infologgerDiscardParameters,
     commonSpec.postprocessingPeriod,
     "",
     ppTaskSpec.tree

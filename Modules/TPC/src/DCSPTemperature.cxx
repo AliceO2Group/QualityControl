@@ -53,7 +53,7 @@ void DCSPTemperature::configure(std::string name, const boost::property_tree::pt
   }
 
   if (keyVec.size() != valueVec.size()) {
-    throw std::runtime_error("Number of keys and values for lookupMetaData are not matching");
+    ILOG(Error, Support) << "Number of keys and values for lookupMetaData are not matching" << ENDM;
   }
 
   keyVec.clear();
@@ -76,10 +76,10 @@ void DCSPTemperature::configure(std::string name, const boost::property_tree::pt
 
   mTimestamp = std::stol(config.get<std::string>("qc.postprocessing." + name + ".timestamp"));
   mNFiles = std::stoi(config.get<std::string>("qc.postprocessing." + name + ".nFiles"));
-  mHost = config.get<std::string>("qc.config.conditionDB.url");
+  mHost = config.get<std::string>("qc.postprocessing." + name + ".dataSourceURL");
 }
 
-void DCSPTemperature::initialize(Trigger, framework::ServiceRegistry&)
+void DCSPTemperature::initialize(Trigger, framework::ServiceRegistryRef)
 {
   mCdbApi.init(mHost);
   mDCSPTemp.initializeCanvases();
@@ -92,7 +92,7 @@ void DCSPTemperature::initialize(Trigger, framework::ServiceRegistry&)
   }
 }
 
-void DCSPTemperature::update(Trigger, framework::ServiceRegistry&)
+void DCSPTemperature::update(Trigger, framework::ServiceRegistryRef)
 {
   std::vector<long> usedTimestamps = getDataTimestamps("TPC/Calib/Temperature", mNFiles, mTimestamp);
   for (auto& timestamp : usedTimestamps) {
@@ -102,7 +102,7 @@ void DCSPTemperature::update(Trigger, framework::ServiceRegistry&)
   mDCSPTemp.processData(mData);
 }
 
-void DCSPTemperature::finalize(Trigger, framework::ServiceRegistry&)
+void DCSPTemperature::finalize(Trigger, framework::ServiceRegistryRef)
 {
   for (auto& canv : mDCSPTemp.getCanvases()) {
     getObjectsManager()->stopPublishing(canv);
@@ -133,6 +133,9 @@ long DCSPTemperature::getTimestamp(const std::string metaInfo)
   std::string result_str;
   long result;
   std::string token = "Validity: ";
+  if (metaInfo.find(token) == std::string::npos) {
+    return -1;
+  }
   int start = metaInfo.find(token) + token.size();
   int end = metaInfo.find(" -", start);
   result_str = metaInfo.substr(start, end - start);
@@ -147,8 +150,11 @@ std::vector<long> DCSPTemperature::getDataTimestamps(const std::string_view path
   std::vector<std::string> fileList = splitString(mCdbApi.list(path.data()), "\n");
 
   if (limit == -1) {
-    for (unsigned int i = 0; i < nFiles; i++) {
-      outVec.emplace_back(getTimestamp(fileList.at(i)));
+    for (unsigned int i = 1; i <= nFiles; i++) {
+      long timeStamp = getTimestamp(fileList.at(i));
+      if (timeStamp != -1) {
+        outVec.emplace_back(timeStamp);
+      }
     }
   } else {
     std::vector<std::string> tmpFiles;
@@ -157,8 +163,11 @@ std::vector<long> DCSPTemperature::getDataTimestamps(const std::string_view path
         tmpFiles.emplace_back(file);
       }
     }
-    for (unsigned int i = 0; i < nFiles; i++) {
-      outVec.emplace_back(getTimestamp(tmpFiles.at(i)));
+    for (unsigned int i = 1; i <= nFiles; i++) {
+      long timeStamp = getTimestamp(tmpFiles.at(i));
+      if (timeStamp != -1) {
+        outVec.emplace_back(timeStamp);
+      }
     }
   }
   std::sort(outVec.begin(), outVec.end());

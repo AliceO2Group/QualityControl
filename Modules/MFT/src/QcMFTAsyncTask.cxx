@@ -99,7 +99,7 @@ void QcMFTAsyncTask::initialize(o2::framework::InitContext& /*ctx*/)
                                                      "Number Of Clusters Per LTF Track; # clusters; # entries", 10, 0.5, 10.5);
   getObjectsManager()->startPublishing(mLTFTrackNumberOfClusters.get());
 
-  mTrackInvQPt = std::make_unique<TH1F>("tracks/mMFTTrackInvQPt", "Track q/p_{T}; q/p_{T} [1/GeV]; # entries", 50, -2, 2);
+  mTrackInvQPt = std::make_unique<TH1F>("tracks/mMFTTrackInvQPt", "Track q/p_{T}; q/p_{T} [1/GeV]; # entries", 250, -10, 10);
   getObjectsManager()->startPublishing(mTrackInvQPt.get());
 
   mTrackChi2 = std::make_unique<TH1F>("tracks/mMFTTrackChi2", "Track #chi^{2}; #chi^{2}; # entries", 21, -0.5, 20.5);
@@ -143,18 +143,27 @@ void QcMFTAsyncTask::initialize(o2::framework::InitContext& /*ctx*/)
   mLTFTrackEta = std::make_unique<TH1F>("tracks/LTF/mMFTLTFTrackEta", "LTF Track #eta; #eta; # entries", 50, -4, -2);
   getObjectsManager()->startPublishing(mLTFTrackEta.get());
 
+  mCATrackPt = std::make_unique<TH1F>("tracks/CA/mMFTCATrackPt", "CA Track p_{T}; p_{T} (GeV/c); # entries", 300, 0, 30);
+  getObjectsManager()->startPublishing(mCATrackPt.get());
+  getObjectsManager()->setDisplayHint(mCATrackPt.get(), "logy");
+
+  mLTFTrackPt = std::make_unique<TH1F>("tracks/LTF/mMFTLTFTrackPt", "LTF Track p_{T}; p_{T} (GeV/c); # entries", 300, 0, 30);
+  getObjectsManager()->startPublishing(mLTFTrackPt.get());
+  getObjectsManager()->setDisplayHint(mLTFTrackPt.get(), "logy");
+
   mTrackTanl = std::make_unique<TH1F>("tracks/mMFTTrackTanl", "Track tan #lambda; tan #lambda; # entries", 100, -25, 0);
   getObjectsManager()->startPublishing(mTrackTanl.get());
 
-  mClusterROFNEntries = std::make_unique<TH1F>("clusters/mMFTClustersROFSize", "MFT Cluster ROFs size; ROF Size; # entries", MaxClusterROFSize, 0, MaxClusterROFSize);
+  mClusterROFNEntries = std::make_unique<TH1F>("clusters/mMFTClustersROFSize", "ROF size in #clusters; ROF Size; # entries", MaxClusterROFSize, 0, MaxClusterROFSize);
   getObjectsManager()->startPublishing(mClusterROFNEntries.get());
 
-  mTrackROFNEntries = std::make_unique<TH1F>("tracks/mMFTTrackROFSize", "MFT Track ROFs size; ROF Size; # entries", MaxTrackROFSize, 0, MaxTrackROFSize);
+  mTrackROFNEntries = std::make_unique<TH1F>("tracks/mMFTTrackROFSize", "ROF size in #tracks; ROF Size (# tracks); # entries", MaxTrackROFSize, 0, MaxTrackROFSize);
   getObjectsManager()->startPublishing(mTrackROFNEntries.get());
 
-  mTracksBC = std::make_unique<TH1F>("tracks/mMFTTracksBC", "Tracks per BC (sum over orbits); BCid; # entries", ROFsPerOrbit, 0, o2::constants::lhc::LHCMaxBunches);
+  mTracksBC = std::make_unique<TH1F>("tracks/mMFTTracksBC", "Tracks per BC; BCid; # entries", o2::constants::lhc::LHCMaxBunches, 0, o2::constants::lhc::LHCMaxBunches);
   mTracksBC->SetMinimum(0.1);
   getObjectsManager()->startPublishing(mTracksBC.get());
+  getObjectsManager()->setDisplayHint(mTracksBC.get(), "hist");
 
   mNOfTracksTime = std::make_unique<TH1F>("tracks/mNOfTracksTime", "Number of tracks per time bin; time (s); # entries", NofTimeBins, 0, MaxDuration);
   mNOfTracksTime->SetMinimum(0.1);
@@ -195,7 +204,9 @@ void QcMFTAsyncTask::monitorData(o2::framework::ProcessingContext& ctx)
   const auto clustersrofs = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("clustersrofs");
 
   // get correct timing info of the first TF orbit
-  mRefOrbit = ctx.services().get<o2::framework::TimingInfo>().firstTForbit;
+  if (mRefOrbit == -1) {
+    mRefOrbit = ctx.services().get<o2::framework::TimingInfo>().firstTForbit;
+  }
 
   // Fill the clusters histograms
   for (const auto& rof : clustersrofs) {
@@ -250,10 +261,12 @@ void QcMFTAsyncTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (oneTrack.isCA()) {
       mCATrackNumberOfClusters->Fill(oneTrack.getNumberOfPoints());
       mCATrackEta->Fill(oneTrack.getEta());
+      mCATrackPt->Fill(oneTrack.getPt());
     }
     if (oneTrack.isLTF()) {
       mLTFTrackNumberOfClusters->Fill(oneTrack.getNumberOfPoints());
       mLTFTrackEta->Fill(oneTrack.getEta());
+      mLTFTrackPt->Fill(oneTrack.getPt());
     }
   }
 }
@@ -294,6 +307,8 @@ void QcMFTAsyncTask::reset()
   }
   mCATrackEta->Reset();
   mLTFTrackEta->Reset();
+  mCATrackPt->Reset();
+  mLTFTrackPt->Reset();
   mTrackTanl->Reset();
 
   mTrackROFNEntries->Reset();

@@ -114,7 +114,8 @@ class ITSFeeTask final : public TaskInterface
 
   // parameters taken from the .json
   int mNPayloadSizeBins = 0;
-  bool mEnableAutoreco = false;
+  bool mResetLaneStatus = false;
+  bool mResetPayload = false;
 
   TH1I* mTFInfo; // count vs TF ID
   TH2I* mTriggerVsFeeId;
@@ -125,6 +126,7 @@ class ITSFeeTask final : public TaskInterface
   TH2I* mIdCheck;    // should be 0x : e4
   TH2I* mRDHSummary;
   TH2I* mLaneStatus[NFlags]; // 4 flags for each lane. 3/8/14 lane for each link. 3/2/2 link for each RU. TODO: remove the OK flag in these 4 flag plots, OK flag plot just used to debug.
+  TH2I* mLaneStatusCumulative[NFlags];
   TH2Poly* mLaneStatusOverview[NFlags] = { 0x0 };
   TH1I* mLaneStatusSummary[NLayer];
   TH1I* mLaneStatusSummaryIB;

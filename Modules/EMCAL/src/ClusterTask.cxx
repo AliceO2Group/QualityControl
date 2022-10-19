@@ -15,12 +15,15 @@
 ///
 
 #include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
 #include <algorithm>
+#include <cmath>
 #include <iostream>
 
 #include <TCanvas.h>
 #include <TH1.h>
 #include <TH2.h>
+#include <TLorentzVector.h>
 
 #include "EMCAL/ClusterTask.h"
 #include "QualityControl/QcInfoLogger.h"
@@ -79,6 +82,11 @@ ClusterTask::~ClusterTask()
   conditionalDelete(mHistM20_DCal);
   conditionalDelete(mHistM02VsClustE__DCal);
   conditionalDelete(mHistM20VsClustE__DCal);
+
+  conditionalDelete(mHistMassDiphoton_EMCAL);
+  conditionalDelete(mHistMassDiphoton_DCAL);
+  conditionalDelete(mHistMassDiphotonPt_EMCAL);
+  conditionalDelete(mHistMassDiphotonPt_DCAL);
 }
 
 void ClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -89,6 +97,8 @@ void ClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   auto get_bool = [](const std::string_view input) -> bool { // svk
     return input == "true";
   };
+
+  configureBindings();
 
   if (hasConfigValue("useInternalClusterizer")) {
     mInternalClusterizer = get_bool(getConfigValueLower("useInternalClusterizer"));
@@ -107,6 +117,16 @@ void ClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
     }
   }
 
+  if (hasConfigValue("hasInvMassMesons")) {
+    mFillInvMassMeson = get_bool(getConfigValueLower("hasInvMassMesons"));
+  }
+  if (mFillInvMassMeson) {
+    ILOG(Info, Support) << "Invariant mass histograms for Meson candidates enabled" << ENDM;
+    configureMesonSelection();
+  } else {
+    ILOG(Info, Support) << "Invariant mass histograms for Meson candidates disabled" << ENDM;
+  }
+
   mEventHandler = std::make_unique<o2::emcal::EventHandler<o2::emcal::Cell>>();
   mClusterFactory = std::make_unique<o2::emcal::ClusterFactory<o2::emcal::Cell>>();
 
@@ -115,10 +135,10 @@ void ClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
     mGeometry = o2::emcal::Geometry::GetInstanceFromRunNumber(300000); // svk
   mClusterFactory->setGeometry(mGeometry);
 
-  mHistNclustPerTF = new TH1F("NclustPerTF", "Number of clusters per time frame;N_{Cluster}/TF;", 10, 0.0, 10.0); // svk
+  mHistNclustPerTF = new TH1F("NclustPerTF", "Number of clusters per time frame;N_{Cluster}/TF;", 2000, 0.0, 200000.0); // svk
   getObjectsManager()->startPublishing(mHistNclustPerTF);
 
-  mHistNclustPerEvt = new TH1F("NclustPerEvt", "Number of clusters per event;N_{Cluster}/Event;", 100, 0.0, 100.0); // svk
+  mHistNclustPerEvt = new TH1F("NclustPerEvt", "Number of clusters per event;N_{Cluster}/Event;", 200, 0.0, 200.0); // svk
   getObjectsManager()->startPublishing(mHistNclustPerEvt);
 
   mHistClustEtaPhi = new TH2F("ClustEtaPhi", "Cluster #eta and #phi distribution;#eta;#phi", 100, -1.0, 1.0, 100, 0.0, 2 * TMath::Pi()); // svk
@@ -172,6 +192,20 @@ void ClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   mHistM20VsClustE__DCal = new TH2F("M20_Vs_ClustE_DCal", "M20 Vs Cluster Energy in DCal;Cluster E(GeV);M02", 500, 0, 50.0, 200, 0.0, 2.0); // svk
   getObjectsManager()->startPublishing(mHistM20VsClustE__DCal);
+
+  if (mFillInvMassMeson) {
+    mHistMassDiphoton_EMCAL = new TH1D("InvMassDiphoton_EMCAL", "Diphoton invariant mass for pairs in EMCAL; m_{#gamma#gamma} (GeV/c^{2}); Number of candidates", 400, 0., 0.8);
+    getObjectsManager()->startPublishing(mHistMassDiphoton_EMCAL);
+
+    mHistMassDiphoton_DCAL = new TH1F("InvMassDiphoton_DCAL", "Diphoton invariant mass for pairs in DCAL; m_{#gamma#gamma} (GeV/c^{2}); Number of candidates", 400, 0., 0.8);
+    getObjectsManager()->startPublishing(mHistMassDiphoton_DCAL);
+
+    mHistMassDiphotonPt_EMCAL = new TH2D("InvMassDiphotonPt_EMCAL", "Diphoton invariant mass vs p_{t} for paris in EMCAL;  m_{#gamma#gamma} (GeV/c^{2}); p_{t,#gamma#gamma} (GeV/c)", 400, 0., 0.8, 200, 0., 20.);
+    getObjectsManager()->startPublishing(mHistMassDiphotonPt_EMCAL);
+
+    mHistMassDiphotonPt_DCAL = new TH2D("InvMassDiphotonPt_DCAL", "Diphoton invariant mass vs p_{t} for paris in DCAL;  m_{#gamma#gamma} (GeV/c^{2}); p_{t,#gamma#gamma} (GeV/c)", 400, 0., 0.8, 200, 0., 20.);
+    getObjectsManager()->startPublishing(mHistMassDiphotonPt_DCAL);
+  }
 }
 
 void ClusterTask::startOfActivity(Activity& activity)
@@ -212,11 +246,8 @@ void ClusterTask::startOfCycle()
 
 void ClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  std::string inputCell = "emcal-cells";
-  std::string inputCellTR = "emcal-cellstriggerecords";
-
-  auto cell = ctx.inputs().get<gsl::span<o2::emcal::Cell>>(inputCell.c_str());
-  auto cellTR = ctx.inputs().get<gsl::span<o2::emcal::TriggerRecord>>(inputCellTR.c_str());
+  auto cell = ctx.inputs().get<gsl::span<o2::emcal::Cell>>(mTaskInputBindings.mCellBinding.data());
+  auto cellTR = ctx.inputs().get<gsl::span<o2::emcal::TriggerRecord>>(mTaskInputBindings.mCellTriggerRecordBinding.data());
 
   if (mInternalClusterizer) {
     std::vector<o2::emcal::Cluster> cluster;
@@ -252,17 +283,10 @@ void ClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
     analyseTimeframe(inputcells, inputTriggerRecords, cluster, clusterTR, cellIndex, cellIndexTR); // Fill histos
 
   } else {
-
-    std::string inputCluster = "emcal-clusters";
-    std::string inputClusterTR = "emcal-clustertriggerecords";
-
-    std::string inputCellIndex = "emcal-cellindices";
-    std::string inputCellIndexTR = "emcal-citriggerecords";
-
-    auto cluster = ctx.inputs().get<gsl::span<o2::emcal::Cluster>>(inputCluster.c_str());
-    auto clusterTR = ctx.inputs().get<gsl::span<o2::emcal::TriggerRecord>>(inputClusterTR.c_str());
-    auto cellIndex = ctx.inputs().get<gsl::span<int>>(inputCellIndex.c_str());
-    auto cellIndexTR = ctx.inputs().get<gsl::span<o2::emcal::TriggerRecord>>(inputCellIndexTR.c_str());
+    auto cluster = ctx.inputs().get<gsl::span<o2::emcal::Cluster>>(mTaskInputBindings.mClusterBinding.data());
+    auto clusterTR = ctx.inputs().get<gsl::span<o2::emcal::TriggerRecord>>(mTaskInputBindings.mClusterTriggerRecordBinding.data());
+    auto cellIndex = ctx.inputs().get<gsl::span<int>>(mTaskInputBindings.mCellIndexBinding.data());
+    auto cellIndexTR = ctx.inputs().get<gsl::span<o2::emcal::TriggerRecord>>(mTaskInputBindings.mCellIndexTriggerRecordBinding.data());
 
     analyseTimeframe(cell, cellTR, cluster, clusterTR, cellIndex, cellIndexTR); // Fill histos
   }
@@ -288,16 +312,18 @@ void ClusterTask::analyseTimeframe(const gsl::span<const o2::emcal::Cell>& cells
   mEventHandler->setClusterData(clusters, clusterIndices, clusterTriggerRecords, cellIndexTriggerRecords);
   mEventHandler->setCellData(cells, cellTriggerRecords);
 
-  mHistNclustPerTF->Fill(clusters.size());               // svk
-  mHistNclustPerEvt->Fill(clusterTriggerRecords.size()); // svk
+  mHistNclustPerTF->Fill(clusters.size());
 
   for (int iev = 0; iev < mEventHandler->getNumberOfEvents(); iev++) {
     auto inputEvent = mEventHandler->buildEvent(iev);
+
+    mHistNclustPerEvt->Fill(inputEvent.mClusters.size());
 
     mClusterFactory->setClustersContainer(inputEvent.mClusters);
     mClusterFactory->setCellsContainer(inputEvent.mCells);
     mClusterFactory->setCellsIndicesContainer(inputEvent.mCellIndices);
 
+    std::vector<TLorentzVector> selclustersEMCAL, selclustersDCAL;
     for (int icl = 0; icl < mClusterFactory->getNumberOfClusters(); icl++) {
 
       o2::emcal::AnalysisCluster analysisCluster = mClusterFactory->buildCluster(icl);
@@ -340,10 +366,52 @@ void ClusterTask::analyseTimeframe(const gsl::span<const o2::emcal::Cell>& cells
         mHistM02VsClustE__DCal->Fill(clustE, analysisCluster.getM02()); // svk
         mHistM20VsClustE__DCal->Fill(clustE, analysisCluster.getM20()); // svk
       }
+      if (mFillInvMassMeson && mMesonClusterCuts.isSelected(analysisCluster)) {
+        auto clustervec = buildClusterVector(analysisCluster);
+        if (clsTypeEMC) {
+          selclustersEMCAL.push_back(clustervec);
+        } else {
+          selclustersDCAL.push_back(clustervec);
+        }
+      }
 
     } // cls loop
-
+    if (mFillInvMassMeson) {
+      buildAndAnalysePiOs(selclustersEMCAL, true);
+      buildAndAnalysePiOs(selclustersDCAL, false);
+    }
   } // event loop
+}
+
+void ClusterTask::buildAndAnalysePiOs(const gsl::span<const TLorentzVector> clustervectors, bool isEMCAL)
+{
+  ILOG(Debug, Support) << "Next event: " << clustervectors.size() << " clusters from detector " << (isEMCAL ? "EMCAL" : "DCAL") << " for meson search" << ENDM;
+  auto histMass1D = isEMCAL ? mHistMassDiphoton_EMCAL : mHistMassDiphoton_DCAL;
+  auto histMassPt = isEMCAL ? mHistMassDiphotonPt_EMCAL : mHistMassDiphotonPt_DCAL;
+  if (clustervectors.size() > 1) {
+    for (int icl = 0; icl < clustervectors.size() - 1; icl++) {
+      for (int jcl = icl + 1; jcl < clustervectors.size(); jcl++) {
+        TLorentzVector pi0candidate = clustervectors[icl] + clustervectors[jcl];
+        if (!mMesonCuts.isSelected(pi0candidate)) {
+          continue;
+        }
+        histMassPt->Fill(pi0candidate.M(), pi0candidate.Pt());
+        histMass1D->Fill(pi0candidate.M());
+      }
+    }
+  }
+}
+
+TLorentzVector ClusterTask::buildClusterVector(const o2::emcal::AnalysisCluster& fullcluster) const
+{
+  auto pos = fullcluster.getGlobalPosition();
+  auto theta = 2 * std::atan2(std::exp(-pos.Eta()), 1);
+  auto px = fullcluster.E() * std::sin(theta) * std::cos(pos.Phi());
+  auto py = fullcluster.E() * std::sin(theta) * std::sin(pos.Phi());
+  auto pz = fullcluster.E() * std::cos(theta);
+  TLorentzVector clustervec;
+  clustervec.SetPxPyPzE(px, py, pz, fullcluster.E());
+  return clustervec;
 }
 
 //_____________________________  Internal clusteriser function _____________________________
@@ -432,6 +500,28 @@ void ClusterTask::getCalibratedCells(const gsl::span<const o2::emcal::Cell>& cel
   }
 }
 
+void ClusterTask::configureBindings()
+{
+  if (hasConfigValue("bindingCells")) {
+    mTaskInputBindings.mCellBinding = getConfigValue("bindingCells");
+  }
+  if (hasConfigValue("bindingCellTriggerRecords")) {
+    mTaskInputBindings.mCellTriggerRecordBinding = getConfigValue("bindingCellTriggerRecords");
+  }
+  if (hasConfigValue("bindingClusters")) {
+    mTaskInputBindings.mClusterBinding = getConfigValue("bindingClusters");
+  }
+  if (hasConfigValue("bindingClusterTriggerRecords")) {
+    mTaskInputBindings.mClusterTriggerRecordBinding = getConfigValue("bindingClusterTriggerRecords");
+  }
+  if (hasConfigValue("bindingCellIndices")) {
+    mTaskInputBindings.mCellIndexBinding = getConfigValue("bindingCellIndices");
+  }
+  if (hasConfigValue("bindingCellIndexTriggerRecords")) {
+    mTaskInputBindings.mCellIndexTriggerRecordBinding = getConfigValue("bindingCellIndexTriggerRecords");
+  }
+}
+
 void ClusterTask::configureClusterizerSettings()
 {
   auto get_bool = [](const std::string_view input) -> bool {
@@ -458,6 +548,31 @@ void ClusterTask::configureClusterizerSettings()
   if (hasConfigValue("clusterizerGradientCut")) {
     mClusterizerSettings.mGradientCut = std::stof(getConfigValue("clusterizerGradientCut"));
   }
+}
+
+void ClusterTask::configureMesonSelection()
+{
+  auto get_bool = [](const std::string_view input) -> bool {
+    return input == "true";
+  };
+  if (hasConfigValue("mesonClusterMinE")) {
+    mMesonClusterCuts.mMinE = std::stod(getConfigValue("mesonClusterMinE"));
+  }
+  if (hasConfigValue("mesonClusterMaxTime")) {
+    mMesonClusterCuts.mMaxTime = std::stod(getConfigValue("mesonClusterMaxTime"));
+  }
+  if (hasConfigValue("mesonClusterMinCells")) {
+    mMesonClusterCuts.mMinNCell = std::stoi(getConfigValue("mesonClusterMinCells"));
+  }
+  if (hasConfigValue("mesonClustersRejectExotics")) {
+    mMesonClusterCuts.mRejectExotics = std::stoi(getConfigValue("mesonClustersRejectExotics"));
+  }
+  if (hasConfigValue("mesonMinPt")) {
+    mMesonCuts.mMinPt = std::stod(getConfigValue("mesonMinPt"));
+  }
+
+  ILOG(Info, Support) << mMesonClusterCuts;
+  ILOG(Info, Support) << mMesonCuts;
 }
 
 void ClusterTask::resetHistograms()
@@ -488,6 +603,11 @@ void ClusterTask::resetHistograms()
   conditionalReset(mHistM20_DCal);
   conditionalReset(mHistM02VsClustE__DCal);
   conditionalReset(mHistM20VsClustE__DCal);
+
+  conditionalReset(mHistMassDiphoton_EMCAL);
+  conditionalReset(mHistMassDiphoton_DCAL);
+  conditionalReset(mHistMassDiphotonPt_EMCAL);
+  conditionalReset(mHistMassDiphotonPt_DCAL);
 }
 
 bool ClusterTask::hasConfigValue(const std::string_view key)
@@ -530,9 +650,63 @@ void ClusterTask::ClusterizerParams::print(std::ostream& stream) const
          << "Gradient cut:                        " << mGradientCut << "\n";
 }
 
+bool ClusterTask::MesonClusterSelection::isSelected(const o2::emcal::AnalysisCluster& cluster) const
+{
+  if (cluster.E() < mMinE) {
+    return false;
+  }
+  if (std::abs(cluster.getClusterTime()) > mMaxTime) {
+    return false;
+  }
+  if (cluster.getNCells() < mMinNCell) {
+    return false;
+  }
+  if (mRejectExotics && cluster.getIsExotic()) {
+    return false;
+  }
+  return true;
+}
+
+void ClusterTask::MesonClusterSelection::print(std::ostream& stream) const
+{
+  stream << "Cluster selection for meson candidates: \n"
+         << "======================================================\n"
+         << "Min. energy:          " << mMinE << " GeV\n"
+         << "Max. time:            " << mMaxTime << " ns\n"
+         << "Min. number of cells: " << mMinNCell << "\n"
+         << "Reject exotics:       " << (mRejectExotics ? "yes" : "no") << "\n";
+}
+
+bool ClusterTask::MesonSelection::isSelected(const TLorentzVector& mesonCandidate) const
+{
+  if (mesonCandidate.Pt() < mMinPt) {
+    return false;
+  }
+  return true;
+}
+
+void ClusterTask::MesonSelection::print(std::ostream& stream) const
+{
+  stream << "Meson candidates selection: \n"
+         << "======================================================\n"
+         << "Min. pt:   " << mMinPt << " GeV/c\n";
+}
+
 std::ostream& operator<<(std::ostream& stream, const ClusterTask::ClusterizerParams& params)
 {
   params.print(stream);
+  return stream;
+}
+
+std::ostream& operator<<(std::ostream& stream, const ClusterTask::MesonClusterSelection& cuts)
+{
+  cuts.print(stream);
+  return stream;
+}
+
+std::ostream& operator<<(std::ostream& stream, const ClusterTask::MesonSelection& cuts)
+{
+  cuts.print(stream);
   return stream;
 }
 

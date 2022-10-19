@@ -52,8 +52,9 @@ MonitorObject::MonitorObject(TObject* object, const std::string& taskName, const
 
 MonitorObject::~MonitorObject()
 {
-  if (mIsOwner && mObject != nullptr) {
+  if (mIsOwner) {
     delete mObject;
+    mObject = nullptr;
   }
 }
 
@@ -76,7 +77,8 @@ const char* MonitorObject::GetName() const
 {
   if (mObject == nullptr) {
     cerr << "MonitorObject::getName() : No object in this MonitorObject, returning empty string" << endl;
-    return "";
+    static char empty[] = "";
+    return empty;
   }
   return mObject->GetName();
 }

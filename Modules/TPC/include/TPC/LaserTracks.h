@@ -49,19 +49,19 @@ class LaserTracks final : public quality_control::postprocessing::PostProcessing
   /// registry with singleton interfaces.
   /// \param trigger  Trigger which caused the initialization, for example Trigger::SOR
   /// \param services Interface containing optional interfaces, for example DatabaseInterface
-  void initialize(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
+  void initialize(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
   /// \brief Update of a post-processing task.
   /// Update of a post-processing task. User receives a Trigger which caused the update and a service
   /// registry with singleton interfaces.
   /// \param trigger  Trigger which caused the initialization, for example Trigger::Period
   /// \param services Interface containing optional interfaces, for example DatabaseInterface
-  void update(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
+  void update(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
   /// \brief Finalization of a post-processing task.
   /// Finalization of a post-processing task. User receives a Trigger which caused the finalization and a service
   /// registry with singleton interfaces.
   /// \param trigger  Trigger which caused the initialization, for example Trigger::EOR
   /// \param services Interface containing optional interfaces, for example DatabaseInterface
-  void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
+  void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
 
  private:
   std::vector<std::unique_ptr<TCanvas>> mLaserTracksCanvasVec{}; ///< vector containing a vector of summary canvases for every CalDet object
@@ -74,4 +74,4 @@ class LaserTracks final : public quality_control::postprocessing::PostProcessing
 
 } // namespace o2::quality_control_modules::tpc
 
-#endif //QUALITYCONTROL_LASERTRACKS_H
+#endif // QUALITYCONTROL_LASERTRACKS_H

@@ -20,6 +20,7 @@
 #include <unordered_map>
 #include <string>
 #include <boost/property_tree/ptree.hpp>
+#include "QualityControl/DiscardFileParameters.h"
 
 namespace o2::quality_control::postprocessing
 {
@@ -28,9 +29,7 @@ struct PostProcessingRunnerConfig {
   std::string taskName;
   std::unordered_map<std::string, std::string> database;
   std::string consulUrl{};
-  bool infologgerFilterDiscardDebug = false;
-  int infologgerDiscardLevel = 21;
-  std::string infologgerDiscardFile{};
+  core::DiscardFileParameters infologgerDiscardParameters;
   double periodSeconds = 10.0;
   std::string configKeyValues; // These are for ConfigurableParams, not for override-values!
   boost::property_tree::ptree configTree{};
