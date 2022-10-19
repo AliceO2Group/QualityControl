@@ -124,7 +124,6 @@ void ServiceDiscovery::runHealthServer(unsigned int port)
     while (mThreadRunning) {
       io_service.reset();
       timer.expires_from_now(boost::posix_time::seconds(1));
-      tcp::socket socket(io_service);
       acceptor.async_accept([this](boost::system::error_code ec, tcp::socket socket) {
       });
       timer.async_wait([&](boost::system::error_code ec) {
