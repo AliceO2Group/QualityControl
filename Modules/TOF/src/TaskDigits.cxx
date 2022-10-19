@@ -159,8 +159,11 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   mHistoMultiplicityOC = std::make_shared<TH1I>("Multiplicity/SectorOC", "TOF hit multiplicity - O/C side;TOF hits;Events ", mBinsMultiplicity, mRangeMinMultiplicity, mRangeMaxMultiplicity);
   getObjectsManager()->startPublishing(mHistoMultiplicityOC.get());
 
-  mHitMultiplicityVsCrate = std::make_shared<TProfile>("Multiplicity/VsCrate", "TOF hit multiplicity vs Crate;TOF hits;Crate;Events", RawDataDecoder::ncrates, 0, RawDataDecoder::ncrates);
+  mHitMultiplicityVsCrate = std::make_shared<TH2F>("Multiplicity/VsCrate", "TOF hit multiplicity vs Crate;Crate;TOF hits", RawDataDecoder::ncrates, 0, RawDataDecoder::ncrates, mBinsMultiplicity, mRangeMinMultiplicity, mRangeMaxMultiplicity);
   getObjectsManager()->startPublishing(mHitMultiplicityVsCrate.get());
+
+  mHitMultiplicityVsCratepro = std::make_shared<TProfile>("Multiplicity/VsCratepro", "TOF hit multiplicity vs Crate;Crate;#LT TOF hits #GT", RawDataDecoder::ncrates, 0, RawDataDecoder::ncrates);
+  getObjectsManager()->startPublishing(mHitMultiplicityVsCratepro.get());
 
   mHitMultiplicityVsBC = std::make_shared<TH2F>("Multiplicity/VsBC", "TOF hit multiplicity vs BC;BC;#TOF hits;Events", mBinsBCForMultiplicity, 0, mRangeMaxBC, mBinsMultiplicity, mRangeMinMultiplicity, mRangeMaxMultiplicity);
   getObjectsManager()->startPublishing(mHitMultiplicityVsBC.get());
@@ -405,7 +408,8 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
     mHistoMultiplicityOC->Fill(ndigitsPerQuater[3]);
 
     for (int crate = 0; crate < RawDataDecoder::ncrates; crate++) {
-      mHitMultiplicityVsCrate->Fill(ndigitsPerCrate[crate], row.size());
+      mHitMultiplicityVsCratepro->Fill(crate, ndigitsPerCrate[crate]);
+      mHitMultiplicityVsCrate->Fill(crate, ndigitsPerCrate[crate]);
       ndigitsPerCrate[crate] = 0;
     }
     //
@@ -486,6 +490,7 @@ void TaskDigits::reset()
   mHistoMultiplicityIC->Reset();
   mHistoMultiplicityOC->Reset();
   mHitMultiplicityVsCrate->Reset();
+  mHitMultiplicityVsCratepro->Reset();
   mHitMultiplicityVsBC->Reset();
   mHitMultiplicityVsBCpro->Reset();
   // Time
