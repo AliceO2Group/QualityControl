@@ -41,8 +41,7 @@ add_root_dictionary(O2QcGLO
   include/GLO/VertexingQcTask.h
   include/GLO/ITSTPCMatchingTask.h
   include/GLO/DataCompressionQcTask.h
-                    LINKDEF include/GLO/LinkDef.h
-                    BASENAME O2QcGLO)
+                    LINKDEF include/GLO/LinkDef.h)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/GLO
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")

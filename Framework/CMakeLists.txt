@@ -32,9 +32,7 @@ add_root_dictionary(O2QualityControlTypes
   include/QualityControl/QualityObject.h
   include/QualityControl/Quality.h
   include/QualityControl/Activity.h
-  LINKDEF include/QualityControl/TypesLinkDef.h
-  BASENAME O2QualityControlTypes
-  )
+  LINKDEF include/QualityControl/TypesLinkDef.h)
 
 # ---- Library ----
 
@@ -130,8 +128,7 @@ add_root_dictionary(O2QualityControl
   include/QualityControl/SliceInfoTrending.h
   include/QualityControl/SliceTrendingTask.h
   include/QualityControl/MonitorObjectCollection.h
-  LINKDEF include/QualityControl/LinkDef.h
-  BASENAME O2QualityControl)
+  LINKDEF include/QualityControl/LinkDef.h)
 
 # ---- Executables ----
 
@@ -309,7 +306,7 @@ endforeach()
 
 target_include_directories(testVersion PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
 target_include_directories(testCcdbDatabase PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
-target_link_libraries(testTaskInterface PRIVATE O2::EMCALBase O2::EMCALCalib) 
+target_link_libraries(testTaskInterface PRIVATE O2::EMCALBase O2::EMCALCalib)
 
 set_property(TEST testWorkflow PROPERTY TIMEOUT 40)
 set_property(TEST testWorkflow PROPERTY LABELS slow)
@@ -325,7 +322,7 @@ set_property(TEST testDbFactory PROPERTY LABELS CCDB)
 set_property(TEST testUserCodeInterface PROPERTY LABELS CCDB)
 set_property(TEST testTaskInterface PROPERTY LABELS CCDB)
 
-# Add a functional test (QC-336) 
+# Add a functional test (QC-336)
 string(RANDOM UNIQUE_ID)
 configure_file(basic-functional.json.in ${CMAKE_BINARY_DIR}/tests/basic-functional.json) # substitute the unique id in the task name
 add_test(NAME functional_test COMMAND o2-qc-functional-test.sh)
@@ -351,7 +348,7 @@ set_tests_properties(batch_test PROPERTIES ENVIRONMENT "JSON_DIR=${CMAKE_BINARY_
 set_property(TEST batch_test PROPERTY LABELS slow)
 set_property(TEST batch_test PROPERTY TIMEOUT 45)
 
-# ---- Install ---- 
+# ---- Install ----
 
 # Build targets with install rpath on Mac to dramatically speed up installation
 # https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling

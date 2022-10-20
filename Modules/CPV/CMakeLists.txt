@@ -22,8 +22,7 @@ add_root_dictionary(O2QcCPV
   include/CPV/PhysicsTask.h
   include/CPV/PedestalCheck.h
   include/CPV/PedestalTask.h
-                    LINKDEF include/CPV/LinkDef.h
-                    BASENAME O2QcCPV)
+                    LINKDEF include/CPV/LinkDef.h)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/CPV
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")

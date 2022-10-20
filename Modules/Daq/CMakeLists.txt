@@ -15,8 +15,7 @@ target_link_libraries(O2QcDaq PUBLIC O2QualityControl PRIVATE ROOT::Gpad O2::Det
 
 add_root_dictionary(O2QcDaq
                     HEADERS include/Daq/DaqTask.h
-                    LINKDEF include/Daq/LinkDef.h
-                    BASENAME O2QcDaq)
+                    LINKDEF include/Daq/LinkDef.h)
 
 install(TARGETS O2QcDaq
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

@@ -25,8 +25,7 @@ add_root_dictionary(O2QcEMCAL
   include/EMCAL/RawErrorCheck.h
   include/EMCAL/CalibMonitoringTask.h
   include/EMCAL/SupermoduleProjectorTask.h
-        LINKDEF include/EMCAL/LinkDef.h
-  BASENAME O2QcEMCAL)
+        LINKDEF include/EMCAL/LinkDef.h)
 
 install(TARGETS O2QcEMCAL
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

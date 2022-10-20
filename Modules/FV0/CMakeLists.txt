@@ -35,8 +35,7 @@ add_root_dictionary(O2QcFV0
           include/FV0/CFDEffCheck.h
           include/FV0/OutOfBunchCollCheck.h
           include/FV0/GenericCheck.h
-  LINKDEF include/FV0/LinkDef.h
-  BASENAME O2QcFV0)
+  LINKDEF include/FV0/LinkDef.h)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/FV0
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")

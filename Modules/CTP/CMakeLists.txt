@@ -21,8 +21,7 @@ add_root_dictionary(O2QcCTP
                     HEADERS
   include/CTP/CountersQcTask.h
 include/CTP/RawDataQcTask.h
-                    LINKDEF include/CTP/LinkDef.h
-                    BASENAME O2QcCTP)
+                    LINKDEF include/CTP/LinkDef.h)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/CTP
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")
