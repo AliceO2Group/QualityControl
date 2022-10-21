@@ -935,7 +935,8 @@ should not be present in real configuration files.
         "filterDiscardDebug": "false",    "": "Set to 1 to discard debug and trace messages (default: false)",
         "filterDiscardLevel": "2",        "": "Message at this level or above are discarded (default: 21 - Trace)",
         "filterDiscardFile": "",          "": ["If set, the discarded messages will go to this file (default: <none>)",
-                                              "The keyword _ID_, if used, is replaced by the device ID.",
+                                              "The keyword _ID_, if used, is replaced by the device ID. Command line",
+                                              "option --log-file-suffix can also suffix the discard file name.",
                                               "Discarded Debug messages don't go there."],
         "filterRotateMaxBytes": "",       "": "Maximum size of the discard file.", 
         "filterRotateMaxFiles": "",       "": "Maximum number of discard files."

@@ -75,6 +75,10 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
                                                                    "The format is \"full.path.to.key=value[;full.path.to.key=value]\"." } });
   workflowOptions.push_back(
     ConfigParamSpec{ "configKeyValues", VariantType::String, "", { "Semicolon separated key=value strings (e.g.: 'TPCHwClusterer.peakChargeThreshold=4;...')" } });
+
+  workflowOptions.push_back(
+    ConfigParamSpec{ "log-file-suffix", VariantType::String, "", { "Suffix appended to the infologger discard log file. " } });
+
 }
 
 void customize(std::vector<CompletionPolicy>& policies)
@@ -166,6 +170,10 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
     auto infologgerFilterDiscardDebug = configTree.get<bool>("qc.config.infologger.filterDiscardDebug", false);
     auto infologgerDiscardLevel = configTree.get<int>("qc.config.infologger.filterDiscardLevel", 21);
     auto infologgerDiscardFile = configTree.get<std::string>("qc.config.infologger.filterDiscardFile", "");
+    auto infologgerDiscardFileSuffix = config.options().get<std::string>("remote-batch");
+    std::cout << "SUFFIX : " << infologgerDiscardFileSuffix << std::endl;
+    infologgerDiscardFile += infologgerDiscardFileSuffix;
+
     ILOG_INST.filterDiscardDebug(infologgerFilterDiscardDebug);
     ILOG_INST.filterDiscardLevel(infologgerDiscardLevel);
     ILOG_INST.filterDiscardSetFile(infologgerDiscardFile.c_str(), 0, 0, 0, true /*Do not store Debug messages in file*/);
