@@ -78,7 +78,6 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
 
   workflowOptions.push_back(
     ConfigParamSpec{ "log-file-suffix", VariantType::String, "", { "Suffix appended to the infologger discard log file. " } });
-
 }
 
 void customize(std::vector<CompletionPolicy>& policies)
