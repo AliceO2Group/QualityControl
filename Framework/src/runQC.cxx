@@ -170,7 +170,6 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
     auto infologgerDiscardLevel = configTree.get<int>("qc.config.infologger.filterDiscardLevel", 21);
     auto infologgerDiscardFile = configTree.get<std::string>("qc.config.infologger.filterDiscardFile", "");
     auto infologgerDiscardFileSuffix = config.options().get<std::string>("log-file-suffix");
-    std::cout << "SUFFIX : " << infologgerDiscardFileSuffix << std::endl;
     infologgerDiscardFile += infologgerDiscardFileSuffix;
 
     ILOG_INST.filterDiscardDebug(infologgerFilterDiscardDebug);
