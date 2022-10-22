@@ -21,6 +21,8 @@
 #include <array>
 #include "DataFormatsTRD/NoiseCalibration.h"
 #include "TRDQC/StatusHelper.h"
+#include "TRDBase/Geometry.h"
+
 
 class TH1F;
 class TH2F;
@@ -62,8 +64,7 @@ class PulseHeightPerChamber final : public TaskInterface
   void drawHashOnLayers(int layer, int hcid, int col, int rowstart, int rowend);
   void buildChamberIgnoreBP();
   bool isChamberToBeIgnored(unsigned int sm, unsigned int stack, unsigned int layer);
-
-
+  
  private:
   //limits
   bool mSkipSharedDigits;
@@ -77,6 +78,11 @@ class PulseHeightPerChamber final : public TaskInterface
   std::shared_ptr<TProfile> mPulseHeightpro = nullptr;
   std::shared_ptr<TH1F> mPulseHeight = nullptr;
 
+  std::vector<TH2F*> mLayers_tracklets;
+  std::vector<TH2F*> mLayers_tracks;
+  std::vector<TH2F*> mLayers_digits;
+
+  o2::trd::Geometry* geo = nullptr;
 // information pulled from ccdb
   o2::trd::NoiseStatusMCM* mNoiseMap = nullptr;
   o2::trd::HalfChamberStatusQC* mChamberStatus = nullptr;
