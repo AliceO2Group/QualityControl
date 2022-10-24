@@ -153,14 +153,14 @@ void TracksQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mTrackRatio44->GetXaxis()->SetBinLabel(9, "MT22 NBend");
   mTrackRatio44->GetYaxis()->SetTitle("Track 44/all");
   mTrackRatio44->SetMinimum(0.);
-  mTrackRatio44->SetMaximum(1.);
+  mTrackRatio44->SetMaximum(1.1);
   mTrackRatio44->SetStats(0);
 
   mTrackBDetRatio44 = std::make_shared<TProfile>("TrackBDetRatio44", "Bend Track 44/all vs DetId", MID_NDE, 0., MID_NDE);
   mTrackBDetRatio44->GetXaxis()->SetTitle("DetId");
   mTrackBDetRatio44->GetYaxis()->SetTitle("Track 44/all");
   mTrackBDetRatio44->SetMinimum(0.);
-  mTrackBDetRatio44->SetMaximum(1.);
+  mTrackBDetRatio44->SetMaximum(1.1);
   getObjectsManager()->startPublishing(mTrackBDetRatio44.get());
   mTrackBDetRatio44->SetStats(0);
 
@@ -168,7 +168,7 @@ void TracksQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mTrackNBDetRatio44->GetXaxis()->SetTitle("DetId");
   mTrackNBDetRatio44->GetYaxis()->SetTitle("Track 44/all");
   mTrackNBDetRatio44->SetMinimum(0.);
-  mTrackNBDetRatio44->SetMaximum(1.);
+  mTrackNBDetRatio44->SetMaximum(1.1);
   getObjectsManager()->startPublishing(mTrackNBDetRatio44.get());
   mTrackNBDetRatio44->SetStats(0);
 
@@ -180,7 +180,7 @@ void TracksQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mTrackDetRatio44Map11->GetXaxis()->SetTitle("Column");
   mTrackDetRatio44Map11->GetYaxis()->SetTitle("Line");
   mTrackDetRatio44Map11->SetMinimum(0.);
-  mTrackDetRatio44Map11->SetMaximum(1.);
+  mTrackDetRatio44Map11->SetMaximum(1.1);
   mTrackDetRatio44Map11->SetOption("colz");
   mTrackDetRatio44Map11->SetStats(0);
 
@@ -189,7 +189,7 @@ void TracksQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mTrackDetRatio44Map12->GetXaxis()->SetTitle("Column");
   mTrackDetRatio44Map12->GetYaxis()->SetTitle("Line");
   mTrackDetRatio44Map12->SetMinimum(0.);
-  mTrackDetRatio44Map12->SetMaximum(1.);
+  mTrackDetRatio44Map12->SetMaximum(1.1);
   mTrackDetRatio44Map12->SetOption("colz");
   mTrackDetRatio44Map12->SetStats(0);
 
@@ -198,7 +198,7 @@ void TracksQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mTrackDetRatio44Map21->GetXaxis()->SetTitle("Column");
   mTrackDetRatio44Map21->GetYaxis()->SetTitle("Line");
   mTrackDetRatio44Map21->SetMinimum(0.);
-  mTrackDetRatio44Map21->SetMaximum(1.);
+  mTrackDetRatio44Map21->SetMaximum(1.1);
   mTrackDetRatio44Map21->SetOption("colz");
   mTrackDetRatio44Map21->SetStats(0);
 
@@ -207,23 +207,31 @@ void TracksQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mTrackDetRatio44Map22->GetXaxis()->SetTitle("Column");
   mTrackDetRatio44Map22->GetYaxis()->SetTitle("Line");
   mTrackDetRatio44Map22->SetMinimum(0.);
-  mTrackDetRatio44Map22->SetMaximum(1.);
+  mTrackDetRatio44Map22->SetMaximum(1.1);
   mTrackDetRatio44Map22->SetOption("colz");
   mTrackDetRatio44Map22->SetStats(0);
+
+  mTrackLocRatio44 = std::make_shared<TProfile>("TrackLocRatio44", " Track 44/all vs LocId", MID_NLOC, 0., MID_NLOC);
+  mTrackLocRatio44->GetXaxis()->SetTitle("LocId");
+  mTrackLocRatio44->GetYaxis()->SetTitle("Track 44/all");
+  mTrackLocRatio44->SetMinimum(0.);
+  mTrackLocRatio44->SetMaximum(1.1);
+  getObjectsManager()->startPublishing(mTrackLocRatio44.get());
+  mTrackLocRatio44->SetStats(0);
 
   mTrackBLocRatio44 = std::make_shared<TProfile>("TrackBLocRatio44", "Bend Track 44/all vs LocId", MID_NLOC, 0., MID_NLOC);
   mTrackBLocRatio44->GetXaxis()->SetTitle("LocId");
   mTrackBLocRatio44->GetYaxis()->SetTitle("Track 44/all");
   mTrackBLocRatio44->SetMinimum(0.);
-  mTrackBLocRatio44->SetMaximum(1.);
+  mTrackBLocRatio44->SetMaximum(1.1);
   getObjectsManager()->startPublishing(mTrackBLocRatio44.get());
   mTrackBLocRatio44->SetStats(0);
 
   mTrackNBLocRatio44 = std::make_shared<TProfile>("TrackNBLocRatio44", "Non-Bend Track 44/all vs LocId", MID_NLOC, 0., MID_NLOC);
-  mTrackNBLocRatio44->GetXaxis()->SetTitle("DetId");
+  mTrackNBLocRatio44->GetXaxis()->SetTitle("LocId");
   mTrackNBLocRatio44->GetYaxis()->SetTitle("Track 44/all");
   mTrackNBLocRatio44->SetMinimum(0.);
-  mTrackNBLocRatio44->SetMaximum(1.);
+  mTrackNBLocRatio44->SetMaximum(1.1);
   getObjectsManager()->startPublishing(mTrackNBLocRatio44.get());
   mTrackNBLocRatio44->SetStats(0);
 
@@ -232,7 +240,7 @@ void TracksQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mTrackLocalBoardsRatio44Map->GetXaxis()->SetTitle("Column");
   mTrackLocalBoardsRatio44Map->GetYaxis()->SetTitle("Line");
   mTrackLocalBoardsRatio44Map->SetMinimum(0.);
-  mTrackLocalBoardsRatio44Map->SetMaximum(1.);
+  mTrackLocalBoardsRatio44Map->SetMaximum(1.1);
   mTrackLocalBoardsRatio44Map->SetOption("colz");
   mTrackLocalBoardsRatio44Map->SetStats(0);
 
@@ -241,7 +249,7 @@ void TracksQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mTrackLocalBoardsBRatio44Map->GetXaxis()->SetTitle("Column");
   mTrackLocalBoardsBRatio44Map->GetYaxis()->SetTitle("Line");
   mTrackLocalBoardsBRatio44Map->SetMinimum(0.);
-  mTrackLocalBoardsBRatio44Map->SetMaximum(1.);
+  mTrackLocalBoardsBRatio44Map->SetMaximum(1.1);
   mTrackLocalBoardsBRatio44Map->SetOption("colz");
   mTrackLocalBoardsBRatio44Map->SetStats(0);
 
@@ -250,7 +258,7 @@ void TracksQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mTrackLocalBoardsNBRatio44Map->GetXaxis()->SetTitle("Column");
   mTrackLocalBoardsNBRatio44Map->GetYaxis()->SetTitle("Line");
   mTrackLocalBoardsNBRatio44Map->SetMinimum(0.);
-  mTrackLocalBoardsNBRatio44Map->SetMaximum(1.);
+  mTrackLocalBoardsNBRatio44Map->SetMaximum(1.1);
   mTrackLocalBoardsNBRatio44Map->SetOption("colz");
   mTrackLocalBoardsNBRatio44Map->SetStats(0);
 }
@@ -504,18 +512,6 @@ void TracksQcTask::monitorData(o2::framework::ProcessingContext& ctx)
           if (EffFlag > 2) { // LocBoardeff
             auto localBoard = mMapping.getBoardId(lineId, colId, deIndex);
 
-            if (HitMapB == 0xF)
-              mTrackBLocRatio44->Fill(localBoard, 1.);
-            else
-              mTrackBLocRatio44->Fill(localBoard, 0.);
-
-            if (HitMapNB == 0xF)
-              mTrackNBLocRatio44->Fill(localBoard, 1.);
-            else
-              mTrackNBLocRatio44->Fill(localBoard, 0.);
-
-            //// Local Boards Display::
-
             int nZoneHistoX = 1;
             if (mMapping.getLastBoardBP(colId, deIndex) == 1)
               nZoneHistoX = 2;
@@ -528,7 +524,7 @@ void TracksQcTask::monitorData(o2::framework::ProcessingContext& ctx)
               int BFired = 0;
               int NBFired = 0;
               if (board == lineId) {
-                // printf(" Loc %i ====> Fired ; col %i, rpcLine %i nZoneX %i\n", mMapping.getBoardId(board, colId, deIndex), colId, rpcLine, nZoneHistoX);
+                // if (localBoard < 10)printf(" Loc %i ====> Fired ; col %i, rpcLine %i nZoneX %i\n", mMapping.getBoardId(board, colId, deIndex), colId, rpcLine, nZoneHistoX);
                 if (HitMap == 0xFF)
                   Fired = 1;
                 if (HitMapB == 0xF)
@@ -536,34 +532,33 @@ void TracksQcTask::monitorData(o2::framework::ProcessingContext& ctx)
                 if (HitMapNB == 0xF)
                   NBFired = 1;
               }
+
               double linePos0 = rpcLine;
-              linePos0 = rpcLine + 0.25 * board;
-              if ((nZoneHistoX == 2) && (board == 1))
-                linePos0 += 0.25;
-              for (int ib = 0; ib < nZoneHistoX; ib++) {
-                double linePos = linePos0 + (0.25 * ib);
-                // int lineBin = TMath::Floor(linePos * 36 / 9) + 1;
-                if (isRightSide == 1) {
-                  // int colBin = colId + 8;
-                  mTrackLocalBoardsRatio44Map->Fill(colId + 0.5, linePos, Fired);
-                  mTrackLocalBoardsBRatio44Map->Fill(colId + 0.5, linePos, BFired);
-                  mTrackLocalBoardsNBRatio44Map->Fill(colId + 0.5, linePos, NBFired);
-                  // printf(" Loc %i ====> right  Fired = %i B: %i NB: %i \n", mMapping.getBoardId(board, colId, deIndex), Fired, BFired, NBFired);
-                  // printf("        ====> ib %i:  col %i, rpcLine %f \n",ib, colId, linePos);
-                } else {
-                  // int colBin = -colId + 7;
-                  mTrackLocalBoardsRatio44Map->Fill(-colId - 0.5, linePos, Fired);
-                  mTrackLocalBoardsBRatio44Map->Fill(-colId - 0.5, linePos, BFired);
-                  mTrackLocalBoardsNBRatio44Map->Fill(-colId - 0.5, linePos, NBFired);
-                  // printf(" Loc %i ====> left Fired = %i B: %i NB: %i \n", mMapping.getBoardId(board, colId, deIndex), Fired, BFired, NBFired);
-                  // printf("        ====> ib %i:  col %i, rpcLine %f \n",ib , colId, linePos);
-                }
-              } // board in line loop
-            }   // board loop
-          }     //(EffFlag>2)
-        }       //(EffFlag>1)
-      }         // Efficiency part (EffFlag>0)
-    }           // tracks in ROF
+              if (localBoard == mMapping.getBoardId(board, colId, deIndex)) { // only fire board in the line
+                mTrackLocRatio44->Fill(localBoard - 1, Fired);
+                mTrackBLocRatio44->Fill(localBoard - 1, BFired);
+                mTrackNBLocRatio44->Fill(localBoard - 1, NBFired);
+                linePos0 = rpcLine + 0.25 * board;
+                if ((nZoneHistoX == 2) && (board == 1))
+                  linePos0 += 0.25;
+                for (int ib = 0; ib < nZoneHistoX; ib++) {
+                  double linePos = linePos0 + (0.25 * ib);
+                  if (isRightSide == 1) {
+                    mTrackLocalBoardsRatio44Map->Fill(colId + 0.5, linePos, Fired);
+                    mTrackLocalBoardsBRatio44Map->Fill(colId + 0.5, linePos, BFired);
+                    mTrackLocalBoardsNBRatio44Map->Fill(colId + 0.5, linePos, NBFired);
+                  } else {
+                    mTrackLocalBoardsRatio44Map->Fill(-colId - 0.5, linePos, Fired);
+                    mTrackLocalBoardsBRatio44Map->Fill(-colId - 0.5, linePos, BFired);
+                    mTrackLocalBoardsNBRatio44Map->Fill(-colId - 0.5, linePos, NBFired);
+                  }
+                } // board in line loop
+              }   // board loop
+            }     // only fire board in the line
+          }       //(EffFlag>2)
+        }         //(EffFlag>1)
+      }           // Efficiency part (EffFlag>0)
+    }             // tracks in ROF
     mMultTracks->Fill(multTracks);
 
   } //  ROFRecords //
@@ -607,6 +602,7 @@ void TracksQcTask::reset()
   mTrackRatio44->Reset();
   mTrackBDetRatio44->Reset();
   mTrackNBDetRatio44->Reset();
+  mTrackLocRatio44->Reset();
   mTrackBLocRatio44->Reset();
   mTrackNBLocRatio44->Reset();
   mTrackLocalBoardsRatio44Map->Reset();

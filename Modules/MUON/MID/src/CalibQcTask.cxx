@@ -16,6 +16,7 @@
 #include <TH1.h>
 #include <TH2.h>
 #include <TFile.h>
+#include <TProfile2D.h>
 
 #include <iostream>
 #include <fstream>
@@ -53,16 +54,22 @@ void CalibQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   /////////////////
   mNbTimeFrame = std::make_shared<TH1F>("NbTimeFrame", "NbTimeFrame", 1, 0, 1.);
   getObjectsManager()->startPublishing(mNbTimeFrame.get());
+
+  mNbDeadROF = std::make_shared<TH1F>("NbDeadROF", "NbDeadROF", 1, 0, 1.);
+  getObjectsManager()->startPublishing(mNbDeadROF.get());
+
+  mNbNoiseROF = std::make_shared<TH1F>("NbNoiseROF", "NbNoiseRF", 1, 0, 1.);
+  getObjectsManager()->startPublishing(mNbNoiseROF.get());
   /// Noise strips Histograms ::
 
-  mMultNoiseMT11B = std::make_shared<TH1F>("MultNoiseMT11B", "Multiplicity Noise strips - MT11 bending plane", 300, 0, 3000);
-  mMultNoiseMT11NB = std::make_shared<TH1F>("MultNoiseMT11NB", "Multiplicity Noise strips - MT11 non-bending plane", 300, 0, 3000);
-  mMultNoiseMT12B = std::make_shared<TH1F>("MultNoiseMT12B", "Multiplicity Noise strips - MT12 bending plane", 300, 0, 3000);
-  mMultNoiseMT12NB = std::make_shared<TH1F>("MultNoiseMT12NB", "Multiplicity Noise strips - MT12 non-bending plane", 300, 0, 3000);
-  mMultNoiseMT21B = std::make_shared<TH1F>("MultNoiseMT21B", "Multiplicity Noise strips - MT21 bending plane", 300, 0, 3000);
-  mMultNoiseMT21NB = std::make_shared<TH1F>("MultNoiseMT21NB", "Multiplicity Noise strips - MT21 non-bending plane", 300, 0, 3000);
-  mMultNoiseMT22B = std::make_shared<TH1F>("MultNoiseMT22B", "Multiplicity Noise strips - MT22 bending plane", 300, 0, 3000);
-  mMultNoiseMT22NB = std::make_shared<TH1F>("MultNoiseMT22NB", "Multiplicity Noise strips - MT22 non-bending plane", 300, 0, 3000);
+  mMultNoiseMT11B = std::make_shared<TH1F>("MultNoiseMT11B", "Multiplicity Noise strips - MT11 bending plane", 300, 0, 300);
+  mMultNoiseMT11NB = std::make_shared<TH1F>("MultNoiseMT11NB", "Multiplicity Noise strips - MT11 non-bending plane", 300, 0, 300);
+  mMultNoiseMT12B = std::make_shared<TH1F>("MultNoiseMT12B", "Multiplicity Noise strips - MT12 bending plane", 300, 0, 300);
+  mMultNoiseMT12NB = std::make_shared<TH1F>("MultNoiseMT12NB", "Multiplicity Noise strips - MT12 non-bending plane", 300, 0, 300);
+  mMultNoiseMT21B = std::make_shared<TH1F>("MultNoiseMT21B", "Multiplicity Noise strips - MT21 bending plane", 300, 0, 300);
+  mMultNoiseMT21NB = std::make_shared<TH1F>("MultNoiseMT21NB", "Multiplicity Noise strips - MT21 non-bending plane", 300, 0, 300);
+  mMultNoiseMT22B = std::make_shared<TH1F>("MultNoiseMT22B", "Multiplicity Noise strips - MT22 bending plane", 300, 0, 300);
+  mMultNoiseMT22NB = std::make_shared<TH1F>("MultNoiseMT22NB", "Multiplicity Noise strips - MT22 non-bending plane", 300, 0, 300);
   getObjectsManager()->startPublishing(mMultNoiseMT11B.get());
   getObjectsManager()->startPublishing(mMultNoiseMT11NB.get());
   getObjectsManager()->startPublishing(mMultNoiseMT12B.get());
@@ -72,56 +79,56 @@ void CalibQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mMultNoiseMT22B.get());
   getObjectsManager()->startPublishing(mMultNoiseMT22NB.get());
 
-  mBendNoiseMap11 = std::make_shared<TH2F>("BendNoiseMap11", "Bending Noise Map MT11", 14, -7, 7, 576, 0, 9);
+  mBendNoiseMap11 = std::make_shared<TProfile2D>("BendNoiseMap11", "Bending Noise Map MT11", 14, -7, 7, 576, 0, 9);
   getObjectsManager()->startPublishing(mBendNoiseMap11.get());
   mBendNoiseMap11->GetXaxis()->SetTitle("Column");
   mBendNoiseMap11->GetYaxis()->SetTitle("Line");
   mBendNoiseMap11->SetOption("colz");
   mBendNoiseMap11->SetStats(0);
 
-  mBendNoiseMap12 = std::make_shared<TH2F>("BendNoiseMap12", "Bending Noise Map MT12", 14, -7, 7, 576, 0, 9);
+  mBendNoiseMap12 = std::make_shared<TProfile2D>("BendNoiseMap12", "Bending Noise Map MT12", 14, -7, 7, 576, 0, 9);
   getObjectsManager()->startPublishing(mBendNoiseMap12.get());
   mBendNoiseMap12->GetXaxis()->SetTitle("Column");
   mBendNoiseMap12->GetYaxis()->SetTitle("Line");
   mBendNoiseMap12->SetOption("colz");
   mBendNoiseMap12->SetStats(0);
 
-  mBendNoiseMap21 = std::make_shared<TH2F>("BendNoiseMap21", "Bending Noise Map MT21", 14, -7, 7, 576, 0, 9);
+  mBendNoiseMap21 = std::make_shared<TProfile2D>("BendNoiseMap21", "Bending Noise Map MT21", 14, -7, 7, 576, 0, 9);
   getObjectsManager()->startPublishing(mBendNoiseMap21.get());
   mBendNoiseMap21->GetXaxis()->SetTitle("Column");
   mBendNoiseMap21->GetYaxis()->SetTitle("Line");
   mBendNoiseMap21->SetOption("colz");
   mBendNoiseMap21->SetStats(0);
 
-  mBendNoiseMap22 = std::make_shared<TH2F>("BendNoiseMap22", "Bending Noise Map MT22", 14, -7, 7, 576, 0, 9);
+  mBendNoiseMap22 = std::make_shared<TProfile2D>("BendNoiseMap22", "Bending Noise Map MT22", 14, -7, 7, 576, 0, 9);
   getObjectsManager()->startPublishing(mBendNoiseMap22.get());
   mBendNoiseMap22->GetXaxis()->SetTitle("Column");
   mBendNoiseMap22->GetYaxis()->SetTitle("Line");
   mBendNoiseMap22->SetOption("colz");
   mBendNoiseMap22->SetStats(0);
 
-  mNBendNoiseMap11 = std::make_shared<TH2F>("NBendNoiseMap11", "Non-Bending Noise Map MT11", 224, -7, 7, 36, 0, 9);
+  mNBendNoiseMap11 = std::make_shared<TProfile2D>("NBendNoiseMap11", "Non-Bending Noise Map MT11", 224, -7, 7, 36, 0, 9);
   getObjectsManager()->startPublishing(mNBendNoiseMap11.get());
   mNBendNoiseMap11->GetXaxis()->SetTitle("Column");
   mNBendNoiseMap11->GetYaxis()->SetTitle("Line");
   mNBendNoiseMap11->SetOption("colz");
   mNBendNoiseMap11->SetStats(0);
 
-  mNBendNoiseMap12 = std::make_shared<TH2F>("NBendNoiseMap12", "Non-Bending Noise Map MT12", 224, -7, 7, 36, 0, 9);
+  mNBendNoiseMap12 = std::make_shared<TProfile2D>("NBendNoiseMap12", "Non-Bending Noise Map MT12", 224, -7, 7, 36, 0, 9);
   getObjectsManager()->startPublishing(mNBendNoiseMap12.get());
   mNBendNoiseMap12->GetXaxis()->SetTitle("Column");
   mNBendNoiseMap12->GetYaxis()->SetTitle("Line");
   mNBendNoiseMap12->SetOption("colz");
   mNBendNoiseMap12->SetStats(0);
 
-  mNBendNoiseMap21 = std::make_shared<TH2F>("NBendNoiseMap21", "Non-Bending Noise Map MT21", 224, -7, 7, 36, 0, 9);
+  mNBendNoiseMap21 = std::make_shared<TProfile2D>("NBendNoiseMap21", "Non-Bending Noise Map MT21", 224, -7, 7, 36, 0, 9);
   getObjectsManager()->startPublishing(mNBendNoiseMap21.get());
   mNBendNoiseMap21->GetXaxis()->SetTitle("Column");
   mNBendNoiseMap21->GetYaxis()->SetTitle("Line");
   mNBendNoiseMap21->SetOption("colz");
   mNBendNoiseMap21->SetStats(0);
 
-  mNBendNoiseMap22 = std::make_shared<TH2F>("NBendNoiseMap22", "Non-Bending Noise Map MT22", 224, -7, 7, 36, 0, 9);
+  mNBendNoiseMap22 = std::make_shared<TProfile2D>("NBendNoiseMap22", "Non-Bending Noise Map MT22", 224, -7, 7, 36, 0, 9);
   getObjectsManager()->startPublishing(mNBendNoiseMap22.get());
   mNBendNoiseMap22->GetXaxis()->SetTitle("Column");
   mNBendNoiseMap22->GetYaxis()->SetTitle("Line");
@@ -147,56 +154,56 @@ void CalibQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mMultDeadMT22B.get());
   getObjectsManager()->startPublishing(mMultDeadMT22NB.get());
 
-  mBendDeadMap11 = std::make_shared<TH2F>("BendDeadMap11", "Bending Dead Map MT11", 14, -7, 7, 576, 0, 9);
+  mBendDeadMap11 = std::make_shared<TProfile2D>("BendDeadMap11", "Bending Dead Map MT11", 14, -7, 7, 576, 0, 9);
   getObjectsManager()->startPublishing(mBendDeadMap11.get());
   mBendDeadMap11->GetXaxis()->SetTitle("Column");
   mBendDeadMap11->GetYaxis()->SetTitle("Line");
   mBendDeadMap11->SetOption("colz");
   mBendDeadMap11->SetStats(0);
 
-  mBendDeadMap12 = std::make_shared<TH2F>("BendDeadMap12", "Bending Dead Map MT12", 14, -7, 7, 576, 0, 9);
+  mBendDeadMap12 = std::make_shared<TProfile2D>("BendDeadMap12", "Bending Dead Map MT12", 14, -7, 7, 576, 0, 9);
   getObjectsManager()->startPublishing(mBendDeadMap12.get());
   mBendDeadMap12->GetXaxis()->SetTitle("Column");
   mBendDeadMap12->GetYaxis()->SetTitle("Line");
   mBendDeadMap12->SetOption("colz");
   mBendDeadMap12->SetStats(0);
 
-  mBendDeadMap21 = std::make_shared<TH2F>("BendDeadMap21", "Bending Dead Map MT21", 14, -7, 7, 576, 0, 9);
+  mBendDeadMap21 = std::make_shared<TProfile2D>("BendDeadMap21", "Bending Dead Map MT21", 14, -7, 7, 576, 0, 9);
   getObjectsManager()->startPublishing(mBendDeadMap21.get());
   mBendDeadMap21->GetXaxis()->SetTitle("Column");
   mBendDeadMap21->GetYaxis()->SetTitle("Line");
   mBendDeadMap21->SetOption("colz");
   mBendDeadMap21->SetStats(0);
 
-  mBendDeadMap22 = std::make_shared<TH2F>("BendDeadMap22", "Bending Dead Map MT22", 14, -7, 7, 576, 0, 9);
+  mBendDeadMap22 = std::make_shared<TProfile2D>("BendDeadMap22", "Bending Dead Map MT22", 14, -7, 7, 576, 0, 9);
   getObjectsManager()->startPublishing(mBendDeadMap22.get());
   mBendDeadMap22->GetXaxis()->SetTitle("Column");
   mBendDeadMap22->GetYaxis()->SetTitle("Line");
   mBendDeadMap22->SetOption("colz");
   mBendDeadMap22->SetStats(0);
 
-  mNBendDeadMap11 = std::make_shared<TH2F>("NBendDeadMap11", "Non-Bending Dead Map MT11", 224, -7, 7, 36, 0, 9);
+  mNBendDeadMap11 = std::make_shared<TProfile2D>("NBendDeadMap11", "Non-Bending Dead Map MT11", 224, -7, 7, 36, 0, 9);
   getObjectsManager()->startPublishing(mNBendDeadMap11.get());
   mNBendDeadMap11->GetXaxis()->SetTitle("Column");
   mNBendDeadMap11->GetYaxis()->SetTitle("Line");
   mNBendDeadMap11->SetOption("colz");
   mNBendDeadMap11->SetStats(0);
 
-  mNBendDeadMap12 = std::make_shared<TH2F>("NBendDeadMap12", "Non-Bending Dead Map MT12", 224, -7, 7, 36, 0, 9);
+  mNBendDeadMap12 = std::make_shared<TProfile2D>("NBendDeadMap12", "Non-Bending Dead Map MT12", 224, -7, 7, 36, 0, 9);
   getObjectsManager()->startPublishing(mNBendDeadMap12.get());
   mNBendDeadMap12->GetXaxis()->SetTitle("Column");
   mNBendDeadMap12->GetYaxis()->SetTitle("Line");
   mNBendDeadMap12->SetOption("colz");
   mNBendDeadMap12->SetStats(0);
 
-  mNBendDeadMap21 = std::make_shared<TH2F>("NBendDeadMap21", "Non-Bending Dead Map MT21", 224, -7, 7, 36, 0, 9);
+  mNBendDeadMap21 = std::make_shared<TProfile2D>("NBendDeadMap21", "Non-Bending Dead Map MT21", 224, -7, 7, 36, 0, 9);
   getObjectsManager()->startPublishing(mNBendDeadMap21.get());
   mNBendDeadMap21->GetXaxis()->SetTitle("Column");
   mNBendDeadMap21->GetYaxis()->SetTitle("Line");
   mNBendDeadMap21->SetOption("colz");
   mNBendDeadMap21->SetStats(0);
 
-  mNBendDeadMap22 = std::make_shared<TH2F>("NBendDeadMap22", "Non-Bending Dead Map MT22", 224, -7, 7, 36, 0, 9);
+  mNBendDeadMap22 = std::make_shared<TProfile2D>("NBendDeadMap22", "Non-Bending Dead Map MT22", 224, -7, 7, 36, 0, 9);
   getObjectsManager()->startPublishing(mNBendDeadMap22.get());
   mNBendDeadMap22->GetXaxis()->SetTitle("Column");
   mNBendDeadMap22->GetYaxis()->SetTitle("Line");
@@ -250,6 +257,7 @@ void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     // printf("========================================================== \n");
     // printf("%05d noiseROF with first entry %05zu and nentries %02zu , BC %05d, ORB %05d , EventType %02d\n", noiseROF, noiserof.firstEntry, noiserof.nEntries, noiserof.interactionRecord.bc, noiserof.interactionRecord.orbit, (int)noiserof.eventType);
     //    eventType::  Standard = 0, Calib = 1, FET = 2
+    mNbNoiseROF->Fill(0.5, 1.);
     noiseROF++;
     multNoiseMT11B = 0;
     multNoiseMT12B = 0;
@@ -300,91 +308,93 @@ void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
             shift = 0.25;
 
           for (int j = 0; j < 16; j++) {
-            if ((noise.patterns[board] & mask) != 0) {
-              double lineHitPos = linePos0 + (j * stripXSize);
-              int colj = j;
-              if (mMapping.getNStripsNBP(colId, deIndex) == 8)
-                colj = j * 2; // Bend with only 8 stripY
-              double colHitPos = colId + (colj * stripYSize);
-              // std::cout << " bit (j) =>>  " << j << "  stripXPos = "<< stripXPos <<"  lineHitPos = "<< lineHitPos << std::endl;
-              if (isRightSide) {
-                if (ichamber == 0) {
-                  if (board == 4) { // Non-Bend
-                    multNoiseMT11NB++;
-                    for (int ib = 0; ib < nZoneHistoY; ib++)
-                      mNBendNoiseMap11->Fill(colHitPos + 0.01, rpcLine + shift + (0.25 * ib), 1);
-                  } else { // Bend
-                    multNoiseMT11B++;
-                    mBendNoiseMap11->Fill(colId + 0.5, lineHitPos, 1);
-                  }
-                } else if (ichamber == 1) {
-                  if (board == 4) {
-                    multNoiseMT12NB++;
-                    for (int ib = 0; ib < nZoneHistoY; ib++)
-                      mNBendNoiseMap12->Fill(colHitPos + 0.01, rpcLine + shift + (0.25 * ib), 1);
-                  } else { // Bend
-                    multNoiseMT12B++;
-                    mBendNoiseMap12->Fill(colId + 0.5, lineHitPos, 1);
-                  }
-                } else if (ichamber == 2) {
-                  if (board == 4) {
-                    multNoiseMT21NB++;
-                    for (int ib = 0; ib < nZoneHistoY; ib++)
-                      mNBendNoiseMap21->Fill(colHitPos + 0.01, rpcLine + shift + (0.25 * ib), 1);
-                  } else { // Bend
-                    multNoiseMT21B++;
-                    mBendNoiseMap21->Fill(colId + 0.5, lineHitPos, 1);
-                  }
-                } else if (ichamber == 3) {
-                  if (board == 4) {
-                    multNoiseMT22NB++;
-                    for (int ib = 0; ib < nZoneHistoY; ib++)
-                      mNBendNoiseMap22->Fill(colHitPos + 0.01, rpcLine + shift + (0.25 * ib), 1);
-                  } else { // Bend
-                    multNoiseMT22B++;
-                    mBendNoiseMap22->Fill(colId + 0.5, lineHitPos, 1);
-                  }
+            int fired = 0;
+            if ((noise.patterns[board] & mask) != 0)
+              fired = 1;
+            double lineHitPos = linePos0 + (j * stripXSize);
+            int colj = j;
+            if (mMapping.getNStripsNBP(colId, deIndex) == 8)
+              colj = j * 2; // Bend with only 8 stripY
+            double colHitPos = colId + (colj * stripYSize);
+            // std::cout << " bit (j) =>>  " << j << "  stripXPos = "<< stripXPos <<"  lineHitPos = "<< lineHitPos << std::endl;
+            if (isRightSide) {
+              if (ichamber == 0) {
+                if (board == 4) { // Non-Bend
+                  multNoiseMT11NB++;
+                  for (int ib = 0; ib < nZoneHistoY; ib++)
+                    mNBendNoiseMap11->Fill(colHitPos + 0.01, rpcLine + shift + (0.25 * ib), fired);
+                } else { // Bend
+                  multNoiseMT11B++;
+                  mBendNoiseMap11->Fill(colId + 0.5, lineHitPos, fired);
                 }
-              } else {
-                if (ichamber == 0) {
-                  if (board == 4) { // Non-Bend
-                    multNoiseMT11NB++;
-                    for (int ib = 0; ib < nZoneHistoY; ib++)
-                      mNBendNoiseMap11->Fill(-colHitPos - 0.01, rpcLine + shift + (0.25 * ib), 1);
-                  } else { // Bend
-                    multNoiseMT11B++;
-                    mBendNoiseMap11->Fill(-colId - 0.5, lineHitPos, 1);
-                  }
-                } else if (ichamber == 1) {
-                  if (board == 4) {
-                    multNoiseMT12NB++;
-                    for (int ib = 0; ib < nZoneHistoY; ib++)
-                      mNBendNoiseMap12->Fill(-colHitPos - 0.01, rpcLine + shift + (0.25 * ib), 1);
-                  } else { // Bend
-                    multNoiseMT12B++;
-                    mBendNoiseMap12->Fill(-colId - 0.5, lineHitPos, 1);
-                  }
-                } else if (ichamber == 2) {
-                  if (board == 4) {
-                    multNoiseMT21NB++;
-                    for (int ib = 0; ib < nZoneHistoY; ib++)
-                      mNBendNoiseMap21->Fill(-colHitPos - 0.01, rpcLine + shift + (0.25 * ib), 1);
-                  } else { // Bend
-                    multNoiseMT21B++;
-                    mBendNoiseMap21->Fill(-colId - 0.5, lineHitPos, 1);
-                  }
-                } else if (ichamber == 3) {
-                  if (board == 4) {
-                    multNoiseMT22NB++;
-                    for (int ib = 0; ib < nZoneHistoY; ib++)
-                      mNBendNoiseMap22->Fill(-colHitPos - 0.01, rpcLine + shift + (0.25 * ib), 1);
-                  } else { // Bend
-                    multNoiseMT22B++;
-                    mBendNoiseMap22->Fill(-colId - 0.5, lineHitPos, 1);
-                  }
+              } else if (ichamber == 1) {
+                if (board == 4) {
+                  multNoiseMT12NB++;
+                  for (int ib = 0; ib < nZoneHistoY; ib++)
+                    mNBendNoiseMap12->Fill(colHitPos + 0.01, rpcLine + shift + (0.25 * ib), fired);
+                } else { // Bend
+                  multNoiseMT12B++;
+                  mBendNoiseMap12->Fill(colId + 0.5, lineHitPos, fired);
                 }
-              } // isRightSide
-            }   // noisePattern & mask
+              } else if (ichamber == 2) {
+                if (board == 4) {
+                  multNoiseMT21NB++;
+                  for (int ib = 0; ib < nZoneHistoY; ib++)
+                    mNBendNoiseMap21->Fill(colHitPos + 0.01, rpcLine + shift + (0.25 * ib), fired);
+                } else { // Bend
+                  multNoiseMT21B++;
+                  mBendNoiseMap21->Fill(colId + 0.5, lineHitPos, fired);
+                }
+              } else if (ichamber == 3) {
+                if (board == 4) {
+                  multNoiseMT22NB++;
+                  for (int ib = 0; ib < nZoneHistoY; ib++)
+                    mNBendNoiseMap22->Fill(colHitPos + 0.01, rpcLine + shift + (0.25 * ib), fired);
+                } else { // Bend
+                  multNoiseMT22B++;
+                  mBendNoiseMap22->Fill(colId + 0.5, lineHitPos, fired);
+                }
+              }
+            } else {
+              if (ichamber == 0) {
+                if (board == 4) { // Non-Bend
+                  multNoiseMT11NB++;
+                  for (int ib = 0; ib < nZoneHistoY; ib++)
+                    mNBendNoiseMap11->Fill(-colHitPos - 0.01, rpcLine + shift + (0.25 * ib), fired);
+                } else { // Bend
+                  multNoiseMT11B++;
+                  mBendNoiseMap11->Fill(-colId - 0.5, lineHitPos, fired);
+                }
+              } else if (ichamber == 1) {
+                if (board == 4) {
+                  multNoiseMT12NB++;
+                  for (int ib = 0; ib < nZoneHistoY; ib++)
+                    mNBendNoiseMap12->Fill(-colHitPos - 0.01, rpcLine + shift + (0.25 * ib), fired);
+                } else { // Bend
+                  multNoiseMT12B++;
+                  mBendNoiseMap12->Fill(-colId - 0.5, lineHitPos, fired);
+                }
+              } else if (ichamber == 2) {
+                if (board == 4) {
+                  multNoiseMT21NB++;
+                  for (int ib = 0; ib < nZoneHistoY; ib++)
+                    mNBendNoiseMap21->Fill(-colHitPos - 0.01, rpcLine + shift + (0.25 * ib), fired);
+                } else { // Bend
+                  multNoiseMT21B++;
+                  mBendNoiseMap21->Fill(-colId - 0.5, lineHitPos, fired);
+                }
+              } else if (ichamber == 3) {
+                if (board == 4) {
+                  multNoiseMT22NB++;
+                  for (int ib = 0; ib < nZoneHistoY; ib++)
+                    mNBendNoiseMap22->Fill(-colHitPos - 0.01, rpcLine + shift + (0.25 * ib), fired);
+                } else { // Bend
+                  multNoiseMT22B++;
+                  mBendNoiseMap22->Fill(-colId - 0.5, lineHitPos, fired);
+                }
+              }
+            } // isRightSide
+              //}   // noisePattern & mask
             mask <<= 1;
           } // pattern loop 1-16
         }   // noise.patterns[board] Bend or Non-Bend not empty
@@ -413,6 +423,7 @@ void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     // printf("========================================================== \n");
     // printf("%05d deadROF with first entry %05zu and nentries %02zu , BC %05d, ORB %05d , EventType %02d\n", deadROF, deadrof.firstEntry, deadrof.nEntries, deadrof.interactionRecord.bc, deadrof.interactionRecord.orbit, (int)deadrof.eventType);
     //   eventType::  Standard = 0, Calib = 1, FET = 2
+    mNbDeadROF->Fill(0.5, 1.);
     deadROF++;
 
     multDeadMT11B = 0;
@@ -470,93 +481,95 @@ void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
             shift = 0.25;
 
           for (int j = 0; j < 16; j++) {
-            if ((dead.patterns[board] & mask) != 0) {
-              double lineHitPos = linePos0 + (j * stripXSize);
+            int fired = 0;
+            if ((dead.patterns[board] & mask) != 0)
+              fired = 1;
+            double lineHitPos = linePos0 + (j * stripXSize);
 
-              int colj = j;
-              if (mMapping.getNStripsNBP(colId, deIndex) == 8)
-                colj = j * 2; // Bend with only 8 stripY
-              double colHitPos = colId + (colj * stripYSize);
-              // if (ichamber == 0)std::cout << "col = "<<colId<<" line = "<<linePos0 <<" board = "<<board<<" bit (j) =>>  " << j << "  lineHitPos = "<< lineHitPos << std::endl;
+            int colj = j;
+            if (mMapping.getNStripsNBP(colId, deIndex) == 8)
+              colj = j * 2; // Bend with only 8 stripY
+            double colHitPos = colId + (colj * stripYSize);
+            // if (ichamber == 0)std::cout << "col = "<<colId<<" line = "<<linePos0 <<" board = "<<board<<" bit (j) =>>  " << j << "  lineHitPos = "<< lineHitPos << std::endl;
 
-              if (isRightSide) {
-                if (ichamber == 0) {
-                  if (board == 4) { // Non-Bend
-                    multDeadMT11NB++;
-                    for (int ib = 0; ib < nZoneHistoY; ib++)
-                      mNBendDeadMap11->Fill(colHitPos + 0.01, rpcLine + shift + (0.25 * ib), 1);
-                  } else { // Bend
-                    multDeadMT11B++;
-                    mBendDeadMap11->Fill(colId + 0.5, lineHitPos, 1);
-                  }
-                } else if (ichamber == 1) {
-                  if (board == 4) {
-                    multDeadMT12NB++;
-                    for (int ib = 0; ib < nZoneHistoY; ib++)
-                      mNBendDeadMap12->Fill(colHitPos + 0.01, rpcLine + shift + (0.25 * ib), 1); // Non-Bend
-                  } else {                                                                       // Bend
-                    multDeadMT12B++;
-                    mBendDeadMap12->Fill(colId + 0.5, lineHitPos, 1);
-                  }
-                } else if (ichamber == 2) {
-                  if (board == 4) {
-                    multDeadMT21NB++;
-                    for (int ib = 0; ib < nZoneHistoY; ib++)
-                      mNBendDeadMap21->Fill(colHitPos + 0.01, rpcLine + shift + (0.25 * ib), 1); // Non-Bend
-                  } else {                                                                       // Bend
-                    multDeadMT21B++;
-                    mBendDeadMap21->Fill(colId + 0.5, lineHitPos, 1);
-                  }
-                } else if (ichamber == 3) {
-                  if (board == 4) {
-                    multDeadMT22NB++;
-                    for (int ib = 0; ib < nZoneHistoY; ib++)
-                      mNBendDeadMap22->Fill(colHitPos + 0.01, rpcLine + shift + (0.25 * ib), 1); // Non-Bend
-                  } else {                                                                       // Bend
-                    multDeadMT22B++;
-                    mBendDeadMap22->Fill(colId + 0.5, lineHitPos, 1);
-                  }
+            if (isRightSide) {
+              if (ichamber == 0) {
+                if (board == 4) { // Non-Bend
+                  multDeadMT11NB++;
+                  for (int ib = 0; ib < nZoneHistoY; ib++)
+                    mNBendDeadMap11->Fill(colHitPos + 0.01, rpcLine + shift + (0.25 * ib), fired);
+                } else { // Bend
+                  multDeadMT11B++;
+                  mBendDeadMap11->Fill(colId + 0.5, lineHitPos, fired);
                 }
-              } else {
-                if (ichamber == 0) {
-                  if (board == 4) {
-                    multDeadMT11NB++;
-                    for (int ib = 0; ib < nZoneHistoY; ib++)
-                      mNBendDeadMap11->Fill(-colHitPos - 0.01, rpcLine + shift + (0.25 * ib), 1); // Non-Bend
-                  } else {                                                                        // Bend
-                    multDeadMT11B++;
-                    mBendDeadMap11->Fill(-colId - 0.5, lineHitPos, 1);
-                  }
-                } else if (ichamber == 1) {
-                  if (board == 4) {
-                    multDeadMT12NB++;
-                    for (int ib = 0; ib < nZoneHistoY; ib++)
-                      mNBendDeadMap12->Fill(-colHitPos - 0.01, rpcLine + shift + (0.25 * ib), 1); // Non-Bend
-                  } else {                                                                        // Bend
-                    multDeadMT12B++;
-                    mBendDeadMap12->Fill(-colId - 0.5, lineHitPos, 1);
-                  }
-                } else if (ichamber == 2) {
-                  if (board == 4) {
-                    multDeadMT21NB++;
-                    for (int ib = 0; ib < nZoneHistoY; ib++)
-                      mNBendDeadMap21->Fill(-colHitPos - 0.01, rpcLine + shift + (0.25 * ib), 1); // Non-Bend
-                  } else {                                                                        // Bend
-                    multDeadMT21B++;
-                    mBendDeadMap21->Fill(-colId - 0.5, lineHitPos, 1);
-                  }
-                } else if (ichamber == 3) {
-                  if (board == 4) {
-                    multDeadMT22NB++;
-                    for (int ib = 0; ib < nZoneHistoY; ib++)
-                      mNBendDeadMap22->Fill(-colHitPos - 0.01, rpcLine + shift + (0.25 * ib), 1); // Non-Bend
-                  } else {                                                                        // Bend
-                    multDeadMT22B++;
-                    mBendDeadMap22->Fill(-colId - 0.5, lineHitPos, 1);
-                  }
+              } else if (ichamber == 1) {
+                if (board == 4) {
+                  multDeadMT12NB++;
+                  for (int ib = 0; ib < nZoneHistoY; ib++)
+                    mNBendDeadMap12->Fill(colHitPos + 0.01, rpcLine + shift + (0.25 * ib), fired); // Non-Bend
+                } else {                                                                           // Bend
+                  multDeadMT12B++;
+                  mBendDeadMap12->Fill(colId + 0.5, lineHitPos, fired);
                 }
-              } // IsRightSide
-            }   // Dead.pattern & mask
+              } else if (ichamber == 2) {
+                if (board == 4) {
+                  multDeadMT21NB++;
+                  for (int ib = 0; ib < nZoneHistoY; ib++)
+                    mNBendDeadMap21->Fill(colHitPos + 0.01, rpcLine + shift + (0.25 * ib), fired); // Non-Bend
+                } else {                                                                           // Bend
+                  multDeadMT21B++;
+                  mBendDeadMap21->Fill(colId + 0.5, lineHitPos, fired);
+                }
+              } else if (ichamber == 3) {
+                if (board == 4) {
+                  multDeadMT22NB++;
+                  for (int ib = 0; ib < nZoneHistoY; ib++)
+                    mNBendDeadMap22->Fill(colHitPos + 0.01, rpcLine + shift + (0.25 * ib), fired); // Non-Bend
+                } else {                                                                           // Bend
+                  multDeadMT22B++;
+                  mBendDeadMap22->Fill(colId + 0.5, lineHitPos, fired);
+                }
+              }
+            } else {
+              if (ichamber == 0) {
+                if (board == 4) {
+                  multDeadMT11NB++;
+                  for (int ib = 0; ib < nZoneHistoY; ib++)
+                    mNBendDeadMap11->Fill(-colHitPos - 0.01, rpcLine + shift + (0.25 * ib), fired); // Non-Bend
+                } else {                                                                            // Bend
+                  multDeadMT11B++;
+                  mBendDeadMap11->Fill(-colId - 0.5, lineHitPos, fired);
+                }
+              } else if (ichamber == 1) {
+                if (board == 4) {
+                  multDeadMT12NB++;
+                  for (int ib = 0; ib < nZoneHistoY; ib++)
+                    mNBendDeadMap12->Fill(-colHitPos - 0.01, rpcLine + shift + (0.25 * ib), fired); // Non-Bend
+                } else {                                                                            // Bend
+                  multDeadMT12B++;
+                  mBendDeadMap12->Fill(-colId - 0.5, lineHitPos, fired);
+                }
+              } else if (ichamber == 2) {
+                if (board == 4) {
+                  multDeadMT21NB++;
+                  for (int ib = 0; ib < nZoneHistoY; ib++)
+                    mNBendDeadMap21->Fill(-colHitPos - 0.01, rpcLine + shift + (0.25 * ib), fired); // Non-Bend
+                } else {                                                                            // Bend
+                  multDeadMT21B++;
+                  mBendDeadMap21->Fill(-colId - 0.5, lineHitPos, fired);
+                }
+              } else if (ichamber == 3) {
+                if (board == 4) {
+                  multDeadMT22NB++;
+                  for (int ib = 0; ib < nZoneHistoY; ib++)
+                    mNBendDeadMap22->Fill(-colHitPos - 0.01, rpcLine + shift + (0.25 * ib), fired); // Non-Bend
+                } else {                                                                            // Bend
+                  multDeadMT22B++;
+                  mBendDeadMap22->Fill(-colId - 0.5, lineHitPos, fired);
+                }
+              }
+            } // IsRightSide
+              //}   // Dead.pattern & mask
             mask <<= 1;
           } // loop pattern 1-16
         }   // Dead.patterns[board] Bend or Non-Bend not empty
@@ -595,6 +608,10 @@ void CalibQcTask::reset()
   // clean all the monitor objects here
 
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+
+  mNbTimeFrame->Reset();
+  mNbNoiseROF->Reset();
+  mNbDeadROF->Reset();
 
   mMultNoiseMT11B->Reset();
   mMultNoiseMT11NB->Reset();
