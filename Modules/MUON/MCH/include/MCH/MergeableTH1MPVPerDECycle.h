@@ -32,6 +32,7 @@
 #else
 #include "MCHBase/Digit.h"
 #endif
+#include "MCHConstants/DetectionElements.h"
 
 using namespace std;
 namespace o2::quality_control_modules::muonchambers
@@ -56,8 +57,8 @@ class MergeableTH1MPVPerDECycle : public TH1F, public o2::mergers::MergeInterfac
   ~MergeableTH1MPVPerDECycle() override = default;
 
   void merge(MergeInterface* const other) override
-  { //FIXME
-    for (auto de : o2::mch::raw::deIdsForAllMCH) {
+  { // FIXME
+    for (auto de : o2::mch::constants::deIdsForAllMCH) {
       auto hnumMap = dynamic_cast<const MergeableTH1MPVPerDECycle* const>(other)->getNum();
       auto hnum = hnumMap.find(de);
       if ((hnum != dynamic_cast<const MergeableTH1MPVPerDECycle* const>(other)->getNum().end()) && (hnum->second != NULL)) {
@@ -78,15 +79,15 @@ class MergeableTH1MPVPerDECycle : public TH1F, public o2::mergers::MergeInterfac
   }
 
   void update()
-  { //FIXME
+  { // FIXME
     const char* name = this->GetName();
     const char* title = this->GetTitle();
     Reset();
     SetNameTitle(name, title);
 
-    TF1* f1 = new TF1("f1", "landau", 200, 5000); //1650V [200,5k]    1700V [400,10k]
+    TF1* f1 = new TF1("f1", "landau", 200, 5000); // 1650V [200,5k]    1700V [400,10k]
 
-    for (auto de : o2::mch::raw::deIdsForAllMCH) {
+    for (auto de : o2::mch::constants::deIdsForAllMCH) {
       auto hLandauCycle = mhistosCharge.find(de);
       if ((hLandauCycle != mhistosCharge.end()) && (hLandauCycle->second != NULL)) {
 
@@ -124,4 +125,4 @@ class MergeableTH1MPVPerDECycle : public TH1F, public o2::mergers::MergeInterfac
 
 } // namespace o2::quality_control_modules::muonchambers
 
-#endif //O2_MERGEABLETH1MPVPERDECYCLE_H
+#endif // O2_MERGEABLETH1MPVPERDECYCLE_H

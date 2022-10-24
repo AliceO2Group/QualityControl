@@ -105,7 +105,7 @@ void PhysicsTaskPreclusters::initialize(o2::framework::InitContext& /*ctx*/)
   mHistogramDenST345->init();
   mAllHistograms.push_back(mHistogramDenST345->getHist());
 
-  for (auto de : o2::mch::raw::deIdsForAllMCH) {
+  for (auto de : o2::mch::constants::deIdsForAllMCH) {
 
     auto h = std::make_shared<TH1F>(TString::Format("Expert/%sCluster_Charge_%03d", getHistoPath(de).c_str(), de),
                                     TString::Format("Cluster charge (DE%03d)", de), 1000, 0, 50000);
@@ -536,7 +536,7 @@ void PhysicsTaskPreclusters::computePseudoEfficiency()
   // update mergeable ratios
   mHistogramPseudoeffElec->update();
 
-  for (auto de : o2::mch::raw::deIdsForAllMCH) {
+  for (auto de : o2::mch::constants::deIdsForAllMCH) {
     for (int i = 0; i < 2; i++) {
       auto h = mHistogramPseudoeffXY[i].find(de);
       if ((h != mHistogramPseudoeffXY[i].end()) && (h->second != nullptr)) {

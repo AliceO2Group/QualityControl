@@ -36,6 +36,7 @@
 #include <Framework/InputRecord.h>
 #include <CommonConstants/LHCConstants.h>
 #include <DetectorsRaw/HBFUtils.h>
+#include "MCHConstants/DetectionElements.h"
 
 using namespace std;
 using namespace o2::mch::raw;
@@ -155,7 +156,7 @@ void PhysicsTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   publishObject(mHistogramAmplitudeVsSamples, "colz", false, true);
 
   // Histograms in detector coordinates
-  for (auto de : o2::mch::raw::deIdsForAllMCH) {
+  for (auto de : o2::mch::constants::deIdsForAllMCH) {
     auto h = std::make_shared<TH1F>(TString::Format("Expert/%sADCamplitude_DE%03d", getHistoPath(de).c_str(), de),
                                     TString::Format("ADC amplitude (DE%03d)", de), 5000, 0, 5000);
     mHistogramADCamplitudeDE.insert(make_pair(de, h));
@@ -454,7 +455,7 @@ void PhysicsTaskDigits::endOfCycle()
   // update mergeable ratios
   mHistogramOccupancyElec->update();
 
-  for (auto de : o2::mch::raw::deIdsForAllMCH) {
+  for (auto de : o2::mch::constants::deIdsForAllMCH) {
     for (int i = 0; i < 2; i++) {
       auto h = mHistogramOccupancyDE[i].find(de);
       if ((h != mHistogramOccupancyDE[i].end()) && (h->second != NULL)) {
