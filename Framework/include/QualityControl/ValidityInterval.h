@@ -17,6 +17,7 @@
 #ifndef QUALITYCONTROL_VALIDITYINTERVAL_H
 #define QUALITYCONTROL_VALIDITYINTERVAL_H
 
+#include <limits>
 #include <MathUtils/detail/Bracket.h>
 
 namespace o2::quality_control::core
