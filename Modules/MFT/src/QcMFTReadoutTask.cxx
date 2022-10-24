@@ -28,6 +28,7 @@
 // Quality Control
 #include "QualityControl/QcInfoLogger.h"
 #include "MFT/QcMFTReadoutTask.h"
+#include "MFT/QcMFTUtilTables.h"
 
 using namespace o2::framework;
 using namespace o2::header;
@@ -113,6 +114,88 @@ void QcMFTReadoutTask::initialize(o2::framework::InitContext& /*ctx*/)
       ->SetBinLabel(i + 1, Form("Chip %i:h%d-d%d-f%d-z%d-tr%d", i, chipMapData[i].half,
                                 chipMapData[i].disk, face, chipMapData[i].zone, chipMapData[i].cable));
   }
+
+  // Defining summary histograms per zone
+  mZoneSummaryChipWarning = std::make_unique<TH2F>(
+    "mZoneSummaryChipWarning",
+    "Summary of chips in fault per zone;;",
+    10, -0.5, 9.5, 8, -0.5, 7.5);
+  mZoneSummaryChipWarning->GetXaxis()->SetBinLabel(1, "d0-f0");
+  mZoneSummaryChipWarning->GetXaxis()->SetBinLabel(2, "d0-f1");
+  mZoneSummaryChipWarning->GetXaxis()->SetBinLabel(3, "d1-f0");
+  mZoneSummaryChipWarning->GetXaxis()->SetBinLabel(4, "d1-f1");
+  mZoneSummaryChipWarning->GetXaxis()->SetBinLabel(5, "d2-f0");
+  mZoneSummaryChipWarning->GetXaxis()->SetBinLabel(6, "d2-f1");
+  mZoneSummaryChipWarning->GetXaxis()->SetBinLabel(7, "d3-f0");
+  mZoneSummaryChipWarning->GetXaxis()->SetBinLabel(8, "d3-f1");
+  mZoneSummaryChipWarning->GetXaxis()->SetBinLabel(9, "d4-f0");
+  mZoneSummaryChipWarning->GetXaxis()->SetBinLabel(10, "d4-f1");
+  mZoneSummaryChipWarning->GetYaxis()->SetBinLabel(1, "h0-z0");
+  mZoneSummaryChipWarning->GetYaxis()->SetBinLabel(2, "h0-z1");
+  mZoneSummaryChipWarning->GetYaxis()->SetBinLabel(3, "h0-z2");
+  mZoneSummaryChipWarning->GetYaxis()->SetBinLabel(4, "h0-z3");
+  mZoneSummaryChipWarning->GetYaxis()->SetBinLabel(5, "h1-z0");
+  mZoneSummaryChipWarning->GetYaxis()->SetBinLabel(6, "h1-z1");
+  mZoneSummaryChipWarning->GetYaxis()->SetBinLabel(7, "h1-z2");
+  mZoneSummaryChipWarning->GetYaxis()->SetBinLabel(8, "h1-z3");
+  mZoneSummaryChipWarning->SetStats(0);
+  getObjectsManager()->startPublishing(mZoneSummaryChipWarning.get());
+  getObjectsManager()->setDefaultDrawOptions(mZoneSummaryChipWarning.get(), "colz");
+
+  mZoneSummaryChipError = std::make_unique<TH2F>(
+    "mZoneSummaryChipError",
+    "Summary of chips in error per zone;;",
+    10, -0.5, 9.5, 8, -0.5, 7.5);
+  mZoneSummaryChipError->GetXaxis()->SetBinLabel(1, "d0-f0");
+  mZoneSummaryChipError->GetXaxis()->SetBinLabel(2, "d0-f1");
+  mZoneSummaryChipError->GetXaxis()->SetBinLabel(3, "d1-f0");
+  mZoneSummaryChipError->GetXaxis()->SetBinLabel(4, "d1-f1");
+  mZoneSummaryChipError->GetXaxis()->SetBinLabel(5, "d2-f0");
+  mZoneSummaryChipError->GetXaxis()->SetBinLabel(6, "d2-f1");
+  mZoneSummaryChipError->GetXaxis()->SetBinLabel(7, "d3-f0");
+  mZoneSummaryChipError->GetXaxis()->SetBinLabel(8, "d3-f1");
+  mZoneSummaryChipError->GetXaxis()->SetBinLabel(9, "d4-f0");
+  mZoneSummaryChipError->GetXaxis()->SetBinLabel(10, "d4-f1");
+  mZoneSummaryChipError->GetYaxis()->SetBinLabel(1, "h0-z0");
+  mZoneSummaryChipError->GetYaxis()->SetBinLabel(2, "h0-z1");
+  mZoneSummaryChipError->GetYaxis()->SetBinLabel(3, "h0-z2");
+  mZoneSummaryChipError->GetYaxis()->SetBinLabel(4, "h0-z3");
+  mZoneSummaryChipError->GetYaxis()->SetBinLabel(5, "h1-z0");
+  mZoneSummaryChipError->GetYaxis()->SetBinLabel(6, "h1-z1");
+  mZoneSummaryChipError->GetYaxis()->SetBinLabel(7, "h1-z2");
+  mZoneSummaryChipError->GetYaxis()->SetBinLabel(8, "h1-z3");
+  mZoneSummaryChipError->SetStats(0);
+  getObjectsManager()->startPublishing(mZoneSummaryChipError.get());
+  getObjectsManager()->setDefaultDrawOptions(mZoneSummaryChipError.get(), "colz");
+
+  mZoneSummaryChipFault = std::make_unique<TH2F>(
+    "mZoneSummaryChipFault",
+    "Summary of chips in fault per zone;;",
+    10, -0.5, 9.5, 8, -0.5, 7.5);
+  mZoneSummaryChipFault->GetXaxis()->SetBinLabel(1, "d0-f0");
+  mZoneSummaryChipFault->GetXaxis()->SetBinLabel(2, "d0-f1");
+  mZoneSummaryChipFault->GetXaxis()->SetBinLabel(3, "d1-f0");
+  mZoneSummaryChipFault->GetXaxis()->SetBinLabel(4, "d1-f1");
+  mZoneSummaryChipFault->GetXaxis()->SetBinLabel(5, "d2-f0");
+  mZoneSummaryChipFault->GetXaxis()->SetBinLabel(6, "d2-f1");
+  mZoneSummaryChipFault->GetXaxis()->SetBinLabel(7, "d3-f0");
+  mZoneSummaryChipFault->GetXaxis()->SetBinLabel(8, "d3-f1");
+  mZoneSummaryChipFault->GetXaxis()->SetBinLabel(9, "d4-f0");
+  mZoneSummaryChipFault->GetXaxis()->SetBinLabel(10, "d4-f1");
+  mZoneSummaryChipFault->GetYaxis()->SetBinLabel(1, "h0-z0");
+  mZoneSummaryChipFault->GetYaxis()->SetBinLabel(2, "h0-z1");
+  mZoneSummaryChipFault->GetYaxis()->SetBinLabel(3, "h0-z2");
+  mZoneSummaryChipFault->GetYaxis()->SetBinLabel(4, "h0-z3");
+  mZoneSummaryChipFault->GetYaxis()->SetBinLabel(5, "h1-z0");
+  mZoneSummaryChipFault->GetYaxis()->SetBinLabel(6, "h1-z1");
+  mZoneSummaryChipFault->GetYaxis()->SetBinLabel(7, "h1-z2");
+  mZoneSummaryChipFault->GetYaxis()->SetBinLabel(8, "h1-z3");
+  mZoneSummaryChipFault->SetStats(0);
+  getObjectsManager()->startPublishing(mZoneSummaryChipFault.get());
+  getObjectsManager()->setDefaultDrawOptions(mZoneSummaryChipFault.get(), "colz");
+
+  // get map data for summary histograms per zone
+  getChipMapData();
 }
 
 void QcMFTReadoutTask::startOfActivity(Activity& /*activity*/)
@@ -156,12 +239,15 @@ void QcMFTReadoutTask::monitorData(o2::framework::ProcessingContext& ctx)
       uint16_t ddwIndex = ddw->indexWord.indexBits.id;
       if (ddwIndex == 0xE4) { // it is a diagnostic data word
         // fill histogram bin with #DDW
-        mDDWSummary->Fill(-1);         // counter stored in the underflow bin!
-        mSummaryChipOk->Fill(-1);      // counter stored in the underflow bin!
-        mSummaryChipWarning->Fill(-1); // counter stored in the underflow bin!
-        mSummaryChipError->Fill(-1);   // counter stored in the underflow bin!
-        mSummaryChipFault->Fill(-1);   // counter stored in the underflow bin!
-        mRDHSummary->Fill(-1);         // counter stored in the underflow bin!
+        mDDWSummary->Fill(-1);                 // counter stored in the underflow bin!
+        mSummaryChipOk->Fill(-1);              // counter stored in the underflow bin!
+        mSummaryChipWarning->Fill(-1);         // counter stored in the underflow bin!
+        mSummaryChipError->Fill(-1);           // counter stored in the underflow bin!
+        mSummaryChipFault->Fill(-1);           // counter stored in the underflow bin!
+        mZoneSummaryChipWarning->Fill(-1, -1); // counter stored in the underflow bin!
+        mZoneSummaryChipError->Fill(-1, -1);   // counter stored in the underflow bin!
+        mZoneSummaryChipFault->Fill(-1, -1);   // counter stored in the underflow bin!
+        mRDHSummary->Fill(-1);                 // counter stored in the underflow bin!
         uint64_t ddwLaneStatus = ddw->laneWord.laneBits.laneStatus;
         uint16_t rdhFeeIndex = rdh->feeId;
         int RUindex = (rdhFeeIndex & 127); // look only at the rightmost 7 bits
@@ -173,6 +259,9 @@ void QcMFTReadoutTask::monitorData(o2::framework::ProcessingContext& ctx)
             continue;
           // get the two bits corresponding to the lane i
           int MFTlaneStatus = ((ddwLaneStatus >> (i * 2)) & (3));
+          // get zone for summary histos
+          int xBin = mDisk[mChipIndex[idx]] * 2 + mFace[mChipIndex[idx]];
+          int yBin = mZone[mChipIndex[idx]] + mHalf[mChipIndex[idx]] * 4;
           // fill the info
           if (MFTlaneStatus == 0) {
             mSummaryChipOk->Fill(mChipIndex[idx]);
@@ -180,13 +269,16 @@ void QcMFTReadoutTask::monitorData(o2::framework::ProcessingContext& ctx)
           if (MFTlaneStatus == 1) {
             mSummaryChipWarning->Fill(mChipIndex[idx]);
             mDDWSummary->Fill(1);
+            mZoneSummaryChipWarning->Fill(xBin, yBin);
           }
           if (MFTlaneStatus == 2) {
             mSummaryChipError->Fill(mChipIndex[idx]);
+            mZoneSummaryChipError->Fill(xBin, yBin);
             mDDWSummary->Fill(2);
           }
           if (MFTlaneStatus == 3) {
             mSummaryChipFault->Fill(mChipIndex[idx]);
+            mZoneSummaryChipFault->Fill(xBin, yBin);
             mDDWSummary->Fill(3);
           }
         } // end loop over lanes
@@ -215,6 +307,9 @@ void QcMFTReadoutTask::reset()
   mSummaryChipFault->Reset();
   mSummaryChipWarning->Reset();
   mSummaryChipOk->Reset();
+  mZoneSummaryChipWarning->Reset();
+  mZoneSummaryChipError->Reset();
+  mZoneSummaryChipFault->Reset();
   mRDHSummary->Reset();
 }
 
@@ -237,6 +332,26 @@ void QcMFTReadoutTask::generateChipIndex()
     int k = chipMapData[i].cable;
     int idx = j * nLanes + k;
     mChipIndex[idx] = chipMapData[i].globalChipSWID;
+  }
+}
+
+void QcMFTReadoutTask::getChipMapData()
+{
+  const o2::itsmft::ChipMappingMFT mapMFT;
+  auto chipMapData = mapMFT.getChipMappingData();
+  QcMFTUtilTables MFTTable;
+
+  for (int i = 0; i < 936; i++) {
+    mHalf[i] = chipMapData[i].half;
+    mDisk[i] = chipMapData[i].disk;
+    mLayer[i] = chipMapData[i].layer;
+    mFace[i] = mLayer[i] % 2;
+    mZone[i] = chipMapData[i].zone;
+    mSensor[i] = chipMapData[i].localChipSWID;
+    mTransID[i] = chipMapData[i].cable;
+    mLadder[i] = MFTTable.mLadder[i];
+    mX[i] = MFTTable.mX[i];
+    mY[i] = MFTTable.mY[i];
   }
 }
 

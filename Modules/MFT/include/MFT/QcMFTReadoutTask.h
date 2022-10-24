@@ -20,6 +20,9 @@
 #ifndef QC_MFT_READOUT_TASK_H
 #define QC_MFT_READOUT_TASK_H
 
+// O2
+#include <ITSMFTReconstruction/ChipMappingMFT.h>
+
 // Quality Control
 #include "QualityControl/TaskInterface.h"
 
@@ -71,6 +74,17 @@ class QcMFTReadoutTask /*final*/ : public TaskInterface // todo add back the "fi
   const int maxRUidx = 104;
   std::array<int, (104 * 25)> mChipIndex;
 
+  int mHalf[936] = { 0 };
+  int mDisk[936] = { 0 };
+  int mFace[936] = { 0 };
+  int mZone[936] = { 0 };
+  int mSensor[936] = { 0 };
+  int mTransID[936] = { 0 };
+  int mLayer[936] = { 0 };
+  int mLadder[936] = { 0 };
+  float mX[936] = { 0 };
+  float mY[936] = { 0 };
+
   // histos
   std::unique_ptr<TH1F> mRDHSummary = nullptr;
   std::unique_ptr<TH1F> mDDWSummary = nullptr;
@@ -78,9 +92,15 @@ class QcMFTReadoutTask /*final*/ : public TaskInterface // todo add back the "fi
   std::unique_ptr<TH1F> mSummaryChipWarning = nullptr;
   std::unique_ptr<TH1F> mSummaryChipError = nullptr;
   std::unique_ptr<TH1F> mSummaryChipFault = nullptr;
+  std::unique_ptr<TH2F> mZoneSummaryChipWarning = nullptr;
+  std::unique_ptr<TH2F> mZoneSummaryChipError = nullptr;
+  std::unique_ptr<TH2F> mZoneSummaryChipFault = nullptr;
 
   // maps RU+lane to Chip
   void generateChipIndex();
+
+  // chip map data for summary histogram per zone
+  void getChipMapData();
 };
 
 } // namespace o2::quality_control_modules::mft
