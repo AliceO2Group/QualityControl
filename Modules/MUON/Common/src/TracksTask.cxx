@@ -17,10 +17,8 @@
 #include <DataFormatsMCH/Digit.h>
 #include <DataFormatsMCH/ROFRecord.h>
 #include <DataFormatsMCH/TrackMCH.h>
-#include <DetectorsBase/GeometryManager.h>
 #include <Framework/DataRefUtils.h>
 #include <Framework/InputRecord.h>
-#include <MCHGeometryTransformer/Transformations.h>
 #include <ReconstructionDataFormats/TrackMCHMID.h>
 #include <ReconstructionDataFormats/GlobalFwdTrack.h>
 #include <gsl/span>
@@ -47,11 +45,6 @@ bool TracksTask::getBooleanParam(const char* paramName) const
 void TracksTask::initialize(o2::framework::InitContext& /*ic*/)
 {
   ILOG(Info, Support) << "initialize TracksTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
-
-  ILOG(Info, Support) << "loading geometry" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
-  if (!o2::base::GeometryManager::isGeometryLoaded()) {
-    TaskInterface::retrieveConditionAny<TObject>("GLO/Config/Geometry");
-  }
 
   double maxTracksPerTF = 400;
 
