@@ -76,7 +76,7 @@ void QcInfoLogger::init(const std::string& facility,
   ILOG_INST.filterDiscardDebug(discardFileParameters.debug);
   ILOG_INST.filterDiscardLevel(discardFileParameters.fromLevel);
   if (!discardFileParameters.discardFile.empty()) {
-    ILOG_INST.filterDiscardSetFile(discardFileParameters.discardFile.c_str(), discardFileParameters.rotateMaxBytes, discardFileParameters.rotateMaxFiles, true /*Do not store Debug messages in file*/);
+    ILOG_INST.filterDiscardSetFile(discardFileParameters.discardFile.c_str(), discardFileParameters.rotateMaxBytes, discardFileParameters.rotateMaxFiles, 0, true /*Do not store Debug messages in file*/);
   }
   ILOG(Debug, Ops) << "QC infologger initialized" << ENDM;
   ILOG(Debug, Support) << "   Discard debug ? " << discardFileParameters.debug << ENDM;
