@@ -39,7 +39,13 @@ ServiceDiscovery::ServiceDiscovery(const std::string& url, const std::string& na
     mHealthUrl = GetDefaultUrl();
   }
   if (_register("")) {
-    mHealthThread = std::thread([=] { runHealthServer(std::stoi(mHealthUrl.substr(mHealthUrl.find(":") + 1))); });
+    mHealthThread = std::thread([=] {
+      #ifdef __linux__
+      std::string threadName = "QC/SrvcDiscov";
+      pthread_setname_np(pthread_self(), threadName.c_str());
+      #endif
+      runHealthServer(std::stoi(mHealthUrl.substr(mHealthUrl.find(":") + 1)));
+    });
   }
 }
 
