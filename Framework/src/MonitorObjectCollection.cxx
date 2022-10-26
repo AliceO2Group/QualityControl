@@ -17,6 +17,7 @@
 #include "QualityControl/MonitorObjectCollection.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/ObjectMetadataKeys.h"
 
 #include <Mergers/MergerAlgorithm.h>
 
@@ -32,6 +33,7 @@ void MonitorObjectCollection::merge(mergers::MergeInterface* const other)
     throw std::runtime_error("The other object is not a MonitorObjectCollection");
   }
 
+  bool reportedMismatchingRunNumbers = false;
   auto otherIterator = otherCollection->MakeIterator();
   while (auto otherObject = otherIterator->Next()) {
     auto otherObjectName = otherObject->GetName();
@@ -41,12 +43,20 @@ void MonitorObjectCollection::merge(mergers::MergeInterface* const other)
       // A corresponding object in the target collection was found, we try to merge.
       auto otherMO = dynamic_cast<MonitorObject*>(otherObject);
       auto targetMO = dynamic_cast<MonitorObject*>(targetObject);
-      if (otherMO && targetMO) {
-        // That might be another collection or a concrete object to be merged, we walk on the collection recursively.
-        algorithm::merge(targetMO->getObject(), otherMO->getObject());
-      } else {
+      if (!otherMO || !targetMO) {
         throw std::runtime_error("The target object or the other object could not be casted to MonitorObject.");
       }
+      if (!reportedMismatchingRunNumbers && targetMO->getActivity().mId != otherMO->getActivity().mId) {
+        ILOG(Error, Support) << "The run number of the input object '" << otherMO->GetName() << "' ("
+                             << otherMO->getActivity().mId << ") "
+                             << "does not match the run number of the target object '"
+                             << targetMO->GetName() << "' (" << targetMO->getActivity().mId
+                             << "). Trying to continue, but this should be understood. Will not report more mismatches in this collection."
+                             << ENDM;
+        reportedMismatchingRunNumbers = true;
+      }
+      // That might be another collection or a concrete object to be merged, we walk on the collection recursively.
+      algorithm::merge(targetMO->getObject(), otherMO->getObject());
     } else {
       // A corresponding object in the target collection could not be found.
       // We prefer to clone instead of passing the pointer in order to simplify deleting the `other`.
@@ -62,7 +72,8 @@ void MonitorObjectCollection::postDeserialization()
   while (auto obj = it->Next()) {
     auto mo = dynamic_cast<MonitorObject*>(obj);
     if (mo == nullptr) {
-      ILOG(Warning) << "Could not cast an object of type '" << obj->ClassName() << "' in MonitorObjectCollection to MonitorObject, skipping." << ENDM;
+      ILOG(Warning) << "Could not cast an object of type '" << obj->ClassName()
+                    << "' in MonitorObjectCollection to MonitorObject, skipping." << ENDM;
       continue;
     }
     mo->setIsOwner(true);
