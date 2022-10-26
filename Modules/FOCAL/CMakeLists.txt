@@ -20,8 +20,7 @@ install(TARGETS O2QcFOCAL
 add_root_dictionary(O2QcFOCAL
   HEADERS
   include/FOCAL/TestbeamRawTask.h
-  LINKDEF include/FOCAL/LinkDef.h
-  BASENAME O2QcFOCAL)
+  LINKDEF include/FOCAL/LinkDef.h)
 
 install(
   DIRECTORY etc DESTINATION Modules/FOCAL
