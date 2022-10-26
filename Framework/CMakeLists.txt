@@ -332,6 +332,9 @@ set_property(TEST functional_test PROPERTY TIMEOUT 45)
 
 include(GenerateUniquePort)
 o2_generate_unique_port(UNIQUE_PORT_1)
+# UNIQUE_PORT_2 is UNIQUE_PORT_1 + 1
+# since we are guaranteed UNIQUE_PORT_1 is even.
+math(EXPR UNIQUE_PORT_2 "${UNIQUE_PORT_1} + 1")
 o2_generate_unique_port(UNIQUE_PORT_2)
 configure_file(multinode-test.json.in ${CMAKE_BINARY_DIR}/tests/multinode-test.json)
 add_test(NAME multinode_test COMMAND o2-qc-multinode-test.sh)

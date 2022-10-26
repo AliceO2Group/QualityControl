@@ -21,6 +21,13 @@ for sig in INT QUIT HUP TERM; do
 done
 trap cleanup EXIT
 
+if [ -z "$UNIQUE_PORT_1" ]
+then
+  echo "UNIQUE_PORT_1 must be set when calling o2-qc-multinode-test.sh"
+  exit 1
+fi
+UNIQUE_TEST_NAME="multinode-test-${UNIQUE_PORT_1}"
+
 function check_if_port_in_use() {
   OS=`uname`
   if [[ $OS == Linux ]] ; then
@@ -42,29 +49,21 @@ function delete_data() {
   curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/QO/MultiNodeLocalTest
   curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/QO/MultiNodeRemoteTest
 
-  rm -f /tmp/multinode_test_obj${UNIQUE_PORT_1}.root
-  rm -f /tmp/multinode_test_obj${UNIQUE_PORT_2}.root
+  cd /tmp
+  # mv in /tmp is guaranteed to be atomic
+  mv -f /tmp/${UNIQUE_TEST_NAME}{,.todelete}
+  rm -rf /tmp/${UNIQUE_TEST_NAME}.todelete
 }
 
-if [ -z "$UNIQUE_PORT_1" ]
-then
-  echo "UNIQUE_PORT_1 must be set when calling o2-qc-multinode-test.sh"
-  exit 1
-fi
+delete_data
+# mkdir in /tmp is guaranteed to be atomic
+mkdir /tmp/${UNIQUE_TEST_NAME} || { echo "Concurrent usage of the same port ${UNIQUE_PORT_1} detected, exiting"; exit 1; }
+pushd /tmp/${UNIQUE_TEST_NAME}
+
+UNIQUE_PORT_2=$((UNIQUE_PORT_1+1))
+
 check_if_port_in_use $UNIQUE_PORT_1
-if [ -z "$UNIQUE_PORT_2" ]
-then
-  echo "UNIQUE_PORT_2 must be set when calling o2-qc-multinode-test.sh"
-  exit 1
-fi
 check_if_port_in_use $UNIQUE_PORT_2
-if [ "$UNIQUE_PORT_1" == "$UNIQUE_PORT_2" ]
-then
-  echo "UNIQUE_PORT_1 must be different than UNIQUE_PORT_2 when calling o2-qc-multinode-test.sh"
-  echo "You were probably very unlucky to have the same port randomly selected twice."
-  echo "Just run the tests again please (or complain to the QC developers if that happens suspiciously often)."
-  exit 1
-fi
 if [ -z "$JSON_DIR" ]
 then
   echo "JSON_DIR must be set when calling o2-qc-multinode-test.sh"
@@ -79,8 +78,6 @@ else
   echo "CCDB not reachable, multinode test is cancelled."
   exit 0
 fi
-
-delete_data
 
 # store data
 o2-qc-run-producer --producers 2 --message-amount 15  --message-rate 1 -b | timeout -s INT 40s o2-qc --config json://${JSON_DIR}/multinode-test.json -b --local --host localhost --run &
@@ -99,14 +96,14 @@ if (( $code != 200 )); then
   exit 2
 fi
 # try to check that we got a valid root object
-root -b -l -q -e 'TFile f("/tmp/multinode_test_obj${UNIQUE_PORT_1}.root"); f.Print();'
+root -b -l -q -e 'TFile f("/tmp/${UNIQUE_TEST_NAME}/multinode_test_obj${UNIQUE_PORT_1}.root"); f.Print();'
 if (( $? != 0 )); then
   echo "Error, monitor object of the local QC Task is invalid."
   delete_data
   exit 2
 fi
 # try if it is a non empty histogram
-entries=`root -b -l -q -e 'TFile f("/tmp/multinode_test_obj${UNIQUE_PORT_1}.root"); TH1F *h = (TH1F*)f.Get("ccdb_object"); cout << h->GetEntries() << endl;' | tail -n 1`
+entries=`root -b -l -q -e 'TFile f("/tmp/${UNIQUE_TEST_NAME}/multinode_test_obj${UNIQUE_PORT_1}.root"); TH1F *h = (TH1F*)f.Get("ccdb_object"); cout << h->GetEntries() << endl;' | tail -n 1`
 if ! [ $entries -gt 0 ] 2>/dev/null
 then
   echo "The histogram of the local QC Task is empty or the object is not a histogram."
@@ -123,14 +120,14 @@ if (( $code != 200 )); then
   exit 2
 fi
 # try to check that we got a valid root object
-root -b -l -q -e 'TFile f("/tmp/multinode_test_obj${UNIQUE_PORT_2}.root"); f.Print();'
+root -b -l -q -e 'TFile f("/tmp/${UNIQUE_TEST_NAME}/multinode_test_obj${UNIQUE_PORT_2}.root"); f.Print();'
 if (( $? != 0 )); then
   echo "Error, monitor object of the remote QC Task is invalid."
   delete_data
   exit 2
 fi
 # try if it is a non empty histogram
-entries=`root -b -l -q -e 'TFile f("/tmp/multinode_test_obj${UNIQUE_PORT_2}.root"); TH1F *h = (TH1F*)f.Get("ccdb_object"); cout << h->GetEntries() << endl;' | tail -n 1`
+entries=`root -b -l -q -e 'TFile f("/tmp/${UNIQUE_TEST_NAME}/multinode_test_obj${UNIQUE_PORT_2}.root"); TH1F *h = (TH1F*)f.Get("ccdb_object"); cout << h->GetEntries() << endl;' | tail -n 1`
 if ! [ $entries -gt 0 ] 2>/dev/null
 then
   echo "The histogram of the remote QC Task is empty or the object is not a histogram."
