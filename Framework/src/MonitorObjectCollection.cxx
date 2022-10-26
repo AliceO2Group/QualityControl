@@ -17,7 +17,6 @@
 #include "QualityControl/MonitorObjectCollection.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/QcInfoLogger.h"
-#include "QualityControl/ObjectMetadataKeys.h"
 
 #include <Mergers/MergerAlgorithm.h>
 
