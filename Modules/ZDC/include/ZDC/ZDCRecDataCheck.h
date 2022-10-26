@@ -10,35 +10,36 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   ZDCRawDataCheck.h
-/// \author Carlo Puggioni
+/// \file   ZDCRecDataCheck.h
+/// \author My Name
 ///
 
-#ifndef QC_MODULE_ZDC_ZDCZDCRAWDATACHECK_H
-#define QC_MODULE_ZDC_ZDCZDCRAWDATACHECK_H
+#ifndef QC_MODULE_ZDC_ZDCZDCRECDATACHECK_H
+#define QC_MODULE_ZDC_ZDCZDCRECDATACHECK_H
 
 #include "QualityControl/CheckInterface.h"
-#include <string>
-#include <vector>
 
 namespace o2::quality_control_modules::zdc
 {
 
-/// \brief  QC Check Data Raw
-/// \author Carlo Puggioni
-class ZDCRawDataCheck : public o2::quality_control::checker::CheckInterface
+/// \brief  Example QC Check
+/// \author My Name
+class ZDCRecDataCheck : public o2::quality_control::checker::CheckInterface
 {
  public:
   /// Default constructor
-  ZDCRawDataCheck() = default;
+  ZDCRecDataCheck() = default;
   /// Destructor
-  ~ZDCRawDataCheck() override = default;
+  ~ZDCRecDataCheck() override = default;
 
+  // Override interface
+  void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
 
-  ClassDefOverride(ZDCRawDataCheck, 2);
+  ClassDefOverride(ZDCRecDataCheck, 2);
+
   struct sCheck {
     std::string ch;
     float minW;
@@ -49,21 +50,32 @@ class ZDCRawDataCheck : public o2::quality_control::checker::CheckInterface
   };
 
   void init();
-  void setChName(std::string channel);
-  void setChCheck(int i);
+  void setChName(std::string channel, std::string type);
+  void setChCheck(int i, std::string type);
   std::vector<std::string> tokenLine(std::string Line, std::string Delimiter);
   void dumpVecParam(int numBinHisto, int num_ch);
+  void setQualityInfo(std::shared_ptr<MonitorObject> mo, int color, std::string text);
 
  private:
-  std::vector<sCheck> mVectParam;
-  int mNumW = 0;
-  int mNumE = 0;
-  float mPosMsgX;
-  float mPosMsgY;
-  std::string mStringW = " ";
-  std::string mStringE = "List channel Bad Quality: ";
+  std::vector<sCheck> mVectParamADC;
+  std::vector<sCheck> mVectParamTDC;
+  int mNumWADC = 0;
+  int mNumEADC = 0;
+  int mNumWTDC = 0;
+  int mNumETDC = 0;
+  float mPosMsgADCX;
+  float mPosMsgADCY;
+  float mPosMsgTDCX;
+  float mPosMsgTDCY;
+  int mQADC = 0;
+  int mQTDC = 0;
+
+  std::string mStringWADC = "";
+  std::string mStringEADC = "";
+  std::string mStringWTDC = "";
+  std::string mStringETDC = "";
 };
 
 } // namespace o2::quality_control_modules::zdc
 
-#endif // QC_MODULE_ZDC_ZDCZDCRAWDATACHECK_H
+#endif // QC_MODULE_ZDC_ZDCZDCRECDATACHECK_H
