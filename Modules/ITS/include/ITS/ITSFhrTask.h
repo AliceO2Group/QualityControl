@@ -163,7 +163,9 @@ class ITSFhrTask final : public TaskInterface
 
   // Geometry decoder
   o2::its::GeometryTGeo* mGeom;
-  std::string mGeomPath;
+  std::string mGeomPath = "./";
+  long int mGeoTimestamp = 1640991600000;
+  int mLocalGeometryFile = 1;
 };
 } // namespace o2::quality_control_modules::its
 

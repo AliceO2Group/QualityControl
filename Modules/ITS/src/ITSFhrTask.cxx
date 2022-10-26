@@ -20,6 +20,9 @@
 
 #include <DPLUtils/RawParser.h>
 #include <DPLUtils/DPLRawParser.h>
+#include "CCDB/BasicCCDBManager.h"
+#include "CCDB/CCDBTimeStampUtils.h"
+
 #ifdef WITH_OPENMP
 #include <omp.h>
 #endif
@@ -84,7 +87,20 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info, Support) << "initialize ITSFhrTask" << ENDM;
   getParameters();
-  o2::base::GeometryManager::loadGeometry(mGeomPath.c_str());
+
+  if (mLocalGeometryFile == 1) {
+    ILOG(Info, Support) << "Getting geometry from local file" << ENDM;
+    o2::base::GeometryManager::loadGeometry(mGeomPath.c_str());
+  } else {
+    ILOG(Info, Support) << "Getting geometry from ccdb - timestamp: " << mGeoTimestamp << ENDM;
+    auto& mgr = o2::ccdb::BasicCCDBManager::instance();
+    mgr.setTimestamp(mGeoTimestamp);
+    mgr.get<TGeoManager>("GLO/Config/GeometryAligned");
+    if (!o2::base::GeometryManager::isGeometryLoaded()) {
+      ILOG(Error, Support) << "Can't retrive geometry from ccdb: " << mgr.getURL() << " timestamp: " << mGeoTimestamp << ENDM;
+    }
+  }
+
   mGeom = o2::its::GeometryTGeo::Instance();
   int numOfChips = mGeom->getNumberOfChips();
 
@@ -747,6 +763,8 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void ITSFhrTask::getParameters()
 {
+  mLocalGeometryFile = std::stoi(mCustomParameters["isLocalGeometry"]);
+  mGeoTimestamp = std::stol(mCustomParameters["geomstamp"]);
   mGeomPath = mCustomParameters["geomPath"];
   mNThreads = std::stoi(mCustomParameters["decoderThreads"]);
   mLayer = std::stoi(mCustomParameters["Layer"]);

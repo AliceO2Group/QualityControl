@@ -52,7 +52,9 @@
 		    "CutSparseTF": "1",
                     "DoHitmapFilter": "1",
                     "PhysicalOccupancyIB": "1.7e-3",
-                    "PhysicalOccupancyOB": "4.3e-5"
+                    "PhysicalOccupancyOB": "4.3e-5",
+                    "isLocalGeometry": "0",
+                    "geomstamp": "1640991600000"  
                 }
             }
         },

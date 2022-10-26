@@ -97,7 +97,18 @@ void ITSClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   getJsonParameters();
 
-  o2::base::GeometryManager::loadGeometry(mGeomPath.c_str());
+  if (mLocalGeometryFile == 1) {
+    ILOG(Info, Support) << "Getting geometry from local file" << ENDM;
+    o2::base::GeometryManager::loadGeometry(mGeomPath.c_str());
+  } else {
+    ILOG(Info, Support) << "Getting geometry from ccdb - timestamp: " << mGeoTimestamp << ENDM;
+    auto& mgr = o2::ccdb::BasicCCDBManager::instance();
+    mgr.setTimestamp(mGeoTimestamp);
+    mgr.get<TGeoManager>("GLO/Config/GeometryAligned");
+    if (!o2::base::GeometryManager::isGeometryLoaded()) {
+      ILOG(Error, Support) << "Can't retrive geometry from ccdb: " << mgr.getURL() << " timestamp: " << mGeoTimestamp << ENDM;
+    }
+  }
   mGeom = o2::its::GeometryTGeo::Instance();
 
   createAllHistos();
@@ -535,6 +546,8 @@ void ITSClusterTask::createAllHistos()
 
 void ITSClusterTask::getJsonParameters()
 {
+  mLocalGeometryFile = std::stoi(mCustomParameters["isLocalGeometry"]);
+  mGeoTimestamp = std::stol(mCustomParameters["geomstamp"]);
   mNThreads = stoi(mCustomParameters.find("nThreads")->second);
   nBCbins = stoi(mCustomParameters.find("nBCbins")->second);
   mGeomPath = mCustomParameters["geomPath"];

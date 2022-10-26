@@ -97,8 +97,10 @@ class ITSClusterTask : public TaskInterface
   int mNRofsMonitor = 0;
   int nBCbins;
   long int mTimestamp;
-  std::string mGeomPath;
+  std::string mGeomPath = "./";
   TString xLabel;
+  long int mGeoTimestamp = 1640991600000;
+  int mLocalGeometryFile = 1;
 
   const int mNStaves[7] = { 12, 16, 20, 24, 30, 42, 48 };
   const int mNHicPerStave[NLayer] = { 1, 1, 1, 8, 8, 14, 14 };
