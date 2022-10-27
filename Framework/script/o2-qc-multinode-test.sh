@@ -26,7 +26,7 @@ then
   echo "UNIQUE_PORT_1 must be set when calling o2-qc-multinode-test.sh"
   exit 1
 fi
-UNIQUE_TEST_NAME="multinode-test-${UNIQUE_PORT_1}"
+export UNIQUE_TEST_NAME="multinode-test-${UNIQUE_PORT_1}"
 
 function check_if_port_in_use() {
   OS=`uname`
