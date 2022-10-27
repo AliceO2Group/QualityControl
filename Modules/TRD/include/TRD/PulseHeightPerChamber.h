@@ -22,7 +22,7 @@
 #include "DataFormatsTRD/NoiseCalibration.h"
 #include "TRDQC/StatusHelper.h"
 #include "TRDBase/Geometry.h"
-
+#include "DetectorsBase/Propagator.h"
 
 class TH1F;
 class TH2F;
@@ -81,8 +81,11 @@ class PulseHeightPerChamber final : public TaskInterface
   std::vector<TH2F*> mLayers_tracklets;
   std::vector<TH2F*> mLayers_tracks;
   std::vector<TH2F*> mLayers_digits;
+  std::vector<TH2F*> mLayers;
 
   o2::trd::Geometry* geo = nullptr;
+  o2::base::Propagator* prop = nullptr;
+  
 // information pulled from ccdb
   o2::trd::NoiseStatusMCM* mNoiseMap = nullptr;
   o2::trd::HalfChamberStatusQC* mChamberStatus = nullptr;

@@ -178,6 +178,7 @@ void DigitsTask::drawHashOnLayers(int layer, int hcid, int col, int rowstart, in
   for (int line = 0; line < 8; ++line) {
     boxlines[line]->SetLineColor(kBlack);
     mLayers[layer]->GetListOfFunctions()->Add(boxlines[line]);
+   
   }
 }
 

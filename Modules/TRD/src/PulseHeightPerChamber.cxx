@@ -29,6 +29,8 @@
 #include "DataFormatsTRD/Tracklet64.h"
 #include "DataFormatsTRD/TriggerRecord.h"
 #include "ReconstructionDataFormats/TrackTPCITS.h"
+#include "TRDWorkflow/TRDGlobalTrackingSpec.h"
+#include "DataFormatsGlobalTracking/RecoContainer.h"
 #include "CommonDataFormat/TFIDInfo.h"
 #include "CommonDataFormat/InteractionRecord.h"
 #include "TRDBase/Geometry.h"
@@ -102,6 +104,48 @@ void PulseHeightPerChamber::retrieveCCDBSettings()
   }
 }
 
+  void PulseHeightPerChamber::drawTrdLayersGrid(TH2F* hist)
+{
+  TLine* line;
+  for (int i = 0; i < 5; ++i) {
+    switch (i) {
+      case 0:
+        line = new TLine(15.5, 0, 15.5, 2592);
+        hist->GetListOfFunctions()->Add(line);
+        line->SetLineStyle(kDashed);
+        line->SetLineColor(kBlack);
+        break;
+      case 1:
+        line = new TLine(31.5, 0, 31.5, 2592);
+        hist->GetListOfFunctions()->Add(line);
+        line->SetLineStyle(kDashed);
+        line->SetLineColor(kBlack);
+        break;
+      case 2:
+        line = new TLine(43.5, 0, 43.5, 2592);
+        hist->GetListOfFunctions()->Add(line);
+        line->SetLineStyle(kDashed);
+        line->SetLineColor(kBlack);
+        break;
+      case 3:
+        line = new TLine(59.5, 0, 59.5, 2592);
+        hist->GetListOfFunctions()->Add(line);
+        line->SetLineStyle(kDashed);
+        line->SetLineColor(kBlack);
+        break;
+    }
+  }
+  for (int iSec = 1; iSec < 18; ++iSec) {
+    float yPos = iSec * 144 - 0.5;
+    line = new TLine(0, yPos, 76, yPos);
+    line->SetLineStyle(kDashed);
+    line->SetLineColor(kBlack);
+    hist->GetListOfFunctions()->Add(line);
+  }
+
+  ILOG(Info, Support) << "Layer Grid redrawn in check for : " << hist->GetName() << ENDM;
+  ILOG(Info, Support) << "Layer Grid redrawn in hist has function count of :  " << hist->GetListOfFunctions()->GetSize() << ENDM;
+}
 void PulseHeightPerChamber::drawLinesOnPulseHeight(TH1F* h)
 {
   TLine* lmin = new TLine(mPulseHeightPeakRegion.first, 0, mPulseHeightPeakRegion.first, 1e9);
@@ -114,6 +158,38 @@ void PulseHeightPerChamber::drawLinesOnPulseHeight(TH1F* h)
   h->GetListOfFunctions()->Add(lmax);
 }
 
+void PulseHeightPerChamber::drawHashOnLayers(int layer, int hcid, int col, int rowstart, int rowend)
+{
+  //instead of using overlays, draw a simple box in red with a cross on it.
+  std::pair<float, float> topright, bottomleft; //coordinates of box
+  TLine* boxlines[8];
+  int det = hcid / 2;
+  int side = hcid % 2;
+  int sec = hcid / 60;
+  bottomleft.first = rowstart - 0.5;
+  bottomleft.second = (sec * 2 + side) * 72;
+  topright.first = rowend - 0.5;
+  topright.second = (sec * 2 + side) * 72 + 72;
+
+  //LOG(info) << "Box for layer : " << layer << " hcid : " << hcid << ": " << bottomleft.first << ":" << bottomleft.second << "(" << bottomleft.second/144 << ") -- " << topright.first << ":" << topright.second << "(" << topright.second/144 << ")";
+  boxlines[0] = new TLine(bottomleft.first, bottomleft.second, topright.first, bottomleft.second);                                                                                     //bottom
+  boxlines[1] = new TLine(bottomleft.first, topright.second, topright.first, topright.second);                                                                                         // top
+  boxlines[2] = new TLine(bottomleft.first, bottomleft.second, bottomleft.first, topright.second);                                                                                     // left
+  boxlines[3] = new TLine(topright.first, bottomleft.second, topright.first, topright.second);                                                                                         // right
+  boxlines[4] = new TLine(bottomleft.first, topright.second - (topright.second - bottomleft.second) / 2, topright.first, topright.second - (topright.second - bottomleft.second) / 2); //horizontal middle
+  boxlines[5] = new TLine(topright.first, bottomleft.second, bottomleft.first, topright.second);                                                                                       //backslash
+  boxlines[6] = new TLine(bottomleft.first, bottomleft.second, topright.first, topright.second);                                                                                       //forwardslash
+  boxlines[7] = new TLine(bottomleft.first + (topright.first - bottomleft.first) / 2, bottomleft.second, bottomleft.first + (topright.first - bottomleft.first) / 2, topright.second); //vertical middle
+  for (int line = 0; line < 8; ++line) {
+    boxlines[line]->SetLineColor(kBlack);
+    // mLayers[layer]->GetListOfFunctions()->Add(boxlines[line]);
+    mLayers_digits[layer]->GetListOfFunctions()->Add(boxlines[line]);
+    //mLayers_tracklets[layer]->GetListOfFunctions()->Add(boxlines[line]);
+    //mLayers_tracks[layer]->GetListOfFunctions()->Add(boxlines[line]);
+
+  }
+}
+  
 void PulseHeightPerChamber::fillLinesOnHistsPerLayer(int iLayer)
 {
   std::bitset<1080> hciddone;
@@ -157,10 +233,8 @@ void PulseHeightPerChamber::fillLinesOnHistsPerLayer(int iLayer)
   getObjectsManager()->startPublishing(mPulseHeightpro.get());
 
    for (int iLayer = 0; iLayer < 6; ++iLayer) {
-    mLayers_digits.push_back(new TH2F(Form("digits_layer%i", iLayer), Form("Digit count per pad in layer %i;stack;sector", iLayer), 76, -0.5, 75.5, 2592, -0.5, 2591.5));
-     mLayers_tracklets.push_back(new TH2F(Form("tracklets_layer%i", iLayer), Form("Tracklets count per pad in layer %i;stack;sector", iLayer), 76, -0.5, 75.5, 2592, -0.5, 2591.5));
-      mLayers_tracks.push_back(new TH2F(Form("tracks_layer%i", iLayer), Form("Tracks count per pad in layer %i;stack;sector", iLayer), 76, -0.5, 75.5, 2592, -0.5, 2591.5));
-    auto xax = mLayers_tracks.back()->GetXaxis();
+    mLayers_digits.push_back(new TH2F(Form("DigitsPerLayer/layer%i", iLayer), Form("Digit count per pad in layer %i;stack;sector", iLayer), 76, -0.5, 75.5, 2592, -0.5, 2591.5));
+    auto xax = mLayers_digits.back()->GetXaxis();
     xax->SetBinLabel(8, "0");
     xax->SetBinLabel(24, "1");
     xax->SetBinLabel(38, "2");
@@ -170,7 +244,7 @@ void PulseHeightPerChamber::fillLinesOnHistsPerLayer(int iLayer)
     xax->SetTickSize(0.01);
     xax->SetLabelSize(0.045);
     xax->SetLabelOffset(0.01);
-    auto yax = mLayers_tracks.back()->GetYaxis();
+    auto yax = mLayers_digits.back()->GetYaxis();
     for (int iSec = 0; iSec < 18; ++iSec) {
       auto lbl = std::to_string(iSec);
       yax->SetBinLabel(iSec * 144 + 72, lbl.c_str());
@@ -179,27 +253,77 @@ void PulseHeightPerChamber::fillLinesOnHistsPerLayer(int iLayer)
     yax->SetTickSize(0.01);
     yax->SetLabelSize(0.045);
     yax->SetLabelOffset(0.01);
-    mLayers_tracks.back()->SetStats(0);
-    mLayers_digits.back()->SetStats(0);
-    mLayers_tracklets.back()->SetStats(0);
-    drawTrdLayersGrid(mLayers_digits.back());
-    drawTrdLayersGrid(mLayers_tracks.back());
-    drawTrdLayersGrid(mLayers_tracklets.back());
-    fillLinesOnHistsPerLayer(iLayer);
 
-    getObjectsManager()->startPublishing(mLayers_tracks.back());
-    getObjectsManager()->setDefaultDrawOptions(mLayers_tracks.back()->GetName(), "COLZ");
-    getObjectsManager()->setDisplayHint(mLayers_tracks.back(), "logz");
+    mLayers_digits.back()->SetStats(0);
+    drawTrdLayersGrid(mLayers_digits.back());
+    fillLinesOnHistsPerLayer(iLayer);
 
     getObjectsManager()->startPublishing(mLayers_digits.back());
     getObjectsManager()->setDefaultDrawOptions(mLayers_digits.back()->GetName(), "COLZ");
     getObjectsManager()->setDisplayHint(mLayers_digits.back(), "logz");
+    }
+
+    for (int iLayer = 0; iLayer < 6; ++iLayer) {
+    mLayers_tracklets.push_back(new TH2F(Form("TrackletsPerLayer/layer%i", iLayer), Form("Tracklets count per pad in layer %i;stack;sector", iLayer), 76, -0.5, 75.5, 2592, -0.5, 2591.5));
+    auto xax = mLayers_tracklets.back()->GetXaxis();
+    xax->SetBinLabel(8, "0");
+    xax->SetBinLabel(24, "1");
+    xax->SetBinLabel(38, "2");
+    xax->SetBinLabel(52, "3");
+    xax->SetBinLabel(68, "4");
+    xax->SetTicks("-");
+    xax->SetTickSize(0.01);
+    xax->SetLabelSize(0.045);
+    xax->SetLabelOffset(0.01);
+    auto yax = mLayers_tracklets.back()->GetYaxis();
+    for (int iSec = 0; iSec < 18; ++iSec) {
+      auto lbl = std::to_string(iSec);
+      yax->SetBinLabel(iSec * 144 + 72, lbl.c_str());
+    }
+    yax->SetTicks("-");
+    yax->SetTickSize(0.01);
+    yax->SetLabelSize(0.045);
+    yax->SetLabelOffset(0.01);
+    mLayers_tracklets.back()->SetStats(0);
+    drawTrdLayersGrid(mLayers_tracklets.back());
+    fillLinesOnHistsPerLayer(iLayer);
 
     getObjectsManager()->startPublishing(mLayers_tracklets.back());
     getObjectsManager()->setDefaultDrawOptions(mLayers_tracklets.back()->GetName(), "COLZ");
     getObjectsManager()->setDisplayHint(mLayers_tracklets.back(), "logz");
+    }
+
+   /* for (int iLayer = 0; iLayer < 6; ++iLayer) {
+    mLayers.push_back(new TH2F(Form("DigitsPerLayer/layer%i", iLayer), Form("Digit count per pad in layer %i;stack;sector", iLayer), 76, -0.5, 75.5, 2592, -0.5, 2591.5));
+    auto xax = mLayers.back()->GetXaxis();
+    xax->SetBinLabel(8, "0");
+    xax->SetBinLabel(24, "1");
+    xax->SetBinLabel(38, "2");
+    xax->SetBinLabel(52, "3");
+    xax->SetBinLabel(68, "4");
+    xax->SetTicks("-");
+    xax->SetTickSize(0.01);
+    xax->SetLabelSize(0.045);
+    xax->SetLabelOffset(0.01);
+    auto yax = mLayers.back()->GetYaxis();
+    for (int iSec = 0; iSec < 18; ++iSec) {
+      auto lbl = std::to_string(iSec);
+      yax->SetBinLabel(iSec * 144 + 72, lbl.c_str());
+    }
+    yax->SetTicks("-");
+    yax->SetTickSize(0.01);
+    yax->SetLabelSize(0.045);
+    yax->SetLabelOffset(0.01);
+    mLayers.back()->SetStats(0);
+    drawTrdLayersGrid(mLayers.back());
+    fillLinesOnHistsPerLayer(iLayer);
+
+    getObjectsManager()->startPublishing(mLayers.back());
+    getObjectsManager()->setDefaultDrawOptions(mLayers.back()->GetName(), "COLZ");
+    getObjectsManager()->setDisplayHint(mLayers.back(), "logz");
+    }*/
+  
   }
-}
   
 void PulseHeightPerChamber::initialize(o2::framework::InitContext& /*ctx*/)
 {
@@ -255,6 +379,16 @@ void PulseHeightPerChamber::initialize(o2::framework::InitContext& /*ctx*/)
     mChambersToIgnore = "16_3_0";
     ILOG(Info, Support) << "configure() : chambers to ignore for pulseheight calculations = " << mChambersToIgnore << ENDM;
   }
+
+  o2::base::GeometryManager::loadGeometry();
+  o2::base::Propagator::initFieldFromGRP();
+  
+  geo = o2::trd::Geometry::instance();
+  geo->createPadPlaneArray();
+  geo->createClusterMatrixArray();
+
+  prop = o2::base::Propagator::Instance();
+  
   buildChamberIgnoreBP();
 
   retrieveCCDBSettings();
@@ -343,7 +477,6 @@ int getSector(float alpha)
   }
   return (int)(alpha * o2::trd::constants::NSECTOR / (2.f * TMath::Pi()));
 }
-
 bool PulseHeightPerChamber::isChamberToBeIgnored(unsigned int sm, unsigned int stack, unsigned int layer)
 {
   // just to make the calling method a bit cleaner
@@ -355,8 +488,9 @@ void PulseHeightPerChamber::monitorData(o2::framework::ProcessingContext& ctx)
     if (input.header != nullptr && input.payload != nullptr) {
 
       //auto tfid=ctx.inputs().get<gsl::span<o2::dataformats::TFIDInfo>>("tfid");
-      auto tracks= ctx.inputs().get<gsl::span<o2::dataformats::TrackTPCITS>>("tracks");
-      
+        auto tracks= ctx.inputs().get<gsl::span<o2::dataformats::TrackTPCITS>>("tracks");
+      //auto tracks= ctx.inputs().get<gsl::span<o2::trd::TRDworkflow::TRDGlobalTrackingSpec>>("tracks");
+      //TRDWorkflow/TRDGlobalTrackingSpec.h
       auto digits = ctx.inputs().get<gsl::span<o2::trd::Digit>>("digits");
       std::vector<o2::trd::Digit> digitv(digits.begin(), digits.end());
 
@@ -382,20 +516,14 @@ void PulseHeightPerChamber::monitorData(o2::framework::ProcessingContext& ctx)
 	
         if (trigger.getNumberOfDigits() == 0 || trigger.getNumberOfTracklets() == 0)
 	  { continue;} // bail if we have no digits in this trigge
-
-	/* geo = o2::trd::Geometry::instance();
-           geo->createPadPlaneArray();
-           geo->createClusterMatrixArray();
-
-	   auto  prop = o2::base::Propagator::Instance();*/
 	   
-	   bool foundTrackForTrigger = false;
+	  bool foundTrackForTrigger = false;
 
       // let's see if we can match tracks to digits and tracklets
-	   //  std::set<std::pair<std::tuple<int, int, int>, int>> trackMap; // filled with detector, row, col for each track point and the index of the ITS-TPC track
-	   //    std::multimap<std::tuple<int, int, int>, int> trackletMap; // filled with detector, row, col and with the index of each tracklet
-	   //  std::multimap<std::tuple<int, int, int>, int> digitMap; // filled with detector, row, col and with the index of each tracklet
-	// float trdTriggerTimeUS = trigger.getBCData().differenceInBCNS(o2::InteractionRecord{0, tfid.firstTForbit});
+	     std::set<std::pair<std::tuple<int, int, int>, int>> trackMap; // filled with detector, row, col for each track point and the index of the ITS-TPC track
+	       std::multimap<std::tuple<int, int, int>, int> trackletMap; // filled with detector, row, col and with the index of each tracklet
+	     std::multimap<std::tuple<int, int, int>, int> digitMap; // filled with detector, row, col and with the index of each tracklet
+	     // float trdTriggerTimeUS = trig.getBCData().bc2ns() * 1e-3;
 
        int nTracks = 0;
        int nPointsTrigger = 0;
@@ -403,7 +531,7 @@ void PulseHeightPerChamber::monitorData(o2::framework::ProcessingContext& ctx)
        int minAdcCount = 0;
 
        //track loop======================================================
-       /*    for (int iTrack = 0; iTrack < static_cast<int>(tracks.size()); ++iTrack){
+       /* for (int iTrack = 0; iTrack < static_cast<int>(tracks.size()); ++iTrack){
         const auto& trkITSTPC = tracks[iTrack];
 
         //printf("ITS-TPC track time: %f\n", trkITSTPC.getTimeMUS().getTimeStamp());
@@ -454,7 +582,7 @@ void PulseHeightPerChamber::monitorData(o2::framework::ProcessingContext& ctx)
           int colGlb = col + sector * 144; // pad column number from 0 to NSectors * 144
 	  //mLayers_tracks[iLy]->SetBinContent(rowGlb+1, colGlb+1, 4);
         }
-	}*/ // end ITS-TPC track loop ==================================================
+	} // end ITS-TPC track loop ==================================================
 	 
 	 // now sort digits to det,row,pad
        
@@ -470,7 +598,7 @@ void PulseHeightPerChamber::monitorData(o2::framework::ProcessingContext& ctx)
         if (trigger.getNumberOfDigits() > 24999)
           trackletnumfix = 24999;
         mDigitsSizevsTrackletSize->Fill(trigger.getNumberOfTracklets(), trigger.getNumberOfDigits());
-	/*  int tbmax = 0;
+	  int tbmax = 0;
         int tbhi = 0;
         int tblo = 0;
 
@@ -505,12 +633,13 @@ void PulseHeightPerChamber::monitorData(o2::framework::ProcessingContext& ctx)
         int sec = det / 30;
         //if (sec == 2) std::cout << digit << std::endl;
         int colGlb = digit.getPadCol() + sec * 144; // pad column number from 0 to NSectors * 144
-	// digitMap.insert(std::make_pair(std::make_tuple(det, digit.getPadRow(), digit.getPadCol()), iDigit));
+	 digitMap.insert(std::make_pair(std::make_tuple(det, digit.getPadRow(), digit.getPadCol()), iDigit));
 	//mLayers_digits[layer]->SetBinContent(rowGlb+1, colGlb+1, adcMax);
+       	 mLayers_digits[layer]->Fill(rowGlb, colGlb);
 	}//digits loop ends================================================
 
 	//tracklets loop begins
-	/*for (int iTrklt = trigger.getFirstTracklet(); iTrklt < trigger.getFirstTracklet() + trigger.getNumberOfTracklets(); ++iTrklt){
+		for (int iTrklt = trigger.getFirstTracklet(); iTrklt < trigger.getFirstTracklet() + trigger.getNumberOfTracklets(); ++iTrklt){
         const auto& trklt = tracklets[iTrklt];
         int det = trklt.getDetector();
         int layer = det % 6;
@@ -533,8 +662,10 @@ void PulseHeightPerChamber::monitorData(o2::framework::ProcessingContext& ctx)
         float colGlb = -65.f + mcmCol * ((float) o2::trd::constants::NCOLMCM) + padLocal * o2::trd::constants::GRANULARITYTRKLPOS + 144.f * sec + 72.f;
         int colInChamber = static_cast<int>(std::round(colGlb - 144.f * sec));
         trackletMap.insert(std::make_pair(std::make_tuple(det, trklt.getPadRow(), colInChamber), iTrklt));
-        //mLayers_tracklets[layer]->SetBinContent(rowGlb + 1, mLayers_tracklets[layer]->GetYaxis()->FindBin(colGlb), 1);
-	}*/ //end of tracklet loop =======================================
+        mLayers_tracklets[layer]->SetBinContent(rowGlb + 1, mLayers_tracklets[layer]->GetYaxis()->FindBin(colGlb), 1);
+       	// mLayers_tracklets[layer]->Fill(mcmCol, colGlb);
+
+	} //end of tracklet loop =======================================
 	
     }       // end for r
   } // end for d
