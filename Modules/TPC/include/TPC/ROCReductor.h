@@ -26,8 +26,8 @@ namespace o2::quality_control_modules::tpc
 
 /// \brief A Reductor of ROC, stores mean, standard deviation and median for each ROC.
 ///
-/// A Reductor of ROC, stores mean, standard deviation and median for each ROC.
-/// It produces a branch in the format: "mean[72]/F:stddev[72]:median[72]"
+/// A Reductor of ROC, stores entries, mean, standard deviation, median and rms for each ROC.
+/// It produces a branch in the format: "entries[72]/I:mean[72]/F:stddev[72]:median[72]:rms[72]"
 class ROCReductor : public quality_control::postprocessing::Reductor
 {
  public:
@@ -40,13 +40,15 @@ class ROCReductor : public quality_control::postprocessing::Reductor
 
  private:
   struct {
+    Int_t entries[72];
     Float_t mean[72];
     Float_t stddev[72];
     Float_t median[72];
+    Float_t rms[72];
   } mCalPad;
 
 }; // class ROCReductor : public quality_control::postprocessing::Reductor
 
 } // namespace o2::quality_control_modules::tpc
 
-#endif //QC_MODULE_TPC_ROCREDUCTOR_H
+#endif // QC_MODULE_TPC_ROCREDUCTOR_H

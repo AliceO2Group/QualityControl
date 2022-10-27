@@ -152,4 +152,5 @@ install(FILES run/tpcQCPID_sampled.json
               run/tpcQCTracks_Generic.json
               run/tpcQCJunkDetection.json
               run/tpcQCPadCalibration_GenericPad.json
+              run/tpcQCROCTrending.json
         DESTINATION etc)
