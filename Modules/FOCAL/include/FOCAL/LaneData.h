@@ -13,46 +13,77 @@
 
 #include <array>
 #include <cstdint>
+#include <exception>
+#include <iosfwd>
+#include <string>
+#include <vector>
+
+#include <gsl/span>
 
 namespace o2::quality_control_modules::focal
 {
 
-namespace lane_constants
+class LanePayload
 {
-constexpr int MAX_LANEDATA_SIZE = 0x10000;
-constexpr int N_LANES = 28;
+ public:
+  LanePayload() = default;
+  ~LanePayload() = default;
 
-constexpr int MAX_TRIGGERS_PER_PACKET = 256;
+  void reset();
+  void append(gsl::span<const uint8_t> payloadwords);
+  void append(uint8_t word);
+  gsl::span<const uint8_t> getPayload() const;
 
-constexpr int LENGTH_DATA = 9;
-constexpr int LENGTH_IDENTIFIER = 1;
-constexpr int LENGTH_PADDING = 6;
-} // namespace lane_constants
+  void print(std::ostream& stream) const;
 
-struct LaneData {
-  unsigned int mSize;
-  unsigned int mLane;
-  std::array<unsigned char, lane_constants::MAX_LANEDATA_SIZE> mLaneData;
-  bool mMode;             // inner or outer barrel
-  unsigned int mModuleID; // TODO: not really necessary here since module already coded in lane
-  //  unsigned short half; // upper or lower
-  /*
-      unsigned short connector;
-      unsigned short inputnumber;
-      bool halfstave;
-      unsigned short moduleid;
-      unsigned short oblanenumber;
-  */
+ private:
+  void printWordType(uint8_t word, std::ostream& stream) const;
+  std::vector<uint8_t> mPayload;
 };
 
-struct TriggerData {
-  std::array<uint64_t, lane_constants::MAX_TRIGGERS_PER_PACKET> mTrigger;
-  std::array<int, lane_constants::MAX_TRIGGERS_PER_PACKET> mPosition;
-  int mSize;
+class LaneHandler
+{
+ public:
+  static constexpr std::size_t NLANES = 28;
+
+  class LaneIndexException : public std::exception
+  {
+   public:
+    LaneIndexException(int index) : std::exception(), mIndex(index), mMessage()
+    {
+      mMessage = "Invalid lane " + std::to_string(mIndex) + " max " + std::to_string(LaneHandler::NLANES);
+    }
+    ~LaneIndexException() noexcept final = default;
+
+    const char* what() const noexcept final { return mMessage.data(); }
+    void print(std::ostream& stream) const;
+
+    std::size_t getIndex() const noexcept { return mIndex; }
+
+   private:
+    std::size_t mIndex;
+    std::string mMessage;
+  };
+
+  LaneHandler() = default;
+  ~LaneHandler() = default;
+
+  LanePayload& operator[](std::size_t index) { return getLane(index); }
+  const LanePayload& operator[](std::size_t index) const { return getLane(index); }
+
+  void reset();
+  void resetLane(std::size_t laneID);
+
+  LanePayload& getLane(std::size_t index);
+  const LanePayload& getLane(std::size_t index) const;
+
+ private:
+  void handleLaneIndex(std::size_t laneIndex) const;
+  std::array<LanePayload, NLANES> mLaneData;
 };
 
-uint64_t triggerForByte(TriggerData td, int pos);
-uint8_t laneId2ModuleId(uint8_t _lane);
+std::ostream& operator<<(std::ostream& stream, const LaneHandler::LaneIndexException& except);
+std::ostream& operator<<(std::ostream& stream, const LanePayload& payload);
 
 } // namespace o2::quality_control_modules::focal
 
