@@ -213,7 +213,7 @@ void DigitsTask::buildHistograms()
   getObjectsManager()->startPublishing(mDigitHCID.get());
   mDigitsPerEvent.reset(new TH1F("digitsperevent", "Digits per Event", 10000, 0, 10000));
   getObjectsManager()->startPublishing(mDigitsPerEvent.get());
-  mEventswDigitsPerTimeFrame.reset(new TH1F("eventswithdigitspertimeframe", "Number of Events with Digits per Time Frame", 100, 0, 100));
+  mEventswDigitsPerTimeFrame.reset(new TH1F("eventswithdigitspertimeframe", "Number of Events with Digits per Time Frame", 10000, 0, 10000));
   getObjectsManager()->startPublishing(mEventswDigitsPerTimeFrame.get());
 
   mDigitsSizevsTrackletSize.reset(new TH2F("digitsvstracklets", "Tracklets Count vs Digits Count per event; Number of Tracklets;Number Of Digits", 2500, 0, 2500, 2500, 0, 2500));
