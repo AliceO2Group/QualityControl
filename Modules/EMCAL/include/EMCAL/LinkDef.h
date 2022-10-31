@@ -27,4 +27,7 @@
 
 #pragma link C++ class o2::quality_control_modules::emcal::SupermoduleProjectorTask + ;
 
-      #endif
+#pragma link C++ class o2::quality_control_modules::emcal::BadChannelMapReductor + ;
+
+#pragma link C++ class o2::quality_control_modules::emcal::TimeCalibParamReductor + ;
+#endif
