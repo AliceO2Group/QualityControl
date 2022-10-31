@@ -53,17 +53,20 @@ void CalibMonitoringTask::initialize(Trigger, framework::ServiceRegistryRef)
       mTimeCalibParamHisto = new TH1D("timeCalibCoeff", "Time Calib Coeff", 17644, -0.5, 17643.5); //
       mTimeCalibParamHisto->GetXaxis()->SetTitle("Cell Id");
       mTimeCalibParamHisto->GetYaxis()->SetTitle("Time (ns)");
+      mTimeCalibParamHisto->SetStats(false);
       getObjectsManager()->startPublishing(mTimeCalibParamHisto);
 
       mTimeCalibParamPosition = new TH2D("timeCalibPosition", "Time Calib Coeff in 2D", 96, -0.5, 95.5, 208, -0.5, 207.5);
       mTimeCalibParamPosition->GetXaxis()->SetTitle("column (#eta)");
       mTimeCalibParamPosition->GetYaxis()->SetTitle("row (#phi)");
+      mTimeCalibParamPosition->SetStats(false);
       getObjectsManager()->startPublishing(mTimeCalibParamPosition);
     }
     if (obj == "BadChannelMap") {
       mBadChannelMapHisto = new TH2D("badChannelMap", "Pos. of Bad Channel", 96, -0.5, 95.5, 208, -0.5, 207.5);
       mBadChannelMapHisto->GetXaxis()->SetTitle("column (#eta)");
       mBadChannelMapHisto->GetYaxis()->SetTitle("row (#phi)");
+      mBadChannelMapHisto->SetStats(false);
       getObjectsManager()->startPublishing(mBadChannelMapHisto);
     }
   }
