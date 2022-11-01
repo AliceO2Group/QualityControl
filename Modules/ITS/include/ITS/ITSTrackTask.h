@@ -75,14 +75,14 @@ class ITSTrackTask : public TaskInterface
   TH2D* hClusterVsBunchCrossing;
   TH2D* hNClusterVsChipITS;
 
-  float mVertexXYsize;
-  float mVertexZsize;
-  float mVertexRsize;
-  Int_t mNtracksMAX;
-  Int_t mDoTTree;
+  float mVertexXYsize = 0.5;
+  float mVertexZsize = 15.;
+  float mVertexRsize = 0.8;
+  Int_t mNtracksMAX = 100;
+  Int_t mDoTTree = 0;
   Int_t mNTracks = 0;
   Int_t mNRofs = 0;
-  int nBCbins;
+  int nBCbins = 103;
   long int mTimestamp;
   int nVertices = 0;
   double mChipBins[2125]; // x bins for cos(lambda) plot

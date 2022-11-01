@@ -38,7 +38,7 @@ target_include_directories(
 
 include_directories(${O2_ROOT}/include/GPU)
 
-target_link_libraries(O2QcITS PUBLIC O2QualityControl O2::ITSBase O2::ITSMFTBase O2::ITSMFTReconstruction ROOT::Hist O2::DataFormatsITS O2::Steer)
+target_link_libraries(O2QcITS PUBLIC O2QualityControl O2::ITSBase O2::ITSMFTBase O2::ITSMFTReconstruction ROOT::Hist O2::DataFormatsITS O2::Steer O2QcCommon)
 
 if (OpenMP_CXX_FOUND)
   target_compile_definitions(O2QcITS PRIVATE WITH_OPENMP)

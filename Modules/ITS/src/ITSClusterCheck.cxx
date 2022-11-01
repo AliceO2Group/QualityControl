@@ -25,6 +25,7 @@
 #include <string.h>
 #include <TLatex.h>
 #include <iostream>
+#include "Common/Utils.h"
 
 namespace o2::quality_control_modules::its
 {
@@ -51,8 +52,8 @@ Quality ITSClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
 
     if (iter->second->getName().find("General_Occupancy") != std::string::npos) {
       auto* hp = dynamic_cast<TH2D*>(iter->second->getObject());
-      std::vector<int> skipxbins = convertToIntArray(mCustomParameters["skipxbinsoccupancy"]);
-      std::vector<int> skipybins = convertToIntArray(mCustomParameters["skipybinsoccupancy"]);
+      std::vector<int> skipxbins = convertToIntArray(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "skipxbinsoccupancy", ""));
+      std::vector<int> skipybins = convertToIntArray(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "skipybinsoccupancy", ""));
       std::vector<std::pair<int, int>> xypairs;
       for (int i = 0; i < (int)skipxbins.size(); i++) {
         xypairs.push_back(std::make_pair(skipxbins[i], skipybins[i]));
@@ -66,7 +67,8 @@ Quality ITSClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
           if (std::find(xypairs.begin(), xypairs.end(), std::make_pair(ix, iy)) != xypairs.end()) {
             continue;
           }
-          if (hp->GetBinContent(ix, iy) > std::stod(mCustomParameters[Form("maxcluoccL%d", ilayer)])) {
+          maxcluocc[ilayer] = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, Form("maxcluoccL%d", ilayer), maxcluocc[ilayer]);
+          if (hp->GetBinContent(ix, iy) > maxcluocc[ilayer]) {
             result.set(Quality::Medium);
             result.updateMetadata(Form("Layer%d%s", ilayer, tb.c_str()), "medium");
           }

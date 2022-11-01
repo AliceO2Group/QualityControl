@@ -25,6 +25,7 @@
 #include <DataFormatsITSMFT/ClusterTopology.h>
 #include "CCDB/BasicCCDBManager.h"
 #include "CCDB/CCDBTimeStampUtils.h"
+#include "Common/Utils.h"
 
 #include <Framework/DataSpecUtils.h>
 #include "ITStracking/Constants.h"
@@ -62,12 +63,12 @@ void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   ILOG(Info, Support) << "initialize ITSTrackTask" << ENDM;
 
-  mVertexXYsize = std::stof(mCustomParameters["vertexXYsize"]);
-  mVertexZsize = std::stof(mCustomParameters["vertexZsize"]);
-  mVertexRsize = std::stof(mCustomParameters["vertexRsize"]);
-  mNtracksMAX = std::stof(mCustomParameters["NtracksMAX"]);
-  mDoTTree = std::stoi(mCustomParameters["doTTree"]);
-  nBCbins = std::stoi(mCustomParameters.find("nBCbins")->second);
+  mVertexXYsize = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "vertexXYsize", mVertexXYsize);
+  mVertexZsize = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "vertexZsize", mVertexZsize);
+  mVertexRsize = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "vertexRsize", mVertexRsize);
+  mNtracksMAX = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "NtracksMAX", mNtracksMAX);
+  mDoTTree = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "doTTree", mDoTTree);
+  nBCbins = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "nBCbins", nBCbins);
 
   createAllHistos();
   publishHistos();
@@ -79,7 +80,8 @@ void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 
   // get dict from ccdb
-  mTimestamp = std::stol(mCustomParameters["dicttimestamp"]);
+  // mTimestamp = std::stol(mCustomParameters["dicttimestamp"]);
+  mTimestamp = std::stol(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "dicttimestamp", "0"));
   long int ts = mTimestamp ? mTimestamp : o2::ccdb::getCurrentTimestamp();
   ILOG(Info, Support) << "Getting dictionary from ccdb - timestamp: " << ts << ENDM;
   auto& mgr = o2::ccdb::BasicCCDBManager::instance();

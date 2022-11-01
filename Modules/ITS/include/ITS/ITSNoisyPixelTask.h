@@ -88,7 +88,7 @@ class ITSNoisyPixelTask : public TaskInterface
                    kDigit };
   QueryType mQueryOption = kUndefined;
 
-  int mOccUpdateFrequency;
+  int mOccUpdateFrequency = 10000;
   bool mEnableOrderedHitsObject;
   int mTotalTimeInQCTask;
   int ChipIDprev = 0;
@@ -99,8 +99,11 @@ class ITSNoisyPixelTask : public TaskInterface
   int mEnableLayers[7];
   o2::itsmft::TopologyDictionary* mDict;
   o2::its::GeometryTGeo* mGeom;
-  std::string mGeomPath;
+  std::string mGeomPath = "./";
   long int mTimestamp;
+
+  int mLocalGeometryFile = 0;
+  string mGeoTimestamp = "1640991600000";
 };
 } //  namespace o2::quality_control_modules::its
 

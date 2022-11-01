@@ -43,7 +43,7 @@
               "nBCbins" : "103",
 	      "dicttimestamp" : "0",
 	      "geomPath": "./",
-              "publishSummary1D": "1",
+              "publishSummary1D": "0",
               "isLocalGeometry": "0",
               "geomstamp": "1640991600000"
       

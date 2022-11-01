@@ -93,7 +93,7 @@ class ITSFhrTask final : public TaskInterface
   const float StartAngle[7] = { 16.997 / 360 * (TMath::Pi() * 2.), 17.504 / 360 * (TMath::Pi() * 2.), 17.337 / 360 * (TMath::Pi() * 2.), 8.75 / 360 * (TMath::Pi() * 2.), 7 / 360 * (TMath::Pi() * 2.), 5.27 / 360 * (TMath::Pi() * 2.), 4.61 / 360 * (TMath::Pi() * 2.) }; // start angle of first stave in each layer
   const float MidPointRad[7] = { 23.49, 31.586, 39.341, 197.598, 246.944, 345.348, 394.883 };                                                                                                                                                                               // mid point radius
 
-  int mNThreads = 0;
+  int mNThreads = 1;
   std::unordered_map<unsigned int, int> mHitPixelID_Hash[7][48][2][14][14]; // layer, stave, substave, hic, chip
 
   o2::itsmft::RawPixelDecoder<o2::itsmft::ChipMappingITS>* mDecoder;
@@ -106,7 +106,7 @@ class ITSFhrTask final : public TaskInterface
   unsigned int mErrors[19] = { 0 };
   static constexpr int NTrigger = 13;
   int16_t partID = 0;
-  int mLayer;
+  int mLayer = 0;
   int mHitCutForCheck = 100; // Hit number cut for fired pixel check in a trigger
   int mGetTFFromBinding = 0;
   int mHitCutForNoisyPixel = 1024;        // Hit number cut for noisy pixel, this number should be define according how many TF will be accumulated before reset(one can reference the cycle time)
@@ -114,7 +114,7 @@ class ITSFhrTask final : public TaskInterface
   float mPhysicalOccupancyIB = 1.7e-3;
   float mPhysicalOccupancyOB = 4.3e-5;
   double mCutTFForSparse = 1; // cut to stop THnSparse filling after mCutTrgForSparse triggers
-  int mDoHitmapFilter;        // do filtering of noise pixel vector
+  int mDoHitmapFilter = 1;    // do filtering of noise pixel vector
   std::unordered_map<unsigned int, int>*** mHitPixelID_InStave /* = new std::unordered_map<unsigned int, int>**[NStaves[lay]]*/;
   int** mHitnumberLane /* = new int*[NStaves[lay]]*/;       // IB : hitnumber[stave][chip]; OB : hitnumber[stave][lane]
   double** mOccupancyLane /* = new double*[NStaves[lay]]*/; // IB : occupancy[stave][chip]; OB : occupancy[stave][Lane]
@@ -164,7 +164,7 @@ class ITSFhrTask final : public TaskInterface
   // Geometry decoder
   o2::its::GeometryTGeo* mGeom;
   std::string mGeomPath = "./";
-  long int mGeoTimestamp = 1640991600000;
+  std::string mGeoTimestamp = "1640991600000";
   int mLocalGeometryFile = 1;
 };
 } // namespace o2::quality_control_modules::its

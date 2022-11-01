@@ -47,6 +47,8 @@ class ITSFhrCheck : public o2::quality_control::checker::CheckInterface
  private:
   int mNPixelPerStave[3] = { 4718592, 58720256, 102760448 }; // IB, ML, OL
   std::shared_ptr<TLatex> tInfo[5];
+  float fhrcutIB = 0.01;
+  float fhrcutOB = 0.0001;
   ClassDefOverride(ITSFhrCheck, 2);
 };
 
