@@ -196,7 +196,7 @@ void TrackletsTask::buildHistograms()
   getObjectsManager()->startPublishing(mTrackletsPerTimeFrame);
   mTrackletsPerTimeFrameCycled = new TH1F("trackletspertimeframecycled", "Number of Tracklets per timeframe, this cycle;Tracklets in TimeFrame;Counts", 25000, 0, 500000);
   getObjectsManager()->startPublishing(mTrackletsPerTimeFrameCycled);
-  mTriggersPerTimeFrame = new TH1F("triggerspertimeframe", "Number of Triggers per timeframe;Triggers in TimeFrame;Counts", 100, 0, 100);
+  mTriggersPerTimeFrame = new TH1F("triggerspertimeframe", "Number of Triggers per timeframe;Triggers in TimeFrame;Counts", 10000, 0, 10000);
   getObjectsManager()->startPublishing(mTriggersPerTimeFrame);
 
   buildTrackletLayers();
