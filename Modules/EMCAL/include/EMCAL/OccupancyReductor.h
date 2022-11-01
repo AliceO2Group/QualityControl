@@ -8,11 +8,6 @@
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
-
-///
-/// \file   TH2Reductor.h
-/// \author Piotr Konopka
-///
 #ifndef QUALITYCONTROL_EMCAL_DIGITOCCUPANCYREDUCTOR_H
 #define QUALITYCONTROL_EMCAL_DIGITOCCUPANCYREDUCTOR_H
 
@@ -29,15 +24,14 @@ class Geometry;
 namespace o2::quality_control_modules::emcal
 {
 
-/// \brief A Reductor which obtains the most popular characteristics of TH2.
+/// \brief Reductor for Occupancy histograms
 ///
-/// A Reductor which obtains the most popular characteristics of TH2.
-/// It produces a branch in the format: "sumw/D:sumw2:sumwx:sumwx2:sumwy:sumwy2:sumwxy:entries"
-class DigitOccupancyReductor : public quality_control::postprocessing::Reductor
+/// Extracting number of entries above 0 for each supermodule area.
+class OccupancyReductor : public quality_control::postprocessing::Reductor
 {
  public:
-  DigitOccupancyReductor();
-  virtual ~DigitOccupancyReductor() = default;
+  OccupancyReductor();
+  virtual ~OccupancyReductor() = default;
 
   void* getBranchAddress() override;
   const char* getBranchLeafList() override;
@@ -53,4 +47,4 @@ class DigitOccupancyReductor : public quality_control::postprocessing::Reductor
 
 } // namespace o2::quality_control_modules::emcal
 
-#endif //QUALITYCONTROL_TH2REDUCTOR_
+#endif // QUALITYCONTROL_EMCAL_DIGITOCCUPANCYREDUCTOR_H

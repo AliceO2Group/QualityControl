@@ -2,8 +2,7 @@
 
 add_library(O2QcEMCAL)
 
-target_sources(O2QcEMCAL PRIVATE src/RawErrorCheck.cxx src/RawTask.cxx src/RawCheck.cxx src/CellTask.cxx src/CellCheck.cxx src/DigitsQcTask.cxx src/DigitCheck.cxx src/DigitOccupancyReductor.cxx src/ClusterTask.cxx src/RawErrorTask.cxx src/CalibMonitoringTask.cxx src/SupermoduleProjectorTask.cxx src/BadChannelMapReductor.cxx src/TimeCalibParamReductor.cxx
-)
+target_sources(O2QcEMCAL PRIVATE src/RawErrorCheck.cxx src/RawTask.cxx src/RawCheck.cxx src/CellTask.cxx src/CellCheck.cxx src/DigitsQcTask.cxx src/DigitCheck.cxx src/OccupancyReductor.cxx src/ClusterTask.cxx src/RawErrorTask.cxx src/CalibMonitoringTask.cxx src/SupermoduleProjectorTask.cxx src/BadChannelMapReductor.cxx src/TimeCalibParamReductor.cxx src/SupermoduleProjectionReductor.cxx src/SubdetectorProjectionReductor.cxx)
 
 target_include_directories(
   O2QcEMCAL
@@ -20,7 +19,7 @@ add_root_dictionary(O2QcEMCAL
   include/EMCAL/RawCheck.h
   include/EMCAL/CellTask.h
   include/EMCAL/CellCheck.h
-  include/EMCAL/DigitOccupancyReductor.h
+  include/EMCAL/OccupancyReductor.h
   include/EMCAL/ClusterTask.h
   include/EMCAL/RawErrorTask.h
   include/EMCAL/RawErrorCheck.h
@@ -28,6 +27,8 @@ add_root_dictionary(O2QcEMCAL
   include/EMCAL/SupermoduleProjectorTask.h
   include/EMCAL/BadChannelMapReductor.h
   include/EMCAL/TimeCalibParamReductor.h
+  include/EMCAL/SupermoduleProjectionReductor.h
+  include/EMCAL/SubdetectorProjectionReductor.h
   LINKDEF include/EMCAL/LinkDef.h)
 
 install(TARGETS O2QcEMCAL

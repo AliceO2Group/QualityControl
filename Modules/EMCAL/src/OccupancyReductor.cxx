@@ -10,27 +10,27 @@
 // or submit itself to any jurisdiction.
 
 #include "EMCALBase/Geometry.h"
-#include "EMCAL/DigitOccupancyReductor.h"
+#include "EMCAL/OccupancyReductor.h"
 #include "TH2.h"
 
 using namespace o2::quality_control_modules::emcal;
 
-DigitOccupancyReductor::DigitOccupancyReductor() : Reductor(), mGeometry(nullptr), mStats()
+OccupancyReductor::OccupancyReductor() : Reductor(), mGeometry(nullptr), mStats()
 {
   mGeometry = o2::emcal::Geometry::GetInstanceFromRunNumber(300000);
 }
 
-void* DigitOccupancyReductor::getBranchAddress()
+void* OccupancyReductor::getBranchAddress()
 {
   return &mStats;
 }
 
-const char* DigitOccupancyReductor::getBranchLeafList()
+const char* OccupancyReductor::getBranchLeafList()
 {
   return "totalCounts/D:smCounts[20]";
 }
 
-void DigitOccupancyReductor::update(TObject* obj)
+void OccupancyReductor::update(TObject* obj)
 {
   memset(mStats.mCountSM, 0, sizeof(double) * 20);
   TH2* digitOccupancyHistogram = static_cast<TH2*>(obj);
