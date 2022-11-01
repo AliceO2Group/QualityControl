@@ -98,7 +98,7 @@ void ITSNoisyPixelTask::initialize(o2::framework::InitContext& /*ctx*/)
   publishHistos();
 
   // get dict from ccdb
-  mTimestamp = std::stol( o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "dicttimestamp","0"));
+  mTimestamp = std::stol(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "dicttimestamp", "0"));
   long int ts = mTimestamp ? mTimestamp : o2::ccdb::getCurrentTimestamp();
   ILOG(Info, Support) << "Getting dictionary from ccdb - timestamp: " << ts << ENDM;
   auto& mgr = o2::ccdb::BasicCCDBManager::instance();
@@ -447,11 +447,11 @@ void ITSNoisyPixelTask::createAllHistos()
 
 void ITSNoisyPixelTask::getJsonParameters()
 {
-  mLocalGeometryFile =  o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "isLocalGeometry",mLocalGeometryFile);
-  mGeoTimestamp = o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "geomstamp",mGeoTimestamp);
-  mGeomPath = o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "geomPath",mGeomPath);
-  
-  std::string LayerConfig = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "layer","0000000");
+  mLocalGeometryFile = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "isLocalGeometry", mLocalGeometryFile);
+  mGeoTimestamp = o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "geomstamp", mGeoTimestamp);
+  mGeomPath = o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "geomPath", mGeomPath);
+
+  std::string LayerConfig = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "layer", "0000000");
 
   for (int ilayer = 0; ilayer < NLayer; ilayer++) {
     if (LayerConfig[ilayer] != '0') {
@@ -462,20 +462,18 @@ void ITSNoisyPixelTask::getJsonParameters()
     }
   }
 
-
-  std::string queryOption = o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "queryOption","from-digit"); 
+  std::string queryOption = o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "queryOption", "from-digit");
   if (queryOption.find("digit") != std::string::npos)
     mQueryOption = kDigit;
   else if (queryOption.find("cluster") != std::string::npos)
     mQueryOption = kCluster;
 
-  mOccUpdateFrequency = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "orderedPlotsUpdateFrequency",mOccUpdateFrequency);     
-  int request_nmostnoisy = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "orderedPlotsBinNumber",25);
+  mOccUpdateFrequency = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "orderedPlotsUpdateFrequency", mOccUpdateFrequency);
+  int request_nmostnoisy = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "orderedPlotsBinNumber", 25);
 
   if (request_nmostnoisy > 0)
     nmostnoisy = request_nmostnoisy;
   mEnableOrderedHitsObject = (mOccUpdateFrequency >= 0 && request_nmostnoisy > 0);
-
 }
 
 void ITSNoisyPixelTask::addObject(TObject* aObject)
