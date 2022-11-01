@@ -16,6 +16,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <unordered_set>
 
 #include <TCanvas.h>
 #include <TH1.h>
@@ -47,6 +48,18 @@ TestbeamRawTask::~TestbeamRawTask()
   }
   for (auto& hist : mPadASICChannelTOT) {
     delete hist;
+  };
+  if (mLinksWithPayloadPixel) {
+    delete mLinksWithPayloadPixel;
+  }
+  if (mTriggersFeePixel) {
+    delete mTriggersFeePixel;
+  }
+  if (mAverageHitsChipPixel) {
+    delete mAverageHitsChipPixel;
+  }
+  if (mHitsChipPixel) {
+    delete mHitsChipPixel;
   }
 }
 
@@ -79,6 +92,24 @@ void TestbeamRawTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
   mPayloadSizePadsGBT = new TH1D("PayloadSizePadGBT", "Payload size GBT words", 10000, 0., 10000.);
   getObjectsManager()->startPublishing(mPayloadSizePadsGBT);
+
+  /////////////////////////////////////////////////////////////////
+  /// Pixel histograms
+  /////////////////////////////////////////////////////////////////
+  constexpr int FEES = 30;
+  constexpr int MAX_CHIPS = 10;    // For the moment leave completely open
+  constexpr int MAX_TRIGGERS = 10; // Number of triggers / HBF usually sparse
+  mLinksWithPayloadPixel = new TH1D("Pixel_PagesFee", "HBF vs. FEE ID; FEE ID; HBFs", FEES, -0.5, FEES - 0.5);
+  getObjectsManager()->startPublishing(mLinksWithPayloadPixel);
+  mTriggersFeePixel = new TH2D("Pixel_NumTriggerHBF", "Number of triggers per HBF and FEE; FEE ID; Number of triggers / HBF", FEES, -0.5, FEES - 0.5, MAX_TRIGGERS, -0.5, MAX_TRIGGERS - 0.5);
+  mTriggersFeePixel->SetStats(false);
+  getObjectsManager()->startPublishing(mTriggersFeePixel);
+  mAverageHitsChipPixel = new TProfile2D("Pixel_AverageNumberOfHitsChip", "Average number of hits / chip", FEES, -0.5, FEES - 0.5, MAX_CHIPS, -0.5, MAX_CHIPS - 0.5);
+  mAverageHitsChipPixel->SetStats(false);
+  getObjectsManager()->startPublishing(mAverageHitsChipPixel);
+  mHitsChipPixel = new TH1D("Pixel_NumberHits", "Number of hits / chip", 50, 0., 50);
+  mHitsChipPixel->SetStats(false);
+  getObjectsManager()->startPublishing(mHitsChipPixel);
 }
 
 void TestbeamRawTask::startOfActivity(Activity& activity)
@@ -120,9 +151,13 @@ void TestbeamRawTask::monitorData(o2::framework::ProcessingContext& ctx)
                 // Pad data
                 ILOG(Debug, Support) << "Processing PAD data" << ENDM;
                 auto payloadsizeGBT = rawbuffer.size() * sizeof(char) / sizeof(PadGBTWord);
-                mPayloadSizePadsGBT->Fill(payloadsizeGBT);
                 processPadPayload(gsl::span<const PadGBTWord>(reinterpret_cast<const PadGBTWord*>(rawbuffer.data()), payloadsizeGBT));
-                rawbuffer.clear();
+              } else if (currentendpoint == 0) {
+                // Pixel data
+                auto feeID = o2::raw::RDHUtils::getFEEID(rdh);
+                ILOG(Debug, Support) << "Processing Pixel data from FEE " << feeID << ENDM;
+                auto payloadsizeGBT = rawbuffer.size() * sizeof(char) / sizeof(o2::itsmft::GBTWord);
+                processPixelPayload(gsl::span<const o2::itsmft::GBTWord>(reinterpret_cast<const o2::itsmft::GBTWord*>(rawbuffer.data()), payloadsizeGBT), feeID);
               } else {
                 ILOG(Error, Support) << "Unsupported endpoint " << currentendpoint << ENDM;
               }
@@ -147,7 +182,7 @@ void TestbeamRawTask::monitorData(o2::framework::ProcessingContext& ctx)
         ILOG(Debug, Support) << "Found payload size:         " << payloadsize << ENDM;
         ILOG(Debug, Support) << "Found offset to next:       " << o2::raw::RDHUtils::getOffsetToNext(rdh) << ENDM;
         ILOG(Debug, Support) << "Stop bit:                   " << (o2::raw::RDHUtils::getStop(rdh) ? "yes" : "no") << ENDM;
-        ILOG(Debug, Support) << "Number of GBT words:        " << (payloadsize * sizeof(char) / sizeof(PadGBTWord)) << ENDM;
+        ILOG(Debug, Support) << "Number of GBT words:        " << (payloadsize * sizeof(char) / (endpoint == 1 ? sizeof(PadGBTWord) : sizeof(o2::itsmft::GBTWord))) << ENDM;
         auto page_payload = databuffer.subspan(currentpos + o2::raw::RDHUtils::getHeaderSize(rdh), payloadsize);
         std::copy(page_payload.begin(), page_payload.end(), std::back_inserter(rawbuffer));
         currentpos += o2::raw::RDHUtils::getOffsetToNext(rdh);
@@ -209,6 +244,28 @@ void TestbeamRawTask::processPadEvent(gsl::span<const PadGBTWord> padpayload)
   }
 }
 
+void TestbeamRawTask::processPixelPayload(gsl::span<const o2::itsmft::GBTWord> pixelpayload, uint16_t feeID)
+{
+  auto fee = feeID & 0x00FF,
+       branch = (feeID & 0xFF00) >> 8;
+  ILOG(Debug, Support) << "Decoded FEE ID " << feeID << " -> FEE " << fee << ", branch " << branch << ENDM;
+  auto useFEE = branch * 10 + fee;
+  mLinksWithPayloadPixel->Fill(useFEE);
+
+  mPixelDecoder.reset();
+  mPixelDecoder.decodeEvent(pixelpayload);
+
+  mTriggersFeePixel->Fill(useFEE, mPixelDecoder.getChipData().size());
+
+  for (const auto& [trigger, chips] : mPixelDecoder.getChipData()) {
+    for (const auto& chip : chips) {
+      ILOG(Debug, Support) << "[In task] Chip " << static_cast<int>(chip.mChipID) << " from lane " << static_cast<int>(chip.mLaneID) << ", " << chip.mHits.size() << " hit(s) ..." << ENDM;
+      mHitsChipPixel->Fill(chip.mHits.size());
+      mAverageHitsChipPixel->Fill(useFEE, chip.mChipID, chip.mHits.size());
+    }
+  }
+}
+
 void TestbeamRawTask::endOfCycle()
 {
   ILOG(Info, Support) << "endOfCycle" << ENDM;
@@ -237,6 +294,11 @@ void TestbeamRawTask::reset()
   for (auto hitmap : mHitMapPadASIC) {
     hitmap->Reset();
   }
+
+  mLinksWithPayloadPixel->Reset();
+  mTriggersFeePixel->Reset();
+  mAverageHitsChipPixel->Reset();
+  mHitsChipPixel->Reset();
 }
 
 } // namespace o2::quality_control_modules::focal

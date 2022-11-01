@@ -20,12 +20,15 @@
 #include <array>
 
 #include "QualityControl/TaskInterface.h"
+#include "ITSMFTReconstruction/GBTWord.h"
 #include "FOCAL/PadWord.h"
 #include "FOCAL/PadDecoder.h"
 #include "FOCAL/PadMapper.h"
+#include "FOCAL/PixelDecoder.h"
 
 class TH1;
 class TH2;
+class TProfile2D;
 
 using namespace o2::quality_control::core;
 
@@ -53,16 +56,29 @@ class TestbeamRawTask final : public TaskInterface
 
  private:
   void processPadPayload(gsl::span<const PadGBTWord> gbtpayload);
+  void processPixelPayload(gsl::span<const o2::itsmft::GBTWord> gbtpayload, uint16_t feeID);
   void processPadEvent(gsl::span<const PadGBTWord> gbtpayload);
 
-  PadDecoder mPadDecoder; ///< Decoder for pad data
-  PadMapper mPadMapper;   ///< Mapping for Pads
+  PadDecoder mPadDecoder;     ///< Decoder for pad data
+  PadMapper mPadMapper;       ///< Mapping for Pads
+  PixelDecoder mPixelDecoder; ///< Decoder for pixel data
 
+  /////////////////////////////////////////////////////////////////////////////////////
+  /// Pad histograms
+  /////////////////////////////////////////////////////////////////////////////////////
   TH1* mPayloadSizePadsGBT;                             ///< Payload size GBT words of pad data
   std::array<TH2*, PadData::NASICS> mPadASICChannelADC; ///< ADC per channel for each ASIC
   std::array<TH2*, PadData::NASICS> mPadASICChannelTOA; ///< TOA per channel for each ASIC
   std::array<TH2*, PadData::NASICS> mPadASICChannelTOT; ///< TOT per channel for each ASIC
   std::array<TH2*, PadData::NASICS> mHitMapPadASIC;     ///< Hitmap per ASIC
+
+  /////////////////////////////////////////////////////////////////////////////////////
+  /// Pixel histograms
+  /////////////////////////////////////////////////////////////////////////////////////
+  TH1* mLinksWithPayloadPixel;       ///< HBF with payload per link
+  TH2* mTriggersFeePixel;            ///< Nunber of triggers per HBF and FEE ID
+  TProfile2D* mAverageHitsChipPixel; ///< Average number of hits / chip
+  TH1* mHitsChipPixel;               ///< Number of hits / chip
 };
 
 } // namespace o2::quality_control_modules::focal
