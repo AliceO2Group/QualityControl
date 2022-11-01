@@ -113,7 +113,7 @@ static std::string getCurrentTime()
   tmp = localtime(&t);
 
   char timestr[500];
-  strftime(timestr, sizeof(timestr), "(%x - %X)", tmp);
+  strftime(timestr, sizeof(timestr), "(%d/%m/%Y - %R)", tmp);
 
   std::string result = timestr;
   return result;
@@ -155,6 +155,48 @@ void DecodingErrorsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
       msg->SetFillColor(kYellow);
       h->SetFillColor(kOrange);
     }
+    h->SetLineColor(kBlack);
+  }
+
+  if (mo->getName().find("SynchErrorsPerDE") != std::string::npos) {
+    auto* h = dynamic_cast<TH1F*>(mo->getObject());
+
+    // disable ticks on vertical axis
+    h->GetXaxis()->SetTickLength(0.0);
+    h->GetXaxis()->SetLabelSize(0.0);
+    h->GetYaxis()->SetTickLength(0);
+    h->GetYaxis()->SetTitle("out-of-sync fraction");
+    //h->SetMaximum(h->GetMaximum() * 1.5);
+
+    TText* xtitle = new TText();
+    xtitle->SetNDC();
+    xtitle->SetText(0.87, 0.03, "chamber #");
+    xtitle->SetTextSize(15);
+    h->GetListOfFunctions()->Add(xtitle);
+
+    // draw chamber delimiters
+    for (int demin = 200; demin <= 1000; demin += 100) {
+      float xpos = static_cast<float>(getDEindex(demin));
+      TLine* delimiter = new TLine(xpos, 0, xpos, h->GetMaximum() * 1.05);
+      delimiter->SetLineColor(kBlack);
+      delimiter->SetLineStyle(kDashed);
+      h->GetListOfFunctions()->Add(delimiter);
+    }
+
+    // draw x-axis labels
+    for (int ch = 1; ch <= 10; ch += 1) {
+      float x1 = static_cast<float>(getDEindex(ch * 100));
+      float x2 = (ch < 10) ? static_cast<float>(getDEindex(ch * 100 + 100)) : h->GetXaxis()->GetXmax();
+      float x0 = 0.8 * (x1 + x2) / (2 * h->GetXaxis()->GetXmax()) + 0.1;
+      float y0 = 0.05;
+      TText* label = new TText();
+      label->SetNDC();
+      label->SetText(x0, y0, TString::Format("%d", ch));
+      label->SetTextSize(15);
+      label->SetTextAlign(22);
+      h->GetListOfFunctions()->Add(label);
+    }
+
     h->SetLineColor(kBlack);
   }
 }

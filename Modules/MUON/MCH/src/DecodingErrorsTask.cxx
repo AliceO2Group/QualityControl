@@ -15,6 +15,7 @@
 ///
 
 #include "MCH/DecodingErrorsTask.h"
+#include "MCH/GlobalHistogram.h"
 
 #include <TFile.h>
 
@@ -28,6 +29,7 @@
 #include "MCHRawDecoder/PageDecoder.h"
 #include "MCHRawDecoder/ErrorCodes.h"
 #include "MCHBase/DecoderError.h"
+#include "MCHBase/HeartBeatPacket.h"
 
 namespace o2
 {
@@ -66,14 +68,10 @@ static void setYAxisLabels(TH2F* hErrors)
   }
 }
 
-void DecodingErrorsTask::initialize(o2::framework::InitContext& /*ic*/)
+//_____________________________________________________________________________
+
+void DecodingErrorsTask::createErrorHistos()
 {
-  ILOG(Info, Support) << "initialize DecodingErrorsTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
-
-  mElec2Det = createElec2DetMapper<ElectronicMapperGenerated>();
-  mFee2Solar = createFeeLink2SolarMapper<ElectronicMapperGenerated>();
-  mSolar2Fee = createSolar2FeeLinkMapper<ElectronicMapperGenerated>();
-
   // Number of decoding errors, grouped by chamber ID and normalized to the number of processed TF
   mHistogramErrorsPerChamber = std::make_shared<MergeableTH2Ratio>("DecodingErrorsPerChamber", "Chamber Number vs. Error Type", getErrorCodesSize(), 0, getErrorCodesSize(), 10, 1, 11);
   setXAxisLabels(mHistogramErrorsPerChamber.get());
@@ -97,15 +95,68 @@ void DecodingErrorsTask::initialize(o2::framework::InitContext& /*ic*/)
   publishObject(mHistogramErrorsPerFeeIdOnCycle, "colz", false, false);
 }
 
+//_____________________________________________________________________________
+
+void DecodingErrorsTask::createHeartBeatHistos()
+{
+  // Heart-beat packets time distribution and synchronization errors
+  mHistogramHBTimeFEC = std::make_shared<MergeableTH2Ratio>("HBTimeFEC", "HB time vs. FEC ID", 64 * 12 * 40, 0, 64 * 12 * 40, 40, mHBExpectedBc - 20, mHBExpectedBc + 20);
+  publishObject(mHistogramHBTimeFEC, "colz", false, false);
+
+  uint64_t max = ((static_cast<uint64_t>(0x100000) / 100) + 1) * 100;
+  mHistogramHBCoarseTimeFEC = std::make_shared<MergeableTH2Ratio>("HBCoarseTimeFEC", "HB time vs. FEC ID (coarse)", 64 * 12 * 40, 0, 64 * 12 * 40, 100, 0, max);
+  publishObject(mHistogramHBCoarseTimeFEC, "colz", false, false);
+
+  mSyncStatusFEC = std::make_shared<TH2F>("SyncStatusFEC", "Heart-beat status vs. FEC ID", 64 * 12 * 40, 0, 64 * 12 * 40, 3, 0, 3);
+  mSyncStatusFEC->GetYaxis()->SetBinLabel(1, "OK");
+  mSyncStatusFEC->GetYaxis()->SetBinLabel(2, "Out-of-sync");
+  mSyncStatusFEC->GetYaxis()->SetBinLabel(3, "Missing");
+  publishObject(mSyncStatusFEC, "col", false, false);
+
+  mHistogramSynchErrorsPerDE = std::make_shared<MergeableTH1Ratio>("SynchErrorsPerDE", "Out-of-sync boards fraction per DE", getDEindexMax() + 1, 0, getDEindexMax() + 1);
+  publishObject(mHistogramSynchErrorsPerDE, "hist", false, false);
+
+  mHistogramSynchErrorsPerChamber = std::make_shared<MergeableTH1Ratio>("SynchErrorsPerChamber", "Out-of-sync boards fraction per chamber", 10, 0, 10);
+  publishObject(mHistogramSynchErrorsPerChamber, "hist", false, false);
+}
+
+//_____________________________________________________________________________
+
+void DecodingErrorsTask::initialize(o2::framework::InitContext& /*ic*/)
+{
+  ILOG(Info, Support) << "initialize DecodingErrorsTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+
+  // expected bunch-crossing value in heart-beat packets
+  if (auto param = mCustomParameters.find("HBExpectedBc"); param != mCustomParameters.end()) {
+    mHBExpectedBc = std::stoi(param->second);
+  }
+
+  mElec2Det = createElec2DetMapper<ElectronicMapperGenerated>();
+  mFee2Solar = createFeeLink2SolarMapper<ElectronicMapperGenerated>();
+  mSolar2Fee = createSolar2FeeLinkMapper<ElectronicMapperGenerated>();
+
+  mHistogramTimeFramesCount = std::make_shared<TH1F>("TimeFramesCount", "Number of Time Frames", 1, 0, 1);
+  publishObject(mHistogramTimeFramesCount, "hist", true, false);
+
+  createErrorHistos();
+  createHeartBeatHistos();
+}
+
+//_____________________________________________________________________________
+
 void DecodingErrorsTask::startOfActivity(Activity& activity)
 {
   ILOG(Info, Support) << "startOfActivity : " << activity.mId << ENDM;
 }
 
+//_____________________________________________________________________________
+
 void DecodingErrorsTask::startOfCycle()
 {
   ILOG(Info, Support) << "startOfCycle" << ENDM;
 }
+
+//_____________________________________________________________________________
 
 void DecodingErrorsTask::decodeTF(framework::ProcessingContext& pc)
 {
@@ -124,6 +175,8 @@ void DecodingErrorsTask::decodeTF(framework::ProcessingContext& pc)
     decodeBuffer(buffer);
   }
 }
+
+//_____________________________________________________________________________
 
 void DecodingErrorsTask::decodeReadout(const o2::framework::DataRef& input)
 {
@@ -147,6 +200,8 @@ void DecodingErrorsTask::decodeReadout(const o2::framework::DataRef& input)
   gsl::span<const std::byte> buffer(reinterpret_cast<const std::byte*>(raw), payloadSize);
   decodeBuffer(buffer);
 }
+
+//_____________________________________________________________________________
 
 void DecodingErrorsTask::decodeBuffer(gsl::span<const std::byte> buf)
 {
@@ -176,6 +231,8 @@ void DecodingErrorsTask::decodeBuffer(gsl::span<const std::byte> buf)
   }
 }
 
+//_____________________________________________________________________________
+
 void DecodingErrorsTask::decodePage(gsl::span<const std::byte> page)
 {
   auto errorHandler = [&](DsElecId dsElecId, int8_t chip, uint32_t error) {
@@ -194,6 +251,8 @@ void DecodingErrorsTask::decodePage(gsl::span<const std::byte> page)
   mDecoder(page);
 }
 
+//_____________________________________________________________________________
+
 void DecodingErrorsTask::processErrors(framework::ProcessingContext& pc)
 {
   auto rawerrors = pc.inputs().get<gsl::span<o2::mch::DecoderError>>("rawerrors");
@@ -201,6 +260,8 @@ void DecodingErrorsTask::processErrors(framework::ProcessingContext& pc)
     plotError(error.getSolarID(), error.getDsID(), error.getChip(), error.getError());
   }
 }
+
+//_____________________________________________________________________________
 
 void DecodingErrorsTask::plotError(int solarId, int dsAddr, int chip, uint32_t error)
 {
@@ -238,6 +299,41 @@ void DecodingErrorsTask::plotError(int solarId, int dsAddr, int chip, uint32_t e
   }
 }
 
+//_____________________________________________________________________________
+
+void DecodingErrorsTask::processHBPackets(framework::ProcessingContext& pc)
+{
+  auto hbpackets = pc.inputs().get<gsl::span<o2::mch::HeartBeatPacket>>("hbpackets");
+  for (auto& hbp : hbpackets) {
+    plotHBPacket(hbp.getSolarID(), hbp.getDsID(), hbp.getChip(), hbp.getBunchCrossing());
+  }
+}
+
+//_____________________________________________________________________________
+
+void DecodingErrorsTask::plotHBPacket(int solarId, int dsAddr, int chip, uint32_t bc)
+{
+  int feeId{ -1 };
+  std::optional<FeeLinkId> feeLinkId = mSolar2Fee(solarId);
+  if (feeLinkId) {
+    feeId = feeLinkId->feeId();
+  }
+
+  DsElecId dsElecId{ uint16_t(solarId), uint8_t(dsAddr / 5), uint8_t(dsAddr % 5) };
+  int chamberId{ -1 };
+  if (auto opt = mElec2Det(dsElecId); opt.has_value()) {
+    DsDetId dsDetId = opt.value();
+    int deId = dsDetId.deId();
+    chamberId = deId / 100;
+  }
+
+  int fecId = feeId * 12 * 40 + feeLinkId->linkId() * 40 + dsAddr;
+  mHistogramHBTimeFEC->getNum()->Fill(fecId, bc);
+  mHistogramHBCoarseTimeFEC->getNum()->Fill(fecId, bc);
+}
+
+//_____________________________________________________________________________
+
 void DecodingErrorsTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   static int nTF = 0;
@@ -251,25 +347,161 @@ void DecodingErrorsTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (input.spec->binding == "rawerrors") {
       processErrors(ctx);
     }
+    if (input.spec->binding == "hbpackets") {
+      processHBPackets(ctx);
+    }
   }
 
   // Count the number of processed TF and set the denominators of the error histograms accordingly
   nTF += 1;
 
-  auto hTF = mHistogramErrorsPerChamber->getDen();
-  for (int ybin = 0; ybin <= hTF->GetYaxis()->GetNbins(); ybin++) {
-    for (int xbin = 0; xbin <= hTF->GetXaxis()->GetNbins(); xbin++) {
-      hTF->SetBinContent(xbin, ybin, nTF);
+  mHistogramTimeFramesCount->Fill(0.5);
+
+  auto updateTFcount = [](MergeableTH2Ratio* hr, int nTF) {
+    auto hTF = hr->getDen();
+    for (int ybin = 1; ybin <= hTF->GetYaxis()->GetNbins(); ybin++) {
+      for (int xbin = 1; xbin <= hTF->GetXaxis()->GetNbins(); xbin++) {
+        hTF->SetBinContent(xbin, ybin, nTF);
+      }
+    }
+  };
+
+  updateTFcount(mHistogramErrorsPerChamber.get(), nTF);
+  updateTFcount(mHistogramErrorsPerFeeId.get(), nTF);
+  updateTFcount(mHistogramHBTimeFEC.get(), nTF);
+  updateTFcount(mHistogramHBCoarseTimeFEC.get(), nTF);
+}
+
+//_____________________________________________________________________________
+
+int DecodingErrorsTask::getDeId(uint16_t feeId, uint8_t linkId, uint8_t eLinkId)
+{
+  uint16_t solarId = -1;
+  int deId = -1;
+  int dsIddet = -1;
+  int padId = -1;
+
+  o2::mch::raw::FeeLinkId feeLinkId{ feeId, linkId };
+
+  if (auto opt = mFee2Solar(feeLinkId); opt.has_value()) {
+    solarId = opt.value();
+  }
+  if (solarId < 0 || solarId > 1023) {
+    return -1;
+  }
+
+  o2::mch::raw::DsElecId dsElecId{ solarId, static_cast<uint8_t>(eLinkId / 5), static_cast<uint8_t>(eLinkId % 5) };
+
+  if (auto opt = mElec2Det(dsElecId); opt.has_value()) {
+    o2::mch::raw::DsDetId dsDetId = opt.value();
+    dsIddet = dsDetId.dsId();
+    deId = dsDetId.deId();
+  }
+
+  if (deId < 0 || dsIddet < 0) {
+    return -1;
+  }
+
+  return deId;
+}
+
+//_____________________________________________________________________________
+
+void DecodingErrorsTask::checkSyncErrors()
+{
+  int mBcMin{ mHBExpectedBc - 2 };
+  int mBcMax{ mHBExpectedBc + 2 };
+
+  std::vector<double> deNum(static_cast<size_t>(getDEindexMax() + 1));
+  std::vector<double> deDen(static_cast<size_t>(getDEindexMax() + 1));
+  std::array<double, 10> chNum;
+  std::array<double, 10> chDen;
+
+  std::fill(deNum.begin(), deNum.end(), 0);
+  std::fill(deDen.begin(), deDen.end(), 0);
+  std::fill(chNum.begin(), chNum.end(), 0);
+  std::fill(chDen.begin(), chDen.end(), 0);
+
+  int nbinsx = mHistogramHBTimeFEC->GetXaxis()->GetNbins();
+  int nbinsy = mHistogramHBTimeFEC->GetYaxis()->GetNbins();
+  for (int i = 1; i <= nbinsx; i++) {
+    int index = i - 1;
+    int ds_addr = (index % 40);
+    int link_id = (index / 40) % 12;
+    int fee_id = index / (12 * 40);
+
+    int de = getDeId(fee_id, link_id, ds_addr);
+    if (de < 0) {
+      continue;
+    }
+
+    int deIndex = getDEindex(de);
+    if (deIndex < 0) {
+      continue;
+    }
+
+    int chamber = de / 100 - 1;
+    if (chamber < 0 || chamber >= 10) {
+      continue;
+    }
+
+    deDen[deIndex] += 1;
+    chDen[chamber] += 1;
+
+    int ybinmin = mHistogramHBTimeFEC->GetYaxis()->FindBin(mBcMin);
+    int ybinmax = mHistogramHBTimeFEC->GetYaxis()->FindBin(mBcMax);
+    // number of HB packets in the good bc range
+    auto ngood = mHistogramHBTimeFEC->getNum()->Integral(i, i, ybinmin, ybinmax);
+    // number of HB packets in the good bc range, normalized to the number of processed time-frames
+    // we expect 2 HB packets per TF and per DS (one per SAMPA chip)
+    auto ngoodNorm = mHistogramHBTimeFEC->Integral(i, i, ybinmin, ybinmax);
+
+    // total number of HB packets received, including underflow/overflow
+    auto total = mHistogramHBTimeFEC->getNum()->Integral(i, i, 1, nbinsy); // integral over all the bc values
+    total += mHistogramHBTimeFEC->getNum()->GetBinContent(i, 0);           // add underflow
+    total += mHistogramHBTimeFEC->getNum()->GetBinContent(i, nbinsy + 1);  // add overflow
+
+    bool isOutOfSync = false;
+    auto nbad = total - ngood;
+    if (nbad > 0) {
+      isOutOfSync = true;
+    }
+
+    bool isMissing = false;
+    if (ngoodNorm < 1.5) {
+      isMissing = true;
+    }
+
+    if (isOutOfSync || isMissing) {
+      deNum[deIndex] += 1;
+      chNum[chamber] += 1;
+    }
+
+    if (!isOutOfSync && !isMissing) {
+      mSyncStatusFEC->Fill(i - 1, 0);
+    }
+    if (isOutOfSync) {
+      mSyncStatusFEC->Fill(i - 1, 1);
+    }
+    if (isMissing) {
+      mSyncStatusFEC->Fill(i - 1, 2);
     }
   }
 
-  hTF = mHistogramErrorsPerFeeId->getDen();
-  for (int ybin = 0; ybin <= hTF->GetYaxis()->GetNbins(); ybin++) {
-    for (int xbin = 0; xbin <= hTF->GetXaxis()->GetNbins(); xbin++) {
-      hTF->SetBinContent(xbin, ybin, nTF);
-    }
+  // update the average number of out-of-sync boards
+  for (size_t de = 0; de < deDen.size(); de++) {
+    mHistogramSynchErrorsPerDE->getNum()->SetBinContent(de + 1, deNum[de]);
+    mHistogramSynchErrorsPerDE->getDen()->SetBinContent(de + 1, deDen[de]);
   }
+  for (size_t ch = 0; ch < chDen.size(); ch++) {
+    mHistogramSynchErrorsPerChamber->getNum()->SetBinContent(ch + 1, chNum[ch]);
+    mHistogramSynchErrorsPerChamber->getDen()->SetBinContent(ch + 1, chDen[ch]);
+  }
+  mHistogramSynchErrorsPerDE->update();
+  mHistogramSynchErrorsPerChamber->update();
 }
+
+//_____________________________________________________________________________
 
 void DecodingErrorsTask::endOfCycle()
 {
@@ -304,6 +536,10 @@ void DecodingErrorsTask::endOfCycle()
   mHistogramErrorsPerChamber->update();
   mHistogramErrorsPerFeeId->update();
 
+  mHistogramHBCoarseTimeFEC->update();
+  mHistogramHBTimeFEC->update();
+  checkSyncErrors();
+
   // fill on-cycle plots
   subtractRatio(mHistogramErrorsPerChamberOnCycle, mHistogramErrorsPerChamber, mHistogramErrorsPerChamberPrevCycle);
   subtractRatio(mHistogramErrorsPerFeeIdOnCycle, mHistogramErrorsPerFeeId, mHistogramErrorsPerFeeIdPrevCycle);
@@ -313,13 +549,14 @@ void DecodingErrorsTask::endOfCycle()
   copyRatio(mHistogramErrorsPerFeeIdPrevCycle, mHistogramErrorsPerFeeId);
 }
 
+//_____________________________________________________________________________
+
 void DecodingErrorsTask::endOfActivity(Activity& /*activity*/)
 {
   ILOG(Info, Support) << "endOfActivity" << ENDM;
-
-  mHistogramErrorsPerChamber->update();
-  mHistogramErrorsPerFeeId->update();
 }
+
+//_____________________________________________________________________________
 
 void DecodingErrorsTask::reset()
 {
