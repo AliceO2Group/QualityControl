@@ -20,6 +20,11 @@
 
 #include <DPLUtils/RawParser.h>
 #include <DPLUtils/DPLRawParser.h>
+#include "CCDB/BasicCCDBManager.h"
+#include "CCDB/CCDBTimeStampUtils.h"
+
+#include "Common/Utils.h"
+
 #ifdef WITH_OPENMP
 #include <omp.h>
 #endif
@@ -84,7 +89,21 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info, Support) << "initialize ITSFhrTask" << ENDM;
   getParameters();
-  o2::base::GeometryManager::loadGeometry(mGeomPath.c_str());
+
+  if (mLocalGeometryFile == 1) {
+    ILOG(Info, Support) << "Getting geometry from local file" << ENDM;
+    o2::base::GeometryManager::loadGeometry(mGeomPath.c_str());
+  } else {
+    ILOG(Info, Support) << "Getting geometry from ccdb - timestamp: " << std::stol(mGeoTimestamp) << ENDM;
+    auto& mgr = o2::ccdb::BasicCCDBManager::instance();
+    mgr.setTimestamp(std::stol(mGeoTimestamp));
+    mgr.get<TGeoManager>("GLO/Config/GeometryAligned");
+    if (!o2::base::GeometryManager::isGeometryLoaded()) {
+      ILOG(Fatal, Support) << "Can't retrive geometry from ccdb: " << mgr.getURL() << " timestamp: " << std::stol(mGeoTimestamp) << ENDM;
+      throw std::runtime_error("Can't retrive geometry from ccdb!");
+    }
+  }
+
   mGeom = o2::its::GeometryTGeo::Instance();
   int numOfChips = mGeom->getNumberOfChips();
 
@@ -747,23 +766,25 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void ITSFhrTask::getParameters()
 {
-  mGeomPath = mCustomParameters["geomPath"];
-  mNThreads = std::stoi(mCustomParameters["decoderThreads"]);
-  mLayer = std::stoi(mCustomParameters["Layer"]);
-  mHitCutForCheck = std::stoi(mCustomParameters["HitNumberCut"]);
-  mGetTFFromBinding = std::stoi(mCustomParameters["GetTFFromBinding"]);
-  mHitCutForNoisyPixel = std::stoi(mCustomParameters["HitNumberCutForNoisyPixel"]);
-  mOccupancyCutForNoisyPixel = std::stof(mCustomParameters["OccupancyNumberCutForNoisyPixel"]);
-  mMaxGeneralAxisRange = std::stof(mCustomParameters["MaxGeneralAxisRange"]);
-  mMinGeneralAxisRange = std::stof(mCustomParameters["MinGeneralAxisRange"]);
-  mMaxGeneralNoisyAxisRange = std::stof(mCustomParameters["MaxGeneralNoisyAxisRange"]);
-  mMinGeneralNoisyAxisRange = std::stof(mCustomParameters["MinGeneralNoisyAxisRange"]);
-  mPhibins = std::stoi(mCustomParameters["Phibins"]);
-  mEtabins = std::stoi(mCustomParameters["Etabins"]);
-  mCutTFForSparse = std::stod(mCustomParameters["CutSparseTF"]);
-  mDoHitmapFilter = std::stoi(mCustomParameters["DoHitmapFilter"]);
-  mPhysicalOccupancyIB = std::stof(mCustomParameters["PhysicalOccupancyIB"]);
-  mPhysicalOccupancyOB = std::stof(mCustomParameters["PhysicalOccupancyOB"]);
+  mLocalGeometryFile = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "isLocalGeometry", mLocalGeometryFile);
+  mGeoTimestamp = o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "geomstamp", mGeoTimestamp);
+  mGeomPath = o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "geomPath", mGeomPath);
+  mNThreads = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "decoderThreads", mNThreads);
+  mLayer = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "Layer", mLayer);
+  mHitCutForCheck = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "HitNumberCut", mHitCutForCheck);
+  mGetTFFromBinding = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "GetTFFromBinding", mGetTFFromBinding);
+  mHitCutForNoisyPixel = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "HitNumberCutForNoisyPixel", mHitCutForNoisyPixel);
+  mOccupancyCutForNoisyPixel = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "OccupancyNumberCutForNoisyPixel", mOccupancyCutForNoisyPixel);
+  mMaxGeneralAxisRange = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "MaxGeneralAxisRange", mMaxGeneralAxisRange);
+  mMinGeneralAxisRange = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "MinGeneralAxisRange", mMinGeneralAxisRange);
+  mMaxGeneralNoisyAxisRange = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "MaxGeneralNoisyAxisRange", mMaxGeneralNoisyAxisRange);
+  mMinGeneralNoisyAxisRange = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "MinGeneralNoisyAxisRange", mMinGeneralNoisyAxisRange);
+  mPhibins = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "Phibins", mPhibins);
+  mEtabins = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "Etabins", mEtabins);
+  mCutTFForSparse = o2::quality_control_modules::common::getFromConfig<double>(mCustomParameters, "CutSparseTF", mCutTFForSparse);
+  mDoHitmapFilter = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "DoHitmapFilter", mDoHitmapFilter);
+  mPhysicalOccupancyIB = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "PhysicalOccupancyIB", mPhysicalOccupancyIB);
+  mPhysicalOccupancyOB = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "PhysicalOccupancyOB", mPhysicalOccupancyOB);
 }
 
 void ITSFhrTask::endOfCycle()

@@ -32,6 +32,7 @@
 #include "CCDB/CCDBTimeStampUtils.h"
 #include <Framework/InputRecord.h>
 #include <THnSparse.h>
+#include "Common/Utils.h"
 
 #ifdef WITH_OPENMP
 #include <omp.h>
@@ -97,7 +98,19 @@ void ITSClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   getJsonParameters();
 
-  o2::base::GeometryManager::loadGeometry(mGeomPath.c_str());
+  if (mLocalGeometryFile == 1) {
+    ILOG(Info, Support) << "Getting geometry from local file" << ENDM;
+    o2::base::GeometryManager::loadGeometry(mGeomPath.c_str());
+  } else {
+    ILOG(Info, Support) << "Getting geometry from ccdb - timestamp: " << std::stol(mGeoTimestamp) << ENDM;
+    auto& mgr = o2::ccdb::BasicCCDBManager::instance();
+    mgr.setTimestamp(std::stol(mGeoTimestamp));
+    mgr.get<TGeoManager>("GLO/Config/GeometryAligned");
+    if (!o2::base::GeometryManager::isGeometryLoaded()) {
+      ILOG(Fatal, Support) << "Can't retrive geometry from ccdb: " << mgr.getURL() << " timestamp: " << std::stol(mGeoTimestamp) << ENDM;
+      throw std::runtime_error("Can't retrive geometry from ccdb!");
+    }
+  }
   mGeom = o2::its::GeometryTGeo::Instance();
 
   createAllHistos();
@@ -116,7 +129,7 @@ void ITSClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   publishHistos();
 
   // get dict from ccdb
-  mTimestamp = std::stol(mCustomParameters["dicttimestamp"]);
+  mTimestamp = std::stol(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "dicttimestamp", "0"));
   long int ts = mTimestamp ? mTimestamp : o2::ccdb::getCurrentTimestamp();
   ILOG(Info, Support) << "Getting dictionary from ccdb - timestamp: " << ts << ENDM;
   auto& mgr = o2::ccdb::BasicCCDBManager::instance();
@@ -535,13 +548,16 @@ void ITSClusterTask::createAllHistos()
 
 void ITSClusterTask::getJsonParameters()
 {
-  mNThreads = stoi(mCustomParameters.find("nThreads")->second);
-  nBCbins = stoi(mCustomParameters.find("nBCbins")->second);
-  mGeomPath = mCustomParameters["geomPath"];
-  mDoPublish1DSummary = stoi(mCustomParameters.find("publishSummary1D")->second);
-  for (int ilayer = 0; ilayer < NLayer; ilayer++) {
+  mLocalGeometryFile = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "isLocalGeometry", mLocalGeometryFile);
+  mGeoTimestamp = o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "geomstamp", mGeoTimestamp);
+  mNThreads = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "nThreads", mNThreads);
+  nBCbins = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "nBCbins", nBCbins);
+  mGeomPath = o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "geomPath", mGeomPath);
+  mDoPublish1DSummary = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "publishSummary1D", mDoPublish1DSummary);
+  std::string LayerConfig = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "layer", "0000000");
 
-    if (mCustomParameters["layer"][ilayer] != '0') {
+  for (int ilayer = 0; ilayer < NLayer; ilayer++) {
+    if (LayerConfig[ilayer] != '0') {
       mEnableLayers[ilayer] = 1;
       ILOG(Info, Support) << "enable layer : " << ilayer << ENDM;
     } else {

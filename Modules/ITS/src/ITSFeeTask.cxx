@@ -19,6 +19,7 @@
 
 #include "ITS/ITSFeeTask.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "Common/Utils.h"
 
 #include <DPLUtils/RawParser.h>
 #include <DPLUtils/DPLRawParser.h>
@@ -475,9 +476,9 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void ITSFeeTask::getParameters()
 {
-  mNPayloadSizeBins = std::stoi(mCustomParameters["NPayloadSizeBins"]);
-  mResetLaneStatus = std::stoi(mCustomParameters["ResetLaneStatus"]);
-  mResetPayload = std::stoi(mCustomParameters["ResetPayload"]);
+  mNPayloadSizeBins = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "NPayloadSizeBins", mNPayloadSizeBins);
+  mResetLaneStatus = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "ResetLaneStatus", mResetLaneStatus);
+  mResetPayload = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "ResetPayload", mResetPayload);
 }
 
 void ITSFeeTask::getStavePoint(int layer, int stave, double* px, double* py)

@@ -113,7 +113,7 @@ class ITSFeeTask final : public TaskInterface
   int mStatusSummaryNumber[4][3] = { { 0 } };          //[summary][iflag] ---> Global, IB, ML, OL
 
   // parameters taken from the .json
-  int mNPayloadSizeBins = 0;
+  int mNPayloadSizeBins = 4096;
   bool mResetLaneStatus = false;
   bool mResetPayload = false;
 

@@ -67,6 +67,13 @@ class ITSFeeCheck : public o2::quality_control::checker::CheckInterface
   std::shared_ptr<TLatex> tInfoPL[10];
   std::shared_ptr<TLatex> tInfoSummary;
   std::shared_ptr<TLatex> tInfoTrg[13];
+
+  std::string skipbinstrg = "";
+  std::string skipfeeids = "";
+  int maxbadchipsIB = 2;
+  int maxbadlanesML = 4;
+  int maxbadlanesOL = 7;
+  double maxfractionbadlanes = 0.1;
 };
 
 } // namespace o2::quality_control_modules::its
