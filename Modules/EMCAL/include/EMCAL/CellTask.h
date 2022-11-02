@@ -181,12 +181,20 @@ class CellTask final : public TaskInterface
 
   TH2* mCells_ev_sm = nullptr;          ///< Number of Cells per events per supermodule
   TH2* mCells_ev_smThr = nullptr;       ///< Number of Cells with Threshold per events per supermodule
+  TH2* mCells_ev_sm_good = nullptr;     ///< Number of good Cells per events per supermodule
+  TH2* mCells_ev_sm_bad = nullptr;      ///< Number of bad Cells per events per supermodule
   TH1* mCells_ev = nullptr;             ///< Number of Cells per events
+  TH1* mCells_ev_good = nullptr;        ///< Number of good Cells per events
+  TH1* mCells_ev_bad = nullptr;         ///< Number of bad Cells per events
   TH1* mCells_ev_Thres = nullptr;       ///< Number of Cells with Threshold per events
   TH1* mCells_ev_EMCAL = nullptr;       ///< Number of Cells per events for EMCAL
   TH1* mCells_ev_EMCAL_Thres = nullptr; ///< Number of Cells with Threshold per events for EMCAL
+  TH1* mCells_ev_EMCAL_good = nullptr;  ///< Number of good Cells per events for EMCAL
+  TH1* mCells_ev_EMCAL_bad = nullptr;   ///< Number of bad Cells per events for EMCAL
   TH1* mCells_ev_DCAL = nullptr;        ///< Number of Cells per events for DCAL
   TH1* mCells_ev_DCAL_Thres = nullptr;  ///< Number of Cells per events with Threshold  for DCAL
+  TH1* mCells_ev_DCAL_good = nullptr;   ///< Number of Cells per events for DCAL
+  TH1* mCells_ev_DCAL_bad = nullptr;    ///< Number of Cells per events for DCAL
   TH2* mFracGoodCellsEvent = nullptr;   ///< Fraction of good cells / event (all / EMCAL / DCAL)
   TH2* mFracGoodCellsSM = nullptr;      ///< Fraction of good cells / supermodule
 };
