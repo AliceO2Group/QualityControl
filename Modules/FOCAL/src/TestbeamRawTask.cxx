@@ -61,6 +61,21 @@ TestbeamRawTask::~TestbeamRawTask()
   if (mHitsChipPixel) {
     delete mHitsChipPixel;
   }
+  if (mPixelHitsTriggerAll) {
+    delete mPixelHitsTriggerAll;
+  }
+  for (auto& hist : mPixelChipHitPofileLayer) {
+    delete hist;
+  }
+  for (auto& hist : mPixelChipHitProfileLayer) {
+    delete hist;
+  }
+  for (auto& hist : mPixelHitDistribitionLayer) {
+    delete hist;
+  }
+  for (auto& hist : mPixelHitsTriggerLayer) {
+    delete hist;
+  }
 }
 
 void TestbeamRawTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -97,7 +112,7 @@ void TestbeamRawTask::initialize(o2::framework::InitContext& /*ctx*/)
   /// Pixel histograms
   /////////////////////////////////////////////////////////////////
   constexpr int FEES = 30;
-  constexpr int MAX_CHIPS = 10;    // For the moment leave completely open
+  constexpr int MAX_CHIPS = 14;    // For the moment leave completely open
   constexpr int MAX_TRIGGERS = 10; // Number of triggers / HBF usually sparse
   mLinksWithPayloadPixel = new TH1D("Pixel_PagesFee", "HBF vs. FEE ID; FEE ID; HBFs", FEES, -0.5, FEES - 0.5);
   getObjectsManager()->startPublishing(mLinksWithPayloadPixel);
@@ -110,6 +125,28 @@ void TestbeamRawTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHitsChipPixel = new TH1D("Pixel_NumberHits", "Number of hits / chip", 50, 0., 50);
   mHitsChipPixel->SetStats(false);
   getObjectsManager()->startPublishing(mHitsChipPixel);
+  mPixelHitsTriggerAll = new TH1D("Pixel_TotalNumberHitsTrigger", "Number of hits per trigger", 1001, -0.5, 1000.5);
+  mPixelHitsTriggerAll->SetStats(false);
+  getObjectsManager()->startPublishing(mPixelHitsTriggerAll);
+
+  constexpr int PIXEL_LAYERS = 2,
+                PIXEL_COLUMNS = 7,
+                PIXEL_ROWS = 6,
+                PIXEL_CHIPS = PIXEL_COLUMNS * PIXEL_ROWS;
+  for (int ilayer = 0; ilayer < PIXEL_LAYERS; ilayer++) {
+    mPixelChipHitPofileLayer[ilayer] = new TProfile2D(Form("Pixel_Hitprofile_%d", ilayer), Form("Pixel hit profile in layer %d", ilayer), PIXEL_COLUMNS, -0.5, PIXEL_COLUMNS - 0.5, PIXEL_ROWS, -0.5, PIXEL_ROWS - 0.5);
+    mPixelChipHitPofileLayer[ilayer]->SetStats(false);
+    getObjectsManager()->startPublishing(mPixelChipHitPofileLayer[ilayer]);
+    mPixelChipHitProfileLayer[ilayer] = new TH2D(Form("Pixel_Hitmap_%d", ilayer), Form("Pixel hitmap in layer %d", ilayer), PIXEL_COLUMNS, -0.5, PIXEL_COLUMNS - 0.5, PIXEL_ROWS, -0.5, PIXEL_ROWS - 0.5);
+    mPixelChipHitProfileLayer[ilayer]->SetStats(false);
+    getObjectsManager()->startPublishing(mPixelChipHitProfileLayer[ilayer]);
+    mPixelHitDistribitionLayer[ilayer] = new TH2D(Form("Pixel_Hitdist_%d", ilayer), Form("Pixel hit distribution in layer %d", ilayer), PIXEL_CHIPS, -0.5, PIXEL_CHIPS - 0.5, 101, -0.5, 100.5);
+    mPixelHitDistribitionLayer[ilayer]->SetStats(false);
+    getObjectsManager()->startPublishing(mPixelHitDistribitionLayer[ilayer]);
+    mPixelHitsTriggerLayer[ilayer] = new TH1D(Form("Pixel_NumberHitsTrigger_%d", ilayer), Form("Number of hits per trigger in layer %d", ilayer), 1001, -0.5, 1000.5);
+    mPixelHitsTriggerLayer[ilayer]->SetStats(false);
+    getObjectsManager()->startPublishing(mPixelHitsTriggerLayer[ilayer]);
+  }
 }
 
 void TestbeamRawTask::startOfActivity(Activity& activity)
@@ -127,6 +164,10 @@ void TestbeamRawTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   ILOG(Info, Support) << "Called" << ENDM;
   ILOG(Info, Support) << "Received " << ctx.inputs().size() << " inputs" << ENDM;
+  mPixelNHitsAll.clear();
+  for (auto& hitcounterLayer : mPixelNHitsLayer) {
+    hitcounterLayer.clear();
+  }
   int inputs = 0;
   std::vector<char> rawbuffer;
   int currentendpoint = 0;
@@ -192,6 +233,16 @@ void TestbeamRawTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
     inputs++;
   }
+
+  // Fill number of hit/trigger histogram of the pixels
+  for (auto& [trg, nhits] : mPixelNHitsAll) {
+    mPixelHitsTriggerAll->Fill(nhits);
+  }
+  for (int ilayer = 0; ilayer < 2; ilayer++) {
+    for (auto& [trg, nhits] : mPixelNHitsLayer[ilayer]) {
+      mPixelHitsTriggerLayer[ilayer]->Fill(nhits);
+    }
+  }
 }
 
 void TestbeamRawTask::processPadPayload(gsl::span<const PadGBTWord> padpayload)
@@ -252,16 +303,42 @@ void TestbeamRawTask::processPixelPayload(gsl::span<const o2::itsmft::GBTWord> p
   auto useFEE = branch * 10 + fee;
   mLinksWithPayloadPixel->Fill(useFEE);
 
+  // Testbeam November 2022
+  int layer = fee < 2 ? 0 : 1;
+  auto& feemapping = mPixelMapper.getMapping(fee);
+
   mPixelDecoder.reset();
   mPixelDecoder.decodeEvent(pixelpayload);
 
   mTriggersFeePixel->Fill(useFEE, mPixelDecoder.getChipData().size());
 
   for (const auto& [trigger, chips] : mPixelDecoder.getChipData()) {
+    int nhitsAll = 0;
     for (const auto& chip : chips) {
       ILOG(Debug, Support) << "[In task] Chip " << static_cast<int>(chip.mChipID) << " from lane " << static_cast<int>(chip.mLaneID) << ", " << chip.mHits.size() << " hit(s) ..." << ENDM;
+      nhitsAll += chip.mHits.size();
       mHitsChipPixel->Fill(chip.mHits.size());
       mAverageHitsChipPixel->Fill(useFEE, chip.mChipID, chip.mHits.size());
+      try {
+        auto position = feemapping.getPosition(chip);
+        mPixelChipHitPofileLayer[layer]->Fill(position.mColumn, position.mRow, chip.mHits.size());
+        mPixelChipHitProfileLayer[layer]->Fill(position.mColumn, position.mRow, chip.mHits.size());
+        int chipIndex = position.mRow * 7 + position.mColumn;
+        mPixelHitDistribitionLayer[layer]->Fill(chipIndex, chip.mHits.size());
+      } catch (...) {
+      }
+    }
+    auto triggerfoundAll = mPixelNHitsAll.find(trigger);
+    if (triggerfoundAll == mPixelNHitsAll.end()) {
+      mPixelNHitsAll[trigger] = nhitsAll;
+    } else {
+      triggerfoundAll->second += nhitsAll;
+    }
+    auto triggerfoundLayer = mPixelNHitsLayer[layer].find(trigger);
+    if (triggerfoundLayer == mPixelNHitsLayer[layer].end()) {
+      mPixelNHitsLayer[layer][trigger] = nhitsAll;
+    } else {
+      triggerfoundLayer->second += nhitsAll;
     }
   }
 }
@@ -295,10 +372,34 @@ void TestbeamRawTask::reset()
     hitmap->Reset();
   }
 
-  mLinksWithPayloadPixel->Reset();
-  mTriggersFeePixel->Reset();
-  mAverageHitsChipPixel->Reset();
-  mHitsChipPixel->Reset();
+  if (mLinksWithPayloadPixel) {
+    mLinksWithPayloadPixel->Reset();
+  }
+  if (mTriggersFeePixel) {
+    mTriggersFeePixel->Reset();
+  }
+  if (mAverageHitsChipPixel) {
+    mAverageHitsChipPixel->Reset();
+  }
+  if (mHitsChipPixel) {
+    mHitsChipPixel->Reset();
+  }
+  if (mPixelHitsTriggerAll) {
+    mPixelHitsTriggerAll->Reset();
+  }
+
+  for (auto& hist : mPixelChipHitPofileLayer) {
+    hist->Reset();
+  }
+  for (auto& hist : mPixelChipHitProfileLayer) {
+    hist->Reset();
+  }
+  for (auto& hist : mPixelHitDistribitionLayer) {
+    hist->Reset();
+  }
+  for (auto& hist : mPixelHitsTriggerLayer) {
+    hist->Reset();
+  }
 }
 
 } // namespace o2::quality_control_modules::focal

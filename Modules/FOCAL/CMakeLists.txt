@@ -2,7 +2,7 @@
 
 add_library(O2QcFOCAL)
 
-target_sources(O2QcFOCAL PRIVATE src/LaneData.cxx src/PadWord.cxx src/PadData.cxx src/PadDecoder.cxx src/PadMapper.cxx src/PixelHit.cxx src/PixelChip.cxx src/PixelDecoder.cxx src/TestbeamRawTask.cxx)
+target_sources(O2QcFOCAL PRIVATE src/LaneData.cxx src/PadWord.cxx src/PadData.cxx src/PadDecoder.cxx src/PadMapper.cxx src/PixelHit.cxx src/PixelChip.cxx src/PixelDecoder.cxx src/PixelMapper.cxx src/TestbeamRawTask.cxx)
 
 target_include_directories(
   O2QcFOCAL
@@ -20,6 +20,12 @@ install(TARGETS O2QcFOCAL
 add_root_dictionary(O2QcFOCAL
   HEADERS
   include/FOCAL/TestbeamRawTask.h
+  include/FOCAL/PixelMapper.h
+  include/FOCAL/PixelDecoder.h
+  include/FOCAL/PadData.h
+  include/FOCAL/PadMapper.h
+  include/FOCAL/LaneData.h
+  include/FOCAL/PadDecoder.h
   LINKDEF include/FOCAL/LinkDef.h)
 
 install(

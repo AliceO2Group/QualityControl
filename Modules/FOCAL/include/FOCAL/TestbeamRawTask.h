@@ -18,13 +18,16 @@
 #define QC_MODULE_FOCAL_FOCALTESTBEAMRAWTASK_H
 
 #include <array>
+#include <unordered_map>
 
 #include "QualityControl/TaskInterface.h"
+#include "CommonDataFormat/InteractionRecord.h"
 #include "ITSMFTReconstruction/GBTWord.h"
 #include "FOCAL/PadWord.h"
 #include "FOCAL/PadDecoder.h"
 #include "FOCAL/PadMapper.h"
 #include "FOCAL/PixelDecoder.h"
+#include "FOCAL/PixelMapper.h"
 
 class TH1;
 class TH2;
@@ -59,9 +62,12 @@ class TestbeamRawTask final : public TaskInterface
   void processPixelPayload(gsl::span<const o2::itsmft::GBTWord> gbtpayload, uint16_t feeID);
   void processPadEvent(gsl::span<const PadGBTWord> gbtpayload);
 
-  PadDecoder mPadDecoder;     ///< Decoder for pad data
-  PadMapper mPadMapper;       ///< Mapping for Pads
-  PixelDecoder mPixelDecoder; ///< Decoder for pixel data
+  PadDecoder mPadDecoder;                                                         ///< Decoder for pad data
+  PadMapper mPadMapper;                                                           ///< Mapping for Pads
+  PixelDecoder mPixelDecoder;                                                     ///< Decoder for pixel data
+  PixelMapper mPixelMapper;                                                       ///< Testbeam mapping for pixels
+  std::unordered_map<o2::InteractionRecord, int> mPixelNHitsAll;                  ///< Number of hits / event all layers
+  std::array<std::unordered_map<o2::InteractionRecord, int>, 2> mPixelNHitsLayer; ///< Number of hits / event layer
 
   /////////////////////////////////////////////////////////////////////////////////////
   /// Pad histograms
@@ -75,10 +81,15 @@ class TestbeamRawTask final : public TaskInterface
   /////////////////////////////////////////////////////////////////////////////////////
   /// Pixel histograms
   /////////////////////////////////////////////////////////////////////////////////////
-  TH1* mLinksWithPayloadPixel;       ///< HBF with payload per link
-  TH2* mTriggersFeePixel;            ///< Nunber of triggers per HBF and FEE ID
-  TProfile2D* mAverageHitsChipPixel; ///< Average number of hits / chip
-  TH1* mHitsChipPixel;               ///< Number of hits / chip
+  TH1* mLinksWithPayloadPixel;                         ///< HBF with payload per link
+  TH2* mTriggersFeePixel;                              ///< Nunber of triggers per HBF and FEE ID
+  TProfile2D* mAverageHitsChipPixel;                   ///< Average number of hits / chip
+  TH1* mHitsChipPixel;                                 ///< Number of hits / chip
+  std::array<TProfile2D*, 2> mPixelChipHitPofileLayer; ///< Hit profile for pixel chips
+  std::array<TH2*, 2> mPixelChipHitProfileLayer;       ///< Hit map for pixel chips
+  std::array<TH2*, 2> mPixelHitDistribitionLayer;      ///< Hit distribution per chip in layer
+  TH1* mPixelHitsTriggerAll;                           ///< Number of pixel hits / trigger
+  std::array<TH1*, 2> mPixelHitsTriggerLayer;          ///< Number of pixel hits in layer / trigger
 };
 
 } // namespace o2::quality_control_modules::focal
