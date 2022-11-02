@@ -394,7 +394,6 @@ void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
                 }
               }
             } // isRightSide
-              //}   // noisePattern & mask
             mask <<= 1;
           } // pattern loop 1-16
         }   // noise.patterns[board] Bend or Non-Bend not empty
@@ -569,7 +568,6 @@ void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
                 }
               }
             } // IsRightSide
-              //}   // Dead.pattern & mask
             mask <<= 1;
           } // loop pattern 1-16
         }   // Dead.patterns[board] Bend or Non-Bend not empty
