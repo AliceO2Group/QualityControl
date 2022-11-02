@@ -39,7 +39,7 @@ class ITSThresholdCalibrationTask : public TaskInterface
   ITSThresholdCalibrationTask();
   ~ITSThresholdCalibrationTask() override;
 
-  struct CalibrationResStruct {
+  struct CalibrationResStructTHR {
     int Layer;
     int Stave;
     int Hs;
@@ -52,8 +52,16 @@ class ITSThresholdCalibrationTask : public TaskInterface
     float Noise;
     float NoiseRMS;
     int status;
-    bool isDeadPixel = false;
-    bool isDeadColumn = false;
+  };
+  struct CalibrationResStructPixel {
+    int Layer;
+    int Stave;
+    int Hs;
+    int HIC;
+    int ChipID;
+    int Type;
+    int counts;
+    int Dcols;
   };
 
   void initialize(o2::framework::InitContext& ctx) override;
@@ -74,7 +82,11 @@ class ITSThresholdCalibrationTask : public TaskInterface
   Int_t getBarrel(Int_t iLayer);
   int getCurrentChip(int barrel, int chipid, int hic, int hs);
 
-  CalibrationResStruct CalibrationParser(string input);
+  void doAnalysisTHR(string inString, int iScan);
+  void doAnalysisPixel(string inString);
+
+  CalibrationResStructTHR CalibrationParserTHR(string input);
+  CalibrationResStructPixel CalibrationParserPixel(string input);
 
   std::vector<TObject*> mPublishedObjects;
 
@@ -90,6 +102,7 @@ class ITSThresholdCalibrationTask : public TaskInterface
   const int StaveBoundary[NLayer] = { 0, 12, 28, 0, 24, 0, 42 };
 
   TString sScanTypes[3] = { "VCASN", "ITHR", "THR" };
+  TString sCalibrationType[3] = { "Noisy", "Dead", "Ineff" };
   TString sBarrelType[3] = { "IB", "ML", "OL" };
   Int_t nChips[3] = { 9, 112, 196 };
   Int_t nStaves[3] = { 48, 54, 90 };
@@ -101,7 +114,9 @@ class ITSThresholdCalibrationTask : public TaskInterface
 
   TH2F *hCalibrationChipDone[3], *hCalibrationChipAverage[3][3], *hCalibrationRMSChipAverage[3][3];
   TH2F *hCalibrationThrNoiseRMSChipAverage[3], *hCalibrationThrNoiseChipAverage[3];
-  TH2F *hCalibrationDeadColumns[3], *hCalibrationDeadPixels[3];
+  // TH2F *hCalibrationDeadColumns[3], *hCalibrationDeadPixels[3];
+  TH2D* hCalibrationDColChipAverage[3];
+  TH2D* hCalibrationPixelpAverage[3][3];
 
   TH1F* hSuccessRate;
   TH1F *hCalibrationLayer[7][3], *hCalibrationRMSLayer[7][3];

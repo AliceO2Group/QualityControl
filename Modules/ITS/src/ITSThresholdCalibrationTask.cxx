@@ -60,8 +60,10 @@ ITSThresholdCalibrationTask::~ITSThresholdCalibrationTask()
     delete hCalibrationThrNoiseChipAverage[iBarrel];
     delete hCalibrationThrNoiseRMSChipAverage[iBarrel];
     delete hCalibrationChipDone[iBarrel];
-    delete hCalibrationDeadColumns[iBarrel];
-    delete hCalibrationDeadPixels[iBarrel];
+
+    delete hCalibrationDColChipAverage[iBarrel];
+    for (int iPixelScanType = 0; iPixelScanType < 3; iPixelScanType++)
+      delete hCalibrationPixelpAverage[iPixelScanType][iBarrel];
   }
 }
 
@@ -87,7 +89,7 @@ void ITSThresholdCalibrationTask::startOfCycle()
 void ITSThresholdCalibrationTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
 
-  string inStringChipDone, inString;
+  string inStringChipDone, inString, inPixel;
   char scanType;
   for (auto&& input : o2::framework::InputRecordWalker(ctx.inputs())) {
     if (input.header != nullptr && input.payload != nullptr) {
@@ -101,6 +103,11 @@ void ITSThresholdCalibrationTask::monitorData(o2::framework::ProcessingContext& 
         const auto tmpstring = ctx.inputs().get<gsl::span<char>>(input);
         std::copy(tmpstring.begin(), tmpstring.end(), std::back_inserter(inStringChipDone));
       }
+      if ((strcmp(header->dataOrigin.str, "ITS") == 0) && (strcmp(header->dataDescription.str, "PIXTYP") == 0)) {
+        const auto tmpstring = ctx.inputs().get<gsl::span<char>>(input);
+        std::copy(tmpstring.begin(), tmpstring.end(), std::back_inserter(inPixel));
+      }
+
       if ((strcmp(header->dataOrigin.str, "ITS") == 0) && (strcmp(header->dataDescription.str, "SCANT") == 0)) {
         scanType = ctx.inputs().get<char>(input);
       }
@@ -108,7 +115,6 @@ void ITSThresholdCalibrationTask::monitorData(o2::framework::ProcessingContext& 
   }
 
   Int_t iScan;
-  Double_t calibrationValue;
   if (scanType == 'V')
     iScan = 0;
   else if (scanType == 'I')
@@ -118,47 +124,17 @@ void ITSThresholdCalibrationTask::monitorData(o2::framework::ProcessingContext& 
   else if (scanType == 'A' || scanType == 'D')
     iScan = 3;
   auto splitRes = splitString(inString, "O2");
+
+  if (scanType == 'A' || scanType == 'D')
+    doAnalysisPixel(inPixel);
+  else
+    doAnalysisTHR(inString, iScan);
+
+  //--------------- Fill chips for which scan is completed
   auto splitResChipDone = splitString(inStringChipDone, "O2");
-
-  for (auto StaveStr : splitRes) {
-
-    if (StaveStr.size() > 0) {
-      CalibrationResStruct result = CalibrationParser(StaveStr);
-
-      int currentStave = StaveBoundary[result.Layer] + result.Stave + 1;
-      int iBarrel = getBarrel(result.Layer);
-      int currentChip = getCurrentChip(iBarrel, result.ChipID, result.HIC, result.Hs);
-      if (iScan < 3) {
-
-        if (scanType == 'V') {
-          calibrationValue = result.VCASN;
-        } else if (scanType == 'I') {
-          calibrationValue = result.ITHR;
-        } else if (scanType == 'T') {
-          calibrationValue = result.THR;
-          hCalibrationThrNoiseChipAverage[iBarrel]->SetBinContent(currentChip, currentStave, result.Noise);
-          hCalibrationThrNoiseRMSChipAverage[iBarrel]->Fill(currentChip, currentStave, result.NoiseRMS);
-        }
-
-        hCalibrationChipAverage[iScan][iBarrel]->SetBinContent(currentChip, currentStave, calibrationValue);
-        hCalibrationRMSChipAverage[iScan][iBarrel]->SetBinContent(currentChip, currentStave, result.RMS);
-      } else {
-        if (result.isDeadPixel)
-          hCalibrationDeadPixels[iBarrel]->Fill(currentChip, currentStave);
-        if (result.isDeadColumn)
-          hCalibrationDeadColumns[iBarrel]->Fill(currentChip, currentStave);
-      }
-
-      if (result.status == 1)
-        SuccessStatus[result.Layer]++;
-      TotalStatus[result.Layer]++;
-    }
-  }
-
-  // Fill chips for which scan is completed
   for (auto StaveStr : splitResChipDone) {
     if (StaveStr.size() > 0) {
-      CalibrationResStruct result = CalibrationParser(StaveStr);
+      CalibrationResStructTHR result = CalibrationParserTHR(StaveStr);
 
       int currentStave = StaveBoundary[result.Layer] + result.Stave + 1;
       int iBarrel = getBarrel(result.Layer);
@@ -169,12 +145,49 @@ void ITSThresholdCalibrationTask::monitorData(o2::framework::ProcessingContext& 
       hCalibrationChipDone[iBarrel]->Fill(currentChip - 1, currentStave - 1);
     }
   }
+}
 
+void ITSThresholdCalibrationTask::doAnalysisTHR(string inString, int iScan)
+{
+
+  auto splitRes = splitString(inString, "O2");
+
+  //-------------- General TH2 plots
+  for (auto StaveStr : splitRes) {
+    if (StaveStr.size() > 0) {
+      CalibrationResStructTHR result = CalibrationParserTHR(StaveStr);
+
+      int currentStave = StaveBoundary[result.Layer] + result.Stave + 1;
+      int iBarrel = getBarrel(result.Layer);
+      int currentChip = getCurrentChip(iBarrel, result.ChipID, result.HIC, result.Hs);
+
+      Double_t calibrationValue;
+      if (iScan == 0) {
+        calibrationValue = result.VCASN;
+      } else if (iScan == 1) {
+        calibrationValue = result.ITHR;
+      } else if (iScan == 2) {
+        calibrationValue = result.THR;
+        hCalibrationThrNoiseChipAverage[iBarrel]->SetBinContent(currentChip, currentStave, result.Noise);
+        hCalibrationThrNoiseRMSChipAverage[iBarrel]->Fill(currentChip, currentStave, result.NoiseRMS);
+      }
+
+      hCalibrationChipAverage[iScan][iBarrel]->SetBinContent(currentChip, currentStave, calibrationValue);
+      hCalibrationRMSChipAverage[iScan][iBarrel]->SetBinContent(currentChip, currentStave, result.RMS);
+
+      if (result.status == 1)
+        SuccessStatus[result.Layer]++;
+      TotalStatus[result.Layer]++;
+    }
+  }
+
+  //---------------------SuccessRate plots:
   for (int iLayer; iLayer < 7; iLayer++) {
     if (TotalStatus[iLayer] > 0)
       hSuccessRate->SetBinContent(iLayer + 1, SuccessStatus[iLayer] / TotalStatus[iLayer]);
   }
 
+  //------------------ 1D summary plots per layer
   for (int iLayer = 0; iLayer < 7; iLayer++) { // TH1 plots per layer
 
     Int_t iBarrel = getBarrel(iLayer);
@@ -203,6 +216,27 @@ void ITSThresholdCalibrationTask::monitorData(o2::framework::ProcessingContext& 
   }
 }
 
+void ITSThresholdCalibrationTask::doAnalysisPixel(string inString)
+{
+
+  auto splitRes = splitString(inString, "O2");
+
+  //-------------- General TH2 plots
+  for (auto StaveStr : splitRes) {
+    if (StaveStr.size() > 0) {
+      CalibrationResStructPixel result = CalibrationParserPixel(StaveStr);
+
+      int currentStave = StaveBoundary[result.Layer] + result.Stave + 1;
+      int iBarrel = getBarrel(result.Layer);
+      int currentChip = getCurrentChip(iBarrel, result.ChipID, result.HIC, result.Hs);
+
+      hCalibrationPixelpAverage[result.Type][iBarrel]->SetBinContent(currentChip, currentStave, result.counts);
+      if (result.Type == 0)
+        hCalibrationDColChipAverage[iBarrel]->SetBinContent(currentChip, currentStave, result.Dcols);
+    }
+  }
+}
+
 int ITSThresholdCalibrationTask::getCurrentChip(int barrel, int chipid, int hic, int hs)
 {
   int currentChip;
@@ -223,9 +257,47 @@ int ITSThresholdCalibrationTask::getCurrentChip(int barrel, int chipid, int hic,
   return currentChip;
 }
 
-ITSThresholdCalibrationTask::CalibrationResStruct ITSThresholdCalibrationTask::CalibrationParser(string input)
+ITSThresholdCalibrationTask::CalibrationResStructPixel ITSThresholdCalibrationTask::CalibrationParserPixel(string input)
 {
-  CalibrationResStruct result;
+  CalibrationResStructPixel result;
+  auto StaveINFO = splitString(input, ",");
+
+  for (string info : StaveINFO) {
+    if (info.size() == 0)
+      continue;
+
+    std::cout << "We have string: " << info << std::endl;
+    std::string name = splitString(info, ":")[0];
+    string data = splitString(info, ":")[1];
+
+    if (name == "ChipID") {
+      int o2chipid = std::stod(data);
+      int Hs, HIC, ChipID, Layer, Stave;
+      mp.expandChipInfoHW(o2chipid, Layer, Stave, Hs, HIC, ChipID);
+      result.Hs = Hs;
+      result.HIC = HIC;
+      result.Layer = Layer;
+      result.Stave = Stave;
+      result.ChipID = ChipID;
+    } else if (name == "PixelType") {
+      if (data == "Noisy")
+        result.Type = 0;
+      else if (data == "Dead")
+        result.Type = 1;
+      else if (data == "Ineff")
+        result.Type = 2;
+    } else if (name == "PixelNos") {
+      result.counts = std::stoi(data);
+    } else if (name == "DcolNos") {
+      result.Dcols = std::stoi(data);
+    }
+  }
+  return result;
+}
+
+ITSThresholdCalibrationTask::CalibrationResStructTHR ITSThresholdCalibrationTask::CalibrationParserTHR(string input)
+{
+  CalibrationResStructTHR result;
   auto StaveINFO = splitString(input, ",");
   for (string info : StaveINFO) {
     if (info.size() == 0)
@@ -261,10 +333,6 @@ ITSThresholdCalibrationTask::CalibrationResStruct ITSThresholdCalibrationTask::C
         result.ITHR = std::stof(data);
       } else if (name == "THR") {
         result.THR = std::stof(data);
-      } else if (name == "Dcol" && std::stof(data) != -1) {
-        result.isDeadColumn = true;
-      } else if (name == "Row" && std::stof(data) != -1) {
-        result.isDeadPixel = true;
       }
     }
   }
@@ -307,8 +375,10 @@ void ITSThresholdCalibrationTask::reset()
     hCalibrationThrNoiseChipAverage[iBarrel]->Reset();
     hCalibrationThrNoiseRMSChipAverage[iBarrel]->Reset();
     hCalibrationChipDone[iBarrel]->Reset();
-    hCalibrationDeadColumns[iBarrel]->Reset();
-    hCalibrationDeadPixels[iBarrel]->Reset();
+
+    hCalibrationDColChipAverage[iBarrel]->Reset();
+    for (int iPixelScanType = 0; iPixelScanType < 3; iPixelScanType++)
+      hCalibrationPixelpAverage[iPixelScanType][iBarrel]->Reset();
   }
 }
 
@@ -349,7 +419,6 @@ void ITSThresholdCalibrationTask::createAllHistos()
       addObject(hCalibrationRMSChipAverage[iScan][iBarrel]);
     }
   }
-
   //------------------Noise histograms for THR scan, success rate, and chip completed
 
   for (int iBarrel = 0; iBarrel < 3; iBarrel++) { // TH2 for THR noise plots
@@ -400,19 +469,21 @@ void ITSThresholdCalibrationTask::createAllHistos()
   }
 
   for (int iBarrel = 0; iBarrel < 3; iBarrel++) {
-    hCalibrationDeadPixels[iBarrel] = new TH2F(Form("NoisyPixels%s", sBarrelType[iBarrel].Data()), Form("Number of noisy pixels per chip (not from bad dcols) for %s", sBarrelType[iBarrel].Data()), nChips[iBarrel], -0.5, nChips[iBarrel] - 0.5, nStaves[iBarrel], -0.5, nStaves[iBarrel] - 0.5);
-    hCalibrationDeadPixels[iBarrel]->SetStats(0);
-    if (iBarrel != 0)
-      formatAxes(hCalibrationDeadPixels[iBarrel], "Chip", "", 1, 1.10);
-    formatLayers(hCalibrationDeadPixels[iBarrel], iBarrel);
-    addObject(hCalibrationDeadPixels[iBarrel]);
 
-    hCalibrationDeadColumns[iBarrel] = new TH2F(Form("NoisyDColumns%s", sBarrelType[iBarrel].Data()), Form("Number of noisy dcols per chip for %s", sBarrelType[iBarrel].Data()), nChips[iBarrel], -0.5, nChips[iBarrel] - 0.5, nStaves[iBarrel], -0.5, nStaves[iBarrel] - 0.5);
-    hCalibrationDeadColumns[iBarrel]->SetStats(0);
+    for (int iType = 0; iType < 3; iType++) {
+      hCalibrationPixelpAverage[iType][iBarrel] = new TH2D(Form("%sPixels%s", sCalibrationType[iType].Data(), sBarrelType[iBarrel].Data()), Form("Number of %s pixels per chip for %s", sCalibrationType[iType].Data(), sBarrelType[iBarrel].Data()), nChips[iBarrel], -0.5, nChips[iBarrel] - 0.5, nStaves[iBarrel], -0.5, nStaves[iBarrel] - 0.5);
+      hCalibrationPixelpAverage[iType][iBarrel]->SetStats(0);
+      if (iBarrel != 0)
+        formatAxes(hCalibrationPixelpAverage[iType][iBarrel], "Chip", "", 1, 1.10);
+      formatLayers(hCalibrationPixelpAverage[iType][iBarrel], iBarrel);
+      addObject(hCalibrationPixelpAverage[iType][iBarrel]);
+    }
+    hCalibrationDColChipAverage[iBarrel] = new TH2D(Form("DColls%s", sBarrelType[iBarrel].Data()), Form("Number of DColls per chip for %s", sBarrelType[iBarrel].Data()), nChips[iBarrel], -0.5, nChips[iBarrel] - 0.5, nStaves[iBarrel], -0.5, nStaves[iBarrel] - 0.5);
+    hCalibrationDColChipAverage[iBarrel]->SetStats(0);
     if (iBarrel != 0)
-      formatAxes(hCalibrationDeadColumns[iBarrel], "Chip", "", 1, 1.10);
-    formatLayers(hCalibrationDeadColumns[iBarrel], iBarrel);
-    addObject(hCalibrationDeadColumns[iBarrel]);
+      formatAxes(hCalibrationDColChipAverage[iBarrel], "Chip", "", 1, 1.10);
+    formatLayers(hCalibrationDColChipAverage[iBarrel], iBarrel);
+    addObject(hCalibrationDColChipAverage[iBarrel]);
   }
 }
 void ITSThresholdCalibrationTask::addObject(TObject* aObject)
