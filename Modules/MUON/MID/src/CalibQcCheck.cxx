@@ -21,6 +21,7 @@
 // ROOT
 #include <TH1.h>
 #include <TH2.h>
+#include <TProfile2D.h>
 
 #include <DataFormatsQualityControl/FlagReasons.h>
 
@@ -45,6 +46,14 @@ Quality CalibQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
         result = Quality::Good;
       else
         result = Quality::Bad;
+    }
+    if (mo->getName() == "NbNoiseROF") {
+      auto* h = dynamic_cast<TH1F*>(mo->getObject());
+      nNoiseRof = h->GetBinContent(1);
+    }
+    if (mo->getName() == "NbDeadROF") {
+      auto* h = dynamic_cast<TH1F*>(mo->getObject());
+      nDeadRof = h->GetBinContent(1);
     }
   }
   return result;
@@ -82,74 +91,77 @@ void CalibQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResu
 {
   // printf("\n*********** CalibQcCheck ****** beautify \n");
   auto currentTime = getCurrentTime();
-  updateTitle(dynamic_cast<TH1*>(mo->getObject()), currentTime);
-  // printf("\n*********** CalibQcCheck ****** nTF = %d\n",nTF);
+  updateTitle(dynamic_cast<TProfile2D*>(mo->getObject()), currentTime);
+  // printf("\n*********** CalibQcCheck ****** nTF = %d, nDeadRof = %d, nNoiseRof = %d\n",nTF,nDeadRof,nNoiseRof);
   if (checkResult == Quality::Good) {
-    float scale = 1 / (nTF * scaleTime);
+    // float scale = 1 / (nTF * scaleTime); //Dead max 998,1
+    // float scale = 1 / (nTF); //Dead max 11,38 (== 113826/10000TF)
+    // float scale = 1.; //Dead max 113826
+    float scale = 100.;
     /// Scale Noise Maps ::
     if (mo->getName() == "BendNoiseMap11") {
-      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
       h2->Scale(scale);
     }
     if (mo->getName() == "BendNoiseMap12") {
-      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
       h2->Scale(scale);
     }
     if (mo->getName() == "BendNoiseMap21") {
-      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
       h2->Scale(scale);
     }
     if (mo->getName() == "BendNoiseMap22") {
-      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
       h2->Scale(scale);
     }
     if (mo->getName() == "NBendNoiseMap11") {
-      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
       h2->Scale(scale);
     }
     if (mo->getName() == "NBendNoiseMap12") {
-      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
       h2->Scale(scale);
     }
     if (mo->getName() == "NBendNoiseMap21") {
-      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
       h2->Scale(scale);
     }
     if (mo->getName() == "NBendNoiseMap22") {
-      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
       h2->Scale(scale);
     }
     /// Scale Dead Maps ::
     if (mo->getName() == "BendDeadMap11") {
-      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
       h2->Scale(scale);
     }
     if (mo->getName() == "BendDeadMap12") {
-      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
       h2->Scale(scale);
     }
     if (mo->getName() == "BendDeadMap21") {
-      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
       h2->Scale(scale);
     }
     if (mo->getName() == "BendDeadMap22") {
-      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
       h2->Scale(scale);
     }
     if (mo->getName() == "NBendDeadMap11") {
-      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
       h2->Scale(scale);
     }
     if (mo->getName() == "NBendDeadMap12") {
-      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
       h2->Scale(scale);
     }
     if (mo->getName() == "NBendDeadMap21") {
-      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
       h2->Scale(scale);
     }
     if (mo->getName() == "NBendDeadMap22") {
-      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
       h2->Scale(scale);
     }
   }

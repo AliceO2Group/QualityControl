@@ -112,10 +112,10 @@ void TracksQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
 {
   // std::cout << "beautify ::: " << checkResult << std::endl;
   auto currentTime = getCurrentTime();
-  updateTitle(dynamic_cast<TH1*>(mo->getObject()), currentTime);
+  updateTitle(dynamic_cast<TProfile*>(mo->getObject()), currentTime);
   TLatex* msg;
   if (mo->getName() == "TrackRatio44") {
-    auto* h = dynamic_cast<TH1F*>(mo->getObject());
+    auto* h = dynamic_cast<TProfile*>(mo->getObject());
     h->SetMinimum(0.);
     h->SetMaximum(1.2);
 
