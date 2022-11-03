@@ -50,23 +50,25 @@ namespace o2::quality_control_modules::pid
 
 bool MyFilter(const MyTrack& tr)
 {
-  return (tr.getP() < 2.0);
+  return (tr.getP() < 1.5);
 }
 
 TaskFT0TOF::~TaskFT0TOF()
 {
   // delete
-  delete mHistDeltatPi;
-  delete mHistDeltatKa;
-  delete mHistDeltatPr;
-  delete mHistDeltatPiPt;
-  delete mHistDeltatKaPt;
-  delete mHistDeltatPrPt;
-  delete mHistMass;
-  delete mHistMassvsP;
-  delete mHistBetavsP;
-  delete mHistDeltatPiEvTimeRes;
-  delete mHistDeltatPiEvTimeMult;
+  for (int i = 0; i < trackType::SIZE + 1; ++i) {
+    delete mHistDeltatPi[i];
+    delete mHistDeltatKa[i];
+    delete mHistDeltatPr[i];
+    delete mHistDeltatPiPt[i];
+    delete mHistDeltatKaPt[i];
+    delete mHistDeltatPrPt[i];
+    delete mHistMass[i];
+    delete mHistMassvsP[i];
+    delete mHistBetavsP[i];
+    delete mHistDeltatPiEvTimeRes[i];
+    delete mHistDeltatPiEvTimeMult[i];
+  }
   delete mHistEvTimeResEvTimeMult;
   delete mHistEvTimeTOF;
   delete mHistEvTimeTOFVsFT0AC;
@@ -144,18 +146,21 @@ void TaskFT0TOF::initialize(o2::framework::InitContext& /*ctx*/)
   }
 
   // initialize histgrams
-  mHistDeltatPi = new TH1F("DeltatPi", ";t_{TOF} - t_{exp}^{#pi} (ps)", 500, -5000, 5000);
-  mHistDeltatKa = new TH1F("DeltatKa", ";t_{TOF} - t_{exp}^{K} (ps)", 500, -5000, 5000);
-  mHistDeltatPr = new TH1F("DeltatPr", ";t_{TOF} - t_{exp}^{p} (ps)", 500, -5000, 5000);
-  mHistDeltatPiPt = new TH2F("DeltatPi_Pt", ";#it{p}_{T} (GeV/#it{c});t_{TOF} - t_{exp}^{#pi} (ps)", 5000, 0., 20., 500, -5000, 5000);
-  mHistDeltatKaPt = new TH2F("DeltatKa_Pt", ";#it{p}_{T} (GeV/#it{c});t_{TOF} - t_{exp}^{#pi} (ps)", 1000, 0., 20., 500, -5000, 5000);
-  mHistDeltatPrPt = new TH2F("DeltatPr_Pt", ";#it{p}_{T} (GeV/#it{c});t_{TOF} - t_{exp}^{#pi} (ps)", 1000, 0., 20., 500, -5000, 5000);
-  mHistMass = new TH1F("HadronMasses", ";M (GeV/#it{c}^{2})", 1000, 0, 3.);
-  mHistMassvsP = new TH2F("HadronMassesvsP", ";#it{p} (GeV/#it{c});M (GeV/#it{c}^{2})", 1000, 0., 5, 1000, 0, 3.);
-  mHistBetavsP = new TH2F("BetavsP", ";#it{p} (GeV/#it{c});TOF #beta", 1000, 0., 5, 1000, 0., 1.5);
-  mHistDeltatPiEvTimeRes = new TH2F("DeltatPiEvtimeRes", "0.7 < p < 1.1 GeV/#it{c};TOF event time resolution (ps);t_{TOF} - t_{exp}^{#pi} (ps)", 200, 0., 200, 500, -5000, 5000);
-  mHistDeltatPiEvTimeMult = new TH2F("DeltatPiEvTimeMult", "0.7 < p < 1.1 GeV/#it{c};TOF multiplicity; t_{TOF} - t_{exp}^{#pi} (ps)", 100, 0., 100, 500, -5000, 5000);
-  mHistEvTimeResEvTimeMult = new TH2F("EvTimeResEvTimeMult", "0.7 < p < 1.1 GeV/#it{c};TOF multiplicity;TOF event time resolution (ps)", 100, 0., 100, 200, 0, 200);
+  std::array<std::string, 5> title{ "TPC", "ITSTPC", "ITSTPCTRD", "TPCTRD" };
+  for (int i = 0; i < trackType::SIZE; ++i) {
+    mHistDeltatPi[i] = new TH1F(Form("DeltatPi_%s", title[i].c_str()), Form("tracks %s;t_{TOF} - t_{exp}^{#pi} (ps)", title[i].c_str()), 500, -5000, 5000);
+    mHistDeltatKa[i] = new TH1F(Form("DeltatKa_%s", title[i].c_str()), Form("tracks %s;t_{TOF} - t_{exp}^{K} (ps)", title[i].c_str()), 500, -5000, 5000);
+    mHistDeltatPr[i] = new TH1F(Form("DeltatPr_%s", title[i].c_str()), Form("tracks %s;t_{TOF} - t_{exp}^{p} (ps)", title[i].c_str()), 500, -5000, 5000);
+    mHistDeltatPiPt[i] = new TH2F(Form("DeltatPi_Pt_%s", title[i].c_str()), Form("tracks %s;#it{p}_{T} (GeV/#it{c});t_{TOF} - t_{exp}^{#pi} (ps)", title[i].c_str()), 5000, 0., 20., 500, -5000, 5000);
+    mHistDeltatKaPt[i] = new TH2F(Form("DeltatKa_Pt_%s", title[i].c_str()), Form("tracks %s;#it{p}_{T} (GeV/#it{c});t_{TOF} - t_{exp}^{#pi} (ps)", title[i].c_str()), 1000, 0., 20., 500, -5000, 5000);
+    mHistDeltatPrPt[i] = new TH2F(Form("DeltatPr_Pt_%s", title[i].c_str()), Form("tracks %s;#it{p}_{T} (GeV/#it{c});t_{TOF} - t_{exp}^{#pi} (ps)", title[i].c_str()), 1000, 0., 20., 500, -5000, 5000);
+    mHistMass[i] = new TH1F(Form("HadronMasses_%s", title[i].c_str()), Form("tracks %s;M (GeV/#it{c}^{2})", title[i].c_str()), 1000, 0, 3.);
+    mHistMassvsP[i] = new TH2F(Form("HadronMassesvsP_%s", title[i].c_str()), Form("tracks %s;#it{p} (GeV/#it{c});M (GeV/#it{c}^{2})", title[i].c_str()), 1000, 0., 5, 1000, 0, 3.);
+    mHistBetavsP[i] = new TH2F(Form("BetavsP_%s", title[i].c_str()), Form("tracks %s;#it{p} (GeV/#it{c});TOF #beta", title[i].c_str()), 1000, 0., 5, 1000, 0., 1.5);
+    mHistDeltatPiEvTimeRes[i] = new TH2F(Form("DeltatPiEvtimeRes_%s", title[i].c_str()), Form("tracks %s, 1.5 < p < 1.6 GeV/#it{c};TOF event time resolution (ps);t_{TOF} - t_{exp}^{#pi} (ps)", title[i].c_str()), 200, 0., 200, 500, -5000, 5000);
+    mHistDeltatPiEvTimeMult[i] = new TH2F(Form("DeltatPiEvTimeMult_%s", title[i].c_str()), Form("tracks %s, 1.5 < p < 1.6 GeV/#it{c};TOF multiplicity; t_{TOF} - t_{exp}^{#pi} (ps)", title[i].c_str()), 100, 0., 100, 500, -5000, 5000);
+  }
+  mHistEvTimeResEvTimeMult = new TH2F("EvTimeResEvTimeMult", "1.5 < p < 1.6 GeV/#it{c};TOF multiplicity;TOF event time resolution (ps)", 100, 0., 100, 200, 0, 200);
   mHistEvTimeTOF = new TH1F("EvTimeTOF", "t_{0}^{TOF};t_{0}^{TOF} (ps);Counts", 1000, -5000., +5000);
   mHistEvTimeTOFVsFT0AC = new TH2F("EvTimeTOFVsFT0AC", "t_{0}^{FT0AC} vs t_{0}^{TOF} w.r.t. BC;t_{0}^{TOF} w.r.t. BC (ps);t_{0}^{FT0AC} w.r.t. BC (ps)", 1000, -5000., +5000, 1000, -5000., +5000);
   mHistEvTimeTOFVsFT0A = new TH2F("EvTimeTOFVsFT0A", "t_{0}^{FT0A} vs t_{0}^{TOF} w.r.t. BC;t_{0}^{TOF} w.r.t. BC (ps);t_{0}^{FT0A} w.r.t. BC (ps)", 1000, -5000., +5000, 1000, -5000., +5000);
@@ -177,33 +182,76 @@ void TaskFT0TOF::initialize(o2::framework::InitContext& /*ctx*/)
   mBz = o2::base::Propagator::Instance()->getNominalBz();
 
   // publish histgrams
+  getObjectsManager()->startPublishing(mHistEvTimeResEvTimeMult);
+  getObjectsManager()->startPublishing(mHistEvTimeTOF);
+  getObjectsManager()->startPublishing(mHistDeltaBCTOFFT0);
+  getObjectsManager()->startPublishing(mHistEvTimeTOFVsFT0AC);
+  getObjectsManager()->startPublishing(mHistEvTimeTOFVsFT0A);
+  getObjectsManager()->startPublishing(mHistEvTimeTOFVsFT0C);
+  getObjectsManager()->startPublishing(mHistDeltaEvTimeTOFVsFT0AC);
+  getObjectsManager()->startPublishing(mHistDeltaEvTimeTOFVsFT0A);
+  getObjectsManager()->startPublishing(mHistDeltaEvTimeTOFVsFT0C);
+  getObjectsManager()->startPublishing(mHistEvTimeTOFVsFT0ACSameBC);
+  getObjectsManager()->startPublishing(mHistEvTimeTOFVsFT0ASameBC);
+  getObjectsManager()->startPublishing(mHistEvTimeTOFVsFT0CSameBC);
+  getObjectsManager()->startPublishing(mHistDeltaEvTimeTOFVsFT0ACSameBC);
+  getObjectsManager()->startPublishing(mHistDeltaEvTimeTOFVsFT0ASameBC);
+  getObjectsManager()->startPublishing(mHistDeltaEvTimeTOFVsFT0CSameBC);
+  // Is track TPC-TOF?
   if (mSrc[GID::Source::ITSTPCTOF] == 1) {
-    getObjectsManager()->startPublishing(mHistDeltatPi);
-    getObjectsManager()->startPublishing(mHistDeltatKa);
-    getObjectsManager()->startPublishing(mHistDeltatPr);
-    getObjectsManager()->startPublishing(mHistDeltatPiPt);
-    getObjectsManager()->startPublishing(mHistDeltatKaPt);
-    getObjectsManager()->startPublishing(mHistDeltatPrPt);
-    getObjectsManager()->startPublishing(mHistMass);
-    getObjectsManager()->startPublishing(mHistBetavsP);
-    getObjectsManager()->startPublishing(mHistMassvsP);
-    getObjectsManager()->startPublishing(mHistDeltatPiEvTimeRes);
-    getObjectsManager()->startPublishing(mHistDeltatPiEvTimeMult);
-    getObjectsManager()->startPublishing(mHistEvTimeResEvTimeMult);
-    getObjectsManager()->startPublishing(mHistEvTimeTOF);
-    getObjectsManager()->startPublishing(mHistDeltaBCTOFFT0);
-    getObjectsManager()->startPublishing(mHistEvTimeTOFVsFT0AC);
-    getObjectsManager()->startPublishing(mHistEvTimeTOFVsFT0A);
-    getObjectsManager()->startPublishing(mHistEvTimeTOFVsFT0C);
-    getObjectsManager()->startPublishing(mHistDeltaEvTimeTOFVsFT0AC);
-    getObjectsManager()->startPublishing(mHistDeltaEvTimeTOFVsFT0A);
-    getObjectsManager()->startPublishing(mHistDeltaEvTimeTOFVsFT0C);
-    getObjectsManager()->startPublishing(mHistEvTimeTOFVsFT0ACSameBC);
-    getObjectsManager()->startPublishing(mHistEvTimeTOFVsFT0ASameBC);
-    getObjectsManager()->startPublishing(mHistEvTimeTOFVsFT0CSameBC);
-    getObjectsManager()->startPublishing(mHistDeltaEvTimeTOFVsFT0ACSameBC);
-    getObjectsManager()->startPublishing(mHistDeltaEvTimeTOFVsFT0ASameBC);
-    getObjectsManager()->startPublishing(mHistDeltaEvTimeTOFVsFT0CSameBC);
+    getObjectsManager()->startPublishing(mHistDeltatPi[trackType::TPC]);
+    getObjectsManager()->startPublishing(mHistDeltatKa[trackType::TPC]);
+    getObjectsManager()->startPublishing(mHistDeltatPr[trackType::TPC]);
+    getObjectsManager()->startPublishing(mHistDeltatPiPt[trackType::TPC]);
+    getObjectsManager()->startPublishing(mHistDeltatKaPt[trackType::TPC]);
+    getObjectsManager()->startPublishing(mHistDeltatPrPt[trackType::TPC]);
+    getObjectsManager()->startPublishing(mHistMass[trackType::TPC]);
+    getObjectsManager()->startPublishing(mHistBetavsP[trackType::TPC]);
+    getObjectsManager()->startPublishing(mHistMassvsP[trackType::TPC]);
+    getObjectsManager()->startPublishing(mHistDeltatPiEvTimeRes[trackType::TPC]);
+    getObjectsManager()->startPublishing(mHistDeltatPiEvTimeMult[trackType::TPC]);
+  }
+  // Is track TPC-TRD-TOF?
+  if (mSrc[GID::Source::TPCTRDTOF] == 1) {
+    getObjectsManager()->startPublishing(mHistDeltatPi[trackType::TPCTRD]);
+    getObjectsManager()->startPublishing(mHistDeltatKa[trackType::TPCTRD]);
+    getObjectsManager()->startPublishing(mHistDeltatPr[trackType::TPCTRD]);
+    getObjectsManager()->startPublishing(mHistDeltatPiPt[trackType::TPCTRD]);
+    getObjectsManager()->startPublishing(mHistDeltatKaPt[trackType::TPCTRD]);
+    getObjectsManager()->startPublishing(mHistDeltatPrPt[trackType::TPCTRD]);
+    getObjectsManager()->startPublishing(mHistMass[trackType::TPCTRD]);
+    getObjectsManager()->startPublishing(mHistBetavsP[trackType::TPCTRD]);
+    getObjectsManager()->startPublishing(mHistMassvsP[trackType::TPCTRD]);
+    getObjectsManager()->startPublishing(mHistDeltatPiEvTimeRes[trackType::TPCTRD]);
+    getObjectsManager()->startPublishing(mHistDeltatPiEvTimeMult[trackType::TPCTRD]);
+  }
+  // Is track ITS-TPC-TOF
+  if (mSrc[GID::Source::ITSTPCTOF] == 1) {
+    getObjectsManager()->startPublishing(mHistDeltatPi[trackType::ITSTPC]);
+    getObjectsManager()->startPublishing(mHistDeltatKa[trackType::ITSTPC]);
+    getObjectsManager()->startPublishing(mHistDeltatPr[trackType::ITSTPC]);
+    getObjectsManager()->startPublishing(mHistDeltatPiPt[trackType::ITSTPC]);
+    getObjectsManager()->startPublishing(mHistDeltatKaPt[trackType::ITSTPC]);
+    getObjectsManager()->startPublishing(mHistDeltatPrPt[trackType::ITSTPC]);
+    getObjectsManager()->startPublishing(mHistMass[trackType::ITSTPC]);
+    getObjectsManager()->startPublishing(mHistBetavsP[trackType::ITSTPC]);
+    getObjectsManager()->startPublishing(mHistMassvsP[trackType::ITSTPC]);
+    getObjectsManager()->startPublishing(mHistDeltatPiEvTimeRes[trackType::ITSTPC]);
+    getObjectsManager()->startPublishing(mHistDeltatPiEvTimeMult[trackType::ITSTPC]);
+  }
+  // Is track ITS-TPC-TRD-TOF
+  if (mSrc[GID::Source::ITSTPCTRDTOF] == 1) {
+    getObjectsManager()->startPublishing(mHistDeltatPi[trackType::ITSTPCTRD]);
+    getObjectsManager()->startPublishing(mHistDeltatKa[trackType::ITSTPCTRD]);
+    getObjectsManager()->startPublishing(mHistDeltatPr[trackType::ITSTPCTRD]);
+    getObjectsManager()->startPublishing(mHistDeltatPiPt[trackType::ITSTPCTRD]);
+    getObjectsManager()->startPublishing(mHistDeltatKaPt[trackType::ITSTPCTRD]);
+    getObjectsManager()->startPublishing(mHistDeltatPrPt[trackType::ITSTPCTRD]);
+    getObjectsManager()->startPublishing(mHistMass[trackType::ITSTPCTRD]);
+    getObjectsManager()->startPublishing(mHistBetavsP[trackType::ITSTPCTRD]);
+    getObjectsManager()->startPublishing(mHistMassvsP[trackType::ITSTPCTRD]);
+    getObjectsManager()->startPublishing(mHistDeltatPiEvTimeRes[trackType::ITSTPCTRD]);
+    getObjectsManager()->startPublishing(mHistDeltatPiEvTimeMult[trackType::ITSTPCTRD]);
   }
   ILOG(Info, Support) << " Initialized!!!! " << ENDM;
 
@@ -266,7 +314,7 @@ void TaskFT0TOF::monitorData(o2::framework::ProcessingContext& ctx)
         continue;
       }
 
-      mMyTracks.push_back(MyTrack(matchTOF, trk));
+      mMyTracks.push_back(MyTrack(matchTOF, trk, trackType::TPC));
     } // END loop on TOF matches
   }   // END if track is TPC-TOF
 
@@ -288,8 +336,7 @@ void TaskFT0TOF::monitorData(o2::framework::ProcessingContext& ctx)
         continue;
       }
 
-      mMyTracks.push_back(MyTrack(matchTOF, trk));
-
+      mMyTracks.push_back(MyTrack(matchTOF, trkTPC, trackType::ITSTPC));
     } // END loop on TOF matches
   }   // END if track is ITS-TPC-TOF
 
@@ -310,8 +357,7 @@ void TaskFT0TOF::monitorData(o2::framework::ProcessingContext& ctx)
         continue;
       }
 
-      mMyTracks.push_back(MyTrack(matchTOF, trk));
-
+      mMyTracks.push_back(MyTrack(matchTOF, trkTPC, trackType::TPCTRD));
     } // END loop on TOF matches
   }   // END if track is TPC-TRD-TOF
 
@@ -333,13 +379,13 @@ void TaskFT0TOF::monitorData(o2::framework::ProcessingContext& ctx)
         continue;
       }
 
-      mMyTracks.push_back(MyTrack(matchTOF, trk));
-
+      mMyTracks.push_back(MyTrack(matchTOF, trkTPC, trackType::ITSTPCTRD));
     } // END loop on TOF matches
-  }   // END if track is TPC-TRD-TOF
+  }   // END if track is ITS-TPC-TRD-TOF
 
   std::vector<MyTrack> tracks;
   std::vector<o2::ft0::RecPoints> ft0Sorted;
+
   if (mUseFT0) {
     ft0Sorted = *ft0rec;
   }
@@ -424,17 +470,19 @@ void TaskFT0TOF::endOfActivity(Activity& /*activity*/)
 void TaskFT0TOF::reset()
 {
   // clean all the monitor objects here
-  mHistDeltatPi->Reset();
-  mHistDeltatKa->Reset();
-  mHistDeltatPr->Reset();
-  mHistDeltatPiPt->Reset();
-  mHistDeltatKaPt->Reset();
-  mHistDeltatPrPt->Reset();
-  mHistMass->Reset();
-  mHistBetavsP->Reset();
-  mHistMassvsP->Reset();
-  mHistDeltatPiEvTimeRes->Reset();
-  mHistDeltatPiEvTimeMult->Reset();
+  for (int i = 0; i < trackType::SIZE; ++i) {
+    mHistDeltatPi[i]->Reset();
+    mHistDeltatKa[i]->Reset();
+    mHistDeltatPr[i]->Reset();
+    mHistDeltatPiPt[i]->Reset();
+    mHistDeltatKaPt[i]->Reset();
+    mHistDeltatPrPt[i]->Reset();
+    mHistMass[i]->Reset();
+    mHistBetavsP[i]->Reset();
+    mHistMassvsP[i]->Reset();
+    mHistDeltatPiEvTimeRes[i]->Reset();
+    mHistDeltatPiEvTimeMult[i]->Reset();
+  }
   mHistEvTimeResEvTimeMult->Reset();
   mHistEvTimeTOF->Reset();
   mHistEvTimeTOFVsFT0AC->Reset();
@@ -453,11 +501,21 @@ void TaskFT0TOF::reset()
 
 void TaskFT0TOF::processEvent(const std::vector<MyTrack>& tracks, const std::vector<o2::ft0::RecPoints>& ft0Cand)
 {
-
   auto evtime = o2::tof::evTimeMaker<std::vector<MyTrack>, MyTrack, MyFilter>(tracks);
+  // if event time is 0
+  if (evtime.mEventTimeMultiplicity <= 2) {
+    int nBC = (tracks[0].tofSignal()) * o2::tof::Geo::BC_TIME_INPS_INV;
+    evtime.mEventTime = nBC * o2::tof::Geo::BC_TIME_INPS;
+  }
   bool isTOFst = evtime.mEventTimeError < 150;
   int nBC = (evtime.mEventTime + 5000.) * o2::tof::Geo::BC_TIME_INPS_INV;  // 5 ns offset to get the correct number of BC (int)
   float mEvTime_BC = evtime.mEventTime - nBC * o2::tof::Geo::BC_TIME_INPS; // Event time in ps wrt BC
+
+  if (TMath::Abs(mEvTime_BC) > 800) {
+    mEvTime_BC = 0;
+    evtime.mEventTime = nBC * o2::tof::Geo::BC_TIME_INPS;
+    evtime.mEventTimeMultiplicity = 0;
+  }
 
   for (auto& obj : ft0Cand) { // fill histo for FT0
     bool isAC = obj.isValidTime(0);
@@ -495,8 +553,10 @@ void TaskFT0TOF::processEvent(const std::vector<MyTrack>& tracks, const std::vec
     float mEvTime = evtime.mEventTime;
     float mEvTimeRes = evtime.mEventTimeError;
     const auto mMultiplicity = evtime.mEventTimeMultiplicity;
-    //
-    evtime.removeBias<MyTrack, MyFilter>(track, nt, mEvTime, mEvTimeRes);
+
+    if (mMultiplicity > 2) {
+      evtime.removeBias<MyTrack, MyFilter>(track, nt, mEvTime, mEvTimeRes);
+    }
 
     // Delta t Pion
     const float deltatpi = track.tofSignal() - mEvTime - track.tofExpSignalPi();
@@ -508,22 +568,27 @@ void TaskFT0TOF::processEvent(const std::vector<MyTrack>& tracks, const std::vec
     const float beta = track.getL() / (track.tofSignal() - mEvTime) * cinv;
     // Mass
     const float mass = track.getP() / beta * TMath::Sqrt(TMath::Abs(1 - beta * beta));
-    // T0 - number of BC
 
-    mHistDeltatPi->Fill(deltatpi);
-    mHistDeltatKa->Fill(deltatka);
-    mHistDeltatPr->Fill(deltatpr);
-    mHistDeltatPiPt->Fill(track.getPt(), deltatpi);
-    mHistDeltatKaPt->Fill(track.getPt(), deltatka);
-    mHistDeltatPrPt->Fill(track.getPt(), deltatpr);
-    mHistMass->Fill(mass);
-    mHistBetavsP->Fill(track.getP(), beta);
-    mHistMassvsP->Fill(track.getP(), mass);
+    for (int i = 0; i < trackType::SIZE; ++i) {
+      if (track.source == i) {
+        mHistDeltatPi[i]->Fill(deltatpi);
+        mHistDeltatKa[i]->Fill(deltatka);
+        mHistDeltatPr[i]->Fill(deltatpr);
+        mHistDeltatPiPt[i]->Fill(track.getPt(), deltatpi);
+        mHistDeltatKaPt[i]->Fill(track.getPt(), deltatka);
+        mHistDeltatPrPt[i]->Fill(track.getPt(), deltatpr);
+        mHistMass[i]->Fill(mass);
+        mHistBetavsP[i]->Fill(track.getP(), beta);
+        mHistMassvsP[i]->Fill(track.getP(), mass);
+        if (track.getPt() > 1.5 && track.getPt() < 1.6) {
+          mHistDeltatPiEvTimeRes[i]->Fill(mEvTimeRes, deltatpi);
+          mHistDeltatPiEvTimeMult[i]->Fill(mMultiplicity, deltatpi);
+        }
+      }
+    }
+
     mHistEvTimeTOF->Fill(mEvTime_BC);
-
-    if (track.getP() > 0.7 && track.getP() < 1.1) {
-      mHistDeltatPiEvTimeRes->Fill(mEvTimeRes, deltatpi);
-      mHistDeltatPiEvTimeMult->Fill(mMultiplicity, deltatpi);
+    if (track.getPt() > 1.5 && track.getPt() < 1.6) {
       mHistEvTimeResEvTimeMult->Fill(mMultiplicity, mEvTimeRes);
     }
   }

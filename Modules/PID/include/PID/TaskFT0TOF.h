@@ -42,9 +42,10 @@ using GID = o2::dataformats::GlobalTrackID;
 using trkType = o2::dataformats::MatchInfoTOFReco::TrackType;
 
 struct MyTrack {
-  o2::dataformats::TrackTPCITS trk;
+  o2::tpc::TrackTPC trk;
   o2::dataformats::MatchInfoTOF match;
-  MyTrack(const o2::dataformats::MatchInfoTOF& m, const o2::dataformats::TrackTPCITS& t) : match(m), trk(t) {}
+  int source = -1;
+  MyTrack(const o2::dataformats::MatchInfoTOF& m, const o2::tpc::TrackTPC& t, const int s) : match(m), trk(t), source(s) {}
   MyTrack() {}
   float tofSignal() const { return match.getSignal(); }
   double tofSignalDouble() const { return match.getSignal(); }
@@ -62,12 +63,18 @@ struct MyTrack {
     const o2::track::TrackLTIntegral& info = match.getLTIntegralOut();
     return info.getL();
   }
-  const o2::dataformats::TrackTPCITS& getTrack() { return trk; }
+  const o2::tpc::TrackTPC& getTrack() { return trk; }
 };
 
 class TaskFT0TOF final : public TaskInterface
 {
  public:
+  enum trackType : int8_t { TPC = 0,
+                            ITSTPC,
+                            ITSTPCTRD,
+                            TPCTRD,
+                            SIZE };
+
   /// \brief Constructor
   TaskFT0TOF() = default;
   /// Destructor
@@ -129,32 +136,32 @@ class TaskFT0TOF final : public TaskInterface
   const float cinv = 33.35641;
   bool mUseFT0 = false;
 
-  TH1F* mHistDeltatPi;
-  TH1F* mHistDeltatKa;
-  TH1F* mHistDeltatPr;
-  TH2F* mHistDeltatPiPt;
-  TH2F* mHistDeltatKaPt;
-  TH2F* mHistDeltatPrPt;
-  TH1F* mHistMass;
-  TH2F* mHistBetavsP;
-  TH2F* mHistMassvsP;
-  TH2F* mHistDeltatPiEvTimeRes;
-  TH2F* mHistDeltatPiEvTimeMult;
-  TH2F* mHistEvTimeResEvTimeMult;
-  TH1F* mHistEvTimeTOF;
-  TH2F* mHistEvTimeTOFVsFT0AC;
-  TH2F* mHistEvTimeTOFVsFT0A;
-  TH2F* mHistEvTimeTOFVsFT0C;
-  TH1F* mHistDeltaEvTimeTOFVsFT0AC;
-  TH1F* mHistDeltaEvTimeTOFVsFT0A;
-  TH1F* mHistDeltaEvTimeTOFVsFT0C;
-  TH2F* mHistEvTimeTOFVsFT0ACSameBC;
-  TH2F* mHistEvTimeTOFVsFT0ASameBC;
-  TH2F* mHistEvTimeTOFVsFT0CSameBC;
-  TH1F* mHistDeltaEvTimeTOFVsFT0ACSameBC;
-  TH1F* mHistDeltaEvTimeTOFVsFT0ASameBC;
-  TH1F* mHistDeltaEvTimeTOFVsFT0CSameBC;
-  TH1I* mHistDeltaBCTOFFT0;
+  TH1F* mHistDeltatPi[trackType::SIZE + 1] = {};
+  TH1F* mHistDeltatKa[trackType::SIZE + 1] = {};
+  TH1F* mHistDeltatPr[trackType::SIZE + 1] = {};
+  TH2F* mHistDeltatPiPt[trackType::SIZE + 1] = {};
+  TH2F* mHistDeltatKaPt[trackType::SIZE + 1] = {};
+  TH2F* mHistDeltatPrPt[trackType::SIZE + 1] = {};
+  TH1F* mHistMass[trackType::SIZE + 1] = {};
+  TH2F* mHistBetavsP[trackType::SIZE + 1] = {};
+  TH2F* mHistMassvsP[trackType::SIZE + 1] = {};
+  TH2F* mHistDeltatPiEvTimeRes[trackType::SIZE + 1] = {};
+  TH2F* mHistDeltatPiEvTimeMult[trackType::SIZE + 1] = {};
+  TH2F* mHistEvTimeResEvTimeMult = 0x0;
+  TH1F* mHistEvTimeTOF = 0x0;
+  TH2F* mHistEvTimeTOFVsFT0AC = 0x0;
+  TH2F* mHistEvTimeTOFVsFT0A = 0x0;
+  TH2F* mHistEvTimeTOFVsFT0C = 0x0;
+  TH1F* mHistDeltaEvTimeTOFVsFT0AC = 0x0;
+  TH1F* mHistDeltaEvTimeTOFVsFT0A = 0x0;
+  TH1F* mHistDeltaEvTimeTOFVsFT0C = 0x0;
+  TH2F* mHistEvTimeTOFVsFT0ACSameBC = 0x0;
+  TH2F* mHistEvTimeTOFVsFT0ASameBC = 0x0;
+  TH2F* mHistEvTimeTOFVsFT0CSameBC = 0x0;
+  TH1F* mHistDeltaEvTimeTOFVsFT0ACSameBC = 0x0;
+  TH1F* mHistDeltaEvTimeTOFVsFT0ASameBC = 0x0;
+  TH1F* mHistDeltaEvTimeTOFVsFT0CSameBC = 0x0;
+  TH1I* mHistDeltaBCTOFFT0 = 0x0;
 };
 
 } // namespace o2::quality_control_modules::pid
