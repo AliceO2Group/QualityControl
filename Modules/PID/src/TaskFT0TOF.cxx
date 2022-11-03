@@ -546,7 +546,6 @@ void TaskFT0TOF::processEvent(const std::vector<MyTrack>& tracks, const std::vec
   }
 
   float FT0evTimes[3] = {};
-  int tempcheck = 0;
   for (auto& obj : ft0Cand) { // fill histo for FT0
     bool isAC = obj.isValidTime(0);
     bool isA = obj.isValidTime(1);
@@ -568,7 +567,6 @@ void TaskFT0TOF::processEvent(const std::vector<MyTrack>& tracks, const std::vec
         FT0evTimes[0] = obj.getInteractionRecord().bc2ns() * 1E3 + times[1];
         FT0evTimes[1] = obj.getInteractionRecord().bc2ns() * 1E3 + times[2];
         FT0evTimes[2] = obj.getInteractionRecord().bc2ns() * 1E3 + times[3];
-        tempcheck++;
         mHistEvTimeTOFVsFT0ACSameBC->Fill(times[0], times[1]);
         mHistEvTimeTOFVsFT0ASameBC->Fill(times[0], times[2]);
         mHistEvTimeTOFVsFT0CSameBC->Fill(times[0], times[3]);
@@ -580,8 +578,6 @@ void TaskFT0TOF::processEvent(const std::vector<MyTrack>& tracks, const std::vec
       mHistDeltaBCTOFFT0->Fill(nBC % o2::constants::lhc::LHCMaxBunches - obj.getInteractionRecord().bc);
     }
   }
-  if (tempcheck > 1)
-    printf("More than 1 FT0 candidate in the same BC: %d\n", tempcheck);
 
   int nt = 0;
   for (auto& track : tracks) {
