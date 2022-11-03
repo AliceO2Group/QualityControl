@@ -80,7 +80,20 @@ TestbeamRawTask::~TestbeamRawTask()
 
 void TestbeamRawTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  mPadDecoder.setTriggerWinDur(20); // MF @TODO make taskParameter
+  auto get_bool = [](const std::string_view input) -> bool {
+    return input == "true";
+  };
+  int winDur = 20;
+  auto hasWinDur = mCustomParameters.find("WinDur");
+  if (hasWinDur != mCustomParameters.end()) {
+    winDur = std::stoi(hasWinDur->second);
+  }
+  mPadDecoder.setTriggerWinDur(winDur);
+
+  auto hasDebugParam = mCustomParameters.find("Debug");
+  if (hasDebugParam != mCustomParameters.end()) {
+    mDebugMode = get_bool(hasDebugParam->second);
+  }
 
   /////////////////////////////////////////////////////////////////
   /// PAD histograms
@@ -181,7 +194,9 @@ void TestbeamRawTask::monitorData(o2::framework::ProcessingContext& ctx)
       int currentpos = 0;
       while (currentpos < databuffer.size()) {
         auto rdh = reinterpret_cast<const o2::header::RDHAny*>(databuffer.data() + currentpos);
-        o2::raw::RDHUtils::printRDH(rdh);
+        if (mDebugMode) {
+          o2::raw::RDHUtils::printRDH(rdh);
+        }
         if (o2::raw::RDHUtils::getMemorySize(rdh) == o2::raw::RDHUtils::getHeaderSize(rdh)) {
           auto trigger = o2::raw::RDHUtils::getTriggerType(rdh);
           if (trigger & o2::trigger::SOT || trigger & o2::trigger::HB) {
