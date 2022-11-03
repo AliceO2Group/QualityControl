@@ -65,7 +65,7 @@ class TestbeamRawTask final : public TaskInterface
   PadDecoder mPadDecoder;                                                         ///< Decoder for pad data
   PadMapper mPadMapper;                                                           ///< Mapping for Pads
   PixelDecoder mPixelDecoder;                                                     ///< Decoder for pixel data
-  PixelMapper mPixelMapper;                                                       ///< Testbeam mapping for pixels
+  std::unique_ptr<PixelMapper> mPixelMapper;                                      ///< Testbeam mapping for pixels
   std::unordered_map<o2::InteractionRecord, int> mPixelNHitsAll;                  ///< Number of hits / event all layers
   std::array<std::unordered_map<o2::InteractionRecord, int>, 2> mPixelNHitsLayer; ///< Number of hits / event layer
 

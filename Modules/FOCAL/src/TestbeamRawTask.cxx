@@ -82,6 +82,30 @@ void TestbeamRawTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   mPadDecoder.setTriggerWinDur(20); // MF @TODO make taskParameter
 
+  PixelMapper::MappingType_t mappingtype = PixelMapper::MappingType_t::MAPPING_IB;
+  auto pixellayout = mCustomParameters.find("Pixellayout");
+  if (pixellayout != mCustomParameters.end()) {
+    if (pixellayout->second == "IB") {
+      mappingtype = PixelMapper::MappingType_t::MAPPING_IB;
+    } else if (pixellayout->second == "OB") {
+      mappingtype = PixelMapper::MappingType_t::MAPPING_OB;
+    } else {
+      ILOG(Fatal, Support) << "Unknown pixel setup: " << pixellayout->second << ENDM;
+    }
+  }
+  switch (mappingtype) {
+    case PixelMapper::MappingType_t::MAPPING_IB:
+      ILOG(Info, Support) << "Using pixel layout: IB" << ENDM;
+      break;
+
+    case PixelMapper::MappingType_t::MAPPING_OB:
+      ILOG(Info, Support) << "Using pixel layout: OB" << ENDM;
+      break;
+    default:
+      break;
+  }
+  mPixelMapper = std::make_unique<PixelMapper>(mappingtype);
+
   /////////////////////////////////////////////////////////////////
   /// PAD histograms
   /////////////////////////////////////////////////////////////////
@@ -129,18 +153,20 @@ void TestbeamRawTask::initialize(o2::framework::InitContext& /*ctx*/)
   mPixelHitsTriggerAll->SetStats(false);
   getObjectsManager()->startPublishing(mPixelHitsTriggerAll);
 
-  constexpr int PIXEL_LAYERS = 2,
-                PIXEL_COLUMNS = 7,
-                PIXEL_ROWS = 6,
-                PIXEL_CHIPS = PIXEL_COLUMNS * PIXEL_ROWS;
+  constexpr int PIXEL_LAYERS = 2;
+  auto& refmapping = mPixelMapper->getMapping(0);
+  auto pixel_columns = refmapping.getNumberOfColumns(),
+       pixel_rows = refmapping.getNumberOfRows(),
+       pixel_chips = pixel_columns * pixel_rows;
+  ILOG(Info, Support) << "Setup acceptance histograms " << pixel_columns << " colums and " << pixel_rows << " rows (" << pixel_chips << " chips)" << ENDM;
   for (int ilayer = 0; ilayer < PIXEL_LAYERS; ilayer++) {
-    mPixelChipHitPofileLayer[ilayer] = new TProfile2D(Form("Pixel_Hitprofile_%d", ilayer), Form("Pixel hit profile in layer %d", ilayer), PIXEL_COLUMNS, -0.5, PIXEL_COLUMNS - 0.5, PIXEL_ROWS, -0.5, PIXEL_ROWS - 0.5);
+    mPixelChipHitPofileLayer[ilayer] = new TProfile2D(Form("Pixel_Hitprofile_%d", ilayer), Form("Pixel hit profile in layer %d", ilayer), pixel_columns, -0.5, pixel_columns - 0.5, pixel_rows, -0.5, pixel_rows - 0.5);
     mPixelChipHitPofileLayer[ilayer]->SetStats(false);
     getObjectsManager()->startPublishing(mPixelChipHitPofileLayer[ilayer]);
-    mPixelChipHitProfileLayer[ilayer] = new TH2D(Form("Pixel_Hitmap_%d", ilayer), Form("Pixel hitmap in layer %d", ilayer), PIXEL_COLUMNS, -0.5, PIXEL_COLUMNS - 0.5, PIXEL_ROWS, -0.5, PIXEL_ROWS - 0.5);
+    mPixelChipHitProfileLayer[ilayer] = new TH2D(Form("Pixel_Hitmap_%d", ilayer), Form("Pixel hitmap in layer %d", ilayer), pixel_columns, -0.5, pixel_columns - 0.5, pixel_rows, -0.5, pixel_rows - 0.5);
     mPixelChipHitProfileLayer[ilayer]->SetStats(false);
     getObjectsManager()->startPublishing(mPixelChipHitProfileLayer[ilayer]);
-    mPixelHitDistribitionLayer[ilayer] = new TH2D(Form("Pixel_Hitdist_%d", ilayer), Form("Pixel hit distribution in layer %d", ilayer), PIXEL_CHIPS, -0.5, PIXEL_CHIPS - 0.5, 101, -0.5, 100.5);
+    mPixelHitDistribitionLayer[ilayer] = new TH2D(Form("Pixel_Hitdist_%d", ilayer), Form("Pixel hit distribution in layer %d", ilayer), pixel_chips, -0.5, pixel_chips - 0.5, 101, -0.5, 100.5);
     mPixelHitDistribitionLayer[ilayer]->SetStats(false);
     getObjectsManager()->startPublishing(mPixelHitDistribitionLayer[ilayer]);
     mPixelHitsTriggerLayer[ilayer] = new TH1D(Form("Pixel_NumberHitsTrigger_%d", ilayer), Form("Number of hits per trigger in layer %d", ilayer), 1001, -0.5, 1000.5);
@@ -305,7 +331,7 @@ void TestbeamRawTask::processPixelPayload(gsl::span<const o2::itsmft::GBTWord> p
 
   // Testbeam November 2022
   int layer = fee < 2 ? 0 : 1;
-  auto& feemapping = mPixelMapper.getMapping(fee);
+  auto& feemapping = mPixelMapper->getMapping(fee);
 
   mPixelDecoder.reset();
   mPixelDecoder.decodeEvent(pixelpayload);
