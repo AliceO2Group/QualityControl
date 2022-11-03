@@ -109,6 +109,8 @@ void TrendingTaskITSFEE::trendValues(const Trigger& t, repository::DatabaseInter
     // cast to whatever it needs.
     if (dataSource.type == "repository") {
       auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name, t.timestamp, t.activity);
+      if (mo == nullptr)
+        continue;
       if (!count) {
         std::map<std::string, std::string> entryMetadata = mo->getMetadataMap();  // full list of metadata as a map
         mMetaData.runNumber = std::stoi(entryMetadata[metadata_keys::runNumber]); // get and set run number
