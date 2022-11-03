@@ -75,6 +75,12 @@ class TaskFT0TOF final : public TaskInterface
                             TPCTRD,
                             SIZE };
 
+  enum evTimeType : int8_t { TOF = 0,
+                             FT0AC,
+                             FT0A,
+                             FT0C,
+                             SIZEt0 };
+
   /// \brief Constructor
   TaskFT0TOF() = default;
   /// Destructor
@@ -136,17 +142,17 @@ class TaskFT0TOF final : public TaskInterface
   const float cinv = 33.35641;
   bool mUseFT0 = false;
 
-  TH1F* mHistDeltatPi[trackType::SIZE + 1] = {};
-  TH1F* mHistDeltatKa[trackType::SIZE + 1] = {};
-  TH1F* mHistDeltatPr[trackType::SIZE + 1] = {};
-  TH2F* mHistDeltatPiPt[trackType::SIZE + 1] = {};
-  TH2F* mHistDeltatKaPt[trackType::SIZE + 1] = {};
-  TH2F* mHistDeltatPrPt[trackType::SIZE + 1] = {};
-  TH1F* mHistMass[trackType::SIZE + 1] = {};
-  TH2F* mHistBetavsP[trackType::SIZE + 1] = {};
-  TH2F* mHistMassvsP[trackType::SIZE + 1] = {};
-  TH2F* mHistDeltatPiEvTimeRes[trackType::SIZE + 1] = {};
-  TH2F* mHistDeltatPiEvTimeMult[trackType::SIZE + 1] = {};
+  TH1F* mHistDeltatPi[trackType::SIZE][evTimeType::SIZEt0] = {};
+  TH1F* mHistDeltatKa[trackType::SIZE][evTimeType::SIZEt0] = {};
+  TH1F* mHistDeltatPr[trackType::SIZE][evTimeType::SIZEt0] = {};
+  TH2F* mHistDeltatPiPt[trackType::SIZE][evTimeType::SIZEt0] = {};
+  TH2F* mHistDeltatKaPt[trackType::SIZE][evTimeType::SIZEt0] = {};
+  TH2F* mHistDeltatPrPt[trackType::SIZE][evTimeType::SIZEt0] = {};
+  TH1F* mHistMass[trackType::SIZE][evTimeType::SIZEt0] = {};
+  TH2F* mHistBetavsP[trackType::SIZE][evTimeType::SIZEt0] = {};
+  TH2F* mHistMassvsP[trackType::SIZE][evTimeType::SIZEt0] = {};
+  TH2F* mHistDeltatPiEvTimeRes[trackType::SIZE] = {};
+  TH2F* mHistDeltatPiEvTimeMult[trackType::SIZE] = {};
   TH2F* mHistEvTimeResEvTimeMult = 0x0;
   TH1F* mHistEvTimeTOF = 0x0;
   TH2F* mHistEvTimeTOFVsFT0AC = 0x0;
