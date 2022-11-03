@@ -113,7 +113,6 @@ Quality ZDCRecDataCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
 
       if (mQADC == 1 && mQTDC == 1) {
         result = Quality::Good;
-        result.addReason(FlagReasonFactory::Unknown(), "ZDCRecDataTask quality is Good");
       } else if (mQADC == 3 || mQTDC == 3) {
         result = Quality::Bad;
         if (mQADC == 3)
@@ -122,13 +121,6 @@ Quality ZDCRecDataCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
         if (mQTDC == 3)
           result.addReason(FlagReasonFactory::Unknown(),
                            "It is bad because in TDC Summary" + std::to_string(mNumWTDC) + " channels:" + mStringWTDC + "have a value in the bad range");
-        if (mQADC == 2)
-          result.addReason(FlagReasonFactory::Unknown(),
-                           "It is medium because in ADC Summary " + std::to_string(mNumWADC) + " channels:" + mStringWADC + "have a value in the medium range");
-
-        if (mQTDC == 2)
-          result.addReason(FlagReasonFactory::Unknown(),
-                           "It is medium because in TDC Summary " + std::to_string(mNumWTDC) + " channels:" + mStringWTDC + "have a value in the medium range");
       } else {
         result = Quality::Medium;
         if (mQADC == 2)
@@ -305,17 +297,19 @@ void ZDCRecDataCheck::dumpVecParam(int numBinHisto, int num_ch)
 {
   std::ofstream dumpFile;
   dumpFile.open("dumpStructuresRecCheck.txt");
-  dumpFile << "\n Vector Param ADC \n";
-  for (int i = 0; i < (int)mVectParamADC.size(); i++) {
-    dumpFile << mVectParamADC.at(i).ch << " \t" << std::to_string(mVectParamADC.at(i).minW) << " \t" << std::to_string(mVectParamADC.at(i).maxW) << " \t" << std::to_string(mVectParamADC.at(i).minE) << " \t" << std::to_string(mVectParamADC.at(i).maxE) << " \n";
+  if (dumpFile) {
+    dumpFile << "\n Vector Param ADC \n";
+    for (int i = 0; i < (int)mVectParamADC.size(); i++) {
+      dumpFile << mVectParamADC.at(i).ch << " \t" << std::to_string(mVectParamADC.at(i).minW) << " \t" << std::to_string(mVectParamADC.at(i).maxW) << " \t" << std::to_string(mVectParamADC.at(i).minE) << " \t" << std::to_string(mVectParamADC.at(i).maxE) << " \n";
+    }
+    dumpFile << "\n Vector Param TDC \n";
+    for (int i = 0; i < (int)mVectParamTDC.size(); i++) {
+      dumpFile << mVectParamTDC.at(i).ch << " \t" << std::to_string(mVectParamTDC.at(i).minW) << " \t" << std::to_string(mVectParamTDC.at(i).maxW) << " \t" << std::to_string(mVectParamTDC.at(i).minE) << " \t" << std::to_string(mVectParamTDC.at(i).maxE) << " \n";
+    }
+    dumpFile << "Num Bin Histo " << std::to_string(numBinHisto) << " \n";
+    dumpFile << "Num ch " << std::to_string(num_ch) << " \n";
+    dumpFile.close();
   }
-  dumpFile << "\n Vector Param TDC \n";
-  for (int i = 0; i < (int)mVectParamTDC.size(); i++) {
-    dumpFile << mVectParamTDC.at(i).ch << " \t" << std::to_string(mVectParamTDC.at(i).minW) << " \t" << std::to_string(mVectParamTDC.at(i).maxW) << " \t" << std::to_string(mVectParamTDC.at(i).minE) << " \t" << std::to_string(mVectParamTDC.at(i).maxE) << " \n";
-  }
-  dumpFile << "Num Bin Histo " << std::to_string(numBinHisto) << " \n";
-  dumpFile << "Num ch " << std::to_string(num_ch) << " \n";
-  dumpFile.close();
 }
 
 } // namespace o2::quality_control_modules::zdc

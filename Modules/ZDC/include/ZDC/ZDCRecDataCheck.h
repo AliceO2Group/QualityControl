@@ -11,7 +11,7 @@
 
 ///
 /// \file   ZDCRecDataCheck.h
-/// \author My Name
+/// \author Carlo Puggioni
 ///
 
 #ifndef QC_MODULE_ZDC_ZDCZDCRECDATACHECK_H
@@ -22,8 +22,8 @@
 namespace o2::quality_control_modules::zdc
 {
 
-/// \brief  Example QC Check
-/// \author My Name
+/// \brief  QC Check Data Rec. Check ADC and TDC mean values of each ZDC channel.
+/// \author alienv enter Readout/latest
 class ZDCRecDataCheck : public o2::quality_control::checker::CheckInterface
 {
  public:

@@ -24,7 +24,7 @@
 namespace o2::quality_control_modules::zdc
 {
 
-/// \brief  QC Check Data Raw
+/// \brief  QC Check Data Raw. Check baseline mean values of each ZDC channel.
 /// \author Carlo Puggioni
 class ZDCRawDataCheck : public o2::quality_control::checker::CheckInterface
 {

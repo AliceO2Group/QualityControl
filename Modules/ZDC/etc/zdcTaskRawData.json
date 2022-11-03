@@ -16,7 +16,7 @@
         "url": "infologger:///debug?qc"
       },
       "consul": {
-        "url": "http://consul-test.cern.ch:8500"
+        "url": ""
       },
       "conditionDB": {
         "url": "ccdb-test.cern.ch:8080"
@@ -87,7 +87,7 @@
               "ZPCS" : "1686;10;20",
               "ZPC1" : "1742;10;20",
               "ZPC2" : "316.1;10;20",
-              "POS_MSG_X": "0.15",
+              "POS_MSG_X": "0.01",
               "POS_MSG_Y": "0.92"
             },
             "dataSource": [{

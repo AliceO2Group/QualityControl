@@ -67,7 +67,6 @@ Quality ZDCRawDataCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
       }
       if (mNumW == 0 && mNumE == 0) {
         result = Quality::Good;
-        result.addReason(FlagReasonFactory::Unknown(), "It is Good");
       }
       if (mNumW > 0) {
         result = Quality::Medium;
@@ -203,13 +202,15 @@ void ZDCRawDataCheck::dumpVecParam(int numBinHisto, int num_ch)
 {
   std::ofstream dumpFile;
   dumpFile.open("dumpStructuresRawCheck.txt");
-
-  dumpFile << "\n Vector Param\n";
-  for (int i = 0; i < (int)mVectParam.size(); i++) {
-    dumpFile << mVectParam.at(i).ch << " \t" << std::to_string(mVectParam.at(i).minW) << " \t" << std::to_string(mVectParam.at(i).maxW) << " \t" << std::to_string(mVectParam.at(i).minE) << " \t" << std::to_string(mVectParam.at(i).maxE) << " \n";
+  if (dumpFile) {
+    dumpFile << "\n Vector Param\n";
+    for (int i = 0; i < (int)mVectParam.size(); i++) {
+      dumpFile << mVectParam.at(i).ch << " \t" << std::to_string(mVectParam.at(i).minW) << " \t" << std::to_string(mVectParam.at(i).maxW) << " \t" << std::to_string(mVectParam.at(i).minE) << " \t" << std::to_string(mVectParam.at(i).maxE) << " \n";
+    }
+    dumpFile << "Num Bin Histo " << std::to_string(numBinHisto) << " \n";
+    dumpFile << "Num ch " << std::to_string(num_ch) << " \n";
+    dumpFile.close();
   }
-  dumpFile << "Num Bin Histo " << std::to_string(numBinHisto) << " \n";
-  dumpFile << "Num ch " << std::to_string(num_ch) << " \n";
-  dumpFile.close();
 }
+
 } // namespace o2::quality_control_modules::zdc
