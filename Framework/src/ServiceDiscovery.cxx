@@ -40,10 +40,10 @@ ServiceDiscovery::ServiceDiscovery(const std::string& url, const std::string& na
   }
   if (_register("")) {
     mHealthThread = std::thread([=] {
-      #ifdef __linux__
+#ifdef __linux__
       std::string threadName = "QC/SrvcDiscov";
       pthread_setname_np(pthread_self(), threadName.c_str());
-      #endif
+#endif
       runHealthServer(std::stoi(mHealthUrl.substr(mHealthUrl.find(":") + 1)));
     });
   }
