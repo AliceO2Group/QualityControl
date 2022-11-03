@@ -1,0 +1,125 @@
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
+//
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+#ifndef QC_MODULE_FOCAL_PIXELMAPPER
+#define QC_MODULE_FOCAL_PIXELMAPPER
+
+#include <array>
+#include <exception>
+#include <iosfwd>
+#include <string>
+#include <unordered_map>
+#include <boost/container_hash/hash.hpp>
+#include <FOCAL/PixelChip.h>
+
+namespace o2::quality_control_modules::focal
+{
+
+class PixelMapping
+{
+ public:
+  struct ChipIdentifier {
+    unsigned int mLaneID;
+    unsigned int mChipID;
+
+    bool operator==(const ChipIdentifier& other) const { return mLaneID == other.mLaneID && mChipID == other.mChipID; }
+  };
+  struct ChipPosition {
+    unsigned int mColumn;
+    unsigned int mRow;
+
+    bool operator==(const ChipPosition& other) const { return mColumn == other.mColumn && mRow == other.mRow; }
+  };
+  struct ChipIdentifierHasher {
+
+    /// \brief Functor implementation
+    /// \param s ChipID for which to determine a hash value
+    /// \return hash value for channel ID
+    size_t operator()(const ChipIdentifier& s) const
+    {
+      std::size_t seed = 0;
+      boost::hash_combine(seed, s.mChipID);
+      boost::hash_combine(seed, s.mLaneID);
+      return seed;
+    }
+  };
+
+  class InvalidChipException : public std::exception
+  {
+   public:
+    InvalidChipException(unsigned int mappingVersion, PixelMapping::ChipIdentifier& identifier) : mMappingVersion(mappingVersion), mIdentifier(identifier), mMessage()
+    {
+      mMessage = "Invalid chip identifier for mapping " + std::to_string(mMappingVersion) + ": lane " + std::to_string(mIdentifier.mLaneID) + ", chip " + std::to_string(mIdentifier.mChipID);
+    }
+    ~InvalidChipException() noexcept final = default;
+
+    const char* what() const noexcept final { return mMessage.data(); }
+    const PixelMapping::ChipIdentifier& getIdentifier() const { return mIdentifier; }
+    unsigned int getLane() const noexcept { return mIdentifier.mLaneID; }
+    unsigned int getChipID() const noexcept { return mIdentifier.mChipID; }
+    int getMappingVersion() const noexcept { return mMappingVersion; }
+    void print(std::ostream& stream) const;
+
+   private:
+    unsigned int mMappingVersion;
+    PixelMapping::ChipIdentifier mIdentifier;
+    std::string mMessage;
+  };
+
+  class VersionException : public std::exception
+  {
+   public:
+    VersionException(unsigned int version) : mMappingVersion(version), mMessage() {}
+    ~VersionException() noexcept final = default;
+
+    const char* what() const noexcept final { return mMessage.data(); }
+    int getMappingVersion() const noexcept { return mMappingVersion; }
+    void print(std::ostream& stream) const;
+
+   private:
+    unsigned int mMappingVersion;
+    std::string mMessage;
+  };
+
+  PixelMapping() = default;
+  PixelMapping(unsigned int version);
+  ~PixelMapping() = default;
+
+  void init(unsigned int version);
+
+  ChipPosition getPosition(unsigned int laneID, unsigned int chipID) const;
+  ChipPosition getPosition(const PixelChip& chip) const { return getPosition(chip.mLaneID, chip.mChipID); }
+
+ private:
+  void buildVersion0();
+  void buildVersion1();
+
+  int mVersion;
+  std::unordered_map<ChipIdentifier, ChipPosition, ChipIdentifierHasher> mMapping;
+};
+
+class PixelMapper
+{
+ public:
+  PixelMapper();
+  ~PixelMapper() = default;
+
+  const PixelMapping& getMapping(unsigned int feeID) const;
+
+ private:
+  std::array<PixelMapping, 2> mMappings;
+};
+
+std::ostream& operator<<(std::ostream& stream, const PixelMapping::InvalidChipException& error);
+std::ostream& operator<<(std::ostream& stream, const PixelMapping::VersionException& error);
+
+} // namespace o2::quality_control_modules::focal
+
+#endif // QC_MODULE_FOCAL_PIXELMAPPER
