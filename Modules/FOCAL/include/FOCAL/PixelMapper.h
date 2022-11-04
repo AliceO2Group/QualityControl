@@ -11,6 +11,7 @@
 #ifndef QC_MODULE_FOCAL_PIXELMAPPER
 #define QC_MODULE_FOCAL_PIXELMAPPER
 
+#include <cstdio>
 #include <array>
 #include <exception>
 #include <iosfwd>
@@ -90,31 +91,69 @@ class PixelMapping
 
   PixelMapping() = default;
   PixelMapping(unsigned int version);
-  ~PixelMapping() = default;
-
-  void init(unsigned int version);
+  virtual ~PixelMapping() = default;
 
   ChipPosition getPosition(unsigned int laneID, unsigned int chipID) const;
-  ChipPosition getPosition(const PixelChip& chip) const { return getPosition(chip.mLaneID, chip.mChipID); }
+  ChipPosition getPosition(const PixelChip& chip) const
+  {
+    return getPosition(chip.mLaneID, chip.mChipID);
+  };
+
+  virtual unsigned int getNumberOfRows() const = 0;
+  virtual unsigned int getNumberOfColumns() const = 0;
+
+ protected:
+  int mVersion = -1;
+  bool mUseLanes = false;
+  std::unordered_map<ChipIdentifier, ChipPosition, ChipIdentifierHasher> mMapping;
+};
+
+class PixelMappingOB : public PixelMapping
+{
+ public:
+  PixelMappingOB() = default;
+  PixelMappingOB(unsigned int version);
+  ~PixelMappingOB() final = default;
+
+  void init(unsigned int version);
+  unsigned int getNumberOfRows() const final { return 6; }
+  unsigned int getNumberOfColumns() const final { return 7; }
 
  private:
   void buildVersion0();
   void buildVersion1();
+};
 
-  int mVersion;
-  std::unordered_map<ChipIdentifier, ChipPosition, ChipIdentifierHasher> mMapping;
+class PixelMappingIB : public PixelMapping
+{
+ public:
+  PixelMappingIB() = default;
+  PixelMappingIB(unsigned int version);
+  ~PixelMappingIB() final = default;
+
+  void init(unsigned int version);
+  unsigned int getNumberOfRows() const final { return 6; }
+  unsigned int getNumberOfColumns() const final { return 3; }
+
+ private:
+  void buildVersion0();
+  void buildVersion1();
 };
 
 class PixelMapper
 {
  public:
-  PixelMapper();
+  enum class MappingType_t {
+    MAPPING_IB,
+    MAPPING_OB
+  };
+  PixelMapper(MappingType_t mappingtype);
   ~PixelMapper() = default;
 
   const PixelMapping& getMapping(unsigned int feeID) const;
 
  private:
-  std::array<PixelMapping, 2> mMappings;
+  std::array<std::shared_ptr<PixelMapping>, 2> mMappings;
 };
 
 std::ostream& operator<<(std::ostream& stream, const PixelMapping::InvalidChipException& error);

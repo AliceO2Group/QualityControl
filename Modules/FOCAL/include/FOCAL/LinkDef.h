@@ -6,6 +6,8 @@
 #pragma link C++ class o2::quality_control_modules::focal::TestbeamRawTask + ;
 #pragma link C++ class o2::quality_control_modules::focal::PixelMapper + ;
 #pragma link C++ class o2::quality_control_modules::focal::PixelMapping + ;
+#pragma link C++ class o2::quality_control_modules::focal::PixelMappingIB + ;
+#pragma link C++ class o2::quality_control_modules::focal::PixelMappingOB + ;
 #pragma link C++ class o2::quality_control_modules::focal::PixelDecoder + ;
 #pragma link C++ class o2::quality_control_modules::focal::PadMapper + ;
 #pragma link C++ class o2::quality_control_modules::focal::PadDecoder + ;
