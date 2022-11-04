@@ -45,7 +45,8 @@ struct MyTrack {
   o2::tpc::TrackTPC trk;
   o2::dataformats::MatchInfoTOF match;
   int source = -1;
-  MyTrack(const o2::dataformats::MatchInfoTOF& m, const o2::tpc::TrackTPC& t, const int s) : match(m), trk(t), source(s) {}
+  float t0maxp = 1.5;
+  MyTrack(const o2::dataformats::MatchInfoTOF& m, const o2::tpc::TrackTPC& t, const int s, const float pmax) : match(m), trk(t), source(s), t0maxp(pmax) {}
   MyTrack() {}
   float tofSignal() const { return match.getSignal(); }
   double tofSignalDouble() const { return match.getSignal(); }
@@ -63,6 +64,7 @@ struct MyTrack {
     const o2::track::TrackLTIntegral& info = match.getLTIntegralOut();
     return info.getL();
   }
+  float getT0MaxP() const { return t0maxp; }
   const o2::tpc::TrackTPC& getTrack() { return trk; }
 };
 
@@ -141,6 +143,7 @@ class TaskFT0TOF final : public TaskInterface
   int mTF = -1;  // to count the number of processed TFs
   const float cinv = 33.35641;
   bool mUseFT0 = false;
+  float mEvTimeTracksMaxMomentum = 1.5;
 
   TH1F* mHistDeltatPi[trackType::SIZE][evTimeType::SIZEt0] = {};
   TH1F* mHistDeltatKa[trackType::SIZE][evTimeType::SIZEt0] = {};

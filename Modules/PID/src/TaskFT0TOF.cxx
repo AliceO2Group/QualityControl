@@ -50,7 +50,7 @@ namespace o2::quality_control_modules::pid
 
 bool MyFilter(const MyTrack& tr)
 {
-  return (tr.getP() < 1.5);
+  return (tr.getP() < tr.getT0MaxP());
 }
 
 TaskFT0TOF::~TaskFT0TOF()
@@ -117,6 +117,10 @@ void TaskFT0TOF::initialize(o2::framework::InitContext& /*ctx*/)
     if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
       mUseFT0 = true;
     }
+  }
+  if (auto param = mCustomParameters.find("evTimeTracksMaxMomentum"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - EvTimeTracksMaxMomentum (for ev time computation): " << param->second << ENDM;
+    mEvTimeTracksMaxMomentum = atof(param->second.c_str());
   }
 
   // for track type selection
@@ -335,7 +339,7 @@ void TaskFT0TOF::monitorData(o2::framework::ProcessingContext& ctx)
         continue;
       }
 
-      mMyTracks.push_back(MyTrack(matchTOF, trk, trackType::TPC));
+      mMyTracks.push_back(MyTrack(matchTOF, trk, trackType::TPC, mEvTimeTracksMaxMomentum));
     } // END loop on TOF matches
   }   // END if track is TPC-TOF
 
@@ -357,7 +361,7 @@ void TaskFT0TOF::monitorData(o2::framework::ProcessingContext& ctx)
         continue;
       }
 
-      mMyTracks.push_back(MyTrack(matchTOF, trkTPC, trackType::ITSTPC));
+      mMyTracks.push_back(MyTrack(matchTOF, trkTPC, trackType::ITSTPC, mEvTimeTracksMaxMomentum));
     } // END loop on TOF matches
   }   // END if track is ITS-TPC-TOF
 
@@ -378,7 +382,7 @@ void TaskFT0TOF::monitorData(o2::framework::ProcessingContext& ctx)
         continue;
       }
 
-      mMyTracks.push_back(MyTrack(matchTOF, trkTPC, trackType::TPCTRD));
+      mMyTracks.push_back(MyTrack(matchTOF, trkTPC, trackType::TPCTRD, mEvTimeTracksMaxMomentum));
     } // END loop on TOF matches
   }   // END if track is TPC-TRD-TOF
 
@@ -400,7 +404,7 @@ void TaskFT0TOF::monitorData(o2::framework::ProcessingContext& ctx)
         continue;
       }
 
-      mMyTracks.push_back(MyTrack(matchTOF, trkTPC, trackType::ITSTPCTRD));
+      mMyTracks.push_back(MyTrack(matchTOF, trkTPC, trackType::ITSTPCTRD, mEvTimeTracksMaxMomentum));
     } // END loop on TOF matches
   }   // END if track is ITS-TPC-TRD-TOF
 
@@ -528,6 +532,7 @@ void TaskFT0TOF::reset()
 void TaskFT0TOF::processEvent(const std::vector<MyTrack>& tracks, const std::vector<o2::ft0::RecPoints>& ft0Cand)
 {
   auto evtime = o2::tof::evTimeMaker<std::vector<MyTrack>, MyTrack, MyFilter>(tracks);
+
   // if event time is 0
   if (evtime.mEventTimeMultiplicity <= 2) {
     int nBC = (tracks[0].tofSignal()) * o2::tof::Geo::BC_TIME_INPS_INV;
