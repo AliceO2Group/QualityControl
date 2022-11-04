@@ -45,8 +45,8 @@ struct MyTrack {
   o2::tpc::TrackTPC trk;
   o2::dataformats::MatchInfoTOF match;
   int source = -1;
-  float t0maxp = 1.5;
-  MyTrack(const o2::dataformats::MatchInfoTOF& m, const o2::tpc::TrackTPC& t, const int s, const float pmax) : match(m), trk(t), source(s), t0maxp(pmax) {}
+  static float t0maxp;
+  MyTrack(const o2::dataformats::MatchInfoTOF& m, const o2::tpc::TrackTPC& t, const int s) : match(m), trk(t), source(s) {}
   MyTrack() {}
   float tofSignal() const { return match.getSignal(); }
   double tofSignalDouble() const { return match.getSignal(); }
@@ -64,7 +64,8 @@ struct MyTrack {
     const o2::track::TrackLTIntegral& info = match.getLTIntegralOut();
     return info.getL();
   }
-  float getT0MaxP() const { return t0maxp; }
+  static float getT0MaxP() { return t0maxp; }
+  static void setT0MaxP(float pmax) { t0maxp = pmax; }
   const o2::tpc::TrackTPC& getTrack() { return trk; }
 };
 
