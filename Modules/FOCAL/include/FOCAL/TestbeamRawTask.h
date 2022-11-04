@@ -86,6 +86,7 @@ class TestbeamRawTask final : public TaskInterface
   TH2* mTriggersFeePixel;                              ///< Nunber of triggers per HBF and FEE ID
   TProfile2D* mAverageHitsChipPixel;                   ///< Average number of hits / chip
   TH1* mHitsChipPixel;                                 ///< Number of hits / chip
+  TH2* mPixelChipsIDsFound;                            ///< Chip IDs vs Pixel IDs
   std::array<TProfile2D*, 2> mPixelChipHitPofileLayer; ///< Hit profile for pixel chips
   std::array<TH2*, 2> mPixelChipHitProfileLayer;       ///< Hit map for pixel chips
   std::array<TH2*, 2> mPixelHitDistribitionLayer;      ///< Hit distribution per chip in layer

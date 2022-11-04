@@ -50,7 +50,7 @@ void PixelMappingOB::init(unsigned int version)
       break;
 
     case 1:
-      buildVersion0();
+      buildVersion1();
       break;
 
     default:
@@ -125,7 +125,7 @@ void PixelMappingIB::init(unsigned int version)
       break;
 
     case 1:
-      buildVersion0();
+      buildVersion1();
       break;
 
     default:

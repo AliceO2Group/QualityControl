@@ -64,6 +64,9 @@ TestbeamRawTask::~TestbeamRawTask()
   if (mPixelHitsTriggerAll) {
     delete mPixelHitsTriggerAll;
   }
+  if (mPixelChipsIDsFound) {
+    delete mPixelChipsIDsFound;
+  }
   for (auto& hist : mPixelChipHitPofileLayer) {
     delete hist;
   }
@@ -165,6 +168,9 @@ void TestbeamRawTask::initialize(o2::framework::InitContext& /*ctx*/)
   mPixelHitsTriggerAll = new TH1D("Pixel_TotalNumberHitsTrigger", "Number of hits per trigger", 1001, -0.5, 1000.5);
   mPixelHitsTriggerAll->SetStats(false);
   getObjectsManager()->startPublishing(mPixelHitsTriggerAll);
+  mPixelChipsIDsFound = new TH2D("Pixel_ChipIDsFEE", "Chip ID vs. FEE ID", FEES, -0.5, FEES - 0.5, MAX_CHIPS, -0.5, MAX_CHIPS - 0.5);
+  mPixelChipsIDsFound->SetDirectory(nullptr);
+  getObjectsManager()->startPublishing(mPixelChipsIDsFound);
 
   constexpr int PIXEL_LAYERS = 2;
   auto& refmapping = mPixelMapper->getMapping(0);
@@ -346,7 +352,7 @@ void TestbeamRawTask::processPixelPayload(gsl::span<const o2::itsmft::GBTWord> p
 
   // Testbeam November 2022
   int layer = fee < 2 ? 0 : 1;
-  auto& feemapping = mPixelMapper->getMapping(fee);
+  auto& feemapping = mPixelMapper->getMapping(useFEE);
 
   mPixelDecoder.reset();
   mPixelDecoder.decodeEvent(pixelpayload);
@@ -355,19 +361,25 @@ void TestbeamRawTask::processPixelPayload(gsl::span<const o2::itsmft::GBTWord> p
 
   for (const auto& [trigger, chips] : mPixelDecoder.getChipData()) {
     int nhitsAll = 0;
+    std::unordered_set<int> chipIDsFound;
     for (const auto& chip : chips) {
       ILOG(Debug, Support) << "[In task] Chip " << static_cast<int>(chip.mChipID) << " from lane " << static_cast<int>(chip.mLaneID) << ", " << chip.mHits.size() << " hit(s) ..." << ENDM;
       nhitsAll += chip.mHits.size();
       mHitsChipPixel->Fill(chip.mHits.size());
       mAverageHitsChipPixel->Fill(useFEE, chip.mChipID, chip.mHits.size());
+      chipIDsFound.insert(chip.mChipID);
       try {
         auto position = feemapping.getPosition(chip);
         mPixelChipHitPofileLayer[layer]->Fill(position.mColumn, position.mRow, chip.mHits.size());
         mPixelChipHitProfileLayer[layer]->Fill(position.mColumn, position.mRow, chip.mHits.size());
         int chipIndex = position.mRow * 7 + position.mColumn;
         mPixelHitDistribitionLayer[layer]->Fill(chipIndex, chip.mHits.size());
-      } catch (...) {
+      } catch (PixelMapping::InvalidChipException& e) {
+        ILOG(Error, Support) << "Error in chip index: " << e << ENDM;
       }
+    }
+    for (auto chipID : chipIDsFound) {
+      mPixelChipsIDsFound->Fill(useFEE, chipID);
     }
     auto triggerfoundAll = mPixelNHitsAll.find(trigger);
     if (triggerfoundAll == mPixelNHitsAll.end()) {
@@ -427,6 +439,9 @@ void TestbeamRawTask::reset()
   }
   if (mPixelHitsTriggerAll) {
     mPixelHitsTriggerAll->Reset();
+  }
+  if (mPixelChipsIDsFound) {
+    mPixelChipsIDsFound->Reset();
   }
 
   for (auto& hist : mPixelChipHitPofileLayer) {
