@@ -151,8 +151,10 @@ class PixelMapper
   ~PixelMapper() = default;
 
   const PixelMapping& getMapping(unsigned int feeID) const;
+  MappingType_t getMappingType() const { return mMappingType; }
 
  private:
+  MappingType_t mMappingType;
   std::array<std::shared_ptr<PixelMapping>, 2> mMappings;
 };
 

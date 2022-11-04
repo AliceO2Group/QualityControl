@@ -162,7 +162,7 @@ void PixelMappingIB::buildVersion1()
   mMapping.insert({ { 0, 8 }, { 2, 1 } });
 }
 
-PixelMapper::PixelMapper(PixelMapper::MappingType_t mappingtype)
+PixelMapper::PixelMapper(PixelMapper::MappingType_t mappingtype) : mMappingType(mappingtype)
 {
   switch (mappingtype) {
     case MappingType_t::MAPPING_IB:

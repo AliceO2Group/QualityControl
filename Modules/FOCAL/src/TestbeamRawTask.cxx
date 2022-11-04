@@ -67,10 +67,19 @@ TestbeamRawTask::~TestbeamRawTask()
   if (mPixelChipsIDsFound) {
     delete mPixelChipsIDsFound;
   }
-  for (auto& hist : mPixelChipHitPofileLayer) {
-    delete hist;
+  if (mPixelChipsIDsHits) {
+    delete mPixelChipsIDsHits;
   }
   for (auto& hist : mPixelChipHitProfileLayer) {
+    delete hist;
+  }
+  for (auto& hist : mPixelChipHitmapLayer) {
+    delete hist;
+  }
+  for (auto& hist : mPixelSegmentHitProfileLayer) {
+    delete hist;
+  }
+  for (auto& hist : mPixelSegmentHitmapLayer) {
     delete hist;
   }
   for (auto& hist : mPixelHitDistribitionLayer) {
@@ -171,20 +180,32 @@ void TestbeamRawTask::initialize(o2::framework::InitContext& /*ctx*/)
   mPixelChipsIDsFound = new TH2D("Pixel_ChipIDsFEE", "Chip ID vs. FEE ID", FEES, -0.5, FEES - 0.5, MAX_CHIPS, -0.5, MAX_CHIPS - 0.5);
   mPixelChipsIDsFound->SetDirectory(nullptr);
   getObjectsManager()->startPublishing(mPixelChipsIDsFound);
+  mPixelChipsIDsHits = new TH2D("Pixel_ChipIDsFilledFEE", "Chip ID with hits vs. FEE ID", FEES, -0.5, FEES - 0.5, MAX_CHIPS, -0.5, MAX_CHIPS - 0.5);
+  mPixelChipsIDsHits->SetDirectory(nullptr);
+  getObjectsManager()->startPublishing(mPixelChipsIDsHits);
 
   constexpr int PIXEL_LAYERS = 2;
   auto& refmapping = mPixelMapper->getMapping(0);
+  auto pixel_segments = getNumberOfPixelSegments(mPixelMapper->getMappingType());
   auto pixel_columns = refmapping.getNumberOfColumns(),
        pixel_rows = refmapping.getNumberOfRows(),
-       pixel_chips = pixel_columns * pixel_rows;
+       pixel_chips = pixel_columns * pixel_rows,
+       segments_colums = pixel_columns * pixel_segments.first,
+       segments_rows = pixel_rows * pixel_segments.second;
   ILOG(Info, Support) << "Setup acceptance histograms " << pixel_columns << " colums and " << pixel_rows << " rows (" << pixel_chips << " chips)" << ENDM;
   for (int ilayer = 0; ilayer < PIXEL_LAYERS; ilayer++) {
-    mPixelChipHitPofileLayer[ilayer] = new TProfile2D(Form("Pixel_Hitprofile_%d", ilayer), Form("Pixel hit profile in layer %d", ilayer), pixel_columns, -0.5, pixel_columns - 0.5, pixel_rows, -0.5, pixel_rows - 0.5);
-    mPixelChipHitPofileLayer[ilayer]->SetStats(false);
-    getObjectsManager()->startPublishing(mPixelChipHitPofileLayer[ilayer]);
-    mPixelChipHitProfileLayer[ilayer] = new TH2D(Form("Pixel_Hitmap_%d", ilayer), Form("Pixel hitmap in layer %d", ilayer), pixel_columns, -0.5, pixel_columns - 0.5, pixel_rows, -0.5, pixel_rows - 0.5);
+    mPixelChipHitProfileLayer[ilayer] = new TProfile2D(Form("Pixel_Hitprofile_%d", ilayer), Form("Pixel hit profile in layer %d", ilayer), pixel_columns, -0.5, pixel_columns - 0.5, pixel_rows, -0.5, pixel_rows - 0.5);
     mPixelChipHitProfileLayer[ilayer]->SetStats(false);
     getObjectsManager()->startPublishing(mPixelChipHitProfileLayer[ilayer]);
+    mPixelChipHitmapLayer[ilayer] = new TH2D(Form("Pixel_Hitmap_%d", ilayer), Form("Pixel hitmap in layer %d", ilayer), pixel_columns, -0.5, pixel_columns - 0.5, pixel_rows, -0.5, pixel_rows - 0.5);
+    mPixelChipHitmapLayer[ilayer]->SetStats(false);
+    getObjectsManager()->startPublishing(mPixelChipHitmapLayer[ilayer]);
+    mPixelSegmentHitProfileLayer[ilayer] = new TProfile2D(Form("Pixel_Segment_Hitprofile_%d", ilayer), Form("Pixel hit profile in layer %d", ilayer), segments_colums, -0.5, segments_colums - 0.5, segments_rows, -0.5, segments_rows - 0.5);
+    mPixelSegmentHitProfileLayer[ilayer]->SetStats(false);
+    getObjectsManager()->startPublishing(mPixelSegmentHitProfileLayer[ilayer]);
+    mPixelSegmentHitmapLayer[ilayer] = new TH2D(Form("Pixel_Segment_Hitmap_%d", ilayer), Form("Pixel hitmap in layer %d", ilayer), segments_colums, -0.5, segments_colums - 0.5, segments_rows, -0.5, segments_rows - 0.5);
+    mPixelSegmentHitmapLayer[ilayer]->SetStats(false);
+    getObjectsManager()->startPublishing(mPixelSegmentHitmapLayer[ilayer]);
     mPixelHitDistribitionLayer[ilayer] = new TH2D(Form("Pixel_Hitdist_%d", ilayer), Form("Pixel hit distribution in layer %d", ilayer), pixel_chips, -0.5, pixel_chips - 0.5, 101, -0.5, 100.5);
     mPixelHitDistribitionLayer[ilayer]->SetStats(false);
     getObjectsManager()->startPublishing(mPixelHitDistribitionLayer[ilayer]);
@@ -192,6 +213,7 @@ void TestbeamRawTask::initialize(o2::framework::InitContext& /*ctx*/)
     mPixelHitsTriggerLayer[ilayer]->SetStats(false);
     getObjectsManager()->startPublishing(mPixelHitsTriggerLayer[ilayer]);
   }
+  mHitSegmentCounter.resize(segments_colums * segments_rows);
 }
 
 void TestbeamRawTask::startOfActivity(Activity& activity)
@@ -249,6 +271,7 @@ void TestbeamRawTask::monitorData(o2::framework::ProcessingContext& ctx)
               } else {
                 ILOG(Error, Support) << "Unsupported endpoint " << currentendpoint << ENDM;
               }
+              rawbuffer.clear();
             } else {
               ILOG(Debug, Support) << "New HBF or Timeframe" << ENDM;
               currentendpoint = o2::raw::RDHUtils::getEndPointID(rdh);
@@ -352,7 +375,12 @@ void TestbeamRawTask::processPixelPayload(gsl::span<const o2::itsmft::GBTWord> p
 
   // Testbeam November 2022
   int layer = fee < 2 ? 0 : 1;
-  auto& feemapping = mPixelMapper->getMapping(useFEE);
+  auto& feemapping = mPixelMapper->getMapping(fee);
+  auto mappingtype = mPixelMapper->getMappingType();
+  auto numbersegments = getNumberOfPixelSegments(mappingtype);
+  int totalsegmentsCol = numbersegments.first * feemapping.getNumberOfColumns(),
+      totalsegmentsRow = numbersegments.second * feemapping.getNumberOfRows(),
+      totalsegments = totalsegmentsCol * totalsegmentsRow;
 
   mPixelDecoder.reset();
   mPixelDecoder.decodeEvent(pixelpayload);
@@ -361,25 +389,40 @@ void TestbeamRawTask::processPixelPayload(gsl::span<const o2::itsmft::GBTWord> p
 
   for (const auto& [trigger, chips] : mPixelDecoder.getChipData()) {
     int nhitsAll = 0;
-    std::unordered_set<int> chipIDsFound;
+    std::unordered_set<int> chipIDsFound, chipIDsHits;
+    memset(mHitSegmentCounter.data(), 0, sizeof(int) * mHitSegmentCounter.size());
     for (const auto& chip : chips) {
       ILOG(Debug, Support) << "[In task] Chip " << static_cast<int>(chip.mChipID) << " from lane " << static_cast<int>(chip.mLaneID) << ", " << chip.mHits.size() << " hit(s) ..." << ENDM;
       nhitsAll += chip.mHits.size();
       mHitsChipPixel->Fill(chip.mHits.size());
       mAverageHitsChipPixel->Fill(useFEE, chip.mChipID, chip.mHits.size());
       chipIDsFound.insert(chip.mChipID);
+      if (chip.mHits.size()) {
+        chipIDsHits.insert(chip.mChipID);
+      }
       try {
         auto position = feemapping.getPosition(chip);
-        mPixelChipHitPofileLayer[layer]->Fill(position.mColumn, position.mRow, chip.mHits.size());
         mPixelChipHitProfileLayer[layer]->Fill(position.mColumn, position.mRow, chip.mHits.size());
+        mPixelChipHitmapLayer[layer]->Fill(position.mColumn, position.mRow, chip.mHits.size());
         int chipIndex = position.mRow * 7 + position.mColumn;
         mPixelHitDistribitionLayer[layer]->Fill(chipIndex, chip.mHits.size());
+        for (auto& hit : chip.mHits) {
+          auto segment = getPixelSegment(hit, mappingtype);
+          auto segment_col = position.mColumn * numbersegments.first + segment.first;
+          auto segment_row = position.mRow * numbersegments.second + segment.second;
+          mPixelSegmentHitmapLayer[layer]->Fill(segment_col, segment_row);
+          int segment_id = segment_row * totalsegmentsCol + segment_col;
+          mHitSegmentCounter[segment_id]++;
+        }
       } catch (PixelMapping::InvalidChipException& e) {
         ILOG(Error, Support) << "Error in chip index: " << e << ENDM;
       }
     }
     for (auto chipID : chipIDsFound) {
       mPixelChipsIDsFound->Fill(useFEE, chipID);
+    }
+    for (auto chipID : chipIDsHits) {
+      mPixelChipsIDsHits->Fill(useFEE, chipID);
     }
     auto triggerfoundAll = mPixelNHitsAll.find(trigger);
     if (triggerfoundAll == mPixelNHitsAll.end()) {
@@ -393,7 +436,51 @@ void TestbeamRawTask::processPixelPayload(gsl::span<const o2::itsmft::GBTWord> p
     } else {
       triggerfoundLayer->second += nhitsAll;
     }
+    for (int segmentID = 0; segmentID < mHitSegmentCounter.size(); segmentID++) {
+      if (mHitSegmentCounter[segmentID]) {
+        int segment_row = segmentID / totalsegmentsCol,
+            segment_col = segmentID % totalsegmentsCol;
+        mPixelSegmentHitProfileLayer[layer]->Fill(segment_col, segment_row, mHitSegmentCounter[segmentID]);
+      }
+    }
   }
+}
+
+std::pair<int, int> TestbeamRawTask::getPixelSegment(const PixelHit& hit, PixelMapper::MappingType_t mappingtype) const
+{
+  int row = -1, col = -1;
+  switch (mappingtype) {
+    case PixelMapper::MappingType_t::MAPPING_IB:
+      col = hit.mColumn / PIXEL_COL_SEGMENSIZE_IB;
+      row = hit.mRow / PIXEL_ROW_SEGMENTSIZE_IB;
+      break;
+    case PixelMapper::MappingType_t::MAPPING_OB:
+      col = hit.mColumn / PIXEL_COL_SEGMENSIZE_OB;
+      row = hit.mRow / PIXEL_ROW_SEGMENTSIZE_OB;
+      break;
+    default:
+      break;
+  };
+  return { col, row };
+}
+
+std::pair<int, int> TestbeamRawTask::getNumberOfPixelSegments(PixelMapper::MappingType_t mappingtype) const
+{
+  int rows = -1, cols = -1;
+  switch (mappingtype) {
+    case PixelMapper::MappingType_t::MAPPING_IB:
+      rows = PIXEL_ROWS_IB / PIXEL_ROW_SEGMENTSIZE_IB;
+      cols = PIXEL_COLS_IB / PIXEL_COL_SEGMENSIZE_IB;
+      break;
+    case PixelMapper::MappingType_t::MAPPING_OB:
+      rows = PIXEL_ROWS_OB / PIXEL_ROW_SEGMENTSIZE_OB;
+      cols = PIXEL_COLS_OB / PIXEL_COL_SEGMENSIZE_OB;
+      break;
+
+    default:
+      break;
+  };
+  return { cols, rows };
 }
 
 void TestbeamRawTask::endOfCycle()
@@ -444,10 +531,16 @@ void TestbeamRawTask::reset()
     mPixelChipsIDsFound->Reset();
   }
 
-  for (auto& hist : mPixelChipHitPofileLayer) {
+  for (auto& hist : mPixelChipHitProfileLayer) {
     hist->Reset();
   }
-  for (auto& hist : mPixelChipHitProfileLayer) {
+  for (auto& hist : mPixelChipHitmapLayer) {
+    hist->Reset();
+  }
+  for (auto& hist : mPixelSegmentHitProfileLayer) {
+    hist->Reset();
+  }
+  for (auto& hist : mPixelSegmentHitmapLayer) {
     hist->Reset();
   }
   for (auto& hist : mPixelHitDistribitionLayer) {
