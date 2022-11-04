@@ -67,7 +67,7 @@ TaskRunner::TaskRunner(const TaskRunnerConfig& config)
 
 TaskRunner::~TaskRunner()
 {
-  ILOG(Debug, Devel) << "TaskRunner destructor" << ENDM;
+  ILOG(Debug, Trace) << "TaskRunner destructor (" << this << ")" << ENDM;
 }
 
 void TaskRunner::refreshConfig(InitContext& iCtx)

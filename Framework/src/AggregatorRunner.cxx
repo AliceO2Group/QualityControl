@@ -67,7 +67,7 @@ AggregatorRunner::AggregatorRunner(AggregatorRunnerConfig arc, const std::vector
 
 AggregatorRunner::~AggregatorRunner()
 {
-  ILOG(Debug, Devel) << "AggregatorRunner destructor" << ENDM;
+  ILOG(Debug, Trace) << "AggregatorRunner destructor (" << this << ")" << ENDM;
   if (mServiceDiscovery != nullptr) {
     mServiceDiscovery->deregister();
   }
