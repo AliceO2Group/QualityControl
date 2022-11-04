@@ -68,6 +68,7 @@ class TestbeamRawTask final : public TaskInterface
   PixelMapper mPixelMapper;                                                       ///< Testbeam mapping for pixels
   std::unordered_map<o2::InteractionRecord, int> mPixelNHitsAll;                  ///< Number of hits / event all layers
   std::array<std::unordered_map<o2::InteractionRecord, int>, 2> mPixelNHitsLayer; ///< Number of hits / event layer
+  bool mDebugMode = false;                                                        ///< Additional debug verbosity
 
   /////////////////////////////////////////////////////////////////////////////////////
   /// Pad histograms
