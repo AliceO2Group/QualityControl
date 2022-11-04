@@ -161,7 +161,7 @@ CheckRunner::CheckRunner(CheckRunnerConfig checkRunnerConfig, InputSpec input)
 
 CheckRunner::~CheckRunner()
 {
-  ILOG(Debug, Devel) << "CheckRunner destructor" << ENDM;
+  ILOG(Debug, Devel) << "CheckRunner destructor (" << this << ")" << ENDM;
   if (mServiceDiscovery != nullptr) {
     mServiceDiscovery->deregister();
   }
