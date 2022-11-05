@@ -343,6 +343,9 @@ void TaskFT0TOF::monitorData(o2::framework::ProcessingContext& ctx)
       }
 
       mMyTracks.push_back(MyTrack(matchTOF, trk, trackType::TPC));
+      auto& mytrk = mMyTracks[mMyTracks.size()-1];
+      mytrk.setP(trk.getP());
+      mytrk.setPt(trk.getPt());
     } // END loop on TOF matches
   }   // END if track is TPC-TOF
 
@@ -365,6 +368,9 @@ void TaskFT0TOF::monitorData(o2::framework::ProcessingContext& ctx)
       }
 
       mMyTracks.push_back(MyTrack(matchTOF, trkTPC, trackType::ITSTPC));
+      auto& mytrk = mMyTracks[mMyTracks.size()-1];
+      mytrk.setP(trk.getP());
+      mytrk.setPt(trk.getPt());
     } // END loop on TOF matches
   }   // END if track is ITS-TPC-TOF
 
@@ -386,6 +392,9 @@ void TaskFT0TOF::monitorData(o2::framework::ProcessingContext& ctx)
       }
 
       mMyTracks.push_back(MyTrack(matchTOF, trkTPC, trackType::TPCTRD));
+      auto& mytrk = mMyTracks[mMyTracks.size()-1];
+      mytrk.setP(trk.getP());
+      mytrk.setPt(trk.getPt());
     } // END loop on TOF matches
   }   // END if track is TPC-TRD-TOF
 
@@ -408,6 +417,9 @@ void TaskFT0TOF::monitorData(o2::framework::ProcessingContext& ctx)
       }
 
       mMyTracks.push_back(MyTrack(matchTOF, trkTPC, trackType::ITSTPCTRD));
+      auto& mytrk = mMyTracks[mMyTracks.size()-1];
+      mytrk.setP(trk.getP());
+      mytrk.setPt(trk.getPt());
     } // END loop on TOF matches
   }   // END if track is ITS-TPC-TRD-TOF
 

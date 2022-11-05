@@ -57,8 +57,10 @@ struct MyTrack {
   float tofExpSigmaKa() const { return 120; } // FIX ME
   float tofExpSigmaPr() const { return 120; } // FIX ME
   float getEta() const { return trk.getEta(); }
-  float getP() const { return trk.getP(); }
-  float getPt() const { return trk.getPt(); }
+  float getP() const { return p; }
+  float getPt() const { return pt; }
+  void setP(float val) { p = val; }
+  void setPt(float val) { pt = val; }
   float getL() const
   {
     const o2::track::TrackLTIntegral& info = match.getLTIntegralOut();
@@ -67,6 +69,8 @@ struct MyTrack {
   static float getT0MaxP() { return t0maxp; }
   static void setT0MaxP(float pmax) { t0maxp = pmax; }
   const o2::tpc::TrackTPC& getTrack() { return trk; }
+  float p = 0.;
+  float pt = 0.;
 };
 
 class TaskFT0TOF final : public TaskInterface
