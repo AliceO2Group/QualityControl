@@ -61,7 +61,13 @@ void PixelDecoder::decodeEvent(gsl::span<const o2::itsmft::GBTWord> payload)
       if (word.isDataIB()) {
         lane = dataword->getLaneIB();
       } else if (word.isDataOB()) {
-        lane = dataword->getLaneOB();
+        // lane = dataword->getLaneOB();
+        // MF treat as if they would be IB lanes
+        lane = dataword->getLaneIB();
+      }
+      if (lane >= LaneHandler::NLANES) {
+        // Discarding lanes
+        continue;
       }
       currenttrigger->getLane(lane).append(payload);
     }
