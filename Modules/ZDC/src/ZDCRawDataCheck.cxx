@@ -202,7 +202,7 @@ void ZDCRawDataCheck::dumpVecParam(int numBinHisto, int num_ch)
 {
   std::ofstream dumpFile;
   dumpFile.open("dumpStructuresRawCheck.txt");
-  if (dumpFile) {
+  if (dumpFile.good()) {
     dumpFile << "\n Vector Param\n";
     for (int i = 0; i < (int)mVectParam.size(); i++) {
       dumpFile << mVectParam.at(i).ch << " \t" << std::to_string(mVectParam.at(i).minW) << " \t" << std::to_string(mVectParam.at(i).maxW) << " \t" << std::to_string(mVectParam.at(i).minE) << " \t" << std::to_string(mVectParam.at(i).maxE) << " \n";

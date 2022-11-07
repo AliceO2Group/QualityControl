@@ -297,7 +297,7 @@ void ZDCRecDataCheck::dumpVecParam(int numBinHisto, int num_ch)
 {
   std::ofstream dumpFile;
   dumpFile.open("dumpStructuresRecCheck.txt");
-  if (dumpFile) {
+  if (dumpFile.good()) {
     dumpFile << "\n Vector Param ADC \n";
     for (int i = 0; i < (int)mVectParamADC.size(); i++) {
       dumpFile << mVectParamADC.at(i).ch << " \t" << std::to_string(mVectParamADC.at(i).minW) << " \t" << std::to_string(mVectParamADC.at(i).maxW) << " \t" << std::to_string(mVectParamADC.at(i).minE) << " \t" << std::to_string(mVectParamADC.at(i).maxE) << " \n";
