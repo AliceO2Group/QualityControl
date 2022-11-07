@@ -25,6 +25,8 @@
 #include <unordered_map>
 #include <TTree.h>
 
+class TAxis;
+
 namespace o2::quality_control::repository
 {
 class DatabaseInterface;
@@ -51,6 +53,8 @@ class TrendingTask : public PostProcessingInterface
   void initialize(Trigger, framework::ServiceRegistryRef) override;
   void update(Trigger, framework::ServiceRegistryRef) override;
   void finalize(Trigger, framework::ServiceRegistryRef) override;
+
+  void setUserAxisLabel(TAxis* xAxis, TAxis* yAxis, const std::string& graphAxisLabel);
 
  private:
   struct {
