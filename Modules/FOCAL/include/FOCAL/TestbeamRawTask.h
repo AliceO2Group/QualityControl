@@ -58,7 +58,8 @@ class TestbeamRawTask final : public TaskInterface
   void reset() override;
 
  private:
-  static constexpr int PIXEL_ROWS_IB = 512,
+  static constexpr int PAD_ASICS = 18,
+                       PIXEL_ROWS_IB = 512,
                        PIXEL_COLS_IB = 1024,
                        PIXEL_ROW_SEGMENTSIZE_IB = 8,
                        PIXEL_COL_SEGMENSIZE_IB = 32,
@@ -66,11 +67,20 @@ class TestbeamRawTask final : public TaskInterface
                        PIXEL_COLS_OB = 1024,
                        PIXEL_ROW_SEGMENTSIZE_OB = 8,
                        PIXEL_COL_SEGMENSIZE_OB = 32;
+  struct PadChannelProjections {
+    PadChannelProjections() = default;
+    ~PadChannelProjections();
+    std::unordered_map<int, TH1*> mHistos;
+    void init(const std::vector<int> channels, int ASICid);
+    void startPublishing(o2::quality_control::core::ObjectsManager& manager);
+    void reset();
+  };
+  void default_init();
   void processPadPayload(gsl::span<const PadGBTWord> gbtpayload);
   void processPixelPayload(gsl::span<const o2::itsmft::GBTWord> gbtpayload, uint16_t feeID);
   void processPadEvent(gsl::span<const PadGBTWord> gbtpayload);
   std::pair<int, int> getNumberOfPixelSegments(PixelMapper::MappingType_t mappingtype) const;
-  std::pair<int, int> getPixelSegment(const PixelHit& hit, PixelMapper::MappingType_t mappingtype) const;
+  std::pair<int, int> getPixelSegment(const PixelHit& hit, PixelMapper::MappingType_t mappingtype, const PixelMapping::ChipPosition& chipMapping) const;
 
   PadDecoder mPadDecoder;                                                         ///< Decoder for pad data
   PadMapper mPadMapper;                                                           ///< Mapping for Pads
@@ -79,32 +89,38 @@ class TestbeamRawTask final : public TaskInterface
   std::unordered_map<o2::InteractionRecord, int> mPixelNHitsAll;                  ///< Number of hits / event all layers
   std::array<std::unordered_map<o2::InteractionRecord, int>, 2> mPixelNHitsLayer; ///< Number of hits / event layer
   std::vector<int> mHitSegmentCounter;                                            ///< Number of hits / segment
+  std::vector<int> mChannelsPadProjections;                                       ///< Channels selected for pad projections
+  int mPadTOTCutADC = 1;                                                          ///< Max TOT for ADC plot
   bool mDebugMode = false;                                                        ///< Additional debug verbosity
+  bool mDisablePads = false;                                                      ///< Disable pads
+  bool mDisablePixels = false;                                                    ///< Disable pixels
 
   /////////////////////////////////////////////////////////////////////////////////////
   /// Pad histograms
   /////////////////////////////////////////////////////////////////////////////////////
-  TH1* mPayloadSizePadsGBT;                             ///< Payload size GBT words of pad data
-  std::array<TH2*, PadData::NASICS> mPadASICChannelADC; ///< ADC per channel for each ASIC
-  std::array<TH2*, PadData::NASICS> mPadASICChannelTOA; ///< TOA per channel for each ASIC
-  std::array<TH2*, PadData::NASICS> mPadASICChannelTOT; ///< TOT per channel for each ASIC
-  std::array<TH2*, PadData::NASICS> mHitMapPadASIC;     ///< Hitmap per ASIC
+  TH1* mPayloadSizePadsGBT;                                                             ///< Payload size GBT words of pad data
+  std::array<TH2*, PAD_ASICS> mPadASICChannelADC;                                       ///< ADC per channel for each ASIC
+  std::array<TH2*, PAD_ASICS> mPadASICChannelTOA;                                       ///< TOA per channel for each ASIC
+  std::array<TH2*, PAD_ASICS> mPadASICChannelTOT;                                       ///< TOT per channel for each ASIC
+  std::array<TH2*, PAD_ASICS> mHitMapPadASIC;                                           ///< Hitmap per ASIC
+  std::array<std::unique_ptr<PadChannelProjections>, PAD_ASICS> mPadChannelProjections; ///< ADC projections per ASIC channel
 
   /////////////////////////////////////////////////////////////////////////////////////
   /// Pixel histograms
   /////////////////////////////////////////////////////////////////////////////////////
-  TH1* mLinksWithPayloadPixel;                             ///< HBF with payload per link
-  TH2* mTriggersFeePixel;                                  ///< Nunber of triggers per HBF and FEE ID
-  TProfile2D* mAverageHitsChipPixel;                       ///< Average number of hits / chip
-  TH1* mHitsChipPixel;                                     ///< Number of hits / chip
-  TH2* mPixelChipsIDsFound;                                ///< Chip IDs vs FEE IDs
-  TH2* mPixelChipsIDsHits;                                 ///< Chip IDs with hits vs FEE IDs
+  TH1* mLinksWithPayloadPixel = nullptr;                   ///< HBF with payload per link
+  TH2* mTriggersFeePixel = nullptr;                        ///< Nunber of triggers per HBF and FEE ID
+  TProfile2D* mAverageHitsChipPixel = nullptr;             ///< Average number of hits / chip
+  TH1* mHitsChipPixel = nullptr;                           ///< Number of hits / chip
+  TH2* mPixelChipsIDsFound = nullptr;                      ///< Chip IDs vs FEE IDs
+  TH2* mPixelChipsIDsHits = nullptr;                       ///< Chip IDs with hits vs FEE IDs
+  std::array<TH1*, 4> mPixelLaneIDChipIDFEE;               ///< Lane ID vs. chip ID for each FEE
   std::array<TProfile2D*, 2> mPixelChipHitProfileLayer;    ///< Hit profile for pixel chips
   std::array<TH2*, 2> mPixelChipHitmapLayer;               ///< Hit map for pixel chips
   std::array<TProfile2D*, 2> mPixelSegmentHitProfileLayer; ///< Hit profile for pixel segments
   std::array<TH2*, 2> mPixelSegmentHitmapLayer;            ///< Hit map for pixel segments
   std::array<TH2*, 2> mPixelHitDistribitionLayer;          ///< Hit distribution per chip in layer
-  TH1* mPixelHitsTriggerAll;                               ///< Number of pixel hits / trigger
+  TH1* mPixelHitsTriggerAll = nullptr;                     ///< Number of pixel hits / trigger
   std::array<TH1*, 2> mPixelHitsTriggerLayer;              ///< Number of pixel hits in layer / trigger
 };
 

@@ -35,6 +35,8 @@ class PixelMapping
   struct ChipPosition {
     unsigned int mColumn;
     unsigned int mRow;
+    bool mInvertColumn;
+    bool mInvertRow;
 
     bool operator==(const ChipPosition& other) const { return mColumn == other.mColumn && mRow == other.mRow; }
   };

@@ -62,53 +62,55 @@ void PixelMappingOB::init(unsigned int version)
 void PixelMappingOB::buildVersion0()
 {
   mMapping.clear();
-  mMapping.insert({ { 7, 6 }, { 0, 5 } });
-  mMapping.insert({ { 7, 5 }, { 1, 5 } });
-  mMapping.insert({ { 7, 4 }, { 2, 5 } });
-  mMapping.insert({ { 7, 3 }, { 3, 5 } });
-  mMapping.insert({ { 7, 2 }, { 4, 5 } });
-  mMapping.insert({ { 7, 1 }, { 5, 5 } });
-  mMapping.insert({ { 7, 0 }, { 6, 5 } });
-  mMapping.insert({ { 6, 8 }, { 0, 4 } });
-  mMapping.insert({ { 6, 9 }, { 1, 4 } });
-  mMapping.insert({ { 6, 10 }, { 2, 4 } });
-  mMapping.insert({ { 6, 11 }, { 3, 4 } });
-  mMapping.insert({ { 6, 12 }, { 4, 4 } });
-  mMapping.insert({ { 6, 13 }, { 5, 4 } });
-  mMapping.insert({ { 7, 14 }, { 6, 4 } });
-  mMapping.insert({ { 21, 6 }, { 0, 1 } });
-  mMapping.insert({ { 21, 5 }, { 1, 1 } });
-  mMapping.insert({ { 21, 4 }, { 2, 1 } });
-  mMapping.insert({ { 21, 3 }, { 3, 1 } });
-  mMapping.insert({ { 21, 2 }, { 4, 1 } });
-  mMapping.insert({ { 21, 1 }, { 5, 1 } });
-  mMapping.insert({ { 21, 0 }, { 6, 1 } });
-  mMapping.insert({ { 20, 8 }, { 0, 0 } });
-  mMapping.insert({ { 20, 9 }, { 1, 0 } });
-  mMapping.insert({ { 20, 10 }, { 2, 0 } });
-  mMapping.insert({ { 20, 11 }, { 3, 0 } });
-  mMapping.insert({ { 20, 12 }, { 4, 0 } });
-  mMapping.insert({ { 20, 13 }, { 5, 0 } });
-  mMapping.insert({ { 20, 14 }, { 6, 0 } });
+  /**                Lane, Chip, Col, Row, Inv Col, Inv Row **/
+  mMapping.insert({ { 8, 6 }, { 0, 5, true, false } });
+  mMapping.insert({ { 8, 5 }, { 1, 5, true, false } });
+  mMapping.insert({ { 8, 4 }, { 2, 5, true, false } });
+  mMapping.insert({ { 8, 3 }, { 3, 5, true, false } });
+  mMapping.insert({ { 8, 2 }, { 4, 5, true, false } });
+  mMapping.insert({ { 8, 1 }, { 5, 5, true, false } });
+  mMapping.insert({ { 8, 0 }, { 6, 5, true, false } });
+  mMapping.insert({ { 6, 8 }, { 0, 4, false, true } });
+  mMapping.insert({ { 6, 9 }, { 1, 4, false, true } });
+  mMapping.insert({ { 6, 10 }, { 2, 4, false, true } });
+  mMapping.insert({ { 6, 11 }, { 3, 4, false, true } });
+  mMapping.insert({ { 6, 12 }, { 4, 4, false, true } });
+  mMapping.insert({ { 6, 13 }, { 5, 4, false, true } });
+  mMapping.insert({ { 6, 14 }, { 6, 4, false, true } });
+  mMapping.insert({ { 24, 6 }, { 0, 1, true, false } });
+  mMapping.insert({ { 24, 5 }, { 1, 1, true, false } });
+  mMapping.insert({ { 24, 4 }, { 2, 1, true, false } });
+  mMapping.insert({ { 24, 3 }, { 3, 1, true, false } });
+  mMapping.insert({ { 24, 2 }, { 4, 1, true, false } });
+  mMapping.insert({ { 24, 1 }, { 5, 1, true, false } });
+  mMapping.insert({ { 24, 0 }, { 6, 1, true, false } });
+  mMapping.insert({ { 22, 8 }, { 0, 0, false, true } });
+  mMapping.insert({ { 22, 9 }, { 1, 0, false, true } });
+  mMapping.insert({ { 22, 10 }, { 2, 0, false, true } });
+  mMapping.insert({ { 22, 11 }, { 3, 0, false, true } });
+  mMapping.insert({ { 22, 12 }, { 4, 0, false, true } });
+  mMapping.insert({ { 22, 13 }, { 5, 0, false, true } });
+  mMapping.insert({ { 22, 14 }, { 6, 0, false, true } });
 }
 
 void PixelMappingOB::buildVersion1()
 {
   mMapping.clear();
-  mMapping.insert({ { 6, 8 }, { 0, 3 } });
-  mMapping.insert({ { 6, 9 }, { 1, 3 } });
-  mMapping.insert({ { 6, 10 }, { 2, 3 } });
-  mMapping.insert({ { 6, 11 }, { 3, 3 } });
-  mMapping.insert({ { 6, 12 }, { 4, 3 } });
-  mMapping.insert({ { 6, 13 }, { 5, 3 } });
-  mMapping.insert({ { 6, 14 }, { 6, 3 } });
-  mMapping.insert({ { 7, 6 }, { 0, 2 } });
-  mMapping.insert({ { 7, 5 }, { 1, 2 } });
-  mMapping.insert({ { 7, 4 }, { 2, 2 } });
-  mMapping.insert({ { 7, 3 }, { 3, 2 } });
-  mMapping.insert({ { 7, 2 }, { 4, 2 } });
-  mMapping.insert({ { 7, 1 }, { 5, 2 } });
-  mMapping.insert({ { 7, 0 }, { 6, 2 } });
+  /**                Lane, Chip, Col, Row, Inv Col, Inv Row **/
+  mMapping.insert({ { 6, 8 }, { 0, 3, false, false } });
+  mMapping.insert({ { 6, 9 }, { 1, 3, false, false } });
+  mMapping.insert({ { 6, 10 }, { 2, 3, false, false } });
+  mMapping.insert({ { 6, 11 }, { 3, 3, false, false } });
+  mMapping.insert({ { 6, 12 }, { 4, 3, false, false } });
+  mMapping.insert({ { 6, 13 }, { 5, 3, false, false } });
+  mMapping.insert({ { 6, 14 }, { 6, 3, false, false } });
+  mMapping.insert({ { 8, 6 }, { 0, 2, true, true } });
+  mMapping.insert({ { 8, 5 }, { 1, 2, true, true } });
+  mMapping.insert({ { 8, 4 }, { 2, 2, true, true } });
+  mMapping.insert({ { 8, 3 }, { 3, 2, true, true } });
+  mMapping.insert({ { 8, 2 }, { 4, 2, true, true } });
+  mMapping.insert({ { 8, 1 }, { 5, 2, true, true } });
+  mMapping.insert({ { 8, 0 }, { 6, 2, true, true } });
 }
 
 PixelMappingIB::PixelMappingIB(unsigned int version) : PixelMapping(version) { init(version); }
@@ -137,29 +139,29 @@ void PixelMappingIB::init(unsigned int version)
 void PixelMappingIB::buildVersion0()
 {
   mMapping.clear();
-  mMapping.insert({ { 0, 0 }, { 0, 4 } });
-  mMapping.insert({ { 0, 1 }, { 1, 4 } });
-  mMapping.insert({ { 0, 2 }, { 2, 4 } });
-  mMapping.insert({ { 0, 3 }, { 0, 2 } });
-  mMapping.insert({ { 0, 4 }, { 1, 2 } });
-  mMapping.insert({ { 0, 5 }, { 2, 2 } });
-  mMapping.insert({ { 0, 6 }, { 0, 0 } });
-  mMapping.insert({ { 0, 7 }, { 1, 0 } });
-  mMapping.insert({ { 0, 8 }, { 2, 0 } });
+  mMapping.insert({ { 0, 0 }, { 0, 4, false, false } });
+  mMapping.insert({ { 0, 1 }, { 1, 4, false, false } });
+  mMapping.insert({ { 0, 2 }, { 2, 4, false, false } });
+  mMapping.insert({ { 0, 3 }, { 0, 2, false, false } });
+  mMapping.insert({ { 0, 4 }, { 1, 2, false, false } });
+  mMapping.insert({ { 0, 5 }, { 2, 2, false, false } });
+  mMapping.insert({ { 0, 6 }, { 0, 0, false, false } });
+  mMapping.insert({ { 0, 7 }, { 1, 0, false, false } });
+  mMapping.insert({ { 0, 8 }, { 2, 0, false, false } });
 }
 
 void PixelMappingIB::buildVersion1()
 {
   mMapping.clear();
-  mMapping.insert({ { 0, 0 }, { 0, 5 } });
-  mMapping.insert({ { 0, 1 }, { 1, 5 } });
-  mMapping.insert({ { 0, 2 }, { 2, 5 } });
-  mMapping.insert({ { 0, 3 }, { 0, 3 } });
-  mMapping.insert({ { 0, 4 }, { 1, 3 } });
-  mMapping.insert({ { 0, 5 }, { 2, 3 } });
-  mMapping.insert({ { 0, 6 }, { 0, 1 } });
-  mMapping.insert({ { 0, 7 }, { 1, 1 } });
-  mMapping.insert({ { 0, 8 }, { 2, 1 } });
+  mMapping.insert({ { 0, 0 }, { 0, 5, false, false } });
+  mMapping.insert({ { 0, 1 }, { 1, 5, false, false } });
+  mMapping.insert({ { 0, 2 }, { 2, 5, false, false } });
+  mMapping.insert({ { 0, 3 }, { 0, 3, false, false } });
+  mMapping.insert({ { 0, 4 }, { 1, 3, false, false } });
+  mMapping.insert({ { 0, 5 }, { 2, 3, false, false } });
+  mMapping.insert({ { 0, 6 }, { 0, 1, false, false } });
+  mMapping.insert({ { 0, 7 }, { 1, 1, false, false } });
+  mMapping.insert({ { 0, 8 }, { 2, 1, false, false } });
 }
 
 PixelMapper::PixelMapper(PixelMapper::MappingType_t mappingtype) : mMappingType(mappingtype)
