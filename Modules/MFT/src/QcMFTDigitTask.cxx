@@ -153,7 +153,7 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mDigitOccupancySummary.get());
   getObjectsManager()->setDefaultDrawOptions(mDigitOccupancySummary.get(), "colz");
 
-  mDigitsROFSize = std::make_unique<TH1F>("mDigitsROFSize", "ROF size in # digits; ROF Size (# digits); # entries", maxDigitROFSize, 0, maxDigitROFSize);
+  mDigitsROFSize = std::make_unique<TH1F>("mDigitsROFSize", "Distribution of the #digits per ROF; # digits per ROF; # entries", maxDigitROFSize, 0, maxDigitROFSize);
   mDigitsROFSize->SetStats(0);
   getObjectsManager()->startPublishing(mDigitsROFSize.get());
   getObjectsManager()->setDisplayHint(mDigitsROFSize.get(), "logx logy");
