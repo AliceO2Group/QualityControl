@@ -82,7 +82,8 @@
             "title": "Mean trend of the example histogram",
             "varexp": "example.mean:time",
             "selection": "",
-            "option": "*L"
+            "option": "*L",
+            "graphAxisLabel": "Mean X:time"
           },
           {
             "name": "histogram_of_means",
@@ -103,7 +104,8 @@
             "title": "Correlation between the stddev and entries of the example histogram",
             "varexp": "example.stddev:example.entries",
             "selection": "",
-            "option": "*"
+            "option": "*",
+            "graphAxisLabel": "stddev:entries"
           },
           {
             "name": "example_quality",

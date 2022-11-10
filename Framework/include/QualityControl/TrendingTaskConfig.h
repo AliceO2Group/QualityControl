@@ -38,6 +38,7 @@ struct TrendingTaskConfig : PostProcessingConfig {
     std::string selection;
     std::string option;
     std::string graphErrors;
+    std::string graphAxisLabel;
   };
 
   struct DataSource {
