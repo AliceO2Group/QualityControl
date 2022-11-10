@@ -54,6 +54,10 @@
           "name" : "MFTClusterTask",
           "MOs" : ["mClusterOccupancy","mClusterPatternIndex","mClusterSizeSummary", "mGroupedClusterSizeSummary", "mClusterOccupancySummary"]
         } ],
+        "checkParameters" : {
+          "ZoneThresholdMedium" : "2",
+          "ZoneThresholdBad" : "5"
+        },
         "className" : "o2::quality_control_modules::mft::QcMFTClusterCheck",
         "moduleName" : "QcMFT",
         "detectorName" : "MFT",
