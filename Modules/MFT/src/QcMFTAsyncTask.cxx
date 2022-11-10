@@ -129,12 +129,10 @@ void QcMFTAsyncTask::initialize(o2::framework::InitContext& /*ctx*/)
     getObjectsManager()->startPublishing(mTrackPhiNCls[nHisto].get());
 
     mTrackXYNCls[nHisto] = std::make_unique<TH2F>(Form("tracks/mMFTTrackXY_%d_MinClusters", minNClusters), Form("Track Position (NCls >= %d); x; y", minNClusters), 320, -16, 16, 320, -16, 16);
-    mTrackXYNCls[nHisto]->SetOption("COLZ");
     getObjectsManager()->startPublishing(mTrackXYNCls[nHisto].get());
     getObjectsManager()->setDisplayHint(mTrackXYNCls[nHisto].get(), "logz colz");
 
     mTrackEtaPhiNCls[nHisto] = std::make_unique<TH2F>(Form("tracks/mMFTTrackEtaPhi_%d_MinClusters", minNClusters), Form("Track #eta , #phi (NCls >= %d); #eta; #phi", minNClusters), 50, -4, -2, 100, -3.2, 3.2);
-    mTrackEtaPhiNCls[nHisto]->SetOption("COLZ");
     getObjectsManager()->startPublishing(mTrackEtaPhiNCls[nHisto].get());
     getObjectsManager()->setDisplayHint(mTrackEtaPhiNCls[nHisto].get(), "colz");
   }
