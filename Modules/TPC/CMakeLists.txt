@@ -28,7 +28,8 @@ target_sources(O2QcTPC PRIVATE src/PID.cxx
                              src/CheckOfSlices.cxx
                              src/GenericHistogramCheck.cxx
                              src/JunkDetection.cxx
-                             src/CheckOfPads.cxx)
+                             src/CheckOfPads.cxx
+                             src/CalPadClusterReductor.cxx)
 
 target_include_directories(
   O2QcTPC
@@ -77,6 +78,7 @@ add_root_dictionary(O2QcTPC
                             include/TPC/GenericHistogramCheck.h
                             include/TPC/JunkDetection.h
                             include/TPC/CheckOfPads.h
+                            include/TPC/CalPadClusterReductor.h
                     LINKDEF include/TPC/LinkDef.h)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/TPC
