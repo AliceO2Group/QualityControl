@@ -109,14 +109,14 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
     936, -0.5, 935.5);
   mDigitChipOccupancy->SetStats(0);
   getObjectsManager()->startPublishing(mDigitChipOccupancy.get());
-  getObjectsManager()->setDefaultDrawOptions(mDigitChipOccupancy.get(), "hist");
+  getObjectsManager()->setDisplayHint(mDigitChipOccupancy.get(), "hist");
 
   mDigitDoubleColumnSensorIndices = std::make_unique<TH2F>("mDigitDoubleColumnSensorIndices",
                                                            "Double Column vs Chip ID;Double Column;Chip ID",
                                                            512, -0.5, 511.5, 936, -0.5, 935.5);
   mDigitDoubleColumnSensorIndices->SetStats(0);
   getObjectsManager()->startPublishing(mDigitDoubleColumnSensorIndices.get());
-  getObjectsManager()->setDefaultDrawOptions(mDigitDoubleColumnSensorIndices.get(), "colz");
+  getObjectsManager()->setDisplayHint(mDigitDoubleColumnSensorIndices.get(), "colz");
 
   if (mNoiseScan == 1) { // to be executed only for special runs
     mDigitChipStdDev = std::make_unique<TH1F>(
@@ -151,7 +151,7 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
   mDigitOccupancySummary->GetYaxis()->SetBinLabel(8, "h1-z3");
   mDigitOccupancySummary->SetStats(0);
   getObjectsManager()->startPublishing(mDigitOccupancySummary.get());
-  getObjectsManager()->setDefaultDrawOptions(mDigitOccupancySummary.get(), "colz");
+  getObjectsManager()->setDisplayHint(mDigitOccupancySummary.get(), "colz");
 
   mDigitsROFSize = std::make_unique<TH1F>("mDigitsROFSize", "Distribution of the #digits per ROF; # digits per ROF; # entries", maxDigitROFSize, 0, maxDigitROFSize);
   mDigitsROFSize->SetStats(0);
