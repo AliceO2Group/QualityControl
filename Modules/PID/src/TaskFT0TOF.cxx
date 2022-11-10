@@ -19,6 +19,8 @@
 #include <TCanvas.h>
 #include <TH1.h>
 #include <TH2.h>
+#include <TProfile.h>
+#include <TLorentzVector.h>
 
 #include "QualityControl/QcInfoLogger.h"
 #include "PID/TaskFT0TOF.h"
@@ -88,6 +90,8 @@ TaskFT0TOF::~TaskFT0TOF()
   delete mHistDeltaEvTimeTOFVsFT0ASameBC;
   delete mHistDeltaEvTimeTOFVsFT0CSameBC;
   delete mHistDeltaBCTOFFT0;
+  delete mHistMismatchVsEta;
+  delete mProfLoverCvsEta;
 }
 
 void TaskFT0TOF::initialize(o2::framework::InitContext& /*ctx*/)
@@ -187,6 +191,8 @@ void TaskFT0TOF::initialize(o2::framework::InitContext& /*ctx*/)
   mHistDeltaEvTimeTOFVsFT0ASameBC = new TH1F("DeltaEvTimeTOFVsFT0ASameBC", ";t_{0}^{TOF} - t_{0}^{FT0A} (ps)", 200, -2000., +2000);
   mHistDeltaEvTimeTOFVsFT0CSameBC = new TH1F("DeltaEvTimeTOFVsFT0CSameBC", ";t_{0}^{TOF} - t_{0}^{FT0C} (ps)", 200, -2000., +2000);
   mHistDeltaBCTOFFT0 = new TH1I("DeltaBCTOFFT0", "#Delta BC (TOF-FT0 evt time);#Delta BC", 16, -8, +8);
+  mHistMismatchVsEta = new TH2F("mHistMismatchVsEta", ";#eta;t_{TOF}-t_{0}^{FT0AC}-L_{ch}/c", 21, -1., +1., 6500, -30000, +100000);
+  mProfLoverCvsEta = new TProfile("LoverCvsEta", ";#eta;L_{ch}/c", 21, -1., +1.);
 
   // initialize B field and geometry for track selection
   o2::base::GeometryManager::loadGeometry(mGeomFileName);
@@ -209,6 +215,8 @@ void TaskFT0TOF::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mHistDeltaEvTimeTOFVsFT0ACSameBC);
   getObjectsManager()->startPublishing(mHistDeltaEvTimeTOFVsFT0ASameBC);
   getObjectsManager()->startPublishing(mHistDeltaEvTimeTOFVsFT0CSameBC);
+  getObjectsManager()->startPublishing(mHistMismatchVsEta);
+  getObjectsManager()->startPublishing(mProfLoverCvsEta);
 
   // Use FT0?
   int evTimeMax = 1; // if not use only TOF (evTimeType::TOF == 0)
@@ -469,8 +477,9 @@ void TaskFT0TOF::monitorData(o2::framework::ProcessingContext& ctx)
         double lastTime = tracks[ntrk - 1].tofSignalDouble() + 8 * o2::tof::Geo::BC_TIME_INPS;
         for (int j = ift0; j < ft0Sorted.size(); j++) {
           auto& obj = ft0Sorted[j];
-          if (obj.getInteractionRecord().orbit < ft0firstOrbit)
-            continue; // skip the FT0 objects from previous orbits
+          if (obj.getInteractionRecord().orbit < ft0firstOrbit) {
+            continue; // skip FT0 objects from previous orbits
+          }
           uint32_t orbit = obj.getInteractionRecord().orbit - ft0firstOrbit;
           double BCtimeFT0 = ((orbit)*o2::constants::lhc::LHCMaxBunches + obj.getInteractionRecord().bc) * o2::tof::Geo::BC_TIME_INPS;
 
@@ -492,6 +501,55 @@ void TaskFT0TOF::monitorData(o2::framework::ProcessingContext& ctx)
       }
 
       processEvent(tracks, ft0Cand);
+    }
+  } // end loop on tracks
+
+  const auto clusters = mRecoCont.getTOFClusters(); // get the TOF clusters
+  std::vector<int> clsIndex;                        // use vector of clusters indices
+  clsIndex.resize(clusters.size());
+  for (int i = 0; i < clsIndex.size(); i++) {
+    clsIndex[i] = i;
+  }
+  // sort clusters indices in time
+  std::sort(clsIndex.begin(), clsIndex.end(), [&clusters](int a, int b) { return clusters[a].getTime() < clusters[b].getTime(); });
+
+  int icls = 0;
+  static TLorentzVector v;
+
+  for (auto& ft0 : ft0Sorted) {
+    if (!ft0.isValidTime(0)) {
+      continue; // skip invalid FT0AC times
+    }
+    if (ft0firstOrbit > ft0.getInteractionRecord().orbit) {
+      continue; // skip FT0 objects from previous orbits
+    }
+
+    double ft0time = ((ft0.getInteractionRecord().orbit - ft0firstOrbit) * o2::constants::lhc::LHCMaxBunches + ft0.getInteractionRecord().bc) * o2::tof::Geo::BC_TIME_INPS + ft0.getCollisionTime(0);
+    double timemax = ft0time + 100E3;
+    double timemin = ft0time - 30E3;
+
+    for (int j = icls; j < clusters.size(); j++) {
+      auto& obj = clusters[clsIndex[j]];
+
+      if (obj.getTime() < timemin) {
+        icls = j + 1;
+        continue;
+      }
+      if (obj.getTime() > timemax) {
+        break;
+      }
+
+      int channel = obj.getMainContributingChannel(); // channel index
+      int det[5];
+      o2::tof::Geo::getVolumeIndices(channel, det); // detector index
+      float pos[3];
+      o2::tof::Geo::getPos(det, pos); // detector position
+      v.SetXYZT(pos[0], pos[1], pos[2], 0);
+      float LoverC = v.P() * 33.3564095; // L/c
+      float eta = v.Eta();
+
+      mHistMismatchVsEta->Fill(eta, obj.getTime() - ft0time - LoverC);
+      mProfLoverCvsEta->Fill(eta, LoverC);
     }
   }
 
