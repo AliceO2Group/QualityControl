@@ -1,4 +1,4 @@
-// Copyright 2019-2022 CERN and copyright holders of ALICE O2.
+﻿// Copyright 2019-2022 CERN and copyright holders of ALICE O2.
 // See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
 // All rights not expressly granted are reserved.
 //
@@ -158,35 +158,6 @@ void ZDCRawDataTask::reset()
     fOverBc->Reset();
 }
 
-void ZDCRawDataTask::setStat(TH1* h)
-{
-  TString hn = h->GetName();
-  h->Draw();
-  gPad->Update();
-  TPaveStats* st = (TPaveStats*)h->GetListOfFunctions()->FindObject("stats");
-  st->SetFillStyle(1001);
-  st->SetBorderSize(1);
-  if (hn.BeginsWith("hp")) {
-    st->SetOptStat(111111);
-    st->SetX1NDC(0.1);
-    st->SetX2NDC(0.3);
-    st->SetY1NDC(0.640);
-    st->SetY2NDC(0.9);
-  } else if (hn.BeginsWith("hc")) {
-    st->SetOptStat(1111);
-    st->SetX1NDC(0.799);
-    st->SetX2NDC(0.999);
-    st->SetY1NDC(0.829);
-    st->SetY2NDC(0.999);
-  } else if (hn.BeginsWith("hs") || hn.BeginsWith("hb")) {
-    st->SetOptStat(11);
-    st->SetX1NDC(0.799);
-    st->SetX2NDC(0.9995);
-    st->SetY1NDC(0.904);
-    st->SetY2NDC(0.999);
-  }
-}
-
 void ZDCRawDataTask::initHisto()
 {
   ILOG(Info, Support) << "initialize ZDC RAW DATA HISTOGRAMS" << ENDM;
@@ -222,9 +193,16 @@ void ZDCRawDataTask::initHisto()
   setNameChannel(7, 1, "ZPC_SUM");
   setNameChannel(7, 2, "ZPC_T1");
   setNameChannel(7, 3, "ZPC_T2");
+
+  std::vector<std::string> tokenString;
   // Histograms Baseline
   // setBinHisto1D(16378, -0.125, o2::zdc::ADCMax + 0.125);
-  setBinHisto1D(4096, -2048.5, 2047.5);
+  if (auto param = mCustomParameters.find("BASELINE"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - BASELINE: " << param->second << ENDM;
+    tokenString = tokenLine(param->second, ";");
+    setBinHisto1D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()));
+  } else
+    setBinHisto1D(4096, -2048.5, 2047.5);
   addNewHisto("BASELINE", "hped-ZNA_TC_TR", "Baseline ZNA TC", "ZNA_TC_TR", "LBC");
   addNewHisto("BASELINE", "hped-ZNA_T1", "Baseline ZNA T1", "ZNA_T1", "LBC");
   addNewHisto("BASELINE", "hped-ZNA_T2", "Baseline ZNA T2", "ZNA_T2", "LBC");
@@ -258,7 +236,12 @@ void ZDCRawDataTask::initHisto()
 
   // Histograms Counts
   // setBinHisto1D(o2::constants::lhc::LHCMaxBunches + 6, -5.5, o2::constants::lhc::LHCMaxBunches+0.5);
-  setBinHisto1D(10, -0.5, 9.5);
+  if (auto param = mCustomParameters.find("COUNTS"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - COUNTS: " << param->second << ENDM;
+    tokenString = tokenLine(param->second, ";");
+    setBinHisto1D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()));
+  } else
+    setBinHisto1D(10, -0.5, 9.5);
   addNewHisto("COUNTS", "hcounts-ZNA_TC_TR", "Counts ZNA TC", "ZNA_TC_TR", "LBC");
   addNewHisto("COUNTS", "hcounts-ZNA_T1", "Counts ZNA T1", "ZNA_T1", "LBC");
   addNewHisto("COUNTS", "hcounts-ZNA_T2", "Counts ZNA T2", "ZNA_T2", "LBC");
@@ -295,7 +278,12 @@ void ZDCRawDataTask::initHisto()
   double xmin = -nBCAheadTrig * o2::zdc::NTimeBinsPerBC - 0.5;
   double xmax = o2::zdc::NTimeBinsPerBC - 0.5 + 12;
   // setBinHisto2D(nbx, xmin, xmax, o2::zdc::ADCRange, o2::zdc::ADCMin - 0.5, o2::zdc::ADCMax + 0.5);
-  setBinHisto2D(60, -36.5, 23.5, 4096, -2048.5, 2047.5);
+  if (auto param = mCustomParameters.find("SIGNAL"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - SIGNAL: " << param->second << ENDM;
+    tokenString = tokenLine(param->second, ";");
+    setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
+  } else
+    setBinHisto2D(60, -36.5, 23.5, 4096, -2048.5, 2047.5);
   // Alice Trigger Or Auto Trigger
   addNewHisto("SIGNAL", "hsignal-ZNA_TC_TR_AoT", "Signal ZNA TC Trigger Alice OR Auto Trigger", "ZNA_TC_TR", "AoT");
   addNewHisto("SIGNAL", "hsignal-ZNA_T1_AoT", "Signal ZNA T1 Trigger Alice OR Auto Trigger", "ZNA_T1", "AoT");
@@ -329,7 +317,12 @@ void ZDCRawDataTask::initHisto()
   addNewHisto("SIGNAL", "hsignal-ZEM2_TR_AoT", "Signal ZEM2 Trigger Alice OR Auto Trigger", "ZEM2_TR", "AoT");
 
   // Histograms Bunch Crossing Maps
-  setBinHisto2D(100, -0.5, 99.5, 36, -35.5, 0.5);
+  if (auto param = mCustomParameters.find("BUNCH"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - BUNCH: " << param->second << ENDM;
+    tokenString = tokenLine(param->second, ";");
+    setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
+  } else
+    setBinHisto2D(100, -0.5, 99.5, 36, -35.5, 0.5);
   addNewHisto("BUNCH", "hbunch-ZNA_TC_TR_A0oT0", "Bunch ZNA TC Ali Trigger OR AutoTrigger", "ZNA_TC_TR", "A0oT0");
   addNewHisto("BUNCH", "hbunch-ZNA_SUM_A0oT0", "Bunch ZNA SUM Ali Trigger OR AutoTrigger", "ZNA_SUM", "A0oT0");
   addNewHisto("BUNCH", "hbunch-ZNC_TC_TR_A0oT0", "Bunch ZNC TC Ali Trigger OR AutoTrigger", "ZNC_TC_TR", "A0oT0");
@@ -363,17 +356,69 @@ void ZDCRawDataTask::initHisto()
   addNewHisto("BUNCH", "hbunch-ZEM1_T0", "Bunch ZEM1  Auto Trigger", "ZEM1_TR", "T0");
   addNewHisto("BUNCH", "hbunch-ZEM2_T0", "Bunch ZEM2  Auto Trigger", "ZEM2_TR", "T0");
 
-  setBinHisto2D(8, -0.5, 7.5, 4, -0.5, 3.5);
+  if (auto param = mCustomParameters.find("TRASMITTEDCHANNEL"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - TRASMITTEDCHANNEL: " << param->second << ENDM;
+    tokenString = tokenLine(param->second, ";");
+    setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
+  } else
+    setBinHisto2D(8, -0.5, 7.5, 4, -0.5, 3.5);
   addNewHisto("TRASMITTEDCHANNEL", "hchTrasmitted", "Channels Trasmitted", "NONE", "ALL");
+
+  if (auto param = mCustomParameters.find("FIRECHANNEL"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - FIRECHANNELL: " << param->second << ENDM;
+    tokenString = tokenLine(param->second, ";");
+    setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
+  } else
+    setBinHisto2D(8, -0.5, 7.5, 4, -0.5, 3.5);
   addNewHisto("FIRECHANNEL", "hchFired", "Channels Fired", "NONE", "ALL");
+
+  if (auto param = mCustomParameters.find("DATALOSS"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - DATALOSS: " << param->second << ENDM;
+    tokenString = tokenLine(param->second, ";");
+    setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
+  } else
+    setBinHisto2D(8, -0.5, 7.5, 4, -0.5, 3.5);
   addNewHisto("DATALOSS", "hchDataLoss", "Data Loss", "NONE", "ALL");
-  setBinHisto2D(32, -0.5, 31.5, 10, -0.5, 9.5);
+
+  if (auto param = mCustomParameters.find("TRIGGER_BIT"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - TRIGGER_BIT: " << param->second << ENDM;
+    tokenString = tokenLine(param->second, ";");
+    setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
+  } else
+    setBinHisto2D(32, -0.5, 31.5, 10, -0.5, 9.5);
   addNewHisto("TRIGGER_BIT", "hchTriggerBits", "Trigger Bits", "NONE", "ALL");
+
+  if (auto param = mCustomParameters.find("TRIGGER_BIT_HIT"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - TRIGGER_BIT_HIT: " << param->second << ENDM;
+    tokenString = tokenLine(param->second, ";");
+    setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
+  } else
+    setBinHisto2D(32, -0.5, 31.5, 10, -0.5, 9.5);
   addNewHisto("TRIGGER_BIT_HIT", "hchTriggerBitsHits", "Trigger Bits Hit", "NONE", "ALL");
-  setBinHisto1D(32, -0.5, 31.5);
+
+  if (auto param = mCustomParameters.find("OVER_BC"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - OVER_BC: " << param->second << ENDM;
+    tokenString = tokenLine(param->second, ";");
+    setBinHisto1D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()));
+  } else
+    setBinHisto1D(32, -0.5, 31.5);
   addNewHisto("OVER_BC", "hbcOver", "BC Overflow", "NONE", "ALL");
-  setBinHisto1D(26, -0.5, 25.5);
+
+  if (auto param = mCustomParameters.find("SUMMARYBASELINE"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - SUMMARYBASELINE: " << param->second << ENDM;
+    tokenString = tokenLine(param->second, ";");
+    setBinHisto1D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()));
+  } else
+    setBinHisto1D(26, -0.5, 25.5);
   addNewHisto("SUMMARYBASELINE", "hpedSummary", "Baseline Summary", "NONE", "LBC");
+
+  if (auto param = mCustomParameters.find("SUMMARYRATE"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - SUMMARYRATE: " << param->second << ENDM;
+    tokenString = tokenLine(param->second, ";");
+    setBinHisto1D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()));
+  } else
+    setBinHisto1D(26, -0.5, 25.5);
+  addNewHisto("SUMMARYRATE", "hrateSummary", "Rate Summary (KHz)", "NONE", "LBC");
 }
 
 void ZDCRawDataTask::init()
@@ -596,6 +641,10 @@ int ZDCRawDataTask::process(const o2::zdc::EventChData& ch)
         if (fSummaryPedestal && fMatrixHistoBaseline[f.board][f.ch].at(0).histo) {
           fSummaryPedestal->SetBinContent(fMapBinNameIdSummaryHisto[getNameChannel(f.board, f.ch)], fMatrixHistoBaseline[f.board][f.ch].at(0).histo->GetMean());
           fSummaryPedestal->SetBinError(fMapBinNameIdSummaryHisto[getNameChannel(f.board, f.ch)], fMatrixHistoBaseline[f.board][f.ch].at(0).histo->GetMeanError());
+        }
+        if (fSummaryRate && fMatrixHistoBaseline[f.board][f.ch].at(0).histo) {
+          fSummaryRate->SetBinContent(fMapBinNameIdSummaryHisto[getNameChannel(f.board, f.ch)], fMatrixHistoCounts[f.board][f.ch].at(0).histo->GetMean() * 11.2455);
+          fSummaryRate->SetBinError(fMapBinNameIdSummaryHisto[getNameChannel(f.board, f.ch)], fMatrixHistoCounts[f.board][f.ch].at(0).histo->GetMeanError());
         }
       }
     }
@@ -910,10 +959,18 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
         return false;
       }
     }
-    if (type.compare("SUMMARYBASELINE") == 0) {
-      fSummaryPedestal = new TH1F(hname, htit, fNumBinX, fMinBinX, fMaxBinX);
-      fSummaryPedestal->GetXaxis()->LabelsOption("v");
-      fSummaryPedestal->SetStats(0);
+
+    if ((type.compare("SUMMARYBASELINE") == 0) || (type.compare("SUMMARYRATE") == 0)) {
+      if (type.compare("SUMMARYBASELINE") == 0) {
+        fSummaryPedestal = new TH1F(hname, htit, fNumBinX, fMinBinX, fMaxBinX);
+        fSummaryPedestal->GetXaxis()->LabelsOption("v");
+        fSummaryPedestal->SetStats(0);
+      }
+      if (type.compare("SUMMARYRATE") == 0) {
+        fSummaryRate = new TH1F(hname, htit, fNumBinX, fMinBinX, fMaxBinX);
+        fSummaryRate->GetXaxis()->LabelsOption("v");
+        fSummaryRate->SetStats(0);
+      }
       int i = 0;
       for (uint32_t imod = 0; imod < o2::zdc::NModules; imod++) {
         for (uint32_t ich = 0; ich < o2::zdc::NChPerModule; ich++) {
@@ -922,17 +979,31 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
             continue;
           } else {
             i++;
-            fSummaryPedestal->GetXaxis()->SetBinLabel(i, TString::Format("%s", getNameChannel(imod, ich).c_str()));
+            if (type.compare("SUMMARYBASELINE") == 0)
+              fSummaryPedestal->GetXaxis()->SetBinLabel(i, TString::Format("%s", getNameChannel(imod, ich).c_str()));
+            if (type.compare("SUMMARYRATE") == 0)
+              fSummaryRate->GetXaxis()->SetBinLabel(i, TString::Format("%s", getNameChannel(imod, ich).c_str()));
+
             fMapBinNameIdSummaryHisto.insert(std::pair<std::string, int>(chName, i));
           }
         }
       }
-      getObjectsManager()->startPublishing(fSummaryPedestal);
+      if (type.compare("SUMMARYBASELINE") == 0)
+        getObjectsManager()->startPublishing(fSummaryPedestal);
+      if (type.compare("SUMMARYRATE") == 0)
+        getObjectsManager()->startPublishing(fSummaryRate);
       try {
-        getObjectsManager()->addMetadata(fSummaryPedestal->GetName(), fSummaryPedestal->GetName(), "34");
+        if (type.compare("SUMMARYBASELINE") == 0)
+          getObjectsManager()->addMetadata(fSummaryPedestal->GetName(), fSummaryPedestal->GetName(), "34");
+        if (type.compare("SUMMARYRATE") == 0)
+          getObjectsManager()->addMetadata(fSummaryRate->GetName(), fSummaryRate->GetName(), "34");
+
         return true;
       } catch (...) {
-        ILOG(Warning, Support) << "Metadata could not be added to " << fSummaryPedestal->GetName() << ENDM;
+        if (type.compare("SUMMARYBASELINE") == 0)
+          ILOG(Warning, Support) << "Metadata could not be added to " << fSummaryPedestal->GetName() << ENDM;
+        if (type.compare("SUMMARYRATE") == 0)
+          ILOG(Warning, Support) << "Metadata could not be added to " << fSummaryRate->GetName() << ENDM;
         return false;
       }
     }
@@ -1040,8 +1111,8 @@ bool ZDCRawDataTask::decodeConfLine(std::vector<std::string> TokenString, int Li
   if (TokenString.at(0).compare("OVER_BC") == 0) {
     return decodeOverBc(TokenString, LineNumber);
   }
-  if (TokenString.at(0).compare("SUMMARYBASELINE") == 0) {
-    return decodeSummaryBaseline(TokenString, LineNumber);
+  if ((TokenString.at(0).compare("SUMMARYBASELINE") == 0) || (TokenString.at(0).compare("SUMMARYRATE") == 0)) {
+    return decodeSummary(TokenString, LineNumber);
   }
   ILOG(Error, Support) << TString::Format("ERROR Line number %d Key word %s does not exist.", LineNumber, TokenString.at(0).c_str()) << ENDM;
   return false;
@@ -1191,7 +1262,7 @@ bool ZDCRawDataTask::decodeTriggerBitHitChannel(std::vector<std::string> TokenSt
   return false;
 }
 
-bool ZDCRawDataTask::decodeSummaryBaseline(std::vector<std::string> TokenString, int LineNumber)
+bool ZDCRawDataTask::decodeSummary(std::vector<std::string> TokenString, int LineNumber)
 {
   if (TokenString.size() == 5) {
     return addNewHisto(TokenString.at(0), TokenString.at(1), TokenString.at(2), TokenString.at(3), TokenString.at(4));

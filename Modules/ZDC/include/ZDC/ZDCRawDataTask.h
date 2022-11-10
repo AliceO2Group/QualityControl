@@ -105,7 +105,7 @@ class ZDCRawDataTask final : public TaskInterface
   bool decodeTrasmittedChannel(std::vector<std::string> tokenString, int lineNumber);
   bool decodeTriggerBitChannel(std::vector<std::string> tokenString, int lineNumber);
   bool decodeTriggerBitHitChannel(std::vector<std::string> tokenString, int lineNumber);
-  bool decodeSummaryBaseline(std::vector<std::string> tokenString, int lineNumber);
+  bool decodeSummary(std::vector<std::string> tokenString, int lineNumber);
   void DumpHistoStructure();
   void setVerbosity(int v)
   {
@@ -114,7 +114,6 @@ class ZDCRawDataTask final : public TaskInterface
   int getVerbosity() const { return mVerbosity; }
 
  private:
-  void setStat(TH1* h);
   int mVerbosity = 1;
 
   o2::zdc::EventChData mCh;
@@ -130,6 +129,7 @@ class ZDCRawDataTask final : public TaskInterface
   TH2* fTriggerBits;
   TH2* fTriggerBitsHits;
   TH1* fSummaryPedestal;
+  TH1* fSummaryRate;
   TH1* fOverBc;
 
   std::vector<std::string> fNameHisto;

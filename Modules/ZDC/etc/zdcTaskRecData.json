@@ -23,14 +23,13 @@
       }
     },
     "tasks": {
-      "QcZDCTask": {
+      "QcZDCRecTask": {
         "active": "true",
         "className": "o2::quality_control_modules::zdc::ZDCRecDataTask",
         "moduleName": "QcZDC",
         "detectorName": "ZDC",
         "cycleDurationSeconds": "10",
         "maxNumberCycles": "-1",
-        "": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
           "type": "dataSamplingPolicy",
           "name": "zdc-rec"
@@ -52,7 +51,63 @@
         "location": "remote",
         "saveObjectsToFile": "QcZDCRecData.root",      "": "For debugging, path to the file where to save. If empty it won't save."
       }
-    }
+    },
+    "checks": {
+          "QcZDCRecCheck": {
+            "active": "true",
+            "className": "o2::quality_control_modules::zdc::ZDCRecDataCheck",
+            "moduleName": "QcZDC",
+            "detectorName" : "ZDC",
+            "policy": "OnAny",
+             "checkParameters" : {
+              "ADC_ZNAC" : "461.2;10;20",
+              "ADC_ZNA1" : "115.6;10;20",
+              "ADC_ZNA2" : "115.8;10;20",
+              "ADC_ZNA3" : "115.6;10;20",
+              "ADC_ZNA4" : "115.9;10;20",
+              "ADC_ZNAS" : "462.7;10;20",
+              "ADC_ZPAC" : "156.7;10;20",
+              "ADC_ZPA1" : "63.63;10;20",
+              "ADC_ZPA2" : "70.86;10;20",
+              "ADC_ZPA3" : "16.30;10;20",
+              "ADC_ZPA4" : "9.25;10;20",
+              "ADC_ZPAS" : "155.2;10;20",
+              "ADC_ZEM1" : "392.2;10;20",
+              "ADC_ZEM2" : "388.2;10;20",
+              "ADC_ZNCC" : "471.7;10;20",
+              "ADC_ZNC1" : "117.7;10;20",
+              "ADC_ZNC2" : "118.8;10;20",
+              "ADC_ZNC3" : "119.2;10;20",
+              "ADC_ZNC4" : "117.6;10;20",
+              "ADC_ZNCS" : "473.3;10;20",
+              "ADC_ZPCC" : "195.6;10;20",
+              "ADC_ZPC1" : "59.19;10;20",
+              "ADC_ZPC2" : "77.63;10;20",
+              "ADC_ZPC3" : "39.96;10;20",
+              "ADC_ZPC4" : "34.21;10;20",
+              "ADC_ZPCS" : "193.9;10;20",
+              "ADC_POS_MSG_X": "0.15",
+              "ADC_POS_MSG_Y": "0.92",
+              "TDC_ZNAC" : "0.70;0.10;0.20",
+              "TDC_ZNAS" : "0.79;0.10;0.20",
+              "TDC_ZPAC" : "1.30;0.10;0.20",
+              "TDC_ZPAS" : "1.36;0.10;0.20",
+              "TDC_ZEM1" : "0.31;0.10;0.20",
+              "TDC_ZEM2" : "0.32;0.10;0.20",
+              "TDC_ZNCC" : "0.50;0.10;0.20",
+              "TDC_ZNCS" : "0.58;0.10;0.20",
+              "TDC_ZPCC" : "1.17;0.10;0.20",
+              "TDC_ZPCS" : "1.24;0.10;0.20",
+              "TDC_POS_MSG_X": "0.01",
+              "TDC_POS_MSG_Y": "0.92"
+            },
+            "dataSource": [{
+              "type": "Task",
+              "name": "QcZDCRecTask",
+              "MOs": ["h_summmary_ADC" , "h_summmary_TDC"]
+            }]
+          }
+      }
   },
   "dataSamplingPolicies": [
     {
@@ -60,7 +115,13 @@
       "active": "true",
       "machines": [],
       "query": "zdc-bcrec:ZDC/BCREC/0;zdc-energyrec:ZDC/ENERGY/0;zdc-tdcrec:ZDC/TDCDATA/0;zdc-inforec:ZDC/INFO/0",
-      "samplingConditions": [      ],
+      "samplingConditions": [ 
+        {
+          "condition": "random",
+          "fraction": "0.3",
+          "seed": "1441"
+        }     
+      ],
       "blocking": "false"
     }
   ]

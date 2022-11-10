@@ -23,7 +23,7 @@
       }
     },
     "tasks": {
-      "QcZDCTask": {
+      "QcZDCRawTask": {
         "active": "true",
         "className": "o2::quality_control_modules::zdc::ZDCRawDataTask",
         "moduleName": "QcZDC",
@@ -36,12 +36,67 @@
           "name": "zdc-raw"
         },
         "taskParameters": {
-          "myOwnKey": "myOwnValue"
+          "BASELINE": "4096;-2048.5;2047.5",
+          "COUNTS": "30;-0.5;29.5",
+          "SIGNAL": "60;-36.5;23.5;4096;-2048.5;2047.5",
+          "BUNCH": "100;-0.5;99.5;36;-35.5;0.5",
+          "TRASMITTEDCHANNEL": "8;-0.5;7.5;4;-0.5;3.5",
+          "FIREDCHANNEL": "8;-0.5;7.5;4;-0.5;3.5",
+          "DATALOSS": "8;-0.5;7.5;4;-0.5;3.5",
+          "TRIGGER_BIT": "32;-0.5;31.5;10;-0.5; 9.5",
+          "TRIGGER_BIT_HIT": "32;-0.5;31.5;10;-0.5; 9.5",
+          "OVER_BC": "32;-0.5;31.5",
+          "SUMMARYBASELINE": "26;-0.5;25.5",
+          "SUMMARYRATE": "26;-0.5;25.5"
         },
         "location": "remote",
         "saveObjectsToFile": "QcZDCRawData.root",      "": "For debugging, path to the file where to save. If empty it won't save."
       }
-    }
+    },
+    "checks": {
+          "QcZDCRawCheck": {
+            "active": "true",
+            "className": "o2::quality_control_modules::zdc::ZDCRawDataCheck",
+            "moduleName": "QcZDC",
+            "detectorName" : "ZDC",
+            "policy": "OnAny",
+             "checkParameters" : {
+              "ZNAC" : "1118.48;10;20",
+              "ZNA1" : "270.66;10;20",
+              "ZNA2" : "262.84;10;20",
+              "ZNAS" : "1074.55;10;20",
+              "ZNA3" : "256.30;10;20",
+              "ZNA4" : "255.04;10;20",
+              "ZNCC" : "1086.07;10;20",
+              "ZNC1" : "262.46;10;20",
+              "ZNC2" : "230.21;10;20",
+              "ZNCS" : "1058.64;10;20",
+              "ZNC3" : "194.54;10;20",
+              "ZNC4" : "180.66;10;20",
+              "ZPAC" : "1741;10;20",
+              "ZEM1" : "1104.89;10;20",
+              "ZPA1" : "356.3;10;20",
+              "ZPA2" : "301.7;10;20",
+              "ZPAS" : "1688;10;20",
+              "ZPA3" : "355.6;10;20",
+              "ZPA4" : "1703;10;20",
+              "ZPCC" : "1787;10;20",
+              "ZEM2" : "1062.12;10;20",
+              "ZPC3" : "343.9;10;20",
+              "ZPC4" : "335.5;10;20",
+              "ZPCS" : "1686;10;20",
+              "ZPC1" : "1742;10;20",
+              "ZPC2" : "316.1;10;20",
+              "POS_MSG_X": "0.01",
+              "POS_MSG_Y": "0.92"
+            },
+            "dataSource": [{
+              "type": "Task",
+              "name": "QcZDCRawTask",
+              "MOs": ["hpedSummary"]
+            }]
+          }
+      }
   },
   "dataSamplingPolicies": [
     {
