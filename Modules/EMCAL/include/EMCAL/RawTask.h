@@ -106,14 +106,12 @@ class RawTask final : public TaskInterface
 
   bool isLostTimeframe(framework::ProcessingContext& ctx) const;
 
-  o2::emcal::Geometry* mGeometry = nullptr; ///< EMCAL geometry
+  o2::emcal::Geometry* mGeometry = nullptr;             ///< EMCAL geometry
+  std::unique_ptr<o2::emcal::MappingHandler> mMappings; ///< Mappings Hardware address -> Channel
   std::string mDataOrigin = "EMC";
-  TH1* mPayloadSize = nullptr;
   TH1* mMessageCounter = nullptr;
-  TH1* mNumberOfSuperpagesPerMessage;
-  TH1* mNumberOfPagesPerMessage;
-  //TH1* mSuperpageCounter = nullptr;                                       ///< Counter for number of superpages
-  //TH1* mPageCounter = nullptr;                                            ///< Counter for number of pages (headers)
+  TH1* mNumberOfSuperpagesPerMessage = nullptr;
+  TH1* mNumberOfPagesPerMessage = nullptr;
   TH1* mTotalDataVolume = nullptr;                                        ///< Total data volume
   TH1* mNbunchPerChan = nullptr;                                          ///< Number of bunch per Channel
   TH1* mNofADCsamples = nullptr;                                          ///< Number of ADC samples per Channel
@@ -133,19 +131,14 @@ class RawTask final : public TaskInterface
   std::unordered_map<EventType, std::array<TH1*, 20>> mMinSMRawAmplSM;    ///< Raw amplitude in Supermodule
   std::unordered_map<EventType, std::array<TH1*, 20>> mMaxBunchRawAmplSM; ///< Max Raw amplitude in EMCAL per cell
   std::unordered_map<EventType, std::array<TH1*, 20>> mMinBunchRawAmplSM; ///< Min Raw amplitude in EMCAL per cell
-  //std::unordered_map<EventType, std::array<TProfile2D*, 20>> mRMSBunchADCRCSM;   ///< ADC rms per SM
-  //std::unordered_map<EventType, std::array<TProfile2D*, 20>> mMeanBunchADCRCSM;  ///< ADC mean per SM
-  //std::unordered_map<EventType, std::array<TProfile2D*, 20>> mMaxChannelADCRCSM; ///< ADC max per SM
-  //std::unordered_map<EventType, std::array<TProfile2D*, 20>> mMinChannelADCRCSM; ///< ADC min per SM
-  std::unique_ptr<o2::emcal::MappingHandler> mMappings; ///< Mappings Hardware address -> Channel
-  TH2* mErrorTypeAltro = nullptr;                       ///< Error from AltroDecoder
-  TH2* mPayloadSizePerDDL = nullptr;                    ///< Payload size per ddl
-  TH1* mPayloadSizePerDDL_1D = nullptr;                 ///< Accumulated Payload size per ddl
-  TH2* mPayloadSizeTFPerDDL = nullptr;                  ///< Payload size per TimeFrame per ddl
-  TH1* mPayloadSizeTFPerDDL_1D = nullptr;               ///< Accumulated Payload size per TimeFrame per ddl
-  TH1* mTFerrorCounter = nullptr;                       ///< Number of TF builder errors
-  Int_t mNumberOfSuperpages = 0;                        ///< Simple total superpage counter
-  Int_t mNumberOfPages = 0;                             ///< Simple total number of superpages counter
+  TH2* mErrorTypeAltro = nullptr;                                         ///< Error from AltroDecoder
+  TH2* mPayloadSizePerDDL = nullptr;                                      ///< Payload size per ddl
+  TH1* mPayloadSizePerDDL_1D = nullptr;                                   ///< Accumulated Payload size per ddl
+  TH2* mPayloadSizeTFPerDDL = nullptr;                                    ///< Payload size per TimeFrame per ddl
+  TH1* mPayloadSizeTFPerDDL_1D = nullptr;                                 ///< Accumulated Payload size per TimeFrame per ddl
+  TH1* mTFerrorCounter = nullptr;                                         ///< Number of TF builder errors
+  Int_t mNumberOfSuperpages = 0;                                          ///< Simple total superpage counter
+  Int_t mNumberOfPages = 0;                                               ///< Simple total number of superpages counter
   Int_t mNumberOfMessages = 0;
 };
 

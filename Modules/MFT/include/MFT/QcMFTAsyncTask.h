@@ -75,6 +75,8 @@ class QcMFTAsyncTask /*final*/ : public TaskInterface // todo add back the "fina
   std::array<unique_ptr<TH2F>, 7> mTrackEtaPhiNCls = { nullptr };
   std::unique_ptr<TH1F> mCATrackEta = nullptr;
   std::unique_ptr<TH1F> mLTFTrackEta = nullptr;
+  std::unique_ptr<TH1F> mCATrackPt = nullptr;
+  std::unique_ptr<TH1F> mLTFTrackPt = nullptr;
   std::unique_ptr<TH1F> mTrackTanl = nullptr;
 
   std::unique_ptr<TH1F> mTrackROFNEntries = nullptr;

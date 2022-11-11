@@ -15,20 +15,23 @@
 ///
 
 #include "QualityControl/Activity.h"
+#include "QualityControl/ObjectMetadataKeys.h"
 #include <iostream>
+
+using namespace o2::quality_control::repository;
 
 namespace o2::quality_control::core
 {
 
 std::ostream& operator<<(std::ostream& out, const Activity& activity)
 {
-  out << "id: " << activity.mId
-      << ", type: " << activity.mType
-      << ", period: '" << activity.mPeriodName
-      << "', pass: '" << activity.mPassName
+  out << metadata_keys::runNumber << ": " << activity.mId
+      << ", " << metadata_keys::runType << ": " << activity.mType
+      << ", " << metadata_keys::periodName << ": '" << activity.mPeriodName
+      << "', " << metadata_keys::passName << ": '" << activity.mPassName
       << "', provenance: '" << activity.mProvenance
-      << "', start: " << activity.mValidity.getMin()
-      << ", end: " << activity.mValidity.getMax();
+      << "', " << metadata_keys::validFrom << ": " << activity.mValidity.getMin()
+      << ", " << metadata_keys::validUntil << ": " << activity.mValidity.getMax();
   return out;
 }
 

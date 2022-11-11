@@ -72,6 +72,7 @@ class DigitsTask final : public TaskInterface
   long int mTimestamp;
 
   std::shared_ptr<TH1F> mDigitsPerEvent;
+  std::shared_ptr<TH1F> mEventswDigitsPerTimeFrame;
   std::shared_ptr<TH2F> mDigitsSizevsTrackletSize;
   std::shared_ptr<TH1F> mDigitHCID = nullptr;
   std::shared_ptr<TH2F> mClusterAmplitudeChamber;

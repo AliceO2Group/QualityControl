@@ -338,7 +338,7 @@ So the file repo is in the default location, `/root/QC`, but the database is als
 ### Config file on EPNs
 
 The config files on EPNs are merged to build a humongous config file used for the whole workflow. 
-The common part is stored here: https://github.com/AliceO2Group/O2DPG/blob/master/DATA/production/qc-sync/qc-global.json
+The common part is stored here: https://github.com/AliceO2Group/O2DPG/blob/master/DATA/production/qc-sync/qc-global-epn.json
 The config file to use for each detector are defined [here](https://github.com/AliceO2Group/O2DPG/blob/master/DATA/production/qc-workflow.sh)
 
 ## run locally multi-node

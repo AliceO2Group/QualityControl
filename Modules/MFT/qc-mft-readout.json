@@ -59,7 +59,7 @@
         "dataSource" : [ {
           "type" : "Task",
           "name" : "MFTReadoutTask",
-            "MOs"  : ["mDDWSummary","mSummaryChipOk","mSummaryChipFault", "mSummaryChipError", "mSummaryChipWarning", "mRDHSummary"]
+            "MOs"  : ["mDDWSummary","mSummaryChipOk","mSummaryChipFault", "mSummaryChipError", "mSummaryChipWarning", "mZoneSummaryChipWarning", "mZoneSummaryChipError", "mZoneSummaryChipFault", "mRDHSummary"]
         } ]
       }
     },

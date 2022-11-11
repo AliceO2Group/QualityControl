@@ -62,7 +62,7 @@ class CellTask final : public TaskInterface
   struct TaskSettings {
     bool mHasAmpVsCellID;
     bool mHasTimeVsCellID;
-    bool mHasHistosCalib2D;
+    bool mHasHistosCalib;
 
     double mAmpThresholdTimePhys = 0.15;
     double mAmpThresholdTimeCalib = 0.3;
@@ -96,11 +96,17 @@ class CellTask final : public TaskInterface
     TH2* mIntegratedOccupancy = nullptr;                ///< Cell integrated occupancy
     TH1* mCellAmplitude_tot = nullptr;                  ///< Cell amplitude in EMCAL,DCAL
     TH1* mCellAmplitudeEMCAL = nullptr;                 ///< Cell amplitude in EMCAL
-    std::array<TH1*, 4> mCellTimeBC;                    ///< Cell amplitude in EMCAL for each bc
     TH1* mCellAmplitudeDCAL = nullptr;                  ///< Cell amplitude in DCAL
+    TH1* mCellAmplitudeCalib_tot = nullptr;             ///< Cell amplitude Calib in EMCAL,DCAL
+    TH1* mCellAmplitudeCalib_EMCAL = nullptr;           ///< Cell amplitude Calib in EMCAL
+    TH1* mCellAmplitudeCalib_DCAL = nullptr;            ///< Cell amplitude Calib in DCAL
+    std::array<TH1*, 4> mCellTimeBC;                    ///< Cell amplitude in EMCAL for each bc
     TH1* mCellTimeSupermodule_tot = nullptr;            ///< Cell time in EMCAL,DCAL per SuperModule
     TH1* mCellTimeSupermoduleEMCAL = nullptr;           ///< Cell time in EMCAL per SuperModule
     TH1* mCellTimeSupermoduleDCAL = nullptr;            ///< Cell time in DCAL per SuperModule
+    TH1* mCellTimeSupermoduleCalib_tot = nullptr;       ///< Cell time in EMCAL,DCAL per SuperModule
+    TH1* mCellTimeSupermoduleCalib_EMCAL = nullptr;     ///< Cell time in EMCAL per SuperModule
+    TH1* mCellTimeSupermoduleCalib_DCAL = nullptr;      ///< Cell time in DCAL per SuperModule
     TH1* mnumberEvents = nullptr;                       ///< Number of Events for normalization
     std::array<TH1*, 2> mCellTimeSupermoduleEMCAL_Gain; ///< Cell  time in EMCAL per high low Gain
     std::array<TH1*, 2> mCellTimeSupermoduleDCAL_Gain;  ///< Digit time in DCAL per high low Gain
@@ -175,12 +181,20 @@ class CellTask final : public TaskInterface
 
   TH2* mCells_ev_sm = nullptr;          ///< Number of Cells per events per supermodule
   TH2* mCells_ev_smThr = nullptr;       ///< Number of Cells with Threshold per events per supermodule
+  TH2* mCells_ev_sm_good = nullptr;     ///< Number of good Cells per events per supermodule
+  TH2* mCells_ev_sm_bad = nullptr;      ///< Number of bad Cells per events per supermodule
   TH1* mCells_ev = nullptr;             ///< Number of Cells per events
+  TH1* mCells_ev_good = nullptr;        ///< Number of good Cells per events
+  TH1* mCells_ev_bad = nullptr;         ///< Number of bad Cells per events
   TH1* mCells_ev_Thres = nullptr;       ///< Number of Cells with Threshold per events
   TH1* mCells_ev_EMCAL = nullptr;       ///< Number of Cells per events for EMCAL
   TH1* mCells_ev_EMCAL_Thres = nullptr; ///< Number of Cells with Threshold per events for EMCAL
+  TH1* mCells_ev_EMCAL_good = nullptr;  ///< Number of good Cells per events for EMCAL
+  TH1* mCells_ev_EMCAL_bad = nullptr;   ///< Number of bad Cells per events for EMCAL
   TH1* mCells_ev_DCAL = nullptr;        ///< Number of Cells per events for DCAL
   TH1* mCells_ev_DCAL_Thres = nullptr;  ///< Number of Cells per events with Threshold  for DCAL
+  TH1* mCells_ev_DCAL_good = nullptr;   ///< Number of Cells per events for DCAL
+  TH1* mCells_ev_DCAL_bad = nullptr;    ///< Number of Cells per events for DCAL
   TH2* mFracGoodCellsEvent = nullptr;   ///< Fraction of good cells / event (all / EMCAL / DCAL)
   TH2* mFracGoodCellsSM = nullptr;      ///< Fraction of good cells / supermodule
 };

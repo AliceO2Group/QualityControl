@@ -24,6 +24,7 @@
 #include <TList.h>
 #include <TH2.h>
 #include <iostream>
+#include "Common/Utils.h"
 
 namespace o2::quality_control_modules::its
 {
@@ -59,21 +60,24 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
           for (int ibin = StaveBoundary[ilayer] + 1; ibin <= StaveBoundary[ilayer + 1]; ++ibin) {
             if (ibin <= StaveBoundary[3]) {
               // Check if there are staves in the IB with lane in Bad (bins are filled with %)
-              if (hp->GetBinContent(ibin) > std::stod(mCustomParameters["maxbadchipsIB"]) / 9.) {
+              maxbadchipsIB = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "maxbadchipsIB", maxbadchipsIB);
+              if (hp->GetBinContent(ibin) > maxbadchipsIB / 9.) {
                 badStaveIB = true;
                 result.updateMetadata("IB", "medium");
                 countStave++;
               }
             } else if (ibin <= StaveBoundary[5]) {
               // Check if there are staves in the MLs with at least 4 lanes in Bad (bins are filled with %)
-              if (hp->GetBinContent(ibin) > std::stod(mCustomParameters["maxbadlanesML"]) / NLanePerStaveLayer[ilayer]) {
+              maxbadlanesML = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "maxbadlanesML", maxbadlanesML);
+              if (hp->GetBinContent(ibin) > maxbadlanesML / NLanePerStaveLayer[ilayer]) {
                 badStaveML = true;
                 result.updateMetadata("ML", "medium");
                 countStave++;
               }
             } else if (ibin <= StaveBoundary[7]) {
               // Check if there are staves in the OLs with at least 7 lanes in Bad (bins are filled with %)
-              if (hp->GetBinContent(ibin) > std::stod(mCustomParameters["maxbadlanesOL"]) / NLanePerStaveLayer[ilayer]) {
+              maxbadlanesOL = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "maxbadlanesOL", maxbadlanesOL);
+              if (hp->GetBinContent(ibin) > maxbadlanesOL / NLanePerStaveLayer[ilayer]) {
                 badStaveOL = true;
                 result.updateMetadata("OL", "medium");
                 countStave++;
@@ -101,7 +105,8 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
       result = Quality::Good;
       auto* h = dynamic_cast<TH1I*>(mo->getObject());
       result.addMetadata("SummaryGlobal", "good");
-      if (h->GetBinContent(1) + h->GetBinContent(2) + h->GetBinContent(3) > std::stod(mCustomParameters["maxfractionbadlanes"]) * 3816) {
+      maxfractionbadlanes = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "maxfractionbadlanes", maxfractionbadlanes);
+      if (h->GetBinContent(1) + h->GetBinContent(2) + h->GetBinContent(3) > maxfractionbadlanes * 3816) {
         result.updateMetadata("SummaryGlobal", "bad");
         result.set(Quality::Bad);
       }
@@ -119,8 +124,9 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
       auto* h = dynamic_cast<TH2I*>(mo->getObject());
       int counttrgflags[NTrg] = { 0 };
       int cutvalue[NTrg] = { 432, 432, 0, 0, 432, 0, 0, 0, 0, 432, 0, 432, 0 };
-      std::vector<int> skipbins = convertToIntArray(mCustomParameters["skipbinstrg"]);
-      std::vector<int> skipfeeid = convertToIntArray(mCustomParameters["skipfeeids"]);
+
+      std::vector<int> skipbins = convertToIntArray(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "skipbinstrg", skipbinstrg));
+      std::vector<int> skipfeeid = convertToIntArray(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "skipfeeids", skipfeeids));
       for (int itrg = 1; itrg <= h->GetNbinsY(); itrg++) {
         result.addMetadata(h->GetYaxis()->GetBinLabel(itrg), "good");
         for (int ifee = 1; ifee <= h->GetNbinsX(); ifee++) {
@@ -149,7 +155,7 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
       result.set(Quality::Good);
       result.addMetadata("CheckTechnicals", "good");
       result.addMetadata("CheckTechnicalsFeeid", "good");
-      std::vector<int> skipfeeid = convertToIntArray(mCustomParameters["skipfeeids"]);
+      std::vector<int> skipfeeid = convertToIntArray(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "skipfeeids", skipfeeids));
       if (h->Integral(1, 432, h->GetYaxis()->FindBin(1000), h->GetYaxis()->FindBin(20000)) > 0) {
         result.set(Quality::Bad);
         result.updateMetadata("CheckTechnicals", "bad");
@@ -207,7 +213,8 @@ void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
         if (strcmp(checkResult.getMetadata("IB").c_str(), "medium") == 0) {
           status = "Quality::Medium (do not call, inform expert on MM)";
           textColor = kOrange;
-          tInfoIB = std::make_shared<TLatex>(0.40, 0.55, Form("Inner Barrel has stave(s) with >%s chips in %s", mCustomParameters["maxbadchipsIB"].c_str(), mLaneStatusFlag[iflag].c_str()));
+          maxbadchipsIB = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "maxbadchipsIB", maxbadchipsIB);
+          tInfoIB = std::make_shared<TLatex>(0.40, 0.55, Form("Inner Barrel has stave(s) with >%d chips in %s", maxbadchipsIB, mLaneStatusFlag[iflag].c_str()));
           tInfoIB->SetTextColor(kOrange);
           tInfoIB->SetTextSize(0.03);
           tInfoIB->SetTextFont(43);
@@ -217,7 +224,8 @@ void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
         if (strcmp(checkResult.getMetadata("ML").c_str(), "medium") == 0) {
           status = "Quality::Medium (do not call, inform expert on MM)";
           textColor = kOrange;
-          tInfoML = std::make_shared<TLatex>(0.42, 0.62, Form("ML have stave(s) with >%s lanes in %s", mCustomParameters["maxbadlanesML"].c_str(), mLaneStatusFlag[iflag].c_str()));
+          maxbadlanesML = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "maxbadlanesML", maxbadlanesML);
+          tInfoML = std::make_shared<TLatex>(0.42, 0.62, Form("ML have stave(s) with >%d lanes in %s", maxbadlanesML, mLaneStatusFlag[iflag].c_str()));
           tInfoML->SetTextColor(kOrange);
           tInfoML->SetTextSize(0.03);
           tInfoML->SetTextFont(43);
@@ -227,7 +235,8 @@ void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
         if (strcmp(checkResult.getMetadata("OL").c_str(), "medium") == 0) {
           status = "Quality::Medium (do not call, inform expert on MM)";
           textColor = kOrange;
-          tInfoOL = std::make_shared<TLatex>(0.415, 0.78, Form("OL have staves with >%s lanes in %s", mCustomParameters["maxbadlanesOL"].c_str(), mLaneStatusFlag[iflag].c_str()));
+          maxbadlanesOL = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "maxbadlanesOL", maxbadlanesOL);
+          tInfoOL = std::make_shared<TLatex>(0.415, 0.78, Form("OL have staves with >%d lanes in %s", maxbadlanesOL, mLaneStatusFlag[iflag].c_str()));
           tInfoOL->SetTextColor(kOrange);
           tInfoOL->SetTextSize(0.03);
           tInfoOL->SetTextFont(43);
@@ -238,9 +247,13 @@ void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
           if (strcmp(checkResult.getMetadata(Form("Layer%d", ilayer)).c_str(), "bad") == 0) {
             status = "Quality::Bad (call expert)";
             textColor = kRed;
-            std::string cut = ilayer < 3 ? mCustomParameters["maxbadchipsIB"] : ilayer < 5 ? mCustomParameters["maxbadlanesML"]
-                                                                                           : mCustomParameters["maxbadlanesOL"];
-            tInfoLayers[ilayer] = std::make_shared<TLatex>(0.37, minTextPosY[ilayer], Form("Layer %d has > 25%% staves with >%s %s in %s", ilayer, cut.c_str(), ilayer < 3 ? "chips" : "lanes", mLaneStatusFlag[iflag].c_str()));
+            maxbadchipsIB = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "maxbadchipsIB", maxbadchipsIB);
+            maxbadlanesML = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "maxbadlanesML", maxbadlanesML);
+            maxbadlanesOL = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "maxbadlanesOL", maxbadlanesOL);
+
+            int cut = ilayer < 3 ? maxbadchipsIB : ilayer < 5 ? maxbadlanesML
+                                                              : maxbadlanesOL;
+            tInfoLayers[ilayer] = std::make_shared<TLatex>(0.37, minTextPosY[ilayer], Form("Layer %d has > 25%% staves with >%d %s in %s", ilayer, cut, ilayer < 3 ? "chips" : "lanes", mLaneStatusFlag[iflag].c_str()));
             tInfoLayers[ilayer]->SetTextColor(kRed);
             tInfoLayers[ilayer]->SetTextSize(0.03);
             tInfoLayers[ilayer]->SetTextFont(43);
@@ -266,7 +279,8 @@ void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
       status = "Quality::BAD (call expert)";
       textColor = kRed;
       if (strcmp(checkResult.getMetadata("SummaryGlobal").c_str(), "bad") == 0) {
-        tInfoSummary = std::make_shared<TLatex>(0.12, 0.5, Form(">%.0f %% of the lanes are bad", std::stod(mCustomParameters["maxfractionbadlanes"]) * 100));
+        maxfractionbadlanes = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "maxfractionbadlanes", maxfractionbadlanes);
+        tInfoSummary = std::make_shared<TLatex>(0.12, 0.5, Form(">%.0f %% of the lanes are bad", maxfractionbadlanes * 100));
         tInfoSummary->SetTextColor(kRed);
         tInfoSummary->SetTextSize(0.05);
         tInfoSummary->SetTextFont(43);

@@ -28,29 +28,6 @@
                        "" : "Message at this level or above are discarded (default: 21 - Trace)" }
     },
     "tasks" : {
-      "Vertexing" : {
-        "active" : "true",
-        "className" : "o2::quality_control_modules::glo::VertexingQcTask",
-        "moduleName" : "QcGLO",
-        "detectorName" : "GLO",
-        "cycleDurationSeconds" : "600",
-        "maxNumberCycles" : "-1",
-        "dataSource" : {
-          "type" : "dataSamplingPolicy",
-          "name" : "VtxSampling"
-        },
-	"taskParameters" : {
-          "isMC": "false"
-        },
-        "location" : "local",
-	"localMachines": [
-            "epn",
-	    "localhost"
-        ],
-        "remoteMachine": "alio2-cr1-qc07.cern.ch",
-	"remotePort": "47760",
-	"localControl": "odc"
-      },
       "MTCITSTPC" : {
         "active" : "true",
         "className" : "o2::quality_control_modules::glo::ITSTPCMatchingTask",
@@ -85,20 +62,6 @@
     },
   },
   "dataSamplingPolicies" : [
-    {
-      "id" : "VtxSampling",
-      "active" : "true",
-      "machines" : [],
-      "query" : "pvtx:GLO/PVTX/0",
-      "samplingConditions" : [
-         {
-           "condition" : "random",
-           "fraction" : "0.1",
-           "seed" : "1234"
-          }
-       ],
-         "blocking" : "false"
-    },
     {
       "id" : "ITSTPCmSamp",
       "active" : "true",

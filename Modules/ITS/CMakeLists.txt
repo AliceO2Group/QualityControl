@@ -5,12 +5,12 @@ add_library(O2QcITS
             src/ITSRawTask.cxx
             src/TrendingTaskITSThr.cxx
             src/TrendingTaskITSFhr.cxx
-	    src/TrendingTaskITSFEE.cxx
+	          src/TrendingTaskITSFEE.cxx
             src/TrendingTaskITSCluster.cxx
             src/TrendingTaskITSTracks.cxx
             src/TrendingTaskConfigITS.cxx
             src/TH2XlineReductor.cxx
-	    src/ReductorBinContent.cxx
+	          src/ReductorBinContent.cxx
             src/ITSFhrTask.cxx
             src/ITSFeeTask.cxx
             src/ITSClusterTask.cxx
@@ -21,7 +21,7 @@ add_library(O2QcITS
             src/ITSClusterCheck.cxx
             src/ITSTrackCheck.cxx
             src/ITSFeeCheck.cxx
-	    src/ITSTrackSimTask.cxx 
+      	    src/ITSTrackSimTask.cxx
             src/ITSThresholdCalibrationCheck.cxx 
             src/ITSDecodingErrorTask.cxx 
             )
@@ -38,7 +38,7 @@ target_include_directories(
 
 include_directories(${O2_ROOT}/include/GPU)
 
-target_link_libraries(O2QcITS PUBLIC O2QualityControl O2::ITSBase O2::ITSMFTBase O2::ITSMFTReconstruction ROOT::Hist O2::DataFormatsITS O2::Steer)
+target_link_libraries(O2QcITS PUBLIC O2QualityControl O2::ITSBase O2::ITSMFTBase O2::ITSMFTReconstruction ROOT::Hist O2::DataFormatsITS O2::Steer O2QcCommon)
 
 if (OpenMP_CXX_FOUND)
   target_compile_definitions(O2QcITS PRIVATE WITH_OPENMP)
@@ -77,8 +77,7 @@ add_root_dictionary(O2QcITS
 			    include/ITS/ITSTrackSimTask.h 
                             include/ITS/ITSThresholdCalibrationCheck.h 
                             include/ITS/ITSDecodingErrorTask.h 
-                    LINKDEF include/ITS/LinkDef.h
-                    BASENAME O2QcITS)
+                    LINKDEF include/ITS/LinkDef.h)
 
 # ---- Test(s) ----
 
@@ -137,7 +136,7 @@ install(FILES
 	itsTrack.json
         itsNoisyPixel.json
 	itsTrackSim.json
-        itsThresholdCalibration.json	
+        itsThresholdCalibration.json
         DESTINATION etc)
 
 get_property(dirs

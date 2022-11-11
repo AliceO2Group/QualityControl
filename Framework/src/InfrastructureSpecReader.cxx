@@ -325,9 +325,9 @@ ExternalTaskSpec
 std::string InfrastructureSpecReader::validateDetectorName(std::string name)
 {
   // name must be a detector code from DetID or one of the few allowed general names
-  int nDetectors = 16;
-  const char* detNames[16] = // once we can use DetID, remove this hard-coded list
-    { "ITS", "TPC", "TRD", "TOF", "PHS", "CPV", "EMC", "HMP", "MFT", "MCH", "MID", "ZDC", "FT0", "FV0", "FDD", "ACO" };
+  int nDetectors = 17;
+  const char* detNames[17] = // once we can use DetID, remove this hard-coded list
+    { "ITS", "TPC", "TRD", "TOF", "PHS", "CPV", "EMC", "HMP", "MFT", "MCH", "MID", "ZDC", "FT0", "FV0", "FDD", "ACO", "FOC" };
   std::vector<std::string> permitted = { "MISC", "DAQ", "GENERAL", "TST", "BMK", "CTP", "TRG", "DCS", "GLO" };
   for (auto i = 0; i < nDetectors; i++) {
     permitted.emplace_back(detNames[i]);

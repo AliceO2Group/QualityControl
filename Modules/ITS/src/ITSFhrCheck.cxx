@@ -26,6 +26,7 @@
 #include <TLatex.h>
 #include <TH2Poly.h>
 #include <TString.h>
+#include "Common/Utils.h"
 
 namespace o2::quality_control_modules::its
 {
@@ -48,10 +49,11 @@ Quality ITSFhrCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
       result.addMetadata("Gen_Occu_OB", "good");
       result.addMetadata("Gen_Occu_empty", "good");
       result.set(Quality::Good);
-      std::vector<int> skipbins = convertToIntArray(mCustomParameters["skipbins"]);
+      std::vector<int> skipbins = convertToIntArray(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "skipbins", ""));
       for (int ibin = 1; ibin <= h->GetNumberOfBins(); ibin++) {
         if (ibin <= 48) { // IB
-          if (h->GetBinContent(ibin) > std::stod(mCustomParameters["fhrcutIB"])) {
+          fhrcutIB = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "fhrcutIB", fhrcutIB);
+          if (h->GetBinContent(ibin) > fhrcutIB) {
             if (std::find(skipbins.begin(), skipbins.end(), ibin) != skipbins.end()) {
               continue;
             }
@@ -59,7 +61,8 @@ Quality ITSFhrCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
             result.set(Quality::Bad);
           }
         } else { // OB
-          if (h->GetBinContent(ibin) > std::stod(mCustomParameters["fhrcutOB"])) {
+          fhrcutOB = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "fhrcutOB", fhrcutOB);
+          if (h->GetBinContent(ibin) > fhrcutOB) {
             if (std::find(skipbins.begin(), skipbins.end(), ibin) != skipbins.end()) {
               continue;
             }
@@ -162,7 +165,8 @@ void ITSFhrCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
     }
 
     if (strcmp(checkResult.getMetadata("Gen_Occu_IB").c_str(), "bad") == 0) {
-      tInfo[0] = std::make_shared<TLatex>(0.4, 0.7, Form("IB has stave(s) with FHR > %.2e hits/ev/pix", std::stod(mCustomParameters["fhrcutIB"])));
+      fhrcutIB = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "fhrcutIB", fhrcutIB);
+      tInfo[0] = std::make_shared<TLatex>(0.4, 0.7, Form("IB has stave(s) with FHR > %.2e hits/ev/pix", fhrcutIB));
       tInfo[0]->SetTextColor(kRed);
       tInfo[0]->SetTextSize(0.03);
       tInfo[0]->SetTextFont(43);
@@ -170,7 +174,8 @@ void ITSFhrCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
       h->GetListOfFunctions()->Add(tInfo[0]->Clone());
     }
     if (strcmp(checkResult.getMetadata("Gen_Occu_OB").c_str(), "bad") == 0) {
-      tInfo[1] = std::make_shared<TLatex>(0.4, 0.65, Form("OB has stave(s) with FHR > %.2e hits/ev/pix", std::stod(mCustomParameters["fhrcutOB"])));
+      fhrcutOB = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "fhrcutOB", fhrcutOB);
+      tInfo[1] = std::make_shared<TLatex>(0.4, 0.65, Form("OB has stave(s) with FHR > %.2e hits/ev/pix", fhrcutOB));
       tInfo[1]->SetTextColor(kRed);
       tInfo[1]->SetTextSize(0.03);
       tInfo[1]->SetTextFont(43);

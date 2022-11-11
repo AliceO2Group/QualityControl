@@ -18,11 +18,13 @@
 #define QC_MODULE_ZDC_ZDCZDCRAWDATACHECK_H
 
 #include "QualityControl/CheckInterface.h"
+#include <string>
+#include <vector>
 
 namespace o2::quality_control_modules::zdc
 {
 
-/// \brief  QC Check Data Raw
+/// \brief  QC Check Data Raw. Check baseline mean values of each ZDC channel.
 /// \author Carlo Puggioni
 class ZDCRawDataCheck : public o2::quality_control::checker::CheckInterface
 {
@@ -37,6 +39,29 @@ class ZDCRawDataCheck : public o2::quality_control::checker::CheckInterface
   std::string getAcceptedType() override;
 
   ClassDefOverride(ZDCRawDataCheck, 2);
+  struct sCheck {
+    std::string ch;
+    float minW;
+    float maxW;
+    float minE;
+    float maxE;
+    std::string typech;
+  };
+
+  void init();
+  void setChName(std::string channel);
+  void setChCheck(int i);
+  std::vector<std::string> tokenLine(std::string Line, std::string Delimiter);
+  void dumpVecParam(int numBinHisto, int num_ch);
+
+ private:
+  std::vector<sCheck> mVectParam;
+  int mNumW = 0;
+  int mNumE = 0;
+  float mPosMsgX;
+  float mPosMsgY;
+  std::string mStringW = " ";
+  std::string mStringE = "List channel Bad Quality: ";
 };
 
 } // namespace o2::quality_control_modules::zdc

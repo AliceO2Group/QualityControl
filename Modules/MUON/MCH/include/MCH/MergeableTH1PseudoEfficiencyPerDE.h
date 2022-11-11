@@ -32,6 +32,7 @@
 #include "MCHBase/Digit.h"
 #endif
 #include "MCH/GlobalHistogram.h"
+#include "MCHConstants/DetectionElements.h"
 
 using namespace std;
 namespace o2::quality_control_modules::muonchambers
@@ -111,7 +112,7 @@ class MergeableTH1PseudoEfficiencyPerDE : public TH1F, public o2::mergers::Merge
     double numDE[1100] = { 0 };
     double denDE[1100] = { 0 };
 
-    for (auto de : o2::mch::raw::deIdsForAllMCH) {
+    for (auto de : o2::mch::constants::deIdsForAllMCH) {
       auto hnum = histosNum.find(de);
       auto hden = histosDen.find(de);
       if ((hden != histosDen.end()) && (hden->second != NULL) && (hnum != histosNum.end()) && (hnum->second != NULL)) {
@@ -130,7 +131,7 @@ class MergeableTH1PseudoEfficiencyPerDE : public TH1F, public o2::mergers::Merge
       }
     }
 
-    for (auto i : o2::mch::raw::deIdsForAllMCH) {
+    for (auto i : o2::mch::constants::deIdsForAllMCH) {
       mHistoNum->SetBinContent(i + 1, numDE[i]);
       mHistoDen->SetBinContent(i + 1, denDE[i]);
     }
@@ -148,4 +149,4 @@ class MergeableTH1PseudoEfficiencyPerDE : public TH1F, public o2::mergers::Merge
 
 } // namespace o2::quality_control_modules::muonchambers
 
-#endif //O2_MERGEABLETH1PSEUDOEFFICIENCYPERDE_H
+#endif // O2_MERGEABLETH1PSEUDOEFFICIENCYPERDE_H

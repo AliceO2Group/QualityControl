@@ -47,8 +47,7 @@ add_root_dictionary(O2QcFT0
           include/FT0/MergedTreeCheck.h
           include/FT0/TreeReaderPostProcessing.h
           include/FT0/RecPointsQcTask.h
-  LINKDEF include/FT0/LinkDef.h
-  BASENAME O2QcFT0)
+  LINKDEF include/FT0/LinkDef.h)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/FT0
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")

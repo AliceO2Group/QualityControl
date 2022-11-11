@@ -55,6 +55,7 @@ class ZDCRecDataTask final : public TaskInterface
     std::string ch;
     std::string typeh;
     std::string typech;
+    int bin;
   };
   struct sHisto2D {
     TH2* histo;
@@ -96,8 +97,8 @@ class ZDCRecDataTask final : public TaskInterface
   float getADCRecValue(std::string typech, std::string ch);
   int getIdTDCch(std::string typech, std::string ch);
   // int getTDCRecValue(int tdcid);
-  bool addNewHisto(std::string typeH, std::string name, std::string title, std::string typeCh1, std::string ch1, std::string typeCh2, std::string ch2);
-  bool add1DHisto(std::string typeH, std::string name, std::string title, std::string typeCh1, std::string ch);
+  bool addNewHisto(std::string typeH, std::string name, std::string title, std::string typeCh1, std::string ch1, std::string typeCh2, std::string ch2, int bin);
+  bool add1DHisto(std::string typeH, std::string name, std::string title, std::string typeCh1, std::string ch, int bin);
   bool add2DHisto(std::string typeH, std::string name, std::string title, std::string typeCh1, std::string ch1, std::string typeCh2, std::string ch2);
   void dumpHistoStructure();
   int process(const gsl::span<const o2::zdc::BCRecData>& RecBC, const gsl::span<const o2::zdc::ZDCEnergy>& Energy, const gsl::span<const o2::zdc::ZDCTDCData>& TDCData, const gsl::span<const uint16_t>& Info);
@@ -108,6 +109,18 @@ class ZDCRecDataTask final : public TaskInterface
   std::vector<std::string> mVecCh;
   std::vector<std::string> mVecType;
   std::vector<std::string> mNameHisto;
+  std::vector<std::string> mVecTDC{
+    "ZNAC",
+    "ZNAS",
+    "ZPAC",
+    "ZPAS",
+    "ZEM1",
+    "ZEM2",
+    "ZNCC",
+    "ZNCS",
+    "ZPCC",
+    "ZPCS",
+  };
   std::vector<sHisto1D> mHisto1D;
   std::vector<sHisto2D> mHisto2D;
   o2::zdc::RecEventFlat mEv;
@@ -117,6 +130,8 @@ class ZDCRecDataTask final : public TaskInterface
   int fNumBinY = 0;
   double fMinBinY = 0;
   double fMaxBinY = 0;
+  int mIdhTDC = 0;
+  int mIdhADC = 0;
   // TH1F* mHistogram = nullptr;
 };
 

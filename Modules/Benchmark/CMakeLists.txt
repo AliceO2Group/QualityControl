@@ -22,8 +22,7 @@ add_root_dictionary(O2QcBenchmark
   include/Benchmark/EmptyPPTask.h
                     include/Benchmark/AlwaysGoodCheck.h
                     include/Benchmark/TH1FTask.h
-                    LINKDEF include/Benchmark/LinkDef.h
-                    BASENAME O2QcBenchmark)
+                    LINKDEF include/Benchmark/LinkDef.h)
 
 install(DIRECTORY etc DESTINATION Modules/Benchmark)
 

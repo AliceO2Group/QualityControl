@@ -196,7 +196,7 @@ void TrackletsTask::buildHistograms()
   getObjectsManager()->startPublishing(mTrackletsPerTimeFrame);
   mTrackletsPerTimeFrameCycled = new TH1F("trackletspertimeframecycled", "Number of Tracklets per timeframe, this cycle;Tracklets in TimeFrame;Counts", 25000, 0, 500000);
   getObjectsManager()->startPublishing(mTrackletsPerTimeFrameCycled);
-  mTriggersPerTimeFrame = new TH1F("triggerspertimeframe", "Number of Triggers per timeframe;Triggers in TimeFrame;Counts", 100, 0, 100);
+  mTriggersPerTimeFrame = new TH1F("triggerspertimeframe", "Number of Triggers per timeframe;Triggers in TimeFrame;Counts", 10000, 0, 10000);
   getObjectsManager()->startPublishing(mTriggersPerTimeFrame);
 
   buildTrackletLayers();
@@ -281,7 +281,7 @@ void TrackletsTask::drawHashedOnHistsPerLayer(int iLayer)
     for (int iSec = 0; iSec < 18; ++iSec) {
       for (int iStack = 0; iStack < 5; ++iStack) {
         int rowMax = (iStack == 2) ? 12 : 16;
-        for (int side = 0; side < 8; ++side) {
+        for (int side = 0; side < 2; ++side) {
           int det = iSec * 30 + iStack * 6 + iLayer;
           int hcid = (side == 0) ? det * 2 : det * 2 + 1;
           int rowstart = iStack < 3 ? iStack * 16 : 44 + (iStack - 3) * 16;                 // pad row within whole sector

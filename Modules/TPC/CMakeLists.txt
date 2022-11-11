@@ -77,8 +77,7 @@ add_root_dictionary(O2QcTPC
                             include/TPC/GenericHistogramCheck.h
                             include/TPC/JunkDetection.h
                             include/TPC/CheckOfPads.h
-                    LINKDEF include/TPC/LinkDef.h
-                    BASENAME O2QcTPC)
+                    LINKDEF include/TPC/LinkDef.h)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/TPC
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")
@@ -153,4 +152,5 @@ install(FILES run/tpcQCPID_sampled.json
               run/tpcQCTracks_Generic.json
               run/tpcQCJunkDetection.json
               run/tpcQCPadCalibration_GenericPad.json
+              run/tpcQCROCTrending.json
         DESTINATION etc)

@@ -169,6 +169,7 @@ class PhysicsTask final : public TaskInterface
   int mCcdbCheckIntervalInMinutes = 1;
   uint32_t mCycleNumber = 0;
   bool mJustWasReset = false;
+  bool mIsAsyncMode = false;
   std::array<TH1F*, kNHist1D> mHist1D = { nullptr };                            ///< Array of 1D histograms
   std::array<TH2F*, kNHist2D> mHist2D = { nullptr };                            ///< Array of 2D histograms
   std::array<IntensiveTH2F*, kNIntensiveHist2D> mIntensiveHist2D = { nullptr }; ///< Array of IntensiveTH2F histograms

@@ -60,6 +60,14 @@ void PhysicsTask::initialize(o2::framework::InitContext& /*ctx*/)
   } else {
     ILOG(Info, Devel) << "Default parameter - ccdbCheckInterval: " << mCcdbCheckIntervalInMinutes << ENDM;
   }
+  if (auto param = mCustomParameters.find("isAsyncMode"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter : isAsyncMode " << param->second << ENDM;
+    mIsAsyncMode = stoi(param->second);
+    ILOG(Info, Devel) << "I set mIsAsyncMode = " << mIsAsyncMode << ENDM;
+  } else {
+    ILOG(Info, Devel) << "Default parameter : isAsyncMode = " << mIsAsyncMode << ENDM;
+  }
+
   initHistograms();
   mNEventsTotal = 0;
   loadCcdb(); // initialize ccdb.
@@ -239,9 +247,9 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
   // we need somehow to extract timestamp from data when there are no ccdb dpl fetcher inputs available
   // however most of the time ccdb dpl fetcher is present. take care of it later
 
-  static auto startTime = std::chrono::system_clock::now(); // remember time when we first time checked ccdb
-  static int minutesPassed = 0;                             // count how much minutes passed from 1st ccdb check
-  bool checkCcdbEntries = isFirstTime || mJustWasReset;     // check at first time or when  mCcdbCheckIntervalInMinutes passed
+  static auto startTime = std::chrono::system_clock::now();                  // remember time when we first time checked ccdb
+  static int minutesPassed = 0;                                              // count how much minutes passed from 1st ccdb check
+  bool checkCcdbEntries = (isFirstTime || mJustWasReset) && (!mIsAsyncMode); // check at first time or when  mCcdbCheckIntervalInMinutes passed
   auto now = std::chrono::system_clock::now();
   if (((now - startTime) / std::chrono::minutes(1)) > minutesPassed) {
     minutesPassed = (now - startTime) / std::chrono::minutes(1);

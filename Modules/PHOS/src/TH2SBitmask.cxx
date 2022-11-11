@@ -26,7 +26,8 @@ void TH2SBitmask::merge(MergeInterface* const other)
     for (unsigned int ix = 1; ix <= this->GetNbinsX(); ix++) {
       for (unsigned int iz = 1; iz <= this->GetNbinsY(); iz++) {
         int cont = this->GetBinContent(ix, iz);
-        cont |= int(otherHisto->GetBinContent(ix, iz, cont));
+        cont |= int(otherHisto->GetBinContent(ix, iz));
+        this->SetBinContent(ix, iz, cont);
       }
     }
   }

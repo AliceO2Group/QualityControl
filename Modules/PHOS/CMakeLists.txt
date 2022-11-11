@@ -1,12 +1,12 @@
-# ---- Library ---- 
+# ---- Library ----
 
 add_library(O2QcPHOS)
 
-target_sources(O2QcPHOS PRIVATE src/TH2FMean.cxx 
-                                src/TH2SBitmask.cxx 
-                                src/RawQcTask.cxx 
-                                src/RawCheck.cxx 
-                                src/ClusterQcTask.cxx 
+target_sources(O2QcPHOS PRIVATE src/TH2FMean.cxx
+                                src/TH2SBitmask.cxx
+                                src/RawQcTask.cxx
+                                src/RawCheck.cxx
+                                src/ClusterQcTask.cxx
                                 src/ClusterCheck.cxx
                                 src/CalibQcTask.cxx)
 
@@ -26,8 +26,7 @@ add_root_dictionary(O2QcPHOS
                             include/PHOS/RawQcTask.h
                             include/PHOS/RawCheck.h
                             include/PHOS/CalibQcTask.h
-                    LINKDEF include/PHOS/LinkDef.h
-                    BASENAME O2QcPHOS)
+                    LINKDEF include/PHOS/LinkDef.h)
 
 install(TARGETS O2QcPHOS
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

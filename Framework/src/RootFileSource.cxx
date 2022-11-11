@@ -38,7 +38,7 @@ void RootFileSource::init(framework::InitContext&)
 
 void RootFileSource::run(framework::ProcessingContext& ctx)
 {
-  auto deviceSpec = ctx.services().get<DeviceSpec const>();
+  auto const& deviceSpec = ctx.services().get<DeviceSpec const>();
   std::vector<framework::OutputLabel> allowedOutputs;
   for (const auto& outputRoute : deviceSpec.outputs) {
     allowedOutputs.push_back(outputRoute.matcher.binding);

@@ -23,6 +23,7 @@
 #include "QualityControl/RepoPathUtils.h"
 
 #include <TH1.h>
+#include <TH2F.h>
 #include <TCanvas.h>
 #include <TPaveText.h>
 #include <TGraphErrors.h>
@@ -126,6 +127,17 @@ void TrendingTask::trendValues(const Trigger& t, repository::DatabaseInterface& 
   mTrend->Fill();
 }
 
+void TrendingTask::setUserAxisLabel(TAxis* xAxis, TAxis* yAxis, const std::string& graphAxisLabel)
+{
+  // todo if we keep adding this method to pp classes we should move it up somewhere
+  const std::size_t posDivider = graphAxisLabel.find(":");
+  const std::string yLabel(graphAxisLabel.substr(0, posDivider));
+  const std::string xLabel(graphAxisLabel.substr(posDivider + 1));
+
+  xAxis->SetTitle(xLabel.data());
+  yAxis->SetTitle(yLabel.data());
+}
+
 void TrendingTask::generatePlots()
 {
   if (mTrend->GetEntries() < 1) {
@@ -167,6 +179,12 @@ void TrendingTask::generatePlots()
         graphErrors = new TGraphErrors(mTrend->GetSelectedRows(), mTrend->GetVal(1), mTrend->GetVal(0), mTrend->GetVal(2), mTrend->GetVal(3));
         // We draw on the same plot as the main graph, but only error bars
         graphErrors->Draw("SAME E");
+      }
+    }
+
+    if (!plot.graphAxisLabel.empty()) {
+      if (auto histo = dynamic_cast<TH2F*>(c->GetPrimitive("htemp"))) {
+        setUserAxisLabel(histo->GetXaxis(), histo->GetYaxis(), plot.graphAxisLabel);
       }
     }
 

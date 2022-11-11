@@ -65,6 +65,11 @@ TaskRunner::TaskRunner(const TaskRunnerConfig& config)
 {
 }
 
+TaskRunner::~TaskRunner()
+{
+  ILOG(Debug, Trace) << "TaskRunner destructor (" << this << ")" << ENDM;
+}
+
 void TaskRunner::refreshConfig(InitContext& iCtx)
 {
   try {
@@ -135,7 +140,11 @@ void TaskRunner::init(InitContext& iCtx)
 
   // registering state machine callbacks
   try {
+#if __has_include(<Framework/Features.h>)
+    iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, services = iCtx.services()]() mutable { start(services); });
+#else
     iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, &services = iCtx.services()]() { start(services); });
+#endif
     iCtx.services().get<CallbackService>().set(CallbackService::Id::Reset, [this]() { reset(); });
     iCtx.services().get<CallbackService>().set(CallbackService::Id::Stop, [this]() { stop(); });
   } catch (o2::framework::RuntimeErrorRef& ref) {
@@ -270,7 +279,7 @@ header::DataDescription TaskRunner::createTaskDataDescription(const std::string&
   }
   o2::header::DataDescription description;
   if (taskName.length() > header::DataDescription::size) {
-    ILOG(Warning, Devel) << "Task name is longer than " << (int)header::DataDescription::size << ", it might cause name clashes in the DPL workflow" << ENDM;
+    ILOG(Warning, Devel) << "Task name \"" << taskName << "\" is longer than " << (int)header::DataDescription::size << ", it might cause name clashes in the DPL workflow" << ENDM;
   }
   description.runtimeInit(std::string(taskName.substr(0, header::DataDescription::size)).c_str());
   return description;

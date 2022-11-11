@@ -27,12 +27,11 @@ install(TARGETS O2QcHMPID
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 add_root_dictionary(O2QcHMPID
-                    HEADERS 
+                    HEADERS
                     include/HMPID/HmpidTask.h
                     include/HMPID/HmpidTaskDigits.h
                     include/HMPID/HmpidTaskClusters.h
-                    LINKDEF include/HMPID/LinkDef.h
-                    BASENAME O2QcHMPID)
+                    LINKDEF include/HMPID/LinkDef.h)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/HMPID
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")

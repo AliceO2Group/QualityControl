@@ -49,7 +49,7 @@ class MergeableTH1PseudoEfficiencyPerDECycle : public TH1F, public o2::mergers::
   MergeableTH1PseudoEfficiencyPerDECycle(const char* name, const char* title, std::map<int, TH2F*> histosnum, std::map<int, TH2F*> histosden)
     : TH1F(name, title, 1100, -0.5, 1099.5), o2::mergers::MergeInterface(), mhistosNum(histosnum), mhistosDen(histosden)
   {
-    for (auto de : o2::mch::raw::deIdsForAllMCH) {
+    for (auto de : o2::mch::constants::deIdsForAllMCH) {
       LastMeanNumDE[de] = 0;
       LastMeanDenDE[de] = 0;
     }
@@ -59,8 +59,8 @@ class MergeableTH1PseudoEfficiencyPerDECycle : public TH1F, public o2::mergers::
   ~MergeableTH1PseudoEfficiencyPerDECycle() override = default;
 
   void merge(MergeInterface* const other) override
-  { //FIXME
-    for (auto de : o2::mch::raw::deIdsForAllMCH) {
+  { // FIXME
+    for (auto de : o2::mch::constants::deIdsForAllMCH) {
       auto hnumMap = dynamic_cast<const MergeableTH1PseudoEfficiencyPerDECycle* const>(other)->getNum();
       auto hnum = hnumMap.find(de);
       auto hdenMap = dynamic_cast<const MergeableTH1PseudoEfficiencyPerDECycle* const>(other)->getDen();
@@ -79,7 +79,7 @@ class MergeableTH1PseudoEfficiencyPerDECycle : public TH1F, public o2::mergers::
     const double* ptrotherLastMeanNumDE = dynamic_cast<const MergeableTH1PseudoEfficiencyPerDECycle* const>(other)->getLastMeanNumDE();
     const double* ptrotherLastMeanDenDE = dynamic_cast<const MergeableTH1PseudoEfficiencyPerDECycle* const>(other)->getLastMeanDenDE();
 
-    for (auto de : o2::mch::raw::deIdsForAllMCH) {
+    for (auto de : o2::mch::constants::deIdsForAllMCH) {
       LastMeanNumDE[de] += ptrotherLastMeanNumDE[de];
       LastMeanDenDE[de] += ptrotherLastMeanDenDE[de];
     }
@@ -87,7 +87,7 @@ class MergeableTH1PseudoEfficiencyPerDECycle : public TH1F, public o2::mergers::
     const double* ptrotherNewMeanNumDE = dynamic_cast<const MergeableTH1PseudoEfficiencyPerDECycle* const>(other)->getNewMeanNumDE();
     const double* ptrotherNewMeanDenDE = dynamic_cast<const MergeableTH1PseudoEfficiencyPerDECycle* const>(other)->getNewMeanDenDE();
 
-    for (auto de : o2::mch::raw::deIdsForAllMCH) {
+    for (auto de : o2::mch::constants::deIdsForAllMCH) {
       NewMeanNumDE[de] += ptrotherNewMeanNumDE[de];
       NewMeanDenDE[de] += ptrotherNewMeanDenDE[de];
     }
@@ -136,7 +136,7 @@ class MergeableTH1PseudoEfficiencyPerDECycle : public TH1F, public o2::mergers::
     Reset();
     SetNameTitle(name, title);
 
-    for (auto de : o2::mch::raw::deIdsForAllMCH) {
+    for (auto de : o2::mch::constants::deIdsForAllMCH) {
 
       LastMeanNumDE[de] = NewMeanNumDE[de];
       LastMeanDenDE[de] = NewMeanDenDE[de];
@@ -159,7 +159,7 @@ class MergeableTH1PseudoEfficiencyPerDECycle : public TH1F, public o2::mergers::
       }
     }
 
-    for (auto de : o2::mch::raw::deIdsForAllMCH) {
+    for (auto de : o2::mch::constants::deIdsForAllMCH) {
       double MeanPseudoeffDECycle = 0;
       if ((NewMeanNumDE[de] - LastMeanNumDE[de]) > 0) {
         MeanPseudoeffDECycle = (NewMeanNumDE[de] - LastMeanNumDE[de]) / (NewMeanDenDE[de] - LastMeanDenDE[de]);
@@ -177,7 +177,7 @@ class MergeableTH1PseudoEfficiencyPerDECycle : public TH1F, public o2::mergers::
 
     // Using NHitsElec and Norbits to get the mean occupancy per DE on last cycle
     // Similarly, by looking at NHits and NOrbits Elec histogram, for each bin incrementing the corresponding DE total hits and total orbits, and from the values obtained at the end of a cycle compared to the beginning of the cycle, computing the occupancy during the cycle.
-    for (auto i : o2::mch::raw::deIdsForAllMCH) {
+    for (auto i : o2::mch::constants::deIdsForAllMCH) {
       auto hnum = mhistosNum.find(i);
       auto hden = mhistosDen.find(i);
       if ((hden != mhistosDen.end()) && (hden->second != NULL) && (hnum != mhistosNum.end()) && (hnum->second != NULL)) {
@@ -204,4 +204,4 @@ class MergeableTH1PseudoEfficiencyPerDECycle : public TH1F, public o2::mergers::
 
 } // namespace o2::quality_control_modules::muonchambers
 
-#endif //O2_MERGEABLETH1PSEUDOEFFICIENCYPERDECYCLE_H
+#endif // O2_MERGEABLETH1PSEUDOEFFICIENCYPERDECYCLE_H

@@ -23,6 +23,9 @@
 #include "EMCALBase/Geometry.h"
 #include "EMCALBase/Mapper.h"
 #include "EMCALReconstruction/AltroDecoder.h"
+#include "EMCALReconstruction/CaloRawFitter.h"
+#include "EMCALReconstruction/RawDecodingError.h"
+#include "EMCALReconstruction/ReconstructionErrors.h"
 #include "DataFormatsEMCAL/ErrorTypeFEE.h"
 #include <Framework/InputRecord.h>
 #include <Framework/InputRecordWalker.h>
@@ -51,6 +54,9 @@ RawErrorTask::~RawErrorTask()
   if (mErrorTypeGain)
     delete mErrorTypeGain;
 
+  if (mErrorTypeUnknown)
+    delete mErrorTypeUnknown;
+
   if (mErrorGainLow)
     delete mErrorGainLow;
 
@@ -73,89 +79,69 @@ void RawErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
   };
   mExcludeGainErrorsFromOverview = get_bool(getConfigValueLower("excludeGainErrorFromSummary"));
 
-  mErrorTypeAll = new TH2F("RawDataErrors", "Raw data errors", 40, 0, 40, 6, -0.5, 5.5);
+  constexpr float binshift = -0.5; // shift bin centers of error codes in order to avoid edge effects
+  mErrorTypeAll = new TH2F("RawDataErrors", "Raw data errors", 40, 0, 40, o2::emcal::ErrorTypeFEE::getNumberOfErrorTypes(), binshift, o2::emcal::ErrorTypeFEE::getNumberOfErrorTypes() + binshift);
   mErrorTypeAll->GetXaxis()->SetTitle("Link");
   mErrorTypeAll->GetYaxis()->SetTitle("Error type");
-  mErrorTypeAll->GetYaxis()->SetBinLabel(1, "Page");
-  mErrorTypeAll->GetYaxis()->SetBinLabel(2, "Major ALTRO");
-  mErrorTypeAll->GetYaxis()->SetBinLabel(3, "Minor ALTRO");
-  mErrorTypeAll->GetYaxis()->SetBinLabel(4, "Fit");
-  mErrorTypeAll->GetYaxis()->SetBinLabel(5, "Geometry");
-  mErrorTypeAll->GetYaxis()->SetBinLabel(6, "Gain");
+  for (int ierror = 0; ierror < o2::emcal::ErrorTypeFEE::getNumberOfErrorTypes(); ierror++) {
+    mErrorTypeAll->GetYaxis()->SetBinLabel(ierror + 1, o2::emcal::ErrorTypeFEE::getErrorTypeTitle(ierror));
+  }
   mErrorTypeAll->SetStats(0);
   getObjectsManager()->startPublishing(mErrorTypeAll);
 
-  mErrorTypeAltro = new TH2F("MajorAltroErrors", "Major ALTRO decoding errors", 40, 0, 40, 10, 0, 10);
+  mErrorTypeAltro = new TH2F("MajorAltroErrors", "Major ALTRO decoding errors", 40, 0, 40, o2::emcal::AltroDecoderError::getNumberOfErrorTypes(), binshift, o2::emcal::AltroDecoderError::getNumberOfErrorTypes() + binshift);
   mErrorTypeAltro->GetXaxis()->SetTitle("Link");
   mErrorTypeAltro->GetYaxis()->SetTitle("Error Type");
-  mErrorTypeAltro->GetYaxis()->SetBinLabel(1, "RCU Trailer");
-  mErrorTypeAltro->GetYaxis()->SetBinLabel(2, "RCU Version");
-  mErrorTypeAltro->GetYaxis()->SetBinLabel(3, "RCU Trailer Size");
-  mErrorTypeAltro->GetYaxis()->SetBinLabel(4, "ALTRO Bunch Header");
-  mErrorTypeAltro->GetYaxis()->SetBinLabel(5, "ALTRO Bunch Length");
-  mErrorTypeAltro->GetYaxis()->SetBinLabel(6, "ALTRO Payload");
-  mErrorTypeAltro->GetYaxis()->SetBinLabel(7, "ALTRO Mapping");
-  mErrorTypeAltro->GetYaxis()->SetBinLabel(8, "Channel");
-  mErrorTypeAltro->GetYaxis()->SetBinLabel(9, "Mapper HWAddress");
-  mErrorTypeAltro->GetYaxis()->SetBinLabel(10, "Geometry InvalidCell");
+  for (auto ierror = 0; ierror < o2::emcal::AltroDecoderError::getNumberOfErrorTypes(); ierror++) {
+    mErrorTypeAltro->GetYaxis()->SetBinLabel(ierror + 1, o2::emcal::AltroDecoderError::getErrorTypeTitle(ierror));
+  }
   mErrorTypeAltro->SetStats(0);
-  getObjectsManager()
-    ->startPublishing(mErrorTypeAltro);
+  getObjectsManager()->startPublishing(mErrorTypeAltro);
 
-  mErrorTypePage = new TH2F("PageErrors", "DMA page decoding errors", 40, 0, 40, 7, 0, 7);
+  mErrorTypePage = new TH2F("PageErrors", "DMA page decoding errors", 40, 0, 40, o2::emcal::RawDecodingError::getNumberOfErrorTypes(), binshift, o2::emcal::RawDecodingError::getNumberOfErrorTypes() + binshift);
   mErrorTypePage->GetXaxis()->SetTitle("Link");
   mErrorTypePage->GetYaxis()->SetTitle("Page Error Type");
-  mErrorTypePage->GetYaxis()->SetBinLabel(1, "Page not found");
-  mErrorTypePage->GetYaxis()->SetBinLabel(2, "Header decoding");
-  mErrorTypePage->GetYaxis()->SetBinLabel(3, "Payload decoding");
-  mErrorTypePage->GetYaxis()->SetBinLabel(4, "Header corruption");
-  mErrorTypePage->GetYaxis()->SetBinLabel(5, "Page start invalid");
-  mErrorTypePage->GetYaxis()->SetBinLabel(6, "Payload corruption");
-  mErrorTypePage->GetYaxis()->SetBinLabel(7, "Trailer decoding");
+  for (int ierror = 0; ierror < o2::emcal::RawDecodingError::getNumberOfErrorTypes(); ierror++) {
+    mErrorTypePage->GetYaxis()->SetBinLabel(ierror + 1, o2::emcal::RawDecodingError::getErrorCodeTitles(ierror));
+  }
   mErrorTypePage->SetStats(0);
-  getObjectsManager()
-    ->startPublishing(mErrorTypePage);
+  getObjectsManager()->startPublishing(mErrorTypePage);
 
-  mErrorTypeMinAltro = new TH2F("MinorAltroError", "Minor ALTRO decoding error", 40, 0, 40, 4, 0, 4);
+  mErrorTypeMinAltro = new TH2F("MinorAltroError", "Minor ALTRO decoding error", 40, 0, 40, o2::emcal::MinorAltroDecodingError::getNumberOfErrorTypes(), binshift, o2::emcal::MinorAltroDecodingError::getNumberOfErrorTypes() + binshift);
   mErrorTypeMinAltro->GetXaxis()->SetTitle("Link");
   mErrorTypeMinAltro->GetYaxis()->SetTitle("MinorAltro Error Type");
-  mErrorTypeMinAltro->GetYaxis()->SetBinLabel(1, "Channel end unexpected");
-  mErrorTypeMinAltro->GetYaxis()->SetBinLabel(2, "Channel exceed");
-  mErrorTypeMinAltro->GetYaxis()->SetBinLabel(3, "Bunch header null");
-  mErrorTypeMinAltro->GetYaxis()->SetBinLabel(4, "Bunch length exceed");
+  for (int ierror = 0; ierror < o2::emcal::MinorAltroDecodingError::getNumberOfErrorTypes(); ierror++) {
+    mErrorTypeMinAltro->GetYaxis()->SetBinLabel(ierror + 1, o2::emcal::MinorAltroDecodingError::getErrorTypeTitle(ierror));
+  }
   mErrorTypeMinAltro->SetStats(0);
-  getObjectsManager()
-    ->startPublishing(mErrorTypeMinAltro);
+  getObjectsManager()->startPublishing(mErrorTypeMinAltro);
 
-  mErrorTypeFit = new TH2F("RawFitError", "Error in raw fitting ", 40, 0, 40, 4, 0, 4);
+  mErrorTypeFit = new TH2F("RawFitError", "Error in raw fitting ", 40, 0, 40, o2::emcal::CaloRawFitter::getNumberOfErrorTypes(), binshift, o2::emcal::CaloRawFitter::getNumberOfErrorTypes() + binshift);
   mErrorTypeFit->GetXaxis()->SetTitle("Link");
   mErrorTypeFit->GetYaxis()->SetTitle("Fit Error Type");
-  mErrorTypeFit->GetYaxis()->SetBinLabel(1, "sample uninitalized");
-  mErrorTypeFit->GetYaxis()->SetBinLabel(2, "No convergence");
-  mErrorTypeFit->GetYaxis()->SetBinLabel(3, "Chi2 error");
-  // mErrorTypeFit->GetYaxis()->SetBinLabel(4, "bunch_not_ok");
-  mErrorTypeFit->GetYaxis()->SetBinLabel(4, "Low signal");
+  for (int ierror = 0; ierror < o2::emcal::CaloRawFitter::getNumberOfErrorTypes(); ierror++) {
+    mErrorTypeFit->GetYaxis()->SetBinLabel(ierror + 1, o2::emcal::CaloRawFitter::getErrorTypeTitle(ierror));
+  }
   mErrorTypeFit->SetStats(0);
-  getObjectsManager()
-    ->startPublishing(mErrorTypeFit);
+  getObjectsManager()->startPublishing(mErrorTypeFit);
 
-  mErrorTypeGeometry = new TH2F("GeometryError", "Geometry error", 40, 0, 40, 2, 0, 2);
+  mErrorTypeGeometry = new TH2F("GeometryError", "Geometry error", 40, 0, 40, o2::emcal::reconstructionerrors::getNumberOfGeometryErrorCodes(), binshift, o2::emcal::reconstructionerrors::getNumberOfGeometryErrorCodes() + binshift);
   mErrorTypeGeometry->GetXaxis()->SetTitle("Link");
   mErrorTypeGeometry->GetYaxis()->SetTitle("Geometry Error Type");
-  mErrorTypeGeometry->GetYaxis()->SetBinLabel(1, "Cell ID outside range");
-  mErrorTypeGeometry->GetYaxis()->SetBinLabel(2, "Cell ID corrupted");
+  for (int ierror = 0; ierror < o2::emcal::reconstructionerrors::getNumberOfGeometryErrorCodes(); ierror++) {
+    mErrorTypeGeometry->GetYaxis()->SetBinLabel(ierror + 1, o2::emcal::reconstructionerrors::getGeometryErrorTitle(ierror));
+  }
   mErrorTypeGeometry->SetStats(0);
-  getObjectsManager()
-    ->startPublishing(mErrorTypeGeometry);
+  getObjectsManager()->startPublishing(mErrorTypeGeometry);
 
-  mErrorTypeGain = new TH2F("GainTypeError", "Gain type error", 40, 0, 40, 2, 0, 2);
+  mErrorTypeGain = new TH2F("GainTypeError", "Gain type error", 40, 0, 40, o2::emcal::reconstructionerrors::getNumberOfGainErrorCodes(), binshift, o2::emcal::reconstructionerrors::getNumberOfGainErrorCodes() + binshift);
   mErrorTypeGain->GetXaxis()->SetTitle("Link");
   mErrorTypeGain->GetYaxis()->SetTitle("Gain Error Type");
-  mErrorTypeGain->GetYaxis()->SetBinLabel(1, "High Gain missing");
-  mErrorTypeGain->GetYaxis()->SetBinLabel(2, "Low Gain missing");
+  for (int ierror = 0; ierror < o2::emcal::reconstructionerrors::getNumberOfGainErrorCodes(); ierror++) {
+    mErrorTypeGain->GetYaxis()->SetBinLabel(ierror + 1, o2::emcal::reconstructionerrors::getGainErrorTitle(ierror));
+  }
   mErrorTypeGain->SetStats(0);
-  getObjectsManager()
-    ->startPublishing(mErrorTypeGain);
+  getObjectsManager()->startPublishing(mErrorTypeGain);
 
   mErrorGainLow = new TH2F("NoHGPerDDL", "High Gain bunch missing", 40, 0, 40, 40, 0, 40);
   mErrorGainLow->GetYaxis()->SetTitle("fecID");
@@ -186,6 +172,11 @@ void RawErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
   mChannelGainHigh->GetYaxis()->SetTitle("Row");
   mChannelGainHigh->SetStats(0);
   getObjectsManager()->startPublishing(mChannelGainHigh);
+
+  mErrorTypeUnknown = new TH1F("UnknownErrorType", "Unknown error types", 40, 0., 40);
+  mErrorTypeUnknown->GetXaxis()->SetTitle("Link");
+  mErrorTypeUnknown->GetYaxis()->SetTitle("Number of errors");
+  getObjectsManager()->startPublishing(mErrorTypeUnknown);
 
   mGeometry = o2::emcal::Geometry::GetInstanceFromRunNumber(300000);
   mMapper = std::make_unique<o2::emcal::MappingHandler>();
@@ -236,21 +227,30 @@ void RawErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
         case o2::emcal::ErrorTypeFEE::ErrorSource_t::GAIN_ERROR:
           errorhist = mErrorTypeGain;
           break;
-        // case UNDEFINED:
-        //   errorhist = mErrorTypeUndefined;
-        //     break;
         default:
+          // Error type is unknown - this should never happen
+          // In order to monitor such messages fill a dedicated
+          // counter histogram
+          mErrorTypeUnknown->Fill(feeid);
           break;
       }; // switch errorCode
-      errorhist->Fill(feeid, errorCode);
+      if (errorhist) {
+        errorhist->Fill(feeid, errorCode);
+      }
 
       if (error.getErrorType() == o2::emcal::ErrorTypeFEE::ErrorSource_t::GAIN_ERROR) {
         // Fill Histogram with FEC ID
         auto fecID = error.getSubspecification();
-        if (errorCode == 0) {
-          mErrorGainLow->Fill(feeid, fecID); // LGnoHG
-        } else {
-          mErrorGainHigh->Fill(feeid, fecID); // HGnoLG
+        auto gainerrortype = o2::emcal::reconstructionerrors::getGainErrorFromErrorCode(errorCode);
+        switch (gainerrortype) {
+          case o2::emcal::reconstructionerrors::GainError_t::LGNOHG:
+            mErrorGainLow->Fill(feeid, fecID); // LGnoHG
+            break;
+          case o2::emcal::reconstructionerrors::GainError_t::HGNOLG:
+            mErrorGainHigh->Fill(feeid, fecID); // HGnoLG
+            break;
+          default:
+            break; // Unknown gain error - not handel
         }
         // Fill histogram with tower position
         if (error.getHarwareAddress() >= 0) {
@@ -299,12 +299,14 @@ void RawErrorTask::reset()
   // clean all the monitor objects here
 
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  mErrorTypeAll->Reset();
   mErrorTypeAltro->Reset();
   mErrorTypePage->Reset();
   mErrorTypeMinAltro->Reset();
   mErrorTypeFit->Reset();
   mErrorTypeGeometry->Reset();
   mErrorTypeGain->Reset();
+  mErrorTypeUnknown->Reset();
   mErrorGainLow->Reset();
   mErrorGainHigh->Reset();
   mFecIdMinorAltroError->Reset();

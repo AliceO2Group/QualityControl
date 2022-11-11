@@ -44,9 +44,6 @@ namespace o2::quality_control_modules::emcal
 
 RawTask::~RawTask()
 {
-  // if (mPayloadSize) {
-  //  delete mPayloadSize;
-  // }
   if (mPayloadSizePerDDL) {
     delete mPayloadSizePerDDL;
   }
@@ -62,12 +59,6 @@ RawTask::~RawTask()
   if (mMessageCounter) {
     delete mMessageCounter;
   }
-  // if (mPageCounter) {
-  //   delete mPageCounter;
-  //  }
-  // if (mSuperpageCounter) {
-  //   delete mSuperpageCounter;
-  // }
   if (mNumberOfPagesPerMessage) {
     delete mNumberOfPagesPerMessage;
   }
@@ -151,28 +142,6 @@ RawTask::~RawTask()
       delete h;
     }
   }
-  // for (auto& histos : mRMSBunchADCRCSM) {
-  //   for (auto h : histos.second) {
-  //     delete h;
-  //   }
-  // }
-
-  // for (auto& histos : mMeanBunchADCRCSM) {
-  //   for (auto h : histos.second) {
-  //     delete h;
-  //   }
-  // }
-
-  // for (auto& histos : mMaxChannelADCRCSM) {
-  //   for (auto h : histos.second) {
-  //     delete h;
-  ////  }
-  //}
-  // for (auto& histos : mMinChannelADCRCSM) {
-  //  for (auto h : histos.second) {
-  //    delete h;
-  //  }
-  //}
 }
 void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
@@ -244,12 +213,6 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
   mPayloadSizeTFPerDDL_1D->GetYaxis()->SetTitle("Accumulated Payload Size / TF (kB)");
   mPayloadSizeTFPerDDL_1D->SetStats(0);
   getObjectsManager()->startPublishing(mPayloadSizeTFPerDDL_1D);
-
-  // mPayloadSize = new TH1F("PayloadSize", "PayloadSize", 20, 0, 60000000); //not needed markus cri: remove
-  // mPayloadSize->GetXaxis()->SetTitle("bytes");
-  // mPayloadSize->GetYaxis()->SetTitle("Counts");
-  // mPayloadSize->SetStats(0);
-  // getObjectsManager()->startPublishing(mPayloadSize);
 
   mErrorTypeAltro = new TH2F("ErrorTypePerSM", "ErrorTypeForSM", 40, 0, 40, 10, 0, 10); // optional? OFFLINE
   mErrorTypeAltro->GetXaxis()->SetTitle("SM");
@@ -399,41 +362,11 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
       histosMinBunchAmpSM[ism]->GetYaxis()->SetTitle("Counts");
       histosMinBunchAmpSM[ism]->SetStats(0);
       getObjectsManager()->startPublishing(histosMinBunchAmpSM[ism]); // do we need it for two triggers? not needed for calibration
-
-      /*histosBunchRawAmplRmsRC[ism] = new TProfile2D(Form("BunchRCRMSAmplitudeSM%d_%s", ism, histoStr[trg].Data()), Form("Bunch ADC RMS SM%d (%s)", ism, histoStr[trg].Data()), 48, -0.5, 47.5, 24, -0.5, 23.5);
-      histosBunchRawAmplRmsRC[ism]->GetXaxis()->SetTitle("col");
-      histosBunchRawAmplRmsRC[ism]->GetYaxis()->SetTitle("row");
-      histosBunchRawAmplRmsRC[ism]->SetStats(0);
-      getObjectsManager()->startPublishing(histosBunchRawAmplRmsRC[ism]); //redundant markus/martin
-
-      histosBunchRawAmplMeanRC[ism] = new TProfile2D(Form("BunchRCMeanAmplitudeSM%d_%s", ism, histoStr[trg].Data()), Form("Bunch ADC mean SM%d (%s)", ism, histoStr[trg].Data()), 48, -0.5, 47.5, 24, -0.5, 23.5);
-      histosBunchRawAmplMeanRC[ism]->GetXaxis()->SetTitle("col");
-      histosBunchRawAmplMeanRC[ism]->GetYaxis()->SetTitle("row");
-      histosBunchRawAmplMeanRC[ism]->SetStats(0);
-      getObjectsManager()->startPublishing(histosBunchRawAmplMeanRC[ism]); //redundant markus/martin
-
-      histosMaxChannelRawAmplRC[ism] = new TProfile2D(Form("ChannelRCMaxAmplitudeSM%d_%s", ism, histoStr[trg].Data()), Form("Channel ADC max SM%d (%s)", ism, histoStr[trg].Data()), 48, -0.5, 47.5, 24, -0.5, 23.5);
-      histosMaxChannelRawAmplRC[ism]->GetXaxis()->SetTitle("col");
-      histosMaxChannelRawAmplRC[ism]->GetYaxis()->SetTitle("row");
-      histosMaxChannelRawAmplRC[ism]->SetStats(0);
-      getObjectsManager()->startPublishing(histosMaxChannelRawAmplRC[ism]); //redundant markus/martin
-
-      histosMinChannelRawAmpRC[ism] = new TProfile2D(Form("ChannelRCMinAmplitudeSM%d_%s", ism, histoStr[trg].Data()), Form("Channel ADC min SM%d (%s)", ism, histoStr[trg].Data()), 48, -0.5, 47.5, 24, -0.5, 23.5);
-      histosMinChannelRawAmpRC[ism]->GetXaxis()->SetTitle("col");
-      histosMinChannelRawAmpRC[ism]->GetYaxis()->SetTitle("raw");
-      histosMinChannelRawAmpRC[ism]->SetStats(0);
-      getObjectsManager()->startPublishing(histosMinChannelRawAmpRC[ism]); //redundant markus/martin
-*/
-    } // loop SM
+    }                                                                 // loop SM
     mMaxSMRawAmplSM[triggers[trg]] = histosMaxSMAmpSM;
     mMinSMRawAmplSM[triggers[trg]] = histosMinSMAmpSM;
     mMaxBunchRawAmplSM[triggers[trg]] = histosMaxBunchAmpSM;
     mMinBunchRawAmplSM[triggers[trg]] = histosMinBunchAmpSM;
-
-    // mRMSBunchADCRCSM[triggers[trg]] = histosBunchRawAmplRmsRC;
-    // mMeanBunchADCRCSM[triggers[trg]] = histosBunchRawAmplMeanRC;
-    // mMaxChannelADCRCSM[triggers[trg]] = histosMaxChannelRawAmplRC;
-    // mMinChannelADCRCSM[triggers[trg]] = histosMinChannelRawAmpRC;
 
     mRMSBunchADCRCFull[triggers[trg]] = histosRawAmplRmsRC;
     mMeanBunchADCRCFull[triggers[trg]] = histosRawAmplMeanRC;
@@ -513,12 +446,10 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
       ILOG(Debug, Support) << "Processing superpage " << mNumberOfSuperpages << ENDM;
       mNumberOfSuperpages++;
       nSuperpagesMessage++;
-      // mSuperpageCounter->Fill(1); //for expert
       mMessageCounter->Fill(1); // fill bin 2 with mSuperpageCounter
       ILOG(Debug, Support) << " EMCAL Reading Payload size: " << payloadSize << " for " << header->dataOrigin << ENDM;
 
       // fill the histogram with payload sizes
-      // mPayloadSize->Fill(payloadSize);         //for expert
       mTotalDataVolume->Fill(1., payloadSize); // for expert
 
       // Skip SOX headers
@@ -537,7 +468,6 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
         ILOG(Debug, Support) << " Processing page " << mNumberOfPages << ENDM;
         mNumberOfPages++;
         nPagesMessage++;
-        // mPageCounter->Fill(1); //expert
         mMessageCounter->Fill(2); // fill bin 3 with PageCounter
         rawreader.next();
         auto rawSize = rawreader.getPayloadSize(); // payloadsize in byte;
@@ -819,28 +749,35 @@ void RawTask::reset()
     mMeanBunchADCRCFull[trg]->Reset();
     mMaxChannelADCRCFull[trg]->Reset();
     mMinChannelADCRCFull[trg]->Reset();
+    mMinBunchRawAmplFull[trg]->Reset();
+    mRawAmplMinEMCAL_tot[trg]->Reset();
+    mRawAmplMinDCAL_tot[trg]->Reset();
     for (Int_t ism = 0; ism < 20; ism++) {
       mMaxSMRawAmplSM[trg][ism]->Reset();
       mMinSMRawAmplSM[trg][ism]->Reset();
       mMaxBunchRawAmplSM[trg][ism]->Reset();
       mMinBunchRawAmplSM[trg][ism]->Reset();
-      // mRMSBunchADCRCSM[trg][ism]->Reset();
-      // mMeanBunchADCRCSM[trg][ism]->Reset();
-      // mMaxChannelADCRCSM[trg][ism]->Reset();
-      // mMinChannelADCRCSM[trg][ism]->Reset();
     }
   }
+  for (int ism = 0; ism < 20; ism++) {
+    mFECmaxCount[ism]->Reset();
+    mFECmaxID[ism]->Reset();
+  }
+  mMessageCounter->Reset();
+  mNumberOfSuperpagesPerMessage->Reset();
+  mNumberOfPagesPerMessage->Reset();
   mPayloadSizePerDDL->Reset();
   mPayloadSizePerDDL_1D->Reset();
   mPayloadSizeTFPerDDL->Reset();
   mPayloadSizeTFPerDDL_1D->Reset();
-  // mPayloadSize->Reset();
   mErrorTypeAltro->Reset();
   mNbunchPerChan->Reset();
   mNofADCsamples->Reset();
   mADCsize->Reset();
   mFECmaxIDperSM->Reset();
   mFECmaxCountperSM->Reset();
+  mTFerrorCounter->Reset();
+  mTotalDataVolume->Reset();
 }
 
 bool RawTask::isLostTimeframe(framework::ProcessingContext& ctx) const

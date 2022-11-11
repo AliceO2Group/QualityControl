@@ -98,6 +98,8 @@ void ClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
     return input == "true";
   };
 
+  configureBindings();
+
   if (hasConfigValue("useInternalClusterizer")) {
     mInternalClusterizer = get_bool(getConfigValueLower("useInternalClusterizer"));
     if (mInternalClusterizer) {
@@ -244,11 +246,8 @@ void ClusterTask::startOfCycle()
 
 void ClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  std::string inputCell = "emcal-cells";
-  std::string inputCellTR = "emcal-cellstriggerecords";
-
-  auto cell = ctx.inputs().get<gsl::span<o2::emcal::Cell>>(inputCell.c_str());
-  auto cellTR = ctx.inputs().get<gsl::span<o2::emcal::TriggerRecord>>(inputCellTR.c_str());
+  auto cell = ctx.inputs().get<gsl::span<o2::emcal::Cell>>(mTaskInputBindings.mCellBinding.data());
+  auto cellTR = ctx.inputs().get<gsl::span<o2::emcal::TriggerRecord>>(mTaskInputBindings.mCellTriggerRecordBinding.data());
 
   if (mInternalClusterizer) {
     std::vector<o2::emcal::Cluster> cluster;
@@ -284,17 +283,10 @@ void ClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
     analyseTimeframe(inputcells, inputTriggerRecords, cluster, clusterTR, cellIndex, cellIndexTR); // Fill histos
 
   } else {
-
-    std::string inputCluster = "emcal-clusters";
-    std::string inputClusterTR = "emcal-clustertriggerecords";
-
-    std::string inputCellIndex = "emcal-cellindices";
-    std::string inputCellIndexTR = "emcal-citriggerecords";
-
-    auto cluster = ctx.inputs().get<gsl::span<o2::emcal::Cluster>>(inputCluster.c_str());
-    auto clusterTR = ctx.inputs().get<gsl::span<o2::emcal::TriggerRecord>>(inputClusterTR.c_str());
-    auto cellIndex = ctx.inputs().get<gsl::span<int>>(inputCellIndex.c_str());
-    auto cellIndexTR = ctx.inputs().get<gsl::span<o2::emcal::TriggerRecord>>(inputCellIndexTR.c_str());
+    auto cluster = ctx.inputs().get<gsl::span<o2::emcal::Cluster>>(mTaskInputBindings.mClusterBinding.data());
+    auto clusterTR = ctx.inputs().get<gsl::span<o2::emcal::TriggerRecord>>(mTaskInputBindings.mClusterTriggerRecordBinding.data());
+    auto cellIndex = ctx.inputs().get<gsl::span<int>>(mTaskInputBindings.mCellIndexBinding.data());
+    auto cellIndexTR = ctx.inputs().get<gsl::span<o2::emcal::TriggerRecord>>(mTaskInputBindings.mCellIndexTriggerRecordBinding.data());
 
     analyseTimeframe(cell, cellTR, cluster, clusterTR, cellIndex, cellIndexTR); // Fill histos
   }
@@ -505,6 +497,28 @@ void ClusterTask::getCalibratedCells(const gsl::span<const o2::emcal::Cell>& cel
     o2::emcal::TriggerRecord nexttrigger(trg.getBCData(), currentlast, ncellsEvent);
     nexttrigger.setTriggerBits(trg.getTriggerBits());
     calibratedTriggerRecords.push_back(nexttrigger);
+  }
+}
+
+void ClusterTask::configureBindings()
+{
+  if (hasConfigValue("bindingCells")) {
+    mTaskInputBindings.mCellBinding = getConfigValue("bindingCells");
+  }
+  if (hasConfigValue("bindingCellTriggerRecords")) {
+    mTaskInputBindings.mCellTriggerRecordBinding = getConfigValue("bindingCellTriggerRecords");
+  }
+  if (hasConfigValue("bindingClusters")) {
+    mTaskInputBindings.mClusterBinding = getConfigValue("bindingClusters");
+  }
+  if (hasConfigValue("bindingClusterTriggerRecords")) {
+    mTaskInputBindings.mClusterTriggerRecordBinding = getConfigValue("bindingClusterTriggerRecords");
+  }
+  if (hasConfigValue("bindingCellIndices")) {
+    mTaskInputBindings.mCellIndexBinding = getConfigValue("bindingCellIndices");
+  }
+  if (hasConfigValue("bindingCellIndexTriggerRecords")) {
+    mTaskInputBindings.mCellIndexTriggerRecordBinding = getConfigValue("bindingCellIndexTriggerRecords");
   }
 }
 

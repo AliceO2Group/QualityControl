@@ -46,8 +46,7 @@ add_root_dictionary(O2QcPID
                             # Trending
                             # Trending config
                             # Utilities
-                    LINKDEF include/PID/LinkDef.h
-                    BASENAME O2QcPID)
+                    LINKDEF include/PID/LinkDef.h)
 
 # ---- Test(s) ----
 

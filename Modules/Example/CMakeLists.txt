@@ -26,8 +26,7 @@ add_root_dictionary(O2QcExample
                             include/Example/FakeCheck.h
                             include/Example/ExampleCondition.h
                             include/Example/CustomTH2F.h
-                    LINKDEF include/Example/LinkDef.h
-                    BASENAME O2QcExample)
+                    LINKDEF include/Example/LinkDef.h)
 
 install(TARGETS O2QcExample
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

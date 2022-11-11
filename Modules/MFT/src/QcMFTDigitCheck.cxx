@@ -34,6 +34,20 @@ using namespace std;
 namespace o2::quality_control_modules::mft
 {
 
+void QcMFTDigitCheck::configure()
+{
+
+  // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
+  if (auto param = mCustomParameters.find("ZoneThresholdMedium"); param != mCustomParameters.end()) {
+    ILOG(Info, Support) << "Custom parameter - ZoneThresholdMedium: " << param->second << ENDM;
+    mZoneThresholdMedium = stoi(param->second);
+  }
+  if (auto param = mCustomParameters.find("ZoneThresholdBad"); param != mCustomParameters.end()) {
+    ILOG(Info, Support) << "Custom parameter - ZoneThresholdBad: " << param->second << ENDM;
+    mZoneThresholdBad = stoi(param->second);
+  }
+}
+
 Quality QcMFTDigitCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
   Quality result = Quality::Null;
@@ -61,13 +75,27 @@ Quality QcMFTDigitCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
       auto* hOccupancySummary = dynamic_cast<TH2F*>(mo->getObject());
 
       float den = hOccupancySummary->GetBinContent(0, 0); // normalisation stored in the uderflow bin
+      float nEmptyBins = 0;                               // number of empty zones stored here
 
       for (int iBinX = 0; iBinX < hOccupancySummary->GetNbinsX(); iBinX++) {
         for (int iBinY = 0; iBinY < hOccupancySummary->GetNbinsY(); iBinY++) {
           float num = hOccupancySummary->GetBinContent(iBinX + 1, iBinY + 1);
           float ratio = (den > 0) ? (num / den) : 0.0;
           hOccupancySummary->SetBinContent(iBinX + 1, iBinY + 1, ratio);
+          if ((hOccupancySummary->GetBinContent(iBinX + 1, iBinY + 1)) == 0) {
+            nEmptyBins = nEmptyBins + 1;
+          }
         }
+      }
+
+      if (nEmptyBins <= mZoneThresholdMedium) {
+        result = Quality::Good;
+      }
+      if (nEmptyBins > mZoneThresholdMedium && nEmptyBins <= mZoneThresholdBad) {
+        result = Quality::Medium;
+      }
+      if (nEmptyBins > mZoneThresholdBad) {
+        result = Quality::Bad;
       }
     }
 
@@ -110,6 +138,30 @@ void QcMFTDigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
       LOG(info) << "Quality::Medium";
       TLatex* tl = new TLatex(350, 1.05 * hStdDev->GetMaximum(), "#color[800]{Dummy check status: Medium!}");
       hStdDev->GetListOfFunctions()->Add(tl);
+      tl->Draw();
+    }
+  }
+
+  if (mo->getName().find("mDigitOccupancySummary") != std::string::npos) {
+    auto* hOccupancySummary = dynamic_cast<TH2F*>(mo->getObject());
+
+    if (checkResult == Quality::Good) {
+      LOG(info) << "Quality::Good";
+      TLatex* tl = new TLatex(0.15, 6.0, "Quality Good");
+      tl->SetTextColor(kGreen);
+      hOccupancySummary->GetListOfFunctions()->Add(tl);
+      tl->Draw();
+    } else if (checkResult == Quality::Medium) {
+      LOG(info) << "Quality::Medium";
+      TLatex* tl = new TLatex(0.15, 6.0, "Quality medium: notify the on-call by mail");
+      tl->SetTextColor(kOrange);
+      hOccupancySummary->GetListOfFunctions()->Add(tl);
+      tl->Draw();
+    } else if (checkResult == Quality::Bad) {
+      LOG(info) << "Quality::Bad";
+      TLatex* tl = new TLatex(0.15, 6.0, "Quality bad: call the on-call!");
+      tl->SetTextColor(kRed);
+      hOccupancySummary->GetListOfFunctions()->Add(tl);
       tl->Draw();
     }
   }

@@ -41,8 +41,7 @@ add_root_dictionary(
           include/MID/TracksQcTask.h
 	  include/MID/CalibQcTask.h
 	  include/MID/CalibQcCheck.h
-  LINKDEF include/MID/LinkDef.h
-  BASENAME O2QcMID)
+  LINKDEF include/MID/LinkDef.h)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/MID DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")
 

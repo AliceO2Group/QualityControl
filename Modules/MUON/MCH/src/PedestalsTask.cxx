@@ -34,6 +34,7 @@
 #ifdef MCH_HAS_MAPPING_FACTORY
 #include "MCHMappingFactory/CreateSegmentation.h"
 #endif
+#include "MCHConstants/DetectionElements.h"
 
 using namespace std;
 using namespace o2::framework;
@@ -87,7 +88,7 @@ void PedestalsTask::initialize(o2::framework::InitContext& /*ctx*/)
     publishObject(mHistogramNoiseDistribution[si].get(), "hist", false);
   }
 
-  for (auto de : o2::mch::raw::deIdsForAllMCH) {
+  for (auto de : o2::mch::constants::deIdsForAllMCH) {
     auto hPedDE = std::make_shared<TH2F>(TString::Format("%sPedestals_Elec_DE%03d", getHistoPath(de).c_str(), de),
                                          TString::Format("Pedestals (DE%03d)", de), 2000, 0, 2000, 64, 0, 64);
     mHistogramPedestalsDE.insert(make_pair(de, hPedDE));

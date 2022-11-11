@@ -50,7 +50,10 @@ ObjectsManager::ObjectsManager(std::string taskName, std::string taskClass, std:
   }
 }
 
-ObjectsManager::~ObjectsManager() = default;
+ObjectsManager::~ObjectsManager()
+{
+  ILOG(Debug, Devel) << "ObjectsManager destructor" << ENDM;
+}
 
 void ObjectsManager::startPublishing(TObject* object)
 {
