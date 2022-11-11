@@ -53,6 +53,10 @@
         "moduleName" : "QcMFT",
         "detectorName" : "MFT",
         "policy" : "OnEachSeparately",
+        "checkParameters" : {
+          "ZoneThresholdMedium" : "2",
+          "ZoneThresholdBad" : "5"
+        },
         "dataSource" : [ {
           "type" : "Task",
           "name" : "MFTDigitTask",
