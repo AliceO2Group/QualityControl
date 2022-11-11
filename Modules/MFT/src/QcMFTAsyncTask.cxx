@@ -129,12 +129,12 @@ void QcMFTAsyncTask::initialize(o2::framework::InitContext& /*ctx*/)
     getObjectsManager()->startPublishing(mTrackPhiNCls[nHisto].get());
 
     mTrackXYNCls[nHisto] = std::make_unique<TH2F>(Form("tracks/mMFTTrackXY_%d_MinClusters", minNClusters), Form("Track Position (NCls >= %d); x; y", minNClusters), 320, -16, 16, 320, -16, 16);
-    mTrackXYNCls[nHisto]->SetOption("COLZ");
     getObjectsManager()->startPublishing(mTrackXYNCls[nHisto].get());
+    getObjectsManager()->setDisplayHint(mTrackXYNCls[nHisto].get(), "logz colz");
 
     mTrackEtaPhiNCls[nHisto] = std::make_unique<TH2F>(Form("tracks/mMFTTrackEtaPhi_%d_MinClusters", minNClusters), Form("Track #eta , #phi (NCls >= %d); #eta; #phi", minNClusters), 50, -4, -2, 100, -3.2, 3.2);
-    mTrackEtaPhiNCls[nHisto]->SetOption("COLZ");
     getObjectsManager()->startPublishing(mTrackEtaPhiNCls[nHisto].get());
+    getObjectsManager()->setDisplayHint(mTrackEtaPhiNCls[nHisto].get(), "colz");
   }
 
   mCATrackEta = std::make_unique<TH1F>("tracks/CA/mMFTCATrackEta", "CA Track #eta; #eta; # entries", 50, -4, -2);
@@ -154,10 +154,10 @@ void QcMFTAsyncTask::initialize(o2::framework::InitContext& /*ctx*/)
   mTrackTanl = std::make_unique<TH1F>("tracks/mMFTTrackTanl", "Track tan #lambda; tan #lambda; # entries", 100, -25, 0);
   getObjectsManager()->startPublishing(mTrackTanl.get());
 
-  mClusterROFNEntries = std::make_unique<TH1F>("clusters/mMFTClustersROFSize", "ROF size in #clusters; ROF Size; # entries", MaxClusterROFSize, 0, MaxClusterROFSize);
+  mClusterROFNEntries = std::make_unique<TH1F>("clusters/mMFTClustersROFSize", "Distribution of the #clusters per ROF; #clusters per ROF; # entries", MaxClusterROFSize, 0, MaxClusterROFSize);
   getObjectsManager()->startPublishing(mClusterROFNEntries.get());
 
-  mTrackROFNEntries = std::make_unique<TH1F>("tracks/mMFTTrackROFSize", "ROF size in #tracks; ROF Size (# tracks); # entries", MaxTrackROFSize, 0, MaxTrackROFSize);
+  mTrackROFNEntries = std::make_unique<TH1F>("tracks/mMFTTrackROFSize", "Distribution of the #tracks per ROF; # tracks per ROF; # entries", MaxTrackROFSize, 0, MaxTrackROFSize);
   getObjectsManager()->startPublishing(mTrackROFNEntries.get());
 
   mTracksBC = std::make_unique<TH1F>("tracks/mMFTTracksBC", "Tracks per BC; BCid; # entries", o2::constants::lhc::LHCMaxBunches, 0, o2::constants::lhc::LHCMaxBunches);
@@ -168,10 +168,12 @@ void QcMFTAsyncTask::initialize(o2::framework::InitContext& /*ctx*/)
   mNOfTracksTime = std::make_unique<TH1F>("tracks/mNOfTracksTime", "Number of tracks per time bin; time (s); # entries", NofTimeBins, 0, MaxDuration);
   mNOfTracksTime->SetMinimum(0.1);
   getObjectsManager()->startPublishing(mNOfTracksTime.get());
+  getObjectsManager()->setDisplayHint(mNOfTracksTime.get(), "hist");
 
   mNOfClustersTime = std::make_unique<TH1F>("clusters/mNOfClustersTime", "Number of clusters per time bin; time (s); # entries", NofTimeBins, 0, MaxDuration);
   mNOfClustersTime->SetMinimum(0.1);
   getObjectsManager()->startPublishing(mNOfClustersTime.get());
+  getObjectsManager()->setDisplayHint(mNOfClustersTime.get(), "hist");
 
   mClusterSensorIndex = std::make_unique<TH1F>("clusters/mMFTClusterSensorIndex", "Chip Cluster Occupancy;Chip ID;#Entries", 936, -0.5, 935.5);
   getObjectsManager()->startPublishing(mClusterSensorIndex.get());
