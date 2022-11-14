@@ -33,6 +33,7 @@
 class TH1F;
 class TH1I;
 class TH2F;
+class TProfile;
 
 namespace o2::quality_control_modules::pid
 {
@@ -176,6 +177,8 @@ class TaskFT0TOF final : public TaskInterface
   TH1F* mHistDeltaEvTimeTOFVsFT0ASameBC = 0x0;
   TH1F* mHistDeltaEvTimeTOFVsFT0CSameBC = 0x0;
   TH1I* mHistDeltaBCTOFFT0 = 0x0;
+  TH2F* mHistMismatchVsEta = 0x0;
+  TProfile* mProfLoverCvsEta = 0x0;
 };
 
 } // namespace o2::quality_control_modules::pid
