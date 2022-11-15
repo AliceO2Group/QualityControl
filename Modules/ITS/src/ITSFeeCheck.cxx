@@ -69,7 +69,7 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
             } else if (ibin <= StaveBoundary[5]) {
               // Check if there are staves in the MLs with at least 4 lanes in Bad (bins are filled with %)
               maxbadlanesML = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "maxbadlanesML", maxbadlanesML);
-              if (hp->GetBinContent(ibin) > maxbadlanesML / NLanePerStaveLayer[ilayer]) {
+              if (hp->GetBinContent(ibin) > maxbadlanesML / (1. * NLanePerStaveLayer[ilayer])) {
                 badStaveML = true;
                 result.updateMetadata("ML", "medium");
                 countStave++;
@@ -77,7 +77,7 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
             } else if (ibin <= StaveBoundary[7]) {
               // Check if there are staves in the OLs with at least 7 lanes in Bad (bins are filled with %)
               maxbadlanesOL = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "maxbadlanesOL", maxbadlanesOL);
-              if (hp->GetBinContent(ibin) > maxbadlanesOL / NLanePerStaveLayer[ilayer]) {
+              if (hp->GetBinContent(ibin) > maxbadlanesOL / (1. * NLanePerStaveLayer[ilayer])) {
                 badStaveOL = true;
                 result.updateMetadata("OL", "medium");
                 countStave++;
