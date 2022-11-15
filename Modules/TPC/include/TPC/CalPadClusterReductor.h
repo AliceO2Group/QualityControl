@@ -28,8 +28,8 @@ namespace o2::quality_control_modules::tpc
 ///
 /// A Reductor of cluster data stored as CalPads. Stores number of entries, mean, standard deviation, median and rms
 /// for each NClusters, QMax, QTot, SigmaTime, SigmaPad and TimeBin individually.
-/// It produces a branch in the format: "NClusters[5][72]/F:QMax[5][72]:QTot[5][72]:SigmaTime[5][72]:SigmaPad[5][72]:TimeBin[5][72]"
-/// First iterator holds entries [0], mean [1], standard deviation [2], median [3] and rms [4]
+/// It produces a branch in the format: "NClusters[4][72]/F:QMax[4][72]:QTot[4][72]:SigmaTime[4][72]:SigmaPad[4][72]:TimeBin[4][72]"
+/// First iterator holds entries [0], mean [1], standard deviation [2] and median [3]
 /// Second iterator runs over all 72 ROCs
 
 class CalPadClusterReductor : public quality_control::postprocessing::Reductor
@@ -44,12 +44,12 @@ class CalPadClusterReductor : public quality_control::postprocessing::Reductor
 
  private:
   struct {
-    Float_t NClusters[5][72];
-    Float_t QMax[5][72];
-    Float_t QTot[5][72];
-    Float_t SigmaTime[5][72];
-    Float_t SigmaPad[5][72];
-    Float_t TimeBin[5][72];
+    Float_t NClusters[4][72];
+    Float_t QMax[4][72];
+    Float_t QTot[4][72];
+    Float_t SigmaTime[4][72];
+    Float_t SigmaPad[4][72];
+    Float_t TimeBin[4][72];
   } mCalPad;
 
   o2::tpc::CalPad& GetCalPad(o2::tpc::qc::Clusters& clusters, int dataType);

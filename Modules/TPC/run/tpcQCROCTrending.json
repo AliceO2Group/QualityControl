@@ -98,13 +98,6 @@
             "varexp": "ClusterData.NClusters[3][ ]:time",
             "selection": "",
             "option": "*L"
-          },
-          {
-            "name": "NClusters_rms_allROC_trending",
-            "title": "RMS NClusters (all ROC) over time",
-            "varexp": "ClusterData.NClusters[4][ ]:time",
-            "selection": "",
-            "option": "*L"
           }
         ],
         "initTrigger": [

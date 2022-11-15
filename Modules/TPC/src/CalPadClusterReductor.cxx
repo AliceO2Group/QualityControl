@@ -32,7 +32,7 @@ void* CalPadClusterReductor::getBranchAddress()
 
 const char* CalPadClusterReductor::getBranchLeafList()
 {
-  return "NClusters[5][72]/F:QMax[5][72]:QTot[5][72]:SigmaTime[5][72]:SigmaPad[5][72]:TimeBin[5][72]";
+  return "NClusters[4][72]/F:QMax[4][72]:QTot[4][72]:SigmaTime[4][72]:SigmaPad[4][72]:TimeBin[4][72]";
 } // const char* CalPadClusterReductor::getBranchLeafList()
 
 void CalPadClusterReductor::update(TObject* obj)
@@ -44,7 +44,6 @@ void CalPadClusterReductor::update(TObject* obj)
       auto& clusters = qcClusters->getClusters();
 
       for (int iType = 0; iType < 6; iType++) {
-
         auto& calDet = GetCalPad(clusters, iType);
 
         for (size_t iROC = 0; iROC < calDet.getData().size(); ++iROC) {
@@ -55,12 +54,12 @@ void CalPadClusterReductor::update(TObject* obj)
           data.erase(std::remove_if(data.begin(), data.end(), [](const auto& value) { return (std::isnan(value) || value <= 0); }), data.end());
 
           Float_t(*Quantity)[72] = getArrayPointer(iType);
-          Quantity[0][iROC] = static_cast<float>(data.size());
-          Quantity[1][iROC] = TMath::Mean(data.begin(), data.end());
-          Quantity[2][iROC] = TMath::StdDev(data.begin(), data.end());
-          Quantity[3][iROC] = TMath::Median(data.size(), data.data());
-          Quantity[4][iROC] = TMath::RMS(data.size(), data.data());
-
+          if ((*Quantity)[0]) {
+            Quantity[0][iROC] = static_cast<float>(data.size());
+            Quantity[1][iROC] = TMath::Mean(data.begin(), data.end());
+            Quantity[2][iROC] = TMath::StdDev(data.begin(), data.end());
+            Quantity[3][iROC] = TMath::Median(data.size(), data.data());
+          }
         } // for (size_t iROC = 0; iROC < calDet.getData().size(); ++iROC)
       }   // for(int iType = 0; iType < 6; iType++)
     }     // if (qcClusters)
@@ -69,7 +68,6 @@ void CalPadClusterReductor::update(TObject* obj)
 
 o2::tpc::CalPad& CalPadClusterReductor::GetCalPad(o2::tpc::qc::Clusters& clusters, int dataType)
 {
-
   if (dataType == 0) {
     return clusters.getNClusters();
   } else if (dataType == 1) {
@@ -84,12 +82,13 @@ o2::tpc::CalPad& CalPadClusterReductor::GetCalPad(o2::tpc::qc::Clusters& cluster
     return clusters.getTimeBin();
   } else {
     ILOG(Error, Support) << "Error: Datatype not supported in CalPadClusterReductor" << ENDM;
+    o2::tpc::CalPad Dummy(0);
+    return Dummy;
   }
 } // o2::tpc::CalPad& CalPadClusterReductor::GetCalPad(o2::tpc::qc::Clusters& clusters, int dataType)
 
 CalPadClusterReductor::pointer_to_arrays CalPadClusterReductor::getArrayPointer(int dataType)
 {
-
   if (dataType == 0) {
     return mCalPad.NClusters;
   } else if (dataType == 1) {
@@ -104,6 +103,7 @@ CalPadClusterReductor::pointer_to_arrays CalPadClusterReductor::getArrayPointer(
     return mCalPad.TimeBin;
   } else {
     ILOG(Error, Support) << "Error: Datatype not supported in CalPadClusterReductor" << ENDM;
+    return NULL;
   }
 } // CalPadClusterReductor::pointer_to_arrays CalPadClusterReductor::getArrayPointer(int dataType)
 
