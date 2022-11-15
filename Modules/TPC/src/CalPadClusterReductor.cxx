@@ -44,6 +44,7 @@ void CalPadClusterReductor::update(TObject* obj)
       auto& clusters = qcClusters->getClusters();
 
       for (int iType = 0; iType < 6; iType++) {
+
         auto& calDet = GetCalPad(clusters, iType);
 
         for (size_t iROC = 0; iROC < calDet.getData().size(); ++iROC) {
@@ -82,8 +83,7 @@ o2::tpc::CalPad& CalPadClusterReductor::GetCalPad(o2::tpc::qc::Clusters& cluster
     return clusters.getTimeBin();
   } else {
     ILOG(Error, Support) << "Error: Datatype not supported in CalPadClusterReductor" << ENDM;
-    o2::tpc::CalPad Dummy(0);
-    return Dummy;
+    return clusters.getNClusters(); // return NClusters as dummy.
   }
 } // o2::tpc::CalPad& CalPadClusterReductor::GetCalPad(o2::tpc::qc::Clusters& clusters, int dataType)
 
