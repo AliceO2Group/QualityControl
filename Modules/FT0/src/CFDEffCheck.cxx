@@ -55,12 +55,12 @@ void CFDEffCheck::configure()
     const std::string del = ",";
     std::vector<uint8_t> deadChannelVec = parseParameters<uint8_t>(chIDs, del);
 
-    mDeadChannelMap = new o2::fit::BadChannelMap();
+    mDeadChannelMap = new o2::fit::DeadChannelMap();
     for (uint8_t chId = 0; chId < sNCHANNELS; ++chId) {
       if (std::find(deadChannelVec.begin(), deadChannelVec.end(), chId) != deadChannelVec.end())
-        mDeadChannelMap->setChannelGood(chId, 0);
+        mDeadChannelMap->setChannelAlive(chId, 0);
       else
-        mDeadChannelMap->setChannelGood(chId, 1);
+        mDeadChannelMap->setChannelAlive(chId, 1);
     }
     ILOG(Warning, Support) << "configure() : using deadChannelMap from config (superseding the one from CCDB)" << ENDM;
   } else {
@@ -76,25 +76,25 @@ void CFDEffCheck::configure()
       mPathDeadChannelMap = param->second;
       ILOG(Info, Support) << "configure() : using pathDeadChannelMap: " << mPathDeadChannelMap << ENDM;
     } else {
-      mPathDeadChannelMap = "FT0/Calib/BadChannelMap";
+      mPathDeadChannelMap = "FT0/Calib/DeadChannelMap";
       ILOG(Info, Support) << "configure() : using default pathDeadChannelMap: " << mPathDeadChannelMap << ENDM;
     }
 
     // WARNING: always uses last available dead channel map
     //          supply deadChannelMap by hand when running offline
     std::map<std::string, std::string> metadata;
-    mDeadChannelMap = retrieveConditionAny<o2::fit::BadChannelMap>(mPathDeadChannelMap, metadata, (long)-1);
+    mDeadChannelMap = retrieveConditionAny<o2::fit::DeadChannelMap>(mPathDeadChannelMap, metadata, (long)-1);
     if (!mDeadChannelMap->map.size()) {
-      ILOG(Error, Support) << "object \"" << mPathDeadChannelMap << "\" NOT retrieved (or empty). All channels assumed to be good!" << ENDM;
-      mDeadChannelMap = new o2::fit::BadChannelMap();
+      ILOG(Error, Support) << "object \"" << mPathDeadChannelMap << "\" NOT retrieved (or empty). All channels assumed to be alive!" << ENDM;
+      mDeadChannelMap = new o2::fit::DeadChannelMap();
       for (uint8_t chId = 0; chId < sNCHANNELS; ++chId) {
-        mDeadChannelMap->setChannelGood(chId, 1);
+        mDeadChannelMap->setChannelAlive(chId, 1);
       }
     }
   }
   mDeadChannelMapStr = "";
   for (unsigned chId = 0; chId < mDeadChannelMap->map.size(); chId++) {
-    if (!mDeadChannelMap->isChannelGood(chId)) {
+    if (!mDeadChannelMap->isChannelAlive(chId)) {
       mDeadChannelMapStr += (mDeadChannelMapStr.empty() ? "" : ",") + std::to_string(chId);
     }
   }
@@ -118,7 +118,7 @@ Quality CFDEffCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
       for (uint8_t chId = 0; chId < h->GetNbinsX(); chId++) {
         if (chId >= sNCHANNELS)
           continue;
-        if (!mDeadChannelMap->isChannelGood(chId))
+        if (!mDeadChannelMap->isChannelAlive(chId))
           continue;
         if (h->GetBinContent(chId + 1) < mThreshError) {
           if (result.isBetterThan(Quality::Bad))

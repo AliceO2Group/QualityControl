@@ -23,7 +23,7 @@
 #include "QualityControl/CheckInterface.h"
 
 #include "FT0Base/Geometry.h"
-#include "DataFormatsFIT/BadChannelMap.h"
+#include "DataFormatsFIT/DeadChannelMap.h"
 
 namespace o2::quality_control_modules::ft0
 {
@@ -68,7 +68,7 @@ class CFDEffCheck : public o2::quality_control::checker::CheckInterface
   }
 
   constexpr static std::size_t sNCHANNELS = o2::ft0::Geometry::Nchannels;
-  o2::fit::BadChannelMap* mDeadChannelMap;
+  o2::fit::DeadChannelMap* mDeadChannelMap;
   std::string mDeadChannelMapStr;
   std::string mPathDeadChannelMap;
   float mThreshWarning;
