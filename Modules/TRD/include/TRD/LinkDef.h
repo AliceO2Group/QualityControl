@@ -14,4 +14,5 @@
 #pragma link C++ class o2::quality_control::postprocessing::TRDTrending + ;
 #pragma link C++ class o2::quality_control::postprocessing::PulseHeightPostProcessing + ;
 #pragma link C++ class o2::quality_control_modules::trd::PulseHeightPerChamber+;
+#pragma link C++ class o2::quality_control_modules::trd::PulseHeightTrackMatch+;
 #endif

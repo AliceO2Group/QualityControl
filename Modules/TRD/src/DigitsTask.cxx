@@ -525,11 +525,19 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
       std::vector<unsigned int> digitsIndex(digitv.size());
       std::iota(digitsIndex.begin(), digitsIndex.end(), 0);
       // we now have sorted digits, can loop sequentially and be going over det/row/pad
+      int noDigitTrig=0;
+      int DigitTrig=0;
+      int totTrigg=0;
       for (auto& trigger : triggerrecords) {
         uint64_t numtracklets = trigger.getNumberOfTracklets();
         uint64_t numdigits = trigger.getNumberOfDigits();
+	totTrigg++;
         if (trigger.getNumberOfDigits() == 0)
+	  {
+	  noDigitTrig++;
           continue; // bail if we have no digits in this trigger
+	  }
+	else {DigitTrig++;}
         // now sort digits to det,row,pad
         std::sort(std::begin(digitsIndex) + trigger.getFirstDigit(), std::begin(digitsIndex) + trigger.getFirstDigit() + trigger.getNumberOfDigits(),
                   [&digitv](unsigned int i, unsigned int j) { return digitIndexCompare(i, j, digitv); });
