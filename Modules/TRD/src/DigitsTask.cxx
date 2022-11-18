@@ -213,7 +213,7 @@ void DigitsTask::buildHistograms()
   getObjectsManager()->startPublishing(mDigitHCID.get());
   mDigitsPerEvent.reset(new TH1F("digitsperevent", "Digits per Event", 10000, 0, 10000));
   getObjectsManager()->startPublishing(mDigitsPerEvent.get());
-  mEventswDigitsPerTimeFrame.reset(new TH1F("eventswithdigitspertimeframe", "Number of Events with Digits per Time Frame", 10000, 0, 10000));
+  mEventswDigitsPerTimeFrame.reset(new TH1F("eventswithdigitspertimeframe", "Number of Events with Digits per Time Frame", 100, 0, 100));
   getObjectsManager()->startPublishing(mEventswDigitsPerTimeFrame.get());
 
   mDigitsSizevsTrackletSize.reset(new TH2F("digitsvstracklets", "Tracklets Count vs Digits Count per event; Number of Tracklets;Number Of Digits", 2500, 0, 2500, 2500, 0, 2500));
@@ -523,14 +523,15 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
       // create a vector indexing into the digits in question
       std::vector<unsigned int> digitsIndex(digitv.size());
       std::iota(digitsIndex.begin(), digitsIndex.end(), 0);
-      mEventswDigitsPerTimeFrame->Fill(triggerrecords.size());
+      int DigitTrig = 0;
       // we now have sorted digits, can loop sequentially and be going over det/row/pad
       for (auto& trigger : triggerrecords) {
         uint64_t numtracklets = trigger.getNumberOfTracklets();
         uint64_t numdigits = trigger.getNumberOfDigits();
         if (trigger.getNumberOfDigits() == 0)
           continue; // bail if we have no digits in this trigger
-        // now sort digits to det,row,pad
+                    // now sort digits to det,row,pad
+        DigitTrig++;
         std::sort(std::begin(digitsIndex) + trigger.getFirstDigit(), std::begin(digitsIndex) + trigger.getFirstDigit() + trigger.getNumberOfDigits(),
                   [&digitv](unsigned int i, unsigned int j) { return digitIndexCompare(i, j, digitv); });
 
@@ -742,8 +743,9 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
           }     // end for c
         }
       } // end for r
-    }   // end for d
-  }     // for loop over digits
+      mEventswDigitsPerTimeFrame->Fill(DigitTrig);
+    } // end for d
+  }   // for loop over digits
 } // loop over triggers
 
 void DigitsTask::endOfCycle()
