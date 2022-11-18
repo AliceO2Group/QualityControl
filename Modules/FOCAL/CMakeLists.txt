@@ -2,7 +2,7 @@
 
 add_library(O2QcFOCAL)
 
-target_sources(O2QcFOCAL PRIVATE src/LaneData.cxx src/PadWord.cxx src/PadData.cxx src/PadDecoder.cxx src/PadMapper.cxx src/PixelHit.cxx src/PixelChip.cxx src/PixelDecoder.cxx src/PixelMapper.cxx src/TestbeamRawTask.cxx)
+target_sources(O2QcFOCAL PRIVATE src/LaneData.cxx src/PadMapper.cxx src/PixelHit.cxx src/PixelChip.cxx src/PixelDecoder.cxx src/PixelMapper.cxx src/TestbeamRawTask.cxx)
 
 target_include_directories(
   O2QcFOCAL
@@ -10,7 +10,7 @@ target_include_directories(
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-target_link_libraries(O2QcFOCAL PUBLIC O2QualityControl O2::DetectorsRaw O2::Headers O2::ITSMFTReconstruction)
+target_link_libraries(O2QcFOCAL PUBLIC O2QualityControl O2::DetectorsRaw O2::Headers O2::ITSMFTReconstruction O2::FOCALReconstruction)
 
 install(TARGETS O2QcFOCAL
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -22,10 +22,8 @@ add_root_dictionary(O2QcFOCAL
   include/FOCAL/TestbeamRawTask.h
   include/FOCAL/PixelMapper.h
   include/FOCAL/PixelDecoder.h
-  include/FOCAL/PadData.h
   include/FOCAL/PadMapper.h
   include/FOCAL/LaneData.h
-  include/FOCAL/PadDecoder.h
   LINKDEF include/FOCAL/LinkDef.h)
 
 install(

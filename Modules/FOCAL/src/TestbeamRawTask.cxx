@@ -25,7 +25,6 @@
 
 #include "QualityControl/QcInfoLogger.h"
 #include "FOCAL/TestbeamRawTask.h"
-#include "FOCAL/PadWord.h"
 #include <CommonConstants/Triggers.h>
 #include <Framework/InputRecord.h>
 #include <Framework/InputRecordWalker.h>
@@ -344,8 +343,8 @@ void TestbeamRawTask::monitorData(o2::framework::ProcessingContext& ctx)
                 // Pad data
                 if (!mDisablePads) {
                   ILOG(Debug, Support) << "Processing PAD data" << ENDM;
-                  auto payloadsizeGBT = rawbuffer.size() * sizeof(char) / sizeof(PadGBTWord);
-                  processPadPayload(gsl::span<const PadGBTWord>(reinterpret_cast<const PadGBTWord*>(rawbuffer.data()), payloadsizeGBT));
+                  auto payloadsizeGBT = rawbuffer.size() * sizeof(char) / sizeof(o2::focal::PadGBTWord);
+                  processPadPayload(gsl::span<const o2::focal::PadGBTWord>(reinterpret_cast<const o2::focal::PadGBTWord*>(rawbuffer.data()), payloadsizeGBT));
                 }
               } else if (currentendpoint == 0) {
                 // Pixel data
@@ -380,7 +379,7 @@ void TestbeamRawTask::monitorData(o2::framework::ProcessingContext& ctx)
         ILOG(Debug, Support) << "Found payload size:         " << payloadsize << ENDM;
         ILOG(Debug, Support) << "Found offset to next:       " << o2::raw::RDHUtils::getOffsetToNext(rdh) << ENDM;
         ILOG(Debug, Support) << "Stop bit:                   " << (o2::raw::RDHUtils::getStop(rdh) ? "yes" : "no") << ENDM;
-        ILOG(Debug, Support) << "Number of GBT words:        " << (payloadsize * sizeof(char) / (endpoint == 1 ? sizeof(PadGBTWord) : sizeof(o2::itsmft::GBTWord))) << ENDM;
+        ILOG(Debug, Support) << "Number of GBT words:        " << (payloadsize * sizeof(char) / (endpoint == 1 ? sizeof(o2::focal::PadGBTWord) : sizeof(o2::itsmft::GBTWord))) << ENDM;
         auto page_payload = databuffer.subspan(currentpos + o2::raw::RDHUtils::getHeaderSize(rdh), payloadsize);
         std::copy(page_payload.begin(), page_payload.end(), std::back_inserter(rawbuffer));
         currentpos += o2::raw::RDHUtils::getOffsetToNext(rdh);
@@ -402,7 +401,7 @@ void TestbeamRawTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
 }
 
-void TestbeamRawTask::processPadPayload(gsl::span<const PadGBTWord> padpayload)
+void TestbeamRawTask::processPadPayload(gsl::span<const o2::focal::PadGBTWord> padpayload)
 {
   // processPadEvent(padpayload);
 
@@ -413,7 +412,7 @@ void TestbeamRawTask::processPadPayload(gsl::span<const PadGBTWord> padpayload)
   }
 }
 
-void TestbeamRawTask::processPadEvent(gsl::span<const PadGBTWord> padpayload)
+void TestbeamRawTask::processPadEvent(gsl::span<const o2::focal::PadGBTWord> padpayload)
 {
   mPadDecoder.reset();
   mPadDecoder.decodeEvent(padpayload);

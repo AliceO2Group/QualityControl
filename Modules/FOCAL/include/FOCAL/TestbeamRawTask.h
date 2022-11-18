@@ -23,8 +23,8 @@
 #include "QualityControl/TaskInterface.h"
 #include "CommonDataFormat/InteractionRecord.h"
 #include "ITSMFTReconstruction/GBTWord.h"
-#include "FOCAL/PadWord.h"
-#include "FOCAL/PadDecoder.h"
+#include "FOCALReconstruction/PadWord.h"
+#include "FOCALReconstruction/PadDecoder.h"
 #include "FOCAL/PadMapper.h"
 #include "FOCAL/PixelDecoder.h"
 #include "FOCAL/PixelMapper.h"
@@ -76,13 +76,13 @@ class TestbeamRawTask final : public TaskInterface
     void reset();
   };
   void default_init();
-  void processPadPayload(gsl::span<const PadGBTWord> gbtpayload);
+  void processPadPayload(gsl::span<const o2::focal::PadGBTWord> gbtpayload);
   void processPixelPayload(gsl::span<const o2::itsmft::GBTWord> gbtpayload, uint16_t feeID);
-  void processPadEvent(gsl::span<const PadGBTWord> gbtpayload);
+  void processPadEvent(gsl::span<const o2::focal::PadGBTWord> gbtpayload);
   std::pair<int, int> getNumberOfPixelSegments(PixelMapper::MappingType_t mappingtype) const;
   std::pair<int, int> getPixelSegment(const PixelHit& hit, PixelMapper::MappingType_t mappingtype, const PixelMapping::ChipPosition& chipMapping) const;
 
-  PadDecoder mPadDecoder;                                                         ///< Decoder for pad data
+  o2::focal::PadDecoder mPadDecoder;                                              ///< Decoder for pad data
   PadMapper mPadMapper;                                                           ///< Mapping for Pads
   PixelDecoder mPixelDecoder;                                                     ///< Decoder for pixel data
   std::unique_ptr<PixelMapper> mPixelMapper;                                      ///< Testbeam mapping for pixels
