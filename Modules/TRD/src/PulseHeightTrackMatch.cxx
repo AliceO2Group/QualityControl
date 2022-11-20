@@ -59,24 +59,31 @@ void PulseHeightTrackMatch::retrieveCCDBSettings()
 
 void PulseHeightTrackMatch::buildHistograms()
 {
+   mParsingTimePerTF.reset(new TH1F("parsingtimeperTF", "Time for processing each TF", 100000, 0, 100000));
+   mParsingTimePerTF->GetXaxis()->SetTitle("Time in #mus");
+   mParsingTimePerTF->GetYaxis()->SetTitle("Counts");
+   getObjectsManager()->startPublishing(mParsingTimePerTF.get());
+  
    mDigitsPerEvent.reset(new TH1F("digitsperevent", "Digits per Event", 10000, 0, 10000));
    getObjectsManager()->startPublishing(mDigitsPerEvent.get());
   
    mTracksPerEvent.reset(new TH1F("tracksperevent", "Matched TRD tracks per Event", 100, 0, 10));
    getObjectsManager()->startPublishing(mTracksPerEvent.get());
 
-   mTriggerPerTF.reset(new TH1F("triggerpertimeframe", "Triggers per TF", 100, 0, 100));
+   mTriggerPerTF.reset(new TH1F("triggerpertimeframe", "Triggers per TF", 1000, 0, 1000));
    getObjectsManager()->startPublishing(mTriggerPerTF.get());
 
    mTriggerWDigitPerTF.reset(new TH1F("triggerwdpertimeframe", "Triggers with Digits per TF", 10, 0, 10));
    getObjectsManager()->startPublishing(mTriggerWDigitPerTF.get());
-
-   mTriggerWoDigitPerTF.reset(new TH1F("triggerwodpertimeframe", "Triggers without Digits per TF", 100, 0, 100));
-   getObjectsManager()->startPublishing(mTriggerWoDigitPerTF.get());
    
   mPulseHeightpro.reset(new TProfile("PulseHeight/mPulseHeightpro", "Pulse height profile  plot;Timebins;Counts", 30, -0.5, 29.5));
   mPulseHeightpro.get()->Sumw2();
   getObjectsManager()->startPublishing(mPulseHeightpro.get());
+
+  mPulseHeightperchamber.reset(new TProfile2D("PulseHeight/mPulseHeightperchamber", "mPulseHeightperchamber;Timebin;Chamber", 30, -0.5, 29.5, 540, 0, 540));
+  mPulseHeightperchamber.get()->Sumw2();
+  getObjectsManager()->startPublishing(mPulseHeightperchamber.get());
+  getObjectsManager()->setDefaultDrawOptions(mPulseHeightperchamber.get()->GetName(), "colz");
  
 }
 
@@ -141,9 +148,9 @@ void PulseHeightTrackMatch::monitorData(o2::framework::ProcessingContext& ctx)
          std::iota(digitsIndex.begin(), digitsIndex.end(), 0);
 
 	 int nTrgWDigits=0;
-	 int nTrgWoDigits=0;
 	 int nTotalTrigger=0;
-       
+         auto crustart = std::chrono::high_resolution_clock::now();
+
 	 for (const auto& trigger : triggerrecords)
 	   {
 	     // printf("-------------Trigger----------------------BCData for Trigger %i, %i \n ",trigger.getBCData().orbit,trigger.getBCData().bc);
@@ -151,8 +158,6 @@ void PulseHeightTrackMatch::monitorData(o2::framework::ProcessingContext& ctx)
              
 	     if (trigger.getNumberOfDigits() == 0)
 	       {
-		 nTrgWoDigits++;
-		 //printf("Return: No digits in the trigger---------------------------\n");
 		 continue;
 	       }
 
@@ -170,11 +175,8 @@ void PulseHeightTrackMatch::monitorData(o2::framework::ProcessingContext& ctx)
 	
 	     for (const auto& triggerTracks : triggerrecordstracks){
 
-	       //printf("--------------TriggerTrack--------------------BCData for TriggerTrack %i, %i \n ",triggerTracks.getBCData().orbit,triggerTracks.getBCData().bc);
-
 	         if(trigger.getBCData()!=triggerTracks.getBCData())
 		 {
-		   // printf("oops! tigger and triggerrecords are from different bunch crossings-------------------------------------going back...\n");
 		   continue;
 		 }
 
@@ -187,10 +189,8 @@ void PulseHeightTrackMatch::monitorData(o2::framework::ProcessingContext& ctx)
 
 		   for(int iLayer=0;iLayer<6;iLayer++)
 		     {
-		       printf("Looping over trd layers for trigger tracks............... %i \n",iLayer);
 		       int trackletIndex= track.getTrackletIndex(iLayer);
 
-		       // printf("Index of the tracklet is %i \n",trackletIndex);
 		       if(trackletIndex==-1)
 			 {
 			   continue;
@@ -207,24 +207,10 @@ void PulseHeightTrackMatch::monitorData(o2::framework::ProcessingContext& ctx)
 		       // MCM number in column direction (0..7)
 		       int mcmCol = (trklt.getMCM() % o2::trd::constants::NMCMROBINCOL) + o2::trd::constants::NMCMROBINCOL * (trklt.getROB() % 2);
 		       int colInChamber = 6.f + mcmCol * ((float) o2::trd::constants::NCOLMCM) + padLocal;
-
-		       /* int padLocal;
-
-		       padLocal = trklt.getPosition() ^ 0x80;
-		       if (padLocal & (1 << (o2::trd::constants::NBITSTRKLPOS - 1))) {
-			 padLocal = -((~(padLocal - 1)) & ((1 << o2::trd::constants::NBITSTRKLPOS) - 1));
-		       } else {
-			 padLocal = padLocal & ((1 << o2::trd::constants::NBITSTRKLPOS) - 1);
-		       }
-
-		       int mcmCol = (trklt.getMCM() % o2::trd::constants::NMCMROBINCOL) + o2::trd::constants::NMCMROBINCOL * (trklt.getROB() % 2);
-		       float colGlb = -65.f + mcmCol * ((float) o2::trd::constants::NCOLMCM) + padLocal * o2::trd::constants::GRANULARITYTRKLPOS + 144.f * sec + 72.f;
-		       int colInChamber = static_cast<int>(std::round(colGlb - 144.f * sec));*/
 		       
 		       for(int iDigit=trigger.getFirstDigit()+1;iDigit<trigger.getFirstDigit()+trigger.getNumberOfDigits() -1 ;++iDigit)
 
 			 {
-			   // printf("haa! We reached to digits..Looping over digits................ %i \n",iDigit);
 			   const auto &digit=digits[iDigit];
 			   const auto &digitBefore=digits[iDigit -1];
 			   const auto &digitAfter=digits[iDigit +1];
@@ -238,25 +224,11 @@ void PulseHeightTrackMatch::monitorData(o2::framework::ProcessingContext& ctx)
 			   auto [det2, row2, col2] = ba;
 			   auto [det3, row3, col3] = ca;
 			   
-			   // printf("Checking for the detectors det1(%i), det2(%i), det3(%i) \n",det1,det2,det3);
-			   // printf("Checking for the rows row1(%i), row2(%i), row3(%i) \n",row1,row2,row3);
-			   // printf("Checking for the columnss column1(%i), column2(%i), column3(%i) \n",col1,col2,col3);
-
-			   // printf("--------------------------------------------------------------\n");
-			   
-			   //  printf("Tracklet Info--->Det %i, Row %i, Col %i \n",det,row,colInChamber);
-			   //  printf("Digit Info--->Det %i, Row %i, Col %i \n",det1,row1,col1);
-
-			   // int det1 = digit.getDetector();
-			   // int row1 = digit.getPadRow();
-			   //int col1 = digit.getPadCol();
-			   
 		       bool consecutive = false;
 		       bool digitmatch =false;
 
 		       if (det==det2 && row==row2){
-			 //printf("Detectors and rows matched for tracklets and tracks \n");
-			 //printf("Column for tracklet is %i and for digit is %i \n",colInChamber,col1);
+			 
 			 int coldif=col2-colInChamber;
 			 if(TMath::Abs(coldif) < 4)
 			      digitmatch = true;			     
@@ -266,20 +238,15 @@ void PulseHeightTrackMatch::monitorData(o2::framework::ProcessingContext& ctx)
 
 			   if(digitmatch && consecutive)
 			     {
-			       // printf("congrats........................detectors and rows for consecutive digits matched with the tracklets \n");
-			       // printf("Tracklet Info--->Det %i, Row %i, Col %i \n",det,row,colInChamber);
-			       // printf("Digit Info--->Det %i, Row %i, Col %i \n",det1,row1,col1);
-			    
-			       // if(colInChamber==col2 || colInChamber==col2+1 || colInChamber==col2-1 ){
-				 // printf("congrats............columns for digits matched with the tracklets \n");
-			       //matchingDigit=true;
-			       //  const auto &digit_matched=digits[iDigit];
+			      
+			int phVal=0;
 
-			        for (int iTb = 0; iTb <o2::trd::constants::TIMEBINS; ++iTb)
-		      {
-			mPulseHeightpro->Fill(iTb, digitBefore.getADC()[iTb] + digit.getADC()[iTb] + digitAfter.getADC()[iTb]);
-			//mPulseHeightpro->Fill(iTb,  digit.getADC()[iTb]);
-		      }
+			for (int iTb = 0; iTb <o2::trd::constants::TIMEBINS; ++iTb)
+			  {
+			    phVal = digitBefore.getADC()[iTb] + digit.getADC()[iTb] + digitAfter.getADC()[iTb];
+			    mPulseHeightpro->Fill(iTb, phVal);
+			    mPulseHeightperchamber->Fill(iTb, det1, phVal);
+			  }
 		   
 
 			     }
@@ -290,17 +257,17 @@ void PulseHeightTrackMatch::monitorData(o2::framework::ProcessingContext& ctx)
 	     }
 	     
 	   }
-	 if(nTotalTrigger>100)
-	   {
-	     mTriggerPerTF->Fill(99);
-	     mTriggerWoDigitPerTF->Fill(99);
-	   }
-	 else
-	   {
-	     mTriggerPerTF->Fill(nTotalTrigger);
-	     mTriggerWoDigitPerTF->Fill(nTrgWoDigits);
-	   }
-	 mTriggerWDigitPerTF->Fill(nTrgWDigits);
+	 if(nTotalTrigger>1000) mTriggerPerTF->Fill(999);
+	 else mTriggerPerTF->Fill(nTotalTrigger);
+	 
+	 if(nTrgWDigits>10)mTriggerWDigitPerTF->Fill(9);
+	 else mTriggerWDigitPerTF->Fill(nTrgWDigits);
+
+	  std::chrono::duration<double, std::micro> parsingtimeTF = std::chrono::high_resolution_clock::now() - crustart;
+	  auto t1= (double)std::chrono::duration_cast<std::chrono::microseconds>(parsingtimeTF).count();
+	  if(t1>100000) mParsingTimePerTF->Fill(99999);
+	  else mParsingTimePerTF->Fill(t1);
+
   }
 }
   
@@ -322,14 +289,15 @@ void PulseHeightTrackMatch::reset()
   mDigitsPerEvent->Reset();
   mTriggerPerTF->Reset();
   mTriggerWDigitPerTF->Reset();
-  mTriggerWoDigitPerTF->Reset();
+  mParsingTimePerTF->Reset();
   
   mDigitsPerEvent.get()->Reset();
   mTriggerPerTF.get()->Reset();
   mTriggerWDigitPerTF.get()->Reset();
-  mTriggerWoDigitPerTF.get()->Reset();
   mTracksPerEvent.get()->Reset();
   mPulseHeightpro.get()->Reset();
+  mPulseHeightperchamber.get()->Reset();
+  mParsingTimePerTF.get()->Reset();
 }
 } // namespace o2::quality_control_modules::trd
 

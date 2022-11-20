@@ -73,17 +73,14 @@ class PulseHeightTrackMatch final : public TaskInterface
   std::pair<float, float> mDriftRegion;
   std::pair<float, float> mPulseHeightPeakRegion;
   long int mTimestamp;
-  
+   std::shared_ptr<TH1F> mParsingTimePerTF;
    std::shared_ptr<TH1F> mDigitsPerEvent;
-   std::shared_ptr<TH1F> mMatchedDigitsPerEvent;
    std::shared_ptr<TH1F> mTrackletsPerEvent;
-   std::shared_ptr<TH1F> mMatchedTrackletsPerEvent;
    std::shared_ptr<TH1F> mTracksPerEvent;
    std::shared_ptr<TH1F> mTriggerPerTF;
    std::shared_ptr<TH1F> mTriggerWDigitPerTF;
-   std::shared_ptr<TH1F> mTriggerWoDigitPerTF;
    std::shared_ptr<TProfile> mPulseHeightpro = nullptr;
-  //  std::array<std::shared_ptr<TH1F>, 540> mPulseHeightPerChamber_1D; // ph2DSM;
+   std::shared_ptr<TProfile2D> mPulseHeightperchamber = nullptr;
    std::vector<TH2F*> mLayers;
   
  
