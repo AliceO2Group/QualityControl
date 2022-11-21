@@ -70,6 +70,13 @@ void CalibQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     }
   }
 
+  if (auto param = mCustomParameters.find("L1phase"); param != mCustomParameters.end()) {
+    ILOG(Info, Support) << "Working in L1phase mode" << AliceO2::InfoLogger::InfoLogger::endm;
+    if (param->second.find("on") != std::string::npos) {
+      mMode = 3;
+    }
+  }
+
   ILOG(Info, Support) << "==============Prepare Histos===============" << AliceO2::InfoLogger::InfoLogger::endm;
   // Prepare histograms
   if (mMode == 1) { // Pedestals
@@ -135,6 +142,20 @@ void CalibQcTask::initialize(o2::framework::InitContext& /*ctx*/)
         mHist2D[kChangeHGM1 + mod]->Reset();
       }
     }
+  }                 // BadMap
+  if (mMode == 3) { // L1phase
+    if (!mHist2D[kL1phase]) {
+      mHist2D[kL1phase] = new TH2F("L1phase", "Time vs DDL", 14, 0., 14., 100, -200.e-9, 200.e-9);
+      mHist2D[kL1phase]->GetXaxis()->SetNdivisions(508, kFALSE);
+      mHist2D[kL1phase]->GetYaxis()->SetNdivisions(514, kFALSE);
+      mHist2D[kL1phase]->GetXaxis()->SetTitle("DDL");
+      mHist2D[kL1phase]->GetYaxis()->SetTitle("t (s)");
+      mHist2D[kL1phase]->SetDrawOption("colz");
+      mHist2D[kL1phase]->SetStats(0);
+      getObjectsManager()->startPublishing(mHist2D[kL1phase]);
+    } else {
+      mHist2D[kL1phase]->Reset();
+    }
   } // BadMap
   ILOG(Info, Support) << " CalibQcTask histos ready " << AliceO2::InfoLogger::InfoLogger::endm;
 }
@@ -174,6 +195,14 @@ void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
         mHist2D[kChangeHGM1 + relid[0] - 1]->SetBinContent(relid[1], relid[2], diff[absId]);
       }
     } // LED, bad map
+    else {
+      if (mMode == 3) { // L1phase
+        auto vec = ctx.inputs().get<gsl::span<unsigned int>>("l1phase");
+        for (short it = 0; it < vec.size(); it++) {
+          mHist2D[kL1phase]->SetBinContent(it / 100 + 1, it % 100 + 1, float(vec[it]));
+        }
+      }
+    }
   }
 } // function monitor data
 
