@@ -215,7 +215,7 @@ void TestbeamRawTask::initialize(o2::framework::InitContext& /*ctx*/)
       mPadASICChannelTOA[iasic]->SetStats(false);
       mPadASICChannelTOT[iasic] = new TH2D(Form("PadTOT_ASIC_%d", iasic), Form("TOT vs. channel ID for ASIC %d; channel ID; TOT", iasic), PAD_CHANNELS, -0.5, PAD_CHANNELS - 0.5, RANGE_TOT / 4, 0., RANGE_TOT);
       mPadASICChannelTOT[iasic]->SetStats(false);
-      mHitMapPadASIC[iasic] = new TProfile2D(Form("HitmapPadASIC_%d", iasic), Form("Hitmap for ASIC %d; col; row", iasic), PadMapper::NCOLUMN, -0.5, PadMapper::NCOLUMN - 0.5, PadMapper::NROW, -0.5, PadMapper::NROW - 0.5);
+      mHitMapPadASIC[iasic] = new TProfile2D(Form("HitmapPadASIC_%d", iasic), Form("Hitmap for ASIC %d; col; row", iasic), o2::focal::PadMapper::NCOLUMN, -0.5, o2::focal::PadMapper::NCOLUMN - 0.5, o2::focal::PadMapper::NROW, -0.5, o2::focal::PadMapper::NROW - 0.5);
       mHitMapPadASIC[iasic]->SetStats(false);
       getObjectsManager()->startPublishing(mPadASICChannelADC[iasic]);
       getObjectsManager()->startPublishing(mPadASICChannelTOA[iasic]);

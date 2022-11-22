@@ -25,7 +25,7 @@
 #include "ITSMFTReconstruction/GBTWord.h"
 #include "FOCALReconstruction/PadWord.h"
 #include "FOCALReconstruction/PadDecoder.h"
-#include "FOCAL/PadMapper.h"
+#include "FOCALReconstruction/PadMapper.h"
 #include "FOCAL/PixelDecoder.h"
 #include "FOCAL/PixelMapper.h"
 
@@ -83,7 +83,7 @@ class TestbeamRawTask final : public TaskInterface
   std::pair<int, int> getPixelSegment(const PixelHit& hit, PixelMapper::MappingType_t mappingtype, const PixelMapping::ChipPosition& chipMapping) const;
 
   o2::focal::PadDecoder mPadDecoder;                                              ///< Decoder for pad data
-  PadMapper mPadMapper;                                                           ///< Mapping for Pads
+  o2::focal::PadMapper mPadMapper;                                                ///< Mapping for Pads
   PixelDecoder mPixelDecoder;                                                     ///< Decoder for pixel data
   std::unique_ptr<PixelMapper> mPixelMapper;                                      ///< Testbeam mapping for pixels
   std::unordered_map<o2::InteractionRecord, int> mPixelNHitsAll;                  ///< Number of hits / event all layers
