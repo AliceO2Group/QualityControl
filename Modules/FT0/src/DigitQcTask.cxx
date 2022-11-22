@@ -151,6 +151,12 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mMapDigitTrgNames.insert({ o2::fit::Triggers::bitOutputsAreBlocked, "OutputsAreBlocked" });
   mMapDigitTrgNames.insert({ o2::fit::Triggers::bitDataIsValid, "DataIsValid" });
 
+  mMapTrgSoftware.insert({ o2::fit::Triggers::bitA, false });
+  mMapTrgSoftware.insert({ o2::fit::Triggers::bitC, false });
+  mMapTrgSoftware.insert({ o2::fit::Triggers::bitVertex, false });
+  mMapTrgSoftware.insert({ o2::fit::Triggers::bitCen, false });
+  mMapTrgSoftware.insert({ o2::fit::Triggers::bitSCen, false });
+
   mTrgModeThresholdVar = getModeParameter("trgModeThresholdVar",
                                           TrgModeThresholdVar::kAmpl,
                                           { { TrgModeThresholdVar::kAmpl, "Ampl" },
