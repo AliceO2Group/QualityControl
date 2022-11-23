@@ -62,8 +62,6 @@ class ITSDecodingErrorTask final : public TaskInterface
   const int ChipBoundary[NLayer + 1] = { 0, 108, 252, 432, 3120, 6480, 14712, 24120 };
   static constexpr int NFees = 48 * 3 + 144 * 2;
 
-  int*** mChipErrorCount;
-
   TH1D* mChipErrorPlots;
   TH1D* mLinkErrorPlots;
   TH2D* mChipErrorVsChipid[7]; // chip ErrorVsChipid

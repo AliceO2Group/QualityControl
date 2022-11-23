@@ -37,13 +37,8 @@ ITSDecodingErrorTask::~ITSDecodingErrorTask()
   delete mLinkErrorVsFeeid;
   delete mChipErrorVsFeeid;
   for (int ilayer = 0; ilayer < 7; ilayer++) {
-    delete[] mChipErrorCount[ilayer];
     delete mChipErrorVsChipid[ilayer];
-    for (int ichip = 0; ichip < ChipBoundary[ilayer + 1] - ChipBoundary[ilayer]; ichip++) {
-      delete[] mChipErrorCount[ilayer][ichip];
-    }
   }
-  delete[] mChipErrorCount;
 }
 
 void ITSDecodingErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -52,17 +47,6 @@ void ITSDecodingErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
   getParameters();
   createDecodingPlots();
   setPlotsFormat();
-
-  mChipErrorCount = new int**[7];
-  for (int ilayer = 0; ilayer < 7; ilayer++) {
-    mChipErrorCount[ilayer] = new int*[ChipBoundary[ilayer + 1] - ChipBoundary[ilayer]];
-    for (int ichip = 0; ichip < ChipBoundary[ilayer + 1] - ChipBoundary[ilayer]; ichip++) {
-      mChipErrorCount[ilayer][ichip] = new int[o2::itsmft::ChipStat::NErrorsDefined];
-      for (int ierror = 0; ierror < o2::itsmft::ChipStat::NErrorsDefined; ierror++) {
-        mChipErrorCount[ilayer][ichip][ierror] = 0;
-      }
-    }
-  }
 }
 
 void ITSDecodingErrorTask::createDecodingPlots()
@@ -169,7 +153,7 @@ void ITSDecodingErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
           continue;
         }
         mChipErrorVsFeeid->Fill(ifee + 1, ierror + 1);
-        mChipErrorCount[ilayer][ichip][ierror]++;
+        mChipErrorVsChipid[ilayer]->Fill(ichip + 1, ierror + 1);
       }
     }
   }
@@ -180,14 +164,6 @@ void ITSDecodingErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
   for (int ierror = 0; ierror < o2::itsmft::ChipStat::NErrorsDefined; ierror++) {
     int feeChipError = mChipErrorVsFeeid->Integral(1, mChipErrorVsFeeid->GetXaxis()->GetNbins(), ierror + 1, ierror + 1);
     mChipErrorPlots->SetBinContent(ierror + 1, feeChipError);
-  }
-
-  for (int ilayer = 0; ilayer < 7; ilayer++) {
-    for (int ichip = 0; ichip < ChipBoundary[ilayer + 1] - ChipBoundary[ilayer]; ichip++) {
-      for (int ierror = 0; ierror < o2::itsmft::ChipStat::NErrorsDefined; ierror++) {
-        mChipErrorVsChipid[ilayer]->SetBinContent(ichip + 1, ierror + 1, mChipErrorCount[ilayer][ichip][ierror]);
-      }
-    }
   }
 
   end = std::chrono::high_resolution_clock::now();
@@ -230,13 +206,6 @@ void ITSDecodingErrorTask::resetGeneralPlots()
 void ITSDecodingErrorTask::reset()
 {
   resetGeneralPlots();
-  for (int ilayer = 0; ilayer < 7; ilayer++) {
-    for (int ichip = 0; ichip < ChipBoundary[ilayer + 1] - ChipBoundary[ilayer]; ichip++) {
-      for (int ierror = 0; ierror < o2::itsmft::ChipStat::NErrorsDefined; ierror++) {
-        mChipErrorCount[ilayer][ichip][ierror] = 0;
-      }
-    }
-  }
   ILOG(Info, Support) << "Reset" << ENDM;
 }
 

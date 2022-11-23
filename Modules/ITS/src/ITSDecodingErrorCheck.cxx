@@ -43,8 +43,6 @@ Quality ITSDecodingErrorCheck::check(std::map<std::string, std::shared_ptr<Monit
   return result;
 }
 
-std::string ITSDecodingErrorCheck::getAcceptedType() { return "TH1"; }
-
 void ITSDecodingErrorCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   TString status;
@@ -65,20 +63,6 @@ void ITSDecodingErrorCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality 
     tInfo->SetNDC();
     h->GetListOfFunctions()->Add(tInfo->Clone());
   }
-}
-
-std::vector<int> ITSDecodingErrorCheck::convertToIntArray(std::string input)
-{
-  std::replace(input.begin(), input.end(), ',', ' ');
-  std::istringstream stringReader{ input };
-
-  std::vector<int> result;
-  int number;
-  while (stringReader >> number) {
-    result.push_back(number);
-  }
-
-  return result;
 }
 
 } // namespace o2::quality_control_modules::its

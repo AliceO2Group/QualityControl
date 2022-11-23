@@ -18,7 +18,6 @@
 #define QC_MODULE_ITS_ITSDECODINGERRORCHECK_H
 
 #include "QualityControl/CheckInterface.h"
-#include <TH2Poly.h>
 #include <TLatex.h>
 #include <string>
 #include <vector>
@@ -41,8 +40,6 @@ class ITSDecodingErrorCheck : public o2::quality_control::checker::CheckInterfac
   // Override interface
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
-  std::string getAcceptedType() override;
-  std::vector<int> convertToIntArray(std::string input);
 
  private:
   ClassDefOverride(ITSDecodingErrorCheck, 1);
