@@ -104,6 +104,7 @@ class DigitQcTask final : public TaskInterface
   void rebinFromConfig();
   unsigned int getModeParameter(std::string, unsigned int, std::map<unsigned int, std::string>);
   int getNumericalParameter(std::string, int);
+  bool chIsVertexEvent(const o2::fv0::ChannelData);
 
   TList* mListHistGarbage;
   std::set<unsigned int> mSetAllowedChIDs;
@@ -111,6 +112,7 @@ class DigitQcTask final : public TaskInterface
   std::array<o2::InteractionRecord, sNCHANNELS_FV0_PLUSREF> mStateLastIR2Ch;
   std::array<uint8_t, sNCHANNELS_FV0_PLUSREF> mChID2PMhash; // map chID->hashed PM value
   uint8_t mTCMhash;                                         // hash value for TCM, and bin position in hist
+  std::map<uint8_t, bool> mMapPMhash2isInner;
   std::map<int, std::string> mMapDigitTrgNames;
   std::map<o2::fv0::ChannelData::EEventDataBit, std::string> mMapChTrgNames;
   std::unique_ptr<TH1F> mHistNumADC;
@@ -136,6 +138,9 @@ class DigitQcTask final : public TaskInterface
   int mTrgThresholdNChannels;
   int mTrgThresholdNChannelsOuter;
   int mTrgThresholdNChannelsInner;
+  int mTrgChargeLevelLow;
+  int mTrgChargeLevelHigh;
+  int mTrgOrGate;
 
   // Objects which will be published
   std::unique_ptr<TH2F> mHistAmp2Ch;
@@ -165,6 +170,9 @@ class DigitQcTask final : public TaskInterface
   std::unique_ptr<TH2F> mHistBCvsFEEmodules;
   std::unique_ptr<TH2F> mHistOrbitVsTrg;
   std::unique_ptr<TH2F> mHistOrbitVsFEEmodules;
+  std::unique_ptr<TH2F> mHistPmTcmNchA;
+  std::unique_ptr<TH2F> mHistPmTcmSumAmpA;
+  std::unique_ptr<TH2F> mHistPmTcmAverageTimeA;
   std::unique_ptr<TH1F> mHistTriggersSw;
   std::unique_ptr<TH2F> mHistTriggersSoftwareVsTCM;
 
