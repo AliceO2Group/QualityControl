@@ -136,6 +136,15 @@ void IDCs::initialize(Trigger, framework::ServiceRegistryRef)
 
 void IDCs::update(Trigger, framework::ServiceRegistryRef)
 {
+  mIDCZeroRadialProf.get()->Clear();
+  mIDCZeroStacksA.get()->Clear();
+  mIDCZeroStacksC.get()->Clear();
+  mIDCDeltaStacksA.get()->Clear();
+  mIDCDeltaStacksC.get()->Clear();
+  mIDCOneSides1D.get()->Clear();
+  mFourierCoeffsA.get()->Clear();
+  mFourierCoeffsC.get()->Clear();
+
   auto idcZeroA = mCdbApi.retrieveFromTFileAny<IDCZero>(CDBTypeMap.at(CDBType::CalIDC0A), std::map<std::string, std::string>{}, mTimestamps["IDCZero"]);
   auto idcZeroC = mCdbApi.retrieveFromTFileAny<IDCZero>(CDBTypeMap.at(CDBType::CalIDC0C), std::map<std::string, std::string>{}, mTimestamps["IDCZero"]);
   auto idcDeltaA = mCdbApi.retrieveFromTFileAny<IDCDelta<unsigned char>>(CDBTypeMap.at(CDBType::CalIDCDeltaA), std::map<std::string, std::string>{}, mTimestamps["IDCDelta"]);
