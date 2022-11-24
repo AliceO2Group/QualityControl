@@ -337,7 +337,7 @@ void ITSTrackTask::createAllHistos()
   formatAxes(hTrackPhi, "#phi", "Counts / n_vertices", 1, 1.10);
   hTrackPhi->SetStats(0);
 
-  hVerticesRof = new TH1D("VerticesRof", "VerticesRof", 51, -0.5, 50.5);
+  hVerticesRof = new TH1D("VerticesRof", "VerticesRof", 101, -0.5, 100.5);
   hVerticesRof->SetTitle("Distribution n_vertices / ROF");
   addObject(hVerticesRof);
   formatAxes(hVerticesRof, "vertices / ROF", "Counts", 1, 1.10);
@@ -359,7 +359,7 @@ void ITSTrackTask::createAllHistos()
   formatAxes(hVertexZ, "Z coordinate (cm)", "counts", 1, 1.10);
   hVertexZ->SetStats(0);
 
-  hVertexContributors = new TH1D("NVertexContributors", "NVertexContributors", 100, 0, 100);
+  hVertexContributors = new TH1D("NVertexContributors", "NVertexContributors", 500, 0, 500);
   hVertexContributors->SetTitle("NVertexContributors");
   addObject(hVertexContributors);
   formatAxes(hVertexContributors, "Number of contributors for vertex", "Counts", 1, 1.10);
