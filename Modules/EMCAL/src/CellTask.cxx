@@ -377,6 +377,10 @@ void CellTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
 
     auto bcphase = trg.mInteractionRecord.bc % 4; // to be fixed:4 histos for EMCAL, 4 histos for DCAL
+    // force BC phase for LED triggers to be 0
+    if (isCalibTrigger) {
+      bcphase = 0;
+    }
     auto histos = mHistogramContainer[trgClass];
     std::fill(numCellsSM.begin(), numCellsSM.end(), 0);
     std::fill(numCellsSM_Thres.begin(), numCellsSM_Thres.end(), 0);
