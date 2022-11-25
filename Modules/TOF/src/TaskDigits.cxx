@@ -34,6 +34,7 @@
 #include "DataFormatsTOF/Diagnostic.h"
 #include "CCDB/BasicCCDBManager.h"
 #include "Framework/TimingInfo.h"
+#include "DetectorsBase/GeometryManager.h"
 
 // Fairlogger includes
 #include <fairlogger/Logger.h>
@@ -64,6 +65,8 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   utils::parseIntParameter(mCustomParameters, "NbinsToT", mBinsToT);
   utils::parseFloatParameter(mCustomParameters, "RangeMinTime", mRangeMinToT);
   utils::parseFloatParameter(mCustomParameters, "RangeMaxTime", mRangeMaxToT);
+
+  o2::base::GeometryManager::loadGeometry();
 
   if (utils::parseIntParameter(mCustomParameters, "NoiseClassSelection", mNoiseClassSelection)) {
     if (mNoiseClassSelection < -1 || mNoiseClassSelection >= nNoiseClasses) {
@@ -343,11 +346,15 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
       int chainECH = o2::tof::Geo::getChainFromECH(ech);
       int tdcECH = o2::tof::Geo::getTDCFromECH(ech);
       int bcCorrCable = bcCorr;
+      float pos[3];
+      o2::tof::Geo::getPos(det, pos);
+      float length = sqrt(pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2]);
 
       if (mCalChannel) {                                                              // calibration
         float timeTDCcorr = digit.getTDC() * o2::tof::Geo::TDCBIN;                    // in ps
-        timeTDCcorr -= mCalChannel->evalTimeSlewing(digit.getChannel(), 0.0) + 10000; // subtract also 10 ns to take partially into account the time of flight
+        timeTDCcorr -= mCalChannel->evalTimeSlewing(digit.getChannel(), 0.0);
         timeTDCcorr -= mLHCphase->getLHCphase(0);
+        timeTDCcorr -= length * 33.356410 - 1000; // subract path (1ns margin)
         bcCorrCable += int(timeTDCcorr * o2::tof::Geo::BC_TIME_INPS_INV);
       } else {
         bcCorrCable -= (o2::tof::Geo::getCableTimeShiftBin(crateECH, slotECH, chainECH, tdcECH) - digit.getTDC()) / 1024; // just cable length
