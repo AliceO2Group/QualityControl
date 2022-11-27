@@ -54,9 +54,12 @@ struct MyTrack {
   float tofExpSignalPi() const { return match.getLTIntegralOut().getTOF(2); }
   float tofExpSignalKa() const { return match.getLTIntegralOut().getTOF(3); }
   float tofExpSignalPr() const { return match.getLTIntegralOut().getTOF(4); }
-  float tofExpSigmaPi() const { return 120; } // FIX ME
-  float tofExpSigmaKa() const { return 120; } // FIX ME
-  float tofExpSigmaPr() const { return 120; } // FIX ME
+  float tofExpSigmaPi() const { return sigmaexp[0]; } // FIX ME
+  float tofExpSigmaKa() const { return sigmaexp[1]; } // FIX ME
+  float tofExpSigmaPr() const { return sigmaexp[2]; } // FIX ME
+  void setSigmaPi(float val) { sigmaexp[0] = val; }
+  void setSigmaKa(float val) { sigmaexp[1] = val; }
+  void setSigmaPr(float val) { sigmaexp[2] = val; }
   float getEta() const { return trk.getEta(); }
   float getP() const { return p; }
   float getPt() const { return pt; }
@@ -72,6 +75,7 @@ struct MyTrack {
   const o2::tpc::TrackTPC& getTrack() { return trk; }
   float p = 0.;
   float pt = 0.;
+  float sigmaexp[3] = { 200., 250., 300. };
 };
 
 class TaskFT0TOF final : public TaskInterface
