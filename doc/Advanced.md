@@ -637,6 +637,13 @@ The address of the CCDB will have to be updated in the Tasks config file.
 
 At the moment, the description of the REST api can be found in this document : https://docs.google.com/presentation/d/1PJ0CVW7QHgnFzi0LELc06V82LFGPgmG3vsmmuurPnUg
 
+## Instructions to move an object in the QCDB
+
+The script `o2-qc-repo-move-objects` lets the user move an object, and thus all the versions attached to it. E.g.:
+```
+python3 o2-qc-repo-move-objects --url http://ccdb-test.cern.ch:8080 --path qc/TST/MO/Bob --new-path qc/TST/MO/Bob2 --log-level 10 
+```
+
 # QCG
 
 ## Display a non-standard ROOT object in QCG
