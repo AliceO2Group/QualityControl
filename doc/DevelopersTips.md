@@ -373,3 +373,24 @@ o2-qc --config json://${JSON_DIR}/multinode-test.json -b --remote --run
   
 =======
 ```
+
+## Collect statistics about versions published by detectors
+
+On the QCDB, become `postgres` and launch `psql`. 
+
+To get the number of objects in a given run :
+```
+select count(distinct pathid) from ccdb where ccdb.metadata -> '1048595860' = '529439';
+```
+
+(1048595860 is the metadata id for RunNumber obtained with `select metadataid from ccdb_metadata where metadatakey = 'RunNumber';`)
+
+Metadata:
+
+- RunNumber=1048595860
+- qc_detector_name=1337188343
+
+query to see for a given run the number of objects per detector:
+```
+select ccdb.metadata -> '1337188343' as detector, count(distinct path), SUM(COUNT(distinct path)) from ccdb, ccdb_paths where ccdb_paths.pathid = ccdb.pathid AND ccdb.metadata -> '1048595860' = '529439' group by detector;
+```
