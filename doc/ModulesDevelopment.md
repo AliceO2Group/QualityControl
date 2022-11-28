@@ -423,7 +423,7 @@ We apply a naming convention for Task, Check and Aggregator names, i.e. how they
 - do not add "QC", it is obvious it is QC
 - do not add "Task" or "Check", process names are marked as such and corresponding objects go to "MO" and "QO" directories
 - do not add "sync", "async" or "mc", it is obvious from the context we run QC and we use a correct path prefix in QCDB
-- ideally use 16 characters, which is the limit of data description in DPL.
+- ideally use less than 16 characters, which is the limit of data description in DPL.
 
 Good name examples are "Tracks", "Clusters", "PID", "Cells".
 In case that a QC config file include multiple detectors, possibly with the same task names, one can add the `taskName` parameter in the body of a task configuration structure to use the preferred name and change the root key to a unique id, which shall be used only for the purpose of navigating a configuration file.
