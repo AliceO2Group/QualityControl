@@ -68,6 +68,8 @@ TOFMatchedTracks::~TOFMatchedTracks()
   }
   for (int isec = 0; isec < 18; isec++) {
     delete mDTimeTrk[isec];
+    delete mDTimeTrkTPC[isec];
+    delete mDTimeTrkTRD[isec];
   }
 }
 
@@ -162,8 +164,16 @@ void TOFMatchedTracks::initialize(o2::framework::InitContext& /*ctx*/)
   }
 
   for (int isec = 0; isec < 18; isec++) {
-    mDTimeTrk[isec] = new TH2F(Form("DTimeTrk_sec%02d", isec), Form("Sector %d: ITS-TPC track-tof #Deltat vs #eta; #eta; #Deltat (# BC)", isec), 100, -1.0f, 1.0f, 1000, -50, 50);
+    mDTimeTrk[isec] = new TH2F(Form("DTimeTrk_sec%02d", isec), Form("Sector %d: ITS-TPC track-tof #Deltat vs #eta; #eta; #Deltat (# BC)", isec), 100, -1.0f, 1.0f, 2000, -200, 200);
     getObjectsManager()->startPublishing(mDTimeTrk[isec]);
+    mDTimeTrkTPC[isec] = new TH2F(Form("DTimeTrkTPC_sec%02d", isec), Form("Sector %d: TPC track-tof #Deltat vs #eta; #eta; #Deltat (# BC)", isec), 100, -1.0f, 1.0f, 2000, -200, 200);
+    if ((mSrc & o2::dataformats::GlobalTrackID::getSourcesMask("TPC")).any()) {
+      getObjectsManager()->startPublishing(mDTimeTrkTPC[isec]);
+    }
+    mDTimeTrkTRD[isec] = new TH2F(Form("DTimeTrkTRD_sec%02d", isec), Form("Sector %d: ITS-TPC-TRD track-tof #Deltat vs #eta; #eta; #Deltat (# BC)", isec), 100, -1.0f, 1.0f, 200, -5, 5);
+    if ((mSrc & o2::dataformats::GlobalTrackID::getSourcesMask("ITS-TPC-TRD")).any()) {
+      getObjectsManager()->startPublishing(mDTimeTrkTRD[isec]);
+    }
   }
 
   // initialize B field and geometry for track selection
@@ -298,6 +308,17 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
       mDeltaXEta[matchType::TPC]->Fill(trk.getEta(), trkDx);
       mDeltaXPhi[matchType::TPC]->Fill(trk.getPhi(), trkDx);
       mTOFChi2[matchType::TPC]->Fill(trkchi2);
+
+      if (trk.getPt() > 1.0) {
+        const double bcTimeInvInMus = o2::tof::Geo::BC_TIME_INV * 1E3;
+        float deltaTrackTimeInBC = -matchTOF.getDeltaT() * bcTimeInvInMus; // track time - tof time in number of BC
+        auto& tofCl = tofClusArray[matchTOF.getTOFClIndex()];
+        int isec = tofCl.getMainContributingChannel() / 8736;
+        if (isec >= 0 && isec < 18) {
+          mDTimeTrkTPC[isec]->Fill(trk.getEta(), deltaTrackTimeInBC);
+        }
+      }
+
       if (mUseMC) {
         auto lbl = mRecoCont.getTrackMCLabel(gTrackId);
         if (lbl.isFake()) {
@@ -423,6 +444,17 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
       mDeltaXEta[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getEta(), trkDx);
       mDeltaXPhi[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getPhi(), trkDx);
       mTOFChi2[matchType::ITSTPC_ITSTPCTRD]->Fill(trkchi2);
+
+      if (trkTPC.getPt() > 1.0) {
+        const double bcTimeInvInMus = o2::tof::Geo::BC_TIME_INV * 1E3;
+        float deltaTrackTimeInBC = -matchTOF.getDeltaT() * bcTimeInvInMus; // track time - tof time in number of BC
+        auto& tofCl = tofClusArray[matchTOF.getTOFClIndex()];
+        int isec = tofCl.getMainContributingChannel() / 8736;
+        if (isec >= 0 && isec < 18) {
+          mDTimeTrkTRD[isec]->Fill(trkTPC.getEta(), deltaTrackTimeInBC);
+        }
+      }
+
       if (mUseMC) {
         auto lbl = mRecoCont.getTrackMCLabel(gTrackId);
         if (lbl.isFake()) {
@@ -701,6 +733,8 @@ void TOFMatchedTracks::reset()
 
   for (int isec = 0; isec < 18; isec++) {
     mDTimeTrk[isec]->Reset();
+    mDTimeTrkTPC[isec]->Reset();
+    mDTimeTrkTRD[isec]->Reset();
   }
 }
 
