@@ -32,6 +32,7 @@
 
 #include <gsl/span>
 
+#include "CommonConstants/Triggers.h"
 #include "DataFormatsEMCAL/Digit.h"
 #include "DataFormatsEMCAL/Cluster.h"
 #include "DataFormatsEMCAL/TriggerRecord.h"
@@ -63,9 +64,15 @@ ClusterTask::~ClusterTask()
     }
   };
 
+  conditionalDelete(mHistCellEnergyTimeUsed);
+  conditionalDelete(mHistCellEnergyTimePhys);
+  conditionalDelete(mHistCellEnergyTimeCalib);
+
   conditionalDelete(mHistNclustPerTF);
   conditionalDelete(mHistNclustPerEvt);
   conditionalDelete(mHistClustEtaPhi);
+  conditionalDelete(mHistNclustPerTFSelected);
+  conditionalDelete(mHistNclustPerEvtSelected);
 
   conditionalDelete(mHistTime_EMCal);
   conditionalDelete(mHistClustE_EMCal);
@@ -87,6 +94,13 @@ ClusterTask::~ClusterTask()
   conditionalDelete(mHistMassDiphoton_DCAL);
   conditionalDelete(mHistMassDiphotonPt_EMCAL);
   conditionalDelete(mHistMassDiphotonPt_DCAL);
+
+  conditionalDelete(mHistNClustPerEvt_Calib);
+  conditionalDelete(mHistNClustPerEvtSelected_Calib);
+  conditionalDelete(mHistClusterEtaPhi_Calib);
+  conditionalDelete(mHistClusterEnergy_Calib);
+  conditionalDelete(mHistClusterEnergyTime_Calib);
+  conditionalDelete(mHistClusterEnergyCells_Calib);
 }
 
 void ClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -117,6 +131,13 @@ void ClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
     }
   }
 
+  if (hasConfigValue("fillControlHistograms")) {
+    mFillControlHistograms = get_bool(getConfigValueLower("fillControlHistograms"));
+    if (mFillControlHistograms) {
+      ILOG(Info, Support) << "Filling cell-level control histograms" << ENDM;
+    }
+  }
+
   if (hasConfigValue("hasInvMassMesons")) {
     mFillInvMassMeson = get_bool(getConfigValueLower("hasInvMassMesons"));
   }
@@ -143,6 +164,24 @@ void ClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   mHistClustEtaPhi = new TH2F("ClustEtaPhi", "Cluster #eta and #phi distribution;#eta;#phi", 100, -1.0, 1.0, 100, 0.0, 2 * TMath::Pi()); // svk
   getObjectsManager()->startPublishing(mHistClustEtaPhi);
+
+  mHistNclustPerTFSelected = new TH1F("NclustPerTFSel", "Number of selected clusters per time frame;N_{Cluster}/TF;", 2000, 0.0, 200000.0);
+  getObjectsManager()->startPublishing(mHistNclustPerTFSelected);
+
+  mHistNclustPerEvtSelected = new TH1F("NclustPerEvtSel", "Number of clusters per event;N_{Cluster}/Event;", 200, 0.0, 200.0);
+  getObjectsManager()->startPublishing(mHistNclustPerEvtSelected);
+
+  ///////////////////
+  // Control histograms (optional)
+  ///////////////////
+  if (mFillControlHistograms) {
+    mHistCellEnergyTimeUsed = new TH2D("CellEnergyTimeUsedAll", "Cell energy vs time (all cells for clustering); E_{cell} (GeV); t_{cell} (ns)", 500, 0, 50, 1800, -900, 900);
+    getObjectsManager()->startPublishing(mHistCellEnergyTimeUsed);
+    mHistCellEnergyTimePhys = new TH2D("CellEnergyTimeUsedPhys", "Cell energy vs time (all cells for clustering, phys events); E_{cell} (GeV); t_{cell} (ns)", 500, 0, 50, 1800, -900, 900);
+    getObjectsManager()->startPublishing(mHistCellEnergyTimePhys);
+    mHistCellEnergyTimeCalib = new TH2D("CellEnergyTimeUsedCalib", "Cell energy vs time (all cells for clustering, calib events); E_{cell} (GeV); t_{cell} (ns)", 500, 0, 50, 1800, -900, 900);
+    getObjectsManager()->startPublishing(mHistCellEnergyTimeCalib);
+  }
 
   ///////////////////
   // EMCal histograms/
@@ -192,6 +231,32 @@ void ClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   mHistM20VsClustE__DCal = new TH2F("M20_Vs_ClustE_DCal", "M20 Vs Cluster Energy in DCal;Cluster E(GeV);M02", 500, 0, 50.0, 200, 0.0, 2.0); // svk
   getObjectsManager()->startPublishing(mHistM20VsClustE__DCal);
+
+  ///////////////////
+  // Calib trigger histograms//
+  ///////////////////
+
+  mHistNClustPerEvt_Calib = new TH1F("NclustPerEvt_Calib", "Number of clusters per calib event;N_{Cluster}/Event;", 4000, 0.0, 4000.0);
+  getObjectsManager()->startPublishing(mHistNClustPerEvt_Calib);
+
+  mHistNClustPerEvtSelected_Calib = new TH1F("NclustPerEvtSel_Calib", "Number of selected clusters per calib event;N_{Cluster}/Event;", 4000, 0.0, 4000.0);
+  getObjectsManager()->startPublishing(mHistNClustPerEvtSelected_Calib);
+
+  mHistClusterEtaPhi_Calib = new TH2D("ClustEtaPhi_LED", "Cluster #eta-#phi position in LED events; #eta; #phi", 100, -1.0, 1.0, 100, 0.0, 2 * TMath::Pi());
+  getObjectsManager()->startPublishing(mHistClusterEtaPhi_Calib);
+
+  mHistClusterEnergy_Calib = new TH1D("ClusterEnergy_LED", "Cluster energy in LED events; E_{cl} (GeV); dN/dE_{cl} (GeV^{-1})", 200, 0., 20.);
+  getObjectsManager()->startPublishing(mHistClusterEnergy_Calib);
+
+  mHistClusterEnergyTime_Calib = new TH2D("ClusterEnergyTime_LED", "Cluster energy vs. time in LED events; E_{cl} (GeV); t (ns)", 500, 0, 50, 1800, -900, 900);
+  getObjectsManager()->startPublishing(mHistClusterEnergyTime_Calib);
+
+  mHistClusterEnergyCells_Calib = new TH2D("CusterEnergyNcell_LED", "Cluster energy vs. ncell in LED events; E_{cl} (GeV); n_{cell}", 500, 0, 50, 100, 0, 100);
+  getObjectsManager()->startPublishing(mHistClusterEnergyCells_Calib);
+
+  ///////////////////
+  // Meson histograms//
+  ///////////////////
 
   if (mFillInvMassMeson) {
     mHistMassDiphoton_EMCAL = new TH1D("InvMassDiphoton_EMCAL", "Diphoton invariant mass for pairs in EMCAL; m_{#gamma#gamma} (GeV/c^{2}); Number of candidates", 400, 0., 0.8);
@@ -307,80 +372,73 @@ void ClusterTask::analyseTimeframe(const gsl::span<const o2::emcal::Cell>& cells
 {
 
   mEventHandler->reset();
-  mClusterFactory->reset();
+  // mClusterFactory->reset();
 
   mEventHandler->setClusterData(clusters, clusterIndices, clusterTriggerRecords, cellIndexTriggerRecords);
   mEventHandler->setCellData(cells, cellTriggerRecords);
 
   mHistNclustPerTF->Fill(clusters.size());
+  int nClustersTimeframeSelected = 0;
 
   for (int iev = 0; iev < mEventHandler->getNumberOfEvents(); iev++) {
     auto inputEvent = mEventHandler->buildEvent(iev);
+    auto trigger = inputEvent.mTriggerBits;
+    auto isCalibTrigger = (trigger & o2::trigger::Cal),
+         isPhysicsTrigger = (trigger & o2::trigger::PhT);
+    if (isCalibTrigger) {
+      mHistNClustPerEvt_Calib->Fill(inputEvent.mClusters.size());
+    }
+    if (isPhysicsTrigger) {
+      mHistNclustPerEvt->Fill(inputEvent.mClusters.size());
+    }
 
-    mHistNclustPerEvt->Fill(inputEvent.mClusters.size());
-
+    mClusterFactory->reset();
     mClusterFactory->setClustersContainer(inputEvent.mClusters);
     mClusterFactory->setCellsContainer(inputEvent.mCells);
     mClusterFactory->setCellsIndicesContainer(inputEvent.mCellIndices);
 
     std::vector<TLorentzVector> selclustersEMCAL, selclustersDCAL;
+    int nClustersEventSelected = 0;
     for (int icl = 0; icl < mClusterFactory->getNumberOfClusters(); icl++) {
 
       o2::emcal::AnalysisCluster analysisCluster = mClusterFactory->buildCluster(icl);
-
-      Double_t clustE = analysisCluster.E();
-      Double_t clustT = analysisCluster.getClusterTime(); // svk converted to ns adapted from Run2;
-
-      /////////////////////////////////
-      // Select EMCAL or DCAL clusters//
-      /////////////////////////////////
-      Bool_t clsTypeEMC;
-
-      math_utils::Point3D<float> emcx = analysisCluster.getGlobalPosition();
-
-      TVector3 clustpos(emcx.X(), emcx.Y(), emcx.Z());
-      Double_t emcphi = TVector2::Phi_0_2pi(clustpos.Phi());
-      Double_t emceta = clustpos.Eta();
-
-      mHistClustEtaPhi->Fill(emceta, emcphi); // svk
-
-      if (emcphi < 4.)
-        clsTypeEMC = kTRUE; // EMCAL : 80 < phi < 187
-      else
-        clsTypeEMC = kFALSE; // DCAL  : 260 < phi < 327
-
-      if (clsTypeEMC) {
-        mHistTime_EMCal->Fill(clustE, clustT); // svk
-        mHistClustE_EMCal->Fill(clustE);
-        mHistNCells_EMCal->Fill(clustE, analysisCluster.getNCells());
-        mHistM02_EMCal->Fill(analysisCluster.getM02());
-        mHistM20_EMCal->Fill(analysisCluster.getM20());
-        mHistM02VsClustE__EMCal->Fill(clustE, analysisCluster.getM02()); // svk
-        mHistM20VsClustE__EMCal->Fill(clustE, analysisCluster.getM20()); // svk
-      } else {
-        mHistTime_DCal->Fill(clustE, clustT); // svk
-        mHistClustE_DCal->Fill(clustE);
-        mHistNCells_DCal->Fill(clustE, analysisCluster.getNCells());
-        mHistM02_DCal->Fill(analysisCluster.getM02());
-        mHistM20_DCal->Fill(analysisCluster.getM20());
-        mHistM02VsClustE__DCal->Fill(clustE, analysisCluster.getM02()); // svk
-        mHistM20VsClustE__DCal->Fill(clustE, analysisCluster.getM20()); // svk
+      if (isPhysicsTrigger) {
+        if (analysisCluster.getIsExotic()) {
+          continue;
+        }
+        auto clsTypeEMC = fillClusterHistogramsPhysics(analysisCluster);
+        if (mFillInvMassMeson && mMesonClusterCuts.isSelected(analysisCluster)) {
+          auto clustervec = buildClusterVector(analysisCluster);
+          if (clsTypeEMC) {
+            selclustersEMCAL.push_back(clustervec);
+          } else {
+            selclustersDCAL.push_back(clustervec);
+          }
+        }
+        nClustersEventSelected++;
+        nClustersTimeframeSelected++;
       }
-      if (mFillInvMassMeson && mMesonClusterCuts.isSelected(analysisCluster)) {
-        auto clustervec = buildClusterVector(analysisCluster);
-        if (clsTypeEMC) {
-          selclustersEMCAL.push_back(clustervec);
-        } else {
-          selclustersDCAL.push_back(clustervec);
+      if (isCalibTrigger) {
+        if (!analysisCluster.getIsExotic()) {
+          fillClusterHistogramsLED(analysisCluster);
+          nClustersEventSelected++;
+          nClustersTimeframeSelected++;
         }
       }
 
     } // cls loop
-    if (mFillInvMassMeson) {
+    if (isPhysicsTrigger && mFillInvMassMeson) {
       buildAndAnalysePiOs(selclustersEMCAL, true);
       buildAndAnalysePiOs(selclustersDCAL, false);
     }
+    if (isPhysicsTrigger) {
+      mHistNclustPerEvtSelected->Fill(nClustersEventSelected);
+    }
+    if (isCalibTrigger) {
+      mHistNClustPerEvtSelected_Calib->Fill(nClustersEventSelected);
+    }
   } // event loop
+  mHistNclustPerTFSelected->Fill(nClustersTimeframeSelected);
 }
 
 void ClusterTask::buildAndAnalysePiOs(const gsl::span<const TLorentzVector> clustervectors, bool isEMCAL)
@@ -414,6 +472,62 @@ TLorentzVector ClusterTask::buildClusterVector(const o2::emcal::AnalysisCluster&
   return clustervec;
 }
 
+bool ClusterTask::fillClusterHistogramsPhysics(const o2::emcal::AnalysisCluster& cluster)
+{
+  Double_t clustE = cluster.E();
+  Double_t clustT = cluster.getClusterTime(); // svk converted to ns adapted from Run2;
+
+  /////////////////////////////////
+  // Select EMCAL or DCAL clusters//
+  /////////////////////////////////
+  Bool_t clsTypeEMC;
+
+  math_utils::Point3D<float> emcx = cluster.getGlobalPosition();
+
+  TVector3 clustpos(emcx.X(), emcx.Y(), emcx.Z());
+  Double_t emcphi = TVector2::Phi_0_2pi(clustpos.Phi());
+  Double_t emceta = clustpos.Eta();
+
+  mHistClustEtaPhi->Fill(emceta, emcphi); // svk
+
+  if (emcphi < 4.)
+    clsTypeEMC = kTRUE; // EMCAL : 80 < phi < 187
+  else
+    clsTypeEMC = kFALSE; // DCAL  : 260 < phi < 327
+
+  if (clsTypeEMC) {
+    mHistTime_EMCal->Fill(clustE, clustT); // svk
+    mHistClustE_EMCal->Fill(clustE);
+    mHistNCells_EMCal->Fill(clustE, cluster.getNCells());
+    mHistM02_EMCal->Fill(cluster.getM02());
+    mHistM20_EMCal->Fill(cluster.getM20());
+    mHistM02VsClustE__EMCal->Fill(clustE, cluster.getM02()); // svk
+    mHistM20VsClustE__EMCal->Fill(clustE, cluster.getM20()); // svk
+  } else {
+    mHistTime_DCal->Fill(clustE, clustT); // svk
+    mHistClustE_DCal->Fill(clustE);
+    mHistNCells_DCal->Fill(clustE, cluster.getNCells());
+    mHistM02_DCal->Fill(cluster.getM02());
+    mHistM20_DCal->Fill(cluster.getM20());
+    mHistM02VsClustE__DCal->Fill(clustE, cluster.getM02()); // svk
+    mHistM20VsClustE__DCal->Fill(clustE, cluster.getM20()); // svk
+  }
+  return clsTypeEMC;
+}
+
+void ClusterTask::fillClusterHistogramsLED(const o2::emcal::AnalysisCluster& cluster)
+{
+  math_utils::Point3D<float> emcx = cluster.getGlobalPosition();
+
+  TVector3 clustpos(emcx.X(), emcx.Y(), emcx.Z());
+  Double_t emcphi = TVector2::Phi_0_2pi(clustpos.Phi());
+  Double_t emceta = clustpos.Eta();
+  mHistClusterEnergy_Calib->Fill(cluster.E());
+  mHistClusterEtaPhi_Calib->Fill(emceta, emcphi);
+  mHistClusterEnergyTime_Calib->Fill(cluster.E(), cluster.getClusterTime());
+  mHistClusterEnergyCells_Calib->Fill(cluster.E(), cluster.getNCells());
+}
+
 //_____________________________  Internal clusteriser function _____________________________
 void ClusterTask::findClustersInternal(const gsl::span<const o2::emcal::Cell>& cells, const gsl::span<const o2::emcal::TriggerRecord>& cellTriggerRecords, std::vector<o2::emcal::Cluster>& clusters, std::vector<o2::emcal::TriggerRecord>& clusterTriggerRecords, std::vector<int>& clusterIndices, std::vector<o2::emcal::TriggerRecord>& clusterIndexTriggerRecords)
 {
@@ -444,7 +558,21 @@ void ClusterTask::findClustersInternal(const gsl::span<const o2::emcal::Cell>& c
     mClusterizer->clear();
     if (cells.size() && iTrgRcrd.getNumberOfObjects()) {
       LOG(debug) << " Number of cells put in " << cells.size() << ENDM;
-      mClusterizer->findClusters(gsl::span<const o2::emcal::Cell>(cells.data() + iTrgRcrd.getFirstEntry(), iTrgRcrd.getNumberOfObjects())); // Find clusters on cells/digits (pass by ref)
+      auto cellsEvent = cells.subspan(iTrgRcrd.getFirstEntry(), iTrgRcrd.getNumberOfObjects());
+      if (mFillControlHistograms) {
+        auto isCalibTrigger = (iTrgRcrd.getTriggerBits() & o2::trigger::Cal),
+             isPhysicsTrigger = (iTrgRcrd.getTriggerBits() & o2::trigger::PhT);
+        for (auto& cell : cellsEvent) {
+          mHistCellEnergyTimeUsed->Fill(cell.getAmplitude(), cell.getTimeStamp());
+          if (isPhysicsTrigger) {
+            mHistCellEnergyTimePhys->Fill(cell.getAmplitude(), cell.getTimeStamp());
+          }
+          if (isCalibTrigger) {
+            mHistCellEnergyTimeCalib->Fill(cell.getAmplitude(), cell.getTimeStamp());
+          }
+        }
+      }
+      mClusterizer->findClusters(cellsEvent); // Find clusters on cells/digits (pass by ref)
     }
 
     auto outputClustersTemp = mClusterizer->getFoundClusters();
@@ -455,8 +583,8 @@ void ClusterTask::findClustersInternal(const gsl::span<const o2::emcal::Cell>& c
     std::copy(outputClustersTemp->begin(), outputClustersTemp->end(), std::back_inserter(clusters));
     std::copy(outputCellDigitIndicesTemp->begin(), outputCellDigitIndicesTemp->end(), std::back_inserter(clusterIndices));
 
-    clusterTriggerRecords.emplace_back(iTrgRcrd.getBCData(), currentStartClusters, outputClustersTemp->size());             // svk
-    clusterIndexTriggerRecords.emplace_back(iTrgRcrd.getBCData(), currentStartIndices, outputCellDigitIndicesTemp->size()); // svk
+    clusterTriggerRecords.emplace_back(iTrgRcrd.getBCData(), currentStartClusters, outputClustersTemp->size()).setTriggerBits(iTrgRcrd.getTriggerBits());             // svk
+    clusterIndexTriggerRecords.emplace_back(iTrgRcrd.getBCData(), currentStartIndices, outputCellDigitIndicesTemp->size()).setTriggerBits(iTrgRcrd.getTriggerBits()); // svk
 
     currentStartClusters = clusters.size();      // svk
     currentStartIndices = clusterIndices.size(); // svk
@@ -585,6 +713,12 @@ void ClusterTask::resetHistograms()
 
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
 
+  conditionalReset(mHistCellEnergyTimeUsed);
+  conditionalReset(mHistCellEnergyTimePhys);
+  conditionalReset(mHistCellEnergyTimeCalib);
+  conditionalReset(mHistNclustPerTFSelected);
+  conditionalReset(mHistNclustPerEvtSelected);
+
   conditionalReset(mHistNclustPerTF);
   conditionalReset(mHistNclustPerEvt);
   conditionalReset(mHistClustEtaPhi);
@@ -608,6 +742,13 @@ void ClusterTask::resetHistograms()
   conditionalReset(mHistMassDiphoton_DCAL);
   conditionalReset(mHistMassDiphotonPt_EMCAL);
   conditionalReset(mHistMassDiphotonPt_DCAL);
+
+  conditionalReset(mHistNClustPerEvt_Calib);
+  conditionalReset(mHistNClustPerEvtSelected_Calib);
+  conditionalReset(mHistClusterEtaPhi_Calib);
+  conditionalReset(mHistClusterEnergy_Calib);
+  conditionalReset(mHistClusterEnergyTime_Calib);
+  conditionalReset(mHistClusterEnergyCells_Calib);
 }
 
 bool ClusterTask::hasConfigValue(const std::string_view key)

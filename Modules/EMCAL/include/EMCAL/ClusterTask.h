@@ -211,6 +211,15 @@ class ClusterTask final : public TaskInterface
   /// \return Value assinged to key in lower letters if present, empty string otherwise
   std::string getConfigValueLower(const std::string_view key);
 
+  /// \brief Fill cluster histograms for physics triggers
+  /// \param cluster Cluster to be analysed
+  /// \return True if the cluster is an EMCAL cluster, false if it is a DCAL cluster
+  bool fillClusterHistogramsPhysics(const o2::emcal::AnalysisCluster& cluster);
+
+  /// \brief Fill cluster histograms for calib (LED) triggers
+  /// \param cluster Cluster to be analysed
+  void fillClusterHistogramsLED(const o2::emcal::AnalysisCluster& cluster);
+
  private:
   o2::emcal::Geometry* mGeometry = nullptr;                                    ///< EMCAL geometry
   std::unique_ptr<o2::emcal::EventHandler<o2::emcal::Cell>> mEventHandler;     ///< Event handler for event loop
@@ -228,13 +237,26 @@ class ClusterTask final : public TaskInterface
   o2::emcal::TimeCalibrationParams* mTimeCalib = nullptr;    ///< EMCAL time calib
   o2::emcal::GainCalibrationFactors* mEnergyCalib = nullptr; ///< EMCAL energy calib factors
 
-  bool mInternalClusterizer = false; ///< Use run internal clusterizer, do not subscribe to external cluster collection
-  bool mCalibrate = false;           ///< Perform recalibration
-  bool mFillInvMassMeson = false;    ///< Fill invariant mass of meson candidates
+  bool mInternalClusterizer = false;   ///< Use run internal clusterizer, do not subscribe to external cluster collection
+  bool mCalibrate = false;             ///< Perform recalibration
+  bool mFillInvMassMeson = false;      ///< Fill invariant mass of meson candidates
+  bool mFillControlHistograms = false; ///< Fill control histograms at cell level
 
-  TH1* mHistNclustPerTF = nullptr;  ///< Histogram number of clusters per timeframe
-  TH1* mHistNclustPerEvt = nullptr; ///< Histogram number of clusters per event
-  TH2* mHistClustEtaPhi = nullptr;  ///< Histogram cluster acceptance as function of eta and phi
+  ///////////////////////////////////////////////////////////////////////////////
+  /// Control histograms input cells                                          ///
+  ///////////////////////////////////////////////////////////////////////////////
+  TH2* mHistCellEnergyTimeUsed = nullptr;  ///< Control histogram cell energy vs time all cells for clusterizing (optional)
+  TH2* mHistCellEnergyTimePhys = nullptr;  ///< Control histogram cell energy vs time all cells for clusterizing physics trigger (optional)
+  TH2* mHistCellEnergyTimeCalib = nullptr; ///< Control histogram cell energy vs time all cells for clusterizing calib trigger (optional)
+
+  ///////////////////////////////////////////////////////////////////////////////
+  /// Histograms for physics events                                           ///
+  ///////////////////////////////////////////////////////////////////////////////
+  TH1* mHistNclustPerTF = nullptr;          ///< Histogram number of clusters per timeframe
+  TH1* mHistNclustPerTFSelected = nullptr;  ///< Histogram number of selected clusters per timeframe
+  TH1* mHistNclustPerEvt = nullptr;         ///< Histogram number of clusters per event
+  TH1* mHistNclustPerEvtSelected = nullptr; ///< Histogram number of selected clusters per event
+  TH2* mHistClustEtaPhi = nullptr;          ///< Histogram cluster acceptance as function of eta and phi
 
   TH2* mHistTime_EMCal = nullptr;         ///< Histogram cluster time vs energy EMCAL clusters
   TH1* mHistClustE_EMCal = nullptr;       ///< Histogram cluster energy EMCAL clusters
@@ -252,6 +274,19 @@ class ClusterTask final : public TaskInterface
   TH2* mHistM02VsClustE__DCal = nullptr; ///< Histogram M02 vs. cluster energy for DCAL clusters
   TH2* mHistM20VsClustE__DCal = nullptr; ///< Histogram M20 vs. cluster energy for DCAL clusters
 
+  ///////////////////////////////////////////////////////////////////////////////
+  /// Histograms for LED events                                               ///
+  ///////////////////////////////////////////////////////////////////////////////
+  TH1* mHistNClustPerEvt_Calib = nullptr;         ///< Histogram number of clusters per calib event
+  TH1* mHistNClustPerEvtSelected_Calib = nullptr; ///< Histogram number of selected clusters per calib event
+  TH2* mHistClusterEtaPhi_Calib = nullptr;        ///< Histogram cluster acceptance as function of eta and phi in calib events
+  TH1* mHistClusterEnergy_Calib = nullptr;        ///< Histogram cluster energy in calib events
+  TH2* mHistClusterEnergyTime_Calib = nullptr;    ///< Histogram cluster energy vs. time in calib events
+  TH2* mHistClusterEnergyCells_Calib = nullptr;   ///< Histogram cluster energy vs. cells in calib events
+
+  ///////////////////////////////////////////////////////////////////////////////
+  /// Histograms for meson candidates                                         ///
+  ///////////////////////////////////////////////////////////////////////////////
   TH1* mHistMassDiphoton_EMCAL = nullptr;   ///< Histogram diphoton mass integrated for meson candidates in EMCAL
   TH1* mHistMassDiphoton_DCAL = nullptr;    ///< Histogram diphoton mass integrated for meson candidates in DCAL
   TH2* mHistMassDiphotonPt_EMCAL = nullptr; ///< Histogram diphoton mass integrated vs. pt for meson candidates in EMCAL
