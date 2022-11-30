@@ -26,6 +26,7 @@
       * [Quick try](#quick-try)
       * [Configuration](#configuration-1)
       * [Implementation](#implementation-1)
+   * [Naming convention](#naming-convention)
    * [Committing code](#committing-code)
    * [Data sources](#data-sources)
       * [Readout](#readout)
@@ -413,6 +414,19 @@ An aggregator inherits from `AggregatorInterface` and in particular this method:
 ```
 
 The `aggregate` method is called whenever the _policy_ is satisfied. It gets a map with all the declared QualityObjects. It is expected to return a new Quality based on the inputs.
+
+## Naming convention
+
+We apply a naming convention for Task, Check and Aggregator names, i.e. how they are named in QCDB, not their class names. Here are the rules:
+- minimally describe the scope of the task/check
+- do not add detetor code, it will be there anyway in the QCDB path. If an actor processes data from a different detector/subsystem, it is allowed to add its code
+- do not add "QC", it is obvious it is QC
+- do not add "Task" or "Check", process names are marked as such and corresponding objects go to "MO" and "QO" directories
+- do not add "sync", "async" or "mc", it is obvious from the context we run QC and we use a correct path prefix in QCDB
+- ideally use less than 16 characters, which is the limit of data description in DPL.
+
+Good name examples are "Tracks", "Clusters", "PID", "Cells".
+In case that a QC config file include multiple detectors, possibly with the same task names, one can add the `taskName` parameter in the body of a task configuration structure to use the preferred name and change the root key to a unique id, which shall be used only for the purpose of navigating a configuration file.
 
 ## Committing code
 

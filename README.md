@@ -42,6 +42,7 @@ For a general overview of our (O2) software, organization and processes, please 
         * [Quick try](doc/ModulesDevelopment.md#quick-try)
         * [Configuration](doc/ModulesDevelopment.md#configuration-1)
         * [Implementation](doc/ModulesDevelopment.md#implementation-1)
+    * [Naming convention](doc/ModulesDevelopment.md#naming-convention)
     * [Committing code](doc/ModulesDevelopment.md#committing-code)
     * [Data sources](doc/ModulesDevelopment.md#data-sources)
         * [Readout](doc/ModulesDevelopment.md#readout)
