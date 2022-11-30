@@ -167,7 +167,7 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
     mHistBcPattern->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
     mHistBcTrgOutOfBunchColl->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
 
-    // depends on triggers set to bits 0-N
+    // Depends on triggers set to bits 0-N
     if (entry.first >= mNumTriggers)
       continue;
     auto pairHistBC = mMapTrgHistBC.insert({ entry.first, new TH1D(Form("BC_%s", entry.second.c_str()), Form("BC for %s trigger;BC;counts;", entry.second.c_str()), sBCperOrbit, 0, sBCperOrbit) });
