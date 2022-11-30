@@ -23,6 +23,7 @@
 #include "QualityControl/CheckInterface.h"
 
 #include "FV0Base/Constants.h"
+#include "DataFormatsFIT/DeadChannelMap.h"
 
 namespace o2::quality_control_modules::fv0
 {
@@ -39,8 +40,6 @@ class CFDEffCheck : public o2::quality_control::checker::CheckInterface
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
-
-  constexpr static std::size_t sNCHANNELS_FV0 = o2::fv0::Constants::nFv0Channels;
 
   ClassDefOverride(CFDEffCheck, 2);
 
@@ -68,8 +67,10 @@ class CFDEffCheck : public o2::quality_control::checker::CheckInterface
     return vecResult;
   }
 
-  std::vector<unsigned int> mDeadChannelMap;
+  constexpr static std::size_t sNCHANNELS = o2::fv0::Constants::nFv0Channels;
+  o2::fit::DeadChannelMap* mDeadChannelMap;
   std::string mDeadChannelMapStr;
+  std::string mPathDeadChannelMap;
   float mThreshWarning;
   float mThreshError;
   int mNumWarnings;

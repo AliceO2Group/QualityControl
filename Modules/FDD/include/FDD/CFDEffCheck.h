@@ -24,6 +24,7 @@
 
 #include "FDDBase/Geometry.h"
 #include "FDDBase/Constants.h"
+#include "DataFormatsFIT/DeadChannelMap.h"
 
 namespace o2::quality_control_modules::fdd
 {
@@ -68,8 +69,9 @@ class CFDEffCheck : public o2::quality_control::checker::CheckInterface
   }
 
   constexpr static std::size_t sNCHANNELS = o2::fdd::Nchannels;
-  std::vector<unsigned int> mDeadChannelMap;
+  o2::fit::DeadChannelMap* mDeadChannelMap;
   std::string mDeadChannelMapStr;
+  std::string mPathDeadChannelMap;
   float mThreshWarning;
   float mThreshError;
   int mNumWarnings;

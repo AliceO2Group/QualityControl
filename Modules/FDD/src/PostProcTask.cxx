@@ -166,6 +166,14 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
     mHistTriggers->GetXaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
     mHistBcPattern->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
     mHistBcTrgOutOfBunchColl->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
+
+    // depends on triggers set to bits 0-N
+    if (entry.first >= mNumTriggers)
+      continue;
+    auto pairHistBC = mMapTrgHistBC.insert({ entry.first, new TH1D(Form("BC_%s", entry.second.c_str()), Form("BC for %s trigger;BC;counts;", entry.second.c_str()), sBCperOrbit, 0, sBCperOrbit) });
+    if (pairHistBC.second) {
+      getObjectsManager()->startPublishing(pairHistBC.first->second);
+    }
   }
   getObjectsManager()->startPublishing(mHistTriggers.get());
   getObjectsManager()->startPublishing(mHistBcPattern.get());
@@ -340,6 +348,10 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
   if (!hBcVsTrg) {
     ILOG(Error, Support) << "MO \"BCvsTriggers\" NOT retrieved!!!" << ENDM;
     return;
+  }
+
+  for (const auto& entry : mMapTrgHistBC) {
+    hBcVsTrg->ProjectionX(entry.second->GetName(), entry.first + 1, entry.first + 1);
   }
 
   long ts = 999;

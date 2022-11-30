@@ -56,7 +56,7 @@ class SingleCheck
       } else if (checkedValue > mThresholdWarning) {
         if (result.isBetterThan(Quality::Medium))
           result.set(Quality::Medium);
-        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("%.3f > %.3f (%s warning limit)", checkedValue, mThresholdError, mCheckName.c_str()));
+        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("%.3f > %.3f (%s warning limit)", checkedValue, mThresholdWarning, mCheckName.c_str()));
         log += "-> Medium";
       } else {
         log += "-> OK";
@@ -70,7 +70,7 @@ class SingleCheck
       } else if (checkedValue < mThresholdWarning) {
         if (result.isBetterThan(Quality::Medium))
           result.set(Quality::Medium);
-        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("%.3f < %.3f (%s warning limit)", checkedValue, mThresholdError, mCheckName.c_str()));
+        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("%.3f < %.3f (%s warning limit)", checkedValue, mThresholdWarning, mCheckName.c_str()));
         log += "-> Medium";
       } else {
         log += "-> OK";
