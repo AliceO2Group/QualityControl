@@ -24,7 +24,6 @@
 #include "DataFormatsTRD/Constants.h"
 #include "TRDQC/StatusHelper.h"
 
-
 class TH1F;
 class TH2F;
 class TH1D;
@@ -73,24 +72,24 @@ class PulseHeightTrackMatch final : public TaskInterface
   std::pair<float, float> mDriftRegion;
   std::pair<float, float> mPulseHeightPeakRegion;
   long int mTimestamp;
-   std::shared_ptr<TH1F> mParsingTimePerTF;
-   std::shared_ptr<TH1F> mDigitsPerEvent;
-   std::shared_ptr<TH1F> mTrackletsPerEvent;
-   std::shared_ptr<TH1F> mTracksPerEvent;
-   std::shared_ptr<TH1F> mTriggerPerTF;
-   std::shared_ptr<TH1F> mTriggerWDigitPerTF;
-   std::shared_ptr<TProfile> mPulseHeightpro = nullptr;
-   std::shared_ptr<TProfile2D> mPulseHeightperchamber = nullptr;
-   std::vector<TH2F*> mLayers;
-  
- 
+  std::shared_ptr<TH1F> mParsingTimePerTF;
+  std::shared_ptr<TH1F> mDigitsPerEvent;
+  std::shared_ptr<TH1F> mTrackletsPerEvent;
+  std::shared_ptr<TH1F> mTracksPerEvent;
+  std::shared_ptr<TH1F> mTrackletsPerMatchedTrack;
+  std::shared_ptr<TH1F> mTriggerPerTF;
+  std::shared_ptr<TH1F> mTriggerWDigitPerTF;
+  std::shared_ptr<TProfile> mPulseHeightpro = nullptr;
+  std::shared_ptr<TProfile2D> mPulseHeightperchamber = nullptr;
+  std::vector<TH2F*> mLayers;
+
   // information pulled from ccdb
   o2::trd::NoiseStatusMCM* mNoiseMap = nullptr;
   o2::trd::HalfChamberStatusQC* mChamberStatus = nullptr;
   std::string mChambersToIgnore;
   std::bitset<o2::trd::constants::MAXCHAMBER> mChambersToIgnoreBP;
 };
- 
+
 } // namespace o2::quality_control_modules::trd
 
 #endif // QC_MODULE_TRD_TRDPULSEHEIGHTTRACKMATCH_H
