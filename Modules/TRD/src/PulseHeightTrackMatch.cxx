@@ -185,10 +185,12 @@ void PulseHeightTrackMatch::monitorData(o2::framework::ProcessingContext& ctx)
           nTracks++;
           const auto& track = tracks[iTrack];
 
-	  printf("Got track with %i tracklets and ID %i \n", track.getNtracklets(), track.getRefGlobalTrackId());
-	  int ntracklets = track.getNtracklets();
-	  if (ntracklets > 10)mTrackletsPerMatchedTrack->Fill(9);
-	  else mTrackletsPerMatchedTrack->Fill(ntracklets);
+          printf("Got track with %i tracklets and ID %i \n", track.getNtracklets(), track.getRefGlobalTrackId());
+          int ntracklets = track.getNtracklets();
+          if (ntracklets > 10)
+            mTrackletsPerMatchedTrack->Fill(9);
+          else
+            mTrackletsPerMatchedTrack->Fill(ntracklets);
 
           for (int iLayer = 0; iLayer < 6; iLayer++) {
             int trackletIndex = track.getTrackletIndex(iLayer);
@@ -202,13 +204,13 @@ void PulseHeightTrackMatch::monitorData(o2::framework::ProcessingContext& ctx)
             int det = trklt.getDetector();
             int sec = det / 30;
             int row = trklt.getPadRow();
-	    int col = trklt.getPadCol();
+            int col = trklt.getPadCol();
 
             // obtain pad number relative to MCM center
-	    // int padLocal = trklt.getPositionBinSigned() * o2::trd::constants::GRANULARITYTRKLPOS;
+            // int padLocal = trklt.getPositionBinSigned() * o2::trd::constants::GRANULARITYTRKLPOS;
             // MCM number in column direction (0..7)
-            //int mcmCol = (trklt.getMCM() % o2::trd::constants::NMCMROBINCOL) + o2::trd::constants::NMCMROBINCOL * (trklt.getROB() % 2);
-            //int colInChamber = 6.f + mcmCol * ((float)o2::trd::constants::NCOLMCM) + padLocal;
+            // int mcmCol = (trklt.getMCM() % o2::trd::constants::NMCMROBINCOL) + o2::trd::constants::NMCMROBINCOL * (trklt.getROB() % 2);
+            // int colInChamber = 6.f + mcmCol * ((float)o2::trd::constants::NCOLMCM) + padLocal;
 
             for (int iDigit = trigger.getFirstDigit() + 1; iDigit < trigger.getFirstDigit() + trigger.getNumberOfDigits() - 1; ++iDigit)
 
