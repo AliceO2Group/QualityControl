@@ -60,3 +60,14 @@ cd Framework/script/RepoCleaner
 python3 -m pip install . 
 ```
 
+## Upload new version
+
+Prerequisite
+
+1. Create an account on https://pypi.org
+
+Create new version
+
+1. Update version number in `setup.py`
+3. `python3 setup.py sdist bdist_wheel`
+4. `python3 -m twine upload --repository pypi dist/*`
