@@ -2,7 +2,7 @@ from datetime import datetime
 from datetime import timedelta
 import logging
 from collections import defaultdict
-from Ccdb import Ccdb, ObjectVersion
+from qcrepocleaner.Ccdb import Ccdb, ObjectVersion
 import dryable
 from typing import Dict, List
 

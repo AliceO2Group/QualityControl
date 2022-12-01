@@ -4,7 +4,7 @@ import logging
 import argparse
 import dryable
 import time
-from Ccdb import Ccdb, ObjectVersion
+from qcrepocleaner.Ccdb import Ccdb, ObjectVersion
 import sys
 import csv
 

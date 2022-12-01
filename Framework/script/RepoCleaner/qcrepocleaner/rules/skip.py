@@ -3,7 +3,7 @@ from datetime import timedelta
 import logging
 from typing import Dict
 
-from Ccdb import Ccdb, ObjectVersion
+from qcrepocleaner.Ccdb import Ccdb, ObjectVersion
 
 
 logger = logging  # default logger

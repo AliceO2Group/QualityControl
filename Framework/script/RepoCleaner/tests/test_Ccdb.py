@@ -9,9 +9,9 @@ from rules import production
 class TestCcdb(unittest.TestCase):
     
     def setUp(self):
-        with open('objectsList.json') as f:   # will close() when we leave this block
+        with open('../qcrepocleaner/objectsList.json') as f:   # will close() when we leave this block
             self.content_objectslist = f.read()
-        with open('versionsList.json') as f:   # will close() when we leave this block
+        with open('../versionsList.json') as f:   # will close() when we leave this block
             self.content_versionslist = f.read()
         self.ccdb = Ccdb('http://ccdb-test.cern.ch:8080')
 

@@ -418,28 +418,14 @@ install(FILES example-default.json
               readout.json
               readout-no-sampling.json
               postprocessing.json
-              script/RepoCleaner/config.yaml
               streamerinfos.root
               streamerinfos_v017.root
         DESTINATION etc)
 
-install(PROGRAMS script/RepoCleaner/o2-qc-repo-cleaner
-                 script/RepoCleaner/o2-qc-repo-delete-objects-in-runs
-                 script/RepoCleaner/o2-qc-repo-delete-time-interval
-                 script/o2-qc-functional-test.sh
+install(PROGRAMS script/o2-qc-functional-test.sh
                  script/o2-qc-multinode-test.sh
                  script/o2-qc-batch-test.sh
         DESTINATION bin)
-
-install(FILES script/RepoCleaner/rules/1_per_hour.py
-              script/RepoCleaner/rules/1_per_run.py
-              script/RepoCleaner/rules/last_only.py
-              script/RepoCleaner/rules/none_kept.py
-              script/RepoCleaner/rules/production.py
-              script/RepoCleaner/rules/skip.py
-              script/RepoCleaner/Ccdb.py
-              script/RepoCleaner/pidfile.py
-        DESTINATION lib)
 
 # ---- Copy test files ----
 #

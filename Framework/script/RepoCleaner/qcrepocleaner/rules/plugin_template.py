@@ -1,6 +1,6 @@
 import logging
 
-from Ccdb import Ccdb
+from qcrepocleaner.Ccdb import Ccdb
 
 
 def process(ccdb: Ccdb, object_path: str, delay: int):

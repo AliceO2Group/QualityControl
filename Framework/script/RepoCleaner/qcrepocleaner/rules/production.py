@@ -5,7 +5,7 @@ from datetime import datetime
 import time
 from datetime import timedelta, date
 
-from Ccdb import Ccdb, ObjectVersion
+from qcrepocleaner.Ccdb import Ccdb, ObjectVersion
 
 
 def in_grace_period(version: ObjectVersion, delay: int):
