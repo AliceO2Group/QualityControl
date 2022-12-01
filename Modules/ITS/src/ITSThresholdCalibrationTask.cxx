@@ -38,8 +38,6 @@ ITSThresholdCalibrationTask::ITSThresholdCalibrationTask() : TaskInterface()
 
 ITSThresholdCalibrationTask::~ITSThresholdCalibrationTask()
 {
-  delete hSuccessRate;
-
   for (int iScan = 0; iScan < 3; iScan++) {
     for (int iLayer = 0; iLayer < 7; iLayer++) {
       delete hCalibrationLayer[iLayer][iScan];
@@ -60,6 +58,7 @@ ITSThresholdCalibrationTask::~ITSThresholdCalibrationTask()
     delete hCalibrationThrNoiseChipAverage[iBarrel];
     delete hCalibrationThrNoiseRMSChipAverage[iBarrel];
     delete hCalibrationChipDone[iBarrel];
+    delete hUnsuccess[iBarrel];
 
     delete hCalibrationDColChipAverage[iBarrel];
     for (int iPixelScanType = 0; iPixelScanType < 3; iPixelScanType++)
@@ -175,16 +174,9 @@ void ITSThresholdCalibrationTask::doAnalysisTHR(string inString, int iScan)
       hCalibrationChipAverage[iScan][iBarrel]->SetBinContent(currentChip, currentStave, calibrationValue);
       hCalibrationRMSChipAverage[iScan][iBarrel]->SetBinContent(currentChip, currentStave, result.RMS);
 
-      if (result.status == 1)
-        SuccessStatus[result.Layer]++;
-      TotalStatus[result.Layer]++;
+      // -------------- Fill percentage of unsuccess
+      hUnsuccess[iBarrel]->SetBinContent(currentChip, currentStave, result.status);
     }
-  }
-
-  //---------------------SuccessRate plots:
-  for (int iLayer; iLayer < 7; iLayer++) {
-    if (TotalStatus[iLayer] > 0)
-      hSuccessRate->SetBinContent(iLayer + 1, SuccessStatus[iLayer] / TotalStatus[iLayer]);
   }
 
   //------------------ 1D summary plots per layer
@@ -324,7 +316,7 @@ ITSThresholdCalibrationTask::CalibrationResStructTHR ITSThresholdCalibrationTask
       } else if (name == "Rms") {
         result.RMS = std::stof(data);
       } else if (name == "Status") {
-        result.status = std::stod(data);
+        result.status = std::stof(data);
       } else if (name == "Noise") {
         result.Noise = std::stof(data);
       } else if (name == "NoiseRms") {
@@ -352,7 +344,10 @@ void ITSThresholdCalibrationTask::endOfActivity(Activity& /*activity*/)
 void ITSThresholdCalibrationTask::reset()
 {
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
-  hSuccessRate->Reset();
+
+  for (int iLayer = 0; iLayer < 7; iLayer++) {
+    hUnsuccess[iLayer]->Reset();
+  }
 
   for (int iScan = 0; iScan < 3; iScan++) {
     for (int iLayer = 0; iLayer < 7; iLayer++) {
@@ -444,6 +439,15 @@ void ITSThresholdCalibrationTask::createAllHistos()
 
     formatLayers(hCalibrationChipDone[iBarrel], iBarrel);
     addObject(hCalibrationChipDone[iBarrel]);
+
+    hUnsuccess[iBarrel] = new TH2F(Form("ChipUnsuccess%s", sBarrelType[iBarrel].Data()), Form("Percentage of unsuccess %s", sBarrelType[iBarrel].Data()), nChips[iBarrel], -0.5, nChips[iBarrel] - 0.5, nStaves[iBarrel], -0.5, nStaves[iBarrel] - 0.5);
+    hUnsuccess[iBarrel]->SetStats(0);
+    hUnsuccess[iBarrel]->SetMinimum(0);
+    hUnsuccess[iBarrel]->SetMaximum(100);
+    if (iBarrel != 0)
+      formatAxes(hUnsuccess[iBarrel], "Chip", "", 1, 1.10);
+    formatLayers(hUnsuccess[iBarrel], iBarrel);
+    addObject(hUnsuccess[iBarrel]);
   }
   for (int iLayer = 0; iLayer < 7; iLayer++) {
     hCalibrationThrNoiseLayer[iLayer] = new TH1F(Form("ThrNoiseLayer%d", iLayer), Form("Threshold Noise for Layer%d", iLayer), 10, -0.5, 9.5);
@@ -455,17 +459,6 @@ void ITSThresholdCalibrationTask::createAllHistos()
     hCalibrationThrNoiseRMSLayer[iLayer]->SetStats(0);
     formatAxes(hCalibrationThrNoiseRMSLayer[iLayer], "THR noise RMS (e)", "Chip counts", 1, 1.10);
     addObject(hCalibrationThrNoiseRMSLayer[iLayer]);
-  }
-
-  hSuccessRate = new TH1F("SuccessRate", "Success Rate", 7, -0.5, 6.5);
-  hSuccessRate->SetStats(0);
-  hSuccessRate->SetBit(TH1::kIsAverage);
-  formatAxes(hSuccessRate, "Layer", "Rate", 1, 1.10);
-  addObject(hSuccessRate);
-
-  for (int iLayer; iLayer < 7; iLayer++) {
-    SuccessStatus[iLayer] = 0;
-    TotalStatus[iLayer] = 0;
   }
 
   for (int iBarrel = 0; iBarrel < 3; iBarrel++) {

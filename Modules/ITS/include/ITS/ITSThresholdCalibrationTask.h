@@ -51,7 +51,7 @@ class ITSThresholdCalibrationTask : public TaskInterface
     float THR;
     float Noise;
     float NoiseRMS;
-    int status;
+    float status;
   };
   struct CalibrationResStructPixel {
     int Layer;
@@ -118,12 +118,11 @@ class ITSThresholdCalibrationTask : public TaskInterface
   TH2D* hCalibrationDColChipAverage[3];
   TH2D* hCalibrationPixelpAverage[3][3];
 
-  TH1F* hSuccessRate;
+  TH2F* hUnsuccess[3];
   TH1F *hCalibrationLayer[7][3], *hCalibrationRMSLayer[7][3];
   TH1F *hCalibrationThrNoiseLayer[7], *hCalibrationThrNoiseRMSLayer[7];
 
   o2::itsmft::ChipMappingITS mp;
-  Int_t SuccessStatus[7], TotalStatus[7];
 };
 } // namespace o2::quality_control_modules::its
 
