@@ -73,6 +73,7 @@ For a general overview of our (O2) software, organization and processes, please 
     * [Solving performance issues](doc/Advanced.md#solving-performance-issues)
     * [CCDB / QCDB](doc/Advanced.md#ccdb--qcdb)
         * [Access run conditions and calibrations from the CCDB](doc/Advanced.md#access-run-conditions-and-calibrations-from-the-ccdb)
+        * [Access GRP objects with GRP Geom Helper](doc/Advanced.md#access-grp-objects-with-grp-geom-helper)
         * [Custom metadata](doc/Advanced.md#custom-metadata)
         * [Details on the data storage format in the CCDB](doc/Advanced.md#details-on-the-data-storage-format-in-the-ccdb)
         * [Local CCDB setup](doc/Advanced.md#local-ccdb-setup)

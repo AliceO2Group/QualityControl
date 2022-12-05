@@ -27,6 +27,7 @@
 #include <Headers/DataHeader.h>
 #include <Framework/O2ControlLabels.h>
 #include <Framework/DataProcessorLabel.h>
+#include <DetectorsBase/GRPGeomHelper.h>
 
 namespace o2::quality_control::core
 {
@@ -72,6 +73,18 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
                       0,
                       Lifetime::Timer);
 
+  static std::unordered_map<std::string, o2::base::GRPGeomRequest::GeomRequest> const geomRequestFromString = {
+    { "None", o2::base::GRPGeomRequest::GeomRequest::None },
+    { "Aligned", o2::base::GRPGeomRequest::GeomRequest::Aligned },
+    { "Ideal", o2::base::GRPGeomRequest::GeomRequest::Ideal },
+    { "Alignments", o2::base::GRPGeomRequest::GeomRequest::Alignments }
+  };
+  const auto& grp = taskSpec.grpGeomRequestSpec;
+  auto grpGeomRequest = grp.geomRequest == "None" //
+                          ? nullptr               //
+                          : std::make_shared<o2::base::GRPGeomRequest>(
+                              grp.askTime, grp.askGRPECS, grp.askGRPLHCIF, grp.askGRPMagField, grp.askMatLUT, geomRequestFromString.at(grp.geomRequest), inputs, grp.askOnceAllButField, grp.needPropagatorD);
+
   OutputSpec monitorObjectsSpec{ { "mo" },
                                  TaskRunner::createTaskDataOrigin(taskSpec.detectorName),
                                  TaskRunner::createTaskDataDescription(taskSpec.taskName),
@@ -112,7 +125,8 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
     taskSpec.saveObjectsToFile,
     resetAfterCycles.value_or(taskSpec.resetAfterCycles),
     globalConfig.infologgerDiscardParameters,
-    fallbackActivity
+    fallbackActivity,
+    grpGeomRequest
   };
 }
 

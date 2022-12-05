@@ -31,6 +31,7 @@
 #include <Framework/DataRefUtils.h>
 #include <Framework/EndOfStreamContext.h>
 #include <CommonUtils/ConfigurableParam.h>
+#include <DetectorsBase/GRPGeomHelper.h>
 
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/TaskFactory.h"
@@ -54,6 +55,7 @@ namespace o2::quality_control::core
 
 using namespace o2::framework;
 using namespace o2::header;
+using namespace o2::base;
 using namespace o2::configuration;
 using namespace o2::monitoring;
 using namespace std::chrono;
@@ -169,6 +171,10 @@ void TaskRunner::init(InitContext& iCtx)
   if (!ConfigParamGlo::keyValues.empty()) {
     conf::ConfigurableParam::updateFromString(ConfigParamGlo::keyValues);
   }
+  // load reco helpers
+  if (mTaskConfig.grpGeomRequest) {
+    GRPGeomHelper::instance().setRequest(mTaskConfig.grpGeomRequest);
+  }
 
   // init user's task
   mTask->setCcdbUrl(mTaskConfig.conditionUrl);
@@ -190,6 +196,10 @@ void TaskRunner::run(ProcessingContext& pCtx)
     startCycle();
   }
 
+  if (mTaskConfig.grpGeomRequest) {
+    GRPGeomHelper::instance().checkUpdates(pCtx);
+  }
+
   auto [dataReady, timerReady] = validateInputs(pCtx.inputs());
 
   if (dataReady) {
@@ -206,6 +216,15 @@ void TaskRunner::run(ProcessingContext& pCtx)
       startCycle();
     } else {
       mNoMoreCycles = true;
+    }
+  }
+}
+
+void TaskRunner::finaliseCCDB(ConcreteDataMatcher& matcher, void* obj)
+{
+  if (mTaskConfig.grpGeomRequest) {
+    if (!GRPGeomHelper::instance().finaliseCCDB(matcher, obj)) {
+      ILOG(Warning, Devel) << "Could not update CCDB objects requested by GRPGeomHelper" << ENDM;
     }
   }
 }

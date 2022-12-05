@@ -138,6 +138,10 @@ TaskSpec InfrastructureSpecReader::readSpecEntry<TaskSpec>(std::string taskID, c
     }
   }
 
+  if (taskTree.count("grpGeomRequest") > 0) {
+    ts.grpGeomRequestSpec = readSpecEntry<GRPGeomRequestSpec>(ts.taskName, taskTree.get_child("grpGeomRequest"), wholeTree);
+  }
+
   return ts;
 }
 
@@ -320,6 +324,23 @@ ExternalTaskSpec
   ets.active = externalTaskTree.get<bool>("active", ets.active);
 
   return ets;
+}
+
+template <>
+GRPGeomRequestSpec
+  InfrastructureSpecReader::readSpecEntry<GRPGeomRequestSpec>(std::string, const boost::property_tree::ptree& grpGeomRequestTree, const boost::property_tree::ptree&)
+{
+  GRPGeomRequestSpec grpSpec;
+  grpSpec.geomRequest = grpGeomRequestTree.get<std::string>("geomRequest", grpSpec.geomRequest);
+  grpSpec.askGRPECS = grpGeomRequestTree.get<bool>("askGRPECS", grpSpec.askGRPECS);
+  grpSpec.askGRPLHCIF = grpGeomRequestTree.get<bool>("askGRPLHCIF", grpSpec.askGRPLHCIF);
+  grpSpec.askGRPMagField = grpGeomRequestTree.get<bool>("askGRPMagField", grpSpec.askGRPMagField);
+  grpSpec.askMatLUT = grpGeomRequestTree.get<bool>("askMatLUT", grpSpec.askMatLUT);
+  grpSpec.askTime = grpGeomRequestTree.get<bool>("askTime", grpSpec.askTime);
+  grpSpec.askOnceAllButField = grpGeomRequestTree.get<bool>("askOnceAllButField", grpSpec.askOnceAllButField);
+  grpSpec.needPropagatorD = grpGeomRequestTree.get<bool>("needPropagatorD", grpSpec.needPropagatorD);
+
+  return grpSpec;
 }
 
 std::string InfrastructureSpecReader::validateDetectorName(std::string name)

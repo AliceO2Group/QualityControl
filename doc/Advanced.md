@@ -25,6 +25,7 @@ Advanced topics
 * [Solving performance issues](#solving-performance-issues)
 * [CCDB / QCDB](#ccdb--qcdb)
    * [Access run conditions and calibrations from the CCDB](#access-run-conditions-and-calibrations-from-the-ccdb)
+   * [Access GRP objects with GRP Geom Helper](#access-grp-objects-with-grp-geom-helper)
    * [Custom metadata](#custom-metadata)
    * [Details on the data storage format in the CCDB](#details-on-the-data-storage-format-in-the-ccdb)
       * [Data storage format before v0.14 and ROOT 6.18](#data-storage-format-before-v014-and-root-618)
@@ -579,6 +580,27 @@ QC objects.
     ...
 ```
 
+## Access GRP objects with GRP Geom Helper
+
+To get GRP objects via a central facility, add the following structure to the task definition and set its values 
+according to the needs.
+```json
+      "myTask": {
+        ...
+        "grpGeomRequest" : {
+          "geomRequest": "None",     "": "Available options are \"None\", \"Aligned\", \"Ideal\", \"Alignements\"",
+          "askGRPECS": "false",
+          "askGRPLHCIF": "false",
+          "askGRPMagField": "false",
+          "askMatLUT": "false",
+          "askTime": "false",
+          "askOnceAllButField": "false",
+          "needPropagatorD":  "false"
+        }
+      }
+```
+The requested objects will be available via [`GRPGeomHelper::instance()`](https://github.com/AliceO2Group/AliceO2/blob/dev/Detectors/Base/include/DetectorsBase/GRPGeomHelper.h) singleton.
+
 ## Custom metadata
 
 One can add custom metadata on the QC objects produced in a QC task.
@@ -1000,7 +1022,17 @@ the "tasks" path.
                                                  "Needed only for multi-node setups."],
         "mergingMode": "delta",             "": "Merging mode, \"delta\" (default) or \"entire\" objects are expected",
         "mergerCycleMultiplier": "1",       "": "Multiplies the Merger cycle duration with respect to the QC Task cycle"
-        "mergersPerLayer": [ "3", "1" ],    "": "Defines the number of Mergers per layer, the default is [\"1\"]"
+        "mergersPerLayer": [ "3", "1" ],    "": "Defines the number of Mergers per layer, the default is [\"1\"]",
+        "grpGeomRequest" : {                "": "Requests to retrieve GRP objects, then available in GRPGeomHelper::instance()",
+          "geomRequest": "None",            "": "Available options are \"None\", \"Aligned\", \"Ideal\", \"Alignements\"",
+          "askGRPECS": "false",
+          "askGRPLHCIF": "false",
+          "askGRPMagField": "false",
+          "askMatLUT": "false",
+          "askTime": "false",
+          "askOnceAllButField": "false",
+          "needPropagatorD":  "false"
+        }
       }
     }
   }

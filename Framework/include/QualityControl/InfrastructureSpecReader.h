@@ -22,6 +22,7 @@
 #include "QualityControl/DataSourceSpec.h"
 #include "QualityControl/CheckSpec.h"
 #include "QualityControl/PostProcessingTaskSpec.h"
+#include "QualityControl/RecoRequestSpecs.h"
 #include <boost/property_tree/ptree_fwd.hpp>
 
 namespace o2::quality_control::core
@@ -52,6 +53,8 @@ template <>
 postprocessing::PostProcessingTaskSpec readSpecEntry<postprocessing::PostProcessingTaskSpec>(std::string entryID, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
 template <>
 ExternalTaskSpec readSpecEntry<ExternalTaskSpec>(std::string entryID, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
+template <>
+GRPGeomRequestSpec readSpecEntry<GRPGeomRequestSpec>(std::string entryID, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
 template <>
 CommonSpec readSpecEntry<CommonSpec>(std::string entryID, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
 
