@@ -51,3 +51,23 @@ CMake will install the python scripts in bin and the config file in etc.
 ```
 PYTHONPATH=./rules:$PYTHONPATH ./o2-qc-repo-cleaner --dry-run --config config-test.yaml --dry-run --only-path qc/DAQ --log-level 10
 ```
+
+## Development
+
+To install locally
+```
+cd Framework/script/RepoCleaner
+python3 -m pip install . 
+```
+
+## Upload new version
+
+Prerequisite
+
+1. Create an account on https://pypi.org
+
+Create new version
+
+1. Update version number in `setup.py`
+3. `python3 setup.py sdist bdist_wheel`
+4. `python3 -m twine upload --repository pypi dist/*`

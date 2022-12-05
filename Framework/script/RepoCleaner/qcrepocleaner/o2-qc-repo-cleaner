@@ -37,8 +37,8 @@ import multiprocessing as mp
 from pathlib import Path
 from datetime import datetime
 
-from Ccdb import Ccdb
-from pidfile import PIDFile, AlreadyRunningError
+from qcrepocleaner.Ccdb import Ccdb
+from qcrepocleaner.pidfile import PIDFile, AlreadyRunningError
 import traceback
 
 class Rule:
@@ -327,7 +327,7 @@ def process_object(object_path, rules, ccdb, args):
 
     # Apply rule on object (find the plug-in script and apply)
     try:
-        module = importlib.import_module(rule.policy)
+        module = importlib.import_module('qcrepocleaner.rules.' + rule.policy)
         module.logger = logger
     except ModuleNotFoundError as err:
         logger.error(f"could not load module {rule.policy}")
@@ -345,7 +345,7 @@ def run(args, ccdb_url, rules):
     # Get list of objects from CCDB
     ccdb = Ccdb(ccdb_url)
     ccdb.logger = logging.getLogger
-    paths = ccdb.getObjectsList(getTimestampLastExecution())
+    paths = ccdb.getObjectsList(getTimestampLastExecution(), args.only_path)
     if args.only_path != '':
         paths = [item for item in paths if item is not None and item.startswith(args.only_path)]
     logging.debug(paths)

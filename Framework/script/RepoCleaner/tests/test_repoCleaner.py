@@ -19,7 +19,7 @@ def import_path(path):  # needed because o2-qc-repo-cleaner has no suffix
     return module
 
 
-repoCleaner = import_path("o2-qc-repo-cleaner")
+repoCleaner = import_path("../qcrepocleaner/o2-qc-repo-cleaner")
 parseConfig = repoCleaner.parseConfig
 Rule = repoCleaner.Rule
 findMatchingRule = repoCleaner.findMatchingRule

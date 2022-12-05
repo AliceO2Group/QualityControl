@@ -3,23 +3,23 @@
 import logging
 import argparse
 import dryable
-from Ccdb import Ccdb
+import time
+from qcrepocleaner.Ccdb import Ccdb
 import sys
-import re
 
 def parseArgs():
     """Parse the arguments passed to the script."""
     logging.info("Parsing arguments")
-    parser = argparse.ArgumentParser(description='Move all objects in path to new-path')
+    parser = argparse.ArgumentParser(description='Remove all the objects in a given time interval in a given path')
     parser.add_argument('--url', dest='url', action='store', help='URL of the CCDB, with http[s]://', required=True)
     parser.add_argument('--log-level', dest='log_level', action='store', default="20",
                         help='Log level (CRITICAL->50, ERROR->40, WARNING->30, INFO->20,DEBUG->10)')
     parser.add_argument('--dry-run', action='store_true',
                         help='Dry run, no actual deletion nor modification to the CCDB.')
     parser.add_argument('--path', dest='path', action='store', default="",
-                        help='Origin path without initial slash and without .* at the end (e.g. qc/TST/MO/Bob).', required=True)
-    parser.add_argument('--new-path', dest='new_path', action='store', default="",
-                        help='New path without initial slash and without .* at the end (e.g. qc/TST2/MO/Bob).', required=True)
+                        help='Clean this path (without initial slash and without .* at the end, e.g. qc/TST/MO/Bob).', required=True)
+    parser.add_argument('--from', dest='from_ts', action='store', help='From this timestamp.', required=True)
+    parser.add_argument('--to', dest='to_ts', action='store', help='To this timestamp.', required=True)
     parser.add_argument('--one-by-one', action='store_true', help='Ask confirmation for each deletion')
     parser.add_argument('--print-list', action='store_true', help='Only print the list of objects that would be deleted')
     args = parser.parse_args()
@@ -45,17 +45,17 @@ def prepare_main_logger():
 
 def run(args):
     ccdb = Ccdb(args.url)
-
-    nb_moved = 0
-    # we have to make sure we take all objects inside the provide path --> we add `/.*` at the end
-    versions = ccdb.getVersionsList(args.path + "/.*", "", "")
-    logging.info("Here are the objects that are going to be moved: ")
-    for v in versions:
-        logging.info(v)
-    logging.info(f"Number of items: {len(versions)}")
+    versions = ccdb.getVersionsList(args.path + "/.*", args.from_ts, args.to_ts)
+    logging.debug(versions)
+    logging.info("Here are the objects that are going to be deleted: ")
 
     if args.print_list:
+        for v in versions:
+            logging.info(v)
+        logging.info(f"Number of items: {len(versions)}")
         exit(0)
+
+    logging.info(f"Number of items: {len(versions)}")
 
     logging.warning("****** ARE YOU ABSOLUTELY SURE YOU WANT TO CONTINUE ? ******")
     answer = input("Yes/No \n  ")
@@ -63,29 +63,26 @@ def run(args):
         exit(0)
 
     for v in versions:
-        logging.info(f"Ready to move {v}")
-        # here we need to make sure that we preserve the subdirectory structure and replace only the matching part
-        version_new_path = re.sub("^" + args.path, args.new_path, v.path, count=0, flags=0)
+        logging.info(f"Ready to delete {v}")
         if args.one_by_one:
             answer = input("  Continue? y/n\n  ")
             if answer.lower() in ["y", "yes"]:
-                ccdb.moveVersion(v, version_new_path)
-                nb_moved += 1
+                ccdb.deleteVersion(v)
             elif answer.lower() in ["n", "no"]:
                 logging.info("   skipping")
             else:
                 logging.error("   wrong input, skipping")
         else:
-            ccdb.moveVersion(v, version_new_path)
-            nb_moved += 1
+            ccdb.deleteVersion(v)
 
-    logging.info(f"Moved items: {nb_moved}")
+    logging.info(f"Deleted items: {len(versions)}")
 
 # ****************
 # We start here !
 # ****************
 
 def main():
+    start_time = time.time()
     prepare_main_logger()
 
     # Parse arguments

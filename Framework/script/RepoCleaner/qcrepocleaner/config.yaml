@@ -60,4 +60,4 @@ Rules:
 #    policy: 1_per_hour
 
 Ccdb:
-  Url: http://137.138.47.222:8080
+  Url: http://ccdb-test.cern.ch:8080
