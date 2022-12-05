@@ -25,9 +25,9 @@ Rules:
 #  - object_path: Test
 #    delay: 240
 #    policy: none_kept
-  - object_path: qc/DAQ/MO/daqTask/numberRDHs
-    delay: 1440
-    policy: none_kept
+#  - object_path: .*
+#    delay: 1440
+#    policy: skip
 #  - object_path: no_cleanup/.*
 #    delay: 60
 #    policy: skip
