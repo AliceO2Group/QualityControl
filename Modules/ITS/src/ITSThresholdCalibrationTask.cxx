@@ -58,8 +58,8 @@ ITSThresholdCalibrationTask::~ITSThresholdCalibrationTask()
     delete hCalibrationThrNoiseChipAverage[iBarrel];
     delete hCalibrationThrNoiseRMSChipAverage[iBarrel];
     delete hCalibrationChipDone[iBarrel];
-    delete hUnsuccess[iBarrel];
-
+    delete hUnsuccess[iBarrel];   
+ 
     delete hCalibrationDColChipAverage[iBarrel];
     for (int iPixelScanType = 0; iPixelScanType < 3; iPixelScanType++)
       delete hCalibrationPixelpAverage[iPixelScanType][iBarrel];
@@ -173,9 +173,9 @@ void ITSThresholdCalibrationTask::doAnalysisTHR(string inString, int iScan)
 
       hCalibrationChipAverage[iScan][iBarrel]->SetBinContent(currentChip, currentStave, calibrationValue);
       hCalibrationRMSChipAverage[iScan][iBarrel]->SetBinContent(currentChip, currentStave, result.RMS);
-
+      
       // -------------- Fill percentage of unsuccess
-      hUnsuccess[iBarrel]->SetBinContent(currentChip, currentStave, result.status);
+      hUnsuccess[iBarrel] -> SetBinContent(currentChip, currentStave, result.status);
     }
   }
 
@@ -344,11 +344,7 @@ void ITSThresholdCalibrationTask::endOfActivity(Activity& /*activity*/)
 void ITSThresholdCalibrationTask::reset()
 {
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
-
-  for (int iLayer = 0; iLayer < 7; iLayer++) {
-    hUnsuccess[iLayer]->Reset();
-  }
-
+  
   for (int iScan = 0; iScan < 3; iScan++) {
     for (int iLayer = 0; iLayer < 7; iLayer++) {
       hCalibrationLayer[iLayer][iScan]->Reset();
@@ -366,7 +362,8 @@ void ITSThresholdCalibrationTask::reset()
   }
 
   for (int iBarrel = 0; iBarrel < 3; iBarrel++) {
-
+    
+    hUnsuccess[iBarrel]->Reset();
     hCalibrationThrNoiseChipAverage[iBarrel]->Reset();
     hCalibrationThrNoiseRMSChipAverage[iBarrel]->Reset();
     hCalibrationChipDone[iBarrel]->Reset();
@@ -444,10 +441,11 @@ void ITSThresholdCalibrationTask::createAllHistos()
     hUnsuccess[iBarrel]->SetStats(0);
     hUnsuccess[iBarrel]->SetMinimum(0);
     hUnsuccess[iBarrel]->SetMaximum(100);
-    if (iBarrel != 0)
+    if(iBarrel != 0)
       formatAxes(hUnsuccess[iBarrel], "Chip", "", 1, 1.10);
     formatLayers(hUnsuccess[iBarrel], iBarrel);
     addObject(hUnsuccess[iBarrel]);
+
   }
   for (int iLayer = 0; iLayer < 7; iLayer++) {
     hCalibrationThrNoiseLayer[iLayer] = new TH1F(Form("ThrNoiseLayer%d", iLayer), Form("Threshold Noise for Layer%d", iLayer), 10, -0.5, 9.5);
@@ -459,6 +457,7 @@ void ITSThresholdCalibrationTask::createAllHistos()
     hCalibrationThrNoiseRMSLayer[iLayer]->SetStats(0);
     formatAxes(hCalibrationThrNoiseRMSLayer[iLayer], "THR noise RMS (e)", "Chip counts", 1, 1.10);
     addObject(hCalibrationThrNoiseRMSLayer[iLayer]);
+
   }
 
   for (int iBarrel = 0; iBarrel < 3; iBarrel++) {
