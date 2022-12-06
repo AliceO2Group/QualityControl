@@ -185,7 +185,7 @@ void PulseHeightTrackMatch::monitorData(o2::framework::ProcessingContext& ctx)
           nTracks++;
           const auto& track = tracks[iTrack];
 
-          printf("Got track with %i tracklets and ID %i \n", track.getNtracklets(), track.getRefGlobalTrackId());
+	  // printf("Got track with %i tracklets \n", track.getNtracklets());
           int ntracklets = track.getNtracklets();
           if (ntracklets > 10)
             mTrackletsPerMatchedTrack->Fill(9);
