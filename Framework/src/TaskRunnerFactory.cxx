@@ -56,12 +56,12 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
 
   int parallelTaskID = id.value_or(0);
 
-  // todo validate data source
   if (!taskSpec.dataSource.isOneOf(DataSourceType::DataSamplingPolicy, DataSourceType::Direct)) {
     throw std::runtime_error("This data source of the task '" + taskSpec.taskName + "' is not supported.");
   }
   auto cycleDurationSeconds = taskSpec.cycleDurationSeconds;
-  if (cycleDurationSeconds < 10) {
+  auto dummyDatabaseUsed = globalConfig.database.count("implementation") > 0 && globalConfig.database.at("implementation") == "Dummy";
+  if (!dummyDatabaseUsed && cycleDurationSeconds < 10) {
     ILOG(Error, Support) << "Cycle duration is too short (" << cycleDurationSeconds << "), replaced by a duration of 10 seconds." << ENDM;
     cycleDurationSeconds = 10;
   }
