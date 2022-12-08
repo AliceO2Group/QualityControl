@@ -95,11 +95,10 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
     o2::base::GeometryManager::loadGeometry(mGeomPath.c_str());
   } else {
     ILOG(Info, Support) << "Getting geometry from ccdb - timestamp: " << std::stol(mGeoTimestamp) << ENDM;
-    auto& mgr = o2::ccdb::BasicCCDBManager::instance();
-    mgr.setTimestamp(std::stol(mGeoTimestamp));
-    mgr.get<TGeoManager>("GLO/Config/GeometryAligned");
+    std::map<std::string, std::string> metadata;
+    TaskInterface::retrieveConditionAny<TGeoManager>("GLO/Config/GeometryAligned", metadata, std::stol(mGeoTimestamp));
     if (!o2::base::GeometryManager::isGeometryLoaded()) {
-      ILOG(Fatal, Support) << "Can't retrive geometry from ccdb: " << mgr.getURL() << " timestamp: " << std::stol(mGeoTimestamp) << ENDM;
+      ILOG(Fatal, Support) << "Can't retrive geometry from ccdb with timestamp: " << std::stol(mGeoTimestamp) << ENDM;
       throw std::runtime_error("Can't retrive geometry from ccdb!");
     }
   }
