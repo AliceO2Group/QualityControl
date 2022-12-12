@@ -26,8 +26,8 @@
 #include "FOCALReconstruction/PadWord.h"
 #include "FOCALReconstruction/PadDecoder.h"
 #include "FOCALReconstruction/PadMapper.h"
-#include "FOCAL/PixelDecoder.h"
-#include "FOCAL/PixelMapper.h"
+#include "FOCALReconstruction/PixelDecoder.h"
+#include "FOCALReconstruction/PixelMapper.h"
 
 class TH1;
 class TH2;
@@ -79,13 +79,13 @@ class TestbeamRawTask final : public TaskInterface
   void processPadPayload(gsl::span<const o2::focal::PadGBTWord> gbtpayload);
   void processPixelPayload(gsl::span<const o2::itsmft::GBTWord> gbtpayload, uint16_t feeID);
   void processPadEvent(gsl::span<const o2::focal::PadGBTWord> gbtpayload);
-  std::pair<int, int> getNumberOfPixelSegments(PixelMapper::MappingType_t mappingtype) const;
-  std::pair<int, int> getPixelSegment(const PixelHit& hit, PixelMapper::MappingType_t mappingtype, const PixelMapping::ChipPosition& chipMapping) const;
+  std::pair<int, int> getNumberOfPixelSegments(o2::focal::PixelMapper::MappingType_t mappingtype) const;
+  std::pair<int, int> getPixelSegment(const o2::focal::PixelHit& hit, o2::focal::PixelMapper::MappingType_t mappingtype, const o2::focal::PixelMapping::ChipPosition& chipMapping) const;
 
   o2::focal::PadDecoder mPadDecoder;                                              ///< Decoder for pad data
   o2::focal::PadMapper mPadMapper;                                                ///< Mapping for Pads
-  PixelDecoder mPixelDecoder;                                                     ///< Decoder for pixel data
-  std::unique_ptr<PixelMapper> mPixelMapper;                                      ///< Testbeam mapping for pixels
+  o2::focal::PixelDecoder mPixelDecoder;                                          ///< Decoder for pixel data
+  std::unique_ptr<o2::focal::PixelMapper> mPixelMapper;                           ///< Testbeam mapping for pixels
   std::unordered_map<o2::InteractionRecord, int> mPixelNHitsAll;                  ///< Number of hits / event all layers
   std::array<std::unordered_map<o2::InteractionRecord, int>, 2> mPixelNHitsLayer; ///< Number of hits / event layer
   std::vector<int> mHitSegmentCounter;                                            ///< Number of hits / segment
