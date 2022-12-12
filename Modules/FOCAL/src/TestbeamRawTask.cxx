@@ -173,29 +173,29 @@ void TestbeamRawTask::initialize(o2::framework::InitContext& /*ctx*/)
   ILOG(Info, Support) << "Debug mode: " << (mDebugMode ? "yes" : "no") << ENDM;
 
   if (!mDisablePixels) {
-    PixelMapper::MappingType_t mappingtype = PixelMapper::MappingType_t::MAPPING_IB;
+    o2::focal::PixelMapper::MappingType_t mappingtype = o2::focal::PixelMapper::MappingType_t::MAPPING_IB;
     auto pixellayout = mCustomParameters.find("Pixellayout");
     if (pixellayout != mCustomParameters.end()) {
       if (pixellayout->second == "IB") {
-        mappingtype = PixelMapper::MappingType_t::MAPPING_IB;
+        mappingtype = o2::focal::PixelMapper::MappingType_t::MAPPING_IB;
       } else if (pixellayout->second == "OB") {
-        mappingtype = PixelMapper::MappingType_t::MAPPING_OB;
+        mappingtype = o2::focal::PixelMapper::MappingType_t::MAPPING_OB;
       } else {
         ILOG(Fatal, Support) << "Unknown pixel setup: " << pixellayout->second << ENDM;
       }
     }
     switch (mappingtype) {
-      case PixelMapper::MappingType_t::MAPPING_IB:
+      case o2::focal::PixelMapper::MappingType_t::MAPPING_IB:
         ILOG(Info, Support) << "Using pixel layout: IB" << ENDM;
         break;
 
-      case PixelMapper::MappingType_t::MAPPING_OB:
+      case o2::focal::PixelMapper::MappingType_t::MAPPING_OB:
         ILOG(Info, Support) << "Using pixel layout: OB" << ENDM;
         break;
       default:
         break;
     }
-    mPixelMapper = std::make_unique<PixelMapper>(mappingtype);
+    mPixelMapper = std::make_unique<o2::focal::PixelMapper>(mappingtype);
   }
 
   /////////////////////////////////////////////////////////////////
@@ -531,7 +531,7 @@ void TestbeamRawTask::processPixelPayload(gsl::span<const o2::itsmft::GBTWord> p
           int segment_id = segment_row * totalsegmentsCol + segment_col;
           mHitSegmentCounter[segment_id]++;
         }
-      } catch (PixelMapping::InvalidChipException& e) {
+      } catch (o2::focal::PixelMapping::InvalidChipException& e) {
         ILOG(Error, Support) << "Error in chip index: " << e << ENDM;
       }
     }
@@ -563,17 +563,17 @@ void TestbeamRawTask::processPixelPayload(gsl::span<const o2::itsmft::GBTWord> p
   }
 }
 
-std::pair<int, int> TestbeamRawTask::getPixelSegment(const PixelHit& hit, PixelMapper::MappingType_t mappingtype, const PixelMapping::ChipPosition& chipMapping) const
+std::pair<int, int> TestbeamRawTask::getPixelSegment(const o2::focal::PixelHit& hit, o2::focal::PixelMapper::MappingType_t mappingtype, const o2::focal::PixelMapping::ChipPosition& chipMapping) const
 {
   int row = -1, col = -1, absColumn = -1, absRow = -1;
   switch (mappingtype) {
-    case PixelMapper::MappingType_t::MAPPING_IB:
+    case o2::focal::PixelMapper::MappingType_t::MAPPING_IB:
       absColumn = chipMapping.mInvertColumn ? PIXEL_COLS_IB - hit.mColumn : hit.mColumn;
       absRow = chipMapping.mInvertRow ? PIXEL_ROWS_IB - hit.mRow : hit.mRow;
       col = absColumn / PIXEL_COL_SEGMENSIZE_IB;
       row = absRow / PIXEL_ROW_SEGMENTSIZE_IB;
       break;
-    case PixelMapper::MappingType_t::MAPPING_OB:
+    case o2::focal::PixelMapper::MappingType_t::MAPPING_OB:
       absColumn = chipMapping.mInvertColumn ? PIXEL_COLS_OB - hit.mColumn : hit.mColumn;
       absRow = chipMapping.mInvertRow ? PIXEL_ROWS_OB - hit.mRow : hit.mRow;
       col = absColumn / PIXEL_COL_SEGMENSIZE_OB;
@@ -585,15 +585,15 @@ std::pair<int, int> TestbeamRawTask::getPixelSegment(const PixelHit& hit, PixelM
   return { col, row };
 }
 
-std::pair<int, int> TestbeamRawTask::getNumberOfPixelSegments(PixelMapper::MappingType_t mappingtype) const
+std::pair<int, int> TestbeamRawTask::getNumberOfPixelSegments(o2::focal::PixelMapper::MappingType_t mappingtype) const
 {
   int rows = -1, cols = -1;
   switch (mappingtype) {
-    case PixelMapper::MappingType_t::MAPPING_IB:
+    case o2::focal::PixelMapper::MappingType_t::MAPPING_IB:
       rows = PIXEL_ROWS_IB / PIXEL_ROW_SEGMENTSIZE_IB;
       cols = PIXEL_COLS_IB / PIXEL_COL_SEGMENSIZE_IB;
       break;
-    case PixelMapper::MappingType_t::MAPPING_OB:
+    case o2::focal::PixelMapper::MappingType_t::MAPPING_OB:
       rows = PIXEL_ROWS_OB / PIXEL_ROW_SEGMENTSIZE_OB;
       cols = PIXEL_COLS_OB / PIXEL_COL_SEGMENSIZE_OB;
       break;
