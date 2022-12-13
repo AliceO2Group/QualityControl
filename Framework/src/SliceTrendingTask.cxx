@@ -46,10 +46,9 @@ void SliceTrendingTask::configure(std::string name,
   mConfig = SliceTrendingTaskConfig(name, config);
 }
 
-
 void SliceTrendingTask::initialize(Trigger, framework::ServiceRegistryRef services)
 {
-  // Prepare the data structure of the trending TTree.
+  // Prepare the data structure of the trending TTree .
   if (mConfig.resumeTrend) {
     ILOG(Info, Support) << "Trying to retrieve an existing TTree for this task to continue the trend." << ENDM;
     auto& qcdb = services.get<repository::DatabaseInterface>();
