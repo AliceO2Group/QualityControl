@@ -187,7 +187,7 @@ void SliceTrendingTask::generatePlots()
           beautifyGraph(multigraph, plot, c);
           multigraph->Draw("A pmc plc");
           c->cd(2);
-//          legend->Draw();
+          //          legend->Draw();
           c->cd(1)->SetLeftMargin(0.15);
           c->cd(1)->SetRightMargin(0.01);
           c->cd(2)->SetLeftMargin(0.01);
@@ -304,7 +304,7 @@ void SliceTrendingTask::drawCanvasMO(TCanvas* thisCanvas, const std::string& var
         } else {
           graphErrors->Draw(opt.data());
           // We try to convince ROOT to delete graphErrors together with the rest of the canvas.
-          //saveObjectToPrimitives(thisCanvas, p + 1, graphErrors);
+          // saveObjectToPrimitives(thisCanvas, p + 1, graphErrors);
         }
       }
     }
@@ -359,8 +359,8 @@ void SliceTrendingTask::drawCanvasMO(TCanvas* thisCanvas, const std::string& var
     thisCanvas->cd(2);
     legend->Draw();
     // We try to convince ROOT to delete multigraph and legend together with the rest of the canvas.
-    //saveObjectToPrimitives(thisCanvas, 1, multigraph);
-    //saveObjectToPrimitives(thisCanvas, 2, legend);
+    // saveObjectToPrimitives(thisCanvas, 1, multigraph);
+    // saveObjectToPrimitives(thisCanvas, 2, legend);
 
   } // Trending vs Time as Multigraph
   else if (trendType == "slices") {
@@ -401,7 +401,7 @@ void SliceTrendingTask::drawCanvasMO(TCanvas* thisCanvas, const std::string& var
       } else {
         graphErrors->Draw(opt.data());
         // We try to convince ROOT to delete graphErrors together with the rest of the canvas.
-        //saveObjectToPrimitives(thisCanvas, 1, graphErrors);
+        // saveObjectToPrimitives(thisCanvas, 1, graphErrors);
       }
     }
   } // Trending vs Slices
@@ -449,7 +449,7 @@ void SliceTrendingTask::drawCanvasMO(TCanvas* thisCanvas, const std::string& var
     gStyle->SetPalette(kBird);
     graph2D->Draw(opt.data());
     // We try to convince ROOT to delete graphErrors together with the rest of the canvas.
-    //saveObjectToPrimitives(thisCanvas, 1, graph2D);
+    // saveObjectToPrimitives(thisCanvas, 1, graph2D);
   } // Trending vs Slices2D
 }
 
@@ -517,7 +517,7 @@ void SliceTrendingTask::beautifyGraph(T& graph, const SliceTrendingTaskConfig::P
     getUserAxisRange(plotconfig.graphYRange, yMin, yMax);
     graph->SetMinimum(yMin);
     graph->SetMaximum(yMax);
-    //graph->Draw(plotconfig.option.data()); // redraw and update to force changes on y-axis
+    // graph->Draw(plotconfig.option.data()); // redraw and update to force changes on y-axis
     canv->Modified();
     canv->Update();
   }
@@ -526,14 +526,14 @@ void SliceTrendingTask::beautifyGraph(T& graph, const SliceTrendingTaskConfig::P
     float xMin, xMax;
     getUserAxisRange(plotconfig.graphXRange, xMin, xMax);
     graph->GetXaxis()->SetLimits(xMin, xMax);
-    //graph->Draw(fmt::format("{0:s} A", plotconfig.option.data()).data());
+    // graph->Draw(fmt::format("{0:s} A", plotconfig.option.data()).data());
     canv->Modified();
     canv->Update();
   }
 
   if (!plotconfig.graphAxisLabel.empty()) {
     setUserAxisLabel(graph->GetXaxis(), graph->GetYaxis(), plotconfig.graphAxisLabel);
-    //graph->Draw(fmt::format("{0:s} A", plotconfig.option.data()).data());
+    // graph->Draw(fmt::format("{0:s} A", plotconfig.option.data()).data());
     canv->Modified();
     canv->Update();
   }
