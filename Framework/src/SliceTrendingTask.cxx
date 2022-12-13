@@ -46,6 +46,7 @@ void SliceTrendingTask::configure(std::string name,
   mConfig = SliceTrendingTaskConfig(name, config);
 }
 
+
 void SliceTrendingTask::initialize(Trigger, framework::ServiceRegistryRef services)
 {
   // Prepare the data structure of the trending TTree.
