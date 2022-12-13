@@ -355,6 +355,8 @@ void SliceTrendingTask::drawCanvasMO(TCanvas* thisCanvas, const std::string& var
     for (auto obj : *multigraph->GetListOfGraphs()) {
       legend->AddEntry(obj, obj->GetName(), "lpf");
     }
+    thisCanvas->cd(2);
+    legend->Draw();
     // We try to convince ROOT to delete multigraph and legend together with the rest of the canvas.
     //saveObjectToPrimitives(thisCanvas, 1, multigraph);
     //saveObjectToPrimitives(thisCanvas, 2, legend);
