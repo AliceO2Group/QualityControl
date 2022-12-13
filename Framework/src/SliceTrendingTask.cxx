@@ -187,7 +187,7 @@ void SliceTrendingTask::generatePlots()
           beautifyGraph(multigraph, plot, c);
           multigraph->Draw("A pmc plc");
           c->cd(2);
-          legend->Draw();
+//          legend->Draw();
           c->cd(1)->SetLeftMargin(0.15);
           c->cd(1)->SetRightMargin(0.01);
           c->cd(2)->SetLeftMargin(0.01);
@@ -198,6 +198,7 @@ void SliceTrendingTask::generatePlots()
           beautifyGraph(multigraph, plot, c);
           multigraph->Draw("A pmc plc");
         }
+        c->Modified();
         c->Update();
       } else if (auto histo = dynamic_cast<TH2F*>(c->cd(p + 1)->GetPrimitive("Graph2D"))) {
 
