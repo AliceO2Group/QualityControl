@@ -48,7 +48,7 @@ void SliceTrendingTask::configure(std::string name,
 
 void SliceTrendingTask::initialize(Trigger, framework::ServiceRegistryRef services)
 {
-  // Prepare the data structure of the trending TTree .
+  // Prepare the data structure of the trending TTree.
   if (mConfig.resumeTrend) {
     ILOG(Info, Support) << "Trying to retrieve an existing TTree for this task to continue the trend." << ENDM;
     auto& qcdb = services.get<repository::DatabaseInterface>();
@@ -185,9 +185,6 @@ void SliceTrendingTask::generatePlots()
         if (auto legend = dynamic_cast<TLegend*>(c->cd(2)->GetPrimitive("MultiGraphLegend"))) {
           c->cd(1);
           beautifyGraph(multigraph, plot, c);
-          multigraph->Draw("A pmc plc");
-          c->cd(2);
-          //          legend->Draw();
           c->cd(1)->SetLeftMargin(0.15);
           c->cd(1)->SetRightMargin(0.01);
           c->cd(2)->SetLeftMargin(0.01);
@@ -196,7 +193,6 @@ void SliceTrendingTask::generatePlots()
           ILOG(Error, Support) << "No legend in multigraph-time" << ENDM;
           c->cd(1);
           beautifyGraph(multigraph, plot, c);
-          multigraph->Draw("A pmc plc");
         }
         c->Modified();
         c->Update();
@@ -222,8 +218,6 @@ void SliceTrendingTask::generatePlots()
 
         gStyle->SetPalette(kBird);
         histo->SetStats(kFALSE);
-        histo->Draw(plot.option.data());
-
       } else {
         ILOG(Error, Devel) << "Could not get the 'Graph' of the plot '"
                            << plot.name << "'." << ENDM;
@@ -303,8 +297,6 @@ void SliceTrendingTask::drawCanvasMO(TCanvas* thisCanvas, const std::string& var
                               << "', which is not a graph, ignoring." << ENDM;
         } else {
           graphErrors->Draw(opt.data());
-          // We try to convince ROOT to delete graphErrors together with the rest of the canvas.
-          // saveObjectToPrimitives(thisCanvas, p + 1, graphErrors);
         }
       }
     }
@@ -358,9 +350,6 @@ void SliceTrendingTask::drawCanvasMO(TCanvas* thisCanvas, const std::string& var
     }
     thisCanvas->cd(2);
     legend->Draw();
-    // We try to convince ROOT to delete multigraph and legend together with the rest of the canvas.
-    // saveObjectToPrimitives(thisCanvas, 1, multigraph);
-    // saveObjectToPrimitives(thisCanvas, 2, legend);
 
   } // Trending vs Time as Multigraph
   else if (trendType == "slices") {
@@ -400,8 +389,6 @@ void SliceTrendingTask::drawCanvasMO(TCanvas* thisCanvas, const std::string& var
                             << "', which is not a graph, ignoring." << ENDM;
       } else {
         graphErrors->Draw(opt.data());
-        // We try to convince ROOT to delete graphErrors together with the rest of the canvas.
-        // saveObjectToPrimitives(thisCanvas, 1, graphErrors);
       }
     }
   } // Trending vs Slices
@@ -448,8 +435,6 @@ void SliceTrendingTask::drawCanvasMO(TCanvas* thisCanvas, const std::string& var
     myReader.Restart();
     gStyle->SetPalette(kBird);
     graph2D->Draw(opt.data());
-    // We try to convince ROOT to delete graphErrors together with the rest of the canvas.
-    // saveObjectToPrimitives(thisCanvas, 1, graph2D);
   } // Trending vs Slices2D
 }
 
@@ -489,15 +474,6 @@ void SliceTrendingTask::getTrendErrors(const std::string& inputvar, std::string&
   errorY = inputvar.substr(0, posEndType_err);
 }
 
-void SliceTrendingTask::saveObjectToPrimitives(TCanvas* canvas, const int padNumber, TObject* object)
-{
-  if (auto* pad = canvas->GetPad(padNumber)) {
-    if (auto* primitives = pad->GetListOfPrimitives()) {
-      primitives->Add(object);
-    }
-  }
-}
-
 template <typename T>
 void SliceTrendingTask::beautifyGraph(T& graph, const SliceTrendingTaskConfig::Plot& plotconfig, TCanvas* canv)
 {
@@ -517,7 +493,6 @@ void SliceTrendingTask::beautifyGraph(T& graph, const SliceTrendingTaskConfig::P
     getUserAxisRange(plotconfig.graphYRange, yMin, yMax);
     graph->SetMinimum(yMin);
     graph->SetMaximum(yMax);
-    // graph->Draw(plotconfig.option.data()); // redraw and update to force changes on y-axis
     canv->Modified();
     canv->Update();
   }
@@ -526,14 +501,12 @@ void SliceTrendingTask::beautifyGraph(T& graph, const SliceTrendingTaskConfig::P
     float xMin, xMax;
     getUserAxisRange(plotconfig.graphXRange, xMin, xMax);
     graph->GetXaxis()->SetLimits(xMin, xMax);
-    // graph->Draw(fmt::format("{0:s} A", plotconfig.option.data()).data());
     canv->Modified();
     canv->Update();
   }
 
   if (!plotconfig.graphAxisLabel.empty()) {
     setUserAxisLabel(graph->GetXaxis(), graph->GetYaxis(), plotconfig.graphAxisLabel);
-    // graph->Draw(fmt::format("{0:s} A", plotconfig.option.data()).data());
     canv->Modified();
     canv->Update();
   }
