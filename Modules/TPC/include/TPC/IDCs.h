@@ -73,6 +73,8 @@ class IDCs : public quality_control::postprocessing::PostProcessingInterface
   o2::tpc::IDCCCDBHelper<unsigned char> mCCDBHelper;
   o2::ccdb::CcdbApi mCdbApi;
   std::string mHost;
+  std::unique_ptr<TCanvas> mIDCZeroScale;
+  std::unique_ptr<TCanvas> mIDCZerOverview;
   std::unique_ptr<TCanvas> mIDCZeroSides;
   std::unique_ptr<TCanvas> mIDCZeroRadialProf;
   std::unique_ptr<TCanvas> mIDCZeroStacksA;
@@ -82,6 +84,7 @@ class IDCs : public quality_control::postprocessing::PostProcessingInterface
   std::unique_ptr<TCanvas> mIDCOneSides1D;
   std::unique_ptr<TCanvas> mFourierCoeffsA;
   std::unique_ptr<TCanvas> mFourierCoeffsC;
+
   std::unordered_map<std::string, long> mTimestamps;             ///< timestamps to look for specific data in the CCDB
   std::vector<std::map<std::string, std::string>> mLookupMaps{}; ///< meta data to look for data in the CCDB
   std::vector<std::map<std::string, std::string>> mStoreMaps{};  ///< meta data to be stored with the output in the QCDB
