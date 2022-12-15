@@ -468,7 +468,7 @@ void ITSThresholdCalibrationTask::createAllHistos()
       formatLayers(hCalibrationPixelpAverage[iType][iBarrel], iBarrel);
       addObject(hCalibrationPixelpAverage[iType][iBarrel]);
     }
-    hCalibrationDColChipAverage[iBarrel] = new TH2D(Form("DCols%s", sBarrelType[iBarrel].Data()), Form("Number of DColls per chip for %s", sBarrelType[iBarrel].Data()), nChips[iBarrel], -0.5, nChips[iBarrel] - 0.5, nStaves[iBarrel], -0.5, nStaves[iBarrel] - 0.5);
+    hCalibrationDColChipAverage[iBarrel] = new TH2D(Form("DCols%s", sBarrelType[iBarrel].Data()), Form("Number of DCols per chip for %s", sBarrelType[iBarrel].Data()), nChips[iBarrel], -0.5, nChips[iBarrel] - 0.5, nStaves[iBarrel], -0.5, nStaves[iBarrel] - 0.5);
     hCalibrationDColChipAverage[iBarrel]->SetStats(0);
     if (iBarrel != 0)
       formatAxes(hCalibrationDColChipAverage[iBarrel], "Chip", "", 1, 1.10);
