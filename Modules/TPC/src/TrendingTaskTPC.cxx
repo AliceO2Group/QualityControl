@@ -210,15 +210,10 @@ void TrendingTaskTPC::generatePlots()
       c->cd(p + 1);
       if (auto histo = dynamic_cast<TGraphErrors*>(c->cd(p + 1)->GetPrimitive("Graph"))) {
         beautifyGraph(histo, plot, c);
-        // Manually empty the buffers before visualising the plot.
-        // histo->BufferEmpty(); // TBD: Should we keep it or not? Graph does not have this method.c
       } else if (auto multigraph = dynamic_cast<TMultiGraph*>(c->cd(p + 1)->GetPrimitive("MultiGraph"))) {
         if (auto legend = dynamic_cast<TLegend*>(c->cd(2)->GetPrimitive("MultiGraphLegend"))) {
           c->cd(1);
           beautifyGraph(multigraph, plot, c);
-          multigraph->Draw("A pmc plc");
-          c->cd(2);
-          legend->Draw();
           c->cd(1)->SetLeftMargin(0.15);
           c->cd(1)->SetRightMargin(0.01);
           c->cd(2)->SetLeftMargin(0.01);
@@ -227,7 +222,6 @@ void TrendingTaskTPC::generatePlots()
           ILOG(Error, Support) << "No legend in multigraph-time" << ENDM;
           c->cd(1);
           beautifyGraph(multigraph, plot, c);
-          multigraph->Draw("A pmc plc");
         }
         c->Update();
       } else if (auto histo = dynamic_cast<TH2F*>(c->cd(p + 1)->GetPrimitive("Graph2D"))) {
@@ -237,7 +231,7 @@ void TrendingTaskTPC::generatePlots()
 
         if (!plot.graphAxisLabel.empty()) {
           setUserAxisLabel(histo->GetXaxis(), histo->GetYaxis(), plot.graphAxisLabel);
-          histo->Draw(plot.option.data());
+          c->Modified();
           c->Update();
         }
 
@@ -246,13 +240,14 @@ void TrendingTaskTPC::generatePlots()
           getUserAxisRange(plot.graphYRange, yMin, yMax);
           histo->SetMinimum(yMin);
           histo->SetMaximum(yMax);
-          histo->Draw(plot.option.data()); // redraw and update to force changes on y-axis
+          c->Modified();
           c->Update();
         }
 
         gStyle->SetPalette(kBird);
         histo->SetStats(kFALSE);
-        histo->Draw(plot.option.data());
+        c->Modified();
+        c->Update();
 
       } else {
         ILOG(Error, Devel) << "Could not get the 'Graph' of the plot '"
@@ -333,8 +328,6 @@ void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
                               << "', which is not a graph, ignoring." << ENDM;
         } else {
           graphErrors->Draw(opt.data());
-          // We try to convince ROOT to delete graphErrors together with the rest of the canvas.
-          saveObjectToPrimitives(thisCanvas, p + 1, graphErrors);
         }
       }
     }
@@ -386,10 +379,8 @@ void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
     for (auto obj : *multigraph->GetListOfGraphs()) {
       legend->AddEntry(obj, obj->GetName(), "lpf");
     }
-    // We try to convince ROOT to delete multigraph and legend together with the rest of the canvas.
-    saveObjectToPrimitives(thisCanvas, 1, multigraph);
-    saveObjectToPrimitives(thisCanvas, 2, legend);
-
+    thisCanvas->cd(2);
+    legend->Draw();
   } // Trending vs Time as Multigraph
   else if (trendType == "slices") {
 
@@ -428,8 +419,6 @@ void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
                             << "', which is not a graph, ignoring." << ENDM;
       } else {
         graphErrors->Draw(opt.data());
-        // We try to convince ROOT to delete graphErrors together with the rest of the canvas.
-        saveObjectToPrimitives(thisCanvas, 1, graphErrors);
       }
     }
   } // Trending vs Slices
@@ -476,8 +465,6 @@ void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
     myReader.Restart();
     gStyle->SetPalette(kBird);
     graph2D->Draw(opt.data());
-    // We try to convince ROOT to delete graphErrors together with the rest of the canvas.
-    saveObjectToPrimitives(thisCanvas, 1, graph2D);
   } // Trending vs Slices2D
 }
 
@@ -497,6 +484,7 @@ void TrendingTaskTPC::drawCanvasQO(TCanvas* thisCanvas, const std::string& var,
                        << "'Trending only possible vs time, break." << ENDM;
   }
   thisCanvas->DivideSquare(1);
+  thisCanvas->cd(1);
 
   // Delete the graph errors after the plot is saved. //To-Do check if ownership is now taken
   // Unfortunately the canvas does not take its ownership.
@@ -541,8 +529,6 @@ void TrendingTaskTPC::drawCanvasQO(TCanvas* thisCanvas, const std::string& var,
                         << "', which is not a graph, ignoring." << ENDM;
   } else {
     graphErrors->Draw(opt.data());
-    // We try to convince ROOT to delete graphErrors together with the rest of the canvas.
-    saveObjectToPrimitives(thisCanvas, 1, graphErrors);
   }
 }
 
@@ -582,15 +568,6 @@ void TrendingTaskTPC::getTrendErrors(const std::string& inputvar, std::string& e
   errorY = inputvar.substr(0, posEndType_err);
 }
 
-void TrendingTaskTPC::saveObjectToPrimitives(TCanvas* canvas, const int padNumber, TObject* object)
-{
-  if (auto* pad = canvas->GetPad(padNumber)) {
-    if (auto* primitives = pad->GetListOfPrimitives()) {
-      primitives->Add(object);
-    }
-  }
-}
-
 template <typename T>
 void TrendingTaskTPC::beautifyGraph(T& graph, const TrendingTaskConfigTPC::Plot& plotconfig, TCanvas* canv)
 {
@@ -610,7 +587,7 @@ void TrendingTaskTPC::beautifyGraph(T& graph, const TrendingTaskConfigTPC::Plot&
     getUserAxisRange(plotconfig.graphYRange, yMin, yMax);
     graph->SetMinimum(yMin);
     graph->SetMaximum(yMax);
-    graph->Draw(plotconfig.option.data()); // redraw and update to force changes on y-axis
+    canv->Modified();
     canv->Update();
   }
 
@@ -618,13 +595,13 @@ void TrendingTaskTPC::beautifyGraph(T& graph, const TrendingTaskConfigTPC::Plot&
     float xMin, xMax;
     getUserAxisRange(plotconfig.graphXRange, xMin, xMax);
     graph->GetXaxis()->SetLimits(xMin, xMax);
-    graph->Draw(fmt::format("{0:s} A", plotconfig.option.data()).data());
+    canv->Modified();
     canv->Update();
   }
 
   if (!plotconfig.graphAxisLabel.empty()) {
     setUserAxisLabel(graph->GetXaxis(), graph->GetYaxis(), plotconfig.graphAxisLabel);
-    graph->Draw(fmt::format("{0:s} A", plotconfig.option.data()).data());
+    canv->Modified();
     canv->Update();
   }
 
@@ -651,7 +628,7 @@ void TrendingTaskTPC::beautifyGraph(T& graph, const TrendingTaskConfigTPC::Plot&
     graph->GetYaxis()->ChangeLabel(3, -1., -1., -1., kOrange - 3, -1, "Medium");
     graph->GetYaxis()->ChangeLabel(4, -1., -1., -1., kRed, -1, "Bad");
 
-    graph->Draw(fmt::format("{0:s} A", plotconfig.option.data()).data());
+    canv->Modified();
     canv->Update();
   }
 }
