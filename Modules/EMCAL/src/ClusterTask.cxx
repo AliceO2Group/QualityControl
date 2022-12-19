@@ -74,21 +74,15 @@ ClusterTask::~ClusterTask()
   conditionalDelete(mHistNclustPerTFSelected);
   conditionalDelete(mHistNclustPerEvtSelected);
 
-  conditionalDelete(mHistTime_EMCal);
-  conditionalDelete(mHistClustE_EMCal);
-  conditionalDelete(mHistNCells_EMCal);
-  conditionalDelete(mHistM02_EMCal);
-  conditionalDelete(mHistM20_EMCal);
-  conditionalDelete(mHistM02VsClustE__EMCal);
-  conditionalDelete(mHistM20VsClustE__EMCal);
-
-  conditionalDelete(mHistTime_DCal);
-  conditionalDelete(mHistClustE_DCal);
-  conditionalDelete(mHistNCells_DCal);
-  conditionalDelete(mHistM02_DCal);
-  conditionalDelete(mHistM20_DCal);
-  conditionalDelete(mHistM02VsClustE__DCal);
-  conditionalDelete(mHistM20VsClustE__DCal);
+  for (int idet = 0; idet < NUM_DETS; idet++) {
+    conditionalDelete(mHistTime[idet]);
+    conditionalDelete(mHistClustE[idet]);
+    conditionalDelete(mHistNCells[idet]);
+    conditionalDelete(mHistM02[idet]);
+    conditionalDelete(mHistM20[idet]);
+    conditionalDelete(mHistM02VsClustE[idet]);
+    conditionalDelete(mHistM20VsClustE[idet]);
+  }
 
   conditionalDelete(mHistMassDiphoton_EMCAL);
   conditionalDelete(mHistMassDiphoton_DCAL);
@@ -156,24 +150,27 @@ void ClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
     mGeometry = o2::emcal::Geometry::GetInstanceFromRunNumber(300000); // svk
   mClusterFactory->setGeometry(mGeometry);
 
-  mHistNclustPerTF = new TH1F("NclustPerTF", "Number of clusters per time frame;N_{Cluster}/TF;", 2000, 0.0, 200000.0); // svk
+  //////////////////////////////////////////////////////////////
+  // Counter histograms                                       //
+  //////////////////////////////////////////////////////////////
+  mHistNclustPerTF = new TH1F("NclustPerTF", "Number of clusters per time frame; N_{Cluster}/TF; Yield", 2000, 0.0, 200000.0); // svk
   getObjectsManager()->startPublishing(mHistNclustPerTF);
 
-  mHistNclustPerEvt = new TH1F("NclustPerEvt", "Number of clusters per event;N_{Cluster}/Event;", 200, 0.0, 200.0); // svk
+  mHistNclustPerEvt = new TH1F("NclustPerEvt", "Number of clusters per event; N_{Cluster}/Event; Yield", 200, 0.0, 200.0); // svk
   getObjectsManager()->startPublishing(mHistNclustPerEvt);
 
-  mHistClustEtaPhi = new TH2F("ClustEtaPhi", "Cluster #eta and #phi distribution;#eta;#phi", 100, -1.0, 1.0, 100, 0.0, 2 * TMath::Pi()); // svk
+  mHistClustEtaPhi = new TH2F("ClustEtaPhi", "Cluster #eta and #phi distribution; #eta; #phi", 100, -1.0, 1.0, 100, 0.0, 2 * TMath::Pi()); // svk
   getObjectsManager()->startPublishing(mHistClustEtaPhi);
 
-  mHistNclustPerTFSelected = new TH1F("NclustPerTFSel", "Number of selected clusters per time frame;N_{Cluster}/TF;", 2000, 0.0, 200000.0);
+  mHistNclustPerTFSelected = new TH1F("NclustPerTFSel", "Number of selected clusters per time frame; N_{Cluster}/TF; yield", 2000, 0.0, 200000.0);
   getObjectsManager()->startPublishing(mHistNclustPerTFSelected);
 
-  mHistNclustPerEvtSelected = new TH1F("NclustPerEvtSel", "Number of clusters per event;N_{Cluster}/Event;", 200, 0.0, 200.0);
+  mHistNclustPerEvtSelected = new TH1F("NclustPerEvtSel", "Number of clusters per event; N_{Cluster}/Event; yield", 200, 0.0, 200.0);
   getObjectsManager()->startPublishing(mHistNclustPerEvtSelected);
 
-  ///////////////////
-  // Control histograms (optional)
-  ///////////////////
+  //////////////////////////////////////////////////////////////
+  // Control histograms (optional)                            //
+  //////////////////////////////////////////////////////////////
   if (mFillControlHistograms) {
     mHistCellEnergyTimeUsed = new TH2D("CellEnergyTimeUsedAll", "Cell energy vs time (all cells for clustering); E_{cell} (GeV); t_{cell} (ns)", 500, 0, 50, 1800, -900, 900);
     getObjectsManager()->startPublishing(mHistCellEnergyTimeUsed);
@@ -183,63 +180,57 @@ void ClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
     getObjectsManager()->startPublishing(mHistCellEnergyTimeCalib);
   }
 
-  ///////////////////
-  // EMCal histograms/
-  ///////////////////
-  mHistTime_EMCal = new TH2F("Time_EMCal", "Time of clusters;Clust E(GeV);t(ns);", 500, 0, 50, 1800, -900, 900); // svk
-  getObjectsManager()->startPublishing(mHistTime_EMCal);
+  //////////////////////////////////////////////////////////////
+  // Cluster distribution histograms (All/EMCAL/DCAL)         //
+  //////////////////////////////////////////////////////////////
+  for (auto idet = 0; idet < NUM_DETS; idet++) {
+    std::string detname, dettitle;
+    switch (idet) {
+      case DetType_t::ALL_DET:
+        detname = "All";
+        dettitle = "EMCAL+DCAL";
+        break;
+      case DetType_t::EMCAL_DET:
+        detname = "EMCal";
+        dettitle = "EMCAL";
+        break;
+      case DetType_t::DCAL_DET:
+        detname = "DCal";
+        dettitle = "DCAL";
+        break;
+      default:
+        break;
+    }
+    mHistTime[idet] = new TH2F(Form("Time_%s", detname.data()), Form("Cluster time (%s); E_{cl} (GeV); t(ns)", dettitle.data()), 500, 0, 50, 1800, -900, 900);
+    getObjectsManager()->startPublishing(mHistTime[idet]);
 
-  mHistClustE_EMCal = new TH1F("ClustE_EMCal", "Cluster energy distribution; Cluster E(GeV);Counts", 500, 0.0, 50.0);
-  getObjectsManager()->startPublishing(mHistClustE_EMCal);
+    mHistClustE[idet] = new TH1F(Form("ClustE_%s", detname.data()), Form("Cluster energy distribution (%s); E_{cl} (GeV); Yield", dettitle.data()), 500, 0.0, 50.0);
+    getObjectsManager()->startPublishing(mHistClustE[idet]);
 
-  mHistNCells_EMCal = new TH2F("Cells_EMCal", "No of cells in a cluster;Cluster E(GeV);N^{EMC}_{cells}", 500, 0, 50, 30, 0, 30);
-  getObjectsManager()->startPublishing(mHistNCells_EMCal);
+    mHistNCells[idet] = new TH2F(Form("Cells_%s", detname.data()), Form("No of cells in a cluster (%s); E_{cl} (GeV); N^{EMC}_{cells}", dettitle.data()), 500, 0, 50, 30, 0, 30);
+    getObjectsManager()->startPublishing(mHistNCells[idet]);
 
-  mHistM02_EMCal = new TH1F("M02_EMCal", "M02 distribution; M02;Counts", 200, 0.0, 2.0);
-  getObjectsManager()->startPublishing(mHistM02_EMCal);
+    mHistM02[idet] = new TH1F(Form("M02_%s", detname.data()), Form("M02 distribution (%s); M02; Yield", dettitle.data()), 200, 0.0, 2.0);
+    getObjectsManager()->startPublishing(mHistM02[idet]);
 
-  mHistM20_EMCal = new TH1F("M20_EMCal", "M20 distribution; M20;Counts", 200, 0.0, 2.0);
-  getObjectsManager()->startPublishing(mHistM20_EMCal);
+    mHistM20[idet] = new TH1F(Form("M20_%s", detname.data()), Form("M20 distribution (%s); M20; Yield", dettitle.data()), 200, 0.0, 2.0);
+    getObjectsManager()->startPublishing(mHistM20[idet]);
 
-  mHistM02VsClustE__EMCal = new TH2F("M02_Vs_ClustE_EMCal", "M02 Vs Cluster Energy in EMCal;Cluster E(GeV);M02", 500, 0, 50.0, 200, 0.0, 2.0); // svk
-  getObjectsManager()->startPublishing(mHistM02VsClustE__EMCal);
+    mHistM02VsClustE[idet] = new TH2F(Form("M02_Vs_ClustE_%s", detname.data()), Form("M02 vs cluster energy (%s); E_{cl} (GeV); M02", dettitle.data()), 500, 0, 50.0, 200, 0.0, 2.0);
+    getObjectsManager()->startPublishing(mHistM02VsClustE[idet]);
 
-  mHistM20VsClustE__EMCal = new TH2F("M20_Vs_ClustE_EMCal", "M20 Vs Cluster Energy in EMCal;Cluster E(GeV);M02", 500, 0, 50.0, 200, 0.0, 2.0); // svk
-  getObjectsManager()->startPublishing(mHistM20VsClustE__EMCal);
+    mHistM20VsClustE[idet] = new TH2F(Form("M20_Vs_ClustE_%s", detname.data()), Form("M20 vs cluster energy (%s); E_{cl} (GeV); M02", dettitle.data()), 500, 0, 50.0, 200, 0.0, 2.0);
+    getObjectsManager()->startPublishing(mHistM20VsClustE[idet]);
+  }
 
-  ///////////////////
-  // DCal histograms//
-  ///////////////////
+  //////////////////////////////////////////////////////////////
+  // Calib trigger histograms                                 //
+  //////////////////////////////////////////////////////////////
 
-  mHistTime_DCal = new TH2F("Time_DCal", "Time of clusters;Clust E(GeV);t(ns);", 500, 0, 50, 1800, -900, 900); // svk
-  getObjectsManager()->startPublishing(mHistTime_DCal);
-
-  mHistClustE_DCal = new TH1F("ClustE_DCal", "Cluster energy distribution; Cluster E(GeV);Counts", 500, 0.0, 50.0);
-  getObjectsManager()->startPublishing(mHistClustE_DCal);
-
-  mHistNCells_DCal = new TH2F("Cells_DCal", "No of cells in a cluster;Cluster E;N^{EMC}_{cells}", 500, 0, 50, 30, 0, 30);
-  getObjectsManager()->startPublishing(mHistNCells_DCal);
-
-  mHistM02_DCal = new TH1F("M02_DCal", "M02 distribution; M02;Counts", 200, 0.0, 2.0);
-  getObjectsManager()->startPublishing(mHistM02_DCal);
-
-  mHistM20_DCal = new TH1F("M20_DCal", "M20 distribution; M20;Counts", 200, 0.0, 2.0);
-  getObjectsManager()->startPublishing(mHistM20_DCal);
-
-  mHistM02VsClustE__DCal = new TH2F("M02_Vs_ClustE_DCal", "M02 Vs Cluster Energy in DCal;Cluster E(GeV);M02", 500, 0, 50.0, 200, 0.0, 2.0); // svk
-  getObjectsManager()->startPublishing(mHistM02VsClustE__DCal);
-
-  mHistM20VsClustE__DCal = new TH2F("M20_Vs_ClustE_DCal", "M20 Vs Cluster Energy in DCal;Cluster E(GeV);M02", 500, 0, 50.0, 200, 0.0, 2.0); // svk
-  getObjectsManager()->startPublishing(mHistM20VsClustE__DCal);
-
-  ///////////////////
-  // Calib trigger histograms//
-  ///////////////////
-
-  mHistNClustPerEvt_Calib = new TH1F("NclustPerEvt_Calib", "Number of clusters per calib event;N_{Cluster}/Event;", 4000, 0.0, 4000.0);
+  mHistNClustPerEvt_Calib = new TH1F("NclustPerEvt_Calib", "Number of clusters per calib event; N_{Cluster}/Event; Yield", 4000, 0.0, 4000.0);
   getObjectsManager()->startPublishing(mHistNClustPerEvt_Calib);
 
-  mHistNClustPerEvtSelected_Calib = new TH1F("NclustPerEvtSel_Calib", "Number of selected clusters per calib event;N_{Cluster}/Event;", 4000, 0.0, 4000.0);
+  mHistNClustPerEvtSelected_Calib = new TH1F("NclustPerEvtSel_Calib", "Number of selected clusters per calib event; N_{clusters}/Event; Yield", 4000, 0.0, 4000.0);
   getObjectsManager()->startPublishing(mHistNClustPerEvtSelected_Calib);
 
   mHistClusterEtaPhi_Calib = new TH2D("ClustEtaPhi_LED", "Cluster #eta-#phi position in LED events; #eta; #phi", 100, -1.0, 1.0, 100, 0.0, 2 * TMath::Pi());
@@ -254,9 +245,9 @@ void ClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistClusterEnergyCells_Calib = new TH2D("CusterEnergyNcell_LED", "Cluster energy vs. ncell in LED events; E_{cl} (GeV); n_{cell}", 500, 0, 50, 100, 0, 100);
   getObjectsManager()->startPublishing(mHistClusterEnergyCells_Calib);
 
-  ///////////////////
-  // Meson histograms//
-  ///////////////////
+  //////////////////////////////////////////////////////////////
+  // Meson histograms                                         //
+  //////////////////////////////////////////////////////////////
 
   if (mFillInvMassMeson) {
     mHistMassDiphoton_EMCAL = new TH1D("InvMassDiphoton_EMCAL", "Diphoton invariant mass for pairs in EMCAL; m_{#gamma#gamma} (GeV/c^{2}); Number of candidates", 400, 0., 0.8);
@@ -488,31 +479,34 @@ bool ClusterTask::fillClusterHistogramsPhysics(const o2::emcal::AnalysisCluster&
   Double_t emcphi = TVector2::Phi_0_2pi(clustpos.Phi());
   Double_t emceta = clustpos.Eta();
 
-  mHistClustEtaPhi->Fill(emceta, emcphi); // svk
+  mHistClustEtaPhi->Fill(emceta, emcphi);
 
-  if (emcphi < 4.)
-    clsTypeEMC = kTRUE; // EMCAL : 80 < phi < 187
-  else
-    clsTypeEMC = kFALSE; // DCAL  : 260 < phi < 327
-
-  if (clsTypeEMC) {
-    mHistTime_EMCal->Fill(clustE, clustT); // svk
-    mHistClustE_EMCal->Fill(clustE);
-    mHistNCells_EMCal->Fill(clustE, cluster.getNCells());
-    mHistM02_EMCal->Fill(cluster.getM02());
-    mHistM20_EMCal->Fill(cluster.getM20());
-    mHistM02VsClustE__EMCal->Fill(clustE, cluster.getM02()); // svk
-    mHistM20VsClustE__EMCal->Fill(clustE, cluster.getM20()); // svk
+  DetType_t dettype = DetType_t::ALL_DET; // Use ALL_DET as default value, will be replaced by actual subdetector
+  if (emcphi < 4.) {
+    dettype = DetType_t::EMCAL_DET; // EMCAL : 80 < phi < 187
   } else {
-    mHistTime_DCal->Fill(clustE, clustT); // svk
-    mHistClustE_DCal->Fill(clustE);
-    mHistNCells_DCal->Fill(clustE, cluster.getNCells());
-    mHistM02_DCal->Fill(cluster.getM02());
-    mHistM20_DCal->Fill(cluster.getM20());
-    mHistM02VsClustE__DCal->Fill(clustE, cluster.getM02()); // svk
-    mHistM20VsClustE__DCal->Fill(clustE, cluster.getM20()); // svk
+    dettype = DetType_t::DCAL_DET; // DCAL  : 260 < phi < 327
   }
-  return clsTypeEMC;
+
+  // First: Distributions both detectors together
+  mHistTime[DetType_t::ALL_DET]->Fill(clustE, clustT);
+  mHistClustE[DetType_t::ALL_DET]->Fill(clustE);
+  mHistNCells[DetType_t::ALL_DET]->Fill(clustE, cluster.getNCells());
+  mHistM02[DetType_t::ALL_DET]->Fill(cluster.getM02());
+  mHistM20[DetType_t::ALL_DET]->Fill(cluster.getM20());
+  mHistM02VsClustE[DetType_t::ALL_DET]->Fill(clustE, cluster.getM02());
+  mHistM20VsClustE[DetType_t::ALL_DET]->Fill(clustE, cluster.getM20());
+
+  // Second: Distributions per subdetector
+  mHistTime[dettype]->Fill(clustE, clustT);
+  mHistClustE[dettype]->Fill(clustE);
+  mHistNCells[dettype]->Fill(clustE, cluster.getNCells());
+  mHistM02[dettype]->Fill(cluster.getM02());
+  mHistM20[dettype]->Fill(cluster.getM20());
+  mHistM02VsClustE[dettype]->Fill(clustE, cluster.getM02());
+  mHistM20VsClustE[dettype]->Fill(clustE, cluster.getM20());
+
+  return dettype == DetType_t::EMCAL_DET;
 }
 
 void ClusterTask::fillClusterHistogramsLED(const o2::emcal::AnalysisCluster& cluster)
@@ -723,20 +717,15 @@ void ClusterTask::resetHistograms()
   conditionalReset(mHistNclustPerEvt);
   conditionalReset(mHistClustEtaPhi);
 
-  conditionalReset(mHistTime_EMCal);
-  conditionalReset(mHistClustE_EMCal);
-  conditionalReset(mHistNCells_EMCal);
-  conditionalReset(mHistM02_EMCal);
-  conditionalReset(mHistM20_EMCal);
-  conditionalReset(mHistM02VsClustE__EMCal);
-  conditionalReset(mHistM20VsClustE__EMCal);
-
-  conditionalReset(mHistClustE_DCal);
-  conditionalReset(mHistNCells_DCal);
-  conditionalReset(mHistM02_DCal);
-  conditionalReset(mHistM20_DCal);
-  conditionalReset(mHistM02VsClustE__DCal);
-  conditionalReset(mHistM20VsClustE__DCal);
+  for (auto idet = 0; idet < NUM_DETS; idet++) {
+    conditionalReset(mHistTime[idet]);
+    conditionalReset(mHistClustE[idet]);
+    conditionalReset(mHistNCells[idet]);
+    conditionalReset(mHistM02[idet]);
+    conditionalReset(mHistM20[idet]);
+    conditionalReset(mHistM02VsClustE[idet]);
+    conditionalReset(mHistM20VsClustE[idet]);
+  }
 
   conditionalReset(mHistMassDiphoton_EMCAL);
   conditionalReset(mHistMassDiphoton_DCAL);
