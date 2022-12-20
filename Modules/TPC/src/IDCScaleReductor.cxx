@@ -38,7 +38,7 @@ void IDCScaleReductor::update(TObject* obj)
     auto canvas = dynamic_cast<TCanvas*>(obj);
 
     if (canvas) {
-      TGraph* g = (TGraph*)canvas->GetListOfPrimitives()->FindObject("g_IDC0ScaleFactor");
+      auto g = dynamic_cast<TGraph*>(canvas->GetListOfPrimitives()->FindObject("g_IDC0ScaleFactor"));
 
       if (g) {
         mIDC.ScaleFactorASide = g->GetPointY(0);
