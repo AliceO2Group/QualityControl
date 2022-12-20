@@ -314,9 +314,48 @@ Please note, that the local batch QC workflow should not work on the same file a
 A semaphore mechanism is required if there is a risk they might be executed in parallel.
 
 The file is organized into directories named after 3-letter detector codes and sub-directories representing Monitor Object Collections for specific tasks.
-To browse the file, one needs the associated Quality Control environment loaded.
-It is worth remembering, that the stored Monitor Object do not have Checks applied, so their cannot be considered the final results.
-
+To browse the file, one needs the associated Quality Control environment loaded, since it contains QC-specific data structures.
+It is worth remembering, that this file is considered as intermediate storage, thus Monitor Object do not have Checks applied and cannot be considered the final results.
+The quick and easy way to inspect the contents of the file is to load a recent environment (e.g. on lxplus) and open it with ROOT's `TBrowser`:
+```shell
+alienv enter O2PDPSuite/nightly-20221219-1
+root
+TBrowser t; // a browser window will pop-up 
+```
+...or by browsing the file manually:
+```shell
+alienv enter O2PDPSuite/nightly-20221219-1
+root
+root [0] auto f = new TFile("QC_fullrun.root")
+(TFile *) @0x7ffe84833dc8
+root [1] f->ls()
+TFile**		QC_fullrun.root	
+ TFile*		QC_fullrun.root	
+  KEY: TDirectoryFile	CPV;1	CPV
+  KEY: TDirectoryFile	EMC;1	EMC
+  KEY: TDirectoryFile	FDD;1	FDD
+  KEY: TDirectoryFile	FT0;1	FT0
+  KEY: TDirectoryFile	FV0;1	FV0
+  KEY: TDirectoryFile	GLO;1	GLO
+  KEY: TDirectoryFile	ITS;1	ITS
+...
+root [2] f->cd("GLO")
+(bool) true
+root [3] f->ls()
+TFile**		QC_fullrun.root	
+ TFile*		QC_fullrun.root	
+  TDirectoryFile*		GLO	GLO
+   KEY: o2::quality_control::core::MonitorObjectCollection	MTCITSTPC;1	
+   KEY: o2::quality_control::core::MonitorObjectCollection	Vertexing;1	
+  KEY: TDirectoryFile	CPV;1	CPV
+...
+root [4] auto vtx = dynamic_cast<o2::quality_control::core::MonitorObjectCollection*>(f->Get("GLO/Vertexing"))
+(o2::quality_control::core::MonitorObjectCollection *) @0x7ffe84833dc8
+root [5] auto vtx_x = dynamic_cast<o2::quality_control::core::MonitorObject*>(vtx->FindObject("vertex_X"))
+(o2::quality_control::core::MonitorObject *) @0x7ffe84833dc8
+root [6] vtx_x->getObject()->ClassName()
+(const char *) "TH1F"
+```
 To merge several incomplete QC files, one can use the `o2-qc-file-merger` executable.
 It takes a list of input files, which may or may not reside on alien, and produces a merged file.
 One can select whether the executable should fail upon any error or continue for as long as possible.
