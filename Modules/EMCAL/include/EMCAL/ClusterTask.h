@@ -82,10 +82,10 @@ class ClusterTask final : public TaskInterface
   ///< \struct MesonClusterSelection
   ///< \brief Cluster selection for meson candidates
   struct MesonClusterSelection {
-    double mMinE = 0.5;    ///< Min. Cluster E
-    double mMaxTime = 25.; ///< Max cluster time relative to 0
-    int mMinNCell = 2;     ///< Min. Number of cells in cluster
-    bool mRejectExotics;   ///< Reject exotic clusters
+    double mMinE = 0.5;         ///< Min. Cluster E
+    double mMaxTime = 25.;      ///< Max cluster time relative to 0
+    int mMinNCell = 2;          ///< Min. Number of cells in cluster
+    bool mRejectExotics = true; ///< Reject exotic clusters
 
     /// \brief Select cluster based on cluster cuts
     /// \param cluster Cluster to be checked
