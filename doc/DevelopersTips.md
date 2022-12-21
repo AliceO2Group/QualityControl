@@ -429,6 +429,7 @@ CONFIG=$(alien_find /alice/data/2022/LHC22m/523821/apass2_cpu QC_production.json
 if [ -n "$CONFIG" ]
 then
   alien_cp "$CONFIG" file://QC_production.json
-  o2-qc --remote-batch QC_fullrun.root --config "json://QC_production.json" -b
+  # we override activity values, as QC_production.json might have only placeholders
+  o2-qc --remote-batch QC_fullrun.root --config "json://QC_production.json" -b --override-values "qc.config.Activity.number=523897;qc.config.Activity.passName=apass2;qc.config.Activity.periodName=LHC22m"
 fi
 ```
