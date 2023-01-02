@@ -364,6 +364,10 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
         bcCorrCable += o2::constants::lhc::LHCMaxBunches;
       }
 
+      if (bcCorrCable >= o2::constants::lhc::LHCMaxBunches) {
+        bcCorrCable -= o2::constants::lhc::LHCMaxBunches;
+      }
+
       ndigitsPerBC[row.mFirstIR.orbit % nOrbits][bcCorrCable]++;
 
       ndigitsPerCrate[crateECH]++;
