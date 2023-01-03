@@ -222,7 +222,7 @@ TriggerFcn ForEachObject(std::string databaseUrl, std::string databaseType, std:
 
   return [filteredObjects, activity, currentObject = filteredObjects->begin(), config]() mutable -> Trigger {
     if (currentObject != filteredObjects->end()) {
-      auto currentActivity = repository::database_helpers::asActivity(*currentObject);
+      auto currentActivity = repository::database_helpers::asActivity(*currentObject, activity.mProvenance);
       bool last = currentObject + 1 == filteredObjects->end();
       Trigger trigger(TriggerType::ForEachObject, last, currentActivity, currentObject->get<int64_t>(timestampKey));
       ++currentObject;
