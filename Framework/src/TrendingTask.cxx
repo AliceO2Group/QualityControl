@@ -199,8 +199,8 @@ void TrendingTask::generatePlots()
       // After the update, the title has a different size and it is not in the center anymore. We have to fix that.
       if (auto title = dynamic_cast<TPaveText*>(c->GetPrimitive("title"))) {
         title->SetBBoxCenterX(c->GetBBoxCenter().fX);
-        // It will have an effect only after invoking Draw again.
-        title->Draw();
+        c->Modified();
+        c->Update();
       } else {
         ILOG(Error, Devel) << "Could not get the title TPaveText of the plot '" << plot.name << "'." << ENDM;
       }

@@ -9,8 +9,8 @@
         "name": "not_applicable"
       },
       "Activity": {
-        "number": "42",
-        "type": "2"
+        "number": "",
+        "type": ""
       },
       "monitoring": {
         "url": "infologger:///debug?qc"
@@ -47,6 +47,48 @@
             "option": "*L",
             "graphErrors": "errMeanX:0.5", 
             "graphYRange": "0.0:10.0"
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "60 seconds"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      },
+      "TestIDCScaleFactorTrending": {
+        "active": "true",
+        "className": "o2::quality_control::postprocessing::TrendingTask",
+        "moduleName": "QcTPC",
+        "detectorName": "TPC",
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "TPC/MO/IDCs",
+            "names": [ "c_sides_IDC0_scale" ],
+            "reductorName": "o2::quality_control_modules::tpc::IDCScaleReductor",
+            "moduleName": "QcTPC"
+          }
+        ],
+        "plots": [
+          {
+            "name": "IDC0_ScaleFactor_ASide_Trend",
+            "title": "IDC 0 Scale Factor - A Side",
+            "varexp": "c_sides_IDC0_scale.IDCScaleFactorASide:time",
+            "selection": "",
+            "option": "*L",
+            "graphAxisLabel": "IDC0 Scale Factor - A Side:time"
+          },
+          {
+            "name": "IDC0_ScaleFactor_CSide_Trend",
+            "title": "IDC 0 Scale Factor - C Side",
+            "varexp": "c_sides_IDC0_scale.IDCScaleFactorCSide:time",
+            "selection": "",
+            "option": "*L",
+            "graphAxisLabel": "IDC0 Scale Factor - C Side:time"
           }
         ],
         "initTrigger": [
