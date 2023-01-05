@@ -57,6 +57,7 @@ Quality SkeletonCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
                            "This is to demonstrate that we can assign more than one Reason to a Quality");
         }
       }
+      result.addMetadata("mykey", "myvalue");
     }
   }
   return result;
