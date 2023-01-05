@@ -26,6 +26,7 @@
 
 #include <DataFormatsITSMFT/TopologyDictionary.h>
 #include <ITSBase/GeometryTGeo.h>
+#include <Framework/TimingInfo.h>
 
 class TH1D;
 class TH2D;
@@ -96,7 +97,7 @@ class ITSClusterTask : public TaskInterface
   int mNRofs = 0;
   int mNRofsMonitor = 0;
   int nBCbins = 103;
-  long int mTimestamp;
+  long int mTimestamp = -1;
   std::string mGeomPath = "./";
   TString xLabel;
   std::string mGeoTimestamp = "1640991600000";

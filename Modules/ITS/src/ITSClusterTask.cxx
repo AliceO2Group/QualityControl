@@ -126,15 +126,6 @@ void ITSClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   mGeneralOccupancy->GetXaxis()->SetLabelSize(0);
   mGeneralOccupancy->GetZaxis()->SetTitle("Max Avg Cluster occ (clusters/event/chip)");
   publishHistos();
-
-  // get dict from ccdb
-  mTimestamp = std::stol(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "dicttimestamp", "0"));
-  long int ts = mTimestamp ? mTimestamp : o2::ccdb::getCurrentTimestamp();
-  ILOG(Info, Support) << "Getting dictionary from ccdb - timestamp: " << ts << ENDM;
-  auto& mgr = o2::ccdb::BasicCCDBManager::instance();
-  mgr.setTimestamp(ts);
-  mDict = mgr.get<o2::itsmft::TopologyDictionary>("ITS/Calib/ClusterDictionary");
-  ILOG(Info, Support) << "Dictionary size: " << mDict->getSize() << ENDM;
 }
 
 void ITSClusterTask::startOfActivity(Activity& /*activity*/)
@@ -150,6 +141,16 @@ void ITSClusterTask::startOfCycle()
 
 void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
+
+  if (mTimestamp == -1) { // get dict from ccdb
+    mTimestamp = std::stol(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "dicttimestamp", "0"));
+    long int ts = mTimestamp ? mTimestamp : ctx.services().get<o2::framework::TimingInfo>().creation;
+    ILOG(Info, Support) << "Getting dictionary from ccdb - timestamp: " << ts << ENDM;
+    auto& mgr = o2::ccdb::BasicCCDBManager::instance();
+    mgr.setTimestamp(ts);
+    mDict = mgr.get<o2::itsmft::TopologyDictionary>("ITS/Calib/ClusterDictionary");
+    ILOG(Info, Support) << "Dictionary size: " << mDict->getSize() << ENDM;
+  }
 
   std::chrono::time_point<std::chrono::high_resolution_clock> start;
   std::chrono::time_point<std::chrono::high_resolution_clock> end;
