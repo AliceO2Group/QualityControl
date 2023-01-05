@@ -172,7 +172,7 @@ void SliceTrendingTask::generatePlots()
     drawCanvasMO(c, plot.varexp, plot.name, plot.option, plot.graphErrors, mAxisDivision[varName]);
 
     int NumberPlots = 1;
-    if (plot.varexp.find(":time") != std::string::npos) { // we plot vs time, multiple plots on canvas possible
+    if (plot.varexp.find(":time") != std::string::npos || plot.varexp.find(":run") != std::string::npos) { // we plot vs time, multiple plots on canvas possible
       NumberPlots = mNumberPads[varName];
     }
     for (int p = 0; p < NumberPlots; p++) {
@@ -243,9 +243,9 @@ void SliceTrendingTask::drawCanvasMO(TCanvas* thisCanvas, const std::string& var
   getTrendErrors(err, errXName, errYName);
 
   // Divide the canvas into the correct number of pads.
-  if (trendType == "time") {
+  if (trendType == "time" || trendType == "run") {
     thisCanvas->DivideSquare(mNumberPads[varName]); // trending vs time: multiple plots per canvas possible
-  } else if (trendType == "multigraphtime") {
+  } else if (trendType == "multigraphtime" || trendType == "multigraphrun") {
     thisCanvas->Divide(2, 1);
   } else {
     thisCanvas->DivideSquare(1);
@@ -258,13 +258,14 @@ void SliceTrendingTask::drawCanvasMO(TCanvas* thisCanvas, const std::string& var
   // Setup the tree reader with the needed values.
   TTreeReader myReader(mTrend.get());
   TTreeReaderValue<UInt_t> retrieveTime(myReader, "time");
+  TTreeReaderValue<Int_t> retrieveRun(myReader, "meta.runNumber");
   TTreeReaderValue<std::vector<SliceInfo>> dataRetrieveVector(myReader, varName.data());
 
   const int nuPa = mNumberPads[varName];
   const int nEntries = mTrend->GetEntriesFast();
 
   // Fill the graph(errors) to be published.
-  if (trendType == "time") {
+  if (trendType == "time" || trendType == "run") {
 
     for (int p = 0; p < nuPa; p++) {
       thisCanvas->cd(p + 1);
@@ -273,7 +274,7 @@ void SliceTrendingTask::drawCanvasMO(TCanvas* thisCanvas, const std::string& var
       graphErrors = new TGraphErrors(nEntries);
 
       while (myReader.Next()) {
-        const double timeStamp = (double)(*retrieveTime);
+        const double timeStamp = (trendType == "time") ? (double)(*retrieveTime) : (double)(*retrieveRun);
         const double dataPoint = (dataRetrieveVector->at(p)).retrieveValue(typeName);
         double errorX = 0.;
         double errorY = 0.;
@@ -301,7 +302,7 @@ void SliceTrendingTask::drawCanvasMO(TCanvas* thisCanvas, const std::string& var
       }
     }
   } // Trending vs time
-  else if (trendType == "multigraphtime") {
+  else if (trendType == "multigraphtime" || trendType == "multigraphrun") {
 
     auto multigraph = new TMultiGraph();
     multigraph->SetName("MultiGraph");
@@ -311,7 +312,7 @@ void SliceTrendingTask::drawCanvasMO(TCanvas* thisCanvas, const std::string& var
       auto gr = new TGraphErrors(nEntries);
 
       while (myReader.Next()) {
-        const double timeStamp = (double)(*retrieveTime);
+        const double timeStamp = (trendType == "multigraphtime") ? (double)(*retrieveTime) : (double)(*retrieveRun);
         const double dataPoint = (dataRetrieveVector->at(p)).retrieveValue(typeName);
         double errorX = 0.;
         double errorY = 0.;
@@ -518,7 +519,7 @@ void SliceTrendingTask::beautifyGraph(T& graph, const SliceTrendingTaskConfig::P
     graph->GetXaxis()->SetTimeOffset(0.0);
     graph->GetXaxis()->SetLabelOffset(0.02);
     graph->GetXaxis()->SetTimeFormat("#splitline{%d.%m.%y}{%H:%M}");
-  } else if (plotconfig.varexp.find(":meta.runNumber") != std::string::npos) {
+  } else if (plotconfig.varexp.find(":meta.runNumber") != std::string::npos || plotconfig.varexp.find(":run") != std::string::npos || plotconfig.varexp.find(":multigraphrun") != std::string::npos) {
     graph->GetXaxis()->SetNoExponent(true);
   }
 }
