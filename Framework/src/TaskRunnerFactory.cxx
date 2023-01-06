@@ -80,10 +80,11 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
     { "Alignments", o2::base::GRPGeomRequest::GeomRequest::Alignments }
   };
   const auto& grp = taskSpec.grpGeomRequestSpec;
-  auto grpGeomRequest = grp.geomRequest == "None" //
-                          ? nullptr               //
-                          : std::make_shared<o2::base::GRPGeomRequest>(
-                              grp.askTime, grp.askGRPECS, grp.askGRPLHCIF, grp.askGRPMagField, grp.askMatLUT, geomRequestFromString.at(grp.geomRequest), inputs, grp.askOnceAllButField, grp.needPropagatorD);
+  auto grpGeomRequest = grp.anyRequestEnabled()                                                               //
+                          ? nullptr                                                                           //
+                          : std::make_shared<o2::base::GRPGeomRequest>(                                       //
+                              grp.askTime, grp.askGRPECS, grp.askGRPLHCIF, grp.askGRPMagField, grp.askMatLUT, //
+                              geomRequestFromString.at(grp.geomRequest), inputs, grp.askOnceAllButField, grp.needPropagatorD);
 
   OutputSpec monitorObjectsSpec{ { "mo" },
                                  TaskRunner::createTaskDataOrigin(taskSpec.detectorName),

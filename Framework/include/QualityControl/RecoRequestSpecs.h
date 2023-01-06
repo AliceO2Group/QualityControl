@@ -25,7 +25,6 @@ namespace o2::quality_control::core
 
 // this reflects the GRPGeomRequest struct, but allows us to gather the values and fill the input specs at different stages
 struct GRPGeomRequestSpec {
-  //  o2::base::GRPGeomRequest::GeomRequest geomRequest = None;
   std::string geomRequest = "None";
 
   bool askGRPECS = false;
@@ -35,6 +34,11 @@ struct GRPGeomRequestSpec {
   bool askTime = false;            // need orbit reset time for precise timestamp calculation
   bool askOnceAllButField = false; // for all entries but field query only once
   bool needPropagatorD = false;    // init also PropagatorD
+
+  bool anyRequestEnabled() const
+  {
+    return geomRequest != "None" || askGRPECS || askGRPLHCIF || askGRPMagField || askMatLUT || askTime || askOnceAllButField || needPropagatorD;
+  }
 };
 
 struct RecoDataRequestSpec {
