@@ -111,6 +111,10 @@ void QualityObserver::getQualities(const Trigger& t,
         mQualities[config.groupTitle].push_back(quality.getName());
         mReasons[config.groupTitle].push_back(quality.getMetadata(quality.getName(), ""));
         mComments[config.groupTitle].push_back(quality.getMetadata("Comment", ""));
+<<<<<<< HEAD
+=======
+        ILOG(Error, Support) << "meta of " << qualityobject << " " <<quality.getMetadata(quality.getName(), "") << " " << quality.getMetadata("Comment", "not found")<<  ENDM;
+>>>>>>> TPC QC WIP: Update QualityObserver for metadata
       } else {
         mQualities[config.groupTitle].push_back(Quality::Null.getName());
         mReasons[config.groupTitle].push_back("");
