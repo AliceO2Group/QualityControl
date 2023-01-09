@@ -29,6 +29,7 @@
         "moduleName": "QcTPC",
         "detectorName": "TPC",
         "qualityObserverName": "TestObserver",
+        "observeDetails": "false", 
         "qualityObserverConfig": [
           {
             "groupTitle": "Tracks Trending",
