@@ -19,10 +19,16 @@
 
 #include <string>
 #include <unordered_map>
+#include <memory>
 
 #include <Framework/DataProcessorSpec.h>
 #include "QualityControl/Activity.h"
 #include "QualityControl/DiscardFileParameters.h"
+
+namespace o2::base
+{
+class GRPGeomRequest;
+}
 
 namespace o2::quality_control::core
 {
@@ -48,6 +54,7 @@ struct TaskRunnerConfig {
   int resetAfterCycles = 0;
   core::DiscardFileParameters infologgerDiscardParameters;
   Activity fallbackActivity;
+  std::shared_ptr<o2::base::GRPGeomRequest> grpGeomRequest;
 };
 
 } // namespace o2::quality_control::core
