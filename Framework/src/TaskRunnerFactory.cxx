@@ -81,10 +81,11 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
   };
   const auto& grp = taskSpec.grpGeomRequestSpec;
   auto grpGeomRequest = grp.anyRequestEnabled()                                                               //
-                          ? nullptr                                                                           //
-                          : std::make_shared<o2::base::GRPGeomRequest>(                                       //
+                          ? std::make_shared<o2::base::GRPGeomRequest>(                                       //
                               grp.askTime, grp.askGRPECS, grp.askGRPLHCIF, grp.askGRPMagField, grp.askMatLUT, //
-                              geomRequestFromString.at(grp.geomRequest), inputs, grp.askOnceAllButField, grp.needPropagatorD);
+                              geomRequestFromString.at(grp.geomRequest), inputs, grp.askOnceAllButField,      //
+                              grp.needPropagatorD)                                                            //
+                          : nullptr;
 
   OutputSpec monitorObjectsSpec{ { "mo" },
                                  TaskRunner::createTaskDataOrigin(taskSpec.detectorName),
