@@ -70,7 +70,29 @@ If for some reason you don't want or can't use the QCG, the CCDB provides a web 
 
 ### How to delete objects from the CCDB ?
 
-By accessing http://ccdb-test.cern.ch:8080/truncate/path/to/folder you will delete all the objects at the given path. Careful with that please ! Don't delete data of others.<br/>In production it will of course not be possible to do so. 
+#### The nuclear option
+
+By accessing `http://ccdb-test.cern.ch:8080/truncate/path/to/folder/.*` you will delete all the objects at the given path. Careful with that please ! Don't delete data of others.<br/>In production it will of course not be possible to do so. 
+
+#### A set of run exported from the logbook
+
+Use `o2-qc-repo-delete-objects-in-runs`. The `--help` will tell you all you need to know about this tool.
+`--print-list` is very useful to see what will be deleted.
+
+Here is an example:
+```
+o2-qc-repo-delete-objects-in-runs --url http://localhost:8083 --path qc/EMC/.* --runs-csv-file /tmp/runs_standalone_bad_LHC22m.csv
+```
+
+#### By time period
+
+Use `o2-qc-repo-delete-time-interval`. The `--help` will tell you all you need to know about this tool. 
+`--print-list` is very useful to see what will be deleted. 
+
+Here is an example:
+```
+o2-qc-repo-delete-time-interval --url http://localhost:8083 --path qc_async/EMC/MO/AsyncTrend --from 0 --to 1654706422910
+```
 
 ### My objects are not stored due to their size. What can I do ?
 
