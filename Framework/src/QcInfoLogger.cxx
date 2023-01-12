@@ -97,7 +97,7 @@ void QcInfoLogger::init(const std::string& facility,
                         const std::string& partitionName)
 {
   DiscardFileParameters discardFileParameters;
-  std::string discardDebugStr = config.get<std::string>("qc.config.infologger.filterDiscardDebug", "false");
+  std::string discardDebugStr = config.get<std::string>("qc.config.infologger.filterDiscardDebug", "true");
   discardFileParameters.debug = discardDebugStr == "true";
   discardFileParameters.fromLevel = config.get<int>("qc.config.infologger.filterDiscardLevel", 21 /* Discard Trace */);
   discardFileParameters.discardFile = config.get<std::string>("qc.config.infologger.filterDiscardFile", "");

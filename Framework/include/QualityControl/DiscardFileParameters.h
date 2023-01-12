@@ -23,7 +23,7 @@ namespace o2::quality_control::core
 {
 
 struct DiscardFileParameters {
-  bool debug = false;
+  bool debug = true;
   int fromLevel = 21 /* Discard Trace */;
   std::string discardFile;
   unsigned long rotateMaxBytes = 0;
