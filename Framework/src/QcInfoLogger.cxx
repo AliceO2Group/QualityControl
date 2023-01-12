@@ -79,6 +79,7 @@ void QcInfoLogger::init(const std::string& facility,
     ILOG_INST.filterDiscardSetFile(discardFileParameters.discardFile.c_str(), discardFileParameters.rotateMaxBytes, discardFileParameters.rotateMaxFiles, 0, true /*Do not store Debug messages in file*/);
   }
   ILOG(Debug, Ops) << "QC infologger initialized" << ENDM;
+  std::cout << "YYY : " << discardFileParameters.debug << std::endl;
   ILOG(Debug, Support) << "   Discard debug ? " << discardFileParameters.debug << ENDM;
   ILOG(Debug, Support) << "   Discard from level ? " << discardFileParameters.fromLevel << ENDM;
   ILOG(Debug, Support) << "   Discard to file ? " << (!discardFileParameters.discardFile.empty() ? discardFileParameters.discardFile : "No") << ENDM;
@@ -97,8 +98,9 @@ void QcInfoLogger::init(const std::string& facility,
                         const std::string& partitionName)
 {
   DiscardFileParameters discardFileParameters;
-  std::string discardDebugStr = config.get<std::string>("qc.config.infologger.filterDiscardDebug", "false");
+  std::string discardDebugStr = config.get<std::string>("qc.config.infologger.filterDiscardDebug", "true");
   discardFileParameters.debug = discardDebugStr == "true";
+  std::cout << "XXX : " << discardFileParameters.debug << std::endl;
   discardFileParameters.fromLevel = config.get<int>("qc.config.infologger.filterDiscardLevel", 21 /* Discard Trace */);
   discardFileParameters.discardFile = config.get<std::string>("qc.config.infologger.filterDiscardFile", "");
   discardFileParameters.rotateMaxBytes = config.get<u_long>("infologger.filterRotateMaxBytes", 0);
