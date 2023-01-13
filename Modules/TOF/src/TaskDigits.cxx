@@ -146,6 +146,13 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   }
   getObjectsManager()->startPublishing(mHistoNoisyChannels.get());
 
+  // if mBinsMultiplicity > 1000 limit it in TH2F
+  int nBinsMultForTH2 = mBinsMultiplicity;
+  if (nBinsMultForTH2 > 1000) {
+    nBinsMultForTH2 = 1000;
+    ILOG(Info, Support) << "Requested Nbins in multiplicity is " << mBinsMultiplicity << " but limited to 1000 ONLY for TH2 " << ENDM;
+  }
+
   // Multiplicity
   mHistoMultiplicity = std::make_shared<TH1I>("Multiplicity/Integrated", "TOF hit multiplicity;TOF hits;Events ", mBinsMultiplicity, mRangeMinMultiplicity, mRangeMaxMultiplicity);
   getObjectsManager()->startPublishing(mHistoMultiplicity.get());
@@ -162,13 +169,13 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   mHistoMultiplicityOC = std::make_shared<TH1I>("Multiplicity/SectorOC", "TOF hit multiplicity - O/C side;TOF hits;Events ", mBinsMultiplicity, mRangeMinMultiplicity, mRangeMaxMultiplicity);
   getObjectsManager()->startPublishing(mHistoMultiplicityOC.get());
 
-  mHitMultiplicityVsCrate = std::make_shared<TH2F>("Multiplicity/VsCrate", "TOF hit multiplicity vs Crate;Crate;TOF hits", RawDataDecoder::ncrates, 0, RawDataDecoder::ncrates, mBinsMultiplicity, mRangeMinMultiplicity, mRangeMaxMultiplicity);
+  mHitMultiplicityVsCrate = std::make_shared<TH2F>("Multiplicity/VsCrate", "TOF hit multiplicity vs Crate;Crate;TOF hits", RawDataDecoder::ncrates, 0, RawDataDecoder::ncrates, nBinsMultForTH2, mRangeMinMultiplicity, mRangeMaxMultiplicity);
   getObjectsManager()->startPublishing(mHitMultiplicityVsCrate.get());
 
   mHitMultiplicityVsCratepro = std::make_shared<TProfile>("Multiplicity/VsCratepro", "TOF hit multiplicity vs Crate;Crate;#LT TOF hits #GT", RawDataDecoder::ncrates, 0, RawDataDecoder::ncrates);
   getObjectsManager()->startPublishing(mHitMultiplicityVsCratepro.get());
 
-  mHitMultiplicityVsBC = std::make_shared<TH2F>("Multiplicity/VsBC", "TOF hit multiplicity vs BC;BC;#TOF hits;Events", mBinsBCForMultiplicity, 0, mRangeMaxBC, mBinsMultiplicity, mRangeMinMultiplicity, mRangeMaxMultiplicity);
+  mHitMultiplicityVsBC = std::make_shared<TH2F>("Multiplicity/VsBC", "TOF hit multiplicity vs BC;BC;#TOF hits;Events", mBinsBCForMultiplicity, 0, mRangeMaxBC, nBinsMultForTH2, mRangeMinMultiplicity, mRangeMaxMultiplicity);
   getObjectsManager()->startPublishing(mHitMultiplicityVsBC.get());
 
   mHitMultiplicityVsBCpro = std::make_shared<TProfile>("Multiplicity/VsBCpro", "TOF hit multiplicity vs BC;BC;#TOF hits;Events", mBinsBCForMultiplicity, 0, mRangeMaxBC);
