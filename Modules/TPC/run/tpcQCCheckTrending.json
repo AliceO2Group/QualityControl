@@ -35,14 +35,19 @@
 
         "stopTrigger_comment": [ "Parameters are needed to choose if check should be performed only as last point comparison to average or average comparison to expected value." ],
         "checkParameters": {
-          "chooseCheckMeanOrExpectedPhysicsValueOrBoth" : "Both",
-          "expectedPhysicsValue" : "0",
+          "CheckChoice" : "Zero, Mean, Range",
+          "expectedPhysicsValue" : "65",
           "allowedNSigmaForExpectation" : "3",
           "badNSigmaForExpectation" : "6",
           "allowedNSigmaForMean" : "3",
           "badNSigmaForMean" : "6",
           "pointsToTakeForExpectedValueCheck" : "10",
-          "pointsToTakeForMeanCheck" : "10"
+          "pointsToTakeForMeanCheck" : "10",
+          "allowedRange" : "0.2",
+          "badRange" : "2",
+          "pointsToTakeForRangeCheck" : "10",
+          "MetadataComment" : "TestComment2",
+          "pointsToTakeForZeroCheck" : "8"
         }
         },
         "CheckOfTrack_Trending" : {
@@ -59,14 +64,21 @@
 
         "stopTrigger_comment": [ "Parameters are needed to choose if check should be performed only as last point comparison to average or average comparison to expected value." ],
         "checkParameters": {
-          "chooseCheckMeanOrExpectedPhysicsValueOrBoth" : "Mean",
+          "CheckChoice" : "Mean",
           "expectedPhysicsValue" : "0",
+          "EPV_comment" : "This value is used for the Expected Physics Value and the Range Check",
           "allowedNSigmaForExpectation" : "3",
           "badNSigmaForExpectation" : "6",
-          "allowedNSigmaForMean" : "3",
-          "badNSigmaForMean" : "6",
+          "allowedNSigmaForMean" : "1",
+          "badNSigmaForMean" : "2",
           "pointsToTakeForExpectedValueCheck" : "10",
-          "pointsToTakeForMeanCheck" : "10"
+          "pointsToTakeForMeanCheck" : "10",
+          "allowedRange" : "0.3",
+          "badRange" : "0.6",
+          "pointsToTakeForRangeCheck" : "3",
+          "MetadataComment" : "TestComment",
+          "pointsToTakeForZeroCheck" : "12"
+          
         }
       }
      },
@@ -355,7 +367,7 @@
           "userorcontrol"
         ],
         "updateTrigger": [
-          "30 seconds"
+          "1 seconds"
         ],
         "stopTrigger": [
           "userorcontrol"

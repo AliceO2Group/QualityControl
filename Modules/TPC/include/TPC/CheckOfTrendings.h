@@ -47,11 +47,30 @@ class CheckOfTrendings : public o2::quality_control::checker::CheckInterface
   float mNSigmaBadExpectedPhysicsValue;
   float mNSigmaMean;
   float mNSigmaBadMean;
+  float mRangeMedium;
+  float mRangeBad;
+
+  // float mMeanFull=0;
+  double mMean = 0;
+  float mStdev;
+  float mStdevFull;
+
   int mPointToTakeForExpectedValueCheck;
   int mPointToTakeForMeanCheck;
-  static constexpr std::string_view CheckChoiceMean = "Mean";
-  static constexpr std::string_view CheckChoiceExpectedPhysicsValue = "ExpectedPhysicsValue";
-  static constexpr std::string_view CheckChoiceBoth = "Both";
+  int mPointToTakeForRangeCheck;
+  int mPointToTakeForZeroCheck;
+
+  std::string mBadString = "";
+  std::string mMediumString = "";
+  std::string mGoodString = "";
+  std::string mNullString = "";
+
+  std::string mMetadataComment;
+
+  bool mRangeCheck = false;
+  bool mExpectedValueCheck = false;
+  bool mMeanCheck = false;
+  bool mZeroCheck = false;
 };
 
 } // namespace o2::quality_control_modules::tpc
