@@ -77,7 +77,7 @@ void QualityObserver::initialize(Trigger, framework::ServiceRegistryRef)
   mColors[Quality::Bad.getName()] = kRed;
   mColors[Quality::Medium.getName()] = kOrange - 3;
   mColors[Quality::Good.getName()] = kGreen + 2;
-  mColors[Quality::Null.getName()] = kGray + 2;
+  mColors[Quality::Null.getName()] = kViolet - 6;
 }
 
 void QualityObserver::update(Trigger t, framework::ServiceRegistryRef services)
@@ -111,7 +111,6 @@ void QualityObserver::getQualities(const Trigger& t,
         mQualities[config.groupTitle].push_back(quality.getName());
         mReasons[config.groupTitle].push_back(quality.getMetadata(quality.getName(), ""));
         mComments[config.groupTitle].push_back(quality.getMetadata("Comment", ""));
-        ILOG(Error, Support) << "meta of " << qualityobject << " " <<quality.getMetadata(quality.getName(), "") << " " << quality.getMetadata("Comment", "not found")<<  ENDM;
       } else {
         mQualities[config.groupTitle].push_back(Quality::Null.getName());
         mReasons[config.groupTitle].push_back("");
@@ -151,14 +150,14 @@ void QualityObserver::generatePanel()
       // To-Check: SetTextAlign does currently not work in QCG
       ((TText*)pt->GetListOfLines()->Last())->SetTextAlign(12);
 
-      if(mViewDetails){
-        if(mReasons[config.groupTitle].at(i) != ""){
-         pt->AddText(Form("  Reason: #color[%d]{%s}", mColors[mQualities[config.groupTitle].at(i).data()], mReasons[config.groupTitle].at(i).data()));
-         ((TText*)pt->GetListOfLines()->Last())->SetTextAlign(12);
+      if (mViewDetails) {
+        if (mReasons[config.groupTitle].at(i) != "") {
+          pt->AddText(Form("#color[%d]{#rightarrow Reason: %s}", kGray + 2, mReasons[config.groupTitle].at(i).data()));
+          ((TText*)pt->GetListOfLines()->Last())->SetTextAlign(12);
         }
-        if(mComments[config.groupTitle].at(i) != ""){
-         pt->AddText(Form("  Reason: #color[%d]{%s}", mColors[mQualities[config.groupTitle].at(i).data()], mComments[config.groupTitle].at(i).data()));
-         ((TText*)pt->GetListOfLines()->Last())->SetTextAlign(12);
+        if (mComments[config.groupTitle].at(i) != "") {
+          pt->AddText(Form("#color[%d]{#rightarrow Comment: %s}", kGray + 2, mComments[config.groupTitle].at(i).data()));
+          ((TText*)pt->GetListOfLines()->Last())->SetTextAlign(12);
         }
       }
     }
