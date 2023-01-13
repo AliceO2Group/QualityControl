@@ -71,7 +71,7 @@ class QualityObserver : public PostProcessingInterface
   std::unordered_map<std::string, int> mColors;
   TCanvas* mCanvas = nullptr;
 
-  bool mViewDetails; 
+  bool mViewDetails;
   std::unordered_map<std::string, std::vector<std::string>> mReasons;
   std::unordered_map<std::string, std::vector<std::string>> mComments;
 };
