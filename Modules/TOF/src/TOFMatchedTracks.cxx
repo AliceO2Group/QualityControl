@@ -170,9 +170,9 @@ void TOFMatchedTracks::initialize(o2::framework::InitContext& /*ctx*/)
   }
 
   for (int isec = 0; isec < 18; isec++) {
-    mDTimeTrk[isec] = new TH2F(Form("DTimeTrk_sec%02d", isec), Form("Sector %d: ITS-TPC track-tof #Deltat vs #eta; #eta; #Deltat (# BC)", isec), 100, -1.0f, 1.0f, 2000, -200, 200);
+    mDTimeTrk[isec] = new TH2F(Form("DTimeTrk_sec%02d", isec), Form("Sector %d: ITS-TPC track-tof #Deltat vs #eta; #eta; #Deltat (# BC)", isec), 50, -1.0f, 1.0f, 500, -200, 200);
     getObjectsManager()->startPublishing(mDTimeTrk[isec]);
-    mDTimeTrkTPC[isec] = new TH2F(Form("DTimeTrkTPC_sec%02d", isec), Form("Sector %d: TPC track-tof #Deltat vs #eta; #eta; #Deltat (# BC)", isec), 100, -1.0f, 1.0f, 2000, -200, 200);
+    mDTimeTrkTPC[isec] = new TH2F(Form("DTimeTrkTPC_sec%02d", isec), Form("Sector %d: TPC track-tof #Deltat vs #eta; #eta; #Deltat (# BC)", isec), 50, -1.0f, 1.0f, 500, -200, 200);
     if ((mSrc & o2::dataformats::GlobalTrackID::getSourcesMask("TPC")).any()) {
       getObjectsManager()->startPublishing(mDTimeTrkTPC[isec]);
     }
