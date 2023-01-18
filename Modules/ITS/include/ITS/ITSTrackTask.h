@@ -22,6 +22,7 @@
 #include <TH2D.h>
 #include <DataFormatsITSMFT/TopologyDictionary.h>
 #include <ITSBase/GeometryTGeo.h>
+#include <Framework/TimingInfo.h>
 #include <TTree.h>
 #include <TLine.h>
 
@@ -83,7 +84,7 @@ class ITSTrackTask : public TaskInterface
   Int_t mNTracks = 0;
   Int_t mNRofs = 0;
   int nBCbins = 103;
-  long int mTimestamp;
+  long int mTimestamp = -1;
   int nVertices = 0;
   double mChipBins[2125]; // x bins for cos(lambda) plot
   double mCoslBins[25];   // y bins for cos(lambda) plot
