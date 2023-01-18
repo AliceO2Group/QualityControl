@@ -35,6 +35,7 @@
 #include "QualityControl/InfrastructureGenerator.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/ConfigParamGlo.h"
+#include "QualityControl/stringUtils.h"
 
 using namespace o2;
 using namespace o2::framework;
@@ -49,6 +50,9 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
 {
   workflowOptions.push_back(
     ConfigParamSpec{ "config", VariantType::String, "", { "Absolute path to QC and Data Sampling configuration file." } });
+
+  workflowOptions.push_back(
+    ConfigParamSpec{ "configs", VariantType::String, "", { "Absolute path to QC and Data Sampling configuration files." } });
 
   workflowOptions.push_back(
     ConfigParamSpec{ "local", VariantType::Bool, false, { "Runs only the local part of the QC workflow." } });
@@ -94,13 +98,18 @@ using namespace std::chrono;
 
 bool validateArguments(const ConfigContext& config)
 {
-  const std::string qcConfigurationSource = config.options().get<std::string>("config");
-  if (qcConfigurationSource.empty()) {
+  size_t exclusiveOptions = 0;
+  exclusiveOptions += !config.options().get<std::string>("config").empty();
+  exclusiveOptions += !config.options().get<std::string>("configs").empty();
+  if (exclusiveOptions > 1) {
+    ILOG(Error, Support) << "More than one of the following options was specified: --config, --configs. This is not allowed, returning an empty workflow." << ENDM;
+    return false;
+  } else if (exclusiveOptions == 0) {
     ILOG(Warning, Support) << "No configuration path specified, returning an empty workflow." << ENDM;
     return false;
   }
 
-  size_t exclusiveOptions = 0;
+  exclusiveOptions = 0;
   exclusiveOptions += config.options().get<bool>("local");
   exclusiveOptions += config.options().get<bool>("remote");
   exclusiveOptions += !config.options().get<std::string>("local-batch").empty();
@@ -136,6 +145,14 @@ WorkflowType getWorkflowType(const ConfigContext& config)
   }
 }
 
+boost::property_tree::ptree operator +(const boost::property_tree::ptree& lhs, const boost::property_tree::ptree& rhs) {
+  boost::property_tree::ptree result(lhs);
+  result.insert(result.end(), rhs.begin(), rhs.end());
+  return result;
+}
+
+using namespace std;
+
 WorkflowSpec defineDataProcessing(const ConfigContext& config)
 {
   WorkflowSpec specs;
@@ -145,7 +162,15 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
   }
   quality_control::ConfigParamGlo::keyValues = config.options().get<std::string>("configKeyValues");
 
-  auto qcConfigurationSource = config.options().get<std::string>("config");
+  std::string configParam = config.options().get<std::string>("config");
+  std::string configsParam = config.options().get<std::string>("configs");
+  std::vector<std::string> allConfigurationSources;
+  if(!configParam.empty()) {
+    allConfigurationSources.push_back(configParam);
+  } else { // multiple configs
+    allConfigurationSources = o2::quality_control::core::splitString(configsParam, ',');
+  }
+
   try {
     // The online QC infrastructure is divided into two parts:
     // - local - QC tasks which are on the same machines as the main processing. We also put Data Sampling there.
@@ -161,8 +186,18 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
     // - remote-batch - Checks and Aggregators are run on the QC objects inside a file created by a local-batch workflow.
     //                  The results are stored in the database specified in the config file.
 
+    // get all the configs and concatenate them
+    boost::property_tree::ptree configTree;
+    for(auto configSource: allConfigurationSources) {
+      cout << "configSource " << configSource << endl;
+      auto newTree = ConfigurationFactory::getConfiguration(configSource)->getRecursive();
+      o2::quality_control::core::printTree(newTree);
+      configTree = configTree + newTree;
+    }
+    cout << "together: " << endl;
+    o2::quality_control::core::printTree(configTree);
+
     // we set the infologger levels as soon as possible to avoid spamming
-    auto configTree = ConfigurationFactory::getConfiguration(qcConfigurationSource)->getRecursive();
     auto infologgerFilterDiscardDebug = configTree.get<bool>("qc.config.infologger.filterDiscardDebug", false);
     auto infologgerDiscardLevel = configTree.get<int>("qc.config.infologger.filterDiscardLevel", 21);
     auto infologgerDiscardFile = configTree.get<std::string>("qc.config.infologger.filterDiscardFile", "");
@@ -171,7 +206,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
     ILOG_INST.filterDiscardSetFile(infologgerDiscardFile.c_str(), 0, 0, 0, true /*Do not store Debug messages in file*/);
     o2::quality_control::core::QcInfoLogger::setFacility("runQC");
 
-    ILOG(Info, Support) << "Using config file '" << qcConfigurationSource << "'" << ENDM;
+    ILOG(Info, Support) << "Using config file '" << (!configParam.empty() ? configParam : configsParam) << "'" << ENDM;
     auto keyValuesToOverride = quality_control::core::parseOverrideValues(config.options().get<std::string>("override-values"));
     quality_control::core::overrideValues(configTree, keyValuesToOverride);
 

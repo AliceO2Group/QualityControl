@@ -408,6 +408,7 @@ install(
 install(FILES example-default.json
               alfa.json
               basic.json
+              general.json
               basic-aggregator.json
               basic-external-histo.json
               basic-no-sampling.json
