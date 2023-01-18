@@ -28,8 +28,8 @@
 #include <ITSBase/GeometryTGeo.h>
 #include <Framework/TimingInfo.h>
 
-class TH1D;
-class TH2D;
+class TH1F;
+class TH2F;
 
 using namespace o2::quality_control::core;
 
@@ -61,35 +61,35 @@ class ITSClusterTask : public TaskInterface
 
   static constexpr int NLayer = 7;
   static constexpr int NLayerIB = 3;
-  TH2D* hClusterVsBunchCrossing;
+  TH2F* hClusterVsBunchCrossing;
   std::vector<TObject*> mPublishedObjects;
-  TH1D* hClusterSizeSummaryIB[7][48][9];
-  TH1D* hClusterTopologySummaryIB[7][48][9];
-  TH1D* hGroupedClusterSizeSummaryIB[7][48][9];
+  TH1F* hClusterSizeSummaryIB[7][48][9];
+  TH1F* hClusterTopologySummaryIB[7][48][9];
+  TH1F* hGroupedClusterSizeSummaryIB[7][48][9];
 
-  TH1D* hClusterSizeLayerSummary[7];
-  TH1D* hClusterTopologyLayerSummary[7];
-  TH1D* hGroupedClusterSizeLayerSummary[7];
+  TH1F* hClusterSizeLayerSummary[7];
+  TH1F* hClusterTopologyLayerSummary[7];
+  TH1F* hGroupedClusterSizeLayerSummary[7];
 
-  TH2D* hAverageClusterOccupancySummaryIB[7];
-  TH2D* hAverageClusterOccupancyMonitorIB[7]; // will be used in online data monitoring, showing occupation for the last N ROFs
-  TH2D* hAverageClusterSizeSummaryIB[7];
-  TH2D* hAverageClusterSizeMonitorIB[7];
+  TH2F* hAverageClusterOccupancySummaryIB[7];
+  TH2F* hAverageClusterOccupancyMonitorIB[7]; // will be used in online data monitoring, showing occupation for the last N ROFs
+  TH2F* hAverageClusterSizeSummaryIB[7];
+  TH2F* hAverageClusterSizeMonitorIB[7];
 
   Int_t mClusterOccupancyIB[7][48][9];
   Int_t mClusterOccupancyIBmonitor[7][48][9];
 
-  TH1D* hGroupedClusterSizeSummaryOB[7][48];
-  TH1D* hClusterSizeSummaryOB[7][48];
-  TH1D* hClusterTopologySummaryOB[7][48];
+  TH1F* hGroupedClusterSizeSummaryOB[7][48];
+  TH1F* hClusterSizeSummaryOB[7][48];
+  TH1F* hClusterTopologySummaryOB[7][48];
 
-  TH2D* hAverageClusterOccupancySummaryOB[7];
-  TH2D* hAverageClusterOccupancyMonitorOB[7]; // will be used in online data monitoring, showing occupation for the last N ROFs
-  TH2D* hAverageClusterSizeSummaryOB[7];
-  TH2D* hAverageClusterSizeMonitorOB[7];
+  TH2F* hAverageClusterOccupancySummaryOB[7];
+  TH2F* hAverageClusterOccupancyMonitorOB[7]; // will be used in online data monitoring, showing occupation for the last N ROFs
+  TH2F* hAverageClusterSizeSummaryOB[7];
+  TH2F* hAverageClusterSizeMonitorOB[7];
 
   //  THnSparseD *sClustersSize[7];
-  TH2D* mGeneralOccupancy;
+  TH2F* mGeneralOccupancy;
 
   const int mOccUpdateFrequency = 100000;
   int mDoPublish1DSummary = 0;
