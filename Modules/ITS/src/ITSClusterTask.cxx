@@ -559,6 +559,7 @@ void ITSClusterTask::getJsonParameters()
   mGeomPath = o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "geomPath", mGeomPath);
   mDoPublish1DSummary = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "publishSummary1D", mDoPublish1DSummary);
   std::string LayerConfig = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "layer", "0000000");
+  mDoPublishDetailedSummary = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "publishDetailedSummary", mDoPublishDetailedSummary);
 
   for (int ilayer = 0; ilayer < NLayer; ilayer++) {
     if (LayerConfig[ilayer] != '0') {
