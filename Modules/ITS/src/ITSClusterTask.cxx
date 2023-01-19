@@ -86,6 +86,8 @@ ITSClusterTask::~ITSClusterTask()
         delete hGroupedClusterSizeSummaryOB[iLayer][iStave];
       }
     }
+    delete hAverageClusterOccupancySummaryCoarse[iLayer];
+    delete hAverageClusterSizeSummaryCoarse[iLayer];
     delete hAverageClusterOccupancySummaryZPhi[iLayer];
     delete hAverageClusterSizeSummaryZPhi[iLayer];
   }
@@ -111,6 +113,12 @@ void ITSClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
     }
   }
   mGeom = o2::its::GeometryTGeo::Instance();
+
+  // create binning for coarse checks
+  setRphiBinningIB();
+  setZBinningIB();
+  setRphiBinningOB();
+  setZBinningOB();
 
   createAllHistos();
 
@@ -242,17 +250,20 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
 
       // Transformation to the local --> global
-      auto gloC = mGeom->getMatrixL2G(ChipID) * locC;  //TODO: fix global coordinates
+      auto gloC = mGeom->getMatrixL2G(ChipID) * locC; // TODO: fix global coordinates
       float phi = (float)TMath::ATan2(locC.Y(), locC.X());
 
       phi = (float)(phi * 180 / TMath::Pi());
       hAverageClusterOccupancySummaryZPhi[lay]->Fill(locC.Z(), 5);
       hAverageClusterSizeSummaryZPhi[lay]->Fill(locC.Z(), phi, (float)npix);
+
+      hAverageClusterOccupancySummaryCoarse[lay]->Fill(getHorizontalBin(locC.Z(), chip, lay, lane), getVerticalBin(locC.X(), sta, lay));
+      hAverageClusterSizeSummaryCoarse[lay]->Fill(getHorizontalBin(locC.Z(), chip, lay, lane), getVerticalBin(locC.X(), sta, lay), (float)npix);
     }
     hClusterVsBunchCrossing->Fill(bcdata.bc, nClustersForBunchCrossing); // we count only the number of clusters, not their sizes
   }
 
-  mNRofs += clusRofArr.size();        // USED to calculate occupancy for the whole run
+  mNRofs += clusRofArr.size(); // USED to calculate occupancy for the whole run
 
   if (mNRofs > 0) {
     for (int iLayer = 0; iLayer < NLayer; iLayer++) {
@@ -287,6 +298,9 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
           mGeneralOccupancy->SetBinError(xbin, ybin, 1e-15);
         }
       }
+      hAverageClusterSizeSummaryZPhi[iLayer]->Divide(hAverageClusterOccupancySummaryZPhi[iLayer]);
+      hAverageClusterOccupancySummaryZPhi[iLayer]->Scale(1. / mNRofs);
+
       hAverageClusterSizeSummaryZPhi[iLayer]->Divide(hAverageClusterOccupancySummaryZPhi[iLayer]);
       hAverageClusterOccupancySummaryZPhi[iLayer]->Scale(1. / mNRofs);
     }
@@ -412,6 +426,30 @@ void ITSClusterTask::createAllHistos()
       hAverageClusterSizeSummaryIB[iLayer]->GetYaxis()->SetLabelSize(0.02);
       hAverageClusterSizeSummaryIB[iLayer]->GetXaxis()->SetLabelSize(0.02);
 
+      // Coarse check
+
+      hAverageClusterOccupancySummaryCoarse[iLayer] = new TH2F(Form("Layer%d/ClusterOccupancyCoarse", iLayer), Form("Cluster occupancy on Layer %d", iLayer), mNChipsPerHic[iLayer] * mNHicPerStave[iLayer] * nZBinsIB, -0.5, (mNChipsPerHic[iLayer] * mNHicPerStave[iLayer] * nZBinsIB) - 0.5, mNStaves[iLayer] * nRphiBinsIB, -0.5, mNStaves[iLayer] * nRphiBinsIB - 0.5);
+      hAverageClusterOccupancySummaryCoarse[iLayer]->SetStats(0);
+      hAverageClusterOccupancySummaryCoarse[iLayer]->SetBit(TH1::kIsAverage);
+      hAverageClusterOccupancySummaryCoarse[iLayer]->GetYaxis()->SetLabelSize(0);
+      hAverageClusterOccupancySummaryCoarse[iLayer]->GetXaxis()->SetLabelSize(0);
+      hAverageClusterOccupancySummaryCoarse[iLayer]->GetYaxis()->SetTickSize(0);
+      hAverageClusterOccupancySummaryCoarse[iLayer]->GetXaxis()->SetTickSize(0);
+      if (mDoPublishDetailedSummary == 1) {
+        addObject(hAverageClusterOccupancySummaryCoarse[iLayer]);
+      }
+
+      hAverageClusterSizeSummaryCoarse[iLayer] = new TH2F(Form("Layer%d/ClusterSizeCoarse", iLayer), Form("Cluster size on Layer %d", iLayer), mNChipsPerHic[iLayer] * mNHicPerStave[iLayer] * nZBinsIB, -0.5, (mNChipsPerHic[iLayer] * mNHicPerStave[iLayer] * nZBinsIB) - 0.5, mNStaves[iLayer] * nRphiBinsIB, -0.5, mNStaves[iLayer] * nRphiBinsIB - 0.5);
+      hAverageClusterSizeSummaryCoarse[iLayer]->SetStats(0);
+      hAverageClusterSizeSummaryCoarse[iLayer]->SetBit(TH1::kIsAverage);
+      hAverageClusterSizeSummaryCoarse[iLayer]->GetYaxis()->SetLabelSize(0);
+      hAverageClusterSizeSummaryCoarse[iLayer]->GetXaxis()->SetLabelSize(0);
+      hAverageClusterSizeSummaryCoarse[iLayer]->GetYaxis()->SetTickSize(0);
+      hAverageClusterSizeSummaryCoarse[iLayer]->GetXaxis()->SetTickSize(0);
+      if (mDoPublishDetailedSummary == 1) {
+        addObject(hAverageClusterSizeSummaryCoarse[iLayer]);
+      }
+
       for (int iStave = 0; iStave < mNStaves[iLayer]; iStave++) {
         hAverageClusterSizeSummaryIB[iLayer]->GetYaxis()->SetBinLabel(iStave + 1, Form("Stave %i", iStave));
         hAverageClusterOccupancySummaryIB[iLayer]->GetYaxis()->SetBinLabel(iStave + 1, Form("Stave %i", iStave));
@@ -455,6 +493,30 @@ void ITSClusterTask::createAllHistos()
       hAverageClusterSizeSummaryOB[iLayer]->GetYaxis()->SetLabelSize(0.02);
       hAverageClusterSizeSummaryOB[iLayer]->GetXaxis()->SetLabelSize(0.02);
       hAverageClusterSizeSummaryOB[iLayer]->GetXaxis()->SetTitleOffset(1.2);
+
+      // Coarse check
+
+      hAverageClusterOccupancySummaryCoarse[iLayer] = new TH2F(Form("Layer%d/ClusterOccupancyCoarse", iLayer), Form("Cluster occupancy on Layer %d", iLayer), mNChipsPerHic[iLayer] * mNHicPerStave[iLayer] * nZBinsOB, -0.5, (mNChipsPerHic[iLayer] * mNHicPerStave[iLayer] * nZBinsOB) - 0.5, mNStaves[iLayer] * nRphiBinsOB, -0.5, mNStaves[iLayer] * nRphiBinsOB - 0.5);
+      hAverageClusterOccupancySummaryCoarse[iLayer]->SetStats(0);
+      hAverageClusterOccupancySummaryCoarse[iLayer]->SetBit(TH1::kIsAverage);
+      hAverageClusterOccupancySummaryCoarse[iLayer]->GetYaxis()->SetLabelSize(0);
+      hAverageClusterOccupancySummaryCoarse[iLayer]->GetXaxis()->SetLabelSize(0);
+      hAverageClusterOccupancySummaryCoarse[iLayer]->GetYaxis()->SetTickSize(0);
+      hAverageClusterOccupancySummaryCoarse[iLayer]->GetXaxis()->SetTickSize(0);
+      if (mDoPublishDetailedSummary == 1) {
+        addObject(hAverageClusterOccupancySummaryCoarse[iLayer]);
+      }
+
+      hAverageClusterSizeSummaryCoarse[iLayer] = new TH2F(Form("Layer%d/ClusterSizeCoarse", iLayer), Form("Cluster size on Layer %d", iLayer), mNChipsPerHic[iLayer] * mNHicPerStave[iLayer] * nZBinsOB, -0.5, (mNChipsPerHic[iLayer] * mNHicPerStave[iLayer] * nZBinsOB) - 0.5, mNStaves[iLayer] * nRphiBinsOB, -0.5, mNStaves[iLayer] * nRphiBinsOB - 0.5);
+      hAverageClusterSizeSummaryCoarse[iLayer]->SetStats(0);
+      hAverageClusterSizeSummaryCoarse[iLayer]->SetBit(TH1::kIsAverage);
+      hAverageClusterSizeSummaryCoarse[iLayer]->GetYaxis()->SetLabelSize(0);
+      hAverageClusterSizeSummaryCoarse[iLayer]->GetXaxis()->SetLabelSize(0);
+      hAverageClusterSizeSummaryCoarse[iLayer]->GetYaxis()->SetTickSize(0);
+      hAverageClusterSizeSummaryCoarse[iLayer]->GetXaxis()->SetTickSize(0);
+      if (mDoPublishDetailedSummary == 1) {
+        addObject(hAverageClusterSizeSummaryCoarse[iLayer]);
+      }
 
       for (int iStave = 0; iStave < mNStaves[iLayer]; iStave++) {
 
@@ -530,6 +592,78 @@ void ITSClusterTask::publishHistos()
   for (unsigned int iObj = 0; iObj < mPublishedObjects.size(); iObj++) {
     getObjectsManager()->startPublishing(mPublishedObjects.at(iObj));
   }
+}
+
+void ITSClusterTask::setRphiBinningIB(std::vector<float> bins)
+{
+  vRphiBinsIB = bins;
+  nRphiBinsIB = (int)vRphiBinsIB.size();
+}
+
+void ITSClusterTask::setZBinningIB(std::vector<float> bins)
+{
+  vZBinsIB = bins;
+  nZBinsIB = (int)vZBinsIB.size();
+}
+
+void ITSClusterTask::setRphiBinningOB(std::vector<float> bins)
+{
+  vRphiBinsOB = bins;
+  nRphiBinsOB = (int)vRphiBinsIB.size();
+}
+
+void ITSClusterTask::setZBinningOB(std::vector<float> bins)
+{
+  vZBinsOB = bins;
+  nZBinsOB = (int)vZBinsIB.size();
+}
+
+float ITSClusterTask::getHorizontalBin(float z, int chip, int layer, int lane)
+{
+  std::vector<float>::iterator iter_z;
+  int index_z, chip_index;
+  float return_index;
+  if (layer < NLayerIB) {
+    if (z < vZBinsIB[0] || z > vZBinsIB[nZBinsIB])
+      return -999.;
+    iter_z = std::upper_bound(vZBinsIB.begin(), vZBinsIB.end(), z,
+                              [](const float& comp1, const float& comp2) { return comp1 < comp2; });
+    index_z = std::distance(vZBinsIB.begin(), iter_z) - 1;
+    chip_index = chip;
+    return_index = (double)(nZBinsIB * chip_index + index_z);
+  } else {
+    if (z < vZBinsOB[0] || z > vZBinsOB[nZBinsOB])
+      return -999.;
+    iter_z = std::upper_bound(vZBinsOB.begin(), vZBinsOB.end(), z,
+                              [](const float& comp1, const float& comp2) { return comp1 < comp2; });
+    index_z = std::distance(vZBinsOB.begin(), iter_z) - 1;
+    chip_index = chip % (mNChipsPerHic[layer] / mNLanePerHic[layer]) + (lane * (mNChipsPerHic[layer] / mNLanePerHic[layer]));
+    return_index = (double)(nZBinsOB * chip_index + index_z);
+  }
+  return return_index;
+}
+
+float ITSClusterTask::getVerticalBin(float rphi, int stave, int layer)
+{
+  std::vector<float>::iterator iter_rphi;
+  int index_rphi;
+  float return_index;
+  if (layer < 3) {
+    if (rphi < vRphiBinsIB[0] || rphi > vRphiBinsIB[nRphiBinsIB])
+      return -999.;
+    iter_rphi = std::upper_bound(vRphiBinsIB.begin(), vRphiBinsIB.end(), rphi,
+                                 [](const float& comp1, const float& comp2) { return comp1 < comp2; });
+    index_rphi = std::distance(vRphiBinsIB.begin(), iter_rphi) - 1;
+    return_index = (double)(stave * nRphiBinsIB + index_rphi);
+  } else {
+    if (rphi < vRphiBinsOB[0] || rphi > vRphiBinsOB[nRphiBinsOB])
+      return -999.;
+    iter_rphi = std::upper_bound(vRphiBinsOB.begin(), vRphiBinsOB.end(), rphi,
+                                 [](const float& comp1, const float& comp2) { return comp1 < comp2; });
+    index_rphi = std::distance(vRphiBinsOB.begin(), iter_rphi) - 1;
+    return_index = (double)(stave * nRphiBinsOB + index_rphi);
+  }
+  return return_index;
 }
 
 } // namespace o2::quality_control_modules::its

@@ -51,6 +51,12 @@ class ITSClusterTask : public TaskInterface
   void endOfActivity(Activity& activity) override;
   void reset() override;
 
+  // coarse checks
+  void setRphiBinningIB(std::vector<float> bins = { -0.75, -0.60, -0.45, -0.30, -0.15, 0, 0.15, 0.30, 0.45, 0.60, 0.76 });
+  void setZBinningIB(std::vector<float> bins = { -1.5, -1.20, -0.9, -0.6, -0.3, 0, 0.3, 0.6, 0.9, 1.2, 1.51 });
+  void setRphiBinningOB(std::vector<float> bins = { -0.75, -0.35, 0, 0.35, 0.76 });
+  void setZBinningOB(std::vector<float> bins = { -1.5, -0.75, 0., 0.75, 1.51 });
+
  private:
   void publishHistos();
   void formatAxes(TH1* h, const char* xTitle, const char* yTitle, float xOffset = 1., float yOffset = 1.);
@@ -58,6 +64,8 @@ class ITSClusterTask : public TaskInterface
   void getJsonParameters();
   void createAllHistos();
 
+  float getHorizontalBin(float z, int chip, int layer, int lane = 0);
+  float getVerticalBin(float rphi, int stave, int layer);
 
   static constexpr int NLayer = 7;
   static constexpr int NLayerIB = 3;
@@ -93,12 +101,33 @@ class ITSClusterTask : public TaskInterface
   TH2F* mGeneralOccupancy;
 
   // Coarse checks
+  TH2F* hAverageClusterOccupancySummaryCoarse[NLayer];
+  TH2F* hAverageClusterSizeSummaryCoarse[NLayer];
 
   TH2F* hAverageClusterOccupancySummaryZPhi[NLayer];
   TH2F* hAverageClusterSizeSummaryZPhi[NLayer];
 
   int mClusterSize[NLayer][48][28]; //[#layers][max staves][max lanes / chips]
   int nClusters[NLayer][48][28];
+
+  // plotting coarse check
+  float offset_vert[NLayer] = { 0.125, 0.115, 0.115, 0.11, 0.105, 0.10, 0.10 };
+  float size_stave[NLayer] = { 0.025, 0.025, 0.025, 0.015, 0.015, 0.015, 0.015 };
+  float top_margin[NLayer] = { 0.075, 0.08, 0.085, 0.09, 0.095, 0.1, 0.095 };
+
+  float offset_hor = 0.125;
+  float offset_hor_lane = 0.11;
+
+  // Edges of space binning within chips (local frame coordinates)
+  std::vector<float> vRphiBinsIB;
+  std::vector<float> vZBinsIB;
+  std::vector<float> vRphiBinsOB;
+  std::vector<float> vZBinsOB;
+
+  int nZBinsIB;
+  int nRphiBinsIB;
+  int nRphiBinsOB;
+  int nZBinsOB;
 
   const int mOccUpdateFrequency = 100000;
   int mDoPublish1DSummary = 0;
