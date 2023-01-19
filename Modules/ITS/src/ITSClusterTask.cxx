@@ -31,10 +31,11 @@
 #include "CCDB/BasicCCDBManager.h"
 #include "CCDB/CCDBTimeStampUtils.h"
 #include <Framework/InputRecord.h>
-#include <THnSparse.h>
 #include <TH1F.h>
 #include <TH2F.h>
 #include "Common/Utils.h"
+#include "TLine.h"
+#include "TLatex.h"
 
 #ifdef WITH_OPENMP
 #include <omp.h>
@@ -57,12 +58,11 @@ ITSClusterTask::~ITSClusterTask()
     if (!mEnableLayers[iLayer])
       continue;
 
-    // delete sClustersSize[iLayer];
     delete hClusterSizeLayerSummary[iLayer];
     delete hClusterTopologyLayerSummary[iLayer];
     delete hGroupedClusterSizeLayerSummary[iLayer];
 
-    if (iLayer < 3) {
+    if (iLayer < NLayerIB) {
 
       delete hAverageClusterOccupancySummaryIB[iLayer];
       delete hAverageClusterSizeSummaryIB[iLayer];
@@ -86,6 +86,8 @@ ITSClusterTask::~ITSClusterTask()
         delete hGroupedClusterSizeSummaryOB[iLayer][iStave];
       }
     }
+    delete hAverageClusterOccupancySummaryZPhi[iLayer];
+    delete hAverageClusterSizeSummaryZPhi[iLayer];
   }
 }
 
@@ -190,19 +192,24 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
       int npix = -1;
       int isGrouped = -1;
+
+      o2::math_utils::Point3D<float> locC; // local coordinates
+
       if (ClusterID != o2::itsmft::CompCluster::InvalidPatternID && !mDict->isGroup(ClusterID)) { // Normal (frequent) cluster shapes
         npix = mDict->getNpixels(ClusterID);
         isGrouped = 0;
+        locC = mDict->getClusterCoordinates(cluster);
       } else {
         o2::itsmft::ClusterPattern patt(pattIt);
         npix = patt.getNPixels();
         isGrouped = 1;
+        locC = mDict->getClusterCoordinates(cluster);
       }
 
       if (npix > 2)
         nClustersForBunchCrossing++;
 
-      if (lay < 3) {
+      if (lay < NLayerIB) {
 
         mClusterOccupancyIB[lay][sta][chip]++;
 
@@ -233,6 +240,14 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
           hGroupedClusterSizeLayerSummary[lay]->Fill(npix);
         }
       }
+
+      // Transformation to the local --> global
+      auto gloC = mGeom->getMatrixL2G(ChipID) * locC;  //TODO: fix global coordinates
+      float phi = (float)TMath::ATan2(locC.Y(), locC.X());
+
+      phi = (float)(phi * 180 / TMath::Pi());
+      hAverageClusterOccupancySummaryZPhi[lay]->Fill(locC.Z(), 5);
+      hAverageClusterSizeSummaryZPhi[lay]->Fill(locC.Z(), phi, (float)npix);
     }
     hClusterVsBunchCrossing->Fill(bcdata.bc, nClustersForBunchCrossing); // we count only the number of clusters, not their sizes
   }
@@ -247,7 +262,7 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 
       for (int iStave = 0; iStave < mNStaves[iLayer]; iStave++) {
 
-        if (iLayer < 3) {
+        if (iLayer < NLayerIB) {
           for (int iChip = 0; iChip < mNChipsPerHic[iLayer]; iChip++) {
             hAverageClusterOccupancySummaryIB[iLayer]->SetBinContent(iChip + 1, iStave + 1, 1. * mClusterOccupancyIB[iLayer][iStave][iChip] / mNRofs);
             hAverageClusterOccupancySummaryIB[iLayer]->SetBinError(iChip + 1, iStave + 1, 1e-15);
@@ -272,6 +287,8 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
           mGeneralOccupancy->SetBinError(xbin, ybin, 1e-15);
         }
       }
+      hAverageClusterSizeSummaryZPhi[iLayer]->Divide(hAverageClusterOccupancySummaryZPhi[iLayer]);
+      hAverageClusterOccupancySummaryZPhi[iLayer]->Scale(1. / mNRofs);
     }
   }
 
@@ -299,12 +316,12 @@ void ITSClusterTask::reset()
   for (int iLayer = 0; iLayer < NLayer; iLayer++) {
     if (!mEnableLayers[iLayer])
       continue;
-    // sClustersSize[iLayer]->Reset();
+
     hClusterSizeLayerSummary[iLayer]->Reset();
     hGroupedClusterSizeLayerSummary[iLayer]->Reset();
     hClusterTopologyLayerSummary[iLayer]->Reset();
 
-    if (iLayer < 3) {
+    if (iLayer < NLayerIB) {
       hAverageClusterOccupancySummaryIB[iLayer]->Reset();
       hAverageClusterSizeSummaryIB[iLayer]->Reset();
       for (int iStave = 0; iStave < mNStaves[iLayer]; iStave++) {
@@ -321,6 +338,8 @@ void ITSClusterTask::reset()
         hGroupedClusterSizeSummaryOB[iLayer][iStave]->Reset();
       }
     }
+    hAverageClusterOccupancySummaryZPhi[iLayer]->Reset();
+    hAverageClusterSizeSummaryZPhi[iLayer]->Reset();
   }
 }
 
@@ -355,7 +374,25 @@ void ITSClusterTask::createAllHistos()
     formatAxes(hClusterTopologyLayerSummary[iLayer], "Cluster Topology (ID)", "counts", 1, 1.10);
     hClusterTopologyLayerSummary[iLayer]->SetStats(0);
 
-    if (iLayer < 3) {
+    hAverageClusterOccupancySummaryZPhi[iLayer] = new TH2F(Form("Layer%d/ClusterOccupancyZPhi", iLayer), Form("Cluster occupancy on Layer %d;z (cm);#phi (#circ);", iLayer), 200, -100., 100., 360, -180., 180.);
+    hAverageClusterOccupancySummaryZPhi[iLayer]->SetStats(0);
+    hAverageClusterOccupancySummaryZPhi[iLayer]->SetBit(TH1::kIsAverage);
+    hAverageClusterOccupancySummaryZPhi[iLayer]->GetYaxis()->SetLabelSize(0.02);
+    hAverageClusterOccupancySummaryZPhi[iLayer]->GetXaxis()->SetLabelSize(0.02);
+    if (mDoPublishDetailedSummary == 1) {
+      addObject(hAverageClusterOccupancySummaryZPhi[iLayer]);
+    }
+
+    hAverageClusterSizeSummaryZPhi[iLayer] = new TH2F(Form("Layer%d/ClusterSizeZPhi", iLayer), Form("Cluster size on Layer %d;z (cm);#phi (#circ);", iLayer), 200, -100., 100., 360, -180., 180.);
+    hAverageClusterSizeSummaryZPhi[iLayer]->SetStats(0);
+    hAverageClusterSizeSummaryZPhi[iLayer]->SetBit(TH1::kIsAverage);
+    hAverageClusterSizeSummaryZPhi[iLayer]->GetYaxis()->SetLabelSize(0.02);
+    hAverageClusterSizeSummaryZPhi[iLayer]->GetXaxis()->SetLabelSize(0.02);
+    if (mDoPublishDetailedSummary == 1) {
+      addObject(hAverageClusterSizeSummaryZPhi[iLayer]);
+    }
+
+    if (iLayer < NLayerIB) {
 
       hAverageClusterOccupancySummaryIB[iLayer] = new TH2F(Form("Layer%d/ClusterOccupation", iLayer), Form("Layer%dClusterOccupancy", iLayer), mNChipsPerHic[iLayer], 0, mNChipsPerHic[iLayer], mNStaves[iLayer], 0, mNStaves[iLayer]);
       hAverageClusterOccupancySummaryIB[iLayer]->SetTitle(Form("Cluster Occupancy on Layer %d", iLayer));

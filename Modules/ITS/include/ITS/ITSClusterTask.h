@@ -58,41 +58,47 @@ class ITSClusterTask : public TaskInterface
   void getJsonParameters();
   void createAllHistos();
 
+
   static constexpr int NLayer = 7;
   static constexpr int NLayerIB = 3;
 
   std::vector<TObject*> mPublishedObjects;
 
   // Inner barrel
-  TH1F* hClusterTopologySummaryIB[7][48][9];
-  TH1F* hGroupedClusterSizeSummaryIB[7][48][9];
+  TH1F* hClusterTopologySummaryIB[NLayer][48][9];
+  TH1F* hGroupedClusterSizeSummaryIB[NLayer][48][9];
 
-  TH2F* hAverageClusterOccupancySummaryIB[7];
-  TH2F* hAverageClusterSizeSummaryIB[7];
+  TH2F* hAverageClusterOccupancySummaryIB[NLayer];
+  TH2F* hAverageClusterSizeSummaryIB[NLayer];
 
-  int mClusterOccupancyIB[7][48][9];
+  int mClusterOccupancyIB[NLayer][48][9];
 
   // Outer barrel
-  TH1F* hGroupedClusterSizeSummaryOB[7][48];
-  TH1F* hClusterSizeSummaryOB[7][48];
-  TH1F* hClusterTopologySummaryOB[7][48];
+  TH1F* hGroupedClusterSizeSummaryOB[NLayer][48];
+  TH1F* hClusterSizeSummaryOB[NLayer][48];
+  TH1F* hClusterTopologySummaryOB[NLayer][48];
 
-  TH2F* hAverageClusterOccupancySummaryOB[7];
-  TH2F* hAverageClusterSizeSummaryOB[7];
+  TH2F* hAverageClusterOccupancySummaryOB[NLayer];
+  TH2F* hAverageClusterSizeSummaryOB[NLayer];
 
-  int mClusterOccupancyOB[7][48][28];
+  int mClusterOccupancyOB[NLayer][48][28];
 
   // Layer synnary
-  TH1F* hClusterSizeLayerSummary[7];
-  TH1F* hClusterTopologyLayerSummary[7];
-  TH1F* hGroupedClusterSizeLayerSummary[7];
+  TH1F* hClusterSizeLayerSummary[NLayer];
+  TH1F* hClusterTopologyLayerSummary[NLayer];
+  TH1F* hGroupedClusterSizeLayerSummary[NLayer];
 
   // General
   TH2F* hClusterVsBunchCrossing;
   TH2F* mGeneralOccupancy;
 
-  int mClusterSize[7][48][28]; //[#layers][max staves][max lanes / chips]
-  int nClusters[7][48][28];
+  // Coarse checks
+
+  TH2F* hAverageClusterOccupancySummaryZPhi[NLayer];
+  TH2F* hAverageClusterSizeSummaryZPhi[NLayer];
+
+  int mClusterSize[NLayer][48][28]; //[#layers][max staves][max lanes / chips]
+  int nClusters[NLayer][48][28];
 
   const int mOccUpdateFrequency = 100000;
   int mDoPublish1DSummary = 0;
@@ -104,8 +110,9 @@ class ITSClusterTask : public TaskInterface
   TString xLabel;
   std::string mGeoTimestamp = "1640991600000";
   int mLocalGeometryFile = 1;
+  int mDoPublishDetailedSummary = 0;
 
-  const int mNStaves[7] = { 12, 16, 20, 24, 30, 42, 48 };
+  const int mNStaves[NLayer] = { 12, 16, 20, 24, 30, 42, 48 };
   const int mNHicPerStave[NLayer] = { 1, 1, 1, 8, 8, 14, 14 };
   const int mNChipsPerHic[NLayer] = { 9, 9, 9, 14, 14, 14, 14 };
   const int mNLanePerHic[NLayer] = { 3, 3, 3, 2, 2, 2, 2 };
@@ -113,7 +120,7 @@ class ITSClusterTask : public TaskInterface
   const int StaveBoundary[NLayer + 1] = { 0, 12, 28, 48, 72, 102, 144, 192 };
   const std::string mYlabels[NLayer * 2] = { "L6B(S24#rightarrow47)", "L5B(S21#rightarrow41)", "L4B(S15#rightarrow29)", "L3B(S12#rightarrow23)", "L2B(S10#rightarrow19)", "L1B(S08#rightarrow15)", "L0B(S06#rightarrow11)", "L0T(S00#rightarrow05)", "L1T(S00#rightarrow07)", "L2T(S00#rightarrow09)", "L3T(S00#rightarrow11)", "L4T(S00#rightarrow14)", "L5T(S00#rightarrow20)", "L6T(S00#rightarrow23)" };
 
-  int mEnableLayers[7];
+  int mEnableLayers[NLayer];
 
   o2::itsmft::TopologyDictionary* mDict;
   o2::its::GeometryTGeo* mGeom;
