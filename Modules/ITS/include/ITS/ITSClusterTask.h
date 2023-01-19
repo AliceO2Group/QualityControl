@@ -57,45 +57,47 @@ class ITSClusterTask : public TaskInterface
   void addObject(TObject* aObject);
   void getJsonParameters();
   void createAllHistos();
-  void updateOccMonitorPlots();
 
   static constexpr int NLayer = 7;
   static constexpr int NLayerIB = 3;
-  TH2F* hClusterVsBunchCrossing;
+
   std::vector<TObject*> mPublishedObjects;
-  TH1F* hClusterSizeSummaryIB[7][48][9];
+
+  // Inner barrel
   TH1F* hClusterTopologySummaryIB[7][48][9];
   TH1F* hGroupedClusterSizeSummaryIB[7][48][9];
 
-  TH1F* hClusterSizeLayerSummary[7];
-  TH1F* hClusterTopologyLayerSummary[7];
-  TH1F* hGroupedClusterSizeLayerSummary[7];
-
   TH2F* hAverageClusterOccupancySummaryIB[7];
-  TH2F* hAverageClusterOccupancyMonitorIB[7]; // will be used in online data monitoring, showing occupation for the last N ROFs
   TH2F* hAverageClusterSizeSummaryIB[7];
-  TH2F* hAverageClusterSizeMonitorIB[7];
 
-  Int_t mClusterOccupancyIB[7][48][9];
-  Int_t mClusterOccupancyIBmonitor[7][48][9];
+  int mClusterOccupancyIB[7][48][9];
 
+  // Outer barrel
   TH1F* hGroupedClusterSizeSummaryOB[7][48];
   TH1F* hClusterSizeSummaryOB[7][48];
   TH1F* hClusterTopologySummaryOB[7][48];
 
   TH2F* hAverageClusterOccupancySummaryOB[7];
-  TH2F* hAverageClusterOccupancyMonitorOB[7]; // will be used in online data monitoring, showing occupation for the last N ROFs
   TH2F* hAverageClusterSizeSummaryOB[7];
-  TH2F* hAverageClusterSizeMonitorOB[7];
 
-  //  THnSparseD *sClustersSize[7];
+  int mClusterOccupancyOB[7][48][28];
+
+  // Layer synnary
+  TH1F* hClusterSizeLayerSummary[7];
+  TH1F* hClusterTopologyLayerSummary[7];
+  TH1F* hGroupedClusterSizeLayerSummary[7];
+
+  // General
+  TH2F* hClusterVsBunchCrossing;
   TH2F* mGeneralOccupancy;
+
+  int mClusterSize[7][48][28]; //[#layers][max staves][max lanes / chips]
+  int nClusters[7][48][28];
 
   const int mOccUpdateFrequency = 100000;
   int mDoPublish1DSummary = 0;
   int mNThreads = 1;
   int mNRofs = 0;
-  int mNRofsMonitor = 0;
   int nBCbins = 103;
   long int mTimestamp = -1;
   std::string mGeomPath = "./";
@@ -112,11 +114,6 @@ class ITSClusterTask : public TaskInterface
   const std::string mYlabels[NLayer * 2] = { "L6B(S24#rightarrow47)", "L5B(S21#rightarrow41)", "L4B(S15#rightarrow29)", "L3B(S12#rightarrow23)", "L2B(S10#rightarrow19)", "L1B(S08#rightarrow15)", "L0B(S06#rightarrow11)", "L0T(S00#rightarrow05)", "L1T(S00#rightarrow07)", "L2T(S00#rightarrow09)", "L3T(S00#rightarrow11)", "L4T(S00#rightarrow14)", "L5T(S00#rightarrow20)", "L6T(S00#rightarrow23)" };
 
   int mEnableLayers[7];
-  int mClusterSize[7][48][28] = { { { 0 } } }; //[#layers][max staves][max lanes / chips]
-  double mClusterSizeMonitor[7][48][28] = { { { 0 } } };
-  int nClusters[7][48][28] = { { { 0 } } };
-  Int_t mClusterOccupancyOB[7][48][28] = { { { 0 } } };
-  Int_t mClusterOccupancyOBmonitor[7][48][28] = { { { 0 } } };
 
   o2::itsmft::TopologyDictionary* mDict;
   o2::its::GeometryTGeo* mGeom;
