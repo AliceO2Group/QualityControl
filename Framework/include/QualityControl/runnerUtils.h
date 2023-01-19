@@ -29,6 +29,7 @@
 #include <CommonUtils/StringUtils.h>
 #include "QualityControl/Activity.h"
 #include <regex>
+using boost::property_tree::ptree;
 
 namespace o2::quality_control::core
 {
@@ -184,6 +185,65 @@ inline void overrideValues(boost::property_tree::ptree& tree, std::vector<std::p
   for (const auto& [key, value] : keyValues) {
     tree.put(key, value);
   }
+}
+
+// Create necessary escape sequences from illegal characters
+template<class Ch>
+std::basic_string<Ch> create_escapes(const std::basic_string<Ch> &s)
+{
+  std::basic_string<Ch> result;
+  typename std::basic_string<Ch>::const_iterator b = s.begin();
+  typename std::basic_string<Ch>::const_iterator e = s.end();
+  while (b != e)
+  {
+    if (*b == Ch('\0')) result += Ch('\\'), result += Ch('0');
+    else if (*b == Ch('\a')) result += Ch('\\'), result += Ch('a');
+    else if (*b == Ch('\b')) result += Ch('\\'), result += Ch('b');
+    else if (*b == Ch('\f')) result += Ch('\\'), result += Ch('f');
+    else if (*b == Ch('\n')) result += Ch('\\'), result += Ch('n');
+    else if (*b == Ch('\r')) result += Ch('\\'), result += Ch('r');
+    else if (*b == Ch('\v')) result += Ch('\\'), result += Ch('v');
+    else if (*b == Ch('"')) result += Ch('\\'), result += Ch('"');
+    else if (*b == Ch('\\')) result += Ch('\\'), result += Ch('\\');
+    else
+      result += *b;
+    ++b;
+  }
+  return result;
+}
+
+// Freely inspired from write_json_helper in boost
+template <class Ptree>
+void mergeInto(const Ptree& pt, ptree& destination, ptree& parent, const std::string& fullPath , int indent)
+{
+  typedef typename Ptree::key_type::value_type Ch;
+  typedef typename std::basic_string<Ch> Str;
+
+  // Value or object or array
+  if (indent > 0 && pt.empty()) { // Handle value
+    Str data = /*create_escapes(*/pt.template get_value<Str>()/*)*/;
+    parent.add(fullPath, data);
+  } else if (indent > 0 && pt.count(Str()) == pt.size()) { // Handle array
+    typename Ptree::const_iterator it = pt.begin();
+    for (; it != pt.end(); ++it) {
+      ptree object;
+      std::string newFullPath = fullPath.empty() ? it->first : fullPath + "." + it->first;
+      mergeInto(it->second, destination, object, "", indent + 1);
+      parent.add_child(newFullPath, object);
+    }
+  } else { // Handle object
+    typename Ptree::const_iterator it = pt.begin();
+    for (; it != pt.end(); ++it) {
+      std::string newFullPath = fullPath.empty() ? it->first : fullPath + "." + it->first;
+      mergeInto(it->second, destination, parent, newFullPath, indent + 1);
+    }
+  }
+}
+
+template <class Ptree>
+void mergeInto(const Ptree& pt, ptree& destination)
+{
+  mergeInto(pt, destination, destination, "", 1);
 }
 
 /**

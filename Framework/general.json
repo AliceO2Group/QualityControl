@@ -36,12 +36,46 @@
         "filterDiscardLevel": "11",
         "": "Message at this level or above are discarded (default: 21 - Trace)",
         "filterDiscardFile": "/tmp/_ID_.txt",
-        "": [
-          "If set, the messages discarded because of filterDiscardLevel",
-          "will go to this file (default: <none>); The keyword _ID_ is replaced by the device id. Discarded Debug ",
-          "messages won't go there."
-        ]
+        "":
+          "If set, the messages discarded because of filterDiscardLevel will go to this file (default: <none>); The keyword _ID_ is replaced by the device id. Discarded Debug messages won't go there."
+
+      }
+    },
+    "tasks": {
+      "QcTask2": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonTask",
+        "moduleName": "QcSkeleton",
+        "detectorName": "TST",
+        "cycleDurationSeconds": "10",     "": "10 seconds minimum",
+        "maxNumberCycles": "-1",
+        "": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "tst-raw"
+        },
+        "taskParameters": {
+          "myOwnKey": "myOwnValue"
+        },
+        "location": "remote",
+        "saveObjectsToFile": "",      "": "For debugging, path to the file where to save. If empty or missing it won't save."
       }
     }
-  }
+  },
+  "dataSamplingPolicies": [
+    {
+      "id": "tst-raw2",
+      "active": "true",
+      "machines": [],
+      "query": "random:TST/RAWDATA/0",
+      "samplingConditions": [
+        {
+          "condition": "random2",
+          "fraction": "0.1",
+          "seed": "1234"
+        }
+      ],
+      "blocking": "false"
+    }
+  ]
 }

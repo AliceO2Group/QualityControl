@@ -850,6 +850,10 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
 }
 ```
 
+## Multiple config files
+
+One can pass more than one config file by passing a comma separated list to the `--config` parameter of `o2-qc`. 
+
 ## Configuration files details
 
 The QC requires a number of configuration items. An example config file is
