@@ -598,25 +598,25 @@ void ITSClusterTask::publishHistos()
 void ITSClusterTask::setRphiBinningIB(std::vector<float> bins)
 {
   vRphiBinsIB = bins;
-  nRphiBinsIB = (int)vRphiBinsIB.size();
+  nRphiBinsIB = (int)vRphiBinsIB.size() - 1;
 }
 
 void ITSClusterTask::setZBinningIB(std::vector<float> bins)
 {
   vZBinsIB = bins;
-  nZBinsIB = (int)vZBinsIB.size();
+  nZBinsIB = (int)vZBinsIB.size() - 1;
 }
 
 void ITSClusterTask::setRphiBinningOB(std::vector<float> bins)
 {
   vRphiBinsOB = bins;
-  nRphiBinsOB = (int)vRphiBinsIB.size();
+  nRphiBinsOB = (int)vRphiBinsOB.size() - 1;
 }
 
 void ITSClusterTask::setZBinningOB(std::vector<float> bins)
 {
   vZBinsOB = bins;
-  nZBinsOB = (int)vZBinsIB.size();
+  nZBinsOB = (int)vZBinsOB.size() - 1;
 }
 
 float ITSClusterTask::getHorizontalBin(float z, int chip, int layer, int lane)
@@ -639,7 +639,7 @@ float ITSClusterTask::getHorizontalBin(float z, int chip, int layer, int lane)
                               [](const float& comp1, const float& comp2) { return comp1 < comp2; });
     index_z = std::distance(vZBinsOB.begin(), iter_z) - 1;
     chip_index = chip % (mNChipsPerHic[layer] / mNLanePerHic[layer]) + (lane * (mNChipsPerHic[layer] / mNLanePerHic[layer]));
-    return_index = (double)(nZBinsOB * chip_index + index_z);
+    return_index = (float)(nZBinsOB * chip_index + index_z);
   }
   return return_index;
 }
@@ -662,7 +662,7 @@ float ITSClusterTask::getVerticalBin(float rphi, int stave, int layer)
     iter_rphi = std::upper_bound(vRphiBinsOB.begin(), vRphiBinsOB.end(), rphi,
                                  [](const float& comp1, const float& comp2) { return comp1 < comp2; });
     index_rphi = std::distance(vRphiBinsOB.begin(), iter_rphi) - 1;
-    return_index = (double)(stave * nRphiBinsOB + index_rphi);
+    return_index = (float)(stave * nRphiBinsOB + index_rphi);
   }
   return return_index;
 }
