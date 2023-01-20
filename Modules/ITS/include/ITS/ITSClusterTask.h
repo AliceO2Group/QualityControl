@@ -73,50 +73,42 @@ class ITSClusterTask : public TaskInterface
   std::vector<TObject*> mPublishedObjects;
 
   // Inner barrel
-  TH1F* hClusterTopologySummaryIB[NLayer][48][9];
-  TH1F* hGroupedClusterSizeSummaryIB[NLayer][48][9];
+  TH1F* hClusterTopologySummaryIB[NLayer][48][9] = { { { nullptr } } };
+  TH1F* hGroupedClusterSizeSummaryIB[NLayer][48][9] = { { { nullptr } } };
 
-  TH2F* hAverageClusterOccupancySummaryIB[NLayer];
-  TH2F* hAverageClusterSizeSummaryIB[NLayer];
+  TH2F* hAverageClusterOccupancySummaryIB[NLayer] = { nullptr };
+  TH2F* hAverageClusterSizeSummaryIB[NLayer] = { nullptr };
 
-  int mClusterOccupancyIB[NLayer][48][9];
+  int mClusterOccupancyIB[NLayer][48][9] = { { { 0 } } };
 
   // Outer barrel
-  TH1F* hGroupedClusterSizeSummaryOB[NLayer][48];
-  TH1F* hClusterSizeSummaryOB[NLayer][48];
-  TH1F* hClusterTopologySummaryOB[NLayer][48];
+  TH1F* hGroupedClusterSizeSummaryOB[NLayer][48] = { { nullptr } };
+  TH1F* hClusterSizeSummaryOB[NLayer][48] = { { nullptr } };
+  TH1F* hClusterTopologySummaryOB[NLayer][48] = { { nullptr } };
 
-  TH2F* hAverageClusterOccupancySummaryOB[NLayer];
-  TH2F* hAverageClusterSizeSummaryOB[NLayer];
+  TH2F* hAverageClusterOccupancySummaryOB[NLayer] = { nullptr };
+  TH2F* hAverageClusterSizeSummaryOB[NLayer] = { nullptr };
 
-  int mClusterOccupancyOB[NLayer][48][28];
+  int mClusterOccupancyOB[NLayer][48][28] = { { { 0 } } };
 
   // Layer synnary
-  TH1F* hClusterSizeLayerSummary[NLayer];
-  TH1F* hClusterTopologyLayerSummary[NLayer];
-  TH1F* hGroupedClusterSizeLayerSummary[NLayer];
+  TH1F* hClusterSizeLayerSummary[NLayer] = { nullptr };
+  TH1F* hClusterTopologyLayerSummary[NLayer] = { nullptr };
+  TH1F* hGroupedClusterSizeLayerSummary[NLayer] = { nullptr };
 
   // General
-  TH2F* hClusterVsBunchCrossing;
-  TH2F* mGeneralOccupancy;
+  TH2F* hClusterVsBunchCrossing = nullptr;
+  TH2F* mGeneralOccupancy = nullptr;
 
   // Coarse checks
-  TH2F* hAverageClusterOccupancySummaryCoarse[NLayer];
-  TH2F* hAverageClusterSizeSummaryCoarse[NLayer];
+  TH2F* hAverageClusterOccupancySummaryCoarse[NLayer] = { nullptr };
+  TH2F* hAverageClusterSizeSummaryCoarse[NLayer] = { nullptr };
 
-  TH2F* hAverageClusterOccupancySummaryZPhi[NLayer];
-  TH2F* hAverageClusterSizeSummaryZPhi[NLayer];
+  TH2F* hAverageClusterOccupancySummaryZPhi[NLayer] = { nullptr };
+  TH2F* hAverageClusterSizeSummaryZPhi[NLayer] = { nullptr };
 
-  int mClusterSize[NLayer][48][28]; //[#layers][max staves][max lanes / chips]
-  int nClusters[NLayer][48][28];
-
-  // plotting coarse check
-  float offset_vert[NLayer] = { 0.125, 0.115, 0.115, 0.11, 0.105, 0.10, 0.10 };
-  float size_stave[NLayer] = { 0.025, 0.025, 0.025, 0.015, 0.015, 0.015, 0.015 };
-  float top_margin[NLayer] = { 0.075, 0.08, 0.085, 0.09, 0.095, 0.1, 0.095 };
-
-  float offset_hor = 0.125;
-  float offset_hor_lane = 0.11;
+  int mClusterSize[NLayer][48][28] = { { { 0 } } }; //[#layers][max staves][max lanes / chips]
+  int nClusters[NLayer][48][28] = { { { 0 } } };
 
   // Edges of space binning within chips (local frame coordinates)
   std::vector<float> vRphiBinsIB;
@@ -124,10 +116,10 @@ class ITSClusterTask : public TaskInterface
   std::vector<float> vRphiBinsOB;
   std::vector<float> vZBinsOB;
 
-  int nZBinsIB;
-  int nRphiBinsIB;
-  int nRphiBinsOB;
-  int nZBinsOB;
+  int nZBinsIB = 1;
+  int nRphiBinsIB = 1;
+  int nRphiBinsOB = 1;
+  int nZBinsOB = 1;
 
   const int mOccUpdateFrequency = 100000;
   int mDoPublish1DSummary = 0;
@@ -149,10 +141,10 @@ class ITSClusterTask : public TaskInterface
   const int StaveBoundary[NLayer + 1] = { 0, 12, 28, 48, 72, 102, 144, 192 };
   const std::string mYlabels[NLayer * 2] = { "L6B(S24#rightarrow47)", "L5B(S21#rightarrow41)", "L4B(S15#rightarrow29)", "L3B(S12#rightarrow23)", "L2B(S10#rightarrow19)", "L1B(S08#rightarrow15)", "L0B(S06#rightarrow11)", "L0T(S00#rightarrow05)", "L1T(S00#rightarrow07)", "L2T(S00#rightarrow09)", "L3T(S00#rightarrow11)", "L4T(S00#rightarrow14)", "L5T(S00#rightarrow20)", "L6T(S00#rightarrow23)" };
 
-  int mEnableLayers[NLayer];
+  int mEnableLayers[NLayer] = { 0 };
 
-  o2::itsmft::TopologyDictionary* mDict;
-  o2::its::GeometryTGeo* mGeom;
+  o2::itsmft::TopologyDictionary* mDict = nullptr;
+  o2::its::GeometryTGeo* mGeom = nullptr;
 
   const char* OBLabel34[16] = { "HIC1L_B0_ln7", "HIC1L_A8_ln6", "HIC2L_B0_ln8", "HIC2L_A8_ln5", "HIC3L_B0_ln9", "HIC3L_A8_ln4", "HIC4L_B0_ln10", "HIC4L_A8_ln3", "HIC1U_B0_ln21", "HIC1U_A8_ln20", "HIC2U_B0_ln22", "HIC2U_A8_ln19", "HIC3U_B0_ln23", "HIC3U_A8_ln18", "HIC4U_B0_ln24", "HIC4U_A8_ln17" };
   const char* OBLabel56[28] = { "HIC1L_B0_ln7", "HIC1L_A8_ln6", "HIC2L_B0_ln8", "HIC2L_A8_ln5", "HIC3L_B0_ln9", "HIC3L_A8_ln4", "HIC4L_B0_ln10", "HIC4L_A8_ln3", "HIC5L_B0_ln11", "HIC5L_A8_ln2", "HIC6L_B0_ln12", "HIC6L_A8_ln1", "HIC7L_B0_ln13", "HIC7L_A8_ln0", "HIC1U_B0_ln21", "HIC1U_A8_ln20", "HIC2U_B0_ln22", "HIC2U_A8_ln19", "HIC3U_B0_ln23", "HIC3U_A8_ln18", "HIC4U_B0_ln24", "HIC4U_A8_ln17", "HIC5U_B0_ln25", "HIC5U_A8_ln16", "HIC6U_B0_ln26", "HIC6U_A8_ln15", "HIC7U_B0_ln27", "HIC7U_A8_ln14" };
