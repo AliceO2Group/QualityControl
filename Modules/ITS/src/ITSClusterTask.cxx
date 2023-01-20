@@ -86,7 +86,6 @@ ITSClusterTask::~ITSClusterTask()
         delete hGroupedClusterSizeSummaryOB[iLayer][iStave];
       }
     }
-    ILOG(Info, Support) << "Deleting new plots" << ENDM;
     delete hAverageClusterOccupancySummaryCoarse[iLayer];
     delete hAverageClusterSizeSummaryCoarse[iLayer];
     delete hAverageClusterOccupancySummaryZPhi[iLayer];
@@ -251,12 +250,13 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
 
       // Transformation to the local --> global
-      auto gloC = mGeom->getMatrixL2G(ChipID) * locC; // TODO: fix global coordinates
-      float phi = (float)TMath::ATan2(locC.Y(), locC.X());
+      mGeom->fillMatrixCache(o2::math_utils::bit2Mask(o2::math_utils::TransformType::L2G));
+      auto gloC = mGeom->getMatrixL2G(ChipID) * locC;
+      float phi = (float)TMath::ATan2(gloC.Y(), gloC.X());
 
       phi = (float)(phi * 180 / TMath::Pi());
-      hAverageClusterOccupancySummaryZPhi[lay]->Fill(locC.Z(), 5);
-      hAverageClusterSizeSummaryZPhi[lay]->Fill(locC.Z(), phi, (float)npix);
+      hAverageClusterOccupancySummaryZPhi[lay]->Fill(gloC.Z(), phi);
+      hAverageClusterSizeSummaryZPhi[lay]->Fill(gloC.Z(), phi, (float)npix);
 
       hAverageClusterOccupancySummaryCoarse[lay]->Fill(getHorizontalBin(locC.Z(), chip, lay, lane), getVerticalBin(locC.X(), sta, lay));
       hAverageClusterSizeSummaryCoarse[lay]->Fill(getHorizontalBin(locC.Z(), chip, lay, lane), getVerticalBin(locC.X(), sta, lay), (float)npix);
@@ -623,8 +623,10 @@ void ITSClusterTask::createAllHistos()
         hAverageClusterSizeSummaryCoarse[iLayer]->GetListOfFunctions()->Add(l_h2);
 
         TLatex* latex_h1 = new TLatex(-1.5 * nZBinsOB * mNChipsPerHic[iLayer] / mNLanePerHic[iLayer], nRphiBinsOB / 8 + (j - 1) * nRphiBinsOB, Form("#bf{Stave %d}", j - 1));
+        latex_h1->SetTextSize(0.03);
         hAverageClusterOccupancySummaryCoarse[iLayer]->GetListOfFunctions()->Add(latex_h1);
         TLatex* latex_h2 = new TLatex(-1.5 * nZBinsOB * mNChipsPerHic[iLayer] / mNLanePerHic[iLayer], nRphiBinsOB / 8 + (j - 1) * nRphiBinsOB, Form("#bf{Stave %d}", j - 1));
+        latex_h2->SetTextSize(0.03);
         hAverageClusterSizeSummaryCoarse[iLayer]->GetListOfFunctions()->Add(latex_h2);
       }
     }
