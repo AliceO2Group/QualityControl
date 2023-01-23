@@ -51,7 +51,7 @@ class ITSClusterTask : public TaskInterface
   void endOfActivity(Activity& activity) override;
   void reset() override;
 
-  // coarse checks
+  // Fine checks
   void setRphiBinningIB(std::vector<float> bins = { -0.75, -0.60, -0.45, -0.30, -0.15, 0, 0.15, 0.30, 0.45, 0.60, 0.76 });
   void setZBinningIB(std::vector<float> bins = { -1.5, -1.20, -0.9, -0.6, -0.3, 0, 0.3, 0.6, 0.9, 1.2, 1.51 });
   void setRphiBinningOB(std::vector<float> bins = { -0.75, -0.35, 0, 0.35, 0.76 });
@@ -100,9 +100,9 @@ class ITSClusterTask : public TaskInterface
   TH2F* hClusterVsBunchCrossing = nullptr;
   TH2F* mGeneralOccupancy = nullptr;
 
-  // Coarse checks
-  TH2F* hAverageClusterOccupancySummaryCoarse[NLayer] = { nullptr };
-  TH2F* hAverageClusterSizeSummaryCoarse[NLayer] = { nullptr };
+  // Fine checks
+  TH2F* hAverageClusterOccupancySummaryFine[NLayer] = { nullptr };
+  TH2F* hAverageClusterSizeSummaryFine[NLayer] = { nullptr };
 
   TH2F* hAverageClusterOccupancySummaryZPhi[NLayer] = { nullptr };
   TH2F* hAverageClusterSizeSummaryZPhi[NLayer] = { nullptr };

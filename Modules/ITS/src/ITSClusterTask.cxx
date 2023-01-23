@@ -86,10 +86,12 @@ ITSClusterTask::~ITSClusterTask()
         delete hGroupedClusterSizeSummaryOB[iLayer][iStave];
       }
     }
-    delete hAverageClusterOccupancySummaryCoarse[iLayer];
-    delete hAverageClusterSizeSummaryCoarse[iLayer];
-    delete hAverageClusterOccupancySummaryZPhi[iLayer];
-    delete hAverageClusterSizeSummaryZPhi[iLayer];
+    if (mDoPublishDetailedSummary == 1) {
+      delete hAverageClusterOccupancySummaryFine[iLayer];
+      delete hAverageClusterSizeSummaryFine[iLayer];
+      delete hAverageClusterOccupancySummaryZPhi[iLayer];
+      delete hAverageClusterSizeSummaryZPhi[iLayer];
+    }
   }
 }
 
@@ -114,7 +116,7 @@ void ITSClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
   mGeom = o2::its::GeometryTGeo::Instance();
 
-  // create binning for coarse checks
+  // create binning for fine checks
   setRphiBinningIB();
   setZBinningIB();
   setRphiBinningOB();
@@ -179,6 +181,15 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 #pragma omp parallel for schedule(dynamic)
 #endif
   // Filling cluster histogram for each ROF by open_mp
+
+  if (mDoPublishDetailedSummary == 1) {
+    for (int iLayer = 0; iLayer < NLayer; iLayer++) {
+      hAverageClusterSizeSummaryZPhi[iLayer]->Multiply(hAverageClusterOccupancySummaryZPhi[iLayer]);
+      hAverageClusterOccupancySummaryZPhi[iLayer]->Scale(mNRofs);
+      hAverageClusterSizeSummaryFine[iLayer]->Multiply(hAverageClusterOccupancySummaryFine[iLayer]);
+      hAverageClusterOccupancySummaryFine[iLayer]->Scale(mNRofs);
+    }
+  }
 
   for (unsigned int iROF = 0; iROF < clusRofArr.size(); iROF++) {
 
@@ -250,16 +261,18 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
 
       // Transformation to the local --> global
-      mGeom->fillMatrixCache(o2::math_utils::bit2Mask(o2::math_utils::TransformType::L2G));
-      auto gloC = mGeom->getMatrixL2G(ChipID) * locC;
-      float phi = (float)TMath::ATan2(gloC.Y(), gloC.X());
+      if (mDoPublishDetailedSummary == 1) {
+        mGeom->fillMatrixCache(o2::math_utils::bit2Mask(o2::math_utils::TransformType::L2G));
+        auto gloC = mGeom->getMatrixL2G(ChipID) * locC;
+        float phi = (float)TMath::ATan2(gloC.Y(), gloC.X());
 
-      phi = (float)(phi * 180 / TMath::Pi());
-      hAverageClusterOccupancySummaryZPhi[lay]->Fill(gloC.Z(), phi);
-      hAverageClusterSizeSummaryZPhi[lay]->Fill(gloC.Z(), phi, (float)npix);
+        phi = (float)(phi * 180 / TMath::Pi());
+        hAverageClusterOccupancySummaryZPhi[lay]->Fill(gloC.Z(), phi);
+        hAverageClusterSizeSummaryZPhi[lay]->Fill(gloC.Z(), phi, (float)npix);
 
-      hAverageClusterOccupancySummaryCoarse[lay]->Fill(getHorizontalBin(locC.Z(), chip, lay, lane), getVerticalBin(locC.X(), sta, lay));
-      hAverageClusterSizeSummaryCoarse[lay]->Fill(getHorizontalBin(locC.Z(), chip, lay, lane), getVerticalBin(locC.X(), sta, lay), (float)npix);
+        hAverageClusterOccupancySummaryFine[lay]->Fill(getHorizontalBin(locC.Z(), chip, lay, lane), getVerticalBin(locC.X(), sta, lay));
+        hAverageClusterSizeSummaryFine[lay]->Fill(getHorizontalBin(locC.Z(), chip, lay, lane), getVerticalBin(locC.X(), sta, lay), (float)npix);
+      }
     }
     hClusterVsBunchCrossing->Fill(bcdata.bc, nClustersForBunchCrossing); // we count only the number of clusters, not their sizes
   }
@@ -299,11 +312,27 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
           mGeneralOccupancy->SetBinError(xbin, ybin, 1e-15);
         }
       }
-      hAverageClusterSizeSummaryZPhi[iLayer]->Divide(hAverageClusterOccupancySummaryZPhi[iLayer]);
-      hAverageClusterOccupancySummaryZPhi[iLayer]->Scale(1. / mNRofs);
+      if (mDoPublishDetailedSummary == 1) {
+        hAverageClusterSizeSummaryZPhi[iLayer]->Divide(hAverageClusterOccupancySummaryZPhi[iLayer]);
+        hAverageClusterOccupancySummaryZPhi[iLayer]->Scale(1. / mNRofs);
 
-      hAverageClusterSizeSummaryZPhi[iLayer]->Divide(hAverageClusterOccupancySummaryZPhi[iLayer]);
-      hAverageClusterOccupancySummaryZPhi[iLayer]->Scale(1. / mNRofs);
+        hAverageClusterSizeSummaryFine[iLayer]->Divide(hAverageClusterOccupancySummaryFine[iLayer]);
+        hAverageClusterOccupancySummaryFine[iLayer]->Scale(1. / mNRofs);
+
+        // Setting errors
+        for (int i = 1; i <= hAverageClusterSizeSummaryZPhi[iLayer]->GetNbinsX(); i++) {
+          for (int j = 1; j <= hAverageClusterSizeSummaryZPhi[iLayer]->GetNbinsY(); j++) {
+            hAverageClusterSizeSummaryZPhi[iLayer]->SetBinError(i, j, 1.e-15);
+            hAverageClusterOccupancySummaryZPhi[iLayer]->SetBinError(i, j, 1.e-15);
+          }
+        }
+        for (int i = 1; i <= hAverageClusterSizeSummaryFine[iLayer]->GetNbinsX(); i++) {
+          for (int j = 1; j <= hAverageClusterSizeSummaryFine[iLayer]->GetNbinsY(); j++) {
+            hAverageClusterSizeSummaryFine[iLayer]->SetBinError(i, j, 1.e-15);
+            hAverageClusterOccupancySummaryFine[iLayer]->SetBinError(i, j, 1.e-15);
+          }
+        }
+      }
     }
   }
 
@@ -353,8 +382,12 @@ void ITSClusterTask::reset()
         hGroupedClusterSizeSummaryOB[iLayer][iStave]->Reset();
       }
     }
-    hAverageClusterOccupancySummaryZPhi[iLayer]->Reset();
-    hAverageClusterSizeSummaryZPhi[iLayer]->Reset();
+    if (mDoPublishDetailedSummary == 1) {
+      hAverageClusterOccupancySummaryZPhi[iLayer]->Reset();
+      hAverageClusterSizeSummaryZPhi[iLayer]->Reset();
+      hAverageClusterOccupancySummaryFine[iLayer]->Reset();
+      hAverageClusterSizeSummaryFine[iLayer]->Reset();
+    }
   }
 }
 
@@ -389,21 +422,20 @@ void ITSClusterTask::createAllHistos()
     formatAxes(hClusterTopologyLayerSummary[iLayer], "Cluster Topology (ID)", "counts", 1, 1.10);
     hClusterTopologyLayerSummary[iLayer]->SetStats(0);
 
-    hAverageClusterOccupancySummaryZPhi[iLayer] = new TH2F(Form("Layer%d/ClusterOccupancyZPhi", iLayer), Form("Cluster occupancy on Layer %d;z (cm);#phi (#circ);", iLayer), 200, -100., 100., 360, -180., 180.);
-    hAverageClusterOccupancySummaryZPhi[iLayer]->SetStats(0);
-    hAverageClusterOccupancySummaryZPhi[iLayer]->SetBit(TH1::kIsAverage);
-    hAverageClusterOccupancySummaryZPhi[iLayer]->GetYaxis()->SetLabelSize(0.02);
-    hAverageClusterOccupancySummaryZPhi[iLayer]->GetXaxis()->SetLabelSize(0.02);
     if (mDoPublishDetailedSummary == 1) {
-      addObject(hAverageClusterOccupancySummaryZPhi[iLayer]);
-    }
+      hAverageClusterOccupancySummaryZPhi[iLayer] = new TH2F(Form("Layer%d/ClusterOccupancyZPhi", iLayer), Form("Cluster occupancy on Layer %d;z (cm);#phi (degree);", iLayer), 200, -100., 100., 360, -180., 180.);
+      hAverageClusterOccupancySummaryZPhi[iLayer]->SetStats(0);
+      hAverageClusterOccupancySummaryZPhi[iLayer]->SetBit(TH1::kIsAverage);
+      hAverageClusterOccupancySummaryZPhi[iLayer]->GetYaxis()->SetLabelSize(0.02);
+      hAverageClusterOccupancySummaryZPhi[iLayer]->GetXaxis()->SetLabelSize(0.02);
 
-    hAverageClusterSizeSummaryZPhi[iLayer] = new TH2F(Form("Layer%d/ClusterSizeZPhi", iLayer), Form("Cluster size on Layer %d;z (cm);#phi (#circ);", iLayer), 200, -100., 100., 360, -180., 180.);
-    hAverageClusterSizeSummaryZPhi[iLayer]->SetStats(0);
-    hAverageClusterSizeSummaryZPhi[iLayer]->SetBit(TH1::kIsAverage);
-    hAverageClusterSizeSummaryZPhi[iLayer]->GetYaxis()->SetLabelSize(0.02);
-    hAverageClusterSizeSummaryZPhi[iLayer]->GetXaxis()->SetLabelSize(0.02);
-    if (mDoPublishDetailedSummary == 1) {
+      addObject(hAverageClusterOccupancySummaryZPhi[iLayer]);
+
+      hAverageClusterSizeSummaryZPhi[iLayer] = new TH2F(Form("Layer%d/ClusterSizeZPhi", iLayer), Form("Cluster size on Layer %d;z (cm);#phi (degree);", iLayer), 200, -100., 100., 360, -180., 180.);
+      hAverageClusterSizeSummaryZPhi[iLayer]->SetStats(0);
+      hAverageClusterSizeSummaryZPhi[iLayer]->SetBit(TH1::kIsAverage);
+      hAverageClusterSizeSummaryZPhi[iLayer]->GetYaxis()->SetLabelSize(0.02);
+      hAverageClusterSizeSummaryZPhi[iLayer]->GetXaxis()->SetLabelSize(0.02);
       addObject(hAverageClusterSizeSummaryZPhi[iLayer]);
     }
 
@@ -427,28 +459,25 @@ void ITSClusterTask::createAllHistos()
       hAverageClusterSizeSummaryIB[iLayer]->GetYaxis()->SetLabelSize(0.02);
       hAverageClusterSizeSummaryIB[iLayer]->GetXaxis()->SetLabelSize(0.02);
 
-      // Coarse check
-
-      hAverageClusterOccupancySummaryCoarse[iLayer] = new TH2F(Form("Layer%d/ClusterOccupancyCoarse", iLayer), Form("Cluster occupancy on Layer %d", iLayer), mNChipsPerHic[iLayer] * mNHicPerStave[iLayer] * nZBinsIB, -0.5, (mNChipsPerHic[iLayer] * mNHicPerStave[iLayer] * nZBinsIB) - 0.5, mNStaves[iLayer] * nRphiBinsIB, -0.5, mNStaves[iLayer] * nRphiBinsIB - 0.5);
-      hAverageClusterOccupancySummaryCoarse[iLayer]->SetStats(0);
-      hAverageClusterOccupancySummaryCoarse[iLayer]->SetBit(TH1::kIsAverage);
-      hAverageClusterOccupancySummaryCoarse[iLayer]->GetYaxis()->SetLabelSize(0);
-      hAverageClusterOccupancySummaryCoarse[iLayer]->GetXaxis()->SetLabelSize(0);
-      hAverageClusterOccupancySummaryCoarse[iLayer]->GetYaxis()->SetTickSize(0);
-      hAverageClusterOccupancySummaryCoarse[iLayer]->GetXaxis()->SetTickSize(0);
+      // Fine check
       if (mDoPublishDetailedSummary == 1) {
-        addObject(hAverageClusterOccupancySummaryCoarse[iLayer]);
-      }
+        hAverageClusterOccupancySummaryFine[iLayer] = new TH2F(Form("Layer%d/ClusterOccupancyFine", iLayer), Form("Cluster occupancy on Layer %d", iLayer), mNChipsPerHic[iLayer] * mNHicPerStave[iLayer] * nZBinsIB, -0.5, (mNChipsPerHic[iLayer] * mNHicPerStave[iLayer] * nZBinsIB) - 0.5, mNStaves[iLayer] * nRphiBinsIB, -0.5, mNStaves[iLayer] * nRphiBinsIB - 0.5);
+        hAverageClusterOccupancySummaryFine[iLayer]->SetStats(0);
+        hAverageClusterOccupancySummaryFine[iLayer]->SetBit(TH1::kIsAverage);
+        hAverageClusterOccupancySummaryFine[iLayer]->GetYaxis()->SetLabelSize(0);
+        hAverageClusterOccupancySummaryFine[iLayer]->GetXaxis()->SetLabelSize(0);
+        hAverageClusterOccupancySummaryFine[iLayer]->GetYaxis()->SetTickSize(0);
+        hAverageClusterOccupancySummaryFine[iLayer]->GetXaxis()->SetTickSize(0);
+        addObject(hAverageClusterOccupancySummaryFine[iLayer]);
 
-      hAverageClusterSizeSummaryCoarse[iLayer] = new TH2F(Form("Layer%d/ClusterSizeCoarse", iLayer), Form("Cluster size on Layer %d", iLayer), mNChipsPerHic[iLayer] * mNHicPerStave[iLayer] * nZBinsIB, -0.5, (mNChipsPerHic[iLayer] * mNHicPerStave[iLayer] * nZBinsIB) - 0.5, mNStaves[iLayer] * nRphiBinsIB, -0.5, mNStaves[iLayer] * nRphiBinsIB - 0.5);
-      hAverageClusterSizeSummaryCoarse[iLayer]->SetStats(0);
-      hAverageClusterSizeSummaryCoarse[iLayer]->SetBit(TH1::kIsAverage);
-      hAverageClusterSizeSummaryCoarse[iLayer]->GetYaxis()->SetLabelSize(0);
-      hAverageClusterSizeSummaryCoarse[iLayer]->GetXaxis()->SetLabelSize(0);
-      hAverageClusterSizeSummaryCoarse[iLayer]->GetYaxis()->SetTickSize(0);
-      hAverageClusterSizeSummaryCoarse[iLayer]->GetXaxis()->SetTickSize(0);
-      if (mDoPublishDetailedSummary == 1) {
-        addObject(hAverageClusterSizeSummaryCoarse[iLayer]);
+        hAverageClusterSizeSummaryFine[iLayer] = new TH2F(Form("Layer%d/ClusterSizeFine", iLayer), Form("Cluster size on Layer %d", iLayer), mNChipsPerHic[iLayer] * mNHicPerStave[iLayer] * nZBinsIB, -0.5, (mNChipsPerHic[iLayer] * mNHicPerStave[iLayer] * nZBinsIB) - 0.5, mNStaves[iLayer] * nRphiBinsIB, -0.5, mNStaves[iLayer] * nRphiBinsIB - 0.5);
+        hAverageClusterSizeSummaryFine[iLayer]->SetStats(0);
+        hAverageClusterSizeSummaryFine[iLayer]->SetBit(TH1::kIsAverage);
+        hAverageClusterSizeSummaryFine[iLayer]->GetYaxis()->SetLabelSize(0);
+        hAverageClusterSizeSummaryFine[iLayer]->GetXaxis()->SetLabelSize(0);
+        hAverageClusterSizeSummaryFine[iLayer]->GetYaxis()->SetTickSize(0);
+        hAverageClusterSizeSummaryFine[iLayer]->GetXaxis()->SetTickSize(0);
+        addObject(hAverageClusterSizeSummaryFine[iLayer]);
       }
 
       for (int iStave = 0; iStave < mNStaves[iLayer]; iStave++) {
@@ -495,28 +524,25 @@ void ITSClusterTask::createAllHistos()
       hAverageClusterSizeSummaryOB[iLayer]->GetXaxis()->SetLabelSize(0.02);
       hAverageClusterSizeSummaryOB[iLayer]->GetXaxis()->SetTitleOffset(1.2);
 
-      // Coarse check
-
-      hAverageClusterOccupancySummaryCoarse[iLayer] = new TH2F(Form("Layer%d/ClusterOccupancyCoarse", iLayer), Form("Cluster occupancy on Layer %d", iLayer), mNChipsPerHic[iLayer] * mNHicPerStave[iLayer] * nZBinsOB, -0.5, (mNChipsPerHic[iLayer] * mNHicPerStave[iLayer] * nZBinsOB) - 0.5, mNStaves[iLayer] * nRphiBinsOB, -0.5, mNStaves[iLayer] * nRphiBinsOB - 0.5);
-      hAverageClusterOccupancySummaryCoarse[iLayer]->SetStats(0);
-      hAverageClusterOccupancySummaryCoarse[iLayer]->SetBit(TH1::kIsAverage);
-      hAverageClusterOccupancySummaryCoarse[iLayer]->GetYaxis()->SetLabelSize(0);
-      hAverageClusterOccupancySummaryCoarse[iLayer]->GetXaxis()->SetLabelSize(0);
-      hAverageClusterOccupancySummaryCoarse[iLayer]->GetYaxis()->SetTickSize(0);
-      hAverageClusterOccupancySummaryCoarse[iLayer]->GetXaxis()->SetTickSize(0);
+      // Fine check
       if (mDoPublishDetailedSummary == 1) {
-        addObject(hAverageClusterOccupancySummaryCoarse[iLayer]);
-      }
+        hAverageClusterOccupancySummaryFine[iLayer] = new TH2F(Form("Layer%d/ClusterOccupancyFine", iLayer), Form("Cluster occupancy on Layer %d", iLayer), mNChipsPerHic[iLayer] * mNHicPerStave[iLayer] * nZBinsOB, -0.5, (mNChipsPerHic[iLayer] * mNHicPerStave[iLayer] * nZBinsOB) - 0.5, mNStaves[iLayer] * nRphiBinsOB, -0.5, mNStaves[iLayer] * nRphiBinsOB - 0.5);
+        hAverageClusterOccupancySummaryFine[iLayer]->SetStats(0);
+        hAverageClusterOccupancySummaryFine[iLayer]->SetBit(TH1::kIsAverage);
+        hAverageClusterOccupancySummaryFine[iLayer]->GetYaxis()->SetLabelSize(0);
+        hAverageClusterOccupancySummaryFine[iLayer]->GetXaxis()->SetLabelSize(0);
+        hAverageClusterOccupancySummaryFine[iLayer]->GetYaxis()->SetTickSize(0);
+        hAverageClusterOccupancySummaryFine[iLayer]->GetXaxis()->SetTickSize(0);
+        addObject(hAverageClusterOccupancySummaryFine[iLayer]);
 
-      hAverageClusterSizeSummaryCoarse[iLayer] = new TH2F(Form("Layer%d/ClusterSizeCoarse", iLayer), Form("Cluster size on Layer %d", iLayer), mNChipsPerHic[iLayer] * mNHicPerStave[iLayer] * nZBinsOB, -0.5, (mNChipsPerHic[iLayer] * mNHicPerStave[iLayer] * nZBinsOB) - 0.5, mNStaves[iLayer] * nRphiBinsOB, -0.5, mNStaves[iLayer] * nRphiBinsOB - 0.5);
-      hAverageClusterSizeSummaryCoarse[iLayer]->SetStats(0);
-      hAverageClusterSizeSummaryCoarse[iLayer]->SetBit(TH1::kIsAverage);
-      hAverageClusterSizeSummaryCoarse[iLayer]->GetYaxis()->SetLabelSize(0);
-      hAverageClusterSizeSummaryCoarse[iLayer]->GetXaxis()->SetLabelSize(0);
-      hAverageClusterSizeSummaryCoarse[iLayer]->GetYaxis()->SetTickSize(0);
-      hAverageClusterSizeSummaryCoarse[iLayer]->GetXaxis()->SetTickSize(0);
-      if (mDoPublishDetailedSummary == 1) {
-        addObject(hAverageClusterSizeSummaryCoarse[iLayer]);
+        hAverageClusterSizeSummaryFine[iLayer] = new TH2F(Form("Layer%d/ClusterSizeFine", iLayer), Form("Cluster size on Layer %d", iLayer), mNChipsPerHic[iLayer] * mNHicPerStave[iLayer] * nZBinsOB, -0.5, (mNChipsPerHic[iLayer] * mNHicPerStave[iLayer] * nZBinsOB) - 0.5, mNStaves[iLayer] * nRphiBinsOB, -0.5, mNStaves[iLayer] * nRphiBinsOB - 0.5);
+        hAverageClusterSizeSummaryFine[iLayer]->SetStats(0);
+        hAverageClusterSizeSummaryFine[iLayer]->SetBit(TH1::kIsAverage);
+        hAverageClusterSizeSummaryFine[iLayer]->GetYaxis()->SetLabelSize(0);
+        hAverageClusterSizeSummaryFine[iLayer]->GetXaxis()->SetLabelSize(0);
+        hAverageClusterSizeSummaryFine[iLayer]->GetYaxis()->SetTickSize(0);
+        hAverageClusterSizeSummaryFine[iLayer]->GetXaxis()->SetTickSize(0);
+        addObject(hAverageClusterSizeSummaryFine[iLayer]);
       }
 
       for (int iStave = 0; iStave < mNStaves[iLayer]; iStave++) {
@@ -549,85 +575,87 @@ void ITSClusterTask::createAllHistos()
       }
     }
 
-    // Add lines and labels to coarse checks
-    for (int i = 1; i <= (mNChipsPerHic[iLayer] * mNHicPerStave[iLayer]); i++) // vertical
-    {
-      if (iLayer < NLayerIB) {
-        if (i != (mNChipsPerHic[iLayer] * mNHicPerStave[iLayer])) { // black lines
-          TLine* l_v1 = new TLine(i * nZBinsIB - 0.5, -0.5, i * nZBinsIB - 0.5, mNStaves[iLayer] * nRphiBinsIB - 0.5);
-          l_v1->SetLineWidth(2);
-          hAverageClusterOccupancySummaryCoarse[iLayer]->GetListOfFunctions()->Add(l_v1);
-          TLine* l_v2 = new TLine(i * nZBinsIB - 0.5, -0.5, i * nZBinsIB - 0.5, mNStaves[iLayer] * nRphiBinsIB - 0.5);
-          l_v2->SetLineWidth(2);
-          hAverageClusterSizeSummaryCoarse[iLayer]->GetListOfFunctions()->Add(l_v2);
-        }
-        TLatex* latex_v1 = new TLatex(nZBinsIB / 4 + (i - 1) * nZBinsIB, -1 * nRphiBinsIB, Form("#bf{Chip %d}", i - 1));
-        hAverageClusterOccupancySummaryCoarse[iLayer]->GetListOfFunctions()->Add(latex_v1);
-        TLatex* latex_v2 = new TLatex(nZBinsIB / 4 + (i - 1) * nZBinsIB, -1 * nRphiBinsIB, Form("#bf{Chip %d}", i - 1));
-        hAverageClusterSizeSummaryCoarse[iLayer]->GetListOfFunctions()->Add(latex_v2);
-      } else {
-        if (i != (mNChipsPerHic[iLayer] * mNHicPerStave[iLayer])) { // black lines
-          TLine* l_v1 = new TLine(i * nZBinsOB - 0.5, -0.5, i * nZBinsOB - 0.5, mNStaves[iLayer] * nRphiBinsOB - 0.5);
-          l_v1->SetLineWidth(2);
-          hAverageClusterOccupancySummaryCoarse[iLayer]->GetListOfFunctions()->Add(l_v1);
-          TLine* l_v2 = new TLine(i * nZBinsOB - 0.5, -0.5, i * nZBinsOB - 0.5, mNStaves[iLayer] * nRphiBinsOB - 0.5);
-          l_v2->SetLineWidth(2);
-          hAverageClusterSizeSummaryCoarse[iLayer]->GetListOfFunctions()->Add(l_v2);
-        }
-      }
-    }
-    if (iLayer >= NLayerIB) {
-      for (int i = 1; i <= (mNLanePerHic[iLayer] * mNHicPerStave[iLayer]); i++) // vertical
+    // Add lines and labels to fine checks
+    if (mDoPublishDetailedSummary == 1) {
+      for (int i = 1; i <= (mNChipsPerHic[iLayer] * mNHicPerStave[iLayer]); i++) // vertical
       {
-        if (i != mNLanePerHic[iLayer] * mNHicPerStave[iLayer]) { // red lines
-          TLine* l_red1 = new TLine(i * nZBinsOB * mNChipsPerHic[iLayer] / mNLanePerHic[iLayer] - 0.5, -0.5, i * nZBinsOB * mNChipsPerHic[iLayer] / mNLanePerHic[iLayer] - 0.5, mNStaves[iLayer] * nRphiBinsOB - 0.5);
-          l_red1->SetLineColor(kRed);
-          l_red1->SetLineWidth(2);
-          hAverageClusterOccupancySummaryCoarse[iLayer]->GetListOfFunctions()->Add(l_red1);
-          TLine* l_red2 = new TLine(i * nZBinsOB * mNChipsPerHic[iLayer] / mNLanePerHic[iLayer] - 0.5, -0.5, i * nZBinsOB * mNChipsPerHic[iLayer] / mNLanePerHic[iLayer] - 0.5, mNStaves[iLayer] * nRphiBinsOB - 0.5);
-          l_red2->SetLineColor(kRed);
-          l_red2->SetLineWidth(2);
-          hAverageClusterSizeSummaryCoarse[iLayer]->GetListOfFunctions()->Add(l_red2);
+        if (iLayer < NLayerIB) {
+          if (i != (mNChipsPerHic[iLayer] * mNHicPerStave[iLayer])) { // black lines
+            TLine* l_v1 = new TLine(i * nZBinsIB - 0.5, -0.5, i * nZBinsIB - 0.5, mNStaves[iLayer] * nRphiBinsIB - 0.5);
+            l_v1->SetLineWidth(2);
+            hAverageClusterOccupancySummaryFine[iLayer]->GetListOfFunctions()->Add(l_v1);
+            TLine* l_v2 = new TLine(i * nZBinsIB - 0.5, -0.5, i * nZBinsIB - 0.5, mNStaves[iLayer] * nRphiBinsIB - 0.5);
+            l_v2->SetLineWidth(2);
+            hAverageClusterSizeSummaryFine[iLayer]->GetListOfFunctions()->Add(l_v2);
+          }
+          TLatex* latex_v1 = new TLatex(nZBinsIB / 4 + (i - 1) * nZBinsIB, -1 * nRphiBinsIB, Form("#bf{Chip %d}", i - 1));
+          hAverageClusterOccupancySummaryFine[iLayer]->GetListOfFunctions()->Add(latex_v1);
+          TLatex* latex_v2 = new TLatex(nZBinsIB / 4 + (i - 1) * nZBinsIB, -1 * nRphiBinsIB, Form("#bf{Chip %d}", i - 1));
+          hAverageClusterSizeSummaryFine[iLayer]->GetListOfFunctions()->Add(latex_v2);
+        } else {
+          if (i != (mNChipsPerHic[iLayer] * mNHicPerStave[iLayer])) { // black lines
+            TLine* l_v1 = new TLine(i * nZBinsOB - 0.5, -0.5, i * nZBinsOB - 0.5, mNStaves[iLayer] * nRphiBinsOB - 0.5);
+            l_v1->SetLineWidth(2);
+            hAverageClusterOccupancySummaryFine[iLayer]->GetListOfFunctions()->Add(l_v1);
+            TLine* l_v2 = new TLine(i * nZBinsOB - 0.5, -0.5, i * nZBinsOB - 0.5, mNStaves[iLayer] * nRphiBinsOB - 0.5);
+            l_v2->SetLineWidth(2);
+            hAverageClusterSizeSummaryFine[iLayer]->GetListOfFunctions()->Add(l_v2);
+          }
         }
-        std::string xLabel = (iLayer < 5) ? Form("#bf{%s}", OBLabel34[i - 1]) : Form("#bf{%s}", OBLabel56[i - 1]);
-        TLatex* latex_v1 = new TLatex(nZBinsOB * mNChipsPerHic[iLayer] / mNLanePerHic[iLayer] / 2 + (i - 1) * nZBinsOB * mNChipsPerHic[iLayer] / mNLanePerHic[iLayer], -1 * nRphiBinsOB, xLabel.c_str());
-        latex_v1->SetTextAngle(-20);
-        latex_v1->SetTextSize(0.03);
-        hAverageClusterOccupancySummaryCoarse[iLayer]->GetListOfFunctions()->Add(latex_v1);
-        TLatex* latex_v2 = new TLatex(nZBinsOB * mNChipsPerHic[iLayer] / mNLanePerHic[iLayer] / 2 + (i - 1) * nZBinsOB * mNChipsPerHic[iLayer] / mNLanePerHic[iLayer], -1 * nRphiBinsOB, xLabel.c_str());
-        latex_v2->SetTextAngle(-20);
-        latex_v2->SetTextSize(0.03);
-        hAverageClusterSizeSummaryCoarse[iLayer]->GetListOfFunctions()->Add(latex_v2);
       }
-    }
-    for (int j = 1; j <= mNStaves[iLayer]; j++) // horizontal
-    {
-      if (iLayer < NLayerIB) {
-        TLine* l_h1 = new TLine(-0.5, j * nRphiBinsIB - 0.5, (mNChipsPerHic[iLayer] * mNHicPerStave[iLayer] * nZBinsIB) - 0.5, j * nRphiBinsIB - 0.5);
-        l_h1->SetLineWidth(2);
-        hAverageClusterOccupancySummaryCoarse[iLayer]->GetListOfFunctions()->Add(l_h1);
-        TLine* l_h2 = new TLine(-0.5, j * nRphiBinsIB - 0.5, (mNChipsPerHic[iLayer] * mNHicPerStave[iLayer] * nZBinsIB) - 0.5, j * nRphiBinsIB - 0.5);
-        l_h2->SetLineWidth(2);
-        hAverageClusterSizeSummaryCoarse[iLayer]->GetListOfFunctions()->Add(l_h2);
+      if (iLayer >= NLayerIB) {
+        for (int i = 1; i <= (mNLanePerHic[iLayer] * mNHicPerStave[iLayer]); i++) // vertical
+        {
+          if (i != mNLanePerHic[iLayer] * mNHicPerStave[iLayer]) { // red lines
+            TLine* l_red1 = new TLine(i * nZBinsOB * mNChipsPerHic[iLayer] / mNLanePerHic[iLayer] - 0.5, -0.5, i * nZBinsOB * mNChipsPerHic[iLayer] / mNLanePerHic[iLayer] - 0.5, mNStaves[iLayer] * nRphiBinsOB - 0.5);
+            l_red1->SetLineColor(kRed);
+            l_red1->SetLineWidth(2);
+            hAverageClusterOccupancySummaryFine[iLayer]->GetListOfFunctions()->Add(l_red1);
+            TLine* l_red2 = new TLine(i * nZBinsOB * mNChipsPerHic[iLayer] / mNLanePerHic[iLayer] - 0.5, -0.5, i * nZBinsOB * mNChipsPerHic[iLayer] / mNLanePerHic[iLayer] - 0.5, mNStaves[iLayer] * nRphiBinsOB - 0.5);
+            l_red2->SetLineColor(kRed);
+            l_red2->SetLineWidth(2);
+            hAverageClusterSizeSummaryFine[iLayer]->GetListOfFunctions()->Add(l_red2);
+          }
+          std::string xLabel = (iLayer < 5) ? Form("#bf{%s}", OBLabel34[i - 1]) : Form("#bf{%s}", OBLabel56[i - 1]);
+          TLatex* latex_v1 = new TLatex(nZBinsOB * mNChipsPerHic[iLayer] / mNLanePerHic[iLayer] / 2 + (i - 1) * nZBinsOB * mNChipsPerHic[iLayer] / mNLanePerHic[iLayer], -1 * nRphiBinsOB, xLabel.c_str());
+          latex_v1->SetTextAngle(-20);
+          latex_v1->SetTextSize(0.03);
+          hAverageClusterOccupancySummaryFine[iLayer]->GetListOfFunctions()->Add(latex_v1);
+          TLatex* latex_v2 = new TLatex(nZBinsOB * mNChipsPerHic[iLayer] / mNLanePerHic[iLayer] / 2 + (i - 1) * nZBinsOB * mNChipsPerHic[iLayer] / mNLanePerHic[iLayer], -1 * nRphiBinsOB, xLabel.c_str());
+          latex_v2->SetTextAngle(-20);
+          latex_v2->SetTextSize(0.03);
+          hAverageClusterSizeSummaryFine[iLayer]->GetListOfFunctions()->Add(latex_v2);
+        }
+      }
+      for (int j = 1; j <= mNStaves[iLayer]; j++) // horizontal
+      {
+        if (iLayer < NLayerIB) {
+          TLine* l_h1 = new TLine(-0.5, j * nRphiBinsIB - 0.5, (mNChipsPerHic[iLayer] * mNHicPerStave[iLayer] * nZBinsIB) - 0.5, j * nRphiBinsIB - 0.5);
+          l_h1->SetLineWidth(2);
+          hAverageClusterOccupancySummaryFine[iLayer]->GetListOfFunctions()->Add(l_h1);
+          TLine* l_h2 = new TLine(-0.5, j * nRphiBinsIB - 0.5, (mNChipsPerHic[iLayer] * mNHicPerStave[iLayer] * nZBinsIB) - 0.5, j * nRphiBinsIB - 0.5);
+          l_h2->SetLineWidth(2);
+          hAverageClusterSizeSummaryFine[iLayer]->GetListOfFunctions()->Add(l_h2);
 
-        TLatex* latex_h1 = new TLatex(-1 * nZBinsIB, nRphiBinsIB / 4 + (j - 1) * nRphiBinsIB, Form("#bf{Stave %d}", j - 1));
-        hAverageClusterOccupancySummaryCoarse[iLayer]->GetListOfFunctions()->Add(latex_h1);
-        TLatex* latex_h2 = new TLatex(-1 * nZBinsIB, nRphiBinsIB / 4 + (j - 1) * nRphiBinsIB, Form("#bf{Stave %d}", j - 1));
-        hAverageClusterSizeSummaryCoarse[iLayer]->GetListOfFunctions()->Add(latex_h2);
-      } else {
-        TLine* l_h1 = new TLine(-0.5, j * nRphiBinsOB - 0.5, (mNChipsPerHic[iLayer] * mNHicPerStave[iLayer] * nZBinsOB) - 0.5, j * nRphiBinsOB - 0.5);
-        l_h1->SetLineWidth(2);
-        hAverageClusterOccupancySummaryCoarse[iLayer]->GetListOfFunctions()->Add(l_h1);
-        TLine* l_h2 = new TLine(-0.5, j * nRphiBinsOB - 0.5, (mNChipsPerHic[iLayer] * mNHicPerStave[iLayer] * nZBinsOB) - 0.5, j * nRphiBinsOB - 0.5);
-        l_h2->SetLineWidth(2);
-        hAverageClusterSizeSummaryCoarse[iLayer]->GetListOfFunctions()->Add(l_h2);
+          TLatex* latex_h1 = new TLatex(-1 * nZBinsIB, nRphiBinsIB / 4 + (j - 1) * nRphiBinsIB, Form("#bf{Stave %d}", j - 1));
+          hAverageClusterOccupancySummaryFine[iLayer]->GetListOfFunctions()->Add(latex_h1);
+          TLatex* latex_h2 = new TLatex(-1 * nZBinsIB, nRphiBinsIB / 4 + (j - 1) * nRphiBinsIB, Form("#bf{Stave %d}", j - 1));
+          hAverageClusterSizeSummaryFine[iLayer]->GetListOfFunctions()->Add(latex_h2);
+        } else {
+          TLine* l_h1 = new TLine(-0.5, j * nRphiBinsOB - 0.5, (mNChipsPerHic[iLayer] * mNHicPerStave[iLayer] * nZBinsOB) - 0.5, j * nRphiBinsOB - 0.5);
+          l_h1->SetLineWidth(2);
+          hAverageClusterOccupancySummaryFine[iLayer]->GetListOfFunctions()->Add(l_h1);
+          TLine* l_h2 = new TLine(-0.5, j * nRphiBinsOB - 0.5, (mNChipsPerHic[iLayer] * mNHicPerStave[iLayer] * nZBinsOB) - 0.5, j * nRphiBinsOB - 0.5);
+          l_h2->SetLineWidth(2);
+          hAverageClusterSizeSummaryFine[iLayer]->GetListOfFunctions()->Add(l_h2);
 
-        TLatex* latex_h1 = new TLatex(-1.5 * nZBinsOB * mNChipsPerHic[iLayer] / mNLanePerHic[iLayer], nRphiBinsOB / 8 + (j - 1) * nRphiBinsOB, Form("#bf{Stave %d}", j - 1));
-        latex_h1->SetTextSize(0.03);
-        hAverageClusterOccupancySummaryCoarse[iLayer]->GetListOfFunctions()->Add(latex_h1);
-        TLatex* latex_h2 = new TLatex(-1.5 * nZBinsOB * mNChipsPerHic[iLayer] / mNLanePerHic[iLayer], nRphiBinsOB / 8 + (j - 1) * nRphiBinsOB, Form("#bf{Stave %d}", j - 1));
-        latex_h2->SetTextSize(0.03);
-        hAverageClusterSizeSummaryCoarse[iLayer]->GetListOfFunctions()->Add(latex_h2);
+          TLatex* latex_h1 = new TLatex(-1.5 * nZBinsOB * mNChipsPerHic[iLayer] / mNLanePerHic[iLayer], nRphiBinsOB / 8 + (j - 1) * nRphiBinsOB, Form("#bf{Stave %d}", j - 1));
+          latex_h1->SetTextSize(0.03);
+          hAverageClusterOccupancySummaryFine[iLayer]->GetListOfFunctions()->Add(latex_h1);
+          TLatex* latex_h2 = new TLatex(-1.5 * nZBinsOB * mNChipsPerHic[iLayer] / mNLanePerHic[iLayer], nRphiBinsOB / 8 + (j - 1) * nRphiBinsOB, Form("#bf{Stave %d}", j - 1));
+          latex_h2->SetTextSize(0.03);
+          hAverageClusterSizeSummaryFine[iLayer]->GetListOfFunctions()->Add(latex_h2);
+        }
       }
     }
   }
