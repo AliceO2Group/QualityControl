@@ -35,8 +35,8 @@ void SkeletonTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
   ILOG(Debug, Devel) << "initialize SkeletonTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
-  ILOG(Debug, Support) << "Debug" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
-  ILOG(Info, Support) << "Info" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Support) << "Debug" << ENDM;                 // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Info, Support) << "Info" << ENDM;                   // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
   if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {

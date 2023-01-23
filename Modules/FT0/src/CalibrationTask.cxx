@@ -37,7 +37,7 @@ CalibrationTask::~CalibrationTask()
 
 void CalibrationTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Debug, Devel) << "initialize CalibrationTask" << ENDM;             // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize CalibrationTask" << ENDM;              // QcInfoLogger is used. FairMQ logs will go to there as well.
   constexpr std::size_t Nchannels_FT0 = o2::ft0::Constants::sNCHANNELS_PM; //208(real) + 8 (empty) number of PM(without LCS) channels
   mNotCalibratedChannelTimeHistogram = std::make_unique<TH1F>("Not_calibrated_time", "Not_calibrated_time", 2 * CHANNEL_TIME_HISTOGRAM_RANGE, -CHANNEL_TIME_HISTOGRAM_RANGE, CHANNEL_TIME_HISTOGRAM_RANGE);
   mCalibratedChannelTimeHistogram = std::make_unique<TH1F>("Calibrated_time", "Calibrated_time", 2 * CHANNEL_TIME_HISTOGRAM_RANGE, -CHANNEL_TIME_HISTOGRAM_RANGE, CHANNEL_TIME_HISTOGRAM_RANGE);

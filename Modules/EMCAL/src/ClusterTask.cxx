@@ -100,7 +100,7 @@ ClusterTask::~ClusterTask()
 void ClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   QcInfoLogger::setDetector("EMC");                        // svk
-  ILOG(Debug, Devel) << "initialize ClusterTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize ClusterTask" << ENDM;  // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   auto get_bool = [](const std::string_view input) -> bool { // svk
     return input == "true";

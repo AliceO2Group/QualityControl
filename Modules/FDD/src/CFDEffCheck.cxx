@@ -70,7 +70,7 @@ void CFDEffCheck::configure()
     } else {
       setCcdbUrl("o2-ccdb.internal");
       ILOG(Debug, Support) << "configure() : using deadChannelMap from CCDB, default url = "
-                          << "o2-ccdb.internal" << ENDM;
+                           << "o2-ccdb.internal" << ENDM;
     }
     if (auto param = mCustomParameters.find("pathDeadChannelMap"); param != mCustomParameters.end()) {
       mPathDeadChannelMap = param->second;

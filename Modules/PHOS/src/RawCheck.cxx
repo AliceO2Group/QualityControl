@@ -37,50 +37,50 @@ void RawCheck::configure()
   if (param != mCustomParameters.end()) {
     mMinHGPedestalValue = stoi(param->second);
     ILOG(Debug, Support) << "configure() : Custom parameter mMinHGPedestalValue "
-                        << mMinHGPedestalValue << ENDM;
+                         << mMinHGPedestalValue << ENDM;
   }
   param = mCustomParameters.find("mMaxHGPedestalValue");
   if (param != mCustomParameters.end()) {
     mMaxHGPedestalValue = stoi(param->second);
     ILOG(Debug, Support) << "configure() : Custom parameter mMaxHGPedestalValue "
-                        << mMaxHGPedestalValue << ENDM;
+                         << mMaxHGPedestalValue << ENDM;
   }
   param = mCustomParameters.find("mMinLGPedestalValue");
   if (param != mCustomParameters.end()) {
     mMinLGPedestalValue = stoi(param->second);
     ILOG(Debug, Support) << "configure() : Custom parameter mMinLGPedestalValue "
-                        << mMinLGPedestalValue << ENDM;
+                         << mMinLGPedestalValue << ENDM;
   }
   param = mCustomParameters.find("mMaxLGPedestalValue");
   if (param != mCustomParameters.end()) {
     mMaxLGPedestalValue = stoi(param->second);
     ILOG(Debug, Support) << "configure() : Custom parameter mMaxLGPedestalValue "
-                        << mMaxLGPedestalValue << ENDM;
+                         << mMaxLGPedestalValue << ENDM;
   }
   // RMS
   param = mCustomParameters.find("mMinHGPedestalRMS");
   if (param != mCustomParameters.end()) {
     mMinHGPedestalRMS = stof(param->second);
     ILOG(Debug, Support) << "configure() : Custom parameter mMinHGPedestalRMS "
-                        << mMinHGPedestalRMS << ENDM;
+                         << mMinHGPedestalRMS << ENDM;
   }
   param = mCustomParameters.find("mMaxHGPedestalRMS");
   if (param != mCustomParameters.end()) {
     mMaxHGPedestalRMS = stof(param->second);
     ILOG(Debug, Support) << "configure() : Custom parameter mMaxHGPedestalRMS "
-                        << mMaxHGPedestalRMS << ENDM;
+                         << mMaxHGPedestalRMS << ENDM;
   }
   param = mCustomParameters.find("mMinLGPedestalRMS");
   if (param != mCustomParameters.end()) {
     mMinLGPedestalRMS = stof(param->second);
     ILOG(Debug, Support) << "configure() : Custom parameter mMinLGPedestalRMS "
-                        << mMinLGPedestalRMS << ENDM;
+                         << mMinLGPedestalRMS << ENDM;
   }
   param = mCustomParameters.find("mMaxLGPedestalRMS");
   if (param != mCustomParameters.end()) {
     mMaxLGPedestalRMS = stof(param->second);
     ILOG(Debug, Support) << "configure() : Custom parameter mMaxLGPedestalRMS "
-                        << mMaxLGPedestalRMS << ENDM;
+                         << mMaxLGPedestalRMS << ENDM;
   }
 
   // mToleratedBadPedestalValueChannelsM
@@ -89,8 +89,8 @@ void RawCheck::configure()
     if (param != mCustomParameters.end()) {
       mToleratedBadChannelsM[mod] = stoi(param->second);
       ILOG(Debug, Support) << "configure() : Custom parameter "
-                          << Form("mToleratedBadChannelsM%d", mod)
-                          << mToleratedBadChannelsM[mod] << ENDM;
+                           << Form("mToleratedBadChannelsM%d", mod)
+                           << mToleratedBadChannelsM[mod] << ENDM;
     }
   }
 }
