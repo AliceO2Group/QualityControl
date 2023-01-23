@@ -37,7 +37,7 @@ CalibrationTask::~CalibrationTask()
 
 void CalibrationTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize CalibrationTask" << ENDM;             // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize CalibrationTask" << ENDM;             // QcInfoLogger is used. FairMQ logs will go to there as well.
   constexpr std::size_t Nchannels_FT0 = o2::ft0::Constants::sNCHANNELS_PM; //208(real) + 8 (empty) number of PM(without LCS) channels
   mNotCalibratedChannelTimeHistogram = std::make_unique<TH1F>("Not_calibrated_time", "Not_calibrated_time", 2 * CHANNEL_TIME_HISTOGRAM_RANGE, -CHANNEL_TIME_HISTOGRAM_RANGE, CHANNEL_TIME_HISTOGRAM_RANGE);
   mCalibratedChannelTimeHistogram = std::make_unique<TH1F>("Calibrated_time", "Calibrated_time", 2 * CHANNEL_TIME_HISTOGRAM_RANGE, -CHANNEL_TIME_HISTOGRAM_RANGE, CHANNEL_TIME_HISTOGRAM_RANGE);
@@ -60,7 +60,7 @@ void CalibrationTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void CalibrationTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity" << activity.mId << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << activity.mId << ENDM;
   mNotCalibratedChannelTimeHistogram->Reset();
   mCalibratedChannelTimeHistogram->Reset();
   mCalibratedTimePerChannelHistogram->Reset();
@@ -69,7 +69,7 @@ void CalibrationTask::startOfActivity(Activity& activity)
 
 void CalibrationTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
   mNotCalibratedChannelTimeHistogram->Reset();
   mCalibratedChannelTimeHistogram->Reset();
   mCalibratedTimePerChannelHistogram->Reset();
@@ -104,12 +104,12 @@ void CalibrationTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void CalibrationTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void CalibrationTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void CalibrationTask::reset()

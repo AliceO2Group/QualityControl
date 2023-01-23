@@ -32,7 +32,7 @@ TH1FTask::~TH1FTask()
 
 void TH1FTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info) << "initialize TH1FTask" << ENDM;
+  ILOG(Debug, Devel) << "initialize TH1FTask" << ENDM;
 
   int histogramsNumber = 1;
   if (auto param = mCustomParameters.find("histoNumber"); param != mCustomParameters.end()) {
@@ -44,9 +44,9 @@ void TH1FTask::initialize(o2::framework::InitContext& /*ctx*/)
     binsNumber = stoi(param->second);
   }
 
-  ILOG(Info) << "Will create " << histogramsNumber << " histograms." << ENDM;
-  ILOG(Info) << "They will have " << binsNumber << " bins each." << ENDM;
-  ILOG(Info) << "In-memory size of one histogram will be around " << binsNumber * 4 << " bytes." << ENDM;
+  ILOG(Info, Support) << "Will create " << histogramsNumber << " histograms." << ENDM;
+  ILOG(Info, Support) << "They will have " << binsNumber << " bins each." << ENDM;
+  ILOG(Info, Support) << "In-memory size of one histogram will be around " << binsNumber * 4 << " bytes." << ENDM;
 
   for (int i = 0; i < histogramsNumber; i++) {
     std::string name = "histo-" + std::to_string(i);
@@ -57,7 +57,7 @@ void TH1FTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void TH1FTask::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info) << "startOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
   for (auto& histo : mHistograms) {
     histo->Reset();
   }
@@ -65,7 +65,7 @@ void TH1FTask::startOfActivity(Activity& /*activity*/)
 
 void TH1FTask::startOfCycle()
 {
-  ILOG(Info) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void TH1FTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -90,17 +90,17 @@ void TH1FTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void TH1FTask::endOfCycle()
 {
-  ILOG(Info) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void TH1FTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void TH1FTask::reset()
 {
-  ILOG(Info) << "Resetting the histograms" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   for (auto& histo : mHistograms) {
     histo->Reset();
   }

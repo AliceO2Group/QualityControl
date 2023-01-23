@@ -43,7 +43,7 @@ ITSDecodingErrorTask::~ITSDecodingErrorTask()
 
 void ITSDecodingErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "Initializing the ITSDecodingErrorTask" << ENDM;
+  ILOG(Debug, Devel) << "initializing the ITSDecodingErrorTask" << ENDM;
   getParameters();
   createDecodingPlots();
   setPlotsFormat();
@@ -106,10 +106,10 @@ void ITSDecodingErrorTask::setPlotsFormat()
 
 void ITSDecodingErrorTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity : " << activity.mId << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity : " << activity.mId << ENDM;
 }
 
-void ITSDecodingErrorTask::startOfCycle() { ILOG(Info, Support) << "startOfCycle" << ENDM; }
+void ITSDecodingErrorTask::startOfCycle() { ILOG(Debug, Devel) << "startOfCycle" << ENDM; }
 
 void ITSDecodingErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
@@ -184,12 +184,12 @@ void ITSDecodingErrorTask::getParameters()
 
 void ITSDecodingErrorTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void ITSDecodingErrorTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void ITSDecodingErrorTask::resetGeneralPlots()

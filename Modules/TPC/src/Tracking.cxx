@@ -54,7 +54,7 @@ Tracking::~Tracking()
 
 void Tracking::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize TPC Tracking QC task" << ENDM;
+  ILOG(Debug, Devel) << "initialize TPC Tracking QC task" << ENDM;
   mOutputMode = o2::tpc::qc::Tracking::outputMergeable;
   mQCTracking.initialize(mOutputMode);
 
@@ -77,13 +77,13 @@ void Tracking::initialize(o2::framework::InitContext& /*ctx*/)
 
 void Tracking::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "startOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
   mQCTracking.resetHistograms();
 }
 
 void Tracking::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void Tracking::monitorData(o2::framework::ProcessingContext& ctx)
@@ -99,19 +99,19 @@ void Tracking::monitorData(o2::framework::ProcessingContext& ctx)
 
 void Tracking::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void Tracking::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void Tracking::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   mQCTracking.resetHistograms();
 }
 

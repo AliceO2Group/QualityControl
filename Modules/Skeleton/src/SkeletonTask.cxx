@@ -34,11 +34,13 @@ SkeletonTask::~SkeletonTask()
 void SkeletonTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
-  ILOG(Info, Support) << "initialize SkeletonTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize SkeletonTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Support) << "Debug" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Info, Support) << "Info" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
   if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - myOwnKey: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - myOwnKey: " << param->second << ENDM;
   }
 
   mHistogram = new TH1F("example", "example", 20, 0, 30000);
@@ -58,14 +60,14 @@ void SkeletonTask::initialize(o2::framework::InitContext& /*ctx*/)
 void SkeletonTask::startOfActivity(Activity& activity)
 {
   // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
-  ILOG(Info, Support) << "startOfActivity " << activity.mId << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
   mHistogram->Reset();
 }
 
 void SkeletonTask::startOfCycle()
 {
   // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void SkeletonTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -132,13 +134,13 @@ void SkeletonTask::monitorData(o2::framework::ProcessingContext& ctx)
 void SkeletonTask::endOfCycle()
 {
   // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void SkeletonTask::endOfActivity(Activity& /*activity*/)
 {
   // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void SkeletonTask::reset()
@@ -147,7 +149,7 @@ void SkeletonTask::reset()
 
   // clean all the monitor objects here
 
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   mHistogram->Reset();
 }
 

@@ -49,11 +49,11 @@ HmpidTaskDigits::~HmpidTaskDigits()
 
 void HmpidTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info) << "initialize HmpidTaskDigits" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize HmpidTaskDigits" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
   // if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {
-  //  ILOG(Info) << "Custom parameter - myOwnKey: " << param->second << ENDM;
+  //  ILOG(Info, Support) << "Custom parameter - myOwnKey: " << param->second << ENDM;
   // }
 
   hOccupancyAvg = new TProfile("hOccupancyAvg", "Occupancy per DDL;;Occupancy (%)", 14, 0.5, 14.5);
@@ -91,7 +91,7 @@ void HmpidTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
 
 void HmpidTaskDigits::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info) << "startOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
   hOccupancyAvg->Reset();
   for (Int_t i = 0; i < numCham; ++i) {
     hHMPIDchargeDist[i]->Reset();
@@ -101,7 +101,7 @@ void HmpidTaskDigits::startOfActivity(Activity& /*activity*/)
 
 void HmpidTaskDigits::startOfCycle()
 {
-  ILOG(Info) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void HmpidTaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
@@ -151,19 +151,19 @@ void HmpidTaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
 
 void HmpidTaskDigits::endOfCycle()
 {
-  ILOG(Info) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void HmpidTaskDigits::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void HmpidTaskDigits::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histogram" << ENDM;
   hOccupancyAvg->Reset();
   for (Int_t i = 0; i < numCham; ++i) {
     hHMPIDchargeDist[i]->Reset();

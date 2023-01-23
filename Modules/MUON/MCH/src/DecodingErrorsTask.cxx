@@ -124,7 +124,7 @@ void DecodingErrorsTask::createHeartBeatHistos()
 
 void DecodingErrorsTask::initialize(o2::framework::InitContext& /*ic*/)
 {
-  ILOG(Info, Support) << "initialize DecodingErrorsTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize DecodingErrorsTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // expected bunch-crossing value in heart-beat packets
   if (auto param = mCustomParameters.find("HBExpectedBc"); param != mCustomParameters.end()) {
@@ -146,14 +146,14 @@ void DecodingErrorsTask::initialize(o2::framework::InitContext& /*ic*/)
 
 void DecodingErrorsTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity : " << activity.mId << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity : " << activity.mId << ENDM;
 }
 
 //_____________________________________________________________________________
 
 void DecodingErrorsTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 //_____________________________________________________________________________
@@ -531,7 +531,7 @@ void DecodingErrorsTask::endOfCycle()
     dst->update();
   };
 
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 
   mHistogramErrorsPerChamber->update();
   mHistogramErrorsPerFeeId->update();
@@ -553,7 +553,7 @@ void DecodingErrorsTask::endOfCycle()
 
 void DecodingErrorsTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 //_____________________________________________________________________________
@@ -561,7 +561,7 @@ void DecodingErrorsTask::endOfActivity(Activity& /*activity*/)
 void DecodingErrorsTask::reset()
 {
   // clean all the monitor objects here
-  ILOG(Info, Support) << "Resetting the histograms" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histogramss" << ENDM;
 
   for (auto h : mAllHistograms) {
     h->Reset("ICES");

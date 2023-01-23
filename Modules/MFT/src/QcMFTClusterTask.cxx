@@ -63,7 +63,7 @@ QcMFTClusterTask::~QcMFTClusterTask()
 
 void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize QcMFTClusterTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize QcMFTClusterTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
   if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {
@@ -73,19 +73,19 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   // loading custom parameters
   auto maxClusterROFSize = 5000;
   if (auto param = mCustomParameters.find("maxClusterROFSize"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - maxClusterROFSize: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - maxClusterROFSize: " << param->second << ENDM;
     maxClusterROFSize = stoi(param->second);
   }
 
   auto maxDuration = 60.f;
   if (auto param = mCustomParameters.find("maxDuration"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - maxDuration: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - maxDuration: " << param->second << ENDM;
     maxDuration = stof(param->second);
   }
 
   auto timeBinSize = 0.01f;
   if (auto param = mCustomParameters.find("timeBinSize"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - timeBinSize: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - timeBinSize: " << param->second << ENDM;
     timeBinSize = stof(param->second);
   }
 
@@ -93,13 +93,13 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   auto ROFLengthInBC = 198;
   if (auto param = mCustomParameters.find("ROFLengthInBC"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - ROFLengthInBC: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - ROFLengthInBC: " << param->second << ENDM;
     ROFLengthInBC = stoi(param->second);
   }
   auto ROFsPerOrbit = o2::constants::lhc::LHCMaxBunches / ROFLengthInBC;
 
   if (auto param = mCustomParameters.find("geomFileName"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - geometry filename: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - geometry filename: " << param->second << ENDM;
     mGeomPath = param->second;
   }
 
@@ -240,7 +240,7 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void QcMFTClusterTask::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "startOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
 
   // reset histograms
   reset();
@@ -248,7 +248,7 @@ void QcMFTClusterTask::startOfActivity(Activity& /*activity*/)
 
 void QcMFTClusterTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void QcMFTClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -338,19 +338,19 @@ void QcMFTClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void QcMFTClusterTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void QcMFTClusterTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void QcMFTClusterTask::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   mClusterOccupancy->Reset();
   mClusterPatternIndex->Reset();
   mClusterPatternSensorIndices->Reset();

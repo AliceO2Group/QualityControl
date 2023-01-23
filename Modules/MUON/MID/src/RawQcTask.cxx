@@ -57,7 +57,7 @@ RawQcTask::~RawQcTask()
 
 void RawQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize RawQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize RawQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
   // printf(" =================== > test initialise RAW \n");
 
   // Retrieve task parameters from the config file
@@ -162,13 +162,13 @@ bool isBoardEmpty(const o2::mid::ROBoard& board)
 
 void RawQcTask::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "startOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
   // printf(" =================== > test startOfActivity RAW \n");
 }
 
 void RawQcTask::startOfCycle()
 {
-  // ILOG(Info, Support) << "startOfCycle" << ENDM;
+  // ILOG(Debug, Devel) << "startOfCycle" << ENDM;
   // printf(" =================== > test startOfCycle RAW \n");
 }
 
@@ -263,13 +263,13 @@ void RawQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void RawQcTask::endOfCycle()
 {
-  // ILOG(Info, Support) << "endOfCycle" << ENDM;
+  // ILOG(Debug, Devel) << "endOfCycle" << ENDM;
   // printf(" =================== > test endOfCycle RAW \n");
 }
 
 void RawQcTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
   // printf(" =================== > test endOfActivity RAW \n");
 }
 
@@ -277,7 +277,7 @@ void RawQcTask::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   // printf(" =================== > test reset RAW \n");
   mRawDataChecker->Reset();
   mRawBCCounts->Reset();

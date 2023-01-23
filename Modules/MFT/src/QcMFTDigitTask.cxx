@@ -46,7 +46,7 @@ QcMFTDigitTask::~QcMFTDigitTask()
 
 void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize QcMFTDigitTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize QcMFTDigitTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
   if (auto param = mCustomParameters.find("FLP"); param != mCustomParameters.end()) {
@@ -62,19 +62,19 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   auto maxDigitROFSize = 5000;
   if (auto param = mCustomParameters.find("maxDigitROFSize"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - maxDigitROFSize: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - maxDigitROFSize: " << param->second << ENDM;
     maxDigitROFSize = stoi(param->second);
   }
 
   auto maxDuration = 60.f;
   if (auto param = mCustomParameters.find("maxDuration"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - maxDuration: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - maxDuration: " << param->second << ENDM;
     maxDuration = stof(param->second);
   }
 
   auto timeBinSize = 0.01f;
   if (auto param = mCustomParameters.find("timeBinSize"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - timeBinSize: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - timeBinSize: " << param->second << ENDM;
     timeBinSize = stof(param->second);
   }
 
@@ -82,7 +82,7 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   auto ROFLengthInBC = 198;
   if (auto param = mCustomParameters.find("ROFLengthInBC"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - ROFLengthInBC: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - ROFLengthInBC: " << param->second << ENDM;
     ROFLengthInBC = stoi(param->second);
   }
   auto ROFsPerOrbit = o2::constants::lhc::LHCMaxBunches / ROFLengthInBC;
@@ -227,7 +227,7 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void QcMFTDigitTask::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "startOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
 
   // reset histograms
   reset();
@@ -235,7 +235,7 @@ void QcMFTDigitTask::startOfActivity(Activity& /*activity*/)
 
 void QcMFTDigitTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void QcMFTDigitTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -304,18 +304,18 @@ void QcMFTDigitTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void QcMFTDigitTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void QcMFTDigitTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void QcMFTDigitTask::reset()
 {
   // clean all the monitor objects here
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
 
   mMergerTest->Reset();
   mDigitChipOccupancy->Reset();

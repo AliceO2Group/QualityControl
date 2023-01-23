@@ -161,7 +161,7 @@ void RawData::buildHistograms()
 void RawData::initialize(o2::framework::InitContext& /*ctx*/)
 {
 
-  ILOG(Info, Support) << "initialize TRD RawData QC " << ENDM;
+  ILOG(Debug, Devel) << "initialize TRD RawData QC " << ENDM;
 
   buildHistograms();
   ILOG(Info, Support) << "TRD RawData QC histograms built" << ENDM;
@@ -171,13 +171,13 @@ void RawData::initialize(o2::framework::InitContext& /*ctx*/)
 
 void RawData::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity " << activity.mId << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
   resetHistograms();
 }
 
 void RawData::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void RawData::monitorData(o2::framework::ProcessingContext& ctx)
@@ -293,24 +293,24 @@ void RawData::monitorData(o2::framework::ProcessingContext& ctx)
 
 void RawData::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void RawData::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void RawData::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   resetHistograms();
 }
 void RawData::resetHistograms()
 {
-  ILOG(Info, Support) << "Resetting the histogram " << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms " << ENDM;
   for (auto hist : mLinkErrors) {
     hist->Reset();
   }

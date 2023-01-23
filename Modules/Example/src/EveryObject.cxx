@@ -45,7 +45,7 @@ EveryObject::~EveryObject()
 
 void EveryObject::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize EveryObject" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize EveryObject" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // todo: enable/disable with config flags (this is why objects are always accessed after checking if not null)
   // todo: ttree, tefficiency, tprofile
@@ -88,12 +88,12 @@ void EveryObject::initialize(o2::framework::InitContext& /*ctx*/)
 
 void EveryObject::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity " << activity.mId << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
 }
 
 void EveryObject::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void EveryObject::monitorData(o2::framework::ProcessingContext& ctx)
@@ -129,17 +129,17 @@ void EveryObject::monitorData(o2::framework::ProcessingContext& ctx)
 
 void EveryObject::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void EveryObject::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void EveryObject::reset()
 {
-  ILOG(Info, Support) << "Resetting the objects" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the objects" << ENDM;
   if (mTH1F) {
     mTH1F->Reset();
   }

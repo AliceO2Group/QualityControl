@@ -54,11 +54,11 @@ void ClusterQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   context.setField(infoCONTEXT::FieldName::System, "QC");
   context.setField(infoCONTEXT::FieldName::Detector, "PHS");
   QcInfoLogger::GetInfoLogger().setContext(context);
-  ILOG(Info, Support) << "initialize ClusterQcTask" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "initialize ClusterQcTask" << ENDM;
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
   if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {
-    ILOG(Info, Support) << "Custom parameter - myOwnKey : " << param->second << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Info, Support) << "Custom parameter - myOwnKey : " << param->second << ENDM;
   }
 
   // read alignment to calculate cluster global coordinates
@@ -120,13 +120,13 @@ void ClusterQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void ClusterQcTask::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
   reset();
 }
 
 void ClusterQcTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void ClusterQcTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -185,18 +185,18 @@ void ClusterQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void ClusterQcTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfCycle" << ENDM;
 }
 
 void ClusterQcTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfActivity" << ENDM;
 }
 
 void ClusterQcTask::reset()
 {
   // clean all the monitor objects here
-  ILOG(Info, Support) << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   for (int i = kNhist1D; i--;) {
     if (mHist1D[i]) {
       mHist1D[i]->Reset();

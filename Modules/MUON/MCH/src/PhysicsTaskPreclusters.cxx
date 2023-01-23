@@ -54,7 +54,7 @@ PhysicsTaskPreclusters::~PhysicsTaskPreclusters() {}
 
 void PhysicsTaskPreclusters::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize PhysicsTaskPreclusters" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "initialize PhysicsTaskPreclusters" << ENDM;
 
   mDiagnostic = false;
   if (auto param = mCustomParameters.find("Diagnostic"); param != mCustomParameters.end()) {
@@ -174,12 +174,12 @@ void PhysicsTaskPreclusters::initialize(o2::framework::InitContext& /*ctx*/)
 
 void PhysicsTaskPreclusters::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
 }
 
 void PhysicsTaskPreclusters::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 static void updateTFcount(TH1D* hDen)
@@ -197,7 +197,7 @@ void PhysicsTaskPreclusters::monitorData(o2::framework::ProcessingContext& ctx)
   auto preClusters = ctx.inputs().get<gsl::span<o2::mch::PreCluster>>("preclusters");
   auto digits = ctx.inputs().get<gsl::span<o2::mch::Digit>>("preclusterdigits");
 
-  ILOG(Info, Support) << fmt::format("Received {} pre-clusters and {} digits", preClusters.size(), digits.size()) << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << fmt::format("Received {} pre-clusters and {} digits", preClusters.size(), digits.size()) << ENDM;
 
   updateTFcount(mHistogramPreclustersPerDE->getDen());
   updateTFcount(mHistogramPreclustersSignalPerDE->getDen());
@@ -507,7 +507,7 @@ void PhysicsTaskPreclusters::printPrecluster(gsl::span<const o2::mch::Digit> pre
   CoG(preClusterDigits, Xcog, Ycog, isWide);
 
   ILOG(Info, Support) << "\n\n\n====================\n"
-                      << "[pre-cluster] nDigits = " << preClusterDigits.size() << "  charge = " << chargeSum[0] << " " << chargeSum[1] << "   CoG = " << Xcog << "," << Ycog << AliceO2::InfoLogger::InfoLogger::endm;
+                      << "[pre-cluster] nDigits = " << preClusterDigits.size() << "  charge = " << chargeSum[0] << " " << chargeSum[1] << "   CoG = " << Xcog << "," << Ycog << ENDM;
   for (auto& d : preClusterDigits) {
     float X = segment.padPositionX(d.getPadID());
     float Y = segment.padPositionY(d.getPadID());
@@ -515,10 +515,10 @@ void PhysicsTaskPreclusters::printPrecluster(gsl::span<const o2::mch::Digit> pre
     ILOG(Info, Support) << fmt::format("  DE {:4d}  PAD {:5d}  ADC {:6d}  TIME ({})",
                                        d.getDetID(), d.getPadID(), d.getADC(), d.getTime())
                         << "\n"
-                        << fmt::format("  CATHODE {}  PAD_XY {:+2.2f} , {:+2.2f}", (int)bend, X, Y) << AliceO2::InfoLogger::InfoLogger::endm;
+                        << fmt::format("  CATHODE {}  PAD_XY {:+2.2f} , {:+2.2f}", (int)bend, X, Y) << ENDM;
   }
   ILOG(Info, Support) << "\n====================\n\n"
-                      << AliceO2::InfoLogger::InfoLogger::endm;
+                      << ENDM;
 }
 
 //_________________________________________________________________________________________________
@@ -560,14 +560,14 @@ void PhysicsTaskPreclusters::computePseudoEfficiency()
 
 void PhysicsTaskPreclusters::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfCycle" << ENDM;
 
   computePseudoEfficiency();
 }
 
 void PhysicsTaskPreclusters::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfActivity" << ENDM;
 
   computePseudoEfficiency();
 }
@@ -575,7 +575,7 @@ void PhysicsTaskPreclusters::endOfActivity(Activity& /*activity*/)
 void PhysicsTaskPreclusters::reset()
 {
   // clean all the monitor objects here
-  ILOG(Info, Support) << "Reseting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "Reseting the histogram" << ENDM;
 
   for (auto h : mAllHistograms) {
     h->Reset("ICES");

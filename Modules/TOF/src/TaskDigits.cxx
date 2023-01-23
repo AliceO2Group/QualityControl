@@ -75,7 +75,7 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
     }
   }
   if (auto param = mCustomParameters.find("applyCalib"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - applyCalib: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - applyCalib: " << param->second << ENDM;
     if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
       mApplyCalib = true;
     }
@@ -84,7 +84,7 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   utils::parseBooleanParameter(mCustomParameters, "PerChannel", mFlagEnableOrphanPerChannel);
 
   // Define histograms
-  ILOG(Info, Support) << "initialize TaskDigits" << ENDM;
+  ILOG(Debug, Devel) << "initialize TaskDigits" << ENDM;
 
   // Event info
   mHistoOrbitID = std::make_shared<TH2F>("OrbitID", Form("TOF OrbitID;OrbitID %% %i;Crate", mRangeMaxOrbitId), mBinsOrbitId, 0, mRangeMaxOrbitId, RawDataDecoder::ncrates, 0, RawDataDecoder::ncrates);
@@ -225,13 +225,13 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
 
 void TaskDigits::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "startOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
   reset();
 }
 
 void TaskDigits::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
@@ -454,7 +454,7 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
 
 void TaskDigits::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
   for (unsigned int i = 0; i < RawDataDecoder::nstrips; i++) {
     mCounterHitsPerStrip[i].FillHistogram(mHistoHitMap.get(), i + 1);
     mCounterHitsPerStripNoiseFiltered[i].FillHistogram(mHistoHitMapNoiseFiltered.get(), i + 1);
@@ -469,13 +469,13 @@ void TaskDigits::endOfCycle()
 
 void TaskDigits::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void TaskDigits::reset()
 {
   // clean all the monitor objects here
-  ILOG(Info, Support) << "Resetting the counters" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the counters" << ENDM;
   for (unsigned int i = 0; i < RawDataDecoder::nstrips; i++) {
     mCounterHitsPerStrip[i].Reset();
     mCounterHitsPerStripNoiseFiltered[i].Reset();
@@ -486,7 +486,7 @@ void TaskDigits::reset()
     mCounterNoisyChannels[i].Reset();
   }
 
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   // Event info
   mHistoOrbitID->Reset();
   mHistoBCID->Reset();

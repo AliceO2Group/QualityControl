@@ -63,20 +63,20 @@ ZDCRawDataTask::~ZDCRawDataTask()
 
 void ZDCRawDataTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize ZDCRawDataTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize ZDCRawDataTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
   init();
 }
 
 void ZDCRawDataTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity" << activity.mId << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << activity.mId << ENDM;
   // reset for all object
   reset();
 }
 
 void ZDCRawDataTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void ZDCRawDataTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -97,19 +97,19 @@ void ZDCRawDataTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void ZDCRawDataTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void ZDCRawDataTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void ZDCRawDataTask::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
 
   for (int i = 0; i < o2::zdc::NModules; i++) {
     for (int j = 0; j < o2::zdc::NChPerModule; j++) {
@@ -160,7 +160,7 @@ void ZDCRawDataTask::reset()
 
 void ZDCRawDataTask::initHisto()
 {
-  ILOG(Info, Support) << "initialize ZDC RAW DATA HISTOGRAMS" << ENDM;
+  ILOG(Debug, Devel) << "initialize ZDC RAW DATA HISTOGRAMS" << ENDM;
   setNameChannel(0, 0, "ZNA_TC_TR");
   setNameChannel(0, 1, "ZNA_SUM_SP");
   setNameChannel(0, 2, "ZNA_T1");
@@ -198,7 +198,7 @@ void ZDCRawDataTask::initHisto()
   // Histograms Baseline
   // setBinHisto1D(16378, -0.125, o2::zdc::ADCMax + 0.125);
   if (auto param = mCustomParameters.find("BASELINE"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - BASELINE: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - BASELINE: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto1D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()));
   } else
@@ -237,7 +237,7 @@ void ZDCRawDataTask::initHisto()
   // Histograms Counts
   // setBinHisto1D(o2::constants::lhc::LHCMaxBunches + 6, -5.5, o2::constants::lhc::LHCMaxBunches+0.5);
   if (auto param = mCustomParameters.find("COUNTS"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - COUNTS: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - COUNTS: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto1D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()));
   } else
@@ -279,7 +279,7 @@ void ZDCRawDataTask::initHisto()
   double xmax = o2::zdc::NTimeBinsPerBC - 0.5 + 12;
   // setBinHisto2D(nbx, xmin, xmax, o2::zdc::ADCRange, o2::zdc::ADCMin - 0.5, o2::zdc::ADCMax + 0.5);
   if (auto param = mCustomParameters.find("SIGNAL"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - SIGNAL: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - SIGNAL: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
   } else
@@ -318,7 +318,7 @@ void ZDCRawDataTask::initHisto()
 
   // Histograms Bunch Crossing Maps
   if (auto param = mCustomParameters.find("BUNCH"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - BUNCH: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - BUNCH: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
   } else
@@ -357,7 +357,7 @@ void ZDCRawDataTask::initHisto()
   addNewHisto("BUNCH", "hbunch-ZEM2_T0", "Bunch ZEM2  Auto Trigger", "ZEM2_TR", "T0");
 
   if (auto param = mCustomParameters.find("TRASMITTEDCHANNEL"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - TRASMITTEDCHANNEL: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - TRASMITTEDCHANNEL: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
   } else
@@ -365,7 +365,7 @@ void ZDCRawDataTask::initHisto()
   addNewHisto("TRASMITTEDCHANNEL", "hchTrasmitted", "Channels Trasmitted", "NONE", "ALL");
 
   if (auto param = mCustomParameters.find("FIRECHANNEL"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - FIRECHANNELL: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - FIRECHANNELL: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
   } else
@@ -373,7 +373,7 @@ void ZDCRawDataTask::initHisto()
   addNewHisto("FIRECHANNEL", "hchFired", "Channels Fired", "NONE", "ALL");
 
   if (auto param = mCustomParameters.find("DATALOSS"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - DATALOSS: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - DATALOSS: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
   } else
@@ -381,7 +381,7 @@ void ZDCRawDataTask::initHisto()
   addNewHisto("DATALOSS", "hchDataLoss", "Data Loss", "NONE", "ALL");
 
   if (auto param = mCustomParameters.find("TRIGGER_BIT"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - TRIGGER_BIT: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - TRIGGER_BIT: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
   } else
@@ -389,7 +389,7 @@ void ZDCRawDataTask::initHisto()
   addNewHisto("TRIGGER_BIT", "hchTriggerBits", "Trigger Bits", "NONE", "ALL");
 
   if (auto param = mCustomParameters.find("TRIGGER_BIT_HIT"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - TRIGGER_BIT_HIT: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - TRIGGER_BIT_HIT: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
   } else
@@ -397,7 +397,7 @@ void ZDCRawDataTask::initHisto()
   addNewHisto("TRIGGER_BIT_HIT", "hchTriggerBitsHits", "Trigger Bits Hit", "NONE", "ALL");
 
   if (auto param = mCustomParameters.find("OVER_BC"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - OVER_BC: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - OVER_BC: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto1D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()));
   } else
@@ -405,7 +405,7 @@ void ZDCRawDataTask::initHisto()
   addNewHisto("OVER_BC", "hbcOver", "BC Overflow", "NONE", "ALL");
 
   if (auto param = mCustomParameters.find("SUMMARYBASELINE"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - SUMMARYBASELINE: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - SUMMARYBASELINE: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto1D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()));
   } else
@@ -413,7 +413,7 @@ void ZDCRawDataTask::initHisto()
   addNewHisto("SUMMARYBASELINE", "hpedSummary", "Baseline Summary", "NONE", "LBC");
 
   if (auto param = mCustomParameters.find("SUMMARYRATE"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - SUMMARYRATE: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - SUMMARYRATE: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto1D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()));
   } else
@@ -1048,7 +1048,7 @@ bool ZDCRawDataTask::configureRawDataTask()
   if (!file) {
     initHisto();
   } else {
-    ILOG(Info, Support) << "initialize ZDC RAW DATA HISTOGRAMS FROM FILE" << ENDM;
+    ILOG(Debug, Devel) << "initialize ZDC RAW DATA HISTOGRAMS FROM FILE" << ENDM;
     while (getline(file, line)) {
       line_number++;
       tokenString = tokenLine(line, ";");

@@ -45,7 +45,7 @@ QcMFTReadoutTask::~QcMFTReadoutTask()
 
 void QcMFTReadoutTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize QcMFTReadoutTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize QcMFTReadoutTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // create the index to link a RU+lane to a chip
   //==============================================
@@ -200,7 +200,7 @@ void QcMFTReadoutTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void QcMFTReadoutTask::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "startOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
 
   // reset histograms
   reset();
@@ -208,7 +208,7 @@ void QcMFTReadoutTask::startOfActivity(Activity& /*activity*/)
 
 void QcMFTReadoutTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void QcMFTReadoutTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -289,19 +289,19 @@ void QcMFTReadoutTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void QcMFTReadoutTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void QcMFTReadoutTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void QcMFTReadoutTask::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   mDDWSummary->Reset();
   mSummaryChipError->Reset();
   mSummaryChipFault->Reset();

@@ -52,10 +52,10 @@ void DigitsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
     if (checkResult == Quality::Good) {
       h->SetFillColor(kGreen);
     } else if (checkResult == Quality::Bad) {
-      ILOG(Info) << "Quality::Bad, setting to red";
+      ILOG(Info, Support) << "Quality::Bad, setting to red";
       h->SetFillColor(kRed);
     } else if (checkResult == Quality::Medium) {
-      ILOG(Info) << "Quality::medium, setting to orange";
+      ILOG(Info, Support) << "Quality::medium, setting to orange";
       h->SetFillColor(kOrange);
     }
     h->SetLineColor(kBlack);

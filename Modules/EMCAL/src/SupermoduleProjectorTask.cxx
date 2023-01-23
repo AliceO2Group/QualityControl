@@ -40,7 +40,7 @@ void SupermoduleProjectorTask::configure(std::string name, const boost::property
 void SupermoduleProjectorTask::initialize(Trigger, framework::ServiceRegistryRef)
 {
   QcInfoLogger::setDetector("EMC");
-  ILOG(Info, Support) << "initialize SuperModuleProjectorTask" << ENDM;
+  ILOG(Debug, Devel) << "initialize SuperModuleProjectorTask" << ENDM;
   // create canvas objects for each plot
   for (const auto& datasource : mDataSources) {
     std::string canvasname = "PerSM_" + datasource.name,

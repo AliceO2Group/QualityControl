@@ -54,7 +54,7 @@ DigitsQcTask::~DigitsQcTask()
 
 void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize DigitsQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize DigitsQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
   // printf(" =================== > test initialize Digits \n");
 
   double paramExemple = 400; /// param from json
@@ -214,13 +214,13 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void DigitsQcTask::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "startOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
   // printf(" =================== > test startOfActivity Digits \n");
 }
 
 void DigitsQcTask::startOfCycle()
 {
-  // ILOG(Info, Support) << "startOfCycle" << ENDM;
+  // ILOG(Debug, Devel) << "startOfCycle" << ENDM;
   // printf(" =================== > test startOfCycle Digits \n");
 }
 
@@ -548,13 +548,13 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void DigitsQcTask::endOfCycle()
 {
-  // ILOG(Info, Support) << "endOfCycle" << ENDM;
+  // ILOG(Debug, Devel) << "endOfCycle" << ENDM;
   // printf(" =================== > test endOfCycle Digits \n");
 }
 
 void DigitsQcTask::endOfActivity(Activity& /*activity*/)
 {
-  // ILOG(Info, Support) << "endOfActivity" << ENDM;
+  // ILOG(Debug, Devel) << "endOfActivity" << ENDM;
   // printf(" =================== > test endOfActivity Digits \n");
 }
 
@@ -562,7 +562,7 @@ void DigitsQcTask::reset()
 {
   // clean all the monitor objects here
 
-  // ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  // ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   // printf(" =================== > test reset Digits \n");
 
   mHitsMapB->Reset();

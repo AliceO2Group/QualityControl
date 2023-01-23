@@ -74,7 +74,7 @@ ITSNoisyPixelTask::~ITSNoisyPixelTask()
 void ITSNoisyPixelTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
 
-  ILOG(Info, Support) << "initialize ITSNoisyPixelTask" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "initialize ITSNoisyPixelTask" << ENDM;
 
   getJsonParameters();
 
@@ -108,12 +108,12 @@ void ITSNoisyPixelTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void ITSNoisyPixelTask::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
 }
 
 void ITSNoisyPixelTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void ITSNoisyPixelTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -123,7 +123,7 @@ void ITSNoisyPixelTask::monitorData(o2::framework::ProcessingContext& ctx)
   int difference;
   start = std::chrono::high_resolution_clock::now();
 
-  ILOG(Info, Support) << "START DOING QC General" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "START DOING QC General" << ENDM;
 
   int lay = -1, sta, hsta, mod, chip;
 
@@ -331,22 +331,22 @@ void ITSNoisyPixelTask::monitorData(o2::framework::ProcessingContext& ctx)
   end = std::chrono::high_resolution_clock::now();
   difference = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
   mTotalTimeInQCTask += difference;
-  ILOG(Info) << "Time in QC Noisy Pixel Task:  " << difference << ENDM;
+  ILOG(Info, Support) << "Time in QC Noisy Pixel Task:  " << difference << ENDM;
 }
 
 void ITSNoisyPixelTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfCycle" << ENDM;
 }
 
 void ITSNoisyPixelTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfActivity" << ENDM;
 }
 
 void ITSNoisyPixelTask::reset()
 {
-  ILOG(Info, Support) << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
 
   if (mEnableOrderedHitsObject) {
     hOrderedHitsAddressIB->Reset();

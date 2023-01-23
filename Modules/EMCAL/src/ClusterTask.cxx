@@ -100,7 +100,7 @@ ClusterTask::~ClusterTask()
 void ClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   QcInfoLogger::setDetector("EMC");                        // svk
-  ILOG(Info, Support) << "initialize ClusterTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize ClusterTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   auto get_bool = [](const std::string_view input) -> bool { // svk
     return input == "true";
@@ -266,13 +266,13 @@ void ClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void ClusterTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity " << activity.mId << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
   resetHistograms();
 }
 
 void ClusterTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 
   if (!o2::base::GeometryManager::isGeometryLoaded()) {
     ILOG(Info, Support) << "Loading geometry" << ENDM;
@@ -350,12 +350,12 @@ void ClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void ClusterTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void ClusterTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 //_____________________________  Fill function _____________________________
@@ -705,7 +705,7 @@ void ClusterTask::resetHistograms()
     }
   };
 
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
 
   conditionalReset(mHistCellEnergyTimeUsed);
   conditionalReset(mHistCellEnergyTimePhys);

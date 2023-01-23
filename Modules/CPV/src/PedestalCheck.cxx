@@ -42,72 +42,72 @@ void PedestalCheck::configure()
     // mMinGoodPedestalValueM
     if (auto param = mCustomParameters.find(Form("mMinGoodPedestalValueM%d", mod + 2));
         param != mCustomParameters.end()) {
-      ILOG(Info, Devel) << "configure() : Custom parameter "
+      ILOG(Debug, Devel) << "configure() : Custom parameter "
                         << Form("mMinGoodPedestalValueM%d = ", mod + 2)
                         << param->second << ENDM;
       mMinGoodPedestalValueM[mod] = stoi(param->second);
     }
-    ILOG(Info, Support) << "configure() : I use "
+    ILOG(Debug, Support) << "configure() : I use "
                         << Form("mMinGoodPedestalValueM%d", mod + 2)
                         << " = "
                         << mMinGoodPedestalValueM[mod] << ENDM;
     // mMaxGoodPedestalSigmaM
     if (auto param = mCustomParameters.find(Form("mMaxGoodPedestalSigmaM%d", mod + 2));
         param != mCustomParameters.end()) {
-      ILOG(Info, Devel) << "configure() : Custom parameter "
+      ILOG(Debug, Devel) << "configure() : Custom parameter "
                         << Form("mMaxGoodPedestalSigmaM%d = ", mod + 2)
                         << param->second << ENDM;
       mMaxGoodPedestalSigmaM[mod] = stof(param->second);
     }
-    ILOG(Info, Support) << "configure() : I use "
+    ILOG(Debug, Support) << "configure() : I use "
                         << Form("mMaxGoodPedestalSigmaM%d", mod + 2)
                         << " = "
                         << mMaxGoodPedestalSigmaM[mod] << ENDM;
     // mMinGoodPedestalEfficiencyM
     if (auto param = mCustomParameters.find(Form("mMinGoodPedestalEfficiencyM%d", mod + 2));
         param != mCustomParameters.end()) {
-      ILOG(Info, Devel) << "configure() : Custom parameter "
+      ILOG(Debug, Devel) << "configure() : Custom parameter "
                         << Form("mMinGoodPedestalEfficiencyM%d = ", mod + 2)
                         << param->second << ENDM;
       mMinGoodPedestalEfficiencyM[mod] = stof(param->second);
     }
-    ILOG(Info, Support) << "configure() : I use "
+    ILOG(Debug, Support) << "configure() : I use "
                         << Form("mMinGoodPedestalEfficiencyM%d", mod + 2)
                         << " = "
                         << mMinGoodPedestalEfficiencyM[mod] << ENDM;
     // mMaxGoodPedestalEfficiencyM
     if (auto param = mCustomParameters.find(Form("mMaxGoodPedestalEfficiencyM%d", mod + 2));
         param != mCustomParameters.end()) {
-      ILOG(Info, Devel) << "configure() : Custom parameter "
+      ILOG(Debug, Devel) << "configure() : Custom parameter "
                         << Form("mMaxGoodPedestalEfficiencyM%d = ", mod + 2)
                         << param->second << ENDM;
       mMaxGoodPedestalEfficiencyM[mod] = stof(param->second);
     }
-    ILOG(Info, Support) << "configure() : I use "
+    ILOG(Debug, Support) << "configure() : I use "
                         << Form("mMaxGoodPedestalEfficiencyM%d", mod + 2)
                         << " = "
                         << mMaxGoodPedestalEfficiencyM[mod] << ENDM;
     // mToleratedBadPedestalValueChannelsM
     if (auto param = mCustomParameters.find(Form("mToleratedBadPedestalValueChannelsM%d", mod + 2));
         param != mCustomParameters.end()) {
-      ILOG(Info, Devel) << "configure() : Custom parameter "
+      ILOG(Debug, Devel) << "configure() : Custom parameter "
                         << Form("mToleratedBadPedestalValueChannelsM%d = ", mod + 2)
                         << param->second << ENDM;
       mToleratedBadPedestalValueChannelsM[mod] = stoi(param->second);
     }
-    ILOG(Info, Support) << "configure() : I use "
+    ILOG(Debug, Support) << "configure() : I use "
                         << Form("mToleratedBadPedestalValueChannelsM%d", mod + 2)
                         << " = "
                         << mToleratedBadPedestalValueChannelsM[mod] << ENDM;
     // mToleratedBadPedestalSigmaChannelsM
     if (auto param = mCustomParameters.find(Form("mToleratedBadPedestalSigmaChannelsM%d", mod + 2));
         param != mCustomParameters.end()) {
-      ILOG(Info, Devel) << "configure() : Custom parameter "
+      ILOG(Debug, Devel) << "configure() : Custom parameter "
                         << Form("mToleratedBadPedestalSigmaChannelsM%d = ", mod + 2)
                         << param->second << ENDM;
       mToleratedBadPedestalSigmaChannelsM[mod] = stoi(param->second);
     }
-    ILOG(Info, Support) << "configure() : I use "
+    ILOG(Debug, Support) << "configure() : I use "
                         << Form("mToleratedBadPedestalSigmaChannelsM%d", mod + 2)
                         << " = "
                         << mToleratedBadPedestalSigmaChannelsM[mod] << ENDM;
@@ -115,24 +115,24 @@ void PedestalCheck::configure()
     // mToleratedBadChannelsM
     if (auto param = mCustomParameters.find(Form("mToleratedBadChannelsM%d", mod + 2));
         param != mCustomParameters.end()) {
-      ILOG(Info, Devel) << "configure() : Custom parameter "
+      ILOG(Debug, Devel) << "configure() : Custom parameter "
                         << Form("mToleratedBadChannelsM%d = ", mod + 2)
                         << param->second << ENDM;
       mToleratedBadChannelsM[mod] = stoi(param->second);
     }
-    ILOG(Info, Support) << "configure() : I use "
+    ILOG(Debug, Support) << "configure() : I use "
                         << Form("mToleratedBadChannelsM%d", mod + 2)
                         << " = "
                         << mToleratedBadChannelsM[mod] << ENDM;
     // mToleratedBadPedestalEfficiencyChannelsM
     if (auto param = mCustomParameters.find(Form("mToleratedBadPedestalEfficiencyChannelsM%d", mod + 2));
         param != mCustomParameters.end()) {
-      ILOG(Info, Devel) << "configure() : Custom parameter "
+      ILOG(Debug, Devel) << "configure() : Custom parameter "
                         << Form("mToleratedBadPedestalEfficiencyChannelsM%d = ", mod + 2)
                         << param->second << ENDM;
       mToleratedBadPedestalEfficiencyChannelsM[mod] = stoi(param->second);
     }
-    ILOG(Info, Support) << "configure() : I use "
+    ILOG(Debug, Support) << "configure() : I use "
                         << Form("mToleratedBadPedestalEfficiencyChannelsM%d", mod + 2)
                         << " = "
                         << mToleratedBadPedestalEfficiencyChannelsM[mod] << ENDM;
