@@ -63,6 +63,7 @@ class ITSClusterTask : public TaskInterface
   void addObject(TObject* aObject);
   void getJsonParameters();
   void createAllHistos();
+  void addLines();
 
   float getHorizontalBin(float z, int chip, int layer, int lane = 0);
   float getVerticalBin(float rphi, int stave, int layer);
