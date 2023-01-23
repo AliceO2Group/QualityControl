@@ -61,7 +61,7 @@ void QcMFTTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
       LOG(info) << "Quality::Good, setting to green";
       histogram->SetLineColor(kGreen);
     } else if (checkResult == Quality::Bad) {
-      LOG(info) << "Quality::Bad, setting to red";
+      LOG(Debug, Devel) << "Quality::Bad, setting to red";
       histogram->SetLineColor(kRed);
     } else if (checkResult == Quality::Medium) {
       LOG(info) << "Quality::Medium, setting to orange";

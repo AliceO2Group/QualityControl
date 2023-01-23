@@ -309,7 +309,7 @@ void PhysicsPreclustersCheck::beautify(std::shared_ptr<MonitorObject> mo, Qualit
       msg->AddText("Pseudo-efficiency consistently within limits: OK!!!");
       msg->SetFillColor(kGreen);
     } else if (checkResult == Quality::Bad) {
-      LOG(info) << "Quality::Bad, setting to red";
+      LOG(Debug, Devel) << "Quality::Bad, setting to red";
       msg->Clear();
       msg->AddText("Call MCH on-call.");
       msg->SetFillColor(kRed);

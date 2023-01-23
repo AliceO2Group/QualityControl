@@ -182,7 +182,7 @@ void CheckOfTrendings::beautify(std::shared_ptr<MonitorObject> mo, Quality check
     msg->AddText("Quality::Good");
     msg->SetFillColor(kGreen);
   } else if (checkResult == Quality::Bad) {
-    LOG(info) << "Quality::Bad, setting to red";
+    LOG(Debug, Devel) << "Quality::Bad, setting to red";
     h->SetFillColor(kRed);
     msg->Clear();
     msg->AddText("Quality::Bad");

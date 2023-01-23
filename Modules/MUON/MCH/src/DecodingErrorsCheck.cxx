@@ -140,7 +140,7 @@ void DecodingErrorsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
 
       h->SetFillColor(kGreen);
     } else if (checkResult == Quality::Bad) {
-      LOG(info) << "Quality::Bad, setting to red";
+      LOG(Debug, Devel) << "Quality::Bad, setting to red";
       //
       msg->Clear();
       msg->AddText("Too many errors, call MCH on-call.");

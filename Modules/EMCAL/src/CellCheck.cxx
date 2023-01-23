@@ -118,7 +118,7 @@ void CellCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
       //
       h->SetFillColor(kGreen);
     } else if (checkResult == Quality::Bad) {
-      LOG(info) << "Quality::Bad, setting to red";
+      LOG(Debug, Devel) << "Quality::Bad, setting to red";
       msg->Clear();
       msg->AddText("Mean outside limits or no entries");
       msg->AddText("If NOT a technical run,");
@@ -144,7 +144,7 @@ void CellCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
       //
       h->SetFillColor(kGreen);
     } else if (checkResult == Quality::Bad) {
-      LOG(info) << "Quality::Bad, setting to red";
+      LOG(Debug, Devel) << "Quality::Bad, setting to red";
       msg->Clear();
       msg->AddText("Mean outside limits or no entries");
       msg->AddText("If NOT a technical run,");
@@ -167,7 +167,7 @@ void CellCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
       h->GetListOfFunctions()->Add(msg);
       msg->Draw();
     } else if (checkResult == Quality::Bad) {
-      LOG(info) << "Quality::Bad, setting to red";
+      LOG(Debug, Devel) << "Quality::Bad, setting to red";
       TLatex* msg = new TLatex(0.2, 0.8, "#color[2]{Noisy supermodule detected}");
       // Large payload in several DDLs
       msg->SetNDC();
