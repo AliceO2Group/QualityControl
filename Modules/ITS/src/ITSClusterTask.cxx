@@ -177,11 +177,6 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   int iPattern = 0;
   int ChipIDprev = -1;
-#ifdef WITH_OPENMP
-  omp_set_num_threads(mNThreads);
-#pragma omp parallel for schedule(dynamic)
-#endif
-  // Filling cluster histogram for each ROF by open_mp
 
   if (mDoPublishDetailedSummary == 1) {
     for (int iLayer = 0; iLayer < NLayer; iLayer++) {
@@ -192,6 +187,12 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
   }
 
+#ifdef WITH_OPENMP
+  omp_set_num_threads(mNThreads);
+#pragma omp parallel for schedule(dynamic)
+#endif
+
+  // Filling cluster histogram for each ROF by open_mp
   for (unsigned int iROF = 0; iROF < clusRofArr.size(); iROF++) {
 
     const auto& ROF = clusRofArr[iROF];
