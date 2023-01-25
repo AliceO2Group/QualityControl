@@ -5,7 +5,7 @@ from datetime import timedelta, date, datetime
 from typing import List
 
 from qcrepocleaner.Ccdb import Ccdb, ObjectVersion
-from qcrepocleaner.rules import new_production
+from qcrepocleaner.rules import multiple_per_run
 
 
 class TestProduction(unittest.TestCase):
@@ -38,7 +38,7 @@ class TestProduction(unittest.TestCase):
         test_path = self.path + "/test_1_finished_run"
         self.prepare_data(test_path, [150], [22*60], 123)
 
-        stats = new_production.process(self.ccdb, test_path, delay=60*24, from_timestamp=1,
+        stats = multiple_per_run.process(self.ccdb, test_path, delay=60*24, from_timestamp=1,
                                        to_timestamp=self.in_ten_years, extra_params=self.extra)
 
         self.assertEqual(stats["deleted"], 147)
@@ -58,7 +58,7 @@ class TestProduction(unittest.TestCase):
         test_path = self.path + "/test_2_runs"
         self.prepare_data(test_path, [150, 150], [3*60, 20*60], 123)
 
-        stats = new_production.process(self.ccdb, test_path, delay=60*24, from_timestamp=1,
+        stats = multiple_per_run.process(self.ccdb, test_path, delay=60*24, from_timestamp=1,
                                        to_timestamp=self.in_ten_years, extra_params=self.extra)
 
         self.assertEqual(stats["deleted"], 147)
@@ -79,7 +79,7 @@ class TestProduction(unittest.TestCase):
         test_path = self.path + "/test_5_runs"
         self.prepare_data(test_path, [60, 120, 190, 240, 300], [60, 120, 190, 240, 24*60], 123)
 
-        stats = new_production.process(self.ccdb, test_path, delay=60*24, from_timestamp=1,
+        stats = multiple_per_run.process(self.ccdb, test_path, delay=60*24, from_timestamp=1,
                                        to_timestamp=self.in_ten_years, extra_params=self.extra)
 
         self.assertEqual(stats["deleted"], 60+120+190+240+300-18)
@@ -99,7 +99,7 @@ class TestProduction(unittest.TestCase):
         test_path = self.path + "/test_run_one_object"
         self.prepare_data(test_path, [1], [25*60], 123)
 
-        stats = new_production.process(self.ccdb, test_path, delay=60*24, from_timestamp=1,
+        stats = multiple_per_run.process(self.ccdb, test_path, delay=60*24, from_timestamp=1,
                                        to_timestamp=self.in_ten_years, extra_params=self.extra)
 
         self.assertEqual(stats["deleted"], 0)
@@ -119,7 +119,7 @@ class TestProduction(unittest.TestCase):
         test_path = self.path + "/test_run_two_object"
         self.prepare_data(test_path, [2], [25*60], 123)
 
-        stats = new_production.process(self.ccdb, test_path, delay=60*24, from_timestamp=1,
+        stats = multiple_per_run.process(self.ccdb, test_path, delay=60*24, from_timestamp=1,
                                        to_timestamp=self.in_ten_years, extra_params=self.extra)
 
         self.assertEqual(stats["deleted"], 0)
@@ -139,7 +139,7 @@ class TestProduction(unittest.TestCase):
         test_path = self.path + "/test_run_3_object"
         self.prepare_data(test_path, [3], [25*60], 123)
 
-        stats = new_production.process(self.ccdb, test_path, delay=60*24, from_timestamp=1,
+        stats = multiple_per_run.process(self.ccdb, test_path, delay=60*24, from_timestamp=1,
                                        to_timestamp=self.in_ten_years, extra_params=self.extra)
 
         self.assertEqual(stats["deleted"], 1)

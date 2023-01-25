@@ -17,15 +17,12 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
     Process this deletion rule on the object. We use the CCDB passed by argument.
     Objects who have been created recently are spared (delay is expressed in minutes).
 
-    This specific policy, new_production, operates like this : take the first record of a run and keep it,
-    delete everything for the next interval_between_versions, find the next one, extend validity of the
-    previous record to match the next one, loop. Make sure to keep the last object the run.
+    This specific policy, multiple_per_run, operates like this : Keep the first and the last version of a run plus
+    1 version every X minutes.
 
     Extra parameters:
       - migrate_to_EOS: Migrate the . (default: false)
       - interval_between_versions: Period in minutes between the versions we will keep. (default: 90)
-      - object_attribute: the attribute from the version that we want to use when applying the rule. "createdAt"
-        or "validFrom".
 
     It is implemented like this :
         Map of buckets: run[+pass+period] -> list of versions
@@ -40,8 +37,6 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
                 until no more
                 move the last one, from delete to preserve
 
-    WE DONT TOUCH THE VALIDITY
-
     :param ccdb: the ccdb in which objects are cleaned up.
     :param object_path: path to the object, or pattern, to which a rule will apply.
     :param delay: delay since SOR after which we process the run altogether.
@@ -51,7 +46,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
     :return a dictionary with the number of deleted, preserved and updated versions. Total = deleted+preserved.
     '''
     
-    logger.debug(f"Plugin new_production processing {object_path}")
+    logger.debug(f"Plugin multiple_per_run processing {object_path}")
 
     preservation_list: List[ObjectVersion] = []
     deletion_list: List[ObjectVersion] = []
@@ -78,16 +73,12 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
         logger.debug(f"Number of versions without runs : {len(versions_buckets_dict['none'])}")
         del versions_buckets_dict['none']
 
-    # TODO handle the case where there is a single version in the run
-    #      also the case where there are only 2 and 3 versions
-
     # for each run or combination of pass and run
     for bucket, run_versions in versions_buckets_dict.items():
         logger.debug(f"- bucket {bucket}")
 
         # Get SOR (validity of first object) and check if it is in the grace period and in the allowed period
         first_object = run_versions[0]
-        logger.debug(f"  SOR2: {first_object.createdAt}")
         if policies_utils.in_grace_period(first_object, delay):
             logger.debug(f"     in grace period, skip this bucket")
             preservation_list.extend(run_versions)
@@ -100,17 +91,6 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
             last_preserved: ObjectVersion = None
             for v in run_versions:
                 logger.debug(f"process {v}")
-
-                if last_preserved is None:
-                    logger.debug(f"last_preserved is None")
-                elif last_preserved.createdAtDt < v.createdAtDt - timedelta(minutes=interval_between_versions):
-                    logger.debug(f"last_preserved.createdAtDt < v.createdAtDt - timedelta(minutes=interval_between_versions)")
-                elif v == run_versions[-1]:
-                    logger.debug(f"v == run_versions[-1]")
-                else:
-                    logger.debug(f"last_preserved.createdAtDt : {last_preserved.createdAtDt}")
-                    logger.debug(f"v.createdAtDt : {v.createdAtDt}")
-                    logger.debug(f"v.createdAtDt - timedelta(minutes=interval_between_versions) : {v.createdAtDt - timedelta(minutes=interval_between_versions)}")
 
                 # first or next after the period, or last one --> preserve
                 if last_preserved is None or \
@@ -138,7 +118,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
     for v in update_list:
         logger.debug(f"   {v}")
 
-    return {"deleted": len(deletion_list), "preserved": len(preservation_list), "updated" : len(update_list)}
+    return {"deleted": len(deletion_list), "preserved": len(preservation_list), "updated": len(update_list)}
 
 
 def main():
