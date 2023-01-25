@@ -807,7 +807,7 @@ mkdir build
 cd build
 mkdir ~/installdir
 cmake -DCMAKE_INSTALL_PREFIX=~/installdir ..
-make
+make -j16 install 
 ```
 
 ***Compilation on top of a local O2***
