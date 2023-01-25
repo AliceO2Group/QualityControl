@@ -2,7 +2,7 @@
 
 1.1
 
-- Add a new policy `new_production` that is simpler than `production`. 
+- Add a new policy `multiple_per_run` that is simpler than `production`. 
 
 1.0
 
