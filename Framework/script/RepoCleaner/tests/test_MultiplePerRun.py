@@ -86,6 +86,14 @@ class TestProduction(unittest.TestCase):
         self.assertEqual(stats["preserved"], 18)
         self.assertEqual(stats["updated"], 0)
 
+        # and now re-run it to make sure we preserve the state
+        stats = multiple_per_run.process(self.ccdb, test_path, delay=60*24, from_timestamp=1,
+                                         to_timestamp=self.in_ten_years, extra_params=self.extra)
+
+        self.assertEqual(stats["deleted"], 0)
+        self.assertEqual(stats["preserved"], 18)
+        self.assertEqual(stats["updated"], 0)
+
     def test_run_one_object(self):
         """
         A run with a single object
@@ -126,24 +134,25 @@ class TestProduction(unittest.TestCase):
         self.assertEqual(stats["preserved"], 2)
         self.assertEqual(stats["updated"], 0)
 
-    def test_run_3_object(self):
+    def test_3_runs_with_period(self):
         """
-        A run with 3 objects
-        Expected output: keep the 2 objects at start and end
+        3 runs more than 24h in the past but only the middle one starts in the period that is allowed.
+        Expected output: second run is trimmed, not the other
         """
         logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s',
                             datefmt='%d-%b-%y %H:%M:%S')
         logging.getLogger().setLevel(int(10))
 
         # Prepare data
-        test_path = self.path + "/test_run_3_object"
-        self.prepare_data(test_path, [3], [25*60], 123)
+        test_path = self.path + "/test_3_runs_with_period"
+        self.prepare_data(test_path, [30,30, 30], [120,120,25*60], 123)
 
-        stats = multiple_per_run.process(self.ccdb, test_path, delay=60*24, from_timestamp=1,
-                                       to_timestamp=self.in_ten_years, extra_params=self.extra)
+        current_timestamp = int(time.time() * 1000)
+        stats = multiple_per_run.process(self.ccdb, test_path, delay=60*24, from_timestamp=current_timestamp-29*60*60*1000,
+                                       to_timestamp=current_timestamp-26*60*60*1000, extra_params=self.extra)
 
-        self.assertEqual(stats["deleted"], 1)
-        self.assertEqual(stats["preserved"], 2)
+        self.assertEqual(stats["deleted"], 28)
+        self.assertEqual(stats["preserved"], 90-28)
         self.assertEqual(stats["updated"], 0)
 
     def prepare_data(self, path, run_durations: List[int], time_till_next_run: List[int], first_run_number: int):
