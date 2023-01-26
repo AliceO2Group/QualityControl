@@ -28,7 +28,8 @@
         "className": "o2::quality_control_modules::tpc::Clusters",
         "moduleName": "QcTPC",
         "detectorName": "TPC",
-        "cycleDurationSeconds": "10",
+        "cycleDurationSeconds": "60",
+        "maxNumberCycles": "-1",
         "resetAfterCycles": "5",
         "dataSource": {
           "type": "direct",
@@ -41,7 +42,8 @@
           "QtotNBins":      "600",  "QtotXMin":      "0", "QtotXMax":      "600",
           "SigmaPadNBins":  "200",  "SigmaPadXMin":  "0", "SigmaPadXMax":  "2",
           "SigmaTimeNBins": "200",  "SigmaTimeXMin": "0", "SigmaTimeXMax": "2",
-          "TimeBinNBins":   "1000", "TimeBinXMin":   "0", "TimeBinXMax":   "100000"
+          "TimeBinNBins":   "1000", "TimeBinXMin":   "0", "TimeBinXMax":   "100000",
+          "OccupancyNBins": "1000", "OccupancyXMin": "0", "OccupancyXMax": "0.00001"
         },
         "location": "local",
         "localMachines": [
