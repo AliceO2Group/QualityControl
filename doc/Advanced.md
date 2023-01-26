@@ -837,7 +837,7 @@ In case the workflows will span over several FLPs and/or QC machines, one should
 
 **Use it in aliECS**
 
-Set an extra variable `extra_env_vars` and set it to 
+In the aliECS gui, in the panel "Advanced Configuration", et an extra variable `extra_env_vars` and set it to 
 ```
 PATH=~/installdir/bin/:$PATH LD_LIBRARY_PATH=~/installdir/lib/:$LD_LIBRARY_PATH QUALITYCONTROL_ROOT=~/installdir/
 ```
