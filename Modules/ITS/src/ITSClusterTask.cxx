@@ -224,6 +224,7 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
         npix = patt.getNPixels();
         isGrouped = 1;
       }
+      
       locC = mDict->getClusterCoordinates(cluster);
 
       if (npix > 2)
