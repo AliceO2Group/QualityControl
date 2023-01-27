@@ -45,7 +45,7 @@ class Rule:
     """A class to hold information about a "rule" defined in the config file."""
 
     def __init__(self, object_path=None, delay=None, policy=None,  from_timestamp=None, to_timestamp=None,
-                 all_params=None):
+                 continue_with_next_rule=None, all_params=None):
         '''
         Constructor.
         :param object_path: path to the object, or pattern, to which a rule will apply.
@@ -59,6 +59,7 @@ class Rule:
         self.policy = policy
         self.from_timestamp = from_timestamp
         self.to_timestamp = to_timestamp
+        self.continue_with_next_rule = continue_with_next_rule
 
         self.extra_params = all_params
         if all_params is not None:
@@ -67,10 +68,12 @@ class Rule:
             self.extra_params.pop("policy")
             self.extra_params.pop("from_timestamp", 0)
             self.extra_params.pop("to_timestamp", 0)
+            self.extra_params.pop("continue_with_next_rule", "False")
 
     def __repr__(self):
         return 'Rule(object_path={.object_path}, delay={.delay}, policy={.policy}, from_timestamp={.from_timestamp}, ' \
-               'to_timestamp={.to_timestamp}, extra_params={.extra_params})'\
+               'to_timestamp={.to_timestamp}, continue_with_next_rule={.continue_with_next_rule}, ' \
+               'extra_params={.extra_params})'\
             .format(self, self, self, self, self, self, self)
 
 
@@ -83,7 +86,7 @@ def parseArgs():
     parser.add_argument('--config-git', action='store_true',
                         help='Check out the config file from git (branch repo_cleaner), ignore --config.')
     parser.add_argument('--config-consul', action='store',
-                        help='Specify the consul url (without initial `http[s]://`) and port in the form of <url>:<port>,'
+                        help='Specify the consul url (without `http[s]://`) and port in the form of <url>:<port>,'
                              ' file must be stored in o2/components/qc/ANY/any/repoCleanerConfig.yaml,'
                              ' if specified ignore both --config and --config-git.')
     parser.add_argument('--log-level', dest='log_level', action='store', default="20",
@@ -122,6 +125,7 @@ def parseConfig(config_file_path):
     logging.debug("Rules found in the config file:")
 
     for rule_yaml in config_content["Rules"]:
+        logging.debug(f"rule_yaml: {rule_yaml}")
         if "from_timestamp" in rule_yaml:
             from_timestamp = rule_yaml["from_timestamp"]
         else:
@@ -131,8 +135,11 @@ def parseConfig(config_file_path):
         else:
             to_timestamp = 2785655701000  # 2058
 
+        continue_with_next_rule = rule_yaml.get("continue_with_next_rule", False)
+
         rule = Rule(rule_yaml["object_path"], rule_yaml["delay"], rule_yaml["policy"],
-                    from_timestamp, to_timestamp, rule_yaml)
+                    from_timestamp, to_timestamp, continue_with_next_rule=continue_with_next_rule,
+                    all_params=rule_yaml)
         rules.append(rule)
         logging.debug(f"   * {rule}")
         storeCrucialLog(f"   * {rule}")
@@ -178,23 +185,24 @@ def downloadConfigFromConsul(consul_url, consul_port):
     return path
 
 
-def findMatchingRule(rules, object_path):
-    """Return the first matching rule for the given path or None if none is found."""
+def findMatchingRules(rules, object_path):
+    """Return a list of all matching rules for the given path."""
 
-    logging.debug(f"findMatchingRule for {object_path}")
+    logging.debug(f"findMatchingRules for {object_path}")
 
-    if object_path == None:
-        logging.error(f"findMatchingRule: object_path is None")
-        return None
+    if object_path is None:
+        logging.error(f"findMatchingRules: object_path is None")
+        return []
 
+    result = []
     for rule in rules:
         pattern = re.compile(rule.object_path)
-        result = pattern.match(object_path)
-        if result != None:
+        matched = pattern.match(object_path)
+        if matched is not None:
             logging.debug(f"   Found! {rule}")
-            return rule
-    logging.debug("   No rule found, skipping.")
-    return None
+            result.append(rule)
+
+    return result
 
 
 filepath = tempfile.gettempdir() + "/repoCleaner.txt"
@@ -305,12 +313,14 @@ def read_config(args):
     ccdb_url = config['ccdb_url']
     return ccdb_url, rules
 
+
 def process_object_wrapped(object_path, rules, ccdb, args):
     '''avoid getting blocked in parallel processing due to exceptions'''
     try:
         process_object(object_path, rules, ccdb, args)
     except:
         logging.error(f"Exception in process_object: {traceback.format_exc()}")
+
 
 # @log_sparse
 def process_object(object_path, rules, ccdb, args):
@@ -319,25 +329,32 @@ def process_object(object_path, rules, ccdb, args):
     logger.info(f"Processing {object_path}")
 
     # Take the first matching rule, if any
-    rule = findMatchingRule(rules, object_path)
+    rules = findMatchingRules(rules, object_path)
+    logger.debug(f"Found {len(rules)} rules")
 
-    if rule is None:
+    if len(rules) == 0:
         logger.info(f"    no matching rule")
         return
 
-    # Apply rule on object (find the plug-in script and apply)
-    try:
-        module = importlib.import_module('qcrepocleaner.rules.' + rule.policy)
-        module.logger = logger
-    except ModuleNotFoundError as err:
-        logger.error(f"could not load module {rule.policy}")
-        return
-    try:
-        stats = module.process(ccdb, object_path, int(rule.delay),  rule.from_timestamp, rule.to_timestamp, rule.extra_params)
-    except Exception as e:
-        logger.error(f"processing error:  {e}")
+    for rule in rules:
+        logger.info(f"rule: {rule}")
+        # Apply rule on object (find the plug-in script and apply)
+        try:
+            module = importlib.import_module('qcrepocleaner.rules.' + rule.policy)
+            module.logger = logger
+        except ModuleNotFoundError as err:
+            logger.error(f"could not load module {rule.policy}")
+            return
+        try:
+            stats = module.process(ccdb, object_path, int(rule.delay),  rule.from_timestamp, rule.to_timestamp,
+                                   rule.extra_params)
+        except Exception as e:
+            logger.error(f"processing error:  {e}")
 
-    logger.info(f"{rule.policy} applied on {object_path}: {stats}")
+        logger.info(f"{rule.policy} applied on {object_path}: {stats}")
+
+        if not rule.continue_with_next_rule:
+            break
 
 
 def run(args, ccdb_url, rules):

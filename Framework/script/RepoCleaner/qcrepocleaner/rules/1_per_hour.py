@@ -27,7 +27,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
     :return a dictionary with the number of deleted, preserved and updated versions. Total = deleted+preserved.
     '''
     
-    logger.debug(f"Plugin 1_per_hour processing {object_path}")
+    logger.debug(f"aPlugin 1_per_hour processing {object_path}")
 
     versions = ccdb.getVersionsList(object_path)
 
@@ -46,9 +46,9 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
             preservation_list.append(last_preserved)
         else:
             if v.validFromAsDt < datetime.now() - timedelta(minutes=delay):  # grace period
-                logger.debug(f"not in the grace period")
+                logger.debug(f"{v} not in the grace period")
                 if from_timestamp < v.validFrom < to_timestamp:  # in the allowed period
-                    logger.debug(f"in the allowed period (from,to), we delete {v}")
+                    logger.debug(f"{v} in the allowed period (from,to), we delete {v}")
                     deletion_list.append(v)
                     ccdb.deleteVersion(v)
                     continue
@@ -66,7 +66,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
     for v in update_list:
         logger.debug(f"   {v}")
 
-    return {"deleted": len(deletion_list), "preserved": len(preservation_list), "updated" : len(update_list)}
+    return {"deleted": len(deletion_list), "preserved": len(preservation_list), "updated": len(update_list)}
 
 
 def main():

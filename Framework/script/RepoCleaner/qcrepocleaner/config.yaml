@@ -1,13 +1,23 @@
 Rules:
-  - object_path: qc/TST/MO/QcTask-barth/example3[/.*]{0,1}
+  - object_path: qc/TST/MO/repo/test
     delay: 0
-    policy: none_kept
-    from_timestamp: 1636091494278
-  - object_path: qc/TST/MO/QcTask-barth/example3[/.*]{0,1}
+    policy: 1_per_hour
+    from_timestamp: 1674700609718
+    continue_with_next_rule: True
+  - object_path: qc/TST/MO/repo/test
     delay: 0
-    policy: none_kept
-    from_timestamp: 1636054889780
-    to_timestamp:  1636095558142
+    policy: 1_per_run
+    to_timestamp: 1674700609718
+#  - object_path: qc/TST/MO/QcTask-barth/example3[/.*]{0,1}
+#    delay: 0
+#    policy: none_kept
+#    from_timestamp: 1636091494278
+#    continue_with_next_rule: True
+#  - object_path: qc/TST/MO/QcTask-barth/example3[/.*]{0,1}
+#    delay: 0
+#    policy: none_kept
+#    from_timestamp: 1636054889780
+#    to_timestamp:  1636095558142
 #  - object_path: qc/ITS/.*
 #    delay: 240
 #    policy: 1_per_run
