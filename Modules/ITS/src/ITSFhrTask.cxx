@@ -126,7 +126,6 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
   mDecoder = new o2::itsmft::RawPixelDecoder<o2::itsmft::ChipMappingITS>();
   mDecoder->init();
   mDecoder->setNThreads(mNThreads);
-  mDecoder->setFormat(GBTLink::NewFormat);               // Using RDHv6 (NewFormat)
   mDecoder->setUserDataOrigin(header::DataOrigin("DS")); // set user data origin in dpl
   mDecoder->setUserDataDescription(header::DataDescription("RAWDATA0"));
   mChipsBuffer.resize(mGeom->getNumberOfChips());
