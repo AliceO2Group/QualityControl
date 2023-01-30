@@ -21,7 +21,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
     1 version every X minutes.
 
     Extra parameters:
-      - migrate_to_EOS: Migrate the . (default: false)
+      - migrate_to_EOS: Migrate the object to EOS. (default: false)
       - interval_between_versions: Period in minutes between the versions we will keep. (default: 90)
 
     It is implemented like this :
