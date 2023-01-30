@@ -33,6 +33,8 @@ class RootFileSource : public framework::Task
   void init(framework::InitContext& ictx) override;
   void run(framework::ProcessingContext& pctx) override;
 
+  static framework::OutputLabel outputBinding(const std::string& detectorCode, const std::string& taskName);
+
  private:
   std::string mFilePath;
 };

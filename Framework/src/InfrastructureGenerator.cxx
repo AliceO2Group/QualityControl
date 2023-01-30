@@ -323,7 +323,7 @@ framework::WorkflowSpec InfrastructureGenerator::generateRemoteBatchInfrastructu
     if (taskSpec.active) {
       auto taskConfig = TaskRunnerFactory::extractConfig(infrastructureSpec.common, taskSpec, 0, 1);
       fileSourceOutputs.push_back(taskConfig.moSpec);
-      fileSourceOutputs.back().binding.value = taskSpec.taskName;
+      fileSourceOutputs.back().binding = RootFileSource::outputBinding(taskSpec.detectorName, taskSpec.taskName);
     }
   }
   if (fileSourceOutputs.size() > 0) {
