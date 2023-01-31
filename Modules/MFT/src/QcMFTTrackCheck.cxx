@@ -39,11 +39,11 @@ Quality QcMFTTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
     (void)moName;
     if (mo->getName() == "mMFTTrackCharge") {
       auto* histogram = dynamic_cast<TH1F*>(mo->getObject());
-      result = Quality::Good;
+      // result = Quality::Good;
 
       // test it
       if (histogram->GetBinContent(0) == 0) {
-        result = Quality::Bad;
+        // result = Quality::Bad;
       }
     }
   }
@@ -58,16 +58,16 @@ void QcMFTTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
     auto* histogram = dynamic_cast<TH1F*>(mo->getObject());
 
     if (checkResult == Quality::Good) {
-      ILOG(Debug, Devel) << "Quality::Good, setting to green";
-      histogram->SetLineColor(kGreen);
+      // LOG(info) << "Quality::Good, setting to green";
+      // histogram->SetLineColor(kGreen);
     } else if (checkResult == Quality::Bad) {
-      ILOG(Debug, Devel) << "Quality::Bad, setting to red";
-      histogram->SetLineColor(kRed);
+      // LOG(info) << "Quality::Bad, setting to red";
+      // histogram->SetLineColor(kRed);
     } else if (checkResult == Quality::Medium) {
-      ILOG(Debug, Devel) << "Quality::Medium, setting to orange";
-      histogram->SetLineColor(kOrange);
+      // LOG(info) << "Quality::Medium, setting to orange";
+      // histogram->SetLineColor(kOrange);
     }
-    histogram->SetLineColor(kBlack);
+    // histogram->SetLineColor(kBlack);
   }
 }
 
