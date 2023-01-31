@@ -23,7 +23,7 @@
       }
     },
     "tasks" : {
-      "MFTDigitTask" : {
+      "Digits" : {
         "active" : "true",
         "className" : "o2::quality_control_modules::mft::QcMFTDigitTask",
         "moduleName" : "QcMFT",
@@ -47,7 +47,7 @@
       }
     },
     "checks" : {
-      "MFTDigitCheck" : {
+      "Digits" : {
         "active" : "true",
         "className" : "o2::quality_control_modules::mft::QcMFTDigitCheck",
         "moduleName" : "QcMFT",
@@ -59,7 +59,7 @@
         },
         "dataSource" : [ {
           "type" : "Task",
-          "name" : "MFTDigitTask",
+          "name" : "Digits",
             "MOs"  : ["mDigitChipOccupancy","mDigitOccupancySummary","mDigitChipStdDev"]
         } ]
       }

@@ -23,7 +23,7 @@
       }
     },
     "tasks" : {
-      "MFTReadoutTask" : {
+      "Readout" : {
         "active" : "true",
         "className" : "o2::quality_control_modules::mft::QcMFTReadoutTask",
         "moduleName" : "QcMFT",
@@ -42,7 +42,7 @@
       }
     },
     "checks" : {
-      "MFTReadoutCheck" : {
+      "Readout" : {
         "active" : "true",
         "className" : "o2::quality_control_modules::mft::QcMFTReadoutCheck",
         "moduleName" : "QcMFT",
@@ -58,13 +58,13 @@
         },
         "dataSource" : [ {
           "type" : "Task",
-          "name" : "MFTReadoutTask",
+          "name" : "Readout",
             "MOs"  : ["mDDWSummary","mSummaryChipOk","mSummaryChipFault", "mSummaryChipError", "mSummaryChipWarning", "mZoneSummaryChipWarning", "mZoneSummaryChipError", "mZoneSummaryChipFault", "mRDHSummary"]
         } ]
       }
     },
     "postprocessing": {
-      "MFTReadoutTrend": {
+      "ReadoutTrend": {
         "active": "true",
         "className": "o2::quality_control::postprocessing::TrendingTask",
         "moduleName": "QcMFT",
@@ -72,7 +72,7 @@
         "dataSources": [
           {
             "type": "repository",
-            "path": "MFT/MO/MFTReadoutTask",
+            "path": "MFT/MO/Readout",
             "names": [ "mSummaryChipError", "mSummaryChipWarning", "mSummaryChipFault" ],
             "reductorName": "o2::quality_control_modules::mft::QcMFTReadoutTrend",
             "moduleName": "QcMFT"
@@ -105,7 +105,7 @@
           "userorcontrol"
         ],
         "updateTrigger": [
-          "newobject:qcdb:MFT/MO/MFTReadoutTask/mSummaryChipWarning"
+          "newobject:qcdb:MFT/MO/Readout/mSummaryChipWarning"
         ],
         "stopTrigger": [
           "userorcontrol"

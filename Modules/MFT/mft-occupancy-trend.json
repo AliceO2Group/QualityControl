@@ -23,7 +23,7 @@
       }
     },
     "postprocessing": {
-      "MFTOccupancyTrend": {
+      "OccupancyTrend": {
         "active": "true",
         "className": "o2::quality_control::postprocessing::TrendingTask",
         "moduleName": "QcMFT",
@@ -31,14 +31,14 @@
         "dataSources": [
           {
             "type": "repository",
-            "path": "MFT/MO/MFTDigitTask",
+            "path": "MFT/MO/Digits",
             "names": [ "mDigitChipOccupancy" ],
             "reductorName": "o2::quality_control_modules::mft::QcMFTOccupancyTrend",
             "moduleName": "QcMFT"
           },
           {
             "type": "repository",
-            "path": "MFT/MO/MFTClusterTask",
+            "path": "MFT/MO/Clusters",
             "names": [ "mClusterOccupancy" ],
             "reductorName": "o2::quality_control_modules::mft::QcMFTOccupancyTrend",
             "moduleName": "QcMFT"
