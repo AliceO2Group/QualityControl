@@ -112,6 +112,9 @@ class CheckRunner : public framework::Task
   /// \brief CheckRunner process callback
   void run(framework::ProcessingContext& ctx) override;
 
+  /// \brief Callback for CallbackService::Id::EndOfStream
+  void endOfStream(framework::EndOfStreamContext& eosContext) override;
+
   framework::Inputs getInputs() { return mInputs; };
   framework::Outputs getOutputs() { return mOutputs; };
 
@@ -222,6 +225,7 @@ class CheckRunner : public framework::Task
   std::unordered_set<std::string> mInputStoreSet;
   std::vector<std::shared_ptr<MonitorObject>> mMonitorObjectStoreVector;
   UpdatePolicyManager updatePolicyManager;
+  bool mReceivedEOS = false;
 
   // DPL
   o2::framework::Inputs mInputs;
