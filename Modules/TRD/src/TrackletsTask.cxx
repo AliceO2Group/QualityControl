@@ -238,8 +238,6 @@ void TrackletsTask::buildTrackletLayers()
     mLayers[iLayer] = new TH2F(Form("TrackletsPerLayer/layer%i", iLayer), Form("Tracklet count per mcm in layer %i;stack;sector", iLayer), 76, -0.5, 75.5, 144, -0.5, 143.5);
 
     auto xax = mLayers[iLayer]->GetXaxis();
-    for (Int_t b = 1; b < 77; b++)
-      xax->SetBinLabel(b, " ");
     xax->SetBinLabel(8, "0");
     xax->SetBinLabel(24, "1");
     xax->SetBinLabel(38, "2");
@@ -251,8 +249,6 @@ void TrackletsTask::buildTrackletLayers()
     xax->SetLabelSize(0.045);
     xax->SetLabelOffset(0.01);
     auto yax = mLayers[iLayer]->GetYaxis();
-    for (Int_t b = 1; b < 145; b++)
-      yax->SetBinLabel(b, " ");
     for (int iSec = 0; iSec < 18; ++iSec) {
       auto lbl = std::to_string(iSec);
       yax->SetBinLabel(iSec * 8 + 4, lbl.c_str());
@@ -300,7 +296,7 @@ void TrackletsTask::drawHashedOnHistsPerLayer(int iLayer)
 
 void TrackletsTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize TrackletsTask" << ENDM;
+  ILOG(Info, Support) << "initialize Tracklets" << ENDM;
   if (auto param = mCustomParameters.find("markerstyle"); param != mCustomParameters.end()) {
     mMarkerStyle = stof(param->second);
     ILOG(Info, Support) << "configure() : using marketstyle : = " << mMarkerStyle << ENDM;
