@@ -115,10 +115,6 @@ void TracksTask::initialize(o2::framework::InitContext& /*ic*/)
 {
   ILOG(Info, Support) << "initialize TracksTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
-  if (!o2::base::GeometryManager::isGeometryLoaded()) {
-    TaskInterface::retrieveConditionAny<TObject>("GLO/Config/Geometry");
-  }
-
   createTrackHistos();
   createClusterHistos();
   createTrackPairHistos();
@@ -309,9 +305,10 @@ bool TracksTask::fillTrackHistos(const o2::mch::TrackMCH& track,
   mTrackPhi->Fill(muon.phi() * TMath::RadToDeg() + 180);
   mTrackPt->Fill(muon.pt());
 
-  o2::mch::TrackExtrap::extrapToZ(trackParamAtOrigin, -505.);
-  double xAbs = trackParamAtOrigin.getNonBendingCoor();
-  double yAbs = trackParamAtOrigin.getBendingCoor();
+  o2::mch::TrackParam trackParamAtAbsEnd(track.getZ(), track.getParameters());
+  o2::mch::TrackExtrap::extrapToZ(trackParamAtAbsEnd, -505.);
+  double xAbs = trackParamAtAbsEnd.getNonBendingCoor();
+  double yAbs = trackParamAtAbsEnd.getBendingCoor();
   auto rAbs = std::sqrt(xAbs * xAbs + yAbs * yAbs);
   mTrackRAbs->Fill(rAbs);
 
