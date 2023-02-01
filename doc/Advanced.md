@@ -803,6 +803,7 @@ As user `flp` do:
 ```
 git clone https://github.com/AliceO2Group/QualityControl.git
 cd QualityControl
+git checkout <release> # use the release included in the installed FLP suite
 mkdir build
 cd build
 mkdir ~/installdir
@@ -817,6 +818,7 @@ If you want to build also O2 locally do
 # O2
 git clone https://github.com/AliceO2Group/AliceO2.git
 cd AliceO2
+git checkout <release> # use the release included in the installed FLP suite
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=~/installdir ..
@@ -825,6 +827,7 @@ make -j8 install
 # QC
 git clone https://github.com/AliceO2Group/QualityControl.git
 cd QualityControl
+git checkout <release> # use the release included in the installed FLP suite
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=~/installdir .. -DO2_ROOT=~/installdir
