@@ -182,14 +182,14 @@ void CheckOfTrendings::beautify(std::shared_ptr<MonitorObject> mo, Quality check
     msg->AddText("Quality::Good");
     msg->SetFillColor(kGreen);
   } else if (checkResult == Quality::Bad) {
-    LOG(Debug, Devel) << "Quality::Bad, setting to red";
+    ILOG(Debug, Devel) << "Quality::Bad, setting to red";
     h->SetFillColor(kRed);
     msg->Clear();
     msg->AddText("Quality::Bad");
     msg->AddText("Outlier, more than 6sigma.");
     msg->SetFillColor(kRed);
   } else if (checkResult == Quality::Medium) {
-    LOG(info) << "Quality::medium, setting to orange";
+    ILOG(Debug, Devel) << "Quality::medium, setting to orange";
     h->SetFillColor(kOrange);
     msg->Clear();
     msg->AddText("Quality::Medium");
