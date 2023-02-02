@@ -98,21 +98,6 @@ Quality QcMFTDigitCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
         result = Quality::Bad;
       }
     }
-
-    if (mo->getName().find("mDigitChipStdDev") != std::string::npos) {
-      auto* hStdDev = dynamic_cast<TH1F*>(mo->getObject());
-
-      // test it
-      if (hStdDev->GetBinContent(hStdDev->GetMinimumBin()) > 250) {
-        // result = Quality::Good;
-      }
-      if ((hStdDev->GetBinContent(hStdDev->GetMinimumBin()) < 250) && (hStdDev->GetBinContent(hStdDev->GetMinimumBin()) > 200)) {
-        // result = Quality::Medium;
-      }
-      if (hStdDev->GetBinContent(hStdDev->GetMinimumBin()) < 200) {
-        // result = Quality::Bad;
-      }
-    }
   }
   return result;
 }
@@ -121,26 +106,6 @@ std::string QcMFTDigitCheck::getAcceptedType() { return "TH1"; }
 
 void QcMFTDigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  if (mo->getName().find("mDigitChipStdDev") != std::string::npos) {
-    auto* hStdDev = dynamic_cast<TH1F*>(mo->getObject());
-
-    if (checkResult == Quality::Good) {
-      LOG(info) << "Quality::Good";
-      TLatex* tl = new TLatex(350, 1.05 * hStdDev->GetMaximum(), "#color[418]{Dummy check status: Good!}");
-      hStdDev->GetListOfFunctions()->Add(tl);
-      tl->Draw();
-    } else if (checkResult == Quality::Bad) {
-      LOG(info) << "Quality::Bad";
-      TLatex* tl = new TLatex(350, 1.05 * hStdDev->GetMaximum(), "#color[633]{Dummy check status: Bad!}");
-      hStdDev->GetListOfFunctions()->Add(tl);
-      tl->Draw();
-    } else if (checkResult == Quality::Medium) {
-      LOG(info) << "Quality::Medium";
-      TLatex* tl = new TLatex(350, 1.05 * hStdDev->GetMaximum(), "#color[800]{Dummy check status: Medium!}");
-      hStdDev->GetListOfFunctions()->Add(tl);
-      tl->Draw();
-    }
-  }
 
   if (mo->getName().find("mDigitOccupancySummary") != std::string::npos) {
     auto* hOccupancySummary = dynamic_cast<TH2F*>(mo->getObject());
