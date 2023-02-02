@@ -98,14 +98,14 @@ bool ServiceDiscovery::_register(const std::string& objects)
   std::stringstream ss;
   boost::property_tree::json_parser::write_json(ss, pt);
 
-  ILOG(Info, Devel) << "Registration to ServiceDiscovery: " << objects << ENDM;
+  ILOG(Debug, Devel) << "Registration to ServiceDiscovery: " << objects << ENDM;
   return send("/v1/agent/service/register", ss.str());
 }
 
 void ServiceDiscovery::deregister()
 {
   send("/v1/agent/service/deregister/" + mId, "");
-  ILOG(Info, Devel) << "Deregistration from ServiceDiscovery" << ENDM;
+  ILOG(Debug, Devel) << "Deregistration from ServiceDiscovery" << ENDM;
 }
 
 void ServiceDiscovery::runHealthServer(unsigned int port)

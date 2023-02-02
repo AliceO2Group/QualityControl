@@ -3,7 +3,7 @@
     "config": {
       "database": {
         "implementation": "CCDB",
-        "host": "http://ccdb-test.cern.ch:8080",
+        "host": "localhost:6464",
         "username": "not_applicable",
         "password": "not_applicable",
         "name": "not_applicable"
@@ -14,21 +14,22 @@
       }
     },
     "tasks": {
-      "Tracks": {
+      "StdTracks": {
         "active": "true",
-        "className": "o2::quality_control_modules::muonchambers::TracksTask",
-        "moduleName": "QcMuonChambers",
+        "className": "o2::quality_control_modules::muon::TracksTask",
+        "moduleName": "QcMUONCommon",
         "detectorName": "MCH",
-        "cycleDurationSeconds": "300",
+        "cycleDurationSeconds": "600",
         "maxNumberCycles": "-1",
         "dataSource": {
           "type": "direct",
-          "query": "tracks:MCH/TRACKS;trackrofs:MCH/TRACKROFS;trackclusters:MCH/TRACKCLUSTERS;trackdigits:MCH/CLUSTERDIGITS"
+          "query": "trackMCH:MCH/TRACKS;trackMCHROF:MCH/TRACKROFS;trackMCHTRACKCLUSTERS:MCH/TRACKCLUSTERS;mchtrackdigits:MCH/CLUSTERDIGITS"
         },
         "taskParameters": {
-          "maxTracksPerTF": "10"
+          "maxTracksPerTF": "600",
+          "GID" : "MCH"
         },
-        "grpGeomRequest": {
+        "grpGeomRequest" : {
           "geomRequest": "Aligned",
           "askGRPECS": "false",
           "askGRPLHCIF": "false",
@@ -36,13 +37,10 @@
           "askMatLUT": "false",
           "askTime": "false",
           "askOnceAllButField": "false",
-          "needPropagatorD": "false"
+          "needPropagatorD":  "false"
         },
         "location": "remote"
       }
-    },
-    "checks": {}
-  },
-  "dataSamplingPolicies": []
+    }
+  }
 }
-

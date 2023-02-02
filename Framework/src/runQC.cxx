@@ -178,28 +178,28 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
     auto workflowType = getWorkflowType(config);
     switch (workflowType) {
       case WorkflowType::Standalone: {
-        ILOG(Info, Support) << "Creating a standalone QC workflow." << ENDM;
+        ILOG(Debug, Support) << "Creating a standalone QC workflow." << ENDM;
 
         if (!config.options().get<bool>("no-data-sampling") && configTree.count("dataSamplingPolicies") > 0) {
-          ILOG(Info, Support) << "Generating Data Sampling" << ENDM;
+          ILOG(Debug, Support) << "Generating Data Sampling" << ENDM;
           DataSampling::GenerateInfrastructure(specs, configTree.get_child("dataSamplingPolicies"));
         } else {
-          ILOG(Info, Support) << "Omitting Data Sampling" << ENDM;
+          ILOG(Debug, Support) << "Omitting Data Sampling" << ENDM;
         }
         quality_control::generateStandaloneInfrastructure(specs, configTree);
         break;
       }
       case WorkflowType::Local: {
-        ILOG(Info, Support) << "Creating a local QC topology." << ENDM;
+        ILOG(Debug, Support) << "Creating a local QC topology." << ENDM;
         auto host = config.options().get<std::string>("host").empty()
                       ? boost::asio::ip::host_name()
                       : config.options().get<std::string>("host");
 
         if (!config.options().get<bool>("no-data-sampling") && configTree.count("dataSamplingPolicies") > 0) {
-          ILOG(Info, Support) << "Generating Data Sampling" << ENDM;
+          ILOG(Debug, Support) << "Generating Data Sampling" << ENDM;
           DataSampling::GenerateInfrastructure(specs, configTree.get_child("dataSamplingPolicies"), 1, host);
         } else {
-          ILOG(Info, Support) << "Omitting Data Sampling" << ENDM;
+          ILOG(Debug, Support) << "Omitting Data Sampling" << ENDM;
         }
 
         // Generation of the local QC topology (local QC tasks and their output proxies)
@@ -207,19 +207,19 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
         break;
       }
       case WorkflowType::Remote: {
-        ILOG(Info, Support) << "Creating a remote QC workflow." << ENDM;
+        ILOG(Debug, Support) << "Creating a remote QC workflow." << ENDM;
 
         // Generation of the remote QC topology (task for QC servers, input proxies, mergers and all check runners)
         quality_control::generateRemoteInfrastructure(specs, configTree);
         break;
       }
       case WorkflowType::LocalBatch: {
-        ILOG(Info, Support) << "Creating a local batch QC workflow." << ENDM;
+        ILOG(Debug, Support) << "Creating a local batch QC workflow." << ENDM;
         if (!config.options().get<bool>("no-data-sampling") && configTree.count("dataSamplingPolicies") > 0) {
-          ILOG(Info, Support) << "Generating Data Sampling" << ENDM;
+          ILOG(Debug, Support) << "Generating Data Sampling" << ENDM;
           DataSampling::GenerateInfrastructure(specs, configTree.get_child("dataSamplingPolicies"));
         } else {
-          ILOG(Info, Support) << "Omitting Data Sampling" << ENDM;
+          ILOG(Debug, Support) << "Omitting Data Sampling" << ENDM;
         }
 
         auto localBatchFilePath = config.options().get<std::string>("local-batch");

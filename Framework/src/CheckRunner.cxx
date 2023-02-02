@@ -513,6 +513,11 @@ void CheckRunner::initLibraries()
   }
 }
 
+void CheckRunner::endOfStream(framework::EndOfStreamContext& eosContext)
+{
+  mReceivedEOS = true;
+}
+
 void CheckRunner::start(ServiceRegistryRef services)
 {
   mActivity = computeActivity(services, mConfig.fallbackActivity);
@@ -523,11 +528,15 @@ void CheckRunner::start(ServiceRegistryRef services)
                       << "\n   - period: " << mActivity.mPeriodName << "\n   - pass type: " << mActivity.mPassName << "\n   - provenance: " << mActivity.mProvenance << ENDM;
   mTimerTotalDurationActivity.reset();
   mCollector->setRunNumber(mActivity.mId);
+  mReceivedEOS = false;
 }
 
 void CheckRunner::stop()
 {
   ILOG(Info, Support) << "Stopping run " << mActivity.mId << ENDM;
+  if (!mReceivedEOS) {
+    ILOG(Warning, Devel) << "The STOP transition happened before an EndOfStream was received. The very last QC objects in this run might not have been stored." << ENDM;
+  }
 }
 
 void CheckRunner::reset()
