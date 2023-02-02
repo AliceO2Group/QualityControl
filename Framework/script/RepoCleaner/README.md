@@ -35,6 +35,8 @@ The configuration for ccdb-test is described [here](../../../doc/DevelopersTips.
 ## Unit Tests
 `cd QualityControl/Framework/script/RepoCleaner ; python3 -m unittest discover`
 
+and to test only one of them: `python3 -m unittest tests/test_NewProduction.py -k test_2_runs`
+
 In particular there is a test for the `production` rule that is pretty extensive. It hits the ccdb though and it needs the following path to be truncated: 
 `
 qc/TST/MO/repo/test*

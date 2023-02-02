@@ -4,23 +4,10 @@ import logging
 from collections import defaultdict
 from qcrepocleaner.Ccdb import Ccdb, ObjectVersion
 import dryable
-from typing import Dict, List
-
+from typing import Dict, List, DefaultDict
+from qcrepocleaner.policies_utils import in_grace_period, group_versions
 
 logger = logging  # default logger
-
-
-def in_grace_period(version: ObjectVersion, delay: int):
-    return not (version.validFromAsDt < datetime.now() - timedelta(minutes=delay))
-
-
-def get_run(v: ObjectVersion) -> str:
-    run = "none"
-    if "Run" in v.metadata:
-        run = str(v.metadata['Run'])
-    elif "RunNumber" in v.metadata:
-        run = str(v.metadata['RunNumber'])
-    return run
 
 
 def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_timestamp: int, extra_params: Dict[str, str]):
@@ -67,14 +54,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
         return {"deleted": 0, "preserved": 0, "updated": 0}
 
     # Find all the runs and group the versions (by run or by a combination of multiple attributes)
-    versions = ccdb.getVersionsList(object_path)
-    for v in versions:
-        logger.debug(f"Assigning {v} to a bucket")
-        run = get_run(v)
-        period_name = v.metadata.get("PeriodName") or ""
-        pass_name = v.metadata.get("PassName") or ""
-        key = run+period_name+pass_name if period_pass else run
-        versions_buckets_dict[key].append(v)
+    policies_utils.group_versions(ccdb, object_path, period_pass, versions_buckets_dict)
 
     logger.debug(f"Number of buckets : {len(versions_buckets_dict)}")
     if not period_pass:
@@ -86,19 +66,19 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
 
     # Dispatch the versions to deletion and preservation lists
     for bucket, run_versions in versions_buckets_dict.items():
-        # logger.debug(f"- run {r}")
+        # logger.debug(f"- bucket {bucket}")
 
         freshest: ObjectVersion = None
         for v in run_versions:
             if freshest is None or freshest.validFromAsDt < v.validFromAsDt:
                 if freshest is not None:
-                    if in_grace_period(freshest, delay):
+                    if policies_utils.in_grace_period(freshest, delay):
                         preservation_list.append(freshest)
                     else:
                         deletion_list.append(freshest)
                 freshest = v
             else:
-                if in_grace_period(freshest, delay):
+                if policies_utils.in_grace_period(freshest, delay):
                     preservation_list.append(v)
                 else:
                     deletion_list.append(v)
@@ -128,6 +108,8 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
         logger.debug(f"   {v}")
 
     return {"deleted" : len(deletion_list), "preserved": len(preservation_list), "updated" : len(update_list)}
+
+
 
 
 def main():
