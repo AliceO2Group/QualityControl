@@ -21,6 +21,7 @@
 #include <Common/Timer.h>
 #include <memory>
 #include <string>
+#include <set>
 
 namespace o2::ccdb
 {
