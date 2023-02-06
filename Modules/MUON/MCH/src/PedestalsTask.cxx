@@ -57,7 +57,7 @@ PedestalsTask::~PedestalsTask()
 
 void PedestalsTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize PedestalsTask" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "initialize PedestalsTask" << ENDM;
 
   mSolar2FeeLinkMapper = o2::mch::raw::createSolar2FeeLinkMapper<o2::mch::raw::ElectronicMapperGenerated>();
   mElec2DetMapper = o2::mch::raw::createElec2DetMapper<o2::mch::raw::ElectronicMapperGenerated>();
@@ -142,12 +142,12 @@ void PedestalsTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void PedestalsTask::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
 }
 
 void PedestalsTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void PedestalsTask::fill_noise_distributions()
@@ -292,7 +292,7 @@ void PedestalsTask::PlotPedestalDE(uint16_t solarID, uint8_t dsID, uint8_t chann
 
 void PedestalsTask::monitorDataPedestals(o2::framework::ProcessingContext& ctx)
 {
-  ILOG(Info, Support) << "Plotting pedestals" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "Plotting pedestals" << ENDM;
 
   auto pedestals = ctx.inputs().get<gsl::span<o2::mch::calibration::PedestalChannel>>("pedestals");
   for (auto& p : pedestals) {
@@ -339,7 +339,7 @@ void PedestalsTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void PedestalsTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfCycle" << ENDM;
 
   fill_noise_distributions();
 
@@ -353,7 +353,7 @@ void PedestalsTask::endOfCycle()
 void PedestalsTask::endOfActivity(Activity& /*activity*/)
 {
   printf("PedestalsTask::endOfActivity() called\n");
-  ILOG(Info, Support) << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfActivity" << ENDM;
 
   fill_noise_distributions();
 }
@@ -362,7 +362,7 @@ void PedestalsTask::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info, Support) << "Reseting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "Reseting the histogram" << ENDM;
   mPedestalData.reset();
 }
 

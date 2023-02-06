@@ -69,7 +69,7 @@ ITSThresholdCalibrationTask::~ITSThresholdCalibrationTask()
 void ITSThresholdCalibrationTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
 
-  ILOG(Info, Support) << "initialize ITSThresholdCalibrationTask" << ENDM;
+  ILOG(Debug, Devel) << "initialize ITSThresholdCalibrationTask" << ENDM;
 
   createAllHistos();
   publishHistos();
@@ -77,12 +77,12 @@ void ITSThresholdCalibrationTask::initialize(o2::framework::InitContext& /*ctx*/
 
 void ITSThresholdCalibrationTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
 }
 
 void ITSThresholdCalibrationTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void ITSThresholdCalibrationTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -333,17 +333,17 @@ ITSThresholdCalibrationTask::CalibrationResStructTHR ITSThresholdCalibrationTask
 
 void ITSThresholdCalibrationTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void ITSThresholdCalibrationTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void ITSThresholdCalibrationTask::reset()
 {
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
 
   for (int iScan = 0; iScan < 3; iScan++) {
     for (int iLayer = 0; iLayer < 7; iLayer++) {

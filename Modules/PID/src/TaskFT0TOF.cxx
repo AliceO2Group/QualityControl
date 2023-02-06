@@ -99,40 +99,40 @@ void TaskFT0TOF::initialize(o2::framework::InitContext& /*ctx*/)
   ILOG(Info, Support) << " Initializing... " << ENDM;
   // track selection
   if (auto param = mCustomParameters.find("minPtCut"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - minPtCut (for track selection): " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - minPtCut (for track selection): " << param->second << ENDM;
     setMinPtCut(atof(param->second.c_str()));
   }
   if (auto param = mCustomParameters.find("etaCut"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - etaCut (for track selection): " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - etaCut (for track selection): " << param->second << ENDM;
     setEtaCut(atof(param->second.c_str()));
   }
   if (auto param = mCustomParameters.find("minNTPCClustersCut"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - minNTPCClustersCut (for track selection): " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - minNTPCClustersCut (for track selection): " << param->second << ENDM;
     setMinNTPCClustersCut(atoi(param->second.c_str()));
   }
   if (auto param = mCustomParameters.find("minDCACut"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - minDCACut (for track selection): " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - minDCACut (for track selection): " << param->second << ENDM;
     setMinDCAtoBeamPipeCut(atof(param->second.c_str()));
   }
   if (auto param = mCustomParameters.find("minDCACutY"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - minDCACutY (for track selection): " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - minDCACutY (for track selection): " << param->second << ENDM;
     setMinDCAtoBeamPipeYCut(atof(param->second.c_str()));
   }
   if (auto param = mCustomParameters.find("useFT0"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - useFT0: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - useFT0: " << param->second << ENDM;
     if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
       mUseFT0 = true;
     }
   }
   if (auto param = mCustomParameters.find("evTimeTracksMaxMomentum"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - EvTimeTracksMaxMomentum (for ev time computation): " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - EvTimeTracksMaxMomentum (for ev time computation): " << param->second << ENDM;
     mEvTimeTracksMaxMomentum = atof(param->second.c_str());
     MyTrack::setT0MaxP(mEvTimeTracksMaxMomentum);
   }
 
   // for track type selection
   if (auto param = mCustomParameters.find("GID"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - GID (= sources by user): " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - GID (= sources by user): " << param->second << ENDM;
     ILOG(Info, Devel) << "Allowed Sources = " << mAllowedSources << ENDM;
     mSrc = mAllowedSources & GID::getSourcesMask(param->second);
     ILOG(Info, Devel) << "Final requested sources = " << mSrc << ENDM;
@@ -297,13 +297,13 @@ void TaskFT0TOF::initialize(o2::framework::InitContext& /*ctx*/)
 
 void TaskFT0TOF::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity " << activity.mId << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
   reset();
 }
 
 void TaskFT0TOF::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void TaskFT0TOF::monitorData(o2::framework::ProcessingContext& ctx)
@@ -560,12 +560,12 @@ void TaskFT0TOF::monitorData(o2::framework::ProcessingContext& ctx)
 void TaskFT0TOF::endOfCycle()
 {
 
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void TaskFT0TOF::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void TaskFT0TOF::reset()

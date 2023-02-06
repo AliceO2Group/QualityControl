@@ -46,7 +46,7 @@ TaskCosmics::TaskCosmics() : TaskInterface()
 
 void TaskCosmics::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize TaskCosmics" << ENDM;
+  ILOG(Debug, Devel) << "initialize TaskCosmics" << ENDM;
 
   // Set task parameters from JSON
   if (utils::parseFloatParameter(mCustomParameters, "mSelDeltaTSignalRegion", mSelDeltaTSignalRegion)) {
@@ -82,13 +82,13 @@ void TaskCosmics::initialize(o2::framework::InitContext& /*ctx*/)
 
 void TaskCosmics::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "startOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
   reset();
 }
 
 void TaskCosmics::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void TaskCosmics::monitorData(o2::framework::ProcessingContext& ctx)
@@ -134,7 +134,7 @@ void TaskCosmics::monitorData(o2::framework::ProcessingContext& ctx)
 
 void TaskCosmics::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
   mCounterPeak.FillHistogram(mHistoCosmicRate.get());
   mCounterBkg.AddHistogram(mHistoCosmicRate.get(), -1);
   if (mCounterTF.HowMany(0) > 0) {
@@ -146,14 +146,14 @@ void TaskCosmics::endOfCycle()
 
 void TaskCosmics::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void TaskCosmics::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   mHistoCrate1->Reset();
   mHistoCrate2->Reset();
   mHistoCrate1VsCrate2->Reset();

@@ -93,7 +93,7 @@ void DigitQcTaskLaser::rebinFromConfig()
 
 void DigitQcTaskLaser::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info) << "initialize DigitQcTaskLaser" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize DigitQcTaskLaser" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
   mStateLastIR2Ch = {};
   mMapChTrgNames.insert({ o2::fdd::ChannelData::kNumberADC, "NumberADC" });
   mMapChTrgNames.insert({ o2::fdd::ChannelData::kIsDoubleEvent, "IsDoubleEvent" });
@@ -210,7 +210,7 @@ void DigitQcTaskLaser::initialize(o2::framework::InitContext& /*ctx*/)
 
 void DigitQcTaskLaser::startOfActivity(Activity& activity)
 {
-  ILOG(Info) << "startOfActivity" << activity.mId << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << activity.mId << ENDM;
   mHistTime2Ch->Reset();
   mHistAmp2Ch->Reset();
   mHistOrbit2BC->Reset();
@@ -229,7 +229,7 @@ void DigitQcTaskLaser::startOfActivity(Activity& activity)
 
 void DigitQcTaskLaser::startOfCycle()
 {
-  ILOG(Info) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
   mTimeMinNS = -1;
   mTimeMaxNS = 0.;
   mTimeCurNS = 0.;
@@ -318,7 +318,7 @@ void DigitQcTaskLaser::monitorData(o2::framework::ProcessingContext& ctx)
 
 void DigitQcTaskLaser::endOfCycle()
 {
-  ILOG(Info) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
   mHistCycleDuration->SetBinContent(1., mTimeSum);
   mHistCycleDuration->SetEntries(mTimeSum);
   ILOG(Debug) << "Cycle duration: NTF=" << mTfCounter << ", range = " << (mTimeMaxNS - mTimeMinNS) / 1e6 / mTfCounter << " ms/TF, sum = " << mTimeSum / 1e6 / mTfCounter << " ms/TF" << ENDM;
@@ -326,7 +326,7 @@ void DigitQcTaskLaser::endOfCycle()
 
 void DigitQcTaskLaser::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void DigitQcTaskLaser::reset()

@@ -66,7 +66,7 @@ DigitsQcTask::~DigitsQcTask()
 void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   QcInfoLogger::setDetector("EMC");
-  ILOG(Info, Support) << "initialize DigitsQcTask" << ENDM;
+  ILOG(Debug, Devel) << "initialize DigitsQcTask" << ENDM;
   //define histograms
 
   auto get_bool = [](const std::string_view input) -> bool {
@@ -150,7 +150,7 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void DigitsQcTask::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "startOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
   reset();
 }
 
@@ -288,12 +288,12 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 void DigitsQcTask::endOfCycle()
 {
   mTFPerCyclesTOT->Fill(mTimeFramesPerCycles); // do not reset this histo
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void DigitsQcTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Debug, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void DigitsQcTask::reset()

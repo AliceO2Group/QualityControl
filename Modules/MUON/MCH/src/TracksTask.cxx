@@ -113,7 +113,7 @@ void TracksTask::createTrackPairHistos()
 
 void TracksTask::initialize(o2::framework::InitContext& /*ic*/)
 {
-  ILOG(Info, Support) << "initialize TracksTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize TracksTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   createTrackHistos();
   createClusterHistos();
@@ -146,12 +146,12 @@ int TracksTask::dsbinx(int deid, int dsid) const
 
 void TracksTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity : " << activity.mId << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity : " << activity.mId << ENDM;
 }
 
 void TracksTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 ROOT::Math::PxPyPzMVector getMomentum4D(const o2::mch::TrackParam& trackParam)
@@ -317,12 +317,12 @@ bool TracksTask::fillTrackHistos(const o2::mch::TrackMCH& track,
 
 void TracksTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void TracksTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void TracksTask::reset()

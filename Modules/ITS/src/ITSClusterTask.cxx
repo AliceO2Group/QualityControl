@@ -98,7 +98,7 @@ ITSClusterTask::~ITSClusterTask()
 void ITSClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
 
-  ILOG(Info, Support) << "initialize ITSClusterTask" << ENDM;
+  ILOG(Debug, Devel) << "initialize ITSClusterTask" << ENDM;
 
   getJsonParameters();
 
@@ -141,13 +141,13 @@ void ITSClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void ITSClusterTask::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "startOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
   reset();
 }
 
 void ITSClusterTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -344,17 +344,17 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void ITSClusterTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void ITSClusterTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void ITSClusterTask::reset()
 {
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   hClusterVsBunchCrossing->Reset();
   mGeneralOccupancy->Reset();
 

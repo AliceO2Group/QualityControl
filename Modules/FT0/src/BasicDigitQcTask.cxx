@@ -35,7 +35,7 @@ BasicDigitQcTask::~BasicDigitQcTask()
 
 void BasicDigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize BasicDigitQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize BasicDigitQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   mChargeHistogram = std::make_unique<TH1F>("Charge", "Charge", 200, 0, 200);
   mTimeHistogram = std::make_unique<TH1F>("Time", "Time", 200, 0, 200);
@@ -50,7 +50,7 @@ void BasicDigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void BasicDigitQcTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity" << activity.mId << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << activity.mId << ENDM;
   mTimeHistogram->Reset();
   mChargeHistogram->Reset();
   mTTree->Reset();
@@ -58,7 +58,7 @@ void BasicDigitQcTask::startOfActivity(Activity& activity)
 
 void BasicDigitQcTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void BasicDigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -99,12 +99,12 @@ void BasicDigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void BasicDigitQcTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void BasicDigitQcTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void BasicDigitQcTask::reset()

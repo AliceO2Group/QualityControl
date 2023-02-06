@@ -50,10 +50,10 @@ void PulseHeightTrackMatch::retrieveCCDBSettings()
 {
   if (auto param = mCustomParameters.find("ccdbtimestamp"); param != mCustomParameters.end()) {
     mTimestamp = std::stol(mCustomParameters["ccdbtimestamp"]);
-    ILOG(Info, Support) << "configure() : using ccdbtimestamp = " << mTimestamp << ENDM;
+    ILOG(Debug, Support) << "configure() : using ccdbtimestamp = " << mTimestamp << ENDM;
   } else {
     mTimestamp = o2::ccdb::getCurrentTimestamp();
-    ILOG(Info, Support) << "configure() : using default timestam of now = " << mTimestamp << ENDM;
+    ILOG(Debug, Support) << "configure() : using default timestam of now = " << mTimestamp << ENDM;
   }
 }
 
@@ -91,7 +91,7 @@ void PulseHeightTrackMatch::buildHistograms()
 
 void PulseHeightTrackMatch::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info) << "initialize TRDDigitQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize TRDDigitQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   retrieveCCDBSettings();
   buildHistograms();
@@ -99,12 +99,12 @@ void PulseHeightTrackMatch::initialize(o2::framework::InitContext& /*ctx*/)
 
 void PulseHeightTrackMatch::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info) << "startOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
 } // set stats/stacs
 
 void PulseHeightTrackMatch::startOfCycle()
 {
-  ILOG(Info) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 bool digitIndexCompare_phtm(unsigned int A, unsigned int B, const std::vector<o2::trd::Digit>& originalDigits)
@@ -277,18 +277,18 @@ void PulseHeightTrackMatch::monitorData(o2::framework::ProcessingContext& ctx)
 
 void PulseHeightTrackMatch::endOfCycle()
 {
-  ILOG(Info) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void PulseHeightTrackMatch::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void PulseHeightTrackMatch::reset()
 {
   // clean all the monitor objects here
-  ILOG(Info) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histogram" << ENDM;
   mTracksPerEvent->Reset();
   mDigitsPerEvent->Reset();
   mTriggerPerTF->Reset();

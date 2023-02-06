@@ -83,7 +83,7 @@ CellTask::~CellTask()
 void CellTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   QcInfoLogger::setDetector("EMC");
-  ILOG(Info, Support) << "initialize CellTask" << ENDM;
+  ILOG(Debug, Devel) << "initialize CellTask" << ENDM;
   // define histograms
 
   auto get_bool = [](const std::string_view input) -> bool {
@@ -285,7 +285,7 @@ void CellTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void CellTask::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "startOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
   reset();
 }
 
@@ -492,12 +492,12 @@ void CellTask::monitorData(o2::framework::ProcessingContext& ctx)
 void CellTask::endOfCycle()
 {
   mTFPerCyclesTOT->Fill(mTimeFramesPerCycles); // do not reset this histo
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void CellTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Debug, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void CellTask::reset()

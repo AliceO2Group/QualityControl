@@ -43,37 +43,37 @@ QcMFTAsyncTask::~QcMFTAsyncTask()
 
 void QcMFTAsyncTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize QcMFTAsyncTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize QcMFTAsyncTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // Loading custom parameters
   auto MaxClusterROFSize = 5000;
   if (auto param = mCustomParameters.find("MaxClusterROFSize"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - MaxClusterROFSize: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - MaxClusterROFSize: " << param->second << ENDM;
     MaxClusterROFSize = stoi(param->second);
   }
 
   auto MaxTrackROFSize = 1000;
   if (auto param = mCustomParameters.find("MaxTrackROFSize"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - MaxTrackROFSize: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - MaxTrackROFSize: " << param->second << ENDM;
     MaxTrackROFSize = stoi(param->second);
   }
 
   auto ROFLengthInBC = 198;
   if (auto param = mCustomParameters.find("ROFLengthInBC"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - ROFLengthInBC: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - ROFLengthInBC: " << param->second << ENDM;
     ROFLengthInBC = stoi(param->second);
   }
   auto ROFsPerOrbit = o2::constants::lhc::LHCMaxBunches / ROFLengthInBC;
 
   auto MaxDuration = 60.f;
   if (auto param = mCustomParameters.find("MaxDuration"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - MaxDuration: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - MaxDuration: " << param->second << ENDM;
     MaxDuration = stof(param->second);
   }
 
   auto TimeBinSize = 0.01f;
   if (auto param = mCustomParameters.find("TimeBinSize"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - TimeBinSize: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - TimeBinSize: " << param->second << ENDM;
     TimeBinSize = stof(param->second);
   }
 
@@ -184,7 +184,7 @@ void QcMFTAsyncTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void QcMFTAsyncTask::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "startOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
 
   // reset histograms
   reset();
@@ -192,7 +192,7 @@ void QcMFTAsyncTask::startOfActivity(Activity& /*activity*/)
 
 void QcMFTAsyncTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void QcMFTAsyncTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -275,19 +275,19 @@ void QcMFTAsyncTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void QcMFTAsyncTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void QcMFTAsyncTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void QcMFTAsyncTask::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
 
   mNumberOfTracksPerTF->Reset();
   mTrackNumberOfClusters->Reset();

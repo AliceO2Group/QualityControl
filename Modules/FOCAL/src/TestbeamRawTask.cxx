@@ -300,13 +300,13 @@ void TestbeamRawTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void TestbeamRawTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity " << activity.mId << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
   reset();
 }
 
 void TestbeamRawTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void TestbeamRawTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -606,19 +606,19 @@ std::pair<int, int> TestbeamRawTask::getNumberOfPixelSegments(o2::focal::PixelMa
 
 void TestbeamRawTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void TestbeamRawTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void TestbeamRawTask::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   if (!mDisablePads) {
     mPayloadSizePadsGBT->Reset();
     for (auto padadc : mPadASICChannelADC) {

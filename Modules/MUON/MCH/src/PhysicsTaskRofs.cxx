@@ -53,7 +53,7 @@ PhysicsTaskRofs::~PhysicsTaskRofs() = default;
 
 void PhysicsTaskRofs::initialize(o2::framework::InitContext& /*ic*/)
 {
-  ILOG(Info, Support) << "initialize PhysicsTaskRofs" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize PhysicsTaskRofs" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   static constexpr int nLogBins = 100;
   Float_t xbins[nLogBins + 1];
@@ -96,12 +96,12 @@ void PhysicsTaskRofs::initialize(o2::framework::InitContext& /*ic*/)
 
 void PhysicsTaskRofs::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity : " << activity.mId << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity : " << activity.mId << ENDM;
 }
 
 void PhysicsTaskRofs::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void PhysicsTaskRofs::plotROF(const o2::mch::ROFRecord& rof, gsl::span<const o2::mch::Digit> digits)
@@ -162,19 +162,19 @@ void PhysicsTaskRofs::monitorData(o2::framework::ProcessingContext& ctx)
 
 void PhysicsTaskRofs::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void PhysicsTaskRofs::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void PhysicsTaskRofs::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info, Support) << "Resetting the histograms" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histogramss" << ENDM;
 
   for (auto h : mAllHistograms) {
     h->Reset("ICES");

@@ -33,7 +33,7 @@ RawDigits::RawDigits() : TaskInterface()
 
 void RawDigits::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize TPC RawDigits QC task" << ENDM;
+  ILOG(Debug, Devel) << "initialize TPC RawDigits QC task" << ENDM;
 
   mRawDigitQC.setName("RawDigitData");
 
@@ -85,12 +85,12 @@ void RawDigits::initialize(o2::framework::InitContext& /*ctx*/)
 
 void RawDigits::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "startOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
 }
 
 void RawDigits::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void RawDigits::monitorData(o2::framework::ProcessingContext& ctx)
@@ -111,7 +111,7 @@ void RawDigits::monitorData(o2::framework::ProcessingContext& ctx)
 
 void RawDigits::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 
   if (mIsMergeable) {
     mRawDigitQC.getClusters().normalize();
@@ -120,14 +120,14 @@ void RawDigits::endOfCycle()
 
 void RawDigits::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void RawDigits::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info, Support) << "Resetting the data" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the data" << ENDM;
 
   mRawDigitQC.getClusters().reset();
 

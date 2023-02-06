@@ -61,7 +61,7 @@ ITSTrackTask::~ITSTrackTask()
 void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
 
-  ILOG(Info, Support) << "initialize ITSTrackTask" << ENDM;
+  ILOG(Debug, Devel) << "initialize ITSTrackTask" << ENDM;
 
   mVertexXYsize = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "vertexXYsize", mVertexXYsize);
   mVertexZsize = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "vertexZsize", mVertexZsize);
@@ -82,12 +82,12 @@ void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void ITSTrackTask::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "startOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
 }
 
 void ITSTrackTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -270,17 +270,17 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void ITSTrackTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void ITSTrackTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void ITSTrackTask::reset()
 {
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   hAngularDistribution->Reset();
   hNClusters->Reset();
   hTrackPhi->Reset();

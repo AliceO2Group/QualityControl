@@ -58,7 +58,7 @@ GID::mask_t adaptSource(GID::mask_t src)
 
 void TracksTask::initialize(o2::framework::InitContext& /*ic*/)
 {
-  ILOG(Info, Support) << "initialize TracksTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize TracksTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   double maxTracksPerTF = 400;
 
@@ -101,12 +101,12 @@ void TracksTask::initialize(o2::framework::InitContext& /*ic*/)
 
 void TracksTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity : " << activity << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity : " << activity << ENDM;
 }
 
 void TracksTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 bool TracksTask::assertInputs(o2::framework::ProcessingContext& ctx)
@@ -201,12 +201,12 @@ void TracksTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void TracksTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void TracksTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void TracksTask::reset()

@@ -45,10 +45,10 @@ void PulseHeight::retrieveCCDBSettings()
 {
   if (auto param = mCustomParameters.find("ccdbtimestamp"); param != mCustomParameters.end()) {
     mTimestamp = std::stol(mCustomParameters["ccdbtimestamp"]);
-    ILOG(Info, Support) << "configure() : using ccdbtimestamp = " << mTimestamp << ENDM;
+    ILOG(Debug, Support) << "configure() : using ccdbtimestamp = " << mTimestamp << ENDM;
   } else {
     mTimestamp = o2::ccdb::getCurrentTimestamp();
-    ILOG(Info, Support) << "configure() : using default timestam of now = " << mTimestamp << ENDM;
+    ILOG(Debug, Support) << "configure() : using default timestam of now = " << mTimestamp << ENDM;
   }
   auto& mgr = o2::ccdb::BasicCCDBManager::instance();
   mgr.setTimestamp(mTimestamp);
@@ -112,34 +112,34 @@ void PulseHeight::buildHistograms()
 }
 void PulseHeight::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize PulseHeight" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize PulseHeight" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
   if (auto param = mCustomParameters.find("peakregionstart"); param != mCustomParameters.end()) {
     mDriftRegion.first = stof(param->second);
-    ILOG(Info, Support) << "configure() : using peakregionstart = " << mDriftRegion.first << ENDM;
+    ILOG(Debug, Support) << "configure() : using peakregionstart = " << mDriftRegion.first << ENDM;
   } else {
     mDriftRegion.first = 7.0;
-    ILOG(Info, Support) << "configure() : using default dritfregionstart = " << mDriftRegion.first << ENDM;
+    ILOG(Debug, Support) << "configure() : using default dritfregionstart = " << mDriftRegion.first << ENDM;
   }
   if (auto param = mCustomParameters.find("peakregionend"); param != mCustomParameters.end()) {
     mDriftRegion.second = stof(param->second);
-    ILOG(Info, Support) << "configure() : using peakregionstart = " << mDriftRegion.second << ENDM;
+    ILOG(Debug, Support) << "configure() : using peakregionstart = " << mDriftRegion.second << ENDM;
   } else {
     mDriftRegion.second = 20.0;
-    ILOG(Info, Support) << "configure() : using default dritfregionstart = " << mDriftRegion.second << ENDM;
+    ILOG(Debug, Support) << "configure() : using default dritfregionstart = " << mDriftRegion.second << ENDM;
   }
   if (auto param = mCustomParameters.find("pulsheightpeaklower"); param != mCustomParameters.end()) {
     mPulseHeightPeakRegion.first = stof(param->second);
-    ILOG(Info, Support) << "configure() : using pulsehheightlower	= " << mPulseHeightPeakRegion.first << ENDM;
+    ILOG(Debug, Support) << "configure() : using pulsehheightlower	= " << mPulseHeightPeakRegion.first << ENDM;
   } else {
     mPulseHeightPeakRegion.first = 1.0;
-    ILOG(Info, Support) << "configure() : using default pulseheightlower = " << mPulseHeightPeakRegion.first << ENDM;
+    ILOG(Debug, Support) << "configure() : using default pulseheightlower = " << mPulseHeightPeakRegion.first << ENDM;
   }
   if (auto param = mCustomParameters.find("pulsheightpeakupper"); param != mCustomParameters.end()) {
     mPulseHeightPeakRegion.second = stof(param->second);
-    ILOG(Info, Support) << "configure() : using pulsehheightupper	= " << mPulseHeightPeakRegion.second << ENDM;
+    ILOG(Debug, Support) << "configure() : using pulsehheightupper	= " << mPulseHeightPeakRegion.second << ENDM;
   } else {
     mPulseHeightPeakRegion.second = 5.0;
-    ILOG(Info, Support) << "configure() : using default pulseheightupper = " << mPulseHeightPeakRegion.second << ENDM;
+    ILOG(Debug, Support) << "configure() : using default pulseheightupper = " << mPulseHeightPeakRegion.second << ENDM;
   }
   buildHistograms();
   retrieveCCDBSettings();
@@ -147,12 +147,12 @@ void PulseHeight::initialize(o2::framework::InitContext& /*ctx*/)
 
 void PulseHeight::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity " << activity.mId << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
 }
 
 void PulseHeight::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 bool pulseheightdigitindexcompare(unsigned int A, unsigned int B, const std::vector<o2::trd::Digit>& originalDigits)
@@ -439,7 +439,7 @@ void PulseHeight::monitorData(o2::framework::ProcessingContext& ctx)
 
 void PulseHeight::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
   double scale = mPulseHeight->GetEntries() / 30;
   for (int i = 0; i < 30; ++i)
     mPulseHeightScaled->SetBinContent(i, mPulseHeight->GetBinContent(i));
@@ -448,7 +448,7 @@ void PulseHeight::endOfCycle()
 
 void PulseHeight::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void PulseHeight::reset()
@@ -457,7 +457,7 @@ void PulseHeight::reset()
   mTotalPulseHeight2D->Reset();
   mPulseHeight->Reset();
 
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
 }
 
 } // namespace o2::quality_control_modules::trd

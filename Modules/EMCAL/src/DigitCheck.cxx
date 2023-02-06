@@ -117,14 +117,14 @@ void DigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult
       //
       h->SetFillColor(kGreen);
     } else if (checkResult == Quality::Bad) {
-      LOG(info) << "Quality::Bad, setting to red";
+      ILOG(Debug, Devel) << "Quality::Bad, setting to red";
       msg->Clear();
       msg->AddText("Mean outside limits or no entries");
       msg->AddText("If NOT a technical run,");
       msg->AddText("call EMCAL on-call.");
       h->SetFillColor(kRed);
     } else if (checkResult == Quality::Medium) {
-      LOG(info) << "Quality::medium, setting to orange";
+      ILOG(Debug, Devel) << "Quality::medium, setting to orange";
       h->SetFillColor(kOrange);
     }
     h->SetLineColor(kBlack);
@@ -143,14 +143,14 @@ void DigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult
       //
       h->SetFillColor(kGreen);
     } else if (checkResult == Quality::Bad) {
-      LOG(info) << "Quality::Bad, setting to red";
+      ILOG(Debug, Devel) << "Quality::Bad, setting to red";
       msg->Clear();
       msg->AddText("Mean outside limits or no entries");
       msg->AddText("If NOT a technical run,");
       msg->AddText("call EMCAL on-call.");
       h->SetFillColor(kRed);
     } else if (checkResult == Quality::Medium) {
-      LOG(info) << "Quality::medium, setting to orange";
+      ILOG(Debug, Devel) << "Quality::medium, setting to orange";
       h->SetFillColor(kOrange);
     }
     h->SetLineColor(kBlack);
@@ -166,7 +166,7 @@ void DigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult
       h->GetListOfFunctions()->Add(msg);
       msg->Draw();
     } else if (checkResult == Quality::Bad) {
-      LOG(info) << "Quality::Bad, setting to red";
+      ILOG(Debug, Devel) << "Quality::Bad, setting to red";
       TLatex* msg = new TLatex(0.2, 0.8, "#color[2]{Noisy supermodule detected}");
       //Large payload in several DDLs
       msg->SetNDC();
@@ -183,7 +183,7 @@ void DigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult
       h->GetListOfFunctions()->Add(msg);
       msg->Draw();
     } else if (checkResult == Quality::Medium) {
-      LOG(info) << "Quality::medium, setting to orange";
+      ILOG(Debug, Devel) << "Quality::medium, setting to orange";
       TLatex* msg = new TLatex(0.2, 0.8, "#color[42]{empty:if in run, call EMCAL-oncall}");
       msg->SetNDC();
       msg->SetTextSize(16);

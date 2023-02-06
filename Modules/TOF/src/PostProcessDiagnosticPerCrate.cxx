@@ -87,7 +87,7 @@ void PostProcessDiagnosticPerCrate::update(Trigger t, framework::ServiceRegistry
 
 void PostProcessDiagnosticPerCrate::finalize(Trigger t, framework::ServiceRegistryRef)
 {
-  ILOG(Info) << "FINALIZING !" << ENDM;
+  ILOG(Info, Support) << "FINALIZING !" << ENDM;
 
   for (auto& i : mCrates) {
     TCanvas* c = new TCanvas(i->GetName(), i->GetName());
@@ -99,7 +99,7 @@ void PostProcessDiagnosticPerCrate::finalize(Trigger t, framework::ServiceRegist
     // It should delete everything inside. Confirmed by trying to delete histo after and getting a segfault.
     delete c;
   }
-  ILOG(Info) << "DONE FINALIZING !" << ENDM;
+  ILOG(Info, Support) << "DONE FINALIZING !" << ENDM;
 }
 
 } // namespace o2::quality_control_modules::tof

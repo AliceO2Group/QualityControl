@@ -51,17 +51,17 @@ PhysicsTask::~PhysicsTask()
 
 void PhysicsTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize PhysicsTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize PhysicsTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
   if (auto param = mCustomParameters.find("ccdbCheckInterval"); param != mCustomParameters.end()) {
     mCcdbCheckIntervalInMinutes = stoi(param->second);
-    ILOG(Info, Devel) << "Custom parameter - ccdbCheckInterval: " << mCcdbCheckIntervalInMinutes << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - ccdbCheckInterval: " << mCcdbCheckIntervalInMinutes << ENDM;
   } else {
     ILOG(Info, Devel) << "Default parameter - ccdbCheckInterval: " << mCcdbCheckIntervalInMinutes << ENDM;
   }
   if (auto param = mCustomParameters.find("isAsyncMode"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter : isAsyncMode " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter : isAsyncMode " << param->second << ENDM;
     mIsAsyncMode = stoi(param->second);
     ILOG(Info, Devel) << "I set mIsAsyncMode = " << mIsAsyncMode << ENDM;
   } else {
@@ -75,14 +75,14 @@ void PhysicsTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void PhysicsTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity() : resetting everything" << activity.mId << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity() : resetting everything" << activity.mId << ENDM;
   resetHistograms();
   mNEventsTotal = 0;
 }
 
 void PhysicsTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
   mCycleNumber++;
 }
 
@@ -356,12 +356,12 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void PhysicsTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void PhysicsTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void PhysicsTask::reset()
@@ -710,7 +710,7 @@ void PhysicsTask::initHistograms()
 void PhysicsTask::resetHistograms()
 {
   // clean all histograms
-  ILOG(Info, Support) << "Resetting the 1D Histograms" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the 1D Histograms" << ENDM;
   for (int itHist1D = H1DInputPayloadSize; itHist1D < kNHist1D; itHist1D++) {
     if (mHist1D[itHist1D]) {
       mHist1D[itHist1D]->Reset();
@@ -719,13 +719,13 @@ void PhysicsTask::resetHistograms()
     }
   }
 
-  ILOG(Info, Support) << "Resetting the 2D Histograms" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the 2D Histograms" << ENDM;
   for (int itHist2D = H2DDigitMapM2; itHist2D < kNHist2D; itHist2D++) {
     if (mHist2D[itHist2D]) {
       mHist2D[itHist2D]->Reset();
     }
   }
-  ILOG(Info, Support) << "Resetting the 2D Intensive Histograms" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the 2D Intensive Histograms" << ENDM;
   for (int itIntHist2D = 0; itIntHist2D < kNIntensiveHist2D; itIntHist2D++) {
     if (mIntensiveHist2D[itIntHist2D]) {
       mIntensiveHist2D[itIntHist2D]->Reset();

@@ -37,26 +37,26 @@ void OutOfBunchCollCheck::configure()
 {
   if (auto param = mCustomParameters.find("thresholdWarning"); param != mCustomParameters.end()) {
     mThreshWarning = stof(param->second);
-    ILOG(Info, Support) << "configure() : using thresholdWarning = " << mThreshWarning << ENDM;
+    ILOG(Debug, Support) << "configure() : using thresholdWarning = " << mThreshWarning << ENDM;
   } else {
     mThreshWarning = 1e-3;
-    ILOG(Info, Support) << "configure() : using default thresholdWarning = " << mThreshWarning << ENDM;
+    ILOG(Debug, Support) << "configure() : using default thresholdWarning = " << mThreshWarning << ENDM;
   }
 
   if (auto param = mCustomParameters.find("thresholdError"); param != mCustomParameters.end()) {
     mThreshError = stof(param->second);
-    ILOG(Info, Support) << "configure() : using thresholdError = " << mThreshError << ENDM;
+    ILOG(Debug, Support) << "configure() : using thresholdError = " << mThreshError << ENDM;
   } else {
     mThreshError = 0.1;
-    ILOG(Info, Support) << "configure() : using default thresholdError = " << mThreshError << ENDM;
+    ILOG(Debug, Support) << "configure() : using default thresholdError = " << mThreshError << ENDM;
   }
 
   if (auto param = mCustomParameters.find("binPos"); param != mCustomParameters.end()) {
     mBinPos = stoi(param->second);
-    ILOG(Info, Support) << "configure() : using binPos = " << mBinPos << ENDM;
+    ILOG(Debug, Support) << "configure() : using binPos = " << mBinPos << ENDM;
   } else {
     mBinPos = int(o2::fit::Triggers::bitVertex) + 1;
-    ILOG(Info, Support) << "configure() : using default binPos = " << mBinPos << ENDM;
+    ILOG(Debug, Support) << "configure() : using default binPos = " << mBinPos << ENDM;
   }
 }
 
