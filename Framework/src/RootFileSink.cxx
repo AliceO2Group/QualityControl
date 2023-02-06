@@ -60,6 +60,14 @@ void closeSinkFile(TFile* file)
   }
 }
 
+void deleteTDirectory(TDirectory* d)
+{
+  if (d != nullptr) {
+    d->Close();
+    delete d;
+  }
+};
+
 void RootFileSink::customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies)
 {
   auto matcher = [label = RootFileSink::getLabel()](framework::DeviceSpec const& device) {
@@ -80,7 +88,7 @@ void RootFileSink::run(framework::ProcessingContext& pctx)
   try {
     sinkFile = openSinkFile(mFilePath);
     for (const auto& input : InputRecordWalker(pctx.inputs())) {
-      auto moc = DataRefUtils::as<MonitorObjectCollection>(input).release();
+      auto moc = DataRefUtils::as<MonitorObjectCollection>(input);
       if (moc == nullptr) {
         ILOG(Error) << "Could not cast the input object to MonitorObjectCollection, skipping." << ENDM;
         continue;
@@ -95,11 +103,11 @@ void RootFileSink::run(framework::ProcessingContext& pctx)
       }
 
       auto detector = moc->getDetector();
-      TDirectory* detDir = sinkFile->GetDirectory(detector.c_str());
+
+      auto detDir = std::unique_ptr<TDirectory, void (*)(TDirectory*)>(sinkFile->GetDirectory(detector.c_str()), deleteTDirectory);
       if (detDir == nullptr) {
         ILOG(Info, Devel) << "Creating a new directory '" << detector << "'." << ENDM;
-        sinkFile->mkdir(detector.c_str());
-        detDir = sinkFile->GetDirectory(detector.c_str());
+        detDir = std::unique_ptr<TDirectory, void (*)(TDirectory*)>(sinkFile->mkdir(detector.c_str()), deleteTDirectory);
         if (detDir == nullptr) {
           ILOG(Error, Support) << "Could not create directory '" << detector << "', skipping." << ENDM;
           continue;
@@ -107,23 +115,20 @@ void RootFileSink::run(framework::ProcessingContext& pctx)
       }
 
       ILOG(Info, Support) << "Checking for existing objects in the file." << ENDM;
-      auto storedTObj = detDir->Get(mocName);
+      auto storedTObj = std::unique_ptr<TObject>(detDir->Get<TObject>(mocName));
       if (storedTObj != nullptr) {
-        auto storedMOC = dynamic_cast<MonitorObjectCollection*>(storedTObj);
+        auto storedMOC = dynamic_cast<MonitorObjectCollection*>(storedTObj.get());
         if (storedMOC == nullptr) {
           ILOG(Error, Support) << "Could not cast the stored object to MonitorObjectCollection, skipping." << ENDM;
-          delete storedTObj;
           continue;
         }
         storedMOC->postDeserialization();
         ILOG(Info, Support) << "Merging object '" << moc->GetName() << "' with the existing one in the file." << ENDM;
         moc->merge(storedMOC);
       }
-      delete storedTObj;
 
-      auto nbytes = detDir->WriteObject(moc, moc->GetName(), "Overwrite");
+      auto nbytes = detDir->WriteObject(moc.get(), moc->GetName(), "Overwrite");
       ILOG(Info, Support) << "Object '" << moc->GetName() << "' has been stored in the file (" << nbytes << " bytes)." << ENDM;
-      delete moc;
     }
     closeSinkFile(sinkFile);
   } catch (const std::bad_alloc& ex) {
