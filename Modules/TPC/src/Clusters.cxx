@@ -38,7 +38,7 @@ Clusters::Clusters() : TaskInterface()
 
 void Clusters::initialize(InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize TPC Clusters QC task" << ENDM;
+  ILOG(Debug, Devel) << "initialize TPC Clusters QC task" << ENDM;
 
   mQCClusters.setName("ClusterData");
 
@@ -89,12 +89,12 @@ void Clusters::initialize(InitContext& /*ctx*/)
 
 void Clusters::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "startOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
 }
 
 void Clusters::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void Clusters::processClusterNative(InputRecord& inputs)
@@ -151,7 +151,7 @@ void Clusters::monitorData(ProcessingContext& ctx)
 
 void Clusters::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 
   if (mIsMergeable) {
     mQCClusters.getClusters().normalize();
@@ -160,14 +160,14 @@ void Clusters::endOfCycle()
 
 void Clusters::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void Clusters::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info, Support) << "Resetting the data" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the data" << ENDM;
 
   mQCClusters.getClusters().reset();
 

@@ -49,7 +49,7 @@ CalibQcTask::~CalibQcTask()
 
 void CalibQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize CalibQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize CalibQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
   // std::cout << "!!!! START initialize CalibQcTask !!!! " << std::endl;
   /////////////////
   mNbTimeFrame = std::make_shared<TH1F>("NbTimeFrame", "NbTimeFrame", 1, 0, 1.);
@@ -213,12 +213,12 @@ void CalibQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void CalibQcTask::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "startOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
 }
 
 void CalibQcTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -593,19 +593,19 @@ void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void CalibQcTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void CalibQcTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void CalibQcTask::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
 
   mNbTimeFrame->Reset();
   mNbNoiseROF->Reset();

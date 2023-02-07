@@ -36,51 +36,51 @@ void RawCheck::configure()
   auto param = mCustomParameters.find("mMinHGPedestalValue");
   if (param != mCustomParameters.end()) {
     mMinHGPedestalValue = stoi(param->second);
-    ILOG(Info, Support) << "configure() : Custom parameter mMinHGPedestalValue "
-                        << mMinHGPedestalValue << ENDM;
+    ILOG(Debug, Support) << "configure() : Custom parameter mMinHGPedestalValue "
+                         << mMinHGPedestalValue << ENDM;
   }
   param = mCustomParameters.find("mMaxHGPedestalValue");
   if (param != mCustomParameters.end()) {
     mMaxHGPedestalValue = stoi(param->second);
-    ILOG(Info, Support) << "configure() : Custom parameter mMaxHGPedestalValue "
-                        << mMaxHGPedestalValue << ENDM;
+    ILOG(Debug, Support) << "configure() : Custom parameter mMaxHGPedestalValue "
+                         << mMaxHGPedestalValue << ENDM;
   }
   param = mCustomParameters.find("mMinLGPedestalValue");
   if (param != mCustomParameters.end()) {
     mMinLGPedestalValue = stoi(param->second);
-    ILOG(Info, Support) << "configure() : Custom parameter mMinLGPedestalValue "
-                        << mMinLGPedestalValue << ENDM;
+    ILOG(Debug, Support) << "configure() : Custom parameter mMinLGPedestalValue "
+                         << mMinLGPedestalValue << ENDM;
   }
   param = mCustomParameters.find("mMaxLGPedestalValue");
   if (param != mCustomParameters.end()) {
     mMaxLGPedestalValue = stoi(param->second);
-    ILOG(Info, Support) << "configure() : Custom parameter mMaxLGPedestalValue "
-                        << mMaxLGPedestalValue << ENDM;
+    ILOG(Debug, Support) << "configure() : Custom parameter mMaxLGPedestalValue "
+                         << mMaxLGPedestalValue << ENDM;
   }
   // RMS
   param = mCustomParameters.find("mMinHGPedestalRMS");
   if (param != mCustomParameters.end()) {
     mMinHGPedestalRMS = stof(param->second);
-    ILOG(Info, Support) << "configure() : Custom parameter mMinHGPedestalRMS "
-                        << mMinHGPedestalRMS << ENDM;
+    ILOG(Debug, Support) << "configure() : Custom parameter mMinHGPedestalRMS "
+                         << mMinHGPedestalRMS << ENDM;
   }
   param = mCustomParameters.find("mMaxHGPedestalRMS");
   if (param != mCustomParameters.end()) {
     mMaxHGPedestalRMS = stof(param->second);
-    ILOG(Info, Support) << "configure() : Custom parameter mMaxHGPedestalRMS "
-                        << mMaxHGPedestalRMS << ENDM;
+    ILOG(Debug, Support) << "configure() : Custom parameter mMaxHGPedestalRMS "
+                         << mMaxHGPedestalRMS << ENDM;
   }
   param = mCustomParameters.find("mMinLGPedestalRMS");
   if (param != mCustomParameters.end()) {
     mMinLGPedestalRMS = stof(param->second);
-    ILOG(Info, Support) << "configure() : Custom parameter mMinLGPedestalRMS "
-                        << mMinLGPedestalRMS << ENDM;
+    ILOG(Debug, Support) << "configure() : Custom parameter mMinLGPedestalRMS "
+                         << mMinLGPedestalRMS << ENDM;
   }
   param = mCustomParameters.find("mMaxLGPedestalRMS");
   if (param != mCustomParameters.end()) {
     mMaxLGPedestalRMS = stof(param->second);
-    ILOG(Info, Support) << "configure() : Custom parameter mMaxLGPedestalRMS "
-                        << mMaxLGPedestalRMS << ENDM;
+    ILOG(Debug, Support) << "configure() : Custom parameter mMaxLGPedestalRMS "
+                         << mMaxLGPedestalRMS << ENDM;
   }
 
   // mToleratedBadPedestalValueChannelsM
@@ -88,9 +88,9 @@ void RawCheck::configure()
     param = mCustomParameters.find(Form("mToleratedBadChannelsM%d", mod));
     if (param != mCustomParameters.end()) {
       mToleratedBadChannelsM[mod] = stoi(param->second);
-      ILOG(Info, Support) << "configure() : Custom parameter "
-                          << Form("mToleratedBadChannelsM%d", mod)
-                          << mToleratedBadChannelsM[mod] << ENDM;
+      ILOG(Debug, Support) << "configure() : Custom parameter "
+                           << Form("mToleratedBadChannelsM%d", mod)
+                           << mToleratedBadChannelsM[mod] << ENDM;
     }
   }
 }

@@ -39,11 +39,11 @@ QcMFTTrackTask::~QcMFTTrackTask()
 
 void QcMFTTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize QcMFTTrackTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize QcMFTTrackTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
   if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - myOwnKey: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - myOwnKey: " << param->second << ENDM;
   }
 
   mTrackNumberOfClusters = std::make_unique<TH1F>("mMFTTrackNumberOfClusters",
@@ -104,7 +104,7 @@ void QcMFTTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void QcMFTTrackTask::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "startOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
 
   // reset histograms
   reset();
@@ -112,7 +112,7 @@ void QcMFTTrackTask::startOfActivity(Activity& /*activity*/)
 
 void QcMFTTrackTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void QcMFTTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -153,19 +153,19 @@ void QcMFTTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void QcMFTTrackTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void QcMFTTrackTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void QcMFTTrackTask::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
 
   mTrackNumberOfClusters->Reset();
   mCATrackNumberOfClusters->Reset();

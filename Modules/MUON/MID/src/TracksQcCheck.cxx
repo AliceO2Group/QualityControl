@@ -35,7 +35,7 @@ namespace o2::quality_control_modules::mid
 
 void TracksQcCheck::configure()
 {
-  ILOG(Info, Support) << "configure TraksQcCheck" << ENDM;
+  ILOG(Debug, Support) << "configure TraksQcCheck" << ENDM;
   if (auto param = mCustomParameters.find("Ratio44Threshold"); param != mCustomParameters.end()) {
     ILOG(Info, Support) << "Custom parameter - Ratio44Threshold: " << param->second << ENDM;
     mRatio44Threshold = stof(param->second);

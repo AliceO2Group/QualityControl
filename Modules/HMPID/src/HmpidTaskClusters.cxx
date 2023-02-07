@@ -50,7 +50,7 @@ HmpidTaskClusters::~HmpidTaskClusters()
 void HmpidTaskClusters::initialize(o2::framework::InitContext& /*ctx*/)
 {
 
-  ILOG(Info, Support) << "initialize TaskClusters" << ENDM;
+  ILOG(Debug, Devel) << "initialize TaskClusters" << ENDM;
 
   // getJsonParameters();
 
@@ -71,13 +71,13 @@ void HmpidTaskClusters::initialize(o2::framework::InitContext& /*ctx*/)
 
 void HmpidTaskClusters::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "startOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
   reset();
 }
 
 void HmpidTaskClusters::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void HmpidTaskClusters::monitorData(o2::framework::ProcessingContext& ctx)
@@ -118,12 +118,12 @@ void HmpidTaskClusters::monitorData(o2::framework::ProcessingContext& ctx)
 void HmpidTaskClusters::endOfCycle()
 {
 
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void HmpidTaskClusters::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void HmpidTaskClusters::BookHistograms()
@@ -147,7 +147,7 @@ void HmpidTaskClusters::BookHistograms()
 
 void HmpidTaskClusters::reset()
 {
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
 
   hClusMultEv->Reset();
   ThClusMult->Reset();

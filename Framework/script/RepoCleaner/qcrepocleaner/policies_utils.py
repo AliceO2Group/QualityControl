@@ -7,8 +7,9 @@ from qcrepocleaner.Ccdb import Ccdb, ObjectVersion
 
 logger = logging  # default logger
 
+
 def in_grace_period(version: ObjectVersion, delay: int):
-    return not (version.validFromAsDt < datetime.now() - timedelta(minutes=delay))
+    return version.createdAtDt >= datetime.now() - timedelta(minutes=delay)
 
 
 def get_run(v: ObjectVersion) -> str:

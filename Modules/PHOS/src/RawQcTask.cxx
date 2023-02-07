@@ -69,35 +69,35 @@ void RawQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   context.setField(infoCONTEXT::FieldName::System, "QC");
   context.setField(infoCONTEXT::FieldName::Detector, "PHS");
   QcInfoLogger::GetInfoLogger().setContext(context);
-  ILOG(Info, Support) << "initialize RawQcTask" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "initialize RawQcTask" << ENDM;
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
   if (auto param = mCustomParameters.find("pedestal"); param != mCustomParameters.end()) {
-    ILOG(Info, Support) << "Working in pedestal mode " << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Info, Support) << "Working in pedestal mode " << ENDM;
     if (param->second.find("on") != std::string::npos) {
       mMode = 1;
     }
   }
   if (auto param = mCustomParameters.find("LED"); param != mCustomParameters.end()) {
-    ILOG(Info, Support) << "Working in LED mode " << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Info, Support) << "Working in LED mode " << ENDM;
     if (param->second.find("on") != std::string::npos) {
       mMode = 2;
     }
   }
   if (auto param = mCustomParameters.find("physics"); param != mCustomParameters.end()) {
-    ILOG(Info, Support) << "Working in physics mode " << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Info, Support) << "Working in physics mode " << ENDM;
     if (param->second.find("on") != std::string::npos) {
       mMode = 0;
     }
   }
   if (auto param = mCustomParameters.find("chi2"); param != mCustomParameters.end()) {
-    ILOG(Info, Support) << "Scan chi2 distributions " << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Info, Support) << "Scan chi2 distributions " << ENDM;
     if (param->second.find("on") != std::string::npos) {
       mCheckChi2 = true;
     }
   }
   if (auto param = mCustomParameters.find("trignoise"); param != mCustomParameters.end()) {
-    ILOG(Info, Support) << "Scan trigger ST and Dig matching " << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Info, Support) << "Scan trigger ST and Dig matching " << ENDM;
     if (param->second.find("on") != std::string::npos) {
       mTrNoise = true;
     }
@@ -176,13 +176,13 @@ void RawQcTask::InitHistograms()
 
 void RawQcTask::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
   reset();
 }
 
 void RawQcTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
   if (mCheckChi2) {
     if (mFinalized) { // mean already calculated
       for (Int_t mod = 0; mod < 4; mod++) {
@@ -237,12 +237,12 @@ void RawQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   //  Read current bad map if not read yet
   if (mInitBadMap) {
     mInitBadMap = false;
-    ILOG(Info, Support) << "Getting bad map" << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Info, Support) << "Getting bad map" << ENDM;
     loadCcdb();
     std::map<std::string, std::string> metadata;
     mBadMap = retrieveConditionAny<o2::phos::BadChannelsMap>("PHS/Calib/BadMap", metadata);
     if (!mBadMap) {
-      ILOG(Error, Support) << "Can not get bad map" << AliceO2::InfoLogger::InfoLogger::endm;
+      ILOG(Error, Support) << "Can not get bad map" << ENDM;
       mHist1D[kBadMapSummary]->Reset();
     } else {
       unsigned short nbm[4] = { 0 };
@@ -254,7 +254,7 @@ void RawQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       for (int mod = 0; mod < 4; mod++) {
         mHist1D[kBadMapSummary]->SetBinContent(mod + 1, nbm[mod]);
       }
-      ILOG(Info, Support) << "Bad channels:[" << nbm[0] << "," << nbm[1] << "," << nbm[2] << "," << nbm[3] << "]" << AliceO2::InfoLogger::InfoLogger::endm;
+      ILOG(Info, Support) << "Bad channels:[" << nbm[0] << "," << nbm[1] << "," << nbm[2] << "," << nbm[3] << "]" << ENDM;
     }
   }
 
@@ -375,7 +375,7 @@ void RawQcTask::endOfCycle()
   }
   //==========LED===========
   if (mMode == 2) { // LED
-    ILOG(Info, Support) << " Caclulating number of peaks" << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Info, Support) << " Caclulating number of peaks" << ENDM;
     for (unsigned int absId = 1793; absId <= o2::phos::Mapping::NCHANNELS; absId++) {
       int npeaks = mSpSearcher->Search(&(mSpectra[absId - 1793]), 2, "goff", 0.1);
       char relid[3];
@@ -384,13 +384,13 @@ void RawQcTask::endOfCycle()
       int ibin = mHist2DMean[kLEDNpeaksM1 + mod]->FindBin(relid[1] - 0.5, relid[2] - 0.5);
       mHist2DMean[kLEDNpeaksM1 + mod]->SetBinContent(ibin, npeaks);
     }
-    ILOG(Info, Support) << " Caclulating number of peaks done" << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Info, Support) << " Caclulating number of peaks done" << ENDM;
   }
 }
 
 void RawQcTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfActivity" << ENDM;
   endOfCycle();
 }
 
@@ -399,7 +399,7 @@ void RawQcTask::reset()
   // clean all the monitor objects here
   mFinalized = false;
 
-  ILOG(Info, Support) << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   for (int i = kNhist1D; i--;) {
     if (mHist1D[i]) {
       mHist1D[i]->Reset();
@@ -441,31 +441,31 @@ void RawQcTask::FillTRUHistograms(const gsl::span<const o2::phos::Cell>& cells, 
       if (c.getTRU()) {
         if (c.getType() == o2::phos::TRU4x4) {
           o2::phos::Geometry::truAbsToRelNumbering(c.getTRUId(), 1, relId);
-          //   ILOG(Info, Support) << "TRU4x4 [" <<(int)relId[0]<< ","<<(int)relId[1]<< ","<< (int)relId[2] <<"]" << AliceO2::InfoLogger::InfoLogger::endm;
+          //   ILOG(Info, Support) << "TRU4x4 [" <<(int)relId[0]<< ","<<(int)relId[1]<< ","<< (int)relId[2] <<"]" << ENDM;
           mHist2D[kTRUSTOccupM1 + relId[0] - 1]->Fill(relId[1] - 0.5, relId[2] - 0.5);
           triggerSTTiles.push_back(relId[0] + (relId[1] << 3) + (relId[2] << 10));
         } else { // 2x2
           o2::phos::Geometry::truAbsToRelNumbering(c.getTRUId(), 0, relId);
-          //   ILOG(Info, Support) << "TRU2x2 [" <<(int)relId[0]<< ","<<(int)relId[1]<< ","<< (int)relId[2] <<"]" << AliceO2::InfoLogger::InfoLogger::endm;
+          //   ILOG(Info, Support) << "TRU2x2 [" <<(int)relId[0]<< ","<<(int)relId[1]<< ","<< (int)relId[2] <<"]" << ENDM;
           mHist2D[kTRUDGOccupM1 + relId[0] - 1]->Fill(relId[1] - 0.5, relId[2] - 0.5);
           triggerDGTiles.push_back(relId[0] + (relId[1] << 3) + (relId[2] << 10));
         }
       }
     }
 
-    //   ILOG(Info, Support) << " triggerSTTiles=" <<triggerSTTiles.size()<< ", triggerDGTiles="<<triggerDGTiles.size()<< AliceO2::InfoLogger::InfoLogger::endm;
+    //   ILOG(Info, Support) << " triggerSTTiles=" <<triggerSTTiles.size()<< ", triggerDGTiles="<<triggerDGTiles.size()<< ENDM;
     //
     for (int aST : triggerSTTiles) {
       bool matched = false;
       for (int bDG : triggerDGTiles) {
-        //   ILOG(Info, Support) << " modules=" <<(aST&0x7) <<" : " << (bDG&0x7) << AliceO2::InfoLogger::InfoLogger::endm;
+        //   ILOG(Info, Support) << " modules=" <<(aST&0x7) <<" : " << (bDG&0x7) << ENDM;
         if ((aST & 0x7) == (bDG & 0x7)) { // same module
           int dx = ((bDG >> 3) & 0x7F) - ((aST >> 3) & 0x7F);
           int dz = ((bDG >> 10) & 0x7F) - ((aST >> 10) & 0x7F);
-          //   ILOG(Info, Support) << " dx=" <<dx<< ", dz="<<dz<< AliceO2::InfoLogger::InfoLogger::endm;
+          //   ILOG(Info, Support) << " dx=" <<dx<< ", dz="<<dz<< ENDM;
 
           if (dx >= 0 && dx <= 2 && dz >= 0 && dz <= 2) {
-            //   ILOG(Info, Support) << "matched [" <<(aST&0x7)<< ","<<((aST>>3)&0x7F)<< ","<< ((aST>>10)&0x7F) <<"]" << AliceO2::InfoLogger::InfoLogger::endm;
+            //   ILOG(Info, Support) << "matched [" <<(aST&0x7)<< ","<<((aST>>3)&0x7F)<< ","<< ((aST>>10)&0x7F) <<"]" << ENDM;
             mHist2D[kTRUSTMatchM1 + (aST & 0x7) - 1]->Fill(((aST >> 3) & 0x7F) - 0.5, ((aST >> 10) & 0x7F) - 0.5);
             matched = true;
             break;
@@ -473,12 +473,12 @@ void RawQcTask::FillTRUHistograms(const gsl::span<const o2::phos::Cell>& cells, 
         }
       }
       if (!matched) {
-        //   ILOG(Info, Support) << " Not matched [" <<(aST&0x7) << ","<<((aST>>3)&0x7F)<< ","<< ((aST>>10)&0x7F) <<"]" << AliceO2::InfoLogger::InfoLogger::endm;
+        //   ILOG(Info, Support) << " Not matched [" <<(aST&0x7) << ","<<((aST>>3)&0x7F)<< ","<< ((aST>>10)&0x7F) <<"]" << ENDM;
         mHist2D[kTRUSTFakeM1 + (aST & 0x7) - 1]->Fill(((aST >> 3) & 0x7F) - 0.5, ((aST >> 10) & 0x7F) - 0.5);
-        //   ILOG(Info, Support) << "Filled" << AliceO2::InfoLogger::InfoLogger::endm;
+        //   ILOG(Info, Support) << "Filled" << ENDM;
       }
     }
-    //   ILOG(Info, Support) << "Filled done" << AliceO2::InfoLogger::InfoLogger::endm;
+    //   ILOG(Info, Support) << "Filled done" << ENDM;
     // now vise versa
     for (int bDG : triggerDGTiles) {
       bool matched = false;
@@ -493,11 +493,11 @@ void RawQcTask::FillTRUHistograms(const gsl::span<const o2::phos::Cell>& cells, 
         }
       }
       if (!matched) {
-        //   ILOG(Info, Support) << "Dig Not matched [" <<(bDG&0x7)<< ","<<((bDG>>3)&0x7F)<< ","<< ((bDG>>10)&0x7F) <<"]" << AliceO2::InfoLogger::InfoLogger::endm;
+        //   ILOG(Info, Support) << "Dig Not matched [" <<(bDG&0x7)<< ","<<((bDG>>3)&0x7F)<< ","<< ((bDG>>10)&0x7F) <<"]" << ENDM;
         mHist2D[kTRUDGFakeM1 + (bDG & 0x7) - 1]->Fill(((bDG >> 3) & 0x7F) - 0.5, ((bDG >> 10) & 0x7F) - 0.5);
       }
     }
-    //   ILOG(Info, Support) << "Filled2 done" << AliceO2::InfoLogger::InfoLogger::endm;
+    //   ILOG(Info, Support) << "Filled2 done" << ENDM;
   }
 }
 void RawQcTask::FillPhysicsHistograms(const gsl::span<const o2::phos::Cell>& cells, const gsl::span<const o2::phos::TriggerRecord>& cellsTR)

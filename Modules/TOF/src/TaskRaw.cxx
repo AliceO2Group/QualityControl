@@ -473,14 +473,14 @@ void TaskRaw::initialize(o2::framework::InitContext& /*ctx*/)
 
 void TaskRaw::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "startOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
   reset();
   mDecoderRaw.resetHistograms();
 }
 
 void TaskRaw::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void TaskRaw::monitorData(o2::framework::ProcessingContext& ctx)
@@ -515,7 +515,7 @@ void TaskRaw::monitorData(o2::framework::ProcessingContext& ctx)
 
 void TaskRaw::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
   for (unsigned int crate = 0; crate < RawDataDecoder::ncrates; crate++) { // Filling histograms only at the end of the cycle
     mDecoderRaw.mCounterRDH[crate].FillHistogram(mHistoRDH.get(), crate + 1);
     mDecoderRaw.mCounterDRM[crate].FillHistogram(mHistoDRM.get(), crate + 1);
@@ -568,14 +568,14 @@ void TaskRaw::endOfCycle()
 
 void TaskRaw::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void TaskRaw::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   mHistoRDH->Reset();
   mHistoDRM->Reset();
   mHistoLTM->Reset();

@@ -85,7 +85,7 @@ void RecPointsQcTask::rebinFromConfig()
 
 void RecPointsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info) << "@@@@initialize RecoQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Info, Support) << "@@@@initialize RecoQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
   mStateLastIR2Ch = {};
 
   mHistTime2Ch = std::make_unique<TH2F>("TimePerChannel", "Time vs Channel;Channel;Time [ns]", NCHANNELS, 0, NCHANNELS, 420, -10.50, 10.50);
@@ -133,13 +133,13 @@ void RecPointsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     }
   }
 
-  ILOG(Info) << "@@@ histos created" << ENDM;
+  ILOG(Info, Support) << "@@@ histos created" << ENDM;
   rebinFromConfig(); // after all histos are created
 }
 
 void RecPointsQcTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info) << "@@@@ startOfActivity" << activity.mId << ENDM;
+  ILOG(Info, Support) << "@@@@ startOfActivity" << activity.mId << ENDM;
   mHistTime2Ch->Reset();
   mHistAmp2Ch->Reset();
   mHistCollTimeA->Reset();
@@ -205,14 +205,14 @@ void RecPointsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void RecPointsQcTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
   // one has to set num. of entries manually because
   // default TH1Reductor gets only mean,stddev and entries (no integral)
 }
 
 void RecPointsQcTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void RecPointsQcTask::reset()

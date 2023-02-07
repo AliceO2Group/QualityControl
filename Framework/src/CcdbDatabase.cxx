@@ -75,7 +75,7 @@ void CcdbDatabase::loadDeprecatedStreamerInfos()
   vector<string> filenames = { "streamerinfos.root", "streamerinfos_v017.root" };
   for (auto filename : filenames) {
     string localPath = path + filename;
-    ILOG(Info, Devel) << "Loading streamerinfos from : " << localPath << ENDM;
+    ILOG(Debug, Devel) << "Loading streamerinfos from : " << localPath << ENDM;
     TFile file(localPath.data(), "READ");
     if (file.IsZombie()) {
       string s = string("Cannot find ") + localPath;

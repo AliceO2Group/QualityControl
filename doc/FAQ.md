@@ -60,6 +60,16 @@ Simply start your binary with `--rate 10000` and it should solve the problem. Th
 o2-qc-run-producer | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/basic.json --rate 10000
 ```
 
+### Why are some of my log messages not appearing ? 
+
+If they are `Debug` messages, it is expected. 
+To enable debug messages, edit your config file : 
+```
+      "infologger": {                     "": "Configuration of the Infologger (optional).",
+        "filterDiscardDebug": "false",    "": "Set to 1 to discard debug and trace messages (default: false)",
+```
+There are more options in the "Advanced" section of this guide. 
+
 ## QCDB
 
 ### How to see which objects are stored in the CCDB ?

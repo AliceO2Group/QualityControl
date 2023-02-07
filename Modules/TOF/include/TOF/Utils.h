@@ -27,7 +27,7 @@ template <typename ParameterType>
 bool parseBooleanParameter(const ParameterType& parametersIn, const std::string& name, bool& parameterOut)
 {
   if (auto param = parametersIn.find(name); param != parametersIn.end()) {
-    ILOG(Info, Devel) << "Custom parameter - " << name << " " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - " << name << " " << param->second << ENDM;
     if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
       parameterOut = true;
     } else if (param->second == "false" || param->second == "False" || param->second == "FALSE") {
@@ -47,7 +47,7 @@ template <typename ParameterType>
 bool parseDoubleParameter(const ParameterType& parametersIn, const std::string& name, double& parameterOut)
 {
   if (auto param = parametersIn.find(name); param != parametersIn.end()) {
-    ILOG(Info, Devel) << "Custom parameter - " << name << " " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - " << name << " " << param->second << ENDM;
     parameterOut = ::atof(param->second.c_str());
     return true;
   }
@@ -63,7 +63,7 @@ template <typename ParameterType>
 bool parseFloatParameter(const ParameterType& parametersIn, const std::string& name, float& parameterOut)
 {
   if (auto param = parametersIn.find(name); param != parametersIn.end()) {
-    ILOG(Info, Devel) << "Custom parameter - " << name << " " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - " << name << " " << param->second << ENDM;
     parameterOut = ::atof(param->second.c_str());
     return true;
   }
@@ -79,7 +79,7 @@ template <typename ParameterType>
 bool parseIntParameter(const ParameterType& parametersIn, const std::string& name, int& parameterOut)
 {
   if (auto param = parametersIn.find(name); param != parametersIn.end()) {
-    ILOG(Info, Devel) << "Custom parameter - " << name << " " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - " << name << " " << param->second << ENDM;
     parameterOut = ::atoi(param->second.c_str());
     return true;
   }
@@ -95,7 +95,7 @@ template <typename ParameterType>
 bool parseStrParameter(const ParameterType& parametersIn, const std::string& name, std::string& parameterOut)
 {
   if (auto param = parametersIn.find(name); param != parametersIn.end()) {
-    ILOG(Info, Devel) << "Custom parameter - " << name << " " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - " << name << " " << param->second << ENDM;
     parameterOut = param->second;
     return true;
   }

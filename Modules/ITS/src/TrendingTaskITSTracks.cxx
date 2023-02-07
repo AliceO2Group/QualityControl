@@ -221,7 +221,7 @@ void TrendingTaskITSTracks::storePlots(repository::DatabaseInterface& qcdb)
 
     SetGraphNameAndAxes(g, plot.name, plot.title, isrun ? "run" : "time", plot.title, ymin,
                         ymax, runlist);
-    ILOG(Info, Support) << " Saving " << plot.name << " to CCDB " << ENDM;
+    ILOG(Debug, Support) << " Saving " << plot.name << " to CCDB " << ENDM;
     auto mo = std::make_shared<MonitorObject>(g, mConfig.taskName, "o2::quality_control_modules::its::TrendingTaskITSTracks",
                                               mConfig.detectorName, mMetaData.runNumber);
     mo->setIsOwner(false);

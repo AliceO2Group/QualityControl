@@ -14,7 +14,6 @@
 #include <DataFormatsMCH/TrackMCH.h>
 #include <ReconstructionDataFormats/TrackMCHMID.h>
 #include <ReconstructionDataFormats/GlobalFwdTrack.h>
-#include <DetectorsBase/GeometryManager.h>
 #include <Framework/DataRefUtils.h>
 #include <Framework/InputRecord.h>
 #include <TH2F.h>

@@ -31,7 +31,7 @@ namespace o2::quality_control_modules::mid
 
 void DigitsQcCheck::configure()
 {
-  ILOG(Info, Support) << "configure DigitsQcCheck" << ENDM;
+  ILOG(Debug, Support) << "configure DigitsQcCheck" << ENDM;
   if (auto param = mCustomParameters.find("MeanMultThreshold"); param != mCustomParameters.end()) {
     ILOG(Info, Support) << "Custom parameter - MeanMultThreshold: " << param->second << ENDM;
     mMeanMultThreshold = stof(param->second);

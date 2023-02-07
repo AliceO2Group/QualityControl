@@ -33,10 +33,10 @@ void DigitsTask::retrieveCCDBSettings()
 {
   if (auto param = mCustomParameters.find("ccdbtimestamp"); param != mCustomParameters.end()) {
     mTimestamp = std::stol(mCustomParameters["ccdbtimestamp"]);
-    ILOG(Info, Support) << "configure() : using ccdbtimestamp = " << mTimestamp << ENDM;
+    ILOG(Debug, Support) << "configure() : using ccdbtimestamp = " << mTimestamp << ENDM;
   } else {
     mTimestamp = o2::ccdb::getCurrentTimestamp();
-    ILOG(Info, Support) << "configure() : using default timestam of now = " << mTimestamp << ENDM;
+    ILOG(Debug, Support) << "configure() : using default timestam of now = " << mTimestamp << ENDM;
   }
   auto& mgr = o2::ccdb::BasicCCDBManager::instance();
   mgr.setTimestamp(mTimestamp);
@@ -411,57 +411,57 @@ void DigitsTask::buildHistograms()
 
 void DigitsTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info) << "initialize TRDDigitQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize TRDDigitQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
   if (auto param = mCustomParameters.find("driftregionstart"); param != mCustomParameters.end()) {
     mDriftRegion.first = stof(param->second);
-    ILOG(Info, Support) << "configure() : using peakregionstart = " << mDriftRegion.first << ENDM;
+    ILOG(Debug, Support) << "configure() : using peakregionstart = " << mDriftRegion.first << ENDM;
   } else {
     mDriftRegion.first = 7.0;
-    ILOG(Info, Support) << "configure() : using default dritfregionstart = " << mDriftRegion.first << ENDM;
+    ILOG(Debug, Support) << "configure() : using default dritfregionstart = " << mDriftRegion.first << ENDM;
   }
   if (auto param = mCustomParameters.find("driftregionend"); param != mCustomParameters.end()) {
     mDriftRegion.second = stof(param->second);
-    ILOG(Info, Support) << "configure() : using peakregionstart = " << mDriftRegion.second << ENDM;
+    ILOG(Debug, Support) << "configure() : using peakregionstart = " << mDriftRegion.second << ENDM;
   } else {
     mDriftRegion.second = 20.0;
-    ILOG(Info, Support) << "configure() : using default dritfregionstart = " << mDriftRegion.second << ENDM;
+    ILOG(Debug, Support) << "configure() : using default dritfregionstart = " << mDriftRegion.second << ENDM;
   }
   if (auto param = mCustomParameters.find("pulseheightpeaklower"); param != mCustomParameters.end()) {
     mPulseHeightPeakRegion.first = stof(param->second);
-    ILOG(Info, Support) << "configure() : using pulsehheightlower	= " << mPulseHeightPeakRegion.first << ENDM;
+    ILOG(Debug, Support) << "configure() : using pulsehheightlower	= " << mPulseHeightPeakRegion.first << ENDM;
   } else {
     mPulseHeightPeakRegion.first = 0.0;
-    ILOG(Info, Support) << "configure() : using default pulseheightlower = " << mPulseHeightPeakRegion.first << ENDM;
+    ILOG(Debug, Support) << "configure() : using default pulseheightlower = " << mPulseHeightPeakRegion.first << ENDM;
   }
   if (auto param = mCustomParameters.find("pulseheightpeakupper"); param != mCustomParameters.end()) {
     mPulseHeightPeakRegion.second = stof(param->second);
-    ILOG(Info, Support) << "configure() : using pulsehheightupper	= " << mPulseHeightPeakRegion.second << ENDM;
+    ILOG(Debug, Support) << "configure() : using pulsehheightupper	= " << mPulseHeightPeakRegion.second << ENDM;
   } else {
     mPulseHeightPeakRegion.second = 5.0;
-    ILOG(Info, Support) << "configure() : using default pulseheightupper = " << mPulseHeightPeakRegion.second << ENDM;
+    ILOG(Debug, Support) << "configure() : using default pulseheightupper = " << mPulseHeightPeakRegion.second << ENDM;
   }
   if (auto param = mCustomParameters.find("skippedshareddigits"); param != mCustomParameters.end()) {
     mSkipSharedDigits = stod(param->second);
-    ILOG(Info, Support) << "configure() : using skip shared digits 	= " << mSkipSharedDigits << ENDM;
+    ILOG(Debug, Support) << "configure() : using skip shared digits 	= " << mSkipSharedDigits << ENDM;
   } else {
     mSkipSharedDigits = false;
-    ILOG(Info, Support) << "configure() : using default skip shared digits = " << mSkipSharedDigits << ENDM;
+    ILOG(Debug, Support) << "configure() : using default skip shared digits = " << mSkipSharedDigits << ENDM;
   }
   if (auto param = mCustomParameters.find("pulseheightthreshold"); param != mCustomParameters.end()) {
     mPulseHeightThreshold = stod(param->second);
-    ILOG(Info, Support) << "configure() : using skip shared digits 	= " << mPulseHeightThreshold << ENDM;
+    ILOG(Debug, Support) << "configure() : using skip shared digits 	= " << mPulseHeightThreshold << ENDM;
   } else {
     mPulseHeightThreshold = 400;
-    ILOG(Info, Support) << "configure() : using default skip shared digits = " << mPulseHeightThreshold << ENDM;
+    ILOG(Debug, Support) << "configure() : using default skip shared digits = " << mPulseHeightThreshold << ENDM;
   }
   if (auto param = mCustomParameters.find("chamberstoignore"); param != mCustomParameters.end()) {
     mChambersToIgnore = param->second;
-    ILOG(Info, Support) << "configure() : chamberstoignore = " << mChambersToIgnore << ENDM;
+    ILOG(Debug, Support) << "configure() : chamberstoignore = " << mChambersToIgnore << ENDM;
   } else {
     mChambersToIgnore = "16_3_0";
-    ILOG(Info, Support) << "configure() : chambers to ignore for pulseheight calculations = " << mChambersToIgnore << ENDM;
+    ILOG(Debug, Support) << "configure() : chambers to ignore for pulseheight calculations = " << mChambersToIgnore << ENDM;
   }
   buildChamberIgnoreBP();
 
@@ -471,12 +471,12 @@ void DigitsTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void DigitsTask::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info) << "startOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
 } // set stats/stacs
 
 void DigitsTask::startOfCycle()
 {
-  ILOG(Info) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 bool digitIndexCompare(unsigned int A, unsigned int B, const std::vector<o2::trd::Digit>& originalDigits)
@@ -568,7 +568,7 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
           if (detector < 0 || detector >= 540) {
             // for some reason online the sm value causes an error below and digittrask crashes.
             // the only possibility is detector number is invalid
-            ILOG(Info) << "Bad detector number from digit : " << detector << " for digit index of " << digitsIndex[currentdigit] << ENDM;
+            ILOG(Info, Support) << "Bad detector number from digit : " << detector << " for digit index of " << digitsIndex[currentdigit] << ENDM;
             continue;
           }
           int sm = detector / 30;
@@ -750,7 +750,7 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void DigitsTask::endOfCycle()
 {
-  ILOG(Info) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
   for (Int_t det = 0; det < 540; det++) {
     mClsAmpCh->Fill(mClusterAmplitudeChamber->Integral(1, -1, det, det + 1)); // prof->GetBinContent(det));
   }
@@ -764,13 +764,13 @@ void DigitsTask::endOfCycle()
 
 void DigitsTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void DigitsTask::reset()
 {
   // clean all the monitor objects here
-  ILOG(Info) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histogram" << ENDM;
   mDigitsPerEvent->Reset();
   mEventswDigitsPerTimeFrame->Reset();
   mDigitHCID->Reset();

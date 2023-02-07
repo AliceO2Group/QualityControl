@@ -123,7 +123,7 @@ int DigitQcTaskLaser::getNumericalParameter(std::string paramName, int defaultVa
 
 void DigitQcTaskLaser::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info) << "initialize DigitQcTaskLaser" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize DigitQcTaskLaser" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
   mStateLastIR2Ch = {};
   mMapChTrgNames.insert({ o2::fv0::ChannelData::kNumberADC, "NumberADC" });
   mMapChTrgNames.insert({ o2::fv0::ChannelData::kIsDoubleEvent, "IsDoubleEvent" });
@@ -306,7 +306,7 @@ void DigitQcTaskLaser::initialize(o2::framework::InitContext& /*ctx*/)
 
 void DigitQcTaskLaser::startOfActivity(Activity& activity)
 {
-  ILOG(Info) << "startOfActivity" << activity.mId << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << activity.mId << ENDM;
   mHistTime2Ch->Reset();
   mHistAmp2Ch->Reset();
   mHistBC->Reset();
@@ -336,7 +336,7 @@ void DigitQcTaskLaser::startOfActivity(Activity& activity)
 
 void DigitQcTaskLaser::startOfCycle()
 {
-  ILOG(Info) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void DigitQcTaskLaser::monitorData(o2::framework::ProcessingContext& ctx)
@@ -472,7 +472,7 @@ void DigitQcTaskLaser::monitorData(o2::framework::ProcessingContext& ctx)
 
 void DigitQcTaskLaser::endOfCycle()
 {
-  ILOG(Info) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
   // one has to set num. of entries manually because
   // default TH1Reductor gets only mean,stddev and entries (no integral)
   mHistCFDEff->Divide(mHistNumADC.get(), mHistNumCFD.get());
@@ -480,7 +480,7 @@ void DigitQcTaskLaser::endOfCycle()
 
 void DigitQcTaskLaser::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void DigitQcTaskLaser::reset()

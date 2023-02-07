@@ -41,8 +41,8 @@ CalibQcTask::~CalibQcTask()
 }
 void CalibQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "==============initialize CalibQcTask==============" << AliceO2::InfoLogger::InfoLogger::endm;
-  ILOG(Info, Support) << "initialize CalibQcTask" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "==============initialize CalibQcTask==============" << ENDM;
+  ILOG(Debug, Devel) << "initialize CalibQcTask" << ENDM;
   using infoCONTEXT = AliceO2::InfoLogger::InfoLoggerContext;
   infoCONTEXT context;
   context.setField(infoCONTEXT::FieldName::Facility, "QC");
@@ -52,32 +52,32 @@ void CalibQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
   if (auto param = mCustomParameters.find("pedestal"); param != mCustomParameters.end()) {
-    ILOG(Info, Support) << "Working in pedestal mode " << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Info, Support) << "Working in pedestal mode " << ENDM;
     if (param->second.find("on") != std::string::npos) {
       mMode = 1;
     }
   }
   if (auto param = mCustomParameters.find("LED"); param != mCustomParameters.end()) {
-    ILOG(Info, Support) << "Working in LED mode " << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Info, Support) << "Working in LED mode " << ENDM;
     if (param->second.find("on") != std::string::npos) {
       mMode = 2;
     }
   }
   if (auto param = mCustomParameters.find("BadMap"); param != mCustomParameters.end()) {
-    ILOG(Info, Support) << "Working in BadMap mode " << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Info, Support) << "Working in BadMap mode " << ENDM;
     if (param->second.find("on") != std::string::npos) {
       mMode = 0;
     }
   }
 
   if (auto param = mCustomParameters.find("L1phase"); param != mCustomParameters.end()) {
-    ILOG(Info, Support) << "Working in L1phase mode" << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Info, Support) << "Working in L1phase mode" << ENDM;
     if (param->second.find("on") != std::string::npos) {
       mMode = 3;
     }
   }
 
-  ILOG(Info, Support) << "==============Prepare Histos===============" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "==============Prepare Histos===============" << ENDM;
   // Prepare histograms
   if (mMode == 1) { // Pedestals
     for (Int_t mod = 0; mod < 4; mod++) {
@@ -157,18 +157,18 @@ void CalibQcTask::initialize(o2::framework::InitContext& /*ctx*/)
       mHist2D[kL1phase]->Reset();
     }
   } // BadMap
-  ILOG(Info, Support) << " CalibQcTask histos ready " << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << " CalibQcTask histos ready " << ENDM;
 }
 
 void CalibQcTask::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
   reset();
 }
 
 void CalibQcTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -208,19 +208,19 @@ void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void CalibQcTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfCycle" << ENDM;
 }
 
 void CalibQcTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfActivity" << ENDM;
 }
 
 void CalibQcTask::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info, Support) << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   for (int i = NHIST2D; i--;) {
     if (mHist2D[i]) {
       mHist2D[i]->Reset();

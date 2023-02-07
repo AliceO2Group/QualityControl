@@ -41,7 +41,7 @@ PID::~PID()
 
 void PID::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize TPC PID QC task" << ENDM;
+  ILOG(Debug, Devel) << "initialize TPC PID QC task" << ENDM;
   // elementary cuts for PID from json file
   const int cutMinNCluster = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "cutMinNCluster");
   const float cutAbsTgl = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "cutAbsTgl");
@@ -66,13 +66,13 @@ void PID::initialize(o2::framework::InitContext& /*ctx*/)
 
 void PID::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "startOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
   mQCPID.resetHistograms();
 }
 
 void PID::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void PID::monitorData(o2::framework::ProcessingContext& ctx)
@@ -88,19 +88,19 @@ void PID::monitorData(o2::framework::ProcessingContext& ctx)
 
 void PID::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void PID::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void PID::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   mQCPID.resetHistograms();
 }
 

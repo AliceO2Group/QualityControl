@@ -40,7 +40,7 @@ Quality ITSClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
     result = Quality::Good;
 
     if (iter->second->getName().find("AverageClusterSize") != std::string::npos) {
-      auto* h = dynamic_cast<TH2D*>(iter->second->getObject());
+      auto* h = dynamic_cast<TH2F*>(iter->second->getObject());
       for (int ilayer = 0; ilayer < NLayer; ilayer++) {
         result.addMetadata(Form("Layer%d", ilayer), "good");
         if (iter->second->getName().find(Form("Layer%d", ilayer)) != std::string::npos && h->GetMaximum() > averageClusterSizeLimit[ilayer]) {
@@ -51,7 +51,7 @@ Quality ITSClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
     }
 
     if (iter->second->getName().find("General_Occupancy") != std::string::npos) {
-      auto* hp = dynamic_cast<TH2D*>(iter->second->getObject());
+      auto* hp = dynamic_cast<TH2F*>(iter->second->getObject());
       std::vector<int> skipxbins = convertToIntArray(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "skipxbinsoccupancy", ""));
       std::vector<int> skipybins = convertToIntArray(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "skipybinsoccupancy", ""));
       std::vector<std::pair<int, int>> xypairs;
@@ -102,7 +102,7 @@ Quality ITSClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
   return result;
 } // end check
 
-std::string ITSClusterCheck::getAcceptedType() { return "TH2D"; }
+std::string ITSClusterCheck::getAcceptedType() { return "TH2F"; }
 
 void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
@@ -112,7 +112,7 @@ void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
   Double_t positionX, positionY;
 
   if (mo->getName().find("AverageClusterSize") != std::string::npos) {
-    auto* h = dynamic_cast<TH2D*>(mo->getObject());
+    auto* h = dynamic_cast<TH2F*>(mo->getObject());
     std::string histoName = mo->getName();
     int iLayer = histoName[histoName.find("Layer") + 5] - 48; // Searching for position of "Layer" in the name of the file, then +5 is the NUMBER of the layer, -48 is conversion to int
 
@@ -137,7 +137,7 @@ void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
   }
 
   if (mo->getName().find("General_Occupancy") != std::string::npos) {
-    auto* h = dynamic_cast<TH2D*>(mo->getObject());
+    auto* h = dynamic_cast<TH2F*>(mo->getObject());
     if (checkResult == Quality::Good) {
       status = "Quality::GOOD";
       textColor = kGreen;

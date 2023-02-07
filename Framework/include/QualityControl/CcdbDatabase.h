@@ -19,8 +19,10 @@
 
 #include "QualityControl/DatabaseInterface.h"
 #include <Common/Timer.h>
+#include <boost/property_tree/ptree.hpp>
 #include <memory>
 #include <string>
+#include <set>
 
 namespace o2::ccdb
 {

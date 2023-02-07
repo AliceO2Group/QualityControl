@@ -51,7 +51,7 @@ Int_t NumCycles = 0;
 
 void HmpidTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize HmpidTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize HmpidTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
   if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {
@@ -127,7 +127,7 @@ void HmpidTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void HmpidTask::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "startOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
   hPedestalMean->Reset();
   hPedestalSigma->Reset();
   hBusyTime->Reset();
@@ -145,7 +145,7 @@ void HmpidTask::startOfActivity(Activity& /*activity*/)
 
 void HmpidTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -223,19 +223,19 @@ void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void HmpidTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void HmpidTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void HmpidTask::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   hPedestalMean->Reset();
   hPedestalSigma->Reset();
   hBusyTime->Reset();

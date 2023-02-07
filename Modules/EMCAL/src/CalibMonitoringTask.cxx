@@ -46,7 +46,7 @@ void CalibMonitoringTask::configure(std::string name, const boost::property_tree
 void CalibMonitoringTask::initialize(Trigger, framework::ServiceRegistryRef)
 {
   QcInfoLogger::setDetector("EMC");
-  ILOG(Info, Support) << "initialize CalibTask" << ENDM;
+  ILOG(Debug, Devel) << "initialize CalibTask" << ENDM;
   // initialize histograms to be monitored as data member
   for (const auto& obj : mCalibObjects) {
     if (obj == "TimeCalibParams") {

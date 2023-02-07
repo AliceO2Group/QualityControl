@@ -50,7 +50,7 @@ TracksQcTask::~TracksQcTask()
 
 void TracksQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  // ILOG(Info, Support) << "initialize TracksQcTask" << ENDM;
+  // ILOG(Debug, Devel) << "initialize TracksQcTask" << ENDM;
   // printf(" =================== > test  initialize Tracks \n");
 
   multTracksTot = 0;
@@ -265,14 +265,14 @@ void TracksQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 void TracksQcTask::startOfActivity(Activity& activity)
 {
   // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
-  ILOG(Info, Support) << "startOfActivity " << activity.mId << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
   // printf(" =================== > test startOfActivity Tracks \n");
 }
 
 void TracksQcTask::startOfCycle()
 {
   // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
-  // ILOG(Info, Support) << "startOfCycle" << ENDM;
+  // ILOG(Debug, Devel) << "startOfCycle" << ENDM;
   // printf(" =================== > test startOfCycle Tracks \n");
 }
 
@@ -567,14 +567,14 @@ void TracksQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 void TracksQcTask::endOfCycle()
 {
   // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
-  // ILOG(Info, Support) << "endOfCycle" << ENDM;
+  // ILOG(Debug, Devel) << "endOfCycle" << ENDM;
   // printf(" =================== > test endOfCycle Tracks \n");
 }
 
 void TracksQcTask::endOfActivity(Activity& /*activity*/)
 {
   // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
   // printf(" =================== > test endOfActivity Tracks \n");
 }
 
@@ -584,7 +584,7 @@ void TracksQcTask::reset()
 
   // clean all the monitor objects here
 
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   // printf(" =================== > test reset Tracks \n");
 
   mTrackMapXY->Reset();

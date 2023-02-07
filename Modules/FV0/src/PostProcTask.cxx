@@ -47,44 +47,44 @@ void PostProcTask::configure(std::string, const boost::property_tree::ptree& con
   auto node = config.get_child_optional(Form("%s.custom.pathGrpLhcIf", configPath));
   if (node) {
     mPathGrpLhcIf = node.get_ptr()->get_child("").get_value<std::string>();
-    ILOG(Info, Support) << "configure() : using pathBunchFilling = \"" << mPathGrpLhcIf << "\"" << ENDM;
+    ILOG(Debug, Support) << "configure() : using pathBunchFilling = \"" << mPathGrpLhcIf << "\"" << ENDM;
   } else {
     mPathGrpLhcIf = "GLO/Config/GRPLHCIF";
-    ILOG(Info, Support) << "configure() : using default pathBunchFilling = \"" << mPathGrpLhcIf << "\"" << ENDM;
+    ILOG(Debug, Support) << "configure() : using default pathBunchFilling = \"" << mPathGrpLhcIf << "\"" << ENDM;
   }
 
   node = config.get_child_optional(Form("%s.custom.numOrbitsInTF", configPath));
   if (node) {
     mNumOrbitsInTF = std::stoi(node.get_ptr()->get_child("").get_value<std::string>());
-    ILOG(Info, Support) << "configure() : using numOrbitsInTF = " << mNumOrbitsInTF << ENDM;
+    ILOG(Debug, Support) << "configure() : using numOrbitsInTF = " << mNumOrbitsInTF << ENDM;
   } else {
     mNumOrbitsInTF = 256;
-    ILOG(Info, Support) << "configure() : using default numOrbitsInTF = " << mNumOrbitsInTF << ENDM;
+    ILOG(Debug, Support) << "configure() : using default numOrbitsInTF = " << mNumOrbitsInTF << ENDM;
   }
 
   node = config.get_child_optional(Form("%s.custom.cycleDurationMoName", configPath));
   if (node) {
     mCycleDurationMoName = node.get_ptr()->get_child("").get_value<std::string>();
-    ILOG(Info, Support) << "configure() : using cycleDurationMoName = \"" << mCycleDurationMoName << "\"" << ENDM;
+    ILOG(Debug, Support) << "configure() : using cycleDurationMoName = \"" << mCycleDurationMoName << "\"" << ENDM;
   } else {
     mCycleDurationMoName = "CycleDurationNTF";
-    ILOG(Info, Support) << "configure() : using default cycleDurationMoName = \"" << mCycleDurationMoName << "\"" << ENDM;
+    ILOG(Debug, Support) << "configure() : using default cycleDurationMoName = \"" << mCycleDurationMoName << "\"" << ENDM;
   }
 
   node = config.get_child_optional(Form("%s.custom.pathDigitQcTask", configPath));
   if (node) {
     mPathDigitQcTask = node.get_ptr()->get_child("").get_value<std::string>();
-    ILOG(Info, Support) << "configure() : using pathDigitQcTask = \"" << mPathDigitQcTask << "\"" << ENDM;
+    ILOG(Debug, Support) << "configure() : using pathDigitQcTask = \"" << mPathDigitQcTask << "\"" << ENDM;
   } else {
     mPathDigitQcTask = "FV0/MO/DigitQcTask/";
-    ILOG(Info, Support) << "configure() : using default pathDigitQcTask = \"" << mPathDigitQcTask << "\"" << ENDM;
+    ILOG(Debug, Support) << "configure() : using default pathDigitQcTask = \"" << mPathDigitQcTask << "\"" << ENDM;
   }
 
   node = config.get_child_optional(Form("%s.custom.timestampSourceLhcIf", configPath));
   if (node) {
     mTimestampSourceLhcIf = node.get_ptr()->get_child("").get_value<std::string>();
     if (mTimestampSourceLhcIf == "last" || mTimestampSourceLhcIf == "trigger" || mTimestampSourceLhcIf == "metadata") {
-      ILOG(Info, Support) << "configure() : using timestampSourceLhcIf = \"" << mTimestampSourceLhcIf << "\"" << ENDM;
+      ILOG(Debug, Support) << "configure() : using timestampSourceLhcIf = \"" << mTimestampSourceLhcIf << "\"" << ENDM;
     } else {
       auto prev = mTimestampSourceLhcIf;
       mTimestampSourceLhcIf = "trigger";
@@ -94,7 +94,7 @@ void PostProcTask::configure(std::string, const boost::property_tree::ptree& con
     }
   } else {
     mTimestampSourceLhcIf = "trigger";
-    ILOG(Info, Support) << "configure() : using default timestampSourceLhcIf = \"" << mTimestampSourceLhcIf << "\"" << ENDM;
+    ILOG(Debug, Support) << "configure() : using default timestampSourceLhcIf = \"" << mTimestampSourceLhcIf << "\"" << ENDM;
   }
 }
 
