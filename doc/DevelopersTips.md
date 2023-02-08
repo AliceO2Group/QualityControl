@@ -77,6 +77,13 @@ cd /data/pgsql
 cp -r QC QC-dd-mm-yy
 ```
 
+### Automatic QCDB backups
+
+The script `qcdb-backup.sh` on the qcdb machine is called by a cron every night to create a tarball. 
+It is then taken by the backup system to the central backup machine before being moved to EOS. 
+
+The script and the crontab installation are stored in ansible (in gitlab). 
+
 ### Trick used to load old data
 Until version 3 of the class MonitorObject, objects were stored in the repository directly. They are now stored within TFiles. The issue with the former way is that the StreamerInfo are lost. To be able to load old data, the StreamerInfos have been saved in a root file "streamerinfos.root". The CcdbDatabase access class loads this file and the StreamerInfos upon creation which allows for a smooth reading of the old objects. The day we are certain nobody will add objects in the old format and that the old objects have been removed from the database, we can delete this file and remove the loading from CcdbDatabase. Moreover, the following lines can be removed : 
 ```
