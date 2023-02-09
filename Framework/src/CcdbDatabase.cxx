@@ -181,7 +181,7 @@ void CcdbDatabase::storeAny(const void* obj, std::type_info const& typeInfo, std
 
   // metadata
   map<string, string> fullMetadata(metadata);
-  addQcMetadata(fullMetadata, detectorName,o2::utils::MemFileHelper::getClassName(typeInfo));
+  addQcMetadata(fullMetadata, detectorName, o2::utils::MemFileHelper::getClassName(typeInfo));
   fullMetadata[metadata_keys::qcTaskName] = taskName;
 
   // other attributes
