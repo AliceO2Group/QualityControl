@@ -35,9 +35,9 @@ namespace o2::quality_control_modules::mid
 
 void TracksQcCheck::configure()
 {
-  ILOG(Debug, Support) << "configure TraksQcCheck" << ENDM;
+  ILOG(Info, Devel) << "configure TraksQcCheck" << ENDM;
   if (auto param = mCustomParameters.find("Ratio44Threshold"); param != mCustomParameters.end()) {
-    ILOG(Info, Support) << "Custom parameter - Ratio44Threshold: " << param->second << ENDM;
+    ILOG(Info, Devel) << "Custom parameter - Ratio44Threshold: " << param->second << ENDM;
     mRatio44Threshold = stof(param->second);
   }
 }
@@ -129,7 +129,7 @@ void TracksQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       // std::cout << "beautify GOOD::: "  << std::endl;
 
     } else if (checkResult == Quality::Bad) {
-      ILOG(Info, Support) << "Quality::Bad, setting to red" << ENDM;
+      ILOG(Info, Devel) << "Quality::Bad, setting to red" << ENDM;
       // msg = drawLatex(.2, 0.82, kRed, ""Global Ratio too low, call MID on-call");
       msg = drawLatex(.2, 0.82, kRed, Form("Global Ratio44/all < %4.2f  too low !! ", mRatio44Threshold));
       h->GetListOfFunctions()->Add(msg);
@@ -140,7 +140,7 @@ void TracksQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       // std::cout << "beautify BAD::: "  << std::endl;
 
     } else if (checkResult == Quality::Medium) {
-      ILOG(Info, Support) << "Quality::medium, setting to orange" << ENDM;
+      ILOG(Info, Devel) << "Quality::medium, setting to orange" << ENDM;
       msg = drawLatex(.2, 0.82, kOrange, Form("Ratio44/all < %4.2f too low !! ", mRatio44Threshold));
       h->GetListOfFunctions()->Add(msg);
       msg->Draw();
