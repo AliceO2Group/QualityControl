@@ -154,7 +154,7 @@ void CcdbDatabase::addQcMetadata(map<string, string>& fullMetadata, string detec
 {
   fullMetadata[metadata_keys::qcVersion] = Version::GetQcVersion().getString();
   fullMetadata[metadata_keys::qcDetectorCode] = detectorName;
-  fullMetadata["adjustableEOV"] = "1"; // QC-936 : this is to allow the modification of the end of validity. 
+  fullMetadata["adjustableEOV"] = "1"; // QC-936 : this is to allow the modification of the end of validity.
   // ObjectType says TObject and not MonitorObject due to a quirk in the API. Once fixed, remove this.
   fullMetadata[metadata_keys::objectType] = className;
 }
