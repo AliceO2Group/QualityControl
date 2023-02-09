@@ -425,7 +425,7 @@ void ITSClusterTask::createAllHistos()
     hClusterTopologyLayerSummary[iLayer]->SetStats(0);
 
     if (mDoPublishDetailedSummary == 1) {
-      hAverageClusterOccupancySummaryZPhi[iLayer] = new TH2F(Form("Layer%d/ClusterOccupancyZPhi", iLayer), Form("Cluster occupancy on Layer %d;z (cm);#phi (degree);", iLayer), 200, -100., 100., 360, -180., 180.);
+      hAverageClusterOccupancySummaryZPhi[iLayer] = new TH2F(Form("Layer%d/ClusterOccupancyZPhi", iLayer), Form("Cluster occupancy on Layer %d;z (cm);#phi (degree);", iLayer), 2 * (int)mLength[iLayer], -1 * mLength[iLayer], mLength[iLayer], 360, -180., 180.);
       hAverageClusterOccupancySummaryZPhi[iLayer]->SetStats(0);
       hAverageClusterOccupancySummaryZPhi[iLayer]->SetBit(TH1::kIsAverage);
       hAverageClusterOccupancySummaryZPhi[iLayer]->GetYaxis()->SetLabelSize(0.02);
@@ -433,7 +433,7 @@ void ITSClusterTask::createAllHistos()
 
       addObject(hAverageClusterOccupancySummaryZPhi[iLayer]);
 
-      hAverageClusterSizeSummaryZPhi[iLayer] = new TH2F(Form("Layer%d/ClusterSizeZPhi", iLayer), Form("Cluster size on Layer %d;z (cm);#phi (degree);", iLayer), 200, -100., 100., 360, -180., 180.);
+      hAverageClusterSizeSummaryZPhi[iLayer] = new TH2F(Form("Layer%d/ClusterSizeZPhi", iLayer), Form("Cluster size on Layer %d;z (cm);#phi (degree);", iLayer), 2 * (int)mLength[iLayer], -1 * mLength[iLayer], mLength[iLayer], 360, -180., 180.);
       hAverageClusterSizeSummaryZPhi[iLayer]->SetStats(0);
       hAverageClusterSizeSummaryZPhi[iLayer]->SetBit(TH1::kIsAverage);
       hAverageClusterSizeSummaryZPhi[iLayer]->GetYaxis()->SetLabelSize(0.02);
