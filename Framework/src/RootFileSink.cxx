@@ -22,6 +22,9 @@
 #include <Framework/CompletionPolicy.h>
 #include <Framework/InputRecordWalker.h>
 #include <TFile.h>
+#if defined(__linux__) && __has_include(<malloc.h>)
+#include <malloc.h>
+#endif
 
 using namespace o2::framework;
 
@@ -103,7 +106,6 @@ void RootFileSink::run(framework::ProcessingContext& pctx)
         ILOG(Error, Support) << "MonitorObjectCollection does not have a name, skipping." << ENDM;
         continue;
       }
-
       auto detector = moc->getDetector();
 
       auto detDir = std::unique_ptr<TDirectory, void (*)(TDirectory*)>(sinkFile->GetDirectory(detector.c_str()), deleteTDirectory);
@@ -136,6 +138,16 @@ void RootFileSink::run(framework::ProcessingContext& pctx)
     closeSinkFile(sinkFile);
     throw;
   }
+
+#if defined(__linux__) && __has_include(<malloc.h>)
+  // Once we write object to TFile, the OS does not actually release the array memory from the heap,
+  // despite deleting the pointers. This function encourages the system to release it.
+  // Unfortunately there is no platform-independent method for this, while we see a similar
+  // (or even worse) behaviour on MacOS.
+  // See the ROOT forum issues for additional details:
+  // https://root-forum.cern.ch/t/should-the-result-of-tdirectory-getdirectory-be-deleted/53427
+  malloc_trim(0);
+#endif
 }
 
 } // namespace o2::quality_control::core
