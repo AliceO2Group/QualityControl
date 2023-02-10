@@ -67,7 +67,7 @@ class ClustQcTask final : public TaskInterface
   std::shared_ptr<TH2F> mClustResYDetId{ nullptr };
 
   ///////////////////////////
-  int nROF = 0;
+  int mROF = 0;
   o2::mid::Mapping mMapping; ///< Mapping
 };
 

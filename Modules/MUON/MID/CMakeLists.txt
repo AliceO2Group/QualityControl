@@ -13,7 +13,9 @@ target_sources(
           src/TracksQcCheck.cxx
           src/TracksQcTask.cxx
           src/CalibQcCheck.cxx
-          src/CalibQcTask.cxx)
+          src/CalibQcTask.cxx
+          src/CalibMQcCheck.cxx
+          src/CalibMQcTask.cxx)
 
 target_include_directories(
   O2QcMID
@@ -41,6 +43,8 @@ add_root_dictionary(
           include/MID/TracksQcTask.h
 	  include/MID/CalibQcTask.h
 	  include/MID/CalibQcCheck.h
+	  include/MID/CalibMQcTask.h
+	  include/MID/CalibMQcCheck.h
   LINKDEF include/MID/LinkDef.h)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/MID DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")

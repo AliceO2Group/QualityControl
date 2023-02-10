@@ -50,7 +50,7 @@ TracksQcTask::~TracksQcTask()
 
 void TracksQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  // ILOG(Debug, Devel) << "initialize TracksQcTask" << ENDM;
+  // ILOG(Info, Devel) << "initialize TracksQcTask" << ENDM;
   // printf(" =================== > test  initialize Tracks \n");
 
   multTracksTot = 0;
@@ -265,20 +265,20 @@ void TracksQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 void TracksQcTask::startOfActivity(Activity& activity)
 {
   // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
-  ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
+  ILOG(Info, Devel) << "startOfActivity " << activity.mId << ENDM;
   // printf(" =================== > test startOfActivity Tracks \n");
 }
 
 void TracksQcTask::startOfCycle()
 {
   // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
-  // ILOG(Debug, Devel) << "startOfCycle" << ENDM;
+  // ILOG(Info, Devel) << "startOfCycle" << ENDM;
   // printf(" =================== > test startOfCycle Tracks \n");
 }
 
 void TracksQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  // ILOG(Info, Support) << "monitorData" << ENDM;
+  // ILOG(Info, Devel) << "monitorData" << ENDM;
   // printf(" =================== > test monitorData Tracks\n");
 
   auto tracks = ctx.inputs().get<gsl::span<o2::mid::Track>>("tracks");
@@ -299,7 +299,7 @@ void TracksQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   for (const auto& rofRecord : rofs) { // loop ROFRecords == Events //
     // printf("========================================================== \n");
     // printf("Tracks :: %05d ROF with first entry %05zu and nentries %02zu , BC %05d, ORB %05d , EventType %02d\n", nROF, rofRecord.firstEntry, rofRecord.nEntries, rofRecord.interactionRecord.bc, rofRecord.interactionRecord.orbit,rofRecord.eventType);
-    nROF++;
+    mROF++;
     multTracks = 0;
     mTrackBCCounts->Fill(rofRecord.interactionRecord.bc, rofRecord.nEntries);
 
@@ -567,14 +567,14 @@ void TracksQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 void TracksQcTask::endOfCycle()
 {
   // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
-  // ILOG(Debug, Devel) << "endOfCycle" << ENDM;
+  // ILOG(Info, Devel) << "endOfCycle" << ENDM;
   // printf(" =================== > test endOfCycle Tracks \n");
 }
 
 void TracksQcTask::endOfActivity(Activity& /*activity*/)
 {
   // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
-  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
+  ILOG(Info, Devel) << "endOfActivity" << ENDM;
   // printf(" =================== > test endOfActivity Tracks \n");
 }
 
@@ -584,7 +584,7 @@ void TracksQcTask::reset()
 
   // clean all the monitor objects here
 
-  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
+  ILOG(Info, Devel) << "Resetting the histogram" << ENDM;
   // printf(" =================== > test reset Tracks \n");
 
   mTrackMapXY->Reset();

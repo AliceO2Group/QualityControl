@@ -10,25 +10,25 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   CalibQcCheck.h
+/// \file   CalibMQcCheck.h
 /// \author Valerie Ramillien
 ///
 
-#ifndef QC_MODULE_MID_MIDCALIBQCCHECK_H
-#define QC_MODULE_MID_MIDCALIBQCCHECK_H
+#ifndef QC_MODULE_MID_MIDCALIBMQCCHECK_H
+#define QC_MODULE_MID_MIDCALIBMQCCHECK_H
 
 #include "QualityControl/CheckInterface.h"
 
 namespace o2::quality_control_modules::mid
 {
 
-class CalibQcCheck : public o2::quality_control::checker::CheckInterface
+class CalibMQcCheck : public o2::quality_control::checker::CheckInterface
 {
  public:
   /// Default constructor
-  CalibQcCheck() = default;
+  CalibMQcCheck() = default;
   /// Destructor
-  ~CalibQcCheck() override = default;
+  ~CalibMQcCheck() override = default;
 
   // Override interface
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
@@ -42,9 +42,9 @@ class CalibQcCheck : public o2::quality_control::checker::CheckInterface
   float mDeadRof = 0;
   float scaleTime = 0.0114048; // 128 orb/TF * 3564 BC/orb * 25ns
 
-  ClassDefOverride(CalibQcCheck, 2);
+  ClassDefOverride(CalibMQcCheck, 2);
 };
 
 } // namespace o2::quality_control_modules::mid
 
-#endif // QC_MODULE_MID_MIDCALIBQCCHECK_H
+#endif // QC_MODULE_MID_MIDCALIBMQCCHECK_H

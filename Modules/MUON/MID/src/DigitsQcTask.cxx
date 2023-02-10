@@ -54,7 +54,7 @@ DigitsQcTask::~DigitsQcTask()
 
 void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Debug, Devel) << "initialize DigitsQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Info, Devel) << "initialize DigitsQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
   // printf(" =================== > test initialize Digits \n");
 
   double paramExemple = 400; /// param from json
@@ -214,13 +214,13 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void DigitsQcTask::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
+  ILOG(Info, Devel) << "startOfActivity" << ENDM;
   // printf(" =================== > test startOfActivity Digits \n");
 }
 
 void DigitsQcTask::startOfCycle()
 {
-  // ILOG(Debug, Devel) << "startOfCycle" << ENDM;
+  // ILOG(Info, Devel) << "startOfCycle" << ENDM;
   // printf(" =================== > test startOfCycle Digits \n");
 }
 
@@ -340,7 +340,7 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     // printf("========================================================== \n");
     // printf("Digits :: %05d ROF with first entry %05zu and nentries %02zu , BC %05d, ORB %05d , EventType %02d\n", nROF, rofRecord.firstEntry, rofRecord.nEntries, rofRecord.interactionRecord.bc, rofRecord.interactionRecord.orbit,rofRecord.eventType);
     //  eventType::  Standard = 0, Calib = 1, FET = 2
-    nROF++;
+    mROF++;
     multHitMT11B = 0;
     multHitMT12B = 0;
     multHitMT21B = 0;
@@ -548,13 +548,13 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void DigitsQcTask::endOfCycle()
 {
-  // ILOG(Debug, Devel) << "endOfCycle" << ENDM;
+  // ILOG(Info, Devel) << "endOfCycle" << ENDM;
   // printf(" =================== > test endOfCycle Digits \n");
 }
 
 void DigitsQcTask::endOfActivity(Activity& /*activity*/)
 {
-  // ILOG(Debug, Devel) << "endOfActivity" << ENDM;
+  // ILOG(Info, Devel) << "endOfActivity" << ENDM;
   // printf(" =================== > test endOfActivity Digits \n");
 }
 
@@ -562,7 +562,7 @@ void DigitsQcTask::reset()
 {
   // clean all the monitor objects here
 
-  // ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
+  // ILOG(Info, Devel) << "Resetting the histogram" << ENDM;
   // printf(" =================== > test reset Digits \n");
 
   mHitsMapB->Reset();

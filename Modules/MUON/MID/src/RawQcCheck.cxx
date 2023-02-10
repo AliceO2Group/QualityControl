@@ -82,10 +82,10 @@ void RawQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult
     if (checkResult == Quality::Good) {
       h->SetFillColor(kGreen);
     } else if (checkResult == Quality::Bad) {
-      ILOG(Info, Support) << "Quality::Bad, setting to red";
+      ILOG(Info) << "Quality::Bad, setting to red";
       h->SetFillColor(kRed);
     } else if (checkResult == Quality::Medium) {
-      ILOG(Info, Support) << "Quality::medium, setting to orange";
+      ILOG(Info) << "Quality::medium, setting to orange";
       h->SetFillColor(kOrange);
     }
     h->SetLineColor(kBlack);
