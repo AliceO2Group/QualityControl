@@ -54,6 +54,7 @@ void closeSinkFile(TFile* file)
   if (file != nullptr) {
     if (file->IsOpen()) {
       ILOG(Info) << "Closing file '" << file->GetName() << "'." << ENDM;
+      file->Write();
       file->Close();
     }
     delete file;
@@ -63,6 +64,7 @@ void closeSinkFile(TFile* file)
 void deleteTDirectory(TDirectory* d)
 {
   if (d != nullptr) {
+    d->Write();
     d->Close();
     delete d;
   }
@@ -115,16 +117,11 @@ void RootFileSink::run(framework::ProcessingContext& pctx)
       }
 
       ILOG(Info, Support) << "Checking for existing objects in the file." << ENDM;
-      auto storedTObj = std::unique_ptr<TObject>(detDir->Get<TObject>(mocName));
-      if (storedTObj != nullptr) {
-        auto storedMOC = dynamic_cast<MonitorObjectCollection*>(storedTObj.get());
-        if (storedMOC == nullptr) {
-          ILOG(Error, Support) << "Could not cast the stored object to MonitorObjectCollection, skipping." << ENDM;
-          continue;
-        }
+      auto storedMOC = std::unique_ptr<MonitorObjectCollection>(detDir->Get<MonitorObjectCollection>(mocName));
+      if (storedMOC != nullptr) {
         storedMOC->postDeserialization();
         ILOG(Info, Support) << "Merging object '" << moc->GetName() << "' with the existing one in the file." << ENDM;
-        moc->merge(storedMOC);
+        moc->merge(storedMOC.get());
       }
 
       auto nbytes = detDir->WriteObject(moc.get(), moc->GetName(), "Overwrite");
