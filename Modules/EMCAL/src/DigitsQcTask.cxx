@@ -17,6 +17,7 @@
 #include <boost/algorithm/string.hpp>
 #include <algorithm>
 #include <iostream>
+#include <set>
 
 #include <TCanvas.h>
 #include <TH2.h>
