@@ -28,6 +28,9 @@
 #include "QualityControl/TaskInterface.h"
 #include <memory>
 #include <regex>
+#include <set>
+#include <array>
+#include <map>
 #include <type_traits>
 #include <boost/algorithm/string.hpp>
 #include <TH1.h>
