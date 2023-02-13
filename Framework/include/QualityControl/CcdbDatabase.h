@@ -157,7 +157,7 @@ class CcdbDatabase : public DatabaseInterface
    * @param taskName
    * @param className
    */
-  void addQcMetadata(std::map<std::string, std::string>& fullMetadata, std::string detectorName, std::string className);
+  void addFrameworkMetadata(std::map<std::string, std::string>& fullMetadata, std::string detectorName, std::string className);
 
   std::unique_ptr<o2::ccdb::CcdbApi> ccdbApi;
   std::string mUrl;
