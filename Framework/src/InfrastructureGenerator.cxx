@@ -612,16 +612,16 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
   auto checkRunnerConfig = CheckRunnerFactory::extractConfig(infrastructureSpec.common);
   for (auto& [inputNames, checkConfigs] : checksMap) {
     // Logging
-    ILOG(Info, Devel) << ">> Inputs (" << inputNames.size() << "): ";
+    ILOG(Debug, Devel) << ">> Inputs (" << inputNames.size() << "): ";
     for (const auto& name : inputNames)
-      ILOG(Info, Devel) << name << " ";
-    ILOG(Info, Devel) << " ; Checks (" << checkConfigs.size() << "): ";
+      ILOG(Debug, Devel) << name << " ";
+    ILOG(Debug, Devel) << " ; Checks (" << checkConfigs.size() << "): ";
     for (const auto& checkConfig : checkConfigs)
-      ILOG(Info, Devel) << checkConfig.name << " ";
-    ILOG(Info, Devel) << " ; Stores (" << storeVectorMap[inputNames].size() << "): ";
+      ILOG(Debug, Devel) << checkConfig.name << " ";
+    ILOG(Debug, Devel) << " ; Stores (" << storeVectorMap[inputNames].size() << "): ";
     for (const auto& input : storeVectorMap[inputNames])
-      ILOG(Info, Devel) << input << " ";
-    ILOG(Info, Devel) << ENDM;
+      ILOG(Debug, Devel) << input << " ";
+    ILOG(Debug, Devel) << ENDM;
 
     DataProcessorSpec spec = checkConfigs.empty()
                                ? CheckRunnerFactory::createSinkDevice(checkRunnerConfig, tasksOutputMap.find(inputNames[0])->second)
