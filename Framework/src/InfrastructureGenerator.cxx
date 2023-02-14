@@ -630,10 +630,10 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
     checkRunnerOutputs.insert(checkRunnerOutputs.end(), spec.outputs.begin(), spec.outputs.end());
   }
 
-  ILOG(Info) << ">> Outputs (" << checkRunnerOutputs.size() << "): ";
+  ILOG(Debug, Devel) << ">> Outputs (" << checkRunnerOutputs.size() << "): ";
   for (const auto& output : checkRunnerOutputs)
-    ILOG(Info) << DataSpecUtils::describe(output) << " ";
-  ILOG(Info) << ENDM;
+    ILOG(Debug, Devel) << DataSpecUtils::describe(output) << " ";
+  ILOG(Debug, Devel) << ENDM;
 }
 
 void InfrastructureGenerator::generateAggregator(WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec)
