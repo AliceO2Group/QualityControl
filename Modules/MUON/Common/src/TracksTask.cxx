@@ -13,14 +13,8 @@
 
 #include "MUONCommon/Helpers.h"
 #include "QualityControl/ObjectsManager.h"
-#include <DataFormatsMCH/Cluster.h>
-#include <DataFormatsMCH/Digit.h>
-#include <DataFormatsMCH/ROFRecord.h>
-#include <DataFormatsMCH/TrackMCH.h>
 #include <Framework/DataRefUtils.h>
 #include <Framework/InputRecord.h>
-#include <ReconstructionDataFormats/TrackMCHMID.h>
-#include <ReconstructionDataFormats/GlobalFwdTrack.h>
 #include <gsl/span>
 
 namespace o2::quality_control_modules::muon
@@ -123,10 +117,6 @@ bool TracksTask::assertInputs(o2::framework::ProcessingContext& ctx)
     ILOG(Info, Support) << "no mch track clusters available on input" << ENDM;
     return false;
   }
-  if (!ctx.inputs().isValid("mchtrackdigits")) {
-    ILOG(Info, Support) << "no mch track digits available on input" << ENDM;
-    return false;
-  }
   if (mSrc[GID::Source::MCHMID] == 1) {
     if (!ctx.inputs().isValid("matchMCHMID")) {
       ILOG(Info, Support) << "no muon (mch+mid) track available on input" << ENDM;
@@ -165,11 +155,6 @@ void TracksTask::monitorData(o2::framework::ProcessingContext& ctx)
   mRecoCont.collectData(ctx, *mDataRequest.get());
 
   ILOG(Info, Devel) << "Debug: Collected data" << ENDM;
-
-  auto tracks = mRecoCont.getMCHTracks();
-  auto rofs = mRecoCont.getMCHTracksROFRecords();
-  auto clusters = mRecoCont.getMCHTrackClusters();
-  auto digits = ctx.inputs().get<gsl::span<o2::mch::Digit>>("mchtrackdigits");
 
   if (mSrc[GID::MCH] == 1) {
     ILOG(Info, Devel) << "Debug: MCH requested" << ENDM;

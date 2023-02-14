@@ -14,7 +14,6 @@
 
 #include <DataFormatsITSMFT/ROFRecord.h>
 #include <DataFormatsMCH/Cluster.h>
-#include <DataFormatsMCH/Digit.h>
 #include <DataFormatsMCH/ROFRecord.h>
 #include <DataFormatsMFT/TrackMFT.h>
 #include <DataFormatsMCH/TrackMCH.h>

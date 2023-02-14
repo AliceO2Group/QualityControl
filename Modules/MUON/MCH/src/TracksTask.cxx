@@ -13,7 +13,6 @@
 
 #include "CommonConstants/LHCConstants.h"
 #include <DataFormatsMCH/Cluster.h>
-#include <DataFormatsMCH/Digit.h>
 #include <DataFormatsMCH/ROFRecord.h>
 #include <DataFormatsMCH/TrackMCH.h>
 #include <DetectorsBase/GeometryManager.h>
