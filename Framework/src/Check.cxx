@@ -70,14 +70,16 @@ void Check::init()
   }
 
   // Print setting
-  ILOG(Info, Support) << mCheckConfig.name << ": Module " << mCheckConfig.moduleName << AliceO2::InfoLogger::InfoLogger::endm;
-  ILOG(Info, Support) << mCheckConfig.name << ": Class " << mCheckConfig.className << AliceO2::InfoLogger::InfoLogger::endm;
-  ILOG(Info, Support) << mCheckConfig.name << ": Detector " << mCheckConfig.detectorName << AliceO2::InfoLogger::InfoLogger::endm;
-  ILOG(Info, Support) << mCheckConfig.name << ": Policy " << UpdatePolicyTypeUtils::ToString(mCheckConfig.policyType) << AliceO2::InfoLogger::InfoLogger::endm;
-  ILOG(Info, Support) << mCheckConfig.name << ": MonitorObjects : " << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Devel) << "Check config: ";
+  ILOG(Info, Devel) << "Module " << mCheckConfig.moduleName;
+  ILOG(Info, Devel) << "; Class " << mCheckConfig.className;
+  ILOG(Info, Devel) << "; Detector " << mCheckConfig.detectorName;
+  ILOG(Info, Devel) << "; Policy " << UpdatePolicyTypeUtils::ToString(mCheckConfig.policyType);
+  ILOG(Info, Devel) << "; MonitorObjects : ";
   for (const auto& moname : mCheckConfig.objectNames) {
-    ILOG(Info, Support) << mCheckConfig.name << "   - " << moname << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Info, Devel) << " / " << moname;
   }
+  ILOG(Info, Devel) << ENDM;
 }
 
 QualityObjectsType Check::check(std::map<std::string, std::shared_ptr<MonitorObject>>& moMap)
@@ -136,7 +138,7 @@ QualityObjectsType Check::check(std::map<std::string, std::shared_ptr<MonitorObj
       continue;
     }
 
-    ILOG(Debug, Devel) << "Check '" << mCheckConfig.name << "', quality '" << quality << "'" << ENDM;
+    ILOG(Debug, Devel) << "Check '" << "', quality '" << quality << "'" << ENDM;
     // todo: take metadata from somewhere
     qualityObjects.emplace_back(std::make_shared<QualityObject>(
       quality,
