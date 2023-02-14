@@ -80,7 +80,8 @@ void PostProcessingRunner::init(const PostProcessingRunnerConfig& runnerConfig, 
   // configuration of the database
   mDatabase = DatabaseFactory::create(mRunnerConfig.database.at("implementation"));
   mDatabase->connect(mRunnerConfig.database);
-  ILOG(Info, Support) << "Database that is going to be used : " << "\n";
+  ILOG(Info, Support) << "Database that is going to be used : "
+                      << "\n";
   ILOG(Info, Support) << ">> Implementation : " << mRunnerConfig.database.at("implementation") << "\n";
   ILOG(Info, Support) << ">> Host : " << mRunnerConfig.database.at("host") << ENDM;
 

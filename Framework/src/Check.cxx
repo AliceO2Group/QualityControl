@@ -138,7 +138,8 @@ QualityObjectsType Check::check(std::map<std::string, std::shared_ptr<MonitorObj
       continue;
     }
 
-    ILOG(Debug, Devel) << "Check '" << "', quality '" << quality << "'" << ENDM;
+    ILOG(Debug, Devel) << "Check '"
+                       << "', quality '" << quality << "'" << ENDM;
     // todo: take metadata from somewhere
     qualityObjects.emplace_back(std::make_shared<QualityObject>(
       quality,

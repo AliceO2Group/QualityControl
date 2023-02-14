@@ -80,7 +80,7 @@ inline int computeRunNumber(framework::ServiceRegistryRef services, int fallback
     ILOG(Debug, Devel) << "   Run number found in options: " << run << ENDM;
   } catch (std::invalid_argument& ia) {
     ILOG(Debug, Devel) << "   Run number not found in options or is not a number, using the one from the config file or 0 as a last resort."
-                        << ENDM;
+                       << ENDM;
   }
   run = run > 0 /* found it in service */ ? run : fallbackRunNumber;
   ILOG(Info, Devel) << "Run number returned by computeRunNumber (default) : " << run << ENDM;
@@ -97,7 +97,7 @@ inline int computeRunType(framework::ServiceRegistryRef services, int fallbackRu
     ILOG(Debug, Devel) << "   Run type found in options: " << runType << ENDM;
   } catch (std::invalid_argument& ia) {
     ILOG(Debug, Devel) << "   Run type not found in options or is not a number, using the one from the config file or 0 as a last resort."
-                        << ENDM;
+                       << ENDM;
   }
   runType = runType > 0 /* found it in service */ ? runType : fallbackRunType;
   ILOG(Info, Devel) << "Run type returned by computeRunType (default) : " << runType << ENDM;

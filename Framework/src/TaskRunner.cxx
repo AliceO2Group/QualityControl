@@ -410,7 +410,8 @@ std::tuple<bool /*data ready*/, bool /*timer ready*/> TaskRunner::validateInputs
 
 void TaskRunner::printTaskConfig()
 {
-  ILOG(Info, Devel) << "Configuration loaded : " << "\n";
+  ILOG(Info, Devel) << "Configuration loaded : "
+                    << "\n";
   ILOG(Info, Devel) << ">> Task name : " << mTaskConfig.taskName << "\n";
   ILOG(Info, Devel) << ">> Module name : " << mTaskConfig.moduleName << "\n";
   ILOG(Info, Devel) << ">> Detector name : " << mTaskConfig.detectorName << "\n";

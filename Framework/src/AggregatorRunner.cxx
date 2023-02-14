@@ -252,8 +252,10 @@ void AggregatorRunner::initDatabase()
   mDatabase = DatabaseFactory::create(mRunnerConfig.database.at("implementation"));
   mDatabase->connect(mRunnerConfig.database);
   ILOG(Info, Support) << "Hello my name is Barth. \n so nice to meet you ! \n I wanted to share information with you \n but first let me tell you a joke: \n "
-                         "knock knock \n Who's there? \n Boo. \n Boo who ? \n Don't cry, it's just a joke! " << ENDM;
-  ILOG(Info, Support) << "Database that is going to be used : " << "\n";
+                         "knock knock \n Who's there? \n Boo. \n Boo who ? \n Don't cry, it's just a joke! "
+                      << ENDM;
+  ILOG(Info, Support) << "Database that is going to be used : "
+                      << "\n";
   ILOG(Info, Support) << ">> Implementation : " << mRunnerConfig.database.at("implementation") << "\n";
   ILOG(Info, Support) << ">> Host : " << mRunnerConfig.database.at("host") << ENDM;
 }
