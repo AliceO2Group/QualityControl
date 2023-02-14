@@ -251,8 +251,8 @@ void AggregatorRunner::initDatabase()
 {
   mDatabase = DatabaseFactory::create(mRunnerConfig.database.at("implementation"));
   mDatabase->connect(mRunnerConfig.database);
-  ILOG(Info, Devel) << "Database that is going to be used : ";
-  ILOG(Info, Support) << ">> Implementation : " << mRunnerConfig.database.at("implementation") << ENDM;
+  ILOG(Info, Support) << "Database that is going to be used : " << "\n";
+  ILOG(Info, Support) << ">> Implementation : " << mRunnerConfig.database.at("implementation") << "\n";
   ILOG(Info, Support) << ">> Host : " << mRunnerConfig.database.at("host") << ENDM;
 }
 
@@ -270,7 +270,7 @@ void AggregatorRunner::initServiceDiscovery()
   auto consulUrl = mRunnerConfig.consulUrl;
   if (consulUrl.empty()) {
     mServiceDiscovery = nullptr;
-    ILOG(Warning, Ops) << "Service Discovery disabled" << ENDM;
+    ILOG(Warning, Support) << "Service Discovery disabled" << ENDM;
     return;
   }
   mServiceDiscovery = std::make_shared<ServiceDiscovery>(consulUrl, mDeviceName, mDeviceName);

@@ -135,7 +135,7 @@ void TaskRunner::initInfologger(InitContext& iCtx)
 void TaskRunner::init(InitContext& iCtx)
 {
   initInfologger(iCtx);
-  ILOG(Info, Support) << "Initializing TaskRunner" << ENDM;
+  ILOG(Info, Devel) << "Initializing TaskRunner" << ENDM;
 
   refreshConfig(iCtx);
   printTaskConfig();
@@ -410,13 +410,13 @@ std::tuple<bool /*data ready*/, bool /*timer ready*/> TaskRunner::validateInputs
 
 void TaskRunner::printTaskConfig()
 {
-  ILOG(Info, Support) << "Configuration loaded : " << ENDM;
-  ILOG(Info, Support) << ">> Task name : " << mTaskConfig.taskName << ENDM;
-  ILOG(Info, Support) << ">> Module name : " << mTaskConfig.moduleName << ENDM;
-  ILOG(Info, Support) << ">> Detector name : " << mTaskConfig.detectorName << ENDM;
-  ILOG(Info, Support) << ">> Cycle duration seconds : " << mTaskConfig.cycleDurationSeconds << ENDM;
-  ILOG(Info, Support) << ">> Max number cycles : " << mTaskConfig.maxNumberCycles << ENDM;
-  ILOG(Info, Support) << ">> Save to file : " << mTaskConfig.saveToFile << ENDM;
+  ILOG(Info, Devel) << "Configuration loaded : " << "\n";
+  ILOG(Info, Devel) << ">> Task name : " << mTaskConfig.taskName << "\n";
+  ILOG(Info, Devel) << ">> Module name : " << mTaskConfig.moduleName << "\n";
+  ILOG(Info, Devel) << ">> Detector name : " << mTaskConfig.detectorName << "\n";
+  ILOG(Info, Devel) << ">> Cycle duration seconds : " << mTaskConfig.cycleDurationSeconds << "\n";
+  ILOG(Info, Devel) << ">> Max number cycles : " << mTaskConfig.maxNumberCycles << "\n";
+  ILOG(Info, Devel) << ">> Save to file : " << mTaskConfig.saveToFile << ENDM;
 }
 
 void TaskRunner::startOfActivity()

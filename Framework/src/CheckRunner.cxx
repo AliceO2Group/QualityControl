@@ -457,8 +457,8 @@ void CheckRunner::initDatabase()
 {
   mDatabase = DatabaseFactory::create(mConfig.database.at("implementation"));
   mDatabase->connect(mConfig.database);
-  ILOG(Info, Support) << "Database that is going to be used : " << ENDM;
-  ILOG(Info, Support) << ">> Implementation : " << mConfig.database.at("implementation") << ENDM;
+  ILOG(Info, Support) << "Database that is going to be used : " << "\n";
+  ILOG(Info, Support) << ">> Implementation : " << mConfig.database.at("implementation") << "\n";
   ILOG(Info, Support) << ">> Host : " << mConfig.database.at("host") << ENDM;
 }
 
