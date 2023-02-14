@@ -202,7 +202,7 @@ void CheckRunner::refreshConfig(InitContext& iCtx)
     ILOG(Warning, Devel) << "Could not get updated config tree in CheckRunner::init() - `qcConfiguration` could not be retrieved" << ENDM;
   } catch (...) {
     // we catch here because we don't know where it will get lost in DPL, and also we don't care if this part has failed.
-    ILOG(Warning, Devel) << "Error caught in CheckRunner::refreshConfig() :\n"
+    ILOG(Warning, Devel) << "Error caught in CheckRunner::refreshConfig(): "
                          << current_diagnostic(true) << ENDM;
   }
 }
@@ -237,7 +237,7 @@ void CheckRunner::init(framework::InitContext& iCtx)
     }
   } catch (...) {
     // catch the exceptions and print it (the ultimate caller might not know how to display it)
-    ILOG(Fatal, Ops) << "Unexpected exception during initialization:\n"
+    ILOG(Fatal, Ops) << "Unexpected exception during initialization: "
                      << current_diagnostic(true) << ENDM;
     throw;
   }
@@ -457,10 +457,7 @@ void CheckRunner::initDatabase()
 {
   mDatabase = DatabaseFactory::create(mConfig.database.at("implementation"));
   mDatabase->connect(mConfig.database);
-  ILOG(Info, Support) << "Database that is going to be used : "
-                      << "\n";
-  ILOG(Info, Support) << ">> Implementation : " << mConfig.database.at("implementation") << "\n";
-  ILOG(Info, Support) << ">> Host : " << mConfig.database.at("host") << ENDM;
+  ILOG(Info, Support) << "Database that is going to be used > Implementation : " << mConfig.database.at("implementation") << " / Host : " << mConfig.database.at("host") << ENDM;
 }
 
 void CheckRunner::initMonitoring()
@@ -549,7 +546,7 @@ void CheckRunner::reset()
     mActivity = Activity();
   } catch (...) {
     // we catch here because we don't know where it will go in DPL's CallbackService
-    ILOG(Error, Support) << "Error caught in reset() :\n"
+    ILOG(Error, Support) << "Error caught in reset() : "
                          << current_diagnostic(true) << ENDM;
     throw;
   }

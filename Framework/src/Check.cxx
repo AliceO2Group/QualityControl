@@ -64,7 +64,7 @@ void Check::init()
     mCheckInterface->setCustomParameters(mCheckConfig.customParameters);
   } catch (...) {
     std::string diagnostic = boost::current_exception_diagnostic_information();
-    ILOG(Fatal, Ops) << "Unexpected exception, diagnostic information follows:\n"
+    ILOG(Fatal, Ops) << "Unexpected exception, diagnostic information follows: "
                      << diagnostic << ENDM;
     throw;
   }
@@ -133,7 +133,7 @@ QualityObjectsType Check::check(std::map<std::string, std::shared_ptr<MonitorObj
       quality = mCheckInterface->check(&moMapToCheck);
     } catch (...) {
       std::string diagnostic = boost::current_exception_diagnostic_information();
-      ILOG(Error, Ops) << "Unexpected exception in user code (check):\n"
+      ILOG(Error, Ops) << "Unexpected exception in user code (check):"
                        << diagnostic << ENDM;
       continue;
     }
@@ -165,7 +165,7 @@ void Check::beautify(std::map<std::string, std::shared_ptr<MonitorObject>>& moMa
       mCheckInterface->beautify(item.second /*mo*/, quality);
     } catch (...) {
       std::string diagnostic = boost::current_exception_diagnostic_information();
-      ILOG(Error, Ops) << "Unexpected exception in user code (beautify):\n"
+      ILOG(Error, Ops) << "Unexpected exception in user code (beautify):"
                        << diagnostic << ENDM;
       continue;
     }

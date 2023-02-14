@@ -360,9 +360,7 @@ std::string InfrastructureSpecReader::validateDetectorName(std::string name)
     std::string permittedString;
     for (const auto& i : permitted)
       permittedString += i + ' ';
-    ILOG(Error, Support) << "Invalid detector name : " << name << "\n"
-                         << "    Placeholder 'MISC' will be used instead\n"
-                         << "    Note: list of permitted detector names :" << permittedString << ENDM;
+    ILOG(Error, Support) << "Invalid detector name : " << name << ". Placeholder 'MISC' will be used instead. Note: list of permitted detector names :" << permittedString << ENDM;
     return "MISC";
   }
   return name;

@@ -106,7 +106,7 @@ void TaskRunner::refreshConfig(InitContext& iCtx)
     ILOG(Warning, Devel) << "Could not get updated config tree in TaskRunner::init() - `qcConfiguration` could not be retrieved" << ENDM;
   } catch (...) {
     // we catch here because we don't know where it will get lost in dpl, and also we don't care if this part has failed.
-    ILOG(Warning, Devel) << "Error caught in refreshConfig() :\n"
+    ILOG(Warning, Devel) << "Error caught in refreshConfig() : "
                          << current_diagnostic(true) << ENDM;
   }
 }
@@ -345,7 +345,7 @@ void TaskRunner::start(ServiceRegistryRef services)
     startCycle();
   } catch (...) {
     // we catch here because we don't know where it will go in DPL's CallbackService
-    ILOG(Error, Support) << "Error caught in start() :\n"
+    ILOG(Error, Support) << "Error caught in start() :"
                          << current_diagnostic(true) << ENDM;
     throw;
   }
@@ -364,7 +364,7 @@ void TaskRunner::stop()
     mRunNumber = 0;
   } catch (...) {
     // we catch here because we don't know where it will go in DPL's CallbackService
-    ILOG(Error, Support) << "Error caught in stop() :\n"
+    ILOG(Error, Support) << "Error caught in stop() : "
                          << current_diagnostic(true) << ENDM;
     throw;
   }
@@ -379,7 +379,7 @@ void TaskRunner::reset()
     mRunNumber = 0;
   } catch (...) {
     // we catch here because we don't know where it will go in DPL's CallbackService
-    ILOG(Error, Support) << "Error caught in reset() :\n"
+    ILOG(Error, Support) << "Error caught in reset() : "
                          << current_diagnostic(true) << ENDM;
     throw;
   }
@@ -410,14 +410,7 @@ std::tuple<bool /*data ready*/, bool /*timer ready*/> TaskRunner::validateInputs
 
 void TaskRunner::printTaskConfig()
 {
-  ILOG(Info, Devel) << "Configuration loaded : "
-                    << "\n";
-  ILOG(Info, Devel) << ">> Task name : " << mTaskConfig.taskName << "\n";
-  ILOG(Info, Devel) << ">> Module name : " << mTaskConfig.moduleName << "\n";
-  ILOG(Info, Devel) << ">> Detector name : " << mTaskConfig.detectorName << "\n";
-  ILOG(Info, Devel) << ">> Cycle duration seconds : " << mTaskConfig.cycleDurationSeconds << "\n";
-  ILOG(Info, Devel) << ">> Max number cycles : " << mTaskConfig.maxNumberCycles << "\n";
-  ILOG(Info, Devel) << ">> Save to file : " << mTaskConfig.saveToFile << ENDM;
+  ILOG(Info, Devel) << "Configuration loaded > Task name : " << mTaskConfig.taskName << " / Module name : " << mTaskConfig.moduleName << " / Detector name : " << mTaskConfig.detectorName << " / Cycle duration seconds : " << mTaskConfig.cycleDurationSeconds << " / Max number cycles : " << mTaskConfig.maxNumberCycles << " / Save to file : " << mTaskConfig.saveToFile << ENDM;
 }
 
 void TaskRunner::startOfActivity()
