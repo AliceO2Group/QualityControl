@@ -52,7 +52,7 @@
         "histogramRanges_comment" : [ "nBins", "min", "max" ],
         "histogramRanges": [
           { "IDCZero" : [ "250",  "0", "2.5" ] },
-          {"IDCZeroOveview" : [ "250",  "-20", "20" ] },
+          { "IDCZeroOveview" : [ "250",  "-20", "20" ] },
           { "IDCOne" : [ "250",  "0", "0.5" ] },
           { "IDCDelta" : [ "100",  "-1.02", "-0.94" ] },
           { "FourierCoeffs" : [ "600",  "-20", "20" ] }

@@ -21,6 +21,7 @@
 #include "DataFormatsTPC/TPCSectorHeader.h"
 #include "TPCBase/CalDet.h"
 #include "TPCBase/Painter.h"
+#include "CommonUtils/StringUtils.h"
 
 // QC includes
 #include "TPC/Utility.h"
@@ -148,6 +149,54 @@ std::unique_ptr<o2::tpc::internal::getWorkflowTPCInput_ret> clusterHandler(o2::f
   o2::tpc::ClusterNativeHelper::Reader::fillIndex(retVal->clusterIndex, retVal->internal.clusterBuffer, retVal->internal.clustersMCBuffer, retVal->internal.inputs, retVal->internal.mcInputs, tpcSectorMask);
 
   return std::move(retVal);
+}
+
+void getTimestamp(const std::string& metaInfo, std::vector<long>& timeStamps)
+{
+  std::string result_str;
+  long result;
+  std::string token = "Validity: ";
+  if (metaInfo.find(token) != std::string::npos) {
+    int start = metaInfo.find(token) + token.size();
+    int end = metaInfo.find(" -", start);
+    result_str = metaInfo.substr(start, end - start);
+    std::string::size_type sz;
+    result = std::stol(result_str, &sz);
+    timeStamps.emplace_back(result);
+  }
+}
+
+std::vector<long> getDataTimestamps(const o2::ccdb::CcdbApi& cdbApi, const std::string_view path, const unsigned int nFiles, const long limit)
+{
+  std::vector<long> outVec{};
+  std::vector<long> tmpVec{};
+
+  std::vector<std::string> fileList = o2::utils::Str::tokenize(cdbApi.list(path.data()), '\n');
+
+  if (limit == -1) {
+    for (const auto& metaData : fileList) {
+      getTimestamp(metaData, outVec);
+      if (outVec.size() == nFiles) {
+        break;
+      }
+    }
+  } else {
+    for (const auto& metaData : fileList) {
+      if (outVec.size() < nFiles) {
+        getTimestamp(metaData, tmpVec);
+        if (tmpVec.size() > 0 && tmpVec.back() <= limit) {
+          if (outVec.size() == 0 || tmpVec.back() != outVec.back()) {
+            outVec.emplace_back(tmpVec.back());
+          }
+        }
+      } else {
+        break;
+      }
+    }
+  }
+  std::sort(outVec.begin(), outVec.end());
+
+  return std::move(outVec);
 }
 
 } // namespace o2::quality_control_modules::tpc

@@ -19,9 +19,11 @@
 
 #include "QualityControl/ObjectsManager.h"
 
+#include "TPCBase/CalDet.h"
 #include "DataFormatsTPC/ClusterNative.h"
 #include "DataFormatsTPC/WorkflowHelper.h"
 #include "Framework/ProcessingContext.h"
+#include "CCDB/CcdbApi.h"
 
 #include <TCanvas.h>
 
@@ -58,5 +60,16 @@ void clearCanvases(std::vector<std::unique_ptr<TCanvas>>& canvases);
 /// \param input InputReconrd from the ProcessingContext
 /// \return getWorkflowTPCInput_ret object for easy cluster access
 std::unique_ptr<o2::tpc::internal::getWorkflowTPCInput_ret> clusterHandler(o2::framework::InputRecord& inputs, int verbosity = 0, unsigned long tpcSectorMask = 0xFFFFFFFFF);
+
+/// \brief Extracts the "Valid from" timestamp from metadata
+void getTimestamp(const std::string& metaInfo, std::vector<long>& timeStamps);
+
+/// \brief Gives a vector of timestamps for data to be processed
+/// Gives a vector of time stamps of x files (x=nFiles) in path which are older than a given time stamp (limit)
+/// \param url CCDB URL
+/// \param path File path in the CCDB
+/// \param nFiles Number of files that shall be processed
+/// \param limit Most recent timestamp to be processed
+std::vector<long> getDataTimestamps(const o2::ccdb::CcdbApi& cdbApi, const std::string_view path, const unsigned int nFiles, const long limit);
 } // namespace o2::quality_control_modules::tpc
 #endif // QUALITYCONTROL_TPCUTILITY_H
