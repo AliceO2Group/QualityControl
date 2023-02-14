@@ -59,6 +59,8 @@ void QcInfoLogger::setPartition(const std::string& partitionName)
   ILOG(Debug, Devel) << "IL: Partition set to " << partitionName << ENDM;
 }
 
+using namespace std;
+
 void QcInfoLogger::init(const std::string& facility,
                         const DiscardFileParameters& discardFileParameters,
                         AliceO2::InfoLogger::InfoLogger* dplInfoLogger,
@@ -78,11 +80,8 @@ void QcInfoLogger::init(const std::string& facility,
   if (!discardFileParameters.discardFile.empty()) {
     ILOG_INST.filterDiscardSetFile(discardFileParameters.discardFile.c_str(), discardFileParameters.rotateMaxBytes, discardFileParameters.rotateMaxFiles, 0, true /*Do not store Debug messages in file*/);
   }
-  ILOG(Debug, Support) << "QC infologger initialized" << ENDM;
-  ILOG(Debug, Devel) << "   Discard debug ? " << discardFileParameters.debug << "\n";
-  ILOG(Debug, Devel) << "   Discard from level ? " << discardFileParameters.fromLevel << "\n";
-  ILOG(Debug, Devel) << "   Discard to file ? " << (!discardFileParameters.discardFile.empty() ? discardFileParameters.discardFile : "No") << "\n";
-  ILOG(Debug, Devel) << "   Discard max bytes and files ? " << discardFileParameters.rotateMaxBytes << " = " << discardFileParameters.rotateMaxFiles << ENDM;
+  ILOG(Debug, Support) << "QC infologger initialized : " << discardFileParameters.debug << " ; " << discardFileParameters.fromLevel << ENDM;
+  ILOG(Debug, Devel) << "   Discard debug ? " << discardFileParameters.debug << " / Discard from level ? " << discardFileParameters.fromLevel << " / Discard to file ? " << (!discardFileParameters.discardFile.empty() ? discardFileParameters.discardFile : "No") << " / Discard max bytes and files ? " << discardFileParameters.rotateMaxBytes << " = " << discardFileParameters.rotateMaxFiles << ENDM;
 
   setFacility(facility);
   setRun(run);
