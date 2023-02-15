@@ -289,7 +289,7 @@ void CheckRunner::prepareCacheData(framework::InputRecord& inputRecord)
       if (tobj->InheritsFrom("TObjArray")) {
         array.reset(dynamic_cast<TObjArray*>(tobj.release()));
         array->SetOwner(false);
-        ILOG(Info, Support) << "CheckRunner " << mDeviceName
+        ILOG(Debug, Devel) << "CheckRunner " << mDeviceName
                             << " received an array with " << array->GetEntries()
                             << " entries from " << input.binding << ENDM;
       } else {
@@ -298,7 +298,7 @@ void CheckRunner::prepareCacheData(framework::InputRecord& inputRecord)
         TObject* newTObject = tobj->Clone(); // we need a copy to avoid that it gets deleted behind our back.
         newArray->Add(newTObject);
         array.reset(newArray); // now that the array is ready we can adopt it.
-        ILOG(Info, Support) << "CheckRunner " << mDeviceName
+        ILOG(Debug, Devel) << "CheckRunner " << mDeviceName
                             << " received a tobject named " << tobj->GetName()
                             << " from " << input.binding << ENDM;
       }
@@ -310,8 +310,8 @@ void CheckRunner::prepareCacheData(framework::InputRecord& inputRecord)
         std::shared_ptr<MonitorObject> mo{ dynamic_cast<MonitorObject*>(tObject) };
 
         if (mo == nullptr) {
-          ILOG(Info, Support) << "The MO is null, probably a TObject could not be casted into an MO." << ENDM;
-          ILOG(Info, Support) << "    Creating an ad hoc MO." << ENDM;
+          ILOG(Debug, Devel) << "The MO is null, probably a TObject could not be casted into an MO." << ENDM;
+          ILOG(Debug, Devel) << "    Creating an ad hoc MO." << ENDM;
           header::DataOrigin origin = DataSpecUtils::asConcreteOrigin(input);
           mo = std::make_shared<MonitorObject>(tObject, input.binding, "CheckRunner", origin.str);
         }
@@ -355,7 +355,7 @@ void CheckRunner::sendPeriodicMonitoring()
 
 QualityObjectsType CheckRunner::check()
 {
-  ILOG(Info, Support) << "Trying " << mChecks.size() << " checks for " << mMonitorObjects.size() << " monitor objects"
+  ILOG(Debug, Devel) << "Trying " << mChecks.size() << " checks for " << mMonitorObjects.size() << " monitor objects"
                       << ENDM;
 
   QualityObjectsType allQOs;
@@ -378,7 +378,7 @@ QualityObjectsType CheckRunner::check()
 
 void CheckRunner::store(QualityObjectsType& qualityObjects, long validFrom)
 {
-  ILOG(Info, Support) << "Storing " << qualityObjects.size() << " QualityObjects" << ENDM;
+  ILOG(Debug, Devel) << "Storing " << qualityObjects.size() << " QualityObjects" << ENDM;
   try {
     for (auto& qo : qualityObjects) {
       qo->setActivity(mActivity);
@@ -393,7 +393,7 @@ void CheckRunner::store(QualityObjectsType& qualityObjects, long validFrom)
 
 void CheckRunner::store(std::vector<std::shared_ptr<MonitorObject>>& monitorObjects, long validFrom)
 {
-  ILOG(Info, Support) << "Storing " << monitorObjects.size() << " MonitorObjects" << ENDM;
+  ILOG(Debug, Devel) << "Storing " << monitorObjects.size() << " MonitorObjects" << ENDM;
   try {
     for (auto& mo : monitorObjects) {
       mo->setActivity(mActivity);
@@ -411,7 +411,7 @@ void CheckRunner::send(QualityObjectsType& qualityObjects, framework::DataAlloca
   // Note that we might send multiple QOs in one output, as separate parts.
   // This should be fine if they are retrieved on the other side with InputRecordWalker.
 
-  ILOG(Info, Support) << "Sending " << qualityObjects.size() << " quality objects" << ENDM;
+  ILOG(Debug, Devel) << "Sending " << qualityObjects.size() << " quality objects" << ENDM;
   for (const auto& qo : qualityObjects) {
     const auto& correspondingCheck = mChecks.at(qo->getCheckName());
     auto outputSpec = correspondingCheck.getOutputSpec();
@@ -457,7 +457,7 @@ void CheckRunner::initDatabase()
 {
   mDatabase = DatabaseFactory::create(mConfig.database.at("implementation"));
   mDatabase->connect(mConfig.database);
-  ILOG(Info, Support) << "Database that is going to be used > Implementation : " << mConfig.database.at("implementation") << " / Host : " << mConfig.database.at("host") << ENDM;
+  ILOG(Info, Devel) << "Database that is going to be used > Implementation : " << mConfig.database.at("implementation") << " / Host : " << mConfig.database.at("host") << ENDM;
 }
 
 void CheckRunner::initMonitoring()
@@ -522,8 +522,8 @@ void CheckRunner::start(ServiceRegistryRef services)
   string partitionName = computePartitionName(services);
   QcInfoLogger::setRun(mActivity.mId);
   QcInfoLogger::setPartition(partitionName);
-  ILOG(Info, Support) << "Starting run " << mActivity.mId << ":"
-                      << "\n   - period: " << mActivity.mPeriodName << "\n   - pass type: " << mActivity.mPassName << "\n   - provenance: " << mActivity.mProvenance << ENDM;
+  ILOG(Info, Support) << "Starting run " << mActivity.mId << ":" << ENDM;
+  ILOG(Debug, Devel) << "   period: " << mActivity.mPeriodName << " / pass type: " << mActivity.mPassName << " / provenance: " << mActivity.mProvenance << ENDM;
   mTimerTotalDurationActivity.reset();
   mCollector->setRunNumber(mActivity.mId);
   mReceivedEOS = false;
@@ -539,7 +539,7 @@ void CheckRunner::stop()
 
 void CheckRunner::reset()
 {
-  ILOG(Info, Support) << "Reset" << ENDM;
+  ILOG(Info, Devel) << "Reset" << ENDM;
 
   try {
     mCollector.reset();

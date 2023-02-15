@@ -425,7 +425,7 @@ void AggregatorRunner::stop()
 
 void AggregatorRunner::reset()
 {
-  ILOG(Info, Support) << "Reset" << ENDM;
+  ILOG(Info, Devel) << "Reset" << ENDM;
 
   try {
     mCollector.reset();
