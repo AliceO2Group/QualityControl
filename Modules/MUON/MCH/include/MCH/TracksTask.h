@@ -18,6 +18,7 @@
 #include <TProfile.h>
 #include <gsl/span>
 #include <memory>
+#include "MCHGeometryTransformer/Transformations.h"
 
 namespace o2::mch
 {
@@ -97,6 +98,7 @@ class TracksTask /*final*/ : public TaskInterface
 
   o2::mch::raw::Det2ElecMapper mDet2ElecMapper;
   o2::mch::raw::Solar2FeeLinkMapper mSolar2FeeLinkMapper;
+  std::unique_ptr<o2::mch::geo::TransformationCreator> mTransformation;
 };
 
 template <typename T>

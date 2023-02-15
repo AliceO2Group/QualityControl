@@ -27,11 +27,6 @@
 
 #include "Mergers/MergeInterface.h"
 #include "MCHRawElecMap/Mapper.h"
-#ifdef HAVE_DIGIT_IN_DATAFORMATS
-#include "DataFormatsMCH/Digit.h"
-#else
-#include "MCHBase/Digit.h"
-#endif
 #include "MCHConstants/DetectionElements.h"
 
 using namespace std;

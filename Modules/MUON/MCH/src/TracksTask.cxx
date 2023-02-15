@@ -13,7 +13,6 @@
 
 #include "CommonConstants/LHCConstants.h"
 #include <DataFormatsMCH/Cluster.h>
-#include <DataFormatsMCH/Digit.h>
 #include <DataFormatsMCH/ROFRecord.h>
 #include <DataFormatsMCH/TrackMCH.h>
 #include <DetectorsBase/GeometryManager.h>
@@ -175,11 +174,22 @@ ROOT::Math::PxPyPzMVector getMomentum4D(const o2::mch::TrackMCH& track)
 
 void TracksTask::fillClusterHistos(gsl::span<const o2::mch::Cluster> clusters)
 {
+  if (mTransformation.get() == nullptr) {
+    // should not happen, but better be safe than sorry
+    return;
+  }
   for (const auto& cluster : clusters) {
     int deId = cluster.getDEId();
     const o2::mch::mapping::Segmentation& seg = o2::mch::mapping::segmentation(deId);
     int b, nb;
-    seg.findPadPairByPosition(cluster.getX(), cluster.getY(), b, nb);
+
+    o2::math_utils::Point3D<double> global{ cluster.getX(),
+                                            cluster.getY(), cluster.getZ() };
+    auto t = (*mTransformation)(deId).Inverse();
+    auto local = t(global);
+
+    seg.findPadPairByPosition(local.X(), local.Y(), b, nb);
+
     if (b >= 0) {
       int dsId = seg.padDualSampaId(b);
       mNofClustersPerDualSampa->Fill(dsbinx(deId, dsId));
@@ -214,6 +224,11 @@ void TracksTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   if (!assertInputs(ctx)) {
     return;
+  }
+
+  if (mTransformation.get() == nullptr && gGeoManager != nullptr) {
+    ILOG(Info, Support) << "get transformation from gGeoManager" << ENDM;
+    mTransformation = std::make_unique<o2::mch::geo::TransformationCreator>(o2::mch::geo::transformationFromTGeoManager(*gGeoManager));
   }
 
   auto tracks = ctx.inputs().get<gsl::span<o2::mch::TrackMCH>>("tracks");
