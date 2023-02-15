@@ -354,8 +354,7 @@ void InfrastructureGenerator::customizeInfrastructure(std::vector<framework::Com
 
 void InfrastructureGenerator::printVersion()
 {
-  // Log the version number
-  ILOG(Info, Support) << "QC version " << o2::quality_control::core::Version::GetQcVersion().getString() << ENDM;
+  ILOG(Info, Devel) << "QC version " << o2::quality_control::core::Version::GetQcVersion().getString() << ENDM;
 }
 
 void InfrastructureGenerator::generateDataSamplingPolicyLocalProxyBind(framework::WorkflowSpec& workflow,
@@ -612,16 +611,16 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
   auto checkRunnerConfig = CheckRunnerFactory::extractConfig(infrastructureSpec.common);
   for (auto& [inputNames, checkConfigs] : checksMap) {
     // Logging
-    ILOG(Info, Devel) << ">> Inputs (" << inputNames.size() << "): ";
+    ILOG(Debug, Devel) << ">> Inputs (" << inputNames.size() << "): ";
     for (const auto& name : inputNames)
-      ILOG(Info, Devel) << name << " ";
-    ILOG(Info, Devel) << " ; Checks (" << checkConfigs.size() << "): ";
+      ILOG(Debug, Devel) << name << " ";
+    ILOG(Debug, Devel) << " ; Checks (" << checkConfigs.size() << "): ";
     for (const auto& checkConfig : checkConfigs)
-      ILOG(Info, Devel) << checkConfig.name << " ";
-    ILOG(Info, Devel) << " ; Stores (" << storeVectorMap[inputNames].size() << "): ";
+      ILOG(Debug, Devel) << checkConfig.name << " ";
+    ILOG(Debug, Devel) << " ; Stores (" << storeVectorMap[inputNames].size() << "): ";
     for (const auto& input : storeVectorMap[inputNames])
-      ILOG(Info, Devel) << input << " ";
-    ILOG(Info, Devel) << ENDM;
+      ILOG(Debug, Devel) << input << " ";
+    ILOG(Debug, Devel) << ENDM;
 
     DataProcessorSpec spec = checkConfigs.empty()
                                ? CheckRunnerFactory::createSinkDevice(checkRunnerConfig, tasksOutputMap.find(inputNames[0])->second)
@@ -630,10 +629,10 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
     checkRunnerOutputs.insert(checkRunnerOutputs.end(), spec.outputs.begin(), spec.outputs.end());
   }
 
-  ILOG(Info) << ">> Outputs (" << checkRunnerOutputs.size() << "): ";
+  ILOG(Debug, Devel) << ">> Outputs (" << checkRunnerOutputs.size() << "): ";
   for (const auto& output : checkRunnerOutputs)
-    ILOG(Info) << DataSpecUtils::describe(output) << " ";
-  ILOG(Info) << ENDM;
+    ILOG(Debug, Devel) << DataSpecUtils::describe(output) << " ";
+  ILOG(Debug, Devel) << ENDM;
 }
 
 void InfrastructureGenerator::generateAggregator(WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec)

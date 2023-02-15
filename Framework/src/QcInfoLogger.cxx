@@ -29,14 +29,14 @@ void QcInfoLogger::setFacility(const std::string& facility)
   mContext->setField(infoContext::FieldName::Facility, facility);
   mContext->setField(infoContext::FieldName::System, "QC");
   instance->setContext(*mContext);
-  ILOG(Debug, Support) << "IL: Facility set to " << facility << ENDM;
+  ILOG(Debug, Devel) << "IL: Facility set to " << facility << ENDM;
 }
 
 void QcInfoLogger::setDetector(const std::string& detector)
 {
   mContext->setField(infoContext::FieldName::Detector, detector);
   instance->setContext(*mContext);
-  ILOG(Debug, Support) << "IL: Detector set to " << detector << ENDM;
+  ILOG(Debug, Devel) << "IL: Detector set to " << detector << ENDM;
 }
 
 void QcInfoLogger::setRun(int run)
@@ -45,19 +45,21 @@ void QcInfoLogger::setRun(int run)
     mContext->setField(infoContext::FieldName::Run, std::to_string(run));
   }
   instance->setContext(*mContext);
-  ILOG(Debug, Support) << "IL: Run set to " << run << ENDM;
+  ILOG(Debug, Devel) << "IL: Run set to " << run << ENDM;
 }
 
 void QcInfoLogger::setPartition(const std::string& partitionName)
 {
   if (partitionName.empty()) {
-    ILOG(Debug, Support) << "IL: Partition empty, we don't set it" << ENDM;
+    ILOG(Debug, Devel) << "IL: Partition empty, we don't set it" << ENDM;
     return;
   }
   mContext->setField(infoContext::FieldName::Partition, partitionName);
   instance->setContext(*mContext);
-  ILOG(Debug, Support) << "IL: Partition set to " << partitionName << ENDM;
+  ILOG(Debug, Devel) << "IL: Partition set to " << partitionName << ENDM;
 }
+
+using namespace std;
 
 void QcInfoLogger::init(const std::string& facility,
                         const DiscardFileParameters& discardFileParameters,
@@ -78,11 +80,8 @@ void QcInfoLogger::init(const std::string& facility,
   if (!discardFileParameters.discardFile.empty()) {
     ILOG_INST.filterDiscardSetFile(discardFileParameters.discardFile.c_str(), discardFileParameters.rotateMaxBytes, discardFileParameters.rotateMaxFiles, 0, true /*Do not store Debug messages in file*/);
   }
-  ILOG(Debug, Ops) << "QC infologger initialized" << ENDM;
-  ILOG(Debug, Support) << "   Discard debug ? " << discardFileParameters.debug << ENDM;
-  ILOG(Debug, Support) << "   Discard from level ? " << discardFileParameters.fromLevel << ENDM;
-  ILOG(Debug, Support) << "   Discard to file ? " << (!discardFileParameters.discardFile.empty() ? discardFileParameters.discardFile : "No") << ENDM;
-  ILOG(Debug, Support) << "   Discard max bytes and files ? " << discardFileParameters.rotateMaxBytes << " = " << discardFileParameters.rotateMaxFiles << ENDM;
+  ILOG(Debug, Support) << "QC infologger initialized : " << discardFileParameters.debug << " ; " << discardFileParameters.fromLevel << ENDM;
+  ILOG(Debug, Devel) << "   Discard debug ? " << discardFileParameters.debug << " / Discard from level ? " << discardFileParameters.fromLevel << " / Discard to file ? " << (!discardFileParameters.discardFile.empty() ? discardFileParameters.discardFile : "No") << " / Discard max bytes and files ? " << discardFileParameters.rotateMaxBytes << " = " << discardFileParameters.rotateMaxFiles << ENDM;
 
   setFacility(facility);
   setRun(run);

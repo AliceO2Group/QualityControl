@@ -80,9 +80,8 @@ void PostProcessingRunner::init(const PostProcessingRunnerConfig& runnerConfig, 
   // configuration of the database
   mDatabase = DatabaseFactory::create(mRunnerConfig.database.at("implementation"));
   mDatabase->connect(mRunnerConfig.database);
-  ILOG(Info, Support) << "Database that is going to be used : " << ENDM;
-  ILOG(Info, Support) << ">> Implementation : " << mRunnerConfig.database.at("implementation") << ENDM;
-  ILOG(Info, Support) << ">> Host : " << mRunnerConfig.database.at("host") << ENDM;
+  ILOG(Info, Support) << "Database that is going to be used > Implementation : " << mRunnerConfig.database.at("implementation") << " / "
+                      << " Host : " << mRunnerConfig.database.at("host") << ENDM;
 
   mObjectManager = std::make_shared<ObjectsManager>(mTaskConfig.taskName, mTaskConfig.className, mTaskConfig.detectorName, mRunnerConfig.consulUrl);
   mObjectManager->setActivity(mTaskConfig.activity);
@@ -92,12 +91,12 @@ void PostProcessingRunner::init(const PostProcessingRunnerConfig& runnerConfig, 
   }
 
   // setup user's task
-  ILOG(Info, Support) << "Creating a user task '" << mTaskConfig.taskName << "'" << ENDM;
+  ILOG(Debug, Devel) << "Creating a user task '" << mTaskConfig.taskName << "'" << ENDM;
   PostProcessingFactory f;
   mTask.reset(f.create(mTaskConfig));
   mTask->setObjectsManager(mObjectManager);
   if (mTask) {
-    ILOG(Info, Support) << "The user task '" << mTaskConfig.taskName << "' has been successfully created" << ENDM;
+    ILOG(Debug, Devel) << "The user task '" << mTaskConfig.taskName << "' has been successfully created" << ENDM;
 
     mTaskState = TaskState::Created;
     mTask->setName(mTaskConfig.taskName);
