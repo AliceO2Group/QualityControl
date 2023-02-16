@@ -22,6 +22,9 @@
 #include <Framework/CompletionPolicy.h>
 #include <Framework/InputRecordWalker.h>
 #include <TFile.h>
+#if defined(__linux__) && __has_include(<malloc.h>)
+#include <malloc.h>
+#endif
 
 using namespace o2::framework;
 
@@ -54,11 +57,21 @@ void closeSinkFile(TFile* file)
   if (file != nullptr) {
     if (file->IsOpen()) {
       ILOG(Info) << "Closing file '" << file->GetName() << "'." << ENDM;
+      file->Write();
       file->Close();
     }
     delete file;
   }
 }
+
+void deleteTDirectory(TDirectory* d)
+{
+  if (d != nullptr) {
+    d->Write();
+    d->Close();
+    delete d;
+  }
+};
 
 void RootFileSink::customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies)
 {
@@ -80,7 +93,7 @@ void RootFileSink::run(framework::ProcessingContext& pctx)
   try {
     sinkFile = openSinkFile(mFilePath);
     for (const auto& input : InputRecordWalker(pctx.inputs())) {
-      auto moc = DataRefUtils::as<MonitorObjectCollection>(input).release();
+      auto moc = DataRefUtils::as<MonitorObjectCollection>(input);
       if (moc == nullptr) {
         ILOG(Error) << "Could not cast the input object to MonitorObjectCollection, skipping." << ENDM;
         continue;
@@ -93,13 +106,12 @@ void RootFileSink::run(framework::ProcessingContext& pctx)
         ILOG(Error, Support) << "MonitorObjectCollection does not have a name, skipping." << ENDM;
         continue;
       }
-
       auto detector = moc->getDetector();
-      TDirectory* detDir = sinkFile->GetDirectory(detector.c_str());
+
+      auto detDir = std::unique_ptr<TDirectory, void (*)(TDirectory*)>(sinkFile->GetDirectory(detector.c_str()), deleteTDirectory);
       if (detDir == nullptr) {
         ILOG(Info, Devel) << "Creating a new directory '" << detector << "'." << ENDM;
-        sinkFile->mkdir(detector.c_str());
-        detDir = sinkFile->GetDirectory(detector.c_str());
+        detDir = std::unique_ptr<TDirectory, void (*)(TDirectory*)>(sinkFile->mkdir(detector.c_str()), deleteTDirectory);
         if (detDir == nullptr) {
           ILOG(Error, Support) << "Could not create directory '" << detector << "', skipping." << ENDM;
           continue;
@@ -107,23 +119,15 @@ void RootFileSink::run(framework::ProcessingContext& pctx)
       }
 
       ILOG(Info, Support) << "Checking for existing objects in the file." << ENDM;
-      auto storedTObj = detDir->Get(mocName);
-      if (storedTObj != nullptr) {
-        auto storedMOC = dynamic_cast<MonitorObjectCollection*>(storedTObj);
-        if (storedMOC == nullptr) {
-          ILOG(Error, Support) << "Could not cast the stored object to MonitorObjectCollection, skipping." << ENDM;
-          delete storedTObj;
-          continue;
-        }
+      auto storedMOC = std::unique_ptr<MonitorObjectCollection>(detDir->Get<MonitorObjectCollection>(mocName));
+      if (storedMOC != nullptr) {
         storedMOC->postDeserialization();
         ILOG(Info, Support) << "Merging object '" << moc->GetName() << "' with the existing one in the file." << ENDM;
-        moc->merge(storedMOC);
+        moc->merge(storedMOC.get());
       }
-      delete storedTObj;
 
-      auto nbytes = detDir->WriteObject(moc, moc->GetName(), "Overwrite");
+      auto nbytes = detDir->WriteObject(moc.get(), moc->GetName(), "Overwrite");
       ILOG(Info, Support) << "Object '" << moc->GetName() << "' has been stored in the file (" << nbytes << " bytes)." << ENDM;
-      delete moc;
     }
     closeSinkFile(sinkFile);
   } catch (const std::bad_alloc& ex) {
@@ -134,6 +138,16 @@ void RootFileSink::run(framework::ProcessingContext& pctx)
     closeSinkFile(sinkFile);
     throw;
   }
+
+#if defined(__linux__) && __has_include(<malloc.h>)
+  // Once we write object to TFile, the OS does not actually release the array memory from the heap,
+  // despite deleting the pointers. This function encourages the system to release it.
+  // Unfortunately there is no platform-independent method for this, while we see a similar
+  // (or even worse) behaviour on MacOS.
+  // See the ROOT forum issues for additional details:
+  // https://root-forum.cern.ch/t/should-the-result-of-tdirectory-getdirectory-be-deleted/53427
+  malloc_trim(0);
+#endif
 }
 
 } // namespace o2::quality_control::core

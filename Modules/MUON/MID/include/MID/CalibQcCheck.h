@@ -37,9 +37,9 @@ class CalibQcCheck : public o2::quality_control::checker::CheckInterface
 
  private:
   ///////////////////////////
-  float nTF = 0;
-  float nNoiseRof = 0;
-  float nDeadRof = 0;
+  float mTF = 0;
+  float mNoiseRof = 0;
+  float mDeadRof = 0;
   float scaleTime = 0.0114048; // 128 orb/TF * 3564 BC/orb * 25ns
 
   ClassDefOverride(CalibQcCheck, 2);

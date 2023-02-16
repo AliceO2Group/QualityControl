@@ -25,10 +25,12 @@ Advanced topics
 * [Solving performance issues](#solving-performance-issues)
 * [CCDB / QCDB](#ccdb--qcdb)
    * [Access run conditions and calibrations from the CCDB](#access-run-conditions-and-calibrations-from-the-ccdb)
+   * [Access GRP objects with GRP Geom Helper](#access-grp-objects-with-grp-geom-helper)
    * [Custom metadata](#custom-metadata)
    * [Details on the data storage format in the CCDB](#details-on-the-data-storage-format-in-the-ccdb)
       * [Data storage format before v0.14 and ROOT 6.18](#data-storage-format-before-v014-and-root-618)
    * [Local CCDB setup](#local-ccdb-setup)
+* [Asynchronous Data and Monte Carlo QC operations](#asynchronous-data-and-monte-carlo-qc-operations)
 * [QCG](#qcg)
    * [Display a non-standard ROOT object in QCG](#display-a-non-standard-root-object-in-qcg)
    * [Canvas options](#canvas-options)
@@ -312,9 +314,53 @@ o2-qc --config json:/${QUALITYCONTROL_ROOT}/etc/basic.json --remote-batch result
 Please note, that the local batch QC workflow should not work on the same file at the same time.
 A semaphore mechanism is required if there is a risk they might be executed in parallel.
 
-To be done:
-- merging multiple files into one, to allow for cases, when local batch workflows cannot access the same file.
-- support for Post-Processing.
+The file is organized into directories named after 3-letter detector codes and sub-directories representing Monitor Object Collections for specific tasks.
+To browse the file, one needs the associated Quality Control environment loaded, since it contains QC-specific data structures.
+It is worth remembering, that this file is considered as intermediate storage, thus Monitor Object do not have Checks applied and cannot be considered the final results.
+The quick and easy way to inspect the contents of the file is to load a recent environment (e.g. on lxplus) and open it with ROOT's `TBrowser`:
+```shell
+alienv enter O2PDPSuite/nightly-20221219-1
+root
+TBrowser t; // a browser window will pop-up 
+```
+...or by browsing the file manually:
+```shell
+alienv enter O2PDPSuite/nightly-20221219-1
+root
+root [0] auto f = new TFile("QC_fullrun.root")
+(TFile *) @0x7ffe84833dc8
+root [1] f->ls()
+TFile**		QC_fullrun.root	
+ TFile*		QC_fullrun.root	
+  KEY: TDirectoryFile	CPV;1	CPV
+  KEY: TDirectoryFile	EMC;1	EMC
+  KEY: TDirectoryFile	FDD;1	FDD
+  KEY: TDirectoryFile	FT0;1	FT0
+  KEY: TDirectoryFile	FV0;1	FV0
+  KEY: TDirectoryFile	GLO;1	GLO
+  KEY: TDirectoryFile	ITS;1	ITS
+...
+root [2] f->cd("GLO")
+(bool) true
+root [3] f->ls()
+TFile**		QC_fullrun.root	
+ TFile*		QC_fullrun.root	
+  TDirectoryFile*		GLO	GLO
+   KEY: o2::quality_control::core::MonitorObjectCollection	MTCITSTPC;1	
+   KEY: o2::quality_control::core::MonitorObjectCollection	Vertexing;1	
+  KEY: TDirectoryFile	CPV;1	CPV
+...
+root [4] auto vtx = dynamic_cast<o2::quality_control::core::MonitorObjectCollection*>(f->Get("GLO/Vertexing"))
+(o2::quality_control::core::MonitorObjectCollection *) @0x7ffe84833dc8
+root [5] auto vtx_x = dynamic_cast<o2::quality_control::core::MonitorObject*>(vtx->FindObject("vertex_X"))
+(o2::quality_control::core::MonitorObject *) @0x7ffe84833dc8
+root [6] vtx_x->getObject()->ClassName()
+(const char *) "TH1F"
+```
+To merge several incomplete QC files, one can use the `o2-qc-file-merger` executable.
+It takes a list of input files, which may or may not reside on alien, and produces a merged file.
+One can select whether the executable should fail upon any error or continue for as long as possible.
+Please see its `--help` output for usage details.
 
 ## Moving window
 
@@ -579,6 +625,27 @@ QC objects.
     ...
 ```
 
+## Access GRP objects with GRP Geom Helper
+
+To get GRP objects via a central facility, add the following structure to the task definition and set its values 
+according to the needs.
+```json
+      "myTask": {
+        ...
+        "grpGeomRequest" : {
+          "geomRequest": "None",     "": "Available options are \"None\", \"Aligned\", \"Ideal\", \"Alignements\"",
+          "askGRPECS": "false",
+          "askGRPLHCIF": "false",
+          "askGRPMagField": "false",
+          "askMatLUT": "false",
+          "askTime": "false",
+          "askOnceAllButField": "false",
+          "needPropagatorD":  "false"
+        }
+      }
+```
+The requested objects will be available via [`GRPGeomHelper::instance()`](https://github.com/AliceO2Group/AliceO2/blob/dev/Detectors/Base/include/DetectorsBase/GRPGeomHelper.h) singleton.
+
 ## Custom metadata
 
 One can add custom metadata on the QC objects produced in a QC task.
@@ -644,6 +711,45 @@ The script `o2-qc-repo-move-objects` lets the user move an object, and thus all 
 python3 o2-qc-repo-move-objects --url http://ccdb-test.cern.ch:8080 --path qc/TST/MO/Bob --new-path qc/TST/MO/Bob2 --log-level 10 
 ```
 
+# Asynchronous Data and Monte Carlo QC operations
+
+QC can accompany workflows reconstructing real and simulated data asynchronously.
+Usually these are distributed among thousands of nodes which might not have access to each other, thus partial results are stored and merged in form of files with mechanism explained in [Batch processing](#batch-processing).
+
+QC workflows for asynchronous data reconstructions are listed in [O2DPG/Data/production/qc-workflow.sh](https://github.com/AliceO2Group/O2DPG/blob/master/DATA/production/qc-workflow.sh).
+The script includes paths to corresponding QC configuration files for subsystems which take part in the reconstruction.
+All the enabled files are merged into a combined QC workflow.
+Thus, it is crucial that unique keys are used in `tasks`, `checks` and `aggregators` structures, as explained in [Merging multiple configuration files into one](#merging-multiple-configuration-files-into-one).
+Post-processing tasks can be added in the script [O2DPG/DATA/production/o2dpg_qc_postproc_workflow.py](https://github.com/AliceO2Group/O2DPG/blob/master/DATA/production/o2dpg_qc_postproc_workflow.py).
+Please see the included example and the in-code documentation for further guidelines in this matter.
+
+Generating and reconstructing simulated data is ran by a framework which organizes specific workflows in a directed acyclic graph and executes them in an order which satisfies all the dependencies and allocated computing resources.
+In contrast to data reconstruction, here, QC workflows are executed separately and pick up corresponding input files.
+For further details, please refer to [Adding QC Tasks to the simulation script](https://github.com/AliceO2Group/O2DPG/tree/master/MC#adding-qc-tasks-to-the-simulation-script).
+
+Data and simulation productions are typically executed on Grid and EPNs, and the outcomes can be inspected in [MonALISA](http://alimonitor.cern.ch/).
+In both cases, QC runs alongside of each subjob and incomplete QC results are stored in files.
+For asynchronous data reconstruction, one file `QC.root` is created.
+Simulation subjobs contain a `QC` directory with separate files for each QC workflow.
+Relevant logs can be found in files like `stdout`, `stderr` as well as archives `debug_log_archive.zip` and `log_archive.zip`.
+
+Once an expected percentage of subjobs completes, several QC merging stages are executed, each producing a merged file for certain range of subjobs.
+The last stage produces the complete file for given masterjob.
+This file is read by the `o2-qc --remote-batch` executable to run Checks on the complete objects and all the results to the QCDB.
+Post-Processing Tasks and associated Checks are executed right after.
+
+Some runs contain too much data to be processed with one masterjob.
+In such case, several masterjobs are run in parallel.
+Each produces a `QC.root` file which contains all the statistics for a masterjob.
+The last masterjob to complete recognizes this fact and merges all `QC.root` into `QC_fullrun.root` and only then uploads the results to QCDB.
+To find it, one can use `alien_find`:
+```
+> alien_find /alice/data/2022/LHC22m/523897/apass1_epn QC_fullrun.root
+/alice/data/2022/LHC22m/523897/apass1_epn/0750/QC/001/QC_fullrun.root
+```
+
+TODO explain how a connection to QCDB is made from Grid sites. 
+
 # QCG
 
 ## Display a non-standard ROOT object in QCG
@@ -697,11 +803,12 @@ As user `flp` do:
 ```
 git clone https://github.com/AliceO2Group/QualityControl.git
 cd QualityControl
+git checkout <release> # use the release included in the installed FLP suite
 mkdir build
 cd build
 mkdir ~/installdir
 cmake -DCMAKE_INSTALL_PREFIX=~/installdir ..
-make
+make -j16 install 
 ```
 
 ***Compilation on top of a local O2***
@@ -711,6 +818,7 @@ If you want to build also O2 locally do
 # O2
 git clone https://github.com/AliceO2Group/AliceO2.git
 cd AliceO2
+git checkout <release> # use the release included in the installed FLP suite
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=~/installdir ..
@@ -719,6 +827,7 @@ make -j8 install
 # QC
 git clone https://github.com/AliceO2Group/QualityControl.git
 cd QualityControl
+git checkout <release> # use the release included in the installed FLP suite
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=~/installdir .. -DO2_ROOT=~/installdir
@@ -731,7 +840,7 @@ In case the workflows will span over several FLPs and/or QC machines, one should
 
 **Use it in aliECS**
 
-Set an extra variable `extra_env_vars` and set it to 
+In the aliECS gui, in the panel "Advanced Configuration", et an extra variable `extra_env_vars` and set it to 
 ```
 PATH=~/installdir/bin/:$PATH LD_LIBRARY_PATH=~/installdir/lib/:$LD_LIBRARY_PATH QUALITYCONTROL_ROOT=~/installdir/
 ```
@@ -1000,7 +1109,17 @@ the "tasks" path.
                                                  "Needed only for multi-node setups."],
         "mergingMode": "delta",             "": "Merging mode, \"delta\" (default) or \"entire\" objects are expected",
         "mergerCycleMultiplier": "1",       "": "Multiplies the Merger cycle duration with respect to the QC Task cycle"
-        "mergersPerLayer": [ "3", "1" ],    "": "Defines the number of Mergers per layer, the default is [\"1\"]"
+        "mergersPerLayer": [ "3", "1" ],    "": "Defines the number of Mergers per layer, the default is [\"1\"]",
+        "grpGeomRequest" : {                "": "Requests to retrieve GRP objects, then available in GRPGeomHelper::instance()",
+          "geomRequest": "None",            "": "Available options are \"None\", \"Aligned\", \"Ideal\", \"Alignements\"",
+          "askGRPECS": "false",
+          "askGRPLHCIF": "false",
+          "askGRPMagField": "false",
+          "askMatLUT": "false",
+          "askTime": "false",
+          "askOnceAllButField": "false",
+          "needPropagatorD":  "false"
+        }
       }
     }
   }

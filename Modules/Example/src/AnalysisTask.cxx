@@ -33,7 +33,7 @@ AnalysisTask::~AnalysisTask()
 
 void AnalysisTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize AnalysisTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize AnalysisTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   mHistogram = new TH1F("example", "example", 20, 0, 30000);
   getObjectsManager()->startPublishing(mHistogram);
@@ -41,13 +41,13 @@ void AnalysisTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void AnalysisTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity" << activity.mId << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << activity.mId << ENDM;
   mHistogram->Reset();
 }
 
 void AnalysisTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void AnalysisTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -67,7 +67,7 @@ void AnalysisTask::monitorData(o2::framework::ProcessingContext& ctx)
     ILOG(Error, Support) << "No columns in the arrow table" << table->num_columns() << ENDM;
     return;
   }
-  ILOG(Info) << "The arrow table has " << table->num_columns() << " columns" << ENDM;
+  ILOG(Info, Support) << "The arrow table has " << table->num_columns() << " columns" << ENDM;
   mHistogram->Fill(table->num_columns());
 
   // Here you can perform analysis of the columnar data.
@@ -77,19 +77,19 @@ void AnalysisTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void AnalysisTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void AnalysisTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void AnalysisTask::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   mHistogram->Reset();
 }
 

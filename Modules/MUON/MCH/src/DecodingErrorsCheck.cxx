@@ -140,7 +140,7 @@ void DecodingErrorsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
 
       h->SetFillColor(kGreen);
     } else if (checkResult == Quality::Bad) {
-      LOG(info) << "Quality::Bad, setting to red";
+      ILOG(Debug, Devel) << "Quality::Bad, setting to red";
       //
       msg->Clear();
       msg->AddText("Too many errors, call MCH on-call.");
@@ -148,7 +148,7 @@ void DecodingErrorsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
 
       h->SetFillColor(kRed);
     } else if (checkResult == Quality::Medium) {
-      LOG(info) << "Quality::medium, setting to orange";
+      ILOG(Debug, Devel) << "Quality::medium, setting to orange";
 
       msg->Clear();
       msg->AddText("No entries. If MCH in the run, check MCH TWiki");

@@ -41,19 +41,19 @@ Quality CalibQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
     (void)moName;
     if (mo->getName() == "NbTimeFrame") {
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
-      nTF = h->GetBinContent(1);
-      if (nTF > 0)
+      mTF = h->GetBinContent(1);
+      if (mTF > 0)
         result = Quality::Good;
       else
         result = Quality::Bad;
     }
     if (mo->getName() == "NbNoiseROF") {
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
-      nNoiseRof = h->GetBinContent(1);
+      mNoiseRof = h->GetBinContent(1);
     }
     if (mo->getName() == "NbDeadROF") {
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
-      nDeadRof = h->GetBinContent(1);
+      mDeadRof = h->GetBinContent(1);
     }
   }
   return result;

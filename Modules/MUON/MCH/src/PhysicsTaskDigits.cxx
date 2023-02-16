@@ -82,7 +82,7 @@ void PhysicsTaskDigits::GlobalHistogramRatio::update()
 
 void PhysicsTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize PhysicsTaskDigits" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "initialize PhysicsTaskDigits" << ENDM;
 
   // flag to enable on-cycle plots
   mOnCycle = false;
@@ -196,12 +196,12 @@ void PhysicsTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
 
 void PhysicsTaskDigits::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
 }
 
 void PhysicsTaskDigits::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void PhysicsTaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
@@ -448,7 +448,7 @@ void PhysicsTaskDigits::endOfCycle()
     dst->update();
   };
 
-  ILOG(Info, Support) << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfCycle" << ENDM;
 
   updateOrbits();
 
@@ -486,13 +486,13 @@ void PhysicsTaskDigits::endOfCycle()
 
 void PhysicsTaskDigits::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfActivity" << ENDM;
 }
 
 void PhysicsTaskDigits::reset()
 {
   // clean all the monitor objects here
-  ILOG(Info, Support) << "Resetting the histograms" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "Resetting the histogramss" << ENDM;
 
   resetOrbits();
 

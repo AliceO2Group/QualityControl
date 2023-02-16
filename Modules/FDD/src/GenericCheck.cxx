@@ -56,7 +56,7 @@ SingleCheck GenericCheck::getCheckFromConfig(std::string paramName)
         ILOG(Warning, Support) << "configure(): warning more strict than error -> swapping values!" << ENDM;
         std::swap(thresholdWarning, thresholdError);
       }
-      ILOG(Info, Support) << "configure() : using thresholdWarning" << paramName.c_str() << " = " << thresholdWarning << " , thresholdError" << paramName << " = " << thresholdError << ENDM;
+      ILOG(Debug, Support) << "configure() : using thresholdWarning" << paramName.c_str() << " = " << thresholdWarning << " , thresholdError" << paramName << " = " << thresholdError << ENDM;
     } else {
       ILOG(Warning, Support) << "configure() : only one threshold (warning/error) was provided for  " << paramName.c_str() << " -> this parameter will not be used!" << ENDM;
     }

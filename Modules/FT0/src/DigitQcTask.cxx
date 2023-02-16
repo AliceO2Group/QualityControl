@@ -131,7 +131,7 @@ bool DigitQcTask::chIsVertexEvent(const o2::ft0::ChannelData chd)
 
 void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info) << "initialize DigitQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize DigitQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
   mStateLastIR2Ch = {};
   mMapChTrgNames.insert({ o2::ft0::ChannelData::kNumberADC, "NumberADC" });
   mMapChTrgNames.insert({ o2::ft0::ChannelData::kIsDoubleEvent, "IsDoubleEvent" });
@@ -399,7 +399,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void DigitQcTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info) << "startOfActivity" << activity.mId << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << activity.mId << ENDM;
   mHistTime2Ch->Reset();
   mHistAmp2Ch->Reset();
   mHistBC->Reset();
@@ -449,7 +449,7 @@ void DigitQcTask::startOfActivity(Activity& activity)
 
 void DigitQcTask::startOfCycle()
 {
-  ILOG(Info) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
   mTimeMinNS = -1;
   mTimeMaxNS = 0.;
   mTimeCurNS = 0.;
@@ -725,7 +725,7 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void DigitQcTask::endOfCycle()
 {
-  ILOG(Info) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
   // add TF creation time for further match with filling scheme in PP in case of offline running
   ILOG(Debug, Support) << "adding last TF creation time: " << mTFcreationTime << ENDM;
   getObjectsManager()->getMonitorObject(mHistBCvsTrg->GetName())->addOrUpdateMetadata("TFcreationTime", std::to_string(mTFcreationTime));
@@ -744,7 +744,7 @@ void DigitQcTask::endOfCycle()
 
 void DigitQcTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void DigitQcTask::reset()

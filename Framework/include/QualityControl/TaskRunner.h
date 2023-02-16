@@ -87,6 +87,8 @@ class TaskRunner : public framework::Task
   void init(framework::InitContext& iCtx) override;
   /// \brief TaskRunner's process callback
   void run(framework::ProcessingContext& pCtx) override;
+  /// \brief TaskRunner's finaliseCCDB callback
+  void finaliseCCDB(framework::ConcreteDataMatcher& matcher, void* obj) override;
 
   /// \brief TaskRunner's completion policy callback
   static framework::CompletionPolicy::CompletionOp completionPolicyCallback(o2::framework::InputSpan const& inputs);

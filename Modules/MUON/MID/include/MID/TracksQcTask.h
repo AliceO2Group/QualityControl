@@ -89,7 +89,7 @@ class TracksQcTask final : public TaskInterface
 
   ///////////////////////////
   o2::mid::Mapping mMapping; ///< Mapping
-  int nROF = 0;
+  int mROF = 0;
   int multTracksTot = 0;
   int multTracks44Tot = 0;
   int multTracksBend44 = 0;
@@ -102,12 +102,12 @@ class TracksQcTask final : public TaskInterface
   int multTraksNB34MT21 = 0;
   int multTraksB34MT22 = 0;
   int multTraksNB34MT22 = 0;
-  float globEff = 0;
-  float globBendEff = 0;
-  float globNBendEff = 0;
-  std::unordered_map<int, std::vector<int>> LocTracks;
-  std::unordered_map<int, std::vector<int>> DetTracks;
-  std::unordered_map<int, int> LocColMap;
+  float mGlobEff = 0;
+  float mGlobBendEff = 0;
+  float mGlobNBendEff = 0;
+  std::unordered_map<int, std::vector<int>> mLocTracks;
+  std::unordered_map<int, std::vector<int>> mDetTracks;
+  std::unordered_map<int, int> mLocColMap;
 };
 
 } // namespace o2::quality_control_modules::mid

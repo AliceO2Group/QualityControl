@@ -39,7 +39,13 @@ ServiceDiscovery::ServiceDiscovery(const std::string& url, const std::string& na
     mHealthUrl = GetDefaultUrl();
   }
   if (_register("")) {
-    mHealthThread = std::thread([=] { runHealthServer(std::stoi(mHealthUrl.substr(mHealthUrl.find(":") + 1))); });
+    mHealthThread = std::thread([=] {
+#ifdef __linux__
+      std::string threadName = "QC/SrvcDiscov";
+      pthread_setname_np(pthread_self(), threadName.c_str());
+#endif
+      runHealthServer(std::stoi(mHealthUrl.substr(mHealthUrl.find(":") + 1)));
+    });
   }
 }
 
@@ -98,14 +104,14 @@ bool ServiceDiscovery::_register(const std::string& objects)
   std::stringstream ss;
   boost::property_tree::json_parser::write_json(ss, pt);
 
-  ILOG(Info, Devel) << "Registration to ServiceDiscovery: " << objects << ENDM;
+  ILOG(Debug, Devel) << "Registration to ServiceDiscovery: " << objects << ENDM;
   return send("/v1/agent/service/register", ss.str());
 }
 
 void ServiceDiscovery::deregister()
 {
   send("/v1/agent/service/deregister/" + mId, "");
-  ILOG(Info, Devel) << "Deregistration from ServiceDiscovery" << ENDM;
+  ILOG(Debug, Devel) << "Deregistration from ServiceDiscovery" << ENDM;
 }
 
 void ServiceDiscovery::runHealthServer(unsigned int port)

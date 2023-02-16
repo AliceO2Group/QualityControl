@@ -20,6 +20,7 @@
 #include <TPC/RatioGeneratorTPC.h>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/algorithm/string.hpp>
+#include <fmt/format.h>
 #include <string>
 #include <TAxis.h>
 

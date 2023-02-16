@@ -60,6 +60,16 @@ Simply start your binary with `--rate 10000` and it should solve the problem. Th
 o2-qc-run-producer | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/basic.json --rate 10000
 ```
 
+### Why are some of my log messages not appearing ? 
+
+If they are `Debug` messages, it is expected. 
+To enable debug messages, edit your config file : 
+```
+      "infologger": {                     "": "Configuration of the Infologger (optional).",
+        "filterDiscardDebug": "false",    "": "Set to 1 to discard debug and trace messages (default: false)",
+```
+There are more options in the "Advanced" section of this guide. 
+
 ## QCDB
 
 ### How to see which objects are stored in the CCDB ?
@@ -70,7 +80,29 @@ If for some reason you don't want or can't use the QCG, the CCDB provides a web 
 
 ### How to delete objects from the CCDB ?
 
-By accessing http://ccdb-test.cern.ch:8080/truncate/path/to/folder you will delete all the objects at the given path. Careful with that please ! Don't delete data of others.<br/>In production it will of course not be possible to do so. 
+#### The nuclear option
+
+By accessing `http://ccdb-test.cern.ch:8080/truncate/path/to/folder/.*` you will delete all the objects at the given path. Careful with that please ! Don't delete data of others.<br/>In production it will of course not be possible to do so. 
+
+#### A set of run exported from the logbook
+
+Use `o2-qc-repo-delete-objects-in-runs`. The `--help` will tell you all you need to know about this tool.
+`--print-list` is very useful to see what will be deleted.
+
+Here is an example:
+```
+o2-qc-repo-delete-objects-in-runs --url http://localhost:8083 --path qc/EMC/.* --runs-csv-file /tmp/runs_standalone_bad_LHC22m.csv
+```
+
+#### By time period
+
+Use `o2-qc-repo-delete-time-interval`. The `--help` will tell you all you need to know about this tool. 
+`--print-list` is very useful to see what will be deleted. 
+
+Here is an example:
+```
+o2-qc-repo-delete-time-interval --url http://localhost:8083 --path qc_async/EMC/MO/AsyncTrend --from 0 --to 1654706422910
+```
 
 ### My objects are not stored due to their size. What can I do ?
 

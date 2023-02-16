@@ -104,10 +104,10 @@ void TrackletsTask::retrieveCCDBSettings()
 {
   if (auto param = mCustomParameters.find("ccdbtimestamp"); param != mCustomParameters.end()) {
     mTimestamp = std::stol(mCustomParameters["ccdbtimestamp"]);
-    ILOG(Info, Support) << "configure() : using ccdbtimestamp = " << mTimestamp << ENDM;
+    ILOG(Debug, Support) << "configure() : using ccdbtimestamp = " << mTimestamp << ENDM;
   } else {
     mTimestamp = o2::ccdb::getCurrentTimestamp();
-    ILOG(Info, Support) << "configure() : using default timestam of now = " << mTimestamp << ENDM;
+    ILOG(Debug, Support) << "configure() : using default timestam of now = " << mTimestamp << ENDM;
   }
   auto& mgr = o2::ccdb::BasicCCDBManager::instance();
   mgr.setTimestamp(mTimestamp);
@@ -238,8 +238,6 @@ void TrackletsTask::buildTrackletLayers()
     mLayers[iLayer] = new TH2F(Form("TrackletsPerLayer/layer%i", iLayer), Form("Tracklet count per mcm in layer %i;stack;sector", iLayer), 76, -0.5, 75.5, 144, -0.5, 143.5);
 
     auto xax = mLayers[iLayer]->GetXaxis();
-    for (Int_t b = 1; b < 77; b++)
-      xax->SetBinLabel(b, " ");
     xax->SetBinLabel(8, "0");
     xax->SetBinLabel(24, "1");
     xax->SetBinLabel(38, "2");
@@ -251,8 +249,6 @@ void TrackletsTask::buildTrackletLayers()
     xax->SetLabelSize(0.045);
     xax->SetLabelOffset(0.01);
     auto yax = mLayers[iLayer]->GetYaxis();
-    for (Int_t b = 1; b < 145; b++)
-      yax->SetBinLabel(b, " ");
     for (int iSec = 0; iSec < 18; ++iSec) {
       auto lbl = std::to_string(iSec);
       yax->SetBinLabel(iSec * 8 + 4, lbl.c_str());
@@ -300,20 +296,20 @@ void TrackletsTask::drawHashedOnHistsPerLayer(int iLayer)
 
 void TrackletsTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize TrackletsTask" << ENDM;
+  ILOG(Debug, Devel) << "initialize TrackletsTask" << ENDM;
   if (auto param = mCustomParameters.find("markerstyle"); param != mCustomParameters.end()) {
     mMarkerStyle = stof(param->second);
-    ILOG(Info, Support) << "configure() : using marketstyle : = " << mMarkerStyle << ENDM;
+    ILOG(Debug, Support) << "configure() : using marketstyle : = " << mMarkerStyle << ENDM;
   } else {
     mMarkerStyle = 3; // a plus sign
-    ILOG(Info, Support) << "configure() : using default dritfregionstart = " << mMarkerStyle << ENDM;
+    ILOG(Debug, Support) << "configure() : using default dritfregionstart = " << mMarkerStyle << ENDM;
   }
   if (auto param = mCustomParameters.find("markersize"); param != mCustomParameters.end()) {
     mMarkerSize = stof(param->second);
-    ILOG(Info, Support) << "configure() : using markersize : = " << mMarkerSize << ENDM;
+    ILOG(Debug, Support) << "configure() : using markersize : = " << mMarkerSize << ENDM;
   } else {
     mMarkerSize = 3; // a plus sign
-    ILOG(Info, Support) << "configure() : using default markersize = " << mMarkerSize << ENDM;
+    ILOG(Debug, Support) << "configure() : using default markersize = " << mMarkerSize << ENDM;
   }
 
   retrieveCCDBSettings();
@@ -322,7 +318,7 @@ void TrackletsTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void TrackletsTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity " << activity.mId << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
   for (Int_t sm = 0; sm < o2::trd::constants::NSECTOR; ++sm) {
     moHCMCM[sm]->Reset();
   }
@@ -330,7 +326,7 @@ void TrackletsTask::startOfActivity(Activity& activity)
 
 void TrackletsTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void TrackletsTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -402,7 +398,7 @@ void TrackletsTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void TrackletsTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
   // scale 2d mHCMCM plots so they all have the same max height.
   int max = 0;
   for (auto& hist : moHCMCM) {
@@ -419,14 +415,14 @@ void TrackletsTask::endOfCycle()
 
 void TrackletsTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void TrackletsTask::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   for (auto h : moHCMCM) {
     h->Reset();
   }

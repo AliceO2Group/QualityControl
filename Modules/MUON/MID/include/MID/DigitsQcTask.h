@@ -68,7 +68,7 @@ class DigitsQcTask final : public TaskInterface
   std::shared_ptr<TH2F> mROFTimeDiff{ nullptr };
 
   ///////////////////////////
-  int nROF = 0;
+  int mROF = 0;
   o2::mid::Mapping mMapping; ///< Mapping
 
   std::shared_ptr<TH1F> mMultHitMT11B{ nullptr };

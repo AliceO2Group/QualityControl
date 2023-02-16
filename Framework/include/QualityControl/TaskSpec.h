@@ -22,6 +22,7 @@
 #include <unordered_map>
 
 #include "QualityControl/DataSourceSpec.h"
+#include "QualityControl/RecoRequestSpecs.h"
 
 namespace o2::quality_control::core
 {
@@ -70,6 +71,7 @@ struct TaskSpec {
   std::string mergingMode = "delta"; // todo as enum?
   int mergerCycleMultiplier = 1;
   std::vector<size_t> mergersPerLayer{ 1 };
+  GRPGeomRequestSpec grpGeomRequestSpec;
 };
 
 } // namespace o2::quality_control::core

@@ -115,9 +115,9 @@ std::unique_ptr<quality_control::TimeRangeFlagCollection> TRFCollectionTask::tra
     mainTrfCollection->merge(*converter.getResult());
   }
 
-  ILOG(Info) << "Total number of QOs included in TRFCollection: " << totalQOsIncluded << ENDM;
-  ILOG(Info) << "Total number of worse than good QOs: " << totalWorseThanGoodQOs << ENDM;
-  ILOG(Info) << "Number of TRFs: " << mainTrfCollection->size() << ENDM;
+  ILOG(Info, Support) << "Total number of QOs included in TRFCollection: " << totalQOsIncluded << ENDM;
+  ILOG(Info, Support) << "Total number of worse than good QOs: " << totalWorseThanGoodQOs << ENDM;
+  ILOG(Info, Support) << "Number of TRFs: " << mainTrfCollection->size() << ENDM;
   // TODO: now we print it, but it should be stored in the QCDB after we have QC-547.
   ILOG(Info) << *mainTrfCollection << ENDM;
 

@@ -1,6 +1,5 @@
 {
-
-   "qc": {
+  "qc": {
     "config": {
       "database": {
         "implementation": "CCDB",
@@ -23,12 +22,12 @@
         "url": "http://alice-ccdb.cern.ch"
       }
     },
-   "tasks": {
+    "tasks": {
       "ITSClusterTask": {
         "active": "true",
         "className": "o2::quality_control_modules::its::ITSClusterTask",
         "moduleName": "QcITS",
-	"detectorName": "ITS",	
+        "detectorName": "ITS",
         "cycleDurationSeconds": "180",
         "maxNumberCycles": "-1",
         "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
@@ -37,18 +36,17 @@
           "name": "compclus"
         },
         "location": "remote",
-              "taskParameters": {
-              "layer": "1111111",
-              "nThreads": "1",
-              "nBCbins" : "103",
-	      "dicttimestamp" : "0",
-	      "geomPath": "./",
-              "publishSummary1D": "0",
-              "isLocalGeometry": "0",
-              "geomstamp": "1640991600000"
-      
+        "taskParameters": {
+          "layer": "1111111",
+          "nThreads": "1",
+          "nBCbins": "103",
+          "dicttimestamp": "0",
+          "geomPath": "./",
+          "publishSummary1D": "0",
+          "publishDetailedSummary": "0",
+          "isLocalGeometry": "0",
+          "geomstamp": "1640991600000"
         }
- 
       }
     },
     "checks": {
@@ -59,47 +57,49 @@
         "policy": "OnEachSeparately",
         "detectorName": "ITS",
         "checkParameters": {
-          "maxcluoccL0" : "5",
-          "maxcluoccL1" : "4",
-          "maxcluoccL2" : "3",
-          "maxcluoccL3" : "2",
-          "maxcluoccL4" : "1",
-          "maxcluoccL5" : "1",
-          "maxcluoccL6" : "1",
-          "skipxbinsoccupancy" : "",
-          "skipybinsoccupancy" : ""
+          "maxcluoccL0": "5",
+          "maxcluoccL1": "4",
+          "maxcluoccL2": "3",
+          "maxcluoccL3": "2",
+          "maxcluoccL4": "1",
+          "maxcluoccL5": "1",
+          "maxcluoccL6": "1",
+          "skipxbinsoccupancy": "",
+          "skipybinsoccupancy": ""
         },
-        "dataSource": [{
-          "type": "Task",
-          "name": "ITSClusterTask",
-          "MOs": ["Layer0/AverageClusterSize","Layer1/AverageClusterSize","Layer2/AverageClusterSize","Layer3/AverageClusterSize","Layer4/AverageClusterSize","Layer5/AverageClusterSize","Layer6/AverageClusterSize", "General/General_Occupancy"]
-
-          }]
-        }
+        "dataSource": [
+          {
+            "type": "Task",
+            "name": "ITSClusterTask",
+            "MOs": [
+              "Layer0/AverageClusterSize",
+              "Layer1/AverageClusterSize",
+              "Layer2/AverageClusterSize",
+              "Layer3/AverageClusterSize",
+              "Layer4/AverageClusterSize",
+              "Layer5/AverageClusterSize",
+              "Layer6/AverageClusterSize",
+              "General/General_Occupancy"
+            ]
+          }
+        ]
+      }
     }
-   },
-
+  },
   "dataSamplingPolicies": [
     {
-    	    "id": "compclus",
-            "active": "true",
-            "machines": [],
-            "query": "compclus:ITS/COMPCLUSTERS/0;clustersrof:ITS/CLUSTERSROF/0;patterns:ITS/PATTERNS/0",
-            "samplingConditions": [
-                {
-                    "condition": "random",
-                    "fraction": "1",
-                    "seed": "1441"
-                }
-            ],
-
-	    "blocking": "false"
+      "id": "compclus",
+      "active": "true",
+      "machines": [],
+      "query": "compclus:ITS/COMPCLUSTERS/0;clustersrof:ITS/CLUSTERSROF/0;patterns:ITS/PATTERNS/0",
+      "samplingConditions": [
+        {
+          "condition": "random",
+          "fraction": "1",
+          "seed": "1441"
+        }
+      ],
+      "blocking": "false"
     }
   ]
-
 }
-                                                                                                                               
-
-
-
-

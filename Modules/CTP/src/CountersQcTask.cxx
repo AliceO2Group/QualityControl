@@ -42,7 +42,7 @@ CTPCountersTask::~CTPCountersTask()
 
 void CTPCountersTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize CountersQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize CountersQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   mInputCountsHist = new TH1D("TriggerInputCounts", "Total Trigger Input Counts", 48, 0, 48);
   //  gPad->SetLogy(mInputCountsHist->GetEntries()>0);
@@ -142,8 +142,8 @@ void CTPCountersTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void CTPCountersTask::startOfActivity(Activity& activity)
 {
-  std::cout << "Start of all activitites ";
-  ILOG(Info, Support) << "startOfActivity " << activity.mId << ENDM;
+  ILOG(Debug, Devel) << "Start of all activitites " << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
   mInputCountsHist->Reset();
   // mInputRateHist->Reset();
   // mClassCountsHist->Reset();
@@ -183,7 +183,7 @@ void CTPCountersTask::startOfActivity(Activity& activity)
 
 void CTPCountersTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void CTPCountersTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -511,17 +511,17 @@ void CTPCountersTask::monitorData(o2::framework::ProcessingContext& ctx)
 void CTPCountersTask::endOfCycle()
 {
   std::cout << "End of Cycle" << std::endl;
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void CTPCountersTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void CTPCountersTask::reset()
 {
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   mInputCountsHist->Reset();
   // mDummyCountsHist->Reset();
   // mClassCountsHist->Reset();

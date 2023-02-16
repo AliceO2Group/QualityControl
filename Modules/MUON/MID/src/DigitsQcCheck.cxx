@@ -31,16 +31,16 @@ namespace o2::quality_control_modules::mid
 
 void DigitsQcCheck::configure()
 {
-  ILOG(Info, Support) << "configure DigitsQcCheck" << ENDM;
+  ILOG(Info, Devel) << "configure DigitsQcCheck" << ENDM;
   if (auto param = mCustomParameters.find("MeanMultThreshold"); param != mCustomParameters.end()) {
-    ILOG(Info, Support) << "Custom parameter - MeanMultThreshold: " << param->second << ENDM;
+    ILOG(Info, Devel) << "Custom parameter - MeanMultThreshold: " << param->second << ENDM;
     mMeanMultThreshold = stof(param->second);
   }
 }
 
 Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
-  // ILOG(Info, Support) << "check DigitsQcCheck" << ENDM;
+  // ILOG(Info, Devel) << "check DigitsQcCheck" << ENDM;
   Quality result = Quality::Null;
   float mean = 0.;
   float midThreshold = mMeanMultThreshold / 2;
@@ -176,7 +176,7 @@ static TLatex* drawLatex(double xmin, double ymin, Color_t color, TString text)
 
 void DigitsQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  // ILOG(Info, Support) << "beautify DigitsQcCheck" << ENDM;
+  // ILOG(Info, Devel) << "beautify DigitsQcCheck" << ENDM;
 
   TLatex* msg;
   unsigned long mean = 0.;

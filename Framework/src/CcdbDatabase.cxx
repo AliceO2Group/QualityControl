@@ -67,7 +67,7 @@ CcdbDatabase::~CcdbDatabase() { disconnect(); }
 void CcdbDatabase::loadDeprecatedStreamerInfos()
 {
   if (getenv("QUALITYCONTROL_ROOT") == nullptr) {
-    ILOG(Warning, Support) << "QUALITYCONTROL_ROOT is not set thus the the streamerinfo ROOT file can't be found.\n"
+    ILOG(Warning, Support) << "QUALITYCONTROL_ROOT is not set thus the the streamerinfo ROOT file can't be found. "
                            << "Consequently, old data might not be readable." << ENDM;
     return;
   }
@@ -75,7 +75,7 @@ void CcdbDatabase::loadDeprecatedStreamerInfos()
   vector<string> filenames = { "streamerinfos.root", "streamerinfos_v017.root" };
   for (auto filename : filenames) {
     string localPath = path + filename;
-    ILOG(Info, Devel) << "Loading streamerinfos from : " << localPath << ENDM;
+    ILOG(Debug, Devel) << "Loading streamerinfos from : " << localPath << ENDM;
     TFile file(localPath.data(), "READ");
     if (file.IsZombie()) {
       string s = string("Cannot find ") + localPath;
@@ -150,6 +150,15 @@ bool CcdbDatabase::isDbInFailure()
   return false;
 }
 
+void CcdbDatabase::addFrameworkMetadata(map<string, string>& fullMetadata, string detectorName, string className)
+{
+  fullMetadata[metadata_keys::qcVersion] = Version::GetQcVersion().getString();
+  fullMetadata[metadata_keys::qcDetectorCode] = detectorName;
+  fullMetadata[metadata_keys::qcAdjustableEOV] = "1"; // QC-936 : this is to allow the modification of the end of validity.
+  // ObjectType says TObject and not MonitorObject due to a quirk in the API. Once fixed, remove this.
+  fullMetadata[metadata_keys::objectType] = className;
+}
+
 void CcdbDatabase::storeAny(const void* obj, std::type_info const& typeInfo, std::string const& path, std::map<std::string, std::string> const& metadata,
                             std::string const& detectorName, std::string const& taskName, long from, long to)
 {
@@ -172,11 +181,8 @@ void CcdbDatabase::storeAny(const void* obj, std::type_info const& typeInfo, std
 
   // metadata
   map<string, string> fullMetadata(metadata);
-  // QC metadata (prefix qc_)
-  fullMetadata[metadata_keys::qcVersion] = Version::GetQcVersion().getString();
-  fullMetadata[metadata_keys::qcDetectorCode] = detectorName;
+  addFrameworkMetadata(fullMetadata, detectorName, o2::utils::MemFileHelper::getClassName(typeInfo));
   fullMetadata[metadata_keys::qcTaskName] = taskName;
-  fullMetadata[metadata_keys::objectType] = o2::utils::MemFileHelper::getClassName(typeInfo);
 
   // other attributes
   if (from == -1) {
@@ -219,11 +225,9 @@ void CcdbDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::Moni
 
   // extract object and metadata from MonitorObject
   TObject* obj = mo->getObject();
-  metadata[metadata_keys::objectType] = mo->getObject()->IsA()->GetName(); // ObjectType says TObject and not MonitorObject due to a quirk in the API. Once fixed, remove this.
 
   // QC metadata (prefix qc_)
-  metadata[metadata_keys::qcVersion] = Version::GetQcVersion().getString();
-  metadata[metadata_keys::qcDetectorCode] = mo->getDetectorName();
+  addFrameworkMetadata(metadata, mo->getDetectorName(), mo->getObject()->IsA()->GetName());
   metadata[metadata_keys::qcTaskName] = mo->getTaskName();
   metadata[metadata_keys::qcTaskClass] = mo->getTaskClass();
 
@@ -250,11 +254,9 @@ void CcdbDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::Qual
 
   // metadata
   map<string, string> metadata = database_helpers::asDatabaseMetadata(qo->getActivity());
-  metadata[metadata_keys::objectType] = qo->IsA()->GetName(); // ObjectType says TObject and not MonitorObject due to a quirk in the API. Once fixed, remove this.
   // QC metadata (prefix qc_)
-  metadata[metadata_keys::qcVersion] = Version::GetQcVersion().getString();
+  addFrameworkMetadata(metadata, qo->getDetectorName(), qo->IsA()->GetName());
   metadata[metadata_keys::qcQuality] = std::to_string(qo->getQuality().getLevel());
-  metadata[metadata_keys::qcDetectorCode] = qo->getDetectorName();
   metadata[metadata_keys::qcCheckName] = qo->getCheckName();
   // user metadata
   map<string, string> userMetadata = qo->getMetadataMap();
@@ -284,11 +286,9 @@ void CcdbDatabase::storeTRFC(std::shared_ptr<const o2::quality_control::TimeRang
   metadata[metadata_keys::runNumber] = std::to_string(trfc->getRunNumber());
   metadata[metadata_keys::periodName] = trfc->getPeriodName();
   metadata[metadata_keys::passName] = trfc->getPassName();
-  metadata[metadata_keys::objectType] = trfc->IsA()->GetName();
   // QC metadata (prefix qc_)
-  metadata[metadata_keys::qcVersion] = Version::GetQcVersion().getString();
+  addFrameworkMetadata(metadata, trfc->getDetector(), trfc->IsA()->GetName());
   metadata[metadata_keys::qcTRFCName] = trfc->getName();
-  metadata[metadata_keys::qcDetectorCode] = trfc->getDetector();
 
   // other attributes
   string path = RepoPathUtils::getTrfcPath(trfc.get());

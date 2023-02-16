@@ -68,7 +68,7 @@ ITSFeeTask::~ITSFeeTask()
 
 void ITSFeeTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "Initializing the ITSFeeTask" << ENDM;
+  ILOG(Debug, Devel) << "initializing the ITSFeeTask" << ENDM;
   getParameters();
   createFeePlots();
   setPlotsFormat();
@@ -304,11 +304,11 @@ void ITSFeeTask::setPlotsFormat()
 
 void ITSFeeTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity : " << activity.mId << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity : " << activity.mId << ENDM;
   mRunNumber = activity.mId;
 }
 
-void ITSFeeTask::startOfCycle() { ILOG(Info, Support) << "startOfCycle" << ENDM; }
+void ITSFeeTask::startOfCycle() { ILOG(Debug, Devel) << "startOfCycle" << ENDM; }
 
 void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
@@ -512,12 +512,12 @@ void ITSFeeTask::getStavePoint(int layer, int stave, double* px, double* py)
 
 void ITSFeeTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void ITSFeeTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void ITSFeeTask::resetGeneralPlots()

@@ -25,12 +25,6 @@
 #include <algorithm>
 
 #include "Mergers/MergeInterface.h"
-#include "MCHRawElecMap/Mapper.h"
-#ifdef HAVE_DIGIT_IN_DATAFORMATS
-#include "DataFormatsMCH/Digit.h"
-#else
-#include "MCHBase/Digit.h"
-#endif
 
 using namespace std;
 namespace o2::quality_control_modules::muonchambers

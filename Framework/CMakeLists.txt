@@ -113,6 +113,7 @@ target_link_libraries(O2QualityControl
                              O2::Mergers
                              O2::DataSampling
                              O2::DataFormatsQualityControl
+                             O2::DetectorsBase
                       PRIVATE Boost::system
                               ROOT::Gui
                               CURL::libcurl)

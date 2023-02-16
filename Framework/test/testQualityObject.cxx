@@ -65,6 +65,12 @@ BOOST_AUTO_TEST_CASE(quality_object_test_constructors)
   BOOST_CHECK_EQUAL(qo2.getMetadataMap().at("probability"), "0.45");
   BOOST_REQUIRE_EQUAL(qo2.getMetadataMap().count("threshold_medium"), 1);
   BOOST_CHECK_EQUAL(qo2.getMetadataMap().at("threshold_medium"), "0.42");
+
+  Quality q(123, "defCheck");
+  q.addMetadata("mykey", "myvalue");
+  QualityObject qo3{ q, "defCheck" };
+  BOOST_REQUIRE_EQUAL(qo3.getMetadataMap().count("mykey"), 1);
+  BOOST_CHECK_EQUAL(qo3.getMetadataMap().at("mykey"), "myvalue");
 }
 
 BOOST_AUTO_TEST_CASE(quality_object_test_setters)

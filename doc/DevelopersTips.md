@@ -77,6 +77,13 @@ cd /data/pgsql
 cp -r QC QC-dd-mm-yy
 ```
 
+### Automatic QCDB backups
+
+The script `qcdb-backup.sh` on the qcdb machine is called by a cron every night to create a tarball. 
+It is then taken by the backup system to the central backup machine before being moved to EOS. 
+
+The script and the crontab installation are stored in ansible (in gitlab). 
+
 ### Trick used to load old data
 Until version 3 of the class MonitorObject, objects were stored in the repository directly. They are now stored within TFiles. The issue with the former way is that the StreamerInfo are lost. To be able to load old data, the StreamerInfos have been saved in a root file "streamerinfos.root". The CcdbDatabase access class loads this file and the StreamerInfos upon creation which allows for a smooth reading of the old objects. The day we are certain nobody will add objects in the old format and that the old objects have been removed from the database, we can delete this file and remove the loading from CcdbDatabase. Moreover, the following lines can be removed : 
 ```
@@ -393,4 +400,43 @@ Metadata:
 query to see for a given run the number of objects per detector:
 ```
 select ccdb.metadata -> '1337188343' as detector, count(distinct path), SUM(COUNT(distinct path)) from ccdb, ccdb_paths where ccdb_paths.pathid = ccdb.pathid AND ccdb.metadata -> '1048595860' = '529439' group by detector;
+```
+
+### Merge and upload QC results for all subjobs of a grid job
+
+Please keep in mind that the file pattern in Grid could have changed since this was written.
+```
+#!/usr/bin/env bash
+set -e
+set -x
+set -u
+
+# we get the list of all QC.root files for o2_ctf and o2_rawtf directories
+alien_find /alice/data/2022/LHC22m/523821/apass2_cpu 'o2_*/QC.root' > qc.list
+# we add alien:// prefix, so ROOT knows to look for them in alien
+sed -i -e 's/^/alien:\/\//' qc.list
+# we split the big list into smallers ones of -l lines, so we can parallelize the processing
+# one can play with the -l parameter
+split -d -l 25 qc.list qc_list_
+
+# for each split file run the merger executable
+for QC_LIST in qc_list_*
+do
+  o2-qc-file-merger --enable-alien --input-files-list "${QC_LIST}" --output-file "merged_${QC_LIST}.root" &
+done
+
+# wait for the jobs started in the loop
+wait $(jobs -p)
+
+# we merge the files of the first "stage"
+o2-qc-file-merger --input-files merged_* --output-file QC_fullrun.root
+
+# we take the first QC config file we find and use it to perform the remote-batch QC
+CONFIG=$(alien_find /alice/data/2022/LHC22m/523821/apass2_cpu QC_production.json | head -n 1)
+if [ -n "$CONFIG" ]
+then
+  alien_cp "$CONFIG" file://QC_production.json
+  # we override activity values, as QC_production.json might have only placeholders
+  o2-qc --remote-batch QC_fullrun.root --config "json://QC_production.json" -b --override-values "qc.config.Activity.number=523897;qc.config.Activity.passName=apass2;qc.config.Activity.periodName=LHC22m"
+fi
 ```

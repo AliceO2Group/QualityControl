@@ -53,9 +53,9 @@ class CalibQcTask final : public TaskInterface
 
  private:
   ///////////////////////////
-  int nTF = 0;
-  int noiseROF = 0;
-  int deadROF = 0;
+  int mTF = 0;
+  int mNoiseROF = 0;
+  int mDeadROF = 0;
   o2::mid::Mapping mMapping; ///< Mapping
 
   std::shared_ptr<TH1F> mNbTimeFrame{ nullptr };

@@ -16,6 +16,9 @@
 
 // O2 includes
 #include "TPCBase/CDBInterface.h"
+#include "TPCBase/CalDet.h"
+#include "TPCBase/CalArray.h"
+#include "TPCBase/Painter.h"
 
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
@@ -109,6 +112,8 @@ void IDCs::initialize(Trigger, framework::ServiceRegistryRef)
 {
   mCdbApi.init(mHost);
 
+  mIDCZeroScale = std::make_unique<TCanvas>("c_sides_IDC0_scale");
+  mIDCZerOverview = std::make_unique<TCanvas>("c_sides_IDC0_overview");
   mIDCZeroRadialProf = std::make_unique<TCanvas>("c_sides_IDC0_radialProfile");
   mIDCZeroStacksA = std::make_unique<TCanvas>("c_GEMStacks_IDC0_1D_ASide");
   mIDCZeroStacksC = std::make_unique<TCanvas>("c_GEMStacks_IDC0_1D_CSide");
@@ -121,6 +126,8 @@ void IDCs::initialize(Trigger, framework::ServiceRegistryRef)
   mFourierCoeffsA = std::make_unique<TCanvas>("c_FourierCoefficients_1D_ASide");
   mFourierCoeffsC = std::make_unique<TCanvas>("c_FourierCoefficients_1D_CSide");
 
+  getObjectsManager()->startPublishing(mIDCZeroScale.get());
+  getObjectsManager()->startPublishing(mIDCZerOverview.get());
   getObjectsManager()->startPublishing(mIDCZeroRadialProf.get());
   getObjectsManager()->startPublishing(mIDCZeroStacksA.get());
   getObjectsManager()->startPublishing(mIDCZeroStacksC.get());
@@ -136,6 +143,8 @@ void IDCs::initialize(Trigger, framework::ServiceRegistryRef)
 
 void IDCs::update(Trigger, framework::ServiceRegistryRef)
 {
+  mIDCZeroScale.get()->Clear();
+  mIDCZerOverview.get()->Clear();
   mIDCZeroRadialProf.get()->Clear();
   mIDCZeroStacksA.get()->Clear();
   mIDCZeroStacksC.get()->Clear();
@@ -163,18 +172,16 @@ void IDCs::update(Trigger, framework::ServiceRegistryRef)
   mCCDBHelper.setFourierCoeffs(idcFFTA, Side::A);
   mCCDBHelper.setFourierCoeffs(idcFFTC, Side::C);
 
-  if (idcZeroA) {
-    mCCDBHelper.drawIDCZeroStackCanvas(mIDCZeroStacksA.get(), Side::A, "IDC0", mRanges["IDCZero"].at(0), mRanges["IDCZero"].at(1), mRanges["IDCZero"].at(2));
-  }
-
-  if (idcZeroC) {
-    mCCDBHelper.drawIDCZeroStackCanvas(mIDCZeroStacksC.get(), Side::C, "IDC0", mRanges["IDCZero"].at(0), mRanges["IDCZero"].at(1), mRanges["IDCZero"].at(2));
-  }
-
   if (idcZeroA && idcZeroC) {
+    // scale IDCZero to the sum of IDCZeros
+    mCCDBHelper.setIDCZeroScale(true);
+    mCCDBHelper.drawIDCZeroScale(mIDCZeroScale.get(), true);
+    mCCDBHelper.drawIDCZeroStackCanvas(mIDCZeroStacksA.get(), Side::A, "IDC0", mRanges["IDCZero"].at(0), mRanges["IDCZero"].at(1), mRanges["IDCZero"].at(2));
+    mCCDBHelper.drawIDCZeroStackCanvas(mIDCZeroStacksC.get(), Side::C, "IDC0", mRanges["IDCZero"].at(0), mRanges["IDCZero"].at(1), mRanges["IDCZero"].at(2));
     mCCDBHelper.drawIDCZeroRadialProfile(mIDCZeroRadialProf.get(), mRanges["IDCZero"].at(0), mRanges["IDCZero"].at(1), mRanges["IDCZero"].at(2));
   }
-
+  const auto& calDet = mCCDBHelper.getIDCZeroCalDet();
+  o2::tpc::painter::draw(calDet, mRanges["IDCZeroOveview"].at(0), mRanges["IDCZeroOveview"].at(1), mRanges["IDCZeroOveview"].at(2), mIDCZerOverview.get());
   if (idcDeltaA) {
     mCCDBHelper.drawIDCZeroStackCanvas(mIDCDeltaStacksA.get(), Side::A, "IDCDelta", mRanges["IDCDelta"].at(0), mRanges["IDCDelta"].at(1), mRanges["IDCDelta"].at(2));
   }
@@ -192,7 +199,7 @@ void IDCs::update(Trigger, framework::ServiceRegistryRef)
   }
 
   if (idcFFTC) {
-    mCCDBHelper.drawFourierCoeff(mFourierCoeffsC.get(), Side::C, mRanges["FourierCoeffs"].at(0), mRanges["FourierCoeffs"].at(1), mRanges["FourierCoeffs"].at(2));
+    mCCDBHelper.drawFourierCoeff(mFourierCoeffsC.get(), Side::C, mRanges["IDCZeroOveview"].at(0), mRanges["IDCZeroOveview"].at(1), mRanges["IDCZeroOveview"].at(2));
   }
 
   delete idcZeroA;
@@ -216,6 +223,8 @@ void IDCs::update(Trigger, framework::ServiceRegistryRef)
 
 void IDCs::finalize(Trigger, framework::ServiceRegistryRef)
 {
+  getObjectsManager()->stopPublishing(mIDCZeroScale.get());
+  getObjectsManager()->stopPublishing(mIDCZerOverview.get());
   getObjectsManager()->stopPublishing(mIDCZeroRadialProf.get());
   getObjectsManager()->stopPublishing(mIDCZeroStacksA.get());
   getObjectsManager()->stopPublishing(mIDCZeroStacksC.get());

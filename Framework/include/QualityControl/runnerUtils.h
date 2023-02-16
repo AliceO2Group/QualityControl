@@ -75,16 +75,15 @@ inline int computeRunNumber(framework::ServiceRegistryRef services, int fallback
   int run = 0;
   try {
     auto temp = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("runNumber", "unspecified");
-    ILOG(Info, Devel) << "Got this property runNumber from RawDeviceService: '" << temp << "'" << ENDM;
+    ILOG(Debug, Devel) << "Got this property runNumber from RawDeviceService: '" << temp << "'" << ENDM;
     run = stoi(temp);
-    ILOG(Info, Support) << "   Run number found in options: " << run << ENDM;
+    ILOG(Debug, Devel) << "   Run number found in options: " << run << ENDM;
   } catch (std::invalid_argument& ia) {
-    ILOG(Info, Support) << "   Run number not found in options or is not a number, \n"
-                           "   using the one from the config file or 0 as a last resort."
-                        << ENDM;
+    ILOG(Debug, Devel) << "   Run number not found in options or is not a number, using the one from the config file or 0 as a last resort."
+                       << ENDM;
   }
   run = run > 0 /* found it in service */ ? run : fallbackRunNumber;
-  ILOG(Debug, Devel) << "Run number returned by computeRunNumber (default) : " << run << ENDM;
+  ILOG(Info, Devel) << "Run number returned by computeRunNumber (default) : " << run << ENDM;
   return run;
 }
 
@@ -93,16 +92,15 @@ inline int computeRunType(framework::ServiceRegistryRef services, int fallbackRu
   int runType = 0;
   try {
     auto temp = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("runType", "unspecified");
-    ILOG(Info, Devel) << "Got this property runType from RawDeviceService: '" << temp << "'" << ENDM;
+    ILOG(Debug, Devel) << "Got this property runType from RawDeviceService: '" << temp << "'" << ENDM;
     runType = stoi(temp);
-    ILOG(Info, Support) << "   Run type found in options: " << runType << ENDM;
+    ILOG(Debug, Devel) << "   Run type found in options: " << runType << ENDM;
   } catch (std::invalid_argument& ia) {
-    ILOG(Info, Support) << "   Run type not found in options or is not a number, \n"
-                           "   using the one from the config file or 0 as a last resort."
-                        << ENDM;
+    ILOG(Debug, Devel) << "   Run type not found in options or is not a number, using the one from the config file or 0 as a last resort."
+                       << ENDM;
   }
   runType = runType > 0 /* found it in service */ ? runType : fallbackRunType;
-  ILOG(Debug, Devel) << "Run type returned by computeRunType (default) : " << runType << ENDM;
+  ILOG(Info, Devel) << "Run type returned by computeRunType (default) : " << runType << ENDM;
   return runType;
 }
 
@@ -110,9 +108,9 @@ inline std::string computePartitionName(framework::ServiceRegistryRef services, 
 {
   std::string partitionName;
   partitionName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("environment_id", "unspecified");
-  ILOG(Info, Devel) << "Got this property partitionName from RawDeviceService: '" << partitionName << "'" << ENDM;
+  ILOG(Debug, Devel) << "Got this property partitionName from RawDeviceService: '" << partitionName << "'" << ENDM;
   partitionName = partitionName != "unspecified" /* found it in service */ ? partitionName : fallbackPartitionName;
-  ILOG(Debug, Devel) << "Period Name returned by computePeriodName : " << partitionName << ENDM;
+  ILOG(Info, Devel) << "Period Name returned by computePeriodName : " << partitionName << ENDM;
   return partitionName;
 }
 
@@ -120,9 +118,9 @@ inline std::string computePeriodName(framework::ServiceRegistryRef services, con
 { // Determine period
   std::string periodName;
   periodName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("periodName", "unspecified");
-  ILOG(Info, Devel) << "Got this property periodName from RawDeviceService: '" << periodName << "'" << ENDM;
+  ILOG(Debug, Devel) << "Got this property periodName from RawDeviceService: '" << periodName << "'" << ENDM;
   periodName = periodName != "unspecified" /* found it in service */ ? periodName : fallbackPeriodName;
-  ILOG(Debug, Devel) << "Period Name returned by computePeriodName : " << periodName << ENDM;
+  ILOG(Info, Devel) << "Period Name returned by computePeriodName : " << periodName << ENDM;
   return periodName;
 }
 

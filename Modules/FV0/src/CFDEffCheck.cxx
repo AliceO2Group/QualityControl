@@ -36,18 +36,18 @@ void CFDEffCheck::configure()
 {
   if (auto param = mCustomParameters.find("thresholdWarning"); param != mCustomParameters.end()) {
     mThreshWarning = stof(param->second);
-    ILOG(Info, Support) << "configure() : using thresholdWarning = " << mThreshWarning << ENDM;
+    ILOG(Debug, Support) << "configure() : using thresholdWarning = " << mThreshWarning << ENDM;
   } else {
     mThreshWarning = 0.9;
-    ILOG(Info, Support) << "configure() : using default thresholdWarning = " << mThreshWarning << ENDM;
+    ILOG(Debug, Support) << "configure() : using default thresholdWarning = " << mThreshWarning << ENDM;
   }
 
   if (auto param = mCustomParameters.find("thresholdError"); param != mCustomParameters.end()) {
     mThreshError = stof(param->second);
-    ILOG(Info, Support) << "configure() : using thresholdError = " << mThreshError << ENDM;
+    ILOG(Debug, Support) << "configure() : using thresholdError = " << mThreshError << ENDM;
   } else {
     mThreshError = 0.8;
-    ILOG(Info, Support) << "configure() : using default thresholdError = " << mThreshError << ENDM;
+    ILOG(Debug, Support) << "configure() : using default thresholdError = " << mThreshError << ENDM;
   }
 
   if (auto param = mCustomParameters.find("deadChannelMap"); param != mCustomParameters.end()) {
@@ -66,18 +66,18 @@ void CFDEffCheck::configure()
   } else {
     if (auto param = mCustomParameters.find("ccdbUrl"); param != mCustomParameters.end()) {
       setCcdbUrl(param->second);
-      ILOG(Info, Support) << "configure() : using deadChannelMap from CCDB, configured url = " << param->second << ENDM;
+      ILOG(Debug, Support) << "configure() : using deadChannelMap from CCDB, configured url = " << param->second << ENDM;
     } else {
       setCcdbUrl("o2-ccdb.internal");
-      ILOG(Info, Support) << "configure() : using deadChannelMap from CCDB, default url = "
-                          << "o2-ccdb.internal" << ENDM;
+      ILOG(Debug, Support) << "configure() : using deadChannelMap from CCDB, default url = "
+                           << "o2-ccdb.internal" << ENDM;
     }
     if (auto param = mCustomParameters.find("pathDeadChannelMap"); param != mCustomParameters.end()) {
       mPathDeadChannelMap = param->second;
-      ILOG(Info, Support) << "configure() : using pathDeadChannelMap: " << mPathDeadChannelMap << ENDM;
+      ILOG(Debug, Support) << "configure() : using pathDeadChannelMap: " << mPathDeadChannelMap << ENDM;
     } else {
       mPathDeadChannelMap = "FV0/Calib/DeadChannelMap";
-      ILOG(Info, Support) << "configure() : using default pathDeadChannelMap: " << mPathDeadChannelMap << ENDM;
+      ILOG(Debug, Support) << "configure() : using default pathDeadChannelMap: " << mPathDeadChannelMap << ENDM;
     }
 
     // WARNING: always uses last available dead channel map

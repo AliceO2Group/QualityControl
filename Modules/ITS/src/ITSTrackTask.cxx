@@ -61,7 +61,7 @@ ITSTrackTask::~ITSTrackTask()
 void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
 
-  ILOG(Info, Support) << "initialize ITSTrackTask" << ENDM;
+  ILOG(Debug, Devel) << "initialize ITSTrackTask" << ENDM;
 
   mVertexXYsize = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "vertexXYsize", mVertexXYsize);
   mVertexZsize = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "vertexZsize", mVertexZsize);
@@ -78,32 +78,33 @@ void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
     auto line = new TLine(ChipBoundary[l], 0, ChipBoundary[l], 10);
     hNClusterVsChipITS->GetListOfFunctions()->Add(line);
   }
-
-  // get dict from ccdb
-  // mTimestamp = std::stol(mCustomParameters["dicttimestamp"]);
-  mTimestamp = std::stol(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "dicttimestamp", "0"));
-  long int ts = mTimestamp ? mTimestamp : o2::ccdb::getCurrentTimestamp();
-  ILOG(Info, Support) << "Getting dictionary from ccdb - timestamp: " << ts << ENDM;
-  auto& mgr = o2::ccdb::BasicCCDBManager::instance();
-  mgr.setTimestamp(ts);
-  mDict = mgr.get<o2::itsmft::TopologyDictionary>("ITS/Calib/ClusterDictionary");
-  ILOG(Info, Support) << "Dictionary size: " << mDict->getSize() << ENDM;
 }
 
 void ITSTrackTask::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "startOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
 }
 
 void ITSTrackTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
 
   ILOG(Info, Support) << "START DOING QC General" << ENDM;
+
+  if (mTimestamp == -1) { // get dict from ccdb
+    mTimestamp = std::stol(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "dicttimestamp", "0"));
+    long int ts = mTimestamp ? mTimestamp : ctx.services().get<o2::framework::TimingInfo>().creation;
+    ILOG(Info, Support) << "Getting dictionary from ccdb - timestamp: " << ts << ENDM;
+    auto& mgr = o2::ccdb::BasicCCDBManager::instance();
+    mgr.setTimestamp(ts);
+    mDict = mgr.get<o2::itsmft::TopologyDictionary>("ITS/Calib/ClusterDictionary");
+    ILOG(Info, Support) << "Dictionary size: " << mDict->getSize() << ENDM;
+  }
+
   auto trackArr = ctx.inputs().get<gsl::span<o2::its::TrackITS>>("tracks");
   auto trackRofArr = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("rofs");
   auto clusRofArr = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("clustersrof");
@@ -269,17 +270,17 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void ITSTrackTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void ITSTrackTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void ITSTrackTask::reset()
 {
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   hAngularDistribution->Reset();
   hNClusters->Reset();
   hTrackPhi->Reset();

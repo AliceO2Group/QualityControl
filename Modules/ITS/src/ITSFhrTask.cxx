@@ -87,7 +87,7 @@ ITSFhrTask::~ITSFhrTask()
 
 void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize ITSFhrTask" << ENDM;
+  ILOG(Debug, Devel) << "initialize ITSFhrTask" << ENDM;
   getParameters();
 
   if (mLocalGeometryFile == 1) {
@@ -126,7 +126,6 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
   mDecoder = new o2::itsmft::RawPixelDecoder<o2::itsmft::ChipMappingITS>();
   mDecoder->init();
   mDecoder->setNThreads(mNThreads);
-  mDecoder->setFormat(GBTLink::NewFormat);               // Using RDHv6 (NewFormat)
   mDecoder->setUserDataOrigin(header::DataOrigin("DS")); // set user data origin in dpl
   mDecoder->setUserDataDescription(header::DataDescription("RAWDATA0"));
   mChipsBuffer.resize(mGeom->getNumberOfChips());
@@ -414,11 +413,11 @@ void ITSFhrTask::setPlotsFormat()
 
 void ITSFhrTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity : " << activity.mId << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity : " << activity.mId << ENDM;
   reset();
 }
 
-void ITSFhrTask::startOfCycle() { ILOG(Info, Support) << "startOfCycle" << ENDM; }
+void ITSFhrTask::startOfCycle() { ILOG(Debug, Devel) << "startOfCycle" << ENDM; }
 
 void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
@@ -789,12 +788,12 @@ void ITSFhrTask::getParameters()
 void ITSFhrTask::endOfCycle()
 {
   ILOG(Debug, Support) << "average process time == " << (double)mAverageProcessTime / mTFCount << ENDM;
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void ITSFhrTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void ITSFhrTask::resetGeneralPlots()

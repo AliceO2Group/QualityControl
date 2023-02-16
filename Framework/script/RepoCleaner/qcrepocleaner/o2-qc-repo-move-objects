@@ -7,7 +7,8 @@ from qcrepocleaner.Ccdb import Ccdb
 import sys
 import re
 
-def parseArgs():
+
+def parse_args():
     """Parse the arguments passed to the script."""
     logging.info("Parsing arguments")
     parser = argparse.ArgumentParser(description='Move all objects in path to new-path')
@@ -47,8 +48,11 @@ def run(args):
     ccdb = Ccdb(args.url)
 
     nb_moved = 0
-    # we have to make sure we take all objects inside the provide path --> we add `/.*` at the end
+    # we have to make sure we take all objects in the subfolders --> we add `/.*` at the end
     versions = ccdb.getVersionsList(args.path + "/.*", "", "")
+    # we also want to have all the versions at the root
+    versions += ccdb.getVersionsList(args.path, "", "")
+
     logging.info("Here are the objects that are going to be moved: ")
     for v in versions:
         logging.info(v)
@@ -63,9 +67,9 @@ def run(args):
         exit(0)
 
     for v in versions:
-        logging.info(f"Ready to move {v}")
         # here we need to make sure that we preserve the subdirectory structure and replace only the matching part
-        version_new_path = re.sub("^" + args.path, args.new_path, v.path, count=0, flags=0)
+        version_new_path = re.sub("^" + args.path, args.new_path.rstrip('/'), v.path.rstrip('/'), count=0, flags=0)
+        logging.info(f"Ready to move {v} to {version_new_path}")
         if args.one_by_one:
             answer = input("  Continue? y/n\n  ")
             if answer.lower() in ["y", "yes"]:
@@ -89,7 +93,7 @@ def main():
     prepare_main_logger()
 
     # Parse arguments
-    args = parseArgs()
+    args = parse_args()
     logging.getLogger().setLevel(int(args.log_level))
 
     run(args)

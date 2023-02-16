@@ -38,7 +38,7 @@ CTPRawDataReaderTask::~CTPRawDataReaderTask()
 
 void CTPRawDataReaderTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize CTPRawDataReaderTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize CTPRawDataReaderTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   mHistoBC = new TH1F("histobc", "BC distribution", 3564, 0, 3564);
   mHistoInputs = new TH1F("inputs", "Inputs distribution", 48, 0, 48);
@@ -50,7 +50,7 @@ void CTPRawDataReaderTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void CTPRawDataReaderTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity " << activity.mId << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
   mHistoBC->Reset();
   mHistoInputs->Reset();
   mHistoClasses->Reset();
@@ -58,7 +58,7 @@ void CTPRawDataReaderTask::startOfActivity(Activity& activity)
 
 void CTPRawDataReaderTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void CTPRawDataReaderTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -186,19 +186,19 @@ void CTPRawDataReaderTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void CTPRawDataReaderTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void CTPRawDataReaderTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void CTPRawDataReaderTask::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   mHistoBC->Reset();
   mHistoInputs->Reset();
   mHistoClasses->Reset();

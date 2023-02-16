@@ -19,6 +19,7 @@
 
 #include "QualityControl/DatabaseInterface.h"
 #include <Common/Timer.h>
+#include <boost/property_tree/ptree.hpp>
 #include <memory>
 #include <string>
 
@@ -148,6 +149,15 @@ class CcdbDatabase : public DatabaseInterface
    * @return
    */
   bool isDbInFailure();
+
+  /**
+   * Add the metadata specific to the QC framework.
+   * @param fullMetadata
+   * @param detectorName
+   * @param taskName
+   * @param className
+   */
+  void addFrameworkMetadata(std::map<std::string, std::string>& fullMetadata, std::string detectorName, std::string className);
 
   std::unique_ptr<o2::ccdb::CcdbApi> ccdbApi;
   std::string mUrl;

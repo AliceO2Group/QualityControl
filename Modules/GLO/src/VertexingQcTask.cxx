@@ -56,18 +56,18 @@ VertexingQcTask::~VertexingQcTask()
 
 void VertexingQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize VertexingQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize VertexingQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
   if (auto param = mCustomParameters.find("verbose"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - verbose (= verbose printouts): " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - verbose (= verbose printouts): " << param->second << ENDM;
     if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
       mVerbose = true;
     }
   }
 
   if (auto param = mCustomParameters.find("isMC"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - isMC: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - isMC: " << param->second << ENDM;
     if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
       mUseMC = true;
       mMCReader.initFromDigitContext("collisioncontext.root");
@@ -147,13 +147,13 @@ void VertexingQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void VertexingQcTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity " << activity.mId << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
   reset();
 }
 
 void VertexingQcTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void VertexingQcTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -247,7 +247,7 @@ void VertexingQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void VertexingQcTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 
   if (mUseMC) {
 
@@ -270,14 +270,14 @@ void VertexingQcTask::endOfCycle()
 
 void VertexingQcTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void VertexingQcTask::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   mX->Reset();
   mY->Reset();
   mZ->Reset();

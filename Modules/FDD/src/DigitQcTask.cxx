@@ -134,7 +134,7 @@ bool DigitQcTask::chIsVertexEvent(const o2::fdd::ChannelData chd)
 
 void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize DigitQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize DigitQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
   mStateLastIR2Ch = {};
   mMapChTrgNames.insert({ o2::fdd::ChannelData::EEventDataBit::kNumberADC, "NumberADC" });
   mMapChTrgNames.insert({ o2::fdd::ChannelData::EEventDataBit::kIsDoubleEvent, "IsDoubleEvent" });
@@ -413,7 +413,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void DigitQcTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity " << activity.mId << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
   mHist2CorrTCMchAndPMch->Reset();
   mHistTime2Ch->Reset();
   mHistAmp2Ch->Reset();
@@ -467,7 +467,7 @@ void DigitQcTask::startOfActivity(Activity& activity)
 
 void DigitQcTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
   mTimeMinNS = -1;
   mTimeMaxNS = 0.;
   mTimeCurNS = 0.;
@@ -815,7 +815,7 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void DigitQcTask::endOfCycle()
 {
-  ILOG(Info) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
   // add TF creation time for further match with filling scheme in PP in case of offline running
   ILOG(Debug, Support) << "adding last TF creation time: " << mTFcreationTime << ENDM;
   getObjectsManager()->getMonitorObject(mHistBCvsTrg->GetName())->addOrUpdateMetadata("TFcreationTime", std::to_string(mTFcreationTime));
@@ -834,13 +834,13 @@ void DigitQcTask::endOfCycle()
 
 void DigitQcTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void DigitQcTask::reset()
 {
   // clean all the monitor objects here
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   mHist2CorrTCMchAndPMch->Reset();
   mHistTime2Ch->Reset();
   mHistAmp2Ch->Reset();

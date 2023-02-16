@@ -57,19 +57,19 @@ ZDCRecDataTask::~ZDCRecDataTask()
 
 void ZDCRecDataTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize ZDCRecDataTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize ZDCRecDataTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
   init();
   reset();
 }
 
 void ZDCRecDataTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity " << activity.mId << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
 }
 
 void ZDCRecDataTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void ZDCRecDataTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -84,19 +84,19 @@ void ZDCRecDataTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void ZDCRecDataTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void ZDCRecDataTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void ZDCRecDataTask::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   for (int i = 0; i < (int)mHisto1D.size(); i++) {
     mHisto1D.at(i).histo->Reset();
   }
@@ -227,11 +227,11 @@ void ZDCRecDataTask::dumpHistoStructure()
 
 void ZDCRecDataTask::initHisto()
 {
-  ILOG(Info, Support) << "initialize ZDC REC DATA HISTOGRAMS" << ENDM;
+  ILOG(Debug, Devel) << "initialize ZDC REC DATA HISTOGRAMS" << ENDM;
   std::vector<std::string> tokenString;
 
   if (auto param = mCustomParameters.find("ADC"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - ADC: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - ADC: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto1D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()));
   } else
@@ -268,7 +268,7 @@ void ZDCRecDataTask::initHisto()
   addNewHisto("ADC1D", "h_ADC_ZEM2", "ADC ZEM2 (Gev)", "ADC", "ZEM2", "", "", 14);
 
   if (auto param = mCustomParameters.find("ADCH"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - ADCH: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - ADCH: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto1D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()));
   } else
@@ -283,7 +283,7 @@ void ZDCRecDataTask::initHisto()
   addNewHisto("ADC1D", "h_ADC_ZPC_SUM_H", "ADC ZPC SUM (Gev) ZOOM", "ADC", "ZPCS", "", "", 0);
 
   if (auto param = mCustomParameters.find("TDCT"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - TDCT: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - TDCT: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto1D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()));
   } else
@@ -300,7 +300,7 @@ void ZDCRecDataTask::initHisto()
   addNewHisto("TDC1D", "h_TDC_ZEM2_V", "TDC Time (ns)  ZEM2", "TDCV", "ZEM2", "", "", 6);
 
   if (auto param = mCustomParameters.find("TDCA"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - TDCA: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - TDCA: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto1D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()));
   } else
@@ -317,7 +317,7 @@ void ZDCRecDataTask::initHisto()
   addNewHisto("TDC1D", "h_TDC_ZEM2_A", "TDC Amplitude ZEM2", "TDCA", "ZEM2", "", "", 0);
   // Centroid ZPA
   if (auto param = mCustomParameters.find("CENTR_ZPA"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - CENTR_ZPA: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - CENTR_ZPA: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto1D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()));
   } else
@@ -325,7 +325,7 @@ void ZDCRecDataTask::initHisto()
   addNewHisto("CENTR_ZPA", "h_CENTR_ZPA", "ZPA Centroid (cm)", "ADC", "CXZPA", "", "", 0);
   // Centroid ZPA
   if (auto param = mCustomParameters.find("CENTR_ZPC"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - CENTR_ZPC: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - CENTR_ZPC: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto1D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()));
   } else
@@ -335,7 +335,7 @@ void ZDCRecDataTask::initHisto()
   // 2D Histos
 
   if (auto param = mCustomParameters.find("ADCSUMvsTC"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - ADCSUMvsTC: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - ADCSUMvsTC: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
   } else
@@ -346,7 +346,7 @@ void ZDCRecDataTask::initHisto()
   addNewHisto("ADCSUMvsTC", "h_ADC_ZPCS_ZPCC", "ADC (Gev) ZPC SUM vs ADC (Gev) ZPC TC", "ADC", "ZPCC", "ADC", "ZPCS", 0);
 
   if (auto param = mCustomParameters.find("ADCvsTDCT"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - ADCvsTDCT: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - ADCvsTDCT: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
   } else
@@ -363,7 +363,7 @@ void ZDCRecDataTask::initHisto()
   addNewHisto("ADCvsTDC", "h_ADC_TDC_ZEM2", "ADC (Gev) ZEM2 vs TDC Time (ns) ZEM2", "TDCV", "ZEM2", "ADC", "ZEM2", 0);
 
   if (auto param = mCustomParameters.find("TDCDIFF"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - TDCDIFF: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - TDCDIFF: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
   } else
@@ -371,7 +371,7 @@ void ZDCRecDataTask::initHisto()
   addNewHisto("TDC-DIFF", "h_TDC_ZNC_DIFF_ZNA_ZNC_SUM_ZNA_V", "TDC Time (ns) TDC ZNC + ZNA vs ZNC - ZNA", "TDCV", "ZNC-ZNA", "TDCV", "ZNC+ZNA", 0);
 
   if (auto param = mCustomParameters.find("TDCAvsTDCT"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - TDCAvsTDCT: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - TDCAvsTDCT: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
   } else
@@ -414,7 +414,7 @@ void ZDCRecDataTask::initHisto()
   mHisto1D.at(mIdhADC).histo->SetStats(0);
   // Centroid ZNA
   if (auto param = mCustomParameters.find("CENTR_ZNA"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - CENTR_ZNA: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - CENTR_ZNA: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
   } else
@@ -422,7 +422,7 @@ void ZDCRecDataTask::initHisto()
   addNewHisto("CENTR_ZNA", "h_CENTR_ZNA", "ZNA Centroid (cm)", "ADC", "CXZNA", "ADC", "CYZNA", 0);
   // Centroid ZNC
   if (auto param = mCustomParameters.find("CENTR_ZNC"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - CENTR_ZNC: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - CENTR_ZNC: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
   } else

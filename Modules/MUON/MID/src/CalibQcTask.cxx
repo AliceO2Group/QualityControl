@@ -49,7 +49,7 @@ CalibQcTask::~CalibQcTask()
 
 void CalibQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize CalibQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Info, Devel) << "initialize CalibQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
   // std::cout << "!!!! START initialize CalibQcTask !!!! " << std::endl;
   /////////////////
   mNbTimeFrame = std::make_shared<TH1F>("NbTimeFrame", "NbTimeFrame", 1, 0, 1.);
@@ -213,18 +213,18 @@ void CalibQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void CalibQcTask::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "startOfActivity" << ENDM;
+  ILOG(Info, Devel) << "startOfActivity" << ENDM;
 }
 
 void CalibQcTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Info, Devel) << "startOfCycle" << ENDM;
 }
 
 void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   // std::cout << "!!!! START monitorData CalibQcTask !!!! " << std::endl;
-  nTF++;
+  mTF++;
   // printf("----------------> %05d TF ",nTF);
   mNbTimeFrame->Fill(0.5, 1.);
 
@@ -258,7 +258,7 @@ void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     // printf("%05d noiseROF with first entry %05zu and nentries %02zu , BC %05d, ORB %05d , EventType %02d\n", noiseROF, noiserof.firstEntry, noiserof.nEntries, noiserof.interactionRecord.bc, noiserof.interactionRecord.orbit, (int)noiserof.eventType);
     //    eventType::  Standard = 0, Calib = 1, FET = 2
     mNbNoiseROF->Fill(0.5, 1.);
-    noiseROF++;
+    mNoiseROF++;
     multNoiseMT11B = 0;
     multNoiseMT12B = 0;
     multNoiseMT21B = 0;
@@ -423,7 +423,7 @@ void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     // printf("%05d deadROF with first entry %05zu and nentries %02zu , BC %05d, ORB %05d , EventType %02d\n", deadROF, deadrof.firstEntry, deadrof.nEntries, deadrof.interactionRecord.bc, deadrof.interactionRecord.orbit, (int)deadrof.eventType);
     //   eventType::  Standard = 0, Calib = 1, FET = 2
     mNbDeadROF->Fill(0.5, 1.);
-    deadROF++;
+    mDeadROF++;
 
     multDeadMT11B = 0;
     multDeadMT12B = 0;
@@ -593,19 +593,19 @@ void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void CalibQcTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Info, Devel) << "endOfCycle" << ENDM;
 }
 
 void CalibQcTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Info, Devel) << "endOfActivity" << ENDM;
 }
 
 void CalibQcTask::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Info, Devel) << "Resetting the histogram" << ENDM;
 
   mNbTimeFrame->Reset();
   mNbNoiseROF->Reset();

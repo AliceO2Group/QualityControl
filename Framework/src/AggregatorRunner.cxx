@@ -107,7 +107,7 @@ void AggregatorRunner::refreshConfig(InitContext& iCtx)
     ILOG(Warning, Devel) << "Could not get updated config tree in TaskRunner::init() - `qcConfiguration` could not be retrieved" << ENDM;
   } catch (...) {
     // we catch here because we don't know where it will get lost in DPL, and also we don't care if this part has failed.
-    ILOG(Warning, Devel) << "Error caught in refreshConfig() :\n"
+    ILOG(Warning, Devel) << "Error caught in refreshConfig(): "
                          << current_diagnostic(true) << ENDM;
   }
 }
@@ -160,7 +160,7 @@ void AggregatorRunner::init(framework::InitContext& iCtx)
     initServiceDiscovery();
     initAggregators();
   } catch (...) {
-    ILOG(Fatal) << "Unexpected exception during initialization:\n"
+    ILOG(Fatal) << "Unexpected exception during initialization: "
                 << current_diagnostic(true) << ENDM;
     throw;
   }
@@ -251,9 +251,7 @@ void AggregatorRunner::initDatabase()
 {
   mDatabase = DatabaseFactory::create(mRunnerConfig.database.at("implementation"));
   mDatabase->connect(mRunnerConfig.database);
-  ILOG(Info, Devel) << "Database that is going to be used : ";
-  ILOG(Info, Support) << ">> Implementation : " << mRunnerConfig.database.at("implementation") << ENDM;
-  ILOG(Info, Support) << ">> Host : " << mRunnerConfig.database.at("host") << ENDM;
+  ILOG(Info, Support) << "Database that is going to be used > Implementation : " << mRunnerConfig.database.at("implementation") << " / Host : " << mRunnerConfig.database.at("host") << ENDM;
 }
 
 void AggregatorRunner::initMonitoring()
@@ -270,7 +268,7 @@ void AggregatorRunner::initServiceDiscovery()
   auto consulUrl = mRunnerConfig.consulUrl;
   if (consulUrl.empty()) {
     mServiceDiscovery = nullptr;
-    ILOG(Warning, Ops) << "Service Discovery disabled" << ENDM;
+    ILOG(Warning, Support) << "Service Discovery disabled" << ENDM;
     return;
   }
   mServiceDiscovery = std::make_shared<ServiceDiscovery>(consulUrl, mDeviceName, mDeviceName);
@@ -417,8 +415,7 @@ void AggregatorRunner::start(ServiceRegistryRef services)
   string partitionName = computePartitionName(services);
   QcInfoLogger::setRun(mActivity.mId);
   QcInfoLogger::setPartition(partitionName);
-  ILOG(Info, Support) << "Starting run " << mActivity.mId << ":"
-                      << "\n   - period: " << mActivity.mPeriodName << "\n   - pass type: " << mActivity.mPassName << "\n   - provenance: " << mActivity.mProvenance << ENDM;
+  ILOG(Info, Support) << "Starting run " << mActivity.mId << "> period: " << mActivity.mPeriodName << " / pass type: " << mActivity.mPassName << " / provenance: " << mActivity.mProvenance << ENDM;
 }
 
 void AggregatorRunner::stop()
@@ -428,14 +425,14 @@ void AggregatorRunner::stop()
 
 void AggregatorRunner::reset()
 {
-  ILOG(Info, Support) << "Reset" << ENDM;
+  ILOG(Info, Devel) << "Reset" << ENDM;
 
   try {
     mCollector.reset();
     mActivity = Activity();
   } catch (...) {
     // we catch here because we don't know where it will go in DPL's CallbackService
-    ILOG(Error, Support) << "Error caught in reset() :\n"
+    ILOG(Error, Support) << "Error caught in reset() : "
                          << current_diagnostic(true) << ENDM;
     throw;
   }

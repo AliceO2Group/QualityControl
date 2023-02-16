@@ -23,17 +23,26 @@
         "maxNumberCycles": "-1",
         "dataSource": {
           "type": "direct",
-          "query" : "tracks:MCH/TRACKS;trackrofs:MCH/TRACKROFS;trackclusters:MCH/TRACKCLUSTERS;trackdigits:MCH/CLUSTERDIGITS"
+          "query": "tracks:MCH/TRACKS;trackrofs:MCH/TRACKROFS;trackclusters:MCH/TRACKCLUSTERS"
         },
-        "taskParameters" : {
-                "maxTracksPerTF": "10"
+        "taskParameters": {
+          "maxTracksPerTF": "10"
+        },
+        "grpGeomRequest": {
+          "geomRequest": "Aligned",
+          "askGRPECS": "false",
+          "askGRPLHCIF": "false",
+          "askGRPMagField": "false",
+          "askMatLUT": "false",
+          "askTime": "false",
+          "askOnceAllButField": "false",
+          "needPropagatorD": "false"
         },
         "location": "remote"
       }
     },
-    "checks": {
-   }
+    "checks": {}
   },
-  "dataSamplingPolicies": [
-  ]
+  "dataSamplingPolicies": []
 }
+

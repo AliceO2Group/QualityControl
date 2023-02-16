@@ -36,33 +36,33 @@ void TrackletsCheck::retrieveCCDBSettings()
 {
   if (auto param = mCustomParameters.find("ccdbtimestamp"); param != mCustomParameters.end()) {
     mTimestamp = std::stol(mCustomParameters["ccdbtimestamp"]);
-    ILOG(Info, Support) << "configure() : using ccdbtimestamp = " << mTimestamp << ENDM;
+    ILOG(Debug, Support) << "configure() : using ccdbtimestamp = " << mTimestamp << ENDM;
   } else {
     mTimestamp = o2::ccdb::getCurrentTimestamp();
-    ILOG(Info, Support) << "configure() : using default timestam of now = " << mTimestamp << ENDM;
+    ILOG(Debug, Support) << "configure() : using default timestam of now = " << mTimestamp << ENDM;
   }
   auto& mgr = o2::ccdb::BasicCCDBManager::instance();
   mgr.setTimestamp(mTimestamp);
   if (auto param = mCustomParameters.find("integralthreshold"); param != mCustomParameters.end()) {
     mIntegralThreshold = std::stol(mCustomParameters["integralthreshold"]);
-    ILOG(Info, Support) << "configure() : using integral threshold = " << mIntegralThreshold << ENDM;
+    ILOG(Debug, Support) << "configure() : using integral threshold = " << mIntegralThreshold << ENDM;
   } else {
     mIntegralThreshold = 100;
-    ILOG(Info, Support) << "configure() : using default integral threshold of = " << mIntegralThreshold << ENDM;
+    ILOG(Debug, Support) << "configure() : using default integral threshold of = " << mIntegralThreshold << ENDM;
   }
   if (auto param = mCustomParameters.find("ratiothreshold"); param != mCustomParameters.end()) {
     mRatioThreshold = std::stol(mCustomParameters["ratiothreshold"]);
-    ILOG(Info, Support) << "configure() : using ratio threshold = " << mRatioThreshold << ENDM;
+    ILOG(Debug, Support) << "configure() : using ratio threshold = " << mRatioThreshold << ENDM;
   } else {
     mRatioThreshold = 0.9; // 90% of counts must be above the threshold
-    ILOG(Info, Support) << "configure() : using default ratio threshold of = " << mRatioThreshold << ENDM;
+    ILOG(Debug, Support) << "configure() : using default ratio threshold of = " << mRatioThreshold << ENDM;
   }
   if (auto param = mCustomParameters.find("zerobinratiotheshold"); param != mCustomParameters.end()) {
     mZeroBinRatioThreshold = std::stol(mCustomParameters["zerobinratiothreshold"]);
-    ILOG(Info, Support) << "configure() : using ratio threshold = " << mZeroBinRatioThreshold << ENDM;
+    ILOG(Debug, Support) << "configure() : using ratio threshold = " << mZeroBinRatioThreshold << ENDM;
   } else {
     mZeroBinRatioThreshold = 0.01; // 1% of counts can be in this bin
-    ILOG(Info, Support) << "configure() : using default ratio threshold of = " << mZeroBinRatioThreshold << ENDM;
+    ILOG(Debug, Support) << "configure() : using default ratio threshold of = " << mZeroBinRatioThreshold << ENDM;
   }
 }
 

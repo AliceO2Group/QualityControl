@@ -19,7 +19,7 @@ class ObjectVersion:
     This class represents a single version. 
     '''
 
-    def __init__(self, path: str, validFrom, validTo, uuid=None, metadata=None):
+    def __init__(self, path: str, validFrom, validTo, createdAt, uuid=None, metadata=None):
         '''
         Construct an ObjectVersion.
         :param path: path to the object
@@ -34,7 +34,10 @@ class ObjectVersion:
         self.validFromAsDt = datetime.datetime.fromtimestamp(int(validFrom) / 1000)  # /1000 because we get ms
         self.validTo = validTo
         self.metadata = metadata
-        
+        self.createdAt = createdAt
+        # precomputed Datetime ("Dt") of the timestamp `createdAt`
+        self.createdAtDt = datetime.datetime.fromtimestamp(int(createdAt) / 1000)  # /1000 because we get ms
+
     def __repr__(self):
         if "Run" in self.metadata or "RunNumber" in self.metadata:
             run_number = self.metadata["Run"] if "Run" in self.metadata else self.metadata["RunNumber"]
@@ -72,7 +75,7 @@ class Ccdb:
         r.raise_for_status()
         try:
             json = r.json()
-        except JSONDecodeError as err:
+        except json.decoder.JSONDecodeError as err:
             logger.error(f"JSON decode error: {err}")
             raise
         paths = []
@@ -83,11 +86,12 @@ class Ccdb:
     def getVersionsList(self, object_path: str, from_ts: str = "", to_ts: str = "", run: int = -1) \
             -> List[ObjectVersion]:
         '''
-        Get the list of all versions for a given object.
+        Get the list of all versions for a given object sorted by CreatedAt.
         :param run: only objects for this run (based on metadata)
         :param object_path: Path to the object for which we want the list of versions.
         :param from_ts: only objects created at or after this timestamp
         :param to_ts: only objects created before or at this timestamp
+        :param sort: which field to sort with
         :return A list of ObjectVersion.
         '''
         url_browse_all_versions = self.url + '/browse/' + object_path
@@ -109,9 +113,9 @@ class Ccdb:
             exit(1)
         versions = []
         for object_path in json_result['objects']:
-            version = ObjectVersion(path=object_path['path'], uuid=object_path['id'], validFrom=object_path['validFrom'], validTo=object_path['validUntil'], metadata=object_path)
+            version = ObjectVersion(path=object_path['path'], uuid=object_path['id'], validFrom=object_path['validFrom'], validTo=object_path['validUntil'], metadata=object_path, createdAt=object_path['Created'])
             versions.insert(0, version)
-        versions.sort(key=lambda v: v.validFrom, reverse=False)
+        versions.sort(key=lambda v: v.createdAt, reverse=False)
         return versions
 
     @dryable.Dryable()
