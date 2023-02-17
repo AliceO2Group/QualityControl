@@ -45,13 +45,15 @@ class ITSThresholdCalibrationTask : public TaskInterface
     int Hs;
     int HIC;
     int ChipID;
-    float VCASN;
+    float MainVal; // can be THR, ITHR, VCASN
     float RMS;
-    float ITHR;
-    float THR;
     float Noise;
     float NoiseRMS;
     float status;
+    float Tot;    // time over threshold
+    float TotRms; // time over threshold rms
+    float Rt;     // rise time
+    float RtRms;  // rise time rms
   };
   struct CalibrationResStructPixel {
     int Layer;
@@ -119,8 +121,12 @@ class ITSThresholdCalibrationTask : public TaskInterface
   TH2D* hCalibrationPixelpAverage[3][3];
 
   TH2F* hUnsuccess[3];
-  TH1F *hCalibrationLayer[7][3], *hCalibrationRMSLayer[7][3];
-  TH1F *hCalibrationThrNoiseLayer[7], *hCalibrationThrNoiseRMSLayer[7];
+  TH1F *hCalibrationLayer[NLayer][3], *hCalibrationRMSLayer[NLayer][3];
+  TH1F *hCalibrationThrNoiseLayer[NLayer], *hCalibrationThrNoiseRMSLayer[NLayer];
+
+  // Histograms for pulse-length scan
+  TH2F *hTimeOverThreshold[3], *hTimeOverThresholdRms[3], *hRiseTime[3], *hRiseTimeRms[3];
+  TH1F *hTimeOverThresholdLayer[NLayer], *hTimeOverThresholdRmsLayer[NLayer], *hRiseTimeLayer[NLayer], *hRiseTimeRmsLayer[NLayer];
 
   o2::itsmft::ChipMappingITS mp;
 };
