@@ -21,6 +21,9 @@
 #define QC_MODULE_ITS_ITSFEETASK_H
 
 #include "QualityControl/TaskInterface.h"
+#include "Headers/RAWDataHeader.h"
+#include "Headers/RDHAny.h"
+#include "DetectorsRaw/RDHUtils.h"
 
 #include <TH1.h>
 #include <TH2.h>

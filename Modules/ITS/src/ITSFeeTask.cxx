@@ -329,24 +329,22 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
   resetLanePlotsAndCounters(); // action taken depending on mResetLaneStatus and mResetPayload
 
   for (auto it = parser.begin(), end = parser.end(); it != end; ++it) {
-    auto const* rdh = it.get_if<o2::header::RAWDataHeaderV7>();
-    if (!rdh) {
-      ILOG(Debug, Devel) << "We ask RDHv7 but you are running with another version, please fix it" << ENDM;
-    }
-    // Decoding data format (RDHv6)
-    int istave = (int)(rdh->feeId & 0x00ff);
-    int ilink = (int)((rdh->feeId & 0x0f00) >> 8);
-    int ilayer = (int)((rdh->feeId & 0xf000) >> 12);
+    auto rdh = reinterpret_cast<const o2::header::RDHAny*>(it.raw());
+    // Decoding data format (RDHv* --> v6 and v7 have same bits for what is considered here)
+    auto feeID = o2::raw::RDHUtils::getFEEID(rdh);
+    int istave = (int)(feeID & 0x00ff);
+    int ilink = (int)((feeID & 0x0f00) >> 8);
+    int ilayer = (int)((feeID & 0xf000) >> 12);
     int ifee = 3 * StaveBoundary[ilayer] - (StaveBoundary[ilayer] - StaveBoundary[NLayerIB]) * (ilayer >= NLayerIB) + istave * (3 - (ilayer >= NLayerIB)) + ilink;
-    int memorysize = (int)(rdh->memorySize);
-    int headersize = (int)(rdh->headerSize);
+    int memorysize = (int)(o2::raw::RDHUtils::getMemorySize(rdh));
+    int headersize = o2::raw::RDHUtils::getHeaderSize(rdh);
 
     payloadTot[ifee] += memorysize - headersize;
     bool clockEvt = false;
 
     // RDHSummaryPlot
     //  get detector field
-    uint64_t summaryLaneStatus = rdh->detectorField;
+    uint32_t summaryLaneStatus = o2::raw::RDHUtils::getDetectorField(rdh);
     // fill statusVsFeeId if set
     if (summaryLaneStatus & (1 << 0))
       mRDHSummary->Fill(ifee, 0); // missing data
@@ -365,7 +363,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (summaryLaneStatus & (1 << 24))
       mRDHSummary->Fill(ifee, 6); // Timebase Unsync evt
 
-    if ((int)(rdh->stop) && it.size()) { // looking into the DDW0 from the closing packet
+    if ((int)(o2::raw::RDHUtils::getStop(rdh)) && it.size()) { // looking into the DDW0 from the closing packet
       auto const* ddw = reinterpret_cast<const GBTDiagnosticWord*>(it.data());
       uint64_t laneInfo = ddw->laneWord.laneBits.laneStatus;
       uint8_t flag1 = ddw->indexWord.indexBits.flag1;
@@ -419,10 +417,10 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
     }
 
-    if ((int)(rdh->stop)) {
+    if ((int)(o2::raw::RDHUtils::getStop(rdh))) {
       nStops[ifee]++;
       for (int i = 0; i < 13; i++) {
-        if (((uint32_t)(rdh->triggerType) >> i & 1) == 1) {
+        if (((o2::raw::RDHUtils::getTriggerType(rdh)) >> i & 1) == 1) {
           mTrigger->Fill(i + 1);
           mTriggerVsFeeId->Fill(ifee, i + 1);
         }
