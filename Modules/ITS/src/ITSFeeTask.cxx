@@ -330,8 +330,8 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   for (auto it = parser.begin(), end = parser.end(); it != end; ++it) {
     auto const* rdh = it.get_if<o2::header::RAWDataHeaderV7>();
-    if(!rdh) {
-      ILOG(Debug, Devel) << "We ask RDHv7 but you are running with another version, please fix it";
+    if (!rdh) {
+      ILOG(Debug, Devel) << "We ask RDHv7 but you are running with another version, please fix it" << ENDM;
     }
     // Decoding data format (RDHv6)
     int istave = (int)(rdh->feeId & 0x00ff);
