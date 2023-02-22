@@ -6,7 +6,7 @@ on:
 
 jobs:
   bump_alidist:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - run: curl -L https://github.com/github/hub/releases/download/v2.12.7/hub-linux-amd64-2.12.7.tgz | tar xz
       - run: |
