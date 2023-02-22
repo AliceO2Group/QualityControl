@@ -41,7 +41,12 @@ struct GRPGeomRequestSpec {
   }
 };
 
-struct RecoDataRequestSpec {
+struct GlobalTrackingDataRequestSpec {
+  std::string canProcessTracks;
+  std::string requestTracks;
+  std::string canProcessClusters;
+  std::string requestClusters;
+  bool mc;
 };
 } // namespace o2::quality_control::core
 

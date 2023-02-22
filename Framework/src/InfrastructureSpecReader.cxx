@@ -142,6 +142,10 @@ TaskSpec InfrastructureSpecReader::readSpecEntry<TaskSpec>(std::string taskID, c
     ts.grpGeomRequestSpec = readSpecEntry<GRPGeomRequestSpec>(ts.taskName, taskTree.get_child("grpGeomRequest"), wholeTree);
   }
 
+  if (taskTree.count("globalTrackingDataRequest") > 0) {
+    ts.globalTrackingDataRequest = readSpecEntry<GlobalTrackingDataRequestSpec>(ts.taskName, taskTree.get_child("globalTrackingDataRequest"), wholeTree);
+  }
+
   return ts;
 }
 
@@ -341,6 +345,20 @@ GRPGeomRequestSpec
   grpSpec.needPropagatorD = grpGeomRequestTree.get<bool>("needPropagatorD", grpSpec.needPropagatorD);
 
   return grpSpec;
+}
+
+template <>
+GlobalTrackingDataRequestSpec
+  InfrastructureSpecReader::readSpecEntry<GlobalTrackingDataRequestSpec>(std::string, const boost::property_tree::ptree& dataRequestTree, const boost::property_tree::ptree&)
+{
+  GlobalTrackingDataRequestSpec gtdrSpec;
+  gtdrSpec.canProcessTracks = dataRequestTree.get<std::string>("canProcessTracks", gtdrSpec.canProcessTracks);
+  gtdrSpec.requestTracks = dataRequestTree.get<std::string>("requestTracks", gtdrSpec.requestTracks);
+  gtdrSpec.canProcessClusters = dataRequestTree.get<std::string>("canProcessClusters", gtdrSpec.canProcessClusters);
+  gtdrSpec.requestClusters = dataRequestTree.get<std::string>("requestClusters", gtdrSpec.requestClusters);
+  gtdrSpec.mc = dataRequestTree.get<bool>("mc", gtdrSpec.mc);
+
+  return gtdrSpec;
 }
 
 std::string InfrastructureSpecReader::validateDetectorName(std::string name)

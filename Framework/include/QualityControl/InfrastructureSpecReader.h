@@ -56,6 +56,8 @@ ExternalTaskSpec readSpecEntry<ExternalTaskSpec>(std::string entryID, const boos
 template <>
 GRPGeomRequestSpec readSpecEntry<GRPGeomRequestSpec>(std::string entryID, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
 template <>
+GlobalTrackingDataRequestSpec readSpecEntry<GlobalTrackingDataRequestSpec>(std::string entryID, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
+template <>
 CommonSpec readSpecEntry<CommonSpec>(std::string entryID, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
 
 // todo: section names should be enum.

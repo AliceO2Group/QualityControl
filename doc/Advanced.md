@@ -646,6 +646,34 @@ according to the needs.
 ```
 The requested objects will be available via [`GRPGeomHelper::instance()`](https://github.com/AliceO2Group/AliceO2/blob/dev/Detectors/Base/include/DetectorsBase/GRPGeomHelper.h) singleton.
 
+
+## Global Tracking Data Request helper
+
+To retrieve tracks and clusters for specific detectors or detector combinations, one can use the [`DataRequest`](https://github.com/AliceO2Group/AliceO2/blob/dev/DataFormats/Detectors/GlobalTracking/include/DataFormatsGlobalTracking/RecoContainer.h) helper.
+By adding the following structure to a QC task, the corresponding `InputSpecs` will be automatically added to the task.
+```json
+      "myTask": {
+        ...
+        "globalTrackingDataRequest": {
+            "canProcessTracks" : "ITS,ITS-TPC",
+            "requestTracks" : "ITS,TPC-TRD",
+            "canProcessClusters" : "TPC",
+            "requestClusters" : "TPC",
+            "mc" : "false",
+        }
+      }
+```
+Then, the corresponding tracks and clusters can be retrieved in the code using `RecoContainer`:
+```c++
+void MyTask::monitorData(o2::framework::ProcessingContext& ctx)
+{
+  o2::globaltracking::RecoContainer recoData;
+  if (auto dataRequest = getGlobalTrackingDataRequest()) {
+    recoData.collectData(ctx, *dataRequest);
+  }
+}
+```
+
 ## Custom metadata
 
 One can add custom metadata on the QC objects produced in a QC task.
@@ -1119,6 +1147,14 @@ the "tasks" path.
           "askTime": "false",
           "askOnceAllButField": "false",
           "needPropagatorD":  "false"
+        },
+        "globalTrackingDataRequest": {         "": "A helper to add tracks or clusters to inputs of the task",
+          "canProcessTracks" : "ITS,ITS-TPC",  "": "tracks that the QC task can process, usually should not change",
+          "requestTracks" : "ITS,TPC-TRD",     "": ["tracks that the QC task should process, TPC-TRD will not be",
+                                                    "requested, as it is not listed in the previous parameter"],
+          "canProcessClusters" : "TPC",        "": "clusters that the QC task can process",
+          "requestClusters" : "TPC",           "": "clusters that the QC task should process",
+          "mc" : "false",                      "": "mc boolean flag for the data request"
         }
       }
     }

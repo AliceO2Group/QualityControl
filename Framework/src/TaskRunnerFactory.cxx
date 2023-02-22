@@ -28,6 +28,8 @@
 #include <Framework/O2ControlLabels.h>
 #include <Framework/DataProcessorLabel.h>
 #include <DetectorsBase/GRPGeomHelper.h>
+#include <DataFormatsGlobalTracking/RecoContainer.h>
+#include <ReconstructionDataFormats/GlobalTrackID.h>
 
 namespace o2::quality_control::core
 {
@@ -87,6 +89,20 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
                               grp.needPropagatorD)                                                            //
                           : nullptr;
 
+  const auto& dr = taskSpec.globalTrackingDataRequest;
+  auto globalTrackingDataRequest = dr.requestTracks.empty() && dr.requestClusters.empty() ? nullptr : std::make_shared<o2::globaltracking::DataRequest>();
+  if (globalTrackingDataRequest) {
+    auto canProcessTracksMask = o2::dataformats::GlobalTrackID::getSourcesMask(dr.canProcessTracks);
+    auto requestTracksMask = o2::dataformats::GlobalTrackID::getSourcesMask(dr.requestTracks);
+    auto requestedTracksMask = canProcessTracksMask & requestTracksMask;
+    globalTrackingDataRequest->requestTracks(requestedTracksMask, dr.mc);
+
+    auto canProcessClustersMask = o2::dataformats::GlobalTrackID::getSourcesMask(dr.canProcessClusters);
+    auto requestClustersMask = o2::dataformats::GlobalTrackID::getSourcesMask(dr.requestClusters);
+    auto requestedClustersMask = canProcessClustersMask & requestClustersMask;
+    globalTrackingDataRequest->requestTracks(requestedClustersMask, dr.mc);
+  }
+
   OutputSpec monitorObjectsSpec{ { "mo" },
                                  TaskRunner::createTaskDataOrigin(taskSpec.detectorName),
                                  TaskRunner::createTaskDataDescription(taskSpec.taskName),
@@ -108,6 +124,8 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
     { globalConfig.activityStart, globalConfig.activityEnd }
   };
 
+  o2::globaltracking::RecoContainer rd;
+
   return {
     deviceName,
     taskSpec.taskName,
@@ -128,7 +146,8 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
     resetAfterCycles.value_or(taskSpec.resetAfterCycles),
     globalConfig.infologgerDiscardParameters,
     fallbackActivity,
-    grpGeomRequest
+    grpGeomRequest,
+    globalTrackingDataRequest
   };
 }
 

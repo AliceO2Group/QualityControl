@@ -162,6 +162,7 @@ void TaskRunner::init(InitContext& iCtx)
   TaskFactory factory;
   mTask.reset(factory.create(mTaskConfig, mObjectsManager));
   mTask->setMonitoring(mCollector);
+  mTask->setGlobalTrackingDataRequest(mTaskConfig.globalTrackingDataRequest);
 
   // load config params
   if (!ConfigParamGlo::keyValues.empty()) {
