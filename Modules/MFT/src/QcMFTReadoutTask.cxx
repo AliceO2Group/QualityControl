@@ -219,9 +219,10 @@ void QcMFTReadoutTask::monitorData(o2::framework::ProcessingContext& ctx)
   // loop over input
   for (auto it = parser.begin(), end = parser.end(); it != end; ++it) {
     // get the header
-    auto const* rdh = it.get_if<o2::header::RAWDataHeaderV6>();
+    auto rdh = reinterpret_cast<const o2::header::RDHAny*>(it.raw()); 
+    auto feeID = o2::raw::RDHUtils::getFEEID(rdh);
     // get detector field
-    uint64_t summaryLaneStatus = rdh->detectorField;
+    uint32_t summaryLaneStatus = o2::raw::RDHUtils::getDetectorField(rdh);
     // fill histogram bin with #entries
     mRDHSummary->Fill(4);
     // fill status if set
@@ -234,7 +235,7 @@ void QcMFTReadoutTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (summaryLaneStatus & (1 << 3))
       mRDHSummary->Fill(3); // fault
     // check if last rdh in HBF and get the DDW word
-    if (rdh->stop && it.size()) {
+    if ((int)(o2::raw::RDHUtils::getStop(rdh)) && it.size()) {
       auto const* ddw = reinterpret_cast<const MFTDDW*>(it.data());
       uint16_t ddwIndex = ddw->indexWord.indexBits.id;
       if (ddwIndex == 0xE4) { // it is a diagnostic data word
@@ -249,7 +250,7 @@ void QcMFTReadoutTask::monitorData(o2::framework::ProcessingContext& ctx)
         mZoneSummaryChipFault->Fill(-1, -1);   // counter stored in the underflow bin!
         mRDHSummary->Fill(-1);                 // counter stored in the underflow bin!
         uint64_t ddwLaneStatus = ddw->laneWord.laneBits.laneStatus;
-        uint16_t rdhFeeIndex = rdh->feeId;
+        uint16_t rdhFeeIndex = feeID;
         int RUindex = (rdhFeeIndex & 127); // look only at the rightmost 7 bits
         // check the status of each lane
         for (int i = 0; i < nLanes; i++) {
