@@ -25,6 +25,9 @@
 
 // Quality Control
 #include "QualityControl/TaskInterface.h"
+#include "Headers/RAWDataHeader.h"
+#include "Headers/RDHAny.h"
+#include "DetectorsRaw/RDHUtils.h"
 
 using namespace o2::quality_control::core;
 
