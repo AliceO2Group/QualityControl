@@ -219,7 +219,7 @@ void QcMFTReadoutTask::monitorData(o2::framework::ProcessingContext& ctx)
   // loop over input
   for (auto it = parser.begin(), end = parser.end(); it != end; ++it) {
     // get the header
-    auto rdh = reinterpret_cast<const o2::header::RDHAny*>(it.raw()); 
+    auto rdh = reinterpret_cast<const o2::header::RDHAny*>(it.raw());
     auto feeID = o2::raw::RDHUtils::getFEEID(rdh);
     // get detector field
     uint32_t summaryLaneStatus = o2::raw::RDHUtils::getDetectorField(rdh);
