@@ -101,6 +101,7 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
     auto requestClustersMask = o2::dataformats::GlobalTrackID::getSourcesMask(dr.requestClusters);
     auto requestedClustersMask = canProcessClustersMask & requestClustersMask;
     globalTrackingDataRequest->requestTracks(requestedClustersMask, dr.mc);
+    inputs.insert(inputs.begin(), globalTrackingDataRequest->inputs.begin(), globalTrackingDataRequest->inputs.end());
   }
 
   OutputSpec monitorObjectsSpec{ { "mo" },

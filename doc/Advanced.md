@@ -659,7 +659,7 @@ By adding the following structure to a QC task, the corresponding `InputSpecs` w
             "requestTracks" : "ITS,TPC-TRD",
             "canProcessClusters" : "TPC",
             "requestClusters" : "TPC",
-            "mc" : "false",
+            "mc" : "false"
         }
       }
 ```
