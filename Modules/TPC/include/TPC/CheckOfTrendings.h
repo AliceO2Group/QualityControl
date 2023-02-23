@@ -17,6 +17,8 @@
 #define QC_MODULE_TPC_CHECKOFTRENDINGS_H
 
 #include "QualityControl/CheckInterface.h"
+#include <TGraph.h>
+#include <TCanvas.h>
 
 namespace o2::quality_control_modules::tpc
 {
@@ -41,6 +43,8 @@ class CheckOfTrendings : public o2::quality_control::checker::CheckInterface
 
  private:
   ClassDefOverride(CheckOfTrendings, 2);
+  void CalculateStatistics(const double* yValues, const double* yErrors, bool UseErrors, const int FirstPoint, const int LastPoint, double& mean, double& stddevOfMean);
+  TGraph* GetGraph(TCanvas* canv);
   std::string mCheckChoice;
   float mExpectedPhysicsValue;
   float mNSigmaExpectedPhysicsValue;
@@ -49,6 +53,7 @@ class CheckOfTrendings : public o2::quality_control::checker::CheckInterface
   float mNSigmaBadMean;
   float mRangeMedium;
   float mRangeBad;
+  bool mSliceTrend;
 
   // float mMeanFull=0;
   double mMean = 0;
