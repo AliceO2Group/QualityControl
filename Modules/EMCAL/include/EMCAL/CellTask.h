@@ -177,6 +177,8 @@ class CellTask final : public TaskInterface
   TH1* mEvCounterTFCALIB = nullptr; ///< Number of Events per timeframe per CALIB
   TH1* mTFPerCyclesTOT = nullptr;   ///< Number of Time Frame per cycles TOT
   TH1* mTFPerCycles = nullptr;      ///< Number of Time Frame per cycles per MonitorData
+  TH1* mBCCounterPHYS = nullptr;    ///< Number of physics triggers in bunch crossing
+  TH1* mBCCounterCalib = nullptr;   ///< Number of calib triggers in bunch crossing
   TH1* mCellsMaxSM = nullptr;       ///< Supermodule with the largest amount of cells
 
   TH2* mCells_ev_sm = nullptr;          ///< Number of Cells per events per supermodule
