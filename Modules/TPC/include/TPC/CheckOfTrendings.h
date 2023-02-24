@@ -55,7 +55,6 @@ class CheckOfTrendings : public o2::quality_control::checker::CheckInterface
   float mRangeBad;
   bool mSliceTrend;
 
-  // float mMeanFull=0;
   double mMean = 0;
   float mStdev;
 
