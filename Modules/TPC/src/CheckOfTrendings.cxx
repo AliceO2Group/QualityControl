@@ -95,7 +95,7 @@ Quality CheckOfTrendings::check(std::map<std::string, std::shared_ptr<MonitorObj
   Quality resultExpectedPhysicsValue = Quality::Null;
 
   auto mo = moMap->begin()->second;
-  auto* canv = (TCanvas*)mo->getObject();
+  auto* canv = dynamic_cast<TCanvas*>(mo->getObject());
   TGraph* g = (TGraph*)canv->GetListOfPrimitives()->FindObject("Graph");
   const int NBins = g->GetN();
 
@@ -170,7 +170,7 @@ std::string CheckOfTrendings::getAcceptedType() { return "TCanvas"; }
 
 void CheckOfTrendings::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  auto* c1 = (TCanvas*)mo->getObject();
+  auto* c1 = dynamic_cast<TCanvas*>(mo->getObject());
   TGraph* h = (TGraph*)c1->GetListOfPrimitives()->FindObject("Graph");
   TPaveText* msg = new TPaveText(0.7, 0.85, 0.9, 0.9, "NDC");
   h->GetListOfFunctions()->Add(msg);

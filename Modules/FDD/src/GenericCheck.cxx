@@ -133,7 +133,7 @@ Quality GenericCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
         mCheckMaxGraphLastPoint.doCheck(result, g->GetPointY(g->GetN() - 1));
     }
     if (std::strcmp(mo->getObject()->ClassName(), "TGraph") == 0) {
-      auto g = (TGraph*)mo->getObject();
+      auto g = dynamic_cast<TGraph*>(mo->getObject());
 
       if (!g) {
         result.set(Quality::Null);
@@ -147,7 +147,7 @@ Quality GenericCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
         mCheckMaxGraphLastPoint.doCheck(result, g->GetPointY(g->GetN() - 1));
 
     } else {
-      auto h = (TH1*)mo->getObject();
+      auto h = dynamic_cast<TH1*>(mo->getObject());
       if (!h) {
         result.set(Quality::Null);
         ILOG(Error, Support) << "Object inside MO " << moName << " not found" << ENDM;
@@ -205,14 +205,14 @@ void GenericCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResu
     }
     g->GetListOfFunctions()->Add(msg);
   } else if (std::strcmp(mo->getObject()->ClassName(), "TGraph") == 0) {
-    auto g = (TGraph*)mo->getObject();
+    auto g = dynamic_cast<TGraph*>(mo->getObject());
     if (!g) {
       ILOG(Error, Support) << "beautify(): Object inside MO " << mo->GetName() << " not found" << ENDM;
       return;
     }
     g->GetListOfFunctions()->Add(msg);
   } else {
-    auto h = (TH1*)mo->getObject();
+    auto h = dynamic_cast<TH1*>(mo->getObject());
     if (!h) {
       ILOG(Error, Support) << "beautify(): Object inside MO " << mo->GetName() << " not found" << ENDM;
       return;

@@ -89,7 +89,7 @@ Quality CheckOfPads::check(std::map<std::string, std::shared_ptr<MonitorObject>>
       resultEV = Quality::Good;
       resultMean = Quality::Good;
 
-      auto* canv = (TCanvas*)mo->getObject();
+      auto* canv = dynamic_cast<TCanvas*>(mo->getObject());
       if (!canv) {
         continue;
       }
@@ -262,7 +262,7 @@ void CheckOfPads::beautify(std::shared_ptr<MonitorObject> mo, Quality)
   auto moName = mo->getName();
   if (auto it = std::find(mMOsToCheck2D.begin(), mMOsToCheck2D.end(), moName); it != mMOsToCheck2D.end()) {
 
-    auto* tcanv = (TCanvas*)mo->getObject();
+    auto* tcanv = dynamic_cast<TCanvas*>(mo->getObject());
     const int padsstart = 1;
     const int padsTotal = 72;
     const size_t end = moName.find("_2D");

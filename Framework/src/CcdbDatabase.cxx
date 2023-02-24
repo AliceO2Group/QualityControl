@@ -355,6 +355,7 @@ std::shared_ptr<o2::quality_control::core::MonitorObject> CcdbDatabase::retrieve
     mo.reset(dynamic_cast<MonitorObject*>(obj));
     if (mo == nullptr) {
       ILOG(Error, Devel) << "Could not cast the object " << fullPath << " to MonitorObject" << ENDM;
+      return nullptr;
     }
   } else {
     // Version >= 0.25 -> the object is stored directly unencapsulated

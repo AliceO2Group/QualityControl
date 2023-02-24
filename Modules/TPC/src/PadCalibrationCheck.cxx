@@ -63,7 +63,7 @@ Quality PadCalibrationCheck::check(std::map<std::string, std::shared_ptr<Monitor
         padsstart = 1;
         padsTotal = 72;
       }
-      auto* canv = (TCanvas*)mo->getObject();
+      auto* canv = dynamic_cast<TCanvas*>(mo->getObject());
       if (!canv) {
         continue;
       }
@@ -130,7 +130,7 @@ void PadCalibrationCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality)
   auto moName = mo->getName();
   if (moName == "c_Sides_Noise" || moName == "c_ROCs_Noise_1D") {
     int padsTotal = 0, padsstart = 1000;
-    auto* tcanv = (TCanvas*)mo->getObject();
+    auto* tcanv = dynamic_cast<TCanvas*>(mo->getObject());
     std::string histNameS, histName;
     if (moName == "c_Sides_Noise") {
       padsstart = 3;

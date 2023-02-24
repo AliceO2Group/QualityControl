@@ -111,6 +111,11 @@ Quality CFDEffCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
     (void)moName;
     if (mo->getName() == "CFD_efficiency") {
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
+      if (h == nullptr) {
+        ILOG(Warning, Devel) << "Could not cast " << mo->getName() << " to TH1F* => Quality::Bad" << ENDM;
+        result = Quality::Bad;
+        continue;
+      }
 
       result = Quality::Good;
       mNumErrors = 0;

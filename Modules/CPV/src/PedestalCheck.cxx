@@ -158,6 +158,10 @@ Quality PedestalCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
         bool isGoodMO = true;
 
         auto* h = dynamic_cast<TH1F*>(mo->getObject());
+        if (h == nullptr) {
+          ILOG(Warning, Devel) << "Could not cast " << mo->getName() << " to TH1F*, skipping" << ENDM;
+          continue;
+        }
         result = Quality::Good; // default
         TPaveText* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
         h->GetListOfFunctions()->Add(msg);
@@ -194,6 +198,10 @@ Quality PedestalCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
       if (mo->getName() == Form("PedestalSigmaM%d", iMod + 2)) {
 
         auto* h = dynamic_cast<TH1F*>(mo->getObject());
+        if (h == nullptr) {
+          ILOG(Warning, Devel) << "Could not cast " << mo->getName() << " to TH1F*, skipping" << ENDM;
+          continue;
+        }
         result = Quality::Good; // default
         TPaveText* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
         h->GetListOfFunctions()->Add(msg);
@@ -222,6 +230,10 @@ Quality PedestalCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
       if (mo->getName() == Form("PedestalEfficiencyM%d", iMod + 2)) {
 
         auto* h = dynamic_cast<TH1F*>(mo->getObject());
+        if (h == nullptr) {
+          ILOG(Warning, Devel) << "Could not cast " << mo->getName() << " to TH1F*, skipping" << ENDM;
+          continue;
+        }
         result = Quality::Good; // default
         TPaveText* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
         h->GetListOfFunctions()->Add(msg);
@@ -263,6 +275,10 @@ void PedestalCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
   for (int iMod = 0; iMod < 3; iMod++) { // loop over modules
     if (mo->getName() == Form("PedestalValueM%d", iMod + 2)) {
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
+      if (h == nullptr) {
+        ILOG(Warning, Devel) << "Could not cast " << mo->getName() << " to TH1F*, skipping" << ENDM;
+        continue;
+      }
 
       if (checkResult == Quality::Good) {
         h->SetFillColor(kGreen);

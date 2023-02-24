@@ -59,6 +59,10 @@ void SupermoduleProjectorTask::update(Trigger t, framework::ServiceRegistryRef s
   auto& qcdb = services.get<quality_control::repository::DatabaseInterface>();
   for (auto& dataSource : mDataSources) {
     auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name, t.timestamp, t.activity);
+    if (mo == nullptr) {
+      ILOG(Warning, Trace) << "Could not retrieve MO '" << dataSource.name << "', skipping this data source" << ENDM;
+      continue;
+    }
     auto canvas = mCanvasHandler.find(dataSource.name);
     if (canvas != mCanvasHandler.end()) {
       PlotAttributes* plotCustomizations = nullptr;

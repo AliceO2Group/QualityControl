@@ -200,7 +200,7 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
   getObjectsManager()->startPublishing(mTime);
 
   for (int i = 0; i < getObjectsManager()->getNumberPublishedObjects(); i++) {
-    TH1* obj = (TH1*)getObjectsManager()->getMonitorObject(i)->getObject();
+    TH1* obj = dynamic_cast<TH1*>(getObjectsManager()->getMonitorObject(i)->getObject());
     obj->SetTitle((string("FT0 ") + obj->GetTitle()).c_str());
   }
 }
@@ -208,7 +208,7 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
 void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
 {
   auto mo = mDatabase->retrieveMO(mPathDigitQcTask, "TriggersCorrelation", t.timestamp, t.activity);
-  auto hTrgCorr = mo ? (TH2F*)mo->getObject() : nullptr;
+  auto hTrgCorr = mo ? dynamic_cast<TH2F*>(mo->getObject()) : nullptr;
   mHistTriggers->Reset();
   auto getBinContent2Ddiag = [](TH2* hist, const std::string& binName) {
     return hist->GetBinContent(hist->GetXaxis()->FindBin(binName.c_str()), hist->GetYaxis()->FindBin(binName.c_str()));
@@ -227,12 +227,12 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
   }
 
   auto moChDataBits = mDatabase->retrieveMO(mPathDigitQcTask, "ChannelDataBits", t.timestamp, t.activity);
-  auto hChDataBits = moChDataBits ? (TH2F*)moChDataBits->getObject() : nullptr;
+  auto hChDataBits = moChDataBits ? dynamic_cast<TH2F*>(moChDataBits->getObject()) : nullptr;
   if (!hChDataBits) {
     ILOG(Error) << "MO \"ChannelDataBits\" NOT retrieved!!!" << ENDM;
   }
   auto moStatChannelID = mDatabase->retrieveMO(mPathDigitQcTask, "StatChannelID", t.timestamp, t.activity);
-  auto hStatChannelID = moStatChannelID ? (TH2F*)moStatChannelID->getObject() : nullptr;
+  auto hStatChannelID = moStatChannelID ? dynamic_cast<TH2F*>(moStatChannelID->getObject()) : nullptr;
   if (!hStatChannelID) {
     ILOG(Error) << "MO \"StatChannelID\" NOT retrieved!!!" << ENDM;
   }
@@ -252,7 +252,7 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
   }
 
   auto mo2 = mDatabase->retrieveMO(mPathDigitQcTask, mCycleDurationMoName, t.timestamp, t.activity);
-  auto hCycleDuration = mo2 ? (TH1D*)mo2->getObject() : nullptr;
+  auto hCycleDuration = mo2 ? dynamic_cast<TH1D*>(mo2->getObject()) : nullptr;
   if (!hCycleDuration) {
     ILOG(Error) << "MO \"" << mCycleDurationMoName << "\" NOT retrieved!!!" << ENDM;
   }
@@ -301,13 +301,13 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
   }
 
   auto mo3 = mDatabase->retrieveMO(mPathDigitQcTask, "AmpPerChannel", t.timestamp, t.activity);
-  auto hAmpPerChannel = mo3 ? (TH2D*)mo3->getObject() : nullptr;
+  auto hAmpPerChannel = mo3 ? dynamic_cast<TH2D*>(mo3->getObject()) : nullptr;
   if (!hAmpPerChannel) {
     ILOG(Error) << "MO \"AmpPerChannel\" NOT retrieved!!!"
                 << ENDM;
   }
   auto mo4 = mDatabase->retrieveMO(mPathDigitQcTask, "TimePerChannel", t.timestamp, t.activity);
-  auto hTimePerChannel = mo4 ? (TH2D*)mo4->getObject() : nullptr;
+  auto hTimePerChannel = mo4 ? dynamic_cast<TH2D*>(mo4->getObject()) : nullptr;
   if (!hTimePerChannel) {
     ILOG(Error) << "MO \"TimePerChannel\" NOT retrieved!!!"
                 << ENDM;
@@ -344,7 +344,7 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
   }
 
   auto moBCvsTriggers = mDatabase->retrieveMO(mPathDigitQcTask, "BCvsTriggers", t.timestamp, t.activity);
-  auto hBcVsTrg = moBCvsTriggers ? (TH2F*)moBCvsTriggers->getObject() : nullptr;
+  auto hBcVsTrg = moBCvsTriggers ? dynamic_cast<TH2F*>(moBCvsTriggers->getObject()) : nullptr;
   if (!hBcVsTrg) {
     ILOG(Error, Support) << "MO \"BCvsTriggers\" NOT retrieved!!!" << ENDM;
     return;

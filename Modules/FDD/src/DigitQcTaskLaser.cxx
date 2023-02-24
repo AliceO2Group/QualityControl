@@ -203,7 +203,7 @@ void DigitQcTaskLaser::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mHistCycleDuration.get());
 
   for (int i = 0; i < getObjectsManager()->getNumberPublishedObjects(); i++) {
-    TH1* obj = (TH1*)getObjectsManager()->getMonitorObject(i)->getObject();
+    TH1* obj = dynamic_cast<TH1*>(getObjectsManager()->getMonitorObject(i)->getObject());
     obj->SetTitle((string("FDD Laser ") + obj->GetTitle()).c_str());
   }
 }

@@ -227,7 +227,7 @@ void TrendingRate::trendValues(const Trigger& t, repository::DatabaseInterface& 
     }
     ILOG(Debug, Support) << "Got MO " << mo << ENDM;
     if (dataSource.name == "HitMap") {
-      TH2F* hmap = (TH2F*)mo->getObject();
+      TH2F* hmap = dynamic_cast<TH2F*>(mo->getObject());
       hmap->Divide(hmap);
       mActiveChannels = hmap->Integral() * 24;
       ILOG(Info, Support) << "N channels = " << mActiveChannels << ENDM;
@@ -246,7 +246,7 @@ void TrendingRate::trendValues(const Trigger& t, repository::DatabaseInterface& 
     return;
   }
 
-  computeTOFRates((TH2F*)moHistogramMultVsBC->getObject(), bcInt, bcRate, bcPileup);
+  computeTOFRates(dynamic_cast<TH2F*>(moHistogramMultVsBC->getObject()), bcInt, bcRate, bcPileup);
 
   ILOG(Info, Support) << "In " << mActiveChannels << " channels, noise rate per channel= " << mNoiseRatePerChannel << " Hz - collision rate = " << mCollisionRate << " Hz - mu-pilup = " << mPileupRate << ENDM;
 
