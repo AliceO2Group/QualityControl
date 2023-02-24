@@ -22,6 +22,7 @@
 #include <unordered_map>
 #include <string>
 #include <string_view>
+#include <tuple>
 
 #include "QualityControl/TaskInterface.h"
 #include <DataFormatsEMCAL/EventHandler.h>
@@ -125,6 +126,10 @@ class ClusterTask final : public TaskInterface
   void endOfCycle() override;
   void endOfActivity(Activity& activity) override;
   void reset() override { resetHistograms(); }
+
+  /// \brief Get the eta/phi position of a cluster
+  /// \return tuple with [eta, phi]
+  static std::tuple<double, double> getClusterEtaPhi(const o2::emcal::AnalysisCluster& cluster);
 
  protected:
   /// \brief Reset all histograms
@@ -260,19 +265,34 @@ class ClusterTask final : public TaskInterface
   ///////////////////////////////////////////////////////////////////////////////
   /// Histograms for physics events                                           ///
   ///////////////////////////////////////////////////////////////////////////////
-  TH1* mHistNclustPerTF = nullptr;          ///< Histogram number of clusters per timeframe
-  TH1* mHistNclustPerTFSelected = nullptr;  ///< Histogram number of selected clusters per timeframe
-  TH1* mHistNclustPerEvt = nullptr;         ///< Histogram number of clusters per event
-  TH1* mHistNclustPerEvtSelected = nullptr; ///< Histogram number of selected clusters per event
-  TH2* mHistClustEtaPhi = nullptr;          ///< Histogram cluster acceptance as function of eta and phi
+  TH1* mHistNclustPerTF = nullptr;               ///< Histogram number of clusters per timeframe
+  TH1* mHistNclustPerTFSelected = nullptr;       ///< Histogram number of selected clusters per timeframe
+  TH1* mHistNclustPerEvt = nullptr;              ///< Histogram number of clusters per event
+  TH1* mHistNclustPerEvtSelected = nullptr;      ///< Histogram number of selected clusters per event
+  TH2* mHistClustEtaPhi = nullptr;               ///< Histogram cluster acceptance as function of eta and phi
+  TH2* mHistClustEtaPhiMaxCluster = nullptr;     ///< Histogram postition of the leading cluster
+  TH1* mHistNclustSupermodule = nullptr;         ///< Histogram number of clusters per supermodule
+  TH2* mHistNClustPerEventSupermodule = nullptr; ///< Histogram number of clusters per event and supermodule
+  TH1* mHistSupermoduleIDMaxCluster = nullptr;   ///< ID of the supermodule of the maximum cluster
 
-  std::array<TH2*, NUM_DETS> mHistTime;        ///< Histogram cluster time vs energy (ALL/EMCAL/DCAL clusters)
-  std::array<TH1*, NUM_DETS> mHistClustE;      ///< Histogram cluster energy (ALL/EMCAL/DCAL clusters)
-  std::array<TH1*, NUM_DETS> mHistNCells;      ///< Histogram number of cells per cluster (ALL/EMCAL/DCAL clusters)
-  std::array<TH1*, NUM_DETS> mHistM02;         ///< Histogram M02 per cluster (ALL/EMCAL/DCAL clusters)
-  std::array<TH1*, NUM_DETS> mHistM20;         ///< Histogram M20 per cluster (ALL/EMCAL/DCAL clusters)
-  std::array<TH2*, NUM_DETS> mHistM02VsClustE; ///< Histogram M02 vs. cluster energy (ALL/EMCAL/DCAL clusters)
-  std::array<TH2*, NUM_DETS> mHistM20VsClustE; ///< Histogram M20 vs. cluster energy (ALL/EMCAL/DCAL clusters)
+  std::array<TH2*, NUM_DETS> mHistTime;                ///< Histogram cluster time vs energy (ALL/EMCAL/DCAL clusters)
+  std::array<TH1*, NUM_DETS> mHistClustE;              ///< Histogram cluster energy (ALL/EMCAL/DCAL clusters)
+  std::array<TH1*, NUM_DETS> mHistNCells;              ///< Histogram number of cells per cluster (ALL/EMCAL/DCAL clusters)
+  std::array<TH1*, NUM_DETS> mHistM02;                 ///< Histogram M02 per cluster (ALL/EMCAL/DCAL clusters)
+  std::array<TH1*, NUM_DETS> mHistM20;                 ///< Histogram M20 per cluster (ALL/EMCAL/DCAL clusters)
+  std::array<TH2*, NUM_DETS> mHistM02VsClustE;         ///< Histogram M02 vs. cluster energy (ALL/EMCAL/DCAL clusters)
+  std::array<TH2*, NUM_DETS> mHistM20VsClustE;         ///< Histogram M20 vs. cluster energy (ALL/EMCAL/DCAL clusters)
+  std::array<TH1*, NUM_DETS> mHistClustEMaxCluster;    ///< Histogram Energy of the leading cluster / event
+  std::array<TH1*, NUM_DETS> mHistClustTimeMaxCluster; ///< Histogram Time of the leading cluster / event
+
+  ///////////////////////////////////////////////////////////////////////////////
+  /// Supermodule dependent histograms                                        ///
+  ///////////////////////////////////////////////////////////////////////////////
+  TH2* mHistClusterTimeSupermodule = nullptr;      ///< Cluster time vs. supermodule ID
+  TH2* mHistClusterEnergySupermodule = nullptr;    ///< Cluster energy vs. supermodule ID
+  TH2* mHistClusterNCellSupermodule = nullptr;     ///< Number of cells vs. supermodule ID
+  TH2* mHistMaxClusterEnergySupermodule = nullptr; ///< Max. cluster energy vs. supermodule ID
+  TH2* mHistMaxClusterTimeSupermodule = nullptr;   ///< Time of the max. cluster vs. supermodule ID
 
   ///////////////////////////////////////////////////////////////////////////////
   /// Histograms for LED events                                               ///
