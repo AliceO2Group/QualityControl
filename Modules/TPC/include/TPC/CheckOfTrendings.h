@@ -58,7 +58,6 @@ class CheckOfTrendings : public o2::quality_control::checker::CheckInterface
   // float mMeanFull=0;
   double mMean = 0;
   float mStdev;
-  float mStdevFull;
 
   int mPointToTakeForExpectedValueCheck;
   int mPointToTakeForMeanCheck;
