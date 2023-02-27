@@ -25,6 +25,7 @@
 #include <DataFormatsEMCAL/TriggerRecord.h>
 #include "QualityControl/QcInfoLogger.h"
 #include "EMCAL/CellTask.h"
+#include "CommonConstants/LHCConstants.h"
 #include "DataFormatsEMCAL/Cell.h"
 #include "EMCALBase/Geometry.h"
 #include "EMCALCalib/CalibDB.h"
@@ -56,6 +57,8 @@ CellTask::~CellTask()
   cleanOptional(mEvCounterTFCALIB);
   cleanOptional(mTFPerCycles);
   cleanOptional(mTFPerCyclesTOT);
+  cleanOptional(mBCCounterPHYS);
+  cleanOptional(mBCCounterCalib);
   cleanOptional(mCellsMaxSM);
   cleanOptional(mCells_ev_sm);
   cleanOptional(mCells_ev_sm_good);
@@ -153,6 +156,16 @@ void CellTask::initialize(o2::framework::InitContext& /*ctx*/)
   mTFPerCycles->GetXaxis()->SetTitle("NumberOfTFperCycles");
   mTFPerCycles->GetYaxis()->SetTitle("Counts");
   getObjectsManager()->startPublishing(mTFPerCycles);
+
+  mBCCounterPHYS = new TH1D("NumberOfTriggerPerBC_PHYS", "Number of Triggers in bunch crossing (physics triggers)", o2::constants::lhc::LHCMaxBunches + 1, -0.5, o2::constants::lhc::LHCMaxBunches + 0.5);
+  mBCCounterPHYS->GetXaxis()->SetTitle("Bunch crossing");
+  mBCCounterPHYS->GetYaxis()->SetTitle("Number of triggers");
+  getObjectsManager()->startPublishing(mBCCounterPHYS);
+
+  mBCCounterCalib = new TH1D("NumberOfTriggerPerBC_CALIB", "Number of Triggers in bunch crossing (calibration triggers)", o2::constants::lhc::LHCMaxBunches + 1, -0.5, o2::constants::lhc::LHCMaxBunches + 0.5);
+  mBCCounterCalib->GetXaxis()->SetTitle("Bunch crossing");
+  mBCCounterCalib->GetYaxis()->SetTitle("Number of triggers");
+  getObjectsManager()->startPublishing(mBCCounterCalib);
 
   mEvCounterTF = new TH1D("NEventsPerTF", "NEventsPerTF", 401, -0.5, 400.5);
   mEvCounterTF->GetXaxis()->SetTitle("NEventsPerTimeFrame");
@@ -372,14 +385,19 @@ void CellTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (isPhysTrigger) {
       trgClass = "PHYS";
       eventcounterPHYS++;
+      if (mBCCounterPHYS) {
+        mBCCounterPHYS->Fill(trg.mInteractionRecord.bc);
+      }
     } else if (isCalibTrigger) {
       trgClass = "CAL";
       eventcounterCALIB++;
+      if (mBCCounterCalib) {
+        mBCCounterCalib->Fill(trg.mInteractionRecord.bc);
+      }
     } else {
       ILOG(Error, Support) << " Unmonitored trigger class requested " << ENDM;
       continue;
     }
-
     auto bcphase = trg.mInteractionRecord.bc % 4; // to be fixed:4 histos for EMCAL, 4 histos for DCAL
     // force BC phase for LED triggers to be 0
     if (isCalibTrigger) {
@@ -523,6 +541,8 @@ void CellTask::reset()
   resetOptional(mEvCounterTFCALIB);
   resetOptional(mTFPerCycles);
   resetOptional(mTFPerCyclesTOT);
+  resetOptional(mBCCounterPHYS);
+  resetOptional(mBCCounterCalib);
   resetOptional(mCellsMaxSM);
   resetOptional(mCells_ev_sm);
   resetOptional(mCells_ev_sm_good);
