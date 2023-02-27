@@ -79,8 +79,13 @@ void SliceTrendingTask::initialize(Trigger, framework::ServiceRegistryRef servic
     mTrend->SetBranchAddress("meta", &(mMetaData.runNumber)); // TO-DO: Find reason why simply &mMetaData does not work
     mTrend->SetBranchAddress("time", &mTime);
     for (const auto& source : mConfig.dataSources) {
+      bool existingBranch = mTrend->GetBranchStatus(source.name.c_str());
       mSources[source.name] = new std::vector<SliceInfo>();
-      mTrend->SetBranchAddress(source.name.c_str(), &mSources[source.name]);
+      if (existingBranch) {
+        mTrend->SetBranchAddress(source.name.c_str(), &mSources[source.name]);
+      } else {
+        mTrend->Branch(source.name.c_str(), &mSources[source.name]);
+      }
     }
   }
   // Reductors
@@ -263,15 +268,21 @@ void SliceTrendingTask::drawCanvasMO(TCanvas* thisCanvas, const std::string& var
 
   const int nuPa = mNumberPads[varName];
   const int nEntries = mTrend->GetEntriesFast();
+  const int nEntriesTime = mTrend->GetBranch("time")->GetEntries();
+  const int nEntriesRuns = mTrend->GetBranch("meta")->GetEntries();
+  const int nEntriesData = mTrend->GetBranch(varName.data())->GetEntries();
 
   // Fill the graph(errors) to be published.
   if (trendType == "time" || trendType == "run") {
 
+    const int nEffectiveEntries = (trendType == "time") ? std::min(nEntriesTime, nEntriesData) : std::min(nEntriesRuns, nEntriesData);
+    const int startPoint = (trendType == "time") ? nEntriesTime - nEffectiveEntries : nEntriesRuns - nEffectiveEntries;
+
     for (int p = 0; p < nuPa; p++) {
       thisCanvas->cd(p + 1);
       int iEntry = 0;
-
-      graphErrors = new TGraphErrors(nEntries);
+      graphErrors = new TGraphErrors(nEffectiveEntries);
+      myReader.SetEntry(startPoint - 1); // startPoint-1 as myReader.Next() increments by one so that we then start at startPoint
 
       while (myReader.Next()) {
         const double timeStamp = (trendType == "time") ? (double)(*retrieveTime) : (double)(*retrieveRun);
@@ -307,9 +318,13 @@ void SliceTrendingTask::drawCanvasMO(TCanvas* thisCanvas, const std::string& var
     auto multigraph = new TMultiGraph();
     multigraph->SetName("MultiGraph");
 
+    const int nEffectiveEntries = (trendType == "multigraphtime") ? std::min(nEntriesTime, nEntriesData) : std::min(nEntriesRuns, nEntriesData);
+    const int startPoint = (trendType == "multigraphtime") ? nEntriesTime - nEffectiveEntries : nEntriesRuns - nEffectiveEntries;
+
     for (int p = 0; p < nuPa; p++) {
       int iEntry = 0;
-      auto gr = new TGraphErrors(nEntries);
+      auto gr = new TGraphErrors(nEffectiveEntries);
+      myReader.SetEntry(startPoint - 1); // startPoint-1 as myReader.Next() increments by one so that we then start at startPoint
 
       while (myReader.Next()) {
         const double timeStamp = (trendType == "multigraphtime") ? (double)(*retrieveTime) : (double)(*retrieveRun);
