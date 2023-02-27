@@ -45,6 +45,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/foreach.hpp>
+#include <utility>
 // misc
 #include "rapidjson/document.h"
 #include "rapidjson/stringbuffer.h"
@@ -73,7 +74,7 @@ void CcdbDatabase::loadDeprecatedStreamerInfos()
   }
   string path = string(getenv("QUALITYCONTROL_ROOT")) + "/etc/";
   vector<string> filenames = { "streamerinfos.root", "streamerinfos_v017.root" };
-  for (auto filename : filenames) {
+  for (const auto& filename : filenames) {
     string localPath = path + filename;
     ILOG(Debug, Devel) << "Loading streamerinfos from : " << localPath << ENDM;
     TFile file(localPath.data(), "READ");
@@ -100,7 +101,7 @@ void CcdbDatabase::loadDeprecatedStreamerInfos()
   }
 }
 
-void CcdbDatabase::connect(std::string host, std::string /*database*/, std::string /*username*/, std::string /*password*/)
+void CcdbDatabase::connect(const string& host, const string& /*database*/, const string& /*username*/, const string& /*password*/)
 {
   mUrl = host;
   init();
@@ -153,10 +154,10 @@ bool CcdbDatabase::isDbInFailure()
 void CcdbDatabase::addFrameworkMetadata(map<string, string>& fullMetadata, string detectorName, string className)
 {
   fullMetadata[metadata_keys::qcVersion] = Version::GetQcVersion().getString();
-  fullMetadata[metadata_keys::qcDetectorCode] = detectorName;
+  fullMetadata[metadata_keys::qcDetectorCode] = std::move(detectorName);
   fullMetadata[metadata_keys::qcAdjustableEOV] = "1"; // QC-936 : this is to allow the modification of the end of validity.
   // ObjectType says TObject and not MonitorObject due to a quirk in the API. Once fixed, remove this.
-  fullMetadata[metadata_keys::objectType] = className;
+  fullMetadata[metadata_keys::objectType] = std::move(className);
 }
 
 void CcdbDatabase::storeAny(const void* obj, std::type_info const& typeInfo, std::string const& path, std::map<std::string, std::string> const& metadata,
@@ -451,7 +452,7 @@ std::string CcdbDatabase::retrieveJson(std::string path, long timestamp, const s
   // Get object
   auto* tobj = retrieveTObject(path, metadata, timestamp, &headers);
   if (tobj == nullptr) {
-    return std::string();
+    return {};
   }
 
   // Convert object to JSON string
@@ -467,7 +468,7 @@ std::string CcdbDatabase::retrieveJson(std::string path, long timestamp, const s
   }
   if (toConvert == nullptr) {
     ILOG(Error, Support) << "Unable to get the object to convert" << ENDM;
-    return std::string();
+    return {};
   }
   TString json = TBufferJSON::ConvertToJSON(toConvert);
   delete toConvert;
@@ -475,7 +476,7 @@ std::string CcdbDatabase::retrieveJson(std::string path, long timestamp, const s
   // Prepare JSON document and add metadata
   if (jsonDocument.Parse(json.Data()).HasParseError()) {
     ILOG(Error, Support) << "Unable to parse the JSON returned by TBufferJSON for object " << path << ENDM;
-    return std::string();
+    return {};
   }
   rapidjson::Document::AllocatorType& allocator = jsonDocument.GetAllocator();
   rapidjson::Value object(rapidjson::Type::kObjectType);
@@ -507,7 +508,7 @@ void CcdbDatabase::prepareTaskDataContainer(std::string /*taskName*/)
   // NOOP for CCDB
 }
 
-std::string CcdbDatabase::getListingAsString(std::string subpath, std::string accept)
+std::string CcdbDatabase::getListingAsString(const std::string& subpath, const std::string& accept)
 {
   std::string tempString = ccdbApi->list(subpath, false, accept);
 
@@ -528,7 +529,7 @@ static inline void rtrim(std::string& s)
   s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) { return !std::isspace(ch); }).base(), s.end());
 }
 
-std::vector<std::string> CcdbDatabase::getListing(std::string subpath)
+std::vector<std::string> CcdbDatabase::getListing(const std::string& subpath)
 {
   std::vector<string> result;
 
@@ -549,7 +550,7 @@ std::vector<std::string> CcdbDatabase::getListing(std::string subpath)
   return result;
 }
 
-boost::property_tree::ptree CcdbDatabase::getListingAsPtree(std::string path)
+boost::property_tree::ptree CcdbDatabase::getListingAsPtree(const std::string& path)
 {
   std::stringstream listingAsStringStream{ getListingAsString(path, "application/json") };
 
@@ -559,7 +560,7 @@ boost::property_tree::ptree CcdbDatabase::getListingAsPtree(std::string path)
   return listingAsTree;
 }
 
-std::vector<uint64_t> CcdbDatabase::getTimestampsForObject(std::string path)
+std::vector<uint64_t> CcdbDatabase::getTimestampsForObject(const std::string& path)
 {
   const auto& objects = getListingAsPtree(path).get_child("objects");
   std::vector<uint64_t> timestamps;

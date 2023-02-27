@@ -86,14 +86,14 @@ class Quality
   /// \brief Add key value pair that will end up in the database
   /// Add a metadata (key value pair) to the QualityObject. It will be stored in the database.
   /// If the key already exists the value will be updated.
-  void addMetadata(std::string key, std::string value);
+  void addMetadata(const std::string& key, const std::string& value);
   /// \brief Add key value pairs that will end up in the database as metadata of the object
   /// Add all the key-value pairs in the map to the MonitorObject. It will be stored in the database as metadata.
   /// If a key already exists the value will NOT be updated.
   void addMetadata(std::map<std::string, std::string> pairs);
   /// \brief Update the value of metadata.
   /// If the key does not exist it will ignore it.
-  void updateMetadata(std::string key, std::string value);
+  void updateMetadata(const std::string& key, std::string value);
   /// \brief Get the full map of user's metadata
   const std::map<std::string, std::string>& getMetadataMap() const;
   /// \brief Overwrite the existing metadata.
@@ -101,14 +101,14 @@ class Quality
   /// \brief Get metadata
   /// \return the value corresponding to the key if it was found.
   /// \throw ObjectNotFoundError in case the key is not found.
-  std::string getMetadata(std::string key) const;
+  std::string getMetadata(const std::string& key) const;
   /// \brief Get metadata
   /// \return the value corresponding to the key if it was found, default value otherwise
-  std::string getMetadata(std::string key, std::string defaultValue) const;
+  std::string getMetadata(const std::string& key, const std::string& defaultValue) const;
 
   /// \brief Associate the Quality with a new reason and an optional comment
   /// \return reference to *this
-  Quality& addReason(FlagReason reason, std::string comment = "");
+  Quality& addReason(const FlagReason& reason, std::string comment = "");
   /// \brief Get the reasons with associated comments for the Quality
   /// \return reason, if exists
   const CommentedFlagReasons& getReasons() const;

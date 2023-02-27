@@ -161,11 +161,11 @@ void SliceTrendingTask::generatePlots()
     }
 
     // Postprocess each pad (titles, axes, flushing buffers).
-    const std::size_t posEndVar = plot.varexp.find("."); // Find the end of the dataSource.
+    const std::size_t posEndVar = plot.varexp.find('.'); // Find the end of the dataSource.
     const std::string varName(plot.varexp.substr(0, posEndVar));
 
     // Draw the trending on a new canvas.
-    TCanvas* c = new TCanvas();
+    auto* c = new TCanvas();
     c->SetName(plot.name.c_str());
     c->SetTitle(plot.title.c_str());
 
@@ -329,7 +329,7 @@ void SliceTrendingTask::drawCanvasMO(TCanvas* thisCanvas, const std::string& var
 
       const std::string_view title = (dataRetrieveVector->at(p)).title;
       const auto posDivider = title.find("RangeX");
-      if (posDivider != title.npos) {
+      if (posDivider != std::string_view::npos) {
         gr->SetName(title.substr(posDivider, -1).data());
       } else {
         gr->SetName(title.data());
@@ -439,9 +439,9 @@ void SliceTrendingTask::drawCanvasMO(TCanvas* thisCanvas, const std::string& var
   } // Trending vs Slices2D
 }
 
-void SliceTrendingTask::getUserAxisRange(const std::string graphAxisRange, float& limitLow, float& limitUp)
+void SliceTrendingTask::getUserAxisRange(const std::string& graphAxisRange, float& limitLow, float& limitUp)
 {
-  const std::size_t posDivider = graphAxisRange.find(":");
+  const std::size_t posDivider = graphAxisRange.find(':');
   const std::string minString(graphAxisRange.substr(0, posDivider));
   const std::string maxString(graphAxisRange.substr(posDivider + 1));
 
@@ -449,9 +449,9 @@ void SliceTrendingTask::getUserAxisRange(const std::string graphAxisRange, float
   limitUp = std::stof(maxString);
 }
 
-void SliceTrendingTask::setUserAxisLabel(TAxis* xAxis, TAxis* yAxis, const std::string graphAxisLabel)
+void SliceTrendingTask::setUserAxisLabel(TAxis* xAxis, TAxis* yAxis, const std::string& graphAxisLabel)
 {
-  const std::size_t posDivider = graphAxisLabel.find(":");
+  const std::size_t posDivider = graphAxisLabel.find(':');
   const std::string yLabel(graphAxisLabel.substr(0, posDivider));
   const std::string xLabel(graphAxisLabel.substr(posDivider + 1));
 
@@ -461,8 +461,8 @@ void SliceTrendingTask::setUserAxisLabel(TAxis* xAxis, TAxis* yAxis, const std::
 
 void SliceTrendingTask::getTrendVariables(const std::string& inputvar, std::string& sourceName, std::string& variableName, std::string& trend)
 {
-  const std::size_t posEndVar = inputvar.find(".");  // Find the end of the dataSource.
-  const std::size_t posEndType = inputvar.find(":"); // Find the end of the quantity.
+  const std::size_t posEndVar = inputvar.find('.');  // Find the end of the dataSource.
+  const std::size_t posEndType = inputvar.find(':'); // Find the end of the quantity.
   sourceName = inputvar.substr(0, posEndVar);
   variableName = inputvar.substr(posEndVar + 1, posEndType - posEndVar - 1);
   trend = inputvar.substr(posEndType + 1, -1);
@@ -470,7 +470,7 @@ void SliceTrendingTask::getTrendVariables(const std::string& inputvar, std::stri
 
 void SliceTrendingTask::getTrendErrors(const std::string& inputvar, std::string& errorX, std::string& errorY)
 {
-  const std::size_t posEndType_err = inputvar.find(":"); // Find the end of the error.
+  const std::size_t posEndType_err = inputvar.find(':'); // Find the end of the error.
   errorX = inputvar.substr(posEndType_err + 1);
   errorY = inputvar.substr(0, posEndType_err);
 }

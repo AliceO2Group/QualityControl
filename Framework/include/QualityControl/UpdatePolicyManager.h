@@ -103,7 +103,7 @@ class UpdatePolicyManager
    * @param revision
    */
   void updateActorRevision(const std::string& actorName, RevisionType revision);
-  void updateActorRevision(std::string actorName);
+  void updateActorRevision(const std::string& actorName);
   /**
    * \brief Update the revision number associated with an object.
    *
@@ -111,8 +111,8 @@ class UpdatePolicyManager
    * @param objectName
    * @param revision
    */
-  void updateObjectRevision(std::string objectName, RevisionType revision);
-  void updateObjectRevision(std::string objectName);
+  void updateObjectRevision(const std::string& objectName, RevisionType revision);
+  void updateObjectRevision(const std::string& objectName);
   /**
    * Add a policy for the given actor.
    * @param actorName
@@ -121,7 +121,7 @@ class UpdatePolicyManager
    * @param allObjects
    * @param policyHelper
    */
-  void addPolicy(std::string actorName, UpdatePolicyType policyType, std::vector<std::string> objectNames, bool allObjects, bool policyHelper);
+  void addPolicy(const std::string& actorName, UpdatePolicyType policyType, std::vector<std::string> objectNames, bool allObjects, bool policyHelper);
 
   /**
    * Remove all policies and reset revisions.

@@ -130,7 +130,7 @@ void TrendingTask::trendValues(const Trigger& t, repository::DatabaseInterface& 
 void TrendingTask::setUserAxisLabel(TAxis* xAxis, TAxis* yAxis, const std::string& graphAxisLabel)
 {
   // todo if we keep adding this method to pp classes we should move it up somewhere
-  const std::size_t posDivider = graphAxisLabel.find(":");
+  const std::size_t posDivider = graphAxisLabel.find(':');
   const std::string yLabel(graphAxisLabel.substr(0, posDivider));
   const std::string xLabel(graphAxisLabel.substr(posDivider + 1));
 

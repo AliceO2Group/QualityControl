@@ -35,18 +35,18 @@ double averageMG1Queue(double rho, double mean, double stddev);
 
 // number of merger layes, M0 is number of producers, R is max reduction factor
 size_t numberOfMergerLayers(size_t M0, size_t R);
-double mergersMemoryUsage(size_t R, size_t M0, size_t objSize, double T, std::function<double(double)> performance);
+double mergersMemoryUsage(size_t R, size_t M0, size_t objSize, double T, const std::function<double(double)>& performance);
 
-double mergersCpuUsage(size_t R, size_t M0, double T, std::function<double(double)> performance);
+double mergersCpuUsage(size_t R, size_t M0, double T, const std::function<double(double)>& performance);
 
 // returns the cost of CPU and RAM of the full merger topology
 std::tuple<double, double> mergerCosts(double costCPU, double costRAM, size_t R, int parallelism, int mosSize,
-                                       double cycleDuration, std::function<double(double)> performance);
+                                       double cycleDuration, const std::function<double(double)>& performance);
 
 // Returns the best Reduction factor (R) for given conditions and total cost of CPU and RAM.
 // If there is a range of equally good reduction factors, it will return the highest.
 std::tuple<size_t, double, double> cheapestMergers(double costCPU, double costRAM, int parallelism, int mosSize,
-                                                   double cycleDuration, std::function<double(double)> performance);
+                                                   double cycleDuration, const std::function<double(double)>& performance);
 
 double qcTaskInputMemory(double utilisation, double avgInputMessage, double stddevInputMessage);
 

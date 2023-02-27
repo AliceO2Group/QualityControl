@@ -132,7 +132,7 @@ bool Aggregator::getAllObjectsOption() const
   return mAggregatorConfig.allObjects;
 }
 
-std::vector<AggregatorSource> Aggregator::getSources()
+std::vector<AggregatorSource> Aggregator::getSources() const
 {
   return mAggregatorConfig.sources;
 }

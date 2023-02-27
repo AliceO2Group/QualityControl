@@ -29,7 +29,7 @@ class DummyDatabase : public DatabaseInterface
   DummyDatabase() = default;
   virtual ~DummyDatabase() = default;
 
-  void connect(std::string host, std::string database, std::string username, std::string password) override;
+  void connect(const std::string& host, const std::string& database, const std::string& username, const std::string& password) override;
   void connect(const std::unordered_map<std::string, std::string>& config) override;
   void storeAny(const void* obj, std::type_info const& typeInfo, std::string const& path, std::map<std::string, std::string> const& metadata,
                 std::string const& detectorName, std::string const& taskName, long from = -1, long to = -1) override;

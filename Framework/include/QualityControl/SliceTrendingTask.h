@@ -72,8 +72,8 @@ class SliceTrendingTask : public PostProcessingInterface
   void generatePlots();
   void drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
                     const std::string& name, const std::string& opt, const std::string& err, const std::vector<std::vector<float>>& axis);
-  void getUserAxisRange(const std::string graphAxisRange, float& limitLow, float& limitUp);
-  void setUserAxisLabel(TAxis* xAxis, TAxis* yAxis, const std::string graphAxisLabel);
+  void getUserAxisRange(const std::string& graphAxisRange, float& limitLow, float& limitUp);
+  void setUserAxisLabel(TAxis* xAxis, TAxis* yAxis, const std::string& graphAxisLabel);
   void getTrendVariables(const std::string& inputvar, std::string& sourceName, std::string& variableName, std::string& trend);
   void getTrendErrors(const std::string& inputvar, std::string& errorX, std::string& errorY);
   void saveObjectToPrimitives(TCanvas* canvas, const int padNumber, TObject* object);

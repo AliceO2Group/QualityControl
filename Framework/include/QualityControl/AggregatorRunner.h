@@ -113,7 +113,7 @@ class AggregatorRunner : public framework::Task
   /// \brief Compute the detector name to be used in the infologger for this runner.
   /// Compute the detector name to be used in the infologger for this runner.
   /// If all checks belong to the same detector we use it, otherwise we use "MANY"
-  static std::string getDetectorName(std::vector<std::shared_ptr<Aggregator>> aggregators);
+  static std::string getDetectorName(const std::vector<std::shared_ptr<Aggregator>>& aggregators);
 
  private:
   /**
@@ -158,8 +158,8 @@ class AggregatorRunner : public framework::Task
    * @param aggregators
    * @return true if all sources are found, by name, in the vector of aggregators.
    */
-  bool areSourcesIn(const std::vector<AggregatorSource>& sources,
-                    const std::vector<std::shared_ptr<Aggregator>>& aggregators);
+  static bool areSourcesIn(const std::vector<AggregatorSource>& sources,
+                           const std::vector<std::shared_ptr<Aggregator>>& aggregators);
 
   /**
    * Send metrics to the monitoring system if the time has come.

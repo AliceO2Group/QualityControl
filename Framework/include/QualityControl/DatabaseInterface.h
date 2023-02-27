@@ -58,7 +58,7 @@ class DatabaseInterface
    * @param password
    * @deprecated
    */
-  virtual void connect(std::string host, std::string database, std::string username, std::string password) = 0;
+  virtual void connect(const std::string& host, const std::string& database, const std::string& username, const std::string& password) = 0;
   /**
    * Connects to the database.
    * For some implementations, this is a noop.

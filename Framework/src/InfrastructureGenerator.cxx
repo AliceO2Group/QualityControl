@@ -41,6 +41,7 @@
 
 #include <algorithm>
 #include <set>
+#include <utility>
 
 using namespace o2::framework;
 using namespace o2::configuration;
@@ -59,7 +60,7 @@ uint16_t defaultPolicyPort = 42349;
 struct DataSamplingPolicySpec {
   DataSamplingPolicySpec(std::string name, std::string control, std::string remoteMachine = "")
     : name(std::move(name)), control(std::move(control)), remoteMachine(std::move(remoteMachine)) {}
-  bool operator<(const DataSamplingPolicySpec other) const
+  bool operator<(const DataSamplingPolicySpec& other) const
   {
     return std::tie(name, control, remoteMachine) < std::tie(other.name, other.control, other.remoteMachine);
   }
@@ -109,7 +110,7 @@ void InfrastructureGenerator::generateStandaloneInfrastructure(framework::Workfl
   workflow.insert(std::end(workflow), std::begin(qcInfrastructure), std::end(qcInfrastructure));
 }
 
-WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(const boost::property_tree::ptree& configurationTree, std::string targetHost)
+WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(const boost::property_tree::ptree& configurationTree, const std::string& targetHost)
 {
   printVersion();
 
@@ -182,7 +183,7 @@ WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(const boost::p
   return workflow;
 }
 
-void InfrastructureGenerator::generateLocalInfrastructure(framework::WorkflowSpec& workflow, const boost::property_tree::ptree& configurationTree, std::string host)
+void InfrastructureGenerator::generateLocalInfrastructure(framework::WorkflowSpec& workflow, const boost::property_tree::ptree& configurationTree, const std::string& host)
 {
   auto qcInfrastructure = InfrastructureGenerator::generateLocalInfrastructure(configurationTree, host);
   workflow.insert(std::end(workflow), std::begin(qcInfrastructure), std::end(qcInfrastructure));
@@ -270,7 +271,7 @@ void InfrastructureGenerator::generateRemoteInfrastructure(framework::WorkflowSp
   workflow.insert(std::end(workflow), std::begin(qcInfrastructure), std::end(qcInfrastructure));
 }
 
-framework::WorkflowSpec InfrastructureGenerator::generateLocalBatchInfrastructure(const boost::property_tree::ptree& configurationTree, std::string sinkFilePath)
+framework::WorkflowSpec InfrastructureGenerator::generateLocalBatchInfrastructure(const boost::property_tree::ptree& configurationTree, const std::string& sinkFilePath)
 {
   printVersion();
 
@@ -290,7 +291,7 @@ framework::WorkflowSpec InfrastructureGenerator::generateLocalBatchInfrastructur
     }
   }
 
-  if (fileSinkInputs.size() > 0) {
+  if (!fileSinkInputs.empty()) {
     // todo: could be moved to a factory.
     workflow.push_back({ "qc-root-file-sink",
                          std::move(fileSinkInputs),
@@ -304,13 +305,13 @@ framework::WorkflowSpec InfrastructureGenerator::generateLocalBatchInfrastructur
   return workflow;
 }
 
-void InfrastructureGenerator::generateLocalBatchInfrastructure(framework::WorkflowSpec& workflow, const boost::property_tree::ptree& configurationTree, std::string sinkFilePath)
+void InfrastructureGenerator::generateLocalBatchInfrastructure(framework::WorkflowSpec& workflow, const boost::property_tree::ptree& configurationTree, const std::string& sinkFilePath)
 {
-  auto qcInfrastructure = InfrastructureGenerator::generateLocalBatchInfrastructure(std::move(configurationTree), std::move(sinkFilePath));
+  auto qcInfrastructure = InfrastructureGenerator::generateLocalBatchInfrastructure(configurationTree, sinkFilePath);
   workflow.insert(std::end(workflow), std::begin(qcInfrastructure), std::end(qcInfrastructure));
 }
 
-framework::WorkflowSpec InfrastructureGenerator::generateRemoteBatchInfrastructure(const boost::property_tree::ptree& configurationTree, std::string sourceFilePath)
+framework::WorkflowSpec InfrastructureGenerator::generateRemoteBatchInfrastructure(const boost::property_tree::ptree& configurationTree, const std::string& sourceFilePath)
 {
   printVersion();
 
@@ -326,7 +327,7 @@ framework::WorkflowSpec InfrastructureGenerator::generateRemoteBatchInfrastructu
       fileSourceOutputs.back().binding = RootFileSource::outputBinding(taskSpec.detectorName, taskSpec.taskName);
     }
   }
-  if (fileSourceOutputs.size() > 0) {
+  if (!fileSourceOutputs.empty()) {
     workflow.push_back({ "qc-root-file-source", {}, std::move(fileSourceOutputs), adaptFromTask<RootFileSource>(sourceFilePath) });
   }
 
@@ -337,7 +338,7 @@ framework::WorkflowSpec InfrastructureGenerator::generateRemoteBatchInfrastructu
   return workflow;
 }
 
-void InfrastructureGenerator::generateRemoteBatchInfrastructure(framework::WorkflowSpec& workflow, const boost::property_tree::ptree& configurationTree, std::string sourceFilePath)
+void InfrastructureGenerator::generateRemoteBatchInfrastructure(framework::WorkflowSpec& workflow, const boost::property_tree::ptree& configurationTree, const std::string& sourceFilePath)
 {
   auto qcInfrastructure = InfrastructureGenerator::generateRemoteBatchInfrastructure(configurationTree, sourceFilePath);
   workflow.insert(std::end(workflow), std::begin(qcInfrastructure), std::end(qcInfrastructure));
@@ -435,7 +436,7 @@ void InfrastructureGenerator::generateDataSamplingPolicyRemoteProxyBind(framewor
                                                                         const std::string& remotePort,
                                                                         const std::string& control)
 {
-  std::string channelName = policyName;
+  const std::string& channelName = policyName;
   const std::string& proxyName = channelName; // channel name has to match proxy name
 
   std::string channelConfig = "name=" + channelName + ",type=sub,method=bind,address=tcp://*:" + remotePort + ",rateLogging=60,transport=zeromq,rcvBufSize=1";
@@ -496,10 +497,10 @@ void InfrastructureGenerator::generateLocalTaskRemoteProxy(framework::WorkflowSp
   enableDraining(proxy.options);
   workflow.emplace_back(std::move(proxy));
 }
-void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow, std::string taskName,
+void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow, const std::string& taskName,
                                               size_t numberOfLocalMachines, double cycleDurationSeconds,
-                                              std::string mergingMode, size_t resetAfterCycles, std::string monitoringUrl,
-                                              std::string detectorName, std::vector<size_t> mergersPerLayer)
+                                              const std::string& mergingMode, size_t resetAfterCycles, std::string monitoringUrl,
+                                              const std::string& detectorName, std::vector<size_t> mergersPerLayer)
 {
   Inputs mergerInputs;
   for (size_t id = 1; id <= numberOfLocalMachines; id++) {
@@ -523,7 +524,7 @@ void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow,
   mergerConfig.mergedObjectTimespan = { MergedObjectTimespan::NCycles, (int)resetAfterCycles };
   // for now one merger should be enough, multiple layers to be supported later
   mergerConfig.topologySize = { TopologySize::MergersPerLayer, mergersPerLayer };
-  mergerConfig.monitoringUrl = monitoringUrl;
+  mergerConfig.monitoringUrl = std::move(monitoringUrl);
   mergerConfig.detectorName = detectorName;
   mergerConfig.parallelismType = { (mergerConfig.inputObjectTimespan.value == InputObjectsTimespan::LastDifference) ? ParallelismType::RoundRobin : ParallelismType::SplitInputs };
   mergersBuilder.setConfig(mergerConfig);

@@ -15,7 +15,6 @@
 ///
 /// \brief Bunch of formulas for theoretical calculations for finding optimal QC topologies.
 #include "QualityControl/Calculators.h"
-#include "QualityControl/QcInfoLogger.h"
 #include <cmath>
 
 namespace o2::quality_control::calculators
@@ -43,7 +42,7 @@ size_t numberOfMergerLayers(size_t M0, size_t R)
   return std::ceil(std::log((double)M0) / std::log((double)R));
 }
 
-double mergersMemoryUsage(size_t R, size_t M0, size_t objSize, double T, std::function<double(double)> performance)
+double mergersMemoryUsage(size_t R, size_t M0, size_t objSize, double T, const std::function<double(double)>& performance)
 {
   const size_t layers = numberOfMergerLayers(M0, R);
 
@@ -52,7 +51,7 @@ double mergersMemoryUsage(size_t R, size_t M0, size_t objSize, double T, std::fu
 
   for (size_t layer = 1; layer <= layers; layer++) {
     const size_t Mi_prev = Mi;
-    const size_t Mi = std::ceil(Mi_prev / (double)R);
+    Mi = std::ceil(Mi_prev / (double)R);
     const double Ri = Mi_prev / (double)Mi;
     const double rho = Ri / (double)T / performance(Ri);
 
@@ -69,7 +68,7 @@ double mergersMemoryUsage(size_t R, size_t M0, size_t objSize, double T, std::fu
   return memory;
 }
 
-double mergersCpuUsage(size_t R, size_t M0, double T, std::function<double(double)> performance)
+double mergersCpuUsage(size_t R, size_t M0, double T, const std::function<double(double)>& performance)
 {
   const size_t layers = numberOfMergerLayers(M0, R);
   double cores = 0.0;
@@ -94,7 +93,7 @@ double mergersCpuUsage(size_t R, size_t M0, double T, std::function<double(doubl
 
 // returns the cost of CPU and RAM of the full merger topology
 std::tuple<double, double> mergerCosts(double costCPU, double costRAM, size_t R, int parallelism, int mosSize,
-                                       double cycleDuration, std::function<double(double)> performance)
+                                       double cycleDuration, const std::function<double(double)>& performance)
 {
   double mergersCPUCost = costCPU * mergersCpuUsage(R, parallelism, cycleDuration, performance);
   double mergersfMemoryCost = costRAM * mergersMemoryUsage(R, parallelism, mosSize, cycleDuration, performance);
@@ -104,7 +103,7 @@ std::tuple<double, double> mergerCosts(double costCPU, double costRAM, size_t R,
 // Returns the best Reduction factor (R) for given conditions and total cost of CPU and RAM.
 // If there is a range of equally good reduction factors, it will return the highest.
 std::tuple<size_t, double, double> cheapestMergers(double costCPU, double costRAM, int parallelism, int mosSize,
-                                                   double cycleDuration, std::function<double(double)> performance)
+                                                   double cycleDuration, const std::function<double(double)>& performance)
 {
   size_t bestR = -1;
   double lowestCPUCost = std::numeric_limits<double>::max();

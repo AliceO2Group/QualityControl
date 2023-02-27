@@ -70,7 +70,6 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
 }
 
 #include <Framework/runDataProcessing.h>
-#include <Framework/DataSpecUtils.h>
 #include <Configuration/ConfigurationFactory.h>
 #include <Configuration/ConfigurationInterface.h>
 #include "QualityControl/QcInfoLogger.h"
