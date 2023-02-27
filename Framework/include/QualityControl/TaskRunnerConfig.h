@@ -30,6 +30,11 @@ namespace o2::base
 class GRPGeomRequest;
 }
 
+namespace o2::globaltracking
+{
+struct DataRequest;
+}
+
 namespace o2::quality_control::core
 {
 
@@ -55,6 +60,7 @@ struct TaskRunnerConfig {
   core::DiscardFileParameters infologgerDiscardParameters;
   Activity fallbackActivity;
   std::shared_ptr<o2::base::GRPGeomRequest> grpGeomRequest;
+  std::shared_ptr<o2::globaltracking::DataRequest> globalTrackingDataRequest;
 };
 
 } // namespace o2::quality_control::core

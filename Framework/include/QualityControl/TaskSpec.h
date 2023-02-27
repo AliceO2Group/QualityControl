@@ -72,6 +72,7 @@ struct TaskSpec {
   int mergerCycleMultiplier = 1;
   std::vector<size_t> mergersPerLayer{ 1 };
   GRPGeomRequestSpec grpGeomRequestSpec;
+  GlobalTrackingDataRequestSpec globalTrackingDataRequest;
 };
 
 } // namespace o2::quality_control::core

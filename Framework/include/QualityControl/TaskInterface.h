@@ -32,6 +32,11 @@ namespace o2::monitoring
 class Monitoring;
 }
 
+namespace o2::globaltracking
+{
+struct DataRequest;
+}
+
 namespace o2::quality_control::core
 {
 
@@ -82,6 +87,8 @@ class TaskInterface : public UserCodeInterface
   // Setters and getters
   void setObjectsManager(std::shared_ptr<ObjectsManager> objectsManager);
   void setMonitoring(const std::shared_ptr<o2::monitoring::Monitoring>& mMonitoring);
+  void setGlobalTrackingDataRequest(std::shared_ptr<o2::globaltracking::DataRequest>);
+  const o2::globaltracking::DataRequest* getGlobalTrackingDataRequest() const;
 
  protected:
   std::shared_ptr<ObjectsManager> getObjectsManager();
@@ -89,6 +96,7 @@ class TaskInterface : public UserCodeInterface
 
  private:
   std::shared_ptr<ObjectsManager> mObjectsManager;
+  std::shared_ptr<o2::globaltracking::DataRequest> mGlobalTrackingDataRequest;
 };
 
 } // namespace o2::quality_control::core
