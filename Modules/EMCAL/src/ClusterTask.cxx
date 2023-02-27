@@ -71,8 +71,12 @@ ClusterTask::~ClusterTask()
   conditionalDelete(mHistNclustPerTF);
   conditionalDelete(mHistNclustPerEvt);
   conditionalDelete(mHistClustEtaPhi);
+  conditionalDelete(mHistClustEtaPhiMaxCluster);
   conditionalDelete(mHistNclustPerTFSelected);
   conditionalDelete(mHistNclustPerEvtSelected);
+  conditionalDelete(mHistNclustSupermodule);
+  conditionalDelete(mHistNClustPerEventSupermodule);
+  conditionalDelete(mHistSupermoduleIDMaxCluster);
 
   for (int idet = 0; idet < NUM_DETS; idet++) {
     conditionalDelete(mHistTime[idet]);
@@ -82,7 +86,15 @@ ClusterTask::~ClusterTask()
     conditionalDelete(mHistM20[idet]);
     conditionalDelete(mHistM02VsClustE[idet]);
     conditionalDelete(mHistM20VsClustE[idet]);
+    conditionalDelete(mHistClustEMaxCluster[idet]);
+    conditionalDelete(mHistClustTimeMaxCluster[idet]);
   }
+
+  conditionalDelete(mHistClusterTimeSupermodule);
+  conditionalDelete(mHistClusterEnergySupermodule);
+  conditionalDelete(mHistClusterNCellSupermodule);
+  conditionalDelete(mHistMaxClusterEnergySupermodule);
+  conditionalDelete(mHistMaxClusterTimeSupermodule);
 
   conditionalDelete(mHistMassDiphoton_EMCAL);
   conditionalDelete(mHistMassDiphoton_DCAL);
@@ -99,8 +111,8 @@ ClusterTask::~ClusterTask()
 
 void ClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  QcInfoLogger::setDetector("EMC");                        // svk
-  ILOG(Debug, Devel) << "initialize ClusterTask" << ENDM;  // QcInfoLogger is used. FairMQ logs will go to there as well.
+  QcInfoLogger::setDetector("EMC");                       // svk
+  ILOG(Debug, Devel) << "initialize ClusterTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   auto get_bool = [](const std::string_view input) -> bool { // svk
     return input == "true";
@@ -153,20 +165,29 @@ void ClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   //////////////////////////////////////////////////////////////
   // Counter histograms                                       //
   //////////////////////////////////////////////////////////////
-  mHistNclustPerTF = new TH1F("NclustPerTF", "Number of clusters per time frame; N_{Cluster}/TF; Yield", 2000, 0.0, 200000.0); // svk
+  mHistNclustPerTF = new TH1F("NclustPerTF", "Number of clusters per time frame; N_{Cluster}/TF; Yield", 2000, 0.0, 200000.0);
   getObjectsManager()->startPublishing(mHistNclustPerTF);
 
-  mHistNclustPerEvt = new TH1F("NclustPerEvt", "Number of clusters per event; N_{Cluster}/Event; Yield", 200, 0.0, 200.0); // svk
+  mHistNclustPerEvt = new TH1F("NclustPerEvt", "Number of clusters per event; N_{Cluster}/Event; Yield", 200, 0.0, 200.0);
   getObjectsManager()->startPublishing(mHistNclustPerEvt);
 
-  mHistClustEtaPhi = new TH2F("ClustEtaPhi", "Cluster #eta and #phi distribution; #eta; #phi", 100, -1.0, 1.0, 100, 0.0, 2 * TMath::Pi()); // svk
+  mHistClustEtaPhi = new TH2F("ClustEtaPhi", "Cluster #eta and #phi distribution; #eta; #phi", 100, -1.0, 1.0, 100, 0.0, 2 * TMath::Pi());
   getObjectsManager()->startPublishing(mHistClustEtaPhi);
+
+  mHistClustEtaPhiMaxCluster = new TH2F("ClustEtaPhiMaxCluster", "Cluster #eta and #phi of the leading cluster; #eta; #phi", 100, -1.0, 1.0, 100, 0.0, 2 * TMath::Pi());
+  getObjectsManager()->startPublishing(mHistClustEtaPhiMaxCluster);
 
   mHistNclustPerTFSelected = new TH1F("NclustPerTFSel", "Number of selected clusters per time frame; N_{Cluster}/TF; yield", 2000, 0.0, 200000.0);
   getObjectsManager()->startPublishing(mHistNclustPerTFSelected);
 
   mHistNclustPerEvtSelected = new TH1F("NclustPerEvtSel", "Number of clusters per event; N_{Cluster}/Event; yield", 200, 0.0, 200.0);
   getObjectsManager()->startPublishing(mHistNclustPerEvtSelected);
+
+  mHistNclustSupermodule = new TH1D("NClusterPerSupermodule", "Number of clusters per supermodule; Supermodule ID; Number of clusters", 20, -0.5, 19.5);
+  getObjectsManager()->startPublishing(mHistNclustSupermodule);
+
+  mHistNClustPerEventSupermodule = new TH2D("NClustersPerEventSupermodule", "Number of clusters per event per supermodule; Number of cluster / event; Supermodule ID", 200, 0., 200., 20., -0.5, 19.5);
+  getObjectsManager()->startPublishing(mHistNClustPerEventSupermodule);
 
   //////////////////////////////////////////////////////////////
   // Control histograms (optional)                            //
@@ -221,7 +242,29 @@ void ClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
 
     mHistM20VsClustE[idet] = new TH2F(Form("M20_Vs_ClustE_%s", detname.data()), Form("M20 vs cluster energy (%s); E_{cl} (GeV); M02", dettitle.data()), 500, 0, 50.0, 200, 0.0, 2.0);
     getObjectsManager()->startPublishing(mHistM20VsClustE[idet]);
+
+    mHistClustEMaxCluster[idet] = new TH1D(Form("ClusterELeading_%s", detname.data()), Form("Energy of the leading cluster (%s); E_{cl,max}; Yield", dettitle.data()), 500, 0., 50.);
+    getObjectsManager()->startPublishing(mHistClustEMaxCluster[idet]);
+
+    mHistClustTimeMaxCluster[idet] = new TH1D(Form("ClusterTimeLeading_%s", detname.data()), Form("Time of the leading cluster (%s); t_{cl,max} (ns); Yield", dettitle.data()), 1800, -900., 900.);
+    getObjectsManager()->startPublishing(mHistClustTimeMaxCluster[idet]);
   }
+
+  //////////////////////////////////////////////////////////////
+  // Supermodule dependent histograms                         //
+  //////////////////////////////////////////////////////////////
+  mHistClusterTimeSupermodule = new TH2D("ClusterTimeSupermodule", "Cluster time vs. Supermodule ID; t_{cl} (ns); Supermodule ID", 600, -400, 800, 20, -0.5, 19.5);
+  getObjectsManager()->startPublishing(mHistClusterTimeSupermodule);
+  mHistClusterEnergySupermodule = new TH2D("ClusterEnergySupermodule", "Cluster energy vs. supermodule ID; E_{cl} (GeV); Supermodule ID", 500, 0.0, 50.0, 20, -0.5, 19.5);
+  getObjectsManager()->startPublishing(mHistClusterEnergySupermodule);
+  mHistClusterNCellSupermodule = new TH2D("ClusterNCellsSupermodule", "Number of cells vs. supermodule ID; N_{cell,clust}; Supermodule ID", 30, 0, 30, 20, -0.5, 19.5);
+  getObjectsManager()->startPublishing(mHistClusterNCellSupermodule);
+  mHistMaxClusterEnergySupermodule = new TH2D("LeadingClusterEnergySupermodule", "Cluster energy of the leading cluster vs. supermodule ID; E_{cl} (GeV); Supermodule ID", 500, 0.0, 50.0, 20, -0.5, 19.5);
+  getObjectsManager()->startPublishing(mHistMaxClusterEnergySupermodule);
+  mHistMaxClusterTimeSupermodule = new TH2D("LeadingClusterTimeSupermodule", "Cluster time of the leading cluster vs. supermodule ID; t_{cl} (ns); Supermodule ID", 600, -400, 800, 20, -0.5, 19.5);
+  getObjectsManager()->startPublishing(mHistMaxClusterTimeSupermodule);
+  mHistSupermoduleIDMaxCluster = new TH1D("SupermoduleIDMaxCluster", "Supermodule ID of the leading cluster; Supermodule ID; Number of events", 20, -0.5, 19.5);
+  getObjectsManager()->startPublishing(mHistSupermoduleIDMaxCluster);
 
   //////////////////////////////////////////////////////////////
   // Calib trigger histograms                                 //
@@ -362,6 +405,40 @@ void ClusterTask::endOfActivity(Activity& /*activity*/)
 void ClusterTask::analyseTimeframe(const gsl::span<const o2::emcal::Cell>& cells, const gsl::span<const o2::emcal::TriggerRecord>& cellTriggerRecords, const gsl::span<const o2::emcal::Cluster> clusters, const gsl::span<const o2::emcal::TriggerRecord> clusterTriggerRecords, const gsl::span<const int> clusterIndices, const gsl::span<const o2::emcal::TriggerRecord> cellIndexTriggerRecords)
 {
 
+  struct MaxCluster {
+    double energy = 0.;
+    double time = 0.;
+    double eta = 0.;
+    double phi = 0.;
+    int supermoduleID = -1;
+    bool initialized = false;
+  };
+
+  auto resetMaxCluster = [](MaxCluster& currentmax) {
+    currentmax.energy = 0.;
+    currentmax.time = 0.;
+    currentmax.eta = 0.;
+    currentmax.phi = 0.;
+    currentmax.supermoduleID = -1;
+    currentmax.initialized = 0;
+  };
+
+  auto isMaxCluster = [](MaxCluster& currentmax, const o2::emcal::AnalysisCluster& currentcluster) {
+    if (!currentmax.initialized) {
+      return true;
+    }
+    return currentcluster.E() > currentmax.energy;
+  };
+
+  auto fillMaxCluster = [](MaxCluster& currentmax, const o2::emcal::AnalysisCluster& currentcluster) {
+    currentmax.energy = currentcluster.E();
+    currentmax.time = currentcluster.getClusterTime();
+    auto [eta, phi] = ClusterTask::getClusterEtaPhi(currentcluster);
+    currentmax.eta = eta;
+    currentmax.phi = phi;
+    currentmax.initialized = true;
+  };
+
   mEventHandler->reset();
   // mClusterFactory->reset();
 
@@ -371,6 +448,9 @@ void ClusterTask::analyseTimeframe(const gsl::span<const o2::emcal::Cell>& cells
   mHistNclustPerTF->Fill(clusters.size());
   int nClustersTimeframeSelected = 0;
 
+  std::array<int, 20> numberOfClustersSupermodule;
+  std::array<MaxCluster, 20> maxClusterSupermodule;
+  std::array<MaxCluster, NUM_DETS> maxClusterDets;
   for (int iev = 0; iev < mEventHandler->getNumberOfEvents(); iev++) {
     auto inputEvent = mEventHandler->buildEvent(iev);
     auto trigger = inputEvent.mTriggerBits;
@@ -387,6 +467,9 @@ void ClusterTask::analyseTimeframe(const gsl::span<const o2::emcal::Cell>& cells
     mClusterFactory->setClustersContainer(inputEvent.mClusters);
     mClusterFactory->setCellsContainer(inputEvent.mCells);
     mClusterFactory->setCellsIndicesContainer(inputEvent.mCellIndices);
+    std::fill(numberOfClustersSupermodule.begin(), numberOfClustersSupermodule.end(), 0);
+    std::for_each(maxClusterSupermodule.begin(), maxClusterSupermodule.end(), resetMaxCluster);
+    std::for_each(maxClusterDets.begin(), maxClusterDets.end(), resetMaxCluster);
 
     std::vector<TLorentzVector> selclustersEMCAL, selclustersDCAL;
     int nClustersEventSelected = 0;
@@ -408,6 +491,37 @@ void ClusterTask::analyseTimeframe(const gsl::span<const o2::emcal::Cell>& cells
         }
         nClustersEventSelected++;
         nClustersTimeframeSelected++;
+        int supermoduleID = -1;
+        try {
+          auto [eta, phi] = getClusterEtaPhi(analysisCluster);
+          supermoduleID = mGeometry->SuperModuleNumberFromEtaPhi(eta, phi);
+          numberOfClustersSupermodule[supermoduleID]++;
+          if (isMaxCluster(maxClusterSupermodule[supermoduleID], analysisCluster)) {
+            fillMaxCluster(maxClusterSupermodule[supermoduleID], analysisCluster);
+          }
+        } catch (o2::emcal::InvalidPositionException& e) {
+        }
+        if (isMaxCluster(maxClusterDets[ALL_DET], analysisCluster)) {
+          fillMaxCluster(maxClusterDets[ALL_DET], analysisCluster);
+          if (supermoduleID > -1) {
+            maxClusterDets[ALL_DET].supermoduleID = supermoduleID;
+          }
+        }
+        if (clsTypeEMC) {
+          if (isMaxCluster(maxClusterDets[EMCAL_DET], analysisCluster)) {
+            fillMaxCluster(maxClusterDets[EMCAL_DET], analysisCluster);
+            if (supermoduleID > -1) {
+              maxClusterDets[EMCAL_DET].supermoduleID = supermoduleID;
+            }
+          }
+        } else {
+          if (isMaxCluster(maxClusterDets[DCAL_DET], analysisCluster)) {
+            fillMaxCluster(maxClusterDets[DCAL_DET], analysisCluster);
+            if (supermoduleID > -1) {
+              maxClusterDets[EMCAL_DET].supermoduleID = supermoduleID;
+            }
+          }
+        }
       }
       if (isCalibTrigger) {
         if (!analysisCluster.getIsExotic()) {
@@ -424,6 +538,23 @@ void ClusterTask::analyseTimeframe(const gsl::span<const o2::emcal::Cell>& cells
     }
     if (isPhysicsTrigger) {
       mHistNclustPerEvtSelected->Fill(nClustersEventSelected);
+      for (int ism = 0; ism < 20; ism++) {
+        mHistNClustPerEventSupermodule->Fill(numberOfClustersSupermodule[ism], ism);
+        if (maxClusterSupermodule[ism].initialized) {
+          mHistMaxClusterEnergySupermodule->Fill(maxClusterSupermodule[ism].energy, ism);
+          mHistMaxClusterTimeSupermodule->Fill(maxClusterSupermodule[ism].time, ism);
+        }
+      }
+      for (int detType = 0; detType < NUM_DETS; detType++) {
+        if (maxClusterDets[detType].initialized) {
+          mHistClustEMaxCluster[detType]->Fill(maxClusterDets[detType].energy);
+          mHistClustTimeMaxCluster[detType]->Fill(maxClusterDets[detType].time);
+          if (detType == ALL_DET) {
+            mHistClustEtaPhiMaxCluster->Fill(maxClusterDets[detType].eta, maxClusterDets[detType].phi);
+            mHistSupermoduleIDMaxCluster->Fill(maxClusterDets[detType].supermoduleID);
+          }
+        }
+      }
     }
     if (isCalibTrigger) {
       mHistNClustPerEvtSelected_Calib->Fill(nClustersEventSelected);
@@ -472,13 +603,7 @@ bool ClusterTask::fillClusterHistogramsPhysics(const o2::emcal::AnalysisCluster&
   // Select EMCAL or DCAL clusters//
   /////////////////////////////////
   Bool_t clsTypeEMC;
-
-  math_utils::Point3D<float> emcx = cluster.getGlobalPosition();
-
-  TVector3 clustpos(emcx.X(), emcx.Y(), emcx.Z());
-  Double_t emcphi = TVector2::Phi_0_2pi(clustpos.Phi());
-  Double_t emceta = clustpos.Eta();
-
+  auto [emceta, emcphi] = getClusterEtaPhi(cluster);
   mHistClustEtaPhi->Fill(emceta, emcphi);
 
   DetType_t dettype = DetType_t::ALL_DET; // Use ALL_DET as default value, will be replaced by actual subdetector
@@ -486,6 +611,16 @@ bool ClusterTask::fillClusterHistogramsPhysics(const o2::emcal::AnalysisCluster&
     dettype = DetType_t::EMCAL_DET; // EMCAL : 80 < phi < 187
   } else {
     dettype = DetType_t::DCAL_DET; // DCAL  : 260 < phi < 327
+  }
+
+  try {
+    auto supermoduleID = mGeometry->SuperModuleNumberFromEtaPhi(emceta, emcphi);
+    mHistNclustSupermodule->Fill(supermoduleID);
+    mHistClusterTimeSupermodule->Fill(clustT, supermoduleID);
+    mHistClusterEnergySupermodule->Fill(clustE, supermoduleID);
+    mHistClusterNCellSupermodule->Fill(cluster.getNCells(), supermoduleID);
+  } catch (o2::emcal::InvalidPositionException& e) {
+    // eventually monitor position errors in the future
   }
 
   // First: Distributions both detectors together
@@ -520,6 +655,14 @@ void ClusterTask::fillClusterHistogramsLED(const o2::emcal::AnalysisCluster& clu
   mHistClusterEtaPhi_Calib->Fill(emceta, emcphi);
   mHistClusterEnergyTime_Calib->Fill(cluster.E(), cluster.getClusterTime());
   mHistClusterEnergyCells_Calib->Fill(cluster.E(), cluster.getNCells());
+}
+
+std::tuple<double, double> ClusterTask::getClusterEtaPhi(const o2::emcal::AnalysisCluster& cluster)
+{
+  math_utils::Point3D<float> emcx = cluster.getGlobalPosition();
+
+  TVector3 clustpos(emcx.X(), emcx.Y(), emcx.Z());
+  return std::make_tuple(clustpos.Eta(), TVector2::Phi_0_2pi(clustpos.Phi()));
 }
 
 //_____________________________  Internal clusteriser function _____________________________
@@ -712,10 +855,14 @@ void ClusterTask::resetHistograms()
   conditionalReset(mHistCellEnergyTimeCalib);
   conditionalReset(mHistNclustPerTFSelected);
   conditionalReset(mHistNclustPerEvtSelected);
+  conditionalReset(mHistNclustSupermodule);
+  conditionalReset(mHistNClustPerEventSupermodule);
+  conditionalReset(mHistSupermoduleIDMaxCluster);
 
   conditionalReset(mHistNclustPerTF);
   conditionalReset(mHistNclustPerEvt);
   conditionalReset(mHistClustEtaPhi);
+  conditionalReset(mHistClustEtaPhiMaxCluster);
 
   for (auto idet = 0; idet < NUM_DETS; idet++) {
     conditionalReset(mHistTime[idet]);
@@ -725,7 +872,15 @@ void ClusterTask::resetHistograms()
     conditionalReset(mHistM20[idet]);
     conditionalReset(mHistM02VsClustE[idet]);
     conditionalReset(mHistM20VsClustE[idet]);
+    conditionalReset(mHistClustEMaxCluster[idet]);
+    conditionalReset(mHistClustTimeMaxCluster[idet]);
   }
+
+  conditionalReset(mHistClusterTimeSupermodule);
+  conditionalReset(mHistClusterEnergySupermodule);
+  conditionalReset(mHistClusterNCellSupermodule);
+  conditionalReset(mHistMaxClusterEnergySupermodule);
+  conditionalReset(mHistMaxClusterTimeSupermodule);
 
   conditionalReset(mHistMassDiphoton_EMCAL);
   conditionalReset(mHistMassDiphoton_DCAL);
