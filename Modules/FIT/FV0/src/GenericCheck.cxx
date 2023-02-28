@@ -66,6 +66,7 @@ SingleCheck GenericCheck::getCheckFromConfig(std::string paramName)
 
 void GenericCheck::configure()
 {
+  mCheckMaxEdgeIntegralRatioY = getCheckFromConfig("MaxEdgeIntegralRatioY");
 
   mCheckMaxOverflowIntegralRatio = getCheckFromConfig("MaxOverflowIntegralRatio");
 
@@ -118,6 +119,25 @@ Quality GenericCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
       ILOG(Error, Support) << "MO " << moName << " not found" << ENDM;
       continue;
     }
+
+    // =============================== Zadanie ===============================
+    if (mo->getName() == "TriggersSoftwareVsTCM") {
+      auto h2 = (TH2*)mo->getObject();
+      int numXBins = h2->GetNbinsX();
+      int numYBins = h2->GetNbinsY();
+
+      for (int i = 1; i <= numXBins; i++) {
+
+          if ((h2->GetBinContent(i, 3) && !h2->GetBinContent(i, 4)) || (!h2->GetBinContent(i, 3) && h2->GetBinContent(i, 4))) {
+            result.set(Quality::Bad);
+            result.addReason(FlagReasonFactory::Unknown(),
+                    "CFD eff. < \"Error\" threshold in channel " + std::to_string(chId));    
+            break;        
+          }
+
+      }
+    }
+
     if (std::strcmp(mo->getObject()->ClassName(), "TCanvas") == 0) {
       auto g = (TGraph*)((TCanvas*)mo->getObject())->GetListOfPrimitives()->FindObject(mNameObjOnCanvas.c_str());
 
@@ -152,6 +172,17 @@ Quality GenericCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
         result.set(Quality::Null);
         ILOG(Error, Support) << "Object inside MO " << moName << " not found" << ENDM;
         continue;
+      }
+
+      // =============================== Zadanie ===============================
+      if (mCheckMaxEdgeIntegralRatioY.isActive()) {
+        int nBinsX = h->GetNbinsX();
+        float sumRatio = 0;
+        for (int iBinX = 1; iBinX <= nBinsX; iBinX++) {
+            sumRatio += h->GetBinContent(iBinX);
+        }
+        float meanRatio = sumRatio / nBinsX;
+        mCheckMaxEdgeIntegralRatioY.doCheck(result, meanRatio);
       }
 
       if (mCheckMinMeanX.isActive())

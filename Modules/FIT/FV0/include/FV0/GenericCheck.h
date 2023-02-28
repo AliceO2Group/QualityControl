@@ -108,6 +108,8 @@ class GenericCheck : public o2::quality_control::checker::CheckInterface
  private:
   SingleCheck getCheckFromConfig(std::string);
 
+  SingleCheck mCheckMaxEdgeIntegralRatioY;
+
   SingleCheck mCheckMaxOverflowIntegralRatio;
 
   SingleCheck mCheckMinMeanX;

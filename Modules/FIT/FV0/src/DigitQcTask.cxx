@@ -262,7 +262,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     mHistBCvsFEEmodules->GetYaxis()->SetBinLabel(entry.second + 1, entry.first.c_str());
     mHistOrbitVsFEEmodules->GetYaxis()->SetBinLabel(entry.second + 1, entry.first.c_str());
   }
-
+  mHistGateTimeRatio2Ch = std::make_unique<TH1F>("HistGateTimeRatio2Ch", "Ratio of measurements between time -192 and 192", sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF);
   // mHistTimeSum2Diff = std::make_unique<TH2F>("timeSumVsDiff", "time A/C side: sum VS diff;(TOC-TOA)/2 [ns];(TOA+TOC)/2 [ns]", 400, -52.08, 52.08, 400, -52.08, 52.08); // range of 52.08 ns = 4000*13.02ps = 4000 channels
   mHistNumADC = std::make_unique<TH1F>("HistNumADC", "HistNumADC", sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF);
   mHistNumCFD = std::make_unique<TH1F>("HistNumCFD", "HistNumCFD", sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF);
@@ -327,6 +327,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   rebinFromConfig(); // after all histos are created
   // 1-dim hists
+  getObjectsManager()->startPublishing(mHistGateTimeRatio2Ch.get());
   getObjectsManager()->startPublishing(mHistCFDEff.get());
   getObjectsManager()->startPublishing(mHistBC.get());
   getObjectsManager()->startPublishing(mHistNchA.get());
@@ -385,6 +386,7 @@ void DigitQcTask::startOfActivity(Activity& activity)
   mHistAmp2Ch->Reset();
   mHistBC->Reset();
   mHistChDataBits->Reset();
+  mHistGateTimeRatio2Ch->Reset();
   mHistCFDEff->Reset();
   mHistNumADC->Reset();
   mHistNumCFD->Reset();
@@ -641,6 +643,17 @@ void DigitQcTask::endOfCycle()
   ILOG(Debug, Support) << "adding last TF creation time: " << mTFcreationTime << ENDM;
   getObjectsManager()->getMonitorObject(mHistBCvsTrg->GetName())->addOrUpdateMetadata("TFcreationTime", std::to_string(mTFcreationTime));
 
+  // =============================== Zadanie ===============================
+  for (int i = 1; i <= sNCHANNELS_FV0_PLUSREF; i++) {
+    int count = 0;
+    for (int j = 1; j <= mHistTime2Ch->GetNbinsY(); j++) {
+        if (mHistTime2Ch->GetYaxis()->GetBinLowEdge(j) >= -192 && mHistTime2Ch->GetYaxis()->GetBinUpEdge(j) <= 192) {
+            count += mHistTime2Ch->GetBinContent(i, j);
+        }
+    }
+    mHistGateTimeRatio2Ch->SetBinContent(i, (float) count / mHistTime2Ch->Integral(i, i));
+  }
+
   // one has to set num. of entries manually because
   // default TH1Reductor gets only mean,stddev and entries (no integral)
   mHistCFDEff->Divide(mHistNumADC.get(), mHistNumCFD.get());
@@ -661,6 +674,7 @@ void DigitQcTask::endOfActivity(Activity& /*activity*/)
 void DigitQcTask::reset()
 {
   // clean all the monitor objects here
+  mHistGateTimeRatio2Ch->Reset();
   mHistTime2Ch->Reset();
   mHistAmp2Ch->Reset();
   mHistBC->Reset();
