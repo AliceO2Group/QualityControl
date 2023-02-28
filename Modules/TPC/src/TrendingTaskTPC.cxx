@@ -503,7 +503,7 @@ void TrendingTaskTPC::drawCanvasQO(TCanvas* thisCanvas, const std::string& var,
   // Divide the canvas into the correct number of pads.
   if (trendType != "time" && trendType != "run") {
     ILOG(Error, Devel) << "Error in trending of Quality Object  '" << name
-                       << "'Trending only possible vs time, break." << ENDM;
+                       << "'Trending only possible vs time or run, break." << ENDM;
   }
   thisCanvas->DivideSquare(1);
   thisCanvas->cd(1);
@@ -538,7 +538,6 @@ void TrendingTaskTPC::drawCanvasQO(TCanvas* thisCanvas, const std::string& var,
 
   while (myReader.Next()) {
     const double timeStamp = (trendType == "time") ? (double)(*retrieveTime) : (double)(*retrieveRun);
-    ;
     double dataPoint = 0.;
 
     dataPoint = qualityRetrieveVector->RetrieveValue(typeName);
