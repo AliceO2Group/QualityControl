@@ -43,7 +43,7 @@ class CheckRunnerFactory
   CheckRunnerFactory() = default;
   virtual ~CheckRunnerFactory() = default;
 
-  static framework::DataProcessorSpec create(CheckRunnerConfig checkRunnerConfig, std::vector<CheckConfig> checkConfigs, std::vector<std::string> storeVector = {});
+  static framework::DataProcessorSpec create(CheckRunnerConfig checkRunnerConfig, const std::vector<CheckConfig>& checkConfigs, std::vector<std::string> storeVector = {});
 
   /*
    * \brief Create a CheckRunner sink DPL device.
@@ -53,7 +53,7 @@ class CheckRunnerFactory
    * @param input InputSpec with the content to store
    * @param configurationSource
    */
-  static framework::DataProcessorSpec createSinkDevice(CheckRunnerConfig checkRunnerConfig, o2::framework::InputSpec input);
+  static framework::DataProcessorSpec createSinkDevice(const CheckRunnerConfig& checkRunnerConfig, const o2::framework::InputSpec& input);
 
   static CheckRunnerConfig extractConfig(const core::CommonSpec&);
 

@@ -51,7 +51,7 @@ InfrastructureSpec InfrastructureSpecReader::readInfrastructureSpec(const boost:
 }
 
 template <>
-CommonSpec InfrastructureSpecReader::readSpecEntry<CommonSpec>(std::string, const boost::property_tree::ptree& commonTree, const boost::property_tree::ptree&)
+CommonSpec InfrastructureSpecReader::readSpecEntry<CommonSpec>(const std::string&, const boost::property_tree::ptree& commonTree, const boost::property_tree::ptree&)
 {
   CommonSpec spec;
   for (const auto& [key, value] : commonTree.get_child("database")) {
@@ -80,7 +80,7 @@ CommonSpec InfrastructureSpecReader::readSpecEntry<CommonSpec>(std::string, cons
 }
 
 template <>
-TaskSpec InfrastructureSpecReader::readSpecEntry<TaskSpec>(std::string taskID, const boost::property_tree::ptree& taskTree, const boost::property_tree::ptree& wholeTree)
+TaskSpec InfrastructureSpecReader::readSpecEntry<TaskSpec>(const std::string& taskID, const boost::property_tree::ptree& taskTree, const boost::property_tree::ptree& wholeTree)
 {
   static std::unordered_map<std::string, TaskLocationSpec> const taskLocationFromString = {
     { "local", TaskLocationSpec::Local },
@@ -150,7 +150,7 @@ TaskSpec InfrastructureSpecReader::readSpecEntry<TaskSpec>(std::string taskID, c
 }
 
 template <>
-DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(std::string dataRequestorId,
+DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(const std::string& dataRequestorId,
                                                                        const boost::property_tree::ptree& dataSourceTree,
                                                                        const boost::property_tree::ptree& wholeTree)
 {
@@ -244,7 +244,7 @@ DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(std::stri
 }
 
 template <>
-CheckSpec InfrastructureSpecReader::readSpecEntry<CheckSpec>(std::string checkID, const boost::property_tree::ptree& checkTree, const boost::property_tree::ptree& wholeTree)
+CheckSpec InfrastructureSpecReader::readSpecEntry<CheckSpec>(const std::string& checkID, const boost::property_tree::ptree& checkTree, const boost::property_tree::ptree& wholeTree)
 {
   CheckSpec cs;
 
@@ -275,7 +275,7 @@ CheckSpec InfrastructureSpecReader::readSpecEntry<CheckSpec>(std::string checkID
 }
 
 template <>
-AggregatorSpec InfrastructureSpecReader::readSpecEntry<AggregatorSpec>(std::string aggregatorID, const boost::property_tree::ptree& aggregatorTree, const boost::property_tree::ptree& wholeTree)
+AggregatorSpec InfrastructureSpecReader::readSpecEntry<AggregatorSpec>(const std::string& aggregatorID, const boost::property_tree::ptree& aggregatorTree, const boost::property_tree::ptree& wholeTree)
 {
   AggregatorSpec as;
 
@@ -306,11 +306,11 @@ AggregatorSpec InfrastructureSpecReader::readSpecEntry<AggregatorSpec>(std::stri
 
 template <>
 PostProcessingTaskSpec
-  InfrastructureSpecReader::readSpecEntry<PostProcessingTaskSpec>(std::string ppTaskName, const boost::property_tree::ptree& ppTaskTree, const boost::property_tree::ptree& wholeTree)
+  InfrastructureSpecReader::readSpecEntry<PostProcessingTaskSpec>(const std::string& ppTaskName, const boost::property_tree::ptree& ppTaskTree, const boost::property_tree::ptree& wholeTree)
 {
   PostProcessingTaskSpec ppts;
 
-  ppts.taskName = std::move(ppTaskName);
+  ppts.taskName = ppTaskName;
   ppts.active = ppTaskTree.get<bool>("active", ppts.active);
   ppts.tree = wholeTree;
 
@@ -319,11 +319,11 @@ PostProcessingTaskSpec
 
 template <>
 ExternalTaskSpec
-  InfrastructureSpecReader::readSpecEntry<ExternalTaskSpec>(std::string externalTaskName, const boost::property_tree::ptree& externalTaskTree, const boost::property_tree::ptree&)
+  InfrastructureSpecReader::readSpecEntry<ExternalTaskSpec>(const std::string& externalTaskName, const boost::property_tree::ptree& externalTaskTree, const boost::property_tree::ptree&)
 {
   ExternalTaskSpec ets;
 
-  ets.taskName = std::move(externalTaskName);
+  ets.taskName = externalTaskName;
   ets.query = externalTaskTree.get<std::string>("query");
   ets.active = externalTaskTree.get<bool>("active", ets.active);
 
@@ -332,7 +332,7 @@ ExternalTaskSpec
 
 template <>
 GRPGeomRequestSpec
-  InfrastructureSpecReader::readSpecEntry<GRPGeomRequestSpec>(std::string, const boost::property_tree::ptree& grpGeomRequestTree, const boost::property_tree::ptree&)
+  InfrastructureSpecReader::readSpecEntry<GRPGeomRequestSpec>(const std::string&, const boost::property_tree::ptree& grpGeomRequestTree, const boost::property_tree::ptree&)
 {
   GRPGeomRequestSpec grpSpec;
   grpSpec.geomRequest = grpGeomRequestTree.get<std::string>("geomRequest", grpSpec.geomRequest);
@@ -349,7 +349,7 @@ GRPGeomRequestSpec
 
 template <>
 GlobalTrackingDataRequestSpec
-  InfrastructureSpecReader::readSpecEntry<GlobalTrackingDataRequestSpec>(std::string, const boost::property_tree::ptree& dataRequestTree, const boost::property_tree::ptree&)
+  InfrastructureSpecReader::readSpecEntry<GlobalTrackingDataRequestSpec>(const std::string&, const boost::property_tree::ptree& dataRequestTree, const boost::property_tree::ptree&)
 {
   GlobalTrackingDataRequestSpec gtdrSpec;
   gtdrSpec.canProcessTracks = dataRequestTree.get<std::string>("canProcessTracks", gtdrSpec.canProcessTracks);
@@ -385,7 +385,7 @@ std::string InfrastructureSpecReader::validateDetectorName(std::string name)
 }
 
 template <typename T>
-T InfrastructureSpecReader::readSpecEntry(std::string, const boost::property_tree::ptree&, const boost::property_tree::ptree&)
+T InfrastructureSpecReader::readSpecEntry(const std::string&, const boost::property_tree::ptree&, const boost::property_tree::ptree&)
 {
   throw std::runtime_error("Unknown entry type: " + std::string(typeid(T).name()));
 }

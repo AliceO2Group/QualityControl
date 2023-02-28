@@ -71,7 +71,7 @@ class Aggregator
   UpdatePolicyType getUpdatePolicyType() const;
   std::vector<std::string> getObjectsNames() const;
   bool getAllObjectsOption() const;
-  std::vector<AggregatorSource> getSources();
+  std::vector<AggregatorSource> getSources() const;
   std::vector<AggregatorSource> getSources(core::DataSourceType type);
   const std::string& getDetector() const { return mAggregatorConfig.detectorName; };
 

@@ -14,6 +14,8 @@
 /// \author Piotr Konopka
 ///
 
+#include <utility>
+
 #include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/ObjectsManager.h"
 
@@ -29,7 +31,7 @@ void PostProcessingInterface::setName(const std::string& name)
 
 void PostProcessingInterface::configure(std::string name, const boost::property_tree::ptree& /*config*/)
 {
-  mName = name;
+  mName = std::move(name);
 }
 
 void PostProcessingInterface::setObjectsManager(std::shared_ptr<core::ObjectsManager> objectsManager)

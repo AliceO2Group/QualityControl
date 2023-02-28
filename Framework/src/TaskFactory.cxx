@@ -21,9 +21,9 @@
 namespace o2::quality_control::core
 {
 
-TaskInterface* TaskFactory::create(TaskRunnerConfig& taskConfig, std::shared_ptr<ObjectsManager> objectsManager)
+TaskInterface* TaskFactory::create(const TaskRunnerConfig& taskConfig, std::shared_ptr<ObjectsManager> objectsManager)
 {
-  TaskInterface* result = root_class_factory::create<TaskInterface>(taskConfig.moduleName, taskConfig.className);
+  auto* result = root_class_factory::create<TaskInterface>(taskConfig.moduleName, taskConfig.className);
   result->setName(taskConfig.taskName);
   result->setObjectsManager(objectsManager);
   result->setCustomParameters(taskConfig.customParameters);

@@ -21,7 +21,7 @@ using namespace o2::quality_control::core;
 namespace o2::quality_control::repository
 {
 
-void DummyDatabase::connect(std::string, std::string, std::string, std::string)
+void DummyDatabase::connect(const std::string&, const std::string&, const std::string&, const std::string&)
 {
 }
 
@@ -40,7 +40,7 @@ void DummyDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::Mon
 
 std::shared_ptr<o2::quality_control::core::MonitorObject> DummyDatabase::retrieveMO(std::string, std::string, long, const core::Activity& activity)
 {
-  return std::shared_ptr<MonitorObject>();
+  return {};
 }
 
 void DummyDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::QualityObject>, long, long)
@@ -53,7 +53,7 @@ void DummyDatabase::storeTRFC(std::shared_ptr<const o2::quality_control::TimeRan
 
 std::shared_ptr<o2::quality_control::core::QualityObject> DummyDatabase::retrieveQO(std::string, long, const core::Activity& activity)
 {
-  return std::shared_ptr<QualityObject>();
+  return {};
 }
 
 void DummyDatabase::disconnect()
@@ -66,7 +66,7 @@ void DummyDatabase::prepareTaskDataContainer(std::string)
 
 std::vector<std::string> DummyDatabase::getPublishedObjectNames(std::string)
 {
-  return std::vector<std::string>();
+  return {};
 }
 
 void DummyDatabase::truncate(std::string, std::string)
@@ -80,7 +80,7 @@ TObject* DummyDatabase::retrieveTObject(std::string, const std::map<std::string,
 
 std::string DummyDatabase::retrieveJson(std::string, long, const std::map<std::string, std::string>&)
 {
-  return std::string();
+  return {};
 }
 
 void* DummyDatabase::retrieveAny(const std::type_info&, const std::string&, const std::map<std::string, std::string>&, long, std::map<std::string, std::string>*, const std::string&, const std::string&)

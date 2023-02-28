@@ -34,9 +34,9 @@ std::optional<double> string2Seconds(std::string str)
   try {
     if (size_t p = str.find(secondsStr); p != std::string::npos) {
       return 1.0 * std::stod(str.substr(0, p));
-    } else if (size_t p = str.find(minutesStr); p != std::string::npos) {
+    } else if (p = str.find(minutesStr); p != std::string::npos) {
       return 60.0 * std::stod(str.substr(0, p));
-    } else if (size_t p = str.find(hoursStr); p != std::string::npos) {
+    } else if (p = str.find(hoursStr); p != std::string::npos) {
       return 3600.0 * std::stod(str.substr(0, p));
     } else {
       return {};
@@ -79,7 +79,7 @@ std::pair<std::string, std::string> parseDbTriggers(const std::string& trigger, 
 
   return { db, objPath };
 }
-TriggerFcn triggerFactory(std::string trigger, const PostProcessingConfig& config)
+TriggerFcn triggerFactory(const std::string& trigger, const PostProcessingConfig& config)
 {
   // todo: should we accept many versions of trigger names?
   std::string triggerLowerCase = trigger;

@@ -57,7 +57,7 @@ namespace o2::quality_control::checker
 AggregatorRunner::AggregatorRunner(AggregatorRunnerConfig arc, const std::vector<AggregatorConfig>& acs) //, const o2::quality_control::core::InfrastructureSpec& infrastructureSpec)
   : mDeviceName(createAggregatorRunnerName()),
     mRunnerConfig(std::move(arc)),
-    mAggregatorsConfig(std::move(acs)),
+    mAggregatorsConfig(acs),
     mTotalNumberObjectsReceived(0),
     mTotalNumberAggregatorExecuted(0),
     mTotalNumberObjectsProduced(0)
@@ -433,7 +433,7 @@ void AggregatorRunner::reset()
   }
 }
 
-std::string AggregatorRunner::getDetectorName(std::vector<std::shared_ptr<Aggregator>> aggregators)
+std::string AggregatorRunner::getDetectorName(const std::vector<std::shared_ptr<Aggregator>>& aggregators)
 {
   std::string detectorName;
   for (auto& aggregator : aggregators) {

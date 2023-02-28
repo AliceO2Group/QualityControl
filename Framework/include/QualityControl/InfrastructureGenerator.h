@@ -76,7 +76,7 @@ class InfrastructureGenerator
   /// \param configurationTree - full QC config ptree
   /// \param targetHost - name of the machine
   /// \return generated local QC workflow
-  static framework::WorkflowSpec generateLocalInfrastructure(const boost::property_tree::ptree& configurationTree, std::string targetHost);
+  static framework::WorkflowSpec generateLocalInfrastructure(const boost::property_tree::ptree& configurationTree, const std::string& targetHost);
 
   /// \brief Generates the local part of the QC infrastructure for a specified host.
   ///
@@ -87,7 +87,7 @@ class InfrastructureGenerator
   /// \param configurationTree - full QC config ptree
   /// \param host - name of the machine
   /// \return generated local QC workflow
-  static void generateLocalInfrastructure(framework::WorkflowSpec& workflow, const boost::property_tree::ptree& configurationTree, std::string host);
+  static void generateLocalInfrastructure(framework::WorkflowSpec& workflow, const boost::property_tree::ptree& configurationTree, const std::string& host);
 
   /// \brief Generates the remote part of the QC infrastructure.
   ///
@@ -114,7 +114,7 @@ class InfrastructureGenerator
   /// \param workflow - existing workflow where QC infrastructure should be placed
   /// \param configurationTree - full QC config ptree
   /// \param sinkFilePath - path to the output file
-  static void generateLocalBatchInfrastructure(framework::WorkflowSpec& workflow, const boost::property_tree::ptree& configurationTree, std::string sinkFilePath);
+  static void generateLocalBatchInfrastructure(framework::WorkflowSpec& workflow, const boost::property_tree::ptree& configurationTree, const std::string& sinkFilePath);
 
   /// \brief Generates the local batch part of the QC infrastructure.
   ///
@@ -123,7 +123,7 @@ class InfrastructureGenerator
   /// \param configurationTree - full QC config ptree
   /// \param sinkFilePath - path to the output file
   /// \return generated local QC workflow
-  static framework::WorkflowSpec generateLocalBatchInfrastructure(const boost::property_tree::ptree& configurationTree, std::string sinkFilePath);
+  static framework::WorkflowSpec generateLocalBatchInfrastructure(const boost::property_tree::ptree& configurationTree, const std::string& sinkFilePath);
 
   /// \brief Generates the remote batch part of the QC infrastructure.
   ///
@@ -132,7 +132,7 @@ class InfrastructureGenerator
   /// \param workflow - existing workflow where QC infrastructure should be placed
   /// \param configurationTree - full QC config ptree
   /// \param sourceFilePath - path to the input file
-  static void generateRemoteBatchInfrastructure(framework::WorkflowSpec& workflow, const boost::property_tree::ptree& configurationTree, std::string sourceFilePath);
+  static void generateRemoteBatchInfrastructure(framework::WorkflowSpec& workflow, const boost::property_tree::ptree& configurationTree, const std::string& sourceFilePath);
 
   /// \brief Generates the remote batch part of the QC infrastructure.
   ///
@@ -141,7 +141,7 @@ class InfrastructureGenerator
   /// \param configurationTree - full QC config ptree
   /// \param sourceFilePath - path to the input file
   /// \return generated remote batch QC workflow
-  static framework::WorkflowSpec generateRemoteBatchInfrastructure(const boost::property_tree::ptree& configurationTree, std::string sourceFilePath);
+  static framework::WorkflowSpec generateRemoteBatchInfrastructure(const boost::property_tree::ptree& configurationTree, const std::string& sourceFilePath);
 
   /// \brief Provides necessary customization of the QC infrastructure.
   ///
@@ -191,13 +191,13 @@ class InfrastructureGenerator
                                            const TaskSpec& taskSpec,
                                            size_t numberOfLocalMachines);
   static void generateMergers(framework::WorkflowSpec& workflow,
-                              std::string taskName,
+                              const std::string& taskName,
                               size_t numberOfLocalMachines,
                               double cycleDurationSeconds,
-                              std::string mergingMode,
+                              const std::string& mergingMode,
                               size_t resetAfterCycles,
                               std::string monitoringUrl,
-                              std::string detectorName,
+                              const std::string& detectorName,
                               std::vector<size_t> mergersPerLayer);
   static void generateCheckRunners(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec);
   static void generateAggregator(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec);

@@ -92,7 +92,7 @@ class ObjectsManager
    * @return A pointer to the MonitorObject.
    * @throw ObjectNotFoundError if the object is not found.
    */
-  MonitorObject* getMonitorObject(std::string objectName);
+  MonitorObject* getMonitorObject(const std::string& objectName);
 
   MonitorObjectCollection* getNonOwningArray() const;
 

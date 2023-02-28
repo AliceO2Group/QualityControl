@@ -14,6 +14,8 @@
 /// \author Barthelemy von Haller
 ///
 
+#include <utility>
+
 #include "QualityControl/UpdatePolicyManager.h"
 
 #include "QualityControl/QcInfoLogger.h"
@@ -46,22 +48,22 @@ void UpdatePolicyManager::updateActorRevision(const std::string& actorName, Revi
   mPoliciesByActor.at(actorName).revision = revision;
 }
 
-void UpdatePolicyManager::updateActorRevision(std::string actorName)
+void UpdatePolicyManager::updateActorRevision(const std::string& actorName)
 {
   updateActorRevision(actorName, mGlobalRevision);
 }
 
-void UpdatePolicyManager::updateObjectRevision(std::string objectName, RevisionType revision)
+void UpdatePolicyManager::updateObjectRevision(const std::string& objectName, RevisionType revision)
 {
   mObjectsRevision[objectName] = revision;
 }
 
-void UpdatePolicyManager::updateObjectRevision(std::string objectName)
+void UpdatePolicyManager::updateObjectRevision(const std::string& objectName)
 {
   updateObjectRevision(objectName, mGlobalRevision);
 }
 
-void UpdatePolicyManager::addPolicy(std::string actorName, UpdatePolicyType policyType, std::vector<std::string> objectNames, bool allObjects, bool policyHelper)
+void UpdatePolicyManager::addPolicy(const std::string& actorName, UpdatePolicyType policyType, std::vector<std::string> objectNames, bool allObjects, bool policyHelper)
 {
   UpdatePolicyFunctionType policy;
   switch (policyType) {
@@ -156,7 +158,7 @@ void UpdatePolicyManager::addPolicy(std::string actorName, UpdatePolicyType poli
     }
   }
 
-  mPoliciesByActor[actorName] = { actorName, policy, objectNames, allObjects, policyHelper };
+  mPoliciesByActor[actorName] = { actorName, policy, std::move(objectNames), allObjects, policyHelper };
 
   ILOG(Info, Devel) << "Added a policy : " << mPoliciesByActor[actorName] << ENDM;
 }

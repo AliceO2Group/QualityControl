@@ -141,7 +141,7 @@ TriggerFcn Periodic(double seconds, const Activity& activity, std::string config
   };
 }
 
-TriggerFcn NewObject(std::string databaseUrl, std::string databaseType, std::string objectPath, const Activity& activity, std::string config)
+TriggerFcn NewObject(const std::string& databaseUrl, const std::string& databaseType, const std::string& objectPath, const Activity& activity, const std::string& config)
 {
   // Key names in the header map.
   constexpr auto timestampKey = metadata_keys::validFrom;
@@ -167,7 +167,7 @@ TriggerFcn NewObject(std::string databaseUrl, std::string databaseType, std::str
     ILOG(Warning, Support) << "Could not find the file '" << fullObjectPath << "' in the db '" << databaseUrl << "' for given Activity settings. It is fine at SOR." << ENDM;
   }
 
-  return [db, databaseUrl = std::move(databaseUrl), fullObjectPath = std::move(fullObjectPath), lastMD5, activity, metadata, config]() mutable -> Trigger {
+  return [db, databaseUrl, fullObjectPath = std::move(fullObjectPath), lastMD5, activity, metadata, config]() mutable -> Trigger {
     if (auto headers = db->retrieveHeaders(fullObjectPath, metadata); headers.count(metadata_keys::md5sum)) {
       auto newMD5 = headers[metadata_keys::md5sum];
       if (lastMD5 != newMD5) {
@@ -185,7 +185,7 @@ TriggerFcn NewObject(std::string databaseUrl, std::string databaseType, std::str
   };
 }
 
-TriggerFcn ForEachObject(std::string databaseUrl, std::string databaseType, std::string objectPath, const Activity& activity, std::string config)
+TriggerFcn ForEachObject(const std::string& databaseUrl, const std::string& databaseType, const std::string& objectPath, const Activity& activity, const std::string& config)
 {
   // Key names in the header map.
   constexpr auto timestampKey = metadata_keys::validFrom;
@@ -233,7 +233,7 @@ TriggerFcn ForEachObject(std::string databaseUrl, std::string databaseType, std:
   };
 }
 
-TriggerFcn ForEachLatest(std::string databaseUrl, std::string databaseType, std::string objectPath, const Activity& activity, std::string config)
+TriggerFcn ForEachLatest(const std::string& databaseUrl, const std::string& databaseType, const std::string& objectPath, const Activity& activity, const std::string& config)
 {
   // Key names in the header map.
   constexpr auto timestampKey = metadata_keys::created;

@@ -61,7 +61,7 @@ class CcdbDatabase : public DatabaseInterface
   CcdbDatabase();
   virtual ~CcdbDatabase();
 
-  void connect(std::string host, std::string database, std::string username, std::string password) override;
+  void connect(const std::string& host, const std::string& database, const std::string& username, const std::string& password) override;
   void connect(const std::unordered_map<std::string, std::string>& config) override;
 
   // storage
@@ -100,21 +100,21 @@ class CcdbDatabase : public DatabaseInterface
   * @param subpath The folder we want to list the children of.
   * @return The listing of folder and/or objects at the subpath.
   */
-  std::vector<std::string> getListing(std::string subpath = "");
+  std::vector<std::string> getListing(const std::string& subpath = "");
 
   /**
    * Return the listing of folder and/or objects in the subpath
    * @param path the folder we want to list the children of.
    * @return The list of folder and/or objects as Ptree
    */
-  boost::property_tree::ptree getListingAsPtree(std::string path); // TODO allow to filter by metadata
+  boost::property_tree::ptree getListingAsPtree(const std::string& path); // TODO allow to filter by metadata
 
   /**
    * \brief Returns a vector of all 'valid from' timestamps for an object.
    * \path Path on an object.
    * \return A vector of all 'valid from' timestamps for an object in non-descending order.
    */
-  std::vector<uint64_t> getTimestampsForObject(std::string path);
+  std::vector<uint64_t> getTimestampsForObject(const std::string& path);
 
   void setMaxObjectSize(size_t maxObjectSize) override;
 
@@ -134,7 +134,7 @@ class CcdbDatabase : public DatabaseInterface
    * @param accept The format of the returned string as an \"Accept\", i.e. text/plain, application/json, text/xml
    * @return The listing of folder and/or objects in the format requested and as returned by the http server.
    */
-  std::string getListingAsString(std::string subpath = "", std::string accept = "text/plain");
+  std::string getListingAsString(const std::string& subpath = "", const std::string& accept = "text/plain");
 
   /**
    * Takes care of the possible errors returned by the storage calls.
@@ -157,7 +157,7 @@ class CcdbDatabase : public DatabaseInterface
    * @param taskName
    * @param className
    */
-  void addFrameworkMetadata(std::map<std::string, std::string>& fullMetadata, std::string detectorName, std::string className);
+  static void addFrameworkMetadata(std::map<std::string, std::string>& fullMetadata, std::string detectorName, std::string className);
 
   std::unique_ptr<o2::ccdb::CcdbApi> ccdbApi;
   std::string mUrl;

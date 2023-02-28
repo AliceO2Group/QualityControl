@@ -159,8 +159,7 @@ void TaskRunner::init(InitContext& iCtx)
   mObjectsManager = std::make_shared<ObjectsManager>(mTaskConfig.taskName, mTaskConfig.className, mTaskConfig.detectorName, mTaskConfig.consulUrl, mTaskConfig.parallelTaskID);
 
   // setup user's task
-  TaskFactory factory;
-  mTask.reset(factory.create(mTaskConfig, mObjectsManager));
+  mTask.reset(TaskFactory::create(mTaskConfig, mObjectsManager));
   mTask->setMonitoring(mCollector);
   mTask->setGlobalTrackingDataRequest(mTaskConfig.globalTrackingDataRequest);
 
@@ -266,7 +265,7 @@ CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framewor
 
 std::string TaskRunner::createTaskRunnerIdString()
 {
-  return std::string("qc-task");
+  return { "qc-task" };
 }
 
 header::DataOrigin TaskRunner::createTaskDataOrigin(const std::string& detectorCode)
@@ -405,9 +404,14 @@ std::tuple<bool /*data ready*/, bool /*timer ready*/> TaskRunner::validateInputs
   return { dataReady, timerReady };
 }
 
-void TaskRunner::printTaskConfig()
+void TaskRunner::printTaskConfig() const
 {
-  ILOG(Info, Devel) << "Configuration loaded > Task name : " << mTaskConfig.taskName << " / Module name : " << mTaskConfig.moduleName << " / Detector name : " << mTaskConfig.detectorName << " / Cycle duration seconds : " << mTaskConfig.cycleDurationSeconds << " / Max number cycles : " << mTaskConfig.maxNumberCycles << " / Save to file : " << mTaskConfig.saveToFile << ENDM;
+  ILOG(Info, Devel) << "Configuration loaded > Task name : " << mTaskConfig.taskName      //
+                    << " / Module name : " << mTaskConfig.moduleName                      //
+                    << " / Detector name : " << mTaskConfig.detectorName                  //
+                    << " / Cycle duration seconds : " << mTaskConfig.cycleDurationSeconds //
+                    << " / Max number cycles : " << mTaskConfig.maxNumberCycles           //
+                    << " / Save to file : " << mTaskConfig.saveToFile << ENDM;
 }
 
 void TaskRunner::startOfActivity()
