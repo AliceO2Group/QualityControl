@@ -89,12 +89,21 @@ void TrendingTaskTPC::initialize(Trigger, framework::ServiceRegistryRef services
     mTrend->SetBranchAddress("meta", &mMetaData);
     mTrend->SetBranchAddress("time", &mTime);
     for (const auto& source : mConfig.dataSources) {
+      bool existingBranch = mTrend->GetBranchStatus(source.name.c_str());
       mSources[source.name] = new std::vector<SliceInfo>();
       mSourcesQuality[source.name] = new SliceInfoQuality();
-      if (source.type == "repository") {
-        mTrend->SetBranchAddress(source.name.c_str(), &mSources[source.name]);
-      } else if (source.type == "repository-quality") {
-        mTrend->SetBranchAddress(source.name.c_str(), &mSourcesQuality[source.name]);
+      if (existingBranch) {
+        if (source.type == "repository") {
+          mTrend->SetBranchAddress(source.name.c_str(), &mSources[source.name]);
+        } else if (source.type == "repository-quality") {
+          mTrend->SetBranchAddress(source.name.c_str(), &mSourcesQuality[source.name]);
+        }
+      } else {
+        if (source.type == "repository") {
+          mTrend->Branch(source.name.c_str(), &mSources[source.name]);
+        } else if (source.type == "repository-quality") {
+          mTrend->Branch(source.name.c_str(), &mSourcesQuality[source.name]);
+        }
       }
     }
   }
@@ -203,7 +212,7 @@ void TrendingTaskTPC::generatePlots()
     }
 
     int NumberPlots = 1;
-    if (plot.varexp.find(":time") != std::string::npos) { // we plot vs time, multiple plots on canvas possible
+    if (plot.varexp.find(":time") != std::string::npos || plot.varexp.find(":run") != std::string::npos) { // we plot vs time, multiple plots on canvas possible
       NumberPlots = mNumberPads[varName];
     }
     for (int p = 0; p < NumberPlots; p++) {
@@ -274,9 +283,9 @@ void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
   getTrendErrors(err, errXName, errYName);
 
   // Divide the canvas into the correct number of pads.
-  if (trendType == "time") {
+  if (trendType == "time" || trendType == "run") {
     thisCanvas->DivideSquare(mNumberPads[varName]); // trending vs time: multiple plots per canvas possible
-  } else if (trendType == "multigraphtime") {
+  } else if (trendType == "multigraphtime" || trendType == "multigraphrun") {
     thisCanvas->Divide(2, 1);
   } else {
     thisCanvas->DivideSquare(1);
@@ -289,22 +298,30 @@ void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
   // Setup the tree reader with the needed values.
   TTreeReader myReader(mTrend.get());
   TTreeReaderValue<UInt_t> retrieveTime(myReader, "time");
+  TTreeReaderValue<Int_t> retrieveRun(myReader, "meta.runNumber");
   TTreeReaderValue<std::vector<SliceInfo>> dataRetrieveVector(myReader, varName.data());
 
   const int nuPa = mNumberPads[varName];
   const int nEntries = mTrend->GetEntriesFast();
+  const int nEntriesTime = mTrend->GetBranch("time")->GetEntries();
+  const int nEntriesRuns = mTrend->GetBranch("meta")->GetEntries();
+  const int nEntriesData = mTrend->GetBranch(varName.data())->GetEntries();
 
   // Fill the graph(errors) to be published.
-  if (trendType == "time") {
+  if (trendType == "time" || trendType == "run") {
+    const int nEffectiveEntries = (trendType == "time") ? std::min(nEntriesTime, nEntriesData) : std::min(nEntriesRuns, nEntriesData);
+    const int startPoint = (trendType == "time") ? nEntriesTime - nEffectiveEntries : nEntriesRuns - nEffectiveEntries;
 
     for (int p = 0; p < nuPa; p++) {
       thisCanvas->cd(p + 1);
       int iEntry = 0;
 
-      graphErrors = new TGraphErrors(nEntries);
+      graphErrors = new TGraphErrors(nEffectiveEntries);
+      myReader.SetEntry(startPoint - 1); // startPoint-1 as myReader.Next() increments by one so that we then start at startPoint
 
       while (myReader.Next()) {
-        const double timeStamp = (double)(*retrieveTime);
+        const double timeStamp = (trendType == "time") ? (double)(*retrieveTime) : (double)(*retrieveRun);
+        ;
         const double dataPoint = (dataRetrieveVector->at(p)).RetrieveValue(typeName);
         double errorX = 0.;
         double errorY = 0.;
@@ -332,17 +349,22 @@ void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
       }
     }
   } // Trending vs time
-  else if (trendType == "multigraphtime") {
+  else if (trendType == "multigraphtime" || trendType == "multigraphrun") {
 
     auto multigraph = new TMultiGraph();
     multigraph->SetName("MultiGraph");
 
+    const int nEffectiveEntries = (trendType == "multigraphtime") ? std::min(nEntriesTime, nEntriesData) : std::min(nEntriesRuns, nEntriesData);
+    const int startPoint = (trendType == "multigraphtime") ? nEntriesTime - nEffectiveEntries : nEntriesRuns - nEffectiveEntries;
+
     for (int p = 0; p < nuPa; p++) {
       int iEntry = 0;
-      auto gr = new TGraphErrors(nEntries);
+      auto gr = new TGraphErrors(nEffectiveEntries);
+      myReader.SetEntry(startPoint - 1); // startPoint-1 as myReader.Next() increments by one so that we then start at startPoint
 
       while (myReader.Next()) {
-        const double timeStamp = (double)(*retrieveTime);
+        const double timeStamp = (trendType == "multigraphtime") ? (double)(*retrieveTime) : (double)(*retrieveRun);
+        ;
         const double dataPoint = (dataRetrieveVector->at(p)).RetrieveValue(typeName);
         double errorX = 0.;
         double errorY = 0.;
@@ -479,7 +501,7 @@ void TrendingTaskTPC::drawCanvasQO(TCanvas* thisCanvas, const std::string& var,
   getTrendVariables(var, varName, typeName, trendType);
 
   // Divide the canvas into the correct number of pads.
-  if (trendType != "time") {
+  if (trendType != "time" && trendType != "run") {
     ILOG(Error, Devel) << "Error in trending of Quality Object  '" << name
                        << "'Trending only possible vs time, break." << ENDM;
   }
@@ -493,6 +515,7 @@ void TrendingTaskTPC::drawCanvasQO(TCanvas* thisCanvas, const std::string& var,
   // Setup the tree reader with the needed values.
   TTreeReader myReader(mTrend.get());
   TTreeReaderValue<UInt_t> retrieveTime(myReader, "time");
+  TTreeReaderValue<UInt_t> retrieveRun(myReader, "meta.runNumber");
   TTreeReaderValue<SliceInfoQuality> qualityRetrieveVector(myReader, varName.data());
 
   if (mNumberPads[varName] != 1)
@@ -500,14 +523,22 @@ void TrendingTaskTPC::drawCanvasQO(TCanvas* thisCanvas, const std::string& var,
                        << "'Quality trending should not have slicing, break." << ENDM;
 
   const int nEntries = mTrend->GetEntriesFast();
+  const int nEntriesTime = mTrend->GetBranch("time")->GetEntries();
+  const int nEntriesRuns = mTrend->GetBranch("meta")->GetEntries();
+  const int nEntriesData = mTrend->GetBranch(varName.data())->GetEntries();
   const double errorX = 0.;
   const double errorY = 0.;
 
+  const int nEffectiveEntries = (trendType == "time") ? std::min(nEntriesTime, nEntriesData) : std::min(nEntriesRuns, nEntriesData);
+  const int startPoint = (trendType == "time") ? nEntriesTime - nEffectiveEntries : nEntriesRuns - nEffectiveEntries;
+
   int iEntry = 0;
-  graphErrors = new TGraphErrors(nEntries);
+  graphErrors = new TGraphErrors(nEffectiveEntries);
+  myReader.SetEntry(startPoint - 1); // startPoint-1 as myReader.Next() increments by one so that we then start at startPoint
 
   while (myReader.Next()) {
-    const double timeStamp = (double)(*retrieveTime);
+    const double timeStamp = (trendType == "time") ? (double)(*retrieveTime) : (double)(*retrieveRun);
+    ;
     double dataPoint = 0.;
 
     dataPoint = qualityRetrieveVector->RetrieveValue(typeName);
@@ -612,6 +643,8 @@ void TrendingTaskTPC::beautifyGraph(T& graph, const TrendingTaskConfigTPC::Plot&
     graph->GetXaxis()->SetTimeOffset(0.0);
     graph->GetXaxis()->SetLabelOffset(0.02);
     graph->GetXaxis()->SetTimeFormat("#splitline{%d.%m.%y}{%H:%M}");
+  } else if (plotconfig.varexp.find(":meta.runNumber") != std::string::npos || plotconfig.varexp.find(":run") != std::string::npos || plotconfig.varexp.find(":multigraphrun") != std::string::npos) {
+    graph->GetXaxis()->SetNoExponent(true);
   }
 
   if (plotconfig.varexp.find("quality") != std::string::npos) {
