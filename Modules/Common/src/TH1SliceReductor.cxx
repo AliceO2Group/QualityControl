@@ -107,11 +107,7 @@ void TH1SliceReductor::update(TObject* obj, std::vector<SliceInfo>& reducedSourc
         }
 
         float StatsY[3]; // 0 Mean, 1 Stddev, 2 Error
-        if (useSlicing) {
-          GetTH1StatsY(histo, StatsY, binXLow, binXUp);
-        } else { // We don't slice and take the full histo as defined.
-          GetTH1StatsY(histo, StatsY, binXLow, binXUp);
-        }
+        GetTH1StatsY(histo, StatsY, binXLow, binXUp);
 
         mySlice.meanY = StatsY[0];
         mySlice.stddevY = StatsY[1];
@@ -141,11 +137,11 @@ void TH1SliceReductor::GetTH1StatsY(TH1* hist, float stats[3],
     ILOG(Error, Support) << "Error: Negative bin in TH1ReducterTPC::GetTH1StatsY" << ENDM;
     exit(0);
   }
-  if (upperBin <= lowerBin) {
+  if (upperBin < lowerBin) {
     ILOG(Error, Support) << "Error: Upper bin smaller than lower bin in TH1ReducterTPC::GetTH1StatsY" << ENDM;
     exit(0);
   }
-  if (nTotalBins < (upperBin - lowerBin)) {
+  if (nTotalBins < iterateBins) {
     ILOG(Error, Support) << "Error: Bin region bigger than total amount of bins TH1ReducterTPC::GetTH1StatsY" << ENDM;
     exit(0);
   }
@@ -164,10 +160,15 @@ void TH1SliceReductor::GetTH1StatsY(TH1* hist, float stats[3],
     stddevY += pow(meanY - hist->GetBinContent(i), 2.);
   }
 
-  stddevY /= ((float)iterateBins - 1.);
-  errMeanY = stddevY / ((float)iterateBins);
-  stddevY = sqrt(stddevY);
-  errMeanY = sqrt(errMeanY);
+  if (iterateBins == 1.) {
+    stddevY = hist->GetBinError(lowerBin) * sqrt(hist->GetBinContent(lowerBin));
+    errMeanY = hist->GetBinError(lowerBin);
+  } else {
+    stddevY /= ((float)iterateBins - 1.);
+    errMeanY = stddevY / ((float)iterateBins);
+    stddevY = sqrt(stddevY);
+    errMeanY = sqrt(errMeanY);
+  }
 
   stats[0] = meanY;
   stats[1] = stddevY;
