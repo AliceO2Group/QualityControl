@@ -27,7 +27,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
     :return a dictionary with the number of deleted, preserved and updated versions. Total = deleted+preserved.
     '''
     
-    logger.debug(f"aPlugin 1_per_hour processing {object_path}")
+    logger.debug(f"Plugin 1_per_hour processing {object_path}")
 
     versions = ccdb.getVersionsList(object_path)
 
