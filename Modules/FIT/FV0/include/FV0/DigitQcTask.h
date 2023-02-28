@@ -157,6 +157,7 @@ class DigitQcTask final : public TaskInterface
   std::unique_ptr<TH1F> mHistAverageTimeC;
   std::unique_ptr<TH1F> mHistChannelID;
   std::unique_ptr<TH1F> mHistCFDEff;
+  std::unique_ptr<TH1F> mHistGateTimeRatio;
   //  std::unique_ptr<TH2F> mHistTimeSum2Diff;
   std::unique_ptr<TH2F> mHistTriggersCorrelation;
   std::unique_ptr<TH1D> mHistCycleDuration;
