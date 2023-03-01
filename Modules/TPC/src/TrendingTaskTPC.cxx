@@ -298,7 +298,7 @@ void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
   // Setup the tree reader with the needed values.
   TTreeReader myReader(mTrend.get());
   TTreeReaderValue<UInt_t> retrieveTime(myReader, "time");
-  TTreeReaderValue<Int_t> retrieveRun(myReader, "meta.runNumber");
+  TTreeReaderValue<Long64_t> retrieveRun(myReader, "meta.runNumber");
   TTreeReaderValue<std::vector<SliceInfo>> dataRetrieveVector(myReader, varName.data());
 
   const int nuPa = mNumberPads[varName];
@@ -515,12 +515,12 @@ void TrendingTaskTPC::drawCanvasQO(TCanvas* thisCanvas, const std::string& var,
   // Setup the tree reader with the needed values.
   TTreeReader myReader(mTrend.get());
   TTreeReaderValue<UInt_t> retrieveTime(myReader, "time");
-  TTreeReaderValue<UInt_t> retrieveRun(myReader, "meta.runNumber");
+  TTreeReaderValue<Long64_t> retrieveRun(myReader, "meta.runNumber");
   TTreeReaderValue<SliceInfoQuality> qualityRetrieveVector(myReader, varName.data());
 
   if (mNumberPads[varName] != 1)
     ILOG(Error, Devel) << "Error in trending of Quality Object  '" << name
-                       << "'Quality trending should not have slicing, break." << ENDM;
+                       << "' Quality trending should not have slicing, break." << ENDM;
 
   const int nEntries = mTrend->GetEntriesFast();
   const int nEntriesTime = mTrend->GetBranch("time")->GetEntries();
