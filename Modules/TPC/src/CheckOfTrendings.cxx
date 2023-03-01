@@ -122,7 +122,8 @@ Quality CheckOfTrendings::check(std::map<std::string, std::shared_ptr<MonitorObj
   if (!mo) {
     ILOG(Fatal, Support) << "Monitoring object not found" << ENDM;
   }
-  auto* canv = (TCanvas*)mo->getObject();
+  auto* canv = dynamic_cast<TCanvas*>(mo->getObject());
+  ;
   if (!canv) {
     ILOG(Fatal, Support) << "Canvas not found" << ENDM;
   }
@@ -325,7 +326,7 @@ std::string CheckOfTrendings::getAcceptedType() { return "TCanvas"; }
 
 void CheckOfTrendings::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  auto* canv = (TCanvas*)mo->getObject();
+  auto* canv = dynamic_cast<TCanvas*>(mo->getObject());
   TGraph* h = GetGraph(canv);
   if (!h) { // if there is no TGraph, give an error and break
     ILOG(Fatal, Support) << "No TGraph found to perform Check against." << ENDM;
