@@ -71,7 +71,7 @@ Quality CheckForEmptyPads::check(std::map<std::string, std::shared_ptr<MonitorOb
       size_t end = moName.find("_2D");
       auto histSubName = moName.substr(7, end - 7);
       result = Quality::Good;
-      auto* canv = (TCanvas*)mo->getObject();
+      auto* canv = dynamic_cast<TCanvas*>(mo->getObject());
       if (!canv)
         continue;
       // Check all histograms in the canvas
@@ -144,7 +144,7 @@ void CheckForEmptyPads::beautify(std::shared_ptr<MonitorObject> mo, Quality)
   auto moName = mo->getName();
   if (auto it = std::find(mMOsToCheck2D.begin(), mMOsToCheck2D.end(), moName); it != mMOsToCheck2D.end()) {
     int padsTotal = 0, padsstart = 1000;
-    auto* tcanv = (TCanvas*)mo->getObject();
+    auto* tcanv = dynamic_cast<TCanvas*>(mo->getObject());
     std::string histNameS, histName;
     padsstart = 1;
     padsTotal = 72;

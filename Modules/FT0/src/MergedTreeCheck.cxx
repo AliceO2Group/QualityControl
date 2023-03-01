@@ -40,6 +40,10 @@ Quality MergedTreeCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
     (void)name;
     if (obj->getName() == "ChargeHistogram") {
       TH1* histogram = dynamic_cast<TH1*>(obj->getObject());
+      if (histogram == nullptr) {
+        ILOG(Warning, Devel) << "Could not cast " << obj->getName() << " to TH1*, skipping" << ENDM;
+        continue;
+      }
       auto entries = histogram->GetEntries();
       if (entries < 1000) {
         return Quality::Bad;

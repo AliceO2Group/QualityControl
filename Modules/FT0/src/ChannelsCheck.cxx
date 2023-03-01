@@ -40,6 +40,10 @@ Quality ChannelsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
 
     if (obj->getName() == "EventTree") {
       TTree* tree = dynamic_cast<TTree*>(obj->getObject());
+      if (tree == nullptr) {
+        ILOG(Warning, Devel) << "Could not cast " << obj->getName() << " to TTree* => Quality::Bad" << ENDM;
+        return Quality::Bad;
+      }
       if (tree->GetEntries() == 0) {
         return Quality::Bad;
       }

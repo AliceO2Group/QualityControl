@@ -130,6 +130,10 @@ std::string OutOfBunchCollCheck::getAcceptedType() { return "TH2"; }
 void OutOfBunchCollCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   auto* h = dynamic_cast<TH2F*>(mo->getObject());
+  if (h == nullptr) {
+    ILOG(Warning, Devel) << "Could not cast " << mo->getName() << " to TH2F*, skipping" << ENDM;
+    return;
+  }
 
   TPaveText* msg = new TPaveText(0.1, 0.9, 0.9, 0.95, "NDC");
   h->GetListOfFunctions()->Add(msg);

@@ -104,7 +104,7 @@ Quality CheckOfSlices::check(std::map<std::string, std::shared_ptr<MonitorObject
   if (!mo) {
     ILOG(Fatal, Support) << "Monitoring object not found" << ENDM;
   }
-  auto* canv = (TCanvas*)mo->getObject();
+  auto* canv = dynamic_cast<TCanvas*>(mo->getObject());
   if (!canv) {
     ILOG(Fatal, Support) << "Canvas not found" << ENDM;
   }
@@ -206,7 +206,7 @@ Quality CheckOfSlices::check(std::map<std::string, std::shared_ptr<MonitorObject
 
 void CheckOfSlices::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  auto* c1 = (TCanvas*)mo->getObject();
+  auto* c1 = dynamic_cast<TCanvas*>(mo->getObject());
 
   TList* padList = (TList*)c1->GetListOfPrimitives();
   padList->SetOwner(kTRUE);

@@ -85,9 +85,9 @@ void RatioGeneratorTPC::generateRatios(const Trigger& t,
       mRatios[source.nameOutputObject] = nullptr;
     }
     auto moNumerator = qcdb.retrieveMO(source.path, source.nameInputObjects[0], t.timestamp, t.activity);
-    TH1* histoNumerator = moNumerator ? static_cast<TH1*>(moNumerator->getObject()) : nullptr;
+    TH1* histoNumerator = moNumerator ? dynamic_cast<TH1*>(moNumerator->getObject()) : nullptr;
     auto moDenominator = qcdb.retrieveMO(source.path, source.nameInputObjects[1], t.timestamp, t.activity);
-    TH1* histoDenominator = moDenominator ? static_cast<TH1*>(moDenominator->getObject()) : nullptr;
+    TH1* histoDenominator = moDenominator ? dynamic_cast<TH1*>(moDenominator->getObject()) : nullptr;
 
     if (histoNumerator && histoDenominator) {
       mRatios[source.nameOutputObject] = (TH1*)histoNumerator->Clone(fmt::format("{}_over_{}", histoNumerator->GetName(), histoDenominator->GetName()).data());
