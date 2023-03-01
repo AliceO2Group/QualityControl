@@ -89,7 +89,7 @@ void TrendingTaskTPC::initialize(Trigger, framework::ServiceRegistryRef services
     mTrend->SetBranchAddress("meta", &mMetaData);
     mTrend->SetBranchAddress("time", &mTime);
     for (const auto& source : mConfig.dataSources) {
-      bool existingBranch = mTrend->GetBranchStatus(source.name.c_str());
+      const bool existingBranch = mTrend->GetBranchStatus(source.name.c_str());
       mSources[source.name] = new std::vector<SliceInfo>();
       mSourcesQuality[source.name] = new SliceInfoQuality();
       if (existingBranch) {
@@ -320,8 +320,7 @@ void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
       myReader.SetEntry(startPoint - 1); // startPoint-1 as myReader.Next() increments by one so that we then start at startPoint
 
       while (myReader.Next()) {
-        const double timeStamp = (trendType == "time") ? (double)(*retrieveTime) : (double)(*retrieveRun);
-        ;
+        const double xVal = (trendType == "time") ? (double)(*retrieveTime) : (double)(*retrieveRun);
         const double dataPoint = (dataRetrieveVector->at(p)).RetrieveValue(typeName);
         double errorX = 0.;
         double errorY = 0.;
@@ -331,7 +330,7 @@ void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
           errorY = (dataRetrieveVector->at(p)).RetrieveValue(errYName);
         }
 
-        graphErrors->SetPoint(iEntry, timeStamp, dataPoint);
+        graphErrors->SetPoint(iEntry, xVal, dataPoint);
         graphErrors->SetPointError(iEntry, errorX, errorY); // Add Error to the last added point
 
         iEntry++;
@@ -363,8 +362,7 @@ void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
       myReader.SetEntry(startPoint - 1); // startPoint-1 as myReader.Next() increments by one so that we then start at startPoint
 
       while (myReader.Next()) {
-        const double timeStamp = (trendType == "multigraphtime") ? (double)(*retrieveTime) : (double)(*retrieveRun);
-        ;
+        const double xVal = (trendType == "multigraphtime") ? (double)(*retrieveTime) : (double)(*retrieveRun);
         const double dataPoint = (dataRetrieveVector->at(p)).RetrieveValue(typeName);
         double errorX = 0.;
         double errorY = 0.;
@@ -374,7 +372,7 @@ void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
           errorY = (dataRetrieveVector->at(p)).RetrieveValue(errYName);
         }
 
-        gr->SetPoint(iEntry, timeStamp, dataPoint);
+        gr->SetPoint(iEntry, xVal, dataPoint);
         gr->SetPointError(iEntry, errorX, errorY); // Add Error to the last added point
         iEntry++;
       }
@@ -537,7 +535,7 @@ void TrendingTaskTPC::drawCanvasQO(TCanvas* thisCanvas, const std::string& var,
   myReader.SetEntry(startPoint - 1); // startPoint-1 as myReader.Next() increments by one so that we then start at startPoint
 
   while (myReader.Next()) {
-    const double timeStamp = (trendType == "time") ? (double)(*retrieveTime) : (double)(*retrieveRun);
+    const double xVal = (trendType == "time") ? (double)(*retrieveTime) : (double)(*retrieveRun);
     double dataPoint = 0.;
 
     dataPoint = qualityRetrieveVector->RetrieveValue(typeName);
@@ -546,7 +544,7 @@ void TrendingTaskTPC::drawCanvasQO(TCanvas* thisCanvas, const std::string& var,
       dataPoint = 0.;
     }
 
-    graphErrors->SetPoint(iEntry, timeStamp, dataPoint);
+    graphErrors->SetPoint(iEntry, xVal, dataPoint);
     graphErrors->SetPointError(iEntry, errorX, errorY); // Add Error to the last added point
 
     iEntry++;
