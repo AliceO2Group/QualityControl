@@ -18,6 +18,7 @@
 #pragma link C++ class o2::quality_control_modules::muonchambers::MergeableTH1PseudoEfficiencyPerDECycle + ;
 #pragma link C++ class o2::quality_control_modules::muonchambers::MergeableTH1MPVPerDECycle + ;
 #pragma link C++ class o2::quality_control_modules::muonchambers::TracksTask + ;
+#pragma link C++ class o2::quality_control_modules::muonchambers::ErrorTask + ;
 // Trending
 #pragma link C++ class o2::quality_control_modules::muonchambers::TrendingFECHistRatio + ;
 #pragma link C++ class o2::quality_control_modules::muonchambers::TrendingTracks + ;
