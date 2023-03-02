@@ -29,6 +29,8 @@
 #include <TGraphErrors.h>
 #include <TPoint.h>
 
+#include <set>
+
 using namespace o2::quality_control;
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;
@@ -36,6 +38,42 @@ using namespace o2::quality_control::postprocessing;
 void TrendingTask::configure(std::string name, const boost::property_tree::ptree& config)
 {
   mConfig = TrendingTaskConfig(name, config);
+}
+
+bool TrendingTask::canContinueTrend(TTree* tree)
+{
+  if (tree == nullptr) {
+    return false;
+  }
+
+  size_t expectedNBranches = 1 /* meta */ + 1 /* time */ + mConfig.dataSources.size();
+  if (tree->GetNbranches() != expectedNBranches) {
+    ILOG(Warning, Support) << "The retrieved TTree has different number of branches than expected ("
+                           << tree->GetNbranches() << " vs. " << expectedNBranches << "). "
+                           << "Filling the tree with mismatching branches might produce invalid plots, "
+                           << "thus a new tree will be created" << ENDM;
+    return false;
+  }
+
+  std::set<std::string> expectedBranchNames{ "time", "meta" };
+  for (const auto& dataSource : mConfig.dataSources) {
+    expectedBranchNames.insert(dataSource.name);
+  }
+
+  std::set<std::string> existingBranchNames;
+  for (const auto& branch : *tree->GetListOfBranches()) {
+    existingBranchNames.insert(branch->GetName());
+  }
+
+  if (expectedBranchNames != existingBranchNames) {
+    ILOG(Warning, Support) << "The retrieved TTree has the same number of branches,"
+                           << " but at least one has a different name."
+                           << " Filling the tree with mismatching branches might produce invalid plots, "
+                           << "thus a new tree will be created" << ENDM;
+    return false;
+  }
+
+  return true;
 }
 
 void TrendingTask::initialize(Trigger, framework::ServiceRegistryRef services)
@@ -53,14 +91,16 @@ void TrendingTask::initialize(Trigger, framework::ServiceRegistryRef services)
         mo->setIsOwner(false);
       }
     } else {
-      ILOG(Warning, Support) << "Could not retrieve an existing TTree for this task, maybe there is none which match these Activity settings" << ENDM;
+      ILOG(Warning, Support)
+        << "Could not retrieve an existing TTree for this task, maybe there is none which match these Activity settings"
+        << ENDM;
     }
   }
   for (const auto& source : mConfig.dataSources) {
     mReductors.emplace(source.name, root_class_factory::create<Reductor>(source.moduleName, source.reductorName));
   }
 
-  if (mTrend == nullptr) {
+  if (mTrend == nullptr || !canContinueTrend(mTrend.get())) {
     mTrend = std::make_unique<TTree>();
     mTrend->SetName(PostProcessingInterface::getName().c_str());
 
