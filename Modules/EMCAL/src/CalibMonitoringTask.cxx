@@ -34,11 +34,11 @@ using namespace o2::quality_control::core;
 namespace o2::quality_control_modules::emcal
 {
 
-void CalibMonitoringTask::configure(std::string name, const boost::property_tree::ptree& config)
+void CalibMonitoringTask::configure(const boost::property_tree::ptree& config)
 {
   mCalibDB = std::make_unique<o2::emcal::CalibDB>(config.get<std::string>("qc.config.conditionDB.url").data());
 
-  for (const auto& output : config.get_child("qc.postprocessing." + name + ".calibObjects")) {
+  for (const auto& output : config.get_child("qc.postprocessing." + getID() + ".calibObjects")) {
     mCalibObjects.emplace_back(output.second.data());
   }
 }

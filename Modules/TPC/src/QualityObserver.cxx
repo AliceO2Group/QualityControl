@@ -30,13 +30,13 @@ using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;
 using namespace o2::quality_control_modules::tpc;
 
-void QualityObserver::configure(std::string name,
-                                const boost::property_tree::ptree& config)
+void QualityObserver::configure(const boost::property_tree::ptree& config)
 {
-  mObserverName = config.get<std::string>("qc.postprocessing." + name + ".qualityObserverName");
-  mViewDetails = config.get<bool>("qc.postprocessing." + name + ".observeDetails", true);
+  auto& id = getID();
+  mObserverName = config.get<std::string>("qc.postprocessing." + id + ".qualityObserverName");
+  mViewDetails = config.get<bool>("qc.postprocessing." + id + ".observeDetails", true);
 
-  for (const auto& dataSourceConfig : config.get_child("qc.postprocessing." + name + ".qualityObserverConfig")) {
+  for (const auto& dataSourceConfig : config.get_child("qc.postprocessing." + id + ".qualityObserverConfig")) {
     Config dataConfig;
 
     dataConfig.groupTitle = dataSourceConfig.second.get<std::string>("groupTitle");

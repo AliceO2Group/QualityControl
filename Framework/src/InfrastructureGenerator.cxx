@@ -552,7 +552,10 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
 
   for (const auto& ppTaskSpec : infrastructureSpec.postProcessingTasks) {
     if (ppTaskSpec.active) {
-      InputSpec ppTaskOutput{ ppTaskSpec.taskName, PostProcessingDevice::createPostProcessingDataOrigin(), PostProcessingDevice::createPostProcessingDataDescription(ppTaskSpec.taskName), Lifetime::Sporadic };
+      InputSpec ppTaskOutput{ ppTaskSpec.taskName,
+                              PostProcessingDevice::createPostProcessingDataOrigin(ppTaskSpec.detectorName),
+                              PostProcessingDevice::createPostProcessingDataDescription(ppTaskSpec.taskName),
+                              Lifetime::Sporadic };
       tasksOutputMap.insert({ DataSpecUtils::label(ppTaskOutput), ppTaskOutput });
     }
   }

@@ -60,7 +60,7 @@ using MOCPublicationCallback = std::function<void(const o2::quality_control::cor
 class PostProcessingRunner
 {
  public:
-  explicit PostProcessingRunner(std::string name);
+  explicit PostProcessingRunner(std::string id);
   ~PostProcessingRunner() = default;
 
   /// \brief Initialization. Creates configuration structures out of the ptree. Throws on errors.
@@ -86,7 +86,7 @@ class PostProcessingRunner
   /// \param callback MonitorObjectCollection publication callback
   void setPublicationCallback(MOCPublicationCallback callback);
 
-  const std::string& getName();
+  const std::string& getID() const;
 
   static PostProcessingRunnerConfig extractConfig(const core::CommonSpec& commonSpec, const PostProcessingTaskSpec& ppTaskSpec);
 
@@ -112,7 +112,7 @@ class PostProcessingRunner
   // TODO in a longer run, we should store from/to in the MonitorObject itself and use them.
   std::function<void(const o2::quality_control::core::MonitorObjectCollection*, uint64_t /*from*/, uint64_t /*to*/)> mPublicationCallback = nullptr;
 
-  std::string mName{};
+  std::string mID{};
   PostProcessingConfig mTaskConfig;
   PostProcessingRunnerConfig mRunnerConfig;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;

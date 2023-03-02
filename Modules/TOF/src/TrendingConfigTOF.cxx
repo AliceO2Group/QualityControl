@@ -25,10 +25,10 @@ using namespace o2::quality_control::postprocessing;
 namespace o2::quality_control_modules::tof
 {
 
-TrendingConfigTOF::TrendingConfigTOF(std::string name, const boost::property_tree::ptree& config)
-  : PostProcessingConfig(name, config)
+TrendingConfigTOF::TrendingConfigTOF(std::string id, const boost::property_tree::ptree& config)
+  : PostProcessingConfig(id, config)
 {
-  if (const auto& customConfigs = config.get_child_optional("qc.postprocessing." + name + ".customization"); customConfigs.has_value()) {
+  if (const auto& customConfigs = config.get_child_optional("qc.postprocessing." + id + ".customization"); customConfigs.has_value()) {
     for (const auto& customConfig : customConfigs.value()) { // Plot configuration
       ILOG(Info, Support) << "Reading configuration " << customConfig.second.get<std::string>("name") << ENDM;
       if (const auto& customNames = customConfig.second.get_child_optional("name"); customNames.has_value()) {
@@ -42,7 +42,7 @@ TrendingConfigTOF::TrendingConfigTOF(std::string name, const boost::property_tre
       }
     }
   }
-  for (const auto& plotConfig : config.get_child("qc.postprocessing." + name + ".plots")) { // Plot configuration
+  for (const auto& plotConfig : config.get_child("qc.postprocessing." + id + ".plots")) { // Plot configuration
     plots.push_back({ plotConfig.second.get<std::string>("name"),
                       plotConfig.second.get<std::string>("title", ""),
                       plotConfig.second.get<std::string>("varexp"),
@@ -50,7 +50,7 @@ TrendingConfigTOF::TrendingConfigTOF(std::string name, const boost::property_tre
                       plotConfig.second.get<std::string>("option", ""),
                       plotConfig.second.get<std::string>("graphErrors", "") });
   }
-  for (const auto& dataSourceConfig : config.get_child("qc.postprocessing." + name + ".dataSources")) { // Data source configuration
+  for (const auto& dataSourceConfig : config.get_child("qc.postprocessing." + id + ".dataSources")) { // Data source configuration
     if (const auto& sourceNames = dataSourceConfig.second.get_child_optional("names"); sourceNames.has_value()) {
       for (const auto& sourceName : sourceNames.value()) {
         dataSources.push_back({ dataSourceConfig.second.get<std::string>("type", "repository"),
@@ -67,7 +67,7 @@ TrendingConfigTOF::TrendingConfigTOF(std::string name, const boost::property_tre
                               dataSourceConfig.second.get<std::string>("reductorName"),
                               dataSourceConfig.second.get<std::string>("moduleName") });
     } else {
-      throw std::runtime_error("No 'name' value or a 'names' vector in the path 'qc.postprocessing." + name + ".dataSources'");
+      throw std::runtime_error("No 'name' value or a 'names' vector in the path 'qc.postprocessing." + id + ".dataSources'");
     }
   }
 }

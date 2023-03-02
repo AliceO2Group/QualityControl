@@ -38,9 +38,9 @@ TRFCollectionTask::~TRFCollectionTask()
 {
 }
 
-void TRFCollectionTask::configure(std::string name, const boost::property_tree::ptree& config)
+void TRFCollectionTask::configure(const boost::property_tree::ptree& config)
 {
-  mConfig = TRFCollectionTaskConfig(name, config);
+  mConfig = TRFCollectionTaskConfig(getID(), config);
 }
 
 void TRFCollectionTask::initialize(Trigger t, framework::ServiceRegistryRef)

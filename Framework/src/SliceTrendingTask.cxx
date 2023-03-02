@@ -40,10 +40,9 @@ using namespace o2::quality_control;
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;
 
-void SliceTrendingTask::configure(std::string name,
-                                  const boost::property_tree::ptree& config)
+void SliceTrendingTask::configure(const boost::property_tree::ptree& config)
 {
-  mConfig = SliceTrendingTaskConfig(name, config);
+  mConfig = SliceTrendingTaskConfig(getID(), config);
 }
 
 void SliceTrendingTask::initialize(Trigger, framework::ServiceRegistryRef services)
