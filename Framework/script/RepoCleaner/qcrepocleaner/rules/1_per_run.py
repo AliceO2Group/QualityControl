@@ -6,6 +6,7 @@ from qcrepocleaner.Ccdb import Ccdb, ObjectVersion
 import dryable
 from typing import Dict, List, DefaultDict
 from qcrepocleaner.policies_utils import in_grace_period, group_versions
+from qcrepocleaner import policies_utils
 
 logger = logging  # default logger
 

@@ -155,6 +155,13 @@ class TestProduction(unittest.TestCase):
         self.assertEqual(stats["preserved"], 90-28)
         self.assertEqual(stats["updated"], 0)
 
+    def test_asdf(self):
+        logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s',
+                            datefmt='%d-%b-%y %H:%M:%S')
+        logging.getLogger().setLevel(int(10))
+        test_path = self.path + "/asdf"
+        self.prepare_data(test_path, [70, 70, 70], [6*60, 6*60, 25*60], 55555)
+
     def prepare_data(self, path, run_durations: List[int], time_till_next_run: List[int], first_run_number: int):
         """
         Prepare a data set populated with a number of runs.
