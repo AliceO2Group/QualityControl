@@ -43,8 +43,8 @@ class CheckOfTrendings : public o2::quality_control::checker::CheckInterface
 
  private:
   ClassDefOverride(CheckOfTrendings, 2);
-  void CalculateStatistics(const double* yValues, const double* yErrors, bool UseErrors, const int FirstPoint, const int LastPoint, double& mean, double& stddevOfMean);
-  TGraph* GetGraph(TCanvas* canv);
+  void calculateStatistics(const double* yValues, const double* yErrors, bool useErrors, const int firstPoint, const int lastPoint, double& mean, double& stddevOfMean);
+  TGraph* getGraph(TCanvas* canv);
   std::string mCheckChoice;
   float mExpectedPhysicsValue;
   float mNSigmaExpectedPhysicsValue;

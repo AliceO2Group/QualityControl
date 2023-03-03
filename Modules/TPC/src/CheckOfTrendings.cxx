@@ -123,46 +123,44 @@ Quality CheckOfTrendings::check(std::map<std::string, std::shared_ptr<MonitorObj
     ILOG(Fatal, Support) << "Monitoring object not found" << ENDM;
   }
   auto* canv = dynamic_cast<TCanvas*>(mo->getObject());
-  ;
   if (!canv) {
     ILOG(Fatal, Support) << "Canvas not found" << ENDM;
   }
-
-  TGraph* g = GetGraph(canv);
+  TGraph* g = getGraph(canv);
   if (!g) { // if there is no TGraph, give an error and break
     ILOG(Fatal, Support) << "No TGraph found to perform Check against." << ENDM;
   }
 
-  const int NBins = g->GetN();
+  const int nBins = g->GetN();
   const double* yValues = g->GetY();
   const double* yErrors = g->GetEY(); // returns nullptr for TGraph (no errors)
 
-  bool UseErrors = true;
+  bool useErrors = true;
   if (yErrors == nullptr) {
-    UseErrors = false;
-    ILOG(Error, Support) << "NO ERRORS" << ENDM;
+    useErrors = false;
+    ILOG(Info, Support) << "NO ERRORS" << ENDM;
   }
 
   double mean = 0.;
   double stddevOfMean = 0.;
 
   // Mean Check:
-  if (NBins > 1) { // If only one data point available, don't check quality for mean
+  if (nBins > 1) { // If only one data point available, don't check quality for mean
     if (mMeanCheck) {
       checkMessage = "";
       checkResult = Quality::Null;
       double x_last = 0., y_last = 0.;
-      g->GetPoint(NBins - 1, x_last, y_last);
+      g->GetPoint(nBins - 1, x_last, y_last);
       int pointNumberForMean = mPointToTakeForMeanCheck;
-      if ((NBins - 1) < mPointToTakeForMeanCheck) {
-        pointNumberForMean = NBins - 1;
+      if ((nBins - 1) < mPointToTakeForMeanCheck) {
+        pointNumberForMean = nBins - 1;
       }
 
-      CalculateStatistics(yValues, yErrors, UseErrors, NBins - 1 - pointNumberForMean, NBins - 1, mean, stddevOfMean);
+      calculateStatistics(yValues, yErrors, useErrors, nBins - 1 - pointNumberForMean, nBins - 1, mean, stddevOfMean);
 
       double lastPointError = 0.;
-      if (UseErrors) {
-        lastPointError = *(yErrors + NBins - 1); // Error of last point
+      if (useErrors) {
+        lastPointError = *(yErrors + nBins - 1); // Error of last point
       }
       if (lastPointError < 0.) {
         ILOG(Warning, Support) << "Last point for check of mean has negative error" << ENDM;
@@ -197,20 +195,20 @@ Quality CheckOfTrendings::check(std::map<std::string, std::shared_ptr<MonitorObj
     checkMessage = "";
     checkResult = Quality::Null;
     int pointNumber = mPointToTakeForExpectedValueCheck;
-    if (!UseErrors && pointNumber == 1) { // if we only have one point without errrors, the stddev = 0 and the check would not make any sense
+    if (!useErrors && pointNumber == 1) { // if we only have one point without errrors, the stddev = 0 and the check would not make any sense
       ILOG(Warning, Support) << "Expected Value Check: Cannot use 1 point without errors. Switching to two points" << ENDM;
       pointNumber = 2;
     }
-    if (NBins < pointNumber) {
-      pointNumber = NBins;
+    if (nBins < pointNumber) {
+      pointNumber = nBins;
     }
 
-    if (!UseErrors && pointNumber == 1) { // changing from 1 to 2 points failed because only 1 point is available -> no quality
+    if (!useErrors && pointNumber == 1) { // changing from 1 to 2 points failed because only 1 point is available -> no quality
       qualities.push_back(Quality::Null);
       checks.push_back("Only one data point without errors for expected physics value check");
 
     } else {
-      CalculateStatistics(yValues, yErrors, UseErrors, NBins - pointNumber, NBins, mean, stddevOfMean);
+      calculateStatistics(yValues, yErrors, useErrors, nBins - pointNumber, nBins, mean, stddevOfMean);
       mMean = mean;
       mStdev = stddevOfMean;
 
@@ -241,11 +239,11 @@ Quality CheckOfTrendings::check(std::map<std::string, std::shared_ptr<MonitorObj
     checkMessage = "";
     checkResult = Quality::Null;
     int pointNumber = mPointToTakeForRangeCheck;
-    if (NBins < pointNumber) {
-      pointNumber = NBins;
+    if (nBins < pointNumber) {
+      pointNumber = nBins;
     }
 
-    CalculateStatistics(yValues, yErrors, UseErrors, NBins - pointNumber, NBins, mean, stddevOfMean);
+    calculateStatistics(yValues, yErrors, useErrors, nBins - pointNumber, nBins, mean, stddevOfMean);
 
     if (std::abs(mean - mExpectedPhysicsValue) > mRangeBad) {
       checkResult = Quality::Bad;
@@ -267,13 +265,13 @@ Quality CheckOfTrendings::check(std::map<std::string, std::shared_ptr<MonitorObj
     checkMessage = "";
     checkResult = Quality::Null;
     int pointNumber = mPointToTakeForZeroCheck;
-    if (NBins < pointNumber) {
-      pointNumber = NBins;
+    if (nBins < pointNumber) {
+      pointNumber = nBins;
     }
 
-    const std::vector<double> v(yValues + NBins - pointNumber, yValues + NBins);
-    bool AllZeros = std::all_of(v.begin(), v.end(), [](double i) { return std::abs(i) == 0.0; });
-    if (AllZeros) {
+    const std::vector<double> v(yValues + nBins - pointNumber, yValues + nBins);
+    const bool allZeros = std::all_of(v.begin(), v.end(), [](double i) { return std::abs(i) == 0.0; });
+    if (allZeros) {
       checkResult = Quality::Bad;
       checkMessage = fmt::format("ZeroCheck: Last {} Points zero", pointNumber);
     } else {
@@ -290,7 +288,6 @@ Quality CheckOfTrendings::check(std::map<std::string, std::shared_ptr<MonitorObj
                                           [](const Quality& q1, const Quality& q2) {
                                             return q1.isBetterThan(q2);
                                           });
-    int Worst_Quality_Index = std::distance(qualities.begin(), Worst_Quality);
     result = *Worst_Quality;
 
     // For writing to metadata and drawing later
@@ -327,7 +324,10 @@ std::string CheckOfTrendings::getAcceptedType() { return "TCanvas"; }
 void CheckOfTrendings::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   auto* canv = dynamic_cast<TCanvas*>(mo->getObject());
-  TGraph* h = GetGraph(canv);
+  if (!canv) {
+    ILOG(Fatal, Support) << "Canvas not found" << ENDM;
+  }
+  TGraph* h = getGraph(canv);
   if (!h) { // if there is no TGraph, give an error and break
     ILOG(Fatal, Support) << "No TGraph found to perform Check against." << ENDM;
   }
@@ -355,21 +355,21 @@ void CheckOfTrendings::beautify(std::shared_ptr<MonitorObject> mo, Quality check
   }
 
   if (mExpectedValueCheck) {
-    TBox* BadBox = new TBox(xMin, yMin, xMax, yMax);
-    BadBox->SetFillColor(kRed);
-    BadBox->SetFillStyle(1001);
-    BadBox->SetLineWidth(0);
-    TBox* MediumBox = new TBox(xMin, mExpectedPhysicsValue - mNSigmaBadExpectedPhysicsValue * mStdev, xMax, mExpectedPhysicsValue + mNSigmaBadExpectedPhysicsValue * mStdev);
-    MediumBox->SetFillColor(kOrange);
-    MediumBox->SetFillStyle(1001);
-    MediumBox->SetLineWidth(0);
-    TBox* GoodBox = new TBox(xMin, mExpectedPhysicsValue - mNSigmaExpectedPhysicsValue * mStdev, xMax, mExpectedPhysicsValue + mNSigmaExpectedPhysicsValue * mStdev);
-    GoodBox->SetFillColor(kGreen - 2);
-    GoodBox->SetFillStyle(1001);
-    GoodBox->SetLineWidth(0);
-    h->GetListOfFunctions()->Add(BadBox);
-    h->GetListOfFunctions()->Add(MediumBox);
-    h->GetListOfFunctions()->Add(GoodBox);
+    TBox* badBox = new TBox(xMin, yMin, xMax, yMax);
+    badBox->SetFillColor(kRed);
+    badBox->SetFillStyle(1001);
+    badBox->SetLineWidth(0);
+    TBox* mediumBox = new TBox(xMin, mExpectedPhysicsValue - mNSigmaBadExpectedPhysicsValue * mStdev, xMax, mExpectedPhysicsValue + mNSigmaBadExpectedPhysicsValue * mStdev);
+    mediumBox->SetFillColor(kOrange);
+    mediumBox->SetFillStyle(1001);
+    mediumBox->SetLineWidth(0);
+    TBox* goodBox = new TBox(xMin, mExpectedPhysicsValue - mNSigmaExpectedPhysicsValue * mStdev, xMax, mExpectedPhysicsValue + mNSigmaExpectedPhysicsValue * mStdev);
+    goodBox->SetFillColor(kGreen - 2);
+    goodBox->SetFillStyle(1001);
+    goodBox->SetLineWidth(0);
+    h->GetListOfFunctions()->Add(badBox);
+    h->GetListOfFunctions()->Add(mediumBox);
+    h->GetListOfFunctions()->Add(goodBox);
   }
 
   if (mRangeCheck) {
@@ -395,34 +395,34 @@ void CheckOfTrendings::beautify(std::shared_ptr<MonitorObject> mo, Quality check
 
   // Draw the mean+stdev each point got compared against
   if (mMeanCheck) {
-    TGraph* MeanGraph = new TGraph();
-    TGraph* StddevGraphMediumUp = new TGraph();
-    TGraph* StddevGraphMediumDown = new TGraph();
-    TGraph* StddevGraphBadUp = new TGraph();
-    TGraph* StddevGraphBadDown = new TGraph();
+    TGraph* meanGraph = new TGraph();
+    TGraph* stddevGraphMediumUp = new TGraph();
+    TGraph* stddevGraphMediumDown = new TGraph();
+    TGraph* stddevGraphBadUp = new TGraph();
+    TGraph* stddevGraphBadDown = new TGraph();
 
     const int nPoints = h->GetN();
     const double* yValues = h->GetY();
     const double* yErrors = h->GetEY(); // returns nullptr for TGraph (no errors)
-    bool UseErrors = true;
+    bool useErrors = true;
     if (yErrors == nullptr) {
-      UseErrors = false;
+      useErrors = false;
     }
 
     if (nPoints > 2) {
-      for (int NBins = 1; NBins < nPoints; NBins++) {
+      for (int nBins = 1; nBins < nPoints; nBins++) {
         int pointNumberForMean = mPointToTakeForMeanCheck;
-        if ((NBins) < mPointToTakeForMeanCheck) {
-          pointNumberForMean = NBins;
+        if ((nBins) < mPointToTakeForMeanCheck) {
+          pointNumberForMean = nBins;
         }
 
         double mean = 0.;
         double stdevMean = 0.;
-        CalculateStatistics(yValues, yErrors, UseErrors, NBins - pointNumberForMean, NBins, mean, stdevMean);
+        calculateStatistics(yValues, yErrors, useErrors, nBins - pointNumberForMean, nBins, mean, stdevMean);
 
         double lastPointError = 0.;
-        if (UseErrors) {
-          lastPointError = *(yErrors + NBins); // Error of last point
+        if (useErrors) {
+          lastPointError = *(yErrors + nBins); // Error of last point
         }
         if (lastPointError < 0.) {
           ILOG(Warning, Support) << "Last point for check of mean has negative error" << ENDM;
@@ -430,38 +430,38 @@ void CheckOfTrendings::beautify(std::shared_ptr<MonitorObject> mo, Quality check
 
         double stdev = sqrt(stdevMean * stdevMean + lastPointError * lastPointError);
 
-        MeanGraph->AddPoint(h->GetPointX(NBins), mean);
-        StddevGraphMediumUp->AddPoint(h->GetPointX(NBins), mean + stdev * mNSigmaMean);
-        StddevGraphMediumDown->AddPoint(h->GetPointX(NBins), mean - stdev * mNSigmaMean);
-        StddevGraphBadUp->AddPoint(h->GetPointX(NBins), mean + stdev * mNSigmaBadMean);
-        StddevGraphBadDown->AddPoint(h->GetPointX(NBins), mean - stdev * mNSigmaBadMean);
-      } // for (int NBins = 1; NBins < nPoints; NBins++)
+        meanGraph->AddPoint(h->GetPointX(nBins), mean);
+        stddevGraphMediumUp->AddPoint(h->GetPointX(nBins), mean + stdev * mNSigmaMean);
+        stddevGraphMediumDown->AddPoint(h->GetPointX(nBins), mean - stdev * mNSigmaMean);
+        stddevGraphBadUp->AddPoint(h->GetPointX(nBins), mean + stdev * mNSigmaBadMean);
+        stddevGraphBadDown->AddPoint(h->GetPointX(nBins), mean - stdev * mNSigmaBadMean);
+      } // for (int nBins = 1; nBins < nPoints; nBins++)
 
-      MeanGraph->SetLineWidth(2);
-      MeanGraph->SetLineColor(kGreen - 2);
-      MeanGraph->SetMarkerColor(kGreen - 2);
+      meanGraph->SetLineWidth(2);
+      meanGraph->SetLineColor(kGreen - 2);
+      meanGraph->SetMarkerColor(kGreen - 2);
 
-      StddevGraphMediumUp->SetLineWidth(2);
-      StddevGraphMediumUp->SetLineColor(kOrange);
-      StddevGraphMediumUp->SetMarkerColor(kOrange);
+      stddevGraphMediumUp->SetLineWidth(2);
+      stddevGraphMediumUp->SetLineColor(kOrange);
+      stddevGraphMediumUp->SetMarkerColor(kOrange);
 
-      StddevGraphMediumDown->SetLineWidth(2);
-      StddevGraphMediumDown->SetLineColor(kOrange);
-      StddevGraphMediumDown->SetMarkerColor(kOrange);
+      stddevGraphMediumDown->SetLineWidth(2);
+      stddevGraphMediumDown->SetLineColor(kOrange);
+      stddevGraphMediumDown->SetMarkerColor(kOrange);
 
-      StddevGraphBadUp->SetLineWidth(2);
-      StddevGraphBadUp->SetLineColor(kRed);
-      StddevGraphBadUp->SetMarkerColor(kRed);
+      stddevGraphBadUp->SetLineWidth(2);
+      stddevGraphBadUp->SetLineColor(kRed);
+      stddevGraphBadUp->SetMarkerColor(kRed);
 
-      StddevGraphBadDown->SetLineWidth(2);
-      StddevGraphBadDown->SetLineColor(kRed);
-      StddevGraphBadDown->SetMarkerColor(kRed);
+      stddevGraphBadDown->SetLineWidth(2);
+      stddevGraphBadDown->SetLineColor(kRed);
+      stddevGraphBadDown->SetMarkerColor(kRed);
 
-      h->GetListOfFunctions()->Add(MeanGraph);
-      h->GetListOfFunctions()->Add(StddevGraphMediumUp);
-      h->GetListOfFunctions()->Add(StddevGraphMediumDown);
-      h->GetListOfFunctions()->Add(StddevGraphBadUp);
-      h->GetListOfFunctions()->Add(StddevGraphBadDown);
+      h->GetListOfFunctions()->Add(meanGraph);
+      h->GetListOfFunctions()->Add(stddevGraphMediumUp);
+      h->GetListOfFunctions()->Add(stddevGraphMediumDown);
+      h->GetListOfFunctions()->Add(stddevGraphBadUp);
+      h->GetListOfFunctions()->Add(stddevGraphBadDown);
     }
   }
 
@@ -506,7 +506,7 @@ void CheckOfTrendings::beautify(std::shared_ptr<MonitorObject> mo, Quality check
   msg->AddText(checkResult.getMetadata("Comment", "").c_str());
 }
 
-TGraph* CheckOfTrendings::GetGraph(TCanvas* canv)
+TGraph* CheckOfTrendings::getGraph(TCanvas* canv)
 {
   TGraph* g;
 
@@ -539,12 +539,12 @@ TGraph* CheckOfTrendings::GetGraph(TCanvas* canv)
   return g;
 }
 
-void CheckOfTrendings::CalculateStatistics(const double* yValues, const double* yErrors, bool UseErrors, const int FirstPoint, const int LastPoint, double& mean, double& stddevOfMean)
+void CheckOfTrendings::calculateStatistics(const double* yValues, const double* yErrors, bool useErrors, const int firstPoint, const int lastPoint, double& mean, double& stddevOfMean)
 {
 
   // yErrors returns nullptr for TGraph (no errors)
-  if (LastPoint - FirstPoint <= 0) {
-    ILOG(Error, Support) << "In CalculateStatistics(), the first and last point of the range have to differ!" << ENDM;
+  if (lastPoint - firstPoint <= 0) {
+    ILOG(Error, Support) << "In calculateStatistics(), the first and last point of the range have to differ!" << ENDM;
     return;
   }
 
@@ -554,15 +554,15 @@ void CheckOfTrendings::CalculateStatistics(const double* yValues, const double* 
   double sumOfSquaredWeights = 0.; // sum (w_i)^2
   double weight = 0.;
 
-  const std::vector<double> v(yValues + FirstPoint, yValues + LastPoint);
-  if (!UseErrors) {
+  const std::vector<double> v(yValues + firstPoint, yValues + lastPoint);
+  if (!useErrors) {
     // In case of no errors, we set our weights equal to 1
     sum = std::accumulate(v.begin(), v.end(), 0.0);
     sumOfWeights = v.size();
     sumOfSquaredWeights = v.size();
   } else {
     // In case of errors, we set our weights equal to 1/sigma_i^2
-    const std::vector<double> vErr(yErrors + FirstPoint, yErrors + LastPoint);
+    const std::vector<double> vErr(yErrors + firstPoint, yErrors + lastPoint);
     for (int i = 0; i < v.size(); i++) {
       weight = 1. / std::pow(vErr[i], 2.);
       sum += v[i] * weight;
@@ -575,13 +575,13 @@ void CheckOfTrendings::CalculateStatistics(const double* yValues, const double* 
   mean = sum / sumOfWeights;
 
   if (v.size() == 1) { // we only have one point, we keep it's uncertainty
-    if (!UseErrors) {
+    if (!useErrors) {
       stddevOfMean = 0.;
     } else {
       stddevOfMean = sqrt(1. / sumOfWeights);
     }
   } else { // for >= 2 points, we calculate the spread
-    if (!UseErrors) {
+    if (!useErrors) {
       std::vector<double> diff(v.size());
       std::transform(v.begin(), v.end(), diff.begin(), [mean](double x) { return x - mean; });
       double sq_sum = std::inner_product(diff.begin(), diff.end(), diff.begin(), 0.0);
