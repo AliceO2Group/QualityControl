@@ -23,7 +23,7 @@
       }
     },
     "postprocessing": {
-      "MFTReadoutTrend": {
+      "ReadoutTrend": {
         "active": "true",
         "className": "o2::quality_control::postprocessing::TrendingTask",
         "moduleName": "QcMFT",
@@ -31,7 +31,7 @@
         "dataSources": [
           {
             "type": "repository",
-            "path": "MFT/MO/MFTReadoutTask",
+            "path": "MFT/MO/Readout",
             "names": [ "mSummaryChipError", "mSummaryChipWarning", "mSummaryChipFault" ],
             "reductorName": "o2::quality_control_modules::mft::QcMFTReadoutTrend",
             "moduleName": "QcMFT"

@@ -23,7 +23,7 @@
       }
     },
     "postprocessing": {
-      "MFTTrendSlices": {
+      "TrendSlices": {
         "active": "true",
         "className": "o2::quality_control::postprocessing::SliceTrendingTask",
         "moduleName": "QcMFT",
@@ -31,7 +31,7 @@
         "dataSources": [
           {
             "type": "repository",
-            "path": "MFT/MO/MFTDigitTask",
+            "path": "MFT/MO/Digits",
             "names": [ "mDigitChipOccupancy" ],
             "reductorName": "o2::quality_control_modules::common::TH1SliceReductor",
             "axisDivision": [ [ "1", "468", "936" ] ],
@@ -39,7 +39,7 @@
           },
           {
             "type": "repository",
-            "path": "MFT/MO/MFTClusterTask",
+            "path": "MFT/MO/Clusters",
             "names": [ "mClusterPatternIndex" ],
             "reductorName": "o2::quality_control_modules::common::TH1SliceReductor",
             "axisDivision": [ [ "0", "4", "11", "300" ] ],

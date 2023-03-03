@@ -24,8 +24,11 @@
 #include <TH2.h>
 // Quality Control
 #include "QualityControl/TaskInterface.h"
+// O2
+#include "CommonConstants/LHCConstants.h"
 
 using namespace o2::quality_control::core;
+using namespace std;
 
 namespace o2::quality_control_modules::mft
 {
@@ -49,20 +52,39 @@ class QcMFTTrackTask /*final*/ : public TaskInterface // todo add back the "fina
   void endOfActivity(Activity& activity) override;
   void reset() override;
 
+  double orbitToSeconds(uint32_t orbit, uint32_t refOrbit)
+  {
+    return (orbit - refOrbit) * o2::constants::lhc::LHCOrbitNS / 1E9;
+  }
+
  private:
+  std::unique_ptr<TH1F> mNumberOfTracksPerTF = nullptr;
   std::unique_ptr<TH1F> mTrackNumberOfClusters = nullptr;
   std::unique_ptr<TH1F> mCATrackNumberOfClusters = nullptr;
   std::unique_ptr<TH1F> mLTFTrackNumberOfClusters = nullptr;
-  std::unique_ptr<TH1F> mTrackOnvQPt = nullptr;
+  std::unique_ptr<TH1F> mTrackInvQPt = nullptr;
   std::unique_ptr<TH1F> mTrackChi2 = nullptr;
   std::unique_ptr<TH1F> mTrackCharge = nullptr;
   std::unique_ptr<TH1F> mTrackPhi = nullptr;
   std::unique_ptr<TH1F> mPositiveTrackPhi = nullptr;
   std::unique_ptr<TH1F> mNegativeTrackPhi = nullptr;
   std::unique_ptr<TH1F> mTrackEta = nullptr;
+  std::array<unique_ptr<TH1F>, 7> mTrackEtaNCls = { nullptr };
+  std::array<unique_ptr<TH1F>, 7> mTrackPhiNCls = { nullptr };
+  std::array<unique_ptr<TH2F>, 7> mTrackXYNCls = { nullptr };
+  std::array<unique_ptr<TH2F>, 7> mTrackEtaPhiNCls = { nullptr };
   std::unique_ptr<TH1F> mCATrackEta = nullptr;
   std::unique_ptr<TH1F> mLTFTrackEta = nullptr;
+  std::unique_ptr<TH1F> mCATrackPt = nullptr;
+  std::unique_ptr<TH1F> mLTFTrackPt = nullptr;
   std::unique_ptr<TH1F> mTrackTanl = nullptr;
+  std::unique_ptr<TH1F> mTrackROFNEntries = nullptr;
+  std::unique_ptr<TH1F> mTracksBC = nullptr;
+  std::unique_ptr<TH1F> mNOfTracksTime = nullptr;
+
+  uint32_t mRefOrbit = -1; // Reference orbit used in relative time calculation
+
+  static constexpr array<short, 7> sMinNClustersList = { 4, 5, 6, 7, 8, 9, 10 };
 };
 
 } // namespace o2::quality_control_modules::mft
