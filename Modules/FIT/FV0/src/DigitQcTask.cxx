@@ -644,14 +644,16 @@ void DigitQcTask::endOfCycle()
   getObjectsManager()->getMonitorObject(mHistBCvsTrg->GetName())->addOrUpdateMetadata("TFcreationTime", std::to_string(mTFcreationTime));
 
   // =============================== Zadanie ===============================
-  for (int i = 1; i <= sNCHANNELS_FV0_PLUSREF; i++) {
-    int count = 0;
-    for (int j = 1; j <= mHistTime2Ch->GetNbinsY(); j++) {
-        if (mHistTime2Ch->GetYaxis()->GetBinLowEdge(j) >= -192 && mHistTime2Ch->GetYaxis()->GetBinUpEdge(j) <= 192) {
-            count += mHistTime2Ch->GetBinContent(i, j);
+  for (int channel = 1; channel <= sNCHANNELS_FV0_PLUSREF; channel++) {
+    int bins_in_range = 0;
+    int bins_per_channel = 0;
+    for (int y_bin_num = 1; y_bin_num <= mHistTime2Ch->GetNbinsY(); y_bin_num++) {
+        if (mHistTime2Ch->GetYaxis()->GetBinLowEdge(y_bin_num) >= -192 && mHistTime2Ch->GetYaxis()->GetBinUpEdge(y_bin_num) <= 192) {
+            bins_in_range += mHistTime2Ch->GetBinContent(channel, y_bin_num);
         }
+        bins_per_channel += mHistTime2Ch->GetBinContent(channel, y_bin_num);
     }
-    mHistGateTimeRatio2Ch->SetBinContent(i, (float) count / mHistTime2Ch->Integral(i, i));
+    mHistGateTimeRatio2Ch->SetBinContent(channel, (float) bins_in_range / (float) bins_per_channel);
   }
 
   // one has to set num. of entries manually because
