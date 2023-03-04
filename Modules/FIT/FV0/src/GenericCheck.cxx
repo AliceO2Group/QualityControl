@@ -131,7 +131,7 @@ Quality GenericCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
           if ((h2->GetBinContent(i, 3) && !h2->GetBinContent(i, 4)) || (!h2->GetBinContent(i, 3) && h2->GetBinContent(i, 4))) {
             result.set(Quality::Bad);
             result.addReason(FlagReasonFactory::Unknown(),
-                    "CFD eff. < \"Error\" threshold in channel " + std::to_string(chId));    
+                    "TriggersSoftwareVsTCM. < \"Error\" threshold in channel " + std::to_string(i));    
             break;        
           }
 
