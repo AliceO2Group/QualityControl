@@ -262,7 +262,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     mHistBCvsFEEmodules->GetYaxis()->SetBinLabel(entry.second + 1, entry.first.c_str());
     mHistOrbitVsFEEmodules->GetYaxis()->SetBinLabel(entry.second + 1, entry.first.c_str());
   }
-  mHistGateTimeRatio2Ch = std::make_unique<TH1F>("HistGateTimeRatio2Ch", "Ratio of measurements between time -192 and 192", sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF);
+  mHistGateTimeRatio2Ch = std::make_unique<TH1F>("EventsInGateTime", "Ratio of events between time -192 and 192", sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF);
   // mHistTimeSum2Diff = std::make_unique<TH2F>("timeSumVsDiff", "time A/C side: sum VS diff;(TOC-TOA)/2 [ns];(TOA+TOC)/2 [ns]", 400, -52.08, 52.08, 400, -52.08, 52.08); // range of 52.08 ns = 4000*13.02ps = 4000 channels
   mHistNumADC = std::make_unique<TH1F>("HistNumADC", "HistNumADC", sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF);
   mHistNumCFD = std::make_unique<TH1F>("HistNumCFD", "HistNumCFD", sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF);
@@ -644,7 +644,7 @@ void DigitQcTask::endOfCycle()
   getObjectsManager()->getMonitorObject(mHistBCvsTrg->GetName())->addOrUpdateMetadata("TFcreationTime", std::to_string(mTFcreationTime));
 
   // =============================== Zadanie ===============================
-  for (int channel = 1; channel <= sNCHANNELS_FV0_PLUSREF; channel++) {
+  for (int channel = 1; channel <= sNCHANNELS_FV0_PLUSREF-1; channel++) {
     int bins_in_range = 0;
     int bins_per_channel = 0;
     for (int y_bin_num = 1; y_bin_num <= mHistTime2Ch->GetNbinsY(); y_bin_num++) {

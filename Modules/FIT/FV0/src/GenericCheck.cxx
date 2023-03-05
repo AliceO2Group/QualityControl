@@ -25,7 +25,7 @@
 #include <TCanvas.h>
 #include <TPaveText.h>
 #include <TMath.h>
-// #include <TLine.h>
+#include <TLine.h>
 #include <TList.h>
 
 #include <DataFormatsQualityControl/FlagReasons.h>
@@ -66,7 +66,8 @@ SingleCheck GenericCheck::getCheckFromConfig(std::string paramName)
 
 void GenericCheck::configure()
 {
-  mCheckMaxEdgeIntegralRatioY = getCheckFromConfig("MaxEdgeIntegralRatioY");
+  mCheckMaxThresholdY = getCheckFromConfig("MaxThresholdY");
+  mCheckMinThresholdY = getCheckFromConfig("MinThresholdY");
 
   mCheckMaxOverflowIntegralRatio = getCheckFromConfig("MaxOverflowIntegralRatio");
 
@@ -120,24 +121,6 @@ Quality GenericCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
       continue;
     }
 
-    // =============================== Zadanie ===============================
-    if (mo->getName() == "TriggersSoftwareVsTCM") {
-      auto h2 = (TH2*)mo->getObject();
-      int numXBins = h2->GetNbinsX();
-      int numYBins = h2->GetNbinsY();
-
-      for (int i = 1; i <= numXBins; i++) {
-
-          if ((h2->GetBinContent(i, 3) && !h2->GetBinContent(i, 4)) || (!h2->GetBinContent(i, 3) && h2->GetBinContent(i, 4))) {
-            result.set(Quality::Bad);
-            result.addReason(FlagReasonFactory::Unknown(),
-                    "TriggersSoftwareVsTCM. < \"Error\" threshold in channel " + std::to_string(i));    
-            break;        
-          }
-
-      }
-    }
-
     if (std::strcmp(mo->getObject()->ClassName(), "TCanvas") == 0) {
       auto g = (TGraph*)((TCanvas*)mo->getObject())->GetListOfPrimitives()->FindObject(mNameObjOnCanvas.c_str());
 
@@ -174,15 +157,22 @@ Quality GenericCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
         continue;
       }
 
-      // =============================== Zadanie ===============================
-      if (mCheckMaxEdgeIntegralRatioY.isActive()) {
-        int nBinsX = h->GetNbinsX();
-        float sumRatio = 0;
-        for (int iBinX = 1; iBinX <= nBinsX; iBinX++) {
-            sumRatio += h->GetBinContent(iBinX);
+      if (mCheckMinThresholdY.isActive()) {
+        int numberOfBinsX = h->GetNbinsX();
+        float minValue = h->GetBinContent(1);
+        for (int channel = 1; channel < numberOfBinsX; ++channel) {
+          if (minValue > h->GetBinContent(channel)) {
+            minValue = h->GetBinContent(channel);
+            mCheckMinThresholdY.mBinNumberX = channel;
+          }
         }
-        float meanRatio = sumRatio / nBinsX;
-        mCheckMaxEdgeIntegralRatioY.doCheck(result, meanRatio);
+        mCheckMinThresholdY.doCheck(result, minValue);
+      }
+
+      if (mCheckMaxThresholdY.isActive()) {
+        mCheckMaxThresholdY.mBinNumberX = h->GetMaximumBin();
+        float maxValue = h->GetBinContent(mCheckMaxThresholdY.mBinNumberX);
+        mCheckMaxThresholdY.doCheck(result, maxValue);
       }
 
       if (mCheckMinMeanX.isActive())
@@ -249,6 +239,22 @@ void GenericCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResu
       return;
     }
     h->GetListOfFunctions()->Add(msg);
+
+    // add threshold lines
+    if(mCheckMinThresholdY.isActive()) {
+      Double_t xMin = h->GetXaxis()->GetXmin();
+      Double_t xMax = h->GetXaxis()->GetXmax();
+      auto* lineMinError = new TLine(xMin, mCheckMinThresholdY.getThresholdError(), xMax, mCheckMinThresholdY.getThresholdError());
+      auto* lineMinWarning = new TLine(xMin, mCheckMinThresholdY.getThresholdWarning(), xMax, mCheckMinThresholdY.getThresholdWarning());
+      lineMinError->SetLineWidth(3);
+      lineMinWarning->SetLineWidth(3);
+      lineMinError->SetLineStyle(kDashed);
+      lineMinWarning->SetLineStyle(kDashed);
+      lineMinError->SetLineColor(kRed);
+      lineMinWarning->SetLineColor(kOrange);
+      h->GetListOfFunctions()->Add(lineMinError);
+      h->GetListOfFunctions()->Add(lineMinWarning);
+    }
   }
 
   msg->SetName(Form("%s_msg", mo->GetName()));

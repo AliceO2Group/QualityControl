@@ -81,6 +81,8 @@ class DigitQcTask final : public TaskInterface
 
   long mTFcreationTime = 0;
 
+  int mTimeGate = 192;
+
   template <typename Param_t,
             typename = typename std::enable_if<std::is_floating_point<Param_t>::value ||
                                                std::is_same<std::string, Param_t>::value || (std::is_integral<Param_t>::value && !std::is_same<bool, Param_t>::value)>::type>
