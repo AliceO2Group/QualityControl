@@ -19,6 +19,7 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TH1D.h>
+#include <TGraphAsymmErrors.h>
 
 // O2 includes
 #include "Framework/ProcessingContext.h"
@@ -62,7 +63,8 @@ void Tracking::initialize(o2::framework::InitContext& /*ctx*/)
     const std::vector<TH1F>* h1;
     const std::vector<TH2F>* h2;
     const std::vector<TH1D>* h3;
-    mQCTracking.getHists(h1, h2, h3);
+    const std::vector<TGraphAsymmErrors>* h4;
+    mQCTracking.getHists(h1, h2, h3, h4);
     for (auto& hist : *h1) {
       getObjectsManager()->startPublishing((TObject*)&hist);
     }
@@ -70,6 +72,9 @@ void Tracking::initialize(o2::framework::InitContext& /*ctx*/)
       getObjectsManager()->startPublishing((TObject*)&hist);
     }
     for (auto& hist : *h3) {
+      getObjectsManager()->startPublishing((TObject*)&hist);
+    }
+    for (auto& hist : *h4) {
       getObjectsManager()->startPublishing((TObject*)&hist);
     }
   }
