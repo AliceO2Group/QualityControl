@@ -67,6 +67,7 @@ class TrendingTask : public PostProcessingInterface
 
   void trendValues(const Trigger& t, repository::DatabaseInterface&);
   void generatePlots();
+  bool canContinueTrend(TTree* tree);
 
   TrendingTaskConfig mConfig;
   UInt_t mTime;
