@@ -157,6 +157,7 @@ Quality GenericCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
         continue;
       }
 
+<<<<<<< HEAD:Modules/FIT/FV0/src/GenericCheck.cxx
       if (mCheckMinThresholdY.isActive()) {
         int numberOfBinsX = h->GetNbinsX();
         float minValue = h->GetBinContent(1);
@@ -173,6 +174,20 @@ Quality GenericCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
         mCheckMaxThresholdY.mBinNumberX = h->GetMaximumBin();
         float maxValue = h->GetBinContent(mCheckMaxThresholdY.mBinNumberX);
         mCheckMaxThresholdY.doCheck(result, maxValue);
+=======
+      // =============================== Zadanie ===============================
+      if (mCheckMaxEdgeIntegralRatioY.isActive() || mCheckMinEdgeIntegralRatioY.isActive()) {
+        int numberOfBinsX = h->GetNbinsX();
+        float sumOfBinsContent = 0;
+        for (int binIndex = 1; binIndex <= numberOfBinsX; binIndex++) {
+            sumOfBinsContent += h->GetBinContent(binIndex);
+        }
+        float meanValue = sumOfBinsContent / numberOfBinsX;
+        if (mCheckMaxEdgeIntegralRatioY.isActive())
+          mCheckMaxEdgeIntegralRatioY.doCheck(result, meanValue);
+        if (mCheckMinEdgeIntegralRatioY.isActive())
+          mCheckMinEdgeIntegralRatioY.doCheck(result, meanValue);
+>>>>>>> b117479b (Fix names and celan up the code):Modules/FV0/src/GenericCheck.cxx
       }
 
       if (mCheckMinMeanX.isActive())

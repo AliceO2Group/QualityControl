@@ -38,9 +38,12 @@ class TriggersSwVsTcmCheck : public o2::quality_control::checker::CheckInterface
   std::string getAcceptedType() override;
 
   ClassDefOverride(TriggersSwVsTcmCheck, 2);
+<<<<<<< HEAD:Modules/FIT/FV0/include/FV0/TriggersSwVsTcmCheck.h
 
  private:
   std::array<double, 4> mPositionMsgBox;
+=======
+>>>>>>> b117479b (Fix names and celan up the code):Modules/FV0/include/FV0/TriggersSwVsTcmCheck.h
 };
 
 } // namespace o2::quality_control_modules::fv0
