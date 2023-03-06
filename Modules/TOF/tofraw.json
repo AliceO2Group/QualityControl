@@ -109,8 +109,25 @@
             ]
           }
         ]
-      }
-    }
+      },
+      "CheckSlotPartMask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::tof::CheckSlotPartMask",
+        "moduleName": "QcTOF",
+        "detectorName": "TOF",
+        "policy": "OnAny",
+        "checkParameters": {},
+        "dataSource": [
+	   {
+             "type": "Task",
+             "name": "TaskRaw",
+             "MOs": [
+                "hSlotPartMask"
+              ]
+           }
+	 ]
+       }
+     }
   },
   "dataSamplingPolicies": [
     {
