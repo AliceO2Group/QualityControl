@@ -37,6 +37,8 @@
 #include <DataSampling/DataSampling.h>
 #include "QualityControl/InfrastructureGenerator.h"
 #include "Common/Exceptions.h"
+#include "BookkeepingApi/BkpProtoClientFactory.h"
+using namespace o2::bkp::api::proto;
 
 using namespace o2;
 using namespace o2::framework;
@@ -92,6 +94,8 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
   WorkflowSpec specs;
   std::string qcConfigurationSource = getConfigPath(config);
 
+  auto client = BkpProtoClientFactory::create("[host][:port]");
+  
   auto configTree = ConfigurationFactory::getConfiguration(qcConfigurationSource)->getRecursive();
   auto infologgerFilterDiscardDebug = configTree.get<bool>("qc.config.infologger.filterDiscardDebug", false);
   auto infologgerDiscardLevel = configTree.get<int>("qc.config.infologger.filterDiscardLevel", 21);

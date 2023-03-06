@@ -205,7 +205,7 @@ foreach(i RANGE ${count})
   list(GET EXE_NAMES ${i} name)
   list(GET EXE_OLD_NAMES ${i} oldname)
   add_executable(${name} ${src})
-  target_link_libraries(${name} PRIVATE O2QualityControl CURL::libcurl ROOT::Tree)
+  target_link_libraries(${name} PRIVATE O2QualityControl CURL::libcurl ROOT::Tree AliceO2::BookkeepingProtoApi)
   install_symlink(${name} ${CMAKE_INSTALL_FULL_BINDIR}/${oldname})
 endforeach()
 
