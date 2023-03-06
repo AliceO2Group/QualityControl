@@ -3,6 +3,7 @@ set(MODULE_NAME "O2QcMuonChambers")
 # ---- Files ----
 
 set(SRCS
+  src/ErrorTask.cxx
   src/GlobalHistogram.cxx
   src/PedestalsTask.cxx
   src/PhysicsTaskDigits.cxx
@@ -22,6 +23,7 @@ set(SRCS
 )
 
 set(HEADERS
+  include/MCH/ErrorTask.h
   include/MCH/GlobalHistogram.h
   include/MCH/PedestalsTask.h
   include/MCH/PhysicsTaskDigits.h
@@ -83,7 +85,8 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/MCH
 # ---- ROOT dictionary ----
 
 add_root_dictionary(${MODULE_NAME}
-                    HEADERS include/MCH/GlobalHistogram.h
+                    HEADERS include/MCH/ErrorTask.h
+                            include/MCH/GlobalHistogram.h
                             include/MCH/PedestalsTask.h
                             include/MCH/PhysicsTaskDigits.h
                             include/MCH/PhysicsTaskRofs.h
