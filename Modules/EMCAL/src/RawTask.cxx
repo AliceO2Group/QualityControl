@@ -23,13 +23,13 @@
 #include <cfloat>
 
 #include "QualityControl/QcInfoLogger.h"
+#include "DetectorsRaw/RawHeaderStream.h"
 #include "DetectorsRaw/RDHUtils.h"
 #include "EMCAL/RawTask.h"
 #include "Headers/RAWDataHeader.h"
 #include "EMCALBase/Geometry.h"
 #include "EMCALReconstruction/AltroDecoder.h"
 #include "EMCALReconstruction/RawReaderMemory.h"
-#include "EMCALReconstruction/RawHeaderStream.h"
 #include <Framework/ConcreteDataMatcher.h>
 #include <Framework/InputRecordWalker.h>
 #include <Framework/InputRecord.h>
