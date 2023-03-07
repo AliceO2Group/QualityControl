@@ -67,6 +67,7 @@ void Activity::importFromRun(const std::shared_ptr<o2::bookkeeping::Run>& run)
   mPeriodName = run->lhcperiod();
   mValidity.setMin(run->timeo2start());
   mValidity.setMax(run->timeo2end());
+  mBeamType = run->pdpbeamtype();
 }
 
 } // namespace o2::quality_control::core

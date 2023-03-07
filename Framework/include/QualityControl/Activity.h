@@ -76,6 +76,7 @@ class Activity
   std::string mPassName{};
   std::string mProvenance{ "qc" };
   ValidityInterval mValidity{ gFullValidityInterval };
+  std::string mBeamType{};
 
   ClassDef(Activity, 2);
 };
