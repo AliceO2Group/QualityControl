@@ -22,7 +22,7 @@
 #include "QualityControl/ValidityInterval.h"
 
 #include "Rtypes.h"
-#include "BookkeepingApi/run.pb.h"  // TODO beurk
+#include "BookkeepingApi/run.pb.h" // TODO beurk
 
 namespace o2::quality_control::core
 {

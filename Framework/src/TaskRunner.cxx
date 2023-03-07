@@ -421,7 +421,7 @@ Activity TaskRunner::createActivityObject()
   Activity activity = mTaskConfig.fallbackActivity;
   activity.mId = mRunNumber;
   // retrieve run info from BK if possible
-  if(!mTaskConfig.bookkeepingUrl.empty()) {
+  if (!mTaskConfig.bookkeepingUrl.empty()) {
     try {
       auto client = BkpProtoClientFactory::create(mTaskConfig.bookkeepingUrl);
       auto bkRun = client->run()->Get(mRunNumber);

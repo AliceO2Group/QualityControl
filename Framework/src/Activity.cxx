@@ -60,7 +60,7 @@ bool Activity::operator==(const Activity& other) const
   return mId == other.mId && mType == other.mType && mPeriodName == other.mPeriodName && mPassName == other.mPassName && mProvenance == other.mProvenance && mValidity == other.mValidity;
 }
 
-void Activity::importFromRun(const std::shared_ptr<o2::bookkeeping::Run> & run)
+void Activity::importFromRun(const std::shared_ptr<o2::bookkeeping::Run>& run)
 {
   mId = run->runnumber();
   mType = run->runtype();
