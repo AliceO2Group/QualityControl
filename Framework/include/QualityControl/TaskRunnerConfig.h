@@ -49,6 +49,7 @@ struct TaskRunnerConfig {
   std::string consulUrl{};
   std::string conditionUrl{};
   std::string monitoringUrl{};
+  std::string bookkeepingUrl{};
   framework::Inputs inputSpecs{};
   framework::OutputSpec moSpec{ "XXX", "INVALID" };
   framework::Options options{};

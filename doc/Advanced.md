@@ -1084,6 +1084,9 @@ should not be present in real configuration files.
         "filterRotateMaxBytes": "",       "": "Maximum size of the discard file.", 
         "filterRotateMaxFiles": "",       "": "Maximum number of discard files."
       },
+      "bookkeeping": {                    "": "Configuration of the bookkeeping (optional)",
+        "url": "localhost:4001",          "": "Url of the bookkeeping API (port is usually different from web interface)"
+      },
       "postprocessing": {                 "": "Configuration parameters for post-processing",
         "periodSeconds": 10.0,            "": "Sets the interval of checking all the triggers. One can put a very small value",
                                           "": "for async processing, but use 10 or more seconds for synchronous operations",

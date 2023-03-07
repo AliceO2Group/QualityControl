@@ -22,6 +22,7 @@
 #include "QualityControl/ValidityInterval.h"
 
 #include "Rtypes.h"
+#include "BookkeepingApi/run.pb.h"  // TODO beurk
 
 namespace o2::quality_control::core
 {
@@ -66,6 +67,8 @@ class Activity
   bool same(const Activity& other) const;
 
   virtual ~Activity() = default;
+
+  void importFromRun(const std::shared_ptr<o2::bookkeeping::Run>& run);
 
   int mId{ 0 };
   int mType{ 0 };

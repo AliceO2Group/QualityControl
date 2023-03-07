@@ -75,6 +75,7 @@ CommonSpec InfrastructureSpecReader::readSpecEntry<CommonSpec>(const std::string
     commonTree.get<u_int>("infologger.filterRotateMaxFiles", spec.infologgerDiscardParameters.rotateMaxFiles)
   };
   spec.postprocessingPeriod = commonTree.get<double>("postprocessing.periodSeconds", spec.postprocessingPeriod);
+  spec.bookkeepingUrl = commonTree.get<std::string>("bookkeeping.url", spec.bookkeepingUrl);
 
   return spec;
 }

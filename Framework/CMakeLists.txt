@@ -25,6 +25,7 @@ target_link_libraries(O2QualityControlTypes
   ROOT::Hist
   AliceO2::Common
   O2::DataFormatsQualityControl
+  AliceO2::BookkeepingProtoApi
 )
 
 add_root_dictionary(O2QualityControlTypes
@@ -205,7 +206,7 @@ foreach(i RANGE ${count})
   list(GET EXE_NAMES ${i} name)
   list(GET EXE_OLD_NAMES ${i} oldname)
   add_executable(${name} ${src})
-  target_link_libraries(${name} PRIVATE O2QualityControl CURL::libcurl ROOT::Tree AliceO2::BookkeepingProtoApi)
+  target_link_libraries(${name} PRIVATE O2QualityControl CURL::libcurl ROOT::Tree)
   install_symlink(${name} ${CMAKE_INSTALL_FULL_BINDIR}/${oldname})
 endforeach()
 

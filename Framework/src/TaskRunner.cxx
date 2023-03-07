@@ -45,6 +45,7 @@
 #include <TFile.h>
 #include <boost/property_tree/ptree.hpp>
 #include <TSystem.h>
+#include "BookkeepingApi/BkpProtoClientFactory.h"
 
 using namespace std;
 
@@ -60,6 +61,7 @@ using namespace o2::configuration;
 using namespace o2::monitoring;
 using namespace std::chrono;
 using namespace AliceO2::Common;
+using namespace o2::bkp::api::proto;
 
 TaskRunner::TaskRunner(const TaskRunnerConfig& config)
   : mTaskConfig(config),
@@ -414,16 +416,34 @@ void TaskRunner::printTaskConfig() const
                     << " / Save to file : " << mTaskConfig.saveToFile << ENDM;
 }
 
+Activity TaskRunner::createActivityObject()
+{
+  Activity activity = mTaskConfig.fallbackActivity;
+  activity.mId = mRunNumber;
+  // retrieve run info from BK if possible
+  if(!mTaskConfig.bookkeepingUrl.empty()) {
+    try {
+      auto client = BkpProtoClientFactory::create(mTaskConfig.bookkeepingUrl);
+      auto bkRun = client->run()->Get(mRunNumber);
+      ILOG(Debug, Devel) << "Retrieved run info from Bookkeeping : " << bkRun->environmentid() << ", " << bkRun->runtype() << ENDM;
+      activity.importFromRun(bkRun);
+      ILOG(Debug, Devel) << "activity created from run : " << activity << ENDM;
+    } catch (std::runtime_error& error) {
+      ILOG(Warning, Support) << "Error retrieving run info from Bookkeeping: " << error.what() << ENDM;
+    }
+  }
+  return activity;
+}
+
 void TaskRunner::startOfActivity()
 {
   // stats
   mTimerTotalDurationActivity.reset();
   mTotalNumberObjectsPublished = 0;
 
-  // Start activity in module's stask and update objectsManager
-  Activity activity = mTaskConfig.fallbackActivity;
-  activity.mId = mRunNumber;
+  // Start activity in module's task and update objectsManager
   ILOG(Info, Support) << "Starting run " << mRunNumber << ENDM;
+  Activity activity = createActivityObject();
   mObjectsManager->setActivity(activity);
   mCollector->setRunNumber(mRunNumber);
   mTask->startOfActivity(activity);

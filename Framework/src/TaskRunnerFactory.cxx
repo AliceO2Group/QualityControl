@@ -137,6 +137,7 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
     globalConfig.consulUrl,
     globalConfig.conditionDBUrl,
     globalConfig.monitoringUrl,
+    globalConfig.bookkeepingUrl,
     inputs,
     monitorObjectsSpec,
     options,
