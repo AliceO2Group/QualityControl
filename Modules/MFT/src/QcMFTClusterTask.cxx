@@ -45,7 +45,7 @@
 #include <fstream>
 
 using namespace o2::mft;
-o2::itsmft::ChipMappingMFT mMFTMapper; 
+o2::itsmft::ChipMappingMFT mMFTMapper;
 
 namespace o2::quality_control_modules::mft
 {
@@ -238,9 +238,9 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
     getObjectsManager()->setDefaultDrawOptions(mClusterXYinLayer[nMFTLayer].get(), "colz");
 
     auto clusterR = std::make_unique<TH1F>(Form("ClusterRinLayer/mClusterRinLayer%d", nMFTLayer), Form("Cluster Radial Position in Layer %d; r (cm); # entries", nMFTLayer), 400, 0, 20);
-      mClusterRinLayer.push_back(std::move(clusterR));
-      getObjectsManager()->startPublishing(mClusterRinLayer[nMFTLayer].get());
-      getObjectsManager()->setDisplayHint(mClusterRinLayer[nMFTLayer].get(), "hist");
+    mClusterRinLayer.push_back(std::move(clusterR));
+    getObjectsManager()->startPublishing(mClusterRinLayer[nMFTLayer].get());
+    getObjectsManager()->setDisplayHint(mClusterRinLayer[nMFTLayer].get(), "hist");
   }
 }
 
