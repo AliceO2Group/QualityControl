@@ -46,6 +46,6 @@ class Bookkeeping
   std::unique_ptr<bkp::api::proto::BkpProtoClient> mClient;
 };
 
-} // o2::quality_control::core
+} // namespace o2::quality_control::core
 
 #endif

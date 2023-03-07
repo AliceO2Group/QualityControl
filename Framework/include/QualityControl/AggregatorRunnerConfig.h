@@ -31,7 +31,7 @@ struct AggregatorRunnerConfig {
   std::string consulUrl{};
   std::string monitoringUrl{};
   std::string bookkeepingUrl{};
-   core::DiscardFileParameters infologgerDiscardParameters;
+  core::DiscardFileParameters infologgerDiscardParameters;
   core::Activity fallbackActivity;
   framework::Options options{};
 };

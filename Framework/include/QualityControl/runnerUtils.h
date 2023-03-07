@@ -140,7 +140,7 @@ inline std::string computeProvenance(const std::string& fallbackProvenance = "")
 inline Activity computeActivity(framework::ServiceRegistryRef services, const Activity& fallbackActivity)
 {
   int runNumber = computeRunNumber(services, fallbackActivity.mId);
-  Activity activity {
+  Activity activity{
     runNumber,
     computeRunType(services, fallbackActivity.mType),
     computePeriodName(services, fallbackActivity.mPeriodName),

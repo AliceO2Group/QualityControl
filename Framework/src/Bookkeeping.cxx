@@ -41,7 +41,7 @@ void Bookkeeping::init(std::string url)
 
 void Bookkeeping::populateActivity(Activity& activity, size_t runNumber)
 {
-  if(!mInitialized) {
+  if (!mInitialized) {
     return;
   }
   try {
@@ -52,7 +52,7 @@ void Bookkeeping::populateActivity(Activity& activity, size_t runNumber)
     activity.mPeriodName = bkRun->lhcperiod();
     activity.mValidity.setMin(bkRun->timeo2start());
     activity.mValidity.setMax(bkRun->timeo2end());
-//    activity.mBeamType = bkRun->pdpbeamtype();   // uncomment when we receive the proper beam type
+    //    activity.mBeamType = bkRun->pdpbeamtype();   // uncomment when we receive the proper beam type
     ILOG(Debug, Devel) << "activity created from run : " << activity << ENDM;
   } catch (std::runtime_error& error) {
     ILOG(Warning, Support) << "Error retrieving run info from Bookkeeping: " << error.what() << ENDM;
