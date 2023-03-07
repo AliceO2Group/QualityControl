@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE(test_aggregator_runner)
   InitContext initContext{ cfReg, sReg };
   aggregatorRunner.init(initContext);
 
-  BOOST_CHECK_EQUAL(aggregatorRunner.getDeviceName(), "QC-AGGREGATOR-RUNNER");
+  BOOST_CHECK_EQUAL(aggregatorRunner.getDeviceName(), "qc-aggregator");
 
   // check the reordering
   const std::vector<std::shared_ptr<Aggregator>> aggregators = aggregatorRunner.getAggregators();

@@ -190,7 +190,7 @@ BOOST_AUTO_TEST_CASE(qc_factory_remote_test)
   auto aggregator = std::find_if(
     workflow.begin(), workflow.end(),
     [](const DataProcessorSpec& d) {
-      return d.name == "QC-AGGREGATOR-RUNNER" &&
+      return d.name == "qc-aggregator" &&
              d.inputs.size() == 4 &&
              d.outputs.size() == 0;
     });
@@ -263,7 +263,7 @@ BOOST_AUTO_TEST_CASE(qc_factory_standalone_test)
   auto aggregator = std::find_if(
     workflow.begin(), workflow.end(),
     [](const DataProcessorSpec& d) {
-      return d.name == "QC-AGGREGATOR-RUNNER" &&
+      return d.name == "qc-aggregator" &&
              d.inputs.size() == 4 &&
              d.outputs.size() == 0;
     });
@@ -393,7 +393,7 @@ BOOST_AUTO_TEST_CASE(qc_infrastructure_remote_batch_test)
   auto aggregator = std::find_if(
     workflow.begin(), workflow.end(),
     [](const DataProcessorSpec& d) {
-      return d.name == "QC-AGGREGATOR-RUNNER" &&
+      return d.name == "qc-aggregator" &&
              d.inputs.size() == 4 &&
              d.outputs.size() == 0;
     });
