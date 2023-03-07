@@ -23,6 +23,8 @@
 #include "TRandom.h"
 
 #include <fairlogger/Logger.h>
+#include <TGraph.h>
+#include <TCanvas.h>
 #include <TGraphErrors.h>
 #include <TList.h>
 #include <TAxis.h>

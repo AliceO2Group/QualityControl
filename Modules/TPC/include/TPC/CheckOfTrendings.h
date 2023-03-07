@@ -17,8 +17,9 @@
 #define QC_MODULE_TPC_CHECKOFTRENDINGS_H
 
 #include "QualityControl/CheckInterface.h"
-#include <TGraph.h>
-#include <TCanvas.h>
+
+class TGraph;
+class TCanvas;
 
 namespace o2::quality_control_modules::tpc
 {
