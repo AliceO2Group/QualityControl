@@ -60,14 +60,4 @@ bool Activity::operator==(const Activity& other) const
   return mId == other.mId && mType == other.mType && mPeriodName == other.mPeriodName && mPassName == other.mPassName && mProvenance == other.mProvenance && mValidity == other.mValidity;
 }
 
-void Activity::importFromRun(const std::shared_ptr<o2::bookkeeping::Run>& run)
-{
-  mId = run->runnumber();
-  mType = run->runtype();
-  mPeriodName = run->lhcperiod();
-  mValidity.setMin(run->timeo2start());
-  mValidity.setMax(run->timeo2end());
-  mBeamType = run->pdpbeamtype();
-}
-
 } // namespace o2::quality_control::core

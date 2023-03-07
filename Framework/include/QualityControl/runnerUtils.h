@@ -29,6 +29,7 @@
 #include <CommonUtils/StringUtils.h>
 #include "QualityControl/Activity.h"
 #include <regex>
+#include "QualityControl/Bookkeeping.h"
 
 namespace o2::quality_control::core
 {
@@ -138,14 +139,19 @@ inline std::string computeProvenance(const std::string& fallbackProvenance = "")
 
 inline Activity computeActivity(framework::ServiceRegistryRef services, const Activity& fallbackActivity)
 {
-  return {
-    computeRunNumber(services, fallbackActivity.mId),
+  int runNumber = computeRunNumber(services, fallbackActivity.mId);
+  Activity activity {
+    runNumber,
     computeRunType(services, fallbackActivity.mType),
     computePeriodName(services, fallbackActivity.mPeriodName),
     computePassName(fallbackActivity.mPassName),
     computeProvenance(fallbackActivity.mProvenance),
     fallbackActivity.mValidity
   };
+  // if available we overwrite with the info from logbook.
+  Bookkeeping::getInstance().populateActivity(activity, runNumber);
+
+  return activity;
 }
 
 inline std::string indentTree(int level)

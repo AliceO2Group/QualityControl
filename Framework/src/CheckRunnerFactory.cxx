@@ -95,6 +95,7 @@ CheckRunnerConfig CheckRunnerFactory::extractConfig(const CommonSpec& commonSpec
     commonSpec.database,
     commonSpec.consulUrl,
     commonSpec.monitoringUrl,
+    commonSpec.bookkeepingUrl,
     commonSpec.infologgerDiscardParameters,
     fallbackActivity,
     options

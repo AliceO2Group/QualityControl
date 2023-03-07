@@ -85,7 +85,8 @@ add_library(O2QualityControl
   src/RootClassFactory.cxx
   src/ConfigParamGlo.cxx
   src/SliceTrendingTask.cxx
-  src/SliceTrendingTaskConfig.cxx)
+  src/SliceTrendingTaskConfig.cxx
+  src/Bookkeeping.cxx)
 
 
 target_include_directories(

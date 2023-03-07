@@ -39,6 +39,7 @@
 #include "QualityControl/AggregatorRunnerFactory.h"
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/ConfigParamGlo.h"
+#include "QualityControl/Bookkeeping.h"
 
 using namespace AliceO2::Common;
 using namespace AliceO2::InfoLogger;
@@ -145,9 +146,9 @@ std::string AggregatorRunner::createAggregatorRunnerName()
 void AggregatorRunner::init(framework::InitContext& iCtx)
 {
   initInfoLogger(iCtx);
-
   refreshConfig(iCtx);
   QcInfoLogger::setDetector(AggregatorRunner::getDetectorName(mAggregators));
+  Bookkeeping::getInstance().init(mRunnerConfig.bookkeepingUrl);
 
   try {
     initLibraries(); // we have to load libraries before we load ConfigurableParams, otherwise the corresponding ROOT dictionaries won't be found

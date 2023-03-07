@@ -140,7 +140,6 @@ class TaskRunner : public framework::Task
   int mRunNumber;
 
   void updateMonitoringStats(framework::ProcessingContext& pCtx);
-  Activity createActivityObject();
 
   bool mCycleOn = false;
   bool mNoMoreCycles = false;
