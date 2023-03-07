@@ -425,7 +425,6 @@ void TaskRunner::startOfActivity()
   // Start activity in module's task and update objectsManager
   ILOG(Info, Support) << "Starting run " << mRunNumber << ENDM;
   Activity activity = mTaskConfig.fallbackActivity;
-  ;
   Bookkeeping::getInstance().populateActivity(activity, mRunNumber);
   mObjectsManager->setActivity(activity);
   mCollector->setRunNumber(mRunNumber);
