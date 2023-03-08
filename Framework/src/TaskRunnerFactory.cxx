@@ -110,8 +110,12 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
                                  static_cast<header::DataHeader::SubSpecificationType>(parallelTaskID),
                                  Lifetime::Sporadic };
 
+  // every 2 second for the first 10s, then every second for 5 seconds.
+  //  std::vector<TimerSpec> timers{{TimerSpec{2000000000, 10},
+  //                                 TimerSpec{1000000000, 5}}};
+
   Options options{
-    { "period-timer-cycle", framework::VariantType::Int, static_cast<int>(taskSpec.cycleDurationSeconds * 1000000), { "timer period" } },
+    { "period-timer-cycle", framework::VariantType::Int, 1, { "timer period" } },
     { "runNumber", framework::VariantType::String, { "Run number" } },
     { "qcConfiguration", VariantType::Dict, emptyDict(), { "Some dictionary configuration" } }
   };
