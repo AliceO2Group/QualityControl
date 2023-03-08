@@ -31,7 +31,8 @@ std::ostream& operator<<(std::ostream& out, const Activity& activity)
       << "', " << metadata_keys::passName << ": '" << activity.mPassName
       << "', provenance: '" << activity.mProvenance
       << "', " << metadata_keys::validFrom << ": " << activity.mValidity.getMin()
-      << ", " << metadata_keys::validUntil << ": " << activity.mValidity.getMax();
+      << ", " << metadata_keys::validUntil << ": " << activity.mValidity.getMax()
+      << ", " << metadata_keys::beamType << ": " << activity.mBeamType;
   return out;
 }
 
