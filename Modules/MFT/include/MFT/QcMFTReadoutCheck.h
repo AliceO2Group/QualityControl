@@ -21,7 +21,7 @@
 #define QC_MFT_READOUT_CHECK_H
 
 // ROOT
-#include <TLatex.h>
+#include <TH1F.h>
 // Quality Control
 #include "QualityControl/CheckInterface.h"
 
@@ -56,7 +56,7 @@ class QcMFTReadoutCheck : public o2::quality_control::checker::CheckInterface
   std::vector<int> mVectorOfErrorBins;
   std::vector<int> mVectorOfWarningBins;
 
-  TLatex* drawLatex(double xmin, double ymin, Color_t color, TString text);
+  void drawLatex(TH1F* histo, double xmin, double ymin, Color_t color, TString text, float tsize, Font_t tfont);
   void resetVector(std::vector<int>& vector);
   Quality checkQualityStatus(TH1F* histo, std::vector<int>& vector);
   void writeMessages(TH1F* histo, std::vector<int>& vector, Quality checkResult);
