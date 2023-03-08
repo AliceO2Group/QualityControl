@@ -154,7 +154,7 @@ void QualityObserver::generatePanel()
         if (mReasons[config.groupTitle].at(i) != "") {
           std::string delimiter = "\n";
 
-          if(mReasons[config.groupTitle].at(i).find(delimiter) != std::string::npos){
+          if (mReasons[config.groupTitle].at(i).find(delimiter) != std::string::npos) {
             size_t pos = 0;
             std::string subText;
             while ((pos = mReasons[config.groupTitle].at(i).find(delimiter)) != std::string::npos) {
@@ -167,7 +167,6 @@ void QualityObserver::generatePanel()
             pt->AddText(Form("#color[%d]{#rightarrow Reason: %s}", kGray + 2, mReasons[config.groupTitle].at(i).data()));
             ((TText*)pt->GetListOfLines()->Last())->SetTextAlign(12);
           }
-
         }
         if (mComments[config.groupTitle].at(i) != "") {
           pt->AddText(Form("#color[%d]{#rightarrow Comment: %s}", kGray + 2, mComments[config.groupTitle].at(i).data()));
