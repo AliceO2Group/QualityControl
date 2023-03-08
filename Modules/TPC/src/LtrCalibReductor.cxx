@@ -32,15 +32,15 @@ void* LtrCalibReductor::getBranchAddress()
 
 const char* LtrCalibReductor::getBranchLeafList()
 {
-  //return "processedTFs/g:dvCorrectionA/F:dvCorrectionC:dvOffsetA:dvOffsetC:nTracksA/s:nTracksC";
-  return "processedTFs/D:dvCorrectionA:dvCorrectionC:dvCorrection:dvOffsetA:dvOffsetC:nTracksA:nTracksC";
+  // return "processedTFs/g:dvCorrectionA/F:dvCorrectionC:dvOffsetA:dvOffsetC:nTracksA/s:nTracksC";
+  return "processedTFs/D:dvCorrectionA:dvCorrectionC:dvCorrection:dvOffsetA:dvOffsetC:nTracksA:nTracksC:dvAbsolute";
 }
 
 void LtrCalibReductor::update(TObject* obj)
 {
   // The 'Calib_Values' for the Laser Calibration are saved in a TPaveText inside a TCanvas 'obj'.
   if (obj) {
-    //ILOG(Info, Support) << "'obj' has been passed to the reductor." << ENDM;
+    // ILOG(Info, Support) << "'obj' has been passed to the reductor." << ENDM;
     if (auto canvas = static_cast<TCanvas*>(obj)) {
       if (auto blocText = static_cast<TPaveText*>(canvas->GetPrimitive("TPave"))) {
 
@@ -52,6 +52,7 @@ void LtrCalibReductor::update(TObject* obj)
         mLtrCalib.dvOffsetC = getValue((TText*)blocText->GetLineWith("dvOffsetC:"));
         mLtrCalib.nTracksA = getValue((TText*)blocText->GetLineWith("nTracksA:"));
         mLtrCalib.nTracksC = getValue((TText*)blocText->GetLineWith("nTracksC:"));
+        mLtrCalib.dvAbsolute = getValue((TText*)blocText->GetLineWith("dvAbsolute:"));
       }
     }
   } else {
@@ -61,6 +62,10 @@ void LtrCalibReductor::update(TObject* obj)
 
 double LtrCalibReductor::getValue(TText* line)
 {
+  if (!line) {
+    return 0.;
+  }
+
   std::string text = static_cast<std::string>(line->GetTitle());
 
   std::string title;

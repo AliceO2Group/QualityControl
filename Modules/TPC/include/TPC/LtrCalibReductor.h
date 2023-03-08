@@ -18,7 +18,6 @@
 #define QC_MODULE_TPC_LTRCALIBREDUCTOR_H
 
 #include "QualityControl/Reductor.h"
-//#include "DataFormatsTPC/LtrCalibData.h"
 #include <TText.h>
 
 namespace o2::quality_control_modules::tpc
@@ -47,10 +46,11 @@ class LtrCalibReductor : public quality_control::postprocessing::Reductor
     double dvOffsetC;
     double nTracksA;
     double nTracksC;
+    double dvAbsolute;
   } mLtrCalib;
 
   double getValue(TText* line);
 };
 
 } // namespace o2::quality_control_modules::tpc
-#endif //QC_MODULE_TPC_LTRCALIBREDUCTOR_H
+#endif // QC_MODULE_TPC_LTRCALIBREDUCTOR_H
