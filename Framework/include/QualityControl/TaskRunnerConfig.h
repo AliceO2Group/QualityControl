@@ -44,7 +44,8 @@ struct TaskRunnerConfig {
   std::string taskName;
   std::string moduleName;
   std::string className;
-  int cycleDurationSeconds;
+  int cycleDurationSeconds = -1;
+  std::map<size_t, size_t> cycleDurations = {}; // complex syntax: multiple durations can be set for different intervals
   int maxNumberCycles;
   std::string consulUrl{};
   std::string conditionUrl{};

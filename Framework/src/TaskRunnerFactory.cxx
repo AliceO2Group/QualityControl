@@ -31,6 +31,8 @@
 #include <DataFormatsGlobalTracking/RecoContainer.h>
 #include <ReconstructionDataFormats/GlobalTrackID.h>
 
+#include <Framework/TimerParamSpec.h>
+
 namespace o2::quality_control::core
 {
 
@@ -62,18 +64,35 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
   if (!taskSpec.dataSource.isOneOf(DataSourceType::DataSamplingPolicy, DataSourceType::Direct)) {
     throw std::runtime_error("This data source of the task '" + taskSpec.taskName + "' is not supported.");
   }
+
+  // cycle duration
+  // Two ways of configuring, incompatible.
+  // 1. simple, old, way: cycleDurationSeconds is the duration in seconds for all cycles
+  // 2. complex, new, way: cycleDurations: a list of tuples specifying different durations to be applied for a certain time
   auto cycleDurationSeconds = taskSpec.cycleDurationSeconds;
+  auto cycleDurations = taskSpec.cycleDurations;
+  if(cycleDurationSeconds > 0 && cycleDurations.size() > 0) {
+    ILOG(Error, Ops) << "Both cycleDurationSeconds and cycleDurations have been defined. Pick one. Sheepishly exiting out." << ENDM;
+    exit(1);
+  }
   auto dummyDatabaseUsed = globalConfig.database.count("implementation") > 0 && globalConfig.database.at("implementation") == "Dummy";
-  if (!dummyDatabaseUsed && cycleDurationSeconds < 10) {
+  if (!dummyDatabaseUsed && cycleDurationSeconds > 0 && cycleDurationSeconds < 10) {
     ILOG(Error, Support) << "Cycle duration is too short (" << cycleDurationSeconds << "), replaced by a duration of 10 seconds." << ENDM;
     cycleDurationSeconds = 10;
+  }
+  // TODO check the length of cycles for cycleDurations
+  std::vector<TimerSpec> timers;
+  for(auto item: cycleDurations) {
+    std::cout << "item.first*1000000000 : " << item.first*1000000000 << ", item.second " << item.second << std::endl;
+    timers.push_back({item.first*1000000000, item.second});
   }
   auto inputs = taskSpec.dataSource.inputs;
   inputs.emplace_back("timer-cycle",
                       TaskRunner::createTaskDataOrigin(taskSpec.detectorName),
                       TaskRunner::createTimerDataDescription(taskSpec.taskName),
                       0,
-                      Lifetime::Timer);
+                      Lifetime::Timer,
+                      timerSpecs(timers));  // TODO check that's ok if we have the old style
 
   static std::unordered_map<std::string, o2::base::GRPGeomRequest::GeomRequest> const geomRequestFromString = {
     { "None", o2::base::GRPGeomRequest::GeomRequest::None },
@@ -110,12 +129,8 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
                                  static_cast<header::DataHeader::SubSpecificationType>(parallelTaskID),
                                  Lifetime::Sporadic };
 
-  // every 2 second for the first 10s, then every second for 5 seconds.
-  //  std::vector<TimerSpec> timers{{TimerSpec{2000000000, 10},
-  //                                 TimerSpec{1000000000, 5}}};
-
   Options options{
-    { "period-timer-cycle", framework::VariantType::Int, 1, { "timer period" } },
+    { "period-timer-cycle", framework::VariantType::Int, 1, { "timer period" } }, // TODO check that's ok if we have the new style
     { "runNumber", framework::VariantType::String, { "Run number" } },
     { "qcConfiguration", VariantType::Dict, emptyDict(), { "Some dictionary configuration" } }
   };
@@ -137,6 +152,7 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
     taskSpec.moduleName,
     taskSpec.className,
     cycleDurationSeconds,
+    cycleDurations,
     taskSpec.maxNumberCycles,
     globalConfig.consulUrl,
     globalConfig.conditionDBUrl,

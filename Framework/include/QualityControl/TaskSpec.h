@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <map>
 
 #include "QualityControl/DataSourceSpec.h"
 #include "QualityControl/RecoRequestSpecs.h"
@@ -54,7 +55,8 @@ struct TaskSpec {
   std::string className = "Invalid";
   std::string moduleName = "Invalid";
   std::string detectorName = "Invalid";
-  int cycleDurationSeconds = -1;
+  int cycleDurationSeconds = -1; // simple syntax
+  std::map<size_t, size_t> cycleDurations = {}; // complex syntax: multiple durations can be set for different intervals
   DataSourceSpec dataSource;
   // advanced
   bool active = true;
