@@ -18,7 +18,6 @@
 #define QC_MODULE_TPC_LTRCALIBREDUCTOR_H
 
 #include "QualityControl/Reductor.h"
-// #include "DataFormatsTPC/LtrCalibData.h"
 #include <TText.h>
 
 namespace o2::quality_control_modules::tpc
