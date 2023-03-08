@@ -62,8 +62,9 @@ void LtrCalibReductor::update(TObject* obj)
 
 double LtrCalibReductor::getValue(TText* line)
 {
-  if (!line)
+  if (!line) {
     return 0.;
+  }
 
   std::string text = static_cast<std::string>(line->GetTitle());
 
