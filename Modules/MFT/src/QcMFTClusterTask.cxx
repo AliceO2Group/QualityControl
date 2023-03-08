@@ -45,6 +45,7 @@
 #include <fstream>
 
 using namespace o2::mft;
+o2::itsmft::ChipMappingMFT mMFTMapper;
 
 namespace o2::quality_control_modules::mft
 {
@@ -162,7 +163,7 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mClusterPatternSensorIndices.get());
   getObjectsManager()->setDefaultDrawOptions(mClusterPatternSensorIndices.get(), "colz");
 
-  mClusterOccupancySummary = std::make_unique<TH2F>("mClusterOccupancySummary", "mClusterOccupancySummary",
+  mClusterOccupancySummary = std::make_unique<TH2F>("mClusterOccupancySummary", "Cluster Occupancy Summary;;",
                                                     10, -0.5, 9.5, 8, -0.5, 7.5);
   mClusterOccupancySummary->GetXaxis()->SetBinLabel(1, "d0-f0");
   mClusterOccupancySummary->GetXaxis()->SetBinLabel(2, "d0-f1");
@@ -190,7 +191,7 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   mClusterZ->SetStats(0);
   getObjectsManager()->startPublishing(mClusterZ.get());
 
-  mClustersROFSize = std::make_unique<TH1F>("mClustersROFSize", "ROF size in # clusters; ROF Size (# clusters); # entries", maxClusterROFSize, 0, maxClusterROFSize);
+  mClustersROFSize = std::make_unique<TH1F>("mClustersROFSize", "Distribution of the #clusters per ROF; # clusters per ROF; # entries", maxClusterROFSize, 0, maxClusterROFSize);
   mClustersROFSize->SetStats(0);
   getObjectsManager()->startPublishing(mClustersROFSize.get());
   getObjectsManager()->setDisplayHint(mClustersROFSize.get(), "logx logy");
@@ -235,6 +236,11 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
     mClusterXYinLayer.push_back(std::move(clusterXY));
     getObjectsManager()->startPublishing(mClusterXYinLayer[nMFTLayer].get());
     getObjectsManager()->setDefaultDrawOptions(mClusterXYinLayer[nMFTLayer].get(), "colz");
+
+    auto clusterR = std::make_unique<TH1F>(Form("ClusterRinLayer/mClusterRinLayer%d", nMFTLayer), Form("Cluster Radial Position in Layer %d; r (cm); # entries", nMFTLayer), 400, 0, 20);
+    mClusterRinLayer.push_back(std::move(clusterR));
+    getObjectsManager()->startPublishing(mClusterRinLayer[nMFTLayer].get());
+    getObjectsManager()->setDisplayHint(mClusterRinLayer[nMFTLayer].get(), "hist");
   }
 }
 
@@ -302,7 +308,7 @@ void QcMFTClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
   // fill all other histograms
   for (auto& oneCluster : clusters) {
     int sensorID = oneCluster.getSensorID();
-    int layerID = mDisk[sensorID] * 2 + mFace[sensorID];
+    int layerID = mMFTMapper.chip2Layer(sensorID); // used instead of previous layerID = mDisk[sensorID] * 2 + mFace[sensorID]
     (mHalf[sensorID] == 0) ? mClusterLayerIndexH0->Fill(layerID)
                            : mClusterLayerIndexH1->Fill(layerID);
     mClusterOccupancy->Fill(sensorID);
@@ -330,9 +336,9 @@ void QcMFTClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
   // fill the histograms that use global position of cluster
   for (auto& oneGlobalCluster : mClustersGlobal) {
     mClusterZ->Fill(oneGlobalCluster.getZ());
-    int sensorID = oneGlobalCluster.getSensorID();
-    int layerID = mDisk[sensorID] * 2 + mFace[sensorID];
+    int layerID = mMFTMapper.chip2Layer(oneGlobalCluster.getSensorID());
     mClusterXYinLayer[layerID]->Fill(oneGlobalCluster.getX(), oneGlobalCluster.getY());
+    mClusterRinLayer[layerID]->Fill(std::sqrt(std::pow(oneGlobalCluster.getX(), 2) + std::pow(oneGlobalCluster.getY(), 2)));
   }
 }
 
@@ -369,6 +375,7 @@ void QcMFTClusterTask::reset()
   // layer histograms
   for (auto nMFTLayer = 0; nMFTLayer < 10; nMFTLayer++) { // there are 10 layers
     mClusterXYinLayer[nMFTLayer]->Reset();
+    mClusterRinLayer[nMFTLayer]->Reset();
   }
 }
 

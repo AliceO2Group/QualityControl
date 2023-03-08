@@ -74,6 +74,7 @@ class QcMFTClusterTask /*final*/ : public TaskInterface // todo add back the "fi
 
   std::unique_ptr<TH1F> mClusterZ = nullptr;
   std::vector<std::unique_ptr<TH2F>> mClusterXYinLayer;
+  std::vector<std::unique_ptr<TH1F>> mClusterRinLayer;
 
   std::unique_ptr<TH1F> mClustersROFSize = nullptr;
   std::unique_ptr<TH1F> mNOfClustersTime = nullptr;
