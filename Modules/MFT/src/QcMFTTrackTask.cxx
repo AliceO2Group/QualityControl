@@ -96,7 +96,7 @@ void QcMFTTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
   mTrackInvQPt = std::make_unique<TH1F>("mMFTTrackInvQPt", "Track q/p_{T}; q/p_{T} [1/GeV]; # entries", 250, -10, 10);
   getObjectsManager()->startPublishing(mTrackInvQPt.get());
 
-  mTrackChi2 = std::make_unique<TH1F>("mMFTTrackChi2", "Track #chi^{2}; #chi^{2}; # entries", 21, -0.5, 20.5);
+  mTrackChi2 = std::make_unique<TH1F>("mMFTTrackChi2", "Track #chi^{2}/NDF; #chi^{2}/NDF; # entries", 210, -0.5, 20.5);
   getObjectsManager()->startPublishing(mTrackChi2.get());
 
   mTrackCharge = std::make_unique<TH1F>("mMFTTrackCharge", "Track Charge; q; # entries", 3, -1.5, 1.5);
@@ -199,7 +199,7 @@ void QcMFTTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   for (auto& oneTrack : tracks) {
     mTrackNumberOfClusters->Fill(oneTrack.getNumberOfPoints());
-    mTrackChi2->Fill(oneTrack.getTrackChi2());
+    mTrackChi2->Fill(oneTrack.getChi2OverNDF());
     mTrackCharge->Fill(oneTrack.getCharge());
     mTrackPhi->Fill(oneTrack.getPhi());
     mTrackEta->Fill(oneTrack.getEta());
