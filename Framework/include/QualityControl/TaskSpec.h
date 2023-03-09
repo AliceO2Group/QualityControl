@@ -55,8 +55,8 @@ struct TaskSpec {
   std::string className = "Invalid";
   std::string moduleName = "Invalid";
   std::string detectorName = "Invalid";
-  int cycleDurationSeconds = -1; // simple syntax
-  std::map<size_t, size_t> cycleDurations = {}; // complex syntax: multiple durations can be set for different intervals
+  int cycleDurationSeconds = -1;                              // simple syntax
+  std::vector<std::pair<size_t, size_t>> cycleDurations = {}; // complex syntax: multiple durations can be set for different intervals
   DataSourceSpec dataSource;
   // advanced
   bool active = true;

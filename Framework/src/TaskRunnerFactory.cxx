@@ -71,28 +71,8 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
   // 2. complex, new, way: cycleDurations: a list of tuples specifying different durations to be applied for a certain time
   auto cycleDurationSeconds = taskSpec.cycleDurationSeconds;
   auto cycleDurations = taskSpec.cycleDurations;
-  if(cycleDurationSeconds > 0 && cycleDurations.size() > 0) {
-    ILOG(Error, Ops) << "Both cycleDurationSeconds and cycleDurations have been defined. Pick one. Sheepishly exiting out." << ENDM;
-    exit(1);
-  }
-  auto dummyDatabaseUsed = globalConfig.database.count("implementation") > 0 && globalConfig.database.at("implementation") == "Dummy";
-  if (!dummyDatabaseUsed && cycleDurationSeconds > 0 && cycleDurationSeconds < 10) {
-    ILOG(Error, Support) << "Cycle duration is too short (" << cycleDurationSeconds << "), replaced by a duration of 10 seconds." << ENDM;
-    cycleDurationSeconds = 10;
-  }
-  // TODO check the length of cycles for cycleDurations
-  std::vector<TimerSpec> timers;
-  for(auto item: cycleDurations) {
-    std::cout << "item.first*1000000000 : " << item.first*1000000000 << ", item.second " << item.second << std::endl;
-    timers.push_back({item.first*1000000000, item.second});
-  }
   auto inputs = taskSpec.dataSource.inputs;
-  inputs.emplace_back("timer-cycle",
-                      TaskRunner::createTaskDataOrigin(taskSpec.detectorName),
-                      TaskRunner::createTimerDataDescription(taskSpec.taskName),
-                      0,
-                      Lifetime::Timer,
-                      timerSpecs(timers));  // TODO check that's ok if we have the old style
+  inputs.emplace_back(createTimerInputSpec(globalConfig, cycleDurationSeconds, cycleDurations, taskSpec.detectorName, taskSpec.taskName));
 
   static std::unordered_map<std::string, o2::base::GRPGeomRequest::GeomRequest> const geomRequestFromString = {
     { "None", o2::base::GRPGeomRequest::GeomRequest::None },
@@ -130,7 +110,7 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
                                  Lifetime::Sporadic };
 
   Options options{
-    { "period-timer-cycle", framework::VariantType::Int, 1, { "timer period" } }, // TODO check that's ok if we have the new style
+    { "period-timer-cycle", framework::VariantType::Int, static_cast<int>(taskSpec.cycleDurationSeconds * 1000000), { "timer period" } },
     { "runNumber", framework::VariantType::String, { "Run number" } },
     { "qcConfiguration", VariantType::Dict, emptyDict(), { "Some dictionary configuration" } }
   };
@@ -170,6 +150,43 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
     grpGeomRequest,
     globalTrackingDataRequest
   };
+}
+
+InputSpec TaskRunnerFactory::createTimerInputSpec(const CommonSpec& globalConfig, int& cycleDurationSeconds, std::vector<std::pair<size_t, size_t>>& cycleDurations,
+                                                  const std::string& detectorName, const std::string& taskName)
+{
+  if (cycleDurationSeconds > 0 && cycleDurations.size() > 0) {
+    ILOG(Error, Ops) << "Both cycleDurationSeconds and cycleDurations have been defined. Pick one. Sheepishly exiting out." << ENDM;
+    exit(1);
+  }
+
+  // This is to check that the durations are not below 10 seconds except when using a dummy database
+  auto dummyDatabaseUsed = globalConfig.database.count("implementation") > 0 && globalConfig.database.at("implementation") == "Dummy";
+  if (!dummyDatabaseUsed && cycleDurationSeconds > 0 && cycleDurationSeconds < 10) {
+    ILOG(Error, Support) << "Cycle duration is too short (" << cycleDurationSeconds << "), replaced by a duration of 10 seconds." << ENDM;
+    cycleDurationSeconds = 10;
+  }
+  if (!cycleDurations.empty()) {
+    for (auto& [cycleDuration, period] : cycleDurations) {
+      if (cycleDuration < 10) {
+        ILOG(Error, Support) << "Cycle duration is too short (" << cycleDuration << "), replaced by a duration of 10 seconds." << ENDM;
+        cycleDuration = 10;
+      }
+    }
+  }
+
+  // Create the TimerSpec for cycleDurations
+  std::vector<TimerSpec> timers;
+  for (auto& [cycleDuration, period] : cycleDurations) {
+    timers.push_back({ cycleDuration * 1000000000 /*µs*/, period });
+  }
+
+  return { "timer-cycle",
+           TaskRunner::createTaskDataOrigin(detectorName),
+           TaskRunner::createTimerDataDescription(taskName),
+           0,
+           Lifetime::Timer,
+           timerSpecs(timers) };
 }
 
 void TaskRunnerFactory::customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies)
