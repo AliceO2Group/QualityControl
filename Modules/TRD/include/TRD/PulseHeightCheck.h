@@ -39,7 +39,6 @@ class PulseHeightCheck : public o2::quality_control::checker::CheckInterface
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
   void buildChamberIgnoreBP();
-  long int mTimeStamp;
   std::pair<float, float> mDriftRegion;
   std::pair<float, float> mPulseHeightPeakRegion;
   unsigned int mPulseHeightMinSum;

@@ -56,7 +56,6 @@ class DigitsTask final : public TaskInterface
   void buildHistograms();
   void drawLinesMCM(TH2F* histo);
   void drawTrdLayersGrid(TH2F* hist);
-  void retrieveCCDBSettings();
   void drawLinesOnPulseHeight(TH1F* h);
   void fillLinesOnHistsPerLayer(int iLayer);
   void drawHashOnLayers(int layer, int hcid, int col, int rowstart, int rowend);
@@ -69,7 +68,6 @@ class DigitsTask final : public TaskInterface
   unsigned int mPulseHeightThreshold;
   std::pair<float, float> mDriftRegion;
   std::pair<float, float> mPulseHeightPeakRegion;
-  long int mTimestamp;
 
   std::shared_ptr<TH1F> mDigitsPerEvent;
   std::shared_ptr<TH1F> mEventswDigitsPerTimeFrame;
@@ -112,8 +110,8 @@ class DigitsTask final : public TaskInterface
   //  std::array<std::shared_ptr<TH1F>, 540> mPulseHeightPerChamber_1D; // ph2DSM;
   std::vector<TH2F*> mLayers;
   // information pulled from ccdb
-  o2::trd::NoiseStatusMCM* mNoiseMap = nullptr;
-  o2::trd::HalfChamberStatusQC* mChamberStatus = nullptr;
+  const o2::trd::NoiseStatusMCM* mNoiseMap = nullptr;
+  const o2::trd::HalfChamberStatusQC* mChamberStatus = nullptr;
   std::string mChambersToIgnore;
   std::bitset<o2::trd::constants::MAXCHAMBER> mChambersToIgnoreBP;
 };

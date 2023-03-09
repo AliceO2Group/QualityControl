@@ -40,10 +40,8 @@ class TrackletsCheck : public o2::quality_control::checker::CheckInterface
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
 
-  void retrieveCCDBSettings();
 
  private:
-  long int mTimestamp;
   float mIntegralThreshold;
   float mRatioThreshold;
   float mZeroBinRatioThreshold;

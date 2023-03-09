@@ -374,6 +374,28 @@ void TrackletsTask::startOfCycle()
 
 void TrackletsTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
+  //get ccdb objects if not already retrieved:
+  if (mNoiseMap == nullptr) {
+    ILOG(Info, Support) << "Getting noisemap from ccdb" << ENDM;
+    auto mNoiseMapPtr = ctx.inputs().get<o2::trd::NoiseStatusMCM*>("clnoisemap");
+    mNoiseMap = mNoiseMapPtr.get();
+    ILOG(Info, Support) << "NoiseMap loaded" << ENDM;
+    if (mNoiseMap == nullptr) {
+      ILOG(Error, Support) << "NoiseMap never loaded, leaving monitor" << ENDM;
+      return;
+    }
+  }
+  if (mChamberStatus == nullptr) {
+    ILOG(Info, Support) << "Getting chamber status from ccdb" << ENDM;
+    auto mChamberStatusPtr = ctx.inputs().get<o2::trd::HalfChamberStatusQC*>("clchamberstatus");
+    mChamberStatus = mChamberStatusPtr.get();
+    if (mChamberStatus == nullptr) {
+      ILOG(Error, Support) << "Chamber Status never loaded, leaving monitor" << ENDM;
+      return;
+    }
+    ILOG(Info, Support) << "Chamber Status loaded" << ENDM;
+  }
+
   for (auto&& input : ctx.inputs()) {
     if (input.header != nullptr && input.payload != nullptr) {
 

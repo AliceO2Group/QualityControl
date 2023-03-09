@@ -38,15 +38,6 @@ namespace o2::quality_control_modules::trd
 
 void PulseHeightCheck::configure()
 {
-  if (auto param = mCustomParameters.find("ccdbtimestamp"); param != mCustomParameters.end()) {
-    mTimeStamp = std::stol(mCustomParameters["ccdbtimestamp"]);
-    ILOG(Debug, Support) << "configure() : using ccdbtimestamp = " << mTimeStamp << ENDM;
-  } else {
-    mTimeStamp = o2::ccdb::getCurrentTimestamp();
-    ILOG(Debug, Support) << "configure() : using default timestam of now = " << mTimeStamp << ENDM;
-  }
-  auto& mgr = o2::ccdb::BasicCCDBManager::instance();
-  mgr.setTimestamp(mTimeStamp);
   ILOG(Debug, Devel) << "initialize PulseHeight" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
   if (auto param = mCustomParameters.find("driftregionstart"); param != mCustomParameters.end()) {
     mDriftRegion.first = stof(param->second);

@@ -50,7 +50,6 @@ class TrackletsTask final : public TaskInterface
   void endOfActivity(const Activity& activity) override;
   void reset() override;
   void buildHistograms();
-  void retrieveCCDBSettings();
   void drawLinesMCM(TH2F* histo);
   void drawTrdLayersGrid(TH2F* hist);
   void buildTrackletLayers();
@@ -86,8 +85,8 @@ class TrackletsTask final : public TaskInterface
   std::array<TH2F*, 6> mLayers;
 
   // data to pull from CCDB
-  o2::trd::NoiseStatusMCM* mNoiseMap = nullptr;
-  o2::trd::HalfChamberStatusQC* mChamberStatus = nullptr;
+  const o2::trd::NoiseStatusMCM* mNoiseMap = nullptr;
+  const o2::trd::HalfChamberStatusQC* mChamberStatus = nullptr;
 };
 
 } // namespace o2::quality_control_modules::trd

@@ -32,17 +32,8 @@ using namespace o2::quality_control;
 namespace o2::quality_control_modules::trd
 {
 
-void TrackletsCheck::retrieveCCDBSettings()
+void TrackletsCheck::configure()
 {
-  if (auto param = mCustomParameters.find("ccdbtimestamp"); param != mCustomParameters.end()) {
-    mTimestamp = std::stol(mCustomParameters["ccdbtimestamp"]);
-    ILOG(Debug, Support) << "configure() : using ccdbtimestamp = " << mTimestamp << ENDM;
-  } else {
-    mTimestamp = o2::ccdb::getCurrentTimestamp();
-    ILOG(Debug, Support) << "configure() : using default timestam of now = " << mTimestamp << ENDM;
-  }
-  auto& mgr = o2::ccdb::BasicCCDBManager::instance();
-  mgr.setTimestamp(mTimestamp);
   if (auto param = mCustomParameters.find("integralthreshold"); param != mCustomParameters.end()) {
     mIntegralThreshold = std::stol(mCustomParameters["integralthreshold"]);
     ILOG(Debug, Support) << "configure() : using integral threshold = " << mIntegralThreshold << ENDM;

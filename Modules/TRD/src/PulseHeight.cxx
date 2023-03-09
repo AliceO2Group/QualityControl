@@ -41,22 +41,6 @@ PulseHeight::~PulseHeight()
 {
 }
 
-void PulseHeight::retrieveCCDBSettings()
-{
-  if (auto param = mCustomParameters.find("ccdbtimestamp"); param != mCustomParameters.end()) {
-    mTimestamp = std::stol(mCustomParameters["ccdbtimestamp"]);
-    ILOG(Debug, Support) << "configure() : using ccdbtimestamp = " << mTimestamp << ENDM;
-  } else {
-    mTimestamp = o2::ccdb::getCurrentTimestamp();
-    ILOG(Debug, Support) << "configure() : using default timestam of now = " << mTimestamp << ENDM;
-  }
-  auto& mgr = o2::ccdb::BasicCCDBManager::instance();
-  mgr.setTimestamp(mTimestamp);
-  mNoiseMap = mgr.get<o2::trd::NoiseStatusMCM>("/TRD/Calib/NoiseMapMCM");
-  if (mNoiseMap == nullptr) {
-    ILOG(Info, Support) << "mNoiseMap is null, no noisy mcm reduction" << ENDM;
-  }
-}
 
 void PulseHeight::buildHistograms()
 {
@@ -142,7 +126,6 @@ void PulseHeight::initialize(o2::framework::InitContext& /*ctx*/)
     ILOG(Debug, Support) << "configure() : using default pulseheightupper = " << mPulseHeightPeakRegion.second << ENDM;
   }
   buildHistograms();
-  retrieveCCDBSettings();
 }
 
 void PulseHeight::startOfActivity(const Activity& activity)
@@ -181,6 +164,17 @@ bool pulseheightdigitindexcompare(unsigned int A, unsigned int B, const std::vec
 
 void PulseHeight::monitorData(o2::framework::ProcessingContext& ctx)
 {
+  //get ccdb objects if not already retrieved:
+  if (mNoiseMap == nullptr) {
+    ILOG(Info, Support) << "Getting noisemap from ccdb" << ENDM;
+    auto mNoiseMapPtr = ctx.inputs().get<o2::trd::NoiseStatusMCM*>("clnoisemap");
+    mNoiseMap = mNoiseMapPtr.get();
+    if (mNoiseMap == nullptr) {
+      ILOG(Error, Support) << "NoiseMap never loaded, leaving monitor" << ENDM;
+      return;
+    }
+    ILOG(Info, Support) << "NoiseMap loaded" << ENDM;
+  }
   auto digits = ctx.inputs().get<gsl::span<o2::trd::Digit>>("digits");
   auto tracklets = ctx.inputs().get<gsl::span<o2::trd::Tracklet64>>("tracklets");
   auto triggerrecords = ctx.inputs().get<gsl::span<o2::trd::TriggerRecord>>("triggers");

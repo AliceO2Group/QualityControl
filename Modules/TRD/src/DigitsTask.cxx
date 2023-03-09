@@ -38,29 +38,9 @@ using namespace o2::quality_control_modules::common;
 
 namespace o2::quality_control_modules::trd
 {
+
 DigitsTask::~DigitsTask()
 {
-}
-
-void DigitsTask::retrieveCCDBSettings()
-{
-  if (auto param = mCustomParameters.find("ccdbtimestamp"); param != mCustomParameters.end()) {
-    mTimestamp = std::stol(mCustomParameters["ccdbtimestamp"]);
-    ILOG(Debug, Support) << "configure() : using ccdbtimestamp = " << mTimestamp << ENDM;
-  } else {
-    mTimestamp = o2::ccdb::getCurrentTimestamp();
-    ILOG(Debug, Support) << "configure() : using default timestam of now = " << mTimestamp << ENDM;
-  }
-  auto& mgr = o2::ccdb::BasicCCDBManager::instance();
-  mgr.setTimestamp(mTimestamp);
-  mNoiseMap = mgr.get<o2::trd::NoiseStatusMCM>("/TRD/Calib/NoiseMapMCM");
-  if (mNoiseMap == nullptr) {
-    ILOG(Info, Support) << "mNoiseMap is null, no noisy mcm reduction" << ENDM;
-  }
-  mChamberStatus = mgr.get<o2::trd::HalfChamberStatusQC>("/TRD/Calib/HalfChamberStatusQC");
-  if (mChamberStatus == nullptr) {
-    ILOG(Info, Support) << "mChamberStatus is null, no chamber status to display" << ENDM;
-  }
 }
 
 void DigitsTask::buildChamberIgnoreBP()
@@ -416,13 +396,13 @@ void DigitsTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   buildChamberIgnoreBP();
 
-  retrieveCCDBSettings();
   buildHistograms();
 }
 
 void DigitsTask::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "startOfActivity" << ENDM;
+  //  mTimeStamp = activity.mValidity.;
 } // set stats/stacs
 
 void DigitsTask::startOfCycle()
@@ -461,6 +441,28 @@ bool DigitsTask::isChamberToBeIgnored(unsigned int sm, unsigned int stack, unsig
 
 void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
+  //get ccdb objects if not already retrieved:
+  if (mNoiseMap == nullptr) {
+    ILOG(Info, Support) << "Getting noisemap from ccdb" << ENDM;
+    auto mNoiseMapPtr = ctx.inputs().get<o2::trd::NoiseStatusMCM*>("clnoisemap");
+    mNoiseMap = mNoiseMapPtr.get();
+    if (mNoiseMap == nullptr) {
+      ILOG(Error, Support) << "NoiseMap never loaded, leaving monitor" << ENDM;
+      return;
+    }
+    ILOG(Info, Support) << "NoiseMap loaded" << ENDM;
+  }
+  if (mChamberStatus == nullptr) {
+    ILOG(Info, Support) << "Getting chamber status from ccdb" << ENDM;
+    auto mChamberStatusPtr = ctx.inputs().get<o2::trd::HalfChamberStatusQC*>("clchamberstatus");
+    mChamberStatus = mChamberStatusPtr.get();
+    if (mChamberStatus == nullptr) {
+      ILOG(Error, Support) << "Chamber Status never loaded, leaving monitor" << ENDM;
+      return;
+    }
+    ILOG(Info, Support) << "Chamber Status loaded" << ENDM;
+  }
+
   for (auto&& input : ctx.inputs()) {
     if (input.header != nullptr && input.payload != nullptr) {
 

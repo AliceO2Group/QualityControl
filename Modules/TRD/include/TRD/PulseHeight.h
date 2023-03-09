@@ -52,10 +52,8 @@ class PulseHeight final : public TaskInterface
   void endOfActivity(const Activity& activity) override;
   void reset() override;
   void buildHistograms();
-  void retrieveCCDBSettings();
 
  private:
-  long int mTimestamp;
   std::shared_ptr<TH1F> mPulseHeight = nullptr;
   std::shared_ptr<TH1F> mPulseHeightScaled = nullptr;
   std::shared_ptr<TH2F> mTotalPulseHeight2D = nullptr;
@@ -70,7 +68,7 @@ class PulseHeight final : public TaskInterface
   std::shared_ptr<TH1F> mPulseHeightDuration;
   std::shared_ptr<TH1F> mPulseHeightDuration1;
   std::shared_ptr<TH1F> mPulseHeightDurationDiff;
-  o2::trd::NoiseStatusMCM* mNoiseMap = nullptr;
+  const o2::trd::NoiseStatusMCM* mNoiseMap = nullptr;
   std::shared_ptr<TProfile> mPulseHeightpro = nullptr;
   std::shared_ptr<TProfile2D> mPulseHeightperchamber = nullptr;
 };
