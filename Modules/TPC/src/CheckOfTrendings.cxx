@@ -526,7 +526,7 @@ TGraph* CheckOfTrendings::getGraph(TCanvas* canv)
     // with the current configuration the TGraphErrors will always be added after the TGraph
     // loop from the back and find the last element with the name "Graph"
     int jList = canv->GetListOfPrimitives()->LastIndex();
-    for (jList; jList > 0; jList--) {
+    for (; jList > 0; jList--) {
       if (!strcmp(canv->GetListOfPrimitives()->At(jList)->GetName(), "Graph")) {
         g = (TGraph*)canv->GetListOfPrimitives()->At(jList);
         break;
