@@ -51,10 +51,23 @@ class CheckOfSlices : public o2::quality_control::checker::CheckInterface
   float mNSigmaBadExpectedPhysicsValue;
   float mNSigmaMean;
   float mNSigmaBadMean;
-  float meanFull;
-  static constexpr std::string_view CheckChoiceMean = "Mean";
-  static constexpr std::string_view CheckChoiceExpectedPhysicsValue = "ExpectedPhysicsValue";
-  static constexpr std::string_view CheckChoiceBoth = "Both";
+  //float meanFull;
+  float mRangeMedium;
+  float mRangeBad;
+  bool mSliceTrend;
+
+  double mMean = 0;
+  float mStdev;
+
+  //static constexpr std::string_view CheckChoiceMean = "Mean";
+  //static constexpr std::string_view CheckChoiceExpectedPhysicsValue = "ExpectedPhysicsValue";
+  //static constexpr std::string_view CheckChoiceBoth = "Both";
+
+
+  bool mRangeCheck = false;
+  bool mExpectedValueCheck = false;
+  bool mMeanCheck = false;
+  bool mZeroCheck = false;
 };
 
 } // namespace o2::quality_control_modules::tpc
