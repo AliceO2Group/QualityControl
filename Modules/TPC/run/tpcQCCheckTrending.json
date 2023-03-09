@@ -22,7 +22,7 @@
     },
     "checks" : {
       "CheckOfPID_Trending" : {
-        "active" : "true",
+        "active" : "false",
         "className" : "o2::quality_control_modules::tpc::CheckOfTrendings",
         "moduleName" : "QcTPC",
         "policy" : "OnEachSeparately",
@@ -35,14 +35,20 @@
 
         "stopTrigger_comment": [ "Parameters are needed to choose if check should be performed only as last point comparison to average or average comparison to expected value." ],
         "checkParameters": {
-          "chooseCheckMeanOrExpectedPhysicsValueOrBoth" : "Both",
-          "expectedPhysicsValue" : "0",
+          "CheckChoice" : "Mean",
+          "SliceTrending" : "false",
+          "expectedPhysicsValue" : "65",
           "allowedNSigmaForExpectation" : "3",
           "badNSigmaForExpectation" : "6",
           "allowedNSigmaForMean" : "3",
           "badNSigmaForMean" : "6",
           "pointsToTakeForExpectedValueCheck" : "10",
-          "pointsToTakeForMeanCheck" : "10"
+          "pointsToTakeForMeanCheck" : "10",
+          "allowedRange" : "0.2",
+          "badRange" : "2",
+          "pointsToTakeForRangeCheck" : "10",
+          "MetadataComment" : "TestComment2",
+          "pointsToTakeForZeroCheck" : "8"
         }
         },
         "CheckOfTrack_Trending" : {
@@ -54,25 +60,65 @@
         "dataSource" : [ {
           "type" : "PostProcessing",
           "name" : "Tracks_Trending",
-          "MOs" : [ "hNClustersBeforeCuts_StatMean_Trend", "hNClustersAfterCuts_StatMean_Trend", "hEta_StatMean_Trend", "hPt_StatMean_Trend", "hSign_StatMean_Trend", "hPtNeg_StatMean_Trend", "hPtPos_StatMean_Trend", "h2DNClustersPhiAside_StatMean_Trend_Phi", "h2DNClustersPhiAside_StatMean_Trend_Nclusters", "h2DNClustersPhiCside_StatMean_Trend_Phi", "h2DNClustersPhiCside_StatMean_Trend_Nclusters" ]
+          "MOs" : [ "hEta_StatMean_Trend" ]
         } ],
 
         "stopTrigger_comment": [ "Parameters are needed to choose if check should be performed only as last point comparison to average or average comparison to expected value." ],
         "checkParameters": {
-          "chooseCheckMeanOrExpectedPhysicsValueOrBoth" : "Mean",
-          "expectedPhysicsValue" : "0",
+          "CheckChoice" : "Mean, ExpectedValue, Range",
+          "SliceTrending" : "false",
+          "expectedPhysicsValue" : "0.1",
+          "EPV_comment" : "This value is used for the Expected Physics Value and the Range Check",
           "allowedNSigmaForExpectation" : "3",
           "badNSigmaForExpectation" : "6",
-          "allowedNSigmaForMean" : "3",
-          "badNSigmaForMean" : "6",
+          "allowedNSigmaForMean" : "1",
+          "badNSigmaForMean" : "2",
           "pointsToTakeForExpectedValueCheck" : "10",
-          "pointsToTakeForMeanCheck" : "10"
+          "pointsToTakeForMeanCheck" : "10",
+          "allowedRange" : "0.05",
+          "badRange" : "0.1",
+          "pointsToTakeForRangeCheck" : "1",
+          "MetadataComment" : "TestComment",
+          "pointsToTakeForZeroCheck" : "4"
+          
+        }
+      },
+      "CheckOfTrack_Trending_Slice" : {
+        "active" : "true",
+        "className" : "o2::quality_control_modules::tpc::CheckOfTrendings",
+        "moduleName" : "QcTPC",
+        "policy" : "OnEachSeparately",
+        "detectorName" : "TPC",
+        "dataSource" : [ {
+          "type" : "PostProcessing",
+          "name" : "Tracks_Trending_Slice",
+          "MOs" : [ "hEta_StatMean_Trend" ]
+        } ],
+
+        "stopTrigger_comment": [ "Parameters are needed to choose if check should be performed only as last point comparison to average or average comparison to expected value." ],
+        "checkParameters": {
+          "CheckChoice" : "Mean, ExpectedValue, Range",
+          "SliceTrending" : "true",
+          "expectedPhysicsValue" : "0.1",
+          "EPV_comment" : "This value is used for the Expected Physics Value and the Range Check",
+          "allowedNSigmaForExpectation" : "3",
+          "badNSigmaForExpectation" : "6",
+          "allowedNSigmaForMean" : "1",
+          "badNSigmaForMean" : "2",
+          "pointsToTakeForExpectedValueCheck" : "10",
+          "pointsToTakeForMeanCheck" : "10",
+          "allowedRange" : "0.05",
+          "badRange" : "0.1",
+          "pointsToTakeForRangeCheck" : "1",
+          "MetadataComment" : "TestComment",
+          "pointsToTakeForZeroCheck" : "4"
+          
         }
       }
      },
     "postprocessing": {
       "PID_Trending": {
-        "active": "true",
+        "active": "false",
         "className": "o2::quality_control::postprocessing::TrendingTask",
         "moduleName": "QualityControl",
         "detectorName": "TPC",
@@ -355,7 +401,47 @@
           "userorcontrol"
         ],
         "updateTrigger": [
-          "30 seconds"
+          "10 seconds"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      }, 
+      "Tracks_Trending_Slice": {
+        "active": "true",
+        "className": "o2::quality_control::postprocessing::SliceTrendingTask",
+        "moduleName": "QualityControl",
+        "detectorName": "TPC",
+        "producePlotsOnUpdate": "true",
+        "resumeTrend": "false",
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "TPC/MO/Tracks",
+            "names": [  "hEta" ],
+            "reductorName": "o2::quality_control_modules::common::TH1SliceReductor",
+            "axisDivision": [ [ ] ],
+            "moduleName": "QcCommon"
+          }
+        ],
+        "plots": [
+          {
+            "name": "hEta_StatMean_Trend",
+            "title": "Mean trend of the pseudorapidity",
+            "varexp": "hEta.meanX:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "errMeanX:0.",
+            "graphYRange": "-1.0:1.0",
+            "graphXRange": "",
+            "graphAxisLabel": "Mean Eta X:time"
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "10 seconds"
         ],
         "stopTrigger": [
           "userorcontrol"

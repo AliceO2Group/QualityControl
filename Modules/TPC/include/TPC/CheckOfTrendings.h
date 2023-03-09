@@ -18,6 +18,9 @@
 
 #include "QualityControl/CheckInterface.h"
 
+class TGraph;
+class TCanvas;
+
 namespace o2::quality_control_modules::tpc
 {
 
@@ -41,17 +44,37 @@ class CheckOfTrendings : public o2::quality_control::checker::CheckInterface
 
  private:
   ClassDefOverride(CheckOfTrendings, 2);
+  void calculateStatistics(const double* yValues, const double* yErrors, bool useErrors, const int firstPoint, const int lastPoint, double& mean, double& stddevOfMean);
+  TGraph* getGraph(TCanvas* canv);
   std::string mCheckChoice;
   float mExpectedPhysicsValue;
   float mNSigmaExpectedPhysicsValue;
   float mNSigmaBadExpectedPhysicsValue;
   float mNSigmaMean;
   float mNSigmaBadMean;
+  float mRangeMedium;
+  float mRangeBad;
+  bool mSliceTrend;
+
+  double mMean = 0;
+  float mStdev;
+
   int mPointToTakeForExpectedValueCheck;
   int mPointToTakeForMeanCheck;
-  static constexpr std::string_view CheckChoiceMean = "Mean";
-  static constexpr std::string_view CheckChoiceExpectedPhysicsValue = "ExpectedPhysicsValue";
-  static constexpr std::string_view CheckChoiceBoth = "Both";
+  int mPointToTakeForRangeCheck;
+  int mPointToTakeForZeroCheck;
+
+  std::string mBadString = "";
+  std::string mMediumString = "";
+  std::string mGoodString = "";
+  std::string mNullString = "";
+
+  std::string mMetadataComment;
+
+  bool mRangeCheck = false;
+  bool mExpectedValueCheck = false;
+  bool mMeanCheck = false;
+  bool mZeroCheck = false;
 };
 
 } // namespace o2::quality_control_modules::tpc
