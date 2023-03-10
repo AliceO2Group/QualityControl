@@ -20,7 +20,6 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include <map>
 
 #include "QualityControl/DataSourceSpec.h"
 #include "QualityControl/RecoRequestSpecs.h"
