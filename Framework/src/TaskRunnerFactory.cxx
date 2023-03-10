@@ -69,10 +69,16 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
   // Two ways of configuring, incompatible.
   // 1. simple, old, way: cycleDurationSeconds is the duration in seconds for all cycles
   // 2. complex, new, way: cycleDurations: a list of tuples specifying different durations to be applied for a certain time
-  auto cycleDurationSeconds = taskSpec.cycleDurationSeconds;
-  auto cycleDurations = taskSpec.cycleDurations;
+  if (taskSpec.cycleDurationSeconds > 0 && taskSpec.cycleDurations.size() > 0) {
+    ILOG(Error, Ops) << "Both cycleDurationSeconds and cycleDurations have been defined. Pick one. Sheepishly exiting out." << ENDM;
+    exit(1);
+  }
+  auto cycleDurations = taskSpec.cycleDurations; // this is the new style
+  if(taskSpec.cycleDurationSeconds > 0) { // if it was actually the old style, then we convert it to the new style
+    cycleDurations = {{taskSpec.cycleDurationSeconds, 1}};
+  }
   auto inputs = taskSpec.dataSource.inputs;
-  inputs.emplace_back(createTimerInputSpec(globalConfig, cycleDurationSeconds, cycleDurations, taskSpec.detectorName, taskSpec.taskName));
+  inputs.emplace_back(createTimerInputSpec(globalConfig, cycleDurations, taskSpec.detectorName, taskSpec.taskName));
 
   static std::unordered_map<std::string, o2::base::GRPGeomRequest::GeomRequest> const geomRequestFromString = {
     { "None", o2::base::GRPGeomRequest::GeomRequest::None },
@@ -131,7 +137,6 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
     taskSpec.taskName,
     taskSpec.moduleName,
     taskSpec.className,
-    cycleDurationSeconds,
     cycleDurations,
     taskSpec.maxNumberCycles,
     globalConfig.consulUrl,
@@ -152,26 +157,15 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
   };
 }
 
-InputSpec TaskRunnerFactory::createTimerInputSpec(const CommonSpec& globalConfig, int& cycleDurationSeconds, std::vector<std::pair<size_t, size_t>>& cycleDurations,
+InputSpec TaskRunnerFactory::createTimerInputSpec(const CommonSpec& globalConfig, std::vector<std::pair<size_t, size_t>>& cycleDurations,
                                                   const std::string& detectorName, const std::string& taskName)
 {
-  if (cycleDurationSeconds > 0 && cycleDurations.size() > 0) {
-    ILOG(Error, Ops) << "Both cycleDurationSeconds and cycleDurations have been defined. Pick one. Sheepishly exiting out." << ENDM;
-    exit(1);
-  }
-
   // This is to check that the durations are not below 10 seconds except when using a dummy database
   auto dummyDatabaseUsed = globalConfig.database.count("implementation") > 0 && globalConfig.database.at("implementation") == "Dummy";
-  if (!dummyDatabaseUsed && cycleDurationSeconds > 0 && cycleDurationSeconds < 10) {
-    ILOG(Error, Support) << "Cycle duration is too short (" << cycleDurationSeconds << "), replaced by a duration of 10 seconds." << ENDM;
-    cycleDurationSeconds = 10;
-  }
-  if (!cycleDurations.empty()) {
-    for (auto& [cycleDuration, period] : cycleDurations) {
-      if (cycleDuration < 10) {
-        ILOG(Error, Support) << "Cycle duration is too short (" << cycleDuration << "), replaced by a duration of 10 seconds." << ENDM;
-        cycleDuration = 10;
-      }
+  for (auto& [cycleDuration, period] : cycleDurations) {
+    if (!dummyDatabaseUsed && cycleDuration < 10) {
+      ILOG(Error, Support) << "Cycle duration is too short (" << cycleDuration << "), replaced by a duration of 10 seconds." << ENDM;
+      cycleDuration = 10;
     }
   }
 

@@ -412,13 +412,8 @@ void TaskRunner::printTaskConfig() const
                     << " / Max number cycles : " << mTaskConfig.maxNumberCycles      //
                     << " / Save to file : " << mTaskConfig.saveToFile
                     << " / Cycle duration seconds : ";
-  if (mTaskConfig.cycleDurationSeconds > 0) {
-    ILOG(Info, Devel) << mTaskConfig.cycleDurationSeconds;
-  }
-  if (mTaskConfig.cycleDurations.size() > 0) {
-    for (auto& [cycleDuration, period] : mTaskConfig.cycleDurations) {
-      ILOG(Info, Devel) << cycleDuration << "s during " << period << "s, ";
-    }
+  for (auto& [cycleDuration, period] : mTaskConfig.cycleDurations) {
+    ILOG(Info, Devel) << cycleDuration << "s during " << period << "s, ";
   }
   ILOG(Info, Devel) << ENDM;
 }
