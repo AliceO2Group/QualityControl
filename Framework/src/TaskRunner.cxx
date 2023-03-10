@@ -178,7 +178,6 @@ void TaskRunner::init(InitContext& iCtx)
 
   mNoMoreCycles = false;
   mCycleNumber = 0;
-  printTaskConfig();
 }
 
 void TaskRunner::run(ProcessingContext& pCtx)
