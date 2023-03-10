@@ -297,6 +297,10 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     mSetAllowedChIDsAmpVsTime.insert(entry);
   }
 
+  if (auto timeGate = mCustomParameters.find(string("gateTimeForRatioHistogram")); timeGate != mCustomParameters.end()) {
+    mTimeGate = stof(timeGate->second);
+  }
+
   for (const auto& chID : mSetAllowedChIDs) {
     auto pairHistAmp = mMapHistAmp1D.insert({ chID, new TH1F(Form("Amp_channel%i", chID), Form("Amplitude, channel %i", chID), 4200, -100, 4100) });
     auto pairHistTime = mMapHistTime1D.insert({ chID, new TH1F(Form("Time_channel%i", chID), Form("Time, channel %i", chID), 4100, -2050, 2050) });
@@ -643,17 +647,16 @@ void DigitQcTask::endOfCycle()
   ILOG(Debug, Support) << "adding last TF creation time: " << mTFcreationTime << ENDM;
   getObjectsManager()->getMonitorObject(mHistBCvsTrg->GetName())->addOrUpdateMetadata("TFcreationTime", std::to_string(mTFcreationTime));
 
-  // =============================== Zadanie ===============================
   for (int channel = 1; channel <= sNCHANNELS_FV0_PLUSREF-1; channel++) {
-    int bins_in_range = 0;
-    int bins_per_channel = 0;
-    for (int y_bin_num = 1; y_bin_num <= mHistTime2Ch->GetNbinsY(); y_bin_num++) {
-        if (mHistTime2Ch->GetYaxis()->GetBinLowEdge(y_bin_num) >= -192 && mHistTime2Ch->GetYaxis()->GetBinUpEdge(y_bin_num) <= 192) {
-            bins_in_range += mHistTime2Ch->GetBinContent(channel, y_bin_num);
+    int events_in_range = 0;
+    int events_per_channel = 0;
+    for (int bin_on_y_axis = 1; bin_on_y_axis <= mHistTime2Ch->GetNbinsY(); bin_on_y_axis++) {
+        if (mHistTime2Ch->GetYaxis()->GetBinLowEdge(bin_on_y_axis) >= -mTimeGate && mHistTime2Ch->GetYaxis()->GetBinUpEdge(bin_on_y_axis) <= mTimeGate) {
+            events_in_range += mHistTime2Ch->GetBinContent(channel, bin_on_y_axis);
         }
-        bins_per_channel += mHistTime2Ch->GetBinContent(channel, y_bin_num);
+        events_per_channel += mHistTime2Ch->GetBinContent(channel, bin_on_y_axis);
     }
-    mHistGateTimeRatio2Ch->SetBinContent(channel, (float) bins_in_range / (float) bins_per_channel);
+    mHistGateTimeRatio2Ch->SetBinContent(channel, (float) events_in_range / (float) events_per_channel);
   }
 
   // one has to set num. of entries manually because
