@@ -215,13 +215,13 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
       // In "delta" mode Mergers should implement moving window, in "entire" - QC Tasks.
       size_t resetAfterCycles = taskSpec.mergingMode == "delta" ? taskSpec.resetAfterCycles : 0;
       std::vector<std::pair<size_t, size_t>> cycleDurationsMultiplied;
-      if(taskSpec.cycleDurationSeconds > 0) { // old, simple, style
-        cycleDurationsMultiplied = {{taskSpec.cycleDurationSeconds, 1}};
+      if (taskSpec.cycleDurationSeconds > 0) { // old, simple, style
+        cycleDurationsMultiplied = { { taskSpec.cycleDurationSeconds, 1 } };
       } else { // new style
         cycleDurationsMultiplied = taskSpec.cycleDurations;
       }
       std::for_each(cycleDurationsMultiplied.begin(), cycleDurationsMultiplied.end(),
-                    [taskSpec](std::pair<size_t, size_t>& p){ p.second *= taskSpec.mergerCycleMultiplier; });
+                    [taskSpec](std::pair<size_t, size_t>& p) { p.second *= taskSpec.mergerCycleMultiplier; });
       generateMergers(workflow, taskSpec.taskName, numberOfLocalMachines, cycleDurationsMultiplied, taskSpec.mergingMode,
                       resetAfterCycles, infrastructureSpec.common.monitoringUrl, taskSpec.detectorName, taskSpec.mergersPerLayer);
 
