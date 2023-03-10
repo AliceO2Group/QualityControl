@@ -44,25 +44,29 @@ class CheckOfSlices : public o2::quality_control::checker::CheckInterface
   std::string getAcceptedType() override { return "TCanvas"; }
 
  private:
-  ClassDefOverride(CheckOfSlices, 2);
+  ClassDefOverride(CheckOfSlices, 3);
+  void calculateStatistics(const double* yValues, const double* yErrors, bool useErrors, const int firstPoint, const int lastPoint, double& mean, double& stddevOfMean);
+  std::string createMetaData(std::vector<std::string>);
   std::string mCheckChoice;
-  float mExpectedPhysicsValue;
-  float mNSigmaExpectedPhysicsValue;
-  float mNSigmaBadExpectedPhysicsValue;
-  float mNSigmaMean;
-  float mNSigmaBadMean;
+  double mExpectedPhysicsValue;
+  double mNSigmaExpectedPhysicsValue;
+  double mNSigmaBadExpectedPhysicsValue;
+  double mNSigmaMean;
+  double mNSigmaBadMean;
   //float meanFull;
-  float mRangeMedium;
-  float mRangeBad;
+  double mRangeMedium;
+  double mRangeBad;
   bool mSliceTrend;
 
   double mMean = 0;
-  float mStdev;
+  double mStdev;
 
-  //static constexpr std::string_view CheckChoiceMean = "Mean";
-  //static constexpr std::string_view CheckChoiceExpectedPhysicsValue = "ExpectedPhysicsValue";
-  //static constexpr std::string_view CheckChoiceBoth = "Both";
+  std::string mBadString = "";
+  std::string mMediumString = "";
+  std::string mGoodString = "";
+  std::string mNullString = "";
 
+  std::string mMetadataComment;
 
   bool mRangeCheck = false;
   bool mExpectedValueCheck = false;

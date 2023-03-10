@@ -18,6 +18,7 @@
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
 #include <fmt/format.h>
+#include "Common/Utils.h"
 
 #include <TCanvas.h>
 #include <TGraphErrors.h>
@@ -71,40 +72,41 @@ void CheckOfSlices::configure()
 
   mMetadataComment = common::getFromConfig<std::string>(mCustomParameters, "MetadataComment", "");
   if (mExpectedValueCheck) {
-    mNSigmaExpectedPhysicsValue = common::getFromConfig<float>(mCustomParameters, "allowedNSigmaForExpectation", 3);
-    mNSigmaBadExpectedPhysicsValue = common::getFromConfig<float>(mCustomParameters, "badNSigmaForExpectation", 6);
+    mNSigmaExpectedPhysicsValue = common::getFromConfig<double>(mCustomParameters, "allowedNSigmaForExpectation", 3);
+    mNSigmaBadExpectedPhysicsValue = common::getFromConfig<double>(mCustomParameters, "badNSigmaForExpectation", 6);
     if (mNSigmaBadExpectedPhysicsValue < mNSigmaExpectedPhysicsValue) { // if bad < medium flip them.
       std::swap(mNSigmaBadExpectedPhysicsValue, mNSigmaExpectedPhysicsValue);
     }
-    mExpectedPhysicsValue = common::getFromConfig<float>(mCustomParameters, "expectedPhysicsValue", 1);
+    mExpectedPhysicsValue = common::getFromConfig<double>(mCustomParameters, "expectedPhysicsValue", 1);
   }
 
   if (mMeanCheck) {
-    mNSigmaMean = common::getFromConfig<float>(mCustomParameters, "allowedNSigmaForMean", 3);
-    mNSigmaBadMean = common::getFromConfig<float>(mCustomParameters, "badNSigmaForMean", 6);
+    mNSigmaMean = common::getFromConfig<double>(mCustomParameters, "allowedNSigmaForMean", 3);
+    mNSigmaBadMean = common::getFromConfig<double>(mCustomParameters, "badNSigmaForMean", 6);
     if (mNSigmaBadMean < mNSigmaMean) { // if bad < medium flip them.
       std::swap(mNSigmaBadMean, mNSigmaMean);
     }
   }
 
   if (mRangeCheck) {
-    mRangeMedium = common::getFromConfig<float>(mCustomParameters, "allowedRange", 1);
-    mRangeBad = common::getFromConfig<float>(mCustomParameters, "badRange", 2);
+    mRangeMedium = common::getFromConfig<double>(mCustomParameters, "allowedRange", 1);
+    mRangeBad = common::getFromConfig<double>(mCustomParameters, "badRange", 2);
     if (mRangeBad < mRangeMedium) { // if bad < medium flip them.
       std::swap(mRangeBad, mRangeMedium);
     }
-    mExpectedPhysicsValue = common::getFromConfig<float>(mCustomParameters, "expectedPhysicsValue", 1);
+    mExpectedPhysicsValue = common::getFromConfig<double>(mCustomParameters, "expectedPhysicsValue", 1);
   }
 }
 
 Quality CheckOfSlices::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
-  Quality result = Quality::Null;
-  Quality resultMean = Quality::Null;
-  Quality resultExpectedPhysicsValue = Quality::Null;
+  Quality totalQuality = Quality::Null;
 
   std::vector<Quality> qualities;
   std::unordered_map<std::string, std::vector<std::string>> checks;
+  checks[Quality::Bad.getName()] = std::vector<std::string>();
+  checks[Quality::Medium.getName()] = std::vector<std::string>();
+  checks[Quality::Good.getName()] = std::vector<std::string>();
 
   auto mo = moMap->begin()->second;
   if (!mo) {
@@ -116,18 +118,14 @@ Quality CheckOfSlices::check(std::map<std::string, std::shared_ptr<MonitorObject
   }
   TList* padList = (TList*)canv->GetListOfPrimitives();
   padList->SetOwner(kTRUE);
-  const int numberPads = padList->GetEntries();
-
-
-  if (numberPads > 1) { //GANESHA change, we need to fetch the first PAD 
-    ILOG(Fatal, Support) << "Number of Pads: " << numberPads << " Should not be more than 1" << ENDM;
+ 
+  auto pad = static_cast<TPad*>(padList->At(0));
+  if(!pad)  {
+    ILOG(Fatal, Support) << "Could not retrieve pad containing slice graph" << ENDM;
   }
+
   TGraphErrors* g = nullptr;
-  for (int iPad = 0; iPad < numberPads; iPad++) {
-    auto pad = static_cast<TPad*>(padList->At(iPad));
-    g = static_cast<TGraphErrors*>(pad->GetPrimitive("Graph"));
-  }
-
+  g = static_cast<TGraphErrors*>(pad->GetPrimitive("Graph"));
   if (!g) {
     ILOG(Fatal, Support) << "No Graph object found" << ENDM;
   }
@@ -141,111 +139,119 @@ Quality CheckOfSlices::check(std::map<std::string, std::shared_ptr<MonitorObject
   // if (NBins > 1) {
   const double* yValues = g->GetY();
   const double* yErrors = g->GetEY(); //GANESHA Change. It has to check if we have errors or not 
+  bool useErrors = true;
+  if (yErrors == nullptr) {
+    useErrors = false;
+    ILOG(Info, Support) << "NO ERRORS" << ENDM;
+  }
 
   const std::vector<double> v(yValues, yValues + NBins);    // use all points
-  const std::vector<double> vErr(yErrors, yErrors + NBins); // use all points
-
-  // now we have the mean and the stddev. Now check if all points are within the margins (default 3,6 sigma margins)
-
-  
-  double meanFull = 0.;
-  double stddevOfMean = 0.;
-  calculateStatistics(yValues, yErrors, useErrors, 0, NBins, mean, stddevOfMean);
+  const std::vector<double> vErr(yErrors, yErrors + NBins); // use all points //GANESHA check if useErrors
+  calculateStatistics(yValues, yErrors, useErrors, 0, NBins, mMean, mStdev);
 
   for (size_t i = 0; i < v.size(); ++i) {
 
-    Quality qualityPoint = Quality::Null; 
+    Quality totalQualityPoint = Quality::Null; 
+    std::vector<Quality> qualityPoints; 
     const auto yvalue = v[i];
     const auto yError = vErr[i];
     
-    std::string BadString = "";
-    std::string MediumString = "";
-    std::string GoodString = "";
-    std::string NullString = "";
+    std::string badStringPoint = "";
+    std::string mediumStringPoint = "";
+    std::string goodStringPoint = "";
     
-    if (mMeanCheck) { //GANESHA add MetaData 
-
-      const double totalError = sqrt(stddevOfMean * stddevOfMean + yError * yError);
-      if (std::abs(yvalue - meanFull) <= totalError * mNSigmaMean) {
-        if (!resultMean.isWorseThan(Quality::Good) || resultMean == Quality::Null) {
-          resultMean = Quality::Good;
-        }
-      } else if (std::abs(yvalue - meanFull) > totalError * mNSigmaBadMean) {
-        resultMean = Quality::Bad;
-      } else if (!resultMean.isWorseThan(Quality::Medium) || resultMean == Quality::Null) {
-        resultMean = Quality::Medium;
+    if (mMeanCheck) { 
+      const double totalError = sqrt(mStdev * mStdev + yError * yError);
+      if (std::abs(yvalue - mMean) <= totalError * mNSigmaMean) {
+        qualityPoints.push_back(Quality::Good);
+        goodStringPoint += "MeanCheck \n";
+      } else if (std::abs(yvalue - mMean) > totalError * mNSigmaBadMean) {
+        qualityPoints.push_back(Quality::Bad);
+        badStringPoint += "MeanCheck \n";
       } else {
-        // just brick, this should hopefully never happen
-        ILOG(Fatal, Support) << "Some Problem with the Quality happened. Quality: " << resultMean << ", Standard deviations: " << std::abs(yvalue - meanFull) / yError << ENDM;
-      }
-     
-      //GANESHA save mean check result of this point 
+        qualityPoints.push_back(Quality::Medium);
+        mediumStringPoint += "MeanCheck \n";
+      } 
     } // if (mMeanCheck)
 
     if (mExpectedValueCheck) {
- 
       if (std::abs(yvalue - mExpectedPhysicsValue) <= yError * mNSigmaExpectedPhysicsValue) {
-        if (!resultExpectedPhysicsValue.isWorseThan(Quality::Good) || resultExpectedPhysicsValue == Quality::Null) {
-          resultExpectedPhysicsValue = Quality::Good;
-        }
+        qualityPoints.push_back(Quality::Good);
+        goodStringPoint += "ExpectedValueCheck \n";
       } else if (std::abs(yvalue - mExpectedPhysicsValue) > yError * mNSigmaBadExpectedPhysicsValue) {
-        resultExpectedPhysicsValue = Quality::Bad;
-      } else if (!resultExpectedPhysicsValue.isWorseThan(Quality::Medium) || resultExpectedPhysicsValue == Quality::Null) {
-        resultExpectedPhysicsValue = Quality::Medium;
+        qualityPoints.push_back(Quality::Bad);
+        badStringPoint += "ExpectedValueCheck \n";
       } else {
-        // just brick, this should hopefully never happen
-        ILOG(Fatal, Support) << "Some Problem with the Quality happened. Quality: " << resultExpectedPhysicsValue << ", Standard deviations: " << std::abs(yvalue - mExpectedPhysicsValue) / yError << ENDM;
-      }
-      
-      //GANESHA save mean check result of this point 
+        qualityPoints.push_back(Quality::Medium);
+        mediumStringPoint += "ExpectedValueCheck \n";
+      } 
     }
 
       // Range Check:
     if (mRangeCheck) {
-
-      //GANESHA change 
       if (std::abs(yvalue - mExpectedPhysicsValue) > mRangeBad) {
-        checkResult = Quality::Bad;
-        checkMessage = fmt::format("RangeCheck: Out of range of ExpectedValue({:.2f}) by more than #pm{:.2f}", mExpectedPhysicsValue, mRangeBad);
+        qualityPoints.push_back(Quality::Bad);
+        badStringPoint += "RangeCheck \n";
       } else if (std::abs(yvalue - mExpectedPhysicsValue) < mRangeMedium) {
-        checkResult = Quality::Good;
-        checkMessage = fmt::format("RangeCheck: In range of ExpectedValue({:.2f}) within #pm{:.2f}", mExpectedPhysicsValue, mRangeMedium);
+        qualityPoints.push_back(Quality::Good);
+        goodStringPoint += "RangeCheck \n";
       } else {
-        checkResult = Quality::Medium;
-        checkMessage = fmt::format("RangeCheck: Out of range of ExpectedValue({:.2f}) between #pm{:.2f} and #pm{:.2f}", mExpectedPhysicsValue, mRangeMedium, mRangeBad);
+        qualityPoints.push_back(Quality::Medium);
+        mediumStringPoint += "RangeCheck \n";
       }
-
-
     }
 
-    //GANESHA map @ at qualities push back 
-    //quality map [Quality].push_back(QualityString)
+   checks[Quality::Bad.getName()].push_back(badStringPoint);
+   checks[Quality::Medium.getName()].push_back(mediumStringPoint);
+   checks[Quality::Good.getName()].push_back(goodStringPoint);
 
-    //aggregate qualities between mean, expected and range into result
-    qualities.push_back(qualityPoint);
+
+    //aggregate qualities of this point between mean, expected and range into result
+    auto Worst_Quality = std::max_element(qualityPoints.begin(), qualityPoints.end(),
+                                          [](const Quality& q1, const Quality& q2) {
+                                            return q1.isBetterThan(q2);
+                                          }); 
+    qualities.push_back(*Worst_Quality);
 
   }  for (size_t i = 0; i < v.size(); ++i)
 
+  //Quality aggregation from previous checks
+  if (qualities.size() >= 1) {
+    auto Worst_Quality = std::max_element(qualities.begin(), qualities.end(),
+                                          [](const Quality& q1, const Quality& q2) {
+                                            return q1.isBetterThan(q2);
+                                          }); 
+    totalQuality = *Worst_Quality;
 
-
+    //MetaData aggregation from previous checks
+    mBadString = createMetaData(checks[Quality::Bad.getName()]);
+    mMediumString = createMetaData(checks[Quality::Medium.getName()]);
+    mGoodString = createMetaData(checks[Quality::Good.getName()]);
+  } 
+  
   // Zeros Check:
+  Quality qualityZeroCheck = Quality::Null;
   if (mZeroCheck) {
     const bool allZeros = std::all_of(v.begin(), v.end(), [](double i) { return std::abs(i) == 0.0; });
     if (allZeros) {
-      checkResult = Quality::Bad;
-      checkMessage = fmt::format("ZeroCheck: All Points zero", pointNumber);
+      mBadString += "ZeroCheck \n";
+      totalQuality = Quality::Bad; 
     } else {
-      checkResult = Quality::Good;
-      checkMessage = "";
+      mGoodString += "ZeroCheck \n"; 
     }
-
-    //GANESHA save result 
   }
 
+  if(totalQuality == Quality::Null){
+    mNullString = "No check performed"; 
+  }
 
-  //GANESHA do aggregation here 
+  totalQuality.addMetadata(Quality::Bad.getName(), mBadString);
+  totalQuality.addMetadata(Quality::Medium.getName(), mMediumString);
+  totalQuality.addMetadata(Quality::Good.getName(), mGoodString);
+  totalQuality.addMetadata(Quality::Null.getName(), mNullString);
+  totalQuality.addMetadata("Comment", mMetadataComment);
 
-  return result;
+  return totalQuality;
 }
 
 void CheckOfSlices::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
@@ -272,7 +278,7 @@ void CheckOfSlices::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
   const std::vector<double> v(yValues, yValues + NBins); // use all points
   const std::vector<double> vErr(yErrors, yErrors + NBins);
   const double sum = std::accumulate(v.begin(), v.end(), 0.0);
-  const double meanFull = sum / NBins;
+  const double mMean = sum / NBins;
   TPaveText* msg = new TPaveText(0.7, 0.85, 0.9, 0.9, "NDC");
   TPaveText* Legend = new TPaveText(0.1, 0.85, 0.35, 0.9, "NDC");
   h->GetListOfFunctions()->Add(msg);
@@ -318,7 +324,7 @@ void CheckOfSlices::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     Legend->AddText(fmt::format("Expected Physics Value: {}", mExpectedPhysicsValue).data());
   }
   if (mMeanCheck) {
-    Legend->AddText(fmt::format("Mean: {}", meanFull).data());
+    Legend->AddText(fmt::format("Mean: {}", mMean).data());
   }
   const double xMin = h->GetXaxis()->GetXmin();
   const double xMax = h->GetXaxis()->GetXmax();
@@ -326,7 +332,7 @@ void CheckOfSlices::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
   lineExpectedValue->SetLineColor(kGreen);
   lineExpectedValue->SetLineWidth(2);
   // mean Line
-  TLine* lineMean = new TLine(xMin, meanFull, xMax, meanFull);
+  TLine* lineMean = new TLine(xMin, mMean, xMax, mMean);
   lineMean->SetLineColor(kOrange);
   lineMean->SetLineWidth(2);
   lineMean->SetLineStyle(10);
@@ -335,7 +341,7 @@ void CheckOfSlices::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
 
 } // beautify function
 
-void CheckOfSlices::calculateStatistics(const double* yValues, const double* yErrors, bool useErrors, const int firstPoint, const int lastPoint, double& mean, double& stddevOfMean)
+void CheckOfSlices::calculateStatistics(const double* yValues, const double* yErrors, bool useErrors, const int firstPoint, const int lastPoint, double& mean, double& mStdev)
 {
 
   // yErrors returns nullptr for TGraph (no errors)
@@ -372,21 +378,56 @@ void CheckOfSlices::calculateStatistics(const double* yValues, const double* yEr
 
   if (v.size() == 1) { // we only have one point, we keep it's uncertainty
     if (!useErrors) {
-      stddevOfMean = 0.;
+      mStdev = 0.;
     } else {
-      stddevOfMean = sqrt(1. / sumOfWeights);
+      mStdev = sqrt(1. / sumOfWeights);
     }
   } else { // for >= 2 points, we calculate the spread
     if (!useErrors) {
       std::vector<double> diff(v.size());
       std::transform(v.begin(), v.end(), diff.begin(), [mean](double x) { return x - mean; });
       double sq_sum = std::inner_product(diff.begin(), diff.end(), diff.begin(), 0.0);
-      stddevOfMean = std::sqrt(sq_sum / (v.size() * (v.size() - 1.)));
+      mStdev = std::sqrt(sq_sum / (v.size() * (v.size() - 1.)));
     } else {
       double ratioSumWeight = sumOfSquaredWeights / (sumOfWeights * sumOfWeights);
-      stddevOfMean = sqrt((sumSquare / sumOfWeights - mean * mean) * (1. / (1. - ratioSumWeight)) * ratioSumWeight);
+      mStdev = sqrt((sumSquare / sumOfWeights - mean * mean) * (1. / (1. - ratioSumWeight)) * ratioSumWeight);
     }
   }
+}
+
+std::string CheckOfSlices::createMetaData(std::vector<std::string> pointMetaData){
+
+  std::string meanString = ""; 
+  std::string expectedValueString = "";
+  std::string rangeString = "";
+
+  for(int i; i<pointMetaData.size(); i++){
+    if (pointMetaData.at(i).find("MeanCheck") != std::string::npos) {
+      meanString += " " + std::to_string(i+1) + ","; 
+    }
+    if (pointMetaData.at(i).find("ExpectedValueCheck") != std::string::npos) {
+      expectedValueString += " " + std::to_string(i+1) + ","; 
+    }
+    if (pointMetaData.at(i).find("RangeCheck") != std::string::npos) {
+      rangeString += " " + std::to_string(i+1) + ","; 
+    }
+  } 
+
+  std::string totalString = ""; 
+  if(meanString != ""){
+    meanString = "MeanCheck for Points:" + meanString + "\n"; 
+    totalString += meanString;
+  }
+  if(expectedValueString != ""){
+    expectedValueString = "ExpectedValueCheck for Points:" + expectedValueString + "\n"; 
+    totalString += expectedValueString;
+  }
+  if(rangeString != ""){
+    rangeString = "RangeCheck for Points:" + rangeString + "\n"; 
+    totalString += rangeString;
+  }
+
+  return totalString; 
 }
 
 } // namespace o2::quality_control_modules::tpc
