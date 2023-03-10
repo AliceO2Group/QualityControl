@@ -262,7 +262,6 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     mHistBCvsFEEmodules->GetYaxis()->SetBinLabel(entry.second + 1, entry.first.c_str());
     mHistOrbitVsFEEmodules->GetYaxis()->SetBinLabel(entry.second + 1, entry.first.c_str());
   }
-  mHistGateTimeRatio2Ch = std::make_unique<TH1F>("EventsInGateTime", "Ratio of events between time -192 and 192", sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF);
   // mHistTimeSum2Diff = std::make_unique<TH2F>("timeSumVsDiff", "time A/C side: sum VS diff;(TOC-TOA)/2 [ns];(TOA+TOC)/2 [ns]", 400, -52.08, 52.08, 400, -52.08, 52.08); // range of 52.08 ns = 4000*13.02ps = 4000 channels
   mHistNumADC = std::make_unique<TH1F>("HistNumADC", "HistNumADC", sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF);
   mHistNumCFD = std::make_unique<TH1F>("HistNumCFD", "HistNumCFD", sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF);
@@ -277,6 +276,18 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistCycleDuration = std::make_unique<TH1D>("CycleDuration", "Cycle Duration;;time [ns]", 1, 0, 2);
   mHistCycleDurationNTF = std::make_unique<TH1D>("CycleDurationNTF", "Cycle Duration;;time [TimeFrames]", 1, 0, 2);
   mHistCycleDurationRange = std::make_unique<TH1D>("CycleDurationRange", "Cycle Duration (total cycle range);;time [ns]", 1, 0, 2);
+
+  if (auto timeGate = mCustomParameters.find(string("gateTimeForRatioHistogram")); timeGate != mCustomParameters.end()) {
+    mTimeGate = stof(timeGate->second);
+  }
+  char gateTimeRatioTitle[50] = "Ratio of events between time -";
+  char gateTimeRatioTitle2[20] = " and ";
+  char timeGateChar[8];
+  sprintf(timeGateChar, "%d", mTimeGate);
+  strcat(gateTimeRatioTitle, timeGateChar);
+  strcat(gateTimeRatioTitle2, timeGateChar);
+  strcat(gateTimeRatioTitle, gateTimeRatioTitle2);
+  mHistGateTimeRatio2Ch = std::make_unique<TH1F>("EventsInGateTime", gateTimeRatioTitle, sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF);
 
   std::vector<unsigned int> vecChannelIDs;
   if (auto param = mCustomParameters.find("ChannelIDs"); param != mCustomParameters.end()) {
@@ -297,9 +308,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     mSetAllowedChIDsAmpVsTime.insert(entry);
   }
 
-  if (auto timeGate = mCustomParameters.find(string("gateTimeForRatioHistogram")); timeGate != mCustomParameters.end()) {
-    mTimeGate = stof(timeGate->second);
-  }
+
 
   for (const auto& chID : mSetAllowedChIDs) {
     auto pairHistAmp = mMapHistAmp1D.insert({ chID, new TH1F(Form("Amp_channel%i", chID), Form("Amplitude, channel %i", chID), 4200, -100, 4100) });
