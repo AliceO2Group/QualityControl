@@ -193,7 +193,7 @@ class InfrastructureGenerator
   static void generateMergers(framework::WorkflowSpec& workflow,
                               const std::string& taskName,
                               size_t numberOfLocalMachines,
-                              double cycleDurationSeconds,
+                              std::vector<std::pair<size_t, size_t>> cycleDurationSeconds,
                               const std::string& mergingMode,
                               size_t resetAfterCycles,
                               std::string monitoringUrl,

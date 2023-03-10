@@ -214,9 +214,15 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
 
       // In "delta" mode Mergers should implement moving window, in "entire" - QC Tasks.
       size_t resetAfterCycles = taskSpec.mergingMode == "delta" ? taskSpec.resetAfterCycles : 0;
-      auto cycleDurationSeconds = taskSpec.cycleDurationSeconds * taskSpec.mergerCycleMultiplier;
-
-      generateMergers(workflow, taskSpec.taskName, numberOfLocalMachines, cycleDurationSeconds, taskSpec.mergingMode,
+      std::vector<std::pair<size_t, size_t>> cycleDurationsMultiplied;
+      if(taskSpec.cycleDurationSeconds > 0) { // old, simple, style
+        cycleDurationsMultiplied = {{taskSpec.cycleDurationSeconds, 1}};
+      } else { // new style
+        cycleDurationsMultiplied = taskSpec.cycleDurations;
+      }
+      std::for_each(cycleDurationsMultiplied.begin(), cycleDurationsMultiplied.end(),
+                    [taskSpec](std::pair<size_t, size_t>& p){ p.second *= taskSpec.mergerCycleMultiplier; });
+      generateMergers(workflow, taskSpec.taskName, numberOfLocalMachines, cycleDurationsMultiplied, taskSpec.mergingMode,
                       resetAfterCycles, infrastructureSpec.common.monitoringUrl, taskSpec.detectorName, taskSpec.mergersPerLayer);
 
     } else if (taskSpec.location == TaskLocationSpec::Remote) {
@@ -498,7 +504,7 @@ void InfrastructureGenerator::generateLocalTaskRemoteProxy(framework::WorkflowSp
   workflow.emplace_back(std::move(proxy));
 }
 void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow, const std::string& taskName,
-                                              size_t numberOfLocalMachines, double cycleDurationSeconds,
+                                              size_t numberOfLocalMachines, std::vector<std::pair<size_t, size_t>> cycleDurations,
                                               const std::string& mergingMode, size_t resetAfterCycles, std::string monitoringUrl,
                                               const std::string& detectorName, std::vector<size_t> mergersPerLayer)
 {
@@ -520,7 +526,7 @@ void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow,
   MergerConfig mergerConfig;
   // if we are to change the mode to Full, disable reseting tasks after each cycle.
   mergerConfig.inputObjectTimespan = { (mergingMode.empty() || mergingMode == "delta") ? InputObjectsTimespan::LastDifference : InputObjectsTimespan::FullHistory };
-  mergerConfig.publicationDecision = { PublicationDecision::EachNSeconds, cycleDurationSeconds };
+  mergerConfig.publicationDecisionNew = { PublicationDecision::EachNSeconds, cycleDurations };
   mergerConfig.mergedObjectTimespan = { MergedObjectTimespan::NCycles, (int)resetAfterCycles };
   // for now one merger should be enough, multiple layers to be supported later
   mergerConfig.topologySize = { TopologySize::MergersPerLayer, mergersPerLayer };
