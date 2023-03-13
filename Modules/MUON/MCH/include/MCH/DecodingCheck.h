@@ -10,13 +10,14 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   DecodingErrorsCheck.h
+/// \file   DecodingCheck.h
 /// \author Andrea Ferrero, Sebastien Perrin
 ///
 
-#ifndef QC_MODULE_MCH_DECODINGERRORSCHECK_H
-#define QC_MODULE_MCH_DECODINGERRORSCHECK_H
+#ifndef QC_MODULE_MCH_DECODINGCHECK_H
+#define QC_MODULE_MCH_DECODINGCHECK_H
 
+#include "MCH/Helpers.h"
 #include "QualityControl/CheckInterface.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
@@ -30,13 +31,13 @@ namespace o2::quality_control_modules::muonchambers
 /// \brief  Check if the occupancy on each pad is between the two specified values
 ///
 /// \author Andrea Ferrero, Sebastien Perrin
-class DecodingErrorsCheck : public o2::quality_control::checker::CheckInterface
+class DecodingCheck : public o2::quality_control::checker::CheckInterface
 {
  public:
   /// Default constructor
-  DecodingErrorsCheck();
+  DecodingCheck() = default;
   /// Destructor
-  ~DecodingErrorsCheck() override;
+  ~DecodingCheck() override = default;
 
   // Override interface
   void configure() override;
@@ -45,12 +46,18 @@ class DecodingErrorsCheck : public o2::quality_control::checker::CheckInterface
   std::string getAcceptedType() override;
 
  private:
-  int mPrintLevel;
-  double mMaxErrorRate;
+  std::string mGoodFracHistName{ "DecodingErrors/LastCycle/GoodBoardsFractionPerDE" };
+  std::string mSyncFracHistName{ "SyncErrors/LastCycle/SyncedBoardsFractionPerDE" };
+  int mMaxBadST12{ 2 };
+  int mMaxBadST345{ 3 };
+  double mMinGoodErrorFrac{ 0.9 };
+  double mMinGoodSyncFrac{ 0.9 };
 
-  ClassDefOverride(DecodingErrorsCheck, 1);
+  QualityChecker mQualityChecker;
+
+  ClassDefOverride(DecodingCheck, 1);
 };
 
 } // namespace o2::quality_control_modules::muonchambers
 
-#endif // QC_MODULE_MCH_DECODINGERRORSCHECK_H
+#endif // QC_MODULE_MCH_DECODINGCHECK_H
