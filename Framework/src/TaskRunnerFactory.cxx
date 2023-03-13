@@ -74,8 +74,8 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
     exit(1);
   }
   auto cycleDurations = taskSpec.cycleDurations; // this is the new style
-  if(taskSpec.cycleDurationSeconds > 0) { // if it was actually the old style, then we convert it to the new style
-    cycleDurations = {{taskSpec.cycleDurationSeconds, 1}};
+  if (taskSpec.cycleDurationSeconds > 0) {       // if it was actually the old style, then we convert it to the new style
+    cycleDurations = { { taskSpec.cycleDurationSeconds, 1 } };
   }
   auto inputs = taskSpec.dataSource.inputs;
   inputs.emplace_back(createTimerInputSpec(globalConfig, cycleDurations, taskSpec.detectorName, taskSpec.taskName));
