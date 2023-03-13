@@ -103,7 +103,6 @@ void TrendingTracks::computeClustersPerChamber(TProfile* p)
 // todo: see if OptimizeBaskets() indeed helps after some time
 void TrendingTracks::update(Trigger t, framework::ServiceRegistryRef services)
 {
-  std::cout << "TrendingTracks::update()" << std::endl;
   auto& qcdb = services.get<repository::DatabaseInterface>();
 
   trendValues(t, qcdb);
