@@ -15,6 +15,10 @@
 /// \author Piotr Konopka, piotr.jan.konopka@cern.ch, Sebastien Perrin, Andrea Ferrero
 
 #include "MUONCommon/MergeableTH2Ratio.h"
+#include <TList.h>
+
+#include <fmt/format.h>
+#include <limits>
 
 using namespace std;
 namespace o2::quality_control_modules::muon
@@ -51,6 +55,16 @@ MergeableTH2Ratio::MergeableTH2Ratio(const char* name, const char* title, bool s
   : TH2F(name, title, 10, 0, 10, 10, 0, 10),
     o2::mergers::MergeInterface(),
     mShowZeroBins(showZeroBins)
+{
+  Bool_t bStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+  mHistoNum = new TH2F("num", "num", 10, 0, 10, 10, 0, 10);
+  mHistoDen = new TH2F("den", "den", 10, 0, 10, 10, 0, 10);
+  TH1::AddDirectory(bStatus);
+  update();
+}
+
+MergeableTH2Ratio::MergeableTH2Ratio() : TH2F(), o2::mergers::MergeInterface(), mShowZeroBins(false)
 {
   Bool_t bStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
@@ -111,7 +125,7 @@ void MergeableTH2Ratio::update()
     for (int binx = 1; binx <= mHistoNum->GetXaxis()->GetNbins(); binx++) {
       for (int biny = 1; biny <= mHistoNum->GetYaxis()->GetNbins(); biny++) {
         if (mHistoNum->GetBinContent(binx, biny) == 0 && mHistoDen->GetBinContent(binx, biny) != 0) {
-          SetBinContent(binx, biny, 0.000001);
+          SetBinContent(binx, biny, std::numeric_limits<float>::min());
           SetBinError(binx, biny, 1);
         }
       }
@@ -145,6 +159,82 @@ void MergeableTH2Ratio::Reset(Option_t* option)
   }
 
   TH2F::Reset(option);
+}
+
+void MergeableTH2Ratio::Copy(TObject& obj) const
+{
+  auto dest = dynamic_cast<MergeableTH2Ratio*>(&obj);
+  if (!dest) {
+    return;
+  }
+
+  getNum()->Copy(*(dest->getNum()));
+  getDen()->Copy(*(dest->getDen()));
+  dest->setShowZeroBins(getShowZeroBins());
+  TH2F::Copy(obj);
+
+  dest->update();
+}
+
+Bool_t MergeableTH2Ratio::Add(const TH1* h1, const TH1* h2, Double_t c1, Double_t c2)
+{
+  auto m1 = dynamic_cast<const MergeableTH2Ratio*>(h1);
+  if (!m1) {
+    return kFALSE;
+  }
+
+  auto m2 = dynamic_cast<const MergeableTH2Ratio*>(h2);
+  if (!m2) {
+    return kFALSE;
+  }
+
+  if (!getNum()->Add(m1->getNum(), m2->getNum(), c1, c2)) {
+    return kFALSE;
+  }
+  if (!getDen()->Add(m1->getDen(), m2->getDen(), c1, c2)) {
+    return kFALSE;
+  }
+
+  update();
+  return kTRUE;
+}
+
+Bool_t MergeableTH2Ratio::Add(const TH1* h1, Double_t c1)
+{
+  auto m1 = dynamic_cast<const MergeableTH2Ratio*>(h1);
+  if (!m1) {
+    return kFALSE;
+  }
+
+  if (!getNum()->Add(m1->getNum(), c1)) {
+    return kFALSE;
+  }
+  if (!getDen()->Add(m1->getDen(), c1)) {
+    return kFALSE;
+  }
+
+  update();
+  return kTRUE;
+}
+
+void MergeableTH2Ratio::SetBins(Int_t nx, Double_t xmin, Double_t xmax)
+{
+  std::cout << "SetBins(Int_t nx, Double_t xmin, Double_t xmax) not valid for MergeableTH2Ratio" << std::endl;
+}
+
+void MergeableTH2Ratio::SetBins(Int_t nx, Double_t xmin, Double_t xmax,
+                                Int_t ny, Double_t ymin, Double_t ymax)
+{
+  getNum()->SetBins(nx, xmin, xmax, ny, ymin, ymax);
+  getDen()->SetBins(nx, xmin, xmax, ny, ymin, ymax);
+  TH2F::SetBins(nx, xmin, xmax, ny, ymin, ymax);
+}
+
+void MergeableTH2Ratio::SetBins(Int_t nx, Double_t xmin, Double_t xmax,
+                                Int_t ny, Double_t ymin, Double_t ymax,
+                                Int_t nz, Double_t zmin, Double_t zmax)
+{
+  std::cout << "SetBins(Int_t nx, Double_t xmin, Double_t xmax, Int_t ny, Double_t ymin, Double_t ymax, Int_t nz, Double_t zmin, Double_t zmax) not valid for MergeableTH2Ratio" << std::endl;
 }
 
 } // namespace o2::quality_control_modules::muon

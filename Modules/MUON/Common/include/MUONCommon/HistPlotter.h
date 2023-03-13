@@ -37,10 +37,9 @@ class HistPlotter
   void reset();
 
   std::vector<HistInfo>& histograms() { return mHistograms; }
-
   const std::vector<HistInfo>& histograms() const { return mHistograms; }
 
-  void publish(std::shared_ptr<o2::quality_control::core::ObjectsManager> objectsManager);
+  virtual void publish(std::shared_ptr<o2::quality_control::core::ObjectsManager> objectsManager);
 
  private:
   std::vector<HistInfo> mHistograms;
