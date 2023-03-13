@@ -1,0 +1,99 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "http://ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "2"
+      }
+    },
+    "tasks": {
+      "MCHPreclusters": {
+        "active": "true",
+        "taskName": "Preclusters",
+        "className": "o2::quality_control_modules::muonchambers::PreclustersTask",
+        "moduleName": "QcMuonChambers",
+        "detectorName": "MCH",
+        "cycleDurationSeconds": "300",
+        "maxNumberCycles": "-1",
+        "dataSource": {
+          "type": "direct",
+          "query": "preclusters:MCH/PRECLUSTERS/0;preclusterdigits:MCH/PRECLUSTERDIGITS/0"
+        },
+        "location": "remote"
+      }
+    },
+    "postprocessing": {
+      "Preclusters": {
+        "active": "true",
+        "className": "o2::quality_control_modules::muonchambers::PreclustersPostProcessing",
+        "moduleName": "QcMuonChambers",
+        "detectorName": "MCH",
+        "customization": [
+          {
+            "name": "FullHistos",
+            "value": "0"
+          },
+          {
+            "name": "ReferenceTimeStamp",
+            "value": "1669672094149"
+          }
+        ],
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "MCH/MO/Preclusters",
+            "names": [
+              "eff:Pseudoeff_Elec", "clcharge:ClusterChargeHist", "clsize:ClusterSizeHist"
+            ],
+            "reductorName": "o2::quality_control_modules::muonchambers::TH2ElecMapReductor",
+            "moduleName": "QcMuonChambers"
+          }
+        ],
+        "plots": [
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "300sec"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      }
+    },
+    "checks": {
+      "PreclustersCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::muonchambers::PreclustersCheck",
+        "moduleName": "QcMuonChambers",
+        "detectorName": "MCH",
+        "policy": "OnAny",
+        "checkParameters": {
+          "MeanEffHistNameB": "Efficiency/LastCycle/MeanEfficiencyB",
+          "MeanEffHistNameNB": "Efficiency/LastCycle/MeanEfficiencyNB",
+          "MeanEffRatioHistNameB": "Efficiency/LastCycle/MeanEfficiencyRefRatioB",
+          "MeanEffRatioHistNameNB": "Efficiency/LastCycle/MeanEfficiencyRefRatioNB",
+          "MinEfficiency": "0.8",
+          "MaxEfficiencyDelta": "0.1",
+          "PseudoeffPlotScaleMin": "0.0",
+          "PseudoeffPlotScaleMax": "1.2",
+          "MaxBadDE_ST12": "2",
+          "MaxBadDE_ST345": "5"
+        },
+        "dataSource": [{
+          "type": "PostProcessing",
+          "name": "Preclusters",
+          "MOs" : "all"
+        }]
+      }
+    }
+  }
+}
