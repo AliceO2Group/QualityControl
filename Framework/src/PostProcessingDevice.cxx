@@ -41,7 +41,6 @@ PostProcessingDevice::PostProcessingDevice(const PostProcessingRunnerConfig& run
     mDeviceName(createPostProcessingIdString() + "-" + runnerConfig.taskName),
     mRunnerConfig(runnerConfig)
 {
-  core::QcInfoLogger::setFacility("PostProcessing");
 }
 
 void PostProcessingDevice::init(framework::InitContext& ctx)
