@@ -218,7 +218,7 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
       if (taskSpec.cycleDurationSeconds > 0) { // old, simple, style
         cycleDurationsMultiplied = { { taskSpec.cycleDurationSeconds, 1 } };
       } else { // new style
-        cycleDurationsMultiplied = taskSpec.cycleDurations;
+        cycleDurationsMultiplied = taskSpec.multipleCycleDurations;
       }
       std::for_each(cycleDurationsMultiplied.begin(), cycleDurationsMultiplied.end(),
                     [taskSpec](std::pair<size_t, size_t>& p) { p.second *= taskSpec.mergerCycleMultiplier; });
@@ -526,7 +526,7 @@ void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow,
   MergerConfig mergerConfig;
   // if we are to change the mode to Full, disable reseting tasks after each cycle.
   mergerConfig.inputObjectTimespan = { (mergingMode.empty() || mergingMode == "delta") ? InputObjectsTimespan::LastDifference : InputObjectsTimespan::FullHistory };
-  mergerConfig.publicationDecisionNew = { PublicationDecision::EachNSeconds, cycleDurations };
+  mergerConfig.publicationDecision = { PublicationDecision::EachNSeconds, cycleDurations };
   mergerConfig.mergedObjectTimespan = { MergedObjectTimespan::NCycles, (int)resetAfterCycles };
   // for now one merger should be enough, multiple layers to be supported later
   mergerConfig.topologySize = { TopologySize::MergersPerLayer, mergersPerLayer };

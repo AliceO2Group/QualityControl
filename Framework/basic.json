@@ -41,8 +41,8 @@
         "detectorName": "TST",
         "": "The last item in cycleDurations will be used for the rest of the duration whatever the period",
         "cycleDurations": [
-          {"cycleDuration": 10, "period": 35},
-          {"cycleDuration": 12, "period": 1}
+          {"cycleDurationSeconds": 10, "validitySeconds": 35},
+          {"cycleDurationSeconds": 12, "validitySeconds": 1}
         ],
         "maxNumberCycles": "-1",
         "": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",

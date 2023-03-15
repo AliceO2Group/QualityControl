@@ -96,9 +96,9 @@ TaskSpec InfrastructureSpecReader::readSpecEntry<TaskSpec>(const std::string& ta
   ts.cycleDurationSeconds = taskTree.get<int>("cycleDurationSeconds", -1);
   if (taskTree.count("cycleDurations") > 0) {
     for (const auto& cycleConfig : taskTree.get_child("cycleDurations")) {
-      auto duration = cycleConfig.second.get<size_t>("cycleDuration");
-      auto nbCycles = cycleConfig.second.get<size_t>("period");
-      ts.cycleDurations.push_back(std::pair{ duration, nbCycles });
+      auto cycleDuration = cycleConfig.second.get<size_t>("cycleDurationSeconds");
+      auto validity = cycleConfig.second.get<size_t>("validitySeconds");
+      ts.multipleCycleDurations.push_back(std::pair{ cycleDuration, validity });
     }
   }
   ts.dataSource = readSpecEntry<DataSourceSpec>(taskID, taskTree.get_child("dataSource"), wholeTree);
