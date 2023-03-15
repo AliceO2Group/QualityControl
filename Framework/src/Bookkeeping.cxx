@@ -27,8 +27,8 @@ namespace o2::quality_control::core
 
 void Bookkeeping::init(const std::string& url)
 {
-  if(mInitialized) {
-    if(mUrl == url) {
+  if (mInitialized) {
+    if (mUrl == url) {
       ILOG(Debug, Devel) << "Bookkeeping already initialized with the same URL, ignoring." << ENDM;
       return;
     } else {
@@ -48,7 +48,7 @@ void Bookkeeping::init(const std::string& url)
     return;
   }
 
-  if(mClient == nullptr) { // make sure we did not get an empty pointer
+  if (mClient == nullptr) { // make sure we did not get an empty pointer
     ILOG(Warning, Support) << "Error - we got an empty pointer to Bookkeeping" << ENDM;
     return;
   }
@@ -70,7 +70,7 @@ void Bookkeeping::populateActivity(Activity& activity, size_t runNumber)
     activity.mPeriodName = bkRun->run().lhcperiod();
     activity.mValidity.setMin(bkRun->run().timeo2start());
     activity.mValidity.setMax(bkRun->run().timeo2end());
-    activity.mBeamType = bkRun->lhcfill().beamtype();   // uncomment when we receive the proper beam type
+    activity.mBeamType = bkRun->lhcfill().beamtype(); // uncomment when we receive the proper beam type
     ILOG(Debug, Devel) << "activity created from run : " << activity << ENDM;
   } catch (std::runtime_error& error) {
     ILOG(Warning, Support) << "Error retrieving run info from Bookkeeping: " << error.what() << ENDM;
