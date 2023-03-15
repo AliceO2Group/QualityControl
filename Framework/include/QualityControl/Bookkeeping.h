@@ -17,11 +17,11 @@
 #define QC_CORE_BOOKKEEPING_H
 
 #include <string>
-#include "QualityControl/Activity.h"
 #include "BookkeepingApi/BkpProtoClient.h"
 
 namespace o2::quality_control::core
 {
+class Activity;
 
 class Bookkeeping
 {
@@ -36,13 +36,14 @@ class Bookkeeping
   Bookkeeping& operator=(const Bookkeeping&) = delete;
   Bookkeeping(const Bookkeeping&) = delete;
 
-  void init(std::string url);
+  void init(const std::string& url);
   void populateActivity(Activity& activity, size_t runNumber);
 
  private:
   Bookkeeping() = default;
 
   bool mInitialized = false;
+  std::string mUrl;
   std::unique_ptr<bkp::api::proto::BkpProtoClient> mClient;
 };
 

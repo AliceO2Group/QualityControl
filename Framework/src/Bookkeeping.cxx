@@ -16,25 +16,43 @@
 
 #include "QualityControl/Bookkeeping.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/Activity.h"
 #include "BookkeepingApi/BkpProtoClientFactory.h"
+#include "BookkeepingApi/BkpProtoClient.h"
 
 using namespace o2::bkp::api::proto;
 
 namespace o2::quality_control::core
 {
 
-void Bookkeeping::init(std::string url)
+void Bookkeeping::init(const std::string& url)
 {
+  if(mInitialized) {
+    if(mUrl == url) {
+      ILOG(Debug, Devel) << "Bookkeeping already initialized with the same URL, ignoring." << ENDM;
+      return;
+    } else {
+      ILOG(Warning, Support) << "Initializing the Bookkeeping although it has already been initialized with a different URL (" << url << " vs " << mUrl << ENDM;
+    }
+  }
+
   if (url.empty()) {
     ILOG(Warning, Support) << "No URL provided for Bookkeeping. Nothing will be stored nor retrieved." << ENDM;
     return;
   }
+
   try {
     mClient = BkpProtoClientFactory::create(url);
   } catch (std::runtime_error& error) {
     ILOG(Warning, Support) << "Error connecting to Bookkeeping: " << error.what() << ENDM;
     return;
   }
+
+  if(mClient == nullptr) { // make sure we did not get an empty pointer
+    ILOG(Warning, Support) << "Error - we got an empty pointer to Bookkeeping" << ENDM;
+    return;
+  }
+
   ILOG(Debug, Devel) << "Bookkeeping initialized" << ENDM;
   mInitialized = true;
 }
