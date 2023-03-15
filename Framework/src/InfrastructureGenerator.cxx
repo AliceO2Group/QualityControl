@@ -221,7 +221,7 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
         cycleDurationsMultiplied = taskSpec.multipleCycleDurations;
       }
       std::for_each(cycleDurationsMultiplied.begin(), cycleDurationsMultiplied.end(),
-                    [taskSpec](std::pair<size_t, size_t>& p) { p.second *= taskSpec.mergerCycleMultiplier; });
+                    [taskSpec](std::pair<size_t, size_t>& p) { p.first *= taskSpec.mergerCycleMultiplier; });
       generateMergers(workflow, taskSpec.taskName, numberOfLocalMachines, cycleDurationsMultiplied, taskSpec.mergingMode,
                       resetAfterCycles, infrastructureSpec.common.monitoringUrl, taskSpec.detectorName, taskSpec.mergersPerLayer);
 
