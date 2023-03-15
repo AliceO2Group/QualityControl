@@ -60,15 +60,19 @@ class Ccdb:
         logger.info(f"Instantiate CCDB at {url}")
         self.url = url
 
-    def getObjectsList(self, added_since: int = 0, path: str = "") -> List[str]:
+    def getObjectsList(self, added_since: int = 0, path: str = "", no_wildcard: bool = False) -> List[str]:
         '''
         Get the full list of objects in the CCDB that have been created since added_since.
 
+        :param no_wildcard: if true, the path for which we get the list is not modified to add `/.*`.
+                            Set it to true if you need to get the versions of an object and not a folder.
+        :param path: the path
         :param added_since: if specified, only return objects added since this timestamp in epoch milliseconds.
         :return A list of strings, each containing a path to an object in the CCDB.
         '''
         logger.debug(f"added_since : {added_since}")
-        url_for_all_obj = self.url + '/latest/' + path + '/.*'
+        url_for_all_obj = self.url + '/latest/' + path
+        url_for_all_obj += '/' if no_wildcard else '/.*'
         logger.debug(f"Ccdb::getObjectsList -> {url_for_all_obj}")
         headers = {'Accept':'application/json', 'If-Not-Before':str(added_since)}
         r = requests.get(url_for_all_obj, headers=headers)

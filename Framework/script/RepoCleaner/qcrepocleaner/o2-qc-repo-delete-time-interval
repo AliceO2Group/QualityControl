@@ -20,6 +20,8 @@ def parseArgs():
                         help='Clean this path (without initial slash and without .* at the end, e.g. qc/TST/MO/Bob).', required=True)
     parser.add_argument('--from', dest='from_ts', action='store', help='From this timestamp.', required=True)
     parser.add_argument('--to', dest='to_ts', action='store', help='To this timestamp.', required=True)
+    parser.add_argument('--only-path-no-subdir', action='store_true', help='Do not process the subfolders, i.e. do not '
+                                                                 'add .* at the end of the path.')
     parser.add_argument('--one-by-one', action='store_true', help='Ask confirmation for each deletion')
     parser.add_argument('--print-list', action='store_true', help='Only print the list of objects that would be deleted')
     args = parser.parse_args()
@@ -45,7 +47,8 @@ def prepare_main_logger():
 
 def run(args):
     ccdb = Ccdb(args.url)
-    versions = ccdb.getVersionsList(args.path + "/.*", args.from_ts, args.to_ts)
+    path = args.path+"/" if args.only_path_no_subdir else args.path + "/.*"
+    versions = ccdb.getVersionsList(path, args.from_ts, args.to_ts)
     logging.debug(versions)
     logging.info("Here are the objects that are going to be deleted: ")
 

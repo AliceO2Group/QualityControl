@@ -97,6 +97,8 @@ def parseArgs():
                         help='Only work on given path (omit the initial slash).')
     parser.add_argument('--workers', dest='workers', action='store', default="1",
                         help='Number of parallel workers.')
+    parser.add_argument('--only-path-no-subdir', action='store_true', default=False, help='Set to true if the '
+                          'only-path points to an object rather than a folder or if subdirectories must be ignored.')
     args = parser.parse_args()
     dryable.set(args.dry_run)
     logging.info(args)
@@ -362,7 +364,7 @@ def run(args, ccdb_url, rules):
     # Get list of objects from CCDB
     ccdb = Ccdb(ccdb_url)
     ccdb.logger = logging.getLogger
-    paths = ccdb.getObjectsList(getTimestampLastExecution(), args.only_path)
+    paths = ccdb.getObjectsList(getTimestampLastExecution(), args.only_path, args.only_path_no_subdir)
     if args.only_path != '':
         paths = [item for item in paths if item is not None and item.startswith(args.only_path)]
     logging.debug(paths)
