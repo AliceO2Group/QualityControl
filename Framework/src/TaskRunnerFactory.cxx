@@ -161,7 +161,7 @@ InputSpec TaskRunnerFactory::createTimerInputSpec(const CommonSpec& globalConfig
 {
   // This is to check that the durations are not below 10 seconds except when using a dummy database
   auto dummyDatabaseUsed = globalConfig.database.count("implementation") > 0 && globalConfig.database.at("implementation") == "Dummy";
-  if(!dummyDatabaseUsed) {
+  if (!dummyDatabaseUsed) {
     for (auto& [cycleDuration, validity] : cycleDurations) {
       if (cycleDuration < 10) {
         ILOG(Error, Support) << "Cycle duration is too short (" << cycleDuration << "), replaced by a duration of 10 seconds." << ENDM;
