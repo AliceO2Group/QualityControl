@@ -365,25 +365,25 @@ void DigitsTask::buildHistograms()
 
   for (int iLayer = 0; iLayer < 6; ++iLayer) {
     mLayers.push_back(new TH2F(Form("DigitsPerLayer/layer%i", iLayer), Form("Digit count per pad in layer %i;stack;sector", iLayer), 76, -0.5, 75.5, 2592, -0.5, 2591.5));
-/*    auto xax = mLayers.back()->GetXaxis();
-    xax->SetBinLabel(8, "0");
-    xax->SetBinLabel(24, "1");
-    xax->SetBinLabel(38, "2");
-    xax->SetBinLabel(52, "3");
-    xax->SetBinLabel(68, "4");
-    xax->SetTicks("-");
-    xax->SetTickSize(0.01);
-    xax->SetLabelSize(0.045);
-    xax->SetLabelOffset(0.01);
-    auto yax = mLayers.back()->GetYaxis();
-    for (int iSec = 0; iSec < 18; ++iSec) {
-      auto lbl = std::to_string(iSec);
-      yax->SetBinLabel(iSec * 144 + 72, lbl.c_str());
-    }
-    yax->SetTicks("-");
-    yax->SetTickSize(0.01);
-    yax->SetLabelSize(0.045);
-    yax->SetLabelOffset(0.01);*/
+    /*    auto xax = mLayers.back()->GetXaxis();
+        xax->SetBinLabel(8, "0");
+        xax->SetBinLabel(24, "1");
+        xax->SetBinLabel(38, "2");
+        xax->SetBinLabel(52, "3");
+        xax->SetBinLabel(68, "4");
+        xax->SetTicks("-");
+        xax->SetTickSize(0.01);
+        xax->SetLabelSize(0.045);
+        xax->SetLabelOffset(0.01);
+        auto yax = mLayers.back()->GetYaxis();
+        for (int iSec = 0; iSec < 18; ++iSec) {
+          auto lbl = std::to_string(iSec);
+          yax->SetBinLabel(iSec * 144 + 72, lbl.c_str());
+        }
+        yax->SetTicks("-");
+        yax->SetTickSize(0.01);
+        yax->SetLabelSize(0.045);
+        yax->SetLabelOffset(0.01);*/
     mLayers.back()->SetStats(0);
     drawTrdLayersGrid(mLayers.back());
     fillLinesOnHistsPerLayer(iLayer);
