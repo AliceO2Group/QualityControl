@@ -10,8 +10,8 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// @file    Bookkeeping.h
-/// @author  Barthelemy von Haller
+/// @file     Bookkeeping.h
+/// @author   Barthelemy von Haller
 
 #ifndef QC_CORE_BOOKKEEPING_H
 #define QC_CORE_BOOKKEEPING_H
