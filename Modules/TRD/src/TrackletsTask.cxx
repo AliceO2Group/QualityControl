@@ -236,7 +236,7 @@ void TrackletsTask::buildTrackletLayers()
 {
   for (int iLayer = 0; iLayer < 6; ++iLayer) {
     mLayers[iLayer] = new TH2F(Form("TrackletsPerLayer/layer%i", iLayer), Form("Tracklet count per mcm in layer %i;stack;sector", iLayer), 76, -0.5, 75.5, 144, -0.5, 143.5);
-
+/*
     auto xax = mLayers[iLayer]->GetXaxis();
     xax->SetBinLabel(8, "0");
     xax->SetBinLabel(24, "1");
@@ -257,7 +257,7 @@ void TrackletsTask::buildTrackletLayers()
     yax->SetTicks("");
     yax->SetTickSize(0.01);
     yax->SetLabelSize(0.045);
-    yax->SetLabelOffset(0.01);
+    yax->SetLabelOffset(0.01);*/
     mLayers[iLayer]->SetStats(0);
 
     drawTrdLayersGrid(mLayers[iLayer]);

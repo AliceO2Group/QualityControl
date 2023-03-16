@@ -363,24 +363,9 @@ void DigitsTask::buildHistograms()
     getObjectsManager()->startPublishing(h);
   }
 
-  /*  int cn = 0;
-  int sm = 0;
-
-  for (int count = 0; count < 540; ++count) {
-    sm = count / 30;
-    std::string label = fmt::format("PulseHeightPerChamber/pulseheight_{0:02d}_{1}_{2}", sm, cn / 6, cn % 6);
-    std::string title = fmt::format("{0:02d}_{1}_{2};Timebin;Chamber", sm, cn / 6, cn % 6);
-    TH1F* h = new TH1F(label.c_str(), title.c_str(), 30, -0.5, 29.5);
-    mPulseHeightPerChamber_1D[count].reset(h);
-    getObjectsManager()->startPublishing(h);
-    cn++;
-    if (cn > 29)
-      cn = 0;
-  }
-*/
   for (int iLayer = 0; iLayer < 6; ++iLayer) {
     mLayers.push_back(new TH2F(Form("DigitsPerLayer/layer%i", iLayer), Form("Digit count per pad in layer %i;stack;sector", iLayer), 76, -0.5, 75.5, 2592, -0.5, 2591.5));
-    auto xax = mLayers.back()->GetXaxis();
+/*    auto xax = mLayers.back()->GetXaxis();
     xax->SetBinLabel(8, "0");
     xax->SetBinLabel(24, "1");
     xax->SetBinLabel(38, "2");
@@ -398,7 +383,7 @@ void DigitsTask::buildHistograms()
     yax->SetTicks("-");
     yax->SetTickSize(0.01);
     yax->SetLabelSize(0.045);
-    yax->SetLabelOffset(0.01);
+    yax->SetLabelOffset(0.01);*/
     mLayers.back()->SetStats(0);
     drawTrdLayersGrid(mLayers.back());
     fillLinesOnHistsPerLayer(iLayer);
