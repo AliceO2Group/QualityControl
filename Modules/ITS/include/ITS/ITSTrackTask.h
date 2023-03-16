@@ -73,6 +73,12 @@ class ITSTrackTask : public TaskInterface
   TH1D* hAssociatedClusterFraction;
   TH1D* hNtracks;
   TH2D* hNClustersPerTrackEta;
+  TH2D* hNClustersPerTrackPhi;
+  TH2D* hHitFirstLayerPhiAll;
+  TH2D* hHitFirstLayerPhi4cls;
+  TH2D* hHitFirstLayerPhi5cls;
+  TH2D* hHitFirstLayerPhi6cls;
+  TH2D* hHitFirstLayerPhi7cls;
   TH2D* hClusterVsBunchCrossing;
   TH2D* hNClusterVsChipITS;
 
@@ -81,16 +87,14 @@ class ITSTrackTask : public TaskInterface
   float mVertexRsize = 0.8;
   Int_t mNtracksMAX = 100;
   Int_t mDoTTree = 0;
-  Int_t mNTracks = 0;
+  // mDoNorm: 0 = no normalization, 1 = normalization by nVertices, 2 = normalization by nRofs
+  Int_t mDoNorm = 1;
   Int_t mNRofs = 0;
   int nBCbins = 103;
   long int mTimestamp = -1;
   int nVertices = 0;
   double mChipBins[2125]; // x bins for cos(lambda) plot
   double mCoslBins[25];   // y bins for cos(lambda) plot
-
-  const int NROFOCCUPANCY = 100;
-  Int_t mNClusters = 0;
 
   TTree* tClusterMap;
   //  Int_t mNtracksInROF;
