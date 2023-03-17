@@ -73,7 +73,7 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
     throw std::runtime_error("Both cycleDurationSeconds and cycleDurations have been defined. Pick one. Sheepishly bailing out.");
   }
   auto multipleCycleDurations = taskSpec.multipleCycleDurations; // this is the new style
-  if (taskSpec.cycleDurationSeconds > 0) {       // if it was actually the old style, then we convert it to the new style
+  if (taskSpec.cycleDurationSeconds > 0) {                       // if it was actually the old style, then we convert it to the new style
     multipleCycleDurations = { { taskSpec.cycleDurationSeconds, 1 } };
   }
   auto inputs = taskSpec.dataSource.inputs;
