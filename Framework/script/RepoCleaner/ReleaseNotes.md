@@ -1,5 +1,9 @@
 # Release notes
 
+1.3
+- Add new tool `o2-qc-repo-find-objects-not-updated` to find all the objects under a path that did not get a new
+  version in the past X days. 
+
 1.2
 
 - Add option `--only-path-no-subdir` to `o2-qc-repo-cleaner` to allow setting `--only-path` to an object rather than a
