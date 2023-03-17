@@ -2,7 +2,7 @@ import datetime
 import logging
 import sys
 import traceback
-from typing import List
+from typing import List, Dict
 
 import dryable
 import requests
@@ -70,11 +70,10 @@ class Ccdb:
         :param added_since: if specified, only return objects added since this timestamp in epoch milliseconds.
         :return A list of strings, each containing a path to an object in the CCDB.
         '''
-        logger.debug(f"added_since : {added_since}")
         url_for_all_obj = self.url + '/latest/' + path
         url_for_all_obj += '/' if no_wildcard else '/.*'
         logger.debug(f"Ccdb::getObjectsList -> {url_for_all_obj}")
-        headers = {'Accept':'application/json', 'If-Not-Before':str(added_since)}
+        headers = {'Accept': 'application/json', 'If-Not-Before':str(added_since)}
         r = requests.get(url_for_all_obj, headers=headers)
         r.raise_for_status()
         try:
@@ -83,9 +82,31 @@ class Ccdb:
             logger.error(f"JSON decode error: {err}")
             raise
         paths = []
+        logger.debug(f"json: {json}")
         for item in json['objects']:
             paths.append(item['path'])
+        logger.debug(type(json['objects']));
+        logger.debug(type(json['objects'][0]));
+
         return paths
+
+    def getFullObjectsDetails(self, path: str = "") -> List[Dict]:
+        '''
+        Return the full json of all the objects found in the path.
+        :param path:
+        :return:
+        '''
+        url_for_all_obj = self.url + '/latest/' + path + '.*'
+        logger.debug(f"Ccdb::getFullObjectsDetails -> {url_for_all_obj}")
+        headers = {'Accept': 'application/json'}
+        r = requests.get(url_for_all_obj, headers=headers)
+        r.raise_for_status()
+        try:
+            json = r.json()
+        except json.decoder.JSONDecodeError as err:
+            logger.error(f"JSON decode error: {err}")
+            raise
+        return json['objects']
 
     def getVersionsList(self, object_path: str, from_ts: str = "", to_ts: str = "", run: int = -1) \
             -> List[ObjectVersion]:
