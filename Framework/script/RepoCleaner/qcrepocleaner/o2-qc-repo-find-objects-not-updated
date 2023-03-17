@@ -16,7 +16,7 @@ def parseArgs():
     parser.add_argument('--log-level', dest='log_level', action='store', default="20",
                         help='Log level (CRITICAL->50, ERROR->40, WARNING->30, INFO->20,DEBUG->10)')
     parser.add_argument('--path', dest='path', action='store', default="",
-                        help='Clean this path (without initial slash and without .* at the end, e.g. qc/TST/MO/Bob).', required=True)
+                        help='The path to work with (without initial slash and without .* at the end, e.g. qc/TST/MO/Bob).', required=True)
     parser.add_argument('--span', dest='span', action='store', default="30",
                         help='The span of time (in days) for which objects without updates will be identified.')
     args = parser.parse_args()
