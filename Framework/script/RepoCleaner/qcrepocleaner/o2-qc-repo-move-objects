@@ -4,7 +4,7 @@ import logging
 import argparse
 import dryable
 from qcrepocleaner.Ccdb import Ccdb
-import sys
+from qcrepocleaner.binUtils import prepare_main_logger
 import re
 
 
@@ -27,21 +27,6 @@ def parse_args():
     dryable.set(args.dry_run)
     logging.info(args)
     return args
-
-
-def prepare_main_logger():
-    logger = logging.getLogger()
-    # Logging (split between stderr and stdout)
-    formatter = logging.Formatter(fmt='%(asctime)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
-    h1 = logging.StreamHandler(sys.stdout)
-    h1.setLevel(logging.DEBUG)
-    h1.addFilter(lambda record: record.levelno <= logging.INFO) # filter out everything that is above INFO level
-    h1.setFormatter(formatter)
-    logger.addHandler(h1)
-    h2 = logging.StreamHandler(sys.stderr)
-    h2.setLevel(logging.WARNING)     # take only warnings and error logs
-    h2.setFormatter(formatter)
-    logger.addHandler(h2)
 
 
 def run(args):
