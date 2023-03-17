@@ -31,6 +31,9 @@
         "filterDiscardFile": "/tmp/_ID_.txt", "": ["If set, the messages discarded because of filterDiscardLevel",
           "will go to this file (default: <none>); The keyword _ID_ is replaced by the device id. Discarded Debug ",
           "messages won't go there."]
+      },
+      "bookkeeping": {
+        "url": ""
       }
     },
     "tasks": {

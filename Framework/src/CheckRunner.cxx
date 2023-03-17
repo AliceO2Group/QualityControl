@@ -34,6 +34,7 @@
 #include "QualityControl/CheckRunnerFactory.h"
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/ConfigParamGlo.h"
+#include "QualityControl/Bookkeeping.h"
 
 #include <TSystem.h>
 
@@ -212,6 +213,7 @@ void CheckRunner::init(framework::InitContext& iCtx)
   try {
     initInfologger(iCtx);
     refreshConfig(iCtx);
+    Bookkeeping::getInstance().init(mConfig.bookkeepingUrl);
     initDatabase();
     initMonitoring();
     initServiceDiscovery();

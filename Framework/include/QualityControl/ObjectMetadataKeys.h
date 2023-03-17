@@ -41,6 +41,7 @@ constexpr auto runType = "RunType";
 constexpr auto runNumber = "RunNumber";
 constexpr auto passName = "PassName";
 constexpr auto periodName = "PeriodName";
+constexpr auto beamType = "BeamType";
 
 } // namespace o2::quality_control::repository::metadata_keys
 

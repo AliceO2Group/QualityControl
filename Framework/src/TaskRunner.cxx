@@ -40,6 +40,7 @@
 #include "QualityControl/TaskRunnerFactory.h"
 #include "QualityControl/ConfigParamGlo.h"
 #include "QualityControl/ObjectsManager.h"
+#include "QualityControl/Bookkeeping.h"
 
 #include <string>
 #include <TFile.h>
@@ -139,6 +140,7 @@ void TaskRunner::init(InitContext& iCtx)
 
   refreshConfig(iCtx);
   printTaskConfig();
+  Bookkeeping::getInstance().init(mTaskConfig.bookkeepingUrl);
 
   // registering state machine callbacks
   try {
@@ -420,10 +422,10 @@ void TaskRunner::startOfActivity()
   mTimerTotalDurationActivity.reset();
   mTotalNumberObjectsPublished = 0;
 
-  // Start activity in module's stask and update objectsManager
-  Activity activity = mTaskConfig.fallbackActivity;
-  activity.mId = mRunNumber;
+  // Start activity in module's task and update objectsManager
   ILOG(Info, Support) << "Starting run " << mRunNumber << ENDM;
+  Activity activity = mTaskConfig.fallbackActivity;
+  Bookkeeping::getInstance().populateActivity(activity, mRunNumber);
   mObjectsManager->setActivity(activity);
   mCollector->setRunNumber(mRunNumber);
   mTask->startOfActivity(activity);
