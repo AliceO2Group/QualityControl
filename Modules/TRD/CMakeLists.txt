@@ -2,7 +2,7 @@
 
 add_library(O2QcTRD)
 
-target_sources(O2QcTRD PRIVATE src/PulseHeightTrackMatch.cxx  src/TrackletsCheck.cxx  src/TrackletsTask.cxx  src/PulseHeightCheck.cxx  src/PulseHeight.cxx  src/RawData.cxx  src/DigitsTask.cxx
+target_sources(O2QcTRD PRIVATE src/TrackingTask.cxx  src/PulseHeightTrackMatch.cxx  src/TrackletsCheck.cxx  src/TrackletsTask.cxx  src/PulseHeightCheck.cxx  src/PulseHeight.cxx  src/RawData.cxx  src/DigitsTask.cxx
                              src/DigitsCheck.cxx src/TRDTrending.cxx src/TrendingTaskConfigTRD.cxx src/PulseHeightPostProcessing.cxx)
 
 target_include_directories(
@@ -20,6 +20,7 @@ install(TARGETS O2QcTRD
 
 add_root_dictionary(O2QcTRD
                     HEADERS
+  include/TRD/TrackingTask.h
   include/TRD/PulseHeightTrackMatch.h
   include/TRD/TrackletsCheck.h
   include/TRD/TrackletsTask.h
