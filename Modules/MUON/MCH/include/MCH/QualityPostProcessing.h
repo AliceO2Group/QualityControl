@@ -61,6 +61,10 @@ class QualityPostProcessing : public PostProcessingInterface
   PostProcessingConfigMCH mConfig;
 
   std::string mAggregatedQualityName{ "Aggregator/MCHQuality" };
+  std::string mMessageGood;
+  std::string mMessageMedium;
+  std::string mMessageBad;
+  std::string mMessageNull;
 
   // CCDB object accessors
   std::vector<CcdbObjectHelper> mCcdbObjects;

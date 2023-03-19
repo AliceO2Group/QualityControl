@@ -33,6 +33,10 @@ void QualityPostProcessing::configure(std::string name, const boost::property_tr
   PostProcessingConfigMCH mchConfig(name, config);
 
   mAggregatedQualityName = mchConfig.getParameter<std::string>("AggregatedQualityName");
+  mMessageGood = mchConfig.getParameter<std::string>("MessageGood");
+  mMessageMedium = mchConfig.getParameter<std::string>("MessageMedium");
+  mMessageBad = mchConfig.getParameter<std::string>("MessageBad");
+  mMessageNull = mchConfig.getParameter<std::string>("MessageNull");
 
   for (auto source : mchConfig.dataSources) {
     mCcdbObjects.emplace_back(source.path, source.name);
@@ -120,14 +124,24 @@ void QualityPostProcessing::update(Trigger t, framework::ServiceRegistryRef serv
 
   mCheckerMessages.insert(mCheckerMessages.begin(), "");
   if (mchQuality == Quality::Good) {
+    if (!mMessageGood.empty()) {
+      mCheckerMessages.insert(mCheckerMessages.begin(), fmt::format("#color[{}]", kRed) + "{" + mMessageGood + "}");
+    }
     mCheckerMessages.insert(mCheckerMessages.begin(), fmt::format("MCH Quality = #color[{}]", kGreen + 2) + "{Good}");
   } else if (mchQuality == Quality::Medium) {
-    mCheckerMessages.insert(mCheckerMessages.begin(), fmt::format("#color[{}]", kOrange - 3) + "{Add Logbook entry}");
+    if (!mMessageMedium.empty()) {
+      mCheckerMessages.insert(mCheckerMessages.begin(), fmt::format("#color[{}]", kOrange - 3) + "{" + mMessageMedium + "}");
+    }
     mCheckerMessages.insert(mCheckerMessages.begin(), fmt::format("MCH Quality = #color[{}]", kOrange - 3) + "{Medium}");
   } else if (mchQuality == Quality::Bad) {
-    mCheckerMessages.insert(mCheckerMessages.begin(), fmt::format("#color[{}]", kRed) + "{Inform MCH on-call immediately}");
+    if (!mMessageBad.empty()) {
+      mCheckerMessages.insert(mCheckerMessages.begin(), fmt::format("#color[{}]", kRed) + "{" + mMessageBad + "}");
+    }
     mCheckerMessages.insert(mCheckerMessages.begin(), fmt::format("MCH Quality = #color[{}]", kRed) + "{Bad}");
   } else if (mchQuality == Quality::Null) {
+    if (!mMessageNull.empty()) {
+      mCheckerMessages.insert(mCheckerMessages.begin(), fmt::format("#color[{}]", kViolet - 6) + "{" + mMessageNull + "}");
+    }
     mCheckerMessages.insert(mCheckerMessages.begin(), fmt::format("MCH Quality = #color[{}]", kViolet - 6) + "{Null}");
   }
 

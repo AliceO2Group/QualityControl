@@ -68,4 +68,28 @@ PostProcessingConfigMCH::PostProcessingConfigMCH(std::string name, const boost::
   }
 }
 
+template <>
+const std::string PostProcessingConfigMCH::getParameter(std::string name) const
+{
+  std::string result;
+  auto entry = parameters.find(name);
+  if (entry != parameters.end()) {
+    result = entry->second;
+  }
+
+  return result;
+}
+
+template <>
+const std::string PostProcessingConfigMCH::getParameter(std::string name, std::string defaultValue) const
+{
+  std::string result = defaultValue;
+  auto entry = parameters.find(name);
+  if (entry != parameters.end()) {
+    result = entry->second;
+  }
+
+  return result;
+}
+
 } // namespace o2::quality_control_modules::muonchambers
