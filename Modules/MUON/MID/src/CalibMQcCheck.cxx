@@ -19,9 +19,12 @@
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
 // ROOT
+#include <TStyle.h>
 #include <TH1.h>
 #include <TH2.h>
-#include <TProfile2D.h>
+#include <TList.h>
+#include <TLatex.h>
+#include <TPaveText.h>
 
 #include <DataFormatsQualityControl/FlagReasons.h>
 
@@ -35,25 +38,57 @@ Quality CalibMQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
 {
   // printf("\n*********** CalibMQcCheck ****** check \n");
   Quality result = Quality::Null;
-
+  IsEmpty = 0;
   for (auto& [moName, mo] : *moMap) {
 
     (void)moName;
-    if (mo->getName() == "mNbTimeFrame") {
-      auto* h = dynamic_cast<TH1F*>(mo->getObject());
-      mTF = h->GetBinContent(1);
-      if (mTF > 0)
-        result = Quality::Good;
-      else
-        result = Quality::Bad;
+    if (mo->getName() == "MBendBadMap11") {
+      auto* h2 = dynamic_cast<TH2I*>(mo->getObject());
+      if (!h2->GetEntries())
+        IsEmpty = 1;
+      // h2->Scale(scale);
     }
-    if (mo->getName() == "MNbNoiseROF") {
-      auto* h = dynamic_cast<TH1F*>(mo->getObject());
-      mNoiseRof = h->GetBinContent(1);
+    if (mo->getName() == "MBendBadMap12") {
+      auto* h2 = dynamic_cast<TH2I*>(mo->getObject());
+      if (!h2->GetEntries())
+        IsEmpty = 1;
+      // h2->Scale(scale);
     }
-    if (mo->getName() == "MNbDeadROF") {
-      auto* h = dynamic_cast<TH1F*>(mo->getObject());
-      mDeadRof = h->GetBinContent(1);
+    if (mo->getName() == "MBendBadMap21") {
+      auto* h2 = dynamic_cast<TH2I*>(mo->getObject());
+      if (!h2->GetEntries())
+        IsEmpty = 1;
+      // h2->Scale(scale);
+    }
+    if (mo->getName() == "MBendBadMap22") {
+      auto* h2 = dynamic_cast<TH2I*>(mo->getObject());
+      if (!h2->GetEntries())
+        IsEmpty = 1;
+      // h2->Scale(scale);
+    }
+    if (mo->getName() == "MNBendBadMap11") {
+      auto* h2 = dynamic_cast<TH2I*>(mo->getObject());
+      if (!h2->GetEntries())
+        IsEmpty = 1;
+      // h2->Scale(scale);
+    }
+    if (mo->getName() == "MNBendBadMap12") {
+      auto* h2 = dynamic_cast<TH2I*>(mo->getObject());
+      if (!h2->GetEntries())
+        IsEmpty = 1;
+      // h2->Scale(scale);
+    }
+    if (mo->getName() == "MNBendBadMap21") {
+      auto* h2 = dynamic_cast<TH2I*>(mo->getObject());
+      if (!h2->GetEntries())
+        IsEmpty = 1;
+      // h2->Scale(scale);
+    }
+    if (mo->getName() == "MNBendBadMap22") {
+      auto* h2 = dynamic_cast<TH2I*>(mo->getObject());
+      if (!h2->GetEntries())
+        IsEmpty = 1;
+      // h2->Scale(scale);
     }
   }
   return result;
@@ -87,82 +122,41 @@ static std::string getCurrentTime()
   return result;
 }
 
+static TLatex* drawLatex(double xmin, double ymin, Color_t color, TString text)
+{
+
+  TLatex* tl = new TLatex(xmin, ymin, Form("%s", text.Data()));
+  tl->SetNDC();
+  tl->SetTextFont(22); // Normal 42
+  tl->SetTextSize(0.08);
+  tl->SetTextColor(color);
+
+  return tl;
+}
+
 void CalibMQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   // printf("\n*********** CalibMQcCheck ****** beautify \n");
+  gStyle->SetPalette(kRainBow);
   auto currentTime = getCurrentTime();
-  updateTitle(dynamic_cast<TProfile2D*>(mo->getObject()), currentTime);
-  // printf("\n*********** CalibQcCheck ****** nTF = %d, nDeadRof = %d, nNoiseRof = %d\n",nTF,nDeadRof,nNoiseRof);
-  if (checkResult == Quality::Good) {
-    // float scale = 1 / (nTF * scaleTime); //Dead max 998,1
-    // float scale = 1 / (nTF); //Dead max 11,38 (== 113826/10000TF)
-    // float scale = 1.; //Dead max 113826
-    float scale = 100.;
-    /// Scale Noise Maps ::
-    if (mo->getName() == "MBendNoiseMap11") {
-      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
-      h2->Scale(scale);
-    }
-    if (mo->getName() == "MBendNoiseMap12") {
-      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
-      h2->Scale(scale);
-    }
-    if (mo->getName() == "MBendNoiseMap21") {
-      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
-      h2->Scale(scale);
-    }
-    if (mo->getName() == "MBendNoiseMap22") {
-      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
-      h2->Scale(scale);
-    }
-    if (mo->getName() == "MNBendNoiseMap11") {
-      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
-      h2->Scale(scale);
-    }
-    if (mo->getName() == "MNBendNoiseMap12") {
-      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
-      h2->Scale(scale);
-    }
-    if (mo->getName() == "MNBendNoiseMap21") {
-      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
-      h2->Scale(scale);
-    }
-    if (mo->getName() == "MNBendNoiseMap22") {
-      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
-      h2->Scale(scale);
-    }
-    /// Scale Dead Maps ::
-    if (mo->getName() == "MBendDeadMap11") {
-      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
-      h2->Scale(scale);
-    }
-    if (mo->getName() == "MBendDeadMap12") {
-      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
-      h2->Scale(scale);
-    }
-    if (mo->getName() == "MBendDeadMap21") {
-      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
-      h2->Scale(scale);
-    }
-    if (mo->getName() == "MBendDeadMap22") {
-      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
-      h2->Scale(scale);
-    }
-    if (mo->getName() == "MNBendDeadMap11") {
-      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
-      h2->Scale(scale);
-    }
-    if (mo->getName() == "MNBendDeadMap12") {
-      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
-      h2->Scale(scale);
-    }
-    if (mo->getName() == "MNBendDeadMap21") {
-      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
-      h2->Scale(scale);
-    }
-    if (mo->getName() == "MNBendDeadMap22") {
-      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
-      h2->Scale(scale);
+  updateTitle(dynamic_cast<TH2I*>(mo->getObject()), currentTime);
+  TLatex* msg;
+  if (mo->getName() == "MBendBadMap11") {
+    auto* h2 = dynamic_cast<TH2I*>(mo->getObject());
+    if (IsEmpty == 1) {
+      msg = drawLatex(.2, 0.8, kRed, " EMPTY ");
+      h2->GetListOfFunctions()->Add(msg);
+      msg = drawLatex(.1, 0.65, kRed, " Calib Objets not produced ");
+      h2->GetListOfFunctions()->Add(msg);
+      msg = drawLatex(.15, 0.5, kRed, " Quality::BAD ");
+      h2->GetListOfFunctions()->Add(msg);
+    } else {
+      msg = drawLatex(.2, 0.8, kGreen, "  Not Empty ");
+      h2->GetListOfFunctions()->Add(msg);
+      // msg = drawLatex(.15, 0.65, kGreen, " Calib Objets   ");
+      // h2->GetListOfFunctions()->Add(msg);
+      msg = drawLatex(.15, 0.5, kGreen, " Quality::GOOD ");
+      h2->GetListOfFunctions()->Add(msg);
     }
   }
 }

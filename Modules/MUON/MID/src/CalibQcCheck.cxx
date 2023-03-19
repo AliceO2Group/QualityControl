@@ -94,8 +94,8 @@ void CalibQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResu
   updateTitle(dynamic_cast<TProfile2D*>(mo->getObject()), currentTime);
   // printf("\n*********** CalibQcCheck ****** nTF = %d, nDeadRof = %d, nNoiseRof = %d\n",nTF,nDeadRof,nNoiseRof);
   if (checkResult == Quality::Good) {
-    // float scale = 1 / (nTF * scaleTime); //Dead max 998,1
-    // float scale = 1 / (nTF); //Dead max 11,38 (== 113826/10000TF)
+    // float scale = 1 / (mTF * scaleTime); //Dead max 998,1
+    // float scale = 1 / (mTF); //Dead max 11,38 (== 113826/10000TF)
     // float scale = 1.; //Dead max 113826
     float scale = 100.;
     /// Scale Noise Maps ::

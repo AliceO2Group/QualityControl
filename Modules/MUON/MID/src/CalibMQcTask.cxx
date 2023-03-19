@@ -12,6 +12,7 @@
 ///
 /// \author Valerie Ramillien
 
+#include <TStyle.h>
 #include <TCanvas.h>
 #include <TH1.h>
 #include <TH2.h>
@@ -53,17 +54,7 @@ void CalibMQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   // std::cout << "!!!! START initialize CalibQcTask Test !!!! " << std::endl;
   /////////////////
 
-  mMNbTimeFrame = std::make_shared<TH1F>("MNbTimeFrame", "NbTimeFrame", 1, 0, 1.);
-  getObjectsManager()->startPublishing(mMNbTimeFrame.get());
-
-  mMNbDeadROF = std::make_shared<TH1F>("MNbDeadROF", "NbDeadROF", 1, 0, 1.);
-  getObjectsManager()->startPublishing(mMNbDeadROF.get());
-
-  mMNbNoiseROF = std::make_shared<TH1F>("MNbNoiseROF", "NbNoiseRF", 1, 0, 1.);
-  getObjectsManager()->startPublishing(mMNbNoiseROF.get());
-
-  mMNbBadROF = std::make_shared<TH1F>("MNbBadROF", "NbBadRF", 1, 0, 1.);
-  getObjectsManager()->startPublishing(mMNbBadROF.get());
+  gStyle->SetPalette(kRainBow);
 
   //////////////////////////////////
   /// Noise strips Histograms :: ///
@@ -85,56 +76,56 @@ void CalibMQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mMMultNoiseMT22B.get());
   getObjectsManager()->startPublishing(mMMultNoiseMT22NB.get());
 
-  mMBendNoiseMap11 = std::make_shared<TProfile2D>("MBendNoiseMap11", "Bending Noise Map MT11", 14, -7, 7, 576, 0, 9);
+  mMBendNoiseMap11 = std::make_shared<TH2I>("MBendNoiseMap11", "Bending Noise Map MT11", 14, -7, 7, 576, 0, 9);
   getObjectsManager()->startPublishing(mMBendNoiseMap11.get());
   mMBendNoiseMap11->GetXaxis()->SetTitle("Column");
   mMBendNoiseMap11->GetYaxis()->SetTitle("Line");
   mMBendNoiseMap11->SetOption("colz");
   mMBendNoiseMap11->SetStats(0);
 
-  mMBendNoiseMap12 = std::make_shared<TProfile2D>("MBendNoiseMap12", "Bending Noise Map MT12", 14, -7, 7, 576, 0, 9);
+  mMBendNoiseMap12 = std::make_shared<TH2I>("MBendNoiseMap12", "Bending Noise Map MT12", 14, -7, 7, 576, 0, 9);
   getObjectsManager()->startPublishing(mMBendNoiseMap12.get());
   mMBendNoiseMap12->GetXaxis()->SetTitle("Column");
   mMBendNoiseMap12->GetYaxis()->SetTitle("Line");
   mMBendNoiseMap12->SetOption("colz");
   mMBendNoiseMap12->SetStats(0);
 
-  mMBendNoiseMap21 = std::make_shared<TProfile2D>("MBendNoiseMap21", "Bending Noise Map MT21", 14, -7, 7, 576, 0, 9);
+  mMBendNoiseMap21 = std::make_shared<TH2I>("MBendNoiseMap21", "Bending Noise Map MT21", 14, -7, 7, 576, 0, 9);
   getObjectsManager()->startPublishing(mMBendNoiseMap21.get());
   mMBendNoiseMap21->GetXaxis()->SetTitle("Column");
   mMBendNoiseMap21->GetYaxis()->SetTitle("Line");
   mMBendNoiseMap21->SetOption("colz");
   mMBendNoiseMap21->SetStats(0);
 
-  mMBendNoiseMap22 = std::make_shared<TProfile2D>("MBendNoiseMap22", "Bending Noise Map MT22", 14, -7, 7, 576, 0, 9);
+  mMBendNoiseMap22 = std::make_shared<TH2I>("MBendNoiseMap22", "Bending Noise Map MT22", 14, -7, 7, 576, 0, 9);
   getObjectsManager()->startPublishing(mMBendNoiseMap22.get());
   mMBendNoiseMap22->GetXaxis()->SetTitle("Column");
   mMBendNoiseMap22->GetYaxis()->SetTitle("Line");
   mMBendNoiseMap22->SetOption("colz");
   mMBendNoiseMap22->SetStats(0);
 
-  mMNBendNoiseMap11 = std::make_shared<TProfile2D>("MNBendNoiseMap11", "Non-Bending Noise Map MT11", 224, -7, 7, 36, 0, 9);
+  mMNBendNoiseMap11 = std::make_shared<TH2I>("MNBendNoiseMap11", "Non-Bending Noise Map MT11", 224, -7, 7, 36, 0, 9);
   getObjectsManager()->startPublishing(mMNBendNoiseMap11.get());
   mMNBendNoiseMap11->GetXaxis()->SetTitle("Column");
   mMNBendNoiseMap11->GetYaxis()->SetTitle("Line");
   mMNBendNoiseMap11->SetOption("colz");
   mMNBendNoiseMap11->SetStats(0);
 
-  mMNBendNoiseMap12 = std::make_shared<TProfile2D>("MNBendNoiseMap12", "Non-Bending Noise Map MT12", 224, -7, 7, 36, 0, 9);
+  mMNBendNoiseMap12 = std::make_shared<TH2I>("MNBendNoiseMap12", "Non-Bending Noise Map MT12", 224, -7, 7, 36, 0, 9);
   getObjectsManager()->startPublishing(mMNBendNoiseMap12.get());
   mMNBendNoiseMap12->GetXaxis()->SetTitle("Column");
   mMNBendNoiseMap12->GetYaxis()->SetTitle("Line");
   mMNBendNoiseMap12->SetOption("colz");
   mMNBendNoiseMap12->SetStats(0);
 
-  mMNBendNoiseMap21 = std::make_shared<TProfile2D>("MNBendNoiseMap21", "Non-Bending Noise Map MT21", 224, -7, 7, 36, 0, 9);
+  mMNBendNoiseMap21 = std::make_shared<TH2I>("MNBendNoiseMap21", "Non-Bending Noise Map MT21", 224, -7, 7, 36, 0, 9);
   getObjectsManager()->startPublishing(mMNBendNoiseMap21.get());
   mMNBendNoiseMap21->GetXaxis()->SetTitle("Column");
   mMNBendNoiseMap21->GetYaxis()->SetTitle("Line");
   mMNBendNoiseMap21->SetOption("colz");
   mMNBendNoiseMap21->SetStats(0);
 
-  mMNBendNoiseMap22 = std::make_shared<TProfile2D>("MNBendNoiseMap22", "Non-Bending Noise Map MT22", 224, -7, 7, 36, 0, 9);
+  mMNBendNoiseMap22 = std::make_shared<TH2I>("MNBendNoiseMap22", "Non-Bending Noise Map MT22", 224, -7, 7, 36, 0, 9);
   getObjectsManager()->startPublishing(mMNBendNoiseMap22.get());
   mMNBendNoiseMap22->GetXaxis()->SetTitle("Column");
   mMNBendNoiseMap22->GetYaxis()->SetTitle("Line");
@@ -161,56 +152,56 @@ void CalibMQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mMMultDeadMT22B.get());
   getObjectsManager()->startPublishing(mMMultDeadMT22NB.get());
 
-  mMBendDeadMap11 = std::make_shared<TProfile2D>("MBendDeadMap11", "Bending Dead Map MT11", 14, -7, 7, 576, 0, 9);
+  mMBendDeadMap11 = std::make_shared<TH2I>("MBendDeadMap11", "Bending Dead Map MT11", 14, -7, 7, 576, 0, 9);
   getObjectsManager()->startPublishing(mMBendDeadMap11.get());
   mMBendDeadMap11->GetXaxis()->SetTitle("Column");
   mMBendDeadMap11->GetYaxis()->SetTitle("Line");
   mMBendDeadMap11->SetOption("colz");
   mMBendDeadMap11->SetStats(0);
 
-  mMBendDeadMap12 = std::make_shared<TProfile2D>("MBendDeadMap12", "Bending Dead Map MT12", 14, -7, 7, 576, 0, 9);
+  mMBendDeadMap12 = std::make_shared<TH2I>("MBendDeadMap12", "Bending Dead Map MT12", 14, -7, 7, 576, 0, 9);
   getObjectsManager()->startPublishing(mMBendDeadMap12.get());
   mMBendDeadMap12->GetXaxis()->SetTitle("Column");
   mMBendDeadMap12->GetYaxis()->SetTitle("Line");
   mMBendDeadMap12->SetOption("colz");
   mMBendDeadMap12->SetStats(0);
 
-  mMBendDeadMap21 = std::make_shared<TProfile2D>("MBendDeadMap21", "Bending Dead Map MT21", 14, -7, 7, 576, 0, 9);
+  mMBendDeadMap21 = std::make_shared<TH2I>("MBendDeadMap21", "Bending Dead Map MT21", 14, -7, 7, 576, 0, 9);
   getObjectsManager()->startPublishing(mMBendDeadMap21.get());
   mMBendDeadMap21->GetXaxis()->SetTitle("Column");
   mMBendDeadMap21->GetYaxis()->SetTitle("Line");
   mMBendDeadMap21->SetOption("colz");
   mMBendDeadMap21->SetStats(0);
 
-  mMBendDeadMap22 = std::make_shared<TProfile2D>("MBendDeadMap22", "Bending Dead Map MT22", 14, -7, 7, 576, 0, 9);
+  mMBendDeadMap22 = std::make_shared<TH2I>("MBendDeadMap22", "Bending Dead Map MT22", 14, -7, 7, 576, 0, 9);
   getObjectsManager()->startPublishing(mMBendDeadMap22.get());
   mMBendDeadMap22->GetXaxis()->SetTitle("Column");
   mMBendDeadMap22->GetYaxis()->SetTitle("Line");
   mMBendDeadMap22->SetOption("colz");
   mMBendDeadMap22->SetStats(0);
 
-  mMNBendDeadMap11 = std::make_shared<TProfile2D>("MNBendDeadMap11", "Non-Bending Dead Map MT11", 224, -7, 7, 36, 0, 9);
+  mMNBendDeadMap11 = std::make_shared<TH2I>("MNBendDeadMap11", "Non-Bending Dead Map MT11", 224, -7, 7, 36, 0, 9);
   getObjectsManager()->startPublishing(mMNBendDeadMap11.get());
   mMNBendDeadMap11->GetXaxis()->SetTitle("Column");
   mMNBendDeadMap11->GetYaxis()->SetTitle("Line");
   mMNBendDeadMap11->SetOption("colz");
   mMNBendDeadMap11->SetStats(0);
 
-  mMNBendDeadMap12 = std::make_shared<TProfile2D>("MNBendDeadMap12", "Non-Bending Dead Map MT12", 224, -7, 7, 36, 0, 9);
+  mMNBendDeadMap12 = std::make_shared<TH2I>("MNBendDeadMap12", "Non-Bending Dead Map MT12", 224, -7, 7, 36, 0, 9);
   getObjectsManager()->startPublishing(mMNBendDeadMap12.get());
   mMNBendDeadMap12->GetXaxis()->SetTitle("Column");
   mMNBendDeadMap12->GetYaxis()->SetTitle("Line");
   mMNBendDeadMap12->SetOption("colz");
   mMNBendDeadMap12->SetStats(0);
 
-  mMNBendDeadMap21 = std::make_shared<TProfile2D>("MNBendDeadMap21", "Non-Bending Dead Map MT21", 224, -7, 7, 36, 0, 9);
+  mMNBendDeadMap21 = std::make_shared<TH2I>("MNBendDeadMap21", "Non-Bending Dead Map MT21", 224, -7, 7, 36, 0, 9);
   getObjectsManager()->startPublishing(mMNBendDeadMap21.get());
   mMNBendDeadMap21->GetXaxis()->SetTitle("Column");
   mMNBendDeadMap21->GetYaxis()->SetTitle("Line");
   mMNBendDeadMap21->SetOption("colz");
   mMNBendDeadMap21->SetStats(0);
 
-  mMNBendDeadMap22 = std::make_shared<TProfile2D>("MNBendDeadMap22", "Non-Bending Dead Map MT22", 224, -7, 7, 36, 0, 9);
+  mMNBendDeadMap22 = std::make_shared<TH2I>("MNBendDeadMap22", "Non-Bending Dead Map MT22", 224, -7, 7, 36, 0, 9);
   getObjectsManager()->startPublishing(mMNBendDeadMap22.get());
   mMNBendDeadMap22->GetXaxis()->SetTitle("Column");
   mMNBendDeadMap22->GetYaxis()->SetTitle("Line");
@@ -238,56 +229,56 @@ void CalibMQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mMMultBadMT22B.get());
   getObjectsManager()->startPublishing(mMMultBadMT22NB.get());
 
-  mMBendBadMap11 = std::make_shared<TProfile2D>("MBendBadMap11", "Bending Bad Map MT11", 14, -7, 7, 576, 0, 9);
+  mMBendBadMap11 = std::make_shared<TH2I>("MBendBadMap11", "Bending Bad Map MT11", 14, -7, 7, 576, 0, 9);
   getObjectsManager()->startPublishing(mMBendBadMap11.get());
   mMBendBadMap11->GetXaxis()->SetTitle("Column");
   mMBendBadMap11->GetYaxis()->SetTitle("Line");
   mMBendBadMap11->SetOption("colz");
   mMBendBadMap11->SetStats(0);
 
-  mMBendBadMap12 = std::make_shared<TProfile2D>("MBendBadMap12", "Bending Bad Map MT12", 14, -7, 7, 576, 0, 9);
+  mMBendBadMap12 = std::make_shared<TH2I>("MBendBadMap12", "Bending Bad Map MT12", 14, -7, 7, 576, 0, 9);
   getObjectsManager()->startPublishing(mMBendBadMap12.get());
   mMBendBadMap12->GetXaxis()->SetTitle("Column");
   mMBendBadMap12->GetYaxis()->SetTitle("Line");
   mMBendBadMap12->SetOption("colz");
   mMBendBadMap12->SetStats(0);
 
-  mMBendBadMap21 = std::make_shared<TProfile2D>("MBendBadMap21", "Bending Bad Map MT21", 14, -7, 7, 576, 0, 9);
+  mMBendBadMap21 = std::make_shared<TH2I>("MBendBadMap21", "Bending Bad Map MT21", 14, -7, 7, 576, 0, 9);
   getObjectsManager()->startPublishing(mMBendBadMap21.get());
   mMBendBadMap21->GetXaxis()->SetTitle("Column");
   mMBendBadMap21->GetYaxis()->SetTitle("Line");
   mMBendBadMap21->SetOption("colz");
   mMBendBadMap21->SetStats(0);
 
-  mMBendBadMap22 = std::make_shared<TProfile2D>("MBendBadMap22", "Bending Bad Map MT22", 14, -7, 7, 576, 0, 9);
+  mMBendBadMap22 = std::make_shared<TH2I>("MBendBadMap22", "Bending Bad Map MT22", 14, -7, 7, 576, 0, 9);
   getObjectsManager()->startPublishing(mMBendBadMap22.get());
   mMBendBadMap22->GetXaxis()->SetTitle("Column");
   mMBendBadMap22->GetYaxis()->SetTitle("Line");
   mMBendBadMap22->SetOption("colz");
   mMBendBadMap22->SetStats(0);
 
-  mMNBendBadMap11 = std::make_shared<TProfile2D>("MNBendBadMap11", "Non-Bending Bad Map MT11", 224, -7, 7, 36, 0, 9);
+  mMNBendBadMap11 = std::make_shared<TH2I>("MNBendBadMap11", "Non-Bending Bad Map MT11", 224, -7, 7, 36, 0, 9);
   getObjectsManager()->startPublishing(mMNBendBadMap11.get());
   mMNBendBadMap11->GetXaxis()->SetTitle("Column");
   mMNBendBadMap11->GetYaxis()->SetTitle("Line");
   mMNBendBadMap11->SetOption("colz");
   mMNBendBadMap11->SetStats(0);
 
-  mMNBendBadMap12 = std::make_shared<TProfile2D>("MNBendBadMap12", "Non-Bending Bad Map MT12", 224, -7, 7, 36, 0, 9);
+  mMNBendBadMap12 = std::make_shared<TH2I>("MNBendBadMap12", "Non-Bending Bad Map MT12", 224, -7, 7, 36, 0, 9);
   getObjectsManager()->startPublishing(mMNBendBadMap12.get());
   mMNBendBadMap12->GetXaxis()->SetTitle("Column");
   mMNBendBadMap12->GetYaxis()->SetTitle("Line");
   mMNBendBadMap12->SetOption("colz");
   mMNBendBadMap12->SetStats(0);
 
-  mMNBendBadMap21 = std::make_shared<TProfile2D>("MNBendBadMap21", "Non-Bending Bad Map MT21", 224, -7, 7, 36, 0, 9);
+  mMNBendBadMap21 = std::make_shared<TH2I>("MNBendBadMap21", "Non-Bending Bad Map MT21", 224, -7, 7, 36, 0, 9);
   getObjectsManager()->startPublishing(mMNBendBadMap21.get());
   mMNBendBadMap21->GetXaxis()->SetTitle("Column");
   mMNBendBadMap21->GetYaxis()->SetTitle("Line");
   mMNBendBadMap21->SetOption("colz");
   mMNBendBadMap21->SetStats(0);
 
-  mMNBendBadMap22 = std::make_shared<TProfile2D>("MNBendBadMap22", "Non-Bending Bad Map MT22", 224, -7, 7, 36, 0, 9);
+  mMNBendBadMap22 = std::make_shared<TH2I>("MNBendBadMap22", "Non-Bending Bad Map MT22", 224, -7, 7, 36, 0, 9);
   getObjectsManager()->startPublishing(mMNBendBadMap22.get());
   mMNBendBadMap22->GetXaxis()->SetTitle("Column");
   mMNBendBadMap22->GetYaxis()->SetTitle("Line");
@@ -312,7 +303,6 @@ void CalibMQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   // std::cout << "!!!! START monitorData CalibMQcTask TEST  !!!! " << std::endl;
   mTF++;
   // printf("----------------> %05d TF \n", nTF);
-  mMNbTimeFrame->Fill(0.5, 1.);
 
   int multNoiseMT11B = 0;
   int multNoiseMT12B = 0;
@@ -345,7 +335,6 @@ void CalibMQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   //  printf("noises ========================================================== \n");
 
-  mMNbNoiseROF->Fill(0.5, 1.);
   mNoiseROF++;
   multNoiseMT11B = 0;
   multNoiseMT12B = 0;
@@ -502,7 +491,6 @@ void CalibMQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   auto deads = ctx.inputs().get<gsl::span<o2::mid::ColumnData>>("deadch");
 
-  mMNbDeadROF->Fill(0.5, 1.);
   mDeadROF++;
 
   multDeadMT11B = 0;
@@ -674,7 +662,6 @@ void CalibMQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   ////  } //  deadROFs //
 
-  mMNbBadROF->Fill(0.5, 1.);
   mBadROF++;
 
   multBadMT11B = 0;
@@ -855,10 +842,6 @@ void CalibMQcTask::reset()
   // clean all the monitor objects here
 
   ILOG(Info, Devel) << "Resetting the histogram" << ENDM;
-
-  mMNbTimeFrame->Reset();
-  mMNbNoiseROF->Reset();
-  mMNbDeadROF->Reset();
 
   mMMultNoiseMT11B->Reset();
   mMMultNoiseMT11NB->Reset();

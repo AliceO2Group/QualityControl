@@ -40,6 +40,11 @@ class DigitsQcCheck : public o2::quality_control::checker::CheckInterface
 
  private:
   double mMeanMultThreshold;
+  double mMinMultThreshold;
+  float mDigitTF = 0;
+  int mOrbTF = 32;
+  // float scaleTime = 0.0114048; // 128 orb/TF * 3564 BC/orb * 25ns
+  float scaleTime = 0.0000891; // 3564 BC/orb * 25ns
 
   Quality resultBMT11 = Quality::Null;
   Quality resultBMT12 = Quality::Null;
