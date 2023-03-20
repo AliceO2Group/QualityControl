@@ -40,7 +40,7 @@ class TrackingTask final : public TaskInterface
 {
  public:
   TrackingTask() = default;
-  ~TrackingTask() override;
+  ~TrackingTask() = default;
 
   void retrieveCCDBSettings();
   void initialize(o2::framework::InitContext& ctx) override;

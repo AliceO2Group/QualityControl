@@ -39,24 +39,20 @@ using namespace o2::trd::constants;
 namespace o2::quality_control_modules::trd
 {
 
-TrackingTask::~TrackingTask()
-{
-}
-
 void TrackingTask::retrieveCCDBSettings()
 {
   if (auto param = mCustomParameters.find("ccdbtimestamp"); param != mCustomParameters.end()) {
     mTimestamp = std::stol(mCustomParameters["ccdbtimestamp"]);
-    ILOG(Info, Support) << "configure() : using ccdbtimestamp = " << mTimestamp << ENDM;
+    ILOG(Debug, Devel) << "configure() : using ccdbtimestamp = " << mTimestamp << ENDM;
   } else {
     mTimestamp = o2::ccdb::getCurrentTimestamp();
-    ILOG(Info, Support) << "configure() : using default timestam of now = " << mTimestamp << ENDM;
+    ILOG(Debug, Devel) << "configure() : using default timestam of now = " << mTimestamp << ENDM;
   }
 }
 
 void TrackingTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize TRD TrackingTask" << ENDM;
+  ILOG(Debug, Devel) << "initialize TRD TrackingTask" << ENDM;
 
   retrieveCCDBSettings();
   buildHistograms();
@@ -64,17 +60,17 @@ void TrackingTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void TrackingTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity " << activity.mId << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
 }
 
 void TrackingTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void TrackingTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  ILOG(Info, Support) << "monitorData" << ENDM;
+  ILOG(Debug, Devel) << "monitorData" << ENDM;
 
   auto trackArr = ctx.inputs().get<gsl::span<o2::trd::TrackQC>>("tracks");
   auto tracktrigArr = ctx.inputs().get<gsl::span<o2::trd::TrackTriggerRecord>>("trigrectrk");
@@ -106,10 +102,12 @@ void TrackingTask::monitorData(o2::framework::ProcessingContext& ctx)
         double trackphi = TMath::ATan2(trackqc.trackY[ilayer], trackqc.trackX[ilayer]) + TMath::Nint(TMath::Floor(trackqc.trackletDet[ilayer] / 30)) * TMath::DegToRad() * 20 + TMath::DegToRad() * 10;
         // find charge bin of the track
         int charge = -1;
-        if (trackqc.trackQpt[ilayer] > 0)
+        if (trackqc.trackQpt[ilayer] > 0) {
           charge = 0;
-        if (trackqc.trackQpt[ilayer] < 0)
+        }
+        if (trackqc.trackQpt[ilayer] < 0) {
           charge = 1;
+        }
         if (charge == -1)
           continue;
         if (!fillOnce) {
@@ -138,17 +136,17 @@ void TrackingTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void TrackingTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void TrackingTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void TrackingTask::reset()
 {
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histogram" << ENDM;
   mNtracks->Reset();
   mNtracklets->Reset();
   mTrackEta->Reset();
@@ -161,16 +159,20 @@ void TrackingTask::reset()
   mDeltaZDet->Reset();
   mDeltaYsphi->Reset();
   mTrackletDef->Reset();
-  for (auto h : mTrackletsEtaPhi)
+  for (auto h : mTrackletsEtaPhi) {
     h->Reset();
-  for (auto h : mTracksEtaPhiPerLayer) {
-    for (auto hh : h)
-      hh->Reset();
   }
-  for (auto h : mDeltaYinEtaPerLayer)
+  for (auto h : mTracksEtaPhiPerLayer) {
+    for (auto hh : h) {
+      hh->Reset();
+    }
+  }
+  for (auto h : mDeltaYinEtaPerLayer) {
     h->Reset();
-  for (auto h : mDeltaYinPhiPerLayer)
+  }
+  for (auto h : mDeltaYinPhiPerLayer) {
     h->Reset();
+  }
 }
 
 void TrackingTask::buildHistograms()
@@ -252,8 +254,9 @@ void TrackingTask::drawLayers(TH2* hist)
   TLine* linePhi[17];
   double etabins[6] = { -0.85, -0.54, -0.16, 0.16, 0.54, 0.85 };
   double phibins[18];
-  for (int i = 0; i < 18; i++)
+  for (int i = 0; i < 18; i++) {
     phibins[i] = (TMath::TwoPi() / 18) * i;
+  }
   for (int iSec = 0; iSec < 4; ++iSec) {
     lineEta[iSec] = new TLine(etabins[iSec + 1], 0, etabins[iSec + 1], TMath::TwoPi());
     lineEta[iSec]->SetLineStyle(2);
@@ -273,22 +276,25 @@ void TrackingTask::axisConfig(TH1* h, const char* xTitle, const char* yTitle, co
   h->GetXaxis()->SetTitleOffset(xOffset);
   h->GetYaxis()->SetTitleOffset(yOffset);
   h->SetStats(stat);
-  if (zTitle)
+  if (zTitle) {
     h->GetZaxis()->SetTitle(zTitle);
+  }
 }
 
-void TrackingTask::publishObject(TObject* aObject, const char *drawOpt, const char *displayOpt)
+void TrackingTask::publishObject(TObject* aObject, const char* drawOpt, const char* displayOpt)
 {
   if (!aObject) {
-    ILOG(Info, Support) << " ERROR: trying to publish a non-existent histogram " << ENDM;
+    ILOG(Debug, Devel) << " ERROR: trying to publish a non-existent histogram " << ENDM;
     return;
   } else {
     getObjectsManager()->startPublishing(aObject);
-    if (drawOpt != "")
+    if (drawOpt != "") {
       getObjectsManager()->setDefaultDrawOptions(aObject->GetName(), drawOpt);
-    if (displayOpt != "")
+    }
+    if (displayOpt != "") {
       getObjectsManager()->setDisplayHint(aObject->GetName(), displayOpt);
-    ILOG(Info, Support) << " Object will be published: " << aObject->GetName() << ENDM;
+    }
+    ILOG(Debug, Devel) << " Object will be published: " << aObject->GetName() << ENDM;
   }
 }
 
