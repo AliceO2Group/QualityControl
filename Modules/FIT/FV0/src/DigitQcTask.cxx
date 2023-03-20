@@ -25,6 +25,8 @@
 #include "Framework/TimingInfo.h"
 #include "DataFormatsFV0/LookUpTable.h"
 
+#include <cmath>
+
 namespace o2::quality_control_modules::fv0
 {
 
@@ -168,6 +170,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mTrgChargeLevelHigh = getNumericalParameter("trgChargeLevelHigh", 4095);
   mTrgThresholdCharge = getNumericalParameter("trgThresholdCharge", 1);
   mTrgThresholdNChannels = getNumericalParameter("trgThresholdNChannels", 1);
+  mTimeGate = getNumericalParameter("gateTimeForRatioHistogram", 192);
 
   if (mTrgModeInnerOuterThresholdVar == TrgModeThresholdVar::kAmpl) {
     mTrgThresholdChargeInner = getNumericalParameter("trgThresholdChargeInner", 1);
@@ -277,17 +280,8 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistCycleDurationNTF = std::make_unique<TH1D>("CycleDurationNTF", "Cycle Duration;;time [TimeFrames]", 1, 0, 2);
   mHistCycleDurationRange = std::make_unique<TH1D>("CycleDurationRange", "Cycle Duration (total cycle range);;time [ns]", 1, 0, 2);
 
-  if (auto timeGate = mCustomParameters.find(string("gateTimeForRatioHistogram")); timeGate != mCustomParameters.end()) {
-    mTimeGate = stof(timeGate->second);
-  }
-  char gateTimeRatioTitle[50] = "Ratio of events between time -";
-  char gateTimeRatioTitle2[20] = " and ";
-  char timeGateChar[8];
-  sprintf(timeGateChar, "%d", mTimeGate);
-  strcat(gateTimeRatioTitle, timeGateChar);
-  strcat(gateTimeRatioTitle2, timeGateChar);
-  strcat(gateTimeRatioTitle, gateTimeRatioTitle2);
-  mHistGateTimeRatio2Ch = std::make_unique<TH1F>("EventsInGateTime", gateTimeRatioTitle, sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF);
+  std::string gateTimeRatioTitle = "Ratio of events between time -" + std::to_string(mTimeGate) + " and " + std::to_string(mTimeGate);
+  mHistGateTimeRatio2Ch = std::make_unique<TH1F>("EventsInGateTime", gateTimeRatioTitle.c_str(), sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF);
 
   std::vector<unsigned int> vecChannelIDs;
   if (auto param = mCustomParameters.find("ChannelIDs"); param != mCustomParameters.end()) {
@@ -660,7 +654,7 @@ void DigitQcTask::endOfCycle()
     int events_in_range = 0;
     int events_per_channel = 0;
     for (int bin_on_y_axis = 1; bin_on_y_axis <= mHistTime2Ch->GetNbinsY(); bin_on_y_axis++) {
-        if (mHistTime2Ch->GetYaxis()->GetBinLowEdge(bin_on_y_axis) >= -mTimeGate && mHistTime2Ch->GetYaxis()->GetBinUpEdge(bin_on_y_axis) <= mTimeGate) {
+        if (std::abs(mHistTime2Ch->GetYaxis()->GetBinLowEdge(bin_on_y_axis)) < mTimeGate) {
             events_in_range += mHistTime2Ch->GetBinContent(channel, bin_on_y_axis);
         }
         events_per_channel += mHistTime2Ch->GetBinContent(channel, bin_on_y_axis);
