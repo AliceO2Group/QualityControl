@@ -22,6 +22,7 @@
 
 namespace o2::quality_control::core
 {
+class Activity;
 class MonitorObject;
 }
 
@@ -69,14 +70,18 @@ class CheckInterface : public UserCodeInterface
   /// \author Barthelemy von Haller
   virtual std::string getAcceptedType();
 
+  void setActivity(std::shared_ptr<core::Activity> activity) {mActivity = activity;}
+  std::shared_ptr<core::Activity> getActivity() {return mActivity;}
+
   bool isObjectCheckable(const std::shared_ptr<core::MonitorObject> mo);
   bool isObjectCheckable(const core::MonitorObject* mo);
 
  protected:
   /// \brief Called each time mCustomParameters is updated.
   virtual void configure() override;
+  std::shared_ptr<core::Activity> mActivity;
 
-  ClassDef(CheckInterface, 4)
+  ClassDef(CheckInterface, 5)
 };
 
 } // namespace o2::quality_control::checker

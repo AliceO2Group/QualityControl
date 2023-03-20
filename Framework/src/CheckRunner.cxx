@@ -378,7 +378,7 @@ void CheckRunner::store(QualityObjectsType& qualityObjects, long validFrom)
   ILOG(Debug, Devel) << "Storing " << qualityObjects.size() << " QualityObjects" << ENDM;
   try {
     for (auto& qo : qualityObjects) {
-      qo->setActivity(mActivity);
+      qo->setActivity(*mActivity);
       mDatabase->storeQO(qo, validFrom);
       mTotalNumberQOStored++;
       mNumberQOStored++;
@@ -393,7 +393,7 @@ void CheckRunner::store(std::vector<std::shared_ptr<MonitorObject>>& monitorObje
   ILOG(Debug, Devel) << "Storing " << monitorObjects.size() << " MonitorObjects" << ENDM;
   try {
     for (auto& mo : monitorObjects) {
-      mo->setActivity(mActivity);
+      mo->setActivity(*mActivity);
       mDatabase->storeMO(mo, validFrom);
       mTotalNumberMOStored++;
       mNumberMOStored++;
@@ -515,20 +515,23 @@ void CheckRunner::endOfStream(framework::EndOfStreamContext& eosContext)
 
 void CheckRunner::start(ServiceRegistryRef services)
 {
-  mActivity = computeActivity(services, mConfig.fallbackActivity);
+  mActivity = std::make_shared<Activity>(computeActivity(services, mConfig.fallbackActivity));
   string partitionName = computePartitionName(services);
-  QcInfoLogger::setRun(mActivity.mId);
+  QcInfoLogger::setRun(mActivity->mId);
   QcInfoLogger::setPartition(partitionName);
-  ILOG(Info, Support) << "Starting run " << mActivity.mId << ":" << ENDM;
-  ILOG(Debug, Devel) << "   period: " << mActivity.mPeriodName << " / pass type: " << mActivity.mPassName << " / provenance: " << mActivity.mProvenance << ENDM;
+  ILOG(Info, Support) << "Starting run " << mActivity->mId << ":" << ENDM;
+  ILOG(Debug, Devel) << "   period: " << mActivity->mPeriodName << " / pass type: " << mActivity->mPassName << " / provenance: " << mActivity->mProvenance << ENDM;
   mTimerTotalDurationActivity.reset();
-  mCollector->setRunNumber(mActivity.mId);
+  mCollector->setRunNumber(mActivity->mId);
   mReceivedEOS = false;
+  for (auto& [checkName, check] : mChecks) {
+    check.setActivity(mActivity);
+  }
 }
 
 void CheckRunner::stop()
 {
-  ILOG(Info, Support) << "Stopping run " << mActivity.mId << ENDM;
+  ILOG(Info, Support) << "Stopping run " << mActivity->mId << ENDM;
   if (!mReceivedEOS) {
     ILOG(Warning, Devel) << "The STOP transition happened before an EndOfStream was received. The very last QC objects in this run might not have been stored." << ENDM;
   }
@@ -540,7 +543,7 @@ void CheckRunner::reset()
 
   try {
     mCollector.reset();
-    mActivity = Activity();
+    mActivity = make_shared<Activity>();
   } catch (...) {
     // we catch here because we don't know where it will go in DPL's CallbackService
     ILOG(Error, Support) << "Error caught in reset() : "
