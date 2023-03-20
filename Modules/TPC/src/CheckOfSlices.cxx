@@ -161,7 +161,7 @@ Quality CheckOfSlices::check(std::map<std::string, std::shared_ptr<MonitorObject
     std::string goodStringPoint = "";
     
     if (mMeanCheck) { 
-      const double totalError = sqrt(mStdev * mStdev + yError * yError);
+      const double totalError = sqrt(mStdev * mStdev + yError * yError); //GANESHA should I rmemove yError in this? mStdev and yError are correlated 
       if (std::abs(yvalue - mMean) <= totalError * mNSigmaMean) {
         qualityPoints.push_back(Quality::Good);
         goodStringPoint += "MeanCheck \n";
