@@ -94,7 +94,14 @@ TaskSpec InfrastructureSpecReader::readSpecEntry<TaskSpec>(const std::string& ta
   ts.className = taskTree.get<std::string>("className");
   ts.moduleName = taskTree.get<std::string>("moduleName");
   ts.detectorName = taskTree.get<std::string>("detectorName");
-  ts.cycleDurationSeconds = taskTree.get<int>("cycleDurationSeconds");
+  ts.cycleDurationSeconds = taskTree.get<int>("cycleDurationSeconds", -1);
+  if (taskTree.count("cycleDurations") > 0) {
+    for (const auto& cycleConfig : taskTree.get_child("cycleDurations")) {
+      auto cycleDuration = cycleConfig.second.get<size_t>("cycleDurationSeconds");
+      auto validity = cycleConfig.second.get<size_t>("validitySeconds");
+      ts.multipleCycleDurations.push_back(std::pair{ cycleDuration, validity });
+    }
+  }
   ts.dataSource = readSpecEntry<DataSourceSpec>(taskID, taskTree.get_child("dataSource"), wholeTree);
   ts.active = taskTree.get<bool>("active", ts.active);
   ts.maxNumberCycles = taskTree.get<int>("maxNumberCycles", ts.maxNumberCycles);

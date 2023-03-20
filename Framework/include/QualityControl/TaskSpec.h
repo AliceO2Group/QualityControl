@@ -54,7 +54,8 @@ struct TaskSpec {
   std::string className = "Invalid";
   std::string moduleName = "Invalid";
   std::string detectorName = "Invalid";
-  int cycleDurationSeconds = -1;
+  int cycleDurationSeconds = -1;                                      // simple syntax
+  std::vector<std::pair<size_t, size_t>> multipleCycleDurations = {}; // complex syntax: multiple durations can be set for different intervals
   DataSourceSpec dataSource;
   // advanced
   bool active = true;
@@ -77,4 +78,4 @@ struct TaskSpec {
 
 } // namespace o2::quality_control::core
 
-#endif //QUALITYCONTROL_TASKSPEC_H
+#endif // QUALITYCONTROL_TASKSPEC_H
