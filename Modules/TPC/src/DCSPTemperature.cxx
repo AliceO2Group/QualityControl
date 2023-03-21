@@ -33,14 +33,15 @@ using namespace o2::quality_control::postprocessing;
 namespace o2::quality_control_modules::tpc
 {
 
-void DCSPTemperature::configure(std::string name, const boost::property_tree::ptree& config)
+void DCSPTemperature::configure(const boost::property_tree::ptree& config)
 {
+  auto& id = getID();
   std::vector<std::string> keyVec{};
   std::vector<std::string> valueVec{};
-  for (const auto& key : config.get_child("qc.postprocessing." + name + ".lookupMetaData.keys")) {
+  for (const auto& key : config.get_child("qc.postprocessing." + id + ".lookupMetaData.keys")) {
     keyVec.emplace_back(key.second.data());
   }
-  for (const auto& value : config.get_child("qc.postprocessing." + name + ".lookupMetaData.values")) {
+  for (const auto& value : config.get_child("qc.postprocessing." + id + ".lookupMetaData.values")) {
     valueVec.emplace_back(value.second.data());
   }
 
@@ -59,10 +60,10 @@ void DCSPTemperature::configure(std::string name, const boost::property_tree::pt
   keyVec.clear();
   valueVec.clear();
 
-  for (const auto& key : config.get_child("qc.postprocessing." + name + ".storeMetaData.keys")) {
+  for (const auto& key : config.get_child("qc.postprocessing." + id + ".storeMetaData.keys")) {
     keyVec.emplace_back(key.second.data());
   }
-  for (const auto& value : config.get_child("qc.postprocessing." + name + ".storeMetaData.values")) {
+  for (const auto& value : config.get_child("qc.postprocessing." + id + ".storeMetaData.values")) {
     valueVec.emplace_back(value.second.data());
   }
 
@@ -74,9 +75,9 @@ void DCSPTemperature::configure(std::string name, const boost::property_tree::pt
     }
   }
 
-  mTimestamp = std::stol(config.get<std::string>("qc.postprocessing." + name + ".timestamp"));
-  mNFiles = std::stoi(config.get<std::string>("qc.postprocessing." + name + ".nFiles"));
-  mHost = config.get<std::string>("qc.postprocessing." + name + ".dataSourceURL");
+  mTimestamp = std::stol(config.get<std::string>("qc.postprocessing." + id + ".timestamp"));
+  mNFiles = std::stoi(config.get<std::string>("qc.postprocessing." + id + ".nFiles"));
+  mHost = config.get<std::string>("qc.postprocessing." + id + ".dataSourceURL");
 }
 
 void DCSPTemperature::initialize(Trigger, framework::ServiceRegistryRef)

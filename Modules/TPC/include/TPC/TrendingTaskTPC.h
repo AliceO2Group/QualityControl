@@ -55,7 +55,7 @@ class TrendingTaskTPC : public PostProcessingInterface
   ~TrendingTaskTPC() final = default;
 
   /// \brief Post-processing methods inherited from 'PostProcessingInterface'.
-  void configure(std::string name, const boost::property_tree::ptree& config) final;
+  void configure(const boost::property_tree::ptree& config) final;
   void initialize(Trigger, framework::ServiceRegistryRef) final;
   void update(Trigger, framework::ServiceRegistryRef) final;
   void finalize(Trigger, framework::ServiceRegistryRef) final;

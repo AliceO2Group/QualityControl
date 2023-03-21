@@ -36,11 +36,11 @@ using namespace o2::quality_control::postprocessing;
 namespace o2::quality_control_modules::tof
 {
 
-void PostProcessHitMap::configure(std::string name, const boost::property_tree::ptree& config)
+void PostProcessHitMap::configure(const boost::property_tree::ptree& config)
 {
   mRefMapCcdbPath = "/TOF/Calib/FEELIGHT";
   mCCDBPath = "TOF/MO/TaskDigits/";
-  if (const auto& customConfigs = config.get_child_optional("qc.postprocessing." + name + ".customization"); customConfigs.has_value()) {
+  if (const auto& customConfigs = config.get_child_optional("qc.postprocessing." + getID() + ".customization"); customConfigs.has_value()) {
     for (const auto& customConfig : customConfigs.value()) { // Plot configuration
       if (const auto& customNames = customConfig.second.get_child_optional("name"); customNames.has_value()) {
         if (customConfig.second.get<std::string>("name") == "CCDBPath") {

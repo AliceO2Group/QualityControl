@@ -960,8 +960,7 @@ The following tasks will be merged correctly:
         }
       }
 ```
-The same approach can be applied to other actors in the QC framework, like Checks (`checkName`), Aggregators (`aggregatorName`) and External Tasks (`taskName`).
-Post-processing tasks do not support this feature yet.
+The same approach can be applied to other actors in the QC framework, like Checks (`checkName`), Aggregators(`aggregatorName`), External Tasks (`taskName`) and Postprocessing Tasks (`taskName`).
 
 ## Definition and access of task-specific configuration
 
@@ -1232,8 +1231,10 @@ declared inside in the "postprocessing" path. Please also refer to [the Post-pro
 {
   "qc": {
     "postprocessing": {
-      "ExamplePostprocessing": {              "": "Name of the PP Task.",
+      "ExamplePostprocessingID": {            "": "ID of the PP Task.",
         "active": "true",                     "": "Activation flag. If not \"true\", the PP Task will not be run.",
+        "taskName": "MyPPTaskName",           "": ["Name of the task, used e.g. in the QCDB. If empty, the ID is used.",
+                                                 "Less than 14 character names are preferred."],
         "className": "namespace::of::PPTask", "": "Class name of the PP Task with full namespace.",
         "moduleName": "QcSkeleton",           "": "Library name. It can be found in CMakeLists of the detector module.",
         "detectorName": "TST",                "": "3-letter code of the detector.",

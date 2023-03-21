@@ -20,11 +20,12 @@
 namespace o2::quality_control::postprocessing
 {
 
-PostProcessingConfig::PostProcessingConfig(const std::string& name, const boost::property_tree::ptree& config) //
-  : taskName(name),
-    moduleName(config.get<std::string>("qc.postprocessing." + name + ".moduleName")),
-    className(config.get<std::string>("qc.postprocessing." + name + ".className")),
-    detectorName(config.get<std::string>("qc.postprocessing." + name + ".detectorName", "MISC")),
+PostProcessingConfig::PostProcessingConfig(const std::string& id, const boost::property_tree::ptree& config) //
+  : id(id),
+    taskName(config.get<std::string>("qc.postprocessing." + id + ".taskName", id)),
+    moduleName(config.get<std::string>("qc.postprocessing." + id + ".moduleName")),
+    className(config.get<std::string>("qc.postprocessing." + id + ".className")),
+    detectorName(config.get<std::string>("qc.postprocessing." + id + ".detectorName", "MISC")),
     qcdbUrl(config.get<std::string>("qc.config.database.implementation") == "CCDB" ? config.get<std::string>("qc.config.database.host") : ""),
     ccdbUrl(config.get<std::string>("qc.config.conditionDB.url", "")),
     consulUrl(config.get<std::string>("qc.config.consul.url", "")),
@@ -37,13 +38,13 @@ PostProcessingConfig::PostProcessingConfig(const std::string& name, const boost:
                config.get<uint64_t>("qc.config.Activity.end", -1) }),
     matchAnyRunNumber(config.get<bool>("qc.config.postprocessing.matchAnyRunNumber", false))
 {
-  for (const auto& initTrigger : config.get_child("qc.postprocessing." + name + ".initTrigger")) {
+  for (const auto& initTrigger : config.get_child("qc.postprocessing." + id + ".initTrigger")) {
     initTriggers.push_back(initTrigger.second.get_value<std::string>());
   }
-  for (const auto& updateTrigger : config.get_child("qc.postprocessing." + name + ".updateTrigger")) {
+  for (const auto& updateTrigger : config.get_child("qc.postprocessing." + id + ".updateTrigger")) {
     updateTriggers.push_back(updateTrigger.second.get_value<std::string>());
   }
-  for (const auto& stopTrigger : config.get_child("qc.postprocessing." + name + ".stopTrigger")) {
+  for (const auto& stopTrigger : config.get_child("qc.postprocessing." + id + ".stopTrigger")) {
     stopTriggers.push_back(stopTrigger.second.get_value<std::string>());
   }
 }

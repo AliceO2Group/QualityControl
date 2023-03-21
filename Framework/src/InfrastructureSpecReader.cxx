@@ -206,8 +206,10 @@ DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(const std
     }
     case DataSourceType::PostProcessingTask: {
       dss.id = dataSourceTree.get<std::string>("name");
-      dss.name = dss.id;
-      dss.inputs = { { dss.name, PostProcessingDevice::createPostProcessingDataOrigin(), PostProcessingDevice::createPostProcessingDataDescription(dss.name), 0, Lifetime::Sporadic } };
+      // this allows us to have tasks with the same name for different detectors
+      dss.name = wholeTree.get<std::string>("qc.postprocessing." + dss.id + ".taskName", dss.id);
+      auto detectorName = wholeTree.get<std::string>("qc.postprocessing." + dss.id + ".detectorName");
+      dss.inputs = { { dss.name, PostProcessingDevice::createPostProcessingDataOrigin(detectorName), PostProcessingDevice::createPostProcessingDataDescription(dss.id), 0, Lifetime::Sporadic } };
       if (dataSourceTree.count("MOs") > 0) {
         for (const auto& moName : dataSourceTree.get_child("MOs")) {
           dss.subInputs.push_back(moName.second.get_value<std::string>());
@@ -314,12 +316,14 @@ AggregatorSpec InfrastructureSpecReader::readSpecEntry<AggregatorSpec>(const std
 
 template <>
 PostProcessingTaskSpec
-  InfrastructureSpecReader::readSpecEntry<PostProcessingTaskSpec>(const std::string& ppTaskName, const boost::property_tree::ptree& ppTaskTree, const boost::property_tree::ptree& wholeTree)
+  InfrastructureSpecReader::readSpecEntry<PostProcessingTaskSpec>(const std::string& ppTaskId, const boost::property_tree::ptree& ppTaskTree, const boost::property_tree::ptree& wholeTree)
 {
   PostProcessingTaskSpec ppts;
 
-  ppts.taskName = ppTaskName;
+  ppts.id = ppTaskId;
+  ppts.taskName = ppTaskTree.get<std::string>("taskName", ppts.id);
   ppts.active = ppTaskTree.get<bool>("active", ppts.active);
+  ppts.detectorName = ppTaskTree.get<std::string>("detectorName", ppts.detectorName);
   ppts.tree = wholeTree;
 
   return ppts;

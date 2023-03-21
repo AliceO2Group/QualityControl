@@ -38,7 +38,7 @@ int main(int argc, const char* argv[])
     desc.add_options()                                                                                       //
       ("help,h", "Help screen")                                                                              //
       ("config", bpo::value<std::string>(), "Absolute path to a configuration file, preceded with backend.") //
-      ("name", bpo::value<std::string>(), "Name of a post processing task to run")                           //
+      ("id", bpo::value<std::string>(), "ID of a post processing task to run")                               //
       ("override-values", bpo::value<std::string>(),                                                         //
        "QC configuration file key/value pairs which should be overwritten. "                                 //
        "The format is \"full.path.to.key=value[;full.path.to.key=value]\".")                                 //
@@ -60,22 +60,22 @@ int main(int argc, const char* argv[])
     if (vm.count("help")) {
       ILOG(Info, Support) << desc << ENDM;
       return 0;
-    } else if (vm.count("name") == 0 && vm.count("config") == 0) {
-      ILOG(Error, Support) << "No name and/or config parameters provided" << ENDM;
+    } else if (vm.count("id") == 0 && vm.count("config") == 0) {
+      ILOG(Error, Support) << "No id and/or config parameters provided" << ENDM;
       return 1;
     }
 
-    PostProcessingRunner runner(vm["name"].as<std::string>());
-
-    auto config = ConfigurationFactory::getConfiguration(vm["config"].as<std::string>());
+    auto taskID = vm["id"].as<std::string>();
+    auto configPath = vm["config"].as<std::string>();
+    auto config = ConfigurationFactory::getConfiguration(configPath);
     auto configTree = config->getRecursive();
     if (vm.count("override-values")) {
       auto keyValuesToOverride = parseOverrideValues(vm["override-values"].as<std::string>());
       overrideValues(configTree, keyValuesToOverride);
     }
-
     int periodUs = static_cast<int>(1000000 * configTree.get<double>("qc.config.postprocessing.periodSeconds", 10.0));
 
+    PostProcessingRunner runner(taskID);
     runner.init(configTree);
 
     if (vm.count("timestamps")) {
