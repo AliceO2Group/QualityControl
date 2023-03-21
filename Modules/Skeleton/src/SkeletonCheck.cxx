@@ -36,7 +36,7 @@ Quality SkeletonCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
   Quality result = Quality::Null;
 
   // you can get details about the activity via the object mActivity:
-  ILOG(Debug, Trace) << "Run type: " << mActivity->mType << ENDM;
+  ILOG(Debug, Trace) << "Run type: " << getActivity()->mType << ENDM;
 
   for (auto& [moName, mo] : *moMap) {
 

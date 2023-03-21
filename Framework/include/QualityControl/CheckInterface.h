@@ -71,7 +71,7 @@ class CheckInterface : public UserCodeInterface
   virtual std::string getAcceptedType();
 
   void setActivity(std::shared_ptr<core::Activity> activity) { mActivity = activity; }
-  std::shared_ptr<core::Activity> getActivity() { return mActivity; }
+  std::shared_ptr<const core::Activity> getActivity() const { return mActivity; }
 
   bool isObjectCheckable(const std::shared_ptr<core::MonitorObject> mo);
   bool isObjectCheckable(const core::MonitorObject* mo);
@@ -79,6 +79,8 @@ class CheckInterface : public UserCodeInterface
  protected:
   /// \brief Called each time mCustomParameters is updated.
   virtual void configure() override;
+
+ private:
   std::shared_ptr<core::Activity> mActivity;
 
   ClassDef(CheckInterface, 5)
