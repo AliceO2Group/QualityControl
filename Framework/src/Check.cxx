@@ -250,5 +250,4 @@ void Check::setActivity(std::shared_ptr<core::Activity> activity)
   mCheckInterface->setActivity(activity);
 }
 
-
 } // namespace o2::quality_control::checker

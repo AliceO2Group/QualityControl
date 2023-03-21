@@ -70,8 +70,8 @@ class CheckInterface : public UserCodeInterface
   /// \author Barthelemy von Haller
   virtual std::string getAcceptedType();
 
-  void setActivity(std::shared_ptr<core::Activity> activity) {mActivity = activity;}
-  std::shared_ptr<core::Activity> getActivity() {return mActivity;}
+  void setActivity(std::shared_ptr<core::Activity> activity) { mActivity = activity; }
+  std::shared_ptr<core::Activity> getActivity() { return mActivity; }
 
   bool isObjectCheckable(const std::shared_ptr<core::MonitorObject> mo);
   bool isObjectCheckable(const core::MonitorObject* mo);
