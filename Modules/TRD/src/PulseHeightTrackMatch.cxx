@@ -121,8 +121,9 @@ void PulseHeightTrackMatch::monitorData(o2::framework::ProcessingContext& ctx)
       }
 
       mTracksPerEvent->Fill(triggerTracks.getNumberOfTracks());
-      if (tracks[triggerTracks.getFirstTrack()].getPileUpTimeShiftMUS() < 0.7)
-        continue; // rejecting triggers which end up in pileup
+      if (tracks[triggerTracks.getFirstTrack()].getPileUpTimeShiftMUS() < 0.7) { // rejecting triggers which end up in pileup
+        continue;
+      }
 
       for (int iTrack = triggerTracks.getFirstTrack(); iTrack < triggerTracks.getFirstTrack() + triggerTracks.getNumberOfTracks(); iTrack++) {
 
@@ -147,22 +148,25 @@ void PulseHeightTrackMatch::monitorData(o2::framework::ProcessingContext& ctx)
 
           int coldif;
           for (int iDigit = trigger.getFirstDigit() + 1; iDigit < trigger.getFirstDigit() + trigger.getNumberOfDigits() - 1; ++iDigit) //+1 and -1 for finding the consecutive digits
-
           {
             const auto& digit = digits[iDigit];
-            if (digit.getDetector() != trklt.getDetector())
+            if (digit.getDetector() != trklt.getDetector()) {
               continue;
-            if (digit.getPadRow() != trklt.getPadRow())
+            }
+            if (digit.getPadRow() != trklt.getPadRow()) {
               continue;
+            }
             coldif = digit.getPadCol() - trklt.getPadCol();
-            if (TMath::Abs(coldif) > 1)
+            if (TMath::Abs(coldif) > 1) {
               continue; // PadCol may be off by +-1 due to the slope of tracklet
+            }
             const auto& digitBefore = digits[iDigit - 1];
             const auto& digitAfter = digits[iDigit + 1];
 
             bool consecutive = false;
-            if (digitBefore.getDetector() == digitAfter.getDetector() && digitBefore.getPadRow() == digit.getPadRow() && digit.getPadRow() == digitAfter.getPadRow() && digit.getPadCol() + 1 == digitBefore.getPadCol() && digitAfter.getPadCol() + 1 == digit.getPadCol())
+            if (digitBefore.getDetector() == digitAfter.getDetector() && digitBefore.getPadRow() == digit.getPadRow() && digit.getPadRow() == digitAfter.getPadRow() && digit.getPadCol() + 1 == digitBefore.getPadCol() && digitAfter.getPadCol() + 1 == digit.getPadCol()) { // looking for consecutive digits in space
               consecutive = true;
+            }
 
             if (consecutive) {
               int phVal = 0;
