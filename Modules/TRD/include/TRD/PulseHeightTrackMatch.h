@@ -56,14 +56,8 @@ class PulseHeightTrackMatch final : public TaskInterface
   void endOfActivity(Activity& activity) override;
   void reset() override;
   void buildHistograms();
-  void drawLinesMCM(TH2F* histo);
-  void drawTrdLayersGrid(TH2F* hist);
   void retrieveCCDBSettings();
   void drawLinesOnPulseHeight(TH1F* h);
-  void fillLinesOnHistsPerLayer(int iLayer);
-  void drawHashOnLayers(int layer, int hcid, int col, int rowstart, int rowend);
-  void buildChamberIgnoreBP();
-  bool isChamberToBeIgnored(unsigned int sm, unsigned int stack, unsigned int layer);
 
  private:
   // limits
@@ -73,16 +67,10 @@ class PulseHeightTrackMatch final : public TaskInterface
   std::pair<float, float> mPulseHeightPeakRegion;
   long int mTimestamp;
   std::shared_ptr<TH1F> mParsingTimePerTF;
-  std::shared_ptr<TH1F> mDigitsPerEvent;
-  std::shared_ptr<TH1F> mTrackletsPerEvent;
   std::shared_ptr<TH1F> mTracksPerEvent;
   std::shared_ptr<TH1F> mTrackletsPerMatchedTrack;
-  std::shared_ptr<TH1F> mTriggerPerTF;
-  std::shared_ptr<TH1F> mTriggerWDigitPerTF;
   std::shared_ptr<TProfile> mPulseHeightpro = nullptr;
   std::shared_ptr<TProfile2D> mPulseHeightperchamber = nullptr;
-  std::vector<TH2F*> mLayers;
-
   // information pulled from ccdb
   o2::trd::NoiseStatusMCM* mNoiseMap = nullptr;
   o2::trd::HalfChamberStatusQC* mChamberStatus = nullptr;
