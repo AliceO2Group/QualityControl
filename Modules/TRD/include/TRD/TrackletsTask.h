@@ -59,6 +59,7 @@ class TrackletsTask final : public TaskInterface
 
  private:
   long int mTimestamp;
+  bool mLayerLabelsIgnore = false;
   std::array<TH2F*, 18> moHCMCM;
   std::array<TH1F*, 18> mTrackletQ0perSector;
   std::array<TH1F*, 18> mTrackletQ1perSector;
