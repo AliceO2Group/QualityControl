@@ -399,6 +399,33 @@ In the presented case, the Merger will publish one set of complete MOs per 10 mi
  received during this last period. Since the QC Tasks cycle is 10 times shorter, the occupancy fluctuations should be
  less apparent. Please also note, that using this parameter in the `"entire"` merging mode does not make much sense, 
  since Mergers would use every 10th incomplete MO version when merging.
+ 
+## Monitor cycles
+
+The QC tasks monitor and process data continuously during a so-called "monitor cycle". At the end of such a cycle they publish the QC objects that will then continue their way in the QC data flow. 
+
+A monitor cycle lasts typically between __1 and 5 minutes__, some reaching 10 minutes but never less than 1 minute for performance reasons. 
+It is defined in the config file this way: 
+```
+    "tasks": {
+      "dataSizeTask": {
+        "cycleDurationSeconds": "60",
+       ...
+```
+
+It is possible to specify various durations for different period of times. It is particularly useful to have shorter cycles at the beginning of the run and longer afterwards:
+
+```
+    "tasks": {
+      "dataSizeTask": {
+        "cycleDurations": [
+          {"cycleDurationSeconds": 60, "validitySeconds": 300},
+          {"cycleDurationSeconds": 180, "validitySeconds": 300},
+          {"cycleDurationSeconds": 300, "validitySeconds": 1}
+        ],
+        ...
+```
+In this example, a cycle of 60 seconds is used for the first 5 minutes (300 seconds), then a cycle of 3 minutes (180 seconds) for 5 minutes, and finally a cycle of 5 minutes for the rest of the run. The last `validitySeconds` is not used and is just applied for the rest of the run. 
 
 ## Writing a DPL data producer 
 
