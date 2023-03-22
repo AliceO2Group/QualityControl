@@ -41,9 +41,8 @@ class PostProcessingInterface
 
   /// \brief Configuration of a post-processing task.
   /// Configuration of a post-processing task. Can be overridden if user wants to retrieve the configuration of the task.
-  /// \param name     Name of the task
   /// \param config   ConfigurationInterface with prefix set to ""
-  virtual void configure(std::string name, const boost::property_tree::ptree& config);
+  virtual void configure(const boost::property_tree::ptree& config);
 
   /// \brief Initialization of a post-processing task.
   /// Initialization of a post-processing task. User receives a Trigger which caused the initialization and a service
@@ -51,12 +50,14 @@ class PostProcessingInterface
   /// \param trigger  Trigger which caused the initialization, for example Trigger::SOR
   /// \param services Interface containing optional interfaces, for example DatabaseInterface
   virtual void initialize(Trigger trigger, framework::ServiceRegistryRef services) = 0;
+
   /// \brief Update of a post-processing task.
   /// Update of a post-processing task. User receives a Trigger which caused the update and a service
   /// registry with singleton interfaces.
   /// \param trigger  Trigger which caused the initialization, for example Trigger::Period
   /// \param services Interface containing optional interfaces, for example DatabaseInterface
   virtual void update(Trigger trigger, framework::ServiceRegistryRef services) = 0;
+
   /// \brief Finalization of a post-processing task.
   /// Finalization of a post-processing task. User receives a Trigger which caused the finalization and a service
   /// registry with singleton interfaces.
@@ -65,13 +66,16 @@ class PostProcessingInterface
   virtual void finalize(Trigger trigger, framework::ServiceRegistryRef services) = 0;
 
   void setObjectsManager(std::shared_ptr<core::ObjectsManager> objectsManager);
+  void setID(const std::string& id);
+  [[nodiscard]] const std::string& getID() const;
   void setName(const std::string& name);
-  [[nodiscard]] std::string getName() const;
+  [[nodiscard]] const std::string& getName() const;
 
  protected:
   std::shared_ptr<core::ObjectsManager> getObjectsManager();
 
  private:
+  std::string mID;
   std::string mName;
   std::shared_ptr<core::ObjectsManager> mObjectsManager;
 };

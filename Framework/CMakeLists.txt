@@ -214,6 +214,7 @@ endforeach()
 # ---- Tests ----
 
 set(TEST_SRCS
+    test/testActivity.cxx
     test/testDbFactory.cxx
     test/testMonitorObject.cxx
     test/testPublisher.cxx
@@ -248,6 +249,7 @@ set(TEST_SRCS
   )
 
 set(TEST_ARGS
+    ""
     ""
     ""
     ""

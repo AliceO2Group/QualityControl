@@ -36,10 +36,10 @@ const std::string qcConfigurationKey = "qcConfiguration";
 class PostProcessingOCCStateMachine : public RuntimeControlledObject
 {
  public:
-  PostProcessingOCCStateMachine(std::string name, double period = 1.0)
-    : RuntimeControlledObject("Post-processing task runner"), mName(name), mPeriod(period)
+  PostProcessingOCCStateMachine(std::string id, double period = 1.0)
+    : RuntimeControlledObject("Post-processing task runner"), mID(id), mPeriod(period)
   {
-    mRunner = std::make_unique<PostProcessingRunner>(name);
+    mRunner = std::make_unique<PostProcessingRunner>(id);
   }
 
   // In all of the methods below we handle exceptions, so we can go into error state - OCC won't do that for us.
@@ -87,7 +87,7 @@ class PostProcessingOCCStateMachine : public RuntimeControlledObject
 
   int executeRecover() final
   {
-    mRunner = std::make_unique<PostProcessingRunner>(mName);
+    mRunner = std::make_unique<PostProcessingRunner>(mID);
     return mRunner == nullptr;
   }
 
@@ -184,7 +184,7 @@ class PostProcessingOCCStateMachine : public RuntimeControlledObject
 
  private:
   std::unique_ptr<PostProcessingRunner> mRunner = nullptr;
-  std::string mName = "";
+  std::string mID = "";
   double mPeriod = 1.0;
   Timer mRateLimiter;
 };
@@ -195,7 +195,7 @@ int main(int argc, const char* argv[])
     bpo::options_description desc{ "Options" };
     desc.add_options()                                                                                     //
       ("help,h", "Help screen")                                                                            //
-      ("name", bpo::value<std::string>(), "Name of a post processing task to run")                         //
+      ("id", bpo::value<std::string>(), "ID of a post processing task to run")                             //
       ("period", bpo::value<double>()->default_value(1.0), "Cycle period of checking triggers in seconds") //
       ("control-port", bpo::value<int>()->default_value(0), "Control port");
 
@@ -208,12 +208,12 @@ int main(int argc, const char* argv[])
     if (vm.count("help")) {
       ILOG(Info, Support) << desc << ENDM;
       return 0;
-    } else if (vm.count("name") == 0) {
+    } else if (vm.count("id") == 0) {
       ILOG(Error, Support) << "No 'name' parameter provided" << ENDM;
       return 1;
     }
 
-    PostProcessingOCCStateMachine stateMachine(vm["name"].as<std::string>(), vm["period"].as<double>());
+    PostProcessingOCCStateMachine stateMachine(vm["id"].as<std::string>(), vm["period"].as<double>());
     OccInstance occ(&stateMachine, vm["control-port"].as<int>());
     occ.wait();
     return 0;

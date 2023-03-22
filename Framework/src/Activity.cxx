@@ -48,17 +48,29 @@ bool Activity::matches(const Activity& other) const
          (mPeriodName.empty() || mPeriodName == other.mPeriodName) &&
          (mPassName.empty() || mPassName == other.mPassName) &&
          (mProvenance == other.mProvenance) && // provenance has to match!
-         !mValidity.isOutside(other.mValidity.getMin());
+         !mValidity.isOutside(other.mValidity.getMin()) &&
+         (mBeamType.empty() || mBeamType == other.mBeamType);
 }
 
 bool Activity::same(const Activity& other) const
 {
-  return mId == other.mId && mType == other.mType && mPeriodName == other.mPeriodName && mPassName == other.mPassName && mProvenance == other.mProvenance;
+  return mId == other.mId &&
+         mType == other.mType &&
+         mPeriodName == other.mPeriodName &&
+         mPassName == other.mPassName &&
+         mProvenance == other.mProvenance &&
+         mBeamType == other.mBeamType;
 }
 
 bool Activity::operator==(const Activity& other) const
 {
-  return mId == other.mId && mType == other.mType && mPeriodName == other.mPeriodName && mPassName == other.mPassName && mProvenance == other.mProvenance && mValidity == other.mValidity;
+  return mId == other.mId &&
+         mType == other.mType &&
+         mPeriodName == other.mPeriodName &&
+         mPassName == other.mPassName &&
+         mProvenance == other.mProvenance &&
+         mValidity == other.mValidity &&
+         mBeamType == other.mBeamType;
 }
 
 } // namespace o2::quality_control::core

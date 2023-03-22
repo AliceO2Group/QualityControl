@@ -36,25 +36,26 @@ using namespace o2::quality_control::postprocessing;
 namespace o2::quality_control_modules::tpc
 {
 
-void CalDetPublisher::configure(std::string name, const boost::property_tree::ptree& config)
+void CalDetPublisher::configure(const boost::property_tree::ptree& config)
 {
   o2::tpc::CDBInterface::instance().setURL(config.get<std::string>("qc.config.conditionDB.url"));
 
-  for (const auto& output : config.get_child("qc.postprocessing." + name + ".outputCalPadMaps")) {
+  auto& id = getID();
+  for (const auto& output : config.get_child("qc.postprocessing." + id + ".outputCalPadMaps")) {
     mOutputListMap.emplace_back(output.second.data());
   }
 
-  for (const auto& output : config.get_child("qc.postprocessing." + name + ".outputCalPads")) {
+  for (const auto& output : config.get_child("qc.postprocessing." + id + ".outputCalPads")) {
     mOutputList.emplace_back(output.second.data());
   }
 
-  for (const auto& timestamp : config.get_child("qc.postprocessing." + name + ".timestamps")) {
+  for (const auto& timestamp : config.get_child("qc.postprocessing." + id + ".timestamps")) {
     mTimestamps.emplace_back(std::stol(timestamp.second.data()));
   }
 
   std::vector<std::string> keyVec{};
   std::vector<std::string> valueVec{};
-  for (const auto& data : config.get_child("qc.postprocessing." + name + ".lookupMetaData")) {
+  for (const auto& data : config.get_child("qc.postprocessing." + id + ".lookupMetaData")) {
     mLookupMaps.emplace_back(std::map<std::string, std::string>());
     if (const auto& keys = data.second.get_child_optional("keys"); keys.has_value()) {
       for (const auto& key : keys.value()) {
@@ -80,7 +81,7 @@ void CalDetPublisher::configure(std::string name, const boost::property_tree::pt
     valueVec.clear();
   }
 
-  for (const auto& data : config.get_child("qc.postprocessing." + name + ".storeMetaData")) {
+  for (const auto& data : config.get_child("qc.postprocessing." + id + ".storeMetaData")) {
     mStoreMaps.emplace_back(std::map<std::string, std::string>());
     if (const auto& keys = data.second.get_child_optional("keys"); keys.has_value()) {
       for (const auto& key : keys.value()) {
@@ -114,7 +115,7 @@ void CalDetPublisher::configure(std::string name, const boost::property_tree::pt
     mCheckZSPrereq = true;
   }
 
-  for (const auto& entry : config.get_child("qc.postprocessing." + name + ".histogramRanges")) {
+  for (const auto& entry : config.get_child("qc.postprocessing." + id + ".histogramRanges")) {
     for (const auto& type : entry.second) {
       for (const auto& value : type.second) {
         mRanges[type.first].emplace_back(std::stof(value.second.data()));
@@ -122,10 +123,10 @@ void CalDetPublisher::configure(std::string name, const boost::property_tree::pt
     }
   }
 
-  std::string checkZSCalibration = config.get<std::string>("qc.postprocessing." + name + ".checkZSCalibration.check");
+  std::string checkZSCalibration = config.get<std::string>("qc.postprocessing." + id + ".checkZSCalibration.check");
   if (checkZSCalibration == "true" && mCheckZSPrereq == true) {
     mCheckZSCalib = true;
-    mInitRefCalibTimestamp = std::stol(config.get<std::string>("qc.postprocessing." + name + ".checkZSCalibration.initRefCalibTimestamp"));
+    mInitRefCalibTimestamp = std::stol(config.get<std::string>("qc.postprocessing." + id + ".checkZSCalibration.initRefCalibTimestamp"));
   } else if (checkZSCalibration == "false") {
     mCheckZSCalib = false;
   } else if (checkZSCalibration == "true" && mCheckZSPrereq == false) {
@@ -134,7 +135,7 @@ void CalDetPublisher::configure(std::string name, const boost::property_tree::pt
     ILOG(Error, Support) << "No valid value for 'checkZSCalibration.check' set. Has to be 'true' or 'false'" << ENDM;
   }
 
-  o2::tpc::CDBInterface::instance().setURL(config.get<std::string>("qc.postprocessing." + name + ".dataSourceURL"));
+  o2::tpc::CDBInterface::instance().setURL(config.get<std::string>("qc.postprocessing." + id + ".dataSourceURL"));
 }
 
 void CalDetPublisher::initialize(Trigger, framework::ServiceRegistryRef)

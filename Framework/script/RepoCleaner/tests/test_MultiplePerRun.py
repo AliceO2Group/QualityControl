@@ -77,19 +77,18 @@ class TestProduction(unittest.TestCase):
 
         # Prepare data
         test_path = self.path + "/test_5_runs"
-        self.prepare_data(test_path, [60, 120, 190, 240, 300], [60, 120, 190, 240, 24*60], 123)
+        self.prepare_data(test_path, [3, 3, 3, 3, 3], [60, 120, 190, 240, 24*60], 123)
 
         stats = multiple_per_run.process(self.ccdb, test_path, delay=60*24, from_timestamp=1,
                                        to_timestamp=self.in_ten_years, extra_params=self.extra)
-
         self.assertEqual(stats["deleted"], 60+120+190+240+300-18)
         self.assertEqual(stats["preserved"], 18)
         self.assertEqual(stats["updated"], 0)
-
+        
         # and now re-run it to make sure we preserve the state
         stats = multiple_per_run.process(self.ccdb, test_path, delay=60*24, from_timestamp=1,
-                                         to_timestamp=self.in_ten_years, extra_params=self.extra)
-
+                                          to_timestamp=self.in_ten_years, extra_params=self.extra)
+        
         self.assertEqual(stats["deleted"], 0)
         self.assertEqual(stats["preserved"], 18)
         self.assertEqual(stats["updated"], 0)

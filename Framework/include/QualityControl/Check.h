@@ -27,6 +27,7 @@ namespace o2::quality_control::core
 class MonitorObject;
 class Quality;
 struct CommonSpec;
+class Activity;
 } // namespace o2::quality_control::core
 
 namespace o2::quality_control::checker
@@ -67,6 +68,7 @@ class Check
   o2::framework::Inputs getInputs() const { return mCheckConfig.inputSpecs; };
   const std::string& getDetector() const { return mCheckConfig.detectorName; };
   const CheckConfig& getConfig() const { return mCheckConfig; };
+  void setActivity(std::shared_ptr<core::Activity> activity);
 
   //TODO: Unique Input string
   static o2::header::DataDescription createCheckDataDescription(const std::string& checkName);

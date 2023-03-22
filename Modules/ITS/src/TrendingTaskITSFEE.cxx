@@ -45,10 +45,9 @@ using namespace o2::quality_control::postprocessing;
 using namespace o2::quality_control::repository;
 using namespace o2::quality_control_modules::its;
 
-void TrendingTaskITSFEE::configure(std::string name,
-                                   const boost::property_tree::ptree& config)
+void TrendingTaskITSFEE::configure(const boost::property_tree::ptree& config)
 {
-  mConfig = TrendingTaskConfigITS(name, config);
+  mConfig = TrendingTaskConfigITS(getID(), config);
 }
 
 void TrendingTaskITSFEE::initialize(Trigger, framework::ServiceRegistryRef)

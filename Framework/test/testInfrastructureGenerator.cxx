@@ -181,7 +181,7 @@ BOOST_AUTO_TEST_CASE(qc_factory_remote_test)
   auto postprocessingTask = std::find_if(
     workflow.begin(), workflow.end(),
     [](const DataProcessorSpec& d) {
-      return d.name == "PP-TASK-RUNNER-SkeletonPostProcessing" &&
+      return d.name == "qc-pp-TST-SkeletonPostProcessing" &&
              d.inputs.size() == 1 &&
              d.outputs.size() == 1;
     });
@@ -254,7 +254,7 @@ BOOST_AUTO_TEST_CASE(qc_factory_standalone_test)
   auto postprocessingTask = std::find_if(
     workflow.begin(), workflow.end(),
     [](const DataProcessorSpec& d) {
-      return d.name == "PP-TASK-RUNNER-SkeletonPostProcessing" &&
+      return d.name == "qc-pp-TST-SkeletonPostProcessing" &&
              d.inputs.size() == 1 &&
              d.outputs.size() == 1;
     });
@@ -384,7 +384,7 @@ BOOST_AUTO_TEST_CASE(qc_infrastructure_remote_batch_test)
   auto postprocessingTask = std::find_if(
     workflow.begin(), workflow.end(),
     [](const DataProcessorSpec& d) {
-      return d.name == "PP-TASK-RUNNER-SkeletonPostProcessing" &&
+      return d.name == "qc-pp-TST-SkeletonPostProcessing" &&
              d.inputs.size() == 1 &&
              d.outputs.size() == 1;
     });

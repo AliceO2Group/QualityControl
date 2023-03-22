@@ -219,7 +219,7 @@ class CheckRunner : public framework::Task
   std::string mDeviceName;
   std::map<std::string, Check> mChecks;
   std::string mDetectorName;
-  Activity mActivity;
+  std::shared_ptr<Activity> mActivity;
   CheckRunnerConfig mConfig;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
   std::unordered_set<std::string> mInputStoreSet;

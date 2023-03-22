@@ -57,8 +57,7 @@ class TrendingTaskITSThr : public PostProcessingInterface
   TrendingTaskITSThr() = default;
   ~TrendingTaskITSThr() override = default;
 
-  void configure(std::string name,
-                 const boost::property_tree::ptree& config) override;
+  void configure(const boost::property_tree::ptree& config) override;
   void initialize(Trigger, framework::ServiceRegistryRef) override;
   void update(Trigger, framework::ServiceRegistryRef) override;
   void finalize(Trigger, framework::ServiceRegistryRef) override;

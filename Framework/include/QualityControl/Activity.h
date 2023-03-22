@@ -38,13 +38,15 @@ class Activity
            const std::string& periodName = "",
            const std::string& passName = "",
            const std::string& provenance = "qc",
-           ValidityInterval validity = gFullValidityInterval)
+           ValidityInterval validity = gFullValidityInterval,
+           const std::string& beamType = "")
     : mId(id),
       mType(type),
       mPeriodName(periodName),
       mPassName(passName),
       mProvenance(provenance),
-      mValidity(validity) {}
+      mValidity(validity),
+      mBeamType(beamType) {}
 
   /// Copy constructor
   Activity(const Activity& other) = default;
@@ -75,7 +77,7 @@ class Activity
   ValidityInterval mValidity{ gFullValidityInterval };
   std::string mBeamType{};
 
-  ClassDef(Activity, 3);
+  ClassDef(Activity, 4);
 };
 
 } // namespace o2::quality_control::core

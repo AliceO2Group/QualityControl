@@ -408,12 +408,16 @@ std::tuple<bool /*data ready*/, bool /*timer ready*/> TaskRunner::validateInputs
 
 void TaskRunner::printTaskConfig() const
 {
-  ILOG(Info, Devel) << "Configuration loaded > Task name : " << mTaskConfig.taskName      //
-                    << " / Module name : " << mTaskConfig.moduleName                      //
-                    << " / Detector name : " << mTaskConfig.detectorName                  //
-                    << " / Cycle duration seconds : " << mTaskConfig.cycleDurationSeconds //
-                    << " / Max number cycles : " << mTaskConfig.maxNumberCycles           //
-                    << " / Save to file : " << mTaskConfig.saveToFile << ENDM;
+  ILOG(Info, Devel) << "Configuration loaded > Task name : " << mTaskConfig.taskName //
+                    << " / Module name : " << mTaskConfig.moduleName                 //
+                    << " / Detector name : " << mTaskConfig.detectorName             //
+                    << " / Max number cycles : " << mTaskConfig.maxNumberCycles      //
+                    << " / Save to file : " << mTaskConfig.saveToFile
+                    << " / Cycle duration seconds : ";
+  for (auto& [cycleDuration, period] : mTaskConfig.cycleDurations) {
+    ILOG(Info, Devel) << cycleDuration << "s during " << period << "s, ";
+  }
+  ILOG(Info, Devel) << ENDM;
 }
 
 void TaskRunner::startOfActivity()
