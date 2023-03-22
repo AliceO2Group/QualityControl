@@ -38,56 +38,56 @@ Quality CalibMQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
 {
   // printf("\n*********** CalibMQcCheck ****** check \n");
   Quality result = Quality::Null;
-  IsEmpty = 0;
+  mIsEmpty = 0;
   for (auto& [moName, mo] : *moMap) {
 
     (void)moName;
-    if (mo->getName() == "MBendBadMap11") {
+    if (!mIsEmpty && mo->getName() == "MBendBadMap11") {
       auto* h2 = dynamic_cast<TH2I*>(mo->getObject());
       if (!h2->GetEntries())
-        IsEmpty = 1;
+        mIsEmpty = 1;
       // h2->Scale(scale);
     }
-    if (mo->getName() == "MBendBadMap12") {
+    if (!mIsEmpty && mo->getName() == "MBendBadMap12") {
       auto* h2 = dynamic_cast<TH2I*>(mo->getObject());
       if (!h2->GetEntries())
-        IsEmpty = 1;
+        mIsEmpty = 1;
       // h2->Scale(scale);
     }
-    if (mo->getName() == "MBendBadMap21") {
+    if (!mIsEmpty && mo->getName() == "MBendBadMap21") {
       auto* h2 = dynamic_cast<TH2I*>(mo->getObject());
       if (!h2->GetEntries())
-        IsEmpty = 1;
+        mIsEmpty = 1;
       // h2->Scale(scale);
     }
-    if (mo->getName() == "MBendBadMap22") {
+    if (!mIsEmpty && mo->getName() == "MBendBadMap22") {
       auto* h2 = dynamic_cast<TH2I*>(mo->getObject());
       if (!h2->GetEntries())
-        IsEmpty = 1;
+        mIsEmpty = 1;
       // h2->Scale(scale);
     }
-    if (mo->getName() == "MNBendBadMap11") {
+    if (!mIsEmpty && mo->getName() == "MNBendBadMap11") {
       auto* h2 = dynamic_cast<TH2I*>(mo->getObject());
       if (!h2->GetEntries())
-        IsEmpty = 1;
+        mIsEmpty = 1;
       // h2->Scale(scale);
     }
-    if (mo->getName() == "MNBendBadMap12") {
+    if (!mIsEmpty && mo->getName() == "MNBendBadMap12") {
       auto* h2 = dynamic_cast<TH2I*>(mo->getObject());
       if (!h2->GetEntries())
-        IsEmpty = 1;
+        mIsEmpty = 1;
       // h2->Scale(scale);
     }
-    if (mo->getName() == "MNBendBadMap21") {
+    if (!mIsEmpty && mo->getName() == "MNBendBadMap21") {
       auto* h2 = dynamic_cast<TH2I*>(mo->getObject());
       if (!h2->GetEntries())
-        IsEmpty = 1;
+        mIsEmpty = 1;
       // h2->Scale(scale);
     }
-    if (mo->getName() == "MNBendBadMap22") {
+    if (!mIsEmpty && mo->getName() == "MNBendBadMap22") {
       auto* h2 = dynamic_cast<TH2I*>(mo->getObject());
-      if (!h2->GetEntries())
-        IsEmpty = 1;
+      if (!(h2->GetEntries()))
+        mIsEmpty = 1;
       // h2->Scale(scale);
     }
   }
@@ -143,7 +143,7 @@ void CalibMQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
   TLatex* msg;
   if (mo->getName() == "MBendBadMap11") {
     auto* h2 = dynamic_cast<TH2I*>(mo->getObject());
-    if (IsEmpty == 1) {
+    if (mIsEmpty == 1) {
       msg = drawLatex(.2, 0.8, kRed, " EMPTY ");
       h2->GetListOfFunctions()->Add(msg);
       msg = drawLatex(.1, 0.65, kRed, " Calib Objets not produced ");

@@ -245,13 +245,13 @@ void DigitsQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       h->GetListOfFunctions()->Add(msg);
       msg = drawLatex(.3, 0.52, kGreen, "Quality::Good");
       h->GetListOfFunctions()->Add(msg);
-    } else if (resultBMT11 == Quality::Bad) {
+    } else if (resultBMT12 == Quality::Bad) {
       h->SetFillColor(kRed);
       msg = drawLatex(.3, 0.62, kRed, Form("Mean = %4.1f  ", h->GetMean()));
       h->GetListOfFunctions()->Add(msg);
       msg = drawLatex(.3, 0.52, kRed, "Quality::Bad ");
       h->GetListOfFunctions()->Add(msg);
-    } else if (resultBMT11 == Quality::Medium) {
+    } else if (resultBMT12 == Quality::Medium) {
       h->SetFillColor(kOrange);
       msg = drawLatex(.3, 0.62, kOrange, Form("Mean = %4.1f ", h->GetMean()));
       h->GetListOfFunctions()->Add(msg);
@@ -272,13 +272,13 @@ void DigitsQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       h->GetListOfFunctions()->Add(msg);
       msg = drawLatex(.3, 0.52, kGreen, "Quality::Good");
       h->GetListOfFunctions()->Add(msg);
-    } else if (resultBMT11 == Quality::Bad) {
+    } else if (resultBMT21 == Quality::Bad) {
       h->SetFillColor(kRed);
       msg = drawLatex(.3, 0.62, kRed, Form("Mean = %4.1f ", h->GetMean()));
       h->GetListOfFunctions()->Add(msg);
       msg = drawLatex(.3, 0.52, kRed, "Quality::Bad ");
       h->GetListOfFunctions()->Add(msg);
-    } else if (resultBMT11 == Quality::Medium) {
+    } else if (resultBMT21 == Quality::Medium) {
       h->SetFillColor(kOrange);
       msg = drawLatex(.3, 0.62, kOrange, Form("Mean = %4.1f ", h->GetMean()));
       h->GetListOfFunctions()->Add(msg);
@@ -299,13 +299,13 @@ void DigitsQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       h->GetListOfFunctions()->Add(msg);
       msg = drawLatex(.3, 0.52, kGreen, "Quality::Good");
       h->GetListOfFunctions()->Add(msg);
-    } else if (resultBMT11 == Quality::Bad) {
+    } else if (resultBMT22 == Quality::Bad) {
       h->SetFillColor(kRed);
       msg = drawLatex(.3, 0.62, kRed, Form("Mean = %4.1f ", h->GetMean()));
       h->GetListOfFunctions()->Add(msg);
       msg = drawLatex(.3, 0.52, kRed, "Quality::Bad ");
       h->GetListOfFunctions()->Add(msg);
-    } else if (resultBMT11 == Quality::Medium) {
+    } else if (resultBMT22 == Quality::Medium) {
       h->SetFillColor(kOrange);
       msg = drawLatex(.3, 0.62, kOrange, Form("Mean = %4.1f", h->GetMean()));
       h->GetListOfFunctions()->Add(msg);
@@ -352,13 +352,13 @@ void DigitsQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       h->GetListOfFunctions()->Add(msg);
       msg = drawLatex(.3, 0.52, kGreen, "Quality::Good");
       h->GetListOfFunctions()->Add(msg);
-    } else if (resultBMT11 == Quality::Bad) {
+    } else if (resultBMT12 == Quality::Bad) {
       h->SetFillColor(kRed);
       msg = drawLatex(.3, 0.62, kRed, Form("Mean = %4.1f", h->GetMean()));
       h->GetListOfFunctions()->Add(msg);
       msg = drawLatex(.3, 0.52, kRed, "Quality::Bad ");
       h->GetListOfFunctions()->Add(msg);
-    } else if (resultBMT11 == Quality::Medium) {
+    } else if (resultBMT12 == Quality::Medium) {
       h->SetFillColor(kOrange);
       msg = drawLatex(.3, 0.62, kOrange, Form("Mean = %4.1f", h->GetMean()));
       h->GetListOfFunctions()->Add(msg);
@@ -378,13 +378,13 @@ void DigitsQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       h->GetListOfFunctions()->Add(msg);
       msg = drawLatex(.3, 0.52, kGreen, "Quality::Good");
       h->GetListOfFunctions()->Add(msg);
-    } else if (resultBMT11 == Quality::Bad) {
+    } else if (resultBMT21 == Quality::Bad) {
       h->SetFillColor(kRed);
       msg = drawLatex(.3, 0.62, kRed, Form("Mean = %4.1f ", h->GetMean()));
       h->GetListOfFunctions()->Add(msg);
       msg = drawLatex(.3, 0.52, kRed, "Quality::Bad ");
       h->GetListOfFunctions()->Add(msg);
-    } else if (resultBMT11 == Quality::Medium) {
+    } else if (resultBMT21 == Quality::Medium) {
       h->SetFillColor(kOrange);
       msg = drawLatex(.3, 0.62, kOrange, Form("Mean = %4.1f", h->GetMean()));
       h->GetListOfFunctions()->Add(msg);
@@ -404,13 +404,13 @@ void DigitsQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       h->GetListOfFunctions()->Add(msg);
       msg = drawLatex(.3, 0.52, kGreen, "Quality::Good");
       h->GetListOfFunctions()->Add(msg);
-    } else if (resultBMT11 == Quality::Bad) {
+    } else if (resultBMT22 == Quality::Bad) {
       h->SetFillColor(kRed);
       msg = drawLatex(.3, 0.62, kRed, Form("Mean = %4.1f", h->GetMean()));
       h->GetListOfFunctions()->Add(msg);
       msg = drawLatex(.3, 0.52, kRed, "Quality::Bad ");
       h->GetListOfFunctions()->Add(msg);
-    } else if (resultBMT11 == Quality::Medium) {
+    } else if (resultBMT22 == Quality::Medium) {
       h->SetFillColor(kOrange);
       msg = drawLatex(.3, 0.62, kOrange, Form("Mean = %4.1f", h->GetMean()));
       h->GetListOfFunctions()->Add(msg);
