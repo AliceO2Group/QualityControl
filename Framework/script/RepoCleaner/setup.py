@@ -5,7 +5,7 @@ with open('README.md', 'r') as fh:
 
 setup(
     name='qcrepocleaner',
-    version='1.3',
+    version='1.4',
     author='Barthelemy von Haller',
     author_email='bvonhall@cern.ch',
     url='https://gitlab.cern.ch/AliceO2Group/QualityControl/Framework/script/RepoCleaner',
