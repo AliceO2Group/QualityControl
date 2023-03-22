@@ -421,12 +421,12 @@ It is possible to specify various durations for different period of times. It is
       "dataSizeTask": {
         "cycleDurations": [
           {"cycleDurationSeconds": 60, "validitySeconds": 300},
-          {"cycleDurationSeconds": 180, "validitySeconds": 300},
+          {"cycleDurationSeconds": 180, "validitySeconds": 600},
           {"cycleDurationSeconds": 300, "validitySeconds": 1}
         ],
         ...
 ```
-In this example, a cycle of 60 seconds is used for the first 5 minutes (300 seconds), then a cycle of 3 minutes (180 seconds) for 5 minutes, and finally a cycle of 5 minutes for the rest of the run. The last `validitySeconds` is not used and is just applied for the rest of the run. 
+In this example, a cycle of 60 seconds is used for the first 5 minutes (300 seconds), then a cycle of 3 minutes (180 seconds) between 5 minutes and 10 minutes after SOR, and finally a cycle of 5 minutes for the rest of the run. The last `validitySeconds` is not used and is just applied for the rest of the run. 
 
 ## Writing a DPL data producer 
 
