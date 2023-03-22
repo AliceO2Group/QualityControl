@@ -15,6 +15,7 @@ Advanced topics
    * [Multi-node setups](#multi-node-setups)
    * [Batch processing](#batch-processing)
    * [Moving window](#moving-window)
+   * [Monitor cycles](#monitor-cycles)
    * [Writing a DPL data producer](#writing-a-dpl-data-producer)
    * [Custom merging](#custom-merging)
    * [QC with DPL Analysis](#qc-with-dpl-analysis)
