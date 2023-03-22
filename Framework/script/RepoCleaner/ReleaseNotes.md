@@ -3,6 +3,7 @@
 1.3
 - Add new tool `o2-qc-repo-find-objects-not-updated` to find all the objects under a path that did not get a new
   version in the past X days. 
+- Add new tool to delete objects not belonging to a list of runs.
 
 1.2
 
