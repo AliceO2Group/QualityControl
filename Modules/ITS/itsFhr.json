@@ -37,8 +37,7 @@
                 "location": "remote",
                 "taskParameters": {
                     "Layer": "3",
-		    "HitNumberCut": "0",
-                    "GetTFFromBinding": "0",
+		    "HitNumberCut": "0", 
                     "decoderThreads": "8",
                     "HitNumberCutForNoisyPixel": "0",
                     "OccupancyNumberCutForNoisyPixel": "0.000001",
@@ -84,7 +83,7 @@
             "id": "RAWDATA",
             "active": "true",
             "machines": [],
-            "query": "filter:ITS/RAWDATA;G:FLP/DISTSUBTIMEFRAME/0",
+            "query": "filter:ITS/RAWDATA",
             "samplingConditions": [
                 {
                     "condition": "random",
