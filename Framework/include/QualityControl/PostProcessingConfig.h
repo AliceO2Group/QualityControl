@@ -30,8 +30,9 @@ namespace o2::quality_control::postprocessing
 /// \brief  Post-processing configuration structure
 struct PostProcessingConfig {
   PostProcessingConfig() = default;
-  PostProcessingConfig(const std::string& name, const boost::property_tree::ptree& config);
+  PostProcessingConfig(const std::string& id, const boost::property_tree::ptree& config);
   ~PostProcessingConfig() = default;
+  std::string id;
   std::string taskName;
   std::string moduleName;
   std::string className;

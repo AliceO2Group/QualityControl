@@ -245,4 +245,9 @@ framework::OutputSpec Check::createOutputSpec(const std::string& checkName)
   return { "QC", createCheckDataDescription(checkName), 0, framework::Lifetime::Sporadic };
 }
 
+void Check::setActivity(std::shared_ptr<core::Activity> activity)
+{
+  mCheckInterface->setActivity(activity);
+}
+
 } // namespace o2::quality_control::checker

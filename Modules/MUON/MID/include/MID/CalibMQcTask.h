@@ -60,11 +60,6 @@ class CalibMQcTask final : public TaskInterface
 
   o2::mid::Mapping mMapping; ///< Mapping
 
-  std::shared_ptr<TH1F> mMNbTimeFrame{ nullptr };
-  std::shared_ptr<TH1F> mMNbNoiseROF{ nullptr };
-  std::shared_ptr<TH1F> mMNbDeadROF{ nullptr };
-  std::shared_ptr<TH1F> mMNbBadROF{ nullptr };
-
   std::shared_ptr<TH1F> mMMultNoiseMT11B{ nullptr };
   std::shared_ptr<TH1F> mMMultNoiseMT11NB{ nullptr };
   std::shared_ptr<TH1F> mMMultNoiseMT12B{ nullptr };
@@ -74,14 +69,14 @@ class CalibMQcTask final : public TaskInterface
   std::shared_ptr<TH1F> mMMultNoiseMT22B{ nullptr };
   std::shared_ptr<TH1F> mMMultNoiseMT22NB{ nullptr };
 
-  std::shared_ptr<TProfile2D> mMBendNoiseMap11{ nullptr };
-  std::shared_ptr<TProfile2D> mMBendNoiseMap12{ nullptr };
-  std::shared_ptr<TProfile2D> mMBendNoiseMap21{ nullptr };
-  std::shared_ptr<TProfile2D> mMBendNoiseMap22{ nullptr };
-  std::shared_ptr<TProfile2D> mMNBendNoiseMap11{ nullptr };
-  std::shared_ptr<TProfile2D> mMNBendNoiseMap12{ nullptr };
-  std::shared_ptr<TProfile2D> mMNBendNoiseMap21{ nullptr };
-  std::shared_ptr<TProfile2D> mMNBendNoiseMap22{ nullptr };
+  std::shared_ptr<TH2I> mMBendNoiseMap11{ nullptr };
+  std::shared_ptr<TH2I> mMBendNoiseMap12{ nullptr };
+  std::shared_ptr<TH2I> mMBendNoiseMap21{ nullptr };
+  std::shared_ptr<TH2I> mMBendNoiseMap22{ nullptr };
+  std::shared_ptr<TH2I> mMNBendNoiseMap11{ nullptr };
+  std::shared_ptr<TH2I> mMNBendNoiseMap12{ nullptr };
+  std::shared_ptr<TH2I> mMNBendNoiseMap21{ nullptr };
+  std::shared_ptr<TH2I> mMNBendNoiseMap22{ nullptr };
 
   std::shared_ptr<TH1F> mMMultDeadMT11B{ nullptr };
   std::shared_ptr<TH1F> mMMultDeadMT11NB{ nullptr };
@@ -92,14 +87,14 @@ class CalibMQcTask final : public TaskInterface
   std::shared_ptr<TH1F> mMMultDeadMT22B{ nullptr };
   std::shared_ptr<TH1F> mMMultDeadMT22NB{ nullptr };
 
-  std::shared_ptr<TProfile2D> mMBendDeadMap11{ nullptr };
-  std::shared_ptr<TProfile2D> mMBendDeadMap12{ nullptr };
-  std::shared_ptr<TProfile2D> mMBendDeadMap21{ nullptr };
-  std::shared_ptr<TProfile2D> mMBendDeadMap22{ nullptr };
-  std::shared_ptr<TProfile2D> mMNBendDeadMap11{ nullptr };
-  std::shared_ptr<TProfile2D> mMNBendDeadMap12{ nullptr };
-  std::shared_ptr<TProfile2D> mMNBendDeadMap21{ nullptr };
-  std::shared_ptr<TProfile2D> mMNBendDeadMap22{ nullptr };
+  std::shared_ptr<TH2I> mMBendDeadMap11{ nullptr };
+  std::shared_ptr<TH2I> mMBendDeadMap12{ nullptr };
+  std::shared_ptr<TH2I> mMBendDeadMap21{ nullptr };
+  std::shared_ptr<TH2I> mMBendDeadMap22{ nullptr };
+  std::shared_ptr<TH2I> mMNBendDeadMap11{ nullptr };
+  std::shared_ptr<TH2I> mMNBendDeadMap12{ nullptr };
+  std::shared_ptr<TH2I> mMNBendDeadMap21{ nullptr };
+  std::shared_ptr<TH2I> mMNBendDeadMap22{ nullptr };
 
   std::shared_ptr<TH1F> mMMultBadMT11B{ nullptr };
   std::shared_ptr<TH1F> mMMultBadMT11NB{ nullptr };
@@ -110,14 +105,14 @@ class CalibMQcTask final : public TaskInterface
   std::shared_ptr<TH1F> mMMultBadMT22B{ nullptr };
   std::shared_ptr<TH1F> mMMultBadMT22NB{ nullptr };
 
-  std::shared_ptr<TProfile2D> mMBendBadMap11{ nullptr };
-  std::shared_ptr<TProfile2D> mMBendBadMap12{ nullptr };
-  std::shared_ptr<TProfile2D> mMBendBadMap21{ nullptr };
-  std::shared_ptr<TProfile2D> mMBendBadMap22{ nullptr };
-  std::shared_ptr<TProfile2D> mMNBendBadMap11{ nullptr };
-  std::shared_ptr<TProfile2D> mMNBendBadMap12{ nullptr };
-  std::shared_ptr<TProfile2D> mMNBendBadMap21{ nullptr };
-  std::shared_ptr<TProfile2D> mMNBendBadMap22{ nullptr };
+  std::shared_ptr<TH2I> mMBendBadMap11{ nullptr };
+  std::shared_ptr<TH2I> mMBendBadMap12{ nullptr };
+  std::shared_ptr<TH2I> mMBendBadMap21{ nullptr };
+  std::shared_ptr<TH2I> mMBendBadMap22{ nullptr };
+  std::shared_ptr<TH2I> mMNBendBadMap11{ nullptr };
+  std::shared_ptr<TH2I> mMNBendBadMap12{ nullptr };
+  std::shared_ptr<TH2I> mMNBendBadMap21{ nullptr };
+  std::shared_ptr<TH2I> mMNBendBadMap22{ nullptr };
 };
 
 } // namespace o2::quality_control_modules::mid

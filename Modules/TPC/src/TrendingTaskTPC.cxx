@@ -45,10 +45,9 @@ using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;
 using namespace o2::quality_control_modules::tpc;
 
-void TrendingTaskTPC::configure(std::string name,
-                                const boost::property_tree::ptree& config)
+void TrendingTaskTPC::configure(const boost::property_tree::ptree& config)
 {
-  mConfig = TrendingTaskConfigTPC(name, config);
+  mConfig = TrendingTaskConfigTPC(getID(), config);
 }
 
 void TrendingTaskTPC::initialize(Trigger, framework::ServiceRegistryRef services)

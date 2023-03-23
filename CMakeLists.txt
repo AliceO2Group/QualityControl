@@ -13,7 +13,7 @@ include(AddQCWorkflow)
 # ---- Project ----
 
 project(QualityControl
-        VERSION 1.93.0
+        VERSION 1.95.0
         DESCRIPTION "O2 Data Quality Control Framework"
         LANGUAGES C CXX)
 
@@ -95,6 +95,7 @@ find_package(Configuration REQUIRED)
 find_package(Monitoring REQUIRED)
 find_package(Common REQUIRED)
 find_package(InfoLogger REQUIRED)
+find_package(BookkeepingApi REQUIRED) # it must be before O2 for some reasons.
 find_package(O2 CONFIG REQUIRED)
 find_package(CURL REQUIRED)
 find_package(GLFW NAMES glfw3 CONFIG)

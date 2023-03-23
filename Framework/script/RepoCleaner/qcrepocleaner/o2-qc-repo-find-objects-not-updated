@@ -1,0 +1,90 @@
+#!/usr/bin/env python3
+
+import logging
+import argparse
+import time
+from qcrepocleaner.Ccdb import Ccdb
+import sys
+import datetime
+
+def parseArgs():
+    """Parse the arguments passed to the script."""
+    logging.info("Parsing arguments")
+    parser = argparse.ArgumentParser(description='Identify the objects that have not seen an update for a given '
+                                                 'amount of time in the given path.')
+    parser.add_argument('--url', dest='url', action='store', help='URL of the CCDB, with http[s]://', required=True)
+    parser.add_argument('--log-level', dest='log_level', action='store', default="20",
+                        help='Log level (CRITICAL->50, ERROR->40, WARNING->30, INFO->20,DEBUG->10)')
+    parser.add_argument('--path', dest='path', action='store', default="",
+                        help='The path to work with (without initial slash and without .* at the end, e.g. qc/TST/MO/Bob).', required=True)
+    parser.add_argument('--span', dest='span', action='store', default="30",
+                        help='The span of time (in days) for which objects without updates will be identified.')
+    args = parser.parse_args()
+    logging.info(args)
+    return args
+
+
+def prepare_main_logger():
+    logger = logging.getLogger()
+    # Logging (split between stderr and stdout)
+    formatter = logging.Formatter(fmt='%(asctime)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
+    h1 = logging.StreamHandler(sys.stdout)
+    h1.setLevel(logging.DEBUG)
+    h1.addFilter(lambda record: record.levelno <= logging.INFO) # filter out everything that is above INFO level
+    h1.setFormatter(formatter)
+    logger.addHandler(h1)
+    h2 = logging.StreamHandler(sys.stderr)
+    h2.setLevel(logging.WARNING)     # take only warnings and error logs
+    h2.setFormatter(formatter)
+    logger.addHandler(h2)
+
+
+def days_ago_timestamp(days):
+    """
+    Returns the timestamp (milliseconds) corresponding to the number of days in the past.
+    """
+    today = datetime.datetime.now()
+    days_ago = today - datetime.timedelta(days=days)
+    timestamp = int(days_ago.timestamp())*1000
+    return timestamp
+
+
+def run(args):
+    ccdb = Ccdb(args.url)
+    ccdb.logger = logging.getLogger
+
+    ts_days_ago = days_ago_timestamp(int(args.span))
+    logging.debug(f"ts : {ts_days_ago}")
+
+    # retrieve all the objects
+    path = args.path + ".*"
+    objects = ccdb.getFullObjectsDetails(path=path)
+
+    logging.info(f"List of the objects in {args.path} not touched in the past {args.span} days:")
+    counter = 0
+    for o in objects:
+        last_updated = o['lastModified']
+        logging.debug(f"{o['path']} : {last_updated}")
+        if last_updated < ts_days_ago:
+            logging.info(f"   {o['path']}")
+            counter += 1
+
+    logging.info(f"Number of items: {counter}")
+
+
+# ****************
+# We start here !
+# ****************
+
+def main():
+    prepare_main_logger()
+
+    # Parse arguments
+    args = parseArgs()
+    logging.getLogger().setLevel(int(args.log_level))
+
+    run(args)
+
+
+if __name__ == "__main__":
+    main()

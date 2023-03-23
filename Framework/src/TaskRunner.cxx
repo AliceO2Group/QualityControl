@@ -40,6 +40,7 @@
 #include "QualityControl/TaskRunnerFactory.h"
 #include "QualityControl/ConfigParamGlo.h"
 #include "QualityControl/ObjectsManager.h"
+#include "QualityControl/Bookkeeping.h"
 
 #include <string>
 #include <TFile.h>
@@ -139,6 +140,7 @@ void TaskRunner::init(InitContext& iCtx)
 
   refreshConfig(iCtx);
   printTaskConfig();
+  Bookkeeping::getInstance().init(mTaskConfig.bookkeepingUrl);
 
   // registering state machine callbacks
   try {
@@ -406,12 +408,16 @@ std::tuple<bool /*data ready*/, bool /*timer ready*/> TaskRunner::validateInputs
 
 void TaskRunner::printTaskConfig() const
 {
-  ILOG(Info, Devel) << "Configuration loaded > Task name : " << mTaskConfig.taskName      //
-                    << " / Module name : " << mTaskConfig.moduleName                      //
-                    << " / Detector name : " << mTaskConfig.detectorName                  //
-                    << " / Cycle duration seconds : " << mTaskConfig.cycleDurationSeconds //
-                    << " / Max number cycles : " << mTaskConfig.maxNumberCycles           //
-                    << " / Save to file : " << mTaskConfig.saveToFile << ENDM;
+  ILOG(Info, Devel) << "Configuration loaded > Task name : " << mTaskConfig.taskName //
+                    << " / Module name : " << mTaskConfig.moduleName                 //
+                    << " / Detector name : " << mTaskConfig.detectorName             //
+                    << " / Max number cycles : " << mTaskConfig.maxNumberCycles      //
+                    << " / Save to file : " << mTaskConfig.saveToFile
+                    << " / Cycle duration seconds : ";
+  for (auto& [cycleDuration, period] : mTaskConfig.cycleDurations) {
+    ILOG(Info, Devel) << cycleDuration << "s during " << period << "s, ";
+  }
+  ILOG(Info, Devel) << ENDM;
 }
 
 void TaskRunner::startOfActivity()
@@ -420,10 +426,10 @@ void TaskRunner::startOfActivity()
   mTimerTotalDurationActivity.reset();
   mTotalNumberObjectsPublished = 0;
 
-  // Start activity in module's stask and update objectsManager
-  Activity activity = mTaskConfig.fallbackActivity;
-  activity.mId = mRunNumber;
+  // Start activity in module's task and update objectsManager
   ILOG(Info, Support) << "Starting run " << mRunNumber << ENDM;
+  Activity activity = mTaskConfig.fallbackActivity;
+  Bookkeeping::getInstance().populateActivity(activity, mRunNumber);
   mObjectsManager->setActivity(activity);
   mCollector->setRunNumber(mRunNumber);
   mTask->startOfActivity(activity);

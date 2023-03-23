@@ -69,7 +69,10 @@ class DigitsQcTask final : public TaskInterface
 
   ///////////////////////////
   int mROF = 0;
+  int mDigitTF = 0;
   o2::mid::Mapping mMapping; ///< Mapping
+
+  std::shared_ptr<TH1F> mNbDigitTF{ nullptr };
 
   std::shared_ptr<TH1F> mMultHitMT11B{ nullptr };
   std::shared_ptr<TH1F> mMultHitMT11NB{ nullptr };

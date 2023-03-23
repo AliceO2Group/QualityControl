@@ -64,20 +64,11 @@ void PulseHeightTrackMatch::buildHistograms()
   mParsingTimePerTF->GetYaxis()->SetTitle("Counts");
   getObjectsManager()->startPublishing(mParsingTimePerTF.get());
 
-  mDigitsPerEvent.reset(new TH1F("digitsperevent", "Digits per Event", 10000, 0, 10000));
-  getObjectsManager()->startPublishing(mDigitsPerEvent.get());
-
   mTracksPerEvent.reset(new TH1F("tracksperevent", "Matched TRD tracks per Event", 100, 0, 10));
   getObjectsManager()->startPublishing(mTracksPerEvent.get());
 
   mTrackletsPerMatchedTrack.reset(new TH1F("trackletspermatchedtrack", "Tracklets per matched TRD track", 100, 0, 10));
   getObjectsManager()->startPublishing(mTrackletsPerMatchedTrack.get());
-
-  mTriggerPerTF.reset(new TH1F("triggerpertimeframe", "Triggers per TF", 1000, 0, 1000));
-  getObjectsManager()->startPublishing(mTriggerPerTF.get());
-
-  mTriggerWDigitPerTF.reset(new TH1F("triggerwdpertimeframe", "Triggers with Digits per TF", 10, 0, 10));
-  getObjectsManager()->startPublishing(mTriggerWDigitPerTF.get());
 
   mPulseHeightpro.reset(new TProfile("PulseHeight/mPulseHeightpro", "Pulse height profile  plot;Timebins;Counts", 30, -0.5, 29.5));
   mPulseHeightpro.get()->Sumw2();
@@ -91,7 +82,7 @@ void PulseHeightTrackMatch::buildHistograms()
 
 void PulseHeightTrackMatch::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Debug, Devel) << "initialize TRDDigitQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize TRDPulseHeightQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   retrieveCCDBSettings();
   buildHistograms();
@@ -107,172 +98,93 @@ void PulseHeightTrackMatch::startOfCycle()
   ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
-bool digitIndexCompare_phtm(unsigned int A, unsigned int B, const std::vector<o2::trd::Digit>& originalDigits)
-{
-  // sort into ROC:padrow
-  const o2::trd::Digit *a, *b;
-  a = &originalDigits[A];
-  b = &originalDigits[B];
-  if (a->getDetector() < b->getDetector()) {
-    return 1;
-  }
-  if (a->getDetector() > b->getDetector()) {
-    return 0;
-  }
-  if (a->getPadRow() < b->getPadRow()) {
-    return 1;
-  }
-  if (a->getPadRow() > b->getPadRow()) {
-    return 0;
-  }
-  if (a->getPadCol() < b->getPadCol()) {
-    return 1;
-  }
-  return 0;
-}
-
 void PulseHeightTrackMatch::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  for (auto&& input : ctx.inputs()) {
-    auto digits = ctx.inputs().get<gsl::span<o2::trd::Digit>>("digits");
-    auto tracklets = ctx.inputs().get<gsl::span<o2::trd::Tracklet64>>("tracklets");
-    auto triggerrecords = ctx.inputs().get<gsl::span<o2::trd::TriggerRecord>>("triggers");
-    auto tracks = ctx.inputs().get<gsl::span<o2::trd::TrackTRD>>("tracks");
-    auto triggerrecordstracks = ctx.inputs().get<gsl::span<o2::trd::TrackTriggerRecord>>("trigrectrk");
+  auto digits = ctx.inputs().get<gsl::span<o2::trd::Digit>>("digits");
+  auto tracklets = ctx.inputs().get<gsl::span<o2::trd::Tracklet64>>("tracklets");
+  auto triggerrecords = ctx.inputs().get<gsl::span<o2::trd::TriggerRecord>>("triggers");
+  auto tracks = ctx.inputs().get<gsl::span<o2::trd::TrackTRD>>("tracks");
+  auto triggerrecordstracks = ctx.inputs().get<gsl::span<o2::trd::TrackTriggerRecord>>("trigrectrk");
 
-    std::vector<o2::trd::Digit> digitv(digits.begin(), digits.end());
+  auto crustart = std::chrono::high_resolution_clock::now();
 
-    if (digitv.size() == 0)
+  for (const auto& trigger : triggerrecords) {
+
+    if (trigger.getNumberOfDigits() == 0) {
       continue;
+    }
 
-    std::vector<unsigned int> digitsIndex(digitv.size());
-    std::iota(digitsIndex.begin(), digitsIndex.end(), 0);
+    for (const auto& triggerTracks : triggerrecordstracks) {
 
-    int nTrgWDigits = 0;
-    int nTotalTrigger = 0;
-    auto crustart = std::chrono::high_resolution_clock::now();
-
-    for (const auto& trigger : triggerrecords) {
-      // printf("-------------Trigger----------------------BCData for Trigger %i, %i \n ",trigger.getBCData().orbit,trigger.getBCData().bc);
-      nTotalTrigger++;
-
-      if (trigger.getNumberOfDigits() == 0) {
+      if (trigger.getBCData() != triggerTracks.getBCData()) { // matching bunch crossing data from TRD trigger abd TRD track trigger
         continue;
       }
 
-      else {
-        nTrgWDigits++;
+      mTracksPerEvent->Fill(triggerTracks.getNumberOfTracks());
+      if (tracks[triggerTracks.getFirstTrack()].getPileUpTimeShiftMUS() < 0.7) { // rejecting triggers which end up in pileup
+        continue;
       }
 
-      if (trigger.getNumberOfDigits() > 10000) {
-        mDigitsPerEvent->Fill(9999);
-      } else {
-        mDigitsPerEvent->Fill(trigger.getNumberOfDigits());
-      }
+      for (int iTrack = triggerTracks.getFirstTrack(); iTrack < triggerTracks.getFirstTrack() + triggerTracks.getNumberOfTracks(); iTrack++) {
 
-      // now sort digits to det,row,pad
-      std::sort(std::begin(digitsIndex) + trigger.getFirstDigit(), std::begin(digitsIndex) + trigger.getFirstDigit() + trigger.getNumberOfDigits(),
-                [&digitv](unsigned int i, unsigned int j) { return digitIndexCompare_phtm(i, j, digitv); });
+        const auto& track = tracks[iTrack];
+        int ntracklets = track.getNtracklets();
+        mTrackletsPerMatchedTrack->Fill(ntracklets);
 
-      for (const auto& triggerTracks : triggerrecordstracks) {
+        for (int iLayer = 0; iLayer < 6; iLayer++) {
+          int trackletIndex = track.getTrackletIndex(iLayer);
 
-        if (trigger.getBCData() != triggerTracks.getBCData()) {
-          continue;
-        }
+          if (trackletIndex == -1) {
+            continue;
+          }
 
-        int nTracks = 0;
-        for (int iTrack = triggerTracks.getFirstTrack(); iTrack < triggerTracks.getFirstTrack() + triggerTracks.getNumberOfTracks(); iTrack++) {
-          nTracks++;
-          const auto& track = tracks[iTrack];
+          const auto& trklt = tracklets[trackletIndex];
 
-          // printf("Got track with %i tracklets \n", track.getNtracklets());
-          int ntracklets = track.getNtracklets();
-          if (ntracklets > 10)
-            mTrackletsPerMatchedTrack->Fill(9);
-          else
-            mTrackletsPerMatchedTrack->Fill(ntracklets);
+          // obtain pad number relative to MCM center
+          // int padLocal = trklt.getPositionBinSigned() * o2::trd::constants::GRANULARITYTRKLPOS;
+          // MCM number in column direction (0..7)
+          // int mcmCol = (trklt.getMCM() % o2::trd::constants::NMCMROBINCOL) + o2::trd::constants::NMCMROBINCOL * (trklt.getROB() % 2);
+          // int col = 6.f + mcmCol * ((float)o2::trd::constants::NCOLMCM) + padLocal;
 
-          for (int iLayer = 0; iLayer < 6; iLayer++) {
-            int trackletIndex = track.getTrackletIndex(iLayer);
-
-            if (trackletIndex == -1) {
+          int coldif;
+          for (int iDigit = trigger.getFirstDigit() + 1; iDigit < trigger.getFirstDigit() + trigger.getNumberOfDigits() - 1; ++iDigit) //+1 and -1 for finding the consecutive digits
+          {
+            const auto& digit = digits[iDigit];
+            if (digit.getDetector() != trklt.getDetector()) {
               continue;
             }
+            if (digit.getPadRow() != trklt.getPadRow()) {
+              continue;
+            }
+            coldif = digit.getPadCol() - trklt.getPadCol();
+            if (TMath::Abs(coldif) > 1) {
+              continue; // PadCol may be off by +-1 due to the slope of tracklet
+            }
+            const auto& digitBefore = digits[iDigit - 1];
+            const auto& digitAfter = digits[iDigit + 1];
 
-            const auto& trklt = tracklets[trackletIndex];
+            bool consecutive = false;
+            if (digitBefore.getDetector() == digitAfter.getDetector() && digitBefore.getPadRow() == digit.getPadRow() && digit.getPadRow() == digitAfter.getPadRow() && digit.getPadCol() + 1 == digitBefore.getPadCol() && digitAfter.getPadCol() + 1 == digit.getPadCol()) { // looking for consecutive digits in space
+              consecutive = true;
+            }
 
-            int det = trklt.getDetector();
-            int sec = det / 30;
-            int row = trklt.getPadRow();
-            // int col = trklt.getPadCol();
-
-            // obtain pad number relative to MCM center
-            int padLocal = trklt.getPositionBinSigned() * o2::trd::constants::GRANULARITYTRKLPOS;
-            // MCM number in column direction (0..7)
-            int mcmCol = (trklt.getMCM() % o2::trd::constants::NMCMROBINCOL) + o2::trd::constants::NMCMROBINCOL * (trklt.getROB() % 2);
-            int col = 6.f + mcmCol * ((float)o2::trd::constants::NCOLMCM) + padLocal;
-
-            for (int iDigit = trigger.getFirstDigit() + 1; iDigit < trigger.getFirstDigit() + trigger.getNumberOfDigits() - 1; ++iDigit)
-
-            {
-              const auto& digit = digits[iDigit];
-              const auto& digitBefore = digits[iDigit - 1];
-              const auto& digitAfter = digits[iDigit + 1];
-
-              std::tuple<unsigned int, unsigned int, unsigned int> aa, ba, ca;
-              aa = std::make_tuple(digitBefore.getDetector(), digitBefore.getPadRow(), digitBefore.getPadCol());
-              ba = std::make_tuple(digit.getDetector(), digit.getPadRow(), digit.getPadCol());
-              ca = std::make_tuple(digitAfter.getDetector(), digitAfter.getPadRow(), digitAfter.getPadCol());
-
-              auto [det1, row1, col1] = aa;
-              auto [det2, row2, col2] = ba;
-              auto [det3, row3, col3] = ca;
-
-              bool consecutive = false;
-              bool digitmatch = false;
-
-              if (det == det2 && row == row2) {
-
-                int coldif = col2 - col;
-                if (TMath::Abs(coldif) < 4)
-                  digitmatch = true;
-              }
-              if (det1 == det2 && det2 == det3 && row1 == row2 && row2 == row3 && col2 + 1 == col1 && col3 + 1 == col2)
-                consecutive = true;
-
-              if (digitmatch && consecutive) {
-
-                int phVal = 0;
-
-                for (int iTb = 0; iTb < o2::trd::constants::TIMEBINS; ++iTb) {
-                  phVal = digitBefore.getADC()[iTb] + digit.getADC()[iTb] + digitAfter.getADC()[iTb];
-                  mPulseHeightpro->Fill(iTb, phVal);
-                  mPulseHeightperchamber->Fill(iTb, det1, phVal);
-                }
+            if (consecutive) {
+              int phVal = 0;
+              for (int iTb = 0; iTb < o2::trd::constants::TIMEBINS; ++iTb) {
+                phVal = digitBefore.getADC()[iTb] + digit.getADC()[iTb] + digitAfter.getADC()[iTb];
+                mPulseHeightpro->Fill(iTb, phVal);
+                mPulseHeightperchamber->Fill(iTb, digit.getDetector(), phVal);
               }
             }
           }
         }
-        mTracksPerEvent->Fill(nTracks);
       }
     }
-    if (nTotalTrigger > 1000)
-      mTriggerPerTF->Fill(999);
-    else
-      mTriggerPerTF->Fill(nTotalTrigger);
-
-    if (nTrgWDigits > 10)
-      mTriggerWDigitPerTF->Fill(9);
-    else
-      mTriggerWDigitPerTF->Fill(nTrgWDigits);
-
-    std::chrono::duration<double, std::micro> parsingtimeTF = std::chrono::high_resolution_clock::now() - crustart;
-    auto t1 = (double)std::chrono::duration_cast<std::chrono::microseconds>(parsingtimeTF).count();
-    if (t1 > 100000)
-      mParsingTimePerTF->Fill(99999);
-    else
-      mParsingTimePerTF->Fill(t1);
   }
+
+  std::chrono::duration<double, std::micro> parsingtimeTF = std::chrono::high_resolution_clock::now() - crustart;
+  auto t1 = (double)std::chrono::duration_cast<std::chrono::microseconds>(parsingtimeTF).count();
+  mParsingTimePerTF->Fill(t1);
 }
 
 void PulseHeightTrackMatch::endOfCycle()
@@ -290,19 +202,9 @@ void PulseHeightTrackMatch::reset()
   // clean all the monitor objects here
   ILOG(Debug, Devel) << "Resetting the histogram" << ENDM;
   mTracksPerEvent->Reset();
-  mDigitsPerEvent->Reset();
-  mTriggerPerTF->Reset();
-  mTriggerWDigitPerTF->Reset();
   mParsingTimePerTF->Reset();
   mTrackletsPerMatchedTrack->Reset();
-
-  mDigitsPerEvent.get()->Reset();
-  mTriggerPerTF.get()->Reset();
-  mTriggerWDigitPerTF.get()->Reset();
-  mTracksPerEvent.get()->Reset();
-  mPulseHeightpro.get()->Reset();
-  mPulseHeightperchamber.get()->Reset();
-  mParsingTimePerTF.get()->Reset();
-  mTrackletsPerMatchedTrack.get()->Reset();
+  mPulseHeightpro->Reset();
+  mPulseHeightperchamber->Reset();
 }
 } // namespace o2::quality_control_modules::trd

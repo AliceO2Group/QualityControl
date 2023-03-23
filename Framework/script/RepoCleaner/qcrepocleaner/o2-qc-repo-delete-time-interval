@@ -3,9 +3,8 @@
 import logging
 import argparse
 import dryable
-import time
 from qcrepocleaner.Ccdb import Ccdb
-import sys
+from qcrepocleaner.binUtils import prepare_main_logger
 
 def parseArgs():
     """Parse the arguments passed to the script."""
@@ -20,6 +19,8 @@ def parseArgs():
                         help='Clean this path (without initial slash and without .* at the end, e.g. qc/TST/MO/Bob).', required=True)
     parser.add_argument('--from', dest='from_ts', action='store', help='From this timestamp.', required=True)
     parser.add_argument('--to', dest='to_ts', action='store', help='To this timestamp.', required=True)
+    parser.add_argument('--only-path-no-subdir', action='store_true', help='Do not process the subfolders, i.e. do not '
+                                                                 'add .* at the end of the path.')
     parser.add_argument('--one-by-one', action='store_true', help='Ask confirmation for each deletion')
     parser.add_argument('--print-list', action='store_true', help='Only print the list of objects that would be deleted')
     args = parser.parse_args()
@@ -28,24 +29,10 @@ def parseArgs():
     return args
 
 
-def prepare_main_logger():
-    logger = logging.getLogger()
-    # Logging (split between stderr and stdout)
-    formatter = logging.Formatter(fmt='%(asctime)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
-    h1 = logging.StreamHandler(sys.stdout)
-    h1.setLevel(logging.DEBUG)
-    h1.addFilter(lambda record: record.levelno <= logging.INFO) # filter out everything that is above INFO level
-    h1.setFormatter(formatter)
-    logger.addHandler(h1)
-    h2 = logging.StreamHandler(sys.stderr)
-    h2.setLevel(logging.WARNING)     # take only warnings and error logs
-    h2.setFormatter(formatter)
-    logger.addHandler(h2)
-
-
 def run(args):
     ccdb = Ccdb(args.url)
-    versions = ccdb.getVersionsList(args.path + "/.*", args.from_ts, args.to_ts)
+    path = args.path+"/" if args.only_path_no_subdir else args.path + "/.*"
+    versions = ccdb.getVersionsList(path, args.from_ts, args.to_ts)
     logging.debug(versions)
     logging.info("Here are the objects that are going to be deleted: ")
 
@@ -77,12 +64,12 @@ def run(args):
 
     logging.info(f"Deleted items: {len(versions)}")
 
+
 # ****************
 # We start here !
 # ****************
 
 def main():
-    start_time = time.time()
     prepare_main_logger()
 
     # Parse arguments

@@ -29,10 +29,10 @@ using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;
 using namespace o2::quality_control_modules::tpc;
 
-void RatioGeneratorTPC::configure(std::string name,
-                                  const boost::property_tree::ptree& config)
+void RatioGeneratorTPC::configure(const boost::property_tree::ptree& config)
 {
-  for (const auto& dataSourceConfig : config.get_child("qc.postprocessing." + name + ".ratioConfig")) {
+  auto& id = getID();
+  for (const auto& dataSourceConfig : config.get_child("qc.postprocessing." + id + ".ratioConfig")) {
     std::string inputNames[2];
     int counter = 0;
 

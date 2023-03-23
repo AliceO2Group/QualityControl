@@ -29,8 +29,8 @@ struct PostProcessingTaskSpec {
   PostProcessingTaskSpec() = default;
 
   // minimal valid spec
-  PostProcessingTaskSpec(std::string taskName)
-    : taskName(std::move(taskName))
+  PostProcessingTaskSpec(std::string id, std::string taskName, std::string detectorName)
+    : id(std::move(id)), taskName(std::move(taskName)), detectorName(std::move(detectorName))
   {
   }
 
@@ -38,8 +38,10 @@ struct PostProcessingTaskSpec {
   // While this is a lack of consequence with respect to other *Specs,
   // I am afraid it is too late to change it, since also users rely on this (see ITS Trending Task).
 
+  std::string id = "Invalid";
   std::string taskName = "Invalid";
   bool active = true;
+  std::string detectorName = "Invalid";
   boost::property_tree::ptree tree = {};
 };
 

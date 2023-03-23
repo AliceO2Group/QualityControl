@@ -37,11 +37,10 @@ namespace o2::quality_control::postprocessing
 {
 
 PostProcessingDevice::PostProcessingDevice(const PostProcessingRunnerConfig& runnerConfig)
-  : mRunner(std::make_unique<PostProcessingRunner>(runnerConfig.taskName)),
-    mDeviceName(createPostProcessingIdString() + "-" + runnerConfig.taskName),
+  : mRunner(std::make_unique<PostProcessingRunner>(runnerConfig.id)),
+    mDeviceName(createPostProcessingDeviceName(runnerConfig.taskName, runnerConfig.detectorName)),
     mRunnerConfig(runnerConfig)
 {
-  core::QcInfoLogger::setFacility("PostProcessing");
 }
 
 void PostProcessingDevice::init(framework::InitContext& ctx)
@@ -49,8 +48,9 @@ void PostProcessingDevice::init(framework::InitContext& ctx)
   if (ctx.options().isSet("configKeyValues")) {
     mRunnerConfig.configKeyValues = ctx.options().get<std::string>("configKeyValues");
   }
+
   // todo: read the updated config from ctx, one available
-  mRunner->init(mRunnerConfig, PostProcessingConfig{ mRunnerConfig.taskName, mRunnerConfig.configTree });
+  mRunner->init(mRunnerConfig, PostProcessingConfig{ mRunner->getID(), mRunnerConfig.configTree });
 
   // registering state machine callbacks
   ctx.services().get<CallbackService>().set<CallbackService::Id::Start>([this, services = ctx.services()]() mutable { start(services); });
@@ -71,21 +71,40 @@ void PostProcessingDevice::run(framework::ProcessingContext& ctx)
   }
 }
 
-std::string PostProcessingDevice::createPostProcessingIdString()
+std::string PostProcessingDevice::createPostProcessingDeviceName(const std::string& taskName, const std::string& detectorName)
 {
-  return "PP-TASK-RUNNER";
+  return "qc-pp-" + detectorName + "-" + taskName;
 }
-o2::header::DataOrigin PostProcessingDevice::createPostProcessingDataOrigin()
+
+header::DataOrigin PostProcessingDevice::createPostProcessingDataOrigin(const std::string& detectorCode)
 {
-  return header::DataOrigin{ "QC" };
+  // We need a unique Data Origin, so we can have PP Tasks with the same names for different detectors.
+  // However, to avoid colliding with data marked as e.g. TPC/CLUSTERS, we add 'P' to the data origin, so it is P<det>.
+  std::string originStr = "P";
+  if (detectorCode.empty()) {
+    ILOG(Warning, Support) << "empty detector code for a task data origin, trying to survive with: DET" << ENDM;
+    originStr += "DET";
+  } else if (detectorCode.size() > 3) {
+    ILOG(Warning, Support) << "too long detector code for a task data origin: " + detectorCode + ", trying to survive with: " + detectorCode.substr(0, 3) << ENDM;
+    originStr += detectorCode.substr(0, 3);
+  } else {
+    originStr += detectorCode;
+  }
+  o2::header::DataOrigin origin;
+  origin.runtimeInit(originStr.c_str());
+  return origin;
 }
+
 header::DataDescription PostProcessingDevice::createPostProcessingDataDescription(const std::string& taskName)
 {
   if (taskName.empty()) {
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Empty taskName for pp-task's data description"));
   }
   o2::header::DataDescription description;
-  description.runtimeInit(std::string(taskName.substr(0, header::DataDescription::size - 3) + "-mo").c_str());
+  if (taskName.length() > header::DataDescription::size) {
+    ILOG(Warning, Devel) << "PP Task name \"" << taskName << "\" is longer than " << (int)header::DataDescription::size << ", it might cause name clashes in the DPL workflow" << ENDM;
+  }
+  description.runtimeInit(std::string(taskName.substr(0, header::DataDescription::size)).c_str());
   return description;
 }
 
@@ -112,23 +131,23 @@ const std::string& PostProcessingDevice::getDeviceName()
 framework::Inputs PostProcessingDevice::getInputsSpecs()
 {
   o2::header::DataDescription timerDescription;
-  timerDescription.runtimeInit(std::string("T-" + mRunner->getName()).substr(0, o2::header::DataDescription::size).c_str());
+  timerDescription.runtimeInit(std::string("T-" + mRunner->getID()).substr(0, o2::header::DataDescription::size).c_str());
 
-  return { { "timer-pp-" + mRunner->getName(),
-             createPostProcessingDataOrigin(),
+  return { { "timer-pp-" + mRunner->getID(),
+             createPostProcessingDataOrigin(mRunnerConfig.detectorName),
              timerDescription,
              0,
              Lifetime::Timer } };
 }
 
-framework::Outputs PostProcessingDevice::getOutputSpecs()
+framework::Outputs PostProcessingDevice::getOutputSpecs() const
 {
-  return { { { outputBinding }, createPostProcessingDataOrigin(), createPostProcessingDataDescription(mRunner->getName()), 0, Lifetime::Sporadic } };
+  return { { { outputBinding }, createPostProcessingDataOrigin(mRunnerConfig.detectorName), createPostProcessingDataDescription(mRunnerConfig.taskName), 0, Lifetime::Sporadic } };
 }
 
 framework::Options PostProcessingDevice::getOptions()
 {
-  return { { "period-timer-pp-" + mRunner->getName(), framework::VariantType::Int, static_cast<int>(mRunnerConfig.periodSeconds * 1000000), { "PP task timer period" } } };
+  return { { "period-timer-pp-" + mRunner->getID(), framework::VariantType::Int, static_cast<int>(mRunnerConfig.periodSeconds * 1000000), { "PP task timer period" } } };
 }
 
 } // namespace o2::quality_control::postprocessing

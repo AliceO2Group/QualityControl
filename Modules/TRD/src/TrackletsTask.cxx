@@ -17,6 +17,7 @@
 #include <TCanvas.h>
 #include <TH1.h>
 #include <TH2.h>
+#include <THashList.h>
 #include <TLine.h>
 #include <sstream>
 #include <string>
@@ -235,29 +236,35 @@ void TrackletsTask::drawHashOnLayers(int layer, int hcid, int rowstart, int rowe
 void TrackletsTask::buildTrackletLayers()
 {
   for (int iLayer = 0; iLayer < 6; ++iLayer) {
-    mLayers[iLayer] = new TH2F(Form("TrackletsPerLayer/layer%i", iLayer), Form("Tracklet count per mcm in layer %i;stack;sector", iLayer), 76, -0.5, 75.5, 144, -0.5, 143.5);
-
+    mLayers[iLayer] = new TH2F(Form("TrackletsPerLayer/layer%i", iLayer), Form("Tracklet count per mcm in layer %i;Stack;Sector", iLayer), 76, -0.5, 75.5, 144, -0.5, 143.5);
     auto xax = mLayers[iLayer]->GetXaxis();
-    xax->SetBinLabel(8, "0");
-    xax->SetBinLabel(24, "1");
-    xax->SetBinLabel(38, "2");
-    xax->SetBinLabel(52, "3");
-    xax->SetBinLabel(68, "4");
-
-    xax->SetTicks("-");
-    xax->SetTickSize(0.01);
-    xax->SetLabelSize(0.045);
-    xax->SetLabelOffset(0.01);
     auto yax = mLayers[iLayer]->GetYaxis();
-    for (int iSec = 0; iSec < 18; ++iSec) {
-      auto lbl = std::to_string(iSec);
-      yax->SetBinLabel(iSec * 8 + 4, lbl.c_str());
+    if (!mLayerLabelsIgnore) {
+      xax->SetNdivisions(5);
+      xax->SetBinLabel(8, "0");
+      xax->SetBinLabel(24, "1");
+      xax->SetBinLabel(38, "2");
+      xax->SetBinLabel(52, "3");
+      xax->SetBinLabel(68, "4");
+      xax->SetTicks("");
+      xax->SetTickSize(0.0);
+      xax->SetLabelSize(0.045);
+      xax->SetLabelOffset(0.005);
+      xax->SetTitleOffset(0.95);
+      xax->CenterTitle(true);
+      yax->SetNdivisions(18);
+      for (int iSec = 0; iSec < 18; ++iSec) {
+        auto lbl = std::to_string(iSec);
+        yax->SetBinLabel(iSec * 8 + 4, lbl.c_str());
+      }
+      yax->SetTicks("");
+      yax->SetTickSize(0.0);
+      yax->SetLabelSize(0.045);
+      yax->SetLabelOffset(0.001);
+      yax->SetTitleOffset(0.40);
+      yax->CenterTitle(true);
     }
 
-    yax->SetTicks("");
-    yax->SetTickSize(0.01);
-    yax->SetLabelSize(0.045);
-    yax->SetLabelOffset(0.01);
     mLayers[iLayer]->SetStats(0);
 
     drawTrdLayersGrid(mLayers[iLayer]);
@@ -266,6 +273,24 @@ void TrackletsTask::buildTrackletLayers()
     getObjectsManager()->startPublishing(mLayers[iLayer]);
     getObjectsManager()->setDefaultDrawOptions(mLayers[iLayer]->GetName(), "COLZ");
     getObjectsManager()->setDisplayHint(mLayers[iLayer], "logz");
+    // check axises :
+
+    /*    std::cout << "Test Tracklet Xlabels for layer : " << iLayer << std::endl;
+        auto binsizex=xax->GetNbins();
+        auto labelsx=xax->GetLabels();
+        auto labelssizex=labelsx->GetSize();
+        std::cout << "binsize:" << binsizex << "  labelsize:" << labelssizex << std::endl;
+        if(binsizex!= labelssizex){
+          std::cout << "binsize != labsize ?= " << binsizex << "!=" << labelssizex << std::endl;
+        }
+        std::cout << "Test Tracklet Ylabels for layer : " << iLayer << std::endl;
+        auto binsizey=yax->GetNbins();
+        auto labelsy=yax->GetLabels();
+        auto labelssizey=labelsy->GetSize();
+        std::cout << "binsize:" << binsizey << "  labelsize:" << labelssizey << std::endl;
+        if(binsizey!= labelssizey){
+          std::cout << "binsize != labsize ?= " << binsizey << "!=" << labelssizey << std::endl;
+        }  */
   }
 }
 
@@ -310,6 +335,10 @@ void TrackletsTask::initialize(o2::framework::InitContext& /*ctx*/)
   } else {
     mMarkerSize = 3; // a plus sign
     ILOG(Debug, Support) << "configure() : using default markersize = " << mMarkerSize << ENDM;
+  }
+  if (auto param = mCustomParameters.find("ignorelayerlabels"); param != mCustomParameters.end()) {
+    mLayerLabelsIgnore = stoi(param->second);
+    ILOG(Debug, Support) << "configure() : ignoring labels on layer plots = " << mLayerLabelsIgnore << ENDM;
   }
 
   retrieveCCDBSettings();

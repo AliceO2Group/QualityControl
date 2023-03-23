@@ -15,6 +15,7 @@ Advanced topics
    * [Multi-node setups](#multi-node-setups)
    * [Batch processing](#batch-processing)
    * [Moving window](#moving-window)
+   * [Monitor cycles](#monitor-cycles)
    * [Writing a DPL data producer](#writing-a-dpl-data-producer)
    * [Custom merging](#custom-merging)
    * [QC with DPL Analysis](#qc-with-dpl-analysis)
@@ -399,6 +400,33 @@ In the presented case, the Merger will publish one set of complete MOs per 10 mi
  received during this last period. Since the QC Tasks cycle is 10 times shorter, the occupancy fluctuations should be
  less apparent. Please also note, that using this parameter in the `"entire"` merging mode does not make much sense, 
  since Mergers would use every 10th incomplete MO version when merging.
+ 
+## Monitor cycles
+
+The QC tasks monitor and process data continuously during a so-called "monitor cycle". At the end of such a cycle they publish the QC objects that will then continue their way in the QC data flow. 
+
+A monitor cycle lasts typically between __1 and 5 minutes__, some reaching 10 minutes but never less than 1 minute for performance reasons. 
+It is defined in the config file this way: 
+```
+    "tasks": {
+      "dataSizeTask": {
+        "cycleDurationSeconds": "60",
+       ...
+```
+
+It is possible to specify various durations for different period of times. It is particularly useful to have shorter cycles at the beginning of the run and longer afterwards:
+
+```
+    "tasks": {
+      "dataSizeTask": {
+        "cycleDurations": [
+          {"cycleDurationSeconds": 60, "validitySeconds": 300},
+          {"cycleDurationSeconds": 180, "validitySeconds": 600},
+          {"cycleDurationSeconds": 300, "validitySeconds": 1}
+        ],
+        ...
+```
+In this example, a cycle of 60 seconds is used for the first 5 minutes (300 seconds), then a cycle of 3 minutes (180 seconds) between 5 minutes and 10 minutes after SOR, and finally a cycle of 5 minutes for the rest of the run. The last `validitySeconds` is not used and is just applied for the rest of the run. 
 
 ## Writing a DPL data producer 
 
@@ -960,8 +988,7 @@ The following tasks will be merged correctly:
         }
       }
 ```
-The same approach can be applied to other actors in the QC framework, like Checks (`checkName`), Aggregators (`aggregatorName`) and External Tasks (`taskName`).
-Post-processing tasks do not support this feature yet.
+The same approach can be applied to other actors in the QC framework, like Checks (`checkName`), Aggregators(`aggregatorName`), External Tasks (`taskName`) and Postprocessing Tasks (`taskName`).
 
 ## Definition and access of task-specific configuration
 
@@ -1076,6 +1103,9 @@ should not be present in real configuration files.
                                               "Discarded Debug messages don't go there."],
         "filterRotateMaxBytes": "",       "": "Maximum size of the discard file.", 
         "filterRotateMaxFiles": "",       "": "Maximum number of discard files."
+      },
+      "bookkeeping": {                    "": "Configuration of the bookkeeping (optional)",
+        "url": "localhost:4001",          "": "Url of the bookkeeping API (port is usually different from web interface)"
       },
       "postprocessing": {                 "": "Configuration parameters for post-processing",
         "periodSeconds": 10.0,            "": "Sets the interval of checking all the triggers. One can put a very small value",
@@ -1229,8 +1259,10 @@ declared inside in the "postprocessing" path. Please also refer to [the Post-pro
 {
   "qc": {
     "postprocessing": {
-      "ExamplePostprocessing": {              "": "Name of the PP Task.",
+      "ExamplePostprocessingID": {            "": "ID of the PP Task.",
         "active": "true",                     "": "Activation flag. If not \"true\", the PP Task will not be run.",
+        "taskName": "MyPPTaskName",           "": ["Name of the task, used e.g. in the QCDB. If empty, the ID is used.",
+                                                 "Less than 14 character names are preferred."],
         "className": "namespace::of::PPTask", "": "Class name of the PP Task with full namespace.",
         "moduleName": "QcSkeleton",           "": "Library name. It can be found in CMakeLists of the detector module.",
         "detectorName": "TST",                "": "3-letter code of the detector.",

@@ -35,9 +35,9 @@ using namespace o2::quality_control;
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;
 
-void TrendingTask::configure(std::string name, const boost::property_tree::ptree& config)
+void TrendingTask::configure(const boost::property_tree::ptree& config)
 {
-  mConfig = TrendingTaskConfig(name, config);
+  mConfig = TrendingTaskConfig(getID(), config);
 }
 
 bool TrendingTask::canContinueTrend(TTree* tree)

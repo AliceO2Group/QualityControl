@@ -45,7 +45,7 @@ class PostProcTask final : public quality_control::postprocessing::PostProcessin
  public:
   PostProcTask() = default;
   ~PostProcTask() override;
-  void configure(std::string, const boost::property_tree::ptree&) override;
+  void configure(const boost::property_tree::ptree&) override;
   void initialize(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
   void update(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
   void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;

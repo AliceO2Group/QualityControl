@@ -28,7 +28,7 @@ namespace o2::quality_control::postprocessing
 /// \brief  TrendingTask configuration structure
 struct TrendingTaskConfigITS : PostProcessingConfig {
   TrendingTaskConfigITS() = default;
-  TrendingTaskConfigITS(std::string name,
+  TrendingTaskConfigITS(std::string id,
                         const boost::property_tree::ptree& config);
   ~TrendingTaskConfigITS() = default;
 

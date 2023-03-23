@@ -1,5 +1,19 @@
 # Release notes
 
+1.4
+- Add new tool to delete objects not belonging to a list of runs.
+
+1.3
+- Add new tool `o2-qc-repo-find-objects-not-updated` to find all the objects under a path that did not get a new
+  version in the past X days. 
+
+1.2
+
+- Add option `--only-path-no-subdir` to `o2-qc-repo-cleaner` to allow setting `--only-path` to an object rather than a
+  folder, or to ignore subfolders. 
+- Add option `--only-path-no-subdir` to `o2-qc-repo-delete-interval` to allow processing an object rather than a folder or 
+  to ignore subfolders. 
+
 1.1
 
 - Add a new policy `multiple_per_run` that is simpler than `production`. 

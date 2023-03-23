@@ -8,6 +8,7 @@
 #include <TProfile.h>
 #include <TProfile2D.h>
 #include <TStopwatch.h>
+#include <THashList.h>
 
 #include "DataFormatsTRD/Constants.h"
 #include "DataFormatsTRD/Digit.h"
@@ -22,6 +23,7 @@
 #include <gsl/span>
 #include <map>
 #include <tuple>
+
 #include "CCDB/BasicCCDBManager.h"
 namespace o2::quality_control_modules::trd
 {
@@ -363,42 +365,35 @@ void DigitsTask::buildHistograms()
     getObjectsManager()->startPublishing(h);
   }
 
-  /*  int cn = 0;
-  int sm = 0;
-
-  for (int count = 0; count < 540; ++count) {
-    sm = count / 30;
-    std::string label = fmt::format("PulseHeightPerChamber/pulseheight_{0:02d}_{1}_{2}", sm, cn / 6, cn % 6);
-    std::string title = fmt::format("{0:02d}_{1}_{2};Timebin;Chamber", sm, cn / 6, cn % 6);
-    TH1F* h = new TH1F(label.c_str(), title.c_str(), 30, -0.5, 29.5);
-    mPulseHeightPerChamber_1D[count].reset(h);
-    getObjectsManager()->startPublishing(h);
-    cn++;
-    if (cn > 29)
-      cn = 0;
-  }
-*/
   for (int iLayer = 0; iLayer < 6; ++iLayer) {
     mLayers.push_back(new TH2F(Form("DigitsPerLayer/layer%i", iLayer), Form("Digit count per pad in layer %i;stack;sector", iLayer), 76, -0.5, 75.5, 2592, -0.5, 2591.5));
     auto xax = mLayers.back()->GetXaxis();
-    xax->SetBinLabel(8, "0");
-    xax->SetBinLabel(24, "1");
-    xax->SetBinLabel(38, "2");
-    xax->SetBinLabel(52, "3");
-    xax->SetBinLabel(68, "4");
-    xax->SetTicks("-");
-    xax->SetTickSize(0.01);
-    xax->SetLabelSize(0.045);
-    xax->SetLabelOffset(0.01);
-    auto yax = mLayers.back()->GetYaxis();
-    for (int iSec = 0; iSec < 18; ++iSec) {
-      auto lbl = std::to_string(iSec);
-      yax->SetBinLabel(iSec * 144 + 72, lbl.c_str());
+    auto yax = mLayers[iLayer]->GetYaxis();
+    if (!mLayerLabelsIgnore) {
+      xax->SetNdivisions(5);
+      xax->SetBinLabel(8, "0");
+      xax->SetBinLabel(24, "1");
+      xax->SetBinLabel(38, "2");
+      xax->SetBinLabel(52, "3");
+      xax->SetBinLabel(68, "4");
+      xax->SetTicks("");
+      xax->SetTickSize(0.0);
+      xax->SetLabelSize(0.045);
+      xax->SetLabelOffset(0.005);
+      xax->SetTitleOffset(0.95);
+      xax->CenterTitle(true);
+      yax->SetNdivisions(18);
+      for (int iSec = 0; iSec < 18; ++iSec) {
+        auto lbl = std::to_string(iSec);
+        yax->SetBinLabel(iSec * 144 + 72, lbl.c_str());
+      }
+      yax->SetTicks("");
+      yax->SetTickSize(0.0);
+      yax->SetLabelSize(0.045);
+      yax->SetLabelOffset(0.001);
+      yax->SetTitleOffset(0.40);
+      yax->CenterTitle(true);
     }
-    yax->SetTicks("-");
-    yax->SetTickSize(0.01);
-    yax->SetLabelSize(0.045);
-    yax->SetLabelOffset(0.01);
     mLayers.back()->SetStats(0);
     drawTrdLayersGrid(mLayers.back());
     fillLinesOnHistsPerLayer(iLayer);
@@ -462,6 +457,10 @@ void DigitsTask::initialize(o2::framework::InitContext& /*ctx*/)
   } else {
     mChambersToIgnore = "16_3_0";
     ILOG(Debug, Support) << "configure() : chambers to ignore for pulseheight calculations = " << mChambersToIgnore << ENDM;
+  }
+  if (auto param = mCustomParameters.find("ignorelayerlabels"); param != mCustomParameters.end()) {
+    mLayerLabelsIgnore = stoi(param->second);
+    ILOG(Debug, Support) << "configure() : ignoring labels on layer plots = " << mLayerLabelsIgnore << ENDM;
   }
   buildChamberIgnoreBP();
 

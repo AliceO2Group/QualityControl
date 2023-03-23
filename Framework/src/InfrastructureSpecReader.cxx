@@ -75,6 +75,7 @@ CommonSpec InfrastructureSpecReader::readSpecEntry<CommonSpec>(const std::string
     commonTree.get<u_int>("infologger.filterRotateMaxFiles", spec.infologgerDiscardParameters.rotateMaxFiles)
   };
   spec.postprocessingPeriod = commonTree.get<double>("postprocessing.periodSeconds", spec.postprocessingPeriod);
+  spec.bookkeepingUrl = commonTree.get<std::string>("bookkeeping.url", spec.bookkeepingUrl);
 
   return spec;
 }
@@ -93,7 +94,14 @@ TaskSpec InfrastructureSpecReader::readSpecEntry<TaskSpec>(const std::string& ta
   ts.className = taskTree.get<std::string>("className");
   ts.moduleName = taskTree.get<std::string>("moduleName");
   ts.detectorName = taskTree.get<std::string>("detectorName");
-  ts.cycleDurationSeconds = taskTree.get<int>("cycleDurationSeconds");
+  ts.cycleDurationSeconds = taskTree.get<int>("cycleDurationSeconds", -1);
+  if (taskTree.count("cycleDurations") > 0) {
+    for (const auto& cycleConfig : taskTree.get_child("cycleDurations")) {
+      auto cycleDuration = cycleConfig.second.get<size_t>("cycleDurationSeconds");
+      auto validity = cycleConfig.second.get<size_t>("validitySeconds");
+      ts.multipleCycleDurations.push_back(std::pair{ cycleDuration, validity });
+    }
+  }
   ts.dataSource = readSpecEntry<DataSourceSpec>(taskID, taskTree.get_child("dataSource"), wholeTree);
   ts.active = taskTree.get<bool>("active", ts.active);
   ts.maxNumberCycles = taskTree.get<int>("maxNumberCycles", ts.maxNumberCycles);
@@ -198,8 +206,10 @@ DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(const std
     }
     case DataSourceType::PostProcessingTask: {
       dss.id = dataSourceTree.get<std::string>("name");
-      dss.name = dss.id;
-      dss.inputs = { { dss.name, PostProcessingDevice::createPostProcessingDataOrigin(), PostProcessingDevice::createPostProcessingDataDescription(dss.name), 0, Lifetime::Sporadic } };
+      // this allows us to have tasks with the same name for different detectors
+      dss.name = wholeTree.get<std::string>("qc.postprocessing." + dss.id + ".taskName", dss.id);
+      auto detectorName = wholeTree.get<std::string>("qc.postprocessing." + dss.id + ".detectorName");
+      dss.inputs = { { dss.name, PostProcessingDevice::createPostProcessingDataOrigin(detectorName), PostProcessingDevice::createPostProcessingDataDescription(dss.id), 0, Lifetime::Sporadic } };
       if (dataSourceTree.count("MOs") > 0) {
         for (const auto& moName : dataSourceTree.get_child("MOs")) {
           dss.subInputs.push_back(moName.second.get_value<std::string>());
@@ -306,12 +316,14 @@ AggregatorSpec InfrastructureSpecReader::readSpecEntry<AggregatorSpec>(const std
 
 template <>
 PostProcessingTaskSpec
-  InfrastructureSpecReader::readSpecEntry<PostProcessingTaskSpec>(const std::string& ppTaskName, const boost::property_tree::ptree& ppTaskTree, const boost::property_tree::ptree& wholeTree)
+  InfrastructureSpecReader::readSpecEntry<PostProcessingTaskSpec>(const std::string& ppTaskId, const boost::property_tree::ptree& ppTaskTree, const boost::property_tree::ptree& wholeTree)
 {
   PostProcessingTaskSpec ppts;
 
-  ppts.taskName = ppTaskName;
+  ppts.id = ppTaskId;
+  ppts.taskName = ppTaskTree.get<std::string>("taskName", ppts.id);
   ppts.active = ppTaskTree.get<bool>("active", ppts.active);
+  ppts.detectorName = ppTaskTree.get<std::string>("detectorName", ppts.detectorName);
   ppts.tree = wholeTree;
 
   return ppts;

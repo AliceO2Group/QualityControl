@@ -31,6 +31,7 @@ struct TRFCollectionTaskConfig : quality_control::postprocessing::PostProcessing
   TRFCollectionTaskConfig(std::string name, const boost::property_tree::ptree& config);
   ~TRFCollectionTaskConfig() = default;
 
+  // todo: almost all here duplicates the parent class, remove
   std::string name;
   std::string detector;
   int runNumber;

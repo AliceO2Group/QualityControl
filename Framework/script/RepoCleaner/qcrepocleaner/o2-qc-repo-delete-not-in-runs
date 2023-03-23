@@ -3,7 +3,6 @@
 import logging
 import argparse
 import dryable
-import time
 from qcrepocleaner.Ccdb import Ccdb, ObjectVersion
 from qcrepocleaner.binUtils import prepare_main_logger
 import csv
@@ -12,22 +11,22 @@ import csv
 def parseArgs():
     """Parse the arguments passed to the script."""
     logging.info("Parsing arguments")
-    parser = argparse.ArgumentParser(description='Remove all objects for a set of runs in a given path. The runs are '
-                                                 'provided in a csv file whose format is the one from the bookkeeping'
-                                                 ' export.')
+    parser = argparse.ArgumentParser(description='Remove all objects in a given path, if they dont belong to any of '
+                                                 'the runs. The runs are provided in a csv file whose format is the '
+                                                 'one from the bookkeeping export.')
     parser.add_argument('--url', dest='url', action='store', help='URL of the CCDB, with http[s]://', required=True)
     parser.add_argument('--log-level', dest='log_level', action='store', default="20",
                         help='Log level (CRITICAL->50, ERROR->40, WARNING->30, INFO->20,DEBUG->10)')
     parser.add_argument('--dry-run', action='store_true',
                         help='Dry run, no actual deletion nor modification to the CCDB.')
     parser.add_argument('--path', dest='path', action='store', default="",
-                        help='Clean this path (without initial slash and without .* at the end, e.g. qc/TST/MO/Bob)', required=True)
+                        help='Clean this path (without initial slash and without .* at the end, e.g. qc/TST/MO/Bob)',
+                        required=True)
     parser.add_argument('--runs-csv-file', dest='runs_file', action='store', help='A csv file with a header and the '
                                                                                   'column `runNumber` contains the run',
                         required=True)
     parser.add_argument('--one-by-one', action='store_true', help='Ask confirmation for each deletion')
     parser.add_argument('--print-list', action='store_true', help='Only print the list of objects that would be deleted')
-    parser.add_argument('--yes', action='store_true', help='Answers yes to all. You should really not use that.')
     args = parser.parse_args()
     dryable.set(args.dry_run)
     logging.info(args)
@@ -37,33 +36,19 @@ def parseArgs():
 def run(args):
     ccdb = Ccdb(args.url)
 
-    total_deleted = 0
-    total_planned = 0
-
     file = open(args.runs_file)
     csvreader = csv.DictReader(file)
+    list_runs = []
     for row in csvreader:
-        nb_deleted = 0
-        run_number = row["runNumber"]
-        logging.info(f"Run : {run_number}")
+        list_runs.append(row["runNumber"])
+    logging.debug(f"List of runs in CSV: {list_runs}")
 
-        versions = ccdb.getVersionsList(args.path + "/.*", "", "", run_number)
-        logging.info("Here are the objects that are going to be deleted: ")
-        for v in versions:
-            logging.info(v)
-        logging.info(f"Number of items: {len(versions)}")
-        total_planned += len(versions)
-
-        if args.print_list or len(versions) == 0:
-            continue
-
-        if not args.yes:
-            logging.warning("****** ARE YOU ABSOLUTELY SURE YOU WANT TO CONTINUE ? ******")
-            answer = input("Yes/No \n  ")
-            if answer.lower() not in ["y", "yes"]:
-                exit(0)
-
-        for v in versions:
+    versions = ccdb.getVersionsList(args.path + "/.*")
+    nb_deleted = 0
+    for v in versions:
+        logging.debug(f"Processing {v}")
+        run_number = v.metadata["RunNumber"]
+        if run_number is not None and list_runs.count(run_number) == 0:
             logging.info(f"Ready to delete {v}")
             if args.one_by_one:
                 answer = input("  Continue? y/n\n  ")
@@ -75,14 +60,11 @@ def run(args):
                 else:
                     logging.error("   wrong input, skipping")
             else:
-                ccdb.deleteVersion(v)
+                if not args.print_list:
+                    ccdb.deleteVersion(v)
                 nb_deleted += 1
 
-        logging.info(f"Deleted items: {nb_deleted}")
-        total_deleted += nb_deleted
-
-    logging.info(f"Total planned to be deleted: {total_planned}")
-    logging.info(f"Total deleted items: {total_deleted}")
+    logging.info(f"Deleted items: {nb_deleted}")
 
 
 # ****************
@@ -92,19 +74,6 @@ def run(args):
 def main():
 
     prepare_main_logger()
-
-    # prepare test data
-    url = "http://ccdb-test.cern.ch:8080"
-    data = {'part': 'part'}
-    path = "qc/TST/MO/repo/test_delete_runs"
-    current_timestamp = int(time.time() * 1000)
-    ccdb = Ccdb(url)
-    for x in range(30):
-        metadata = {'RunNumber': str(x)}
-        from_ts = current_timestamp - 60 * 1000
-        to_ts = current_timestamp
-        version_info = ObjectVersion(path=path, validFrom=from_ts, validTo=to_ts, metadata=metadata)
-        ccdb.putVersion(version=version_info, data=data)
 
     # Parse arguments
     args = parseArgs()

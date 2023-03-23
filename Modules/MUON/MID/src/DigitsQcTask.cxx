@@ -62,6 +62,9 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     paramExemple = std::stof(param->second);
   }
 
+  mNbDigitTF = std::make_shared<TH1F>("NbDigitTF", "NbTimeFrame", 1, 0, 1.);
+  getObjectsManager()->startPublishing(mNbDigitTF.get());
+
   mHitsMapB = std::make_shared<TH2F>("HitsMapB", "Hits Map - bending plane", MID_NDE, 0, MID_NDE, MID_NCOL, 0, MID_NCOL);
   getObjectsManager()->startPublishing(mHitsMapB.get());
   mHitsMapB->GetXaxis()->SetTitle("DetectorElementID");
@@ -285,7 +288,8 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   // printf(" =================== > test monitorData Digits \n");
   //  auto digits = ctx.inputs().get<gsl::span<o2::mid::ColumnData>>("digits");
   //  auto rofs = ctx.inputs().get<gsl::span<o2::mid::ROFRecord>>("digitrofs");
-
+  mDigitTF++;
+  mNbDigitTF->Fill(0.5, 1.);
   auto digits = o2::mid::specs::getData(ctx, "digits", o2::mid::EventType::Standard);
   auto rofs = o2::mid::specs::getRofs(ctx, "digits", o2::mid::EventType::Standard);
 
@@ -564,6 +568,8 @@ void DigitsQcTask::reset()
 
   // ILOG(Info, Devel) << "Resetting the histogram" << ENDM;
   // printf(" =================== > test reset Digits \n");
+
+  mNbDigitTF->Reset();
 
   mHitsMapB->Reset();
   mHitsMapNB->Reset();
