@@ -21,11 +21,9 @@
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TProfile2D.h"
-#include <TCanvas.h>
 #include <TH1.h>
-#include <TMath.h>
-#include <TLine.h>
 #include <Framework/TimingInfo.h>
+#include "DataFormatsTRD/TrackTRD.h"
 
 class TH1D;
 class TH2D;
@@ -35,6 +33,7 @@ using namespace o2::quality_control::core;
 
 namespace o2::quality_control_modules::trd
 {
+using GTrackID = o2::dataformats::GlobalTrackID;
 
 class TrackingTask final : public TaskInterface
 {

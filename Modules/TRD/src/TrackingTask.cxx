@@ -30,8 +30,7 @@
 #include "CCDB/BasicCCDBManager.h"
 #include "TLine.h"
 #include "TCanvas.h"
-#include "TStyle.h"
-#include "TH1.h"
+#include "TMath.h"
 
 using namespace o2::trd;
 using namespace o2::trd::constants;
@@ -72,7 +71,7 @@ void TrackingTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   ILOG(Debug, Devel) << "monitorData" << ENDM;
 
-  auto trackArr = ctx.inputs().get<gsl::span<o2::trd::TrackQC>>("tracks");
+  auto trackqcArr = ctx.inputs().get<gsl::span<o2::trd::TrackQC>>("tracksqc");
   auto tracktrigArr = ctx.inputs().get<gsl::span<o2::trd::TrackTriggerRecord>>("trigrectrk");
 
   for (const auto& tracktrig : tracktrigArr) {
@@ -80,54 +79,55 @@ void TrackingTask::monitorData(o2::framework::ProcessingContext& ctx)
     int end = first + tracktrig.getNumberOfTracks();
     // count number of matched tracks
     int nMatched = 0;
+
     for (int itrack = first; itrack < end; ++itrack) {
-      auto& trackqc = trackArr[itrack];
-      // type of track is 0 for TPC-TRD track, 1 for ITS-TPC-TRD track
-      if (trackqc.type == 0)
+      auto& trackqc = trackqcArr[itrack];
+      // match only ITS-TPC tracks
+      auto trackType = trackqc.refGlobalTrackId.getSource();
+      if (!(trackType == GTrackID::Source::ITSTPC))
         continue;
       nMatched++;
       // remove tracks with pt < 1 GeV/c
-      if (trackqc.pt < 1)
+      if (trackqc.trackTRD.getPt() < 1)
         continue;
-      mNtracklets->Fill(trackqc.nTracklets);
-      mTrackPt->Fill(trackqc.pt);
-      mTrackChi2->Fill(trackqc.reducedChi2);
+      mNtracklets->Fill(trackqc.trackTRD.getNtracklets());
+      mTrackPt->Fill(trackqc.trackTRD.getPt());
+      mTrackChi2->Fill(trackqc.trackTRD.getReducedChi2());
       // flag to fill some objects only once per track
       bool fillOnce = false;
       for (auto ilayer : { 0, 1, 2, 3, 4, 5 }) {
         // cut on x position of the track
-        if (trackqc.trackX[ilayer] < 2)
+        if (trackqc.trackProp[ilayer].getX() < 2)
           continue;
-        // calculate phi taking into account the rotation of the sector
-        double trackphi = TMath::ATan2(trackqc.trackY[ilayer], trackqc.trackX[ilayer]) + TMath::Nint(TMath::Floor(trackqc.trackletDet[ilayer] / 30)) * TMath::DegToRad() * 20 + TMath::DegToRad() * 10;
+        // remove tracks with no tracklet in a layer
+        if (trackqc.trackTRD.getTrackletIndex(ilayer) < 0)
+          continue;
         // find charge bin of the track
         int charge = -1;
-        if (trackqc.trackQpt[ilayer] > 0) {
+        if (trackqc.trackProp[ilayer].getQ2Pt() > 0) {
           charge = 0;
-        }
-        if (trackqc.trackQpt[ilayer] < 0) {
+        } else if (trackqc.trackProp[ilayer].getQ2Pt() < 0) {
           charge = 1;
         }
         if (charge == -1)
           continue;
         if (!fillOnce) {
-          mTrackEta->Fill(trackqc.trackEta[ilayer]);
-          mTrackPhi->Fill(trackphi);
-          mTrackletsEtaPhi[charge]->Fill(trackqc.trackEta[ilayer], trackphi, trackqc.nTracklets);
+          mTrackEta->Fill(trackqc.trackProp[ilayer].getEta());
+          mTrackPhi->Fill(trackqc.trackProp[ilayer].getPhiPos());
+          mTrackletsEtaPhi[charge]->Fill(trackqc.trackProp[ilayer].getEta(), trackqc.trackProp[ilayer].getPhiPos(), trackqc.trackTRD.getNtracklets());
           fillOnce = true;
         }
         // fill eta-phi map of tracks
-        mTracksEtaPhiPerLayer[charge][ilayer]->Fill(trackqc.trackEta[ilayer], trackphi);
+        mTracksEtaPhiPerLayer[charge][ilayer]->Fill(trackqc.trackProp[ilayer].getEta(), trackqc.trackProp[ilayer].getPhiPos());
         // residuals
-        mDeltaY->Fill(trackqc.trackY[ilayer] - trackqc.trackletY[ilayer]);
-        mDeltaZ->Fill(trackqc.trackZ[ilayer] - trackqc.trackletZ[ilayer]);
-        mDeltaYDet->Fill(trackqc.trackletDet[ilayer], trackqc.trackY[ilayer] - trackqc.trackletY[ilayer]);
-        mDeltaZDet->Fill(trackqc.trackletDet[ilayer], trackqc.trackZ[ilayer] - trackqc.trackletZ[ilayer]);
-        mDeltaYsphi->Fill(trackqc.trackSnp[ilayer], trackqc.trackY[ilayer] - trackqc.trackletY[ilayer]);
-        mDeltaYinEtaPerLayer[ilayer]->Fill(trackqc.trackEta[ilayer], trackqc.trackY[ilayer] - trackqc.trackletY[ilayer]);
-        mDeltaYinPhiPerLayer[ilayer]->Fill(trackphi, trackqc.trackY[ilayer] - trackqc.trackletY[ilayer]);
-        mTrackletDef->Fill(trackqc.trackSnp[ilayer], trackqc.trackletDy[ilayer]);
-        mDeltaYDet->Fill(trackqc.trackletDet[ilayer], trackqc.trackY[ilayer] - trackqc.trackletY[ilayer]);
+        mDeltaY->Fill(trackqc.trackProp[ilayer].getY() - trackqc.trackletY[ilayer]);
+        mDeltaZ->Fill(trackqc.trackProp[ilayer].getZ() - trackqc.trackletZ[ilayer]);
+        mDeltaYDet->Fill(trackqc.trklt64[ilayer].getDetector(), trackqc.trackProp[ilayer].getY() - trackqc.trackletY[ilayer]);
+        mDeltaZDet->Fill(trackqc.trklt64[ilayer].getDetector(), trackqc.trackProp[ilayer].getZ() - trackqc.trackletZ[ilayer]);
+        mDeltaYsphi->Fill(trackqc.trackProp[ilayer].getSnp(), trackqc.trackProp[ilayer].getY() - trackqc.trackletY[ilayer]);
+        mDeltaYinEtaPerLayer[ilayer]->Fill(trackqc.trackProp[ilayer].getEta(), trackqc.trackProp[ilayer].getY() - trackqc.trackletY[ilayer]);
+        mDeltaYinPhiPerLayer[ilayer]->Fill(trackqc.trackProp[ilayer].getPhiPos(), trackqc.trackProp[ilayer].getY() - trackqc.trackletY[ilayer]);
+        mTrackletDef->Fill(trackqc.trackProp[ilayer].getSnp(), trackqc.trkltCalib[ilayer].getDy());
       } // end of loop over layers
     }   // end of loop over tracks
     mNtracks->Fill(nMatched);
