@@ -84,12 +84,14 @@ void TrackingTask::monitorData(o2::framework::ProcessingContext& ctx)
       auto& trackqc = trackqcArr[itrack];
       // match only ITS-TPC tracks
       auto trackType = trackqc.refGlobalTrackId.getSource();
-      if (!(trackType == GTrackID::Source::ITSTPC))
+      if (!(trackType == GTrackID::Source::ITSTPC)) {
         continue;
+      }
       nMatched++;
       // remove tracks with pt < 1 GeV/c
-      if (trackqc.trackTRD.getPt() < 1)
+      if (trackqc.trackTRD.getPt() < 1) {
         continue;
+      }
       mNtracklets->Fill(trackqc.trackTRD.getNtracklets());
       mTrackPt->Fill(trackqc.trackTRD.getPt());
       mTrackChi2->Fill(trackqc.trackTRD.getReducedChi2());
@@ -97,11 +99,13 @@ void TrackingTask::monitorData(o2::framework::ProcessingContext& ctx)
       bool fillOnce = false;
       for (auto ilayer : { 0, 1, 2, 3, 4, 5 }) {
         // cut on x position of the track
-        if (trackqc.trackProp[ilayer].getX() < 2)
+        if (trackqc.trackProp[ilayer].getX() < 2) {
           continue;
+        }
         // remove tracks with no tracklet in a layer
-        if (trackqc.trackTRD.getTrackletIndex(ilayer) < 0)
+        if (trackqc.trackTRD.getTrackletIndex(ilayer) < 0) {
           continue;
+        }
         // find charge bin of the track
         int charge = -1;
         if (trackqc.trackProp[ilayer].getQ2Pt() > 0) {
@@ -109,8 +113,9 @@ void TrackingTask::monitorData(o2::framework::ProcessingContext& ctx)
         } else if (trackqc.trackProp[ilayer].getQ2Pt() < 0) {
           charge = 1;
         }
-        if (charge == -1)
+        if (charge == -1) {
           continue;
+        }
         if (!fillOnce) {
           mTrackEta->Fill(trackqc.trackProp[ilayer].getEta());
           mTrackPhi->Fill(trackqc.trackProp[ilayer].getPhiPos());
