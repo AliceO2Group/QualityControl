@@ -28,9 +28,9 @@ using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;
 using namespace o2::quality_control_modules::muonchambers;
 
-void QualityPostProcessing::configure(std::string name, const boost::property_tree::ptree& config)
+void QualityPostProcessing::configure(const boost::property_tree::ptree& config)
 {
-  PostProcessingConfigMCH mchConfig(name, config);
+  PostProcessingConfigMCH mchConfig(getID(), config);
 
   mAggregatedQualityName = mchConfig.getParameter<std::string>("AggregatedQualityName");
   mMessageGood = mchConfig.getParameter<std::string>("MessageGood");

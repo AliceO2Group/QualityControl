@@ -45,9 +45,9 @@ using namespace o2::quality_control_modules::muon;
 using namespace o2::quality_control_modules::muonchambers;
 using namespace o2::mch::raw;
 
-void DecodingPostProcessing::configure(std::string name, const boost::property_tree::ptree& config)
+void DecodingPostProcessing::configure(const boost::property_tree::ptree& config)
 {
-  PostProcessingConfigMCH mchConfig(name, config);
+  PostProcessingConfigMCH mchConfig(getID(), config);
 
   mRefTimeStamp = mchConfig.getParameter<int64_t>("ReferenceTimeStamp", -1);
   auto refDate = mchConfig.getParameter<std::string>("ReferenceDate");

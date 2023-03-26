@@ -22,9 +22,9 @@
 
 using namespace o2::quality_control_modules::muonchambers;
 
-void PreclustersPostProcessing::configure(std::string name, const boost::property_tree::ptree& config)
+void PreclustersPostProcessing::configure(const boost::property_tree::ptree& config)
 {
-  PostProcessingConfigMCH mchConfig(name, config);
+  PostProcessingConfigMCH mchConfig(getID(), config);
 
   mRefTimeStamp = mchConfig.getParameter<int64_t>("ReferenceTimeStamp", -1);
   auto refDate = mchConfig.getParameter<std::string>("ReferenceDate");
