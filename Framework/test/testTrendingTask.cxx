@@ -45,6 +45,7 @@ BOOST_AUTO_TEST_CASE(test_task)
 {
   const std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testTrendingTask.json";
   const std::string taskName = "TestTrendingTask";
+  const std::string taskID = "TSTTrendingTask";
   const size_t trendTimes = 5;
 
   std::shared_ptr<DatabaseInterface> repository = DatabaseFactory::create("CCDB");
@@ -84,8 +85,9 @@ BOOST_AUTO_TEST_CASE(test_task)
 
     TrendingTask task;
     task.setName(taskName);
+    task.setID(taskID);
     task.setObjectsManager(objectManager);
-    task.configure(taskName, ConfigurationFactory::getConfiguration(configFilePath)->getRecursive());
+    task.configure(ConfigurationFactory::getConfiguration(configFilePath)->getRecursive());
     task.initialize({ TriggerType::Once, false, { 0, 0, "", "", "qc" }, 1 }, services);
     for (size_t i = 0; i < trendTimes; i++) {
       task.update({ TriggerType::Always, false, { 0, 0, "", "", "qc" }, i * 1000 + 50 }, services);

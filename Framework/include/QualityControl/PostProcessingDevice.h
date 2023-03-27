@@ -51,15 +51,14 @@ class PostProcessingDevice : public framework::Task
 
   const std::string& getDeviceName();
   framework::Inputs getInputsSpecs();
-  framework::Outputs getOutputSpecs();
+  framework::Outputs getOutputSpecs() const;
   framework::Options getOptions();
 
   /// \brief Data Processor Label to identify all Task Runners
   static framework::DataProcessorLabel getLabel() { return { "qc-pp-task-runner" }; }
-  /// \brief ID string for all PostProcessingDevices
-  static std::string createPostProcessingIdString();
+  static std::string createPostProcessingDeviceName(const std::string& taskName, const std::string& detectorName);
   /// \brief Unified DataOrigin for Post-processing tasks
-  static header::DataOrigin createPostProcessingDataOrigin();
+  static header::DataOrigin createPostProcessingDataOrigin(const std::string& detectorCode);
   /// \brief Unified DataDescription naming scheme for all Post-processing tasks
   static header::DataDescription createPostProcessingDataDescription(const std::string& taskName);
 

@@ -321,10 +321,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
   int nStops[NFees] = {};
   int payloadTot[NFees] = {};
 
-  std::vector<InputSpec> rawDataFilter{ InputSpec{ "", ConcreteDataTypeMatcher{ "DS", "RAWDATA0" }, Lifetime::Timeframe } };
-
-  rawDataFilter.push_back(InputSpec{ "", ConcreteDataTypeMatcher{ "ITS", "RAWDATA" }, Lifetime::Timeframe });
-  DPLRawParser parser(ctx.inputs(), rawDataFilter);
+  DPLRawParser parser(ctx.inputs());
 
   resetLanePlotsAndCounters(); // action taken depending on mResetLaneStatus and mResetPayload
 
@@ -366,8 +363,8 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
     if ((int)(o2::raw::RDHUtils::getStop(rdh)) && it.size()) { // looking into the DDW0 from the closing packet
       auto const* ddw = reinterpret_cast<const GBTDiagnosticWord*>(it.data());
       uint64_t laneInfo = ddw->laneWord.laneBits.laneStatus;
-      uint8_t flag1 = ddw->indexWord.indexBits.flag1;
 
+      uint8_t flag1 = ddw->indexWord.indexBits.flag1;
       for (int i = 0; i < 3; i++) {
         if (flag1 >> i & 0x1) {
           mFlag1Check->Fill(ifee, i);
@@ -467,7 +464,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
   }
 
-  mTimeFrameId = ctx.inputs().get<int>("G");
+  mTimeFrameId++;
 
   mTFInfo->Fill(mTimeFrameId);
   end = std::chrono::high_resolution_clock::now();

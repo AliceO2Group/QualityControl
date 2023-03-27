@@ -37,11 +37,11 @@ PostProcTask::~PostProcTask()
   delete mTime;
 }
 
-void PostProcTask::configure(std::string, const boost::property_tree::ptree& config)
+void PostProcTask::configure(const boost::property_tree::ptree& config)
 {
   mCcdbUrl = config.get_child("qc.config.conditionDB.url").get_value<std::string>();
 
-  const char* configPath = Form("qc.postprocessing.%s", getName().c_str());
+  const char* configPath = Form("qc.postprocessing.%s", getID().c_str());
   ILOG(Info, Support) << "configPath = " << configPath << ENDM;
 
   auto node = config.get_child_optional(Form("%s.custom.pathGrpLhcIf", configPath));
@@ -201,7 +201,9 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
 
   for (int i = 0; i < getObjectsManager()->getNumberPublishedObjects(); i++) {
     TH1* obj = dynamic_cast<TH1*>(getObjectsManager()->getMonitorObject(i)->getObject());
-    obj->SetTitle((string("FV0 ") + obj->GetTitle()).c_str());
+    if (obj != nullptr) {
+      obj->SetTitle((string("FV0 ") + obj->GetTitle()).c_str());
+    }
   }
 }
 

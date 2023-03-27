@@ -44,9 +44,9 @@ using namespace o2::quality_control::postprocessing;
 using namespace o2::quality_control_modules::muon;
 using namespace o2::quality_control_modules::muonchambers;
 
-void TrendingFECHistRatio::configure(std::string name, const boost::property_tree::ptree& config)
+void TrendingFECHistRatio::configure(const boost::property_tree::ptree& config)
 {
-  mConfig = TrendingConfigMCH(name, config);
+  mConfig = TrendingConfigMCH(getID(), config);
   for (int chamber = 0; chamber < 10; chamber++) {
     mConfig.plots.push_back({ fmt::format("{}_CH{}", mConfig.mConfigTrendingFECHistRatio.namePrefix, chamber + 1),
                               fmt::format("{} CH{}", mConfig.mConfigTrendingFECHistRatio.namePrefix, chamber + 1),

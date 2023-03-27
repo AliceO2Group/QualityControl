@@ -38,9 +38,9 @@ using namespace o2::quality_control::core;
 using namespace o2::quality_control::repository;
 using namespace o2::quality_control::postprocessing;
 
-void TRDTrending::configure(std::string name, const boost::property_tree::ptree& config)
+void TRDTrending::configure(const boost::property_tree::ptree& config)
 {
-  mConfig = TrendingTaskConfigTRD(name, config);
+  mConfig = TrendingTaskConfigTRD(getID(), config);
 }
 
 void TRDTrending::initialize(Trigger, framework::ServiceRegistryRef services)

@@ -20,11 +20,11 @@
 namespace o2::quality_control_modules::common
 {
 
-TRFCollectionTaskConfig::TRFCollectionTaskConfig(std::string name, const boost::property_tree::ptree& config)
-  : PostProcessingConfig(name, config), name(name)
+TRFCollectionTaskConfig::TRFCollectionTaskConfig(std::string id, const boost::property_tree::ptree& config)
+  : PostProcessingConfig(id, config), name(id)
 {
-  detector = config.get<std::string>("qc.postprocessing." + name + ".detectorName");
-  for (const auto& qoPath : config.get_child("qc.postprocessing." + name + ".QOs")) {
+  detector = config.get<std::string>("qc.postprocessing." + id + ".detectorName");
+  for (const auto& qoPath : config.get_child("qc.postprocessing." + id + ".QOs")) {
     qualityObjects.push_back(qoPath.second.data());
   }
   runNumber = config.get<int>("qc.config.Activity.number", 0);

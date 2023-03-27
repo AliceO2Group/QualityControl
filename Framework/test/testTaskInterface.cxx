@@ -174,7 +174,7 @@ BOOST_AUTO_TEST_CASE(test_task_factory)
     "skeletonTask",
     "QcSkeleton",
     "o2::quality_control_modules::skeleton::SkeletonTask",
-    10,
+    { { 10, 1 } },
     -1,
     ""
   };

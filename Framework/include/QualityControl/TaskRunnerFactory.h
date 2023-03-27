@@ -57,6 +57,7 @@ class TaskRunnerFactory
   /// them work. Put it inside customize() function before including <Framework/runDataProcessing.cxx>.
   /// \param policies - completion policies vector
   static void customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies);
+  static framework::InputSpec createTimerInputSpec(const CommonSpec& globalConfig, std::vector<std::pair<size_t, size_t>>& cycleDurations, const std::string& detectorName, const std::string& taskName);
 };
 
 } // namespace o2::quality_control::core

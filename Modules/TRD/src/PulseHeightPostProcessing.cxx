@@ -41,7 +41,7 @@ using namespace o2::quality_control::core;
 using namespace o2::quality_control::repository;
 using namespace o2::quality_control::postprocessing;
 
-void PulseHeightPostProcessing::configure(std::string name, const boost::property_tree::ptree& config)
+void PulseHeightPostProcessing::configure(const boost::property_tree::ptree& config)
 {
 
   mHost = config.get<std::string>("qc.config.conditionDB.url");

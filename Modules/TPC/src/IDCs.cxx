@@ -35,11 +35,12 @@ using namespace o2::tpc;
 namespace o2::quality_control_modules::tpc
 {
 
-void IDCs::configure(std::string name, const boost::property_tree::ptree& config)
+void IDCs::configure(const boost::property_tree::ptree& config)
 {
+  auto& id = getID();
   std::vector<std::string> keyVec{};
   std::vector<std::string> valueVec{};
-  for (const auto& data : config.get_child("qc.postprocessing." + name + ".lookupMetaData")) {
+  for (const auto& data : config.get_child("qc.postprocessing." + id + ".lookupMetaData")) {
     mLookupMaps.emplace_back(std::map<std::string, std::string>());
     if (const auto& keys = data.second.get_child_optional("keys"); keys.has_value()) {
       for (const auto& key : keys.value()) {
@@ -65,7 +66,7 @@ void IDCs::configure(std::string name, const boost::property_tree::ptree& config
     valueVec.clear();
   }
 
-  for (const auto& data : config.get_child("qc.postprocessing." + name + ".storeMetaData")) {
+  for (const auto& data : config.get_child("qc.postprocessing." + id + ".storeMetaData")) {
     mStoreMaps.emplace_back(std::map<std::string, std::string>());
     if (const auto& keys = data.second.get_child_optional("keys"); keys.has_value()) {
       for (const auto& key : keys.value()) {
@@ -91,7 +92,7 @@ void IDCs::configure(std::string name, const boost::property_tree::ptree& config
     valueVec.clear();
   }
 
-  for (const auto& entry : config.get_child("qc.postprocessing." + name + ".histogramRanges")) {
+  for (const auto& entry : config.get_child("qc.postprocessing." + id + ".histogramRanges")) {
     for (const auto& type : entry.second) {
       for (const auto& value : type.second) {
         mRanges[type.first].emplace_back(std::stof(value.second.data()));
@@ -99,13 +100,13 @@ void IDCs::configure(std::string name, const boost::property_tree::ptree& config
     }
   }
 
-  for (const auto& entry : config.get_child("qc.postprocessing." + name + ".timestamps")) {
+  for (const auto& entry : config.get_child("qc.postprocessing." + id + ".timestamps")) {
     for (const auto& type : entry.second) {
       mTimestamps[type.first] = std::stol(type.second.data());
     }
   }
 
-  mHost = config.get<std::string>("qc.postprocessing." + name + ".dataSourceURL");
+  mHost = config.get<std::string>("qc.postprocessing." + id + ".dataSourceURL");
 }
 
 void IDCs::initialize(Trigger, framework::ServiceRegistryRef)

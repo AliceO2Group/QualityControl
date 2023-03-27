@@ -47,7 +47,6 @@ ITSFhrTask::~ITSFhrTask()
   delete mGeneralNoisyPixel;
   delete mDecoder;
   delete mChipDataBuffer;
-  delete mTFInfo;
   delete mErrorPlots;
   delete mErrorVsFeeid;
   delete mChipStaveOccupancy;
@@ -270,9 +269,6 @@ void ITSFhrTask::createGeneralPlots()
 
   createErrorTriggerPlots();
 
-  mTFInfo = new TH1F("General/TFInfo", "TF vs count", 15000, 0, 15000);
-  getObjectsManager()->startPublishing(mTFInfo); // mTFInfo
-
   mErrorVsFeeid = new TH2I("General/ErrorVsFeeid", "Error count vs Error id and Fee id", (3 * StaveBoundary[3]) + (2 * (StaveBoundary[7] - StaveBoundary[3])), 0, (3 * StaveBoundary[3]) + (2 * (StaveBoundary[7] - StaveBoundary[3])), o2::itsmft::GBTLinkDecodingStat::NErrorsDefined, 0.5, o2::itsmft::GBTLinkDecodingStat::NErrorsDefined + 0.5);
   mErrorVsFeeid->SetMinimum(0);
   mErrorVsFeeid->SetStats(0);
@@ -371,9 +367,6 @@ void ITSFhrTask::setPlotsFormat()
   if (mErrorPlots) {
     setAxisTitle(mErrorPlots, "Error ID", "Counts");
   }
-  if (mTFInfo) {
-    setAxisTitle(mTFInfo, "TF ID", "Counts");
-  }
   if (mErrorVsFeeid) {
     setAxisTitle(mErrorVsFeeid, "FeeID", "Error ID");
   }
@@ -426,17 +419,6 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
   std::chrono::time_point<std::chrono::high_resolution_clock> end;
   int difference;
   start = std::chrono::high_resolution_clock::now();
-  // get TF id by dataorigin and datadescription
-  const InputSpec TFIdFilter{ "", ConcreteDataTypeMatcher{ "DS", "RAWDATA1" }, Lifetime::Timeframe }; // after Data Sampling the dataorigin will become to "DS" and the datadescription will become  to "RAWDATAX"
-  if (!mGetTFFromBinding) {
-    for (auto& input : ctx.inputs()) {
-      if (DataRefUtils::match(input, TFIdFilter)) {
-        mTimeFrameId = (unsigned int)*input.payload;
-      }
-    }
-  } else {
-    mTimeFrameId = ctx.inputs().get<int>("G");
-  }
 
   // set Decoder
   mDecoder->startNewTF(ctx.inputs());
@@ -750,11 +732,6 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
   delete[] occupancyPlotTmp;
 
-  // temporarily reverting to get TFId by querying binding
-  //   mTimeFrameId = ctx.inputs().get<int>("G");
-  // Timer LOG
-  mTFInfo->Fill(mTimeFrameId);
-
   end = std::chrono::high_resolution_clock::now();
   difference = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
@@ -770,7 +747,6 @@ void ITSFhrTask::getParameters()
   mNThreads = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "decoderThreads", mNThreads);
   mLayer = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "Layer", mLayer);
   mHitCutForCheck = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "HitNumberCut", mHitCutForCheck);
-  mGetTFFromBinding = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "GetTFFromBinding", mGetTFFromBinding);
   mHitCutForNoisyPixel = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "HitNumberCutForNoisyPixel", mHitCutForNoisyPixel);
   mOccupancyCutForNoisyPixel = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "OccupancyNumberCutForNoisyPixel", mOccupancyCutForNoisyPixel);
   mMaxGeneralAxisRange = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "MaxGeneralAxisRange", mMaxGeneralAxisRange);
@@ -798,7 +774,6 @@ void ITSFhrTask::endOfActivity(Activity& /*activity*/)
 
 void ITSFhrTask::resetGeneralPlots()
 {
-  resetObject(mTFInfo);
   resetObject(mErrorPlots);
   resetObject(mErrorVsFeeid);
 }
@@ -807,7 +782,6 @@ void ITSFhrTask::resetOccupancyPlots()
 {
   memset(mHitNumberOfChip, 0, sizeof(mHitNumberOfChip));
   memset(mErrors, 0, sizeof(mErrors));
-  mTimeFrameId = 0;
   mChipStaveOccupancy->Reset();
   mChipStaveEventHitCheck->Reset();
   mOccupancyPlot->Reset();

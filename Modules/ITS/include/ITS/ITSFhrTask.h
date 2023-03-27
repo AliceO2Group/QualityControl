@@ -100,7 +100,6 @@ class ITSFhrTask final : public TaskInterface
   ChipPixelData* mChipDataBuffer = nullptr;
   std::vector<ChipPixelData> mChipsBuffer;
   int mHitNumberOfChip[7][48][2][14][14] = { { { { { 0 } } } } }; // layer, stave, substave, hic, chip
-  unsigned int mTimeFrameId = 0;
 
   int mNTrigger = 13;
   unsigned int mErrors[19] = { 0 };
@@ -145,7 +144,6 @@ class ITSFhrTask final : public TaskInterface
   float etabinsOB6[49 + 1] = { -1.369600, -1.332400, -1.293960, -1.254200, -1.213050, -1.170430, -1.126260, -1.080380, -1.032840, -0.983488, -0.932225, -0.878966, -0.823626, -0.766135, -0.706331, -0.644375, -0.580163, -0.513723, -0.445132, -0.374519, -0.302079, -0.227946, -0.152690, -0.076567, 0.000000, 0.076567, 0.152690, 0.227946, 0.302079, 0.374519, 0.445132, 0.513723, 0.580163, 0.644375, 0.706331, 0.766135, 0.823626, 0.878966, 0.932225, 0.983488, 1.032840, 1.080380, 1.126260, 1.170430, 1.213050, 1.254200, 1.293960, 1.332400, 1.369600, 1.4 };
 
   // General plots
-  TH1F* mTFInfo; // count vs TF ID
   TH1D* mErrorPlots;
   TH2I* mErrorVsFeeid;
   TH2Poly* mGeneralOccupancy;  // Max Occuapncy(chip/hic) in one stave

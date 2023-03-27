@@ -42,9 +42,9 @@ using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;
 using namespace o2::quality_control_modules::tof;
 
-void TrendingRate::configure(std::string name, const boost::property_tree::ptree& config)
+void TrendingRate::configure(const boost::property_tree::ptree& config)
 {
-  mConfig = TrendingConfigTOF(name, config);
+  mConfig = TrendingConfigTOF(getID(), config);
   mThresholdSgn = mConfig.mConfigTrendingRate.thresholdSignal;
   mThresholdBkg = mConfig.mConfigTrendingRate.thresholdBackground;
 }
