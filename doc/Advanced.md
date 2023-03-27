@@ -992,7 +992,76 @@ The same approach can be applied to other actors in the QC framework, like Check
 
 ## Definition and access of task-specific configuration
 
+A task can access custom parameters declared in the configuration file at `qc.tasks.<task_id>.extendTaskParameters` or `qc.tasks.<task_id>.taskParameters`. They are stored inside an object of type `CustomParameters` named `mCustomParameters`, which is a protected member of `TaskInterface`.
+
+The simple, deprecated, syntax is 
+```json
+    "tasks": {
+      "QcTask": {
+        "taskParameters": {
+          "myOwnKey": "myOwnValue"
+        },
+```
+It is accessed with : `mCustomParameters["myOwnKey"]`. 
+
+The new syntax is
+```json
+    "tasks": {
+      "QcTask": {
+        "extendedTaskParameters": {
+          "default": {
+            "default": {
+              "myOwnKey": "myOwnValue",
+              "myOwnKey2": "myOwnValue2",
+              "myOwnKey3": "myOwnValue3"
+            }
+          },
+          "physics": {
+            "default": {
+              "myOwnKey1": "myOwnValue1b",
+              "myOwnKey2": "myOwnValue2b"
+            },
+            "pp": {
+              "myOwnKey1": "myOwnValue1c"
+            },
+            "PbPb": {
+              "myOwnKey1": "myOwnValue1d"
+            }
+          },
+          "cosmics": {
+            "myOwnKey1": "myOwnValue1e",
+            "myOwnKey2": "myOwnValue2e"
+          }
+        },
+```
+It allows to have variations of the parameters depending on the run and beam types. The `default` can be used 
+to ignore the run or the beam type. The values can be accessed this way: 
+```c++
+mCustomParameters["myOwnKey"]; // considering that run and beam type are `default` --> returns `myOwnValue`
+mCustomParameters.at("myOwnKey"); // returns `myOwnValue`
+mCustomParameters.at("myOwnKey", "default"); // returns `myOwnValue`
+mCustomParameters.at("myOwnKey", "default", "default"); // returns `myOwnValue`
+
+mCustomParameters.at("myOwnKey1", "physics", "pp"); // returns `myOwnValue1c`
+mCustomParameters.at("myOwnKey1", "physics", "PbPb"); // returns `myOwnValue1d`
+mCustomParameters.at("myOwnKey2", "cosmics"); // returns `myOwnValue2e`
+```
+The correct way of accessing a parameter and to default to a value if it is not there, is the following:
+```c++
+  std::string param = mCustomParameters.atOrDefaultValue("myOwnKey1", "physics", "pp", "1");
+  int casted = std::stoi(param);
+```
+Finally the way to search for a value and only act if it is there is the following: 
+```c++
+  if (auto param2 = mCustomParameters.find("myOwnKey1", "physics", "pp"); param2 != cp.end()) {
+    int casted = std::stoi(param);
+  }
+```
+
+
 A task can access custom parameters declared in the configuration file at `qc.tasks.<task_id>.taskParameters`. They are stored inside a key-value map named mCustomParameters, which is a protected member of `TaskInterface`.
+
+
 
 One can also tell the DPL driver to accept new arguments. This is done using the `customize` method at the top of your workflow definition (usually called "runXXX" in the QC).
 
