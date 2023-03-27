@@ -54,18 +54,18 @@ BOOST_AUTO_TEST_CASE(test_cp_basic)
 BOOST_AUTO_TEST_CASE(test_cp_iterators)
 {
   CustomParameters cp;
-  cp.set("value1", "key1", "run1", "beam1") ;
+  cp.set("value1", "key1", "run1", "beam1");
   auto param = cp.find("key1", "run1", "beam1");
   BOOST_CHECK(param != cp.end());
   if (param != cp.end()) {
-    BOOST_CHECK_EQUAL(param->second , "value1");
+    BOOST_CHECK_EQUAL(param->second, "value1");
   }
 
-  cp.set("value2", "key2") ;
+  cp.set("value2", "key2");
   param = cp.find("key2");
   BOOST_CHECK(param != cp.end());
   if (param != cp.end()) {
-    BOOST_CHECK_EQUAL(param->second , "value2");
+    BOOST_CHECK_EQUAL(param->second, "value2");
   }
 
   param = cp.find("not_found");
@@ -131,10 +131,7 @@ BOOST_AUTO_TEST_CASE(test_cp_new_access_pattern)
   BOOST_CHECK_EQUAL(std::stoi(param), 1);
 
   // if we don't have a default value and only want to do something if there is a value:
-  if(auto param2 = cp.find("aaa"); param2 != cp.end()) {
+  if (auto param2 = cp.find("aaa"); param2 != cp.end()) {
     BOOST_CHECK_EQUAL(std::stoi(param), 1);
   }
 }
-
-
-

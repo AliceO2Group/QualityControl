@@ -24,9 +24,10 @@
 namespace o2::quality_control::core
 {
 
-class CustomParameters {
+class CustomParameters
+{
   // runtype -> beamtype -> key -> value
-  using CustomParametersType = std::unordered_map< std::string, std::unordered_map< std::string, std::unordered_map< std::string, std::string>>>;
+  using CustomParametersType = std::unordered_map<std::string, std::unordered_map<std::string, std::unordered_map<std::string, std::string>>>;
 
  public:
   CustomParameters()
@@ -53,7 +54,7 @@ class CustomParameters {
    */
   const std::unordered_map<std::string, std::string>& getAllForRunBeam(const std::string& runType, const std::string& beamType)
   {
-    if(mCustomParameters.count(runType) > 0 && mCustomParameters[runType].count(beamType) > 0) {
+    if (mCustomParameters.count(runType) > 0 && mCustomParameters[runType].count(beamType) > 0) {
       return mCustomParameters[runType][beamType];
     }
     throw std::out_of_range("Unknown beam or run: " + runType + ", " + beamType);
@@ -111,7 +112,7 @@ class CustomParameters {
   {
     try {
       at(name, runType, beamType);
-    } catch(const std::out_of_range& oor) {
+    } catch (const std::out_of_range& oor) {
       return 0;
     }
     return 1;
@@ -126,24 +127,24 @@ class CustomParameters {
    * @param beamType
    * @return the item or end()
    */
-  std::unordered_map<std::string, std::string>::const_iterator find (const std::string& name, const std::string& runType = "default", const std::string& beamType = "default") const
+  std::unordered_map<std::string, std::string>::const_iterator find(const std::string& name, const std::string& runType = "default", const std::string& beamType = "default") const
   {
     auto subTreeRunType = mCustomParameters.find(runType);
-    if(subTreeRunType == mCustomParameters.end()) {
+    if (subTreeRunType == mCustomParameters.end()) {
       return end();
     }
     auto subTreeBeamType = subTreeRunType->second.find(beamType);
-    if(subTreeBeamType == subTreeRunType->second.end()) {
+    if (subTreeBeamType == subTreeRunType->second.end()) {
       return end();
     }
     auto foundValue = subTreeBeamType->second.find(name);
-    if(foundValue == subTreeBeamType->second.end()) {
+    if (foundValue == subTreeBeamType->second.end()) {
       return end();
     }
     return foundValue;
   }
 
-  std::unordered_map<std::string, std::string>::const_iterator end () const
+  std::unordered_map<std::string, std::string>::const_iterator end() const
   {
     return mCustomParameters.at("default").at("default").end();
   }
@@ -154,7 +155,8 @@ class CustomParameters {
    * @return
    * @throw std::out_of_range
    */
-  std::string operator[](const std::string& index) const {
+  std::string operator[](const std::string& index) const
+  {
     return at(index);
   }
 
@@ -162,9 +164,9 @@ class CustomParameters {
   friend std::ostream& operator<<(std::ostream& out, const CustomParameters& customParameters)
   {
     // todo: should we swallow the exceptions here ?
-    for(const auto& runType : customParameters.mCustomParameters){
-      for(const auto& beamType : runType.second) {
-        for(const auto& name : beamType.second) {
+    for (const auto& runType : customParameters.mCustomParameters) {
+      for (const auto& beamType : runType.second) {
+        for (const auto& name : beamType.second) {
           out << runType.first << " - " << beamType.first << " - " << name.first << " : " << name.second << "\n";
         }
       }
@@ -176,6 +178,6 @@ class CustomParameters {
   CustomParametersType mCustomParameters;
 };
 
-}
+} // namespace o2::quality_control::core
 
-#endif //QC_TYPE_UTILS_H
+#endif // QC_TYPE_UTILS_H

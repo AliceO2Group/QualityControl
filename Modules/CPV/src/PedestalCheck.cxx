@@ -33,7 +33,7 @@ namespace o2::quality_control_modules::cpv
 
 void PedestalCheck::configure()
 {
-  ILOG(Info, Support) << "PedestalCheck::configure() : I have been called with following custom parameters" << mCustomParameters<< ENDM;
+  ILOG(Info, Support) << "PedestalCheck::configure() : I have been called with following custom parameters" << mCustomParameters << ENDM;
 
   for (int mod = 0; mod < 3; mod++) {
     // mMinGoodPedestalValueM

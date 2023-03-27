@@ -110,7 +110,7 @@ TaskSpec InfrastructureSpecReader::readSpecEntry<TaskSpec>(const std::string& ta
   if (taskTree.count("extendedTaskParameters") > 0) {
     for (const auto& [runtype, subTreeRunType] : taskTree.get_child("extendedTaskParameters")) {
       for (const auto& [beamtype, subTreeBeamType] : subTreeRunType) {
-        for(const auto& [key, value] : subTreeBeamType) {
+        for (const auto& [key, value] : subTreeBeamType) {
           ts.customParameters.set(value.get_value<std::string>(), key, runtype, beamtype);
         }
       }
@@ -287,7 +287,7 @@ CheckSpec InfrastructureSpecReader::readSpecEntry<CheckSpec>(const std::string& 
   if (checkTree.count("extendedCheckParameters") > 0) {
     for (const auto& [runtype, subTreeRunType] : checkTree.get_child("extendedCheckParameters")) {
       for (const auto& [beamtype, subTreeBeamType] : subTreeRunType) {
-        for(const auto& [key, value] : subTreeBeamType) {
+        for (const auto& [key, value] : subTreeBeamType) {
           cs.customParameters.set(value.get_value<std::string>(), key, runtype, beamtype);
         }
       }
@@ -327,7 +327,7 @@ AggregatorSpec InfrastructureSpecReader::readSpecEntry<AggregatorSpec>(const std
   if (aggregatorTree.count("extendedAggregatorParameters") > 0) {
     for (const auto& [runtype, subTreeRunType] : aggregatorTree.get_child("extendedAggregatorParameters")) {
       for (const auto& [beamtype, subTreeBeamType] : subTreeRunType) {
-        for(const auto& [key, value] : subTreeBeamType) {
+        for (const auto& [key, value] : subTreeBeamType) {
           as.customParameters.set(value.get_value<std::string>(), key, runtype, beamtype);
         }
       }
