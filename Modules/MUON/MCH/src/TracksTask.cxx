@@ -26,6 +26,7 @@
 #include <Math/Vector4D.h>
 #include <TMath.h>
 #include <gsl/span>
+#include "QualityControl/QcInfoLogger.h"
 
 namespace
 {

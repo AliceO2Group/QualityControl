@@ -30,7 +30,7 @@ namespace o2::quality_control_modules::common
 /// \param name Name of the taskParameter
 /// \return taskParameter converted to bool, int, float, double or std::string depending on the template type
 template <typename T>
-T getFromConfig(const std::unordered_map<std::string, std::string>& params, const std::string_view name, T retVal = T{})
+T getFromConfig(const CustomParameters& params, const std::string_view name, T retVal = T{})
 {
   const auto last = params.end();
   const auto itParam = params.find(name.data());

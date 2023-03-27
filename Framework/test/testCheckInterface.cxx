@@ -88,12 +88,12 @@ BOOST_AUTO_TEST_CASE(test_invoke_all_methods)
 
   BOOST_CHECK_EQUAL(testCheck.check(&moMap), Quality::Null);
 
-  std::unordered_map<std::string, std::string> customParameters;
-  customParameters["test"] = "A different string";
+  CustomParameters customParameters;
+  customParameters.set("A different string", "test");
   testCheck.setCustomParameters(customParameters);
   BOOST_CHECK_EQUAL(testCheck.check(&moMap), Quality::Bad);
 
-  customParameters["test"] = "A string";
+  customParameters.set("A string", "test");
   testCheck.setCustomParameters(customParameters);
   BOOST_CHECK_EQUAL(testCheck.check(&moMap), Quality::Good);
 

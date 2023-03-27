@@ -18,6 +18,7 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include <fairlogger/Logger.h>
+#include "QualityControl/QcInfoLogger.h"
 // ROOT
 #include <TH1.h>
 #include <TH2.h>

@@ -35,7 +35,7 @@ namespace o2::quality_control_modules::common
 
 void MeanIsAbove::configure()
 {
-  mThreshold = stof(mCustomParameters.at("meanThreshold"));
+//  mThreshold = stof(mCustomParameters.at("meanThreshold"));
 }
 
 std::string MeanIsAbove::getAcceptedType() { return "TH1"; }

@@ -27,7 +27,7 @@
       },
       "infologger": {                     "": "Configuration of the Infologger (optional).",
         "filterDiscardDebug": "false",    "": "Set to true to discard debug and trace messages (default: false)",
-        "filterDiscardLevel": "11",       "": "Message at this level or above are discarded (default: 21 - Trace)",
+        "filterDiscardLevel": "21",       "": "Message at this level or above are discarded (default: 21 - Trace)",
         "filterDiscardFile": "/tmp/_ID_.txt", "": ["If set, the messages discarded because of filterDiscardLevel",
           "will go to this file (default: <none>); The keyword _ID_ is replaced by the device id. Discarded Debug ",
           "messages won't go there."]
@@ -53,8 +53,30 @@
           "type": "dataSamplingPolicy",
           "name": "tst-raw"
         },
-        "taskParameters": {
-          "myOwnKey": "myOwnValue"
+        "extendedTaskParameters": {
+          "default": {
+            "default": {
+              "myOwnKey": "myOwnValue",
+              "myOwnKey2": "myOwnValue2",
+              "myOwnKey3": "myOwnValue3"
+            }
+          },
+          "physics": {
+            "default": {
+              "myOwnKey1": "myOwnValue1b",
+              "myOwnKey2": "myOwnValue2b"
+            },
+            "pp": {
+              "myOwnKey1": "myOwnValue1c"
+            },
+            "PbPb": {
+              "myOwnKey1": "myOwnValue1d"
+            }
+          },
+          "cosmics": {
+            "myOwnKey1": "myOwnValue1e",
+            "myOwnKey2": "myOwnValue2e"
+          }
         },
         "location": "remote",
         "saveObjectsToFile": "",      "": "For debugging, path to the file where to save. If empty or missing it won't save."

@@ -246,6 +246,7 @@ set(TEST_SRCS
     test/testPolicyManager.cxx
     test/testQualitiesToTRFCollectionConverter.cxx
     test/testUserCodeInterface.cxx
+    test/testCustomParameters.cxx
   )
 
 set(TEST_ARGS
@@ -276,6 +277,7 @@ set(TEST_ARGS
     ""
     "-b --run"
     "-b --run"
+    ""
     ""
     ""
     ""

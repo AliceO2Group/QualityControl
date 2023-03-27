@@ -19,6 +19,7 @@
 
 #include "QualityControl/CheckInterface.h"
 #include <DataFormatsQualityControl/FlagReasons.h>
+#include "QualityControl/QcInfoLogger.h"
 
 namespace o2::quality_control_modules::ft0
 {

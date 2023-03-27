@@ -23,6 +23,7 @@
 #include <iomanip>
 #include <bitset>
 #include <Common/Exceptions.h>
+#include "QualityControl/CustomParameters.h"
 
 namespace o2::quality_control::core
 {
@@ -77,13 +78,12 @@ bool decodeBool(const std::string& value)
 /// @return true if the option was found in the config and it was set to true, false if it was set to false
 /// @throw AliceO2::Common::ObjectNotFoundError if 'name' is not found in mCustomParameters
 /// @throw std::runtime_error the value is not a bool
-bool parseBoolParam(std::unordered_map<std::string, std::string> customParameters, const std::string& name)
+bool parseBoolParam(const CustomParameters& customParameters, const std::string& name, const std::string& runType = "default", const std::string& beamType = "default")
 {
-  if (auto param = customParameters.find(name); param != customParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - " << name << " " << param->second << ENDM;
-    return decodeBool(param->second);
-  } else {
-    BOOST_THROW_EXCEPTION(AliceO2::Common::ObjectNotFoundError() << AliceO2::Common::errinfo_object_name(name));
+  try {
+    return decodeBool(customParameters.at(name, runType, beamType));
+  } catch (std::out_of_range& exception) {
+    BOOST_THROW_EXCEPTION(AliceO2::Common::ObjectNotFoundError() << AliceO2::Common::errinfo_object_name(runType + "/" + beamType + "/" + name));
   }
 }
 
