@@ -50,7 +50,7 @@ class OutOfBunchCollCheck : public o2::quality_control::checker::CheckInterface
   float mThreshError;
   int mBinPos;
   std::string mTrgName;
-  bool mEnableMessage{true};
+  bool mEnableMessage{ true };
 };
 
 } // namespace o2::quality_control_modules::fv0

@@ -60,7 +60,7 @@ void OutOfBunchCollCheck::configure()
     mBinPos = int(o2::fit::Triggers::bitA) + 1;
     ILOG(Debug, Support) << "configure() : using default binPos = " << mBinPos << ENDM;
   }
-  mEnableMessage = o2::quality_control_modules::common::getFromConfig(mCustomParameters,"enableMessage",true);
+  mEnableMessage = o2::quality_control_modules::common::getFromConfig(mCustomParameters, "enableMessage", true);
 }
 
 Quality OutOfBunchCollCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
@@ -138,7 +138,7 @@ void OutOfBunchCollCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
     ILOG(Warning, Devel) << "Could not cast " << mo->getName() << " to TH2F*, skipping" << ENDM;
     return;
   }
-  if(!mEnableMessage) {
+  if (!mEnableMessage) {
     return;
   }
   TPaveText* msg = new TPaveText(0.1, 0.9, 0.9, 0.95, "NDC");
