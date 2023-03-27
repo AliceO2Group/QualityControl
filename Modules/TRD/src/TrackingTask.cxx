@@ -14,29 +14,29 @@
 /// \author Salman Malik
 ///
 
+// ROOT includes
+#include "TLine.h"
+#include "TCanvas.h"
+#include "TMath.h"
+// O2 includes
 #include "QualityControl/QcInfoLogger.h"
 #include "DataFormatsTRD/TrackTRD.h"
 #include "DataFormatsTRD/TrackTriggerRecord.h"
-#include "DataFormatsTRD/Constants.h"
 #include "DataFormatsTRD/Tracklet64.h"
 #include "DataFormatsGlobalTracking/RecoContainer.h"
 #include "DataFormatsTRD/CalibratedTracklet.h"
 #include "TRDQC/Tracking.h"
-#include "TRD/TrackingTask.h"
 #include <Framework/InputRecord.h>
-#include <Framework/InputRecordWalker.h>
-#include <Framework/DataRefUtils.h>
-#include <Framework/DataSpecUtils.h>
 #include "CCDB/BasicCCDBManager.h"
-#include "TLine.h"
-#include "TCanvas.h"
-#include "TMath.h"
+// QC includes
+#include "TRD/TrackingTask.h"
 
 using namespace o2::trd;
 using namespace o2::trd::constants;
 
 namespace o2::quality_control_modules::trd
 {
+using GTrackID = o2::dataformats::GlobalTrackID;
 
 void TrackingTask::retrieveCCDBSettings()
 {
@@ -52,6 +52,11 @@ void TrackingTask::retrieveCCDBSettings()
 void TrackingTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Debug, Devel) << "initialize TRD TrackingTask" << ENDM;
+
+  // minimum pT of tracks is configurable from json file
+  if (auto param = mCustomParameters.find("pTminvalue"); param != mCustomParameters.end()) {
+    pTmin = std::stof(param->second);
+  }
 
   retrieveCCDBSettings();
   buildHistograms();
@@ -89,7 +94,7 @@ void TrackingTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
       nMatched++;
       // remove tracks with pt < 1 GeV/c
-      if (trackqc.trackTRD.getPt() < 1) {
+      if (trackqc.trackTRD.getPt() < pTmin) {
         continue;
       }
       mNtracklets->Fill(trackqc.trackTRD.getNtracklets());
@@ -98,10 +103,6 @@ void TrackingTask::monitorData(o2::framework::ProcessingContext& ctx)
       // flag to fill some objects only once per track
       bool fillOnce = false;
       for (auto ilayer : { 0, 1, 2, 3, 4, 5 }) {
-        // cut on x position of the track
-        if (trackqc.trackProp[ilayer].getX() < 2) {
-          continue;
-        }
         // remove tracks with no tracklet in a layer
         if (trackqc.trackTRD.getTrackletIndex(ilayer) < 0) {
           continue;
@@ -129,7 +130,7 @@ void TrackingTask::monitorData(o2::framework::ProcessingContext& ctx)
         mDeltaZ->Fill(trackqc.trackProp[ilayer].getZ() - trackqc.trackletZ[ilayer]);
         mDeltaYDet->Fill(trackqc.trklt64[ilayer].getDetector(), trackqc.trackProp[ilayer].getY() - trackqc.trackletY[ilayer]);
         mDeltaZDet->Fill(trackqc.trklt64[ilayer].getDetector(), trackqc.trackProp[ilayer].getZ() - trackqc.trackletZ[ilayer]);
-        mDeltaYsphi->Fill(trackqc.trackProp[ilayer].getSnp(), trackqc.trackProp[ilayer].getY() - trackqc.trackletY[ilayer]);
+        mDeltaYvsSphi->Fill(trackqc.trackProp[ilayer].getSnp(), trackqc.trackProp[ilayer].getY() - trackqc.trackletY[ilayer]);
         mDeltaYinEtaPerLayer[ilayer]->Fill(trackqc.trackProp[ilayer].getEta(), trackqc.trackProp[ilayer].getY() - trackqc.trackletY[ilayer]);
         mDeltaYinPhiPerLayer[ilayer]->Fill(trackqc.trackProp[ilayer].getPhiPos(), trackqc.trackProp[ilayer].getY() - trackqc.trackletY[ilayer]);
         mTrackletDef->Fill(trackqc.trackProp[ilayer].getSnp(), trackqc.trkltCalib[ilayer].getDy());
@@ -162,7 +163,7 @@ void TrackingTask::reset()
   mDeltaZ->Reset();
   mDeltaYDet->Reset();
   mDeltaZDet->Reset();
-  mDeltaYsphi->Reset();
+  mDeltaYvsSphi->Reset();
   mTrackletDef->Reset();
   for (auto h : mTrackletsEtaPhi) {
     h->Reset();
@@ -222,15 +223,15 @@ void TrackingTask::buildHistograms()
   axisConfig(mDeltaZDet, "chamber number", "track Z - tracklet Z (cm)", "Counts", 0, 1.0, 1.1);
   publishObject(mDeltaZDet, "colz", "logz");
 
-  mDeltaYsphi = new TH2D("DeltaYsnphi", "YResiduals vs Track sin(#phi)", 50, -0.4, 0.4, 50, -10, 10);
-  axisConfig(mDeltaYsphi, "track #it{sin(#phi)}", "track Y - tracklet Y (cm)", "Counts", 0, 1.0, 1.1);
-  publishObject(mDeltaYsphi, "colz", "logz");
+  mDeltaYvsSphi = new TH2D("DeltaYsnphi", "YResiduals vs Track sin(#phi)", 50, -0.4, 0.4, 50, -10, 10);
+  axisConfig(mDeltaYvsSphi, "track #it{sin(#phi)}", "track Y - tracklet Y (cm)", "Counts", 0, 1.0, 1.1);
+  publishObject(mDeltaYvsSphi, "colz", "logz");
 
   mTrackletDef = new TH2D("TrackletDeflection", "Tracklet slope vs Track sin(#phi)", 100, -0.5, 0.5, 100, -1.5, 1.5);
   axisConfig(mTrackletDef, "track #it{sin(#phi)}", "tracklet D_{y}", "Counts", 0, 1.0, 1.1);
   publishObject(mTrackletDef, "colz", "logz");
 
-  for (int i = 0; i < NLayers; ++i) {
+  for (int i = 0; i < NLAYER; ++i) {
     for (int j = 0; j < 2; ++j) {
       mTracksEtaPhiPerLayer[j][i] = new TH2D(Form("EtaPhi%sTrackPerLayer/layer%i", chrg[j].Data(), i), Form("EtaPhi for %s tracks in layer %i", chrg[j].Data(), i), 100, -0.856, 0.856, 180, 0, TMath::TwoPi());
       axisConfig(mTracksEtaPhiPerLayer[j][i], "#eta", "#phi", "Counts", 0, 1.0, 1.1);

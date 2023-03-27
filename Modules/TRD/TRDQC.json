@@ -126,10 +126,7 @@
           "query": "tracks:TRD/TRACKINGQC;trigrectrk:TRD/TRGREC_ITSTPC"
         },
         "taskParameters": {
-          "peakregionstart": "7.0",
-          "peakregionend": "20.0",
-          "pulseheightpeaklower": "1.0",
-          "pulseheightpeakupper": "5.0"
+          "pTminvalue": "0.0"
         },
         "location": "remote",
         "saveObjectsToFile": "trackingqcobject.root"

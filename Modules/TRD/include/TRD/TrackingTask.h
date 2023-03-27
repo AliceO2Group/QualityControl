@@ -17,13 +17,17 @@
 #ifndef QC_MODULE_TRD_TRDTRACKINGTASK_H
 #define QC_MODULE_TRD_TRDTRACKINGTASK_H
 
-#include "QualityControl/TaskInterface.h"
+// ROOT includes
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TProfile2D.h"
 #include <TH1.h>
-#include <Framework/TimingInfo.h>
+// O2 includes
 #include "DataFormatsTRD/TrackTRD.h"
+#include "DataFormatsTRD/Constants.h"
+#include <Framework/TimingInfo.h>
+// QC includes
+#include "QualityControl/TaskInterface.h"
 
 class TH1D;
 class TH2D;
@@ -33,7 +37,6 @@ using namespace o2::quality_control::core;
 
 namespace o2::quality_control_modules::trd
 {
-using GTrackID = o2::dataformats::GlobalTrackID;
 
 class TrackingTask final : public TaskInterface
 {
@@ -57,24 +60,24 @@ class TrackingTask final : public TaskInterface
   void drawLayers(TH2* hist);
   long int mTimestamp;
 
-  static constexpr int NLayers = 6;                                // number of TRD layers
-  TString chrg[2] = { "Pos", "Neg" };                              // charge of tracks
-  TH1D* mNtracks = nullptr;                                        // number of ITS-TPC-TRD tracks per event
-  TH1D* mNtracklets = nullptr;                                     // number of TRD tracklets per track
-  TH1D* mTrackEta = nullptr;                                       // eta of ITS-TPC-TRD tracks
-  TH1D* mTrackPhi = nullptr;                                       // phi of ITS-TPC-TRD tracks
-  TH1D* mTrackPt = nullptr;                                        // pt of ITS-TPC-TRD tracks
-  TH1D* mTrackChi2 = nullptr;                                      // reduced chi2 of ITS-TPC-TRD tracks
-  TH1D* mDeltaY = nullptr;                                         // residual in y direction (trackposiny - trackletposiny)
-  TH1D* mDeltaZ = nullptr;                                         // residual in z direction (trackposinz - trackletposinz)
-  TH2D* mDeltaYDet = nullptr;                                      // residual in y direction vs. 540 detectors
-  TH2D* mDeltaZDet = nullptr;                                      // residual in z direction vs. 540 detectors
-  TH2D* mDeltaYsphi = nullptr;                                     // residual in y direction vs. sin(phi) track seed
-  TH2D* mTrackletDef = nullptr;                                    // tracklet slope vs. tracklet position
-  std::array<TProfile2D*, 2> mTrackletsEtaPhi;                     // eta vs. phi as function of tracklets
-  std::array<std::array<TH2D*, 2>, NLayers> mTracksEtaPhiPerLayer; // eta vs. phi of tracks per layer
-  std::array<TH2D*, NLayers> mDeltaYinEtaPerLayer;                 // residual in y direction vs. eta per layer
-  std::array<TH2D*, NLayers> mDeltaYinPhiPerLayer;                 // residual in y direction vs. phi per layer
+  float pTmin = 0.0;                                                                  // minimum pT of tracks
+  TString chrg[2] = { "Pos", "Neg" };                                                 // charge of tracks
+  TH1D* mNtracks = nullptr;                                                           // number of ITS-TPC-TRD tracks per event
+  TH1D* mNtracklets = nullptr;                                                        // number of TRD tracklets per track
+  TH1D* mTrackEta = nullptr;                                                          // eta of ITS-TPC-TRD tracks
+  TH1D* mTrackPhi = nullptr;                                                          // phi of ITS-TPC-TRD tracks
+  TH1D* mTrackPt = nullptr;                                                           // pt of ITS-TPC-TRD tracks
+  TH1D* mTrackChi2 = nullptr;                                                         // reduced chi2 of ITS-TPC-TRD tracks
+  TH1D* mDeltaY = nullptr;                                                            // residual in y direction (trackposiny - trackletposiny)
+  TH1D* mDeltaZ = nullptr;                                                            // residual in z direction (trackposinz - trackletposinz)
+  TH2D* mDeltaYDet = nullptr;                                                         // residual in y direction vs. 540 detectors
+  TH2D* mDeltaZDet = nullptr;                                                         // residual in z direction vs. 540 detectors
+  TH2D* mDeltaYvsSphi = nullptr;                                                      // residual in y direction vs. sin(phi) track seed
+  TH2D* mTrackletDef = nullptr;                                                       // tracklet slope vs. tracklet position
+  std::array<TProfile2D*, 2> mTrackletsEtaPhi;                                        // eta vs. phi as function of tracklets
+  std::array<std::array<TH2D*, 2>, o2::trd::constants::NLAYER> mTracksEtaPhiPerLayer; // eta vs. phi of tracks per layer
+  std::array<TH2D*, o2::trd::constants::NLAYER> mDeltaYinEtaPerLayer;                 // residual in y direction vs. eta per layer
+  std::array<TH2D*, o2::trd::constants::NLAYER> mDeltaYinPhiPerLayer;                 // residual in y direction vs. phi per layer
 };
 
 } // namespace o2::quality_control_modules::trd
