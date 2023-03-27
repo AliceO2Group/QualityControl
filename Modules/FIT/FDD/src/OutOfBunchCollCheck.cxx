@@ -26,6 +26,7 @@
 #include <TList.h>
 
 #include <DataFormatsQualityControl/FlagReasons.h>
+#include "Common/Utils.h"
 
 using namespace std;
 using namespace o2::quality_control;
@@ -58,6 +59,7 @@ void OutOfBunchCollCheck::configure()
     mBinPos = int(o2::fit::Triggers::bitVertex) + 1;
     ILOG(Debug, Support) << "configure() : using default binPos = " << mBinPos << ENDM;
   }
+  mEnableMessage = o2::quality_control_modules::common::getFromConfig(mCustomParameters,"enableMessage",true);
 }
 
 Quality OutOfBunchCollCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
@@ -130,7 +132,13 @@ std::string OutOfBunchCollCheck::getAcceptedType() { return "TH2"; }
 void OutOfBunchCollCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   auto* h = dynamic_cast<TH2F*>(mo->getObject());
-
+  if (h == nullptr) {
+    ILOG(Warning, Devel) << "Could not cast " << mo->getName() << " to TH2F*, skipping" << ENDM;
+    return;
+  }
+  if(!mEnableMessage) {
+    return;
+  }
   TPaveText* msg = new TPaveText(0.1, 0.9, 0.9, 0.95, "NDC");
   h->GetListOfFunctions()->Add(msg);
   msg->SetName(Form("%s_msg", mo->GetName()));
