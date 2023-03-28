@@ -33,7 +33,6 @@
 #include "DataFormatsGlobalTracking/RecoContainerCreateTracksVariadic.h"
 #include "ReconstructionDataFormats/TrackParametrization.h"
 #include "DetectorsBase/Propagator.h"
-#include "DetectorsBase/GeometryManager.h"
 #include "TOFBase/EventTimeMaker.h"
 #include "GlobalTrackingWorkflow/TOFEventTimeChecker.h"
 #include "DetectorsRaw/HBFUtils.h"
@@ -194,11 +193,6 @@ void TaskFT0TOF::initialize(o2::framework::InitContext& /*ctx*/)
   mHistMismatchVsEta = new TH2F("mHistMismatchVsEta", ";#eta;t_{TOF}-t_{0}^{FT0AC}-L_{ch}/c", 21, -1., +1., 6500, -30000, +100000);
   mProfLoverCvsEta = new TProfile("LoverCvsEta", ";#eta;L_{ch}/c", 21, -1., +1.);
 
-  // initialize B field and geometry for track selection
-  o2::base::GeometryManager::loadGeometry(mGeomFileName);
-  o2::base::Propagator::initFieldFromGRP(mGRPFileName);
-  mBz = o2::base::Propagator::Instance()->getNominalBz();
-
   // publish histgrams
   getObjectsManager()->startPublishing(mHistEvTimeResEvTimeMult);
   getObjectsManager()->startPublishing(mHistEvTimeTOF);
@@ -310,6 +304,9 @@ void TaskFT0TOF::monitorData(o2::framework::ProcessingContext& ctx)
 {
   ++mTF;
   ILOG(Info, Support) << " Processing TF: " << mTF << ENDM;
+
+  // Getting the B field
+  mBz = o2::base::Propagator::Instance()->getNominalBz();
 
   mRecoCont.collectData(ctx, *mDataRequest.get());
 
