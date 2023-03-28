@@ -64,14 +64,12 @@ void RatioGeneratorTPC::update(Trigger t, framework::ServiceRegistryRef services
 
 void RatioGeneratorTPC::finalize(Trigger t, framework::ServiceRegistryRef)
 {
-  generatePlots();
   for (const auto& source : mConfig) {
     if (mRatios.count(source.nameOutputObject)) {
       getObjectsManager()->stopPublishing(source.nameOutputObject);
-      delete mRatios[source.nameOutputObject];
-      mRatios[source.nameOutputObject] = nullptr;
     }
   }
+  generatePlots();
 }
 
 void RatioGeneratorTPC::generateRatios(const Trigger& t,
