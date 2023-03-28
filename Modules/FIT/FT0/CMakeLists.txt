@@ -25,7 +25,8 @@ target_include_directories(
 target_link_libraries(O2QcFT0 PUBLIC O2QualityControl
                                      O2::DataFormatsFT0
                                      O2::FT0Base
-                                     O2::DataFormatsParameters)
+                                     O2::DataFormatsParameters
+                                     O2QcCommon)
 
 install(TARGETS O2QcFT0
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

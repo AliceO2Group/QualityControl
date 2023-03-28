@@ -14,11 +14,10 @@
 /// \author Sebastian Bysiak sbysiak@cern.ch
 ///
 
-#include "FV0/OutOfBunchCollCheck.h"
+#include "FDD/OutOfBunchCollCheck.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
-
 #include "DataFormatsFIT/Triggers.h"
 // ROOT
 #include <TH1.h>
@@ -27,11 +26,12 @@
 #include <TList.h>
 
 #include <DataFormatsQualityControl/FlagReasons.h>
+#include "Common/Utils.h"
 
 using namespace std;
 using namespace o2::quality_control;
 
-namespace o2::quality_control_modules::fv0
+namespace o2::quality_control_modules::fdd
 {
 
 void OutOfBunchCollCheck::configure()
@@ -56,9 +56,10 @@ void OutOfBunchCollCheck::configure()
     mBinPos = stoi(param->second);
     ILOG(Debug, Support) << "configure() : using binPos = " << mBinPos << ENDM;
   } else {
-    mBinPos = int(o2::fit::Triggers::bitA) + 1;
+    mBinPos = int(o2::fit::Triggers::bitVertex) + 1;
     ILOG(Debug, Support) << "configure() : using default binPos = " << mBinPos << ENDM;
   }
+  mEnableMessage = o2::quality_control_modules::common::getFromConfig(mCustomParameters, "enableMessage", true);
 }
 
 Quality OutOfBunchCollCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
@@ -69,7 +70,6 @@ Quality OutOfBunchCollCheck::check(std::map<std::string, std::shared_ptr<Monitor
   float integralOutOfBunchColl = 0;
   bool metadataFound = false;
   const std::string metadataKey = "BcVsTrgIntegralBin" + std::to_string(mBinPos);
-
   for (auto& [moName, mo] : *moMap) {
     (void)moName;
     if (mo->getName().find("OutOfBunchColl") != std::string::npos) {
@@ -132,7 +132,13 @@ std::string OutOfBunchCollCheck::getAcceptedType() { return "TH2"; }
 void OutOfBunchCollCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   auto* h = dynamic_cast<TH2F*>(mo->getObject());
-
+  if (h == nullptr) {
+    ILOG(Warning, Devel) << "Could not cast " << mo->getName() << " to TH2F*, skipping" << ENDM;
+    return;
+  }
+  if (!mEnableMessage) {
+    return;
+  }
   TPaveText* msg = new TPaveText(0.1, 0.9, 0.9, 0.95, "NDC");
   h->GetListOfFunctions()->Add(msg);
   msg->SetName(Form("%s_msg", mo->GetName()));
@@ -155,4 +161,4 @@ void OutOfBunchCollCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
   }
 }
 
-} // namespace o2::quality_control_modules::fv0
+} // namespace o2::quality_control_modules::fdd
