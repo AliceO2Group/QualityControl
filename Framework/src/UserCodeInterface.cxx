@@ -15,7 +15,6 @@
 ///
 
 #include "QualityControl/UserCodeInterface.h"
-#include "QualityControl/QcInfoLogger.h"
 
 using namespace o2::ccdb;
 
