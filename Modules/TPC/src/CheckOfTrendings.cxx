@@ -120,6 +120,8 @@ Quality CheckOfTrendings::check(std::map<std::string, std::shared_ptr<MonitorObj
   Quality result = Quality::Null;
   std::vector<Quality> qualities;
 
+  std::vector<TGraphs*> graphs; //
+
   auto mo = moMap->begin()->second;
   if (!mo) {
     ILOG(Fatal, Support) << "Monitoring object not found" << ENDM;
@@ -128,11 +130,18 @@ Quality CheckOfTrendings::check(std::map<std::string, std::shared_ptr<MonitorObj
   if (!canv) {
     ILOG(Fatal, Support) << "Canvas not found" << ENDM;
   }
-  TGraph* g = getGraph(canv);
-  if (!g) { // if there is no TGraph, give an error and break
-    ILOG(Fatal, Support) << "No TGraph found to perform Check against." << ENDM;
-  }
+  getGraphs(canv, graphs);
 
+  if(graphs.size() == 0){
+    ILOG(Fatal, Support) << "Could not retrieve any TGraph for CheckOfTrendings" << ENDM;
+  }
+  for(int_t iGraph = 0; iGraph < graphs.size(); iGraph++){
+    if (!graphs[i]) { // if there is no TGraph, give an error and break
+      ILOG(Fatal, Support) << "TGraph number " << iGraph << " is NULL." << ENDM;
+    }
+  }
+  
+  for(int_t iGraph = 0; iGraph < graphs.size(); iGraph++){
   const int nBins = g->GetN();
   const double* yValues = g->GetY();
   const double* yErrors = g->GetEY(); // returns nullptr for TGraph (no errors)
@@ -329,7 +338,7 @@ void CheckOfTrendings::beautify(std::shared_ptr<MonitorObject> mo, Quality check
   if (!canv) {
     ILOG(Fatal, Support) << "Canvas not found" << ENDM;
   }
-  TGraph* h = getGraph(canv);
+  TGraph* h = getGraphs(canv);
   if (!h) { // if there is no TGraph, give an error and break
     ILOG(Fatal, Support) << "No TGraph found to perform Check against." << ENDM;
   }
@@ -508,23 +517,23 @@ void CheckOfTrendings::beautify(std::shared_ptr<MonitorObject> mo, Quality check
   msg->AddText(checkResult.getMetadata("Comment", "").c_str());
 }
 
-TGraph* CheckOfTrendings::getGraph(TCanvas* canv)
+void CheckOfTrendings::getGraphs(TCanvas* canv, std::vector<TGraph*>& graphs)
 {
-  TGraph* g;
+  
 
   if (mSliceTrend) {
     TList* padList = (TList*)canv->GetListOfPrimitives();
     padList->SetOwner(kTRUE);
     const int numberPads = padList->GetEntries();
-    if (numberPads > 1) {
-      ILOG(Error, Support) << "CheckOfTrending does not support multiple pads from SliceTrending yet" << ENDM;
+    for(int iPad = 0; iPad < numberPads; iPad++){
+      auto pad = static_cast<TPad*>(padList->At(0));
+      graphs.push_back(static_cast<TGraph*>(pad->GetPrimitive("Graph")));
     }
-    auto pad = static_cast<TPad*>(padList->At(0));
-    g = static_cast<TGraph*>(pad->GetPrimitive("Graph"));
   } else {
     // If we have a standard trending with a TGraphErrors, then there will be a TGraph and a TGraphErrors with the same name ("Graph")
     // with the current configuration the TGraphErrors will always be added after the TGraph
     // loop from the back and find the last element with the name "Graph"
+    TGraph* g;
     int jList = canv->GetListOfPrimitives()->LastIndex();
     for (; jList > 0; jList--) {
       if (!strcmp(canv->GetListOfPrimitives()->At(jList)->GetName(), "Graph")) {
@@ -537,8 +546,8 @@ TGraph* CheckOfTrendings::getGraph(TCanvas* canv)
       ILOG(Warning, Support) << "No TGraph found in the List of primitives." << ENDM;
       g = (TGraph*)canv->GetListOfPrimitives()->FindObject("Graph");
     }
+    graphs.push_back(g);
   }
-  return g;
 }
 
 void CheckOfTrendings::calculateStatistics(const double* yValues, const double* yErrors, bool useErrors, const int firstPoint, const int lastPoint, double& mean, double& stddevOfMean)
