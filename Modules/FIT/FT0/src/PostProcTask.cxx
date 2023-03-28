@@ -108,7 +108,7 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
   mRateVertex = std::make_unique<TGraph>(0);
   mRateCentral = std::make_unique<TGraph>(0);
   mRateSemiCentral = std::make_unique<TGraph>(0);
-  mRatesCanv = std::make_unique<TCanvas>("cRates", "trigger rates");
+  //mRatesCanv = std::make_unique<TCanvas>("cRates", "trigger rates");
   mAmpl = new TProfile("MeanAmplPerChannel", "mean ampl per channel;Channel;Ampl #mu #pm #sigma", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
   mTime = new TProfile("MeanTimePerChannel", "mean time per channel;Channel;Time #mu #pm #sigma", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
 
@@ -195,7 +195,7 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
   getObjectsManager()->startPublishing(mRateVertex.get());
   getObjectsManager()->startPublishing(mRateCentral.get());
   getObjectsManager()->startPublishing(mRateSemiCentral.get());
-  getObjectsManager()->startPublishing(mRatesCanv.get());
+  //getObjectsManager()->startPublishing(mRatesCanv.get());
   getObjectsManager()->startPublishing(mAmpl);
   getObjectsManager()->startPublishing(mTime);
 
@@ -280,7 +280,7 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
       mRateCentral->SetPoint(n, n, getBinContent2Ddiag(hTrgCorr, "Central") / cycleDurationMS);
       mRateSemiCentral->SetPoint(n, n, getBinContent2Ddiag(hTrgCorr, "SemiCentral") / cycleDurationMS);
     }
-
+/*
     mRatesCanv->cd();
     float vmin = std::min({ mRateOrA->GetYaxis()->GetXmin(), mRateOrC->GetYaxis()->GetXmin(), mRateVertex->GetYaxis()->GetXmin(), mRateCentral->GetYaxis()->GetXmin(), mRateSemiCentral->GetYaxis()->GetXmin() });
     float vmax = std::max({ mRateOrA->GetYaxis()->GetXmax(), mRateOrC->GetYaxis()->GetXmax(), mRateVertex->GetYaxis()->GetXmax(), mRateCentral->GetYaxis()->GetXmax(), mRateSemiCentral->GetYaxis()->GetXmax() });
@@ -302,6 +302,7 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
     leg->SetFillStyle(1);
     mRatesCanv->Modified();
     mRatesCanv->Update();
+    */
   }
 
   auto mo3 = mDatabase->retrieveMO(mPathDigitQcTask, "AmpPerChannel", t.timestamp, t.activity);
