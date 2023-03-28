@@ -300,6 +300,8 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
     mRateSemiCentral->Draw("PL,SAME");
     TLegend* leg = gPad->BuildLegend();
     leg->SetFillStyle(1);
+    mRatesCanv->Modified();
+    mRatesCanv->Update();
   }
 
   auto mo3 = mDatabase->retrieveMO(mPathDigitQcTask, "AmpPerChannel", t.timestamp, t.activity);
