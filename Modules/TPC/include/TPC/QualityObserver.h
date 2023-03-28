@@ -74,6 +74,8 @@ class QualityObserver : public PostProcessingInterface
   bool mViewDetails;
   std::unordered_map<std::string, std::vector<std::string>> mReasons;
   std::unordered_map<std::string, std::vector<std::string>> mComments;
+  std::string mQualityDetailChoice;
+  std::unordered_map<std::string, bool> mQualityDetails;
 };
 
 } // namespace o2::quality_control_modules::tpc
