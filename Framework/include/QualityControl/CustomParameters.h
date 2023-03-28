@@ -10,12 +10,12 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   typeUtils.h
+/// \file   CustomParameters.h
 /// \author Barthelemy von Haller
 ///
 
-#ifndef QC_TYPE_UTILS_H
-#define QC_TYPE_UTILS_H
+#ifndef QC_CUSTOM_PARAMETERS_H
+#define QC_CUSTOM_PARAMETERS_H
 
 #include <string>
 #include <unordered_map>
@@ -180,4 +180,4 @@ class CustomParameters
 
 } // namespace o2::quality_control::core
 
-#endif // QC_TYPE_UTILS_H
+#endif // QC_CUSTOM_PARAMETERS_H

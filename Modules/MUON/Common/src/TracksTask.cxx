@@ -16,7 +16,6 @@
 #include <Framework/DataRefUtils.h>
 #include <Framework/InputRecord.h>
 #include <gsl/span>
-#include "QualityControl/QcInfoLogger.h"
 
 namespace o2::quality_control_modules::muon
 {

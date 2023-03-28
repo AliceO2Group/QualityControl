@@ -21,7 +21,6 @@
 #include "FV0Base/Constants.h"
 #include "DataFormatsFIT/DeadChannelMap.h"
 #include <DataFormatsQualityControl/FlagReasons.h>
-#include "QualityControl/QcInfoLogger.h"
 
 namespace o2::quality_control_modules::fv0
 {

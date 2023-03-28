@@ -35,12 +35,12 @@ void TH1FTask::initialize(o2::framework::InitContext& /*ctx*/)
   ILOG(Debug, Devel) << "initialize TH1FTask" << ENDM;
 
   int histogramsNumber = 1;
-  if (mCustomParameters.count("histoNumber") > 0 /*auto param = mCustomParametersd["default"]["default"].find("histoNumber"); param != mCustomParameters["default"]["default"].end()*/) {
+  if (mCustomParameters.count("histoNumber") > 0) {
     histogramsNumber = stoi(mCustomParameters.at("histoNumber"));
   }
 
   int binsNumber = 20;
-  if (mCustomParameters.count("binsNumber") > 0 /*auto param = mCustomParameters["default"]["default"].find("binsNumber"); param != mCustomParameters["default"]["default"].end()*/) {
+  if (mCustomParameters.count("binsNumber") > 0) {
     binsNumber = stoi(mCustomParameters.at("binsNumber"));
   }
 

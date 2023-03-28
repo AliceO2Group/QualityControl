@@ -24,6 +24,7 @@
 #include <CCDB/CcdbApi.h>
 
 #include "QualityControl/CustomParameters.h"
+#include "QualityControl/QcInfoLogger.h"
 
 namespace o2::quality_control::core
 {

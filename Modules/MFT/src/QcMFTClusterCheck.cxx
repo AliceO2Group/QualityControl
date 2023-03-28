@@ -28,7 +28,6 @@
 #include "MFT/QcMFTClusterCheck.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
-#include "QualityControl/QcInfoLogger.h"
 
 using namespace std;
 

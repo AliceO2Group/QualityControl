@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE(test_invoke_all_methods)
 
   // setting custom parameters should configure
   CustomParameters customParameters;
-  customParameters.set("asdf", "test");
+  customParameters["test"] = "asdf";
   testInterface.setCustomParameters(customParameters);
   BOOST_CHECK_EQUAL(testInterface.configured, true);
   BOOST_CHECK_EQUAL(testInterface.get("test"), "asdf");

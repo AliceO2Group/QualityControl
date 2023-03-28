@@ -89,11 +89,11 @@ BOOST_AUTO_TEST_CASE(test_invoke_all_methods)
   BOOST_CHECK_EQUAL(testCheck.check(&moMap), Quality::Null);
 
   CustomParameters customParameters;
-  customParameters.set("A different string", "test");
+  customParameters["test"] = "A different string";
   testCheck.setCustomParameters(customParameters);
   BOOST_CHECK_EQUAL(testCheck.check(&moMap), Quality::Bad);
 
-  customParameters.set("A string", "test");
+  customParameters["test"] = "A string";
   testCheck.setCustomParameters(customParameters);
   BOOST_CHECK_EQUAL(testCheck.check(&moMap), Quality::Good);
 

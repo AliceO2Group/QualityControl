@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE(test_checks)
 
   MeanIsAbove check;
   CustomParameters customParameters;
-  customParameters.set("1.0", "meanThreshold");
+  customParameters["meanThreshold"] = "1.0";
   check.setCustomParameters(customParameters);
   Quality quality = check.check(&moMap);
   BOOST_CHECK_EQUAL(quality, Quality::Bad);

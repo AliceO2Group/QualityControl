@@ -52,7 +52,6 @@ struct CheckSpec {
   UpdatePolicyType updatePolicy = UpdatePolicyType::OnAny;
   // advanced
   bool active = true;
-  // runtype -> beamtype -> key -> value
   core::CustomParameters customParameters;
 };
 

@@ -10,8 +10,8 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file    testCheck.cxx
-/// \author  Rafal Pacholek
+/// \file    testCustomParameters.cxx
+/// \author  Barthelemy von Haller
 ///
 
 #include "QualityControl/CustomParameters.h"
