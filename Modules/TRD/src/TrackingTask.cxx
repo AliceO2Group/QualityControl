@@ -55,7 +55,7 @@ void TrackingTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   // minimum pT of tracks is configurable from json file
   if (auto param = mCustomParameters.find("pTminvalue"); param != mCustomParameters.end()) {
-    pTmin = std::stof(param->second);
+    mPtMin = std::stof(param->second);
   }
 
   retrieveCCDBSettings();
@@ -93,8 +93,8 @@ void TrackingTask::monitorData(o2::framework::ProcessingContext& ctx)
         continue;
       }
       nMatched++;
-      // remove tracks with pt < 1 GeV/c
-      if (trackqc.trackTRD.getPt() < pTmin) {
+      // remove tracks with pt below threshold
+      if (trackqc.trackTRD.getPt() < mPtMin) {
         continue;
       }
       mNtracklets->Fill(trackqc.trackTRD.getNtracklets());

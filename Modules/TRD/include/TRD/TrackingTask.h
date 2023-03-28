@@ -60,7 +60,7 @@ class TrackingTask final : public TaskInterface
   void drawLayers(TH2* hist);
   long int mTimestamp;
 
-  float pTmin = 0.0;                                                                  // minimum pT of tracks
+  float mPtMin = 0.0;                                                                 // minimum pT of tracks
   TString chrg[2] = { "Pos", "Neg" };                                                 // charge of tracks
   TH1D* mNtracks = nullptr;                                                           // number of ITS-TPC-TRD tracks per event
   TH1D* mNtracklets = nullptr;                                                        // number of TRD tracklets per track
