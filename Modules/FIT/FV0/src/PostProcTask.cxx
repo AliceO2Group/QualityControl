@@ -108,7 +108,7 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
   mRateOrAin = std::make_unique<TGraph>(0);
   mRateTrgCharge = std::make_unique<TGraph>(0);
   mRateTrgNchan = std::make_unique<TGraph>(0);
-  //mRatesCanv = std::make_unique<TCanvas>("cRates", "trigger rates");
+  // mRatesCanv = std::make_unique<TCanvas>("cRates", "trigger rates");
   mAmpl = new TProfile("MeanAmplPerChannel", "mean ampl per channel;Channel;Ampl #mu #pm #sigma", sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF);
   mTime = new TProfile("MeanTimePerChannel", "mean time per channel;Channel;Time #mu #pm #sigma", sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF);
 
@@ -195,7 +195,7 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
   getObjectsManager()->startPublishing(mRateOrAin.get());
   getObjectsManager()->startPublishing(mRateTrgCharge.get());
   getObjectsManager()->startPublishing(mRateTrgNchan.get());
-  //getObjectsManager()->startPublishing(mRatesCanv.get());
+  // getObjectsManager()->startPublishing(mRatesCanv.get());
   getObjectsManager()->startPublishing(mAmpl);
   getObjectsManager()->startPublishing(mTime);
 
