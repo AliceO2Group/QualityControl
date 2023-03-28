@@ -15,6 +15,7 @@
 /// \author Piotr Konopka, piotr.jan.konopka@cern.ch, Sebastien Perrin, Andrea Ferrero
 
 #include "MUONCommon/MergeableTH2Ratio.h"
+#include "QualityControl/QcInfoLogger.h"
 #include <TList.h>
 
 #include <fmt/format.h>
@@ -219,7 +220,7 @@ Bool_t MergeableTH2Ratio::Add(const TH1* h1, Double_t c1)
 
 void MergeableTH2Ratio::SetBins(Int_t nx, Double_t xmin, Double_t xmax)
 {
-  std::cout << "SetBins(Int_t nx, Double_t xmin, Double_t xmax) not valid for MergeableTH2Ratio" << std::endl;
+  ILOG(Debug, Devel) << "SetBins(Int_t nx, Double_t xmin, Double_t xmax) not valid for MergeableTH2Ratio" << ENDM;
 }
 
 void MergeableTH2Ratio::SetBins(Int_t nx, Double_t xmin, Double_t xmax,
@@ -234,7 +235,7 @@ void MergeableTH2Ratio::SetBins(Int_t nx, Double_t xmin, Double_t xmax,
                                 Int_t ny, Double_t ymin, Double_t ymax,
                                 Int_t nz, Double_t zmin, Double_t zmax)
 {
-  std::cout << "SetBins(Int_t nx, Double_t xmin, Double_t xmax, Int_t ny, Double_t ymin, Double_t ymax, Int_t nz, Double_t zmin, Double_t zmax) not valid for MergeableTH2Ratio" << std::endl;
+  ILOG(Debug, Devel) << "SetBins(Int_t nx, Double_t xmin, Double_t xmax, Int_t ny, Double_t ymin, Double_t ymax, Int_t nz, Double_t zmin, Double_t zmax) not valid for MergeableTH2Ratio" << ENDM;
 }
 
 } // namespace o2::quality_control_modules::muon
