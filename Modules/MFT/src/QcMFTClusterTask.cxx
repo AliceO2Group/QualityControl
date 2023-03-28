@@ -104,8 +104,6 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
     mGeomPath = param->second;
   }
 
-  o2::base::GeometryManager::loadGeometry(mGeomPath.c_str());
-
   getChipMapData();
 
   // define histograms

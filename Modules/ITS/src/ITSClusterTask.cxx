@@ -102,21 +102,6 @@ void ITSClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   getJsonParameters();
 
-  if (mLocalGeometryFile == 1) {
-    ILOG(Info, Support) << "Getting geometry from local file" << ENDM;
-    o2::base::GeometryManager::loadGeometry(mGeomPath.c_str());
-  } else {
-    ILOG(Info, Support) << "Getting geometry from ccdb - timestamp: " << std::stol(mGeoTimestamp) << ENDM;
-    std::map<std::string, std::string> metadata;
-    TaskInterface::retrieveConditionAny<TGeoManager>("GLO/Config/GeometryAligned", metadata, std::stol(mGeoTimestamp));
-    if (!o2::base::GeometryManager::isGeometryLoaded()) {
-      ILOG(Fatal, Support) << "Can't retrive geometry from ccdb with timestamp: " << std::stol(mGeoTimestamp) << ENDM;
-      throw std::runtime_error("Can't retrive geometry from ccdb!");
-    }
-  }
-  mGeom = o2::its::GeometryTGeo::Instance();
-  mGeom->fillMatrixCache(o2::math_utils::bit2Mask(o2::math_utils::TransformType::L2G));
-
   // create binning for fine checks
   setRphiBinningIB();
   setZBinningIB();
@@ -152,6 +137,9 @@ void ITSClusterTask::startOfCycle()
 
 void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
+
+  mGeom = o2::its::GeometryTGeo::Instance();
+  mGeom->fillMatrixCache(o2::math_utils::bit2Mask(o2::math_utils::TransformType::L2G));
 
   if (mTimestamp == -1) { // get dict from ccdb
     mTimestamp = std::stol(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "dicttimestamp", "0"));
