@@ -35,6 +35,7 @@ void QualityObserver::configure(const boost::property_tree::ptree& config)
   auto& id = getID();
   mObserverName = config.get<std::string>("qc.postprocessing." + id + ".qualityObserverName");
   mViewDetails = config.get<bool>("qc.postprocessing." + id + ".observeDetails", true);
+  mQualityDetailChoice = config.get<std::string>("qc.postprocessing." + id + ".qualityDetailChoice", "Null, Good, Medium, Bad");
 
   for (const auto& dataSourceConfig : config.get_child("qc.postprocessing." + id + ".qualityObserverConfig")) {
     Config dataConfig;
@@ -78,6 +79,24 @@ void QualityObserver::initialize(Trigger, framework::ServiceRegistryRef)
   mColors[Quality::Medium.getName()] = kOrange - 3;
   mColors[Quality::Good.getName()] = kGreen + 2;
   mColors[Quality::Null.getName()] = kViolet - 6;
+
+  mQualityDetails[Quality::Bad.getName()] = false;
+  mQualityDetails[Quality::Medium.getName()] = false;
+  mQualityDetails[Quality::Good.getName()] = false;
+  mQualityDetails[Quality::Null.getName()] = false;
+
+  if (size_t finder = mQualityDetailChoice.find("Bad"); finder != std::string::npos) {
+    mQualityDetails[Quality::Bad.getName()] = true;
+  }
+  if (size_t finder = mQualityDetailChoice.find("Medium"); finder != std::string::npos) {
+    mQualityDetails[Quality::Medium.getName()] = true;
+  }
+  if (size_t finder = mQualityDetailChoice.find("Good"); finder != std::string::npos) {
+    mQualityDetails[Quality::Good.getName()] = true;
+  }
+  if (size_t finder = mQualityDetailChoice.find("Null"); finder != std::string::npos) {
+    mQualityDetails[Quality::Null.getName()] = true;
+  }
 }
 
 void QualityObserver::update(Trigger t, framework::ServiceRegistryRef services)
@@ -90,8 +109,6 @@ void QualityObserver::update(Trigger t, framework::ServiceRegistryRef services)
 void QualityObserver::finalize(Trigger t, framework::ServiceRegistryRef)
 {
   generatePanel();
-  delete mCanvas;
-  mCanvas = nullptr;
 }
 
 void QualityObserver::getQualities(const Trigger& t,
@@ -150,7 +167,7 @@ void QualityObserver::generatePanel()
       // To-Check: SetTextAlign does currently not work in QCG
       ((TText*)pt->GetListOfLines()->Last())->SetTextAlign(12);
 
-      if (mViewDetails) {
+      if (mViewDetails && mQualityDetails[mQualities[config.groupTitle].at(i).data()]) {
         if (mReasons[config.groupTitle].at(i) != "") {
           std::string delimiter = "\n";
 
