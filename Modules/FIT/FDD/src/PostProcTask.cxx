@@ -108,7 +108,7 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
   mRateVertex = std::make_unique<TGraph>(0);
   mRateCentral = std::make_unique<TGraph>(0);
   mRateSemiCentral = std::make_unique<TGraph>(0);
-  mRatesCanv = std::make_unique<TCanvas>("cRates", "trigger rates");
+  // mRatesCanv = std::make_unique<TCanvas>("cRates", "trigger rates");
   mAmpl = new TProfile("MeanAmplPerChannel", "mean ampl per channel;Channel;Ampl #mu #pm #sigma", sNCHANNELS_PM, 0, sNCHANNELS_PM);
   mTime = new TProfile("MeanTimePerChannel", "mean time per channel;Channel;Time #mu #pm #sigma", sNCHANNELS_PM, 0, sNCHANNELS_PM);
 
@@ -195,7 +195,7 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
   getObjectsManager()->startPublishing(mRateVertex.get());
   getObjectsManager()->startPublishing(mRateCentral.get());
   getObjectsManager()->startPublishing(mRateSemiCentral.get());
-  getObjectsManager()->startPublishing(mRatesCanv.get());
+  // getObjectsManager()->startPublishing(mRatesCanv.get());
   getObjectsManager()->startPublishing(mAmpl);
   getObjectsManager()->startPublishing(mTime);
 
@@ -280,26 +280,29 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
       mRateCentral->SetPoint(n, n, getBinContent2Ddiag(hTrgCorr, "Central") / cycleDurationMS);
       mRateSemiCentral->SetPoint(n, n, getBinContent2Ddiag(hTrgCorr, "SemiCentral") / cycleDurationMS);
     }
+    /*
+        mRatesCanv->cd();
+        float vmin = std::min({ mRateOrA->GetYaxis()->GetXmin(), mRateOrC->GetYaxis()->GetXmin(), mRateVertex->GetYaxis()->GetXmin(), mRateCentral->GetYaxis()->GetXmin(), mRateSemiCentral->GetYaxis()->GetXmin() });
+        float vmax = std::max({ mRateOrA->GetYaxis()->GetXmax(), mRateOrC->GetYaxis()->GetXmax(), mRateVertex->GetYaxis()->GetXmax(), mRateCentral->GetYaxis()->GetXmax(), mRateSemiCentral->GetYaxis()->GetXmax() });
 
-    mRatesCanv->cd();
-    float vmin = std::min({ mRateOrA->GetYaxis()->GetXmin(), mRateOrC->GetYaxis()->GetXmin(), mRateVertex->GetYaxis()->GetXmin(), mRateCentral->GetYaxis()->GetXmin(), mRateSemiCentral->GetYaxis()->GetXmin() });
-    float vmax = std::max({ mRateOrA->GetYaxis()->GetXmax(), mRateOrC->GetYaxis()->GetXmax(), mRateVertex->GetYaxis()->GetXmax(), mRateCentral->GetYaxis()->GetXmax(), mRateSemiCentral->GetYaxis()->GetXmax() });
+        auto hAxis = mRateOrA->GetHistogram();
+        hAxis->GetYaxis()->SetTitleOffset(1.4);
+        hAxis->SetMinimum(vmin);
+        hAxis->SetMaximum(vmax * 1.1);
+        hAxis->SetTitle("FDD trigger rates");
+        hAxis->SetLineWidth(0);
+        hAxis->Draw("AXIS");
 
-    auto hAxis = mRateOrA->GetHistogram();
-    hAxis->GetYaxis()->SetTitleOffset(1.4);
-    hAxis->SetMinimum(vmin);
-    hAxis->SetMaximum(vmax * 1.1);
-    hAxis->SetTitle("FDD trigger rates");
-    hAxis->SetLineWidth(0);
-    hAxis->Draw("AXIS");
-
-    mRateOrA->Draw("PL,SAME");
-    mRateOrC->Draw("PL,SAME");
-    mRateVertex->Draw("PL,SAME");
-    mRateCentral->Draw("PL,SAME");
-    mRateSemiCentral->Draw("PL,SAME");
-    TLegend* leg = gPad->BuildLegend();
-    leg->SetFillStyle(1);
+        mRateOrA->Draw("PL,SAME");
+        mRateOrC->Draw("PL,SAME");
+        mRateVertex->Draw("PL,SAME");
+        mRateCentral->Draw("PL,SAME");
+        mRateSemiCentral->Draw("PL,SAME");
+        TLegend* leg = gPad->BuildLegend();
+        leg->SetFillStyle(1);
+        mRatesCanv->Modified();
+        mRatesCanv->Update();
+        */
   }
 
   auto mo3 = mDatabase->retrieveMO(mPathDigitQcTask, "AmpPerChannel", t.timestamp, t.activity);
