@@ -147,8 +147,6 @@ class TaskFT0TOF final : public TaskInterface
   int32_t mNTPCClustersCut = 40;
   float mMinDCAtoBeamPipeCut = 100.f;
   float mMinDCAtoBeamPipeCutY = 10.f;
-  std::string mGRPFileName = "o2sim_grp.root";
-  std::string mGeomFileName = "o2sim_geometry-aligned.root";
   float mBz = 0; ///< nominal Bz
   int mTF = -1;  // to count the number of processed TFs
   const float cinv = 33.35641;

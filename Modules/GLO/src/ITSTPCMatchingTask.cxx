@@ -59,14 +59,6 @@ void ITSTPCMatchingTask::initialize(o2::framework::InitContext& /*ctx*/)
     ILOG(Debug, Devel) << "Custom parameter - minDCACutY (for track selection): " << param->second << ENDM;
     mMatchITSTPCQC.setMinDCAtoBeamPipeYCut(atof(param->second.c_str()));
   }
-  if (auto param = mCustomParameters.find("grpFileName"); param != mCustomParameters.end()) {
-    ILOG(Debug, Devel) << "Custom parameter - GRP filename: " << param->second << ENDM;
-    mMatchITSTPCQC.setGRPFileName(param->second);
-  }
-  if (auto param = mCustomParameters.find("geomFileName"); param != mCustomParameters.end()) {
-    ILOG(Debug, Devel) << "Custom parameter - geometry filename: " << param->second << ENDM;
-    mMatchITSTPCQC.setGeomFileName(param->second);
-  }
 
   mMatchITSTPCQC.initDataRequest();
   mMatchITSTPCQC.init();

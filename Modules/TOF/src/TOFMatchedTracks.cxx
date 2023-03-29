@@ -33,7 +33,6 @@
 #include "DataFormatsGlobalTracking/RecoContainerCreateTracksVariadic.h"
 #include "ReconstructionDataFormats/TrackParametrization.h"
 #include "DetectorsBase/Propagator.h"
-#include "DetectorsBase/GeometryManager.h"
 
 #include "TOF/Utils.h"
 #include "TOFBase/Geo.h"
@@ -106,14 +105,6 @@ void TOFMatchedTracks::initialize(o2::framework::InitContext& /*ctx*/)
     ILOG(Debug, Devel) << "Custom parameter - minDCACutY (for track selection): " << param->second << ENDM;
     setMinDCAtoBeamPipeYCut(atof(param->second.c_str()));
   }
-  if (auto param = mCustomParameters.find("geomFileName"); param != mCustomParameters.end()) {
-    ILOG(Debug, Devel) << "Custom parameter - geomFileName: " << param->second << ENDM;
-    mGeomFileName = param->second.c_str();
-  }
-  if (auto param = mCustomParameters.find("grpFileName"); param != mCustomParameters.end()) {
-    ILOG(Debug, Devel) << "Custom parameter - grpFileName: " << param->second << ENDM;
-    mGRPFileName = param->second.c_str();
-  }
 
   // for track type selection
   if (auto param = mCustomParameters.find("GID"); param != mCustomParameters.end()) {
@@ -181,11 +172,6 @@ void TOFMatchedTracks::initialize(o2::framework::InitContext& /*ctx*/)
       getObjectsManager()->startPublishing(mDTimeTrkTRD[isec]);
     }
   }
-
-  // initialize B field and geometry for track selection
-  o2::base::GeometryManager::loadGeometry(mGeomFileName);
-  o2::base::Propagator::initFieldFromGRP(mGRPFileName);
-  mBz = o2::base::Propagator::Instance()->getNominalBz();
 
   if (mSrc[GID::Source::TPCTOF] == 1) {
     getObjectsManager()->startPublishing(mInTracksPt[matchType::TPC]);
@@ -285,6 +271,9 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
   LOG(debug) << " *** Processing TF " << mTF << " *** ";
   LOG(debug) << " ************************ ";
   mRecoCont.collectData(ctx, *mDataRequest.get());
+
+  // Getting the B field
+  mBz = o2::base::Propagator::Instance()->getNominalBz();
 
   // TOF
   gsl::span<const o2::tof::Cluster> tofClusArray = mRecoCont.getTOFClusters();
