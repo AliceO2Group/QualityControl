@@ -31,6 +31,7 @@
 #include "CCDB/BasicCCDBManager.h"
 #include "CCDB/CCDBTimeStampUtils.h"
 #include <Framework/InputRecord.h>
+#include "Framework/TimingInfo.h"
 #include <TH1F.h>
 #include <TH2F.h>
 #include "Common/Utils.h"
@@ -137,9 +138,10 @@ void ITSClusterTask::startOfCycle()
 
 void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-
-  mGeom = o2::its::GeometryTGeo::Instance();
-  mGeom->fillMatrixCache(o2::math_utils::bit2Mask(o2::math_utils::TransformType::L2G));
+  if (ctx.services().get<o2::framework::TimingInfo>().globalRunNumberChanged) {
+    mGeom = o2::its::GeometryTGeo::Instance();
+    mGeom->fillMatrixCache(o2::math_utils::bit2Mask(o2::math_utils::TransformType::L2G));
+  }
 
   if (mTimestamp == -1) { // get dict from ccdb
     mTimestamp = std::stol(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "dicttimestamp", "0"));

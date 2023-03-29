@@ -22,6 +22,7 @@
 #include <DPLUtils/DPLRawParser.h>
 #include "CCDB/BasicCCDBManager.h"
 #include "CCDB/CCDBTimeStampUtils.h"
+#include "Framework/TimingInfo.h"
 
 #include "Common/Utils.h"
 
@@ -398,9 +399,9 @@ void ITSFhrTask::startOfCycle() { ILOG(Debug, Devel) << "startOfCycle" << ENDM; 
 
 void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-
-  mGeom = o2::its::GeometryTGeo::Instance();
-
+  if (ctx.services().get<o2::framework::TimingInfo>().globalRunNumberChanged) {
+    mGeom = o2::its::GeometryTGeo::Instance();
+  }
   // set timer
   std::chrono::time_point<std::chrono::high_resolution_clock> start;
   std::chrono::time_point<std::chrono::high_resolution_clock> end;
