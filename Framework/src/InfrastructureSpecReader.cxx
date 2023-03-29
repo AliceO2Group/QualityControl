@@ -111,14 +111,14 @@ TaskSpec InfrastructureSpecReader::readSpecEntry<TaskSpec>(const std::string& ta
     for (const auto& [runtype, subTreeRunType] : taskTree.get_child("extendedTaskParameters")) {
       for (const auto& [beamtype, subTreeBeamType] : subTreeRunType) {
         for (const auto& [key, value] : subTreeBeamType) {
-          ts.customParameters.set(value.get_value<std::string>(), key, runtype, beamtype);
+          ts.customParameters.set(key, value.get_value<std::string>(), runtype, beamtype);
         }
       }
     }
   }
   if (taskTree.count("taskParameters") > 0) {
     for (const auto& [key, value] : taskTree.get_child("taskParameters")) {
-      ts.customParameters.set(value.get_value<std::string>(), key);
+      ts.customParameters.set(key, value.get_value<std::string>());
     }
   }
 
@@ -288,14 +288,14 @@ CheckSpec InfrastructureSpecReader::readSpecEntry<CheckSpec>(const std::string& 
     for (const auto& [runtype, subTreeRunType] : checkTree.get_child("extendedCheckParameters")) {
       for (const auto& [beamtype, subTreeBeamType] : subTreeRunType) {
         for (const auto& [key, value] : subTreeBeamType) {
-          cs.customParameters.set(value.get_value<std::string>(), key, runtype, beamtype);
+          cs.customParameters.set(key, value.get_value<std::string>(), runtype, beamtype);
         }
       }
     }
   }
   if (checkTree.count("checkParameters") > 0) {
     for (const auto& [key, value] : checkTree.get_child("checkParameters")) {
-      cs.customParameters.set(value.get_value<std::string>(), key);
+      cs.customParameters.set(key, value.get_value<std::string>());
     }
   }
 
@@ -328,14 +328,14 @@ AggregatorSpec InfrastructureSpecReader::readSpecEntry<AggregatorSpec>(const std
     for (const auto& [runtype, subTreeRunType] : aggregatorTree.get_child("extendedAggregatorParameters")) {
       for (const auto& [beamtype, subTreeBeamType] : subTreeRunType) {
         for (const auto& [key, value] : subTreeBeamType) {
-          as.customParameters.set(value.get_value<std::string>(), key, runtype, beamtype);
+          as.customParameters.set(key, value.get_value<std::string>(), runtype, beamtype);
         }
       }
     }
   }
   if (aggregatorTree.count("aggregatorParameters") > 0) {
     for (const auto& [key, value] : aggregatorTree.get_child("aggregatorParameters")) {
-      as.customParameters.set(value.get_value<std::string>(), key);
+      as.customParameters.set(key, value.get_value<std::string>());
     }
   }
   return as;

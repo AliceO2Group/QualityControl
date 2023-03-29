@@ -29,22 +29,22 @@ BOOST_AUTO_TEST_CASE(test_cp_basic)
 {
   CustomParameters cp;
 
-  cp.set("value", "key");
+  cp.set("key", "value");
   BOOST_CHECK_EQUAL(cp.at("key"), "value");
   BOOST_CHECK_EQUAL(cp.at("key", "default"), "value");
   BOOST_CHECK_EQUAL(cp.at("key", "default", "default"), "value");
 
-  cp.set("value_run1", "key", "run1");
+  cp.set("key", "value_run1", "run1");
   BOOST_CHECK_EQUAL(cp.at("key"), "value");
   BOOST_CHECK_EQUAL(cp.at("key", "run1"), "value_run1");
   BOOST_CHECK_EQUAL(cp.at("key", "run1", "default"), "value_run1");
 
-  cp.set("value_beam1", "key", "default", "beam1");
+  cp.set("key", "value_beam1", "default", "beam1");
   BOOST_CHECK_EQUAL(cp.at("key"), "value");
   BOOST_CHECK_EQUAL(cp.at("key", "default"), "value");
   BOOST_CHECK_EQUAL(cp.at("key", "default", "beam1"), "value_beam1");
 
-  cp.set("value_run1_beam1", "key", "run1", "beam1");
+  cp.set("key", "value_run1_beam1", "run1", "beam1");
   BOOST_CHECK_EQUAL(cp.at("key"), "value");
   BOOST_CHECK_EQUAL(cp.at("key", "run1", "beam1"), "value_run1_beam1");
 
@@ -54,14 +54,14 @@ BOOST_AUTO_TEST_CASE(test_cp_basic)
 BOOST_AUTO_TEST_CASE(test_cp_iterators)
 {
   CustomParameters cp;
-  cp.set("value1", "key1", "run1", "beam1");
+  cp.set("key1", "value1", "run1", "beam1");
   auto param = cp.find("key1", "run1", "beam1");
   BOOST_CHECK(param != cp.end());
   if (param != cp.end()) {
     BOOST_CHECK_EQUAL(param->second, "value1");
   }
 
-  cp.set("value2", "key2");
+  cp.set("key2", "value2");
   param = cp.find("key2");
   BOOST_CHECK(param != cp.end());
   if (param != cp.end()) {
@@ -81,13 +81,13 @@ BOOST_AUTO_TEST_CASE(test_cp_iterators)
 BOOST_AUTO_TEST_CASE(test_cp_misc)
 {
   CustomParameters cp;
-  cp.set("AAA", "aaa");
-  cp.set("BBB", "bbb");
-  cp.set("AAA", "aaa", "runX");
-  cp.set("AAA", "aaa", "runX", "beamB");
-  cp.set("CCC", "ccc");
-  cp.set("BBB", "bbb", "runX");
-  cp.set("CCC", "ccc", "runY");
+  cp.set("aaa", "AAA");
+  cp.set("bbb", "BBB");
+  cp.set("aaa", "AAA", "runX");
+  cp.set("aaa", "AAA", "runX", "beamB");
+  cp.set("ccc", "CCC");
+  cp.set("bbb", "BBB", "runX");
+  cp.set("ccc", "CCC", "runY");
 
   BOOST_CHECK_EQUAL(cp.count("aaa"), 1);
   BOOST_CHECK_EQUAL(cp.count("bbb"), 1);
@@ -116,13 +116,13 @@ BOOST_AUTO_TEST_CASE(test_cp_misc)
 BOOST_AUTO_TEST_CASE(test_cp_new_access_pattern)
 {
   CustomParameters cp;
-  cp.set("AAA", "aaa");
-  cp.set("BBB", "bbb");
-  cp.set("AAA", "aaa", "runX");
-  cp.set("AAA", "aaa", "runX", "beamB");
-  cp.set("CCC", "ccc");
-  cp.set("BBB", "bbb", "runX");
-  cp.set("CCC", "ccc", "runY");
+  cp.set("aaa", "AAA");
+  cp.set("bbb", "BBB");
+  cp.set("aaa", "AAA", "runX");
+  cp.set("aaa", "AAA", "runX", "beamB");
+  cp.set("ccc", "CCC");
+  cp.set("bbb", "BBB", "runX");
+  cp.set("ccc", "CCC", "runY");
 
   // if we have a default value
   std::string param = cp.atOrDefaultValue("myOwnKey", "1");
