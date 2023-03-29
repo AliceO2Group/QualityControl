@@ -294,10 +294,10 @@ void TrackingTask::publishObject(TObject* aObject, const char* drawOpt, const ch
     return;
   } else {
     getObjectsManager()->startPublishing(aObject);
-    if (drawOpt != "") {
+    if (drawOpt) {
       getObjectsManager()->setDefaultDrawOptions(aObject->GetName(), drawOpt);
     }
-    if (displayOpt != "") {
+    if (displayOpt) {
       getObjectsManager()->setDisplayHint(aObject->GetName(), displayOpt);
     }
     ILOG(Debug, Devel) << " Object will be published: " << aObject->GetName() << ENDM;
