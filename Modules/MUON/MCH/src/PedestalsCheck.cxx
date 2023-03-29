@@ -14,47 +14,41 @@
 /// \author Andrea Ferrero
 ///
 
+#include "MCH/PedestalsCheck.h"
 #include "MCHMappingInterface/Segmentation.h"
 #include "MCHMappingSegContour/CathodeSegmentationContours.h"
-#include "MCH/PedestalsCheck.h"
 
 #include <fairlogger/Logger.h>
 #include <TH1.h>
 #include <TH2.h>
+#include <TCanvas.h>
 #include <TLine.h>
 #include <TList.h>
 #include <TMath.h>
 #include <TPaveText.h>
+#include <TColor.h>
 
 using namespace std;
 
 namespace o2::quality_control_modules::muonchambers
 {
 
-PedestalsCheck::PedestalsCheck()
-  : mMinPedestal(50.f), mMaxPedestal(100.f), mMinGoodFraction(0.9), mMinGoodFractionPerDE(0.5), mPedestalsPlotScaleMin(40), mPedestalsPlotScaleMax(250), mNoisePlotScaleMin(0), mNoisePlotScaleMax(1.5)
-{
-  mElec2DetMapper = o2::mch::raw::createElec2DetMapper<o2::mch::raw::ElectronicMapperGenerated>();
-  mDet2ElecMapper = o2::mch::raw::createDet2ElecMapper<o2::mch::raw::ElectronicMapperGenerated>();
-  mFeeLink2SolarMapper = o2::mch::raw::createFeeLink2SolarMapper<o2::mch::raw::ElectronicMapperGenerated>();
-  mSolar2FeeLinkMapper = o2::mch::raw::createSolar2FeeLinkMapper<o2::mch::raw::ElectronicMapperGenerated>();
-}
-
-PedestalsCheck::~PedestalsCheck() {}
-
 void PedestalsCheck::configure()
 {
-  if (auto param = mCustomParameters.find("MinPedestal"); param != mCustomParameters.end()) {
-    mMinPedestal = std::stof(param->second);
+  if (auto param = mCustomParameters.find("MaxBadDE_ST12"); param != mCustomParameters.end()) {
+    mMaxBadST12 = std::stoi(param->second);
   }
-  if (auto param = mCustomParameters.find("MaxPedestal"); param != mCustomParameters.end()) {
-    mMaxPedestal = std::stof(param->second);
+  if (auto param = mCustomParameters.find("MaxBadDE_ST345"); param != mCustomParameters.end()) {
+    mMaxBadST345 = std::stoi(param->second);
   }
-  if (auto param = mCustomParameters.find("MinGoodFractionPerDE"); param != mCustomParameters.end()) {
-    mMinGoodFractionPerDE = std::stof(param->second);
+  if (auto param = mCustomParameters.find("MaxBadFractionPerDE"); param != mCustomParameters.end()) {
+    mMaxBadFractionPerDE = std::stof(param->second);
   }
-  if (auto param = mCustomParameters.find("MinGoodFraction"); param != mCustomParameters.end()) {
-    mMinGoodFraction = std::stof(param->second);
+  if (auto param = mCustomParameters.find("MaxEmptyFractionPerDE"); param != mCustomParameters.end()) {
+    mMaxEmptyFractionPerDE = std::stof(param->second);
+  }
+  if (auto param = mCustomParameters.find("MinStatisticsPerDE"); param != mCustomParameters.end()) {
+    mMinStatisticsPerDE = std::stof(param->second);
   }
   if (auto param = mCustomParameters.find("PedestalsPlotScaleMin"); param != mCustomParameters.end()) {
     mPedestalsPlotScaleMin = std::stof(param->second);
@@ -68,110 +62,185 @@ void PedestalsCheck::configure()
   if (auto param = mCustomParameters.find("NoisePlotScaleMax"); param != mCustomParameters.end()) {
     mNoisePlotScaleMax = std::stof(param->second);
   }
-}
 
-bool PedestalsCheck::checkPadMapping(uint16_t feeId, uint8_t linkId, uint8_t eLinkId, o2::mch::raw::DualSampaChannelId channel, int& deId)
-{
-  uint16_t solarId = -1;
-  int dsIddet = -1;
-  int padId = -1;
-
-  o2::mch::raw::FeeLinkId feeLinkId{ feeId, linkId };
-
-  if (auto opt = mFeeLink2SolarMapper(feeLinkId); opt.has_value()) {
-    solarId = opt.value();
-  }
-  if (solarId < 0 || solarId > 1023) {
-    return false;
-  }
-
-  o2::mch::raw::DsElecId dsElecId{ solarId, static_cast<uint8_t>(eLinkId / 5), static_cast<uint8_t>(eLinkId % 5) };
-
-  if (auto opt = mElec2DetMapper(dsElecId); opt.has_value()) {
-    o2::mch::raw::DsDetId dsDetId = opt.value();
-    dsIddet = dsDetId.dsId();
-    deId = dsDetId.deId();
-  }
-
-  if (deId < 0 || dsIddet < 0) {
-    return false;
-  }
-
-  const o2::mch::mapping::Segmentation& segment = o2::mch::mapping::segmentation(deId);
-  padId = segment.findPadByFEE(dsIddet, int(channel));
-
-  if (padId < 0) {
-    return false;
-  }
-  return true;
+  mQualityChecker.mMaxBadST12 = mMaxBadST12;
+  mQualityChecker.mMaxBadST345 = mMaxBadST345;
 }
 
 Quality PedestalsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
+  Quality resultTable = Quality::Null;
   Quality result = Quality::Null;
 
-  static constexpr int sDeMax = 1100;
-  double nPadsPerDE[sDeMax + 1] = { 0 };
-  double nGoodPerDE[sDeMax + 1] = { 0 };
+  mQualityBadChannels = Quality::Null;
+  std::array<Quality, getNumDE()> qualityBadChannelsDE;
+  QualityChecker qualityCheckerBadChannels;
+  qualityCheckerBadChannels.mMaxBadST12 = mMaxBadST12;
+  qualityCheckerBadChannels.mMaxBadST345 = mMaxBadST345;
+
+  mQualityEmptyChannels = Quality::Null;
+  std::array<Quality, getNumDE()> qualityEmptyChannelsDE;
+  QualityChecker qualityCheckerEmptyChannels;
+  qualityCheckerEmptyChannels.mMaxBadST12 = mMaxBadST12;
+  qualityCheckerEmptyChannels.mMaxBadST345 = mMaxBadST345;
+
+  mQualityStatistics = Quality::Null;
+  std::array<Quality, getNumDE()> qualityStatisticsDE;
+  QualityChecker qualityCheckerStatistics;
+  qualityCheckerStatistics.mMaxBadST12 = mMaxBadST12;
+  qualityCheckerStatistics.mMaxBadST345 = mMaxBadST345;
+
+  mQualityChecker.reset();
 
   for (auto& [moName, mo] : *moMap) {
-
-    (void)moName;
-    if (mo->getName().find("Pedestals_Elec") != std::string::npos) {
+    // check if the bad channels table was received from the calibrator
+    if (mo->getName().find("BadChannels_Elec") != std::string::npos) {
       auto* h = dynamic_cast<TH2F*>(mo->getObject());
-      if (!h)
+      if (!h) {
         return result;
+      }
 
       if (h->GetEntries() == 0) {
-        result = Quality::Medium;
+        resultTable = Quality::Bad;
+      } else {
+        resultTable = Quality::Good;
+      }
+    }
+
+    // check fraction of bad channels per detection element
+    if (mo->getName().find("BadChannelsPerDE") != std::string::npos) {
+      auto* h = dynamic_cast<TH1F*>(mo->getObject());
+      if (!h) {
+        return result;
+      }
+
+      // initialize the DE qualities to Good
+      std::fill(qualityBadChannelsDE.begin(), qualityBadChannelsDE.end(), Quality::Good);
+      if (h->GetEntries() == 0) {
+        // plot is empty, set quality to Null
+        std::fill(qualityBadChannelsDE.begin(), qualityBadChannelsDE.end(), Quality::Null);
       } else {
         int nbinsx = h->GetXaxis()->GetNbins();
-        int nbinsy = h->GetYaxis()->GetNbins();
-        int ngood = 0;
-        int npads = 0;
         for (int i = 1; i <= nbinsx; i++) {
-          int index = i - 1;
-          int ds_addr = (index % 40);
-          int link_id = (index / 40) % 12;
-          int fee_id = index / (12 * 40);
-
-          for (int j = 1; j <= nbinsy; j++) {
-            int chan_addr = j - 1;
-            int deId = -1;
-
-            if (!checkPadMapping(fee_id, link_id, ds_addr, chan_addr, deId)) {
-              continue;
-            }
-            if (deId < 0 || deId > sDeMax) {
-              continue;
-            }
-            npads += 1;
-            nPadsPerDE[deId] += 1;
-            Float_t ped = h->GetBinContent(i, j);
-            if (ped >= mMinPedestal && ped <= mMaxPedestal) {
-              ngood += 1;
-              nGoodPerDE[deId] += 1;
-            }
+          // set the DE quality to Bad if the fraction of bad channels is above the threshold
+          if (h->GetBinContent(i) > mMaxBadFractionPerDE) {
+            qualityBadChannelsDE[i - 1] = Quality::Bad;
           }
         }
 
-        result = Quality::Good;
+        // update the quality checkers
+        qualityCheckerBadChannels.addCheckResult(qualityBadChannelsDE);
+        mQualityChecker.addCheckResult(qualityBadChannelsDE);
+      }
+    }
 
-        if (ngood < mMinGoodFraction * npads) {
-          result = Quality::Bad;
-        }
-        for (int deId = 0; deId <= sDeMax; deId++) {
-          if (nPadsPerDE[deId] == 0) {
-            continue;
-          }
-          if (nGoodPerDE[deId] < mMinGoodFractionPerDE * nPadsPerDE[deId]) {
-            result = Quality::Bad;
-            break;
+    // check fraction of empty channels per detection element
+    if (mo->getName().find("EmptyChannelsPerDE") != std::string::npos) {
+      auto* h = dynamic_cast<TH1F*>(mo->getObject());
+      if (!h) {
+        return result;
+      }
+
+      // initialize the DE qualities to Good
+      std::fill(qualityEmptyChannelsDE.begin(), qualityEmptyChannelsDE.end(), Quality::Good);
+      if (h->GetEntries() == 0) {
+        // plot is empty, set quality to Null
+        std::fill(qualityEmptyChannelsDE.begin(), qualityEmptyChannelsDE.end(), Quality::Medium);
+      } else {
+        int nbinsx = h->GetXaxis()->GetNbins();
+        for (int i = 1; i <= nbinsx; i++) {
+          // set the DE quality to Bad if the fraction of empty channels is above the threshold
+          if (h->GetBinContent(i) > mMaxEmptyFractionPerDE) {
+            qualityEmptyChannelsDE[i - 1] = Quality::Bad;
           }
         }
       }
+
+      // update the quality checkers
+      qualityCheckerEmptyChannels.addCheckResult(qualityEmptyChannelsDE);
+      mQualityChecker.addCheckResult(qualityEmptyChannelsDE);
+    }
+
+    // check fraction of empty channels per detection element
+    if (mo->getName().find("StatisticsPerDE") != std::string::npos) {
+      auto* h = dynamic_cast<TH1F*>(mo->getObject());
+      if (!h) {
+        return result;
+      }
+
+      // initialize the DE qualities to Good
+      std::fill(qualityStatisticsDE.begin(), qualityStatisticsDE.end(), Quality::Good);
+      if (h->GetEntries() == 0) {
+        // plot is empty, set quality to Null
+        std::fill(qualityStatisticsDE.begin(), qualityStatisticsDE.end(), Quality::Medium);
+      } else {
+        int nbinsx = h->GetXaxis()->GetNbins();
+        for (int i = 1; i <= nbinsx; i++) {
+          // set the DE quality to Bad if the fraction of empty channels is above the threshold
+          if (h->GetBinContent(i) < mMinStatisticsPerDE) {
+            qualityStatisticsDE[i - 1] = Quality::Bad;
+          }
+        }
+      }
+
+      // update the quality checkers
+      qualityCheckerStatistics.addCheckResult(qualityStatisticsDE);
+      mQualityChecker.addCheckResult(qualityStatisticsDE);
     }
   }
+
+  // compute the aggregated quality
+  mQualityEmptyChannels = qualityCheckerEmptyChannels.getQuality();
+  mQualityBadChannels = qualityCheckerBadChannels.getQuality();
+  mQualityStatistics = qualityCheckerStatistics.getQuality();
+  result = mQualityChecker.getQuality();
+  if (resultTable == Quality::Bad) {
+    result = Quality::Bad;
+  }
+
+  // update the error messages
+  mErrorMessages.clear();
+  if (result == Quality::Good) {
+    mErrorMessages.emplace_back("Quality: GOOD");
+  } else if (result == Quality::Medium) {
+    mErrorMessages.emplace_back("Quality: MEDIUM");
+    mErrorMessages.emplace_back("Add Logbook entry");
+  } else if (result == Quality::Bad) {
+    mErrorMessages.emplace_back("Quality: BAD");
+    mErrorMessages.emplace_back("Contact MCH on-call");
+  } else if (result == Quality::Null) {
+    mErrorMessages.emplace_back("Quality: NULL\n");
+  }
+  mErrorMessages.emplace_back("");
+
+  if (resultTable == Quality::Bad) {
+    mErrorMessages.emplace_back("Missing Bad Channels Table");
+  }
+
+  if (mQualityEmptyChannels == Quality::Null) {
+    mErrorMessages.emplace_back("Empty channels plot not filled");
+  } else if (mQualityEmptyChannels == Quality::Bad) {
+    mErrorMessages.emplace_back("Too many empty channels");
+  } else if (mQualityEmptyChannels == Quality::Medium) {
+    mErrorMessages.emplace_back("Some detectors have empty channels");
+  }
+
+  if (mQualityBadChannels == Quality::Null) {
+    mErrorMessages.emplace_back("Bad channels plot not filled");
+  } else if (mQualityBadChannels == Quality::Bad) {
+    mErrorMessages.emplace_back("Too many bad channels");
+  } else if (mQualityBadChannels == Quality::Medium) {
+    mErrorMessages.emplace_back("Some detectors have bad channels");
+  }
+
+  if (mQualityStatistics == Quality::Null) {
+    mErrorMessages.emplace_back("Statistics plot not filled");
+  } else if (mQualityStatistics == Quality::Bad) {
+    mErrorMessages.emplace_back("Statistics too small");
+  } else if (mQualityStatistics == Quality::Medium) {
+    mErrorMessages.emplace_back("Some detectors have small statistics");
+  }
+
   return result;
 }
 
@@ -208,36 +277,126 @@ void PedestalsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRe
   auto currentTime = getCurrentTime();
   updateTitle(dynamic_cast<TH1*>(mo->getObject()), currentTime);
 
+  if (mo->getName().find("CheckerMessages") != std::string::npos) {
+    auto* canvas = dynamic_cast<TCanvas*>(mo->getObject());
+    if (!canvas) {
+      return;
+    }
+    canvas->cd();
+
+    TPaveText* msg = new TPaveText(0.1, 0.1, 0.9, 0.9, "NDC");
+    for (auto s : mErrorMessages) {
+      msg->AddText(s.c_str());
+    }
+    if (checkResult == Quality::Good) {
+      msg->SetTextColor(kGreen + 2);
+    }
+    if (checkResult == Quality::Medium) {
+      msg->SetTextColor(kOrange);
+    }
+    if (checkResult == Quality::Bad) {
+      msg->SetTextColor(kRed);
+    }
+    if (checkResult == Quality::Null) {
+      msg->SetTextColor(kBlack);
+    }
+    msg->SetBorderSize(0);
+    msg->SetFillColor(kWhite);
+    msg->Draw();
+  }
+
+  if (mo->getName().find("EmptyChannelsPerDE") != std::string::npos) {
+    auto* h = dynamic_cast<TH1F*>(mo->getObject());
+
+    h->SetMinimum(0);
+    h->SetMaximum(1.1);
+
+    addChamberDelimiters(h, 0, 1.1);
+
+    TLine* delimiter = new TLine(h->GetXaxis()->GetXmin(), mMaxEmptyFractionPerDE, h->GetXaxis()->GetXmax(), mMaxEmptyFractionPerDE);
+    delimiter->SetLineColor(kBlack);
+    delimiter->SetLineStyle(kDashed);
+    h->GetListOfFunctions()->Add(delimiter);
+
+    if (mQualityEmptyChannels == Quality::Good) {
+      h->SetFillColor(kGreen);
+    } else if (mQualityEmptyChannels == Quality::Bad) {
+      h->SetFillColor(kRed);
+    } else if (mQualityEmptyChannels == Quality::Medium) {
+      h->SetFillColor(kOrange);
+    }
+    h->SetLineColor(kBlack);
+  }
+
+  if (mo->getName().find("BadChannelsPerDE") != std::string::npos) {
+    auto* h = dynamic_cast<TH1F*>(mo->getObject());
+
+    h->SetMinimum(0);
+    h->SetMaximum(1.1);
+
+    addChamberDelimiters(h, 0, 1.1);
+
+    TLine* delimiter = new TLine(h->GetXaxis()->GetXmin(), mMaxBadFractionPerDE, h->GetXaxis()->GetXmax(), mMaxBadFractionPerDE);
+    delimiter->SetLineColor(kBlack);
+    delimiter->SetLineStyle(kDashed);
+    h->GetListOfFunctions()->Add(delimiter);
+
+    if (mQualityBadChannels == Quality::Good) {
+      h->SetFillColor(kGreen);
+    } else if (mQualityBadChannels == Quality::Bad) {
+      h->SetFillColor(kRed);
+    } else if (mQualityBadChannels == Quality::Medium) {
+      h->SetFillColor(kOrange);
+    }
+    h->SetLineColor(kBlack);
+  }
+
+  if (mo->getName().find("StatisticsPerDE") != std::string::npos) {
+    auto* h = dynamic_cast<TH1F*>(mo->getObject());
+
+    auto min = h->GetMinimum();
+    auto max = 1.05 * h->GetMaximum();
+
+    if (max < mMinStatisticsPerDE) {
+      max = 1.05 * mMinStatisticsPerDE;
+    }
+    h->SetMinimum(min);
+    h->SetMaximum(max);
+
+    addChamberDelimiters(h, min, max);
+
+    TLine* delimiter = new TLine(h->GetXaxis()->GetXmin(), mMinStatisticsPerDE, h->GetXaxis()->GetXmax(), mMinStatisticsPerDE);
+    delimiter->SetLineColor(kBlack);
+    delimiter->SetLineStyle(kDashed);
+    h->GetListOfFunctions()->Add(delimiter);
+
+    if (mQualityStatistics == Quality::Good) {
+      h->SetFillColor(kGreen);
+    } else if (mQualityStatistics == Quality::Bad) {
+      h->SetFillColor(kRed);
+    } else if (mQualityStatistics == Quality::Medium) {
+      h->SetFillColor(kOrange);
+    }
+    h->SetLineColor(kBlack);
+  }
+
+  if (mo->getName().find("PedestalsPerDE") != std::string::npos ||
+      mo->getName().find("NoisePerDE") != std::string::npos) {
+    auto* h = dynamic_cast<TH1F*>(mo->getObject());
+
+    auto min = 0;
+    auto max = 1.05 * h->GetMaximum();
+    h->SetMinimum(min);
+    h->SetMaximum(max);
+
+    addChamberDelimiters(h, min, max);
+  }
+
   if (mo->getName().find("Pedestals_Elec") != std::string::npos) {
     auto* h = dynamic_cast<TH2F*>(mo->getObject());
 
     h->SetMinimum(mPedestalsPlotScaleMin);
     h->SetMaximum(mPedestalsPlotScaleMax);
-
-    TPaveText* msg = new TPaveText(0.1, 0.9, 0.9, 0.95, "NDC");
-    h->GetListOfFunctions()->Add(msg);
-    msg->SetName(Form("%s_msg", mo->GetName()));
-    msg->SetBorderSize(0);
-
-    if (checkResult == Quality::Good) {
-      msg->Clear();
-      msg->AddText("All pedestals within limits: OK!!!");
-      msg->SetFillColor(kGreen);
-      h->SetFillColor(kGreen);
-    } else if (checkResult == Quality::Bad) {
-      ILOG(Debug, Devel) << "Quality::Bad, setting to red";
-      msg->Clear();
-      msg->AddText("Call MCH on-call.");
-      msg->SetFillColor(kRed);
-      h->SetFillColor(kRed);
-    } else if (checkResult == Quality::Medium) {
-      ILOG(Debug, Devel) << "Quality::medium, setting to orange";
-      msg->Clear();
-      msg->AddText("No entries. If MCH in the run, check MCH TWiki");
-      msg->SetFillColor(kYellow);
-      h->SetFillColor(kOrange);
-    }
-    h->SetLineColor(kBlack);
   }
 
   if (mo->getName().find("Noise_Elec") != std::string::npos) {
@@ -245,32 +404,6 @@ void PedestalsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRe
 
     h->SetMinimum(mNoisePlotScaleMin);
     h->SetMaximum(mNoisePlotScaleMax);
-
-    TPaveText* msg = new TPaveText(0.1, 0.9, 0.9, 0.95, "NDC");
-    h->GetListOfFunctions()->Add(msg);
-    msg->SetName(Form("%s_msg", mo->GetName()));
-    msg->SetBorderSize(0);
-
-    if (checkResult == Quality::Good) {
-      msg->Clear();
-      msg->AddText("All pedestals within limits: OK!!!");
-      msg->SetFillColor(kGreen);
-      h->SetFillColor(kGreen);
-    } else if (checkResult == Quality::Bad) {
-      ILOG(Debug, Devel) << "Quality::Bad, setting to red";
-      //
-      msg->Clear();
-      msg->AddText("Call MCH on-call.");
-      msg->SetFillColor(kRed);
-      h->SetFillColor(kRed);
-    } else if (checkResult == Quality::Medium) {
-      ILOG(Debug, Devel) << "Quality::medium, setting to orange";
-      msg->Clear();
-      msg->AddText("No entries. If MCH in the run, check MCH TWiki");
-      msg->SetFillColor(kYellow);
-      h->SetFillColor(kOrange);
-    }
-    h->SetLineColor(kBlack);
   }
 
   if ((mo->getName().find("Pedestals_ST12") != std::string::npos) ||
@@ -295,6 +428,27 @@ void PedestalsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRe
     h->GetYaxis()->SetLabelSize(0.0);
   }
 
+  if ((mo->getName().find("BadChannels_ST12") != std::string::npos) ||
+      (mo->getName().find("BadChannels_ST345") != std::string::npos)) {
+    auto* h = dynamic_cast<TH2F*>(mo->getObject());
+    double min = 1;
+    int nbinsx = h->GetXaxis()->GetNbins();
+    int nbinsy = h->GetYaxis()->GetNbins();
+    for (int i = 1; i <= nbinsx; i++) {
+      for (int j = 1; j <= nbinsy; j++) {
+        auto value = h->GetBinContent(i, j);
+        if (value > 0 && value < min) {
+          min = value;
+        }
+      }
+    }
+    h->SetMinimum(0.99 * min);
+    h->GetXaxis()->SetTickLength(0.0);
+    h->GetXaxis()->SetLabelSize(0.0);
+    h->GetYaxis()->SetTickLength(0.0);
+    h->GetYaxis()->SetLabelSize(0.0);
+  }
+
   if (mo->getName().find("Pedestals_XY") != std::string::npos) {
     auto* h = dynamic_cast<TH2F*>(mo->getObject());
     h->SetMinimum(mPedestalsPlotScaleMin);
@@ -309,6 +463,16 @@ void PedestalsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRe
     auto* h = dynamic_cast<TH2F*>(mo->getObject());
     h->SetMinimum(mNoisePlotScaleMin);
     h->SetMaximum(mNoisePlotScaleMax);
+    h->GetXaxis()->SetTickLength(0.0);
+    h->GetXaxis()->SetLabelSize(0.0);
+    h->GetYaxis()->SetTickLength(0.0);
+    h->GetYaxis()->SetLabelSize(0.0);
+  }
+
+  if (mo->getName().find("BadChannels_XY") != std::string::npos) {
+    auto* h = dynamic_cast<TH2F*>(mo->getObject());
+    h->SetMinimum(0);
+    h->SetMaximum(1);
     h->GetXaxis()->SetTickLength(0.0);
     h->GetXaxis()->SetLabelSize(0.0);
     h->GetYaxis()->SetTickLength(0.0);

@@ -21,7 +21,6 @@
 #include <iostream>
 #include <TObject.h>
 #include <TH2.h>
-#include <TList.h>
 #include "Mergers/MergeInterface.h"
 
 using namespace std;
@@ -31,12 +30,9 @@ namespace o2::quality_control_modules::muon
 class MergeableTH2Ratio : public TH2F, public o2::mergers::MergeInterface
 {
  public:
-  MergeableTH2Ratio() = default;
-
+  MergeableTH2Ratio();
   MergeableTH2Ratio(MergeableTH2Ratio const& copymerge);
-
   MergeableTH2Ratio(const char* name, const char* title, int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax, bool showZeroBins = false);
-
   MergeableTH2Ratio(const char* name, const char* title, bool showZeroBins = false);
 
   ~MergeableTH2Ratio();
@@ -58,11 +54,23 @@ class MergeableTH2Ratio : public TH2F, public o2::mergers::MergeInterface
     return mShowZeroBins;
   }
 
+  void setShowZeroBins(bool showZeroBins)
+  {
+    mShowZeroBins = showZeroBins;
+  }
+
   void update();
 
   void beautify();
 
+  // functions inherited from TH2F
   void Reset(Option_t* option = "") override;
+  void Copy(TObject& obj) const override;
+  Bool_t Add(const TH1* h1, const TH1* h2, Double_t c1 = 1, Double_t c2 = 1) override;
+  Bool_t Add(const TH1* h1, Double_t c1 = 1) override;
+  void SetBins(Int_t nx, Double_t xmin, Double_t xmax) override;
+  void SetBins(Int_t nx, Double_t xmin, Double_t xmax, Int_t ny, Double_t ymin, Double_t ymax) override;
+  void SetBins(Int_t nx, Double_t xmin, Double_t xmax, Int_t ny, Double_t ymin, Double_t ymax, Int_t nz, Double_t zmin, Double_t zmax) override;
 
  private:
   TH2F* mHistoNum{ nullptr };

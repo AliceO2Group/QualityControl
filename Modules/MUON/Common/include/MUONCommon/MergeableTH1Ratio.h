@@ -32,11 +32,8 @@ class MergeableTH1Ratio : public TH1F, public o2::mergers::MergeInterface
 {
  public:
   MergeableTH1Ratio() = default;
-
   MergeableTH1Ratio(MergeableTH1Ratio const& copymerge);
-
   MergeableTH1Ratio(const char* name, const char* title, int nbinsx, double xmin, double xmax, double scaling = 1.);
-
   MergeableTH1Ratio(const char* name, const char* title, double scaling = 1.);
 
   ~MergeableTH1Ratio();

@@ -22,9 +22,10 @@
 #include "MCH/GlobalHistogram.h"
 #include "Framework/DataRef.h"
 #include "MCHCalibration/PedestalData.h"
-
-class TH1F;
-class TH2F;
+#include "MCHRawCommon/DataFormats.h"
+#include <TH1F.h>
+#include <TH2F.h>
+#include <TCanvas.h>
 
 using namespace o2::quality_control::core;
 
@@ -64,36 +65,56 @@ class PedestalsTask final : public TaskInterface
     getObjectsManager()->setDefaultDrawOptions(histo, drawOption);
   }
 
+  /// check if a given electronics channel is associated with a detector pad
+  bool checkPadMapping(uint16_t feeId, uint8_t linkId, uint8_t eLinkId, o2::mch::raw::DualSampaChannelId channel, int& deId, int& padId);
+
   void monitorDataDigits(o2::framework::ProcessingContext& ctx);
   void monitorDataPedestals(o2::framework::ProcessingContext& ctx);
+  void monitorDataBadChannels(o2::framework::ProcessingContext& ctx);
 
-  void PlotPedestal(uint16_t solarID, uint8_t dsID, uint8_t channel, double mean, double rms);
-  void PlotPedestalDE(uint16_t solarID, uint8_t dsID, uint8_t channel, double mean, double rms);
-  void fill_noise_distributions();
+  void PlotPedestal(uint16_t solarID, uint8_t dsID, uint8_t channel, double stat, double mean, double rms);
+  void PlotPedestalDE(uint16_t solarID, uint8_t dsID, uint8_t channel, double stat, double mean, double rms);
+  void PlotBadChannel(uint16_t solarID, uint8_t dsID, uint8_t channel);
+  void PlotBadChannelDE(uint16_t solarID, uint8_t dsID, uint8_t channel);
+  void processElecMaps();
 
   static constexpr int sMaxFeeId = 64;
   static constexpr int sMaxLinkId = 12;
   static constexpr int sMaxDsId = 40;
 
-  o2::mch::raw::Solar2FeeLinkMapper mSolar2FeeLinkMapper;
   o2::mch::raw::Elec2DetMapper mElec2DetMapper;
+  o2::mch::raw::Det2ElecMapper mDet2ElecMapper;
+  o2::mch::raw::FeeLink2SolarMapper mFeeLink2SolarMapper;
+  o2::mch::raw::Solar2FeeLinkMapper mSolar2FeeLinkMapper;
 
   /// helper class that performs the actual computation of the pedestals from the input digits
   o2::mch::calibration::PedestalData mPedestalData;
 
-  std::shared_ptr<TH2F> mHistogramPedestals;
-  std::shared_ptr<TH2F> mHistogramNoise;
+  std::unique_ptr<TH2F> mHistogramStat;
+  std::unique_ptr<TH2F> mHistogramPedestals;
+  std::unique_ptr<TH2F> mHistogramNoise;
+  std::unique_ptr<TH2F> mHistogramBadChannels;
 
-  std::map<int, std::shared_ptr<TH2F>> mHistogramPedestalsDE;
-  std::map<int, std::shared_ptr<TH2F>> mHistogramNoiseDE;
-  std::map<int, std::shared_ptr<DetectorHistogram>> mHistogramPedestalsXY[2];
-  std::map<int, std::shared_ptr<DetectorHistogram>> mHistogramNoiseXY[2];
+  std::unique_ptr<TH1F> mHistogramStatDE;
+  std::unique_ptr<TH1F> mHistogramPedestalsDE;
+  std::unique_ptr<TH1F> mHistogramNoiseDE;
+  std::unique_ptr<TH1F> mHistogramEmptyChannelsDE;
+  std::unique_ptr<TH1F> mHistogramBadChannelsDE;
+
+  std::array<std::map<int, std::shared_ptr<DetectorHistogram>>, 2> mHistogramStatXY;
+  std::array<std::map<int, std::shared_ptr<DetectorHistogram>>, 2> mHistogramPedestalsXY;
+  std::array<std::map<int, std::shared_ptr<DetectorHistogram>>, 2> mHistogramNoiseXY;
+  std::array<std::map<int, std::shared_ptr<DetectorHistogram>>, 2> mHistogramBadChannelsXY;
 
   std::map<int, std::shared_ptr<TH1F>> mHistogramNoiseDistributionDE[5][2];
-  std::shared_ptr<TH1F> mHistogramNoiseDistribution[5];
+  std::array<std::unique_ptr<TH1F>, 5> mHistogramNoiseDistribution;
 
-  std::shared_ptr<GlobalHistogram> mHistogramPedestalsMCH[2];
-  std::shared_ptr<GlobalHistogram> mHistogramNoiseMCH[2];
+  std::array<std::unique_ptr<GlobalHistogram>, 2> mHistogramStatMCH;
+  std::array<std::unique_ptr<GlobalHistogram>, 2> mHistogramPedestalsMCH;
+  std::array<std::unique_ptr<GlobalHistogram>, 2> mHistogramNoiseMCH;
+  std::array<std::unique_ptr<GlobalHistogram>, 2> mHistogramBadChannelsMCH;
+
+  std::unique_ptr<TCanvas> mCanvasCheckerMessages;
 
   int mPrintLevel;
 

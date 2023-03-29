@@ -29,11 +29,6 @@ namespace quality_control_modules
 namespace muonchambers
 {
 
-std::string getHistoPath(int deId);
-
-int getDEindex(int de);
-int getDEindexMax();
-
 class DetectorHistogram
 {
  public:

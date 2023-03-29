@@ -75,10 +75,6 @@ void TrackPlotter::createTrackHistos(int maxTracksPerTF)
   mTrackRAbs[1] = createHisto<TH1F>(TString::Format("%sNegative/TrackRAbs", mPath.c_str()), "Track R_{abs} (-);R_{abs} (cm)", 1000, 0, 100);
   mTrackRAbs[2] = createHisto<TH1F>(TString::Format("%sTrackRAbs", mPath.c_str()), "Track R_{abs};R_{abs} (cm)", 1000, 0, 100);
 
-  mTrackChi2OverNDF[0] = createHisto<TH1F>(TString::Format("%sPositive/TrackChi2OverNDF", mPath.c_str()), "Track #chi^{2}/ndf (+);#chi^{2}/ndf", 500, 0, 50);
-  mTrackChi2OverNDF[1] = createHisto<TH1F>(TString::Format("%sNegative/TrackChi2OverNDF", mPath.c_str()), "Track #chi^{2}/ndf (-);#chi^{2}/ndf", 500, 0, 50);
-  mTrackChi2OverNDF[2] = createHisto<TH1F>(TString::Format("%sTrackChi2OverNDF", mPath.c_str()), "Track #chi^{2}/ndf;#chi^{2}/ndf", 500, 0, 50);
-
   mTrackBC = createHisto<TH1F>(TString::Format("%sTrackBC", mPath.c_str()), "Track BC;BC", o2::constants::lhc::LHCMaxBunches, 0, o2::constants::lhc::LHCMaxBunches);
   mTrackBCWidth = createHisto<TH1F>(TString::Format("%sTrackBCWidth", mPath.c_str()), "Track BCWidth;BC Width", 400, 0, 400);
 
@@ -114,7 +110,7 @@ void TrackPlotter::fillTrackPairHistos(gsl::span<const MuonTrack> tracks)
         if (tracks[i].getSign() == tracks[j].getSign()) {
           continue;
         }
-        auto dt = (tracks[i].getIR() - tracks[j].getIR()).bc2ns();
+        auto dt = tracks[j].getIR().differenceInBCNS(tracks[i].getIR());
         if (std::abs(dt) > 1000) {
           continue;
         }

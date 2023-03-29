@@ -82,7 +82,6 @@ class TrackPlotter : public HistPlotter
   std::unique_ptr<TH1F> mTrackBCWidth;                    ///< BC width associated to the track
   std::unique_ptr<TH1> mTrackDT;                          ///< time difference between MFT/MCH/MID tracks segments
   std::array<std::unique_ptr<TH1F>, 3> mNofTracksPerTF;   ///< number of tracks per TF
-  std::array<std::unique_ptr<TH1F>, 3> mTrackChi2OverNDF; ///< chi2/ndf for the track
   std::array<std::unique_ptr<TH1F>, 3> mTrackDCA;         ///< DCA (cm) of the track
   std::array<std::unique_ptr<TH1F>, 3> mTrackEta;         ///< eta of the track
   std::array<std::unique_ptr<TH1F>, 3> mTrackPDCA;        ///< p (GeV/c) x DCA (cm) of the track
