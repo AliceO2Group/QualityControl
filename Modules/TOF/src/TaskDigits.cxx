@@ -66,8 +66,6 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   utils::parseFloatParameter(mCustomParameters, "RangeMinTime", mRangeMinToT);
   utils::parseFloatParameter(mCustomParameters, "RangeMaxTime", mRangeMaxToT);
 
-  o2::base::GeometryManager::loadGeometry();
-
   if (utils::parseIntParameter(mCustomParameters, "NoiseClassSelection", mNoiseClassSelection)) {
     if (mNoiseClassSelection < -1 || mNoiseClassSelection >= nNoiseClasses) {
       ILOG(Error, Support) << "Asked to discard noise class " << mNoiseClassSelection << " but it is invalid, use -1, 0, 1, 2. Setting it to -1 (no selection)" << ENDM;
