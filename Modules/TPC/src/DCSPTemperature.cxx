@@ -20,6 +20,7 @@
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
 #include "TPC/DCSPTemperature.h"
+#include "TPC/Utility.h"
 
 // root includes
 #include "TCanvas.h"
@@ -95,7 +96,7 @@ void DCSPTemperature::initialize(Trigger, framework::ServiceRegistryRef)
 
 void DCSPTemperature::update(Trigger, framework::ServiceRegistryRef)
 {
-  std::vector<long> usedTimestamps = getDataTimestamps("TPC/Calib/Temperature", mNFiles, mTimestamp);
+  std::vector<long> usedTimestamps = getDataTimestamps(mCdbApi, "TPC/Calib/Temperature", mNFiles, mTimestamp);
   for (auto& timestamp : usedTimestamps) {
     mData.emplace_back(mCdbApi.retrieveFromTFileAny<o2::tpc::dcs::Temperature>("TPC/Calib/Temperature", mLookupMap, timestamp));
   }
@@ -108,71 +109,6 @@ void DCSPTemperature::finalize(Trigger, framework::ServiceRegistryRef)
   for (auto& canv : mDCSPTemp.getCanvases()) {
     getObjectsManager()->stopPublishing(canv);
   }
-}
-
-std::vector<std::string> DCSPTemperature::splitString(const std::string inString, const char* delimiter)
-{
-  std::vector<std::string> outVec;
-  std::string placeholder;
-  std::istringstream stream(inString);
-  std::string token;
-  while (std::getline(stream, token, *delimiter)) {
-    if (token == "") {
-      if (!placeholder.empty()) {
-        outVec.emplace_back(placeholder);
-        placeholder.clear();
-      }
-    } else {
-      placeholder.append(token + "\n");
-    }
-  }
-  return std::move(outVec);
-}
-
-long DCSPTemperature::getTimestamp(const std::string metaInfo)
-{
-  std::string result_str;
-  long result;
-  std::string token = "Validity: ";
-  if (metaInfo.find(token) == std::string::npos) {
-    return -1;
-  }
-  int start = metaInfo.find(token) + token.size();
-  int end = metaInfo.find(" -", start);
-  result_str = metaInfo.substr(start, end - start);
-  std::string::size_type sz;
-  result = std::stol(result_str, &sz);
-  return result;
-}
-
-std::vector<long> DCSPTemperature::getDataTimestamps(const std::string_view path, const unsigned int nFiles, const long limit)
-{
-  std::vector<long> outVec;
-  std::vector<std::string> fileList = splitString(mCdbApi.list(path.data()), "\n");
-
-  if (limit == -1) {
-    for (unsigned int i = 1; i <= nFiles; i++) {
-      long timeStamp = getTimestamp(fileList.at(i));
-      if (timeStamp != -1) {
-        outVec.emplace_back(timeStamp);
-      }
-    }
-  } else {
-    std::vector<std::string> tmpFiles;
-    for (auto& file : fileList) {
-      if (getTimestamp(file) <= limit) {
-        tmpFiles.emplace_back(file);
-      }
-    }
-    for (unsigned int i = 1; i <= nFiles; i++) {
-      long timeStamp = getTimestamp(tmpFiles.at(i));
-      if (timeStamp != -1) {
-        outVec.emplace_back(timeStamp);
-      }
-    }
-  }
-  std::sort(outVec.begin(), outVec.end());
-  return std::move(outVec);
 }
 
 } // namespace o2::quality_control_modules::tpc
