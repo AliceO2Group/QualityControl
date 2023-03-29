@@ -89,22 +89,6 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
   ILOG(Debug, Devel) << "initialize ITSFhrTask" << ENDM;
   getParameters();
 
-  if (mLocalGeometryFile == 1) {
-    ILOG(Info, Support) << "Getting geometry from local file" << ENDM;
-    o2::base::GeometryManager::loadGeometry(mGeomPath.c_str());
-  } else {
-    ILOG(Info, Support) << "Getting geometry from ccdb - timestamp: " << std::stol(mGeoTimestamp) << ENDM;
-    std::map<std::string, std::string> metadata;
-    TaskInterface::retrieveConditionAny<TGeoManager>("GLO/Config/GeometryAligned", metadata, std::stol(mGeoTimestamp));
-    if (!o2::base::GeometryManager::isGeometryLoaded()) {
-      ILOG(Fatal, Support) << "Can't retrive geometry from ccdb with timestamp: " << std::stol(mGeoTimestamp) << ENDM;
-      throw std::runtime_error("Can't retrive geometry from ccdb!");
-    }
-  }
-
-  mGeom = o2::its::GeometryTGeo::Instance();
-  int numOfChips = mGeom->getNumberOfChips();
-
   mGeneralOccupancy = new TH2Poly();
   mGeneralOccupancy->SetTitle("General Occupancy;mm (IB 3x);mm (IB 3x)");
   mGeneralOccupancy->SetName("General/General_Occupancy");
@@ -414,6 +398,9 @@ void ITSFhrTask::startOfCycle() { ILOG(Debug, Devel) << "startOfCycle" << ENDM; 
 
 void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
+
+  mGeom = o2::its::GeometryTGeo::Instance();
+
   // set timer
   std::chrono::time_point<std::chrono::high_resolution_clock> start;
   std::chrono::time_point<std::chrono::high_resolution_clock> end;
