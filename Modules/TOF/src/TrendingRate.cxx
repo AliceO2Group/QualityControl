@@ -128,10 +128,10 @@ void TrendingRate::computeTOFRates(TH2F* h, std::vector<int>& bcInt, std::vector
       const int bcmax = ibc * 18;
       TH1D* hs = hDiffGlobal.ProjectionY(Form("sign_%d_%d", bcmin, bcmax), ibc, ibc);
       hs->SetTitle(Form("%d < BC < %d", bcmin, bcmax));
-      if(hb->GetBinContent(1)) {
-	hb->Scale(hs->GetBinContent(1) / hb->GetBinContent(1));
+      if (hb->GetBinContent(1)) {
+        hb->Scale(hs->GetBinContent(1) / hb->GetBinContent(1));
       } else {
-	continue;
+        continue;
       }
       const float overall = hs->Integral();
       if (overall <= 0.f) {
@@ -226,7 +226,7 @@ void TrendingRate::trendValues(const Trigger& t, repository::DatabaseInterface& 
 
   bool foundHitMap = false;
   bool foundVsBC = false;
-    
+
   for (auto& dataSource : mConfig.dataSources) {
     auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name, t.timestamp, t.activity);
     if (!mo) {
@@ -245,12 +245,12 @@ void TrendingRate::trendValues(const Trigger& t, repository::DatabaseInterface& 
     }
   }
 
-  if ( !foundHitMap ) {
+  if (!foundHitMap) {
     ILOG(Info, Support) << "HitMap not found";
     return;
   }
 
-  if ( !foundVsBC ) {
+  if (!foundVsBC) {
     ILOG(Info, Support) << "Multiplicity/VsBC not found";
     return;
   }

@@ -59,6 +59,8 @@ void RawDataDecoder::rdhHandler(const o2::header::RAWDataHeader* rdh)
     return;
   }
 
+  mHistoPayload->Fill(rdh->feeId, TMath::Log2((rdh->memorySize - rdh->headerSize) + 1));
+
   constexpr auto rdhCrateWord = 0xFF;
   if (RDHUtils::getPageCounter(rdh) == 0) { // if RDH open
     mCounterRDHOpen.Count(rdh->feeId & rdhCrateWord);
@@ -227,6 +229,7 @@ void RawDataDecoder::initHistograms() // Initialization of histograms in Decoder
   mHistoOrbitID = std::make_shared<TH2F>("hOrbitID", "OrbitID;OrbitID % 1048576;Crate", 1024, 0, 1048576, ncrates, 0, ncrates);
   mHistoNoiseMap = std::make_shared<TH2F>("hNoiseMap", "Noise Map (1 bin = 1 FEA = 24 channels); crate; Fea x strip", ncrates, 0., ncrates, 364, 0., nstrips);
   mHistoIndexEOHitRate = std::make_shared<TH1F>("hIndexEOHitRate", "Hit Rate (Hz); index EO; Rate (Hz)", nequipments, 0., nequipments);
+  mHistoPayload = std::make_shared<TH2F>("hPayload", "hPayload;Crate;Log_{2}(payload + 1)", ncrates, 0., ncrates, 30, 0, 30); // up to 1 GB 2^30
 }
 
 void RawDataDecoder::resetHistograms() // Reset of histograms in Decoder
@@ -264,6 +267,7 @@ void RawDataDecoder::resetHistograms() // Reset of histograms in Decoder
   mHistoOrbitID->Reset();
   mHistoNoiseMap->Reset();
   mHistoIndexEOHitRate->Reset();
+  mHistoPayload->Reset();
 }
 
 void RawDataDecoder::estimateNoise(std::shared_ptr<TH1F> hIndexEOIsNoise)
@@ -469,6 +473,7 @@ void TaskRaw::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mDecoderRaw.mHistoOrbitID.get());
   getObjectsManager()->startPublishing(mDecoderRaw.mHistoNoiseMap.get());
   getObjectsManager()->startPublishing(mDecoderRaw.mHistoIndexEOHitRate.get());
+  getObjectsManager()->startPublishing(mDecoderRaw.mHistoPayload.get());
 }
 
 void TaskRaw::startOfActivity(Activity& /*activity*/)
@@ -499,6 +504,7 @@ void TaskRaw::monitorData(o2::framework::ProcessingContext& ctx)
       // either the span or its data pointer and size
       mDecoderRaw.setDecoderBuffer(payloadIn);
       mDecoderRaw.setDecoderBufferSize(payloadInSize);
+
       //
       mDecoderRaw.decode();
     }

@@ -115,6 +115,7 @@ class RawDataDecoder final : public DecoderBase
   std::shared_ptr<TH2F> mHistoOrbitID;            /// Orbit ID for the header and trailer words
   std::shared_ptr<TH2F> mHistoNoiseMap;           /// Noise map, one bin corresponds to one FEA card
   std::shared_ptr<TH1F> mHistoIndexEOHitRate;     /// Noise rate x channel
+  std::shared_ptr<TH2F> mHistoPayload;            /// Time
 
  private:
   /** decoding handlers **/
