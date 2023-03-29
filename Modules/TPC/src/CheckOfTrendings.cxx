@@ -11,6 +11,7 @@
 ///
 /// \file   CheckOfTrendings.cxx
 /// \author Laura Serksnyte
+/// \author Marcel Lesch
 ///
 
 #include "TPC/CheckOfTrendings.h"
@@ -114,13 +115,14 @@ void CheckOfTrendings::configure()
 
 Quality CheckOfTrendings::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
-  std::vector<std::string> checks;
-  std::string checkMessage;
-  Quality checkResult = Quality::Null;
-  Quality result = Quality::Null;
-  std::vector<Quality> qualities;
+  mPadQualities.clear();
+  mPadMetaData.clear();
+  mPadMetaData[Quality::Null.getName()] = std::vector<std::string>();
+  mPadMetaData[Quality::Bad.getName()] = std::vector<std::string>();
+  mPadMetaData[Quality::Medium.getName()] = std::vector<std::string>();
+  mPadMetaData[Quality::Good.getName()] = std::vector<std::string>();
 
-  std::vector<TGraphs*> graphs; //
+  std::vector<TGraph*> graphs;
 
   auto mo = moMap->begin()->second;
   if (!mo) {
@@ -132,202 +134,221 @@ Quality CheckOfTrendings::check(std::map<std::string, std::shared_ptr<MonitorObj
   }
   getGraphs(canv, graphs);
 
-  if(graphs.size() == 0){
+  if (graphs.size() == 0) {
     ILOG(Fatal, Support) << "Could not retrieve any TGraph for CheckOfTrendings" << ENDM;
   }
-  for(int_t iGraph = 0; iGraph < graphs.size(); iGraph++){
-    if (!graphs[i]) { // if there is no TGraph, give an error and break
+  for (int iGraph = 0; iGraph < graphs.size(); iGraph++) {
+    if (!graphs[iGraph]) { // if there is no TGraph, give an error and break
       ILOG(Fatal, Support) << "TGraph number " << iGraph << " is NULL." << ENDM;
     }
   }
-  
-  for(int_t iGraph = 0; iGraph < graphs.size(); iGraph++){
-  const int nBins = g->GetN();
-  const double* yValues = g->GetY();
-  const double* yErrors = g->GetEY(); // returns nullptr for TGraph (no errors)
-
-  bool useErrors = true;
-  if (yErrors == nullptr) {
-    useErrors = false;
-    ILOG(Info, Support) << "NO ERRORS" << ENDM;
+  if (!mSliceTrend && graphs.size() > 1) {
+    ILOG(Fatal, Support) << "Multiple Graphs found even though this is not a slice trending" << ENDM;
   }
 
-  double mean = 0.;
-  double stddevOfMean = 0.;
+  for (int iGraph = 0; iGraph < graphs.size(); iGraph++) {
 
-  // Mean Check:
-  if (nBins > 1) { // If only one data point available, don't check quality for mean
+    std::string padNullString = "";
+    std::string padBadString = "";
+    std::string padMediumString = "";
+    std::string padGoodString = "";
+    std::string checkMessage = "";
+    std::vector<Quality> qualitiesOfPad;
+
+    const int nBins = graphs[iGraph]->GetN();
+    const double* yValues = graphs[iGraph]->GetY();
+    const double* yErrors = graphs[iGraph]->GetEY(); // returns nullptr for TGraph (no errors)
+
+    bool useErrors = true;
+    if (yErrors == nullptr) {
+      useErrors = false;
+      ILOG(Info, Support) << "NO ERRORS" << ENDM;
+    }
+
+    double mean = 0.;
+    double stddevOfMean = 0.;
+
+    // Mean Check:
     if (mMeanCheck) {
-      checkMessage = "";
-      checkResult = Quality::Null;
-      double x_last = 0., y_last = 0.;
-      g->GetPoint(nBins - 1, x_last, y_last);
-      int pointNumberForMean = mPointToTakeForMeanCheck;
-      if ((nBins - 1) < mPointToTakeForMeanCheck) {
-        pointNumberForMean = nBins - 1;
-      }
-
-      calculateStatistics(yValues, yErrors, useErrors, nBins - 1 - pointNumberForMean, nBins - 1, mean, stddevOfMean);
-
-      double lastPointError = 0.;
-      if (useErrors) {
-        lastPointError = *(yErrors + nBins - 1); // Error of last point
-      }
-      if (lastPointError < 0.) {
-        ILOG(Warning, Support) << "Last point for check of mean has negative error" << ENDM;
-      }
-
-      double totalError = sqrt(stddevOfMean * stddevOfMean + lastPointError * lastPointError);
-      double nSigma = -1.;
-      if (totalError != 0.) {
-        nSigma = std::abs(y_last - mean) / totalError;
-      }
-      if (nSigma < 0.) {
-        checkResult = Quality::Bad;
-        checkMessage = "MeanCheck: Final uncertainty of mean is zero";
+      if (nBins <= 1) { // If only one data point available, don't check quality for mean
+        qualitiesOfPad.push_back(Quality::Null);
+        padNullString += "MeanCheck: Could not perform check due as there is only one data point or less \n";
       } else {
-        if (std::abs(y_last - mean) < totalError * mNSigmaMean) {
-          checkResult = Quality::Good;
-        } else if (std::abs(y_last - mean) > totalError * mNSigmaBadMean) {
-          checkResult = Quality::Bad;
-        } else {
-          checkResult = Quality::Medium;
+
+        checkMessage = "";
+        double x_last = 0., y_last = 0.;
+        graphs[iGraph]->GetPoint(nBins - 1, x_last, y_last);
+        int pointNumberForMean = mPointToTakeForMeanCheck;
+        if ((nBins - 1) < mPointToTakeForMeanCheck) {
+          pointNumberForMean = nBins - 1;
         }
-        checkMessage = fmt::format("MeanCheck: {:.1f}#sigma difference to mean({:.2f}#pm{:.2f})", nSigma, mean, totalError);
+
+        calculateStatistics(yValues, yErrors, useErrors, nBins - 1 - pointNumberForMean, nBins - 1, mean, stddevOfMean);
+
+        double lastPointError = 0.;
+        if (useErrors) {
+          lastPointError = *(yErrors + nBins - 1); // Error of last point
+        }
+        if (lastPointError < 0.) {
+          ILOG(Warning, Support) << "Last point for check of mean has negative error" << ENDM;
+        }
+
+        double totalError = sqrt(stddevOfMean * stddevOfMean + lastPointError * lastPointError);
+        double nSigma = -1.;
+        if (totalError != 0.) {
+          nSigma = std::abs(y_last - mean) / totalError;
+        }
+        if (nSigma < 0.) {
+          qualitiesOfPad.push_back(Quality::Bad);
+          padBadString += "MeanCheck: Final uncertainty of mean is zero \n";
+        } else {
+          checkMessage = fmt::format("MeanCheck: {:.1f}#sigma difference to mean({:.2f}#pm{:.2f}) \n", nSigma, mean, totalError);
+
+          if (std::abs(y_last - mean) < totalError * mNSigmaMean) {
+            qualitiesOfPad.push_back(Quality::Good);
+            padGoodString += checkMessage;
+          } else if (std::abs(y_last - mean) > totalError * mNSigmaBadMean) {
+            qualitiesOfPad.push_back(Quality::Bad);
+            padBadString += checkMessage;
+          } else {
+            qualitiesOfPad.push_back(Quality::Medium);
+            padMediumString += checkMessage;
+          }
+        }
+      }
+    } // if (mMeanCheck)
+
+    // ExpectedValue Check:
+    if (mExpectedValueCheck) {
+      checkMessage = "";
+      int pointNumber = mPointToTakeForExpectedValueCheck;
+      if (!useErrors && pointNumber == 1) { // if we only have one point without errrors, the stddev = 0 and the check would not make any sense
+        ILOG(Warning, Support) << "Expected Value Check: Cannot use 1 point without errors. Switching to two points" << ENDM;
+        pointNumber = 2;
+      }
+      if (nBins < pointNumber) {
+        pointNumber = nBins;
       }
 
-      qualities.push_back(checkResult);
-      checks.push_back(checkMessage);
-    }
-  }
+      if (!useErrors && pointNumber == 1) { // changing from 1 to 2 points failed because only 1 point is available -> no quality
+        qualitiesOfPad.push_back(Quality::Null);
+        padNullString += "ExpectedValueCheck: Only one data point without errors \n";
+      } else {
+        calculateStatistics(yValues, yErrors, useErrors, nBins - pointNumber, nBins, mean, stddevOfMean);
+        mMean = mean;
+        mStdev = stddevOfMean;
 
-  // ExpectedValue Check:
-  if (mExpectedValueCheck) {
-    checkMessage = "";
-    checkResult = Quality::Null;
-    int pointNumber = mPointToTakeForExpectedValueCheck;
-    if (!useErrors && pointNumber == 1) { // if we only have one point without errrors, the stddev = 0 and the check would not make any sense
-      ILOG(Warning, Support) << "Expected Value Check: Cannot use 1 point without errors. Switching to two points" << ENDM;
-      pointNumber = 2;
-    }
-    if (nBins < pointNumber) {
-      pointNumber = nBins;
-    }
+        double nSigma = -1.;
+        if (stddevOfMean != 0.) {
+          nSigma = std::abs(mean - mExpectedPhysicsValue) / stddevOfMean;
+        }
+        if (nSigma < 0.) {
+          qualitiesOfPad.push_back(Quality::Bad);
+          padBadString += "ExpectedValueCheck: Final uncertainty of mean is zero \n";
+        } else {
+          checkMessage = fmt::format("ExpectedValueCheck: {:.1f}#sigma difference to ExpectedValue({:.2f}) \n", nSigma, mExpectedPhysicsValue);
 
-    if (!useErrors && pointNumber == 1) { // changing from 1 to 2 points failed because only 1 point is available -> no quality
-      qualities.push_back(Quality::Null);
-      checks.push_back("Only one data point without errors for expected physics value check");
+          if (std::abs(mean - mExpectedPhysicsValue) > mNSigmaBadExpectedPhysicsValue * stddevOfMean) {
+            qualitiesOfPad.push_back(Quality::Bad);
+            padBadString += checkMessage;
+          } else if (std::abs(mean - mExpectedPhysicsValue) < mNSigmaExpectedPhysicsValue * stddevOfMean) {
+            qualitiesOfPad.push_back(Quality::Good);
+            padGoodString += checkMessage;
+          } else {
+            qualitiesOfPad.push_back(Quality::Medium);
+            padMediumString += checkMessage;
+          }
+        }
+      }
+    } // if (mExpectedValueCheck)
 
-    } else {
+    // Range Check:
+    if (mRangeCheck) {
+      int pointNumber = mPointToTakeForRangeCheck;
+      if (nBins < pointNumber) {
+        pointNumber = nBins;
+      }
+
       calculateStatistics(yValues, yErrors, useErrors, nBins - pointNumber, nBins, mean, stddevOfMean);
-      mMean = mean;
-      mStdev = stddevOfMean;
 
-      double nSigma = -1.;
-      if (stddevOfMean != 0.) {
-        nSigma = std::abs(mean - mExpectedPhysicsValue) / stddevOfMean;
-      }
-      if (nSigma < 0.) {
-        checkResult = Quality::Bad;
-        checkMessage = "ExpectedValueCheck: Final uncertainty of mean is zero";
+      if (std::abs(mean - mExpectedPhysicsValue) > mRangeBad) {
+        qualitiesOfPad.push_back(Quality::Bad);
+        padBadString += fmt::format("RangeCheck: Out of range of ExpectedValue({:.2f}) by more than #pm{:.2f} \n", mExpectedPhysicsValue, mRangeBad);
+      } else if (std::abs(mean - mExpectedPhysicsValue) < mRangeMedium) {
+        qualitiesOfPad.push_back(Quality::Good);
+        padGoodString += fmt::format("RangeCheck: In range of ExpectedValue({:.2f}) within #pm{:.2f} \n", mExpectedPhysicsValue, mRangeMedium);
       } else {
-        if (std::abs(mean - mExpectedPhysicsValue) > mNSigmaBadExpectedPhysicsValue * stddevOfMean) {
-          checkResult = Quality::Bad;
-        } else if (std::abs(mean - mExpectedPhysicsValue) < mNSigmaExpectedPhysicsValue * stddevOfMean) {
-          checkResult = Quality::Good;
-        } else {
-          checkResult = Quality::Medium;
-        }
-        checkMessage = fmt::format("ExpectedValueCheck: {:.1f}#sigma difference to ExpectedValue({:.2f})", nSigma, mExpectedPhysicsValue);
+        qualitiesOfPad.push_back(Quality::Medium);
+        padMediumString += fmt::format("RangeCheck: Out of range of ExpectedValue({:.2f}) between #pm{:.2f} and #pm{:.2f} \n", mExpectedPhysicsValue, mRangeMedium, mRangeBad);
       }
-      qualities.push_back(checkResult);
-      checks.push_back(checkMessage);
-    }
-  }
+    } // if(mRangeCheck)
 
-  // Range Check:
-  if (mRangeCheck) {
-    checkMessage = "";
-    checkResult = Quality::Null;
-    int pointNumber = mPointToTakeForRangeCheck;
-    if (nBins < pointNumber) {
-      pointNumber = nBins;
-    }
+    // Zeros Check:
+    if (mZeroCheck) {
+      int pointNumber = mPointToTakeForZeroCheck;
+      if (nBins < pointNumber) {
+        pointNumber = nBins;
+      }
 
-    calculateStatistics(yValues, yErrors, useErrors, nBins - pointNumber, nBins, mean, stddevOfMean);
+      const std::vector<double> v(yValues + nBins - pointNumber, yValues + nBins);
+      const bool allZeros = std::all_of(v.begin(), v.end(), [](double i) { return std::abs(i) == 0.0; });
+      if (allZeros) {
+        qualitiesOfPad.push_back(Quality::Bad);
+        padBadString += fmt::format("ZeroCheck: Last {} Points zero \n", pointNumber);
+      } else {
+        qualitiesOfPad.push_back(Quality::Good);
+        padGoodString += "ZeroCheck: Not all Points zero \n";
+      }
+    } // if (mZeroCheck)
 
-    if (std::abs(mean - mExpectedPhysicsValue) > mRangeBad) {
-      checkResult = Quality::Bad;
-      checkMessage = fmt::format("RangeCheck: Out of range of ExpectedValue({:.2f}) by more than #pm{:.2f}", mExpectedPhysicsValue, mRangeBad);
-    } else if (std::abs(mean - mExpectedPhysicsValue) < mRangeMedium) {
-      checkResult = Quality::Good;
-      checkMessage = fmt::format("RangeCheck: In range of ExpectedValue({:.2f}) within #pm{:.2f}", mExpectedPhysicsValue, mRangeMedium);
+    // Quality aggregation
+    if (qualitiesOfPad.size() >= 1) {
+      auto Worst_Quality_Pad = std::max_element(qualitiesOfPad.begin(), qualitiesOfPad.end(),
+                                                [](const Quality& q1, const Quality& q2) {
+                                                  return q1.isBetterThan(q2);
+                                                });
+      mPadQualities.push_back(*Worst_Quality_Pad);
     } else {
-      checkResult = Quality::Medium;
-      checkMessage = fmt::format("RangeCheck: Out of range of ExpectedValue({:.2f}) between #pm{:.2f} and #pm{:.2f}", mExpectedPhysicsValue, mRangeMedium, mRangeBad);
+      mPadQualities.push_back(Quality::Null);
+      padNullString += "No Checks performed for pad " + std::to_string(iGraph) + " \n";
     }
 
-    qualities.push_back(checkResult);
-    checks.push_back(checkMessage);
-  }
+    mPadMetaData[Quality::Null.getName()].push_back(padNullString);
+    mPadMetaData[Quality::Bad.getName()].push_back(padBadString);
+    mPadMetaData[Quality::Medium.getName()].push_back(padMediumString);
+    mPadMetaData[Quality::Good.getName()].push_back(padGoodString);
+  } // for(int iGraph = 0; iGraph < graphs.size(); iGraph++)
 
-  // Zeros Check:
-  if (mZeroCheck) {
-    checkMessage = "";
-    checkResult = Quality::Null;
-    int pointNumber = mPointToTakeForZeroCheck;
-    if (nBins < pointNumber) {
-      pointNumber = nBins;
-    }
+  // Final Aggregation of qualities and metadata of all Pads
+  std::string totalBadString = "";
+  std::string totalMediumString = "";
+  std::string totalGoodString = "";
+  std::string totalNullString = "";
+  Quality totalQuality = Quality::Null;
 
-    const std::vector<double> v(yValues + nBins - pointNumber, yValues + nBins);
-    const bool allZeros = std::all_of(v.begin(), v.end(), [](double i) { return std::abs(i) == 0.0; });
-    if (allZeros) {
-      checkResult = Quality::Bad;
-      checkMessage = fmt::format("ZeroCheck: Last {} Points zero", pointNumber);
-    } else {
-      checkResult = Quality::Good;
-      checkMessage = "";
-    }
-    qualities.push_back(checkResult);
-    checks.push_back(checkMessage);
-  }
-
-  // Quality aggregation
-  if (qualities.size() >= 1) {
-    auto Worst_Quality = std::max_element(qualities.begin(), qualities.end(),
+  if (mPadQualities.size() >= 1) {
+    auto Worst_Quality = std::max_element(mPadQualities.begin(), mPadQualities.end(),
                                           [](const Quality& q1, const Quality& q2) {
                                             return q1.isBetterThan(q2);
                                           });
-    result = *Worst_Quality;
+    totalQuality = *Worst_Quality;
 
-    // For writing to metadata and drawing later
-    mBadString = "";
-    mMediumString = "";
-    mGoodString = "";
-    mNullString = "";
-
-    for (int qualityindex = 0; qualityindex < qualities.size(); qualityindex++) {
-      Quality q = qualities.at(qualityindex);
-      if (q == Quality::Bad) {
-        mBadString = mBadString + checks.at(qualityindex) + "\n";
-      } else if (q == Quality::Medium) {
-        mMediumString = mMediumString + checks.at(qualityindex) + "\n";
-      } else if (q == Quality::Good) {
-        mGoodString = mGoodString + checks.at(qualityindex) + "\n";
-      } else {
-        mNullString = mNullString + checks.at(qualityindex) + "\n";
-      }
-    }
+    // MetaData aggregation from all pads
+    totalBadString = createMetaData(mPadMetaData[Quality::Bad.getName()]);
+    totalMediumString = createMetaData(mPadMetaData[Quality::Medium.getName()]);
+    totalGoodString = createMetaData(mPadMetaData[Quality::Good.getName()]);
+    totalNullString = createMetaData(mPadMetaData[Quality::Null.getName()]);
+  } else {
+    totalNullString = "No Check was performed \n";
   }
 
-  result.addMetadata("Bad", mBadString);
-  result.addMetadata("Medium", mMediumString);
-  result.addMetadata("Good", mGoodString);
-  result.addMetadata("Null", mNullString);
-  result.addMetadata("Comment", mMetadataComment);
+  totalQuality.addMetadata(Quality::Bad.getName(), totalBadString);
+  totalQuality.addMetadata(Quality::Medium.getName(), totalMediumString);
+  totalQuality.addMetadata(Quality::Good.getName(), totalGoodString);
+  totalQuality.addMetadata(Quality::Null.getName(), totalNullString);
+  totalQuality.addMetadata("Comment", mMetadataComment);
 
-  return result;
+  return totalQuality;
 }
 
 std::string CheckOfTrendings::getAcceptedType() { return "TCanvas"; }
@@ -338,195 +359,206 @@ void CheckOfTrendings::beautify(std::shared_ptr<MonitorObject> mo, Quality check
   if (!canv) {
     ILOG(Fatal, Support) << "Canvas not found" << ENDM;
   }
-  TGraph* h = getGraphs(canv);
-  if (!h) { // if there is no TGraph, give an error and break
-    ILOG(Fatal, Support) << "No TGraph found to perform Check against." << ENDM;
-  }
 
-  h->SetLineColor(kBlack);
-  double xMin = h->GetXaxis()->GetXmin();
-  double xMax = h->GetXaxis()->GetXmax();
-  double yMin = 0.;
-  double yMax = 0.;
-  if (mSliceTrend) {
-    yMin = h->GetYaxis()->GetXmin();
-    yMax = h->GetYaxis()->GetXmax();
-  } else {
-    TH2* htemp = (TH2*)canv->GetListOfPrimitives()->FindObject("htemp");
-    if (htemp) {
-      xMin = htemp->GetXaxis()->GetXmin();
-      xMax = htemp->GetXaxis()->GetXmax();
-      yMin = htemp->GetYaxis()->GetXmin();
-      yMax = htemp->GetYaxis()->GetXmax();
+  std::vector<TGraph*> graphs;
+  getGraphs(canv, graphs);
+
+  if (graphs.size() == 0) {
+    ILOG(Fatal, Support) << "Could not retrieve any TGraph for CheckOfTrendings" << ENDM;
+  }
+  for (int iGraph = 0; iGraph < graphs.size(); iGraph++) {
+    if (!graphs[iGraph]) { // if there is no TGraph, give an error and break
+      ILOG(Fatal, Support) << "TGraph number " << iGraph << " is NULL." << ENDM;
     }
   }
-  if (mMeanCheck) {
-    int nn = h->GetN();
-    xMin = h->GetPointX(nn - 1) + (xMax - h->GetPointX(nn - 1)) / 4.;
+  if (!mSliceTrend && graphs.size() > 1) {
+    ILOG(Fatal, Support) << "Multiple Graphs found even though this is not a slice trending" << ENDM;
   }
 
-  if (mExpectedValueCheck) {
-    TBox* badBox = new TBox(xMin, yMin, xMax, yMax);
-    badBox->SetFillColor(kRed);
-    badBox->SetFillStyle(1001);
-    badBox->SetLineWidth(0);
-    TBox* mediumBox = new TBox(xMin, mExpectedPhysicsValue - mNSigmaBadExpectedPhysicsValue * mStdev, xMax, mExpectedPhysicsValue + mNSigmaBadExpectedPhysicsValue * mStdev);
-    mediumBox->SetFillColor(kOrange);
-    mediumBox->SetFillStyle(1001);
-    mediumBox->SetLineWidth(0);
-    TBox* goodBox = new TBox(xMin, mExpectedPhysicsValue - mNSigmaExpectedPhysicsValue * mStdev, xMax, mExpectedPhysicsValue + mNSigmaExpectedPhysicsValue * mStdev);
-    goodBox->SetFillColor(kGreen - 2);
-    goodBox->SetFillStyle(1001);
-    goodBox->SetLineWidth(0);
-    h->GetListOfFunctions()->Add(badBox);
-    h->GetListOfFunctions()->Add(mediumBox);
-    h->GetListOfFunctions()->Add(goodBox);
-  }
-
-  if (mRangeCheck) {
-    TLine* lineUpperRangeMed = new TLine(xMin, mExpectedPhysicsValue + mRangeMedium, xMax, mExpectedPhysicsValue + mRangeMedium);
-    lineUpperRangeMed->SetLineColor(kBlack);
-    lineUpperRangeMed->SetLineStyle(kDashed);
-    lineUpperRangeMed->SetLineWidth(1);
-    h->GetListOfFunctions()->Add(lineUpperRangeMed);
-    TLine* lineLowerRangeMed = new TLine(xMin, mExpectedPhysicsValue - mRangeMedium, xMax, mExpectedPhysicsValue - mRangeMedium);
-    lineLowerRangeMed->SetLineColor(kBlack);
-    lineLowerRangeMed->SetLineStyle(kDashed);
-    lineLowerRangeMed->SetLineWidth(1);
-    h->GetListOfFunctions()->Add(lineLowerRangeMed);
-    TLine* lineUpperRangeBad = new TLine(xMin, mExpectedPhysicsValue + mRangeBad, xMax, mExpectedPhysicsValue + mRangeBad);
-    lineUpperRangeBad->SetLineColor(kBlack);
-    lineUpperRangeBad->SetLineWidth(3);
-    h->GetListOfFunctions()->Add(lineUpperRangeBad);
-    TLine* lineLowerRangeBad = new TLine(xMin, mExpectedPhysicsValue - mRangeBad, xMax, mExpectedPhysicsValue - mRangeBad);
-    lineLowerRangeBad->SetLineColor(kBlack);
-    lineLowerRangeBad->SetLineWidth(3);
-    h->GetListOfFunctions()->Add(lineLowerRangeBad);
-  }
-
-  // Draw the mean+stdev each point got compared against
-  if (mMeanCheck) {
-    TGraph* meanGraph = new TGraph();
-    TGraph* stddevGraphMediumUp = new TGraph();
-    TGraph* stddevGraphMediumDown = new TGraph();
-    TGraph* stddevGraphBadUp = new TGraph();
-    TGraph* stddevGraphBadDown = new TGraph();
-
-    const int nPoints = h->GetN();
-    const double* yValues = h->GetY();
-    const double* yErrors = h->GetEY(); // returns nullptr for TGraph (no errors)
-    bool useErrors = true;
-    if (yErrors == nullptr) {
-      useErrors = false;
+  for (int iGraph = 0; iGraph < graphs.size(); iGraph++) {
+    graphs[iGraph]->SetLineColor(kBlack);
+    double xMin = graphs[iGraph]->GetXaxis()->GetXmin();
+    double xMax = graphs[iGraph]->GetXaxis()->GetXmax();
+    double yMin = 0.;
+    double yMax = 0.;
+    if (mSliceTrend) {
+      yMin = graphs[iGraph]->GetYaxis()->GetXmin();
+      yMax = graphs[iGraph]->GetYaxis()->GetXmax();
+    } else {
+      TH2* htemp = (TH2*)canv->GetListOfPrimitives()->FindObject("htemp");
+      if (htemp) {
+        xMin = htemp->GetXaxis()->GetXmin();
+        xMax = htemp->GetXaxis()->GetXmax();
+        yMin = htemp->GetYaxis()->GetXmin();
+        yMax = htemp->GetYaxis()->GetXmax();
+      }
+    }
+    if (mMeanCheck) {
+      int nn = graphs[iGraph]->GetN();
+      xMin = graphs[iGraph]->GetPointX(nn - 1) + (xMax - graphs[iGraph]->GetPointX(nn - 1)) / 4.;
     }
 
-    if (nPoints > 2) {
-      for (int nBins = 1; nBins < nPoints; nBins++) {
-        int pointNumberForMean = mPointToTakeForMeanCheck;
-        if ((nBins) < mPointToTakeForMeanCheck) {
-          pointNumberForMean = nBins;
-        }
-
-        double mean = 0.;
-        double stdevMean = 0.;
-        calculateStatistics(yValues, yErrors, useErrors, nBins - pointNumberForMean, nBins, mean, stdevMean);
-
-        double lastPointError = 0.;
-        if (useErrors) {
-          lastPointError = *(yErrors + nBins); // Error of last point
-        }
-        if (lastPointError < 0.) {
-          ILOG(Warning, Support) << "Last point for check of mean has negative error" << ENDM;
-        }
-
-        double stdev = sqrt(stdevMean * stdevMean + lastPointError * lastPointError);
-
-        meanGraph->AddPoint(h->GetPointX(nBins), mean);
-        stddevGraphMediumUp->AddPoint(h->GetPointX(nBins), mean + stdev * mNSigmaMean);
-        stddevGraphMediumDown->AddPoint(h->GetPointX(nBins), mean - stdev * mNSigmaMean);
-        stddevGraphBadUp->AddPoint(h->GetPointX(nBins), mean + stdev * mNSigmaBadMean);
-        stddevGraphBadDown->AddPoint(h->GetPointX(nBins), mean - stdev * mNSigmaBadMean);
-      } // for (int nBins = 1; nBins < nPoints; nBins++)
-
-      meanGraph->SetLineWidth(2);
-      meanGraph->SetLineColor(kGreen - 2);
-      meanGraph->SetMarkerColor(kGreen - 2);
-
-      stddevGraphMediumUp->SetLineWidth(2);
-      stddevGraphMediumUp->SetLineColor(kOrange);
-      stddevGraphMediumUp->SetMarkerColor(kOrange);
-
-      stddevGraphMediumDown->SetLineWidth(2);
-      stddevGraphMediumDown->SetLineColor(kOrange);
-      stddevGraphMediumDown->SetMarkerColor(kOrange);
-
-      stddevGraphBadUp->SetLineWidth(2);
-      stddevGraphBadUp->SetLineColor(kRed);
-      stddevGraphBadUp->SetMarkerColor(kRed);
-
-      stddevGraphBadDown->SetLineWidth(2);
-      stddevGraphBadDown->SetLineColor(kRed);
-      stddevGraphBadDown->SetMarkerColor(kRed);
-
-      h->GetListOfFunctions()->Add(meanGraph);
-      h->GetListOfFunctions()->Add(stddevGraphMediumUp);
-      h->GetListOfFunctions()->Add(stddevGraphMediumDown);
-      h->GetListOfFunctions()->Add(stddevGraphBadUp);
-      h->GetListOfFunctions()->Add(stddevGraphBadDown);
+    if (mExpectedValueCheck) {
+      TBox* badBox = new TBox(xMin, yMin, xMax, yMax);
+      badBox->SetFillColor(kRed);
+      badBox->SetFillStyle(1001);
+      badBox->SetLineWidth(0);
+      TBox* mediumBox = new TBox(xMin, mExpectedPhysicsValue - mNSigmaBadExpectedPhysicsValue * mStdev, xMax, mExpectedPhysicsValue + mNSigmaBadExpectedPhysicsValue * mStdev);
+      mediumBox->SetFillColor(kOrange);
+      mediumBox->SetFillStyle(1001);
+      mediumBox->SetLineWidth(0);
+      TBox* goodBox = new TBox(xMin, mExpectedPhysicsValue - mNSigmaExpectedPhysicsValue * mStdev, xMax, mExpectedPhysicsValue + mNSigmaExpectedPhysicsValue * mStdev);
+      goodBox->SetFillColor(kGreen - 2);
+      goodBox->SetFillStyle(1001);
+      goodBox->SetLineWidth(0);
+      graphs[iGraph]->GetListOfFunctions()->Add(badBox);
+      graphs[iGraph]->GetListOfFunctions()->Add(mediumBox);
+      graphs[iGraph]->GetListOfFunctions()->Add(goodBox);
     }
-  }
 
-  // InfoBox
-  std::string checkMessage;
-  TPaveText* msg = new TPaveText(0.5, 0.75, 0.9, 0.9, "NDC");
-  h->GetListOfFunctions()->Add(msg);
-  msg->SetName(Form("%s_msg", mo->GetName()));
+    if (mRangeCheck) {
+      TLine* lineUpperRangeMed = new TLine(xMin, mExpectedPhysicsValue + mRangeMedium, xMax, mExpectedPhysicsValue + mRangeMedium);
+      lineUpperRangeMed->SetLineColor(kBlack);
+      lineUpperRangeMed->SetLineStyle(kDashed);
+      lineUpperRangeMed->SetLineWidth(1);
+      graphs[iGraph]->GetListOfFunctions()->Add(lineUpperRangeMed);
+      TLine* lineLowerRangeMed = new TLine(xMin, mExpectedPhysicsValue - mRangeMedium, xMax, mExpectedPhysicsValue - mRangeMedium);
+      lineLowerRangeMed->SetLineColor(kBlack);
+      lineLowerRangeMed->SetLineStyle(kDashed);
+      lineLowerRangeMed->SetLineWidth(1);
+      graphs[iGraph]->GetListOfFunctions()->Add(lineLowerRangeMed);
+      TLine* lineUpperRangeBad = new TLine(xMin, mExpectedPhysicsValue + mRangeBad, xMax, mExpectedPhysicsValue + mRangeBad);
+      lineUpperRangeBad->SetLineColor(kBlack);
+      lineUpperRangeBad->SetLineWidth(3);
+      graphs[iGraph]->GetListOfFunctions()->Add(lineUpperRangeBad);
+      TLine* lineLowerRangeBad = new TLine(xMin, mExpectedPhysicsValue - mRangeBad, xMax, mExpectedPhysicsValue - mRangeBad);
+      lineLowerRangeBad->SetLineColor(kBlack);
+      lineLowerRangeBad->SetLineWidth(3);
+      graphs[iGraph]->GetListOfFunctions()->Add(lineLowerRangeBad);
+    }
 
-  if (checkResult == Quality::Good) {
-    h->SetFillColor(kGreen - 2);
-    msg->Clear();
-    msg->AddText("Quality::Good");
-    msg->SetFillColor(kGreen - 2);
-  } else if (checkResult == Quality::Bad) {
-    h->SetFillColor(kRed);
-    msg->Clear();
-    msg->AddText("Quality::Bad. Failed checks:");
-    checkMessage = mBadString;
-    msg->SetFillColor(kRed);
-  } else if (checkResult == Quality::Medium) {
-    h->SetFillColor(kOrange);
-    msg->Clear();
-    msg->AddText("Quality::Medium. Failed checks:");
-    checkMessage = mMediumString;
-    msg->SetFillColor(kOrange);
-  } else if (checkResult == Quality::Null) {
-    h->SetFillColor(0);
-    msg->AddText("Quality::Null. Failed checks:");
-    checkMessage = mNullString;
-  }
+    // Draw the mean+stdev each point got compared against
+    if (mMeanCheck) {
+      TGraph* meanGraph = new TGraph();
+      TGraph* stddevGraphMediumUp = new TGraph();
+      TGraph* stddevGraphMediumDown = new TGraph();
+      TGraph* stddevGraphBadUp = new TGraph();
+      TGraph* stddevGraphBadDown = new TGraph();
 
-  // Split lines by hand as \n does not work with TPaveText
-  std::string delimiter = "\n";
-  size_t pos = 0;
-  std::string subText;
-  while ((pos = checkMessage.find(delimiter)) != std::string::npos) {
-    subText = checkMessage.substr(0, pos);
-    msg->AddText(subText.c_str());
-    checkMessage.erase(0, pos + delimiter.length());
-  }
-  msg->AddText(checkResult.getMetadata("Comment", "").c_str());
+      const int nPoints = graphs[iGraph]->GetN();
+      const double* yValues = graphs[iGraph]->GetY();
+      const double* yErrors = graphs[iGraph]->GetEY(); // returns nullptr for TGraph (no errors)
+      bool useErrors = true;
+      if (yErrors == nullptr) {
+        useErrors = false;
+      }
+
+      if (nPoints > 2) {
+        for (int nBins = 1; nBins < nPoints; nBins++) {
+          int pointNumberForMean = mPointToTakeForMeanCheck;
+          if ((nBins) < mPointToTakeForMeanCheck) {
+            pointNumberForMean = nBins;
+          }
+
+          double mean = 0.;
+          double stdevMean = 0.;
+          calculateStatistics(yValues, yErrors, useErrors, nBins - pointNumberForMean, nBins, mean, stdevMean);
+
+          double lastPointError = 0.;
+          if (useErrors) {
+            lastPointError = *(yErrors + nBins); // Error of last point
+          }
+          if (lastPointError < 0.) {
+            ILOG(Warning, Support) << "Last point for check of mean has negative error" << ENDM;
+          }
+
+          double stdev = sqrt(stdevMean * stdevMean + lastPointError * lastPointError);
+
+          meanGraph->AddPoint(graphs[iGraph]->GetPointX(nBins), mean);
+          stddevGraphMediumUp->AddPoint(graphs[iGraph]->GetPointX(nBins), mean + stdev * mNSigmaMean);
+          stddevGraphMediumDown->AddPoint(graphs[iGraph]->GetPointX(nBins), mean - stdev * mNSigmaMean);
+          stddevGraphBadUp->AddPoint(graphs[iGraph]->GetPointX(nBins), mean + stdev * mNSigmaBadMean);
+          stddevGraphBadDown->AddPoint(graphs[iGraph]->GetPointX(nBins), mean - stdev * mNSigmaBadMean);
+        } // for (int nBins = 1; nBins < nPoints; nBins++)
+
+        meanGraph->SetLineWidth(2);
+        meanGraph->SetLineColor(kGreen - 2);
+        meanGraph->SetMarkerColor(kGreen - 2);
+
+        stddevGraphMediumUp->SetLineWidth(2);
+        stddevGraphMediumUp->SetLineColor(kOrange);
+        stddevGraphMediumUp->SetMarkerColor(kOrange);
+
+        stddevGraphMediumDown->SetLineWidth(2);
+        stddevGraphMediumDown->SetLineColor(kOrange);
+        stddevGraphMediumDown->SetMarkerColor(kOrange);
+
+        stddevGraphBadUp->SetLineWidth(2);
+        stddevGraphBadUp->SetLineColor(kRed);
+        stddevGraphBadUp->SetMarkerColor(kRed);
+
+        stddevGraphBadDown->SetLineWidth(2);
+        stddevGraphBadDown->SetLineColor(kRed);
+        stddevGraphBadDown->SetMarkerColor(kRed);
+
+        graphs[iGraph]->GetListOfFunctions()->Add(meanGraph);
+        graphs[iGraph]->GetListOfFunctions()->Add(stddevGraphMediumUp);
+        graphs[iGraph]->GetListOfFunctions()->Add(stddevGraphMediumDown);
+        graphs[iGraph]->GetListOfFunctions()->Add(stddevGraphBadUp);
+        graphs[iGraph]->GetListOfFunctions()->Add(stddevGraphBadDown);
+      }
+    }
+
+    // InfoBox
+    std::string checkMessage;
+    TPaveText* msg = new TPaveText(0.5, 0.75, 0.9, 0.9, "NDC");
+    msg->SetName(Form("%s_msg_%d", mo->GetName(), iGraph));
+    graphs[iGraph]->GetListOfFunctions()->Add(msg);
+
+    if (mPadQualities[iGraph] == Quality::Good) {
+      graphs[iGraph]->SetFillColor(kGreen - 2);
+      msg->Clear();
+      msg->AddText("Quality::Good");
+      msg->SetFillColor(kGreen - 2);
+    } else if (mPadQualities[iGraph] == Quality::Bad) {
+      graphs[iGraph]->SetFillColor(kRed);
+      msg->Clear();
+      msg->AddText("Quality::Bad. Failed checks:");
+      checkMessage = mPadMetaData[Quality::Bad.getName()][iGraph];
+      msg->SetFillColor(kRed);
+    } else if (mPadQualities[iGraph] == Quality::Medium) {
+      graphs[iGraph]->SetFillColor(kOrange);
+      msg->Clear();
+      msg->AddText("Quality::Medium. Failed checks:");
+      checkMessage = mPadMetaData[Quality::Medium.getName()][iGraph];
+      msg->SetFillColor(kOrange);
+    } else if (mPadQualities[iGraph] == Quality::Null) {
+      graphs[iGraph]->SetFillColor(0);
+      msg->AddText("Quality::Null. Failed checks:");
+      checkMessage = mPadMetaData[Quality::Null.getName()][iGraph];
+    }
+
+    // Split lines by hand as \n does not work with TPaveText
+    std::string delimiter = "\n";
+    size_t pos = 0;
+    std::string subText;
+    while ((pos = checkMessage.find(delimiter)) != std::string::npos) {
+      subText = checkMessage.substr(0, pos);
+      msg->AddText(subText.c_str());
+      checkMessage.erase(0, pos + delimiter.length());
+    }
+    msg->AddText(checkResult.getMetadata("Comment", "").c_str());
+  } // for(int iGraph = 0; iGraph < graphs.size(); iGraph++)
 }
 
 void CheckOfTrendings::getGraphs(TCanvas* canv, std::vector<TGraph*>& graphs)
 {
-  
-
   if (mSliceTrend) {
     TList* padList = (TList*)canv->GetListOfPrimitives();
     padList->SetOwner(kTRUE);
     const int numberPads = padList->GetEntries();
-    for(int iPad = 0; iPad < numberPads; iPad++){
-      auto pad = static_cast<TPad*>(padList->At(0));
+    for (int iPad = 0; iPad < numberPads; iPad++) {
+      auto pad = static_cast<TPad*>(padList->At(iPad));
       graphs.push_back(static_cast<TGraph*>(pad->GetPrimitive("Graph")));
     }
   } else {
@@ -552,7 +584,6 @@ void CheckOfTrendings::getGraphs(TCanvas* canv, std::vector<TGraph*>& graphs)
 
 void CheckOfTrendings::calculateStatistics(const double* yValues, const double* yErrors, bool useErrors, const int firstPoint, const int lastPoint, double& mean, double& stddevOfMean)
 {
-
   // yErrors returns nullptr for TGraph (no errors)
   if (lastPoint - firstPoint <= 0) {
     ILOG(Error, Support) << "In calculateStatistics(), the first and last point of the range have to differ!" << ENDM;
@@ -602,6 +633,59 @@ void CheckOfTrendings::calculateStatistics(const double* yValues, const double* 
       stddevOfMean = sqrt((sumSquare / sumOfWeights - mean * mean) * (1. / (1. - ratioSumWeight)) * ratioSumWeight);
     }
   }
+}
+
+std::string CheckOfTrendings::createMetaData(std::vector<std::string> pointMetaData)
+{
+
+  std::string totalString = "";
+
+  if (pointMetaData.size() > 1) {
+    std::string meanString = "";
+    std::string expectedValueString = "";
+    std::string rangeString = "";
+    std::string zeroString = "";
+
+    for (int i; i < pointMetaData.size(); i++) {
+      if (pointMetaData.at(i).find("MeanCheck") != std::string::npos) {
+        meanString += " " + std::to_string(i) + ",";
+      }
+      if (pointMetaData.at(i).find("ExpectedValueCheck") != std::string::npos) {
+        expectedValueString += " " + std::to_string(i) + ",";
+      }
+      if (pointMetaData.at(i).find("RangeCheck") != std::string::npos) {
+        rangeString += " " + std::to_string(i) + ",";
+      }
+      if (pointMetaData.at(i).find("ZeroCheck") != std::string::npos) {
+        zeroString += " " + std::to_string(i) + ",";
+      }
+    }
+
+    if (meanString != "") {
+      meanString.pop_back();
+      meanString = "MeanCheck for Graphs:" + meanString + "\n";
+      totalString += meanString;
+    }
+    if (expectedValueString != "") {
+      expectedValueString.pop_back();
+      expectedValueString = "ExpectedValueCheck for Graphs:" + expectedValueString + "\n";
+      totalString += expectedValueString;
+    }
+    if (rangeString != "") {
+      rangeString.pop_back();
+      rangeString = "RangeCheck for Graphs:" + rangeString + "\n";
+      totalString += rangeString;
+    }
+    if (zeroString != "") {
+      zeroString.pop_back();
+      zeroString = "ZeroCheck for Graphs:" + zeroString + "\n";
+      totalString += zeroString;
+    }
+  } else {
+    totalString = pointMetaData[0];
+  }
+
+  return totalString;
 }
 
 } // namespace o2::quality_control_modules::tpc

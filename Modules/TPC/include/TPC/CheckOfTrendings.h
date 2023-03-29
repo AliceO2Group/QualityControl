@@ -11,6 +11,7 @@
 ///
 /// \file   CheckOfTrendings.h
 /// \author Laura Serksnyte
+/// \author Marcel Lesch
 ///
 
 #ifndef QC_MODULE_TPC_CHECKOFTRENDINGS_H
@@ -44,8 +45,9 @@ class CheckOfTrendings : public o2::quality_control::checker::CheckInterface
 
  private:
   ClassDefOverride(CheckOfTrendings, 2);
-  void calculateStatistics(const double* yValues, const double* yErrors, bool useErrors, const int firstPoint, const int lastPoint, double& mean, double& stddevOfMean);
   void getGraphs(TCanvas* canv, std::vector<TGraph*>& graphs);
+  void calculateStatistics(const double* yValues, const double* yErrors, bool useErrors, const int firstPoint, const int lastPoint, double& mean, double& stddevOfMean);
+  std::string createMetaData(std::vector<std::string> pointMetaData);
   std::string mCheckChoice;
   float mExpectedPhysicsValue;
   float mNSigmaExpectedPhysicsValue;
@@ -64,10 +66,8 @@ class CheckOfTrendings : public o2::quality_control::checker::CheckInterface
   int mPointToTakeForRangeCheck;
   int mPointToTakeForZeroCheck;
 
-  std::string mBadString = "";
-  std::string mMediumString = "";
-  std::string mGoodString = "";
-  std::string mNullString = "";
+  std::unordered_map<std::string, std::vector<std::string>> mPadMetaData;
+  std::vector<Quality> mPadQualities;
 
   std::string mMetadataComment;
 

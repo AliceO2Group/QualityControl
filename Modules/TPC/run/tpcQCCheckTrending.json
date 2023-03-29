@@ -117,6 +117,32 @@
       }
      },
     "postprocessing": {
+      "TestQualityCheckerTrending": {
+        "active": "true",
+        "className": "o2::quality_control_modules::tpc::QualityObserver",
+        "moduleName": "QcTPC",
+        "detectorName": "TPC",
+        "qualityObserverName": "TestQualityCheckerTrending",
+        "observeDetails": "true", 
+        "qualityDetailChoice": "Null, Good, Medium, Bad",
+        "qualityObserverConfig": [
+          {
+            "groupTitle": "Tracks Trending",
+            "path": "TPC/QO/",
+            "inputObjects": [ "CheckOfTrack_Trending/Tracks_Trending/hEta_StatMean_Trend", "CheckOfTrack_Trending_Slice/Tracks_Trending_Slice/hEta_StatMean_Trend" ],
+            "inputObjectTitles": [ "Eta, Mean Trend, Framework Trend",  "Eta, Mean Trend, Slice Trend" ]
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "10 seconds"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      },
       "PID_Trending": {
         "active": "false",
         "className": "o2::quality_control::postprocessing::TrendingTask",
@@ -420,7 +446,7 @@
             "path": "TPC/MO/Tracks",
             "names": [  "hEta" ],
             "reductorName": "o2::quality_control_modules::common::TH1SliceReductor",
-            "axisDivision": [ [ ] ],
+            "axisDivision": [ [ "-1.0", "-0.5", "0.0", "0.5", "1.0" ] ],
             "moduleName": "QcCommon"
           }
         ],
