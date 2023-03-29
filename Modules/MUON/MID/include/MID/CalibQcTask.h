@@ -71,14 +71,14 @@ class CalibQcTask final : public TaskInterface
   std::shared_ptr<TH1F> mMultNoiseMT22B{ nullptr };
   std::shared_ptr<TH1F> mMultNoiseMT22NB{ nullptr };
 
-  std::shared_ptr<TProfile2D> mBendNoiseMap11{ nullptr };
-  std::shared_ptr<TProfile2D> mBendNoiseMap12{ nullptr };
-  std::shared_ptr<TProfile2D> mBendNoiseMap21{ nullptr };
-  std::shared_ptr<TProfile2D> mBendNoiseMap22{ nullptr };
-  std::shared_ptr<TProfile2D> mNBendNoiseMap11{ nullptr };
-  std::shared_ptr<TProfile2D> mNBendNoiseMap12{ nullptr };
-  std::shared_ptr<TProfile2D> mNBendNoiseMap21{ nullptr };
-  std::shared_ptr<TProfile2D> mNBendNoiseMap22{ nullptr };
+  std::shared_ptr<TH2F> mBendNoiseMap11{ nullptr };
+  std::shared_ptr<TH2F> mBendNoiseMap12{ nullptr };
+  std::shared_ptr<TH2F> mBendNoiseMap21{ nullptr };
+  std::shared_ptr<TH2F> mBendNoiseMap22{ nullptr };
+  std::shared_ptr<TH2F> mNBendNoiseMap11{ nullptr };
+  std::shared_ptr<TH2F> mNBendNoiseMap12{ nullptr };
+  std::shared_ptr<TH2F> mNBendNoiseMap21{ nullptr };
+  std::shared_ptr<TH2F> mNBendNoiseMap22{ nullptr };
 
   std::shared_ptr<TH1F> mMultDeadMT11B{ nullptr };
   std::shared_ptr<TH1F> mMultDeadMT11NB{ nullptr };
@@ -89,14 +89,14 @@ class CalibQcTask final : public TaskInterface
   std::shared_ptr<TH1F> mMultDeadMT22B{ nullptr };
   std::shared_ptr<TH1F> mMultDeadMT22NB{ nullptr };
 
-  std::shared_ptr<TProfile2D> mBendDeadMap11{ nullptr };
-  std::shared_ptr<TProfile2D> mBendDeadMap12{ nullptr };
-  std::shared_ptr<TProfile2D> mBendDeadMap21{ nullptr };
-  std::shared_ptr<TProfile2D> mBendDeadMap22{ nullptr };
-  std::shared_ptr<TProfile2D> mNBendDeadMap11{ nullptr };
-  std::shared_ptr<TProfile2D> mNBendDeadMap12{ nullptr };
-  std::shared_ptr<TProfile2D> mNBendDeadMap21{ nullptr };
-  std::shared_ptr<TProfile2D> mNBendDeadMap22{ nullptr };
+  std::shared_ptr<TH2F> mBendDeadMap11{ nullptr };
+  std::shared_ptr<TH2F> mBendDeadMap12{ nullptr };
+  std::shared_ptr<TH2F> mBendDeadMap21{ nullptr };
+  std::shared_ptr<TH2F> mBendDeadMap22{ nullptr };
+  std::shared_ptr<TH2F> mNBendDeadMap11{ nullptr };
+  std::shared_ptr<TH2F> mNBendDeadMap12{ nullptr };
+  std::shared_ptr<TH2F> mNBendDeadMap21{ nullptr };
+  std::shared_ptr<TH2F> mNBendDeadMap22{ nullptr };
 };
 
 } // namespace o2::quality_control_modules::mid
