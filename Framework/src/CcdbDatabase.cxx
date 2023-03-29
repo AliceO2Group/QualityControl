@@ -68,7 +68,7 @@ CcdbDatabase::~CcdbDatabase() { disconnect(); }
 void CcdbDatabase::loadDeprecatedStreamerInfos()
 {
   if (getenv("QUALITYCONTROL_ROOT") == nullptr) {
-    ILOG(Warning, Support) << "QUALITYCONTROL_ROOT is not set thus the the streamerinfo ROOT file can't be found. "
+    ILOG(Debug, Devel) << "QUALITYCONTROL_ROOT is not set thus the the streamerinfo ROOT file can't be found. "
                            << "Consequently, old data might not be readable." << ENDM;
     return;
   }
