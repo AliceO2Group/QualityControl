@@ -93,12 +93,12 @@ void TrendingRate::computeTOFRates(TH2F* h, std::vector<int>& bcInt, std::vector
   mPreviousPlot->Reset();
   mPreviousPlot->Add(h);
 
-  if (nb == 0) { // threshold too high? return since hback was not created
-    ILOG(Warning, Support) << "Counted 0 background events, threshold might be too high!" << ENDM;
+  if (nb == 0) { // threshold too low? return since hback was not created
+    ILOG(Warning, Support) << "Counted 0 background events, BKG threshold might be too low!" << ENDM;
     delete hpdiff;
     return;
   }
-  if (hback->Integral() < 0) {
+  if (hback->Integral() < 0 || hback->GetMean() < 0.5) {
     return;
   }
 
@@ -128,7 +128,11 @@ void TrendingRate::computeTOFRates(TH2F* h, std::vector<int>& bcInt, std::vector
       const int bcmax = ibc * 18;
       TH1D* hs = hDiffGlobal.ProjectionY(Form("sign_%d_%d", bcmin, bcmax), ibc, ibc);
       hs->SetTitle(Form("%d < BC < %d", bcmin, bcmax));
-      hb->Scale(hs->GetBinContent(1) / hb->GetBinContent(1));
+      if (hb->GetBinContent(1)) {
+        hb->Scale(hs->GetBinContent(1) / hb->GetBinContent(1));
+      } else {
+        continue;
+      }
       const float overall = hs->Integral();
       if (overall <= 0.f) {
         ILOG(Info, Support) << "no signal for BC index " << ibc << ENDM;
@@ -220,6 +224,9 @@ void TrendingRate::trendValues(const Trigger& t, repository::DatabaseInterface& 
   std::vector<float> bcRate;
   std::vector<float> bcPileup;
 
+  bool foundHitMap = false;
+  bool foundVsBC = false;
+
   for (auto& dataSource : mConfig.dataSources) {
     auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name, t.timestamp, t.activity);
     if (!mo) {
@@ -227,22 +234,29 @@ void TrendingRate::trendValues(const Trigger& t, repository::DatabaseInterface& 
     }
     ILOG(Debug, Support) << "Got MO " << mo << ENDM;
     if (dataSource.name == "HitMap") {
+      foundHitMap = true;
       TH2F* hmap = dynamic_cast<TH2F*>(mo->getObject());
       hmap->Divide(hmap);
       mActiveChannels = hmap->Integral() * 24;
       ILOG(Info, Support) << "N channels = " << mActiveChannels << ENDM;
     } else if (dataSource.name == "Multiplicity/VsBC") {
       moHistogramMultVsBC = mo;
+      foundVsBC = true;
     }
+  }
+
+  if (!foundHitMap) {
+    ILOG(Info, Support) << "HitMap not found";
+    return;
+  }
+
+  if (!foundVsBC) {
+    ILOG(Info, Support) << "Multiplicity/VsBC not found";
+    return;
   }
 
   if (mActiveChannels < 1) {
     ILOG(Info, Support) << "No active channels or empty objects";
-    return;
-  }
-
-  if (!moHistogramMultVsBC) {
-    ILOG(Info, Support) << "Got no histogramMultVsBC, can't compute rates";
     return;
   }
 
