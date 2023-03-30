@@ -55,6 +55,7 @@ class TrendingTask : public PostProcessingInterface
   void finalize(Trigger, framework::ServiceRegistryRef) override;
 
   static void setUserAxisLabel(TAxis* xAxis, TAxis* yAxis, const std::string& graphAxisLabel);
+  static void setUserYAxisRange(TH1* hist, const std::string& graphYAxisRange);
 
  private:
   struct {
@@ -78,4 +79,4 @@ class TrendingTask : public PostProcessingInterface
 
 } // namespace o2::quality_control::postprocessing
 
-#endif //QUALITYCONTROL_TRENDINGTASK_H
+#endif // QUALITYCONTROL_TRENDINGTASK_H

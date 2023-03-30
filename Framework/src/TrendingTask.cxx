@@ -121,7 +121,7 @@ void TrendingTask::initialize(Trigger, framework::ServiceRegistryRef services)
   }
 }
 
-//todo: see if OptimizeBaskets() indeed helps after some time
+// todo: see if OptimizeBaskets() indeed helps after some time
 void TrendingTask::update(Trigger t, framework::ServiceRegistryRef services)
 {
   auto& qcdb = services.get<repository::DatabaseInterface>();
@@ -176,6 +176,17 @@ void TrendingTask::setUserAxisLabel(TAxis* xAxis, TAxis* yAxis, const std::strin
 
   xAxis->SetTitle(xLabel.data());
   yAxis->SetTitle(yLabel.data());
+}
+
+void TrendingTask::setUserYAxisRange(TH1* hist, const std::string& graphYAxisRange)
+{
+  const std::size_t posDivider = graphYAxisRange.find(':');
+  const std::string minString(graphYAxisRange.substr(0, posDivider));
+  const std::string maxString(graphYAxisRange.substr(posDivider + 1));
+
+  const float yMin = std::stof(minString);
+  const float yMax = std::stof(maxString);
+  hist->GetYaxis()->SetLimits(yMin, yMax);
 }
 
 void TrendingTask::generatePlots()
@@ -257,6 +268,14 @@ void TrendingTask::generatePlots()
       } else if (plot.varexp.find(":meta.runNumber") != std::string::npos) {
         histo->GetXaxis()->SetNoExponent(true);
       }
+
+      // Set the user-defined range on the y axis if needed.
+      if (!plot.graphYRange.empty()) {
+        setUserYAxisRange(histo, plot.graphYRange);
+        c->Modified();
+        c->Update();
+      }
+
       // QCG doesn't empty the buffers before visualizing the plot, nor does ROOT when saving the file,
       // so we have to do it here.
       histo->BufferEmpty();
