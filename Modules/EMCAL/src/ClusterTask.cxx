@@ -467,6 +467,7 @@ void ClusterTask::analyseTimeframe(const gsl::span<const o2::emcal::Cell>& cells
     mClusterFactory->setClustersContainer(inputEvent.mClusters);
     mClusterFactory->setCellsContainer(inputEvent.mCells);
     mClusterFactory->setCellsIndicesContainer(inputEvent.mCellIndices);
+    mClusterFactory->setLookUpTable();
     std::fill(numberOfClustersSupermodule.begin(), numberOfClustersSupermodule.end(), 0);
     std::for_each(maxClusterSupermodule.begin(), maxClusterSupermodule.end(), resetMaxCluster);
     std::for_each(maxClusterDets.begin(), maxClusterDets.end(), resetMaxCluster);
