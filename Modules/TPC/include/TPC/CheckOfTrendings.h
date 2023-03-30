@@ -28,6 +28,7 @@ namespace o2::quality_control_modules::tpc
 /// \brief  Check if the a new data point in trend is not 3sigma or 6 sigma away from the average value
 ///
 /// \author Laura Serksnyte
+/// \author Marcel Lesch
 class CheckOfTrendings : public o2::quality_control::checker::CheckInterface
 {
 
