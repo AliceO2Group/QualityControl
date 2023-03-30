@@ -24,9 +24,12 @@
       "conditionDB": {
         "url": "ccdb-test.cern.ch:8080"
       },
-      "infologger": { "": "Configuration of the Infologger (optional).",
-        "filterDiscardDebug": "false",    "": "Set to 1 to discard debug and trace messages (default: false)",
-        "filterDiscardLevel": "2", "": "Message at this level or above are discarded (default: 21 - Trace)" 
+      "infologger": {
+        "": "Configuration of the Infologger (optional).",
+        "filterDiscardDebug": "false",
+        "": "Set to 1 to discard debug and trace messages (default: false)",
+        "filterDiscardLevel": "2",
+        "": "Message at this level or above are discarded (default: 21 - Trace)"
       }
     },
     "tasks": {
@@ -48,7 +51,7 @@
           "pulseheightpeakupper": "5.0"
         },
         "location": "remote",
-	"saveObjectsToFile":"qcrootobjects.root"
+        "saveObjectsToFile": "qcrootobjects.root"
       },
       "DigitTask": {
         "active": "true",
@@ -68,7 +71,7 @@
           "pulseheightpeakupper": "5.0"
         },
         "location": "remote",
-	"saveObjectsToFile":"digitrootobjects.root"
+        "saveObjectsToFile": "digitrootobjects.root"
       },
       "TrackletsTask": {
         "active": "true",
@@ -89,7 +92,7 @@
           "pulseheightpeakupper": "5.0"
         },
         "location": "remote",
-	"saveObjectsToFile":"trackletobjects.root"
+        "saveObjectsToFile": "trackletobjects.root"
       },
       "PulseHeight": {
         "active": "true",
@@ -109,10 +112,26 @@
           "pulseheightpeakupper": "5.0"
         },
         "location": "remote",
-	"saveObjectsToFile":"qcpulseheight.root"
+        "saveObjectsToFile": "qcpulseheight.root"
+      },
+      "TrackingTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::trd::TrackingTask",
+        "moduleName": "QcTRD",
+        "detectorName": "TRD",
+        "cycleDurationSeconds": "60",
+        "maxNumberCycles": "-1",
+        "dataSource": {
+          "type": "direct",
+          "query": "tracks:TRD/TRACKINGQC;trigrectrk:TRD/TRGREC_ITSTPC"
+        },
+        "taskParameters": {
+          "pTminvalue": "0.0"
+        },
+        "location": "remote",
+        "saveObjectsToFile": "trackingqcobject.root"
       }
     },
-  "dataSamplingPolicies": [
-  ]
-}
+    "dataSamplingPolicies": []
+  }
 }
