@@ -40,7 +40,12 @@ Quality CalibMQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
   Quality result = Quality::Null;
   mIsEmpty = 0;
   for (auto& [moName, mo] : *moMap) {
-
+    (void)moName;
+    if (!mIsEmpty && mo->getName() == "NbTimeFrame") {
+      auto* h = dynamic_cast<TH1F*>(mo->getObject());
+      mCalibTF = h->GetBinContent(1);
+      printf("\n mCalibTF = %i \n", mCalibTF);
+    }
     (void)moName;
     if (!mIsEmpty && mo->getName() == "MBendBadMap11") {
       auto* h2 = dynamic_cast<TH2I*>(mo->getObject());
@@ -102,7 +107,7 @@ static void updateTitle(TH1* hist, std::string suffix)
     return;
   }
   TString title = hist->GetTitle();
-  title.Append(" (Hz) ");
+  title.Append(" ");
   title.Append(suffix.c_str());
   hist->SetTitle(title);
 }
@@ -141,6 +146,7 @@ void CalibMQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
   auto currentTime = getCurrentTime();
   updateTitle(dynamic_cast<TH2I*>(mo->getObject()), currentTime);
   TLatex* msg;
+  // if(mCalibTF>0){
   if (mo->getName() == "MBendBadMap11") {
     auto* h2 = dynamic_cast<TH2I*>(mo->getObject());
     if (mIsEmpty == 1) {
@@ -159,6 +165,7 @@ void CalibMQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       h2->GetListOfFunctions()->Add(msg);
     }
   }
+  // }
 }
 
 } // namespace o2::quality_control_modules::mid
