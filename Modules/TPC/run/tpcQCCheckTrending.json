@@ -65,7 +65,7 @@
 
         "stopTrigger_comment": [ "Parameters are needed to choose if check should be performed only as last point comparison to average or average comparison to expected value." ],
         "checkParameters": {
-          "CheckChoice" : "Mean, ExpectedValue, Range",
+          "CheckChoice" : "Zero, Mean",
           "SliceTrending" : "false",
           "expectedPhysicsValue" : "0.1",
           "EPV_comment" : "This value is used for the Expected Physics Value and the Range Check",
@@ -97,7 +97,7 @@
 
         "stopTrigger_comment": [ "Parameters are needed to choose if check should be performed only as last point comparison to average or average comparison to expected value." ],
         "checkParameters": {
-          "CheckChoice" : "Mean, ExpectedValue, Range",
+          "CheckChoice" : "Zero, Mean",
           "SliceTrending" : "true",
           "expectedPhysicsValue" : "0.1",
           "EPV_comment" : "This value is used for the Expected Physics Value and the Range Check",

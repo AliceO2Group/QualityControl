@@ -147,7 +147,6 @@ Quality CheckOfTrendings::check(std::map<std::string, std::shared_ptr<MonitorObj
   }
 
   for (int iGraph = 0; iGraph < graphs.size(); iGraph++) {
-
     std::string padNullString = "";
     std::string padBadString = "";
     std::string padMediumString = "";
@@ -163,6 +162,12 @@ Quality CheckOfTrendings::check(std::map<std::string, std::shared_ptr<MonitorObj
     if (yErrors == nullptr) {
       useErrors = false;
       ILOG(Info, Support) << "NO ERRORS" << ENDM;
+    } else {
+      const std::vector<double> vErr(yErrors, yErrors + nBins);
+      if (std::find(vErr.begin(), vErr.end(), 0.0) != vErr.end()) {
+        useErrors = false;
+        ILOG(Info, Support) << "Cannot take uncertainties of points into account for check of trending. At least one uncertainty is zero" << ENDM;
+      }
     }
 
     double mean = 0.;
@@ -235,8 +240,7 @@ Quality CheckOfTrendings::check(std::map<std::string, std::shared_ptr<MonitorObj
         padNullString += "ExpectedValueCheck: Only one data point without errors \n";
       } else {
         calculateStatistics(yValues, yErrors, useErrors, nBins - pointNumber, nBins, mean, stddevOfMean);
-        mMean = mean;
-        mStdev = stddevOfMean;
+        mStdev.push_back(stddevOfMean);
 
         double nSigma = -1.;
         if (stddevOfMean != 0.) {
@@ -403,11 +407,11 @@ void CheckOfTrendings::beautify(std::shared_ptr<MonitorObject> mo, Quality check
       badBox->SetFillColor(kRed);
       badBox->SetFillStyle(1001);
       badBox->SetLineWidth(0);
-      TBox* mediumBox = new TBox(xMin, mExpectedPhysicsValue - mNSigmaBadExpectedPhysicsValue * mStdev, xMax, mExpectedPhysicsValue + mNSigmaBadExpectedPhysicsValue * mStdev);
+      TBox* mediumBox = new TBox(xMin, mExpectedPhysicsValue - mNSigmaBadExpectedPhysicsValue * mStdev[iGraph], xMax, mExpectedPhysicsValue + mNSigmaBadExpectedPhysicsValue * mStdev[iGraph]);
       mediumBox->SetFillColor(kOrange);
       mediumBox->SetFillStyle(1001);
       mediumBox->SetLineWidth(0);
-      TBox* goodBox = new TBox(xMin, mExpectedPhysicsValue - mNSigmaExpectedPhysicsValue * mStdev, xMax, mExpectedPhysicsValue + mNSigmaExpectedPhysicsValue * mStdev);
+      TBox* goodBox = new TBox(xMin, mExpectedPhysicsValue - mNSigmaExpectedPhysicsValue * mStdev[iGraph], xMax, mExpectedPhysicsValue + mNSigmaExpectedPhysicsValue * mStdev[iGraph]);
       goodBox->SetFillColor(kGreen - 2);
       goodBox->SetFillStyle(1001);
       goodBox->SetLineWidth(0);
@@ -451,6 +455,12 @@ void CheckOfTrendings::beautify(std::shared_ptr<MonitorObject> mo, Quality check
       bool useErrors = true;
       if (yErrors == nullptr) {
         useErrors = false;
+      } else {
+        const std::vector<double> vErr(yErrors, yErrors + nPoints);
+        if (std::find(vErr.begin(), vErr.end(), 0.0) != vErr.end()) {
+          useErrors = false;
+          ILOG(Info, Support) << "Cannot take uncertainties of points into account for check of trending. At least one uncertainty is zero" << ENDM;
+        }
       }
 
       if (nPoints > 2) {

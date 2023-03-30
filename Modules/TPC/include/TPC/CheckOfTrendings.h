@@ -59,8 +59,7 @@ class CheckOfTrendings : public o2::quality_control::checker::CheckInterface
   float mRangeBad;
   bool mSliceTrend;
 
-  double mMean = 0;
-  float mStdev;
+  std::vector<float> mStdev;
 
   int mPointToTakeForExpectedValueCheck;
   int mPointToTakeForMeanCheck;
