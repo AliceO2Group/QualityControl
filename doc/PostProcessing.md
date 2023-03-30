@@ -289,7 +289,7 @@ Similarly, plots are defined by adding proper structures to the `"plots"` list, 
  stored under the `"name"` value and it will have the `"title"` value shown on the top. The `"varexp"`, `"selection"` and `"option"` fields correspond to the arguments of the [`TTree::Draw`](https://root.cern/doc/master/classTTree.html#a73450649dc6e54b5b94516c468523e45) method.
 Optionally, one can use `"graphError"` to add x and y error bars to a graph, as in the first plot example.
 The `"name"` and `"varexp"` are the only compulsory arguments, others can be omitted to reduce configuration files size.
-`"graphAxisLabel"` allows the user to set axis labels in the form of `"Label Y axis: Label X axis"`.
+`"graphAxisLabel"` allows the user to set axis labels in the form of `"Label Y axis: Label X axis"`. With `"graphYRange"` numerical values for fixed ranges of the y axis can be provided in the form of `"Min:Max"`.
 ``` json
 {
         ...
@@ -301,8 +301,8 @@ The `"name"` and `"varexp"` are the only compulsory arguments, others can be omi
             "selection": "",
             "option": "*L",
             "graphErrors": "5:example.stddev",
-            "graphAxisLabel": "Mean X:time"
-
+            "graphAxisLabel": "Mean X:time",
+            "graphYRange": "-2.3:6.7"
           },
           {
             "name": "histogram_of_means",

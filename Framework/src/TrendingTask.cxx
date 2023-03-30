@@ -170,6 +170,10 @@ void TrendingTask::trendValues(const Trigger& t, repository::DatabaseInterface& 
 void TrendingTask::setUserAxisLabel(TAxis* xAxis, TAxis* yAxis, const std::string& graphAxisLabel)
 {
   // todo if we keep adding this method to pp classes we should move it up somewhere
+  if (std::count(graphAxisLabel.begin(), graphAxisLabel.end(), ':') != 1 && graphAxisLabel != "") {
+    ILOG(Error, Support) << "In setup of graphAxisLabel yLabel:xLabel should be divided by one ':'" << ENDM;
+    return;
+  }
   const std::size_t posDivider = graphAxisLabel.find(':');
   const std::string yLabel(graphAxisLabel.substr(0, posDivider));
   const std::string xLabel(graphAxisLabel.substr(posDivider + 1));
@@ -180,6 +184,10 @@ void TrendingTask::setUserAxisLabel(TAxis* xAxis, TAxis* yAxis, const std::strin
 
 void TrendingTask::setUserYAxisRange(TH1* hist, const std::string& graphYAxisRange)
 {
+  if (std::count(graphYAxisRange.begin(), graphYAxisRange.end(), ':') != 1 && graphYAxisRange != "") {
+    ILOG(Error, Support) << "In setup of graphYRange yMin:yMax should be divided by one ':'" << ENDM;
+    return;
+  }
   const std::size_t posDivider = graphYAxisRange.find(':');
   const std::string minString(graphYAxisRange.substr(0, posDivider));
   const std::string maxString(graphYAxisRange.substr(posDivider + 1));
