@@ -112,10 +112,7 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
   mDecoder->setNThreads(mNThreads);
   mDecoder->setUserDataOrigin(header::DataOrigin("DS")); // set user data origin in dpl
   mDecoder->setUserDataDescription(header::DataDescription("RAWDATA0"));
-  mChipsBuffer.resize(mGeom->getNumberOfChips());
-
-  mGeom->fillMatrixCache(o2::math_utils::bit2Mask(o2::math_utils::TransformType::L2G));
-  const math_utils::Point3D<float> loc(0., 0., 0.);
+  mChipsBuffer.resize(24120); //resize to number of chips in ITS
 
   if (mLayer != -1) {
     // define the hitnumber, occupancy, errorcount array
@@ -401,6 +398,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   if (ctx.services().get<o2::framework::TimingInfo>().globalRunNumberChanged) {
     mGeom = o2::its::GeometryTGeo::Instance();
+    mGeom->fillMatrixCache(o2::math_utils::bit2Mask(o2::math_utils::TransformType::L2G));
   }
   // set timer
   std::chrono::time_point<std::chrono::high_resolution_clock> start;
