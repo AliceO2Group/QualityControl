@@ -77,7 +77,7 @@ Quality CheckRawMultiplicity::check(std::map<std::string, std::shared_ptr<Monito
         result = Quality::Medium;
         result.addReason(FlagReasonFactory::NoDetectorData(),
                          "Empty histogram (no counts)");
-        mShifterMessages.AddMessage("No counts!");
+        mShifterMessages.AddMessage("Empty histogram, no counts!");
       } else { // Histogram is non empty
 
         // Computing variables to check
@@ -92,20 +92,20 @@ Quality CheckRawMultiplicity::check(std::map<std::string, std::shared_ptr<Monito
         mo->addMetadata("integ", Form("%f", hitsIntegral));
 
         if (hitsIntegral > 0) {
-          mo->addMetadata("frac0mult", Form("%5.2f%%", hitsZeroMultIntegral * 100. / hitsIntegral));
+          mo->addMetadata("frac0mult", Form("%5.2f%%", hitsZeroMultIntegral * 100. / (hitsIntegral + hitsZeroMultIntegral)));
         } else {
           mo->addMetadata("frac0mult", "UNDEF");
         }
 
-        if (hitsIntegral == 0) { //if only "0 hits per event" bin is filled -> error
+        if (hitsIntegral == 0) { // if only "0 hits per event" bin is filled -> error
           if (h->GetBinContent(1) > 0) {
             result = Quality::Bad;
             result.addReason(FlagReasonFactory::Unknown(),
                              "Only events with 0 multiplicity");
-            mShifterMessages.AddMessage("Only events at 0 filled!");
+            mShifterMessages.AddMessage("Only events with 0 multiplicity!");
           }
         } else {
-          const bool isZeroBinContentHigh = (hitsZeroMultIntegral > (mMaxFractAtZeroMult * hitsIntegral));
+          const bool isZeroBinContentHigh = (hitsZeroMultIntegral > (mMaxFractAtZeroMult * (hitsIntegral + hitsZeroMultIntegral)));
           const bool isLowMultContentHigh = (hitsLowMultIntegral > (mMaxFractAtLowMult * hitsIntegral));
           const bool isAverageLow = (hitsMean < mMinRawHits);
           const bool isAverageHigh = (hitsMean > mMaxRawHits);
@@ -114,12 +114,13 @@ Quality CheckRawMultiplicity::check(std::map<std::string, std::shared_ptr<Monito
               if (isZeroBinContentHigh) {
                 result = Quality::Medium;
                 mShifterMessages.AddMessage("Zero-multiplicity counts are high");
-                mShifterMessages.AddMessage(Form("(%.2f higher than total)!", mMaxFractAtZeroMult));
-              } else if (isLowMultContentHigh) {
-                result = Quality::Medium;
-                mShifterMessages.AddMessage("Low-multiplicity counts are high");
-                mShifterMessages.AddMessage(Form("(%.2f higher than total)!", mMaxFractAtLowMult));
-              } else if (isAverageLow) {
+                // mShifterMessages.AddMessage(Form("(%.2f higher than total)!", mMaxFractAtZeroMult));
+              } /*else if (isLowMultContentHigh) {
+                 result = Quality::Medium;
+                 mShifterMessages.AddMessage("Low-multiplicity counts are high");
+                 mShifterMessages.AddMessage(Form("(%.2f higher than total)!", mMaxFractAtLowMult));
+              }*/
+              else if (isAverageLow) {
                 result = Quality::Medium;
                 mShifterMessages.AddMessage(Form("Average lower than expected (%.2f)!", mMinRawHits));
               } else if (isAverageHigh) {
@@ -131,7 +132,7 @@ Quality CheckRawMultiplicity::check(std::map<std::string, std::shared_ptr<Monito
               }
               break;
             case kModeCosmics: // Cosmics
-              if (hitsMean < 10.) {
+              if (hitsMean < 200.) {
                 result = Quality::Good;
                 mShifterMessages.AddMessage("Average within limits");
               } else {
@@ -172,8 +173,18 @@ void CheckRawMultiplicity::beautify(std::shared_ptr<MonitorObject> mo, Quality c
       return meta.at(key).c_str();
     };
     msg->AddText(Form("Mean value = %s", getMetaData("mean")));
-    msg->AddText(Form("Reference range: %5.2f-%5.2f", mMinRawHits, mMaxRawHits));
-    msg->AddText(Form("Events with 0 hits = %s", getMetaData("frac0mult")));
+    switch (mRunningMode) {
+      case kModeCollisions:
+        msg->AddText(Form("Reference range: [%5.2f-%5.2f]", mMinRawHits, mMaxRawHits));
+        msg->AddText(Form("Events with 0 hits = %s", getMetaData("frac0mult")));
+        break;
+      case kModeCosmics: // Cosmics
+        msg->AddText("Reference range: [0-200]");
+        break;
+      default:
+        ILOG(Fatal, Support) << "Not running in correct mode " << mRunningMode << ENDM;
+        break;
+    }
 
     if (h->GetEntries() < mMinEntriesBeforeMessage) { // Checking that the histogram has enough entries before printing messages
       msg->AddText("Cannot establish quality yet");
@@ -187,7 +198,7 @@ void CheckRawMultiplicity::beautify(std::shared_ptr<MonitorObject> mo, Quality c
       msg->AddText("Call TOF on-call.");
     } else if (checkResult == Quality::Medium) {
       ILOG(Info, Support) << "Quality::medium, setting to yellow" << ENDM;
-      msg->AddText("IF TOF IN RUN email TOF on-call.");
+      msg->AddText("IF TOF in run email TOF on-call.");
     }
   } else if (mo->getName() == "Multiplicity/SectorIA" ||
              mo->getName() == "Multiplicity/SectorOA" ||
