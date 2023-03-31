@@ -137,7 +137,7 @@ Quality CheckOfTrendings::check(std::map<std::string, std::shared_ptr<MonitorObj
   if (graphs.size() == 0) {
     ILOG(Fatal, Support) << "Could not retrieve any TGraph for CheckOfTrendings" << ENDM;
   }
-  for (int iGraph = 0; iGraph < graphs.size(); iGraph++) {
+  for (size_t iGraph = 0; iGraph < graphs.size(); iGraph++) {
     if (!graphs[iGraph]) { // if there is no TGraph, give an error and break
       ILOG(Fatal, Support) << "TGraph number " << iGraph << " is NULL." << ENDM;
     }
@@ -146,7 +146,7 @@ Quality CheckOfTrendings::check(std::map<std::string, std::shared_ptr<MonitorObj
     ILOG(Fatal, Support) << "Multiple Graphs found even though this is not a slice trending" << ENDM;
   }
 
-  for (int iGraph = 0; iGraph < graphs.size(); iGraph++) {
+  for (size_t iGraph = 0; iGraph < graphs.size(); iGraph++) {
     std::string padNullString = "";
     std::string padBadString = "";
     std::string padMediumString = "";
@@ -198,7 +198,7 @@ Quality CheckOfTrendings::check(std::map<std::string, std::shared_ptr<MonitorObj
           ILOG(Warning, Support) << "Last point for check of mean has negative error" << ENDM;
         }
 
-        double totalError = sqrt(stddevOfMean * stddevOfMean + lastPointError * lastPointError);
+        const double totalError = sqrt(stddevOfMean * stddevOfMean + lastPointError * lastPointError);
         double nSigma = -1.;
         if (totalError != 0.) {
           nSigma = std::abs(y_last - mean) / totalError;
@@ -307,11 +307,11 @@ Quality CheckOfTrendings::check(std::map<std::string, std::shared_ptr<MonitorObj
 
     // Quality aggregation
     if (qualitiesOfPad.size() >= 1) {
-      auto Worst_Quality_Pad = std::max_element(qualitiesOfPad.begin(), qualitiesOfPad.end(),
+      auto worst_Quality_Pad = std::max_element(qualitiesOfPad.begin(), qualitiesOfPad.end(),
                                                 [](const Quality& q1, const Quality& q2) {
                                                   return q1.isBetterThan(q2);
                                                 });
-      mPadQualities.push_back(*Worst_Quality_Pad);
+      mPadQualities.push_back(*worst_Quality_Pad);
     } else {
       mPadQualities.push_back(Quality::Null);
       padNullString += "No Checks performed for pad " + std::to_string(iGraph) + " \n";
@@ -321,7 +321,7 @@ Quality CheckOfTrendings::check(std::map<std::string, std::shared_ptr<MonitorObj
     mPadMetaData[Quality::Bad.getName()].push_back(padBadString);
     mPadMetaData[Quality::Medium.getName()].push_back(padMediumString);
     mPadMetaData[Quality::Good.getName()].push_back(padGoodString);
-  } // for(int iGraph = 0; iGraph < graphs.size(); iGraph++)
+  } // for(size_t iGraph = 0; iGraph < graphs.size(); iGraph++)
 
   // Final Aggregation of qualities and metadata of all Pads
   std::string totalBadString = "";
@@ -331,11 +331,11 @@ Quality CheckOfTrendings::check(std::map<std::string, std::shared_ptr<MonitorObj
   Quality totalQuality = Quality::Null;
 
   if (mPadQualities.size() >= 1) {
-    auto Worst_Quality = std::max_element(mPadQualities.begin(), mPadQualities.end(),
+    auto worst_Quality = std::max_element(mPadQualities.begin(), mPadQualities.end(),
                                           [](const Quality& q1, const Quality& q2) {
                                             return q1.isBetterThan(q2);
                                           });
-    totalQuality = *Worst_Quality;
+    totalQuality = *worst_Quality;
 
     // MetaData aggregation from all pads
     totalBadString = createMetaData(mPadMetaData[Quality::Bad.getName()]);
@@ -370,7 +370,7 @@ void CheckOfTrendings::beautify(std::shared_ptr<MonitorObject> mo, Quality check
   if (graphs.size() == 0) {
     ILOG(Fatal, Support) << "Could not retrieve any TGraph for CheckOfTrendings" << ENDM;
   }
-  for (int iGraph = 0; iGraph < graphs.size(); iGraph++) {
+  for (size_t iGraph = 0; iGraph < graphs.size(); iGraph++) {
     if (!graphs[iGraph]) { // if there is no TGraph, give an error and break
       ILOG(Fatal, Support) << "TGraph number " << iGraph << " is NULL." << ENDM;
     }
@@ -379,7 +379,7 @@ void CheckOfTrendings::beautify(std::shared_ptr<MonitorObject> mo, Quality check
     ILOG(Fatal, Support) << "Multiple Graphs found even though this is not a slice trending" << ENDM;
   }
 
-  for (int iGraph = 0; iGraph < graphs.size(); iGraph++) {
+  for (size_t iGraph = 0; iGraph < graphs.size(); iGraph++) {
     graphs[iGraph]->SetLineColor(kBlack);
     double xMin = graphs[iGraph]->GetXaxis()->GetXmin();
     double xMax = graphs[iGraph]->GetXaxis()->GetXmax();
@@ -558,7 +558,7 @@ void CheckOfTrendings::beautify(std::shared_ptr<MonitorObject> mo, Quality check
       checkMessage.erase(0, pos + delimiter.length());
     }
     msg->AddText(checkResult.getMetadata("Comment", "").c_str());
-  } // for(int iGraph = 0; iGraph < graphs.size(); iGraph++)
+  } // for(size_t iGraph = 0; iGraph < graphs.size(); iGraph++)
 }
 
 void CheckOfTrendings::getGraphs(TCanvas* canv, std::vector<TGraph*>& graphs)
@@ -615,7 +615,7 @@ void CheckOfTrendings::calculateStatistics(const double* yValues, const double* 
   } else {
     // In case of errors, we set our weights equal to 1/sigma_i^2
     const std::vector<double> vErr(yErrors + firstPoint, yErrors + lastPoint);
-    for (int i = 0; i < v.size(); i++) {
+    for (size_t i = 0; i < v.size(); i++) {
       weight = 1. / std::pow(vErr[i], 2.);
       sum += v[i] * weight;
       sumSquare += v[i] * v[i] * weight;
@@ -656,7 +656,7 @@ std::string CheckOfTrendings::createMetaData(std::vector<std::string> pointMetaD
     std::string rangeString = "";
     std::string zeroString = "";
 
-    for (int i; i < pointMetaData.size(); i++) {
+    for (size_t i = 0; i < pointMetaData.size(); i++) {
       if (pointMetaData.at(i).find("MeanCheck") != std::string::npos) {
         meanString += " " + std::to_string(i) + ",";
       }
