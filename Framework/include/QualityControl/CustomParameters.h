@@ -175,13 +175,26 @@ class CustomParameters
 
   /**
    * Return the value for the given key, and for beamType=default and runType=default.
+   * If the key does not exist, it will create it with a value="".
    * @param key
    * @return
-   * @throw std::out_of_range
    */
   std::string operator[](const std::string& key) const
   {
     return at(key);
+  }
+
+  /**
+   * Assign the value to the key, and for beamType=default and runType=default.
+   * @param key
+   * @return
+   */
+  std::string& operator[](const std::string& key)
+  {
+    if(count(key) == 0) {
+      set(key, "");
+    }
+    return mCustomParameters.at("default").at("default").at(key);
   }
 
   /**

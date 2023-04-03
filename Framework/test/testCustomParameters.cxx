@@ -103,7 +103,6 @@ BOOST_AUTO_TEST_CASE(test_cp_misc)
 
   BOOST_CHECK_EQUAL(cp["aaa"], "AAA");
   BOOST_CHECK_EQUAL(cp["ccc"], "CCC");
-  BOOST_CHECK_THROW(cp["not_found"], std::out_of_range);
 
   auto all = cp.getAllForRunBeam("runX", "default");
   auto another = cp.getAllForRunBeam("default", "default");
@@ -111,6 +110,16 @@ BOOST_AUTO_TEST_CASE(test_cp_misc)
   BOOST_CHECK_EQUAL(another.size(), same.size());
   BOOST_CHECK_EQUAL(all.size(), 2);
   BOOST_CHECK_EQUAL(another.size(), 3);
+
+  BOOST_CHECK_NO_THROW(cp["not_found"]); // this won't throw, it will create an empty value at "not_found"
+  BOOST_CHECK_EQUAL(cp.count("not_found"), 1);
+  BOOST_CHECK_EQUAL(cp.at("not_found"), "");
+
+  // test bracket assignemnt
+  cp["something"] = "else";
+  BOOST_CHECK_EQUAL(cp.at("something"), "else");
+  cp["something"] = "asdf";
+  BOOST_CHECK_EQUAL(cp.at("something"), "asdf");
 }
 
 BOOST_AUTO_TEST_CASE(test_cp_new_access_pattern)
