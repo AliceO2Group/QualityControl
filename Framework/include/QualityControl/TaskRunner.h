@@ -102,6 +102,8 @@ class TaskRunner : public framework::Task
 
   /// \brief Data Processor Label to identify all Task Runners
   static framework::DataProcessorLabel getTaskRunnerLabel() { return { "qc-task" }; }
+  /// \brief Data Processor Label to make it expendable, i.e. non-critical
+  static framework::DataProcessorLabel getExpendableLabel() { return { "expendable" }; }
   /// \brief ID string for all TaskRunner devices
   static std::string createTaskRunnerIdString();
   /// \brief Unified DataOrigin for Quality Control tasks

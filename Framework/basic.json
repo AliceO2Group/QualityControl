@@ -39,6 +39,7 @@
     "tasks": {
       "QcTask": {
         "active": "true",
+        "critical": "false",     "": "if false the task is allowed to die without stopping the workflow",
         "className": "o2::quality_control_modules::skeleton::SkeletonTask",
         "moduleName": "QcSkeleton",
         "detectorName": "TST",

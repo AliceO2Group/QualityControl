@@ -53,6 +53,9 @@ o2::framework::DataProcessorSpec TaskRunnerFactory::create(const TaskRunnerConfi
   };
   newTask.labels.emplace_back(o2::framework::ecs::qcReconfigurable);
   newTask.labels.emplace_back(TaskRunner::getTaskRunnerLabel());
+  if(!taskConfig.critical) {
+    newTask.labels.emplace_back(TaskRunner::getExpendableLabel());
+  }
 
   return newTask;
 }
@@ -144,6 +147,7 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
     taskSpec.className,
     multipleCycleDurations,
     taskSpec.maxNumberCycles,
+    taskSpec.critical,
     globalConfig.consulUrl,
     globalConfig.conditionDBUrl,
     globalConfig.monitoringUrl,

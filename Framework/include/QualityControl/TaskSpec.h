@@ -59,6 +59,7 @@ struct TaskSpec {
   DataSourceSpec dataSource;
   // advanced
   bool active = true;
+  bool critical = true;
   int maxNumberCycles = -1;
   size_t resetAfterCycles = 0;
   std::string saveObjectsToFile;
