@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE(test_cp_new_access_pattern)
   cp.set("bbb", "BBB");
   cp.set("aaa", "AAA", "runX");
   cp.set("aaa", "AAA", "runX", "beamB");
-  cp.set("ccc", "CCC");
+  cp.set("ccc", "1");
   cp.set("bbb", "BBB", "runX");
   cp.set("ccc", "CCC", "runY");
 
@@ -128,10 +128,10 @@ BOOST_AUTO_TEST_CASE(test_cp_new_access_pattern)
   std::string param = cp.atOrDefaultValue("myOwnKey", "1");
   BOOST_CHECK_EQUAL(std::stoi(param), 1);
   param = cp.atOrDefaultValue("aaa", "1");
-  BOOST_CHECK_EQUAL(std::stoi(param), 1);
+  BOOST_CHECK_EQUAL(param, "AAA");
 
   // if we don't have a default value and only want to do something if there is a value:
-  if (auto param2 = cp.find("aaa"); param2 != cp.end()) {
-    BOOST_CHECK_EQUAL(std::stoi(param), 1);
+  if (auto param2 = cp.find("ccc"); param2 != cp.end()) {
+    BOOST_CHECK_EQUAL(std::stoi(param2->second), 1);
   }
 }
