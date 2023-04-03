@@ -191,7 +191,7 @@ class CustomParameters
    */
   std::string& operator[](const std::string& key)
   {
-    if(count(key) == 0) {
+    if (count(key) == 0) {
       set(key, "");
     }
     return mCustomParameters.at("default").at("default").at(key);
