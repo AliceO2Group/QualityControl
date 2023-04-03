@@ -48,7 +48,6 @@ class TestCheck : public checker::CheckInterface
   // Override interface
   void configure() override
   {
-    mValidString = mCustomParameters["test"];
   }
   
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override
@@ -88,13 +87,10 @@ BOOST_AUTO_TEST_CASE(test_invoke_all_methods)
 
   BOOST_CHECK_EQUAL(testCheck.check(&moMap), Quality::Null);
 
-  CustomParameters customParameters;
-  customParameters["test"] = "A different string";
-  testCheck.setCustomParameters(customParameters);
+  testCheck.mValidString = "A different string";
   BOOST_CHECK_EQUAL(testCheck.check(&moMap), Quality::Bad);
 
-  customParameters["test"] = "A string";
-  testCheck.setCustomParameters(customParameters);
+  testCheck.mValidString = "A string";
   BOOST_CHECK_EQUAL(testCheck.check(&moMap), Quality::Good);
 
   testCheck.beautify(mo);
