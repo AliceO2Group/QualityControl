@@ -59,7 +59,7 @@
                    "askGRPMagField": "true",
                    "askMatLUT": "false",
                    "askTime": "false",
-                   "askOnceAllButField": "false",
+                   "askOnceAllButField": "true",
                    "needPropagatorD":  "false"
                 },
                 "": "For debugging, path to the file where to save. If empty or missing it won't save."
