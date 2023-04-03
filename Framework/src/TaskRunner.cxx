@@ -408,7 +408,7 @@ void TaskRunner::printTaskConfig() const
                     << " / Module name : " << mTaskConfig.moduleName                 //
                     << " / Detector name : " << mTaskConfig.detectorName             //
                     << " / Max number cycles : " << mTaskConfig.maxNumberCycles      //
-                    << " / critical : " << mTaskConfig.critical      //
+                    << " / critical : " << mTaskConfig.critical                      //
                     << " / Save to file : " << mTaskConfig.saveToFile
                     << " / Cycle duration seconds : ";
   for (auto& [cycleDuration, period] : mTaskConfig.cycleDurations) {
