@@ -73,9 +73,6 @@ class Check
   //TODO: Unique Input string
   static o2::header::DataDescription createCheckDataDescription(const std::string& checkName);
 
-  // For testing purpose
-  void setCheckInterface(CheckInterface* checkInterface) { mCheckInterface = checkInterface; };
-
   UpdatePolicyType getUpdatePolicyType() const;
   std::vector<std::string> getObjectsNames() const;
   bool getAllObjectsOption() const;

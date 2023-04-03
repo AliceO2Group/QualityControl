@@ -20,6 +20,7 @@
 // O2
 #include <Common/Exceptions.h>
 // QC
+#include "QualityControl/ActivityHelpers.h"
 #include "QualityControl/CheckInterface.h"
 #include "QualityControl/CheckSpec.h"
 #include "QualityControl/CommonSpec.h"
@@ -72,6 +73,7 @@ void Check::init()
   // Print setting
   ILOG(Info, Devel) << "Check config: ";
   ILOG(Info, Devel) << "Module " << mCheckConfig.moduleName;
+  ILOG(Info, Devel) << "; Name " << mCheckConfig.name;
   ILOG(Info, Devel) << "; Class " << mCheckConfig.className;
   ILOG(Info, Devel) << "; Detector " << mCheckConfig.detectorName;
   ILOG(Info, Devel) << "; Policy " << UpdatePolicyTypeUtils::ToString(mCheckConfig.policyType);
@@ -128,6 +130,13 @@ QualityObjectsType Check::check(std::map<std::string, std::shared_ptr<MonitorObj
     std::vector<std::string> monitorObjectsNames;
     boost::copy(moMapToCheck | boost::adaptors::map_keys, std::back_inserter(monitorObjectsNames));
 
+    if (std::any_of(moMapToCheck.begin(), moMapToCheck.end(), [](const std::pair<std::string, std::shared_ptr<MonitorObject>>& item) {
+          return item.second == nullptr || item.second->getObject() == nullptr;
+        })) {
+      ILOG(Warning, Devel) << "Some MOs in the map to check are nullptr, skipping check '" << mCheckInterface->getName() << "'" << ENDM;
+      continue;
+    }
+
     Quality quality;
     try {
       quality = mCheckInterface->check(&moMapToCheck);
@@ -137,9 +146,14 @@ QualityObjectsType Check::check(std::map<std::string, std::shared_ptr<MonitorObj
                        << diagnostic << ENDM;
       continue;
     }
+    auto commonActivity = ActivityHelpers::strictestMatchingActivity(
+      moMapToCheck.begin(),
+      moMapToCheck.end(),
+      [](const std::pair<std::string, std::shared_ptr<MonitorObject>>& item) -> const Activity& {
+        return item.second->getActivity();
+      });
 
-    ILOG(Debug, Devel) << "Check '"
-                       << "', quality '" << quality << "'" << ENDM;
+    ILOG(Debug, Devel) << "Check '" << mCheckConfig.name << "', quality '" << quality << "'" << ENDM;
     // todo: take metadata from somewhere
     qualityObjects.emplace_back(std::make_shared<QualityObject>(
       quality,
@@ -148,6 +162,7 @@ QualityObjectsType Check::check(std::map<std::string, std::shared_ptr<MonitorObj
       UpdatePolicyTypeUtils::ToString(mCheckConfig.policyType),
       stringifyInput(mCheckConfig.inputSpecs),
       monitorObjectsNames));
+    qualityObjects.back()->setActivity(commonActivity);
     beautify(moMapToCheck, quality);
   }
 
@@ -171,6 +186,7 @@ void Check::beautify(std::map<std::string, std::shared_ptr<MonitorObject>>& moMa
     }
   }
 }
+
 UpdatePolicyType Check::getUpdatePolicyType() const
 {
   return mCheckConfig.policyType;
@@ -247,7 +263,11 @@ framework::OutputSpec Check::createOutputSpec(const std::string& checkName)
 
 void Check::setActivity(std::shared_ptr<core::Activity> activity)
 {
-  mCheckInterface->setActivity(activity);
+  if (mCheckInterface) {
+    mCheckInterface->setActivity(std::move(activity));
+  } else {
+    throw std::runtime_error("Trying to set Activity on an empty CheckInterface '" + mCheckConfig.name + "'");
+  }
 }
 
 } // namespace o2::quality_control::checker

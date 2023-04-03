@@ -31,7 +31,7 @@ void loadLibrary(const std::string& moduleName)
   ILOG(Info, Devel) << "Loading library " << library << ENDM;
   int libLoaded = gSystem->Load(library.c_str(), "", true);
   if (libLoaded < 0) {
-    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Failed to load Detector Publisher Library"));
+    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Failed to load the library " + library));
   }
 }
 
