@@ -53,7 +53,7 @@ void TrackingTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Debug, Devel) << "initialize TRD TrackingTask" << ENDM;
 
-  // minimum pT of tracks is configurable from json file
+  // minimum pT of tracks is configurable from json
   if (auto param = mCustomParameters.find("pTminvalue"); param != mCustomParameters.end()) {
     mPtMin = std::stof(param->second);
   }
@@ -77,67 +77,72 @@ void TrackingTask::monitorData(o2::framework::ProcessingContext& ctx)
   ILOG(Debug, Devel) << "monitorData" << ENDM;
 
   auto trackqcArr = ctx.inputs().get<gsl::span<o2::trd::TrackQC>>("tracksqc");
+  auto trackTRDArr = ctx.inputs().get<gsl::span<o2::trd::TrackTRD>>("tracksTRD");
   auto tracktrigArr = ctx.inputs().get<gsl::span<o2::trd::TrackTriggerRecord>>("trigrectrk");
 
   for (const auto& tracktrig : tracktrigArr) {
-    int first = tracktrig.getFirstTrack();
-    int end = first + tracktrig.getNumberOfTracks();
-    // count number of matched tracks
-    int nMatched = 0;
-
-    for (int itrack = first; itrack < end; ++itrack) {
-      auto& trackqc = trackqcArr[itrack];
-      // match only ITS-TPC tracks
-      auto trackType = trackqc.refGlobalTrackId.getSource();
-      if (!(trackType == GTrackID::Source::ITSTPC)) {
-        continue;
-      }
-      nMatched++;
+    int start = tracktrig.getFirstTrack();
+    int end = start + tracktrig.getNumberOfTracks();
+    mNtracks->Fill(tracktrig.getNumberOfTracks());
+    for (int itrack = start; itrack < end; ++itrack) {
+      auto& trackTRD = trackTRDArr[itrack];
       // remove tracks with pt below threshold
-      if (trackqc.trackTRD.getPt() < mPtMin) {
+      if (trackTRD.getPt() < mPtMin) {
         continue;
       }
-      mNtracklets->Fill(trackqc.trackTRD.getNtracklets());
-      mTrackPt->Fill(trackqc.trackTRD.getPt());
-      mTrackChi2->Fill(trackqc.trackTRD.getReducedChi2());
-      // flag to fill some objects only once per track
+      // filling track information
+      mTrackPt->Fill(trackTRD.getPt());
+      mTrackPhi->Fill(trackTRD.getPhiPos());
+      mNtracklets->Fill(trackTRD.getNtracklets());
+      mTrackChi2->Fill(trackTRD.getReducedChi2());
+      mTrackEta->Fill(trackTRD.getEta());
+      // find charge bin of the track
+      int charge = trackTRD.getCharge() > 0 ? 0 : 1;
+      // flag to fill objects only once per track
       bool fillOnce = false;
-      for (auto ilayer : { 0, 1, 2, 3, 4, 5 }) {
-        // remove tracks with no tracklet in a layer
-        if (trackqc.trackTRD.getTrackletIndex(ilayer) < 0) {
-          continue;
-        }
-        // find charge bin of the track
-        int charge = -1;
-        if (trackqc.trackProp[ilayer].getQ2Pt() > 0) {
-          charge = 0;
-        } else if (trackqc.trackProp[ilayer].getQ2Pt() < 0) {
-          charge = 1;
-        }
-        if (charge == -1) {
+      for (int iLayer = 0; iLayer < NLAYER; iLayer++) {
+        // skip layers with no tracklet
+        if (trackTRD.getTrackletIndex(iLayer) < 0) {
           continue;
         }
         if (!fillOnce) {
-          mTrackEta->Fill(trackqc.trackProp[ilayer].getEta());
-          mTrackPhi->Fill(trackqc.trackProp[ilayer].getPhiPos());
-          mTrackletsEtaPhi[charge]->Fill(trackqc.trackProp[ilayer].getEta(), trackqc.trackProp[ilayer].getPhiPos(), trackqc.trackTRD.getNtracklets());
+          // eta-phi distribution of tracklets per layer
+          mTrackletsEtaPhi[charge]->Fill(trackTRD.getEta(), trackTRD.getPhiPos(), trackTRD.getNtracklets());
           fillOnce = true;
         }
-        // fill eta-phi map of tracks
-        mTracksEtaPhiPerLayer[charge][ilayer]->Fill(trackqc.trackProp[ilayer].getEta(), trackqc.trackProp[ilayer].getPhiPos());
-        // residuals
-        mDeltaY->Fill(trackqc.trackProp[ilayer].getY() - trackqc.trackletY[ilayer]);
-        mDeltaZ->Fill(trackqc.trackProp[ilayer].getZ() - trackqc.trackletZ[ilayer]);
-        mDeltaYDet->Fill(trackqc.trklt64[ilayer].getDetector(), trackqc.trackProp[ilayer].getY() - trackqc.trackletY[ilayer]);
-        mDeltaZDet->Fill(trackqc.trklt64[ilayer].getDetector(), trackqc.trackProp[ilayer].getZ() - trackqc.trackletZ[ilayer]);
-        mDeltaYvsSphi->Fill(trackqc.trackProp[ilayer].getSnp(), trackqc.trackProp[ilayer].getY() - trackqc.trackletY[ilayer]);
-        mDeltaYinEtaPerLayer[ilayer]->Fill(trackqc.trackProp[ilayer].getEta(), trackqc.trackProp[ilayer].getY() - trackqc.trackletY[ilayer]);
-        mDeltaYinPhiPerLayer[ilayer]->Fill(trackqc.trackProp[ilayer].getPhiPos(), trackqc.trackProp[ilayer].getY() - trackqc.trackletY[ilayer]);
-        mTrackletDef->Fill(trackqc.trackProp[ilayer].getSnp(), trackqc.trkltCalib[ilayer].getDy());
+        // eta-phi distribution per layer
+        mTracksEtaPhiPerLayer[charge][iLayer]->Fill(trackTRD.getEta(), trackTRD.getPhiPos());
       } // end of loop over layers
     }   // end of loop over tracks
-    mNtracks->Fill(nMatched);
-  } // end of loop over track trigger records
+  }     // end of loop over track trigger records
+
+  // Residuals in y and z using TRD/TRACKINGQC
+  for (const auto& trackqc : trackqcArr) {
+    // match only ITS-TPC tracks
+    auto trackType = trackqc.refGlobalTrackId.getSource();
+    if (!(trackType == GTrackID::Source::ITSTPC)) {
+      continue;
+    }
+    // remove tracks with pt below threshold
+    if (trackqc.trackTRD.getPt() < mPtMin) {
+      continue;
+    }
+    for (int iLayer = 0; iLayer < NLAYER; iLayer++) {
+      // skip layers with no tracklet
+      if (trackqc.trackTRD.getTrackletIndex(iLayer) < 0) {
+        continue;
+      }
+      // residuals information
+      mDeltaY->Fill(trackqc.trackProp[iLayer].getY() - trackqc.trackletY[iLayer]);
+      mDeltaZ->Fill(trackqc.trackProp[iLayer].getZ() - trackqc.trackletZ[iLayer]);
+      mDeltaYDet->Fill(trackqc.trklt64[iLayer].getDetector(), trackqc.trackProp[iLayer].getY() - trackqc.trackletY[iLayer]);
+      mDeltaZDet->Fill(trackqc.trklt64[iLayer].getDetector(), trackqc.trackProp[iLayer].getZ() - trackqc.trackletZ[iLayer]);
+      mDeltaYvsSphi->Fill(trackqc.trackProp[iLayer].getSnp(), trackqc.trackProp[iLayer].getY() - trackqc.trackletY[iLayer]);
+      mDeltaYinEtaPerLayer[iLayer]->Fill(trackqc.trackProp[iLayer].getEta(), trackqc.trackProp[iLayer].getY() - trackqc.trackletY[iLayer]);
+      mDeltaYinPhiPerLayer[iLayer]->Fill(trackqc.trackProp[iLayer].getPhiPos(), trackqc.trackProp[iLayer].getY() - trackqc.trackletY[iLayer]);
+      mTrackletDef->Fill(trackqc.trackProp[iLayer].getSnp(), trackqc.trkltCalib[iLayer].getDy());
+    } // end of loop over layers
+  }   // end of loop over tracks
 }
 
 void TrackingTask::endOfCycle()
@@ -183,12 +188,12 @@ void TrackingTask::reset()
 
 void TrackingTask::buildHistograms()
 {
-  mNtracks = new TH1D("Ntracks", "Number of matched tracks per tf", 100, 0.0, 100.0);
-  axisConfig(mNtracks, "# of tracks", "Counts", "", 1, 1.0, 1.3);
+  mNtracks = new TH1D("Ntracks", "Number of matched tracks", 100, 0.0, 100.0);
+  axisConfig(mNtracks, "# of tracks", "", "", 1, 1.0, 1.3);
   publishObject(mNtracks);
 
   mNtracklets = new TH1D("Ntracklets", "Number of Tracklets per track", 6, 0.0, 6.0);
-  axisConfig(mNtracklets, "# of tracklets", "Counts", "", 1, 1.0, 1.1);
+  axisConfig(mNtracklets, "# of tracklets", "", "", 1, 1.0, 1.1);
   publishObject(mNtracklets);
 
   mTrackEta = new TH1D("TrackEta", "Eta Distribution", 20, -1.0, 1.0);
@@ -199,7 +204,7 @@ void TrackingTask::buildHistograms()
   axisConfig(mTrackPhi, "#phi", "Counts", "", 1, 1.0, 1.1);
   publishObject(mTrackPhi);
 
-  mTrackPt = new TH1D("TrackPt", "p_{#it{T}} Distribution", 100, 0.0, 10.0);
+  mTrackPt = new TH1D("TrackPt", "p_{T} Distribution", 100, 0.0, 10.0);
   axisConfig(mTrackPt, "p_{T}", "Counts", "", 1, 1.0, 1.1);
   publishObject(mTrackPt);
 

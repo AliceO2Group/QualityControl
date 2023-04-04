@@ -123,7 +123,7 @@
         "maxNumberCycles": "-1",
         "dataSource": {
           "type": "direct",
-          "query": "tracks:TRD/TRACKINGQC;trigrectrk:TRD/TRGREC_ITSTPC"
+          "query": "tracksqc:TRD/TRACKINGQC;tracksTRD:TRD/MATCH_ITSTPC;trigrectrk:TRD/TRGREC_ITSTPC"
         },
         "taskParameters": {
           "pTminvalue": "0.0"
