@@ -14,6 +14,8 @@ target_sources(O2QcCommon
                        src/WorstOfAllAggregator.cxx
                        src/TRFCollectionTask.cxx
                        src/TRFCollectionTaskConfig.cxx
+                       src/QualityTask.cxx
+                       src/QualityTaskConfig.cxx
                        src/NonEmpty.cxx
                        src/MeanIsAbove.cxx
                        src/TH1Reductor.cxx
@@ -41,6 +43,7 @@ add_root_dictionary(O2QcCommon
                     HEADERS include/Common/NonEmpty.h
                             include/Common/WorstOfAllAggregator.h
                             include/Common/TRFCollectionTask.h
+                            include/Common/QualityTask.h
                             include/Common/MeanIsAbove.h
                             include/Common/TH1Reductor.h
                             include/Common/TH2Reductor.h

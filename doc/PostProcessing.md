@@ -14,6 +14,8 @@
          * [Configuration](#configuration-1)
       * [The SliceTrendingTask class](#the-slicetrendingtask-class)
          * [Configuration](#configuration-2)
+      * [The QualityTask class](#the-qualitytask-class)
+         * [Configuration](#configuration-3)
       * [The TRFCollectionTask class](#the-trfcollectiontask-class)
    * [More examples](#more-examples)
 <!--te-->
@@ -412,6 +414,87 @@ The field `"graphErrors"` is set up as `"graphErrors":"Var1:Var2"` where `Var1` 
         ...
 }
 ```
+
+### The QualityTask class
+
+This task allows to trend a set of QualityObjects (QO) stored in the QCDB, and to display their name and value in human-readable format on a canvas. For each QualityObject, it also creates a 1-D distribution of the corresponding quality values (*Good/Medium/Bad/Null*).
+ The aggregated quality of the detector is shown at the top of the canvas, immediately followed by a message that can provide instructions or further details based on the quality value.
+Each time the post-processing task is triggered, the QualityObjects are fetched from the CCDB and the canvas is updated with the current values. Moreover, the trending plot and 1-D distribution associated to each QO is aupdated accordingly.
+Hence, the trending and 1-D distribution can be used to estimate the fraction of good data for a given run.
+
+#### Configuration
+The QualityObjects to be monitored and displayed are passed as **dataSources**.
+A number of configuration parameters allow to identify the aggregated quality object and customize the messages to be displayed in the canvas:
+* `"AggregatedQualityName"`: the name of the QO representing the aggregated quality of the detector
+* `"MessageGood"`: the text to be displayed when the aggregated quality is *Good*
+* `"MessageMedium"`: the text to be displayed when the aggregated quality is *Medium*
+* `"MessageBad"`: the text to be displayed when the aggregated quality is *Bad*
+* `"MessageNull"`: the text to be displayed when the aggregated quality is *Null*
+
+Here is a complete example of `QualityTask` configuration:
+```json
+{
+  "qc": {
+    "config": {
+      "": "The usual global configuration variables"
+    },
+    "postprocessing": {
+      "ExampleQualityTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::QualityTask",
+        "moduleName": "QualityControl",
+        "detectorName": "TST",
+        "customization": [
+          {
+            "name": "AggregatedQualityName",
+            "value": "Aggregator/AggregatedQuality"
+          },
+          {
+            "name": "MessageGood",
+            "value": "All checks are OK"
+          },
+          {
+            "name": "MessageMedium",
+            "value": "Add bookkeeping entry"
+          },
+          {
+            "name": "MessageBad",
+            "value": "Inform XYZ on-call immediately"
+          },
+          {
+            "name": "MessageNull",
+            "value": "Some histograms are empty!!!"
+          }
+        ],
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "TST/QO",
+            "names": [
+              "Check1", "Check2", "Check3"
+            ]
+          },
+          {
+            "type": "repository",
+            "path": "TST/QO/Aggregator",
+            "name": "AggregatedQuality"
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "60 seconds"
+        ],
+        "stopTrigger": [
+          "userorcontrol", "10 minutes"
+        ]
+      }
+    }
+  }
+}
+```
+
 
 ### The TRFCollectionTask class
 
