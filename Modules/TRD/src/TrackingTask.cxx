@@ -85,7 +85,7 @@ void TrackingTask::monitorData(o2::framework::ProcessingContext& ctx)
     int end = start + tracktrig.getNumberOfTracks();
     mNtracks->Fill(tracktrig.getNumberOfTracks());
     for (int itrack = start; itrack < end; ++itrack) {
-      auto& trackTRD = trackTRDArr[itrack];
+      const auto& trackTRD = trackTRDArr[itrack];
       // remove tracks with pt below threshold
       if (trackTRD.getPt() < mPtMin) {
         continue;
@@ -98,17 +98,12 @@ void TrackingTask::monitorData(o2::framework::ProcessingContext& ctx)
       mTrackEta->Fill(trackTRD.getEta());
       // find charge bin of the track
       int charge = trackTRD.getCharge() > 0 ? 0 : 1;
-      // flag to fill objects only once per track
-      bool fillOnce = false;
+      // eta-phi distribution of tracklets per layer
+      mTrackletsEtaPhi[charge]->Fill(trackTRD.getEta(), trackTRD.getPhiPos(), trackTRD.getNtracklets());
       for (int iLayer = 0; iLayer < NLAYER; iLayer++) {
         // skip layers with no tracklet
         if (trackTRD.getTrackletIndex(iLayer) < 0) {
           continue;
-        }
-        if (!fillOnce) {
-          // eta-phi distribution of tracklets per layer
-          mTrackletsEtaPhi[charge]->Fill(trackTRD.getEta(), trackTRD.getPhiPos(), trackTRD.getNtracklets());
-          fillOnce = true;
         }
         // eta-phi distribution per layer
         mTracksEtaPhiPerLayer[charge][iLayer]->Fill(trackTRD.getEta(), trackTRD.getPhiPos());
@@ -206,7 +201,7 @@ void TrackingTask::buildHistograms()
 
   mTrackPt = new TH1D("TrackPt", "p_{T} Distribution", 100, 0.0, 10.0);
   axisConfig(mTrackPt, "p_{T}", "Counts", "", 1, 1.0, 1.1);
-  publishObject(mTrackPt);
+  publishObject(mTrackPt, "", "logx");
 
   mTrackChi2 = new TH1D("TrackChi2", "Reduced Chi2Distribution", 100, 0.0, 10.0);
   axisConfig(mTrackChi2, "reduced #chi^{2}", "Counts", "", 1, 1.0, 1.1);
