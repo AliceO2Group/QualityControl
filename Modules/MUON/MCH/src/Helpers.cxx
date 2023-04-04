@@ -18,6 +18,8 @@
 
 #include "MCH/Helpers.h"
 #include "QualityControl/MonitorObject.h"
+#include "QualityControl/QualityObject.h"
+#include "QualityControl/ObjectMetadataKeys.h"
 #include "MCHRawElecMap/Mapper.h"
 #include <TLine.h>
 #include <TLine.h>
@@ -400,7 +402,7 @@ static long getMoTimeStamp(std::shared_ptr<o2::quality_control::core::MonitorObj
 {
   long timeStamp{ 0 };
 
-  auto iter = mo->getMetadataMap().find("Created");
+  auto iter = mo->getMetadataMap().find(repository::metadata_keys::created);
   if (iter != mo->getMetadataMap().end()) {
     timeStamp = std::stol(iter->second);
   }
@@ -474,6 +476,77 @@ bool CcdbObjectHelper::update(repository::DatabaseInterface* qcdb, long timeStam
 
   if (!checkMoTimeStamp(mObject, mTimeStamp)) {
     return false;
+  }
+
+  return true;
+}
+
+//_________________________________________________________________________________________
+
+static long getQoTimeStamp(std::shared_ptr<o2::quality_control::core::QualityObject> qo)
+{
+  long timeStamp{ 0 };
+
+  auto iter = qo->getMetadataMap().find(repository::metadata_keys::created);
+  if (iter != qo->getMetadataMap().end()) {
+    timeStamp = std::stol(iter->second);
+  }
+
+  return timeStamp;
+}
+
+//_________________________________________________________________________________________
+
+static bool checkQoTimeStamp(std::shared_ptr<o2::quality_control::core::QualityObject> qo, uint64_t& timeStampOld)
+{
+  auto timeStamp = getQoTimeStamp(qo);
+  bool result = (timeStamp != timeStampOld) ? true : false;
+  timeStampOld = timeStamp;
+  return result;
+}
+
+//_________________________________________________________________________________________
+
+QualityObjectHelper::QualityObjectHelper()
+{
+  setStartIme();
+}
+
+//_________________________________________________________________________________________
+
+QualityObjectHelper::QualityObjectHelper(std::string p, std::string n) : mPath(p), mName(n)
+{
+  setStartIme();
+}
+
+//_________________________________________________________________________________________
+
+void QualityObjectHelper::setStartIme()
+{
+  mTimeStart = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+}
+
+//_________________________________________________________________________________________
+
+bool QualityObjectHelper::update(repository::DatabaseInterface* qcdb, long timeStamp, const core::Activity& activity)
+{
+  mObject = qcdb->retrieveQO(mPath + "/" + mName, timeStamp, activity);
+  if (!mObject) {
+    return false;
+  }
+
+  if (timeStamp > mTimeStart) {
+    // we are requesting a new object, so check that the retrieved one
+    // was created after the start of the processing
+    if (getQoTimeStamp(mObject) < mTimeStart) {
+      return false;
+    }
+  }
+
+  if (!checkQoTimeStamp(mObject, mTimeStamp)) {
+    mUpdated = false;
+  } else {
+    mUpdated = true;
   }
 
   return true;

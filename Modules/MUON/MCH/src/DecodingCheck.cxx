@@ -25,7 +25,6 @@
 #include <TH2.h>
 #include <TList.h>
 #include <TMath.h>
-#include <TPaveText.h>
 #include <TLine.h>
 #include <iostream>
 #include <fstream>
@@ -209,31 +208,11 @@ void DecodingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     l->SetLineStyle(kDashed);
     h->GetListOfFunctions()->Add(l);
 
-    TPaveText* msg = new TPaveText(0.1, 0.9, 0.9, 0.95, "NDC");
-    h->GetListOfFunctions()->Add(msg);
-    msg->SetName(Form("%s_msg", mo->GetName()));
-    msg->SetBorderSize(0);
-
     if (checkResult == Quality::Good) {
-      msg->Clear();
-      msg->AddText("All errors within limits: OK!!!");
-      msg->SetFillColor(kGreen);
-
       h->SetFillColor(kGreen);
     } else if (checkResult == Quality::Bad) {
-      ILOG(Debug, Devel) << "Quality::Bad, setting to red";
-      //
-      msg->Clear();
-      msg->AddText("Too many errors, call MCH on-call.");
-      msg->SetFillColor(kRed);
-
       h->SetFillColor(kRed);
     } else if (checkResult == Quality::Medium) {
-      ILOG(Debug, Devel) << "Quality::medium, setting to orange";
-
-      msg->Clear();
-      msg->AddText("No entries. If MCH in the run, check Infologger");
-      msg->SetFillColor(kYellow);
       h->SetFillColor(kOrange);
     }
     h->SetLineColor(kBlack);
@@ -258,31 +237,11 @@ void DecodingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     l->SetLineStyle(kDashed);
     h->GetListOfFunctions()->Add(l);
 
-    TPaveText* msg = new TPaveText(0.1, 0.9, 0.9, 0.95, "NDC");
-    h->GetListOfFunctions()->Add(msg);
-    msg->SetName(Form("%s_msg", mo->GetName()));
-    msg->SetBorderSize(0);
-
     if (checkResult == Quality::Good) {
-      msg->Clear();
-      msg->AddText("All errors within limits: OK!!!");
-      msg->SetFillColor(kGreen);
-
       h->SetFillColor(kGreen);
     } else if (checkResult == Quality::Bad) {
-      ILOG(Debug, Devel) << "Quality::Bad, setting to red";
-      //
-      msg->Clear();
-      msg->AddText("Too many errors, call MCH on-call.");
-      msg->SetFillColor(kRed);
-
       h->SetFillColor(kRed);
     } else if (checkResult == Quality::Medium) {
-      ILOG(Debug, Devel) << "Quality::medium, setting to orange";
-
-      msg->Clear();
-      msg->AddText("No entries. If MCH in the run, check Infologger");
-      msg->SetFillColor(kYellow);
       h->SetFillColor(kOrange);
     }
     h->SetLineColor(kBlack);

@@ -26,7 +26,6 @@
 #include <TCanvas.h>
 #include <TList.h>
 #include <TMath.h>
-#include <TPaveText.h>
 #include <TLine.h>
 #include <iostream>
 #include <fstream>
@@ -199,7 +198,7 @@ Quality DigitsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
 
     if (matchHistName(mo->getName(), mGoodChanFracRatioHistName)) {
       TH1F* h = getHisto<TH1F>(mo);
-      if (h) {
+      if (h && h->GetEntries() > 0) {
         auto q = checkBadChannelsRatio(h);
         mQualityChecker.addCheckResult(q);
       }
@@ -265,31 +264,12 @@ void DigitsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
     h->SetDrawOption("colz");
     h->SetMinimum(mRatePlotScaleMin);
     h->SetMaximum(mRatePlotScaleMax);
-    TPaveText* msg = new TPaveText(0.1, 0.9, 0.9, 0.95, "NDC");
-    h->GetListOfFunctions()->Add(msg);
-    msg->SetName(Form("%s_msg", mo->GetName()));
-    msg->SetBorderSize(0);
 
     if (checkResult == Quality::Good) {
-      msg->Clear();
-      msg->AddText("All occupancies within limits: OK!!!");
-      msg->SetFillColor(kGreen);
-
       h->SetFillColor(kGreen);
     } else if (checkResult == Quality::Bad) {
-      LOG(info) << "Quality::Bad, setting to red";
-      //
-      msg->Clear();
-      msg->AddText("Call MCH experts");
-      msg->SetFillColor(kRed);
-
       h->SetFillColor(kRed);
     } else if (checkResult == Quality::Medium) {
-      LOG(info) << "Quality::medium, setting to orange";
-
-      msg->Clear();
-      msg->AddText("No entries. If MCH in the run, call MCH experts");
-      msg->SetFillColor(kYellow);
       h->SetFillColor(kOrange);
     }
     h->SetLineColor(kBlack);
@@ -362,33 +342,11 @@ void DigitsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
       h->GetListOfFunctions()->Add(l);
     }
 
-    h->SetFillColor(kGreen);
-
-    TPaveText* msg = new TPaveText(0.1, 0.903, 0.9, 0.945, "NDC");
-    h->GetListOfFunctions()->Add(msg);
-    msg->SetName(Form("%s_msg", mo->GetName()));
-    msg->SetBorderSize(0);
-
     if (checkResult == Quality::Good) {
-      msg->Clear();
-      msg->AddText("All occupancies within limits: OK!!!");
-      msg->SetFillColor(kGreen);
-
       h->SetFillColor(kGreen);
     } else if (checkResult == Quality::Bad) {
-      LOG(info) << "Quality::Bad, setting to red";
-      //
-      msg->Clear();
-      msg->AddText("Call MCH experts");
-      msg->SetFillColor(kRed);
-
       h->SetFillColor(kRed);
     } else if (checkResult == Quality::Medium) {
-      LOG(info) << "Quality::medium, setting to orange";
-
-      msg->Clear();
-      msg->AddText("No entries. If MCH in the run, call MCH experts");
-      msg->SetFillColor(kYellow);
       h->SetFillColor(kOrange);
     }
     h->SetLineColor(kBlack);
@@ -442,33 +400,11 @@ void DigitsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
       h->GetListOfFunctions()->Add(l);
     }
 
-    h->SetFillColor(kGreen);
-
-    TPaveText* msg = new TPaveText(0.1, 0.903, 0.9, 0.945, "NDC");
-    h->GetListOfFunctions()->Add(msg);
-    msg->SetName(Form("%s_msg", mo->GetName()));
-    msg->SetBorderSize(0);
-
     if (checkResult == Quality::Good) {
-      msg->Clear();
-      msg->AddText("All occupancies within limits: OK!!!");
-      msg->SetFillColor(kGreen);
-
       h->SetFillColor(kGreen);
     } else if (checkResult == Quality::Bad) {
-      LOG(info) << "Quality::Bad, setting to red";
-      //
-      msg->Clear();
-      msg->AddText("Call MCH experts");
-      msg->SetFillColor(kRed);
-
       h->SetFillColor(kRed);
     } else if (checkResult == Quality::Medium) {
-      LOG(info) << "Quality::medium, setting to orange";
-
-      msg->Clear();
-      msg->AddText("No entries. If MCH in the run, call MCH experts");
-      msg->SetFillColor(kYellow);
       h->SetFillColor(kOrange);
     }
     h->SetLineColor(kBlack);
