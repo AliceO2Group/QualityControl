@@ -54,14 +54,17 @@ Quality CalibQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
         result = Quality::Good;
       else
         result = Quality::Bad;
+      // std::cout << "mTF = "<< mTF  << std::endl;
     }
     if (mo->getName() == "NbNoiseROF") {
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
       mNoiseRof = h->GetBinContent(1);
+      // std::cout << "mNoiseRof = "<< mNoiseRof  << std::endl;
     }
     if (mo->getName() == "NbDeadROF") {
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
       mDeadRof = h->GetBinContent(1);
+      // std::cout << "mDeadRof = "<< mDeadRof  << std::endl;
     }
   }
   return result;
@@ -75,7 +78,7 @@ static void updateTitle(TH1* hist, std::string suffix)
     return;
   }
   TString title = hist->GetTitle();
-  title.Append(" (kHz) ");
+  // title.Append(" (kHz) ");
   title.Append(suffix.c_str());
   hist->SetTitle(title);
 }
@@ -100,78 +103,103 @@ void CalibQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResu
   // printf("\n*********** CalibQcCheck ****** beautify \n");
   auto currentTime = getCurrentTime();
   updateTitle(dynamic_cast<TH2F*>(mo->getObject()), currentTime);
-  // printf("\n*********** CalibQcCheck ****** nTF = %d, nDeadRof = %d, nNoiseRof = %d\n",nTF,nDeadRof,nNoiseRof);
+  float scaleNoise = 1.;
+  float scaleDead = 1.;
+  if (mOrbTF * mTF > 0)
+    scaleNoise = 1. / (mTF * scaleTime * mOrbTF * 1000); // (kHz)
+  if (mDeadRof > 0)
+    scaleDead = 100. / mDeadRof; // % Nb dead/Nb FET
+
   if (checkResult == Quality::Good) {
-    // float scale = 1 / (mTF * scaleTime); //Dead max 998,1
-    // float scale = 1 / (mTF); //Dead max 11,38 (== 113826/10000TF)
-    // float scale = 1.; //Dead max 113826
-    // float scale = 100.;
-    float scale = 1 / (mTF * scaleTime * mOrbTF * 1000); // (kHz)
     /// Scale Noise Maps ::
     if (mo->getName() == "BendNoiseMap11") {
       auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
-      h2->Scale(scale);
+      updateTitle(h2, " (kHz)");
+      h2->Scale(scaleNoise);
+      h2->SetMaximum(10.);
     }
     if (mo->getName() == "BendNoiseMap12") {
       auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
-      h2->Scale(scale);
+      updateTitle(h2, " (kHz)");
+      h2->Scale(scaleNoise);
+      h2->SetMaximum(10.);
     }
     if (mo->getName() == "BendNoiseMap21") {
       auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
-      h2->Scale(scale);
+      updateTitle(h2, " (kHz)");
+      h2->Scale(scaleNoise);
+      h2->SetMaximum(10.);
     }
     if (mo->getName() == "BendNoiseMap22") {
       auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
-      h2->Scale(scale);
+      updateTitle(h2, " (kHz)");
+      h2->Scale(scaleNoise);
+      h2->SetMaximum(10.);
     }
     if (mo->getName() == "NBendNoiseMap11") {
       auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
-      h2->Scale(scale);
+      updateTitle(h2, " (kHz)");
+      h2->Scale(scaleNoise);
+      h2->SetMaximum(10);
     }
     if (mo->getName() == "NBendNoiseMap12") {
       auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
-      h2->Scale(scale);
+      updateTitle(h2, " (kHz)");
+      h2->Scale(scaleNoise);
+      h2->SetMaximum(10.);
     }
     if (mo->getName() == "NBendNoiseMap21") {
       auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
-      h2->Scale(scale);
+      updateTitle(h2, " (kHz)");
+      h2->Scale(scaleNoise);
+      h2->SetMaximum(10.);
     }
     if (mo->getName() == "NBendNoiseMap22") {
       auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
-      h2->Scale(scale);
+      updateTitle(h2, " (kHz)");
+      h2->Scale(scaleNoise);
+      h2->SetMaximum(10.);
     }
     /// Scale Dead Maps ::
     if (mo->getName() == "BendDeadMap11") {
       auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
-      h2->Scale(scale);
+      updateTitle(h2, " (%)");
+      h2->Scale(scaleDead);
     }
     if (mo->getName() == "BendDeadMap12") {
       auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
-      h2->Scale(scale);
+      updateTitle(h2, " (%)");
+      h2->Scale(scaleDead);
     }
     if (mo->getName() == "BendDeadMap21") {
       auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
-      h2->Scale(scale);
+      updateTitle(h2, " (%)");
+      h2->Scale(scaleDead);
     }
     if (mo->getName() == "BendDeadMap22") {
       auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
-      h2->Scale(scale);
+      updateTitle(h2, " (%)");
+      h2->Scale(scaleDead);
     }
     if (mo->getName() == "NBendDeadMap11") {
       auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
-      h2->Scale(scale);
+      updateTitle(h2, " (%)");
+      h2->Scale(scaleDead);
     }
     if (mo->getName() == "NBendDeadMap12") {
       auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
-      h2->Scale(scale);
+      updateTitle(h2, " (%)");
+      h2->Scale(scaleDead);
     }
     if (mo->getName() == "NBendDeadMap21") {
       auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
-      h2->Scale(scale);
+      updateTitle(h2, " (%)");
+      h2->Scale(scaleDead);
     }
     if (mo->getName() == "NBendDeadMap22") {
       auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
-      h2->Scale(scale);
+      updateTitle(h2, " (%)");
+      h2->Scale(scaleDead);
     }
   }
 }
