@@ -56,7 +56,7 @@
           "askGRPMagField": "true",
           "askMatLUT": "false",
           "askTime": "false",
-          "askOnceAllButField": "false",
+          "askOnceAllButField": "true",
           "needPropagatorD":  "false"
         },
         "location" : "remote",
