@@ -12,11 +12,14 @@
 ///
 /// \file   QualityTaskConfig.cxx
 /// \author Andrea Ferrero
+/// \author Piotr Konopka
 ///
 
 #include "Common/QualityTaskConfig.h"
 #include <boost/property_tree/ptree.hpp>
 #include <chrono>
+
+using namespace o2::quality_control::core;
 
 namespace o2::quality_control_modules::common
 {
@@ -24,52 +27,37 @@ namespace o2::quality_control_modules::common
 QualityTaskConfig::QualityTaskConfig(std::string name, const boost::property_tree::ptree& config)
   : PostProcessingConfig(name, config)
 {
-  // parameters
-  if (const auto& customConfigs = config.get_child_optional("qc.postprocessing." + name + ".customization"); customConfigs.has_value()) {
-    for (const auto& customConfig : customConfigs.value()) {
-      if (const auto& customNames = customConfig.second.get_child_optional("name"); customNames.has_value()) {
-        mConfigParameters.insert(std::make_pair(customConfig.second.get<std::string>("name"), customConfig.second.get<std::string>("value")));
-      }
-    }
-  }
-
-  mAggregatedQualityName = getConfigParameter("AggregatedQualityName");
-  mMessageGood = getConfigParameter("MessageGood");
-  mMessageMedium = getConfigParameter("MessageMedium");
-  mMessageBad = getConfigParameter("MessageBad");
-  mMessageNull = getConfigParameter("MessageNull");
-
   auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 
-  for (const auto& dataSourceConfig : config.get_child("qc.postprocessing." + name + ".dataSources")) {
-    if (const auto& sourceNames = dataSourceConfig.second.get_child_optional("names"); sourceNames.has_value()) {
-      for (const auto& sourceName : sourceNames.value()) {
-        dataSources.push_back({ dataSourceConfig.second.get<std::string>("type", "repository"),
-                                dataSourceConfig.second.get<std::string>("path"),
-                                sourceName.second.data(),
-                                now });
+  for (const auto& qualityGroupConfig : config.get_child("qc.postprocessing." + name + ".qualityGroups")) {
+    QualityGroup qualityGroup{
+      qualityGroupConfig.second.get<std::string>("name"),
+      qualityGroupConfig.second.get<std::string>("title", ""),
+      qualityGroupConfig.second.get<std::string>("path"),
+    };
+    if (const auto& ignoredQualities = qualityGroupConfig.second.get_child_optional("ignoreQualitiesDetails"); ignoredQualities.has_value()) {
+      for (const auto& ignoredQuality : ignoredQualities.value()) {
+        qualityGroup.ignoreQualitiesDetails.emplace_back(Quality::fromString(ignoredQuality.second.get_value<std::string>()));
       }
-    } else if (!dataSourceConfig.second.get<std::string>("name").empty()) {
-      // "name" : [ "something" ] would return an empty string here
-      dataSources.push_back({ dataSourceConfig.second.get<std::string>("type", "repository"),
-                              dataSourceConfig.second.get<std::string>("path"),
-                              dataSourceConfig.second.get<std::string>("name"),
-                              now });
-    } else {
-      throw std::runtime_error("No 'name' value or a 'names' vector in the path 'qc.postprocessing." + name + ".dataSources'");
     }
-  }
-}
 
-const std::string QualityTaskConfig::getConfigParameter(std::string name) const
-{
-  std::string result;
-  auto entry = mConfigParameters.find(name);
-  if (entry != mConfigParameters.end()) {
-    result = entry->second;
-  }
+    if (const auto& inputObjects = qualityGroupConfig.second.get_child_optional("inputObjects"); inputObjects.has_value()) {
+      for (const auto& inputObject : inputObjects.value()) {
+        QualityConfig qualityConfig{
+          inputObject.second.get<std::string>("name"),
+          inputObject.second.get<std::string>("title", "")
+        };
+        qualityConfig.messages[Quality::Good.getName()] = inputObject.second.get<std::string>("messageGood", "");
+        qualityConfig.messages[Quality::Medium.getName()] = inputObject.second.get<std::string>("messageMedium", "");
+        qualityConfig.messages[Quality::Bad.getName()] = inputObject.second.get<std::string>("messageBad", "");
+        qualityConfig.messages[Quality::Null.getName()] = inputObject.second.get<std::string>("messageNull", "");
+        qualityConfig.latestTimestamp = now;
+        qualityGroup.inputObjects.emplace_back(std::move(qualityConfig));
+      }
+    }
 
-  return result;
+    qualityGroups.emplace_back(std::move(qualityGroup));
+  }
 }
 
 } // namespace o2::quality_control_modules::common

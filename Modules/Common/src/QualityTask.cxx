@@ -12,6 +12,7 @@
 ///
 /// \file    QualityTask.h
 /// \author  Andrea Ferrero
+/// \author  Piotr Konopka
 /// \brief   Post-processing of quality flags
 ///
 
@@ -22,7 +23,9 @@
 #include "QualityControl/ObjectMetadataKeys.h"
 #include <TDatime.h>
 #include <TPaveText.h>
+#include <TLine.h>
 #include <chrono>
+#include <variant>
 
 using namespace o2::quality_control::postprocessing;
 using namespace o2::quality_control::core;
@@ -100,6 +103,21 @@ void QualityTask::QualityTrendGraph::update(uint64_t time, Quality q)
   }
 }
 
+std::string QualityTask::QualityTrendGraph::distributionName(const std::string& groupName, const std::string& qualityName)
+{
+  return "Distributions/" + groupName + "/" + qualityName;
+}
+
+std::string QualityTask::QualityTrendGraph::trendName(const std::string& groupName, const std::string& qualityName)
+{
+  return "Trends/" + groupName + "/" + qualityName;
+}
+
+static std::string fullQoPath(const std::string& path, const std::string& name)
+{
+  return path + "/" + name;
+}
+
 //_________________________________________________________________________________________
 
 void QualityTask::configure(const boost::property_tree::ptree& config)
@@ -136,20 +154,24 @@ void QualityTask::initialize(quality_control::postprocessing::Trigger t, framewo
   mQualityIDs[Quality::Medium.getName()] = 2;
   mQualityIDs[Quality::Good.getName()] = 3;
 
-  mCheckerMessages[Quality::Null.getName()] = mConfig.mMessageNull;
-  mCheckerMessages[Quality::Bad.getName()] = mConfig.mMessageBad;
-  mCheckerMessages[Quality::Medium.getName()] = mConfig.mMessageMedium;
-  mCheckerMessages[Quality::Good.getName()] = mConfig.mMessageGood;
-
   // instantiate the histograms and trends, one for each of the quality objects in the data sources list
-  for (auto source : mConfig.dataSources) {
-    auto iter1 = mHistograms.emplace(std::make_pair(source.name, std::make_unique<TH1F>(source.name.c_str(), source.name.c_str(), 4, 0, 4)));
-    setQualityLabels(iter1.first->second.get());
-    getObjectsManager()->startPublishing(iter1.first->second.get());
+  for (const auto& qualityGroupConfig : mConfig.qualityGroups) {
+    for (const auto& qualityConfig : qualityGroupConfig.inputObjects) {
+      auto fullPath = fullQoPath(qualityGroupConfig.path, qualityConfig.name);
+      mLatestTimestamps[fullPath] = 0;
 
-    auto iter2 = mTrends.emplace(std::make_pair(source.name, std::make_unique<QualityTrendGraph>((std::string("Trends/") + source.name).c_str(), source.name.c_str())));
-    getObjectsManager()->startPublishing(iter2.first->second.get());
-    getObjectsManager()->setDisplayHint(iter2.first->second.get(), "gridy");
+      auto distributionName = QualityTrendGraph::distributionName(qualityGroupConfig.name, qualityConfig.name);
+      auto distributionTitle = qualityConfig.title.empty() ? qualityConfig.name : qualityConfig.title;
+      auto distrIter = mHistograms.emplace(std::make_pair(distributionName, std::make_unique<TH1F>(distributionName.c_str(), distributionTitle.c_str(), 4, 0, 4)));
+      setQualityLabels(distrIter.first->second.get());
+      getObjectsManager()->startPublishing(distrIter.first->second.get());
+
+      auto trendName = QualityTrendGraph::trendName(qualityGroupConfig.name, qualityConfig.name);
+      auto trendTitle = qualityConfig.title.empty() ? qualityConfig.name : qualityConfig.title;
+      auto iter2 = mTrends.emplace(std::make_pair(trendName, std::make_unique<QualityTrendGraph>(trendName.c_str(), trendTitle)));
+      getObjectsManager()->startPublishing(iter2.first->second.get());
+      getObjectsManager()->setDisplayHint(iter2.first->second.get(), "gridy");
+    }
   }
 
   // canvas for the human-readable messages
@@ -162,26 +184,28 @@ void QualityTask::initialize(quality_control::postprocessing::Trigger t, framewo
 // A non-null QO is returned in the first element of the pair if the QO is found in the QCDB
 // The second element of the pair is set to true if the QO has a time stamp more recent than the last retrieved one
 
-static std::pair<std::shared_ptr<QualityObject>, bool> getQO(repository::DatabaseInterface& qcdb, Trigger t, QualityTaskConfig::DataSource& source)
+std::pair<std::shared_ptr<QualityObject>, bool> QualityTask::getQO(
+  repository::DatabaseInterface& qcdb, const Trigger& t, const std::string& fullPath)
 {
-  // retrieve MO from CCDB
-  auto qo = qcdb.retrieveQO(source.path + "/" + source.name, t.timestamp, t.activity);
+  // retrieve QO from CCDB
+  auto qo = qcdb.retrieveQO(fullPath, t.timestamp, t.activity);
   if (!qo) {
     return { nullptr, false };
   }
   // get the MO creation time stamp
-  long timeStamp{ 0 };
-  auto iter = qo->getMetadataMap().find(repository::metadata_keys::created);
-  if (iter != qo->getMetadataMap().end()) {
-    timeStamp = std::stol(iter->second);
+  long thisTimestamp{ 0 };
+  auto createdIter = qo->getMetadataMap().find(repository::metadata_keys::created);
+  if (createdIter != qo->getMetadataMap().end()) {
+    thisTimestamp = std::stol(createdIter->second);
   }
   // check if the object is newer than the last visited one
-  if (timeStamp <= source.timeStamp) {
+  auto lastTimestamp = mLatestTimestamps[fullPath];
+  if (thisTimestamp <= lastTimestamp) {
     return { qo, false };
   }
 
   // update the time stamp of the last visited object
-  source.timeStamp = timeStamp;
+  mLatestTimestamps[fullPath] = thisTimestamp;
 
   return { qo, true };
 }
@@ -191,67 +215,103 @@ static std::pair<std::shared_ptr<QualityObject>, bool> getQO(repository::Databas
 void QualityTask::update(quality_control::postprocessing::Trigger t, framework::ServiceRegistryRef services)
 {
   auto& qcdb = services.get<repository::DatabaseInterface>();
-  std::vector<std::string> messages;
 
-  Quality aggregatedQuality = Quality::Null;
+  struct Separator {
+  };
+  struct TextAlign {
+    Short_t value;
+  };
+  struct Message {
+    std::string text;
+  };
+  std::vector<std::variant<Separator, TextAlign, Message>> lines;
 
-  for (auto source : mConfig.dataSources) {
-    // retrieve QO from CCDB, in the form of a std::pair<std::shared_ptr<QualityObject>, bool>
-    // a valid object is returned in the first element of the pair if the QO is found in the QCDB
-    // the second element of the pair is set to true if the QO has a time stamp more recent than the last retrieved one
-    auto qo = getQO(qcdb, t, source);
-    if (!qo.first) {
-      continue;
+  for (const auto& qualityGroupConfig : mConfig.qualityGroups) {
+    if (!qualityGroupConfig.title.empty()) {
+      lines.emplace_back(Message{ qualityGroupConfig.title });
+      lines.emplace_back(TextAlign{ 22 });
     }
 
-    auto timeSeconds = source.timeStamp / 1000; // ROOT expects seconds since epoch
-
-    std::string qoName = qo.first->getName();
-    std::string qoValue = qo.first->getQuality().getName();
-    int qoID = mQualityIDs[qoValue];
-    std::string qoStr = fmt::format("#color[{}]", mColors[qoValue]) + "{" + qoValue + "}";
-
-    // only update plots/trends when the objects is updated
-    if (qo.second) {
-      // fill quality histogram
-      auto iter1 = mHistograms.find(source.name);
-      if (iter1 != mHistograms.end()) {
-        iter1->second->Fill(qoID + 0.5);
+    for (const auto& qualityConfig : qualityGroupConfig.inputObjects) {
+      auto fullPath = fullQoPath(qualityGroupConfig.path, qualityConfig.name);
+      auto& qualityTitle = qualityConfig.title.empty() ? qualityConfig.name : qualityConfig.title;
+      // retrieve QO from CCDB, in the form of a std::pair<std::shared_ptr<QualityObject>, bool>
+      // a valid object is returned in the first element of the pair if the QO is found in the QCDB
+      // the second element of the pair is set to true if the QO has a time stamp more recent than the last retrieved one
+      auto [qo, wasUpdated] = getQO(qcdb, t, fullPath);
+      if (!qo) {
+        lines.emplace_back(Message{ fmt::format("#color[{}]{{{} : quality missing!}}", mColors[Quality::Null.getName()], qualityTitle) });
+        lines.emplace_back(TextAlign{ 12 });
+        continue;
       }
 
-      // add point in quality trending plot
-      auto iter2 = mTrends.find(source.name);
-      if (iter2 != mTrends.end()) {
-        iter2->second->update(timeSeconds, qo.first->getQuality());
+      const auto& quality = qo->getQuality();
+      std::string qoName = qo->getName();
+      std::string qoValue = quality.getName();
+      int qoID = mQualityIDs[qoValue];
+      lines.emplace_back(Message{ fmt::format("#color[{}]{{{} : {}}}", mColors[qoValue], qualityTitle, qoValue) });
+      lines.emplace_back(TextAlign{ 12 });
+
+      if (auto& message = qualityConfig.messages.at(qoValue); !message.empty()) {
+        lines.emplace_back(Message{ fmt::format("#color[{}]{{{}}}", mColors[qoValue], message) });
+        lines.emplace_back(TextAlign{ 12 });
+      }
+
+      if (std::find(qualityGroupConfig.ignoreQualitiesDetails.begin(), qualityGroupConfig.ignoreQualitiesDetails.end(), quality) == qualityGroupConfig.ignoreQualitiesDetails.end()) {
+        for (const auto& [flag, comment] : qo->getReasons()) {
+          if (comment.empty()) {
+            lines.emplace_back(Message{ fmt::format("#color[{}]{{#rightarrow Flag: {}}}", kGray + 2, flag.getName()) });
+          } else {
+            lines.emplace_back(Message{ fmt::format("#color[{}]{{#rightarrow Flag: {}: {}}}", kGray + 2, flag.getName(), comment) });
+          }
+          lines.emplace_back(TextAlign{ 12 });
+        }
+      }
+
+      // only update plots/trends when the objects is wasUpdated
+      if (wasUpdated) {
+        // fill quality histogram
+        auto distributionName = QualityTrendGraph::distributionName(qualityGroupConfig.name, qualityConfig.name);
+        auto distroIter = mHistograms.find(distributionName);
+        if (distroIter != mHistograms.end()) {
+          distroIter->second->Fill(qoID + 0.5);
+        }
+
+        // add point in quality trending plot
+        auto trendName = QualityTrendGraph::trendName(qualityGroupConfig.name, qualityConfig.name);
+        auto trendIter = mTrends.find(trendName);
+        if (trendIter != mTrends.end()) {
+          auto timestampSeconds = mLatestTimestamps[fullPath] / 1000; // ROOT expects seconds since epoch
+          trendIter->second->update(timestampSeconds, qo->getQuality());
+        }
       }
     }
-
-    // add line to be displayed in summary canvas
-    if (qoName == mConfig.mAggregatedQualityName) {
-      // the aggregated quality is treated separately
-      aggregatedQuality = qo.first->getQuality();
-    } else {
-      messages.emplace_back(fmt::format("{} = {}", qoName, qoStr));
-    }
+    lines.emplace_back(Separator{});
   }
+  lines.pop_back(); // remove the last separator
 
-  // add mesages for aggregated quality
-  messages.insert(messages.begin(), "");
-  if (!mCheckerMessages[aggregatedQuality.getName()].empty()) {
-    messages.insert(messages.begin(), fmt::format("#color[{}]", mColors[aggregatedQuality.getName()]) + "{" + mCheckerMessages[aggregatedQuality.getName()] + "}");
-  }
-  messages.insert(messages.begin(), fmt::format("Quality = #color[{}]", mColors[aggregatedQuality.getName()]) + "{" + aggregatedQuality.getName() + "}");
-
-  // draw messages in canvas
+  // draw lines in canvas
   mQualityCanvas->Clear();
-  mQualityCanvas->cd();
+  mQualityCanvas->cd(1);
 
-  TPaveText* msg = new TPaveText(0.1, 0.1, 0.9, 0.9, "NDC");
-  for (auto s : messages) {
-    msg->AddText(s.c_str());
-  }
-  msg->SetBorderSize(0);
+  auto* msg = new TPaveText(0.05, 0.05, 0.95, 0.95, "NDC");
+  msg->SetLineColor(kBlack);
   msg->SetFillColor(kWhite);
+  msg->SetBorderSize(0);
+
+  for (const auto& line : lines) {
+    if (std::holds_alternative<Message>(line)) {
+      msg->AddText(std::get<Message>(line).text.c_str());
+    } else if (std::holds_alternative<Separator>(line)) {
+      msg->AddLine();
+      ((TLine*)msg->GetListOfLines()->Last())->SetLineWidth(3);
+      ((TLine*)msg->GetListOfLines()->Last())->SetLineStyle(9);
+      ((TLine*)msg->GetListOfLines()->Last())->SetLineColor(kBlack);
+    } else if (std::holds_alternative<TextAlign>(line)) {
+      ((TText*)msg->GetListOfLines()->Last())->SetTextAlign(std::get<TextAlign>(line).value);
+    }
+  }
+
   msg->Draw();
 }
 
