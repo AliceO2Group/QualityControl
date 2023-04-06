@@ -89,11 +89,13 @@ class SingleCheck
     ILOG(Debug, Support) << log << ENDM;
   }
 
-  float getThresholdWarning() {
+  float getThresholdWarning()
+  {
     return mThresholdWarning;
   }
 
-  float getThresholdError() {
+  float getThresholdError()
+  {
     return mThresholdError;
   }
 

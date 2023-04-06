@@ -36,14 +36,15 @@ namespace o2::quality_control_modules::fv0
 constexpr int kBinSwOnly = 1;
 constexpr int kBinTcmOnly = 2;
 
-void TriggersSwVsTcmCheck::configure() {
+void TriggersSwVsTcmCheck::configure()
+{
   if (auto param = mCustomParameters.find("ccdbUrl"); param != mCustomParameters.end()) {
     setCcdbUrl(param->second);
     ILOG(Debug, Support) << "configure() : using deadChannelMap from CCDB, configured url = " << param->second << ENDM;
   } else {
     setCcdbUrl("o2-ccdb.internal");
     ILOG(Debug, Support) << "configure() : using deadChannelMap from CCDB, default url = "
-                          << "o2-ccdb.internal" << ENDM;
+                         << "o2-ccdb.internal" << ENDM;
   }
 
   mPositionMsgBox = { 0.15, 0.75, 0.85, 0.9 };
@@ -82,10 +83,9 @@ Quality TriggersSwVsTcmCheck::check(std::map<std::string, std::shared_ptr<Monito
         if ((bool)(histogram->GetBinContent(binId, kBinSwOnly)) || (bool)(histogram->GetBinContent(binId, kBinTcmOnly))) {
           mNumErrors++;
           if (result.isBetterThan(Quality::Bad)) {
-              result.set(Quality::Bad);
+            result.set(Quality::Bad);
           }
-          result.addReason(FlagReasonFactory::Unknown(),
-                  "Only SW or TCM trigger was activated");
+          result.addReason(FlagReasonFactory::Unknown(), "Only SW or TCM trigger was activated");
         }
       }
     }

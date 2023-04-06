@@ -241,7 +241,7 @@ void GenericCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResu
     h->GetListOfFunctions()->Add(msg);
 
     // add threshold lines
-    if(mCheckMinThresholdY.isActive()) {
+    if (mCheckMinThresholdY.isActive()) {
       Double_t xMin = h->GetXaxis()->GetXmin();
       Double_t xMax = h->GetXaxis()->GetXmax();
       auto* lineMinError = new TLine(xMin, mCheckMinThresholdY.getThresholdError(), xMax, mCheckMinThresholdY.getThresholdError());
