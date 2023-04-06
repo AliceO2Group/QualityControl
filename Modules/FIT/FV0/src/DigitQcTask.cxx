@@ -302,8 +302,6 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     mSetAllowedChIDsAmpVsTime.insert(entry);
   }
 
-
-
   for (const auto& chID : mSetAllowedChIDs) {
     auto pairHistAmp = mMapHistAmp1D.insert({ chID, new TH1F(Form("Amp_channel%i", chID), Form("Amplitude, channel %i", chID), 4200, -100, 4100) });
     auto pairHistTime = mMapHistTime1D.insert({ chID, new TH1F(Form("Time_channel%i", chID), Form("Time, channel %i", chID), 4100, -2050, 2050) });
@@ -650,16 +648,16 @@ void DigitQcTask::endOfCycle()
   ILOG(Debug, Support) << "adding last TF creation time: " << mTFcreationTime << ENDM;
   getObjectsManager()->getMonitorObject(mHistBCvsTrg->GetName())->addOrUpdateMetadata("TFcreationTime", std::to_string(mTFcreationTime));
 
-  for (int channel = 1; channel <= sNCHANNELS_FV0_PLUSREF-1; channel++) {
+  for (int channel = 1; channel <= sNCHANNELS_FV0_PLUSREF - 1; channel++) {
     int events_in_range = 0;
     int events_per_channel = 0;
     for (int bin_on_y_axis = 1; bin_on_y_axis <= mHistTime2Ch->GetNbinsY(); bin_on_y_axis++) {
-        if (std::abs(mHistTime2Ch->GetYaxis()->GetBinLowEdge(bin_on_y_axis)) < mTimeGate) {
-            events_in_range += mHistTime2Ch->GetBinContent(channel, bin_on_y_axis);
-        }
-        events_per_channel += mHistTime2Ch->GetBinContent(channel, bin_on_y_axis);
+      if (std::abs(mHistTime2Ch->GetYaxis()->GetBinLowEdge(bin_on_y_axis)) < mTimeGate) {
+        events_in_range += mHistTime2Ch->GetBinContent(channel, bin_on_y_axis);
+      }
+      events_per_channel += mHistTime2Ch->GetBinContent(channel, bin_on_y_axis);
     }
-    mHistGateTimeRatio2Ch->SetBinContent(channel, (float) events_in_range / (float) events_per_channel);
+    mHistGateTimeRatio2Ch->SetBinContent(channel, (float)events_in_range / (float)events_per_channel);
   }
 
   // one has to set num. of entries manually because
