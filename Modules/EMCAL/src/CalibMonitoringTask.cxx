@@ -68,6 +68,22 @@ void CalibMonitoringTask::initialize(Trigger, framework::ServiceRegistryRef)
       mBadChannelMapHisto->GetYaxis()->SetTitle("row (#phi)");
       mBadChannelMapHisto->SetStats(false);
       getObjectsManager()->startPublishing(mBadChannelMapHisto);
+
+      // histogram for number of bad, dead, good channels in emcal only
+      mBadChannelMapEMCALHisto = new TH2D("badChannelMapEMCAL", "Number of Good/Dead/Bad Channels in EMCAL Only", 3, 0, 2, 12288, 0, 12288);
+      mBadChannelMapEMCALHisto->GetXaxis()->SetTitle("channel status");
+      mBadChannelMapEMCALHisto->GetYaxis()->SetTitle("Number of channels");
+      mBadChannelMapEMCALHisto->SetStats(false);
+      getObjectsManager()->startPublishing(mBadChannelMapEMCALHisto);
+
+      // histogram for number of bad, dead, good channels in emcal only
+      mBadChannelMapDCALHisto = new TH2D("badChannelMapDCAL", "Number of Good/Dead/Bad Channels in DCAL Only", 3, 0, 2, 5376, 0, 5376);
+      mBadChannelMapDCALHisto->GetXaxis()->SetTitle("channel status");
+      mBadChannelMapDCALHisto->GetYaxis()->SetTitle("Number of channels");
+      mBadChannelMapDCALHisto->SetStats(false);
+      getObjectsManager()->startPublishing(mBadChannelMapDCALHisto);
+
+ 
     }
   }
   o2::emcal::Geometry::GetInstanceFromRunNumber(300000);
@@ -88,6 +104,14 @@ void CalibMonitoringTask::update(Trigger t, framework::ServiceRegistryRef)
       for (Int_t i = 0; i < hist_temp2->GetNbinsX(); i++) {
         for (Int_t j = 0; j < hist_temp2->GetNbinsY(); j++) {
           mBadChannelMapHisto->SetBinContent(i + 1, j + 1, hist_temp2->GetBinContent(i + 1, j + 1));
+          // check to see if the cell is in the emcal or dcal and fill appropriate hist
+          int cellID = geo->GetAbsCellIdFromCellIndexes(i, j);
+          if (cellID < 12288) {
+            mBadChannelMapEMCALHisto->Fill(hist_temp2->GetBinContent(i + 1, j + 1));
+          }
+          else{
+            mBadChannelMapDCALHisto->Fill(hist_temp2->GetBinContent(i + 1, j + 1));
+          }
         }
       }
     }
@@ -112,6 +136,8 @@ void CalibMonitoringTask::finalize(Trigger t, framework::ServiceRegistryRef)
   for (const auto& obj : mCalibObjects) {
     if (obj == "BadChannelMap") {
       getObjectsManager()->stopPublishing(mBadChannelMapHisto);
+      getObjectsManager()->stopPublishing(mBadChannelMapEMCALHisto);
+      getObjectsManager()->stopPublishing(mBadChannelMapDCALHisto);
     }
     if (obj == "TimeCalibParams") {
       getObjectsManager()->stopPublishing(mTimeCalibParamHisto);
@@ -126,6 +152,10 @@ void CalibMonitoringTask::reset()
   ILOG(Debug, Support) << "Resetting the histogram" << ENDM;
   if (mBadChannelMapHisto)
     mBadChannelMapHisto->Reset();
+  if (mBadChannelMapEMCALHisto)
+    mBadChannelMapEMCALHisto->Reset();
+  if (mBadChannelMapDCALHisto)
+    mBadChannelMapDCALHisto->Reset();
   if (mTimeCalibParamHisto)
     mTimeCalibParamHisto->Reset();
 }
