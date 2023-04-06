@@ -418,6 +418,10 @@ void CellTask::monitorData(o2::framework::ProcessingContext& ctx)
         ILOG(Debug, Support) << subev.mCellRange.getEntries() << " cells in subevent from equipment " << subev.mSpecification << ENDM;
         gsl::span<const o2::emcal::Cell> eventcells(cellsSubspec->second.data() + subev.mCellRange.getFirstEntry(), subev.mCellRange.getEntries());
         for (auto cell : eventcells) {
+          if (cell.getLEDMon()) {
+            // Drop LEDMON cells
+            continue;
+          }
           // int index = cell.getHighGain() ? 0 : (cell.getLowGain() ? 1 : -1);
           // int index = cell.getHighGain() ? 0 : 1;
           auto timeoffset = mTimeCalib ? mTimeCalib->getTimeCalibParam(cell.getTower(), cell.getLowGain()) : 0.;
