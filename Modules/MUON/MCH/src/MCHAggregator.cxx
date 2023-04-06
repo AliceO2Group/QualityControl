@@ -29,12 +29,6 @@ std::map<std::string, Quality> MCHAggregator::aggregate(QualityObjectsMapType& q
 {
   std::map<std::string, Quality> result;
 
-  ILOG(Info, Devel) << "Entered MCHAggregator::aggregate" << ENDM;
-  ILOG(Info, Devel) << "   received a list of size : " << qoMap.size() << ENDM;
-  for (const auto& item : qoMap) {
-    ILOG(Info, Devel) << "Object: " << (*item.second) << ENDM;
-  }
-
   // we return the worse quality of all the objects we receive
   Quality current = Quality::Good;
   for (auto qo : qoMap) {
@@ -43,7 +37,6 @@ std::map<std::string, Quality> MCHAggregator::aggregate(QualityObjectsMapType& q
     }
   }
 
-  ILOG(Info, Devel) << "   result: " << current << ENDM;
   result["MCHQuality"] = current;
 
   return result;

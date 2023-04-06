@@ -67,7 +67,7 @@ class QualityPostProcessing : public PostProcessingInterface
   std::string mMessageNull;
 
   // CCDB object accessors
-  std::vector<CcdbObjectHelper> mCcdbObjects;
+  std::vector<QualityObjectHelper> mCcdbObjects;
   std::vector<std::string> mCheckerMessages;
 
   // Quality histograms ===============================================

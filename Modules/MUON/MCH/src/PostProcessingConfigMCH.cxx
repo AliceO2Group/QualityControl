@@ -36,24 +36,29 @@ PostProcessingConfigMCH::PostProcessingConfigMCH(std::string name, const boost::
   }
 
   // Plot configuration
-  for (const auto& plotConfig : config.get_child("qc.postprocessing." + name + ".plots")) {
-    plots.push_back({ plotConfig.second.get<std::string>("name"),
-                      plotConfig.second.get<std::string>("title", ""),
-                      plotConfig.second.get<std::string>("varexp"),
-                      plotConfig.second.get<std::string>("selection", ""),
-                      plotConfig.second.get<std::string>("option", ""),
-                      plotConfig.second.get<std::string>("graphErrors", "") });
+  auto plotConfigs = config.get_child_optional("qc.postprocessing." + name + ".plots");
+  if (plotConfigs.has_value()) {
+    for (const auto& plotConfig : plotConfigs.value()) {
+      plots.push_back({ plotConfig.second.get<std::string>("name"),
+                        plotConfig.second.get<std::string>("title", ""),
+                        plotConfig.second.get<std::string>("varexp"),
+                        plotConfig.second.get<std::string>("selection", ""),
+                        plotConfig.second.get<std::string>("option", ""),
+                        plotConfig.second.get<std::string>("graphErrors", "") });
+    }
   }
 
   // Data source configuration
   for (const auto& dataSourceConfig : config.get_child("qc.postprocessing." + name + ".dataSources")) {
     if (const auto& sourceNames = dataSourceConfig.second.get_child_optional("names"); sourceNames.has_value()) {
       for (const auto& sourceName : sourceNames.value()) {
+        auto reductorName = dataSourceConfig.second.get_optional<std::string>("reductorName");
+        auto moduleName = dataSourceConfig.second.get_optional<std::string>("moduleName");
         dataSources.push_back({ dataSourceConfig.second.get<std::string>("type", "repository"),
                                 dataSourceConfig.second.get<std::string>("path"),
                                 sourceName.second.data(),
-                                dataSourceConfig.second.get<std::string>("reductorName"),
-                                dataSourceConfig.second.get<std::string>("moduleName") });
+                                (reductorName.has_value() ? reductorName.value() : ""),
+                                (moduleName.has_value() ? moduleName.value() : "") });
       }
     } else if (!dataSourceConfig.second.get<std::string>("name").empty()) {
       // "name" : [ "something" ] would return an empty string here
