@@ -522,7 +522,7 @@ void CheckOfTrendings::beautify(std::shared_ptr<MonitorObject> mo, Quality check
     // InfoBox
     std::string checkMessage;
     TPaveText* msg = new TPaveText(0.5, 0.75, 0.9, 0.9, "NDC");
-    msg->SetName(Form("%s_msg_%d", mo->GetName(), iGraph));
+    msg->SetName(Form("%s_msg_%zu", mo->GetName(), iGraph));
     graphs[iGraph]->GetListOfFunctions()->Add(msg);
 
     if (mPadQualities[iGraph] == Quality::Good) {
