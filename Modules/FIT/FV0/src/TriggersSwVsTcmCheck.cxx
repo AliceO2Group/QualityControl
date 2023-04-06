@@ -84,13 +84,8 @@ Quality TriggersSwVsTcmCheck::check(std::map<std::string, std::shared_ptr<Monito
           if (result.isBetterThan(Quality::Bad)) {
               result.set(Quality::Bad);
           }
-          if ((bool)(histogram->GetBinContent(binId, kBinSwOnly))) {
-            result.addReason(FlagReasonFactory::Unknown(),
-                    Form("TriggersSoftwareVsTCM. < \"Error\" Only SW trigger was activated for bin nr %d", binId));
-          } else {
-            result.addReason(FlagReasonFactory::Unknown(),
-                    Form("TriggersSoftwareVsTCM. < \"Error\" Only TCM trigger was activated for bin nr %d", binId));
-          }
+          result.addReason(FlagReasonFactory::Unknown(),
+                  "Only SW or TCM trigger was activated");
         }
       }
     }
@@ -110,14 +105,7 @@ void TriggersSwVsTcmCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality c
     histogram->GetListOfFunctions()->Add(msg);
     msg->SetName(Form("%s_msg", mo->GetName()));
     msg->Clear();
-    auto reasons = checkResult.getReasons();
-    for (int i = 0; i < int(reasons.size()); i++) {
-      msg->AddText(reasons[i].second.c_str());
-      if (i > 4) {
-        msg->AddText("et al ... ");
-        break;
-      }
-    }
+    msg->AddText(checkResult.getReasons()[0].second.c_str());
     int color = kBlack;
     if (checkResult == Quality::Good) {
       color = kGreen + 1;
