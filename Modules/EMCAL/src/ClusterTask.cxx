@@ -696,6 +696,27 @@ void ClusterTask::findClustersInternal(const gsl::span<const o2::emcal::Cell>& c
     if (cells.size() && iTrgRcrd.getNumberOfObjects()) {
       LOG(debug) << " Number of cells put in " << cells.size() << ENDM;
       auto cellsEvent = cells.subspan(iTrgRcrd.getFirstEntry(), iTrgRcrd.getNumberOfObjects());
+      if (iTrgRcrd.getTriggerBits() & o2::trigger::Cal) {
+        // In case of calib trigger drop LEDMON cells
+        // both from clusterizing and internal cell monitoring
+        // LEDMONs are organized in strip modules, they
+        // cannot be clustered
+        // they appear after FEC cells in the cell vector,
+        // consequently it is sufficient to restrict the cell
+        // vector to the first N cells. Also the cell index in
+        // the cluster won't be disturbed.
+        int rangeFECCells = -1, currentIndex = 0;
+        for (const auto& cell : cells) {
+          if (cell.getLEDMon()) {
+            rangeFECCells = currentIndex;
+            break;
+          }
+          currentIndex++;
+        }
+        if (rangeFECCells > -1) {
+          cellsEvent = cellsEvent.subspan(0, rangeFECCells);
+        }
+      }
       if (mFillControlHistograms) {
         auto isCalibTrigger = (iTrgRcrd.getTriggerBits() & o2::trigger::Cal),
              isPhysicsTrigger = (iTrgRcrd.getTriggerBits() & o2::trigger::PhT);
