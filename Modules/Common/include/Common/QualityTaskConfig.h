@@ -42,7 +42,6 @@ struct QualityTaskConfig : quality_control::postprocessing::PostProcessingConfig
       { quality_control::core::Quality::Medium.getName(), "" },
       { quality_control::core::Quality::Good.getName(), "" }
     };
-    uint64_t latestTimestamp = 0; // used for as a state, not retrieved from configuration
   };
 
   struct QualityGroup {

@@ -27,8 +27,6 @@ namespace o2::quality_control_modules::common
 QualityTaskConfig::QualityTaskConfig(std::string name, const boost::property_tree::ptree& config)
   : PostProcessingConfig(name, config)
 {
-  auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-
   for (const auto& qualityGroupConfig : config.get_child("qc.postprocessing." + name + ".qualityGroups")) {
     QualityGroup qualityGroup{
       qualityGroupConfig.second.get<std::string>("name"),
@@ -51,7 +49,6 @@ QualityTaskConfig::QualityTaskConfig(std::string name, const boost::property_tre
         qualityConfig.messages[Quality::Medium.getName()] = inputObject.second.get<std::string>("messageMedium", "");
         qualityConfig.messages[Quality::Bad.getName()] = inputObject.second.get<std::string>("messageBad", "");
         qualityConfig.messages[Quality::Null.getName()] = inputObject.second.get<std::string>("messageNull", "");
-        qualityConfig.latestTimestamp = now;
         qualityGroup.inputObjects.emplace_back(std::move(qualityConfig));
       }
     }

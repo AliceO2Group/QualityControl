@@ -85,7 +85,7 @@ class QualityTask : public quality_control::postprocessing::PostProcessingInterf
 
  private:
   std::pair<std::shared_ptr<quality_control::core::QualityObject>, bool> getQO(
-    quality_control::repository::DatabaseInterface& qcdb, const quality_control::postprocessing::Trigger& t, const std::string& fullPath);
+    quality_control::repository::DatabaseInterface& qcdb, const quality_control::postprocessing::Trigger& t, const std::string& fullPath, const std::string& group);
 
  private:
   /// \brief configuration parameters

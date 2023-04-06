@@ -118,6 +118,11 @@ static std::string fullQoPath(const std::string& path, const std::string& name)
   return path + "/" + name;
 }
 
+static std::string uniqueQoID(const std::string& group, const std::string& fullPath)
+{
+  return group + "/" + fullPath;
+}
+
 //_________________________________________________________________________________________
 
 void QualityTask::configure(const boost::property_tree::ptree& config)
@@ -157,8 +162,8 @@ void QualityTask::initialize(quality_control::postprocessing::Trigger t, framewo
   // instantiate the histograms and trends, one for each of the quality objects in the data sources list
   for (const auto& qualityGroupConfig : mConfig.qualityGroups) {
     for (const auto& qualityConfig : qualityGroupConfig.inputObjects) {
-      auto fullPath = fullQoPath(qualityGroupConfig.path, qualityConfig.name);
-      mLatestTimestamps[fullPath] = 0;
+      auto qoID = uniqueQoID(qualityGroupConfig.name, fullQoPath(qualityGroupConfig.path, qualityConfig.name));
+      mLatestTimestamps[qoID] = 0;
 
       auto distributionName = QualityTrendGraph::distributionName(qualityGroupConfig.name, qualityConfig.name);
       auto distributionTitle = qualityConfig.title.empty() ? qualityConfig.name : qualityConfig.title;
@@ -185,7 +190,7 @@ void QualityTask::initialize(quality_control::postprocessing::Trigger t, framewo
 // The second element of the pair is set to true if the QO has a time stamp more recent than the last retrieved one
 
 std::pair<std::shared_ptr<QualityObject>, bool> QualityTask::getQO(
-  repository::DatabaseInterface& qcdb, const Trigger& t, const std::string& fullPath)
+  repository::DatabaseInterface& qcdb, const Trigger& t, const std::string& fullPath, const std::string& group)
 {
   // retrieve QO from CCDB
   auto qo = qcdb.retrieveQO(fullPath, t.timestamp, t.activity);
@@ -198,14 +203,16 @@ std::pair<std::shared_ptr<QualityObject>, bool> QualityTask::getQO(
   if (createdIter != qo->getMetadataMap().end()) {
     thisTimestamp = std::stol(createdIter->second);
   }
+
   // check if the object is newer than the last visited one
-  auto lastTimestamp = mLatestTimestamps[fullPath];
+  auto qoID = uniqueQoID(group, fullPath);
+  auto lastTimestamp = mLatestTimestamps[qoID];
   if (thisTimestamp <= lastTimestamp) {
     return { qo, false };
   }
 
   // update the time stamp of the last visited object
-  mLatestTimestamps[fullPath] = thisTimestamp;
+  mLatestTimestamps[qoID] = thisTimestamp;
 
   return { qo, true };
 }
@@ -238,7 +245,7 @@ void QualityTask::update(quality_control::postprocessing::Trigger t, framework::
       // retrieve QO from CCDB, in the form of a std::pair<std::shared_ptr<QualityObject>, bool>
       // a valid object is returned in the first element of the pair if the QO is found in the QCDB
       // the second element of the pair is set to true if the QO has a time stamp more recent than the last retrieved one
-      auto [qo, wasUpdated] = getQO(qcdb, t, fullPath);
+      auto [qo, wasUpdated] = getQO(qcdb, t, fullPath, qualityGroupConfig.name);
       if (!qo) {
         lines.emplace_back(Message{ fmt::format("#color[{}]{{{} : quality missing!}}", mColors[Quality::Null.getName()], qualityTitle) });
         lines.emplace_back(TextAlign{ 12 });
@@ -248,7 +255,7 @@ void QualityTask::update(quality_control::postprocessing::Trigger t, framework::
       const auto& quality = qo->getQuality();
       std::string qoName = qo->getName();
       std::string qoValue = quality.getName();
-      int qoID = mQualityIDs[qoValue];
+      int qID = mQualityIDs[qoValue];
       lines.emplace_back(Message{ fmt::format("#color[{}]{{{} : {}}}", mColors[qoValue], qualityTitle, qoValue) });
       lines.emplace_back(TextAlign{ 12 });
 
@@ -274,14 +281,15 @@ void QualityTask::update(quality_control::postprocessing::Trigger t, framework::
         auto distributionName = QualityTrendGraph::distributionName(qualityGroupConfig.name, qualityConfig.name);
         auto distroIter = mHistograms.find(distributionName);
         if (distroIter != mHistograms.end()) {
-          distroIter->second->Fill(qoID + 0.5);
+          distroIter->second->Fill(qID + 0.5);
         }
 
         // add point in quality trending plot
         auto trendName = QualityTrendGraph::trendName(qualityGroupConfig.name, qualityConfig.name);
         auto trendIter = mTrends.find(trendName);
         if (trendIter != mTrends.end()) {
-          auto timestampSeconds = mLatestTimestamps[fullPath] / 1000; // ROOT expects seconds since epoch
+          auto qoID = uniqueQoID(qualityGroupConfig.name, fullPath);
+          auto timestampSeconds = mLatestTimestamps[qoID] / 1000; // ROOT expects seconds since epoch
           trendIter->second->update(timestampSeconds, qo->getQuality());
         }
       }
