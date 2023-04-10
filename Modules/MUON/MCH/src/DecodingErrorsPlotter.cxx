@@ -92,6 +92,21 @@ DecodingErrorsPlotter::DecodingErrorsPlotter(std::string path) : mPath(path)
 
 //_________________________________________________________________________________________
 
+static bool isWarning(int errorID)
+{
+  // Temporary solution, until the error code severity is implemented directly in O2
+  uint32_t error = ((uint32_t)1) << errorID;
+  if (error == ErrorCodes::ErrorTruncatedData) {
+    return true;
+  }
+  if (error == ErrorCodes::ErrorTruncatedDataUL) {
+    return true;
+  }
+  return false;
+}
+
+//_________________________________________________________________________________________
+
 void DecodingErrorsPlotter::update(TH2F* h)
 {
   if (!h) {
@@ -146,7 +161,8 @@ void DecodingErrorsPlotter::update(TH2F* h)
       auto count = h->GetBinContent(i, j);
       if (feeId >= 0) {
         incrementBin(mHistogramErrorsPerFeeId.get(), feeId + 1, j, count);
-        if (count > 0) {
+        // do not include warnings when counting the boards in error
+        if (!isWarning(j - 1) && count > 0) {
           hasError = true;
         }
       }
