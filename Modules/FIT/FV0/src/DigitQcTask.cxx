@@ -25,8 +25,6 @@
 #include "Framework/TimingInfo.h"
 #include "DataFormatsFV0/LookUpTable.h"
 
-#include <cmath>
-
 namespace o2::quality_control_modules::fv0
 {
 
