@@ -76,7 +76,15 @@ Quality TriggersSwVsTcmCheck::check(std::map<std::string, std::shared_ptr<Monito
   for (auto& [moName, mo] : *moMap) {
     (void)moName;
     if (mo->getName() == "TriggersSoftwareVsTCM") {
-      auto* histogram = dynamic_cast<TH2F*>(mo->getObject());
+      auto* histogram = dynamic_cast<TH2*>(mo->getObject());
+
+      if (!histogram) {
+        ILOG(Error, Support) << "check(): MO TriggersSoftwareVsTCM not found" << ENDM;
+        result.addReason(FlagReasonFactory::Unknown(), "MO TriggersSoftwareVsTCM not found");
+        result.set(Quality::Null);
+        return result;
+      }
+
       result = Quality::Good;
       int numberOfBinsX = histogram->GetNbinsX();
       for (int binId = 1; binId <= numberOfBinsX; binId++) {
@@ -99,7 +107,12 @@ std::string TriggersSwVsTcmCheck::getAcceptedType() { return "TH2"; }
 void TriggersSwVsTcmCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   if (mo->getName() == "TriggersSoftwareVsTCM") {
-    auto* histogram = dynamic_cast<TH2F*>(mo->getObject());
+    auto* histogram = dynamic_cast<TH2*>(mo->getObject());
+
+    if (!histogram) {
+      ILOG(Error, Support) << "beautify(): MO TriggersSoftwareVsTCM not found" << ENDM;
+      return;
+    }
 
     TPaveText* msg = new TPaveText(mPositionMsgBox[0], mPositionMsgBox[1], mPositionMsgBox[2], mPositionMsgBox[3], "NDC");
     histogram->GetListOfFunctions()->Add(msg);

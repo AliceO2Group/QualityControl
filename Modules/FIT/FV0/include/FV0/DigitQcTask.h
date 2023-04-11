@@ -81,7 +81,8 @@ class DigitQcTask final : public TaskInterface
 
   long mTFcreationTime = 0;
 
-  int mTimeGate = 192;
+  int mMinTimeGate = -192;
+  int mMaxTimeGate = 192;
 
   template <typename Param_t,
             typename = typename std::enable_if<std::is_floating_point<Param_t>::value ||
