@@ -170,7 +170,8 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mTrgChargeLevelHigh = getNumericalParameter("trgChargeLevelHigh", 4095);
   mTrgThresholdCharge = getNumericalParameter("trgThresholdCharge", 1);
   mTrgThresholdNChannels = getNumericalParameter("trgThresholdNChannels", 1);
-  mTimeGate = getNumericalParameter("gateTimeForRatioHistogram", 192);
+  mMinTimeGate = getNumericalParameter("minGateTimeForRatioHistogram", -192);
+  mMaxTimeGate = getNumericalParameter("maxGateTimeForRatioHistogram", 192);
 
   if (mTrgModeInnerOuterThresholdVar == TrgModeThresholdVar::kAmpl) {
     mTrgThresholdChargeInner = getNumericalParameter("trgThresholdChargeInner", 1);
@@ -280,7 +281,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistCycleDurationNTF = std::make_unique<TH1D>("CycleDurationNTF", "Cycle Duration;;time [TimeFrames]", 1, 0, 2);
   mHistCycleDurationRange = std::make_unique<TH1D>("CycleDurationRange", "Cycle Duration (total cycle range);;time [ns]", 1, 0, 2);
 
-  std::string gateTimeRatioTitle = "Ratio of events between time -" + std::to_string(mTimeGate) + " and " + std::to_string(mTimeGate);
+  std::string gateTimeRatioTitle = "Ratio of events between time " + std::to_string(mMinTimeGate) + " and " + std::to_string(mMaxTimeGate);
   mHistGateTimeRatio2Ch = std::make_unique<TH1F>("EventsInGateTime", gateTimeRatioTitle.c_str(), sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF);
 
   std::vector<unsigned int> vecChannelIDs;
@@ -649,15 +650,19 @@ void DigitQcTask::endOfCycle()
   getObjectsManager()->getMonitorObject(mHistBCvsTrg->GetName())->addOrUpdateMetadata("TFcreationTime", std::to_string(mTFcreationTime));
 
   for (int channel = 1; channel <= sNCHANNELS_FV0_PLUSREF - 1; channel++) {
-    int events_in_range = 0;
-    int events_per_channel = 0;
+    float events_in_range = 0;
+    float events_per_channel = 0;
     for (int bin_on_y_axis = 1; bin_on_y_axis <= mHistTime2Ch->GetNbinsY(); bin_on_y_axis++) {
-      if (std::abs(mHistTime2Ch->GetYaxis()->GetBinLowEdge(bin_on_y_axis)) < mTimeGate) {
+      if (mHistTime2Ch->GetYaxis()->GetBinLowEdge(bin_on_y_axis) > mMinTimeGate && mHistTime2Ch->GetYaxis()->GetBinLowEdge(bin_on_y_axis) < mMaxTimeGate) {
         events_in_range += mHistTime2Ch->GetBinContent(channel, bin_on_y_axis);
       }
       events_per_channel += mHistTime2Ch->GetBinContent(channel, bin_on_y_axis);
     }
-    mHistGateTimeRatio2Ch->SetBinContent(channel, (float)events_in_range / (float)events_per_channel);
+    if (events_per_channel) {
+      mHistGateTimeRatio2Ch->SetBinContent(channel, events_in_range / events_per_channel);
+    } else {
+      mHistGateTimeRatio2Ch->SetBinContent(channel, 0);
+    }
   }
 
   // one has to set num. of entries manually because
