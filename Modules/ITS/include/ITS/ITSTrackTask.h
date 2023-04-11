@@ -62,6 +62,7 @@ class ITSTrackTask : public TaskInterface
 
   std::vector<TObject*> mPublishedObjects;
   TH1D* hNClusters;
+  TH1D* hNClustersReset;
   TH1D* hTrackEta;
   TH1D* hTrackPhi;
   TH1D* hVerticesRof;
@@ -72,6 +73,7 @@ class ITSTrackTask : public TaskInterface
   TH1D* hVertexContributors;
   TH1D* hAssociatedClusterFraction;
   TH1D* hNtracks;
+  TH1D* hNtracksReset;
   TH2D* hNClustersPerTrackEta;
   TH2D* hClusterVsBunchCrossing;
   TH2D* hNClusterVsChipITS;
@@ -83,6 +85,7 @@ class ITSTrackTask : public TaskInterface
   Int_t mDoTTree = 0;
   Int_t mNTracks = 0;
   Int_t mNRofs = 0;
+  bool isNewCycle = true;
   int nBCbins = 103;
   long int mTimestamp = -1;
   int nVertices = 0;
