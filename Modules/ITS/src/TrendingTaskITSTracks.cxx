@@ -132,11 +132,18 @@ void TrendingTaskITSTracks::trendValues(const Trigger& t, repository::DatabaseIn
 
 void TrendingTaskITSTracks::storePlots(repository::DatabaseInterface& qcdb)
 {
-  ILOG(Info, Support) << "Generating and storing " << mConfig.plots.size() << " plots."
-                      << ENDM;
   //
   // Create and save trends for each stave
   //
+
+  if (runlist.size() == 0) {
+    ILOG(Info, Support) << "There are no plots to store, skipping" << ENDM;
+    return;
+  }
+
+  ILOG(Info, Support) << "Generating and storing " << mConfig.plots.size() << " plots."
+                      << ENDM;
+
   int countplots = 0;
   int ilay = 0;
   for (const auto& plot : mConfig.plots) {
@@ -216,6 +223,7 @@ void TrendingTaskITSTracks::storePlots(repository::DatabaseInterface& qcdb)
 
     // post processing plot
     TGraph* g = new TGraph(n, x, y);
+
     SetGraphStyle(g, col[(int)class1 % 2], mkr[(int)class1 % 2]);
 
     SetGraphNameAndAxes(g, plot.name, plot.title, isrun ? "run" : "time", plot.title, ymin,
