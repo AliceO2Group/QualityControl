@@ -320,6 +320,7 @@ void TestbeamRawTask::monitorData(o2::framework::ProcessingContext& ctx)
   int inputs = 0;
   std::vector<char> rawbuffer;
   int currentendpoint = 0;
+  int currentsource = 0;
   for (const auto& rawData : framework::InputRecordWalker(ctx.inputs())) {
     if (rawData.header != nullptr && rawData.payload != nullptr) {
       const auto payloadSize = o2::framework::DataRefUtils::getPayloadSize(rawData);
@@ -339,14 +340,14 @@ void TestbeamRawTask::monitorData(o2::framework::ProcessingContext& ctx)
             if (o2::raw::RDHUtils::getStop(rdh)) {
               ILOG(Debug, Support) << "Stop bit received - processing payload" << ENDM;
               // Data ready
-              if (currentendpoint == 1) {
+              if (currentsource == 0x2b) { // Use source ID 43 for pads
                 // Pad data
                 if (!mDisablePads) {
                   ILOG(Debug, Support) << "Processing PAD data" << ENDM;
                   auto payloadsizeGBT = rawbuffer.size() * sizeof(char) / sizeof(o2::focal::PadGBTWord);
                   processPadPayload(gsl::span<const o2::focal::PadGBTWord>(reinterpret_cast<const o2::focal::PadGBTWord*>(rawbuffer.data()), payloadsizeGBT));
                 }
-              } else if (currentendpoint == 0) {
+              } else if (currentsource == 0x20) { // Use source ID 32 (ITS) for pixels
                 // Pixel data
                 if (!mDisablePixels) {
                   auto feeID = o2::raw::RDHUtils::getFEEID(rdh);
@@ -361,6 +362,7 @@ void TestbeamRawTask::monitorData(o2::framework::ProcessingContext& ctx)
             } else {
               ILOG(Debug, Support) << "New HBF or Timeframe" << ENDM;
               currentendpoint = o2::raw::RDHUtils::getEndPointID(rdh);
+              currentsource = o2::raw::RDHUtils::getSourceID(rdh);
               ILOG(Debug, Support) << "Using endpoint " << currentendpoint;
               rawbuffer.clear();
             }
