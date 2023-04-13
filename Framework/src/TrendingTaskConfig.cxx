@@ -32,7 +32,8 @@ TrendingTaskConfig::TrendingTaskConfig(std::string id, const boost::property_tre
                       plotConfig.second.get<std::string>("selection", ""),
                       plotConfig.second.get<std::string>("option", ""),
                       plotConfig.second.get<std::string>("graphErrors", ""),
-                      plotConfig.second.get<std::string>("graphAxisLabel", "") });
+                      plotConfig.second.get<std::string>("graphAxisLabel", ""),
+                      plotConfig.second.get<std::string>("graphYRange", "") });
   }
   for (const auto& dataSourceConfig : config.get_child("qc.postprocessing." + id + ".dataSources")) {
     if (const auto& sourceNames = dataSourceConfig.second.get_child_optional("names"); sourceNames.has_value()) {

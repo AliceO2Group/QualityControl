@@ -24,7 +24,7 @@
 namespace o2::quality_control::postprocessing
 {
 
-//todo pretty print
+// todo pretty print
 /// \brief  TrendingTask configuration structure
 struct TrendingTaskConfig : PostProcessingConfig {
   TrendingTaskConfig() = default;
@@ -39,6 +39,7 @@ struct TrendingTaskConfig : PostProcessingConfig {
     std::string option;
     std::string graphErrors;
     std::string graphAxisLabel;
+    std::string graphYRange;
   };
 
   struct DataSource {
@@ -57,4 +58,4 @@ struct TrendingTaskConfig : PostProcessingConfig {
 
 } // namespace o2::quality_control::postprocessing
 
-#endif //QUALITYCONTROL_TRENDINGTASKCONFIG_H
+#endif // QUALITYCONTROL_TRENDINGTASKCONFIG_H

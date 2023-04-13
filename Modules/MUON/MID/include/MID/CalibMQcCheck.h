@@ -37,9 +37,8 @@ class CalibMQcCheck : public o2::quality_control::checker::CheckInterface
 
  private:
   ///////////////////////////
-  float scaleTime = 0.0114048; // 128 orb/TF * 3564 BC/orb * 25ns
   int mIsEmpty = 0;
-
+  int mCalibTF = 0;
   ClassDefOverride(CalibMQcCheck, 2);
 };
 

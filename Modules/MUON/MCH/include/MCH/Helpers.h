@@ -137,6 +137,26 @@ struct CcdbObjectHelper {
 
 //_________________________________________________________________________________________
 
+struct QualityObjectHelper {
+  QualityObjectHelper();
+  QualityObjectHelper(std::string p, std::string n);
+
+  bool update(o2::quality_control::repository::DatabaseInterface* qcdb,
+              long timeStamp = -1,
+              const o2::quality_control::core::Activity& activity = {});
+  void setStartIme();
+  long getTimeStamp() { return mTimeStamp; }
+
+  std::shared_ptr<o2::quality_control::core::QualityObject> mObject;
+  bool mUpdated{ false };
+  std::string mPath;
+  std::string mName;
+  uint64_t mTimeStart{ 0 };
+  uint64_t mTimeStamp{ 0 };
+};
+
+//_________________________________________________________________________________________
+
 class TrendGraph : public TCanvas
 {
  public:

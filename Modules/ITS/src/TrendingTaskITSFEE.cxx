@@ -129,7 +129,17 @@ void TrendingTaskITSFEE::trendValues(const Trigger& t, repository::DatabaseInter
 
 void TrendingTaskITSFEE::storePlots(repository::DatabaseInterface& qcdb)
 {
-  // ILOG(Info, Support) << "Generating and storing " << mConfig.plots.size() << " plots." << ENDM;
+  //
+  // Create and save trends for each stave
+  //
+
+  if (runlist.size() == 0) {
+    ILOG(Info, Support) << "There are no plots to store, skipping" << ENDM;
+    return;
+  }
+
+  ILOG(Info, Support) << "Generating and storing " << mConfig.plots.size() << " plots."
+                      << ENDM;
 
   int countplots = 0;
   int countITSpart = 0;

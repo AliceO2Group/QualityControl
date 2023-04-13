@@ -27,7 +27,6 @@
 #include <TList.h>
 #include <TLine.h>
 #include <TMath.h>
-#include <TPaveText.h>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -317,29 +316,11 @@ void PreclustersCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality check
     if ((mo->getName().find("MeanEfficiencyB") != std::string::npos) ||
         (mo->getName().find("MeanEfficiencyNB") != std::string::npos) ||
         (mo->getName().find("MeanEfficiencyRefRatio") != std::string::npos)) {
-      TPaveText* msg = new TPaveText(0.3, 0.9, 0.7, 0.95, "NDC");
-      h->GetListOfFunctions()->Add(msg);
-      msg->SetName(Form("%s_msg", mo->GetName()));
-
       if (checkResult == Quality::Good) {
-        msg->Clear();
-        msg->AddText("Pseudo-efficiency consistently within limits: OK!!!");
-        msg->SetFillColor(kGreen);
-
         h->SetFillColor(kGreen);
       } else if (checkResult == Quality::Bad) {
-        LOG(info) << "Quality::Bad, setting to red";
-        msg->Clear();
-        msg->AddText("Call MCH experts");
-        msg->SetFillColor(kRed);
-
         h->SetFillColor(kRed);
       } else if (checkResult == Quality::Medium) {
-        LOG(info) << "Quality::medium, setting to orange";
-        msg->Clear();
-        msg->AddText("No entries. If MCH in the run, call MCH experts");
-        msg->SetFillColor(kYellow);
-
         h->SetFillColor(kOrange);
       }
       h->SetLineColor(kBlack);

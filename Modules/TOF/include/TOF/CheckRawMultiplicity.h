@@ -40,7 +40,7 @@ class CheckRawMultiplicity : public o2::quality_control::checker::CheckInterface
 
   /// Running modes available
   static constexpr int kModeCollisions = 0; /// Standard running mode with collisions
-  static constexpr int kModeCosmics = 1;    /// Running mode with collisions
+  static constexpr int kModeCosmics = 1;    /// Running mode with cosmics
 
  private:
   // Running configurable parameters

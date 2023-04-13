@@ -203,225 +203,226 @@ void DigitsQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
   unsigned long mean = 0.;
 
   // Bend Multiplicity Histo ::
-  if (mo->getName() == "MultHitMT11B") {
-    auto* h = dynamic_cast<TH1F*>(mo->getObject());
-    mean = h->GetMean();
-    if (resultBMT11 == Quality::Good) {
-      // std::cout << "beautify :: BMT11 mean =>>  " << mean << std::endl;
-      h->SetFillColor(kGreen);
-      msg = drawLatex(.15, 0.82, kGreen, Form("Limit : [%4.2f;%4.1f]", mMinMultThreshold, mMeanMultThreshold));
-      h->GetListOfFunctions()->Add(msg);
-      msg = drawLatex(.3, 0.62, kGreen, Form("Mean=%4.1f ", h->GetMean()));
-      h->GetListOfFunctions()->Add(msg);
-      msg = drawLatex(.3, 0.52, kGreen, "Quality::Good");
-      h->GetListOfFunctions()->Add(msg);
-    } else if (resultBMT11 == Quality::Bad) {
-      h->SetFillColor(kRed);
-      msg = drawLatex(.2, 0.72, kRed, Form("Limit : [%4.2f;%4.1f]", mMinMultThreshold, mMeanMultThreshold));
-      h->GetListOfFunctions()->Add(msg);
-      msg = drawLatex(.3, 0.62, kRed, Form("Mean = %4.1f  ", h->GetMean()));
-      h->GetListOfFunctions()->Add(msg);
-      msg = drawLatex(.3, 0.52, kRed, "Quality::Bad ");
-      h->GetListOfFunctions()->Add(msg);
-    } else if (resultBMT11 == Quality::Medium) {
-      h->SetFillColor(kOrange);
-      msg = drawLatex(.2, 0.72, kOrange, Form("Limit : [%4.2f;%4.1f]", mMinMultThreshold, mMeanMultThreshold / 2));
-      h->GetListOfFunctions()->Add(msg);
-      msg = drawLatex(.3, 0.62, kOrange, Form("Mean = %4.1f ", h->GetMean()));
-      h->GetListOfFunctions()->Add(msg);
-      msg = drawLatex(.3, 0.52, kOrange, "Quality::Medium ");
-      h->GetListOfFunctions()->Add(msg);
+  if (mDigitTF > 2) {
+    if (mo->getName() == "MultHitMT11B") {
+      auto* h = dynamic_cast<TH1F*>(mo->getObject());
+      mean = h->GetMean();
+      if (resultBMT11 == Quality::Good) {
+        // std::cout << "beautify :: BMT11 mean =>>  " << mean << std::endl;
+        h->SetFillColor(kGreen);
+        msg = drawLatex(.15, 0.82, kGreen, Form("Limit : [%4.2f;%4.1f]", mMinMultThreshold, mMeanMultThreshold));
+        h->GetListOfFunctions()->Add(msg);
+        msg = drawLatex(.3, 0.62, kGreen, Form("Mean=%4.1f ", h->GetMean()));
+        h->GetListOfFunctions()->Add(msg);
+        msg = drawLatex(.3, 0.52, kGreen, "Quality::Good");
+        h->GetListOfFunctions()->Add(msg);
+      } else if (resultBMT11 == Quality::Bad) {
+        h->SetFillColor(kRed);
+        msg = drawLatex(.2, 0.72, kRed, Form("Limit : [%4.2f;%4.1f]", mMinMultThreshold, mMeanMultThreshold));
+        h->GetListOfFunctions()->Add(msg);
+        msg = drawLatex(.3, 0.62, kRed, Form("Mean = %4.1f  ", h->GetMean()));
+        h->GetListOfFunctions()->Add(msg);
+        msg = drawLatex(.3, 0.52, kRed, "Quality::Bad ");
+        h->GetListOfFunctions()->Add(msg);
+      } else if (resultBMT11 == Quality::Medium) {
+        h->SetFillColor(kOrange);
+        msg = drawLatex(.2, 0.72, kOrange, Form("Limit : [%4.2f;%4.1f]", mMinMultThreshold, mMeanMultThreshold / 2));
+        h->GetListOfFunctions()->Add(msg);
+        msg = drawLatex(.3, 0.62, kOrange, Form("Mean = %4.1f ", h->GetMean()));
+        h->GetListOfFunctions()->Add(msg);
+        msg = drawLatex(.3, 0.52, kOrange, "Quality::Medium ");
+        h->GetListOfFunctions()->Add(msg);
+      }
+      h->SetTitleSize(0.04);
+      h->SetLineColor(kBlack);
     }
-    h->SetTitleSize(0.04);
-    h->SetLineColor(kBlack);
-  }
-  if (mo->getName() == "MultHitMT12B") {
-    // std::cout << "beautify :: BMT12 =>>  " << resultBMT12 << std::endl;
-    auto* h = dynamic_cast<TH1F*>(mo->getObject());
-    mean = h->GetMean();
-    if (resultBMT12 == Quality::Good) {
-      h->SetFillColor(kGreen);
-      msg = drawLatex(.3, 0.62, kGreen, Form("Mean = %4.1f ", h->GetMean()));
+    if (mo->getName() == "MultHitMT12B") {
+      // std::cout << "beautify :: BMT12 =>>  " << resultBMT12 << std::endl;
+      auto* h = dynamic_cast<TH1F*>(mo->getObject());
+      mean = h->GetMean();
+      if (resultBMT12 == Quality::Good) {
+        h->SetFillColor(kGreen);
+        msg = drawLatex(.3, 0.62, kGreen, Form("Mean = %4.1f ", h->GetMean()));
+        h->GetListOfFunctions()->Add(msg);
+        msg = drawLatex(.3, 0.52, kGreen, "Quality::Good");
+        h->GetListOfFunctions()->Add(msg);
+      } else if (resultBMT12 == Quality::Bad) {
+        h->SetFillColor(kRed);
+        msg = drawLatex(.3, 0.62, kRed, Form("Mean = %4.1f  ", h->GetMean()));
+        h->GetListOfFunctions()->Add(msg);
+        msg = drawLatex(.3, 0.52, kRed, "Quality::Bad ");
+        h->GetListOfFunctions()->Add(msg);
+      } else if (resultBMT12 == Quality::Medium) {
+        h->SetFillColor(kOrange);
+        msg = drawLatex(.3, 0.62, kOrange, Form("Mean = %4.1f ", h->GetMean()));
+        h->GetListOfFunctions()->Add(msg);
+        msg = drawLatex(.3, 0.52, kOrange, "Quality::Medium ");
+        h->GetListOfFunctions()->Add(msg);
+      }
       h->GetListOfFunctions()->Add(msg);
-      msg = drawLatex(.3, 0.52, kGreen, "Quality::Good");
-      h->GetListOfFunctions()->Add(msg);
-    } else if (resultBMT12 == Quality::Bad) {
-      h->SetFillColor(kRed);
-      msg = drawLatex(.3, 0.62, kRed, Form("Mean = %4.1f  ", h->GetMean()));
-      h->GetListOfFunctions()->Add(msg);
-      msg = drawLatex(.3, 0.52, kRed, "Quality::Bad ");
-      h->GetListOfFunctions()->Add(msg);
-    } else if (resultBMT12 == Quality::Medium) {
-      h->SetFillColor(kOrange);
-      msg = drawLatex(.3, 0.62, kOrange, Form("Mean = %4.1f ", h->GetMean()));
-      h->GetListOfFunctions()->Add(msg);
-      msg = drawLatex(.3, 0.52, kOrange, "Quality::Medium ");
-      h->GetListOfFunctions()->Add(msg);
+      h->SetTitleSize(0.04);
+      h->SetLineColor(kBlack);
     }
-    h->GetListOfFunctions()->Add(msg);
-    h->SetTitleSize(0.04);
-    h->SetLineColor(kBlack);
-  }
-  if (mo->getName() == "MultHitMT21B") {
-    // std::cout << "beautify :: BMT21 =>>  " << resultBMT21 << std::endl;
-    auto* h = dynamic_cast<TH1F*>(mo->getObject());
-    mean = h->GetMean();
-    if (resultBMT21 == Quality::Good) {
-      h->SetFillColor(kGreen);
-      msg = drawLatex(.3, 0.62, kGreen, Form("Mean = %4.1f ", h->GetMean()));
+    if (mo->getName() == "MultHitMT21B") {
+      // std::cout << "beautify :: BMT21 =>>  " << resultBMT21 << std::endl;
+      auto* h = dynamic_cast<TH1F*>(mo->getObject());
+      mean = h->GetMean();
+      if (resultBMT21 == Quality::Good) {
+        h->SetFillColor(kGreen);
+        msg = drawLatex(.3, 0.62, kGreen, Form("Mean = %4.1f ", h->GetMean()));
+        h->GetListOfFunctions()->Add(msg);
+        msg = drawLatex(.3, 0.52, kGreen, "Quality::Good");
+        h->GetListOfFunctions()->Add(msg);
+      } else if (resultBMT21 == Quality::Bad) {
+        h->SetFillColor(kRed);
+        msg = drawLatex(.3, 0.62, kRed, Form("Mean = %4.1f ", h->GetMean()));
+        h->GetListOfFunctions()->Add(msg);
+        msg = drawLatex(.3, 0.52, kRed, "Quality::Bad ");
+        h->GetListOfFunctions()->Add(msg);
+      } else if (resultBMT21 == Quality::Medium) {
+        h->SetFillColor(kOrange);
+        msg = drawLatex(.3, 0.62, kOrange, Form("Mean = %4.1f ", h->GetMean()));
+        h->GetListOfFunctions()->Add(msg);
+        msg = drawLatex(.3, 0.52, kOrange, "Quality::Medium ");
+        h->GetListOfFunctions()->Add(msg);
+      }
       h->GetListOfFunctions()->Add(msg);
-      msg = drawLatex(.3, 0.52, kGreen, "Quality::Good");
-      h->GetListOfFunctions()->Add(msg);
-    } else if (resultBMT21 == Quality::Bad) {
-      h->SetFillColor(kRed);
-      msg = drawLatex(.3, 0.62, kRed, Form("Mean = %4.1f ", h->GetMean()));
-      h->GetListOfFunctions()->Add(msg);
-      msg = drawLatex(.3, 0.52, kRed, "Quality::Bad ");
-      h->GetListOfFunctions()->Add(msg);
-    } else if (resultBMT21 == Quality::Medium) {
-      h->SetFillColor(kOrange);
-      msg = drawLatex(.3, 0.62, kOrange, Form("Mean = %4.1f ", h->GetMean()));
-      h->GetListOfFunctions()->Add(msg);
-      msg = drawLatex(.3, 0.52, kOrange, "Quality::Medium ");
-      h->GetListOfFunctions()->Add(msg);
+      h->SetTitleSize(0.04);
+      h->SetLineColor(kBlack);
     }
-    h->GetListOfFunctions()->Add(msg);
-    h->SetTitleSize(0.04);
-    h->SetLineColor(kBlack);
-  }
-  if (mo->getName() == "MultHitMT22B") {
-    // std::cout << "beautify :: BMT22 =>>  " << resultBMT22 << std::endl;
-    auto* h = dynamic_cast<TH1F*>(mo->getObject());
-    mean = h->GetMean();
-    if (resultBMT22 == Quality::Good) {
-      h->SetFillColor(kGreen);
-      msg = drawLatex(.3, 0.62, kGreen, Form("Mean = %4.1f  ", h->GetMean()));
+    if (mo->getName() == "MultHitMT22B") {
+      // std::cout << "beautify :: BMT22 =>>  " << resultBMT22 << std::endl;
+      auto* h = dynamic_cast<TH1F*>(mo->getObject());
+      mean = h->GetMean();
+      if (resultBMT22 == Quality::Good) {
+        h->SetFillColor(kGreen);
+        msg = drawLatex(.3, 0.62, kGreen, Form("Mean = %4.1f  ", h->GetMean()));
+        h->GetListOfFunctions()->Add(msg);
+        msg = drawLatex(.3, 0.52, kGreen, "Quality::Good");
+        h->GetListOfFunctions()->Add(msg);
+      } else if (resultBMT22 == Quality::Bad) {
+        h->SetFillColor(kRed);
+        msg = drawLatex(.3, 0.62, kRed, Form("Mean = %4.1f ", h->GetMean()));
+        h->GetListOfFunctions()->Add(msg);
+        msg = drawLatex(.3, 0.52, kRed, "Quality::Bad ");
+        h->GetListOfFunctions()->Add(msg);
+      } else if (resultBMT22 == Quality::Medium) {
+        h->SetFillColor(kOrange);
+        msg = drawLatex(.3, 0.62, kOrange, Form("Mean = %4.1f", h->GetMean()));
+        h->GetListOfFunctions()->Add(msg);
+        msg = drawLatex(.3, 0.52, kOrange, "Quality::Medium ");
+        h->GetListOfFunctions()->Add(msg);
+      }
       h->GetListOfFunctions()->Add(msg);
-      msg = drawLatex(.3, 0.52, kGreen, "Quality::Good");
-      h->GetListOfFunctions()->Add(msg);
-    } else if (resultBMT22 == Quality::Bad) {
-      h->SetFillColor(kRed);
-      msg = drawLatex(.3, 0.62, kRed, Form("Mean = %4.1f ", h->GetMean()));
-      h->GetListOfFunctions()->Add(msg);
-      msg = drawLatex(.3, 0.52, kRed, "Quality::Bad ");
-      h->GetListOfFunctions()->Add(msg);
-    } else if (resultBMT22 == Quality::Medium) {
-      h->SetFillColor(kOrange);
-      msg = drawLatex(.3, 0.62, kOrange, Form("Mean = %4.1f", h->GetMean()));
-      h->GetListOfFunctions()->Add(msg);
-      msg = drawLatex(.3, 0.52, kOrange, "Quality::Medium ");
-      h->GetListOfFunctions()->Add(msg);
+      h->SetTitleSize(0.04);
+      h->SetLineColor(kBlack);
     }
-    h->GetListOfFunctions()->Add(msg);
-    h->SetTitleSize(0.04);
-    h->SetLineColor(kBlack);
-  }
-  // Non-Bend Multiplicity Histo ::
-  if (mo->getName() == "MultHitMT11NB") {
-    auto* h = dynamic_cast<TH1F*>(mo->getObject());
-    mean = h->GetMean();
-    if (resultNBMT11 == Quality::Good) {
-      h->SetFillColor(kGreen);
-      msg = drawLatex(.3, 0.62, kGreen, Form("Mean = %4.1f", h->GetMean()));
+    // Non-Bend Multiplicity Histo ::
+    if (mo->getName() == "MultHitMT11NB") {
+      auto* h = dynamic_cast<TH1F*>(mo->getObject());
+      mean = h->GetMean();
+      if (resultNBMT11 == Quality::Good) {
+        h->SetFillColor(kGreen);
+        msg = drawLatex(.3, 0.62, kGreen, Form("Mean = %4.1f", h->GetMean()));
+        h->GetListOfFunctions()->Add(msg);
+        msg = drawLatex(.3, 0.52, kGreen, "Quality::Good");
+        h->GetListOfFunctions()->Add(msg);
+      } else if (resultBMT11 == Quality::Bad) {
+        h->SetFillColor(kRed);
+        msg = drawLatex(.3, 0.62, kRed, Form("Mean = %4.1f", h->GetMean()));
+        h->GetListOfFunctions()->Add(msg);
+        msg = drawLatex(.3, 0.52, kRed, "Quality::Bad ");
+        h->GetListOfFunctions()->Add(msg);
+      } else if (resultBMT11 == Quality::Medium) {
+        h->SetFillColor(kOrange);
+        msg = drawLatex(.3, 0.62, kOrange, Form("Mean = %4.1f ", h->GetMean()));
+        h->GetListOfFunctions()->Add(msg);
+        msg = drawLatex(.3, 0.52, kOrange, "Quality::Medium ");
+        h->GetListOfFunctions()->Add(msg);
+      }
       h->GetListOfFunctions()->Add(msg);
-      msg = drawLatex(.3, 0.52, kGreen, "Quality::Good");
-      h->GetListOfFunctions()->Add(msg);
-    } else if (resultBMT11 == Quality::Bad) {
-      h->SetFillColor(kRed);
-      msg = drawLatex(.3, 0.62, kRed, Form("Mean = %4.1f", h->GetMean()));
-      h->GetListOfFunctions()->Add(msg);
-      msg = drawLatex(.3, 0.52, kRed, "Quality::Bad ");
-      h->GetListOfFunctions()->Add(msg);
-    } else if (resultBMT11 == Quality::Medium) {
-      h->SetFillColor(kOrange);
-      msg = drawLatex(.3, 0.62, kOrange, Form("Mean = %4.1f ", h->GetMean()));
-      h->GetListOfFunctions()->Add(msg);
-      msg = drawLatex(.3, 0.52, kOrange, "Quality::Medium ");
-      h->GetListOfFunctions()->Add(msg);
+      h->SetTitleSize(0.04);
+      h->SetLineColor(kBlack);
     }
-    h->GetListOfFunctions()->Add(msg);
-    h->SetTitleSize(0.04);
-    h->SetLineColor(kBlack);
-  }
-  if (mo->getName() == "MultHitMT12NB") {
-    auto* h = dynamic_cast<TH1F*>(mo->getObject());
-    mean = h->GetMean();
-    if (resultNBMT12 == Quality::Good) {
-      h->SetFillColor(kGreen);
-      msg = drawLatex(.3, 0.62, kGreen, Form("Mean = %4.1f", h->GetMean()));
+    if (mo->getName() == "MultHitMT12NB") {
+      auto* h = dynamic_cast<TH1F*>(mo->getObject());
+      mean = h->GetMean();
+      if (resultNBMT12 == Quality::Good) {
+        h->SetFillColor(kGreen);
+        msg = drawLatex(.3, 0.62, kGreen, Form("Mean = %4.1f", h->GetMean()));
+        h->GetListOfFunctions()->Add(msg);
+        msg = drawLatex(.3, 0.52, kGreen, "Quality::Good");
+        h->GetListOfFunctions()->Add(msg);
+      } else if (resultBMT12 == Quality::Bad) {
+        h->SetFillColor(kRed);
+        msg = drawLatex(.3, 0.62, kRed, Form("Mean = %4.1f", h->GetMean()));
+        h->GetListOfFunctions()->Add(msg);
+        msg = drawLatex(.3, 0.52, kRed, "Quality::Bad ");
+        h->GetListOfFunctions()->Add(msg);
+      } else if (resultBMT12 == Quality::Medium) {
+        h->SetFillColor(kOrange);
+        msg = drawLatex(.3, 0.62, kOrange, Form("Mean = %4.1f", h->GetMean()));
+        h->GetListOfFunctions()->Add(msg);
+        msg = drawLatex(.3, 0.52, kOrange, "Quality::Medium ");
+        h->GetListOfFunctions()->Add(msg);
+      }
       h->GetListOfFunctions()->Add(msg);
-      msg = drawLatex(.3, 0.52, kGreen, "Quality::Good");
-      h->GetListOfFunctions()->Add(msg);
-    } else if (resultBMT12 == Quality::Bad) {
-      h->SetFillColor(kRed);
-      msg = drawLatex(.3, 0.62, kRed, Form("Mean = %4.1f", h->GetMean()));
-      h->GetListOfFunctions()->Add(msg);
-      msg = drawLatex(.3, 0.52, kRed, "Quality::Bad ");
-      h->GetListOfFunctions()->Add(msg);
-    } else if (resultBMT12 == Quality::Medium) {
-      h->SetFillColor(kOrange);
-      msg = drawLatex(.3, 0.62, kOrange, Form("Mean = %4.1f", h->GetMean()));
-      h->GetListOfFunctions()->Add(msg);
-      msg = drawLatex(.3, 0.52, kOrange, "Quality::Medium ");
-      h->GetListOfFunctions()->Add(msg);
+      h->SetTitleSize(0.04);
+      h->SetLineColor(kBlack);
     }
-    h->GetListOfFunctions()->Add(msg);
-    h->SetTitleSize(0.04);
-    h->SetLineColor(kBlack);
-  }
-  if (mo->getName() == "MultHitMT21NB") {
-    auto* h = dynamic_cast<TH1F*>(mo->getObject());
-    mean = h->GetMean();
-    if (resultNBMT21 == Quality::Good) {
-      h->SetFillColor(kGreen);
-      msg = drawLatex(.3, 0.62, kGreen, Form("Mean = %4.1f ", h->GetMean()));
+    if (mo->getName() == "MultHitMT21NB") {
+      auto* h = dynamic_cast<TH1F*>(mo->getObject());
+      mean = h->GetMean();
+      if (resultNBMT21 == Quality::Good) {
+        h->SetFillColor(kGreen);
+        msg = drawLatex(.3, 0.62, kGreen, Form("Mean = %4.1f ", h->GetMean()));
+        h->GetListOfFunctions()->Add(msg);
+        msg = drawLatex(.3, 0.52, kGreen, "Quality::Good");
+        h->GetListOfFunctions()->Add(msg);
+      } else if (resultBMT21 == Quality::Bad) {
+        h->SetFillColor(kRed);
+        msg = drawLatex(.3, 0.62, kRed, Form("Mean = %4.1f ", h->GetMean()));
+        h->GetListOfFunctions()->Add(msg);
+        msg = drawLatex(.3, 0.52, kRed, "Quality::Bad ");
+        h->GetListOfFunctions()->Add(msg);
+      } else if (resultBMT21 == Quality::Medium) {
+        h->SetFillColor(kOrange);
+        msg = drawLatex(.3, 0.62, kOrange, Form("Mean = %4.1f", h->GetMean()));
+        h->GetListOfFunctions()->Add(msg);
+        msg = drawLatex(.3, 0.52, kOrange, "Quality::Medium ");
+        h->GetListOfFunctions()->Add(msg);
+      }
       h->GetListOfFunctions()->Add(msg);
-      msg = drawLatex(.3, 0.52, kGreen, "Quality::Good");
-      h->GetListOfFunctions()->Add(msg);
-    } else if (resultBMT21 == Quality::Bad) {
-      h->SetFillColor(kRed);
-      msg = drawLatex(.3, 0.62, kRed, Form("Mean = %4.1f ", h->GetMean()));
-      h->GetListOfFunctions()->Add(msg);
-      msg = drawLatex(.3, 0.52, kRed, "Quality::Bad ");
-      h->GetListOfFunctions()->Add(msg);
-    } else if (resultBMT21 == Quality::Medium) {
-      h->SetFillColor(kOrange);
-      msg = drawLatex(.3, 0.62, kOrange, Form("Mean = %4.1f", h->GetMean()));
-      h->GetListOfFunctions()->Add(msg);
-      msg = drawLatex(.3, 0.52, kOrange, "Quality::Medium ");
-      h->GetListOfFunctions()->Add(msg);
+      h->SetTitleSize(0.04);
+      h->SetLineColor(kBlack);
     }
-    h->GetListOfFunctions()->Add(msg);
-    h->SetTitleSize(0.04);
-    h->SetLineColor(kBlack);
-  }
-  if (mo->getName() == "MultHitMT22NB") {
-    auto* h = dynamic_cast<TH1F*>(mo->getObject());
-    mean = h->GetMean();
-    if (resultNBMT22 == Quality::Good) {
-      h->SetFillColor(kGreen);
-      msg = drawLatex(.3, 0.62, kGreen, Form("Mean = %4.1f ", h->GetMean()));
+    if (mo->getName() == "MultHitMT22NB") {
+      auto* h = dynamic_cast<TH1F*>(mo->getObject());
+      mean = h->GetMean();
+      if (resultNBMT22 == Quality::Good) {
+        h->SetFillColor(kGreen);
+        msg = drawLatex(.3, 0.62, kGreen, Form("Mean = %4.1f ", h->GetMean()));
+        h->GetListOfFunctions()->Add(msg);
+        msg = drawLatex(.3, 0.52, kGreen, "Quality::Good");
+        h->GetListOfFunctions()->Add(msg);
+      } else if (resultBMT22 == Quality::Bad) {
+        h->SetFillColor(kRed);
+        msg = drawLatex(.3, 0.62, kRed, Form("Mean = %4.1f", h->GetMean()));
+        h->GetListOfFunctions()->Add(msg);
+        msg = drawLatex(.3, 0.52, kRed, "Quality::Bad ");
+        h->GetListOfFunctions()->Add(msg);
+      } else if (resultBMT22 == Quality::Medium) {
+        h->SetFillColor(kOrange);
+        msg = drawLatex(.3, 0.62, kOrange, Form("Mean = %4.1f", h->GetMean()));
+        h->GetListOfFunctions()->Add(msg);
+        msg = drawLatex(.3, 0.52, kOrange, "Quality::Medium ");
+        h->GetListOfFunctions()->Add(msg);
+      }
       h->GetListOfFunctions()->Add(msg);
-      msg = drawLatex(.3, 0.52, kGreen, "Quality::Good");
-      h->GetListOfFunctions()->Add(msg);
-    } else if (resultBMT22 == Quality::Bad) {
-      h->SetFillColor(kRed);
-      msg = drawLatex(.3, 0.62, kRed, Form("Mean = %4.1f", h->GetMean()));
-      h->GetListOfFunctions()->Add(msg);
-      msg = drawLatex(.3, 0.52, kRed, "Quality::Bad ");
-      h->GetListOfFunctions()->Add(msg);
-    } else if (resultBMT22 == Quality::Medium) {
-      h->SetFillColor(kOrange);
-      msg = drawLatex(.3, 0.62, kOrange, Form("Mean = %4.1f", h->GetMean()));
-      h->GetListOfFunctions()->Add(msg);
-      msg = drawLatex(.3, 0.52, kOrange, "Quality::Medium ");
-      h->GetListOfFunctions()->Add(msg);
+      h->SetTitleSize(0.04);
+      h->SetLineColor(kBlack);
     }
-    h->GetListOfFunctions()->Add(msg);
-    h->SetTitleSize(0.04);
-    h->SetLineColor(kBlack);
   }
-
   /// Display Normalization (Hz)
   float scale = 1 / (mDigitTF * scaleTime * mOrbTF * 1000); // (kHz)
   // std::cout << " scale = "<< scale << std::endl ;

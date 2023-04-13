@@ -85,7 +85,7 @@ void QualityPostProcessing::update(Trigger t, framework::ServiceRegistryRef serv
 
   for (auto& obj : mCcdbObjects) {
     if (obj.update(&qcdb, t.timestamp, t.activity)) {
-      auto qo = obj.get<QualityObject>();
+      auto qo = obj.mObject;
       if (qo) {
         auto time = obj.getTimeStamp() / 1000; // ROOT expects seconds since epoch
         int Q = 0;
@@ -103,14 +103,17 @@ void QualityPostProcessing::update(Trigger t, framework::ServiceRegistryRef serv
           Qstr = fmt::format("#color[{}]", kGreen + 2) + "{Good}";
         }
 
-        auto iter1 = mHistogramsQuality.find(obj.mName);
-        if (iter1 != mHistogramsQuality.end()) {
-          iter1->second->Fill(Q + 0.5);
-        }
+        // only update plots/trends when the object is updated
+        if (obj.mUpdated) {
+          auto iter1 = mHistogramsQuality.find(obj.mName);
+          if (iter1 != mHistogramsQuality.end()) {
+            iter1->second->Fill(Q + 0.5);
+          }
 
-        auto iter2 = mTrendsQuality.find(obj.mName);
-        if (iter2 != mTrendsQuality.end()) {
-          iter2->second->update(time, qo->getQuality());
+          auto iter2 = mTrendsQuality.find(obj.mName);
+          if (iter2 != mTrendsQuality.end()) {
+            iter2->second->update(time, qo->getQuality());
+          }
         }
 
         if (qo->getName() == mAggregatedQualityName) {
@@ -125,7 +128,7 @@ void QualityPostProcessing::update(Trigger t, framework::ServiceRegistryRef serv
   mCheckerMessages.insert(mCheckerMessages.begin(), "");
   if (mchQuality == Quality::Good) {
     if (!mMessageGood.empty()) {
-      mCheckerMessages.insert(mCheckerMessages.begin(), fmt::format("#color[{}]", kRed) + "{" + mMessageGood + "}");
+      mCheckerMessages.insert(mCheckerMessages.begin(), fmt::format("#color[{}]", kGreen + 2) + "{" + mMessageGood + "}");
     }
     mCheckerMessages.insert(mCheckerMessages.begin(), fmt::format("MCH Quality = #color[{}]", kGreen + 2) + "{Good}");
   } else if (mchQuality == Quality::Medium) {

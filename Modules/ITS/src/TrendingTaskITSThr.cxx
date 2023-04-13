@@ -129,7 +129,18 @@ void TrendingTaskITSThr::trendValues(const Trigger& t, repository::DatabaseInter
 }
 void TrendingTaskITSThr::storePlots(repository::DatabaseInterface& qcdb)
 {
-  ILOG(Info, Support) << "Generating " << mConfig.plots.size() << " plots." << ENDM;
+  //
+  // Create and save trends for each stave
+  //
+
+  if (runlist.size() == 0) {
+    ILOG(Info, Support) << "There are no plots to store, skipping" << ENDM;
+    return;
+  }
+
+  ILOG(Info, Support) << "Generating and storing " << mConfig.plots.size() << " plots."
+                      << ENDM;
+
   //
   // Create canvas with multiple trends - average threshold - 1 canvas per layer
   //
