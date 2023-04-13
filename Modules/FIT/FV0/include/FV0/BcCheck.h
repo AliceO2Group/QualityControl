@@ -17,6 +17,7 @@
 #ifndef QC_MODULE_FV0_BCCHECK_H
 #define QC_MODULE_FV0_BCCHECK_H
 
+#include <TH2.h>
 #include "QualityControl/CheckInterface.h"
 
 namespace o2::quality_control_modules::fv0

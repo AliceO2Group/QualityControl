@@ -14,9 +14,11 @@
 /// \author Dawid Skora dawid.mateusz.skora@cern.ch
 ///
 
+#include "QualityControl/MonitorObject.h"
 #include "FV0/BcCheck.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/Quality.h"
+#include <TList.h>
 #include <TH2.h>
 #include <TPaveText.h>
 
@@ -46,7 +48,7 @@ Quality BcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* mo
                 return result;
             }
 
-            for (int channel = 1; channel < h->GetNbinsX(); ++channel) {
+            for (int channel = 1; channel < histogram->GetNbinsX(); ++channel) {
                 
             }
         }
@@ -87,4 +89,5 @@ void BcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
             msg->SetFillColor(kGray);
         }
     }
+}
 } // namespace o2::quality_control_modules::fv0
