@@ -15,15 +15,16 @@
 ///
 
 #include "FV0/BcCheck.h"
+#include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/Quality.h"
+#include <TH2.h>
+#include <TPaveText.h>
 
 using namespace std;
 using namespace o2::quality_control;
 
 namespace o2::quality_control_modules::fv0
 {
-
-constexpr int kBinSwOnly = 1;
-constexpr int kBinTcmOnly = 2;
 
 void BcCheck::configure()
 {
@@ -32,14 +33,58 @@ void BcCheck::configure()
 
 Quality BcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
+    Quality result = Quality::Null;
+    for (auto& [moName, mo] : *moMap) {
+        (void)moName;
+        if (mo->getName() == "BCvsFEEmodules" || mo->getName() == "BCvsTriggers") {
+            auto* histogram = dynamic_cast<TH2*>(mo->getObject());
 
+            if (!histogram) {
+                ILOG(Error, Support) << "check(): MO " << mo->getName() << " not found" << ENDM;
+                result.addReason(FlagReasonFactory::Unknown(), "MO " + mo->getName() + " not found");
+                result.set(Quality::Null);
+                return result;
+            }
+
+            for (int channel = 1; channel < h->GetNbinsX(); ++channel) {
+                
+            }
+        }
+    }
 }
 
 std::string BcCheck::getAcceptedType() { return "TH2"; }
 
 void BcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
+    if (mo->getName() == "BCvsFEEmodules" || mo->getName() == "BCvsTriggers") {
 
-}
+        auto* histogram = dynamic_cast<TH2*>(mo->getObject());
 
+        if (!histogram) {
+            ILOG(Error, Support) << "beautify(): MO " << mo->getName() << " not found" << ENDM;
+            return;
+        }
+
+        TPaveText* msg = new TPaveText(0.15, 0.2, 0.85, 0.45, "NDC");
+        histogram->GetListOfFunctions()->Add(msg);
+        msg->SetName(Form("%s_msg", mo->GetName()));
+        msg->Clear();
+
+        if (checkResult == Quality::Good) {
+            msg->AddText(">> Quality::Good <<");
+            msg->SetFillColor(kGreen);
+        } else if (checkResult == Quality::Bad) {
+            auto reasons = checkResult.getReasons();
+            msg->SetFillColor(kRed);
+            msg->AddText(">> Quality::Bad <<");
+        } else if (checkResult == Quality::Medium) {
+            auto reasons = checkResult.getReasons();
+            msg->SetFillColor(kOrange);
+            msg->AddText(">> Quality::Medium <<");
+        } else if (checkResult == Quality::Null) {
+            msg->AddText(">> Quality::Null <<");
+            msg->SetFillColor(kGray);
+        }
+    }
 } // namespace o2::quality_control_modules::fv0

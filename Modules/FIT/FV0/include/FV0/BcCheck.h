@@ -19,8 +19,6 @@
 
 #include "QualityControl/CheckInterface.h"
 
-#include "FV0Base/Constants.h"
-
 namespace o2::quality_control_modules::fv0
 {
 
@@ -39,6 +37,7 @@ class BcCheck : public o2::quality_control::checker::CheckInterface
 
  private:
   std::array<double, 4> mPositionMsgBox;
+  TH2F* mBcPattern;
 };
 
 } // namespace o2::quality_control_modules::fv0
