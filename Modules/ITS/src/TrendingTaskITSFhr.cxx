@@ -80,7 +80,7 @@ void TrendingTaskITSFhr::finalize(Trigger t, framework::ServiceRegistryRef servi
 
 void TrendingTaskITSFhr::storeTrend(repository::DatabaseInterface& qcdb)
 {
-  ILOG(Info, Support) << "Storing the trend, entries: " << mTrend->GetEntries() << ENDM;
+  ILOG(Debug, Devel) << "Storing the trend, entries: " << mTrend->GetEntries() << ENDM;
 
   auto mo = std::make_shared<core::MonitorObject>(mTrend.get(), getName(), "o2::quality_control_modules::its::TrendingTaskITSFhr",
                                                   mConfig.detectorName, mMetaData.runNumber);
@@ -131,8 +131,8 @@ void TrendingTaskITSFhr::trendValues(const Trigger& t, repository::DatabaseInter
 
 void TrendingTaskITSFhr::storePlots(repository::DatabaseInterface& qcdb)
 {
-  ILOG(Info, Support) << "Generating and storing " << mConfig.plots.size() << " plots."
-                      << ENDM;
+  ILOG(Debug, Devel) << "Generating and storing " << mConfig.plots.size() << " plots."
+                     << ENDM;
   //
   // Create and save trends for each stave
   //
@@ -205,7 +205,7 @@ void TrendingTaskITSFhr::storePlots(repository::DatabaseInterface& qcdb)
     bool isrun = plot.varexp.find("ntreeentries") != std::string::npos ? true : false; // vs run or vs time
     long int n = mTrend->Draw(plot.varexp.c_str(), plot.selection.c_str(), "goff");
     // post processing plot
-    ILOG(Info, Support) << " Drawing " << plot.name << ENDM;
+    ILOG(Debug, Devel) << " Drawing " << plot.name << ENDM;
     TGraph* g = new TGraph(n, mTrend->GetV2(), mTrend->GetV1());
     SetGraphStyle(g, col[colidx], mkr[mkridx]);
     gTrendsAll[ilay * NTRENDSFHR + index]->Add((TGraph*)g->Clone());
@@ -238,8 +238,8 @@ void TrendingTaskITSFhr::storePlots(repository::DatabaseInterface& qcdb)
         gTrendsAll[ilay * NTRENDSFHR + id]->Draw();
         legstaves[ilay]->Draw("same");
 
-        ILOG(Info, Support) << " Saving canvas for layer " << ilay << " to CCDB "
-                            << ENDM;
+        ILOG(Debug, Devel) << " Saving canvas for layer " << ilay << " to CCDB "
+                           << ENDM;
         auto mo = std::make_shared<MonitorObject>(c[ilay * NTRENDSFHR + id], mConfig.taskName, "o2::quality_control_modules::its::TrendingTaskITSFhr",
                                                   mConfig.detectorName, mMetaData.runNumber);
         mo->setIsOwner(false);

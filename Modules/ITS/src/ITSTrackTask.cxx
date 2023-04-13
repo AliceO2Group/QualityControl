@@ -94,16 +94,16 @@ void ITSTrackTask::startOfCycle()
 void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
 
-  ILOG(Info, Support) << "START DOING QC General" << ENDM;
+  ILOG(Debug, Devel) << "START DOING QC General" << ENDM;
 
   if (mTimestamp == -1) { // get dict from ccdb
     mTimestamp = std::stol(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "dicttimestamp", "0"));
     long int ts = mTimestamp ? mTimestamp : ctx.services().get<o2::framework::TimingInfo>().creation;
-    ILOG(Info, Support) << "Getting dictionary from ccdb - timestamp: " << ts << ENDM;
+    ILOG(Debug, Devel) << "Getting dictionary from ccdb - timestamp: " << ts << ENDM;
     auto& mgr = o2::ccdb::BasicCCDBManager::instance();
     mgr.setTimestamp(ts);
     mDict = mgr.get<o2::itsmft::TopologyDictionary>("ITS/Calib/ClusterDictionary");
-    ILOG(Info, Support) << "Dictionary size: " << mDict->getSize() << ENDM;
+    ILOG(Debug, Devel) << "Dictionary size: " << mDict->getSize() << ENDM;
   }
 
   auto trackArr = ctx.inputs().get<gsl::span<o2::its::TrackITS>>("tracks");
@@ -536,7 +536,7 @@ void ITSTrackTask::createAllHistos()
 void ITSTrackTask::addObject(TObject* aObject)
 {
   if (!aObject) {
-    ILOG(Info, Support) << " ERROR: trying to add non-existent object " << ENDM;
+    ILOG(Debug, Devel) << " ERROR: trying to add non-existent object " << ENDM;
     return;
   } else {
     mPublishedObjects.push_back(aObject);
@@ -555,7 +555,7 @@ void ITSTrackTask::publishHistos()
 {
   for (unsigned int iObj = 0; iObj < mPublishedObjects.size(); iObj++) {
     getObjectsManager()->startPublishing(mPublishedObjects.at(iObj));
-    ILOG(Info, Support) << " Object will be published: " << mPublishedObjects.at(iObj)->GetName() << ENDM;
+    ILOG(Debug, Devel) << " Object will be published: " << mPublishedObjects.at(iObj)->GetName() << ENDM;
   }
 }
 

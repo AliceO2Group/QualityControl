@@ -78,7 +78,7 @@ void TrendingTaskITSTracks::finalize(Trigger t, framework::ServiceRegistryRef se
 
 void TrendingTaskITSTracks::storeTrend(repository::DatabaseInterface& qcdb)
 {
-  ILOG(Info, Support) << "Storing the trend, entries: " << mTrend->GetEntries() << ENDM;
+  ILOG(Debug, Devel) << "Storing the trend, entries: " << mTrend->GetEntries() << ENDM;
 
   auto mo = std::make_shared<core::MonitorObject>(mTrend.get(), getName(),
                                                   mConfig.className,
@@ -132,8 +132,8 @@ void TrendingTaskITSTracks::trendValues(const Trigger& t, repository::DatabaseIn
 
 void TrendingTaskITSTracks::storePlots(repository::DatabaseInterface& qcdb)
 {
-  ILOG(Info, Support) << "Generating and storing " << mConfig.plots.size() << " plots."
-                      << ENDM;
+  ILOG(Debug, Devel) << "Generating and storing " << mConfig.plots.size() << " plots."
+                     << ENDM;
   //
   // Create and save trends for each stave
   //
