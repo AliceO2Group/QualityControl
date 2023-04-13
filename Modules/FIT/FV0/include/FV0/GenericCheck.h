@@ -18,7 +18,10 @@
 #define QC_MODULE_FV0_FV0GENERICCHECK_H
 
 #include "QualityControl/CheckInterface.h"
+#include "FV0Base/Constants.h"
+#include "DataFormatsFIT/DeadChannelMap.h"
 #include <DataFormatsQualityControl/FlagReasons.h>
+
 
 namespace o2::quality_control_modules::fv0
 {
@@ -149,6 +152,11 @@ class GenericCheck : public o2::quality_control::checker::CheckInterface
 
   std::array<double, 4> mPositionMsgBox;
   std::string mNameObjOnCanvas;
+
+  constexpr static std::size_t sNCHANNELS = o2::fv0::Constants::nFv0Channels;
+  o2::fit::DeadChannelMap* mDeadChannelMap;
+  std::string mDeadChannelMapStr;
+  std::string mPathDeadChannelMap;
 };
 
 } // namespace o2::quality_control_modules::fv0
