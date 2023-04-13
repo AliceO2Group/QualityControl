@@ -129,8 +129,6 @@ void TrendingTaskITSFEE::trendValues(const Trigger& t, repository::DatabaseInter
 
 void TrendingTaskITSFEE::storePlots(repository::DatabaseInterface& qcdb)
 {
-  // ILOG(Debug, Devel) << "Generating and storing " << mConfig.plots.size() << " plots." << ENDM;
-
   int countplots = 0;
   int countITSpart = 0;
   bool isRun = false;

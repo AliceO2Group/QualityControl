@@ -325,6 +325,14 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   resetLanePlotsAndCounters(); // action taken depending on mResetLaneStatus and mResetPayload
 
+  // manual call of DPL data iterator to catch exceptoin:
+  try {
+    auto it = parser.begin();
+  } catch (const std::runtime_error& error) {
+    LOG(error) << "Error during parsing DPL data: " << error.what();
+    return;
+  }
+
   for (auto it = parser.begin(), end = parser.end(); it != end; ++it) {
     auto rdh = reinterpret_cast<const o2::header::RDHAny*>(it.raw());
     // Decoding data format (RDHv* --> v6 and v7 have same bits for what is considered here)
@@ -335,7 +343,6 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
     int ifee = 3 * StaveBoundary[ilayer] - (StaveBoundary[ilayer] - StaveBoundary[NLayerIB]) * (ilayer >= NLayerIB) + istave * (3 - (ilayer >= NLayerIB)) + ilink;
     int memorysize = (int)(o2::raw::RDHUtils::getMemorySize(rdh));
     int headersize = o2::raw::RDHUtils::getHeaderSize(rdh);
-
     payloadTot[ifee] += memorysize - headersize;
     bool clockEvt = false;
 
@@ -358,10 +365,16 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (summaryLaneStatus & (1 << 25))
       mRDHSummary->Fill(ifee, 5); // Timebase evt
     if (summaryLaneStatus & (1 << 24))
-      mRDHSummary->Fill(ifee, 6); // Timebase Unsync evt
-
+      mRDHSummary->Fill(ifee, 6);                              // Timebase Unsync evt
     if ((int)(o2::raw::RDHUtils::getStop(rdh)) && it.size()) { // looking into the DDW0 from the closing packet
-      auto const* ddw = reinterpret_cast<const GBTDiagnosticWord*>(it.data());
+      const GBTDiagnosticWord* ddw;
+      try {
+        ddw = reinterpret_cast<const GBTDiagnosticWord*>(it.data());
+      } catch (const std::runtime_error& error) {
+        LOG(error) << "Error during reading late diagnostic data: " << error.what();
+        return;
+      }
+
       uint64_t laneInfo = ddw->laneWord.laneBits.laneStatus;
 
       uint8_t flag1 = ddw->indexWord.indexBits.flag1;
@@ -389,7 +402,6 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
         }
       }
 
-      // std::cout << "Layer:"<< ilayer << "Stave:" << istave << std::endl;
       for (int i = 0; i < NLanesMax; i++) {
         int laneValue = laneInfo >> (2 * i) & 0x3;
         if (laneValue) {

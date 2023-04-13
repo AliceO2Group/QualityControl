@@ -130,8 +130,6 @@ void TrendingTaskITSCluster::trendValues(const Trigger& t, repository::DatabaseI
 
 void TrendingTaskITSCluster::storePlots(repository::DatabaseInterface& qcdb)
 {
-  ILOG(Debug, Devel) << "Generating and storing " << mConfig.plots.size() << " plots."
-                     << ENDM;
   //
   // Create average plots for all layers
   //

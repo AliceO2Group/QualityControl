@@ -168,6 +168,8 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mTrgChargeLevelHigh = getNumericalParameter("trgChargeLevelHigh", 4095);
   mTrgThresholdCharge = getNumericalParameter("trgThresholdCharge", 1);
   mTrgThresholdNChannels = getNumericalParameter("trgThresholdNChannels", 1);
+  mMinTimeGate = getNumericalParameter("minGateTimeForRatioHistogram", -192);
+  mMaxTimeGate = getNumericalParameter("maxGateTimeForRatioHistogram", 192);
 
   if (mTrgModeInnerOuterThresholdVar == TrgModeThresholdVar::kAmpl) {
     mTrgThresholdChargeInner = getNumericalParameter("trgThresholdChargeInner", 1);
@@ -203,7 +205,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistTriggersSw = std::make_unique<TH1F>("TriggersSoftware", "Triggers from software", mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
   mHistTriggersSoftwareVsTCM = std::make_unique<TH2F>("TriggersSoftwareVsTCM", "Comparison of triggers from software and TCM;;Trigger name", mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size(), 4, 0, 4);
   mHistTriggersSoftwareVsTCM->SetOption("colz");
-  mHistTriggersSoftwareVsTCM->SetStats(0);
+  mHistTriggersSoftwareVsTCM->SetStats(1);
   for (const auto& entry : mMapDigitTrgNames) {
     mHistOrbitVsTrg->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
     mHistTriggersCorrelation->GetXaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
@@ -262,7 +264,6 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     mHistBCvsFEEmodules->GetYaxis()->SetBinLabel(entry.second + 1, entry.first.c_str());
     mHistOrbitVsFEEmodules->GetYaxis()->SetBinLabel(entry.second + 1, entry.first.c_str());
   }
-
   // mHistTimeSum2Diff = std::make_unique<TH2F>("timeSumVsDiff", "time A/C side: sum VS diff;(TOC-TOA)/2 [ns];(TOA+TOC)/2 [ns]", 400, -52.08, 52.08, 400, -52.08, 52.08); // range of 52.08 ns = 4000*13.02ps = 4000 channels
   mHistNumADC = std::make_unique<TH1F>("HistNumADC", "HistNumADC", sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF);
   mHistNumCFD = std::make_unique<TH1F>("HistNumCFD", "HistNumCFD", sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF);
@@ -277,6 +278,9 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistCycleDuration = std::make_unique<TH1D>("CycleDuration", "Cycle Duration;;time [ns]", 1, 0, 2);
   mHistCycleDurationNTF = std::make_unique<TH1D>("CycleDurationNTF", "Cycle Duration;;time [TimeFrames]", 1, 0, 2);
   mHistCycleDurationRange = std::make_unique<TH1D>("CycleDurationRange", "Cycle Duration (total cycle range);;time [ns]", 1, 0, 2);
+
+  std::string gateTimeRatioTitle = "Ratio of events between time " + std::to_string(mMinTimeGate) + " and " + std::to_string(mMaxTimeGate);
+  mHistGateTimeRatio2Ch = std::make_unique<TH1F>("EventsInGateTime", gateTimeRatioTitle.c_str(), sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF);
 
   std::vector<unsigned int> vecChannelIDs;
   if (auto param = mCustomParameters.find("ChannelIDs"); param != mCustomParameters.end()) {
@@ -327,6 +331,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   rebinFromConfig(); // after all histos are created
   // 1-dim hists
+  getObjectsManager()->startPublishing(mHistGateTimeRatio2Ch.get());
   getObjectsManager()->startPublishing(mHistCFDEff.get());
   getObjectsManager()->startPublishing(mHistBC.get());
   getObjectsManager()->startPublishing(mHistNchA.get());
@@ -385,6 +390,7 @@ void DigitQcTask::startOfActivity(Activity& activity)
   mHistAmp2Ch->Reset();
   mHistBC->Reset();
   mHistChDataBits->Reset();
+  mHistGateTimeRatio2Ch->Reset();
   mHistCFDEff->Reset();
   mHistNumADC->Reset();
   mHistNumCFD->Reset();
@@ -641,6 +647,22 @@ void DigitQcTask::endOfCycle()
   ILOG(Debug, Support) << "adding last TF creation time: " << mTFcreationTime << ENDM;
   getObjectsManager()->getMonitorObject(mHistBCvsTrg->GetName())->addOrUpdateMetadata("TFcreationTime", std::to_string(mTFcreationTime));
 
+  for (int channel = 1; channel <= sNCHANNELS_FV0_PLUSREF - 1; channel++) {
+    float events_in_range = 0;
+    float events_per_channel = 0;
+    for (int bin_on_y_axis = 1; bin_on_y_axis <= mHistTime2Ch->GetNbinsY(); bin_on_y_axis++) {
+      if (mHistTime2Ch->GetYaxis()->GetBinLowEdge(bin_on_y_axis) > mMinTimeGate && mHistTime2Ch->GetYaxis()->GetBinLowEdge(bin_on_y_axis) < mMaxTimeGate) {
+        events_in_range += mHistTime2Ch->GetBinContent(channel, bin_on_y_axis);
+      }
+      events_per_channel += mHistTime2Ch->GetBinContent(channel, bin_on_y_axis);
+    }
+    if (events_per_channel) {
+      mHistGateTimeRatio2Ch->SetBinContent(channel, events_in_range / events_per_channel);
+    } else {
+      mHistGateTimeRatio2Ch->SetBinContent(channel, 0);
+    }
+  }
+
   // one has to set num. of entries manually because
   // default TH1Reductor gets only mean,stddev and entries (no integral)
   mHistCFDEff->Divide(mHistNumADC.get(), mHistNumCFD.get());
@@ -661,6 +683,7 @@ void DigitQcTask::endOfActivity(Activity& /*activity*/)
 void DigitQcTask::reset()
 {
   // clean all the monitor objects here
+  mHistGateTimeRatio2Ch->Reset();
   mHistTime2Ch->Reset();
   mHistAmp2Ch->Reset();
   mHistBC->Reset();

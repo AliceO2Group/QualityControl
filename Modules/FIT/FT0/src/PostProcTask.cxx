@@ -234,7 +234,7 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
     ILOG(Error) << "MO \"ChannelDataBits\" NOT retrieved!!!" << ENDM;
   }
   auto moStatChannelID = mDatabase->retrieveMO(mPathDigitQcTask, "StatChannelID", t.timestamp, t.activity);
-  auto hStatChannelID = moStatChannelID ? dynamic_cast<TH2F*>(moStatChannelID->getObject()) : nullptr;
+  auto hStatChannelID = moStatChannelID ? dynamic_cast<TH1F*>(moStatChannelID->getObject()) : nullptr;
   if (!hStatChannelID) {
     ILOG(Error) << "MO \"StatChannelID\" NOT retrieved!!!" << ENDM;
   }
@@ -306,13 +306,13 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
   }
 
   auto mo3 = mDatabase->retrieveMO(mPathDigitQcTask, "AmpPerChannel", t.timestamp, t.activity);
-  auto hAmpPerChannel = mo3 ? dynamic_cast<TH2D*>(mo3->getObject()) : nullptr;
+  auto hAmpPerChannel = mo3 ? dynamic_cast<TH2F*>(mo3->getObject()) : nullptr;
   if (!hAmpPerChannel) {
     ILOG(Error) << "MO \"AmpPerChannel\" NOT retrieved!!!"
                 << ENDM;
   }
   auto mo4 = mDatabase->retrieveMO(mPathDigitQcTask, "TimePerChannel", t.timestamp, t.activity);
-  auto hTimePerChannel = mo4 ? dynamic_cast<TH2D*>(mo4->getObject()) : nullptr;
+  auto hTimePerChannel = mo4 ? dynamic_cast<TH2F*>(mo4->getObject()) : nullptr;
   if (!hTimePerChannel) {
     ILOG(Error) << "MO \"TimePerChannel\" NOT retrieved!!!"
                 << ENDM;
