@@ -19,6 +19,7 @@
 #include <iostream>
 #include <utility>
 #include <Common/Exceptions.h>
+#include <boost/algorithm/string.hpp>
 
 namespace o2::quality_control::core
 {
@@ -101,4 +102,18 @@ const CommentedFlagReasons& Quality::getReasons() const
 {
   return mReasons;
 }
+
+Quality Quality::fromString(const std::string& str)
+{
+  if (str == Quality::Good.getName()) {
+    return Quality::Good;
+  } else if (str == Quality::Medium.getName()) {
+    return Quality::Medium;
+  } else if (str == Quality::Bad.getName()) {
+    return Quality::Bad;
+  } else {
+    return Quality::Null;
+  }
+}
+
 } // namespace o2::quality_control::core

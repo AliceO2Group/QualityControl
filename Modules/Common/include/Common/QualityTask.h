@@ -28,6 +28,21 @@
 #include <string>
 #include <map>
 
+namespace o2::quality_control::core
+{
+class QualityObject;
+}
+
+namespace o2::quality_control::repository
+{
+class DatabaseInterface;
+}
+
+namespace o2::quality_control::postprocessing
+{
+struct Trigger;
+}
+
 namespace o2::quality_control_modules::common
 {
 
@@ -52,6 +67,8 @@ class QualityTask : public quality_control::postprocessing::PostProcessingInterf
   struct QualityTrendGraph : public TCanvas {
     QualityTrendGraph(std::string name, std::string title);
     void update(uint64_t time, o2::quality_control::core::Quality q);
+    static std::string distributionName(const std::string& groupName, const std::string& qualityName);
+    static std::string trendName(const std::string& groupName, const std::string& qualityName);
 
     std::unique_ptr<TGraph> mGraph;
     std::unique_ptr<TGraph> mGraphHist;
@@ -67,8 +84,14 @@ class QualityTask : public quality_control::postprocessing::PostProcessingInterf
   void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
 
  private:
+  std::pair<std::shared_ptr<quality_control::core::QualityObject>, bool> getQO(
+    quality_control::repository::DatabaseInterface& qcdb, const quality_control::postprocessing::Trigger& t, const std::string& fullPath, const std::string& group);
+
+ private:
   /// \brief configuration parameters
   QualityTaskConfig mConfig;
+  /// \brief latest creation timestamp of each tracked QO
+  std::unordered_map<std::string /* full path */, uint64_t> mLatestTimestamps;
   /// \brief colors associated to each quality state (Good/Medium/Bad/Null)
   std::unordered_map<std::string, int> mColors;
   /// \brief numerical IDs associated to each quality state (Good/Medium/Bad/Null)
@@ -78,11 +101,11 @@ class QualityTask : public quality_control::postprocessing::PostProcessingInterf
   /// \brief Quality Objects histograms
   std::unordered_map<std::string, std::unique_ptr<TH1F>> mHistograms;
   /// \brief Quality Objects trends
-  std::map<std::string, std::unique_ptr<QualityTrendGraph>> mTrends;
+  std::unordered_map<std::string, std::unique_ptr<QualityTrendGraph>> mTrends;
   /// \brief canvas with human-readable quality states and messages
   std::unique_ptr<TCanvas> mQualityCanvas;
 };
 
 } // namespace o2::quality_control_modules::common
 
-#endif // QC_MODULE_MCH_PP_DIGITS_H
+#endif // QUALITYCONTROL_QUALITYTASK_H

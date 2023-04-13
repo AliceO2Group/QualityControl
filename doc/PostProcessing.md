@@ -417,19 +417,25 @@ The field `"graphErrors"` is set up as `"graphErrors":"Var1:Var2"` where `Var1` 
 
 ### The QualityTask class
 
-This task allows to trend a set of QualityObjects (QO) stored in the QCDB, and to display their name and value in human-readable format on a canvas. For each QualityObject, it also creates a 1-D distribution of the corresponding quality values (*Good/Medium/Bad/Null*).
- The aggregated quality of the detector is shown at the top of the canvas, immediately followed by a message that can provide instructions or further details based on the quality value.
-Each time the post-processing task is triggered, the QualityObjects are fetched from the CCDB and the canvas is updated with the current values. Moreover, the trending plot and 1-D distribution associated to each QO is aupdated accordingly.
+This task allows to trend a set of QualityObjects (QO) stored in the QCDB, and to display their name and value in human-readable format on a canvas (see the figure below).
+For each QualityObject, it also creates a 1-D distribution of the corresponding quality values (*Good/Medium/Bad/Null*).
+Each Quality can be optionally accompanied by a message that can provide instructions or further details based on the quality value.
+Each time the post-processing task is triggered, the QualityObjects are fetched from the CCDB and the canvas is updated with the current values.
+Moreover, the trending plot and 1-D distribution associated to each QO is updated accordingly.
 Hence, the trending and 1-D distribution can be used to estimate the fraction of good data for a given run.
 
+![QualityTask](images/quality-task.png)
+
 #### Configuration
-The QualityObjects to be monitored and displayed are passed as **dataSources**.
-A number of configuration parameters allow to identify the aggregated quality object and customize the messages to be displayed in the canvas:
-* `"AggregatedQualityName"`: the name of the QO representing the aggregated quality of the detector
-* `"MessageGood"`: the text to be displayed when the aggregated quality is *Good*
-* `"MessageMedium"`: the text to be displayed when the aggregated quality is *Medium*
-* `"MessageBad"`: the text to be displayed when the aggregated quality is *Bad*
-* `"MessageNull"`: the text to be displayed when the aggregated quality is *Null*
+The QualityObjects to be monitored and displayed are passed as **qualityGroups**, each containing **inputObjects** for a specific, line-separated group. 
+Each group requires a **name** and **path** to the contained objects.
+A **title** can be added optionally, which appears at the top of the group in the canvas.
+By listing certain qualities in **ignoreQualitiesDetails** one can ask to ignore FlagReasons associated to QualityObjects. 
+
+The **inputObjects** list should contain Quality Object names in a given group.
+A **title** can be added, which is used in the summary canvas to denote given Quality Object.
+If it is absent, **name** is used instead.
+Optionally, one can add **messageBad**, **messageMedium**, **messageGood**, **messageNull** to add a message when a particular Quality is seen.
 
 Here is a complete example of `QualityTask` configuration:
 ```json
@@ -444,40 +450,42 @@ Here is a complete example of `QualityTask` configuration:
         "className": "o2::quality_control_modules::common::QualityTask",
         "moduleName": "QualityControl",
         "detectorName": "TST",
-        "customization": [
+        "qualityGroups": [
           {
-            "name": "AggregatedQualityName",
-            "value": "Aggregator/AggregatedQuality"
-          },
-          {
-            "name": "MessageGood",
-            "value": "All checks are OK"
-          },
-          {
-            "name": "MessageMedium",
-            "value": "Add bookkeeping entry"
-          },
-          {
-            "name": "MessageBad",
-            "value": "Inform XYZ on-call immediately"
-          },
-          {
-            "name": "MessageNull",
-            "value": "Some histograms are empty!!!"
-          }
-        ],
-        "dataSources": [
-          {
-            "type": "repository",
+            "name" : "global",
+            "title" : "GLOBAL TST QUALITY",
             "path": "TST/QO",
-            "names": [
-              "Check1", "Check2", "Check3"
+            "ignoreQualitiesDetails" : ["Null", "Good", "Medium", "Bad"],
+            "inputObjects": [
+              {
+                "name" : "QcCheck",
+                "title" : "Aggregated TST Quality",
+                "messageBad" : "Inform XYZ on-call immediately",
+                "messageMedium": "Add bookkeeping entry",
+                "messageGood": "All checks are OK",
+                "messageNull": "Some histograms are empty!!!"
+              }
             ]
           },
           {
-            "type": "repository",
-            "path": "TST/QO/Aggregator",
-            "name": "AggregatedQuality"
+            "name" : "details",
+            "title" : "TST DETAILS",
+            "path": "TST/QO",
+            "ignoreQualitiesDetails" : [],
+            "inputObjects": [
+              {
+                "name" : "QcCheck",
+                "title" : ""
+              },
+              {
+                "name" : "someNumbersCheck",
+                "title" : ""
+              },
+              {
+                "name" : "XYZCheck",
+                "title" : ""
+              }
+            ]
           }
         ],
         "initTrigger": [
@@ -494,7 +502,6 @@ Here is a complete example of `QualityTask` configuration:
   }
 }
 ```
-
 
 ### The TRFCollectionTask class
 

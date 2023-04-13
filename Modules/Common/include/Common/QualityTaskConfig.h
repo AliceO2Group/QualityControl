@@ -18,9 +18,10 @@
 #define QUALITYCONTROL_QUALITYTASKCONFIG_H
 
 #include <vector>
-#include <map>
+#include <unordered_map>
 #include <string>
 #include "QualityControl/PostProcessingConfig.h"
+#include "QualityControl/Quality.h"
 
 namespace o2::quality_control_modules::common
 {
@@ -32,23 +33,26 @@ struct QualityTaskConfig : quality_control::postprocessing::PostProcessingConfig
   QualityTaskConfig(std::string name, const boost::property_tree::ptree& config);
   ~QualityTaskConfig() = default;
 
-  const std::string getConfigParameter(std::string name) const;
-
-  struct DataSource {
-    std::string type;
-    std::string path;
+  struct QualityConfig {
     std::string name;
-    long timeStamp{ 0 };
+    std::string title;
+    std::unordered_map<std::string /* quality */, std::string /* message */> messages = {
+      { quality_control::core::Quality::Null.getName(), "" },
+      { quality_control::core::Quality::Bad.getName(), "" },
+      { quality_control::core::Quality::Medium.getName(), "" },
+      { quality_control::core::Quality::Good.getName(), "" }
+    };
   };
 
-  std::map<std::string, std::string> mConfigParameters;
-  std::string mAggregatedQualityName;
-  std::string mMessageGood;
-  std::string mMessageMedium;
-  std::string mMessageBad;
-  std::string mMessageNull;
+  struct QualityGroup {
+    std::string name;
+    std::string title;
+    std::string path;
+    std::vector<quality_control::core::Quality> ignoreQualitiesDetails{};
+    std::vector<QualityConfig> inputObjects{};
+  };
 
-  std::vector<DataSource> dataSources;
+  std::vector<QualityGroup> qualityGroups;
 };
 
 } // namespace o2::quality_control_modules::common
