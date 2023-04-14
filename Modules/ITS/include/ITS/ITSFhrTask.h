@@ -120,6 +120,8 @@ class ITSFhrTask final : public TaskInterface
   int*** mErrorCount /* = new int**[NStaves[lay]]*/;        // IB : errorcount[stave][FEE][errorid]
   double** mChipPhi /* = new double*[NStaves[lay]]*/;       // IB/OB : mChipPhi[Stave][chip]
   double** mChipEta /* = new double*[NStaves[lay]]*/;       // IB/OB : mChipEta[Stave][chip]
+  double** mChipZ /* = new double*[NStaves[lay]]*/;       // IB/OB : mChipZ[Stave][chip]
+
   int** mChipStat /* = new double*[NStaves[lay]]*/;         // IB/OB : mChipStat[Stave][chip]
   int mNoisyPixelNumber[7][48] = { { 0 } };
 
@@ -131,6 +133,9 @@ class ITSFhrTask final : public TaskInterface
   static constexpr int nbinsphiIB = 16;
   int mEtabins = 130;
   int mPhibins = 240;
+
+  const float mLength[NLayer] = { 27.1, 27.1, 27.1, 84.3, 84.3, 147.5, 147.5 };  //Sensetive area length  
+
   float etabinsIB[3][nbinsetaIB + 1] = { { -2.34442, -2.06375, -1.67756, -1.0732, 0., 1.0732, 1.67756, 2.06375, 2.34442, 2.6 }, { -2.05399, -1.77866, -1.40621, -0.851972, 0., 0.851972, 1.40621, 1.77866, 2.05399, 2.4 }, { -1.8412, -1.57209, -1.21477, -0.707629, 0., 0.707629, 1.21477, 1.57209, 1.8412, 2.1 } };
   float phibinsIB[3][nbinsphiIB + 1] = { { -2.86662, -2.34302, -1.81942, -1.29582, -0.772222, -0.248623, 0.203977, 0.274976, 0.596676, 0.798574, 0.989375, 1.32217, 1.38207, 1.84577, 2.36937, 2.89297, 3.2 }, { -2.93762, -2.54492, -2.15222, -1.75952, -1.36682, -0.974121, -0.581422, -0.188722, 0.159761, 0.47392, 0.78808, 1.10224, 1.77477, 2.16747, 2.56017, 2.95287, 3.2 }, { -2.98183, -2.66767, -2.35351, -2.03935, -1.72519, -1.41104, -1.09688, -0.782717, -0.468558, -0.154398, 1.4164, 1.73056, 2.04472, 2.35888, 2.67304, 2.98719, 3.2 } };
 
