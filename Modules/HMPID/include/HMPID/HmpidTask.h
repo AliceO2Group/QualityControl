@@ -26,6 +26,7 @@
 class TH1F;
 class TH2F;
 class TProfile;
+class TProfile2D;
 
 using namespace o2::quality_control::core;
 
@@ -60,6 +61,12 @@ class HmpidTask final : public TaskInterface
   TProfile* hEventNumber = nullptr;
   TH2F* hModuleMap[numCham] = { nullptr };
   o2::hmpid::HmpidDecoder2* mDecoder = nullptr;
+  // TH2F *fHmpBigMap = nullptr;
+  TH2F* fHmpHvSectorQ = nullptr;
+  TProfile2D* fHmpBigMap_profile = nullptr;
+  // TProfile2D *fHmpHvSectorQ_profile = nullptr;
+  // TH2F *fHmpHvSectorQ_profile_temp = nullptr;
+  TProfile* fHmpPadOccPrf = nullptr;
 };
 
 } // namespace o2::quality_control_modules::hmpid
