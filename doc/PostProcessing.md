@@ -181,7 +181,7 @@ Debugging post-processing tasks might be easier when using the `o2-qc-run-postpr
 To run the basic example, use the command below. The `--config` parameter should point to the configuration file.
 
 ```
-o2-qc-run-postprocessing --config json://${QUALITYCONTROL_ROOT}/etc/postprocessing.json --name ExamplePostprocessing
+o2-qc-run-postprocessing --config json://${QUALITYCONTROL_ROOT}/etc/postprocessing.json --id ExamplePostprocessing
 ```
 
 As it is configured to invoke each method only `"once"`, you will see it initializing, entering the update method, then finalizing the task and exiting.
