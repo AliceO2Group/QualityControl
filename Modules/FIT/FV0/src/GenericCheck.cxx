@@ -18,6 +18,7 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
+#include <string>
 // ROOT
 #include <TH1.h>
 #include <TH2.h>
@@ -27,7 +28,6 @@
 #include <TMath.h>
 #include <TLine.h>
 #include <TList.h>
-
 #include <DataFormatsQualityControl/FlagReasons.h>
 
 using namespace std;
@@ -212,19 +212,20 @@ Quality GenericCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
       }
 
       if (mCheckMaxThresholdY.isActive()) {
-        mCheckMaxThresholdY.mBinNumberX = h->GetMaximumBin();
-        if (mDeadChannelMap->isChannelAlive(mCheckMaxThresholdY.mBinNumberX)) {
+        if (mDeadChannelMap->isChannelAlive(h->GetMaximumBin())) {
+          mCheckMaxThresholdY.mBinNumberX = h->GetMaximumBin();
           mCheckMaxThresholdY.doCheck(result, h->GetBinContent(mCheckMaxThresholdY.mBinNumberX));
         } else {
-          float maxValue = h->GetBinContent(1);
+          float maxValue = 0;
           for (int channel = 1; channel < h->GetNbinsX(); ++channel) {
             if (channel >= sNCHANNELS || !mDeadChannelMap->isChannelAlive(channel))
               continue;
             if (maxValue < h->GetBinContent(channel)) {
               maxValue = h->GetBinContent(channel);
-              mCheckMinThresholdY.mBinNumberX = channel;
+              mCheckMaxThresholdY.mBinNumberX = channel;
             }
           }
+          mCheckMaxThresholdY.doCheck(result, maxValue);
         }
       }
 
