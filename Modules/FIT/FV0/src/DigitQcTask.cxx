@@ -279,8 +279,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistCycleDurationNTF = std::make_unique<TH1D>("CycleDurationNTF", "Cycle Duration;;time [TimeFrames]", 1, 0, 2);
   mHistCycleDurationRange = std::make_unique<TH1D>("CycleDurationRange", "Cycle Duration (total cycle range);;time [ns]", 1, 0, 2);
 
-  std::string gateTimeRatioTitle = "Ratio of events between time " + std::to_string(mMinTimeGate) + " and " + std::to_string(mMaxTimeGate);
-  mHistGateTimeRatio2Ch = std::make_unique<TH1F>("EventsInGateTime", gateTimeRatioTitle.c_str(), sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF);
+  mHistGateTimeRatio2Ch = std::make_unique<TH1F>("EventsInGateTime", "Ratio of events in gate time;Channel ID;Ratio", sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF);
 
   std::vector<unsigned int> vecChannelIDs;
   if (auto param = mCustomParameters.find("ChannelIDs"); param != mCustomParameters.end()) {
