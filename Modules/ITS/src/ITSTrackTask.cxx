@@ -291,10 +291,10 @@ void ITSTrackTask::endOfActivity(Activity& /*activity*/)
 
 void ITSTrackTask::reset()
 {
+
   ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   hAngularDistribution->Reset();
   hNClusters->Reset();
-  hNClustersReset->Reset();
   hTrackPhi->Reset();
   hTrackEta->Reset();
   hVerticesRof->Reset();
@@ -307,10 +307,10 @@ void ITSTrackTask::reset()
 
   hAssociatedClusterFraction->Reset();
   hNtracks->Reset();
-  hNtracksReset->Reset();
   hNClustersPerTrackEta->Reset();
   hClusterVsBunchCrossing->Reset();
   hNClusterVsChipITS->Reset();
+
 }
 
 void ITSTrackTask::createAllHistos()
