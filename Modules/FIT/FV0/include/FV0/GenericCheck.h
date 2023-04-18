@@ -22,7 +22,6 @@
 #include "DataFormatsFIT/DeadChannelMap.h"
 #include <DataFormatsQualityControl/FlagReasons.h>
 
-
 namespace o2::quality_control_modules::fv0
 {
 

@@ -89,7 +89,7 @@ void GenericCheck::configure()
   } else {
     setCcdbUrl("alice-ccdb.cern.ch");
     ILOG(Debug, Support) << "configure() : using deadChannelMap from CCDB, default url = "
-                          << "alice-ccdb.cern.ch" << ENDM;
+                         << "alice-ccdb.cern.ch" << ENDM;
   }
 
   // Set internal path to DeadChannelMap
