@@ -566,7 +566,7 @@ void ITSFeeTask::resetLanePlotsAndCounters()
 void ITSFeeTask::reset()
 {
   resetGeneralPlots();
-  ILOG(Info, Support) << "Reset" << ENDM;
+  ILOG(Debug, Devel) << "Reset" << ENDM;
 }
 
 } // namespace o2::quality_control_modules::its
