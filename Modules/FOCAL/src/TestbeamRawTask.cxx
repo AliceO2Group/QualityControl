@@ -15,6 +15,7 @@
 ///
 
 #include <algorithm>
+#include <iomanip>
 #include <iostream>
 #include <unordered_set>
 
@@ -319,8 +320,7 @@ void TestbeamRawTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
   int inputs = 0;
   std::vector<char> rawbuffer;
-  int currentendpoint = 0;
-  int currentsource = 0;
+  uint16_t currentfee = 0;
   for (const auto& rawData : framework::InputRecordWalker(ctx.inputs())) {
     if (rawData.header != nullptr && rawData.payload != nullptr) {
       const auto payloadSize = o2::framework::DataRefUtils::getPayloadSize(rawData);
@@ -340,14 +340,14 @@ void TestbeamRawTask::monitorData(o2::framework::ProcessingContext& ctx)
             if (o2::raw::RDHUtils::getStop(rdh)) {
               ILOG(Debug, Support) << "Stop bit received - processing payload" << ENDM;
               // Data ready
-              if (currentsource == 0x2b) { // Use source ID 43 for pads
+              if (currentfee == 0xcafe) { // Use FEE ID 0xcafe for PAD data
                 // Pad data
                 if (!mDisablePads) {
                   ILOG(Debug, Support) << "Processing PAD data" << ENDM;
                   auto payloadsizeGBT = rawbuffer.size() * sizeof(char) / sizeof(o2::focal::PadGBTWord);
                   processPadPayload(gsl::span<const o2::focal::PadGBTWord>(reinterpret_cast<const o2::focal::PadGBTWord*>(rawbuffer.data()), payloadsizeGBT));
                 }
-              } else if (currentsource == 0x20) { // Use source ID 32 (ITS) for pixels
+              } else { // All other FEEs are pixel FEEs
                 // Pixel data
                 if (!mDisablePixels) {
                   auto feeID = o2::raw::RDHUtils::getFEEID(rdh);
@@ -355,15 +355,12 @@ void TestbeamRawTask::monitorData(o2::framework::ProcessingContext& ctx)
                   auto payloadsizeGBT = rawbuffer.size() * sizeof(char) / sizeof(o2::itsmft::GBTWord);
                   processPixelPayload(gsl::span<const o2::itsmft::GBTWord>(reinterpret_cast<const o2::itsmft::GBTWord*>(rawbuffer.data()), payloadsizeGBT), feeID);
                 }
-              } else {
-                ILOG(Error, Support) << "Unsupported endpoint " << currentendpoint << ENDM;
               }
               rawbuffer.clear();
             } else {
               ILOG(Debug, Support) << "New HBF or Timeframe" << ENDM;
-              currentendpoint = o2::raw::RDHUtils::getEndPointID(rdh);
-              currentsource = o2::raw::RDHUtils::getSourceID(rdh);
-              ILOG(Debug, Support) << "Using endpoint " << currentendpoint;
+              currentfee = o2::raw::RDHUtils::getFEEID(rdh);
+              ILOG(Debug, Support) << "Using FEE ID: 0x" << std::hex << currentfee << std::dec << ENDM;
               rawbuffer.clear();
             }
           }
@@ -373,15 +370,15 @@ void TestbeamRawTask::monitorData(o2::framework::ProcessingContext& ctx)
 
         // non-0 payload size:
         auto payloadsize = o2::raw::RDHUtils::getMemorySize(rdh) - o2::raw::RDHUtils::getHeaderSize(rdh);
-        int endpoint = static_cast<int>(o2::raw::RDHUtils::getEndPointID(rdh));
+        auto fee = static_cast<int>(o2::raw::RDHUtils::getFEEID(rdh));
         ILOG(Debug, Support) << "Next RDH: " << ENDM;
-        ILOG(Debug, Support) << "Found endpoint              " << endpoint << ENDM;
+        ILOG(Debug, Support) << "Found fee                   0x" << std::hex << fee << std::dec << " (System " << (fee == 0xcafe ? "Pads" : "Pixels") << ")" << ENDM;
         ILOG(Debug, Support) << "Found trigger BC:           " << o2::raw::RDHUtils::getTriggerBC(rdh) << ENDM;
         ILOG(Debug, Support) << "Found trigger Oribt:        " << o2::raw::RDHUtils::getTriggerOrbit(rdh) << ENDM;
         ILOG(Debug, Support) << "Found payload size:         " << payloadsize << ENDM;
         ILOG(Debug, Support) << "Found offset to next:       " << o2::raw::RDHUtils::getOffsetToNext(rdh) << ENDM;
         ILOG(Debug, Support) << "Stop bit:                   " << (o2::raw::RDHUtils::getStop(rdh) ? "yes" : "no") << ENDM;
-        ILOG(Debug, Support) << "Number of GBT words:        " << (payloadsize * sizeof(char) / (endpoint == 1 ? sizeof(o2::focal::PadGBTWord) : sizeof(o2::itsmft::GBTWord))) << ENDM;
+        ILOG(Debug, Support) << "Number of GBT words:        " << (payloadsize * sizeof(char) / (fee == 0xcafe ? sizeof(o2::focal::PadGBTWord) : sizeof(o2::itsmft::GBTWord))) << ENDM;
         auto page_payload = databuffer.subspan(currentpos + o2::raw::RDHUtils::getHeaderSize(rdh), payloadsize);
         std::copy(page_payload.begin(), page_payload.end(), std::back_inserter(rawbuffer));
         currentpos += o2::raw::RDHUtils::getOffsetToNext(rdh);
