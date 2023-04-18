@@ -78,6 +78,15 @@ void PulseHeightTrackMatch::buildHistograms()
   mPulseHeightperchamber.get()->Sumw2();
   getObjectsManager()->startPublishing(mPulseHeightperchamber.get());
   getObjectsManager()->setDefaultDrawOptions(mPulseHeightperchamber.get()->GetName(), "colz");
+
+  mDebugCounter.reset(new TH1F("debugcounter", "Counts of position reached in monitor data", 20, -0.5, 19.5));
+  getObjectsManager()->startPublishing(mDebugCounter.get());
+
+  mTriggerMatches.reset(new TH1F("triggermatches", "Trigger matches seen by trackmatched pulseheight monitor data", 1000, -0.5, 999.5));
+  getObjectsManager()->startPublishing(mTriggerMatches.get());
+
+  mTriggerRecordsMatchesDigits.reset(new TH1F("triggerrecordmatchesdigits", "Trigger matches digit count", 10000, -0.5, 9999.5));
+  getObjectsManager()->startPublishing(mTriggerRecordsMatchesDigits.get());
 }
 
 void PulseHeightTrackMatch::initialize(o2::framework::InitContext& /*ctx*/)
@@ -108,20 +117,29 @@ void PulseHeightTrackMatch::monitorData(o2::framework::ProcessingContext& ctx)
 
   auto crustart = std::chrono::high_resolution_clock::now();
 
+  mDebugCounter->Fill(0);
+  mTriggerMatches->Fill(triggerrecords.size());
+  int loopcount = 0;
   for (const auto& trigger : triggerrecords) {
-
+    mDebugCounter->Fill(1);
+    loopcount++;
+    mTriggerRecordsMatchesDigits->Fill(trigger.getNumberOfDigits());
     if (trigger.getNumberOfDigits() == 0) {
+      mDebugCounter->Fill(2);
       continue;
     }
 
     for (const auto& triggerTracks : triggerrecordstracks) {
 
       if (trigger.getBCData() != triggerTracks.getBCData()) { // matching bunch crossing data from TRD trigger abd TRD track trigger
+        mDebugCounter->Fill(3);
         continue;
       }
 
       mTracksPerEvent->Fill(triggerTracks.getNumberOfTracks());
-      if (tracks[triggerTracks.getFirstTrack()].getPileUpTimeShiftMUS() < 0.7) { // rejecting triggers which end up in pileup
+      // check if there is pileup info and that its above the limit of 0.7
+      if (tracks[triggerTracks.getFirstTrack()].hasPileUpInfo() && tracks[triggerTracks.getFirstTrack()].getPileUpTimeShiftMUS() < 0.7) { // rejecting triggers which end up in pileup
+        mDebugCounter->Fill(4);
         continue;
       }
 
@@ -135,6 +153,7 @@ void PulseHeightTrackMatch::monitorData(o2::framework::ProcessingContext& ctx)
           int trackletIndex = track.getTrackletIndex(iLayer);
 
           if (trackletIndex == -1) {
+            mDebugCounter->Fill(5);
             continue;
           }
 
@@ -151,13 +170,16 @@ void PulseHeightTrackMatch::monitorData(o2::framework::ProcessingContext& ctx)
           {
             const auto& digit = digits[iDigit];
             if (digit.getDetector() != trklt.getDetector()) {
+              mDebugCounter->Fill(6);
               continue;
             }
             if (digit.getPadRow() != trklt.getPadRow()) {
+              mDebugCounter->Fill(7);
               continue;
             }
             coldif = digit.getPadCol() - trklt.getPadCol();
             if (TMath::Abs(coldif) > 1) {
+              mDebugCounter->Fill(8);
               continue; // PadCol may be off by +-1 due to the slope of tracklet
             }
             const auto& digitBefore = digits[iDigit - 1];
@@ -165,10 +187,12 @@ void PulseHeightTrackMatch::monitorData(o2::framework::ProcessingContext& ctx)
 
             bool consecutive = false;
             if (digitBefore.getDetector() == digitAfter.getDetector() && digitBefore.getPadRow() == digit.getPadRow() && digit.getPadRow() == digitAfter.getPadRow() && digit.getPadCol() + 1 == digitBefore.getPadCol() && digitAfter.getPadCol() + 1 == digit.getPadCol()) { // looking for consecutive digits in space
+              mDebugCounter->Fill(9);
               consecutive = true;
             }
 
             if (consecutive) {
+              mDebugCounter->Fill(10);
               int phVal = 0;
               for (int iTb = 0; iTb < o2::trd::constants::TIMEBINS; ++iTb) {
                 phVal = digitBefore.getADC()[iTb] + digit.getADC()[iTb] + digitAfter.getADC()[iTb];
