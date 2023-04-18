@@ -85,10 +85,11 @@ void RawData::buildHistograms()
   getObjectsManager()->setDisplayHint(mDataVolumePerHalfChamber->GetName(), "logz");
 
   mDataVolumePerSector = new TH2F("datavolumepersector", "Event size per sector, from parsing;Sector;Data Volume [kB/event]", 18, 0, 18, 1000, 0, 1000);
+  mDataVolumePerSector->SetStats(0);
   getObjectsManager()->startPublishing(mDataVolumePerSector);
   getObjectsManager()->setDefaultDrawOptions("datavolumepersector", "COLZ");
   getObjectsManager()->setDisplayHint(mDataVolumePerSector->GetName(), "logz");
- 
+
   mDataVolumePerHalfSectorCru = new TH2F("datavolumeperhalfsectorcru", "Event size per half chamber, from cru header; Half Chamber ID; Data Volume as per CRU [kB/event]", 1080, 0, 1080, 1000, 0, 1000);
   getObjectsManager()->startPublishing(mDataVolumePerHalfSectorCru);
   getObjectsManager()->setDefaultDrawOptions("datavolumeperhalfsectorcru", "COLZ");
@@ -231,7 +232,7 @@ void RawData::monitorData(o2::framework::ProcessingContext& ctx)
     if (eventsize[hcid] > 0) {
       int sec = hcid / 60;
       mDataVolumePerHalfChamber->Fill(hcid, eventsize[hcid] / 256.f); // eventsize is given in unit of 32 bits
-      mDataVolumePerSector->Fill(sec, eventsize[hcid] / 256.f); // eventsize is given in unit of 32 bits
+      mDataVolumePerSector->Fill(sec, eventsize[hcid] / 256.f);       // eventsize is given in unit of 32 bits
     }
   }
 
