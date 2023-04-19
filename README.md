@@ -58,6 +58,7 @@ For a general overview of our (O2) software, organization and processes, please 
     * [Convenience classes](doc/PostProcessing.md#convenience-classes)
         * [The TrendingTask class](doc/PostProcessing.md#the-trendingtask-class)
         * [The SliceTrendingTask class](doc/PostProcessing.md#the-slicetrendingtask-class)
+        * [The QualityTask class](doc/PostProcessing.md#the-qualitytask-class)
         * [The TRFCollectionTask class](doc/PostProcessing.md#the-trfcollectiontask-class)
     * [More examples](doc/PostProcessing.md#more-examples)
 * [Advanced topics](doc/Advanced.md)
