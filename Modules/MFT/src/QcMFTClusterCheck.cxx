@@ -152,7 +152,7 @@ void QcMFTClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality chec
       tl->Draw();
     } else if (checkResult == Quality::Medium) {
       LOG(info) << "Quality::Medium";
-      TLatex* tl = new TLatex(0.15, 6.0, "Quality medium: notify the on-call by mail");
+      TLatex* tl = new TLatex(0.15, 6.0, "Quality medium: write a logbook entry tagging MFT");
       tl->SetTextColor(kOrange);
       hOccupancySummary->GetListOfFunctions()->Add(tl);
       tl->Draw();
