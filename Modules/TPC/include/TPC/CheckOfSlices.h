@@ -12,6 +12,7 @@
 /// \file   CheckOfSlices.h
 /// \author Maximilian Horst
 /// \author Laura Serksnyte
+/// \author Marcel Lesch
 ///
 
 #ifndef QC_MODULE_TPC_CHECKOFSLICES_H
@@ -26,6 +27,7 @@ namespace o2::quality_control_modules::tpc
 /// \brief  Check if all the slices in a Trending (e.g. as a function of TPC Pad) are within their uncertainty compatible with the mean or a predefined physical value
 /// \author Maximilian Horst
 /// \author Laura Serksnyte
+/// \author Marcel Lesch
 class CheckOfSlices : public o2::quality_control::checker::CheckInterface
 {
 

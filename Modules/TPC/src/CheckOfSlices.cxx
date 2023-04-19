@@ -11,6 +11,7 @@
 ///
 /// \file   CheckOfSlices.cxx
 /// \author Maximilian Horst
+/// \author Marcel Lesch
 ///
 
 #include "TPC/CheckOfSlices.h"
