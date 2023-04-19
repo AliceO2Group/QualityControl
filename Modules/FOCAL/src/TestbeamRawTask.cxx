@@ -360,7 +360,9 @@ void TestbeamRawTask::monitorData(o2::framework::ProcessingContext& ctx)
             } else {
               ILOG(Debug, Support) << "New HBF or Timeframe" << ENDM;
               currentfee = o2::raw::RDHUtils::getFEEID(rdh);
-              ILOG(Debug, Support) << "Using FEE ID: 0x" << std::hex << currentfee << std::dec << ENDM;
+              stringstream ss;
+              ss << "Using FEE ID: 0x" << std::hex << currentfee << std::dec;
+              ILOG(Debug, Support) << ss.str() << ENDM;
               rawbuffer.clear();
             }
           }
