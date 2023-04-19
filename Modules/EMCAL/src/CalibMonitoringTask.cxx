@@ -70,21 +70,21 @@ void CalibMonitoringTask::initialize(Trigger, framework::ServiceRegistryRef)
       getObjectsManager()->startPublishing(mBadChannelMapHisto);
 
       // histogram for number of bad, dead, good channels in emcal only
-      mMaskStatsEMCALHisto = new TH2D("MaskStatsEMCALHisto", "Number of Good/Dead/Bad Channels in EMCAL Only", 3, 0, 2, 12288, 0, 12288);
+      mMaskStatsEMCALHisto = new TH1D("MaskStatsEMCALHisto", "Number of Good/Dead/Bad Channels in EMCAL Only",3, -0.5, 2.5);
       mMaskStatsEMCALHisto->GetXaxis()->SetTitle("channel status");
       mMaskStatsEMCALHisto->GetYaxis()->SetTitle("Number of channels");
       mMaskStatsEMCALHisto->SetStats(false);
       getObjectsManager()->startPublishing(mMaskStatsEMCALHisto);
 
       // histogram for number of bad, dead, good channels in emcal only
-      mMaskStatsDCALHisto = new TH2D("MaskStatsDCALHisto", "Number of Good/Dead/Bad Channels in DCAL Only", 3, 0, 2, 5376, 0, 5376);
+      mMaskStatsDCALHisto = new TH1D("MaskStatsDCALHisto", "Number of Good/Dead/Bad Channels in DCAL Only", 3, -0.5, 2.5);
       mMaskStatsDCALHisto->GetXaxis()->SetTitle("channel status");
       mMaskStatsDCALHisto->GetYaxis()->SetTitle("Number of channels");
       mMaskStatsDCALHisto->SetStats(false);
       getObjectsManager()->startPublishing(mMaskStatsDCALHisto);
 
       // histogram for number of bad, dead, good channels in all
-      mMaskStatsAllHisto = new TH2D("MaskStatsAllHisto", "Number of Good/Dead/Bad Channels in EMCAL + DCAL", 3, 0, 2, 5376, 0, 5376);
+      mMaskStatsAllHisto = new TH1D("MaskStatsAllHisto", "Number of Good/Dead/Bad Channels in EMCAL + DCAL", 3, -0.5, 2.5);
       mMaskStatsAllHisto->GetXaxis()->SetTitle("channel status");
       mMaskStatsAllHisto->GetYaxis()->SetTitle("Number of channels");
       mMaskStatsAllHisto->SetStats(false);
