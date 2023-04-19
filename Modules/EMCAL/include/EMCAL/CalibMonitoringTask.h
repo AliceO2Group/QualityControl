@@ -77,7 +77,7 @@ class CalibMonitoringTask final : public quality_control::postprocessing::PostPr
   TH2* mTimeCalibParamPosition = nullptr;       ///< Monitor time calib param as function of the position in EMCAL
   TH1* mMaskStatsEMCALHisto = nullptr;          ///< Monitor number of good, bad, dead cells in emcal only
   TH1* mMaskStatsDCALHisto = nullptr;           ///< Monitor number of good, bad, dead cells in dcal only
-  TH1* mMaskStatsAllHisto = nullptr;           ///< Monitor number of good, bad, dead cells in emcal + dcal only
+  TH1* mMaskStatsAllHisto = nullptr;            ///< Monitor number of good, bad, dead cells in emcal + dcal only
   std::unique_ptr<o2::emcal::CalibDB> mCalibDB; ///< EMCAL calibration DB handler
   o2::emcal::BadChannelMap* mBadChannelMap;     ///< EMCAL channel map
   o2::emcal::TimeCalibrationParams* mTimeCalib; ///< EMCAL time calib

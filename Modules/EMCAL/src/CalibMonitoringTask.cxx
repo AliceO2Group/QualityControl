@@ -70,7 +70,7 @@ void CalibMonitoringTask::initialize(Trigger, framework::ServiceRegistryRef)
       getObjectsManager()->startPublishing(mBadChannelMapHisto);
 
       // histogram for number of bad, dead, good channels in emcal only
-      mMaskStatsEMCALHisto = new TH1D("MaskStatsEMCALHisto", "Number of Good/Dead/Bad Channels in EMCAL Only",3, -0.5, 2.5);
+      mMaskStatsEMCALHisto = new TH1D("MaskStatsEMCALHisto", "Number of Good/Dead/Bad Channels in EMCAL Only", 3, -0.5, 2.5);
       mMaskStatsEMCALHisto->GetXaxis()->SetTitle("channel status");
       mMaskStatsEMCALHisto->GetYaxis()->SetTitle("Number of channels");
       mMaskStatsEMCALHisto->SetStats(false);
@@ -120,10 +120,10 @@ void CalibMonitoringTask::update(Trigger t, framework::ServiceRegistryRef)
         if (cellStatus == o2::emcal::ChannelStatus_t::BAD) {
           statusbin = 1;
         } else if (cellStatus == o2::emcal::ChannelStatus_t::DEAD) {
-           statusbin = 2;
+          statusbin = 2;
         }
         mMaskStatsAllHisto->Fill(statusbin);
-        if(cellID < minCellDCAL) {
+        if (cellID < minCellDCAL) {
           mMaskStatsEMCALHisto->Fill(statusbin);
         } else {
           mMaskStatsDCALHisto->Fill(statusbin);
