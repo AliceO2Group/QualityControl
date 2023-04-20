@@ -360,7 +360,9 @@ void TestbeamRawTask::monitorData(o2::framework::ProcessingContext& ctx)
             } else {
               ILOG(Debug, Support) << "New HBF or Timeframe" << ENDM;
               currentfee = o2::raw::RDHUtils::getFEEID(rdh);
-              ILOG(Debug, Support) << "Using FEE ID: 0x" << std::hex << currentfee << std::dec << ENDM;
+              stringstream ss;
+              ss << "Using FEE ID: 0x" << std::hex << currentfee << std::dec;
+              ILOG(Debug, Support) << ss.str() << ENDM;
               rawbuffer.clear();
             }
           }
@@ -372,7 +374,9 @@ void TestbeamRawTask::monitorData(o2::framework::ProcessingContext& ctx)
         auto payloadsize = o2::raw::RDHUtils::getMemorySize(rdh) - o2::raw::RDHUtils::getHeaderSize(rdh);
         auto fee = static_cast<int>(o2::raw::RDHUtils::getFEEID(rdh));
         ILOG(Debug, Support) << "Next RDH: " << ENDM;
-        ILOG(Debug, Support) << "Found fee                   0x" << std::hex << fee << std::dec << " (System " << (fee == 0xcafe ? "Pads" : "Pixels") << ")" << ENDM;
+        stringstream ss;
+        ss << "Found fee                   0x" << std::hex << fee << std::dec << " (System " << (fee == 0xcafe ? "Pads" : "Pixels") << ")";
+        ILOG(Debug, Support) << ss.str() << ENDM;
         ILOG(Debug, Support) << "Found trigger BC:           " << o2::raw::RDHUtils::getTriggerBC(rdh) << ENDM;
         ILOG(Debug, Support) << "Found trigger Oribt:        " << o2::raw::RDHUtils::getTriggerOrbit(rdh) << ENDM;
         ILOG(Debug, Support) << "Found payload size:         " << payloadsize << ENDM;
