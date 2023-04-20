@@ -75,6 +75,7 @@ class CalibMonitoringTask final : public quality_control::postprocessing::PostPr
   std::vector<std::string> mCalibObjects;       ///< list of vectors of parm objects to be processed
   TH1* mTimeCalibParamHisto = nullptr;          ///< Monitor Time Calib Param
   TH2* mTimeCalibParamPosition = nullptr;       ///< Monitor time calib param as function of the position in EMCAL
+  TH2* mBadChannelMapHisto = nullptr;           ///< Monitor bad channel map
   TH1* mMaskStatsEMCALHisto = nullptr;          ///< Monitor number of good, bad, dead cells in emcal only
   TH1* mMaskStatsDCALHisto = nullptr;           ///< Monitor number of good, bad, dead cells in dcal only
   TH1* mMaskStatsAllHisto = nullptr;            ///< Monitor number of good, bad, dead cells in emcal + dcal only

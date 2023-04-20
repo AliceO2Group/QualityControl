@@ -117,9 +117,9 @@ void CalibMonitoringTask::update(Trigger t, framework::ServiceRegistryRef)
       for (int cellID = 0; cellID < 17664; cellID++) {
         auto cellStatus = mBadChannelMap->getChannelStatus(cellID);
         int statusbin = 0;
-        if (cellStatus == o2::emcal::ChannelStatus_t::BAD) {
+        if (cellStatus == o2::emcal::BadChannelMap::MaskType_t::BAD_CELL) {
           statusbin = 1;
-        } else if (cellStatus == o2::emcal::ChannelStatus_t::DEAD) {
+        } else if (cellStatus == o2::emcal::BadChannelMap::MaskType_t::DEAD_CELL) {
           statusbin = 2;
         }
         mMaskStatsAllHisto->Fill(statusbin);
