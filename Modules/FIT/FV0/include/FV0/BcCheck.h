@@ -24,8 +24,6 @@
 namespace o2::quality_control_modules::fv0
 {
 
-/// \brief This check provide xnor (exclusive nor) operation on SW and HW triggers
-/// \author Dawid Skora dawid.mateusz.skora@cern.ch
 class BcCheck : public o2::quality_control::checker::CheckInterface
 {
  public:
