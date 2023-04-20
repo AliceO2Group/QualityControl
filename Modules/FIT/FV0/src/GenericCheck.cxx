@@ -119,8 +119,9 @@ void GenericCheck::configure()
       mDeadChannelMapStr += (mDeadChannelMapStr.empty() ? "" : ",") + std::to_string(chId);
     }
   }
-  if (mDeadChannelMapStr.empty())
+  if (mDeadChannelMapStr.empty()) {
     mDeadChannelMapStr = "EMPTY";
+  }
   ILOG(Info, Support) << "Loaded dead channel map: " << mDeadChannelMapStr << ENDM;
 
   mPositionMsgBox = { 0.15, 0.75, 0.85, 0.9 };
@@ -201,8 +202,9 @@ Quality GenericCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
       if (mCheckMinThresholdY.isActive()) {
         float minValue = h->GetBinContent(1);
         for (int channel = 1; channel < h->GetNbinsX(); ++channel) {
-          if (channel >= sNCHANNELS || !mDeadChannelMap->isChannelAlive(channel))
+          if (channel >= sNCHANNELS || !mDeadChannelMap->isChannelAlive(channel)) {
             continue;
+          }
           if (minValue > h->GetBinContent(channel)) {
             minValue = h->GetBinContent(channel);
             mCheckMinThresholdY.mBinNumberX = channel;
@@ -218,8 +220,9 @@ Quality GenericCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
         } else {
           float maxValue = 0;
           for (int channel = 1; channel < h->GetNbinsX(); ++channel) {
-            if (channel >= sNCHANNELS || !mDeadChannelMap->isChannelAlive(channel))
+            if (channel >= sNCHANNELS || !mDeadChannelMap->isChannelAlive(channel)) {
               continue;
+            }
             if (maxValue < h->GetBinContent(channel)) {
               maxValue = h->GetBinContent(channel);
               mCheckMaxThresholdY.mBinNumberX = channel;
