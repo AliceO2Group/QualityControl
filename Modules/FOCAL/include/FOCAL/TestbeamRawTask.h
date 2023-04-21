@@ -33,6 +33,11 @@ class TH1;
 class TH2;
 class TProfile2D;
 
+namespace o2::focal
+{
+class PadPedestal;
+}
+
 using namespace o2::quality_control::core;
 
 namespace o2::quality_control_modules::focal
@@ -85,6 +90,7 @@ class TestbeamRawTask final : public TaskInterface
   o2::focal::PadDecoder mPadDecoder;                                              ///< Decoder for pad data
   o2::focal::PadMapper mPadMapper;                                                ///< Mapping for Pads
   o2::focal::PixelDecoder mPixelDecoder;                                          ///< Decoder for pixel data
+  o2::focal::PadPedestal* mPadPedestalHandler = nullptr;                          ///< Pedestal handler for pad pedestal subtraction
   std::unique_ptr<o2::focal::PixelMapper> mPixelMapper;                           ///< Testbeam mapping for pixels
   std::unordered_map<o2::InteractionRecord, int> mPixelNHitsAll;                  ///< Number of hits / event all layers
   std::array<std::unordered_map<o2::InteractionRecord, int>, 2> mPixelNHitsLayer; ///< Number of hits / event layer
@@ -94,6 +100,7 @@ class TestbeamRawTask final : public TaskInterface
   bool mDebugMode = false;                                                        ///< Additional debug verbosity
   bool mDisablePads = false;                                                      ///< Disable pads
   bool mDisablePixels = false;                                                    ///< Disable pixels
+  bool mEnablePedestalSubtraction = false;                                        ///< Enable pedestal subtraction pads
 
   /////////////////////////////////////////////////////////////////////////////////////
   /// Pad histograms
