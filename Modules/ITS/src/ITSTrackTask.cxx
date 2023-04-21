@@ -310,7 +310,6 @@ void ITSTrackTask::reset()
   hNClustersPerTrackEta->Reset();
   hClusterVsBunchCrossing->Reset();
   hNClusterVsChipITS->Reset();
-
 }
 
 void ITSTrackTask::createAllHistos()
