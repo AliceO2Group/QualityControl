@@ -68,6 +68,27 @@ void CalibMonitoringTask::initialize(Trigger, framework::ServiceRegistryRef)
       mBadChannelMapHisto->GetYaxis()->SetTitle("row (#phi)");
       mBadChannelMapHisto->SetStats(false);
       getObjectsManager()->startPublishing(mBadChannelMapHisto);
+
+      // histogram for number of bad, dead, good channels in emcal only
+      mMaskStatsEMCALHisto = new TH1D("MaskStatsEMCALHisto", "Number of Good/Dead/Bad Channels in EMCAL Only", 3, -0.5, 2.5);
+      mMaskStatsEMCALHisto->GetXaxis()->SetTitle("channel status");
+      mMaskStatsEMCALHisto->GetYaxis()->SetTitle("Number of channels");
+      mMaskStatsEMCALHisto->SetStats(false);
+      getObjectsManager()->startPublishing(mMaskStatsEMCALHisto);
+
+      // histogram for number of bad, dead, good channels in emcal only
+      mMaskStatsDCALHisto = new TH1D("MaskStatsDCALHisto", "Number of Good/Dead/Bad Channels in DCAL Only", 3, -0.5, 2.5);
+      mMaskStatsDCALHisto->GetXaxis()->SetTitle("channel status");
+      mMaskStatsDCALHisto->GetYaxis()->SetTitle("Number of channels");
+      mMaskStatsDCALHisto->SetStats(false);
+      getObjectsManager()->startPublishing(mMaskStatsDCALHisto);
+
+      // histogram for number of bad, dead, good channels in all
+      mMaskStatsAllHisto = new TH1D("MaskStatsAllHisto", "Number of Good/Dead/Bad Channels in EMCAL + DCAL", 3, -0.5, 2.5);
+      mMaskStatsAllHisto->GetXaxis()->SetTitle("channel status");
+      mMaskStatsAllHisto->GetYaxis()->SetTitle("Number of channels");
+      mMaskStatsAllHisto->SetStats(false);
+      getObjectsManager()->startPublishing(mMaskStatsAllHisto);
     }
   }
   o2::emcal::Geometry::GetInstanceFromRunNumber(300000);
@@ -88,6 +109,24 @@ void CalibMonitoringTask::update(Trigger t, framework::ServiceRegistryRef)
       for (Int_t i = 0; i < hist_temp2->GetNbinsX(); i++) {
         for (Int_t j = 0; j < hist_temp2->GetNbinsY(); j++) {
           mBadChannelMapHisto->SetBinContent(i + 1, j + 1, hist_temp2->GetBinContent(i + 1, j + 1));
+        }
+      }
+
+      // loop over all cells and check channel status
+      int minCellDCAL = 12288;
+      for (int cellID = 0; cellID < 17664; cellID++) {
+        auto cellStatus = mBadChannelMap->getChannelStatus(cellID);
+        int statusbin = 0;
+        if (cellStatus == o2::emcal::BadChannelMap::MaskType_t::BAD_CELL) {
+          statusbin = 1;
+        } else if (cellStatus == o2::emcal::BadChannelMap::MaskType_t::DEAD_CELL) {
+          statusbin = 2;
+        }
+        mMaskStatsAllHisto->Fill(statusbin);
+        if (cellID < minCellDCAL) {
+          mMaskStatsEMCALHisto->Fill(statusbin);
+        } else {
+          mMaskStatsDCALHisto->Fill(statusbin);
         }
       }
     }
@@ -112,6 +151,9 @@ void CalibMonitoringTask::finalize(Trigger t, framework::ServiceRegistryRef)
   for (const auto& obj : mCalibObjects) {
     if (obj == "BadChannelMap") {
       getObjectsManager()->stopPublishing(mBadChannelMapHisto);
+      getObjectsManager()->stopPublishing(mMaskStatsEMCALHisto);
+      getObjectsManager()->stopPublishing(mMaskStatsDCALHisto);
+      getObjectsManager()->stopPublishing(mMaskStatsAllHisto);
     }
     if (obj == "TimeCalibParams") {
       getObjectsManager()->stopPublishing(mTimeCalibParamHisto);
@@ -126,6 +168,12 @@ void CalibMonitoringTask::reset()
   ILOG(Debug, Support) << "Resetting the histogram" << ENDM;
   if (mBadChannelMapHisto)
     mBadChannelMapHisto->Reset();
+  if (mMaskStatsEMCALHisto)
+    mMaskStatsEMCALHisto->Reset();
+  if (mMaskStatsDCALHisto)
+    mMaskStatsDCALHisto->Reset();
+  if (mMaskStatsAllHisto)
+    mMaskStatsAllHisto->Reset();
   if (mTimeCalibParamHisto)
     mTimeCalibParamHisto->Reset();
 }
