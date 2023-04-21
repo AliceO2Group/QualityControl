@@ -44,6 +44,7 @@ ITSTrackTask::ITSTrackTask() : TaskInterface()
 ITSTrackTask::~ITSTrackTask()
 {
   delete hNClusters;
+  delete hNClustersReset;
   delete hTrackEta;
   delete hTrackPhi;
   delete hAngularDistribution;
@@ -53,6 +54,7 @@ ITSTrackTask::~ITSTrackTask()
   delete hVertexContributors;
   delete hAssociatedClusterFraction;
   delete hNtracks;
+  delete hNtracksReset;
   delete hNClustersPerTrackEta;
   delete hClusterVsBunchCrossing;
   delete hNClusterVsChipITS;
@@ -89,12 +91,19 @@ void ITSTrackTask::startOfActivity(Activity& /*activity*/)
 void ITSTrackTask::startOfCycle()
 {
   ILOG(Debug, Devel) << "startOfCycle" << ENDM;
+  isNewCycle = true;
 }
 
 void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
 
   ILOG(Debug, Devel) << "START DOING QC General" << ENDM;
+
+  if (isNewCycle) {
+    hNClustersReset->Reset();
+    hNtracksReset->Reset();
+    isNewCycle = false;
+  }
 
   if (mTimestamp == -1) { // get dict from ccdb
     mTimestamp = std::stol(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "dicttimestamp", "0"));
@@ -216,6 +225,7 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
       hTrackPhi->Fill(out.getPhi());
       hAngularDistribution->Fill(Eta, out.getPhi());
       hNClusters->Fill(track.getNumberOfClusters());
+      hNClustersReset->Fill(track.getNumberOfClusters());
 
       vMap.emplace_back(track.getPattern());
       vEta.emplace_back(Eta);
@@ -259,6 +269,7 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
     float clusterRatio = nTotCls > 0 ? (float)nClusterCntTrack / (float)nTotCls : -1;
     hAssociatedClusterFraction->Fill(clusterRatio);
     hNtracks->Fill(nTracks);
+    hNtracksReset->Fill(nTracks);
 
     const auto bcdata = trackRofArr[iROF].getBCData();
     hClusterVsBunchCrossing->Fill(bcdata.bc, clusterRatio);
@@ -323,6 +334,7 @@ void ITSTrackTask::endOfActivity(Activity& /*activity*/)
 
 void ITSTrackTask::reset()
 {
+
   ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   hAngularDistribution->Reset();
   hNClusters->Reset();
@@ -372,6 +384,12 @@ void ITSTrackTask::createAllHistos()
   addObject(hNClusters);
   formatAxes(hNClusters, "Number of clusters per Track", "Counts", 1, 1.10);
   hNClusters->SetStats(0);
+
+  hNClustersReset = new TH1D("NClustersReset", "NClustersReset", 15, -0.5, 14.5);
+  hNClustersReset->SetTitle("hNClusters in one cycle");
+  addObject(hNClustersReset);
+  formatAxes(hNClustersReset, "Number of clusters per Track", "Counts", 1, 1.10);
+  hNClustersReset->SetStats(0);
 
   hTrackEta = new TH1D("EtaDistribution", "EtaDistribution", 40, -2.0, 2.0);
   if (mDoNorm) {
@@ -432,6 +450,12 @@ void ITSTrackTask::createAllHistos()
   addObject(hNtracks);
   formatAxes(hNtracks, "# tracks", "Counts", 1, 1.10);
   hNtracks->SetStats(0);
+
+  hNtracksReset = new TH1D("NtracksReset", "NtracksReset", (int)mNtracksMAX, 0, mNtracksMAX);
+  hNtracksReset->SetTitle("The number of tracks event by event for last QC cycle");
+  addObject(hNtracksReset);
+  formatAxes(hNtracksReset, "# tracks", "Counts", 1, 1.10);
+  hNtracksReset->SetStats(0);
 
   hNClustersPerTrackEta = new TH2D("NClustersPerTrackEta", "NClustersPerTrackEta", 400, -2.0, 2.0, 15, -0.5, 14.5);
   if (mDoNorm) {
