@@ -32,6 +32,7 @@
 #include <Framework/DataRefUtils.h>
 #include <DPLUtils/DPLRawParser.h>
 #include <DetectorsRaw/RDHUtils.h>
+#include <FOCALCalib/PadPedestal.h>
 #include <Headers/DataHeader.h>
 #include <Headers/RDHAny.h>
 
@@ -133,6 +134,10 @@ void TestbeamRawTask::initialize(o2::framework::InitContext& /*ctx*/)
   auto hasDisablePixels = mCustomParameters.find("DisablePixels");
   if (hasDisablePixels != mCustomParameters.end()) {
     mDisablePixels = get_bool(hasDisablePixels->second);
+  }
+  auto hasPadPedestalSubtraction = mCustomParameters.find("SubtractPadPedestals");
+  if (hasPadPedestalSubtraction != mCustomParameters.end()) {
+    mEnablePedestalSubtraction = get_bool(hasPadPedestalSubtraction->second);
   }
 
   mChannelsPadProjections = { 52, 16, 19, 46, 59, 14, 42 };
@@ -303,6 +308,16 @@ void TestbeamRawTask::startOfActivity(Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
   reset();
+  // Pedestal come from pedestal runs, usually not updated during the run
+  std::map<std::string, std::string> metadata;
+  if (mEnablePedestalSubtraction) {
+    mPadPedestalHandler = retrieveConditionAny<o2::focal::PadPedestal>("FOC/Calib/PadPedestals", metadata);
+    if (mPadPedestalHandler) {
+      ILOG(Info, Support) << "Pedestal data found - pedestals will be subtracted for Pads" << ENDM;
+    } else {
+      ILOG(Error, Support) << "No pedestal data found - pedestal subtraction not possible" << ENDM;
+    }
+  }
 }
 
 void TestbeamRawTask::startOfCycle()
@@ -427,12 +442,21 @@ void TestbeamRawTask::processPadEvent(gsl::span<const o2::focal::PadGBTWord> pad
     int currentchannel = 0;
     for (const auto& chan : asic.getChannels()) {
       if (chan.getTOT() < mPadTOTCutADC) {
-        mPadASICChannelADC[iasic]->Fill(currentchannel, chan.getADC());
+        double adc = chan.getADC(); // must be converted to floating point number for pedestal subtraction
+        if (mPadPedestalHandler && iasic < 18) {
+          try {
+            double pedestal = mPadPedestalHandler->getPedestal(iasic, currentchannel);
+            adc -= pedestal;
+          } catch (o2::focal::PadPedestal::InvalidChannelException& e) {
+            ILOG(Error, Support) << e.what() << ENDM;
+          }
+        }
+        mPadASICChannelADC[iasic]->Fill(currentchannel, adc);
         auto [column, row] = mPadMapper.getRowColFromChannelID(currentchannel);
         // temporary mask channel col 7 row 8 in ASIC 0
         auto mask = (iasic == 0) && ((column == 7) && (row == 8));
         if (!mask) {
-          mHitMapPadASIC[iasic]->Fill(column, row, chan.getADC());
+          mHitMapPadASIC[iasic]->Fill(column, row, adc);
         }
       }
       mPadASICChannelTOA[iasic]->Fill(currentchannel, chan.getTOA());
