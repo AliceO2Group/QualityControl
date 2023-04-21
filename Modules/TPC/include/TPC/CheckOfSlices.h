@@ -24,14 +24,12 @@
 namespace o2::quality_control_modules::tpc
 {
 
-/// \brief  Check if all the slices in a Trending (e.g. as a function of TPC Pad) are within their uncertainty compatible with the mean or a predefined physical value
+/// \brief  Check if all the slices in a Trending (e.g. as a function of TPC sector) are within their uncertainty compatible with the mean or a predefined physical value
 /// \author Maximilian Horst
 /// \author Laura Serksnyte
 /// \author Marcel Lesch
 class CheckOfSlices : public o2::quality_control::checker::CheckInterface
 {
-
-  // ILOG(Warning,Support) << "##########################################################################################Start Check Header file:" << ENDM;
 
  public:
   /// Default constructor
@@ -55,7 +53,6 @@ class CheckOfSlices : public o2::quality_control::checker::CheckInterface
   double mNSigmaBadExpectedPhysicsValue;
   double mNSigmaMean;
   double mNSigmaBadMean;
-  //float meanFull;
   double mRangeMedium;
   double mRangeBad;
   bool mSliceTrend;
