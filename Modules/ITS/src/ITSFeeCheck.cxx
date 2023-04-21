@@ -103,10 +103,10 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
     // Adding summary Plots Checks (General)
     if (mo->getName() == "LaneStatusSummary/LaneStatusSummaryGlobal") {
       result = Quality::Good;
-      auto* h = dynamic_cast<TH1I*>(mo->getObject());
+      auto* h = dynamic_cast<TH1D*>(mo->getObject());
       result.addMetadata("SummaryGlobal", "good");
       maxfractionbadlanes = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "maxfractionbadlanes", maxfractionbadlanes);
-      if (h->GetBinContent(1) + h->GetBinContent(2) + h->GetBinContent(3) > maxfractionbadlanes * 3816) {
+      if (h->GetBinContent(1) + h->GetBinContent(2) + h->GetBinContent(3) > maxfractionbadlanes) {
         result.updateMetadata("SummaryGlobal", "bad");
         result.set(Quality::Bad);
       }
@@ -271,7 +271,7 @@ void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
     }
   } // end flags
   if (mo->getName() == "LaneStatusSummary/LaneStatusSummaryGlobal") {
-    auto* h = dynamic_cast<TH1I*>(mo->getObject());
+    auto* h = dynamic_cast<TH1D*>(mo->getObject());
     if (checkResult == Quality::Good) {
       status = "Quality::GOOD";
       textColor = kGreen;
