@@ -21,6 +21,8 @@
 
 #include "FV0Base/Constants.h"
 
+#include <string>
+
 namespace o2::quality_control_modules::fv0
 {
 
@@ -39,6 +41,8 @@ class BcCheck : public o2::quality_control::checker::CheckInterface
 
  private:
   std::array<double, 4> mPositionMsgBox;
+  o2::ccdb::CcdbApi mCcdbApi;
+  std::string mPathGrpLhcIf = "GLO/Config/GRPLHCIF";
 };
 
 } // namespace o2::quality_control_modules::fv0
