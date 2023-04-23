@@ -127,8 +127,8 @@ bool DigitQcTask::chIsVertexEvent(const o2::fv0::ChannelData chd)
   return (chd.getFlag(o2::fv0::ChannelData::kIsCFDinADCgate) &&
           !(chd.getFlag(o2::fv0::ChannelData::kIsTimeInfoNOTvalid) || chd.getFlag(o2::fv0::ChannelData::kIsTimeInfoLate) || chd.getFlag(o2::fv0::ChannelData::kIsTimeInfoLost)) &&
           std::abs(static_cast<Int_t>(chd.CFDTime)) < mTrgOrGate &&
-          static_cast<Int_t>(chd.QTCAmpl) >= mTrgChargeLevelLow &&
-          static_cast<Int_t>(chd.QTCAmpl) <= mTrgChargeLevelHigh);
+          static_cast<Int_t>(chd.QTCAmpl) > mTrgChargeLevelLow &&
+          static_cast<Int_t>(chd.QTCAmpl) < mTrgChargeLevelHigh);
 }
 
 void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
