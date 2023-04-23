@@ -456,6 +456,106 @@ The task is configured as follows:
 
 TimeRangeFlagCollections are meant to be used as a base to derive Data Tags for analysis (WIP).
 
+### The BigScreen class
+
+This task allows to display the aggregated quality flags of each system (detectors + global QC) in a single canvas, arranged as a matrix of colored boxes.
+The system names are displayed above each box, while the quality flag is displayed inside the box. The box color follows the usual convention:
+
+* Good: green
+* Medium: orange
+* Bad: red
+* Null: magenta
+
+In addition, the boxes are filled with a grey color is the corresponding QualityObjects cannot be retrieved or are too old.
+
+The task is configured as follows:
+```json
+{
+  "qc": {
+    "config": {
+      "": "The usual global configuration variables"
+    },
+    "postprocessing": {
+      "BigScreen": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::BigScreen",
+        "moduleName": "QualityControl",
+        "detectorName": "GLO",
+        "customization": [
+          {
+            "name": "NRows",
+            "value": "4"
+          },
+          {
+            "name": "NCols",
+            "value": "5"
+          },
+          {
+            "name": "BorderWidth",
+            "value": "5"
+          },
+          {
+            "name": "NotOlderThan",
+            "value": "3600"
+          },
+          {
+            "name": "IgnoreActivity",
+            "value": "0"
+          }
+        ],
+        "dataSources": [
+          {
+            "names": [
+              "CPV:MCH/QO/CPVQuality/CPVQuality",
+              "EMC:MCH/QO/EMCQuality/EMCQuality",
+              "FDD:MCH/QO/FDDQuality/FDDQuality",
+              "FT0:MCH/QO/FT0Quality/FT0Quality",
+              "FV0:MCH/QO/FV0Quality/FV0Quality",
+              "HMP:MCH/QO/HMPQuality/HMPQuality",
+              "ITS:MCH/QO/ITSQuality/ITSQuality",
+              "MCH:MCH/QO/MCHQuality/MCHQuality",
+              "MFT:MCH/QO/MFTQuality/MFTQuality",
+              "MID:MCH/QO/MIDQuality/MIDQuality",
+              "PHS:MCH/QO/PHSQuality/PHSQuality",
+              "TOF:MCH/QO/TOFQuality/TOFQuality",
+              "TPC:MCH/QO/TPCQuality/TPCQuality",
+              "TRD:MCH/QO/TRDQuality/TRDQuality",
+              "ZDC:MCH/QO/ZDCQuality/ZDCQuality",
+              "TRK:MCH/QO/TRKQuality/TRKQuality",
+              "MTK:MCH/QO/MTKQuality/MTKQuality",
+              "VTX:MCH/QO/VTXQuality/VTXQuality",
+              "PID:MCH/QO/PIDQuality/PIDQuality"
+            ]
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "60 seconds"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      }
+    }
+  }
+}
+```
+
+The following options allow to configure the appearence and behavior of the task:
+
+* `NRows`/`NCols`: size of the X-Y grid
+* `BorderWidth`: size of the border around the boxes
+* `NotOlderThan`: ignore quality objects that are older than a given number of seconds. A value of -1 means "no limit".
+* `IgnoreActivity`: if diferent from 0, the task will fetch objects regardless of their activity number and type.
+
+The names in the data sources are composed of two parts, separated by a colon:
+```
+SYSTEM_NAME:OBJECT_PATH
+```
+The grid of colored boxes is built from the list of data sources, and the corresponding `SYSTEM_NAME` is displayed above each box.
+
 ## More examples
 
 This section contains examples of how to approach usual use-cases.
