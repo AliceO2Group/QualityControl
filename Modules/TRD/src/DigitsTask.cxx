@@ -759,8 +759,8 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
                 if (time > mDriftRegion.first && time < mDriftRegion.second) {
                   mClsAmpDrift->Fill(sum);
                   mClsDetAmp[sm]->Fill(detLoc, sum);
-                                  }
-		mClusterAmplitudeChamber->Fill(sum, chamber);
+                }
+                mClusterAmplitudeChamber->Fill(sum, chamber);
 
                 mClsSector->Fill(sm, sum);
                 mClsStack->Fill(stack, sum);
