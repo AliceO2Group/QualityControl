@@ -210,6 +210,15 @@ void TestbeamRawTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 
   /////////////////////////////////////////////////////////////////
+  /// general histograms
+  /////////////////////////////////////////////////////////////////
+  mTFerrorCounter = new TH1F("NumberOfTFerror", "Number of TFbuilder errors", 2, 0.5, 2.5);
+  mTFerrorCounter->GetYaxis()->SetTitle("Time Frame Builder Error");
+  mTFerrorCounter->GetXaxis()->SetBinLabel(1, "empty");
+  mTFerrorCounter->GetXaxis()->SetBinLabel(2, "filled");
+  getObjectsManager()->startPublishing(mTFerrorCounter);
+
+  /////////////////////////////////////////////////////////////////
   /// PAD histograms
   /////////////////////////////////////////////////////////////////
 
@@ -346,6 +355,13 @@ void TestbeamRawTask::monitorData(o2::framework::ProcessingContext& ctx)
   for (auto& hitcounterLayer : mPixelNHitsLayer) {
     hitcounterLayer.clear();
   }
+
+  if (isLostTimeframe(ctx)) {
+    mTFerrorCounter->Fill(1);
+    return;
+  }
+  mTFerrorCounter->Fill(2);
+
   int inputs = 0;
   std::vector<char> rawbuffer;
   uint16_t currentfee = 0;
@@ -782,6 +798,49 @@ void TestbeamRawTask::PadChannelProjections::reset()
   for (auto& [chan, hist] : mHistos) {
     hist->Reset();
   }
+}
+
+bool TestbeamRawTask::isLostTimeframe(framework::ProcessingContext& ctx) const
+{
+  // direct data
+  constexpr auto originFOC = header::gDataOriginFOC;
+  o2::framework::InputSpec dummy{ "dummy",
+                                  framework::ConcreteDataMatcher{ originFOC,
+                                                                  header::gDataDescriptionRawData,
+                                                                  0xDEADBEEF } };
+  for (const auto& ref : o2::framework::InputRecordWalker(ctx.inputs(), { dummy })) {
+    // auto posReadout = ctx.inputs().getPos("readout");
+    // auto nslots = ctx.inputs().getNofParts(posReadout);
+    // for (decltype(nslots) islot = 0; islot < nslots; islot++) {
+    //   const auto& ref = ctx.inputs().getByPos(posReadout, islot);
+    const auto dh = o2::framework::DataRefUtils::getHeader<o2::header::DataHeader*>(ref);
+    const auto payloadSize = o2::framework::DataRefUtils::getPayloadSize(ref);
+    // if (dh->subSpecification == 0xDEADBEEF) {
+    if (payloadSize == 0) {
+      return true;
+      //  }
+    }
+  }
+  // sampled data
+  o2::framework::InputSpec dummyDS{ "dummyDS",
+                                    framework::ConcreteDataMatcher{ "DS",
+                                                                    "focrawdata0",
+                                                                    0xDEADBEEF } };
+  for (const auto& ref : o2::framework::InputRecordWalker(ctx.inputs(), { dummyDS })) {
+    // auto posReadout = ctx.inputs().getPos("readout");
+    // auto nslots = ctx.inputs().getNofParts(posReadout);
+    // for (decltype(nslots) islot = 0; islot < nslots; islot++) {
+    //   const auto& ref = ctx.inputs().getByPos(posReadout, islot);
+    const auto dh = o2::framework::DataRefUtils::getHeader<o2::header::DataHeader*>(ref);
+    const auto payloadSize = o2::framework::DataRefUtils::getPayloadSize(ref);
+    // if (dh->subSpecification == 0xDEADBEEF) {
+    if (payloadSize == 0) {
+      return true;
+      //  }
+    }
+  }
+
+  return false;
 }
 
 } // namespace o2::quality_control_modules::focal

@@ -82,6 +82,7 @@ class TestbeamRawTask final : public TaskInterface
     void reset();
   };
   void default_init();
+  bool isLostTimeframe(framework::ProcessingContext& ctx) const;
   void processPadPayload(gsl::span<const o2::focal::PadGBTWord> gbtpayload);
   void processPixelPayload(gsl::span<const o2::itsmft::GBTWord> gbtpayload, uint16_t feeID);
   void processPadEvent(gsl::span<const o2::focal::PadGBTWord> gbtpayload);
@@ -104,6 +105,11 @@ class TestbeamRawTask final : public TaskInterface
   bool mDisablePixels = false;                                                    ///< Disable pixels
   bool mEnablePedestalSubtraction = false;                                        ///< Enable pedestal subtraction pads
   bool mEnableBadChannelMask = false;                                             ///< Enable bad channel map for pads
+
+  /////////////////////////////////////////////////////////////////////////////////////
+  /// General histograms
+  /////////////////////////////////////////////////////////////////////////////////////
+  TH1* mTFerrorCounter = nullptr; ///< Number of TF builder errors
 
   /////////////////////////////////////////////////////////////////////////////////////
   /// Pad histograms
