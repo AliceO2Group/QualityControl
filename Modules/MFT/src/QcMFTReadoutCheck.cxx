@@ -299,15 +299,15 @@ void QcMFTReadoutCheck::writeMessages(TH1F* histo, std::vector<int>& vector, Qua
     histo->SetLineColor(kOrange + 7);
     if (strcmp(histo->GetName(), "mSummaryChipFault") == 0) {
       drawLatex(histo, 0.14, 0.87, kOrange + 7, "Quality is Medium.", 0.04);
-      drawLatex(histo, 0.14, 0.87 - 0.025, kOrange + 7, Form("%lu chips in Fault. Inform the MFT oncall (via Mattermost during night).", vector.size()));
+      drawLatex(histo, 0.14, 0.87 - 0.025, kOrange + 7, Form("%lu chips in Fault. Write a logbook entry tagging MFT.", vector.size()));
     }
     if (strcmp(histo->GetName(), "mSummaryChipError") == 0) {
       drawLatex(histo, 0.14, 0.87, kOrange + 7, "Quality is Medium.", 0.04);
-      drawLatex(histo, 0.14, 0.87 - 0.025, kOrange + 7, Form("%lu chips in Error. Inform the MFT oncall (via Mattermost during night).", vector.size()));
+      drawLatex(histo, 0.14, 0.87 - 0.025, kOrange + 7, Form("%lu chips in Error. Write a logbook entry tagging MFT.", vector.size()));
     }
     if (strcmp(histo->GetName(), "mSummaryChipWarning") == 0) {
       drawLatex(histo, 0.14, 0.87, kOrange + 7, "Quality is Medium.", 0.04);
-      drawLatex(histo, 0.14, 0.87 - 0.025, kOrange + 7, Form("%lu chips in Warning. Inform the MFT oncall (via Mattermost during night).", vector.size()));
+      drawLatex(histo, 0.14, 0.87 - 0.025, kOrange + 7, Form("%lu chips in Warning. Write a logbook entry tagging MFT.", vector.size()));
     }
   } else if (checkResult == Quality::Bad) {
     histo->SetFillColor(kRed + 1);
