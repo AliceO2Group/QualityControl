@@ -32,6 +32,7 @@
 #include <Framework/DataRefUtils.h>
 #include <DPLUtils/DPLRawParser.h>
 #include <DetectorsRaw/RDHUtils.h>
+#include <FOCALCalib/PadBadChannelMap.h>
 #include <FOCALCalib/PadPedestal.h>
 #include <Headers/DataHeader.h>
 #include <Headers/RDHAny.h>
@@ -138,6 +139,10 @@ void TestbeamRawTask::initialize(o2::framework::InitContext& /*ctx*/)
   auto hasPadPedestalSubtraction = mCustomParameters.find("SubtractPadPedestals");
   if (hasPadPedestalSubtraction != mCustomParameters.end()) {
     mEnablePedestalSubtraction = get_bool(hasPadPedestalSubtraction->second);
+  }
+  auto hasPadBadChannelMap = mCustomParameters.find("PadBadChannelMasking");
+  if (hasPadBadChannelMap != mCustomParameters.end()) {
+    mEnableBadChannelMask = get_bool(hasPadBadChannelMap->second);
   }
 
   mChannelsPadProjections = { 52, 16, 19, 46, 59, 14, 42 };
@@ -318,6 +323,14 @@ void TestbeamRawTask::startOfActivity(Activity& activity)
       ILOG(Error, Support) << "No pedestal data found - pedestal subtraction not possible" << ENDM;
     }
   }
+  if (mEnableBadChannelMask) {
+    mPadBadChannelMap = retrieveConditionAny<o2::focal::PadBadChannelMap>("FOC/Calib/PadBadChannelMap", metadata);
+    if (mPadPedestalHandler) {
+      ILOG(Info, Support) << "Bad channel map for pads found - bad pad channels will be masked" << ENDM;
+    } else {
+      ILOG(Error, Support) << "No bad channel map found for pads - bad channel mask cannot be applied" << ENDM;
+    }
+  }
 }
 
 void TestbeamRawTask::startOfCycle()
@@ -441,6 +454,17 @@ void TestbeamRawTask::processPadEvent(gsl::span<const o2::focal::PadGBTWord> pad
     ILOG(Debug, Support) << "ASIC " << iasic << ", Header 1: " << asic.getSecondHeader() << ENDM;
     int currentchannel = 0;
     for (const auto& chan : asic.getChannels()) {
+      bool skipChannel = false;
+      if (mPadBadChannelMap) {
+        try {
+          skipChannel = (mPadBadChannelMap->getChannelStatus(iasic, currentchannel) != o2::focal::PadBadChannelMap::MaskType_t::GOOD_CHANNEL);
+        } catch (o2::focal::PadBadChannelMap::ChannelIndexException& e) {
+          ILOG(Error, Support) << "Error accessing channel status: " << e.what() << ENDM;
+        }
+      }
+      if (skipChannel) {
+        continue;
+      }
       if (chan.getTOT() < mPadTOTCutADC) {
         double adc = chan.getADC(); // must be converted to floating point number for pedestal subtraction
         if (mPadPedestalHandler && iasic < 18) {
@@ -453,11 +477,7 @@ void TestbeamRawTask::processPadEvent(gsl::span<const o2::focal::PadGBTWord> pad
         }
         mPadASICChannelADC[iasic]->Fill(currentchannel, adc);
         auto [column, row] = mPadMapper.getRowColFromChannelID(currentchannel);
-        // temporary mask channel col 7 row 8 in ASIC 0
-        auto mask = (iasic == 0) && ((column == 7) && (row == 8));
-        if (!mask) {
-          mHitMapPadASIC[iasic]->Fill(column, row, adc);
-        }
+        mHitMapPadASIC[iasic]->Fill(column, row, adc);
       }
       mPadASICChannelTOA[iasic]->Fill(currentchannel, chan.getTOA());
       if (chan.getTOT()) {
