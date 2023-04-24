@@ -81,6 +81,9 @@ class DigitQcTask final : public TaskInterface
 
   long mTFcreationTime = 0;
 
+  int mMinTimeGate = -192;
+  int mMaxTimeGate = 192;
+
   template <typename Param_t,
             typename = typename std::enable_if<std::is_floating_point<Param_t>::value ||
                                                std::is_same<std::string, Param_t>::value || (std::is_integral<Param_t>::value && !std::is_same<bool, Param_t>::value)>::type>
@@ -157,6 +160,7 @@ class DigitQcTask final : public TaskInterface
   std::unique_ptr<TH1F> mHistAverageTimeC;
   std::unique_ptr<TH1F> mHistChannelID;
   std::unique_ptr<TH1F> mHistCFDEff;
+  std::unique_ptr<TH1F> mHistGateTimeRatio2Ch;
   //  std::unique_ptr<TH2F> mHistTimeSum2Diff;
   std::unique_ptr<TH2F> mHistTriggersCorrelation;
   std::unique_ptr<TH1D> mHistCycleDuration;

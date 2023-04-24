@@ -113,6 +113,8 @@ class Quality
   /// \return reason, if exists
   const CommentedFlagReasons& getReasons() const;
 
+  static Quality fromString(const std::string& str);
+
  private:
   unsigned int mLevel; /// 0 is no quality, 1 is best quality, then it only goes downhill...
   std::string mName;

@@ -49,6 +49,13 @@ void OrbitsPlotter::update(TH2F* h)
     return;
   }
 
+  auto incrementBin = [&](TH2F* h, float x, float y, float val) {
+    int bx = h->GetXaxis()->FindBin(x);
+    int by = h->GetYaxis()->FindBin(y);
+    auto entries = h->GetBinContent(bx, by);
+    h->SetBinContent(bx, by, entries + val);
+  };
+
   mHistogramOrbits->Reset();
 
   // loop over bins in electronics coordinates, and map the channels to the corresponding cathode pads
@@ -67,9 +74,7 @@ void OrbitsPlotter::update(TH2F* h)
     for (int j = 1; j <= nbinsy; j++) {
       float entries = h->GetBinContent(i, j);
       int orbit = h->GetYaxis()->GetBinCenter(j);
-      for (int i = 0; i < entries; i++) {
-        mHistogramOrbits->Fill(deIndex, orbit);
-      }
+      incrementBin(mHistogramOrbits.get(), deIndex, orbit, entries);
     }
   }
 }

@@ -120,7 +120,7 @@ void TrendingTaskITSFEE::trendValues(const Trigger& t, repository::DatabaseInter
       if (obj)
         mReductors[dataSource.name]->update(obj);
     } else {
-      ILOGE << "Unknown type of data source '" << dataSource.type << "'.";
+      ILOG(Debug, Devel) << "Unknown type of data source '" << dataSource.type << "'." << ENDM;
     }
     count++;
   }
@@ -129,8 +129,6 @@ void TrendingTaskITSFEE::trendValues(const Trigger& t, repository::DatabaseInter
 
 void TrendingTaskITSFEE::storePlots(repository::DatabaseInterface& qcdb)
 {
-  // ILOG(Info, Support) << "Generating and storing " << mConfig.plots.size() << " plots." << ENDM;
-
   int countplots = 0;
   int countITSpart = 0;
   bool isRun = false;
