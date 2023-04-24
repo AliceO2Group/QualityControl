@@ -52,11 +52,6 @@ class QcMFTTrackTask /*final*/ : public TaskInterface // todo add back the "fina
   void endOfActivity(Activity& activity) override;
   void reset() override;
 
-  double orbitToSeconds(uint32_t orbit, uint32_t refOrbit)
-  {
-    return (orbit - refOrbit) * o2::constants::lhc::LHCOrbitNS / 1E9;
-  }
-
  private:
   std::unique_ptr<TH1F> mNumberOfTracksPerTF = nullptr;
   std::unique_ptr<TH1F> mTrackNumberOfClusters = nullptr;
@@ -80,9 +75,8 @@ class QcMFTTrackTask /*final*/ : public TaskInterface // todo add back the "fina
   std::unique_ptr<TH1F> mTrackTanl = nullptr;
   std::unique_ptr<TH1F> mTrackROFNEntries = nullptr;
   std::unique_ptr<TH1F> mTracksBC = nullptr;
-  std::unique_ptr<TH1F> mNOfTracksTime = nullptr;
-
-  uint32_t mRefOrbit = -1; // Reference orbit used in relative time calculation
+  std::unique_ptr<TH1F> mAssociatedClusterFraction = nullptr;
+  std::unique_ptr<TH2F> mClusterRatioVsBunchCrossing = nullptr; 
 
   static constexpr array<short, 7> sMinNClustersList = { 4, 5, 6, 7, 8, 9, 10 };
 };
