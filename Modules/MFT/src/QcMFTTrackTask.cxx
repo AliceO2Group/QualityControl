@@ -75,7 +75,7 @@ void QcMFTTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   // Creating histos
 
-  double maxTracksPerTF = 5000;
+  double maxTracksPerTF = 400;
 
   mNumberOfTracksPerTF = std::make_unique<TH1F>("mMFTTracksPerTF",
                                                 "Number of tracks per TimeFrame; Number of tracks per TF", maxTracksPerTF, -0.5, maxTracksPerTF - 0.5);
