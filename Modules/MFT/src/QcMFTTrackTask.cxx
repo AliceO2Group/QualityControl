@@ -160,14 +160,10 @@ void QcMFTTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mAssociatedClusterFraction.get());
   getObjectsManager()->setDisplayHint(mAssociatedClusterFraction.get(), "hist logy");
 
-
-  mClusterRatioVsBunchCrossing = std::make_unique<TH2F>("mClusterRatioVsBunchCrossing","Bunch Crossing ID vs Cluster Ratio;BC ID;Fraction of clusters in tracks", 
-  o2::constants::lhc::LHCMaxBunches, 0, o2::constants::lhc::LHCMaxBunches, 100, 0, 1);
+  mClusterRatioVsBunchCrossing = std::make_unique<TH2F>("mClusterRatioVsBunchCrossing", "Bunch Crossing ID vs Cluster Ratio;BC ID;Fraction of clusters in tracks",
+                                                        o2::constants::lhc::LHCMaxBunches, 0, o2::constants::lhc::LHCMaxBunches, 100, 0, 1);
   getObjectsManager()->startPublishing(mClusterRatioVsBunchCrossing.get());
   getObjectsManager()->setDisplayHint(mClusterRatioVsBunchCrossing.get(), "colz logz");
-  
-
-
 }
 
 void QcMFTTrackTask::startOfActivity(Activity& /*activity*/)
@@ -198,12 +194,12 @@ void QcMFTTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
     int nClusterCountTrack = 0;
     int nTracks = tracksrofs[iROF].getNEntries();
 
-    mTrackROFNEntries->Fill(nTracks); 
+    mTrackROFNEntries->Fill(nTracks);
 
     int start = tracksrofs[iROF].getFirstEntry();
     int end = start + tracksrofs[iROF].getNEntries();
 
-    for (int itrack=start; itrack<end;itrack++){
+    for (int itrack = start; itrack < end; itrack++) {
       auto& track = tracks[itrack];
       nClusterCountTrack += track.getNumberOfPoints();
     }
@@ -217,8 +213,6 @@ void QcMFTTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
     mAssociatedClusterFraction->Fill(clusterRatio);
     mClusterRatioVsBunchCrossing->Fill(bcData.bc, clusterRatio);
   }
-
-
 
   for (auto& oneTrack : tracks) {
     mTrackNumberOfClusters->Fill(oneTrack.getNumberOfPoints());

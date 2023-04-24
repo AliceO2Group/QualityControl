@@ -76,7 +76,7 @@ class QcMFTTrackTask /*final*/ : public TaskInterface // todo add back the "fina
   std::unique_ptr<TH1F> mTrackROFNEntries = nullptr;
   std::unique_ptr<TH1F> mTracksBC = nullptr;
   std::unique_ptr<TH1F> mAssociatedClusterFraction = nullptr;
-  std::unique_ptr<TH2F> mClusterRatioVsBunchCrossing = nullptr; 
+  std::unique_ptr<TH2F> mClusterRatioVsBunchCrossing = nullptr;
 
   static constexpr array<short, 7> sMinNClustersList = { 4, 5, 6, 7, 8, 9, 10 };
 };
