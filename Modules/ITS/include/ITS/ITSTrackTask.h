@@ -62,6 +62,7 @@ class ITSTrackTask : public TaskInterface
 
   std::vector<TObject*> mPublishedObjects;
   TH1D* hNClusters;
+  TH1D* hNClustersReset;
   TH1D* hTrackEta;
   TH1D* hTrackPhi;
   TH1D* hVerticesRof;
@@ -72,6 +73,7 @@ class ITSTrackTask : public TaskInterface
   TH1D* hVertexContributors;
   TH1D* hAssociatedClusterFraction;
   TH1D* hNtracks;
+  TH1D* hNtracksReset;
   TH2D* hNClustersPerTrackEta;
   TH2D* hNClustersPerTrackPhi;
   TH2D* hHitFirstLayerPhiAll;
@@ -90,6 +92,7 @@ class ITSTrackTask : public TaskInterface
   // mDoNorm: 0 = no normalization, 1 = normalization by nVertices, 2 = normalization by nRofs
   Int_t mDoNorm = 1;
   Int_t mNRofs = 0;
+  bool isNewCycle = true;
   int nBCbins = 103;
   long int mTimestamp = -1;
   int nVertices = 0;

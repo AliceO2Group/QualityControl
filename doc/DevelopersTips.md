@@ -312,6 +312,18 @@ psql -h localhost ccdb ccdb_user -c "delete from ccdb_paths where pathid in (sel
 
 `curl -s 'http://ali-qcdb-gpn.cern.ch:8083/latest/qc/EMC.*' | grep -c ^Path:`
 
+### Update the certificate of the QCDB
+
+1. go to ca.cern.ch -> New Grid Host Certificate. Subject: alio2-cr1-hv-qcdb-gpn.cern.ch (alternative: alio2-cr1-hv-qcdb.cern.ch)
+2. download
+3. scp the p12 file to qcdb
+4. `openssl pkcs12 -in /tmp/new-certif.p12 -out hostcert.pem -clcerts -nokeys`
+5. `openssl pkcs12 -in /tmp/new-certif.p12 -out hostkey.pem -nocerts -nodes`
+6. `cd /var/lib/pgsql/.globus `
+7. backup the old files
+8. copy hostcert and hostkey
+9 chmod 600 them
+
 ### ControlWorkflows
 
 #### Parameter `qcConfiguration` in tasks

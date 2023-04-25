@@ -35,7 +35,7 @@ Quality ITSDecodingErrorCheck::check(std::map<std::string, std::shared_ptr<Monit
     if ((mo->getName() == "General/LinkErrorPlots") || (mo->getName() == "General/ChipErrorPlots")) {
       result = Quality::Good;
       auto* h = dynamic_cast<TH1D*>(mo->getObject());
-      if (h->GetMaximum() > 0) {
+      if (h->GetMaximum() > 200) {
         result.set(Quality::Bad);
       }
     }

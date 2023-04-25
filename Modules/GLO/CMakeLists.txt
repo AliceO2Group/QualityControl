@@ -2,7 +2,7 @@
 
 add_library(O2QcGLO)
 
-target_sources(O2QcGLO PRIVATE src/VertexingQcTask.cxx src/ITSTPCMatchingTask.cxx src/DataCompressionQcTask.cxx)
+target_sources(O2QcGLO PRIVATE src/MeanVertexPostProcessing.cxx  src/VertexingQcTask.cxx src/ITSTPCMatchingTask.cxx src/DataCompressionQcTask.cxx)
 
 target_include_directories(
   O2QcGLO
@@ -16,6 +16,7 @@ target_link_libraries(O2QcGLO
   O2::Steer
   O2::DataFormatsGlobalTracking
   O2::DataFormatsITS
+  O2::DataFormatsCalibration
   O2::GlobalTracking
   O2QcCommon)
 
@@ -33,11 +34,13 @@ install(FILES ITSTPCmatchedTracks_external.json
               vertexing-qc.json
               vertexing-qc-mc.json
               dataCompression-qc.json
+	      glo-mean-vtx-post-processing.json
         DESTINATION etc
        )
 
 add_root_dictionary(O2QcGLO
                     HEADERS
+  include/GLO/MeanVertexPostProcessing.h
   include/GLO/VertexingQcTask.h
   include/GLO/ITSTPCMatchingTask.h
   include/GLO/DataCompressionQcTask.h

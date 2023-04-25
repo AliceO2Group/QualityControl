@@ -361,7 +361,7 @@ void InfrastructureGenerator::customizeInfrastructure(std::vector<framework::Com
 
 void InfrastructureGenerator::printVersion()
 {
-  ILOG(Info, Devel) << "QC version " << o2::quality_control::core::Version::GetQcVersion().getString() << ENDM;
+  ILOG(Debug, Devel) << "QC version " << o2::quality_control::core::Version::GetQcVersion().getString() << ENDM;
 }
 
 void InfrastructureGenerator::generateDataSamplingPolicyLocalProxyBind(framework::WorkflowSpec& workflow,

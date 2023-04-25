@@ -64,4 +64,4 @@ class CalibrationTask final : public TaskInterface
 
 } // namespace o2::quality_control_modules::fv0
 
-#endif //QUALITYCONTROL_FV0_CALIBRATIONTASK_H
+#endif // QUALITYCONTROL_FV0_CALIBRATIONTASK_H
