@@ -348,6 +348,14 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
     mTime->GetYaxis()->SetTitleOffset(1);
   }
 
+  // TO DO download BC hists and add to their metadata bcPattern
+  auto moBcVsFeeModules = mDatabase->retrieveMO(mPathDigitQcTask, "BCvsFEEmodules", t.timestamp, t.activity);
+  auto hBcVsFeeModules = moBcVsFeeModules ? dynamic_cast<TH2F*>(moBcVsFeeModules->getObject()) : nullptr;
+  if (!hBcVsFeeModules) {
+    ILOG(Error, Support) << "MO \"BCvsTriggers\" NOT retrieved!!!" << ENDM;
+    return;
+  }
+
   auto moBCvsTriggers = mDatabase->retrieveMO(mPathDigitQcTask, "BCvsTriggers", t.timestamp, t.activity);
   auto hBcVsTrg = moBCvsTriggers ? dynamic_cast<TH2F*>(moBCvsTriggers->getObject()) : nullptr;
   if (!hBcVsTrg) {
@@ -404,6 +412,14 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
     }
   }
 
+  // TEST
+  for (int iBin = 0; iBin < sBCperOrbit + 1; iBin++) {
+    const std::string metadataKey = "Bc" + std::to_string(iBin);
+    const std::string metadataValue = std::to_string(mHistBcPattern->GetBinContent(iBin));
+    getObjectsManager()->getMonitorObject(hBcVsFeeModules->GetName())->addOrUpdateMetadata(metadataKey, metadataValue);
+    getObjectsManager()->getMonitorObject(hBcVsTrg->GetName())->addOrUpdateMetadata(metadataKey, metadataValue);
+  }
+
   mHistBcTrgOutOfBunchColl->Reset();
   float vmax = hBcVsTrg->GetBinContent(hBcVsTrg->GetMaximumBin());
   mHistBcTrgOutOfBunchColl->Add(hBcVsTrg, mHistBcPattern.get(), 1, -1 * vmax);
@@ -422,14 +438,6 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
     ILOG(Info, Support) << metadataKey << ":" << metadataValue << ENDM;
   }
 
-//   // TO DO download BC hists and add to their metadata bcPattern
-//   auto moBcVsFeeModules = mDatabase->retrieveMO(mPathDigitQcTask, "BCvsFEEmodules", t.timestamp, t.activity);
-//   auto hBcVsFeeModules = moBcVsFeeModules ? dynamic_cast<TH2F*>(moBcVsFeeModules->getObject()) : nullptr;
-//   if (!hBcVsFeeModules) {
-//     ILOG(Error, Support) << "MO \"BCvsTriggers\" NOT retrieved!!!" << ENDM;
-//     return;
-//   }
-//   getObjectsManager()->getMonitorObject(hBcVsFeeModules->GetName())->addOrUpdateMetadata(metadataKey, metadataValue);
 }
 
 void PostProcTask::finalize(Trigger t, framework::ServiceRegistryRef)
