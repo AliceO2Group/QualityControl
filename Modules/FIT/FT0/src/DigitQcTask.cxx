@@ -209,10 +209,10 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   //  mHistTriggersSoftwareVsTCM->SetOption("colz");
   // mHistTriggersSoftwareVsTCM->SetStats(0);
   std::map<unsigned int, std::string> mapTrgValidationStatus = {
-    { TrgComparisonResult::kSWonly + 1, "Sw only" },
-    { TrgComparisonResult::kTCMonly + 1, "TCM only" },
-    { TrgComparisonResult::kNone + 1, "neither TCM nor Sw" },
-    { TrgComparisonResult::kBoth + 1, "both TCM and Sw" }
+    { TrgComparisonResult::kSWonly, "Sw only" },
+    { TrgComparisonResult::kTCMonly, "TCM only" },
+    { TrgComparisonResult::kNone, "neither TCM nor Sw" },
+    { TrgComparisonResult::kBoth, "both TCM and Sw" }
   };
 
   mHistTriggersSoftwareVsTCM = helper::registerHist<TH2F>(getObjectsManager(), "COLZ", "TriggersSoftwareVsTCM", "Trigger validation", mMapBasicTrgBits, mapTrgValidationStatus);
