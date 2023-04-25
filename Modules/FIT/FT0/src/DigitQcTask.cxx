@@ -23,10 +23,14 @@
 #include "Framework/InputRecord.h"
 #include "Framework/TimingInfo.h"
 #include "DataFormatsFT0/LookUpTable.h"
+#include "Common/Utils.h"
+
+#include "FITCommon/HelperHist.h"
+#include "FITCommon/HelperFIT.h"
 
 namespace o2::quality_control_modules::ft0
 {
-
+using namespace o2::quality_control_modules::fit;
 DigitQcTask::~DigitQcTask()
 {
   delete mListHistGarbage;
@@ -133,24 +137,10 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Debug, Devel) << "initialize DigitQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
   mStateLastIR2Ch = {};
-  mMapChTrgNames.insert({ o2::ft0::ChannelData::kNumberADC, "NumberADC" });
-  mMapChTrgNames.insert({ o2::ft0::ChannelData::kIsDoubleEvent, "IsDoubleEvent" });
-  mMapChTrgNames.insert({ o2::ft0::ChannelData::kIsTimeInfoNOTvalid, "IsTimeInfoNOTvalid" });
-  mMapChTrgNames.insert({ o2::ft0::ChannelData::kIsCFDinADCgate, "IsCFDinADCgate" });
-  mMapChTrgNames.insert({ o2::ft0::ChannelData::kIsTimeInfoLate, "IsTimeInfoLate" });
-  mMapChTrgNames.insert({ o2::ft0::ChannelData::kIsAmpHigh, "IsAmpHigh" });
-  mMapChTrgNames.insert({ o2::ft0::ChannelData::kIsEventInTVDC, "IsEventInTVDC" });
-  mMapChTrgNames.insert({ o2::ft0::ChannelData::kIsTimeInfoLost, "IsTimeInfoLost" });
-
-  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitA, "OrA" });
-  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitC, "OrC" });
-  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitVertex, "Vertex" });
-  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitCen, "Central" });
-  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitSCen, "SemiCentral" });
-  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitLaser, "Laser" });
-  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitOutputsAreBlocked, "OutputsAreBlocked" });
-  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitDataIsValid, "DataIsValid" });
-
+  HelperFIT<o2::ft0::Digit, o2::ft0::ChannelData> helperFIT;
+  mMapChTrgNames = helperFIT.mMapPMbits;
+  mMapDigitTrgNames = helperFIT.mMapTrgBits;
+  mMapBasicTrgBits = helperFIT.mMapBasicTrgBits;
   mMapTrgSoftware.insert({ o2::fit::Triggers::bitA, false });
   mMapTrgSoftware.insert({ o2::fit::Triggers::bitC, false });
   mMapTrgSoftware.insert({ o2::fit::Triggers::bitVertex, false });
@@ -215,23 +205,27 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistPmTcmSumAmpC = std::make_unique<TH2F>("PmTcmSumAmpC", "Comparison of sum of amplitudes C from PM and TCM;Sum of amplitudes(TCM), side C;PM - TCM", 2e2, 0, 1e3, 2e3, -1e3 - 0.5, 1e3 - 0.5);
   mHistPmTcmAverageTimeC = std::make_unique<TH2F>("PmTcmAverageTimeC", "Comparison of average time C from PM and TCM;Average time(TCM), side C;PM - TCM", 410, -2050, 2050, 820, -410 - 0.5, 410 - 0.5);
   mHistTriggersSw = std::make_unique<TH1F>("TriggersSoftware", "Triggers from software", mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
-  mHistTriggersSoftwareVsTCM = std::make_unique<TH2F>("TriggersSoftwareVsTCM", "Comparison of triggers from software and TCM;;Trigger name", mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size(), 4, 0, 4);
-  mHistTriggersSoftwareVsTCM->SetOption("colz");
-  mHistTriggersSoftwareVsTCM->SetStats(0);
+  // mHistTriggersSoftwareVsTCM = std::make_unique<TH2F>("TriggersSoftwareVsTCM", "Comparison of triggers from software and TCM;;Trigger name", mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size(), 4, 0, 4);
+  //  mHistTriggersSoftwareVsTCM->SetOption("colz");
+  // mHistTriggersSoftwareVsTCM->SetStats(0);
+  std::map<unsigned int, std::string> mapTrgValidationStatus = {
+    { TrgComparisonResult::kSWonly + 1, "Sw only" },
+    { TrgComparisonResult::kTCMonly + 1, "TCM only" },
+    { TrgComparisonResult::kNone + 1, "neither TCM nor Sw" },
+    { TrgComparisonResult::kBoth + 1, "both TCM and Sw" }
+  };
+
+  mHistTriggersSoftwareVsTCM = helper::registerHist<TH2F>(getObjectsManager(), "COLZ", "TriggersSoftwareVsTCM", "Trigger validation", mMapBasicTrgBits, mapTrgValidationStatus);
   for (const auto& entry : mMapDigitTrgNames) {
     mHistOrbitVsTrg->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
     mHistTriggersCorrelation->GetXaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
     mHistTriggersCorrelation->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
     mHistBCvsTrg->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
     mHistTriggersSw->GetXaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
-    mHistTriggersSoftwareVsTCM->GetXaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
+    //    mHistTriggersSoftwareVsTCM->GetXaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
   }
   mHistTriggersSw->GetXaxis()->SetRange(1, 5);
-  mHistTriggersSoftwareVsTCM->GetXaxis()->SetRange(1, 5);
-  mHistTriggersSoftwareVsTCM->GetYaxis()->SetBinLabel(TrgComparisonResult::kSWonly + 1, "Sw only");
-  mHistTriggersSoftwareVsTCM->GetYaxis()->SetBinLabel(TrgComparisonResult::kTCMonly + 1, "TCM only");
-  mHistTriggersSoftwareVsTCM->GetYaxis()->SetBinLabel(TrgComparisonResult::kNone + 1, "neither TCM nor Sw");
-  mHistTriggersSoftwareVsTCM->GetYaxis()->SetBinLabel(TrgComparisonResult::kBoth + 1, "both TCM and Sw");
+  //  mHistTriggersSoftwareVsTCM->GetXaxis()->SetRange(1, 5);
 
   mListHistGarbage = new TList();
   mListHistGarbage->SetOwner(kTRUE);
@@ -388,13 +382,20 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->setDefaultDrawOptions(mHistPmTcmAverageTimeC.get(), "COLZ");
   getObjectsManager()->startPublishing(mHistTriggersCorrelation.get());
   getObjectsManager()->setDefaultDrawOptions(mHistTriggersCorrelation.get(), "COLZ");
-  getObjectsManager()->startPublishing(mHistTriggersSoftwareVsTCM.get());
-  getObjectsManager()->setDefaultDrawOptions(mHistTriggersSoftwareVsTCM.get(), "COLZ");
+  // getObjectsManager()->startPublishing(mHistTriggersSoftwareVsTCM.get());
+  // getObjectsManager()->setDefaultDrawOptions(mHistTriggersSoftwareVsTCM.get(), "COLZ");
 
   for (int i = 0; i < getObjectsManager()->getNumberPublishedObjects(); i++) {
     TH1* obj = dynamic_cast<TH1*>(getObjectsManager()->getMonitorObject(i)->getObject());
     obj->SetTitle((string("FT0 ") + obj->GetTitle()).c_str());
   }
+  //
+  mGoodPMbits_ChID = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "goodPMbits_ChID", 1 << o2::ft0::ChannelData::kIsCFDinADCgate);
+  mBadPMbits_ChID = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "badPMbits_ChID", (1 << o2::ft0::ChannelData::kIsTimeInfoNOTvalid) | (1 << o2::ft0::ChannelData::kIsTimeInfoLate) | (1 << o2::ft0::ChannelData::kIsAmpHigh) | (1 << o2::ft0::ChannelData::kIsTimeInfoLost));
+  mPMbitsToCheck_ChID = mBadPMbits_ChID | mGoodPMbits_ChID;
+  mLowTimeGate_ChID = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "lowTimeGate_ChID", -192);
+  mUpTimeGate_ChID = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "upTimeGate_ChID", 192);
+  mHistChIDperBC = helper::registerHist<TH2F>(getObjectsManager(), "COLZ", "ChannelIDperBC", Form("FT0 ChannelID per BC, bad PM bit suppression %i, good PM checking %i, gate (%i,%i)", mBadPMbits_ChID, mGoodPMbits_ChID, mLowTimeGate_ChID, mUpTimeGate_ChID), sBCperOrbit, 0, sBCperOrbit, sNCHANNELS_PM, 0, sNCHANNELS_PM);
 }
 
 void DigitQcTask::startOfActivity(Activity& activity)
@@ -533,7 +534,8 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
       setFEEmodules.insert(mChID2PMhash[chData.ChId]);
 
-      if (chIsVertexEvent(chData)) {
+      //      if (chIsVertexEvent(chData)) {
+      if (((chData.ChainQTC & mPMbitsToCheck_ChID) == mGoodPMbits_ChID) && std::abs(static_cast<Int_t>(chData.CFDTime)) < mTrgOrGate) {
         if (!mMapPMhash2isAside[mChID2PMhash[static_cast<uint8_t>(chData.ChId)]]) {
           pmSumTimeC += chData.CFDTime;
           pmNChanC++;
@@ -541,6 +543,7 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
           pmSumTimeA += chData.CFDTime;
           pmNChanA++;
         }
+        mHistChIDperBC->Fill(digit.getBC(), chData.ChId);
       }
       if (chData.getFlag(o2::ft0::ChannelData::kIsCFDinADCgate)) {
         mapPMhash2sumAmpl[mChID2PMhash[static_cast<uint8_t>(chData.ChId)]] += static_cast<Int_t>(chData.QTCAmpl);
