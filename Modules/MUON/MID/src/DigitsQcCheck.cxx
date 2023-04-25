@@ -34,7 +34,15 @@ namespace o2::quality_control_modules::mid
 {
 
 void DigitsQcCheck::configure()
-{
+{ // default params ::
+  mMeanMultThreshold = 100.;
+  mMinMultThreshold = 0.;
+  mOrbTF = 32;
+  mLocalBoardScale = 100;     // kHz
+  mLocalBoardThreshold = 400; // kHz
+  mNbBadLocalBoard = 10;
+  mNbEmptyLocalBoard = 117; // 234/2
+
   ILOG(Info, Devel) << "configure DigitsQcCheck" << ENDM;
   if (auto param = mCustomParameters.find("MeanMultThreshold"); param != mCustomParameters.end()) {
     ILOG(Info, Devel) << "Custom parameter - MeanMultThreshold: " << param->second << ENDM;
@@ -48,6 +56,25 @@ void DigitsQcCheck::configure()
     ILOG(Info, Devel) << "Custom parameter - :NbOrbitPerTF " << param->second << ENDM;
     mOrbTF = stof(param->second);
   }
+  if (auto param = mCustomParameters.find("LocalBoardScale"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - :LocalBoardScale " << param->second << ENDM;
+    mLocalBoardScale = stof(param->second);
+  }
+  if (auto param = mCustomParameters.find("LocalBoardThreshold"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - :LocalBoardThreshold " << param->second << ENDM;
+    mLocalBoardThreshold = stof(param->second);
+  }
+  if (auto param = mCustomParameters.find("NbBadLocalBoard"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - :NbBadLocalBoard " << param->second << ENDM;
+    mNbBadLocalBoard = stof(param->second);
+  }
+  if (auto param = mCustomParameters.find("NbEmptyLocalBoard"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - :NbEmptyLocalBoard " << param->second << ENDM;
+    mNbEmptyLocalBoard = stof(param->second);
+  }
+  // std::cout << " mLocalBoardThreshold  = "<<mLocalBoardThreshold << std::endl ;
+  // std::cout << " mNbBadLocalBoard  = "<<mNbBadLocalBoard << std::endl ;
+  mscale = 0;
 }
 
 Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
@@ -56,8 +83,8 @@ Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
   Quality result = Quality::Null;
   float mean = 0.;
   float midThreshold = mMeanMultThreshold / 2;
-  for (auto& [moName, mo] : *moMap) {
 
+  for (auto& [moName, mo] : *moMap) {
     // Nb Time Frame ::
     (void)moName;
     if (mo->getName() == "NbDigitTF") {
@@ -150,6 +177,33 @@ Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
       else if (mean > midThreshold)
         resultNBMT22 = Quality::Medium;
     } // end mMultHitMT22NB check
+
+    if (mo->getName() == "LocalBoardsMap") {
+      mBadLB = 0;
+      mEmptyLB = 0;
+      if (mDigitTF > 0) {
+        mscale = 1;
+        float scale = 1 / (mDigitTF * scaleTime * mOrbTF * 1000); // (kHz)
+        // std::cout << " scale = "<< scale << std::endl ;
+        auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+        h2->Scale(scale);
+        for (int bx = 1; bx < 15; bx++) {
+          for (int by = 1; by < 37; by++) {
+            if (!((bx > 6) && (bx < 9) && (by > 15) && (by < 22))) { // central zone empty
+              if (!(h2->GetBinContent(bx, by)))
+                mEmptyLB++;
+              else if (h2->GetBinContent(bx, by) > mLocalBoardThreshold)
+                mBadLB++;
+              // std::cout <<"        mBad:"<<mBadLB<<" ; mEmpt:"<<mEmptyLB<<" :: Board( " << bx <<";"<< by <<") ==> "<< h2->GetBinContent(bx,by) <<std::endl;
+              if ((bx == 1) || (bx == 14) || (by == 1) || (by == 33))
+                by += 3; // zones 1 board
+              else if (!((bx > 4) && (bx < 11) && (by > 12) && (by < 25)))
+                by += 1; // zones 2 boards
+            }
+          }
+        }
+      }
+    } // if mDigitTF>0
   }
   return result;
 }
@@ -188,7 +242,7 @@ static TLatex* drawLatex(double xmin, double ymin, Color_t color, TString text)
   TLatex* tl = new TLatex(xmin, ymin, Form("%s", text.Data()));
   tl->SetNDC();
   tl->SetTextFont(22); // Normal 42
-  tl->SetTextSize(0.06);
+  tl->SetTextSize(0.08);
   tl->SetTextColor(color);
 
   return tl;
@@ -203,7 +257,7 @@ void DigitsQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
   unsigned long mean = 0.;
 
   // Bend Multiplicity Histo ::
-  if (mDigitTF > 2) {
+  if (mDigitTF > 5) {
     if (mo->getName() == "MultHitMT11B") {
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
       mean = h->GetMean();
@@ -422,115 +476,164 @@ void DigitsQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       h->SetTitleSize(0.04);
       h->SetLineColor(kBlack);
     }
-  }
-  /// Display Normalization (Hz)
-  float scale = 1 / (mDigitTF * scaleTime * mOrbTF * 1000); // (kHz)
-  // std::cout << " scale = "<< scale << std::endl ;
-  int SetMaxLoc = 100;  // 100kHz Max Display
-  int SetMaxStrip = 20; // 20kHz Max Display
-  Double_t zcontoursLoc[18] = { 0, 0.05, 0.1, 0.5, 1, 5, 8, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 400 };
-  Double_t zcontoursStrip[18] = { 0, 0.02, 0.05, 0.08, 0.1, 0.3, 0.5, 0.8, 1, 3, 5, 8, 10, 12, 14, 16, 18, 20 };
-  int ncontours = 18;
 
-  /// Local Boards Display
-  if (mo->getName() == "LocalBoardsMap") {
-    auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
-    updateTitle(h2, "(kHz)");
-    h2->Scale(scale);
-    h2->SetMaximum(SetMaxLoc * 4);
-    // h2->SetContour(ncontours, zcontours);
-    // TPaletteAxis *palette = new TPaletteAxis(0.1,0.1,0.4,0.4, h2);
-    // auto palette = (TPaletteAxis*)h2->GetListOfFunctions()->FindObject("palette");
-    // palette->SetLabelColor(2);
+    /// Display Normalization (Hz)
+    Double_t zcontoursLoc[18] = { 0, 0.05, 0.1, 0.5, 1, 5, 8, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 400 };
+    Double_t zcontoursLoc4[18];
+    Double_t zcontoursStrip[18] = { 0, 0.02, 0.05, 0.08, 0.1, 0.3, 0.5, 0.8, 1, 3, 5, 8, 10, 12, 14, 16, 18, 20 };
+    for (int i = 0; i < 18; i++) {
+      zcontoursLoc[i] = zcontoursLoc[i] / 400 * mLocalBoardScale;
+      zcontoursLoc4[i] = zcontoursLoc[i] * 4;
+      zcontoursStrip[i] = zcontoursLoc[i] / 10;
+    }
+    int ncontours = 18;
+
+    /// Local Boards Display
+    float scale = 1 / (mDigitTF * scaleTime * mOrbTF * 1000); // (kHz)
+    if (mo->getName() == "LocalBoardsMap") {
+      if (mscale) {
+        auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+        // h2->GetZaxis()->SetTitleOffset(1.5);
+        // h2->GetZaxis()->SetTitleSize(0.05);
+        // h2->GetZaxis()->SetTitle("kHz");
+
+        // std::cout << " scale = "<< scale << std::endl ;
+        updateTitle(h2, "(kHz)");
+        updateTitle(h2, Form("- TF=%3.0f -", mDigitTF));
+        h2->SetMaximum(mLocalBoardScale);
+        h2->SetContour(ncontours, zcontoursLoc4);
+
+        if (mBadLB > mNbBadLocalBoard) {
+          msg = drawLatex(.12, 0.72, kRed, Form(" %d boards > %3.1f kHz", mBadLB, mLocalBoardThreshold));
+          h2->GetListOfFunctions()->Add(msg);
+          msg = drawLatex(.3, 0.32, kRed, "Quality::BAD ");
+          h2->GetListOfFunctions()->Add(msg);
+          QualLocBoards = Quality::Bad;
+        } else if (mBadLB >= 1) {
+          msg = drawLatex(.12, 0.72, kOrange, Form(" %d boards > %3.1f kHz", mBadLB, mLocalBoardThreshold));
+          h2->GetListOfFunctions()->Add(msg);
+          msg = drawLatex(.25, 0.32, kOrange, "Quality::MEDIUM ");
+          h2->GetListOfFunctions()->Add(msg);
+          QualLocBoards = Quality::Medium;
+        }
+        if (mEmptyLB > mNbEmptyLocalBoard) {
+          msg = drawLatex(.15, 0.62, kRed, Form(" %d boards empty", mEmptyLB, mLocalBoardThreshold));
+          h2->GetListOfFunctions()->Add(msg);
+          msg = drawLatex(.3, 0.32, kRed, "Quality::BAD ");
+          h2->GetListOfFunctions()->Add(msg);
+          QualLocBoards = Quality::Bad;
+        } else if (mEmptyLB >= mNbEmptyLocalBoard / 3) {
+          msg = drawLatex(.12, 0.62, kOrange, Form(" %d boards empty", mEmptyLB));
+          h2->GetListOfFunctions()->Add(msg);
+          msg = drawLatex(.25, 0.32, kOrange, "Quality::MEDIUM ");
+          h2->GetListOfFunctions()->Add(msg);
+          QualLocBoards = Quality::Medium;
+        } else if (mBadLB == 0) {
+          msg = drawLatex(.3, 0.32, kGreen, "Quality::GOOD ");
+          h2->GetListOfFunctions()->Add(msg);
+          QualLocBoards = Quality::Good;
+        }
+      }
+    }
+    if (mo->getName() == "LocalBoardsMap11") {
+      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      updateTitle(h2, "(kHz)");
+      updateTitle(h2, Form("TF= %3.0f", mDigitTF));
+      h2->Scale(scale);
+      h2->SetContour(ncontours, zcontoursLoc);
+      h2->SetMaximum(mLocalBoardScale / 4);
+    }
+    if (mo->getName() == "LocalBoardsMap12") {
+      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      updateTitle(h2, "(kHz)");
+      updateTitle(h2, Form("TF= %3.0f", mDigitTF));
+      h2->Scale(scale);
+      h2->SetContour(ncontours, zcontoursLoc);
+      h2->SetMaximum(mLocalBoardScale / 4);
+    }
+    if (mo->getName() == "LocalBoardsMap21") {
+      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      updateTitle(h2, "(kHz)");
+      updateTitle(h2, Form("TF= %3.0f", mDigitTF));
+      h2->Scale(scale);
+      h2->SetContour(ncontours, zcontoursLoc);
+      h2->SetMaximum(mLocalBoardScale / 4);
+    }
+    if (mo->getName() == "LocalBoardsMap22") {
+      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      updateTitle(h2, "(kHz)");
+      updateTitle(h2, Form("TF= %3.0f", mDigitTF));
+      h2->Scale(scale);
+      h2->SetContour(ncontours, zcontoursLoc);
+      h2->SetMaximum(mLocalBoardScale / 4);
+    }
+    /// Strips Display
+    if (mo->getName() == "BendHitsMap11") {
+      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      updateTitle(h2, "(kHz)");
+      updateTitle(h2, Form("TF= %3.0f", mDigitTF));
+      h2->Scale(scale);
+      h2->SetContour(ncontours, zcontoursStrip);
+      h2->SetMaximum(mLocalBoardScale / 20);
+    }
+    if (mo->getName() == "BendHitsMap12") {
+      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      updateTitle(h2, "(kHz)");
+      updateTitle(h2, Form("TF= %3.0f", mDigitTF));
+      h2->Scale(scale);
+      h2->SetContour(ncontours, zcontoursStrip);
+      h2->SetMaximum(mLocalBoardScale / 20);
+    }
+    if (mo->getName() == "BendHitsMap21") {
+      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      updateTitle(h2, "(kHz)");
+      updateTitle(h2, Form("TF= %3.0f", mDigitTF));
+      h2->Scale(scale);
+      h2->SetContour(ncontours, zcontoursStrip);
+      h2->SetMaximum(mLocalBoardScale / 20);
+    }
+    if (mo->getName() == "BendHitsMap22") {
+      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      updateTitle(h2, "(kHz)");
+      h2->Scale(scale);
+      h2->SetContour(ncontours, zcontoursStrip);
+      h2->SetMaximum(mLocalBoardScale / 20);
+    }
+    if (mo->getName() == "NBendHitsMap11") {
+      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      updateTitle(h2, "(kHz)");
+      updateTitle(h2, Form("TF= %3.0f", mDigitTF));
+      h2->Scale(scale);
+      h2->SetContour(ncontours, zcontoursStrip);
+      h2->SetMaximum(mLocalBoardScale / 20);
+    }
+    if (mo->getName() == "NBendHitsMap12") {
+      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      updateTitle(h2, "(kHz)");
+      updateTitle(h2, Form("TF= %3.0f", mDigitTF));
+      h2->Scale(scale);
+      h2->SetContour(ncontours, zcontoursStrip);
+      h2->SetMaximum(mLocalBoardScale / 20);
+    }
+    if (mo->getName() == "NBendHitsMap21") {
+      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      updateTitle(h2, "(kHz)");
+      h2->Scale(scale);
+      h2->SetContour(ncontours, zcontoursStrip);
+      h2->SetMaximum(mLocalBoardScale / 20);
+    }
+    if (mo->getName() == "NBendHitsMap22") {
+      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      updateTitle(h2, "(kHz)");
+      updateTitle(h2, Form("TF= %3.0f", mDigitTF));
+      h2->Scale(scale);
+      h2->SetContour(ncontours, zcontoursStrip);
+      h2->SetMaximum(mLocalBoardScale / 20);
+    }
+    gStyle->SetPalette(kRainBow);
+    auto currentTime = getCurrentTime();
+    updateTitle(dynamic_cast<TH1*>(mo->getObject()), currentTime);
   }
-  if (mo->getName() == "LocalBoardsMap11") {
-    auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
-    updateTitle(h2, "(kHz)");
-    h2->Scale(scale);
-    h2->SetContour(ncontours, zcontoursLoc);
-    h2->SetMaximum(SetMaxLoc);
-  }
-  if (mo->getName() == "LocalBoardsMap12") {
-    auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
-    updateTitle(h2, "(kHz)");
-    h2->Scale(scale);
-    h2->SetContour(ncontours, zcontoursLoc);
-    h2->SetMaximum(SetMaxLoc);
-  }
-  if (mo->getName() == "LocalBoardsMap21") {
-    auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
-    updateTitle(h2, "(kHz)");
-    h2->Scale(scale);
-    h2->SetContour(ncontours, zcontoursLoc);
-    h2->SetMaximum(SetMaxLoc);
-  }
-  if (mo->getName() == "LocalBoardsMap22") {
-    auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
-    updateTitle(h2, "(kHz)");
-    h2->Scale(scale);
-    h2->SetContour(ncontours, zcontoursLoc);
-    h2->SetMaximum(SetMaxLoc);
-  }
-  /// Strips Display
-  if (mo->getName() == "BendHitsMap11") {
-    auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
-    updateTitle(h2, "(kHz)");
-    h2->Scale(scale);
-    h2->SetContour(ncontours, zcontoursStrip);
-    h2->SetMaximum(SetMaxStrip);
-  }
-  if (mo->getName() == "BendHitsMap12") {
-    auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
-    updateTitle(h2, "(kHz)");
-    h2->Scale(scale);
-    h2->SetContour(ncontours, zcontoursStrip);
-    h2->SetMaximum(SetMaxStrip);
-  }
-  if (mo->getName() == "BendHitsMap21") {
-    auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
-    updateTitle(h2, "(kHz)");
-    h2->Scale(scale);
-    h2->SetContour(ncontours, zcontoursStrip);
-    h2->SetMaximum(SetMaxStrip);
-  }
-  if (mo->getName() == "BendHitsMap22") {
-    auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
-    updateTitle(h2, "(kHz)");
-    h2->Scale(scale);
-    h2->SetContour(ncontours, zcontoursStrip);
-    h2->SetMaximum(SetMaxStrip);
-  }
-  if (mo->getName() == "NBendHitsMap11") {
-    auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
-    updateTitle(h2, "(kHz)");
-    h2->Scale(scale);
-    h2->SetContour(ncontours, zcontoursStrip);
-    h2->SetMaximum(SetMaxStrip);
-  }
-  if (mo->getName() == "NBendHitsMap12") {
-    auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
-    updateTitle(h2, "(kHz)");
-    h2->Scale(scale);
-    h2->SetContour(ncontours, zcontoursStrip);
-    h2->SetMaximum(SetMaxStrip);
-  }
-  if (mo->getName() == "NBendHitsMap21") {
-    auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
-    updateTitle(h2, "(kHz)");
-    h2->Scale(scale);
-    h2->SetContour(ncontours, zcontoursStrip);
-    h2->SetMaximum(SetMaxStrip);
-  }
-  if (mo->getName() == "NBendHitsMap22") {
-    auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
-    updateTitle(h2, "(kHz)");
-    h2->Scale(scale);
-    h2->SetContour(ncontours, zcontoursStrip);
-    h2->SetMaximum(SetMaxStrip);
-  }
-  gStyle->SetPalette(kRainBow);
-  auto currentTime = getCurrentTime();
-  updateTitle(dynamic_cast<TH1*>(mo->getObject()), currentTime);
 }
 
 } // namespace o2::quality_control_modules::mid

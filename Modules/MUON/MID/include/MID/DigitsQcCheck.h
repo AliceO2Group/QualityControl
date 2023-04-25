@@ -45,6 +45,13 @@ class DigitsQcCheck : public o2::quality_control::checker::CheckInterface
   int mOrbTF = 32;
   // float scaleTime = 0.0114048; // 128 orb/TF * 3564 BC/orb * 25ns
   float scaleTime = 0.0000891; // 3564 BC/orb * 25ns
+  int mscale = 0;
+  int mLocalBoardScale;
+  int mNbEmptyLocalBoard;
+  float mLocalBoardThreshold;
+  int mNbBadLocalBoard;
+  int mBadLB;
+  int mEmptyLB;
 
   Quality resultBMT11 = Quality::Null;
   Quality resultBMT12 = Quality::Null;
@@ -54,6 +61,8 @@ class DigitsQcCheck : public o2::quality_control::checker::CheckInterface
   Quality resultNBMT12 = Quality::Null;
   Quality resultNBMT21 = Quality::Null;
   Quality resultNBMT22 = Quality::Null;
+
+  Quality QualLocBoards = Quality::Null;
 
   ClassDefOverride(DigitsQcCheck, 2);
 };
