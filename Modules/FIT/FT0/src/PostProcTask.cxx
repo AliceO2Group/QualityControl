@@ -354,7 +354,6 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
   auto moChIDvsBC = mDatabase->retrieveMO(mPathDigitQcTask, "ChannelIDperBC", t.timestamp, t.activity);
   auto hChIDvsBC = moChIDvsBC ? dynamic_cast<TH2F*>(moChIDvsBC->getObject()) : nullptr;
   if (hChIDvsBC != nullptr && lhcIf != nullptr) {
-    const auto mapTrainBC = helper::getMapBCtrains(bcPattern.getBCPattern());
     auto hChID_InBC = std::make_unique<TH1D>("hChID_InBC", "hChID_InBC", hChIDvsBC->GetYaxis()->GetNbins(), 0, hChIDvsBC->GetYaxis()->GetNbins());
     auto hChID_OutOfBC = std::make_unique<TH1D>("hChID_OutOfBC", "hChID_OutOfBC", hChIDvsBC->GetYaxis()->GetNbins(), 0, hChIDvsBC->GetYaxis()->GetNbins());
     if (mAsynchChannelLogic == std::string{ "standard" }) {
