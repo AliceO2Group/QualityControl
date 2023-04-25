@@ -92,7 +92,7 @@ class DigitsTask final : public TaskInterface
   std::shared_ptr<TH1F> mClsChargeTbCycle;
   std::shared_ptr<TH1F> mClsNTb;
   std::shared_ptr<TH1F> mClsAmp;
-  std::shared_ptr<TH1F> mNClsAmp;
+  std::shared_ptr<TH1F> mTotNClsLayer;
   std::shared_ptr<TH1F> mClsAmpDrift;
   std::shared_ptr<TH1F> mClsAmpTb;
   std::shared_ptr<TH1F> mClsAmpCh;

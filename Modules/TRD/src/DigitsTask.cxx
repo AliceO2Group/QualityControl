@@ -367,8 +367,8 @@ void DigitsTask::buildHistograms()
   mNCls.get()->Draw();
 
   _cCluster_1->cd(2);
-  mNClsAmp.reset(new TH1F("Cluster/NClsAmp", "Total number of clusters per sector;Sector;Counts", 200, -0.5, 199.5));
-  mNClsAmp.get()->Draw();
+  mTotNClsLayer.reset(new TH1F("Cluster/TotNClsLayer", "Total number of clusters per layer;Layer;Counts", 12, -0.5, 5.5));
+  mTotNClsLayer.get()->Draw();
 
   mClsTb.reset(new TH2F("Cluster/ClsTb", "Cluster  vs. timebin;Timebin;Cluster", 30, -0.5, 29.5, 200, 0, 2000));
   mClsTb->GetXaxis()->SetTitle("Timebin");
@@ -743,6 +743,7 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
                   continue;
 
                 mNCls->Fill(sm);
+		mTotNClsLayer->Fill(layer);
                 mClsSM[sm]->Fill(sum);
                 mClsTbSM[sm]->Fill(time, sum);
                 mClsTb->Fill(time, sum);
@@ -886,7 +887,7 @@ void DigitsTask::reset()
   mClsChargeTb.get()->Reset();
   mClsNTb.get()->Reset();
   mClsAmp.get()->Reset();
-  mNClsAmp.get()->Reset();
+  mTotNClsLayer.get()->Reset();
   mClsAmpDrift.get()->Reset();
   mClsAmpTb.get()->Reset();
   mClsAmpCh.get()->Reset();
