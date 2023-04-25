@@ -743,7 +743,7 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
                   continue;
 
                 mNCls->Fill(sm);
-		mTotNClsLayer->Fill(layer);
+                mTotNClsLayer->Fill(layer);
                 mClsSM[sm]->Fill(sum);
                 mClsTbSM[sm]->Fill(time, sum);
                 mClsTb->Fill(time, sum);
