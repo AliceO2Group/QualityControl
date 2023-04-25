@@ -23,8 +23,9 @@
       }
     },
     "postprocessing": {
-      "TestTrendingTask": {
+      "TSTTrendingTask": {
         "active": "true",
+        "taskName": "TestTrendingTask",
         "className": "o2::quality_control::postprocessing::TrendingTask",
         "moduleName": "QualityControl",
         "detectorName": "TST",
