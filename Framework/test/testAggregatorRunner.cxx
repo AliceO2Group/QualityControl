@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE(test_aggregator_runner)
     { "qcConfiguration", VariantType::Dict, emptyDict(), { "Some dictionary configuration" } }
   };
   std::vector<std::unique_ptr<ParamRetriever>> retr;
-  std::unique_ptr<ConfigParamStore> store = make_unique<ConfigParamStore>(move(options), move(retr));
+  std::unique_ptr<ConfigParamStore> store = make_unique<ConfigParamStore>(std::move(options), std::move(retr));
   ConfigParamRegistry cfReg(std::move(store));
   ServiceRegistry sReg;
   InitContext initContext{ cfReg, sReg };

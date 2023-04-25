@@ -41,7 +41,7 @@ o2::framework::ConfigParamRegistry createDummyRegistry()
 {
   using namespace o2::framework;
   std::unique_ptr<ParamRetriever> retriever;
-  ConfigParamRegistry registry(move(retriever));
+  ConfigParamRegistry registry(std::move(retriever));
 
   return registry;
 }
