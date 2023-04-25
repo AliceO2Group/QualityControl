@@ -32,6 +32,7 @@
 #include <Framework/DataRefUtils.h>
 #include <DPLUtils/DPLRawParser.h>
 #include <DetectorsRaw/RDHUtils.h>
+#include <FOCALCalib/PadBadChannelMap.h>
 #include <FOCALCalib/PadPedestal.h>
 #include <Headers/DataHeader.h>
 #include <Headers/RDHAny.h>
@@ -139,6 +140,10 @@ void TestbeamRawTask::initialize(o2::framework::InitContext& /*ctx*/)
   if (hasPadPedestalSubtraction != mCustomParameters.end()) {
     mEnablePedestalSubtraction = get_bool(hasPadPedestalSubtraction->second);
   }
+  auto hasPadBadChannelMap = mCustomParameters.find("PadBadChannelMasking");
+  if (hasPadBadChannelMap != mCustomParameters.end()) {
+    mEnableBadChannelMask = get_bool(hasPadBadChannelMap->second);
+  }
 
   mChannelsPadProjections = { 52, 16, 19, 46, 59, 14, 42 };
   if (!mDisablePads) {
@@ -203,6 +208,15 @@ void TestbeamRawTask::initialize(o2::framework::InitContext& /*ctx*/)
     }
     mPixelMapper = std::make_unique<o2::focal::PixelMapper>(mappingtype);
   }
+
+  /////////////////////////////////////////////////////////////////
+  /// general histograms
+  /////////////////////////////////////////////////////////////////
+  mTFerrorCounter = new TH1F("NumberOfTFerror", "Number of TFbuilder errors", 2, 0.5, 2.5);
+  mTFerrorCounter->GetYaxis()->SetTitle("Time Frame Builder Error");
+  mTFerrorCounter->GetXaxis()->SetBinLabel(1, "empty");
+  mTFerrorCounter->GetXaxis()->SetBinLabel(2, "filled");
+  getObjectsManager()->startPublishing(mTFerrorCounter);
 
   /////////////////////////////////////////////////////////////////
   /// PAD histograms
@@ -318,6 +332,14 @@ void TestbeamRawTask::startOfActivity(Activity& activity)
       ILOG(Error, Support) << "No pedestal data found - pedestal subtraction not possible" << ENDM;
     }
   }
+  if (mEnableBadChannelMask) {
+    mPadBadChannelMap = retrieveConditionAny<o2::focal::PadBadChannelMap>("FOC/Calib/PadBadChannelMap", metadata);
+    if (mPadPedestalHandler) {
+      ILOG(Info, Support) << "Bad channel map for pads found - bad pad channels will be masked" << ENDM;
+    } else {
+      ILOG(Error, Support) << "No bad channel map found for pads - bad channel mask cannot be applied" << ENDM;
+    }
+  }
 }
 
 void TestbeamRawTask::startOfCycle()
@@ -333,6 +355,13 @@ void TestbeamRawTask::monitorData(o2::framework::ProcessingContext& ctx)
   for (auto& hitcounterLayer : mPixelNHitsLayer) {
     hitcounterLayer.clear();
   }
+
+  if (isLostTimeframe(ctx)) {
+    mTFerrorCounter->Fill(1);
+    return;
+  }
+  mTFerrorCounter->Fill(2);
+
   int inputs = 0;
   std::vector<char> rawbuffer;
   uint16_t currentfee = 0;
@@ -441,6 +470,17 @@ void TestbeamRawTask::processPadEvent(gsl::span<const o2::focal::PadGBTWord> pad
     ILOG(Debug, Support) << "ASIC " << iasic << ", Header 1: " << asic.getSecondHeader() << ENDM;
     int currentchannel = 0;
     for (const auto& chan : asic.getChannels()) {
+      bool skipChannel = false;
+      if (mPadBadChannelMap) {
+        try {
+          skipChannel = (mPadBadChannelMap->getChannelStatus(iasic, currentchannel) != o2::focal::PadBadChannelMap::MaskType_t::GOOD_CHANNEL);
+        } catch (o2::focal::PadBadChannelMap::ChannelIndexException& e) {
+          ILOG(Error, Support) << "Error accessing channel status: " << e.what() << ENDM;
+        }
+      }
+      if (skipChannel) {
+        continue;
+      }
       if (chan.getTOT() < mPadTOTCutADC) {
         double adc = chan.getADC(); // must be converted to floating point number for pedestal subtraction
         if (mPadPedestalHandler && iasic < 18) {
@@ -453,11 +493,7 @@ void TestbeamRawTask::processPadEvent(gsl::span<const o2::focal::PadGBTWord> pad
         }
         mPadASICChannelADC[iasic]->Fill(currentchannel, adc);
         auto [column, row] = mPadMapper.getRowColFromChannelID(currentchannel);
-        // temporary mask channel col 7 row 8 in ASIC 0
-        auto mask = (iasic == 0) && ((column == 7) && (row == 8));
-        if (!mask) {
-          mHitMapPadASIC[iasic]->Fill(column, row, adc);
-        }
+        mHitMapPadASIC[iasic]->Fill(column, row, adc);
       }
       mPadASICChannelTOA[iasic]->Fill(currentchannel, chan.getTOA());
       if (chan.getTOT()) {
@@ -762,6 +798,49 @@ void TestbeamRawTask::PadChannelProjections::reset()
   for (auto& [chan, hist] : mHistos) {
     hist->Reset();
   }
+}
+
+bool TestbeamRawTask::isLostTimeframe(framework::ProcessingContext& ctx) const
+{
+  // direct data
+  constexpr auto originFOC = header::gDataOriginFOC;
+  o2::framework::InputSpec dummy{ "dummy",
+                                  framework::ConcreteDataMatcher{ originFOC,
+                                                                  header::gDataDescriptionRawData,
+                                                                  0xDEADBEEF } };
+  for (const auto& ref : o2::framework::InputRecordWalker(ctx.inputs(), { dummy })) {
+    // auto posReadout = ctx.inputs().getPos("readout");
+    // auto nslots = ctx.inputs().getNofParts(posReadout);
+    // for (decltype(nslots) islot = 0; islot < nslots; islot++) {
+    //   const auto& ref = ctx.inputs().getByPos(posReadout, islot);
+    const auto dh = o2::framework::DataRefUtils::getHeader<o2::header::DataHeader*>(ref);
+    const auto payloadSize = o2::framework::DataRefUtils::getPayloadSize(ref);
+    // if (dh->subSpecification == 0xDEADBEEF) {
+    if (payloadSize == 0) {
+      return true;
+      //  }
+    }
+  }
+  // sampled data
+  o2::framework::InputSpec dummyDS{ "dummyDS",
+                                    framework::ConcreteDataMatcher{ "DS",
+                                                                    "focrawdata0",
+                                                                    0xDEADBEEF } };
+  for (const auto& ref : o2::framework::InputRecordWalker(ctx.inputs(), { dummyDS })) {
+    // auto posReadout = ctx.inputs().getPos("readout");
+    // auto nslots = ctx.inputs().getNofParts(posReadout);
+    // for (decltype(nslots) islot = 0; islot < nslots; islot++) {
+    //   const auto& ref = ctx.inputs().getByPos(posReadout, islot);
+    const auto dh = o2::framework::DataRefUtils::getHeader<o2::header::DataHeader*>(ref);
+    const auto payloadSize = o2::framework::DataRefUtils::getPayloadSize(ref);
+    // if (dh->subSpecification == 0xDEADBEEF) {
+    if (payloadSize == 0) {
+      return true;
+      //  }
+    }
+  }
+
+  return false;
 }
 
 } // namespace o2::quality_control_modules::focal
