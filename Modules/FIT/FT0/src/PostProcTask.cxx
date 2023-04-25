@@ -371,8 +371,8 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
         hChID_OutOfBC->Fill(iChID, cntOutOfBC);
       }
     } else if (mAsynchChannelLogic == std::string{ "normalizedTrains" }) {
+      const auto mapTrainBC = helper::getMapBCtrains(bcPattern.getBCPattern());
       for (int iChID = 0; iChID < hChIDvsBC->GetYaxis()->GetNbins(); iChID++) {
-        const auto mapTrainBC = helper::getMapBCtrains(bcPattern.getBCPattern());
         double cntOutOfBC{ 0 };
         double cntInBC{ 0 };
         for (const auto& train : mapTrainBC) {
