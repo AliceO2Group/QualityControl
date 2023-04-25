@@ -27,6 +27,7 @@
 #include <TLine.h>
 #include <TList.h>
 
+#include <map>
 #include <DataFormatsQualityControl/FlagReasons.h>
 
 using namespace std;
@@ -63,8 +64,8 @@ Quality BcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* mo
 {
   Quality result = Quality::Null;
   int mNumErrors = 0;
-  bool metadataFound = false;
-  const std::string metadataKey = "BcVsTrgIntegralBin";
+  std::map<std::string, int> bcPatternMap;
+  std::vector<int> bcPatternVec;
 
   for (auto& [moName, mo] : *moMap) {
     (void)moName;
@@ -78,12 +79,11 @@ Quality BcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* mo
         return result;
       }
 
-      // TO DO Recive bcPattern from hists metadata
-      float metadata_info = 0;
+      // Recive bcPattern from hists metadata
       for (auto metainfo : mo->getMetadataMap()) {
-        if (metainfo.first == metadataKey) {
-          metadata_info = std::stof(metainfo.second);
-          metadataFound = true;
+        if (metainfo.first.find("Bc")) {
+          // bcPatternMap.emplace(metainfo.first, std::stoi(metainfo.second));
+          bcPatternVec[](std::stoi(metainfo.second));
         }
       }
     }

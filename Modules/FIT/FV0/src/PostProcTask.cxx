@@ -351,6 +351,7 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
   // TO DO download BC hists and add to their metadata bcPattern
   auto moBcVsFeeModules = mDatabase->retrieveMO(mPathDigitQcTask, "BCvsFEEmodules", t.timestamp, t.activity);
   auto hBcVsFeeModules = moBcVsFeeModules ? dynamic_cast<TH2F*>(moBcVsFeeModules->getObject()) : nullptr;
+  auto hBcVsFeeModulesOutOfBunch = hBcVsFeeModules;
   if (!hBcVsFeeModules) {
     ILOG(Error, Support) << "MO \"BCvsTriggers\" NOT retrieved!!!" << ENDM;
     return;
@@ -358,6 +359,7 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
 
   auto moBCvsTriggers = mDatabase->retrieveMO(mPathDigitQcTask, "BCvsTriggers", t.timestamp, t.activity);
   auto hBcVsTrg = moBCvsTriggers ? dynamic_cast<TH2F*>(moBCvsTriggers->getObject()) : nullptr;
+  auto hBcVsTrgOutOfBanch = hBcVsTrg;
   if (!hBcVsTrg) {
     ILOG(Error, Support) << "MO \"BCvsTriggers\" NOT retrieved!!!" << ENDM;
     return;
@@ -419,14 +421,24 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
     getObjectsManager()->getMonitorObject(hBcVsFeeModules->GetName())->addOrUpdateMetadata(metadataKey, metadataValue);
     getObjectsManager()->getMonitorObject(hBcVsTrg->GetName())->addOrUpdateMetadata(metadataKey, metadataValue);
   }
+  hBcVsFeeModulesOutOfBunch->Reset();
+  float vmax = hBcVsFeeModules->GetBinContent(hBcVsFeeModules->GetMaximumBin());
+  hBcVsFeeModulesOutOfBunch->Add(hBcVsFeeModules, mHistBcPattern.get(), 1, -1 * vmax);
+  for (int i = 0; i < sBCperOrbit + 1; i++) {
+    for (int j = 0; j < mMapDigitTrgNames.size() + 1; j++) {
+      if (hBcVsFeeModulesOutOfBunch->GetBinContent(i + 1, j + 1) < 0) {
+        hBcVsFeeModulesOutOfBunch->SetBinContent(i + 1, j + 1, 0);
+      }
+    }
+  }
 
   mHistBcTrgOutOfBunchColl->Reset();
-  float vmax = hBcVsTrg->GetBinContent(hBcVsTrg->GetMaximumBin());
+  vmax = hBcVsTrg->GetBinContent(hBcVsTrg->GetMaximumBin());
   mHistBcTrgOutOfBunchColl->Add(hBcVsTrg, mHistBcPattern.get(), 1, -1 * vmax);
   for (int i = 0; i < sBCperOrbit + 1; i++) {
     for (int j = 0; j < mMapDigitTrgNames.size() + 1; j++) {
       if (mHistBcTrgOutOfBunchColl->GetBinContent(i + 1, j + 1) < 0) {
-        mHistBcTrgOutOfBunchColl->SetBinContent(i + 1, j + 1, 0); // is it too slow?
+        mHistBcTrgOutOfBunchColl->SetBinContent(i + 1, j + 1, 0);
       }
     }
   }
