@@ -25,7 +25,7 @@
 #include <TCanvas.h>
 #include <TPaveText.h>
 #include <TMath.h>
-// #include <TLine.h>
+#include <TLine.h>
 #include <TList.h>
 
 #include <DataFormatsQualityControl/FlagReasons.h>
@@ -66,6 +66,8 @@ SingleCheck GenericCheck::getCheckFromConfig(std::string paramName)
 
 void GenericCheck::configure()
 {
+  mCheckMaxThresholdY = getCheckFromConfig("MaxThresholdY");
+  mCheckMinThresholdY = getCheckFromConfig("MinThresholdY");
 
   mCheckMaxOverflowIntegralRatio = getCheckFromConfig("MaxOverflowIntegralRatio");
 
@@ -118,6 +120,7 @@ Quality GenericCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
       ILOG(Error, Support) << "MO " << moName << " not found" << ENDM;
       continue;
     }
+
     if (std::strcmp(mo->getObject()->ClassName(), "TCanvas") == 0) {
       auto g = (TGraph*)((TCanvas*)mo->getObject())->GetListOfPrimitives()->FindObject(mNameObjOnCanvas.c_str());
 
@@ -152,6 +155,24 @@ Quality GenericCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
         result.set(Quality::Null);
         ILOG(Error, Support) << "Object inside MO " << moName << " not found" << ENDM;
         continue;
+      }
+
+      if (mCheckMinThresholdY.isActive()) {
+        int numberOfBinsX = h->GetNbinsX();
+        float minValue = h->GetBinContent(1);
+        for (int channel = 1; channel < numberOfBinsX; ++channel) {
+          if (minValue > h->GetBinContent(channel)) {
+            minValue = h->GetBinContent(channel);
+            mCheckMinThresholdY.mBinNumberX = channel;
+          }
+        }
+        mCheckMinThresholdY.doCheck(result, minValue);
+      }
+
+      if (mCheckMaxThresholdY.isActive()) {
+        mCheckMaxThresholdY.mBinNumberX = h->GetMaximumBin();
+        float maxValue = h->GetBinContent(mCheckMaxThresholdY.mBinNumberX);
+        mCheckMaxThresholdY.doCheck(result, maxValue);
       }
 
       if (mCheckMinMeanX.isActive())
@@ -218,6 +239,22 @@ void GenericCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResu
       return;
     }
     h->GetListOfFunctions()->Add(msg);
+
+    // add threshold lines
+    if (mCheckMinThresholdY.isActive()) {
+      Double_t xMin = h->GetXaxis()->GetXmin();
+      Double_t xMax = h->GetXaxis()->GetXmax();
+      auto* lineMinError = new TLine(xMin, mCheckMinThresholdY.getThresholdError(), xMax, mCheckMinThresholdY.getThresholdError());
+      auto* lineMinWarning = new TLine(xMin, mCheckMinThresholdY.getThresholdWarning(), xMax, mCheckMinThresholdY.getThresholdWarning());
+      lineMinError->SetLineWidth(3);
+      lineMinWarning->SetLineWidth(3);
+      lineMinError->SetLineStyle(kDashed);
+      lineMinWarning->SetLineStyle(kDashed);
+      lineMinError->SetLineColor(kRed);
+      lineMinWarning->SetLineColor(kOrange);
+      h->GetListOfFunctions()->Add(lineMinError);
+      h->GetListOfFunctions()->Add(lineMinWarning);
+    }
   }
 
   msg->SetName(Form("%s_msg", mo->GetName()));

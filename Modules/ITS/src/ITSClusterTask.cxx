@@ -146,11 +146,11 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
   if (mTimestamp == -1) { // get dict from ccdb
     mTimestamp = std::stol(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "dicttimestamp", "0"));
     long int ts = mTimestamp ? mTimestamp : ctx.services().get<o2::framework::TimingInfo>().creation;
-    ILOG(Info, Support) << "Getting dictionary from ccdb - timestamp: " << ts << ENDM;
+    ILOG(Debug, Devel) << "Getting dictionary from ccdb - timestamp: " << ts << ENDM;
     auto& mgr = o2::ccdb::BasicCCDBManager::instance();
     mgr.setTimestamp(ts);
     mDict = mgr.get<o2::itsmft::TopologyDictionary>("ITS/Calib/ClusterDictionary");
-    ILOG(Info, Support) << "Dictionary size: " << mDict->getSize() << ENDM;
+    ILOG(Debug, Devel) << "Dictionary size: " << mDict->getSize() << ENDM;
   }
 
   std::chrono::time_point<std::chrono::high_resolution_clock> start;
@@ -158,7 +158,7 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
   int difference;
   start = std::chrono::high_resolution_clock::now();
 
-  ILOG(Info, Support) << "START DOING QC General" << ENDM;
+  ILOG(Debug, Devel) << "START DOING QC General" << ENDM;
   auto clusArr = ctx.inputs().get<gsl::span<o2::itsmft::CompClusterExt>>("compclus");
   auto clusRofArr = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("clustersrof");
   auto clusPatternArr = ctx.inputs().get<gsl::span<unsigned char>>("patterns");
@@ -329,7 +329,7 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   end = std::chrono::high_resolution_clock::now();
   difference = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-  ILOG(Info, Support) << "Time in QC Cluster Task:  " << difference << ENDM;
+  ILOG(Debug, Devel) << "Time in QC Cluster Task:  " << difference << ENDM;
 }
 
 void ITSClusterTask::endOfCycle()
@@ -580,7 +580,7 @@ void ITSClusterTask::getJsonParameters()
   for (int ilayer = 0; ilayer < NLayer; ilayer++) {
     if (LayerConfig[ilayer] != '0') {
       mEnableLayers[ilayer] = 1;
-      ILOG(Info, Support) << "enable layer : " << ilayer << ENDM;
+      ILOG(Debug, Devel) << "enable layer : " << ilayer << ENDM;
     } else {
       mEnableLayers[ilayer] = 0;
     }
@@ -590,7 +590,7 @@ void ITSClusterTask::getJsonParameters()
 void ITSClusterTask::addObject(TObject* aObject)
 {
   if (!aObject) {
-    ILOG(Info, Support) << " ERROR: trying to add non-existent object " << ENDM;
+    ILOG(Debug, Devel) << " ERROR: trying to add non-existent object " << ENDM;
     return;
   } else
     mPublishedObjects.push_back(aObject);

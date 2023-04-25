@@ -464,10 +464,7 @@ void ClusterTask::analyseTimeframe(const gsl::span<const o2::emcal::Cell>& cells
     }
 
     mClusterFactory->reset();
-    mClusterFactory->setClustersContainer(inputEvent.mClusters);
-    mClusterFactory->setCellsContainer(inputEvent.mCells);
-    mClusterFactory->setCellsIndicesContainer(inputEvent.mCellIndices);
-    mClusterFactory->setLookUpTable();
+    mClusterFactory->setContainer(inputEvent.mClusters, inputEvent.mCells, inputEvent.mCellIndices);
     std::fill(numberOfClustersSupermodule.begin(), numberOfClustersSupermodule.end(), 0);
     std::for_each(maxClusterSupermodule.begin(), maxClusterSupermodule.end(), resetMaxCluster);
     std::for_each(maxClusterDets.begin(), maxClusterDets.end(), resetMaxCluster);
@@ -707,7 +704,7 @@ void ClusterTask::findClustersInternal(const gsl::span<const o2::emcal::Cell>& c
         // vector to the first N cells. Also the cell index in
         // the cluster won't be disturbed.
         int rangeFECCells = -1, currentIndex = 0;
-        for (const auto& cell : cells) {
+        for (const auto& cell : cellsEvent) {
           if (cell.getLEDMon()) {
             rangeFECCells = currentIndex;
             break;

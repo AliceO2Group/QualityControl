@@ -61,9 +61,9 @@ class PostProcTask final : public quality_control::postprocessing::PostProcessin
   int mNumOrbitsInTF;
   const unsigned int mNumTriggers = 5;
 
-  std::map<o2::ft0::ChannelData::EEventDataBit, std::string> mMapChTrgNames;
-  std::map<int, std::string> mMapDigitTrgNames;
-
+  std::map<unsigned int, std::string> mMapChTrgNames;
+  std::map<unsigned int, std::string> mMapDigitTrgNames;
+  std::map<unsigned int, std::string> mMapBasicTrgBits;
   o2::quality_control::repository::DatabaseInterface* mDatabase = nullptr;
   o2::ccdb::CcdbApi mCcdbApi;
 
@@ -75,13 +75,14 @@ class PostProcTask final : public quality_control::postprocessing::PostProcessin
   std::unique_ptr<TH2F> mHistChDataNegBits;
   std::unique_ptr<TH1F> mHistTriggers;
 
-  std::unique_ptr<TH1F> mHistTimeUpperFraction;
-  std::unique_ptr<TH1F> mHistTimeLowerFraction;
   std::unique_ptr<TH1F> mHistTimeInWindow;
 
+  std::unique_ptr<TH1F> mHistChannelID_outOfBC;
+  std::unique_ptr<TH1F> mHistTrgValidation;
+
   std::unique_ptr<TCanvas> mRatesCanv;
-  TProfile* mAmpl = nullptr;
-  TProfile* mTime = nullptr;
+  TProfile* mAmpl;
+  TProfile* mTime;
 
   // if storage size matters it can be replaced with TH1
   // and TH2 can be created based on it on the fly, but only TH1 would be stored
@@ -89,6 +90,9 @@ class PostProcTask final : public quality_control::postprocessing::PostProcessin
   std::unique_ptr<TH2F> mHistBcTrgOutOfBunchColl;
 
   std::map<unsigned int, TH1D*> mMapTrgHistBC;
+  int mLowTimeThreshold{ -192 };
+  int mUpTimeThreshold{ 192 };
+  std::string mAsynchChannelLogic{ "standard" };
 };
 
 } // namespace o2::quality_control_modules::ft0

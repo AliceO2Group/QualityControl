@@ -82,7 +82,7 @@ Quality ITSClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
           if (hp->GetBinContent(ix, iy) < 1e-15) {
             result.updateMetadata(Form("Layer%d%s_empty", ilayer, tb.c_str()), "bad");
             result.set(Quality::Bad);
-            LOG(info) << "************************ " << Form("Layer%d%s_empty", ilayer, tb.c_str());
+            ILOG(Debug, Devel) << "************************ " << Form("Layer%d%s_empty", ilayer, tb.c_str()) << ENDM;
           }
         }
         int stop = (iy == 2 || iy == 13) ? 13 + mNStaves[ilayer] / 4 + 1 : 13 + mNStaves[ilayer] / 4; // for L5

@@ -38,6 +38,7 @@ class SingleCheck
     mThresholdError = thresholdError;
     mShouldBeLower = shouldBeLower;
     mIsActive = isActive;
+    mBinNumberX = 0;
   };
   bool isActive() { return mIsActive; };
 
@@ -47,16 +48,17 @@ class SingleCheck
       return;
 
     std::string log = Form("%s : comparing  value = %f with thresholds = %f, %f", mCheckName.c_str(), checkedValue, mThresholdWarning, mThresholdError);
+    std::string reason;
     if (mShouldBeLower) {
       if (checkedValue > mThresholdError) {
         if (result.isBetterThan(Quality::Bad))
           result.set(Quality::Bad);
-        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("%.3f > %.3f (%s error limit)", checkedValue, mThresholdError, mCheckName.c_str()));
+        reason = Form("%.3f > %.3f (%s error limit)", checkedValue, mThresholdError, mCheckName.c_str());
         log += "-> Bad";
       } else if (checkedValue > mThresholdWarning) {
         if (result.isBetterThan(Quality::Medium))
           result.set(Quality::Medium);
-        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("%.3f > %.3f (%s warning limit)", checkedValue, mThresholdWarning, mCheckName.c_str()));
+        reason = Form("%.3f > %.3f (%s warning limit)", checkedValue, mThresholdWarning, mCheckName.c_str());
         log += "-> Medium";
       } else {
         log += "-> OK";
@@ -65,19 +67,40 @@ class SingleCheck
       if (checkedValue < mThresholdError) {
         if (result.isBetterThan(Quality::Bad))
           result.set(Quality::Bad);
-        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("%.3f < %.3f (%s error limit)", checkedValue, mThresholdError, mCheckName.c_str()));
+        reason = Form("%.3f < %.3f (%s error limit)", checkedValue, mThresholdError, mCheckName.c_str());
         log += "-> Bad";
       } else if (checkedValue < mThresholdWarning) {
         if (result.isBetterThan(Quality::Medium))
           result.set(Quality::Medium);
-        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("%.3f < %.3f (%s warning limit)", checkedValue, mThresholdWarning, mCheckName.c_str()));
+        reason = Form("%.3f < %.3f (%s warning limit)", checkedValue, mThresholdWarning, mCheckName.c_str());
         log += "-> Medium";
       } else {
         log += "-> OK";
       }
     }
+
+    if (reason.length()) {
+      if (mBinNumberX) {
+        reason += Form(" for channel %d", mBinNumberX);
+      }
+      result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), reason);
+    }
+
     ILOG(Debug, Support) << log << ENDM;
   }
+
+  float getThresholdWarning()
+  {
+    return mThresholdWarning;
+  }
+
+  float getThresholdError()
+  {
+    return mThresholdError;
+  }
+
+ public:
+  int mBinNumberX;
 
  private:
   std::string mCheckName;
@@ -107,6 +130,9 @@ class GenericCheck : public o2::quality_control::checker::CheckInterface
 
  private:
   SingleCheck getCheckFromConfig(std::string);
+
+  SingleCheck mCheckMaxThresholdY;
+  SingleCheck mCheckMinThresholdY;
 
   SingleCheck mCheckMaxOverflowIntegralRatio;
 

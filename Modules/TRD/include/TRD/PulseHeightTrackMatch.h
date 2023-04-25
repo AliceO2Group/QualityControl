@@ -69,6 +69,9 @@ class PulseHeightTrackMatch final : public TaskInterface
   std::shared_ptr<TH1F> mParsingTimePerTF;
   std::shared_ptr<TH1F> mTracksPerEvent;
   std::shared_ptr<TH1F> mTrackletsPerMatchedTrack;
+  std::shared_ptr<TH1F> mDebugCounter;
+  std::shared_ptr<TH1F> mTriggerMatches;
+  std::shared_ptr<TH1F> mTriggerRecordsMatchesDigits;
   std::shared_ptr<TProfile> mPulseHeightpro = nullptr;
   std::shared_ptr<TProfile2D> mPulseHeightperchamber = nullptr;
   // information pulled from ccdb

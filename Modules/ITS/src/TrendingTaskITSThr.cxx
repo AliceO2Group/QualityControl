@@ -77,7 +77,7 @@ void TrendingTaskITSThr::finalize(Trigger t, framework::ServiceRegistryRef servi
 
 void TrendingTaskITSThr::storeTrend(repository::DatabaseInterface& qcdb)
 {
-  ILOG(Info, Support) << "Storing the trend, entries: " << mTrend->GetEntries() << ENDM;
+  ILOG(Debug, Devel) << "Storing the trend, entries: " << mTrend->GetEntries() << ENDM;
 
   auto mo = std::make_shared<core::MonitorObject>(mTrend.get(), getName(),
                                                   mConfig.className,
@@ -129,7 +129,6 @@ void TrendingTaskITSThr::trendValues(const Trigger& t, repository::DatabaseInter
 }
 void TrendingTaskITSThr::storePlots(repository::DatabaseInterface& qcdb)
 {
-  ILOG(Info, Support) << "Generating " << mConfig.plots.size() << " plots." << ENDM;
   //
   // Create canvas with multiple trends - average threshold - 1 canvas per layer
   //
@@ -206,8 +205,8 @@ void TrendingTaskITSThr::storePlots(repository::DatabaseInterface& qcdb)
         hfake->Draw();
         gTrends_all[ilay * NTRENDSTHR + id]->Draw();
         legstaves[ilay]->Draw();
-        ILOG(Info, Support) << " Saving canvas for layer " << ilay << " to CCDB "
-                            << ENDM;
+        ILOG(Debug, Devel) << " Saving canvas for layer " << ilay << " to CCDB "
+                           << ENDM;
         auto mo = std::make_shared<MonitorObject>(c[ilay * NTRENDSTHR + id], mConfig.taskName, "o2::quality_control_modules::its::TrendingTaskITSThr",
                                                   mConfig.detectorName);
         mo->setIsOwner(false);

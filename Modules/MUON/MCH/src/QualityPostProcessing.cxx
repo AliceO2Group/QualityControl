@@ -128,7 +128,7 @@ void QualityPostProcessing::update(Trigger t, framework::ServiceRegistryRef serv
   mCheckerMessages.insert(mCheckerMessages.begin(), "");
   if (mchQuality == Quality::Good) {
     if (!mMessageGood.empty()) {
-      mCheckerMessages.insert(mCheckerMessages.begin(), fmt::format("#color[{}]", kRed) + "{" + mMessageGood + "}");
+      mCheckerMessages.insert(mCheckerMessages.begin(), fmt::format("#color[{}]", kGreen + 2) + "{" + mMessageGood + "}");
     }
     mCheckerMessages.insert(mCheckerMessages.begin(), fmt::format("MCH Quality = #color[{}]", kGreen + 2) + "{Good}");
   } else if (mchQuality == Quality::Medium) {

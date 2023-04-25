@@ -103,10 +103,10 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
     // Adding summary Plots Checks (General)
     if (mo->getName() == "LaneStatusSummary/LaneStatusSummaryGlobal") {
       result = Quality::Good;
-      auto* h = dynamic_cast<TH1I*>(mo->getObject());
+      auto* h = dynamic_cast<TH1D*>(mo->getObject());
       result.addMetadata("SummaryGlobal", "good");
       maxfractionbadlanes = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "maxfractionbadlanes", maxfractionbadlanes);
-      if (h->GetBinContent(1) + h->GetBinContent(2) + h->GetBinContent(3) > maxfractionbadlanes * 3816) {
+      if (h->GetBinContent(1) + h->GetBinContent(2) + h->GetBinContent(3) > maxfractionbadlanes) {
         result.updateMetadata("SummaryGlobal", "bad");
         result.set(Quality::Bad);
       }
@@ -271,7 +271,7 @@ void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
     }
   } // end flags
   if (mo->getName() == "LaneStatusSummary/LaneStatusSummaryGlobal") {
-    auto* h = dynamic_cast<TH1I*>(mo->getObject());
+    auto* h = dynamic_cast<TH1D*>(mo->getObject());
     if (checkResult == Quality::Good) {
       status = "Quality::GOOD";
       textColor = kGreen;
@@ -322,7 +322,7 @@ void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
       status = "Quality::BAD (call expert)";
       textColor = kRed;
       for (int itrg = 1; itrg <= h->GetNbinsY(); itrg++) {
-        LOG(info) << checkResult.getMetadata(h->GetYaxis()->GetBinLabel(itrg)).c_str();
+        ILOG(Debug, Devel) << checkResult.getMetadata(h->GetYaxis()->GetBinLabel(itrg)).c_str() << ENDM;
         if (strcmp(checkResult.getMetadata(h->GetYaxis()->GetBinLabel(itrg)).c_str(), "bad") == 0) {
           std::string extraText = (!strcmp(h->GetYaxis()->GetBinLabel(itrg), "PHYSICS")) ? "(OK if it's COSMICS/SYNTHETIC)" : "";
           tInfoTrg[itrg - 1] = std::make_shared<TLatex>(0.3, 0.1 + 0.05 * (itrg - 1), Form("Trigger flag %s of bad quality %s", h->GetYaxis()->GetBinLabel(itrg), extraText.c_str()));

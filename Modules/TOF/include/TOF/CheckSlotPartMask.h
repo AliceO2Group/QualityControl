@@ -41,8 +41,14 @@ class CheckSlotPartMask : public o2::quality_control::checker::CheckInterface
  private:
   // Threshold number of crates missing
   int mNCrates = 36;
+  // Threshold number of inefficient links
+  int mNCrateIneff = 36;
+  // Fraction of entries w.r.t. mean of all crates to decide if a link is inefficient
+  double mIneffThreshold = 0.8;
   /// Messages to print on the output PAD
   MessagePad mShifterMessages{ "", 60.f, 13.f, 72.f, 14.f };
+  /// To select to check link inefficiencies (if recovery does not work)
+  int mCheckLinkInefficiency = 0;
 
   ClassDefOverride(CheckSlotPartMask, 2);
 };
