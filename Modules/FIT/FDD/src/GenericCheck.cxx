@@ -96,7 +96,7 @@ void GenericCheck::configure()
     mPathDeadChannelMap = param->second;
     ILOG(Debug, Support) << "configure() : using pathDeadChannelMap: " << mPathDeadChannelMap << ENDM;
   } else {
-    mPathDeadChannelMap = "FV0/Calib/DeadChannelMap";
+    mPathDeadChannelMap = "FDD/Calib/DeadChannelMap";
     ILOG(Debug, Support) << "configure() : using default pathDeadChannelMap: " << mPathDeadChannelMap << ENDM;
   }
 
