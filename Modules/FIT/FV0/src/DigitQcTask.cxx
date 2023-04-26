@@ -127,7 +127,8 @@ bool DigitQcTask::chIsVertexEvent(const o2::fv0::ChannelData chd)
   return (chd.getFlag(o2::fv0::ChannelData::kIsCFDinADCgate) &&
           !(chd.getFlag(o2::fv0::ChannelData::kIsTimeInfoNOTvalid) || chd.getFlag(o2::fv0::ChannelData::kIsTimeInfoLate) || chd.getFlag(o2::fv0::ChannelData::kIsTimeInfoLost)) &&
           std::abs(static_cast<Int_t>(chd.CFDTime)) < mTrgOrGate &&
-          !chd.getFlag(o2::fv0::ChannelData::kIsAmpHigh));
+          static_cast<Int_t>(chd.QTCAmpl) > mTrgChargeLevelLow &&
+          static_cast<Int_t>(chd.QTCAmpl) < mTrgChargeLevelHigh);
 }
 
 void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -267,7 +268,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   // mHistTimeSum2Diff = std::make_unique<TH2F>("timeSumVsDiff", "time A/C side: sum VS diff;(TOC-TOA)/2 [ns];(TOA+TOC)/2 [ns]", 400, -52.08, 52.08, 400, -52.08, 52.08); // range of 52.08 ns = 4000*13.02ps = 4000 channels
   mHistNumADC = std::make_unique<TH1F>("HistNumADC", "HistNumADC", sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF);
   mHistNumCFD = std::make_unique<TH1F>("HistNumCFD", "HistNumCFD", sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF);
-  mHistCFDEff = std::make_unique<TH1F>("CFD_efficiency", "CFD efficiency;ChannelID;efficiency", sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF);
+  mHistCFDEff = std::make_unique<TH1F>("CFD_efficiency", "Fraction of events with CFD in ADC gate vs ChannelID;ChannelID;Event fraction with CFD in ADC gate", sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF);
   mHistNchA = std::make_unique<TH1F>("NumChannelsA", "Number of channels(TCM), side A;Nch", sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF);
   // mHistNchC = std::make_unique<TH1F>("NumChannelsC", "Number of channels(TCM), side C;Nch", sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF);
   mHistSumAmpA = std::make_unique<TH1F>("SumAmpA", "Sum of amplitudes(TCM), side A;", 1e4, 0, 1e4);
@@ -278,9 +279,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistCycleDuration = std::make_unique<TH1D>("CycleDuration", "Cycle Duration;;time [ns]", 1, 0, 2);
   mHistCycleDurationNTF = std::make_unique<TH1D>("CycleDurationNTF", "Cycle Duration;;time [TimeFrames]", 1, 0, 2);
   mHistCycleDurationRange = std::make_unique<TH1D>("CycleDurationRange", "Cycle Duration (total cycle range);;time [ns]", 1, 0, 2);
-
-  std::string gateTimeRatioTitle = "Ratio of events between time " + std::to_string(mMinTimeGate) + " and " + std::to_string(mMaxTimeGate);
-  mHistGateTimeRatio2Ch = std::make_unique<TH1F>("EventsInGateTime", gateTimeRatioTitle.c_str(), sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF);
+  mHistGateTimeRatio2Ch = std::make_unique<TH1F>("EventsInGateTime", "Fraction of events with CFD in time gate vs ChannelID;ChannelID;Event fraction with CFD in time gate", sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF);
 
   std::vector<unsigned int> vecChannelIDs;
   if (auto param = mCustomParameters.find("ChannelIDs"); param != mCustomParameters.end()) {

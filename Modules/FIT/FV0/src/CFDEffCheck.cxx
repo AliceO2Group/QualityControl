@@ -189,7 +189,7 @@ void CFDEffCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
     lineWarning->SetLineColor(kOrange);
     h->GetListOfFunctions()->Add(lineError);
     h->GetListOfFunctions()->Add(lineWarning);
-    h->SetStats(0);
+    h->SetStats(1);
   }
 }
 
