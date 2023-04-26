@@ -120,15 +120,10 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
   getObjectsManager()->startPublishing(mHistTimeInWindow.get());
 
   getObjectsManager()->startPublishing(mRateOrA.get());
-  getObjectsManager()->setDefaultDrawOptions(mRateOrA.get(), "PL");
   getObjectsManager()->startPublishing(mRateOrC.get());
-  getObjectsManager()->setDefaultDrawOptions(mRateOrC.get(), "PL");
   getObjectsManager()->startPublishing(mRateVertex.get());
-  getObjectsManager()->setDefaultDrawOptions(mRateVertex.get(), "PL");
   getObjectsManager()->startPublishing(mRateCentral.get());
-  getObjectsManager()->setDefaultDrawOptions(mRateCentral.get(), "PL");
   getObjectsManager()->startPublishing(mRateSemiCentral.get());
-  getObjectsManager()->setDefaultDrawOptions(mRateSemiCentral.get(), "PL");
   // getObjectsManager()->startPublishing(mRatesCanv.get());
   getObjectsManager()->startPublishing(mAmpl);
   getObjectsManager()->startPublishing(mTime);
