@@ -106,6 +106,11 @@ std::string TriggersSwVsTcmCheck::getAcceptedType() { return "TH2"; }
 
 void TriggersSwVsTcmCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
+  if (!mo) {
+    ILOG(Error, Support) << "beautify(): MO NULL pointer" << ENDM;
+    return;
+  }
+
   if (mo->getName() == "TriggersSoftwareVsTCM") {
     auto* histogram = dynamic_cast<TH2*>(mo->getObject());
 
@@ -118,7 +123,10 @@ void TriggersSwVsTcmCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality c
     histogram->GetListOfFunctions()->Add(msg);
     msg->SetName(Form("%s_msg", mo->GetName()));
     msg->Clear();
-    msg->AddText(checkResult.getReasons()[0].second.c_str());
+    auto reasons = checkResult.getReasons();
+    for (int i = 0; i < int(reasons.size()); i++) {
+      msg->AddText(reasons[i].second.c_str());
+    }
     int color = kBlack;
     if (checkResult == Quality::Good) {
       color = kGreen + 1;
