@@ -126,6 +126,9 @@ void TriggersSwVsTcmCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality c
     auto reasons = checkResult.getReasons();
     for (int i = 0; i < int(reasons.size()); i++) {
       msg->AddText(reasons[i].second.c_str());
+      if (i > 1) {
+        break;
+      }
     }
     int color = kBlack;
     if (checkResult == Quality::Good) {
