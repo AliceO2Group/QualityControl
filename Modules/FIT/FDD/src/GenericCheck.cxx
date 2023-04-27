@@ -12,7 +12,7 @@
 ///
 /// \file   GenericCheck.cxx
 /// \author Sebastian Bysiak
-///
+/// LATEST modification for FDD on 25.04.2023 (akhuntia@cern.ch)
 
 #include "FDD/GenericCheck.h"
 #include "QualityControl/MonitorObject.h"
@@ -25,7 +25,7 @@
 #include <TCanvas.h>
 #include <TPaveText.h>
 #include <TMath.h>
-// #include <TLine.h>
+#include <TLine.h>
 #include <TList.h>
 
 #include <DataFormatsQualityControl/FlagReasons.h>
@@ -66,9 +66,10 @@ SingleCheck GenericCheck::getCheckFromConfig(std::string paramName)
 
 void GenericCheck::configure()
 {
+  mCheckMaxThresholdY = getCheckFromConfig("MaxThresholdY");
+  mCheckMinThresholdY = getCheckFromConfig("MinThresholdY");
 
   mCheckMaxOverflowIntegralRatio = getCheckFromConfig("MaxOverflowIntegralRatio");
-
   mCheckMinMeanX = getCheckFromConfig("MinMeanX");
   mCheckMaxMeanX = getCheckFromConfig("MaxMeanX");
   mCheckMaxStddevX = getCheckFromConfig("MaxStddevX");
@@ -79,6 +80,48 @@ void GenericCheck::configure()
 
   mCheckMinGraphLastPoint = getCheckFromConfig("MinGraphLastPoint");
   mCheckMaxGraphLastPoint = getCheckFromConfig("MaxGraphLastPoint");
+
+  // Set path to ccdb to get DeadChannelMap
+  if (auto param = mCustomParameters.find("ccdbUrl"); param != mCustomParameters.end()) {
+    setCcdbUrl(param->second);
+    ILOG(Info, Support) << "configure() : using deadChannelMap from CCDB, configured url = " << param->second << ENDM;
+  } else {
+    setCcdbUrl("alice-ccdb.cern.ch");
+    ILOG(Debug, Support) << "configure() : using deadChannelMap from CCDB, default url = "
+                         << "alice-ccdb.cern.ch" << ENDM;
+  }
+
+  // Set internal path to DeadChannelMap
+  if (auto param = mCustomParameters.find("pathDeadChannelMap"); param != mCustomParameters.end()) {
+    mPathDeadChannelMap = param->second;
+    ILOG(Debug, Support) << "configure() : using pathDeadChannelMap: " << mPathDeadChannelMap << ENDM;
+  } else {
+    mPathDeadChannelMap = "FDD/Calib/DeadChannelMap";
+    ILOG(Debug, Support) << "configure() : using default pathDeadChannelMap: " << mPathDeadChannelMap << ENDM;
+  }
+
+  // Align mDeadChannelMap with downloaded one
+  std::map<std::string, std::string> metadata;
+  mDeadChannelMap = retrieveConditionAny<o2::fit::DeadChannelMap>(mPathDeadChannelMap, metadata, (long)-1);
+  if (!mDeadChannelMap || !mDeadChannelMap->map.size()) {
+    ILOG(Error, Support) << "object \"" << mPathDeadChannelMap << "\" NOT retrieved (or empty). All channels assumed to be alive!" << ENDM;
+    mDeadChannelMap = new o2::fit::DeadChannelMap();
+    for (uint8_t chId = 0; chId < sNCHANNELSPhy; ++chId) {
+      mDeadChannelMap->setChannelAlive(chId, 1);
+    }
+  }
+
+  // Print DeadChannelMap
+  mDeadChannelMapStr = "";
+  for (unsigned chId = 0; chId < mDeadChannelMap->map.size(); chId++) {
+    if (!mDeadChannelMap->isChannelAlive(chId)) {
+      mDeadChannelMapStr += (mDeadChannelMapStr.empty() ? "" : ",") + std::to_string(chId);
+    }
+  }
+  if (mDeadChannelMapStr.empty()) {
+    mDeadChannelMapStr = "EMPTY";
+  }
+  ILOG(Info, Support) << "Loaded dead channel map: " << mDeadChannelMapStr << ENDM;
 
   mPositionMsgBox = { 0.15, 0.75, 0.85, 0.9 };
   if (auto param = mCustomParameters.find("positionMsgBox"); param != mCustomParameters.end()) {
@@ -154,6 +197,39 @@ Quality GenericCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
         continue;
       }
 
+      if (mCheckMinThresholdY.isActive()) {
+        float minValue = h->GetBinContent(1);
+        for (int channel = 1; channel < h->GetNbinsX(); ++channel) {
+          if (channel >= sNCHANNELSPhy || !mDeadChannelMap->isChannelAlive(channel)) {
+            continue;
+          }
+          if (minValue > h->GetBinContent(channel)) {
+            minValue = h->GetBinContent(channel);
+            mCheckMinThresholdY.mBinNumberX = channel;
+          }
+        }
+        mCheckMinThresholdY.doCheck(result, minValue);
+      }
+
+      if (mCheckMaxThresholdY.isActive()) {
+        if (mDeadChannelMap->isChannelAlive(h->GetMaximumBin())) {
+          mCheckMaxThresholdY.mBinNumberX = h->GetMaximumBin();
+          mCheckMaxThresholdY.doCheck(result, h->GetBinContent(mCheckMaxThresholdY.mBinNumberX));
+        } else {
+          float maxValue = 0;
+          for (int channel = 1; channel < h->GetNbinsX(); ++channel) {
+            if (channel >= sNCHANNELSPhy || !mDeadChannelMap->isChannelAlive(channel)) {
+              continue;
+            }
+            if (maxValue < h->GetBinContent(channel)) {
+              maxValue = h->GetBinContent(channel);
+              mCheckMaxThresholdY.mBinNumberX = channel;
+            }
+          }
+          mCheckMaxThresholdY.doCheck(result, maxValue);
+        }
+      }
+
       if (mCheckMinMeanX.isActive())
         mCheckMinMeanX.doCheck(result, h->GetMean());
       if (mCheckMaxMeanX.isActive())
@@ -218,6 +294,21 @@ void GenericCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResu
       return;
     }
     h->GetListOfFunctions()->Add(msg);
+    // add threshold lines
+    if (mCheckMinThresholdY.isActive()) {
+      Double_t xMin = h->GetXaxis()->GetXmin();
+      Double_t xMax = h->GetXaxis()->GetXmax();
+      auto* lineMinError = new TLine(xMin, mCheckMinThresholdY.getThresholdError(), xMax, mCheckMinThresholdY.getThresholdError());
+      auto* lineMinWarning = new TLine(xMin, mCheckMinThresholdY.getThresholdWarning(), xMax, mCheckMinThresholdY.getThresholdWarning());
+      lineMinError->SetLineWidth(3);
+      lineMinWarning->SetLineWidth(3);
+      lineMinError->SetLineStyle(kDashed);
+      lineMinWarning->SetLineStyle(kDashed);
+      lineMinError->SetLineColor(kRed);
+      lineMinWarning->SetLineColor(kOrange);
+      h->GetListOfFunctions()->Add(lineMinError);
+      h->GetListOfFunctions()->Add(lineMinWarning);
+    }
   }
 
   msg->SetName(Form("%s_msg", mo->GetName()));

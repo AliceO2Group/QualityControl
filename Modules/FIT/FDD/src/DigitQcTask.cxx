@@ -12,7 +12,7 @@
 ///
 /// \file   DigitQcTask.cxx
 /// \author Artur Furs afurs@cern.ch
-/// LATEST modification for FDD on 24.08.2022 (sbysiak@cern.ch)
+/// LATEST modification for FDD on 25.04.2023 (akhuntia@cern.ch)
 
 #include "FDD/DigitQcTask.h"
 #include "TCanvas.h"
@@ -129,7 +129,8 @@ bool DigitQcTask::chIsVertexEvent(const o2::fdd::ChannelData chd)
   return (chd.getFlag(o2::fdd::ChannelData::kIsCFDinADCgate) &&
           !(chd.getFlag(o2::fdd::ChannelData::kIsTimeInfoNOTvalid) || chd.getFlag(o2::fdd::ChannelData::kIsTimeInfoLate) || chd.getFlag(o2::fdd::ChannelData::kIsTimeInfoLost)) &&
           std::abs(static_cast<Int_t>(chd.mTime)) < mTrgOrGate &&
-          !chd.getFlag(o2::fdd::ChannelData::kIsAmpHigh));
+          static_cast<Int_t>(chd.mChargeADC) > mTrgChargeLevelLow &&
+          static_cast<Int_t>(chd.mChargeADC) < mTrgChargeLevelHigh);
 }
 
 void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -175,6 +176,10 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mTrgChargeLevelHigh = getNumericalParameter("trgChargeLevelHigh", 4095);
   mTrgThresholdTimeLow = getNumericalParameter("trgThresholdTimeLow", -192);
   mTrgThresholdTimeHigh = getNumericalParameter("trgThresholdTimeHigh", 192);
+  mBinMinADCSaturationCheck = getNumericalParameter("BinMinADCSaturationCheck", 1);
+  mBinMaxADCSaturationCheck = getNumericalParameter("BinMaxADCSaturationCheck", 3600);
+  mMinTimeGate = getNumericalParameter("minGateTimeForRatioHistogram", -192);
+  mMaxTimeGate = getNumericalParameter("maxGateTimeForRatioHistogram", 192);
   if (mTrgModeSide == TrgModeSide::kAplusC) {
     mTrgThresholdCenA = getNumericalParameter("trgThresholdCenA", 20);
     mTrgThresholdSCenA = getNumericalParameter("trgThresholdSCenA", 10);
@@ -286,7 +291,10 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistTimeSum2Diff->GetYaxis()->SetRangeUser(-5, 5);
   mHistNumADC = std::make_unique<TH1F>("HistNumADC", "HistNumADC", sNCHANNELS_PM, 0, sNCHANNELS_PM);
   mHistNumCFD = std::make_unique<TH1F>("HistNumCFD", "HistNumCFD", sNCHANNELS_PM, 0, sNCHANNELS_PM);
-  mHistCFDEff = std::make_unique<TH1F>("CFD_efficiency", "CFD efficiency;ChannelID;efficiency", sNCHANNELS_PM, 0, sNCHANNELS_PM);
+  mHistCFDEff = std::make_unique<TH1F>("CFD_efficiency", "Fraction of events with CFD in ADC gate vs ChannelID;ChannelID;Event fraction with CFD in ADC gate", sNCHANNELS_PM, 0, sNCHANNELS_PM);
+  mHistSaturationFraction = std::make_unique<TH1F>("ADCChargeFractionInRange", Form("Fraction of charge in [%d, %d] ADC;Channel ID;Event fraction in [%d, %d] ADC", mBinMinADCSaturationCheck, mBinMaxADCSaturationCheck, mBinMinADCSaturationCheck, mBinMaxADCSaturationCheck), sNCHANNELS_PM, 0, sNCHANNELS_PM);
+  std::string gateTimeRatioTitle = "Ratio of events between time " + std::to_string(mMinTimeGate) + " and " + std::to_string(mMaxTimeGate);
+  mHistGateTimeRatio2Ch = std::make_unique<TH1F>("EventsInGateTime", gateTimeRatioTitle.c_str(), sNCHANNELS_PM, 0, sNCHANNELS_PM);
   mHistNchA = std::make_unique<TH1F>("NumChannelsA", "Number of channels(TCM), side A;Nch", sNCHANNELS_A, 0, sNCHANNELS_A);
   mHistNchC = std::make_unique<TH1F>("NumChannelsC", "Number of channels(TCM), side C;Nch", sNCHANNELS_C, 0, sNCHANNELS_C);
   mHistSumAmpA = std::make_unique<TH1F>("SumAmpA", "Sum of amplitudes(TCM), side A;", 5e3, 0, 5e3);
@@ -353,6 +361,8 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   rebinFromConfig(); // after all histos are created
   // 1-dim hists
   getObjectsManager()->startPublishing(mHistCFDEff.get());
+  getObjectsManager()->startPublishing(mHistSaturationFraction.get());
+  getObjectsManager()->startPublishing(mHistGateTimeRatio2Ch.get());
   getObjectsManager()->startPublishing(mHistBC.get());
   getObjectsManager()->startPublishing(mHistNchA.get());
   getObjectsManager()->startPublishing(mHistNchC.get());
@@ -420,6 +430,8 @@ void DigitQcTask::startOfActivity(Activity& activity)
   mHistBC->Reset();
   mHistChDataBits->Reset();
   mHistCFDEff->Reset();
+  mHistSaturationFraction->Reset();
+  mHistGateTimeRatio2Ch->Reset();
   mHistNumADC->Reset();
   mHistNumCFD->Reset();
   mHistTimeSum2Diff->Reset();
@@ -823,6 +835,29 @@ void DigitQcTask::endOfCycle()
   // one has to set num. of entries manually because
   // default TH1Reductor gets only mean,stddev and entries (no integral)
   mHistCFDEff->Divide(mHistNumADC.get(), mHistNumCFD.get());
+  for (int iPM = 0; iPM < sNCHANNELS_PM; iPM++) {
+    double intNumerator = mHistAmp2Ch->ProjectionY("yNum", iPM + 1, iPM + 1)->Integral(mBinMinADCSaturationCheck, mBinMaxADCSaturationCheck);
+    double intDenominator = mHistAmp2Ch->ProjectionY("yDen", iPM + 1, iPM + 1)->Integral(mBinMinADCSaturationCheck, mHistAmp2Ch->GetNbinsY());
+    if (intDenominator)
+      mHistSaturationFraction->SetBinContent(iPM, intNumerator / intDenominator);
+  }
+
+  for (int channel = 0; channel <= sNCHANNELS_PM; channel++) {
+    float events_in_range = 0;
+    float events_per_channel = 0;
+    for (int bin_on_y_axis = 1; bin_on_y_axis <= mHistTime2Ch->GetNbinsY(); bin_on_y_axis++) {
+      if (mHistTime2Ch->GetYaxis()->GetBinLowEdge(bin_on_y_axis) > mMinTimeGate && mHistTime2Ch->GetYaxis()->GetBinLowEdge(bin_on_y_axis) < mMaxTimeGate) {
+        events_in_range += mHistTime2Ch->GetBinContent(channel + 1, bin_on_y_axis);
+      }
+      events_per_channel += mHistTime2Ch->GetBinContent(channel + 1, bin_on_y_axis);
+    }
+    if (events_per_channel) {
+      mHistGateTimeRatio2Ch->SetBinContent(channel + 1, events_in_range / events_per_channel);
+    } else {
+      mHistGateTimeRatio2Ch->SetBinContent(channel + 1, 0);
+    }
+  }
+  mHistSaturationFraction->GetYaxis()->SetRangeUser(0, 1.1);
   mHistCycleDurationRange->SetBinContent(1., mTimeMaxNS - mTimeMinNS);
   mHistCycleDurationRange->SetEntries(mTimeMaxNS - mTimeMinNS);
   mHistCycleDurationNTF->SetBinContent(1., mTfCounter);
@@ -847,6 +882,8 @@ void DigitQcTask::reset()
   mHistBC->Reset();
   mHistChDataBits->Reset();
   mHistCFDEff->Reset();
+  mHistSaturationFraction->Reset();
+  mHistGateTimeRatio2Ch->Reset();
   mHistNumADC->Reset();
   mHistNumCFD->Reset();
   mHistTimeSum2Diff->Reset();
