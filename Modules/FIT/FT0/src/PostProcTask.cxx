@@ -187,7 +187,7 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
   }
 
   auto mo2 = mDatabase->retrieveMO(mPathDigitQcTask, mCycleDurationMoName, t.timestamp, t.activity);
-  auto hCycleDuration = mo2 ? dynamic_cast<TH1F*>(mo2->getObject()) : nullptr;
+  auto hCycleDuration = mo2 ? dynamic_cast<TH1D*>(mo2->getObject()) : nullptr;
   if (!hCycleDuration) {
     ILOG(Error) << "MO \"" << mCycleDurationMoName << "\" NOT retrieved!!!" << ENDM;
   }
