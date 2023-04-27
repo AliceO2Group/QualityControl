@@ -517,7 +517,7 @@ void DigitsQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
           QualLocBoards = Quality::Medium;
         }
         if (mEmptyLB > mNbEmptyLocalBoard) {
-          msg = drawLatex(.15, 0.62, kRed, Form(" %d boards empty", mEmptyLB, mLocalBoardThreshold));
+          msg = drawLatex(.15, 0.62, kRed, Form(" %d boards empty", mEmptyLB));
           h2->GetListOfFunctions()->Add(msg);
           msg = drawLatex(.3, 0.32, kRed, "Quality::BAD ");
           h2->GetListOfFunctions()->Add(msg);
