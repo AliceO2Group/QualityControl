@@ -29,6 +29,7 @@ class TH2D;
 class TLine;
 class TProfile;
 class TProfile2D;
+class TCanvas;
 using namespace o2::quality_control::core;
 
 namespace o2::quality_control_modules::trd
@@ -91,7 +92,7 @@ class DigitsTask final : public TaskInterface
   std::shared_ptr<TH1F> mClsChargeTbCycle;
   std::shared_ptr<TH1F> mClsNTb;
   std::shared_ptr<TH1F> mClsAmp;
-  std::shared_ptr<TH1F> mNClsAmp;
+  std::shared_ptr<TH1F> mTotNClsLayer;
   std::shared_ptr<TH1F> mClsAmpDrift;
   std::shared_ptr<TH1F> mClsAmpTb;
   std::shared_ptr<TH1F> mClsAmpCh;
@@ -110,6 +111,13 @@ class DigitsTask final : public TaskInterface
   std::shared_ptr<TH1F> mPulseHeightn = nullptr;
   std::shared_ptr<TProfile> mPulseHeightpro = nullptr;
   std::shared_ptr<TProfile2D> mPulseHeightperchamber = nullptr;
+  using TCanvasArray = std::array<std::shared_ptr<TCanvas>, 3>;
+  TCanvasArray _cSM_1, _cSM_2, _cSM_3, _cSM_4, _cSM_5, _cSM_6, _cSM_7;
+  std::shared_ptr<TCanvas> _cDigit = nullptr;
+  std::shared_ptr<TCanvas> _cCluster = nullptr;
+  std::shared_ptr<TCanvas> _cLayer = nullptr;
+  std::shared_ptr<TCanvas> _cCluster_1 = nullptr;
+  std::shared_ptr<TCanvas> _cLayer_1 = nullptr;
   //  std::array<std::shared_ptr<TH1F>, 540> mPulseHeightPerChamber_1D; // ph2DSM;
   std::vector<TH2F*> mLayers;
   // information pulled from ccdb
