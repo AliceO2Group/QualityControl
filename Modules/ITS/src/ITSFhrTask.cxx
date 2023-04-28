@@ -653,7 +653,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
           mAliveChipPos->SetBinContent(mAliveChipPos->GetXaxis()->FindBin(mChipZ[istave][ichip]), mAliveChipPos->GetYaxis()->FindBin(mChipPhi[istave][ichip]), 1);
           mTotalAliveChipPos->SetBinContent(mTotalAliveChipPos->GetXaxis()->FindBin(mChipZ[istave][ichip]), mTotalAliveChipPos->GetYaxis()->FindBin(mChipPhi[istave][ichip]), 1);
           mDeadChipPos->SetBinContent(mDeadChipPos->GetXaxis()->FindBin(mChipZ[istave][ichip] ), mDeadChipPos->GetYaxis()->FindBin(mChipPhi[istave][ichip] ), 0);                     // not dead
-          mTotalDeadChipPos->SetBinContent(mTotalDeadChipPos->GetXaxis()->FindBin(mChipZ[istave][ichip]), mTotalDeadChipPos->GetYaxis()->FindBin(mChipPhi[istave][ichip]), 1); // change to 0 after testing! // not dead
+          mTotalDeadChipPos->SetBinContent(mTotalDeadChipPos->GetXaxis()->FindBin(mChipZ[istave][ichip]), mTotalDeadChipPos->GetYaxis()->FindBin(mChipPhi[istave][ichip]), 0);  // not dead
         }
         int ilink = ichip / 3;
         for (int ierror = 0; ierror < o2::itsmft::GBTLinkDecodingStat::NErrorsDefined; ierror++) {
