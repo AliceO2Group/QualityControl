@@ -31,13 +31,13 @@
         "dataSources": [
           {
             "type": "repository",
-            "paths": ["ITS/MO/ITSTrackTask/NClusters",
+            "paths": ["ITS/MO/ITSTrackTask/NClustersReset",
                       "ITS/MO/ITSTrackTask/EtaDistribution",
                       "ITS/MO/ITSTrackTask/PhiDistribution",
                       "ITS/MO/ITSTrackTask/VertexZ",
                       "ITS/MO/ITSTrackTask/NVertexContributors",
                       "ITS/MO/ITSTrackTask/AssociatedClusterFraction",
-                      "ITS/MO/ITSTrackTask/Ntracks"
+                      "ITS/MO/ITSTrackTask/NtracksReset"
                      ],
             "names": ["NClusters",
                       "EtaDistribution",
@@ -65,7 +65,7 @@
         "plots": [
           {
             "names": ["NClusters_mean", "NClusters_stddev"],
-            "title": ["Average NClusters", "Stddev NClusters"],
+            "title": ["Average NClusters per Cycle", "Stddev NClusters per Cycle"],
             "varexp": ["NClusters.mean:ntreeentries", "NClusters.stddev:ntreeentries"],
             "selection": "",
             "option": "PL"
@@ -107,7 +107,7 @@
           },
           {
             "names": ["Ntracks_mean", "Ntracks_stddev"],
-            "title": ["Average NTracks per event", "Stddev of NTracks per event"],
+            "title": ["Average NTracks per event per cycle", "Stddev of NTracks per event per cycle"],
             "varexp": ["Ntracks.mean:ntreeentries", "Ntracks.stddev:ntreeentries"],
             "selection": "",
             "option": "PL"
