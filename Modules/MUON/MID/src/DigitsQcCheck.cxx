@@ -80,7 +80,7 @@ void DigitsQcCheck::configure()
 Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
   // ILOG(Info, Devel) << "check DigitsQcCheck" << ENDM;
-  Quality result = Quality::Null;
+
   float mean = 0.;
   float midThreshold = mMeanMultThreshold / 2;
 
@@ -94,11 +94,27 @@ Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
     }
 
     (void)moName;
+    if (mo->getName() == "MeanMultiHits") {
+      auto* hmult = dynamic_cast<TH1F*>(mo->getObject());
+      hmult->GetXaxis()->SetBinLabel(1, "MT11 Bend");
+      hmult->GetXaxis()->SetBinLabel(2, "MT12 Bend");
+      hmult->GetXaxis()->SetBinLabel(3, "MT21 Bend");
+      hmult->GetXaxis()->SetBinLabel(4, "MT22 Bend");
+      hmult->GetXaxis()->SetBinLabel(5, "MT11 NBend");
+      hmult->GetXaxis()->SetBinLabel(6, "MT12 NBend");
+      hmult->GetXaxis()->SetBinLabel(7, "MT21 NBend");
+      hmult->GetXaxis()->SetBinLabel(8, "MT22 NBend");
+      hmult->GetYaxis()->SetTitle("Min Hits Multiplicity");
+      hmult->SetStats(0);
+    }
+
+    (void)moName;
     // Bend Multiplicity Histo ::
     if (mo->getName() == "MultHitMT11B") {
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
       resultBMT11 = Quality::Good;
       mean = h->GetMean();
+      mMultTab[0] = mean;
       if ((mean > mMeanMultThreshold) || (mean < mMinMultThreshold))
         resultBMT11 = Quality::Bad;
       else if (mean > midThreshold)
@@ -110,6 +126,7 @@ Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
       resultBMT12 = Quality::Good;
       mean = h->GetMean();
+      mMultTab[1] = mean;
       if ((mean > mMeanMultThreshold) || (mean < mMinMultThreshold))
         resultBMT12 = Quality::Bad;
       else if (mean > midThreshold)
@@ -120,6 +137,7 @@ Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
       resultBMT21 = Quality::Good;
       mean = h->GetMean();
+      mMultTab[2] = mean;
       if ((mean > mMeanMultThreshold) || (mean < mMinMultThreshold))
         resultBMT21 = Quality::Bad;
       else if (mean > midThreshold)
@@ -130,6 +148,7 @@ Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
       resultBMT22 = Quality::Good;
       mean = h->GetMean();
+      mMultTab[3] = mean;
       if ((mean > mMeanMultThreshold) || (mean < mMinMultThreshold))
         resultBMT22 = Quality::Bad;
       else if (mean > midThreshold)
@@ -141,6 +160,7 @@ Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
       resultNBMT11 = Quality::Good;
       mean = h->GetMean();
+      mMultTab[4] = mean;
       // std::cout << "check :: NBMT11 mean =>>  " << mean << std::endl;
       if ((mean > mMeanMultThreshold) || (mean < mMinMultThreshold))
         resultNBMT11 = Quality::Bad;
@@ -152,6 +172,7 @@ Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
       resultNBMT12 = Quality::Good;
       mean = h->GetMean();
+      mMultTab[5] = mean;
       if ((mean > mMeanMultThreshold) || (mean < mMinMultThreshold))
         resultNBMT12 = Quality::Bad;
       else if (mean > midThreshold)
@@ -162,6 +183,7 @@ Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
       resultNBMT21 = Quality::Good;
       mean = h->GetMean();
+      mMultTab[6] = mean;
       if ((mean > mMeanMultThreshold) || (mean < mMinMultThreshold))
         resultNBMT21 = Quality::Bad;
       else if (mean > midThreshold)
@@ -172,11 +194,25 @@ Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
       resultNBMT22 = Quality::Good;
       mean = h->GetMean();
+      mMultTab[7] = mean;
       if ((mean > mMeanMultThreshold) || (mean < mMinMultThreshold))
         resultNBMT22 = Quality::Bad;
       else if (mean > midThreshold)
         resultNBMT22 = Quality::Medium;
     } // end mMultHitMT22NB check
+
+    if ((resultBMT11 == Quality::Good) && (resultBMT12 == Quality::Good) &&
+        (resultBMT21 == Quality::Good) && (resultBMT22 == Quality::Good) &&
+        (resultNBMT11 == Quality::Good) && (resultNBMT12 == Quality::Good) &&
+        (resultNBMT21 == Quality::Good) && (resultNBMT22 == Quality::Good))
+      result = Quality::Good;
+    else if ((resultBMT11 == Quality::Bad) || (resultBMT12 == Quality::Bad) ||
+             (resultBMT21 == Quality::Bad) || (resultBMT22 == Quality::Bad) ||
+             (resultNBMT11 == Quality::Bad) || (resultNBMT12 == Quality::Bad) ||
+             (resultNBMT21 == Quality::Bad) || (resultNBMT22 == Quality::Bad))
+      result = Quality::Bad;
+    else
+      result = Quality::Medium;
 
     if (mo->getName() == "LocalBoardsMap") {
       mBadLB = 0;
@@ -202,8 +238,8 @@ Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
             }
           }
         }
-      }
-    } // if mDigitTF>0
+      } // if mDigitTF>0
+    }
   }
   return result;
 }
@@ -258,6 +294,26 @@ void DigitsQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
 
   // Bend Multiplicity Histo ::
   if (mDigitTF > 5) {
+
+    if (mo->getName() == "MeanMultiHits") {
+      auto* hmult = dynamic_cast<TH1F*>(mo->getObject());
+      for (int i = 0; i < 8; i++) {
+        hmult->SetBinContent(i + 1, mMultTab[i]);
+        // std::cout <<"        binb: "<<i<<" ; meanMult:"<< mMultTab[i]  <<std::endl;
+      }
+      if (result == Quality::Good) {
+        msg = drawLatex(.3, 0.52, kGreen, "Quality::Good");
+        hmult->GetListOfFunctions()->Add(msg);
+      } else if (result == Quality::Bad) {
+        msg = drawLatex(.3, 0.52, kRed, "Quality::Bad");
+        hmult->GetListOfFunctions()->Add(msg);
+      } else {
+        msg = drawLatex(.3, 0.52, kOrange, "Quality::Medium");
+        hmult->GetListOfFunctions()->Add(msg);
+      }
+      updateTitle(hmult, Form("TF= %3.0f", mDigitTF));
+    }
+
     if (mo->getName() == "MultHitMT11B") {
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
       mean = h->GetMean();

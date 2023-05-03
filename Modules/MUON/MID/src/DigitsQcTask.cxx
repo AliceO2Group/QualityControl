@@ -56,10 +56,8 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info, Devel) << "initialize DigitsQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
   // printf(" =================== > test initialize Digits \n");
-
-  double paramExemple = 400; /// param from json
-  if (auto param = mCustomParameters.find("paramExemple"); param != mCustomParameters.end()) {
-    paramExemple = std::stof(param->second);
+  if (auto param = mCustomParameters.find("DigitReset"); param != mCustomParameters.end()) {
+    mDigitReset = std::stof(param->second);
   }
 
   mNbDigitTF = std::make_shared<TH1F>("NbDigitTF", "NbTimeFrame", 1, 0, 1.);
@@ -119,6 +117,9 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mMultHitMT21NB.get());
   getObjectsManager()->startPublishing(mMultHitMT22B.get());
   getObjectsManager()->startPublishing(mMultHitMT22NB.get());
+
+  mMeanMultiHits = std::make_shared<TH1F>("MeanMultiHits", "MeanMultiHits", 8, 0, 8.);
+  getObjectsManager()->startPublishing(mMeanMultiHits.get());
 
   mLocalBoardsMap = std::make_shared<TH2F>("LocalBoardsMap", "Local boards Occupancy Map", 14, -7, 7, 36, 0, 9);
   getObjectsManager()->startPublishing(mLocalBoardsMap.get());
@@ -214,6 +215,37 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mDigitBCCounts->GetXaxis()->SetTitle("BC");
   mDigitBCCounts->GetYaxis()->SetTitle("Entry (Ko)");
 }
+/*
+static void DigitReset(){
+
+  mNbDigitTF->Reset();
+
+  mMultHitMT11B->Reset();
+  mMultHitMT11NB->Reset();
+  mMultHitMT12B->Reset();
+  mMultHitMT12NB->Reset();
+  mMultHitMT21B->Reset();
+  mMultHitMT21NB->Reset();
+  mMultHitMT22B->Reset();
+  mMultHitMT22NB->Reset();
+
+  mLocalBoardsMap->Reset();
+  mLocalBoardsMap11->Reset();
+  mLocalBoardsMap12->Reset();
+  mLocalBoardsMap21->Reset();
+  mLocalBoardsMap22->Reset();
+
+  mBendHitsMap11->Reset();
+  mBendHitsMap12->Reset();
+  mBendHitsMap21->Reset();
+  mBendHitsMap22->Reset();
+  mNBendHitsMap11->Reset();
+  mNBendHitsMap12->Reset();
+  mNBendHitsMap21->Reset();
+  mNBendHitsMap22->Reset();
+
+  mDigitBCCounts->Reset();
+}*/
 
 void DigitsQcTask::startOfActivity(Activity& /*activity*/)
 {
@@ -544,10 +576,13 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     mMultHitMT21NB->Fill(multHitMT21NB);
     mMultHitMT22NB->Fill(multHitMT22NB);
   } //  ROFRecords //
-  // float sc=1/nROF;
-  // std::cout << "************************  nROF =>>  " << nROF  <<" scale =>>  " << sc << std::endl;
-  // mLocalBoardsMap->Divide(mLocalBoardsMapBC);
-  // mLocalBoardsMap->Scale(sc);
+
+  // RESET Histo
+  if (mDigitTF > mDigitReset * 60 / 25.e-9) {
+    reset();
+    mDigitTF = 0;
+    // std::cout << "************************ Digit Reset  "<< std::endl;
+  }
 }
 
 void DigitsQcTask::endOfCycle()
@@ -569,16 +604,8 @@ void DigitsQcTask::reset()
   // ILOG(Info, Devel) << "Resetting the histogram" << ENDM;
   // printf(" =================== > test reset Digits \n");
 
+  // DigitReset();
   mNbDigitTF->Reset();
-
-  mHitsMapB->Reset();
-  mHitsMapNB->Reset();
-  mOrbitsMapB->Reset();
-  mOrbitsMapNB->Reset();
-  mROFSizeB->Reset();
-  mROFSizeNB->Reset();
-
-  mROFTimeDiff->Reset();
 
   mMultHitMT11B->Reset();
   mMultHitMT11NB->Reset();
@@ -605,6 +632,14 @@ void DigitsQcTask::reset()
   mNBendHitsMap22->Reset();
 
   mDigitBCCounts->Reset();
+
+  mHitsMapB->Reset();
+  mHitsMapNB->Reset();
+  mOrbitsMapB->Reset();
+  mOrbitsMapNB->Reset();
+  mROFSizeB->Reset();
+  mROFSizeNB->Reset();
+  mROFTimeDiff->Reset();
 }
 
 } // namespace o2::quality_control_modules::mid
