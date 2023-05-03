@@ -277,9 +277,8 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
       std::for_each(cycleDurationsMultiplied.begin(), cycleDurationsMultiplied.end(),
                     [taskSpec](std::pair<size_t, size_t>& p) { p.first *= taskSpec.mergerCycleMultiplier; });
       bool enableMovingWindows = !taskSpec.movingWindows.empty();
-      generateMergers(workflow, taskSpec.taskName, numberOfLocalMachines, cycleDurationsMultiplied,
-                      taskSpec.mergingMode, resetAfterCycles, infrastructureSpec.common.monitoringUrl,
-                      taskSpec.detectorName, taskSpec.mergersPerLayer, enableMovingWindows);
+      generateMergers(workflow, taskSpec.taskName, numberOfLocalMachines, cycleDurationsMultiplied, taskSpec.mergingMode,
+                      resetAfterCycles, infrastructureSpec.common.monitoringUrl, taskSpec.detectorName, taskSpec.mergersPerLayer, enableMovingWindows, taskSpec.critical);
 
     } else if (taskSpec.location == TaskLocationSpec::Remote) {
 
@@ -585,11 +584,9 @@ void InfrastructureGenerator::generateLocalTaskRemoteProxy(framework::WorkflowSp
   workflow.emplace_back(std::move(proxy));
 }
 void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow, const std::string& taskName,
-                                              size_t numberOfLocalMachines,
-                                              std::vector<std::pair<size_t, size_t>> cycleDurations,
-                                              const std::string& mergingMode, size_t resetAfterCycles,
-                                              std::string monitoringUrl, const std::string& detectorName,
-                                              std::vector<size_t> mergersPerLayer, bool enableMovingWindows)
+                                              size_t numberOfLocalMachines, std::vector<std::pair<size_t, size_t>> cycleDurations,
+                                              const std::string& mergingMode, size_t resetAfterCycles, std::string monitoringUrl,
+                                              const std::string& detectorName, std::vector<size_t> mergersPerLayer, bool enableMovingWindows, bool critical)
 {
   Inputs mergerInputs;
   for (size_t id = 1; id <= numberOfLocalMachines; id++) {
@@ -618,7 +615,6 @@ void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow,
   mergerConfig.monitoringUrl = std::move(monitoringUrl);
   mergerConfig.detectorName = detectorName;
   mergerConfig.parallelismType = { (mergerConfig.inputObjectTimespan.value == InputObjectsTimespan::LastDifference) ? ParallelismType::RoundRobin : ParallelismType::SplitInputs };
-  mergerConfig.publishMovingWindow = { enableMovingWindows ? PublishMovingWindow::Yes : PublishMovingWindow::No };
   mergersBuilder.setConfig(mergerConfig);
 
   mergersBuilder.generateInfrastructure(workflow);

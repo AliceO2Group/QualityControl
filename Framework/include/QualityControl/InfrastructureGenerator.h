@@ -219,9 +219,11 @@ class InfrastructureGenerator
   static void generateMergers(framework::WorkflowSpec& workflow, const std::string& taskName,
                               size_t numberOfLocalMachines,
                               std::vector<std::pair<size_t, size_t>> cycleDurationSeconds,
-                              const std::string& mergingMode, size_t resetAfterCycles,
-                              std::string monitoringUrl, const std::string& detectorName,
-                              std::vector<size_t> mergersPerLayer, bool enableMovingWindows);
+                              const std::string& mergingMode,
+                              size_t resetAfterCycles,
+                              std::string monitoringUrl,
+                              const std::string& detectorName,
+                              std::vector<size_t> mergersPerLayer, bool enableMovingWindows, bool critical);
   static void generateCheckRunners(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec);
   static void generateAggregator(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec);
   static void generatePostProcessing(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec);
