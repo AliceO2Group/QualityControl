@@ -45,7 +45,6 @@ class CheckOfSlices : public o2::quality_control::checker::CheckInterface
 
  private:
   ClassDefOverride(CheckOfSlices, 3);
-  void calculateStatistics(const double* yValues, const double* yErrors, bool useErrors, const int firstPoint, const int lastPoint, double& mean, double& stddevOfMean);
   std::string createMetaData(std::vector<std::string>);
   std::string mCheckChoice;
   double mExpectedPhysicsValue;
