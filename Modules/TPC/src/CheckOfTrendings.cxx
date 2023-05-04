@@ -593,7 +593,7 @@ void CheckOfTrendings::getGraphs(TCanvas* canv, std::vector<TGraph*>& graphs)
   }
 }
 
-std::string CheckOfTrendings::createMetaData(std::vector<std::string> pointMetaData)
+std::string CheckOfTrendings::createMetaData(const std::vector<std::string>& pointMetaData)
 {
 
   std::string totalString = "";

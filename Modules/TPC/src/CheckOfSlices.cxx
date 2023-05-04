@@ -461,7 +461,7 @@ void CheckOfSlices::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
   } // if (mMeanCheck)
 } // beautify function
 
-std::string CheckOfSlices::createMetaData(std::vector<std::string> pointMetaData)
+std::string CheckOfSlices::createMetaData(const std::vector<std::string>& pointMetaData)
 {
 
   std::string meanString = "";

@@ -45,7 +45,7 @@ class CheckOfSlices : public o2::quality_control::checker::CheckInterface
 
  private:
   ClassDefOverride(CheckOfSlices, 3);
-  std::string createMetaData(std::vector<std::string>);
+  std::string createMetaData(const std::vector<std::string>& pointMetaData);
   std::string mCheckChoice;
   double mExpectedPhysicsValue;
   double mNSigmaExpectedPhysicsValue;

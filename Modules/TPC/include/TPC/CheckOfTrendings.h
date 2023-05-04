@@ -47,7 +47,7 @@ class CheckOfTrendings : public o2::quality_control::checker::CheckInterface
  private:
   ClassDefOverride(CheckOfTrendings, 2);
   void getGraphs(TCanvas* canv, std::vector<TGraph*>& graphs);
-  std::string createMetaData(std::vector<std::string> pointMetaData);
+  std::string createMetaData(const std::vector<std::string>& pointMetaData);
   std::string mCheckChoice;
   float mExpectedPhysicsValue;
   float mNSigmaExpectedPhysicsValue;
