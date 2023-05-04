@@ -43,7 +43,7 @@ class ClustQcCheck : public o2::quality_control::checker::CheckInterface
   float scaleTime = 0.0000891; // 3564 BC/orb * 25ns
   float mClusterScale = 100;
 
-  ClassDefOverride(ClustQcCheck, 2);
+  ClassDefOverride(ClustQcCheck, 3);
 };
 
 } // namespace o2::quality_control_modules::mid
