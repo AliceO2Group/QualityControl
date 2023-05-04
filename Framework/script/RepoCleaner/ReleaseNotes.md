@@ -1,5 +1,9 @@
 # Release notes
 
+1.5
+- Add the binary `o2-qc-repo-delete-not-in-runs` to the install list. 
+- Remove excessive logging in `Ccdb.py`
+
 1.4
 - Add new tool to delete objects not belonging to a list of runs.
 
