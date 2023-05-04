@@ -49,7 +49,7 @@ DataProcessorSpec AggregatorRunnerFactory::create(const core::CommonSpec& common
   };
   newAggregatorRunner.labels.emplace_back(o2::framework::ecs::qcReconfigurable);
   newAggregatorRunner.labels.emplace_back(AggregatorRunner::getLabel());
-  framework::DataProcessorLabel expendableLabel = {"expendable"};
+  framework::DataProcessorLabel expendableLabel = { "expendable" };
   newAggregatorRunner.labels.emplace_back(expendableLabel);
   newAggregatorRunner.algorithm = adaptFromTask<AggregatorRunner>(std::move(aggregatorRunner));
   return newAggregatorRunner;

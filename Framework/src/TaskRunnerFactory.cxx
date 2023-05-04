@@ -54,7 +54,7 @@ o2::framework::DataProcessorSpec TaskRunnerFactory::create(const TaskRunnerConfi
   newTask.labels.emplace_back(o2::framework::ecs::qcReconfigurable);
   newTask.labels.emplace_back(TaskRunner::getTaskRunnerLabel());
   if (!taskConfig.critical) {
-    framework::DataProcessorLabel expendableLabel = {"expendable"};
+    framework::DataProcessorLabel expendableLabel = { "expendable" };
     newTask.labels.emplace_back(expendableLabel);
   }
 
