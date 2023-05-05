@@ -202,10 +202,10 @@ void RecPointsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (isTCM) {
       int bc = recpoint.getInteractionRecord().bc;
       bool vertexTrigger = triggersignals.getVertex();
-      double collisionTimeA = static_cast<Float_t>(recpoint.getCollisionTimeA() * 1.e-3);                   // time ps-->ns
-      double collisionTimeC = static_cast<Float_t>(recpoint.getCollisionTimeC() * 1.e-3);                   // time ps-->ns
-      mHistCollTimeA->Fill(collisionTimeA);                                                                 // time ps-->ns
-      mHistCollTimeC->Fill(collisionTimeC);                                                                 // time ps-->ns
+      double collisionTimeA = static_cast<Float_t>(recpoint.getCollisionTimeA() * 1.e-3); // time ps-->ns
+      double collisionTimeC = static_cast<Float_t>(recpoint.getCollisionTimeC() * 1.e-3); // time ps-->ns
+      mHistCollTimeA->Fill(collisionTimeA);                                               // time ps-->ns
+      mHistCollTimeC->Fill(collisionTimeC);                                               // time ps-->ns
       mTimeAvsTimeC->Fill(collisionTimeA, collisionTimeC);
       if ((collisionTimeA > -15 && collisionTimeA < 15) && (collisionTimeC > -15 && collisionTimeC < 15)) { // avoid dummytime
         mVertexVsCollTimeAllBC->Fill(((collisionTimeA - collisionTimeC) / 2) * o2::constants::physics::LightSpeedCm2NS, (collisionTimeA + collisionTimeC) / 2);
