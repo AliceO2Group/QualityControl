@@ -12,6 +12,7 @@
 /// \file   CheckOfSlices.h
 /// \author Maximilian Horst
 /// \author Laura Serksnyte
+/// \author Marcel Lesch
 ///
 
 #ifndef QC_MODULE_TPC_CHECKOFSLICES_H
@@ -23,13 +24,12 @@
 namespace o2::quality_control_modules::tpc
 {
 
-/// \brief  Check if all the slices in a Trending (e.g. as a function of TPC Pad) are within their uncertainty compatible with the mean or a predefined physical value
+/// \brief  Check if all the slices in a Trending (e.g. as a function of TPC sector) are within their uncertainty compatible with the mean or a predefined physical value
 /// \author Maximilian Horst
 /// \author Laura Serksnyte
+/// \author Marcel Lesch
 class CheckOfSlices : public o2::quality_control::checker::CheckInterface
 {
-
-  // ILOG(Warning,Support) << "##########################################################################################Start Check Header file:" << ENDM;
 
  public:
   /// Default constructor
@@ -44,17 +44,32 @@ class CheckOfSlices : public o2::quality_control::checker::CheckInterface
   std::string getAcceptedType() override { return "TCanvas"; }
 
  private:
-  ClassDefOverride(CheckOfSlices, 2);
+  ClassDefOverride(CheckOfSlices, 3);
+  std::string createMetaData(const std::vector<std::string>& pointMetaData);
   std::string mCheckChoice;
-  float mExpectedPhysicsValue;
-  float mNSigmaExpectedPhysicsValue;
-  float mNSigmaBadExpectedPhysicsValue;
-  float mNSigmaMean;
-  float mNSigmaBadMean;
-  float meanFull;
-  static constexpr std::string_view CheckChoiceMean = "Mean";
-  static constexpr std::string_view CheckChoiceExpectedPhysicsValue = "ExpectedPhysicsValue";
-  static constexpr std::string_view CheckChoiceBoth = "Both";
+  double mExpectedPhysicsValue;
+  double mNSigmaExpectedPhysicsValue;
+  double mNSigmaBadExpectedPhysicsValue;
+  double mNSigmaMean;
+  double mNSigmaBadMean;
+  double mRangeMedium;
+  double mRangeBad;
+  bool mSliceTrend;
+
+  double mMean = 0;
+  double mStdev;
+
+  std::string mBadString = "";
+  std::string mMediumString = "";
+  std::string mGoodString = "";
+  std::string mNullString = "";
+
+  std::string mMetadataComment;
+
+  bool mRangeCheck = false;
+  bool mExpectedValueCheck = false;
+  bool mMeanCheck = false;
+  bool mZeroCheck = false;
 };
 
 } // namespace o2::quality_control_modules::tpc

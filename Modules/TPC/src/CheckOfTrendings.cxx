@@ -19,6 +19,7 @@
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "Common/Utils.h"
+#include "TPC/Utility.h"
 #include <fmt/format.h>
 #include "TROOT.h"
 #include "TRandom.h"
@@ -549,7 +550,7 @@ void CheckOfTrendings::beautify(std::shared_ptr<MonitorObject> mo, Quality check
     }
 
     // Split lines by hand as \n does not work with TPaveText
-    std::string delimiter = "\n";
+    const std::string delimiter = "\n";
     size_t pos = 0;
     std::string subText;
     while ((pos = checkMessage.find(delimiter)) != std::string::npos) {
@@ -592,60 +593,7 @@ void CheckOfTrendings::getGraphs(TCanvas* canv, std::vector<TGraph*>& graphs)
   }
 }
 
-void CheckOfTrendings::calculateStatistics(const double* yValues, const double* yErrors, bool useErrors, const int firstPoint, const int lastPoint, double& mean, double& stddevOfMean)
-{
-  // yErrors returns nullptr for TGraph (no errors)
-  if (lastPoint - firstPoint <= 0) {
-    ILOG(Error, Support) << "In calculateStatistics(), the first and last point of the range have to differ!" << ENDM;
-    return;
-  }
-
-  double sum = 0.;
-  double sumSquare = 0.;
-  double sumOfWeights = 0.;        // sum w_i
-  double sumOfSquaredWeights = 0.; // sum (w_i)^2
-  double weight = 0.;
-
-  const std::vector<double> v(yValues + firstPoint, yValues + lastPoint);
-  if (!useErrors) {
-    // In case of no errors, we set our weights equal to 1
-    sum = std::accumulate(v.begin(), v.end(), 0.0);
-    sumOfWeights = v.size();
-    sumOfSquaredWeights = v.size();
-  } else {
-    // In case of errors, we set our weights equal to 1/sigma_i^2
-    const std::vector<double> vErr(yErrors + firstPoint, yErrors + lastPoint);
-    for (size_t i = 0; i < v.size(); i++) {
-      weight = 1. / std::pow(vErr[i], 2.);
-      sum += v[i] * weight;
-      sumSquare += v[i] * v[i] * weight;
-      sumOfWeights += weight;
-      sumOfSquaredWeights += weight * weight;
-    }
-  }
-
-  mean = sum / sumOfWeights;
-
-  if (v.size() == 1) { // we only have one point, we keep it's uncertainty
-    if (!useErrors) {
-      stddevOfMean = 0.;
-    } else {
-      stddevOfMean = sqrt(1. / sumOfWeights);
-    }
-  } else { // for >= 2 points, we calculate the spread
-    if (!useErrors) {
-      std::vector<double> diff(v.size());
-      std::transform(v.begin(), v.end(), diff.begin(), [mean](double x) { return x - mean; });
-      double sq_sum = std::inner_product(diff.begin(), diff.end(), diff.begin(), 0.0);
-      stddevOfMean = std::sqrt(sq_sum / (v.size() * (v.size() - 1.)));
-    } else {
-      double ratioSumWeight = sumOfSquaredWeights / (sumOfWeights * sumOfWeights);
-      stddevOfMean = sqrt((sumSquare / sumOfWeights - mean * mean) * (1. / (1. - ratioSumWeight)) * ratioSumWeight);
-    }
-  }
-}
-
-std::string CheckOfTrendings::createMetaData(std::vector<std::string> pointMetaData)
+std::string CheckOfTrendings::createMetaData(const std::vector<std::string>& pointMetaData)
 {
 
   std::string totalString = "";

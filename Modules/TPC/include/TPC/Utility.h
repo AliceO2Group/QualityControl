@@ -71,5 +71,15 @@ void getTimestamp(const std::string& metaInfo, std::vector<long>& timeStamps);
 /// \param nFiles Number of files that shall be processed
 /// \param limit Most recent timestamp to be processed
 std::vector<long> getDataTimestamps(const o2::ccdb::CcdbApi& cdbApi, const std::string_view path, const unsigned int nFiles, const long limit);
+
+/// \brief Calculates mean and stddev from yValues of a TGraph
+/// \param yValues const double* pointer to yValues of TGraph (via TGraph->GetY())
+/// \param yErrors const double* pointer to y uncertainties of TGraph (via TGraph->GetEY())
+/// \param useErrors bool whether uncertainties should be used in calculation of mean and stddev of mean
+/// \param firstPoint const int, first point of yValues to include in calculation
+/// \param lastPoint const int, last point of yValues to include in calculation
+/// \param mean double&, reference to double that should store mean
+/// \param stddevOfMean double&, reference to double that should store stddev of mean
+void calculateStatistics(const double* yValues, const double* yErrors, bool useErrors, const int firstPoint, const int lastPoint, double& mean, double& stddevOfMean);
 } // namespace o2::quality_control_modules::tpc
 #endif // QUALITYCONTROL_TPCUTILITY_H
