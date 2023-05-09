@@ -66,13 +66,11 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
         result.updateMetadata("CheckEmpty", "bad");
         result.set(Quality::Bad);
       }
-      if (h->GetMean() < 5.2 || h->GetMean()>5.8) {
-     
+      if (h->GetMean() < 5.2 || h->GetMean() > 5.8) {
+
         result.updateMetadata("CheckMean", "medium");
         result.set(Quality::Medium);
       }
-
-
     }
 
     if (iter->second->getName() == "AngularDistribution") {
@@ -227,16 +225,14 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       }
       if (strcmp(checkResult.getMetadata("CheckMean").c_str(), "medium") == 0) {
         status = "";
-        textColor = kOrange; 
-        tMessage[5] = std::make_shared<TLatex>(0.12, 0.7, Form("Quality::Medium: Mean (%.1f) is outside of 5.2 - 5.9,  (ignore for non-physics",h->GetMean()));
+        textColor = kOrange;
+        tMessage[5] = std::make_shared<TLatex>(0.12, 0.7, Form("Quality::Medium: Mean (%.1f) is outside of 5.2 - 5.9,  (ignore for non-physics", h->GetMean()));
         tMessage[5]->SetTextFont(43);
         tMessage[5]->SetTextSize(0.04);
         tMessage[5]->SetTextColor(kOrange);
         tMessage[5]->SetNDC();
         h->GetListOfFunctions()->Add(tMessage[5]->Clone());
       }
- 
- 
     }
 
     tInfo = std::make_shared<TLatex>(0.12, 0.75, Form("#bf{%s}", status.Data()));
