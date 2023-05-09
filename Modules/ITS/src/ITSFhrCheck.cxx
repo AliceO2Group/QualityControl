@@ -27,6 +27,7 @@
 #include <TH2Poly.h>
 #include <TString.h>
 #include "Common/Utils.h"
+#include "TMath.h"
 
 namespace o2::quality_control_modules::its
 {
@@ -50,35 +51,55 @@ Quality ITSFhrCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
       result.addMetadata("Gen_Occu_empty", "good");
       result.set(Quality::Good);
       std::vector<int> skipbins = convertToIntArray(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "skipbins", ""));
-      for (int ibin = 1; ibin <= h->GetNumberOfBins(); ibin++) {
-        if (ibin <= 48) { // IB
+
+
+      TIter next(h->GetBins());
+      int ibin = 0;
+      double_t nBadStaves[4];
+      
+      while (TH2PolyBin *Bin = (TH2PolyBin*) next()){
+
+        if (std::find(skipbins.begin(), skipbins.end(), ibin) != skipbins.end()) {
+              ibin++;
+              continue;
+        }
+
+        double X_center = (Bin->GetXMax () + Bin->GetXMin ()) /2;
+        double Y_center = (Bin->GetYMax () + Bin->GetYMin ()) /2;
+        double phi = TMath::ATan2(Y_center, X_center);
+        int sector = 2 * ( phi + TMath::Pi()) / TMath::Pi();
+ 
+       if (ibin < 48) { // IB
           fhrcutIB = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "fhrcutIB", fhrcutIB);
           if (h->GetBinContent(ibin) > fhrcutIB) {
-            if (std::find(skipbins.begin(), skipbins.end(), ibin) != skipbins.end()) {
-              continue;
-            }
             result.updateMetadata("Gen_Occu_IB", "bad");
             result.set(Quality::Bad);
           }
         } else { // OB
           fhrcutOB = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "fhrcutOB", fhrcutOB);
           if (h->GetBinContent(ibin) > fhrcutOB) {
-            if (std::find(skipbins.begin(), skipbins.end(), ibin) != skipbins.end()) {
-              continue;
-            }
             result.updateMetadata("Gen_Occu_OB", "bad");
             result.set(Quality::Bad);
           }
         }
 
-        if (h->GetBinContent(ibin) < 1e-15) { // in case of empty stave
-          if (std::find(skipbins.begin(), skipbins.end(), ibin) != skipbins.end()) {
-            continue;
-          }
-          result.updateMetadata("Gen_Occu_empty", "bad");
-          result.set(Quality::Bad);
+        if (Bin->GetContent() < 1e-15) { // in case of empty stave
+            nBadStaves[sector]++;
         }
-      } // end loop on bins
+        ibin++;
+      }
+
+      for (int iSector = 0 ;iSector<4; iSector++){
+          if ( nBadStaves[iSector] / 48 > 0.1 ){
+                    result.updateMetadata("Gen_Occu_empty", "bad");
+                    result.set(Quality::Bad);
+                    break;
+          } else if ( nBadStaves[iSector] / 48 > 0.05 ){
+                    result.updateMetadata("Gen_Occu_empty", "medium");
+                    result.set(Quality::Medium);
+          } 
+        }
+
     } else if (mo->getName() == "General/Noisy_Pixel") {
       auto* h = dynamic_cast<TH2Poly*>(mo->getObject());
       result.addMetadata("Noi_Pix", "good");
@@ -183,8 +204,15 @@ void ITSFhrCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
       h->GetListOfFunctions()->Add(tInfo[1]->Clone());
     }
     if (strcmp(checkResult.getMetadata("Gen_Occu_empty").c_str(), "bad") == 0) {
-      tInfo[2] = std::make_shared<TLatex>(0.4, 0.3, "#splitline{There are staves without hits}{IGNORE them if run has just started OR if it's TECH RUN}");
+      tInfo[2] = std::make_shared<TLatex>(0.4, 0.3, "#splitline{ITS sector has more than 10% of empty staves}{IGNORE them if run has just started OR if it's TECH RUN}");
       tInfo[2]->SetTextColor(kRed);
+      tInfo[2]->SetTextSize(0.03);
+      tInfo[2]->SetTextFont(43);
+      tInfo[2]->SetNDC();
+      h->GetListOfFunctions()->Add(tInfo[2]->Clone());
+    }else if (strcmp(checkResult.getMetadata("Gen_Occu_empty").c_str(), "mediun") == 0) {
+      tInfo[2] = std::make_shared<TLatex>(0.4, 0.3, "#splitline{ITS sector has more than 5% of empty staves}{IGNORE them if run has just started OR if it's TECH RUN}");
+      tInfo[2]->SetTextColor(kOrange);
       tInfo[2]->SetTextSize(0.03);
       tInfo[2]->SetTextFont(43);
       tInfo[2]->SetNDC();
