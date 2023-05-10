@@ -26,9 +26,6 @@ target_include_directories(
 
 target_link_libraries(${MODULE_NAME} PUBLIC O2QualityControl ROOT::Core ROOT::Hist O2::DataFormatsFDD O2::DataFormatsFT0 O2::DataFormatsFV0 O2::DataFormatsFIT O2QcCommon)
 
-#get_target_property(O2_INCLUDE_DIRS O2::CommonDataFormat INTERFACE_INCLUDE_DIRECTORIES)
-#get_target_property(ROOT_INCLUDE_DIRS ROOT::Core ROOT::Hist INTERFACE_INCLUDE_DIRECTORIES)
-
 set(CMAKE_REQUIRED_INCLUDES ${O2_INCLUDE_DIRS} ${ROOT_INCLUDE_DIRS})
 
 install(
@@ -37,32 +34,3 @@ install(
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
-
-# ---- ROOT dictionary ----
-
-#add_root_dictionary(${MODULE_NAME}
-#                    HEADERS include/FITCommon/BaseDigitQcTask.h
-#                            include/MUONCommon/MergeableTH2Ratio.h
-#                    LINKDEF include/FITCommon/LinkDef.h)
-
-# ---- ROOT dictionary ----
-
-#add_root_dictionary(${MODULE_NAME}
-#                    HEADERS include/FITCommon/RecoFITQcTask.h
-#                    LINKDEF include/FITCommon/LinkDef.h)
-
-# ---- Tests ----
-
-set(
-  TEST_SRCS
-)
-
-foreach(test ${TEST_SRCS})
-  get_filename_component(test_name ${test} NAME)
-  string(REGEX REPLACE ".cxx" "" test_name ${test_name})
-
-  add_executable(${test_name} ${test})
-  target_link_libraries(${test_name} PRIVATE ${MODULE_NAME} Boost::unit_test_framework)
-  add_test(NAME ${test_name} COMMAND ${test_name})
-  set_tests_properties(${test_name} PROPERTIES TIMEOUT 60)
-endforeach()
