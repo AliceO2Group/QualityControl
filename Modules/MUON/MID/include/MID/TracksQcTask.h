@@ -50,6 +50,7 @@ class TracksQcTask final : public TaskInterface
   void reset() override;
 
  private:
+  std::shared_ptr<TH1F> mNbTracksTF{ nullptr };
   std::shared_ptr<TH1F> mMultTracks{ nullptr };
   std::shared_ptr<TH2F> mTrackMapXY{ nullptr };
   std::shared_ptr<TH1F> mTrackDevX{ nullptr };

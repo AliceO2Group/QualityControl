@@ -20,10 +20,12 @@
 #include "QualityControl/QcInfoLogger.h"
 // ROOT
 #include <TH1.h>
+#include <TH2F.h>
 #include <TProfile.h>
 #include <TList.h>
 #include <TPaveText.h>
 #include <TLatex.h>
+#include <TLine.h>
 
 #include <DataFormatsQualityControl/FlagReasons.h>
 
@@ -40,30 +42,63 @@ void TracksQcCheck::configure()
     ILOG(Info, Devel) << "Custom parameter - Ratio44Threshold: " << param->second << ENDM;
     mRatio44Threshold = stof(param->second);
   }
+  if (auto param = mCustomParameters.find("NbOrbitPerTF"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - :NbOrbitPerTF " << param->second << ENDM;
+    mOrbTF = stof(param->second);
+  }
+  if (auto param = mCustomParameters.find("TracksScale"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - :TracksScale " << param->second << ENDM;
+    mTracksScale = stof(param->second);
+  }
 }
 
 Quality TracksQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
   Quality result = Quality::Null;
+
   for (auto& [moName, mo] : *moMap) {
+    (void)moName;
+    if (mo->getName() == "NbTracksTF") {
+      auto* h = dynamic_cast<TH1F*>(mo->getObject());
+      mTracksTF = h->GetBinContent(1);
+      // std::cout << " mTracksF  = "<< mTracksTF << std::endl ;
+    }
+    float scale = 1 / (mTracksTF * scaleTime * mOrbTF); // (Hz)
+
+    if (mo->getName() == "TrackMapXY") {
+      auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+      h2->Scale(scale);
+    }
+
     (void)moName;
     if (mo->getName() == "TrackRatio44") {
       auto* h = dynamic_cast<TProfile*>(mo->getObject());
+      TLine* lineThreshold = new TLine(0., mRatio44Threshold, h->GetXaxis()->GetXmax(), mRatio44Threshold);
+      lineThreshold->SetLineColor(kGreen);
+      // lineThreshold->SetLineStyle(kDashed);
+      lineThreshold->SetLineStyle(9);
+      lineThreshold->SetLineWidth(3);
+
       result = Quality::Good;
-      for (int i = 1; i < h->GetNbinsX(); i++) {
-        if ((i == 1) && (h->GetBinContent(i) < mRatio44Threshold)) {
-          result = Quality::Bad;
-          result.addReason(FlagReasonFactory::Unknown(),
-                           "Global Ratio44 too high in bin " + std::to_string(i));
-          break;
-        } else if ((i > 1) && (i < 10) && (h->GetBinContent(i) < mRatio44Threshold)) {
-          result = Quality::Medium;
-          result.addReason(FlagReasonFactory::Unknown(),
-                           "Ratio44 too high in bin " + std::to_string(i));
-          break;
+      if (mTracksTF > 0) {
+        for (int i = 1; i < h->GetNbinsX(); i++) {
+          if ((i == 1) && (h->GetBinContent(i) < mRatio44Threshold)) {
+            result = Quality::Bad;
+            result.addReason(FlagReasonFactory::Unknown(),
+                             "All Ratio44 too high in bin " + std::to_string(i));
+            lineThreshold->SetLineColor(kRed);
+            break;
+          } else if ((i > 1) && (i < 10) && (h->GetBinContent(i) < mRatio44Threshold)) {
+            result = Quality::Medium;
+            result.addReason(FlagReasonFactory::Unknown(),
+                             "Ratio44 too high in bin " + std::to_string(i));
+            lineThreshold->SetLineColor(kOrange);
+            break;
+          }
         }
-      } // TrackRatio44
-    }
+        h->GetListOfFunctions()->Add(lineThreshold);
+      }
+    } // TrackRatio44
   }
   return result;
 }
@@ -112,44 +147,51 @@ void TracksQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
 {
   // std::cout << "beautify ::: " << checkResult << std::endl;
   auto currentTime = getCurrentTime();
-  updateTitle(dynamic_cast<TProfile*>(mo->getObject()), currentTime);
+  // updateTitle(dynamic_cast<TProfile*>(mo->getObject()), currentTime);
   TLatex* msg;
-  if (mo->getName() == "TrackRatio44") {
-    auto* h = dynamic_cast<TProfile*>(mo->getObject());
-    h->SetMinimum(0.);
-    h->SetMaximum(1.2);
 
-    if (checkResult == Quality::Good) {
-      msg = drawLatex(.2, 0.82, kGreen, "All ratio within limits: OK!");
-      h->GetListOfFunctions()->Add(msg);
-      msg->Draw();
-      h->SetFillColor(kGreen);
-      h->GetListOfFunctions()->Add(msg);
-      h->SetTitleSize(0.04);
-      // std::cout << "beautify GOOD::: "  << std::endl;
+  if (mo->getName() == "TrackMapXY") {
+    auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
+    updateTitle(h2, "(Hz)");
+    updateTitle(h2, Form("- TF=%3.0f -", mTracksTF));
+    updateTitle(h2, currentTime);
+    h2->SetMaximum(mTracksScale);
+  }
+  if (mTracksTF > 0) {
+    if (mo->getName() == "TrackRatio44") {
+      auto* h = dynamic_cast<TProfile*>(mo->getObject());
+      updateTitle(h, Form("- TF=%3.0f -", mTracksTF));
+      updateTitle(h, currentTime);
+      h->SetMinimum(0.);
+      h->SetMaximum(1.2);
 
-    } else if (checkResult == Quality::Bad) {
-      ILOG(Info, Devel) << "Quality::Bad, setting to red" << ENDM;
-      // msg = drawLatex(.2, 0.82, kRed, ""Global Ratio too low, call MID on-call");
-      msg = drawLatex(.2, 0.82, kRed, Form("Global Ratio44/all < %4.2f  too low !! ", mRatio44Threshold));
-      h->GetListOfFunctions()->Add(msg);
-      msg->Draw();
-      h->SetFillColor(kRed);
-      h->GetListOfFunctions()->Add(msg);
-      h->SetTitleSize(0.04);
-      // std::cout << "beautify BAD::: "  << std::endl;
+      if (checkResult == Quality::Good) {
+        msg = drawLatex(.2, 0.82, kGreen, "All ratio within limits: OK!");
+        msg->Draw();
+        h->SetFillColor(kGreen);
+        h->GetListOfFunctions()->Add(msg);
+        // std::cout << "beautify GOOD::: "  << std::endl;
 
-    } else if (checkResult == Quality::Medium) {
-      ILOG(Info, Devel) << "Quality::medium, setting to orange" << ENDM;
-      msg = drawLatex(.2, 0.82, kOrange, Form("Ratio44/all < %4.2f too low !! ", mRatio44Threshold));
-      h->GetListOfFunctions()->Add(msg);
-      msg->Draw();
-      h->SetFillColor(kOrange);
-      h->GetListOfFunctions()->Add(msg);
+      } else if (checkResult == Quality::Bad) {
+        ILOG(Info, Devel) << "Quality::Bad, setting to red" << ENDM;
+        // msg = drawLatex(.2, 0.82, kRed, ""Global Ratio too low, call MID on-call");
+        msg = drawLatex(.2, 0.82, kRed, Form("Global Ratio44/all < %4.2f  too low !! ", mRatio44Threshold));
+        msg->Draw();
+        h->SetFillColor(kRed);
+        h->GetListOfFunctions()->Add(msg);
+        // std::cout << "beautify BAD::: "  << std::endl;
+
+      } else if (checkResult == Quality::Medium) {
+        ILOG(Info, Devel) << "Quality::medium, setting to orange" << ENDM;
+        msg = drawLatex(.2, 0.82, kOrange, Form("Ratio44/all < %4.2f too low !! ", mRatio44Threshold));
+        msg->Draw();
+        h->SetFillColor(kOrange);
+        h->GetListOfFunctions()->Add(msg);
+        // std::cout << "beautify MEDIUM::: "  << std::endl;
+      }
       h->SetTitleSize(0.04);
-      // std::cout << "beautify MEDIUM::: "  << std::endl;
+      h->SetLineColor(kBlack);
     }
-    h->SetLineColor(kBlack);
   }
 }
 

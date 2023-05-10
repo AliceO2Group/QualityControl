@@ -52,7 +52,9 @@ class DigitsQcCheck : public o2::quality_control::checker::CheckInterface
   int mNbBadLocalBoard;
   int mBadLB;
   int mEmptyLB;
+  float mMultTab[8];
 
+  Quality result = Quality::Null;
   Quality resultBMT11 = Quality::Null;
   Quality resultBMT12 = Quality::Null;
   Quality resultBMT21 = Quality::Null;

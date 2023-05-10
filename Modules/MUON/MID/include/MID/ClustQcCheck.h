@@ -31,11 +31,19 @@ class ClustQcCheck : public o2::quality_control::checker::CheckInterface
   ~ClustQcCheck() override = default;
 
   // Override interface
+  void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
 
-  ClassDefOverride(ClustQcCheck, 2);
+ private:
+  float mClusterTF = 0;
+  int mOrbTF = 32;
+  // float scaleTime = 0.0114048; // 128 orb/TF * 3564 BC/orb * 25ns
+  float scaleTime = 0.0000891; // 3564 BC/orb * 25ns
+  float mClusterScale = 100;
+
+  ClassDefOverride(ClustQcCheck, 3);
 };
 
 } // namespace o2::quality_control_modules::mid
