@@ -24,6 +24,7 @@
 #include <DataFormatsFDD/ChannelData.h>
 #include <Framework/InputRecord.h>
 #include <vector>
+#include "CommonConstants/PhysicsConstants.h"
 
 namespace o2::quality_control_modules::fdd
 {
@@ -61,7 +62,6 @@ void RecPointsQcTask::rebinFromConfig()
       ILOG(Warning) << "config: invalid binning parameter: " << hName << " -> " << binning << ENDM;
     }
   };
-
   const std::string rebinKeyword = "binning";
   const char* channelIdPlaceholder = "#";
   for (auto& param : mCustomParameters) {
@@ -89,13 +89,16 @@ void RecPointsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mStateLastIR2Ch = {};
 
   mHistTime2Ch = std::make_unique<TH2F>("TimePerChannel", "Time vs Channel;Channel;Time [ns]", NCHANNELS, 0, NCHANNELS, 420, -10.50, 10.50);
-  mHistTime2Ch->SetOption("colz");
+  mVertexVsCollTimeAllBC = std::make_unique<TH2F>("VertexVsCollTimeAllBC", "FDD vertex vs Collision time;FDD vertex (cm);  Collision Time [ns]", 2001, -100.5, 100.5, 2100, -20.5, 20.5);
+  mVertexVsCollTimeVertexTrigger = std::make_unique<TH2F>("VertexVsCollTimeVertexTrigger", "FDD vertex vs Collision time (Vertex trigger);FDD vertex (cm);  Collision Time [ns]", 2001, -100.5, 100.5, 2100, -20.5, 20.5);
+  mVertexNsVsCollTimeAllBC = std::make_unique<TH2F>("VertexNsVsCollTimeAllBC", "FDD vertex vs Collision time;FDD vertex (ns);  Collision Time [ns]", 2100, -20.5, 20.5, 2100, -20.5, 20.5);
+  mVertexNsVsCollTimeVertexTrigger = std::make_unique<TH2F>("VertexNsVsCollTimeVertexTrigger", "FDD vertex vs Collision time (Vertex trigger);FDD vertex (ns);  Collision Time [ns]", 2100, -20.5, 20.5, 2100, -20.5, 20.5);
+  mTimeAvsTimeC = std::make_unique<TH2F>("TimeAvsTimeC", "FDD time A  vs time C;time A (ns);time C (ns)", 1610, -80.5, 80.5, 1610, -80.5, 80.5);
   mHistAmp2Ch = std::make_unique<TH2F>("AmpPerChannel", "Amplitude vs Channel;Channel;Amp [#ADC channels]", NCHANNELS, 0, NCHANNELS, 2200, -100, 4100);
-  mHistAmp2Ch->SetOption("colz");
   mHistCollTimeA = std::make_unique<TH1F>("CollTimeA", "T0A;Time [ns]", 4100, -20.5, 20.5);
   mHistCollTimeC = std::make_unique<TH1F>("CollTimeC", "T0C;Time [ns]", 4100, -20.5, 20.5);
   mHistBC = std::make_unique<TH1F>("BC", "BC;BC;counts;", sBCperOrbit, 0, sBCperOrbit);
-  mHistBCTCM = std::make_unique<TH1F>("BCTCM", "BC TCM;BC;counts;", sBCperOrbit, 0, sBCperOrbit);
+  mHistBCVetex = std::make_unique<TH1F>("BCVetex", "BC Vertex trigger;BC;counts;", sBCperOrbit, 0, sBCperOrbit);
   mHistBCorA = std::make_unique<TH1F>("BCorA", "BC orA;BC;counts;", sBCperOrbit, 0, sBCperOrbit);
   mHistBCorC = std::make_unique<TH1F>("BCorC", "BC orC;BC;counts;", sBCperOrbit, 0, sBCperOrbit);
   mListHistGarbage = new TList();
@@ -113,15 +116,24 @@ void RecPointsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   for (const auto& entry : vecChannelIDs) {
     mSetAllowedChIDs.insert(entry);
   }
-
   getObjectsManager()->startPublishing(mHistTime2Ch.get());
   getObjectsManager()->setDefaultDrawOptions(mHistTime2Ch.get(), "COLZ");
   getObjectsManager()->startPublishing(mHistAmp2Ch.get());
   getObjectsManager()->setDefaultDrawOptions(mHistAmp2Ch.get(), "COLZ");
+  getObjectsManager()->startPublishing(mVertexVsCollTimeAllBC.get());
+  getObjectsManager()->setDefaultDrawOptions(mVertexVsCollTimeAllBC.get(), "COLZ");
+  getObjectsManager()->startPublishing(mVertexVsCollTimeVertexTrigger.get());
+  getObjectsManager()->setDefaultDrawOptions(mVertexVsCollTimeVertexTrigger.get(), "COLZ");
+  getObjectsManager()->startPublishing(mVertexNsVsCollTimeAllBC.get());
+  getObjectsManager()->setDefaultDrawOptions(mVertexNsVsCollTimeAllBC.get(), "COLZ");
+  getObjectsManager()->startPublishing(mVertexNsVsCollTimeVertexTrigger.get());
+  getObjectsManager()->setDefaultDrawOptions(mVertexNsVsCollTimeVertexTrigger.get(), "COLZ");
+  getObjectsManager()->startPublishing(mTimeAvsTimeC.get());
+  getObjectsManager()->setDefaultDrawOptions(mTimeAvsTimeC.get(), "COLZ");
   getObjectsManager()->startPublishing(mHistCollTimeA.get());
   getObjectsManager()->startPublishing(mHistCollTimeC.get());
   getObjectsManager()->startPublishing(mHistBC.get());
-  getObjectsManager()->startPublishing(mHistBCTCM.get());
+  getObjectsManager()->startPublishing(mHistBCVetex.get());
   getObjectsManager()->startPublishing(mHistBCorA.get());
   getObjectsManager()->startPublishing(mHistBCorC.get());
 
@@ -130,6 +142,7 @@ void RecPointsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     if (pairHistAmpVsTime.second) {
       mListHistGarbage->Add(pairHistAmpVsTime.first->second);
       getObjectsManager()->startPublishing(pairHistAmpVsTime.first->second);
+      getObjectsManager()->setDefaultDrawOptions(pairHistAmpVsTime.first->second, "COLZ");
     }
   }
 
@@ -142,10 +155,15 @@ void RecPointsQcTask::startOfActivity(Activity& activity)
   ILOG(Info, Support) << "@@@@ startOfActivity" << activity.mId << ENDM;
   mHistTime2Ch->Reset();
   mHistAmp2Ch->Reset();
+  mVertexVsCollTimeAllBC->Reset();
+  mVertexVsCollTimeVertexTrigger->Reset();
+  mVertexNsVsCollTimeAllBC->Reset();
+  mVertexNsVsCollTimeVertexTrigger->Reset();
+  mTimeAvsTimeC->Reset();
   mHistCollTimeA->Reset();
   mHistCollTimeC->Reset();
   mHistBC->Reset();
-  mHistBCTCM->Reset();
+  mHistBCVetex->Reset();
   mHistBCorA->Reset();
   mHistBCorC->Reset();
   for (auto& entry : mMapHistAmpVsTime) {
@@ -177,19 +195,32 @@ void RecPointsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       isTCM = false;
     }
     o2::fdd::Triggers triggersignals = recpoint.getTrigger();
-    // bool vertexTrigger = triggersignals.getVertex();
+
     auto channels = recpoint.getBunchChannelData(chan);
     mHistBC->Fill(recpoint.getInteractionRecord().bc);
 
     if (isTCM) {
-      mHistBCTCM->Fill(recpoint.getInteractionRecord().bc);
+      int bc = recpoint.getInteractionRecord().bc;
+      bool vertexTrigger = triggersignals.getVertex();
+      double collisionTimeA = static_cast<Double_t>(recpoint.getCollisionTimeA() * 1.e-3); // time ps-->ns
+      double collisionTimeC = static_cast<Double_t>(recpoint.getCollisionTimeC() * 1.e-3); // time ps-->ns
+      mHistCollTimeA->Fill(collisionTimeA);                                                // time ps-->ns
+      mHistCollTimeC->Fill(collisionTimeC);                                                // time ps-->ns
+      mTimeAvsTimeC->Fill(collisionTimeA, collisionTimeC);
+      if ((collisionTimeA > -15 && collisionTimeA < 15) && (collisionTimeC > -15 && collisionTimeC < 15)) { // avoid dummytime
+        mVertexVsCollTimeAllBC->Fill(((collisionTimeA - collisionTimeC) / 2) * o2::constants::physics::LightSpeedCm2NS, (collisionTimeA + collisionTimeC) / 2);
+        mVertexNsVsCollTimeAllBC->Fill((collisionTimeA - collisionTimeC) / 2., (collisionTimeA + collisionTimeC) / 2.);
+      }
+      if (vertexTrigger) {
+        mHistBCVetex->Fill(bc);
+        mVertexVsCollTimeVertexTrigger->Fill(((collisionTimeA - collisionTimeC) / 2) * o2::constants::physics::LightSpeedCm2NS, (collisionTimeA + collisionTimeC) / 2);
+        mVertexNsVsCollTimeVertexTrigger->Fill((collisionTimeA - collisionTimeC) / 2., (collisionTimeA + collisionTimeC) / 2.);
+      }
       if (triggersignals.getOrA()) {
-        mHistCollTimeA->Fill(static_cast<Float_t>(recpoint.getCollisionTimeA() * 1.e-3)); // time ps-->ns
-        mHistBCorA->Fill(recpoint.getInteractionRecord().bc);
+        mHistBCorA->Fill(bc);
       }
       if (triggersignals.getOrC()) {
-        mHistCollTimeC->Fill(static_cast<Float_t>(recpoint.getCollisionTimeC() * 1.e-3)); // time ps-->ns
-        mHistBCorC->Fill(recpoint.getInteractionRecord().bc);
+        mHistBCorC->Fill(bc);
       }
     } /// TCM
     for (const auto& chData : channels) {
@@ -220,15 +251,19 @@ void RecPointsQcTask::reset()
   // clean all the monitor objects here
   mHistTime2Ch->Reset();
   mHistAmp2Ch->Reset();
+  mVertexVsCollTimeAllBC->Reset();
+  mVertexVsCollTimeVertexTrigger->Reset();
+  mVertexNsVsCollTimeAllBC->Reset();
+  mVertexNsVsCollTimeVertexTrigger->Reset();
+  mTimeAvsTimeC->Reset();
   mHistCollTimeA->Reset();
   mHistCollTimeC->Reset();
   mHistBC->Reset();
-  mHistBCTCM->Reset();
+  mHistBCVetex->Reset();
   mHistBCorA->Reset();
   mHistBCorC->Reset();
   for (auto& entry : mMapHistAmpVsTime) {
     entry.second->Reset();
   }
 }
-
 } // namespace o2::quality_control_modules::fdd

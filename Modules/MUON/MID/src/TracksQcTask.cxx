@@ -66,7 +66,9 @@ void TracksQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   multTraksB34MT22 = 0;
   multTraksNB34MT22 = 0;
 
-  // mTrackBCCounts = std::make_shared<TH1F>("TrackBCCounts", "Tracks Bunch Crossing Counts;BC;Entry (tracks nb)", o2::constants::lhc::LHCMaxBunches, 0., o2::constants::lhc::LHCMaxBunches);
+  mNbTracksTF = std::make_shared<TH1F>("NbTracksTF", "NbTimeFrame", 1, 0, 1.);
+  getObjectsManager()->startPublishing(mNbTracksTF.get());
+
   mTrackBCCounts = std::make_shared<TProfile>("TrackBCCounts", "Mean Tracks in Bunch Crossing ; BC ; Mean Tracks nb", o2::constants::lhc::LHCMaxBunches, 0., o2::constants::lhc::LHCMaxBunches);
   getObjectsManager()->startPublishing(mTrackBCCounts.get());
   // mTrackBCCounts->GetXaxis()->SetTitle("BC");
@@ -284,6 +286,7 @@ void TracksQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   auto tracks = ctx.inputs().get<gsl::span<o2::mid::Track>>("tracks");
   auto rofs = ctx.inputs().get<gsl::span<o2::mid::ROFRecord>>("trackrofs");
 
+  mNbTracksTF->Fill(0.5, 1.);
   // auto tracks = o2::mid::specs::getData(ctx, "tracks", o2::mid::EventType::Standard);
   // auto rofs = o2::mid::specs::getRofs(ctx, "tracks", o2::mid::EventType::Standard);
 
@@ -587,6 +590,7 @@ void TracksQcTask::reset()
   ILOG(Info, Devel) << "Resetting the histogram" << ENDM;
   // printf(" =================== > test reset Tracks \n");
 
+  mNbTracksTF->Reset();
   mTrackMapXY->Reset();
   mTrackDevX->Reset();
   mTrackDevY->Reset();

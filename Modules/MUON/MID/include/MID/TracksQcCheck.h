@@ -40,6 +40,10 @@ class TracksQcCheck : public o2::quality_control::checker::CheckInterface
 
  private:
   double mRatio44Threshold;
+  float mTracksTF = 0;
+  int mOrbTF = 32;
+  float scaleTime = 0.0000891; // 3564 BC/orb * 25ns
+  int mTracksScale = 100;
 
   ClassDefOverride(TracksQcCheck, 2);
 };

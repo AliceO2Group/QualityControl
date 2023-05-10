@@ -82,11 +82,8 @@ class Ccdb:
             logger.error(f"JSON decode error: {err}")
             raise
         paths = []
-        logger.debug(f"json: {json}")
         for item in json['objects']:
             paths.append(item['path'])
-        logger.debug(type(json['objects']));
-        logger.debug(type(json['objects'][0]));
 
         return paths
 
