@@ -100,8 +100,8 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
   mRateSemiCentral->SetLineColor(kOrange);
 
   mMapChTrgNames = helperFIT.mMapPMbits;
-  mMapDigitTrgNames = helperFIT.mMapTrgBits;
-  mMapBasicTrgBits = helperFIT.mMapBasicTrgBits;
+  mMapDigitTrgNames = HelperTrgFIT::sMapTrgBits;
+  mMapBasicTrgBits = HelperTrgFIT::sMapBasicTrgBitsFT0;
   mHistChDataNegBits = helper::registerHist<TH2F>(getObjectsManager(), "COLZ", "ChannelDataNegBits", "ChannelData negative bits per ChannelID;Channel;Negative bit", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM, mMapChTrgNames);
   mHistTriggers = helper::registerHist<TH1F>(getObjectsManager(), "", "Triggers", "FT0 Triggers from TCM", mMapDigitTrgNames);
   mHistBcTrgOutOfBunchColl = helper::registerHist<TH2F>(getObjectsManager(), "COLZ", "OutOfBunchColl_BCvsTrg", "FT0 BC vs Triggers for out-of-bunch collisions;BC;Triggers", sBCperOrbit, 0, sBCperOrbit, mMapDigitTrgNames);

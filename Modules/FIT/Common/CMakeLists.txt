@@ -5,11 +5,13 @@ set(MODULE_NAME "O2QcFITCommon")
 set(SRCS
   src/HelperFIT.cxx
   src/HelperHist.cxx
+  src/DigitSync.cxx
 )
 
 set(HEADERS
   include/FITCommon/HelperFIT.h
   include/FITCommon/HelperHist.h
+  include/FITCommon/DigitSync.h
 )
 
 # ---- Library ----
@@ -22,7 +24,7 @@ target_include_directories(
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_link_libraries(${MODULE_NAME} PUBLIC O2QualityControl ROOT::Core ROOT::Hist)
+target_link_libraries(${MODULE_NAME} PUBLIC O2QualityControl ROOT::Core ROOT::Hist O2::DataFormatsFDD O2::DataFormatsFT0 O2::DataFormatsFV0 O2::DataFormatsFIT O2QcCommon)
 
 #get_target_property(O2_INCLUDE_DIRS O2::CommonDataFormat INTERFACE_INCLUDE_DIRECTORIES)
 #get_target_property(ROOT_INCLUDE_DIRS ROOT::Core ROOT::Hist INTERFACE_INCLUDE_DIRECTORIES)
@@ -41,6 +43,12 @@ install(
 #add_root_dictionary(${MODULE_NAME}
 #                    HEADERS include/FITCommon/BaseDigitQcTask.h
 #                            include/MUONCommon/MergeableTH2Ratio.h
+#                    LINKDEF include/FITCommon/LinkDef.h)
+
+# ---- ROOT dictionary ----
+
+#add_root_dictionary(${MODULE_NAME}
+#                    HEADERS include/FITCommon/RecoFITQcTask.h
 #                    LINKDEF include/FITCommon/LinkDef.h)
 
 # ---- Tests ----

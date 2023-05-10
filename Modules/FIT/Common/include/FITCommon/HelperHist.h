@@ -37,7 +37,7 @@ namespace helper
 
 // Preparation for map axis -> map with bin labels
 template <std::size_t NStep, std::size_t NArgLocal, std::size_t NAxis, typename TupleArgs>
-void getMapBinLabelsPerAxis(std::map<unsigned int, std::map<unsigned int, std::string>>& mapAxisToMapBinLabels, const TupleArgs& tupleArgs)
+inline void getMapBinLabelsPerAxis(std::map<unsigned int, std::map<unsigned int, std::string>>& mapAxisToMapBinLabels, const TupleArgs& tupleArgs)
 {
   if constexpr (NStep < std::tuple_size_v<TupleArgs>) {
     using ElementType = typename std::tuple_element<NStep, TupleArgs>::type;
@@ -59,7 +59,7 @@ void getMapBinLabelsPerAxis(std::map<unsigned int, std::map<unsigned int, std::s
 
 // For unpacking std::map<unsigned int, std::string> into tuple of bin parameters
 template <typename Arg>
-auto unpackHistArg(const Arg& arg)
+inline auto unpackHistArg(const Arg& arg)
 {
   if constexpr (std::is_same_v<std::decay_t<Arg>, std::map<unsigned int, std::string>>) {
     return std::make_tuple(static_cast<int>(arg.size()), float(0.0), static_cast<float>(arg.size()));
@@ -74,7 +74,7 @@ auto unpackHistArg(const Arg& arg)
 // auto h2 = makeHist<TH1F>("hist2","hist2",map1)
 
 template <typename HistType, typename... BinArgs>
-auto makeHist(const std::string& name, const std::string& title, BinArgs&&... binArgs)
+inline auto makeHist(const std::string& name, const std::string& title, BinArgs&&... binArgs)
 {
 
   const auto tupleArgs = std::tuple_cat(std::make_tuple(name, title), unpackHistArg(std::forward<BinArgs>(binArgs))...);
@@ -109,7 +109,7 @@ auto makeHist(const std::string& name, const std::string& title, BinArgs&&... bi
 }
 
 template <typename HistType, typename ManagerType, typename... BinArgs>
-auto registerHist(ManagerType manager, const std::string& defaultDrawOption, const std::string& name, const std::string& title, BinArgs&&... binArgs)
+inline auto registerHist(ManagerType manager, const std::string& defaultDrawOption, const std::string& name, const std::string& title, BinArgs&&... binArgs)
 {
   auto ptrHist = makeHist<HistType>(name, title, std::forward<BinArgs>(binArgs)...);
   manager->startPublishing(ptrHist.get());
@@ -120,7 +120,7 @@ auto registerHist(ManagerType manager, const std::string& defaultDrawOption, con
 }
 
 template <typename ValueType>
-ValueType getConfigFromPropertyTree(const boost::property_tree::ptree& config, const char* fieldName, ValueType value = {})
+inline ValueType getConfigFromPropertyTree(const boost::property_tree::ptree& config, const char* fieldName, ValueType value = {})
 {
   const auto& node = config.get_child_optional(fieldName);
   if (node) {
@@ -134,7 +134,7 @@ ValueType getConfigFromPropertyTree(const boost::property_tree::ptree& config, c
 
 // first entry - start BC, second - number of BCs in row
 template <typename BitSetBC>
-std::vector<std::pair<int, int>> getMapBCtrains(const BitSetBC& bitsetBC)
+inline std::vector<std::pair<int, int>> getMapBCtrains(const BitSetBC& bitsetBC)
 {
   std::vector<std::pair<int, int>> vecTrains{};
   int nBCs{ 0 };
@@ -158,6 +158,49 @@ std::vector<std::pair<int, int>> getMapBCtrains(const BitSetBC& bitsetBC)
     vecTrains.push_back({ firstBC, nBCs });
   }
   return vecTrains;
+}
+
+inline std::map<unsigned int, std::string> multiplyMaps(const std::vector<std::tuple<std::string, std::map<unsigned int, std::string>, std::string>>& vecPreffixMapSuffix, bool useMapSizeAsMultFactor = true)
+{
+
+  auto multiplyPairMaps = [](bool useMapSizeAsMultFactor, const std::tuple<std::string, std::map<unsigned int, std::string>, std::string>& firstPreffixMapSuffix,
+                             const std::tuple<std::string, std::map<unsigned int, std::string>, std::string>& secondPreffixMapSuffix = {}) -> std::map<unsigned int, std::string> {
+    std::map<unsigned int, std::string> mapResult{};
+    const auto& firstPreffix = std::get<0>(firstPreffixMapSuffix);
+    const auto& firstSuffix = std::get<2>(firstPreffixMapSuffix);
+    const auto& firstMap = std::get<1>(firstPreffixMapSuffix);
+
+    const auto& secondPreffix = std::get<0>(secondPreffixMapSuffix);
+    const auto& secondSuffix = std::get<2>(secondPreffixMapSuffix);
+    const auto& secondMap = std::get<1>(secondPreffixMapSuffix);
+
+    const unsigned int lastPosSecondMap = secondMap.size() > 0 ? (--secondMap.end())->first : 0;
+    const unsigned int multFactor = (useMapSizeAsMultFactor && secondMap.size() > 0) ? secondMap.size() : lastPosSecondMap + 1;
+
+    for (const auto& entryFirst : firstMap) {
+      const std::string newEntrySecond_preffix = firstPreffix + entryFirst.second + firstSuffix;
+      const unsigned int startIndex = entryFirst.first * multFactor;
+      for (const auto& entrySecond : secondMap) {
+        const std::string newEntrySecond = newEntrySecond_preffix + secondPreffix + entrySecond.second + secondSuffix;
+        const unsigned int newEntryFirst = startIndex + entrySecond.first;
+        mapResult.insert({ newEntryFirst, newEntrySecond });
+      }
+      if (secondMap.size() == 0) {
+        // Only add preffix and suffix
+        mapResult.insert({ startIndex, newEntrySecond_preffix });
+      }
+    }
+    return mapResult;
+  };
+  std::map<unsigned int, std::string> mapResult{};
+  if (vecPreffixMapSuffix.size() > 0) {
+    mapResult = multiplyPairMaps(useMapSizeAsMultFactor, vecPreffixMapSuffix[0]);
+    for (int iEntry = 1; iEntry < vecPreffixMapSuffix.size(); iEntry++) {
+      const std::string s1{ "" }, s2{ "" };
+      mapResult = multiplyPairMaps(useMapSizeAsMultFactor, std::tie(s1, mapResult, s2), vecPreffixMapSuffix[iEntry]);
+    }
+  }
+  return mapResult;
 }
 
 } // namespace helper
