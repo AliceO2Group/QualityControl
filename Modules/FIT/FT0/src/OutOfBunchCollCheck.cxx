@@ -59,7 +59,7 @@ void OutOfBunchCollCheck::configure()
     mBinPos = int(o2::fit::Triggers::bitVertex) + 1;
     ILOG(Debug, Support) << "configure() : using default binPos = " << mBinPos << ENDM;
   }
-  mEnableMessage = o2::quality_control_modules::common::getFromConfig(mCustomParameters, "enableMessage", true);
+  mEnableMessage = o2::quality_control_modules::common::getFromConfig<bool>(mCustomParameters, "enableMessage", true);
 }
 
 Quality OutOfBunchCollCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)

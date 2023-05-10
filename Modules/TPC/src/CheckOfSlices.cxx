@@ -11,6 +11,7 @@
 ///
 /// \file   CheckOfSlices.cxx
 /// \author Maximilian Horst
+/// \author Marcel Lesch
 ///
 
 #include "TPC/CheckOfSlices.h"
@@ -18,6 +19,8 @@
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
 #include <fmt/format.h>
+#include "Common/Utils.h"
+#include "TPC/Utility.h"
 
 #include <TCanvas.h>
 #include <TGraphErrors.h>
@@ -35,70 +38,77 @@ namespace o2::quality_control_modules::tpc
 
 void CheckOfSlices::configure()
 {
-  if (auto param = mCustomParameters.find("chooseCheckMeanOrExpectedPhysicsValueOrBoth"); param != mCustomParameters.end()) {
-    mCheckChoice = param->second.c_str();
-    if ((mCheckChoice != CheckChoiceMean) && (mCheckChoice != CheckChoiceExpectedPhysicsValue) && (mCheckChoice != CheckChoiceBoth)) {
-      mCheckChoice = CheckChoiceMean;
-      ILOG(Warning, Support) << "The chosen value does not exist. Available options: mean, ExpectedPhysicsValue, both. Default mean selected." << ENDM;
-    }
-    if ((mCheckChoice == CheckChoiceExpectedPhysicsValue) || (mCheckChoice == CheckChoiceBoth)) {
-      if (auto param = mCustomParameters.find("expectedPhysicsValue"); param != mCustomParameters.end()) {
-        mExpectedPhysicsValue = std::atof(param->second.c_str());
-      } else {
-        // This is not properly working, does not shut down process
-        ILOG(Fatal, Support) << "Chosen check requires ExpectedPhysicsValue which is not given." << ENDM;
-      }
-      if (auto param = mCustomParameters.find("allowedNSigmaForExpectation"); param != mCustomParameters.end()) {
-        mNSigmaExpectedPhysicsValue = std::atof(param->second.c_str());
-      } else {
-        mNSigmaExpectedPhysicsValue = 3;
-        ILOG(Info, Support) << "Chosen check requires mNSigmaExpectedPhysicsValue which is not given. Setting to default 3." << ENDM;
-      }
-      if (auto param = mCustomParameters.find("badNSigmaForExpectation"); param != mCustomParameters.end()) {
-        mNSigmaBadExpectedPhysicsValue = std::atof(param->second.c_str());
-      } else {
-        mNSigmaBadExpectedPhysicsValue = 6;
-        ILOG(Info, Support) << "Chosen check requires mNSigmaBadExpectedPhysicsValue which is not given. Setting to default 6." << ENDM;
-      }
-      /*
-      if (auto param = mCustomParameters.find("pointsToTakeForExpectedValueCheck"); param != mCustomParameters.end()) {
-        mPointToTakeForExpectedValueCheck = std::atof(param->second.c_str());
-      } else {
-        mPointToTakeForExpectedValueCheck = 10;
-        ILOG(Warning, Support) << "Chosen check requires mPointToTakeForExpectedValueCheck which is not given. Set to default 10." << ENDM;
-      }*/
-    }
+  // Backwards compability for old choice
+  const std::string oldCheckChoiceString = common::getFromConfig<std::string>(mCustomParameters, "chooseCheckMeanOrExpectedPhysicsValueOrBoth", "");
+  if (oldCheckChoiceString != "") {
+    ILOG(Warning, Support) << "json using CheckOfTrendings needs to be updated! chooseCheckMeanOrExpectedPhysicsValueOrBoth was replaced by CheckChoice. Available options: Mean, ExpectedValue, Range, Zero" << ENDM;
 
-    if ((mCheckChoice == CheckChoiceMean) || (mCheckChoice == CheckChoiceBoth)) {
-      if (auto param = mCustomParameters.find("allowedNSigmaForMean"); param != mCustomParameters.end()) {
-        mNSigmaMean = std::atof(param->second.c_str());
-      } else {
-        mNSigmaMean = 3;
-        ILOG(Warning, Support) << "Chosen check requires allowedNSigmaForMean which is not given. Setting to default 3." << ENDM;
-      }
-      if (auto param = mCustomParameters.find("badNSigmaForMean"); param != mCustomParameters.end()) {
-        mNSigmaBadMean = std::atof(param->second.c_str());
-      } else {
-        mNSigmaBadMean = 6;
-        ILOG(Warning, Support) << "Chosen check requires badNSigmaForMean which is not given. Setting to default 6." << ENDM;
-      }
-      /* We dont need number of Points
-      if (auto param = mCustomParameters.find("pointsToTakeForMeanCheck"); param != mCustomParameters.end()) {
-        mPointToTakeForMeanCheck = std::atof(param->second.c_str());
-      } else {
-        mPointToTakeForMeanCheck = 10;
-        ILOG(Warning, Support) << "Chosen check requires mPointToTakeForMeanCheck which is not given. Set to default 10." << ENDM;
-      }
-      */
+    if (size_t finder = oldCheckChoiceString.find("Both"); finder != std::string::npos) {
+      mMeanCheck = true;
+      mExpectedValueCheck = true;
+    } else if (size_t finder = oldCheckChoiceString.find("Mean"); finder != std::string::npos) {
+      mMeanCheck = true;
+    } else if (size_t finder = oldCheckChoiceString.find("ExpectedPhysicsValue"); finder != std::string::npos) {
+      mExpectedValueCheck = true;
     }
+  }
+
+  const std::string checkChoiceString = common::getFromConfig<std::string>(mCustomParameters, "CheckChoice", "Mean");
+
+  if (size_t finder = checkChoiceString.find("ExpectedValue"); finder != std::string::npos) {
+    mExpectedValueCheck = true;
+  }
+  if (size_t finder = checkChoiceString.find("Mean"); finder != std::string::npos) {
+    mMeanCheck = true;
+  }
+  if (size_t finder = checkChoiceString.find("Range"); finder != std::string::npos) {
+    mRangeCheck = true;
+  }
+  if (size_t finder = checkChoiceString.find("Zero"); finder != std::string::npos) {
+    mZeroCheck = true;
+  }
+
+  if (!mExpectedValueCheck && !mMeanCheck && !mRangeCheck && !mZeroCheck) { // A choice was provided but does not overlap with any of the provided options
+    ILOG(Warning, Support) << "The chosen check option does not exist. Available options: Mean, ExpectedValue, Range, Zero. Multiple options can be chosen in parallel. Default Mean is now selected." << ENDM;
+  }
+
+  mMetadataComment = common::getFromConfig<std::string>(mCustomParameters, "MetadataComment", "");
+  if (mExpectedValueCheck) {
+    mNSigmaExpectedPhysicsValue = common::getFromConfig<double>(mCustomParameters, "allowedNSigmaForExpectation", 3);
+    mNSigmaBadExpectedPhysicsValue = common::getFromConfig<double>(mCustomParameters, "badNSigmaForExpectation", 6);
+    if (mNSigmaBadExpectedPhysicsValue < mNSigmaExpectedPhysicsValue) { // if bad < medium flip them.
+      std::swap(mNSigmaBadExpectedPhysicsValue, mNSigmaExpectedPhysicsValue);
+    }
+    mExpectedPhysicsValue = common::getFromConfig<double>(mCustomParameters, "expectedPhysicsValue", 1);
+  }
+
+  if (mMeanCheck) {
+    mNSigmaMean = common::getFromConfig<double>(mCustomParameters, "allowedNSigmaForMean", 3);
+    mNSigmaBadMean = common::getFromConfig<double>(mCustomParameters, "badNSigmaForMean", 6);
+    if (mNSigmaBadMean < mNSigmaMean) { // if bad < medium flip them.
+      std::swap(mNSigmaBadMean, mNSigmaMean);
+    }
+  }
+
+  if (mRangeCheck) {
+    mRangeMedium = common::getFromConfig<double>(mCustomParameters, "allowedRange", 1);
+    mRangeBad = common::getFromConfig<double>(mCustomParameters, "badRange", 2);
+    if (mRangeBad < mRangeMedium) { // if bad < medium flip them.
+      std::swap(mRangeBad, mRangeMedium);
+    }
+    mExpectedPhysicsValue = common::getFromConfig<double>(mCustomParameters, "expectedPhysicsValue", 1);
   }
 }
 
 Quality CheckOfSlices::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
-  Quality result = Quality::Null;
-  Quality resultMean = Quality::Null;
-  Quality resultExpectedPhysicsValue = Quality::Null;
+  Quality totalQuality = Quality::Null;
+
+  std::vector<Quality> qualities;
+  std::unordered_map<std::string, std::vector<std::string>> checks;
+  checks[Quality::Bad.getName()] = std::vector<std::string>();
+  checks[Quality::Medium.getName()] = std::vector<std::string>();
+  checks[Quality::Good.getName()] = std::vector<std::string>();
 
   auto mo = moMap->begin()->second;
   if (!mo) {
@@ -110,184 +120,384 @@ Quality CheckOfSlices::check(std::map<std::string, std::shared_ptr<MonitorObject
   }
   TList* padList = (TList*)canv->GetListOfPrimitives();
   padList->SetOwner(kTRUE);
-  const int numberPads = padList->GetEntries();
-  if (numberPads > 1) {
-    ILOG(Fatal, Support) << "Number of Pads: " << numberPads << " Should not be more than 1" << ENDM;
+  if (padList->GetEntries() > 1) {
+    ILOG(Error, Support) << "CheckOfSlices does not support multiple pads from SliceTrending" << ENDM;
   }
-  TGraphErrors* g = nullptr;
-  for (int iPad = 0; iPad < numberPads; iPad++) {
-    auto pad = static_cast<TPad*>(padList->At(iPad));
-    g = static_cast<TGraphErrors*>(pad->GetPrimitive("Graph"));
+  auto pad = static_cast<TPad*>(padList->At(0));
+  if (!pad) {
+    ILOG(Fatal, Support) << "Could not retrieve pad containing slice graph" << ENDM;
   }
 
+  TGraphErrors* g = nullptr;
+  g = static_cast<TGraphErrors*>(pad->GetPrimitive("Graph"));
   if (!g) {
     ILOG(Fatal, Support) << "No Graph object found" << ENDM;
   }
-  if (strcmp(g->GetName(), "Graph") != 0) {
-    ILOG(Fatal, Support) << "If found an object of type: " << g->GetName() << " should be Graph" << ENDM;
-  }
 
   const int NBins = g->GetN();
-
-  // If only one data point available, don't check quality for mean --  not really necessary in slices. Maybe add an expected number of Slices?
-  // if (NBins > 1) {
   const double* yValues = g->GetY();
   const double* yErrors = g->GetEY();
-  const std::vector<double> v(yValues, yValues + NBins);    // use all points
-  const std::vector<double> vErr(yErrors, yErrors + NBins); // use all points
-
-  // now we have the mean and the stddev. Now check if all points are within the margins (default 3,6 sigma margins)
-
-  if ((mCheckChoice == CheckChoiceMean) || (mCheckChoice == CheckChoiceBoth)) {
-
-    // const std::vector<double> v(yValues + NBins - 1 - pointNumberForMean, yValues + NBins - 1);
-
-    const double sum = std::accumulate(v.begin(), v.end(), 0.0);
-    const double meanFull = sum / NBins;
-
-    for (size_t i = 0; i < v.size(); ++i) {
-      const auto yvalue = v[i];
-      const auto yError = vErr[i];
-      if (std::abs(yvalue - meanFull) <= yError * mNSigmaMean) {
-        if (!resultMean.isWorseThan(Quality::Good) || resultMean == Quality::Null) {
-          resultMean = Quality::Good;
-        }
-      } else if (std::abs(yvalue - meanFull) > yError * mNSigmaBadMean) {
-        resultMean = Quality::Bad;
-      } else if (!resultMean.isWorseThan(Quality::Medium) || resultMean == Quality::Null) {
-        resultMean = Quality::Medium;
-      } else {
-        // just brick, this should hopefully never happen
-        ILOG(Fatal, Support) << "Some Problem with the Quality happened. Quality: " << resultMean << ", Standard deviations: " << std::abs(yvalue - meanFull) / yError << ENDM;
-      }
-      if (resultMean == Quality::Bad) {
-        break;
-      }
-      //}
+  bool useErrors = true;
+  if (yErrors == nullptr) {
+    useErrors = false;
+    ILOG(Info, Support) << "NO ERRORS" << ENDM;
+  }
+  const std::vector<double> v(yValues, yValues + NBins); // use all points
+  std::vector<double> vErr;
+  if (useErrors) {
+    const std::vector<double> vErrTemp(yErrors, yErrors + NBins); // use all points
+    vErr = vErrTemp;
+  } else {
+    for (int i = 0; i < NBins; ++i) {
+      vErr.push_back(0.);
     }
-  } // if (mCheckChoice == mCheckChoiceMean || mCheckChoice == mCheckChoiceBoth)
-  result = resultMean;
-  //########################## ExpectedPhysicsValue #######################################
-  if ((mCheckChoice == CheckChoiceExpectedPhysicsValue) || (mCheckChoice == CheckChoiceBoth)) {
-    for (size_t i = 0; i < v.size(); ++i) {
-      const auto yvalue = v[i];
-      const auto yError = vErr[i];
-      if (std::abs(yvalue - mExpectedPhysicsValue) <= yError * mNSigmaExpectedPhysicsValue) {
-        if (!resultExpectedPhysicsValue.isWorseThan(Quality::Good) || resultExpectedPhysicsValue == Quality::Null) {
-          resultExpectedPhysicsValue = Quality::Good;
-        }
+  }
+
+  calculateStatistics(yValues, yErrors, useErrors, 0, NBins, mMean, mStdev);
+
+  for (size_t i = 0; i < v.size(); ++i) {
+
+    Quality totalQualityPoint = Quality::Null;
+    std::vector<Quality> qualityPoints;
+    const auto yvalue = v[i];
+    const auto yError = vErr[i];
+
+    std::string badStringPoint = "";
+    std::string mediumStringPoint = "";
+    std::string goodStringPoint = "";
+
+    if (mMeanCheck) {
+      const double totalError = sqrt(mStdev * mStdev + yError * yError);
+      if (std::abs(yvalue - mMean) < totalError * mNSigmaMean) {
+        qualityPoints.push_back(Quality::Good);
+        goodStringPoint += "MeanCheck \n";
+      } else if (std::abs(yvalue - mMean) > totalError * mNSigmaBadMean) {
+        qualityPoints.push_back(Quality::Bad);
+        badStringPoint += "MeanCheck \n";
+      } else {
+        qualityPoints.push_back(Quality::Medium);
+        mediumStringPoint += "MeanCheck \n";
+      }
+    } // if (mMeanCheck)
+
+    if (mExpectedValueCheck) {
+      if (std::abs(yvalue - mExpectedPhysicsValue) < yError * mNSigmaExpectedPhysicsValue) {
+        qualityPoints.push_back(Quality::Good);
+        goodStringPoint += "ExpectedValueCheck \n";
       } else if (std::abs(yvalue - mExpectedPhysicsValue) > yError * mNSigmaBadExpectedPhysicsValue) {
-        resultExpectedPhysicsValue = Quality::Bad;
-      } else if (!resultExpectedPhysicsValue.isWorseThan(Quality::Medium) || resultExpectedPhysicsValue == Quality::Null) {
-        resultExpectedPhysicsValue = Quality::Medium;
+        qualityPoints.push_back(Quality::Bad);
+        badStringPoint += "ExpectedValueCheck \n";
       } else {
-        // just brick, this should hopefully never happen
-        ILOG(Fatal, Support) << "Some Problem with the Quality happened. Quality: " << resultExpectedPhysicsValue << ", Standard deviations: " << std::abs(yvalue - mExpectedPhysicsValue) / yError << ENDM;
+        qualityPoints.push_back(Quality::Medium);
+        mediumStringPoint += "ExpectedValueCheck \n";
       }
-      if (resultExpectedPhysicsValue == Quality::Bad) {
-        break;
-      }
-      // }
-    }
+    } // if (mExpectedValueCheck)
 
-    result = resultExpectedPhysicsValue;
-  }
-  if (mCheckChoice == CheckChoiceBoth) {
-    // If mean check is not performed, the total combined quality mean && expectedValue should be set to expectedValue result
-    if (resultMean != Quality::Null) {
-      if (resultMean.isWorseThan(resultExpectedPhysicsValue)) {
-        result = resultMean;
+    if (mRangeCheck) {
+      if (std::abs(yvalue - mExpectedPhysicsValue) > mRangeBad) {
+        qualityPoints.push_back(Quality::Bad);
+        badStringPoint += "RangeCheck \n";
+      } else if (std::abs(yvalue - mExpectedPhysicsValue) < mRangeMedium) {
+        qualityPoints.push_back(Quality::Good);
+        goodStringPoint += "RangeCheck \n";
+      } else {
+        qualityPoints.push_back(Quality::Medium);
+        mediumStringPoint += "RangeCheck \n";
       }
+    } // if (mRangeCheck) {
+
+    checks[Quality::Bad.getName()].push_back(badStringPoint);
+    checks[Quality::Medium.getName()].push_back(mediumStringPoint);
+    checks[Quality::Good.getName()].push_back(goodStringPoint);
+
+    // aggregate qualities of this point between mean, expected and range into result
+    auto Worst_Quality = std::max_element(qualityPoints.begin(), qualityPoints.end(),
+                                          [](const Quality& q1, const Quality& q2) {
+                                            return q1.isBetterThan(q2);
+                                          });
+    qualities.push_back(*Worst_Quality);
+
+  } // for (size_t i = 0; i < v.size(); ++i)
+
+  // Quality aggregation from previous checks
+  if (qualities.size() >= 1) {
+    auto Worst_Quality = std::max_element(qualities.begin(), qualities.end(),
+                                          [](const Quality& q1, const Quality& q2) {
+                                            return q1.isBetterThan(q2);
+                                          });
+    totalQuality = *Worst_Quality;
+
+    // MetaData aggregation from previous checks
+    mBadString = createMetaData(checks[Quality::Bad.getName()]);
+    mMediumString = createMetaData(checks[Quality::Medium.getName()]);
+    mGoodString = createMetaData(checks[Quality::Good.getName()]);
+  }
+
+  // Zeros Check:
+  Quality qualityZeroCheck = Quality::Null;
+  if (mZeroCheck) {
+    const bool allZeros = std::all_of(v.begin(), v.end(), [](double i) { return std::abs(i) == 0.0; });
+    if (allZeros) {
+      mBadString += "ZeroCheck \n";
+      totalQuality = Quality::Bad;
+    } else {
+      mGoodString += "ZeroCheck \n";
     }
   }
 
-  return result;
+  if (totalQuality == Quality::Null) {
+    mNullString = "No check performed";
+  }
+
+  totalQuality.addMetadata(Quality::Bad.getName(), mBadString);
+  totalQuality.addMetadata(Quality::Medium.getName(), mMediumString);
+  totalQuality.addMetadata(Quality::Good.getName(), mGoodString);
+  totalQuality.addMetadata(Quality::Null.getName(), mNullString);
+  totalQuality.addMetadata("Comment", mMetadataComment);
+
+  return totalQuality;
 }
 
 void CheckOfSlices::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  auto* c1 = dynamic_cast<TCanvas*>(mo->getObject());
-
-  TList* padList = (TList*)c1->GetListOfPrimitives();
+  auto* canv = dynamic_cast<TCanvas*>(mo->getObject());
+  if (!canv) {
+    ILOG(Fatal, Support) << "Canvas not found" << ENDM;
+  }
+  TList* padList = (TList*)canv->GetListOfPrimitives();
   padList->SetOwner(kTRUE);
-  int numberPads = padList->GetEntries();
+  if (padList->GetEntries() > 1) {
+    ILOG(Error, Support) << "CheckOfSlices does not support multiple pads from SliceTrending" << ENDM;
+  }
+  auto pad = static_cast<TPad*>(padList->At(0));
+  if (!pad) {
+    ILOG(Fatal, Support) << "Could not retrieve pad containing slice graph" << ENDM;
+  }
   TGraphErrors* h = nullptr;
-  for (int iPad = 0; iPad < numberPads; iPad++) {
-    auto pad = static_cast<TPad*>(padList->At(iPad));
-    h = static_cast<TGraphErrors*>(pad->GetPrimitive("Graph"));
-  }
+  h = static_cast<TGraphErrors*>(pad->GetPrimitive("Graph"));
   if (!h) {
-    ILOG(Fatal, Support) << "Could not find graph in given Pad" << ENDM;
+    ILOG(Fatal, Support) << "No Graph object found" << ENDM;
   }
-  const int NBins = h->GetN();
-  if (NBins == 0) {
+
+  const int nPoints = h->GetN();
+  if (nPoints == 0) {
     ILOG(Fatal, Support) << "No bins were found for the Graph!" << ENDM;
   }
+
   const double* yValues = h->GetY();
-  const double* yErrors = h->GetEY();
-  const std::vector<double> v(yValues, yValues + NBins); // use all points
-  const std::vector<double> vErr(yErrors, yErrors + NBins);
-  const double sum = std::accumulate(v.begin(), v.end(), 0.0);
-  const double meanFull = sum / NBins;
-  TPaveText* msg = new TPaveText(0.7, 0.85, 0.9, 0.9, "NDC");
-  TPaveText* Legend = new TPaveText(0.1, 0.85, 0.35, 0.9, "NDC");
+  const double* yErrors = h->GetEY(); // returns nullptr for TGraph (no errors)
+  bool useErrors = true;
+  if (yErrors == nullptr) {
+    useErrors = false;
+  }
+
+  TPaveText* msg = new TPaveText(0.5, 0.75, 0.9, 0.9, "NDC");
   h->GetListOfFunctions()->Add(msg);
-  h->GetListOfFunctions()->Add(Legend);
   msg->SetName(fmt::format("{}_msg", mo->GetName()).data());
 
+  std::string checkMessage;
   if (checkResult == Quality::Good) {
-    h->SetFillColor(kGreen);
+    h->SetFillColor(kGreen - 2);
     msg->Clear();
     msg->AddText("Quality::Good");
-    msg->SetFillColor(kGreen);
+    msg->SetFillColor(kGreen - 2);
   } else if (checkResult == Quality::Bad) {
-    ILOG(Info, Support) << "Quality::Bad, setting to red";
     h->SetFillColor(kRed);
     msg->Clear();
-    msg->AddText("Quality::Bad");
-    if (mCheckChoice == CheckChoiceExpectedPhysicsValue) {
-      msg->AddText(fmt::format("Outlier, more than {} sigma.", mNSigmaBadExpectedPhysicsValue).data());
-    } else if (mCheckChoice == CheckChoiceMean) {
-      msg->AddText(fmt::format("Outlier, more than {} sigma.", mNSigmaBadMean).data());
-    } else {
-      msg->AddText("Outlier. Bad Quality.");
-    }
+    msg->AddText("Quality::Bad. Failed checks:");
+    checkMessage = mBadString;
     msg->SetFillColor(kRed);
   } else if (checkResult == Quality::Medium) {
-    ILOG(Info, Support) << "Quality::medium, setting to orange";
     h->SetFillColor(kOrange);
     msg->Clear();
-    msg->AddText("Quality::Medium");
-    if (mCheckChoice == CheckChoiceExpectedPhysicsValue) {
-      msg->AddText(fmt::format("Outlier, more than {} sigma.", mNSigmaExpectedPhysicsValue).data());
-    } else if (mCheckChoice == CheckChoiceMean) {
-      msg->AddText(fmt::format("Outlier, more than {} sigma.", mNSigmaMean).data());
-    } else {
-      msg->AddText("Outlier. Medium Quality");
-    }
+    msg->AddText("Quality::Medium. Failed checks:");
+    checkMessage = mMediumString;
     msg->SetFillColor(kOrange);
   } else if (checkResult == Quality::Null) {
     h->SetFillColor(0);
+    msg->AddText("Quality::Null. Failed checks:");
+    checkMessage = mNullString;
   }
-  h->SetLineColor(kBlack);
-  if (mCheckChoice == CheckChoiceExpectedPhysicsValue || mCheckChoice == CheckChoiceBoth) {
-    Legend->AddText(fmt::format("Expected Physics Value: {}", mExpectedPhysicsValue).data());
-  }
-  if (mCheckChoice == CheckChoiceMean || mCheckChoice == CheckChoiceBoth) {
-    Legend->AddText(fmt::format("Mean: {}", meanFull).data());
-  }
-  const double xMin = h->GetXaxis()->GetXmin();
-  const double xMax = h->GetXaxis()->GetXmax();
-  TLine* lineExpectedValue = new TLine(xMin, mExpectedPhysicsValue, xMax, mExpectedPhysicsValue);
-  lineExpectedValue->SetLineColor(kGreen);
-  lineExpectedValue->SetLineWidth(2);
-  // mean Line
-  TLine* lineMean = new TLine(xMin, meanFull, xMax, meanFull);
-  lineMean->SetLineColor(kOrange);
-  lineMean->SetLineWidth(2);
-  lineMean->SetLineStyle(10);
-  h->GetListOfFunctions()->Add(lineExpectedValue);
-  h->GetListOfFunctions()->Add(lineMean);
 
+  // Split lines by hand as \n does not work with TPaveText
+  const std::string delimiter = "\n";
+  size_t pos = 0;
+  std::string subText;
+  while ((pos = checkMessage.find(delimiter)) != std::string::npos) {
+    subText = checkMessage.substr(0, pos);
+    msg->AddText(subText.c_str());
+    checkMessage.erase(0, pos + delimiter.length());
+  }
+  msg->AddText(checkResult.getMetadata("Comment", "").c_str());
+
+  const double xMin = h->GetPointX(0);
+  const double xMax = h->GetPointX(nPoints - 1);
+
+  if (mRangeCheck) {
+    TLine* lineUpperRangeMed = new TLine(xMin, mExpectedPhysicsValue + mRangeMedium, xMax, mExpectedPhysicsValue + mRangeMedium);
+    lineUpperRangeMed->SetLineColor(kBlack);
+    lineUpperRangeMed->SetLineStyle(kDashed);
+    lineUpperRangeMed->SetLineWidth(1);
+    h->GetListOfFunctions()->Add(lineUpperRangeMed);
+    TLine* lineLowerRangeMed = new TLine(xMin, mExpectedPhysicsValue - mRangeMedium, xMax, mExpectedPhysicsValue - mRangeMedium);
+    lineLowerRangeMed->SetLineColor(kBlack);
+    lineLowerRangeMed->SetLineStyle(kDashed);
+    lineLowerRangeMed->SetLineWidth(1);
+    h->GetListOfFunctions()->Add(lineLowerRangeMed);
+    TLine* lineUpperRangeBad = new TLine(xMin, mExpectedPhysicsValue + mRangeBad, xMax, mExpectedPhysicsValue + mRangeBad);
+    lineUpperRangeBad->SetLineColor(kBlack);
+    lineUpperRangeBad->SetLineWidth(3);
+    h->GetListOfFunctions()->Add(lineUpperRangeBad);
+    TLine* lineLowerRangeBad = new TLine(xMin, mExpectedPhysicsValue - mRangeBad, xMax, mExpectedPhysicsValue - mRangeBad);
+    lineLowerRangeBad->SetLineColor(kBlack);
+    lineLowerRangeBad->SetLineWidth(3);
+    h->GetListOfFunctions()->Add(lineLowerRangeBad);
+  } // if (mRangeCheck)
+
+  if (mExpectedValueCheck) {
+    TLine* expectedValueLine = new TLine(xMin, mExpectedPhysicsValue, xMax, mExpectedPhysicsValue);
+
+    TGraph* stddevGraphMediumUp = new TGraph();
+    TGraph* stddevGraphMediumDown = new TGraph();
+    TGraph* stddevGraphBadUp = new TGraph();
+    TGraph* stddevGraphBadDown = new TGraph();
+
+    for (int nBins = 0; nBins < nPoints; nBins++) {
+
+      double PointError = 0.;
+      if (useErrors) {
+        PointError = *(yErrors + nBins);
+      }
+      if (PointError < 0.) {
+        ILOG(Warning, Support) << "Point for check of mean has negative error" << ENDM;
+      }
+
+      stddevGraphMediumUp->AddPoint(h->GetPointX(nBins), mExpectedPhysicsValue + PointError * mNSigmaExpectedPhysicsValue);
+      stddevGraphMediumDown->AddPoint(h->GetPointX(nBins), mExpectedPhysicsValue - PointError * mNSigmaExpectedPhysicsValue);
+      stddevGraphBadUp->AddPoint(h->GetPointX(nBins), mExpectedPhysicsValue + PointError * mNSigmaBadExpectedPhysicsValue);
+      stddevGraphBadDown->AddPoint(h->GetPointX(nBins), mExpectedPhysicsValue - PointError * mNSigmaBadExpectedPhysicsValue);
+    } // for (int nBins = 1; nBins < nPoints; nBins++)
+
+    expectedValueLine->SetLineWidth(2);
+    expectedValueLine->SetLineColor(kGreen - 7);
+    expectedValueLine->SetLineStyle(kDashed);
+
+    stddevGraphMediumUp->SetLineWidth(2);
+    stddevGraphMediumUp->SetLineColor(kOrange - 3);
+    stddevGraphMediumUp->SetMarkerColor(kOrange - 3);
+    stddevGraphMediumUp->SetLineStyle(kDashed);
+
+    stddevGraphMediumDown->SetLineWidth(2);
+    stddevGraphMediumDown->SetLineColor(kOrange - 3);
+    stddevGraphMediumDown->SetMarkerColor(kOrange - 3);
+    stddevGraphMediumDown->SetLineStyle(kDashed);
+
+    stddevGraphBadUp->SetLineWidth(2);
+    stddevGraphBadUp->SetLineColor(kRed - 3);
+    stddevGraphBadUp->SetMarkerColor(kRed - 3);
+    stddevGraphBadUp->SetLineStyle(kDashed);
+
+    stddevGraphBadDown->SetLineWidth(2);
+    stddevGraphBadDown->SetLineColor(kRed - 3);
+    stddevGraphBadDown->SetMarkerColor(kRed - 3);
+    stddevGraphBadDown->SetLineStyle(kDashed);
+
+    h->GetListOfFunctions()->Add(expectedValueLine);
+    h->GetListOfFunctions()->Add(stddevGraphMediumUp);
+    h->GetListOfFunctions()->Add(stddevGraphMediumDown);
+    h->GetListOfFunctions()->Add(stddevGraphBadUp);
+    h->GetListOfFunctions()->Add(stddevGraphBadDown);
+  } // if (mExpectedValueCheck)
+
+  if (mMeanCheck) {
+    TLine* meanGraph = new TLine(xMin, mMean, xMax, mMean);
+    TGraph* stddevGraphMediumUp = new TGraph();
+    TGraph* stddevGraphMediumDown = new TGraph();
+    TGraph* stddevGraphBadUp = new TGraph();
+    TGraph* stddevGraphBadDown = new TGraph();
+
+    for (int nBins = 0; nBins < nPoints; nBins++) {
+
+      double PointError = 0.;
+      if (useErrors) {
+        PointError = *(yErrors + nBins);
+      }
+      if (PointError < 0.) {
+        ILOG(Warning, Support) << "Last point for check of mean has negative error" << ENDM;
+      }
+
+      double totalError = sqrt(mStdev * mStdev + PointError * PointError);
+
+      stddevGraphMediumUp->AddPoint(h->GetPointX(nBins), mMean + totalError * mNSigmaMean);
+      stddevGraphMediumDown->AddPoint(h->GetPointX(nBins), mMean - totalError * mNSigmaMean);
+      stddevGraphBadUp->AddPoint(h->GetPointX(nBins), mMean + totalError * mNSigmaBadMean);
+      stddevGraphBadDown->AddPoint(h->GetPointX(nBins), mMean - totalError * mNSigmaBadMean);
+    } // for (int nBins = 1; nBins < nPoints; nBins++)
+
+    meanGraph->SetLineWidth(2);
+    meanGraph->SetLineColor(kGreen - 2);
+
+    stddevGraphMediumUp->SetLineWidth(2);
+    stddevGraphMediumUp->SetLineColor(kOrange);
+    stddevGraphMediumUp->SetMarkerColor(kOrange);
+
+    stddevGraphMediumDown->SetLineWidth(2);
+    stddevGraphMediumDown->SetLineColor(kOrange);
+    stddevGraphMediumDown->SetMarkerColor(kOrange);
+
+    stddevGraphBadUp->SetLineWidth(2);
+    stddevGraphBadUp->SetLineColor(kRed);
+    stddevGraphBadUp->SetMarkerColor(kRed);
+
+    stddevGraphBadDown->SetLineWidth(2);
+    stddevGraphBadDown->SetLineColor(kRed);
+    stddevGraphBadDown->SetMarkerColor(kRed);
+
+    h->GetListOfFunctions()->Add(meanGraph);
+    h->GetListOfFunctions()->Add(stddevGraphMediumUp);
+    h->GetListOfFunctions()->Add(stddevGraphMediumDown);
+    h->GetListOfFunctions()->Add(stddevGraphBadUp);
+    h->GetListOfFunctions()->Add(stddevGraphBadDown);
+  } // if (mMeanCheck)
 } // beautify function
+
+std::string CheckOfSlices::createMetaData(const std::vector<std::string>& pointMetaData)
+{
+
+  std::string meanString = "";
+  std::string expectedValueString = "";
+  std::string rangeString = "";
+
+  for (int i; i < pointMetaData.size(); i++) {
+    if (pointMetaData.at(i).find("MeanCheck") != std::string::npos) {
+      meanString += " " + std::to_string(i + 1) + ",";
+    }
+    if (pointMetaData.at(i).find("ExpectedValueCheck") != std::string::npos) {
+      expectedValueString += " " + std::to_string(i + 1) + ",";
+    }
+    if (pointMetaData.at(i).find("RangeCheck") != std::string::npos) {
+      rangeString += " " + std::to_string(i + 1) + ",";
+    }
+  }
+
+  std::string totalString = "";
+  if (meanString != "") {
+    meanString.pop_back();
+    meanString = "MeanCheck (solid, coloured lines) for Points:" + meanString + "\n";
+    totalString += meanString;
+  }
+  if (expectedValueString != "") {
+    expectedValueString.pop_back();
+    expectedValueString = "ExpectedValueCheck (dashed, coloured lines) for Points:" + expectedValueString + "\n";
+    totalString += expectedValueString;
+  }
+  if (rangeString != "") {
+    rangeString.pop_back();
+    rangeString = "RangeCheck (black lines) for Points:" + rangeString + "\n";
+    totalString += rangeString;
+  }
+
+  return totalString;
+}
+
 } // namespace o2::quality_control_modules::tpc

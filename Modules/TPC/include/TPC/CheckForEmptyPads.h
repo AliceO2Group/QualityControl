@@ -41,11 +41,24 @@ class CheckForEmptyPads : public o2::quality_control::checker::CheckInterface
 
  private:
   ClassDefOverride(CheckForEmptyPads, 1);
+  std::string summarizeMetaData(Quality quality);
   std::vector<std::string> mSectorsName;
   std::vector<Quality> mSectorsQuality;
   std::vector<std::string> mMOsToCheck2D;
   double mMediumQualityLimit;
   double mBadQualityLimit;
+
+  std::string mBadString = "";
+  std::string mMediumString = "";
+  std::string mGoodString = "";
+  std::string mNullString = "";
+
+  std::string mBadStringMeta = "";
+  std::string mMediumStringMeta = "";
+  std::string mGoodStringMeta = "";
+  std::string mNullStringMeta = "";
+
+  std::string mMetadataComment = "";
 };
 
 } // namespace o2::quality_control_modules::tpc

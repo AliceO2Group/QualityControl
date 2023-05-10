@@ -1,0 +1,108 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "2"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+          "url": ""
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      }
+    },
+    "tasks": {
+      "CPVPhysicsTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::cpv::PhysicsTask",
+        "moduleName": "QcCPV",
+        "detectorName": "CPV",
+        "cycleDurationSeconds": "10",
+        "maxNumberCycles": "100",
+        "": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
+        "dataSource": {
+          "type": "direct",
+          "query": "digits:CPV/DIGITS/0;dtrigrec:CPV/DIGITTRIGREC/0;clusters:CPV/CLUSTERS/0;ctrigrec:CPV/CLUSTERTRIGRECS/0;calibdigits:CPV/CALIBDIGITS/0;rawerrors:CPV/RAWHWERRORS/0;peds:CPV/CPV_Pedestals;badmap:CPV/CPV_BadMap;gains:CPV/CPV_Gains"
+        },
+        "taskParameters": {
+	  "ccdbCheckInterval": "1000",    
+          "isAsyncMode": "1"
+        },
+        "location": "remote",
+        "saveObjectsToFile": "MOs.root",      "": "For debugging, path to the file where to save. If empty or missing it won't save."
+      }
+    },
+    "checks": {
+      "PhysicsCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::cpv::PhysicsCheck",
+        "moduleName": "QcCPV",
+        "policy": "OnAny",
+        "detectorName": "CPV",
+        "dataSource": [{
+          "type": "Task",
+          "name": "CPVPhysicsTask",
+          "MOs": [ ]
+        }],
+        "checkParameters": {
+	    "mAmplitudeRangeL2": "20",
+	    "mAmplitudeRangeL3": "20",
+	    "mAmplitudeRangeL4": "20",
+	    "mAmplitudeRangeR2": "1000",
+	    "mAmplitudeRangeR3": "1000",
+	    "mAmplitudeRangeR4": "1000",
+            "mMinEventsToFit2": "1000",
+            "mMinEventsToFit3": "1000",
+	    "mMinEventsToFit4": "1000",
+	    "mMinAmplification2": "5",
+	    "mMinAmplification3": "5",
+	    "mMinAmplification4": "5",
+	    "mMaxAmplification2": "500",
+	    "mMaxAmplification3": "500",
+	    "mMaxAmplification4": "500",
+	    "mMinClusterSize2": "2",
+	    "mMinClusterSize3": "2",
+	    "mMinClusterSize4": "2",
+	    "mMaxClusterSize2": "5",
+	    "mMaxClusterSize3": "5",
+	    "mMaxClusterSize4": "5",
+	    "mMinEventsToCheckDigitMap2": "10000",
+	    "mMinEventsToCheckDigitMap3": "10000",
+	    "mMinEventsToCheckDigitMap4": "10000",
+	    "mStripPopulationDeviationAllowed2": "1.2",
+	    "mStripPopulationDeviationAllowed3": "30",
+	    "mStripPopulationDeviationAllowed4": "30",
+	    "mNBadStripsPerQuarterAllowed2": "5",
+	    "mNBadStripsPerQuarterAllowed3": "10",
+	    "mNBadStripsPerQuarterAllowed4": "10",
+	    "mNCold3GassiplexAllowed2": "1",
+	    "mNCold3GassiplexAllowed3": "10",
+	    "mNCold3GassiplexAllowed4": "10",
+	    "mNHot3GassiplexAllowed2": "1",
+	    "mNHot3GassiplexAllowed3": "10",
+	    "mNHot3GassiplexAllowed4": "10",
+	    "mHot3GassiplexCriterium2": "1",
+	    "mHot3GassiplexCriterium3": "10",
+	    "mHot3GassiplexCriterium4": "10",
+	    "mCold3GassiplexCriterium2": "0.9",
+	    "mCold3GassiplexCriterium3": "0.1",
+	    "mCold3GassiplexCriterium4": "0.1"
+	}
+      }
+    }
+  },
+  "dataSamplingPolicies": [
+    
+  ]  
+}

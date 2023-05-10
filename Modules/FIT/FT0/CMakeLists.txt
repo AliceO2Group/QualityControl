@@ -7,13 +7,10 @@ target_sources(O2QcFT0 PRIVATE src/TH1ReductorLaser.cxx
                                src/DigitQcTask.cxx
                                src/GenericCheck.cxx
                                src/CFDEffCheck.cxx
+                               src/FractionCheck.cxx
                                src/PostProcTask.cxx
                                src/OutOfBunchCollCheck.cxx
-                               src/BasicDigitQcTask.cxx
-                               src/ChannelsCheck.cxx
-                               src/DigitsCheck.cxx
                                src/MergedTreeCheck.cxx
-                               src/TreeReaderPostProcessing.cxx
                                src/RecPointsQcTask.cxx)
 
 target_include_directories(
@@ -26,7 +23,8 @@ target_link_libraries(O2QcFT0 PUBLIC O2QualityControl
                                      O2::DataFormatsFT0
                                      O2::FT0Base
                                      O2::DataFormatsParameters
-                                     O2QcCommon)
+                                     O2QcCommon
+                                     O2QcFITCommon)
 
 install(TARGETS O2QcFT0
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -39,14 +37,11 @@ add_root_dictionary(O2QcFT0
           include/FT0/DigitQcTask.h
           include/FT0/PostProcTask.h
           include/FT0/CFDEffCheck.h
+          include/FT0/FractionCheck.h
           include/FT0/OutOfBunchCollCheck.h
           include/FT0/GenericCheck.h
-          include/FT0/BasicDigitQcTask.h
-          include/FT0/ChannelsCheck.h
-          include/FT0/DigitsCheck.h
           include/FT0/Utilities.h
           include/FT0/MergedTreeCheck.h
-          include/FT0/TreeReaderPostProcessing.h
           include/FT0/RecPointsQcTask.h
   LINKDEF include/FT0/LinkDef.h)
 
@@ -95,10 +90,6 @@ endforeach()
 
 # ----- Configs -------
 install(FILES
-        ft0-calibration-config.json
-        ft0-multinode-config.json
-        ft0-postprocessing-config.json
-        ft0-basic-config.json
         ft0-reconstruction-config.json
         DESTINATION etc)
 

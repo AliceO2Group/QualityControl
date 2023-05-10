@@ -11,6 +11,7 @@
 ///
 /// \file   CheckOfTrendings.h
 /// \author Laura Serksnyte
+/// \author Marcel Lesch
 ///
 
 #ifndef QC_MODULE_TPC_CHECKOFTRENDINGS_H
@@ -27,6 +28,7 @@ namespace o2::quality_control_modules::tpc
 /// \brief  Check if the a new data point in trend is not 3sigma or 6 sigma away from the average value
 ///
 /// \author Laura Serksnyte
+/// \author Marcel Lesch
 class CheckOfTrendings : public o2::quality_control::checker::CheckInterface
 {
 
@@ -44,8 +46,8 @@ class CheckOfTrendings : public o2::quality_control::checker::CheckInterface
 
  private:
   ClassDefOverride(CheckOfTrendings, 2);
-  void calculateStatistics(const double* yValues, const double* yErrors, bool useErrors, const int firstPoint, const int lastPoint, double& mean, double& stddevOfMean);
-  TGraph* getGraph(TCanvas* canv);
+  void getGraphs(TCanvas* canv, std::vector<TGraph*>& graphs);
+  std::string createMetaData(const std::vector<std::string>& pointMetaData);
   std::string mCheckChoice;
   float mExpectedPhysicsValue;
   float mNSigmaExpectedPhysicsValue;
@@ -56,18 +58,15 @@ class CheckOfTrendings : public o2::quality_control::checker::CheckInterface
   float mRangeBad;
   bool mSliceTrend;
 
-  double mMean = 0;
-  float mStdev;
+  std::vector<float> mStdev;
 
   int mPointToTakeForExpectedValueCheck;
   int mPointToTakeForMeanCheck;
   int mPointToTakeForRangeCheck;
   int mPointToTakeForZeroCheck;
 
-  std::string mBadString = "";
-  std::string mMediumString = "";
-  std::string mGoodString = "";
-  std::string mNullString = "";
+  std::unordered_map<std::string, std::vector<std::string>> mPadMetaData;
+  std::vector<Quality> mPadQualities;
 
   std::string mMetadataComment;
 

@@ -51,7 +51,7 @@
       "id" : "mft-track",
       "active" : "true",
       "machines" : [],
-      "query" : "tracks:MFT/TRACKS/0;tracksrofs:MFT/MFTTrackROF/0",
+      "query" : "tracks:MFT/TRACKS/0;tracksrofs:MFT/MFTTrackROF/0;clustersrofs:MFT/CLUSTERSROF/0",
       "samplingConditions" : [
         {
           "condition" : "random",

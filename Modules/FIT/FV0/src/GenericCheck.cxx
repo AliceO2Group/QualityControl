@@ -18,6 +18,7 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
+#include <string>
 // ROOT
 #include <TH1.h>
 #include <TH2.h>
@@ -27,7 +28,6 @@
 #include <TMath.h>
 #include <TLine.h>
 #include <TList.h>
-
 #include <DataFormatsQualityControl/FlagReasons.h>
 
 using namespace std;
@@ -81,6 +81,48 @@ void GenericCheck::configure()
 
   mCheckMinGraphLastPoint = getCheckFromConfig("MinGraphLastPoint");
   mCheckMaxGraphLastPoint = getCheckFromConfig("MaxGraphLastPoint");
+
+  // Set path to ccdb to get DeadChannelMap
+  if (auto param = mCustomParameters.find("ccdbUrl"); param != mCustomParameters.end()) {
+    setCcdbUrl(param->second);
+    ILOG(Debug, Support) << "configure() : using deadChannelMap from CCDB, configured url = " << param->second << ENDM;
+  } else {
+    setCcdbUrl("alice-ccdb.cern.ch");
+    ILOG(Debug, Support) << "configure() : using deadChannelMap from CCDB, default url = "
+                         << "alice-ccdb.cern.ch" << ENDM;
+  }
+
+  // Set internal path to DeadChannelMap
+  if (auto param = mCustomParameters.find("pathDeadChannelMap"); param != mCustomParameters.end()) {
+    mPathDeadChannelMap = param->second;
+    ILOG(Debug, Support) << "configure() : using pathDeadChannelMap: " << mPathDeadChannelMap << ENDM;
+  } else {
+    mPathDeadChannelMap = "FV0/Calib/DeadChannelMap";
+    ILOG(Debug, Support) << "configure() : using default pathDeadChannelMap: " << mPathDeadChannelMap << ENDM;
+  }
+
+  // Align mDeadChannelMap with downloaded one
+  std::map<std::string, std::string> metadata;
+  mDeadChannelMap = retrieveConditionAny<o2::fit::DeadChannelMap>(mPathDeadChannelMap, metadata, (long)-1);
+  if (!mDeadChannelMap || !mDeadChannelMap->map.size()) {
+    ILOG(Error, Support) << "object \"" << mPathDeadChannelMap << "\" NOT retrieved (or empty). All channels assumed to be alive!" << ENDM;
+    mDeadChannelMap = new o2::fit::DeadChannelMap();
+    for (uint8_t chId = 0; chId < sNCHANNELS; ++chId) {
+      mDeadChannelMap->setChannelAlive(chId, 1);
+    }
+  }
+
+  // Print DeadChannelMap
+  mDeadChannelMapStr = "";
+  for (unsigned chId = 0; chId < mDeadChannelMap->map.size(); chId++) {
+    if (!mDeadChannelMap->isChannelAlive(chId)) {
+      mDeadChannelMapStr += (mDeadChannelMapStr.empty() ? "" : ",") + std::to_string(chId);
+    }
+  }
+  if (mDeadChannelMapStr.empty()) {
+    mDeadChannelMapStr = "EMPTY";
+  }
+  ILOG(Info, Support) << "Loaded dead channel map: " << mDeadChannelMapStr << ENDM;
 
   mPositionMsgBox = { 0.15, 0.75, 0.85, 0.9 };
   if (auto param = mCustomParameters.find("positionMsgBox"); param != mCustomParameters.end()) {
@@ -158,9 +200,11 @@ Quality GenericCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
       }
 
       if (mCheckMinThresholdY.isActive()) {
-        int numberOfBinsX = h->GetNbinsX();
         float minValue = h->GetBinContent(1);
-        for (int channel = 1; channel < numberOfBinsX; ++channel) {
+        for (int channel = 1; channel < h->GetNbinsX(); ++channel) {
+          if (channel >= sNCHANNELS || !mDeadChannelMap->isChannelAlive(channel)) {
+            continue;
+          }
           if (minValue > h->GetBinContent(channel)) {
             minValue = h->GetBinContent(channel);
             mCheckMinThresholdY.mBinNumberX = channel;
@@ -170,9 +214,22 @@ Quality GenericCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
       }
 
       if (mCheckMaxThresholdY.isActive()) {
-        mCheckMaxThresholdY.mBinNumberX = h->GetMaximumBin();
-        float maxValue = h->GetBinContent(mCheckMaxThresholdY.mBinNumberX);
-        mCheckMaxThresholdY.doCheck(result, maxValue);
+        if (mDeadChannelMap->isChannelAlive(h->GetMaximumBin())) {
+          mCheckMaxThresholdY.mBinNumberX = h->GetMaximumBin();
+          mCheckMaxThresholdY.doCheck(result, h->GetBinContent(mCheckMaxThresholdY.mBinNumberX));
+        } else {
+          float maxValue = 0;
+          for (int channel = 1; channel < h->GetNbinsX(); ++channel) {
+            if (channel >= sNCHANNELS || !mDeadChannelMap->isChannelAlive(channel)) {
+              continue;
+            }
+            if (maxValue < h->GetBinContent(channel)) {
+              maxValue = h->GetBinContent(channel);
+              mCheckMaxThresholdY.mBinNumberX = channel;
+            }
+          }
+          mCheckMaxThresholdY.doCheck(result, maxValue);
+        }
       }
 
       if (mCheckMinMeanX.isActive())

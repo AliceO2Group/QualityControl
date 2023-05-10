@@ -40,7 +40,7 @@ void LaserTracks::initialize(Trigger, framework::ServiceRegistryRef)
 {
   addAndPublish(getObjectsManager(),
                 mLaserTracksCanvasVec,
-                { "Ltr_Coverage", "Calib_Values" },
+                { "Ltr_Coverage", "Calib_Values", "Ltr_dEdx" },
                 mStoreMap);
 }
 

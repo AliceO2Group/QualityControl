@@ -10,28 +10,35 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   TreeReaderPostProcessing.h
-/// \author Milosz Filus
-/// Example of post processing task for FT0 detector
+/// \file   MeanVertexPostProcessing.h
+/// \author My Name
+///
 
-#ifndef QUALITYCONTROL_TREEREADERPOSTPROCESSING_H
-#define QUALITYCONTROL_TREEREADERPOSTPROCESSING_H
+#ifndef QUALITYCONTROL_MEANVERTEXPOSTPROCESSING_H
+#define QUALITYCONTROL_MEANVERTEXPOSTPROCESSING_H
 
 #include "QualityControl/PostProcessingInterface.h"
-#include "QualityControl/DatabaseInterface.h"
+#include "CCDB/CcdbApi.h"
 
 class TH1F;
 
-namespace o2::quality_control_modules::ft0
+namespace o2::quality_control_modules::glo
 {
 
-class TreeReaderPostProcessing final : public quality_control::postprocessing::PostProcessingInterface
+/// \brief Postprocessing Task for Mean Vertex calibration
+
+class MeanVertexPostProcessing final : public quality_control::postprocessing::PostProcessingInterface
 {
  public:
   /// \brief Constructor
-  TreeReaderPostProcessing() = default;
+  MeanVertexPostProcessing() = default;
   /// \brief Destructor
-  ~TreeReaderPostProcessing() override;
+  ~MeanVertexPostProcessing() override;
+
+  /// \brief Configuration of a post-processing task.
+  /// Configuration of a post-processing task. Can be overridden if user wants to retrieve the configuration of the task.
+  /// \param config   ConfigurationInterface with prefix set to ""
+  virtual void configure(const boost::property_tree::ptree& config) override;
 
   /// \brief Initialization of a post-processing task.
   /// Initialization of a post-processing task. User receives a Trigger which caused the initialization and a service
@@ -39,12 +46,14 @@ class TreeReaderPostProcessing final : public quality_control::postprocessing::P
   /// \param trigger  Trigger which caused the initialization, for example Trigger::SOR
   /// \param services Interface containing optional interfaces, for example DatabaseInterface
   void initialize(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
+
   /// \brief Update of a post-processing task.
   /// Update of a post-processing task. User receives a Trigger which caused the update and a service
   /// registry with singleton interfaces.
   /// \param trigger  Trigger which caused the initialization, for example Trigger::Period
   /// \param services Interface containing optional interfaces, for example DatabaseInterface
   void update(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
+
   /// \brief Finalization of a post-processing task.
   /// Finalization of a post-processing task. User receives a Trigger which caused the finalization and a service
   /// registry with singleton interfaces.
@@ -53,12 +62,14 @@ class TreeReaderPostProcessing final : public quality_control::postprocessing::P
   void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
 
  private:
-  o2::quality_control::repository::DatabaseInterface* mDatabase = nullptr;
-
-  //Objects that will be created and published in post processing
-  std::unique_ptr<TH1F> mChargeHistogram;
+  TH1F* mX = nullptr;
+  TH1F* mY = nullptr;
+  TH1F* mZ = nullptr;
+  TH1F* mStartValidity = nullptr;
+  o2::ccdb::CcdbApi mCcdbApi;
+  std::string mCcdbUrl = "https://alice-ccdb.cern.ch";
 };
 
-} // namespace o2::quality_control_modules::ft0
+} // namespace o2::quality_control_modules::glo
 
-#endif //QUALITYCONTROL_TreeReaderPostProcessing_H
+#endif // QUALITYCONTROL_MEANVERTEXPOSTPROCESSING_H

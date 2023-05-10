@@ -2,7 +2,7 @@
 
 add_library(O2QcFOCAL)
 
-target_sources(O2QcFOCAL PRIVATE src/TestbeamRawTask.cxx)
+target_sources(O2QcFOCAL PRIVATE src/PedestalCalibTask.cxx  src/TestbeamRawTask.cxx)
 
 target_include_directories(
   O2QcFOCAL
@@ -10,7 +10,7 @@ target_include_directories(
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-target_link_libraries(O2QcFOCAL PUBLIC O2QualityControl O2::DetectorsRaw O2::Headers O2::ITSMFTReconstruction O2::DataFormatsFOCAL O2::FOCALReconstruction)
+target_link_libraries(O2QcFOCAL PUBLIC O2QualityControl O2::DetectorsRaw O2::Headers O2::ITSMFTReconstruction O2::DataFormatsFOCAL O2::FOCALReconstruction O2::FOCALCalib)
 
 install(TARGETS O2QcFOCAL
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -20,7 +20,8 @@ install(TARGETS O2QcFOCAL
 add_root_dictionary(O2QcFOCAL
   HEADERS
   include/FOCAL/TestbeamRawTask.h
-  LINKDEF include/FOCAL/LinkDef.h)
+      include/FOCAL/PedestalCalibTask.h
+        LINKDEF include/FOCAL/LinkDef.h)
 
 install(
   DIRECTORY etc DESTINATION Modules/FOCAL

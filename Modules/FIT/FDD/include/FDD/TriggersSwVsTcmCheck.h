@@ -1,4 +1,4 @@
-// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// Copyright 2023 CERN and copyright holders of ALICE O2.
 // See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
 // All rights not expressly granted are reserved.
 //
@@ -10,35 +10,35 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   ChannelsCheck.h
-/// \author Milosz Filus
-/// Dummy check for FT0 detector
+/// \file   TriggersSwVsTcmCheck.h
+/// \author Dawid Skora dawid.mateusz.skora@cern.ch
+/// \Modification for FDD by arvind.khuntia@cern.ch (25.04.2023)
 
-#ifndef QC_MODULE_FT0_FT0ChannelsCheck_H
-#define QC_MODULE_FT0_FT0ChannelsCheck_H
+#ifndef QC_MODULE_FDD_TRIGGERSSWVSTCMCHECK_H
+#define QC_MODULE_FDD_TRIGGERSSWVSTCMCHECK_H
 
-// Quality Control
 #include "QualityControl/CheckInterface.h"
+#include "FV0Base/Constants.h"
 
-namespace o2::quality_control_modules::ft0
+namespace o2::quality_control_modules::fdd
 {
-
-class ChannelsCheck : public o2::quality_control::checker::CheckInterface
+class TriggersSwVsTcmCheck : public o2::quality_control::checker::CheckInterface
 {
  public:
-  /// Default constructor
-  ChannelsCheck() = default;
-  /// Destructor
-  ~ChannelsCheck() override = default;
+  TriggersSwVsTcmCheck() = default;
+  ~TriggersSwVsTcmCheck() override = default;
 
-  // Override interface
+  void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
 
-  ClassDefOverride(ChannelsCheck, 2);
+  ClassDefOverride(TriggersSwVsTcmCheck, 2);
+
+ private:
+  std::array<double, 4> mPositionMsgBox;
 };
 
-} // namespace o2::quality_control_modules::ft0
+} // namespace o2::quality_control_modules::fdd
 
-#endif
+#endif // QC_MODULE_FDD_TRIGGERSSWVSTCMCHECK_H

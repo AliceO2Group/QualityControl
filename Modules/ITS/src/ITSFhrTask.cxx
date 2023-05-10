@@ -820,7 +820,7 @@ void ITSFhrTask::reset()
     }
   }
 
-  ILOG(Info, Support) << "Reset" << ENDM;
+  ILOG(Debug, Devel) << "Reset" << ENDM;
 }
 
 void ITSFhrTask::getStavePoint(int layer, int stave, double* px, double* py)

@@ -15,6 +15,7 @@
 ///
 
 #include <algorithm>
+#include <iomanip>
 #include <iostream>
 #include <unordered_set>
 
@@ -31,6 +32,8 @@
 #include <Framework/DataRefUtils.h>
 #include <DPLUtils/DPLRawParser.h>
 #include <DetectorsRaw/RDHUtils.h>
+#include <FOCALCalib/PadBadChannelMap.h>
+#include <FOCALCalib/PadPedestal.h>
 #include <Headers/DataHeader.h>
 #include <Headers/RDHAny.h>
 
@@ -133,6 +136,14 @@ void TestbeamRawTask::initialize(o2::framework::InitContext& /*ctx*/)
   if (hasDisablePixels != mCustomParameters.end()) {
     mDisablePixels = get_bool(hasDisablePixels->second);
   }
+  auto hasPadPedestalSubtraction = mCustomParameters.find("SubtractPadPedestals");
+  if (hasPadPedestalSubtraction != mCustomParameters.end()) {
+    mEnablePedestalSubtraction = get_bool(hasPadPedestalSubtraction->second);
+  }
+  auto hasPadBadChannelMap = mCustomParameters.find("PadBadChannelMasking");
+  if (hasPadBadChannelMap != mCustomParameters.end()) {
+    mEnableBadChannelMask = get_bool(hasPadBadChannelMap->second);
+  }
 
   mChannelsPadProjections = { 52, 16, 19, 46, 59, 14, 42 };
   if (!mDisablePads) {
@@ -197,6 +208,15 @@ void TestbeamRawTask::initialize(o2::framework::InitContext& /*ctx*/)
     }
     mPixelMapper = std::make_unique<o2::focal::PixelMapper>(mappingtype);
   }
+
+  /////////////////////////////////////////////////////////////////
+  /// general histograms
+  /////////////////////////////////////////////////////////////////
+  mTFerrorCounter = new TH1F("NumberOfTFerror", "Number of TFbuilder errors", 2, 0.5, 2.5);
+  mTFerrorCounter->GetYaxis()->SetTitle("Time Frame Builder Error");
+  mTFerrorCounter->GetXaxis()->SetBinLabel(1, "empty");
+  mTFerrorCounter->GetXaxis()->SetBinLabel(2, "filled");
+  getObjectsManager()->startPublishing(mTFerrorCounter);
 
   /////////////////////////////////////////////////////////////////
   /// PAD histograms
@@ -302,6 +322,24 @@ void TestbeamRawTask::startOfActivity(Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
   reset();
+  // Pedestal come from pedestal runs, usually not updated during the run
+  std::map<std::string, std::string> metadata;
+  if (mEnablePedestalSubtraction) {
+    mPadPedestalHandler = retrieveConditionAny<o2::focal::PadPedestal>("FOC/Calib/PadPedestals", metadata);
+    if (mPadPedestalHandler) {
+      ILOG(Info, Support) << "Pedestal data found - pedestals will be subtracted for Pads" << ENDM;
+    } else {
+      ILOG(Error, Support) << "No pedestal data found - pedestal subtraction not possible" << ENDM;
+    }
+  }
+  if (mEnableBadChannelMask) {
+    mPadBadChannelMap = retrieveConditionAny<o2::focal::PadBadChannelMap>("FOC/Calib/PadBadChannelMap", metadata);
+    if (mPadPedestalHandler) {
+      ILOG(Info, Support) << "Bad channel map for pads found - bad pad channels will be masked" << ENDM;
+    } else {
+      ILOG(Error, Support) << "No bad channel map found for pads - bad channel mask cannot be applied" << ENDM;
+    }
+  }
 }
 
 void TestbeamRawTask::startOfCycle()
@@ -317,10 +355,16 @@ void TestbeamRawTask::monitorData(o2::framework::ProcessingContext& ctx)
   for (auto& hitcounterLayer : mPixelNHitsLayer) {
     hitcounterLayer.clear();
   }
+
+  if (isLostTimeframe(ctx)) {
+    mTFerrorCounter->Fill(1);
+    return;
+  }
+  mTFerrorCounter->Fill(2);
+
   int inputs = 0;
   std::vector<char> rawbuffer;
-  int currentendpoint = 0;
-  int currentsource = 0;
+  uint16_t currentfee = 0;
   for (const auto& rawData : framework::InputRecordWalker(ctx.inputs())) {
     if (rawData.header != nullptr && rawData.payload != nullptr) {
       const auto payloadSize = o2::framework::DataRefUtils::getPayloadSize(rawData);
@@ -340,14 +384,14 @@ void TestbeamRawTask::monitorData(o2::framework::ProcessingContext& ctx)
             if (o2::raw::RDHUtils::getStop(rdh)) {
               ILOG(Debug, Support) << "Stop bit received - processing payload" << ENDM;
               // Data ready
-              if (currentsource == 0x2b) { // Use source ID 43 for pads
+              if (currentfee == 0xcafe) { // Use FEE ID 0xcafe for PAD data
                 // Pad data
                 if (!mDisablePads) {
                   ILOG(Debug, Support) << "Processing PAD data" << ENDM;
                   auto payloadsizeGBT = rawbuffer.size() * sizeof(char) / sizeof(o2::focal::PadGBTWord);
                   processPadPayload(gsl::span<const o2::focal::PadGBTWord>(reinterpret_cast<const o2::focal::PadGBTWord*>(rawbuffer.data()), payloadsizeGBT));
                 }
-              } else if (currentsource == 0x20) { // Use source ID 32 (ITS) for pixels
+              } else { // All other FEEs are pixel FEEs
                 // Pixel data
                 if (!mDisablePixels) {
                   auto feeID = o2::raw::RDHUtils::getFEEID(rdh);
@@ -355,15 +399,14 @@ void TestbeamRawTask::monitorData(o2::framework::ProcessingContext& ctx)
                   auto payloadsizeGBT = rawbuffer.size() * sizeof(char) / sizeof(o2::itsmft::GBTWord);
                   processPixelPayload(gsl::span<const o2::itsmft::GBTWord>(reinterpret_cast<const o2::itsmft::GBTWord*>(rawbuffer.data()), payloadsizeGBT), feeID);
                 }
-              } else {
-                ILOG(Error, Support) << "Unsupported endpoint " << currentendpoint << ENDM;
               }
               rawbuffer.clear();
             } else {
               ILOG(Debug, Support) << "New HBF or Timeframe" << ENDM;
-              currentendpoint = o2::raw::RDHUtils::getEndPointID(rdh);
-              currentsource = o2::raw::RDHUtils::getSourceID(rdh);
-              ILOG(Debug, Support) << "Using endpoint " << currentendpoint;
+              currentfee = o2::raw::RDHUtils::getFEEID(rdh);
+              stringstream ss;
+              ss << "Using FEE ID: 0x" << std::hex << currentfee << std::dec;
+              ILOG(Debug, Support) << ss.str() << ENDM;
               rawbuffer.clear();
             }
           }
@@ -373,15 +416,17 @@ void TestbeamRawTask::monitorData(o2::framework::ProcessingContext& ctx)
 
         // non-0 payload size:
         auto payloadsize = o2::raw::RDHUtils::getMemorySize(rdh) - o2::raw::RDHUtils::getHeaderSize(rdh);
-        int endpoint = static_cast<int>(o2::raw::RDHUtils::getEndPointID(rdh));
+        auto fee = static_cast<int>(o2::raw::RDHUtils::getFEEID(rdh));
         ILOG(Debug, Support) << "Next RDH: " << ENDM;
-        ILOG(Debug, Support) << "Found endpoint              " << endpoint << ENDM;
+        stringstream ss;
+        ss << "Found fee                   0x" << std::hex << fee << std::dec << " (System " << (fee == 0xcafe ? "Pads" : "Pixels") << ")";
+        ILOG(Debug, Support) << ss.str() << ENDM;
         ILOG(Debug, Support) << "Found trigger BC:           " << o2::raw::RDHUtils::getTriggerBC(rdh) << ENDM;
         ILOG(Debug, Support) << "Found trigger Oribt:        " << o2::raw::RDHUtils::getTriggerOrbit(rdh) << ENDM;
         ILOG(Debug, Support) << "Found payload size:         " << payloadsize << ENDM;
         ILOG(Debug, Support) << "Found offset to next:       " << o2::raw::RDHUtils::getOffsetToNext(rdh) << ENDM;
         ILOG(Debug, Support) << "Stop bit:                   " << (o2::raw::RDHUtils::getStop(rdh) ? "yes" : "no") << ENDM;
-        ILOG(Debug, Support) << "Number of GBT words:        " << (payloadsize * sizeof(char) / (endpoint == 1 ? sizeof(o2::focal::PadGBTWord) : sizeof(o2::itsmft::GBTWord))) << ENDM;
+        ILOG(Debug, Support) << "Number of GBT words:        " << (payloadsize * sizeof(char) / (fee == 0xcafe ? sizeof(o2::focal::PadGBTWord) : sizeof(o2::itsmft::GBTWord))) << ENDM;
         auto page_payload = databuffer.subspan(currentpos + o2::raw::RDHUtils::getHeaderSize(rdh), payloadsize);
         std::copy(page_payload.begin(), page_payload.end(), std::back_inserter(rawbuffer));
         currentpos += o2::raw::RDHUtils::getOffsetToNext(rdh);
@@ -425,14 +470,30 @@ void TestbeamRawTask::processPadEvent(gsl::span<const o2::focal::PadGBTWord> pad
     ILOG(Debug, Support) << "ASIC " << iasic << ", Header 1: " << asic.getSecondHeader() << ENDM;
     int currentchannel = 0;
     for (const auto& chan : asic.getChannels()) {
-      if (chan.getTOT() < mPadTOTCutADC) {
-        mPadASICChannelADC[iasic]->Fill(currentchannel, chan.getADC());
-        auto [column, row] = mPadMapper.getRowColFromChannelID(currentchannel);
-        // temporary mask channel col 7 row 8 in ASIC 0
-        auto mask = (iasic == 0) && ((column == 7) && (row == 8));
-        if (!mask) {
-          mHitMapPadASIC[iasic]->Fill(column, row, chan.getADC());
+      bool skipChannel = false;
+      if (mPadBadChannelMap) {
+        try {
+          skipChannel = (mPadBadChannelMap->getChannelStatus(iasic, currentchannel) != o2::focal::PadBadChannelMap::MaskType_t::GOOD_CHANNEL);
+        } catch (o2::focal::PadBadChannelMap::ChannelIndexException& e) {
+          ILOG(Error, Support) << "Error accessing channel status: " << e.what() << ENDM;
         }
+      }
+      if (skipChannel) {
+        continue;
+      }
+      if (chan.getTOT() < mPadTOTCutADC) {
+        double adc = chan.getADC(); // must be converted to floating point number for pedestal subtraction
+        if (mPadPedestalHandler && iasic < 18) {
+          try {
+            double pedestal = mPadPedestalHandler->getPedestal(iasic, currentchannel);
+            adc -= pedestal;
+          } catch (o2::focal::PadPedestal::InvalidChannelException& e) {
+            ILOG(Error, Support) << e.what() << ENDM;
+          }
+        }
+        mPadASICChannelADC[iasic]->Fill(currentchannel, adc);
+        auto [column, row] = mPadMapper.getRowColFromChannelID(currentchannel);
+        mHitMapPadASIC[iasic]->Fill(column, row, adc);
       }
       mPadASICChannelTOA[iasic]->Fill(currentchannel, chan.getTOA());
       if (chan.getTOT()) {
@@ -737,6 +798,49 @@ void TestbeamRawTask::PadChannelProjections::reset()
   for (auto& [chan, hist] : mHistos) {
     hist->Reset();
   }
+}
+
+bool TestbeamRawTask::isLostTimeframe(framework::ProcessingContext& ctx) const
+{
+  // direct data
+  constexpr auto originFOC = header::gDataOriginFOC;
+  o2::framework::InputSpec dummy{ "dummy",
+                                  framework::ConcreteDataMatcher{ originFOC,
+                                                                  header::gDataDescriptionRawData,
+                                                                  0xDEADBEEF } };
+  for (const auto& ref : o2::framework::InputRecordWalker(ctx.inputs(), { dummy })) {
+    // auto posReadout = ctx.inputs().getPos("readout");
+    // auto nslots = ctx.inputs().getNofParts(posReadout);
+    // for (decltype(nslots) islot = 0; islot < nslots; islot++) {
+    //   const auto& ref = ctx.inputs().getByPos(posReadout, islot);
+    const auto dh = o2::framework::DataRefUtils::getHeader<o2::header::DataHeader*>(ref);
+    const auto payloadSize = o2::framework::DataRefUtils::getPayloadSize(ref);
+    // if (dh->subSpecification == 0xDEADBEEF) {
+    if (payloadSize == 0) {
+      return true;
+      //  }
+    }
+  }
+  // sampled data
+  o2::framework::InputSpec dummyDS{ "dummyDS",
+                                    framework::ConcreteDataMatcher{ "DS",
+                                                                    "focrawdata0",
+                                                                    0xDEADBEEF } };
+  for (const auto& ref : o2::framework::InputRecordWalker(ctx.inputs(), { dummyDS })) {
+    // auto posReadout = ctx.inputs().getPos("readout");
+    // auto nslots = ctx.inputs().getNofParts(posReadout);
+    // for (decltype(nslots) islot = 0; islot < nslots; islot++) {
+    //   const auto& ref = ctx.inputs().getByPos(posReadout, islot);
+    const auto dh = o2::framework::DataRefUtils::getHeader<o2::header::DataHeader*>(ref);
+    const auto payloadSize = o2::framework::DataRefUtils::getPayloadSize(ref);
+    // if (dh->subSpecification == 0xDEADBEEF) {
+    if (payloadSize == 0) {
+      return true;
+      //  }
+    }
+  }
+
+  return false;
 }
 
 } // namespace o2::quality_control_modules::focal

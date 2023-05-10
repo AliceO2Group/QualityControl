@@ -12,7 +12,7 @@
 ///
 /// \file   CFDEffCheck.h
 /// \author Sebastian Bysiak sbysiak@cern.ch
-///
+/// LATEST modification for FDD on 25.04.2023 (akhuntia@cern.ch)
 
 #ifndef QC_MODULE_FDD_FDDCFDEFFCHECK_H
 #define QC_MODULE_FDD_FDDCFDEFFCHECK_H

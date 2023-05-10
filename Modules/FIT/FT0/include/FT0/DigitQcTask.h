@@ -114,8 +114,9 @@ class DigitQcTask final : public TaskInterface
   std::array<uint8_t, sNCHANNELS_PM> mChID2PMhash; // map chID->hashed PM value
   uint8_t mTCMhash;                                // hash value for TCM, and bin position in hist
   std::map<uint8_t, bool> mMapPMhash2isAside;
-  std::map<int, std::string> mMapDigitTrgNames;
-  std::map<o2::ft0::ChannelData::EEventDataBit, std::string> mMapChTrgNames;
+  std::map<unsigned int, std::string> mMapDigitTrgNames;
+  std::map<unsigned int, std::string> mMapChTrgNames;
+  std::map<unsigned int, std::string> mMapBasicTrgBits;
   std::unique_ptr<TH1F> mHistNumADC;
   std::unique_ptr<TH1F> mHistNumCFD;
 
@@ -150,6 +151,12 @@ class DigitQcTask final : public TaskInterface
   int mTrgChargeLevelHigh;
   int mTrgOrGate;
 
+  int mGoodPMbits_ChID;
+  int mBadPMbits_ChID;
+  int mPMbitsToCheck_ChID;
+  int mLowTimeGate_ChID;
+  int mUpTimeGate_ChID;
+
   // Objects which will be published
   std::unique_ptr<TH2F> mHistAmp2Ch;
   std::unique_ptr<TH2F> mHistTime2Ch;
@@ -164,6 +171,7 @@ class DigitQcTask final : public TaskInterface
   std::unique_ptr<TH1F> mHistAverageTimeA;
   std::unique_ptr<TH1F> mHistAverageTimeC;
   std::unique_ptr<TH1F> mHistChannelID;
+  std::unique_ptr<TH2F> mHistChIDperBC;
   std::unique_ptr<TH1F> mHistCFDEff;
   std::unique_ptr<TH2F> mHistTimeSum2Diff;
   std::unique_ptr<TH2F> mHistTriggersCorrelation;
