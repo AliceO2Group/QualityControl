@@ -119,9 +119,9 @@ class ITSFhrTask final : public TaskInterface
   double** mOccupancyLane /* = new double*[NStaves[lay]]*/; // IB : occupancy[stave][chip]; OB : occupancy[stave][Lane]
   int*** mErrorCount /* = new int**[NStaves[lay]]*/;        // IB : errorcount[stave][FEE][errorid]
   double** mChipPhi /* = new double*[NStaves[lay]]*/;       // IB/OB : mChipPhi[Stave][chip]
-  double** mChipZ /* = new double*[NStaves[lay]]*/;       // IB/OB : mChipZ[Stave][chip]
+  double** mChipZ /* = new double*[NStaves[lay]]*/;         // IB/OB : mChipZ[Stave][chip]
 
-  int** mChipStat /* = new double*[NStaves[lay]]*/;         // IB/OB : mChipStat[Stave][chip]
+  int** mChipStat /* = new double*[NStaves[lay]]*/; // IB/OB : mChipStat[Stave][chip]
   int mNoisyPixelNumber[7][48] = { { 0 } };
 
   int mMaxGeneralAxisRange = -3;  // the range of TH2Poly plots z axis range, pow(10, mMinGeneralAxisRange) ~ pow(10, mMaxGeneralAxisRange)
@@ -132,7 +132,7 @@ class ITSFhrTask final : public TaskInterface
   int mEtabins = 130;
   int mPhibins = 240;
 
-  const float mLength[NLayer] = { 27.1, 27.1, 27.1, 84.3, 84.3, 147.5, 147.5 };  //Sensetive area length  
+  const float mLength[NLayer] = { 27.1, 27.1, 27.1, 84.3, 84.3, 147.5, 147.5 }; // Sensetive area length
 
   // General plots
   TH1D* mErrorPlots;
