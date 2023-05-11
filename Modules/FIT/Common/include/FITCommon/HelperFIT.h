@@ -22,6 +22,8 @@
 #include <utility>
 #include <unordered_map>
 #include <functional>
+#include <array>
+#include <vector>
 #include <DataFormatsFIT/Triggers.h>
 
 namespace o2::quality_control_modules::fit
