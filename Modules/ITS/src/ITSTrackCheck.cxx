@@ -257,7 +257,7 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     tInfo->SetTextColor(textColor);
     tInfo->SetNDC();
     h->GetListOfFunctions()->Add(tInfo->Clone());
-   
+
     if (ShifterInfoText[mo->getName()] != "")
       h->GetListOfFunctions()->Add(tShifterInfo->Clone());
   }
