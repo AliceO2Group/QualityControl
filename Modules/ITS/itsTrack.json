@@ -56,6 +56,10 @@
         "moduleName" : "QcITS",
         "policy" : "OnEachSeparately",
         "detectorName" : "ITS",
+                "checkParameters": {
+                      "plotWithTextMessage": "AngularDistribution",
+                      "textMessage": "test message"
+        },
         "dataSource" : [ {
           "type" : "Task",
           "name" : "ITSTrackTask",

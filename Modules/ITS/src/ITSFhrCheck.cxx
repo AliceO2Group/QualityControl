@@ -50,7 +50,7 @@ Quality ITSFhrCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
       result.addMetadata("Gen_Occu_OB", "good");
       result.addMetadata("Gen_Occu_empty", "good");
       result.set(Quality::Good);
-      std::vector<int> skipbins = convertToIntArray(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "skipbins", ""));
+      std::vector<int> skipbins = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "skipbins", ""));
 
       TIter next(h->GetBins());
       int ibin = 0;
@@ -148,6 +148,23 @@ std::string ITSFhrCheck::getAcceptedType() { return "TH1"; }
 
 void ITSFhrCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
+  std::vector<string> vPlotWithTextMessage = convertToArray<string>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "plotWithTextMessage", ""));
+  std::vector<string> vTextMessage = convertToArray<string>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "textMessage", ""));
+  std::map<string, string> ShifterInfoText;
+
+  if ((int)vTextMessage.size() == (int)vPlotWithTextMessage.size()) {
+    for (int i = 0; i < (int)vTextMessage.size(); i++) {
+      ShifterInfoText[vPlotWithTextMessage[i]] = vTextMessage[i];
+    }
+  } else
+
+    ILOG(Warning, Support) << "Bad list of plot with TextMessages for shifter, check .json" << ENDM;
+
+  std::shared_ptr<TLatex> tShifterInfo = std::make_shared<TLatex>(0.005, 0.006, Form("#bf{%s}", TString(ShifterInfoText[mo->getName()]).Data()));
+  tShifterInfo->SetTextSize(0.04);
+  tShifterInfo->SetTextFont(43);
+  tShifterInfo->SetNDC();
+
   TLatex* text[5];
   TString status;
   int textColor;
@@ -174,6 +191,9 @@ void ITSFhrCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
         h->GetListOfFunctions()->Add(text[i]);
       }
     }
+    if (ShifterInfoText[mo->getName()] != "")
+      h->GetListOfFunctions()->Add(tShifterInfo->Clone());
+
   } else if (mo->getName() == "General/General_Occupancy") {
     auto* h = dynamic_cast<TH2Poly*>(mo->getObject());
     if (checkResult == Quality::Good) {
@@ -225,6 +245,10 @@ void ITSFhrCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
     tInfo[3]->SetNDC();
     h->GetListOfFunctions()->Add(tInfo[3]->Clone());
 
+    std::cout<<"###################################### doing new stuff, ShifterInfoText[mo->getName()] = " << ShifterInfoText[mo->getName()] <<std::endl;
+    if (ShifterInfoText[mo->getName()] != "")
+      h->GetListOfFunctions()->Add(tShifterInfo->Clone());
+
   } else if (mo->getName() == "General/Noisy_Pixel") {
     auto* h = dynamic_cast<TH2Poly*>(mo->getObject());
     if (strcmp(checkResult.getMetadata("Noi_Pix").c_str(), "good") == 0) {
@@ -254,6 +278,8 @@ void ITSFhrCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
         h->GetListOfFunctions()->Add(text[i]);
       }
     }
+    if (ShifterInfoText[mo->getName()] != "")
+      h->GetListOfFunctions()->Add(tShifterInfo->Clone());
   }
   TString objectName = mo->getName();
   if (objectName.Contains("ChipStave")) {
@@ -294,21 +320,9 @@ void ITSFhrCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
         h->GetListOfFunctions()->Add(text[i]);
       }
     }
+    if (ShifterInfoText[mo->getName()] != "")
+      h->GetListOfFunctions()->Add(tShifterInfo->Clone());
   }
-}
-
-std::vector<int> ITSFhrCheck::convertToIntArray(std::string input)
-{
-  std::replace(input.begin(), input.end(), ',', ' ');
-  std::istringstream stringReader{ input };
-
-  std::vector<int> result;
-  int number;
-  while (stringReader >> number) {
-    result.push_back(number);
-  }
-
-  return result;
 }
 
 } // namespace o2::quality_control_modules::its

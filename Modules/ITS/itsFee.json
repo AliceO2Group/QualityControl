@@ -51,11 +51,13 @@
                 "detectorName": "ITS",
                 "checkParameters": {
                   "skipbinstrg": "",
-                  "skipfeeids": "",
+                  "skipfeeids": "12,11,10",
                   "maxbadchipsIB": "2",
                   "maxbadlanesML": "4",
                   "maxbadlanesOL": "7",
-                  "maxfractionbadlanes": "0.1"
+                  "maxfractionbadlanes": "0.1",
+                  "plotWithTextMessage": "TriggerVsFeeid,PayloadSize",
+                  "textMessage": "Ignore FEEid = 297 problem stave was switched off, test message" 
                 },
                 "dataSource": [
                     {

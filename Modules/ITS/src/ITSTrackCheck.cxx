@@ -26,6 +26,7 @@
 #include "TLatex.h"
 
 #include <iostream>
+#include "Common/Utils.h"
 
 namespace o2::quality_control_modules::its
 {
@@ -170,6 +171,21 @@ std::string ITSTrackCheck::getAcceptedType() { return "TH1D"; }
 
 void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
+  std::vector<string> vPlotWithTextMessage = convertToArray<string>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "plotWithTextMessage", ""));
+  std::vector<string> vTextMessage = convertToArray<string>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "textMessage", ""));
+  std::map<string, string> ShifterInfoText;
+
+  if ((int)vTextMessage.size() == (int)vPlotWithTextMessage.size()) {
+    for (int i = 0; i < (int)vTextMessage.size(); i++) {
+      ShifterInfoText[vPlotWithTextMessage[i]] = vTextMessage[i];
+    }
+  } else
+    ILOG(Warning, Support) << "Bad list of plot with TextMessages for shifter, check .json" << ENDM;
+
+  std::shared_ptr<TLatex> tShifterInfo = std::make_shared<TLatex>(0.005, 0.006, Form("#bf{%s}", TString(ShifterInfoText[mo->getName()]).Data()));
+  tShifterInfo->SetTextSize(0.04);
+  tShifterInfo->SetTextFont(43);
+  tShifterInfo->SetNDC();
 
   TString text[2];
   TString status;
@@ -241,6 +257,8 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     tInfo->SetTextColor(textColor);
     tInfo->SetNDC();
     h->GetListOfFunctions()->Add(tInfo->Clone());
+    if (ShifterInfoText[mo->getName()] != "")
+      h->GetListOfFunctions()->Add(tShifterInfo->Clone());
   }
 
   if (mo->getName() == "AngularDistribution") {
@@ -283,6 +301,8 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     tInfo->SetTextColor(textColor);
     tInfo->SetNDC();
     h->GetListOfFunctions()->Add(tInfo->Clone());
+    if (ShifterInfoText[mo->getName()] != "")
+      h->GetListOfFunctions()->Add(tShifterInfo->Clone());
   }
 
   if (mo->getName() == "VertexCoordinates") {
@@ -351,6 +371,8 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     tInfo->SetTextColor(textColor);
     tInfo->SetNDC();
     h->GetListOfFunctions()->Add(tInfo->Clone());
+    if (ShifterInfoText[mo->getName()] != "")
+      h->GetListOfFunctions()->Add(tShifterInfo->Clone());
   }
 
   if (mo->getName() == "VertexRvsZ") {
@@ -377,6 +399,8 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     tInfo->SetTextColor(textColor);
     tInfo->SetNDC();
     h->GetListOfFunctions()->Add(tInfo->Clone());
+    if (ShifterInfoText[mo->getName()] != "")
+      h->GetListOfFunctions()->Add(tShifterInfo->Clone());
   }
 
   if (mo->getName() == "VertexZ") {
@@ -433,6 +457,8 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     tInfo->SetTextColor(textColor);
     tInfo->SetNDC();
     h->GetListOfFunctions()->Add(tInfo->Clone());
+    if (ShifterInfoText[mo->getName()] != "")
+      h->GetListOfFunctions()->Add(tShifterInfo->Clone());
   }
 }
 

@@ -75,7 +75,10 @@
                 "checkParameters": {
                     "fhrcutIB": "0.01",
                     "fhrcutOB": "0.0001",
-                    "skipbins": ""
+                    "skipbins": "",
+                    "plotWithTextMessage": "General/General_Occupancy",
+                    "textMessage": "test message"
+
                 },
                 "dataSource": [{
                     "type": "Task",
