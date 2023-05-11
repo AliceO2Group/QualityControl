@@ -245,7 +245,6 @@ void ITSFhrCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
     tInfo[3]->SetNDC();
     h->GetListOfFunctions()->Add(tInfo[3]->Clone());
 
-    std::cout<<"###################################### doing new stuff, ShifterInfoText[mo->getName()] = " << ShifterInfoText[mo->getName()] <<std::endl;
     if (ShifterInfoText[mo->getName()] != "")
       h->GetListOfFunctions()->Add(tShifterInfo->Clone());
 

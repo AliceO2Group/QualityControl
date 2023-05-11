@@ -74,8 +74,8 @@
           "maxcluoccL6": "1",
           "skipxbinsoccupancy": "",
           "skipybinsoccupancy": "",
-          "plotWithTextMessage": "General/General_Occupancy",
-          "textMessage": "test message" 
+          "plotWithTextMessage": "",
+          "textMessage": "" 
 
         },
         "dataSource": [

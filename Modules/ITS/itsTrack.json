@@ -57,8 +57,8 @@
         "policy" : "OnEachSeparately",
         "detectorName" : "ITS",
                 "checkParameters": {
-                      "plotWithTextMessage": "AngularDistribution",
-                      "textMessage": "test message"
+                      "plotWithTextMessage": "",
+                      "textMessage": ""
         },
         "dataSource" : [ {
           "type" : "Task",

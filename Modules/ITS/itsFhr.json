@@ -76,8 +76,8 @@
                     "fhrcutIB": "0.01",
                     "fhrcutOB": "0.0001",
                     "skipbins": "",
-                    "plotWithTextMessage": "General/General_Occupancy",
-                    "textMessage": "test message"
+                    "plotWithTextMessage": "General/General_Occupancy,General/ErrorPlots",
+                    "textMessage": "test message occ,test message errors"
 
                 },
                 "dataSource": [{

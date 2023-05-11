@@ -56,8 +56,8 @@
                   "maxbadlanesML": "4",
                   "maxbadlanesOL": "7",
                   "maxfractionbadlanes": "0.1",
-                  "plotWithTextMessage": "TriggerVsFeeid,PayloadSize",
-                  "textMessage": "Ignore FEEid = 297 problem stave was switched off, test message" 
+                  "plotWithTextMessage": "",
+                  "textMessage": "" 
                 },
                 "dataSource": [
                     {
