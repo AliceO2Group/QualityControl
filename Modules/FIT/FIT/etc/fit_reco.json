@@ -1,0 +1,45 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": ""
+      },
+      "conditionDB": {
+        "url": "alice-ccdb.cern.ch",
+        "host": "alice-ccdb.cern.ch"
+      },
+      "infologger": {                     "": "Configuration of the Infologger (optional).",
+        "filterDiscardDebug": "false",    "": "Set to 1 to discard debug and trace messages (default: false)",
+        "filterDiscardLevel": "20",        "": "Message at this level or above are discarded (default: 21 - Trace)"
+      }
+    },
+    "tasks": {
+      "FITRecPoints": {
+        "active": "true",
+        "className": "o2::quality_control_modules::fit::RecoFITQcTask",
+        "moduleName": "QcFIT",
+        "taskName": "RecPoints",
+        "detectorName": "FIT",
+        "cycleDurationSeconds": "60",
+        "maxNumberCycles": "-1",
+        "resetAfterCycles": "1",
+        "dataSource": {
+          "type": "direct",
+          "query": "recPointsFDD:FDD/RECPOINTS/0;channelsFDD:FDD/RECCHDATA/0;recPointsFT0:FT0/RECPOINTS/0;channelsFT0:FT0/RECCHDATA/0;recPointsFV0:FV0/RECPOINTS/0;channelsFV0:FV0/RECCHDATA/0"
+        },
+        "taskParameters": {
+        }
+      }
+    }
+  }
+}
