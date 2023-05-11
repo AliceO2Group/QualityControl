@@ -17,6 +17,7 @@ target_sources(
           src/CalibMQcCheck.cxx
           src/CalibMQcTask.cxx
           src/DigitsHelper.cxx
+          src/HistoHelper.cxx
   )
 
 target_include_directories(
@@ -47,6 +48,7 @@ add_root_dictionary(
           include/MID/CalibMQcTask.h
           include/MID/CalibMQcCheck.h
           include/MID/DigitsHelper.h
+          include/MID/HistoHelper.h
   LINKDEF include/MID/LinkDef.h)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/MID DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")
