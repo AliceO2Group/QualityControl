@@ -379,7 +379,7 @@ std::string InfrastructureSpecReader::validateDetectorName(std::string name)
   int nDetectors = 17;
   const char* detNames[17] = // once we can use DetID, remove this hard-coded list
     { "ITS", "TPC", "TRD", "TOF", "PHS", "CPV", "EMC", "HMP", "MFT", "MCH", "MID", "ZDC", "FT0", "FV0", "FDD", "ACO", "FOC" };
-  std::vector<std::string> permitted = { "MISC", "DAQ", "GENERAL", "TST", "BMK", "CTP", "TRG", "DCS", "GLO" };
+  std::vector<std::string> permitted = { "MISC", "DAQ", "GENERAL", "TST", "BMK", "CTP", "TRG", "DCS", "GLO", "FIT" };
   for (auto i = 0; i < nDetectors; i++) {
     permitted.emplace_back(detNames[i]);
     //    permitted.push_back(o2::detectors::DetID::getName(i));
