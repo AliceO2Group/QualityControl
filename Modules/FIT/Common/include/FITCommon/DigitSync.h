@@ -24,6 +24,7 @@
 #include <type_traits>
 #include <functional>
 #include <bitset>
+#include <array>
 
 #include "CommonDataFormat/InteractionRecord.h"
 
