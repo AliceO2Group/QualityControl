@@ -24,7 +24,7 @@ target_include_directories(
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_link_libraries(${MODULE_NAME} PUBLIC O2QualityControl ROOT::Core ROOT::Hist O2::DataFormatsFDD O2::DataFormatsFT0 O2::DataFormatsFV0 O2::DataFormatsFIT O2QcCommon)
+target_link_libraries(${MODULE_NAME} PUBLIC O2QualityControl ROOT::Core ROOT::Hist O2::CommonDataFormat O2::DataFormatsFIT O2QcCommon)
 
 set(CMAKE_REQUIRED_INCLUDES ${O2_INCLUDE_DIRS} ${ROOT_INCLUDE_DIRS})
 
