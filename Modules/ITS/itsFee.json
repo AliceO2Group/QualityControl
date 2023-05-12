@@ -51,7 +51,7 @@
                 "detectorName": "ITS",
                 "checkParameters": {
                   "skipbinstrg": "",
-                  "skipfeeids": "12,11,10",
+                  "skipfeeids": "",
                   "maxbadchipsIB": "2",
                   "maxbadlanesML": "4",
                   "maxbadlanesOL": "7",

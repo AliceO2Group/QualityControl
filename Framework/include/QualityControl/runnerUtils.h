@@ -74,6 +74,7 @@ inline bool hasChecks(std::string configSource)
 inline int computeRunNumber(framework::ServiceRegistryRef services, int fallbackRunNumber = 0)
 { // Determine run number
   int run = 0;
+
   try {
     auto temp = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("runNumber", "unspecified");
     ILOG(Debug, Devel) << "Got this property runNumber from RawDeviceService: '" << temp << "'" << ENDM;
@@ -90,6 +91,7 @@ inline int computeRunNumber(framework::ServiceRegistryRef services, int fallback
 
 inline int computeRunType(framework::ServiceRegistryRef services, int fallbackRunType = 0)
 { // Determine runType number
+
   int runType = 0;
   try {
     auto temp = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("runType", "unspecified");
