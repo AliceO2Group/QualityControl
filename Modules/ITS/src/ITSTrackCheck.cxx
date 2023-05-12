@@ -242,7 +242,7 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       if (strcmp(checkResult.getMetadata("CheckMean").c_str(), "medium") == 0) {
         status = "";
         textColor = kOrange;
-        tMessage[5] = std::make_shared<TLatex>(0.12, 0.7, Form("Quality::Medium: Mean (%.1f) is outside of 5.2 - 5.9,  (ignore for non-physics", h->GetMean()));
+        tMessage[5] = std::make_shared<TLatex>(0.12, 0.7, Form("Quality::Medium: Mean (%.1f) is outside of 5.2 - 5.9,  (ignore for COSMICS and TECHICALS", h->GetMean()));
         tMessage[5]->SetTextFont(43);
         tMessage[5]->SetTextSize(0.04);
         tMessage[5]->SetTextColor(kOrange);
