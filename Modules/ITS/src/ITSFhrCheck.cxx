@@ -52,7 +52,6 @@ Quality ITSFhrCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
       result.set(Quality::Good);
       std::vector<int> skipbins = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "skipbins", ""));
 
-
       TIter next(h->GetBins());
       int ibin = 0;
       double_t nBadStaves[4];
