@@ -139,8 +139,8 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mStateLastIR2Ch = {};
   HelperFIT<o2::ft0::Digit, o2::ft0::ChannelData> helperFIT;
   mMapChTrgNames = helperFIT.mMapPMbits;
-  mMapDigitTrgNames = helperFIT.mMapTrgBits;
-  mMapBasicTrgBits = helperFIT.mMapBasicTrgBits;
+  mMapDigitTrgNames = HelperTrgFIT::sMapTrgBits;
+  mMapBasicTrgBits = HelperTrgFIT::sMapBasicTrgBitsFT0;
   mMapTrgSoftware.insert({ o2::fit::Triggers::bitA, false });
   mMapTrgSoftware.insert({ o2::fit::Triggers::bitC, false });
   mMapTrgSoftware.insert({ o2::fit::Triggers::bitVertex, false });

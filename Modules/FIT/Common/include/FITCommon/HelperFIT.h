@@ -22,6 +22,10 @@
 #include <utility>
 #include <unordered_map>
 #include <functional>
+#include <array>
+#include <vector>
+#include <DataFormatsFIT/Triggers.h>
+
 namespace o2::quality_control_modules::fit
 {
 
@@ -43,24 +47,33 @@ class HelperFIT
     { ChannelData_t::kIsEventInTVDC, "IsEventInTVDC" },
     { ChannelData_t::kIsTimeInfoLost, "IsTimeInfoLost" }
   };
-  const std::map<unsigned int, std::string> mMapTrgBits = {
-    { Triggers_t::bitA, "OrA" },
-    { Triggers_t::bitC, "OrC" },
-    { Triggers_t::bitVertex, "Vertex" },
-    { Triggers_t::bitCen, "Central" },
-    { Triggers_t::bitSCen, "SemiCentral" },
-    { Triggers_t::bitLaser, "Laser" },
-    { Triggers_t::bitOutputsAreBlocked, "OutputsAreBlocked" },
-    { Triggers_t::bitDataIsValid, "DataIsValid" }
-  };
-  const std::map<unsigned int, std::string> mMapBasicTrgBits = {
-    { Triggers_t::bitA, "OrA" },
-    { Triggers_t::bitC, "OrC" },
-    { Triggers_t::bitVertex, "Vertex" },
-    { Triggers_t::bitCen, "Central" },
-    { Triggers_t::bitSCen, "SemiCentral" }
-  };
 };
+
+class HelperTrgFIT
+{
+ public:
+  HelperTrgFIT() = delete;
+  ~HelperTrgFIT() = delete;
+  static const std::map<unsigned int, std::string> sMapTrgBits;
+  static const std::map<unsigned int, std::string> sMapBasicTrgBitsFDD;
+  static const std::map<unsigned int, std::string> sMapBasicTrgBitsFT0;
+  static const std::map<unsigned int, std::string> sMapBasicTrgBitsFV0;
+  static const std::array<std::vector<uint8_t>, 256> sArrDecomposed1Byte;
+  inline static std::array<std::vector<uint8_t>, 256> decompose1Byte()
+  {
+    std::array<std::vector<uint8_t>, 256> arrBitPos{};
+    for (int iByteValue = 0; iByteValue < arrBitPos.size(); iByteValue++) {
+      auto& vec = arrBitPos[iByteValue];
+      for (int iBit = 0; iBit < 8; iBit++) {
+        if (iByteValue & (1 << iBit)) {
+          vec.push_back(iBit);
+        }
+      }
+    }
+    return arrBitPos;
+  }
+};
+
 template <typename DigitType>
 struct DataTCM {
   using Digit_t = DigitType;

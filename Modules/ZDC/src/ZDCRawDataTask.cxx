@@ -81,15 +81,49 @@ void ZDCRawDataTask::startOfCycle()
 
 void ZDCRawDataTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
+  o2::framework::DPLRawParser parser(ctx.inputs());
+  int PayloadPerGBTW = 10;
+  int dataFormat;
+  const uint32_t* gbtw;
+  uint64_t count = 0;
+  size_t payloadSize;
+  size_t offset;
+  static uint64_t nErr[3] = { 0 };
 
-  o2::framework::InputRecord& inputs = ctx.inputs();
-  o2::framework::DPLRawParser parser(inputs);
   for (auto it = parser.begin(), end = parser.end(); it != end; ++it) {
-    auto const* payload = it.data();
-    size_t payloadSize = it.size();
-    if (payload != nullptr) {
-      for (int32_t ip = 0; ip < (int32_t)payloadSize; ip += 16) {
-        processWord((const uint32_t*)&payload[ip]);
+    auto rdhPtr = reinterpret_cast<const o2::header::RDHAny*>(it.raw());
+    if (rdhPtr == nullptr || !o2::raw::RDHUtils::checkRDH(rdhPtr, true)) {
+      nErr[0]++;
+      /*if (nErr[0] < 5) {
+        LOG(warning) << "ZDCDataReaderDPLSpec::run - Missing RAWDataHeader on page " << count;
+      } else if (nErr[0] == 5) {
+        LOG(warning) << "ZDCDataReaderDPLSpec::run - Missing RAWDataHeader on page " << count << " suppressing further messages";
+      }*/
+    } else {
+      if (it.data() == nullptr) {
+        nErr[1]++;
+      } else if (it.size() == 0) {
+        nErr[2]++;
+      } else {
+        // retrieving payload pointer of the page
+        auto const* payload = it.data();
+        // size of payload
+        payloadSize = it.size();
+        // offset of payload in the raw page
+        offset = it.offset();
+        dataFormat = o2::raw::RDHUtils::getDataFormat(rdhPtr);
+        if (dataFormat == 2) {
+          for (int32_t ip = 0; (ip + PayloadPerGBTW) <= payloadSize; ip += PayloadPerGBTW) {
+            gbtw = (const uint32_t*)&payload[ip];
+            if (gbtw[0] != 0xffffffff || gbtw[1] != 0xffffffff || (gbtw[2] & 0xffff) != 0xffff) {
+              processWord(gbtw);
+            }
+          }
+        } else if (dataFormat == 0) {
+          for (int32_t ip = 0; ip < (int32_t)payloadSize; ip += 16) {
+            processWord((const uint32_t*)&payload[ip]);
+          }
+        }
       }
     }
   }
