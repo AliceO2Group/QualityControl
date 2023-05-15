@@ -372,63 +372,64 @@ void TestbeamRawTask::monitorData(o2::framework::ProcessingContext& ctx)
       ILOG(Debug, Support) << "Channel " << header->dataOrigin.str << "/" << header->dataDescription.str << "/" << header->subSpecification << ENDM;
 
       gsl::span<const char> databuffer(rawData.payload, payloadSize);
+      ILOG(Debug, Support) << "Payload buffer has size " << databuffer.size() << ENDM;
       int currentpos = 0;
       while (currentpos < databuffer.size()) {
         auto rdh = reinterpret_cast<const o2::header::RDHAny*>(databuffer.data() + currentpos);
         if (mDebugMode) {
           o2::raw::RDHUtils::printRDH(rdh);
         }
-        if (o2::raw::RDHUtils::getMemorySize(rdh) == o2::raw::RDHUtils::getHeaderSize(rdh)) {
-          auto trigger = o2::raw::RDHUtils::getTriggerType(rdh);
-          if (trigger & o2::trigger::SOT || trigger & o2::trigger::HB) {
-            if (o2::raw::RDHUtils::getStop(rdh)) {
-              ILOG(Debug, Support) << "Stop bit received - processing payload" << ENDM;
-              // Data ready
-              if (currentfee == 0xcafe) { // Use FEE ID 0xcafe for PAD data
-                // Pad data
-                if (!mDisablePads) {
-                  ILOG(Debug, Support) << "Processing PAD data" << ENDM;
-                  auto payloadsizeGBT = rawbuffer.size() * sizeof(char) / sizeof(o2::focal::PadGBTWord);
-                  processPadPayload(gsl::span<const o2::focal::PadGBTWord>(reinterpret_cast<const o2::focal::PadGBTWord*>(rawbuffer.data()), payloadsizeGBT));
-                }
-              } else { // All other FEEs are pixel FEEs
-                // Pixel data
-                if (!mDisablePixels) {
-                  auto feeID = o2::raw::RDHUtils::getFEEID(rdh);
-                  ILOG(Debug, Support) << "Processing Pixel data from FEE " << feeID << ENDM;
-                  auto payloadsizeGBT = rawbuffer.size() * sizeof(char) / sizeof(o2::itsmft::GBTWord);
-                  processPixelPayload(gsl::span<const o2::itsmft::GBTWord>(reinterpret_cast<const o2::itsmft::GBTWord*>(rawbuffer.data()), payloadsizeGBT), feeID);
-                }
-              }
-              rawbuffer.clear();
-            } else {
-              ILOG(Debug, Support) << "New HBF or Timeframe" << ENDM;
-              currentfee = o2::raw::RDHUtils::getFEEID(rdh);
-              stringstream ss;
-              ss << "Using FEE ID: 0x" << std::hex << currentfee << std::dec;
-              ILOG(Debug, Support) << ss.str() << ENDM;
-              rawbuffer.clear();
-            }
-          }
-          currentpos += o2::raw::RDHUtils::getOffsetToNext(rdh);
-          continue;
+
+        if (o2::raw::RDHUtils::getMemorySize(rdh) > o2::raw::RDHUtils::getHeaderSize(rdh)) {
+          // non-0 payload size:
+          auto payloadsize = o2::raw::RDHUtils::getMemorySize(rdh) - o2::raw::RDHUtils::getHeaderSize(rdh);
+          auto fee = static_cast<int>(o2::raw::RDHUtils::getFEEID(rdh));
+          ILOG(Debug, Support) << "Next RDH: " << ENDM;
+          stringstream ss;
+          ss << "Found fee                   0x" << std::hex << fee << std::dec << " (System " << (fee == 0xcafe ? "Pads" : "Pixels") << ")";
+          ILOG(Debug, Support) << ss.str() << ENDM;
+          ILOG(Debug, Support) << "Found trigger BC:           " << o2::raw::RDHUtils::getTriggerBC(rdh) << ENDM;
+          ILOG(Debug, Support) << "Found trigger Oribt:        " << o2::raw::RDHUtils::getTriggerOrbit(rdh) << ENDM;
+          ILOG(Debug, Support) << "Found payload size:         " << payloadsize << ENDM;
+          ILOG(Debug, Support) << "Found offset to next:       " << o2::raw::RDHUtils::getOffsetToNext(rdh) << ENDM;
+          ILOG(Debug, Support) << "Stop bit:                   " << (o2::raw::RDHUtils::getStop(rdh) ? "yes" : "no") << ENDM;
+          ILOG(Debug, Support) << "Number of GBT words:        " << (payloadsize * sizeof(char) / (fee == 0xcafe ? sizeof(o2::focal::PadGBTWord) : sizeof(o2::itsmft::GBTWord))) << ENDM;
+          auto page_payload = databuffer.subspan(currentpos + o2::raw::RDHUtils::getHeaderSize(rdh), payloadsize);
+          std::copy(page_payload.begin(), page_payload.end(), std::back_inserter(rawbuffer));
         }
 
-        // non-0 payload size:
-        auto payloadsize = o2::raw::RDHUtils::getMemorySize(rdh) - o2::raw::RDHUtils::getHeaderSize(rdh);
-        auto fee = static_cast<int>(o2::raw::RDHUtils::getFEEID(rdh));
-        ILOG(Debug, Support) << "Next RDH: " << ENDM;
-        stringstream ss;
-        ss << "Found fee                   0x" << std::hex << fee << std::dec << " (System " << (fee == 0xcafe ? "Pads" : "Pixels") << ")";
-        ILOG(Debug, Support) << ss.str() << ENDM;
-        ILOG(Debug, Support) << "Found trigger BC:           " << o2::raw::RDHUtils::getTriggerBC(rdh) << ENDM;
-        ILOG(Debug, Support) << "Found trigger Oribt:        " << o2::raw::RDHUtils::getTriggerOrbit(rdh) << ENDM;
-        ILOG(Debug, Support) << "Found payload size:         " << payloadsize << ENDM;
-        ILOG(Debug, Support) << "Found offset to next:       " << o2::raw::RDHUtils::getOffsetToNext(rdh) << ENDM;
-        ILOG(Debug, Support) << "Stop bit:                   " << (o2::raw::RDHUtils::getStop(rdh) ? "yes" : "no") << ENDM;
-        ILOG(Debug, Support) << "Number of GBT words:        " << (payloadsize * sizeof(char) / (fee == 0xcafe ? sizeof(o2::focal::PadGBTWord) : sizeof(o2::itsmft::GBTWord))) << ENDM;
-        auto page_payload = databuffer.subspan(currentpos + o2::raw::RDHUtils::getHeaderSize(rdh), payloadsize);
-        std::copy(page_payload.begin(), page_payload.end(), std::back_inserter(rawbuffer));
+        auto trigger = o2::raw::RDHUtils::getTriggerType(rdh);
+        if (trigger & o2::trigger::SOT || trigger & o2::trigger::HB) {
+          if (o2::raw::RDHUtils::getStop(rdh)) {
+            ILOG(Debug, Support) << "Stop bit received - processing payload" << ENDM;
+            // Data ready
+            if (currentfee == 0xcafe) { // Use FEE ID 0xcafe for PAD data
+              // Pad data
+              if (!mDisablePads) {
+                ILOG(Debug, Support) << "Processing PAD data" << ENDM;
+                auto payloadsizeGBT = rawbuffer.size() * sizeof(char) / sizeof(o2::focal::PadGBTWord);
+                ILOG(Debug) << "Found pixel payload of size " << rawbuffer.size() << " (" << payloadsizeGBT << " GBT words)" << ENDM;
+                processPadPayload(gsl::span<const o2::focal::PadGBTWord>(reinterpret_cast<const o2::focal::PadGBTWord*>(rawbuffer.data()), payloadsizeGBT));
+              }
+            } else { // All other FEEs are pixel FEEs
+              // Pixel data
+              if (!mDisablePixels) {
+                auto feeID = o2::raw::RDHUtils::getFEEID(rdh);
+                ILOG(Debug, Support) << "Processing Pixel data from FEE " << feeID << ENDM;
+                auto payloadsizeGBT = rawbuffer.size() * sizeof(char) / sizeof(o2::itsmft::GBTWord);
+                ILOG(Debug, Support) << "Found pixel payload of size " << rawbuffer.size() << " (" << payloadsizeGBT << " GBT words)" << ENDM;
+                processPixelPayload(gsl::span<const o2::itsmft::GBTWord>(reinterpret_cast<const o2::itsmft::GBTWord*>(rawbuffer.data()), payloadsizeGBT), feeID);
+              }
+            }
+            rawbuffer.clear();
+          } else {
+            ILOG(Debug, Support) << "New HBF or Timeframe" << ENDM;
+            currentfee = o2::raw::RDHUtils::getFEEID(rdh);
+            stringstream ss;
+            ss << "Using FEE ID: 0x" << std::hex << currentfee << std::dec;
+            ILOG(Debug, Support) << ss.str() << ENDM;
+          }
+        }
         currentpos += o2::raw::RDHUtils::getOffsetToNext(rdh);
       }
     } else {
