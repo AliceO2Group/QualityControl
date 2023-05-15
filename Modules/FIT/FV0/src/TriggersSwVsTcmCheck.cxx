@@ -119,7 +119,7 @@ void TriggersSwVsTcmCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality c
     msg->SetName(Form("%s_msg", mo->GetName()));
     msg->Clear();
     msg->AddText(checkResult.getReasons()[0].second.c_str());
-    int color = kBlack;
+    int color = kWhite;
     if (checkResult == Quality::Good) {
       color = kGreen + 1;
       msg->AddText(">> Quality::Good <<");

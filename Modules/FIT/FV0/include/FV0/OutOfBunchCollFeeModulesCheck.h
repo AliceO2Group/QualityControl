@@ -10,41 +10,43 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   BcCheck.h
+/// \file   OutOfBunchCollFeeModulesCheck.h
 /// \author Dawid Skora dawid.mateusz.skora@cern.ch
 ///
 
-#ifndef QC_MODULE_FV0_BCCHECK_H
-#define QC_MODULE_FV0_BCCHECK_H
+#ifndef QC_MODULE_FV0_OUTOFBUNCHCOLLFEEMODULESCHECK_H
+#define QC_MODULE_FV0_OUTOFBUNCHCOLLFEEMODULESCHECK_H
 
 #include "QualityControl/CheckInterface.h"
 
 #include "FV0Base/Constants.h"
+#include "CommonConstants/LHCConstants.h"
 
 #include <string>
 
 namespace o2::quality_control_modules::fv0
 {
 
-class BcCheck : public o2::quality_control::checker::CheckInterface
+class OutOfBunchCollFeeModulesCheck : public o2::quality_control::checker::CheckInterface
 {
  public:
-  BcCheck() = default;
-  ~BcCheck() override = default;
+  OutOfBunchCollFeeModulesCheck() = default;
+  ~OutOfBunchCollFeeModulesCheck() override = default;
 
   void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
 
-  ClassDefOverride(BcCheck, 2);
+  ClassDefOverride(OutOfBunchCollFeeModulesCheck, 2);
 
  private:
-  std::array<double, 4> mPositionMsgBox;
-  o2::ccdb::CcdbApi mCcdbApi;
-  std::string mPathGrpLhcIf = "GLO/Config/GRPLHCIF";
+  float mThreshWarning;
+  float mThreshError;
+  float mFractionOutOfBunchColl = 0;
+  constexpr static std::size_t sBCperOrbit = o2::constants::lhc::LHCMaxBunches;
 };
 
 } // namespace o2::quality_control_modules::fv0
 
-#endif // QC_MODULE_FV0_BCCHECK_H
+#endif // QC_MODULE_FV0_OUTOFBUNCHCOLLFEEMODULESCHECK_H
