@@ -164,7 +164,7 @@ TriggerFcn NewObject(const std::string& databaseUrl, const std::string& database
   } else {
     // We don't make a fuss over it, because we might be just waiting for the first version of such object.
     // It should not happen often though, so having a warning makes sense.
-    ILOG(Warning, Support) << "Could not find the file '" << fullObjectPath << "' in the db '" << databaseUrl << "' for given Activity settings. It is fine at SOR." << ENDM;
+    ILOG(Warning, Devel) << "Could not find the file '" << fullObjectPath << "' in the db '" << databaseUrl << "' for given Activity settings. It is fine at SOR." << ENDM;
   }
 
   return [db, databaseUrl, fullObjectPath = std::move(fullObjectPath), lastMD5, activity, metadata, config]() mutable -> Trigger {
@@ -178,7 +178,7 @@ TriggerFcn NewObject(const std::string& databaseUrl, const std::string& database
       // We don't make a fuss over it, because we might be just waiting for the first version of such object.
       // It should not happen often though, so having a warning makes sense.
       ILOG(Warning, Support) << "Could not find the file '" << fullObjectPath << "' in the db '"
-                             << databaseUrl << "' for given Activity settings (" << activity << ")" << ENDM;
+                             << databaseUrl << "' for given Activity settings (" << activity << "). Zeroes and empty strings are treated as wildcards." << ENDM;
     }
 
     return { TriggerType::No, false, activity, Trigger::msSinceEpoch(), config };
