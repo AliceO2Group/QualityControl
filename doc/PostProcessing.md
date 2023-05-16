@@ -14,6 +14,8 @@
          * [Configuration](#configuration-1)
       * [The SliceTrendingTask class](#the-slicetrendingtask-class)
          * [Configuration](#configuration-2)
+      * [The QualityTask class](#the-qualitytask-class)
+         * [Configuration](#configuration-3)
       * [The TRFCollectionTask class](#the-trfcollectiontask-class)
    * [More examples](#more-examples)
 <!--te-->
@@ -181,7 +183,7 @@ Debugging post-processing tasks might be easier when using the `o2-qc-run-postpr
 To run the basic example, use the command below. The `--config` parameter should point to the configuration file.
 
 ```
-o2-qc-run-postprocessing --config json://${QUALITYCONTROL_ROOT}/etc/postprocessing.json --name ExamplePostprocessing
+o2-qc-run-postprocessing --config json://${QUALITYCONTROL_ROOT}/etc/postprocessing.json --id ExamplePostprocessing
 ```
 
 As it is configured to invoke each method only `"once"`, you will see it initializing, entering the update method, then finalizing the task and exiting.
@@ -413,6 +415,94 @@ The field `"graphErrors"` is set up as `"graphErrors":"Var1:Var2"` where `Var1` 
 }
 ```
 
+### The QualityTask class
+
+This task allows to trend a set of QualityObjects (QO) stored in the QCDB, and to display their name and value in human-readable format on a canvas (see the figure below).
+For each QualityObject, it also creates a 1-D distribution of the corresponding quality values (*Good/Medium/Bad/Null*).
+Each Quality can be optionally accompanied by a message that can provide instructions or further details based on the quality value.
+Each time the post-processing task is triggered, the QualityObjects are fetched from the CCDB and the canvas is updated with the current values.
+Moreover, the trending plot and 1-D distribution associated to each QO is updated accordingly.
+Hence, the trending and 1-D distribution can be used to estimate the fraction of good data for a given run.
+
+![QualityTask](images/quality-task.png)
+
+#### Configuration
+The QualityObjects to be monitored and displayed are passed as **qualityGroups**, each containing **inputObjects** for a specific, line-separated group. 
+Each group requires a **name** and **path** to the contained objects.
+A **title** can be added optionally, which appears at the top of the group in the canvas.
+By listing certain qualities in **ignoreQualitiesDetails** one can ask to ignore FlagReasons associated to QualityObjects. 
+
+The **inputObjects** list should contain Quality Object names in a given group.
+A **title** can be added, which is used in the summary canvas to denote given Quality Object.
+If it is absent, **name** is used instead.
+Optionally, one can add **messageBad**, **messageMedium**, **messageGood**, **messageNull** to add a message when a particular Quality is seen.
+
+Here is a complete example of `QualityTask` configuration:
+```json
+{
+  "qc": {
+    "config": {
+      "": "The usual global configuration variables"
+    },
+    "postprocessing": {
+      "ExampleQualityTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::QualityTask",
+        "moduleName": "QualityControl",
+        "detectorName": "TST",
+        "qualityGroups": [
+          {
+            "name" : "global",
+            "title" : "GLOBAL TST QUALITY",
+            "path": "TST/QO",
+            "ignoreQualitiesDetails" : ["Null", "Good", "Medium", "Bad"],
+            "inputObjects": [
+              {
+                "name" : "QcCheck",
+                "title" : "Aggregated TST Quality",
+                "messageBad" : "Inform XYZ on-call immediately",
+                "messageMedium": "Add bookkeeping entry",
+                "messageGood": "All checks are OK",
+                "messageNull": "Some histograms are empty!!!"
+              }
+            ]
+          },
+          {
+            "name" : "details",
+            "title" : "TST DETAILS",
+            "path": "TST/QO",
+            "ignoreQualitiesDetails" : [],
+            "inputObjects": [
+              {
+                "name" : "QcCheck",
+                "title" : ""
+              },
+              {
+                "name" : "someNumbersCheck",
+                "title" : ""
+              },
+              {
+                "name" : "XYZCheck",
+                "title" : ""
+              }
+            ]
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "60 seconds"
+        ],
+        "stopTrigger": [
+          "userorcontrol", "10 minutes"
+        ]
+      }
+    }
+  }
+}
+```
+
 ### The TRFCollectionTask class
 
 This task allows to transform a set of QualityObjects stored QCDB across certain timespan (usually for the duration of a data acquisition run) into a TimeRangeFlagCollection.
@@ -455,6 +545,106 @@ The task is configured as follows:
 ```
 
 TimeRangeFlagCollections are meant to be used as a base to derive Data Tags for analysis (WIP).
+
+### The BigScreen class
+
+This task allows to display the aggregated quality flags of each system (detectors + global QC) in a single canvas, arranged as a matrix of colored boxes.
+The system names are displayed above each box, while the quality flag is displayed inside the box. The box color follows the usual convention:
+
+* Good: green
+* Medium: orange
+* Bad: red
+* Null: magenta
+
+In addition, the boxes are filled with a grey color is the corresponding QualityObjects cannot be retrieved or are too old.
+
+The task is configured as follows:
+```json
+{
+  "qc": {
+    "config": {
+      "": "The usual global configuration variables"
+    },
+    "postprocessing": {
+      "BigScreen": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::BigScreen",
+        "moduleName": "QualityControl",
+        "detectorName": "GLO",
+        "customization": [
+          {
+            "name": "NRows",
+            "value": "4"
+          },
+          {
+            "name": "NCols",
+            "value": "5"
+          },
+          {
+            "name": "BorderWidth",
+            "value": "5"
+          },
+          {
+            "name": "NotOlderThan",
+            "value": "3600"
+          },
+          {
+            "name": "IgnoreActivity",
+            "value": "0"
+          }
+        ],
+        "dataSources": [
+          {
+            "names": [
+              "CPV:MCH/QO/CPVQuality/CPVQuality",
+              "EMC:MCH/QO/EMCQuality/EMCQuality",
+              "FDD:MCH/QO/FDDQuality/FDDQuality",
+              "FT0:MCH/QO/FT0Quality/FT0Quality",
+              "FV0:MCH/QO/FV0Quality/FV0Quality",
+              "HMP:MCH/QO/HMPQuality/HMPQuality",
+              "ITS:MCH/QO/ITSQuality/ITSQuality",
+              "MCH:MCH/QO/MCHQuality/MCHQuality",
+              "MFT:MCH/QO/MFTQuality/MFTQuality",
+              "MID:MCH/QO/MIDQuality/MIDQuality",
+              "PHS:MCH/QO/PHSQuality/PHSQuality",
+              "TOF:MCH/QO/TOFQuality/TOFQuality",
+              "TPC:MCH/QO/TPCQuality/TPCQuality",
+              "TRD:MCH/QO/TRDQuality/TRDQuality",
+              "ZDC:MCH/QO/ZDCQuality/ZDCQuality",
+              "TRK:MCH/QO/TRKQuality/TRKQuality",
+              "MTK:MCH/QO/MTKQuality/MTKQuality",
+              "VTX:MCH/QO/VTXQuality/VTXQuality",
+              "PID:MCH/QO/PIDQuality/PIDQuality"
+            ]
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "60 seconds"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      }
+    }
+  }
+}
+```
+
+The following options allow to configure the appearence and behavior of the task:
+
+* `NRows`/`NCols`: size of the X-Y grid
+* `BorderWidth`: size of the border around the boxes
+* `NotOlderThan`: ignore quality objects that are older than a given number of seconds. A value of -1 means "no limit".
+* `IgnoreActivity`: if diferent from 0, the task will fetch objects regardless of their activity number and type.
+
+The names in the data sources are composed of two parts, separated by a colon:
+```
+SYSTEM_NAME:OBJECT_PATH
+```
+The grid of colored boxes is built from the list of data sources, and the corresponding `SYSTEM_NAME` is displayed above each box.
 
 ## More examples
 

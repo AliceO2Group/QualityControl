@@ -360,7 +360,7 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
         timeTDCcorr -= mCalChannel->evalTimeSlewing(digit.getChannel(), 0.0);
         timeTDCcorr -= mLHCphase->getLHCphase(0);
         timeTDCcorr -= length * 33.356410 - 1000; // subract path (1ns margin)
-        bcCorrCable += int(timeTDCcorr * o2::tof::Geo::BC_TIME_INPS_INV);
+        bcCorrCable += int(o2::constants::lhc::LHCMaxBunches + timeTDCcorr * o2::tof::Geo::BC_TIME_INPS_INV) - o2::constants::lhc::LHCMaxBunches; // to truncate in the proper way
       } else {
         bcCorrCable -= (o2::tof::Geo::getCableTimeShiftBin(crateECH, slotECH, chainECH, tdcECH) - digit.getTDC()) / 1024; // just cable length
       }
@@ -437,8 +437,8 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
 
   for (int iorb = 0; iorb < nOrbits; iorb++) {
     for (int ibc = 0; ibc < mBinsBCForMultiplicity; ibc++) {
-      mHitMultiplicityVsBC->Fill(ibc + 1, ndigitsPerBC[iorb][ibc]);
-      mHitMultiplicityVsBCpro->Fill(ibc + 1, ndigitsPerBC[iorb][ibc]);
+      mHitMultiplicityVsBC->Fill(ibc, ndigitsPerBC[iorb][ibc]);
+      mHitMultiplicityVsBCpro->Fill(ibc, ndigitsPerBC[iorb][ibc]);
     }
   }
 

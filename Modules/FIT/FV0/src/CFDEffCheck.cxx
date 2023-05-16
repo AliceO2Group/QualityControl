@@ -84,7 +84,7 @@ void CFDEffCheck::configure()
     //          supply deadChannelMap by hand when running offline
     std::map<std::string, std::string> metadata;
     mDeadChannelMap = retrieveConditionAny<o2::fit::DeadChannelMap>(mPathDeadChannelMap, metadata, (long)-1);
-    if (!mDeadChannelMap->map.size()) {
+    if (!mDeadChannelMap || !mDeadChannelMap->map.size()) {
       ILOG(Error, Support) << "object \"" << mPathDeadChannelMap << "\" NOT retrieved (or empty). All channels assumed to be alive!" << ENDM;
       mDeadChannelMap = new o2::fit::DeadChannelMap();
       for (uint8_t chId = 0; chId < sNCHANNELS; ++chId) {
@@ -189,7 +189,7 @@ void CFDEffCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
     lineWarning->SetLineColor(kOrange);
     h->GetListOfFunctions()->Add(lineError);
     h->GetListOfFunctions()->Add(lineWarning);
-    h->SetStats(0);
+    h->SetStats(1);
   }
 }
 

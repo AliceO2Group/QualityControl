@@ -33,6 +33,12 @@ class TH1;
 class TH2;
 class TProfile2D;
 
+namespace o2::focal
+{
+class PadPedestal;
+class PadBadChannelMap;
+} // namespace o2::focal
+
 using namespace o2::quality_control::core;
 
 namespace o2::quality_control_modules::focal
@@ -76,6 +82,7 @@ class TestbeamRawTask final : public TaskInterface
     void reset();
   };
   void default_init();
+  bool isLostTimeframe(framework::ProcessingContext& ctx) const;
   void processPadPayload(gsl::span<const o2::focal::PadGBTWord> gbtpayload);
   void processPixelPayload(gsl::span<const o2::itsmft::GBTWord> gbtpayload, uint16_t feeID);
   void processPadEvent(gsl::span<const o2::focal::PadGBTWord> gbtpayload);
@@ -85,6 +92,8 @@ class TestbeamRawTask final : public TaskInterface
   o2::focal::PadDecoder mPadDecoder;                                              ///< Decoder for pad data
   o2::focal::PadMapper mPadMapper;                                                ///< Mapping for Pads
   o2::focal::PixelDecoder mPixelDecoder;                                          ///< Decoder for pixel data
+  o2::focal::PadPedestal* mPadPedestalHandler = nullptr;                          ///< Pedestal handler for pad pedestal subtraction
+  o2::focal::PadBadChannelMap* mPadBadChannelMap = nullptr;                       ///< Bad channel map for pads
   std::unique_ptr<o2::focal::PixelMapper> mPixelMapper;                           ///< Testbeam mapping for pixels
   std::unordered_map<o2::InteractionRecord, int> mPixelNHitsAll;                  ///< Number of hits / event all layers
   std::array<std::unordered_map<o2::InteractionRecord, int>, 2> mPixelNHitsLayer; ///< Number of hits / event layer
@@ -94,6 +103,13 @@ class TestbeamRawTask final : public TaskInterface
   bool mDebugMode = false;                                                        ///< Additional debug verbosity
   bool mDisablePads = false;                                                      ///< Disable pads
   bool mDisablePixels = false;                                                    ///< Disable pixels
+  bool mEnablePedestalSubtraction = false;                                        ///< Enable pedestal subtraction pads
+  bool mEnableBadChannelMask = false;                                             ///< Enable bad channel map for pads
+
+  /////////////////////////////////////////////////////////////////////////////////////
+  /// General histograms
+  /////////////////////////////////////////////////////////////////////////////////////
+  TH1* mTFerrorCounter = nullptr; ///< Number of TF builder errors
 
   /////////////////////////////////////////////////////////////////////////////////////
   /// Pad histograms

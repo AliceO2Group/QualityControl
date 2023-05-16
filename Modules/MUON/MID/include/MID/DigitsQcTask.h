@@ -70,6 +70,7 @@ class DigitsQcTask final : public TaskInterface
   ///////////////////////////
   int mROF = 0;
   int mDigitTF = 0;
+  float mDigitReset = 1;     //
   o2::mid::Mapping mMapping; ///< Mapping
 
   std::shared_ptr<TH1F> mNbDigitTF{ nullptr };
@@ -82,6 +83,7 @@ class DigitsQcTask final : public TaskInterface
   std::shared_ptr<TH1F> mMultHitMT21NB{ nullptr };
   std::shared_ptr<TH1F> mMultHitMT22B{ nullptr };
   std::shared_ptr<TH1F> mMultHitMT22NB{ nullptr };
+  std::shared_ptr<TH1F> mMeanMultiHits{ nullptr };
 
   std::shared_ptr<TH2F> mLocalBoardsMap{ nullptr };
   std::shared_ptr<TH2F> mLocalBoardsMap11{ nullptr };

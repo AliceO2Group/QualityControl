@@ -75,7 +75,7 @@ void QcMFTTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   // Creating histos
 
-  double maxTracksPerTF = 400;
+  double maxTracksPerTF = 5000;
 
   mNumberOfTracksPerTF = std::make_unique<TH1F>("mMFTTracksPerTF",
                                                 "Number of tracks per TimeFrame; Number of tracks per TF", maxTracksPerTF, -0.5, maxTracksPerTF - 0.5);
@@ -156,10 +156,14 @@ void QcMFTTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mTracksBC.get());
   getObjectsManager()->setDisplayHint(mTracksBC.get(), "hist");
 
-  mNOfTracksTime = std::make_unique<TH1F>("mNOfTracksTime", "Number of tracks per time bin; time (s); # entries", NofTimeBins, 0, MaxDuration);
-  mNOfTracksTime->SetMinimum(0.1);
-  getObjectsManager()->startPublishing(mNOfTracksTime.get());
-  getObjectsManager()->setDisplayHint(mNOfTracksTime.get(), "hist");
+  mAssociatedClusterFraction = std::make_unique<TH1F>("mAssociatedClusterFraction", "Fraction of clusters in tracks; Clusters in tracks / All clusters; # entries", 100, 0, 1);
+  getObjectsManager()->startPublishing(mAssociatedClusterFraction.get());
+  getObjectsManager()->setDisplayHint(mAssociatedClusterFraction.get(), "hist logy");
+
+  mClusterRatioVsBunchCrossing = std::make_unique<TH2F>("mClusterRatioVsBunchCrossing", "Bunch Crossing ID vs Cluster Ratio;BC ID;Fraction of clusters in tracks",
+                                                        o2::constants::lhc::LHCMaxBunches, 0, o2::constants::lhc::LHCMaxBunches, 100, 0, 1);
+  getObjectsManager()->startPublishing(mClusterRatioVsBunchCrossing.get());
+  getObjectsManager()->setDisplayHint(mClusterRatioVsBunchCrossing.get(), "colz logz");
 }
 
 void QcMFTTrackTask::startOfActivity(Activity& /*activity*/)
@@ -180,21 +184,34 @@ void QcMFTTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
   // get the tracks
   const auto tracks = ctx.inputs().get<gsl::span<o2::mft::TrackMFT>>("tracks");
   const auto tracksrofs = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("tracksrofs");
-
-  // get correct timing info of the first TF orbit
-  if (mRefOrbit == -1) {
-    mRefOrbit = ctx.services().get<o2::framework::TimingInfo>().firstTForbit;
-  }
+  const auto clustersrofs = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("clustersrofs");
 
   // fill the tracks histogram
 
   mNumberOfTracksPerTF->Fill(tracks.size());
 
-  for (const auto& rof : tracksrofs) {
-    mTrackROFNEntries->Fill(rof.getNEntries());
-    mTracksBC->Fill(rof.getBCData().bc, rof.getNEntries());
-    float seconds = orbitToSeconds(rof.getBCData().orbit, mRefOrbit) + rof.getBCData().bc * o2::constants::lhc::LHCBunchSpacingNS * 1e-9;
-    mNOfTracksTime->Fill(seconds, rof.getNEntries());
+  for (int iROF = 0; iROF < tracksrofs.size(); iROF++) {
+    int nClusterCountTrack = 0;
+    int nTracks = tracksrofs[iROF].getNEntries();
+
+    mTrackROFNEntries->Fill(nTracks);
+
+    int start = tracksrofs[iROF].getFirstEntry();
+    int end = start + tracksrofs[iROF].getNEntries();
+
+    for (int itrack = start; itrack < end; itrack++) {
+      auto& track = tracks[itrack];
+      nClusterCountTrack += track.getNumberOfPoints();
+    }
+
+    int nTotalClusters = clustersrofs[iROF].getNEntries();
+
+    float clusterRatio = nTotalClusters > 0 ? (float)nClusterCountTrack / (float)nTotalClusters : -1;
+
+    const auto bcData = tracksrofs[iROF].getBCData();
+    mTracksBC->Fill(bcData.bc, nTracks);
+    mAssociatedClusterFraction->Fill(clusterRatio);
+    mClusterRatioVsBunchCrossing->Fill(bcData.bc, clusterRatio);
   }
 
   for (auto& oneTrack : tracks) {
@@ -278,7 +295,8 @@ void QcMFTTrackTask::reset()
   mTrackTanl->Reset();
   mTrackROFNEntries->Reset();
   mTracksBC->Reset();
-  mNOfTracksTime->Reset();
+  mAssociatedClusterFraction->Reset();
+  mClusterRatioVsBunchCrossing->Reset();
 }
 
 } // namespace o2::quality_control_modules::mft

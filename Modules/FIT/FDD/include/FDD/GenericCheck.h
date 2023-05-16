@@ -12,17 +12,18 @@
 ///
 /// \file   GenericCheck.h
 /// \author Sebastian Bysiak
-///
+/// LATEST modification for FDD on 25.04.2023 (akhuntia@cern.ch)
 
 #ifndef QC_MODULE_FDD_FDDGENERICCHECK_H
 #define QC_MODULE_FDD_FDDGENERICCHECK_H
 
 #include "QualityControl/CheckInterface.h"
 #include <DataFormatsQualityControl/FlagReasons.h>
+#include "DataFormatsFIT/DeadChannelMap.h"
+#include <DataFormatsQualityControl/FlagReasons.h>
 
 namespace o2::quality_control_modules::fdd
 {
-
 /// \brief  helper class to store acceptable limits for given quantity
 /// \author Sebastian Bysiak
 class SingleCheck
@@ -38,6 +39,7 @@ class SingleCheck
     mThresholdError = thresholdError;
     mShouldBeLower = shouldBeLower;
     mIsActive = isActive;
+    mBinNumberX = 0;
   };
   bool isActive() { return mIsActive; };
 
@@ -47,16 +49,17 @@ class SingleCheck
       return;
 
     std::string log = Form("%s : comparing  value = %f with thresholds = %f, %f", mCheckName.c_str(), checkedValue, mThresholdWarning, mThresholdError);
+    std::string reason;
     if (mShouldBeLower) {
       if (checkedValue > mThresholdError) {
         if (result.isBetterThan(Quality::Bad))
           result.set(Quality::Bad);
-        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("%.3f > %.3f (%s error limit)", checkedValue, mThresholdError, mCheckName.c_str()));
+        reason = Form("%.3f > %.3f (%s error limit)", checkedValue, mThresholdError, mCheckName.c_str());
         log += "-> Bad";
       } else if (checkedValue > mThresholdWarning) {
         if (result.isBetterThan(Quality::Medium))
           result.set(Quality::Medium);
-        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("%.3f > %.3f (%s warning limit)", checkedValue, mThresholdWarning, mCheckName.c_str()));
+        reason = Form("%.3f > %.3f (%s warning limit)", checkedValue, mThresholdWarning, mCheckName.c_str());
         log += "-> Medium";
       } else {
         log += "-> OK";
@@ -65,19 +68,37 @@ class SingleCheck
       if (checkedValue < mThresholdError) {
         if (result.isBetterThan(Quality::Bad))
           result.set(Quality::Bad);
-        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("%.3f < %.3f (%s error limit)", checkedValue, mThresholdError, mCheckName.c_str()));
+        reason = Form("%.3f < %.3f (%s error limit)", checkedValue, mThresholdError, mCheckName.c_str());
         log += "-> Bad";
       } else if (checkedValue < mThresholdWarning) {
         if (result.isBetterThan(Quality::Medium))
           result.set(Quality::Medium);
-        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("%.3f < %.3f (%s warning limit)", checkedValue, mThresholdWarning, mCheckName.c_str()));
+        reason = Form("%.3f < %.3f (%s warning limit)", checkedValue, mThresholdWarning, mCheckName.c_str());
         log += "-> Medium";
       } else {
         log += "-> OK";
       }
     }
+    if (reason.length()) {
+      if (mBinNumberX) {
+        reason += Form(" for channel %d", mBinNumberX);
+      }
+      result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), reason);
+    }
+
     ILOG(Debug, Support) << log << ENDM;
   }
+  float getThresholdWarning()
+  {
+    return mThresholdWarning;
+  }
+  float getThresholdError()
+  {
+    return mThresholdError;
+  }
+
+ public:
+  int mBinNumberX;
 
  private:
   std::string mCheckName;
@@ -107,7 +128,8 @@ class GenericCheck : public o2::quality_control::checker::CheckInterface
 
  private:
   SingleCheck getCheckFromConfig(std::string);
-
+  SingleCheck mCheckMinThresholdY;
+  SingleCheck mCheckMaxThresholdY;
   SingleCheck mCheckMaxOverflowIntegralRatio;
 
   SingleCheck mCheckMinMeanX;
@@ -123,6 +145,11 @@ class GenericCheck : public o2::quality_control::checker::CheckInterface
 
   std::array<double, 4> mPositionMsgBox;
   std::string mNameObjOnCanvas;
+
+  constexpr static std::size_t sNCHANNELSPhy = 16;
+  o2::fit::DeadChannelMap* mDeadChannelMap;
+  std::string mDeadChannelMapStr;
+  std::string mPathDeadChannelMap;
 };
 
 } // namespace o2::quality_control_modules::fdd

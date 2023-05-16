@@ -10,34 +10,35 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   BasicDigitQcTask.h
-/// \author Milosz Filus
-/// Example of QC Task for FT0 detector
+/// \file   PedestalCalibTask.h
+/// \author My Name
+///
 
-#ifndef QC_MODULE_FT0_FT0BASICDIGITQCTASK_H
-#define QC_MODULE_FT0_FT0BASICDIGITQCTASK_H
+#ifndef QC_MODULE_FOCAL_FOCALPEDESTALCALIBTASK_H
+#define QC_MODULE_FOCAL_FOCALPEDESTALCALIBTASK_H
 
+#include <array>
+#include "DataFormatsFOCAL/Constants.h"
+#include "FOCALReconstruction/PadMapper.h"
 #include "QualityControl/TaskInterface.h"
-#include <memory>
-#include "TH1.h"
-#include "TH2.h"
-#include "TTree.h"
-#include "TFile.h"
-#include "TMultiGraph.h"
-#include "Rtypes.h"
+
+class TH1;
+class TH2;
 
 using namespace o2::quality_control::core;
 
-namespace o2::quality_control_modules::ft0
+namespace o2::quality_control_modules::focal
 {
 
-class BasicDigitQcTask final : public TaskInterface
+/// \brief Example Quality Control DPL Task
+/// \author My Name
+class PedestalCalibTask final : public TaskInterface
 {
  public:
   /// \brief Constructor
-  BasicDigitQcTask() = default;
+  PedestalCalibTask();
   /// Destructor
-  ~BasicDigitQcTask() override;
+  ~PedestalCalibTask() override;
 
   // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& ctx) override;
@@ -49,13 +50,12 @@ class BasicDigitQcTask final : public TaskInterface
   void reset() override;
 
  private:
-  // Object which will be published
-  std::unique_ptr<TH1F> mChargeHistogram;
-  std::unique_ptr<TH1F> mTimeHistogram;
-  std::unique_ptr<TH2F> mAmplitudeAndTime;
-  std::unique_ptr<TTree> mTTree;
+  o2::focal::PadMapper mPadMapper;
+  std::array<TH1*, 18> mPedestalChannel;
+  std::array<TH2*, 18> mPedestalPosition;
+  std::size_t mNumberObjectsFetched = 0;
 };
 
-} // namespace o2::quality_control_modules::ft0
+} // namespace o2::quality_control_modules::focal
 
-#endif // QC_MODULE_FT0_FT0BasicDigitQcTask_H
+#endif // QC_MODULE_FOCAL_FOCALPEDESTALCALIBTASK_H

@@ -12,7 +12,7 @@
 ///
 /// \file   DigitQcTask.h
 /// \author Artur Furs afurs@cern.ch
-/// LATEST modification for FDD on 24.05.2022 (akhuntia@cern.ch)
+/// LATEST modification for FDD on 25.04.2023 (akhuntia@cern.ch)
 
 #ifndef QC_MODULE_FDD_FDDDIGITQCTASK_H
 #define QC_MODULE_FDD_FDDDIGITQCTASK_H
@@ -70,7 +70,6 @@ class DigitQcTask final : public TaskInterface
   constexpr static std::size_t sNCHANNELS_C = 8;
   constexpr static std::size_t sOrbitsPerTF = 256;
   constexpr static std::size_t sBCperOrbit = o2::constants::lhc::LHCMaxBunches;
-
   constexpr static float sCFDChannel2NS = o2::fdd::timePerTDC; // CFD channel width in ns
 
  private:
@@ -84,8 +83,9 @@ class DigitQcTask final : public TaskInterface
   double mTimeCurNS = 0.;
   int mTfCounter = 0;
   double mTimeSum = 0.;
-
   long mTFcreationTime = 0;
+  int mMinTimeGate = -192;
+  int mMaxTimeGate = 192;
 
   template <typename Param_t,
             typename = typename std::enable_if<std::is_floating_point<Param_t>::value ||
@@ -154,6 +154,8 @@ class DigitQcTask final : public TaskInterface
   int mTrgChargeLevelLow;
   int mTrgChargeLevelHigh;
   int mTrgOrGate;
+  int mBinMinADCSaturationCheck;
+  int mBinMaxADCSaturationCheck;
 
   // Object which will be published
   std::unique_ptr<TH2F> mHist2CorrTCMchAndPMch;
@@ -173,6 +175,8 @@ class DigitQcTask final : public TaskInterface
   std::unique_ptr<TH1F> mHistAverageTimeC;
   std::unique_ptr<TH1F> mHistChannelID;
   std::unique_ptr<TH1F> mHistCFDEff;
+  std::unique_ptr<TH1F> mHistGateTimeRatio2Ch;
+  std::unique_ptr<TH1F> mHistSaturationFraction;
   std::unique_ptr<TH2F> mHistTimeSum2Diff;
   std::unique_ptr<TH2F> mHistTriggersCorrelation;
   std::unique_ptr<TH1D> mHistCycleDuration;

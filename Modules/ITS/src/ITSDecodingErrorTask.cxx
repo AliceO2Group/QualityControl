@@ -51,7 +51,7 @@ void ITSDecodingErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void ITSDecodingErrorTask::createDecodingPlots()
 {
-  mLinkErrorVsFeeid = new TH2I("General/LinkErrorVsFeeid", "GBTLink errors per FeeId", NFees, 0, NFees, o2::itsmft::GBTLinkDecodingStat::NErrorsDefined, 0.5, o2::itsmft::GBTLinkDecodingStat::NErrorsDefined + 0.5);
+  mLinkErrorVsFeeid = new TH2D("General/LinkErrorVsFeeid", "GBTLink errors per FeeId", NFees, 0, NFees, o2::itsmft::GBTLinkDecodingStat::NErrorsDefined, 0.5, o2::itsmft::GBTLinkDecodingStat::NErrorsDefined + 0.5);
   mLinkErrorVsFeeid->SetMinimum(0);
   mLinkErrorVsFeeid->SetStats(0);
   getObjectsManager()->startPublishing(mLinkErrorVsFeeid);
@@ -61,7 +61,7 @@ void ITSDecodingErrorTask::createDecodingPlots()
     mChipErrorVsChipid[ilayer]->SetStats(0);
     getObjectsManager()->startPublishing(mChipErrorVsChipid[ilayer]);
   }
-  mChipErrorVsFeeid = new TH2I("General/ChipErrorVsFeeid", "Chip decoding errors per FeeId", NFees, 0, NFees, o2::itsmft::ChipStat::NErrorsDefined, 0.5, o2::itsmft::ChipStat::NErrorsDefined + 0.5);
+  mChipErrorVsFeeid = new TH2D("General/ChipErrorVsFeeid", "Chip decoding errors per FeeId", NFees, 0, NFees, o2::itsmft::ChipStat::NErrorsDefined, 0.5, o2::itsmft::ChipStat::NErrorsDefined + 0.5);
   mChipErrorVsFeeid->SetMinimum(0);
   mChipErrorVsFeeid->SetStats(0);
   getObjectsManager()->startPublishing(mChipErrorVsFeeid);
@@ -124,11 +124,6 @@ void ITSDecodingErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
   auto decErrors = ctx.inputs().get<gsl::span<o2::itsmft::ChipError>>("decerrors");
 
   // multiply Error distributions before re-filling
-  mLinkErrorVsFeeid->Scale((double)mTFCount);
-  mChipErrorVsFeeid->Scale((double)mTFCount);
-  for (int ilayer = 0; ilayer < 7; ilayer++) {
-    mChipErrorVsChipid[ilayer]->Scale((double)mTFCount);
-  }
   for (const auto& le : linkErrors) {
     int istave = (int)(le.feeID & 0x00ff);
     int ilink = (int)((le.feeID & 0x0f00) >> 8);
@@ -167,15 +162,6 @@ void ITSDecodingErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
 
   end = std::chrono::high_resolution_clock::now();
-  mTFCount++; // Number of TF
-  // Scale error distributions by latest number of TF
-  if (mTFCount > 0) {
-    mLinkErrorVsFeeid->Scale(1. / (double)mTFCount);
-    mChipErrorVsFeeid->Scale(1. / (double)mTFCount);
-    for (int ilayer = 0; ilayer < 7; ilayer++) {
-      mChipErrorVsChipid[ilayer]->Scale(1. / (double)mTFCount);
-    }
-  }
 }
 
 void ITSDecodingErrorTask::getParameters()
@@ -206,7 +192,7 @@ void ITSDecodingErrorTask::resetGeneralPlots()
 void ITSDecodingErrorTask::reset()
 {
   resetGeneralPlots();
-  ILOG(Info, Support) << "Reset" << ENDM;
+  ILOG(Debug, Devel) << "Reset" << ENDM;
 }
 
 } // namespace o2::quality_control_modules::its

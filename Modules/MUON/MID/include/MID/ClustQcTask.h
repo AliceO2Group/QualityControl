@@ -49,6 +49,8 @@ class ClustQcTask final : public TaskInterface
   void reset() override;
 
  private:
+  std::shared_ptr<TH1F> mNbClusterTF{ nullptr };
+
   std::shared_ptr<TH2F> mClusterMap11{ nullptr };
   std::shared_ptr<TH2F> mClusterMap12{ nullptr };
   std::shared_ptr<TH2F> mClusterMap21{ nullptr };

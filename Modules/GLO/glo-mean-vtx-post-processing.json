@@ -1,0 +1,109 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "infologger": {
+        "filterDiscardDebug": "true",
+        "filterDiscardLevel": "11"
+      },
+      "Activity": {
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": "http://localhost:8500"
+      },
+      "conditionDB": {
+        "url": "http://ccdb-test.cern.ch:8080"
+      },
+      "postprocessing": {
+        "matchAnyRunNumber": "true"
+      }
+    },
+    "postprocessing": {
+      "MeanVertexCalib": {
+        "active": "true",
+        "className": "o2::quality_control_modules::glo::MeanVertexPostProcessing",
+        "moduleName": "QcGLO",
+        "detectorName": "GLO",
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "newobject:ccdb:GLO/Calib/MeanVertex"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ],
+	"customization": [
+	    {
+		"CcdbURL": "http://ccdb-test.cern.ch:8080"
+	    }
+	]
+      },
+      "MeanVtxTrending": {
+        "active": "true",
+        "className": "o2::quality_control::postprocessing::TrendingTask",
+        "moduleName": "QualityControl",
+        "detectorName": "GLO",
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "GLO/MO/MeanVertexCalib",
+            "names": [
+		"mMeanVtxX",
+		"mMeanVtxY",
+		"mMeanVtxZ",
+		"mStartValidity"
+            ],
+            "reductorName": "o2::quality_control_modules::common::TH1Reductor",
+            "moduleName": "QcCommon"
+          }
+        ],
+        "plots": [
+          {
+            "name": "meanVtx_X",
+            "title": "Mean vertex position, X",
+            "varexp": "mMeanVtxX.mean:mStartValidity.mean",
+            "selection": "",
+            "option": "*L",
+            "graphAxisLabel": "MeanVtx, X (cm):StartValidy (ms)"
+          },
+	  {
+            "name": "meanVtx_Y",
+            "title": "Mean vertex position, Y",
+            "varexp": "mMeanVtxY.mean:mStartValidity.mean",
+            "selection": "",
+            "option": "*L",
+            "graphAxisLabel": "MeanVtx, Y (cm):StartValidy (ms)"
+          },
+	  {
+            "name": "meanVtx_Z",
+            "title": "Mean vertex position, Z",
+            "varexp": "mMeanVtxZ.mean:mStartValidity.mean",
+            "selection": "",
+            "option": "*L",
+            "graphAxisLabel": "MeanVtx, Z (cm):StartValidy (ms)"
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "newobject:qcdb:GLO/MO/MeanVertexCalib/mMeanVtxX"
+        ],
+        "stopTrigger": [
+          "userorcontrol",
+          "10 minutes"
+        ]
+      }
+    }
+  }
+}

@@ -37,12 +37,15 @@
 
         "stopTrigger_comment": [ "Parameters are needed to choose if check should be performed on the mean (Mean) of all points or as a comparison to an expected physics value (ExpectedPhysicsValue). Or both (Both)." ],
         "checkParameters": {
-          "chooseCheckMeanOrExpectedPhysicsValueOrBoth" : "ExpectedPhysicsValue",
-          "expectedPhysicsValue" : "0.1",
-          "allowedNSigmaForExpectation" : "0.1",
+          "CheckChoice" : "Mean, ExpectedValue, Zero",
+          "expectedPhysicsValue" : "1.0",
+          "allowedNSigmaForExpectation" : "3",
           "badNSigmaForExpectation" : "6",
           "allowedNSigmaForMean" : "3",
-          "badNSigmaForMean" : "6"
+          "badNSigmaForMean" : "6",
+          "allowedRange" : "0.2",
+          "badRange" : "0.3",
+          "MetadataComment" : "TestComment2"
         }
         }
      },
@@ -52,6 +55,8 @@
         "className": "o2::quality_control_modules::tpc::TrendingTaskTPC",
         "moduleName": "QcTPC",
         "detectorName": "TPC",
+        "producePlotsOnUpdate": "true",
+        "resumeTrend": "false",
         "dataSources": [
           {
             "type": "repository",
@@ -141,7 +146,7 @@
             "selection": "",
             "option": "*L",
             "graphErrors": "errMeanY:0.0", 
-            "graphYRange": "0.0:1.5",
+            "graphYRange": "-5.0:5.0",
 	    "graphXRange": "-0.5:6.5", 
 	    "graphAxisLabel": "Mean #phi ratio A side:#phi"
           },
@@ -172,14 +177,14 @@
           "userorcontrol"
         ],
         "updateTrigger": [
-          "60 seconds"
+          "20 seconds"
         ],
         "stopTrigger": [
           "userorcontrol"
         ]
       },
       "TestTPCTH2Slicer": {
-        "active": "true",
+        "active": "false",
         "className": "o2::quality_control_modules::tpc::TrendingTaskTPC",
         "moduleName": "QcTPC",
         "detectorName": "TPC",
@@ -254,7 +259,7 @@
           "userorcontrol"
         ],
         "updateTrigger": [
-          "60 seconds"
+          "20 seconds"
         ],
         "stopTrigger": [
           "userorcontrol"
