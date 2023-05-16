@@ -377,6 +377,9 @@ std::shared_ptr<o2::quality_control::core::QualityObject> CcdbDatabase::retrieve
   map<string, string> metadata = database_helpers::asDatabaseMetadata(activity, false);
   auto fullPath = activity.mProvenance + "/" + qoPath;
   TObject* obj = retrieveTObject(fullPath, metadata, timestamp, &headers);
+  if (obj == nullptr) {
+    return nullptr;
+  }
   std::shared_ptr<QualityObject> qo(dynamic_cast<QualityObject*>(obj));
   if (qo == nullptr) {
     ILOG(Error, Devel) << "Could not cast the object " << fullPath << " to QualityObject" << ENDM;
