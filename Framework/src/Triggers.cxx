@@ -146,6 +146,7 @@ TriggerFcn NewObject(const std::string& databaseUrl, const std::string& database
   // Key names in the header map.
   constexpr auto timestampKey = metadata_keys::validFrom;
   auto fullObjectPath = (databaseType == "qcdb" ? activity.mProvenance + "/" : "") + objectPath;
+  auto metadata = databaseType == "qcdb" ? repository::database_helpers::asDatabaseMetadata(activity, false) : std::map<std::string, std::string>();
 
   ILOG(Debug, Support) << "Initializing newObject trigger for the object '" << fullObjectPath << "' and Activity '" << activity << "'" << ENDM;
   // We support only CCDB here.
@@ -158,7 +159,6 @@ TriggerFcn NewObject(const std::string& databaseUrl, const std::string& database
   // We rely on changing MD5 - if the object has changed, it should have a different check sum.
   // If someone reuploaded an old object, it should not have an influence.
   std::string lastMD5;
-  auto metadata = repository::database_helpers::asDatabaseMetadata(activity, false);
   if (auto headers = db->retrieveHeaders(fullObjectPath, metadata); headers.count(metadata_keys::md5sum)) {
     lastMD5 = headers[metadata_keys::md5sum];
   } else {
@@ -198,7 +198,7 @@ TriggerFcn ForEachObject(const std::string& databaseUrl, const std::string& data
   auto objects = db->getListingAsPtree(fullObjectPath).get_child("objects");
   ILOG(Info, Support) << "Got " << objects.size() << " objects for the path '" << fullObjectPath << "'" << ENDM;
   auto filteredObjects = std::make_shared<std::vector<boost::property_tree::ptree>>();
-  const auto& filter = activity;
+  const auto filter = databaseType == "qcdb" ? activity : Activity();
 
   ILOG(Debug, Devel) << "Filter activity: " << activity << ENDM;
 
@@ -246,7 +246,7 @@ TriggerFcn ForEachLatest(const std::string& databaseUrl, const std::string& data
   auto objects = db->getListingAsPtree(fullObjectPath).get_child("objects");
   ILOG(Info, Support) << "Got " << objects.size() << " objects for the path '" << fullObjectPath << "'" << ENDM;
   auto filteredObjects = std::make_shared<std::vector<std::pair<Activity, boost::property_tree::ptree>>>();
-  const auto& filter = activity;
+  const auto filter = databaseType == "qcdb" ? activity : Activity();
 
   ILOG(Debug, Devel) << "Filter activity: " << activity << ENDM;
 
