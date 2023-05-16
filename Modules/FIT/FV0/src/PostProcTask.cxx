@@ -99,7 +99,6 @@ void PostProcTask::configure(const boost::property_tree::ptree& config)
     mTimestampSourceLhcIf = "trigger";
     ILOG(Debug, Support) << "configure() : using default timestampSourceLhcIf = \"" << mTimestampSourceLhcIf << "\"" << ENDM;
   }
-
 }
 
 void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
@@ -200,7 +199,7 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
         ILOG(Error, Support) << "Incorrect LUT entry: chID " << strChID << " | " << moduleName << ENDM;
       }
     } else if (moduleType != "TCM") {
-      ILOG(Error, Support) << "Non-TCM module w/o numerical chID: chID " << strChID << " | " << moduleName<< ENDM;
+      ILOG(Error, Support) << "Non-TCM module w/o numerical chID: chID " << strChID << " | " << moduleName << ENDM;
     } else if (moduleType == "TCM") {
       uint8_t mTCMhash = mMapFEE2hash[moduleName];
     }
@@ -208,9 +207,9 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
 
   mHistBcPatternFee = std::make_unique<TH2F>("bcPatternForFeeModules", "BC pattern", sBCperOrbit, 0, sBCperOrbit, 13, 0, 13);
   mHistBcFeeOutOfBunchColl = std::make_unique<TH2F>("OutOfBunchColl_BCvsFeeModules", "BC vs FEE Modules for out-of-bunch collisions;BC;FEE Modules", sBCperOrbit, 0, sBCperOrbit, mMapFEE2hash.size(), 0, mMapFEE2hash.size());
-  
+
   for (const auto& entry : mMapFEE2hash) {
-    // ILOG(Warning, Support) << "============= mMapFEE2hash.second + 1: " << entry.second + 1 
+    // ILOG(Warning, Support) << "============= mMapFEE2hash.second + 1: " << entry.second + 1
     //                        << " mMapFEE2hash.first.c_str(): " << entry.first.c_str() << ENDM;
 
     mHistBcPatternFee->GetYaxis()->SetBinLabel(entry.second + 1, entry.first.c_str());
@@ -425,7 +424,6 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
     }
   }
 
-
   // Download bcPattern
   std::map<std::string, std::string> metadata;
   std::map<std::string, std::string> headers;
@@ -444,11 +442,9 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
   }
   auto bcPattern = lhcIf->getBunchFilling();
 
-
   // Download histogram BCvsFEEmodules from database
   auto moBcVsFeeModules = mDatabase->retrieveMO(mPathDigitQcTask, "BCvsFEEmodules", t.timestamp, t.activity);
   auto hBcVsFeeModules = moBcVsFeeModules ? dynamic_cast<TH2F*>(moBcVsFeeModules->getObject()) : nullptr;
-
 
   if (!hBcVsFeeModules) {
     ILOG(Error, Support) << "MO \"BCvsFEEmodules\" NOT retrieved!!!" << ENDM;
