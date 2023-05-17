@@ -22,6 +22,7 @@
 #include <vector>
 #include <functional>
 #include <iosfwd>
+#include <cstdint>
 
 #include "QualityControl/UpdatePolicyType.h"
 
