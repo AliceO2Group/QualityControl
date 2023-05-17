@@ -19,18 +19,18 @@
 #ifndef QC_MODULE_MID_MIDDIGITSQCTASK_H
 #define QC_MODULE_MID_MIDDIGITSQCTASK_H
 
+#include <array>
+#include <memory>
+
+#include <TH1.h>
+#include <TH2.h>
+
 #include "QualityControl/TaskInterface.h"
-#include "MUONCommon/MergeableTH2Ratio.h"
-#include "MIDQC/RawDataChecker.h"
-#include "MIDRaw/CrateMasks.h"
-#include "MIDRaw/Decoder.h"
-#include "MIDRaw/ElectronicsDelay.h"
-#include "MIDRaw/FEEIdConfig.h"
 #include "MIDBase/Mapping.h"
+#include "MID/DigitsHelper.h"
 
 class TH1F;
 class TH2F;
-class TProfile;
 
 using namespace o2::quality_control::core;
 
@@ -45,7 +45,7 @@ class DigitsQcTask final : public TaskInterface
   /// \brief Constructor
   DigitsQcTask() = default;
   /// Destructor
-  ~DigitsQcTask() override;
+  ~DigitsQcTask() override = default;
 
   // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& ctx) override;
@@ -57,52 +57,27 @@ class DigitsQcTask final : public TaskInterface
   void reset() override;
 
  private:
-  std::shared_ptr<TH2F> mHitsMapB{ nullptr };
-  std::shared_ptr<TH2F> mHitsMapNB{ nullptr };
-  std::shared_ptr<TH2F> mOrbitsMapB{ nullptr };
-  std::shared_ptr<TH2F> mOrbitsMapNB{ nullptr };
+  void resetDisplayHistos();
 
-  std::shared_ptr<TH1F> mROFSizeB{ nullptr };
-  std::shared_ptr<TH1F> mROFSizeNB{ nullptr };
+  DigitsHelper mDigitsHelper; ///! Digits helper
 
-  std::shared_ptr<TH2F> mROFTimeDiff{ nullptr };
+  std::unique_ptr<TH2F> mROFTimeDiff{ nullptr };
 
-  ///////////////////////////
-  int mROF = 0;
-  int mDigitTF = 0;
-  float mDigitReset = 1;     //
-  o2::mid::Mapping mMapping; ///< Mapping
+  std::unique_ptr<TH1F> mNbDigitTF{ nullptr };
 
-  std::shared_ptr<TH1F> mNbDigitTF{ nullptr };
+  std::array<std::unique_ptr<TH1F>, 5> mMultHitB{};
+  std::array<std::unique_ptr<TH1F>, 5> mMultHitNB{};
+  std::unique_ptr<TH1F> mMeanMultiHits;
 
-  std::shared_ptr<TH1F> mMultHitMT11B{ nullptr };
-  std::shared_ptr<TH1F> mMultHitMT11NB{ nullptr };
-  std::shared_ptr<TH1F> mMultHitMT12B{ nullptr };
-  std::shared_ptr<TH1F> mMultHitMT12NB{ nullptr };
-  std::shared_ptr<TH1F> mMultHitMT21B{ nullptr };
-  std::shared_ptr<TH1F> mMultHitMT21NB{ nullptr };
-  std::shared_ptr<TH1F> mMultHitMT22B{ nullptr };
-  std::shared_ptr<TH1F> mMultHitMT22NB{ nullptr };
-  std::shared_ptr<TH1F> mMeanMultiHits{ nullptr };
+  std::array<std::unique_ptr<TH2F>, 5> mLocalBoardsMap{};
+  std::unique_ptr<TH1F> mHits;
 
-  std::shared_ptr<TH2F> mLocalBoardsMap{ nullptr };
-  std::shared_ptr<TH2F> mLocalBoardsMap11{ nullptr };
-  std::shared_ptr<TH2F> mLocalBoardsMap12{ nullptr };
-  std::shared_ptr<TH2F> mLocalBoardsMap21{ nullptr };
-  std::shared_ptr<TH2F> mLocalBoardsMap22{ nullptr };
+  std::array<std::unique_ptr<TH2F>, 4> mBendHitsMap{};
+  std::array<std::unique_ptr<TH2F>, 4> mNBendHitsMap{};
 
-  std::shared_ptr<TH2F> mBendHitsMap11{ nullptr };
-  std::shared_ptr<TH2F> mBendHitsMap12{ nullptr };
-  std::shared_ptr<TH2F> mBendHitsMap21{ nullptr };
-  std::shared_ptr<TH2F> mBendHitsMap22{ nullptr };
+  std::unique_ptr<TH1F> mDigitBCCounts{ nullptr };
 
-  std::shared_ptr<TH2F> mNBendHitsMap11{ nullptr };
-  std::shared_ptr<TH2F> mNBendHitsMap12{ nullptr };
-  std::shared_ptr<TH2F> mNBendHitsMap21{ nullptr };
-  std::shared_ptr<TH2F> mNBendHitsMap22{ nullptr };
-
-  std::shared_ptr<TH1F> mDigitBCCounts{ nullptr };
-  // std::shared_ptr<TProfile> mDigitBCCounts{ nullptr };
+  bool mResetAtCycle = false; ///< Reset histograms at each cycle
 };
 
 } // namespace o2::quality_control_modules::mid

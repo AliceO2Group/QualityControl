@@ -15,15 +15,17 @@ target_sources(
           src/CalibQcCheck.cxx
           src/CalibQcTask.cxx
           src/CalibMQcCheck.cxx
-          src/CalibMQcTask.cxx)
+          src/CalibMQcTask.cxx
+          src/DigitsHelper.cxx
+          src/HistoHelper.cxx
+  )
 
 target_include_directories(
   O2QcMID
   PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-target_link_libraries(O2QcMID PUBLIC O2QualityControl O2QcMUONCommon O2::MIDRaw O2::MIDQC O2::MIDSimulation
-                                     O2::MIDWorkflow)
+target_link_libraries(O2QcMID PUBLIC O2QualityControl O2QcMUONCommon O2::MIDRaw O2::MIDQC O2::MIDWorkflow O2::MIDGlobalMapping)
 
 install(
   TARGETS O2QcMID
@@ -41,10 +43,12 @@ add_root_dictionary(
           include/MID/ClustQcTask.h
           include/MID/TracksQcCheck.h
           include/MID/TracksQcTask.h
-	  include/MID/CalibQcTask.h
-	  include/MID/CalibQcCheck.h
-	  include/MID/CalibMQcTask.h
-	  include/MID/CalibMQcCheck.h
+          include/MID/CalibQcTask.h
+          include/MID/CalibQcCheck.h
+          include/MID/CalibMQcTask.h
+          include/MID/CalibMQcCheck.h
+          include/MID/DigitsHelper.h
+          include/MID/HistoHelper.h
   LINKDEF include/MID/LinkDef.h)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/MID DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")
