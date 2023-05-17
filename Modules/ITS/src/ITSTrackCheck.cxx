@@ -46,6 +46,11 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
       result.addMetadata("CheckTracks7", "good");
       result.addMetadata("CheckEmpty", "good");
       result.addMetadata("CheckMean", "good");
+      if (h->GetMean() < 5.2 || h->GetMean() > 5.8) {
+
+        result.updateMetadata("CheckMean", "medium");
+        result.set(Quality::Medium);
+      }
       if (h->GetBinContent(h->FindBin(4)) < 1e-15) {
         result.updateMetadata("CheckTracks4", "bad");
         result.set(Quality::Bad);
@@ -65,11 +70,6 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
       if (h->GetEntries() < 1e-15) {
         result.updateMetadata("CheckEmpty", "bad");
         result.set(Quality::Bad);
-      }
-      if (h->GetMean() < 5.2 || h->GetMean() > 5.8) {
-
-        result.updateMetadata("CheckMean", "medium");
-        result.set(Quality::Medium);
       }
     }
 
@@ -105,10 +105,6 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
       result.addMetadata("CheckYVertexMean", "good");
       result.addMetadata("CheckXVertexRms", "good");
       result.addMetadata("CheckYVertexRms", "good");
-      if (h->GetEntries() < 1e-15 || (h->Integral(h->GetXaxis()->FindBin(-0.2), h->GetXaxis()->FindBin(+0.2), h->GetYaxis()->FindBin(0.05), h->GetYaxis()->FindBin(0.2)) < 1e-15)) {
-        result.updateMetadata("CheckXYVertexEmpty", "bad");
-        result.set(Quality::Bad);
-      }
       if (std::abs(h->GetMean(1)) > 0.05) {
         result.updateMetadata("CheckXVertexMean", "medium");
         result.set(Quality::Medium);
@@ -124,6 +120,10 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
       if (h->GetRMS(2) > 0.1) {
         result.updateMetadata("CheckYVertexRms", "medium");
         result.set(Quality::Medium);
+      }
+      if (h->GetEntries() < 1e-15 || (h->Integral(h->GetXaxis()->FindBin(-0.2), h->GetXaxis()->FindBin(+0.2), h->GetYaxis()->FindBin(0.05), h->GetYaxis()->FindBin(0.2)) < 1e-15)) {
+        result.updateMetadata("CheckXYVertexEmpty", "bad");
+        result.set(Quality::Bad);
       }
     }
 
@@ -149,16 +149,16 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
         result.updateMetadata("CheckZVertexMeanMed", "medium");
         result.set(Quality::Medium);
       }
-      if (std::abs(h->GetMean()) >= 3.) {
-        result.updateMetadata("CheckZVertexMeanBad", "bad");
-        result.set(Quality::Bad);
-      }
       if (h->GetRMS() >= 7.) {
         result.updateMetadata("CheckZVertexRms", "medium");
         result.set(Quality::Medium);
       }
       if (h->GetEntries() < 1e-15 || h->Integral(h->FindBin(0) + 1, h->FindBin(10)) < 1e-15) {
         result.updateMetadata("CheckZVertexEmpty", "bad");
+        result.set(Quality::Bad);
+      }
+      if (std::abs(h->GetMean()) >= 3.) {
+        result.updateMetadata("CheckZVertexMeanBad", "bad");
         result.set(Quality::Bad);
       }
     }
@@ -181,8 +181,15 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       status = "Quality::GOOD";
       textColor = kGreen;
     } else {
-      status = "Quality::Bad (call expert)";
-      textColor = kRed;
+
+      if (checkResult == Quality::Bad) {
+        status = "Quality::Bad (call expert)";
+        textColor = kRed;
+      } else {
+        status = "Quality::Medium";
+        textColor = kOrange;
+      }
+
       if (strcmp(checkResult.getMetadata("CheckTracks4").c_str(), "bad") == 0) {
         tMessage[0] = std::make_shared<TLatex>(0.12, 0.6, "0 tracks with 4 clusters (OK if it's synthetic run)");
         tMessage[0]->SetTextFont(43);
@@ -224,9 +231,7 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
         h->GetListOfFunctions()->Add(tMessage[4]->Clone());
       }
       if (strcmp(checkResult.getMetadata("CheckMean").c_str(), "medium") == 0) {
-        status = "";
-        textColor = kOrange;
-        tMessage[5] = std::make_shared<TLatex>(0.12, 0.7, Form("Quality::Medium: Mean (%.1f) is outside of 5.2 - 5.9,  (ignore for COSMICS and TECHICALS", h->GetMean()));
+        tMessage[5] = std::make_shared<TLatex>(0.12, 0.76, Form("#splitline{Mean (%.1f) is outside 5.2-5.9}{ignore for COSMICS and TECHNICALS}", h->GetMean()));
         tMessage[5]->SetTextFont(43);
         tMessage[5]->SetTextSize(0.04);
         tMessage[5]->SetTextColor(kOrange);
@@ -235,7 +240,7 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       }
     }
 
-    tInfo = std::make_shared<TLatex>(0.12, 0.75, Form("#bf{%s}", status.Data()));
+    tInfo = std::make_shared<TLatex>(0.12, 0.65, Form("#bf{%s}", status.Data()));
     tInfo->SetTextFont(43);
     tInfo->SetTextSize(0.04);
     tInfo->SetTextColor(textColor);
