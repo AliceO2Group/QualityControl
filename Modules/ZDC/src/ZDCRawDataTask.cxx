@@ -77,6 +77,7 @@ void ZDCRawDataTask::startOfActivity(Activity& activity)
 void ZDCRawDataTask::startOfCycle()
 {
   ILOG(Debug, Devel) << "startOfCycle" << ENDM;
+  fNumCycle++;
 }
 
 void ZDCRawDataTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -132,6 +133,7 @@ void ZDCRawDataTask::monitorData(o2::framework::ProcessingContext& ctx)
 void ZDCRawDataTask::endOfCycle()
 {
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
+  // dumpHistoStructure();
 }
 
 void ZDCRawDataTask::endOfActivity(Activity& /*activity*/)
@@ -190,43 +192,47 @@ void ZDCRawDataTask::reset()
     fDataLoss->Reset();
   if (fOverBc)
     fOverBc->Reset();
+  if (fSummaryRate)
+    fSummaryRate->Reset();
+  if (fSummaryAlign)
+    fSummaryAlign->Reset();
 }
 
 void ZDCRawDataTask::initHisto()
 {
   ILOG(Debug, Devel) << "initialize ZDC RAW DATA HISTOGRAMS" << ENDM;
-  setNameChannel(0, 0, "ZNA_TC_TR");
-  setNameChannel(0, 1, "ZNA_SUM_SP");
-  setNameChannel(0, 2, "ZNA_T1");
-  setNameChannel(0, 3, "ZNA_T2");
-  setNameChannel(1, 0, "ZNA_TC_OTR");
-  setNameChannel(1, 1, "ZNA_SUM");
-  setNameChannel(1, 2, "ZNA_T3");
-  setNameChannel(1, 3, "ZNA_T4");
-  setNameChannel(2, 0, "ZNC_TC_TR");
-  setNameChannel(2, 1, "ZNC_SUM_SP");
-  setNameChannel(2, 2, "ZNC_T1");
-  setNameChannel(2, 3, "ZNC_T2");
-  setNameChannel(3, 0, "ZNC_TC_OTR");
-  setNameChannel(3, 1, "ZNC_SUM");
-  setNameChannel(3, 2, "ZNC_T3");
-  setNameChannel(3, 3, "ZNC_T4");
-  setNameChannel(4, 0, "ZPA_TC_TR");
-  setNameChannel(4, 1, "ZEM1_TR");
-  setNameChannel(4, 2, "ZPA_T1");
-  setNameChannel(4, 3, "ZPA_T2");
-  setNameChannel(5, 0, "ZPA_TC_OTR");
-  setNameChannel(5, 1, "ZPA_SUM");
-  setNameChannel(5, 2, "ZPA_T3");
-  setNameChannel(5, 3, "ZPA_T4");
-  setNameChannel(6, 0, "ZPC_TC_TR");
-  setNameChannel(6, 1, "ZEM2_TR");
-  setNameChannel(6, 2, "ZPC_T3");
-  setNameChannel(6, 3, "ZPC_T4");
-  setNameChannel(7, 0, "ZPC_TC_OTR");
-  setNameChannel(7, 1, "ZPC_SUM");
-  setNameChannel(7, 2, "ZPC_T1");
-  setNameChannel(7, 3, "ZPC_T2");
+  setNameChannel(0, 0, "ZNA_TC_TR", 1);
+  setNameChannel(0, 1, "ZNA_SUM_SP", -1);
+  setNameChannel(0, 2, "ZNA_T1", 2);
+  setNameChannel(0, 3, "ZNA_T2", 3);
+  setNameChannel(1, 0, "ZNA_TC_OTR", -1);
+  setNameChannel(1, 1, "ZNA_SUM", 4);
+  setNameChannel(1, 2, "ZNA_T3", 5);
+  setNameChannel(1, 3, "ZNA_T4", 6);
+  setNameChannel(2, 0, "ZNC_TC_TR", 7);
+  setNameChannel(2, 1, "ZNC_SUM_SP", -1);
+  setNameChannel(2, 2, "ZNC_T1", 8);
+  setNameChannel(2, 3, "ZNC_T2", 9);
+  setNameChannel(3, 0, "ZNC_TC_OTR", -1);
+  setNameChannel(3, 1, "ZNC_SUM", 10);
+  setNameChannel(3, 2, "ZNC_T3", 11);
+  setNameChannel(3, 3, "ZNC_T4", 12);
+  setNameChannel(4, 0, "ZPA_TC_TR", 13);
+  setNameChannel(4, 1, "ZEM1_TR", 14);
+  setNameChannel(4, 2, "ZPA_T1", 15);
+  setNameChannel(4, 3, "ZPA_T2", 16);
+  setNameChannel(5, 0, "ZPA_TC_OTR", -1);
+  setNameChannel(5, 1, "ZPA_SUM", 17);
+  setNameChannel(5, 2, "ZPA_T3", 18);
+  setNameChannel(5, 3, "ZPA_T4", 19);
+  setNameChannel(6, 0, "ZPC_TC_TR", 20);
+  setNameChannel(6, 1, "ZEM2_TR", 21);
+  setNameChannel(6, 2, "ZPC_T3", 22);
+  setNameChannel(6, 3, "ZPC_T4", 23);
+  setNameChannel(7, 0, "ZPC_TC_OTR", -1);
+  setNameChannel(7, 1, "ZPC_SUM", 24);
+  setNameChannel(7, 2, "ZPC_T1", 25);
+  setNameChannel(7, 3, "ZPC_T2", 26);
 
   std::vector<std::string> tokenString;
   // Histograms Baseline
@@ -453,6 +459,29 @@ void ZDCRawDataTask::initHisto()
   } else
     setBinHisto1D(26, -0.5, 25.5);
   addNewHisto("SUMMARYRATE", "hrateSummary", "Rate Summary (KHz)", "NONE", "LBC");
+
+  if (auto param = mCustomParameters.find("SUMMARY_ALIGN"); param != mCustomParameters.end()) {
+    ILOG(Debug, Devel) << "Custom parameter - SUMMARY_ALIGN: " << param->second << ENDM;
+    tokenString = tokenLine(param->second, ";");
+    setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
+  } else
+    setBinHisto2D(26, 0.5, 26.5, 12, -0.5, 11.5);
+  addNewHisto("SUMMARY_ALIGN", "hAlignPlot", "Alignment Plot", "NONE", "A0oT0");
+  addNewHisto("SUMMARY_ALIGN_SHIFT", "hAlignPlotShift", "Alignment Plot", "NONE", "A0oT0");
+
+  if (auto param = mCustomParameters.find("ALIGN_NUM_CYCLE"); param != mCustomParameters.end()) {
+    ILOG(Debug, Devel) << "Custom parameter -ALIGN_CYCLE: " << param->second << ENDM;
+    tokenString = tokenLine(param->second, ";");
+    fAlignCycle = atoi(param->second.c_str());
+  } else
+    fAlignCycle = 1;
+
+  if (auto param = mCustomParameters.find("ALIGN_NUM_ENTRIES"); param != mCustomParameters.end()) {
+    ILOG(Debug, Devel) << "Custom parameter -ALIGN_NUM_ENTRIES: " << param->second << ENDM;
+    tokenString = tokenLine(param->second, ";");
+    fAlignNumEntries = atoi(param->second.c_str());
+  } else
+    fAlignNumEntries = 2000;
 }
 
 void ZDCRawDataTask::init()
@@ -463,7 +492,7 @@ void ZDCRawDataTask::init()
   mCh.f.fixed_0 = o2::zdc::Id_wn;
   mCh.f.fixed_1 = o2::zdc::Id_wn;
   mCh.f.fixed_2 = o2::zdc::Id_wn;
-  // DumpHistoStructure();
+  // dumpHistoStructure();
 }
 
 inline int ZDCRawDataTask::getHPos(uint32_t board, uint32_t ch, int matrix[o2::zdc::NModules][o2::zdc::NChPerModule])
@@ -525,6 +554,7 @@ int ZDCRawDataTask::process(const o2::zdc::EventChData& ch)
     uint16_t uns;
     int16_t sig;
   } word16;
+  int flag = 0;
   // Not empty event
   auto f = ch.f;
   uint16_t us[12];
@@ -566,10 +596,34 @@ int ZDCRawDataTask::process(const o2::zdc::EventChData& ch)
         }
         if ((fMatrixHistoSignal[f.board][f.ch].at(j).condHisto.at(0).compare("AoT") == 0) && (f.Alice_0 || f.Auto_0)) {
           fMatrixHistoSignal[f.board][f.ch].at(j).histo->Fill(i + 0., double(s[i]));
+          if (f.Auto_0) {
+            fMatrixAlign[f.board][f.ch].minSample.vSamples[i].num_entry += 1;
+            fMatrixAlign[f.board][f.ch].minSample.vSamples[i].sum += (int)s[i];
+            fMatrixAlign[f.board][f.ch].minSample.vSamples[i].mean = (double)fMatrixAlign[f.board][f.ch].minSample.vSamples[i].sum / (double)fMatrixAlign[f.board][f.ch].minSample.vSamples[i].num_entry;
+            if (fMatrixAlign[f.board][f.ch].minSample.vSamples[0].num_entry > fAlignNumEntries && fMatrixAlign[f.board][f.ch].minSample.vSamples[i].mean < fMatrixAlign[f.board][f.ch].minSample.min_mean) {
+              fMatrixAlign[f.board][f.ch].minSample.id_min_sample = i;
+              fMatrixAlign[f.board][f.ch].minSample.min_mean = fMatrixAlign[f.board][f.ch].minSample.vSamples[i].mean;
+              fMatrixAlign[f.board][f.ch].minSample.num_entry = fMatrixAlign[f.board][f.ch].minSample.vSamples[i].num_entry;
+            }
+          }
         }
       }
     }
   }
+
+  if (fNumCycle == fAlignCycle) {
+    fSummaryAlignShift->Reset();
+    for (int i_mod = 0; i_mod < o2::zdc::NModules; i_mod++) {
+      for (int i_ch = 0; i_ch < o2::zdc::NChPerModule; i_ch++) {
+        if (fMatrixAlign[i_mod][i_ch].minSample.vSamples[0].num_entry > 0)
+          fSummaryAlign->Fill(fMatrixAlign[i_mod][i_ch].bin, fMatrixAlign[i_mod][i_ch].minSample.id_min_sample);
+        fSummaryAlignShift->Fill(fMatrixAlign[i_mod][i_ch].bin, fMatrixAlign[i_mod][i_ch].minSample.id_min_sample);
+      }
+    }
+    resetAlign();
+    fNumCycle = 0;
+  }
+
   if ((f.Alice_0 || f.Auto_0 || f.Alice_1 || f.Auto_1 || f.Alice_2 || f.Auto_2 || f.Alice_3 || f.Auto_3 || f.Auto_m) && fTriggerBits && fTriggerBitsHits) {
     if (f.Alice_3) {
       fTriggerBits->Fill(itb, 9);
@@ -707,13 +761,27 @@ std::string ZDCRawDataTask::getNameChannel(int imod, int ich)
   return fNameChannel[imod][ich];
 }
 
-void ZDCRawDataTask::setNameChannel(int imod, int ich, std::string namech)
+void ZDCRawDataTask::setNameChannel(int imod, int ich, std::string namech, int bin)
 {
+  sSample sample;
   fNameChannel[imod][ich] = namech;
   std::vector<int> coord;
   coord.push_back(imod);
   coord.push_back(ich);
   fMapChNameModCh.insert(std::pair<std::string, std::vector<int>>(namech, coord));
+
+  // init  structure alignment
+  fMatrixAlign[imod][ich].name_ch = namech;
+  fMatrixAlign[imod][ich].bin = bin;
+  fMatrixAlign[imod][ich].minSample.id_min_sample = -1;
+  fMatrixAlign[imod][ich].minSample.min_mean = 2048.0;
+  fMatrixAlign[imod][ich].minSample.num_entry = 0;
+  for (int i = 0; i < 12; i++) {
+    sample.id_sample = i;
+    sample.num_entry = 0;
+    sample.mean = 0.0;
+    fMatrixAlign[imod][ich].minSample.vSamples.push_back(sample);
+  }
 }
 
 bool ZDCRawDataTask::getModAndCh(std::string chName, int* module, int* channel)
@@ -888,7 +956,7 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
     }
 
     if (type.compare("FIRECHANNEL") == 0) {
-      fFireChannel = new TH2F(hname, htit, fNumBinX, fMinBinX, fMaxBinX, fNumBinY, fMinBinY, fMaxBinY);
+      fFireChannel = new TH2I(hname, htit, fNumBinX, fMinBinX, fMaxBinX, fNumBinY, fMinBinY, fMaxBinY);
       fFireChannel->SetStats(0);
       getObjectsManager()->startPublishing(fFireChannel);
       try {
@@ -911,7 +979,7 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
       }
     }
     if (type.compare("TRASMITTEDCHANNEL") == 0) {
-      fTrasmChannel = new TH2F(hname, htit, fNumBinX, fMinBinX, fMaxBinX, fNumBinY, fMinBinY, fMaxBinY);
+      fTrasmChannel = new TH2I(hname, htit, fNumBinX, fMinBinX, fMaxBinX, fNumBinY, fMinBinY, fMaxBinY);
       fTrasmChannel->SetStats(0);
       getObjectsManager()->startPublishing(fTrasmChannel);
       try {
@@ -994,7 +1062,7 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
       }
     }
 
-    if ((type.compare("SUMMARYBASELINE") == 0) || (type.compare("SUMMARYRATE") == 0)) {
+    if ((type.compare("SUMMARYBASELINE") == 0) || (type.compare("SUMMARYRATE") == 0) || (type.compare("SUMMARY_ALIGN") == 0) || (type.compare("SUMMARY_ALIGN_SHIFT") == 0)) {
       if (type.compare("SUMMARYBASELINE") == 0) {
         fSummaryPedestal = new TH1F(hname, htit, fNumBinX, fMinBinX, fMaxBinX);
         fSummaryPedestal->GetXaxis()->LabelsOption("v");
@@ -1004,6 +1072,16 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
         fSummaryRate = new TH1F(hname, htit, fNumBinX, fMinBinX, fMaxBinX);
         fSummaryRate->GetXaxis()->LabelsOption("v");
         fSummaryRate->SetStats(0);
+      }
+      if (type.compare("SUMMARY_ALIGN") == 0) {
+        fSummaryAlign = new TH2D(hname, htit, fNumBinX, fMinBinX, fMaxBinX, fNumBinY, fMinBinY, fMaxBinY);
+        fSummaryAlign->GetXaxis()->LabelsOption("v");
+        fSummaryAlign->SetStats(0);
+      }
+      if (type.compare("SUMMARY_ALIGN_SHIFT") == 0) {
+        fSummaryAlignShift = new TH2D(hname, htit, fNumBinX, fMinBinX, fMaxBinX, fNumBinY, fMinBinY, fMaxBinY);
+        fSummaryAlignShift->GetXaxis()->LabelsOption("v");
+        fSummaryAlignShift->SetStats(0);
       }
       int i = 0;
       for (uint32_t imod = 0; imod < o2::zdc::NModules; imod++) {
@@ -1017,7 +1095,10 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
               fSummaryPedestal->GetXaxis()->SetBinLabel(i, TString::Format("%s", getNameChannel(imod, ich).c_str()));
             if (type.compare("SUMMARYRATE") == 0)
               fSummaryRate->GetXaxis()->SetBinLabel(i, TString::Format("%s", getNameChannel(imod, ich).c_str()));
-
+            if (type.compare("SUMMARY_ALIGN") == 0)
+              fSummaryAlign->GetXaxis()->SetBinLabel(fMatrixAlign[imod][ich].bin, TString::Format("%s", fMatrixAlign[imod][ich].name_ch.c_str()));
+            if (type.compare("SUMMARY_ALIGN_SHIFT") == 0)
+              fSummaryAlignShift->GetXaxis()->SetBinLabel(fMatrixAlign[imod][ich].bin, TString::Format("%s", fMatrixAlign[imod][ich].name_ch.c_str()));
             fMapBinNameIdSummaryHisto.insert(std::pair<std::string, int>(chName, i));
           }
         }
@@ -1026,18 +1107,29 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
         getObjectsManager()->startPublishing(fSummaryPedestal);
       if (type.compare("SUMMARYRATE") == 0)
         getObjectsManager()->startPublishing(fSummaryRate);
+      if (type.compare("SUMMARY_ALIGN") == 0)
+        getObjectsManager()->startPublishing(fSummaryAlign);
+      if (type.compare("SUMMARY_ALIGN_SHIFT") == 0)
+        getObjectsManager()->startPublishing(fSummaryAlignShift);
       try {
         if (type.compare("SUMMARYBASELINE") == 0)
           getObjectsManager()->addMetadata(fSummaryPedestal->GetName(), fSummaryPedestal->GetName(), "34");
         if (type.compare("SUMMARYRATE") == 0)
           getObjectsManager()->addMetadata(fSummaryRate->GetName(), fSummaryRate->GetName(), "34");
-
+        if (type.compare("SUMMARY_ALIGN") == 0)
+          getObjectsManager()->addMetadata(fSummaryAlign->GetName(), fSummaryAlign->GetName(), "34");
+        if (type.compare("SUMMARY_ALIGN_SHIFT") == 0)
+          getObjectsManager()->addMetadata(fSummaryAlign->GetName(), fSummaryAlignShift->GetName(), "34");
         return true;
       } catch (...) {
         if (type.compare("SUMMARYBASELINE") == 0)
           ILOG(Warning, Support) << "Metadata could not be added to " << fSummaryPedestal->GetName() << ENDM;
         if (type.compare("SUMMARYRATE") == 0)
           ILOG(Warning, Support) << "Metadata could not be added to " << fSummaryRate->GetName() << ENDM;
+        if (type.compare("SUMMARY_ALIGN") == 0)
+          ILOG(Warning, Support) << "Metadata could not be added to " << fSummaryAlign->GetName() << ENDM;
+        if (type.compare("SUMMARY_ALIGN_SHIFT") == 0)
+          ILOG(Warning, Support) << "Metadata could not be added to " << fSummaryAlignShift->GetName() << ENDM;
         return false;
       }
     }
@@ -1168,7 +1260,7 @@ bool ZDCRawDataTask::decodeModule(std::vector<std::string> TokenString, int Line
   }
   // set Name Channels
   for (int i = 2; i < (int)TokenString.size(); i++) {
-    setNameChannel(imod, ich, TokenString.at(i));
+    setNameChannel(imod, ich, TokenString.at(i), 0);
     ich = ich + 1;
   }
   return true;
@@ -1330,7 +1422,24 @@ bool ZDCRawDataTask::checkCondition(std::string cond)
   return false;
 }
 
-void ZDCRawDataTask::DumpHistoStructure()
+void ZDCRawDataTask::resetAlign()
+{
+  for (int i = 0; i < o2::zdc::NModules; i++) {
+    for (int j = 0; j < NChPerModule; j++) {
+      fMatrixAlign[i][j].minSample.id_min_sample = -1;
+      fMatrixAlign[i][j].minSample.min_mean = 2048.0;
+      fMatrixAlign[i][j].minSample.num_entry = 0;
+      for (int k = 0; k < 12; k++) {
+        fMatrixAlign[i][j].minSample.vSamples[k].id_sample = k;
+        fMatrixAlign[i][j].minSample.vSamples[k].num_entry = 0;
+        fMatrixAlign[i][j].minSample.vSamples[k].sum = 0;
+        fMatrixAlign[i][j].minSample.vSamples[k].mean = 0;
+      }
+    }
+  }
+}
+
+void ZDCRawDataTask::dumpHistoStructure()
 {
   std::ofstream dumpFile;
   dumpFile.open("dumpStructures.txt");
@@ -1395,6 +1504,31 @@ void ZDCRawDataTask::DumpHistoStructure()
       dumpFile << "\n";
     }
     dumpFile << "\n";
+  }
+
+  dumpFile << "\nAlign Struct \n";
+  for (int i = 0; i < o2::zdc::NModules; i++) {
+    for (int j = 0; j < o2::zdc::NChPerModule; j++) {
+      dumpFile << "[" << i << "][" << j << "] " << fMatrixAlign[i][j].name_ch << "  \t pos_histo " << fMatrixAlign[i][j].bin << "  \t" << fMatrixAlign[i][j].minSample.id_min_sample << "  \t";
+      dumpFile << "\n";
+    }
+    dumpFile << "\n";
+  }
+
+  dumpFile << "\nAlign Struct details  Num Cycle: " << fNumCycle << "\n";
+  for (int i = 0; i < o2::zdc::NModules; i++) {
+    for (int j = 0; j < o2::zdc::NChPerModule; j++) {
+      dumpFile << "[" << i << "][" << j << "] " << fMatrixAlign[i][j].name_ch << "  \t pos_histo " << fMatrixAlign[i][j].bin << "  \t id " << fMatrixAlign[i][j].minSample.id_min_sample << "  \t mean: " << fMatrixAlign[i][j].minSample.min_mean << "  \t entry: " << fMatrixAlign[i][j].minSample.num_entry << "  \t";
+      dumpFile << "\n";
+      for (int k = 0; k < 12; k++) {
+        dumpFile << "\t id [" << k << "] sample " << fMatrixAlign[i][j].minSample.vSamples[k].id_sample << "  \t  mean: " << fMatrixAlign[i][j].minSample.vSamples[k].mean << "  \t  sum: " << fMatrixAlign[i][j].minSample.vSamples[k].sum << "  \t entry: " << fMatrixAlign[i][j].minSample.vSamples[k].num_entry << "  \t";
+        dumpFile << "\n";
+      }
+      dumpFile << "\n";
+    }
+    dumpFile << "\n";
+    dumpFile << "\nAlign Param Num Cycle: " << fAlignCycle << "\n";
+    dumpFile << "\nAlign Param Num entries: " << fAlignNumEntries << "\n";
   }
   dumpFile.close();
 }

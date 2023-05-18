@@ -47,7 +47,11 @@
           "TRIGGER_BIT_HIT": "32;-0.5;31.5;10;-0.5; 9.5",
           "OVER_BC": "32;-0.5;31.5",
           "SUMMARYBASELINE": "26;-0.5;25.5",
-          "SUMMARYRATE": "26;-0.5;25.5"
+          "SUMMARYRATE": "26;-0.5;25.5",
+          "SUMMARY_ALIGN": "26;0.5; 26.5;12;-0.5;11.5",
+          "ALIGN_NUM_CYCLE": "5",
+          "ALIGN_NUM_ENTRIES": "2000"
+
         },
         "location": "remote",
         "saveObjectsToFile": "QcZDCRawData.root",      "": "For debugging, path to the file where to save. If empty it won't save."
