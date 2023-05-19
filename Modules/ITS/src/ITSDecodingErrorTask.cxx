@@ -161,6 +161,7 @@ void ITSDecodingErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
     int feeLinkError = mLinkErrorVsFeeid->Integral(1, mLinkErrorVsFeeid->GetXaxis()->GetNbins(), ierror + 1, ierror + 1);
     mLinkErrorPlots->SetBinContent(ierror + 1, feeLinkError);
   }
+
   for (int ierror = 0; ierror < o2::itsmft::ChipStat::NErrorsDefined; ierror++) {
     int feeChipError = mChipErrorVsFeeid->Integral(1, mChipErrorVsFeeid->GetXaxis()->GetNbins(), ierror + 1, ierror + 1);
     mChipErrorPlots->SetBinContent(ierror + 1, feeChipError);

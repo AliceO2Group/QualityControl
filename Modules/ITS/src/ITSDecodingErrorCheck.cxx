@@ -17,6 +17,7 @@
 #include "ITS/ITSDecodingErrorCheck.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
+#include "ITSMFTReconstruction/DecodingStat.h"
 
 #include <fairlogger/Logger.h>
 #include <TList.h>
@@ -29,6 +30,13 @@ namespace o2::quality_control_modules::its
 
 Quality ITSDecodingErrorCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
+
+  std::vector<int> vDecErrorLimits = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "DecLinkErrorLimits", ""));
+  if (vDecErrorLimits.size() != o2::itsmft::GBTLinkDecodingStat::NErrorsDefined) {
+    LOG(error) << "Incorrect vector with DecodingError limits, check .json" << ENDM;
+    doFlatCheck = true;
+  }
+
   Quality result = Quality::Null;
 
   for (auto& [moName, mo] : *moMap) {
@@ -36,8 +44,25 @@ Quality ITSDecodingErrorCheck::check(std::map<std::string, std::shared_ptr<Monit
     if ((mo->getName() == "General/LinkErrorPlots") || (mo->getName() == "General/ChipErrorPlots")) {
       result = Quality::Good;
       auto* h = dynamic_cast<TH1D*>(mo->getObject());
-      if (h->GetMaximum() > 200) {
-        result.set(Quality::Bad);
+      if (doFlatCheck || mo->getName() == "General/ChipErrorPlots") {
+        if (h->GetMaximum() > 200) {
+          result.set(Quality::Bad);
+        }
+      } else {
+        for (int iBin = 1; iBin <= h->GetNbinsX(); iBin++) {
+
+          if (vDecErrorLimits[iBin - 1] < 0)
+            continue; // skipping bin
+
+          if (vDecErrorLimits[iBin - 1] <= h->GetBinContent(iBin)) {
+            vListErrorIdBad.push_back(iBin - 1);
+            result.set(Quality::Bad);
+          } else if (vDecErrorLimits[iBin - 1] / 2 < h->GetBinContent(iBin)) {
+            vListErrorIdMedium.push_back(iBin - 1);
+            if (result != Quality::Bad)
+              result.set(Quality::Medium);
+          }
+        }
       }
     }
   }
@@ -69,9 +94,36 @@ void ITSDecodingErrorCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality 
     if (checkResult == Quality::Good) {
       status = "Quality::GOOD";
       textColor = kGreen;
-    } else if (checkResult == Quality::Bad) {
-      status = "Quality::BAD (call expert)";
-      textColor = kRed;
+    } else {
+
+      if (checkResult == Quality::Bad) {
+        status = "Quality::BAD (call expert)";
+        for (int id = 0; id < vListErrorIdBad.size(); id++) {
+          int currentError = vListErrorIdBad[id];
+          tInfo = std::make_shared<TLatex>(0.12, 0.835 - 0.04 * (id + 1), Form("BAD: ID = %d, %s", currentError, sErrorDesc[currentError].Data()));
+          tInfo->SetTextColor(kRed + 2);
+          tInfo->SetTextSize(0.04);
+          tInfo->SetTextFont(43);
+          tInfo->SetNDC();
+          h->GetListOfFunctions()->Add(tInfo->Clone());
+        }
+        textColor = kRed + 2;
+      }
+      if (vListErrorIdMedium.size() > 0) {
+        if (checkResult == Quality::Medium) {
+          status = "Quality::Medium";
+          textColor = kOrange;
+        }
+        for (int id = 0; id < vListErrorIdMedium.size(); id++) {
+          int currentError = vListErrorIdMedium[id];
+          tInfo = std::make_shared<TLatex>(0.12, 0.6 - 0.04 * (id + 1), Form("Medium: ID = %d, %s", currentError, sErrorDesc[currentError].Data()));
+          tInfo->SetTextColor(kOrange + 1);
+          tInfo->SetTextSize(0.04);
+          tInfo->SetTextFont(43);
+          tInfo->SetNDC();
+          h->GetListOfFunctions()->Add(tInfo->Clone());
+        }
+      }
     }
     tInfo = std::make_shared<TLatex>(0.12, 0.835, Form("#bf{%s}", status.Data()));
     tInfo->SetTextColor(textColor);
@@ -82,6 +134,8 @@ void ITSDecodingErrorCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality 
     if (ShifterInfoText[mo->getName()] != "")
       h->GetListOfFunctions()->Add(tShifterInfo->Clone());
   }
+  vListErrorIdBad.clear();
+  vListErrorIdMedium.clear();
 }
 
 } // namespace o2::quality_control_modules::its
