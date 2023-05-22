@@ -53,11 +53,10 @@ Quality ITSFhrCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
       std::vector<int> skipbins = convertToIntArray(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "skipbins", ""));
 
       TIter next(h->GetBins());
-      int ibin = 0;
+      int ibin = 1;
       double_t nBadStaves[4];
 
       while (TH2PolyBin* Bin = (TH2PolyBin*)next()) {
-
         if (std::find(skipbins.begin(), skipbins.end(), ibin) != skipbins.end()) {
           ibin++;
           continue;
@@ -68,7 +67,7 @@ Quality ITSFhrCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
         double phi = TMath::ATan2(Y_center, X_center);
         int sector = 2 * (phi + TMath::Pi()) / TMath::Pi();
 
-        if (ibin < 48) { // IB
+        if (ibin <= 48) { // IB
           fhrcutIB = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "fhrcutIB", fhrcutIB);
           if (h->GetBinContent(ibin) > fhrcutIB) {
             result.updateMetadata("Gen_Occu_IB", "bad");
