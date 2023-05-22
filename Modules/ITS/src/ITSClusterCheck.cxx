@@ -52,8 +52,8 @@ Quality ITSClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
 
     if (iter->second->getName().find("General_Occupancy") != std::string::npos) {
       auto* hp = dynamic_cast<TH2F*>(iter->second->getObject());
-      std::vector<int> skipxbins = convertToIntArray(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "skipxbinsoccupancy", ""));
-      std::vector<int> skipybins = convertToIntArray(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "skipybinsoccupancy", ""));
+      std::vector<int> skipxbins = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "skipxbinsoccupancy", ""));
+      std::vector<int> skipybins = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "skipybinsoccupancy", ""));
       std::vector<std::pair<int, int>> xypairs;
       for (int i = 0; i < (int)skipxbins.size(); i++) {
         xypairs.push_back(std::make_pair(skipxbins[i], skipybins[i]));
@@ -106,6 +106,21 @@ std::string ITSClusterCheck::getAcceptedType() { return "TH2F"; }
 
 void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
+  std::vector<string> vPlotWithTextMessage = convertToArray<string>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "plotWithTextMessage", ""));
+  std::vector<string> vTextMessage = convertToArray<string>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "textMessage", ""));
+  std::map<string, string> ShifterInfoText;
+
+  if ((int)vTextMessage.size() == (int)vPlotWithTextMessage.size()) {
+    for (int i = 0; i < (int)vTextMessage.size(); i++) {
+      ShifterInfoText[vPlotWithTextMessage[i]] = vTextMessage[i];
+    }
+  } else
+    ILOG(Warning, Support) << "Bad list of plot with TextMessages for shifter, check .json" << ENDM;
+
+  std::shared_ptr<TLatex> tShifterInfo = std::make_shared<TLatex>(0.005, 0.006, Form("#bf{%s}", TString(ShifterInfoText[mo->getName()]).Data()));
+  tShifterInfo->SetTextSize(0.04);
+  tShifterInfo->SetTextFont(43);
+  tShifterInfo->SetNDC();
 
   TString status;
   int textColor;
@@ -134,6 +149,8 @@ void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
     msg->SetTextFont(43);
     msg->SetNDC();
     h->GetListOfFunctions()->Add(msg->Clone());
+    if (ShifterInfoText[mo->getName()] != "")
+      h->GetListOfFunctions()->Add(tShifterInfo->Clone());
   }
 
   if (mo->getName().find("General_Occupancy") != std::string::npos) {
@@ -179,21 +196,9 @@ void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
     msg->SetTextFont(43);
     msg->SetNDC();
     h->GetListOfFunctions()->Add(msg->Clone());
+    if (ShifterInfoText[mo->getName()] != "")
+      h->GetListOfFunctions()->Add(tShifterInfo->Clone());
   }
-}
-
-std::vector<int> ITSClusterCheck::convertToIntArray(std::string input)
-{
-  std::replace(input.begin(), input.end(), ',', ' ');
-  std::istringstream stringReader{ input };
-
-  std::vector<int> result;
-  int number;
-  while (stringReader >> number) {
-    result.push_back(number);
-  }
-
-  return result;
 }
 
 } // namespace o2::quality_control_modules::its

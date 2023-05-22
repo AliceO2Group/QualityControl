@@ -73,7 +73,10 @@
           "maxcluoccL5": "1",
           "maxcluoccL6": "1",
           "skipxbinsoccupancy": "",
-          "skipybinsoccupancy": ""
+          "skipybinsoccupancy": "",
+          "plotWithTextMessage": "",
+          "textMessage": "" 
+
         },
         "dataSource": [
           {
