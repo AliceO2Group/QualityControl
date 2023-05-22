@@ -28,6 +28,7 @@
 #include <Framework/InputRecord.h>
 #include <Framework/InputRecordWalker.h>
 #include "DataFormatsTRD/Tracklet64.h"
+#include "DataFormatsTRD/HelperMethods.h"
 #include "DataFormatsTRD/Digit.h"
 #include "DataFormatsTRD/Digit.h"
 #include "DataFormatsTRD/NoiseCalibration.h"
@@ -147,6 +148,28 @@ void TrackletsTask::buildHistograms()
   getObjectsManager()->startPublishing(mTrackletPositionRaw);
   mTrackletsPerEvent = new TH1F("trackletsperevent", "Number of Tracklets per event;Tracklets in Event;Counts", 25000, 0, 25000);
   getObjectsManager()->startPublishing(mTrackletsPerEvent);
+  mTrackletsPerEvent2D = new TH2F("trackletsperevent2d", "Number of Tracklets per event;Sector_Side;Stack_Side", 36, 0, 36, 30, 0, 30);
+  getObjectsManager()->startPublishing(mTrackletsPerEvent2D);
+  getObjectsManager()->setDefaultDrawOptions("trackletsperevent2d", "COLZ");
+  getObjectsManager()->setDisplayHint(mTrackletsPerEvent2D->GetName(), "logz");
+  mTrackletsPerEvent2D->GetXaxis()->SetTitle("Sector_Side");
+  mTrackletsPerEvent2D->GetXaxis()->CenterTitle(kTRUE);
+  mTrackletsPerEvent2D->GetYaxis()->SetTitle("Stack_Layer");
+  mTrackletsPerEvent2D->GetYaxis()->CenterTitle(kTRUE);
+  for (int s = 0; s < o2::trd::constants::NSTACK; ++s) {
+    for (int l = 0; l < o2::trd::constants::NLAYER; ++l) {
+      std::string label = fmt::format("{0}_{1}", s, l);
+      int pos = s * o2::trd::constants::NLAYER + l + 1;
+      mTrackletsPerEvent2D->GetYaxis()->SetBinLabel(pos, label.c_str());
+    }
+  }
+  for (int sm = 0; sm < o2::trd::constants::NSECTOR; ++sm) {
+    for (int side = 0; side < 2; ++side) {
+      std::string label = fmt::format("{0}_{1}", sm, side == 0 ? "A" : "B");
+      int pos = sm * 2 + side + 1;
+      mTrackletsPerEvent2D->GetXaxis()->SetBinLabel(pos, label.c_str());
+    }
+  }
 
   for (Int_t sm = 0; sm < o2::trd::constants::NSECTOR; ++sm) {
     std::string label = fmt::format("TrackletHCMCMnoise_{0}", sm);
@@ -387,6 +410,10 @@ void TrackletsTask::monitorData(o2::framework::ProcessingContext& ctx)
           if (istack >= 2) {
             stackoffset -= 2; // only 12in stack 2
           }
+          int hcid = tracklets[currenttracklet].getHCID();
+          int stackLayer = o2::trd::HelperMethods::getStack(hcid / 2) * o2::trd::constants::NLAYER + o2::trd::HelperMethods::getLayer(hcid / 2);
+          int sectorSide = (hcid / o2::trd::constants::NHCPERSEC) * 2 + (hcid % 2);
+          mTrackletsPerEvent2D->Fill(sectorSide, stackLayer);
           // 8 rob x 16 mcm each per chamber
           //  5 stack(y), 6 layers(x)
           //  y=stack_rob, x=layer_mcm
@@ -461,6 +488,7 @@ void TrackletsTask::reset()
   mTrackletPosition->Reset();
   mTrackletPositionRaw->Reset();
   mTrackletsPerEvent->Reset();
+  mTrackletsPerEvent2D->Reset();
   for (auto h : moHCMCMn) {
     h->Reset();
   }
