@@ -70,6 +70,14 @@ To enable debug messages, edit your config file :
 ```
 There are more options in the "Advanced" section of this guide. 
 
+### Why do I get an error about multiple devices sharing the same first 16 characters of their names ? 
+
+The O2 software imposes that the device names do not exceed 16 characters. As a consequence we truncate. This can cause
+issues as it might seem that the names are different but in the end they are not. 
+
+If two or more devices share the 16 first characters in their names, we issue and error and we quit. 
+If you want to proceed and run despite the error, set the env var `QUALITYCONTROL_NO_FATAL_16_CHARS` to anything.
+
 ## QCDB
 
 ### How to see which objects are stored in the CCDB ?

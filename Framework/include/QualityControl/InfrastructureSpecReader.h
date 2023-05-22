@@ -24,6 +24,7 @@
 #include "QualityControl/PostProcessingTaskSpec.h"
 #include "QualityControl/RecoRequestSpecs.h"
 #include <boost/property_tree/ptree_fwd.hpp>
+#include <unordered_set>
 
 namespace o2::quality_control::core
 {
@@ -77,6 +78,9 @@ std::vector<T> readSectionSpec(const boost::property_tree::ptree& wholeTree, con
 }
 
 std::string validateDetectorName(std::string name);
+static void validateName(const std::string& name);
+
+static std::unordered_set<std::string> deviceNamesCache;
 
 } // namespace InfrastructureSpecReader
 } // namespace o2::quality_control::core
