@@ -184,29 +184,42 @@ void TestbeamRawTask::initialize(o2::framework::InitContext& /*ctx*/)
   ILOG(Info, Support) << "Debug mode: " << (mDebugMode ? "yes" : "no") << ENDM;
 
   if (!mDisablePixels) {
-    o2::focal::PixelMapper::MappingType_t mappingtype = o2::focal::PixelMapper::MappingType_t::MAPPING_IB;
+    o2::focal::PixelMapperV1::MappingType_t mappingtype = o2::focal::PixelMapperV1::MappingType_t::MAPPING_IB;
     auto pixellayout = mCustomParameters.find("Pixellayout");
     if (pixellayout != mCustomParameters.end()) {
       if (pixellayout->second == "IB") {
-        mappingtype = o2::focal::PixelMapper::MappingType_t::MAPPING_IB;
+        mappingtype = o2::focal::PixelMapperV1::MappingType_t::MAPPING_IB;
       } else if (pixellayout->second == "OB") {
-        mappingtype = o2::focal::PixelMapper::MappingType_t::MAPPING_OB;
+        mappingtype = o2::focal::PixelMapperV1::MappingType_t::MAPPING_OB;
       } else {
         ILOG(Fatal, Support) << "Unknown pixel setup: " << pixellayout->second << ENDM;
       }
     }
     switch (mappingtype) {
-      case o2::focal::PixelMapper::MappingType_t::MAPPING_IB:
+      case o2::focal::PixelMapperV1::MappingType_t::MAPPING_IB:
         ILOG(Info, Support) << "Using pixel layout: IB" << ENDM;
         break;
 
-      case o2::focal::PixelMapper::MappingType_t::MAPPING_OB:
+      case o2::focal::PixelMapperV1::MappingType_t::MAPPING_OB:
         ILOG(Info, Support) << "Using pixel layout: OB" << ENDM;
         break;
       default:
         break;
     }
-    mPixelMapper = std::make_unique<o2::focal::PixelMapper>(mappingtype);
+    std::string mappingfile;
+    auto mappingfilename = mCustomParameters.find("Pixelmapping");
+    if (mappingfilename != mCustomParameters.end()) {
+      mappingfile = mappingfilename->second;
+      ILOG(Info, Support) << "Using pixel chip mapping from file: " << mappingfile << ENDM;
+    }
+    mPixelMapperV1 = std::make_unique<o2::focal::PixelMapperV1>(mappingfile.length() ? o2::focal::PixelMapperV1::MappingType_t::MAPPING_UNKNOWN : mappingtype);
+    if (mappingfile.length()) {
+      try {
+        mPixelMapperV1->setMappingFile(mappingfile, mappingtype);
+      } catch (o2::focal::PixelMapperV1::MappingNotSetException& e) {
+        ILOG(Fatal, Support) << "Unable to initialize pixel chip mapping: " << e << ENDM;
+      }
+    }
   }
 
   /////////////////////////////////////////////////////////////////
@@ -285,13 +298,13 @@ void TestbeamRawTask::initialize(o2::framework::InitContext& /*ctx*/)
     }
 
     constexpr int PIXEL_LAYERS = 2;
-    auto& refmapping = mPixelMapper->getMapping(0);
-    auto pixel_segments = getNumberOfPixelSegments(mPixelMapper->getMappingType());
-    auto pixel_columns = refmapping.getNumberOfColumns(),
-         pixel_rows = refmapping.getNumberOfRows(),
+    auto pixel_segments = getNumberOfPixelSegments(mPixelMapperV1->getMappingType());
+    auto pixel_columns = mPixelMapperV1->getNumberOfColumns(),
+         pixel_rows = mPixelMapperV1->getNumberOfRows(),
          pixel_chips = pixel_columns * pixel_rows,
          segments_colums = pixel_columns * pixel_segments.first,
          segments_rows = pixel_rows * pixel_segments.second;
+    ILOG(Info, Support) << "Pixel hitmap, segments per chip (" << pixel_segments.first << " columns, " << pixel_segments.second << " rows), segment columns " << segments_colums << ", rows " << segments_rows << ENDM;
     std::array<int, 2> pixelLayerIndex = { { 10, 5 } };
     ILOG(Info, Support) << "Setup acceptance histograms " << pixel_columns << " colums and " << pixel_rows << " rows (" << pixel_chips << " chips)" << ENDM;
     for (int ilayer = 0; ilayer < PIXEL_LAYERS; ilayer++) {
@@ -552,14 +565,13 @@ void TestbeamRawTask::processPixelPayload(gsl::span<const o2::itsmft::GBTWord> p
   ILOG(Debug, Support) << "Decoded FEE ID " << feeID << " -> FEE " << fee << ", branch " << branch << ENDM;
   auto useFEE = branch * 10 + fee;
   mLinksWithPayloadPixel->Fill(useFEE);
+  int layer = -1;
 
   // Testbeam November 2022
-  int layer = fee < 2 ? 0 : 1;
-  auto& feemapping = mPixelMapper->getMapping(fee);
-  auto mappingtype = mPixelMapper->getMappingType();
+  auto mappingtype = mPixelMapperV1->getMappingType();
   auto numbersegments = getNumberOfPixelSegments(mappingtype);
-  int totalsegmentsCol = numbersegments.first * feemapping.getNumberOfColumns(),
-      totalsegmentsRow = numbersegments.second * feemapping.getNumberOfRows(),
+  int totalsegmentsCol = numbersegments.first * mPixelMapperV1->getNumberOfColumns(),
+      totalsegmentsRow = numbersegments.second * mPixelMapperV1->getNumberOfRows(),
       totalsegments = totalsegmentsCol * totalsegmentsRow;
 
   mPixelDecoder.reset();
@@ -582,21 +594,26 @@ void TestbeamRawTask::processPixelPayload(gsl::span<const o2::itsmft::GBTWord> p
         chipIDsHits.insert(chip.mChipID);
       }
       try {
-        auto position = feemapping.getPosition(chip);
-        mPixelChipHitProfileLayer[layer]->Fill(position.mColumn, position.mRow, chip.mHits.size());
-        mPixelChipHitmapLayer[layer]->Fill(position.mColumn, position.mRow, chip.mHits.size());
+        auto position = mPixelMapperV1->getPosition(feeID, chip);
+        if (layer < 0) {
+          layer = position.mLayer;
+        }
+        mPixelChipHitProfileLayer[position.mLayer]->Fill(position.mColumn, position.mRow, chip.mHits.size());
+        mPixelChipHitmapLayer[position.mLayer]->Fill(position.mColumn, position.mRow, chip.mHits.size());
         int chipIndex = position.mRow * 7 + position.mColumn;
-        mPixelHitDistribitionLayer[layer]->Fill(chipIndex, chip.mHits.size());
+        mPixelHitDistribitionLayer[position.mLayer]->Fill(chipIndex, chip.mHits.size());
         for (auto& hit : chip.mHits) {
           auto segment = getPixelSegment(hit, mappingtype, position);
           auto segment_col = position.mColumn * numbersegments.first + segment.first;
           auto segment_row = position.mRow * numbersegments.second + segment.second;
-          mPixelSegmentHitmapLayer[layer]->Fill(segment_col, segment_row);
+          mPixelSegmentHitmapLayer[position.mLayer]->Fill(segment_col, segment_row);
           int segment_id = segment_row * totalsegmentsCol + segment_col;
           mHitSegmentCounter[segment_id]++;
         }
-      } catch (o2::focal::PixelMapping::InvalidChipException& e) {
+      } catch (o2::focal::PixelMapperV1::InvalidChipException& e) {
         ILOG(Error, Support) << "Error in chip index: " << e << ENDM;
+      } catch (o2::focal::PixelMapperV1::UninitException& e) {
+        ILOG(Error, Support) << e << ENDM;
       }
     }
     for (auto chipID : chipIDsFound) {
@@ -627,17 +644,17 @@ void TestbeamRawTask::processPixelPayload(gsl::span<const o2::itsmft::GBTWord> p
   }
 }
 
-std::pair<int, int> TestbeamRawTask::getPixelSegment(const o2::focal::PixelHit& hit, o2::focal::PixelMapper::MappingType_t mappingtype, const o2::focal::PixelMapping::ChipPosition& chipMapping) const
+std::pair<int, int> TestbeamRawTask::getPixelSegment(const o2::focal::PixelHit& hit, o2::focal::PixelMapperV1::MappingType_t mappingtype, const o2::focal::PixelMapperV1::ChipPosition& chipMapping) const
 {
   int row = -1, col = -1, absColumn = -1, absRow = -1;
   switch (mappingtype) {
-    case o2::focal::PixelMapper::MappingType_t::MAPPING_IB:
+    case o2::focal::PixelMapperV1::MappingType_t::MAPPING_IB:
       absColumn = chipMapping.mInvertColumn ? PIXEL_COLS_IB - hit.mColumn : hit.mColumn;
       absRow = chipMapping.mInvertRow ? PIXEL_ROWS_IB - hit.mRow : hit.mRow;
       col = absColumn / PIXEL_COL_SEGMENSIZE_IB;
       row = absRow / PIXEL_ROW_SEGMENTSIZE_IB;
       break;
-    case o2::focal::PixelMapper::MappingType_t::MAPPING_OB:
+    case o2::focal::PixelMapperV1::MappingType_t::MAPPING_OB:
       absColumn = chipMapping.mInvertColumn ? PIXEL_COLS_OB - hit.mColumn : hit.mColumn;
       absRow = chipMapping.mInvertRow ? PIXEL_ROWS_OB - hit.mRow : hit.mRow;
       col = absColumn / PIXEL_COL_SEGMENSIZE_OB;
@@ -649,15 +666,15 @@ std::pair<int, int> TestbeamRawTask::getPixelSegment(const o2::focal::PixelHit& 
   return { col, row };
 }
 
-std::pair<int, int> TestbeamRawTask::getNumberOfPixelSegments(o2::focal::PixelMapper::MappingType_t mappingtype) const
+std::pair<int, int> TestbeamRawTask::getNumberOfPixelSegments(o2::focal::PixelMapperV1::MappingType_t mappingtype) const
 {
   int rows = -1, cols = -1;
   switch (mappingtype) {
-    case o2::focal::PixelMapper::MappingType_t::MAPPING_IB:
+    case o2::focal::PixelMapperV1::MappingType_t::MAPPING_IB:
       rows = PIXEL_ROWS_IB / PIXEL_ROW_SEGMENTSIZE_IB;
       cols = PIXEL_COLS_IB / PIXEL_COL_SEGMENSIZE_IB;
       break;
-    case o2::focal::PixelMapper::MappingType_t::MAPPING_OB:
+    case o2::focal::PixelMapperV1::MappingType_t::MAPPING_OB:
       rows = PIXEL_ROWS_OB / PIXEL_ROW_SEGMENTSIZE_OB;
       cols = PIXEL_COLS_OB / PIXEL_COL_SEGMENSIZE_OB;
       break;
