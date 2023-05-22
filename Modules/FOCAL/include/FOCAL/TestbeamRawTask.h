@@ -119,7 +119,22 @@ class TestbeamRawTask final : public TaskInterface
   std::array<TH2*, PAD_ASICS> mPadASICChannelTOA;                                       ///< TOA per channel for each ASIC
   std::array<TH2*, PAD_ASICS> mPadASICChannelTOT;                                       ///< TOT per channel for each ASIC
   std::array<TH2*, PAD_ASICS> mHitMapPadASIC;                                           ///< Hitmap per ASIC
+  std::array<TH1*, PAD_ASICS> mPadTOTSumASIC;                                           ///< Sum of TOT per ASIC
+  std::array<TH1*, PAD_ASICS> mPadADCSumASIC;                                           ///< Sum of ADC per ASIC
+  std::array<TH2*, PAD_ASICS> mPadTOTCorrASIC;                                          ///< TOT correlation between ASICs
+  std::array<TH2*, PAD_ASICS> mPadADCCorrASIC;                                          ///< ADC correlation between ASICs
+  TH1* mPadTOTSumGlobal = nullptr;                                                      ///< Sum of TOT per event
+  TH1* mPadADCSumGlobal = nullptr;                                                      ///< Sum of ADC per event
   std::array<std::unique_ptr<PadChannelProjections>, PAD_ASICS> mPadChannelProjections; ///< ADC projections per ASIC channel
+  TH2* mPadTOAvsASIC = nullptr;                                                         ///< average TOA for each ASICs
+  TH2* mPadTOAvsASIC_Ch14 = nullptr;                                                    ///< (no average) TOA for each ASICs for channel 14
+  TH2* mPadTOAvsASIC_Ch16 = nullptr;                                                    ///< (no average) TOA for each ASICs for channel 16
+  TH2* mPadTOAvsASIC_Ch19 = nullptr;                                                    ///< (no average) TOA for each ASICs for channel 19
+  TH2* mPadTOAvsASIC_Ch48 = nullptr;                                                    ///< (no average) TOA for each ASICs for channel 48
+  TH2* mPadTOAvsASIC_Ch52 = nullptr;                                                    ///< (no average) TOA for each ASICs for channel 52
+  TH2* mPadTOAvsASIC_Ch61 = nullptr;                                                    ///< (no average) TOA for each ASICs for channel 61
+
+  std::array<TH2*, PAD_ASICS> mPadTRIGvsWindowASIC; ///< Number of triggers per window for each ASIC
 
   /////////////////////////////////////////////////////////////////////////////////////
   /// Pixel histograms
