@@ -46,6 +46,10 @@
                 "moduleName": "QcITS",
                 "policy": "OnEachSeparately",
                 "detectorName": "ITS",
+                "checkParameters": {
+                      "plotWithTextMessage": "",
+                      "textMessage": ""
+                },
                 "dataSource": [{
                     "type": "Task",
                     "name": "ITSDECODING",

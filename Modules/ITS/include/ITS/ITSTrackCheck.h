@@ -40,6 +40,24 @@ class ITSTrackCheck : public o2::quality_control::checker::CheckInterface
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
   int getDigit(int number, int digit);
+  template <typename T>
+  std::vector<T> convertToArray(std::string input)
+  {
+
+    std::istringstream ss{ input };
+
+    std::vector<T> result;
+    std::string token;
+
+    while (std::getline(ss, token, ',')) {
+      if constexpr (std::is_same_v<T, int>) {
+        result.push_back(std::stoi(token));
+      } else if constexpr (std::is_same_v<T, std::string>) {
+        result.push_back(token);
+      }
+    }
+    return result;
+  }
 
  private:
   std::shared_ptr<TLatex> tInfo;

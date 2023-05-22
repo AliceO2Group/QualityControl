@@ -75,7 +75,10 @@
                 "checkParameters": {
                     "fhrcutIB": "0.01",
                     "fhrcutOB": "0.0001",
-                    "skipbins": ""
+                    "skipbins": "",
+                    "plotWithTextMessage": "",
+                    "textMessage": ""
+
                 },
                 "dataSource": [{
                     "type": "Task",

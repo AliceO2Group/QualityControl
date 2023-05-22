@@ -101,6 +101,10 @@ void TestbeamRawTask::default_init()
   std::fill(mPadASICChannelTOA.begin(), mPadASICChannelTOA.end(), nullptr);
   std::fill(mPadASICChannelTOT.begin(), mPadASICChannelTOT.end(), nullptr);
   std::fill(mHitMapPadASIC.begin(), mHitMapPadASIC.end(), nullptr);
+  std::fill(mPadTOTSumASIC.begin(), mPadTOTSumASIC.end(), nullptr);
+  std::fill(mPadADCSumASIC.begin(), mPadADCSumASIC.end(), nullptr);
+  std::fill(mPadTOTCorrASIC.begin(), mPadTOTCorrASIC.end(), nullptr);
+  std::fill(mPadADCCorrASIC.begin(), mPadADCCorrASIC.end(), nullptr);
 
   std::fill(mPixelLaneIDChipIDFEE.begin(), mPixelLaneIDChipIDFEE.end(), nullptr);
   std::fill(mPixelChipHitProfileLayer.begin(), mPixelChipHitProfileLayer.end(), nullptr);
@@ -109,6 +113,7 @@ void TestbeamRawTask::default_init()
   std::fill(mPixelSegmentHitmapLayer.begin(), mPixelSegmentHitmapLayer.end(), nullptr);
   std::fill(mPixelHitDistribitionLayer.begin(), mPixelHitDistribitionLayer.end(), nullptr);
   std::fill(mPixelHitsTriggerLayer.begin(), mPixelHitsTriggerLayer.end(), nullptr);
+  std::fill(mPadTRIGvsWindowASIC.begin(), mPadTRIGvsWindowASIC.end(), nullptr);
 }
 
 void TestbeamRawTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -184,29 +189,42 @@ void TestbeamRawTask::initialize(o2::framework::InitContext& /*ctx*/)
   ILOG(Info, Support) << "Debug mode: " << (mDebugMode ? "yes" : "no") << ENDM;
 
   if (!mDisablePixels) {
-    o2::focal::PixelMapper::MappingType_t mappingtype = o2::focal::PixelMapper::MappingType_t::MAPPING_IB;
+    o2::focal::PixelMapperV1::MappingType_t mappingtype = o2::focal::PixelMapperV1::MappingType_t::MAPPING_IB;
     auto pixellayout = mCustomParameters.find("Pixellayout");
     if (pixellayout != mCustomParameters.end()) {
       if (pixellayout->second == "IB") {
-        mappingtype = o2::focal::PixelMapper::MappingType_t::MAPPING_IB;
+        mappingtype = o2::focal::PixelMapperV1::MappingType_t::MAPPING_IB;
       } else if (pixellayout->second == "OB") {
-        mappingtype = o2::focal::PixelMapper::MappingType_t::MAPPING_OB;
+        mappingtype = o2::focal::PixelMapperV1::MappingType_t::MAPPING_OB;
       } else {
         ILOG(Fatal, Support) << "Unknown pixel setup: " << pixellayout->second << ENDM;
       }
     }
     switch (mappingtype) {
-      case o2::focal::PixelMapper::MappingType_t::MAPPING_IB:
+      case o2::focal::PixelMapperV1::MappingType_t::MAPPING_IB:
         ILOG(Info, Support) << "Using pixel layout: IB" << ENDM;
         break;
 
-      case o2::focal::PixelMapper::MappingType_t::MAPPING_OB:
+      case o2::focal::PixelMapperV1::MappingType_t::MAPPING_OB:
         ILOG(Info, Support) << "Using pixel layout: OB" << ENDM;
         break;
       default:
         break;
     }
-    mPixelMapper = std::make_unique<o2::focal::PixelMapper>(mappingtype);
+    std::string mappingfile;
+    auto mappingfilename = mCustomParameters.find("Pixelmapping");
+    if (mappingfilename != mCustomParameters.end()) {
+      mappingfile = mappingfilename->second;
+      ILOG(Info, Support) << "Using pixel chip mapping from file: " << mappingfile << ENDM;
+    }
+    mPixelMapperV1 = std::make_unique<o2::focal::PixelMapperV1>(mappingfile.length() ? o2::focal::PixelMapperV1::MappingType_t::MAPPING_UNKNOWN : mappingtype);
+    if (mappingfile.length()) {
+      try {
+        mPixelMapperV1->setMappingFile(mappingfile, mappingtype);
+      } catch (o2::focal::PixelMapperV1::MappingNotSetException& e) {
+        ILOG(Fatal, Support) << "Unable to initialize pixel chip mapping: " << e << ENDM;
+      }
+    }
   }
 
   /////////////////////////////////////////////////////////////////
@@ -228,6 +246,14 @@ void TestbeamRawTask::initialize(o2::framework::InitContext& /*ctx*/)
     constexpr int RANGE_TOA = 1024;
     constexpr int RANGE_TOT = 4096;
 
+    mPadTOTSumGlobal = new TH1D("PadTOTSumGlobal", "Sum of all TOTs in a time frame; TOT sum; counts", 250, 0., 50000);
+    mPadTOTSumGlobal->SetStats(false);
+    mPadADCSumGlobal = new TH1D("PadADCSumGlobal", "Sum of all ADCs in a time frame; ADC sum; counts", 250, 0., 200E3);
+    mPadADCSumGlobal->SetStats(false);
+
+    getObjectsManager()->startPublishing(mPadTOTSumGlobal);
+    getObjectsManager()->startPublishing(mPadADCSumGlobal);
+
     for (int iasic = 0; iasic < PAD_ASICS; iasic++) {
       mPadASICChannelADC[iasic] = new TH2D(Form("PadADC_ASIC_%d", iasic), Form("ADC vs. channel ID for ASIC %d; channel ID; ADC", iasic), PAD_CHANNELS, -0.5, PAD_CHANNELS - 0.5, RANGE_ADC, 0., RANGE_ADC);
       mPadASICChannelADC[iasic]->SetStats(false);
@@ -235,19 +261,65 @@ void TestbeamRawTask::initialize(o2::framework::InitContext& /*ctx*/)
       mPadASICChannelTOA[iasic]->SetStats(false);
       mPadASICChannelTOT[iasic] = new TH2D(Form("PadTOT_ASIC_%d", iasic), Form("TOT vs. channel ID for ASIC %d; channel ID; TOT", iasic), PAD_CHANNELS, -0.5, PAD_CHANNELS - 0.5, RANGE_TOT / 4, 0., RANGE_TOT);
       mPadASICChannelTOT[iasic]->SetStats(false);
-      mHitMapPadASIC[iasic] = new TProfile2D(Form("HitmapPadASIC_%d", iasic), Form("Hitmap for ASIC %d; col; row", iasic), o2::focal::PadMapper::NCOLUMN, -0.5, o2::focal::PadMapper::NCOLUMN - 0.5, o2::focal::PadMapper::NROW, -0.5, o2::focal::PadMapper::NROW - 0.5);
+      mHitMapPadASIC[iasic] = new TProfile2D(Form("HitmapPadASIC_%d", iasic), Form("Hitmap for ASIC %d; col; row", iasic), o2::focal::PadMapper::NROW, -0.5, o2::focal::PadMapper::NROW - 0.5, o2::focal::PadMapper::NCOLUMN, -0.5, o2::focal::PadMapper::NCOLUMN - 0.5);
       mHitMapPadASIC[iasic]->SetStats(false);
+
+      mPadTOTSumASIC[iasic] = new TH1D(Form("PadTOTSumASIC%d", iasic), Form("TOT sum for ASIC %d; TOT ASIC %d", iasic, iasic), 300, 0., 6000);
+      mPadTOTSumASIC[iasic]->SetStats(false);
+
+      mPadADCSumASIC[iasic] = new TH1D(Form("PadADCSumASIC_%d", iasic), Form("ADC sum for ASIC %d; ADC ASIC %d", iasic, iasic), 400, 0., 16000);
+      mPadADCSumASIC[iasic]->SetStats(false);
+
+      mPadTOTCorrASIC[iasic] = new TH2D(Form("PadTOTCorrASIC_%d_%d", iasic + 1, iasic), Form("TOT ASIC %d vs. ASIC %d; TOT ASIC %d; TOT ASIC %d", iasic, iasic + 1, iasic, iasic + 1), 300, 0., 6000, 300, 0., 6000);
+      mPadTOTCorrASIC[iasic]->SetStats(false);
+
+      mPadADCCorrASIC[iasic] = new TH2D(Form("PadADCCorrASIC_%d_%d", iasic + 1, iasic), Form("ADC ASIC %d vs. ASIC %d; ADC ASIC %d; ADC ASIC %d", iasic, iasic + 1, iasic, iasic + 1), 400, 0., 16000, 400, 0., 16000);
+      mPadADCCorrASIC[iasic]->SetStats(false);
+
+      mPadTRIGvsWindowASIC[iasic] = new TH2D(Form("PadTRIGvsWindowASIC_%d", iasic), Form("TRIG vs. Window ASIC %d; Window; Trig", iasic), 20, 0., 20., 128, 0., 128);
+      mPadTRIGvsWindowASIC[iasic]->SetStats(false);
+
       getObjectsManager()->startPublishing(mPadASICChannelADC[iasic]);
       getObjectsManager()->startPublishing(mPadASICChannelTOA[iasic]);
       getObjectsManager()->startPublishing(mPadASICChannelTOT[iasic]);
       getObjectsManager()->startPublishing(mHitMapPadASIC[iasic]);
+      getObjectsManager()->startPublishing(mPadTOTSumASIC[iasic]);
+      getObjectsManager()->startPublishing(mPadADCSumASIC[iasic]);
+      getObjectsManager()->startPublishing(mPadTOTCorrASIC[iasic]);
+      getObjectsManager()->startPublishing(mPadADCCorrASIC[iasic]);
+      getObjectsManager()->startPublishing(mPadTRIGvsWindowASIC[iasic]);
 
       mPadChannelProjections[iasic] = std::make_unique<PadChannelProjections>();
       mPadChannelProjections[iasic]->init(mChannelsPadProjections, iasic);
       mPadChannelProjections[iasic]->startPublishing(*getObjectsManager());
     }
+
     mPayloadSizePadsGBT = new TH1D("PayloadSizePadGBT", "Payload size GBT words", 10000, 0., 10000.);
     getObjectsManager()->startPublishing(mPayloadSizePadsGBT);
+
+    // Pad average TOA per ASIC for all channels with TOA>0
+    mPadTOAvsASIC = new TH2D("PadTOAvsASIC", "average Pad TOA vs. ASIC (for TOA>0); TOA; ASIC NO.", 512, 0., 1024., PAD_ASICS, 0, PAD_ASICS);
+    mPadTOAvsASIC->SetStats(false);
+    getObjectsManager()->startPublishing(mPadTOAvsASIC);
+
+    mPadTOAvsASIC_Ch14 = new TH2D("PadTOAvsASIC_Ch14", "TOA vs. ASIC for channel 14; TOA; ASIC NO.", 512, 0., 1024., PAD_ASICS, 0, PAD_ASICS);
+    mPadTOAvsASIC_Ch16 = new TH2D("PadTOAvsASIC_Ch16", "TOA vs. ASIC for channel 16; TOA; ASIC NO.", 512, 0., 1024., PAD_ASICS, 0, PAD_ASICS);
+    mPadTOAvsASIC_Ch19 = new TH2D("PadTOAvsASIC_Ch19", "TOA vs. ASIC for channel 19; TOA; ASIC NO.", 512, 0., 1024., PAD_ASICS, 0, PAD_ASICS);
+    mPadTOAvsASIC_Ch48 = new TH2D("PadTOAvsASIC_Ch48", "TOA vs. ASIC for channel 48; TOA; ASIC NO.", 512, 0., 1024., PAD_ASICS, 0, PAD_ASICS);
+    mPadTOAvsASIC_Ch52 = new TH2D("PadTOAvsASIC_Ch52", "TOA vs. ASIC for channel 52; TOA; ASIC NO.", 512, 0., 1024., PAD_ASICS, 0, PAD_ASICS);
+    mPadTOAvsASIC_Ch61 = new TH2D("PadTOAvsASIC_Ch61", "TOA vs. ASIC for channel 61; TOA; ASIC NO.", 512, 0., 1024., PAD_ASICS, 0, PAD_ASICS);
+    mPadTOAvsASIC_Ch14->SetStats(false);
+    mPadTOAvsASIC_Ch16->SetStats(false);
+    mPadTOAvsASIC_Ch19->SetStats(false);
+    mPadTOAvsASIC_Ch48->SetStats(false);
+    mPadTOAvsASIC_Ch52->SetStats(false);
+    mPadTOAvsASIC_Ch61->SetStats(false);
+    getObjectsManager()->startPublishing(mPadTOAvsASIC_Ch14);
+    getObjectsManager()->startPublishing(mPadTOAvsASIC_Ch16);
+    getObjectsManager()->startPublishing(mPadTOAvsASIC_Ch19);
+    getObjectsManager()->startPublishing(mPadTOAvsASIC_Ch48);
+    getObjectsManager()->startPublishing(mPadTOAvsASIC_Ch52);
+    getObjectsManager()->startPublishing(mPadTOAvsASIC_Ch61);
   }
 
   /////////////////////////////////////////////////////////////////
@@ -285,13 +357,13 @@ void TestbeamRawTask::initialize(o2::framework::InitContext& /*ctx*/)
     }
 
     constexpr int PIXEL_LAYERS = 2;
-    auto& refmapping = mPixelMapper->getMapping(0);
-    auto pixel_segments = getNumberOfPixelSegments(mPixelMapper->getMappingType());
-    auto pixel_columns = refmapping.getNumberOfColumns(),
-         pixel_rows = refmapping.getNumberOfRows(),
+    auto pixel_segments = getNumberOfPixelSegments(mPixelMapperV1->getMappingType());
+    auto pixel_columns = mPixelMapperV1->getNumberOfColumns(),
+         pixel_rows = mPixelMapperV1->getNumberOfRows(),
          pixel_chips = pixel_columns * pixel_rows,
          segments_colums = pixel_columns * pixel_segments.first,
          segments_rows = pixel_rows * pixel_segments.second;
+    ILOG(Info, Support) << "Pixel hitmap, segments per chip (" << pixel_segments.first << " columns, " << pixel_segments.second << " rows), segment columns " << segments_colums << ", rows " << segments_rows << ENDM;
     std::array<int, 2> pixelLayerIndex = { { 10, 5 } };
     ILOG(Info, Support) << "Setup acceptance histograms " << pixel_columns << " colums and " << pixel_rows << " rows (" << pixel_chips << " chips)" << ENDM;
     for (int ilayer = 0; ilayer < PIXEL_LAYERS; ilayer++) {
@@ -465,11 +537,21 @@ void TestbeamRawTask::processPadEvent(gsl::span<const o2::focal::PadGBTWord> pad
   mPadDecoder.reset();
   mPadDecoder.decodeEvent(padpayload);
   const auto& eventdata = mPadDecoder.getData();
+  double totglobalsum = 0;
+  double adcglobalsum = 0;
+
+  std::array<double, PAD_ASICS> kTOTsum = { 0 };
+  std::array<double, PAD_ASICS> kADCsum = { 0 };
   for (int iasic = 0; iasic < PAD_ASICS; iasic++) {
     const auto& asic = eventdata[iasic].getASIC();
     ILOG(Debug, Support) << "ASIC " << iasic << ", Header 0: " << asic.getFirstHeader() << ENDM;
     ILOG(Debug, Support) << "ASIC " << iasic << ", Header 1: " << asic.getSecondHeader() << ENDM;
     int currentchannel = 0;
+    double totsum = 0;
+    double adcsum = 0;
+
+    double asicAverageTOA = 0; // average TOA of all channels with TOA>0
+    int nAsicsWithTOA = 0;     // number of ASICs with TOA>0
     for (const auto& chan : asic.getChannels()) {
       bool skipChannel = false;
       if (mPadBadChannelMap) {
@@ -493,12 +575,26 @@ void TestbeamRawTask::processPadEvent(gsl::span<const o2::focal::PadGBTWord> pad
           }
         }
         mPadASICChannelADC[iasic]->Fill(currentchannel, adc);
+        if ((chan.getTOT() == 0) && (chan.getTOT() != 4095)) {
+          adcsum += adc;
+          kADCsum[iasic] += adc;
+        }
         auto [column, row] = mPadMapper.getRowColFromChannelID(currentchannel);
-        mHitMapPadASIC[iasic]->Fill(column, row, adc);
+        mHitMapPadASIC[iasic]->Fill(row, column, adc);
+
+        // get average TOA of all channels in the ASIC
+        if (chan.getTOA() > 0) {
+          asicAverageTOA += chan.getTOA();
+          nAsicsWithTOA++;
+        }
       }
       mPadASICChannelTOA[iasic]->Fill(currentchannel, chan.getTOA());
       if (chan.getTOT()) {
         mPadASICChannelTOT[iasic]->Fill(currentchannel, chan.getTOT());
+        if (chan.getTOT() != 4095) {
+          totsum += chan.getTOT();
+          kTOTsum[iasic] += chan.getTOT();
+        }
       }
       if (std::find(mChannelsPadProjections.begin(), mChannelsPadProjections.end(), currentchannel) != mChannelsPadProjections.end()) {
         auto hist = mPadChannelProjections[iasic]->mHistos.find(currentchannel);
@@ -506,7 +602,57 @@ void TestbeamRawTask::processPadEvent(gsl::span<const o2::focal::PadGBTWord> pad
           hist->second->Fill(chan.getADC());
         }
       }
+      if (currentchannel == 14)
+        mPadTOAvsASIC_Ch14->Fill(chan.getTOA(), iasic);
+      if (currentchannel == 16)
+        mPadTOAvsASIC_Ch16->Fill(chan.getTOA(), iasic);
+      if (currentchannel == 19)
+        mPadTOAvsASIC_Ch19->Fill(chan.getTOA(), iasic);
+      if (currentchannel == 48)
+        mPadTOAvsASIC_Ch48->Fill(chan.getTOA(), iasic);
+      if (currentchannel == 52)
+        mPadTOAvsASIC_Ch52->Fill(chan.getTOA(), iasic);
+      if (currentchannel == 61)
+        mPadTOAvsASIC_Ch61->Fill(chan.getTOA(), iasic);
+
       currentchannel++;
+    }
+    asicAverageTOA /= nAsicsWithTOA;
+
+    // fill average TOA
+    mPadTOAvsASIC->Fill(asicAverageTOA, iasic);
+
+    mPadTOTSumASIC[iasic]->Fill(totsum);
+    mPadADCSumASIC[iasic]->Fill(adcsum);
+    totglobalsum += totsum;
+    adcglobalsum += adcsum;
+
+    // find all trigger windows of asic (20 windows)
+    auto trigwindows = eventdata[iasic].getTriggerWords();
+
+    // loop over span of all trigger windows
+    int w = 0;
+    for (auto& trigwindow : trigwindows) {
+      // find largest value from all trigger regions
+      uint64_t maxTrig = 0;
+      if (trigwindow.mTrigger0 >= maxTrig)
+        maxTrig = trigwindow.mTrigger0;
+      if (trigwindow.mTrigger1 >= maxTrig)
+        maxTrig = trigwindow.mTrigger1;
+      if (trigwindow.mTrigger2 >= maxTrig)
+        maxTrig = trigwindow.mTrigger2;
+      if (trigwindow.mTrigger3 >= maxTrig)
+        maxTrig = trigwindow.mTrigger3;
+      if (trigwindow.mTrigger4 >= maxTrig)
+        maxTrig = trigwindow.mTrigger4;
+      if (trigwindow.mTrigger5 >= maxTrig)
+        maxTrig = trigwindow.mTrigger5;
+      if (trigwindow.mTrigger6 >= maxTrig)
+        maxTrig = trigwindow.mTrigger6;
+      if (trigwindow.mTrigger7 >= maxTrig)
+        maxTrig = trigwindow.mTrigger7;
+      mPadTRIGvsWindowASIC[iasic]->Fill(w, maxTrig);
+      w++;
     }
     // Fill CMN channels
     if (asic.getFirstCMN().getTOT() < mPadTOTCutADC) {
@@ -543,6 +689,15 @@ void TestbeamRawTask::processPadEvent(gsl::span<const o2::focal::PadGBTWord> pad
     }
     currentchannel++;
   }
+
+  // loop over all TOT sums to fill correlations
+  for (int i = 0; i < PAD_ASICS - 1; i++) {
+    mPadTOTCorrASIC[i]->Fill(kTOTsum[i], kTOTsum[i + 1]);
+    mPadADCCorrASIC[i]->Fill(kADCsum[i], kADCsum[i + 1]);
+  }
+
+  mPadTOTSumGlobal->Fill(totglobalsum);
+  mPadADCSumGlobal->Fill(adcglobalsum);
 }
 
 void TestbeamRawTask::processPixelPayload(gsl::span<const o2::itsmft::GBTWord> pixelpayload, uint16_t feeID)
@@ -552,14 +707,13 @@ void TestbeamRawTask::processPixelPayload(gsl::span<const o2::itsmft::GBTWord> p
   ILOG(Debug, Support) << "Decoded FEE ID " << feeID << " -> FEE " << fee << ", branch " << branch << ENDM;
   auto useFEE = branch * 10 + fee;
   mLinksWithPayloadPixel->Fill(useFEE);
+  int layer = -1;
 
   // Testbeam November 2022
-  int layer = fee < 2 ? 0 : 1;
-  auto& feemapping = mPixelMapper->getMapping(fee);
-  auto mappingtype = mPixelMapper->getMappingType();
+  auto mappingtype = mPixelMapperV1->getMappingType();
   auto numbersegments = getNumberOfPixelSegments(mappingtype);
-  int totalsegmentsCol = numbersegments.first * feemapping.getNumberOfColumns(),
-      totalsegmentsRow = numbersegments.second * feemapping.getNumberOfRows(),
+  int totalsegmentsCol = numbersegments.first * mPixelMapperV1->getNumberOfColumns(),
+      totalsegmentsRow = numbersegments.second * mPixelMapperV1->getNumberOfRows(),
       totalsegments = totalsegmentsCol * totalsegmentsRow;
 
   mPixelDecoder.reset();
@@ -582,21 +736,26 @@ void TestbeamRawTask::processPixelPayload(gsl::span<const o2::itsmft::GBTWord> p
         chipIDsHits.insert(chip.mChipID);
       }
       try {
-        auto position = feemapping.getPosition(chip);
-        mPixelChipHitProfileLayer[layer]->Fill(position.mColumn, position.mRow, chip.mHits.size());
-        mPixelChipHitmapLayer[layer]->Fill(position.mColumn, position.mRow, chip.mHits.size());
+        auto position = mPixelMapperV1->getPosition(feeID, chip);
+        if (layer < 0) {
+          layer = position.mLayer;
+        }
+        mPixelChipHitProfileLayer[position.mLayer]->Fill(position.mColumn, position.mRow, chip.mHits.size());
+        mPixelChipHitmapLayer[position.mLayer]->Fill(position.mColumn, position.mRow, chip.mHits.size());
         int chipIndex = position.mRow * 7 + position.mColumn;
-        mPixelHitDistribitionLayer[layer]->Fill(chipIndex, chip.mHits.size());
+        mPixelHitDistribitionLayer[position.mLayer]->Fill(chipIndex, chip.mHits.size());
         for (auto& hit : chip.mHits) {
           auto segment = getPixelSegment(hit, mappingtype, position);
           auto segment_col = position.mColumn * numbersegments.first + segment.first;
           auto segment_row = position.mRow * numbersegments.second + segment.second;
-          mPixelSegmentHitmapLayer[layer]->Fill(segment_col, segment_row);
+          mPixelSegmentHitmapLayer[position.mLayer]->Fill(segment_col, segment_row);
           int segment_id = segment_row * totalsegmentsCol + segment_col;
           mHitSegmentCounter[segment_id]++;
         }
-      } catch (o2::focal::PixelMapping::InvalidChipException& e) {
+      } catch (o2::focal::PixelMapperV1::InvalidChipException& e) {
         ILOG(Error, Support) << "Error in chip index: " << e << ENDM;
+      } catch (o2::focal::PixelMapperV1::UninitException& e) {
+        ILOG(Error, Support) << e << ENDM;
       }
     }
     for (auto chipID : chipIDsFound) {
@@ -627,17 +786,17 @@ void TestbeamRawTask::processPixelPayload(gsl::span<const o2::itsmft::GBTWord> p
   }
 }
 
-std::pair<int, int> TestbeamRawTask::getPixelSegment(const o2::focal::PixelHit& hit, o2::focal::PixelMapper::MappingType_t mappingtype, const o2::focal::PixelMapping::ChipPosition& chipMapping) const
+std::pair<int, int> TestbeamRawTask::getPixelSegment(const o2::focal::PixelHit& hit, o2::focal::PixelMapperV1::MappingType_t mappingtype, const o2::focal::PixelMapperV1::ChipPosition& chipMapping) const
 {
   int row = -1, col = -1, absColumn = -1, absRow = -1;
   switch (mappingtype) {
-    case o2::focal::PixelMapper::MappingType_t::MAPPING_IB:
+    case o2::focal::PixelMapperV1::MappingType_t::MAPPING_IB:
       absColumn = chipMapping.mInvertColumn ? PIXEL_COLS_IB - hit.mColumn : hit.mColumn;
       absRow = chipMapping.mInvertRow ? PIXEL_ROWS_IB - hit.mRow : hit.mRow;
       col = absColumn / PIXEL_COL_SEGMENSIZE_IB;
       row = absRow / PIXEL_ROW_SEGMENTSIZE_IB;
       break;
-    case o2::focal::PixelMapper::MappingType_t::MAPPING_OB:
+    case o2::focal::PixelMapperV1::MappingType_t::MAPPING_OB:
       absColumn = chipMapping.mInvertColumn ? PIXEL_COLS_OB - hit.mColumn : hit.mColumn;
       absRow = chipMapping.mInvertRow ? PIXEL_ROWS_OB - hit.mRow : hit.mRow;
       col = absColumn / PIXEL_COL_SEGMENSIZE_OB;
@@ -649,15 +808,15 @@ std::pair<int, int> TestbeamRawTask::getPixelSegment(const o2::focal::PixelHit& 
   return { col, row };
 }
 
-std::pair<int, int> TestbeamRawTask::getNumberOfPixelSegments(o2::focal::PixelMapper::MappingType_t mappingtype) const
+std::pair<int, int> TestbeamRawTask::getNumberOfPixelSegments(o2::focal::PixelMapperV1::MappingType_t mappingtype) const
 {
   int rows = -1, cols = -1;
   switch (mappingtype) {
-    case o2::focal::PixelMapper::MappingType_t::MAPPING_IB:
+    case o2::focal::PixelMapperV1::MappingType_t::MAPPING_IB:
       rows = PIXEL_ROWS_IB / PIXEL_ROW_SEGMENTSIZE_IB;
       cols = PIXEL_COLS_IB / PIXEL_COL_SEGMENSIZE_IB;
       break;
-    case o2::focal::PixelMapper::MappingType_t::MAPPING_OB:
+    case o2::focal::PixelMapperV1::MappingType_t::MAPPING_OB:
       rows = PIXEL_ROWS_OB / PIXEL_ROW_SEGMENTSIZE_OB;
       cols = PIXEL_COLS_OB / PIXEL_COL_SEGMENSIZE_OB;
       break;
@@ -705,11 +864,48 @@ void TestbeamRawTask::reset()
         hitmap->Reset();
       }
     }
+    for (auto mtotsum : mPadTOTSumASIC) {
+      if (mtotsum) {
+        mtotsum->Reset();
+      }
+    }
+    for (auto madcsum : mPadADCSumASIC) {
+      if (madcsum) {
+        madcsum->Reset();
+      }
+    }
     for (auto& projections : mPadChannelProjections) {
       if (projections) {
         projections->reset();
       }
     }
+
+    for (auto hist : mPadTOTCorrASIC) {
+      if (hist) {
+        hist->Reset();
+      }
+    }
+    for (auto hist : mPadADCCorrASIC) {
+      if (hist) {
+        hist->Reset();
+      }
+    }
+
+    for (auto hist : mPadTRIGvsWindowASIC) {
+      if (hist) {
+        hist->Reset();
+      }
+    }
+    mPadTOTSumGlobal->Reset();
+    mPadADCSumGlobal->Reset();
+    mPadTOAvsASIC->Reset();
+
+    mPadTOAvsASIC_Ch14->Reset();
+    mPadTOAvsASIC_Ch16->Reset();
+    mPadTOAvsASIC_Ch19->Reset();
+    mPadTOAvsASIC_Ch48->Reset();
+    mPadTOAvsASIC_Ch52->Reset();
+    mPadTOAvsASIC_Ch61->Reset();
   }
 
   if (!mDisablePixels) {

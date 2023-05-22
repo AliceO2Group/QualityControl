@@ -27,7 +27,7 @@
 #include "FOCALReconstruction/PadDecoder.h"
 #include "FOCALReconstruction/PadMapper.h"
 #include "FOCALReconstruction/PixelDecoder.h"
-#include "FOCALReconstruction/PixelMapper.h"
+#include "FOCALReconstruction/PixelMapperV1.h"
 
 class TH1;
 class TH2;
@@ -86,15 +86,15 @@ class TestbeamRawTask final : public TaskInterface
   void processPadPayload(gsl::span<const o2::focal::PadGBTWord> gbtpayload);
   void processPixelPayload(gsl::span<const o2::itsmft::GBTWord> gbtpayload, uint16_t feeID);
   void processPadEvent(gsl::span<const o2::focal::PadGBTWord> gbtpayload);
-  std::pair<int, int> getNumberOfPixelSegments(o2::focal::PixelMapper::MappingType_t mappingtype) const;
-  std::pair<int, int> getPixelSegment(const o2::focal::PixelHit& hit, o2::focal::PixelMapper::MappingType_t mappingtype, const o2::focal::PixelMapping::ChipPosition& chipMapping) const;
+  std::pair<int, int> getNumberOfPixelSegments(o2::focal::PixelMapperV1::MappingType_t mappingtype) const;
+  std::pair<int, int> getPixelSegment(const o2::focal::PixelHit& hit, o2::focal::PixelMapperV1::MappingType_t mappingtype, const o2::focal::PixelMapperV1::ChipPosition& chipMapping) const;
 
   o2::focal::PadDecoder mPadDecoder;                                              ///< Decoder for pad data
   o2::focal::PadMapper mPadMapper;                                                ///< Mapping for Pads
   o2::focal::PixelDecoder mPixelDecoder;                                          ///< Decoder for pixel data
   o2::focal::PadPedestal* mPadPedestalHandler = nullptr;                          ///< Pedestal handler for pad pedestal subtraction
   o2::focal::PadBadChannelMap* mPadBadChannelMap = nullptr;                       ///< Bad channel map for pads
-  std::unique_ptr<o2::focal::PixelMapper> mPixelMapper;                           ///< Testbeam mapping for pixels
+  std::unique_ptr<o2::focal::PixelMapperV1> mPixelMapperV1;                       ///< Testbeam mapping for pixels
   std::unordered_map<o2::InteractionRecord, int> mPixelNHitsAll;                  ///< Number of hits / event all layers
   std::array<std::unordered_map<o2::InteractionRecord, int>, 2> mPixelNHitsLayer; ///< Number of hits / event layer
   std::vector<int> mHitSegmentCounter;                                            ///< Number of hits / segment
@@ -119,7 +119,22 @@ class TestbeamRawTask final : public TaskInterface
   std::array<TH2*, PAD_ASICS> mPadASICChannelTOA;                                       ///< TOA per channel for each ASIC
   std::array<TH2*, PAD_ASICS> mPadASICChannelTOT;                                       ///< TOT per channel for each ASIC
   std::array<TH2*, PAD_ASICS> mHitMapPadASIC;                                           ///< Hitmap per ASIC
+  std::array<TH1*, PAD_ASICS> mPadTOTSumASIC;                                           ///< Sum of TOT per ASIC
+  std::array<TH1*, PAD_ASICS> mPadADCSumASIC;                                           ///< Sum of ADC per ASIC
+  std::array<TH2*, PAD_ASICS> mPadTOTCorrASIC;                                          ///< TOT correlation between ASICs
+  std::array<TH2*, PAD_ASICS> mPadADCCorrASIC;                                          ///< ADC correlation between ASICs
+  TH1* mPadTOTSumGlobal = nullptr;                                                      ///< Sum of TOT per event
+  TH1* mPadADCSumGlobal = nullptr;                                                      ///< Sum of ADC per event
   std::array<std::unique_ptr<PadChannelProjections>, PAD_ASICS> mPadChannelProjections; ///< ADC projections per ASIC channel
+  TH2* mPadTOAvsASIC = nullptr;                                                         ///< average TOA for each ASICs
+  TH2* mPadTOAvsASIC_Ch14 = nullptr;                                                    ///< (no average) TOA for each ASICs for channel 14
+  TH2* mPadTOAvsASIC_Ch16 = nullptr;                                                    ///< (no average) TOA for each ASICs for channel 16
+  TH2* mPadTOAvsASIC_Ch19 = nullptr;                                                    ///< (no average) TOA for each ASICs for channel 19
+  TH2* mPadTOAvsASIC_Ch48 = nullptr;                                                    ///< (no average) TOA for each ASICs for channel 48
+  TH2* mPadTOAvsASIC_Ch52 = nullptr;                                                    ///< (no average) TOA for each ASICs for channel 52
+  TH2* mPadTOAvsASIC_Ch61 = nullptr;                                                    ///< (no average) TOA for each ASICs for channel 61
+
+  std::array<TH2*, PAD_ASICS> mPadTRIGvsWindowASIC; ///< Number of triggers per window for each ASIC
 
   /////////////////////////////////////////////////////////////////////////////////////
   /// Pixel histograms
