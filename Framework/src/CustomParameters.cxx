@@ -29,4 +29,4 @@ std::ostream& operator<<(std::ostream& out, const CustomParameters& customParame
   return out;
 }
 
-}
+} // namespace o2::quality_control::core

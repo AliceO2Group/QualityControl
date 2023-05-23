@@ -68,9 +68,9 @@ void SkeletonTask::startOfActivity(Activity& activity)
   int runType = activity.mType; // get the type for this run
   // convert it to a string (via a string_view as this is what we get from O2)
   string_view runTypeStringView = o2::parameters::GRPECS::RunTypeNames[runType];
-  string runTypeString = {runTypeStringView.begin(), runTypeStringView.end()};
+  string runTypeString = { runTypeStringView.begin(), runTypeStringView.end() };
   // get the param
-  if(auto param = mCustomParameters.atOptional("myOwnKey", runTypeString)) {
+  if (auto param = mCustomParameters.atOptional("myOwnKey", runTypeString)) {
     ILOG(Debug, Devel) << "Custom parameter - myOwnKey: " << param.value() << ENDM;
   }
 }
