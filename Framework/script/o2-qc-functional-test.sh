@@ -29,8 +29,8 @@ else
 fi
 
 # delete data
-curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/MO/FunctionalTest${UNIQUE_ID}*
-curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/QO/FunctionalTest${UNIQUE_ID}*
+curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/MO/FuncTest${UNIQUE_ID}*
+curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/QO/FuncTestCheck${UNIQUE_ID}*
 
 # store data
 DIR="$(dirname "${BASH_SOURCE[0]}")"  # get the directory name
@@ -39,7 +39,7 @@ o2-qc-run-producer --message-amount 10 -b | o2-qc --config json://${JSON_DIR}/ba
 
 # check MonitorObject
 # first the return code must be 200
-code=$(curl -L ccdb-test.cern.ch:8080/qc/TST/MO/FunctionalTest${UNIQUE_ID}/example/`date +%s`999 --write-out %{http_code} --silent --output /tmp/output${UNIQUE_ID}.root)
+code=$(curl -L ccdb-test.cern.ch:8080/qc/TST/MO/FuncTest${UNIQUE_ID}/example/`date +%s`999 --write-out %{http_code} --silent --output /tmp/output${UNIQUE_ID}.root)
 if (( $code != 200 )); then
   echo "Error, monitor object could not be found."
   exit 2
@@ -49,7 +49,7 @@ root -b -l -q -e 'TFile f("/tmp/output${UNIQUE_ID}.root"); f.Print();'
 
 # check QualityObject
 # first the return code must be 200
-code=$(curl -L ccdb-test.cern.ch:8080/qc/TST/QO/FunctionalTest${UNIQUE_ID}/`date +%s`999 --write-out %{http_code} --silent --output /tmp/output${UNIQUE_ID}.root)
+code=$(curl -L ccdb-test.cern.ch:8080/qc/TST/QO/FuncTestCheck${UNIQUE_ID}/`date +%s`999 --write-out %{http_code} --silent --output /tmp/output${UNIQUE_ID}.root)
 if (( $code != 200 )); then
   echo "Error, data not found."
   exit 2
@@ -58,5 +58,5 @@ fi
 root -b -l -q -e 'TFile f("/tmp/output${UNIQUE_ID}.root"); f.Print();'
 
 # delete the data
-curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/MO/FunctionalTest${UNIQUE_ID}*
-curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/QO/FunctionalTest${UNIQUE_ID}*
+curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/MO/FuncTest${UNIQUE_ID}*
+curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/QO/FuncTestCheck${UNIQUE_ID}*

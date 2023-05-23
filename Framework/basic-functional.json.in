@@ -23,7 +23,7 @@
       }
     },
     "tasks": {
-      "FunctionalTest@UNIQUE_ID@": {
+      "FuncTest@UNIQUE_ID@": {
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonTask",
         "moduleName": "QcSkeleton",
@@ -42,7 +42,7 @@
       }
     },
     "checks": {
-      "FunctionalTest@UNIQUE_ID@": {
+      "FuncTestCheck@UNIQUE_ID@": {
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
         "moduleName": "QcSkeleton",
@@ -50,7 +50,7 @@
         "detectorName": "TST",
         "dataSource": [{
           "type": "Task",
-          "name": "FunctionalTest@UNIQUE_ID@",
+          "name": "FuncTest@UNIQUE_ID@",
           "MOs": ["example"]
         }]
       }
