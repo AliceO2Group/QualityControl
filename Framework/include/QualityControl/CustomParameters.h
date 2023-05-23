@@ -20,6 +20,7 @@
 #include <string>
 #include <unordered_map>
 #include <stdexcept>
+#include <optional>
 
 namespace o2::quality_control::core
 {
