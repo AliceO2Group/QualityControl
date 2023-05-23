@@ -44,10 +44,10 @@ function check_if_port_in_use() {
 }
 
 function delete_data() {
-  curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/MO/MultiNodeLocalTest${UNIQUE_PORT_1}*
-  curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/MO/MultiNodeRemoteTest${UNIQUE_PORT_2}*
-  curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/QO/MultiNodeLocalTest
-  curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/QO/MultiNodeRemoteTest
+  curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/MO/MNLocalTest${UNIQUE_PORT_1}*
+  curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/MO/MNRemoteTest${UNIQUE_PORT_2}*
+  curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/QO/MNLocalTest
+  curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/QO/MNRemoteTest
 
   cd /tmp
   # mv in /tmp is guaranteed to be atomic
@@ -89,7 +89,7 @@ wait
 
 # check MonitorObject
 # first the return code must be 200
-code=$(curl -L ccdb-test.cern.ch:8080/qc/TST/MO/MultiNodeLocalTest${UNIQUE_PORT_1}/example/`date +%s`999 --write-out %{http_code} --silent --output /tmp/${UNIQUE_TEST_NAME}/multinode_test_obj${UNIQUE_PORT_1}.root)
+code=$(curl -L ccdb-test.cern.ch:8080/qc/TST/MO/MNLocalTest${UNIQUE_PORT_1}/example/`date +%s`999 --write-out %{http_code} --silent --output /tmp/${UNIQUE_TEST_NAME}/multinode_test_obj${UNIQUE_PORT_1}.root)
 if (( $code != 200 )); then
   echo "Error, monitor object of the local QC Task could not be found."
   delete_data
@@ -113,7 +113,7 @@ fi
 
 # check MonitorObject
 # first the return code must be 200
-code=$(curl -L ccdb-test.cern.ch:8080/qc/TST/MO/MultiNodeRemoteTest${UNIQUE_PORT_2}/example/`date +%s`999 --write-out %{http_code} --silent --output /tmp/${UNIQUE_TEST_NAME}/multinode_test_obj${UNIQUE_PORT_2}.root)
+code=$(curl -L ccdb-test.cern.ch:8080/qc/TST/MO/MNRemoteTest${UNIQUE_PORT_2}/example/`date +%s`999 --write-out %{http_code} --silent --output /tmp/${UNIQUE_TEST_NAME}/multinode_test_obj${UNIQUE_PORT_2}.root)
 if (( $code != 200 )); then
   echo "Error, monitor object of the remote QC Task could not be found."
   delete_data

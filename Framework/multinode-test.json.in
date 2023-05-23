@@ -23,7 +23,7 @@
       }
     },
     "tasks": {
-      "MultiNodeLocalTest@UNIQUE_PORT_1@": {
+      "MNLocalTest@UNIQUE_PORT_1@": {
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonTask",
         "moduleName": "QcSkeleton",
@@ -44,7 +44,7 @@
         "remotePort": "@UNIQUE_PORT_1@",
         "mergingMode": "delta"
       },
-      "MultiNodeRemoteTest@UNIQUE_PORT_2@": {
+      "MNRemoteTest@UNIQUE_PORT_2@": {
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonTask",
         "moduleName": "QcSkeleton",
@@ -62,7 +62,7 @@
       }
     },
     "checks": {
-      "MultiNodeLocalTest": {
+      "MNLocalTest": {
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
         "moduleName": "QcSkeleton",
@@ -70,11 +70,11 @@
         "detectorName": "TST",
         "dataSource": [{
           "type": "Task",
-          "name": "MultiNodeLocalTest@UNIQUE_PORT_1@",
+          "name": "MNLocalTest@UNIQUE_PORT_1@",
           "MOs": ["example"]
         }]
       },
-      "MultiNodeRemoteTest": {
+      "MNRemoteTest": {
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
         "moduleName": "QcSkeleton",
@@ -82,7 +82,7 @@
         "detectorName": "TST",
         "dataSource": [{
           "type": "Task",
-          "name": "MultiNodeRemoteTest@UNIQUE_PORT_2@",
+          "name": "MNRemoteTest@UNIQUE_PORT_2@",
           "MOs": ["example"]
         }]
       }
