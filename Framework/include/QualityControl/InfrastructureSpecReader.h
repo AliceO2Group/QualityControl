@@ -80,7 +80,7 @@ std::vector<T> readSectionSpec(const boost::property_tree::ptree& wholeTree, con
 std::string validateDetectorName(std::string name);
 static void validateName(const std::string& name);
 
-static std::unordered_set<std::string> deviceNamesCache;
+static std::unordered_set<std::string> sDeviceNamesCache;
 
 } // namespace InfrastructureSpecReader
 } // namespace o2::quality_control::core

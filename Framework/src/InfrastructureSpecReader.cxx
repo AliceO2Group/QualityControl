@@ -34,6 +34,7 @@ namespace o2::quality_control::core
 InfrastructureSpec InfrastructureSpecReader::readInfrastructureSpec(const boost::property_tree::ptree& wholeTree)
 {
   InfrastructureSpec spec;
+  sDeviceNamesCache.clear();
   const auto& qcTree = wholeTree.get_child("qc");
   if (qcTree.find("config") != qcTree.not_found()) {
     spec.common = readSpecEntry<CommonSpec>("", qcTree.get_child("config"), wholeTree);
@@ -409,7 +410,7 @@ T InfrastructureSpecReader::readSpecEntry(const std::string&, const boost::prope
 void InfrastructureSpecReader::validateName(const std::string& name)
 {
   std::string const trunc = name.substr( 0, 16 );
-  auto test = deviceNamesCache.emplace(trunc);
+  auto test = sDeviceNamesCache.emplace(trunc);
   if(!test.second) { // the second of the pair indicates if there was an insertion, i.e. it was not already there
     std::string errorMessage = std::string("Multiple devices share the same first 16 characters of their names: ") + trunc + "[" + name.substr(16) + "]. Probable cause: name was longer than 16 characters and was truncated. Disable one of the faulty tasks/aggregator/postprocessing or call the detector expert to change the name.";
     if (getenv("QUALITYCONTROL_NO_FATAL_16_CHARS") == nullptr) { // if this sysenv is set to anything we don't quit
