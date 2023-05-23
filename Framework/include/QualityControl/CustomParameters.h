@@ -143,7 +143,7 @@ class CustomParameters
   }
 
   /**
-   * Finds the items whose key is `name`.
+   * Finds the items whose key is `key`.
    * A runType and/or a beamType can be set as well.
    * If it is not found it returns end()
    * @param key
