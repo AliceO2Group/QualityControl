@@ -107,6 +107,9 @@ TaskSpec InfrastructureSpecReader::readSpecEntry<TaskSpec>(const std::string& ta
   ts.maxNumberCycles = taskTree.get<int>("maxNumberCycles", ts.maxNumberCycles);
   ts.resetAfterCycles = taskTree.get<size_t>("resetAfterCycles", ts.resetAfterCycles);
   ts.saveObjectsToFile = taskTree.get<std::string>("saveObjectsToFile", ts.saveObjectsToFile);
+  if (taskTree.count("extendedTaskParameters") > 0 && taskTree.count("taskParameters") > 0) {
+    ILOG(Warning, Devel) << "Both taskParameters and extendedTaskParameters are defined in the QC config file. We will use only extendedTaskParameters. " << ENDM;
+  }
   if (taskTree.count("extendedTaskParameters") > 0) {
     for (const auto& [runtype, subTreeRunType] : taskTree.get_child("extendedTaskParameters")) {
       for (const auto& [beamtype, subTreeBeamType] : subTreeRunType) {
@@ -115,8 +118,7 @@ TaskSpec InfrastructureSpecReader::readSpecEntry<TaskSpec>(const std::string& ta
         }
       }
     }
-  }
-  if (taskTree.count("taskParameters") > 0) {
+  } else if (taskTree.count("taskParameters") > 0) {
     for (const auto& [key, value] : taskTree.get_child("taskParameters")) {
       ts.customParameters.set(key, value.get_value<std::string>());
     }
