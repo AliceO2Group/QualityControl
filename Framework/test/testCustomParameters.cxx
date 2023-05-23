@@ -99,7 +99,8 @@ BOOST_AUTO_TEST_CASE(test_cp_misc)
 
   BOOST_CHECK_THROW(cp.at("not_found"), std::out_of_range);
   BOOST_CHECK_EQUAL(cp.atOrDefaultValue("not_found", "default_value"), "default_value");
-  BOOST_CHECK_EQUAL(cp.atOrDefaultValue("not_found", "asdf", "adsf", "default_value2"), "default_value2");
+  BOOST_CHECK_EQUAL(cp.atOrDefaultValue("not_found"), "");
+  BOOST_CHECK_EQUAL(cp.atOrDefaultValue("not_found", "default_value2", "asdf", "adsf"), "default_value2");
 
   BOOST_CHECK_EQUAL(cp["aaa"], "AAA");
   BOOST_CHECK_EQUAL(cp["ccc"], "CCC");

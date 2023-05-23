@@ -19,7 +19,6 @@
 
 #include <string>
 #include <unordered_map>
-#include <iostream>
 
 namespace o2::quality_control::core
 {
@@ -101,25 +100,19 @@ class CustomParameters
    * @param defaultValue
    * @return the value for the given key, runType and beamType or defaultValue if none is found.
    */
-  std::string atOrDefaultValue(const std::string& key, const std::string& runType, const std::string& beamType, std::string defaultValue) const
+
+  /**
+   * Return the value for the given key, runType and beamType (the two latter optional). If it does not exist, returns the default value if provided or an empty string.
+   * @param key
+   * @param runType
+   * @param beamType
+   * @param defaultValue
+   * @return the value for the given key, runType and beamType. If it is not found, it returns an empty string or defaultValue if provided.
+   */
+  std::string atOrDefaultValue(const std::string& key, std::string defaultValue = "", const std::string& runType = "default", const std::string& beamType = "default")
   {
     try {
       return mCustomParameters.at(runType).at(beamType).at(key);
-    } catch (const std::out_of_range& exc) {
-      return defaultValue;
-    }
-  }
-
-  /**
-   * Return the value for the given key. If it does not exist, returns the provided default value.
-   * @param key
-   * @param defaultValue
-   * @return the value for the given key. If it does not exist, returns the provided default value.
-   */
-  std::string atOrDefaultValue(const std::string& key, std::string defaultValue) const
-  {
-    try {
-      return mCustomParameters.at("default").at("default").at(key);
     } catch (const std::out_of_range& exc) {
       return defaultValue;
     }
@@ -200,18 +193,7 @@ class CustomParameters
   /**
    * prints the CustomParameters
    */
-  friend std::ostream& operator<<(std::ostream& out, const CustomParameters& customParameters)
-  {
-    // todo: should we swallow the exceptions here ?
-    for (const auto& runType : customParameters.mCustomParameters) {
-      for (const auto& beamType : runType.second) {
-        for (const auto& name : beamType.second) {
-          out << runType.first << " - " << beamType.first << " - " << name.first << " : " << name.second << "\n";
-        }
-      }
-    }
-    return out;
-  }
+  friend std::ostream& operator<<(std::ostream& out, const CustomParameters& customParameters);
 
  private:
   CustomParametersType mCustomParameters;
