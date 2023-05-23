@@ -12,6 +12,7 @@
 #pragma link C++ class o2::quality_control_modules::muonchambers::DecodingTask + ;
 #pragma link C++ class o2::quality_control_modules::muonchambers::TracksTask + ;
 #pragma link C++ class o2::quality_control_modules::muonchambers::ErrorTask + ;
+#pragma link C++ class o2::quality_control_modules::muonchambers::ClustersTask + ;
 // Post-processing
 #pragma link C++ class o2::quality_control_modules::muonchambers::DecodingPostProcessing + ;
 #pragma link C++ class o2::quality_control_modules::muonchambers::DigitsPostProcessing + ;
