@@ -45,6 +45,8 @@ add_root_dictionary(O2QcCommon
                             include/Common/TRFCollectionTask.h
                             include/Common/QualityTask.h
                             include/Common/MeanIsAbove.h
+                            include/Common/TH1Ratio.h
+                            include/Common/TH2Ratio.h
                             include/Common/TH1Reductor.h
                             include/Common/TH2Reductor.h
                             include/Common/THnSparse5Reductor.h
