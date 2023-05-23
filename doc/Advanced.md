@@ -992,7 +992,7 @@ The same approach can be applied to other actors in the QC framework, like Check
 
 ## Definition and access of task-specific configuration
 
-A task can access custom parameters declared in the configuration file at `qc.tasks.<task_id>.extendTaskParameters` or `qc.tasks.<task_id>.taskParameters`. They are stored inside an object of type `CustomParameters` named `mCustomParameters`, which is a protected member of `TaskInterface`.
+A task can access custom parameters declared in the configuration file at `qc.tasks.<task_id>.extendedTaskParameters` or `qc.tasks.<task_id>.taskParameters`. They are stored inside an object of type `CustomParameters` named `mCustomParameters`, which is a protected member of `TaskInterface`.
 
 The simple, deprecated, syntax is 
 ```json
