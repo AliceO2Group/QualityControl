@@ -123,6 +123,19 @@ BOOST_AUTO_TEST_CASE(test_cp_misc)
   BOOST_CHECK_EQUAL(cp.at("something"), "asdf");
 }
 
+BOOST_AUTO_TEST_CASE(test_at_optional)
+{
+  CustomParameters cp;
+  cp.set("aaa", "AAA");
+  cp.set("bbb", "BBB");
+  cp.set("aaa", "AAA", "runX");
+  cp.set("aaa", "AAA", "runX", "beamB");
+
+  BOOST_CHECK_EQUAL(cp.atOptional("aaa").value(), "AAA");
+  BOOST_CHECK_EQUAL(cp.atOptional("abc").has_value(), false);
+  BOOST_CHECK_EQUAL(cp.atOptional("abc").value_or("bla"), "bla");
+}
+
 BOOST_AUTO_TEST_CASE(test_cp_new_access_pattern)
 {
   CustomParameters cp;

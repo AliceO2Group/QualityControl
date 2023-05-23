@@ -93,13 +93,20 @@ class CustomParameters
   }
 
   /**
-   * Return the value for the given key, runType and beamType. If it does not exist, returns the provided default value.
+   * Return the optional value for the given key, runType and beamType (the two latter optional).
    * @param key
    * @param runType
    * @param beamType
-   * @param defaultValue
-   * @return the value for the given key, runType and beamType or defaultValue if none is found.
+   * @return an optional with the value for the given key, runType and beamType or empty if not found.
    */
+  std::optional<std::string> atOptional(const std::string& key, const std::string& runType = "default", const std::string& beamType = "default") const
+  {
+    try {
+      return mCustomParameters.at(runType).at(beamType).at(key);
+    } catch (const std::out_of_range& exc) {
+      return {};
+    }
+  }
 
   /**
    * Return the value for the given key, runType and beamType (the two latter optional). If it does not exist, returns the default value if provided or an empty string.
