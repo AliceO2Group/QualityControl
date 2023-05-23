@@ -23,6 +23,7 @@
 #include <TH1.h>
 #include <TH2.h>
 #include <TProfile2D.h>
+#include <TMath.h>
 
 #include "QualityControl/QcInfoLogger.h"
 #include "FOCAL/TestbeamRawTask.h"
@@ -320,6 +321,32 @@ void TestbeamRawTask::initialize(o2::framework::InitContext& /*ctx*/)
     getObjectsManager()->startPublishing(mPadTOAvsASIC_Ch48);
     getObjectsManager()->startPublishing(mPadTOAvsASIC_Ch52);
     getObjectsManager()->startPublishing(mPadTOAvsASIC_Ch61);
+
+    mPadGlobalMIPADC_Ch14_Asic0 = new TH1D("PadGlobalMIPADC_Ch14_Asic0", "Pad global ADC after CMN sub for channel 14, ASIC 0; ADC", 130, -30., 100.);
+    mPadGlobalMIPADC_Ch16_Asic0 = new TH1D("PadGlobalMIPADC_Ch16_Asic0", "Pad global ADC after CMN sub for channel 16, ASIC 0; ADC", 130, -30., 100.);
+    mPadGlobalMIPADC_Ch19_Asic0 = new TH1D("PadGlobalMIPADC_Ch19_Asic0", "Pad global ADC after CMN sub for channel 19, ASIC 0; ADC", 130, -30., 100.);
+    mPadGlobalMIPADC_Ch48_Asic0 = new TH1D("PadGlobalMIPADC_Ch48_Asic0", "Pad global ADC after CMN sub for channel 48, ASIC 0; ADC", 130, -30., 100.);
+    mPadGlobalMIPADC_Ch52_Asic0 = new TH1D("PadGlobalMIPADC_Ch52_Asic0", "Pad global ADC after CMN sub for channel 52, ASIC 0; ADC", 130, -30., 100.);
+    mPadGlobalMIPADC_Ch61_Asic0 = new TH1D("PadGlobalMIPADC_Ch61_Asic0", "Pad global ADC after CMN sub for channel 61, ASIC 0; ADC", 130, -30., 100.);
+    mPadGlobalMIPADC_Ch14_Asic0->SetStats(false);
+    mPadGlobalMIPADC_Ch16_Asic0->SetStats(false);
+    mPadGlobalMIPADC_Ch19_Asic0->SetStats(false);
+    mPadGlobalMIPADC_Ch48_Asic0->SetStats(false);
+    mPadGlobalMIPADC_Ch52_Asic0->SetStats(false);
+    mPadGlobalMIPADC_Ch61_Asic0->SetStats(false);
+    getObjectsManager()->startPublishing(mPadGlobalMIPADC_Ch14_Asic0);
+    getObjectsManager()->startPublishing(mPadGlobalMIPADC_Ch16_Asic0);
+    getObjectsManager()->startPublishing(mPadGlobalMIPADC_Ch19_Asic0);
+    getObjectsManager()->startPublishing(mPadGlobalMIPADC_Ch48_Asic0);
+    getObjectsManager()->startPublishing(mPadGlobalMIPADC_Ch52_Asic0);
+    getObjectsManager()->startPublishing(mPadGlobalMIPADC_Ch61_Asic0);
+
+    mPadGlobalTOAvsADC = new TH2D("PadGlobalTOAvsADC", "Pad average TOA vs. sum ADC; sum ADC; average TOA", 250, 0., 200E3, 512, 0., 1024.);
+    mPadGlobalTOAvsADC->SetStats(false);
+    getObjectsManager()->startPublishing(mPadGlobalTOAvsADC);
+    mPadGlobalTOTvsADC = new TH2D("PadGlobalTOTvsADC", "Pad sum TOT vs. sum ADC; sum ADC; sum TOT", 250, 0., 200E3, 250, 0., 50000);
+    mPadGlobalTOTvsADC->SetStats(false);
+    getObjectsManager()->startPublishing(mPadGlobalTOTvsADC);
   }
 
   /////////////////////////////////////////////////////////////////
@@ -534,14 +561,21 @@ void TestbeamRawTask::processPadPayload(gsl::span<const o2::focal::PadGBTWord> p
 
 void TestbeamRawTask::processPadEvent(gsl::span<const o2::focal::PadGBTWord> padpayload)
 {
+  // adc vs. TOT
+  // adc vs. TOA
+  // adc for MIP -30 to 100 in 130bin
   mPadDecoder.reset();
   mPadDecoder.decodeEvent(padpayload);
   const auto& eventdata = mPadDecoder.getData();
   double totglobalsum = 0;
   double adcglobalsum = 0;
+  double toaglobalaverage = 0; // toa average of all layers
 
   std::array<double, PAD_ASICS> kTOTsum = { 0 };
   std::array<double, PAD_ASICS> kADCsum = { 0 };
+  double cmn = 0;
+std:
+  array<double, 66> kADCForCMN = { 0 };
   for (int iasic = 0; iasic < PAD_ASICS; iasic++) {
     const auto& asic = eventdata[iasic].getASIC();
     ILOG(Debug, Support) << "ASIC " << iasic << ", Header 0: " << asic.getFirstHeader() << ENDM;
@@ -550,8 +584,16 @@ void TestbeamRawTask::processPadEvent(gsl::span<const o2::focal::PadGBTWord> pad
     double totsum = 0;
     double adcsum = 0;
 
+    double adc_ch14 = 0;
+    double adc_ch16 = 0;
+    double adc_ch19 = 0;
+    double adc_ch48 = 0;
+    double adc_ch52 = 0;
+    double adc_ch61 = 0;
+
     double asicAverageTOA = 0; // average TOA of all channels with TOA>0
-    int nAsicsWithTOA = 0;     // number of ASICs with TOA>0
+    int nChWithTOA = 0;        // number of ASICs with TOA>0
+    int icmn = 0;
     for (const auto& chan : asic.getChannels()) {
       bool skipChannel = false;
       if (mPadBadChannelMap) {
@@ -585,7 +627,27 @@ void TestbeamRawTask::processPadEvent(gsl::span<const o2::focal::PadGBTWord> pad
         // get average TOA of all channels in the ASIC
         if (chan.getTOA() > 0) {
           asicAverageTOA += chan.getTOA();
-          nAsicsWithTOA++;
+          nChWithTOA++;
+        }
+
+        if (iasic == 0) {
+          if ((currentchannel != 14) && (currentchannel != 16) && (currentchannel != 19) && (currentchannel != 48) && (currentchannel != 52) && (currentchannel != 61)) {
+            kADCForCMN[icmn] += adc;
+            icmn++;
+          }
+
+          if (currentchannel == 14)
+            adc_ch14 = adc;
+          if (currentchannel == 16)
+            adc_ch16 = adc;
+          if (currentchannel == 19)
+            adc_ch19 = adc;
+          if (currentchannel == 48)
+            adc_ch48 = adc;
+          if (currentchannel == 52)
+            adc_ch52 = adc;
+          if (currentchannel == 61)
+            adc_ch61 = adc;
         }
       }
       mPadASICChannelTOA[iasic]->Fill(currentchannel, chan.getTOA());
@@ -616,8 +678,12 @@ void TestbeamRawTask::processPadEvent(gsl::span<const o2::focal::PadGBTWord> pad
         mPadTOAvsASIC_Ch61->Fill(chan.getTOA(), iasic);
 
       currentchannel++;
+      // calculate common noise
     }
-    asicAverageTOA /= nAsicsWithTOA;
+
+    asicAverageTOA /= nChWithTOA;
+
+    toaglobalaverage += asicAverageTOA;
 
     // fill average TOA
     mPadTOAvsASIC->Fill(asicAverageTOA, iasic);
@@ -626,6 +692,16 @@ void TestbeamRawTask::processPadEvent(gsl::span<const o2::focal::PadGBTWord> pad
     mPadADCSumASIC[iasic]->Fill(adcsum);
     totglobalsum += totsum;
     adcglobalsum += adcsum;
+
+    if (iasic == 0) {
+      cmn = TMath::Median(icmn, kADCForCMN.data());
+      mPadGlobalMIPADC_Ch14_Asic0->Fill(adc_ch14 - cmn);
+      mPadGlobalMIPADC_Ch16_Asic0->Fill(adc_ch16 - cmn);
+      mPadGlobalMIPADC_Ch19_Asic0->Fill(adc_ch19 - cmn);
+      mPadGlobalMIPADC_Ch48_Asic0->Fill(adc_ch48 - cmn);
+      mPadGlobalMIPADC_Ch52_Asic0->Fill(adc_ch52 - cmn);
+      mPadGlobalMIPADC_Ch61_Asic0->Fill(adc_ch61 - cmn);
+    }
 
     // find all trigger windows of asic (20 windows)
     auto trigwindows = eventdata[iasic].getTriggerWords();
@@ -690,6 +766,9 @@ void TestbeamRawTask::processPadEvent(gsl::span<const o2::focal::PadGBTWord> pad
     currentchannel++;
   }
 
+  // fill global average TOA
+  toaglobalaverage /= PAD_ASICS;
+
   // loop over all TOT sums to fill correlations
   for (int i = 0; i < PAD_ASICS - 1; i++) {
     mPadTOTCorrASIC[i]->Fill(kTOTsum[i], kTOTsum[i + 1]);
@@ -698,6 +777,9 @@ void TestbeamRawTask::processPadEvent(gsl::span<const o2::focal::PadGBTWord> pad
 
   mPadTOTSumGlobal->Fill(totglobalsum);
   mPadADCSumGlobal->Fill(adcglobalsum);
+
+  mPadGlobalTOTvsADC->Fill(adcglobalsum, totglobalsum);
+  mPadGlobalTOAvsADC->Fill(adcglobalsum, toaglobalaverage);
 }
 
 void TestbeamRawTask::processPixelPayload(gsl::span<const o2::itsmft::GBTWord> pixelpayload, uint16_t feeID)
@@ -898,6 +980,8 @@ void TestbeamRawTask::reset()
     }
     mPadTOTSumGlobal->Reset();
     mPadADCSumGlobal->Reset();
+    mPadGlobalTOTvsADC->Reset();
+    mPadGlobalTOAvsADC->Reset();
     mPadTOAvsASIC->Reset();
 
     mPadTOAvsASIC_Ch14->Reset();
@@ -906,6 +990,13 @@ void TestbeamRawTask::reset()
     mPadTOAvsASIC_Ch48->Reset();
     mPadTOAvsASIC_Ch52->Reset();
     mPadTOAvsASIC_Ch61->Reset();
+
+    mPadGlobalMIPADC_Ch14_Asic0->Reset();
+    mPadGlobalMIPADC_Ch16_Asic0->Reset();
+    mPadGlobalMIPADC_Ch19_Asic0->Reset();
+    mPadGlobalMIPADC_Ch48_Asic0->Reset();
+    mPadGlobalMIPADC_Ch52_Asic0->Reset();
+    mPadGlobalMIPADC_Ch61_Asic0->Reset();
   }
 
   if (!mDisablePixels) {

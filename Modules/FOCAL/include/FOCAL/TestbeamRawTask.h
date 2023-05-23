@@ -134,8 +134,15 @@ class TestbeamRawTask final : public TaskInterface
   TH2* mPadTOAvsASIC_Ch52 = nullptr;                                                    ///< (no average) TOA for each ASICs for channel 52
   TH2* mPadTOAvsASIC_Ch61 = nullptr;                                                    ///< (no average) TOA for each ASICs for channel 61
 
+  TH1* mPadGlobalMIPADC_Ch14_Asic0 = nullptr;       ///  ADC for channel 14 for asic 0 after cmn subtraction
+  TH1* mPadGlobalMIPADC_Ch16_Asic0 = nullptr;       ///  ADC for channel 16 for asic 0 after cmn subtraction
+  TH1* mPadGlobalMIPADC_Ch19_Asic0 = nullptr;       ///  ADC for channel 19 for asic 0 after cmn subtraction
+  TH1* mPadGlobalMIPADC_Ch48_Asic0 = nullptr;       ///  ADC for channel 48 for asic 0 after cmn subtraction
+  TH1* mPadGlobalMIPADC_Ch52_Asic0 = nullptr;       ///  ADC for channel 52 for asic 0 after cmn subtraction
+  TH1* mPadGlobalMIPADC_Ch61_Asic0 = nullptr;       ///  ADC for channel 61 for asic 0 after cmn subtraction
   std::array<TH2*, PAD_ASICS> mPadTRIGvsWindowASIC; ///< Number of triggers per window for each ASIC
-
+  TH2* mPadGlobalTOTvsADC = nullptr;                ///< TOT vs ADC for all pad layers
+  TH2* mPadGlobalTOAvsADC = nullptr;                ///< TOA vs ADC for all pad layers
   /////////////////////////////////////////////////////////////////////////////////////
   /// Pixel histograms
   /////////////////////////////////////////////////////////////////////////////////////
