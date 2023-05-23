@@ -19,6 +19,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <stdexcept>
 
 namespace o2::quality_control::core
 {

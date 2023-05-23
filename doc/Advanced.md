@@ -24,13 +24,17 @@ Advanced topics
       * [Merging with other analysis workflows](#merging-with-other-analysis-workflows)
       * [Enabling a workflow to run on Hyperloop](#enabling-a-workflow-to-run-on-hyperloop)
 * [Solving performance issues](#solving-performance-issues)
+   * [Dispatcher](#dispatcher)
+   * [QC Tasks](#qc-tasks)
+   * [Mergers](#mergers)
 * [CCDB / QCDB](#ccdb--qcdb)
    * [Accessing objects in CCDB](#accessing-objects-in-ccdb)
    * [Access GRP objects with GRP Geom Helper](#access-grp-objects-with-grp-geom-helper)
+   * [Global Tracking Data Request helper](#global-tracking-data-request-helper)
    * [Custom metadata](#custom-metadata)
    * [Details on the data storage format in the CCDB](#details-on-the-data-storage-format-in-the-ccdb)
-      * [Data storage format before v0.14 and ROOT 6.18](#data-storage-format-before-v014-and-root-618)
    * [Local CCDB setup](#local-ccdb-setup)
+   * [Instructions to move an object in the QCDB](#instructions-to-move-an-object-in-the-qcdb)
 * [Asynchronous Data and Monte Carlo QC operations](#asynchronous-data-and-monte-carlo-qc-operations)
 * [QCG](#qcg)
    * [Display a non-standard ROOT object in QCG](#display-a-non-standard-root-object-in-qcg)
@@ -57,6 +61,7 @@ Advanced topics
    * [Data Sampling monitoring](#data-sampling-monitoring)
    * [Monitoring metrics](#monitoring-metrics)
    * [Common check IncreasingEntries](#common-check-increasingentries)
+   * [Update the shmem segment size of a detector](#update-the-shmem-segment-size-of-a-detector)
 <!--te-->
 
 [← Go back to Post-processing](PostProcessing.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Frequently Asked Questions →](FAQ.md)
@@ -1016,7 +1021,7 @@ The new syntax is
               "myOwnKey3": "myOwnValue3"
             }
           },
-          "physics": {
+          "PHYSICS": {
             "default": {
               "myOwnKey1": "myOwnValue1b",
               "myOwnKey2": "myOwnValue2b"
@@ -1028,13 +1033,13 @@ The new syntax is
               "myOwnKey1": "myOwnValue1d"
             }
           },
-          "cosmics": {
+          "COSMICS": {
             "myOwnKey1": "myOwnValue1e",
             "myOwnKey2": "myOwnValue2e"
           }
         },
 ```
-It allows to have variations of the parameters depending on the run and beam types. The `default` can be used 
+It allows to have variations of the parameters depending on the run and beam types. The proper run types can be found here: https://github.com/AliceO2Group/AliceO2/blob/dev/DataFormats/Parameters/include/DataFormatsParameters/ECSDataAdapters.h. The `default` can be used 
 to ignore the run or the beam type. The values can be accessed this way: 
 ```c++
 mCustomParameters["myOwnKey"]; // considering that run and beam type are `default` --> returns `myOwnValue`
@@ -1042,9 +1047,9 @@ mCustomParameters.at("myOwnKey"); // returns `myOwnValue`
 mCustomParameters.at("myOwnKey", "default"); // returns `myOwnValue`
 mCustomParameters.at("myOwnKey", "default", "default"); // returns `myOwnValue`
 
-mCustomParameters.at("myOwnKey1", "physics", "pp"); // returns `myOwnValue1c`
-mCustomParameters.at("myOwnKey1", "physics", "PbPb"); // returns `myOwnValue1d`
-mCustomParameters.at("myOwnKey2", "cosmics"); // returns `myOwnValue2e`
+mCustomParameters.at("myOwnKey1", "PHYSICS", "pp"); // returns `myOwnValue1c`
+mCustomParameters.at("myOwnKey1", "PHYSICS", "PbPb"); // returns `myOwnValue1d`
+mCustomParameters.at("myOwnKey2", "COSMICS"); // returns `myOwnValue2e`
 ```
 The correct way of accessing a parameter and to default to a value if it is not there, is the following:
 ```c++

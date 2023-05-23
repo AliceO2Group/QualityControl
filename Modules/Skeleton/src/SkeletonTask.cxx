@@ -22,6 +22,7 @@
 #include <Framework/InputRecord.h>
 #include <Framework/InputRecordWalker.h>
 #include <Framework/DataRefUtils.h>
+#include "DataFormatsParameters/ECSDataAdapters.h"
 
 namespace o2::quality_control_modules::skeleton
 {
@@ -59,9 +60,19 @@ void SkeletonTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void SkeletonTask::startOfActivity(Activity& activity)
 {
-  // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
+  // THIS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
   ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
   mHistogram->Reset();
+
+  // Get the proper parameter for the given activity
+  int runType = activity.mType; // get the type for this run
+  // convert it to a string (via a string_view as this is what we get from O2)
+  string_view runTypeStringView = o2::parameters::GRPECS::RunTypeNames[runType];
+  string runTypeString = {runTypeStringView.begin(), runTypeStringView.end()};
+  // get the param
+  if(auto param = mCustomParameters.atOptional("myOwnKey", runTypeString)) {
+    ILOG(Debug, Devel) << "Custom parameter - myOwnKey: " << param.value() << ENDM;
+  }
 }
 
 void SkeletonTask::startOfCycle()
@@ -72,7 +83,7 @@ void SkeletonTask::startOfCycle()
 
 void SkeletonTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
+  // THIS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
 
   // In this function you can access data inputs specified in the JSON config file, for example:
   //   "query": "random:ITS/RAWDATA/0"
@@ -133,19 +144,19 @@ void SkeletonTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void SkeletonTask::endOfCycle()
 {
-  // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
+  // THIS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void SkeletonTask::endOfActivity(Activity& /*activity*/)
 {
-  // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
+  // THIS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void SkeletonTask::reset()
 {
-  // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
+  // THIS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
 
   // clean all the monitor objects here
 
