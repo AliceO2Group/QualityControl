@@ -213,17 +213,32 @@ endforeach()
 
 # ---- Tests ----
 
+add_executable(o2-qc-test-core 
+               test/testActivity.cxx
+               test/testAggregatorInterface.cxx
+               test/testInfrastructureGenerator.cxx
+               test/testVersion.cxx
+               )
+set_property(TARGET o2-qc-test-core
+             PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
+target_link_libraries(o2-qc-test-core PRIVATE O2QualityControl O2::Catch2)
+target_include_directories(o2-qc-test-core PRIVATE ${CMAKE_SOURCE_DIR})
+
+add_test(NAME o2-qc-test-core COMMAND o2-qc-test-core)
+set_tests_properties(o2-qc-test-core PROPERTIES TIMEOUT 30)
+target_sources(o2-qc-test-core PRIVATE
+               ${CMAKE_BINARY_DIR}/getTestDataDirectory.cxx)
+target_include_directories(o2-qc-test-core PRIVATE ${CMAKE_SOURCE_DIR})
+target_include_directories(o2-qc-test-core PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
+
 set(TEST_SRCS
-    test/testActivity.cxx
     test/testDbFactory.cxx
     test/testMonitorObject.cxx
     test/testPublisher.cxx
     test/testQcInfoLogger.cxx
-    test/testInfrastructureGenerator.cxx
     test/testTaskInterface.cxx
     test/testTaskRunner.cxx
     test/testCheckInterface.cxx
-    test/testAggregatorInterface.cxx
     test/testCheckRunner.cxx
     test/testAggregatorRunner.cxx
     test/testCheck.cxx
@@ -241,7 +256,6 @@ set(TEST_SRCS
     test/testTrendingTask.cxx
     test/testCheckWorkflow.cxx
     test/testWorkflow.cxx
-    test/testVersion.cxx
     test/testRepoPathUtils.cxx
     test/testPolicyManager.cxx
     test/testQualitiesToTRFCollectionConverter.cxx
@@ -271,12 +285,8 @@ set(TEST_ARGS
     ""
     ""
     ""
-    ""
-    ""
-    ""
     "-b --run"
     "-b --run"
-    ""
     ""
     ""
     ""
@@ -303,14 +313,13 @@ foreach(i RANGE ${count})
 endforeach()
 
 foreach(t testTaskInterface testWorkflow testTaskRunner testCheckWorkflow
-        testInfrastructureGenerator testPostProcessingConfig testPostProcessingInterface
+        testPostProcessingConfig testPostProcessingInterface
         testPostProcessingRunner testCheck testCheckRunner testTrendingTask testAggregatorRunner)
   target_sources(${t} PRIVATE
                  ${CMAKE_BINARY_DIR}/getTestDataDirectory.cxx)
   target_include_directories(${t} PRIVATE ${CMAKE_SOURCE_DIR})
 endforeach()
 
-target_include_directories(testVersion PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
 target_include_directories(testCcdbDatabase PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
 target_link_libraries(testTaskInterface PRIVATE O2::EMCALBase O2::EMCALCalib)
 
