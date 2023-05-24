@@ -211,26 +211,12 @@ Bool_t TH2Ratio<T>::Add(const TH1* h1, Double_t c1)
 }
 
 template<class T>
-void TH2Ratio<T>::SetBins(Int_t nx, Double_t xmin, Double_t xmax)
-{
-  ILOG(Debug, Devel) << "SetBins(Int_t nx, Double_t xmin, Double_t xmax) not valid for TH2Ratio" << ENDM;
-}
-
-template<class T>
 void TH2Ratio<T>::SetBins(Int_t nx, Double_t xmin, Double_t xmax,
                        Int_t ny, Double_t ymin, Double_t ymax)
 {
   getNum()->SetBins(nx, xmin, xmax, ny, ymin, ymax);
   getDen()->SetBins(nx, xmin, xmax, ny, ymin, ymax);
   T::SetBins(nx, xmin, xmax, ny, ymin, ymax);
-}
-
-template<class T>
-void TH2Ratio<T>::SetBins(Int_t nx, Double_t xmin, Double_t xmax,
-                       Int_t ny, Double_t ymin, Double_t ymax,
-                       Int_t nz, Double_t zmin, Double_t zmax)
-{
-  ILOG(Debug, Devel) << "SetBins(Int_t nx, Double_t xmin, Double_t xmax, Int_t ny, Double_t ymin, Double_t ymax, Int_t nz, Double_t zmin, Double_t zmax) not valid for TH2Ratio" << ENDM;
 }
 
 } // namespace o2::quality_control_modules::common

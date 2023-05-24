@@ -217,19 +217,4 @@ void TH1Ratio<T>::SetBins(Int_t nx, Double_t xmin, Double_t xmax)
   T::SetBins(nx, xmin, xmax);
 }
 
-template<class T>
-void TH1Ratio<T>::SetBins(Int_t nx, Double_t xmin, Double_t xmax,
-                       Int_t ny, Double_t ymin, Double_t ymax)
-{
-  ILOG(Debug, Devel) << "SetBins(Int_t nx, Double_t xmin, Double_t xmax, Int_t ny, Double_t ymin, Double_t ymax) not valid for MergeableTH2Ratio" << ENDM;
-}
-
-template<class T>
-void TH1Ratio<T>::SetBins(Int_t nx, Double_t xmin, Double_t xmax,
-                       Int_t ny, Double_t ymin, Double_t ymax,
-                       Int_t nz, Double_t zmin, Double_t zmax)
-{
-  ILOG(Debug, Devel) << "SetBins(Int_t nx, Double_t xmin, Double_t xmax, Int_t ny, Double_t ymin, Double_t ymax, Int_t nz, Double_t zmin, Double_t zmax) not valid for MergeableTH2Ratio" << ENDM;
-}
-
 } // namespace o2::quality_control_modules::common
