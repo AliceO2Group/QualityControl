@@ -1,3 +1,4 @@
+
 #include <TCanvas.h>
 #include <TH1.h>
 #include <TH2.h>
@@ -210,165 +211,102 @@ void DigitsTask::fillLinesOnHistsPerLayer(int iLayer)
 
 void DigitsTask::buildHistograms()
 {
-
-  std::shared_ptr<TCanvas> c0 = std::make_shared<TCanvas>("digit", "digit distribution");
-  c0->Divide(2, 2);
-  getObjectsManager()->startPublishing(c0.get());
-  _cDigit = c0;
-
-  _cDigit->cd(1);
   mDigitHCID.reset(new TH1F("digithcid", "Digit distribution over Halfchambers", 1080, 0, 1080));
-  mDigitHCID.get()->Draw();
-
-  _cDigit->cd(2);
+  getObjectsManager()->startPublishing(mDigitHCID.get());
   mDigitsPerEvent.reset(new TH1F("digitsperevent", "Digits per Event", 10000, 0, 10000));
-  mDigitsPerEvent.get()->Draw();
-
-  _cDigit->cd(3);
+  getObjectsManager()->startPublishing(mDigitsPerEvent.get());
   mEventswDigitsPerTimeFrame.reset(new TH1F("eventswithdigitspertimeframe", "Number of Events with Digits per Time Frame", 100, 0, 100));
-  mEventswDigitsPerTimeFrame.get()->Draw();
+  getObjectsManager()->startPublishing(mEventswDigitsPerTimeFrame.get());
 
-  _cDigit->cd(4);
   mDigitsSizevsTrackletSize.reset(new TH2F("digitsvstracklets", "Tracklets Count vs Digits Count per event; Number of Tracklets;Number Of Digits", 2500, 0, 2500, 2500, 0, 2500));
-  mDigitsSizevsTrackletSize.get()->Draw();
+  getObjectsManager()->startPublishing(mDigitsSizevsTrackletSize.get());
 
-  std::shared_ptr<TCanvas> c1 = std::make_shared<TCanvas>("Cluster/Amplitude_Charge", "cluster");
-  c1->Divide(3, 2);
-  getObjectsManager()->startPublishing(c1.get());
-  _cCluster = c1;
-  _cCluster->cd(1);
   mClsAmpCh.reset(new TH1F("Cluster/ClsAmpCh", "Reconstructed mean amplitude;Amplitude (ADC);# chambers", 100, 25, 125));
   mClsAmpCh->GetXaxis()->SetTitle("Amplitude (ADC)");
   mClsAmpCh->GetYaxis()->SetTitle("# chambers");
-  mClsAmpCh.get()->Draw();
+  getObjectsManager()->startPublishing(mClsAmpCh.get());
 
-  _cCluster->cd(2);
   mClsNTb.reset(new TH1F("Cluster/ClsNTb", "ClsNTb", 30, -0.5, 29.5));
   mClsNTb->SetTitle("Clusters per time bin;Number of clusters;Timebin");
-  mClsNTb.get()->Draw();
+  getObjectsManager()->startPublishing(mClsNTb.get());
 
-  _cCluster->cd(3);
   mClsChargeFirst.reset(new TH2F("Cluster/ClsChargeFirst", "ClsChargeFirst;Timebin of max Signal;Timebin", 100, 0, 1000, 101, -0.2, 0.2));
-  mClsChargeFirst.get()->Draw("COLZ");
+  getObjectsManager()->startPublishing(mClsChargeFirst.get());
+  getObjectsManager()->setDefaultDrawOptions(mClsChargeFirst->GetName(), "COLZ");
 
-  _cCluster->cd(4);
   mClsChargeTb.reset(new TH1F("Cluster/ClsChargeTb", "ClsChargeTb;", 30, -0.5, 29.5));
-  mClsChargeTb.get()->Draw();
+  getObjectsManager()->startPublishing(mClsChargeTb.get());
 
-  _cCluster->cd(5);
-  mClsAmp.reset(new TH1F("Cluster/ClsAmp", "Amplitude of clusters;Amplitdue(ADC);Counts", 200, -0.5, 1999.5));
-  mClsAmp.get()->Draw();
+  mClsChargeTbCycle.reset(new TH1F("Cluster/ClsChargeTbCycle", "ClsChargeTb cleared per cycle;Cluster charge; Timebin", 30, -0.5, 29.5));
+  getObjectsManager()->startPublishing(mClsChargeTbCycle.get());
 
-  _cCluster->cd(6);
+  mClsAmp.reset(new TH1F("Cluster/ClsAmp", "Amplitude of clusters;Amplitdu(ADC);Counts", 200, -0.5, 1999.5));
+  getObjectsManager()->startPublishing(mClsAmp.get());
+
   mClsAmpDrift.reset(new TH1F("Cluster/ClsAmpDrift", "Amplitude of clusters in drift region;Amplitdu(ADC);Counts", 500, -0.5, 999.5));
-  mClsAmpDrift.get()->Draw();
-
-  std::shared_ptr<TCanvas> cLayer = std::make_shared<TCanvas>("Cluster/NClsLayer", "Cluster/NClsLayer");
-  cLayer->Divide(3, 2);
-  getObjectsManager()->startPublishing(cLayer.get());
-  _cLayer = cLayer;
+  getObjectsManager()->startPublishing(mClsAmpDrift.get());
 
   for (Int_t layer = 0; layer < o2::trd::constants::NLAYER; ++layer) {
-    _cLayer->cd(layer + 1);
     std::string label = fmt::format("Cluster/NClsLayer_{0}", layer);
     std::string title = fmt::format("Illumination layer {0};Sectors;Padrows (z)", layer);
     mNClsLayer[layer].reset(new TH2F(label.c_str(), title.c_str(), 18 * 8, -0.5, 17.5, 76, -0.5, 75.5));
-    mNClsLayer[layer].get()->Draw("COLZ");
+    getObjectsManager()->startPublishing(mNClsLayer[layer].get());
+    getObjectsManager()->setDefaultDrawOptions(label.c_str(), "COLZ");
   }
-
   mADCvalue.reset(new TH1D("ADCvalue", "ADC value distribution;ADC value;Counts", 500, -0.5, 499.5));
   getObjectsManager()->startPublishing(mADCvalue.get());
   char buffer[256];
-
-  std::string canvaslabel[] = { "DigitsPerMCM/HCMCM", "Cluster/ClsDetAmp", "ADCTB", "ADC", "Cluster/ClsSM", "Cluster/ClsTbSM" };
-  std::string superModuleNo[] = { "00-05", "06-11", "12-17" };
-  for (int i = 1; i <= 6; ++i) {
-    for (int j = 0; j < 3; ++j) {
-      std::string name = fmt::format("{0}_SM-{1}", canvaslabel[i - 1], superModuleNo[j]);
-      std::shared_ptr<TCanvas> canvas = std::make_shared<TCanvas>(name.c_str(), name.c_str());
-      canvas->Divide(3, 2);
-      getObjectsManager()->startPublishing(canvas.get());
-
-      switch (i) {
-        case 1:
-          _cSM_1[j] = canvas;
-          break;
-        case 2:
-          _cSM_2[j] = canvas;
-          break;
-        case 3:
-          _cSM_3[j] = canvas;
-          break;
-        case 4:
-          _cSM_4[j] = canvas;
-          break;
-        case 5:
-          _cSM_5[j] = canvas;
-          break;
-        case 6:
-          _cSM_6[j] = canvas;
-          break;
-      }
-    }
-  }
   for (Int_t iSM = 0; iSM < o2::trd::constants::NSECTOR; ++iSM) {
-    int canvasIndex = iSM / 6;
-    int padIndex = iSM % 6 + 1;
-
-    _cSM_1[canvasIndex]->cd(padIndex);
 
     std::string label = fmt::format("DigitsPerMCM/HCMCM_{0}", iSM);
     std::string title = fmt::format("MCM in Digits data stream for sector {0}; Pad Row; Pad Column", iSM);
     mHCMCM[iSM].reset(new TH2F(label.c_str(), title.c_str(), 76, -0.5, 75.5, 8 * 6, -0.5, 8 * 6 - 0.5));
-    mHCMCM[iSM].get()->Draw("COLZ");
+    getObjectsManager()->startPublishing(mHCMCM[iSM].get());
+    getObjectsManager()->setDefaultDrawOptions(mHCMCM[iSM]->GetName(), "COLZ");
     drawLinesMCM(mHCMCM[iSM].get());
 
-    _cSM_2[canvasIndex]->cd(padIndex);
     label = fmt::format("Cluster/ClsDetAmp_{0}", iSM);
     title = fmt::format("Cluster amplitude chamberwise in SM {0};Chamber;Amplitude", iSM);
     mClsDetAmp[iSM].reset(new TH2F(label.c_str(), title.c_str(), 30, -0.5, 29.5, 500, -0.5, 999.5));
+    getObjectsManager()->startPublishing(mClsDetAmp[iSM].get());
+    getObjectsManager()->setDefaultDrawOptions(mClsDetAmp[iSM]->GetName(), "COLZ");
 
-    mClsDetAmp[iSM].get()->Draw("COLZ");
-
-    _cSM_3[canvasIndex]->cd(padIndex);
     label = fmt::format("ADCTB_{0}", iSM);
     title = fmt::format("Signal in Timebins for sector {0};Timebin;ADC", iSM);
     mADCTB[iSM].reset(new TH2F(label.c_str(), title.c_str(), 30, -0.5, 29.5, 128, -0.5, 127.5));
-    mADCTB[iSM].get()->Draw("COLZ");
+    getObjectsManager()->startPublishing(mADCTB[iSM].get());
+    getObjectsManager()->setDefaultDrawOptions(mADCTB[iSM]->GetName(), "COLZ");
 
-    _cSM_4[canvasIndex]->cd(padIndex);
+    label = fmt::format("ADCTBfull_{0}", iSM);
+    title = fmt::format("Signal in Timebins full for sector {0};Timebin;ADC", iSM);
+    mADCTBfull[iSM].reset(new TH2F(label.c_str(), title.c_str(), 30, -0.5, 29.5, 128, -0.5, 127.5));
+    getObjectsManager()->startPublishing(mADCTBfull[iSM].get());
+    getObjectsManager()->setDefaultDrawOptions(mADCTBfull[iSM]->GetName(), "COLZ");
+
     label = fmt::format("ADC_{0}", iSM);
     title = fmt::format("ADC value distribution for sector {0};ADC value;Counts", iSM);
     mADC[iSM].reset(new TH1F(label.c_str(), title.c_str(), 500, -0.5, 499.5));
-    mADC[iSM].get()->Draw();
+    getObjectsManager()->startPublishing(mADC[iSM].get());
 
     // clusters
-    _cSM_5[canvasIndex]->cd(padIndex);
     label = fmt::format("Cluster/ClsSM_{0}", iSM);
     title = fmt::format("Cluster for Sector {0};ADC value;Counts", iSM);
     mClsSM[iSM].reset(new TH1F(label.c_str(), title.c_str(), 100, 0, 200));
-    mClsSM[iSM].get()->Draw();
+    getObjectsManager()->startPublishing(mClsSM[iSM].get());
 
-    _cSM_6[canvasIndex]->cd(padIndex);
     label = fmt::format("Cluster/ClsTbSM_{0}", iSM);
     title = fmt::format("Cluster Timbin  for sector {0};Timebin;ADC", iSM);
     mClsTbSM[iSM].reset(new TH2F(label.c_str(), title.c_str(), 30, -0.5, 29.5, 10, 0, 200));
-    mClsTbSM[iSM].get()->Draw("COLZ");
+    getObjectsManager()->startPublishing(mClsTbSM[iSM].get());
+    getObjectsManager()->setDefaultDrawOptions(mClsTbSM[iSM]->GetName(), "COLZ");
   }
 
-  std::shared_ptr<TCanvas> cCluster = std::make_shared<TCanvas>("Cluster/TotalCluster_Amplitude_Charge", "Cluster");
-  cCluster->Divide(3, 2);
-  getObjectsManager()->startPublishing(cCluster.get());
-  _cCluster_1 = cCluster;
-
-  _cCluster_1->cd(1);
   mNCls.reset(new TH1F("Cluster/NCls", "Total number of clusters per sector", 18, -0.5, 17.5));
   mNCls->SetTitle("Total number of clusters per sector;Sector;Counts");
-  mNCls.get()->Draw();
+  getObjectsManager()->startPublishing(mNCls.get());
 
-  _cCluster_1->cd(2);
-  mTotNClsLayer.reset(new TH1F("Cluster/TotNClsLayer", "Total number of clusters per layer;Layer;Counts", 12, -0.5, 5.5));
-  mTotNClsLayer.get()->Draw();
+  mNClsAmp.reset(new TH1F("Cluster/NClsAmp", "Total number of clusters per sector;Sector;Counts", 200, -0.5, 199.5));
+  getObjectsManager()->startPublishing(mNClsAmp.get());
 
   mClsTb.reset(new TH2F("Cluster/ClsTb", "Cluster  vs. timebin;Timebin;Cluster", 30, -0.5, 29.5, 200, 0, 2000));
   mClsTb->GetXaxis()->SetTitle("Timebin");
@@ -378,31 +316,26 @@ void DigitsTask::buildHistograms()
   mClsAmpTb.reset(new TH1F("Cluster/ClsAmpTb", "Cluster amplitude vs. timebin;Timebin;Amplitude", 30, -0.5, 29.5));
   // getObjectsManager()->startPublishing(mClsAmpTb.get());
 
-  _cCluster_1->cd(3);
   mClsSector.reset(new TH2F("Cluster/ClsSector", "Cluster amplidue per sector;Sector,Amplitude", 18, -0.5, 17.5, 500, -0.5, 999.5));
-  mClsSector.get()->Draw();
+  getObjectsManager()->startPublishing(mClsSector.get());
 
-  _cCluster_1->cd(4);
   mClsStack.reset(new TH2F("Cluster/ClsStack", "Cluster amplitude per stack;Stack;Amplitude", 5, -0.5, 4.5, 500, -0.5, 999.5));
-  mClsStack.get()->Draw();
+  getObjectsManager()->startPublishing(mClsStack.get());
 
   // local histos
-
-  _cCluster_1->cd(5);
   std::string label = fmt::format("Cluster/clsAmp");
   std::string title = fmt::format("Cluster Amplitude for chamber;Cluster Amplidute;Chamber");
   mClusterAmplitudeChamber.reset(new TH2F(label.c_str(), title.c_str(), 300, -0.5, 299.5, 540, -0.5, 539.5));
-  mClusterAmplitudeChamber.get()->Draw();
+  getObjectsManager()->startPublishing(mClusterAmplitudeChamber.get());
 
-  _cCluster_1->cd(6);
   mClsChargeTbTigg.reset(new TH1F("Cluster/ClsChargeTbTrgg", "Total charge vs. time bin;timebin; totalcharge", 30, -0.5, 29.5));
-  mClsChargeTbTigg.get()->Draw();
+  getObjectsManager()->startPublishing(mClsChargeTbTigg.get());
 
   mPulseHeight.reset(new TH1F("PulseHeight/mPulseHeight", Form("Pulse height plot threshold:%i;Timebins;Counts", mPulseHeightThreshold), 30, -0.5, 29.5));
   drawLinesOnPulseHeight(mPulseHeight.get());
   getObjectsManager()->startPublishing(mPulseHeight.get());
   mPulseHeight.get()->GetYaxis()->SetTickSize(0.01);
-  mPulseHeightn.reset(new TH1F("PulseHeight/mPulseHeight2nonoise", "Pulse height plot v2 excluding noise;TimeBins;Counts", 30, -0.5, 29.5));
+  mPulseHeightn.reset(new TH1F("mPulseHeight2nonoise", "Pulse height plot v2 excluding noise;TimeBins;Counts", 30, -0.5, 29.5));
   drawLinesOnPulseHeight(mPulseHeightn.get());
   getObjectsManager()->startPublishing(mPulseHeightn.get());
   mPulseHeightn.get()->GetYaxis()->SetTickSize(0.01);
@@ -424,35 +357,15 @@ void DigitsTask::buildHistograms()
   getObjectsManager()->startPublishing(mPulseHeightperchamber.get());
   getObjectsManager()->setDefaultDrawOptions(mPulseHeightperchamber.get()->GetName(), "colz");
 
-  for (int j = 0; j < 3; ++j) {
-    std::string name = fmt::format("{0}_SM-{1}", "PulseHeight/PulseHeightPerSuperModule", superModuleNo[j]);
-    std::shared_ptr<TCanvas> cPHPSM = std::make_shared<TCanvas>(name.c_str(), name.c_str());
-    cPHPSM->Divide(3, 2);
-    getObjectsManager()->startPublishing(cPHPSM.get());
-
-    _cSM_7[j] = cPHPSM;
-  }
-
   for (int count = 0; count < 18; ++count) {
-    int canvasIndex = count / 6;
-    int padIndex = count % 6 + 1;
-    _cSM_7[canvasIndex]->cd(padIndex);
     std::string label = fmt::format("PulseHeight/pulseheight2d_sm_{0:02d}", count);
     std::string title = fmt::format("Pulse Height Spectrum for SM {0:02d};Timebin;Counts", count);
     TH1F* h = new TH1F(label.c_str(), title.c_str(), 30, -0.5, 29.5);
     mPulseHeight2DperSM[count].reset(h);
-    h->Draw();
+    getObjectsManager()->startPublishing(h);
   }
 
-  std::shared_ptr<TCanvas> cLayer_1 = std::make_shared<TCanvas>("DigitsPerLayer", "DigitPerLayer");
-  cLayer_1->Divide(3, 2);
-  getObjectsManager()->startPublishing(cLayer_1.get());
-
-  _cLayer_1 = cLayer_1;
-  _cLayer_1->SetLogz();
-
   for (int iLayer = 0; iLayer < 6; ++iLayer) {
-    _cLayer_1->cd(iLayer + 1);
     mLayers.push_back(new TH2F(Form("DigitsPerLayer/layer%i", iLayer), Form("Digit count per pad in layer %i;stack;sector", iLayer), 76, -0.5, 75.5, 2592, -0.5, 2591.5));
     auto xax = mLayers.back()->GetXaxis();
     auto yax = mLayers[iLayer]->GetYaxis();
@@ -484,7 +397,10 @@ void DigitsTask::buildHistograms()
     mLayers.back()->SetStats(0);
     drawTrdLayersGrid(mLayers.back());
     fillLinesOnHistsPerLayer(iLayer);
-    mLayers.back()->Draw("COLZ");
+
+    getObjectsManager()->startPublishing(mLayers.back());
+    getObjectsManager()->setDefaultDrawOptions(mLayers.back()->GetName(), "COLZ");
+    getObjectsManager()->setDisplayHint(mLayers.back(), "logz");
   }
 }
 
@@ -607,7 +523,6 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
       std::vector<unsigned int> digitsIndex(digitv.size());
       std::iota(digitsIndex.begin(), digitsIndex.end(), 0);
       int DigitTrig = 0;
-
       // we now have sorted digits, can loop sequentially and be going over det/row/pad
       for (auto& trigger : triggerrecords) {
         uint64_t numtracklets = trigger.getNumberOfTracklets();
@@ -646,7 +561,6 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
         int channel = 0;
 
         for (int currentdigit = trigger.getFirstDigit() + 1; currentdigit < trigger.getFirstDigit() + trigger.getNumberOfDigits() - 1; ++currentdigit) { // -1 and +1 as we are looking for consecutive digits pre and post the current one indexed.
-
           if (digits[digitsIndex[currentdigit]].getChannel() > 21)
             continue;
           int detector = digits[digitsIndex[currentdigit]].getDetector();
@@ -707,6 +621,7 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
             mADCvalue->Fill(value);
             mADC[sm]->Fill(value);
             mADCTB[sm]->Fill(time, value);
+            mADCTBfull[sm]->Fill(time, value);
 
             if (consecutive) {
               // clusterize
@@ -743,7 +658,6 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
                   continue;
 
                 mNCls->Fill(sm);
-                mTotNClsLayer->Fill(layer);
                 mClsSM[sm]->Fill(sum);
                 mClsTbSM[sm]->Fill(time, sum);
                 mClsTb->Fill(time, sum);
@@ -752,6 +666,7 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
 
                 if (sum > 10 && sum < clsCutoff) {
                   mClsChargeTb->Fill(time, sum);
+                  mClsChargeTbCycle->Fill(time, sum);
                   mClsNTb->Fill(time);
                 }
 
@@ -760,8 +675,8 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
                 if (time > mDriftRegion.first && time < mDriftRegion.second) {
                   mClsAmpDrift->Fill(sum);
                   mClsDetAmp[sm]->Fill(detLoc, sum);
+                  mClusterAmplitudeChamber->Fill(sum, chamber);
                 }
-                mClusterAmplitudeChamber->Fill(sum, chamber);
 
                 mClsSector->Fill(sm, sum);
                 mClsStack->Fill(stack, sum);
@@ -827,9 +742,7 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
           }     // end for c
         }
       } // end for r
-
       mEventswDigitsPerTimeFrame->Fill(DigitTrig);
-
     } // end for d
   }   // for loop over digits
 } // loop over triggers
@@ -844,6 +757,8 @@ void DigitsTask::endOfCycle()
   for (int i = 0; i < 30; ++i)
     mPulseHeightScaled->SetBinContent(i, mPulseHeight->GetBinContent(i));
   mPulseHeightScaled->Scale(1 / scale);
+
+  mClsChargeTbCycle.get()->Reset();
 }
 
 void DigitsTask::endOfActivity(Activity& /*activity*/)
@@ -874,7 +789,9 @@ void DigitsTask::reset()
   for (auto& h : mADCTB) {
     h.get()->Reset();
   }
-
+  for (auto& h : mADCTBfull) {
+    h.get()->Reset();
+  }
   mNCls.get()->Reset();
   for (auto& h : mHCMCM) {
     h.get()->Reset();
@@ -885,16 +802,16 @@ void DigitsTask::reset()
   mClsTb.get()->Reset();
   mClsChargeFirst.get()->Reset();
   mClsChargeTb.get()->Reset();
+  mClsChargeTbCycle.get()->Reset();
   mClsNTb.get()->Reset();
   mClsAmp.get()->Reset();
-  mTotNClsLayer.get()->Reset();
+  mNClsAmp.get()->Reset();
   mClsAmpDrift.get()->Reset();
   mClsAmpTb.get()->Reset();
   mClsAmpCh.get()->Reset();
   for (auto& h : mClsDetAmp) {
     h.get()->Reset();
   }
-
   mClsSector.get()->Reset();
   mClsStack.get()->Reset();
   mClsChargeTbTigg.get()->Reset();
@@ -907,42 +824,8 @@ void DigitsTask::reset()
   mPulseHeightn.get()->Reset();
   mPulseHeightpro.get()->Reset();
   mPulseHeightperchamber.get()->Reset();
-
-  for (auto& canvas : _cSM_1) {
-    canvas->Clear();
-  }
-  for (auto& canvas : _cSM_2) {
-    canvas->Clear();
-  }
-  for (auto& canvas : _cSM_3) {
-    canvas->Clear();
-  }
-  for (auto& canvas : _cSM_4) {
-    canvas->Clear();
-  }
-  for (auto& canvas : _cSM_5) {
-    canvas->Clear();
-  }
-  for (auto& canvas : _cSM_6) {
-    canvas->Clear();
-  }
-  for (auto& canvas : _cSM_7) {
-    canvas->Clear();
-  }
-  if (_cDigit) {
-    _cDigit->Clear();
-  }
-  if (_cCluster) {
-    _cCluster->Clear();
-  }
-  if (_cLayer) {
-    _cLayer->Clear();
-  }
-  if (_cCluster_1) {
-    _cCluster_1->Clear();
-  }
-  if (_cLayer_1) {
-    _cLayer_1->Clear();
-  }
+  //  for (auto& h : mPulseHeightPerChamber_1D) {
+  // j    h->Reset();
+  //  }; // ph2DSM;
 }
 } // namespace o2::quality_control_modules::trd
