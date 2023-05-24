@@ -141,4 +141,3 @@ BOOST_AUTO_TEST_CASE(test_TH2FRatio)
     }
   }
 }
-
