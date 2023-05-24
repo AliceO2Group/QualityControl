@@ -69,6 +69,7 @@ set(TEST_SRCS
         test/testMeanIsAbove.cxx
         test/testNonEmpty.cxx
         test/testCommonReductors.cxx
+        test/testCommonHistRatios.cxx
         test/testWorstOfAllAggregator.cxx)
 
 foreach(test ${TEST_SRCS})
