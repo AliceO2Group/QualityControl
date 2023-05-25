@@ -175,6 +175,16 @@ class ObjectsManager
    */
   void removeAllFromServiceDiscovery();
 
+  /**
+   * \brief Sets the validity interval of all registered objects.
+   */
+  void setValidity(ValidityInterval);
+
+  /**
+   * \brief Extends the validity interval of all registered objects to the provided value.
+   */
+  void updateValidity(validity_time_t);
+
   const Activity& getActivity() const;
   void setActivity(const Activity& activity);
 

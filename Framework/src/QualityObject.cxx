@@ -35,7 +35,7 @@ QualityObject::QualityObject(
     mPolicyName{ std::move(policyName) },
     mInputs{ std::move(inputs) },
     mMonitorObjectsNames{ std::move(monitorObjectsNames) },
-    mActivity(runNumber, 0, "", "", "qc")
+    mActivity(runNumber, 0, "", "", "qc", gInvalidValidityInterval)
 {
   mQuality.addMetadata(std::move(metadata));
 }
@@ -194,6 +194,21 @@ Activity& QualityObject::getActivity()
 void QualityObject::setActivity(const Activity& activity)
 {
   mActivity = activity;
+}
+
+void QualityObject::setValidity(ValidityInterval validityInterval)
+{
+  mActivity.mValidity = validityInterval;
+}
+
+void QualityObject::updateValidity(validity_time_t value)
+{
+  mActivity.mValidity.update(value);
+}
+
+ValidityInterval QualityObject::getValidity() const
+{
+  return mActivity.mValidity;
 }
 
 } // namespace o2::quality_control::core

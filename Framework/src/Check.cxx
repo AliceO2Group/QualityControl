@@ -146,7 +146,7 @@ QualityObjectsType Check::check(std::map<std::string, std::shared_ptr<MonitorObj
                        << diagnostic << ENDM;
       continue;
     }
-    auto commonActivity = ActivityHelpers::strictestMatchingActivity(
+    auto commonActivity = activity_helpers::strictestMatchingActivity(
       moMapToCheck.begin(),
       moMapToCheck.end(),
       [](const std::pair<std::string, std::shared_ptr<MonitorObject>>& item) -> const Activity& {

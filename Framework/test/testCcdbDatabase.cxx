@@ -146,12 +146,14 @@ BOOST_AUTO_TEST_CASE(ccdb_store)
   f.backend->storeQO(qo4);
 
   // with timestamps
-  f.backend->storeMO(mo3, 10000, 20000);
-  f.backend->storeQO(qo3, 10000, 20000);
+  mo3->setValidity({ 10000, 20000 });
+  qo3->setValidity({ 10000, 20000 });
+  f.backend->storeMO(mo3);
+  f.backend->storeQO(qo3);
 
   // test the max size
   f.backend->setMaxObjectSize(1);
-  f.backend->storeMO(mo3, 10000, 20000); // should fail
+  f.backend->storeMO(mo3); // should fail
 }
 
 BOOST_AUTO_TEST_CASE(ccdb_store_for_future_tests)
@@ -208,7 +210,7 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_qo, *utf::depends_on("ccdb_store"))
 {
   test_fixture f;
   std::shared_ptr<QualityObject> qo = f.backend->retrieveQO(RepoPathUtils::getQoPath("TST", f.taskName + "/test-ccdb-check", "", {}, "", false));
-  BOOST_CHECK_NE(qo, nullptr);
+  BOOST_REQUIRE_NE(qo, nullptr);
   Quality q = qo->getQuality();
   BOOST_CHECK_EQUAL(q.getLevel(), 3);
   BOOST_CHECK_EQUAL(qo->getActivity().mId, 1234);
@@ -221,11 +223,11 @@ BOOST_AUTO_TEST_CASE(ccdb_provenance, *utf::depends_on("ccdb_store"))
 {
   test_fixture f;
   std::shared_ptr<QualityObject> qo = f.backend->retrieveQO(RepoPathUtils::getQoPath("TST", f.taskName + "/provenance", "", {}, "", false), -1, { 0, 0, "", "", "qc_hello" });
-  BOOST_CHECK_NE(qo, nullptr);
+  BOOST_REQUIRE_NE(qo, nullptr);
   BOOST_CHECK_EQUAL(qo->getActivity().mProvenance, "qc_hello");
 
   std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO(f.getMoFolder("provenance"), "provenance", -1, { 0, 0, "", "", "qc_hello" });
-  BOOST_CHECK_NE(mo, nullptr);
+  BOOST_REQUIRE_NE(mo, nullptr);
   BOOST_CHECK_EQUAL(mo->getActivity().mProvenance, "qc_hello");
 }
 
