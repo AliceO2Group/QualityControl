@@ -528,11 +528,9 @@ void CcdbDatabase::prepareTaskDataContainer(std::string /*taskName*/)
   // NOOP for CCDB
 }
 
-std::string CcdbDatabase::getListingAsString(const std::string& subpath, const std::string& accept)
+std::string CcdbDatabase::getListingAsString(const std::string& subpath, const std::string& accept, bool latestOnly)
 {
-  std::string tempString = ccdbApi->list(subpath, false, accept);
-
-  return tempString;
+  return ccdbApi->list(subpath, latestOnly, accept);
 }
 
 /// trim from start (in place)
@@ -570,9 +568,16 @@ std::vector<std::string> CcdbDatabase::getListing(const std::string& subpath)
   return result;
 }
 
-boost::property_tree::ptree CcdbDatabase::getListingAsPtree(const std::string& path)
+boost::property_tree::ptree CcdbDatabase::getListingAsPtree(const std::string& path, const std::map<std::string, std::string>& metadata, bool latestOnly)
 {
-  std::stringstream listingAsStringStream{ getListingAsString(path, "application/json") };
+  // CCDB accepts metadata filters as slash-separated key=value pairs at the end of the object path
+  std::stringstream pathWithMetadata;
+  pathWithMetadata << path;
+  for (const auto& [key, value] : metadata) {
+    pathWithMetadata << '/' << key << '=' << value;
+  }
+
+  std::stringstream listingAsStringStream{ getListingAsString(pathWithMetadata.str(), "application/json", latestOnly) };
 
   boost::property_tree::ptree listingAsTree;
   boost::property_tree::read_json(listingAsStringStream, listingAsTree);

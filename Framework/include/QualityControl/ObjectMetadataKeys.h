@@ -27,6 +27,7 @@ constexpr auto validUntil = "Valid-Until";
 constexpr auto created = "Created";
 constexpr auto md5sum = "Content-MD5";
 constexpr auto objectType = "ObjectType";
+constexpr auto lastModified = "lastModified";
 // General QC framework
 constexpr auto qcVersion = "qc_version";
 constexpr auto qcDetectorCode = "qc_detector_name";
