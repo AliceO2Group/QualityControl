@@ -37,6 +37,7 @@ MonitorObject::MonitorObject()
 {
   mActivity.mProvenance = "qc";
   mActivity.mId = 0;
+  mActivity.mValidity = gInvalidValidityInterval;
 }
 
 MonitorObject::MonitorObject(TObject* object, const std::string& taskName, const std::string& taskClass, const std::string& detectorName, int runNumber, const std::string& periodName, const std::string& passName, const std::string& provenance)
@@ -45,7 +46,7 @@ MonitorObject::MonitorObject(TObject* object, const std::string& taskName, const
     mTaskName(taskName),
     mTaskClass(taskClass),
     mDetectorName(detectorName),
-    mActivity(runNumber, 0, periodName, passName, provenance),
+    mActivity(runNumber, 0, periodName, passName, provenance, gInvalidValidityInterval),
     mIsOwner(true)
 {
 }
@@ -151,6 +152,21 @@ void MonitorObject::updateActivity(int runNumber, const std::string& periodName,
   mActivity.mPeriodName = periodName;
   mActivity.mPassName = passName;
   mActivity.mProvenance = provenance;
+}
+
+void MonitorObject::setValidity(ValidityInterval validityInterval)
+{
+  mActivity.mValidity = validityInterval;
+}
+
+void MonitorObject::updateValidity(validity_time_t value)
+{
+  mActivity.mValidity.update(value);
+}
+
+ValidityInterval MonitorObject::getValidity() const
+{
+  return mActivity.mValidity;
 }
 
 const string& MonitorObject::getTaskClass() const

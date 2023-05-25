@@ -34,7 +34,7 @@ void DummyDatabase::storeAny(const void*, std::type_info const&, std::string con
 {
 }
 
-void DummyDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::MonitorObject>, long, long)
+void DummyDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::MonitorObject>)
 {
 }
 
@@ -43,7 +43,7 @@ std::shared_ptr<o2::quality_control::core::MonitorObject> DummyDatabase::retriev
   return {};
 }
 
-void DummyDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::QualityObject>, long, long)
+void DummyDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::QualityObject>)
 {
 }
 

@@ -91,6 +91,10 @@ class MonitorObject : public TObject
   void setActivity(const Activity& activity);
   void updateActivity(int runNumber, const std::string& periodName, const std::string& passName, const std::string& provenance);
 
+  void setValidity(ValidityInterval);
+  void updateValidity(validity_time_t value);
+  ValidityInterval getValidity() const;
+
   /// \brief Add key value pair that will end up in the database as metadata of the object
   /// Add a metadata (key value pair) to the MonitorObject. It will be stored in the database as metadata.
   /// If the key already exists the value will NOT be updated.
@@ -132,7 +136,7 @@ class MonitorObject : public TObject
   // TODO : maybe we should always be the owner ?
   bool mIsOwner;
 
-  ClassDefOverride(MonitorObject, 10);
+  ClassDefOverride(MonitorObject, 11);
 };
 
 } // namespace o2::quality_control::core

@@ -28,6 +28,7 @@
 
 #include <vector>
 #include <utility>
+#include <regex>
 #include <boost/asio/ip/host_name.hpp>
 #include <DataSampling/DataSampling.h>
 #include <Configuration/ConfigurationFactory.h>
@@ -95,8 +96,12 @@ using namespace std::chrono;
 bool validateArguments(const ConfigContext& config)
 {
   const std::string qcConfigurationSource = config.options().get<std::string>("config");
+  std::regex configBackend(".+://.+$");
   if (qcConfigurationSource.empty()) {
     ILOG(Warning, Support) << "No configuration path specified, returning an empty workflow." << ENDM;
+    return false;
+  } else if (!std::regex_match(qcConfigurationSource, configBackend)) {
+    ILOG(Error, Support) << "The --config option expects a backend name (e.g. json:// or consul-json://) preceding the path. User specified: " << qcConfigurationSource << ENDM;
     return false;
   }
 

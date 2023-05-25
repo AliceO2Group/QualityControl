@@ -39,6 +39,7 @@ add_root_dictionary(O2QualityControlTypes
 
 add_library(O2QualityControl
   src/Activity.cxx
+  src/ActivityHelpers.cxx
   src/ObjectsManager.cxx
   src/CheckRunner.cxx
   src/AggregatorRunner.cxx
@@ -46,7 +47,6 @@ add_library(O2QualityControl
   src/AggregatorRunnerFactory.cxx
   src/CheckInterface.cxx
   src/DatabaseFactory.cxx
-  src/DatabaseHelpers.cxx
   src/CcdbDatabase.cxx
   src/QcInfoLogger.cxx
   src/TaskFactory.cxx
@@ -87,7 +87,8 @@ add_library(O2QualityControl
   src/SliceTrendingTask.cxx
   src/SliceTrendingTaskConfig.cxx
   src/Bookkeeping.cxx
-  src/CustomParameters.cxx)
+  src/CustomParameters.cxx
+  src/runnerUtils.cxx)
 
 
 target_include_directories(
