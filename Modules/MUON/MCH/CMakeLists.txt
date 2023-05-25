@@ -39,6 +39,7 @@ set(SRCS
   src/MCHAggregator.cxx
   src/QualityPostProcessing.cxx
   src/QualityCheck.cxx
+  src/ClustersTask.cxx
 )
 
 set(HEADERS
@@ -81,6 +82,7 @@ set(HEADERS
   include/MCH/MCHAggregator.h
   include/MCH/QualityPostProcessing.h
   include/MCH/QualityCheck.h
+  include/MCH/ClustersTask.h
 
   # legacy tasks
   include/MCH/PhysicsTaskDigits.h
@@ -98,8 +100,24 @@ target_include_directories(
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_link_libraries(${MODULE_NAME} PUBLIC O2QualityControl O2QcMUONCommon O2::CommonDataFormat O2::GPUCommon O2::MCHGlobalMapping
-        $<TARGET_NAME_IF_EXISTS:O2::MCHMappingFactory> O2::MCHMappingImpl4 O2::MCHMappingSegContour O2::MCHBase O2::DataFormatsMCH O2::MCHRawDecoder O2::MCHCalibration O2::MCHDigitFiltering O2::MCHPreClustering O2::MCHTracking O2::MCHConstants)
+target_link_libraries(${MODULE_NAME} PUBLIC
+  $<TARGET_NAME_IF_EXISTS:O2::MCHMappingFactory>
+  O2::CommonDataFormat
+  O2::DataFormatsMCH
+  O2::GPUCommon
+  O2::MCHBase
+  O2::MCHCalibration
+  O2::MCHConstants
+  O2::MCHDigitFiltering
+  O2::MCHGlobalMapping
+  O2::MCHMappingImpl4
+  O2::MCHMappingSegContour
+  O2::MCHPreClustering
+  O2::MCHRawDecoder
+  O2::MCHTracking
+  O2QcMUONCommon
+  O2QualityControl
+)
 
 target_compile_definitions(${MODULE_NAME} PRIVATE $<$<TARGET_EXISTS:O2::MCHMappingFactory>:MCH_HAS_MAPPING_FACTORY>)
 
@@ -128,7 +146,7 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/MCH
 # ---- ROOT dictionary ----
 
 add_root_dictionary(${MODULE_NAME}
-                    HEADERS 
+                    HEADERS
                             include/MCH/TH2ElecMapReductor.h
                             include/MCH/ClusterChargeReductor.h
                             include/MCH/GlobalHistogram.h
@@ -152,7 +170,8 @@ add_root_dictionary(${MODULE_NAME}
                             include/MCH/MCHAggregator.h
                             include/MCH/QualityPostProcessing.h
                             include/MCH/QualityCheck.h
-                             
+                            include/MCH/ClustersTask.h
+
                             # legacy tasks
                             include/MCH/PhysicsTaskDigits.h
                             include/MCH/PhysicsTaskRofs.h
