@@ -70,7 +70,7 @@ void Bookkeeping::populateActivity(Activity& activity, size_t runNumber)
     activity.mPeriodName = bkRun->run().lhcperiod();
     activity.mValidity.setMin(bkRun->run().timeo2start());
     activity.mValidity.setMax(bkRun->run().timeo2end());
-    activity.mBeamType = bkRun->lhcfill().beamtype(); // uncomment when we receive the proper beam type
+    activity.mBeamType = bkRun->lhcfill().beamtype();
     ILOG(Debug, Devel) << "activity created from run : " << activity << ENDM;
   } catch (std::runtime_error& error) {
     ILOG(Warning, Support) << "Error retrieving run info from Bookkeeping: " << error.what() << ENDM;

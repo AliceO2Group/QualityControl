@@ -1039,16 +1039,19 @@ The new syntax is
           }
         },
 ```
-It allows to have variations of the parameters depending on the run and beam types. The proper run types can be found here: https://github.com/AliceO2Group/AliceO2/blob/dev/DataFormats/Parameters/include/DataFormatsParameters/ECSDataAdapters.h. The `default` can be used 
-to ignore the run or the beam type. The values can be accessed this way: 
+It allows to have variations of the parameters depending on the run and beam types. The proper run types can be found here: https://github.com/AliceO2Group/AliceO2/blob/dev/DataFormats/Parameters/include/DataFormatsParameters/ECSDataAdapters.h#L54. The `default` can be used 
+to ignore the run or the beam type. 
+The beam type is one of the following: `PROTON-PROTON`, `Pb-Pb`, `Pb-PROTON`
+
+The values can be accessed this way: 
 ```c++
 mCustomParameters["myOwnKey"]; // considering that run and beam type are `default` --> returns `myOwnValue`
 mCustomParameters.at("myOwnKey"); // returns `myOwnValue`
 mCustomParameters.at("myOwnKey", "default"); // returns `myOwnValue`
 mCustomParameters.at("myOwnKey", "default", "default"); // returns `myOwnValue`
 
-mCustomParameters.at("myOwnKey1", "PHYSICS", "pp"); // returns `myOwnValue1c`
-mCustomParameters.at("myOwnKey1", "PHYSICS", "PbPb"); // returns `myOwnValue1d`
+mCustomParameters.at("myOwnKey1", "PHYSICS", "PROTON-PROTON"); // returns `myOwnValue1c`
+mCustomParameters.at("myOwnKey1", "PHYSICS", "Pb-Pb"); // returns `myOwnValue1d`
 mCustomParameters.at("myOwnKey2", "COSMICS"); // returns `myOwnValue2e`
 ```
 The correct way of accessing a parameter and to default to a value if it is not there, is the following:
@@ -1149,7 +1152,7 @@ should not be present in real configuration files.
         "maxObjectSize": "2097152",       "": "[Bytes, default=2MB] Maximum size allowed, larger objects are rejected."
       },
       "Activity": {                       "": ["Configuration of a QC Activity (Run). This structure is subject to",
-                                               "change or the values might come from other source (e.g. AliECS)." ],
+                                               "change or the values might come from other source (e.g. ECS+Bookkeeping)." ],
         "number": "42",                   "": "Activity number.",
         "type": "2",                      "": "Arbitrary activity type.",
         "periodName": "",                 "": "Period name - e.g. LHC22c, LHC22c1b_test",
