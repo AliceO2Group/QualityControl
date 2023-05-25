@@ -83,10 +83,10 @@ TEST_CASE("test_invoke_all_interface_methods")
   CHECK(testCheck.check(&moMap) == Quality::Null);
 
   testCheck.mValidString = "A different string";
-  BOOST_CHECK_EQUAL(testCheck.check(&moMap), Quality::Bad);
+  CHECK(testCheck.check(&moMap) == Quality::Bad);
 
   testCheck.mValidString = "A string";
-  BOOST_CHECK_EQUAL(testCheck.check(&moMap), Quality::Good);
+  CHECK(testCheck.check(&moMap) == Quality::Good);
 
   testCheck.beautify(mo);
   CHECK(reinterpret_cast<TObjString*>(mo->getObject())->String() == "A string is beautiful now");
