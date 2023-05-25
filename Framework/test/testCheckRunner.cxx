@@ -17,38 +17,33 @@
 #include "QualityControl/CheckRunnerFactory.h"
 #include "QualityControl/CheckRunner.h"
 #include "QualityControl/CommonSpec.h"
-
-#define BOOST_TEST_MODULE CheckRunner test
-#define BOOST_TEST_MAIN
-#define BOOST_TEST_DYN_LINK
-
-#include <boost/test/unit_test.hpp>
+#include <catch_amalgamated.hpp>
 
 using namespace o2::quality_control::checker;
 using namespace std;
 using namespace o2::framework;
 using namespace o2::header;
 
-BOOST_AUTO_TEST_CASE(test_check_runner_static)
+TEST_CASE("test_check_runner_static")
 {
   // facility name
-  BOOST_CHECK(CheckRunner::createCheckRunnerFacility(CheckRunner::createCheckRunnerIdString() + "-test") == "check/test");
-  BOOST_CHECK(CheckRunner::createCheckRunnerFacility(CheckRunner::createCheckRunnerIdString() + "-abcdefghijklmnopqrstuvwxyz") == "check/abcdefghijklmnopqrstuvwxyz");
-  BOOST_CHECK(CheckRunner::createCheckRunnerFacility(CheckRunner::createCheckRunnerIdString() + "-abcdefghijklmnopqrstuvwxyz123456789") == "check/abcdefghijklmnopqrstuvwxyz");
+  CHECK(CheckRunner::createCheckRunnerFacility(CheckRunner::createCheckRunnerIdString() + "-test") == "check/test");
+  CHECK(CheckRunner::createCheckRunnerFacility(CheckRunner::createCheckRunnerIdString() + "-abcdefghijklmnopqrstuvwxyz") == "check/abcdefghijklmnopqrstuvwxyz");
+  CHECK(CheckRunner::createCheckRunnerFacility(CheckRunner::createCheckRunnerIdString() + "-abcdefghijklmnopqrstuvwxyz123456789") == "check/abcdefghijklmnopqrstuvwxyz");
 }
 
-BOOST_AUTO_TEST_CASE(test_getDetector)
+TEST_CASE("test_checkRunner_getDetector")
 {
   CheckConfig config;
   config.detectorName = "TST";
 
   vector<CheckConfig> checks;
-  BOOST_CHECK_EQUAL(CheckRunner::getDetectorName(checks), "");
+  CHECK(CheckRunner::getDetectorName(checks) == "");
   checks.push_back(config);
-  BOOST_CHECK_EQUAL(CheckRunner::getDetectorName(checks), "TST");
+  CHECK(CheckRunner::getDetectorName(checks) == "TST");
   checks.push_back(config);
-  BOOST_CHECK_EQUAL(CheckRunner::getDetectorName(checks), "TST");
+  CHECK(CheckRunner::getDetectorName(checks) == "TST");
   config.detectorName = "EMC";
   checks.push_back(config);
-  BOOST_CHECK_EQUAL(CheckRunner::getDetectorName(checks), "MANY");
+  CHECK(CheckRunner::getDetectorName(checks) == "MANY");
 }
