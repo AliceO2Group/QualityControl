@@ -52,7 +52,6 @@ class PulseHeightTrackMatch final : public TaskInterface
   void startOfActivity(Activity& activity) override;
   void startOfCycle() override;
   void monitorData(o2::framework::ProcessingContext& ctx) override;
-  void drawLinesOnPulseHeight(TH1F* h);
   void endOfCycle() override;
   void endOfActivity(Activity& activity) override;
   void reset() override;
