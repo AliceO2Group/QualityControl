@@ -215,6 +215,7 @@ endforeach()
 
 add_executable(o2-qc-test-core 
                test/testActivity.cxx
+               test/testActivityHelpers.cxx
                test/testAggregatorInterface.cxx
                test/testAggregatorRunner.cxx
                test/testCheckInterface.cxx
