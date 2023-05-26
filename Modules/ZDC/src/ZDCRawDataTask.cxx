@@ -1,4 +1,4 @@
-﻿// Copyright 2019-2022 CERN and copyright holders of ALICE O2.
+// Copyright 2019-2022 CERN and copyright holders of ALICE O2.
 // See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
 // All rights not expressly granted are reserved.
 //
@@ -45,20 +45,27 @@ namespace o2::quality_control_modules::zdc
 
 ZDCRawDataTask::~ZDCRawDataTask()
 {
-  if (fFireChannel)
+  if (fFireChannel) {
     delete fFireChannel;
-  if (fTrasmChannel)
+  }
+  if (fTrasmChannel) {
     delete fTrasmChannel;
-  if (fSummaryPedestal)
+  }
+  if (fSummaryPedestal) {
     delete fSummaryPedestal;
-  if (fTriggerBits)
+  }
+  if (fTriggerBits) {
     delete fTriggerBits;
-  if (fTriggerBitsHits)
+  }
+  if (fTriggerBitsHits) {
     delete fTriggerBitsHits;
-  if (fDataLoss)
+  }
+  if (fDataLoss) {
     delete fDataLoss;
-  if (fOverBc)
+  }
+  if (fOverBc) {
     delete fOverBc;
+  }
 }
 
 void ZDCRawDataTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -178,24 +185,33 @@ void ZDCRawDataTask::reset()
       }
     }
   }
-  if (fFireChannel)
+  if (fFireChannel) {
     fFireChannel->Reset();
-  if (fTrasmChannel)
+  }
+  if (fTrasmChannel) {
     fTrasmChannel->Reset();
-  if (fSummaryPedestal)
+  }
+  if (fSummaryPedestal) {
     fSummaryPedestal->Reset();
-  if (fTriggerBits)
+  }
+  if (fTriggerBits) {
     fTriggerBits->Reset();
-  if (fTriggerBitsHits)
+  }
+  if (fTriggerBitsHits) {
     fTriggerBitsHits->Reset();
-  if (fDataLoss)
+  }
+  if (fDataLoss) {
     fDataLoss->Reset();
-  if (fOverBc)
+  }
+  if (fOverBc) {
     fOverBc->Reset();
-  if (fSummaryRate)
+  }
+  if (fSummaryRate) {
     fSummaryRate->Reset();
-  if (fSummaryAlign)
+  }
+  if (fSummaryAlign) {
     fSummaryAlign->Reset();
+  }
 }
 
 void ZDCRawDataTask::initHisto()
@@ -241,8 +257,9 @@ void ZDCRawDataTask::initHisto()
     ILOG(Debug, Devel) << "Custom parameter - BASELINE: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto1D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()));
-  } else
+  } else {
     setBinHisto1D(4096, -2048.5, 2047.5);
+  }
   addNewHisto("BASELINE", "hped-ZNA_TC_TR", "Baseline ZNA TC", "ZNA_TC_TR", "LBC");
   addNewHisto("BASELINE", "hped-ZNA_T1", "Baseline ZNA T1", "ZNA_T1", "LBC");
   addNewHisto("BASELINE", "hped-ZNA_T2", "Baseline ZNA T2", "ZNA_T2", "LBC");
@@ -280,8 +297,9 @@ void ZDCRawDataTask::initHisto()
     ILOG(Debug, Devel) << "Custom parameter - COUNTS: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto1D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()));
-  } else
+  } else {
     setBinHisto1D(10, -0.5, 9.5);
+  }
   addNewHisto("COUNTS", "hcounts-ZNA_TC_TR", "Counts ZNA TC", "ZNA_TC_TR", "LBC");
   addNewHisto("COUNTS", "hcounts-ZNA_T1", "Counts ZNA T1", "ZNA_T1", "LBC");
   addNewHisto("COUNTS", "hcounts-ZNA_T2", "Counts ZNA T2", "ZNA_T2", "LBC");
@@ -322,8 +340,9 @@ void ZDCRawDataTask::initHisto()
     ILOG(Debug, Devel) << "Custom parameter - SIGNAL: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
-  } else
+  } else {
     setBinHisto2D(60, -36.5, 23.5, 4096, -2048.5, 2047.5);
+  }
   // Alice Trigger Or Auto Trigger
   addNewHisto("SIGNAL", "hsignal-ZNA_TC_TR_AoT", "Signal ZNA TC Trigger Alice OR Auto Trigger", "ZNA_TC_TR", "AoT");
   addNewHisto("SIGNAL", "hsignal-ZNA_T1_AoT", "Signal ZNA T1 Trigger Alice OR Auto Trigger", "ZNA_T1", "AoT");
@@ -361,8 +380,9 @@ void ZDCRawDataTask::initHisto()
     ILOG(Debug, Devel) << "Custom parameter - BUNCH: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
-  } else
+  } else {
     setBinHisto2D(100, -0.5, 99.5, 36, -35.5, 0.5);
+  }
   addNewHisto("BUNCH", "hbunch-ZNA_TC_TR_A0oT0", "Bunch ZNA TC Ali Trigger OR AutoTrigger", "ZNA_TC_TR", "A0oT0");
   addNewHisto("BUNCH", "hbunch-ZNA_SUM_A0oT0", "Bunch ZNA SUM Ali Trigger OR AutoTrigger", "ZNA_SUM", "A0oT0");
   addNewHisto("BUNCH", "hbunch-ZNC_TC_TR_A0oT0", "Bunch ZNC TC Ali Trigger OR AutoTrigger", "ZNC_TC_TR", "A0oT0");
@@ -400,72 +420,81 @@ void ZDCRawDataTask::initHisto()
     ILOG(Debug, Devel) << "Custom parameter - TRASMITTEDCHANNEL: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
-  } else
+  } else {
     setBinHisto2D(8, -0.5, 7.5, 4, -0.5, 3.5);
+  }
   addNewHisto("TRASMITTEDCHANNEL", "hchTrasmitted", "Channels Trasmitted", "NONE", "ALL");
 
   if (auto param = mCustomParameters.find("FIRECHANNEL"); param != mCustomParameters.end()) {
     ILOG(Debug, Devel) << "Custom parameter - FIRECHANNELL: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
-  } else
+  } else {
     setBinHisto2D(8, -0.5, 7.5, 4, -0.5, 3.5);
+  }
   addNewHisto("FIRECHANNEL", "hchFired", "Channels Fired", "NONE", "ALL");
 
   if (auto param = mCustomParameters.find("DATALOSS"); param != mCustomParameters.end()) {
     ILOG(Debug, Devel) << "Custom parameter - DATALOSS: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
-  } else
+  } else {
     setBinHisto2D(8, -0.5, 7.5, 4, -0.5, 3.5);
+  }
   addNewHisto("DATALOSS", "hchDataLoss", "Data Loss", "NONE", "ALL");
 
   if (auto param = mCustomParameters.find("TRIGGER_BIT"); param != mCustomParameters.end()) {
     ILOG(Debug, Devel) << "Custom parameter - TRIGGER_BIT: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
-  } else
+  } else {
     setBinHisto2D(32, -0.5, 31.5, 10, -0.5, 9.5);
+  }
   addNewHisto("TRIGGER_BIT", "hchTriggerBits", "Trigger Bits", "NONE", "ALL");
 
   if (auto param = mCustomParameters.find("TRIGGER_BIT_HIT"); param != mCustomParameters.end()) {
     ILOG(Debug, Devel) << "Custom parameter - TRIGGER_BIT_HIT: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
-  } else
+  } else {
     setBinHisto2D(32, -0.5, 31.5, 10, -0.5, 9.5);
+  }
   addNewHisto("TRIGGER_BIT_HIT", "hchTriggerBitsHits", "Trigger Bits Hit", "NONE", "ALL");
 
   if (auto param = mCustomParameters.find("OVER_BC"); param != mCustomParameters.end()) {
     ILOG(Debug, Devel) << "Custom parameter - OVER_BC: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto1D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()));
-  } else
+  } else {
     setBinHisto1D(32, -0.5, 31.5);
+  }
   addNewHisto("OVER_BC", "hbcOver", "BC Overflow", "NONE", "ALL");
 
   if (auto param = mCustomParameters.find("SUMMARYBASELINE"); param != mCustomParameters.end()) {
     ILOG(Debug, Devel) << "Custom parameter - SUMMARYBASELINE: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto1D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()));
-  } else
+  } else {
     setBinHisto1D(26, -0.5, 25.5);
+  }
   addNewHisto("SUMMARYBASELINE", "hpedSummary", "Baseline Summary", "NONE", "LBC");
 
   if (auto param = mCustomParameters.find("SUMMARYRATE"); param != mCustomParameters.end()) {
     ILOG(Debug, Devel) << "Custom parameter - SUMMARYRATE: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto1D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()));
-  } else
+  } else {
     setBinHisto1D(26, -0.5, 25.5);
+  }
   addNewHisto("SUMMARYRATE", "hrateSummary", "Rate Summary (KHz)", "NONE", "LBC");
 
   if (auto param = mCustomParameters.find("SUMMARY_ALIGN"); param != mCustomParameters.end()) {
     ILOG(Debug, Devel) << "Custom parameter - SUMMARY_ALIGN: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
-  } else
+  } else {
     setBinHisto2D(26, 0.5, 26.5, 12, -0.5, 11.5);
+  }
   addNewHisto("SUMMARY_ALIGN", "hAlignPlot", "Alignment Plot", "NONE", "A0oT0");
   addNewHisto("SUMMARY_ALIGN_SHIFT", "hAlignPlotShift", "Alignment Plot", "NONE", "A0oT0");
 
@@ -473,15 +502,17 @@ void ZDCRawDataTask::initHisto()
     ILOG(Debug, Devel) << "Custom parameter -ALIGN_CYCLE: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     fAlignCycle = atoi(param->second.c_str());
-  } else
+  } else {
     fAlignCycle = 1;
+  }
 
   if (auto param = mCustomParameters.find("ALIGN_NUM_ENTRIES"); param != mCustomParameters.end()) {
     ILOG(Debug, Devel) << "Custom parameter -ALIGN_NUM_ENTRIES: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     fAlignNumEntries = atoi(param->second.c_str());
-  } else
+  } else {
     fAlignNumEntries = 2000;
+  }
 }
 
 void ZDCRawDataTask::init()
@@ -572,10 +603,12 @@ int ZDCRawDataTask::process(const o2::zdc::EventChData& ch)
   us[10] = f.s10;
   us[11] = f.s11;
   int itb = 4 * (int)f.board + (int)f.ch;
-  if (f.Hit == 1 && fFireChannel)
+  if (f.Hit == 1 && fFireChannel) {
     fFireChannel->Fill(f.board, f.ch);
-  if (fTrasmChannel)
+  }
+  if (fTrasmChannel) {
     fTrasmChannel->Fill(f.board, f.ch);
+  }
 
   if (f.Alice_0 || f.Auto_0 || f.Alice_1 || f.Auto_1 || f.Alice_2 || f.Auto_2 || f.Alice_3 || f.Auto_3) {
     for (int j = 0; j < (int)fMatrixHistoSignal[f.board][f.ch].size(); j++) {
@@ -615,9 +648,10 @@ int ZDCRawDataTask::process(const o2::zdc::EventChData& ch)
     fSummaryAlignShift->Reset();
     for (int i_mod = 0; i_mod < o2::zdc::NModules; i_mod++) {
       for (int i_ch = 0; i_ch < o2::zdc::NChPerModule; i_ch++) {
-        if (fMatrixAlign[i_mod][i_ch].minSample.vSamples[0].num_entry > 0)
+        if (fMatrixAlign[i_mod][i_ch].minSample.vSamples[0].num_entry > 0) {
           fSummaryAlign->Fill(fMatrixAlign[i_mod][i_ch].bin, fMatrixAlign[i_mod][i_ch].minSample.id_min_sample);
-        fSummaryAlignShift->Fill(fMatrixAlign[i_mod][i_ch].bin, fMatrixAlign[i_mod][i_ch].minSample.id_min_sample);
+          fSummaryAlignShift->Fill(fMatrixAlign[i_mod][i_ch].bin, fMatrixAlign[i_mod][i_ch].minSample.id_min_sample);
+        }
       }
     }
     resetAlign();
@@ -628,8 +662,9 @@ int ZDCRawDataTask::process(const o2::zdc::EventChData& ch)
     if (f.Alice_3) {
       fTriggerBits->Fill(itb, 9);
       if (f.Hit) {
-        if (f.Hit)
+        if (f.Hit) {
           fTriggerBitsHits->Fill(itb, 9);
+        }
       }
     }
     if (f.Alice_2) {
@@ -696,12 +731,15 @@ int ZDCRawDataTask::process(const o2::zdc::EventChData& ch)
     double bc_d = uint32_t(f.bc / 100);
     double bc_m = uint32_t(f.bc % 100);
     for (int i = 0; i < (int)fMatrixHistoBunch[f.board][f.ch].size(); i++) {
-      if (fMatrixHistoBunch[f.board][f.ch].at(i).condHisto.at(0).compare("A0oT0") == 0)
+      if (fMatrixHistoBunch[f.board][f.ch].at(i).condHisto.at(0).compare("A0oT0") == 0) {
         fMatrixHistoBunch[f.board][f.ch].at(i).histo->Fill(bc_m, -bc_d);
-      if (f.Alice_0 && fMatrixHistoBunch[f.board][f.ch].at(i).condHisto.at(0).compare("A0") == 0)
+      }
+      if (f.Alice_0 && fMatrixHistoBunch[f.board][f.ch].at(i).condHisto.at(0).compare("A0") == 0) {
         fMatrixHistoBunch[f.board][f.ch].at(i).histo->Fill(bc_m, -bc_d);
-      if (f.Auto_0 && fMatrixHistoBunch[f.board][f.ch].at(i).condHisto.at(0).compare("T0") == 0)
+      }
+      if (f.Auto_0 && fMatrixHistoBunch[f.board][f.ch].at(i).condHisto.at(0).compare("T0") == 0) {
         fMatrixHistoBunch[f.board][f.ch].at(i).histo->Fill(bc_m, -bc_d);
+      }
     }
   }
   if (f.bc == last_bc) {
@@ -716,8 +754,9 @@ int ZDCRawDataTask::process(const o2::zdc::EventChData& ch)
 
     // Fill Counts
 
-    if (fDataLoss && (f.hits & 0x8000))
+    if (fDataLoss && (f.dLoss)) {
       fDataLoss->Fill(f.board, f.ch);
+    }
 
     for (int i = 0; i < (int)fMatrixHistoCounts[f.board][f.ch].size(); i++) {
       fMatrixHistoCounts[f.board][f.ch].at(i).histo->Fill(f.hits & 0xfff);
@@ -824,8 +863,9 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
   // Check if the channel name defined
   if (getModAndCh(chName, &mod, &ch) == true) {
     // Check if channel selected produced data. (_SP spare _OTR only trigger)
-    if (chName.find("_SP") != std::string::npos || chName.find("_OTR") != std::string::npos)
+    if (chName.find("_SP") != std::string::npos || chName.find("_OTR") != std::string::npos) {
       return false;
+    }
     TString hname = TString::Format("%s", name.c_str());
     TString htit = TString::Format("%s", title.c_str());
     // BASELINE
@@ -1091,45 +1131,61 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
             continue;
           } else {
             i++;
-            if (type.compare("SUMMARYBASELINE") == 0)
+            if (type.compare("SUMMARYBASELINE") == 0) {
               fSummaryPedestal->GetXaxis()->SetBinLabel(i, TString::Format("%s", getNameChannel(imod, ich).c_str()));
-            if (type.compare("SUMMARYRATE") == 0)
+            }
+            if (type.compare("SUMMARYRATE") == 0) {
               fSummaryRate->GetXaxis()->SetBinLabel(i, TString::Format("%s", getNameChannel(imod, ich).c_str()));
-            if (type.compare("SUMMARY_ALIGN") == 0)
+            }
+            if (type.compare("SUMMARY_ALIGN") == 0) {
               fSummaryAlign->GetXaxis()->SetBinLabel(fMatrixAlign[imod][ich].bin, TString::Format("%s", fMatrixAlign[imod][ich].name_ch.c_str()));
-            if (type.compare("SUMMARY_ALIGN_SHIFT") == 0)
+            }
+            if (type.compare("SUMMARY_ALIGN_SHIFT") == 0) {
               fSummaryAlignShift->GetXaxis()->SetBinLabel(fMatrixAlign[imod][ich].bin, TString::Format("%s", fMatrixAlign[imod][ich].name_ch.c_str()));
+            }
             fMapBinNameIdSummaryHisto.insert(std::pair<std::string, int>(chName, i));
           }
         }
       }
-      if (type.compare("SUMMARYBASELINE") == 0)
+      if (type.compare("SUMMARYBASELINE") == 0) {
         getObjectsManager()->startPublishing(fSummaryPedestal);
-      if (type.compare("SUMMARYRATE") == 0)
+      }
+      if (type.compare("SUMMARYRATE") == 0) {
         getObjectsManager()->startPublishing(fSummaryRate);
-      if (type.compare("SUMMARY_ALIGN") == 0)
+      }
+      if (type.compare("SUMMARY_ALIGN") == 0) {
         getObjectsManager()->startPublishing(fSummaryAlign);
-      if (type.compare("SUMMARY_ALIGN_SHIFT") == 0)
+      }
+      if (type.compare("SUMMARY_ALIGN_SHIFT") == 0) {
         getObjectsManager()->startPublishing(fSummaryAlignShift);
+      }
       try {
-        if (type.compare("SUMMARYBASELINE") == 0)
+        if (type.compare("SUMMARYBASELINE") == 0) {
           getObjectsManager()->addMetadata(fSummaryPedestal->GetName(), fSummaryPedestal->GetName(), "34");
-        if (type.compare("SUMMARYRATE") == 0)
+        }
+        if (type.compare("SUMMARYRATE") == 0) {
           getObjectsManager()->addMetadata(fSummaryRate->GetName(), fSummaryRate->GetName(), "34");
-        if (type.compare("SUMMARY_ALIGN") == 0)
+        }
+        if (type.compare("SUMMARY_ALIGN") == 0) {
           getObjectsManager()->addMetadata(fSummaryAlign->GetName(), fSummaryAlign->GetName(), "34");
-        if (type.compare("SUMMARY_ALIGN_SHIFT") == 0)
+        }
+        if (type.compare("SUMMARY_ALIGN_SHIFT") == 0) {
           getObjectsManager()->addMetadata(fSummaryAlign->GetName(), fSummaryAlignShift->GetName(), "34");
+        }
         return true;
       } catch (...) {
-        if (type.compare("SUMMARYBASELINE") == 0)
+        if (type.compare("SUMMARYBASELINE") == 0) {
           ILOG(Warning, Support) << "Metadata could not be added to " << fSummaryPedestal->GetName() << ENDM;
-        if (type.compare("SUMMARYRATE") == 0)
+        }
+        if (type.compare("SUMMARYRATE") == 0) {
           ILOG(Warning, Support) << "Metadata could not be added to " << fSummaryRate->GetName() << ENDM;
-        if (type.compare("SUMMARY_ALIGN") == 0)
+        }
+        if (type.compare("SUMMARY_ALIGN") == 0) {
           ILOG(Warning, Support) << "Metadata could not be added to " << fSummaryAlign->GetName() << ENDM;
-        if (type.compare("SUMMARY_ALIGN_SHIFT") == 0)
+        }
+        if (type.compare("SUMMARY_ALIGN_SHIFT") == 0) {
           ILOG(Warning, Support) << "Metadata could not be added to " << fSummaryAlignShift->GetName() << ENDM;
+        }
         return false;
       }
     }
@@ -1181,16 +1237,18 @@ bool ZDCRawDataTask::configureRawDataTask()
       // ILOG(Info, Support) << TString::Format("Decode Line number %d %s",line_number, line.c_str()) << ENDM;
       if (line.compare(0, 1, "#") == 0 || line.compare(0, 1, "\n") == 0 || line.compare(0, 1, " ") == 0 || line.compare(0, 1, "\t") == 0 || line.compare(0, 1, "") == 0)
         check = true;
-      else
+      else {
         check = decodeConfLine(tokenString, line_number);
+      }
       if (check == false) {
         error = false;
       }
       tokenString.clear();
     }
   }
-  if (error == false)
+  if (error == false) {
     initHisto();
+  }
   file.close();
   return true;
 }
@@ -1286,8 +1344,9 @@ bool ZDCRawDataTask::decodeBaseline(std::vector<std::string> TokenString, int Li
     return addNewHisto(TokenString.at(0), TokenString.at(1), TokenString.at(2), TokenString.at(3), TokenString.at(4));
   }
   ILOG(Error, Support) << TString::Format("ERROR Line number %d not correct number of paramiter", LineNumber) << ENDM;
-  if (checkCondition(TokenString.at(4)) == false)
+  if (checkCondition(TokenString.at(4)) == false) {
     ILOG(Error, Support) << TString::Format("ERROR Line number %d the condition specified don't exist", LineNumber) << ENDM;
+  }
   return false;
 }
 
@@ -1297,8 +1356,9 @@ bool ZDCRawDataTask::decodeCounts(std::vector<std::string> TokenString, int Line
     return addNewHisto(TokenString.at(0), TokenString.at(1), TokenString.at(2), TokenString.at(3), TokenString.at(4));
   }
   ILOG(Error, Support) << TString::Format("ERROR Line number %d not correct number of paramiter", LineNumber) << ENDM;
-  if (checkCondition(TokenString.at(4)) == false)
+  if (checkCondition(TokenString.at(4)) == false) {
     ILOG(Error, Support) << TString::Format("ERROR Line number %d the condition specified don't exist", LineNumber) << ENDM;
+  }
   return false;
 }
 
@@ -1308,8 +1368,9 @@ bool ZDCRawDataTask::decodeSignal(std::vector<std::string> TokenString, int Line
     return addNewHisto(TokenString.at(0), TokenString.at(1), TokenString.at(2), TokenString.at(3), TokenString.at(4));
   }
   ILOG(Error, Support) << TString::Format("ERROR Line number %d not correct number of paramiter", LineNumber) << ENDM;
-  if (checkCondition(TokenString.at(4)) == false)
+  if (checkCondition(TokenString.at(4)) == false) {
     ILOG(Error, Support) << TString::Format("ERROR Line number %d the condition specified don't exist", LineNumber) << ENDM;
+  }
   return false;
 }
 
@@ -1319,8 +1380,9 @@ bool ZDCRawDataTask::decodeBunch(std::vector<std::string> TokenString, int LineN
     return addNewHisto(TokenString.at(0), TokenString.at(1), TokenString.at(2), TokenString.at(3), TokenString.at(4));
   }
   ILOG(Error, Support) << TString::Format("ERROR Line number %d not correct number of paramiter", LineNumber) << ENDM;
-  if (checkCondition(TokenString.at(4)) == false)
+  if (checkCondition(TokenString.at(4)) == false) {
     ILOG(Error, Support) << TString::Format("ERROR Line number %d the condition specified don't exist", LineNumber) << ENDM;
+  }
   return false;
 }
 
@@ -1330,8 +1392,9 @@ bool ZDCRawDataTask::decodeFireChannel(std::vector<std::string> TokenString, int
     return addNewHisto(TokenString.at(0), TokenString.at(1), TokenString.at(2), TokenString.at(3), TokenString.at(4));
   }
   ILOG(Error, Support) << TString::Format("ERROR Line number %d not correct number of paramiter", LineNumber) << ENDM;
-  if (checkCondition(TokenString.at(4)) == false)
+  if (checkCondition(TokenString.at(4)) == false) {
     ILOG(Error, Support) << TString::Format("ERROR Line number %d the condition specified don't exist", LineNumber) << ENDM;
+  }
   return false;
 }
 
@@ -1341,8 +1404,9 @@ bool ZDCRawDataTask::decodeDataLoss(std::vector<std::string> TokenString, int Li
     return addNewHisto(TokenString.at(0), TokenString.at(1), TokenString.at(2), TokenString.at(3), TokenString.at(4));
   }
   ILOG(Error, Support) << TString::Format("ERROR Line number %d not correct number of paramiter", LineNumber) << ENDM;
-  if (checkCondition(TokenString.at(4)) == false)
+  if (checkCondition(TokenString.at(4)) == false) {
     ILOG(Error, Support) << TString::Format("ERROR Line number %d the condition specified don't exist", LineNumber) << ENDM;
+  }
   return false;
 }
 bool ZDCRawDataTask::decodeOverBc(std::vector<std::string> TokenString, int LineNumber)
@@ -1351,8 +1415,9 @@ bool ZDCRawDataTask::decodeOverBc(std::vector<std::string> TokenString, int Line
     return addNewHisto(TokenString.at(0), TokenString.at(1), TokenString.at(2), TokenString.at(3), TokenString.at(4));
   }
   ILOG(Error, Support) << TString::Format("ERROR Line number %d not correct number of paramiter", LineNumber) << ENDM;
-  if (checkCondition(TokenString.at(4)) == false)
+  if (checkCondition(TokenString.at(4)) == false) {
     ILOG(Error, Support) << TString::Format("ERROR Line number %d the condition specified don't exist", LineNumber) << ENDM;
+  }
   return false;
 }
 bool ZDCRawDataTask::decodeTrasmittedChannel(std::vector<std::string> TokenString, int LineNumber)
@@ -1361,8 +1426,9 @@ bool ZDCRawDataTask::decodeTrasmittedChannel(std::vector<std::string> TokenStrin
     return addNewHisto(TokenString.at(0), TokenString.at(1), TokenString.at(2), TokenString.at(3), TokenString.at(4));
   }
   ILOG(Error, Support) << TString::Format("ERROR Line number %d not correct number of paramiter", LineNumber) << ENDM;
-  if (checkCondition(TokenString.at(4)) == false)
+  if (checkCondition(TokenString.at(4)) == false) {
     ILOG(Error, Support) << TString::Format("ERROR Line number %d the condition specified don't exist", LineNumber) << ENDM;
+  }
   return false;
 }
 
@@ -1372,8 +1438,9 @@ bool ZDCRawDataTask::decodeTriggerBitChannel(std::vector<std::string> TokenStrin
     return addNewHisto(TokenString.at(0), TokenString.at(1), TokenString.at(2), TokenString.at(3), TokenString.at(4));
   }
   ILOG(Error, Support) << TString::Format("ERROR Line number %d not correct number of paramiter", LineNumber) << ENDM;
-  if (checkCondition(TokenString.at(4)) == false)
+  if (checkCondition(TokenString.at(4)) == false) {
     ILOG(Error, Support) << TString::Format("ERROR Line number %d the condition specified don't exist", LineNumber) << ENDM;
+  }
   return false;
 }
 
@@ -1383,8 +1450,9 @@ bool ZDCRawDataTask::decodeTriggerBitHitChannel(std::vector<std::string> TokenSt
     return addNewHisto(TokenString.at(0), TokenString.at(1), TokenString.at(2), TokenString.at(3), TokenString.at(4));
   }
   ILOG(Error, Support) << TString::Format("ERROR Line number %d not correct number of paramiter", LineNumber) << ENDM;
-  if (checkCondition(TokenString.at(4)) == false)
+  if (checkCondition(TokenString.at(4)) == false) {
     ILOG(Error, Support) << TString::Format("ERROR Line number %d the condition specified don't exist", LineNumber) << ENDM;
+  }
   return false;
 }
 
@@ -1394,31 +1462,36 @@ bool ZDCRawDataTask::decodeSummary(std::vector<std::string> TokenString, int Lin
     return addNewHisto(TokenString.at(0), TokenString.at(1), TokenString.at(2), TokenString.at(3), TokenString.at(4));
   }
   ILOG(Error, Support) << TString::Format("ERROR Line number %d not correct number of paramiter", LineNumber) << ENDM;
-  if (checkCondition(TokenString.at(4)) == false)
+  if (checkCondition(TokenString.at(4)) == false) {
     ILOG(Error, Support) << TString::Format("ERROR Line number %d the condition specified don't exist", LineNumber) << ENDM;
+  }
   return false;
 }
 
 bool ZDCRawDataTask::checkCondition(std::string cond)
 {
-  /* if (cond.compare("A") == 0)
-     return true; // All Alice trigger (A0, A1,A2,A3)
-   if (cond.compare("T") == 0)
-     return true; // All Auto trigger (A0, A1,A2,A3)*/
-  if (cond.compare("A0") == 0)
+
+  if (cond.compare("A0") == 0) {
     return true; // Alice Trigger 0
-  if (cond.compare("T0") == 0)
+  }
+  if (cond.compare("T0") == 0) {
     return true; // Auto Trigger 0
-  if (cond.compare("A0eT0") == 0)
+  }
+  if (cond.compare("A0eT0") == 0) {
     return true; // Alice Trigger 0 AND Auto Trigger 0
-  if (cond.compare("A0oT0") == 0)
+  }
+  if (cond.compare("A0oT0") == 0) {
     return true; // Alice Trigger 0 OR Auto Trigger 0
-  if (cond.compare("AoT") == 0)
+  }
+  if (cond.compare("AoT") == 0) {
     return true; // Alice Trigger 0 OR Auto Trigger 0
-  if (cond.compare("LBC") == 0)
+  }
+  if (cond.compare("LBC") == 0) {
     return true; // Last BC
-  if (cond.compare("ALL") == 0)
+  }
+  if (cond.compare("ALL") == 0) {
     return true; // no trigger
+  }
   return false;
 }
 
