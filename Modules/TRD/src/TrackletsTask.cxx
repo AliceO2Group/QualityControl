@@ -148,7 +148,7 @@ void TrackletsTask::buildHistograms()
   getObjectsManager()->startPublishing(mTrackletPositionRaw);
   mTrackletsPerEvent = new TH1F("trackletsperevent", "Number of Tracklets per event;Tracklets in Event;Counts", 25000, 0, 25000);
   getObjectsManager()->startPublishing(mTrackletsPerEvent);
-  mTrackletsPerEvent2D = new TH2F("trackletsperevent2d", "Number of Tracklets per event;Sector_Side;Stack_Side", 36, 0, 36, 30, 0, 30);
+  mTrackletsPerEvent2D = new TH2F("trackletsperevent2d", "Tracklets distribution in half-chambers;Sector_Side;Stack_Side;Number of tracklets per half-chamber", 36, 0, 36, 30, 0, 30);
   getObjectsManager()->startPublishing(mTrackletsPerEvent2D);
   getObjectsManager()->setDefaultDrawOptions("trackletsperevent2d", "COLZ");
   getObjectsManager()->setDisplayHint(mTrackletsPerEvent2D->GetName(), "logz");

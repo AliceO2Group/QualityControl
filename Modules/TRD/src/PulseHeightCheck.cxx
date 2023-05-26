@@ -99,7 +99,7 @@ Quality PulseHeightCheck::check(std::map<std::string, std::shared_ptr<MonitorObj
   for (auto& [moName, mo] : *moMap) {
 
     (void)moName;
-    if (mo->getName() == "PulseHeight/mPulseHeight") {
+    if ((mo->getName() == "PulseHeight/mPulseHeight") || (mo->getName() == "PulseHeight/mPulseHeightpro")) {
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
 
       result = Quality::Good;
@@ -123,7 +123,7 @@ Quality PulseHeightCheck::check(std::map<std::string, std::shared_ptr<MonitorObj
         return result;
       }
 
-      // check the drift region is suffuciently below the lefth hand peak.
+      // check the drift region is sufficiently below the left hand peak.
       if (average > 0) {
         if (max / average > mPulseHeightRatio) {
           // peak is sufficiently high relative to the drift region.
@@ -158,7 +158,7 @@ std::string PulseHeightCheck::getAcceptedType() { return "TH1"; }
 
 void PulseHeightCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  if (mo->getName() == "PulseHeight/mPulseHeight") {
+  if ((mo->getName() == "PulseHeight/mPulseHeight") || (mo->getName() == "PulseHeight/mPulseHeightpro")) {
     auto* h = dynamic_cast<TH1F*>(mo->getObject());
     TPaveText* msg = new TPaveText(0.3, 0.9, 0.7, 0.95, "NDC");
     h->GetListOfFunctions()->Add(msg);
