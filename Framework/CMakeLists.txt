@@ -223,13 +223,16 @@ add_executable(o2-qc-test-core
                test/testMonitorObject.cxx
                test/testPolicyManager.cxx
                test/testPostProcessingRunner.cxx
-               test/testVersion.cxx
-               test/testTriggerHelpers.cxx
                test/testQuality.cxx
+               test/testQualityObject.cxx
+               test/testTaskInterface.cxx
+               test/testTriggerHelpers.cxx
+               test/testVersion.cxx
                )
 set_property(TARGET o2-qc-test-core
              PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
 target_link_libraries(o2-qc-test-core PRIVATE O2QualityControl O2::Catch2)
+target_link_libraries(o2-qc-test-core PRIVATE O2::EMCALBase O2::EMCALCalib)
 target_include_directories(o2-qc-test-core PRIVATE ${CMAKE_SOURCE_DIR})
 
 add_test(NAME o2-qc-test-core COMMAND o2-qc-test-core)
@@ -243,10 +246,8 @@ set(TEST_SRCS
     test/testDbFactory.cxx
     test/testPublisher.cxx
     test/testQcInfoLogger.cxx
-    test/testTaskInterface.cxx
     test/testTaskRunner.cxx
     test/testCheck.cxx
-    test/testQualityObject.cxx
     test/testObjectsManager.cxx
     test/testCcdbDatabase.cxx
     test/testCcdbDatabaseExtra.cxx
@@ -263,8 +264,6 @@ set(TEST_SRCS
   )
 
 set(TEST_ARGS
-    ""
-    ""
     ""
     ""
     ""
@@ -304,7 +303,7 @@ foreach(i RANGE ${count})
   set_tests_properties(${test_name} PROPERTIES TIMEOUT 30)
 endforeach()
 
-foreach(t testTaskInterface testWorkflow testTaskRunner testCheckWorkflow
+foreach(t testWorkflow testTaskRunner testCheckWorkflow
         testPostProcessingConfig testPostProcessingInterface
         testCheck testTrendingTask)
   target_sources(${t} PRIVATE
@@ -313,7 +312,6 @@ foreach(t testTaskInterface testWorkflow testTaskRunner testCheckWorkflow
 endforeach()
 
 target_include_directories(testCcdbDatabase PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
-target_link_libraries(testTaskInterface PRIVATE O2::EMCALBase O2::EMCALCalib)
 
 set_property(TEST testWorkflow PROPERTY TIMEOUT 40)
 set_property(TEST testWorkflow PROPERTY LABELS slow)
@@ -327,7 +325,6 @@ set_property(TEST testCcdbDatabaseExtra PROPERTY LABELS manual CCDB)
 set_property(TEST testTrendingTask PROPERTY LABELS manual)
 set_property(TEST testDbFactory PROPERTY LABELS CCDB)
 set_property(TEST testUserCodeInterface PROPERTY LABELS CCDB)
-set_property(TEST testTaskInterface PROPERTY LABELS CCDB)
 
 # Add a functional test (QC-336)
 string(RANDOM UNIQUE_ID)
