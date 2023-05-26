@@ -43,6 +43,24 @@ namespace o2::quality_control_modules::focal
 
 TestbeamRawTask::~TestbeamRawTask()
 {
+  if (mTFerrorCounter) {
+    delete mTFerrorCounter;
+  }
+  if (mFEENumberHBF) {
+    delete mFEENumberHBF;
+  }
+  if (mFEENumberTF) {
+    delete mFEENumberTF;
+  }
+  if (mNumLinksTF) {
+    delete mNumLinksTF;
+  }
+  if (mNumHBFPerCRU) {
+    delete mNumHBFPerCRU;
+  }
+  if (mCRUcounter) {
+    delete mCRUcounter;
+  }
   for (auto& hist : mPadASICChannelADC) {
     delete hist;
   }
@@ -236,6 +254,31 @@ void TestbeamRawTask::initialize(o2::framework::InitContext& /*ctx*/)
   mTFerrorCounter->GetXaxis()->SetBinLabel(1, "empty");
   mTFerrorCounter->GetXaxis()->SetBinLabel(2, "filled");
   getObjectsManager()->startPublishing(mTFerrorCounter);
+
+  mFEENumberHBF = new TH1F("NumberOfHBFPerFEE", "Number of HBFs per FEE", 100001, -0.5, 100000.5);
+  mFEENumberHBF->GetXaxis()->SetTitle("FEE ID");
+  mFEENumberHBF->GetYaxis()->SetTitle("Number of HBFs");
+  getObjectsManager()->startPublishing(mFEENumberHBF);
+
+  mFEENumberTF = new TH1F("NumberOfTFPerFEE", "Number of TFs per FEE", 100001, -0.5, 100000.5);
+  mFEENumberTF->GetXaxis()->SetTitle("FEE ID");
+  mFEENumberTF->GetYaxis()->SetTitle("Number of TFs");
+  getObjectsManager()->startPublishing(mFEENumberTF);
+
+  mNumLinksTF = new TH1F("NumberOfLinksPerTF", "Number of Links / timeframe", 101, -0.5, 100.5);
+  mNumLinksTF->GetXaxis()->SetTitle("Number of links");
+  mNumLinksTF->GetYaxis()->SetTitle("Number of TFs");
+  getObjectsManager()->startPublishing(mNumLinksTF);
+
+  mNumHBFPerCRU = new TH1F("NumberOfHBFPerCRU", "Number of HBFs / CRU", 10001, -0.5, 10000.5);
+  mNumHBFPerCRU->GetXaxis()->SetTitle("Endpoint ID");
+  mNumHBFPerCRU->GetYaxis()->SetTitle("Link ID");
+  getObjectsManager()->startPublishing(mNumHBFPerCRU);
+
+  mCRUcounter = new TH2D("CRUcounter", "Number of HBFs per CRU link", 2, -0.5, 1.5, 21, -0.5, 20.5);
+  mCRUcounter->GetXaxis()->SetTitle("Endpoint ID");
+  mCRUcounter->GetYaxis()->SetTitle("Link ID");
+  getObjectsManager()->startPublishing(mCRUcounter);
 
   /////////////////////////////////////////////////////////////////
   /// PAD histograms
@@ -461,6 +504,8 @@ void TestbeamRawTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
   mTFerrorCounter->Fill(2);
 
+  std::unordered_set<uint64_t> feeIDs;
+
   int inputs = 0;
   std::vector<char> rawbuffer;
   uint16_t currentfee = 0;
@@ -501,6 +546,13 @@ void TestbeamRawTask::monitorData(o2::framework::ProcessingContext& ctx)
         if (trigger & o2::trigger::SOT || trigger & o2::trigger::HB) {
           if (o2::raw::RDHUtils::getStop(rdh)) {
             ILOG(Debug, Support) << "Stop bit received - processing payload" << ENDM;
+            mFEENumberHBF->Fill(currentfee);
+            mNumHBFPerCRU->Fill(o2::raw::RDHUtils::getCRUID(rdh));
+            mCRUcounter->Fill(o2::raw::RDHUtils::getEndPointID(rdh), o2::raw::RDHUtils::getLinkID(rdh));
+            auto fee_found = feeIDs.find(currentfee);
+            if (fee_found == feeIDs.end()) {
+              feeIDs.insert(currentfee);
+            }
             // Data ready
             if (currentfee == 0xcafe) { // Use FEE ID 0xcafe for PAD data
               // Pad data
@@ -545,6 +597,11 @@ void TestbeamRawTask::monitorData(o2::framework::ProcessingContext& ctx)
     for (auto& [trg, nhits] : mPixelNHitsLayer[ilayer]) {
       mPixelHitsTriggerLayer[ilayer]->Fill(nhits);
     }
+  }
+  mNumLinksTF->Fill(feeIDs.size());
+  for (auto& fee : feeIDs) {
+    ILOG(Debug, Support) << "Found fee: " << fee << ENDM;
+    mFEENumberTF->Fill(fee);
   }
 }
 
@@ -924,6 +981,12 @@ void TestbeamRawTask::reset()
   // clean all the monitor objects here
 
   ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
+  mTFerrorCounter->Reset();
+  mFEENumberHBF->Reset();
+  mFEENumberTF->Reset();
+  mNumLinksTF->Reset();
+  mNumHBFPerCRU->Reset();
+  mCRUcounter->Reset();
   if (!mDisablePads) {
     mPayloadSizePadsGBT->Reset();
     for (auto padadc : mPadASICChannelADC) {

@@ -110,6 +110,11 @@ class TestbeamRawTask final : public TaskInterface
   /// General histograms
   /////////////////////////////////////////////////////////////////////////////////////
   TH1* mTFerrorCounter = nullptr; ///< Number of TF builder errors
+  TH1* mFEENumberHBF = nullptr;   ///< Number of HBFs per FEE
+  TH1* mFEENumberTF = nullptr;    ///< Number of TFs per FEE
+  TH1* mNumLinksTF = nullptr;     ///< Number of links per timeframe
+  TH1* mNumHBFPerCRU = nullptr;   ///< Number of HBFs per CRU
+  TH2* mCRUcounter = nullptr;     ///< CRU counter
 
   /////////////////////////////////////////////////////////////////////////////////////
   /// Pad histograms
