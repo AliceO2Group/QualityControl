@@ -19,7 +19,6 @@
 
 #include <string>
 #include <unordered_map>
-#include <stdexcept>
 #include <optional>
 
 namespace o2::quality_control::core
@@ -47,15 +46,9 @@ class CustomParameters
   using CustomParametersType = std::unordered_map<std::string, std::unordered_map<std::string, std::unordered_map<std::string, std::string>>>;
 
  public:
-  CustomParameters()
-  {
-    mCustomParameters["default"]["default"] = {};
-  }
+  CustomParameters();
 
-  void set(const std::string& key, const std::string& value, const std::string& runType = "default", const std::string& beamType = "default")
-  {
-    mCustomParameters[runType][beamType][key] = value;
-  }
+  void set(const std::string& key, const std::string& value, const std::string& runType = "default", const std::string& beamType = "default");
 
   /**
    * Return all the parameters (key-value pairs) for the given runType and beamType.
@@ -64,22 +57,13 @@ class CustomParameters
    * @return a map of the key-value pairs
    * @throw std::out_of_range if no key-value pair correspond to these beamType and runType
    */
-  const std::unordered_map<std::string, std::string>& getAllForRunBeam(const std::string& runType, const std::string& beamType)
-  {
-    if (mCustomParameters.count(runType) > 0 && mCustomParameters[runType].count(beamType) > 0) {
-      return mCustomParameters[runType][beamType];
-    }
-    throw std::out_of_range("Unknown beam or run: " + runType + ", " + beamType);
-  }
+  const std::unordered_map<std::string, std::string>& getAllForRunBeam(const std::string& runType, const std::string& beamType);
 
   /**
    * Return all the parameters (key-value pairs) for the default runType and the default beamType.
    * @return
    */
-  const std::unordered_map<std::string, std::string>& getAllDefaults()
-  {
-    return getAllForRunBeam("default", "default");
-  }
+  const std::unordered_map<std::string, std::string>& getAllDefaults();
 
   /**
    * Return the value for the given key, runType and beamType.
@@ -89,10 +73,7 @@ class CustomParameters
    * @return the value for the given key, runType and beamType.
    * @throw std::out_of_range if no key-value pair corresponds to this key and to these beamType and runType
    */
-  std::string at(const std::string& key, const std::string& runType = "default", const std::string& beamType = "default") const
-  {
-    return mCustomParameters.at(runType).at(beamType).at(key);
-  }
+  std::string at(const std::string& key, const std::string& runType = "default", const std::string& beamType = "default") const;
 
   /**
    * Return the optional value for the given key, runType and beamType (the two latter optional).
@@ -101,31 +82,18 @@ class CustomParameters
    * @param beamType
    * @return an optional with the value for the given key, runType and beamType or empty if not found.
    */
-  std::optional<std::string> atOptional(const std::string& key, const std::string& runType = "default", const std::string& beamType = "default") const
-  {
-    try {
-      return mCustomParameters.at(runType).at(beamType).at(key);
-    } catch (const std::out_of_range& exc) {
-      return {};
-    }
-  }
+  std::optional<std::string> atOptional(const std::string& key, const std::string& runType = "default", const std::string& beamType = "default") const;
 
   /**
    * Return the value for the given key, runType and beamType (the two latter optional). If it does not exist, returns the default value if provided or an empty string.
    * @param key
    * @param runType
+   *
    * @param beamType
    * @param defaultValue
    * @return the value for the given key, runType and beamType. If it is not found, it returns an empty string or defaultValue if provided.
    */
-  std::string atOrDefaultValue(const std::string& key, std::string defaultValue = "", const std::string& runType = "default", const std::string& beamType = "default")
-  {
-    try {
-      return mCustomParameters.at(runType).at(beamType).at(key);
-    } catch (const std::out_of_range& exc) {
-      return defaultValue;
-    }
-  }
+  std::string atOrDefaultValue(const std::string& key, std::string defaultValue = "", const std::string& runType = "default", const std::string& beamType = "default");
 
   /**
    * Returns the number of items found for the provided key, beamType and runType. It can only be either 0 or 1.
@@ -134,15 +102,7 @@ class CustomParameters
    * @param beamType
    * @return 0 or 1 depending if a value is found.
    */
-  int count(const std::string& key, const std::string& runType = "default", const std::string& beamType = "default") const
-  {
-    try {
-      at(key, runType, beamType);
-    } catch (const std::out_of_range& oor) {
-      return 0;
-    }
-    return 1;
-  }
+  int count(const std::string& key, const std::string& runType = "default", const std::string& beamType = "default") const;
 
   /**
    * Finds the items whose key is `key`.
@@ -153,27 +113,9 @@ class CustomParameters
    * @param beamType
    * @return the item or end()
    */
-  std::unordered_map<std::string, std::string>::const_iterator find(const std::string& key, const std::string& runType = "default", const std::string& beamType = "default") const
-  {
-    auto subTreeRunType = mCustomParameters.find(runType);
-    if (subTreeRunType == mCustomParameters.end()) {
-      return end();
-    }
-    auto subTreeBeamType = subTreeRunType->second.find(beamType);
-    if (subTreeBeamType == subTreeRunType->second.end()) {
-      return end();
-    }
-    auto foundValue = subTreeBeamType->second.find(key);
-    if (foundValue == subTreeBeamType->second.end()) {
-      return end();
-    }
-    return foundValue;
-  }
+  std::unordered_map<std::string, std::string>::const_iterator find(const std::string& key, const std::string& runType = "default", const std::string& beamType = "default") const;
 
-  std::unordered_map<std::string, std::string>::const_iterator end() const
-  {
-    return mCustomParameters.at("default").at("default").end();
-  }
+  std::unordered_map<std::string, std::string>::const_iterator end() const;
 
   /**
    * Return the value for the given key, and for beamType=default and runType=default.
@@ -181,23 +123,14 @@ class CustomParameters
    * @param key
    * @return
    */
-  std::string operator[](const std::string& key) const
-  {
-    return at(key);
-  }
+  std::string operator[](const std::string& key) const;
 
   /**
    * Assign the value to the key, and for beamType=default and runType=default.
    * @param key
    * @return
    */
-  std::string& operator[](const std::string& key)
-  {
-    if (count(key) == 0) {
-      set(key, "");
-    }
-    return mCustomParameters.at("default").at("default").at(key);
-  }
+  std::string& operator[](const std::string& key);
 
   /**
    * prints the CustomParameters
