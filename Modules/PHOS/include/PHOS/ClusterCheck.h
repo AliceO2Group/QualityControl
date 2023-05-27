@@ -43,11 +43,15 @@ class ClusterCheck : public o2::quality_control::checker::CheckInterface
   std::string getAcceptedType() override;
 
  protected:
-  static constexpr int kDeadThreshold = 10;   /// Number of new dead channels per module to decalre bad
-  static constexpr int kNoisyThreshold = 2;   /// Number of new noisy channels per module to send warning
-  static constexpr int kMaxUccupancyCut = 10; /// occupancy in noisy channel wrt mean over module
+  int mDeadThreshold[5] = { 10, 10, 10, 10, 10 };   /// Number of new dead channels per module to decalre bad
+  int mNoisyThreshold[5] = { 2, 2, 2, 2, 2 };       /// Number of new noisy channels per module to send warning
+  int mMaxOccupancyCut[5] = { 10, 10, 10, 10, 10 }; /// occupancy in noisy channel wrt mean over module
+  float mCluEnergyRangeL[5] = { 1., 1., 1., 1., 1. };
+  float mCluEnergyRangeR[5] = { 10., 10., 10., 10., 10. };
+  float mMinCluEnergyMean[5] = { 2., 2., 2., 2., 2 };
+  float mMaxCluEnergyMean[5] = { 4., 4., 4., 4., 4 };
 
-  std::unique_ptr<o2::phos::BadChannelsMap> mBadMap; /// bad map
+  const o2::phos::BadChannelsMap* mBadMap; /// bad map
   ClassDefOverride(ClusterCheck, 2);
 };
 
