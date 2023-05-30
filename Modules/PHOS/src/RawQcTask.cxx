@@ -60,6 +60,12 @@ RawQcTask::~RawQcTask()
       mHist2DBitmask[i] = nullptr;
     }
   }
+  for (int i = kNratio1D; i--;) {
+    if (mFractions1D[i]) {
+      delete mFractions1D[i];
+      mFractions1D[i] = nullptr;
+    }
+  }
 }
 void RawQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
@@ -125,6 +131,17 @@ void RawQcTask::InitHistograms()
   mHist2DBitmask[kErrorType]->SetDrawOption("colz");
   mHist2DBitmask[kErrorType]->SetStats(0);
   getObjectsManager()->startPublishing(mHist2DBitmask[kErrorType]);
+
+  mFractions1D[kErrorTypeOccurance] = new TH1Fraction("ErrorTypeOccurance", "Errors of differen types per event", 5, 0, 5);
+  mFractions1D[kErrorTypeOccurance]->GetXaxis()->SetTitle("Error Type");
+  mFractions1D[kErrorTypeOccurance]->SetStats(0);
+  mFractions1D[kErrorTypeOccurance]->GetYaxis()->SetTitle("Occurance (event^{-1})");
+  const char* errorLabel[] = { "wrong ALTRO", "mapping", "ch. header",
+                               "ch. payload", "wrond hw addr" };
+  for (int i = 1; i <= 5; i++) {
+    mFractions1D[kErrorTypeOccurance]->GetXaxis()->SetBinLabel(i, errorLabel[i - 1]);
+  }
+  getObjectsManager()->startPublishing(mFractions1D[kErrorTypeOccurance]);
 
   mHist1D[kBadMapSummary] = new TH1F("BadMapSummary", "Number of bad channels", 4, 1., 5.); // xaxis: FEE card number + 2 for TRU and global errors
   mHist1D[kBadMapSummary]->GetXaxis()->SetTitle("module");
@@ -231,6 +248,8 @@ void RawQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       int cont = mHist2DBitmask[kErrorType]->GetBinContent(ibin);
       cont |= (1 << e.getError());
       mHist2DBitmask[kErrorType]->SetBinContent(ibin, cont);
+      mFractions1D[kErrorTypeOccurance]->fillUnderlying(e.getError() - 3);
+      // LOG(info) << "Error of type " << (int)e.getError();
     }
   }
   // Bad Map
@@ -280,6 +299,7 @@ void RawQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   // Cells
   auto cells = ctx.inputs().get<gsl::span<o2::phos::Cell>>("cells");
   auto cellsTR = ctx.inputs().get<gsl::span<o2::phos::TriggerRecord>>("cellstr");
+  mFractions1D[kErrorTypeOccurance]->increaseEventCounter(cellsTR.size());
 
   if (mMode == 0) { // Physics
     FillPhysicsHistograms(cells, cellsTR);
@@ -297,6 +317,7 @@ void RawQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void RawQcTask::endOfCycle()
 {
+  mFractions1D[kErrorTypeOccurance]->update();
   if (mCheckChi2) {
     if (!mFinalized) { // not already calculated
       for (Int_t mod = 0; mod < 4; mod++) {
@@ -396,6 +417,7 @@ void RawQcTask::endOfActivity(Activity& /*activity*/)
 
 void RawQcTask::reset()
 {
+  eventCounter = 0;
   // clean all the monitor objects here
   mFinalized = false;
 
