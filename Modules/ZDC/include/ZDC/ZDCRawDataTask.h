@@ -56,6 +56,26 @@ class ZDCRawDataTask final : public TaskInterface
     TH2* histo;
     std::vector<std::string> condHisto;
   };
+  struct sSample {
+    int id_sample;
+    int num_entry;
+    int sum;
+    double mean;
+  };
+
+  struct sMinSample {
+    int id_min_sample;
+    double min_mean;
+    int num_entry;
+    std::vector<sSample> vSamples;
+  };
+
+  struct sAlignment {
+    std::string name_ch;
+    int bin;
+    sMinSample minSample;
+  };
+
   // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& ctx) override;
   void startOfActivity(Activity& activity) override;
@@ -71,7 +91,7 @@ class ZDCRawDataTask final : public TaskInterface
   int processWord(const uint32_t* word);
   int getHPos(uint32_t board, uint32_t ch, int matrix[o2::zdc::NModules][o2::zdc::NChPerModule]);
   std::string getNameChannel(int imod, int ich);
-  void setNameChannel(int imod, int ich, std::string namech);
+  void setNameChannel(int imod, int ich, std::string namech, int bin);
   void setBinHisto1D(int numBinX, double minBinX, double maxBinX);
   void setBinHisto2D(int numBinX, double minBinX, double maxBinX, int numBinY, double minBinY, double maxBinY);
   void setNumBinX(int nbin) { fNumBinX = nbin; };
@@ -106,7 +126,8 @@ class ZDCRawDataTask final : public TaskInterface
   bool decodeTriggerBitChannel(std::vector<std::string> tokenString, int lineNumber);
   bool decodeTriggerBitHitChannel(std::vector<std::string> tokenString, int lineNumber);
   bool decodeSummary(std::vector<std::string> tokenString, int lineNumber);
-  void DumpHistoStructure();
+  void dumpHistoStructure();
+  void resetAlign();
   void setVerbosity(int v)
   {
     mVerbosity = v;
@@ -130,6 +151,8 @@ class ZDCRawDataTask final : public TaskInterface
   TH2* fTriggerBitsHits;
   TH1* fSummaryPedestal;
   TH1* fSummaryRate;
+  TH2* fSummaryAlign;
+  TH2* fSummaryAlignShift;
   TH1* fOverBc;
 
   std::vector<std::string> fNameHisto;
@@ -143,6 +166,10 @@ class ZDCRawDataTask final : public TaskInterface
   int fNumBinY = 0;
   double fMinBinY = 0;
   double fMaxBinY = 0;
+  int fNumCycle = 0;
+  int fAlignCycle = 1;
+  int fAlignNumEntries = 2000;
+  sAlignment fMatrixAlign[o2::zdc::NModules][o2::zdc::NChPerModule];
 };
 
 } // namespace o2::quality_control_modules::zdc
