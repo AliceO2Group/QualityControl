@@ -33,9 +33,8 @@ void customize(std::vector<CompletionPolicy>& policies)
   auto matcher = [](framework::DeviceSpec const& device) {
     return device.name.find(receiverName) != std::string::npos;
   };
-  auto callback = CompletionPolicyHelpers::consumeWhenAny().callback;
 
-  policies.emplace_back("receiverCompletionPolicy", matcher, callback);
+  policies.emplace_back(CompletionPolicyHelpers::consumeWhenAny("receiverCompletionPolicy", matcher));
 }
 
 #include "getTestDataDirectory.h"
