@@ -252,7 +252,7 @@ void TOFMatchedTracks::initialize(o2::framework::InitContext& /*ctx*/)
   }
 }
 
-void TOFMatchedTracks::startOfActivity(Activity& activity)
+void TOFMatchedTracks::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
   reset();
@@ -719,7 +719,7 @@ void TOFMatchedTracks::endOfCycle()
   }
 }
 
-void TOFMatchedTracks::endOfActivity(Activity& /*activity*/)
+void TOFMatchedTracks::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

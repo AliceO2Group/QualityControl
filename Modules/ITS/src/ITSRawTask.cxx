@@ -167,7 +167,7 @@ void ITSRawTask::initialize(o2::framework::InitContext& /*ctx*/)
   mYellowed = 0;
 }
 
-void ITSRawTask::startOfActivity(Activity& /*activity*/)
+void ITSRawTask::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "startOfActivity" << ENDM;
 }
@@ -686,7 +686,7 @@ void ITSRawTask::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void ITSRawTask::endOfActivity(Activity& /*activity*/)
+void ITSRawTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

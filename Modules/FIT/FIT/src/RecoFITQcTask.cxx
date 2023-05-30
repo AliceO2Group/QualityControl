@@ -77,7 +77,7 @@ void RecoFITQcTask::initialize(o2::framework::InitContext& ctx)
   }
 }
 
-void RecoFITQcTask::startOfActivity(Activity& activity)
+void RecoFITQcTask::startOfActivity(const Activity& activity)
 {
 }
 
@@ -141,7 +141,7 @@ void RecoFITQcTask::endOfCycle()
   // default TH1Reductor gets only mean,stddev and entries (no integral)
 }
 
-void RecoFITQcTask::endOfActivity(Activity& /*activity*/)
+void RecoFITQcTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

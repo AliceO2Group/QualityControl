@@ -58,7 +58,7 @@ void SkeletonTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 }
 
-void SkeletonTask::startOfActivity(Activity& activity)
+void SkeletonTask::startOfActivity(const Activity& activity)
 {
   // THIS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
   ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
@@ -148,7 +148,7 @@ void SkeletonTask::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void SkeletonTask::endOfActivity(Activity& /*activity*/)
+void SkeletonTask::endOfActivity(const Activity& /*activity*/)
 {
   // THIS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;

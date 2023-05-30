@@ -91,7 +91,7 @@ void ClustersTask::initialize(o2::framework::InitContext& /*ic*/)
   mSolar2FeeLinkMapper = o2::mch::raw::createSolar2FeeLinkMapper<o2::mch::raw::ElectronicMapperGenerated>();
 }
 
-void ClustersTask::startOfActivity(Activity& activity)
+void ClustersTask::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity : " << activity.mId << ENDM;
 }
@@ -186,7 +186,7 @@ void ClustersTask::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void ClustersTask::endOfActivity(Activity& /*activity*/)
+void ClustersTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

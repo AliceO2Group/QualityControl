@@ -83,7 +83,7 @@ void RawDigits::initialize(o2::framework::InitContext& /*ctx*/)
   });
 }
 
-void RawDigits::startOfActivity(Activity& /*activity*/)
+void RawDigits::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "startOfActivity" << ENDM;
 }
@@ -118,7 +118,7 @@ void RawDigits::endOfCycle()
   }
 }
 
-void RawDigits::endOfActivity(Activity& /*activity*/)
+void RawDigits::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

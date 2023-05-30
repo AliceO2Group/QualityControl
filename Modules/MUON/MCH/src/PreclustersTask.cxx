@@ -70,7 +70,7 @@ void PreclustersTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 //_________________________________________________________________________________________________
 
-void PreclustersTask::startOfActivity(Activity& /*activity*/)
+void PreclustersTask::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Info, Devel) << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 }
@@ -337,7 +337,7 @@ void PreclustersTask::endOfCycle()
 
 //_________________________________________________________________________________________________
 
-void PreclustersTask::endOfActivity(Activity& /*activity*/)
+void PreclustersTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Info, Devel) << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 }

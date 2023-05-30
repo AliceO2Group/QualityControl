@@ -94,7 +94,7 @@ void RofsTask::initialize(o2::framework::InitContext& /*ic*/)
   publishObject(mHistRofTime_Signal, "hist", false);
 }
 
-void RofsTask::startOfActivity(Activity& activity)
+void RofsTask::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity : " << activity.mId << ENDM;
 }
@@ -165,7 +165,7 @@ void RofsTask::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void RofsTask::endOfActivity(Activity& /*activity*/)
+void RofsTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

@@ -75,7 +75,7 @@ void DataCompressionQcTask::initialize(o2::framework::InitContext&)
   }
 }
 
-void DataCompressionQcTask::startOfActivity(Activity&)
+void DataCompressionQcTask::startOfActivity(const Activity&)
 {
   ILOG(Debug, Devel) << "startOfActivity" << ENDM;
 
@@ -117,7 +117,7 @@ void DataCompressionQcTask::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void DataCompressionQcTask::endOfActivity(Activity&)
+void DataCompressionQcTask::endOfActivity(const Activity&)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

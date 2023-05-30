@@ -225,7 +225,7 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 }
 
-void QcMFTDigitTask::startOfActivity(Activity& /*activity*/)
+void QcMFTDigitTask::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "startOfActivity" << ENDM;
 
@@ -307,7 +307,7 @@ void QcMFTDigitTask::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void QcMFTDigitTask::endOfActivity(Activity& /*activity*/)
+void QcMFTDigitTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

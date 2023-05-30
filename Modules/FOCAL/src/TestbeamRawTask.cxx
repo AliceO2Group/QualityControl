@@ -460,7 +460,7 @@ void TestbeamRawTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 }
 
-void TestbeamRawTask::startOfActivity(Activity& activity)
+void TestbeamRawTask::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
   reset();
@@ -971,7 +971,7 @@ void TestbeamRawTask::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void TestbeamRawTask::endOfActivity(Activity& /*activity*/)
+void TestbeamRawTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

@@ -39,7 +39,7 @@ void AnalysisTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mHistogram);
 }
 
-void AnalysisTask::startOfActivity(Activity& activity)
+void AnalysisTask::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity" << activity.mId << ENDM;
   mHistogram->Reset();
@@ -80,7 +80,7 @@ void AnalysisTask::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void AnalysisTask::endOfActivity(Activity& /*activity*/)
+void AnalysisTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

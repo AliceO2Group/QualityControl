@@ -107,7 +107,7 @@ void PedestalTask::initialize(o2::framework::InitContext& /*ctx*/)
   mNEventsFromLastFillHistogramsCall = 0;
 }
 
-void PedestalTask::startOfActivity(Activity& activity)
+void PedestalTask::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity() : Run Number of Activity is " << activity.mId << ENDM;
   resetHistograms();
@@ -322,7 +322,7 @@ void PedestalTask::endOfCycle()
   }
 }
 
-void PedestalTask::endOfActivity(Activity& /*activity*/)
+void PedestalTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
   if (!mMonitorDigits) {

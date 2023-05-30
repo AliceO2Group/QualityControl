@@ -89,7 +89,7 @@ void HmpidTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   }
 }
 
-void HmpidTaskDigits::startOfActivity(Activity& /*activity*/)
+void HmpidTaskDigits::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "startOfActivity" << ENDM;
   hOccupancyAvg->Reset();
@@ -154,7 +154,7 @@ void HmpidTaskDigits::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void HmpidTaskDigits::endOfActivity(Activity& /*activity*/)
+void HmpidTaskDigits::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

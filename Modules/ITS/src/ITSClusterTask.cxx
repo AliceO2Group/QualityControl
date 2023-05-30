@@ -125,7 +125,7 @@ void ITSClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   publishHistos();
 }
 
-void ITSClusterTask::startOfActivity(Activity& /*activity*/)
+void ITSClusterTask::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "startOfActivity" << ENDM;
   reset();
@@ -337,7 +337,7 @@ void ITSClusterTask::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void ITSClusterTask::endOfActivity(Activity& /*activity*/)
+void ITSClusterTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

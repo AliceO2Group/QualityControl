@@ -182,7 +182,7 @@ void PedestalsTask::initialize(o2::framework::InitContext& /*ctx*/)
   mPrintLevel = 0;
 }
 
-void PedestalsTask::startOfActivity(Activity& /*activity*/)
+void PedestalsTask::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "startOfActivity" << ENDM;
 }
@@ -603,7 +603,7 @@ void PedestalsTask::endOfCycle()
   fillGlobalHistograms(mHistogramNoiseXY, mHistogramNoiseMCH, true);
 }
 
-void PedestalsTask::endOfActivity(Activity& /*activity*/)
+void PedestalsTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

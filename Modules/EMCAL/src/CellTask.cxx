@@ -300,7 +300,7 @@ void CellTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 }
 
-void CellTask::startOfActivity(Activity& /*activity*/)
+void CellTask::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "startOfActivity" << ENDM;
   reset();
@@ -528,7 +528,7 @@ void CellTask::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void CellTask::endOfActivity(Activity& /*activity*/)
+void CellTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

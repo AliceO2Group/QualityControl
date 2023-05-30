@@ -145,7 +145,7 @@ void PulseHeight::initialize(o2::framework::InitContext& /*ctx*/)
   retrieveCCDBSettings();
 }
 
-void PulseHeight::startOfActivity(Activity& activity)
+void PulseHeight::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
 }
@@ -446,7 +446,7 @@ void PulseHeight::endOfCycle()
   mPulseHeightScaled->Scale(1 / scale);
 }
 
-void PulseHeight::endOfActivity(Activity& /*activity*/)
+void PulseHeight::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

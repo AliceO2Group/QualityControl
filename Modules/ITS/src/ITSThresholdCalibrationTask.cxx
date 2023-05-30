@@ -86,7 +86,7 @@ void ITSThresholdCalibrationTask::initialize(o2::framework::InitContext& /*ctx*/
   publishHistos();
 }
 
-void ITSThresholdCalibrationTask::startOfActivity(Activity& activity)
+void ITSThresholdCalibrationTask::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity" << ENDM;
 }
@@ -336,7 +336,7 @@ void ITSThresholdCalibrationTask::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void ITSThresholdCalibrationTask::endOfActivity(Activity& /*activity*/)
+void ITSThresholdCalibrationTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

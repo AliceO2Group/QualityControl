@@ -198,7 +198,7 @@ void QcMFTReadoutTask::initialize(o2::framework::InitContext& /*ctx*/)
   getChipMapData();
 }
 
-void QcMFTReadoutTask::startOfActivity(Activity& /*activity*/)
+void QcMFTReadoutTask::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "startOfActivity" << ENDM;
 
@@ -293,7 +293,7 @@ void QcMFTReadoutTask::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void QcMFTReadoutTask::endOfActivity(Activity& /*activity*/)
+void QcMFTReadoutTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

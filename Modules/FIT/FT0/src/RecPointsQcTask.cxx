@@ -134,7 +134,7 @@ void RecPointsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   rebinFromConfig(); // after all histos are created
 }
 
-void RecPointsQcTask::startOfActivity(Activity& activity)
+void RecPointsQcTask::startOfActivity(const Activity& activity)
 {
   ILOG(Info, Support) << "@@@@ startOfActivity" << activity.mId << ENDM;
   mHistTime2Ch->Reset();
@@ -239,7 +239,7 @@ void RecPointsQcTask::endOfCycle()
   // default TH1Reductor gets only mean,stddev and entries (no integral)
 }
 
-void RecPointsQcTask::endOfActivity(Activity& /*activity*/)
+void RecPointsQcTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

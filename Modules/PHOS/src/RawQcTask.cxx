@@ -191,7 +191,7 @@ void RawQcTask::InitHistograms()
   }
 }
 
-void RawQcTask::startOfActivity(Activity& /*activity*/)
+void RawQcTask::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "startOfActivity" << ENDM;
   reset();
@@ -409,7 +409,7 @@ void RawQcTask::endOfCycle()
   }
 }
 
-void RawQcTask::endOfActivity(Activity& /*activity*/)
+void RawQcTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Info, Support) << "endOfActivity" << ENDM;
   endOfCycle();
