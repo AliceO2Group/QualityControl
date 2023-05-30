@@ -77,7 +77,6 @@ class DigitsQcTask final : public TaskInterface
 
   std::unique_ptr<TH1F> mDigitBCCounts{ nullptr };
 
-  bool mResetAtCycle = false; ///< Reset histograms at each cycle
 };
 
 } // namespace o2::quality_control_modules::mid
