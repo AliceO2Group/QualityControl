@@ -65,7 +65,7 @@ class UserCodeInterface
   std::shared_ptr<o2::ccdb::CcdbApi> mCcdbApi;
   std::string mCcdbUrl; // we need to keep the url in addition to the ccdbapi because we don't initialize the latter before the first call
 
-  ClassDef(UserCodeInterface, 1)
+  ClassDef(UserCodeInterface, 2)
 };
 
 template <typename T>
