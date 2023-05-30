@@ -87,6 +87,7 @@ add_library(O2QualityControl
   src/SliceTrendingTask.cxx
   src/SliceTrendingTaskConfig.cxx
   src/Bookkeeping.cxx
+  src/CustomParameters.cxx
   src/runnerUtils.cxx)
 
 
@@ -260,6 +261,7 @@ set(TEST_SRCS
     test/testRepoPathUtils.cxx
     test/testQualitiesToTRFCollectionConverter.cxx
     test/testUserCodeInterface.cxx
+    test/testCustomParameters.cxx
   )
 
 set(TEST_ARGS
@@ -280,6 +282,7 @@ set(TEST_ARGS
     ""
     "-b --run"
     "-b --run"
+    ""
     ""
     ""
     ""

@@ -57,7 +57,7 @@ std::vector<TCanvas*> toVector(std::vector<std::unique_ptr<TCanvas>>& input)
   return output;
 }
 
-void fillCanvases(const o2::tpc::CalDet<float>& calDet, std::vector<std::unique_ptr<TCanvas>>& canvases, const std::unordered_map<std::string, std::string>& params, const std::string paramName)
+void fillCanvases(const o2::tpc::CalDet<float>& calDet, std::vector<std::unique_ptr<TCanvas>>& canvases, const quality_control::core::CustomParameters& params, const std::string paramName)
 {
   const std::string parNBins = paramName + "NBins";
   const std::string parXMin = paramName + "XMin";
