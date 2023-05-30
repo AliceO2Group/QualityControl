@@ -87,6 +87,8 @@ class CellTask final : public TaskInterface
     TH2* mCellTimeSupermodule = nullptr;      ///< Uncalibrated cell time versus supermodule
     TH2* mCellTimeSupermoduleCalib = nullptr; ///< Calibrated cell time (good cells) versus supermodule
     TH2* mCellAmpSupermoduleBad = nullptr;    ///< Cell amplitude bad cells versus supermodule
+    TH2* mCellAmplitudeTime = nullptr;        ///< Cell amplitude vs. time (raw)
+    TH2* mCellAmplitudeTimeCalib = nullptr;   ///< Cell amplitude vs. time (calibrated)
 
     TH2* mCellOccupancy = nullptr;                      ///< Cell occupancy EMCAL and DCAL
     TH2* mCellOccupancyThr = nullptr;                   ///< Cell occupancy EMCAL and DCAL with Energy trheshold
