@@ -40,6 +40,34 @@ class ITSDecodingErrorCheck : public o2::quality_control::checker::CheckInterfac
   // Override interface
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
+  std::vector<int> vDecErrorLimits, vListErrorIdBad, vListErrorIdMedium;
+  bool doFlatCheck = false;
+
+  TString sErrorDesc[23] = {
+    "Page data does not start with expected RDH",                        // ErrNoRDHAtStart
+    "RDH is stopped, but the time is not matching the stop packet",      // ErrPageNotStopped
+    "Page with RDH.stop does not contain diagnostic word only",          // ErrStopPageNotEmpty
+    "RDH page counters for the same RU/trigger are not continuous",      // ErrPageCounterDiscontinuity
+    "RDH and GBT header page counters are not consistent",               // ErrRDHvsGBTHPageCnt
+    "GBT trigger word was expected but not found",                       // ErrMissingGBTTrigger
+    "GBT payload header was expected but not found",                     // ErrMissingGBTHeader
+    "GBT payload trailer was expected but not found",                    // ErrMissingGBTTrailer
+    "All lanes were stopped but the page counter in not 0",              // ErrNonZeroPageAfterStop
+    "End of FEE data reached while not all lanes received stop",         // ErrUnstoppedLanes
+    "Data was received for stopped lane",                                // ErrDataForStoppedLane
+    "No data was seen for lane (which was not in timeout)",              // ErrNoDataForActiveLane
+    "ChipID (on module) was different from the lane ID on the IB stave", // ErrIBChipLaneMismatch
+    "Cable data does not start with chip header or empty chip",          // ErrCableDataHeadWrong
+    "Active lanes pattern conflicts with expected for given RU type",    // ErrInvalidActiveLanes
+    "Jump in RDH_packetCounter",                                         // ErrPacketCounterJump
+    "Packet done is missing in the trailer while CRU page is not over",  // ErrPacketDoneMissing
+    "Wrong/missing diagnostic GBT word after RDH with stop",             // ErrMissingDiagnosticWord
+    "GBT word not recognized",                                           // ErrGBTWordNotRecognized
+    "Wrong cable ID",                                                    // ErrWrongeCableID
+    "Unexpected CRU page alignment padding word",                        // ErrWrongAlignmentWord
+    "ROF in future, pause decoding to synchronize",                      // ErrMissingROF
+    "Old ROF, discarding",                                               // ErrOldROF
+  };
   template <typename T>
   std::vector<T> convertToArray(std::string input)
   {
