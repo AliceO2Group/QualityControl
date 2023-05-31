@@ -163,12 +163,6 @@ void DigitsQcTask::endOfCycle()
 
   // Then fill from the strip histogram
   mDigitsHelper.fillMapHistos(mHits.get(), mBendHitsMap, mNBendHitsMap, mLocalBoardsMap);
-
-  // Fill the summary multiplicity histogram
-  for (int ich = 0; ich < 4; ++ich) {
-    mMeanMultiHits->SetBinContent(1 + ich, mMultHitB[ich]->GetMean());
-    mMeanMultiHits->SetBinContent(5 + ich, mMultHitNB[ich]->GetMean());
-  }
 }
 
 void DigitsQcTask::endOfActivity(Activity& /*activity*/)

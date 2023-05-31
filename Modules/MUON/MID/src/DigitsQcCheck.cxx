@@ -64,56 +64,65 @@ Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
 {
   Quality result = Quality::Null;
   // This info must be available from the beginning
+  TH1* meanMultiHits = nullptr;
   for (auto& item : *moMap) {
     if (item.second->getName() == "NbDigitTF") {
       mHistoHelper.setNTFs(static_cast<TH1F*>(item.second->getObject())->GetBinContent(1));
-      break;
+    } else if (item.second->getName() == "MeanMultiHits") {
+      meanMultiHits = static_cast<TH1*>(item.second->getObject());
     }
   }
 
-  for (auto& [moName, mo] : *moMap) {
-    if (mo->getName() == "MeanMultiHits") {
-      int nGood = 0, nNull = 0, nBad = 0, nMedium = 0;
-      auto globalQual = Quality::Null;
-      for (int icath = 0; icath < 2; ++icath) {
-        for (int ich = 0; ich < 4; ++ich) {
-          int ibin = 1 + 4 * icath + ich;
-          auto histo = static_cast<TH1F*>(mo->getObject());
-          auto mean = histo->GetBinContent(ibin);
-          auto qual = Quality::Good;
-          if (mean == 0.) {
-            ++nNull;
-            qual = Quality::Null;
-          } else if (mean > mMeanMultThreshold || mean < mMinMultThreshold) {
-            qual = Quality::Bad;
-            result = qual;
-            ++nBad;
-          } else if (mean > mMeanMultThreshold / 2.) {
-            qual = Quality::Medium;
-            ++nMedium;
-          } else {
-            ++nGood;
-          }
-          std::string hName = "MultHit";
-          hName += histo->GetXaxis()->GetBinLabel(ibin);
-          mQualityMap[hName] = qual;
-        }
-      }
-      if (nBad > 0) {
-        globalQual = Quality::Bad;
-      } else if (nMedium > 0) {
-        globalQual = Quality::Medium;
-      } else if (nGood == 8) {
-        globalQual = Quality::Good;
-      }
-      mQualityMap[mo->getName()] = globalQual;
+  // Fill the summary multiplicity histogram
+  if (meanMultiHits) {
+    meanMultiHits->Reset();
+    std::unordered_map<std::string, int> ref;
+    for (int ibin = 1; ibin <= meanMultiHits->GetNbinsX(); ++ibin) {
+      std::string hName = "MultHit";
+      hName += meanMultiHits->GetXaxis()->GetBinLabel(ibin);
+      ref[hName] = ibin;
     }
 
-    if (mo->getName() == "LocalBoardsMap") {
+    int nGood = 0, nNull = 0, nBad = 0, nMedium = 0;
+    auto globalQual = Quality::Null;
+    for (auto& item : *moMap) {
+      if (item.second->getName().find("MultHitMT") != std::string::npos) {
+        std::string hName = item.second->getName();
+        auto mean = static_cast<TH1*>(item.second->getObject())->GetMean();
+        meanMultiHits->SetBinContent(ref[hName], mean);
+        auto qual = Quality::Good;
+        if (mean == 0.) {
+          ++nNull;
+          qual = Quality::Null;
+        } else if (mean > mMeanMultThreshold || mean < mMinMultThreshold) {
+          qual = Quality::Bad;
+          result = qual;
+          ++nBad;
+        } else if (mean > mMeanMultThreshold / 2.) {
+          qual = Quality::Medium;
+          ++nMedium;
+        } else {
+          ++nGood;
+        }
+        mQualityMap[hName] = qual;
+      }
+    }
+    if (nBad > 0) {
+      globalQual = Quality::Bad;
+    } else if (nMedium > 0) {
+      globalQual = Quality::Medium;
+    } else if (nGood == 8) {
+      globalQual = Quality::Good;
+    }
+    mQualityMap[meanMultiHits->GetName()] = globalQual;
+  }
+
+  for (auto& item : *moMap) {
+    if (item.second->getName() == "LocalBoardsMap") {
       if (mHistoHelper.getNTFs() > 0) {
         int nEmptyLB = 0;
         int nBadLB = 0;
-        auto histo = static_cast<TH2F*>(mo->getObject());
+        auto histo = static_cast<TH2F*>(item.second->getObject());
         mHistoHelper.normalizeHistoTokHz(histo);
         for (int bx = 1; bx < 15; bx++) {
           for (int by = 1; by < 37; by++) {
@@ -147,7 +156,7 @@ Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
           auto flag = o2::quality_control::FlagReason();
           qual.addReason(flag, fmt::format("{} boards empty", nEmptyLB));
         }
-        mQualityMap[mo->getName()] = qual;
+        mQualityMap[item.second->getName()] = qual;
       } // if mNTFInSeconds > 0.
     }
   }
