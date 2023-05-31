@@ -43,6 +43,7 @@ Quality ITSFhrCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
       auto* h = dynamic_cast<TH1D*>(mo->getObject());
       if (h->GetMaximum() > 0) {
         result.set(Quality::Bad);
+        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), "BAD:Decoding error(s) detected;");
       }
     } else if (mo->getName() == "General/General_Occupancy") {
       auto* h = dynamic_cast<TH2Poly*>(mo->getObject());
@@ -55,7 +56,7 @@ Quality ITSFhrCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
       TIter next(h->GetBins());
       int ibin = 1;
       double_t nBadStaves[4];
-
+      TString sErrorReason = "";
       while (TH2PolyBin* Bin = (TH2PolyBin*)next()) {
         if (std::find(skipbins.begin(), skipbins.end(), ibin) != skipbins.end()) {
           ibin++;
@@ -72,12 +73,18 @@ Quality ITSFhrCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
           if (h->GetBinContent(ibin) > fhrcutIB) {
             result.updateMetadata("Gen_Occu_IB", "bad");
             result.set(Quality::Bad);
+            TString text = "Bad: IB stave has high FHR;";
+            if (!checkReason(result, text))
+              result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), text.Data());
           }
         } else { // OB
           fhrcutOB = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "fhrcutOB", fhrcutOB);
           if (h->GetBinContent(ibin) > fhrcutOB) {
             result.updateMetadata("Gen_Occu_OB", "bad");
             result.set(Quality::Bad);
+            TString text = "Bad: OB stave has high FHR;";
+            if (!checkReason(result, text))
+              result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), text.Data());
           }
         }
 
@@ -91,10 +98,12 @@ Quality ITSFhrCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
         if (nBadStaves[iSector] / 48 > 0.1) {
           result.updateMetadata("Gen_Occu_empty", "bad");
           result.set(Quality::Bad);
+          result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), "Bad: Many empty staves in sector; IGNORE if run has just started OR it's TECH RUN");
           break;
         } else if (nBadStaves[iSector] / 48 > 0.05) {
           result.updateMetadata("Gen_Occu_empty", "medium");
           result.set(Quality::Medium);
+          result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), "Medium: Many empty staves in sector; IGNORE if run has just started OR it's TECH RUN");
         }
       }
 
@@ -170,21 +179,22 @@ void ITSFhrCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
   if (mo->getName() == "General/ErrorPlots") {
     auto* h = dynamic_cast<TH1D*>(mo->getObject());
     if (checkResult == Quality::Good) {
-      text[0] = new TLatex(10, 0.6, "Quality::Good");
-      text[1] = new TLatex(10, 0.4, "There is no Error found");
+      text[0] = new TLatex(0.05, 0.95, "#bf{Quality::Good}");
+      text[1] = new TLatex(0.2, 0.4, "There is no Error found");
       for (int i = 0; i < 2; ++i) {
-        text[i]->SetTextAlign(23);
-        text[i]->SetTextSize(0.08);
+        text[i]->SetTextFont(43);
+        text[i]->SetTextSize(0.06);
         text[i]->SetTextColor(kGreen);
+        text[i]->SetNDC();
         h->GetListOfFunctions()->Add(text[i]);
       }
     } else if (checkResult == Quality::Bad) {
-      text[0] = new TLatex(0.2, 0.7, "Quality::Bad");
+      text[0] = new TLatex(0.05, 0.95, "#bf{Quality::Bad}");
       text[1] = new TLatex(0.2, 0.65, "Decoding error(s) detected");
       text[2] = new TLatex(0.2, 0.6, "Do not call, create a log entry");
       for (int i = 0; i < 3; ++i) {
         text[i]->SetTextFont(43);
-        text[i]->SetTextSize(0.04);
+        text[i]->SetTextSize(0.06);
         text[i]->SetTextColor(kRed);
         text[i]->SetNDC();
         h->GetListOfFunctions()->Add(text[i]);
@@ -199,7 +209,7 @@ void ITSFhrCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
       status = "Quality GOOD";
       textColor = kGreen;
     } else if (checkResult == Quality::Bad) {
-      status = "Quality Bad (call expert)";
+      status = "Quality::Bad (call expert)";
       textColor = kRed;
     }
 
@@ -237,9 +247,9 @@ void ITSFhrCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
       h->GetListOfFunctions()->Add(tInfo[2]->Clone());
     }
 
-    tInfo[3] = std::make_shared<TLatex>(0.12, 0.835, Form("#bf{%s}", status.Data()));
+    tInfo[3] = std::make_shared<TLatex>(0.05, 0.95, Form("#bf{%s}", status.Data()));
     tInfo[3]->SetTextColor(textColor);
-    tInfo[3]->SetTextSize(0.03);
+    tInfo[3]->SetTextSize(0.06);
     tInfo[3]->SetTextFont(43);
     tInfo[3]->SetNDC();
     h->GetListOfFunctions()->Add(tInfo[3]->Clone());
@@ -321,6 +331,15 @@ void ITSFhrCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
     if (ShifterInfoText[mo->getName()] != "")
       h->GetListOfFunctions()->Add(tShifterInfo->Clone());
   }
+}
+bool ITSFhrCheck::checkReason(Quality checkResult, TString text)
+{
+  auto reasons = checkResult.getReasons();
+  for (int i = 0; i < int(reasons.size()); i++) {
+    if (text.Contains(reasons[i].second.c_str()))
+      return true;
+  }
+  return false;
 }
 
 } // namespace o2::quality_control_modules::its

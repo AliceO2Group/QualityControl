@@ -51,26 +51,32 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
 
         result.updateMetadata("CheckMean", "medium");
         result.set(Quality::Medium);
+        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("Medium: Mean (%.1f) is outside 5.2-5.9, ignore for COSMICS and TECHNICALS", h->GetMean()));
       }
       if (h->GetBinContent(h->FindBin(4)) < 1e-15) {
         result.updateMetadata("CheckTracks4", "bad");
         result.set(Quality::Bad);
+        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), "BAD: no tracks with 4 clusters");
       }
       if (h->GetBinContent(h->FindBin(5)) < 1e-15) {
         result.updateMetadata("CheckTracks5", "bad");
         result.set(Quality::Bad);
+        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), "BAD: no tracks with 5 clusters");
       }
       if (h->GetBinContent(h->FindBin(6)) < 1e-15) {
         result.updateMetadata("CheckTracks6", "bad");
         result.set(Quality::Bad);
+        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), "BAD: no tracks with 6 clusters");
       }
       if (h->GetBinContent(h->FindBin(7)) < 1e-15) {
         result.updateMetadata("CheckTracks7", "bad");
         result.set(Quality::Bad);
+        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), "BAD: no tracks with 7 clusters");
       }
       if (h->GetEntries() < 1e-15) {
         result.updateMetadata("CheckEmpty", "bad");
         result.set(Quality::Bad);
+        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), "BAD: no tracks!");
       }
     }
 
@@ -87,14 +93,17 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
       if (hAngular->GetEntries() < 1e-15) {
         result.updateMetadata("CheckAngEmpty", "bad");
         result.set(Quality::Bad);
+        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), "BAD: no tracks!");
       }
       if (ratioEta > 0.3) {
         result.updateMetadata("CheckAsymmEta", "bad");
         result.set(Quality::Bad);
+        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), "BAD: Eta asymmetry");
       }
       if (ratioPhi > 0.3) {
         result.updateMetadata("CheckAsymmPhi", "bad");
         result.set(Quality::Bad);
+        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), "BAD: Phi asymmetry");
       }
     }
 
@@ -256,9 +265,9 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       }
     }
 
-    tInfo = std::make_shared<TLatex>(0.12, 0.65, Form("#bf{%s}", status.Data()));
+    tInfo = std::make_shared<TLatex>(0.05, 0.95, Form("#bf{%s}", status.Data()));
     tInfo->SetTextFont(43);
-    tInfo->SetTextSize(0.04);
+    tInfo->SetTextSize(0.06);
     tInfo->SetTextColor(textColor);
     tInfo->SetNDC();
     h->GetListOfFunctions()->Add(tInfo->Clone());
@@ -301,9 +310,9 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       }
     }
 
-    tInfo = std::make_shared<TLatex>(0.12, 0.75, Form("#bf{%s}", status.Data()));
+    tInfo = std::make_shared<TLatex>(0.05, 0.95, Form("#bf{%s}", status.Data()));
     tInfo->SetTextFont(43);
-    tInfo->SetTextSize(0.04);
+    tInfo->SetTextSize(0.06);
     tInfo->SetTextColor(textColor);
     tInfo->SetNDC();
     h->GetListOfFunctions()->Add(tInfo->Clone());

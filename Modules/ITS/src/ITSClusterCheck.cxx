@@ -63,18 +63,25 @@ Quality ITSClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
         int ilayer = iy <= hp->GetNbinsY() / 2 ? hp->GetNbinsY() / 2 - iy : iy - hp->GetNbinsY() / 2 - 1;
         std::string tb = iy <= hp->GetNbinsY() / 2 ? "B" : "T";
         result.addMetadata(Form("Layer%d%s", ilayer, tb.c_str()), "good");
+        bool mediumHalfLayer = false;
         for (int ix = 1; ix <= hp->GetNbinsX(); ix++) { // loop on staves
           if (std::find(xypairs.begin(), xypairs.end(), std::make_pair(ix, iy)) != xypairs.end()) {
             continue;
           }
+
           maxcluocc[ilayer] = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, Form("maxcluoccL%d", ilayer), maxcluocc[ilayer]);
           if (hp->GetBinContent(ix, iy) > maxcluocc[ilayer]) {
             result.set(Quality::Medium);
             result.updateMetadata(Form("Layer%d%s", ilayer, tb.c_str()), "medium");
+            mediumHalfLayer = true;
           }
         }
+        if (mediumHalfLayer)
+          result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("Medium: Layer%d%s has high cluster occupancy;", ilayer, tb.c_str()));
+
         // check for empty bins (empty staves)
         result.addMetadata(Form("Layer%d%s_empty", ilayer, tb.c_str()), "good");
+        bool badHalfLayer = false;
         for (int ix = 12; ix > 12 - mNStaves[ilayer] / 4; ix--) {
           if (std::find(xypairs.begin(), xypairs.end(), std::make_pair(ix, iy)) != xypairs.end()) {
             continue;
@@ -82,6 +89,7 @@ Quality ITSClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
           if (hp->GetBinContent(ix, iy) < 1e-15) {
             result.updateMetadata(Form("Layer%d%s_empty", ilayer, tb.c_str()), "bad");
             result.set(Quality::Bad);
+            badHalfLayer = true;
             ILOG(Debug, Devel) << "************************ " << Form("Layer%d%s_empty", ilayer, tb.c_str()) << ENDM;
           }
         }
@@ -93,12 +101,14 @@ Quality ITSClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
           if (hp->GetBinContent(ix, iy) < 1e-15) {
             result.updateMetadata(Form("Layer%d%s_empty", ilayer, tb.c_str()), "bad");
             result.set(Quality::Bad);
+            badHalfLayer = true;
           }
         }
+        if (badHalfLayer)
+          result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("BAD: Layer%d%s has empty stave;", ilayer, tb.c_str()));
       }
     } // end GeneralOccupancy
   }
-
   return result;
 } // end check
 
@@ -158,8 +168,8 @@ void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
     if (checkResult == Quality::Good) {
       status = "Quality::GOOD";
       textColor = kGreen;
-      positionX = 0.12;
-      positionY = 0.75;
+      positionX = 0.05;
+      positionY = 0.95;
     } else {
       for (int il = 0; il < 14; il++) {
         std::string tb = il < 7 ? "T" : "B";
@@ -170,10 +180,10 @@ void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
           text[il]->SetTextColor(kOrange);
           text[il]->SetNDC();
           h->GetListOfFunctions()->Add(text[il]->Clone());
-          status = "#splitline{Quality::Medium}{do NOT call, create log entry}";
+          status = "Quality::Medium, create log entry";
           textColor = kOrange;
-          positionX = 0.12;
-          positionY = 0.75;
+          positionX = 0.05;
+          positionY = 0.95;
         }
 
         if (strcmp(checkResult.getMetadata(Form("Layer%d%s_empty", il % 7, tb.c_str())).c_str(), "bad") == 0) {
@@ -183,16 +193,16 @@ void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
           text2[il]->SetTextColor(kRed);
           text2[il]->SetNDC();
           h->GetListOfFunctions()->Add(text2[il]->Clone());
-          status = "#splitline{Quality::Bad}{Call expert}";
+          status = "Quality::Bad, call expert";
           textColor = kRed;
-          positionX = 0.12;
-          positionY = 0.75;
+          positionX = 0.05;
+          positionY = 0.95;
         }
       }
     }
     msg = std::make_shared<TLatex>(positionX, positionY, Form("#bf{%s}", status.Data()));
     msg->SetTextColor(textColor);
-    msg->SetTextSize(0.04);
+    msg->SetTextSize(0.06);
     msg->SetTextFont(43);
     msg->SetNDC();
     h->GetListOfFunctions()->Add(msg->Clone());
