@@ -36,11 +36,6 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info, Devel) << "initialize DigitsQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will
 
-  if (auto param = mCustomParameters.find("ResetAtCycle"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - ResetAtCycle: " << param->second << ENDM;
-    mResetAtCycle = (param->second == "True" || param->second == "TRUE" || param->second == "true") ? true : false;
-  }
-
   mNbDigitTF = std::make_unique<TH1F>("NbDigitTF", "NbTimeFrame", 1, 0, 1.);
   getObjectsManager()->startPublishing(mNbDigitTF.get());
 
@@ -111,9 +106,6 @@ void DigitsQcTask::startOfActivity(Activity& /*activity*/)
 
 void DigitsQcTask::startOfCycle()
 {
-  if (mResetAtCycle) {
-    reset();
-  }
 }
 
 void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
