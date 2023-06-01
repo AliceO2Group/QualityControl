@@ -13,8 +13,8 @@
 #pragma link C++ class o2::quality_control_modules::trd::TrackletsCheck + ;
 #pragma link C++ class o2::quality_control::postprocessing::TRDTrending + ;
 #pragma link C++ class o2::quality_control::postprocessing::PulseHeightPostProcessing + ;
-#pragma link C++ class o2::quality_control_modules::trd::PulseHeightTrackMatch+;
-#pragma link C++ class o2::quality_control_modules::trd::TrackingTask+;
-#pragma link C++ class o2::quality_control_modules::trd::PulsePositionCheck+;
-#pragma link C++ class o2::quality_control_modules::trd::TRDReductor+;
+#pragma link C++ class o2::quality_control_modules::trd::PulseHeightTrackMatch + ;
+#pragma link C++ class o2::quality_control_modules::trd::TrackingTask + ;
+#pragma link C++ class o2::quality_control_modules::trd::PulsePositionCheck + ;
+#pragma link C++ class o2::quality_control_modules::trd::TRDReductor + ;
 #endif

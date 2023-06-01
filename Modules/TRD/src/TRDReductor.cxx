@@ -34,15 +34,14 @@ void TRDReductor::update(TObject* obj)
 {
   auto histo = dynamic_cast<TH1*>(obj);
   if (histo) {
-          // Defining Fit function
-	    TF1* f1=new TF1("landaufit","((x<2) ? ROOT::Math::erf(x)*[0]:[0]) + [1]*TMath::Landau(x,[2],[3])",0.0,6.0);
-	    f1->SetParameters(100000,100000,1.48,1.09);
+    // Defining Fit function
+    TF1* f1 = new TF1("landaufit", "((x<2) ? ROOT::Math::erf(x)*[0]:[0]) + [1]*TMath::Landau(x,[2],[3])", 0.0, 6.0);
+    f1->SetParameters(100000, 100000, 1.48, 1.09);
 
-        // Fitting Pulse Distribution with defined fit function
-        histo->Fit(f1,"","",0.0,4.0);
-        mStats.t0peak = f1->GetMaximumX(0.0,4.0);
-        mStats.BinWithMaxContent = histo->GetMaximumBin();
-     
+    // Fitting Pulse Distribution with defined fit function
+    histo->Fit(f1, "", "", 0.0, 4.0);
+    mStats.t0peak = f1->GetMaximumX(0.0, 4.0);
+    mStats.BinWithMaxContent = histo->GetMaximumBin();
   }
 }
 

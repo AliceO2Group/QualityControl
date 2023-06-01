@@ -104,7 +104,7 @@ Quality PulseHeightCheck::check(std::map<std::string, std::shared_ptr<MonitorObj
 
       result = Quality::Good;
 
-      //check max bin is in the spike on left.
+      // check max bin is in the spike on left.
       auto max = h->GetMaximum();
       auto maxbin = h->GetMaximumBin();
       auto average = 0.0;
@@ -137,7 +137,7 @@ Quality PulseHeightCheck::check(std::map<std::string, std::shared_ptr<MonitorObj
           return result;
         }
         if (max < average) {
-          //if the peak maximum is below the average height of the drift region, we have a problem.
+          // if the peak maximum is below the average height of the drift region, we have a problem.
           result = Quality::Bad;
           result.addReason(FlagReasonFactory::Invalid(),
                            "Peak is below the drift region average  peak : " + std::to_string(max) + " average of drift:" + std::to_string(average));
@@ -162,7 +162,7 @@ void PulseHeightCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality check
     auto* h = dynamic_cast<TH1F*>(mo->getObject());
     TPaveText* msg = new TPaveText(0.3, 0.9, 0.7, 0.95, "NDC");
     h->GetListOfFunctions()->Add(msg);
-    //std::string message = fmt::format("Pulseheight message");
+    // std::string message = fmt::format("Pulseheight message");
     std::string message = "Pulseheight message";
     msg->SetName(message.c_str());
 
@@ -178,7 +178,7 @@ void PulseHeightCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality check
       h->SetFillColor(kOrange);
       h->SetLineColor(kOrange);
     }
-    //h->SetLineColor(kBlack);
+    // h->SetLineColor(kBlack);
     h->Draw();
   }
 }
