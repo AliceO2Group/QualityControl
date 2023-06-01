@@ -55,6 +55,8 @@ class CalibMQcTask final : public TaskInterface
   void resetDisplayHistos();
   DigitsHelper mDigitsHelper; ///! Digits helper
 
+  std::unique_ptr<TH1F> mNbBadChannelTF{ nullptr };
+
   std::unique_ptr<TH1F> mNoise{ nullptr };
   std::array<std::unique_ptr<TH2F>, 4> mBendNoiseMap{};
   std::array<std::unique_ptr<TH2F>, 4> mNBendNoiseMap{};
