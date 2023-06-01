@@ -38,6 +38,9 @@ void CalibMQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   std::array<string, 4> chId{ "11", "12", "21", "22" };
 
+  mNbBadChannelTF = std::make_unique<TH1F>("NbBadChannelTF", "Anaylyzed timeframes", 1, 0, 1.);
+  getObjectsManager()->startPublishing(mNbBadChannelTF.get());
+
   mNoise = std::make_unique<TH1F>(mDigitsHelper.makeStripHisto("MNoiseStrips", "Noise strips"));
   getObjectsManager()->startPublishing(mNoise.get());
 
@@ -88,6 +91,8 @@ void CalibMQcTask::startOfCycle()
 
 void CalibMQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
+  mNbBadChannelTF->Fill(0.5);
+
   auto noises = ctx.inputs().get<gsl::span<o2::mid::ColumnData>>("noisych");
   auto deads = ctx.inputs().get<gsl::span<o2::mid::ColumnData>>("deadch");
   auto bads = ctx.inputs().get<gsl::span<o2::mid::ColumnData>>("badch");
@@ -143,6 +148,7 @@ void CalibMQcTask::resetDisplayHistos()
 
 void CalibMQcTask::reset()
 {
+  mNbBadChannelTF->Reset();
   mNoise->Reset();
   mDead->Reset();
   mBad->Reset();
