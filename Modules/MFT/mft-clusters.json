@@ -70,7 +70,7 @@
         "className" : "o2::quality_control_modules::mft::QcMFTClusterCheck",
         "moduleName" : "QcMFT",
         "detectorName" : "MFT",
-        "policy" : "OnAny"
+        "policy" : "OnEachSeparately"
       }
     }
   },
