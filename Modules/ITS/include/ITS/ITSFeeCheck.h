@@ -64,6 +64,7 @@ class ITSFeeCheck : public o2::quality_control::checker::CheckInterface
 
     return result;
   }
+  bool checkReason(Quality checkResult, TString text);
 
  private:
   ClassDefOverride(ITSFeeCheck, 2);
