@@ -375,7 +375,7 @@ void PhysicsTask::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info, Support) << "PhysicsTask::reset() : resetting the histograms" << ENDM;
+  ILOG(Debug, Devel) << "PhysicsTask::reset() : resetting the histograms" << ENDM;
   resetHistograms();
   mNEventsTotal = 0;
   mJustWasReset = true;
