@@ -51,6 +51,7 @@ ITSFeeTask::~ITSFeeTask()
   delete mLaneStatusSummaryML;
   delete mLaneStatusSummaryOL;
   delete mLaneStatusSummaryGlobal;
+  delete mLaneStatusSummaryGlobalCanvas;
   delete mRDHSummary;
   for (int i = 0; i < NFlags; i++) {
     delete mLaneStatus[i];
@@ -114,8 +115,11 @@ void ITSFeeTask::createFeePlots()
   getObjectsManager()->startPublishing(mLaneStatusSummaryML); // mLaneStatusSummaryML
   mLaneStatusSummaryOL = new TH1D("LaneStatusSummary/LaneStatusSummaryOL", "Lane Status Summary OL", 3, 0, 3);
   getObjectsManager()->startPublishing(mLaneStatusSummaryOL); // mLaneStatusSummaryOL
-  mLaneStatusSummaryGlobal = new TH1D("LaneStatusSummary/LaneStatusSummaryGlobal", "Lane Status Summary Global", 3, 0, 3);
+  mLaneStatusSummaryGlobal = new TH1D("LaneStatusSummary/LaneStatusSummaryGlobal", "Lane Status Summary Global", 4, 0, 4);
   getObjectsManager()->startPublishing(mLaneStatusSummaryGlobal); // mLaneStatusSummaryGlobal
+
+  mLaneStatusSummaryGlobalCanvas = new TCanvas("LaneStatusSummary/SummaryCanvas", "SummaryCanvas");
+  getObjectsManager()->startPublishing(mLaneStatusSummaryGlobalCanvas);
 
   mFlag1Check = new TH2I("Flag1Check", "Flag 1 Check", NFees, 0, NFees, 3, 0, 3); // Row 1 : transmission_timeout, Row 2 : packet_overflow, Row 3 : lane_starts_violation
   getObjectsManager()->startPublishing(mFlag1Check);                              // mFlag1Check
@@ -279,6 +283,7 @@ void ITSFeeTask::setPlotsFormat()
     for (int i = 0; i < NFlags; i++) {
       mLaneStatusSummaryGlobal->GetXaxis()->SetBinLabel(i + 1, mLaneStatusFlag[i].c_str());
     }
+    mLaneStatusSummaryGlobal->GetXaxis()->SetBinLabel(4, "TOTAL");
     mLaneStatusSummaryGlobal->GetXaxis()->CenterLabels();
     mLaneStatusSummaryGlobal->SetStats(0);
   }
@@ -440,6 +445,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
   // Filling histograms: loop over mStatusFlagNumber[ilayer][istave][ilane][iflag]
   int counterSummary[4][3] = { { 0 } };
   int layerSummary[7][3] = { { 0 } };
+
   for (int iflag = 0; iflag < NFlags; iflag++) {
     for (int ilayer = 0; ilayer < NLayer; ilayer++) {
       for (int istave = 0; istave < NStaves[ilayer]; istave++) {
@@ -468,6 +474,22 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
     mLaneStatusSummaryML->SetBinContent(iflag + 1, 1. * counterSummary[2][iflag] / NLanesML);
     mLaneStatusSummaryOL->SetBinContent(iflag + 1, 1. * counterSummary[3][iflag] / NLanesOL);
   }
+
+  mLaneStatusSummaryGlobal->SetBinContent(4, 1. * (counterSummary[0][0] + counterSummary[0][1] + counterSummary[0][2]) / NLanesTotal);
+  mLaneStatusSummaryGlobalCanvas->cd();
+  mLaneStatusSummaryGlobal->SetMaximum(1);
+  mLaneStatusSummaryGlobal->Draw("histo");
+  TLine* line = new TLine(0, 0.1, 4, 0.1);
+  line->SetLineStyle(9);
+  line->SetLineColor(kRed);
+  line->Draw("same");
+  TLatex* tInfo = new TLatex(0.1, 0.11, Form("#bf{%s}", "Threshold value"));
+  tInfo->SetTextSize(0.04);
+  tInfo->SetTextFont(43);
+  tInfo->SetTextColor(kRed);
+  tInfo->Draw("same");
+  delete line;
+  delete tInfo;
 
   for (int i = 0; i < NFees; i++) {
     if (nStops[i]) {
