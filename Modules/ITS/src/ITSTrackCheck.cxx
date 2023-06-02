@@ -47,7 +47,7 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
       result.addMetadata("CheckTracks7", "good");
       result.addMetadata("CheckEmpty", "good");
       result.addMetadata("CheckMean", "good");
-      if (h->GetMean() < 5.2 || h->GetMean() > 5.8) {
+      if (h->GetMean() < 5.2 || h->GetMean() > 6.2) {
 
         result.updateMetadata("CheckMean", "medium");
         result.set(Quality::Medium);
@@ -247,7 +247,7 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
         h->GetListOfFunctions()->Add(tMessage[4]->Clone());
       }
       if (strcmp(checkResult.getMetadata("CheckMean").c_str(), "medium") == 0) {
-        tMessage[5] = std::make_shared<TLatex>(0.12, 0.76, Form("#splitline{Mean (%.1f) is outside 5.2-5.9}{ignore for COSMICS and TECHNICALS}", h->GetMean()));
+        tMessage[5] = std::make_shared<TLatex>(0.12, 0.76, Form("#splitline{Mean (%.1f) is outside 5.2-6.2}{ignore for COSMICS and TECHNICALS}", h->GetMean()));
         tMessage[5]->SetTextFont(43);
         tMessage[5]->SetTextSize(0.04);
         tMessage[5]->SetTextColor(kOrange);

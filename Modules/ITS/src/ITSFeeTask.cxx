@@ -109,7 +109,7 @@ void ITSFeeTask::createFeePlots()
     getObjectsManager()->startPublishing(mLaneStatusSummary[i]); // mLaneStatusSummary
   }
 
-  mLaneStatusSummaryGlobalCanvas = new TCanvas("LaneStatusSummary/SummaryCanvas", "SummaryCanvas",800,600);
+  mLaneStatusSummaryGlobalCanvas = new TCanvas("LaneStatusSummary/SummaryCanvas", "SummaryCanvas", 800, 600);
   getObjectsManager()->startPublishing(mLaneStatusSummaryGlobalCanvas);
 
   mLaneStatusSummaryIB = new TH1D("LaneStatusSummary/LaneStatusSummaryIB", "Lane Status Summary IB", 3, 0, 3);
@@ -479,8 +479,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   mLaneStatusSummaryGlobal->SetBinContent(4, 1. * (counterSummary[0][0] + counterSummary[0][1] + counterSummary[0][2]) / NLanesTotal);
 
-
- //-------------------------------------------  canvas for GlobalSummaryPlot
+  //-------------------------------------------  canvas for GlobalSummaryPlot
   mLaneStatusSummaryGlobalCanvas->cd();
   mLaneStatusSummaryGlobalCanvas->Clear();
 
@@ -488,21 +487,21 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
   mLaneStatusSummaryLine->SetLineStyle(9);
   mLaneStatusSummaryLine->SetLineColor(kRed);
   mLaneStatusSummaryLine->SetBit(TObject::kCanDelete);
-  
+
   TLatex* mLaneStatusSummaryInfo = new TLatex(0.1, 0.11, Form("#bf{%s}", "Threshold value"));
   mLaneStatusSummaryInfo->SetTextSize(0.05);
   mLaneStatusSummaryInfo->SetTextFont(43);
   mLaneStatusSummaryInfo->SetTextColor(kRed);
   mLaneStatusSummaryInfo->SetBit(TObject::kCanDelete);
 
-  TH1F *  mLaneStatusCanvasMember = (TH1F*) mLaneStatusSummaryGlobal->Clone("mLaneStatusCanvasMember");
+  TH1F* mLaneStatusCanvasMember = (TH1F*)mLaneStatusSummaryGlobal->Clone("mLaneStatusCanvasMember");
   mLaneStatusCanvasMember->SetBit(TObject::kCanDelete);
 
   mLaneStatusCanvasMember->Draw("histo");
-  mLaneStatusSummaryLine->Draw("same");  
-  mLaneStatusSummaryInfo->Draw("same"); 
-//------end of canvas settings
- 
+  mLaneStatusSummaryLine->Draw("same");
+  mLaneStatusSummaryInfo->Draw("same");
+  //------end of canvas settings
+
   for (int i = 0; i < NFees; i++) {
     if (nStops[i]) {
       float payloadAvg = (float)payloadTot[i] / nStops[i];
