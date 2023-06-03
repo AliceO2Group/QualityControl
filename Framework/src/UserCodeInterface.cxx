@@ -21,7 +21,7 @@ using namespace o2::ccdb;
 namespace o2::quality_control::core
 {
 
-void UserCodeInterface::setCustomParameters(const std::unordered_map<std::string, std::string>& parameters)
+void UserCodeInterface::setCustomParameters(const CustomParameters& parameters)
 {
   mCustomParameters = parameters;
   configure();

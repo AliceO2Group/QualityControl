@@ -53,9 +53,19 @@
           "type": "dataSamplingPolicy",
           "name": "tst-raw"
         },
-        "taskParameters": {
-          "myOwnKey": "myOwnValue"
-        },
+        "extendedTaskParameters": {
+          "default": {
+            "default": {
+              "myOwnKey": "myOwnValue",
+              "myOwnKey2": "myOwnValue2"
+            }
+          },
+          "PHYSICS": {
+            "default": {
+              "myOwnKey1": "myOwnValue1b",
+              "myOwnKey2": "myOwnValue2b"
+            }
+          },
         "location": "remote",
         "saveObjectsToFile": "",      "": "For debugging, path to the file where to save. If empty or missing it won't save."
       }
@@ -71,7 +81,14 @@
           "type": "Task",
           "name": "QcTask",
           "MOs": ["example"]
-        }]
+        }],
+        "extendedCheckParameters": {
+          "physics": {
+            "PROTON-PROTON": {
+              "myOwnKey1": "myOwnValue1c"
+            }
+          }
+        }
       }
     }
   },

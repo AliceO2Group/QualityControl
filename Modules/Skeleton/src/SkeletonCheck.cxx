@@ -36,7 +36,9 @@ Quality SkeletonCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
   Quality result = Quality::Null;
 
   // you can get details about the activity via the object mActivity:
-  ILOG(Debug, Trace) << "Run type: " << getActivity()->mType << ENDM;
+  ILOG(Debug, Devel) << "Run " << getActivity()->mId << ", type: " << getActivity()->mType << ", beam: " << getActivity()->mBeamType << ENDM;
+  // and you can get your custom parameters:
+  ILOG(Debug, Devel) << "custom param physics.pp.myOwnKey1 : " << mCustomParameters.atOrDefaultValue("myOwnKey1", "physics", "pp", "default_value") << ENDM;
 
   for (auto& [moName, mo] : *moMap) {
 

@@ -23,6 +23,7 @@
 
 #include <Framework/DataProcessorSpec.h>
 #include "QualityControl/UpdatePolicyType.h"
+#include "QualityControl/CustomParameters.h"
 
 namespace o2::quality_control::checker
 {
@@ -33,7 +34,7 @@ struct CheckConfig {
   std::string moduleName;
   std::string className;
   std::string detectorName = "MISC"; // intended to be the 3 letters code;
-  std::unordered_map<std::string, std::string> customParameters = {};
+  core::CustomParameters customParameters;
   UpdatePolicyType policyType = UpdatePolicyType::OnAny;
   std::vector<std::string> objectNames{}; // fixme: if object names are empty, allObjects are true, consider reducing to one var
   bool allObjects = false;

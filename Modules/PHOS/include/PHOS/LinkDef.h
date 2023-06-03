@@ -3,6 +3,10 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
+#pragma link C++ class o2::quality_control_modules::phos::TH1Fraction + ;
+
+#pragma link C++ class o2::quality_control_modules::phos::TH2Fraction + ;
+
 #pragma link C++ class o2::quality_control_modules::phos::TH2SBitmask + ;
 
 #pragma link C++ class o2::quality_control_modules::phos::TH2FMean + ;

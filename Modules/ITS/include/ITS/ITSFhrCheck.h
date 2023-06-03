@@ -62,6 +62,7 @@ class ITSFhrCheck : public o2::quality_control::checker::CheckInterface
 
     return result;
   }
+  bool checkReason(Quality checkResult, TString text);
 
  private:
   int mNPixelPerStave[3] = { 4718592, 58720256, 102760448 }; // IB, ML, OL

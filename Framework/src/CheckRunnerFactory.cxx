@@ -70,10 +70,7 @@ void CheckRunnerFactory::customizeInfrastructure(std::vector<framework::Completi
   auto matcher = [label = CheckRunner::getCheckRunnerLabel()](framework::DeviceSpec const& device) {
     return std::find(device.labels.begin(), device.labels.end(), label) != device.labels.end();
   };
-
-  auto callback = CompletionPolicyHelpers::consumeWhenAny().callback;
-
-  policies.emplace_back("checkerCompletionPolicy", matcher, callback);
+  policies.emplace_back(CompletionPolicyHelpers::consumeWhenAny("checkerCompletionPolicy", matcher));
 }
 
 CheckRunnerConfig CheckRunnerFactory::extractConfig(const CommonSpec& commonSpec)

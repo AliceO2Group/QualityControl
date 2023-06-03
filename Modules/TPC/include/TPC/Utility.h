@@ -18,6 +18,7 @@
 #define QUALITYCONTROL_TPCUTILITY_H
 
 #include "QualityControl/ObjectsManager.h"
+#include "QualityControl/CustomParameters.h"
 
 #include "TPCBase/CalDet.h"
 #include "DataFormatsTPC/ClusterNative.h"
@@ -49,7 +50,7 @@ std::vector<TCanvas*> toVector(std::vector<std::unique_ptr<TCanvas>>& input);
 /// \param canvases Vector containing three std::unique_ptr<TCanvas>, will be filled
 /// \param params Information about the ranges of the histograms that will be drawn on the canvases. The params can be set via 'taskParameters' in the config file of corresponding the task.
 /// \param paramName Name of the observable that is stored in calDet
-void fillCanvases(const o2::tpc::CalDet<float>& calDet, std::vector<std::unique_ptr<TCanvas>>& canvases, const std::unordered_map<std::string, std::string>& params, const std::string paramName);
+void fillCanvases(const o2::tpc::CalDet<float>& calDet, std::vector<std::unique_ptr<TCanvas>>& canvases, const quality_control::core::CustomParameters& params, const std::string paramName);
 
 /// \brief Clears all canvases
 /// \param canvases Contains the canvases that will be cleared

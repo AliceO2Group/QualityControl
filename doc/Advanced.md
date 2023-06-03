@@ -24,13 +24,17 @@ Advanced topics
       * [Merging with other analysis workflows](#merging-with-other-analysis-workflows)
       * [Enabling a workflow to run on Hyperloop](#enabling-a-workflow-to-run-on-hyperloop)
 * [Solving performance issues](#solving-performance-issues)
+   * [Dispatcher](#dispatcher)
+   * [QC Tasks](#qc-tasks)
+   * [Mergers](#mergers)
 * [CCDB / QCDB](#ccdb--qcdb)
    * [Accessing objects in CCDB](#accessing-objects-in-ccdb)
    * [Access GRP objects with GRP Geom Helper](#access-grp-objects-with-grp-geom-helper)
+   * [Global Tracking Data Request helper](#global-tracking-data-request-helper)
    * [Custom metadata](#custom-metadata)
    * [Details on the data storage format in the CCDB](#details-on-the-data-storage-format-in-the-ccdb)
-      * [Data storage format before v0.14 and ROOT 6.18](#data-storage-format-before-v014-and-root-618)
    * [Local CCDB setup](#local-ccdb-setup)
+   * [Instructions to move an object in the QCDB](#instructions-to-move-an-object-in-the-qcdb)
 * [Asynchronous Data and Monte Carlo QC operations](#asynchronous-data-and-monte-carlo-qc-operations)
 * [QCG](#qcg)
    * [Display a non-standard ROOT object in QCG](#display-a-non-standard-root-object-in-qcg)
@@ -57,6 +61,7 @@ Advanced topics
    * [Data Sampling monitoring](#data-sampling-monitoring)
    * [Monitoring metrics](#monitoring-metrics)
    * [Common check IncreasingEntries](#common-check-increasingentries)
+   * [Update the shmem segment size of a detector](#update-the-shmem-segment-size-of-a-detector)
 <!--te-->
 
 [← Go back to Post-processing](PostProcessing.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Frequently Asked Questions →](FAQ.md)
@@ -992,7 +997,79 @@ The same approach can be applied to other actors in the QC framework, like Check
 
 ## Definition and access of task-specific configuration
 
+A task can access custom parameters declared in the configuration file at `qc.tasks.<task_id>.extendedTaskParameters` or `qc.tasks.<task_id>.taskParameters`. They are stored inside an object of type `CustomParameters` named `mCustomParameters`, which is a protected member of `TaskInterface`.
+
+The simple, deprecated, syntax is 
+```json
+    "tasks": {
+      "QcTask": {
+        "taskParameters": {
+          "myOwnKey": "myOwnValue"
+        },
+```
+It is accessed with : `mCustomParameters["myOwnKey"]`. 
+
+The new syntax is
+```json
+    "tasks": {
+      "QcTask": {
+        "extendedTaskParameters": {
+          "default": {
+            "default": {
+              "myOwnKey": "myOwnValue",
+              "myOwnKey2": "myOwnValue2",
+              "myOwnKey3": "myOwnValue3"
+            }
+          },
+          "PHYSICS": {
+            "default": {
+              "myOwnKey1": "myOwnValue1b",
+              "myOwnKey2": "myOwnValue2b"
+            },
+            "pp": {
+              "myOwnKey1": "myOwnValue1c"
+            },
+            "PbPb": {
+              "myOwnKey1": "myOwnValue1d"
+            }
+          },
+          "COSMICS": {
+            "myOwnKey1": "myOwnValue1e",
+            "myOwnKey2": "myOwnValue2e"
+          }
+        },
+```
+It allows to have variations of the parameters depending on the run and beam types. The proper run types can be found here: https://github.com/AliceO2Group/AliceO2/blob/dev/DataFormats/Parameters/include/DataFormatsParameters/ECSDataAdapters.h#L54. The `default` can be used 
+to ignore the run or the beam type. 
+The beam type is one of the following: `PROTON-PROTON`, `Pb-Pb`, `Pb-PROTON`
+
+The values can be accessed this way: 
+```c++
+mCustomParameters["myOwnKey"]; // considering that run and beam type are `default` --> returns `myOwnValue`
+mCustomParameters.at("myOwnKey"); // returns `myOwnValue`
+mCustomParameters.at("myOwnKey", "default"); // returns `myOwnValue`
+mCustomParameters.at("myOwnKey", "default", "default"); // returns `myOwnValue`
+
+mCustomParameters.at("myOwnKey1", "PHYSICS", "PROTON-PROTON"); // returns `myOwnValue1c`
+mCustomParameters.at("myOwnKey1", "PHYSICS", "Pb-Pb"); // returns `myOwnValue1d`
+mCustomParameters.at("myOwnKey2", "COSMICS"); // returns `myOwnValue2e`
+```
+The correct way of accessing a parameter and to default to a value if it is not there, is the following:
+```c++
+  std::string param = mCustomParameters.atOrDefaultValue("myOwnKey1", "physics", "pp", "1");
+  int casted = std::stoi(param);
+```
+Finally the way to search for a value and only act if it is there is the following: 
+```c++
+  if (auto param2 = mCustomParameters.find("myOwnKey1", "physics", "pp"); param2 != cp.end()) {
+    int casted = std::stoi(param);
+  }
+```
+
+
 A task can access custom parameters declared in the configuration file at `qc.tasks.<task_id>.taskParameters`. They are stored inside a key-value map named mCustomParameters, which is a protected member of `TaskInterface`.
+
+
 
 One can also tell the DPL driver to accept new arguments. This is done using the `customize` method at the top of your workflow definition (usually called "runXXX" in the QC).
 
@@ -1075,7 +1152,7 @@ should not be present in real configuration files.
         "maxObjectSize": "2097152",       "": "[Bytes, default=2MB] Maximum size allowed, larger objects are rejected."
       },
       "Activity": {                       "": ["Configuration of a QC Activity (Run). This structure is subject to",
-                                               "change or the values might come from other source (e.g. AliECS)." ],
+                                               "change or the values might come from other source (e.g. ECS+Bookkeeping)." ],
         "number": "42",                   "": "Activity number.",
         "type": "2",                      "": "Arbitrary activity type.",
         "periodName": "",                 "": "Period name - e.g. LHC22c, LHC22c1b_test",

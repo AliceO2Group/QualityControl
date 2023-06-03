@@ -118,6 +118,13 @@ void ClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
     return input == "true";
   };
 
+  if (hasConfigValue("debuggerDelay")) {
+    if (get_bool("debuggerDelay")) {
+      // set delay in order to allow for attaching the debugger
+      sleep(20);
+    }
+  }
+
   configureBindings();
 
   if (hasConfigValue("useInternalClusterizer")) {
@@ -781,6 +788,7 @@ void ClusterTask::getCalibratedCells(const gsl::span<const o2::emcal::Cell>& cel
     o2::emcal::TriggerRecord nexttrigger(trg.getBCData(), currentlast, ncellsEvent);
     nexttrigger.setTriggerBits(trg.getTriggerBits());
     calibratedTriggerRecords.push_back(nexttrigger);
+    currentlast = calibratedCells.size();
   }
 }
 

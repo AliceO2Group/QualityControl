@@ -25,6 +25,8 @@
 #include <chrono>
 #include <ostream>
 #include <tuple>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
 
 using namespace std::chrono;
 using namespace o2::quality_control::core;
@@ -150,37 +152,42 @@ TriggerFcn NewObject(const std::string& databaseUrl, const std::string& database
 
   ILOG(Debug, Support) << "Initializing newObject trigger for the object '" << fullObjectPath << "' and Activity '" << activity << "'" << ENDM;
   // We support only CCDB here.
-  auto db = std::make_shared<o2::ccdb::CcdbApi>();
-  db->init(databaseUrl);
-  if (!db->isHostReachable()) {
-    ILOG(Error, Support) << "CCDB at URL '" << databaseUrl << "' is not reachable." << ENDM;
-  }
+  auto db = std::make_shared<repository::CcdbDatabase>();
+  db->connect(databaseUrl, "", "", "");
 
-  // We rely on changing MD5 - if the object has changed, it should have a different check sum.
-  // If someone reuploaded an old object, it should not have an influence.
-  std::string lastMD5;
-  if (auto headers = db->retrieveHeaders(fullObjectPath, metadata); headers.count(metadata_keys::md5sum)) {
-    lastMD5 = headers[metadata_keys::md5sum];
-  } else {
-    // We don't make a fuss over it, because we might be just waiting for the first version of such object.
-    // It should not happen often though, so having a warning makes sense.
-    ILOG(Warning, Devel) << "Could not find the file '" << fullObjectPath << "' in the db '" << databaseUrl << "' for given Activity settings. It is fine at SOR." << ENDM;
-  }
-
-  return [db, databaseUrl, fullObjectPath = std::move(fullObjectPath), lastMD5, activity, metadata, config]() mutable -> Trigger {
-    if (auto headers = db->retrieveHeaders(fullObjectPath, metadata); headers.count(metadata_keys::md5sum)) {
-      auto newMD5 = headers[metadata_keys::md5sum];
-      if (lastMD5 != newMD5) {
-        lastMD5 = newMD5;
-        return { TriggerType::NewObject, false, activity, std::stoull(headers[timestampKey]), config };
-      }
-    } else {
+  // Returns "Valid-From" of an object if there is a new one, otherwise 0.
+  auto newObjectValidityStart = [db, fullObjectPath, metadata, databaseUrl, activity, lastModified = validity_time_t{ 0 }]() mutable -> validity_time_t {
+    const auto listing = db->getListingAsPtree(fullObjectPath, metadata, true);
+    if (listing.count("objects") == 0) {
+      ILOG(Warning, Support) << "Could not get a valid listing from db '" << databaseUrl << "' for object '" << fullObjectPath << "'" << ENDM;
+      return 0;
+    }
+    const auto& objects = listing.get_child("objects");
+    if (objects.empty()) {
       // We don't make a fuss over it, because we might be just waiting for the first version of such object.
       // It should not happen often though, so having a warning makes sense.
       ILOG(Warning, Support) << "Could not find the file '" << fullObjectPath << "' in the db '"
                              << databaseUrl << "' for given Activity settings (" << activity << "). Zeroes and empty strings are treated as wildcards." << ENDM;
+      return 0;
+    } else if (objects.size() > 1) {
+      ILOG(Warning, Support) << "Expected just one metadata entry for object '" << fullObjectPath << "'. Trying to continue by using the first." << ENDM;
     }
 
+    const auto& object = objects.front().second;
+    validity_time_t newLastModified = object.get<uint64_t>(metadata_keys::lastModified, 0);
+    if (newLastModified > lastModified) {
+      lastModified = newLastModified;
+      return object.get<uint64_t>(metadata_keys::validFrom, 0);
+    }
+    return 0;
+  };
+  // we execute it once before in order to know about the latest existing object.
+  newObjectValidityStart();
+
+  return [activity, config, newObjectValidityStart]() mutable -> Trigger {
+    if (auto validFrom = newObjectValidityStart()) {
+      return { TriggerType::NewObject, false, activity, validFrom, config };
+    }
     return { TriggerType::No, false, activity, Trigger::msSinceEpoch(), config };
   };
 }

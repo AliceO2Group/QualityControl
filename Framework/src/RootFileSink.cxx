@@ -78,9 +78,8 @@ void RootFileSink::customizeInfrastructure(std::vector<framework::CompletionPoli
   auto matcher = [label = RootFileSink::getLabel()](framework::DeviceSpec const& device) {
     return std::find(device.labels.begin(), device.labels.end(), label) != device.labels.end();
   };
-  auto callback = CompletionPolicyHelpers::consumeWhenAny().callback;
 
-  policies.emplace_back("qcRootFileSinkCompletionPolicy", matcher, callback);
+  policies.emplace_back(CompletionPolicyHelpers::consumeWhenAny("qcRootFileSinkCompletionPolicy", matcher));
 }
 
 void RootFileSink::init(framework::InitContext& ictx)

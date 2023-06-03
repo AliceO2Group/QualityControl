@@ -1,0 +1,421 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "2"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": ""
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      }
+    },
+    "tasks": {
+            "ITSFEE": {
+                "active": "true",
+                "className": "o2::quality_control_modules::its::ITSFeeTask",
+                "moduleName": "QcITS",
+                "detectorName": "ITS",
+                "cycleDurationSeconds": "30",
+                "maxNumberCycles": "-1",
+                "dataSource": {
+                    "type": "direct",
+                    "query": "filter:ITS/RAWDATA"
+                },
+                "location": "local",
+                "taskParameters": {
+                    "NPayloadSizeBins": "4096",
+                    "ResetLaneStatus": "1",
+                    "ResetPayload": "0"
+                }
+            },
+            "FHRTask": {
+                "active": "true",
+                "className": "o2::quality_control_modules::its::ITSFhrTask",
+                "moduleName": "QcITS",
+                "detectorName": "ITS",
+                "cycleDurationSeconds": "30",
+                "maxNumberCycles": "-1",
+                "dataSource": {
+                    "type": "dataSamplingPolicy",
+                    "name": "RAWDATA"
+                },
+                "location": "remote",
+                "taskParameters": {
+                    "Layer": "3",
+		    "HitNumberCut": "0", 
+                    "decoderThreads": "8",
+                    "HitNumberCutForNoisyPixel": "0",
+                    "OccupancyNumberCutForNoisyPixel": "0.000001",
+          	    "MaxGeneralAxisRange": "-2",
+          	    "MinGeneralAxisRange": "-12",
+          	    "MaxGeneralNoisyAxisRange": "5000",
+                    "MinGeneralNoisyAxisRange": "0",
+		    "Etabins": "130",
+                    "Phibins": "240",
+		    "geomPath": "./",
+		    "CutSparseTF": "1",
+                    "DoHitmapFilter": "1",
+                    "PhysicalOccupancyIB": "1.7e-3",
+                    "PhysicalOccupancyOB": "4.3e-5"
+                },
+	        "grpGeomRequest" : {
+                    "geomRequest": "Aligned",
+                    "askGRPECS": "false",
+                    "askGRPLHCIF": "false",
+                    "askGRPMagField": "false",
+                    "askMatLUT": "false",
+                    "askTime": "false",
+                    "askOnceAllButField": "true",
+                    "needPropagatorD":  "false"
+                }
+            },
+ "ITSClusterTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::its::ITSClusterTask",
+        "moduleName": "QcITS",
+        "detectorName": "ITS",
+        "cycleDurationSeconds": "180",
+        "maxNumberCycles": "-1",
+        "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "compclus"
+        },
+        "location": "remote",
+        "taskParameters": {
+          "layer": "1111111",
+          "nThreads": "1",
+          "nBCbins": "103",
+          "dicttimestamp": "0",
+          "geomPath": "./",
+          "publishSummary1D": "0",
+          "publishDetailedSummary": "0"
+        },
+	"grpGeomRequest" : {
+          "geomRequest": "Aligned",
+          "askGRPECS": "false",
+          "askGRPLHCIF": "false",
+          "askGRPMagField": "false",
+          "askMatLUT": "false",
+          "askTime": "false",
+          "askOnceAllButField": "true",
+          "needPropagatorD":  "false"
+        }
+      },
+"ITSTrackTask" : {
+        "active" : "true",
+        "className" : "o2::quality_control_modules::its::ITSTrackTask",
+        "moduleName" : "QcITS",
+        "detectorName" : "ITS",
+        "cycleDurationSeconds" : "30",
+        "maxNumberCycles" : "-1",
+        "dataSource_comment" : "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
+        "dataSource" : {
+          "type" : "dataSamplingPolicy",
+          "name" : "tracks"
+        },
+        "location" : "remote",
+        "taskParameters" : {
+	        "vertexXYsize" : "0.5",
+	        "vertexZsize": "15",
+          "vertexRsize": "0.8",
+	  "NtracksMAX"  : "100",
+          "doTTree": "0",
+          "nBCbins": "103",
+          "dicttimestamp" : "0",
+          "doNorm" : "1"
+        }
+
+      }
+    },
+
+    "checks" : {
+      "ITSFeeCheck": {
+                "active": "true",
+                "className": "o2::quality_control_modules::its::ITSFeeCheck",
+                "moduleName": "QcITS",
+                "policy": "OnEachSeparately",
+                "detectorName": "ITS",
+                "checkParameters": {
+                  "skipbinstrg": "",
+                  "skipfeeids": "",
+                  "maxbadchipsIB": "2",
+                  "maxbadlanesML": "4",
+                  "maxbadlanesOL": "7",
+                  "maxfractionbadlanes": "0.1"
+                },
+                "dataSource": [
+                    {
+                        "type": "Task",
+                        "name": "ITSFEE",
+                        "MOs": [
+                            "LaneStatus/laneStatusFlagFAULT",
+                            "LaneStatus/laneStatusFlagERROR",
+                            "LaneStatus/laneStatusFlagWARNING",
+                            "LaneStatus/laneStatusOverviewFlagFAULT",
+                            "LaneStatus/laneStatusOverviewFlagERROR",
+                            "LaneStatus/laneStatusOverviewFlagWARNING",
+                            "LaneStatusSummary/LaneStatusSummaryGlobal",
+                            "RDHSummary",
+                            "TriggerVsFeeid",
+                            "PayloadSize"
+                        ]
+                    }
+                ]
+            }, 
+      "FHRCheck": {
+                "active": "true",
+                "className": "o2::quality_control_modules::its::ITSFhrCheck",
+                "moduleName": "QcITS",
+                "policy": "OnEachSeparately",
+                "detectorName": "ITS",
+                "checkParameters": {
+                    "fhrcutIB": "0.01",
+                    "fhrcutOB": "0.0001",
+                    "skipbins": ""
+                },
+                "dataSource": [{
+                    "type": "Task",
+                    "name": "FHRTask",
+                    "MOs": ["General/ErrorPlots","General/General_Occupancy","General/Noisy_Pixel","Occupancy/Layer0/Layer0ChipStave","Occupancy/Layer1/Layer1ChipStave","Occupancy/Layer2/Layer2ChipStave","Occupancy/Layer3/Layer3ChipStave","Occupancy/Layer4/Layer4ChipStave","Occupancy/Layer5/Layer5ChipStave","Occupancy/Layer6/Layer6ChipStave"]
+                }]
+       },
+      "ITSClusterCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::its::ITSClusterCheck",
+        "moduleName": "QcITS",
+        "policy": "OnEachSeparately",
+        "detectorName": "ITS",
+        "checkParameters": {
+          "maxcluoccL0": "5",
+          "maxcluoccL1": "4",
+          "maxcluoccL2": "3",
+          "maxcluoccL3": "2",
+          "maxcluoccL4": "1",
+          "maxcluoccL5": "1",
+          "maxcluoccL6": "1",
+          "skipxbinsoccupancy": "",
+          "skipybinsoccupancy": ""
+        },
+        "dataSource": [
+          {
+            "type": "Task",
+            "name": "ITSClusterTask",
+            "MOs": [
+              "Layer0/AverageClusterSize",
+              "Layer1/AverageClusterSize",
+              "Layer2/AverageClusterSize",
+              "Layer3/AverageClusterSize",
+              "Layer4/AverageClusterSize",
+              "Layer5/AverageClusterSize",
+              "Layer6/AverageClusterSize",
+              "General/General_Occupancy"
+            ]
+          }
+        ]
+      },
+ 
+      "ITSTrackCheck" : {
+        "active" : "true",
+        "className" : "o2::quality_control_modules::its::ITSTrackCheck",
+        "moduleName" : "QcITS",
+        "policy" : "OnEachSeparately",
+        "detectorName" : "ITS",
+        "dataSource" : [ {
+          "type" : "Task",
+          "name" : "ITSTrackTask",
+          "MOs" : ["NClusters",
+                   "PhiDistribution",
+                   "AngularDistribution",
+                   "EtaDistribution",
+                   "VertexCoordinates",
+                   "VertexRvsZ",
+                   "VertexZ"
+                  ]
+        } ]
+      }
+
+
+
+    },
+    "postprocessing": {
+      "ITSQualityTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::QualityTask",
+        "moduleName": "QualityControl",
+        "detectorName": "ITS",
+        "qualityGroups": [
+         {
+            "name" : "global",
+            "title" : "GLOBAL ITS QUALITY",
+            "path": "ITS/QO",
+            "ignoreQualitiesDetails" : ["Null", "Good", "Medium", "Bad"],
+            "inputObjects": [
+              {
+                "name" : "ITSQuality/ITSQuality",
+                "title" : "ITS Quality",
+                "messageBad" : "Inform on-call immediately",
+                "messageMedium": "Add bookkeeping entry",
+                "messageGood": "All checks are OK",
+                "messageNull": "Some histograms are empty!!!"
+              }
+            ]
+          },
+
+        {
+            "name" : "details",
+            "title" : "ITS DETAILS",
+            "path": "ITS/QO",
+            "ignoreQualitiesDetails" : [],
+            "inputObjects": [
+              {
+                "name" : "FHRCheck/FHRTask/General/General_Occupancy",
+                "title" : "Hit Occupancy"
+              },
+              {
+                "name" : "FHRCheck/FHRTask/General/ErrorPlots",
+                "title" : "Decoding Errors"
+              },
+
+              {
+                "name" : "ITSFeeCheck/ITSFEE/LaneStatus/laneStatusOverviewFlagFAULT",
+                "title" : "Lanes into FAULT"
+              },
+              {
+                "name" : "ITSFeeCheck/ITSFEE/LaneStatus/laneStatusOverviewFlagERROR",
+                "title" : "Lanes into ERROR"
+              },
+               {
+                "name" : "ITSFeeCheck/ITSFEE/LaneStatus/laneStatusOverviewFlagWARNING",
+                "title" : "Lanes into WARNING"
+              },
+              {
+                "name" : "ITSFeeCheck/ITSFEE/LaneStatusSummary/LaneStatusSummaryGlobal",
+                "title" : "Lane status summary"
+              },     
+              {
+                "name" : "ITSFeeCheck/ITSFEE/TriggerVsFeeid",
+                "title" : "Trigger count Vs FeeID"
+              },
+              {
+                "name" : "ITSClusterCheck/ITSClusterTask/General/General_Occupancy",
+                "title" : "Cluster occupancy"
+              },
+              {
+                "name" : "ITSTrackCheck/ITSTrackTask/AngularDistribution",
+                "title" : "Track angular distribution"
+              },
+            {
+                "name" : "ITSTrackCheck/ITSTrackTask/NClusters",
+                "title" : "NClusters"
+            }            
+           ]
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "60 seconds"
+        ],
+        "stopTrigger": [
+          "userorcontrol", "10 minutes"
+        ]
+      }
+    },
+    "aggregators": {
+      "ITSQuality": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::WorstOfAllAggregator",
+        "moduleName": "QualityControl",
+        "policy": "OnAny",
+        "detectorName": "ITS",
+        "dataSource": [
+          {
+            "type": "Check",
+            "name": "FHRCheck",
+            "QOs" : ["FHRTask/General/General_Occupancy", "FHRTask/General/ErrorPlots" ]
+          },
+          {
+            "type": "Check",
+            "name": "ITSFeeCheck",
+            "QOs": ["ITSFEE/LaneStatus/laneStatusOverviewFlagFAULT", "ITSFEE/LaneStatus/laneStatusOverviewFlagERROR", "ITSFEE/LaneStatus/laneStatusOverviewFlagWarning", "ITSFEE/LaneStatusSummary/LaneStatusSummaryGlobal", "ITSFEE/TriggerVsFeeid" ]
+          },
+          {
+            "type": "Check",
+            "name": "ITSClusterCheck",
+             "QOs" : ["ITSClusterTask/General/General_Occupancy"]
+          },
+
+          {
+            "type": "Check",
+            "name": "ITSTrackCheck",
+             "QOs" : ["ITSTrackTask/AngularDistribution", "ITSTrackTask/NClusters" ]
+          }
+        ]
+     }
+    }
+
+
+  },
+           "dataSamplingPolicies" : [
+           {
+             "id" : "tracks",
+             "active" : "true",
+             "machines" : [],
+             "query" : "Verticesrof:ITS/VERTICESROF/0;Vertices:ITS/VERTICES/0;tracks:ITS/TRACKS/0;rofs:ITS/ITSTrackROF/0;clustersrof:ITS/CLUSTERSROF/0;compclus:ITS/COMPCLUSTERS/0;patterns:ITS/PATTERNS/0;clusteridx:ITS/TRACKCLSID/0",
+             "samplingConditions" : [
+               {
+                 "condition" : "random",
+                 "fraction" : "1",
+                 "seed" : "1441"
+               }
+             ],
+
+             "blocking" : "false"
+           },
+        {
+            "id": "RAWDATA",
+            "active": "true",
+            "machines": [],
+            "query": "filter:ITS/RAWDATA",
+            "samplingConditions": [
+                {
+                    "condition": "random",
+                    "fraction": "1",
+                    "seed": "1441"
+                }
+            ],
+            "blocking": "false"
+        },
+    {
+      "id": "compclus",
+      "active": "true",
+      "machines": [],
+      "query": "compclus:ITS/COMPCLUSTERS/0;clustersrof:ITS/CLUSTERSROF/0;patterns:ITS/PATTERNS/0",
+      "samplingConditions": [
+        {
+          "condition": "random",
+          "fraction": "1",
+          "seed": "1441"
+        }
+      ],
+      "blocking": "false"
+    }
+         ]
+
+
+}

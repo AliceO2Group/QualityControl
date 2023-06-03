@@ -222,7 +222,8 @@ void DaqTask::monitorInputRecord(InputRecord& inputRecord)
   mNumberInputs->Fill(inputRecord.countValidInputs());
 }
 
-void printPage(const DPLRawParser::Iterator<const DataRef>& data)
+template <class T>
+void printPage(const T& data)
 {
   auto const* raw = data.raw();         // retrieving the raw pointer of the page
   auto const* rawPayload = data.data(); // retrieving payload pointer of the page
