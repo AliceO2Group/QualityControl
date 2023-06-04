@@ -35,6 +35,7 @@ class TRDReductor : public quality_control::postprocessing::Reductor
  private:
   struct {
     Double_t t0peak;
+    Double_t chi2byNDF;
     Int_t BinWithMaxContent;
   } mStats;
 };

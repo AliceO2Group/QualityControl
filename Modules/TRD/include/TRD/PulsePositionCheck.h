@@ -39,6 +39,7 @@ class PulsePositionCheck : public o2::quality_control::checker::CheckInterface
   std::string getAcceptedType() override;
   long int mTimeStamp;
   std::pair<float, float> mPulseHeightPeakRegion;
+  double chi2byNDF_threshold;
 
   ClassDefOverride(PulsePositionCheck, 2);
 };

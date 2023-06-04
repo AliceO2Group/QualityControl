@@ -71,6 +71,14 @@
               "selection": "",
               "option": "*L",
               "graphAxisLabel": "t0peak position:time"
+            },
+            {
+              "name":"t0Fit_chi2/NDF",
+              "title":"Trend of t0peak's chi2/ndf",
+              "varexp":"mPulseHeight.chi2byNDF:time",
+              "selection":"",
+              "option": "*L",
+              "graphAxisLabel": "chi2/NDF trend:time"
             }
           ],
           "initTrigger": [

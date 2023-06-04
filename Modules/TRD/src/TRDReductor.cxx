@@ -27,7 +27,7 @@ void* TRDReductor::getBranchAddress()
 
 const char* TRDReductor::getBranchLeafList()
 {
-  return "t0peak/D";
+  return "t0peak/D:chi2byNDF/D";
 }
 
 void TRDReductor::update(TObject* obj)
@@ -42,6 +42,7 @@ void TRDReductor::update(TObject* obj)
     histo->Fit(f1, "", "", 0.0, 4.0);
     mStats.t0peak = f1->GetMaximumX(0.0, 4.0);
     mStats.BinWithMaxContent = histo->GetMaximumBin();
+    mStats.chi2byNDF=(f1->GetChisquare())/(f1->GetNDF());
   }
 }
 

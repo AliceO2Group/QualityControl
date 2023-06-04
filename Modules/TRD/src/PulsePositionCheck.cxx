@@ -59,6 +59,13 @@ void PulsePositionCheck::configure()
     mPulseHeightPeakRegion.second = 5.0;
     ILOG(Debug, Support) << "configure() : using default pulseheightpeakupper = " << mPulseHeightPeakRegion.second << ENDM;
   }
+  if(auto param=mCustomParameters.find("Chi2byNDF_threshold");param != mCustomParameters.end()){
+    chi2byNDF_threshold=stod(param->second);
+    ILOG(Debug, Support) << "configure() : using chi2/NDF threshold = " << chi2byNDF_threshold << ENDM;
+  }else{
+    chi2byNDF_threshold=0.22;
+    ILOG(Debug, Support) << "configure() : using chi2/NDF threshold = " << chi2byNDF_threshold << ENDM;
+  }
 }
 
 Quality PulsePositionCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
@@ -94,6 +101,14 @@ Quality PulsePositionCheck::check(std::map<std::string, std::shared_ptr<MonitorO
       h->Fit(f1, "", "", 0.0, 4.0);
 
       double_t peak_value_x = f1->GetMaximumX(0.0, 4.0);
+      double_t chi2_value=f1->GetChisquare();
+      Int_t NDF=f1->GetNDF();
+      double_t Chi2byNDF = chi2_value/NDF;
+
+      if(Chi2byNDF>chi2byNDF_threshold){
+        result = Quality::Bad;
+        result.addReason(FlagReasonFactory::UnknownQuality(), "chi2/ndf is very large");
+      }
 
       auto x0 = h->GetXaxis()->GetBinLowEdge(0);
       auto x1 = h->GetXaxis()->GetBinLowEdge(1);

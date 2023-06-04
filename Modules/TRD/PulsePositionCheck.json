@@ -72,7 +72,11 @@
             "type": "Task",
             "name": "PulseHeight",
             "MOs": [ "mPulseHeight" ]
-          }]
+          }],
+          "stopTrigger_comment":[],
+          "checkParameters":{
+            "Chi2byNDF_threshold":"0.22"
+          }
         }
       },
       "aggregators": {
