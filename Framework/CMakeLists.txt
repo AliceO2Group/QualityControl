@@ -39,6 +39,7 @@ add_root_dictionary(O2QualityControlTypes
 
 add_library(O2QualityControl
   src/Activity.cxx
+  src/ActivityHelpers.cxx
   src/ObjectsManager.cxx
   src/CheckRunner.cxx
   src/AggregatorRunner.cxx
@@ -46,7 +47,6 @@ add_library(O2QualityControl
   src/AggregatorRunnerFactory.cxx
   src/CheckInterface.cxx
   src/DatabaseFactory.cxx
-  src/DatabaseHelpers.cxx
   src/CcdbDatabase.cxx
   src/QcInfoLogger.cxx
   src/TaskFactory.cxx
@@ -86,7 +86,9 @@ add_library(O2QualityControl
   src/ConfigParamGlo.cxx
   src/SliceTrendingTask.cxx
   src/SliceTrendingTaskConfig.cxx
-  src/Bookkeeping.cxx)
+  src/Bookkeeping.cxx
+  src/CustomParameters.cxx
+  src/runnerUtils.cxx)
 
 
 target_include_directories(
@@ -118,7 +120,6 @@ target_link_libraries(O2QualityControl
                              O2::DetectorsBase
                              O2::GlobalTracking
                       PRIVATE Boost::system
-                              ROOT::Gui
                               CURL::libcurl)
 
 add_root_dictionary(O2QualityControl
@@ -213,39 +214,56 @@ endforeach()
 
 # ---- Tests ----
 
+add_executable(o2-qc-test-core 
+               test/testActivity.cxx
+               test/testActivityHelpers.cxx
+               test/testAggregatorInterface.cxx
+               test/testAggregatorRunner.cxx
+               test/testCheckInterface.cxx
+               test/testCheckRunner.cxx
+               test/testInfrastructureGenerator.cxx
+               test/testMonitorObject.cxx
+               test/testPolicyManager.cxx
+               test/testPostProcessingRunner.cxx
+               test/testQuality.cxx
+               test/testQualityObject.cxx
+               test/testTaskInterface.cxx
+               test/testTriggerHelpers.cxx
+               test/testVersion.cxx
+               )
+set_property(TARGET o2-qc-test-core
+             PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
+target_link_libraries(o2-qc-test-core PRIVATE O2QualityControl O2::Catch2)
+target_link_libraries(o2-qc-test-core PRIVATE O2::EMCALBase O2::EMCALCalib)
+target_include_directories(o2-qc-test-core PRIVATE ${CMAKE_SOURCE_DIR})
+
+add_test(NAME o2-qc-test-core COMMAND o2-qc-test-core)
+set_tests_properties(o2-qc-test-core PROPERTIES TIMEOUT 30)
+target_sources(o2-qc-test-core PRIVATE
+               ${CMAKE_BINARY_DIR}/getTestDataDirectory.cxx)
+target_include_directories(o2-qc-test-core PRIVATE ${CMAKE_SOURCE_DIR})
+target_include_directories(o2-qc-test-core PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
+
 set(TEST_SRCS
-    test/testActivity.cxx
     test/testDbFactory.cxx
-    test/testMonitorObject.cxx
     test/testPublisher.cxx
     test/testQcInfoLogger.cxx
-    test/testInfrastructureGenerator.cxx
-    test/testTaskInterface.cxx
     test/testTaskRunner.cxx
-    test/testCheckInterface.cxx
-    test/testAggregatorInterface.cxx
-    test/testCheckRunner.cxx
-    test/testAggregatorRunner.cxx
     test/testCheck.cxx
-    test/testQuality.cxx
-    test/testQualityObject.cxx
     test/testObjectsManager.cxx
     test/testCcdbDatabase.cxx
     test/testCcdbDatabaseExtra.cxx
     test/testTriggers.cxx
-    test/testTriggerHelpers.cxx
-    test/testPostProcessingRunner.cxx
     test/testPostProcessingInterface.cxx
     test/testPostProcessingConfig.cxx
     test/testReductor.cxx
     test/testTrendingTask.cxx
     test/testCheckWorkflow.cxx
     test/testWorkflow.cxx
-    test/testVersion.cxx
     test/testRepoPathUtils.cxx
-    test/testPolicyManager.cxx
     test/testQualitiesToTRFCollectionConverter.cxx
     test/testUserCodeInterface.cxx
+    test/testCustomParameters.cxx
   )
 
 set(TEST_ARGS
@@ -262,21 +280,8 @@ set(TEST_ARGS
     ""
     ""
     ""
-    ""
-    ""
-    ""
-    ""
-    ""
-    ""
-    ""
-    ""
-    ""
-    ""
-    ""
-    ""
     "-b --run"
     "-b --run"
-    ""
     ""
     ""
     ""
@@ -302,17 +307,15 @@ foreach(i RANGE ${count})
   set_tests_properties(${test_name} PROPERTIES TIMEOUT 30)
 endforeach()
 
-foreach(t testTaskInterface testWorkflow testTaskRunner testCheckWorkflow
-        testInfrastructureGenerator testPostProcessingConfig testPostProcessingInterface
-        testPostProcessingRunner testCheck testCheckRunner testTrendingTask testAggregatorRunner)
+foreach(t testWorkflow testTaskRunner testCheckWorkflow
+        testPostProcessingConfig testPostProcessingInterface
+        testCheck testTrendingTask)
   target_sources(${t} PRIVATE
                  ${CMAKE_BINARY_DIR}/getTestDataDirectory.cxx)
   target_include_directories(${t} PRIVATE ${CMAKE_SOURCE_DIR})
 endforeach()
 
-target_include_directories(testVersion PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
 target_include_directories(testCcdbDatabase PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
-target_link_libraries(testTaskInterface PRIVATE O2::EMCALBase O2::EMCALCalib)
 
 set_property(TEST testWorkflow PROPERTY TIMEOUT 40)
 set_property(TEST testWorkflow PROPERTY LABELS slow)
@@ -326,7 +329,6 @@ set_property(TEST testCcdbDatabaseExtra PROPERTY LABELS manual CCDB)
 set_property(TEST testTrendingTask PROPERTY LABELS manual)
 set_property(TEST testDbFactory PROPERTY LABELS CCDB)
 set_property(TEST testUserCodeInterface PROPERTY LABELS CCDB)
-set_property(TEST testTaskInterface PROPERTY LABELS CCDB)
 
 # Add a functional test (QC-336)
 string(RANDOM UNIQUE_ID)

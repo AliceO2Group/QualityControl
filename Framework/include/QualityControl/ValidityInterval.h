@@ -29,7 +29,7 @@ const static ValidityInterval gInvalidValidityInterval{
   std::numeric_limits<validity_time_t>::max(), std::numeric_limits<validity_time_t>::min()
 };
 const static ValidityInterval gFullValidityInterval{
-  std::numeric_limits<validity_time_t>::min(), std::numeric_limits<validity_time_t>::max()
+  std::numeric_limits<validity_time_t>::min() + 1, std::numeric_limits<validity_time_t>::max()
 };
 
 } // namespace o2::quality_control::core

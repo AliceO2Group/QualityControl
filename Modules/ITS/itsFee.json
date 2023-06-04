@@ -55,7 +55,9 @@
                   "maxbadchipsIB": "2",
                   "maxbadlanesML": "4",
                   "maxbadlanesOL": "7",
-                  "maxfractionbadlanes": "0.1"
+                  "maxfractionbadlanes": "0.1",
+                  "plotWithTextMessage": "",
+                  "textMessage": "" 
                 },
                 "dataSource": [
                     {

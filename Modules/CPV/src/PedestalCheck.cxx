@@ -14,11 +14,15 @@
 /// \author Sergey Evdokimov
 ///
 
+// QC
 #include "CPV/PedestalCheck.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/ObjectMetadataKeys.h"
+// O2
+#include <DataFormatsQualityControl/FlagReasons.h>
+#include <DataFormatsQualityControl/FlagReasonFactory.h>
 // ROOT
 #include <TH1.h>
 #include <TH2.h>
@@ -26,6 +30,7 @@
 #include <TList.h>
 
 using namespace std;
+using namespace o2::quality_control;
 using namespace o2::quality_control::repository;
 
 namespace o2::quality_control_modules::cpv
@@ -33,10 +38,7 @@ namespace o2::quality_control_modules::cpv
 
 void PedestalCheck::configure()
 {
-  ILOG(Info, Support) << "PedestalCheck::configure() : I have been called with following custom parameters" << ENDM;
-  for (auto [key, value] : mCustomParameters) {
-    ILOG(Info, Support) << key << ": " << value << ENDM;
-  }
+  ILOG(Info, Support) << "PedestalCheck::configure() : I have been called with following custom parameters" << mCustomParameters << ENDM;
 
   for (int mod = 0; mod < 3; mod++) {
     // mMinGoodPedestalValueM
@@ -148,6 +150,7 @@ Quality PedestalCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
     configure();
   }
 
+  // default
   Quality result = Quality::Good;
 
   for (auto& [moName, mo] : *moMap) {
@@ -162,16 +165,18 @@ Quality PedestalCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
           ILOG(Warning, Devel) << "Could not cast " << mo->getName() << " to TH1F*, skipping" << ENDM;
           continue;
         }
-        result = Quality::Good; // default
         TPaveText* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
         h->GetListOfFunctions()->Add(msg);
         msg->SetName(Form("%s_msg", mo->GetName()));
         msg->Clear();
-        msg->AddText(Form("Run %d", getRunNumberFromMO(mo)));
+        // msg->AddText(Form("Run %d", getRunNumberFromMO(mo)));
         // count number of too small pedestals + too big pedestals
         int nOfBadPedestalValues = h->Integral(0, mMinGoodPedestalValueM[iMod]) + h->GetBinContent(h->GetNbinsX() + 1); // underflow + small pedestals + overflow
         if (nOfBadPedestalValues > mToleratedBadPedestalValueChannelsM[iMod]) {
-          result = Quality::Bad;
+          if (result.isBetterThan(Quality::Bad)) {
+            result = Quality::Bad;
+          }
+          result.addReason(FlagReasonFactory::Unknown(), Form("bad ped values M%d", iMod));
           msg->AddText(Form("Too many bad ped values: %d", nOfBadPedestalValues));
           msg->AddText(Form("Tolerated bad ped values: %d", mToleratedBadPedestalValueChannelsM[iMod]));
           msg->SetFillColor(kRed);
@@ -181,7 +186,10 @@ Quality PedestalCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
         // count number of bad pedestals (double peaked and so)
         int nOfBadPedestals = 7680 - h->GetEntries();
         if (nOfBadPedestals > mToleratedBadChannelsM[iMod]) {
-          result = Quality::Bad;
+          if (result.isBetterThan(Quality::Bad)) {
+            result.set(Quality::Bad);
+          }
+          result.addReason(FlagReasonFactory::Unknown(), Form("bad pedestals M%d", iMod));
           msg->AddText(Form("Too many bad channels: %d", nOfBadPedestals));
           msg->AddText(Form("Tolerated bad channels: %d", mToleratedBadChannelsM[iMod]));
           msg->SetFillColor(kRed);
@@ -202,19 +210,21 @@ Quality PedestalCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
           ILOG(Warning, Devel) << "Could not cast " << mo->getName() << " to TH1F*, skipping" << ENDM;
           continue;
         }
-        result = Quality::Good; // default
         TPaveText* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
         h->GetListOfFunctions()->Add(msg);
         msg->SetName(Form("%s_msg", mo->GetName()));
         msg->Clear();
-        msg->AddText(Form("Run %d", getRunNumberFromMO(mo)));
+        // msg->AddText(Form("Run %d", getRunNumberFromMO(mo)));
         // count number of too small pedestals + too big pedestals
         float binWidth = h->GetBinWidth(1);
         int nOfBadPedestalSigmas = h->Integral(mMaxGoodPedestalSigmaM[iMod] / binWidth + 1,
                                                h->GetNbinsX() + 1); // big sigmas + overflow
 
         if (nOfBadPedestalSigmas > mToleratedBadPedestalSigmaChannelsM[iMod]) {
-          result = Quality::Bad;
+          if (result.isBetterThan(Quality::Bad)) {
+            result.set(Quality::Bad);
+          }
+          result.addReason(FlagReasonFactory::Unknown(), Form("bad ped sigmas M%d", iMod));
           msg->AddText(Form("Too many bad ped sigmas: %d", nOfBadPedestalSigmas));
           msg->AddText(Form("Tolerated bad ped sigmas: %d", mToleratedBadPedestalSigmaChannelsM[iMod]));
 
@@ -239,7 +249,7 @@ Quality PedestalCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
         h->GetListOfFunctions()->Add(msg);
         msg->SetName(Form("%s_msg", mo->GetName()));
         msg->Clear();
-        msg->AddText(Form("Run %d", getRunNumberFromMO(mo)));
+        // msg->AddText(Form("Run %d", getRunNumberFromMO(mo)));
         // count number of too small pedestals + too big pedestals
         float binWidth = h->GetBinWidth(1);
         int nOfBadPedestalEfficiencies = 7680 -
@@ -247,7 +257,10 @@ Quality PedestalCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
                                                      mMaxGoodPedestalEfficiencyM[iMod] / binWidth); // big sigmas + overflow
 
         if (nOfBadPedestalEfficiencies > mToleratedBadPedestalEfficiencyChannelsM[iMod]) {
-          result = Quality::Bad;
+          if (result.isBetterThan(Quality::Bad)) {
+            result.set(Quality::Bad);
+          }
+          result.addReason(FlagReasonFactory::Unknown(), Form("bad ped efficiencies M%d", iMod));
           msg->AddText(Form("Too many bad ped efficiencies: %d", nOfBadPedestalEfficiencies));
           msg->AddText(Form("Tolerated bad ped efficiencies: %d",
                             mToleratedBadPedestalEfficiencyChannelsM[iMod]));

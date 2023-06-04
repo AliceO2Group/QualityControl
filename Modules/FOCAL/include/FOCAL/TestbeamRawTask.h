@@ -87,7 +87,7 @@ class TestbeamRawTask final : public TaskInterface
   void processPixelPayload(gsl::span<const o2::itsmft::GBTWord> gbtpayload, uint16_t feeID);
   void processPadEvent(gsl::span<const o2::focal::PadGBTWord> gbtpayload);
   std::pair<int, int> getNumberOfPixelSegments(o2::focal::PixelMapper::MappingType_t mappingtype) const;
-  std::pair<int, int> getPixelSegment(const o2::focal::PixelHit& hit, o2::focal::PixelMapper::MappingType_t mappingtype, const o2::focal::PixelMapping::ChipPosition& chipMapping) const;
+  std::pair<int, int> getPixelSegment(const o2::focal::PixelHit& hit, o2::focal::PixelMapper::MappingType_t mappingtype, const o2::focal::PixelMapper::ChipPosition& chipMapping) const;
 
   o2::focal::PadDecoder mPadDecoder;                                              ///< Decoder for pad data
   o2::focal::PadMapper mPadMapper;                                                ///< Mapping for Pads
@@ -110,6 +110,11 @@ class TestbeamRawTask final : public TaskInterface
   /// General histograms
   /////////////////////////////////////////////////////////////////////////////////////
   TH1* mTFerrorCounter = nullptr; ///< Number of TF builder errors
+  TH1* mFEENumberHBF = nullptr;   ///< Number of HBFs per FEE
+  TH1* mFEENumberTF = nullptr;    ///< Number of TFs per FEE
+  TH1* mNumLinksTF = nullptr;     ///< Number of links per timeframe
+  TH1* mNumHBFPerCRU = nullptr;   ///< Number of HBFs per CRU
+  TH2* mCRUcounter = nullptr;     ///< CRU counter
 
   /////////////////////////////////////////////////////////////////////////////////////
   /// Pad histograms
@@ -119,8 +124,30 @@ class TestbeamRawTask final : public TaskInterface
   std::array<TH2*, PAD_ASICS> mPadASICChannelTOA;                                       ///< TOA per channel for each ASIC
   std::array<TH2*, PAD_ASICS> mPadASICChannelTOT;                                       ///< TOT per channel for each ASIC
   std::array<TH2*, PAD_ASICS> mHitMapPadASIC;                                           ///< Hitmap per ASIC
+  std::array<TH1*, PAD_ASICS> mPadTOTSumASIC;                                           ///< Sum of TOT per ASIC
+  std::array<TH1*, PAD_ASICS> mPadADCSumASIC;                                           ///< Sum of ADC per ASIC
+  std::array<TH2*, PAD_ASICS> mPadTOTCorrASIC;                                          ///< TOT correlation between ASICs
+  std::array<TH2*, PAD_ASICS> mPadADCCorrASIC;                                          ///< ADC correlation between ASICs
+  TH1* mPadTOTSumGlobal = nullptr;                                                      ///< Sum of TOT per event
+  TH1* mPadADCSumGlobal = nullptr;                                                      ///< Sum of ADC per event
   std::array<std::unique_ptr<PadChannelProjections>, PAD_ASICS> mPadChannelProjections; ///< ADC projections per ASIC channel
+  TH2* mPadTOAvsASIC = nullptr;                                                         ///< average TOA for each ASICs
+  TH2* mPadTOAvsASIC_Ch14 = nullptr;                                                    ///< (no average) TOA for each ASICs for channel 14
+  TH2* mPadTOAvsASIC_Ch16 = nullptr;                                                    ///< (no average) TOA for each ASICs for channel 16
+  TH2* mPadTOAvsASIC_Ch19 = nullptr;                                                    ///< (no average) TOA for each ASICs for channel 19
+  TH2* mPadTOAvsASIC_Ch48 = nullptr;                                                    ///< (no average) TOA for each ASICs for channel 48
+  TH2* mPadTOAvsASIC_Ch52 = nullptr;                                                    ///< (no average) TOA for each ASICs for channel 52
+  TH2* mPadTOAvsASIC_Ch61 = nullptr;                                                    ///< (no average) TOA for each ASICs for channel 61
 
+  TH1* mPadGlobalMIPADC_Ch14_Asic0 = nullptr;       ///  ADC for channel 14 for asic 0 after cmn subtraction
+  TH1* mPadGlobalMIPADC_Ch16_Asic0 = nullptr;       ///  ADC for channel 16 for asic 0 after cmn subtraction
+  TH1* mPadGlobalMIPADC_Ch19_Asic0 = nullptr;       ///  ADC for channel 19 for asic 0 after cmn subtraction
+  TH1* mPadGlobalMIPADC_Ch48_Asic0 = nullptr;       ///  ADC for channel 48 for asic 0 after cmn subtraction
+  TH1* mPadGlobalMIPADC_Ch52_Asic0 = nullptr;       ///  ADC for channel 52 for asic 0 after cmn subtraction
+  TH1* mPadGlobalMIPADC_Ch61_Asic0 = nullptr;       ///  ADC for channel 61 for asic 0 after cmn subtraction
+  std::array<TH2*, PAD_ASICS> mPadTRIGvsWindowASIC; ///< Number of triggers per window for each ASIC
+  TH2* mPadGlobalTOTvsADC = nullptr;                ///< TOT vs ADC for all pad layers
+  TH2* mPadGlobalTOAvsADC = nullptr;                ///< TOA vs ADC for all pad layers
   /////////////////////////////////////////////////////////////////////////////////////
   /// Pixel histograms
   /////////////////////////////////////////////////////////////////////////////////////

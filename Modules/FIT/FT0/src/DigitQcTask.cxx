@@ -71,7 +71,7 @@ void DigitQcTask::rebinFromConfig()
 
   const std::string rebinKeyword = "binning";
   const char* channelIdPlaceholder = "#";
-  for (auto& param : mCustomParameters) {
+  for (auto& param : mCustomParameters.getAllDefaults()) {
     if (param.first.rfind(rebinKeyword, 0) != 0)
       continue;
     std::string hName = param.first.substr(rebinKeyword.length() + 1);

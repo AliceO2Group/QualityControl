@@ -35,7 +35,7 @@ namespace o2::quality_control_modules::common
 void IncreasingEntries::configure()
 {
   try {
-    mMustIncrease = parseBoolParam(mCustomParameters, "mustIncrease");
+    mMustIncrease = parseBoolParam(mCustomParameters, "default", "default", "mustIncrease");
   } catch (AliceO2::Common::ObjectNotFoundError& exc) {
     mMustIncrease = true; // if not there, default behaviour
   }

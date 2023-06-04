@@ -17,7 +17,6 @@
 #include "FDD/GenericCheck.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
-#include "QualityControl/QcInfoLogger.h"
 // ROOT
 #include <TH1.h>
 #include <TH2.h>

@@ -2,7 +2,9 @@
 
 add_library(O2QcPHOS)
 
-target_sources(O2QcPHOS PRIVATE src/TH2FMean.cxx
+target_sources(O2QcPHOS PRIVATE src/TH1Fraction.cxx
+                                src/TH2Fraction.cxx
+                                src/TH2FMean.cxx
                                 src/TH2SBitmask.cxx
                                 src/RawQcTask.cxx
                                 src/RawCheck.cxx
@@ -16,13 +18,15 @@ target_include_directories(
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_link_libraries(O2QcPHOS PUBLIC O2QualityControl O2::PHOSBase O2::PHOSReconstruction ROOT::Spectrum)
+target_link_libraries(O2QcPHOS PUBLIC O2QualityControl O2::DataFormatsQualityControl O2::PHOSBase O2::PHOSReconstruction ROOT::Spectrum)
 
 add_root_dictionary(O2QcPHOS
-                    HEADERS include/PHOS/TH2FMean.h
+                    HEADERS include/PHOS/TH1Fraction.h
+                            include/PHOS/TH2Fraction.h
+                            include/PHOS/TH2FMean.h
                             include/PHOS/TH2SBitmask.h
                             include/PHOS/ClusterQcTask.h
-		            include/PHOS/ClusterCheck.h
+		                        include/PHOS/ClusterCheck.h
                             include/PHOS/RawQcTask.h
                             include/PHOS/RawCheck.h
                             include/PHOS/CalibQcTask.h

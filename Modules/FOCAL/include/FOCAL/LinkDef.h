@@ -5,6 +5,6 @@
 
 #pragma link C++ class o2::quality_control_modules::focal::TestbeamRawTask + ;
 
-      #pragma link C++ class o2::quality_control_modules::focal::PedestalCalibTask+;
-      
-      #endif
+#pragma link C++ class o2::quality_control_modules::focal::PedestalCalibTask + ;
+
+#endif

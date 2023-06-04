@@ -19,10 +19,10 @@
 
 #include <string>
 #include <vector>
-#include <unordered_map>
 
 #include "QualityControl/DataSourceSpec.h"
 #include "QualityControl/RecoRequestSpecs.h"
+#include "QualityControl/CustomParameters.h"
 
 namespace o2::quality_control::core
 {
@@ -62,7 +62,7 @@ struct TaskSpec {
   int maxNumberCycles = -1;
   size_t resetAfterCycles = 0;
   std::string saveObjectsToFile;
-  std::unordered_map<std::string, std::string> customParameters = {};
+  core::CustomParameters customParameters;
   // multinode setups
   TaskLocationSpec location = TaskLocationSpec::Remote;
   std::vector<std::string> localMachines = {};

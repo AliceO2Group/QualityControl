@@ -114,6 +114,28 @@
         "location": "remote",
         "saveObjectsToFile": "qcpulseheight.root"
       },
+      "PulseHeightTrackMatch": {
+        "active": "true",
+        "className": "o2::quality_control_modules::trd::PulseHeightTrackMatch",
+        "moduleName": "QcTRD",
+        "detectorName": "TRD",
+        "cycleDurationSeconds": "15",
+        "maxNumberCycles": "-1",
+        "dataSource_comment": "no comment",
+        "dataSource": {
+          "type": "direct",
+          "query": "digits:TRD/DIGITS;tracklets:TRD/TRACKLETS;triggers:TRD/TRKTRGRD;tracks:TRD/MATCH_ITSTPC;trigrectrk:TRD/TRGREC_ITSTPC"
+        },
+        "taskParameters": {
+          "pileupCut": "0.7",
+          "peakregionstart": "7.0",
+          "peakregionend": "20.0",
+          "pulseheightpeaklower": "1.0",
+          "pulseheightpeakupper": "5.0"
+        },
+        "location": "remote",
+        "saveObjectsToFile": "qcpulseheightitstpc.root"
+      },
       "TrackingTask": {
         "active": "true",
         "className": "o2::quality_control_modules::trd::TrackingTask",

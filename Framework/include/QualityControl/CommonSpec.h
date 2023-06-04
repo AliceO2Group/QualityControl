@@ -17,6 +17,7 @@
 ///
 
 #include <string>
+#include <cstdint>
 #include <unordered_map>
 #include "QualityControl/DiscardFileParameters.h"
 
@@ -44,4 +45,4 @@ struct CommonSpec {
 
 } // namespace o2::quality_control::core
 
-#endif //QUALITYCONTROL_COMMONSPEC_H
+#endif // QUALITYCONTROL_COMMONSPEC_H

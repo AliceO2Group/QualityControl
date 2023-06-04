@@ -1,0 +1,47 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "http://ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "2"
+      }
+    },
+    "tasks": {
+      "Clusters": {
+        "active": "true",
+        "className": "o2::quality_control_modules::muonchambers::ClustersTask",
+        "moduleName": "QcMuonChambers",
+        "detectorName": "MCH",
+        "cycleDurationSeconds": "300",
+        "maxNumberCycles": "-1",
+        "dataSource": {
+          "type": "direct",
+          "query": "tracks:MCH/TRACKS;trackrofs:MCH/TRACKROFS;trackclusters:MCH/TRACKCLUSTERS"
+        },
+        "taskParameters": {
+        },
+        "grpGeomRequest": {
+          "geomRequest": "Aligned",
+          "askGRPECS": "false",
+          "askGRPLHCIF": "false",
+          "askGRPMagField": "false",
+          "askMatLUT": "false",
+          "askTime": "false",
+          "askOnceAllButField": "true",
+          "needPropagatorD": "false"
+        },
+        "location": "remote"
+      }
+    },
+    "checks": {}
+  },
+  "dataSamplingPolicies": []
+}
+

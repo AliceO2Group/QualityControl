@@ -18,6 +18,8 @@
 #define QC_MODULE_CPV_CPVPHYSICSTASK_H
 
 #include "QualityControl/TaskInterface.h"
+#include "PHOS/TH1Fraction.h"
+#include "PHOS/TH2Fraction.h"
 #include <Mergers/MergeInterface.h>
 #include <memory>
 #include <array>
@@ -81,6 +83,8 @@ class IntensiveTH2F : public TH2F, public o2::mergers::MergeInterface
 /// \brief Task for CPV Physics monitoring
 /// \author Sergey Evdokimov
 using Geometry = o2::cpv::Geometry;
+using TH1Fraction = o2::quality_control_modules::phos::TH1Fraction;
+using TH2Fraction = o2::quality_control_modules::phos::TH2Fraction;
 class PhysicsTask final : public TaskInterface
 {
  public:
@@ -134,16 +138,13 @@ class PhysicsTask final : public TaskInterface
                   H1DNDigitsInClusterM4
   };
 
-  static constexpr short kNHist2D = 12;
+  static constexpr short kNHist2D = 9;
   enum Histos2D { H2DDigitMapM2,
                   H2DDigitMapM3,
                   H2DDigitMapM4,
                   H2DCalibDigitMapM2,
                   H2DCalibDigitMapM3,
                   H2DCalibDigitMapM4,
-                  H2DDigitFreqM2,
-                  H2DDigitFreqM3,
-                  H2DDigitFreqM4,
                   H2DClusterMapM2,
                   H2DClusterMapM3,
                   H2DClusterMapM4
@@ -162,6 +163,14 @@ class PhysicsTask final : public TaskInterface
                            H2DGainsM3,
                            H2DGainsM4
   };
+  static constexpr short kNfractions1D = 1;
+  enum fractions1D { F1DErrorTypeOccurance };
+
+  static constexpr short kNfractions2D = 3;
+  enum fractions2D { F2DDigitFreqM2,
+                     F2DDigitFreqM3,
+                     F2DDigitFreqM4
+  };
 
   static constexpr short kNModules = 3;
   static constexpr short kNChannels = 23040;
@@ -173,6 +182,8 @@ class PhysicsTask final : public TaskInterface
   std::array<TH1F*, kNHist1D> mHist1D = { nullptr };                            ///< Array of 1D histograms
   std::array<TH2F*, kNHist2D> mHist2D = { nullptr };                            ///< Array of 2D histograms
   std::array<IntensiveTH2F*, kNIntensiveHist2D> mIntensiveHist2D = { nullptr }; ///< Array of IntensiveTH2F histograms
+  std::array<TH1Fraction*, kNfractions1D> mFractions1D = { nullptr };           ///< Array of TH1Fraction histograms
+  std::array<TH2Fraction*, kNfractions2D> mFractions2D = { nullptr };           ///< Array of TH1Fraction histograms
 };
 
 } // namespace o2::quality_control_modules::cpv

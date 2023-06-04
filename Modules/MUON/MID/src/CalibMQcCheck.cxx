@@ -38,62 +38,12 @@ Quality CalibMQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
 {
   // printf("\n*********** CalibMQcCheck ****** check \n");
   Quality result = Quality::Null;
-  mIsEmpty = 0;
-  for (auto& [moName, mo] : *moMap) {
-    (void)moName;
-    if (!mIsEmpty && mo->getName() == "NbTimeFrame") {
-      auto* h = dynamic_cast<TH1F*>(mo->getObject());
-      mCalibTF = h->GetBinContent(1);
-      printf("\n mCalibTF = %i \n", mCalibTF);
-    }
-    (void)moName;
-    if (!mIsEmpty && mo->getName() == "MBendBadMap11") {
-      auto* h2 = dynamic_cast<TH2I*>(mo->getObject());
-      if (!h2->GetEntries())
-        mIsEmpty = 1;
-      // h2->Scale(scale);
-    }
-    if (!mIsEmpty && mo->getName() == "MBendBadMap12") {
-      auto* h2 = dynamic_cast<TH2I*>(mo->getObject());
-      if (!h2->GetEntries())
-        mIsEmpty = 1;
-      // h2->Scale(scale);
-    }
-    if (!mIsEmpty && mo->getName() == "MBendBadMap21") {
-      auto* h2 = dynamic_cast<TH2I*>(mo->getObject());
-      if (!h2->GetEntries())
-        mIsEmpty = 1;
-      // h2->Scale(scale);
-    }
-    if (!mIsEmpty && mo->getName() == "MBendBadMap22") {
-      auto* h2 = dynamic_cast<TH2I*>(mo->getObject());
-      if (!h2->GetEntries())
-        mIsEmpty = 1;
-      // h2->Scale(scale);
-    }
-    if (!mIsEmpty && mo->getName() == "MNBendBadMap11") {
-      auto* h2 = dynamic_cast<TH2I*>(mo->getObject());
-      if (!h2->GetEntries())
-        mIsEmpty = 1;
-      // h2->Scale(scale);
-    }
-    if (!mIsEmpty && mo->getName() == "MNBendBadMap12") {
-      auto* h2 = dynamic_cast<TH2I*>(mo->getObject());
-      if (!h2->GetEntries())
-        mIsEmpty = 1;
-      // h2->Scale(scale);
-    }
-    if (!mIsEmpty && mo->getName() == "MNBendBadMap21") {
-      auto* h2 = dynamic_cast<TH2I*>(mo->getObject());
-      if (!h2->GetEntries())
-        mIsEmpty = 1;
-      // h2->Scale(scale);
-    }
-    if (!mIsEmpty && mo->getName() == "MNBendBadMap22") {
-      auto* h2 = dynamic_cast<TH2I*>(mo->getObject());
-      if (!(h2->GetEntries()))
-        mIsEmpty = 1;
-      // h2->Scale(scale);
+  for (auto& item : *moMap) {
+    if (item.second->getName() == "NbBadChannelTF") {
+      auto nbTFs = static_cast<TH1F*>(item.second->getObject())->GetBinContent(1);
+      mHistoHelper.setNTFs(nbTFs);
+      result = (nbTFs == 0) ? Quality::Bad : Quality::Good;
+      return result;
     }
   }
   return result;
@@ -101,71 +51,22 @@ Quality CalibMQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
 
 std::string CalibMQcCheck::getAcceptedType() { return "TH1"; }
 
-static void updateTitle(TH1* hist, std::string suffix)
-{
-  if (!hist) {
-    return;
-  }
-  TString title = hist->GetTitle();
-  title.Append(" ");
-  title.Append(suffix.c_str());
-  hist->SetTitle(title);
-}
-
-static std::string getCurrentTime()
-{
-  time_t t;
-  time(&t);
-
-  struct tm* tmp;
-  tmp = localtime(&t);
-
-  char timestr[500];
-  strftime(timestr, sizeof(timestr), "(%x - %X)", tmp);
-
-  std::string result = timestr;
-  return result;
-}
-
-static TLatex* drawLatex(double xmin, double ymin, Color_t color, TString text)
-{
-
-  TLatex* tl = new TLatex(xmin, ymin, Form("%s", text.Data()));
-  tl->SetNDC();
-  tl->SetTextFont(22); // Normal 42
-  tl->SetTextSize(0.08);
-  tl->SetTextColor(color);
-
-  return tl;
-}
-
 void CalibMQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  // printf("\n*********** CalibMQcCheck ****** beautify \n");
-  gStyle->SetPalette(kRainBow);
-  auto currentTime = getCurrentTime();
-  updateTitle(dynamic_cast<TH2I*>(mo->getObject()), currentTime);
-  TLatex* msg;
-  // if(mCalibTF>0){
-  if (mo->getName() == "MBendBadMap11") {
-    auto* h2 = dynamic_cast<TH2I*>(mo->getObject());
-    if (mIsEmpty == 1) {
-      msg = drawLatex(.2, 0.8, kRed, " EMPTY ");
-      h2->GetListOfFunctions()->Add(msg);
-      msg = drawLatex(.1, 0.65, kRed, " Calib Objets not produced ");
-      h2->GetListOfFunctions()->Add(msg);
-      msg = drawLatex(.15, 0.5, kRed, " Quality::BAD ");
-      h2->GetListOfFunctions()->Add(msg);
-    } else {
-      msg = drawLatex(.2, 0.8, kGreen, "  Not Empty ");
-      h2->GetListOfFunctions()->Add(msg);
-      // msg = drawLatex(.15, 0.65, kGreen, " Calib Objets   ");
-      // h2->GetListOfFunctions()->Add(msg);
-      msg = drawLatex(.15, 0.5, kGreen, " Quality::GOOD ");
-      h2->GetListOfFunctions()->Add(msg);
-    }
+
+  auto currentTime = mHistoHelper.getCurrentTime();
+  mHistoHelper.updateTitle(dynamic_cast<TH1*>(mo->getObject()), mHistoHelper.getCurrentTime());
+  if (mHistoHelper.getNTFs() == 0) {
+    checkResult = Quality::Bad;
   }
-  // }
+  auto color = mHistoHelper.getColor(checkResult);
+  if (mo->getName().find("BendBadMap") != std::string::npos) {
+    auto* h2 = static_cast<TH2*>(mo->getObject());
+    if (checkResult == Quality::Bad) {
+      mHistoHelper.addLatex(h2, 0.2, 0.8, color, "Calib objects not produced!");
+    }
+    mHistoHelper.addLatex(h2, 0.15, 0.5, color, fmt::format("Quality::{}", checkResult.getName()));
+  }
 }
 
 } // namespace o2::quality_control_modules::mid

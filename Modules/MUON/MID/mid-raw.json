@@ -36,7 +36,7 @@
           "name": "rawdata"
         },
         "taskParameters": {
-          "feeId-config-file": "/home/mid/daq_utils/config/feeId_mapper.txt",
+          "feeId-config-file": "",
           "crate-masks-file": "",
           "electronics-delays-file": ""
         }

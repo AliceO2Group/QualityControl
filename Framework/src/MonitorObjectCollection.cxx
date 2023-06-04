@@ -17,6 +17,7 @@
 #include "QualityControl/MonitorObjectCollection.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/ActivityHelpers.h"
 
 #include <Mergers/MergerAlgorithm.h>
 
@@ -56,6 +57,8 @@ void MonitorObjectCollection::merge(mergers::MergeInterface* const other)
       }
       // That might be another collection or a concrete object to be merged, we walk on the collection recursively.
       algorithm::merge(targetMO->getObject(), otherMO->getObject());
+      targetMO->updateValidity(otherMO->getValidity().getMin());
+      targetMO->updateValidity(otherMO->getValidity().getMax());
     } else {
       // A corresponding object in the target collection could not be found.
       // We prefer to clone instead of passing the pointer in order to simplify deleting the `other`.

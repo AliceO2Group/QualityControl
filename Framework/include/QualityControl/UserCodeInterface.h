@@ -23,6 +23,7 @@
 #include <Rtypes.h>
 #include <CCDB/CcdbApi.h>
 
+#include "QualityControl/CustomParameters.h"
 #include "QualityControl/QcInfoLogger.h"
 
 namespace o2::quality_control::core
@@ -39,7 +40,7 @@ class UserCodeInterface
   /// Destructor
   virtual ~UserCodeInterface() = default;
 
-  void setCustomParameters(const std::unordered_map<std::string, std::string>& parameters);
+  void setCustomParameters(const CustomParameters& parameters);
 
   /// \brief Configure the object.
   ///
@@ -57,7 +58,7 @@ class UserCodeInterface
                           long timestamp = -1);
 
  protected:
-  std::unordered_map<std::string, std::string> mCustomParameters;
+  CustomParameters mCustomParameters;
   std::string mName;
 
  private:

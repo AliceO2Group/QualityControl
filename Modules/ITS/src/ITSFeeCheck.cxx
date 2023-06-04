@@ -31,6 +31,7 @@ namespace o2::quality_control_modules::its
 
 Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
+
   Quality result = Quality::Null;
   bool badStaveCount, badStaveIB, badStaveML, badStaveOL;
 
@@ -65,6 +66,9 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
                 badStaveIB = true;
                 result.updateMetadata("IB", "medium");
                 countStave++;
+                TString text = "Medium:IB stave has many NOK chips;";
+                if (!checkReason(result, text))
+                  result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), text.Data());
               }
             } else if (ibin <= StaveBoundary[5]) {
               // Check if there are staves in the MLs with at least 4 lanes in Bad (bins are filled with %)
@@ -73,6 +77,9 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
                 badStaveML = true;
                 result.updateMetadata("ML", "medium");
                 countStave++;
+                TString text = "Medium:ML stave has many NOK chips;";
+                if (!checkReason(result, text))
+                  result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), text.Data());
               }
             } else if (ibin <= StaveBoundary[7]) {
               // Check if there are staves in the OLs with at least 7 lanes in Bad (bins are filled with %)
@@ -81,6 +88,9 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
                 badStaveOL = true;
                 result.updateMetadata("OL", "medium");
                 countStave++;
+                TString text = "Medium:OL stave has many NOK chips;";
+                if (!checkReason(result, text))
+                  result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), text.Data());
               }
             }
           } // end loop bins (staves)
@@ -90,6 +100,7 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
           if (countStave > 0.25 * NStaves[ilayer]) {
             badStaveCount = true;
             result.updateMetadata(Form("Layer%d", ilayer), "bad");
+            result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("BAD:Layer%d has many NOK staves;", ilayer));
           }
         } // end loop over layers
         if (badStaveIB || badStaveML || badStaveOL) {
@@ -109,6 +120,7 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
       if (h->GetBinContent(1) + h->GetBinContent(2) + h->GetBinContent(3) > maxfractionbadlanes) {
         result.updateMetadata("SummaryGlobal", "bad");
         result.set(Quality::Bad);
+        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("BAD:>%.0f %% of the lanes are bad", (h->GetBinContent(1) + h->GetBinContent(2) + h->GetBinContent(3)) * 100));
       }
     } // end summary loop
     if (mo->getName() == Form("RDHSummary")) {
@@ -125,8 +137,8 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
       int counttrgflags[NTrg] = { 0 };
       int cutvalue[NTrg] = { 432, 432, 0, 0, 432, 0, 0, 0, 0, 432, 0, 432, 0 };
 
-      std::vector<int> skipbins = convertToIntArray(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "skipbinstrg", skipbinstrg));
-      std::vector<int> skipfeeid = convertToIntArray(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "skipfeeids", skipfeeids));
+      std::vector<int> skipbins = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "skipbinstrg", skipbinstrg));
+      std::vector<int> skipfeeid = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "skipfeeids", skipfeeids));
       for (int itrg = 1; itrg <= h->GetNbinsY(); itrg++) {
         result.addMetadata(h->GetYaxis()->GetBinLabel(itrg), "good");
         for (int ifee = 1; ifee <= h->GetNbinsX(); ifee++) {
@@ -140,13 +152,19 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
         if (std::find(skipbins.begin(), skipbins.end(), itrg + 1) != skipbins.end()) {
           continue;
         }
+        bool badTrigger = false;
         if ((itrg == 0 || itrg == 1 || itrg == 4 || itrg == 9 || itrg == 11) && counttrgflags[itrg] < cutvalue[itrg] - (int)skipfeeid.size()) {
           result.updateMetadata(h->GetYaxis()->GetBinLabel(itrg + 1), "bad");
           result.set(Quality::Bad);
+          badTrigger = true;
         } else if ((itrg == 2 || itrg == 3 || itrg == 5 || itrg == 6 || itrg == 7 || itrg == 8 || itrg == 10 || itrg == 12) && counttrgflags[itrg] > cutvalue[itrg]) {
           result.updateMetadata(h->GetYaxis()->GetBinLabel(itrg + 1), "bad");
           result.set(Quality::Bad);
+          badTrigger = true;
         }
+        std::string extraText = (!strcmp(h->GetYaxis()->GetBinLabel(itrg + 1), "PHYSICS")) ? "(OK if it's COSMICS/SYNTHETIC)" : "";
+        if (badTrigger)
+          result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("BAD:Trigger flag %s of bad quality %s", h->GetYaxis()->GetBinLabel(itrg + 1), extraText.c_str()));
       }
     }
 
@@ -155,7 +173,7 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
       result.set(Quality::Good);
       result.addMetadata("CheckTechnicals", "good");
       result.addMetadata("CheckTechnicalsFeeid", "good");
-      std::vector<int> skipfeeid = convertToIntArray(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "skipfeeids", skipfeeids));
+      std::vector<int> skipfeeid = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "skipfeeids", skipfeeids));
       if (h->Integral(1, 432, h->GetYaxis()->FindBin(1000), h->GetYaxis()->FindBin(20000)) > 0) {
         result.set(Quality::Bad);
         result.updateMetadata("CheckTechnicals", "bad");
@@ -182,6 +200,23 @@ std::string ITSFeeCheck::getAcceptedType() { return "TH2I, TH2Poly"; }
 
 void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
+  std::vector<string> vPlotWithTextMessage = convertToArray<string>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "plotWithTextMessage", ""));
+  std::vector<string> vTextMessage = convertToArray<string>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "textMessage", ""));
+  std::map<string, string> ShifterInfoText;
+
+  if ((int)vTextMessage.size() == (int)vPlotWithTextMessage.size()) {
+    for (int i = 0; i < (int)vTextMessage.size(); i++) {
+      ShifterInfoText[vPlotWithTextMessage[i]] = vTextMessage[i];
+    }
+  } else
+
+    ILOG(Warning, Support) << "Bad list of plot with TextMessages for shifter, check .json" << ENDM;
+
+  std::shared_ptr<TLatex> tShifterInfo = std::make_shared<TLatex>(0.005, 0.006, Form("#bf{%s}", TString(ShifterInfoText[mo->getName()]).Data()));
+  tShifterInfo->SetTextSize(0.04);
+  tShifterInfo->SetTextFont(43);
+  tShifterInfo->SetNDC();
+
   TString status;
   int textColor;
 
@@ -201,6 +236,8 @@ void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
       tInfo->SetTextFont(43);
       tInfo->SetNDC();
       h->GetListOfFunctions()->Add(tInfo->Clone());
+      if (ShifterInfoText[mo->getName()] != "")
+        h->GetListOfFunctions()->Add(tShifterInfo->Clone());
     }
     if (mo->getName() == Form("LaneStatus/laneStatusOverviewFlag%s", mLaneStatusFlag[iflag].c_str())) {
       auto* hp = dynamic_cast<TH2Poly*>(mo->getObject());
@@ -262,12 +299,14 @@ void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
           } // end check result over layer
         }   // end of loop over layers
       }
-      tInfo = std::make_shared<TLatex>(0.12, 0.835, Form("#bf{%s}", status.Data()));
+      tInfo = std::make_shared<TLatex>(0.05, 0.95, Form("#bf{%s}", status.Data()));
       tInfo->SetTextColor(textColor);
-      tInfo->SetTextSize(0.03);
+      tInfo->SetTextSize(0.06);
       tInfo->SetTextFont(43);
       tInfo->SetNDC();
       hp->GetListOfFunctions()->Add(tInfo->Clone());
+      if (ShifterInfoText[mo->getName()] != "")
+        hp->GetListOfFunctions()->Add(tShifterInfo->Clone());
     }
   } // end flags
   if (mo->getName() == "LaneStatusSummary/LaneStatusSummaryGlobal") {
@@ -288,12 +327,14 @@ void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
         h->GetListOfFunctions()->Add(tInfoSummary->Clone());
       }
     }
-    tInfo = std::make_shared<TLatex>(0.12, 0.835, Form("#bf{%s}", status.Data()));
+    tInfo = std::make_shared<TLatex>(0.05, 0.95, Form("#bf{%s}", status.Data()));
     tInfo->SetTextColor(textColor);
-    tInfo->SetTextSize(0.04);
+    tInfo->SetTextSize(0.06);
     tInfo->SetTextFont(43);
     tInfo->SetNDC();
     h->GetListOfFunctions()->Add(tInfo->Clone());
+    if (ShifterInfoText[mo->getName()] != "")
+      h->GetListOfFunctions()->Add(tShifterInfo->Clone());
   }
   if (mo->getName() == Form("RDHSummary")) {
     auto* h = dynamic_cast<TH2I*>(mo->getObject());
@@ -304,12 +345,14 @@ void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
       status = "Quality::BAD (call expert)";
       textColor = kRed;
     }
-    tInfo = std::make_shared<TLatex>(0.12, 0.835, Form("#bf{%s}", status.Data()));
+    tInfo = std::make_shared<TLatex>(0.05, 0.95, Form("#bf{%s}", status.Data()));
     tInfo->SetTextColor(textColor);
-    tInfo->SetTextSize(0.04);
+    tInfo->SetTextSize(0.06);
     tInfo->SetTextFont(43);
     tInfo->SetNDC();
     h->GetListOfFunctions()->Add(tInfo->Clone());
+    if (ShifterInfoText[mo->getName()] != "")
+      h->GetListOfFunctions()->Add(tShifterInfo->Clone());
   }
 
   // trigger plot
@@ -334,12 +377,14 @@ void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
         }
       }
     }
-    tInfo = std::make_shared<TLatex>(0.12, 0.835, Form("#bf{%s}", status.Data()));
+    tInfo = std::make_shared<TLatex>(0.05, 0.95, Form("#bf{%s}", status.Data()));
     tInfo->SetTextColor(textColor);
-    tInfo->SetTextSize(0.04);
+    tInfo->SetTextSize(0.06);
     tInfo->SetTextFont(43);
     tInfo->SetNDC();
     h->GetListOfFunctions()->Add(tInfo->Clone());
+    if (ShifterInfoText[mo->getName()] != "")
+      h->GetListOfFunctions()->Add(tShifterInfo->Clone());
   }
 
   // payload size plot
@@ -368,27 +413,25 @@ void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
         h->GetListOfFunctions()->Add(tInfoPL[1]->Clone());
       }
     }
-    tInfo = std::make_shared<TLatex>(0.12, 0.75, Form("#bf{%s}", status.Data()));
+    tInfo = std::make_shared<TLatex>(0.05, 0.95, Form("#bf{%s}", status.Data()));
     tInfo->SetTextColor(textColor);
-    tInfo->SetTextSize(0.04);
+    tInfo->SetTextSize(0.06);
     tInfo->SetTextFont(43);
     tInfo->SetNDC();
     h->GetListOfFunctions()->Add(tInfo->Clone());
+    if (ShifterInfoText[mo->getName()] != "")
+      h->GetListOfFunctions()->Add(tShifterInfo->Clone());
   }
-} // end beautify
+}
 
-std::vector<int> ITSFeeCheck::convertToIntArray(std::string input)
+bool ITSFeeCheck::checkReason(Quality checkResult, TString text)
 {
-  std::replace(input.begin(), input.end(), ',', ' ');
-  std::istringstream stringReader{ input };
-
-  std::vector<int> result;
-  int number;
-  while (stringReader >> number) {
-    result.push_back(number);
+  auto reasons = checkResult.getReasons();
+  for (int i = 0; i < int(reasons.size()); i++) {
+    if (text.Contains(reasons[i].second.c_str()))
+      return true;
   }
-
-  return result;
+  return false;
 }
 
 } // namespace o2::quality_control_modules::its

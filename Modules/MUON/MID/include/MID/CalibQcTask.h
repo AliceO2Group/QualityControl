@@ -17,15 +17,13 @@
 #define QC_MODULE_MID_MIDCALIBQCTASK_H
 
 #include "QualityControl/TaskInterface.h"
-#include "MIDRaw/CrateMasks.h"
-#include "MIDRaw/Decoder.h"
-#include "MIDRaw/ElectronicsDelay.h"
-#include "MIDRaw/FEEIdConfig.h"
-#include "MIDBase/Mapping.h"
+
+#include <array>
+#include <memory>
+#include "MID/DigitsHelper.h"
 
 class TH1F;
 class TH2F;
-class TProfile2D;
 
 using namespace o2::quality_control::core;
 
@@ -52,51 +50,29 @@ class CalibQcTask final : public TaskInterface
   void reset() override;
 
  private:
-  ///////////////////////////
-  int mTF = 0;
-  int mNoiseROF = 0;
-  int mDeadROF = 0;
-  o2::mid::Mapping mMapping; ///< Mapping
+  void resetDisplayHistos();
 
-  std::shared_ptr<TH1F> mNbTimeFrame{ nullptr };
-  std::shared_ptr<TH1F> mNbNoiseROF{ nullptr };
-  std::shared_ptr<TH1F> mNbDeadROF{ nullptr };
+  DigitsHelper mDigitsHelper; ///! Digits helper
 
-  std::shared_ptr<TH1F> mMultNoiseMT11B{ nullptr };
-  std::shared_ptr<TH1F> mMultNoiseMT11NB{ nullptr };
-  std::shared_ptr<TH1F> mMultNoiseMT12B{ nullptr };
-  std::shared_ptr<TH1F> mMultNoiseMT12NB{ nullptr };
-  std::shared_ptr<TH1F> mMultNoiseMT21B{ nullptr };
-  std::shared_ptr<TH1F> mMultNoiseMT21NB{ nullptr };
-  std::shared_ptr<TH1F> mMultNoiseMT22B{ nullptr };
-  std::shared_ptr<TH1F> mMultNoiseMT22NB{ nullptr };
+  std::unique_ptr<TH1F> mNbTimeFrame{ nullptr };
+  std::unique_ptr<TH1F> mNbNoiseROF{ nullptr };
+  std::unique_ptr<TH1F> mNbDeadROF{ nullptr };
 
-  std::shared_ptr<TH2F> mBendNoiseMap11{ nullptr };
-  std::shared_ptr<TH2F> mBendNoiseMap12{ nullptr };
-  std::shared_ptr<TH2F> mBendNoiseMap21{ nullptr };
-  std::shared_ptr<TH2F> mBendNoiseMap22{ nullptr };
-  std::shared_ptr<TH2F> mNBendNoiseMap11{ nullptr };
-  std::shared_ptr<TH2F> mNBendNoiseMap12{ nullptr };
-  std::shared_ptr<TH2F> mNBendNoiseMap21{ nullptr };
-  std::shared_ptr<TH2F> mNBendNoiseMap22{ nullptr };
+  std::array<std::unique_ptr<TH1F>, 4> mMultNoiseB{};
+  std::array<std::unique_ptr<TH1F>, 4> mMultNoiseNB{};
 
-  std::shared_ptr<TH1F> mMultDeadMT11B{ nullptr };
-  std::shared_ptr<TH1F> mMultDeadMT11NB{ nullptr };
-  std::shared_ptr<TH1F> mMultDeadMT12B{ nullptr };
-  std::shared_ptr<TH1F> mMultDeadMT12NB{ nullptr };
-  std::shared_ptr<TH1F> mMultDeadMT21B{ nullptr };
-  std::shared_ptr<TH1F> mMultDeadMT21NB{ nullptr };
-  std::shared_ptr<TH1F> mMultDeadMT22B{ nullptr };
-  std::shared_ptr<TH1F> mMultDeadMT22NB{ nullptr };
+  std::unique_ptr<TH1F> mNoise{ nullptr };
 
-  std::shared_ptr<TH2F> mBendDeadMap11{ nullptr };
-  std::shared_ptr<TH2F> mBendDeadMap12{ nullptr };
-  std::shared_ptr<TH2F> mBendDeadMap21{ nullptr };
-  std::shared_ptr<TH2F> mBendDeadMap22{ nullptr };
-  std::shared_ptr<TH2F> mNBendDeadMap11{ nullptr };
-  std::shared_ptr<TH2F> mNBendDeadMap12{ nullptr };
-  std::shared_ptr<TH2F> mNBendDeadMap21{ nullptr };
-  std::shared_ptr<TH2F> mNBendDeadMap22{ nullptr };
+  std::array<std::unique_ptr<TH2F>, 4> mBendNoiseMap{};
+  std::array<std::unique_ptr<TH2F>, 4> mNBendNoiseMap{};
+
+  std::array<std::unique_ptr<TH1F>, 4> mMultDeadB{};
+  std::array<std::unique_ptr<TH1F>, 4> mMultDeadNB{};
+
+  std::unique_ptr<TH1F> mDead{ nullptr };
+
+  std::array<std::unique_ptr<TH2F>, 4> mBendDeadMap{};
+  std::array<std::unique_ptr<TH2F>, 4> mNBendDeadMap{};
 };
 
 } // namespace o2::quality_control_modules::mid

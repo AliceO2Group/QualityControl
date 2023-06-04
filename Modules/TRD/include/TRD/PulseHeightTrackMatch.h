@@ -57,11 +57,12 @@ class PulseHeightTrackMatch final : public TaskInterface
   void reset() override;
   void buildHistograms();
   void retrieveCCDBSettings();
-  void drawLinesOnPulseHeight(TH1F* h);
+  void drawLinesOnPulseHeight(TProfile* h);
 
  private:
   // limits
   bool mSkipSharedDigits;
+  double mPileupCut = 0.0;
   unsigned int mPulseHeightThreshold;
   std::pair<float, float> mDriftRegion;
   std::pair<float, float> mPulseHeightPeakRegion;

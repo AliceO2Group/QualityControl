@@ -20,6 +20,7 @@
 #include <Framework/ConfigParamRegistry.h>
 #include "EMCALCalib/BadChannelMap.h"
 #include "CCDB/CcdbApi.h"
+#include <catch_amalgamated.hpp>
 
 #if (__has_include(<Framework/ConfigParamStore.h>))
 #include <Framework/ConfigParamStore.h>
@@ -47,14 +48,10 @@ o2::framework::ConfigParamRegistry createDummyRegistry()
 }
 #endif
 
-#define BOOST_TEST_MODULE TaskInterface test
-#define BOOST_TEST_MAIN
-#define BOOST_TEST_DYN_LINK
-
 #include <Framework/InitContext.h>
 #include <Framework/ConfigParamRegistry.h>
 #include <Framework/ServiceRegistry.h>
-#include <boost/test/unit_test.hpp>
+#include <catch_amalgamated.hpp>
 
 using namespace o2::quality_control;
 using namespace std;
@@ -72,7 +69,7 @@ class TestTask : public TaskInterface
  public:
   TestTask(ObjectsManager* objectsManager) : TaskInterface(objectsManager) { test = 0; }
 
-  ~TestTask() override {}
+  ~TestTask() override = default;
 
   // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& /*ctx*/) override
@@ -131,43 +128,43 @@ class TestTask : public TaskInterface
 } /* namespace test */
 } /* namespace o2::quality_control */
 
-BOOST_AUTO_TEST_CASE(test_invoke_all_methods)
+TEST_CASE("test_invoke_all_TaskRunnerConfig_methods")
 {
   // This is maximum that we can do until we are able to test the DPL algorithms in isolation.
   TaskRunnerConfig taskConfig;
-  ObjectsManager* objectsManager = new ObjectsManager(taskConfig.taskName, taskConfig.className, taskConfig.detectorName, taskConfig.consulUrl, 0, true);
+  auto* objectsManager = new ObjectsManager(taskConfig.taskName, taskConfig.className, taskConfig.detectorName, taskConfig.consulUrl, 0, true);
 
   test::TestTask testTask(objectsManager);
-  BOOST_CHECK_EQUAL(testTask.test, 0);
+  CHECK(testTask.test == 0);
 
   auto options = createDummyRegistry();
   ServiceRegistry services;
   InitContext ctx(options, services);
   testTask.initialize(ctx);
-  BOOST_CHECK_EQUAL(testTask.test, 1);
+  CHECK(testTask.test == 1);
 
   Activity act;
   testTask.startOfActivity(act);
-  BOOST_CHECK_EQUAL(testTask.test, 2);
+  CHECK(testTask.test == 2);
 
   testTask.startOfCycle();
-  BOOST_CHECK_EQUAL(testTask.test, 3);
+  CHECK(testTask.test == 3);
 
   // creating a valid ProcessingContext is almost impossible outside of the framework
   // testTask.monitorData(pctx);
-  // BOOST_CHECK_EQUAL(testTask.test, 4);
+  // CHECK(testTask.test == 4);
 
   testTask.endOfCycle();
-  BOOST_CHECK_EQUAL(testTask.test, 5);
+  CHECK(testTask.test == 5);
 
   testTask.endOfActivity(act);
-  BOOST_CHECK_EQUAL(testTask.test, 6);
+  CHECK(testTask.test == 6);
 
   testTask.reset();
-  BOOST_CHECK_EQUAL(testTask.test, 7);
+  CHECK(testTask.test == 7);
 }
 
-BOOST_AUTO_TEST_CASE(test_task_factory)
+TEST_CASE("test_task_factory")
 {
   TaskRunnerConfig config{
     "SkeletonTaskRunner",
@@ -184,11 +181,11 @@ BOOST_AUTO_TEST_CASE(test_task_factory)
   TaskFactory taskFactory;
   auto task = taskFactory.create(config, objectsManager);
 
-  BOOST_REQUIRE(task != nullptr);
+  REQUIRE(task != nullptr);
   delete task;
 }
 
-BOOST_AUTO_TEST_CASE(retrieveCondition)
+TEST_CASE("retrieveCondition")
 {
   // first store a condition
   o2::emcal::BadChannelMap bad;
@@ -202,11 +199,11 @@ BOOST_AUTO_TEST_CASE(retrieveCondition)
 
   // retrieve it
   TaskRunnerConfig taskConfig;
-  ObjectsManager* objectsManager = new ObjectsManager(taskConfig.taskName, taskConfig.className, taskConfig.detectorName, taskConfig.consulUrl, 0, true);
+  auto* objectsManager = new ObjectsManager(taskConfig.taskName, taskConfig.className, taskConfig.detectorName, taskConfig.consulUrl, 0, true);
   test::TestTask testTask(objectsManager);
   testTask.setCcdbUrl("ccdb-test.cern.ch:8080");
   testTask.loadCcdb();
   o2::emcal::BadChannelMap* bcm = testTask.testRetrieveCondition();
-  BOOST_CHECK_EQUAL(bcm->getChannelStatus(1), o2::emcal::BadChannelMap::MaskType_t::GOOD_CELL);
-  BOOST_CHECK_EQUAL(bcm->getChannelStatus(3), o2::emcal::BadChannelMap::MaskType_t::DEAD_CELL);
+  CHECK(bcm->getChannelStatus(1) == o2::emcal::BadChannelMap::MaskType_t::GOOD_CELL);
+  CHECK(bcm->getChannelStatus(3) == o2::emcal::BadChannelMap::MaskType_t::DEAD_CELL);
 }

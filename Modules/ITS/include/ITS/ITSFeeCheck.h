@@ -44,7 +44,27 @@ class ITSFeeCheck : public o2::quality_control::checker::CheckInterface
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
-  std::vector<int> convertToIntArray(std::string input);
+  template <typename T>
+  std::vector<T> convertToArray(std::string input)
+  {
+
+    std::istringstream ss{ input };
+
+    std::vector<T> result;
+    std::string token;
+
+    while (std::getline(ss, token, ',')) {
+
+      if constexpr (std::is_same_v<T, int>) {
+        result.push_back(std::stoi(token));
+      } else if constexpr (std::is_same_v<T, std::string>) {
+        result.push_back(token);
+      }
+    }
+
+    return result;
+  }
+  bool checkReason(Quality checkResult, TString text);
 
  private:
   ClassDefOverride(ITSFeeCheck, 2);

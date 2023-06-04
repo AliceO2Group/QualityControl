@@ -31,6 +31,9 @@
 #include <regex>
 #include "QualityControl/Bookkeeping.h"
 
+// TODO: most of these could be moved to a source file with minimal performance impact
+//  and noticable compilation time improvement (we bring boost, regex, FairMQ headers to 10 other source files)
+
 namespace o2::quality_control::core
 {
 
@@ -74,6 +77,7 @@ inline bool hasChecks(std::string configSource)
 inline int computeRunNumber(framework::ServiceRegistryRef services, int fallbackRunNumber = 0)
 { // Determine run number
   int run = 0;
+
   try {
     auto temp = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("runNumber", "unspecified");
     ILOG(Debug, Devel) << "Got this property runNumber from RawDeviceService: '" << temp << "'" << ENDM;
@@ -90,6 +94,7 @@ inline int computeRunNumber(framework::ServiceRegistryRef services, int fallback
 
 inline int computeRunType(framework::ServiceRegistryRef services, int fallbackRunType = 0)
 { // Determine runType number
+
   int runType = 0;
   try {
     auto temp = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("runType", "unspecified");
@@ -206,6 +211,8 @@ inline std::string templateILDiscardFile(std::string& originalFile, framework::I
   }
   return originalFile;
 }
+
+uint64_t getCurrentTimestamp();
 
 } // namespace o2::quality_control::core
 

@@ -19,6 +19,8 @@
 
 #include "QualityControl/CheckInterface.h"
 
+#include "MID/HistoHelper.h"
+
 namespace o2::quality_control_modules::mid
 {
 
@@ -37,15 +39,10 @@ class CalibQcCheck : public o2::quality_control::checker::CheckInterface
   std::string getAcceptedType() override;
 
  private:
-  ///////////////////////////
-  float mTF = 0;
-  int mOrbTF = 32;
-  float mNoiseRof = 0;
   float mDeadRof = 0;
-  // float scaleTime = 0.0114048; // 128 orb/TF * 3564 BC/orb * 25ns
-  float scaleTime = 0.0000891; // 3564 BC/orb * 25ns
+  HistoHelper mHistoHelper; ///! Histogram helper
 
-  ClassDefOverride(CalibQcCheck, 2);
+  ClassDefOverride(CalibQcCheck, 3);
 };
 
 } // namespace o2::quality_control_modules::mid

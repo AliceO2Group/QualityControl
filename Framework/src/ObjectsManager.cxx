@@ -184,6 +184,30 @@ void ObjectsManager::setDisplayHint(TObject* obj, const std::string& hints)
   mo->addOrUpdateMetadata(gDisplayHintsKey, hints);
 }
 
+void ObjectsManager::setValidity(ValidityInterval validityInterval)
+{
+  for (auto* tobj : *mMonitorObjects) {
+    auto* mo = dynamic_cast<MonitorObject*>(tobj);
+    if (mo) {
+      mo->setValidity(validityInterval);
+    } else {
+      ILOG(Error, Devel) << "ObjectsManager::setObjectsValidity : dynamic_cast returned nullptr." << ENDM;
+    }
+  }
+}
+
+void ObjectsManager::updateValidity(validity_time_t validityTime)
+{
+  for (auto* tobj : *mMonitorObjects) {
+    auto* mo = dynamic_cast<MonitorObject*>(tobj);
+    if (mo) {
+      mo->updateValidity(validityTime);
+    } else {
+      ILOG(Error, Devel) << "ObjectsManager::setObjectsValidity : dynamic_cast returned nullptr." << ENDM;
+    }
+  }
+}
+
 const Activity& ObjectsManager::getActivity() const
 {
   return mActivity;

@@ -59,9 +59,7 @@ void AggregatorRunnerFactory::customizeInfrastructure(std::vector<framework::Com
   auto matcher = [label = AggregatorRunner::getLabel()](framework::DeviceSpec const& device) {
     return std::find(device.labels.begin(), device.labels.end(), label) != device.labels.end();
   };
-  auto callback = CompletionPolicyHelpers::consumeWhenAny().callback;
-
-  policies.emplace_back("aggregatorRunnerCompletionPolicy", matcher, callback);
+  policies.emplace_back(CompletionPolicyHelpers::consumeWhenAny("aggregatorRunnerCompletionPolicy", matcher));
 }
 
 AggregatorRunnerConfig AggregatorRunnerFactory::extractRunnerConfig(const core::CommonSpec& commonSpec)

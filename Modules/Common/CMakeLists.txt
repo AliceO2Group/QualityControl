@@ -48,6 +48,8 @@ add_root_dictionary(O2QcCommon
                             include/Common/QualityTask.h
                             include/Common/BigScreen.h
                             include/Common/MeanIsAbove.h
+                            include/Common/TH1Ratio.h
+                            include/Common/TH2Ratio.h
                             include/Common/TH1Reductor.h
                             include/Common/TH2Reductor.h
                             include/Common/THnSparse5Reductor.h
@@ -70,6 +72,7 @@ set(TEST_SRCS
         test/testMeanIsAbove.cxx
         test/testNonEmpty.cxx
         test/testCommonReductors.cxx
+        test/testCommonHistRatios.cxx
         test/testWorstOfAllAggregator.cxx)
 
 foreach(test ${TEST_SRCS})

@@ -70,7 +70,8 @@ void PulseHeightTrackMatch::buildHistograms()
   mTrackletsPerMatchedTrack.reset(new TH1F("trackletspermatchedtrack", "Tracklets per matched TRD track", 100, 0, 10));
   getObjectsManager()->startPublishing(mTrackletsPerMatchedTrack.get());
 
-  mPulseHeightpro.reset(new TProfile("PulseHeight/mPulseHeightpro", "Pulse height profile  plot;Timebins;Counts", 30, -0.5, 29.5));
+  mPulseHeightpro.reset(new TProfile("PulseHeight/mPulseHeightpro", "Pulse Height profile plot;Timebins;ADC Counts", 30, -0.5, 29.5));
+  drawLinesOnPulseHeight(mPulseHeightpro.get());
   mPulseHeightpro.get()->Sumw2();
   getObjectsManager()->startPublishing(mPulseHeightpro.get());
 
@@ -92,6 +93,43 @@ void PulseHeightTrackMatch::buildHistograms()
 void PulseHeightTrackMatch::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Debug, Devel) << "initialize TRDPulseHeightQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+
+  // values configurable from json
+  if (auto param = mCustomParameters.find("driftregionstart"); param != mCustomParameters.end()) {
+    mDriftRegion.first = stof(param->second);
+    ILOG(Debug, Devel) << "configure() : using peakregionstart = " << mDriftRegion.first << ENDM;
+  } else {
+    mDriftRegion.first = 7.0;
+    ILOG(Debug, Devel) << "configure() : using default dritfregionstart = " << mDriftRegion.first << ENDM;
+  }
+  if (auto param = mCustomParameters.find("driftregionend"); param != mCustomParameters.end()) {
+    mDriftRegion.second = stof(param->second);
+    ILOG(Debug, Devel) << "configure() : using peakregionstart = " << mDriftRegion.second << ENDM;
+  } else {
+    mDriftRegion.second = 20.0;
+    ILOG(Debug, Devel) << "configure() : using default dritfregionstart = " << mDriftRegion.second << ENDM;
+  }
+  if (auto param = mCustomParameters.find("pulseheightpeaklower"); param != mCustomParameters.end()) {
+    mPulseHeightPeakRegion.first = stof(param->second);
+    ILOG(Debug, Devel) << "configure() : using pulsehheightlower	= " << mPulseHeightPeakRegion.first << ENDM;
+  } else {
+    mPulseHeightPeakRegion.first = 0.0;
+    ILOG(Debug, Devel) << "configure() : using default pulseheightlower = " << mPulseHeightPeakRegion.first << ENDM;
+  }
+  if (auto param = mCustomParameters.find("pulseheightpeakupper"); param != mCustomParameters.end()) {
+    mPulseHeightPeakRegion.second = stof(param->second);
+    ILOG(Debug, Devel) << "configure() : using pulsehheightupper	= " << mPulseHeightPeakRegion.second << ENDM;
+  } else {
+    mPulseHeightPeakRegion.second = 5.0;
+    ILOG(Debug, Devel) << "configure() : using default pulseheightupper = " << mPulseHeightPeakRegion.second << ENDM;
+  }
+  if (auto param = mCustomParameters.find("pileupCut"); param != mCustomParameters.end()) {
+    mPileupCut = std::stof(param->second);
+    ILOG(Debug, Devel) << "configure() : using pileupcut	= " << mPileupCut << ENDM;
+  } else {
+    mPileupCut = 0.7;
+    ILOG(Debug, Devel) << "configure() : using default pileupcut = " << mPileupCut << ENDM;
+  }
 
   retrieveCCDBSettings();
   buildHistograms();
@@ -138,7 +176,7 @@ void PulseHeightTrackMatch::monitorData(o2::framework::ProcessingContext& ctx)
 
       mTracksPerEvent->Fill(triggerTracks.getNumberOfTracks());
       // check if there is pileup info and that its above the limit of 0.7
-      if (tracks[triggerTracks.getFirstTrack()].hasPileUpInfo() && tracks[triggerTracks.getFirstTrack()].getPileUpTimeShiftMUS() < 0.7) { // rejecting triggers which end up in pileup
+      if (tracks[triggerTracks.getFirstTrack()].hasPileUpInfo() && tracks[triggerTracks.getFirstTrack()].getPileUpTimeShiftMUS() < mPileupCut) { // rejecting triggers which end up in pileup
         mDebugCounter->Fill(4);
         continue;
       }
@@ -209,6 +247,18 @@ void PulseHeightTrackMatch::monitorData(o2::framework::ProcessingContext& ctx)
   std::chrono::duration<double, std::micro> parsingtimeTF = std::chrono::high_resolution_clock::now() - crustart;
   auto t1 = (double)std::chrono::duration_cast<std::chrono::microseconds>(parsingtimeTF).count();
   mParsingTimePerTF->Fill(t1);
+}
+
+void PulseHeightTrackMatch::drawLinesOnPulseHeight(TProfile* h)
+{
+  TLine* lmin = new TLine(mPulseHeightPeakRegion.first, -10, mPulseHeightPeakRegion.first, 1e9);
+  TLine* lmax = new TLine(mPulseHeightPeakRegion.second, -10, mPulseHeightPeakRegion.second, 1e9);
+  lmin->SetLineStyle(2);
+  lmax->SetLineStyle(2);
+  lmin->SetLineColor(kRed);
+  lmax->SetLineColor(kRed);
+  h->GetListOfFunctions()->Add(lmin);
+  h->GetListOfFunctions()->Add(lmax);
 }
 
 void PulseHeightTrackMatch::endOfCycle()

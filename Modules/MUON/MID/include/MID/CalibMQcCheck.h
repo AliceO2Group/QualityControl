@@ -19,6 +19,8 @@
 
 #include "QualityControl/CheckInterface.h"
 
+#include "MID/HistoHelper.h"
+
 namespace o2::quality_control_modules::mid
 {
 
@@ -37,9 +39,8 @@ class CalibMQcCheck : public o2::quality_control::checker::CheckInterface
 
  private:
   ///////////////////////////
-  int mIsEmpty = 0;
-  int mCalibTF = 0;
-  ClassDefOverride(CalibMQcCheck, 2);
+  HistoHelper mHistoHelper; ///! Histogram helper
+  ClassDefOverride(CalibMQcCheck, 3);
 };
 
 } // namespace o2::quality_control_modules::mid

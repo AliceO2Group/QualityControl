@@ -15,12 +15,7 @@
 ///
 
 #include "QualityControl/AggregatorInterface.h"
-
-#define BOOST_TEST_MODULE AggregatorInterface test
-#define BOOST_TEST_MAIN
-#define BOOST_TEST_DYN_LINK
-
-#include <boost/test/unit_test.hpp>
+#include <catch_amalgamated.hpp>
 #include <TObjString.h>
 #include <string>
 
@@ -78,7 +73,7 @@ class SimpleTestAggregator : public checker::AggregatorInterface
 } /* namespace test */
 } /* namespace o2::quality_control */
 
-BOOST_AUTO_TEST_CASE(test_invoke_all_methods)
+TEST_CASE("test_invoke_all_methods")
 {
   test::SimpleTestAggregator testAggregator;
 
@@ -90,21 +85,21 @@ BOOST_AUTO_TEST_CASE(test_invoke_all_methods)
   QualityObjectsMapType input;
 
   std::map<std::string, Quality> result1 = testAggregator.aggregate(input);
-  BOOST_CHECK_EQUAL(result1.size(), 1);
-  BOOST_CHECK_EQUAL(result1["asdf"], Quality::Null); // because empty vector passed
+  CHECK(result1.size() == 1);
+  CHECK(result1["asdf"] == Quality::Null); // because empty vector passed
 
   input[qo_good->getName()] = qo_good;
   std::map<std::string, Quality> result2 = testAggregator.aggregate(input);
-  BOOST_CHECK_EQUAL(result2.size(), 1);
-  BOOST_CHECK_EQUAL(result2["asdf"], Quality::Good);
+  CHECK(result2.size() == 1);
+  CHECK(result2["asdf"] == Quality::Good);
 
   input[qo_medium->getName()] = qo_medium;
   std::map<std::string, Quality> result3 = testAggregator.aggregate(input);
-  BOOST_CHECK_EQUAL(result3.size(), 1);
-  BOOST_CHECK_EQUAL(result3["asdf"], Quality::Medium);
+  CHECK(result3.size() == 1);
+  CHECK(result3["asdf"] == Quality::Medium);
 
   input[qo_bad->getName()] = qo_bad;
   std::map<std::string, Quality> result4 = testAggregator.aggregate(input);
-  BOOST_CHECK_EQUAL(result4.size(), 1);
-  BOOST_CHECK_EQUAL(result4["asdf"], Quality::Bad);
+  CHECK(result4.size() == 1);
+  CHECK(result4["asdf"] == Quality::Bad);
 }

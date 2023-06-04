@@ -14,30 +14,37 @@
 /// \author Sergey Evdokimov
 ///
 
+// QC
 #include "CPV/PhysicsCheck.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/ObjectMetadataKeys.h"
+#include "PHOS/TH1Fraction.h"
+#include "PHOS/TH2Fraction.h"
+// O2
+#include <DataFormatsQualityControl/FlagReasons.h>
+#include <DataFormatsQualityControl/FlagReasonFactory.h>
 // ROOT
 #include <TF1.h>
 #include <TH1.h>
 #include <TH2.h>
 #include <TPaveText.h>
 #include <TList.h>
+#include <TLatex.h>
 
 using namespace std;
+using namespace o2::quality_control;
 using namespace o2::quality_control::repository;
+using TH1Fraction = o2::quality_control_modules::phos::TH1Fraction;
+using TH2Fraction = o2::quality_control_modules::phos::TH2Fraction;
 
 namespace o2::quality_control_modules::cpv
 {
 
 void PhysicsCheck::configure()
 {
-  ILOG(Info, Support) << "PhysicsCheck::configure() : I have been called with following custom parameters" << ENDM;
-  for (auto [key, value] : mCustomParameters) {
-    ILOG(Info, Support) << key << ": " << value << ENDM;
-  }
+  ILOG(Info, Support) << "PhysicsCheck::configure() : I have been called with following custom parameters" << mCustomParameters << ENDM;
 
   for (int mod = 0; mod < 3; mod++) {
     // mAmplitudeRangeL
@@ -56,31 +63,72 @@ void PhysicsCheck::configure()
                          << param->second << ENDM;
       mAmplitudeRangeR[mod] = stof(param->second);
     }
-    // mMinEventsToFit
-    if (auto param = mCustomParameters.find(Form("mMinEventsToFit%d", mod + 2));
+    // mMinEventsToChaeckAmplitude
+    if (auto param = mCustomParameters.find(Form("mMinEventsToCheckAmplitude%d", mod + 2));
         param != mCustomParameters.end()) {
       ILOG(Debug, Devel) << "configure() : Custom parameter "
-                         << Form("mMinEventsToFit%d = ", mod + 2)
+                         << Form("mMinEventsToCheckAmplitude%d = ", mod + 2)
                          << param->second << ENDM;
-      mMinEventsToFit[mod] = stof(param->second);
+      mMinEventsToCheckAmplitude[mod] = stof(param->second);
     }
 
-    // mMinAmplification
-    if (auto param = mCustomParameters.find(Form("mMinAmplification%d", mod + 2));
+    // mMinAmplitudeMean
+    if (auto param = mCustomParameters.find(Form("mMinAmplitudeMean%d", mod + 2));
         param != mCustomParameters.end()) {
       ILOG(Debug, Devel) << "configure() : Custom parameter "
-                         << Form("mMinAmplification%d = ", mod + 2)
+                         << Form("mMinAmplitudeMean%d = ", mod + 2)
                          << param->second << ENDM;
-      mMinAmplification[mod] = stof(param->second);
+      mMinAmplitudeMean[mod] = stof(param->second);
     }
-    // mMaxAmplification
-    if (auto param = mCustomParameters.find(Form("mMaxAmplification%d", mod + 2));
+    // mMaxAmplitudeMean
+    if (auto param = mCustomParameters.find(Form("mMaxAmplitudeMean%d", mod + 2));
         param != mCustomParameters.end()) {
       ILOG(Debug, Devel) << "configure() : Custom parameter "
-                         << Form("mMaxAmplification%d = ", mod + 2)
+                         << Form("mMaxAmplitudeMean%d = ", mod + 2)
                          << param->second << ENDM;
-      mMaxAmplification[mod] = stof(param->second);
+      mMaxAmplitudeMean[mod] = stof(param->second);
     }
+    // mMinEventsToCheckClusters
+    if (auto param = mCustomParameters.find(Form("mMinEventsToCheckClusters%d", mod + 2));
+        param != mCustomParameters.end()) {
+      ILOG(Debug, Devel) << "configure() : Custom parameter "
+                         << Form("mMinEventsToCheckClusters%d = ", mod + 2)
+                         << param->second << ENDM;
+      mMinEventsToCheckClusters[mod] = stoi(param->second);
+    }
+    // mCluEnergyRangeL
+    if (auto param = mCustomParameters.find(Form("mCluEnergyRangeL%d", mod + 2));
+        param != mCustomParameters.end()) {
+      ILOG(Debug, Devel) << "configure() : Custom parameter "
+                         << Form("mCluEnergyRangeL%d = ", mod + 2)
+                         << param->second << ENDM;
+      mCluEnergyRangeL[mod] = stof(param->second);
+    }
+    // mCluEnergyRangeR
+    if (auto param = mCustomParameters.find(Form("mCluEnergyRangeR%d", mod + 2));
+        param != mCustomParameters.end()) {
+      ILOG(Debug, Devel) << "configure() : Custom parameter "
+                         << Form("mCluEnergyRangeR%d = ", mod + 2)
+                         << param->second << ENDM;
+      mCluEnergyRangeR[mod] = stof(param->second);
+    }
+    // mMinCluEnergyMean
+    if (auto param = mCustomParameters.find(Form("mMinCluEnergyMean%d", mod + 2));
+        param != mCustomParameters.end()) {
+      ILOG(Debug, Devel) << "configure() : Custom parameter "
+                         << Form("mMinCluEnergyMean%d = ", mod + 2)
+                         << param->second << ENDM;
+      mMinCluEnergyMean[mod] = stof(param->second);
+    }
+    // mMaxCluEnergyMean
+    if (auto param = mCustomParameters.find(Form("mMaxCluEnergyMean%d", mod + 2));
+        param != mCustomParameters.end()) {
+      ILOG(Debug, Devel) << "configure() : Custom parameter "
+                         << Form("mMaxCluEnergyMean%d = ", mod + 2)
+                         << param->second << ENDM;
+      mMaxCluEnergyMean[mod] = stof(param->second);
+    }
+
     // mMinClusterSize
     if (auto param = mCustomParameters.find(Form("mMinClusterSize%d", mod + 2));
         param != mCustomParameters.end()) {
@@ -97,30 +145,13 @@ void PhysicsCheck::configure()
                          << param->second << ENDM;
       mMaxClusterSize[mod] = stof(param->second);
     }
-
-    // mMinEventsToCheckTrip
+    // mMinEventsToCheckDigitMap
     if (auto param = mCustomParameters.find(Form("mMinEventsToCheckDigitMap%d", mod + 2));
         param != mCustomParameters.end()) {
       ILOG(Debug, Devel) << "configure() : Custom parameter "
                          << Form("mMinEventsToCheckDigitMap%d = ", mod + 2)
                          << param->second << ENDM;
       mMinEventsToCheckDigitMap[mod] = stoi(param->second);
-    }
-    // mStripPopulationDeviationAllowed
-    if (auto param = mCustomParameters.find(Form("mStripPopulationDeviationAllowed%d", mod + 2));
-        param != mCustomParameters.end()) {
-      ILOG(Debug, Devel) << "configure() : Custom parameter "
-                         << Form("mStripPopulationDeviationAllowed%d = ", mod + 2)
-                         << param->second << ENDM;
-      mStripPopulationDeviationAllowed[mod] = stof(param->second);
-    }
-    // mNBadStripsPerQuarterAllowed
-    if (auto param = mCustomParameters.find(Form("mNBadStripsPerQuarterAllowed%d", mod + 2));
-        param != mCustomParameters.end()) {
-      ILOG(Debug, Devel) << "configure() : Custom parameter "
-                         << Form("mNBadStripsPerQuarterAllowed%d = ", mod + 2)
-                         << param->second << ENDM;
-      mNBadStripsPerQuarterAllowed[mod] = stoi(param->second);
     }
     // mNCold3GassiplexAllowed
     if (auto param = mCustomParameters.find(Form("mNCold3GassiplexAllowed%d", mod + 2));
@@ -154,7 +185,50 @@ void PhysicsCheck::configure()
                          << param->second << ENDM;
       mCold3GassiplexCriterium[mod] = stof(param->second);
     }
+    // mHot3GassiplexOccurance
+    if (auto param = mCustomParameters.find(Form("mHot3GassiplexOccurance%d", mod + 2));
+        param != mCustomParameters.end()) {
+      ILOG(Debug, Devel) << "configure() : Custom parameter "
+                         << Form("mHot3GassiplexOccurance%d = ", mod + 2)
+                         << param->second << ENDM;
+      mHot3GassiplexOccurance[mod] = stof(param->second);
+    }
+    // mCold3GassilexOccurance
+    if (auto param = mCustomParameters.find(Form("mCold3GassiplexOccurance%d", mod + 2));
+        param != mCustomParameters.end()) {
+      ILOG(Debug, Devel) << "configure() : Custom parameter "
+                         << Form("mCold3GassiplexOccurance%d = ", mod + 2)
+                         << param->second << ENDM;
+      mCold3GassiplexOccurance[mod] = stof(param->second);
+    }
+    // mMinDigitsPerEvent
+    if (auto param = mCustomParameters.find(Form("mMinDigitsPerEvent%d", mod + 2));
+        param != mCustomParameters.end()) {
+      ILOG(Debug, Devel) << "configure() : Custom parameter "
+                         << Form("mMinDigitsPerEvent%d = ", mod + 2)
+                         << param->second << ENDM;
+      mMinDigitsPerEvent[mod] = stof(param->second);
+    }
+    // mMaxDigitsPerEvent
+    if (auto param = mCustomParameters.find(Form("mMaxDigitsPerEvent%d", mod + 2));
+        param != mCustomParameters.end()) {
+      ILOG(Debug, Devel) << "configure() : Custom parameter "
+                         << Form("mMaxDigitsPerEvent%d = ", mod + 2)
+                         << param->second << ENDM;
+      mMaxDigitsPerEvent[mod] = stof(param->second);
+    }
   }
+  // error occurance
+  for (int i = 0; i < 20; i++) {
+    if (auto param = mCustomParameters.find(Form("mErrorOccuranceThreshold%d", i));
+        param != mCustomParameters.end()) {
+      ILOG(Debug, Devel) << "configure() : Custom parameter "
+                         << Form("mErrorOccuranceThreshold%d = ", i)
+                         << param->second << "for the " << mErrorLabel[i] << ENDM;
+      mErrorOccuranceThreshold[i] = stof(param->second);
+    }
+  }
+
   ILOG(Info, Support) << "PhysicsCheck::configure() : configuring is done." << ENDM;
   mIsConfigured = true;
 }
@@ -166,11 +240,13 @@ Quality PhysicsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
     configure();
   }
 
+  // default value
   Quality result = Quality::Good;
 
   for (auto& [moName, mo] : *moMap) {
     (void)moName;                          // trick the compiler about not used variable
     for (int iMod = 0; iMod < 3; iMod++) { // loop modules
+      // ========================= CALIBDIGIT ENERGY =========================
       if (mo->getName() == Form("CalibDigitEnergyM%d", iMod + 2)) {
         bool isGoodMO = true;
 
@@ -179,51 +255,107 @@ Quality PhysicsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
           ILOG(Warning, Devel) << "Could not cast " << mo->getName() << " to TH1F*, skipping" << ENDM;
           continue;
         }
-        result = Quality::Good; // default
-        TPaveText* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
+        TPaveText* msg = new TPaveText(0.6, 0.5, 1.0, 0.75, "NDC");
         h->GetListOfFunctions()->Add(msg);
         msg->SetName(Form("%s_msg", mo->GetName()));
         msg->Clear();
-        float binWidth = h->GetBinWidth(1);
-        float amplification;
-        auto nEventsToFit = h->Integral(mAmplitudeRangeL[iMod] / binWidth + 1, mAmplitudeRangeR[iMod] / binWidth + 1);
-        if (nEventsToFit < mMinEventsToFit[iMod]) {
-          result = Quality::Medium;
-          msg->AddText("Not enough data in fit range");
+
+        auto nEvents = h->GetEntries();
+        if (nEvents < mMinEventsToCheckAmplitude[iMod]) {
+          if (result.isBetterThan(Quality::Null)) {
+            result.set(Quality::Null);
+          }
+          result.addReason(FlagReasonFactory::Unknown(), Form("not enough statistics M%d", iMod + 2));
+          msg->AddText("Not enough data to check");
           msg->SetFillColor(kOrange);
           isGoodMO = false;
         } else {
-          // fit with Landau function
-          TF1* fLandau = new TF1("fLandau", "landau", mAmplitudeRangeL[iMod], mAmplitudeRangeR[iMod]);
-          fLandau->SetParLimits(0, 0., 1.E100);
-          fLandau->SetParLimits(1, 0., 1.E3);
-          fLandau->SetParLimits(2, 0., 1.E3);
-          fLandau->SetParameters(1000., 100., 60.);
-          h->Fit(fLandau, "Q0N", "", mAmplitudeRangeL[iMod], mAmplitudeRangeR[iMod]);
-          amplification = fLandau->GetParameter(1);
-          if (amplification < mMinAmplification[iMod]) {
-            result = Quality::Bad;
-            msg->AddText(Form("Amplification is too small: %f", amplification));
-            msg->AddText(Form("Lowest allowed amplification: %f", mMinAmplification[iMod]));
+          h->GetXaxis()->SetRangeUser(mAmplitudeRangeL[iMod], mAmplitudeRangeR[iMod]);
+          auto mean = h->GetMean();
+          if (mean < mMinAmplitudeMean[iMod]) {
+            if (result.isBetterThan(Quality::Medium)) {
+              result.set(Quality::Medium);
+            }
+            result.addReason(FlagReasonFactory::Unknown(), Form("too small mean M%d", iMod + 2));
+            msg->AddText(Form("Mean is too small: %f", mean));
+            msg->AddText(Form("Min allowed mean: %f", mMinAmplitudeMean[iMod]));
             msg->SetFillColor(kRed);
             h->SetFillColor(kRed);
             isGoodMO = false;
-          } else if (amplification > mMaxAmplification[iMod]) {
-            result = Quality::Bad;
-            msg->AddText(Form("Amplification is too big: %f", amplification));
-            msg->AddText(Form("Largest allowed amplification: %f", mMaxAmplification[iMod]));
+          } else if (mean > mMaxAmplitudeMean[iMod]) {
+            if (result.isBetterThan(Quality::Medium)) {
+              result.set(Quality::Medium);
+            }
+            result.addReason(FlagReasonFactory::Unknown(), Form("too big mean M%d", iMod + 2));
+            msg->AddText(Form("Mean is too big: %f", mean));
+            msg->AddText(Form("Max allowed mean: %f", mMaxAmplitudeMean[iMod]));
             msg->SetFillColor(kRed);
             h->SetFillColor(kRed);
             isGoodMO = false;
           }
         }
         if (isGoodMO) {
-          msg->AddText(Form("amplification %4.1f: OK", amplification));
+          msg->AddText("OK");
+          msg->SetFillColor(kGreen);
+        }
+        break; // exit modules loop for this particular object
+      }
+      // ========================= CLUSTER ENERGY =========================
+      if (mo->getName() == Form("ClusterTotEnergyM%d", iMod + 2)) {
+        bool isGoodMO = true;
+
+        auto* h = dynamic_cast<TH1F*>(mo->getObject());
+        if (h == nullptr) {
+          ILOG(Warning, Devel) << "Could not cast " << mo->getName() << " to TH1F*, skipping" << ENDM;
+          continue;
+        }
+        TPaveText* msg = new TPaveText(0.6, 0.5, 1.0, 0.75, "NDC");
+        h->GetListOfFunctions()->Add(msg);
+        msg->SetName(Form("%s_msg", mo->GetName()));
+        msg->Clear();
+
+        auto nEvents = h->GetEntries();
+        if (nEvents < mMinEventsToCheckClusters[iMod]) {
+          if (result.isBetterThan(Quality::Null)) {
+            result.set(Quality::Null);
+          }
+          result.addReason(FlagReasonFactory::Unknown(), Form("not enough statistics M%d", iMod + 2));
+          msg->AddText("Not enough data to check");
+          msg->SetFillColor(kOrange);
+          isGoodMO = false;
+        } else {
+          h->GetXaxis()->SetRangeUser(mCluEnergyRangeL[iMod], mCluEnergyRangeR[iMod]);
+          auto mean = h->GetMean();
+          if (mean < mMinCluEnergyMean[iMod]) {
+            if (result.isBetterThan(Quality::Medium)) {
+              result.set(Quality::Medium);
+            }
+            result.addReason(FlagReasonFactory::Unknown(), Form("too small mean energy M%d", iMod + 2));
+            msg->AddText(Form("Mean is too small: %f", mean));
+            msg->AddText(Form("Min allowed mean: %f", mMinCluEnergyMean[iMod]));
+            msg->SetFillColor(kRed);
+            h->SetFillColor(kRed);
+            isGoodMO = false;
+          } else if (mean > mMaxCluEnergyMean[iMod]) {
+            if (result.isBetterThan(Quality::Medium)) {
+              result.set(Quality::Medium);
+            }
+            result.addReason(FlagReasonFactory::Unknown(), Form("too big mean energy M%d", iMod + 2));
+            msg->AddText(Form("Mean is too big: %f", mean));
+            msg->AddText(Form("Max allowed mean: %f", mMaxCluEnergyMean[iMod]));
+            msg->SetFillColor(kRed);
+            h->SetFillColor(kRed);
+            isGoodMO = false;
+          }
+        }
+        if (isGoodMO) {
+          msg->AddText("OK");
           msg->SetFillColor(kGreen);
         }
         break; // exit modules loop for this particular object
       }
 
+      // ====================== CLUSTER SIZE =============================
       if (mo->getName() == Form("NDigitsInClusterM%d", iMod + 2)) {
 
         auto* h = dynamic_cast<TH1F*>(mo->getObject());
@@ -231,23 +363,33 @@ Quality PhysicsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
           ILOG(Warning, Devel) << "Could not cast " << mo->getName() << " to TH1F*, skipping" << ENDM;
           continue;
         }
-        result = Quality::Good; // default
-        TPaveText* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
+        TPaveText* msg = new TPaveText(0.6, 0.5, 1.0, 0.75, "NDC");
         h->GetListOfFunctions()->Add(msg);
         msg->SetName(Form("%s_msg", mo->GetName()));
         msg->Clear();
-        msg->SetMargin(0.005);
+        if (h->GetEntries() < mMinEventsToCheckClusters[iMod]) {
+          result.addReason(FlagReasonFactory::Unknown(), Form("not enough statistics M%d", iMod));
+          msg->AddText("Not enough data to check");
+          msg->SetFillColor(kOrange);
+          break;
+        }
         auto meanClusterSize = h->GetMean();
         if (meanClusterSize < mMinClusterSize[iMod]) {
-          result = Quality::Bad;
-          msg->AddText(Form("Too small mean cluster size: %f", meanClusterSize));
-          msg->AddText(Form("Tolerated mean cluster size: %f", mMinClusterSize[iMod]));
+          if (result.isBetterThan(Quality::Medium)) {
+            result.set(Quality::Medium);
+          }
+          result.addReason(FlagReasonFactory::Unknown(), Form("too big mean size M%d", iMod + 2));
+          msg->AddText(Form("Mean is too small: %f", meanClusterSize));
+          msg->AddText(Form("Min allowed mean: %f", mMinClusterSize[iMod]));
           msg->SetFillColor(kRed);
           h->SetFillColor(kRed);
         } else if (meanClusterSize > mMaxClusterSize[iMod]) {
-          result = Quality::Bad;
-          msg->AddText(Form("Too big mean cluster size: %f", meanClusterSize));
-          msg->AddText(Form("Tolerated mean cluster size: %f", mMaxClusterSize[iMod]));
+          if (result.isBetterThan(Quality::Medium)) {
+            result.set(Quality::Medium);
+          }
+          result.addReason(FlagReasonFactory::Unknown(), Form("too big mean size M%d", iMod + 2));
+          msg->AddText(Form("Mean is too big: %f", meanClusterSize));
+          msg->AddText(Form("Max allowed mean: %f", mMaxClusterSize[iMod]));
           msg->SetFillColor(kRed);
           h->SetFillColor(kRed);
         } else {
@@ -257,23 +399,18 @@ Quality PhysicsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
         break; // exit modules loop for this particular object
       }
 
+      // ======================= DIGIT MAP =========================
       if (mo->getName() == Form("DigitMapM%d", iMod + 2)) {
 
         auto* h = dynamic_cast<TH2F*>(mo->getObject());
         if (h == nullptr) {
           ILOG(Warning, Devel) << "Could not cast " << mo->getName() << " to TH2F*, skipping" << ENDM;
-          continue;
+          break;
         }
-        result = Quality::Good; // default
-
         if (h->GetEntries() < mMinEventsToCheckDigitMap[iMod]) {
-          continue;
+          break;
         }
-        TPaveText* msg = new TPaveText(0.6, 0.0, 1., 0.3, "NDC");
-        msg->SetName(Form("%s_msg", mo->GetName()));
-        msg->Clear();
-        msg->SetMargin(0.005);
-
+        bool isObjectGood = true;
         // check Cold and hot 3gassiplex cards
         int nHot3Gassiplexes = 0, nCold3Gassiplexes = 0;
         TH2* h3GassiplexMap = (TH2*)h->Clone("h3GassiplexMap");
@@ -296,56 +433,34 @@ Quality PhysicsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
           }
         }
         if (nHot3Gassiplexes > mNHot3GassiplexAllowed[iMod]) {
-          result = Quality::Bad;
-          msg->AddText(Form("hot 3Gassiplex cards (%d/%d)", nHot3Gassiplexes, mNHot3GassiplexAllowed[iMod]));
-          msg->SetTextSize(20);
+          if (result.isBetterThan(Quality::Bad)) {
+            result.set(Quality::Bad);
+          }
+          result.addReason(FlagReasonFactory::Unknown(), Form("many hot cards M%d", iMod + 2));
+          TPaveText* msg = new TPaveText(0.0, 0.0, 0.2, 0.1, "NDC");
+          msg->SetName(Form("%s_msgHot3G", mo->GetName()));
+          msg->Clear();
+          msg->AddText(Form("hot 3G cards (%d/%d)", nHot3Gassiplexes, mNHot3GassiplexAllowed[iMod]));
           msg->SetFillColor(kRed);
           h->GetListOfFunctions()->Add(msg);
+          isObjectGood = false;
         }
         if (nCold3Gassiplexes > mNCold3GassiplexAllowed[iMod]) {
-          result = Quality::Bad;
-          msg->AddText(Form("cold 3Gassiplex cards (%d/%d)", nCold3Gassiplexes, mNCold3GassiplexAllowed[iMod]));
-          msg->SetFillColor(kRed);
-          msg->SetTextSize(20);
-          h->GetListOfFunctions()->Add(msg);
-        }
-        h3GassiplexMap->Delete();
-
-        // check quarters for HV trip
-        bool isHVTrip = false;
-        int tripQ = 0, nTripQ = 0;
-        TH1* projectionX = h->ProjectionX();
-        TF1 pol0("constant", "pol0", 0., 128.);
-        for (int q = 0; q < 4; q++) {
-          int firstBin = 1 + q * 32;
-          int lastBin = (q + 1) * 32;
-          projectionX->Fit(&pol0, "Q0N", "", firstBin - 1, lastBin);
-          double mean = pol0.GetParameter(0);
-          int nBadStrips = 0;
-          for (int iBin = firstBin; iBin < lastBin; iBin++) {
-            if (projectionX->GetBinContent(iBin) > 0 && (projectionX->GetBinContent(iBin) > mean * mStripPopulationDeviationAllowed[iMod] ||
-                                                         projectionX->GetBinContent(iBin) < mean / mStripPopulationDeviationAllowed[iMod])) {
-              nBadStrips++;
-            }
+          if (result.isBetterThan(Quality::Bad)) {
+            result.set(Quality::Bad);
           }
-          if (nBadStrips > mNBadStripsPerQuarterAllowed[iMod]) {
-            tripQ = (q + 1) + 10 * tripQ;
-            nTripQ++;
-            isHVTrip = true;
-          }
-        }
-        projectionX->Delete();
-        if (isHVTrip) {
-          result = Quality::Bad;
-          msg->AddText(Form("HV Trip in Q%d ?", tripQ));
-          msg->SetTextSize(20);
+          result.addReason(FlagReasonFactory::Unknown(), Form("many cold cards M%d", iMod + 2));
+          TPaveText* msg = new TPaveText(0.0, 0.9, 0.2, 1.0, "NDC");
+          msg->AddText(Form("cold 3G cards (%d/%d)", nCold3Gassiplexes, mNCold3GassiplexAllowed[iMod]));
           msg->SetFillColor(kRed);
           h->GetListOfFunctions()->Add(msg);
+          isObjectGood = false;
         }
+        delete h3GassiplexMap;
 
         // show OK message if everything is OK
-        if (result == Quality::Good) {
-          TPaveText* msgOk = new TPaveText(0.9, 0.0, 1., 0.1, "NDC");
+        if (isObjectGood) {
+          TPaveText* msgOk = new TPaveText(0.9, 0.9, 1.0, 1.0, "NDC");
           msgOk->SetName(Form("%s_msg", mo->GetName()));
           msgOk->Clear();
           msgOk->AddText("OK");
@@ -354,9 +469,153 @@ Quality PhysicsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
         }
         break; // exit modules loop for this particular object
       }
+      // ======================= DIGIT OCCURANCE =========================
+      if (mo->getName() == Form("DigitOccuranceM%d", iMod + 2)) {
 
+        auto* h = dynamic_cast<TH2D*>(mo->getObject());
+        if (h == nullptr) {
+          ILOG(Warning, Devel) << "Could not cast " << mo->getName() << " to TH2D*, skipping" << ENDM;
+          break;
+        }
+        auto* hFraction = dynamic_cast<TH2Fraction*>(mo->getObject());
+        if (hFraction->getEventCounter() < mMinEventsToCheckDigitMap[iMod]) {
+          break;
+        }
+        bool isObjectGood = true;
+        // check Cold and hot 3gassiplex cards
+        int nHot3Gassiplexes = 0, nCold3Gassiplexes = 0;
+        TH2* h3GassiplexOccurance = (TH2*)h->Clone("h3GassiplexOccurance");
+        h3GassiplexOccurance->Rebin2D(8, 6);
+        h3GassiplexOccurance->Scale(1. / 48.);
+        float meanOcc = 0;
+        for (int iX = 1; iX <= h3GassiplexOccurance->GetNbinsX(); iX++) {
+          for (int iY = 1; iY <= h3GassiplexOccurance->GetNbinsY(); iY++) {
+            if (h3GassiplexOccurance->GetBinContent(iX, iY) > mHot3GassiplexOccurance[iMod]) {
+              nHot3Gassiplexes++;
+            }
+            if (h3GassiplexOccurance->GetBinContent(iX, iY) < mCold3GassiplexOccurance[iMod]) {
+              nCold3Gassiplexes++;
+            }
+          }
+        }
+        if (nHot3Gassiplexes > mNHot3GassiplexAllowed[iMod]) {
+          if (result.isBetterThan(Quality::Bad)) {
+            result.set(Quality::Bad);
+          }
+          result.addReason(FlagReasonFactory::Unknown(), Form("many hot cards M%d", iMod + 2));
+          TPaveText* msg = new TPaveText(0.0, 0.0, 0.2, 0.1, "NDC");
+          msg->SetName(Form("%s_msgHot3G", mo->GetName()));
+          msg->Clear();
+          msg->AddText(Form("hot 3G cards (%d/%d)", nHot3Gassiplexes, mNHot3GassiplexAllowed[iMod]));
+          msg->SetFillColor(kRed);
+          h->GetListOfFunctions()->Add(msg);
+          isObjectGood = false;
+        }
+        if (nCold3Gassiplexes > mNCold3GassiplexAllowed[iMod]) {
+          if (result.isBetterThan(Quality::Bad)) {
+            result.set(Quality::Bad);
+          }
+          result.addReason(FlagReasonFactory::Unknown(), Form("many cold cards M%d", iMod + 2));
+          TPaveText* msg = new TPaveText(0.0, 0.9, 0.2, 1.0, "NDC");
+          msg->AddText(Form("cold 3G cards (%d/%d)", nCold3Gassiplexes, mNCold3GassiplexAllowed[iMod]));
+          msg->SetFillColor(kRed);
+          h->GetListOfFunctions()->Add(msg);
+          isObjectGood = false;
+        }
+        delete h3GassiplexOccurance;
+
+        // show OK message if everything is OK
+        if (isObjectGood) {
+          TPaveText* msgOk = new TPaveText(0.9, 0.9, 1.0, 1.0, "NDC");
+          msgOk->SetName(Form("%s_msg", mo->GetName()));
+          msgOk->Clear();
+          msgOk->AddText("OK");
+          msgOk->SetFillColor(kGreen);
+          h->GetListOfFunctions()->Add(msgOk);
+        }
+        break; // exit modules loop for this particular object
+      }
+      // ======================= PER EVENT COUNTS ===========================
+      if (mo->getName() == Form("DigitsInEventM%d", iMod + 2)) {
+
+        auto* h = dynamic_cast<TH1F*>(mo->getObject());
+        if (h == nullptr) {
+          ILOG(Warning, Devel) << "Could not cast " << mo->getName() << " to TH1F*, skipping" << ENDM;
+          break;
+        }
+        auto mean = h->GetMean();
+        if (mean > mMaxDigitsPerEvent[iMod]) {
+          if (result.isBetterThan(Quality::Medium)) {
+            result.set(Quality::Medium);
+          }
+          result.addReason(FlagReasonFactory::Unknown(), Form("too many digits per event M%d", iMod + 2));
+          TPaveText* msg = new TPaveText(0.6, 0.6, 1.0, 0.8, "NDC");
+          msg->AddText(Form("Mean is too big: %f", mean));
+          msg->AddText(Form("Max allowed mean: %f", mMaxDigitsPerEvent[iMod]));
+          msg->SetFillColor(kRed);
+          h->GetListOfFunctions()->Add(msg);
+        } else if (mean < mMinDigitsPerEvent[iMod]) {
+          if (result.isBetterThan(Quality::Medium)) {
+            result.set(Quality::Medium);
+          }
+          result.addReason(FlagReasonFactory::Unknown(), Form("too few digits per event M%d", iMod + 2));
+          TPaveText* msg = new TPaveText(0.6, 0.6, 1.0, 0.8, "NDC");
+          msg->AddText(Form("Mean is too small: %f", mean));
+          msg->AddText(Form("Min allowed mean: %f", mMinDigitsPerEvent[iMod]));
+          msg->SetFillColor(kRed);
+          h->GetListOfFunctions()->Add(msg);
+        } else {
+          TPaveText* msgOk = new TPaveText(0.0, 0.0, 0.1, 0.1, "NDC");
+          msgOk->SetName(Form("%s_msg", mo->GetName()));
+          msgOk->Clear();
+          msgOk->AddText("OK");
+          msgOk->SetFillColor(kGreen);
+          h->GetListOfFunctions()->Add(msgOk);
+        }
+      }
     } // iMod cycle
-  }   // moMap cycle
+    // ======================= HW ERRORS CHECK ============================
+    if (mo->getName() == "ErrorTypeOccurance") {
+      auto* h = dynamic_cast<TH1Fraction*>(mo->getObject());
+      if (h == nullptr) {
+        ILOG(Warning, Devel) << "Could not cast " << mo->getName() << " to TH1Fraction*, skipping" << ENDM;
+        break;
+      }
+      bool isGoodMO = true;
+      for (int i = 1; i <= h->GetXaxis()->GetNbins(); i++) {
+        if (h->GetBinContent(i) > mErrorOccuranceThreshold[i - 1]) {
+          isGoodMO = false;
+          if (result.isBetterThan(Quality::Medium)) {
+            result.set(Quality::Medium);
+          }
+          result.addReason(FlagReasonFactory::Unknown(), Form("too many %s errors", mErrorLabel[i - 1]));
+          TLatex* msg = new TLatex(0.12 + (0.2 * (i % 2)), 0.2 + (i / 2) * 0.06, Form("#color[2]{Too many %s errors}", mErrorLabel[i - 1]));
+          msg->SetNDC();
+          msg->SetTextSize(16);
+          msg->SetTextFont(43);
+          h->GetListOfFunctions()->Add(msg);
+          msg->Draw();
+          h->SetFillColor(kOrange);
+          h->SetOption("hist");
+          h->SetDrawOption("hist");
+          h->SetMarkerStyle(21);
+          h->SetLineWidth(2);
+        }
+      }
+      if (isGoodMO) {
+        TPaveText* msgOk = new TPaveText(0.0, 0.0, 0.1, 0.1, "NDC");
+        msgOk->SetName(Form("%s_msg", mo->GetName()));
+        msgOk->Clear();
+        msgOk->AddText("OK");
+        msgOk->SetFillColor(kGreen);
+        h->GetListOfFunctions()->Add(msgOk);
+        h->SetFillColor(kGreen);
+        h->SetOption("hist");
+        h->SetDrawOption("hist");
+      }
+    }
+
+  } // moMap cycle
 
   return result;
 } // namespace o2::quality_control_modules::cpv
