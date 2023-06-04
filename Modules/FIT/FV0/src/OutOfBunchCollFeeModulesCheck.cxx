@@ -83,16 +83,20 @@ Quality OutOfBunchCollFeeModulesCheck::check(std::map<std::string, std::shared_p
         try {
           bin = std::stoi(metainfo.first);
           value = std::stof(metainfo.second);
+          allCollPerFeeModule[bin] = value;
         } catch (const std::invalid_argument& e) {
+          ILOG(Warning, Support) << "Could not get value for key " << metainfo.first << ENDM;
           continue;
         }
-        allCollPerFeeModule[bin] = value;
       }
 
       // Calculate out-of-bunch-coll fraction for Fee Modules
       for (int binY = 1; binY <= histogram->GetNbinsY(); binY++) {
         auto outOfBcCollisions = histogram->Integral(1, sBCperOrbit, binY, binY);
-        auto fraction = outOfBcCollisions / allCollPerFeeModule[binY];
+        float fraction = 0;
+        if(allCollPerFeeModule[binY]){
+          fraction = outOfBcCollisions / allCollPerFeeModule[binY];
+        }
 
         if (fraction > mFractionOutOfBunchColl) {
           mFractionOutOfBunchColl = fraction;
