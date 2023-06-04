@@ -94,7 +94,7 @@ Quality OutOfBunchCollFeeModulesCheck::check(std::map<std::string, std::shared_p
       for (int binY = 1; binY <= histogram->GetNbinsY(); binY++) {
         auto outOfBcCollisions = histogram->Integral(1, sBCperOrbit, binY, binY);
         float fraction = 0;
-        if(allCollPerFeeModule[binY]){
+        if (allCollPerFeeModule[binY]) {
           fraction = outOfBcCollisions / allCollPerFeeModule[binY];
         }
 
