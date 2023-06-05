@@ -45,6 +45,7 @@ struct PostProcessingConfig {
   std::string consulUrl;
   core::Activity activity;
   bool matchAnyRunNumber = false;
+  bool critical;
 };
 
 } // namespace o2::quality_control::postprocessing

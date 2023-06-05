@@ -509,22 +509,35 @@ Once a custom class is implemented, one should let QCG know how to display it co
 Some DPL devices can be marked as non-critical. It means that if they die the system will continue running. There is 
 obviously an impact as all the downstream devices won't get data. 
 
-In QC, one can mark a task as critical or non-critical: 
+### QC tasks
 
+In QC, one can mark a task as critical or non-critical:
 ```json
     "tasks": {
       "QcTask": {
         "active": "true",
         "critical": "false",     "": "if false the task is allowed to die without stopping the workflow, default: true",
 ```
-
 By default, they are critical. 
+
+### QC mergers
 
 Mergers are critical or not based on the criticality of the task they are merging data for. 
 
+### QC checkers
+
 Checkers are non-critical. 
 
-Post-processing ???
+### QC post-processing tasks
+
+Post-processing tasks can be marked as critical or non-critical: 
+```json
+    "postprocessing": {
+      "ExamplePostprocessing": {
+        "active": "true",
+        "critical": "false",     "": "if false the task is allowed to die without stopping the workflow, default: true",
+```
+By default, they are critical.
 
 ## QC with DPL Analysis
 

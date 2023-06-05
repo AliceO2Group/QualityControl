@@ -782,6 +782,10 @@ void InfrastructureGenerator::generatePostProcessing(WorkflowSpec& workflow, con
         ppTask.getOptions()
       };
       dataProcessorSpec.labels.emplace_back(PostProcessingDevice::getLabel());
+      if (!ppTaskSpec.critical) {
+        framework::DataProcessorLabel expendableLabel = { "expendable" };
+        dataProcessorSpec.labels.emplace_back(expendableLabel);
+      }
       dataProcessorSpec.algorithm = adaptFromTask<PostProcessingDevice>(std::move(ppTask));
 
       workflow.emplace_back(std::move(dataProcessorSpec));

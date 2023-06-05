@@ -110,7 +110,7 @@ TaskSpec InfrastructureSpecReader::readSpecEntry<TaskSpec>(const std::string& ta
   }
   ts.dataSource = readSpecEntry<DataSourceSpec>(taskID, taskTree.get_child("dataSource"), wholeTree);
   ts.active = taskTree.get<bool>("active", ts.active);
-  ts.critical = taskTree.get<bool>("critical", ts.active);
+  ts.critical = taskTree.get<bool>("critical", ts.critical);
   ts.maxNumberCycles = taskTree.get<int>("maxNumberCycles", ts.maxNumberCycles);
   ts.resetAfterCycles = taskTree.get<size_t>("resetAfterCycles", ts.resetAfterCycles);
   ts.saveObjectsToFile = taskTree.get<std::string>("saveObjectsToFile", ts.saveObjectsToFile);
@@ -382,6 +382,7 @@ PostProcessingTaskSpec
   ppts.id = ppTaskId;
   ppts.taskName = ppTaskTree.get<std::string>("taskName", ppts.id);
   ppts.active = ppTaskTree.get<bool>("active", ppts.active);
+  ppts.critical = ppTaskTree.get<bool>("critical", ppts.critical);
   ppts.detectorName = ppTaskTree.get<std::string>("detectorName", ppts.detectorName);
   ppts.tree = wholeTree;
 
