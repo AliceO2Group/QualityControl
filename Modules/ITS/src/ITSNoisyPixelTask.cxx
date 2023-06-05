@@ -106,7 +106,7 @@ void ITSNoisyPixelTask::initialize(o2::framework::InitContext& /*ctx*/)
   ILOG(Debug, Devel) << "Dictionary size: " << mDict->getSize() << ENDM;
 }
 
-void ITSNoisyPixelTask::startOfActivity(Activity& /*activity*/)
+void ITSNoisyPixelTask::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "startOfActivity" << ENDM;
 }
@@ -339,7 +339,7 @@ void ITSNoisyPixelTask::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void ITSNoisyPixelTask::endOfActivity(Activity& /*activity*/)
+void ITSNoisyPixelTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

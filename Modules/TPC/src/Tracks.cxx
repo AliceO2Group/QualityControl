@@ -53,7 +53,7 @@ void Tracks::initialize(o2::framework::InitContext& /*ctx*/)
   }
 }
 
-void Tracks::startOfActivity(Activity& /*activity*/)
+void Tracks::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "startOfActivity" << ENDM;
   mQCTracks.resetHistograms();
@@ -80,7 +80,7 @@ void Tracks::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void Tracks::endOfActivity(Activity& /*activity*/)
+void Tracks::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

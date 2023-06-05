@@ -80,7 +80,7 @@ void TaskCosmics::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mHistoCosmicRate.get());
 }
 
-void TaskCosmics::startOfActivity(Activity& /*activity*/)
+void TaskCosmics::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "startOfActivity" << ENDM;
   reset();
@@ -144,7 +144,7 @@ void TaskCosmics::endOfCycle()
   }
 }
 
-void TaskCosmics::endOfActivity(Activity& /*activity*/)
+void TaskCosmics::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

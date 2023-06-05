@@ -78,7 +78,7 @@ class TestTask : public TaskInterface
     test = 1;
   }
 
-  void startOfActivity(Activity& /*activity*/) override
+  void startOfActivity(const Activity& /*activity*/) override
   {
     ILOG(Info, Support) << "startOfActivity" << ENDM;
     test = 2;
@@ -102,7 +102,7 @@ class TestTask : public TaskInterface
     test = 5;
   }
 
-  void endOfActivity(Activity& /*activity*/) override
+  void endOfActivity(const Activity& /*activity*/) override
   {
     ILOG(Info, Support) << "endOfActivity" << ENDM;
     test = 6;

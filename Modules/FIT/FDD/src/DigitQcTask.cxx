@@ -421,7 +421,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 }
 
-void DigitQcTask::startOfActivity(Activity& activity)
+void DigitQcTask::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
   mHist2CorrTCMchAndPMch->Reset();
@@ -867,7 +867,7 @@ void DigitQcTask::endOfCycle()
   ILOG(Debug, Support) << "Cycle duration: NTF=" << mTfCounter << ", range = " << (mTimeMaxNS - mTimeMinNS) / 1e6 / mTfCounter << " ms/TF, sum = " << mTimeSum / 1e6 / mTfCounter << " ms/TF" << ENDM;
 }
 
-void DigitQcTask::endOfActivity(Activity& /*activity*/)
+void DigitQcTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

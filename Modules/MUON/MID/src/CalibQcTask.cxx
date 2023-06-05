@@ -90,7 +90,7 @@ void CalibQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 }
 
-void CalibQcTask::startOfActivity(Activity& /*activity*/)
+void CalibQcTask::startOfActivity(const Activity& /*activity*/)
 {
 }
 
@@ -156,7 +156,7 @@ void CalibQcTask::endOfCycle()
   mDigitsHelper.fillMapHistos(mDead.get(), mBendDeadMap, mNBendDeadMap);
 }
 
-void CalibQcTask::endOfActivity(Activity& /*activity*/)
+void CalibQcTask::endOfActivity(const Activity& /*activity*/)
 {
 }
 

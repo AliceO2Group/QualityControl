@@ -48,7 +48,7 @@ void CTPRawDataReaderTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mHistoClasses);
 }
 
-void CTPRawDataReaderTask::startOfActivity(Activity& activity)
+void CTPRawDataReaderTask::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
   mHistoBC->Reset();
@@ -189,7 +189,7 @@ void CTPRawDataReaderTask::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void CTPRawDataReaderTask::endOfActivity(Activity& /*activity*/)
+void CTPRawDataReaderTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

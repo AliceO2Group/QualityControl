@@ -121,7 +121,7 @@ void ITSTrackSimTask::initialize(o2::framework::InitContext& /*ctx*/)
   mGeom = o2::its::GeometryTGeo::Instance();
 }
 
-void ITSTrackSimTask::startOfActivity(Activity& activity)
+void ITSTrackSimTask::startOfActivity(const Activity& activity)
 {
   mRunNumber = activity.mId;
   ILOG(Debug, Devel) << "startOfActivity" << ENDM;
@@ -311,7 +311,7 @@ void ITSTrackSimTask::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void ITSTrackSimTask::endOfActivity(Activity& /*activity*/)
+void ITSTrackSimTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

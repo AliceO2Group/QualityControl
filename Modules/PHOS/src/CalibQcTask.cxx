@@ -160,7 +160,7 @@ void CalibQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   ILOG(Info, Support) << " CalibQcTask histos ready " << ENDM;
 }
 
-void CalibQcTask::startOfActivity(Activity& /*activity*/)
+void CalibQcTask::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "startOfActivity" << ENDM;
   reset();
@@ -211,7 +211,7 @@ void CalibQcTask::endOfCycle()
   ILOG(Info, Support) << "endOfCycle" << ENDM;
 }
 
-void CalibQcTask::endOfActivity(Activity& /*activity*/)
+void CalibQcTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Info, Support) << "endOfActivity" << ENDM;
 }

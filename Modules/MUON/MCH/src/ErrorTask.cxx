@@ -98,7 +98,7 @@ void ErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 }
 
-void ErrorTask::startOfActivity(Activity& activity)
+void ErrorTask::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
   reset();
@@ -145,7 +145,7 @@ void ErrorTask::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void ErrorTask::endOfActivity(Activity& /*activity*/)
+void ErrorTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

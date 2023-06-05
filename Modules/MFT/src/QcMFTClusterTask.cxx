@@ -242,7 +242,7 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 }
 
-void QcMFTClusterTask::startOfActivity(Activity& /*activity*/)
+void QcMFTClusterTask::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "startOfActivity" << ENDM;
 
@@ -345,7 +345,7 @@ void QcMFTClusterTask::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void QcMFTClusterTask::endOfActivity(Activity& /*activity*/)
+void QcMFTClusterTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

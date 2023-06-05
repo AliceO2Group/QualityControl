@@ -176,7 +176,7 @@ void RawData::initialize(o2::framework::InitContext& /*ctx*/)
   // ILOG(Warning, Support) << "Metadata could not be added to " << mHistogram->GetName() << ENDM;
 }
 
-void RawData::startOfActivity(Activity& activity)
+void RawData::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
   resetHistograms();
@@ -306,7 +306,7 @@ void RawData::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void RawData::endOfActivity(Activity& /*activity*/)
+void RawData::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

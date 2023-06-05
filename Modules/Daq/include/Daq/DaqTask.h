@@ -43,11 +43,11 @@ class DaqTask final : public o2::quality_control::core::TaskInterface
 
   // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& ctx) override;
-  void startOfActivity(o2::quality_control::core::Activity& activity) override;
+  void startOfActivity(const o2::quality_control::core::Activity& activity) override;
   void startOfCycle() override;
   void monitorData(o2::framework::ProcessingContext& ctx) override;
   void endOfCycle() override;
-  void endOfActivity(o2::quality_control::core::Activity& activity) override;
+  void endOfActivity(const o2::quality_control::core::Activity& activity) override;
   void reset() override;
 
  private:

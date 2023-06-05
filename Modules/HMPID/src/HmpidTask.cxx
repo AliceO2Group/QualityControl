@@ -190,7 +190,7 @@ void HmpidTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(fHmpPadOccPrf);
 }
 
-void HmpidTask::startOfActivity(Activity& /*activity*/)
+void HmpidTask::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "startOfActivity" << ENDM;
   hPedestalMean->Reset();
@@ -302,7 +302,7 @@ void HmpidTask::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void HmpidTask::endOfActivity(Activity& /*activity*/)
+void HmpidTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

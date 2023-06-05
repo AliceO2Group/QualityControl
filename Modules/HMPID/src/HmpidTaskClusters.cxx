@@ -69,7 +69,7 @@ void HmpidTaskClusters::initialize(o2::framework::InitContext& /*ctx*/)
   // here do the QC
 }
 
-void HmpidTaskClusters::startOfActivity(Activity& /*activity*/)
+void HmpidTaskClusters::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "startOfActivity" << ENDM;
   reset();
@@ -121,7 +121,7 @@ void HmpidTaskClusters::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void HmpidTaskClusters::endOfActivity(Activity& /*activity*/)
+void HmpidTaskClusters::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

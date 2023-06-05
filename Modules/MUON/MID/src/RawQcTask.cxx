@@ -160,7 +160,7 @@ bool isBoardEmpty(const o2::mid::ROBoard& board)
   return rep;
 }
 
-void RawQcTask::startOfActivity(Activity& /*activity*/)
+void RawQcTask::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Info, Devel) << "startOfActivity" << ENDM;
   // printf(" =================== > test startOfActivity RAW \n");
@@ -267,7 +267,7 @@ void RawQcTask::endOfCycle()
   // printf(" =================== > test endOfCycle RAW \n");
 }
 
-void RawQcTask::endOfActivity(Activity& /*activity*/)
+void RawQcTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Info, Devel) << "endOfActivity" << ENDM;
   // printf(" =================== > test endOfActivity RAW \n");

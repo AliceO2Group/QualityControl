@@ -221,7 +221,7 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   // getObjectsManager()->startPublishing(mTimeVsCttmBit.get());
 }
 
-void TaskDigits::startOfActivity(Activity& /*activity*/)
+void TaskDigits::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "startOfActivity" << ENDM;
   reset();
@@ -465,7 +465,7 @@ void TaskDigits::endOfCycle()
   }
 }
 
-void TaskDigits::endOfActivity(Activity& /*activity*/)
+void TaskDigits::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
