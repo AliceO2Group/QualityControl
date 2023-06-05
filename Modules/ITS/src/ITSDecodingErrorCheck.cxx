@@ -40,29 +40,36 @@ Quality ITSDecodingErrorCheck::check(std::map<std::string, std::shared_ptr<Monit
 
   for (auto& [moName, mo] : *moMap) {
     (void)moName;
-    if ((mo->getName() == "General/LinkErrorPlots") || (mo->getName() == "General/ChipErrorPlots")) {
+    if (mo->getName() == "General/ChipErrorPlots") {
+      result = Quality::Good;
+      auto* h = dynamic_cast<TH1D*>(mo->getObject());
+      if (h->GetMaximum() > 200)
+        result.set(Quality::Bad);
+    }
+
+    if (mo->getName() == "General/LinkErrorPlots") {
       result = Quality::Good;
       auto* h = dynamic_cast<TH1D*>(mo->getObject());
 
-      if (doFlatCheck || mo->getName() == "General/ChipErrorPlots") {
-        if (h->GetMaximum() > 200) {
+      if (doFlatCheck) {
+        if (h->GetMaximum() > 200)
           result.set(Quality::Bad);
-        }
+
       } else {
         for (int iBin = 1; iBin <= h->GetNbinsX(); iBin++) {
 
           if (vDecErrorLimits[iBin - 1] < 0)
             continue; // skipping bin
-
           if (vDecErrorLimits[iBin - 1] <= h->GetBinContent(iBin)) {
             vListErrorIdBad.push_back(iBin - 1);
             result.set(Quality::Bad);
-            result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("BAD: ID = %d, %s", iBin - 1, sErrorDesc[iBin - 1].Data()));
+            result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("BAD: ID = %d, %s", iBin - 1, std::string(statistics.ErrNames[iBin - 1]).c_str()));
           } else if (vDecErrorLimits[iBin - 1] / 2 < h->GetBinContent(iBin)) {
             vListErrorIdMedium.push_back(iBin - 1);
-            if (result != Quality::Bad)
-              result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("Medium: ID = %d, %s", iBin - 1, sErrorDesc[iBin - 1].Data()));
-            result.set(Quality::Medium);
+            if (result != Quality::Bad) {
+              result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("Medium: ID = %d, %s", iBin - 1, std::string(statistics.ErrNames[iBin - 1]).c_str()));
+              result.set(Quality::Medium);
+            }
           }
         }
       }
@@ -102,7 +109,7 @@ void ITSDecodingErrorCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality 
         status = "Quality::BAD (call expert)";
         for (int id = 0; id < vListErrorIdBad.size(); id++) {
           int currentError = vListErrorIdBad[id];
-          tInfo = std::make_shared<TLatex>(0.12, 0.835 - 0.04 * (id + 1), Form("BAD: ID = %d, %s", currentError, sErrorDesc[currentError].Data()));
+          tInfo = std::make_shared<TLatex>(0.12, 0.835 - 0.04 * (id + 1), Form("BAD: ID = %d, %s", currentError, std::string(statistics.ErrNames[currentError]).c_str()));
           tInfo->SetTextColor(kRed + 2);
           tInfo->SetTextSize(0.04);
           tInfo->SetTextFont(43);
@@ -118,7 +125,7 @@ void ITSDecodingErrorCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality 
         }
         for (int id = 0; id < vListErrorIdMedium.size(); id++) {
           int currentError = vListErrorIdMedium[id];
-          tInfo = std::make_shared<TLatex>(0.12, 0.6 - 0.04 * (id + 1), Form("Medium: ID = %d, %s", currentError, sErrorDesc[currentError].Data()));
+          tInfo = std::make_shared<TLatex>(0.12, 0.6 - 0.04 * (id + 1), Form("Medium: ID = %d, %s", currentError, std::string(statistics.ErrNames[currentError]).c_str()));
           tInfo->SetTextColor(kOrange + 1);
           tInfo->SetTextSize(0.04);
           tInfo->SetTextFont(43);

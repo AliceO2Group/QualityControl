@@ -136,6 +136,7 @@ void ITSDecodingErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
       mLinkErrorVsFeeid->SetBinContent(ifee + 1, ierror + 1, le.errorCounts[ierror]);
     }
   }
+
   for (const auto& de : decErrors) {
     int istave = (int)(de.getFEEID() & 0x00ff);
     int ilink = (int)((de.getFEEID() & 0x0f00) >> 8);
