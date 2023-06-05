@@ -133,6 +133,9 @@ header::DataDescription AggregatorRunner::createAggregatorRunnerDataDescription(
   if (aggregatorName.empty()) {
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Empty taskName for task's data description"));
   }
+  if (aggregatorName.length() > header::DataDescription::size) {
+    ILOG(Warning, Devel) << "Aggregator name \"" << aggregatorName << "\" is longer than " << (int)header::DataDescription::size << ", it might cause name clashes in the DPL workflow" << ENDM;
+  }
   o2::header::DataDescription description;
   description.runtimeInit(std::string(aggregatorName.substr(0, header::DataDescription::size)).c_str());
   return description;

@@ -378,7 +378,7 @@ void ITSFhrTask::setPlotsFormat()
   }
 }
 
-void ITSFhrTask::startOfActivity(Activity& activity)
+void ITSFhrTask::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity : " << activity.mId << ENDM;
   reset();
@@ -745,7 +745,7 @@ void ITSFhrTask::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void ITSFhrTask::endOfActivity(Activity& /*activity*/)
+void ITSFhrTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

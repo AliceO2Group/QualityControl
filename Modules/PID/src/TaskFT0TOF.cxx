@@ -289,7 +289,7 @@ void TaskFT0TOF::initialize(o2::framework::InitContext& /*ctx*/)
   mDataRequest->requestTracks(mSrc, 0 /*mUseMC*/);
 }
 
-void TaskFT0TOF::startOfActivity(Activity& activity)
+void TaskFT0TOF::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
   reset();
@@ -560,7 +560,7 @@ void TaskFT0TOF::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void TaskFT0TOF::endOfActivity(Activity& /*activity*/)
+void TaskFT0TOF::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

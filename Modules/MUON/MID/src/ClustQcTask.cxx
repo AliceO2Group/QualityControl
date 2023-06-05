@@ -121,7 +121,7 @@ void ClustQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mClustResYDetId->SetStats(0);
 }
 
-void ClustQcTask::startOfActivity(Activity& /*activity*/)
+void ClustQcTask::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Info, Devel) << "startOfActivity" << ENDM;
   // printf(" =================== > test startOfActivity Clust \n");
@@ -202,7 +202,7 @@ void ClustQcTask::endOfCycle()
   // printf(" =================== > test endOfCycle Clust \n");
 }
 
-void ClustQcTask::endOfActivity(Activity& /*activity*/)
+void ClustQcTask::endOfActivity(const Activity& /*activity*/)
 {
   // ILOG(Info, Devel) << "endOfActivity" << ENDM;
   // printf(" =================== > test endOfActivity Clust \n");

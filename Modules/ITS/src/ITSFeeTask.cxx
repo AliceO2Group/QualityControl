@@ -302,7 +302,7 @@ void ITSFeeTask::setPlotsFormat()
   }
 }
 
-void ITSFeeTask::startOfActivity(Activity& activity)
+void ITSFeeTask::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity : " << activity.mId << ENDM;
   mRunNumber = activity.mId;
@@ -525,7 +525,7 @@ void ITSFeeTask::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void ITSFeeTask::endOfActivity(Activity& /*activity*/)
+void ITSFeeTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

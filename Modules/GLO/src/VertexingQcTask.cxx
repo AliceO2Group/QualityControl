@@ -145,7 +145,7 @@ void VertexingQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mBeamSpot->GetYaxis()->SetTitleOffset(1.4);
 }
 
-void VertexingQcTask::startOfActivity(Activity& activity)
+void VertexingQcTask::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
   reset();
@@ -268,7 +268,7 @@ void VertexingQcTask::endOfCycle()
   }
 }
 
-void VertexingQcTask::endOfActivity(Activity& /*activity*/)
+void VertexingQcTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

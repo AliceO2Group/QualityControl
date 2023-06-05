@@ -368,7 +368,7 @@ void TrackletsTask::initialize(o2::framework::InitContext& /*ctx*/)
   buildHistograms();
 }
 
-void TrackletsTask::startOfActivity(Activity& activity)
+void TrackletsTask::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
   for (Int_t sm = 0; sm < o2::trd::constants::NSECTOR; ++sm) {
@@ -469,7 +469,7 @@ void TrackletsTask::endOfCycle()
   mTrackletsPerTimeFrameCycled->Reset();
 }
 
-void TrackletsTask::endOfActivity(Activity& /*activity*/)
+void TrackletsTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

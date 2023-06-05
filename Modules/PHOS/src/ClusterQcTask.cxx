@@ -118,7 +118,7 @@ void ClusterQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 }
 
-void ClusterQcTask::startOfActivity(Activity& /*activity*/)
+void ClusterQcTask::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "startOfActivity" << ENDM;
   reset();
@@ -188,7 +188,7 @@ void ClusterQcTask::endOfCycle()
   ILOG(Info, Support) << "endOfCycle" << ENDM;
 }
 
-void ClusterQcTask::endOfActivity(Activity& /*activity*/)
+void ClusterQcTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Info, Support) << "endOfActivity" << ENDM;
 }

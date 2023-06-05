@@ -57,7 +57,7 @@ void CalibrationTask::initialize(o2::framework::InitContext& /*ctx*/)
   ccdb::BasicCCDBManager::instance().setURL(mCustomParameters.at(CCDB_PARAM_KEY));
 }
 
-void CalibrationTask::startOfActivity(Activity& activity)
+void CalibrationTask::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity" << activity.mId << ENDM;
   mNotCalibratedChannelTimeHistogram->Reset();
@@ -111,7 +111,7 @@ void CalibrationTask::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void CalibrationTask::endOfActivity(Activity& /*activity*/)
+void CalibrationTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

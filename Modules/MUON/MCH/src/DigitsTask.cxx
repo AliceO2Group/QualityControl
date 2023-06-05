@@ -101,7 +101,7 @@ void DigitsTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 }
 
-void DigitsTask::startOfActivity(Activity& /*activity*/)
+void DigitsTask::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 }
@@ -312,7 +312,7 @@ void DigitsTask::endOfCycle()
   nCycles += 1;
 }
 
-void DigitsTask::endOfActivity(Activity& /*activity*/)
+void DigitsTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 }

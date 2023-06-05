@@ -74,7 +74,7 @@ void ZDCRawDataTask::initialize(o2::framework::InitContext& /*ctx*/)
   init();
 }
 
-void ZDCRawDataTask::startOfActivity(Activity& activity)
+void ZDCRawDataTask::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity" << activity.mId << ENDM;
   // reset for all object
@@ -143,7 +143,7 @@ void ZDCRawDataTask::endOfCycle()
   // dumpHistoStructure();
 }
 
-void ZDCRawDataTask::endOfActivity(Activity& /*activity*/)
+void ZDCRawDataTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

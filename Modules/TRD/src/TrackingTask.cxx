@@ -62,7 +62,7 @@ void TrackingTask::initialize(o2::framework::InitContext& /*ctx*/)
   buildHistograms();
 }
 
-void TrackingTask::startOfActivity(Activity& activity)
+void TrackingTask::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
 }
@@ -145,7 +145,7 @@ void TrackingTask::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void TrackingTask::endOfActivity(Activity& /*activity*/)
+void TrackingTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

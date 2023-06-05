@@ -100,7 +100,7 @@ void DecodingTask::initialize(o2::framework::InitContext& /*ic*/)
 
 //_____________________________________________________________________________
 
-void DecodingTask::startOfActivity(Activity& activity)
+void DecodingTask::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity : " << activity.mId << ENDM;
 }
@@ -367,7 +367,7 @@ void DecodingTask::endOfCycle()
 
 //_____________________________________________________________________________
 
-void DecodingTask::endOfActivity(Activity& /*activity*/)
+void DecodingTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

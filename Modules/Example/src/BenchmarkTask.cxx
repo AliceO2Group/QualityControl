@@ -59,7 +59,7 @@ void BenchmarkTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 }
 
-void BenchmarkTask::startOfActivity(Activity& /*activity*/)
+void BenchmarkTask::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "startOfActivity" << ENDM;
 }
@@ -83,7 +83,7 @@ void BenchmarkTask::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void BenchmarkTask::endOfActivity(Activity& /*activity*/)
+void BenchmarkTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

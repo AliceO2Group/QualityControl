@@ -55,7 +55,7 @@ void TH1FTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 }
 
-void TH1FTask::startOfActivity(Activity& /*activity*/)
+void TH1FTask::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "startOfActivity" << ENDM;
   for (auto& histo : mHistograms) {
@@ -93,7 +93,7 @@ void TH1FTask::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void TH1FTask::endOfActivity(Activity& /*activity*/)
+void TH1FTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
