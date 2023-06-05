@@ -5,6 +5,7 @@ Advanced topics
 <!--TOC generated with https://github.com/ekalinin/github-markdown-toc-->
 <!--./gh-md-toc --insert --no-backup --hide-footer --indent 3 QualityControl/doc/Advanced.md -->
 <!--ts-->
+   * [Advanced topics](#advanced-topics)
 * [Framework](#framework)
    * [Plugging the QC to an existing DPL workflow](#plugging-the-qc-to-an-existing-dpl-workflow)
    * [Production of QC objects outside this framework](#production-of-qc-objects-outside-this-framework)
@@ -18,6 +19,7 @@ Advanced topics
    * [Monitor cycles](#monitor-cycles)
    * [Writing a DPL data producer](#writing-a-dpl-data-producer)
    * [Custom merging](#custom-merging)
+   * [Critical and non-critical tasks](#critical-and-non-critical-tasks)
    * [QC with DPL Analysis](#qc-with-dpl-analysis)
       * [Uploading objects to QCDB](#uploading-objects-to-qcdb)
       * [Getting AODs in QC Tasks](#getting-aods-in-qc-tasks)
@@ -501,6 +503,28 @@ Please pay special attention to delete all the allocated resources in the destru
 Feel free to consult the existing usage examples among other modules in the QC repository.
 
 Once a custom class is implemented, one should let QCG know how to display it correctly, which is explained in the subsection [Display a non-standard ROOT object in QCG](#display-a-non-standard-root-object-in-qcg).
+
+## Critical and non-critical tasks
+
+Some DPL devices can be marked as non-critical. It means that if they die the system will continue running. There is 
+obviously an impact as all the downstream devices won't get data. 
+
+In QC, one can mark a task as critical or non-critical: 
+
+```json
+    "tasks": {
+      "QcTask": {
+        "active": "true",
+        "critical": "false",     "": "if false the task is allowed to die without stopping the workflow, default: true",
+```
+
+By default, they are critical. 
+
+Mergers are critical or not based on the criticality of the task they are merging data for. 
+
+Checkers are non-critical. 
+
+Post-processing ???
 
 ## QC with DPL Analysis
 
@@ -1291,6 +1315,7 @@ the "tasks" path.
         "className": "namespace::of::Task", "": "Class name of the QC Task with full namespace.",
         "moduleName": "QcSkeleton",         "": "Library name. It can be found in CMakeLists of the detector module.",
         "detectorName": "TST",              "": "3-letter code of the detector.",
+        "critical": "true",                "": "if false the task is allowed to die without stopping the workflow, default: true",
         "cycleDurationSeconds": "10",       "": "Cycle duration (how often objects are published), 10 seconds minimum.",
                                             "": "The first cycle will be randomly shorter. ",
         "": "Alternatively, one can specify different cycle durations for different periods. The last item in cycleDurations will be used for the rest of the duration whatever the period. The first cycle will be randomly shorter.",
