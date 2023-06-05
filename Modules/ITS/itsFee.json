@@ -3,7 +3,7 @@
         "config": {
             "database": {
                 "implementation": "CCDB",
-                "host": "188.184.2.55:8080",
+                "host": "ccdb-test.cern.ch:8080",
                 "username": "not_applicable",
                 "password": "not_applicable",
                 "name": "not_applicable"
@@ -19,7 +19,7 @@
                 "url": ""
             },
             "conditionDB": {
-                "url": "188.184.2.55:8080"
+                "url": "ccdb-test.cern.ch:8080"
             }
         },
         "tasks": {
@@ -32,7 +32,7 @@
                 "maxNumberCycles": "-1",
                 "dataSource": {
                     "type": "direct",
-                    "query": "filter:ITS/RAWDATA;G:FLP/DISTSUBTIMEFRAME/0"
+                    "query": "filter:ITS/RAWDATA"
                 },
                 "location": "local",
                 "taskParameters": {
@@ -55,7 +55,9 @@
                   "maxbadchipsIB": "2",
                   "maxbadlanesML": "4",
                   "maxbadlanesOL": "7",
-                  "maxfractionbadlanes": "0.1"
+                  "maxfractionbadlanes": "0.1",
+                  "plotWithTextMessage": "",
+                  "textMessage": "" 
                 },
                 "dataSource": [
                     {
@@ -77,21 +79,5 @@
                 ]
             }
         }
-    },
-    "dataSamplingPolicies": [
-        {
-            "id": "RAWDATA",
-            "active": "true",
-            "machines": [],
-            "query": "filter:ITS/RAWDATA;G:FLP/DISTSUBTIMEFRAME/0",
-            "samplingConditions": [
-                {
-                    "condition": "random",
-                    "fraction": "1",
-                    "seed": "1441"
-                }
-            ],
-            "blocking": "false"
-        }
-    ]
+    }
 }

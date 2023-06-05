@@ -43,7 +43,8 @@
 	  "NtracksMAX"  : "100",
           "doTTree": "0",
           "nBCbins": "103",
-          "dicttimestamp" : "0"
+          "dicttimestamp" : "0",
+          "doNorm" : "1"
         }
 
       }
@@ -55,6 +56,10 @@
         "moduleName" : "QcITS",
         "policy" : "OnEachSeparately",
         "detectorName" : "ITS",
+                "checkParameters": {
+                      "plotWithTextMessage": "",
+                      "textMessage": ""
+        },
         "dataSource" : [ {
           "type" : "Task",
           "name" : "ITSTrackTask",
@@ -80,7 +85,7 @@
              "samplingConditions" : [
                {
                  "condition" : "random",
-                 "fraction" : "0.3",
+                 "fraction" : "1",
                  "seed" : "1441"
                }
              ],

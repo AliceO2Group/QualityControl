@@ -39,6 +39,16 @@
           "Diagnostic": "false",
           "NoiseClassSelection": "0"
         },
+	"grpGeomRequest" : {
+          "geomRequest": "Aligned",
+          "askGRPECS": "false",
+          "askGRPLHCIF": "false",
+          "askGRPMagField": "false",
+          "askMatLUT": "false",
+          "askTime": "false",
+          "askOnceAllButField": "true",
+          "needPropagatorD":  "false"
+        },
         "location": "remote"
       }
     },

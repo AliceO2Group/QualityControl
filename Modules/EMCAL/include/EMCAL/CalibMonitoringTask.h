@@ -48,9 +48,8 @@ class CalibMonitoringTask final : public quality_control::postprocessing::PostPr
 
   /// \brief Configuration of a post-processing task.
   /// Configuration of a post-processing task. Can be overridden if user wants to retrieve the configuration of the task.
-  /// \param name     Name of the task
   /// \param config   ConfigurationInterface with prefix set to ""
-  void configure(std::string name, const boost::property_tree::ptree& config) override;
+  void configure(const boost::property_tree::ptree& config) override;
   /// \brief Initialization of a post-processing task.
   /// Initialization of a post-processing task. User receives a Trigger which caused the initialization and a service
   /// registry with singleton interfaces.
@@ -76,7 +75,10 @@ class CalibMonitoringTask final : public quality_control::postprocessing::PostPr
   std::vector<std::string> mCalibObjects;       ///< list of vectors of parm objects to be processed
   TH1* mTimeCalibParamHisto = nullptr;          ///< Monitor Time Calib Param
   TH2* mTimeCalibParamPosition = nullptr;       ///< Monitor time calib param as function of the position in EMCAL
-  TH2* mBadChannelMapHisto = nullptr;           ///< Monitor Bad channel map
+  TH2* mBadChannelMapHisto = nullptr;           ///< Monitor bad channel map
+  TH1* mMaskStatsEMCALHisto = nullptr;          ///< Monitor number of good, bad, dead cells in emcal only
+  TH1* mMaskStatsDCALHisto = nullptr;           ///< Monitor number of good, bad, dead cells in dcal only
+  TH1* mMaskStatsAllHisto = nullptr;            ///< Monitor number of good, bad, dead cells in emcal + dcal only
   std::unique_ptr<o2::emcal::CalibDB> mCalibDB; ///< EMCAL calibration DB handler
   o2::emcal::BadChannelMap* mBadChannelMap;     ///< EMCAL channel map
   o2::emcal::TimeCalibrationParams* mTimeCalib; ///< EMCAL time calib

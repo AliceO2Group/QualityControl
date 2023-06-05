@@ -29,6 +29,7 @@ struct CheckRunnerConfig {
   std::unordered_map<std::string, std::string> database;
   std::string consulUrl{};
   std::string monitoringUrl{};
+  std::string bookkeepingUrl{};
   core::DiscardFileParameters infologgerDiscardParameters;
   core::Activity fallbackActivity;
   framework::Options options{};

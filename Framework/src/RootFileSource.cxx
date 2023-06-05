@@ -75,9 +75,10 @@ void RootFileSource::run(framework::ProcessingContext& ctx)
           continue;
         }
 
+        auto binding = outputBinding(detectorKey->GetName(), storedMOC->GetName());
         if (std::find_if(allowedOutputs.begin(), allowedOutputs.end(),
-                         [name = storedMOC->GetName()](const auto& other) { return other.value == name; }) == allowedOutputs.end()) {
-          ILOG(Error) << "The input object name '" << storedMOC->GetName() << "' is not among declared output bindings: ";
+                         [binding](const auto& other) { return other.value == binding.value; }) == allowedOutputs.end()) {
+          ILOG(Error) << "The MonitorObjectCollection '" << binding.value << "' is not among declared output bindings: ";
           for (const auto& output : allowedOutputs) {
             ILOG(Error) << output.value << " ";
           }
@@ -87,7 +88,7 @@ void RootFileSource::run(framework::ProcessingContext& ctx)
 
         // snapshot does a shallow copy, so we cannot let it delete elements in MOC when it deletes the MOC
         storedMOC->SetOwner(false);
-        ctx.outputs().snapshot(OutputRef{ storedMOC->GetName(), 0 }, *storedMOC);
+        ctx.outputs().snapshot(OutputRef{ binding.value, 0 }, *storedMOC);
         storedMOC->postDeserialization();
         ILOG(Info) << "Read and published object '" << storedMOC->GetName() << "'" << ENDM;
       }
@@ -99,6 +100,11 @@ void RootFileSource::run(framework::ProcessingContext& ctx)
 
   ctx.services().get<ControlService>().endOfStream();
   ctx.services().get<ControlService>().readyToQuit(QuitRequest::Me);
+}
+
+framework::OutputLabel RootFileSource::outputBinding(const std::string& detectorCode, const std::string& taskName)
+{
+  return { detectorCode + "-" + taskName };
 }
 
 } // namespace o2::quality_control::core

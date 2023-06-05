@@ -101,6 +101,14 @@
             "selection": "",
             "option": "*L",
             "graphErrors": ""
+          },
+          {
+            "name": "dvAbsolute_Trend",
+            "title": "Trend of the dvAbsolute",
+            "varexp": "Calib_Values.dvAbsolute:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
           }
         ],
         "initTrigger": [

@@ -8,6 +8,7 @@
 #include <TProfile.h>
 #include <TProfile2D.h>
 #include <TStopwatch.h>
+#include <THashList.h>
 
 #include "DataFormatsTRD/Constants.h"
 #include "DataFormatsTRD/Digit.h"
@@ -22,6 +23,7 @@
 #include <gsl/span>
 #include <map>
 #include <tuple>
+
 #include "CCDB/BasicCCDBManager.h"
 namespace o2::quality_control_modules::trd
 {
@@ -33,10 +35,10 @@ void DigitsTask::retrieveCCDBSettings()
 {
   if (auto param = mCustomParameters.find("ccdbtimestamp"); param != mCustomParameters.end()) {
     mTimestamp = std::stol(mCustomParameters["ccdbtimestamp"]);
-    ILOG(Info, Support) << "configure() : using ccdbtimestamp = " << mTimestamp << ENDM;
+    ILOG(Debug, Support) << "configure() : using ccdbtimestamp = " << mTimestamp << ENDM;
   } else {
     mTimestamp = o2::ccdb::getCurrentTimestamp();
-    ILOG(Info, Support) << "configure() : using default timestam of now = " << mTimestamp << ENDM;
+    ILOG(Debug, Support) << "configure() : using default timestam of now = " << mTimestamp << ENDM;
   }
   auto& mgr = o2::ccdb::BasicCCDBManager::instance();
   mgr.setTimestamp(mTimestamp);
@@ -213,7 +215,7 @@ void DigitsTask::buildHistograms()
   getObjectsManager()->startPublishing(mDigitHCID.get());
   mDigitsPerEvent.reset(new TH1F("digitsperevent", "Digits per Event", 10000, 0, 10000));
   getObjectsManager()->startPublishing(mDigitsPerEvent.get());
-  mEventswDigitsPerTimeFrame.reset(new TH1F("eventswithdigitspertimeframe", "Number of Events with Digits per Time Frame", 10000, 0, 10000));
+  mEventswDigitsPerTimeFrame.reset(new TH1F("eventswithdigitspertimeframe", "Number of Events with Digits per Time Frame", 100, 0, 100));
   getObjectsManager()->startPublishing(mEventswDigitsPerTimeFrame.get());
 
   mDigitsSizevsTrackletSize.reset(new TH2F("digitsvstracklets", "Tracklets Count vs Digits Count per event; Number of Tracklets;Number Of Digits", 2500, 0, 2500, 2500, 0, 2500));
@@ -363,42 +365,35 @@ void DigitsTask::buildHistograms()
     getObjectsManager()->startPublishing(h);
   }
 
-  /*  int cn = 0;
-  int sm = 0;
-
-  for (int count = 0; count < 540; ++count) {
-    sm = count / 30;
-    std::string label = fmt::format("PulseHeightPerChamber/pulseheight_{0:02d}_{1}_{2}", sm, cn / 6, cn % 6);
-    std::string title = fmt::format("{0:02d}_{1}_{2};Timebin;Chamber", sm, cn / 6, cn % 6);
-    TH1F* h = new TH1F(label.c_str(), title.c_str(), 30, -0.5, 29.5);
-    mPulseHeightPerChamber_1D[count].reset(h);
-    getObjectsManager()->startPublishing(h);
-    cn++;
-    if (cn > 29)
-      cn = 0;
-  }
-*/
   for (int iLayer = 0; iLayer < 6; ++iLayer) {
     mLayers.push_back(new TH2F(Form("DigitsPerLayer/layer%i", iLayer), Form("Digit count per pad in layer %i;stack;sector", iLayer), 76, -0.5, 75.5, 2592, -0.5, 2591.5));
     auto xax = mLayers.back()->GetXaxis();
-    xax->SetBinLabel(8, "0");
-    xax->SetBinLabel(24, "1");
-    xax->SetBinLabel(38, "2");
-    xax->SetBinLabel(52, "3");
-    xax->SetBinLabel(68, "4");
-    xax->SetTicks("-");
-    xax->SetTickSize(0.01);
-    xax->SetLabelSize(0.045);
-    xax->SetLabelOffset(0.01);
-    auto yax = mLayers.back()->GetYaxis();
-    for (int iSec = 0; iSec < 18; ++iSec) {
-      auto lbl = std::to_string(iSec);
-      yax->SetBinLabel(iSec * 144 + 72, lbl.c_str());
+    auto yax = mLayers[iLayer]->GetYaxis();
+    if (!mLayerLabelsIgnore) {
+      xax->SetNdivisions(5);
+      xax->SetBinLabel(8, "0");
+      xax->SetBinLabel(24, "1");
+      xax->SetBinLabel(38, "2");
+      xax->SetBinLabel(52, "3");
+      xax->SetBinLabel(68, "4");
+      xax->SetTicks("");
+      xax->SetTickSize(0.0);
+      xax->SetLabelSize(0.045);
+      xax->SetLabelOffset(0.005);
+      xax->SetTitleOffset(0.95);
+      xax->CenterTitle(true);
+      yax->SetNdivisions(18);
+      for (int iSec = 0; iSec < 18; ++iSec) {
+        auto lbl = std::to_string(iSec);
+        yax->SetBinLabel(iSec * 144 + 72, lbl.c_str());
+      }
+      yax->SetTicks("");
+      yax->SetTickSize(0.0);
+      yax->SetLabelSize(0.045);
+      yax->SetLabelOffset(0.001);
+      yax->SetTitleOffset(0.40);
+      yax->CenterTitle(true);
     }
-    yax->SetTicks("-");
-    yax->SetTickSize(0.01);
-    yax->SetLabelSize(0.045);
-    yax->SetLabelOffset(0.01);
     mLayers.back()->SetStats(0);
     drawTrdLayersGrid(mLayers.back());
     fillLinesOnHistsPerLayer(iLayer);
@@ -411,57 +406,61 @@ void DigitsTask::buildHistograms()
 
 void DigitsTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info) << "initialize TRDDigitQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize TRDDigitQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
   if (auto param = mCustomParameters.find("driftregionstart"); param != mCustomParameters.end()) {
     mDriftRegion.first = stof(param->second);
-    ILOG(Info, Support) << "configure() : using peakregionstart = " << mDriftRegion.first << ENDM;
+    ILOG(Debug, Support) << "configure() : using peakregionstart = " << mDriftRegion.first << ENDM;
   } else {
     mDriftRegion.first = 7.0;
-    ILOG(Info, Support) << "configure() : using default dritfregionstart = " << mDriftRegion.first << ENDM;
+    ILOG(Debug, Support) << "configure() : using default dritfregionstart = " << mDriftRegion.first << ENDM;
   }
   if (auto param = mCustomParameters.find("driftregionend"); param != mCustomParameters.end()) {
     mDriftRegion.second = stof(param->second);
-    ILOG(Info, Support) << "configure() : using peakregionstart = " << mDriftRegion.second << ENDM;
+    ILOG(Debug, Support) << "configure() : using peakregionstart = " << mDriftRegion.second << ENDM;
   } else {
     mDriftRegion.second = 20.0;
-    ILOG(Info, Support) << "configure() : using default dritfregionstart = " << mDriftRegion.second << ENDM;
+    ILOG(Debug, Support) << "configure() : using default dritfregionstart = " << mDriftRegion.second << ENDM;
   }
   if (auto param = mCustomParameters.find("pulseheightpeaklower"); param != mCustomParameters.end()) {
     mPulseHeightPeakRegion.first = stof(param->second);
-    ILOG(Info, Support) << "configure() : using pulsehheightlower	= " << mPulseHeightPeakRegion.first << ENDM;
+    ILOG(Debug, Support) << "configure() : using pulsehheightlower	= " << mPulseHeightPeakRegion.first << ENDM;
   } else {
     mPulseHeightPeakRegion.first = 0.0;
-    ILOG(Info, Support) << "configure() : using default pulseheightlower = " << mPulseHeightPeakRegion.first << ENDM;
+    ILOG(Debug, Support) << "configure() : using default pulseheightlower = " << mPulseHeightPeakRegion.first << ENDM;
   }
   if (auto param = mCustomParameters.find("pulseheightpeakupper"); param != mCustomParameters.end()) {
     mPulseHeightPeakRegion.second = stof(param->second);
-    ILOG(Info, Support) << "configure() : using pulsehheightupper	= " << mPulseHeightPeakRegion.second << ENDM;
+    ILOG(Debug, Support) << "configure() : using pulsehheightupper	= " << mPulseHeightPeakRegion.second << ENDM;
   } else {
     mPulseHeightPeakRegion.second = 5.0;
-    ILOG(Info, Support) << "configure() : using default pulseheightupper = " << mPulseHeightPeakRegion.second << ENDM;
+    ILOG(Debug, Support) << "configure() : using default pulseheightupper = " << mPulseHeightPeakRegion.second << ENDM;
   }
   if (auto param = mCustomParameters.find("skippedshareddigits"); param != mCustomParameters.end()) {
     mSkipSharedDigits = stod(param->second);
-    ILOG(Info, Support) << "configure() : using skip shared digits 	= " << mSkipSharedDigits << ENDM;
+    ILOG(Debug, Support) << "configure() : using skip shared digits 	= " << mSkipSharedDigits << ENDM;
   } else {
     mSkipSharedDigits = false;
-    ILOG(Info, Support) << "configure() : using default skip shared digits = " << mSkipSharedDigits << ENDM;
+    ILOG(Debug, Support) << "configure() : using default skip shared digits = " << mSkipSharedDigits << ENDM;
   }
   if (auto param = mCustomParameters.find("pulseheightthreshold"); param != mCustomParameters.end()) {
     mPulseHeightThreshold = stod(param->second);
-    ILOG(Info, Support) << "configure() : using skip shared digits 	= " << mPulseHeightThreshold << ENDM;
+    ILOG(Debug, Support) << "configure() : using skip shared digits 	= " << mPulseHeightThreshold << ENDM;
   } else {
     mPulseHeightThreshold = 400;
-    ILOG(Info, Support) << "configure() : using default skip shared digits = " << mPulseHeightThreshold << ENDM;
+    ILOG(Debug, Support) << "configure() : using default skip shared digits = " << mPulseHeightThreshold << ENDM;
   }
   if (auto param = mCustomParameters.find("chamberstoignore"); param != mCustomParameters.end()) {
     mChambersToIgnore = param->second;
-    ILOG(Info, Support) << "configure() : chamberstoignore = " << mChambersToIgnore << ENDM;
+    ILOG(Debug, Support) << "configure() : chamberstoignore = " << mChambersToIgnore << ENDM;
   } else {
     mChambersToIgnore = "16_3_0";
-    ILOG(Info, Support) << "configure() : chambers to ignore for pulseheight calculations = " << mChambersToIgnore << ENDM;
+    ILOG(Debug, Support) << "configure() : chambers to ignore for pulseheight calculations = " << mChambersToIgnore << ENDM;
+  }
+  if (auto param = mCustomParameters.find("ignorelayerlabels"); param != mCustomParameters.end()) {
+    mLayerLabelsIgnore = stoi(param->second);
+    ILOG(Debug, Support) << "configure() : ignoring labels on layer plots = " << mLayerLabelsIgnore << ENDM;
   }
   buildChamberIgnoreBP();
 
@@ -471,12 +470,12 @@ void DigitsTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void DigitsTask::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info) << "startOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
 } // set stats/stacs
 
 void DigitsTask::startOfCycle()
 {
-  ILOG(Info) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 bool digitIndexCompare(unsigned int A, unsigned int B, const std::vector<o2::trd::Digit>& originalDigits)
@@ -523,14 +522,15 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
       // create a vector indexing into the digits in question
       std::vector<unsigned int> digitsIndex(digitv.size());
       std::iota(digitsIndex.begin(), digitsIndex.end(), 0);
-      mEventswDigitsPerTimeFrame->Fill(triggerrecords.size());
+      int DigitTrig = 0;
       // we now have sorted digits, can loop sequentially and be going over det/row/pad
       for (auto& trigger : triggerrecords) {
         uint64_t numtracklets = trigger.getNumberOfTracklets();
         uint64_t numdigits = trigger.getNumberOfDigits();
         if (trigger.getNumberOfDigits() == 0)
           continue; // bail if we have no digits in this trigger
-        // now sort digits to det,row,pad
+                    // now sort digits to det,row,pad
+        DigitTrig++;
         std::sort(std::begin(digitsIndex) + trigger.getFirstDigit(), std::begin(digitsIndex) + trigger.getFirstDigit() + trigger.getNumberOfDigits(),
                   [&digitv](unsigned int i, unsigned int j) { return digitIndexCompare(i, j, digitv); });
 
@@ -567,7 +567,7 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
           if (detector < 0 || detector >= 540) {
             // for some reason online the sm value causes an error below and digittrask crashes.
             // the only possibility is detector number is invalid
-            ILOG(Info) << "Bad detector number from digit : " << detector << " for digit index of " << digitsIndex[currentdigit] << ENDM;
+            ILOG(Info, Support) << "Bad detector number from digit : " << detector << " for digit index of " << digitsIndex[currentdigit] << ENDM;
             continue;
           }
           int sm = detector / 30;
@@ -742,13 +742,14 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
           }     // end for c
         }
       } // end for r
-    }   // end for d
-  }     // for loop over digits
+      mEventswDigitsPerTimeFrame->Fill(DigitTrig);
+    } // end for d
+  }   // for loop over digits
 } // loop over triggers
 
 void DigitsTask::endOfCycle()
 {
-  ILOG(Info) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
   for (Int_t det = 0; det < 540; det++) {
     mClsAmpCh->Fill(mClusterAmplitudeChamber->Integral(1, -1, det, det + 1)); // prof->GetBinContent(det));
   }
@@ -762,13 +763,13 @@ void DigitsTask::endOfCycle()
 
 void DigitsTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void DigitsTask::reset()
 {
   // clean all the monitor objects here
-  ILOG(Info) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histogram" << ENDM;
   mDigitsPerEvent->Reset();
   mEventswDigitsPerTimeFrame->Reset();
   mDigitHCID->Reset();

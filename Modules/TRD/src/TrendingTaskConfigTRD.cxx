@@ -20,11 +20,11 @@ using boost::property_tree::ptree;
 namespace o2::quality_control::postprocessing
 {
 
-TrendingTaskConfigTRD::TrendingTaskConfigTRD(std::string name, const boost::property_tree::ptree& config)
-  : PostProcessingConfig(name, config)
+TrendingTaskConfigTRD::TrendingTaskConfigTRD(std::string id, const boost::property_tree::ptree& config)
+  : PostProcessingConfig(id, config)
 {
 
-  for (const auto& plotConfig : config.get_child("qc.postprocessing." + name + ".plots")) {
+  for (const auto& plotConfig : config.get_child("qc.postprocessing." + id + ".plots")) {
 
     if (const auto& sourceNames = plotConfig.second.get_child_optional("names");
         sourceNames.has_value()) {
@@ -53,7 +53,7 @@ TrendingTaskConfigTRD::TrendingTaskConfigTRD(std::string name, const boost::prop
     }
   }
 
-  for (const auto& dataSourceConfig : config.get_child("qc.postprocessing." + name + ".dataSources")) {
+  for (const auto& dataSourceConfig : config.get_child("qc.postprocessing." + id + ".dataSources")) {
     if (const auto& sourceNames = dataSourceConfig.second.get_child_optional("names"); sourceNames.has_value()) {
 
       for (const auto& sourceName : sourceNames.value()) {
@@ -71,7 +71,7 @@ TrendingTaskConfigTRD::TrendingTaskConfigTRD(std::string name, const boost::prop
                               dataSourceConfig.second.get<std::string>("reductorName"),
                               dataSourceConfig.second.get<std::string>("moduleName") });
     } else {
-      throw std::runtime_error("No 'name' value or a 'names' vector in the path 'qc.postprocessing." + name + ".dataSources'");
+      throw std::runtime_error("No 'name' value or a 'names' vector in the path 'qc.postprocessing." + id + ".dataSources'");
     }
   }
 }

@@ -32,8 +32,9 @@ namespace o2::quality_control::checker
 
 using namespace o2::framework;
 
-DataProcessorSpec CheckRunnerFactory::create(CheckRunnerConfig checkRunnerConfig, std::vector<CheckConfig> checkConfigs, std::vector<std::string> storeVector)
+DataProcessorSpec CheckRunnerFactory::create(CheckRunnerConfig checkRunnerConfig, const std::vector<CheckConfig>& checkConfigs, std::vector<std::string> storeVector)
 {
+  auto options = checkRunnerConfig.options;
   CheckRunner qcCheckRunner{ std::move(checkRunnerConfig), checkConfigs };
   qcCheckRunner.setTaskStoreSet({ storeVector.begin(), storeVector.end() });
 
@@ -41,14 +42,14 @@ DataProcessorSpec CheckRunnerFactory::create(CheckRunnerConfig checkRunnerConfig
                                     qcCheckRunner.getInputs(),
                                     Outputs{ qcCheckRunner.getOutputs() },
                                     AlgorithmSpec{},
-                                    checkRunnerConfig.options };
+                                    options };
   newCheckRunner.labels.emplace_back(o2::framework::ecs::qcReconfigurable);
   newCheckRunner.labels.emplace_back(CheckRunner::getCheckRunnerLabel());
   newCheckRunner.algorithm = adaptFromTask<CheckRunner>(std::move(qcCheckRunner));
   return newCheckRunner;
 }
 
-DataProcessorSpec CheckRunnerFactory::createSinkDevice(CheckRunnerConfig checkRunnerConfig, o2::framework::InputSpec input)
+DataProcessorSpec CheckRunnerFactory::createSinkDevice(const CheckRunnerConfig& checkRunnerConfig, const o2::framework::InputSpec& input)
 {
   CheckRunner qcCheckRunner{ checkRunnerConfig, input };
   qcCheckRunner.setTaskStoreSet({ DataSpecUtils::label(input) });
@@ -69,10 +70,7 @@ void CheckRunnerFactory::customizeInfrastructure(std::vector<framework::Completi
   auto matcher = [label = CheckRunner::getCheckRunnerLabel()](framework::DeviceSpec const& device) {
     return std::find(device.labels.begin(), device.labels.end(), label) != device.labels.end();
   };
-
-  auto callback = CompletionPolicyHelpers::consumeWhenAny().callback;
-
-  policies.emplace_back("checkerCompletionPolicy", matcher, callback);
+  policies.emplace_back(CompletionPolicyHelpers::consumeWhenAny("checkerCompletionPolicy", matcher));
 }
 
 CheckRunnerConfig CheckRunnerFactory::extractConfig(const CommonSpec& commonSpec)
@@ -94,6 +92,7 @@ CheckRunnerConfig CheckRunnerFactory::extractConfig(const CommonSpec& commonSpec
     commonSpec.database,
     commonSpec.consulUrl,
     commonSpec.monitoringUrl,
+    commonSpec.bookkeepingUrl,
     commonSpec.infologgerDiscardParameters,
     fallbackActivity,
     options

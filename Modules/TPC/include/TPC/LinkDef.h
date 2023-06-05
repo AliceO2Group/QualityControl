@@ -33,6 +33,9 @@
 #pragma link C++ class o2::quality_control_modules::tpc::GenericHistogramCheck + ;
 #pragma link C++ class o2::quality_control_modules::tpc::JunkDetection+;
 #pragma link C++ class o2::quality_control_modules::tpc::CheckOfPads + ;
+#pragma link C++ class o2::quality_control_modules::tpc::CalPadClusterReductor + ;
+#pragma link C++ class o2::quality_control_modules::tpc::IDCScaleReductor + ;
+#pragma link C++ class o2::quality_control_modules::tpc::SACs + ;
 
 #pragma link C++ function o2::quality_control_modules::tpc::addAndPublish + ;
 #pragma link C++ function o2::quality_control_modules::tpc::toVector + ;

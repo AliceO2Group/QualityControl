@@ -40,10 +40,9 @@ using namespace o2::quality_control;
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;
 
-void SliceTrendingTask::configure(std::string name,
-                                  const boost::property_tree::ptree& config)
+void SliceTrendingTask::configure(const boost::property_tree::ptree& config)
 {
-  mConfig = SliceTrendingTaskConfig(name, config);
+  mConfig = SliceTrendingTaskConfig(getID(), config);
 }
 
 void SliceTrendingTask::initialize(Trigger, framework::ServiceRegistryRef services)
@@ -79,8 +78,13 @@ void SliceTrendingTask::initialize(Trigger, framework::ServiceRegistryRef servic
     mTrend->SetBranchAddress("meta", &(mMetaData.runNumber)); // TO-DO: Find reason why simply &mMetaData does not work
     mTrend->SetBranchAddress("time", &mTime);
     for (const auto& source : mConfig.dataSources) {
+      bool existingBranch = mTrend->GetBranchStatus(source.name.c_str());
       mSources[source.name] = new std::vector<SliceInfo>();
-      mTrend->SetBranchAddress(source.name.c_str(), &mSources[source.name]);
+      if (existingBranch) {
+        mTrend->SetBranchAddress(source.name.c_str(), &mSources[source.name]);
+      } else {
+        mTrend->Branch(source.name.c_str(), &mSources[source.name]);
+      }
     }
   }
   // Reductors
@@ -161,18 +165,18 @@ void SliceTrendingTask::generatePlots()
     }
 
     // Postprocess each pad (titles, axes, flushing buffers).
-    const std::size_t posEndVar = plot.varexp.find("."); // Find the end of the dataSource.
+    const std::size_t posEndVar = plot.varexp.find('.'); // Find the end of the dataSource.
     const std::string varName(plot.varexp.substr(0, posEndVar));
 
     // Draw the trending on a new canvas.
-    TCanvas* c = new TCanvas();
+    auto* c = new TCanvas();
     c->SetName(plot.name.c_str());
     c->SetTitle(plot.title.c_str());
 
     drawCanvasMO(c, plot.varexp, plot.name, plot.option, plot.graphErrors, mAxisDivision[varName]);
 
     int NumberPlots = 1;
-    if (plot.varexp.find(":time") != std::string::npos) { // we plot vs time, multiple plots on canvas possible
+    if (plot.varexp.find(":time") != std::string::npos || plot.varexp.find(":run") != std::string::npos) { // we plot vs time, multiple plots on canvas possible
       NumberPlots = mNumberPads[varName];
     }
     for (int p = 0; p < NumberPlots; p++) {
@@ -185,9 +189,6 @@ void SliceTrendingTask::generatePlots()
         if (auto legend = dynamic_cast<TLegend*>(c->cd(2)->GetPrimitive("MultiGraphLegend"))) {
           c->cd(1);
           beautifyGraph(multigraph, plot, c);
-          multigraph->Draw("A pmc plc");
-          c->cd(2);
-          legend->Draw();
           c->cd(1)->SetLeftMargin(0.15);
           c->cd(1)->SetRightMargin(0.01);
           c->cd(2)->SetLeftMargin(0.01);
@@ -196,8 +197,8 @@ void SliceTrendingTask::generatePlots()
           ILOG(Error, Support) << "No legend in multigraph-time" << ENDM;
           c->cd(1);
           beautifyGraph(multigraph, plot, c);
-          multigraph->Draw("A pmc plc");
         }
+        c->Modified();
         c->Update();
       } else if (auto histo = dynamic_cast<TH2F*>(c->cd(p + 1)->GetPrimitive("Graph2D"))) {
 
@@ -206,7 +207,7 @@ void SliceTrendingTask::generatePlots()
 
         if (!plot.graphAxisLabel.empty()) {
           setUserAxisLabel(histo->GetXaxis(), histo->GetYaxis(), plot.graphAxisLabel);
-          histo->Draw(plot.option.data());
+          c->Modified();
           c->Update();
         }
 
@@ -215,14 +216,12 @@ void SliceTrendingTask::generatePlots()
           getUserAxisRange(plot.graphYRange, yMin, yMax);
           histo->SetMinimum(yMin);
           histo->SetMaximum(yMax);
-          histo->Draw(plot.option.data()); // redraw and update to force changes on y-axis
+          c->Modified();
           c->Update();
         }
 
         gStyle->SetPalette(kBird);
         histo->SetStats(kFALSE);
-        histo->Draw(plot.option.data());
-
       } else {
         ILOG(Error, Devel) << "Could not get the 'Graph' of the plot '"
                            << plot.name << "'." << ENDM;
@@ -248,9 +247,9 @@ void SliceTrendingTask::drawCanvasMO(TCanvas* thisCanvas, const std::string& var
   getTrendErrors(err, errXName, errYName);
 
   // Divide the canvas into the correct number of pads.
-  if (trendType == "time") {
+  if (trendType == "time" || trendType == "run") {
     thisCanvas->DivideSquare(mNumberPads[varName]); // trending vs time: multiple plots per canvas possible
-  } else if (trendType == "multigraphtime") {
+  } else if (trendType == "multigraphtime" || trendType == "multigraphrun") {
     thisCanvas->Divide(2, 1);
   } else {
     thisCanvas->DivideSquare(1);
@@ -263,22 +262,29 @@ void SliceTrendingTask::drawCanvasMO(TCanvas* thisCanvas, const std::string& var
   // Setup the tree reader with the needed values.
   TTreeReader myReader(mTrend.get());
   TTreeReaderValue<UInt_t> retrieveTime(myReader, "time");
+  TTreeReaderValue<Int_t> retrieveRun(myReader, "meta.runNumber");
   TTreeReaderValue<std::vector<SliceInfo>> dataRetrieveVector(myReader, varName.data());
 
   const int nuPa = mNumberPads[varName];
   const int nEntries = mTrend->GetEntriesFast();
+  const int nEntriesTime = mTrend->GetBranch("time")->GetEntries();
+  const int nEntriesRuns = mTrend->GetBranch("meta")->GetEntries();
+  const int nEntriesData = mTrend->GetBranch(varName.data())->GetEntries();
 
   // Fill the graph(errors) to be published.
-  if (trendType == "time") {
+  if (trendType == "time" || trendType == "run") {
+
+    const int nEffectiveEntries = (trendType == "time") ? std::min(nEntriesTime, nEntriesData) : std::min(nEntriesRuns, nEntriesData);
+    const int startPoint = (trendType == "time") ? nEntriesTime - nEffectiveEntries : nEntriesRuns - nEffectiveEntries;
 
     for (int p = 0; p < nuPa; p++) {
       thisCanvas->cd(p + 1);
       int iEntry = 0;
-
-      graphErrors = new TGraphErrors(nEntries);
+      graphErrors = new TGraphErrors(nEffectiveEntries);
+      myReader.SetEntry(startPoint - 1); // startPoint-1 as myReader.Next() increments by one so that we then start at startPoint
 
       while (myReader.Next()) {
-        const double timeStamp = (double)(*retrieveTime);
+        const double timeStamp = (trendType == "time") ? (double)(*retrieveTime) : (double)(*retrieveRun);
         const double dataPoint = (dataRetrieveVector->at(p)).retrieveValue(typeName);
         double errorX = 0.;
         double errorY = 0.;
@@ -302,23 +308,25 @@ void SliceTrendingTask::drawCanvasMO(TCanvas* thisCanvas, const std::string& var
                               << "', which is not a graph, ignoring." << ENDM;
         } else {
           graphErrors->Draw(opt.data());
-          // We try to convince ROOT to delete graphErrors together with the rest of the canvas.
-          saveObjectToPrimitives(thisCanvas, p + 1, graphErrors);
         }
       }
     }
   } // Trending vs time
-  else if (trendType == "multigraphtime") {
+  else if (trendType == "multigraphtime" || trendType == "multigraphrun") {
 
     auto multigraph = new TMultiGraph();
     multigraph->SetName("MultiGraph");
 
+    const int nEffectiveEntries = (trendType == "multigraphtime") ? std::min(nEntriesTime, nEntriesData) : std::min(nEntriesRuns, nEntriesData);
+    const int startPoint = (trendType == "multigraphtime") ? nEntriesTime - nEffectiveEntries : nEntriesRuns - nEffectiveEntries;
+
     for (int p = 0; p < nuPa; p++) {
       int iEntry = 0;
-      auto gr = new TGraphErrors(nEntries);
+      auto gr = new TGraphErrors(nEffectiveEntries);
+      myReader.SetEntry(startPoint - 1); // startPoint-1 as myReader.Next() increments by one so that we then start at startPoint
 
       while (myReader.Next()) {
-        const double timeStamp = (double)(*retrieveTime);
+        const double timeStamp = (trendType == "multigraphtime") ? (double)(*retrieveTime) : (double)(*retrieveRun);
         const double dataPoint = (dataRetrieveVector->at(p)).retrieveValue(typeName);
         double errorX = 0.;
         double errorY = 0.;
@@ -335,7 +343,7 @@ void SliceTrendingTask::drawCanvasMO(TCanvas* thisCanvas, const std::string& var
 
       const std::string_view title = (dataRetrieveVector->at(p)).title;
       const auto posDivider = title.find("RangeX");
-      if (posDivider != title.npos) {
+      if (posDivider != std::string_view::npos) {
         gr->SetName(title.substr(posDivider, -1).data());
       } else {
         gr->SetName(title.data());
@@ -355,9 +363,8 @@ void SliceTrendingTask::drawCanvasMO(TCanvas* thisCanvas, const std::string& var
     for (auto obj : *multigraph->GetListOfGraphs()) {
       legend->AddEntry(obj, obj->GetName(), "lpf");
     }
-    // We try to convince ROOT to delete multigraph and legend together with the rest of the canvas.
-    saveObjectToPrimitives(thisCanvas, 1, multigraph);
-    saveObjectToPrimitives(thisCanvas, 2, legend);
+    thisCanvas->cd(2);
+    legend->Draw();
 
   } // Trending vs Time as Multigraph
   else if (trendType == "slices") {
@@ -397,8 +404,6 @@ void SliceTrendingTask::drawCanvasMO(TCanvas* thisCanvas, const std::string& var
                             << "', which is not a graph, ignoring." << ENDM;
       } else {
         graphErrors->Draw(opt.data());
-        // We try to convince ROOT to delete graphErrors together with the rest of the canvas.
-        saveObjectToPrimitives(thisCanvas, 1, graphErrors);
       }
     }
   } // Trending vs Slices
@@ -445,14 +450,12 @@ void SliceTrendingTask::drawCanvasMO(TCanvas* thisCanvas, const std::string& var
     myReader.Restart();
     gStyle->SetPalette(kBird);
     graph2D->Draw(opt.data());
-    // We try to convince ROOT to delete graphErrors together with the rest of the canvas.
-    saveObjectToPrimitives(thisCanvas, 1, graph2D);
   } // Trending vs Slices2D
 }
 
-void SliceTrendingTask::getUserAxisRange(const std::string graphAxisRange, float& limitLow, float& limitUp)
+void SliceTrendingTask::getUserAxisRange(const std::string& graphAxisRange, float& limitLow, float& limitUp)
 {
-  const std::size_t posDivider = graphAxisRange.find(":");
+  const std::size_t posDivider = graphAxisRange.find(':');
   const std::string minString(graphAxisRange.substr(0, posDivider));
   const std::string maxString(graphAxisRange.substr(posDivider + 1));
 
@@ -460,9 +463,9 @@ void SliceTrendingTask::getUserAxisRange(const std::string graphAxisRange, float
   limitUp = std::stof(maxString);
 }
 
-void SliceTrendingTask::setUserAxisLabel(TAxis* xAxis, TAxis* yAxis, const std::string graphAxisLabel)
+void SliceTrendingTask::setUserAxisLabel(TAxis* xAxis, TAxis* yAxis, const std::string& graphAxisLabel)
 {
-  const std::size_t posDivider = graphAxisLabel.find(":");
+  const std::size_t posDivider = graphAxisLabel.find(':');
   const std::string yLabel(graphAxisLabel.substr(0, posDivider));
   const std::string xLabel(graphAxisLabel.substr(posDivider + 1));
 
@@ -472,8 +475,8 @@ void SliceTrendingTask::setUserAxisLabel(TAxis* xAxis, TAxis* yAxis, const std::
 
 void SliceTrendingTask::getTrendVariables(const std::string& inputvar, std::string& sourceName, std::string& variableName, std::string& trend)
 {
-  const std::size_t posEndVar = inputvar.find(".");  // Find the end of the dataSource.
-  const std::size_t posEndType = inputvar.find(":"); // Find the end of the quantity.
+  const std::size_t posEndVar = inputvar.find('.');  // Find the end of the dataSource.
+  const std::size_t posEndType = inputvar.find(':'); // Find the end of the quantity.
   sourceName = inputvar.substr(0, posEndVar);
   variableName = inputvar.substr(posEndVar + 1, posEndType - posEndVar - 1);
   trend = inputvar.substr(posEndType + 1, -1);
@@ -481,18 +484,9 @@ void SliceTrendingTask::getTrendVariables(const std::string& inputvar, std::stri
 
 void SliceTrendingTask::getTrendErrors(const std::string& inputvar, std::string& errorX, std::string& errorY)
 {
-  const std::size_t posEndType_err = inputvar.find(":"); // Find the end of the error.
+  const std::size_t posEndType_err = inputvar.find(':'); // Find the end of the error.
   errorX = inputvar.substr(posEndType_err + 1);
   errorY = inputvar.substr(0, posEndType_err);
-}
-
-void SliceTrendingTask::saveObjectToPrimitives(TCanvas* canvas, const int padNumber, TObject* object)
-{
-  if (auto* pad = canvas->GetPad(padNumber)) {
-    if (auto* primitives = pad->GetListOfPrimitives()) {
-      primitives->Add(object);
-    }
-  }
 }
 
 template <typename T>
@@ -514,7 +508,7 @@ void SliceTrendingTask::beautifyGraph(T& graph, const SliceTrendingTaskConfig::P
     getUserAxisRange(plotconfig.graphYRange, yMin, yMax);
     graph->SetMinimum(yMin);
     graph->SetMaximum(yMax);
-    graph->Draw(plotconfig.option.data()); // redraw and update to force changes on y-axis
+    canv->Modified();
     canv->Update();
   }
 
@@ -522,13 +516,13 @@ void SliceTrendingTask::beautifyGraph(T& graph, const SliceTrendingTaskConfig::P
     float xMin, xMax;
     getUserAxisRange(plotconfig.graphXRange, xMin, xMax);
     graph->GetXaxis()->SetLimits(xMin, xMax);
-    graph->Draw(fmt::format("{0:s} A", plotconfig.option.data()).data());
+    canv->Modified();
     canv->Update();
   }
 
   if (!plotconfig.graphAxisLabel.empty()) {
     setUserAxisLabel(graph->GetXaxis(), graph->GetYaxis(), plotconfig.graphAxisLabel);
-    graph->Draw(fmt::format("{0:s} A", plotconfig.option.data()).data());
+    canv->Modified();
     canv->Update();
   }
 
@@ -539,7 +533,7 @@ void SliceTrendingTask::beautifyGraph(T& graph, const SliceTrendingTaskConfig::P
     graph->GetXaxis()->SetTimeOffset(0.0);
     graph->GetXaxis()->SetLabelOffset(0.02);
     graph->GetXaxis()->SetTimeFormat("#splitline{%d.%m.%y}{%H:%M}");
-  } else if (plotconfig.varexp.find(":meta.runNumber") != std::string::npos) {
+  } else if (plotconfig.varexp.find(":meta.runNumber") != std::string::npos || plotconfig.varexp.find(":run") != std::string::npos || plotconfig.varexp.find(":multigraphrun") != std::string::npos) {
     graph->GetXaxis()->SetNoExponent(true);
   }
 }

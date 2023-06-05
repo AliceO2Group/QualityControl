@@ -45,13 +45,15 @@ class ITSThresholdCalibrationTask : public TaskInterface
     int Hs;
     int HIC;
     int ChipID;
-    float VCASN;
+    float MainVal; // can be THR, ITHR, VCASN
     float RMS;
-    float ITHR;
-    float THR;
     float Noise;
     float NoiseRMS;
-    int status;
+    float status;
+    float Tot;    // time over threshold
+    float TotRms; // time over threshold rms
+    float Rt;     // rise time
+    float RtRms;  // rise time rms
   };
   struct CalibrationResStructPixel {
     int Layer;
@@ -106,8 +108,8 @@ class ITSThresholdCalibrationTask : public TaskInterface
   TString sBarrelType[3] = { "IB", "ML", "OL" };
   Int_t nChips[3] = { 9, 112, 196 };
   Int_t nStaves[3] = { 48, 54, 90 };
-  Int_t nXmax[3] = { 80, 100, 400 };
-  Int_t nZmax[3] = { 90, 110, 300 };
+  Int_t nXmax[3] = { 130, 100, 450 };
+  Int_t nZmax[3] = { 130, 110, 300 };
   Int_t nZmin[3] = { 20, 20, 30 };
 
   TString sXtitles[3] = { "DAC", "DAC", "e" };
@@ -118,12 +120,15 @@ class ITSThresholdCalibrationTask : public TaskInterface
   TH2D* hCalibrationDColChipAverage[3];
   TH2D* hCalibrationPixelpAverage[3][3];
 
-  TH1F* hSuccessRate;
-  TH1F *hCalibrationLayer[7][3], *hCalibrationRMSLayer[7][3];
-  TH1F *hCalibrationThrNoiseLayer[7], *hCalibrationThrNoiseRMSLayer[7];
+  TH2F* hUnsuccess[3];
+  TH1F *hCalibrationLayer[NLayer][3], *hCalibrationRMSLayer[NLayer][3];
+  TH1F *hCalibrationThrNoiseLayer[NLayer], *hCalibrationThrNoiseRMSLayer[NLayer];
+
+  // Histograms for pulse-length scan
+  TH2F *hTimeOverThreshold[3], *hTimeOverThresholdRms[3], *hRiseTime[3], *hRiseTimeRms[3];
+  TH1F *hTimeOverThresholdLayer[NLayer], *hTimeOverThresholdRmsLayer[NLayer], *hRiseTimeLayer[NLayer], *hRiseTimeRmsLayer[NLayer];
 
   o2::itsmft::ChipMappingITS mp;
-  Int_t SuccessStatus[7], TotalStatus[7];
 };
 } // namespace o2::quality_control_modules::its
 

@@ -19,9 +19,10 @@
 
 #include <string>
 #include <vector>
-#include <unordered_map>
 
 #include "QualityControl/DataSourceSpec.h"
+#include "QualityControl/RecoRequestSpecs.h"
+#include "QualityControl/CustomParameters.h"
 
 namespace o2::quality_control::core
 {
@@ -53,14 +54,15 @@ struct TaskSpec {
   std::string className = "Invalid";
   std::string moduleName = "Invalid";
   std::string detectorName = "Invalid";
-  int cycleDurationSeconds = -1;
+  int cycleDurationSeconds = -1;                                      // simple syntax
+  std::vector<std::pair<size_t, size_t>> multipleCycleDurations = {}; // complex syntax: multiple durations can be set for different intervals
   DataSourceSpec dataSource;
   // advanced
   bool active = true;
   int maxNumberCycles = -1;
   size_t resetAfterCycles = 0;
   std::string saveObjectsToFile;
-  std::unordered_map<std::string, std::string> customParameters = {};
+  core::CustomParameters customParameters;
   // multinode setups
   TaskLocationSpec location = TaskLocationSpec::Remote;
   std::vector<std::string> localMachines = {};
@@ -70,8 +72,10 @@ struct TaskSpec {
   std::string mergingMode = "delta"; // todo as enum?
   int mergerCycleMultiplier = 1;
   std::vector<size_t> mergersPerLayer{ 1 };
+  GRPGeomRequestSpec grpGeomRequestSpec;
+  GlobalTrackingDataRequestSpec globalTrackingDataRequest;
 };
 
 } // namespace o2::quality_control::core
 
-#endif //QUALITYCONTROL_TASKSPEC_H
+#endif // QUALITYCONTROL_TASKSPEC_H

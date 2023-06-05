@@ -51,7 +51,7 @@ InfrastructureSpec InfrastructureSpecReader::readInfrastructureSpec(const boost:
 }
 
 template <>
-CommonSpec InfrastructureSpecReader::readSpecEntry<CommonSpec>(std::string, const boost::property_tree::ptree& commonTree, const boost::property_tree::ptree&)
+CommonSpec InfrastructureSpecReader::readSpecEntry<CommonSpec>(const std::string&, const boost::property_tree::ptree& commonTree, const boost::property_tree::ptree&)
 {
   CommonSpec spec;
   for (const auto& [key, value] : commonTree.get_child("database")) {
@@ -75,12 +75,13 @@ CommonSpec InfrastructureSpecReader::readSpecEntry<CommonSpec>(std::string, cons
     commonTree.get<u_int>("infologger.filterRotateMaxFiles", spec.infologgerDiscardParameters.rotateMaxFiles)
   };
   spec.postprocessingPeriod = commonTree.get<double>("postprocessing.periodSeconds", spec.postprocessingPeriod);
+  spec.bookkeepingUrl = commonTree.get<std::string>("bookkeeping.url", spec.bookkeepingUrl);
 
   return spec;
 }
 
 template <>
-TaskSpec InfrastructureSpecReader::readSpecEntry<TaskSpec>(std::string taskID, const boost::property_tree::ptree& taskTree, const boost::property_tree::ptree& wholeTree)
+TaskSpec InfrastructureSpecReader::readSpecEntry<TaskSpec>(const std::string& taskID, const boost::property_tree::ptree& taskTree, const boost::property_tree::ptree& wholeTree)
 {
   static std::unordered_map<std::string, TaskLocationSpec> const taskLocationFromString = {
     { "local", TaskLocationSpec::Local },
@@ -93,15 +94,33 @@ TaskSpec InfrastructureSpecReader::readSpecEntry<TaskSpec>(std::string taskID, c
   ts.className = taskTree.get<std::string>("className");
   ts.moduleName = taskTree.get<std::string>("moduleName");
   ts.detectorName = taskTree.get<std::string>("detectorName");
-  ts.cycleDurationSeconds = taskTree.get<int>("cycleDurationSeconds");
+  ts.cycleDurationSeconds = taskTree.get<int>("cycleDurationSeconds", -1);
+  if (taskTree.count("cycleDurations") > 0) {
+    for (const auto& cycleConfig : taskTree.get_child("cycleDurations")) {
+      auto cycleDuration = cycleConfig.second.get<size_t>("cycleDurationSeconds");
+      auto validity = cycleConfig.second.get<size_t>("validitySeconds");
+      ts.multipleCycleDurations.push_back(std::pair{ cycleDuration, validity });
+    }
+  }
   ts.dataSource = readSpecEntry<DataSourceSpec>(taskID, taskTree.get_child("dataSource"), wholeTree);
   ts.active = taskTree.get<bool>("active", ts.active);
   ts.maxNumberCycles = taskTree.get<int>("maxNumberCycles", ts.maxNumberCycles);
   ts.resetAfterCycles = taskTree.get<size_t>("resetAfterCycles", ts.resetAfterCycles);
   ts.saveObjectsToFile = taskTree.get<std::string>("saveObjectsToFile", ts.saveObjectsToFile);
-  if (taskTree.count("taskParameters") > 0) {
+  if (taskTree.count("extendedTaskParameters") > 0 && taskTree.count("taskParameters") > 0) {
+    ILOG(Warning, Devel) << "Both taskParameters and extendedTaskParameters are defined in the QC config file. We will use only extendedTaskParameters. " << ENDM;
+  }
+  if (taskTree.count("extendedTaskParameters") > 0) {
+    for (const auto& [runtype, subTreeRunType] : taskTree.get_child("extendedTaskParameters")) {
+      for (const auto& [beamtype, subTreeBeamType] : subTreeRunType) {
+        for (const auto& [key, value] : subTreeBeamType) {
+          ts.customParameters.set(key, value.get_value<std::string>(), runtype, beamtype);
+        }
+      }
+    }
+  } else if (taskTree.count("taskParameters") > 0) {
     for (const auto& [key, value] : taskTree.get_child("taskParameters")) {
-      ts.customParameters.emplace(key, value.get_value<std::string>());
+      ts.customParameters.set(key, value.get_value<std::string>());
     }
   }
 
@@ -138,11 +157,19 @@ TaskSpec InfrastructureSpecReader::readSpecEntry<TaskSpec>(std::string taskID, c
     }
   }
 
+  if (taskTree.count("grpGeomRequest") > 0) {
+    ts.grpGeomRequestSpec = readSpecEntry<GRPGeomRequestSpec>(ts.taskName, taskTree.get_child("grpGeomRequest"), wholeTree);
+  }
+
+  if (taskTree.count("globalTrackingDataRequest") > 0) {
+    ts.globalTrackingDataRequest = readSpecEntry<GlobalTrackingDataRequestSpec>(ts.taskName, taskTree.get_child("globalTrackingDataRequest"), wholeTree);
+  }
+
   return ts;
 }
 
 template <>
-DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(std::string dataRequestorId,
+DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(const std::string& dataRequestorId,
                                                                        const boost::property_tree::ptree& dataSourceTree,
                                                                        const boost::property_tree::ptree& wholeTree)
 {
@@ -190,8 +217,10 @@ DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(std::stri
     }
     case DataSourceType::PostProcessingTask: {
       dss.id = dataSourceTree.get<std::string>("name");
-      dss.name = dss.id;
-      dss.inputs = { { dss.name, PostProcessingDevice::createPostProcessingDataOrigin(), PostProcessingDevice::createPostProcessingDataDescription(dss.name), 0, Lifetime::Sporadic } };
+      // this allows us to have tasks with the same name for different detectors
+      dss.name = wholeTree.get<std::string>("qc.postprocessing." + dss.id + ".taskName", dss.id);
+      auto detectorName = wholeTree.get<std::string>("qc.postprocessing." + dss.id + ".detectorName");
+      dss.inputs = { { dss.name, PostProcessingDevice::createPostProcessingDataOrigin(detectorName), PostProcessingDevice::createPostProcessingDataDescription(dss.id), 0, Lifetime::Sporadic } };
       if (dataSourceTree.count("MOs") > 0) {
         for (const auto& moName : dataSourceTree.get_child("MOs")) {
           dss.subInputs.push_back(moName.second.get_value<std::string>());
@@ -236,7 +265,7 @@ DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(std::stri
 }
 
 template <>
-CheckSpec InfrastructureSpecReader::readSpecEntry<CheckSpec>(std::string checkID, const boost::property_tree::ptree& checkTree, const boost::property_tree::ptree& wholeTree)
+CheckSpec InfrastructureSpecReader::readSpecEntry<CheckSpec>(const std::string& checkID, const boost::property_tree::ptree& checkTree, const boost::property_tree::ptree& wholeTree)
 {
   CheckSpec cs;
 
@@ -257,9 +286,18 @@ CheckSpec InfrastructureSpecReader::readSpecEntry<CheckSpec>(std::string checkID
   }
 
   cs.active = checkTree.get<bool>("active", cs.active);
+  if (checkTree.count("extendedCheckParameters") > 0) {
+    for (const auto& [runtype, subTreeRunType] : checkTree.get_child("extendedCheckParameters")) {
+      for (const auto& [beamtype, subTreeBeamType] : subTreeRunType) {
+        for (const auto& [key, value] : subTreeBeamType) {
+          cs.customParameters.set(key, value.get_value<std::string>(), runtype, beamtype);
+        }
+      }
+    }
+  }
   if (checkTree.count("checkParameters") > 0) {
     for (const auto& [key, value] : checkTree.get_child("checkParameters")) {
-      cs.customParameters.emplace(key, value.get_value<std::string>());
+      cs.customParameters.set(key, value.get_value<std::string>());
     }
   }
 
@@ -267,7 +305,7 @@ CheckSpec InfrastructureSpecReader::readSpecEntry<CheckSpec>(std::string checkID
 }
 
 template <>
-AggregatorSpec InfrastructureSpecReader::readSpecEntry<AggregatorSpec>(std::string aggregatorID, const boost::property_tree::ptree& aggregatorTree, const boost::property_tree::ptree& wholeTree)
+AggregatorSpec InfrastructureSpecReader::readSpecEntry<AggregatorSpec>(const std::string& aggregatorID, const boost::property_tree::ptree& aggregatorTree, const boost::property_tree::ptree& wholeTree)
 {
   AggregatorSpec as;
 
@@ -288,9 +326,18 @@ AggregatorSpec InfrastructureSpecReader::readSpecEntry<AggregatorSpec>(std::stri
   }
 
   as.active = aggregatorTree.get<bool>("active", as.active);
+  if (aggregatorTree.count("extendedAggregatorParameters") > 0) {
+    for (const auto& [runtype, subTreeRunType] : aggregatorTree.get_child("extendedAggregatorParameters")) {
+      for (const auto& [beamtype, subTreeBeamType] : subTreeRunType) {
+        for (const auto& [key, value] : subTreeBeamType) {
+          as.customParameters.set(key, value.get_value<std::string>(), runtype, beamtype);
+        }
+      }
+    }
+  }
   if (aggregatorTree.count("aggregatorParameters") > 0) {
     for (const auto& [key, value] : aggregatorTree.get_child("aggregatorParameters")) {
-      as.customParameters.emplace(key, value.get_value<std::string>());
+      as.customParameters.set(key, value.get_value<std::string>());
     }
   }
   return as;
@@ -298,12 +345,14 @@ AggregatorSpec InfrastructureSpecReader::readSpecEntry<AggregatorSpec>(std::stri
 
 template <>
 PostProcessingTaskSpec
-  InfrastructureSpecReader::readSpecEntry<PostProcessingTaskSpec>(std::string ppTaskName, const boost::property_tree::ptree& ppTaskTree, const boost::property_tree::ptree& wholeTree)
+  InfrastructureSpecReader::readSpecEntry<PostProcessingTaskSpec>(const std::string& ppTaskId, const boost::property_tree::ptree& ppTaskTree, const boost::property_tree::ptree& wholeTree)
 {
   PostProcessingTaskSpec ppts;
 
-  ppts.taskName = std::move(ppTaskName);
+  ppts.id = ppTaskId;
+  ppts.taskName = ppTaskTree.get<std::string>("taskName", ppts.id);
   ppts.active = ppTaskTree.get<bool>("active", ppts.active);
+  ppts.detectorName = ppTaskTree.get<std::string>("detectorName", ppts.detectorName);
   ppts.tree = wholeTree;
 
   return ppts;
@@ -311,15 +360,46 @@ PostProcessingTaskSpec
 
 template <>
 ExternalTaskSpec
-  InfrastructureSpecReader::readSpecEntry<ExternalTaskSpec>(std::string externalTaskName, const boost::property_tree::ptree& externalTaskTree, const boost::property_tree::ptree&)
+  InfrastructureSpecReader::readSpecEntry<ExternalTaskSpec>(const std::string& externalTaskName, const boost::property_tree::ptree& externalTaskTree, const boost::property_tree::ptree&)
 {
   ExternalTaskSpec ets;
 
-  ets.taskName = std::move(externalTaskName);
+  ets.taskName = externalTaskName;
   ets.query = externalTaskTree.get<std::string>("query");
   ets.active = externalTaskTree.get<bool>("active", ets.active);
 
   return ets;
+}
+
+template <>
+GRPGeomRequestSpec
+  InfrastructureSpecReader::readSpecEntry<GRPGeomRequestSpec>(const std::string&, const boost::property_tree::ptree& grpGeomRequestTree, const boost::property_tree::ptree&)
+{
+  GRPGeomRequestSpec grpSpec;
+  grpSpec.geomRequest = grpGeomRequestTree.get<std::string>("geomRequest", grpSpec.geomRequest);
+  grpSpec.askGRPECS = grpGeomRequestTree.get<bool>("askGRPECS", grpSpec.askGRPECS);
+  grpSpec.askGRPLHCIF = grpGeomRequestTree.get<bool>("askGRPLHCIF", grpSpec.askGRPLHCIF);
+  grpSpec.askGRPMagField = grpGeomRequestTree.get<bool>("askGRPMagField", grpSpec.askGRPMagField);
+  grpSpec.askMatLUT = grpGeomRequestTree.get<bool>("askMatLUT", grpSpec.askMatLUT);
+  grpSpec.askTime = grpGeomRequestTree.get<bool>("askTime", grpSpec.askTime);
+  grpSpec.askOnceAllButField = grpGeomRequestTree.get<bool>("askOnceAllButField", grpSpec.askOnceAllButField);
+  grpSpec.needPropagatorD = grpGeomRequestTree.get<bool>("needPropagatorD", grpSpec.needPropagatorD);
+
+  return grpSpec;
+}
+
+template <>
+GlobalTrackingDataRequestSpec
+  InfrastructureSpecReader::readSpecEntry<GlobalTrackingDataRequestSpec>(const std::string&, const boost::property_tree::ptree& dataRequestTree, const boost::property_tree::ptree&)
+{
+  GlobalTrackingDataRequestSpec gtdrSpec;
+  gtdrSpec.canProcessTracks = dataRequestTree.get<std::string>("canProcessTracks", gtdrSpec.canProcessTracks);
+  gtdrSpec.requestTracks = dataRequestTree.get<std::string>("requestTracks", gtdrSpec.requestTracks);
+  gtdrSpec.canProcessClusters = dataRequestTree.get<std::string>("canProcessClusters", gtdrSpec.canProcessClusters);
+  gtdrSpec.requestClusters = dataRequestTree.get<std::string>("requestClusters", gtdrSpec.requestClusters);
+  gtdrSpec.mc = dataRequestTree.get<bool>("mc", gtdrSpec.mc);
+
+  return gtdrSpec;
 }
 
 std::string InfrastructureSpecReader::validateDetectorName(std::string name)
@@ -328,7 +408,7 @@ std::string InfrastructureSpecReader::validateDetectorName(std::string name)
   int nDetectors = 17;
   const char* detNames[17] = // once we can use DetID, remove this hard-coded list
     { "ITS", "TPC", "TRD", "TOF", "PHS", "CPV", "EMC", "HMP", "MFT", "MCH", "MID", "ZDC", "FT0", "FV0", "FDD", "ACO", "FOC" };
-  std::vector<std::string> permitted = { "MISC", "DAQ", "GENERAL", "TST", "BMK", "CTP", "TRG", "DCS", "GLO" };
+  std::vector<std::string> permitted = { "MISC", "DAQ", "GENERAL", "TST", "BMK", "CTP", "TRG", "DCS", "GLO", "FIT" };
   for (auto i = 0; i < nDetectors; i++) {
     permitted.emplace_back(detNames[i]);
     //    permitted.push_back(o2::detectors::DetID::getName(i));
@@ -339,16 +419,14 @@ std::string InfrastructureSpecReader::validateDetectorName(std::string name)
     std::string permittedString;
     for (const auto& i : permitted)
       permittedString += i + ' ';
-    ILOG(Error, Support) << "Invalid detector name : " << name << "\n"
-                         << "    Placeholder 'MISC' will be used instead\n"
-                         << "    Note: list of permitted detector names :" << permittedString << ENDM;
+    ILOG(Error, Support) << "Invalid detector name : " << name << ". Placeholder 'MISC' will be used instead. Note: list of permitted detector names :" << permittedString << ENDM;
     return "MISC";
   }
   return name;
 }
 
 template <typename T>
-T InfrastructureSpecReader::readSpecEntry(std::string, const boost::property_tree::ptree&, const boost::property_tree::ptree&)
+T InfrastructureSpecReader::readSpecEntry(const std::string&, const boost::property_tree::ptree&, const boost::property_tree::ptree&)
 {
   throw std::runtime_error("Unknown entry type: " + std::string(typeid(T).name()));
 }

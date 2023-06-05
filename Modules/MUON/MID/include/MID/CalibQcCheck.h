@@ -19,6 +19,8 @@
 
 #include "QualityControl/CheckInterface.h"
 
+#include "MID/HistoHelper.h"
+
 namespace o2::quality_control_modules::mid
 {
 
@@ -31,18 +33,16 @@ class CalibQcCheck : public o2::quality_control::checker::CheckInterface
   ~CalibQcCheck() override = default;
 
   // Override interface
+  void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
 
  private:
-  ///////////////////////////
-  float nTF = 0;
-  float nNoiseRof = 0;
-  float nDeadRof = 0;
-  float scaleTime = 0.0114048; // 128 orb/TF * 3564 BC/orb * 25ns
+  float mDeadRof = 0;
+  HistoHelper mHistoHelper; ///! Histogram helper
 
-  ClassDefOverride(CalibQcCheck, 2);
+  ClassDefOverride(CalibQcCheck, 3);
 };
 
 } // namespace o2::quality_control_modules::mid

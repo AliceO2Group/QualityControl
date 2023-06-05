@@ -17,6 +17,7 @@
 #include <TCanvas.h>
 #include <TH1.h>
 #include <TH2.h>
+#include <THashList.h>
 #include <TLine.h>
 #include <sstream>
 #include <string>
@@ -27,6 +28,7 @@
 #include <Framework/InputRecord.h>
 #include <Framework/InputRecordWalker.h>
 #include "DataFormatsTRD/Tracklet64.h"
+#include "DataFormatsTRD/HelperMethods.h"
 #include "DataFormatsTRD/Digit.h"
 #include "DataFormatsTRD/Digit.h"
 #include "DataFormatsTRD/NoiseCalibration.h"
@@ -104,10 +106,10 @@ void TrackletsTask::retrieveCCDBSettings()
 {
   if (auto param = mCustomParameters.find("ccdbtimestamp"); param != mCustomParameters.end()) {
     mTimestamp = std::stol(mCustomParameters["ccdbtimestamp"]);
-    ILOG(Info, Support) << "configure() : using ccdbtimestamp = " << mTimestamp << ENDM;
+    ILOG(Debug, Support) << "configure() : using ccdbtimestamp = " << mTimestamp << ENDM;
   } else {
     mTimestamp = o2::ccdb::getCurrentTimestamp();
-    ILOG(Info, Support) << "configure() : using default timestam of now = " << mTimestamp << ENDM;
+    ILOG(Debug, Support) << "configure() : using default timestam of now = " << mTimestamp << ENDM;
   }
   auto& mgr = o2::ccdb::BasicCCDBManager::instance();
   mgr.setTimestamp(mTimestamp);
@@ -146,6 +148,28 @@ void TrackletsTask::buildHistograms()
   getObjectsManager()->startPublishing(mTrackletPositionRaw);
   mTrackletsPerEvent = new TH1F("trackletsperevent", "Number of Tracklets per event;Tracklets in Event;Counts", 25000, 0, 25000);
   getObjectsManager()->startPublishing(mTrackletsPerEvent);
+  mTrackletsPerEvent2D = new TH2F("trackletsperevent2d", "Tracklets distribution in half-chambers;Sector_Side;Stack_Side;Number of tracklets per half-chamber", 36, 0, 36, 30, 0, 30);
+  getObjectsManager()->startPublishing(mTrackletsPerEvent2D);
+  getObjectsManager()->setDefaultDrawOptions("trackletsperevent2d", "COLZ");
+  getObjectsManager()->setDisplayHint(mTrackletsPerEvent2D->GetName(), "logz");
+  mTrackletsPerEvent2D->GetXaxis()->SetTitle("Sector_Side");
+  mTrackletsPerEvent2D->GetXaxis()->CenterTitle(kTRUE);
+  mTrackletsPerEvent2D->GetYaxis()->SetTitle("Stack_Layer");
+  mTrackletsPerEvent2D->GetYaxis()->CenterTitle(kTRUE);
+  for (int s = 0; s < o2::trd::constants::NSTACK; ++s) {
+    for (int l = 0; l < o2::trd::constants::NLAYER; ++l) {
+      std::string label = fmt::format("{0}_{1}", s, l);
+      int pos = s * o2::trd::constants::NLAYER + l + 1;
+      mTrackletsPerEvent2D->GetYaxis()->SetBinLabel(pos, label.c_str());
+    }
+  }
+  for (int sm = 0; sm < o2::trd::constants::NSECTOR; ++sm) {
+    for (int side = 0; side < 2; ++side) {
+      std::string label = fmt::format("{0}_{1}", sm, side == 0 ? "A" : "B");
+      int pos = sm * 2 + side + 1;
+      mTrackletsPerEvent2D->GetXaxis()->SetBinLabel(pos, label.c_str());
+    }
+  }
 
   for (Int_t sm = 0; sm < o2::trd::constants::NSECTOR; ++sm) {
     std::string label = fmt::format("TrackletHCMCMnoise_{0}", sm);
@@ -235,33 +259,35 @@ void TrackletsTask::drawHashOnLayers(int layer, int hcid, int rowstart, int rowe
 void TrackletsTask::buildTrackletLayers()
 {
   for (int iLayer = 0; iLayer < 6; ++iLayer) {
-    mLayers[iLayer] = new TH2F(Form("TrackletsPerLayer/layer%i", iLayer), Form("Tracklet count per mcm in layer %i;stack;sector", iLayer), 76, -0.5, 75.5, 144, -0.5, 143.5);
-
+    mLayers[iLayer] = new TH2F(Form("TrackletsPerLayer/layer%i", iLayer), Form("Tracklet count per mcm in layer %i;Stack;Sector", iLayer), 76, -0.5, 75.5, 144, -0.5, 143.5);
     auto xax = mLayers[iLayer]->GetXaxis();
-    for (Int_t b = 1; b < 77; b++)
-      xax->SetBinLabel(b, " ");
-    xax->SetBinLabel(8, "0");
-    xax->SetBinLabel(24, "1");
-    xax->SetBinLabel(38, "2");
-    xax->SetBinLabel(52, "3");
-    xax->SetBinLabel(68, "4");
-
-    xax->SetTicks("-");
-    xax->SetTickSize(0.01);
-    xax->SetLabelSize(0.045);
-    xax->SetLabelOffset(0.01);
     auto yax = mLayers[iLayer]->GetYaxis();
-    for (Int_t b = 1; b < 145; b++)
-      yax->SetBinLabel(b, " ");
-    for (int iSec = 0; iSec < 18; ++iSec) {
-      auto lbl = std::to_string(iSec);
-      yax->SetBinLabel(iSec * 8 + 4, lbl.c_str());
+    if (!mLayerLabelsIgnore) {
+      xax->SetNdivisions(5);
+      xax->SetBinLabel(8, "0");
+      xax->SetBinLabel(24, "1");
+      xax->SetBinLabel(38, "2");
+      xax->SetBinLabel(52, "3");
+      xax->SetBinLabel(68, "4");
+      xax->SetTicks("");
+      xax->SetTickSize(0.0);
+      xax->SetLabelSize(0.045);
+      xax->SetLabelOffset(0.005);
+      xax->SetTitleOffset(0.95);
+      xax->CenterTitle(true);
+      yax->SetNdivisions(18);
+      for (int iSec = 0; iSec < 18; ++iSec) {
+        auto lbl = std::to_string(iSec);
+        yax->SetBinLabel(iSec * 8 + 4, lbl.c_str());
+      }
+      yax->SetTicks("");
+      yax->SetTickSize(0.0);
+      yax->SetLabelSize(0.045);
+      yax->SetLabelOffset(0.001);
+      yax->SetTitleOffset(0.40);
+      yax->CenterTitle(true);
     }
 
-    yax->SetTicks("");
-    yax->SetTickSize(0.01);
-    yax->SetLabelSize(0.045);
-    yax->SetLabelOffset(0.01);
     mLayers[iLayer]->SetStats(0);
 
     drawTrdLayersGrid(mLayers[iLayer]);
@@ -270,6 +296,24 @@ void TrackletsTask::buildTrackletLayers()
     getObjectsManager()->startPublishing(mLayers[iLayer]);
     getObjectsManager()->setDefaultDrawOptions(mLayers[iLayer]->GetName(), "COLZ");
     getObjectsManager()->setDisplayHint(mLayers[iLayer], "logz");
+    // check axises :
+
+    /*    std::cout << "Test Tracklet Xlabels for layer : " << iLayer << std::endl;
+        auto binsizex=xax->GetNbins();
+        auto labelsx=xax->GetLabels();
+        auto labelssizex=labelsx->GetSize();
+        std::cout << "binsize:" << binsizex << "  labelsize:" << labelssizex << std::endl;
+        if(binsizex!= labelssizex){
+          std::cout << "binsize != labsize ?= " << binsizex << "!=" << labelssizex << std::endl;
+        }
+        std::cout << "Test Tracklet Ylabels for layer : " << iLayer << std::endl;
+        auto binsizey=yax->GetNbins();
+        auto labelsy=yax->GetLabels();
+        auto labelssizey=labelsy->GetSize();
+        std::cout << "binsize:" << binsizey << "  labelsize:" << labelssizey << std::endl;
+        if(binsizey!= labelssizey){
+          std::cout << "binsize != labsize ?= " << binsizey << "!=" << labelssizey << std::endl;
+        }  */
   }
 }
 
@@ -300,20 +344,24 @@ void TrackletsTask::drawHashedOnHistsPerLayer(int iLayer)
 
 void TrackletsTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize TrackletsTask" << ENDM;
+  ILOG(Debug, Devel) << "initialize TrackletsTask" << ENDM;
   if (auto param = mCustomParameters.find("markerstyle"); param != mCustomParameters.end()) {
     mMarkerStyle = stof(param->second);
-    ILOG(Info, Support) << "configure() : using marketstyle : = " << mMarkerStyle << ENDM;
+    ILOG(Debug, Support) << "configure() : using marketstyle : = " << mMarkerStyle << ENDM;
   } else {
     mMarkerStyle = 3; // a plus sign
-    ILOG(Info, Support) << "configure() : using default dritfregionstart = " << mMarkerStyle << ENDM;
+    ILOG(Debug, Support) << "configure() : using default dritfregionstart = " << mMarkerStyle << ENDM;
   }
   if (auto param = mCustomParameters.find("markersize"); param != mCustomParameters.end()) {
     mMarkerSize = stof(param->second);
-    ILOG(Info, Support) << "configure() : using markersize : = " << mMarkerSize << ENDM;
+    ILOG(Debug, Support) << "configure() : using markersize : = " << mMarkerSize << ENDM;
   } else {
     mMarkerSize = 3; // a plus sign
-    ILOG(Info, Support) << "configure() : using default markersize = " << mMarkerSize << ENDM;
+    ILOG(Debug, Support) << "configure() : using default markersize = " << mMarkerSize << ENDM;
+  }
+  if (auto param = mCustomParameters.find("ignorelayerlabels"); param != mCustomParameters.end()) {
+    mLayerLabelsIgnore = stoi(param->second);
+    ILOG(Debug, Support) << "configure() : ignoring labels on layer plots = " << mLayerLabelsIgnore << ENDM;
   }
 
   retrieveCCDBSettings();
@@ -322,7 +370,7 @@ void TrackletsTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void TrackletsTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity " << activity.mId << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
   for (Int_t sm = 0; sm < o2::trd::constants::NSECTOR; ++sm) {
     moHCMCM[sm]->Reset();
   }
@@ -330,7 +378,7 @@ void TrackletsTask::startOfActivity(Activity& activity)
 
 void TrackletsTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void TrackletsTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -362,6 +410,10 @@ void TrackletsTask::monitorData(o2::framework::ProcessingContext& ctx)
           if (istack >= 2) {
             stackoffset -= 2; // only 12in stack 2
           }
+          int hcid = tracklets[currenttracklet].getHCID();
+          int stackLayer = o2::trd::HelperMethods::getStack(hcid / 2) * o2::trd::constants::NLAYER + o2::trd::HelperMethods::getLayer(hcid / 2);
+          int sectorSide = (hcid / o2::trd::constants::NHCPERSEC) * 2 + (hcid % 2);
+          mTrackletsPerEvent2D->Fill(sectorSide, stackLayer);
           // 8 rob x 16 mcm each per chamber
           //  5 stack(y), 6 layers(x)
           //  y=stack_rob, x=layer_mcm
@@ -402,7 +454,7 @@ void TrackletsTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void TrackletsTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
   // scale 2d mHCMCM plots so they all have the same max height.
   int max = 0;
   for (auto& hist : moHCMCM) {
@@ -419,14 +471,14 @@ void TrackletsTask::endOfCycle()
 
 void TrackletsTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void TrackletsTask::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   for (auto h : moHCMCM) {
     h->Reset();
   }
@@ -436,6 +488,7 @@ void TrackletsTask::reset()
   mTrackletPosition->Reset();
   mTrackletPositionRaw->Reset();
   mTrackletsPerEvent->Reset();
+  mTrackletsPerEvent2D->Reset();
   for (auto h : moHCMCMn) {
     h->Reset();
   }

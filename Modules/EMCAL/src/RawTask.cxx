@@ -23,13 +23,13 @@
 #include <cfloat>
 
 #include "QualityControl/QcInfoLogger.h"
+#include "DetectorsRaw/RawHeaderStream.h"
 #include "DetectorsRaw/RDHUtils.h"
 #include "EMCAL/RawTask.h"
 #include "Headers/RAWDataHeader.h"
 #include "EMCALBase/Geometry.h"
 #include "EMCALReconstruction/AltroDecoder.h"
 #include "EMCALReconstruction/RawReaderMemory.h"
-#include "EMCALReconstruction/RawHeaderStream.h"
 #include <Framework/ConcreteDataMatcher.h>
 #include <Framework/InputRecordWalker.h>
 #include <Framework/InputRecord.h>
@@ -151,7 +151,7 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
   context.setField(infoCONTEXT::FieldName::System, "QC");
   context.setField(infoCONTEXT::FieldName::Detector, "EMC");
   QcInfoLogger::GetInfoLogger().setContext(context);
-  ILOG(Info, Support) << "initialize RawTask" << ENDM;
+  ILOG(Debug, Devel) << "initialize RawTask" << ENDM;
 
   // initialize geometry
   if (!mGeometry)
@@ -382,7 +382,7 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void RawTask::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "startOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
   reset();
 }
 
@@ -732,7 +732,7 @@ void RawTask::endOfCycle()
 
 void RawTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
   ILOG(Info, Support) << "Total amount of messages: " << mNumberOfMessages << ENDM;
   ILOG(Info, Support) << "Total amount of superpages: " << mNumberOfSuperpages << ", pages: " << mNumberOfPages << ENDM;
 }

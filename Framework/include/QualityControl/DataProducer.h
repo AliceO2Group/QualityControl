@@ -36,7 +36,7 @@ namespace o2::quality_control::core
 /// \return         A random data producer specification
 framework::DataProcessorSpec
   getDataProducerSpec(size_t minSize, size_t maxSize, double rate, uint64_t amount = 0, size_t index = 0,
-                      std::string monitoringUrl = "", bool fill = true, size_t timepipeline = 1);
+                      const std::string& monitoringUrl = "", bool fill = true, size_t timepipeline = 1);
 
 /// \brief Returns an algorithm generating random messages
 ///
@@ -51,7 +51,7 @@ framework::DataProcessorSpec
 /// \return         A random data producer algorithm
 framework::AlgorithmSpec
   getDataProducerAlgorithm(framework::ConcreteDataMatcher output, size_t minSize, size_t maxSize, double rate,
-                           uint64_t amount = 0, std::string monitoringUrl = "", bool fill = true);
+                           uint64_t amount = 0, const std::string& monitoringUrl = "", bool fill = true);
 
 } // namespace o2::quality_control::core
 

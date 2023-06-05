@@ -112,6 +112,9 @@ class CheckRunner : public framework::Task
   /// \brief CheckRunner process callback
   void run(framework::ProcessingContext& ctx) override;
 
+  /// \brief Callback for CallbackService::Id::EndOfStream
+  void endOfStream(framework::EndOfStreamContext& eosContext) override;
+
   framework::Inputs getInputs() { return mInputs; };
   framework::Outputs getOutputs() { return mOutputs; };
 
@@ -147,14 +150,14 @@ class CheckRunner : public framework::Task
    *
    * @param qualityObjects QOs to be stored in DB.
    */
-  void store(QualityObjectsType& qualityObjects, long validFrom);
+  void store(QualityObjectsType& qualityObjects);
 
   /**
    * \brief Store the MonitorObjects in the database.
    *
    * @param monitorObjects MOs to be stored in DB.
    */
-  void store(std::vector<std::shared_ptr<MonitorObject>>& monitorObjects, long validFrom);
+  void store(std::vector<std::shared_ptr<MonitorObject>>& monitorObjects);
 
   /**
    * \brief Send the QualityObjects on the DataProcessor output channel.
@@ -216,12 +219,13 @@ class CheckRunner : public framework::Task
   std::string mDeviceName;
   std::map<std::string, Check> mChecks;
   std::string mDetectorName;
-  Activity mActivity;
+  std::shared_ptr<Activity> mActivity;
   CheckRunnerConfig mConfig;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
   std::unordered_set<std::string> mInputStoreSet;
   std::vector<std::shared_ptr<MonitorObject>> mMonitorObjectStoreVector;
   UpdatePolicyManager updatePolicyManager;
+  bool mReceivedEOS = false;
 
   // DPL
   o2::framework::Inputs mInputs;

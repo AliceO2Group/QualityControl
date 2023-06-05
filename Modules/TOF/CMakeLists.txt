@@ -17,6 +17,7 @@ target_sources(O2QcTOF
                       src/CheckRawToT.cxx
                       src/CheckHitMap.cxx
                       src/CheckNoise.cxx
+                      src/CheckSlotPartMask.cxx
                       # PostProcessing
                       src/PostProcessDiagnosticPerCrate.cxx
                       src/PostProcessHitMap.cxx
@@ -67,6 +68,7 @@ add_root_dictionary(O2QcTOF
                             include/TOF/CheckRawToT.h
                             include/TOF/CheckHitMap.h
                             include/TOF/CheckNoise.h
+                            include/TOF/CheckSlotPartMask.h
                             # PostProcessing
                             include/TOF/PostProcessDiagnosticPerCrate.h
                             include/TOF/PostProcessHitMap.h

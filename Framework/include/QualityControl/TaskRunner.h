@@ -87,6 +87,8 @@ class TaskRunner : public framework::Task
   void init(framework::InitContext& iCtx) override;
   /// \brief TaskRunner's process callback
   void run(framework::ProcessingContext& pCtx) override;
+  /// \brief TaskRunner's finaliseCCDB callback
+  void finaliseCCDB(framework::ConcreteDataMatcher& matcher, void* obj) override;
 
   /// \brief TaskRunner's completion policy callback
   static framework::CompletionPolicy::CompletionOp completionPolicyCallback(o2::framework::InputSpan const& inputs);
@@ -118,10 +120,10 @@ class TaskRunner : public framework::Task
   /// \brief Callback for CallbackService::Id::Reset (DPL) a.k.a. RESET DEVICE transition (FairMQ)
   void reset();
 
-  std::tuple<bool /*data ready*/, bool /*timer ready*/> validateInputs(const framework::InputRecord&);
+  static std::tuple<bool /*data ready*/, bool /*timer ready*/> validateInputs(const framework::InputRecord&);
   void refreshConfig(framework::InitContext& iCtx);
   void initInfologger(framework::InitContext& iCtx);
-  void printTaskConfig();
+  void printTaskConfig() const;
   void startOfActivity();
   void endOfActivity();
   void startCycle();

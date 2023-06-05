@@ -16,15 +16,20 @@
 
 // O2 includes
 #include "TPCBase/CDBInterface.h"
+#include "TPCBase/CalDet.h"
+#include "TPCBase/CalArray.h"
+#include "TPCBase/Painter.h"
 
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
 #include "TPC/IDCs.h"
+#include "TPC/Utility.h"
 
 // root includes
 #include "TCanvas.h"
 
 #include <fmt/format.h>
+#include <boost/optional/optional.hpp>
 
 using namespace o2::quality_control::postprocessing;
 using namespace o2::tpc;
@@ -32,11 +37,12 @@ using namespace o2::tpc;
 namespace o2::quality_control_modules::tpc
 {
 
-void IDCs::configure(std::string name, const boost::property_tree::ptree& config)
+void IDCs::configure(const boost::property_tree::ptree& config)
 {
+  auto& id = getID();
   std::vector<std::string> keyVec{};
   std::vector<std::string> valueVec{};
-  for (const auto& data : config.get_child("qc.postprocessing." + name + ".lookupMetaData")) {
+  for (const auto& data : config.get_child("qc.postprocessing." + id + ".lookupMetaData")) {
     mLookupMaps.emplace_back(std::map<std::string, std::string>());
     if (const auto& keys = data.second.get_child_optional("keys"); keys.has_value()) {
       for (const auto& key : keys.value()) {
@@ -62,7 +68,7 @@ void IDCs::configure(std::string name, const boost::property_tree::ptree& config
     valueVec.clear();
   }
 
-  for (const auto& data : config.get_child("qc.postprocessing." + name + ".storeMetaData")) {
+  for (const auto& data : config.get_child("qc.postprocessing." + id + ".storeMetaData")) {
     mStoreMaps.emplace_back(std::map<std::string, std::string>());
     if (const auto& keys = data.second.get_child_optional("keys"); keys.has_value()) {
       for (const auto& key : keys.value()) {
@@ -88,7 +94,7 @@ void IDCs::configure(std::string name, const boost::property_tree::ptree& config
     valueVec.clear();
   }
 
-  for (const auto& entry : config.get_child("qc.postprocessing." + name + ".histogramRanges")) {
+  for (const auto& entry : config.get_child("qc.postprocessing." + id + ".histogramRanges")) {
     for (const auto& type : entry.second) {
       for (const auto& value : type.second) {
         mRanges[type.first].emplace_back(std::stof(value.second.data()));
@@ -96,37 +102,58 @@ void IDCs::configure(std::string name, const boost::property_tree::ptree& config
     }
   }
 
-  for (const auto& entry : config.get_child("qc.postprocessing." + name + ".timestamps")) {
+  for (const auto& entry : config.get_child("qc.postprocessing." + id + ".timestamps")) {
     for (const auto& type : entry.second) {
       mTimestamps[type.first] = std::stol(type.second.data());
     }
   }
 
-  mHost = config.get<std::string>("qc.postprocessing." + name + ".dataSourceURL");
+  mHost = config.get<std::string>("qc.postprocessing." + id + ".dataSourceURL");
+
+  boost::optional<const boost::property_tree::ptree&> doDeltaExists = config.get_child_optional("qc.postprocessing." + id + ".doIDCDelta");
+  if (doDeltaExists) {
+    auto doDelta = config.get<std::string>("qc.postprocessing." + id + ".doIDCDelta");
+    if (doDelta == "1" || doDelta == "true" || doDelta == "True" || doDelta == "TRUE" || doDelta == "yes") {
+      mDoIDCDelta = true;
+    } else if (doDelta == "0" || doDelta == "false" || doDelta == "False" || doDelta == "FALSE" || doDelta == "no") {
+      mDoIDCDelta = false;
+    } else {
+      mDoIDCDelta = false;
+      ILOG(Warning, Support) << "No valid input for 'doIDCDelta'. Using default value 'false'." << ENDM;
+    }
+  } else {
+    mDoIDCDelta = false;
+    ILOG(Warning, Support) << "Option 'doIDCDelta' is missing. Using default value 'false'." << ENDM;
+  }
 }
 
 void IDCs::initialize(Trigger, framework::ServiceRegistryRef)
 {
   mCdbApi.init(mHost);
 
+  mIDCZeroScale = std::make_unique<TCanvas>("c_sides_IDC0_scale");
+  mIDCZerOverview = std::make_unique<TCanvas>("c_sides_IDC0_overview");
   mIDCZeroRadialProf = std::make_unique<TCanvas>("c_sides_IDC0_radialProfile");
   mIDCZeroStacksA = std::make_unique<TCanvas>("c_GEMStacks_IDC0_1D_ASide");
   mIDCZeroStacksC = std::make_unique<TCanvas>("c_GEMStacks_IDC0_1D_CSide");
-
-  mIDCDeltaStacksA = std::make_unique<TCanvas>("c_GEMStacks_IDCDelta_1D_ASide");
-  mIDCDeltaStacksC = std::make_unique<TCanvas>("c_GEMStacks_IDCDelta_1D_CSide");
 
   mIDCOneSides1D = std::make_unique<TCanvas>("c_sides_IDC1_1D");
 
   mFourierCoeffsA = std::make_unique<TCanvas>("c_FourierCoefficients_1D_ASide");
   mFourierCoeffsC = std::make_unique<TCanvas>("c_FourierCoefficients_1D_CSide");
 
+  if (mDoIDCDelta) {
+    mIDCDeltaStacksA = std::make_unique<TCanvas>("c_GEMStacks_IDCDelta_1D_ASide");
+    mIDCDeltaStacksC = std::make_unique<TCanvas>("c_GEMStacks_IDCDelta_1D_CSide");
+    getObjectsManager()->startPublishing(mIDCDeltaStacksA.get());
+    getObjectsManager()->startPublishing(mIDCDeltaStacksC.get());
+  }
+
+  getObjectsManager()->startPublishing(mIDCZeroScale.get());
+  getObjectsManager()->startPublishing(mIDCZerOverview.get());
   getObjectsManager()->startPublishing(mIDCZeroRadialProf.get());
   getObjectsManager()->startPublishing(mIDCZeroStacksA.get());
   getObjectsManager()->startPublishing(mIDCZeroStacksC.get());
-
-  getObjectsManager()->startPublishing(mIDCDeltaStacksA.get());
-  getObjectsManager()->startPublishing(mIDCDeltaStacksC.get());
 
   getObjectsManager()->startPublishing(mIDCOneSides1D.get());
 
@@ -136,54 +163,92 @@ void IDCs::initialize(Trigger, framework::ServiceRegistryRef)
 
 void IDCs::update(Trigger, framework::ServiceRegistryRef)
 {
-  auto idcZeroA = mCdbApi.retrieveFromTFileAny<IDCZero>(CDBTypeMap.at(CDBType::CalIDC0A), std::map<std::string, std::string>{}, mTimestamps["IDCZero"]);
-  auto idcZeroC = mCdbApi.retrieveFromTFileAny<IDCZero>(CDBTypeMap.at(CDBType::CalIDC0C), std::map<std::string, std::string>{}, mTimestamps["IDCZero"]);
-  auto idcDeltaA = mCdbApi.retrieveFromTFileAny<IDCDelta<unsigned char>>(CDBTypeMap.at(CDBType::CalIDCDeltaA), std::map<std::string, std::string>{}, mTimestamps["IDCDelta"]);
-  auto idcDeltaC = mCdbApi.retrieveFromTFileAny<IDCDelta<unsigned char>>(CDBTypeMap.at(CDBType::CalIDCDeltaC), std::map<std::string, std::string>{}, mTimestamps["IDCDelta"]);
-  auto idcOneA = mCdbApi.retrieveFromTFileAny<IDCOne>(CDBTypeMap.at(CDBType::CalIDC1A), std::map<std::string, std::string>{}, mTimestamps["IDCOne"]);
-  auto idcOneC = mCdbApi.retrieveFromTFileAny<IDCOne>(CDBTypeMap.at(CDBType::CalIDC1C), std::map<std::string, std::string>{}, mTimestamps["IDCOne"]);
-  auto idcFFTA = mCdbApi.retrieveFromTFileAny<FourierCoeff>(CDBTypeMap.at(CDBType::CalIDCFourierA), std::map<std::string, std::string>{}, mTimestamps["FourierCoeffs"]);
-  auto idcFFTC = mCdbApi.retrieveFromTFileAny<FourierCoeff>(CDBTypeMap.at(CDBType::CalIDCFourierC), std::map<std::string, std::string>{}, mTimestamps["FourierCoeffs"]);
+  std::vector<long> availableTimestampsIDCZeroA = getDataTimestamps(mCdbApi, CDBTypeMap.at(CDBType::CalIDC0A), 1, mTimestamps["IDCZero"]);
+  std::vector<long> availableTimestampsIDCZeroC = getDataTimestamps(mCdbApi, CDBTypeMap.at(CDBType::CalIDC0C), 1, mTimestamps["IDCZero"]);
+  std::vector<long> availableTimestampsIDCOneA = getDataTimestamps(mCdbApi, CDBTypeMap.at(CDBType::CalIDC1A), 1, mTimestamps["IDCOne"]);
+  std::vector<long> availableTimestampsIDCOneC = getDataTimestamps(mCdbApi, CDBTypeMap.at(CDBType::CalIDC1C), 1, mTimestamps["IDCOne"]);
+  std::vector<long> availableTimestampsFFTA = getDataTimestamps(mCdbApi, CDBTypeMap.at(CDBType::CalIDCFourierA), 1, mTimestamps["FourierCoeffs"]);
+  std::vector<long> availableTimestampsFFTC = getDataTimestamps(mCdbApi, CDBTypeMap.at(CDBType::CalIDCFourierC), 1, mTimestamps["FourierCoeffs"]);
+  std::vector<long> availableTimestampsIDCDeltaA{ 0 };
+  std::vector<long> availableTimestampsIDCDeltaC{ 0 };
 
-  mCCDBHelper.setIDCZero(idcZeroA, Side::A);
-  mCCDBHelper.setIDCZero(idcZeroC, Side::C);
-  mCCDBHelper.setIDCDelta(idcDeltaA, Side::A);
-  mCCDBHelper.setIDCDelta(idcDeltaC, Side::C);
-  mCCDBHelper.setIDCOne(idcOneA, Side::A);
-  mCCDBHelper.setIDCOne(idcOneC, Side::C);
-  mCCDBHelper.setFourierCoeffs(idcFFTA, Side::A);
-  mCCDBHelper.setFourierCoeffs(idcFFTC, Side::C);
-
-  if (idcZeroA) {
-    mCCDBHelper.drawIDCZeroStackCanvas(mIDCZeroStacksA.get(), Side::A, "IDC0", mRanges["IDCZero"].at(0), mRanges["IDCZero"].at(1), mRanges["IDCZero"].at(2));
+  if (mDoIDCDelta) {
+    availableTimestampsIDCDeltaA = getDataTimestamps(mCdbApi, CDBTypeMap.at(CDBType::CalIDCDeltaA), 1, mTimestamps["IDCDelta"]);
+    availableTimestampsIDCDeltaC = getDataTimestamps(mCdbApi, CDBTypeMap.at(CDBType::CalIDCDeltaC), 1, mTimestamps["IDCDelta"]);
   }
 
-  if (idcZeroC) {
-    mCCDBHelper.drawIDCZeroStackCanvas(mIDCZeroStacksC.get(), Side::C, "IDC0", mRanges["IDCZero"].at(0), mRanges["IDCZero"].at(1), mRanges["IDCZero"].at(2));
+  mIDCZeroScale.get()->Clear();
+  mIDCZerOverview.get()->Clear();
+  mIDCZeroRadialProf.get()->Clear();
+  mIDCZeroStacksA.get()->Clear();
+  mIDCZeroStacksC.get()->Clear();
+  mIDCOneSides1D.get()->Clear();
+  mFourierCoeffsA.get()->Clear();
+  mFourierCoeffsC.get()->Clear();
+
+  if (mDoIDCDelta) {
+    mIDCDeltaStacksA.get()->Clear();
+    mIDCDeltaStacksC.get()->Clear();
   }
+
+  o2::tpc::IDCZero* idcZeroA = nullptr;
+  o2::tpc::IDCZero* idcZeroC = nullptr;
+  o2::tpc::IDCDelta<unsigned char>* idcDeltaA = nullptr;
+  o2::tpc::IDCDelta<unsigned char>* idcDeltaC = nullptr;
+  o2::tpc::IDCOne* idcOneA = nullptr;
+  o2::tpc::IDCOne* idcOneC = nullptr;
+  o2::tpc::FourierCoeff* idcFFTA = nullptr;
+  o2::tpc::FourierCoeff* idcFFTC = nullptr;
+
+  idcZeroA = mCdbApi.retrieveFromTFileAny<IDCZero>(CDBTypeMap.at(CDBType::CalIDC0A), std::map<std::string, std::string>{}, availableTimestampsIDCZeroA[0]);
+  idcZeroC = mCdbApi.retrieveFromTFileAny<IDCZero>(CDBTypeMap.at(CDBType::CalIDC0C), std::map<std::string, std::string>{}, availableTimestampsIDCZeroC[0]);
+  if (mDoIDCDelta) {
+    idcDeltaA = mCdbApi.retrieveFromTFileAny<IDCDelta<unsigned char>>(CDBTypeMap.at(CDBType::CalIDCDeltaA), std::map<std::string, std::string>{}, availableTimestampsIDCDeltaA[0]);
+    idcDeltaC = mCdbApi.retrieveFromTFileAny<IDCDelta<unsigned char>>(CDBTypeMap.at(CDBType::CalIDCDeltaC), std::map<std::string, std::string>{}, availableTimestampsIDCDeltaC[0]);
+  }
+  idcOneA = mCdbApi.retrieveFromTFileAny<IDCOne>(CDBTypeMap.at(CDBType::CalIDC1A), std::map<std::string, std::string>{}, availableTimestampsIDCOneA[0]);
+  idcOneC = mCdbApi.retrieveFromTFileAny<IDCOne>(CDBTypeMap.at(CDBType::CalIDC1C), std::map<std::string, std::string>{}, availableTimestampsIDCOneC[0]);
+  idcFFTA = mCdbApi.retrieveFromTFileAny<FourierCoeff>(CDBTypeMap.at(CDBType::CalIDCFourierA), std::map<std::string, std::string>{}, availableTimestampsFFTA[0]);
+  idcFFTC = mCdbApi.retrieveFromTFileAny<FourierCoeff>(CDBTypeMap.at(CDBType::CalIDCFourierC), std::map<std::string, std::string>{}, availableTimestampsFFTC[0]);
 
   if (idcZeroA && idcZeroC) {
+    mCCDBHelper.setIDCZero(idcZeroA, Side::A);
+    mCCDBHelper.setIDCZero(idcZeroC, Side::C);
+    // scale IDCZero to the sum of IDCZeros
+    mCCDBHelper.setIDCZeroScale(true);
+    mCCDBHelper.drawIDCZeroScale(mIDCZeroScale.get(), true);
+    mCCDBHelper.drawIDCZeroStackCanvas(mIDCZeroStacksA.get(), Side::A, "IDC0", mRanges["IDCZero"].at(0), mRanges["IDCZero"].at(1), mRanges["IDCZero"].at(2));
+    mCCDBHelper.drawIDCZeroStackCanvas(mIDCZeroStacksC.get(), Side::C, "IDC0", mRanges["IDCZero"].at(0), mRanges["IDCZero"].at(1), mRanges["IDCZero"].at(2));
     mCCDBHelper.drawIDCZeroRadialProfile(mIDCZeroRadialProf.get(), mRanges["IDCZero"].at(0), mRanges["IDCZero"].at(1), mRanges["IDCZero"].at(2));
+
+    const auto& calDet = mCCDBHelper.getIDCZeroCalDet();
+    o2::tpc::painter::draw(calDet, mRanges["IDCZeroOveview"].at(0), mRanges["IDCZeroOveview"].at(1), mRanges["IDCZeroOveview"].at(2), mIDCZerOverview.get());
   }
 
   if (idcDeltaA) {
+    mCCDBHelper.setIDCDelta(idcDeltaA, Side::A);
     mCCDBHelper.drawIDCZeroStackCanvas(mIDCDeltaStacksA.get(), Side::A, "IDCDelta", mRanges["IDCDelta"].at(0), mRanges["IDCDelta"].at(1), mRanges["IDCDelta"].at(2));
   }
 
   if (idcDeltaC) {
+    mCCDBHelper.setIDCDelta(idcDeltaC, Side::C);
     mCCDBHelper.drawIDCZeroStackCanvas(mIDCDeltaStacksC.get(), Side::C, "IDCDelta", mRanges["IDCDelta"].at(0), mRanges["IDCDelta"].at(1), mRanges["IDCDelta"].at(2));
   }
 
   if (idcOneA && idcOneC) {
+    mCCDBHelper.setIDCOne(idcOneA, Side::A);
+    mCCDBHelper.setIDCOne(idcOneC, Side::C);
     mCCDBHelper.drawIDCOneCanvas(mIDCOneSides1D.get(), mRanges["IDCOne"].at(0), mRanges["IDCOne"].at(1), mRanges["IDCOne"].at(2));
   }
 
   if (idcFFTA) {
+    mCCDBHelper.setFourierCoeffs(idcFFTA, Side::A);
     mCCDBHelper.drawFourierCoeff(mFourierCoeffsA.get(), Side::A, mRanges["FourierCoeffs"].at(0), mRanges["FourierCoeffs"].at(1), mRanges["FourierCoeffs"].at(2));
   }
 
   if (idcFFTC) {
-    mCCDBHelper.drawFourierCoeff(mFourierCoeffsC.get(), Side::C, mRanges["FourierCoeffs"].at(0), mRanges["FourierCoeffs"].at(1), mRanges["FourierCoeffs"].at(2));
+    mCCDBHelper.setFourierCoeffs(idcFFTC, Side::C);
+    mCCDBHelper.drawFourierCoeff(mFourierCoeffsC.get(), Side::C, mRanges["IDCZeroOveview"].at(0), mRanges["IDCZeroOveview"].at(1), mRanges["IDCZeroOveview"].at(2));
   }
 
   delete idcZeroA;
@@ -207,17 +272,21 @@ void IDCs::update(Trigger, framework::ServiceRegistryRef)
 
 void IDCs::finalize(Trigger, framework::ServiceRegistryRef)
 {
+  getObjectsManager()->stopPublishing(mIDCZeroScale.get());
+  getObjectsManager()->stopPublishing(mIDCZerOverview.get());
   getObjectsManager()->stopPublishing(mIDCZeroRadialProf.get());
   getObjectsManager()->stopPublishing(mIDCZeroStacksA.get());
   getObjectsManager()->stopPublishing(mIDCZeroStacksC.get());
-
-  getObjectsManager()->stopPublishing(mIDCDeltaStacksA.get());
-  getObjectsManager()->stopPublishing(mIDCDeltaStacksC.get());
 
   getObjectsManager()->stopPublishing(mIDCOneSides1D.get());
 
   getObjectsManager()->stopPublishing(mFourierCoeffsA.get());
   getObjectsManager()->stopPublishing(mFourierCoeffsC.get());
+
+  if (mDoIDCDelta) {
+    getObjectsManager()->stopPublishing(mIDCDeltaStacksA.get());
+    getObjectsManager()->stopPublishing(mIDCDeltaStacksC.get());
+  }
 }
 
 } // namespace o2::quality_control_modules::tpc

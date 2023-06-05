@@ -45,6 +45,7 @@
 #include <fstream>
 
 using namespace o2::mft;
+o2::itsmft::ChipMappingMFT mMFTMapper;
 
 namespace o2::quality_control_modules::mft
 {
@@ -63,7 +64,7 @@ QcMFTClusterTask::~QcMFTClusterTask()
 
 void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize QcMFTClusterTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize QcMFTClusterTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
   if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {
@@ -73,19 +74,19 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   // loading custom parameters
   auto maxClusterROFSize = 5000;
   if (auto param = mCustomParameters.find("maxClusterROFSize"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - maxClusterROFSize: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - maxClusterROFSize: " << param->second << ENDM;
     maxClusterROFSize = stoi(param->second);
   }
 
   auto maxDuration = 60.f;
   if (auto param = mCustomParameters.find("maxDuration"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - maxDuration: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - maxDuration: " << param->second << ENDM;
     maxDuration = stof(param->second);
   }
 
   auto timeBinSize = 0.01f;
   if (auto param = mCustomParameters.find("timeBinSize"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - timeBinSize: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - timeBinSize: " << param->second << ENDM;
     timeBinSize = stof(param->second);
   }
 
@@ -93,17 +94,15 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   auto ROFLengthInBC = 198;
   if (auto param = mCustomParameters.find("ROFLengthInBC"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - ROFLengthInBC: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - ROFLengthInBC: " << param->second << ENDM;
     ROFLengthInBC = stoi(param->second);
   }
   auto ROFsPerOrbit = o2::constants::lhc::LHCMaxBunches / ROFLengthInBC;
 
   if (auto param = mCustomParameters.find("geomFileName"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - geometry filename: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - geometry filename: " << param->second << ENDM;
     mGeomPath = param->second;
   }
-
-  o2::base::GeometryManager::loadGeometry(mGeomPath.c_str());
 
   getChipMapData();
 
@@ -162,7 +161,7 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mClusterPatternSensorIndices.get());
   getObjectsManager()->setDefaultDrawOptions(mClusterPatternSensorIndices.get(), "colz");
 
-  mClusterOccupancySummary = std::make_unique<TH2F>("mClusterOccupancySummary", "mClusterOccupancySummary",
+  mClusterOccupancySummary = std::make_unique<TH2F>("mClusterOccupancySummary", "Cluster Occupancy Summary;;",
                                                     10, -0.5, 9.5, 8, -0.5, 7.5);
   mClusterOccupancySummary->GetXaxis()->SetBinLabel(1, "d0-f0");
   mClusterOccupancySummary->GetXaxis()->SetBinLabel(2, "d0-f1");
@@ -190,7 +189,7 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   mClusterZ->SetStats(0);
   getObjectsManager()->startPublishing(mClusterZ.get());
 
-  mClustersROFSize = std::make_unique<TH1F>("mClustersROFSize", "ROF size in # clusters; ROF Size (# clusters); # entries", maxClusterROFSize, 0, maxClusterROFSize);
+  mClustersROFSize = std::make_unique<TH1F>("mClustersROFSize", "Distribution of the #clusters per ROF; # clusters per ROF; # entries", maxClusterROFSize, 0, maxClusterROFSize);
   mClustersROFSize->SetStats(0);
   getObjectsManager()->startPublishing(mClustersROFSize.get());
   getObjectsManager()->setDisplayHint(mClustersROFSize.get(), "logx logy");
@@ -235,12 +234,17 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
     mClusterXYinLayer.push_back(std::move(clusterXY));
     getObjectsManager()->startPublishing(mClusterXYinLayer[nMFTLayer].get());
     getObjectsManager()->setDefaultDrawOptions(mClusterXYinLayer[nMFTLayer].get(), "colz");
+
+    auto clusterR = std::make_unique<TH1F>(Form("ClusterRinLayer/mClusterRinLayer%d", nMFTLayer), Form("Cluster Radial Position in Layer %d; r (cm); # entries", nMFTLayer), 400, 0, 20);
+    mClusterRinLayer.push_back(std::move(clusterR));
+    getObjectsManager()->startPublishing(mClusterRinLayer[nMFTLayer].get());
+    getObjectsManager()->setDisplayHint(mClusterRinLayer[nMFTLayer].get(), "hist");
   }
 }
 
 void QcMFTClusterTask::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "startOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
 
   // reset histograms
   reset();
@@ -248,7 +252,7 @@ void QcMFTClusterTask::startOfActivity(Activity& /*activity*/)
 
 void QcMFTClusterTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void QcMFTClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -302,7 +306,7 @@ void QcMFTClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
   // fill all other histograms
   for (auto& oneCluster : clusters) {
     int sensorID = oneCluster.getSensorID();
-    int layerID = mDisk[sensorID] * 2 + mFace[sensorID];
+    int layerID = mMFTMapper.chip2Layer(sensorID); // used instead of previous layerID = mDisk[sensorID] * 2 + mFace[sensorID]
     (mHalf[sensorID] == 0) ? mClusterLayerIndexH0->Fill(layerID)
                            : mClusterLayerIndexH1->Fill(layerID);
     mClusterOccupancy->Fill(sensorID);
@@ -330,27 +334,27 @@ void QcMFTClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
   // fill the histograms that use global position of cluster
   for (auto& oneGlobalCluster : mClustersGlobal) {
     mClusterZ->Fill(oneGlobalCluster.getZ());
-    int sensorID = oneGlobalCluster.getSensorID();
-    int layerID = mDisk[sensorID] * 2 + mFace[sensorID];
+    int layerID = mMFTMapper.chip2Layer(oneGlobalCluster.getSensorID());
     mClusterXYinLayer[layerID]->Fill(oneGlobalCluster.getX(), oneGlobalCluster.getY());
+    mClusterRinLayer[layerID]->Fill(std::sqrt(std::pow(oneGlobalCluster.getX(), 2) + std::pow(oneGlobalCluster.getY(), 2)));
   }
 }
 
 void QcMFTClusterTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void QcMFTClusterTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void QcMFTClusterTask::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   mClusterOccupancy->Reset();
   mClusterPatternIndex->Reset();
   mClusterPatternSensorIndices->Reset();
@@ -369,6 +373,7 @@ void QcMFTClusterTask::reset()
   // layer histograms
   for (auto nMFTLayer = 0; nMFTLayer < 10; nMFTLayer++) { // there are 10 layers
     mClusterXYinLayer[nMFTLayer]->Reset();
+    mClusterRinLayer[nMFTLayer]->Reset();
   }
 }
 

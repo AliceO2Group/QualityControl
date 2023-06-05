@@ -1,0 +1,32 @@
+{
+    "qc": {
+        "config": {
+            "database": {
+                "implementation": "CCDB",
+                "host": "http://ccdb-test.cern.ch:8080",
+                "username": "not_applicable",
+                "password": "not_applicable",
+                "name": "not_applicable"
+            },
+            "Activity": {
+                "number": "42",
+                "type": "2"
+            }
+        },
+        "tasks": {
+            "MCHErrors": {
+                "active": "true",
+                "taskName": "Errors",
+                "className": "o2::quality_control_modules::muonchambers::ErrorTask",
+                "moduleName": "QcMuonChambers",
+                "detectorName": "MCH",
+                "cycleDurationSeconds": "600",
+                "maxNumberCycles": "-1",
+                "dataSource": {
+                    "type": "direct",
+                    "query": "errors:MCH/PROCERRORS/0"
+                }
+            }
+        }
+    }
+}

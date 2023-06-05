@@ -19,7 +19,7 @@
                 "url": ""
             },
             "conditionDB": {
-                "url": "ccdb-test.cern.ch:8080"
+                "url": "http://alice-ccdb.cern.ch"
             }
         },
         "tasks": {
@@ -37,8 +37,7 @@
                 "location": "remote",
                 "taskParameters": {
                     "Layer": "3",
-		    "HitNumberCut": "0",
-                    "GetTFFromBinding": "0",
+		    "HitNumberCut": "0", 
                     "decoderThreads": "8",
                     "HitNumberCutForNoisyPixel": "0",
                     "OccupancyNumberCutForNoisyPixel": "0.000001",
@@ -52,9 +51,17 @@
 		    "CutSparseTF": "1",
                     "DoHitmapFilter": "1",
                     "PhysicalOccupancyIB": "1.7e-3",
-                    "PhysicalOccupancyOB": "4.3e-5",
-                    "isLocalGeometry": "0",
-                    "geomstamp": "1640991600000"  
+                    "PhysicalOccupancyOB": "4.3e-5"
+                },
+	        "grpGeomRequest" : {
+                    "geomRequest": "Aligned",
+                    "askGRPECS": "false",
+                    "askGRPLHCIF": "false",
+                    "askGRPMagField": "false",
+                    "askMatLUT": "false",
+                    "askTime": "false",
+                    "askOnceAllButField": "true",
+                    "needPropagatorD":  "false"
                 }
             }
         },
@@ -68,7 +75,10 @@
                 "checkParameters": {
                     "fhrcutIB": "0.01",
                     "fhrcutOB": "0.0001",
-                    "skipbins": ""
+                    "skipbins": "",
+                    "plotWithTextMessage": "",
+                    "textMessage": ""
+
                 },
                 "dataSource": [{
                     "type": "Task",
@@ -84,7 +94,7 @@
             "id": "RAWDATA",
             "active": "true",
             "machines": [],
-            "query": "filter:ITS/RAWDATA;G:FLP/DISTSUBTIMEFRAME/0",
+            "query": "filter:ITS/RAWDATA",
             "samplingConditions": [
                 {
                     "condition": "random",

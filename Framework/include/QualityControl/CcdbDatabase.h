@@ -19,6 +19,7 @@
 
 #include "QualityControl/DatabaseInterface.h"
 #include <Common/Timer.h>
+#include <boost/property_tree/ptree.hpp>
 #include <memory>
 #include <string>
 
@@ -60,12 +61,12 @@ class CcdbDatabase : public DatabaseInterface
   CcdbDatabase();
   virtual ~CcdbDatabase();
 
-  void connect(std::string host, std::string database, std::string username, std::string password) override;
+  void connect(const std::string& host, const std::string& database, const std::string& username, const std::string& password) override;
   void connect(const std::unordered_map<std::string, std::string>& config) override;
 
   // storage
-  void storeMO(std::shared_ptr<const o2::quality_control::core::MonitorObject> q, long from = -1, long to = -1) override;
-  void storeQO(std::shared_ptr<const o2::quality_control::core::QualityObject> q, long from = -1, long to = -1) override;
+  void storeMO(std::shared_ptr<const o2::quality_control::core::MonitorObject> q) override;
+  void storeQO(std::shared_ptr<const o2::quality_control::core::QualityObject> q) override;
   void storeTRFC(std::shared_ptr<const o2::quality_control::TimeRangeFlagCollection> trfc) override;
   void storeAny(const void* obj, std::type_info const& typeInfo, std::string const& path, std::map<std::string, std::string> const& metadata,
                 std::string const& detectorName, std::string const& taskName, long from = -1, long to = -1) override;
@@ -99,21 +100,23 @@ class CcdbDatabase : public DatabaseInterface
   * @param subpath The folder we want to list the children of.
   * @return The listing of folder and/or objects at the subpath.
   */
-  std::vector<std::string> getListing(std::string subpath = "");
+  std::vector<std::string> getListing(const std::string& subpath = "");
 
   /**
    * Return the listing of folder and/or objects in the subpath
    * @param path the folder we want to list the children of.
+   * @param metadata metadata to filter queried objects.
+   * @param latestOnly return only the latest object matching the path and metadata.
    * @return The list of folder and/or objects as Ptree
    */
-  boost::property_tree::ptree getListingAsPtree(std::string path); // TODO allow to filter by metadata
+  boost::property_tree::ptree getListingAsPtree(const std::string& path, const std::map<std::string, std::string>& metadata = {}, bool latestOnly = false);
 
   /**
    * \brief Returns a vector of all 'valid from' timestamps for an object.
    * \path Path on an object.
    * \return A vector of all 'valid from' timestamps for an object in non-descending order.
    */
-  std::vector<uint64_t> getTimestampsForObject(std::string path);
+  std::vector<uint64_t> getTimestampsForObject(const std::string& path);
 
   void setMaxObjectSize(size_t maxObjectSize) override;
 
@@ -131,9 +134,10 @@ class CcdbDatabase : public DatabaseInterface
    * Return the listing of folder and/or objects in the subpath.
    * @param subpath The folder we want to list the children of.
    * @param accept The format of the returned string as an \"Accept\", i.e. text/plain, application/json, text/xml
+   * @param latestOnly Return only the latest matching object/folder
    * @return The listing of folder and/or objects in the format requested and as returned by the http server.
    */
-  std::string getListingAsString(std::string subpath = "", std::string accept = "text/plain");
+  std::string getListingAsString(const std::string& subpath = "", const std::string& accept = "text/plain", bool latestOnly = false);
 
   /**
    * Takes care of the possible errors returned by the storage calls.
@@ -148,6 +152,15 @@ class CcdbDatabase : public DatabaseInterface
    * @return
    */
   bool isDbInFailure();
+
+  /**
+   * Add the metadata specific to the QC framework.
+   * @param fullMetadata
+   * @param detectorName
+   * @param taskName
+   * @param className
+   */
+  static void addFrameworkMetadata(std::map<std::string, std::string>& fullMetadata, std::string detectorName, std::string className);
 
   std::unique_ptr<o2::ccdb::CcdbApi> ccdbApi;
   std::string mUrl;

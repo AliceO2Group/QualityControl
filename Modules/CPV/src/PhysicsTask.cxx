@@ -51,17 +51,17 @@ PhysicsTask::~PhysicsTask()
 
 void PhysicsTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize PhysicsTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize PhysicsTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
   if (auto param = mCustomParameters.find("ccdbCheckInterval"); param != mCustomParameters.end()) {
     mCcdbCheckIntervalInMinutes = stoi(param->second);
-    ILOG(Info, Devel) << "Custom parameter - ccdbCheckInterval: " << mCcdbCheckIntervalInMinutes << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - ccdbCheckInterval: " << mCcdbCheckIntervalInMinutes << ENDM;
   } else {
     ILOG(Info, Devel) << "Default parameter - ccdbCheckInterval: " << mCcdbCheckIntervalInMinutes << ENDM;
   }
   if (auto param = mCustomParameters.find("isAsyncMode"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter : isAsyncMode " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter : isAsyncMode " << param->second << ENDM;
     mIsAsyncMode = stoi(param->second);
     ILOG(Info, Devel) << "I set mIsAsyncMode = " << mIsAsyncMode << ENDM;
   } else {
@@ -75,14 +75,14 @@ void PhysicsTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void PhysicsTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity() : resetting everything" << activity.mId << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity() : resetting everything" << activity.mId << ENDM;
   resetHistograms();
   mNEventsTotal = 0;
 }
 
 void PhysicsTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
   mCycleNumber++;
 }
 
@@ -153,10 +153,20 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
 
   // 2. Using get("<binding>")
+  // HW Raw Errors
+  if (hasRawErrors) {
+    auto rawErrors = ctx.inputs().get<gsl::span<o2::cpv::RawDecoderError>>("rawerrors");
+    for (const auto& rawError : rawErrors) {
+      mHist1D[H1DRawErrors]->Fill(rawError.errortype);
+      mFractions1D[F1DErrorTypeOccurance]->fillUnderlying(rawError.errortype);
+    }
+  }
+
   // digits
   if (hasDigits) {
     auto digits = ctx.inputs().get<gsl::span<o2::cpv::Digit>>("digits");
     auto digitsTR = ctx.inputs().get<gsl::span<o2::cpv::TriggerRecord>>("dtrigrec");
+    mFractions1D[F1DErrorTypeOccurance]->increaseEventCounter(digitsTR.size());
     mHist1D[H1DNDigitsPerInput]->Fill(digits.size());
     unsigned short nDigPerEvent[3];
     for (const auto& trigRecord : digitsTR) {
@@ -173,18 +183,17 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
             // reminder: relId[3]={Module, phi col, z row} where Module=2..4, phi col=0..127, z row=0..59
             mHist2D[H2DDigitMapM2 + relId[0] - 2]->Fill(relId[1], relId[2]);
             mHist1D[H1DDigitEnergyM2 + relId[0] - 2]->Fill(digits[iDig].getAmplitude());
+            mFractions2D[F2DDigitFreqM2 + relId[0] - 2]->fillUnderlying(relId[1], relId[2]);
             nDigPerEvent[relId[0] - 2]++;
           }
         }
       }
+      for (int i = 0; i < 3; i++) {
+        mHist1D[H1DDigitsInEventM2 + i]->Fill(nDigPerEvent[i]);
+      }
     }
     for (int iMod = 0; iMod < kNModules; iMod++) {
-      mHist1D[H1DDigitsInEventM2 + iMod]->Fill(nDigPerEvent[iMod]);
-      for (int iZ = 1; iZ <= 60; iZ++) {
-        for (int iX = 1; iX <= 128; iX++) {
-          mHist2D[H2DDigitFreqM2 + iMod]->SetBinContent(iX, iZ, mHist2D[H2DDigitMapM2 + iMod]->GetBinContent(iX, iZ) / mNEventsTotal);
-        }
-      }
+      mFractions2D[F2DDigitFreqM2 + iMod]->increaseEventCounter(digitsTR.size());
     }
   }
 
@@ -232,14 +241,6 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
   }
 
-  // HW Raw Errors
-  if (hasRawErrors) {
-    auto rawErrors = ctx.inputs().get<gsl::span<o2::cpv::RawDecoderError>>("rawerrors");
-    for (const auto& rawError : rawErrors) {
-      mHist1D[H1DRawErrors]->Fill(rawError.errortype);
-    }
-  }
-
   // 3. Access CCDB. If it is enough to retrieve it once, do it in initialize().
   // Remember to delete the object when the pointer goes out of scope or it is no longer needed.
 
@@ -247,20 +248,20 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
   // we need somehow to extract timestamp from data when there are no ccdb dpl fetcher inputs available
   // however most of the time ccdb dpl fetcher is present. take care of it later
 
-  static auto startTime = std::chrono::system_clock::now();                  // remember time when we first time checked ccdb
-  static int minutesPassed = 0;                                              // count how much minutes passed from 1st ccdb check
-  bool checkCcdbEntries = (isFirstTime || mJustWasReset) && (!mIsAsyncMode); // check at first time or when  mCcdbCheckIntervalInMinutes passed
+  static auto startTime = std::chrono::system_clock::now(); // remember time when we first time checked ccdb
+  static int minutesPassed = 0;                             // count how much minutes passed from 1st ccdb check
+  bool checkCcdbEntries = isFirstTime && (!mIsAsyncMode);   // check at first time or when  mCcdbCheckIntervalInMinutes passed
   auto now = std::chrono::system_clock::now();
   if (((now - startTime) / std::chrono::minutes(1)) > minutesPassed) {
     minutesPassed = (now - startTime) / std::chrono::minutes(1);
     LOG(info) << "minutes passed since first monitorData() call: " << minutesPassed;
     if (minutesPassed % mCcdbCheckIntervalInMinutes == 0) {
       checkCcdbEntries = true;
+      LOG(info) << "checking CCDB objects";
     }
   }
 
   if (checkCcdbEntries) {
-    mJustWasReset = false;
     // retrieve gains
     const o2::cpv::CalibParams* gains = nullptr;
     if (hasGains) {
@@ -356,19 +357,25 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void PhysicsTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
+  for (int i = 0; i < kNfractions1D; i++) {
+    mFractions1D[i]->update();
+  }
+  for (int i = 0; i < kNfractions2D; i++) {
+    mFractions2D[i]->update();
+  }
 }
 
 void PhysicsTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void PhysicsTask::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info, Support) << "PhysicsTask::reset() : resetting the histograms" << ENDM;
+  ILOG(Debug, Devel) << "PhysicsTask::reset() : resetting the histograms" << ENDM;
   resetHistograms();
   mNEventsTotal = 0;
   mJustWasReset = true;
@@ -447,14 +454,6 @@ void PhysicsTask::initHistograms()
     mHist1D[H1DDigitsInEventM2M3M4]->Reset();
   }
 
-  // if (!mHist1D[H1DCalibDigitsInEventM2M3M4]) {
-  //   mHist1D[H1DCalibDigitsInEventM2M3M4] =
-  //     new TH1F("NCalibDigitsInEventM2M3M4", "Number of CalibDigits per event", 23040, 0., 23040.);
-  //   getObjectsManager()->startPublishing(mHist1D[H1DCalibDigitsInEventM2M3M4]);
-  // } else {
-  //   mHist1D[H1DCalibDigitsInEventM2M3M4]->Reset();
-  // }
-
   if (!mHist1D[H1DClustersInEventM2M3M4]) {
     mHist1D[H1DClustersInEventM2M3M4] =
       new TH1F("NClustersInEventM2M3M4", "Number of clusters per event", 23040, 0., 23040.);
@@ -469,6 +468,41 @@ void PhysicsTask::initHistograms()
     getObjectsManager()->startPublishing(mHist1D[H1DRawErrors]);
   } else {
     mHist1D[H1DRawErrors]->Reset();
+  }
+
+  if (!mFractions1D[F1DErrorTypeOccurance]) {
+    mFractions1D[F1DErrorTypeOccurance] = new TH1Fraction("ErrorTypeOccurance", "Errors of differen types per event", 20, 0, 20);
+    mFractions1D[F1DErrorTypeOccurance]->GetXaxis()->SetTitle("Error Type");
+    mFractions1D[F1DErrorTypeOccurance]->SetStats(0);
+    mFractions1D[F1DErrorTypeOccurance]->GetYaxis()->SetTitle("Occurance (event^{-1})");
+    const char* errorLabel[] = {
+      "ok",
+      "no payload",
+      "rdh decod",
+      "rdh invalid",
+      "not cpv rdh",
+      "no stopbit",
+      "page not found",
+      "0 offset to next",
+      "payload incomplete",
+      "no cpv header",
+      "no cpv trailer",
+      "cpv header invalid",
+      "cpv trailer invalid",
+      "segment header err",
+      "row header error",
+      "EOE header error",
+      "pad error",
+      "unknown word",
+      "pad address",
+      "wrong data format"
+    };
+    for (int i = 1; i <= 20; i++) {
+      mFractions1D[F1DErrorTypeOccurance]->GetXaxis()->SetBinLabel(i, errorLabel[i - 1]);
+    }
+    getObjectsManager()->startPublishing(mFractions1D[F1DErrorTypeOccurance]);
+  } else {
+    mFractions1D[F1DErrorTypeOccurance]->Reset();
   }
 
   int nPadsX = Geometry::kNumberOfCPVPadsPhi;
@@ -515,19 +549,6 @@ void PhysicsTask::initHistograms()
     } else {
       mHist1D[H1DDigitsInEventM2 + mod]->Reset();
     }
-
-    // N CalibDigits per event
-    // if (!mHist1D[H1DCalibDigitsInEventM2 + mod]) {
-    //  mHist1D[H1DCalibDigitsInEventM2 + mod] =
-    //    new TH1F(
-    //      Form("CalibDigitsInEventM%d", mod + 2),
-    //      Form("CalibDigits per event in M%d", mod + 2),
-    //      Geometry::kNCHANNELS / 3, 0., float(Geometry::kNCHANNELS / 3));
-    //  mHist1D[H1DCalibDigitsInEventM2 + mod]->GetXaxis()->SetTitle("Number of CalibDigits");
-    //  getObjectsManager()->startPublishing(mHist1D[H1DCalibDigitsInEventM2 + mod]);
-    // } else {
-    //  mHist1D[H1DCalibDigitsInEventM2 + mod]->Reset();
-    // }
 
     // Total cluster energy
     if (!mHist1D[H1DClusterTotEnergyM2 + mod]) {
@@ -601,22 +622,6 @@ void PhysicsTask::initHistograms()
       mHist2D[H2DCalibDigitMapM2 + mod]->Reset();
     }
 
-    // digit frequency
-    if (!mHist2D[H2DDigitFreqM2 + mod]) {
-      mHist2D[H2DDigitFreqM2 + mod] =
-        new TH2F(
-          Form("DigitFreqM%d", 2 + mod),
-          Form("Digit Frequency in M%d", mod + 2),
-          nPadsX, -0.5, nPadsX - 0.5,
-          nPadsZ, -0.5, nPadsZ - 0.5);
-      mHist2D[H2DDigitFreqM2 + mod]->GetXaxis()->SetTitle("x, pad");
-      mHist2D[H2DDigitFreqM2 + mod]->GetYaxis()->SetTitle("z, pad");
-      mHist2D[H2DDigitFreqM2 + mod]->SetStats(0);
-      getObjectsManager()->startPublishing(mHist2D[H2DDigitFreqM2 + mod]);
-    } else {
-      mHist2D[H2DDigitFreqM2 + mod]->Reset();
-    }
-
     // cluster map
     if (!mHist2D[H2DClusterMapM2 + mod]) {
       mHist2D[H2DClusterMapM2 + mod] =
@@ -648,7 +653,6 @@ void PhysicsTask::initHistograms()
     } else {
       mIntensiveHist2D[H2DPedestalValueM2 + mod]->Reset();
       mIntensiveHist2D[H2DPedestalValueM2 + mod]->setCycleNumber(0);
-      mJustWasReset = true;
     }
 
     // pedestal sigma map
@@ -666,7 +670,6 @@ void PhysicsTask::initHistograms()
     } else {
       mIntensiveHist2D[H2DPedestalSigmaM2 + mod]->Reset();
       mIntensiveHist2D[H2DPedestalSigmaM2 + mod]->setCycleNumber(0);
-      mJustWasReset = true;
     }
 
     // bad channel map
@@ -684,7 +687,6 @@ void PhysicsTask::initHistograms()
     } else {
       mIntensiveHist2D[H2DBadChannelMapM2 + mod]->Reset();
       mIntensiveHist2D[H2DBadChannelMapM2 + mod]->setCycleNumber(0);
-      mJustWasReset = true;
     }
 
     // gains map
@@ -702,7 +704,22 @@ void PhysicsTask::initHistograms()
     } else {
       mIntensiveHist2D[H2DGainsM2 + mod]->Reset();
       mIntensiveHist2D[H2DGainsM2 + mod]->setCycleNumber(0);
-      mJustWasReset = true;
+    }
+
+    // digit occurance per event
+    if (!mFractions2D[F2DDigitFreqM2 + mod]) {
+      mFractions2D[F2DDigitFreqM2 + mod] =
+        new TH2Fraction(
+          Form("DigitOccuranceM%d", 2 + mod),
+          Form("Digit occurance per event in M%d", mod + 2),
+          nPadsX, -0.5, nPadsX - 0.5,
+          nPadsZ, -0.5, nPadsZ - 0.5);
+      mFractions2D[F2DDigitFreqM2 + mod]->GetXaxis()->SetTitle("x, pad");
+      mFractions2D[F2DDigitFreqM2 + mod]->GetYaxis()->SetTitle("z, pad");
+      mFractions2D[F2DDigitFreqM2 + mod]->SetStats(0);
+      getObjectsManager()->startPublishing(mFractions2D[F2DDigitFreqM2 + mod]);
+    } else {
+      mFractions2D[F2DDigitFreqM2 + mod]->Reset();
     }
   }
 }
@@ -710,7 +727,7 @@ void PhysicsTask::initHistograms()
 void PhysicsTask::resetHistograms()
 {
   // clean all histograms
-  ILOG(Info, Support) << "Resetting the 1D Histograms" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the 1D Histograms" << ENDM;
   for (int itHist1D = H1DInputPayloadSize; itHist1D < kNHist1D; itHist1D++) {
     if (mHist1D[itHist1D]) {
       mHist1D[itHist1D]->Reset();
@@ -719,20 +736,29 @@ void PhysicsTask::resetHistograms()
     }
   }
 
-  ILOG(Info, Support) << "Resetting the 2D Histograms" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the 2D Histograms" << ENDM;
   for (int itHist2D = H2DDigitMapM2; itHist2D < kNHist2D; itHist2D++) {
     if (mHist2D[itHist2D]) {
       mHist2D[itHist2D]->Reset();
     }
   }
-  ILOG(Info, Support) << "Resetting the 2D Intensive Histograms" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the 2D Intensive Histograms" << ENDM;
   for (int itIntHist2D = 0; itIntHist2D < kNIntensiveHist2D; itIntHist2D++) {
     if (mIntensiveHist2D[itIntHist2D]) {
       mIntensiveHist2D[itIntHist2D]->Reset();
       mIntensiveHist2D[itIntHist2D]->setCycleNumber(0);
     }
   }
-  mJustWasReset = true;
+  for (int i = 0; i < kNfractions1D; i++) {
+    if (mFractions1D[i]) {
+      mFractions1D[i]->Reset();
+    }
+  }
+  for (int i = 0; i < kNfractions2D; i++) {
+    if (mFractions2D[i]) {
+      mFractions2D[i]->Reset();
+    }
+  }
 }
 
 } // namespace o2::quality_control_modules::cpv

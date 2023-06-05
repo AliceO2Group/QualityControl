@@ -36,6 +36,16 @@ void TaskInterface::setMonitoring(const std::shared_ptr<o2::monitoring::Monitori
   TaskInterface::mMonitoring = mMonitoring;
 }
 
+void TaskInterface::setGlobalTrackingDataRequest(std::shared_ptr<o2::globaltracking::DataRequest> request)
+{
+  mGlobalTrackingDataRequest = std::move(request);
+}
+
+const o2::globaltracking::DataRequest* TaskInterface::getGlobalTrackingDataRequest() const
+{
+  return mGlobalTrackingDataRequest.get();
+}
+
 void TaskInterface::configure()
 {
   // noop, override it if you want.

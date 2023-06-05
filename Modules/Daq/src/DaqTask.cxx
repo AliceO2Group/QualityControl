@@ -57,7 +57,7 @@ bool isDetIdValid(DAQID::ID id)
 
 void DaqTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "Initializiation of DaqTask" << ENDM;
+  ILOG(Debug, Devel) << "initializiation of DaqTask" << ENDM;
 
   // General plots, related mostly to the payload size (InputRecord, Inputs) and the numbers of RDHs and Inputs in an InputRecord.
   mInputRecordPayloadSize = new TH1F("inputRecordSize", "Total payload size per InputRecord;bytes", 128, 0, 2047);
@@ -97,13 +97,13 @@ void DaqTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void DaqTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity: " << activity.mId << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity: " << activity.mId << ENDM;
   reset();
 }
 
 void DaqTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void DaqTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -114,7 +114,7 @@ void DaqTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void DaqTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 
   // TODO make this optional once we are able to know the run number and the detectors included.
   //      It might still be necessary in test runs without a proper run number.
@@ -130,7 +130,7 @@ void DaqTask::endOfCycle()
 
 void DaqTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 
   for (const auto& system : mSystems) {
     if (getObjectsManager()->isBeingPublished(mSubSystemsTotalSizes[system.first]->GetName())) {
@@ -222,7 +222,8 @@ void DaqTask::monitorInputRecord(InputRecord& inputRecord)
   mNumberInputs->Fill(inputRecord.countValidInputs());
 }
 
-void printPage(const DPLRawParser::Iterator<const DataRef>& data)
+template <class T>
+void printPage(const T& data)
 {
   auto const* raw = data.raw();         // retrieving the raw pointer of the page
   auto const* rawPayload = data.data(); // retrieving payload pointer of the page

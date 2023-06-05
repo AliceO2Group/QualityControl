@@ -15,6 +15,7 @@ Advanced topics
    * [Multi-node setups](#multi-node-setups)
    * [Batch processing](#batch-processing)
    * [Moving window](#moving-window)
+   * [Monitor cycles](#monitor-cycles)
    * [Writing a DPL data producer](#writing-a-dpl-data-producer)
    * [Custom merging](#custom-merging)
    * [QC with DPL Analysis](#qc-with-dpl-analysis)
@@ -23,12 +24,18 @@ Advanced topics
       * [Merging with other analysis workflows](#merging-with-other-analysis-workflows)
       * [Enabling a workflow to run on Hyperloop](#enabling-a-workflow-to-run-on-hyperloop)
 * [Solving performance issues](#solving-performance-issues)
+   * [Dispatcher](#dispatcher)
+   * [QC Tasks](#qc-tasks)
+   * [Mergers](#mergers)
 * [CCDB / QCDB](#ccdb--qcdb)
-   * [Access run conditions and calibrations from the CCDB](#access-run-conditions-and-calibrations-from-the-ccdb)
+   * [Accessing objects in CCDB](#accessing-objects-in-ccdb)
+   * [Access GRP objects with GRP Geom Helper](#access-grp-objects-with-grp-geom-helper)
+   * [Global Tracking Data Request helper](#global-tracking-data-request-helper)
    * [Custom metadata](#custom-metadata)
    * [Details on the data storage format in the CCDB](#details-on-the-data-storage-format-in-the-ccdb)
-      * [Data storage format before v0.14 and ROOT 6.18](#data-storage-format-before-v014-and-root-618)
    * [Local CCDB setup](#local-ccdb-setup)
+   * [Instructions to move an object in the QCDB](#instructions-to-move-an-object-in-the-qcdb)
+* [Asynchronous Data and Monte Carlo QC operations](#asynchronous-data-and-monte-carlo-qc-operations)
 * [QCG](#qcg)
    * [Display a non-standard ROOT object in QCG](#display-a-non-standard-root-object-in-qcg)
    * [Canvas options](#canvas-options)
@@ -54,6 +61,7 @@ Advanced topics
    * [Data Sampling monitoring](#data-sampling-monitoring)
    * [Monitoring metrics](#monitoring-metrics)
    * [Common check IncreasingEntries](#common-check-increasingentries)
+   * [Update the shmem segment size of a detector](#update-the-shmem-segment-size-of-a-detector)
 <!--te-->
 
 [← Go back to Post-processing](PostProcessing.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Frequently Asked Questions →](FAQ.md)
@@ -312,9 +320,53 @@ o2-qc --config json:/${QUALITYCONTROL_ROOT}/etc/basic.json --remote-batch result
 Please note, that the local batch QC workflow should not work on the same file at the same time.
 A semaphore mechanism is required if there is a risk they might be executed in parallel.
 
-To be done:
-- merging multiple files into one, to allow for cases, when local batch workflows cannot access the same file.
-- support for Post-Processing.
+The file is organized into directories named after 3-letter detector codes and sub-directories representing Monitor Object Collections for specific tasks.
+To browse the file, one needs the associated Quality Control environment loaded, since it contains QC-specific data structures.
+It is worth remembering, that this file is considered as intermediate storage, thus Monitor Object do not have Checks applied and cannot be considered the final results.
+The quick and easy way to inspect the contents of the file is to load a recent environment (e.g. on lxplus) and open it with ROOT's `TBrowser`:
+```shell
+alienv enter O2PDPSuite/nightly-20221219-1
+root
+TBrowser t; // a browser window will pop-up 
+```
+...or by browsing the file manually:
+```shell
+alienv enter O2PDPSuite/nightly-20221219-1
+root
+root [0] auto f = new TFile("QC_fullrun.root")
+(TFile *) @0x7ffe84833dc8
+root [1] f->ls()
+TFile**		QC_fullrun.root	
+ TFile*		QC_fullrun.root	
+  KEY: TDirectoryFile	CPV;1	CPV
+  KEY: TDirectoryFile	EMC;1	EMC
+  KEY: TDirectoryFile	FDD;1	FDD
+  KEY: TDirectoryFile	FT0;1	FT0
+  KEY: TDirectoryFile	FV0;1	FV0
+  KEY: TDirectoryFile	GLO;1	GLO
+  KEY: TDirectoryFile	ITS;1	ITS
+...
+root [2] f->cd("GLO")
+(bool) true
+root [3] f->ls()
+TFile**		QC_fullrun.root	
+ TFile*		QC_fullrun.root	
+  TDirectoryFile*		GLO	GLO
+   KEY: o2::quality_control::core::MonitorObjectCollection	MTCITSTPC;1	
+   KEY: o2::quality_control::core::MonitorObjectCollection	Vertexing;1	
+  KEY: TDirectoryFile	CPV;1	CPV
+...
+root [4] auto vtx = dynamic_cast<o2::quality_control::core::MonitorObjectCollection*>(f->Get("GLO/Vertexing"))
+(o2::quality_control::core::MonitorObjectCollection *) @0x7ffe84833dc8
+root [5] auto vtx_x = dynamic_cast<o2::quality_control::core::MonitorObject*>(vtx->FindObject("vertex_X"))
+(o2::quality_control::core::MonitorObject *) @0x7ffe84833dc8
+root [6] vtx_x->getObject()->ClassName()
+(const char *) "TH1F"
+```
+To merge several incomplete QC files, one can use the `o2-qc-file-merger` executable.
+It takes a list of input files, which may or may not reside on alien, and produces a merged file.
+One can select whether the executable should fail upon any error or continue for as long as possible.
+Please see its `--help` output for usage details.
 
 ## Moving window
 
@@ -353,6 +405,33 @@ In the presented case, the Merger will publish one set of complete MOs per 10 mi
  received during this last period. Since the QC Tasks cycle is 10 times shorter, the occupancy fluctuations should be
  less apparent. Please also note, that using this parameter in the `"entire"` merging mode does not make much sense, 
  since Mergers would use every 10th incomplete MO version when merging.
+ 
+## Monitor cycles
+
+The QC tasks monitor and process data continuously during a so-called "monitor cycle". At the end of such a cycle they publish the QC objects that will then continue their way in the QC data flow. 
+
+A monitor cycle lasts typically between __1 and 5 minutes__, some reaching 10 minutes but never less than 1 minute for performance reasons. 
+It is defined in the config file this way: 
+```
+    "tasks": {
+      "dataSizeTask": {
+        "cycleDurationSeconds": "60",
+       ...
+```
+
+It is possible to specify various durations for different period of times. It is particularly useful to have shorter cycles at the beginning of the run and longer afterwards:
+
+```
+    "tasks": {
+      "dataSizeTask": {
+        "cycleDurations": [
+          {"cycleDurationSeconds": 60, "validitySeconds": 300},
+          {"cycleDurationSeconds": 180, "validitySeconds": 600},
+          {"cycleDurationSeconds": 300, "validitySeconds": 1}
+        ],
+        ...
+```
+In this example, a cycle of 60 seconds is used for the first 5 minutes (300 seconds), then a cycle of 3 minutes (180 seconds) between 5 minutes and 10 minutes after SOR, and finally a cycle of 5 minutes for the rest of the run. The last `validitySeconds` is not used and is just applied for the rest of the run. 
 
 ## Writing a DPL data producer 
 
@@ -550,33 +629,75 @@ The following points might help avoid backpressure:
 
 # CCDB / QCDB
 
-## Access run conditions and calibrations from the CCDB
+## Accessing objects in CCDB
 
-The MonitorObjects generated by Quality Control are stored in a dedicated
-repository based on CCDB. The run conditions, on the other hand, are located
-in another, separate database. One can access these conditions inside a
-Task by a dedicated method of the TaskInterface, as below:
-```
-TObject* condition = TaskInterface::retrieveCondition("Path/to/condition");
-if (condition) {
-  LOG(info) << "Retrieved " << condition->ClassName();
-  delete condition;
-}
-```
-Make sure to declare a valid URL of CCDB in the config file. Keep in
-mind that it might be different from the CCDB instance used for storing
-QC objects.
-
-```
-{
-  "qc": {
-    "config": {
-     ...
-      "conditionDB": {
-        "url": "ccdb-test.cern.ch:8080"
-      }
-    },
+The MonitorObjects generated by Quality Control are stored in a dedicated repository (QCDB), which is based on CCDB. 
+The run conditions, on the other hand, are located in another, separate database.
+The recommended way to access these is to use a `Lifetime::Condition` DPL input, which can be requested as in the query below:
+```json
+  "tasks": {
+    "MyTask": {
     ...
+      "dataSource": {
+        "type": "direct",
+        "query": "randomcluster:MFT/COMPCLUSTERS/0;cldict:MFT/CLUSDICT/0?lifetime=condition&ccdb-path=MFT/Calib/ClusterDictionary"
+      },
+    }
+  },
+```
+The timestamp of the CCDB object will be aligned with the data timestamp.
+
+Geometry and General Run Parameters (GRP) can be also accessed with the [GRP Geom Helper](#access-grp-objects-with-grp-geom-helper).
+
+If your task accesses CCDB objects using `TaskInterface::retrieveCondition`, please migrate to using one of the methods mentioned above.
+
+## Access GRP objects with GRP Geom Helper
+
+To get GRP objects via a central facility, add the following structure to the task definition and set its values 
+according to the needs.
+```json
+      "myTask": {
+        ...
+        "grpGeomRequest" : {
+          "geomRequest": "None",     "": "Available options are \"None\", \"Aligned\", \"Ideal\", \"Alignements\"",
+          "askGRPECS": "false",
+          "askGRPLHCIF": "false",
+          "askGRPMagField": "false",
+          "askMatLUT": "false",
+          "askTime": "false",
+          "askOnceAllButField": "false",
+          "needPropagatorD":  "false"
+        }
+      }
+```
+The requested objects will be available via [`GRPGeomHelper::instance()`](https://github.com/AliceO2Group/AliceO2/blob/dev/Detectors/Base/include/DetectorsBase/GRPGeomHelper.h) singleton.
+
+
+## Global Tracking Data Request helper
+
+To retrieve tracks and clusters for specific detectors or detector combinations, one can use the [`DataRequest`](https://github.com/AliceO2Group/AliceO2/blob/dev/DataFormats/Detectors/GlobalTracking/include/DataFormatsGlobalTracking/RecoContainer.h) helper.
+By adding the following structure to a QC task, the corresponding `InputSpecs` will be automatically added to the task.
+```json
+      "myTask": {
+        ...
+        "globalTrackingDataRequest": {
+            "canProcessTracks" : "ITS,ITS-TPC",
+            "requestTracks" : "ITS,TPC-TRD",
+            "canProcessClusters" : "TPC",
+            "requestClusters" : "TPC",
+            "mc" : "false"
+        }
+      }
+```
+Then, the corresponding tracks and clusters can be retrieved in the code using `RecoContainer`:
+```c++
+void MyTask::monitorData(o2::framework::ProcessingContext& ctx)
+{
+  o2::globaltracking::RecoContainer recoData;
+  if (auto dataRequest = getGlobalTrackingDataRequest()) {
+    recoData.collectData(ctx, *dataRequest);
+  }
+}
 ```
 
 ## Custom metadata
@@ -637,6 +758,52 @@ The address of the CCDB will have to be updated in the Tasks config file.
 
 At the moment, the description of the REST api can be found in this document : https://docs.google.com/presentation/d/1PJ0CVW7QHgnFzi0LELc06V82LFGPgmG3vsmmuurPnUg
 
+## Instructions to move an object in the QCDB
+
+The script `o2-qc-repo-move-objects` lets the user move an object, and thus all the versions attached to it. E.g.:
+```
+python3 o2-qc-repo-move-objects --url http://ccdb-test.cern.ch:8080 --path qc/TST/MO/Bob --new-path qc/TST/MO/Bob2 --log-level 10 
+```
+
+# Asynchronous Data and Monte Carlo QC operations
+
+QC can accompany workflows reconstructing real and simulated data asynchronously.
+Usually these are distributed among thousands of nodes which might not have access to each other, thus partial results are stored and merged in form of files with mechanism explained in [Batch processing](#batch-processing).
+
+QC workflows for asynchronous data reconstructions are listed in [O2DPG/Data/production/qc-workflow.sh](https://github.com/AliceO2Group/O2DPG/blob/master/DATA/production/qc-workflow.sh).
+The script includes paths to corresponding QC configuration files for subsystems which take part in the reconstruction.
+All the enabled files are merged into a combined QC workflow.
+Thus, it is crucial that unique keys are used in `tasks`, `checks` and `aggregators` structures, as explained in [Merging multiple configuration files into one](#merging-multiple-configuration-files-into-one).
+Post-processing tasks can be added in the script [O2DPG/DATA/production/o2dpg_qc_postproc_workflow.py](https://github.com/AliceO2Group/O2DPG/blob/master/DATA/production/o2dpg_qc_postproc_workflow.py).
+Please see the included example and the in-code documentation for further guidelines in this matter.
+
+Generating and reconstructing simulated data is ran by a framework which organizes specific workflows in a directed acyclic graph and executes them in an order which satisfies all the dependencies and allocated computing resources.
+In contrast to data reconstruction, here, QC workflows are executed separately and pick up corresponding input files.
+For further details, please refer to [Adding QC Tasks to the simulation script](https://github.com/AliceO2Group/O2DPG/tree/master/MC#adding-qc-tasks-to-the-simulation-script).
+
+Data and simulation productions are typically executed on Grid and EPNs, and the outcomes can be inspected in [MonALISA](http://alimonitor.cern.ch/).
+In both cases, QC runs alongside of each subjob and incomplete QC results are stored in files.
+For asynchronous data reconstruction, one file `QC.root` is created.
+Simulation subjobs contain a `QC` directory with separate files for each QC workflow.
+Relevant logs can be found in files like `stdout`, `stderr` as well as archives `debug_log_archive.zip` and `log_archive.zip`.
+
+Once an expected percentage of subjobs completes, several QC merging stages are executed, each producing a merged file for certain range of subjobs.
+The last stage produces the complete file for given masterjob.
+This file is read by the `o2-qc --remote-batch` executable to run Checks on the complete objects and all the results to the QCDB.
+Post-Processing Tasks and associated Checks are executed right after.
+
+Some runs contain too much data to be processed with one masterjob.
+In such case, several masterjobs are run in parallel.
+Each produces a `QC.root` file which contains all the statistics for a masterjob.
+The last masterjob to complete recognizes this fact and merges all `QC.root` into `QC_fullrun.root` and only then uploads the results to QCDB.
+To find it, one can use `alien_find`:
+```
+> alien_find /alice/data/2022/LHC22m/523897/apass1_epn QC_fullrun.root
+/alice/data/2022/LHC22m/523897/apass1_epn/0750/QC/001/QC_fullrun.root
+```
+
+TODO explain how a connection to QCDB is made from Grid sites. 
+
 # QCG
 
 ## Display a non-standard ROOT object in QCG
@@ -690,11 +857,12 @@ As user `flp` do:
 ```
 git clone https://github.com/AliceO2Group/QualityControl.git
 cd QualityControl
+git checkout <release> # use the release included in the installed FLP suite
 mkdir build
 cd build
 mkdir ~/installdir
 cmake -DCMAKE_INSTALL_PREFIX=~/installdir ..
-make
+make -j16 install 
 ```
 
 ***Compilation on top of a local O2***
@@ -704,6 +872,7 @@ If you want to build also O2 locally do
 # O2
 git clone https://github.com/AliceO2Group/AliceO2.git
 cd AliceO2
+git checkout <release> # use the release included in the installed FLP suite
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=~/installdir ..
@@ -712,6 +881,7 @@ make -j8 install
 # QC
 git clone https://github.com/AliceO2Group/QualityControl.git
 cd QualityControl
+git checkout <release> # use the release included in the installed FLP suite
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=~/installdir .. -DO2_ROOT=~/installdir
@@ -724,7 +894,7 @@ In case the workflows will span over several FLPs and/or QC machines, one should
 
 **Use it in aliECS**
 
-Set an extra variable `extra_env_vars` and set it to 
+In the aliECS gui, in the panel "Advanced Configuration", et an extra variable `extra_env_vars` and set it to 
 ```
 PATH=~/installdir/bin/:$PATH LD_LIBRARY_PATH=~/installdir/lib/:$LD_LIBRARY_PATH QUALITYCONTROL_ROOT=~/installdir/
 ```
@@ -823,12 +993,83 @@ The following tasks will be merged correctly:
         }
       }
 ```
-The same approach can be applied to other actors in the QC framework, like Checks (`checkName`), Aggregators (`aggregatorName`) and External Tasks (`taskName`).
-Post-processing tasks do not support this feature yet.
+The same approach can be applied to other actors in the QC framework, like Checks (`checkName`), Aggregators(`aggregatorName`), External Tasks (`taskName`) and Postprocessing Tasks (`taskName`).
 
 ## Definition and access of task-specific configuration
 
+A task can access custom parameters declared in the configuration file at `qc.tasks.<task_id>.extendedTaskParameters` or `qc.tasks.<task_id>.taskParameters`. They are stored inside an object of type `CustomParameters` named `mCustomParameters`, which is a protected member of `TaskInterface`.
+
+The simple, deprecated, syntax is 
+```json
+    "tasks": {
+      "QcTask": {
+        "taskParameters": {
+          "myOwnKey": "myOwnValue"
+        },
+```
+It is accessed with : `mCustomParameters["myOwnKey"]`. 
+
+The new syntax is
+```json
+    "tasks": {
+      "QcTask": {
+        "extendedTaskParameters": {
+          "default": {
+            "default": {
+              "myOwnKey": "myOwnValue",
+              "myOwnKey2": "myOwnValue2",
+              "myOwnKey3": "myOwnValue3"
+            }
+          },
+          "PHYSICS": {
+            "default": {
+              "myOwnKey1": "myOwnValue1b",
+              "myOwnKey2": "myOwnValue2b"
+            },
+            "pp": {
+              "myOwnKey1": "myOwnValue1c"
+            },
+            "PbPb": {
+              "myOwnKey1": "myOwnValue1d"
+            }
+          },
+          "COSMICS": {
+            "myOwnKey1": "myOwnValue1e",
+            "myOwnKey2": "myOwnValue2e"
+          }
+        },
+```
+It allows to have variations of the parameters depending on the run and beam types. The proper run types can be found here: https://github.com/AliceO2Group/AliceO2/blob/dev/DataFormats/Parameters/include/DataFormatsParameters/ECSDataAdapters.h#L54. The `default` can be used 
+to ignore the run or the beam type. 
+The beam type is one of the following: `PROTON-PROTON`, `Pb-Pb`, `Pb-PROTON`
+
+The values can be accessed this way: 
+```c++
+mCustomParameters["myOwnKey"]; // considering that run and beam type are `default` --> returns `myOwnValue`
+mCustomParameters.at("myOwnKey"); // returns `myOwnValue`
+mCustomParameters.at("myOwnKey", "default"); // returns `myOwnValue`
+mCustomParameters.at("myOwnKey", "default", "default"); // returns `myOwnValue`
+
+mCustomParameters.at("myOwnKey1", "PHYSICS", "PROTON-PROTON"); // returns `myOwnValue1c`
+mCustomParameters.at("myOwnKey1", "PHYSICS", "Pb-Pb"); // returns `myOwnValue1d`
+mCustomParameters.at("myOwnKey2", "COSMICS"); // returns `myOwnValue2e`
+```
+The correct way of accessing a parameter and to default to a value if it is not there, is the following:
+```c++
+  std::string param = mCustomParameters.atOrDefaultValue("myOwnKey1", "physics", "pp", "1");
+  int casted = std::stoi(param);
+```
+Finally the way to search for a value and only act if it is there is the following: 
+```c++
+  if (auto param2 = mCustomParameters.find("myOwnKey1", "physics", "pp"); param2 != cp.end()) {
+    int casted = std::stoi(param);
+  }
+```
+
+
 A task can access custom parameters declared in the configuration file at `qc.tasks.<task_id>.taskParameters`. They are stored inside a key-value map named mCustomParameters, which is a protected member of `TaskInterface`.
+
+
 
 One can also tell the DPL driver to accept new arguments. This is done using the `customize` method at the top of your workflow definition (usually called "runXXX" in the QC).
 
@@ -911,7 +1152,7 @@ should not be present in real configuration files.
         "maxObjectSize": "2097152",       "": "[Bytes, default=2MB] Maximum size allowed, larger objects are rejected."
       },
       "Activity": {                       "": ["Configuration of a QC Activity (Run). This structure is subject to",
-                                               "change or the values might come from other source (e.g. AliECS)." ],
+                                               "change or the values might come from other source (e.g. ECS+Bookkeeping)." ],
         "number": "42",                   "": "Activity number.",
         "type": "2",                      "": "Arbitrary activity type.",
         "periodName": "",                 "": "Period name - e.g. LHC22c, LHC22c1b_test",
@@ -939,6 +1180,9 @@ should not be present in real configuration files.
                                               "Discarded Debug messages don't go there."],
         "filterRotateMaxBytes": "",       "": "Maximum size of the discard file.", 
         "filterRotateMaxFiles": "",       "": "Maximum number of discard files."
+      },
+      "bookkeeping": {                    "": "Configuration of the bookkeeping (optional)",
+        "url": "localhost:4001",          "": "Url of the bookkeeping API (port is usually different from web interface)"
       },
       "postprocessing": {                 "": "Configuration parameters for post-processing",
         "periodSeconds": 10.0,            "": "Sets the interval of checking all the triggers. One can put a very small value",
@@ -993,7 +1237,25 @@ the "tasks" path.
                                                  "Needed only for multi-node setups."],
         "mergingMode": "delta",             "": "Merging mode, \"delta\" (default) or \"entire\" objects are expected",
         "mergerCycleMultiplier": "1",       "": "Multiplies the Merger cycle duration with respect to the QC Task cycle"
-        "mergersPerLayer": [ "3", "1" ],    "": "Defines the number of Mergers per layer, the default is [\"1\"]"
+        "mergersPerLayer": [ "3", "1" ],    "": "Defines the number of Mergers per layer, the default is [\"1\"]",
+        "grpGeomRequest" : {                "": "Requests to retrieve GRP objects, then available in GRPGeomHelper::instance()",
+          "geomRequest": "None",            "": "Available options are \"None\", \"Aligned\", \"Ideal\", \"Alignements\"",
+          "askGRPECS": "false",
+          "askGRPLHCIF": "false",
+          "askGRPMagField": "false",
+          "askMatLUT": "false",
+          "askTime": "false",
+          "askOnceAllButField": "false",
+          "needPropagatorD":  "false"
+        },
+        "globalTrackingDataRequest": {         "": "A helper to add tracks or clusters to inputs of the task",
+          "canProcessTracks" : "ITS,ITS-TPC",  "": "tracks that the QC task can process, usually should not change",
+          "requestTracks" : "ITS,TPC-TRD",     "": ["tracks that the QC task should process, TPC-TRD will not be",
+                                                    "requested, as it is not listed in the previous parameter"],
+          "canProcessClusters" : "TPC",        "": "clusters that the QC task can process",
+          "requestClusters" : "TPC",           "": "clusters that the QC task should process",
+          "mc" : "false",                      "": "mc boolean flag for the data request"
+        }
       }
     }
   }
@@ -1074,8 +1336,10 @@ declared inside in the "postprocessing" path. Please also refer to [the Post-pro
 {
   "qc": {
     "postprocessing": {
-      "ExamplePostprocessing": {              "": "Name of the PP Task.",
+      "ExamplePostprocessingID": {            "": "ID of the PP Task.",
         "active": "true",                     "": "Activation flag. If not \"true\", the PP Task will not be run.",
+        "taskName": "MyPPTaskName",           "": ["Name of the task, used e.g. in the QCDB. If empty, the ID is used.",
+                                                 "Less than 14 character names are preferred."],
         "className": "namespace::of::PPTask", "": "Class name of the PP Task with full namespace.",
         "moduleName": "QcSkeleton",           "": "Library name. It can be found in CMakeLists of the detector module.",
         "detectorName": "TST",                "": "3-letter code of the detector.",

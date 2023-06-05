@@ -33,6 +33,7 @@
 class TH1F;
 class TH1I;
 class TH2F;
+class TProfile;
 
 namespace o2::quality_control_modules::pid
 {
@@ -53,9 +54,12 @@ struct MyTrack {
   float tofExpSignalPi() const { return match.getLTIntegralOut().getTOF(2); }
   float tofExpSignalKa() const { return match.getLTIntegralOut().getTOF(3); }
   float tofExpSignalPr() const { return match.getLTIntegralOut().getTOF(4); }
-  float tofExpSigmaPi() const { return 120; } // FIX ME
-  float tofExpSigmaKa() const { return 120; } // FIX ME
-  float tofExpSigmaPr() const { return 120; } // FIX ME
+  float tofExpSigmaPi() const { return sigmaexp[0]; } // FIX ME
+  float tofExpSigmaKa() const { return sigmaexp[1]; } // FIX ME
+  float tofExpSigmaPr() const { return sigmaexp[2]; } // FIX ME
+  void setSigmaPi(float val) { sigmaexp[0] = val; }
+  void setSigmaKa(float val) { sigmaexp[1] = val; }
+  void setSigmaPr(float val) { sigmaexp[2] = val; }
   float getEta() const { return trk.getEta(); }
   float getP() const { return p; }
   float getPt() const { return pt; }
@@ -71,6 +75,7 @@ struct MyTrack {
   const o2::tpc::TrackTPC& getTrack() { return trk; }
   float p = 0.;
   float pt = 0.;
+  float sigmaexp[3] = { 200., 250., 300. };
 };
 
 class TaskFT0TOF final : public TaskInterface
@@ -142,8 +147,6 @@ class TaskFT0TOF final : public TaskInterface
   int32_t mNTPCClustersCut = 40;
   float mMinDCAtoBeamPipeCut = 100.f;
   float mMinDCAtoBeamPipeCutY = 10.f;
-  std::string mGRPFileName = "o2sim_grp.root";
-  std::string mGeomFileName = "o2sim_geometry-aligned.root";
   float mBz = 0; ///< nominal Bz
   int mTF = -1;  // to count the number of processed TFs
   const float cinv = 33.35641;
@@ -176,6 +179,8 @@ class TaskFT0TOF final : public TaskInterface
   TH1F* mHistDeltaEvTimeTOFVsFT0ASameBC = 0x0;
   TH1F* mHistDeltaEvTimeTOFVsFT0CSameBC = 0x0;
   TH1I* mHistDeltaBCTOFFT0 = 0x0;
+  TH2F* mHistMismatchVsEta = 0x0;
+  TProfile* mProfLoverCvsEta = 0x0;
 };
 
 } // namespace o2::quality_control_modules::pid

@@ -14,22 +14,30 @@
 /// \author Piotr Konopka
 ///
 
+#include <utility>
+
 #include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/ObjectsManager.h"
 
 namespace o2::quality_control::postprocessing
 {
 
-std::string PostProcessingInterface::getName() const { return mName; }
+const std::string& PostProcessingInterface::getID() const { return mID; }
+
+void PostProcessingInterface::setID(const std::string& id)
+{
+  mID = id;
+}
+
+const std::string& PostProcessingInterface::getName() const { return mName; }
 
 void PostProcessingInterface::setName(const std::string& name)
 {
   mName = name;
 }
 
-void PostProcessingInterface::configure(std::string name, const boost::property_tree::ptree& /*config*/)
+void PostProcessingInterface::configure(const boost::property_tree::ptree& config)
 {
-  mName = name;
 }
 
 void PostProcessingInterface::setObjectsManager(std::shared_ptr<core::ObjectsManager> objectsManager)

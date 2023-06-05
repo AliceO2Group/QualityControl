@@ -118,7 +118,7 @@ Quality GenericHistogramCheck::check(std::map<std::string, std::shared_ptr<Monit
       continue;
       ILOG(Error, Support) << "No MO found" << ENDM;
     }
-    auto h = (TH1*)mo->getObject();
+    auto h = dynamic_cast<TH1*>(mo->getObject());
     if (!h) {
       ILOG(Fatal, Support) << "No Histogram found!" << ENDM;
     }
@@ -195,7 +195,7 @@ void GenericHistogramCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality 
   double xText = 0;
   double yText = 0;
   double yText2 = 0;
-  auto h = (TH1D*)(mo->getObject());
+  auto h = dynamic_cast<TH1D*>((mo->getObject()));
   if (mHistDimension == 1) {
     TLine* lineX = new TLine(mMeanX, h->GetMinimum() * 1.1, mMeanX, h->GetMaximum() * 1.1);
     TLine* lineXEV = new TLine(mExpectedValueX, h->GetMinimum() * 1.1, mExpectedValueX, h->GetMaximum() * 1.1);

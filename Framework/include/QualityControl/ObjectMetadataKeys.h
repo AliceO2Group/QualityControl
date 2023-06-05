@@ -27,6 +27,7 @@ constexpr auto validUntil = "Valid-Until";
 constexpr auto created = "Created";
 constexpr auto md5sum = "Content-MD5";
 constexpr auto objectType = "ObjectType";
+constexpr auto lastModified = "lastModified";
 // General QC framework
 constexpr auto qcVersion = "qc_version";
 constexpr auto qcDetectorCode = "qc_detector_name";
@@ -35,11 +36,13 @@ constexpr auto qcTaskClass = "qc_task_class";
 constexpr auto qcQuality = "qc_quality";
 constexpr auto qcCheckName = "qc_check_name";
 constexpr auto qcTRFCName = "qc_trfc_name";
+constexpr auto qcAdjustableEOV = "adjustableEOV"; // this is a keyword for the CCDB
 // QC Activity
 constexpr auto runType = "RunType";
 constexpr auto runNumber = "RunNumber";
 constexpr auto passName = "PassName";
 constexpr auto periodName = "PeriodName";
+constexpr auto beamType = "BeamType";
 
 } // namespace o2::quality_control::repository::metadata_keys
 

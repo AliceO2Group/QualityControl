@@ -35,6 +35,11 @@ Quality SkeletonCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
 {
   Quality result = Quality::Null;
 
+  // you can get details about the activity via the object mActivity:
+  ILOG(Debug, Devel) << "Run " << getActivity()->mId << ", type: " << getActivity()->mType << ", beam: " << getActivity()->mBeamType << ENDM;
+  // and you can get your custom parameters:
+  ILOG(Debug, Devel) << "custom param physics.pp.myOwnKey1 : " << mCustomParameters.atOrDefaultValue("myOwnKey1", "physics", "pp", "default_value") << ENDM;
+
   for (auto& [moName, mo] : *moMap) {
 
     (void)moName;
@@ -57,6 +62,7 @@ Quality SkeletonCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
                            "This is to demonstrate that we can assign more than one Reason to a Quality");
         }
       }
+      result.addMetadata("mykey", "myvalue");
     }
   }
   return result;
@@ -72,10 +78,10 @@ void SkeletonCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     if (checkResult == Quality::Good) {
       h->SetFillColor(kGreen);
     } else if (checkResult == Quality::Bad) {
-      ILOG(Info, Support) << "Quality::Bad, setting to red" << ENDM;
+      ILOG(Debug, Devel) << "Quality::Bad, setting to red" << ENDM;
       h->SetFillColor(kRed);
     } else if (checkResult == Quality::Medium) {
-      ILOG(Info, Support) << "Quality::medium, setting to orange" << ENDM;
+      ILOG(Debug, Devel) << "Quality::medium, setting to orange" << ENDM;
       h->SetFillColor(kOrange);
     }
     h->SetLineColor(kBlack);

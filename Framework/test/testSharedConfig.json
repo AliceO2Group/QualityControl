@@ -82,6 +82,41 @@
           "name": "tpcclust"
         },
         "cycleDurationSeconds": "10"
+      },
+      "recoTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonTask",
+        "moduleName": "QcSkeleton",
+        "detectorName": "GLO",
+        "dataSource": {
+          "type": "direct",
+          "query": ""
+        },
+        "cycleDurationSeconds": "10",
+        "grpGeomRequest" : {
+          "geomRequest": "Aligned",
+          "askGRPECS": "true",
+          "askGRPLHCIF": "true",
+          "askGRPMagField": "true",
+          "askMatLUT": "true",
+          "askTime": "true",
+          "askOnceAllButField": "true",
+          "needPropagatorD":  "true"
+        },
+        "globalTrackingDataRequest": {
+          "canProcessTracks" : "ITS,ITS-TPC",
+          "requestTracks" : "ITS,TPC-TRD",
+          "canProcessClusters" : "TPC",
+          "requestClusters" : "TPC",
+          "mc" : "false"
+        },
+        "location": "local",
+        "localMachines": [
+          "o2flp1"
+        ],
+        "remoteMachine": "o2qc01",
+        "remotePort": "30333",
+        "mergingMode": "delta"
       }
     },
     "checks": {

@@ -30,30 +30,26 @@ using namespace o2::quality_control;
 
 namespace o2::quality_control_modules::mid
 {
+void CalibQcCheck::configure()
+{
+  ILOG(Info, Devel) << "configure CalibQcCheck" << ENDM;
 
+  if (auto param = mCustomParameters.find("NbOrbitPerTF"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - NbOrbitPerTF: " << param->second << ENDM;
+    mHistoHelper.setNOrbitsPerTF(std::stol(param->second));
+  }
+}
 Quality CalibQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
   // printf("\n*********** CalibQcCheck ****** check \n");
   Quality result = Quality::Null;
 
-  for (auto& [moName, mo] : *moMap) {
-
-    (void)moName;
-    if (mo->getName() == "NbTimeFrame") {
-      auto* h = dynamic_cast<TH1F*>(mo->getObject());
-      nTF = h->GetBinContent(1);
-      if (nTF > 0)
-        result = Quality::Good;
-      else
-        result = Quality::Bad;
-    }
-    if (mo->getName() == "NbNoiseROF") {
-      auto* h = dynamic_cast<TH1F*>(mo->getObject());
-      nNoiseRof = h->GetBinContent(1);
-    }
-    if (mo->getName() == "NbDeadROF") {
-      auto* h = dynamic_cast<TH1F*>(mo->getObject());
-      nDeadRof = h->GetBinContent(1);
+  for (auto& item : *moMap) {
+    if (item.second->getName() == "NbTimeFrame") {
+      mHistoHelper.setNTFs(static_cast<TH1F*>(item.second->getObject())->GetBinContent(1));
+      result = mHistoHelper.getNTFs() == 0 ? Quality::Bad : Quality::Good;
+    } else if (item.second->getName() == "NbDeadROF") {
+      mDeadRof = static_cast<TH1F*>(item.second->getObject())->GetBinContent(1);
     }
   }
   return result;
@@ -61,110 +57,28 @@ Quality CalibQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
 
 std::string CalibQcCheck::getAcceptedType() { return "TH1"; }
 
-static void updateTitle(TH1* hist, std::string suffix)
-{
-  if (!hist) {
-    return;
-  }
-  TString title = hist->GetTitle();
-  title.Append(" (Hz) ");
-  title.Append(suffix.c_str());
-  hist->SetTitle(title);
-}
-
-static std::string getCurrentTime()
-{
-  time_t t;
-  time(&t);
-
-  struct tm* tmp;
-  tmp = localtime(&t);
-
-  char timestr[500];
-  strftime(timestr, sizeof(timestr), "(%x - %X)", tmp);
-
-  std::string result = timestr;
-  return result;
-}
-
 void CalibQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  // printf("\n*********** CalibQcCheck ****** beautify \n");
-  auto currentTime = getCurrentTime();
-  updateTitle(dynamic_cast<TProfile2D*>(mo->getObject()), currentTime);
-  // printf("\n*********** CalibQcCheck ****** nTF = %d, nDeadRof = %d, nNoiseRof = %d\n",nTF,nDeadRof,nNoiseRof);
-  if (checkResult == Quality::Good) {
-    // float scale = 1 / (nTF * scaleTime); //Dead max 998,1
-    // float scale = 1 / (nTF); //Dead max 11,38 (== 113826/10000TF)
-    // float scale = 1.; //Dead max 113826
-    float scale = 100.;
-    /// Scale Noise Maps ::
-    if (mo->getName() == "BendNoiseMap11") {
-      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
-      h2->Scale(scale);
-    }
-    if (mo->getName() == "BendNoiseMap12") {
-      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
-      h2->Scale(scale);
-    }
-    if (mo->getName() == "BendNoiseMap21") {
-      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
-      h2->Scale(scale);
-    }
-    if (mo->getName() == "BendNoiseMap22") {
-      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
-      h2->Scale(scale);
-    }
-    if (mo->getName() == "NBendNoiseMap11") {
-      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
-      h2->Scale(scale);
-    }
-    if (mo->getName() == "NBendNoiseMap12") {
-      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
-      h2->Scale(scale);
-    }
-    if (mo->getName() == "NBendNoiseMap21") {
-      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
-      h2->Scale(scale);
-    }
-    if (mo->getName() == "NBendNoiseMap22") {
-      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
-      h2->Scale(scale);
-    }
-    /// Scale Dead Maps ::
-    if (mo->getName() == "BendDeadMap11") {
-      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
-      h2->Scale(scale);
-    }
-    if (mo->getName() == "BendDeadMap12") {
-      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
-      h2->Scale(scale);
-    }
-    if (mo->getName() == "BendDeadMap21") {
-      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
-      h2->Scale(scale);
-    }
-    if (mo->getName() == "BendDeadMap22") {
-      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
-      h2->Scale(scale);
-    }
-    if (mo->getName() == "NBendDeadMap11") {
-      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
-      h2->Scale(scale);
-    }
-    if (mo->getName() == "NBendDeadMap12") {
-      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
-      h2->Scale(scale);
-    }
-    if (mo->getName() == "NBendDeadMap21") {
-      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
-      h2->Scale(scale);
-    }
-    if (mo->getName() == "NBendDeadMap22") {
-      auto* h2 = dynamic_cast<TProfile2D*>(mo->getObject());
-      h2->Scale(scale);
+  auto currentTime = mHistoHelper.getCurrentTime();
+  mHistoHelper.updateTitle(dynamic_cast<TH2F*>(mo->getObject()), currentTime);
+
+  if (mo->getName().find("Mult") == std::string::npos) {
+    // Do nothing for Mult* objects
+    if (mo->getName().find("Noise") != std::string::npos) {
+      // Scale histograms with noise info
+      auto histo = static_cast<TH2F*>(mo->getObject());
+      mHistoHelper.normalizeHistoTokHz(histo);
+      if (mo->getName().find("Map") != std::string::npos) {
+        histo->SetMaximum(10.);
+      }
+    } else if (mo->getName().find("Dead") != std::string::npos) {
+      if (mDeadRof > 0.) {
+        // Scale histograms with dead channels info
+        auto histo = static_cast<TH2F*>(mo->getObject());
+        histo->Scale(100. / mDeadRof);
+        mHistoHelper.updateTitle(histo, " (%)");
+      }
     }
   }
 }
-
 } // namespace o2::quality_control_modules::mid

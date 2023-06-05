@@ -22,9 +22,8 @@
 #include <TH1.h>
 #include <TH2.h>
 
-class TH2I;
-class TH1I;
-class TH2F;
+class TH2D;
+class TH1D;
 
 using namespace o2::quality_control::core;
 
@@ -49,6 +48,7 @@ class ITSDecodingErrorTask final : public TaskInterface
   void reset() override;
 
  private:
+  int mTFCount = 0;
   void getParameters(); // get Task parameters from json file
   void setAxisTitle(TH1* object, const char* xTitle, const char* yTitle);
   void createDecodingPlots();
@@ -58,12 +58,14 @@ class ITSDecodingErrorTask final : public TaskInterface
   static constexpr int NLayer = 7;
   static constexpr int NLayerIB = 3;
   const int StaveBoundary[NLayer + 1] = { 0, 12, 28, 48, 72, 102, 144, 192 };
+  const int ChipBoundary[NLayer + 1] = { 0, 108, 252, 432, 3120, 6480, 14712, 24120 };
   static constexpr int NFees = 48 * 3 + 144 * 2;
 
-  TH1D* mLinkErrorPlots;
   TH1D* mChipErrorPlots;
-  TH2I* mLinkErrorVsFeeid; // link ErrorVsFeeid
-  TH2I* mChipErrorVsFeeid; // chip ErrorVsFeeid
+  TH1D* mLinkErrorPlots;
+  TH2D* mChipErrorVsChipid[7]; // chip ErrorVsChipid
+  TH2D* mLinkErrorVsFeeid;     // link ErrorVsFeeid
+  TH2D* mChipErrorVsFeeid;     // chip ErrorVsFeeid
 };
 
 } // namespace o2::quality_control_modules::its

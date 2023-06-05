@@ -47,7 +47,7 @@ void Aggregator::init()
     mAggregatorInterface->configure();
   } catch (...) {
     std::string diagnostic = boost::current_exception_diagnostic_information();
-    ILOG(Fatal, Ops) << "Unexpected exception, diagnostic information follows:\n"
+    ILOG(Fatal, Ops) << "Unexpected exception, diagnostic information follows: "
                      << diagnostic << ENDM;
     throw;
   }
@@ -132,7 +132,7 @@ bool Aggregator::getAllObjectsOption() const
   return mAggregatorConfig.allObjects;
 }
 
-std::vector<AggregatorSource> Aggregator::getSources()
+std::vector<AggregatorSource> Aggregator::getSources() const
 {
   return mAggregatorConfig.sources;
 }

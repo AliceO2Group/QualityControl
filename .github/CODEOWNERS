@@ -3,7 +3,11 @@
 
 # Detectors
 /Modules/TOF/      @njacazio
+/Modules/PID/      @njacazio
 /Modules/EMCAL/    @mfasDa @jokonig @Barthelemy @knopers8
 /Modules/TPC/      @wiechula
 /Modules/MFT/      @tomas-herman
 /Modules/ITS/      @iravasen @IsakovAD
+/Modules/TRD/      @pachmay @bazinski
+/Modules/FOCAL/    @mfasDa @fjonasALICE
+

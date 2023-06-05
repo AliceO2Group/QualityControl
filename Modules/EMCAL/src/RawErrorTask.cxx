@@ -72,7 +72,7 @@ RawErrorTask::~RawErrorTask()
 
 void RawErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize RawErrorTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize RawErrorTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   auto get_bool = [](const std::string_view input) -> bool {
     return input == "true";
@@ -184,13 +184,13 @@ void RawErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void RawErrorTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity " << activity.mId << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
   reset();
 }
 
 void RawErrorTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void RawErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -286,19 +286,19 @@ void RawErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void RawErrorTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void RawErrorTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void RawErrorTask::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   mErrorTypeAll->Reset();
   mErrorTypeAltro->Reset();
   mErrorTypePage->Reset();

@@ -34,6 +34,7 @@
 #include "DataFormatsTOF/Diagnostic.h"
 #include "CCDB/BasicCCDBManager.h"
 #include "Framework/TimingInfo.h"
+#include "DetectorsBase/GeometryManager.h"
 
 // Fairlogger includes
 #include <fairlogger/Logger.h>
@@ -72,7 +73,7 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
     }
   }
   if (auto param = mCustomParameters.find("applyCalib"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - applyCalib: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - applyCalib: " << param->second << ENDM;
     if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
       mApplyCalib = true;
     }
@@ -81,7 +82,7 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   utils::parseBooleanParameter(mCustomParameters, "PerChannel", mFlagEnableOrphanPerChannel);
 
   // Define histograms
-  ILOG(Info, Support) << "initialize TaskDigits" << ENDM;
+  ILOG(Debug, Devel) << "initialize TaskDigits" << ENDM;
 
   // Event info
   mHistoOrbitID = std::make_shared<TH2F>("OrbitID", Form("TOF OrbitID;OrbitID %% %i;Crate", mRangeMaxOrbitId), mBinsOrbitId, 0, mRangeMaxOrbitId, RawDataDecoder::ncrates, 0, RawDataDecoder::ncrates);
@@ -143,6 +144,13 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   }
   getObjectsManager()->startPublishing(mHistoNoisyChannels.get());
 
+  // if mBinsMultiplicity > 1000 limit it in TH2F
+  int nBinsMultForTH2 = mBinsMultiplicity;
+  if (nBinsMultForTH2 > 1000) {
+    nBinsMultForTH2 = 1000;
+    ILOG(Info, Support) << "Requested Nbins in multiplicity is " << mBinsMultiplicity << " but limited to 1000 ONLY for TH2 " << ENDM;
+  }
+
   // Multiplicity
   mHistoMultiplicity = std::make_shared<TH1I>("Multiplicity/Integrated", "TOF hit multiplicity;TOF hits;Events ", mBinsMultiplicity, mRangeMinMultiplicity, mRangeMaxMultiplicity);
   getObjectsManager()->startPublishing(mHistoMultiplicity.get());
@@ -159,13 +167,13 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   mHistoMultiplicityOC = std::make_shared<TH1I>("Multiplicity/SectorOC", "TOF hit multiplicity - O/C side;TOF hits;Events ", mBinsMultiplicity, mRangeMinMultiplicity, mRangeMaxMultiplicity);
   getObjectsManager()->startPublishing(mHistoMultiplicityOC.get());
 
-  mHitMultiplicityVsCrate = std::make_shared<TH2F>("Multiplicity/VsCrate", "TOF hit multiplicity vs Crate;Crate;TOF hits", RawDataDecoder::ncrates, 0, RawDataDecoder::ncrates, mBinsMultiplicity, mRangeMinMultiplicity, mRangeMaxMultiplicity);
+  mHitMultiplicityVsCrate = std::make_shared<TH2F>("Multiplicity/VsCrate", "TOF hit multiplicity vs Crate;Crate;TOF hits", RawDataDecoder::ncrates, 0, RawDataDecoder::ncrates, nBinsMultForTH2, mRangeMinMultiplicity, mRangeMaxMultiplicity);
   getObjectsManager()->startPublishing(mHitMultiplicityVsCrate.get());
 
   mHitMultiplicityVsCratepro = std::make_shared<TProfile>("Multiplicity/VsCratepro", "TOF hit multiplicity vs Crate;Crate;#LT TOF hits #GT", RawDataDecoder::ncrates, 0, RawDataDecoder::ncrates);
   getObjectsManager()->startPublishing(mHitMultiplicityVsCratepro.get());
 
-  mHitMultiplicityVsBC = std::make_shared<TH2F>("Multiplicity/VsBC", "TOF hit multiplicity vs BC;BC;#TOF hits;Events", mBinsBCForMultiplicity, 0, mRangeMaxBC, mBinsMultiplicity, mRangeMinMultiplicity, mRangeMaxMultiplicity);
+  mHitMultiplicityVsBC = std::make_shared<TH2F>("Multiplicity/VsBC", "TOF hit multiplicity vs BC;BC;#TOF hits;Events", mBinsBCForMultiplicity, 0, mRangeMaxBC, nBinsMultForTH2, mRangeMinMultiplicity, mRangeMaxMultiplicity);
   getObjectsManager()->startPublishing(mHitMultiplicityVsBC.get());
 
   mHitMultiplicityVsBCpro = std::make_shared<TProfile>("Multiplicity/VsBCpro", "TOF hit multiplicity vs BC;BC;#TOF hits;Events", mBinsBCForMultiplicity, 0, mRangeMaxBC);
@@ -215,13 +223,13 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
 
 void TaskDigits::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "startOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
   reset();
 }
 
 void TaskDigits::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
@@ -343,18 +351,26 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
       int chainECH = o2::tof::Geo::getChainFromECH(ech);
       int tdcECH = o2::tof::Geo::getTDCFromECH(ech);
       int bcCorrCable = bcCorr;
+      float pos[3];
+      o2::tof::Geo::getPos(det, pos);
+      float length = sqrt(pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2]);
 
       if (mCalChannel) {                                                              // calibration
         float timeTDCcorr = digit.getTDC() * o2::tof::Geo::TDCBIN;                    // in ps
-        timeTDCcorr -= mCalChannel->evalTimeSlewing(digit.getChannel(), 0.0) + 10000; // subtract also 10 ns to take partially into account the time of flight
+        timeTDCcorr -= mCalChannel->evalTimeSlewing(digit.getChannel(), 0.0);
         timeTDCcorr -= mLHCphase->getLHCphase(0);
-        bcCorrCable += int(timeTDCcorr * o2::tof::Geo::BC_TIME_INPS_INV);
+        timeTDCcorr -= length * 33.356410 - 1000; // subract path (1ns margin)
+        bcCorrCable += int(o2::constants::lhc::LHCMaxBunches + timeTDCcorr * o2::tof::Geo::BC_TIME_INPS_INV) - o2::constants::lhc::LHCMaxBunches; // to truncate in the proper way
       } else {
         bcCorrCable -= (o2::tof::Geo::getCableTimeShiftBin(crateECH, slotECH, chainECH, tdcECH) - digit.getTDC()) / 1024; // just cable length
       }
 
       if (bcCorrCable < 0) {
         bcCorrCable += o2::constants::lhc::LHCMaxBunches;
+      }
+
+      if (bcCorrCable >= o2::constants::lhc::LHCMaxBunches) {
+        bcCorrCable -= o2::constants::lhc::LHCMaxBunches;
       }
 
       ndigitsPerBC[row.mFirstIR.orbit % nOrbits][bcCorrCable]++;
@@ -421,8 +437,8 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
 
   for (int iorb = 0; iorb < nOrbits; iorb++) {
     for (int ibc = 0; ibc < mBinsBCForMultiplicity; ibc++) {
-      mHitMultiplicityVsBC->Fill(ibc + 1, ndigitsPerBC[iorb][ibc]);
-      mHitMultiplicityVsBCpro->Fill(ibc + 1, ndigitsPerBC[iorb][ibc]);
+      mHitMultiplicityVsBC->Fill(ibc, ndigitsPerBC[iorb][ibc]);
+      mHitMultiplicityVsBCpro->Fill(ibc, ndigitsPerBC[iorb][ibc]);
     }
   }
 
@@ -436,7 +452,7 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
 
 void TaskDigits::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
   for (unsigned int i = 0; i < RawDataDecoder::nstrips; i++) {
     mCounterHitsPerStrip[i].FillHistogram(mHistoHitMap.get(), i + 1);
     mCounterHitsPerStripNoiseFiltered[i].FillHistogram(mHistoHitMapNoiseFiltered.get(), i + 1);
@@ -451,13 +467,13 @@ void TaskDigits::endOfCycle()
 
 void TaskDigits::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void TaskDigits::reset()
 {
   // clean all the monitor objects here
-  ILOG(Info, Support) << "Resetting the counters" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the counters" << ENDM;
   for (unsigned int i = 0; i < RawDataDecoder::nstrips; i++) {
     mCounterHitsPerStrip[i].Reset();
     mCounterHitsPerStripNoiseFiltered[i].Reset();
@@ -468,7 +484,7 @@ void TaskDigits::reset()
     mCounterNoisyChannels[i].Reset();
   }
 
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   // Event info
   mHistoOrbitID->Reset();
   mHistoBCID->Reset();

@@ -207,6 +207,59 @@
         "stopTrigger": [
           "userorcontrol", "10 minutes"
         ]
+      },
+      "ExampleQualityTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::QualityTask",
+        "moduleName": "QualityControl",
+        "detectorName": "TST",
+        "qualityGroups": [
+          {
+            "name" : "global",
+            "title" : "GLOBAL TST QUALITY",
+            "path": "TST/QO",
+            "ignoreQualitiesDetails" : ["Null", "Good", "Medium", "Bad"],
+            "inputObjects": [
+              {
+                "name" : "QcCheck",
+                "title" : "Aggregated TST Quality",
+                "messageBad" : "Inform XYZ on-call immediately",
+                "messageMedium": "Add bookkeeping entry",
+                "messageGood": "All checks are OK",
+                "messageNull": "Some histograms are empty!!!"
+              }
+            ]
+          },
+          {
+            "name" : "details",
+            "title" : "TST DETAILS",
+            "path": "TST/QO",
+            "ignoreQualitiesDetails" : [],
+            "inputObjects": [
+              {
+                "name" : "QcCheck",
+                "title" : ""
+              },
+              {
+                "name" : "someNumbersCheck",
+                "title" : ""
+              },
+              {
+                "name" : "XYZCheck",
+                "title" : ""
+              }
+            ]
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "10 seconds"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
       }
     }
   }

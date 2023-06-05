@@ -38,7 +38,26 @@
                 "taskParameters": {
                 }
             }
-        }
+    },
+    "checks": {
+            "DecodingErrorCheck": {
+                "active": "true",
+                "className": "o2::quality_control_modules::its::ITSDecodingErrorCheck",
+                "moduleName": "QcITS",
+                "policy": "OnEachSeparately",
+                "detectorName": "ITS",
+                "checkParameters": {
+                      "plotWithTextMessage": "",
+                      "textMessage": ""
+                },
+                "dataSource": [{
+                    "type": "Task",
+                    "name": "ITSDECODING",
+                    "MOs": ["General/LinkErrorPlots","General/ChipErrorPlots"]
+                }]
+            }
+       }
+
     },
     "dataSamplingPolicies": [
         {

@@ -13,7 +13,6 @@
 
 #include "CommonConstants/LHCConstants.h"
 #include <DataFormatsMCH/Cluster.h>
-#include <DataFormatsMCH/Digit.h>
 #include <DataFormatsMCH/ROFRecord.h>
 #include <DataFormatsMCH/TrackMCH.h>
 #include <DetectorsBase/GeometryManager.h>
@@ -113,11 +112,7 @@ void TracksTask::createTrackPairHistos()
 
 void TracksTask::initialize(o2::framework::InitContext& /*ic*/)
 {
-  ILOG(Info, Support) << "initialize TracksTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
-
-  if (!o2::base::GeometryManager::isGeometryLoaded()) {
-    TaskInterface::retrieveConditionAny<TObject>("GLO/Config/Geometry");
-  }
+  ILOG(Debug, Devel) << "initialize TracksTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   createTrackHistos();
   createClusterHistos();
@@ -150,12 +145,12 @@ int TracksTask::dsbinx(int deid, int dsid) const
 
 void TracksTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity : " << activity.mId << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity : " << activity.mId << ENDM;
 }
 
 void TracksTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 ROOT::Math::PxPyPzMVector getMomentum4D(const o2::mch::TrackParam& trackParam)
@@ -179,11 +174,22 @@ ROOT::Math::PxPyPzMVector getMomentum4D(const o2::mch::TrackMCH& track)
 
 void TracksTask::fillClusterHistos(gsl::span<const o2::mch::Cluster> clusters)
 {
+  if (mTransformation.get() == nullptr) {
+    // should not happen, but better be safe than sorry
+    return;
+  }
   for (const auto& cluster : clusters) {
     int deId = cluster.getDEId();
     const o2::mch::mapping::Segmentation& seg = o2::mch::mapping::segmentation(deId);
     int b, nb;
-    seg.findPadPairByPosition(cluster.getX(), cluster.getY(), b, nb);
+
+    o2::math_utils::Point3D<double> global{ cluster.getX(),
+                                            cluster.getY(), cluster.getZ() };
+    auto t = (*mTransformation)(deId).Inverse();
+    auto local = t(global);
+
+    seg.findPadPairByPosition(local.X(), local.Y(), b, nb);
+
     if (b >= 0) {
       int dsId = seg.padDualSampaId(b);
       mNofClustersPerDualSampa->Fill(dsbinx(deId, dsId));
@@ -218,6 +224,11 @@ void TracksTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   if (!assertInputs(ctx)) {
     return;
+  }
+
+  if (mTransformation.get() == nullptr && gGeoManager != nullptr) {
+    ILOG(Info, Support) << "get transformation from gGeoManager" << ENDM;
+    mTransformation = std::make_unique<o2::mch::geo::TransformationCreator>(o2::mch::geo::transformationFromTGeoManager(*gGeoManager));
   }
 
   auto tracks = ctx.inputs().get<gsl::span<o2::mch::TrackMCH>>("tracks");
@@ -309,9 +320,10 @@ bool TracksTask::fillTrackHistos(const o2::mch::TrackMCH& track,
   mTrackPhi->Fill(muon.phi() * TMath::RadToDeg() + 180);
   mTrackPt->Fill(muon.pt());
 
-  o2::mch::TrackExtrap::extrapToZ(trackParamAtOrigin, -505.);
-  double xAbs = trackParamAtOrigin.getNonBendingCoor();
-  double yAbs = trackParamAtOrigin.getBendingCoor();
+  o2::mch::TrackParam trackParamAtAbsEnd(track.getZ(), track.getParameters());
+  o2::mch::TrackExtrap::extrapToZ(trackParamAtAbsEnd, -505.);
+  double xAbs = trackParamAtAbsEnd.getNonBendingCoor();
+  double yAbs = trackParamAtAbsEnd.getBendingCoor();
   auto rAbs = std::sqrt(xAbs * xAbs + yAbs * yAbs);
   mTrackRAbs->Fill(rAbs);
 
@@ -320,12 +332,12 @@ bool TracksTask::fillTrackHistos(const o2::mch::TrackMCH& track,
 
 void TracksTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void TracksTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void TracksTask::reset()

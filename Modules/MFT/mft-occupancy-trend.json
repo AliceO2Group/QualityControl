@@ -1,0 +1,77 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "0"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": ""
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      }
+    },
+    "postprocessing": {
+      "OccupancyTrend": {
+        "active": "true",
+        "className": "o2::quality_control::postprocessing::TrendingTask",
+        "moduleName": "QcMFT",
+        "detectorName": "MFT",
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "MFT/MO/Digits",
+            "names": [ "mDigitChipOccupancy" ],
+            "reductorName": "o2::quality_control_modules::mft::QcMFTOccupancyTrend",
+            "moduleName": "QcMFT"
+          },
+          {
+            "type": "repository",
+            "path": "MFT/MO/Clusters",
+            "names": [ "mClusterOccupancy" ],
+            "reductorName": "o2::quality_control_modules::mft::QcMFTOccupancyTrend",
+            "moduleName": "QcMFT"
+          }
+        ],
+        "plots": [
+          {
+            "name": "mDigitEmptyChipsTrend",
+            "title": "Trend of total number of chips with no digits",
+            "varexp": "mDigitChipOccupancy.binContentOverflow:time",
+            "selection": "",
+            "option": "*L",
+            "graphAxisLabel": "Chips with no digits:time"
+          },
+          {
+            "name": "mClusterEmptyChipsTrend",
+            "title": "Trend of total number of chips with no clusters",
+            "varexp": "mClusterOccupancy.binContentOverflow:time",
+            "selection": "",
+            "option": "*L",
+            "graphAxisLabel": "Chips with no clusters:time"
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "60 seconds"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      }
+    }
+  }
+}

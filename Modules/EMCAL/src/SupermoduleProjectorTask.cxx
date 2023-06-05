@@ -25,22 +25,24 @@
 #include "TH1D.h"
 #include "TH2D.h"
 
+#include <boost/property_tree/ptree.hpp>
+
 using namespace o2::quality_control::postprocessing;
 using namespace o2::quality_control::core;
 
 namespace o2::quality_control_modules::emcal
 {
 
-void SupermoduleProjectorTask::configure(std::string name, const boost::property_tree::ptree& config)
+void SupermoduleProjectorTask::configure(const boost::property_tree::ptree& config)
 {
-  mDataSources = getDataSources(name, config);
-  mAttributeHandler = parseCustomizations(name, config);
+  mDataSources = getDataSources(getID(), config);
+  mAttributeHandler = parseCustomizations(getID(), config);
 }
 
 void SupermoduleProjectorTask::initialize(Trigger, framework::ServiceRegistryRef)
 {
   QcInfoLogger::setDetector("EMC");
-  ILOG(Info, Support) << "initialize SuperModuleProjectorTask" << ENDM;
+  ILOG(Debug, Devel) << "initialize SuperModuleProjectorTask" << ENDM;
   // create canvas objects for each plot
   for (const auto& datasource : mDataSources) {
     std::string canvasname = "PerSM_" + datasource.name,
@@ -57,6 +59,10 @@ void SupermoduleProjectorTask::update(Trigger t, framework::ServiceRegistryRef s
   auto& qcdb = services.get<quality_control::repository::DatabaseInterface>();
   for (auto& dataSource : mDataSources) {
     auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name, t.timestamp, t.activity);
+    if (mo == nullptr) {
+      ILOG(Warning, Trace) << "Could not retrieve MO '" << dataSource.name << "', skipping this data source" << ENDM;
+      continue;
+    }
     auto canvas = mCanvasHandler.find(dataSource.name);
     if (canvas != mCanvasHandler.end()) {
       PlotAttributes* plotCustomizations = nullptr;

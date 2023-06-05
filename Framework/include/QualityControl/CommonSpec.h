@@ -17,6 +17,7 @@
 ///
 
 #include <string>
+#include <cstdint>
 #include <unordered_map>
 #include "QualityControl/DiscardFileParameters.h"
 
@@ -39,8 +40,9 @@ struct CommonSpec {
   std::string conditionDBUrl = "http://ccdb-test.cern.ch:8080";
   DiscardFileParameters infologgerDiscardParameters;
   double postprocessingPeriod = 10.0;
+  std::string bookkeepingUrl;
 };
 
 } // namespace o2::quality_control::core
 
-#endif //QUALITYCONTROL_COMMONSPEC_H
+#endif // QUALITYCONTROL_COMMONSPEC_H

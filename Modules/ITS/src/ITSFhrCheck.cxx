@@ -27,6 +27,7 @@
 #include <TH2Poly.h>
 #include <TString.h>
 #include "Common/Utils.h"
+#include "TMath.h"
 
 namespace o2::quality_control_modules::its
 {
@@ -42,6 +43,7 @@ Quality ITSFhrCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
       auto* h = dynamic_cast<TH1D*>(mo->getObject());
       if (h->GetMaximum() > 0) {
         result.set(Quality::Bad);
+        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), "BAD:Decoding error(s) detected;");
       }
     } else if (mo->getName() == "General/General_Occupancy") {
       auto* h = dynamic_cast<TH2Poly*>(mo->getObject());
@@ -49,36 +51,62 @@ Quality ITSFhrCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
       result.addMetadata("Gen_Occu_OB", "good");
       result.addMetadata("Gen_Occu_empty", "good");
       result.set(Quality::Good);
-      std::vector<int> skipbins = convertToIntArray(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "skipbins", ""));
-      for (int ibin = 1; ibin <= h->GetNumberOfBins(); ibin++) {
+      std::vector<int> skipbins = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "skipbins", ""));
+
+      TIter next(h->GetBins());
+      int ibin = 1;
+      double_t nBadStaves[4];
+      TString sErrorReason = "";
+      while (TH2PolyBin* Bin = (TH2PolyBin*)next()) {
+        if (std::find(skipbins.begin(), skipbins.end(), ibin) != skipbins.end()) {
+          ibin++;
+          continue;
+        }
+
+        double X_center = (Bin->GetXMax() + Bin->GetXMin()) / 2;
+        double Y_center = (Bin->GetYMax() + Bin->GetYMin()) / 2;
+        double phi = TMath::ATan2(Y_center, X_center);
+        int sector = 2 * (phi + TMath::Pi()) / TMath::Pi();
+
         if (ibin <= 48) { // IB
           fhrcutIB = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "fhrcutIB", fhrcutIB);
           if (h->GetBinContent(ibin) > fhrcutIB) {
-            if (std::find(skipbins.begin(), skipbins.end(), ibin) != skipbins.end()) {
-              continue;
-            }
             result.updateMetadata("Gen_Occu_IB", "bad");
             result.set(Quality::Bad);
+            TString text = "Bad: IB stave has high FHR;";
+            if (!checkReason(result, text))
+              result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), text.Data());
           }
         } else { // OB
           fhrcutOB = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "fhrcutOB", fhrcutOB);
           if (h->GetBinContent(ibin) > fhrcutOB) {
-            if (std::find(skipbins.begin(), skipbins.end(), ibin) != skipbins.end()) {
-              continue;
-            }
             result.updateMetadata("Gen_Occu_OB", "bad");
             result.set(Quality::Bad);
+            TString text = "Bad: OB stave has high FHR;";
+            if (!checkReason(result, text))
+              result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), text.Data());
           }
         }
 
-        if (h->GetBinContent(ibin) < 1e-15) { // in case of empty stave
-          if (std::find(skipbins.begin(), skipbins.end(), ibin) != skipbins.end()) {
-            continue;
-          }
+        if (Bin->GetContent() < 1e-15) { // in case of empty stave
+          nBadStaves[sector]++;
+        }
+        ibin++;
+      }
+
+      for (int iSector = 0; iSector < 4; iSector++) {
+        if (nBadStaves[iSector] / 48 > 0.1) {
           result.updateMetadata("Gen_Occu_empty", "bad");
           result.set(Quality::Bad);
+          result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), "Bad: Many empty staves in sector; IGNORE if run has just started OR it's TECH RUN");
+          break;
+        } else if (nBadStaves[iSector] / 48 > 0.05) {
+          result.updateMetadata("Gen_Occu_empty", "medium");
+          result.set(Quality::Medium);
+          result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), "Medium: Many empty staves in sector; IGNORE if run has just started OR it's TECH RUN");
         }
-      } // end loop on bins
+      }
+
     } else if (mo->getName() == "General/Noisy_Pixel") {
       auto* h = dynamic_cast<TH2Poly*>(mo->getObject());
       result.addMetadata("Noi_Pix", "good");
@@ -128,39 +156,60 @@ std::string ITSFhrCheck::getAcceptedType() { return "TH1"; }
 
 void ITSFhrCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
+  std::vector<string> vPlotWithTextMessage = convertToArray<string>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "plotWithTextMessage", ""));
+  std::vector<string> vTextMessage = convertToArray<string>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "textMessage", ""));
+  std::map<string, string> ShifterInfoText;
+
+  if ((int)vTextMessage.size() == (int)vPlotWithTextMessage.size()) {
+    for (int i = 0; i < (int)vTextMessage.size(); i++) {
+      ShifterInfoText[vPlotWithTextMessage[i]] = vTextMessage[i];
+    }
+  } else
+
+    ILOG(Warning, Support) << "Bad list of plot with TextMessages for shifter, check .json" << ENDM;
+
+  std::shared_ptr<TLatex> tShifterInfo = std::make_shared<TLatex>(0.005, 0.006, Form("#bf{%s}", TString(ShifterInfoText[mo->getName()]).Data()));
+  tShifterInfo->SetTextSize(0.04);
+  tShifterInfo->SetTextFont(43);
+  tShifterInfo->SetNDC();
+
   TLatex* text[5];
   TString status;
   int textColor;
   if (mo->getName() == "General/ErrorPlots") {
     auto* h = dynamic_cast<TH1D*>(mo->getObject());
     if (checkResult == Quality::Good) {
-      text[0] = new TLatex(10, 0.6, "Quality::Good");
-      text[1] = new TLatex(10, 0.4, "There is no Error found");
+      text[0] = new TLatex(0.05, 0.95, "#bf{Quality::Good}");
+      text[1] = new TLatex(0.2, 0.4, "There is no Error found");
       for (int i = 0; i < 2; ++i) {
-        text[i]->SetTextAlign(23);
-        text[i]->SetTextSize(0.08);
+        text[i]->SetTextFont(43);
+        text[i]->SetTextSize(0.06);
         text[i]->SetTextColor(kGreen);
+        text[i]->SetNDC();
         h->GetListOfFunctions()->Add(text[i]);
       }
     } else if (checkResult == Quality::Bad) {
-      text[0] = new TLatex(0.2, 0.7, "Quality::Bad");
+      text[0] = new TLatex(0.05, 0.95, "#bf{Quality::Bad}");
       text[1] = new TLatex(0.2, 0.65, "Decoding error(s) detected");
       text[2] = new TLatex(0.2, 0.6, "Do not call, create a log entry");
       for (int i = 0; i < 3; ++i) {
         text[i]->SetTextFont(43);
-        text[i]->SetTextSize(0.04);
+        text[i]->SetTextSize(0.06);
         text[i]->SetTextColor(kRed);
         text[i]->SetNDC();
         h->GetListOfFunctions()->Add(text[i]);
       }
     }
+    if (ShifterInfoText[mo->getName()] != "")
+      h->GetListOfFunctions()->Add(tShifterInfo->Clone());
+
   } else if (mo->getName() == "General/General_Occupancy") {
     auto* h = dynamic_cast<TH2Poly*>(mo->getObject());
     if (checkResult == Quality::Good) {
       status = "Quality GOOD";
       textColor = kGreen;
     } else if (checkResult == Quality::Bad) {
-      status = "Quality Bad (call expert)";
+      status = "Quality::Bad (call expert)";
       textColor = kRed;
     }
 
@@ -183,20 +232,30 @@ void ITSFhrCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
       h->GetListOfFunctions()->Add(tInfo[1]->Clone());
     }
     if (strcmp(checkResult.getMetadata("Gen_Occu_empty").c_str(), "bad") == 0) {
-      tInfo[2] = std::make_shared<TLatex>(0.4, 0.3, "#splitline{There are staves without hits}{IGNORE them if run has just started OR if it's TECH RUN}");
+      tInfo[2] = std::make_shared<TLatex>(0.4, 0.3, "#splitline{ITS sector has more than 10% of empty staves}{IGNORE them if run has just started OR if it's TECH RUN}");
       tInfo[2]->SetTextColor(kRed);
+      tInfo[2]->SetTextSize(0.03);
+      tInfo[2]->SetTextFont(43);
+      tInfo[2]->SetNDC();
+      h->GetListOfFunctions()->Add(tInfo[2]->Clone());
+    } else if (strcmp(checkResult.getMetadata("Gen_Occu_empty").c_str(), "medium") == 0) {
+      tInfo[2] = std::make_shared<TLatex>(0.4, 0.3, "#splitline{ITS sector has more than 5% of empty staves}{IGNORE them if run has just started OR if it's TECH RUN}");
+      tInfo[2]->SetTextColor(kOrange);
       tInfo[2]->SetTextSize(0.03);
       tInfo[2]->SetTextFont(43);
       tInfo[2]->SetNDC();
       h->GetListOfFunctions()->Add(tInfo[2]->Clone());
     }
 
-    tInfo[3] = std::make_shared<TLatex>(0.12, 0.835, Form("#bf{%s}", status.Data()));
+    tInfo[3] = std::make_shared<TLatex>(0.05, 0.95, Form("#bf{%s}", status.Data()));
     tInfo[3]->SetTextColor(textColor);
-    tInfo[3]->SetTextSize(0.03);
+    tInfo[3]->SetTextSize(0.06);
     tInfo[3]->SetTextFont(43);
     tInfo[3]->SetNDC();
     h->GetListOfFunctions()->Add(tInfo[3]->Clone());
+
+    if (ShifterInfoText[mo->getName()] != "")
+      h->GetListOfFunctions()->Add(tShifterInfo->Clone());
 
   } else if (mo->getName() == "General/Noisy_Pixel") {
     auto* h = dynamic_cast<TH2Poly*>(mo->getObject());
@@ -227,6 +286,8 @@ void ITSFhrCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
         h->GetListOfFunctions()->Add(text[i]);
       }
     }
+    if (ShifterInfoText[mo->getName()] != "")
+      h->GetListOfFunctions()->Add(tShifterInfo->Clone());
   }
   TString objectName = mo->getName();
   if (objectName.Contains("ChipStave")) {
@@ -267,21 +328,18 @@ void ITSFhrCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
         h->GetListOfFunctions()->Add(text[i]);
       }
     }
+    if (ShifterInfoText[mo->getName()] != "")
+      h->GetListOfFunctions()->Add(tShifterInfo->Clone());
   }
 }
-
-std::vector<int> ITSFhrCheck::convertToIntArray(std::string input)
+bool ITSFhrCheck::checkReason(Quality checkResult, TString text)
 {
-  std::replace(input.begin(), input.end(), ',', ' ');
-  std::istringstream stringReader{ input };
-
-  std::vector<int> result;
-  int number;
-  while (stringReader >> number) {
-    result.push_back(number);
+  auto reasons = checkResult.getReasons();
+  for (int i = 0; i < int(reasons.size()); i++) {
+    if (text.Contains(reasons[i].second.c_str()))
+      return true;
   }
-
-  return result;
+  return false;
 }
 
 } // namespace o2::quality_control_modules::its

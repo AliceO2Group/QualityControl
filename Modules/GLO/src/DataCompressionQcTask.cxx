@@ -31,7 +31,7 @@ namespace o2::quality_control_modules::glo
 
 void DataCompressionQcTask::initialize(o2::framework::InitContext&)
 {
-  // ILOG(Info, Support) << "initialize DataCompression QC task" << ENDM;
+  // ILOG(Debug, Devel) << "initialize DataCompression QC task" << ENDM;
 
   TH1::AddDirectory(false);
 
@@ -77,7 +77,7 @@ void DataCompressionQcTask::initialize(o2::framework::InitContext&)
 
 void DataCompressionQcTask::startOfActivity(Activity&)
 {
-  ILOG(Info, Support) << "startOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
 
   for (const auto& pair : mCompressionHists) {
     for (const auto& hist : pair.second) {
@@ -88,7 +88,7 @@ void DataCompressionQcTask::startOfActivity(Activity&)
 
 void DataCompressionQcTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void DataCompressionQcTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -114,17 +114,17 @@ void DataCompressionQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void DataCompressionQcTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void DataCompressionQcTask::endOfActivity(Activity&)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void DataCompressionQcTask::reset()
 {
-  ILOG(Info, Support) << "Resetting the histograms" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histogramss" << ENDM;
 
   for (const auto& pair : mCompressionHists) {
     for (const auto& hist : pair.second) {

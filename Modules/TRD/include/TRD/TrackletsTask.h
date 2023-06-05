@@ -59,6 +59,7 @@ class TrackletsTask final : public TaskInterface
 
  private:
   long int mTimestamp;
+  bool mLayerLabelsIgnore = false;
   std::array<TH2F*, 18> moHCMCM;
   std::array<TH1F*, 18> mTrackletQ0perSector;
   std::array<TH1F*, 18> mTrackletQ1perSector;
@@ -70,6 +71,7 @@ class TrackletsTask final : public TaskInterface
   TH1F* mTrackletPosition = nullptr;
   TH1F* mTrackletPositionRaw = nullptr;
   TH1F* mTrackletsPerEvent = nullptr;
+  TH2F* mTrackletsPerEvent2D = nullptr;
   std::array<TH2F*, 18> moHCMCMn;
   TH1F* mTrackletSlopen = nullptr;
   TH1F* mTrackletSlopeRawn = nullptr;

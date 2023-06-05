@@ -34,7 +34,7 @@ namespace o2::quality_control_modules::tpc
 
 void JunkDetection::initialize(o2::framework::InitContext&)
 {
-  ILOG(Info, Support) << "initialize JunkDetection QC task" << ENDM;
+  ILOG(Debug, Devel) << "initialize JunkDetection QC task" << ENDM;
 
   mIsMergeable = o2::quality_control_modules::common::getFromConfig<bool>(mCustomParameters, "mergeableOutput");
 
@@ -54,7 +54,7 @@ void JunkDetection::initialize(o2::framework::InitContext&)
 
 void JunkDetection::startOfActivity(Activity&)
 {
-  ILOG(Info, Support) << "startOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
 
   if (!mIsMergeable) {
     mJDCanv->Clear();
@@ -63,7 +63,7 @@ void JunkDetection::startOfActivity(Activity&)
 
 void JunkDetection::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void JunkDetection::monitorData(o2::framework::ProcessingContext& ctx)
@@ -83,12 +83,12 @@ void JunkDetection::monitorData(o2::framework::ProcessingContext& ctx)
 
 void JunkDetection::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void JunkDetection::endOfActivity(Activity&)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 
   if (!mIsMergeable) {
     getObjectsManager()->stopPublishing(mJDCanv.get());
@@ -102,7 +102,7 @@ void JunkDetection::endOfActivity(Activity&)
 
 void JunkDetection::reset()
 {
-  ILOG(Info, Support) << "Resetting the histograms" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histogramss" << ENDM;
 
   if (!mIsMergeable) {
     mJDCanv->Clear();

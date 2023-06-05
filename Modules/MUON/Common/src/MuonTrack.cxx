@@ -10,10 +10,10 @@
 // or submit itself to any jurisdiction.
 
 #include "MUONCommon/MuonTrack.h"
+#include "QualityControl/QcInfoLogger.h"
 
 #include <DataFormatsITSMFT/ROFRecord.h>
 #include <DataFormatsMCH/Cluster.h>
-#include <DataFormatsMCH/Digit.h>
 #include <DataFormatsMCH/ROFRecord.h>
 #include <DataFormatsMFT/TrackMFT.h>
 #include <DataFormatsMCH/TrackMCH.h>
@@ -149,7 +149,7 @@ static ROOT::Math::PxPyPzMVector getMuonMomentumAtVertex(const o2::mch::TrackPar
   o2::mch::TrackParam trackParamAtVertex = par;
   bool result = getParametersAtVertex(trackParamAtVertex);
   if (!result) {
-    std::cerr << "Track extrap failed\n";
+    ILOG(Error, Devel) << "Track extrap failed" << ENDM;
     return ROOT::Math::PxPyPzMVector();
   }
 
@@ -164,7 +164,7 @@ static float getDCA(const o2::mch::TrackParam& par)
   o2::mch::TrackParam trackParamAtDCA = par;
   bool result = getParametersAtVertex(trackParamAtDCA, false);
   if (!result) {
-    std::cerr << "Track extrap failed\n";
+    ILOG(Error, Devel) << "Track extrap failed" << ENDM;
     return 0;
   }
 

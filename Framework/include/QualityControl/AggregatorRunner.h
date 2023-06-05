@@ -106,14 +106,14 @@ class AggregatorRunner : public framework::Task
   const std::vector<std::shared_ptr<Aggregator>>& getAggregators() const { return mAggregators; }
 
   static framework::DataProcessorLabel getLabel() { return { "qc-aggregator" }; }
-  static std::string createAggregatorRunnerIdString() { return "QC-AGGREGATOR-RUNNER"; };
+  static std::string createAggregatorRunnerIdString() { return "qc-aggregator"; };
   static std::string createAggregatorRunnerName();
   static header::DataDescription createAggregatorRunnerDataDescription(const std::string& aggregatorName);
 
   /// \brief Compute the detector name to be used in the infologger for this runner.
   /// Compute the detector name to be used in the infologger for this runner.
   /// If all checks belong to the same detector we use it, otherwise we use "MANY"
-  static std::string getDetectorName(std::vector<std::shared_ptr<Aggregator>> aggregators);
+  static std::string getDetectorName(const std::vector<std::shared_ptr<Aggregator>>& aggregators);
 
  private:
   /**
@@ -158,8 +158,8 @@ class AggregatorRunner : public framework::Task
    * @param aggregators
    * @return true if all sources are found, by name, in the vector of aggregators.
    */
-  bool areSourcesIn(const std::vector<AggregatorSource>& sources,
-                    const std::vector<std::shared_ptr<Aggregator>>& aggregators);
+  static bool areSourcesIn(const std::vector<AggregatorSource>& sources,
+                           const std::vector<std::shared_ptr<Aggregator>>& aggregators);
 
   /**
    * Send metrics to the monitoring system if the time has come.

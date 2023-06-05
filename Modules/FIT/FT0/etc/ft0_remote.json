@@ -1,0 +1,206 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?METRIC"
+      },
+      "consul": {
+        "url": ""
+      },
+      "conditionDB": {
+        "url": "alice-ccdb.cern.ch"
+      },
+      "infologger": {
+        "filterDiscardDebug": "false",
+        "filterDiscardLevel": "20"
+      }
+    },
+    "checks": {
+      "OutOfBunchCollCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::ft0::OutOfBunchCollCheck",
+        "moduleName": "QcFT0",
+        "policy": "OnAny",
+        "detectorName": "FT0",
+        "dataSource": [
+          {
+            "type": "PostProcessing",
+            "name": "PostProcTask",
+            "MOs": [
+              "OutOfBunchColl_BCvsTrg"
+            ]
+          }
+        ],
+        "checkParameters": {
+          "thresholdWarning": "2.5e-3",
+          "thresholdError": "5.0e-3"
+        }
+      },
+      "ChannelCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::ft0::FractionCheck",
+        "moduleName": "QcFT0",
+        "policy": "OnAny",
+        "detectorName": "FT0",
+        "dataSource": [
+          {
+            "type": "PostProcessing",
+            "name": "PostProcTask",
+            "MOs": [
+              "TimeInWindowFraction"
+            ]
+          }
+        ],
+        "checkParameters": {
+          "thresholdWarning": "0.9",
+          "thresholdError": "0.8",
+          "binsToIgnore": "139",
+          "nameObjectToCheck" : "TimeInWindowFraction",
+          "isInversedThresholds" : "false"
+        }
+      },
+      "ChannelOutOfBunchCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::ft0::FractionCheck",
+        "moduleName": "QcFT0",
+        "policy": "OnAny",
+        "detectorName": "FT0",
+        "dataSource": [
+          {
+            "type": "PostProcessing",
+            "name": "PostProcTask",
+            "MOs": [
+              "ChannelID_outOfBC"
+            ]
+          }
+        ],
+        "checkParameters": {
+          "thresholdWarning": "0.0005",
+          "thresholdError": "0.002",
+          "binsToIgnore": "139",
+          "nameObjectToCheck" : "ChannelID_outOfBC",
+          "isInversedThresholds" : "true"
+        }
+      },
+      "TrgValidationCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::ft0::FractionCheck",
+        "moduleName": "QcFT0",
+        "policy": "OnAny",
+        "detectorName": "FT0",
+        "dataSource": [
+          {
+            "type": "PostProcessing",
+            "name": "PostProcTask",
+            "MOs": [
+              "TrgValidation"
+            ]
+          }
+        ],
+        "checkParameters": {
+          "thresholdWarning": "0.0005",
+          "thresholdError": "0.002",
+          "binsToIgnore": "3,2",
+          "nameObjectToCheck" : "TrgValidation",
+          "isInversedThresholds" : "true"
+        }
+      }
+      
+    },
+    "postprocessing": {
+      "PostProcTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::ft0::PostProcTask",
+        "moduleName": "QcFT0",
+        "detectorName": "FT0",
+        "custom": {
+          "numOrbitsInTF": "32",
+          "cycleDurationMoName": "CycleDurationNTF",
+          "timestampSourceLhcIf": "metadata"
+        },
+        "initTrigger": [
+          "newobject:qcdb:FT0/MO/DigitQcTask/TriggersCorrelation"
+        ],
+        "updateTrigger": [
+          "newobject:qcdb:FT0/MO/DigitQcTask/TriggersCorrelation"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      },
+      "TrendingTask": {
+        "active": "true",
+        "className": "o2::quality_control::postprocessing::TrendingTask",
+        "moduleName": "QcFT0",
+        "detectorName": "FT0",
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "FT0/MO/DigitQcTask",
+            "names": [
+              "CycleDuration",
+              "CycleDurationNTF",
+              "AverageTimeA",
+              "AverageTimeC"
+            ],
+            "reductorName": "o2::quality_control_modules::common::TH1Reductor",
+            "moduleName": "QcCommon"
+          }
+        ],
+        "plots": [
+          {
+            "name": "trend_cycle_duration",
+            "title": "cycle duration [ns]",
+            "varexp": "CycleDuration.entries:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "trend_cycle_duration_ntf",
+            "title": "cycle duration [TimeFrames]",
+            "varexp": "CycleDurationNTF.entries:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "cycle_duration_corr",
+            "title": "cycle duration: ns/TF;time;cycle duration [ns/TimeFrames]",
+            "varexp": "CycleDuration.entries/CycleDurationNTF.entries:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "cycle_duration_ntf_corr",
+            "title": "TF duration [ns];#TF;TF duration [ns]",
+            "varexp": "CycleDuration.entries/CycleDurationNTF.entries:CycleDurationNTF.entries",
+            "selection": "",
+            "option": "colz"
+          },
+          {
+            "name": "trend_time",
+            "title": "(TOA+TOC)/2 from TCM [ps]",
+            "varexp": "(AverageTimeA.mean+AverageTimeC.mean)/2 * 13.02:time",
+            "selection": "",
+            "option": "*L"
+          }
+        ],
+        "initTrigger": [
+          "newobject:qcdb:FT0/MO/DigitQcTask/TriggersCorrelation"
+        ],
+        "updateTrigger": [
+          "newobject:qcdb:FT0/MO/DigitQcTask/TriggersCorrelation"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      }
+    }
+  }
+}

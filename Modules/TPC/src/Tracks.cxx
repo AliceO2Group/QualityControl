@@ -36,7 +36,7 @@ namespace o2::quality_control_modules::tpc
 
 void Tracks::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize TPC Tracks QC task" << ENDM;
+  ILOG(Debug, Devel) << "initialize TPC Tracks QC task" << ENDM;
 
   const float cutMindEdxTot = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "cutMindEdxTot");
   const float cutAbsEta = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "cutAbsEta");
@@ -55,13 +55,13 @@ void Tracks::initialize(o2::framework::InitContext& /*ctx*/)
 
 void Tracks::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "startOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
   mQCTracks.resetHistograms();
 }
 
 void Tracks::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void Tracks::monitorData(o2::framework::ProcessingContext& ctx)
@@ -77,19 +77,19 @@ void Tracks::monitorData(o2::framework::ProcessingContext& ctx)
 void Tracks::endOfCycle()
 {
   mQCTracks.processEndOfCycle();
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void Tracks::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void Tracks::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   mQCTracks.resetHistograms();
 }
 

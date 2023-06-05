@@ -50,7 +50,7 @@ class TrendingRate : public PostProcessingInterface
   TrendingRate() = default;
   ~TrendingRate() override = default;
 
-  void configure(std::string name, const boost::property_tree::ptree& config) override;
+  void configure(const boost::property_tree::ptree& config) override;
   void initialize(Trigger, framework::ServiceRegistryRef) override;
   void update(Trigger, framework::ServiceRegistryRef) override;
   void finalize(Trigger, framework::ServiceRegistryRef) override;
@@ -85,7 +85,7 @@ class TrendingRate : public PostProcessingInterface
 
   TH2F* mPreviousPlot = nullptr; /// to keep memory of previous plot to work only with updates
 
-  static constexpr float orbit_lenght = 90E-6;
+  static constexpr float orbit_lenght = 88.924596E-6;
   // These are initialized from the TrendingConfigTOF.h
   float mThresholdSgn = 0.f;
   float mThresholdBkg = 0.f;

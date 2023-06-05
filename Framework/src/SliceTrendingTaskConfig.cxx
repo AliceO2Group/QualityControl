@@ -22,13 +22,13 @@
 namespace o2::quality_control::postprocessing
 {
 
-SliceTrendingTaskConfig::SliceTrendingTaskConfig(const std::string& name,
+SliceTrendingTaskConfig::SliceTrendingTaskConfig(const std::string& id,
                                                  const boost::property_tree::ptree& config)
-  : PostProcessingConfig(name, config)
+  : PostProcessingConfig(id, config)
 {
-  producePlotsOnUpdate = config.get<bool>("qc.postprocessing." + name + ".producePlotsOnUpdate", true);
-  resumeTrend = config.get<bool>("qc.postprocessing." + name + ".resumeTrend", false);
-  for (const auto& plotConfig : config.get_child("qc.postprocessing." + name + ".plots")) {
+  producePlotsOnUpdate = config.get<bool>("qc.postprocessing." + id + ".producePlotsOnUpdate", true);
+  resumeTrend = config.get<bool>("qc.postprocessing." + id + ".resumeTrend", false);
+  for (const auto& plotConfig : config.get_child("qc.postprocessing." + id + ".plots")) {
     plots.push_back({ plotConfig.second.get<std::string>("name"),
                       plotConfig.second.get<std::string>("title", ""),
                       plotConfig.second.get<std::string>("varexp"),
@@ -41,7 +41,7 @@ SliceTrendingTaskConfig::SliceTrendingTaskConfig(const std::string& name,
   }
 
   // Loop over all the data sources to trend.
-  for (const auto& dataSourceConfig : config.get_child("qc.postprocessing." + name + ".dataSources")) {
+  for (const auto& dataSourceConfig : config.get_child("qc.postprocessing." + id + ".dataSources")) {
     // Prepare the vector(vector) for the slicing.
     std::vector<std::vector<float>> axisBoundaries;
     std::vector<float> singleAxis;
@@ -75,7 +75,7 @@ SliceTrendingTaskConfig::SliceTrendingTaskConfig(const std::string& name,
                               axisBoundaries,
                               dataSourceConfig.second.get<std::string>("moduleName") });
     } else {
-      throw std::runtime_error("No 'name' value or a 'names' vector in the path 'qc.postprocessing." + name + ".dataSources'");
+      throw std::runtime_error("No 'name' value or a 'names' vector in the path 'qc.postprocessing." + id + ".dataSources'");
     }
 
     axisBoundaries.clear();

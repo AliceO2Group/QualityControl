@@ -58,7 +58,7 @@ class DatabaseInterface
    * @param password
    * @deprecated
    */
-  virtual void connect(std::string host, std::string database, std::string username, std::string password) = 0;
+  virtual void connect(const std::string& host, const std::string& database, const std::string& username, const std::string& password) = 0;
   /**
    * Connects to the database.
    * For some implementations, this is a noop.
@@ -116,7 +116,7 @@ class DatabaseInterface
    * @param from The timestamp indicating the start of object's validity (ms since epoch).
    * @param to The timestamp indicating the end of object's validity (ms since epoch).
    */
-  virtual void storeMO(std::shared_ptr<const o2::quality_control::core::MonitorObject> mo, long from = -1, long to = -1) = 0;
+  virtual void storeMO(std::shared_ptr<const o2::quality_control::core::MonitorObject> mo) = 0;
 
   /**
    * Stores the serialized QualityObject in the database.
@@ -124,7 +124,7 @@ class DatabaseInterface
    * @param from The timestamp indicating the start of object's validity (ms since epoch).
    * @param to The timestamp indicating the end of object's validity (ms since epoch).
    */
-  virtual void storeQO(std::shared_ptr<const o2::quality_control::core::QualityObject> qo, long from = -1, long to = -1) = 0;
+  virtual void storeQO(std::shared_ptr<const o2::quality_control::core::QualityObject> qo) = 0;
 
   /**
    * Stores the serialized TimeRangeFlagCollection in the database.

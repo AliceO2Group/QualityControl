@@ -19,6 +19,8 @@
 #include <TCanvas.h>
 #include <TH1.h>
 #include <TH2.h>
+#include <TProfile.h>
+#include <TLorentzVector.h>
 
 #include "QualityControl/QcInfoLogger.h"
 #include "PID/TaskFT0TOF.h"
@@ -31,7 +33,6 @@
 #include "DataFormatsGlobalTracking/RecoContainerCreateTracksVariadic.h"
 #include "ReconstructionDataFormats/TrackParametrization.h"
 #include "DetectorsBase/Propagator.h"
-#include "DetectorsBase/GeometryManager.h"
 #include "TOFBase/EventTimeMaker.h"
 #include "GlobalTrackingWorkflow/TOFEventTimeChecker.h"
 #include "DetectorsRaw/HBFUtils.h"
@@ -88,6 +89,8 @@ TaskFT0TOF::~TaskFT0TOF()
   delete mHistDeltaEvTimeTOFVsFT0ASameBC;
   delete mHistDeltaEvTimeTOFVsFT0CSameBC;
   delete mHistDeltaBCTOFFT0;
+  delete mHistMismatchVsEta;
+  delete mProfLoverCvsEta;
 }
 
 void TaskFT0TOF::initialize(o2::framework::InitContext& /*ctx*/)
@@ -95,40 +98,40 @@ void TaskFT0TOF::initialize(o2::framework::InitContext& /*ctx*/)
   ILOG(Info, Support) << " Initializing... " << ENDM;
   // track selection
   if (auto param = mCustomParameters.find("minPtCut"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - minPtCut (for track selection): " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - minPtCut (for track selection): " << param->second << ENDM;
     setMinPtCut(atof(param->second.c_str()));
   }
   if (auto param = mCustomParameters.find("etaCut"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - etaCut (for track selection): " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - etaCut (for track selection): " << param->second << ENDM;
     setEtaCut(atof(param->second.c_str()));
   }
   if (auto param = mCustomParameters.find("minNTPCClustersCut"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - minNTPCClustersCut (for track selection): " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - minNTPCClustersCut (for track selection): " << param->second << ENDM;
     setMinNTPCClustersCut(atoi(param->second.c_str()));
   }
   if (auto param = mCustomParameters.find("minDCACut"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - minDCACut (for track selection): " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - minDCACut (for track selection): " << param->second << ENDM;
     setMinDCAtoBeamPipeCut(atof(param->second.c_str()));
   }
   if (auto param = mCustomParameters.find("minDCACutY"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - minDCACutY (for track selection): " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - minDCACutY (for track selection): " << param->second << ENDM;
     setMinDCAtoBeamPipeYCut(atof(param->second.c_str()));
   }
   if (auto param = mCustomParameters.find("useFT0"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - useFT0: " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - useFT0: " << param->second << ENDM;
     if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
       mUseFT0 = true;
     }
   }
   if (auto param = mCustomParameters.find("evTimeTracksMaxMomentum"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - EvTimeTracksMaxMomentum (for ev time computation): " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - EvTimeTracksMaxMomentum (for ev time computation): " << param->second << ENDM;
     mEvTimeTracksMaxMomentum = atof(param->second.c_str());
     MyTrack::setT0MaxP(mEvTimeTracksMaxMomentum);
   }
 
   // for track type selection
   if (auto param = mCustomParameters.find("GID"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - GID (= sources by user): " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - GID (= sources by user): " << param->second << ENDM;
     ILOG(Info, Devel) << "Allowed Sources = " << mAllowedSources << ENDM;
     mSrc = mAllowedSources & GID::getSourcesMask(param->second);
     ILOG(Info, Devel) << "Final requested sources = " << mSrc << ENDM;
@@ -162,36 +165,33 @@ void TaskFT0TOF::initialize(o2::framework::InitContext& /*ctx*/)
       mHistDeltatPi[i][j] = new TH1F(Form("DeltatPi_%s_t0%s", title[i].c_str(), evtimetitle[j].c_str()), Form("tracks: %s , evTime: %s;t_{TOF} - t_{exp}^{#pi} (ps)", title[i].c_str(), evtimetitle[j].c_str()), 500, -5000, 5000);
       mHistDeltatKa[i][j] = new TH1F(Form("DeltatKa_%s_t0%s", title[i].c_str(), evtimetitle[j].c_str()), Form("tracks: %s , evTime: %s;t_{TOF} - t_{exp}^{K} (ps)", title[i].c_str(), evtimetitle[j].c_str()), 500, -5000, 5000);
       mHistDeltatPr[i][j] = new TH1F(Form("DeltatPr_%s_t0%s", title[i].c_str(), evtimetitle[j].c_str()), Form("tracks: %s , evTime: %s;t_{TOF} - t_{exp}^{p} (ps)", title[i].c_str(), evtimetitle[j].c_str()), 500, -5000, 5000);
-      mHistDeltatPiPt[i][j] = new TH2F(Form("DeltatPi_Pt_%s_t0%s", title[i].c_str(), evtimetitle[j].c_str()), Form("tracks: %s , evTime: %s;#it{p}_{T} (GeV/#it{c});t_{TOF} - t_{exp}^{#pi} (ps)", title[i].c_str(), evtimetitle[j].c_str()), 5000, 0., 20., 500, -5000, 5000);
-      mHistDeltatKaPt[i][j] = new TH2F(Form("DeltatKa_Pt_%s_t0%s", title[i].c_str(), evtimetitle[j].c_str()), Form("tracks: %s , evTime: %s;#it{p}_{T} (GeV/#it{c});t_{TOF} - t_{exp}^{#pi} (ps)", title[i].c_str(), evtimetitle[j].c_str()), 1000, 0., 20., 500, -5000, 5000);
-      mHistDeltatPrPt[i][j] = new TH2F(Form("DeltatPr_Pt_%s_t0%s", title[i].c_str(), evtimetitle[j].c_str()), Form("tracks: %s , evTime: %s;#it{p}_{T} (GeV/#it{c});t_{TOF} - t_{exp}^{#pi} (ps)", title[i].c_str(), evtimetitle[j].c_str()), 1000, 0., 20., 500, -5000, 5000);
+      mHistDeltatPiPt[i][j] = new TH2F(Form("DeltatPi_Pt_%s_t0%s", title[i].c_str(), evtimetitle[j].c_str()), Form("tracks: %s , evTime: %s;#it{p}_{T} (GeV/#it{c});t_{TOF} - t_{exp}^{#pi} (ps)", title[i].c_str(), evtimetitle[j].c_str()), 100, 0., 10., 500, -5000, 5000);
+      mHistDeltatKaPt[i][j] = new TH2F(Form("DeltatKa_Pt_%s_t0%s", title[i].c_str(), evtimetitle[j].c_str()), Form("tracks: %s , evTime: %s;#it{p}_{T} (GeV/#it{c});t_{TOF} - t_{exp}^{#pi} (ps)", title[i].c_str(), evtimetitle[j].c_str()), 100, 0., 10., 500, -5000, 5000);
+      mHistDeltatPrPt[i][j] = new TH2F(Form("DeltatPr_Pt_%s_t0%s", title[i].c_str(), evtimetitle[j].c_str()), Form("tracks: %s , evTime: %s;#it{p}_{T} (GeV/#it{c});t_{TOF} - t_{exp}^{#pi} (ps)", title[i].c_str(), evtimetitle[j].c_str()), 100, 0., 10., 500, -5000, 5000);
       mHistMass[i][j] = new TH1F(Form("HadronMasses_%s_t0%s", title[i].c_str(), evtimetitle[j].c_str()), Form("tracks: %s , evTime: %s;M (GeV/#it{c}^{2})", title[i].c_str(), evtimetitle[j].c_str()), 1000, 0, 3.);
-      mHistMassvsP[i][j] = new TH2F(Form("HadronMassesvsP_%s_t0%s", title[i].c_str(), evtimetitle[j].c_str()), Form("tracks: %s , evTime: %s;#it{p} (GeV/#it{c});M (GeV/#it{c}^{2})", title[i].c_str(), evtimetitle[j].c_str()), 1000, 0., 5, 1000, 0, 3.);
-      mHistBetavsP[i][j] = new TH2F(Form("BetavsP_%s_t0%s", title[i].c_str(), evtimetitle[j].c_str()), Form("tracks: %s , evTime: %s;#it{p} (GeV/#it{c});TOF #beta", title[i].c_str(), evtimetitle[j].c_str()), 1000, 0., 5, 1000, 0., 1.5);
+      mHistMassvsP[i][j] = new TH2F(Form("HadronMassesvsP_%s_t0%s", title[i].c_str(), evtimetitle[j].c_str()), Form("tracks: %s , evTime: %s;#it{p} (GeV/#it{c});M (GeV/#it{c}^{2})", title[i].c_str(), evtimetitle[j].c_str()), 100, 0., 5, 500, 0, 3.);
+      mHistBetavsP[i][j] = new TH2F(Form("BetavsP_%s_t0%s", title[i].c_str(), evtimetitle[j].c_str()), Form("tracks: %s , evTime: %s;#it{p} (GeV/#it{c});TOF #beta", title[i].c_str(), evtimetitle[j].c_str()), 100, 0., 5, 500, 0., 1.5);
     }
-    mHistDeltatPiEvTimeRes[i] = new TH2F(Form("DeltatPiEvtimeRes_%s", title[i].c_str()), Form("tracks %s, 1.5 < p < 1.6 GeV/#it{c};TOF event time resolution (ps);t_{TOF} - t_{exp}^{#pi} (ps)", title[i].c_str()), 200, 0., 200, 500, -5000, 5000);
-    mHistDeltatPiEvTimeMult[i] = new TH2F(Form("DeltatPiEvTimeMult_%s", title[i].c_str()), Form("tracks %s, 1.5 < p < 1.6 GeV/#it{c};TOF multiplicity; t_{TOF} - t_{exp}^{#pi} (ps)", title[i].c_str()), 100, 0., 100, 500, -5000, 5000);
+    mHistDeltatPiEvTimeRes[i] = new TH2F(Form("DeltatPiEvtimeRes_%s", title[i].c_str()), Form("tracks %s, 1.5 < p < 1.6 GeV/#it{c};TOF event time resolution (ps);t_{TOF} - t_{exp}^{#pi} (ps)", title[i].c_str()), 100, 0., 200, 500, -5000, 5000);
+    mHistDeltatPiEvTimeMult[i] = new TH2F(Form("DeltatPiEvTimeMult_%s", title[i].c_str()), Form("tracks %s, 1.5 < p < 1.6 GeV/#it{c};TOF multiplicity; t_{TOF} - t_{exp}^{#pi} (ps)", title[i].c_str()), 200, 0., 200, 500, -5000, 5000);
   }
   mHistEvTimeResEvTimeMult = new TH2F("EvTimeResEvTimeMult", "1.5 < p < 1.6 GeV/#it{c};TOF multiplicity;TOF event time resolution (ps)", 100, 0., 100, 200, 0, 200);
   mHistEvTimeTOF = new TH1F("EvTimeTOF", "t_{0}^{TOF};t_{0}^{TOF} (ps);Counts", 1000, -5000., +5000);
-  mHistEvTimeTOFVsFT0AC = new TH2F("EvTimeTOFVsFT0AC", "t_{0}^{FT0AC} vs t_{0}^{TOF} w.r.t. BC;t_{0}^{TOF} w.r.t. BC (ps);t_{0}^{FT0AC} w.r.t. BC (ps)", 1000, -5000., +5000, 1000, -5000., +5000);
-  mHistEvTimeTOFVsFT0A = new TH2F("EvTimeTOFVsFT0A", "t_{0}^{FT0A} vs t_{0}^{TOF} w.r.t. BC;t_{0}^{TOF} w.r.t. BC (ps);t_{0}^{FT0A} w.r.t. BC (ps)", 1000, -5000., +5000, 1000, -5000., +5000);
-  mHistEvTimeTOFVsFT0C = new TH2F("EvTimeTOFVsFT0C", "t_{0}^{FT0C} vs t_{0}^{TOF} w.r.t. BC;t_{0}^{TOF} w.r.t. BC (ps);t_{0}^{FT0C} w.r.t. BC (ps)", 1000, -5000., +5000, 1000, -5000., +5000);
+  mHistEvTimeTOFVsFT0AC = new TH2F("EvTimeTOFVsFT0AC", "t_{0}^{FT0AC} vs t_{0}^{TOF} w.r.t. BC;t_{0}^{TOF} w.r.t. BC (ps);t_{0}^{FT0AC} w.r.t. BC (ps)", 200, -2000., +2000, 200, -2000., +2000);
+  mHistEvTimeTOFVsFT0A = new TH2F("EvTimeTOFVsFT0A", "t_{0}^{FT0A} vs t_{0}^{TOF} w.r.t. BC;t_{0}^{TOF} w.r.t. BC (ps);t_{0}^{FT0A} w.r.t. BC (ps)", 200, -2000., +2000, 200, -2000., +2000);
+  mHistEvTimeTOFVsFT0C = new TH2F("EvTimeTOFVsFT0C", "t_{0}^{FT0C} vs t_{0}^{TOF} w.r.t. BC;t_{0}^{TOF} w.r.t. BC (ps);t_{0}^{FT0C} w.r.t. BC (ps)", 200, -2000., +2000, 200, -2000., +2000);
   mHistDeltaEvTimeTOFVsFT0AC = new TH1F("DeltaEvTimeTOFVsFT0AC", ";t_{0}^{TOF} - t_{0}^{FT0AC} (ps)", 200, -2000., +2000);
   mHistDeltaEvTimeTOFVsFT0A = new TH1F("DeltaEvTimeTOFVsFT0A", ";t_{0}^{TOF} - t_{0}^{FT0A} (ps)", 200, -2000., +2000);
   mHistDeltaEvTimeTOFVsFT0C = new TH1F("DeltaEvTimeTOFVsFT0C", ";t_{0}^{TOF} - t_{0}^{FT0C} (ps)", 200, -2000., +2000);
-  mHistEvTimeTOFVsFT0ACSameBC = new TH2F("EvTimeTOFVsFT0ACSameBC", "t_{0}^{FT0AC} vs t_{0}^{TOF} w.r.t. BC;t_{0}^{TOF} w.r.t. BC (ps);t_{0}^{FT0AC} w.r.t. BC (ps)", 1000, -5000., +5000, 1000, -5000., +5000);
-  mHistEvTimeTOFVsFT0ASameBC = new TH2F("EvTimeTOFVsFT0ASameBC", "t_{0}^{FT0A} vs t_{0}^{TOF} w.r.t. BC;t_{0}^{TOF} w.r.t. BC (ps);t_{0}^{FT0A} w.r.t. BC (ps)", 1000, -5000., +5000, 1000, -5000., +5000);
-  mHistEvTimeTOFVsFT0CSameBC = new TH2F("EvTimeTOFVsFT0CSameBC", "t_{0}^{FT0C} vs t_{0}^{TOF} w.r.t. BC;t_{0}^{TOF} w.r.t. BC (ps);t_{0}^{FT0C} w.r.t. BC (ps)", 1000, -5000., +5000, 1000, -5000., +5000);
+  mHistEvTimeTOFVsFT0ACSameBC = new TH2F("EvTimeTOFVsFT0ACSameBC", "t_{0}^{FT0AC} vs t_{0}^{TOF} w.r.t. BC;t_{0}^{TOF} w.r.t. BC (ps);t_{0}^{FT0AC} w.r.t. BC (ps)", 200, -2000., +2000, 200, -2000., +2000);
+  mHistEvTimeTOFVsFT0ASameBC = new TH2F("EvTimeTOFVsFT0ASameBC", "t_{0}^{FT0A} vs t_{0}^{TOF} w.r.t. BC;t_{0}^{TOF} w.r.t. BC (ps);t_{0}^{FT0A} w.r.t. BC (ps)", 200, -2000., +2000, 200, -2000., +2000);
+  mHistEvTimeTOFVsFT0CSameBC = new TH2F("EvTimeTOFVsFT0CSameBC", "t_{0}^{FT0C} vs t_{0}^{TOF} w.r.t. BC;t_{0}^{TOF} w.r.t. BC (ps);t_{0}^{FT0C} w.r.t. BC (ps)", 200, -2000., +2000, 200, -2000., +2000);
   mHistDeltaEvTimeTOFVsFT0ACSameBC = new TH1F("DeltaEvTimeTOFVsFT0ACSameBC", ";t_{0}^{TOF} - t_{0}^{FT0AC} (ps)", 200, -2000., +2000);
   mHistDeltaEvTimeTOFVsFT0ASameBC = new TH1F("DeltaEvTimeTOFVsFT0ASameBC", ";t_{0}^{TOF} - t_{0}^{FT0A} (ps)", 200, -2000., +2000);
   mHistDeltaEvTimeTOFVsFT0CSameBC = new TH1F("DeltaEvTimeTOFVsFT0CSameBC", ";t_{0}^{TOF} - t_{0}^{FT0C} (ps)", 200, -2000., +2000);
   mHistDeltaBCTOFFT0 = new TH1I("DeltaBCTOFFT0", "#Delta BC (TOF-FT0 evt time);#Delta BC", 16, -8, +8);
-
-  // initialize B field and geometry for track selection
-  o2::base::GeometryManager::loadGeometry(mGeomFileName);
-  o2::base::Propagator::initFieldFromGRP(mGRPFileName);
-  mBz = o2::base::Propagator::Instance()->getNominalBz();
+  mHistMismatchVsEta = new TH2F("mHistMismatchVsEta", ";#eta;t_{TOF}-t_{0}^{FT0AC}-L_{ch}/c", 21, -1., +1., 6500, -30000, +100000);
+  mProfLoverCvsEta = new TProfile("LoverCvsEta", ";#eta;L_{ch}/c", 21, -1., +1.);
 
   // publish histgrams
   getObjectsManager()->startPublishing(mHistEvTimeResEvTimeMult);
@@ -209,6 +209,8 @@ void TaskFT0TOF::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mHistDeltaEvTimeTOFVsFT0ACSameBC);
   getObjectsManager()->startPublishing(mHistDeltaEvTimeTOFVsFT0ASameBC);
   getObjectsManager()->startPublishing(mHistDeltaEvTimeTOFVsFT0CSameBC);
+  getObjectsManager()->startPublishing(mHistMismatchVsEta);
+  getObjectsManager()->startPublishing(mProfLoverCvsEta);
 
   // Use FT0?
   int evTimeMax = 1; // if not use only TOF (evTimeType::TOF == 0)
@@ -289,19 +291,22 @@ void TaskFT0TOF::initialize(o2::framework::InitContext& /*ctx*/)
 
 void TaskFT0TOF::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity " << activity.mId << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
   reset();
 }
 
 void TaskFT0TOF::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void TaskFT0TOF::monitorData(o2::framework::ProcessingContext& ctx)
 {
   ++mTF;
   ILOG(Info, Support) << " Processing TF: " << mTF << ENDM;
+
+  // Getting the B field
+  mBz = o2::base::Propagator::Instance()->getNominalBz();
 
   mRecoCont.collectData(ctx, *mDataRequest.get());
 
@@ -469,8 +474,9 @@ void TaskFT0TOF::monitorData(o2::framework::ProcessingContext& ctx)
         double lastTime = tracks[ntrk - 1].tofSignalDouble() + 8 * o2::tof::Geo::BC_TIME_INPS;
         for (int j = ift0; j < ft0Sorted.size(); j++) {
           auto& obj = ft0Sorted[j];
-          if (obj.getInteractionRecord().orbit < ft0firstOrbit)
-            continue; // skip the FT0 objects from previous orbits
+          if (obj.getInteractionRecord().orbit < ft0firstOrbit) {
+            continue; // skip FT0 objects from previous orbits
+          }
           uint32_t orbit = obj.getInteractionRecord().orbit - ft0firstOrbit;
           double BCtimeFT0 = ((orbit)*o2::constants::lhc::LHCMaxBunches + obj.getInteractionRecord().bc) * o2::tof::Geo::BC_TIME_INPS;
 
@@ -493,6 +499,55 @@ void TaskFT0TOF::monitorData(o2::framework::ProcessingContext& ctx)
 
       processEvent(tracks, ft0Cand);
     }
+  } // end loop on tracks
+
+  const auto clusters = mRecoCont.getTOFClusters(); // get the TOF clusters
+  std::vector<int> clsIndex;                        // use vector of clusters indices
+  clsIndex.resize(clusters.size());
+  for (int i = 0; i < clsIndex.size(); i++) {
+    clsIndex[i] = i;
+  }
+  // sort clusters indices in time
+  std::sort(clsIndex.begin(), clsIndex.end(), [&clusters](int a, int b) { return clusters[a].getTime() < clusters[b].getTime(); });
+
+  int icls = 0;
+  static TLorentzVector v;
+
+  for (auto& ft0 : ft0Sorted) {
+    if (!ft0.isValidTime(0)) {
+      continue; // skip invalid FT0AC times
+    }
+    if (ft0firstOrbit > ft0.getInteractionRecord().orbit) {
+      continue; // skip FT0 objects from previous orbits
+    }
+
+    double ft0time = ((ft0.getInteractionRecord().orbit - ft0firstOrbit) * o2::constants::lhc::LHCMaxBunches + ft0.getInteractionRecord().bc) * o2::tof::Geo::BC_TIME_INPS + ft0.getCollisionTime(0);
+    double timemax = ft0time + 100E3;
+    double timemin = ft0time - 30E3;
+
+    for (int j = icls; j < clusters.size(); j++) {
+      auto& obj = clusters[clsIndex[j]];
+
+      if (obj.getTime() < timemin) {
+        icls = j + 1;
+        continue;
+      }
+      if (obj.getTime() > timemax) {
+        break;
+      }
+
+      int channel = obj.getMainContributingChannel(); // channel index
+      int det[5];
+      o2::tof::Geo::getVolumeIndices(channel, det); // detector index
+      float pos[3];
+      o2::tof::Geo::getPos(det, pos); // detector position
+      v.SetXYZT(pos[0], pos[1], pos[2], 0);
+      float LoverC = v.P() * 33.3564095; // L/c
+      float eta = v.Eta();
+
+      mHistMismatchVsEta->Fill(eta, obj.getTime() - ft0time - LoverC);
+      mProfLoverCvsEta->Fill(eta, LoverC);
+    }
   }
 
   ILOG(Info, Support) << " Processed! " << ENDM;
@@ -502,12 +557,12 @@ void TaskFT0TOF::monitorData(o2::framework::ProcessingContext& ctx)
 void TaskFT0TOF::endOfCycle()
 {
 
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void TaskFT0TOF::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void TaskFT0TOF::reset()
@@ -651,7 +706,11 @@ void TaskFT0TOF::processEvent(const std::vector<MyTrack>& tracks, const std::vec
         }
         if (track.getPt() > 1.5 && track.getPt() < 1.6) {
           mHistDeltatPiEvTimeRes[i]->Fill(mEvTimeRes, deltatpi[0]);
-          mHistDeltatPiEvTimeMult[i]->Fill(mMultiplicity, deltatpi[0]);
+          if (mMultiplicity < 200) {
+            mHistDeltatPiEvTimeMult[i]->Fill(mMultiplicity, deltatpi[0]);
+          } else {
+            mHistDeltatPiEvTimeMult[i]->Fill(199, deltatpi[0]);
+          }
         }
       }
     }

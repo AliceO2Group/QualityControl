@@ -16,3 +16,5 @@ compile_commands.json
 *.orig
 gh-md-toc
 .clangd
+/Framework/script/RepoCleaner/build/
+/Framework/script/RepoCleaner/qcrepocleaner.egg-info/

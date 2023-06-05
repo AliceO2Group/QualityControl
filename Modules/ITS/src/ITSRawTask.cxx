@@ -107,12 +107,12 @@ ITSRawTask::~ITSRawTask()
 
 void ITSRawTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize ITSRawTask" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "initialize ITSRawTask" << ENDM;
 
   o2::its::GeometryTGeo* geom = o2::its::GeometryTGeo::Instance();
   geom->fillMatrixCache(o2::math_utils::bit2Mask(o2::math_utils::TransformType::L2G));
   int numOfChips = geom->getNumberOfChips();
-  ILOG(Info, Support) << "numOfChips = " << numOfChips << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "numOfChips = " << numOfChips << ENDM;
   setNChips(numOfChips);
 
   for (int i = 0; i < NError; i++) {
@@ -158,7 +158,7 @@ void ITSRawTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   publishHistos();
 
-  ILOG(Info, Support) << "DONE Inititing Publication = " << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "DONE Inititing Publication = " << ENDM;
 
   bulb->SetFillColor(kRed);
   mTotalFileDone = 0;
@@ -169,12 +169,12 @@ void ITSRawTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void ITSRawTask::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
 }
 
 void ITSRawTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void ITSRawTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -193,25 +193,25 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   ofstream timefout2("HisTimeLoop.dat", ios::app);
 
-  ILOG(Info, Support) << "BEEN HERE BRO" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "BEEN HERE BRO" << ENDM;
 
   int FileID = ctx.inputs().get<int>("File");
   int EPID = ctx.inputs().get<int>("EP");
   getProcessStatus(ctx.inputs().get<int>("Finish"), FileFinish);
   updateFile(ctx.inputs().get<int>("Run"), ctx.inputs().get<int>("EP"), FileID);
 
-  //Will Fix Later//
+  // Will Fix Later//
 
   int ResetDecision = ctx.inputs().get<int>("in");
-  ILOG(Info, Support) << "Reset Histogram Decision = " << ResetDecision
-                      << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "Reset Histogram Decision = " << ResetDecision
+                     << ENDM;
   if (ResetDecision == 1) {
     reset();
   }
 
   auto digits = ctx.inputs().get<const std::vector<o2::itsmft::Digit>>("digits");
   auto events = ctx.inputs().get<DigitEvent*>("Events");
-  LOG(info) << "Digit Size Getting For This TimeFrame (Event) = " << digits.size();
+  ILOG(Debug, Devel) << "Digit Size Getting For This TimeFrame (Event) = " << digits.size() << ENDM;
 
   mErrors = ctx.inputs().get<const std::array<unsigned int, NError>>("Error");
 
@@ -220,8 +220,8 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
 
   for (int i = 0; i < NError; i++) {
-    ILOG(Info, Support) << " i = " << i << "   Error = " << mErrors[i] << "   ErrorPre = " << mErrorPre[i]
-                        << "   ErrorPerFile = " << mErrorPerFile[i] << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Debug, Devel) << " i = " << i << "   Error = " << mErrors[i] << "   ErrorPre = " << mErrorPre[i]
+                       << "   ErrorPerFile = " << mErrorPerFile[i] << ENDM;
     hErrorPlots->SetBinContent(i + 1, mErrors[i]);
     hErrorFile->SetBinContent((FileID + 1 + (EPID - 4) * 12), i + 1, mErrorPerFile[i]);
   }
@@ -233,7 +233,7 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
 
   difference = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-  //	ILOG(Info, Support) << "Before Loop = " << difference/1000.0 << "s" <<  AliceO2::InfoLogger::InfoLogger::endm;
+  //	ILOG(Debug, Devel) << "Before Loop = " << difference/1000.0 << "s" <<  ENDM;
   timefout << "Before Loop  = " << difference / 1000.0 << "s" << std::endl;
   int i = 0;
   for (auto&& pixeldata : digits) {
@@ -245,7 +245,7 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext& ctx)
     //    mNEvent = pixeldata.getROFrame();
     mNEvent = events.get()[i].NEvent;
     i++;
-    //cout << "Event Compare: " << NEvent << ", " << NEventPre << endl;
+    // cout << "Event Compare: " << NEvent << ", " << NEventPre << endl;
 
     if (mNEvent % occUpdateFrequency == 0 && mNEvent > 0 && mNEvent != mNEventPre) {
       updateOccupancyPlots(mNEventPre);
@@ -256,12 +256,12 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (mCounted < mTotalCounted) {
       end = std::chrono::high_resolution_clock::now();
       difference = std::chrono::duration_cast<std::chrono::nanoseconds>(end - startLoop).count();
-      //	ILOG(Info, Support) << "Before Geo = " << difference << "ns" <<  AliceO2::InfoLogger::InfoLogger::endm;
+      //	ILOG(Debug, Devel) << "Before Geo = " << difference << "ns" <<  ENDM;
       timefout2 << "Getting Value Time  = " << difference << "ns" << std::endl;
     }
 
     if (mNEvent % 1000000 == 0 && mNEvent > 0) {
-      ILOG(Info, Support) << "ChipID = " << ChipID << "  col = " << col << "  row = " << row << "  mNEvent = " << mNEvent << AliceO2::InfoLogger::InfoLogger::endm;
+      ILOG(Debug, Devel) << "ChipID = " << ChipID << "  col = " << col << "  row = " << row << "  mNEvent = " << mNEvent << ENDM;
     }
     // wouldnt this update this update the text for every digit in events 1000, 2000 ... ?
     if (mNEvent % 1000 == 0 || mNEventPre != mNEvent) {
@@ -272,7 +272,7 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (mCounted < mTotalCounted) {
       end = std::chrono::high_resolution_clock::now();
       difference = std::chrono::duration_cast<std::chrono::nanoseconds>(end - startLoop).count();
-      //	ILOG(Info, Support) << "Before Geo = " << difference << "ns" <<  AliceO2::InfoLogger::InfoLogger::endm;
+      //	ILOG(Debug, Devel) << "Before Geo = " << difference << "ns" <<  ENDM;
       timefout2 << "Before Geo  = " << difference << "ns" << std::endl;
     }
 
@@ -289,7 +289,7 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (mCounted < mTotalCounted) {
       end = std::chrono::high_resolution_clock::now();
       difference = std::chrono::duration_cast<std::chrono::nanoseconds>(end - startLoop).count();
-      //	ILOG(Info, Support) << "After Geo = " << difference << "ns" <<  AliceO2::InfoLogger::InfoLogger::endm;
+      //	ILOG(Debug, Devel) << "After Geo = " << difference << "ns" <<  ENDM;
       timefout2 << "After Geo =  " << difference << "ns" << std::endl;
     }
 
@@ -309,14 +309,14 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (mCounted < mTotalCounted) {
       end = std::chrono::high_resolution_clock::now();
       difference = std::chrono::duration_cast<std::chrono::nanoseconds>(end - startLoop).count();
-      //	ILOG(Info, Support) << "After Geo = " << difference << "ns" <<  AliceO2::InfoLogger::InfoLogger::endm;
+      //	ILOG(Debug, Devel) << "After Geo = " << difference << "ns" <<  ENDM;
       timefout2 << "Fill HitMaps =  " << difference << "ns" << std::endl;
     }
 
     if (mCounted < mTotalCounted) {
       end = std::chrono::high_resolution_clock::now();
       difference = std::chrono::duration_cast<std::chrono::nanoseconds>(end - startLoop).count();
-      //	ILOG(Info, Support) << "After Geo = " << difference << "ns" <<  AliceO2::InfoLogger::InfoLogger::endm;
+      //	ILOG(Debug, Devel) << "After Geo = " << difference << "ns" <<  ENDM;
       timefout2 << "Before glo etaphi =  " << difference << "ns" << std::endl;
     }
 
@@ -327,7 +327,7 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (mCounted < mTotalCounted) {
       end = std::chrono::high_resolution_clock::now();
       difference = std::chrono::duration_cast<std::chrono::nanoseconds>(end - startLoop).count();
-      //	ILOG(Info, Support) << "After Geo = " << difference << "ns" <<  AliceO2::InfoLogger::InfoLogger::endm;
+      //	ILOG(Debug, Devel) << "After Geo = " << difference << "ns" <<  ENDM;
       timefout2 << "After glo etaphi =  " << difference << "ns" << std::endl;
       mCounted = mCounted + 1;
     }
@@ -339,23 +339,23 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext& ctx)
   if (mNEventPre > 0) {
     updateOccupancyPlots(mNEventPre);
   }
-  //cout << "EndUpdateOcc " << NEventPre <<endl;
+  // cout << "EndUpdateOcc " << NEventPre <<endl;
   end = std::chrono::high_resolution_clock::now();
   difference = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-  ILOG(Info, Support) << "Time After Loop = " << difference / 1000.0 << "s"
-                      << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "Time After Loop = " << difference / 1000.0 << "s"
+                     << ENDM;
   timefout << "Time After Loop = " << difference / 1000.0 << "s" << std::endl;
 
-  ILOG(Info, Support) << "NEventDone = " << mNEvent << AliceO2::InfoLogger::InfoLogger::endm;
-  ILOG(Info, Support) << "Test  " << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "NEventDone = " << mNEvent << ENDM;
+  ILOG(Debug, Devel) << "Test  " << ENDM;
 
   digits.clear();
 
   end = std::chrono::high_resolution_clock::now();
   difference = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
   TotalHisTime = TotalHisTime + difference;
-  ILOG(Info, Support) << "Time in Histogram = " << difference / 1000.0 << "s"
-                      << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "Time in Histogram = " << difference / 1000.0 << "s"
+                     << ENDM;
   timefout << "Time in Histogram = " << difference / 1000.0 << "s" << std::endl;
 
   if (mNEvent == 0 && ChipID == 0 && row == 0 && col == 0 && mYellowed == 0) {
@@ -367,7 +367,7 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext& ctx)
 void ITSRawTask::addObject(TObject* aObject, bool published)
 {
   if (!aObject) {
-    ILOG(Info, Support) << "ERROR: trying to add non-existent object" << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Debug, Devel) << "ERROR: trying to add non-existent object" << ENDM;
     return;
   }
   m_objects.push_back(aObject);
@@ -401,7 +401,7 @@ void ITSRawTask::createGlobalHistos()
   hErrorFile = new TH2D("General/ErrorFile", "Decoding Errors vs File ID", NFiles + 1, -0.5, NFiles + 0.5, NError, 0.5, NError + 0.5);
   formatAxes(hErrorFile, "File ID (data-link)", "Error ID");
   formatStatistics(hErrorFile);
-  //format2DZaxis(hErrorFile);
+  // format2DZaxis(hErrorFile);
   hErrorFile->GetZaxis()->SetTitle("Counts");
   hErrorFile->SetMinimum(0);
 
@@ -640,11 +640,11 @@ void ITSRawTask::addMetadata(int runID, int EpID, int fileID)
 void ITSRawTask::getProcessStatus(int aInfoFile, int& aFileFinish)
 {
   aFileFinish = aInfoFile % 10;
-  //cout<<"aInfoFile = "<<aInfoFile<<endl;
+  // cout<<"aInfoFile = "<<aInfoFile<<endl;
   FileRest = (aInfoFile - aFileFinish) / 10;
 
-  ILOG(Info, Support) << "FileFinish = " << aFileFinish << AliceO2::InfoLogger::InfoLogger::endm;
-  ILOG(Info, Support) << "FileRest = " << FileRest << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "FileFinish = " << aFileFinish << ENDM;
+  ILOG(Debug, Devel) << "FileRest = " << FileRest << ENDM;
 
   if (aFileFinish == 0) {
     bulb->SetFillColor(kGreen);
@@ -663,13 +663,13 @@ void ITSRawTask::updateFile(int aRunID, int aEpID, int aFileID)
   static int RunIDPre = 0, FileIDPre = 0;
   if (RunIDPre != aRunID || FileIDPre != aFileID) {
     TString FileName = Form("infiles/run000%d/data-ep%d-link%d", aRunID, aEpID, aFileID);
-    ILOG(Info, Support) << "For the Moment: RunID = " << aRunID << "  FileID = " << aFileID
-                        << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Debug, Devel) << "For the Moment: RunID = " << aRunID << "  FileID = " << aFileID
+                       << ENDM;
     hFileNameInfo->Fill(0.5);
     hFileNameInfo->SetTitle(Form("Current File Name: %s", FileName.Data()));
     mTotalFileDone = mTotalFileDone + 1;
-    //hInfoCanvas->SetBinContent(1,FileID);
-    //hInfoCanvas->SetBinContent(2,TotalFileDone);
+    // hInfoCanvas->SetBinContent(1,FileID);
+    // hInfoCanvas->SetBinContent(2,TotalFileDone);
     ptFileName->Clear();
     ptNFile->Clear();
     ptFileName->AddText(Form("File Being Proccessed: %s", FileName.Data()));
@@ -683,18 +683,18 @@ void ITSRawTask::updateFile(int aRunID, int aEpID, int aFileID)
 
 void ITSRawTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void ITSRawTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void ITSRawTask::reset()
 {
   // clean all the monitor objects here
-  ILOG(Info, Support) << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
 
   mTotalFileDone = 0;
   ptNFile->Clear();
@@ -704,7 +704,7 @@ void ITSRawTask::reset()
   resetHitmaps();
   resetOccupancyPlots();
 
-  ILOG(Info, Support) << "DONE the histogram Resetting" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "DONE the histogram Resetting" << ENDM;
 }
 
 // reset method for all plots that are supposed to be reset once
@@ -760,7 +760,7 @@ void ITSRawTask::updateOccupancyPlots(int nEvents)
     if (!mlayerEnable[iLayer]) {
       continue;
     }
-    //hEtaPhiHitmap[iLayer]->Reset();
+    // hEtaPhiHitmap[iLayer]->Reset();
     for (int iStave = 0; iStave < NStaves[iLayer]; iStave++) {
       for (int iHic = 0; iHic < nHicPerStave[iLayer]; iHic++) {
         for (int iChip = 0; iChip < nChipsPerHic[iLayer]; iChip++) {
@@ -805,7 +805,7 @@ void ITSRawTask::enableLayers()
   for (int i = 0; i < 7; i++) {
     mlayerEnable[i] = stoi(enable[i]);
   }
-  //cout << "LayerEnable = " << " layer0 = " << layerEnable[0] << " layer5 = " << layerEnable[5] <<  endl;
+  // cout << "LayerEnable = " << " layer0 = " << layerEnable[0] << " layer5 = " << layerEnable[5] <<  endl;
 }
 
 } // namespace its

@@ -161,9 +161,9 @@ function benchmark() {
               continue
             fi
 
-            mapfile -t metrics_checks_executed < <(grep -a 'qc_checks_executed' $run_log | grep -o -e 'value=[0-9]\{1,\}' | sed -e 's/value=//' | tail -n +$warm_up_cycles)
-            mapfile -t metrics_objects_received < <(grep -a 'qc_objects_received' $run_log | grep -o -e 'value=[0-9]\{1,\}' | sed -e 's/value=//' | tail -n +$warm_up_cycles)
-            mapfile -t metrics_test_duration < <(grep -a 'qc_checks_executed' $run_log | grep -o -e '[0-9]\{1,\} hostname' | sed -e 's/ hostname//' | tail -n +$warm_up_cycles)
+            mapfile -t metrics_checks_executed < <(grep -a 'qc_checkrunner_checks_executed' $run_log | sed -r 's/^.*,0 ([0-9]+) .*/\1/' | tail -n +$warm_up_cycles)
+            mapfile -t metrics_objects_received < <(grep -a 'qc_checkrunner_objects_received' $run_log | sed -r 's/^.*,0 ([0-9]+) .*/\1/' | tail -n +$warm_up_cycles)
+            mapfile -t metrics_test_duration < <(grep -a 'qc_checkrunner_checks_executed' $run_log | grep -o -e '[0-9]\{1,\} hostname' | sed -e 's/ hostname//' | tail -n +$warm_up_cycles)
 
             if [ ${#metrics_checks_executed[@]} -ge 2 ] && [ ${#metrics_test_duration[@]} -ge 2 ] && [ ${#metrics_objects_received[@]} -ge 2 ]; then
 

@@ -29,20 +29,20 @@ QualityObject::QualityObject(
   std::vector<std::string> monitorObjectsNames,
   std::map<std::string, std::string> metadata,
   int runNumber)
-  : mQuality{ quality },
+  : mQuality{ std::move(quality) },
     mCheckName{ std::move(checkName) },
     mDetectorName{ std::move(detectorName) },
     mPolicyName{ std::move(policyName) },
     mInputs{ std::move(inputs) },
     mMonitorObjectsNames{ std::move(monitorObjectsNames) },
-    mActivity(runNumber, 0, "", "", "qc")
+    mActivity(runNumber, 0, "", "", "qc", gInvalidValidityInterval)
 {
-  mQuality.overwriteMetadata(std::move(metadata));
+  mQuality.addMetadata(std::move(metadata));
 }
 
 QualityObject::~QualityObject() = default;
 
-const std::string anonChecker = "anonymousChecker";
+constexpr auto anonChecker = "anonymousChecker";
 QualityObject::QualityObject()
   : QualityObject(Quality(), anonChecker)
 {
@@ -70,7 +70,7 @@ std::string QualityObject::getName() const
 void QualityObject::updateQuality(Quality quality)
 {
   //TODO: Update timestamp
-  mQuality = quality;
+  mQuality = std::move(quality);
 }
 Quality QualityObject::getQuality() const
 {
@@ -79,12 +79,12 @@ Quality QualityObject::getQuality() const
 
 void QualityObject::addMetadata(std::string key, std::string value)
 {
-  mQuality.addMetadata(key, value);
+  mQuality.addMetadata(std::move(key), std::move(value));
 }
 
 void QualityObject::addMetadata(std::map<std::string, std::string> pairs)
 {
-  mQuality.addMetadata(pairs);
+  mQuality.addMetadata(std::move(pairs));
 }
 
 const std::map<std::string, std::string>& QualityObject::getMetadataMap() const
@@ -94,17 +94,17 @@ const std::map<std::string, std::string>& QualityObject::getMetadataMap() const
 
 void QualityObject::updateMetadata(std::string key, std::string value)
 {
-  mQuality.updateMetadata(key, value);
+  mQuality.updateMetadata(std::move(key), std::move(value));
 }
 
 std::string QualityObject::getMetadata(std::string key) const
 {
-  return mQuality.getMetadata(key);
+  return mQuality.getMetadata(std::move(key));
 }
 
 std::string QualityObject::getMetadata(std::string key, std::string defaultValue) const
 {
-  return mQuality.getMetadata(key, defaultValue);
+  return mQuality.getMetadata(std::move(key), std::move(defaultValue));
 }
 
 std::string QualityObject::getPath() const
@@ -119,7 +119,7 @@ std::string QualityObject::getPath() const
   return path;
 }
 
-QualityObject& QualityObject::addReason(FlagReason reason, std::string comment)
+QualityObject& QualityObject::addReason(const FlagReason& reason, std::string comment)
 {
   mQuality.addReason(reason, std::move(comment));
   return *this;
@@ -194,6 +194,21 @@ Activity& QualityObject::getActivity()
 void QualityObject::setActivity(const Activity& activity)
 {
   mActivity = activity;
+}
+
+void QualityObject::setValidity(ValidityInterval validityInterval)
+{
+  mActivity.mValidity = validityInterval;
+}
+
+void QualityObject::updateValidity(validity_time_t value)
+{
+  mActivity.mValidity.update(value);
+}
+
+ValidityInterval QualityObject::getValidity() const
+{
+  return mActivity.mValidity;
 }
 
 } // namespace o2::quality_control::core

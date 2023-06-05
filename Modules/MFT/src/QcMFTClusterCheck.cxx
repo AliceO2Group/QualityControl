@@ -23,6 +23,7 @@
 #include <TH2.h>
 #include <TLatex.h>
 #include <TList.h>
+#include <TPaveText.h>
 // Quality Control
 #include "MFT/QcMFTClusterCheck.h"
 #include "QualityControl/MonitorObject.h"
@@ -141,51 +142,44 @@ std::string QcMFTClusterCheck::getAcceptedType() { return "TH1"; }
 
 void QcMFTClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  if (mo->getName() == "mClusterOccupancy") {
-    auto* histogram = dynamic_cast<TH1F*>(mo->getObject());
-
-    if (checkResult == Quality::Good) {
-      LOG(info) << "Quality::Good";
-      histogram->SetLineColor(kGreen + 2);
-      TLatex* tl = new TLatex(350, 1.05 * histogram->GetMaximum(), "#color[418]{Dummy check status: Good!}");
-      histogram->GetListOfFunctions()->Add(tl);
-      tl->Draw();
-    } else if (checkResult == Quality::Bad) {
-      LOG(info) << "Quality::Bad";
-      histogram->SetLineColor(kRed + 1);
-      TLatex* tl = new TLatex(350, 1.05 * histogram->GetMaximum(), "#color[633]{Dummy check status: Bad!}");
-      histogram->GetListOfFunctions()->Add(tl);
-      tl->Draw();
-    } else if (checkResult == Quality::Medium) {
-      LOG(info) << "Quality::Medium";
-      histogram->SetLineColor(kOrange);
-      TLatex* tl = new TLatex(350, 1.05 * histogram->GetMaximum(), "#color[800]{Dummy check status: Medium!}");
-      histogram->GetListOfFunctions()->Add(tl);
-      tl->Draw();
-    }
-  }
-
   if (mo->getName().find("mClusterOccupancySummary") != std::string::npos) {
     auto* hOccupancySummary = dynamic_cast<TH2F*>(mo->getObject());
-
+    TPaveText* msg1 = new TPaveText(0.05, 0.9, 0.35, 1.0, "NDC NB");
+    TPaveText* msg2 = new TPaveText(0.65, 0.9, 0.95, 1.0, "NDC NB");
+    hOccupancySummary->GetListOfFunctions()->Add(msg1);
+    hOccupancySummary->GetListOfFunctions()->Add(msg2);
+    msg1->SetName(Form("%s_msg1", mo->GetName()));
+    msg2->SetName(Form("%s_msg2", mo->GetName()));
     if (checkResult == Quality::Good) {
       LOG(info) << "Quality::Good";
-      TLatex* tl = new TLatex(0.15, 6.0, "Quality Good");
-      tl->SetTextColor(kGreen);
-      hOccupancySummary->GetListOfFunctions()->Add(tl);
-      tl->Draw();
+      msg1->Clear();
+      msg1->AddText("Quality Good");
+      msg1->SetFillColor(kGreen);
+      msg1->Draw();
+      msg2->Clear();
+      msg2->AddText("No action needed");
+      msg2->SetFillColor(kGreen);
+      msg2->Draw();
     } else if (checkResult == Quality::Medium) {
       LOG(info) << "Quality::Medium";
-      TLatex* tl = new TLatex(0.15, 6.0, "Quality medium: notify the on-call by mail");
-      tl->SetTextColor(kOrange);
-      hOccupancySummary->GetListOfFunctions()->Add(tl);
-      tl->Draw();
+      msg1->Clear();
+      msg1->AddText("Quality medium");
+      msg1->SetFillColor(kOrange);
+      msg1->Draw();
+      msg2->Clear();
+      msg2->AddText("Write a logbook entry tagging MFT");
+      msg2->SetFillColor(kOrange);
+      msg2->Draw();
     } else if (checkResult == Quality::Bad) {
       LOG(info) << "Quality::Bad";
-      TLatex* tl = new TLatex(0.15, 6.0, "Quality bad: call the on-call!");
-      tl->SetTextColor(kRed);
-      hOccupancySummary->GetListOfFunctions()->Add(tl);
-      tl->Draw();
+      msg1->Clear();
+      msg1->AddText("Quality bad");
+      msg1->SetFillColor(kRed);
+      msg1->Draw();
+      msg2->Clear();
+      msg2->AddText("Call the on-call!");
+      msg2->SetFillColor(kRed);
+      msg2->Draw();
     }
   }
 }

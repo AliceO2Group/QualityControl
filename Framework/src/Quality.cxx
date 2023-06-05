@@ -17,7 +17,9 @@
 #include "QualityControl/Quality.h"
 #include <ostream>
 #include <iostream>
+#include <utility>
 #include <Common/Exceptions.h>
+#include <boost/algorithm/string.hpp>
 
 namespace o2::quality_control::core
 {
@@ -30,7 +32,7 @@ const Quality Quality::Medium(2, "Medium");
 const Quality Quality::Bad(3, "Bad");
 const Quality Quality::Null(NullLevel, "Null"); // we consider it the worst of the worst
 
-Quality::Quality(unsigned int level, std::string name) : mLevel(level), mName(name), mUserMetadata{} {}
+Quality::Quality(unsigned int level, std::string name) : mLevel(level), mName(std::move(name)), mUserMetadata{} {}
 
 void Quality::set(const Quality& q)
 {
@@ -48,9 +50,9 @@ std::ostream& operator<<(std::ostream& out, const Quality& q) // output
   return out;
 }
 
-void Quality::addMetadata(std::string key, std::string value)
+void Quality::addMetadata(const std::string& key, const std::string& value)
 {
-  mUserMetadata.insert(std::pair(key, value));
+  mUserMetadata.emplace(key, value);
 }
 
 void Quality::addMetadata(std::map<std::string, std::string> pairs)
@@ -64,20 +66,20 @@ const std::map<std::string, std::string>& Quality::getMetadataMap() const
   return mUserMetadata;
 }
 
-void Quality::updateMetadata(std::string key, std::string value)
+void Quality::updateMetadata(const std::string& key, std::string value)
 {
   if (mUserMetadata.count(key) > 0) {
-    mUserMetadata[key] = value;
+    mUserMetadata[key] = std::move(value);
   }
 }
 
 void Quality::overwriteMetadata(std::map<std::string, std::string> pairs)
 {
   mUserMetadata.clear();
-  addMetadata(pairs);
+  addMetadata(std::move(pairs));
 }
 
-std::string Quality::getMetadata(std::string key) const
+std::string Quality::getMetadata(const std::string& key) const
 {
   if (mUserMetadata.count(key) == 0) {
     std::cerr << "Could not get the metadata with key \"" << key << "\"" << std::endl;
@@ -86,12 +88,12 @@ std::string Quality::getMetadata(std::string key) const
   return mUserMetadata.at(key);
 }
 
-std::string Quality::getMetadata(std::string key, std::string defaultValue) const
+std::string Quality::getMetadata(const std::string& key, const std::string& defaultValue) const
 {
   return mUserMetadata.count(key) > 0 ? mUserMetadata.at(key) : defaultValue;
 }
 
-Quality& Quality::addReason(FlagReason reason, std::string comment)
+Quality& Quality::addReason(const FlagReason& reason, std::string comment)
 {
   mReasons.emplace_back(std::move(reason), std::move(comment));
   return *this;
@@ -100,4 +102,18 @@ const CommentedFlagReasons& Quality::getReasons() const
 {
   return mReasons;
 }
+
+Quality Quality::fromString(const std::string& str)
+{
+  if (str == Quality::Good.getName()) {
+    return Quality::Good;
+  } else if (str == Quality::Medium.getName()) {
+    return Quality::Medium;
+  } else if (str == Quality::Bad.getName()) {
+    return Quality::Bad;
+  } else {
+    return Quality::Null;
+  }
+}
+
 } // namespace o2::quality_control::core

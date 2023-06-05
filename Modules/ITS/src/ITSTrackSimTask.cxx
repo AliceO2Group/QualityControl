@@ -107,7 +107,7 @@ ITSTrackSimTask::~ITSTrackSimTask()
 
 void ITSTrackSimTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize ITSTrackSimTask" << ENDM;
+  ILOG(Debug, Devel) << "initialize ITSTrackSimTask" << ENDM;
   mO2GrpPath = mCustomParameters["o2GrpPath"];
   mCollisionsContextPath = mCustomParameters["collisionsContextPath"];
   createAllHistos();
@@ -124,17 +124,17 @@ void ITSTrackSimTask::initialize(o2::framework::InitContext& /*ctx*/)
 void ITSTrackSimTask::startOfActivity(Activity& activity)
 {
   mRunNumber = activity.mId;
-  ILOG(Info, Support) << "startOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
 }
 
 void ITSTrackSimTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void ITSTrackSimTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  ILOG(Info, Support) << "START DOING QC General" << ENDM;
+  ILOG(Debug, Devel) << "START DOING QC General" << ENDM;
   o2::steer::MCKinematicsReader reader(mCollisionsContextPath.c_str());
   info.resize(reader.getNEvents(0));
   for (int i = 0; i < reader.getNEvents(0); ++i) {
@@ -308,17 +308,17 @@ void ITSTrackSimTask::endOfCycle()
 
   for (unsigned int iObj = 0; iObj < mPublishedObjects.size(); iObj++)
     getObjectsManager()->addMetadata(mPublishedObjects.at(iObj)->GetName(), "Run", std::to_string(mRunNumber));
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void ITSTrackSimTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void ITSTrackSimTask::reset()
 {
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   hNumRecoValid_pt->Reset();
   hNumRecoFake_pt->Reset();
   hDenTrue_pt->Reset();
@@ -442,7 +442,7 @@ void ITSTrackSimTask::createAllHistos()
 void ITSTrackSimTask::addObject(TObject* aObject)
 {
   if (!aObject) {
-    ILOG(Info, Support) << " ERROR: trying to add non-existent object " << ENDM;
+    ILOG(Debug, Devel) << " ERROR: trying to add non-existent object " << ENDM;
     return;
   } else {
     mPublishedObjects.push_back(aObject);
@@ -461,7 +461,7 @@ void ITSTrackSimTask::publishHistos()
 {
   for (unsigned int iObj = 0; iObj < mPublishedObjects.size(); iObj++) {
     getObjectsManager()->startPublishing(mPublishedObjects.at(iObj));
-    ILOG(Info, Support) << " Object will be published: " << mPublishedObjects.at(iObj)->GetName() << ENDM;
+    ILOG(Debug, Devel) << " Object will be published: " << mPublishedObjects.at(iObj)->GetName() << ENDM;
   }
 }
 

@@ -53,7 +53,7 @@ git checkout -b branch_$patchVersion
 
 
 echo "cherry-pick the commit from master"
-read -p "Hash to cherry-pick? " hash
+read -p "Hash(es) to cherry-pick? (space separated if multiple)" hash
 echo
 git cherry-pick $hash
 

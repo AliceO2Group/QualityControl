@@ -87,6 +87,8 @@ class CellTask final : public TaskInterface
     TH2* mCellTimeSupermodule = nullptr;      ///< Uncalibrated cell time versus supermodule
     TH2* mCellTimeSupermoduleCalib = nullptr; ///< Calibrated cell time (good cells) versus supermodule
     TH2* mCellAmpSupermoduleBad = nullptr;    ///< Cell amplitude bad cells versus supermodule
+    TH2* mCellAmplitudeTime = nullptr;        ///< Cell amplitude vs. time (raw)
+    TH2* mCellAmplitudeTimeCalib = nullptr;   ///< Cell amplitude vs. time (calibrated)
 
     TH2* mCellOccupancy = nullptr;                      ///< Cell occupancy EMCAL and DCAL
     TH2* mCellOccupancyThr = nullptr;                   ///< Cell occupancy EMCAL and DCAL with Energy trheshold
@@ -177,6 +179,8 @@ class CellTask final : public TaskInterface
   TH1* mEvCounterTFCALIB = nullptr; ///< Number of Events per timeframe per CALIB
   TH1* mTFPerCyclesTOT = nullptr;   ///< Number of Time Frame per cycles TOT
   TH1* mTFPerCycles = nullptr;      ///< Number of Time Frame per cycles per MonitorData
+  TH1* mBCCounterPHYS = nullptr;    ///< Number of physics triggers in bunch crossing
+  TH1* mBCCounterCalib = nullptr;   ///< Number of calib triggers in bunch crossing
   TH1* mCellsMaxSM = nullptr;       ///< Supermodule with the largest amount of cells
 
   TH2* mCells_ev_sm = nullptr;          ///< Number of Cells per events per supermodule

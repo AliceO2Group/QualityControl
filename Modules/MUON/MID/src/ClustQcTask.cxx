@@ -47,8 +47,11 @@ ClustQcTask::~ClustQcTask()
 
 void ClustQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  // ILOG(Info, Support) << "initialize ClusterQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  // ILOG(Info, Devel) << "initialize ClusterQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
   // printf(" =================== > test initialise Clust \n");
+
+  mNbClusterTF = std::make_shared<TH1F>("NbClusterTF", "NbTimeFrame", 1, 0, 1.);
+  getObjectsManager()->startPublishing(mNbClusterTF.get());
 
   mMultClust11 = std::make_shared<TH1F>("MultClust11", "Multiplicity Clusters - MT11 ", 100, 0, 100);
   getObjectsManager()->startPublishing(mMultClust11.get());
@@ -120,19 +123,21 @@ void ClustQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void ClustQcTask::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "startOfActivity" << ENDM;
+  ILOG(Info, Devel) << "startOfActivity" << ENDM;
   // printf(" =================== > test startOfActivity Clust \n");
 }
 
 void ClustQcTask::startOfCycle()
 {
-  // ILOG(Info, Support) << "startOfCycle" << ENDM;
+  // ILOG(Info, Devel) << "startOfCycle" << ENDM;
   // printf(" =================== > test startOfCycle Clust \n");
 }
 
 void ClustQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   // printf(" =================== > test monitorData Clust \n");
+
+  mNbClusterTF->Fill(0.5, 1.);
 
   auto clusters = ctx.inputs().get<gsl::span<o2::mid::Cluster>>("clusters");
   auto rofs = ctx.inputs().get<gsl::span<o2::mid::ROFRecord>>("clusterrofs");
@@ -156,7 +161,7 @@ void ClustQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     multClusterMT12 = 0;
     multClusterMT21 = 0;
     multClusterMT22 = 0;
-    nROF++;
+    mROF++;
 
     for (auto& cluster : clusters.subspan(rofRecord.firstEntry, rofRecord.nEntries)) { // loop Cluster in ROF//
       mClustBCCounts->Fill(rofRecord.interactionRecord.bc, rofRecord.nEntries);
@@ -193,13 +198,13 @@ void ClustQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void ClustQcTask::endOfCycle()
 {
-  // ILOG(Info, Support) << "endOfCycle" << ENDM;
+  // ILOG(Info, Devel) << "endOfCycle" << ENDM;
   // printf(" =================== > test endOfCycle Clust \n");
 }
 
 void ClustQcTask::endOfActivity(Activity& /*activity*/)
 {
-  // ILOG(Info, Support) << "endOfActivity" << ENDM;
+  // ILOG(Info, Devel) << "endOfActivity" << ENDM;
   // printf(" =================== > test endOfActivity Clust \n");
 }
 
@@ -207,8 +212,9 @@ void ClustQcTask::reset()
 {
   // clean all the monitor objects here
 
-  // ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  // ILOG(Info, Devel) << "Resetting the histogram" << ENDM;
   // printf(" =================== > test reset Clust \n");
+  mNbClusterTF->Reset();
 
   mClusterMap11->Reset();
   mClusterMap12->Reset();

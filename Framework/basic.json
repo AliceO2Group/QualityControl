@@ -31,6 +31,9 @@
         "filterDiscardFile": "/tmp/_ID_.txt", "": ["If set, the messages discarded because of filterDiscardLevel",
           "will go to this file (default: <none>); The keyword _ID_ is replaced by the device id. Discarded Debug ",
           "messages won't go there."]
+      },
+      "bookkeeping": {
+        "url": ""
       }
     },
     "tasks": {
@@ -39,16 +42,30 @@
         "className": "o2::quality_control_modules::skeleton::SkeletonTask",
         "moduleName": "QcSkeleton",
         "detectorName": "TST",
-        "cycleDurationSeconds": "10",     "": "10 seconds minimum",
+        "": "The last item in cycleDurations will be used for the rest of the duration whatever the period",
+        "cycleDurations": [
+          {"cycleDurationSeconds": 10, "validitySeconds": 35},
+          {"cycleDurationSeconds": 12, "validitySeconds": 1}
+        ],
         "maxNumberCycles": "-1",
         "": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
           "type": "dataSamplingPolicy",
           "name": "tst-raw"
         },
-        "taskParameters": {
-          "myOwnKey": "myOwnValue"
-        },
+        "extendedTaskParameters": {
+          "default": {
+            "default": {
+              "myOwnKey": "myOwnValue",
+              "myOwnKey2": "myOwnValue2"
+            }
+          },
+          "PHYSICS": {
+            "default": {
+              "myOwnKey1": "myOwnValue1b",
+              "myOwnKey2": "myOwnValue2b"
+            }
+          },
         "location": "remote",
         "saveObjectsToFile": "",      "": "For debugging, path to the file where to save. If empty or missing it won't save."
       }
@@ -64,7 +81,14 @@
           "type": "Task",
           "name": "QcTask",
           "MOs": ["example"]
-        }]
+        }],
+        "extendedCheckParameters": {
+          "physics": {
+            "PROTON-PROTON": {
+              "myOwnKey1": "myOwnValue1c"
+            }
+          }
+        }
       }
     }
   },

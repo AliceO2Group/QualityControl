@@ -57,26 +57,26 @@ RawQcTask::~RawQcTask()
 
 void RawQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize RawQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Info, Devel) << "initialize RawQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
   // printf(" =================== > test initialise RAW \n");
 
   // Retrieve task parameters from the config file
   if (auto param = mCustomParameters.find("feeId-config-file"); param != mCustomParameters.end()) {
-    ILOG(Info, Support) << "Custom parameter - FEE Id config file: " << param->second << ENDM;
+    ILOG(Info, Devel) << "Custom parameter - FEE Id config file: " << param->second << ENDM;
     if (!param->second.empty()) {
       mFeeIdConfig = o2::mid::FEEIdConfig(param->second.c_str());
     }
   }
 
   if (auto param = mCustomParameters.find("crate-masks-file"); param != mCustomParameters.end()) {
-    ILOG(Info, Support) << "Custom parameter - Crate masks file: " << param->second << ENDM;
+    ILOG(Info, Devel) << "Custom parameter - Crate masks file: " << param->second << ENDM;
     if (!param->second.empty()) {
       mCrateMasks = o2::mid::CrateMasks(param->second.c_str());
     }
   }
 
   if (auto param = mCustomParameters.find("electronics-delays-file"); param != mCustomParameters.end()) {
-    ILOG(Info, Support) << "Custom parameter - Electronics delays file: " << param->second << ENDM;
+    ILOG(Info, Devel) << "Custom parameter - Electronics delays file: " << param->second << ENDM;
     if (!param->second.empty()) {
       mElectronicsDelay = o2::mid::readElectronicsDelay(param->second.c_str());
     }
@@ -162,20 +162,20 @@ bool isBoardEmpty(const o2::mid::ROBoard& board)
 
 void RawQcTask::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "startOfActivity" << ENDM;
+  ILOG(Info, Devel) << "startOfActivity" << ENDM;
   // printf(" =================== > test startOfActivity RAW \n");
 }
 
 void RawQcTask::startOfCycle()
 {
-  // ILOG(Info, Support) << "startOfCycle" << ENDM;
+  // ILOG(Info, Devel) << "startOfCycle" << ENDM;
   // printf(" =================== > test startOfCycle RAW \n");
 }
 
 void RawQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
 
-  // ILOG(Info, Support) << "startOfDataMonitoring" << ENDM;
+  // ILOG(Info, Devel) << "startOfDataMonitoring" << ENDM;
   // printf(" =================== > test monitorData RAW \n");
 
   o2::framework::DPLRawParser parser(ctx.inputs());
@@ -186,7 +186,7 @@ void RawQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   if (!mDecoder) {
     auto const* rdhPtr = reinterpret_cast<const o2::header::RDHAny*>(parser.begin().raw());
     mDecoder = createDecoder(*rdhPtr, true, mElectronicsDelay, mCrateMasks, mFeeIdConfig);
-    ILOG(Info, Support) << "Created decoder" << ENDM;
+    ILOG(Info, Devel) << "Created decoder" << ENDM;
   }
 
   mDecoder->clear();
@@ -250,26 +250,26 @@ void RawQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   // mChecker.clear();
   // if (!mChecker.process(mDecoder->getData(), mDecoder->getROFRecords(), dummy)) {
-  //  // ILOG(Info, Support) << mChecker.getDebugMessage() << ENDM;
+  //  // ILOG(Info, Devel) << mChecker.getDebugMessage() << ENDM;
   //  mRawDataChecker->Fill("Faulty", mChecker.getNEventsFaulty());
   //}
 
-  // ILOG(Info, Support) << "Number of busy raised: " << mChecker.getNBusyRaised() << ENDM;
-  // ILOG(Info, Support) << "Fraction of faulty events: " << mChecker.getNEventsFaulty() << " / " << mChecker.getNEventsProcessed() << ENDM;
-  // ILOG(Info, Support) << "Counts: " << count << ENDM;
+  // ILOG(Info, Devel) << "Number of busy raised: " << mChecker.getNBusyRaised() << ENDM;
+  // ILOG(Info, Devel) << "Fraction of faulty events: " << mChecker.getNEventsFaulty() << " / " << mChecker.getNEventsProcessed() << ENDM;
+  // ILOG(Info, Devel) << "Counts: " << count << ENDM;
 
   // mRawDataChecker->Fill("Processed", mChecker.getNEventsProcessed());
 }
 
 void RawQcTask::endOfCycle()
 {
-  // ILOG(Info, Support) << "endOfCycle" << ENDM;
+  // ILOG(Info, Devel) << "endOfCycle" << ENDM;
   // printf(" =================== > test endOfCycle RAW \n");
 }
 
 void RawQcTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Info, Devel) << "endOfActivity" << ENDM;
   // printf(" =================== > test endOfActivity RAW \n");
 }
 
@@ -277,7 +277,7 @@ void RawQcTask::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Info, Devel) << "Resetting the histogram" << ENDM;
   // printf(" =================== > test reset RAW \n");
   mRawDataChecker->Reset();
   mRawBCCounts->Reset();

@@ -2,7 +2,7 @@
 
 add_library(O2QcCPV)
 
-target_sources(O2QcCPV PRIVATE src/PhysicsTask.cxx  src/PedestalCheck.cxx  src/PedestalTask.cxx )
+target_sources(O2QcCPV PRIVATE src/PhysicsTask.cxx src/PhysicsCheck.cxx src/PedestalCheck.cxx src/PedestalTask.cxx)
 
 target_include_directories(
   O2QcCPV
@@ -10,7 +10,7 @@ target_include_directories(
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-target_link_libraries(O2QcCPV PUBLIC O2QualityControl O2::CPVBase ROOT::Spectrum)
+target_link_libraries(O2QcCPV PUBLIC O2QualityControl O2QcPHOS O2::DataFormatsQualityControl O2::CPVBase ROOT::Spectrum)
 
 install(TARGETS O2QcCPV
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -20,6 +20,7 @@ install(TARGETS O2QcCPV
 add_root_dictionary(O2QcCPV
                     HEADERS
   include/CPV/PhysicsTask.h
+  include/CPV/PhysicsCheck.h
   include/CPV/PedestalCheck.h
   include/CPV/PedestalTask.h
                     LINKDEF include/CPV/LinkDef.h)

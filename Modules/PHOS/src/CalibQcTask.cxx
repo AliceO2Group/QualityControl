@@ -41,8 +41,8 @@ CalibQcTask::~CalibQcTask()
 }
 void CalibQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "==============initialize CalibQcTask==============" << AliceO2::InfoLogger::InfoLogger::endm;
-  ILOG(Info, Support) << "initialize CalibQcTask" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "==============initialize CalibQcTask==============" << ENDM;
+  ILOG(Debug, Devel) << "initialize CalibQcTask" << ENDM;
   using infoCONTEXT = AliceO2::InfoLogger::InfoLoggerContext;
   infoCONTEXT context;
   context.setField(infoCONTEXT::FieldName::Facility, "QC");
@@ -52,25 +52,32 @@ void CalibQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
   if (auto param = mCustomParameters.find("pedestal"); param != mCustomParameters.end()) {
-    ILOG(Info, Support) << "Working in pedestal mode " << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Info, Support) << "Working in pedestal mode " << ENDM;
     if (param->second.find("on") != std::string::npos) {
       mMode = 1;
     }
   }
   if (auto param = mCustomParameters.find("LED"); param != mCustomParameters.end()) {
-    ILOG(Info, Support) << "Working in LED mode " << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Info, Support) << "Working in LED mode " << ENDM;
     if (param->second.find("on") != std::string::npos) {
       mMode = 2;
     }
   }
   if (auto param = mCustomParameters.find("BadMap"); param != mCustomParameters.end()) {
-    ILOG(Info, Support) << "Working in BadMap mode " << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Info, Support) << "Working in BadMap mode " << ENDM;
     if (param->second.find("on") != std::string::npos) {
       mMode = 0;
     }
   }
 
-  ILOG(Info, Support) << "==============Prepare Histos===============" << AliceO2::InfoLogger::InfoLogger::endm;
+  if (auto param = mCustomParameters.find("L1phase"); param != mCustomParameters.end()) {
+    ILOG(Info, Support) << "Working in L1phase mode" << ENDM;
+    if (param->second.find("on") != std::string::npos) {
+      mMode = 3;
+    }
+  }
+
+  ILOG(Info, Support) << "==============Prepare Histos===============" << ENDM;
   // Prepare histograms
   if (mMode == 1) { // Pedestals
     for (Int_t mod = 0; mod < 4; mod++) {
@@ -135,19 +142,33 @@ void CalibQcTask::initialize(o2::framework::InitContext& /*ctx*/)
         mHist2D[kChangeHGM1 + mod]->Reset();
       }
     }
+  }                 // BadMap
+  if (mMode == 3) { // L1phase
+    if (!mHist2D[kL1phase]) {
+      mHist2D[kL1phase] = new TH2F("L1phase", "Time vs DDL", 14, 0., 14., 100, -200.e-9, 200.e-9);
+      mHist2D[kL1phase]->GetXaxis()->SetNdivisions(508, kFALSE);
+      mHist2D[kL1phase]->GetYaxis()->SetNdivisions(514, kFALSE);
+      mHist2D[kL1phase]->GetXaxis()->SetTitle("DDL");
+      mHist2D[kL1phase]->GetYaxis()->SetTitle("t (s)");
+      mHist2D[kL1phase]->SetDrawOption("colz");
+      mHist2D[kL1phase]->SetStats(0);
+      getObjectsManager()->startPublishing(mHist2D[kL1phase]);
+    } else {
+      mHist2D[kL1phase]->Reset();
+    }
   } // BadMap
-  ILOG(Info, Support) << " CalibQcTask histos ready " << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << " CalibQcTask histos ready " << ENDM;
 }
 
 void CalibQcTask::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
   reset();
 }
 
 void CalibQcTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -174,24 +195,32 @@ void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
         mHist2D[kChangeHGM1 + relid[0] - 1]->SetBinContent(relid[1], relid[2], diff[absId]);
       }
     } // LED, bad map
+    else {
+      if (mMode == 3) { // L1phase
+        auto vec = ctx.inputs().get<gsl::span<unsigned int>>("l1phase");
+        for (short it = 0; it < vec.size(); it++) {
+          mHist2D[kL1phase]->SetBinContent(it / 100 + 1, it % 100 + 1, float(vec[it]));
+        }
+      }
+    }
   }
 } // function monitor data
 
 void CalibQcTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfCycle" << ENDM;
 }
 
 void CalibQcTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfActivity" << ENDM;
 }
 
 void CalibQcTask::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info, Support) << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   for (int i = NHIST2D; i--;) {
     if (mHist2D[i]) {
       mHist2D[i]->Reset();

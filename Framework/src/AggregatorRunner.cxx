@@ -39,6 +39,7 @@
 #include "QualityControl/AggregatorRunnerFactory.h"
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/ConfigParamGlo.h"
+#include "QualityControl/Bookkeeping.h"
 
 using namespace AliceO2::Common;
 using namespace AliceO2::InfoLogger;
@@ -57,7 +58,7 @@ namespace o2::quality_control::checker
 AggregatorRunner::AggregatorRunner(AggregatorRunnerConfig arc, const std::vector<AggregatorConfig>& acs) //, const o2::quality_control::core::InfrastructureSpec& infrastructureSpec)
   : mDeviceName(createAggregatorRunnerName()),
     mRunnerConfig(std::move(arc)),
-    mAggregatorsConfig(std::move(acs)),
+    mAggregatorsConfig(acs),
     mTotalNumberObjectsReceived(0),
     mTotalNumberAggregatorExecuted(0),
     mTotalNumberObjectsProduced(0)
@@ -107,7 +108,7 @@ void AggregatorRunner::refreshConfig(InitContext& iCtx)
     ILOG(Warning, Devel) << "Could not get updated config tree in TaskRunner::init() - `qcConfiguration` could not be retrieved" << ENDM;
   } catch (...) {
     // we catch here because we don't know where it will get lost in DPL, and also we don't care if this part has failed.
-    ILOG(Warning, Devel) << "Error caught in refreshConfig() :\n"
+    ILOG(Warning, Devel) << "Error caught in refreshConfig(): "
                          << current_diagnostic(true) << ENDM;
   }
 }
@@ -132,6 +133,9 @@ header::DataDescription AggregatorRunner::createAggregatorRunnerDataDescription(
   if (aggregatorName.empty()) {
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Empty taskName for task's data description"));
   }
+  if (aggregatorName.length() > header::DataDescription::size) {
+    ILOG(Warning, Devel) << "Aggregator name \"" << aggregatorName << "\" is longer than " << (int)header::DataDescription::size << ", it might cause name clashes in the DPL workflow" << ENDM;
+  }
   o2::header::DataDescription description;
   description.runtimeInit(std::string(aggregatorName.substr(0, header::DataDescription::size)).c_str());
   return description;
@@ -145,9 +149,9 @@ std::string AggregatorRunner::createAggregatorRunnerName()
 void AggregatorRunner::init(framework::InitContext& iCtx)
 {
   initInfoLogger(iCtx);
-
   refreshConfig(iCtx);
   QcInfoLogger::setDetector(AggregatorRunner::getDetectorName(mAggregators));
+  Bookkeeping::getInstance().init(mRunnerConfig.bookkeepingUrl);
 
   try {
     initLibraries(); // we have to load libraries before we load ConfigurableParams, otherwise the corresponding ROOT dictionaries won't be found
@@ -160,7 +164,7 @@ void AggregatorRunner::init(framework::InitContext& iCtx)
     initServiceDiscovery();
     initAggregators();
   } catch (...) {
-    ILOG(Fatal) << "Unexpected exception during initialization:\n"
+    ILOG(Fatal) << "Unexpected exception during initialization: "
                 << current_diagnostic(true) << ENDM;
     throw;
   }
@@ -168,14 +172,9 @@ void AggregatorRunner::init(framework::InitContext& iCtx)
   try {
     // registering state machine callbacks
     // FIXME: this is a workaround until we get some O2 PR in.
-#if __has_include(<Framework/Features.h>)
-    iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, services = iCtx.services()]() mutable { start(services); });
-#else
-    iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, &services = iCtx.services()]() { start(services); });
-#endif
-
-    iCtx.services().get<CallbackService>().set(CallbackService::Id::Reset, [this]() { reset(); });
-    iCtx.services().get<CallbackService>().set(CallbackService::Id::Stop, [this]() { stop(); });
+    iCtx.services().get<CallbackService>().set<CallbackService::Id::Start>([this, services = iCtx.services()]() mutable { start(services); });
+    iCtx.services().get<CallbackService>().set<CallbackService::Id::Reset>([this]() { reset(); });
+    iCtx.services().get<CallbackService>().set<CallbackService::Id::Stop>([this]() { stop(); });
   } catch (o2::framework::RuntimeErrorRef& ref) {
     ILOG(Error) << "Error during initialization: " << o2::framework::error_from_ref(ref).what << ENDM;
   }
@@ -251,9 +250,7 @@ void AggregatorRunner::initDatabase()
 {
   mDatabase = DatabaseFactory::create(mRunnerConfig.database.at("implementation"));
   mDatabase->connect(mRunnerConfig.database);
-  ILOG(Info, Devel) << "Database that is going to be used : ";
-  ILOG(Info, Support) << ">> Implementation : " << mRunnerConfig.database.at("implementation") << ENDM;
-  ILOG(Info, Support) << ">> Host : " << mRunnerConfig.database.at("host") << ENDM;
+  ILOG(Info, Support) << "Database that is going to be used > Implementation : " << mRunnerConfig.database.at("implementation") << " / Host : " << mRunnerConfig.database.at("host") << ENDM;
 }
 
 void AggregatorRunner::initMonitoring()
@@ -270,7 +267,7 @@ void AggregatorRunner::initServiceDiscovery()
   auto consulUrl = mRunnerConfig.consulUrl;
   if (consulUrl.empty()) {
     mServiceDiscovery = nullptr;
-    ILOG(Warning, Ops) << "Service Discovery disabled" << ENDM;
+    ILOG(Warning, Support) << "Service Discovery disabled" << ENDM;
     return;
   }
   mServiceDiscovery = std::make_shared<ServiceDiscovery>(consulUrl, mDeviceName, mDeviceName);
@@ -417,8 +414,7 @@ void AggregatorRunner::start(ServiceRegistryRef services)
   string partitionName = computePartitionName(services);
   QcInfoLogger::setRun(mActivity.mId);
   QcInfoLogger::setPartition(partitionName);
-  ILOG(Info, Support) << "Starting run " << mActivity.mId << ":"
-                      << "\n   - period: " << mActivity.mPeriodName << "\n   - pass type: " << mActivity.mPassName << "\n   - provenance: " << mActivity.mProvenance << ENDM;
+  ILOG(Info, Support) << "Starting run " << mActivity.mId << "> period: " << mActivity.mPeriodName << " / pass type: " << mActivity.mPassName << " / provenance: " << mActivity.mProvenance << ENDM;
 }
 
 void AggregatorRunner::stop()
@@ -428,20 +424,20 @@ void AggregatorRunner::stop()
 
 void AggregatorRunner::reset()
 {
-  ILOG(Info, Support) << "Reset" << ENDM;
+  ILOG(Info, Devel) << "Reset" << ENDM;
 
   try {
     mCollector.reset();
     mActivity = Activity();
   } catch (...) {
     // we catch here because we don't know where it will go in DPL's CallbackService
-    ILOG(Error, Support) << "Error caught in reset() :\n"
+    ILOG(Error, Support) << "Error caught in reset() : "
                          << current_diagnostic(true) << ENDM;
     throw;
   }
 }
 
-std::string AggregatorRunner::getDetectorName(std::vector<std::shared_ptr<Aggregator>> aggregators)
+std::string AggregatorRunner::getDetectorName(const std::vector<std::shared_ptr<Aggregator>>& aggregators)
 {
   std::string detectorName;
   for (auto& aggregator : aggregators) {

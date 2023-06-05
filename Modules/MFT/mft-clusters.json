@@ -1,0 +1,93 @@
+{
+  "qc" : {
+    "config" : {
+      "database" : {
+        "implementation" : "CCDB",
+        "host" : "ccdb-test.cern.ch:8080",
+        "username" : "not_applicable",
+        "password" : "not_applicable",
+        "name" : "not_applicable"
+      },
+      "Activity" : {
+        "number" : "42",
+        "type" : "0"
+      },
+      "monitoring" : {
+        "url" : "infologger:///debug?qc"
+      },
+      "consul" : {
+        "url" : ""
+      },
+      "conditionDB" : {
+        "url" : "ccdb-test.cern.ch:8080"
+      }
+    },
+    "tasks" : {
+      "Clusters" : {
+        "active" : "true",
+        "className" : "o2::quality_control_modules::mft::QcMFTClusterTask",
+        "moduleName" : "QcMFT",
+        "detectorName" : "MFT",
+        "cycleDurationSeconds" : "60",
+        "maxNumberCycles" : "-1",
+        "dataSource_comment" : "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
+        "dataSource" : {
+          "type" : "dataSamplingPolicy",
+          "name" : "mft-clusters"
+        },
+        "taskParameters" : {
+          "myOwnKey" : "myOwnValue",
+          "maxClusterROFSize" : "5000",
+          "maxDuration" : "60000",
+          "timeBinSize" : "0.1",
+          "ROFLengthInBC" : "198"
+        },
+	"grpGeomRequest" : {
+          "geomRequest": "Aligned",
+          "askGRPECS": "false",
+          "askGRPLHCIF": "false",
+          "askGRPMagField": "false",
+          "askMatLUT": "false",
+          "askTime": "false",
+          "askOnceAllButField": "true",
+          "needPropagatorD":  "false"
+        },
+        "location" : "remote"
+      }
+    },
+    "checks" : {
+      "Clusters" : {
+        "active" : "true",
+        "dataSource" : [ {
+          "type" : "Task",
+          "name" : "Clusters",
+          "MOs" : ["mClusterOccupancy","mClusterPatternIndex","mClusterSizeSummary", "mGroupedClusterSizeSummary", "mClusterOccupancySummary"]
+        } ],
+        "checkParameters" : {
+          "ZoneThresholdMedium" : "2",
+          "ZoneThresholdBad" : "5"
+        },
+        "className" : "o2::quality_control_modules::mft::QcMFTClusterCheck",
+        "moduleName" : "QcMFT",
+        "detectorName" : "MFT",
+        "policy" : "OnEachSeparately"
+      }
+    }
+  },
+         "dataSamplingPolicies" : [
+           {
+             "id" : "mft-clusters",
+             "active" : "true",
+             "machines" : [],
+             "query" : "randomcluster:MFT/COMPCLUSTERS/0;clustersrof:MFT/CLUSTERSROF/0;patterns:MFT/PATTERNS/0;cldict:MFT/CLUSDICT/0?lifetime=condition&ccdb-path=MFT/Calib/ClusterDictionary",
+             "samplingConditions" : [
+               {
+                 "condition" : "random",
+                 "fraction" : "0.01",
+                 "seed" : "1234"
+               }
+             ],
+             "blocking" : "false"
+           }
+         ]
+}

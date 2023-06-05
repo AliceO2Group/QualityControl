@@ -70,25 +70,25 @@ PedestalTask::~PedestalTask()
 
 void PedestalTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize PedestalTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize PedestalTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
   if (auto param = mCustomParameters.find("minNEventsToUpdatePedestals"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter : minNEventsToUpdatePedestals " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter : minNEventsToUpdatePedestals " << param->second << ENDM;
     mMinNEventsToUpdatePedestals = stoi(param->second);
     ILOG(Info, Devel) << "I set minNEventsToUpdatePedestals = " << mMinNEventsToUpdatePedestals << ENDM;
   } else {
     ILOG(Info, Devel) << "Default parameter : minNEventsToUpdatePedestals = " << mMinNEventsToUpdatePedestals << ENDM;
   }
   if (auto param = mCustomParameters.find("monitorPedestalCalibrator"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter : monitorPedestalCalibrator " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter : monitorPedestalCalibrator " << param->second << ENDM;
     mMonitorPedestalCalibrator = stoi(param->second);
     ILOG(Info, Devel) << "I set mMonitorPedestalCalibrator = " << mMonitorPedestalCalibrator << ENDM;
   } else {
     ILOG(Info, Devel) << "Default parameter : monitorPedestalCalibrator = " << mMonitorPedestalCalibrator << ENDM;
   }
   if (auto param = mCustomParameters.find("monitorDigits"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter : monitorDigits " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter : monitorDigits " << param->second << ENDM;
     mMonitorDigits = stoi(param->second);
     ILOG(Info, Devel) << "I set mMonitorDigits = " << mMonitorDigits << ENDM;
   } else {
@@ -109,7 +109,7 @@ void PedestalTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void PedestalTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity() : Run Number of Activity is " << activity.mId << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity() : Run Number of Activity is " << activity.mId << ENDM;
   resetHistograms();
   mNEventsTotal = 0;
   mNEventsFromLastFillHistogramsCall = 0;
@@ -128,7 +128,7 @@ void PedestalTask::startOfActivity(Activity& activity)
 
 void PedestalTask::startOfCycle()
 {
-  ILOG(Info, Devel) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
   // at at the startOfCycle all HistAmplitudes are not updated by definition
   if (mMonitorDigits) {
     for (int i = 0; i < o2::cpv::Geometry::kNCHANNELS; i++) {
@@ -324,7 +324,7 @@ void PedestalTask::endOfCycle()
 
 void PedestalTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
   if (!mMonitorDigits) {
     // do a final fill of histograms (if needed)
     if (mNEventsFromLastFillHistogramsCall) {
@@ -337,7 +337,7 @@ void PedestalTask::endOfActivity(Activity& /*activity*/)
 void PedestalTask::reset()
 {
   // clean all the monitor objects here
-  ILOG(Info, Support) << "Resetting PedestalTask" << ENDM;
+  ILOG(Debug, Devel) << "Resetting PedestalTask" << ENDM;
   resetHistograms();
   mNEventsTotal = 0;
   mNEventsFromLastFillHistogramsCall = 0;
@@ -772,7 +772,7 @@ void PedestalTask::fillDigitsHistograms()
 void PedestalTask::resetHistograms()
 {
   // clean all histograms
-  ILOG(Info, Support) << "Resetting amplitude histograms" << ENDM;
+  ILOG(Debug, Devel) << "Resetting amplitude histograms" << ENDM;
   for (int i = 0; i < o2::cpv::Geometry::kNCHANNELS; i++) {
     if (mHistAmplitudes[i]) {
       mHistAmplitudes[i]->Reset();
@@ -780,14 +780,14 @@ void PedestalTask::resetHistograms()
     mIsUpdatedAmplitude[i] = false;
   }
 
-  ILOG(Info, Support) << "Resetting the 1D Histograms" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the 1D Histograms" << ENDM;
   for (int iHist1D = 0; iHist1D < kNHist1D; iHist1D++) {
     if (mHist1D[iHist1D]) {
       mHist1D[iHist1D]->Reset();
     }
   }
 
-  ILOG(Info, Support) << "Resetting the 2D Histograms" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the 2D Histograms" << ENDM;
   for (int iHist2D = 0; iHist2D < kNHist2D; iHist2D++) {
     if (mHist2D[iHist2D]) {
       mHist2D[iHist2D]->Reset();

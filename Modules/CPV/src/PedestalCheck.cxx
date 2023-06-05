@@ -14,11 +14,15 @@
 /// \author Sergey Evdokimov
 ///
 
+// QC
 #include "CPV/PedestalCheck.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/ObjectMetadataKeys.h"
+// O2
+#include <DataFormatsQualityControl/FlagReasons.h>
+#include <DataFormatsQualityControl/FlagReasonFactory.h>
 // ROOT
 #include <TH1.h>
 #include <TH2.h>
@@ -26,6 +30,7 @@
 #include <TList.h>
 
 using namespace std;
+using namespace o2::quality_control;
 using namespace o2::quality_control::repository;
 
 namespace o2::quality_control_modules::cpv
@@ -33,109 +38,106 @@ namespace o2::quality_control_modules::cpv
 
 void PedestalCheck::configure()
 {
-  ILOG(Info, Support) << "PedestalCheck::configure() : I have been called with following custom parameters" << ENDM;
-  for (auto [key, value] : mCustomParameters) {
-    ILOG(Info, Support) << key << ": " << value << ENDM;
-  }
+  ILOG(Info, Support) << "PedestalCheck::configure() : I have been called with following custom parameters" << mCustomParameters << ENDM;
 
   for (int mod = 0; mod < 3; mod++) {
     // mMinGoodPedestalValueM
     if (auto param = mCustomParameters.find(Form("mMinGoodPedestalValueM%d", mod + 2));
         param != mCustomParameters.end()) {
-      ILOG(Info, Devel) << "configure() : Custom parameter "
-                        << Form("mMinGoodPedestalValueM%d = ", mod + 2)
-                        << param->second << ENDM;
+      ILOG(Debug, Devel) << "configure() : Custom parameter "
+                         << Form("mMinGoodPedestalValueM%d = ", mod + 2)
+                         << param->second << ENDM;
       mMinGoodPedestalValueM[mod] = stoi(param->second);
     }
-    ILOG(Info, Support) << "configure() : I use "
-                        << Form("mMinGoodPedestalValueM%d", mod + 2)
-                        << " = "
-                        << mMinGoodPedestalValueM[mod] << ENDM;
+    ILOG(Debug, Support) << "configure() : I use "
+                         << Form("mMinGoodPedestalValueM%d", mod + 2)
+                         << " = "
+                         << mMinGoodPedestalValueM[mod] << ENDM;
     // mMaxGoodPedestalSigmaM
     if (auto param = mCustomParameters.find(Form("mMaxGoodPedestalSigmaM%d", mod + 2));
         param != mCustomParameters.end()) {
-      ILOG(Info, Devel) << "configure() : Custom parameter "
-                        << Form("mMaxGoodPedestalSigmaM%d = ", mod + 2)
-                        << param->second << ENDM;
+      ILOG(Debug, Devel) << "configure() : Custom parameter "
+                         << Form("mMaxGoodPedestalSigmaM%d = ", mod + 2)
+                         << param->second << ENDM;
       mMaxGoodPedestalSigmaM[mod] = stof(param->second);
     }
-    ILOG(Info, Support) << "configure() : I use "
-                        << Form("mMaxGoodPedestalSigmaM%d", mod + 2)
-                        << " = "
-                        << mMaxGoodPedestalSigmaM[mod] << ENDM;
+    ILOG(Debug, Support) << "configure() : I use "
+                         << Form("mMaxGoodPedestalSigmaM%d", mod + 2)
+                         << " = "
+                         << mMaxGoodPedestalSigmaM[mod] << ENDM;
     // mMinGoodPedestalEfficiencyM
     if (auto param = mCustomParameters.find(Form("mMinGoodPedestalEfficiencyM%d", mod + 2));
         param != mCustomParameters.end()) {
-      ILOG(Info, Devel) << "configure() : Custom parameter "
-                        << Form("mMinGoodPedestalEfficiencyM%d = ", mod + 2)
-                        << param->second << ENDM;
+      ILOG(Debug, Devel) << "configure() : Custom parameter "
+                         << Form("mMinGoodPedestalEfficiencyM%d = ", mod + 2)
+                         << param->second << ENDM;
       mMinGoodPedestalEfficiencyM[mod] = stof(param->second);
     }
-    ILOG(Info, Support) << "configure() : I use "
-                        << Form("mMinGoodPedestalEfficiencyM%d", mod + 2)
-                        << " = "
-                        << mMinGoodPedestalEfficiencyM[mod] << ENDM;
+    ILOG(Debug, Support) << "configure() : I use "
+                         << Form("mMinGoodPedestalEfficiencyM%d", mod + 2)
+                         << " = "
+                         << mMinGoodPedestalEfficiencyM[mod] << ENDM;
     // mMaxGoodPedestalEfficiencyM
     if (auto param = mCustomParameters.find(Form("mMaxGoodPedestalEfficiencyM%d", mod + 2));
         param != mCustomParameters.end()) {
-      ILOG(Info, Devel) << "configure() : Custom parameter "
-                        << Form("mMaxGoodPedestalEfficiencyM%d = ", mod + 2)
-                        << param->second << ENDM;
+      ILOG(Debug, Devel) << "configure() : Custom parameter "
+                         << Form("mMaxGoodPedestalEfficiencyM%d = ", mod + 2)
+                         << param->second << ENDM;
       mMaxGoodPedestalEfficiencyM[mod] = stof(param->second);
     }
-    ILOG(Info, Support) << "configure() : I use "
-                        << Form("mMaxGoodPedestalEfficiencyM%d", mod + 2)
-                        << " = "
-                        << mMaxGoodPedestalEfficiencyM[mod] << ENDM;
+    ILOG(Debug, Support) << "configure() : I use "
+                         << Form("mMaxGoodPedestalEfficiencyM%d", mod + 2)
+                         << " = "
+                         << mMaxGoodPedestalEfficiencyM[mod] << ENDM;
     // mToleratedBadPedestalValueChannelsM
     if (auto param = mCustomParameters.find(Form("mToleratedBadPedestalValueChannelsM%d", mod + 2));
         param != mCustomParameters.end()) {
-      ILOG(Info, Devel) << "configure() : Custom parameter "
-                        << Form("mToleratedBadPedestalValueChannelsM%d = ", mod + 2)
-                        << param->second << ENDM;
+      ILOG(Debug, Devel) << "configure() : Custom parameter "
+                         << Form("mToleratedBadPedestalValueChannelsM%d = ", mod + 2)
+                         << param->second << ENDM;
       mToleratedBadPedestalValueChannelsM[mod] = stoi(param->second);
     }
-    ILOG(Info, Support) << "configure() : I use "
-                        << Form("mToleratedBadPedestalValueChannelsM%d", mod + 2)
-                        << " = "
-                        << mToleratedBadPedestalValueChannelsM[mod] << ENDM;
+    ILOG(Debug, Support) << "configure() : I use "
+                         << Form("mToleratedBadPedestalValueChannelsM%d", mod + 2)
+                         << " = "
+                         << mToleratedBadPedestalValueChannelsM[mod] << ENDM;
     // mToleratedBadPedestalSigmaChannelsM
     if (auto param = mCustomParameters.find(Form("mToleratedBadPedestalSigmaChannelsM%d", mod + 2));
         param != mCustomParameters.end()) {
-      ILOG(Info, Devel) << "configure() : Custom parameter "
-                        << Form("mToleratedBadPedestalSigmaChannelsM%d = ", mod + 2)
-                        << param->second << ENDM;
+      ILOG(Debug, Devel) << "configure() : Custom parameter "
+                         << Form("mToleratedBadPedestalSigmaChannelsM%d = ", mod + 2)
+                         << param->second << ENDM;
       mToleratedBadPedestalSigmaChannelsM[mod] = stoi(param->second);
     }
-    ILOG(Info, Support) << "configure() : I use "
-                        << Form("mToleratedBadPedestalSigmaChannelsM%d", mod + 2)
-                        << " = "
-                        << mToleratedBadPedestalSigmaChannelsM[mod] << ENDM;
+    ILOG(Debug, Support) << "configure() : I use "
+                         << Form("mToleratedBadPedestalSigmaChannelsM%d", mod + 2)
+                         << " = "
+                         << mToleratedBadPedestalSigmaChannelsM[mod] << ENDM;
 
     // mToleratedBadChannelsM
     if (auto param = mCustomParameters.find(Form("mToleratedBadChannelsM%d", mod + 2));
         param != mCustomParameters.end()) {
-      ILOG(Info, Devel) << "configure() : Custom parameter "
-                        << Form("mToleratedBadChannelsM%d = ", mod + 2)
-                        << param->second << ENDM;
+      ILOG(Debug, Devel) << "configure() : Custom parameter "
+                         << Form("mToleratedBadChannelsM%d = ", mod + 2)
+                         << param->second << ENDM;
       mToleratedBadChannelsM[mod] = stoi(param->second);
     }
-    ILOG(Info, Support) << "configure() : I use "
-                        << Form("mToleratedBadChannelsM%d", mod + 2)
-                        << " = "
-                        << mToleratedBadChannelsM[mod] << ENDM;
+    ILOG(Debug, Support) << "configure() : I use "
+                         << Form("mToleratedBadChannelsM%d", mod + 2)
+                         << " = "
+                         << mToleratedBadChannelsM[mod] << ENDM;
     // mToleratedBadPedestalEfficiencyChannelsM
     if (auto param = mCustomParameters.find(Form("mToleratedBadPedestalEfficiencyChannelsM%d", mod + 2));
         param != mCustomParameters.end()) {
-      ILOG(Info, Devel) << "configure() : Custom parameter "
-                        << Form("mToleratedBadPedestalEfficiencyChannelsM%d = ", mod + 2)
-                        << param->second << ENDM;
+      ILOG(Debug, Devel) << "configure() : Custom parameter "
+                         << Form("mToleratedBadPedestalEfficiencyChannelsM%d = ", mod + 2)
+                         << param->second << ENDM;
       mToleratedBadPedestalEfficiencyChannelsM[mod] = stoi(param->second);
     }
-    ILOG(Info, Support) << "configure() : I use "
-                        << Form("mToleratedBadPedestalEfficiencyChannelsM%d", mod + 2)
-                        << " = "
-                        << mToleratedBadPedestalEfficiencyChannelsM[mod] << ENDM;
+    ILOG(Debug, Support) << "configure() : I use "
+                         << Form("mToleratedBadPedestalEfficiencyChannelsM%d", mod + 2)
+                         << " = "
+                         << mToleratedBadPedestalEfficiencyChannelsM[mod] << ENDM;
   }
   ILOG(Info, Support) << "PedestalCheck::configure() : configuring is done." << ENDM;
   mIsConfigured = true;
@@ -148,6 +150,7 @@ Quality PedestalCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
     configure();
   }
 
+  // default
   Quality result = Quality::Good;
 
   for (auto& [moName, mo] : *moMap) {
@@ -158,16 +161,22 @@ Quality PedestalCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
         bool isGoodMO = true;
 
         auto* h = dynamic_cast<TH1F*>(mo->getObject());
-        result = Quality::Good; // default
+        if (h == nullptr) {
+          ILOG(Warning, Devel) << "Could not cast " << mo->getName() << " to TH1F*, skipping" << ENDM;
+          continue;
+        }
         TPaveText* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
         h->GetListOfFunctions()->Add(msg);
         msg->SetName(Form("%s_msg", mo->GetName()));
         msg->Clear();
-        msg->AddText(Form("Run %d", getRunNumberFromMO(mo)));
+        // msg->AddText(Form("Run %d", getRunNumberFromMO(mo)));
         // count number of too small pedestals + too big pedestals
         int nOfBadPedestalValues = h->Integral(0, mMinGoodPedestalValueM[iMod]) + h->GetBinContent(h->GetNbinsX() + 1); // underflow + small pedestals + overflow
         if (nOfBadPedestalValues > mToleratedBadPedestalValueChannelsM[iMod]) {
-          result = Quality::Bad;
+          if (result.isBetterThan(Quality::Bad)) {
+            result = Quality::Bad;
+          }
+          result.addReason(FlagReasonFactory::Unknown(), Form("bad ped values M%d", iMod));
           msg->AddText(Form("Too many bad ped values: %d", nOfBadPedestalValues));
           msg->AddText(Form("Tolerated bad ped values: %d", mToleratedBadPedestalValueChannelsM[iMod]));
           msg->SetFillColor(kRed);
@@ -177,7 +186,10 @@ Quality PedestalCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
         // count number of bad pedestals (double peaked and so)
         int nOfBadPedestals = 7680 - h->GetEntries();
         if (nOfBadPedestals > mToleratedBadChannelsM[iMod]) {
-          result = Quality::Bad;
+          if (result.isBetterThan(Quality::Bad)) {
+            result.set(Quality::Bad);
+          }
+          result.addReason(FlagReasonFactory::Unknown(), Form("bad pedestals M%d", iMod));
           msg->AddText(Form("Too many bad channels: %d", nOfBadPedestals));
           msg->AddText(Form("Tolerated bad channels: %d", mToleratedBadChannelsM[iMod]));
           msg->SetFillColor(kRed);
@@ -194,19 +206,25 @@ Quality PedestalCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
       if (mo->getName() == Form("PedestalSigmaM%d", iMod + 2)) {
 
         auto* h = dynamic_cast<TH1F*>(mo->getObject());
-        result = Quality::Good; // default
+        if (h == nullptr) {
+          ILOG(Warning, Devel) << "Could not cast " << mo->getName() << " to TH1F*, skipping" << ENDM;
+          continue;
+        }
         TPaveText* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
         h->GetListOfFunctions()->Add(msg);
         msg->SetName(Form("%s_msg", mo->GetName()));
         msg->Clear();
-        msg->AddText(Form("Run %d", getRunNumberFromMO(mo)));
+        // msg->AddText(Form("Run %d", getRunNumberFromMO(mo)));
         // count number of too small pedestals + too big pedestals
         float binWidth = h->GetBinWidth(1);
         int nOfBadPedestalSigmas = h->Integral(mMaxGoodPedestalSigmaM[iMod] / binWidth + 1,
                                                h->GetNbinsX() + 1); // big sigmas + overflow
 
         if (nOfBadPedestalSigmas > mToleratedBadPedestalSigmaChannelsM[iMod]) {
-          result = Quality::Bad;
+          if (result.isBetterThan(Quality::Bad)) {
+            result.set(Quality::Bad);
+          }
+          result.addReason(FlagReasonFactory::Unknown(), Form("bad ped sigmas M%d", iMod));
           msg->AddText(Form("Too many bad ped sigmas: %d", nOfBadPedestalSigmas));
           msg->AddText(Form("Tolerated bad ped sigmas: %d", mToleratedBadPedestalSigmaChannelsM[iMod]));
 
@@ -222,12 +240,16 @@ Quality PedestalCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
       if (mo->getName() == Form("PedestalEfficiencyM%d", iMod + 2)) {
 
         auto* h = dynamic_cast<TH1F*>(mo->getObject());
+        if (h == nullptr) {
+          ILOG(Warning, Devel) << "Could not cast " << mo->getName() << " to TH1F*, skipping" << ENDM;
+          continue;
+        }
         result = Quality::Good; // default
         TPaveText* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
         h->GetListOfFunctions()->Add(msg);
         msg->SetName(Form("%s_msg", mo->GetName()));
         msg->Clear();
-        msg->AddText(Form("Run %d", getRunNumberFromMO(mo)));
+        // msg->AddText(Form("Run %d", getRunNumberFromMO(mo)));
         // count number of too small pedestals + too big pedestals
         float binWidth = h->GetBinWidth(1);
         int nOfBadPedestalEfficiencies = 7680 -
@@ -235,7 +257,10 @@ Quality PedestalCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
                                                      mMaxGoodPedestalEfficiencyM[iMod] / binWidth); // big sigmas + overflow
 
         if (nOfBadPedestalEfficiencies > mToleratedBadPedestalEfficiencyChannelsM[iMod]) {
-          result = Quality::Bad;
+          if (result.isBetterThan(Quality::Bad)) {
+            result.set(Quality::Bad);
+          }
+          result.addReason(FlagReasonFactory::Unknown(), Form("bad ped efficiencies M%d", iMod));
           msg->AddText(Form("Too many bad ped efficiencies: %d", nOfBadPedestalEfficiencies));
           msg->AddText(Form("Tolerated bad ped efficiencies: %d",
                             mToleratedBadPedestalEfficiencyChannelsM[iMod]));
@@ -263,6 +288,10 @@ void PedestalCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
   for (int iMod = 0; iMod < 3; iMod++) { // loop over modules
     if (mo->getName() == Form("PedestalValueM%d", iMod + 2)) {
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
+      if (h == nullptr) {
+        ILOG(Warning, Devel) << "Could not cast " << mo->getName() << " to TH1F*, skipping" << ENDM;
+        continue;
+      }
 
       if (checkResult == Quality::Good) {
         h->SetFillColor(kGreen);

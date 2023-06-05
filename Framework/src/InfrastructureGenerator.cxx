@@ -41,6 +41,7 @@
 
 #include <algorithm>
 #include <set>
+#include <utility>
 
 using namespace o2::framework;
 using namespace o2::configuration;
@@ -59,7 +60,7 @@ uint16_t defaultPolicyPort = 42349;
 struct DataSamplingPolicySpec {
   DataSamplingPolicySpec(std::string name, std::string control, std::string remoteMachine = "")
     : name(std::move(name)), control(std::move(control)), remoteMachine(std::move(remoteMachine)) {}
-  bool operator<(const DataSamplingPolicySpec other) const
+  bool operator<(const DataSamplingPolicySpec& other) const
   {
     return std::tie(name, control, remoteMachine) < std::tie(other.name, other.control, other.remoteMachine);
   }
@@ -109,7 +110,7 @@ void InfrastructureGenerator::generateStandaloneInfrastructure(framework::Workfl
   workflow.insert(std::end(workflow), std::begin(qcInfrastructure), std::end(qcInfrastructure));
 }
 
-WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(const boost::property_tree::ptree& configurationTree, std::string targetHost)
+WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(const boost::property_tree::ptree& configurationTree, const std::string& targetHost)
 {
   printVersion();
 
@@ -182,7 +183,7 @@ WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(const boost::p
   return workflow;
 }
 
-void InfrastructureGenerator::generateLocalInfrastructure(framework::WorkflowSpec& workflow, const boost::property_tree::ptree& configurationTree, std::string host)
+void InfrastructureGenerator::generateLocalInfrastructure(framework::WorkflowSpec& workflow, const boost::property_tree::ptree& configurationTree, const std::string& host)
 {
   auto qcInfrastructure = InfrastructureGenerator::generateLocalInfrastructure(configurationTree, host);
   workflow.insert(std::end(workflow), std::begin(qcInfrastructure), std::end(qcInfrastructure));
@@ -213,9 +214,15 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
 
       // In "delta" mode Mergers should implement moving window, in "entire" - QC Tasks.
       size_t resetAfterCycles = taskSpec.mergingMode == "delta" ? taskSpec.resetAfterCycles : 0;
-      auto cycleDurationSeconds = taskSpec.cycleDurationSeconds * taskSpec.mergerCycleMultiplier;
-
-      generateMergers(workflow, taskSpec.taskName, numberOfLocalMachines, cycleDurationSeconds, taskSpec.mergingMode,
+      std::vector<std::pair<size_t, size_t>> cycleDurationsMultiplied;
+      if (taskSpec.cycleDurationSeconds > 0) { // old, simple, style
+        cycleDurationsMultiplied = { { taskSpec.cycleDurationSeconds, 1 } };
+      } else { // new style
+        cycleDurationsMultiplied = taskSpec.multipleCycleDurations;
+      }
+      std::for_each(cycleDurationsMultiplied.begin(), cycleDurationsMultiplied.end(),
+                    [taskSpec](std::pair<size_t, size_t>& p) { p.first *= taskSpec.mergerCycleMultiplier; });
+      generateMergers(workflow, taskSpec.taskName, numberOfLocalMachines, cycleDurationsMultiplied, taskSpec.mergingMode,
                       resetAfterCycles, infrastructureSpec.common.monitoringUrl, taskSpec.detectorName, taskSpec.mergersPerLayer);
 
     } else if (taskSpec.location == TaskLocationSpec::Remote) {
@@ -270,7 +277,7 @@ void InfrastructureGenerator::generateRemoteInfrastructure(framework::WorkflowSp
   workflow.insert(std::end(workflow), std::begin(qcInfrastructure), std::end(qcInfrastructure));
 }
 
-framework::WorkflowSpec InfrastructureGenerator::generateLocalBatchInfrastructure(const boost::property_tree::ptree& configurationTree, std::string sinkFilePath)
+framework::WorkflowSpec InfrastructureGenerator::generateLocalBatchInfrastructure(const boost::property_tree::ptree& configurationTree, const std::string& sinkFilePath)
 {
   printVersion();
 
@@ -290,7 +297,7 @@ framework::WorkflowSpec InfrastructureGenerator::generateLocalBatchInfrastructur
     }
   }
 
-  if (fileSinkInputs.size() > 0) {
+  if (!fileSinkInputs.empty()) {
     // todo: could be moved to a factory.
     workflow.push_back({ "qc-root-file-sink",
                          std::move(fileSinkInputs),
@@ -304,13 +311,13 @@ framework::WorkflowSpec InfrastructureGenerator::generateLocalBatchInfrastructur
   return workflow;
 }
 
-void InfrastructureGenerator::generateLocalBatchInfrastructure(framework::WorkflowSpec& workflow, const boost::property_tree::ptree& configurationTree, std::string sinkFilePath)
+void InfrastructureGenerator::generateLocalBatchInfrastructure(framework::WorkflowSpec& workflow, const boost::property_tree::ptree& configurationTree, const std::string& sinkFilePath)
 {
-  auto qcInfrastructure = InfrastructureGenerator::generateLocalBatchInfrastructure(std::move(configurationTree), std::move(sinkFilePath));
+  auto qcInfrastructure = InfrastructureGenerator::generateLocalBatchInfrastructure(configurationTree, sinkFilePath);
   workflow.insert(std::end(workflow), std::begin(qcInfrastructure), std::end(qcInfrastructure));
 }
 
-framework::WorkflowSpec InfrastructureGenerator::generateRemoteBatchInfrastructure(const boost::property_tree::ptree& configurationTree, std::string sourceFilePath)
+framework::WorkflowSpec InfrastructureGenerator::generateRemoteBatchInfrastructure(const boost::property_tree::ptree& configurationTree, const std::string& sourceFilePath)
 {
   printVersion();
 
@@ -323,10 +330,10 @@ framework::WorkflowSpec InfrastructureGenerator::generateRemoteBatchInfrastructu
     if (taskSpec.active) {
       auto taskConfig = TaskRunnerFactory::extractConfig(infrastructureSpec.common, taskSpec, 0, 1);
       fileSourceOutputs.push_back(taskConfig.moSpec);
-      fileSourceOutputs.back().binding.value = taskSpec.taskName;
+      fileSourceOutputs.back().binding = RootFileSource::outputBinding(taskSpec.detectorName, taskSpec.taskName);
     }
   }
-  if (fileSourceOutputs.size() > 0) {
+  if (!fileSourceOutputs.empty()) {
     workflow.push_back({ "qc-root-file-source", {}, std::move(fileSourceOutputs), adaptFromTask<RootFileSource>(sourceFilePath) });
   }
 
@@ -337,7 +344,7 @@ framework::WorkflowSpec InfrastructureGenerator::generateRemoteBatchInfrastructu
   return workflow;
 }
 
-void InfrastructureGenerator::generateRemoteBatchInfrastructure(framework::WorkflowSpec& workflow, const boost::property_tree::ptree& configurationTree, std::string sourceFilePath)
+void InfrastructureGenerator::generateRemoteBatchInfrastructure(framework::WorkflowSpec& workflow, const boost::property_tree::ptree& configurationTree, const std::string& sourceFilePath)
 {
   auto qcInfrastructure = InfrastructureGenerator::generateRemoteBatchInfrastructure(configurationTree, sourceFilePath);
   workflow.insert(std::end(workflow), std::begin(qcInfrastructure), std::end(qcInfrastructure));
@@ -354,8 +361,7 @@ void InfrastructureGenerator::customizeInfrastructure(std::vector<framework::Com
 
 void InfrastructureGenerator::printVersion()
 {
-  // Log the version number
-  ILOG(Info, Support) << "QC version " << o2::quality_control::core::Version::GetQcVersion().getString() << ENDM;
+  ILOG(Debug, Devel) << "QC version " << o2::quality_control::core::Version::GetQcVersion().getString() << ENDM;
 }
 
 void InfrastructureGenerator::generateDataSamplingPolicyLocalProxyBind(framework::WorkflowSpec& workflow,
@@ -436,7 +442,7 @@ void InfrastructureGenerator::generateDataSamplingPolicyRemoteProxyBind(framewor
                                                                         const std::string& remotePort,
                                                                         const std::string& control)
 {
-  std::string channelName = policyName;
+  const std::string& channelName = policyName;
   const std::string& proxyName = channelName; // channel name has to match proxy name
 
   std::string channelConfig = "name=" + channelName + ",type=sub,method=bind,address=tcp://*:" + remotePort + ",rateLogging=60,transport=zeromq,rcvBufSize=1";
@@ -497,10 +503,10 @@ void InfrastructureGenerator::generateLocalTaskRemoteProxy(framework::WorkflowSp
   enableDraining(proxy.options);
   workflow.emplace_back(std::move(proxy));
 }
-void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow, std::string taskName,
-                                              size_t numberOfLocalMachines, double cycleDurationSeconds,
-                                              std::string mergingMode, size_t resetAfterCycles, std::string monitoringUrl,
-                                              std::string detectorName, std::vector<size_t> mergersPerLayer)
+void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow, const std::string& taskName,
+                                              size_t numberOfLocalMachines, std::vector<std::pair<size_t, size_t>> cycleDurations,
+                                              const std::string& mergingMode, size_t resetAfterCycles, std::string monitoringUrl,
+                                              const std::string& detectorName, std::vector<size_t> mergersPerLayer)
 {
   Inputs mergerInputs;
   for (size_t id = 1; id <= numberOfLocalMachines; id++) {
@@ -520,11 +526,11 @@ void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow,
   MergerConfig mergerConfig;
   // if we are to change the mode to Full, disable reseting tasks after each cycle.
   mergerConfig.inputObjectTimespan = { (mergingMode.empty() || mergingMode == "delta") ? InputObjectsTimespan::LastDifference : InputObjectsTimespan::FullHistory };
-  mergerConfig.publicationDecision = { PublicationDecision::EachNSeconds, cycleDurationSeconds };
+  mergerConfig.publicationDecision = { PublicationDecision::EachNSeconds, cycleDurations };
   mergerConfig.mergedObjectTimespan = { MergedObjectTimespan::NCycles, (int)resetAfterCycles };
   // for now one merger should be enough, multiple layers to be supported later
   mergerConfig.topologySize = { TopologySize::MergersPerLayer, mergersPerLayer };
-  mergerConfig.monitoringUrl = monitoringUrl;
+  mergerConfig.monitoringUrl = std::move(monitoringUrl);
   mergerConfig.detectorName = detectorName;
   mergerConfig.parallelismType = { (mergerConfig.inputObjectTimespan.value == InputObjectsTimespan::LastDifference) ? ParallelismType::RoundRobin : ParallelismType::SplitInputs };
   mergersBuilder.setConfig(mergerConfig);
@@ -552,7 +558,10 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
 
   for (const auto& ppTaskSpec : infrastructureSpec.postProcessingTasks) {
     if (ppTaskSpec.active) {
-      InputSpec ppTaskOutput{ ppTaskSpec.taskName, PostProcessingDevice::createPostProcessingDataOrigin(), PostProcessingDevice::createPostProcessingDataDescription(ppTaskSpec.taskName), Lifetime::Sporadic };
+      InputSpec ppTaskOutput{ ppTaskSpec.taskName,
+                              PostProcessingDevice::createPostProcessingDataOrigin(ppTaskSpec.detectorName),
+                              PostProcessingDevice::createPostProcessingDataDescription(ppTaskSpec.taskName),
+                              Lifetime::Sporadic };
       tasksOutputMap.insert({ DataSpecUtils::label(ppTaskOutput), ppTaskOutput });
     }
   }
@@ -612,16 +621,16 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
   auto checkRunnerConfig = CheckRunnerFactory::extractConfig(infrastructureSpec.common);
   for (auto& [inputNames, checkConfigs] : checksMap) {
     // Logging
-    ILOG(Info, Devel) << ">> Inputs (" << inputNames.size() << "): ";
+    ILOG(Debug, Devel) << ">> Inputs (" << inputNames.size() << "): ";
     for (const auto& name : inputNames)
-      ILOG(Info, Devel) << name << " ";
-    ILOG(Info, Devel) << " ; Checks (" << checkConfigs.size() << "): ";
+      ILOG(Debug, Devel) << name << " ";
+    ILOG(Debug, Devel) << " ; Checks (" << checkConfigs.size() << "): ";
     for (const auto& checkConfig : checkConfigs)
-      ILOG(Info, Devel) << checkConfig.name << " ";
-    ILOG(Info, Devel) << " ; Stores (" << storeVectorMap[inputNames].size() << "): ";
+      ILOG(Debug, Devel) << checkConfig.name << " ";
+    ILOG(Debug, Devel) << " ; Stores (" << storeVectorMap[inputNames].size() << "): ";
     for (const auto& input : storeVectorMap[inputNames])
-      ILOG(Info, Devel) << input << " ";
-    ILOG(Info, Devel) << ENDM;
+      ILOG(Debug, Devel) << input << " ";
+    ILOG(Debug, Devel) << ENDM;
 
     DataProcessorSpec spec = checkConfigs.empty()
                                ? CheckRunnerFactory::createSinkDevice(checkRunnerConfig, tasksOutputMap.find(inputNames[0])->second)
@@ -630,10 +639,10 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
     checkRunnerOutputs.insert(checkRunnerOutputs.end(), spec.outputs.begin(), spec.outputs.end());
   }
 
-  ILOG(Info) << ">> Outputs (" << checkRunnerOutputs.size() << "): ";
+  ILOG(Debug, Devel) << ">> Outputs (" << checkRunnerOutputs.size() << "): ";
   for (const auto& output : checkRunnerOutputs)
-    ILOG(Info) << DataSpecUtils::describe(output) << " ";
-  ILOG(Info) << ENDM;
+    ILOG(Debug, Devel) << DataSpecUtils::describe(output) << " ";
+  ILOG(Debug, Devel) << ENDM;
 }
 
 void InfrastructureGenerator::generateAggregator(WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec)

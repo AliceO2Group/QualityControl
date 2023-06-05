@@ -74,20 +74,19 @@ ITSNoisyPixelTask::~ITSNoisyPixelTask()
 void ITSNoisyPixelTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
 
-  ILOG(Info, Support) << "initialize ITSNoisyPixelTask" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "initialize ITSNoisyPixelTask" << ENDM;
 
   getJsonParameters();
 
   if (mLocalGeometryFile == 1) {
-    ILOG(Info, Support) << "Getting geometry from local file" << ENDM;
+    ILOG(Debug, Devel) << "Getting geometry from local file" << ENDM;
     o2::base::GeometryManager::loadGeometry(mGeomPath.c_str());
   } else {
-    ILOG(Info, Support) << "Getting geometry from ccdb - timestamp: " << std::stol(mGeoTimestamp) << ENDM;
-    auto& mgr = o2::ccdb::BasicCCDBManager::instance();
-    mgr.setTimestamp(std::stol(mGeoTimestamp));
-    mgr.get<TGeoManager>("GLO/Config/GeometryAligned");
+    ILOG(Debug, Devel) << "Getting geometry from ccdb - timestamp: " << std::stol(mGeoTimestamp) << ENDM;
+    std::map<std::string, std::string> metadata;
+    TaskInterface::retrieveConditionAny<TGeoManager>("GLO/Config/GeometryAligned", metadata, std::stol(mGeoTimestamp));
     if (!o2::base::GeometryManager::isGeometryLoaded()) {
-      ILOG(Fatal, Support) << "Can't retrive geometry from ccdb: " << mgr.getURL() << " timestamp: " << std::stol(mGeoTimestamp) << ENDM;
+      ILOG(Fatal, Support) << "Can't retrive geometry from ccdb  timestamp: " << std::stol(mGeoTimestamp) << ENDM;
       throw std::runtime_error("Can't retrive geometry from ccdb!");
     }
   }
@@ -100,21 +99,21 @@ void ITSNoisyPixelTask::initialize(o2::framework::InitContext& /*ctx*/)
   // get dict from ccdb
   mTimestamp = std::stol(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "dicttimestamp", "0"));
   long int ts = mTimestamp ? mTimestamp : o2::ccdb::getCurrentTimestamp();
-  ILOG(Info, Support) << "Getting dictionary from ccdb - timestamp: " << ts << ENDM;
+  ILOG(Debug, Devel) << "Getting dictionary from ccdb - timestamp: " << ts << ENDM;
   auto& mgr = o2::ccdb::BasicCCDBManager::instance();
   mgr.setTimestamp(ts);
   mDict = mgr.get<o2::itsmft::TopologyDictionary>("ITS/Calib/ClusterDictionary");
-  ILOG(Info, Support) << "Dictionary size: " << mDict->getSize() << ENDM;
+  ILOG(Debug, Devel) << "Dictionary size: " << mDict->getSize() << ENDM;
 }
 
 void ITSNoisyPixelTask::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
 }
 
 void ITSNoisyPixelTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void ITSNoisyPixelTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -124,7 +123,7 @@ void ITSNoisyPixelTask::monitorData(o2::framework::ProcessingContext& ctx)
   int difference;
   start = std::chrono::high_resolution_clock::now();
 
-  ILOG(Info, Support) << "START DOING QC General" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "START DOING QC General" << ENDM;
 
   int lay = -1, sta, hsta, mod, chip;
 
@@ -332,22 +331,22 @@ void ITSNoisyPixelTask::monitorData(o2::framework::ProcessingContext& ctx)
   end = std::chrono::high_resolution_clock::now();
   difference = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
   mTotalTimeInQCTask += difference;
-  ILOG(Info) << "Time in QC Noisy Pixel Task:  " << difference << ENDM;
+  ILOG(Debug, Devel) << "Time in QC Noisy Pixel Task:  " << difference << ENDM;
 }
 
 void ITSNoisyPixelTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void ITSNoisyPixelTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void ITSNoisyPixelTask::reset()
 {
-  ILOG(Info, Support) << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
 
   if (mEnableOrderedHitsObject) {
     hOrderedHitsAddressIB->Reset();
@@ -456,7 +455,7 @@ void ITSNoisyPixelTask::getJsonParameters()
   for (int ilayer = 0; ilayer < NLayer; ilayer++) {
     if (LayerConfig[ilayer] != '0') {
       mEnableLayers[ilayer] = 1;
-      ILOG(Info, Support) << "enable layer : " << ilayer << ENDM;
+      ILOG(Debug, Devel) << "enable layer : " << ilayer << ENDM;
     } else {
       mEnableLayers[ilayer] = 0;
     }
@@ -479,7 +478,7 @@ void ITSNoisyPixelTask::getJsonParameters()
 void ITSNoisyPixelTask::addObject(TObject* aObject)
 {
   if (!aObject) {
-    LOG(info) << " ERROR: trying to add non-existent object ";
+    ILOG(Debug, Devel) << " ERROR: trying to add non-existent object " << ENDM;
     return;
   } else
     mPublishedObjects.push_back(aObject);
@@ -538,7 +537,7 @@ void ITSNoisyPixelTask::publishHistos()
 {
   for (unsigned int iObj = 0; iObj < mPublishedObjects.size(); iObj++) {
     getObjectsManager()->startPublishing(mPublishedObjects.at(iObj));
-    LOG(info) << " Object will be published: " << mPublishedObjects.at(iObj)->GetName();
+    ILOG(Debug, Devel) << " Object will be published: " << mPublishedObjects.at(iObj)->GetName() << ENDM;
   }
 }
 

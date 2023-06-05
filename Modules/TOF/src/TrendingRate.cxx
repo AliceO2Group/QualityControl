@@ -42,9 +42,9 @@ using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;
 using namespace o2::quality_control_modules::tof;
 
-void TrendingRate::configure(std::string name, const boost::property_tree::ptree& config)
+void TrendingRate::configure(const boost::property_tree::ptree& config)
 {
-  mConfig = TrendingConfigTOF(name, config);
+  mConfig = TrendingConfigTOF(getID(), config);
   mThresholdSgn = mConfig.mConfigTrendingRate.thresholdSignal;
   mThresholdBkg = mConfig.mConfigTrendingRate.thresholdBackground;
 }
@@ -93,12 +93,12 @@ void TrendingRate::computeTOFRates(TH2F* h, std::vector<int>& bcInt, std::vector
   mPreviousPlot->Reset();
   mPreviousPlot->Add(h);
 
-  if (nb == 0) { // threshold too high? return since hback was not created
-    ILOG(Warning, Support) << "Counted 0 background events, threshold might be too high!" << ENDM;
+  if (nb == 0) { // threshold too low? return since hback was not created
+    ILOG(Warning, Support) << "Counted 0 background events, BKG threshold might be too low!" << ENDM;
     delete hpdiff;
     return;
   }
-  if (hback->Integral() < 0) {
+  if (hback->Integral() < 0 || hback->GetMean() < 0.5) {
     return;
   }
 
@@ -128,7 +128,11 @@ void TrendingRate::computeTOFRates(TH2F* h, std::vector<int>& bcInt, std::vector
       const int bcmax = ibc * 18;
       TH1D* hs = hDiffGlobal.ProjectionY(Form("sign_%d_%d", bcmin, bcmax), ibc, ibc);
       hs->SetTitle(Form("%d < BC < %d", bcmin, bcmax));
-      hb->Scale(hs->GetBinContent(1) / hb->GetBinContent(1));
+      if (hb->GetBinContent(1)) {
+        hb->Scale(hs->GetBinContent(1) / hb->GetBinContent(1));
+      } else {
+        continue;
+      }
       const float overall = hs->Integral();
       if (overall <= 0.f) {
         ILOG(Info, Support) << "no signal for BC index " << ibc << ENDM;
@@ -220,6 +224,9 @@ void TrendingRate::trendValues(const Trigger& t, repository::DatabaseInterface& 
   std::vector<float> bcRate;
   std::vector<float> bcPileup;
 
+  bool foundHitMap = false;
+  bool foundVsBC = false;
+
   for (auto& dataSource : mConfig.dataSources) {
     auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name, t.timestamp, t.activity);
     if (!mo) {
@@ -227,13 +234,25 @@ void TrendingRate::trendValues(const Trigger& t, repository::DatabaseInterface& 
     }
     ILOG(Debug, Support) << "Got MO " << mo << ENDM;
     if (dataSource.name == "HitMap") {
-      TH2F* hmap = (TH2F*)mo->getObject();
+      foundHitMap = true;
+      TH2F* hmap = dynamic_cast<TH2F*>(mo->getObject());
       hmap->Divide(hmap);
       mActiveChannels = hmap->Integral() * 24;
       ILOG(Info, Support) << "N channels = " << mActiveChannels << ENDM;
     } else if (dataSource.name == "Multiplicity/VsBC") {
       moHistogramMultVsBC = mo;
+      foundVsBC = true;
     }
+  }
+
+  if (!foundHitMap) {
+    ILOG(Info, Support) << "HitMap not found";
+    return;
+  }
+
+  if (!foundVsBC) {
+    ILOG(Info, Support) << "Multiplicity/VsBC not found";
+    return;
   }
 
   if (mActiveChannels < 1) {
@@ -241,12 +260,7 @@ void TrendingRate::trendValues(const Trigger& t, repository::DatabaseInterface& 
     return;
   }
 
-  if (!moHistogramMultVsBC) {
-    ILOG(Info, Support) << "Got no histogramMultVsBC, can't compute rates";
-    return;
-  }
-
-  computeTOFRates((TH2F*)moHistogramMultVsBC->getObject(), bcInt, bcRate, bcPileup);
+  computeTOFRates(dynamic_cast<TH2F*>(moHistogramMultVsBC->getObject()), bcInt, bcRate, bcPileup);
 
   ILOG(Info, Support) << "In " << mActiveChannels << " channels, noise rate per channel= " << mNoiseRatePerChannel << " Hz - collision rate = " << mCollisionRate << " Hz - mu-pilup = " << mPileupRate << ENDM;
 
@@ -270,9 +284,14 @@ void TrendingRate::generatePlots()
 
     // Before we generate any new plots, we have to delete existing under the same names.
     // It seems that ROOT cannot handle an existence of two canvases with a common name in the same process.
-    if (mPlots.count(plot.name)) {
-      getObjectsManager()->stopPublishing(plot.name);
-      delete mPlots[plot.name];
+    TCanvas* c;
+    if (!mPlots.count(plot.name)) {
+      c = new TCanvas(plot.name.c_str(), plot.title.c_str());
+      mPlots[plot.name] = c;
+      getObjectsManager()->startPublishing(c);
+    } else {
+      c = (TCanvas*)mPlots[plot.name];
+      c->cd();
     }
 
     // we determine the order of the plot, i.e. if it is a histogram (1), graph (2), or any higher dimension.
@@ -280,12 +299,7 @@ void TrendingRate::generatePlots()
     // we have to delete the graph errors after the plot is saved, unfortunately the canvas does not take its ownership
     TGraphErrors* graphErrors = nullptr;
 
-    TCanvas* c = new TCanvas();
-
     mTrend->Draw(plot.varexp.c_str(), plot.selection.c_str(), plot.option.c_str());
-
-    c->SetName(plot.name.c_str());
-    c->SetTitle(plot.title.c_str());
 
     // For graphs we allow to draw errors if they are specified.
     if (!plot.graphErrors.empty()) {
@@ -340,8 +354,5 @@ void TrendingRate::generatePlots()
     } else {
       ILOG(Error, Devel) << "Could not get the htemp histogram of the plot '" << plot.name << "'." << ENDM;
     }
-
-    mPlots[plot.name] = c;
-    getObjectsManager()->startPublishing(c);
   }
 }

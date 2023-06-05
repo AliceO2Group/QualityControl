@@ -45,10 +45,9 @@ using namespace o2::quality_control::postprocessing;
 using namespace o2::quality_control::repository;
 using namespace o2::quality_control_modules::its;
 
-void TrendingTaskITSFEE::configure(std::string name,
-                                   const boost::property_tree::ptree& config)
+void TrendingTaskITSFEE::configure(const boost::property_tree::ptree& config)
 {
-  mConfig = TrendingTaskConfigITS(name, config);
+  mConfig = TrendingTaskConfigITS(getID(), config);
 }
 
 void TrendingTaskITSFEE::initialize(Trigger, framework::ServiceRegistryRef)
@@ -121,7 +120,7 @@ void TrendingTaskITSFEE::trendValues(const Trigger& t, repository::DatabaseInter
       if (obj)
         mReductors[dataSource.name]->update(obj);
     } else {
-      ILOGE << "Unknown type of data source '" << dataSource.type << "'.";
+      ILOG(Debug, Devel) << "Unknown type of data source '" << dataSource.type << "'." << ENDM;
     }
     count++;
   }
@@ -130,8 +129,6 @@ void TrendingTaskITSFEE::trendValues(const Trigger& t, repository::DatabaseInter
 
 void TrendingTaskITSFEE::storePlots(repository::DatabaseInterface& qcdb)
 {
-  // ILOG(Info, Support) << "Generating and storing " << mConfig.plots.size() << " plots." << ENDM;
-
   int countplots = 0;
   int countITSpart = 0;
   bool isRun = false;
@@ -172,7 +169,7 @@ void TrendingTaskITSFEE::storePlots(repository::DatabaseInterface& qcdb)
     // Create and save plots
     if (countplots == nFlags - 1) {
 
-      SetGraphAxes(multi_trend, Form("%s", isRun ? "Run" : "Time"), "Number of lanes", !isRun);
+      SetGraphAxes(multi_trend, Form("%s", isRun ? "Run" : "Time"), "Fraction of lanes", !isRun);
 
       // Canvas settings
       std::string name = "LaneStatusSummary_" + itsParts[countITSpart] + "_Trends";
@@ -180,9 +177,9 @@ void TrendingTaskITSFEE::storePlots(repository::DatabaseInterface& qcdb)
       SetCanvasSettings(canvas);
 
       // Plot as a function of run number requires a dummy TH1 histogram
-      TH1I* hDummy = nullptr;
+      TH1D* hDummy = nullptr;
       if (isRun) {
-        hDummy = new TH1I("hDummy", Form("%s; %s; %s", multi_trend->GetTitle(), multi_trend->GetXaxis()->GetTitle(), multi_trend->GetYaxis()->GetTitle()), numberOfEntries, 0.5, numberOfEntries + 0.5);
+        hDummy = new TH1D("hDummy", Form("%s; %s; %s", multi_trend->GetTitle(), multi_trend->GetXaxis()->GetTitle(), multi_trend->GetYaxis()->GetTitle()), numberOfEntries, 0.5, numberOfEntries + 0.5);
         SetHistoAxes(hDummy, runlist, multi_trend->GetYaxis()->GetXmin(), multi_trend->GetYaxis()->GetXmax());
       }
 

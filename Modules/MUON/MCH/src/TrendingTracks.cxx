@@ -42,9 +42,9 @@ using namespace o2::quality_control::postprocessing;
 using namespace o2::quality_control_modules::muon;
 using namespace o2::quality_control_modules::muonchambers;
 
-void TrendingTracks::configure(std::string name, const boost::property_tree::ptree& config)
+void TrendingTracks::configure(const boost::property_tree::ptree& config)
 {
-  mConfig = TrendingConfigMCH(name, config);
+  mConfig = PostProcessingConfigMCH(getID(), config);
   for (int chamber = 0; chamber < 10; chamber++) {
     mConfig.plots.push_back({ fmt::format("Clusters_CH{}", chamber + 1),
                               fmt::format("Clusters CH{}", chamber + 1),
@@ -103,7 +103,6 @@ void TrendingTracks::computeClustersPerChamber(TProfile* p)
 // todo: see if OptimizeBaskets() indeed helps after some time
 void TrendingTracks::update(Trigger t, framework::ServiceRegistryRef services)
 {
-  std::cout << "TrendingTracks::update()" << std::endl;
   auto& qcdb = services.get<repository::DatabaseInterface>();
 
   trendValues(t, qcdb);

@@ -22,6 +22,7 @@
 #include "QualityControl/DataSourceSpec.h"
 #include "QualityControl/CheckSpec.h"
 #include "QualityControl/PostProcessingTaskSpec.h"
+#include "QualityControl/RecoRequestSpecs.h"
 #include <boost/property_tree/ptree_fwd.hpp>
 
 namespace o2::quality_control::core
@@ -37,23 +38,27 @@ namespace InfrastructureSpecReader
 InfrastructureSpec readInfrastructureSpec(const boost::property_tree::ptree& wholeTree);
 
 template <typename T>
-T readSpecEntry(std::string entryID, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
+T readSpecEntry(const std::string& entryID, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
 
 // readers for separate parts
 template <>
-DataSourceSpec readSpecEntry<DataSourceSpec>(std::string entryID, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
+DataSourceSpec readSpecEntry<DataSourceSpec>(const std::string& entryID, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
 template <>
-TaskSpec readSpecEntry<TaskSpec>(std::string entryID, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
+TaskSpec readSpecEntry<TaskSpec>(const std::string& entryID, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
 template <>
-checker::CheckSpec readSpecEntry<checker::CheckSpec>(std::string entryID, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
+checker::CheckSpec readSpecEntry<checker::CheckSpec>(const std::string& entryID, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
 template <>
-checker::AggregatorSpec readSpecEntry<checker::AggregatorSpec>(std::string entryID, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
+checker::AggregatorSpec readSpecEntry<checker::AggregatorSpec>(const std::string& entryID, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
 template <>
-postprocessing::PostProcessingTaskSpec readSpecEntry<postprocessing::PostProcessingTaskSpec>(std::string entryID, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
+postprocessing::PostProcessingTaskSpec readSpecEntry<postprocessing::PostProcessingTaskSpec>(const std::string& entryID, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
 template <>
-ExternalTaskSpec readSpecEntry<ExternalTaskSpec>(std::string entryID, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
+ExternalTaskSpec readSpecEntry<ExternalTaskSpec>(const std::string& entryID, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
 template <>
-CommonSpec readSpecEntry<CommonSpec>(std::string entryID, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
+GRPGeomRequestSpec readSpecEntry<GRPGeomRequestSpec>(const std::string& entryID, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
+template <>
+GlobalTrackingDataRequestSpec readSpecEntry<GlobalTrackingDataRequestSpec>(const std::string& entryID, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
+template <>
+CommonSpec readSpecEntry<CommonSpec>(const std::string& entryID, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
 
 // todo: section names should be enum.
 template <typename T>

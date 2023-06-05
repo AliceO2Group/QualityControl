@@ -19,6 +19,10 @@
 
 #include "QualityControl/CheckInterface.h"
 
+#include <unordered_map>
+#include "QualityControl/Quality.h"
+#include "MID/HistoHelper.h"
+
 namespace o2::quality_control_modules::mid
 {
 
@@ -39,18 +43,18 @@ class DigitsQcCheck : public o2::quality_control::checker::CheckInterface
   std::string getAcceptedType() override;
 
  private:
-  double mMeanMultThreshold;
+  double mMeanMultThreshold = 10.;   ///! Upper threshold on mean multiplicity
+  double mMinMultThreshold = 0.001;  ///! Lower threshold on mean multiplicity
+  double mLocalBoardScale = 100.;    ///! Local board scale in kHz
+  int mNbEmptyLocalBoard = 117;      ///! Maximum number of allowed empty boards
+  double mLocalBoardThreshold = 400; ///! Threshold on board multiplicity (kHz)
+  int mNbBadLocalBoard = 10;         ///! Maximum number of local boards above threshold
 
-  Quality resultBMT11 = Quality::Null;
-  Quality resultBMT12 = Quality::Null;
-  Quality resultBMT21 = Quality::Null;
-  Quality resultBMT22 = Quality::Null;
-  Quality resultNBMT11 = Quality::Null;
-  Quality resultNBMT12 = Quality::Null;
-  Quality resultNBMT21 = Quality::Null;
-  Quality resultNBMT22 = Quality::Null;
+  std::unordered_map<std::string, Quality> mQualityMap; ///! Quality map
 
-  ClassDefOverride(DigitsQcCheck, 2);
+  HistoHelper mHistoHelper; ///! Histogram helper
+
+  ClassDefOverride(DigitsQcCheck, 3);
 };
 
 } // namespace o2::quality_control_modules::mid

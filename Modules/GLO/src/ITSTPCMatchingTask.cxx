@@ -31,55 +31,54 @@ ITSTPCMatchingTask::~ITSTPCMatchingTask()
 }
 void ITSTPCMatchingTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize ITSTPCMatchingTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize ITSTPCMatchingTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   if (auto param = mCustomParameters.find("isMC"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - isMC (= use of MC info): " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - isMC (= use of MC info): " << param->second << ENDM;
     if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
       mMatchITSTPCQC.setUseMC(true);
     }
   }
   if (auto param = mCustomParameters.find("minPtCut"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - minPtCut (for track selection): " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - minPtCut (for track selection): " << param->second << ENDM;
     mMatchITSTPCQC.setPtCut(atof(param->second.c_str()));
   }
   if (auto param = mCustomParameters.find("EtaCut"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - EtaCut (for track selection): " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - EtaCut (for track selection): " << param->second << ENDM;
     mMatchITSTPCQC.setEtaCut(atof(param->second.c_str()));
   }
   if (auto param = mCustomParameters.find("minNTPCClustersCut"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - minNTPCClustersCut (for track selection): " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - minNTPCClustersCut (for track selection): " << param->second << ENDM;
     mMatchITSTPCQC.setMinNTPCClustersCut(atoi(param->second.c_str()));
   }
   if (auto param = mCustomParameters.find("minDCACut"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - minDCACut (for track selection): " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - minDCACut (for track selection): " << param->second << ENDM;
     mMatchITSTPCQC.setMinDCAtoBeamPipeDistanceCut(atof(param->second.c_str()));
   }
   if (auto param = mCustomParameters.find("minDCACutY"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - minDCACutY (for track selection): " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - minDCACutY (for track selection): " << param->second << ENDM;
     mMatchITSTPCQC.setMinDCAtoBeamPipeYCut(atof(param->second.c_str()));
-  }
-  if (auto param = mCustomParameters.find("grpFileName"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - GRP filename: " << param->second << ENDM;
-    mMatchITSTPCQC.setGRPFileName(param->second);
-  }
-  if (auto param = mCustomParameters.find("geomFileName"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - geometry filename: " << param->second << ENDM;
-    mMatchITSTPCQC.setGeomFileName(param->second);
   }
 
   mMatchITSTPCQC.initDataRequest();
   mMatchITSTPCQC.init();
+
+  // Pt
   getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPt());
   getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPtTPC());
   getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatch());
+  // Phi
   getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPhi());
   getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPhiTPC());
   getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatchPhi());
+  getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatchPhiVsPt());
+  // Eta
   getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoEta());
   getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoEtaTPC());
   getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatchEta());
+  getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatchEtaVsPt());
 
+  // Residuals
   getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoResidualPt());
   getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoResidualPhi());
   getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoResidualEta());
@@ -88,12 +87,15 @@ void ITSTPCMatchingTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoChi2Refit());
   getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoTimeResVsPt());
   if (mMatchITSTPCQC.getUseMC()) {
+    // Pt
     getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPtPhysPrim());
     getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPtTPCPhysPrim());
     getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatchPhysPrim());
+    // Phi
     getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPhiPhysPrim());
     getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPhiTPCPhysPrim());
     getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatchPhiPhysPrim());
+    // Eta
     getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoEtaPhysPrim());
     getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoEtaTPCPhysPrim());
     getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatchEtaPhysPrim());
@@ -102,13 +104,13 @@ void ITSTPCMatchingTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void ITSTPCMatchingTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity " << activity.mId << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
   mMatchITSTPCQC.reset();
 }
 
 void ITSTPCMatchingTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void ITSTPCMatchingTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -118,20 +120,20 @@ void ITSTPCMatchingTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void ITSTPCMatchingTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
   mMatchITSTPCQC.finalize();
 }
 
 void ITSTPCMatchingTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void ITSTPCMatchingTask::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info, Support) << "Resetting the histograms" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histogramss" << ENDM;
   mMatchITSTPCQC.reset();
 }
 

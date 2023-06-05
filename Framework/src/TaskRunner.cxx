@@ -31,6 +31,7 @@
 #include <Framework/DataRefUtils.h>
 #include <Framework/EndOfStreamContext.h>
 #include <CommonUtils/ConfigurableParam.h>
+#include <DetectorsBase/GRPGeomHelper.h>
 
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/TaskFactory.h"
@@ -39,6 +40,7 @@
 #include "QualityControl/TaskRunnerFactory.h"
 #include "QualityControl/ConfigParamGlo.h"
 #include "QualityControl/ObjectsManager.h"
+#include "QualityControl/Bookkeeping.h"
 
 #include <string>
 #include <TFile.h>
@@ -54,6 +56,7 @@ namespace o2::quality_control::core
 
 using namespace o2::framework;
 using namespace o2::header;
+using namespace o2::base;
 using namespace o2::configuration;
 using namespace o2::monitoring;
 using namespace std::chrono;
@@ -104,7 +107,7 @@ void TaskRunner::refreshConfig(InitContext& iCtx)
     ILOG(Warning, Devel) << "Could not get updated config tree in TaskRunner::init() - `qcConfiguration` could not be retrieved" << ENDM;
   } catch (...) {
     // we catch here because we don't know where it will get lost in dpl, and also we don't care if this part has failed.
-    ILOG(Warning, Devel) << "Error caught in refreshConfig() :\n"
+    ILOG(Warning, Devel) << "Error caught in refreshConfig() : "
                          << current_diagnostic(true) << ENDM;
   }
 }
@@ -133,20 +136,17 @@ void TaskRunner::initInfologger(InitContext& iCtx)
 void TaskRunner::init(InitContext& iCtx)
 {
   initInfologger(iCtx);
-  ILOG(Info, Support) << "Initializing TaskRunner" << ENDM;
+  ILOG(Info, Devel) << "Initializing TaskRunner" << ENDM;
 
   refreshConfig(iCtx);
   printTaskConfig();
+  Bookkeeping::getInstance().init(mTaskConfig.bookkeepingUrl);
 
   // registering state machine callbacks
   try {
-#if __has_include(<Framework/Features.h>)
-    iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, services = iCtx.services()]() mutable { start(services); });
-#else
-    iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, &services = iCtx.services()]() { start(services); });
-#endif
-    iCtx.services().get<CallbackService>().set(CallbackService::Id::Reset, [this]() { reset(); });
-    iCtx.services().get<CallbackService>().set(CallbackService::Id::Stop, [this]() { stop(); });
+    iCtx.services().get<CallbackService>().set<CallbackService::Id::Start>([this, services = iCtx.services()]() mutable { start(services); });
+    iCtx.services().get<CallbackService>().set<CallbackService::Id::Reset>([this]() { reset(); });
+    iCtx.services().get<CallbackService>().set<CallbackService::Id::Stop>([this]() { stop(); });
   } catch (o2::framework::RuntimeErrorRef& ref) {
     ILOG(Error) << "Error during initialization: " << o2::framework::error_from_ref(ref).what << ENDM;
   }
@@ -161,13 +161,17 @@ void TaskRunner::init(InitContext& iCtx)
   mObjectsManager = std::make_shared<ObjectsManager>(mTaskConfig.taskName, mTaskConfig.className, mTaskConfig.detectorName, mTaskConfig.consulUrl, mTaskConfig.parallelTaskID);
 
   // setup user's task
-  TaskFactory factory;
-  mTask.reset(factory.create(mTaskConfig, mObjectsManager));
+  mTask.reset(TaskFactory::create(mTaskConfig, mObjectsManager));
   mTask->setMonitoring(mCollector);
+  mTask->setGlobalTrackingDataRequest(mTaskConfig.globalTrackingDataRequest);
 
   // load config params
   if (!ConfigParamGlo::keyValues.empty()) {
     conf::ConfigurableParam::updateFromString(ConfigParamGlo::keyValues);
+  }
+  // load reco helpers
+  if (mTaskConfig.grpGeomRequest) {
+    GRPGeomHelper::instance().setRequest(mTaskConfig.grpGeomRequest);
   }
 
   // init user's task
@@ -190,6 +194,10 @@ void TaskRunner::run(ProcessingContext& pCtx)
     startCycle();
   }
 
+  if (mTaskConfig.grpGeomRequest) {
+    GRPGeomHelper::instance().checkUpdates(pCtx);
+  }
+
   auto [dataReady, timerReady] = validateInputs(pCtx.inputs());
 
   if (dataReady) {
@@ -206,6 +214,15 @@ void TaskRunner::run(ProcessingContext& pCtx)
       startCycle();
     } else {
       mNoMoreCycles = true;
+    }
+  }
+}
+
+void TaskRunner::finaliseCCDB(ConcreteDataMatcher& matcher, void* obj)
+{
+  if (mTaskConfig.grpGeomRequest) {
+    if (!GRPGeomHelper::instance().finaliseCCDB(matcher, obj)) {
+      ILOG(Warning, Devel) << "Could not update CCDB objects requested by GRPGeomHelper" << ENDM;
     }
   }
 }
@@ -250,7 +267,7 @@ CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framewor
 
 std::string TaskRunner::createTaskRunnerIdString()
 {
-  return std::string("qc-task");
+  return { "qc-task" };
 }
 
 header::DataOrigin TaskRunner::createTaskDataOrigin(const std::string& detectorCode)
@@ -326,7 +343,7 @@ void TaskRunner::start(ServiceRegistryRef services)
     startCycle();
   } catch (...) {
     // we catch here because we don't know where it will go in DPL's CallbackService
-    ILOG(Error, Support) << "Error caught in start() :\n"
+    ILOG(Error, Support) << "Error caught in start() :"
                          << current_diagnostic(true) << ENDM;
     throw;
   }
@@ -345,7 +362,7 @@ void TaskRunner::stop()
     mRunNumber = 0;
   } catch (...) {
     // we catch here because we don't know where it will go in DPL's CallbackService
-    ILOG(Error, Support) << "Error caught in stop() :\n"
+    ILOG(Error, Support) << "Error caught in stop() : "
                          << current_diagnostic(true) << ENDM;
     throw;
   }
@@ -360,7 +377,7 @@ void TaskRunner::reset()
     mRunNumber = 0;
   } catch (...) {
     // we catch here because we don't know where it will go in DPL's CallbackService
-    ILOG(Error, Support) << "Error caught in reset() :\n"
+    ILOG(Error, Support) << "Error caught in reset() : "
                          << current_diagnostic(true) << ENDM;
     throw;
   }
@@ -389,15 +406,18 @@ std::tuple<bool /*data ready*/, bool /*timer ready*/> TaskRunner::validateInputs
   return { dataReady, timerReady };
 }
 
-void TaskRunner::printTaskConfig()
+void TaskRunner::printTaskConfig() const
 {
-  ILOG(Info, Support) << "Configuration loaded : " << ENDM;
-  ILOG(Info, Support) << ">> Task name : " << mTaskConfig.taskName << ENDM;
-  ILOG(Info, Support) << ">> Module name : " << mTaskConfig.moduleName << ENDM;
-  ILOG(Info, Support) << ">> Detector name : " << mTaskConfig.detectorName << ENDM;
-  ILOG(Info, Support) << ">> Cycle duration seconds : " << mTaskConfig.cycleDurationSeconds << ENDM;
-  ILOG(Info, Support) << ">> Max number cycles : " << mTaskConfig.maxNumberCycles << ENDM;
-  ILOG(Info, Support) << ">> Save to file : " << mTaskConfig.saveToFile << ENDM;
+  ILOG(Info, Devel) << "Configuration loaded > Task name : " << mTaskConfig.taskName //
+                    << " / Module name : " << mTaskConfig.moduleName                 //
+                    << " / Detector name : " << mTaskConfig.detectorName             //
+                    << " / Max number cycles : " << mTaskConfig.maxNumberCycles      //
+                    << " / Save to file : " << mTaskConfig.saveToFile
+                    << " / Cycle duration seconds : ";
+  for (auto& [cycleDuration, period] : mTaskConfig.cycleDurations) {
+    ILOG(Info, Devel) << cycleDuration << "s during " << period << "s, ";
+  }
+  ILOG(Info, Devel) << ENDM;
 }
 
 void TaskRunner::startOfActivity()
@@ -406,10 +426,10 @@ void TaskRunner::startOfActivity()
   mTimerTotalDurationActivity.reset();
   mTotalNumberObjectsPublished = 0;
 
-  // Start activity in module's stask and update objectsManager
-  Activity activity = mTaskConfig.fallbackActivity;
-  activity.mId = mRunNumber;
+  // Start activity in module's task and update objectsManager
   ILOG(Info, Support) << "Starting run " << mRunNumber << ENDM;
+  Activity activity = mTaskConfig.fallbackActivity;
+  Bookkeeping::getInstance().populateActivity(activity, mRunNumber);
   mObjectsManager->setActivity(activity);
   mCollector->setRunNumber(mRunNumber);
   mTask->startOfActivity(activity);
@@ -444,6 +464,8 @@ void TaskRunner::finishCycle(DataAllocator& outputs)
   ILOG(Debug, Support) << "Finish cycle " << mCycleNumber << ENDM;
   mTask->endOfCycle();
 
+  auto nowMs = getCurrentTimestamp();
+  mObjectsManager->setValidity(ValidityInterval{ nowMs, nowMs + 1000l * 60 * 60 * 24 * 365 * 10 });
   mNumberObjectsPublishedInCycle += publish(outputs);
   mTotalNumberObjectsPublished += mNumberObjectsPublishedInCycle;
   saveToFile();
@@ -503,7 +525,7 @@ void TaskRunner::publishCycleStats()
 
 int TaskRunner::publish(DataAllocator& outputs)
 {
-  ILOG(Info, Support) << "Publishing " << mObjectsManager->getNumberPublishedObjects() << " MonitorObjects" << ENDM;
+  ILOG(Debug, Support) << "Publishing " << mObjectsManager->getNumberPublishedObjects() << " MonitorObjects" << ENDM;
   AliceO2::Common::Timer publicationDurationTimer;
 
   auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(mTaskConfig.moSpec);

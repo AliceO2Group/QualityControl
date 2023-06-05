@@ -34,6 +34,7 @@
 #include "QualityControl/CheckRunnerFactory.h"
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/ConfigParamGlo.h"
+#include "QualityControl/Bookkeeping.h"
 
 #include <TSystem.h>
 
@@ -202,7 +203,7 @@ void CheckRunner::refreshConfig(InitContext& iCtx)
     ILOG(Warning, Devel) << "Could not get updated config tree in CheckRunner::init() - `qcConfiguration` could not be retrieved" << ENDM;
   } catch (...) {
     // we catch here because we don't know where it will get lost in DPL, and also we don't care if this part has failed.
-    ILOG(Warning, Devel) << "Error caught in CheckRunner::refreshConfig() :\n"
+    ILOG(Warning, Devel) << "Error caught in CheckRunner::refreshConfig(): "
                          << current_diagnostic(true) << ENDM;
   }
 }
@@ -212,6 +213,7 @@ void CheckRunner::init(framework::InitContext& iCtx)
   try {
     initInfologger(iCtx);
     refreshConfig(iCtx);
+    Bookkeeping::getInstance().init(mConfig.bookkeepingUrl);
     initDatabase();
     initMonitoring();
     initServiceDiscovery();
@@ -221,14 +223,9 @@ void CheckRunner::init(framework::InitContext& iCtx)
       conf::ConfigurableParam::updateFromString(ConfigParamGlo::keyValues);
     }
     // registering state machine callbacks
-    // FIXME: this is a workaround until we get some O2 PR in.
-#if __has_include(<Framework/Features.h>)
-    iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, services = iCtx.services()]() mutable { start(services); });
-#else
-    iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, &services = iCtx.services()]() { start(services); });
-#endif
-    iCtx.services().get<CallbackService>().set(CallbackService::Id::Reset, [this]() { reset(); });
-    iCtx.services().get<CallbackService>().set(CallbackService::Id::Stop, [this]() { stop(); });
+    iCtx.services().get<CallbackService>().set<CallbackService::Id::Start>([this, services = iCtx.services()]() mutable { start(services); });
+    iCtx.services().get<CallbackService>().set<CallbackService::Id::Reset>([this]() { reset(); });
+    iCtx.services().get<CallbackService>().set<CallbackService::Id::Stop>([this]() { stop(); });
 
     updatePolicyManager.reset();
     for (auto& [checkName, check] : mChecks) {
@@ -237,19 +234,10 @@ void CheckRunner::init(framework::InitContext& iCtx)
     }
   } catch (...) {
     // catch the exceptions and print it (the ultimate caller might not know how to display it)
-    ILOG(Fatal, Ops) << "Unexpected exception during initialization:\n"
+    ILOG(Fatal, Ops) << "Unexpected exception during initialization: "
                      << current_diagnostic(true) << ENDM;
     throw;
   }
-}
-
-long getCurrentTimestamp()
-{
-  auto now = std::chrono::system_clock::now();
-  auto now_ms = std::chrono::time_point_cast<std::chrono::milliseconds>(now);
-  auto epoch = now_ms.time_since_epoch();
-  auto value = std::chrono::duration_cast<std::chrono::milliseconds>(epoch);
-  return value.count();
 }
 
 void CheckRunner::run(framework::ProcessingContext& ctx)
@@ -258,12 +246,8 @@ void CheckRunner::run(framework::ProcessingContext& ctx)
 
   auto qualityObjects = check();
 
-  // we want all objects that we are going to store to have the same validFrom values.
-  // ideally it should be SOR or the moving window start, but before GUI allows for this,
-  // we have to put the current timestamp.
-  auto now = getCurrentTimestamp();
-  store(qualityObjects, now);
-  store(mMonitorObjectStoreVector, now);
+  store(qualityObjects);
+  store(mMonitorObjectStoreVector);
 
   send(qualityObjects, ctx.outputs());
 
@@ -289,18 +273,18 @@ void CheckRunner::prepareCacheData(framework::InputRecord& inputRecord)
       if (tobj->InheritsFrom("TObjArray")) {
         array.reset(dynamic_cast<TObjArray*>(tobj.release()));
         array->SetOwner(false);
-        ILOG(Info, Support) << "CheckRunner " << mDeviceName
-                            << " received an array with " << array->GetEntries()
-                            << " entries from " << input.binding << ENDM;
+        ILOG(Debug, Devel) << "CheckRunner " << mDeviceName
+                           << " received an array with " << array->GetEntries()
+                           << " entries from " << input.binding << ENDM;
       } else {
         // it is just a TObject not embedded in a TObjArray. We build a TObjArray for it.
         auto* newArray = new TObjArray();    // we cannot use `array` to add an object as it is const
         TObject* newTObject = tobj->Clone(); // we need a copy to avoid that it gets deleted behind our back.
         newArray->Add(newTObject);
         array.reset(newArray); // now that the array is ready we can adopt it.
-        ILOG(Info, Support) << "CheckRunner " << mDeviceName
-                            << " received a tobject named " << tobj->GetName()
-                            << " from " << input.binding << ENDM;
+        ILOG(Debug, Devel) << "CheckRunner " << mDeviceName
+                           << " received a tobject named " << tobj->GetName()
+                           << " from " << input.binding << ENDM;
       }
 
       // for each item of the array, check whether it is a MonitorObject. If not, create one and encapsulate.
@@ -310,8 +294,8 @@ void CheckRunner::prepareCacheData(framework::InputRecord& inputRecord)
         std::shared_ptr<MonitorObject> mo{ dynamic_cast<MonitorObject*>(tObject) };
 
         if (mo == nullptr) {
-          ILOG(Info, Support) << "The MO is null, probably a TObject could not be casted into an MO." << ENDM;
-          ILOG(Info, Support) << "    Creating an ad hoc MO." << ENDM;
+          ILOG(Debug, Devel) << "The MO is null, probably a TObject could not be casted into an MO." << ENDM;
+          ILOG(Debug, Devel) << "    Creating an ad hoc MO." << ENDM;
           header::DataOrigin origin = DataSpecUtils::asConcreteOrigin(input);
           mo = std::make_shared<MonitorObject>(tObject, input.binding, "CheckRunner", origin.str);
         }
@@ -355,8 +339,8 @@ void CheckRunner::sendPeriodicMonitoring()
 
 QualityObjectsType CheckRunner::check()
 {
-  ILOG(Info, Support) << "Trying " << mChecks.size() << " checks for " << mMonitorObjects.size() << " monitor objects"
-                      << ENDM;
+  ILOG(Debug, Devel) << "Trying " << mChecks.size() << " checks for " << mMonitorObjects.size() << " monitor objects"
+                     << ENDM;
 
   QualityObjectsType allQOs;
   for (auto& [checkName, check] : mChecks) {
@@ -376,13 +360,12 @@ QualityObjectsType CheckRunner::check()
   return allQOs;
 }
 
-void CheckRunner::store(QualityObjectsType& qualityObjects, long validFrom)
+void CheckRunner::store(QualityObjectsType& qualityObjects)
 {
-  ILOG(Info, Support) << "Storing " << qualityObjects.size() << " QualityObjects" << ENDM;
+  ILOG(Debug, Devel) << "Storing " << qualityObjects.size() << " QualityObjects" << ENDM;
   try {
     for (auto& qo : qualityObjects) {
-      qo->setActivity(mActivity);
-      mDatabase->storeQO(qo, validFrom);
+      mDatabase->storeQO(qo);
       mTotalNumberQOStored++;
       mNumberQOStored++;
     }
@@ -391,13 +374,12 @@ void CheckRunner::store(QualityObjectsType& qualityObjects, long validFrom)
   }
 }
 
-void CheckRunner::store(std::vector<std::shared_ptr<MonitorObject>>& monitorObjects, long validFrom)
+void CheckRunner::store(std::vector<std::shared_ptr<MonitorObject>>& monitorObjects)
 {
-  ILOG(Info, Support) << "Storing " << monitorObjects.size() << " MonitorObjects" << ENDM;
+  ILOG(Debug, Devel) << "Storing " << monitorObjects.size() << " MonitorObjects" << ENDM;
   try {
     for (auto& mo : monitorObjects) {
-      mo->setActivity(mActivity);
-      mDatabase->storeMO(mo, validFrom);
+      mDatabase->storeMO(mo);
       mTotalNumberMOStored++;
       mNumberMOStored++;
     }
@@ -411,7 +393,7 @@ void CheckRunner::send(QualityObjectsType& qualityObjects, framework::DataAlloca
   // Note that we might send multiple QOs in one output, as separate parts.
   // This should be fine if they are retrieved on the other side with InputRecordWalker.
 
-  ILOG(Info, Support) << "Sending " << qualityObjects.size() << " quality objects" << ENDM;
+  ILOG(Debug, Devel) << "Sending " << qualityObjects.size() << " quality objects" << ENDM;
   for (const auto& qo : qualityObjects) {
     const auto& correspondingCheck = mChecks.at(qo->getCheckName());
     auto outputSpec = correspondingCheck.getOutputSpec();
@@ -457,9 +439,7 @@ void CheckRunner::initDatabase()
 {
   mDatabase = DatabaseFactory::create(mConfig.database.at("implementation"));
   mDatabase->connect(mConfig.database);
-  ILOG(Info, Support) << "Database that is going to be used : " << ENDM;
-  ILOG(Info, Support) << ">> Implementation : " << mConfig.database.at("implementation") << ENDM;
-  ILOG(Info, Support) << ">> Host : " << mConfig.database.at("host") << ENDM;
+  ILOG(Info, Devel) << "Database that is going to be used > Implementation : " << mConfig.database.at("implementation") << " / Host : " << mConfig.database.at("host") << ENDM;
 }
 
 void CheckRunner::initMonitoring()
@@ -513,33 +493,45 @@ void CheckRunner::initLibraries()
   }
 }
 
+void CheckRunner::endOfStream(framework::EndOfStreamContext& eosContext)
+{
+  mReceivedEOS = true;
+}
+
 void CheckRunner::start(ServiceRegistryRef services)
 {
-  mActivity = computeActivity(services, mConfig.fallbackActivity);
+  mActivity = std::make_shared<Activity>(computeActivity(services, mConfig.fallbackActivity));
   string partitionName = computePartitionName(services);
-  QcInfoLogger::setRun(mActivity.mId);
+  QcInfoLogger::setRun(mActivity->mId);
   QcInfoLogger::setPartition(partitionName);
-  ILOG(Info, Support) << "Starting run " << mActivity.mId << ":"
-                      << "\n   - period: " << mActivity.mPeriodName << "\n   - pass type: " << mActivity.mPassName << "\n   - provenance: " << mActivity.mProvenance << ENDM;
+  ILOG(Info, Support) << "Starting run " << mActivity->mId << ":" << ENDM;
+  ILOG(Debug, Devel) << "   period: " << mActivity->mPeriodName << " / pass type: " << mActivity->mPassName << " / provenance: " << mActivity->mProvenance << ENDM;
   mTimerTotalDurationActivity.reset();
-  mCollector->setRunNumber(mActivity.mId);
+  mCollector->setRunNumber(mActivity->mId);
+  mReceivedEOS = false;
+  for (auto& [checkName, check] : mChecks) {
+    check.setActivity(mActivity);
+  }
 }
 
 void CheckRunner::stop()
 {
-  ILOG(Info, Support) << "Stopping run " << mActivity.mId << ENDM;
+  ILOG(Info, Support) << "Stopping run " << mActivity->mId << ENDM;
+  if (!mReceivedEOS) {
+    ILOG(Warning, Devel) << "The STOP transition happened before an EndOfStream was received. The very last QC objects in this run might not have been stored." << ENDM;
+  }
 }
 
 void CheckRunner::reset()
 {
-  ILOG(Info, Support) << "Reset" << ENDM;
+  ILOG(Info, Devel) << "Reset" << ENDM;
 
   try {
     mCollector.reset();
-    mActivity = Activity();
+    mActivity = make_shared<Activity>();
   } catch (...) {
     // we catch here because we don't know where it will go in DPL's CallbackService
-    ILOG(Error, Support) << "Error caught in reset() :\n"
+    ILOG(Error, Support) << "Error caught in reset() : "
                          << current_diagnostic(true) << ENDM;
     throw;
   }

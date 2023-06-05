@@ -38,9 +38,9 @@ using namespace o2::quality_control::core;
 using namespace o2::quality_control::repository;
 using namespace o2::quality_control::postprocessing;
 
-void TRDTrending::configure(std::string name, const boost::property_tree::ptree& config)
+void TRDTrending::configure(const boost::property_tree::ptree& config)
 {
-  mConfig = TrendingTaskConfigTRD(name, config);
+  mConfig = TrendingTaskConfigTRD(getID(), config);
 }
 
 void TRDTrending::initialize(Trigger, framework::ServiceRegistryRef services)
@@ -90,6 +90,10 @@ void TRDTrending::trendValues(const Trigger& t, repository::DatabaseInterface& q
     // todo: make it agnostic to MOs, QOs or other objects. Let the reductor cast to whatever it needs.
     if (dataSource.type == "repository") {
       auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name, t.timestamp);
+      if (mo == nullptr) {
+        ILOG(Warning, Devel) << "Could not retrieve MO '" << dataSource.name << "' from QCDB, skipping this data source" << ENDM;
+        continue;
+      }
 
       if (!count) {
         std::map<std::string, std::string> entryMetadata = mo->getMetadataMap();  // full list of metadata as a map

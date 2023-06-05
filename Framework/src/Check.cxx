@@ -20,6 +20,7 @@
 // O2
 #include <Common/Exceptions.h>
 // QC
+#include "QualityControl/ActivityHelpers.h"
 #include "QualityControl/CheckInterface.h"
 #include "QualityControl/CheckSpec.h"
 #include "QualityControl/CommonSpec.h"
@@ -64,20 +65,23 @@ void Check::init()
     mCheckInterface->setCustomParameters(mCheckConfig.customParameters);
   } catch (...) {
     std::string diagnostic = boost::current_exception_diagnostic_information();
-    ILOG(Fatal, Ops) << "Unexpected exception, diagnostic information follows:\n"
+    ILOG(Fatal, Ops) << "Unexpected exception, diagnostic information follows: "
                      << diagnostic << ENDM;
     throw;
   }
 
   // Print setting
-  ILOG(Info, Support) << mCheckConfig.name << ": Module " << mCheckConfig.moduleName << AliceO2::InfoLogger::InfoLogger::endm;
-  ILOG(Info, Support) << mCheckConfig.name << ": Class " << mCheckConfig.className << AliceO2::InfoLogger::InfoLogger::endm;
-  ILOG(Info, Support) << mCheckConfig.name << ": Detector " << mCheckConfig.detectorName << AliceO2::InfoLogger::InfoLogger::endm;
-  ILOG(Info, Support) << mCheckConfig.name << ": Policy " << UpdatePolicyTypeUtils::ToString(mCheckConfig.policyType) << AliceO2::InfoLogger::InfoLogger::endm;
-  ILOG(Info, Support) << mCheckConfig.name << ": MonitorObjects : " << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Devel) << "Check config: ";
+  ILOG(Info, Devel) << "Module " << mCheckConfig.moduleName;
+  ILOG(Info, Devel) << "; Name " << mCheckConfig.name;
+  ILOG(Info, Devel) << "; Class " << mCheckConfig.className;
+  ILOG(Info, Devel) << "; Detector " << mCheckConfig.detectorName;
+  ILOG(Info, Devel) << "; Policy " << UpdatePolicyTypeUtils::ToString(mCheckConfig.policyType);
+  ILOG(Info, Devel) << "; MonitorObjects : ";
   for (const auto& moname : mCheckConfig.objectNames) {
-    ILOG(Info, Support) << mCheckConfig.name << "   - " << moname << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Info, Devel) << " / " << moname;
   }
+  ILOG(Info, Devel) << ENDM;
 }
 
 QualityObjectsType Check::check(std::map<std::string, std::shared_ptr<MonitorObject>>& moMap)
@@ -126,17 +130,30 @@ QualityObjectsType Check::check(std::map<std::string, std::shared_ptr<MonitorObj
     std::vector<std::string> monitorObjectsNames;
     boost::copy(moMapToCheck | boost::adaptors::map_keys, std::back_inserter(monitorObjectsNames));
 
+    if (std::any_of(moMapToCheck.begin(), moMapToCheck.end(), [](const std::pair<std::string, std::shared_ptr<MonitorObject>>& item) {
+          return item.second == nullptr || item.second->getObject() == nullptr;
+        })) {
+      ILOG(Warning, Devel) << "Some MOs in the map to check are nullptr, skipping check '" << mCheckInterface->getName() << "'" << ENDM;
+      continue;
+    }
+
     Quality quality;
     try {
       quality = mCheckInterface->check(&moMapToCheck);
     } catch (...) {
       std::string diagnostic = boost::current_exception_diagnostic_information();
-      ILOG(Error, Ops) << "Unexpected exception in user code (check):\n"
+      ILOG(Error, Ops) << "Unexpected exception in user code (check):"
                        << diagnostic << ENDM;
       continue;
     }
+    auto commonActivity = activity_helpers::strictestMatchingActivity(
+      moMapToCheck.begin(),
+      moMapToCheck.end(),
+      [](const std::pair<std::string, std::shared_ptr<MonitorObject>>& item) -> const Activity& {
+        return item.second->getActivity();
+      });
 
-    ILOG(Info, Support) << "Check '" << mCheckConfig.name << "', quality '" << quality << "'" << ENDM;
+    ILOG(Debug, Devel) << "Check '" << mCheckConfig.name << "', quality '" << quality << "'" << ENDM;
     // todo: take metadata from somewhere
     qualityObjects.emplace_back(std::make_shared<QualityObject>(
       quality,
@@ -145,6 +162,7 @@ QualityObjectsType Check::check(std::map<std::string, std::shared_ptr<MonitorObj
       UpdatePolicyTypeUtils::ToString(mCheckConfig.policyType),
       stringifyInput(mCheckConfig.inputSpecs),
       monitorObjectsNames));
+    qualityObjects.back()->setActivity(commonActivity);
     beautify(moMapToCheck, quality);
   }
 
@@ -162,12 +180,13 @@ void Check::beautify(std::map<std::string, std::shared_ptr<MonitorObject>>& moMa
       mCheckInterface->beautify(item.second /*mo*/, quality);
     } catch (...) {
       std::string diagnostic = boost::current_exception_diagnostic_information();
-      ILOG(Error, Ops) << "Unexpected exception in user code (beautify):\n"
+      ILOG(Error, Ops) << "Unexpected exception in user code (beautify):"
                        << diagnostic << ENDM;
       continue;
     }
   }
 }
+
 UpdatePolicyType Check::getUpdatePolicyType() const
 {
   return mCheckConfig.policyType;
@@ -240,6 +259,15 @@ CheckConfig Check::extractConfig(const CommonSpec&, const CheckSpec& checkSpec)
 framework::OutputSpec Check::createOutputSpec(const std::string& checkName)
 {
   return { "QC", createCheckDataDescription(checkName), 0, framework::Lifetime::Sporadic };
+}
+
+void Check::setActivity(std::shared_ptr<core::Activity> activity)
+{
+  if (mCheckInterface) {
+    mCheckInterface->setActivity(std::move(activity));
+  } else {
+    throw std::runtime_error("Trying to set Activity on an empty CheckInterface '" + mCheckConfig.name + "'");
+  }
 }
 
 } // namespace o2::quality_control::checker

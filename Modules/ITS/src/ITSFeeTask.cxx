@@ -68,7 +68,7 @@ ITSFeeTask::~ITSFeeTask()
 
 void ITSFeeTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "Initializing the ITSFeeTask" << ENDM;
+  ILOG(Debug, Devel) << "initializing the ITSFeeTask" << ENDM;
   getParameters();
   createFeePlots();
   setPlotsFormat();
@@ -108,13 +108,13 @@ void ITSFeeTask::createFeePlots()
     getObjectsManager()->startPublishing(mLaneStatusSummary[i]); // mLaneStatusSummary
   }
 
-  mLaneStatusSummaryIB = new TH1I("LaneStatusSummary/LaneStatusSummaryIB", "Lane Status Summary IB", 3, 0, 3);
+  mLaneStatusSummaryIB = new TH1D("LaneStatusSummary/LaneStatusSummaryIB", "Lane Status Summary IB", 3, 0, 3);
   getObjectsManager()->startPublishing(mLaneStatusSummaryIB); // mLaneStatusSummaryIB
-  mLaneStatusSummaryML = new TH1I("LaneStatusSummary/LaneStatusSummaryML", "Lane Status Summary ML", 3, 0, 3);
+  mLaneStatusSummaryML = new TH1D("LaneStatusSummary/LaneStatusSummaryML", "Lane Status Summary ML", 3, 0, 3);
   getObjectsManager()->startPublishing(mLaneStatusSummaryML); // mLaneStatusSummaryML
-  mLaneStatusSummaryOL = new TH1I("LaneStatusSummary/LaneStatusSummaryOL", "Lane Status Summary OL", 3, 0, 3);
+  mLaneStatusSummaryOL = new TH1D("LaneStatusSummary/LaneStatusSummaryOL", "Lane Status Summary OL", 3, 0, 3);
   getObjectsManager()->startPublishing(mLaneStatusSummaryOL); // mLaneStatusSummaryOL
-  mLaneStatusSummaryGlobal = new TH1I("LaneStatusSummary/LaneStatusSummaryGlobal", "Lane Status Summary Global", 3, 0, 3);
+  mLaneStatusSummaryGlobal = new TH1D("LaneStatusSummary/LaneStatusSummaryGlobal", "Lane Status Summary Global", 3, 0, 3);
   getObjectsManager()->startPublishing(mLaneStatusSummaryGlobal); // mLaneStatusSummaryGlobal
 
   mFlag1Check = new TH2I("Flag1Check", "Flag 1 Check", NFees, 0, NFees, 3, 0, 3); // Row 1 : transmission_timeout, Row 2 : packet_overflow, Row 3 : lane_starts_violation
@@ -248,7 +248,7 @@ void ITSFeeTask::setPlotsFormat()
   }
 
   if (mLaneStatusSummaryIB) {
-    setAxisTitle(mLaneStatusSummaryIB, "", "#Lanes");
+    setAxisTitle(mLaneStatusSummaryIB, "", "Fraction of Lanes");
     for (int i = 0; i < NFlags; i++) {
       mLaneStatusSummaryIB->GetXaxis()->SetBinLabel(i + 1, mLaneStatusFlag[i].c_str());
     }
@@ -257,7 +257,7 @@ void ITSFeeTask::setPlotsFormat()
   }
 
   if (mLaneStatusSummaryML) {
-    setAxisTitle(mLaneStatusSummaryML, "", "#Lanes");
+    setAxisTitle(mLaneStatusSummaryML, "", "Fraction of Lanes");
     for (int i = 0; i < NFlags; i++) {
       mLaneStatusSummaryML->GetXaxis()->SetBinLabel(i + 1, mLaneStatusFlag[i].c_str());
     }
@@ -266,7 +266,7 @@ void ITSFeeTask::setPlotsFormat()
   }
 
   if (mLaneStatusSummaryOL) {
-    setAxisTitle(mLaneStatusSummaryOL, "", "#Lanes");
+    setAxisTitle(mLaneStatusSummaryOL, "", "Fraction of Lanes");
     for (int i = 0; i < NFlags; i++) {
       mLaneStatusSummaryOL->GetXaxis()->SetBinLabel(i + 1, mLaneStatusFlag[i].c_str());
     }
@@ -275,7 +275,7 @@ void ITSFeeTask::setPlotsFormat()
   }
 
   if (mLaneStatusSummaryGlobal) {
-    setAxisTitle(mLaneStatusSummaryGlobal, "", "#Lanes");
+    setAxisTitle(mLaneStatusSummaryGlobal, "", "Fraction Lanes");
     for (int i = 0; i < NFlags; i++) {
       mLaneStatusSummaryGlobal->GetXaxis()->SetBinLabel(i + 1, mLaneStatusFlag[i].c_str());
     }
@@ -304,11 +304,11 @@ void ITSFeeTask::setPlotsFormat()
 
 void ITSFeeTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity : " << activity.mId << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity : " << activity.mId << ENDM;
   mRunNumber = activity.mId;
 }
 
-void ITSFeeTask::startOfCycle() { ILOG(Info, Support) << "startOfCycle" << ENDM; }
+void ITSFeeTask::startOfCycle() { ILOG(Debug, Devel) << "startOfCycle" << ENDM; }
 
 void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
@@ -321,29 +321,34 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
   int nStops[NFees] = {};
   int payloadTot[NFees] = {};
 
-  std::vector<InputSpec> rawDataFilter{ InputSpec{ "", ConcreteDataTypeMatcher{ "DS", "RAWDATA0" }, Lifetime::Timeframe } };
-
-  rawDataFilter.push_back(InputSpec{ "", ConcreteDataTypeMatcher{ "ITS", "RAWDATA" }, Lifetime::Timeframe });
-  DPLRawParser parser(ctx.inputs(), rawDataFilter);
+  DPLRawParser parser(ctx.inputs());
 
   resetLanePlotsAndCounters(); // action taken depending on mResetLaneStatus and mResetPayload
 
-  for (auto it = parser.begin(), end = parser.end(); it != end; ++it) {
-    auto const* rdh = it.get_if<o2::header::RAWDataHeaderV6>();
-    // Decoding data format (RDHv6)
-    int istave = (int)(rdh->feeId & 0x00ff);
-    int ilink = (int)((rdh->feeId & 0x0f00) >> 8);
-    int ilayer = (int)((rdh->feeId & 0xf000) >> 12);
-    int ifee = 3 * StaveBoundary[ilayer] - (StaveBoundary[ilayer] - StaveBoundary[NLayerIB]) * (ilayer >= NLayerIB) + istave * (3 - (ilayer >= NLayerIB)) + ilink;
-    int memorysize = (int)(rdh->memorySize);
-    int headersize = (int)(rdh->headerSize);
+  // manual call of DPL data iterator to catch exceptoin:
+  try {
+    auto it = parser.begin();
+  } catch (const std::runtime_error& error) {
+    LOG(error) << "Error during parsing DPL data: " << error.what();
+    return;
+  }
 
+  for (auto it = parser.begin(), end = parser.end(); it != end; ++it) {
+    auto rdh = reinterpret_cast<const o2::header::RDHAny*>(it.raw());
+    // Decoding data format (RDHv* --> v6 and v7 have same bits for what is considered here)
+    auto feeID = o2::raw::RDHUtils::getFEEID(rdh);
+    int istave = (int)(feeID & 0x00ff);
+    int ilink = (int)((feeID & 0x0f00) >> 8);
+    int ilayer = (int)((feeID & 0xf000) >> 12);
+    int ifee = 3 * StaveBoundary[ilayer] - (StaveBoundary[ilayer] - StaveBoundary[NLayerIB]) * (ilayer >= NLayerIB) + istave * (3 - (ilayer >= NLayerIB)) + ilink;
+    int memorysize = (int)(o2::raw::RDHUtils::getMemorySize(rdh));
+    int headersize = o2::raw::RDHUtils::getHeaderSize(rdh);
     payloadTot[ifee] += memorysize - headersize;
     bool clockEvt = false;
 
     // RDHSummaryPlot
     //  get detector field
-    uint64_t summaryLaneStatus = rdh->detectorField;
+    uint32_t summaryLaneStatus = o2::raw::RDHUtils::getDetectorField(rdh);
     // fill statusVsFeeId if set
     if (summaryLaneStatus & (1 << 0))
       mRDHSummary->Fill(ifee, 0); // missing data
@@ -360,13 +365,19 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (summaryLaneStatus & (1 << 25))
       mRDHSummary->Fill(ifee, 5); // Timebase evt
     if (summaryLaneStatus & (1 << 24))
-      mRDHSummary->Fill(ifee, 6); // Timebase Unsync evt
+      mRDHSummary->Fill(ifee, 6);                              // Timebase Unsync evt
+    if ((int)(o2::raw::RDHUtils::getStop(rdh)) && it.size()) { // looking into the DDW0 from the closing packet
+      const GBTDiagnosticWord* ddw;
+      try {
+        ddw = reinterpret_cast<const GBTDiagnosticWord*>(it.data());
+      } catch (const std::runtime_error& error) {
+        LOG(error) << "Error during reading late diagnostic data: " << error.what();
+        return;
+      }
 
-    if ((int)(rdh->stop) && it.size()) { // looking into the DDW0 from the closing packet
-      auto const* ddw = reinterpret_cast<const GBTDiagnosticWord*>(it.data());
       uint64_t laneInfo = ddw->laneWord.laneBits.laneStatus;
-      uint8_t flag1 = ddw->indexWord.indexBits.flag1;
 
+      uint8_t flag1 = ddw->indexWord.indexBits.flag1;
       for (int i = 0; i < 3; i++) {
         if (flag1 >> i & 0x1) {
           mFlag1Check->Fill(ifee, i);
@@ -391,7 +402,6 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
         }
       }
 
-      // std::cout << "Layer:"<< ilayer << "Stave:" << istave << std::endl;
       for (int i = 0; i < NLanesMax; i++) {
         int laneValue = laneInfo >> (2 * i) & 0x3;
         if (laneValue) {
@@ -416,10 +426,10 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
     }
 
-    if ((int)(rdh->stop)) {
+    if ((int)(o2::raw::RDHUtils::getStop(rdh))) {
       nStops[ifee]++;
       for (int i = 0; i < 13; i++) {
-        if (((uint32_t)(rdh->triggerType) >> i & 1) == 1) {
+        if (((o2::raw::RDHUtils::getTriggerType(rdh)) >> i & 1) == 1) {
           mTrigger->Fill(i + 1);
           mTriggerVsFeeId->Fill(ifee, i + 1);
         }
@@ -453,10 +463,10 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
       mLaneStatusSummary[ilayer]->SetBinContent(iflag + 1, layerSummary[ilayer][iflag]);
     }
-    mLaneStatusSummaryGlobal->SetBinContent(iflag + 1, counterSummary[0][iflag]);
-    mLaneStatusSummaryIB->SetBinContent(iflag + 1, counterSummary[1][iflag]);
-    mLaneStatusSummaryML->SetBinContent(iflag + 1, counterSummary[2][iflag]);
-    mLaneStatusSummaryOL->SetBinContent(iflag + 1, counterSummary[3][iflag]);
+    mLaneStatusSummaryGlobal->SetBinContent(iflag + 1, 1. * counterSummary[0][iflag] / NLanesTotal);
+    mLaneStatusSummaryIB->SetBinContent(iflag + 1, 1. * counterSummary[1][iflag] / NLanesIB);
+    mLaneStatusSummaryML->SetBinContent(iflag + 1, 1. * counterSummary[2][iflag] / NLanesML);
+    mLaneStatusSummaryOL->SetBinContent(iflag + 1, 1. * counterSummary[3][iflag] / NLanesOL);
   }
 
   for (int i = 0; i < NFees; i++) {
@@ -466,7 +476,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
   }
 
-  mTimeFrameId = ctx.inputs().get<int>("G");
+  mTimeFrameId++;
 
   mTFInfo->Fill(mTimeFrameId);
   end = std::chrono::high_resolution_clock::now();
@@ -512,12 +522,12 @@ void ITSFeeTask::getStavePoint(int layer, int stave, double* px, double* py)
 
 void ITSFeeTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void ITSFeeTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void ITSFeeTask::resetGeneralPlots()
@@ -556,7 +566,7 @@ void ITSFeeTask::resetLanePlotsAndCounters()
 void ITSFeeTask::reset()
 {
   resetGeneralPlots();
-  ILOG(Info, Support) << "Reset" << ENDM;
+  ILOG(Debug, Devel) << "Reset" << ENDM;
 }
 
 } // namespace o2::quality_control_modules::its

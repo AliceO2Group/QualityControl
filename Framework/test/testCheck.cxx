@@ -46,9 +46,10 @@ CheckConfig getCheckConfig(const std::string& configFilePath, const std::string&
   auto config = ConfigurationFactory::getConfiguration(configFilePath);
   auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(config->getRecursive());
 
-  auto checkSpec = std::find_if(infrastructureSpec.checks.begin(), infrastructureSpec.checks.end(), [&checkName](const auto& checkSpec) {
-    return checkSpec.checkName == checkName;
-  });
+  auto checkSpec = std::find_if(infrastructureSpec.checks.begin(), infrastructureSpec.checks.end(),
+                                [&checkName](const auto& checkSpec) {
+                                  return checkSpec.checkName == checkName;
+                                });
   if (checkSpec != infrastructureSpec.checks.end()) {
     return Check::extractConfig(infrastructureSpec.common, *checkSpec);
   } else {
@@ -68,75 +69,54 @@ BOOST_AUTO_TEST_CASE(test_check_specs)
   BOOST_CHECK_EQUAL(check.getOutputSpec(), (OutputSpec{ "QC", "singleCheck-chk", 0, Lifetime::Sporadic }));
 }
 
-/*
- * Test check and beautify
- */
-class TestCheck : public CheckInterface
+std::shared_ptr<MonitorObject> dummyMO(const std::string& objName)
 {
- public:
-  TestCheck() = default;
-  void configure()
-  {
-  }
-  Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
-  {
-    if (moMap->size()) {
-      mCheck = true;
-    }
-    return Quality();
-  }
-  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null)
-  {
-    (void)checkResult;
-    if (mo) {
-      mBeautify = true;
-    }
-  }
-  std::string getAcceptedType()
-  {
-    return "any";
-  }
+  auto obj = std::make_shared<MonitorObject>(new TH1F(objName.c_str(), objName.c_str(), 100, 0, 10), "test", "test", "TST");
+  obj->setIsOwner(true);
+  return obj;
+}
 
-  bool mCheck = false;
-  bool mBeautify = false;
-};
-
-BOOST_AUTO_TEST_CASE(test_check_invoke_check_beautify)
+BOOST_AUTO_TEST_CASE(test_check_empty_mo)
 {
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
 
   Check check(getCheckConfig(configFilePath, "singleCheck"));
   check.init();
+  check.setActivity(std::make_shared<Activity>());
 
-  TestCheck testCheck;
-  check.setCheckInterface(dynamic_cast<CheckInterface*>(&testCheck));
+  {
+    std::map<std::string, std::shared_ptr<MonitorObject>> moMap{
+      { "skeletonTask/example", nullptr }
+    };
 
-  std::map<std::string, std::shared_ptr<MonitorObject>> moMap = { { "skeletonTask/example", std::shared_ptr<MonitorObject>(new MonitorObject()) } };
+    auto qos = check.check(moMap);
+    BOOST_CHECK_EQUAL(qos.size(), 0);
+  }
 
-  check.check(moMap);
-  // Check should run
-  BOOST_CHECK(testCheck.mCheck);
-  // Beautify should run - single MO declared
-  BOOST_CHECK(testCheck.mBeautify);
+  {
+    std::map<std::string, std::shared_ptr<MonitorObject>> moMap{
+      { "skeletonTask/example", std::make_shared<MonitorObject>() }
+    };
+
+    auto qos = check.check(moMap);
+    BOOST_CHECK_EQUAL(qos.size(), 0);
+  }
 }
 
-BOOST_AUTO_TEST_CASE(test_check_dont_invoke_beautify)
+BOOST_AUTO_TEST_CASE(test_check_invoke_check)
 {
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
 
-  Check check(getCheckConfig(configFilePath, "checkAny"));
+  Check check(getCheckConfig(configFilePath, "singleCheck"));
   check.init();
+  check.setActivity(std::make_shared<Activity>());
 
-  TestCheck testCheck;
-  check.setCheckInterface(dynamic_cast<CheckInterface*>(&testCheck));
+  std::map<std::string, std::shared_ptr<MonitorObject>> moMap{
+    { "skeletonTask/example", dummyMO("example") }
+  };
 
-  std::map<std::string, std::shared_ptr<MonitorObject>> moMap = { { "abcTask/test1", std::shared_ptr<MonitorObject>() } };
-
-  check.check(moMap);
-  // Check should run
-  BOOST_CHECK(testCheck.mCheck);
-  // Beautify should not run - more than one MO declared
-  BOOST_CHECK(!testCheck.mBeautify);
+  auto qos = check.check(moMap);
+  BOOST_CHECK_EQUAL(qos.size(), 1);
 }
 
 BOOST_AUTO_TEST_CASE(test_check_postprocessing)
@@ -145,15 +125,40 @@ BOOST_AUTO_TEST_CASE(test_check_postprocessing)
 
   Check check(getCheckConfig(configFilePath, "checkAnyPP"));
   check.init();
+  check.setActivity(std::make_shared<Activity>());
 
-  TestCheck testCheck;
-  check.setCheckInterface(dynamic_cast<CheckInterface*>(&testCheck));
+  std::map<std::string, std::shared_ptr<MonitorObject>> moMap{
+    { "SkeletonPostProcessing/example", dummyMO("example") }
+  };
 
-  std::map<std::string, std::shared_ptr<MonitorObject>> moMap = { { "SkeletonPostProcessing/example", std::shared_ptr<MonitorObject>(new MonitorObject()) } };
+  auto qos = check.check(moMap);
+  BOOST_CHECK_EQUAL(qos.size(), 1);
+}
 
-  check.check(moMap);
-  // Check should run
-  BOOST_CHECK(testCheck.mCheck);
-  // Beautify should run - single MO declared
-  BOOST_CHECK(testCheck.mBeautify);
+BOOST_AUTO_TEST_CASE(test_check_activity)
+{
+  Check check({ "test",
+                "QcSkeleton",
+                "o2::quality_control_modules::skeleton::SkeletonCheck",
+                "TST",
+                {},
+                UpdatePolicyType::OnAny,
+                {},
+                true });
+
+  std::map<std::string, std::shared_ptr<MonitorObject>> moMap{
+    { "abcTask/test1", dummyMO("test1") },
+    { "abcTask/test2", dummyMO("test2") }
+  };
+
+  moMap["abcTask/test1"]->setActivity({ 300000, 1, "LHC22a", "spass", "qc", { 1, 10 }, "pp" });
+  moMap["abcTask/test2"]->setActivity({ 300000, 1, "LHC22a", "spass", "qc", { 5, 15 }, "pp" });
+
+  check.init();
+  check.setActivity(std::make_shared<Activity>());
+  auto qos = check.check(moMap);
+
+  BOOST_REQUIRE_EQUAL(qos.size(), 1);
+  ValidityInterval correctValidity{ 1, 15 };
+  BOOST_CHECK(qos[0]->getActivity().mValidity == correctValidity);
 }

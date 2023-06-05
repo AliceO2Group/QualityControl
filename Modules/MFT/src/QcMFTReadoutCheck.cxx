@@ -22,6 +22,7 @@
 #include <TH1.h>
 #include <TH2.h>
 #include <TList.h>
+#include <TLatex.h>
 
 // Quality Control
 #include "MFT/QcMFTReadoutCheck.h"
@@ -224,16 +225,19 @@ void QcMFTReadoutCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality chec
   }
 }
 
-TLatex* QcMFTReadoutCheck::drawLatex(double xmin, double ymin, Color_t color, TString text)
+void QcMFTReadoutCheck::drawLatex(TH1F* histo, double xmin, double ymin, Color_t color, TString text,
+                                  float tsize = 0.025, Font_t tfont = 42)
 {
 
   TLatex* tl = new TLatex(xmin, ymin, Form("%s", text.Data()));
   tl->SetNDC();
-  tl->SetTextFont(42);
-  tl->SetTextSize(0.025);
+  tl->SetTextFont(tfont);
+  tl->SetTextSize(tsize);
   tl->SetTextColor(color);
 
-  return tl;
+  // add it to the histo
+  histo->GetListOfFunctions()->Add(tl);
+  tl->Draw();
 }
 
 void QcMFTReadoutCheck::resetVector(std::vector<int>& vector)
@@ -276,54 +280,59 @@ Quality QcMFTReadoutCheck::checkQualityStatus(TH1F* histo, std::vector<int>& vec
 void QcMFTReadoutCheck::writeMessages(TH1F* histo, std::vector<int>& vector, Quality checkResult)
 {
   if (checkResult == Quality::Good) {
-    TLatex* tlGood;
     histo->SetFillColor(kGreen + 2);
     histo->SetLineColor(kGreen + 2);
-    if (strcmp(histo->GetName(), "mSummaryChipFault") == 0)
-      tlGood = drawLatex(0.15, 0.875, kGreen + 2, Form("%lu chips in Fault as expected. Quality is good.", vector.size()));
-    if (strcmp(histo->GetName(), "mSummaryChipError") == 0)
-      tlGood = drawLatex(0.15, 0.875, kGreen + 2, Form("%lu chips in Error as expected. Quality is good.", vector.size()));
-    if (strcmp(histo->GetName(), "mSummaryChipWarning") == 0)
-      tlGood = drawLatex(0.15, 0.875, kGreen + 2, Form("%lu chips in Warning as expected. Quality is good.", vector.size()));
-    histo->GetListOfFunctions()->Add(tlGood);
-    tlGood->Draw();
+    if (strcmp(histo->GetName(), "mSummaryChipFault") == 0) {
+      drawLatex(histo, 0.14, 0.87, kGreen + 2, "Quality is good.", 0.04);
+      drawLatex(histo, 0.14, 0.87 - 0.025, kGreen + 2, Form("%lu chips in Fault as expected.", vector.size()));
+    }
+    if (strcmp(histo->GetName(), "mSummaryChipError") == 0) {
+      drawLatex(histo, 0.14, 0.87, kGreen + 2, "Quality is good.", 0.04);
+      drawLatex(histo, 0.14, 0.87 - 0.025, kGreen + 2, Form("%lu chips in Error as expected.", vector.size()));
+    };
+    if (strcmp(histo->GetName(), "mSummaryChipWarning") == 0) {
+      drawLatex(histo, 0.14, 0.87, kGreen + 2, "Quality is good.", 0.04);
+      drawLatex(histo, 0.14, 0.87 - 0.025, kGreen + 2, Form("%lu chips in Warning as expected.", vector.size()));
+    }
   } else if (checkResult == Quality::Medium) {
     histo->SetFillColor(kOrange + 7);
     histo->SetLineColor(kOrange + 7);
-    TLatex* tlMedium;
-    if (strcmp(histo->GetName(), "mSummaryChipFault") == 0)
-      tlMedium = drawLatex(0.15, 0.875, kOrange + 7, Form("%lu chips in Fault. Inform the MFT oncall (via Mattermost during night).", vector.size()));
-    if (strcmp(histo->GetName(), "mSummaryChipError") == 0)
-      tlMedium = drawLatex(0.15, 0.875, kOrange + 7, Form("%lu chips in Error. Inform the MFT oncall (via Mattermost during night).", vector.size()));
-    if (strcmp(histo->GetName(), "mSummaryChipWarning") == 0)
-      tlMedium = drawLatex(0.15, 0.875, kOrange + 7, Form("%lu chips in Warning. Inform the MFT oncall (via Mattermost during night).", vector.size()));
-    histo->GetListOfFunctions()->Add(tlMedium);
-    tlMedium->Draw();
+    if (strcmp(histo->GetName(), "mSummaryChipFault") == 0) {
+      drawLatex(histo, 0.14, 0.87, kOrange + 7, "Quality is Medium.", 0.04);
+      drawLatex(histo, 0.14, 0.87 - 0.025, kOrange + 7, Form("%lu chips in Fault. Write a logbook entry tagging MFT.", vector.size()));
+    }
+    if (strcmp(histo->GetName(), "mSummaryChipError") == 0) {
+      drawLatex(histo, 0.14, 0.87, kOrange + 7, "Quality is Medium.", 0.04);
+      drawLatex(histo, 0.14, 0.87 - 0.025, kOrange + 7, Form("%lu chips in Error. Write a logbook entry tagging MFT.", vector.size()));
+    }
+    if (strcmp(histo->GetName(), "mSummaryChipWarning") == 0) {
+      drawLatex(histo, 0.14, 0.87, kOrange + 7, "Quality is Medium.", 0.04);
+      drawLatex(histo, 0.14, 0.87 - 0.025, kOrange + 7, Form("%lu chips in Warning. Write a logbook entry tagging MFT.", vector.size()));
+    }
   } else if (checkResult == Quality::Bad) {
     histo->SetFillColor(kRed + 1);
     histo->SetLineColor(kRed + 1);
-    TLatex* tlBad;
-    if (strcmp(histo->GetName(), "mSummaryChipFault") == 0)
-      tlBad = drawLatex(0.15, 0.875, kRed + 1, Form("%lu chips in Fault. Inform the MFT oncall immediately!", vector.size()));
-    if (strcmp(histo->GetName(), "mSummaryChipError") == 0)
-      tlBad = drawLatex(0.15, 0.875, kRed + 1, Form("%lu chips in Error. Inform the MFT oncall immediately!", vector.size()));
-    if (strcmp(histo->GetName(), "mSummaryChipWarning") == 0)
-      tlBad = drawLatex(0.15, 0.875, kRed + 1, Form("%lu chips in Warning. Inform the MFT oncall immediately!", vector.size()));
-    histo->GetListOfFunctions()->Add(tlBad);
-    tlBad->Draw();
+    if (strcmp(histo->GetName(), "mSummaryChipFault") == 0) {
+      drawLatex(histo, 0.14, 0.87, kRed + 1, "Quality is Bad.", 0.04);
+      drawLatex(histo, 0.14, 0.87 - 0.025, kRed + 1, Form("%lu chips in Fault. Inform the MFT oncall immediately!.", vector.size()));
+    }
+    if (strcmp(histo->GetName(), "mSummaryChipError") == 0) {
+      drawLatex(histo, 0.14, 0.87, kRed + 1, "Quality is Bad.", 0.04);
+      drawLatex(histo, 0.14, 0.87 - 0.025, kRed + 1, Form("%lu chips in Error. Inform the MFT oncall immediately!.", vector.size()));
+    }
+    if (strcmp(histo->GetName(), "mSummaryChipWarning") == 0) {
+      drawLatex(histo, 0.14, 0.87, kRed + 1, "Quality is Bad.", 0.04);
+      drawLatex(histo, 0.14, 0.87 - 0.025, kRed + 1, Form("%lu chips in Warning. Inform the MFT oncall immediately!.", vector.size()));
+    }
   }
-  histo->SetMaximum(histo->GetMaximum() * (3.2 / 2.));
+  histo->SetMaximum(histo->GetMaximum() * 1.7);
   int midBinIteration = (vector.size() < 10) ? vector.size() : 10;
   for (int iBin = 0; iBin < midBinIteration; iBin++) {
-    TLatex* tlList = drawLatex(0.15, 0.85 - iBin * 0.025, kBlack, Form("%s", histo->GetXaxis()->GetBinLabel(vector[iBin])));
-    histo->GetListOfFunctions()->Add(tlList);
-    tlList->Draw();
+    drawLatex(histo, 0.15, 0.85 - 0.025 - iBin * 0.025, kBlack, Form("%s", histo->GetXaxis()->GetBinLabel(vector[iBin])));
   }
   int maxBinIteration = (vector.size() < 20) ? vector.size() : 20;
   for (int iBin = midBinIteration; iBin < maxBinIteration; iBin++) {
-    TLatex* tlList = drawLatex(0.55, 0.85 - (iBin - midBinIteration) * 0.025, kBlack, Form("%s", histo->GetXaxis()->GetBinLabel(vector[iBin])));
-    histo->GetListOfFunctions()->Add(tlList);
-    tlList->Draw();
+    drawLatex(histo, 0.55, 0.85 - 0.025 - (iBin - midBinIteration) * 0.025, kBlack, Form("%s", histo->GetXaxis()->GetBinLabel(vector[iBin])));
   }
 }
 

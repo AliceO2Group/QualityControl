@@ -45,10 +45,9 @@ using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;
 using namespace o2::quality_control_modules::tpc;
 
-void TrendingTaskTPC::configure(std::string name,
-                                const boost::property_tree::ptree& config)
+void TrendingTaskTPC::configure(const boost::property_tree::ptree& config)
 {
-  mConfig = TrendingTaskConfigTPC(name, config);
+  mConfig = TrendingTaskConfigTPC(getID(), config);
 }
 
 void TrendingTaskTPC::initialize(Trigger, framework::ServiceRegistryRef services)
@@ -89,12 +88,21 @@ void TrendingTaskTPC::initialize(Trigger, framework::ServiceRegistryRef services
     mTrend->SetBranchAddress("meta", &mMetaData);
     mTrend->SetBranchAddress("time", &mTime);
     for (const auto& source : mConfig.dataSources) {
+      const bool existingBranch = mTrend->GetBranchStatus(source.name.c_str());
       mSources[source.name] = new std::vector<SliceInfo>();
       mSourcesQuality[source.name] = new SliceInfoQuality();
-      if (source.type == "repository") {
-        mTrend->SetBranchAddress(source.name.c_str(), &mSources[source.name]);
-      } else if (source.type == "repository-quality") {
-        mTrend->SetBranchAddress(source.name.c_str(), &mSourcesQuality[source.name]);
+      if (existingBranch) {
+        if (source.type == "repository") {
+          mTrend->SetBranchAddress(source.name.c_str(), &mSources[source.name]);
+        } else if (source.type == "repository-quality") {
+          mTrend->SetBranchAddress(source.name.c_str(), &mSourcesQuality[source.name]);
+        }
+      } else {
+        if (source.type == "repository") {
+          mTrend->Branch(source.name.c_str(), &mSources[source.name]);
+        } else if (source.type == "repository-quality") {
+          mTrend->Branch(source.name.c_str(), &mSourcesQuality[source.name]);
+        }
       }
     }
   }
@@ -203,22 +211,17 @@ void TrendingTaskTPC::generatePlots()
     }
 
     int NumberPlots = 1;
-    if (plot.varexp.find(":time") != std::string::npos) { // we plot vs time, multiple plots on canvas possible
+    if (plot.varexp.find(":time") != std::string::npos || plot.varexp.find(":run") != std::string::npos) { // we plot vs time, multiple plots on canvas possible
       NumberPlots = mNumberPads[varName];
     }
     for (int p = 0; p < NumberPlots; p++) {
       c->cd(p + 1);
       if (auto histo = dynamic_cast<TGraphErrors*>(c->cd(p + 1)->GetPrimitive("Graph"))) {
         beautifyGraph(histo, plot, c);
-        // Manually empty the buffers before visualising the plot.
-        // histo->BufferEmpty(); // TBD: Should we keep it or not? Graph does not have this method.c
       } else if (auto multigraph = dynamic_cast<TMultiGraph*>(c->cd(p + 1)->GetPrimitive("MultiGraph"))) {
         if (auto legend = dynamic_cast<TLegend*>(c->cd(2)->GetPrimitive("MultiGraphLegend"))) {
           c->cd(1);
           beautifyGraph(multigraph, plot, c);
-          multigraph->Draw("A pmc plc");
-          c->cd(2);
-          legend->Draw();
           c->cd(1)->SetLeftMargin(0.15);
           c->cd(1)->SetRightMargin(0.01);
           c->cd(2)->SetLeftMargin(0.01);
@@ -227,7 +230,6 @@ void TrendingTaskTPC::generatePlots()
           ILOG(Error, Support) << "No legend in multigraph-time" << ENDM;
           c->cd(1);
           beautifyGraph(multigraph, plot, c);
-          multigraph->Draw("A pmc plc");
         }
         c->Update();
       } else if (auto histo = dynamic_cast<TH2F*>(c->cd(p + 1)->GetPrimitive("Graph2D"))) {
@@ -237,7 +239,7 @@ void TrendingTaskTPC::generatePlots()
 
         if (!plot.graphAxisLabel.empty()) {
           setUserAxisLabel(histo->GetXaxis(), histo->GetYaxis(), plot.graphAxisLabel);
-          histo->Draw(plot.option.data());
+          c->Modified();
           c->Update();
         }
 
@@ -246,13 +248,14 @@ void TrendingTaskTPC::generatePlots()
           getUserAxisRange(plot.graphYRange, yMin, yMax);
           histo->SetMinimum(yMin);
           histo->SetMaximum(yMax);
-          histo->Draw(plot.option.data()); // redraw and update to force changes on y-axis
+          c->Modified();
           c->Update();
         }
 
         gStyle->SetPalette(kBird);
         histo->SetStats(kFALSE);
-        histo->Draw(plot.option.data());
+        c->Modified();
+        c->Update();
 
       } else {
         ILOG(Error, Devel) << "Could not get the 'Graph' of the plot '"
@@ -279,9 +282,9 @@ void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
   getTrendErrors(err, errXName, errYName);
 
   // Divide the canvas into the correct number of pads.
-  if (trendType == "time") {
+  if (trendType == "time" || trendType == "run") {
     thisCanvas->DivideSquare(mNumberPads[varName]); // trending vs time: multiple plots per canvas possible
-  } else if (trendType == "multigraphtime") {
+  } else if (trendType == "multigraphtime" || trendType == "multigraphrun") {
     thisCanvas->Divide(2, 1);
   } else {
     thisCanvas->DivideSquare(1);
@@ -294,22 +297,29 @@ void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
   // Setup the tree reader with the needed values.
   TTreeReader myReader(mTrend.get());
   TTreeReaderValue<UInt_t> retrieveTime(myReader, "time");
+  TTreeReaderValue<Long64_t> retrieveRun(myReader, "meta.runNumber");
   TTreeReaderValue<std::vector<SliceInfo>> dataRetrieveVector(myReader, varName.data());
 
   const int nuPa = mNumberPads[varName];
   const int nEntries = mTrend->GetEntriesFast();
+  const int nEntriesTime = mTrend->GetBranch("time")->GetEntries();
+  const int nEntriesRuns = mTrend->GetBranch("meta")->GetEntries();
+  const int nEntriesData = mTrend->GetBranch(varName.data())->GetEntries();
 
   // Fill the graph(errors) to be published.
-  if (trendType == "time") {
+  if (trendType == "time" || trendType == "run") {
+    const int nEffectiveEntries = (trendType == "time") ? std::min(nEntriesTime, nEntriesData) : std::min(nEntriesRuns, nEntriesData);
+    const int startPoint = (trendType == "time") ? nEntriesTime - nEffectiveEntries : nEntriesRuns - nEffectiveEntries;
 
     for (int p = 0; p < nuPa; p++) {
       thisCanvas->cd(p + 1);
       int iEntry = 0;
 
-      graphErrors = new TGraphErrors(nEntries);
+      graphErrors = new TGraphErrors(nEffectiveEntries);
+      myReader.SetEntry(startPoint - 1); // startPoint-1 as myReader.Next() increments by one so that we then start at startPoint
 
       while (myReader.Next()) {
-        const double timeStamp = (double)(*retrieveTime);
+        const double xVal = (trendType == "time") ? (double)(*retrieveTime) : (double)(*retrieveRun);
         const double dataPoint = (dataRetrieveVector->at(p)).RetrieveValue(typeName);
         double errorX = 0.;
         double errorY = 0.;
@@ -319,7 +329,7 @@ void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
           errorY = (dataRetrieveVector->at(p)).RetrieveValue(errYName);
         }
 
-        graphErrors->SetPoint(iEntry, timeStamp, dataPoint);
+        graphErrors->SetPoint(iEntry, xVal, dataPoint);
         graphErrors->SetPointError(iEntry, errorX, errorY); // Add Error to the last added point
 
         iEntry++;
@@ -333,23 +343,25 @@ void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
                               << "', which is not a graph, ignoring." << ENDM;
         } else {
           graphErrors->Draw(opt.data());
-          // We try to convince ROOT to delete graphErrors together with the rest of the canvas.
-          saveObjectToPrimitives(thisCanvas, p + 1, graphErrors);
         }
       }
     }
   } // Trending vs time
-  else if (trendType == "multigraphtime") {
+  else if (trendType == "multigraphtime" || trendType == "multigraphrun") {
 
     auto multigraph = new TMultiGraph();
     multigraph->SetName("MultiGraph");
 
+    const int nEffectiveEntries = (trendType == "multigraphtime") ? std::min(nEntriesTime, nEntriesData) : std::min(nEntriesRuns, nEntriesData);
+    const int startPoint = (trendType == "multigraphtime") ? nEntriesTime - nEffectiveEntries : nEntriesRuns - nEffectiveEntries;
+
     for (int p = 0; p < nuPa; p++) {
       int iEntry = 0;
-      auto gr = new TGraphErrors(nEntries);
+      auto gr = new TGraphErrors(nEffectiveEntries);
+      myReader.SetEntry(startPoint - 1); // startPoint-1 as myReader.Next() increments by one so that we then start at startPoint
 
       while (myReader.Next()) {
-        const double timeStamp = (double)(*retrieveTime);
+        const double xVal = (trendType == "multigraphtime") ? (double)(*retrieveTime) : (double)(*retrieveRun);
         const double dataPoint = (dataRetrieveVector->at(p)).RetrieveValue(typeName);
         double errorX = 0.;
         double errorY = 0.;
@@ -359,7 +371,7 @@ void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
           errorY = (dataRetrieveVector->at(p)).RetrieveValue(errYName);
         }
 
-        gr->SetPoint(iEntry, timeStamp, dataPoint);
+        gr->SetPoint(iEntry, xVal, dataPoint);
         gr->SetPointError(iEntry, errorX, errorY); // Add Error to the last added point
         iEntry++;
       }
@@ -386,10 +398,8 @@ void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
     for (auto obj : *multigraph->GetListOfGraphs()) {
       legend->AddEntry(obj, obj->GetName(), "lpf");
     }
-    // We try to convince ROOT to delete multigraph and legend together with the rest of the canvas.
-    saveObjectToPrimitives(thisCanvas, 1, multigraph);
-    saveObjectToPrimitives(thisCanvas, 2, legend);
-
+    thisCanvas->cd(2);
+    legend->Draw();
   } // Trending vs Time as Multigraph
   else if (trendType == "slices") {
 
@@ -428,8 +438,6 @@ void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
                             << "', which is not a graph, ignoring." << ENDM;
       } else {
         graphErrors->Draw(opt.data());
-        // We try to convince ROOT to delete graphErrors together with the rest of the canvas.
-        saveObjectToPrimitives(thisCanvas, 1, graphErrors);
       }
     }
   } // Trending vs Slices
@@ -476,8 +484,6 @@ void TrendingTaskTPC::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
     myReader.Restart();
     gStyle->SetPalette(kBird);
     graph2D->Draw(opt.data());
-    // We try to convince ROOT to delete graphErrors together with the rest of the canvas.
-    saveObjectToPrimitives(thisCanvas, 1, graph2D);
   } // Trending vs Slices2D
 }
 
@@ -492,11 +498,12 @@ void TrendingTaskTPC::drawCanvasQO(TCanvas* thisCanvas, const std::string& var,
   getTrendVariables(var, varName, typeName, trendType);
 
   // Divide the canvas into the correct number of pads.
-  if (trendType != "time") {
+  if (trendType != "time" && trendType != "run") {
     ILOG(Error, Devel) << "Error in trending of Quality Object  '" << name
-                       << "'Trending only possible vs time, break." << ENDM;
+                       << "'Trending only possible vs time or run, break." << ENDM;
   }
   thisCanvas->DivideSquare(1);
+  thisCanvas->cd(1);
 
   // Delete the graph errors after the plot is saved. //To-Do check if ownership is now taken
   // Unfortunately the canvas does not take its ownership.
@@ -505,21 +512,29 @@ void TrendingTaskTPC::drawCanvasQO(TCanvas* thisCanvas, const std::string& var,
   // Setup the tree reader with the needed values.
   TTreeReader myReader(mTrend.get());
   TTreeReaderValue<UInt_t> retrieveTime(myReader, "time");
+  TTreeReaderValue<Long64_t> retrieveRun(myReader, "meta.runNumber");
   TTreeReaderValue<SliceInfoQuality> qualityRetrieveVector(myReader, varName.data());
 
   if (mNumberPads[varName] != 1)
     ILOG(Error, Devel) << "Error in trending of Quality Object  '" << name
-                       << "'Quality trending should not have slicing, break." << ENDM;
+                       << "' Quality trending should not have slicing, break." << ENDM;
 
   const int nEntries = mTrend->GetEntriesFast();
+  const int nEntriesTime = mTrend->GetBranch("time")->GetEntries();
+  const int nEntriesRuns = mTrend->GetBranch("meta")->GetEntries();
+  const int nEntriesData = mTrend->GetBranch(varName.data())->GetEntries();
   const double errorX = 0.;
   const double errorY = 0.;
 
+  const int nEffectiveEntries = (trendType == "time") ? std::min(nEntriesTime, nEntriesData) : std::min(nEntriesRuns, nEntriesData);
+  const int startPoint = (trendType == "time") ? nEntriesTime - nEffectiveEntries : nEntriesRuns - nEffectiveEntries;
+
   int iEntry = 0;
-  graphErrors = new TGraphErrors(nEntries);
+  graphErrors = new TGraphErrors(nEffectiveEntries);
+  myReader.SetEntry(startPoint - 1); // startPoint-1 as myReader.Next() increments by one so that we then start at startPoint
 
   while (myReader.Next()) {
-    const double timeStamp = (double)(*retrieveTime);
+    const double xVal = (trendType == "time") ? (double)(*retrieveTime) : (double)(*retrieveRun);
     double dataPoint = 0.;
 
     dataPoint = qualityRetrieveVector->RetrieveValue(typeName);
@@ -528,7 +543,7 @@ void TrendingTaskTPC::drawCanvasQO(TCanvas* thisCanvas, const std::string& var,
       dataPoint = 0.;
     }
 
-    graphErrors->SetPoint(iEntry, timeStamp, dataPoint);
+    graphErrors->SetPoint(iEntry, xVal, dataPoint);
     graphErrors->SetPointError(iEntry, errorX, errorY); // Add Error to the last added point
 
     iEntry++;
@@ -541,8 +556,6 @@ void TrendingTaskTPC::drawCanvasQO(TCanvas* thisCanvas, const std::string& var,
                         << "', which is not a graph, ignoring." << ENDM;
   } else {
     graphErrors->Draw(opt.data());
-    // We try to convince ROOT to delete graphErrors together with the rest of the canvas.
-    saveObjectToPrimitives(thisCanvas, 1, graphErrors);
   }
 }
 
@@ -582,15 +595,6 @@ void TrendingTaskTPC::getTrendErrors(const std::string& inputvar, std::string& e
   errorY = inputvar.substr(0, posEndType_err);
 }
 
-void TrendingTaskTPC::saveObjectToPrimitives(TCanvas* canvas, const int padNumber, TObject* object)
-{
-  if (auto* pad = canvas->GetPad(padNumber)) {
-    if (auto* primitives = pad->GetListOfPrimitives()) {
-      primitives->Add(object);
-    }
-  }
-}
-
 template <typename T>
 void TrendingTaskTPC::beautifyGraph(T& graph, const TrendingTaskConfigTPC::Plot& plotconfig, TCanvas* canv)
 {
@@ -610,7 +614,7 @@ void TrendingTaskTPC::beautifyGraph(T& graph, const TrendingTaskConfigTPC::Plot&
     getUserAxisRange(plotconfig.graphYRange, yMin, yMax);
     graph->SetMinimum(yMin);
     graph->SetMaximum(yMax);
-    graph->Draw(plotconfig.option.data()); // redraw and update to force changes on y-axis
+    canv->Modified();
     canv->Update();
   }
 
@@ -618,13 +622,13 @@ void TrendingTaskTPC::beautifyGraph(T& graph, const TrendingTaskConfigTPC::Plot&
     float xMin, xMax;
     getUserAxisRange(plotconfig.graphXRange, xMin, xMax);
     graph->GetXaxis()->SetLimits(xMin, xMax);
-    graph->Draw(fmt::format("{0:s} A", plotconfig.option.data()).data());
+    canv->Modified();
     canv->Update();
   }
 
   if (!plotconfig.graphAxisLabel.empty()) {
     setUserAxisLabel(graph->GetXaxis(), graph->GetYaxis(), plotconfig.graphAxisLabel);
-    graph->Draw(fmt::format("{0:s} A", plotconfig.option.data()).data());
+    canv->Modified();
     canv->Update();
   }
 
@@ -635,6 +639,8 @@ void TrendingTaskTPC::beautifyGraph(T& graph, const TrendingTaskConfigTPC::Plot&
     graph->GetXaxis()->SetTimeOffset(0.0);
     graph->GetXaxis()->SetLabelOffset(0.02);
     graph->GetXaxis()->SetTimeFormat("#splitline{%d.%m.%y}{%H:%M}");
+  } else if (plotconfig.varexp.find(":meta.runNumber") != std::string::npos || plotconfig.varexp.find(":run") != std::string::npos || plotconfig.varexp.find(":multigraphrun") != std::string::npos) {
+    graph->GetXaxis()->SetNoExponent(true);
   }
 
   if (plotconfig.varexp.find("quality") != std::string::npos) {
@@ -651,7 +657,7 @@ void TrendingTaskTPC::beautifyGraph(T& graph, const TrendingTaskConfigTPC::Plot&
     graph->GetYaxis()->ChangeLabel(3, -1., -1., -1., kOrange - 3, -1, "Medium");
     graph->GetYaxis()->ChangeLabel(4, -1., -1., -1., kRed, -1, "Bad");
 
-    graph->Draw(fmt::format("{0:s} A", plotconfig.option.data()).data());
+    canv->Modified();
     canv->Update();
   }
 }

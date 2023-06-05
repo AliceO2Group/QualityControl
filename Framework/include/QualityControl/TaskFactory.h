@@ -43,7 +43,7 @@ class TaskFactory
   /// The TaskInterface actual class is decided based on the parameters passed.
   /// \todo make it static ?
   /// \author Barthelemy von Haller
-  TaskInterface* create(TaskRunnerConfig& taskConfig, std::shared_ptr<ObjectsManager> objectsManager);
+  static TaskInterface* create(const TaskRunnerConfig& taskConfig, std::shared_ptr<ObjectsManager> objectsManager);
 };
 
 } // namespace o2::quality_control::core

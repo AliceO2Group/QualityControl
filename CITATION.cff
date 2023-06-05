@@ -1,0 +1,30 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: The ALICE Data Quality Control framework
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Barthélémy
+    family-names: von Haller
+    email: barthelemy.von.haller@cern.ch
+    affiliation: CERN
+    orcid: 'https://orcid.org/0000-0002-3422-4585'
+  - given-names: Piotr
+    family-names: Konopka
+    email: piotr.jan.konopka@cern.ch
+    affiliation: CERN
+    orcid: 'https://orcid.org/0000-0001-8738-7268'
+repository-code: 'https://github.com/AliceO2Group/QualityControl'
+keywords:
+  - data quality monitoring
+  - data quality
+  - quality control
+  - quality assurance
+  - cern
+  - alice
+  - message passing
+license: GPL-3.0

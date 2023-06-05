@@ -33,7 +33,6 @@
 #include "DataFormatsGlobalTracking/RecoContainerCreateTracksVariadic.h"
 #include "ReconstructionDataFormats/TrackParametrization.h"
 #include "DetectorsBase/Propagator.h"
-#include "DetectorsBase/GeometryManager.h"
 
 #include "TOF/Utils.h"
 #include "TOFBase/Geo.h"
@@ -62,18 +61,23 @@ TOFMatchedTracks::~TOFMatchedTracks()
     delete mEff2DPtEta[i];
     delete mDeltaZEta[i];
     delete mDeltaZPhi[i];
+    delete mDeltaZPt[i];
     delete mDeltaXEta[i];
     delete mDeltaXPhi[i];
+    delete mDeltaXPt[i];
     delete mTOFChi2[i];
+    delete mTOFChi2Pt[i];
   }
   for (int isec = 0; isec < 18; isec++) {
     delete mDTimeTrk[isec];
+    delete mDTimeTrkTPC[isec];
+    delete mDTimeTrkTRD[isec];
   }
 }
 
 void TOFMatchedTracks::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize TOFMatchedTracks" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize TOFMatchedTracks" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
 
@@ -82,37 +86,29 @@ void TOFMatchedTracks::initialize(o2::framework::InitContext& /*ctx*/)
 
   // for track selection
   if (auto param = mCustomParameters.find("minPtCut"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - minPtCut (for track selection): " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - minPtCut (for track selection): " << param->second << ENDM;
     setPtCut(atof(param->second.c_str()));
   }
   if (auto param = mCustomParameters.find("etaCut"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - etaCut (for track selection): " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - etaCut (for track selection): " << param->second << ENDM;
     setEtaCut(atof(param->second.c_str()));
   }
   if (auto param = mCustomParameters.find("minNTPCClustersCut"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - minNTPCClustersCut (for track selection): " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - minNTPCClustersCut (for track selection): " << param->second << ENDM;
     setMinNTPCClustersCut(atoi(param->second.c_str()));
   }
   if (auto param = mCustomParameters.find("minDCACut"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - minDCACut (for track selection): " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - minDCACut (for track selection): " << param->second << ENDM;
     setMinDCAtoBeamPipeDistanceCut(atof(param->second.c_str()));
   }
   if (auto param = mCustomParameters.find("minDCACutY"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - minDCACutY (for track selection): " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - minDCACutY (for track selection): " << param->second << ENDM;
     setMinDCAtoBeamPipeYCut(atof(param->second.c_str()));
-  }
-  if (auto param = mCustomParameters.find("geomFileName"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - geomFileName: " << param->second << ENDM;
-    mGeomFileName = param->second.c_str();
-  }
-  if (auto param = mCustomParameters.find("grpFileName"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - grpFileName: " << param->second << ENDM;
-    mGRPFileName = param->second.c_str();
   }
 
   // for track type selection
   if (auto param = mCustomParameters.find("GID"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - GID (= sources by user): " << param->second << ENDM;
+    ILOG(Debug, Devel) << "Custom parameter - GID (= sources by user): " << param->second << ENDM;
     ILOG(Info, Devel) << "Allowed Sources = " << mAllowedSources << ENDM;
     mSrc = mAllowedSources & GID::getSourcesMask(param->second);
     ILOG(Info, Devel) << "Final requested sources = " << mSrc << ENDM;
@@ -156,20 +152,26 @@ void TOFMatchedTracks::initialize(o2::framework::InitContext& /*ctx*/)
     mEff2DPtEta[i] = new TEfficiency(Form("mEff2DPtEta_%s", title[i].c_str()), Form("Efficiency vs Pt vs Eta (matchType: %s); #it{p}_{T}; #eta; Eff", title[i].c_str()), 100, 0.f, 20.f, 100, -1.0f, 1.0f);
     mDeltaZEta[i] = new TH2F(Form("mDeltaZEta%s", title[i].c_str()), Form("mDeltaZEta (matchType: %s); #eta; #Delta z (cm); counts", title[i].c_str()), 100, -1.0f, 1.0f, 100, -10.f, 10.f);
     mDeltaZPhi[i] = new TH2F(Form("mDeltaZPhi%s", title[i].c_str()), Form("mDeltaZPhi (matchType: %s); #phi; #Delta z (cm); counts", title[i].c_str()), 100, .0f, 6.3f, 100, -10.f, 10.f);
+    mDeltaZPt[i] = new TH2F(Form("mDeltaZPt%s", title[i].c_str()), Form("mDeltaZPt (matchType: %s); #it{p}_{T}; #Delta z (cm); counts", title[i].c_str()), 100, 0.f, 20.f, 100, -10.f, 10.f);
     mDeltaXEta[i] = new TH2F(Form("mDeltaXEta%s", title[i].c_str()), Form("mDeltaXEta (matchType: %s); #eta; #Delta x (cm); counts", title[i].c_str()), 100, -1.0f, 1.0f, 100, -10.f, 10.f);
     mDeltaXPhi[i] = new TH2F(Form("mDeltaXPhi%s", title[i].c_str()), Form("mDeltaXPhi (matchType: %s); #phi; #Delta x (cm); counts", title[i].c_str()), 100, .0f, 6.3f, 100, -10.f, 10.f);
+    mDeltaXPt[i] = new TH2F(Form("mDeltaXPt%s", title[i].c_str()), Form("mDeltaXPt (matchType: %s); #it{p}_{T}; #Delta z (cm); counts", title[i].c_str()), 100, 0.f, 20.f, 100, -10.f, 10.f);
     mTOFChi2[i] = new TH1F(Form("mTOFChi2%s", title[i].c_str()), Form("mTOFChi2 (matchType: %s); #chi^{2}; counts", title[i].c_str()), 100, 0.f, 10.f);
+    mTOFChi2Pt[i] = new TH2F(Form("mTOFChi2Pt%s", title[i].c_str()), Form("mTOFChi2Pt (matchType: %s); #it{p}_{T}; #chi^{2}; counts", title[i].c_str()), 100, 0.f, 20.f, 100, 0.f, 10.f);
   }
 
   for (int isec = 0; isec < 18; isec++) {
-    mDTimeTrk[isec] = new TH2F(Form("DTimeTrk_sec%02d", isec), Form("Sector %d: ITS-TPC track-tof #Deltat vs #eta; #eta; #Deltat (# BC)", isec), 100, -1.0f, 1.0f, 1000, -50, 50);
+    mDTimeTrk[isec] = new TH2F(Form("DTimeTrk_sec%02d", isec), Form("Sector %d: ITS-TPC track-tof #Deltat vs #eta; #eta; #Deltat (# BC)", isec), 50, -1.0f, 1.0f, 500, -200, 200);
     getObjectsManager()->startPublishing(mDTimeTrk[isec]);
+    mDTimeTrkTPC[isec] = new TH2F(Form("DTimeTrkTPC_sec%02d", isec), Form("Sector %d: TPC track-tof #Deltat vs #eta; #eta; #Deltat (# BC)", isec), 50, -1.0f, 1.0f, 500, -200, 200);
+    if ((mSrc & o2::dataformats::GlobalTrackID::getSourcesMask("TPC")).any()) {
+      getObjectsManager()->startPublishing(mDTimeTrkTPC[isec]);
+    }
+    mDTimeTrkTRD[isec] = new TH2F(Form("DTimeTrkTRD_sec%02d", isec), Form("Sector %d: ITS-TPC-TRD track-tof #Deltat vs #eta; #eta; #Deltat (# BC)", isec), 100, -1.0f, 1.0f, 200, -5, 5);
+    if ((mSrc & o2::dataformats::GlobalTrackID::getSourcesMask("ITS-TPC-TRD")).any()) {
+      getObjectsManager()->startPublishing(mDTimeTrkTRD[isec]);
+    }
   }
-
-  // initialize B field and geometry for track selection
-  o2::base::GeometryManager::loadGeometry(mGeomFileName);
-  o2::base::Propagator::initFieldFromGRP(mGRPFileName);
-  mBz = o2::base::Propagator::Instance()->getNominalBz();
 
   if (mSrc[GID::Source::TPCTOF] == 1) {
     getObjectsManager()->startPublishing(mInTracksPt[matchType::TPC]);
@@ -189,9 +191,12 @@ void TOFMatchedTracks::initialize(o2::framework::InitContext& /*ctx*/)
     getObjectsManager()->startPublishing(mEff2DPtEta[matchType::TPC]);
     getObjectsManager()->startPublishing(mDeltaZEta[matchType::TPC]);
     getObjectsManager()->startPublishing(mDeltaZPhi[matchType::TPC]);
+    getObjectsManager()->startPublishing(mDeltaZPt[matchType::TPC]);
     getObjectsManager()->startPublishing(mDeltaXEta[matchType::TPC]);
     getObjectsManager()->startPublishing(mDeltaXPhi[matchType::TPC]);
+    getObjectsManager()->startPublishing(mDeltaXPt[matchType::TPC]);
     getObjectsManager()->startPublishing(mTOFChi2[matchType::TPC]);
+    getObjectsManager()->startPublishing(mTOFChi2Pt[matchType::TPC]);
   }
 
   if (mSrc[GID::Source::TPCTRDTOF] == 1) {
@@ -212,9 +217,12 @@ void TOFMatchedTracks::initialize(o2::framework::InitContext& /*ctx*/)
     getObjectsManager()->startPublishing(mEff2DPtEta[matchType::TPCTRD]);
     getObjectsManager()->startPublishing(mDeltaZEta[matchType::TPCTRD]);
     getObjectsManager()->startPublishing(mDeltaZPhi[matchType::TPCTRD]);
+    getObjectsManager()->startPublishing(mDeltaZPt[matchType::TPCTRD]);
     getObjectsManager()->startPublishing(mDeltaXEta[matchType::TPCTRD]);
     getObjectsManager()->startPublishing(mDeltaXPhi[matchType::TPCTRD]);
+    getObjectsManager()->startPublishing(mDeltaXPt[matchType::TPCTRD]);
     getObjectsManager()->startPublishing(mTOFChi2[matchType::TPCTRD]);
+    getObjectsManager()->startPublishing(mTOFChi2Pt[matchType::TPCTRD]);
   }
 
   if (mSrc[GID::Source::ITSTPCTOF] == 1 || mSrc[GID::Source::ITSTPCTRDTOF] == 1) {
@@ -235,21 +243,24 @@ void TOFMatchedTracks::initialize(o2::framework::InitContext& /*ctx*/)
     getObjectsManager()->startPublishing(mEff2DPtEta[matchType::ITSTPC_ITSTPCTRD]);
     getObjectsManager()->startPublishing(mDeltaZEta[matchType::ITSTPC_ITSTPCTRD]);
     getObjectsManager()->startPublishing(mDeltaZPhi[matchType::ITSTPC_ITSTPCTRD]);
+    getObjectsManager()->startPublishing(mDeltaZPt[matchType::ITSTPC_ITSTPCTRD]);
     getObjectsManager()->startPublishing(mDeltaXEta[matchType::ITSTPC_ITSTPCTRD]);
     getObjectsManager()->startPublishing(mDeltaXPhi[matchType::ITSTPC_ITSTPCTRD]);
+    getObjectsManager()->startPublishing(mDeltaXPt[matchType::ITSTPC_ITSTPCTRD]);
     getObjectsManager()->startPublishing(mTOFChi2[matchType::ITSTPC_ITSTPCTRD]);
+    getObjectsManager()->startPublishing(mTOFChi2Pt[matchType::ITSTPC_ITSTPCTRD]);
   }
 }
 
 void TOFMatchedTracks::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity " << activity.mId << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
   reset();
 }
 
 void TOFMatchedTracks::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
@@ -260,6 +271,9 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
   LOG(debug) << " *** Processing TF " << mTF << " *** ";
   LOG(debug) << " ************************ ";
   mRecoCont.collectData(ctx, *mDataRequest.get());
+
+  // Getting the B field
+  mBz = o2::base::Propagator::Instance()->getNominalBz();
 
   // TOF
   gsl::span<const o2::tof::Cluster> tofClusArray = mRecoCont.getTOFClusters();
@@ -295,9 +309,23 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
       mMatchedTracks2DPtEta[matchType::TPC]->Fill(trk.getPt(), trk.getEta());
       mDeltaZEta[matchType::TPC]->Fill(trk.getEta(), trkDz);
       mDeltaZPhi[matchType::TPC]->Fill(trk.getPhi(), trkDz);
+      mDeltaZPt[matchType::TPC]->Fill(trk.getPt(), trkDz);
       mDeltaXEta[matchType::TPC]->Fill(trk.getEta(), trkDx);
       mDeltaXPhi[matchType::TPC]->Fill(trk.getPhi(), trkDx);
+      mDeltaXPt[matchType::TPC]->Fill(trk.getPt(), trkDx);
       mTOFChi2[matchType::TPC]->Fill(trkchi2);
+      mTOFChi2Pt[matchType::TPC]->Fill(trk.getPt(), trkchi2);
+
+      if (trk.getPt() > 1.0) {
+        const double bcTimeInvInMus = o2::tof::Geo::BC_TIME_INV * 1E3;
+        float deltaTrackTimeInBC = -matchTOF.getDeltaT() * bcTimeInvInMus; // track time - tof time in number of BC
+        auto& tofCl = tofClusArray[matchTOF.getTOFClIndex()];
+        int isec = tofCl.getMainContributingChannel() / 8736;
+        if (isec >= 0 && isec < 18) {
+          mDTimeTrkTPC[isec]->Fill(trk.getEta(), deltaTrackTimeInBC);
+        }
+      }
+
       if (mUseMC) {
         auto lbl = mRecoCont.getTrackMCLabel(gTrackId);
         if (lbl.isFake()) {
@@ -344,9 +372,12 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
       mMatchedTracks2DPtEta[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getPt(), trkTPC.getEta());
       mDeltaZEta[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getEta(), trkDz);
       mDeltaZPhi[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getPhi(), trkDz);
+      mDeltaZPt[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getPt(), trkDz);
       mDeltaXEta[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getEta(), trkDx);
       mDeltaXPhi[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getPhi(), trkDx);
+      mDeltaXPt[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getPt(), trkDx);
       mTOFChi2[matchType::ITSTPC_ITSTPCTRD]->Fill(trkchi2);
+      mTOFChi2Pt[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getPt(), trkchi2);
       if (mUseMC) {
         auto lbl = mRecoCont.getTrackMCLabel(gTrackId);
         if (lbl.isFake()) {
@@ -381,9 +412,12 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
       mMatchedTracks2DPtEta[matchType::TPCTRD]->Fill(trk.getPt(), trk.getEta());
       mDeltaZEta[matchType::TPCTRD]->Fill(trk.getEta(), trkDz);
       mDeltaZPhi[matchType::TPCTRD]->Fill(trk.getPhi(), trkDz);
+      mDeltaZPt[matchType::TPCTRD]->Fill(trk.getPt(), trkDz);
       mDeltaXEta[matchType::TPCTRD]->Fill(trk.getEta(), trkDx);
       mDeltaXPhi[matchType::TPCTRD]->Fill(trk.getPhi(), trkDx);
+      mDeltaXPt[matchType::TPCTRD]->Fill(trk.getPt(), trkDx);
       mTOFChi2[matchType::TPCTRD]->Fill(trkchi2);
+      mTOFChi2Pt[matchType::TPCTRD]->Fill(trk.getPt(), trkchi2);
       if (mUseMC) {
         auto lbl = mRecoCont.getTrackMCLabel(gTrackId);
         if (lbl.isFake()) {
@@ -420,9 +454,23 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
       mMatchedTracks2DPtEta[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getPt(), trkTPC.getEta());
       mDeltaZEta[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getEta(), trkDz);
       mDeltaZPhi[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getPhi(), trkDz);
+      mDeltaZPt[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getPt(), trkDz);
       mDeltaXEta[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getEta(), trkDx);
       mDeltaXPhi[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getPhi(), trkDx);
+      mDeltaXPt[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getPt(), trkDx);
       mTOFChi2[matchType::ITSTPC_ITSTPCTRD]->Fill(trkchi2);
+      mTOFChi2Pt[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getPt(), trkchi2);
+
+      if (trkTPC.getPt() > 1.0) {
+        const double bcTimeInvInMus = o2::tof::Geo::BC_TIME_INV * 1E3;
+        float deltaTrackTimeInBC = -matchTOF.getDeltaT() * bcTimeInvInMus; // track time - tof time in number of BC
+        auto& tofCl = tofClusArray[matchTOF.getTOFClIndex()];
+        int isec = tofCl.getMainContributingChannel() / 8736;
+        if (isec >= 0 && isec < 18) {
+          mDTimeTrkTRD[isec]->Fill(trkTPC.getEta(), deltaTrackTimeInBC);
+        }
+      }
+
       if (mUseMC) {
         auto lbl = mRecoCont.getTrackMCLabel(gTrackId);
         if (lbl.isFake()) {
@@ -545,7 +593,7 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
 void TOFMatchedTracks::endOfCycle()
 {
 
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 
   // Logging in case any denominator has less entries than the corresponding numerator
   for (int i = 0; i < matchType::SIZE; ++i) {
@@ -673,14 +721,14 @@ void TOFMatchedTracks::endOfCycle()
 
 void TOFMatchedTracks::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void TOFMatchedTracks::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   for (int i = 0; i < matchType::SIZE; ++i) {
     mMatchedTracksPt[i]->Reset();
     mMatchedTracksEta[i]->Reset();
@@ -694,13 +742,18 @@ void TOFMatchedTracks::reset()
     mInTracks2DPtEta[i]->Reset();
     mDeltaZEta[i]->Reset();
     mDeltaZPhi[i]->Reset();
+    mDeltaZPt[i]->Reset();
     mDeltaXEta[i]->Reset();
     mDeltaXPhi[i]->Reset();
+    mDeltaXPt[i]->Reset();
     mTOFChi2[i]->Reset();
+    mTOFChi2Pt[i]->Reset();
   }
 
   for (int isec = 0; isec < 18; isec++) {
     mDTimeTrk[isec]->Reset();
+    mDTimeTrkTPC[isec]->Reset();
+    mDTimeTrkTRD[isec]->Reset();
   }
 }
 
@@ -709,10 +762,10 @@ void TOFMatchedTracks::reset()
 bool TOFMatchedTracks::selectTrack(o2::tpc::TrackTPC const& track)
 {
 
-  if (track.getPt() < mPtCut) {
+  if (track.getPt() <= mPtCut) {
     return false;
   }
-  if (std::abs(track.getEta()) > mEtaCut) {
+  if (std::abs(track.getEta()) >= mEtaCut) {
     return false;
   }
   if (track.getNClusters() < mNTPCClustersCut) {

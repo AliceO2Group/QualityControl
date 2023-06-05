@@ -103,10 +103,15 @@ class TOFMatchedTracks final : public TaskInterface
   TH1F* mFakeMatchedTracksEta[matchType::SIZE] = {};
   TH2F* mDeltaZEta[matchType::SIZE] = {};
   TH2F* mDeltaZPhi[matchType::SIZE] = {};
+  TH2F* mDeltaZPt[matchType::SIZE] = {};
   TH2F* mDeltaXEta[matchType::SIZE] = {};
   TH2F* mDeltaXPhi[matchType::SIZE] = {};
+  TH2F* mDeltaXPt[matchType::SIZE] = {};
   TH1F* mTOFChi2[matchType::SIZE] = {};
+  TH2F* mTOFChi2Pt[matchType::SIZE] = {};
   TH2F* mDTimeTrk[18] = {};
+  TH2F* mDTimeTrkTPC[18] = {};
+  TH2F* mDTimeTrkTRD[18] = {};
 
   TEfficiency* mEffPt[matchType::SIZE] = {};
   TEfficiency* mEffEta[matchType::SIZE] = {};
@@ -120,8 +125,6 @@ class TOFMatchedTracks final : public TaskInterface
   int32_t mNTPCClustersCut = 40;
   float mDCACut = 100.f;
   float mDCACutY = 10.f;
-  std::string mGRPFileName = "o2sim_grp.root";
-  std::string mGeomFileName = "o2sim_geometry-aligned.root";
   float mBz = 0; ///< nominal Bz
 
   int mTF = -1; // to count the number of processed TFs

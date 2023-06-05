@@ -17,7 +17,7 @@ A typical rule in the config file looks like:
     delay: 240
     policy: 1_per_hour
 ```
-There can be any number of these rules. The order is important as we use the first matching rule for each element in the QCDB. 
+There can be any number of these rules. The order is important as we use the first matching rule for each element in the QCDB (caveat the use of the flag `continue_with_next_rule`, see below).
 - `object_path`: a pattern to be matched to know if the rule applies
 - `delay`: the duration in minutes of the grace period during which an object is not removed, even if it matches the above path. 
 - `policy`: the name of a policy to apply on the matching objects. Here are the currently available policies (full description in the corresponding files):
@@ -28,12 +28,15 @@ There can be any number of these rules. The order is important as we use the fir
    - `skip`: keep everything
 - `from_timestamp`: the rule only applies to versions whose `valid_from` is older than this timestamp
 - `to_timestamp`: the rule only applies to versions whose `valid_from` is younger than this timestamp
+- `continue_with_next_rule`: if `True`, the next matching rule is also applied. 
 - `xyz`: any extra argument necessary for a given policy. This is the case of the argument `delete_when_no_run` required by the policy `1_per_run`. 
 
 The configuration for ccdb-test is described [here](../../../doc/DevelopersTips.md). 
 
 ## Unit Tests
 `cd QualityControl/Framework/script/RepoCleaner ; python3 -m unittest discover`
+
+and to test only one of them: `python3 -m unittest tests/test_NewProduction.py -k test_2_runs`
 
 In particular there is a test for the `production` rule that is pretty extensive. It hits the ccdb though and it needs the following path to be truncated: 
 `
@@ -51,3 +54,23 @@ CMake will install the python scripts in bin and the config file in etc.
 ```
 PYTHONPATH=./rules:$PYTHONPATH ./o2-qc-repo-cleaner --dry-run --config config-test.yaml --dry-run --only-path qc/DAQ --log-level 10
 ```
+
+## Development
+
+To install locally
+```
+cd Framework/script/RepoCleaner
+python3 -m pip install . 
+```
+
+## Upload new version
+
+Prerequisite
+
+1. Create an account on https://pypi.org
+
+Create new version
+
+1. Update version number in `setup.py`
+3. `python3 setup.py sdist bdist_wheel`
+4. `python3 -m twine upload --repository pypi dist/*`

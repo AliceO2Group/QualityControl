@@ -42,9 +42,8 @@ class DCSPTemperature : public quality_control::postprocessing::PostProcessingIn
 
   /// \brief Configuration of a post-processing task.
   /// Configuration of a post-processing task. Can be overridden if user wants to retrieve the configuration of the task.
-  /// \param name     Name of the task
   /// \param config   ConfigurationInterface with prefix set to ""
-  void configure(std::string name, const boost::property_tree::ptree& config) override;
+  void configure(const boost::property_tree::ptree& config) override;
   /// \brief Initialization of a post-processing task.
   /// Initialization of a post-processing task. User receives a Trigger which caused the initialization and a service
   /// registry with singleton interfaces.
@@ -63,22 +62,6 @@ class DCSPTemperature : public quality_control::postprocessing::PostProcessingIn
   /// \param trigger  Trigger which caused the initialization, for example Trigger::EOR
   /// \param services Interface containing optional interfaces, for example DatabaseInterface
   void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
-
-  /// \brief Splits strings
-  /// Splits strings at delimiter and puts the tokens into a vector
-  /// \param inString  String to be split
-  /// \param delimiter  Delimiter where string should be split
-  std::vector<std::string> splitString(const std::string inString, const char* delimiter);
-
-  /// \brief Extracts the "Valid from" timestamp from metadata
-  long getTimestamp(const std::string metaInfo);
-
-  /// \brief Gives a vector of timestamps for data to be processed
-  /// Gives a vector of time stamps of x files (x=nFiles) in path which are older than a given time stamp (limit)
-  /// \param path  File path in the CCDB
-  /// \param nFiles  Number of files that shall be processed
-  /// \param limit  Most recent timestamp to be processed
-  std::vector<long> getDataTimestamps(const std::string_view path, const unsigned int nFiles, const long limit);
 
  private:
   o2::tpc::qc::DCSPTemperature mDCSPTemp;

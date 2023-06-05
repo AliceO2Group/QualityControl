@@ -31,16 +31,16 @@ using namespace o2::quality_control::postprocessing;
 namespace o2::quality_control_modules::tpc
 {
 
-void LaserTracks::configure(std::string name, const boost::property_tree::ptree& config)
+void LaserTracks::configure(const boost::property_tree::ptree& config)
 {
-  o2::tpc::CDBInterface::instance().setURL(config.get<std::string>("qc.postprocessing." + name + ".dataSourceURL"));
+  o2::tpc::CDBInterface::instance().setURL(config.get<std::string>("qc.postprocessing." + getID() + ".dataSourceURL"));
 }
 
 void LaserTracks::initialize(Trigger, framework::ServiceRegistryRef)
 {
   addAndPublish(getObjectsManager(),
                 mLaserTracksCanvasVec,
-                { "Ltr_Coverage", "Calib_Values" },
+                { "Ltr_Coverage", "Calib_Values", "Ltr_dEdx" },
                 mStoreMap);
 }
 

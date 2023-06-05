@@ -22,6 +22,8 @@
 #include <Common/Exceptions.h>
 #include <TObjArray.h>
 
+#include <utility>
+
 using namespace o2::quality_control::core;
 using namespace AliceO2::Common;
 using namespace std;
@@ -33,17 +35,17 @@ const std::string ObjectsManager::gDrawOptionsKey = "drawOptions";
 const std::string ObjectsManager::gDisplayHintsKey = "displayHints";
 
 ObjectsManager::ObjectsManager(std::string taskName, std::string taskClass, std::string detectorName, std::string consulUrl, int parallelTaskID, bool noDiscovery)
-  : mTaskName(taskName), mTaskClass(taskClass), mDetectorName(detectorName), mUpdateServiceDiscovery(false)
+  : mTaskName(std::move(taskName)), mTaskClass(std::move(taskClass)), mDetectorName(std::move(detectorName)), mUpdateServiceDiscovery(false)
 {
   mMonitorObjects = std::make_unique<MonitorObjectCollection>();
   mMonitorObjects->SetOwner(true);
-  mMonitorObjects->SetName(taskName.c_str());
-  mMonitorObjects->setDetector(detectorName);
+  mMonitorObjects->SetName(mTaskName.c_str());
+  mMonitorObjects->setDetector(mDetectorName);
 
   // register with the discovery service
   if (!noDiscovery && !consulUrl.empty()) {
-    std::string uniqueTaskID = taskName + "_" + std::to_string(parallelTaskID);
-    mServiceDiscovery = std::make_unique<ServiceDiscovery>(consulUrl, taskName, uniqueTaskID);
+    std::string uniqueTaskID = mTaskName + "_" + std::to_string(parallelTaskID);
+    mServiceDiscovery = std::make_unique<ServiceDiscovery>(consulUrl, mTaskName, uniqueTaskID);
   } else {
     ILOG(Warning, Support) << "Service Discovery disabled" << ENDM;
     mServiceDiscovery = nullptr;
@@ -76,7 +78,7 @@ void ObjectsManager::updateServiceDiscovery()
   // prepare the string of comma separated objects and publish it
   string objects;
   for (auto tobj : *mMonitorObjects) {
-    MonitorObject* mo = dynamic_cast<MonitorObject*>(tobj);
+    auto* mo = dynamic_cast<MonitorObject*>(tobj);
     if (mo) {
       objects += mo->getPath() + ",";
     } else {
@@ -113,7 +115,7 @@ bool ObjectsManager::isBeingPublished(const string& name)
   return (mMonitorObjects->FindObject(name.c_str()) != nullptr);
 }
 
-MonitorObject* ObjectsManager::getMonitorObject(std::string objectName)
+MonitorObject* ObjectsManager::getMonitorObject(const std::string& objectName)
 {
   TObject* object = mMonitorObjects->FindObject(objectName.c_str());
   if (object == nullptr) {
@@ -180,6 +182,30 @@ void ObjectsManager::setDisplayHint(TObject* obj, const std::string& hints)
 {
   MonitorObject* mo = getMonitorObject(obj->GetName());
   mo->addOrUpdateMetadata(gDisplayHintsKey, hints);
+}
+
+void ObjectsManager::setValidity(ValidityInterval validityInterval)
+{
+  for (auto* tobj : *mMonitorObjects) {
+    auto* mo = dynamic_cast<MonitorObject*>(tobj);
+    if (mo) {
+      mo->setValidity(validityInterval);
+    } else {
+      ILOG(Error, Devel) << "ObjectsManager::setObjectsValidity : dynamic_cast returned nullptr." << ENDM;
+    }
+  }
+}
+
+void ObjectsManager::updateValidity(validity_time_t validityTime)
+{
+  for (auto* tobj : *mMonitorObjects) {
+    auto* mo = dynamic_cast<MonitorObject*>(tobj);
+    if (mo) {
+      mo->updateValidity(validityTime);
+    } else {
+      ILOG(Error, Devel) << "ObjectsManager::setObjectsValidity : dynamic_cast returned nullptr." << ENDM;
+    }
+  }
 }
 
 const Activity& ObjectsManager::getActivity() const

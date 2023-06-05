@@ -45,7 +45,7 @@ QcMFTReadoutTask::~QcMFTReadoutTask()
 
 void QcMFTReadoutTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize QcMFTReadoutTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize QcMFTReadoutTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // create the index to link a RU+lane to a chip
   //==============================================
@@ -118,7 +118,7 @@ void QcMFTReadoutTask::initialize(o2::framework::InitContext& /*ctx*/)
   // Defining summary histograms per zone
   mZoneSummaryChipWarning = std::make_unique<TH2F>(
     "mZoneSummaryChipWarning",
-    "Summary of chips in fault per zone;;",
+    "Summary of chips in warning per zone;;",
     10, -0.5, 9.5, 8, -0.5, 7.5);
   mZoneSummaryChipWarning->GetXaxis()->SetBinLabel(1, "d0-f0");
   mZoneSummaryChipWarning->GetXaxis()->SetBinLabel(2, "d0-f1");
@@ -200,7 +200,7 @@ void QcMFTReadoutTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void QcMFTReadoutTask::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "startOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
 
   // reset histograms
   reset();
@@ -208,7 +208,7 @@ void QcMFTReadoutTask::startOfActivity(Activity& /*activity*/)
 
 void QcMFTReadoutTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void QcMFTReadoutTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -219,9 +219,10 @@ void QcMFTReadoutTask::monitorData(o2::framework::ProcessingContext& ctx)
   // loop over input
   for (auto it = parser.begin(), end = parser.end(); it != end; ++it) {
     // get the header
-    auto const* rdh = it.get_if<o2::header::RAWDataHeaderV6>();
+    auto rdh = reinterpret_cast<const o2::header::RDHAny*>(it.raw());
+    auto feeID = o2::raw::RDHUtils::getFEEID(rdh);
     // get detector field
-    uint64_t summaryLaneStatus = rdh->detectorField;
+    uint32_t summaryLaneStatus = o2::raw::RDHUtils::getDetectorField(rdh);
     // fill histogram bin with #entries
     mRDHSummary->Fill(4);
     // fill status if set
@@ -234,7 +235,7 @@ void QcMFTReadoutTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (summaryLaneStatus & (1 << 3))
       mRDHSummary->Fill(3); // fault
     // check if last rdh in HBF and get the DDW word
-    if (rdh->stop && it.size()) {
+    if ((int)(o2::raw::RDHUtils::getStop(rdh)) && it.size()) {
       auto const* ddw = reinterpret_cast<const MFTDDW*>(it.data());
       uint16_t ddwIndex = ddw->indexWord.indexBits.id;
       if (ddwIndex == 0xE4) { // it is a diagnostic data word
@@ -249,7 +250,7 @@ void QcMFTReadoutTask::monitorData(o2::framework::ProcessingContext& ctx)
         mZoneSummaryChipFault->Fill(-1, -1);   // counter stored in the underflow bin!
         mRDHSummary->Fill(-1);                 // counter stored in the underflow bin!
         uint64_t ddwLaneStatus = ddw->laneWord.laneBits.laneStatus;
-        uint16_t rdhFeeIndex = rdh->feeId;
+        uint16_t rdhFeeIndex = feeID;
         int RUindex = (rdhFeeIndex & 127); // look only at the rightmost 7 bits
         // check the status of each lane
         for (int i = 0; i < nLanes; i++) {
@@ -289,19 +290,19 @@ void QcMFTReadoutTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void QcMFTReadoutTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void QcMFTReadoutTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void QcMFTReadoutTask::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   mDDWSummary->Reset();
   mSummaryChipError->Reset();
   mSummaryChipFault->Reset();

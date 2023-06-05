@@ -75,13 +75,13 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
 
   o2::base::GeometryManager::loadGeometry();
 
-  ILOG(Info, Support) << "START READER" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "START READER" << ENDM;
 
   specs.emplace_back(o2::its::getTestDataReaderSpec());
 
   // Path to the config file
   std::string qcConfigurationSource = getConfigPath(config);
-  LOG(info) << "Using config file '" << qcConfigurationSource << "'";
+  ILOG(Debug, Devel) << "Using config file '" << qcConfigurationSource << "'" << ENDM;
 
   // Generation of Data Sampling infrastructure
   auto configInterface = ConfigurationFactory::getConfiguration(qcConfigurationSource);

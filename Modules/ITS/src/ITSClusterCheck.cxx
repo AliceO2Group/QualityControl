@@ -40,7 +40,7 @@ Quality ITSClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
     result = Quality::Good;
 
     if (iter->second->getName().find("AverageClusterSize") != std::string::npos) {
-      auto* h = dynamic_cast<TH2D*>(iter->second->getObject());
+      auto* h = dynamic_cast<TH2F*>(iter->second->getObject());
       for (int ilayer = 0; ilayer < NLayer; ilayer++) {
         result.addMetadata(Form("Layer%d", ilayer), "good");
         if (iter->second->getName().find(Form("Layer%d", ilayer)) != std::string::npos && h->GetMaximum() > averageClusterSizeLimit[ilayer]) {
@@ -51,9 +51,9 @@ Quality ITSClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
     }
 
     if (iter->second->getName().find("General_Occupancy") != std::string::npos) {
-      auto* hp = dynamic_cast<TH2D*>(iter->second->getObject());
-      std::vector<int> skipxbins = convertToIntArray(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "skipxbinsoccupancy", ""));
-      std::vector<int> skipybins = convertToIntArray(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "skipybinsoccupancy", ""));
+      auto* hp = dynamic_cast<TH2F*>(iter->second->getObject());
+      std::vector<int> skipxbins = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "skipxbinsoccupancy", ""));
+      std::vector<int> skipybins = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "skipybinsoccupancy", ""));
       std::vector<std::pair<int, int>> xypairs;
       for (int i = 0; i < (int)skipxbins.size(); i++) {
         xypairs.push_back(std::make_pair(skipxbins[i], skipybins[i]));
@@ -63,18 +63,25 @@ Quality ITSClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
         int ilayer = iy <= hp->GetNbinsY() / 2 ? hp->GetNbinsY() / 2 - iy : iy - hp->GetNbinsY() / 2 - 1;
         std::string tb = iy <= hp->GetNbinsY() / 2 ? "B" : "T";
         result.addMetadata(Form("Layer%d%s", ilayer, tb.c_str()), "good");
+        bool mediumHalfLayer = false;
         for (int ix = 1; ix <= hp->GetNbinsX(); ix++) { // loop on staves
           if (std::find(xypairs.begin(), xypairs.end(), std::make_pair(ix, iy)) != xypairs.end()) {
             continue;
           }
+
           maxcluocc[ilayer] = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, Form("maxcluoccL%d", ilayer), maxcluocc[ilayer]);
           if (hp->GetBinContent(ix, iy) > maxcluocc[ilayer]) {
             result.set(Quality::Medium);
             result.updateMetadata(Form("Layer%d%s", ilayer, tb.c_str()), "medium");
+            mediumHalfLayer = true;
           }
         }
+        if (mediumHalfLayer)
+          result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("Medium: Layer%d%s has high cluster occupancy;", ilayer, tb.c_str()));
+
         // check for empty bins (empty staves)
         result.addMetadata(Form("Layer%d%s_empty", ilayer, tb.c_str()), "good");
+        bool badHalfLayer = false;
         for (int ix = 12; ix > 12 - mNStaves[ilayer] / 4; ix--) {
           if (std::find(xypairs.begin(), xypairs.end(), std::make_pair(ix, iy)) != xypairs.end()) {
             continue;
@@ -82,7 +89,8 @@ Quality ITSClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
           if (hp->GetBinContent(ix, iy) < 1e-15) {
             result.updateMetadata(Form("Layer%d%s_empty", ilayer, tb.c_str()), "bad");
             result.set(Quality::Bad);
-            LOG(info) << "************************ " << Form("Layer%d%s_empty", ilayer, tb.c_str());
+            badHalfLayer = true;
+            ILOG(Debug, Devel) << "************************ " << Form("Layer%d%s_empty", ilayer, tb.c_str()) << ENDM;
           }
         }
         int stop = (iy == 2 || iy == 13) ? 13 + mNStaves[ilayer] / 4 + 1 : 13 + mNStaves[ilayer] / 4; // for L5
@@ -93,26 +101,43 @@ Quality ITSClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
           if (hp->GetBinContent(ix, iy) < 1e-15) {
             result.updateMetadata(Form("Layer%d%s_empty", ilayer, tb.c_str()), "bad");
             result.set(Quality::Bad);
+            badHalfLayer = true;
           }
         }
+        if (badHalfLayer)
+          result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("BAD: Layer%d%s has empty stave;", ilayer, tb.c_str()));
       }
     } // end GeneralOccupancy
   }
-
   return result;
 } // end check
 
-std::string ITSClusterCheck::getAcceptedType() { return "TH2D"; }
+std::string ITSClusterCheck::getAcceptedType() { return "TH2F"; }
 
 void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
+  std::vector<string> vPlotWithTextMessage = convertToArray<string>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "plotWithTextMessage", ""));
+  std::vector<string> vTextMessage = convertToArray<string>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "textMessage", ""));
+  std::map<string, string> ShifterInfoText;
+
+  if ((int)vTextMessage.size() == (int)vPlotWithTextMessage.size()) {
+    for (int i = 0; i < (int)vTextMessage.size(); i++) {
+      ShifterInfoText[vPlotWithTextMessage[i]] = vTextMessage[i];
+    }
+  } else
+    ILOG(Warning, Support) << "Bad list of plot with TextMessages for shifter, check .json" << ENDM;
+
+  std::shared_ptr<TLatex> tShifterInfo = std::make_shared<TLatex>(0.005, 0.006, Form("#bf{%s}", TString(ShifterInfoText[mo->getName()]).Data()));
+  tShifterInfo->SetTextSize(0.04);
+  tShifterInfo->SetTextFont(43);
+  tShifterInfo->SetNDC();
 
   TString status;
   int textColor;
   Double_t positionX, positionY;
 
   if (mo->getName().find("AverageClusterSize") != std::string::npos) {
-    auto* h = dynamic_cast<TH2D*>(mo->getObject());
+    auto* h = dynamic_cast<TH2F*>(mo->getObject());
     std::string histoName = mo->getName();
     int iLayer = histoName[histoName.find("Layer") + 5] - 48; // Searching for position of "Layer" in the name of the file, then +5 is the NUMBER of the layer, -48 is conversion to int
 
@@ -134,15 +159,17 @@ void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
     msg->SetTextFont(43);
     msg->SetNDC();
     h->GetListOfFunctions()->Add(msg->Clone());
+    if (ShifterInfoText[mo->getName()] != "")
+      h->GetListOfFunctions()->Add(tShifterInfo->Clone());
   }
 
   if (mo->getName().find("General_Occupancy") != std::string::npos) {
-    auto* h = dynamic_cast<TH2D*>(mo->getObject());
+    auto* h = dynamic_cast<TH2F*>(mo->getObject());
     if (checkResult == Quality::Good) {
       status = "Quality::GOOD";
       textColor = kGreen;
-      positionX = 0.12;
-      positionY = 0.75;
+      positionX = 0.05;
+      positionY = 0.95;
     } else {
       for (int il = 0; il < 14; il++) {
         std::string tb = il < 7 ? "T" : "B";
@@ -153,10 +180,10 @@ void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
           text[il]->SetTextColor(kOrange);
           text[il]->SetNDC();
           h->GetListOfFunctions()->Add(text[il]->Clone());
-          status = "#splitline{Quality::Medium}{do NOT call, create log entry}";
+          status = "Quality::Medium, create log entry";
           textColor = kOrange;
-          positionX = 0.12;
-          positionY = 0.75;
+          positionX = 0.05;
+          positionY = 0.95;
         }
 
         if (strcmp(checkResult.getMetadata(Form("Layer%d%s_empty", il % 7, tb.c_str())).c_str(), "bad") == 0) {
@@ -166,34 +193,22 @@ void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
           text2[il]->SetTextColor(kRed);
           text2[il]->SetNDC();
           h->GetListOfFunctions()->Add(text2[il]->Clone());
-          status = "#splitline{Quality::Bad}{Call expert}";
+          status = "Quality::Bad, call expert";
           textColor = kRed;
-          positionX = 0.12;
-          positionY = 0.75;
+          positionX = 0.05;
+          positionY = 0.95;
         }
       }
     }
     msg = std::make_shared<TLatex>(positionX, positionY, Form("#bf{%s}", status.Data()));
     msg->SetTextColor(textColor);
-    msg->SetTextSize(0.04);
+    msg->SetTextSize(0.06);
     msg->SetTextFont(43);
     msg->SetNDC();
     h->GetListOfFunctions()->Add(msg->Clone());
+    if (ShifterInfoText[mo->getName()] != "")
+      h->GetListOfFunctions()->Add(tShifterInfo->Clone());
   }
-}
-
-std::vector<int> ITSClusterCheck::convertToIntArray(std::string input)
-{
-  std::replace(input.begin(), input.end(), ',', ' ');
-  std::istringstream stringReader{ input };
-
-  std::vector<int> result;
-  int number;
-  while (stringReader >> number) {
-    result.push_back(number);
-  }
-
-  return result;
 }
 
 } // namespace o2::quality_control_modules::its

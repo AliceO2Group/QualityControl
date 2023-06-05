@@ -17,6 +17,7 @@
 #include "QualityControl/DatabaseInterface.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/QualityObject.h"
 #include <TPC/QualityObserver.h>
 #include <boost/property_tree/ptree.hpp>
 #include <TPaveText.h>
@@ -29,12 +30,14 @@ using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;
 using namespace o2::quality_control_modules::tpc;
 
-void QualityObserver::configure(std::string name,
-                                const boost::property_tree::ptree& config)
+void QualityObserver::configure(const boost::property_tree::ptree& config)
 {
-  mObserverName = config.get<std::string>("qc.postprocessing." + name + ".qualityObserverName");
+  auto& id = getID();
+  mObserverName = config.get<std::string>("qc.postprocessing." + id + ".qualityObserverName");
+  mViewDetails = config.get<bool>("qc.postprocessing." + id + ".observeDetails", true);
+  mQualityDetailChoice = config.get<std::string>("qc.postprocessing." + id + ".qualityDetailChoice", "Null, Good, Medium, Bad");
 
-  for (const auto& dataSourceConfig : config.get_child("qc.postprocessing." + name + ".qualityObserverConfig")) {
+  for (const auto& dataSourceConfig : config.get_child("qc.postprocessing." + id + ".qualityObserverConfig")) {
     Config dataConfig;
 
     dataConfig.groupTitle = dataSourceConfig.second.get<std::string>("groupTitle");
@@ -69,11 +72,31 @@ void QualityObserver::initialize(Trigger, framework::ServiceRegistryRef)
 {
   for (const auto& config : mConfig) {
     mQualities[config.groupTitle] = std::vector<std::string>();
+    mReasons[config.groupTitle] = std::vector<std::string>();
+    mComments[config.groupTitle] = std::vector<std::string>();
   }
   mColors[Quality::Bad.getName()] = kRed;
   mColors[Quality::Medium.getName()] = kOrange - 3;
   mColors[Quality::Good.getName()] = kGreen + 2;
-  mColors[Quality::Null.getName()] = kGray + 2;
+  mColors[Quality::Null.getName()] = kViolet - 6;
+
+  mQualityDetails[Quality::Bad.getName()] = false;
+  mQualityDetails[Quality::Medium.getName()] = false;
+  mQualityDetails[Quality::Good.getName()] = false;
+  mQualityDetails[Quality::Null.getName()] = false;
+
+  if (size_t finder = mQualityDetailChoice.find("Bad"); finder != std::string::npos) {
+    mQualityDetails[Quality::Bad.getName()] = true;
+  }
+  if (size_t finder = mQualityDetailChoice.find("Medium"); finder != std::string::npos) {
+    mQualityDetails[Quality::Medium.getName()] = true;
+  }
+  if (size_t finder = mQualityDetailChoice.find("Good"); finder != std::string::npos) {
+    mQualityDetails[Quality::Good.getName()] = true;
+  }
+  if (size_t finder = mQualityDetailChoice.find("Null"); finder != std::string::npos) {
+    mQualityDetails[Quality::Null.getName()] = true;
+  }
 }
 
 void QualityObserver::update(Trigger t, framework::ServiceRegistryRef services)
@@ -86,8 +109,6 @@ void QualityObserver::update(Trigger t, framework::ServiceRegistryRef services)
 void QualityObserver::finalize(Trigger t, framework::ServiceRegistryRef)
 {
   generatePanel();
-  delete mCanvas;
-  mCanvas = nullptr;
 }
 
 void QualityObserver::getQualities(const Trigger& t,
@@ -97,14 +118,20 @@ void QualityObserver::getQualities(const Trigger& t,
 
     if (mQualities[config.groupTitle].size() > 0) {
       mQualities[config.groupTitle].clear();
+      mReasons[config.groupTitle].clear();
+      mComments[config.groupTitle].clear();
     }
     for (const auto& qualityobject : config.qo) {
       const auto qo = qcdb.retrieveQO(config.path + "/" + qualityobject, t.timestamp, t.activity);
       if (qo) {
         const auto quality = qo->getQuality();
         mQualities[config.groupTitle].push_back(quality.getName());
+        mReasons[config.groupTitle].push_back(quality.getMetadata(quality.getName(), ""));
+        mComments[config.groupTitle].push_back(quality.getMetadata("Comment", ""));
       } else {
         mQualities[config.groupTitle].push_back(Quality::Null.getName());
+        mReasons[config.groupTitle].push_back("");
+        mComments[config.groupTitle].push_back("");
       }
     }
   }
@@ -139,6 +166,30 @@ void QualityObserver::generatePanel()
       pt->AddText(Form("%s = #color[%d]{%s}", config.qoTitle.at(i).data(), mColors[mQualities[config.groupTitle].at(i).data()], mQualities[config.groupTitle].at(i).data()));
       // To-Check: SetTextAlign does currently not work in QCG
       ((TText*)pt->GetListOfLines()->Last())->SetTextAlign(12);
+
+      if (mViewDetails && mQualityDetails[mQualities[config.groupTitle].at(i).data()]) {
+        if (mReasons[config.groupTitle].at(i) != "") {
+          std::string delimiter = "\n";
+
+          if (mReasons[config.groupTitle].at(i).find(delimiter) != std::string::npos) {
+            size_t pos = 0;
+            std::string subText;
+            while ((pos = mReasons[config.groupTitle].at(i).find(delimiter)) != std::string::npos) {
+              subText = mReasons[config.groupTitle].at(i).substr(0, pos);
+              pt->AddText(Form("#color[%d]{#rightarrow Reason: %s}", kGray + 2, subText.data()));
+              ((TText*)pt->GetListOfLines()->Last())->SetTextAlign(12);
+              mReasons[config.groupTitle].at(i).erase(0, pos + delimiter.length());
+            }
+          } else {
+            pt->AddText(Form("#color[%d]{#rightarrow Reason: %s}", kGray + 2, mReasons[config.groupTitle].at(i).data()));
+            ((TText*)pt->GetListOfLines()->Last())->SetTextAlign(12);
+          }
+        }
+        if (mComments[config.groupTitle].at(i) != "") {
+          pt->AddText(Form("#color[%d]{#rightarrow Comment: %s}", kGray + 2, mComments[config.groupTitle].at(i).data()));
+          ((TText*)pt->GetListOfLines()->Last())->SetTextAlign(12);
+        }
+      }
     }
 
     // To-Check: AddLine broken for qcg. Does not simply append line

@@ -32,7 +32,7 @@
           {
             "type": "repository",
             "path": "TPC/MO/Clusters",
-            "names": [ "N_Clusters", "Q_Max", "Q_Tot" ],
+            "names": [ "N_Clusters", "Q_Max", "Q_Tot", "Sigma_Pad", "Sigma_Time", "Time_Bin" ],
             "reductorName": "o2::quality_control_modules::tpc::ROCReductor",
             "moduleName": "QcTPC"
           }
@@ -42,6 +42,60 @@
             "name": "temp_mean_N_Clusters_0",
             "title": "Mean value of N_Clusters (ROC 0) over time",
             "varexp": "N_Clusters.mean[]:time",
+            "selection": "",
+            "option": "*L"
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "10 seconds"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      },
+      "TrendingCalPadCluster": {
+        "active": "true",
+        "className": "o2::quality_control::postprocessing::TrendingTask",
+        "moduleName": "QualityControl",
+        "detectorName": "TPC",
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "TPC/MO/Clusters",
+            "names": [ "ClusterData" ],
+            "reductorName": "o2::quality_control_modules::tpc::CalPadClusterReductor",
+            "moduleName": "QcTPC"
+          }
+        ],
+        "plots": [
+          {
+            "name": "NClusters_numberEntries_allROC_trending",
+            "title": "Number of Entries NClusters (all ROC) over time",
+            "varexp": "ClusterData.NClusters[0][ ]:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "NClusters_mean_allROC_trending",
+            "title": "Mean NClusters (all ROC) over time",
+            "varexp": "ClusterData.NClusters[1][ ]:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "NClusters_stddev_allROC_trending",
+            "title": "Stddev NClusters (all ROC) over time",
+            "varexp": "ClusterData.NClusters[2][ ]:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "NClusters_median_allROC_trending",
+            "title": "Median NClusters (all ROC) over time",
+            "varexp": "ClusterData.NClusters[3][ ]:time",
             "selection": "",
             "option": "*L"
           }

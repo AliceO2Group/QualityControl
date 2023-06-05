@@ -40,55 +40,55 @@ void PulseHeightCheck::configure()
 {
   if (auto param = mCustomParameters.find("ccdbtimestamp"); param != mCustomParameters.end()) {
     mTimeStamp = std::stol(mCustomParameters["ccdbtimestamp"]);
-    ILOG(Info, Support) << "configure() : using ccdbtimestamp = " << mTimeStamp << ENDM;
+    ILOG(Debug, Support) << "configure() : using ccdbtimestamp = " << mTimeStamp << ENDM;
   } else {
     mTimeStamp = o2::ccdb::getCurrentTimestamp();
-    ILOG(Info, Support) << "configure() : using default timestam of now = " << mTimeStamp << ENDM;
+    ILOG(Debug, Support) << "configure() : using default timestam of now = " << mTimeStamp << ENDM;
   }
   auto& mgr = o2::ccdb::BasicCCDBManager::instance();
   mgr.setTimestamp(mTimeStamp);
-  ILOG(Info, Support) << "initialize PulseHeight" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize PulseHeight" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
   if (auto param = mCustomParameters.find("driftregionstart"); param != mCustomParameters.end()) {
     mDriftRegion.first = stof(param->second);
-    ILOG(Info, Support) << "configure() : using driftregionstart = " << mDriftRegion.first << ENDM;
+    ILOG(Debug, Support) << "configure() : using driftregionstart = " << mDriftRegion.first << ENDM;
   } else {
     mDriftRegion.first = 7.0;
-    ILOG(Info, Support) << "configure() : using default dritfregionstart = " << mDriftRegion.first << ENDM;
+    ILOG(Debug, Support) << "configure() : using default dritfregionstart = " << mDriftRegion.first << ENDM;
   }
   if (auto param = mCustomParameters.find("driftregionend"); param != mCustomParameters.end()) {
     mDriftRegion.second = stof(param->second);
-    ILOG(Info, Support) << "configure() : using dritftregionend = " << mDriftRegion.second << ENDM;
+    ILOG(Debug, Support) << "configure() : using dritftregionend = " << mDriftRegion.second << ENDM;
   } else {
     mDriftRegion.second = 20.0;
-    ILOG(Info, Support) << "configure() : using default dritfregionend = " << mDriftRegion.second << ENDM;
+    ILOG(Debug, Support) << "configure() : using default dritfregionend = " << mDriftRegion.second << ENDM;
   }
   if (auto param = mCustomParameters.find("peakregionstart"); param != mCustomParameters.end()) {
     mPulseHeightPeakRegion.first = stof(param->second);
-    ILOG(Info, Support) << "configure() : using peakregionstart " << mPulseHeightPeakRegion.first << ENDM;
+    ILOG(Debug, Support) << "configure() : using peakregionstart " << mPulseHeightPeakRegion.first << ENDM;
   } else {
     mPulseHeightPeakRegion.first = 1.0;
-    ILOG(Info, Support) << "configure() : using default peakregionstart  = " << mPulseHeightPeakRegion.first << ENDM;
+    ILOG(Debug, Support) << "configure() : using default peakregionstart  = " << mPulseHeightPeakRegion.first << ENDM;
   }
   if (auto param = mCustomParameters.find("peakregionend"); param != mCustomParameters.end()) {
     mPulseHeightPeakRegion.second = stof(param->second);
-    ILOG(Info, Support) << "configure() : using peak region ends = " << mPulseHeightPeakRegion.second << ENDM;
+    ILOG(Debug, Support) << "configure() : using peak region ends = " << mPulseHeightPeakRegion.second << ENDM;
   } else {
     mPulseHeightPeakRegion.second = 5.0;
-    ILOG(Info, Support) << "configure() : using default peak region end = " << mPulseHeightPeakRegion.second << ENDM;
+    ILOG(Debug, Support) << "configure() : using default peak region end = " << mPulseHeightPeakRegion.second << ENDM;
   }
   if (auto param = mCustomParameters.find("pulseheightminsum"); param != mCustomParameters.end()) {
     mPulseHeightMinSum = stoi(param->second);
-    ILOG(Info, Support) << "configure() : using pulseheight min sum before checking = " << mPulseHeightMinSum << ENDM;
+    ILOG(Debug, Support) << "configure() : using pulseheight min sum before checking = " << mPulseHeightMinSum << ENDM;
   } else {
     mPulseHeightMinSum = 1500;
-    ILOG(Info, Support) << "configure() : using pulseheight min sum before checking = " << mPulseHeightMinSum << ENDM;
+    ILOG(Debug, Support) << "configure() : using pulseheight min sum before checking = " << mPulseHeightMinSum << ENDM;
   }
   if (auto param = mCustomParameters.find("pulseheightratio"); param != mCustomParameters.end()) {
     mPulseHeightRatio = stoi(param->second);
-    ILOG(Info, Support) << "configure() : using pulseheight ratio, peak/drift = " << mPulseHeightRatio << ENDM;
+    ILOG(Debug, Support) << "configure() : using pulseheight ratio, peak/drift = " << mPulseHeightRatio << ENDM;
   } else {
     mPulseHeightRatio = 1.1;
-    ILOG(Info, Support) << "configure() : using pulseheight ratio, peak/drift = " << mPulseHeightRatio << ENDM;
+    ILOG(Debug, Support) << "configure() : using pulseheight ratio, peak/drift = " << mPulseHeightRatio << ENDM;
   }
 }
 
@@ -99,7 +99,7 @@ Quality PulseHeightCheck::check(std::map<std::string, std::shared_ptr<MonitorObj
   for (auto& [moName, mo] : *moMap) {
 
     (void)moName;
-    if (mo->getName() == "PulseHeight/mPulseHeight") {
+    if ((mo->getName() == "PulseHeight/mPulseHeight") || (mo->getName() == "PulseHeight/mPulseHeightpro")) {
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
 
       result = Quality::Good;
@@ -123,7 +123,7 @@ Quality PulseHeightCheck::check(std::map<std::string, std::shared_ptr<MonitorObj
         return result;
       }
 
-      // check the drift region is suffuciently below the lefth hand peak.
+      // check the drift region is sufficiently below the left hand peak.
       if (average > 0) {
         if (max / average > mPulseHeightRatio) {
           // peak is sufficiently high relative to the drift region.
@@ -158,7 +158,7 @@ std::string PulseHeightCheck::getAcceptedType() { return "TH1"; }
 
 void PulseHeightCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  if (mo->getName() == "PulseHeight/mPulseHeight") {
+  if ((mo->getName() == "PulseHeight/mPulseHeight") || (mo->getName() == "PulseHeight/mPulseHeightpro")) {
     auto* h = dynamic_cast<TH1F*>(mo->getObject());
     TPaveText* msg = new TPaveText(0.3, 0.9, 0.7, 0.95, "NDC");
     h->GetListOfFunctions()->Add(msg);

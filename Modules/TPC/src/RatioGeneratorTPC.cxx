@@ -20,6 +20,7 @@
 #include <TPC/RatioGeneratorTPC.h>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/algorithm/string.hpp>
+#include <fmt/format.h>
 #include <string>
 #include <TAxis.h>
 
@@ -28,10 +29,10 @@ using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;
 using namespace o2::quality_control_modules::tpc;
 
-void RatioGeneratorTPC::configure(std::string name,
-                                  const boost::property_tree::ptree& config)
+void RatioGeneratorTPC::configure(const boost::property_tree::ptree& config)
 {
-  for (const auto& dataSourceConfig : config.get_child("qc.postprocessing." + name + ".ratioConfig")) {
+  auto& id = getID();
+  for (const auto& dataSourceConfig : config.get_child("qc.postprocessing." + id + ".ratioConfig")) {
     std::string inputNames[2];
     int counter = 0;
 
@@ -63,14 +64,12 @@ void RatioGeneratorTPC::update(Trigger t, framework::ServiceRegistryRef services
 
 void RatioGeneratorTPC::finalize(Trigger t, framework::ServiceRegistryRef)
 {
-  generatePlots();
   for (const auto& source : mConfig) {
     if (mRatios.count(source.nameOutputObject)) {
       getObjectsManager()->stopPublishing(source.nameOutputObject);
-      delete mRatios[source.nameOutputObject];
-      mRatios[source.nameOutputObject] = nullptr;
     }
   }
+  generatePlots();
 }
 
 void RatioGeneratorTPC::generateRatios(const Trigger& t,
@@ -84,9 +83,9 @@ void RatioGeneratorTPC::generateRatios(const Trigger& t,
       mRatios[source.nameOutputObject] = nullptr;
     }
     auto moNumerator = qcdb.retrieveMO(source.path, source.nameInputObjects[0], t.timestamp, t.activity);
-    TH1* histoNumerator = moNumerator ? static_cast<TH1*>(moNumerator->getObject()) : nullptr;
+    TH1* histoNumerator = moNumerator ? dynamic_cast<TH1*>(moNumerator->getObject()) : nullptr;
     auto moDenominator = qcdb.retrieveMO(source.path, source.nameInputObjects[1], t.timestamp, t.activity);
-    TH1* histoDenominator = moDenominator ? static_cast<TH1*>(moDenominator->getObject()) : nullptr;
+    TH1* histoDenominator = moDenominator ? dynamic_cast<TH1*>(moDenominator->getObject()) : nullptr;
 
     if (histoNumerator && histoDenominator) {
       mRatios[source.nameOutputObject] = (TH1*)histoNumerator->Clone(fmt::format("{}_over_{}", histoNumerator->GetName(), histoDenominator->GetName()).data());

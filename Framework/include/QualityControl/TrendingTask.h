@@ -49,12 +49,13 @@ class TrendingTask : public PostProcessingInterface
   TrendingTask() = default;
   ~TrendingTask() override = default;
 
-  void configure(std::string name, const boost::property_tree::ptree& config) override;
+  void configure(const boost::property_tree::ptree& config) override;
   void initialize(Trigger, framework::ServiceRegistryRef) override;
   void update(Trigger, framework::ServiceRegistryRef) override;
   void finalize(Trigger, framework::ServiceRegistryRef) override;
 
-  void setUserAxisLabel(TAxis* xAxis, TAxis* yAxis, const std::string& graphAxisLabel);
+  static void setUserAxisLabel(TAxis* xAxis, TAxis* yAxis, const std::string& graphAxisLabel);
+  static void setUserYAxisRange(TH1* hist, const std::string& graphYAxisRange);
 
  private:
   struct {
@@ -67,6 +68,7 @@ class TrendingTask : public PostProcessingInterface
 
   void trendValues(const Trigger& t, repository::DatabaseInterface&);
   void generatePlots();
+  bool canContinueTrend(TTree* tree);
 
   TrendingTaskConfig mConfig;
   UInt_t mTime;
@@ -77,4 +79,4 @@ class TrendingTask : public PostProcessingInterface
 
 } // namespace o2::quality_control::postprocessing
 
-#endif //QUALITYCONTROL_TRENDINGTASK_H
+#endif // QUALITYCONTROL_TRENDINGTASK_H

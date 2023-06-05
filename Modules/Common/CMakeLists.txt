@@ -14,6 +14,10 @@ target_sources(O2QcCommon
                        src/WorstOfAllAggregator.cxx
                        src/TRFCollectionTask.cxx
                        src/TRFCollectionTaskConfig.cxx
+                       src/QualityTask.cxx
+                       src/QualityTaskConfig.cxx
+                       src/BigScreen.cxx
+                       src/BigScreenConfig.cxx
                        src/NonEmpty.cxx
                        src/MeanIsAbove.cxx
                        src/TH1Reductor.cxx
@@ -41,7 +45,11 @@ add_root_dictionary(O2QcCommon
                     HEADERS include/Common/NonEmpty.h
                             include/Common/WorstOfAllAggregator.h
                             include/Common/TRFCollectionTask.h
+                            include/Common/QualityTask.h
+                            include/Common/BigScreen.h
                             include/Common/MeanIsAbove.h
+                            include/Common/TH1Ratio.h
+                            include/Common/TH2Ratio.h
                             include/Common/TH1Reductor.h
                             include/Common/TH2Reductor.h
                             include/Common/THnSparse5Reductor.h
@@ -64,6 +72,7 @@ set(TEST_SRCS
         test/testMeanIsAbove.cxx
         test/testNonEmpty.cxx
         test/testCommonReductors.cxx
+        test/testCommonHistRatios.cxx
         test/testWorstOfAllAggregator.cxx)
 
 foreach(test ${TEST_SRCS})
