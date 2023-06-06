@@ -58,7 +58,9 @@
         "detectorName" : "ITS",
                 "checkParameters": {
                       "plotWithTextMessage": "",
-                      "textMessage": ""
+                      "textMessage": "",
+                      "EtaRatio": "0.3",
+                      "PhiRatio": "0.3"
         },
         "dataSource" : [ {
           "type" : "Task",

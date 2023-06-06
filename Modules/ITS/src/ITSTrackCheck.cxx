@@ -33,6 +33,9 @@ namespace o2::quality_control_modules::its
 
 Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
+  mEtaRatio = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "EtaRatio", mEtaRatio);
+  mPhiRatio = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "PhiRatio", mPhiRatio);
+
   Quality result = 0;
   Int_t id = 0;
   std::map<std::string, std::shared_ptr<MonitorObject>>::iterator iter;
@@ -88,11 +91,11 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
         result.updateMetadata("CheckAngEmpty", "bad");
         result.set(Quality::Bad);
       }
-      if (ratioEta > 0.3) {
+      if (ratioEta > mEtaRatio) {
         result.updateMetadata("CheckAsymmEta", "bad");
         result.set(Quality::Bad);
       }
-      if (ratioPhi > 0.3) {
+      if (ratioPhi > mPhiRatio) {
         result.updateMetadata("CheckAsymmPhi", "bad");
         result.set(Quality::Bad);
       }
