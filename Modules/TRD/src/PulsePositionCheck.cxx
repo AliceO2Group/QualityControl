@@ -82,17 +82,6 @@ Quality PulsePositionCheck::check(std::map<std::string, std::shared_ptr<MonitorO
 
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
 
-      // check max bin is in the spike on left.
-      auto maxbin = h->GetMaximumBin();
-
-      if (maxbin < mPulseHeightPeakRegion.first || maxbin > mPulseHeightPeakRegion.second) {
-        // is the peak in the peak region.
-        result = Quality::Bad;
-        result.addReason(FlagReasonFactory::Unknown(),
-                         "Amplification Peak is in the wrong position " + std::to_string(maxbin));
-        return result;
-      }
-
       // Defining Fit function
       TF1* f1 = new TF1("landaufit", "((x<2) ? ROOT::Math::erf(x)*[0]:[0]) + [1]*TMath::Landau(x,[2],[3])", 0.0, 6.0);
       f1->SetParameters(100000, 100000, 1.48, 1.09);
