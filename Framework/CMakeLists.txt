@@ -88,7 +88,10 @@ add_library(O2QualityControl
   src/SliceTrendingTaskConfig.cxx
   src/Bookkeeping.cxx
   src/CustomParameters.cxx
-  src/runnerUtils.cxx)
+  src/runnerUtils.cxx
+  src/Timekeeper.cxx
+  src/TimekeeperSynchronous.cxx
+  src/TimekeeperAsynchronous.cxx)
 
 
 target_include_directories(
@@ -228,6 +231,7 @@ add_executable(o2-qc-test-core
                test/testQuality.cxx
                test/testQualityObject.cxx
                test/testTaskInterface.cxx
+               test/testTimekeeper.cxx
                test/testTriggerHelpers.cxx
                test/testVersion.cxx
                )
