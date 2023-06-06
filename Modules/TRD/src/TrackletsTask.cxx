@@ -148,7 +148,7 @@ void TrackletsTask::buildHistograms()
   getObjectsManager()->startPublishing(mTrackletPositionRaw);
   mTrackletsPerEvent = new TH1F("trackletsperevent", "Number of Tracklets per event;Tracklets in Event;Counts", 25000, 0, 25000);
   getObjectsManager()->startPublishing(mTrackletsPerEvent);
-  mTrackletsPerHC2D = new TH2F("trackletsperHC2D", "Tracklets distribution in half-chambers;Sector_Side;Stack_Side;Number of tracklets per half-chamber", 36, 0, 36, 30, 0, 30);
+  mTrackletsPerHC2D = new TH2F("trackletsperHC2D", "Tracklets distribution in half-chambers;Sector_Side;Stack_Side", 36, 0, 36, 30, 0, 30);
   mTrackletsPerHC2D->SetStats(0);
   mTrackletsPerHC2D->GetXaxis()->SetTitle("Sector_Side");
   mTrackletsPerHC2D->GetXaxis()->CenterTitle(kTRUE);
