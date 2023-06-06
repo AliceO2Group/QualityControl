@@ -49,14 +49,14 @@ void PulsePositionCheck::configure()
     mPulseHeightPeakRegion.first = stof(param->second);
     ILOG(Debug, Support) << "configure() : using pulseheightpeaklower " << mPulseHeightPeakRegion.first << ENDM;
   } else {
-    mPulseHeightPeakRegion.first = 1.0;
+    mPulseHeightPeakRegion.first = 0.5;
     ILOG(Debug, Support) << "configure() : using default pulseheightpeaklower  = " << mPulseHeightPeakRegion.first << ENDM;
   }
   if (auto param = mCustomParameters.find("pulseheightpeakupper"); param != mCustomParameters.end()) {
     mPulseHeightPeakRegion.second = stof(param->second);
     ILOG(Debug, Support) << "configure() : using pulseheightpeakupper = " << mPulseHeightPeakRegion.second << ENDM;
   } else {
-    mPulseHeightPeakRegion.second = 5.0;
+    mPulseHeightPeakRegion.second = 4.0;
     ILOG(Debug, Support) << "configure() : using default pulseheightpeakupper = " << mPulseHeightPeakRegion.second << ENDM;
   }
   if(auto param=mCustomParameters.find("Chi2byNDF_threshold");param != mCustomParameters.end()){
@@ -89,7 +89,13 @@ Quality PulsePositionCheck::check(std::map<std::string, std::shared_ptr<MonitorO
       // Fitting Pulse Distribution with defined fit function
       h->Fit(f1, "", "", 0.0, 4.0);
 
-      double_t peak_value_x = f1->GetMaximumX(0.0, 4.0);
+      // peak region should be well inside the fitting range(0_4)
+      if(mPulseHeightPeakRegion.second>4.0){
+        mPulseHeightPeakRegion.second = 4.0;
+        }
+
+      double_t peak_value_x = f1->GetMaximumX(mPulseHeightPeakRegion.first, mPulseHeightPeakRegion.second);
+
       double_t chi2_value=f1->GetChisquare();
       Int_t NDF=f1->GetNDF();
       double_t Chi2byNDF = chi2_value/NDF;
