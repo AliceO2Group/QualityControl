@@ -75,7 +75,15 @@
           }],
           "stopTrigger_comment":[],
           "checkParameters":{
-            "Chi2byNDF_threshold":"0.22"
+            "FitParameter0":"100000",
+            "FitParameter1":"100000",
+            "FitParameter2":"1.48",
+            "FitParameter3":"1.09",
+            "Chi2byNDF_threshold":"0.22",
+            "DefinedFunctionRangeL":"0.0",
+            "DefinedFunctionRangeU":"6.0",
+            "FitRangeL":"0.0",
+            "FitRangeU":"4.0"
           }
         }
       },
