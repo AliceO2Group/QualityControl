@@ -32,6 +32,9 @@
 #include <TLine.h>
 #include <TText.h>
 #include <TLatex.h>
+#include <TLine.h>
+#include <TLegend.h>
+#include <TCanvas.h>
 
 class TH2I;
 class TH1I;
@@ -137,6 +140,7 @@ class ITSFeeTask final : public TaskInterface
   TH1D* mLaneStatusSummaryML;
   TH1D* mLaneStatusSummaryOL;
   TH1D* mLaneStatusSummaryGlobal;
+  TCanvas* mLaneStatusSummaryGlobalCanvas;
   TH1I* mProcessingTime;
   TH2F* mPayloadSize; // average payload size vs linkID
   // TH1D* mInfoCanvas;//TODO: default, not implemented yet
