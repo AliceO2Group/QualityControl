@@ -61,76 +61,76 @@ void PulsePositionCheck::configure()
   }
 
   // peak region should be well inside the fitting range(0_4)
-    // safe Gaurd
-    if(mPulseHeightPeakRegion.second>4.0){
-      mPulseHeightPeakRegion.second = 4.0;
-      }
-      
-  if(auto param=mCustomParameters.find("Chi2byNDF_threshold");param != mCustomParameters.end()){
-    chi2byNDF_threshold=stod(param->second);
+  // safe Gaurd
+  if (mPulseHeightPeakRegion.second > 4.0) {
+    mPulseHeightPeakRegion.second = 4.0;
+  }
+
+  if (auto param = mCustomParameters.find("Chi2byNDF_threshold"); param != mCustomParameters.end()) {
+    chi2byNDF_threshold = stod(param->second);
     ILOG(Debug, Support) << "configure() : using chi2/NDF threshold = " << chi2byNDF_threshold << ENDM;
-  }else{
-    chi2byNDF_threshold=0.22;
+  } else {
+    chi2byNDF_threshold = 0.22;
     ILOG(Debug, Support) << "configure() : using chi2/NDF threshold = " << chi2byNDF_threshold << ENDM;
   }
   // Fit param 0
-  if(auto param=mCustomParameters.find("FitParameter0"); param!=mCustomParameters.end()){
-    FitParam0=stod(param->second);
-    ILOG(Debug, Support) << "configure() : using FitParameter0= "<<FitParam0 <<ENDM;
-  }else{
-    FitParam0=100000.0;
-    ILOG(Debug, Support) << "configure() : using FitParameter0= "<<FitParam0 <<ENDM;
+  if (auto param = mCustomParameters.find("FitParameter0"); param != mCustomParameters.end()) {
+    FitParam0 = stod(param->second);
+    ILOG(Debug, Support) << "configure() : using FitParameter0= " << FitParam0 << ENDM;
+  } else {
+    FitParam0 = 100000.0;
+    ILOG(Debug, Support) << "configure() : using FitParameter0= " << FitParam0 << ENDM;
   }
   // Fit param 1
-  if(auto param=mCustomParameters.find("FitParameter1"); param!=mCustomParameters.end()){
-    FitParam1=stod(param->second);
-    ILOG(Debug, Support) << "configure() : using FitParameter1= "<<FitParam1 <<ENDM;
-  }else{
-    FitParam1=100000.0;
-    ILOG(Debug, Support) << "configure() : using FitParameter1= "<<FitParam1 <<ENDM;
+  if (auto param = mCustomParameters.find("FitParameter1"); param != mCustomParameters.end()) {
+    FitParam1 = stod(param->second);
+    ILOG(Debug, Support) << "configure() : using FitParameter1= " << FitParam1 << ENDM;
+  } else {
+    FitParam1 = 100000.0;
+    ILOG(Debug, Support) << "configure() : using FitParameter1= " << FitParam1 << ENDM;
   }
   // Fit param 2
-  if(auto param=mCustomParameters.find("FitParameter2"); param!=mCustomParameters.end()){
-    FitParam2=stod(param->second);
-    ILOG(Debug, Support) << "configure() : using FitParameter2= "<<FitParam2 <<ENDM;
-  }else{
-    FitParam2=1.48;
-    ILOG(Debug, Support) << "configure() : using FitParameter2= "<<FitParam2 <<ENDM;
+  if (auto param = mCustomParameters.find("FitParameter2"); param != mCustomParameters.end()) {
+    FitParam2 = stod(param->second);
+    ILOG(Debug, Support) << "configure() : using FitParameter2= " << FitParam2 << ENDM;
+  } else {
+    FitParam2 = 1.48;
+    ILOG(Debug, Support) << "configure() : using FitParameter2= " << FitParam2 << ENDM;
   }
   // Fit param 3
-  if(auto param=mCustomParameters.find("FitParameter3"); param!=mCustomParameters.end()){
-    FitParam3=stod(param->second);
-    ILOG(Debug, Support) << "configure() : using FitParameter3= "<<FitParam3 <<ENDM;
-  }else{
-    FitParam3=1.09;
-    ILOG(Debug, Support) << "configure() : using FitParameter3= "<<FitParam3 <<ENDM;
+  if (auto param = mCustomParameters.find("FitParameter3"); param != mCustomParameters.end()) {
+    FitParam3 = stod(param->second);
+    ILOG(Debug, Support) << "configure() : using FitParameter3= " << FitParam3 << ENDM;
+  } else {
+    FitParam3 = 1.09;
+    ILOG(Debug, Support) << "configure() : using FitParameter3= " << FitParam3 << ENDM;
   }
   // Defined function range
-  if(auto param=mCustomParameters.find("DefinedFunctionRangeL");param!=mCustomParameters.end()){
-    FunctionRange[0]=stod(param->second);
-  }else{
-    FunctionRange[0]=0.0;
+  if (auto param = mCustomParameters.find("DefinedFunctionRangeL"); param != mCustomParameters.end()) {
+    FunctionRange[0] = stod(param->second);
+  } else {
+    FunctionRange[0] = 0.0;
   }
-  if(auto param=mCustomParameters.find("DefinedFunctionRangeU");param!=mCustomParameters.end()){
-    FunctionRange[1]=stod(param->second);
-  }else{
-    FunctionRange[1]=6.0;
+  if (auto param = mCustomParameters.find("DefinedFunctionRangeU"); param != mCustomParameters.end()) {
+    FunctionRange[1] = stod(param->second);
+  } else {
+    FunctionRange[1] = 6.0;
   }
-  ILOG(Debug,Support)<<"configure() : using defined function range = "<<FunctionRange[0]<<" to "<<FunctionRange[1]<<ENDM;
+  ILOG(Debug, Support) << "configure() : using defined function range = " << FunctionRange[0] << " to " << FunctionRange[1] << ENDM;
 
   // Fiiting range lower value
-  if(auto param=mCustomParameters.find("FitRangeL"); param!=mCustomParameters.end()){
-    FitRange[0]=stod(param->second);
-  }else{
-    FitRange[0]=0.0;
+  if (auto param = mCustomParameters.find("FitRangeL"); param != mCustomParameters.end()) {
+    FitRange[0] = stod(param->second);
+  } else {
+    FitRange[0] = 0.0;
   }
   // Fiiting range upper value
-  if(auto param=mCustomParameters.find("FitRangeU"); param!=mCustomParameters.end()){
-    FitRange[1]=stod(param->second);
-  }else{
-    FitRange[1]=4.0;
+  if (auto param = mCustomParameters.find("FitRangeU"); param != mCustomParameters.end()) {
+    FitRange[1] = stod(param->second);
+  } else {
+    FitRange[1] = 4.0;
   }
-  ILOG(Debug,Support)<<"config() : using fit range= "<<FitRange[0]<<" to "<<FitRange[1]<<ENDM;
+  ILOG(Debug, Support) << "config() : using fit range= " << FitRange[0] << " to " << FitRange[1] << ENDM;
 }
 
 Quality PulsePositionCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
@@ -156,11 +156,11 @@ Quality PulsePositionCheck::check(std::map<std::string, std::shared_ptr<MonitorO
 
       double_t peak_value_x = f1->GetMaximumX(mPulseHeightPeakRegion.first, mPulseHeightPeakRegion.second);
 
-      double_t chi2_value=f1->GetChisquare();
-      Int_t NDF=f1->GetNDF();
-      double_t Chi2byNDF = chi2_value/NDF;
+      double_t chi2_value = f1->GetChisquare();
+      Int_t NDF = f1->GetNDF();
+      double_t Chi2byNDF = chi2_value / NDF;
 
-      if(Chi2byNDF>chi2byNDF_threshold){
+      if (Chi2byNDF > chi2byNDF_threshold) {
         result = Quality::Bad;
         result.addReason(FlagReasonFactory::UnknownQuality(), "chi2/ndf is very large");
       }

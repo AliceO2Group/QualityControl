@@ -162,7 +162,6 @@ void RawData::buildHistograms()
       }
     }
   }
-
 }
 
 void RawData::initialize(o2::framework::InitContext& /*ctx*/)
@@ -195,8 +194,8 @@ void RawData::monitorData(o2::framework::ProcessingContext& ctx)
   auto tracklets = ctx.inputs().get<gsl::span<o2::trd::Tracklet64>>("tracklets");
   auto triggerrecords = ctx.inputs().get<gsl::span<o2::trd::TriggerRecord>>("triggers");
 
-  //RAWSTATS is the RawDataStats class which is essentially histograms.
-  //loop through all the bits and pieces and fill the histograms
+  // RAWSTATS is the RawDataStats class which is essentially histograms.
+  // loop through all the bits and pieces and fill the histograms
 
   std::array<uint16_t, MAXCHAMBER * 2> eventsize{};
   // triggerrecords is a span of our triggers in the respective time frame
