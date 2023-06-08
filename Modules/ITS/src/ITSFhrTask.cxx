@@ -500,7 +500,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
         int chip = digit.getChipIndex() % 9;
         mHitPixelID_InStave[istave][0][chip][1000 * digit.getColumn() + digit.getRow()]++;
         if (mTFCount <= mCutTFForSparse) {
-          Double_t pixelPos[2] = { digit.getColumn() + (1024 * chip) + 1., digit.getRow() + 1. };
+          Double_t pixelPos[2] = { digit.getColumn() + (1024 * chip), digit.getRow()};
           mStaveHitmap[istave]->Fill(pixelPos);
         }
       }
@@ -512,10 +512,10 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
           int ilink = ihic / (nHicPerStave[mLayer] / 2);
           if (mTFCount <= mCutTFForSparse) {
             if (chip < 7) {
-              Double_t pixelPos[2] = { (ihic % (nHicPerStave[mLayer] / NSubStave[mLayer]) * ((nChipsPerHic[mLayer] / 2) * NCols)) + chip * NCols + digit.getColumn() + 1., NRows - digit.getRow() - 1 + (1024 * ilink) + 1. };
+              Double_t pixelPos[2] = { (ihic % (nHicPerStave[mLayer] / NSubStave[mLayer]) * ((nChipsPerHic[mLayer] / 2) * NCols)) + chip * NCols + digit.getColumn(), NRows - digit.getRow() - 1 + (1024 * ilink)};
               mStaveHitmap[istave]->Fill(pixelPos);
             } else {
-              Double_t pixelPos[2] = { (ihic % (nHicPerStave[mLayer] / NSubStave[mLayer]) * ((nChipsPerHic[mLayer] / 2) * NCols)) + (nChipsPerHic[mLayer] / 2) * NCols - (chip - 7) * NCols - digit.getColumn() * 1., NRows + digit.getRow() + (1024 * ilink) + 1. };
+              Double_t pixelPos[2] = { (ihic % (nHicPerStave[mLayer] / NSubStave[mLayer]) * ((nChipsPerHic[mLayer] / 2) * NCols)) + (nChipsPerHic[mLayer] / 2) * NCols - (chip - 7) * NCols - digit.getColumn() * 1., NRows + digit.getRow() + (1024 * ilink)};
               mStaveHitmap[istave]->Fill(pixelPos);
             }
           }
