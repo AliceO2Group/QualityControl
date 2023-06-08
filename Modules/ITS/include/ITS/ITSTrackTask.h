@@ -83,6 +83,13 @@ class ITSTrackTask : public TaskInterface
   TH2D* hHitFirstLayerPhi7cls;
   TH2D* hClusterVsBunchCrossing;
   TH2D* hNClusterVsChipITS;
+  // Histograms for inv mass k0s, lambda
+  TH1D* hInvMassK0s;
+  TH1D* hInvMassLambda;
+  TH1D* hInvMassLambdaBar;
+
+  float mPiInvMass = 0.14;
+  float mProtonInvMass = 0.938;
 
   float mVertexXYsize = 0.5;
   float mVertexZsize = 15.;
