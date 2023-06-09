@@ -46,6 +46,8 @@ void CTPRawDataReaderTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mHistoBC);
   getObjectsManager()->startPublishing(mHistoInputs);
   getObjectsManager()->startPublishing(mHistoClasses);
+  mDecoder.setDoLumi(1);
+  mDecoder.setDoDigits(1);
 }
 
 void CTPRawDataReaderTask::startOfActivity(const Activity& activity)
@@ -63,6 +65,58 @@ void CTPRawDataReaderTask::startOfCycle()
 
 void CTPRawDataReaderTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
+  LOG(info) << "============  Starting monitoring ================== ";
+  // get the input
+
+  //std::map<o2::InteractionRecord, o2::ctp::CTPDigit> digits;
+  //std::vector<o2::ctp::CTPDigit> digits;
+  std::vector<o2::framework::InputSpec> filter;
+  //std::map<o2::InteractionRecord, o2::ctp::CTPDigit> digits;
+  //std::map<o2::InteractionRecord, CTPDigit> digits;
+  std::vector<o2::ctp::LumiInfo> lumiPointsHBF1;
+  std::vector<o2::ctp::CTPDigit> outputDigits;
+  //LOG(info) << "before decoder -----------";
+  mDecoder.decodeRaw(ctx.inputs(), filter, outputDigits, lumiPointsHBF1);
+  
+  LOG(info) << "after decoder ------------- ";
+  //LOG(info) << "size of the map: " << digits.size();
+  //LOG(info) << "is map empty? " << digits.empty();
+
+  
+  //for (auto const digmap : digits) {
+    //  LOG(info) << "before outputDigits -----------";
+    //  outputDigits.push_back(digmap.second);
+    //  LOG(info) << "after outputDigits -----------";
+  //  }
+  
+  for (auto const digit : outputDigits) {
+    uint16_t bcid = digit.intRecord.bc;
+    LOG(info) << "bcid = " << bcid;
+    mHistoBC->Fill(bcid);
+    if (digit.CTPInputMask.count()) {
+      for (int i = 0; i < o2::ctp::CTP_NINPUTS; i++) {
+        if (digit.CTPInputMask[i]) {
+          LOG(info) << "i of input = " << i;
+          mHistoInputs->Fill(i);
+        }
+      }
+    }
+    if (digit.CTPClassMask.count()) {
+      for (int i = 0; i < o2::ctp::CTP_NCLASSES; i++) {
+        if (digit.CTPClassMask[i]) {
+          LOG(info) << "i of class = " << i;
+          mHistoClasses->Fill(i);
+        }
+      }
+    }
+  }
+
+}
+
+// old code
+/*
+void CTPRawDataReaderTask::monitorData(o2::framework::ProcessingContext& ctx)
+{
   // get the input
   o2::framework::DPLRawParser parser(ctx.inputs());
   o2::ctp::gbtword80_t remnant = 0;
@@ -75,8 +129,11 @@ void CTPRawDataReaderTask::monitorData(o2::framework::ProcessingContext& ctx)
   // loop over input
   for (auto it = parser.begin(), end = parser.end(); it != end; ++it) {
     // get the header
+    LOG(info) << "before getting header";
     auto const* rdh = it.get_if<o2::header::RAWDataHeader>();
+    LOG(info) << "before getting orbit";
     auto triggerOrbit = o2::raw::RDHUtils::getTriggerOrbit(rdh);
+    LOG(info) << "after getting orbit";
     if (first) {
       orbit0 = triggerOrbit;
       first = false;
@@ -87,21 +144,24 @@ void CTPRawDataReaderTask::monitorData(o2::framework::ProcessingContext& ctx)
     // mHistogram2->Fill(triggerBC);
 
     uint32_t payloadCTP;
+    LOG(info) << "before FEEID";
     auto feeID = o2::raw::RDHUtils::getFEEID(rdh); // 0 = IR, 1 = TCR
-    auto linkCRU = (feeID & 0xf00) >> 8;
+    auto linkCRU = (feeID & 0xf00) >> 8; 
     if (linkCRU == o2::ctp::GBTLinkIDIntRec) {
       payloadCTP = o2::ctp::NIntRecPayload;
     } else if (linkCRU == o2::ctp::GBTLinkIDClassRec) {
       payloadCTP = o2::ctp::NClassPayload;
     } else {
-      LOG(error) << "Unxpected  CTP CRU link:" << linkCRU;
+      LOG(error) << "Unxpected CTP CRU link:" << linkCRU;
     }
-    // LOG(info) << "RDH FEEid: " << feeID << " CTP CRU link:" << linkCRU << " Orbit:" << triggerOrbit << " payloadCTP = " << payloadCTP;
+    LOG(info) << "RDH FEEid: " << feeID << " CTP CRU link:" << linkCRU << " Orbit:" << triggerOrbit << " payloadCTP = " << payloadCTP;
     pldmask = 0;
     for (uint32_t i = 0; i < payloadCTP; i++) {
       pldmask[12 + i] = 1;
     }
+    LOG(info) << "before payload";
     gsl::span<const uint8_t> payload(it.data(), it.size());
+    LOG(info) << "after payload";
     o2::ctp::gbtword80_t gbtWord = 0;
     int wordCount = 0;
     std::vector<o2::ctp::gbtword80_t> diglets;
@@ -183,6 +243,8 @@ void CTPRawDataReaderTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
   }
 }
+
+*/
 
 void CTPRawDataReaderTask::endOfCycle()
 {
