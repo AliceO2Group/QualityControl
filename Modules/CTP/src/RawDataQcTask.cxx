@@ -74,12 +74,12 @@ void CTPRawDataReaderTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   for (auto const digit : outputDigits) {
     uint16_t bcid = digit.intRecord.bc;
-    LOG(info) << "bcid = " << bcid;
+    // LOG(info) << "bcid = " << bcid;
     mHistoBC->Fill(bcid);
     if (digit.CTPInputMask.count()) {
       for (int i = 0; i < o2::ctp::CTP_NINPUTS; i++) {
         if (digit.CTPInputMask[i]) {
-          LOG(info) << "i of input = " << i;
+          // LOG(info) << "i of input = " << i;
           mHistoInputs->Fill(i);
         }
       }
@@ -87,7 +87,7 @@ void CTPRawDataReaderTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (digit.CTPClassMask.count()) {
       for (int i = 0; i < o2::ctp::CTP_NCLASSES; i++) {
         if (digit.CTPClassMask[i]) {
-          LOG(info) << "i of class = " << i;
+          // LOG(info) << "i of class = " << i;
           mHistoClasses->Fill(i);
         }
       }
