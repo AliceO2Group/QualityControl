@@ -65,13 +65,13 @@ void CTPRawDataReaderTask::startOfCycle()
 
 void CTPRawDataReaderTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  //LOG(info) << "============  Starting monitoring ================== ";
-  // get the input
+  // LOG(info) << "============  Starting monitoring ================== ";
+  //  get the input
   std::vector<o2::framework::InputSpec> filter;
   std::vector<o2::ctp::LumiInfo> lumiPointsHBF1;
   std::vector<o2::ctp::CTPDigit> outputDigits;
   mDecoder.decodeRaw(ctx.inputs(), filter, outputDigits, lumiPointsHBF1);
-  
+
   for (auto const digit : outputDigits) {
     uint16_t bcid = digit.intRecord.bc;
     LOG(info) << "bcid = " << bcid;
@@ -93,7 +93,6 @@ void CTPRawDataReaderTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
     }
   }
-
 }
 
 void CTPRawDataReaderTask::endOfCycle()
