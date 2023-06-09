@@ -116,7 +116,7 @@ inline std::string computePartitionName(framework::ServiceRegistryRef services, 
   partitionName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("environment_id", "unspecified");
   ILOG(Debug, Devel) << "Got this property partitionName from RawDeviceService: '" << partitionName << "'" << ENDM;
   partitionName = partitionName != "unspecified" /* found it in service */ ? partitionName : fallbackPartitionName;
-  ILOG(Info, Devel) << "Period Name returned by computePeriodName : " << partitionName << ENDM;
+  ILOG(Info, Devel) << "Partition Name returned by computePartitionName : " << partitionName << ENDM;
   return partitionName;
 }
 
