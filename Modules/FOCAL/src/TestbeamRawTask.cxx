@@ -70,6 +70,15 @@ TestbeamRawTask::~TestbeamRawTask()
   for (auto& hist : mPadASICChannelTOT) {
     delete hist;
   };
+  if (mPayloadSizePadsGBT) {
+    delete mPayloadSizePadsGBT;
+  }
+  if (mPayloadSizePixelsGBT) {
+    delete mPayloadSizePixelsGBT;
+  }
+  if (mPayloadSizeTF) {
+    delete mPayloadSizeTF;
+  }
   if (mLinksWithPayloadPixel) {
     delete mLinksWithPayloadPixel;
   }
@@ -280,6 +289,9 @@ void TestbeamRawTask::initialize(o2::framework::InitContext& /*ctx*/)
   mCRUcounter->GetYaxis()->SetTitle("Link ID");
   getObjectsManager()->startPublishing(mCRUcounter);
 
+  mPayloadSizeTF = new TH1D("PayloadSizeTF", "Payload size TF", 10000, 0., 10000.);
+  getObjectsManager()->startPublishing(mPayloadSizeTF);
+
   /////////////////////////////////////////////////////////////////
   /// PAD histograms
   /////////////////////////////////////////////////////////////////
@@ -420,6 +432,9 @@ void TestbeamRawTask::initialize(o2::framework::InitContext& /*ctx*/)
     mPixelChipsIDsHits->SetDirectory(nullptr);
     getObjectsManager()->startPublishing(mPixelChipsIDsHits);
 
+    mPayloadSizePixelsGBT = new TH1D("PayloadSizePixelsGBT", "Payload size GBT words", 10000, 0., 10000.);
+    getObjectsManager()->startPublishing(mPayloadSizePixelsGBT);
+
     for (int ifee = 0; ifee < 4; ifee++) {
       mPixelLaneIDChipIDFEE[ifee] = new TH2D(Form("Pixel_LaneIDChipID_FEE%d", ifee), Form("Lane ID vs. Chip ID for FEE %d; Lane ID; ChipID", ifee), 57, -0.5, 56.5, 31, -0.5, 30.5);
       mPixelLaneIDChipIDFEE[ifee]->SetDirectory(nullptr);
@@ -512,6 +527,7 @@ void TestbeamRawTask::monitorData(o2::framework::ProcessingContext& ctx)
   for (const auto& rawData : framework::InputRecordWalker(ctx.inputs())) {
     if (rawData.header != nullptr && rawData.payload != nullptr) {
       const auto payloadSize = o2::framework::DataRefUtils::getPayloadSize(rawData);
+      mPayloadSizeTF->Fill(payloadSize);
       auto header = o2::framework::DataRefUtils::getHeader<o2::header::DataHeader*>(rawData);
       ILOG(Debug, Support) << "Channel " << header->dataOrigin.str << "/" << header->dataDescription.str << "/" << header->subSpecification << ENDM;
 
@@ -559,6 +575,7 @@ void TestbeamRawTask::monitorData(o2::framework::ProcessingContext& ctx)
               if (!mDisablePads) {
                 ILOG(Debug, Support) << "Processing PAD data" << ENDM;
                 auto payloadsizeGBT = rawbuffer.size() * sizeof(char) / sizeof(o2::focal::PadGBTWord);
+                mPayloadSizePadsGBT->Fill(payloadsizeGBT);
                 ILOG(Debug) << "Found pixel payload of size " << rawbuffer.size() << " (" << payloadsizeGBT << " GBT words)" << ENDM;
                 processPadPayload(gsl::span<const o2::focal::PadGBTWord>(reinterpret_cast<const o2::focal::PadGBTWord*>(rawbuffer.data()), payloadsizeGBT));
               }
@@ -568,6 +585,7 @@ void TestbeamRawTask::monitorData(o2::framework::ProcessingContext& ctx)
                 auto feeID = o2::raw::RDHUtils::getFEEID(rdh);
                 ILOG(Debug, Support) << "Processing Pixel data from FEE " << feeID << ENDM;
                 auto payloadsizeGBT = rawbuffer.size() * sizeof(char) / sizeof(o2::itsmft::GBTWord);
+                mPayloadSizePixelsGBT->Fill(payloadsizeGBT);
                 ILOG(Debug, Support) << "Found pixel payload of size " << rawbuffer.size() << " (" << payloadsizeGBT << " GBT words)" << ENDM;
                 processPixelPayload(gsl::span<const o2::itsmft::GBTWord>(reinterpret_cast<const o2::itsmft::GBTWord*>(rawbuffer.data()), payloadsizeGBT), feeID);
               }
@@ -857,6 +875,9 @@ void TestbeamRawTask::processPixelPayload(gsl::span<const o2::itsmft::GBTWord> p
 
   mPixelDecoder.reset();
   mPixelDecoder.decodeEvent(pixelpayload);
+  if (pixelpayload.size()) {
+    ILOG(Debug, Support) << "Found pixel payload of size: " << pixelpayload.size() << " -> " << mPixelDecoder.getChipData().size() << " chips" << ENDM;
+  }
 
   mTriggersFeePixel->Fill(useFEE, mPixelDecoder.getChipData().size());
 
@@ -987,6 +1008,7 @@ void TestbeamRawTask::reset()
   mNumLinksTF->Reset();
   mNumHBFPerCRU->Reset();
   mCRUcounter->Reset();
+  mPayloadSizeTF->Reset();
   if (!mDisablePads) {
     mPayloadSizePadsGBT->Reset();
     for (auto padadc : mPadASICChannelADC) {
@@ -1063,6 +1085,7 @@ void TestbeamRawTask::reset()
   }
 
   if (!mDisablePixels) {
+    mPayloadSizePixelsGBT->Reset();
     if (mLinksWithPayloadPixel) {
       mLinksWithPayloadPixel->Reset();
     }
