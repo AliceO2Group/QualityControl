@@ -58,13 +58,11 @@ BOOST_AUTO_TEST_CASE(test_task)
     histo->Fill(5);
     histo->Fill(6);
     std::shared_ptr<MonitorObject> mo = std::make_shared<MonitorObject>(histo, taskName, "TestClass", "TST");
-    mo->setValidity({ 1, 100000 });
-    repository->storeMO(mo);
+    repository->storeMO(mo, 1, 100000);
 
     std::shared_ptr<QualityObject> qo = std::make_shared<QualityObject>(Quality::Null, "testTrendingTaskCheck", "TST");
     qo->updateQuality(Quality::Bad);
-    qo->setValidity({ 1, 100000 });
-    repository->storeQO(qo);
+    repository->storeQO(qo, 1, 100000);
   }
 
   // We make sure, that destroy the previous, possibly correct test result
@@ -93,8 +91,7 @@ BOOST_AUTO_TEST_CASE(test_task)
     task.initialize({ TriggerType::Once, false, { 0, 0, "", "", "qc" }, 1 }, services);
     for (size_t i = 0; i < trendTimes; i++) {
       task.update({ TriggerType::Always, false, { 0, 0, "", "", "qc" }, i * 1000 + 50 }, services);
-      objectManager->setValidity({ i * 1000, i * 1000 + 100 });
-      publicationCallback(objectManager->getNonOwningArray());
+      publicationCallback(objectManager->getNonOwningArray(), i * 1000, i * 1000 + 100);
     }
     task.finalize({ TriggerType::UserOrControl, false, { 0, 0, "", "", "qc" }, trendTimes * 1000 }, services);
   }

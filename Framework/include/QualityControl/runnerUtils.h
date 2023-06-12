@@ -31,9 +31,6 @@
 #include <regex>
 #include "QualityControl/Bookkeeping.h"
 
-// TODO: most of these could be moved to a source file with minimal performance impact
-//  and noticable compilation time improvement (we bring boost, regex, FairMQ headers to 10 other source files)
-
 namespace o2::quality_control::core
 {
 
@@ -211,8 +208,6 @@ inline std::string templateILDiscardFile(std::string& originalFile, framework::I
   }
   return originalFile;
 }
-
-uint64_t getCurrentTimestamp();
 
 } // namespace o2::quality_control::core
 

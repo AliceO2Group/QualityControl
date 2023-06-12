@@ -465,8 +465,6 @@ void TaskRunner::finishCycle(DataAllocator& outputs)
   ILOG(Debug, Support) << "Finish cycle " << mCycleNumber << ENDM;
   mTask->endOfCycle();
 
-  auto nowMs = getCurrentTimestamp();
-  mObjectsManager->setValidity(ValidityInterval{ nowMs, nowMs + 1000l * 60 * 60 * 24 * 365 * 10 });
   mNumberObjectsPublishedInCycle += publish(outputs);
   mTotalNumberObjectsPublished += mNumberObjectsPublishedInCycle;
   saveToFile();

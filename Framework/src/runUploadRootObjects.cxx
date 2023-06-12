@@ -126,8 +126,7 @@ int main(int argc, const char* argv[])
               mo = std::make_shared<MonitorObject>(storedTObj, taskName, "unknown", detectorCode, runNumber, periodName, passName, provenance);
               mo->setIsOwner(false);
             }
-            mo->setValidity({ validityStart, validityEnd });
-            database.storeMO(mo);
+            database.storeMO(mo, validityStart, validityEnd);
             objectsUploaded++;
           }
         }

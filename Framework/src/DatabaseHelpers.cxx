@@ -10,17 +10,15 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   ActivityHelpers.cxx
+/// \file   DatabaseHelpers.cxx
 /// \author Piotr Konopka
 ///
 
-#include "QualityControl/ActivityHelpers.h"
+#include "QualityControl/DatabaseHelpers.h"
 #include <boost/property_tree/ptree.hpp>
 #include "QualityControl/ObjectMetadataKeys.h"
 
-using namespace o2::quality_control::repository;
-
-namespace o2::quality_control::core::activity_helpers
+namespace o2::quality_control::repository::database_helpers
 {
 
 std::map<std::string, std::string> asDatabaseMetadata(const core::Activity& activity, bool putDefault)
@@ -93,4 +91,4 @@ core::Activity asActivity(const boost::property_tree::ptree& tree, const std::st
   return activity;
 }
 
-} // namespace o2::quality_control::core::activity_helpers
+} // namespace o2::quality_control::repository::database_helpers

@@ -108,9 +108,8 @@ BOOST_AUTO_TEST_CASE(test_trigger_new_object)
   // Send the object
   std::shared_ptr<DatabaseInterface> repository = DatabaseFactory::create("CCDB");
   repository->connect(CCDB_ENDPOINT, "", "", "");
-  validity_time_t currentTimestamp = CcdbDatabase::getCurrentTimestamp();
-  mo->setValidity({ currentTimestamp, gInvalidValidityInterval.getMax() });
-  repository->storeMO(mo);
+  auto currentTimestamp = CcdbDatabase::getCurrentTimestamp();
+  repository->storeMO(mo, currentTimestamp);
 
   // Check after sending
   BOOST_CHECK_EQUAL(newObjectTrigger(), Trigger(TriggerType::NewObject, currentTimestamp));
@@ -119,9 +118,7 @@ BOOST_AUTO_TEST_CASE(test_trigger_new_object)
 
   // Update the object
   obj->Fill(10);
-  currentTimestamp = CcdbDatabase::getCurrentTimestamp();
-  mo->setValidity({ currentTimestamp, gInvalidValidityInterval.getMax() });
-  repository->storeMO(mo);
+  repository->storeMO(mo, currentTimestamp);
 
   // Check after the update
   BOOST_CHECK_EQUAL(newObjectTrigger(), Trigger(TriggerType::NewObject, currentTimestamp));
@@ -155,13 +152,13 @@ BOOST_AUTO_TEST_CASE(test_trigger_for_each_object)
   // Send three objects with different metadata
   std::shared_ptr<DatabaseInterface> repository = DatabaseFactory::create("CCDB");
   repository->connect(CCDB_ENDPOINT, "", "", "");
-  validity_time_t currentTimestamp = CcdbDatabase::getCurrentTimestamp();
-  mo->setActivity({ 100, 2, "FCC42x", "tpass1", "qc", { currentTimestamp, gInvalidValidityInterval.getMax() } });
-  repository->storeMO(mo);
-  mo->setActivity({ 101, 2, "FCC42x", "tpass1", "qc", { currentTimestamp + 1000, gInvalidValidityInterval.getMax() } });
-  repository->storeMO(mo);
-  mo->setActivity({ 100, 2, "FCC42x", "tpass2", "qc", { currentTimestamp + 2000, gInvalidValidityInterval.getMax() } });
-  repository->storeMO(mo);
+  auto currentTimestamp = CcdbDatabase::getCurrentTimestamp();
+  mo->setActivity({ 100, 2, "FCC42x", "tpass1", "qc" });
+  repository->storeMO(mo, currentTimestamp);
+  mo->setActivity({ 101, 2, "FCC42x", "tpass1", "qc" });
+  repository->storeMO(mo, currentTimestamp + 1000);
+  mo->setActivity({ 100, 2, "FCC42x", "tpass2", "qc" });
+  repository->storeMO(mo, currentTimestamp + 2000);
 
   {
     const Activity activityAllRunsPass1{ 0, 2, "FCC42x", "tpass1", "qc" };
@@ -225,15 +222,15 @@ BOOST_AUTO_TEST_CASE(test_trigger_for_each_latest)
   // Send three objects with different metadata
   std::shared_ptr<DatabaseInterface> repository = DatabaseFactory::create("CCDB");
   repository->connect(CCDB_ENDPOINT, "", "", "");
-  mo->setActivity({ 100, 2, "FCC42x", "tpass1", "qc", gInvalidValidityInterval });
+  mo->setActivity({ 100, 2, "FCC42x", "tpass1", "qc" });
   repository->storeMO(mo);
   usleep(1000);
   repository->storeMO(mo);
-  mo->setActivity({ 101, 2, "FCC42x", "tpass1", "qc", gInvalidValidityInterval });
+  mo->setActivity({ 101, 2, "FCC42x", "tpass1", "qc" });
   repository->storeMO(mo);
   usleep(1000);
   repository->storeMO(mo);
-  mo->setActivity({ 100, 2, "FCC42x", "tpass2", "qc", gInvalidValidityInterval });
+  mo->setActivity({ 100, 2, "FCC42x", "tpass2", "qc" });
   repository->storeMO(mo);
 
   {
