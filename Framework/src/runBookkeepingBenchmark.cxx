@@ -26,14 +26,7 @@ using namespace o2::quality_control::core;
 int main(int argc, const char* argv[])
 {
   bpo::options_description desc{ "Options" };
-  desc.add_options()
-    ("help,h", "Help screen")
-    ("url,u", bpo::value<std::string>()->required(), "URL to the Bookkeeping")
-    ("run,r", bpo::value<int>())
-          ("max,m", bpo::value<int>()->default_value(10000), "Max number of executions, default: 10000")
-          ("printCycles,p", bpo::value<int>()->default_value(1000), "We print every X cycles, default: 1000")
-              ("printActivity", bpo::value<bool>()->default_value(false), "just to check that we get something in the activity.")
-    ;
+  desc.add_options()("help,h", "Help screen")("url,u", bpo::value<std::string>()->required(), "URL to the Bookkeeping")("run,r", bpo::value<int>())("max,m", bpo::value<int>()->default_value(10000), "Max number of executions, default: 10000")("printCycles,p", bpo::value<int>()->default_value(1000), "We print every X cycles, default: 1000")("printActivity", bpo::value<bool>()->default_value(false), "just to check that we get something in the activity.");
 
   bpo::variables_map vm;
   store(parse_command_line(argc, argv, desc), vm);
@@ -67,19 +60,19 @@ int main(int argc, const char* argv[])
   int numberOfExecutionsInCycle = 0;
   int totalNumberOfExecutions = 0;
 
-  while(totalNumberOfExecutions<max) {
+  while (totalNumberOfExecutions < max) {
     numberOfExecutionsInCycle++;
     totalNumberOfExecutions++;
     timer.reset();
     Bookkeeping::getInstance().populateActivity(activity, run);
-    if(printActivity) {
+    if (printActivity) {
       cout << activity << endl;
     }
     auto duration = timer.getTime();
     totalDuration += duration;
     cycleDuration += duration;
-    if(totalNumberOfExecutions % printCycles == 0) {
-      cout << "average duration last " << printCycles << " calls in [ms]: " << cycleDuration/numberOfExecutionsInCycle*1000 << endl;
+    if (totalNumberOfExecutions % printCycles == 0) {
+      cout << "average duration last " << printCycles << " calls in [ms]: " << cycleDuration / numberOfExecutionsInCycle * 1000 << endl;
       numberOfExecutionsInCycle = 0;
       cycleDuration = 0;
     }
