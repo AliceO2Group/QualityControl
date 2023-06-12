@@ -23,6 +23,10 @@ using namespace o2::bkp::api;
 using namespace o2::bkp::api::proto;
 using namespace o2::quality_control::core;
 
+/**
+ * A small utility to stress test the bookkeeping api.
+ */
+
 int main(int argc, const char* argv[])
 {
   bpo::options_description desc{ "Options" };
