@@ -67,6 +67,7 @@ class ITSClusterCheck : public o2::quality_control::checker::CheckInterface
  private:
   ClassDefOverride(ITSClusterCheck, 2);
 
+  std::shared_ptr<TLatex> tInfoSummary;
   std::shared_ptr<TLatex> msg;
   std::shared_ptr<TLatex> text[14];
   std::shared_ptr<TLatex> text2[14];
@@ -74,6 +75,7 @@ class ITSClusterCheck : public o2::quality_control::checker::CheckInterface
   const int mNStaves[NLayer] = { 12, 16, 20, 24, 30, 42, 48 };
   const int StaveBoundary[NLayer + 1] = { 0, 12, 28, 48, 72, 102, 144, 192 };
   float maxcluocc[NLayer] = { 5, 4, 3, 2, 1, 1, 1 };
+  double maxfractionbadlanes = 0.1;
 };
 
 } // namespace o2::quality_control_modules::its

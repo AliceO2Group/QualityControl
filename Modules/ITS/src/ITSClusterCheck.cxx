@@ -50,6 +50,17 @@ Quality ITSClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
       }
     }
 
+    if (iter->second->getName().find("LaneStatusSummaryGlobal") != std::string::npos) {
+      auto* h = dynamic_cast<TH1D*>(iter->second->getObject());
+      result.addMetadata("SummaryGlobal", "good");
+      maxfractionbadlanes = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "maxfractionbadlanes", maxfractionbadlanes);
+      if (h->GetBinContent(1) + h->GetBinContent(2) + h->GetBinContent(3) > maxfractionbadlanes) {
+        result.updateMetadata("SummaryGlobal", "bad");
+        result.set(Quality::Bad);
+        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("BAD:>%.0f %% of the lanes are bad", (h->GetBinContent(1) + h->GetBinContent(2) + h->GetBinContent(3)) * 100));
+      }
+    } // end summary loop
+
     if (iter->second->getName().find("General_Occupancy") != std::string::npos) {
       auto* hp = dynamic_cast<TH2F*>(iter->second->getObject());
       std::vector<int> skipxbins = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "skipxbinsoccupancy", ""));
@@ -163,6 +174,35 @@ void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
       h->GetListOfFunctions()->Add(tShifterInfo->Clone());
   }
 
+  if (mo->getName().find("LaneStatusSummaryGlobal") != std::string::npos) {
+    auto* h = dynamic_cast<TH1D*>(mo->getObject());
+    if (checkResult == Quality::Good) {
+      status = "Quality::GOOD";
+      textColor = kGreen;
+      positionX = 0.05;
+      positionY = 0.95;
+    } else if (checkResult == Quality::Bad) {
+      status = "Quality::BAD (call expert)";
+      textColor = kRed;
+      if (strcmp(checkResult.getMetadata("SummaryGlobal").c_str(), "bad") == 0) {
+        maxfractionbadlanes = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "maxfractionbadlanes", maxfractionbadlanes);
+        tInfoSummary = std::make_shared<TLatex>(0.12, 0.5, Form(">%.0f %% of the lanes are bad", maxfractionbadlanes * 100));
+        tInfoSummary->SetTextColor(kRed);
+        tInfoSummary->SetTextSize(0.05);
+        tInfoSummary->SetTextFont(43);
+        tInfoSummary->SetNDC();
+        h->GetListOfFunctions()->Add(tInfoSummary->Clone());
+      }
+    }
+    msg = std::make_shared<TLatex>(positionX, positionY, Form("#bf{%s}", status.Data()));
+    msg->SetTextColor(textColor);
+    msg->SetTextSize(0.06);
+    msg->SetTextFont(43);
+    msg->SetNDC();
+    h->GetListOfFunctions()->Add(msg->Clone());
+    if (ShifterInfoText[mo->getName()] != "")
+      h->GetListOfFunctions()->Add(tShifterInfo->Clone());
+  }
   if (mo->getName().find("General_Occupancy") != std::string::npos) {
     auto* h = dynamic_cast<TH2F*>(mo->getObject());
     if (checkResult == Quality::Good) {
