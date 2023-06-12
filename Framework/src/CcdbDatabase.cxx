@@ -19,7 +19,7 @@
 #include "QualityControl/Version.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/RepoPathUtils.h"
-#include "QualityControl/ActivityHelpers.h"
+#include "QualityControl/DatabaseHelpers.h"
 #include "QualityControl/ObjectMetadataKeys.h"
 
 // O2
@@ -200,7 +200,7 @@ void CcdbDatabase::storeAny(const void* obj, std::type_info const& typeInfo, std
 }
 
 // Monitor object
-void CcdbDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::MonitorObject> mo)
+void CcdbDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::MonitorObject> mo, long from, long to)
 {
   if (mo->getName().length() == 0 || mo->getTaskName().length() == 0) {
     BOOST_THROW_EXCEPTION(DatabaseException()
@@ -216,7 +216,7 @@ void CcdbDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::Moni
     return;
   }
 
-  map<string, string> metadata = activity_helpers::asDatabaseMetadata(mo->getActivity());
+  map<string, string> metadata = database_helpers::asDatabaseMetadata(mo->getActivity());
 
   // user metadata
   map<string, string> userMetadata = mo->getMetadataMap();
@@ -234,19 +234,11 @@ void CcdbDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::Moni
 
   // path attributes
   string path = mo->getPath();
-  auto validity = mo->getValidity();
-  auto from = static_cast<long>(validity.getMin());
-  auto to = static_cast<long>(validity.getMax());
-
-  if (from == -1 || validity.getMin() == gInvalidValidityInterval.getMin()) {
+  if (from == -1) {
     from = getCurrentTimestamp();
   }
-  if (to == -1 || validity.getMax() == gInvalidValidityInterval.getMax()) {
+  if (to == -1) {
     to = from + 1000l * 60 * 60 * 24 * 365 * 10; // ~10 years since the start of validity
-  }
-  if (from >= to) {
-    ILOG(Error, Support) << "The start validity of '" << mo->GetName() << "' is not earlier than the end (" << from << ", " << to << "). The object will not be stored" << ENDM;
-    return;
   }
 
   ILOG(Debug, Support) << "Storing MonitorObject " << path << ENDM;
@@ -255,14 +247,14 @@ void CcdbDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::Moni
   handleStorageError(path, result);
 }
 
-void CcdbDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::QualityObject> qo)
+void CcdbDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::QualityObject> qo, long from, long to)
 {
   if (isDbInFailure()) {
     return;
   }
 
   // metadata
-  map<string, string> metadata = activity_helpers::asDatabaseMetadata(qo->getActivity());
+  map<string, string> metadata = database_helpers::asDatabaseMetadata(qo->getActivity());
   // QC metadata (prefix qc_)
   addFrameworkMetadata(metadata, qo->getDetectorName(), qo->IsA()->GetName());
   metadata[metadata_keys::qcQuality] = std::to_string(qo->getQuality().getLevel());
@@ -275,19 +267,11 @@ void CcdbDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::Qual
 
   // other attributes
   string path = qo->getPath();
-  auto validity = qo->getValidity();
-  auto from = static_cast<long>(validity.getMin());
-  auto to = static_cast<long>(validity.getMax());
-
-  if (from == -1 || validity.getMin() == gInvalidValidityInterval.getMin()) {
+  if (from == -1) {
     from = getCurrentTimestamp();
   }
-  if (to == -1 || validity.getMax() == gInvalidValidityInterval.getMax()) {
+  if (to == -1) {
     to = from + 1000l * 60 * 60 * 24 * 365 * 10; // ~10 years since the start of validity
-  }
-  if (from >= to) {
-    ILOG(Error, Support) << "The start validity of '" << qo->GetName() << "' is not earlier than the end (" << from << ", " << to << "). The object will not be stored" << ENDM;
-    return;
   }
 
   ILOG(Debug, Support) << "Storing quality object " << path << " (" << qo->getName() << ")" << ENDM;
@@ -350,7 +334,7 @@ std::shared_ptr<o2::quality_control::core::MonitorObject> CcdbDatabase::retrieve
 {
   string fullPath = activity.mProvenance + "/" + objectPath + "/" + objectName;
   map<string, string> headers;
-  map<string, string> metadata = activity_helpers::asDatabaseMetadata(activity, false);
+  map<string, string> metadata = database_helpers::asDatabaseMetadata(activity, false);
   TObject* obj = retrieveTObject(fullPath, metadata, timestamp, &headers);
 
   // no object found
@@ -381,7 +365,7 @@ std::shared_ptr<o2::quality_control::core::MonitorObject> CcdbDatabase::retrieve
     // TODO should we remove the headers we know are general such as ETag and qc_task_name ?
     mo->addMetadata(headers);
     // we could just copy the argument here, but this would not cover cases where the activity in headers has more non-default fields
-    mo->setActivity(activity_helpers::asActivity(headers, activity.mProvenance));
+    mo->setActivity(database_helpers::asActivity(headers, activity.mProvenance));
   }
   mo->setIsOwner(true);
   return mo;
@@ -390,7 +374,7 @@ std::shared_ptr<o2::quality_control::core::MonitorObject> CcdbDatabase::retrieve
 std::shared_ptr<o2::quality_control::core::QualityObject> CcdbDatabase::retrieveQO(std::string qoPath, long timestamp, const core::Activity& activity)
 {
   map<string, string> headers;
-  map<string, string> metadata = activity_helpers::asDatabaseMetadata(activity, false);
+  map<string, string> metadata = database_helpers::asDatabaseMetadata(activity, false);
   auto fullPath = activity.mProvenance + "/" + qoPath;
   TObject* obj = retrieveTObject(fullPath, metadata, timestamp, &headers);
   if (obj == nullptr) {
@@ -403,7 +387,7 @@ std::shared_ptr<o2::quality_control::core::QualityObject> CcdbDatabase::retrieve
     // TODO should we remove the headers we know are general such as ETag and qc_task_name ?
     qo->addMetadata(headers);
     // we could just copy the argument here, but this would not cover cases where the activity in headers has more non-default fields
-    qo->setActivity(activity_helpers::asActivity(headers, activity.mProvenance));
+    qo->setActivity(database_helpers::asActivity(headers, activity.mProvenance));
   }
   return qo;
 }

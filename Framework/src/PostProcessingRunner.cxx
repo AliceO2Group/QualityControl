@@ -231,16 +231,14 @@ void PostProcessingRunner::doUpdate(const Trigger& trigger)
 {
   ILOG(Info, Support) << "Updating the user task due to trigger '" << trigger << "'" << ENDM;
   mTask->update(trigger, mServices);
-  mObjectManager->setValidity(ValidityInterval{ trigger.timestamp, trigger.timestamp + objectValidity });
-  mPublicationCallback(mObjectManager->getNonOwningArray());
+  mPublicationCallback(mObjectManager->getNonOwningArray(), trigger.timestamp, trigger.timestamp + objectValidity);
 }
 
 void PostProcessingRunner::doFinalize(const Trigger& trigger)
 {
   ILOG(Info, Support) << "Finalizing the user task due to trigger '" << trigger << "'" << ENDM;
   mTask->finalize(trigger, mServices);
-  mObjectManager->setValidity(ValidityInterval{ trigger.timestamp, trigger.timestamp + objectValidity });
-  mPublicationCallback(mObjectManager->getNonOwningArray());
+  mPublicationCallback(mObjectManager->getNonOwningArray(), trigger.timestamp, trigger.timestamp + objectValidity);
   mTaskState = TaskState::Finished;
 }
 
@@ -266,7 +264,7 @@ PostProcessingRunnerConfig PostProcessingRunner::extractConfig(const CommonSpec&
 
 MOCPublicationCallback publishToDPL(framework::DataAllocator& allocator, std::string outputBinding)
 {
-  return [&allocator = allocator, outputBinding = std::move(outputBinding)](const MonitorObjectCollection* moc) {
+  return [&allocator = allocator, outputBinding = std::move(outputBinding)](const MonitorObjectCollection* moc, uint64_t, uint64_t) {
     // TODO pass timestamps to objects, so they are later stored correctly.
     ILOG(Debug, Support) << "Publishing " << moc->GetEntries() << " MonitorObjects" << ENDM;
     allocator.snapshot(framework::OutputRef{ outputBinding }, *moc);
@@ -275,12 +273,12 @@ MOCPublicationCallback publishToDPL(framework::DataAllocator& allocator, std::st
 
 MOCPublicationCallback publishToRepository(o2::quality_control::repository::DatabaseInterface& repository)
 {
-  return [&](const MonitorObjectCollection* collection) {
+  return [&](const MonitorObjectCollection* collection, uint64_t from, uint64_t to) {
     ILOG(Debug, Support) << "Publishing " << collection->GetEntries() << " MonitorObjects" << ENDM;
     for (const TObject* mo : *collection) {
       // We have to copy the object so we can pass a shared_ptr.
       // This is not ideal, but MySQL interface requires shared ptrs to queue the objects.
-      repository.storeMO(std::shared_ptr<MonitorObject>(dynamic_cast<MonitorObject*>(mo->Clone())));
+      repository.storeMO(std::shared_ptr<MonitorObject>(dynamic_cast<MonitorObject*>(mo->Clone())), from, to);
     }
   };
 }

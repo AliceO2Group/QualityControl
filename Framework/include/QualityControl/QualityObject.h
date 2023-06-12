@@ -132,10 +132,6 @@ class QualityObject : public TObject
   void setActivity(const Activity& activity);
   void updateActivity(int runNumber = 0, const std::string& periodName = "", const std::string& passName = "", const std::string& provenance = "");
 
-  void setValidity(ValidityInterval);
-  void updateValidity(validity_time_t value);
-  ValidityInterval getValidity() const;
-
  private:
   Quality mQuality;
   std::string mCheckName;

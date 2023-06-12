@@ -16,7 +16,7 @@
 
 #include "QualityControl/Triggers.h"
 #include "QualityControl/QcInfoLogger.h"
-#include "QualityControl/ActivityHelpers.h"
+#include "QualityControl/DatabaseHelpers.h"
 #include "QualityControl/CcdbDatabase.h"
 #include "QualityControl/ObjectMetadataKeys.h"
 
@@ -148,7 +148,7 @@ TriggerFcn NewObject(const std::string& databaseUrl, const std::string& database
   // Key names in the header map.
   constexpr auto timestampKey = metadata_keys::validFrom;
   auto fullObjectPath = (databaseType == "qcdb" ? activity.mProvenance + "/" : "") + objectPath;
-  auto metadata = databaseType == "qcdb" ? activity_helpers::asDatabaseMetadata(activity, false) : std::map<std::string, std::string>();
+  auto metadata = databaseType == "qcdb" ? repository::database_helpers::asDatabaseMetadata(activity, false) : std::map<std::string, std::string>();
 
   ILOG(Debug, Support) << "Initializing newObject trigger for the object '" << fullObjectPath << "' and Activity '" << activity << "'" << ENDM;
   // We support only CCDB here.
@@ -212,7 +212,7 @@ TriggerFcn ForEachObject(const std::string& databaseUrl, const std::string& data
   // As for today, we receive objects in the order of the newest to the oldest.
   // We prefer the other order here.
   for (auto rit = objects.rbegin(); rit != objects.rend(); ++rit) {
-    auto objectActivity = activity_helpers::asActivity(rit->second, activity.mProvenance);
+    auto objectActivity = repository::database_helpers::asActivity(rit->second, activity.mProvenance);
     ILOG(Debug, Trace) << "Matching the filter with object's activity: " << objectActivity << ENDM;
     if (filter.matches(objectActivity)) {
       filteredObjects->emplace_back(rit->second);
@@ -229,7 +229,7 @@ TriggerFcn ForEachObject(const std::string& databaseUrl, const std::string& data
 
   return [filteredObjects, activity, currentObject = filteredObjects->begin(), config]() mutable -> Trigger {
     if (currentObject != filteredObjects->end()) {
-      auto currentActivity = activity_helpers::asActivity(*currentObject, activity.mProvenance);
+      auto currentActivity = repository::database_helpers::asActivity(*currentObject, activity.mProvenance);
       bool last = currentObject + 1 == filteredObjects->end();
       Trigger trigger(TriggerType::ForEachObject, last, currentActivity, currentObject->get<int64_t>(timestampKey));
       ++currentObject;
@@ -261,7 +261,7 @@ TriggerFcn ForEachLatest(const std::string& databaseUrl, const std::string& data
   // The inverse order is more likely to follow what we want (ascending by period/pass/run),
   // thus sorting may take less time.
   for (auto rit = objects.rbegin(); rit != objects.rend(); ++rit) {
-    auto objectActivity = activity_helpers::asActivity(rit->second, activity.mProvenance);
+    auto objectActivity = repository::database_helpers::asActivity(rit->second, activity.mProvenance);
     ILOG(Debug, Trace) << "Matching the filter with object's activity: " << objectActivity << ENDM;
     if (filter.matches(objectActivity)) {
       auto latestObject = std::find_if(filteredObjects->begin(), filteredObjects->end(), [&](const std::pair<Activity, boost::property_tree::ptree>& entry) {

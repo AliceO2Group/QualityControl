@@ -125,19 +125,4 @@ TEST_CASE("path")
   CHECK(path == "qc/DET/MO/task/asdf");
 }
 
-TEST_CASE("validity")
-{
-  o2::quality_control::core::MonitorObject obj;
-
-  CHECK(obj.getValidity() == gInvalidValidityInterval);
-
-  obj.updateValidity(1234);
-  CHECK(obj.getValidity() == o2::quality_control::core::ValidityInterval(1234, 1234));
-  obj.updateValidity(9000);
-  CHECK(obj.getValidity() == o2::quality_control::core::ValidityInterval(1234, 9000));
-
-  obj.setValidity({ 3, 4 });
-  CHECK(obj.getValidity() == o2::quality_control::core::ValidityInterval(3, 4));
-}
-
 } // namespace o2::quality_control::core

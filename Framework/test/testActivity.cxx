@@ -88,7 +88,7 @@ TEST_CASE("test_minimalMatchingActivity")
       { 4, { 300000, 1, "LHC22a", "spass", "qc", { 20, 30 }, "pp" } },
       { 3, { 300000, 1, "LHC22a", "spass", "qc", { 30, 40 }, "pp" } }
     };
-    auto result = activity_helpers::strictestMatchingActivity(m.begin(), m.end(), [](const auto& item) { return item.second; });
+    auto result = ActivityHelpers::strictestMatchingActivity(m.begin(), m.end(), [](const auto& item) { return item.second; });
     Activity expectation{ 300000, 1, "LHC22a", "spass", "qc", { 1, 40 }, "pp" };
     CHECK(result == expectation);
   }
@@ -98,7 +98,7 @@ TEST_CASE("test_minimalMatchingActivity")
       { 300000, 1, "LHC22a", "spass", "qc", { 1, 10 }, "pp" },
       { 300001, 1, "LHC22a", "spass", "qc", { 20, 30 }, "pp" }
     };
-    auto result = activity_helpers::strictestMatchingActivity(m.begin(), m.end());
+    auto result = ActivityHelpers::strictestMatchingActivity(m.begin(), m.end());
     Activity expectation{ 0, 1, "LHC22a", "spass", "qc", { 1, 30 }, "pp" };
     CHECK(result == expectation);
   }
@@ -108,7 +108,7 @@ TEST_CASE("test_minimalMatchingActivity")
       { 300000, 1, "LHC22a", "spass", "qc", { 1, 10 }, "pp" },
       { 300001, 2, "LHC22b", "apass2", "qc_mc", { 20, 30 }, "PbPb" }
     };
-    auto result = activity_helpers::strictestMatchingActivity(m.begin(), m.end(), [](const auto& a) { return a; });
+    auto result = ActivityHelpers::strictestMatchingActivity(m.begin(), m.end(), [](const auto& a) { return a; });
     Activity expectation{ 0, 0, "", "", "qc", { 1, 30 }, "" };
     CHECK(result == expectation);
   }
