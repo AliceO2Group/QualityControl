@@ -150,14 +150,14 @@ class CheckRunner : public framework::Task
    *
    * @param qualityObjects QOs to be stored in DB.
    */
-  void store(QualityObjectsType& qualityObjects);
+  void store(QualityObjectsType& qualityObjects, long validFrom);
 
   /**
    * \brief Store the MonitorObjects in the database.
    *
    * @param monitorObjects MOs to be stored in DB.
    */
-  void store(std::vector<std::shared_ptr<MonitorObject>>& monitorObjects);
+  void store(std::vector<std::shared_ptr<MonitorObject>>& monitorObjects, long validFrom);
 
   /**
    * \brief Send the QualityObjects on the DataProcessor output channel.
