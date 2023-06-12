@@ -18,6 +18,7 @@
 #define QC_MODULE_CTP_CTPRAWDATAQCTASK_H
 
 #include "QualityControl/TaskInterface.h"
+#include "CTPReconstruction/RawDataDecoder.h"
 
 class TH1F;
 
@@ -46,6 +47,7 @@ class CTPRawDataReaderTask final : public TaskInterface
   void reset() override;
 
  private:
+  o2::ctp::RawDataDecoder mDecoder;
   TH1F* mHistoBC = nullptr;
   TH1F* mHistoInputs = nullptr;
   TH1F* mHistoClasses = nullptr;
