@@ -72,7 +72,7 @@ int main(int argc, const char* argv[])
     if (triggerTimer.isTimeout()) {
       numberOfExecutionsInCycle++;
       totalNumberOfExecutions++;
-      triggerTimer.reset(minDelay*1000);
+      triggerTimer.reset(minDelay * 1000);
       timer.reset();
       Bookkeeping::getInstance().populateActivity(activity, run);
       auto duration = timer.getTime();
