@@ -239,6 +239,7 @@ void PostProcessingRunner::doFinalize(const Trigger& trigger)
 {
   if(mTaskState != TaskState::Running) {
     ILOG(Warning, Support) << "Attempt at finalizing the user task although it was not initialized. Skipping the finalization." << ENDM;
+    return;
   }
   ILOG(Info, Support) << "Finalizing the user task due to trigger '" << trigger << "'" << ENDM;
   mTask->finalize(trigger, mServices);
