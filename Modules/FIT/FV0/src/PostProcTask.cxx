@@ -18,6 +18,7 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "CommonConstants/LHCConstants.h"
 #include "DataFormatsParameters/GRPLHCIFData.h"
+#include "DataFormatsFV0/LookUpTable.h"
 
 #include <TH1F.h>
 #include <TH2F.h>
@@ -25,6 +26,8 @@
 #include <TPad.h>
 #include <TLegend.h>
 #include <TProfile.h>
+#include <regex>
+#include <map>
 
 using namespace o2::quality_control::postprocessing;
 
@@ -175,11 +178,52 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
       getObjectsManager()->startPublishing(pairHistBC.first->second);
     }
   }
+
+  const auto& lut = o2::fv0::SingleLUT::Instance().getVecMetadataFEE();
+  auto lutSorted = lut;
+  std::sort(lutSorted.begin(), lutSorted.end(), [](const auto& first, const auto& second) { return first.mModuleName < second.mModuleName; });
+  uint8_t binPos{ 0 };
+  for (const auto& lutEntry : lutSorted) {
+    const auto& moduleName = lutEntry.mModuleName;
+    const auto& moduleType = lutEntry.mModuleType;
+    const auto& strChID = lutEntry.mChannelID;
+    const auto& pairIt = mMapFEE2hash.insert({ moduleName, binPos });
+    if (pairIt.second) {
+      binPos++;
+    }
+    if (std::regex_match(strChID, std::regex("[[\\d]{1,3}"))) {
+      int chID = std::stoi(strChID);
+      if (chID < sNCHANNELS_FV0_PLUSREF) {
+        mChID2PMhash[chID] = mMapFEE2hash[moduleName];
+      } else {
+        ILOG(Error, Support) << "Incorrect LUT entry: chID " << strChID << " | " << moduleName << ENDM;
+      }
+    } else if (moduleType != "TCM") {
+      ILOG(Error, Support) << "Non-TCM module w/o numerical chID: chID " << strChID << " | " << moduleName << ENDM;
+    } else if (moduleType == "TCM") {
+      uint8_t mTCMhash = mMapFEE2hash[moduleName];
+    }
+  }
+
+  mHistBcPatternFee = std::make_unique<TH2F>("bcPatternForFeeModules", "BC pattern", sBCperOrbit, 0, sBCperOrbit, 13, 0, 13);
+  mHistBcFeeOutOfBunchColl = std::make_unique<TH2F>("OutOfBunchColl_BCvsFeeModules", "BC vs FEE Modules for out-of-bunch collisions;BC;FEE Modules", sBCperOrbit, 0, sBCperOrbit, mMapFEE2hash.size(), 0, mMapFEE2hash.size());
+
+  for (const auto& entry : mMapFEE2hash) {
+    // ILOG(Warning, Support) << "============= mMapFEE2hash.second + 1: " << entry.second + 1
+    //                        << " mMapFEE2hash.first.c_str(): " << entry.first.c_str() << ENDM;
+
+    mHistBcPatternFee->GetYaxis()->SetBinLabel(entry.second + 1, entry.first.c_str());
+    mHistBcFeeOutOfBunchColl->GetYaxis()->SetBinLabel(entry.second + 1, entry.first.c_str());
+  }
   getObjectsManager()->startPublishing(mHistTriggers.get());
   getObjectsManager()->startPublishing(mHistBcPattern.get());
   getObjectsManager()->setDefaultDrawOptions(mHistBcPattern.get(), "COLZ");
   getObjectsManager()->startPublishing(mHistBcTrgOutOfBunchColl.get());
   getObjectsManager()->setDefaultDrawOptions(mHistBcTrgOutOfBunchColl.get(), "COLZ");
+  getObjectsManager()->startPublishing(mHistBcPatternFee.get());
+  getObjectsManager()->setDefaultDrawOptions(mHistBcPatternFee.get(), "COLZ");
+  getObjectsManager()->startPublishing(mHistBcFeeOutOfBunchColl.get());
+  getObjectsManager()->setDefaultDrawOptions(mHistBcFeeOutOfBunchColl.get(), "COLZ");
 
   mHistTimeUpperFraction = std::make_unique<TH1F>("TimeUpperFraction", "Fraction of events under time window(-+190 channels);ChID;Fraction", sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF);
   getObjectsManager()->startPublishing(mHistTimeUpperFraction.get());
@@ -348,13 +392,13 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
     mTime->GetYaxis()->SetTitleOffset(1);
   }
 
+  // Download BCvsTriggers
   auto moBCvsTriggers = mDatabase->retrieveMO(mPathDigitQcTask, "BCvsTriggers", t.timestamp, t.activity);
   auto hBcVsTrg = moBCvsTriggers ? dynamic_cast<TH2F*>(moBCvsTriggers->getObject()) : nullptr;
   if (!hBcVsTrg) {
     ILOG(Error, Support) << "MO \"BCvsTriggers\" NOT retrieved!!!" << ENDM;
     return;
   }
-
   for (const auto& entry : mMapTrgHistBC) {
     hBcVsTrg->ProjectionX(entry.second->GetName(), entry.first + 1, entry.first + 1);
   }
@@ -380,6 +424,7 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
     }
   }
 
+  // Download bcPattern
   std::map<std::string, std::string> metadata;
   std::map<std::string, std::string> headers;
   auto* lhcIf = mCcdbApi.retrieveFromTFileAny<o2::parameters::GRPLHCIFData>(mPathGrpLhcIf, metadata, ts, &headers);
@@ -397,6 +442,45 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
   }
   auto bcPattern = lhcIf->getBunchFilling();
 
+  // Download histogram BCvsFEEmodules from database
+  auto moBcVsFeeModules = mDatabase->retrieveMO(mPathDigitQcTask, "BCvsFEEmodules", t.timestamp, t.activity);
+  auto hBcVsFeeModules = moBcVsFeeModules ? dynamic_cast<TH2F*>(moBcVsFeeModules->getObject()) : nullptr;
+
+  if (!hBcVsFeeModules) {
+    ILOG(Error, Support) << "MO \"BCvsFEEmodules\" NOT retrieved!!!" << ENDM;
+    return;
+  } else {
+
+    // Create histogram with bc pattern for FEE modules
+    mHistBcPatternFee->Reset();
+    for (int i = 0; i < sBCperOrbit + 1; i++) {
+      for (int j = 0; j < mMapFEE2hash.size() + 1; j++) {
+        mHistBcPatternFee->SetBinContent(i + 1, j + 1, bcPattern.testBC(i));
+      }
+    }
+    ILOG(Warning, Support) << " mHistBcPatternFee->Integral: " << mHistBcPatternFee->Integral(1, sBCperOrbit, 1, mMapFEE2hash.size()) << ENDM;
+
+    mHistBcFeeOutOfBunchColl->Reset();
+    float vmax = hBcVsFeeModules->GetBinContent(hBcVsFeeModules->GetMaximumBin());
+    mHistBcFeeOutOfBunchColl->Add(hBcVsFeeModules, mHistBcPatternFee.get(), 1, -1 * vmax);
+
+    for (int i = 0; i < sBCperOrbit + 1; i++) {
+      for (int j = 0; j < mMapFEE2hash.size() + 1; j++) {
+        if (mHistBcFeeOutOfBunchColl->GetBinContent(i + 1, j + 1) < 0) {
+          mHistBcFeeOutOfBunchColl->SetBinContent(i + 1, j + 1, 0);
+        }
+      }
+    }
+
+    // Add metadata to histogram OutOfBunchColl_BCvsFeeModules
+    mHistBcFeeOutOfBunchColl->SetEntries(mHistBcFeeOutOfBunchColl->Integral(1, sBCperOrbit, 1, mMapFEE2hash.size()));
+    for (int iBin = 1; iBin <= mMapFEE2hash.size(); iBin++) {
+      const std::string metadataKey = std::to_string(iBin);
+      const std::string metadataValue = std::to_string(hBcVsFeeModules->Integral(1, sBCperOrbit, iBin, iBin));
+      getObjectsManager()->getMonitorObject(mHistBcFeeOutOfBunchColl->GetName())->addOrUpdateMetadata(metadataKey, metadataValue);
+    }
+  }
+
   mHistBcPattern->Reset();
   for (int i = 0; i < sBCperOrbit + 1; i++) {
     for (int j = 0; j < mMapDigitTrgNames.size() + 1; j++) {
@@ -410,10 +494,11 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
   for (int i = 0; i < sBCperOrbit + 1; i++) {
     for (int j = 0; j < mMapDigitTrgNames.size() + 1; j++) {
       if (mHistBcTrgOutOfBunchColl->GetBinContent(i + 1, j + 1) < 0) {
-        mHistBcTrgOutOfBunchColl->SetBinContent(i + 1, j + 1, 0); // is it too slow?
+        mHistBcTrgOutOfBunchColl->SetBinContent(i + 1, j + 1, 0);
       }
     }
   }
+
   mHistBcTrgOutOfBunchColl->SetEntries(mHistBcTrgOutOfBunchColl->Integral(1, sBCperOrbit, 1, mMapDigitTrgNames.size()));
   for (int iBin = 1; iBin < mMapDigitTrgNames.size() + 1; iBin++) {
     const std::string metadataKey = "BcVsTrgIntegralBin" + std::to_string(iBin);

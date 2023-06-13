@@ -51,6 +51,7 @@ ITSFeeTask::~ITSFeeTask()
   delete mLaneStatusSummaryML;
   delete mLaneStatusSummaryOL;
   delete mLaneStatusSummaryGlobal;
+  delete mLaneStatusSummaryGlobalCanvas;
   delete mRDHSummary;
   for (int i = 0; i < NFlags; i++) {
     delete mLaneStatus[i];
@@ -108,13 +109,18 @@ void ITSFeeTask::createFeePlots()
     getObjectsManager()->startPublishing(mLaneStatusSummary[i]); // mLaneStatusSummary
   }
 
+  mLaneStatusSummaryGlobalCanvas = new TCanvas("LaneStatusSummary/SummaryCanvas", "SummaryCanvas", 800, 600);
+  getObjectsManager()->startPublishing(mLaneStatusSummaryGlobalCanvas);
+
   mLaneStatusSummaryIB = new TH1D("LaneStatusSummary/LaneStatusSummaryIB", "Lane Status Summary IB", 3, 0, 3);
   getObjectsManager()->startPublishing(mLaneStatusSummaryIB); // mLaneStatusSummaryIB
   mLaneStatusSummaryML = new TH1D("LaneStatusSummary/LaneStatusSummaryML", "Lane Status Summary ML", 3, 0, 3);
   getObjectsManager()->startPublishing(mLaneStatusSummaryML); // mLaneStatusSummaryML
   mLaneStatusSummaryOL = new TH1D("LaneStatusSummary/LaneStatusSummaryOL", "Lane Status Summary OL", 3, 0, 3);
   getObjectsManager()->startPublishing(mLaneStatusSummaryOL); // mLaneStatusSummaryOL
-  mLaneStatusSummaryGlobal = new TH1D("LaneStatusSummary/LaneStatusSummaryGlobal", "Lane Status Summary Global", 3, 0, 3);
+  mLaneStatusSummaryGlobal = new TH1D("LaneStatusSummary/LaneStatusSummaryGlobal", "Lane Status Summary Global", 4, 0, 4);
+  mLaneStatusSummaryGlobal->SetMaximum(1);
+  mLaneStatusSummaryGlobal->SetBit(TObject::kCanDelete);
   getObjectsManager()->startPublishing(mLaneStatusSummaryGlobal); // mLaneStatusSummaryGlobal
 
   mFlag1Check = new TH2I("Flag1Check", "Flag 1 Check", NFees, 0, NFees, 3, 0, 3); // Row 1 : transmission_timeout, Row 2 : packet_overflow, Row 3 : lane_starts_violation
@@ -279,6 +285,7 @@ void ITSFeeTask::setPlotsFormat()
     for (int i = 0; i < NFlags; i++) {
       mLaneStatusSummaryGlobal->GetXaxis()->SetBinLabel(i + 1, mLaneStatusFlag[i].c_str());
     }
+    mLaneStatusSummaryGlobal->GetXaxis()->SetBinLabel(4, "TOTAL");
     mLaneStatusSummaryGlobal->GetXaxis()->CenterLabels();
     mLaneStatusSummaryGlobal->SetStats(0);
   }
@@ -440,6 +447,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
   // Filling histograms: loop over mStatusFlagNumber[ilayer][istave][ilane][iflag]
   int counterSummary[4][3] = { { 0 } };
   int layerSummary[7][3] = { { 0 } };
+
   for (int iflag = 0; iflag < NFlags; iflag++) {
     for (int ilayer = 0; ilayer < NLayer; ilayer++) {
       for (int istave = 0; istave < NStaves[ilayer]; istave++) {
@@ -468,6 +476,31 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
     mLaneStatusSummaryML->SetBinContent(iflag + 1, 1. * counterSummary[2][iflag] / NLanesML);
     mLaneStatusSummaryOL->SetBinContent(iflag + 1, 1. * counterSummary[3][iflag] / NLanesOL);
   }
+
+  mLaneStatusSummaryGlobal->SetBinContent(4, 1. * (counterSummary[0][0] + counterSummary[0][1] + counterSummary[0][2]) / NLanesTotal);
+
+  //-------------------------------------------  canvas for GlobalSummaryPlot
+  mLaneStatusSummaryGlobalCanvas->cd();
+  mLaneStatusSummaryGlobalCanvas->Clear();
+
+  TLine* mLaneStatusSummaryLine = new TLine(0, 0.1, 4, 0.1);
+  mLaneStatusSummaryLine->SetLineStyle(9);
+  mLaneStatusSummaryLine->SetLineColor(kRed);
+  mLaneStatusSummaryLine->SetBit(TObject::kCanDelete);
+
+  TLatex* mLaneStatusSummaryInfo = new TLatex(0.1, 0.11, Form("#bf{%s}", "Threshold value"));
+  mLaneStatusSummaryInfo->SetTextSize(0.05);
+  mLaneStatusSummaryInfo->SetTextFont(43);
+  mLaneStatusSummaryInfo->SetTextColor(kRed);
+  mLaneStatusSummaryInfo->SetBit(TObject::kCanDelete);
+
+  TH1F* mLaneStatusCanvasMember = (TH1F*)mLaneStatusSummaryGlobal->Clone("mLaneStatusCanvasMember");
+  mLaneStatusCanvasMember->SetBit(TObject::kCanDelete);
+
+  mLaneStatusCanvasMember->Draw("histo");
+  mLaneStatusSummaryLine->Draw("same");
+  mLaneStatusSummaryInfo->Draw("same");
+  //------end of canvas settings
 
   for (int i = 0; i < NFees; i++) {
     if (nStops[i]) {

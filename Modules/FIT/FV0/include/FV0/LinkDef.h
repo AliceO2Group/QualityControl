@@ -9,6 +9,7 @@
 #pragma link C++ class o2::quality_control_modules::fv0::OutOfBunchCollCheck + ;
 #pragma link C++ class o2::quality_control_modules::fv0::GenericCheck + ;
 #pragma link C++ class o2::quality_control_modules::fv0::TriggersSwVsTcmCheck + ;
+#pragma link C++ class o2::quality_control_modules::fv0::OutOfBunchCollFeeModulesCheck + ;
 //#pragma link C++ class o2::quality_control_modules::fv0::CalibrationTask + ;
 //#pragma link C++ class o2::quality_control_modules::fv0::ChannelTimeCalibrationCheck + ;
 

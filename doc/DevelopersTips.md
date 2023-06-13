@@ -360,6 +360,8 @@ The config files on EPNs are merged to build a humongous config file used for th
 The common part is stored here: https://github.com/AliceO2Group/O2DPG/blob/master/DATA/production/qc-sync/qc-global-epn.json
 The config file to use for each detector are defined [here](https://github.com/AliceO2Group/O2DPG/blob/master/DATA/production/qc-workflow.sh)
 
+To use a different common part file, one can copy the `qc-global-epn.json` to some path on the EPNs (from the gateway, in your home as it is shared) and change in that json what we need for the tests. Then you can add to `pdp_extra_env_vars` the variable (they are space separated) : `QC_JSON_GLOBAL=/path/to/your/qc-global-epn.json` and that will be used
+
 ## run locally multi-node
 Terminal 1
 ```bash

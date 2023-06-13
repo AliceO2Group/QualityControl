@@ -33,6 +33,9 @@ namespace o2::quality_control_modules::its
 
 Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
+  mEtaRatio = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "EtaRatio", mEtaRatio);
+  mPhiRatio = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "PhiRatio", mPhiRatio);
+
   Quality result = 0;
   Int_t id = 0;
   std::map<std::string, std::shared_ptr<MonitorObject>>::iterator iter;
@@ -47,7 +50,7 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
       result.addMetadata("CheckTracks7", "good");
       result.addMetadata("CheckEmpty", "good");
       result.addMetadata("CheckMean", "good");
-      if (h->GetMean() < 5.2 || h->GetMean() > 5.8) {
+      if (h->GetMean() < 5.2 || h->GetMean() > 6.2) {
 
         result.updateMetadata("CheckMean", "medium");
         result.set(Quality::Medium);
@@ -95,12 +98,12 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
         result.set(Quality::Bad);
         result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), "BAD: no tracks!");
       }
-      if (ratioEta > 0.3) {
+      if (ratioEta > mEtaRatio) {
         result.updateMetadata("CheckAsymmEta", "bad");
         result.set(Quality::Bad);
         result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), "BAD: Eta asymmetry");
       }
-      if (ratioPhi > 0.3) {
+      if (ratioPhi > mPhiRatio) {
         result.updateMetadata("CheckAsymmPhi", "bad");
         result.set(Quality::Bad);
         result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), "BAD: Phi asymmetry");
@@ -256,7 +259,7 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
         h->GetListOfFunctions()->Add(tMessage[4]->Clone());
       }
       if (strcmp(checkResult.getMetadata("CheckMean").c_str(), "medium") == 0) {
-        tMessage[5] = std::make_shared<TLatex>(0.12, 0.76, Form("#splitline{Mean (%.1f) is outside 5.2-5.9}{ignore for COSMICS and TECHNICALS}", h->GetMean()));
+        tMessage[5] = std::make_shared<TLatex>(0.12, 0.76, Form("#splitline{Mean (%.1f) is outside 5.2-6.2}{ignore for COSMICS and TECHNICALS}", h->GetMean()));
         tMessage[5]->SetTextFont(43);
         tMessage[5]->SetTextSize(0.04);
         tMessage[5]->SetTextColor(kOrange);
