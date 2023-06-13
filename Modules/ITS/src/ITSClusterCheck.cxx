@@ -50,14 +50,14 @@ Quality ITSClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
       }
     }
 
-    if (iter->second->getName().find("LaneStatusSummaryGlobal") != std::string::npos) {
+    if (iter->second->getName().find("EmptyLaneFractionGlobal") != std::string::npos) {
       auto* h = dynamic_cast<TH1D*>(iter->second->getObject());
-      result.addMetadata("SummaryGlobal", "good");
-      maxfractionbadlanes = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "maxfractionbadlanes", maxfractionbadlanes);
-      if (h->GetBinContent(1) + h->GetBinContent(2) + h->GetBinContent(3) > maxfractionbadlanes) {
-        result.updateMetadata("SummaryGlobal", "bad");
+      result.addMetadata("EmptyLaneFractionGlobal", "good");
+      MaxEmptyLaneFraction = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "MaxEmptyLaneFraction", MaxEmptyLaneFraction);
+      if (h->GetBinContent(1) + h->GetBinContent(2) + h->GetBinContent(3) > MaxEmptyLaneFraction) {
+        result.updateMetadata("EmptyLaneFractionGlobal", "bad");
         result.set(Quality::Bad);
-        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("BAD:>%.0f %% of the lanes are bad", (h->GetBinContent(1) + h->GetBinContent(2) + h->GetBinContent(3)) * 100));
+        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("BAD:>%.0f %% of the lanes are empty", (h->GetBinContent(1) + h->GetBinContent(2) + h->GetBinContent(3)) * 100));
       }
     } // end summary loop
 
@@ -174,7 +174,7 @@ void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
       h->GetListOfFunctions()->Add(tShifterInfo->Clone());
   }
 
-  if (mo->getName().find("LaneStatusSummaryGlobal") != std::string::npos) {
+  if (mo->getName().find("EmptyLaneFractionGlobal") != std::string::npos) {
     auto* h = dynamic_cast<TH1D*>(mo->getObject());
     if (checkResult == Quality::Good) {
       status = "Quality::GOOD";
@@ -184,9 +184,9 @@ void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
     } else if (checkResult == Quality::Bad) {
       status = "Quality::BAD (call expert)";
       textColor = kRed;
-      if (strcmp(checkResult.getMetadata("SummaryGlobal").c_str(), "bad") == 0) {
-        maxfractionbadlanes = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "maxfractionbadlanes", maxfractionbadlanes);
-        tInfoSummary = std::make_shared<TLatex>(0.12, 0.5, Form(">%.0f %% of the lanes are bad", maxfractionbadlanes * 100));
+      if (strcmp(checkResult.getMetadata("EmptyLaneFractionGlobal").c_str(), "bad") == 0) {
+        MaxEmptyLaneFraction = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "MaxEmptyLaneFraction", MaxEmptyLaneFraction);
+        tInfoSummary = std::make_shared<TLatex>(0.12, 0.5, Form(">%.0f %% of the lanes are empty", MaxEmptyLaneFraction * 100));
         tInfoSummary->SetTextColor(kRed);
         tInfoSummary->SetTextSize(0.05);
         tInfoSummary->SetTextFont(43);

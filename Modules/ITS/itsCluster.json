@@ -72,7 +72,7 @@
           "maxcluoccL4": "1",
           "maxcluoccL5": "1",
           "maxcluoccL6": "1",
-          "maxfractionbadlanes": "0.1",
+          "MaxEmptyLaneFraction": "0.1",
           "skipxbinsoccupancy": "",
           "skipybinsoccupancy": "",
           "plotWithTextMessage": "",
@@ -91,7 +91,7 @@
               "Layer4/AverageClusterSize",
               "Layer5/AverageClusterSize",
               "Layer6/AverageClusterSize",
-              "LaneStatusSummaryGlobal",
+              "EmptyLaneFractionGlobal",
               "General/General_Occupancy"
             ]
           }

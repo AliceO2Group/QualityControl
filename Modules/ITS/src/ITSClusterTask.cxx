@@ -54,7 +54,8 @@ ITSClusterTask::ITSClusterTask() : TaskInterface() {}
 ITSClusterTask::~ITSClusterTask()
 {
   delete hClusterVsBunchCrossing;
-  delete hLaneStatusSummaryGlobal;
+  delete hEmptyLaneFractionGlobal;
+  delete hEmptyLaneFractionGlobalCanvas;
   for (int iLayer = 0; iLayer < NLayer; iLayer++) {
 
     if (!mEnableLayers[iLayer])
@@ -223,8 +224,6 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 
       if (lay < NLayerIB) {
         mClusterOccupancyIB[lay][sta][chip]++;
-	int ilane =(int) chip/3;
-        mClusterOccupancyLaneIB[lay][sta][ilane]++;
 
         mClusterSize[lay][sta][chip] += npix;
         nClusters[lay][sta][chip]++;
@@ -279,13 +278,11 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
       for (int iStave = 0; iStave < mNStaves[iLayer]; iStave++) {
 
         if (iLayer < NLayerIB) {
-	  for (int iLane = 0; iLane < 3; iLane++) {
-	    if (!mClusterOccupancyLaneIB[iLayer][iStave][iLane]) {
+          for (int iChip = 0; iChip < mNChipsPerHic[iLayer]; iChip++) {
+            if (!mClusterOccupancyIB[iLayer][iStave][iChip]) {
               mNLaneEmpty[0]++;
               mNLaneEmpty[3]++;
             }
-	  }
-          for (int iChip = 0; iChip < mNChipsPerHic[iLayer]; iChip++) {
             hAverageClusterOccupancySummaryIB[iLayer]->SetBinContent(iChip + 1, iStave + 1, 1. * mClusterOccupancyIB[iLayer][iStave][iChip] / mNRofs);
             hAverageClusterOccupancySummaryIB[iLayer]->SetBinError(iChip + 1, iStave + 1, 1e-15);
             hAverageClusterSizeSummaryIB[iLayer]->SetBinContent(iChip + 1, iStave + 1, nClusters[iLayer][iStave][iChip] != 0 ? (double)mClusterSize[iLayer][iStave][iChip] / nClusters[iLayer][iStave][iChip] : 0.);
@@ -298,17 +295,17 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
         } else {
 
           for (int iLane = 0; iLane < mNLanePerHic[iLayer] * mNHicPerStave[iLayer]; iLane++) {
-	    if (iLayer < 5) {
-	      if (!mClusterOccupancyOB[iLayer][iStave][iLane]) {
-		mNLaneEmpty[1]++;
-            	mNLaneEmpty[3]++;
-	      }
- 	    } else {
-	      if (!mClusterOccupancyOB[iLayer][iStave][iLane]) {
-		mNLaneEmpty[2]++;
-            	mNLaneEmpty[3]++;
-	      }
-	    }
+            if (iLayer < 5) {
+              if (!mClusterOccupancyOB[iLayer][iStave][iLane]) {
+                mNLaneEmpty[1]++;
+                mNLaneEmpty[3]++;
+              }
+            } else {
+              if (!mClusterOccupancyOB[iLayer][iStave][iLane]) {
+                mNLaneEmpty[2]++;
+                mNLaneEmpty[3]++;
+              }
+            }
             hAverageClusterOccupancySummaryOB[iLayer]->SetBinContent(iLane + 1, iStave + 1, 1. * mClusterOccupancyOB[iLayer][iStave][iLane] / mNRofs / (mNChipsPerHic[iLayer] / mNLanePerHic[iLayer])); // 14 To have occupation per chip -> 7 because we're considering lanes
             hAverageClusterOccupancySummaryOB[iLayer]->SetBinError(iLane + 1, iStave + 1, 1e-15);                                                                                                       // 14 To have occupation per chip
             hAverageClusterSizeSummaryOB[iLayer]->SetBinContent(iLane + 1, iStave + 1, nClusters[iLayer][iStave][iLane] != 0 ? (double)mClusterSize[iLayer][iStave][iLane] / nClusters[iLayer][iStave][iLane] : 0.);
@@ -343,10 +340,32 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
     }
     for (int iflag = 0; iflag < NFlags; iflag++) {
-      hLaneStatusSummaryGlobal->SetBinContent(iflag + 1, 1. * mNLaneEmpty[iflag] / mNLanes[iflag]);
+      hEmptyLaneFractionGlobal->SetBinContent(iflag + 1, 1. * mNLaneEmpty[iflag] / mNLanes[iflag]);
     }
   }
 
+  //-------------------------------------------  canvas for Empty lane fraction Plot
+  hEmptyLaneFractionGlobalCanvas->cd();
+  hEmptyLaneFractionGlobalCanvas->Clear();
+
+  TLine* hEmptyLaneFractionGlobalLine = new TLine(0, 0.1, 4, 0.1);
+  hEmptyLaneFractionGlobalLine->SetLineStyle(9);
+  hEmptyLaneFractionGlobalLine->SetLineColor(kRed);
+  hEmptyLaneFractionGlobalLine->SetBit(TObject::kCanDelete);
+
+  TLatex* hEmptyLaneFractionGlobalInfo = new TLatex(0.1, 0.11, Form("#bf{%s}", "Threshold value"));
+  hEmptyLaneFractionGlobalInfo->SetTextSize(0.05);
+  hEmptyLaneFractionGlobalInfo->SetTextFont(43);
+  hEmptyLaneFractionGlobalInfo->SetTextColor(kRed);
+  hEmptyLaneFractionGlobalInfo->SetBit(TObject::kCanDelete);
+
+  TH1F* hEmptyLaneCanvasMember = (TH1F*)hEmptyLaneFractionGlobal->Clone("hEmptyLaneCanvasMember");
+  hEmptyLaneCanvasMember->SetBit(TObject::kCanDelete);
+
+  hEmptyLaneCanvasMember->Draw("histo");
+  hEmptyLaneFractionGlobalLine->Draw("same");
+  hEmptyLaneFractionGlobalInfo->Draw("same");
+  //------end of canvas settings
   end = std::chrono::high_resolution_clock::now();
   difference = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
   ILOG(Debug, Devel) << "Time in QC Cluster Task:  " << difference << ENDM;
@@ -366,7 +385,7 @@ void ITSClusterTask::reset()
 {
   ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   hClusterVsBunchCrossing->Reset();
-  hLaneStatusSummaryGlobal->Reset();
+  hEmptyLaneFractionGlobal->Reset();
   mGeneralOccupancy->Reset();
 
   for (int iLayer = 0; iLayer < NLayer; iLayer++) {
@@ -412,17 +431,22 @@ void ITSClusterTask::createAllHistos()
   addObject(hClusterVsBunchCrossing);
   formatAxes(hClusterVsBunchCrossing, "Bunch Crossing ID", "Number of clusters with npix > 2 in ROF", 1, 1.10);
   hClusterVsBunchCrossing->SetStats(0);
-  hLaneStatusSummaryGlobal = new TH1D("LaneStatusSummaryGlobal", "Lane Status Summary Global", 4, 0, 4);
-  hLaneStatusSummaryGlobal->SetTitle("Empty Lane /All Lane ");
-  addObject(hLaneStatusSummaryGlobal);
-  formatAxes(hLaneStatusSummaryGlobal, "", "Fraction of empty lane");
+
+  hEmptyLaneFractionGlobalCanvas = new TCanvas("EmptyLaneFractionGlobalCanvas", "Empty Lane Fraction Global Canvas", 800, 600);
+  addObject(hEmptyLaneFractionGlobalCanvas);
+
+  hEmptyLaneFractionGlobal = new TH1D("EmptyLaneFractionGlobal", "Empty Lane Fraction Global", 4, 0, 4);
+  hEmptyLaneFractionGlobal->SetTitle("Empty Lane /All Lane ");
+  addObject(hEmptyLaneFractionGlobal);
+  formatAxes(hEmptyLaneFractionGlobal, "", "Fraction of empty lane");
   for (int i = 0; i < NFlags; i++) {
-    hLaneStatusSummaryGlobal->GetXaxis()->SetBinLabel(i + 1, mLaneStatusFlag[i].c_str());
+    hEmptyLaneFractionGlobal->GetXaxis()->SetBinLabel(i + 1, mLaneStatusFlag[i].c_str());
   }
-  hLaneStatusSummaryGlobal->GetXaxis()->CenterLabels();
-  hLaneStatusSummaryGlobal->SetMaximum(1);
-  hLaneStatusSummaryGlobal->SetStats(0);
-  
+  hEmptyLaneFractionGlobal->GetXaxis()->CenterLabels();
+  hEmptyLaneFractionGlobal->SetMaximum(1);
+  hEmptyLaneFractionGlobal->SetMinimum(0);
+  hEmptyLaneFractionGlobal->SetBit(TObject::kCanDelete);
+  hEmptyLaneFractionGlobal->SetStats(0);
 
   for (int iLayer = 0; iLayer < NLayer; iLayer++) {
     if (!mEnableLayers[iLayer])
