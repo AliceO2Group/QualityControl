@@ -30,7 +30,7 @@ using namespace o2::quality_control::core;
 int main(int argc, const char* argv[])
 {
   bpo::options_description desc{ "Options" };
-  desc.add_options()("help,h", "Help screen")("url,u", bpo::value<std::string>()->required(), "URL to the Bookkeeping")("run,r", bpo::value<int>())("max,m", bpo::value<int>()->default_value(10000), "Max number of executions, default: 10000")("printCycles,p", bpo::value<int>()->default_value(1000), "We print every X cycles, default: 1000")("printActivity", bpo::value<bool>()->default_value(false), "just to check that we get something in the activity.");
+  desc.add_options()("help,h", "Help screen")("url,u", bpo::value<std::string>()->required(), "URL to the Bookkeeping")("run,r", bpo::value<int>())("max,m", bpo::value<int>()->default_value(10000), "Max number of executions, default: 10000")("printCycles,p", bpo::value<int>()->default_value(1000), "We print every X cycles, default: 1000")("printActivity", bpo::value<bool>()->default_value(false), "just to check that we get something in the activity.")("delay,d", bpo::value<int>()->default_value(0), "Minimum delay between calls in ms, default 0");
 
   bpo::variables_map vm;
   store(parse_command_line(argc, argv, desc), vm);
@@ -51,6 +51,8 @@ int main(int argc, const char* argv[])
   cout << "printCycles : " << printCycles << endl;
   const auto printActivity = vm["printActivity"].as<bool>();
   cout << "printActivity : " << printActivity << endl;
+  const auto minDelay = vm["delay"].as<int>();
+  cout << "minDelay : " << minDelay << endl;
 
   ILOG_INST.filterDiscardDebug(true);
   ILOG_INST.filterDiscardLevel(11);
@@ -58,6 +60,8 @@ int main(int argc, const char* argv[])
   Bookkeeping::getInstance().init(url);
 
   AliceO2::Common::Timer timer;
+  AliceO2::Common::Timer triggerTimer;
+  triggerTimer.reset();
   Activity activity;
   double totalDuration = 0;
   double cycleDuration = 0;
@@ -65,20 +69,23 @@ int main(int argc, const char* argv[])
   int totalNumberOfExecutions = 0;
 
   while (totalNumberOfExecutions < max) {
-    numberOfExecutionsInCycle++;
-    totalNumberOfExecutions++;
-    timer.reset();
-    Bookkeeping::getInstance().populateActivity(activity, run);
-    if (printActivity) {
-      cout << activity << endl;
-    }
-    auto duration = timer.getTime();
-    totalDuration += duration;
-    cycleDuration += duration;
-    if (totalNumberOfExecutions % printCycles == 0) {
-      cout << "average duration last " << printCycles << " calls in [ms]: " << cycleDuration / numberOfExecutionsInCycle * 1000 << endl;
-      numberOfExecutionsInCycle = 0;
-      cycleDuration = 0;
+    if (triggerTimer.isTimeout()) {
+      numberOfExecutionsInCycle++;
+      totalNumberOfExecutions++;
+      triggerTimer.reset(minDelay*1000);
+      timer.reset();
+      Bookkeeping::getInstance().populateActivity(activity, run);
+      auto duration = timer.getTime();
+      if (printActivity) {
+        cout << activity << endl;
+      }
+      totalDuration += duration;
+      cycleDuration += duration;
+      if (totalNumberOfExecutions % printCycles == 0) {
+        cout << "average duration last " << printCycles << " calls in [ms]: " << cycleDuration / numberOfExecutionsInCycle * 1000 << endl;
+        numberOfExecutionsInCycle = 0;
+        cycleDuration = 0;
+      }
     }
   }
   cout << "average duration overall in ms : " << totalDuration / totalNumberOfExecutions * 1000 << endl;
