@@ -151,7 +151,7 @@ void SliceTrendingTask::trendValues(const Trigger& t,
 
 void SliceTrendingTask::generatePlots()
 {
-  if(mTrend == nullptr) {
+  if (mTrend == nullptr) {
     ILOG(Info, Support) << "The trend object is not there, won't generate any plots." << ENDM;
     return;
   }
