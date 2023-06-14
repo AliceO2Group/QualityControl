@@ -140,7 +140,7 @@ void CTPCountersTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 }
 
-void CTPCountersTask::startOfActivity(Activity& activity)
+void CTPCountersTask::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "Start of all activitites " << ENDM;
   ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
@@ -514,7 +514,7 @@ void CTPCountersTask::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void CTPCountersTask::endOfActivity(Activity& /*activity*/)
+void CTPCountersTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

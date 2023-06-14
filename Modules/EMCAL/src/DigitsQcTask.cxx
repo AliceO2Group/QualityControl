@@ -149,7 +149,7 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mDigitsMaxSM);
 }
 
-void DigitsQcTask::startOfActivity(Activity& /*activity*/)
+void DigitsQcTask::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "startOfActivity" << ENDM;
   reset();
@@ -292,7 +292,7 @@ void DigitsQcTask::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void DigitsQcTask::endOfActivity(Activity& /*activity*/)
+void DigitsQcTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

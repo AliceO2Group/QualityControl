@@ -59,7 +59,7 @@ void PedestalCalibTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 }
 
-void PedestalCalibTask::startOfActivity(Activity& activity)
+void PedestalCalibTask::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
   reset();
@@ -117,7 +117,7 @@ void PedestalCalibTask::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void PedestalCalibTask::endOfActivity(Activity& /*activity*/)
+void PedestalCalibTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

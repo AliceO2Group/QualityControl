@@ -468,7 +468,7 @@ void DigitsTask::initialize(o2::framework::InitContext& /*ctx*/)
   buildHistograms();
 }
 
-void DigitsTask::startOfActivity(Activity& /*activity*/)
+void DigitsTask::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "startOfActivity" << ENDM;
 } // set stats/stacs
@@ -761,7 +761,7 @@ void DigitsTask::endOfCycle()
   mClsChargeTbCycle.get()->Reset();
 }
 
-void DigitsTask::endOfActivity(Activity& /*activity*/)
+void DigitsTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

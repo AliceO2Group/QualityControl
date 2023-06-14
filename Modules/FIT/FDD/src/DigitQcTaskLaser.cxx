@@ -208,7 +208,7 @@ void DigitQcTaskLaser::initialize(o2::framework::InitContext& /*ctx*/)
   }
 }
 
-void DigitQcTaskLaser::startOfActivity(Activity& activity)
+void DigitQcTaskLaser::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity" << activity.mId << ENDM;
   mHistTime2Ch->Reset();
@@ -324,7 +324,7 @@ void DigitQcTaskLaser::endOfCycle()
   ILOG(Debug) << "Cycle duration: NTF=" << mTfCounter << ", range = " << (mTimeMaxNS - mTimeMinNS) / 1e6 / mTfCounter << " ms/TF, sum = " << mTimeSum / 1e6 / mTfCounter << " ms/TF" << ENDM;
 }
 
-void DigitQcTaskLaser::endOfActivity(Activity& /*activity*/)
+void DigitQcTaskLaser::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

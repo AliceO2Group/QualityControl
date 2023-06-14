@@ -398,7 +398,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistChIDperBC = helper::registerHist<TH2F>(getObjectsManager(), "COLZ", "ChannelIDperBC", Form("FT0 ChannelID per BC, bad PM bit suppression %i, good PM checking %i, gate (%i,%i)", mBadPMbits_ChID, mGoodPMbits_ChID, mLowTimeGate_ChID, mUpTimeGate_ChID), sBCperOrbit, 0, sBCperOrbit, sNCHANNELS_PM, 0, sNCHANNELS_PM);
 }
 
-void DigitQcTask::startOfActivity(Activity& activity)
+void DigitQcTask::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity" << activity.mId << ENDM;
   mHistTime2Ch->Reset();
@@ -745,7 +745,7 @@ void DigitQcTask::endOfCycle()
   ILOG(Debug) << "Cycle duration: NTF=" << mTfCounter << ", range = " << (mTimeMaxNS - mTimeMinNS) / 1e6 / mTfCounter << " ms/TF, sum = " << mTimeSum / 1e6 / mTfCounter << " ms/TF" << ENDM;
 }
 
-void DigitQcTask::endOfActivity(Activity& /*activity*/)
+void DigitQcTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

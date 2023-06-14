@@ -166,7 +166,7 @@ void QcMFTTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->setDisplayHint(mClusterRatioVsBunchCrossing.get(), "colz logz");
 }
 
-void QcMFTTrackTask::startOfActivity(Activity& /*activity*/)
+void QcMFTTrackTask::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "startOfActivity" << ENDM;
 
@@ -259,7 +259,7 @@ void QcMFTTrackTask::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void QcMFTTrackTask::endOfActivity(Activity& /*activity*/)
+void QcMFTTrackTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

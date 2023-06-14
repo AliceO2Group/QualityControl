@@ -476,7 +476,7 @@ void TaskRaw::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mDecoderRaw.mHistoPayload.get());
 }
 
-void TaskRaw::startOfActivity(Activity& /*activity*/)
+void TaskRaw::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "startOfActivity" << ENDM;
   reset();
@@ -572,7 +572,7 @@ void TaskRaw::endOfCycle()
   }
 }
 
-void TaskRaw::endOfActivity(Activity& /*activity*/)
+void TaskRaw::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

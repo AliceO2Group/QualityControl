@@ -264,7 +264,7 @@ void TracksQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mTrackLocalBoardsNBRatio44Map->SetOption("colz");
   mTrackLocalBoardsNBRatio44Map->SetStats(0);
 }
-void TracksQcTask::startOfActivity(Activity& activity)
+void TracksQcTask::startOfActivity(const Activity& activity)
 {
   // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
   ILOG(Info, Devel) << "startOfActivity " << activity.mId << ENDM;
@@ -574,7 +574,7 @@ void TracksQcTask::endOfCycle()
   // printf(" =================== > test endOfCycle Tracks \n");
 }
 
-void TracksQcTask::endOfActivity(Activity& /*activity*/)
+void TracksQcTask::endOfActivity(const Activity& /*activity*/)
 {
   // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
   ILOG(Info, Devel) << "endOfActivity" << ENDM;

@@ -73,7 +73,7 @@ void PhysicsTask::initialize(o2::framework::InitContext& /*ctx*/)
   loadCcdb(); // initialize ccdb.
 }
 
-void PhysicsTask::startOfActivity(Activity& activity)
+void PhysicsTask::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity() : resetting everything" << activity.mId << ENDM;
   resetHistograms();
@@ -366,7 +366,7 @@ void PhysicsTask::endOfCycle()
   }
 }
 
-void PhysicsTask::endOfActivity(Activity& /*activity*/)
+void PhysicsTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

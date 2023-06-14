@@ -100,7 +100,7 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mDigitBCCounts->GetYaxis()->SetTitle("Number of digits");
 }
 
-void DigitsQcTask::startOfActivity(Activity& /*activity*/)
+void DigitsQcTask::startOfActivity(const Activity& /*activity*/)
 {
 }
 
@@ -165,7 +165,7 @@ void DigitsQcTask::endOfCycle()
   mDigitsHelper.fillMapHistos(mHits.get(), mBendHitsMap, mNBendHitsMap, mLocalBoardsMap);
 }
 
-void DigitsQcTask::endOfActivity(Activity& /*activity*/)
+void DigitsQcTask::endOfActivity(const Activity& /*activity*/)
 {
 }
 
