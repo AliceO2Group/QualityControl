@@ -199,6 +199,11 @@ void TrendingTask::setUserYAxisRange(TH1* hist, const std::string& graphYAxisRan
 
 void TrendingTask::generatePlots()
 {
+  if (mTrend == nullptr) {
+    ILOG(Info, Support) << "The trend object is not there, won't generate any plots." << ENDM;
+    return;
+  }
+
   if (mTrend->GetEntries() < 1) {
     ILOG(Info, Support) << "No entries in the trend so far, won't generate any plots." << ENDM;
     return;
