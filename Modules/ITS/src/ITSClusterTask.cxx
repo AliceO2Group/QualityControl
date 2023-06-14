@@ -55,7 +55,6 @@ ITSClusterTask::~ITSClusterTask()
 {
   delete hClusterVsBunchCrossing;
   delete hEmptyLaneFractionGlobal;
-  delete hEmptyLaneFractionGlobalCanvas;
   for (int iLayer = 0; iLayer < NLayer; iLayer++) {
 
     if (!mEnableLayers[iLayer])
@@ -344,28 +343,6 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
   }
 
-  //-------------------------------------------  canvas for Empty lane fraction Plot
-  hEmptyLaneFractionGlobalCanvas->cd();
-  hEmptyLaneFractionGlobalCanvas->Clear();
-
-  TLine* hEmptyLaneFractionGlobalLine = new TLine(0, 0.1, 4, 0.1);
-  hEmptyLaneFractionGlobalLine->SetLineStyle(9);
-  hEmptyLaneFractionGlobalLine->SetLineColor(kRed);
-  hEmptyLaneFractionGlobalLine->SetBit(TObject::kCanDelete);
-
-  TLatex* hEmptyLaneFractionGlobalInfo = new TLatex(0.1, 0.11, Form("#bf{%s}", "Threshold value"));
-  hEmptyLaneFractionGlobalInfo->SetTextSize(0.05);
-  hEmptyLaneFractionGlobalInfo->SetTextFont(43);
-  hEmptyLaneFractionGlobalInfo->SetTextColor(kRed);
-  hEmptyLaneFractionGlobalInfo->SetBit(TObject::kCanDelete);
-
-  TH1F* hEmptyLaneCanvasMember = (TH1F*)hEmptyLaneFractionGlobal->Clone("hEmptyLaneCanvasMember");
-  hEmptyLaneCanvasMember->SetBit(TObject::kCanDelete);
-
-  hEmptyLaneCanvasMember->Draw("histo");
-  hEmptyLaneFractionGlobalLine->Draw("same");
-  hEmptyLaneFractionGlobalInfo->Draw("same");
-  //------end of canvas settings
   end = std::chrono::high_resolution_clock::now();
   difference = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
   ILOG(Debug, Devel) << "Time in QC Cluster Task:  " << difference << ENDM;
@@ -431,9 +408,6 @@ void ITSClusterTask::createAllHistos()
   addObject(hClusterVsBunchCrossing);
   formatAxes(hClusterVsBunchCrossing, "Bunch Crossing ID", "Number of clusters with npix > 2 in ROF", 1, 1.10);
   hClusterVsBunchCrossing->SetStats(0);
-
-  hEmptyLaneFractionGlobalCanvas = new TCanvas("EmptyLaneFractionGlobalCanvas", "Empty Lane Fraction Global Canvas", 800, 600);
-  addObject(hEmptyLaneFractionGlobalCanvas);
 
   hEmptyLaneFractionGlobal = new TH1D("EmptyLaneFractionGlobal", "Empty Lane Fraction Global", 4, 0, 4);
   hEmptyLaneFractionGlobal->SetTitle("Empty Lane /All Lane ");

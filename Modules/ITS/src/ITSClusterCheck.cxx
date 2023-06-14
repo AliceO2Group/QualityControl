@@ -24,6 +24,7 @@
 #include <TH2.h>
 #include <string.h>
 #include <TLatex.h>
+#include <TLine.h>
 #include <iostream>
 #include "Common/Utils.h"
 
@@ -180,7 +181,7 @@ void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
       status = "Quality::GOOD";
       textColor = kGreen;
       positionX = 0.05;
-      positionY = 0.95;
+      positionY = 0.91;
     } else if (checkResult == Quality::Bad) {
       status = "Quality::BAD (call expert)";
       textColor = kRed;
@@ -192,6 +193,17 @@ void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
         tInfoSummary->SetTextFont(43);
         tInfoSummary->SetNDC();
         h->GetListOfFunctions()->Add(tInfoSummary->Clone());
+        tInfo = std::make_shared<TLatex>(0.1, 0.11, Form("#bf{%s}", "Threshold value"));
+        tInfo->SetTextColor(kRed);
+        tInfo->SetTextSize(0.05);
+        tInfo->SetTextFont(43);
+        tInfo->SetBit(TObject::kCanDelete);
+        h->GetListOfFunctions()->Add(tInfo->Clone());
+        tInfoLine = std::make_shared<TLine>(0, 0.1, 4, 0.1);
+        tInfoLine->SetLineColor(kRed);
+        tInfoLine->SetLineStyle(9);
+        tInfoLine->SetBit(TObject::kCanDelete);
+        h->GetListOfFunctions()->Add(tInfoLine->Clone());
       }
     }
     msg = std::make_shared<TLatex>(positionX, positionY, Form("#bf{%s}", status.Data()));

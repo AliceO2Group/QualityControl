@@ -21,6 +21,7 @@
 
 #include "QualityControl/CheckInterface.h"
 #include <TLatex.h>
+#include <TLine.h>
 #include <TH2Poly.h>
 #include <vector>
 #include <string>
@@ -68,6 +69,8 @@ class ITSClusterCheck : public o2::quality_control::checker::CheckInterface
   ClassDefOverride(ITSClusterCheck, 2);
 
   std::shared_ptr<TLatex> tInfoSummary;
+  std::shared_ptr<TLatex> tInfo;
+  std::shared_ptr<TLine> tInfoLine;
   std::shared_ptr<TLatex> msg;
   std::shared_ptr<TLatex> text[14];
   std::shared_ptr<TLatex> text2[14];

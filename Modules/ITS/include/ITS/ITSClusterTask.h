@@ -114,7 +114,6 @@ class ITSClusterTask : public TaskInterface
   TH2F* hAverageClusterSizeSummaryZPhi[NLayer] = { nullptr };
 
   TH1D* hEmptyLaneFractionGlobal;
-  TCanvas* hEmptyLaneFractionGlobalCanvas;
 
   int mClusterSize[NLayer][48][28] = { { { 0 } } }; //[#layers][max staves][max lanes / chips]
   int nClusters[NLayer][48][28] = { { { 0 } } };
