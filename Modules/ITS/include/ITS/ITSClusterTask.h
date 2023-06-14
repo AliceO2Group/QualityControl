@@ -29,7 +29,6 @@
 #include <Framework/TimingInfo.h>
 
 #include <TLine.h>
-#include <TCanvas.h>
 #include <TLatex.h>
 
 class TH1F;

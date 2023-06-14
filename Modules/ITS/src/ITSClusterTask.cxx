@@ -19,7 +19,6 @@
 #include "ITS/ITSClusterTask.h"
 
 #include <sstream>
-#include <TCanvas.h>
 #include <DataFormatsParameters/GRPObject.h>
 #include <ITSMFTReconstruction/DigitPixelReader.h>
 #include <DataFormatsITSMFT/ROFRecord.h>

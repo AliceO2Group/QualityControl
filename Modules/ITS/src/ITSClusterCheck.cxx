@@ -197,12 +197,10 @@ void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
         tInfo->SetTextColor(kRed);
         tInfo->SetTextSize(0.05);
         tInfo->SetTextFont(43);
-        tInfo->SetBit(TObject::kCanDelete);
         h->GetListOfFunctions()->Add(tInfo->Clone());
         tInfoLine = std::make_shared<TLine>(0, 0.1, 4, 0.1);
         tInfoLine->SetLineColor(kRed);
         tInfoLine->SetLineStyle(9);
-        tInfoLine->SetBit(TObject::kCanDelete);
         h->GetListOfFunctions()->Add(tInfoLine->Clone());
       }
     }
