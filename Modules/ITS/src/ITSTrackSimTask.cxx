@@ -182,11 +182,9 @@ void ITSTrackSimTask::monitorData(o2::framework::ProcessingContext& ctx)
   for (int i = 0; i < reader.getNEvents(0); ++i) {
     std::vector<MCTrack> const& mcArr = reader.getTracks(i);
     auto mcHeader = reader.getMCEventHeader(0, i); // SourceID=0 for ITS
-
     for (int mc = 0; mc < mcArr.size(); mc++) {
 
       const auto& mcTrack = (mcArr)[mc];
-
       info[i][mc].isFilled = false;
       if (mcTrack.Vx() * mcTrack.Vx() + mcTrack.Vy() * mcTrack.Vy() > 1)
         continue;
