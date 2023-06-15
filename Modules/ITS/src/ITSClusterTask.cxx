@@ -418,7 +418,6 @@ void ITSClusterTask::createAllHistos()
   hEmptyLaneFractionGlobal->GetXaxis()->CenterLabels();
   hEmptyLaneFractionGlobal->SetMaximum(1);
   hEmptyLaneFractionGlobal->SetMinimum(0);
-  hEmptyLaneFractionGlobal->SetBit(TObject::kCanDelete);
   hEmptyLaneFractionGlobal->SetStats(0);
 
   for (int iLayer = 0; iLayer < NLayer; iLayer++) {
