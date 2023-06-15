@@ -34,6 +34,7 @@ class ConfigurationInterface;
 namespace o2::quality_control::core
 {
 struct CommonSpec;
+struct Activity;
 }
 
 namespace o2::quality_control::checker
@@ -65,7 +66,7 @@ class Aggregator
    */
   void init();
 
-  o2::quality_control::core::QualityObjectsType aggregate(core::QualityObjectsMapType& qoMap);
+  o2::quality_control::core::QualityObjectsType aggregate(core::QualityObjectsMapType& qoMap, const core::Activity& defaultActivity = {});
 
   const std::string& getName() const;
   UpdatePolicyType getUpdatePolicyType() const;
