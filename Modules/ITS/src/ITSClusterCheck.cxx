@@ -193,17 +193,17 @@ void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
         tInfoSummary->SetTextFont(43);
         tInfoSummary->SetNDC();
         h->GetListOfFunctions()->Add(tInfoSummary->Clone());
-        tInfo = std::make_shared<TLatex>(0.1, 0.11, Form("#bf{%s}", "Threshold value"));
-        tInfo->SetTextColor(kRed);
-        tInfo->SetTextSize(0.05);
-        tInfo->SetTextFont(43);
-        h->GetListOfFunctions()->Add(tInfo->Clone());
-        tInfoLine = std::make_shared<TLine>(0, 0.1, 4, 0.1);
-        tInfoLine->SetLineColor(kRed);
-        tInfoLine->SetLineStyle(9);
-        h->GetListOfFunctions()->Add(tInfoLine->Clone());
       }
     }
+    tInfo = std::make_shared<TLatex>(0.1, 0.11, Form("#bf{%s}", "Threshold value"));
+    tInfo->SetTextColor(kRed);
+    tInfo->SetTextSize(0.05);
+    tInfo->SetTextFont(43);
+    h->GetListOfFunctions()->Add(tInfo->Clone());
+    tInfoLine = std::make_shared<TLine>(0, 0.1, 4, 0.1);
+    tInfoLine->SetLineColor(kRed);
+    tInfoLine->SetLineStyle(9);
+    h->GetListOfFunctions()->Add(tInfoLine->Clone());
     msg = std::make_shared<TLatex>(positionX, positionY, Form("#bf{%s}", status.Data()));
     msg->SetTextColor(textColor);
     msg->SetTextSize(0.06);
