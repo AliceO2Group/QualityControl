@@ -25,6 +25,8 @@
 #include <Framework/TimingInfo.h>
 #include <TTree.h>
 #include <TLine.h>
+#include "Common/TH1Ratio.h"
+#include "Common/TH2Ratio.h"
 
 class TH1D;
 class TH2D;
@@ -63,10 +65,10 @@ class ITSTrackTask : public TaskInterface
   std::vector<TObject*> mPublishedObjects;
   TH1D* hNClusters;
   TH1D* hNClustersReset;
-  TH1D* hTrackEta;
-  TH1D* hTrackPhi;
+  std::unique_ptr<TH1DRatio> hTrackEta;
+  std::unique_ptr<TH1DRatio> hTrackPhi;
   TH1D* hVerticesRof;
-  TH2D* hAngularDistribution;
+  std::unique_ptr<TH2DRatio> hAngularDistribution;
   TH2D* hVertexCoordinates;
   TH2D* hVertexRvsZ;
   TH1D* hVertexZ;
@@ -74,15 +76,15 @@ class ITSTrackTask : public TaskInterface
   TH1D* hAssociatedClusterFraction;
   TH1D* hNtracks;
   TH1D* hNtracksReset;
-  TH2D* hNClustersPerTrackEta;
-  TH2D* hNClustersPerTrackPhi;
-  TH2D* hHitFirstLayerPhiAll;
-  TH2D* hHitFirstLayerPhi4cls;
-  TH2D* hHitFirstLayerPhi5cls;
-  TH2D* hHitFirstLayerPhi6cls;
-  TH2D* hHitFirstLayerPhi7cls;
+  std::unique_ptr<TH2DRatio> hNClustersPerTrackEta;
+  std::unique_ptr<TH2DRatio> hNClustersPerTrackPhi;
+  std::unique_ptr<TH2DRatio> hHitFirstLayerPhiAll;
+  std::unique_ptr<TH2DRatio> hHitFirstLayerPhi4cls;
+  std::unique_ptr<TH2DRatio> hHitFirstLayerPhi5cls;
+  std::unique_ptr<TH2DRatio> hHitFirstLayerPhi6cls;
+  std::unique_ptr<TH2DRatio> hHitFirstLayerPhi7cls;
   TH2D* hClusterVsBunchCrossing;
-  TH2D* hNClusterVsChipITS;
+  std::unique_ptr<TH2DRatio> hNClusterVsChipITS;
 
   float mVertexXYsize = 0.5;
   float mVertexZsize = 15.;
