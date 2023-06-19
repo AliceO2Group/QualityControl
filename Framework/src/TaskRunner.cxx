@@ -187,7 +187,6 @@ void TaskRunner::init(InitContext& iCtx)
   }
 
   // init user's task
-  mTask->setCcdbUrl(mTaskConfig.conditionUrl);
   mTask->initialize(iCtx);
 
   mNoMoreCycles = false;
@@ -455,6 +454,7 @@ void TaskRunner::startOfActivity()
   mTimekeeper->setStartOfActivity(activity.mValidity.getMin(), mTaskConfig.fallbackActivity.mValidity.getMin(), now);
   mTimekeeper->updateByCurrentTimestamp(mTimekeeper->getActivityDuration().getMin());
   mTimekeeper->setEndOfActivity(activity.mValidity.getMax(), mTaskConfig.fallbackActivity.mValidity.getMax(), now);
+  o2::ccdb::BasicCCDBManager::instance().setTimestamp(now);
 
   mCollector->setRunNumber(mRunNumber);
   mTask->startOfActivity(activity);

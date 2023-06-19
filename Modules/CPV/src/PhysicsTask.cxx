@@ -70,7 +70,6 @@ void PhysicsTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   initHistograms();
   mNEventsTotal = 0;
-  loadCcdb(); // initialize ccdb.
 }
 
 void PhysicsTask::startOfActivity(const Activity& activity)
