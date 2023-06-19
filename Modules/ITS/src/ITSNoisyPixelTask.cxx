@@ -83,7 +83,8 @@ void ITSNoisyPixelTask::initialize(o2::framework::InitContext& /*ctx*/)
     o2::base::GeometryManager::loadGeometry(mGeomPath.c_str());
   } else {
     ILOG(Debug, Devel) << "Getting geometry from ccdb - timestamp: " << std::stol(mGeoTimestamp) << ENDM;
-    TaskInterface::retrieveConditionAny<TGeoManager>("GLO/Config/GeometryAligned");
+    std::map<std::string, std::string> metadata;
+    TaskInterface::retrieveConditionAny<TGeoManager>("GLO/Config/GeometryAligned", metadata, std::stol(mGeoTimestamp));
     if (!o2::base::GeometryManager::isGeometryLoaded()) {
       ILOG(Fatal, Support) << "Can't retrive geometry from ccdb  timestamp: " << std::stol(mGeoTimestamp) << ENDM;
       throw std::runtime_error("Can't retrive geometry from ccdb!");

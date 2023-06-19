@@ -53,7 +53,7 @@ class UserCodeInterface
   void setName(const std::string& name);
 
   template <typename T>
-  T* retrieveConditionAny(std::string const& path, std::map<std::string, std::string> const& metadata = {});
+  T* retrieveConditionAny(std::string const& path, std::map<std::string, std::string> const& metadata = {}, long timestamp=-1);
 
  protected:
   CustomParameters mCustomParameters;
@@ -63,9 +63,10 @@ class UserCodeInterface
 };
 
 template <typename T>
-T* UserCodeInterface::retrieveConditionAny(std::string const& path, std::map<std::string, std::string> const& metadata)
+T* UserCodeInterface::retrieveConditionAny(std::string const& path, std::map<std::string, std::string> const& metadata, long timestamp)
 {
   auto& mgr = o2::ccdb::BasicCCDBManager::instance();
+  o2::ccdb::BasicCCDBManager::instance().setTimestamp(timestamp);
   return mgr.getSpecific<T>(path, mgr.getTimestamp(), metadata);
 }
 
