@@ -34,24 +34,33 @@ void TimekeeperSynchronous::updateByCurrentTimestamp(validity_time_t timestampMs
 
 void TimekeeperSynchronous::updateByTimeFrameID(uint32_t tfid)
 {
-  if (mActivityDuration.getMin() == gInvalidValidityInterval.getMin() || mActivityDuration.isInvalid()) {
-    if (!mWarnedAboutDataWithoutSOR) {
-      ILOG(Warning, Devel)
-        << "Data arrived before SOR time was set, cannot proceed with creating sample timespan. Will not warn further."
-        << ENDM;
-      mWarnedAboutDataWithoutSOR = true;
+  if (tfid == 0) {
+    if (!mWarnedAboutTfIdZero) {
+      ILOG(Warning, Devel) << "Seen TFID equal to 0, which is not expected. Will not update TF-based validity, will not warn further." << ENDM;
+      mWarnedAboutTfIdZero = true;
     }
-  } else {
-    // fixme: We might want to use this once we know how to get orbitResetTime:
-    //  std::ceil((timingInfo.firstTForbit * o2::constants::lhc::LHCOrbitNS / 1000 + orbitResetTime) / 1000);
-    //  Until then, we use a less precise method:
-    auto tfStart = mActivityDuration.getMin() + constants::lhc::LHCOrbitNS / 1000000 * mNOrbitsPerTF * tfid;
-    auto tfEnd = tfStart + constants::lhc::LHCOrbitNS / 1000000 * mNOrbitsPerTF - 1;
-    mCurrentSampleTimespan.update(tfStart);
-    mCurrentSampleTimespan.update(tfEnd);
+    return;
   }
 
   mCurrentTimeframeIdRange.update(tfid);
+
+  if (mActivityDuration.getMin() == gInvalidValidityInterval.getMin() || mActivityDuration.isInvalid()) {
+    if (!mWarnedAboutDataWithoutSOR) {
+      ILOG(Warning, Devel)
+        << "Data arrived before SOR time was set, cannot proceed with creating sample timespan. Will not warn further." << ENDM;
+      mWarnedAboutDataWithoutSOR = true;
+    }
+    return;
+  }
+
+  // fixme: We might want to use this once we know how to get orbitResetTime:
+  //  std::ceil((timingInfo.firstTForbit * o2::constants::lhc::LHCOrbitNS / 1000 + orbitResetTime) / 1000);
+  //  Until then, we use a less precise method:
+  auto tfDuration = constants::lhc::LHCOrbitNS / 1000000 * mNOrbitsPerTF;
+  auto tfStart = mActivityDuration.getMin() + tfDuration * (tfid - 1);
+  auto tfEnd = tfStart + tfDuration - 1;
+  mCurrentSampleTimespan.update(tfStart);
+  mCurrentSampleTimespan.update(tfEnd);
 }
 
 void TimekeeperSynchronous::reset()

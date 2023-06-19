@@ -39,6 +39,7 @@ class TimekeeperAsynchronous : public Timekeeper
 
  private:
   validity_time_t mWindowLengthMs = 0;
+  bool mWarnedAboutTfIdZero = false;
 };
 
 } // namespace o2::quality_control::core

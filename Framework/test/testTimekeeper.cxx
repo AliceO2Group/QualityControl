@@ -79,7 +79,7 @@ TEST_CASE("timekeeper_synchronous")
     // we need at least one update with timestamp for a valid validity
     tk->updateByCurrentTimestamp(1653000000000);
     CHECK(tk->getValidity() == ValidityInterval{ 1653000000000, 1653000000000 });
-    CHECK(tk->getSampleTimespan() == ValidityInterval{ 1653000000014, 1653000000016 });
+    CHECK(tk->getSampleTimespan() == ValidityInterval{ 1653000000011, 1653000000013 });
     CHECK(tk->getTimerangeIdRange() == TimeframeIdRange{ 5, 5 });
   }
 
@@ -90,7 +90,7 @@ TEST_CASE("timekeeper_synchronous")
     tk->updateByTimeFrameID(5);
 
     CHECK(tk->getValidity() == ValidityInterval{ 1653000000000, 1653000000000 });
-    CHECK(tk->getSampleTimespan() == ValidityInterval{ 1653000000014, 1653000000016 });
+    CHECK(tk->getSampleTimespan() == ValidityInterval{ 1653000000011, 1653000000013 });
     CHECK(tk->getTimerangeIdRange() == TimeframeIdRange{ 5, 5 });
 
     tk->reset();
@@ -128,7 +128,7 @@ TEST_CASE("timekeeper_synchronous")
     tk->updateByCurrentTimestamp(1653500000000);
 
     CHECK(tk->getValidity() == ValidityInterval{ 1653000000000, 1653500000000 });
-    CHECK(tk->getSampleTimespan() == ValidityInterval{ 1653000000008, 1653000000030 });
+    CHECK(tk->getSampleTimespan() == ValidityInterval{ 1653000000005, 1653000000027 });
     CHECK(tk->getTimerangeIdRange() == TimeframeIdRange{ 3, 10 });
 
     tk->reset();
@@ -141,7 +141,7 @@ TEST_CASE("timekeeper_synchronous")
     tk->updateByCurrentTimestamp(1653600000000);
 
     CHECK(tk->getValidity() == ValidityInterval{ 1653500000000, 1653600000000 });
-    CHECK(tk->getSampleTimespan() == ValidityInterval{ 1653000000034, 1653000000155 });
+    CHECK(tk->getSampleTimespan() == ValidityInterval{ 1653000000031, 1653000000152 });
     CHECK(tk->getTimerangeIdRange() == TimeframeIdRange{ 12, 54 });
   }
 
@@ -232,7 +232,7 @@ TEST_CASE("timekeeper_asynchronous")
     tk->updateByTimeFrameID(3);
     tk->updateByTimeFrameID(10);
     CHECK(tk->getValidity() == ValidityInterval{ 1653000000000, 1655000000000 });
-    CHECK(tk->getSampleTimespan() == ValidityInterval{ 1653000000008, 1653000000030 });
+    CHECK(tk->getSampleTimespan() == ValidityInterval{ 1653000000005, 1653000000027 });
     CHECK(tk->getTimerangeIdRange() == TimeframeIdRange{ 3, 10 });
 
     tk->reset();
@@ -243,7 +243,7 @@ TEST_CASE("timekeeper_asynchronous")
     tk->updateByTimeFrameID(12);
     tk->updateByTimeFrameID(54);
     CHECK(tk->getValidity() == ValidityInterval{ 1653000000000, 1655000000000 });
-    CHECK(tk->getSampleTimespan() == ValidityInterval{ 1653000000034, 1653000000155 });
+    CHECK(tk->getSampleTimespan() == ValidityInterval{ 1653000000031, 1653000000152 });
     CHECK(tk->getTimerangeIdRange() == TimeframeIdRange{ 12, 54 });
   }
 
@@ -255,17 +255,17 @@ TEST_CASE("timekeeper_asynchronous")
 
     // hitting only the 1st window
     tk->updateByTimeFrameID(1);
-    tk->updateByTimeFrameID(9);
+    tk->updateByTimeFrameID(10);
     CHECK(tk->getValidity() == ValidityInterval{ 1653000000000, 1653000030000 });
-    CHECK(tk->getSampleTimespan() == ValidityInterval{ 1653000001000, 1653000009999 });
-    CHECK(tk->getTimerangeIdRange() == TimeframeIdRange{ 1, 9 });
+    CHECK(tk->getSampleTimespan() == ValidityInterval{ 1653000000000, 1653000009999 });
+    CHECK(tk->getTimerangeIdRange() == TimeframeIdRange{ 1, 10 });
 
     // hitting the 1st and 2nd window
     tk->reset();
     tk->updateByTimeFrameID(1);
     tk->updateByTimeFrameID(55);
     CHECK(tk->getValidity() == ValidityInterval{ 1653000000000, 1653000060000 });
-    CHECK(tk->getSampleTimespan() == ValidityInterval{ 1653000001000, 1653000056001 });
+    CHECK(tk->getSampleTimespan() == ValidityInterval{ 1653000000000, 1653000055001 });
     CHECK(tk->getTimerangeIdRange() == TimeframeIdRange{ 1, 55 });
 
     // hitting the 3rd, extended window in the main part.
@@ -273,14 +273,14 @@ TEST_CASE("timekeeper_asynchronous")
     tk->reset();
     tk->updateByTimeFrameID(80);
     CHECK(tk->getValidity() == ValidityInterval{ 1653000060000, 1653000095000 });
-    CHECK(tk->getSampleTimespan() == ValidityInterval{ 1653000080003, 1653000081002 });
+    CHECK(tk->getSampleTimespan() == ValidityInterval{ 1653000079003, 1653000080002 });
     CHECK(tk->getTimerangeIdRange() == TimeframeIdRange{ 80, 80 });
 
     // hitting the 3rd window with a sample which is in the extended part.
     tk->reset();
     tk->updateByTimeFrameID(93);
     CHECK(tk->getValidity() == ValidityInterval{ 1653000060000, 1653000095000 });
-    CHECK(tk->getSampleTimespan() == ValidityInterval{ 1653000093004, 1653000094003 });
+    CHECK(tk->getSampleTimespan() == ValidityInterval{ 1653000092004, 1653000093003 });
     CHECK(tk->getTimerangeIdRange() == TimeframeIdRange{ 93, 93 });
   }
 
