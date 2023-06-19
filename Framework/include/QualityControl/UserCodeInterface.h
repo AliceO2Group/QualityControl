@@ -51,7 +51,6 @@ class UserCodeInterface
   void setCcdbUrl(const std::string& url);
   const std::string& getName() const;
   void setName(const std::string& name);
-  void setTimestamp(long timestamp);
 
   template <typename T>
   T* retrieveConditionAny(std::string const& path, std::map<std::string, std::string> const& metadata = {});
