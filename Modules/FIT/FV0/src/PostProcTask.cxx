@@ -207,11 +207,11 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
 
   mHistBcPatternFee = std::make_unique<TH2F>("bcPatternForFeeModules", "BC pattern", sBCperOrbit, 0, sBCperOrbit, 13, 0, 13);
   mHistBcFeeOutOfBunchColl = std::make_unique<TH2F>("OutOfBunchColl_BCvsFeeModules", "BC vs FEE Modules for out-of-bunch collisions;BC;FEE Modules", sBCperOrbit, 0, sBCperOrbit, mMapFEE2hash.size(), 0, mMapFEE2hash.size());
-  mHistBcFeeOutOfBunchCollForOrATrg = std::make_unique<TH2F>("OutOfBunchColl_BCvsFeeModulesForOrATrg", "BC vs FEE Modules for out-of-bunch collisions;BC;FEE Modules", sBCperOrbit, 0, sBCperOrbit, mMapFEE2hash.size(), 0, mMapFEE2hash.size());
-  mHistBcFeeOutOfBunchCollForOrAOutTrg = std::make_unique<TH2F>("OutOfBunchColl_BCvsFeeModulesForOrAOutTrg", "BC vs FEE Modules for out-of-bunch collisions;BC;FEE Modules", sBCperOrbit, 0, sBCperOrbit, mMapFEE2hash.size(), 0, mMapFEE2hash.size());
-  mHistBcFeeOutOfBunchCollForNChanTrg = std::make_unique<TH2F>("OutOfBunchColl_BCvsFeeModulesForNChanTrg", "BC vs FEE Modules for out-of-bunch collisions;BC;FEE Modules", sBCperOrbit, 0, sBCperOrbit, mMapFEE2hash.size(), 0, mMapFEE2hash.size());
-  mHistBcFeeOutOfBunchCollForChargeTrg = std::make_unique<TH2F>("OutOfBunchColl_BCvsFeeModulesForChargeTrg", "BC vs FEE Modules for out-of-bunch collisions;BC;FEE Modules", sBCperOrbit, 0, sBCperOrbit, mMapFEE2hash.size(), 0, mMapFEE2hash.size());
-  mHistBcFeeOutOfBunchCollForOrAInTrg = std::make_unique<TH2F>("OutOfBunchColl_BCvsFeeModulesForOrAInTrg", "BC vs FEE Modules for out-of-bunch collisions;BC;FEE Modules", sBCperOrbit, 0, sBCperOrbit, mMapFEE2hash.size(), 0, mMapFEE2hash.size());
+  mHistBcFeeOutOfBunchCollForOrATrg = std::make_unique<TH2F>("OutOfBunchColl_BCvsFeeModulesForOrATrg", "BC vs FEE Modules for out-of-bunch collisions for OrA trg;BC;FEE Modules", sBCperOrbit, 0, sBCperOrbit, mMapFEE2hash.size(), 0, mMapFEE2hash.size());
+  mHistBcFeeOutOfBunchCollForOrAOutTrg = std::make_unique<TH2F>("OutOfBunchColl_BCvsFeeModulesForOrAOutTrg", "BC vs FEE Modules for out-of-bunch collisions for OrAOut trg;BC;FEE Modules", sBCperOrbit, 0, sBCperOrbit, mMapFEE2hash.size(), 0, mMapFEE2hash.size());
+  mHistBcFeeOutOfBunchCollForNChanTrg = std::make_unique<TH2F>("OutOfBunchColl_BCvsFeeModulesForNChanTrg", "BC vs FEE Modules for out-of-bunch collisions for NChan trg;BC;FEE Modules", sBCperOrbit, 0, sBCperOrbit, mMapFEE2hash.size(), 0, mMapFEE2hash.size());
+  mHistBcFeeOutOfBunchCollForChargeTrg = std::make_unique<TH2F>("OutOfBunchColl_BCvsFeeModulesForChargeTrg", "BC vs FEE Modules for out-of-bunch collisions for Charge trg;BC;FEE Modules", sBCperOrbit, 0, sBCperOrbit, mMapFEE2hash.size(), 0, mMapFEE2hash.size());
+  mHistBcFeeOutOfBunchCollForOrAInTrg = std::make_unique<TH2F>("OutOfBunchColl_BCvsFeeModulesForOrAInTrg", "BC vs FEE Modules for out-of-bunch collisions for OrAIn trg;BC;FEE Modules", sBCperOrbit, 0, sBCperOrbit, mMapFEE2hash.size(), 0, mMapFEE2hash.size());
 
   for (const auto& entry : mMapFEE2hash) {
     // ILOG(Warning, Support) << "============= mMapFEE2hash.second + 1: " << entry.second + 1
@@ -474,6 +474,8 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
     }
   }
 
+  ILOG(Warning, Support) << "Prepering OutOfBunchColl_BCvsFeeModules" << ENDM;
+
   if (!hBcVsFeeModules) {
     ILOG(Error, Support) << "MO \"BCvsFEEmodules\" NOT retrieved!!!" << ENDM;
     return;
@@ -503,6 +505,8 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
   // Download histogram BCvsFEEmodulesForOrATrg from database
   auto moBcVsFeeModulesForOrATrg = mDatabase->retrieveMO(mPathDigitQcTask, "BCvsFEEmodulesForOrATrg", t.timestamp, t.activity);
   auto hBcVsFeeModulesForOrATrg = moBcVsFeeModulesForOrATrg ? dynamic_cast<TH2F*>(moBcVsFeeModulesForOrATrg->getObject()) : nullptr;
+
+  ILOG(Warning, Support) << "Prepering OutOfBunchColl_BCvsFeeModulesForOrATrg" << ENDM;
 
   if (!hBcVsFeeModulesForOrATrg) {
     ILOG(Error, Support) << "MO \"BCvsFEEmodulesForOrATrg\" NOT retrieved!!!" << ENDM;
@@ -534,6 +538,8 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
   auto moBCvsFEEmodulesForOrAOutTrg = mDatabase->retrieveMO(mPathDigitQcTask, "BCvsFEEmodulesForOrAOutTrg", t.timestamp, t.activity);
   auto hBCvsFEEmodulesForOrAOutTrg = moBCvsFEEmodulesForOrAOutTrg ? dynamic_cast<TH2F*>(moBCvsFEEmodulesForOrAOutTrg->getObject()) : nullptr;
 
+  ILOG(Warning, Support) << "Prepering OutOfBunchColl_BCvsFeeModulesForOrAOutTrg" << ENDM;
+
   if (!hBCvsFEEmodulesForOrAOutTrg) {
     ILOG(Error, Support) << "MO \"hBCvsFEEmodulesForOrAOutTrg\" NOT retrieved!!!" << ENDM;
     return;
@@ -562,6 +568,8 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
   // Download histogram BCvsFEEmodulesForNChanTrg from database
   auto moBCvsFEEmodulesForNChanTrg = mDatabase->retrieveMO(mPathDigitQcTask, "BCvsFEEmodulesForNChanTrg", t.timestamp, t.activity);
   auto hBCvsFEEmodulesForNChanTrg = moBCvsFEEmodulesForNChanTrg ? dynamic_cast<TH2F*>(moBCvsFEEmodulesForNChanTrg->getObject()) : nullptr;
+
+  ILOG(Warning, Support) << "Prepering OutOfBunchColl_BCvsFeeModulesForNChanTrg" << ENDM;
 
   if (!hBCvsFEEmodulesForNChanTrg) {
     ILOG(Error, Support) << "MO \"BCvsFEEmodulesForNChanTrg\" NOT retrieved!!!" << ENDM;
@@ -592,6 +600,8 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
   auto moBCvsFEEmodulesForChargeTrg = mDatabase->retrieveMO(mPathDigitQcTask, "BCvsFEEmodulesForChargeTrg", t.timestamp, t.activity);
   auto hBCvsFEEmodulesForChargeTrg = moBCvsFEEmodulesForChargeTrg ? dynamic_cast<TH2F*>(moBCvsFEEmodulesForChargeTrg->getObject()) : nullptr;
 
+  ILOG(Warning, Support) << "Prepering OutOfBunchColl_BCvsFeeModulesForChargeTrg" << ENDM;
+
   if (!hBCvsFEEmodulesForChargeTrg) {
     ILOG(Error, Support) << "MO \"BCvsFEEmodulesForChargeTrg\" NOT retrieved!!!" << ENDM;
     return;
@@ -620,6 +630,8 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
   // Download histogram BCvsFEEmodulesForOrAInTrg from database
   auto moBCvsFEEmodulesForOrAInTrg = mDatabase->retrieveMO(mPathDigitQcTask, "BCvsFEEmodulesForOrAInTrg", t.timestamp, t.activity);
   auto hBCvsFEEmodulesForOrAInTrg = moBCvsFEEmodulesForOrAInTrg ? dynamic_cast<TH2F*>(moBCvsFEEmodulesForOrAInTrg->getObject()) : nullptr;
+
+  ILOG(Warning, Support) << "Prepering OutOfBunchColl_BCvsFeeModulesOrAInTrg" << ENDM;
 
   if (!hBCvsFEEmodulesForOrAInTrg) {
     ILOG(Error, Support) << "MO \"BCvsFEEmodulesForOrAInTrg\" NOT retrieved!!!" << ENDM;
