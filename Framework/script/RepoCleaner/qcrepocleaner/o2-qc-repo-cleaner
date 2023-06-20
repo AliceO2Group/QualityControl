@@ -93,6 +93,8 @@ def parseArgs():
                         help='Log level (CRITICAL->50, ERROR->40, WARNING->30, INFO->20,DEBUG->10)')
     parser.add_argument('--dry-run', action='store_true',
                         help='Dry run, no actual deletion nor modification to the CCDB.')
+    parser.add_argument('--set-adjustableEOV', action='store_true',
+                        help='When updating the validity, set adjustableEOV to make sure that we can update it.')
     parser.add_argument('--only-path', dest='only_path', action='store', default="",
                         help='Only work on given path (omit the initial slash).')
     parser.add_argument('--workers', dest='workers', action='store', default="1",
@@ -364,6 +366,8 @@ def run(args, ccdb_url, rules):
     # Get list of objects from CCDB
     ccdb = Ccdb(ccdb_url)
     ccdb.logger = logging.getLogger
+    ccdb.set_adjustable_eov = args.set_adjustableEOV
+    logging.info(f"ccdb.set_adjustable_eov: {ccdb.set_adjustable_eov}")
     paths = ccdb.getObjectsList(getTimestampLastExecution(), args.only_path, args.only_path_no_subdir)
     if args.only_path != '':
         paths = [item for item in paths if item is not None and item.startswith(args.only_path)]
