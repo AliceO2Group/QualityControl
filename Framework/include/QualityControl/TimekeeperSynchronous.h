@@ -40,6 +40,7 @@ class TimekeeperSynchronous : public Timekeeper
 
  private:
   bool mWarnedAboutDataWithoutSOR = false;
+  bool mWarnedAboutTfIdZero = false;
 };
 
 } // namespace o2::quality_control::core

@@ -42,9 +42,17 @@ void TimekeeperAsynchronous::updateByTimeFrameID(uint32_t tfid)
       << "trying to update the validity range with TF ID without having set the activity duration, returning" << ENDM;
     return;
   }
-  auto tfLengthMs = constants::lhc::LHCOrbitNS / 1000000 * mNOrbitsPerTF;
-  auto tfStart = static_cast<validity_time_t>(mActivityDuration.getMin() + tfLengthMs * tfid);
-  auto tfEnd = static_cast<validity_time_t>(mActivityDuration.getMin() + tfLengthMs * (tfid + 1) - 1); // todo ints!
+  if (tfid == 0) {
+    if (!mWarnedAboutTfIdZero) {
+      ILOG(Warning, Devel) << "Seen TFID equal to 0, which is not expected. Will not update TF-based validity, will not warn further." << ENDM;
+      mWarnedAboutTfIdZero = true;
+    }
+    return;
+  }
+
+  auto tfDurationMs = constants::lhc::LHCOrbitNS / 1000000 * mNOrbitsPerTF;
+  auto tfStart = static_cast<validity_time_t>(mActivityDuration.getMin() + tfDurationMs * (tfid - 1));
+  auto tfEnd = static_cast<validity_time_t>(mActivityDuration.getMin() + tfDurationMs * tfid - 1);
   mCurrentSampleTimespan.update(tfStart);
   mCurrentSampleTimespan.update(tfEnd);
 
