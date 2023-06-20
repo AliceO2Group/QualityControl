@@ -21,12 +21,8 @@
 namespace o2::quality_control::core
 {
 
-Timekeeper::Timekeeper(uint64_t nOrbitsPerTF)
-  : mNOrbitsPerTF(nOrbitsPerTF)
+Timekeeper::Timekeeper()
 {
-  if (nOrbitsPerTF == 0) {
-    ILOG(Warning, Support) << "nOrbitsPerTF was set to 0, object validity may be incorrectly marked" << ENDM;
-  }
 }
 
 void Timekeeper::setActivityDuration(ValidityInterval validity)

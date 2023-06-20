@@ -25,11 +25,11 @@ namespace o2::quality_control::core
 class TimekeeperAsynchronous : public Timekeeper
 {
  public:
-  explicit TimekeeperAsynchronous(uint64_t nOrbitsPerTF, validity_time_t windowLengthMs = 0);
+  explicit TimekeeperAsynchronous(validity_time_t windowLengthMs = 0);
   ~TimekeeperAsynchronous() = default;
 
   void updateByCurrentTimestamp(validity_time_t timestampMs) override;
-  void updateByTimeFrameID(uint32_t tfID) override;
+  void updateByTimeFrameID(uint32_t tfID, uint64_t nOrbitsPerTF) override;
   void reset() override;
 
  protected:

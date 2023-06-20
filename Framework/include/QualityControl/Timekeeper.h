@@ -37,7 +37,7 @@ const static TimeframeIdRange gInvalidTimeframeIdRange{
 class Timekeeper
 {
  public:
-  explicit Timekeeper(uint64_t nOrbitsPerTF);
+  Timekeeper();
   virtual ~Timekeeper() = default;
 
   /// \brief sets activity (run) duration
@@ -50,7 +50,7 @@ class Timekeeper
   /// \brief updates the validity based on the provided timestamp (ms since epoch)
   virtual void updateByCurrentTimestamp(validity_time_t timestampMs) = 0;
   /// \brief updates the validity based on the provided TF ID
-  virtual void updateByTimeFrameID(uint32_t tfID) = 0;
+  virtual void updateByTimeFrameID(uint32_t tfID, uint64_t nOrbitsPerTF) = 0;
 
   /// \brief resets the state of the mCurrent* counters
   virtual void reset() = 0;
@@ -71,8 +71,6 @@ class Timekeeper
   ValidityInterval mCurrentValidityTimespan = gInvalidValidityInterval; // since the last reset time until `update()` call
   ValidityInterval mCurrentSampleTimespan = gInvalidValidityInterval;   // since the last reset
   TimeframeIdRange mCurrentTimeframeIdRange = gInvalidTimeframeIdRange; // since the last reset
-
-  uint64_t mNOrbitsPerTF = 0;
 };
 
 } // namespace o2::quality_control::core
