@@ -122,13 +122,26 @@ int DigitQcTask::getNumericalParameter(std::string paramName, int defaultVal)
   }
 }
 
-bool DigitQcTask::chIsVertexEvent(const o2::fv0::ChannelData chd)
+bool DigitQcTask::chIsVertexEvent(const o2::fv0::ChannelData chd, bool simpleCheck) const
 {
-  return (chd.getFlag(o2::fv0::ChannelData::kIsCFDinADCgate) &&
-          !(chd.getFlag(o2::fv0::ChannelData::kIsTimeInfoNOTvalid) || chd.getFlag(o2::fv0::ChannelData::kIsTimeInfoLate) || chd.getFlag(o2::fv0::ChannelData::kIsTimeInfoLost)) &&
-          std::abs(static_cast<Int_t>(chd.CFDTime)) < mTrgOrGate &&
-          static_cast<Int_t>(chd.QTCAmpl) > mTrgChargeLevelLow &&
-          static_cast<Int_t>(chd.QTCAmpl) < mTrgChargeLevelHigh);
+  if (simpleCheck) {
+    return chd.getFlag(o2::fv0::ChannelData::kIsEventInTVDC);
+  } else {
+    return (chd.getFlag(o2::fv0::ChannelData::kIsCFDinADCgate) &&
+            !(chd.getFlag(o2::fv0::ChannelData::kIsTimeInfoNOTvalid) || chd.getFlag(o2::fv0::ChannelData::kIsTimeInfoLate) || chd.getFlag(o2::fv0::ChannelData::kIsTimeInfoLost)) &&
+            std::abs(static_cast<Int_t>(chd.CFDTime)) < mTrgOrGate &&
+            static_cast<Int_t>(chd.QTCAmpl) > mTrgChargeLevelLow &&
+            static_cast<Int_t>(chd.QTCAmpl) < mTrgChargeLevelHigh);
+  }
+}
+
+int DigitQcTask::fpgaDivision(int numerator, int denominator)
+{
+  // content of the ROM
+  int rom7x17[] = { 16383, 8192, 5461, 4096, 3277, 2731, 2341, 2048, 1820, 1638, 1489, 1365, 1260, 1170, 1092, 1024, 964, 910, 862, 819, 780, 745, 712, 683, 655, 630, 607, 585, 565, 546, 529, 512, 496, 482, 468, 455, 443, 431, 420, 410, 400, 390, 381, 372, 364, 356, 349, 341, 334, 328, 321, 315, 309, 303, 298, 293, 287, 282, 278, 273, 269, 264, 260, 256, 252, 248, 245, 241, 237, 234, 231, 228, 224, 221, 218, 216, 213, 210, 207, 205, 202, 200, 197, 195, 193, 191, 188, 186, 184, 182, 180, 178, 176, 174, 172, 171, 169, 167, 165, 164, 162, 161, 159, 158, 156, 155, 153, 152, 150, 149, 148, 146, 145, 144, 142, 141, 140, 139, 138, 137, 135, 134, 133, 132, 131, 130, 129 };
+
+  // return result of the operation (numerator / denominator)
+  return denominator ? (numerator * rom7x17[denominator - 1]) >> 14 : 0;
 }
 
 void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -242,6 +255,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
       int chID = std::stoi(strChID);
       if (chID < sNCHANNELS_FV0_PLUSREF) {
         mChID2PMhash[chID] = mapFEE2hash[moduleName];
+        mMapPMhash2isInner.insert({ mapFEE2hash[moduleName], chID < sNCHANNELS_FV0_INNER });
       } else {
         LOG(error) << "Incorrect LUT entry: chID " << strChID << " | " << moduleName;
       }
@@ -251,13 +265,6 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
       mTCMhash = mapFEE2hash[moduleName];
     }
   }
-  // hardcoded as this info is not stored in the LUT
-  mMapPMhash2isInner.insert({ mapFEE2hash["PMA0"], true });
-  mMapPMhash2isInner.insert({ mapFEE2hash["PMA1"], true });
-  mMapPMhash2isInner.insert({ mapFEE2hash["PMA2"], true });
-  mMapPMhash2isInner.insert({ mapFEE2hash["PMA3"], false });
-  mMapPMhash2isInner.insert({ mapFEE2hash["PMA4"], false });
-  mMapPMhash2isInner.insert({ mapFEE2hash["PMA5"], false });
 
   mHistBCvsFEEmodules = std::make_unique<TH2F>("BCvsFEEmodules", "BC vs FEE module;BC;FEE", sBCperOrbit, 0, sBCperOrbit, mapFEE2hash.size(), 0, mapFEE2hash.size());
   mHistOrbitVsFEEmodules = std::make_unique<TH2F>("OrbitVsFEEmodules", "Orbit vs FEE module;Orbit;FEE", sOrbitsPerTF, 0, sOrbitsPerTF, mapFEE2hash.size(), 0, mapFEE2hash.size());
@@ -519,7 +526,7 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
         continue;
       }
 
-      if (chIsVertexEvent(chData)) {
+      if (chIsVertexEvent(chData, true)) {
         pmSumTime += chData.CFDTime;
         if (chData.ChId < sNCHANNELS_FV0_INNER) {
           pmNChanIn++;
@@ -530,27 +537,22 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       if (chData.getFlag(o2::fv0::ChannelData::kIsCFDinADCgate)) {
         mapPMhash2sumAmpl[mChID2PMhash[static_cast<uint8_t>(chData.ChId)]] += static_cast<Int_t>(chData.QTCAmpl);
       }
-    }
+    } // channel data loop
 
     for (const auto& entry : mapPMhash2sumAmpl) {
       if (mMapPMhash2isInner[entry.first])
-        pmSumAmplIn += std::lround(static_cast<int>(entry.second / 8.));
+        pmSumAmplIn += static_cast<int>(entry.second >> 3);
       else
-        pmSumAmplOut += std::lround(static_cast<int>(entry.second / 8.));
+        pmSumAmplOut += static_cast<int>(entry.second >> 3);
     }
 
     auto pmNChan = pmNChanIn + pmNChanOut;
     auto pmSumAmpl = pmSumAmplIn + pmSumAmplOut;
     if (isTCM) {
-      if (pmNChan > 1) {
-        pmAverTime = std::floor((float)pmSumTime / pmNChan);
-      } else if (pmNChan == 1) {
-        pmAverTime = pmSumTime;
-      } else {
-        pmAverTime = 0;
-      }
-    } else
+      pmAverTime = fpgaDivision(pmSumTime, pmNChan);
+    } else {
       pmAverTime = o2::fit::Triggers::DEFAULT_TIME;
+    }
 
     if (isTCM) {
       setFEEmodules.insert(mTCMhash);
@@ -636,7 +638,7 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
       // end of triggers re-computation
     }
-  }
+  } // digit loop
 }
 
 void DigitQcTask::endOfCycle()
