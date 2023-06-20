@@ -133,12 +133,14 @@ void SACs::initialize(Trigger, framework::ServiceRegistryRef)
   mSACOneSides = std::make_unique<TCanvas>("c_sides_SACOne");
   mFourierCoeffsA = std::make_unique<TCanvas>("c_FourierCoefficients_1D_ASide");
   mFourierCoeffsC = std::make_unique<TCanvas>("c_FourierCoefficients_1D_CSide");
+  mSACZeroScale = std::make_unique<TCanvas>("c_sides_SACZero_scale");
 
   getObjectsManager()->startPublishing(mSACZeroSides.get());
   getObjectsManager()->startPublishing(mSACDeltaSides.get());
   getObjectsManager()->startPublishing(mSACOneSides.get());
   getObjectsManager()->startPublishing(mFourierCoeffsA.get());
   getObjectsManager()->startPublishing(mFourierCoeffsC.get());
+  getObjectsManager()->startPublishing(mSACZeroScale.get());
 }
 
 void SACs::update(Trigger, framework::ServiceRegistryRef)
@@ -148,13 +150,16 @@ void SACs::update(Trigger, framework::ServiceRegistryRef)
   mSACOneSides.get()->Clear();
   mFourierCoeffsA.get()->Clear();
   mFourierCoeffsC.get()->Clear();
+  mSACZeroScale.get()->Clear();
 
   o2::tpc::SACZero* sacZero = nullptr;
   o2::tpc::SACDelta<unsigned char>* sacDelta = nullptr;
   o2::tpc::SACOne* sacOne = nullptr;
   o2::tpc::FourierCoeffSAC* sacFFT = nullptr;
+  ILOG(Warning, Support) << "Here 1" << ENDM;
 
   if (mDoLatest) {
+    ILOG(Warning, Support) << "Here 2" << ENDM;
     std::vector<long> availableTimestampsSACZero = getDataTimestamps(mCdbApi, CDBTypeMap.at(CDBType::CalSAC0), 1, mTimestamps["SACZero"]);
     std::vector<long> availableTimestampsSACDelta = getDataTimestamps(mCdbApi, CDBTypeMap.at(CDBType::CalSACDelta), 1, mTimestamps["SACDelta"]);
     std::vector<long> availableTimestampsSACOne = getDataTimestamps(mCdbApi, CDBTypeMap.at(CDBType::CalSAC1), 1, mTimestamps["SACOne"]);
@@ -165,15 +170,22 @@ void SACs::update(Trigger, framework::ServiceRegistryRef)
     sacOne = mCdbApi.retrieveFromTFileAny<SACOne>(CDBTypeMap.at(CDBType::CalSAC1), std::map<std::string, std::string>{}, availableTimestampsSACOne[0]);
     sacFFT = mCdbApi.retrieveFromTFileAny<FourierCoeffSAC>(CDBTypeMap.at(CDBType::CalSACFourier), std::map<std::string, std::string>{}, availableTimestampsSACFourierCoeffs[0]);
   } else {
+    ILOG(Warning, Support) << "Obtained nothing so far." << ENDM;
     sacZero = mCdbApi.retrieveFromTFileAny<SACZero>(CDBTypeMap.at(CDBType::CalSAC0), std::map<std::string, std::string>{}, mTimestamps["SACZero"]);
+    ILOG(Warning, Support) << "Obtained SACZero." << ENDM;
     sacDelta = mCdbApi.retrieveFromTFileAny<SACDelta<unsigned char>>(CDBTypeMap.at(CDBType::CalSACDelta), std::map<std::string, std::string>{}, mTimestamps["SACDelta"]);
+    ILOG(Warning, Support) << "Obtained SACDelta." << ENDM;
     sacOne = mCdbApi.retrieveFromTFileAny<SACOne>(CDBTypeMap.at(CDBType::CalSAC1), std::map<std::string, std::string>{}, mTimestamps["SACOne"]);
+    ILOG(Warning, Support) << "Obtained SACOne." << ENDM;
     sacFFT = mCdbApi.retrieveFromTFileAny<FourierCoeffSAC>(CDBTypeMap.at(CDBType::CalSACFourier), std::map<std::string, std::string>{}, mTimestamps["SACFourierCoeffs"]);
+    ILOG(Warning, Support) << "Obtained SACFourierCoeffs." << ENDM;
   }
 
   if (sacZero) {
     mSACs.setSACZero(sacZero);
     mSACs.drawSACTypeSides(o2::tpc::SACType::IDCZero, 0, mRanges["SACZero"].at(1), mRanges["SACZero"].at(2), mSACZeroSides.get());
+    mSACs.drawIDCZeroScale(mSACZeroScale.get());
+    //GANESHA add here the scale stuff 
   }
   if (sacDelta) {
     mSACs.setSACDelta(sacDelta);
@@ -209,6 +221,7 @@ void SACs::finalize(Trigger, framework::ServiceRegistryRef)
   getObjectsManager()->stopPublishing(mSACDeltaSides.get());
   getObjectsManager()->stopPublishing(mFourierCoeffsA.get());
   getObjectsManager()->stopPublishing(mFourierCoeffsC.get());
+  getObjectsManager()->stopPublishing(mSACZeroScale.get());
 }
 
 } // namespace o2::quality_control_modules::tpc
