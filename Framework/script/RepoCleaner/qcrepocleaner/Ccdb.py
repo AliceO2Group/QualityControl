@@ -55,6 +55,7 @@ class Ccdb:
     counter_deleted: int = 0
     counter_validity_updated: int = 0
     counter_preserved: int = 0
+    set_adjustable_eov: bool = False  # if True, set the metadata adjustableEOV before change validity
 
     def __init__(self, url):
         logger.info(f"Instantiate CCDB at {url}")
@@ -188,6 +189,9 @@ class Ccdb:
             logger.debug(f"{metadata}")
             for key in metadata:
                 full_path += key + "=" + metadata[key] + "&"
+        if self.set_adjustable_eov:
+            logger.debug(f"As the parameter force is set, we add metadata adjustableEOV")
+            full_path += "adjustableEOV=1&"
         try:
             headers = {'Connection': 'close'}
             r = requests.put(full_path, headers=headers)
