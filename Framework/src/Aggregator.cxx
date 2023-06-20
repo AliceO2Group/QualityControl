@@ -19,6 +19,8 @@
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/AggregatorInterface.h"
 #include "QualityControl/UpdatePolicyType.h"
+#include "QualityControl/ActivityHelpers.h"
+#include "QualityControl/Activity.h"
 #include <Common/Exceptions.h>
 
 #include <utility>
@@ -97,9 +99,30 @@ QualityObjectsMapType Aggregator::filter(QualityObjectsMapType& qoMap)
   return result;
 }
 
-QualityObjectsType Aggregator::aggregate(QualityObjectsMapType& qoMap)
+QualityObjectsType Aggregator::aggregate(QualityObjectsMapType& qoMap, const Activity& defaultActivity)
 {
   auto filtered = filter(qoMap);
+
+  Activity resultActivity;
+  if (filtered.empty()) {
+    resultActivity = defaultActivity;
+  } else {
+    // Aggregated Quality validity is a union of all Qualities used to produce it.
+    // This is to allow to trigger postprocessing on an update of the aggregated QualityObject
+    // and get a validFrom timestamp which allows to access all the input QualityObjects as well.
+    // Not sure if this is "correct", but I do not see a better solution at the moment...
+    resultActivity = activity_helpers::overlappingActivity(
+      filtered.begin(),
+      filtered.end(),
+      [](const std::pair<std::string, std::shared_ptr<const QualityObject>>& item) -> const Activity& {
+        return item.second->getActivity();
+      });
+    if (resultActivity.mValidity.isInvalid()) {
+      ILOG(Warning, Support) << "Overlapping validity of inputs QOs to aggregator " << mAggregatorConfig.name << " is invalid (disjoint validities of input objects). Default activity will be used instead." << ENDM;
+      resultActivity = defaultActivity;
+    }
+  }
+
   auto results = mAggregatorInterface->aggregate(filtered);
   QualityObjectsType qualityObjects;
   for (auto const& [qualityName, quality] : results) {
@@ -108,6 +131,7 @@ QualityObjectsType Aggregator::aggregate(QualityObjectsMapType& qoMap)
       mAggregatorConfig.name + "/" + qualityName,
       mAggregatorConfig.detectorName,
       UpdatePolicyTypeUtils::ToString(mAggregatorConfig.policyType)));
+    qualityObjects.back()->setActivity(resultActivity);
   }
   return qualityObjects;
 }
