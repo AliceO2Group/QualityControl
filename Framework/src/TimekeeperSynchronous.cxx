@@ -22,7 +22,7 @@
 namespace o2::quality_control::core
 {
 
-TimekeeperSynchronous::TimekeeperSynchronous(uint64_t nOrbitsPerTF) : Timekeeper(nOrbitsPerTF)
+TimekeeperSynchronous::TimekeeperSynchronous() : Timekeeper()
 {
 }
 
@@ -32,7 +32,7 @@ void TimekeeperSynchronous::updateByCurrentTimestamp(validity_time_t timestampMs
   mActivityDuration.update(timestampMs);
 }
 
-void TimekeeperSynchronous::updateByTimeFrameID(uint32_t tfid)
+void TimekeeperSynchronous::updateByTimeFrameID(uint32_t tfid, uint64_t nOrbitsPerTF)
 {
   if (tfid == 0) {
     if (!mWarnedAboutTfIdZero) {
@@ -56,7 +56,7 @@ void TimekeeperSynchronous::updateByTimeFrameID(uint32_t tfid)
   // fixme: We might want to use this once we know how to get orbitResetTime:
   //  std::ceil((timingInfo.firstTForbit * o2::constants::lhc::LHCOrbitNS / 1000 + orbitResetTime) / 1000);
   //  Until then, we use a less precise method:
-  auto tfDuration = constants::lhc::LHCOrbitNS / 1000000 * mNOrbitsPerTF;
+  auto tfDuration = constants::lhc::LHCOrbitNS / 1000000 * nOrbitsPerTF;
   auto tfStart = mActivityDuration.getMin() + tfDuration * (tfid - 1);
   auto tfEnd = tfStart + tfDuration - 1;
   mCurrentSampleTimespan.update(tfStart);

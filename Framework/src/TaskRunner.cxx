@@ -167,9 +167,9 @@ void TaskRunner::init(InitContext& iCtx)
   // fixme: use DataTakingContext.deployment once we can get it during initialization
   // fixme: use DataTakingContext.nOrbitsPerTF once we can get it during initialization
   if (mTaskConfig.fallbackActivity.mProvenance == "qc") {
-    mTimekeeper = std::make_shared<TimekeeperSynchronous>(32);
+    mTimekeeper = std::make_shared<TimekeeperSynchronous>();
   } else {
-    mTimekeeper = std::make_shared<TimekeeperAsynchronous>(32);
+    mTimekeeper = std::make_shared<TimekeeperAsynchronous>();
   }
 
   // setup user's task
@@ -213,7 +213,7 @@ void TaskRunner::run(ProcessingContext& pCtx)
   auto [dataReady, timerReady] = validateInputs(pCtx.inputs());
 
   if (dataReady) {
-    mTimekeeper->updateByTimeFrameID(pCtx.services().get<TimingInfo>().tfCounter);
+    mTimekeeper->updateByTimeFrameID(pCtx.services().get<TimingInfo>().tfCounter, pCtx.services().get<DataTakingContext>().nOrbitsPerTF);
     mTask->monitorData(pCtx);
     updateMonitoringStats(pCtx);
   }

@@ -25,11 +25,11 @@ namespace o2::quality_control::core
 class TimekeeperSynchronous : public Timekeeper
 {
  public:
-  explicit TimekeeperSynchronous(uint64_t nOrbitsPerTF);
+  TimekeeperSynchronous();
   ~TimekeeperSynchronous() = default;
 
   void updateByCurrentTimestamp(validity_time_t timestampMs) override;
-  void updateByTimeFrameID(uint32_t tfID) override;
+  void updateByTimeFrameID(uint32_t tfID, uint64_t nOrbitsPerTF) override;
 
   void reset() override;
 

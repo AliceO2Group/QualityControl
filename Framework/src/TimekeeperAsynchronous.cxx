@@ -22,8 +22,8 @@
 namespace o2::quality_control::core
 {
 
-TimekeeperAsynchronous::TimekeeperAsynchronous(uint64_t nOrbitsPerTF, validity_time_t windowLengthMs)
-  : Timekeeper(nOrbitsPerTF), mWindowLengthMs(windowLengthMs)
+TimekeeperAsynchronous::TimekeeperAsynchronous(validity_time_t windowLengthMs)
+  : Timekeeper(), mWindowLengthMs(windowLengthMs)
 {
 }
 
@@ -32,7 +32,7 @@ void TimekeeperAsynchronous::updateByCurrentTimestamp(validity_time_t timestampM
   // async QC should ignore current timestamp
 }
 
-void TimekeeperAsynchronous::updateByTimeFrameID(uint32_t tfid)
+void TimekeeperAsynchronous::updateByTimeFrameID(uint32_t tfid, uint64_t nOrbitsPerTF)
 {
   // fixme: We might want to use this once we know how to get orbitResetTime:
   //  std::ceil((timingInfo.firstTForbit * o2::constants::lhc::LHCOrbitNS / 1000 + orbitResetTime) / 1000);
@@ -50,7 +50,7 @@ void TimekeeperAsynchronous::updateByTimeFrameID(uint32_t tfid)
     return;
   }
 
-  auto tfDurationMs = constants::lhc::LHCOrbitNS / 1000000 * mNOrbitsPerTF;
+  auto tfDurationMs = constants::lhc::LHCOrbitNS / 1000000 * nOrbitsPerTF;
   auto tfStart = static_cast<validity_time_t>(mActivityDuration.getMin() + tfDurationMs * (tfid - 1));
   auto tfEnd = static_cast<validity_time_t>(mActivityDuration.getMin() + tfDurationMs * tfid - 1);
   mCurrentSampleTimespan.update(tfStart);
