@@ -10,7 +10,11 @@
       },
       "Activity": {
         "number": "42",
-        "type": "2"
+        "type": "2",
+        "start": "8000000",
+        "end": "9000000",
+        "periodName": "LHC9000x",
+        "passName": "apass500"
       },
       "monitoring": {
         "url": "infologger:///debug?qc"

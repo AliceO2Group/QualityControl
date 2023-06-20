@@ -202,7 +202,7 @@ TriggerFcn NewObject(const std::string& databaseUrl, const std::string& database
 TriggerFcn ForEachObject(const std::string& databaseUrl, const std::string& databaseType, const std::string& objectPath, const Activity& activity, const std::string& config)
 {
   // Key names in the header map.
-  constexpr auto timestampKey = metadata_keys::validFrom;
+  constexpr auto timestampSortKey = metadata_keys::validFrom;
   auto fullObjectPath = (databaseType == "qcdb" ? activity.mProvenance + "/" : "") + objectPath;
 
   // We support only CCDB here.
@@ -231,14 +231,14 @@ TriggerFcn ForEachObject(const std::string& databaseUrl, const std::string& data
   // we make sure it is sorted. If it is already, it shouldn't cost much.
   std::sort(filteredObjects->begin(), filteredObjects->end(),
             [](const boost::property_tree::ptree& a, const boost::property_tree::ptree& b) {
-              return a.get<int64_t>(timestampKey) < b.get<int64_t>(timestampKey);
+              return a.get<int64_t>(timestampSortKey) < b.get<int64_t>(timestampSortKey);
             });
 
   return [filteredObjects, activity, currentObject = filteredObjects->begin(), config]() mutable -> Trigger {
     if (currentObject != filteredObjects->end()) {
       auto currentActivity = activity_helpers::asActivity(*currentObject, activity.mProvenance);
       bool last = currentObject + 1 == filteredObjects->end();
-      Trigger trigger(TriggerType::ForEachObject, last, currentActivity, currentObject->get<int64_t>(timestampKey));
+      Trigger trigger(TriggerType::ForEachObject, last, currentActivity, currentObject->get<int64_t>(timestampSortKey));
       ++currentObject;
       return trigger;
     } else {
@@ -250,7 +250,7 @@ TriggerFcn ForEachObject(const std::string& databaseUrl, const std::string& data
 TriggerFcn ForEachLatest(const std::string& databaseUrl, const std::string& databaseType, const std::string& objectPath, const Activity& activity, const std::string& config)
 {
   // Key names in the header map.
-  constexpr auto timestampKey = metadata_keys::created;
+  constexpr auto timestampSortKey = metadata_keys::created;
   auto fullObjectPath = (databaseType == "qcdb" ? activity.mProvenance + "/" : "") + objectPath;
 
   // We support only CCDB here.
@@ -274,7 +274,7 @@ TriggerFcn ForEachLatest(const std::string& databaseUrl, const std::string& data
       auto latestObject = std::find_if(filteredObjects->begin(), filteredObjects->end(), [&](const std::pair<Activity, boost::property_tree::ptree>& entry) {
         return entry.first.same(objectActivity);
       });
-      if (latestObject != filteredObjects->end() && latestObject->second.get<int64_t>(timestampKey) < rit->second.get<int64_t>(timestampKey)) {
+      if (latestObject != filteredObjects->end() && latestObject->second.get<int64_t>(timestampSortKey) < rit->second.get<int64_t>(timestampSortKey)) {
         *latestObject = { objectActivity, rit->second };
         ILOG(Debug, Devel) << "Updated the object with activity: " << objectActivity << ENDM;
       } else {
@@ -302,7 +302,7 @@ TriggerFcn ForEachLatest(const std::string& databaseUrl, const std::string& data
       const auto& currentActivity = currentObject->first;
       const auto& currentPtree = currentObject->second;
       bool last = currentObject + 1 == filteredObjects->end();
-      Trigger trigger(TriggerType::ForEachLatest, last, currentActivity, currentPtree.get<int64_t>(timestampKey), config);
+      Trigger trigger(TriggerType::ForEachLatest, last, currentActivity, currentPtree.get<int64_t>(metadata_keys::validFrom), config);
       ++currentObject;
       return trigger;
     } else {
