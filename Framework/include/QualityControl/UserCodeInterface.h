@@ -53,7 +53,7 @@ class UserCodeInterface
   void setName(const std::string& name);
 
   template <typename T>
-  T* retrieveConditionAny(std::string const& path, std::map<std::string, std::string> const& metadata = {}, long timestamp=-1);
+  T* retrieveConditionAny(std::string const& path, std::map<std::string, std::string> const& metadata = {}, long timestamp = -1);
 
  protected:
   CustomParameters mCustomParameters;
