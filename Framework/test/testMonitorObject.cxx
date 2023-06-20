@@ -91,7 +91,7 @@ TEST_CASE("metadata")
   // add map
   map<string, string> another = { { "key2", "value2" }, { "key3", "value3" } };
   obj.addMetadata(another);
-  CHECK(obj.getMetadataMap().size() == 3);
+  CHECK(obj.getMetadataMap().size() == 666);
   CHECK(obj.getMetadataMap().at("key1") == "value1");
   CHECK(obj.getMetadataMap().at("key2") == "value2");
   CHECK(obj.getMetadataMap().at("key3") == "value3");
