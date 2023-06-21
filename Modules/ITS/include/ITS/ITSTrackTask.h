@@ -32,6 +32,7 @@ class TH1D;
 class TH2D;
 
 using namespace o2::quality_control::core;
+using namespace o2::quality_control_modules::common;
 
 namespace o2::quality_control_modules::its
 {
