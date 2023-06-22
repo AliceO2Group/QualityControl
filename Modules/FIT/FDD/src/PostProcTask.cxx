@@ -83,7 +83,7 @@ void PostProcTask::configure(const boost::property_tree::ptree& config)
   node = config.get_child_optional(Form("%s.custom.timestampSourceLhcIf", configPath));
   if (node) {
     mTimestampSourceLhcIf = node.get_ptr()->get_child("").get_value<std::string>();
-    if (mTimestampSourceLhcIf == "last" || mTimestampSourceLhcIf == "trigger" || mTimestampSourceLhcIf == "metadata") {
+    if (mTimestampSourceLhcIf == "last" || mTimestampSourceLhcIf == "trigger" || mTimestampSourceLhcIf == "metadata" || mTimestampSourceLhcIf == "validUntil") {
       ILOG(Debug, Support) << "configure() : using timestampSourceLhcIf = \"" << mTimestampSourceLhcIf << "\"" << ENDM;
     } else {
       auto prev = mTimestampSourceLhcIf;
@@ -364,6 +364,8 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
     ts = -1;
   } else if (mTimestampSourceLhcIf == "trigger") {
     ts = t.timestamp;
+  } else if (mTimestampSourceLhcIf == "validUntil") {
+    ts = t.activity.mValidity.getMax();
   } else if (mTimestampSourceLhcIf == "metadata") {
     for (auto metainfo : moBCvsTriggers->getMetadataMap()) {
       if (metainfo.first == "TFcreationTime")

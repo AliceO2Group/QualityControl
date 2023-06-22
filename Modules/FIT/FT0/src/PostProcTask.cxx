@@ -289,6 +289,8 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
     ts = -1;
   } else if (mTimestampSourceLhcIf == "trigger") {
     ts = t.timestamp;
+  } else if (mTimestampSourceLhcIf == "validUntil") {
+    ts = t.activity.mValidity.getMax();
   } else if (mTimestampSourceLhcIf == "metadata") {
     for (auto metainfo : moBCvsTriggers->getMetadataMap()) {
       if (metainfo.first == "TFcreationTime")

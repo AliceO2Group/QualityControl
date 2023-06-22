@@ -23,6 +23,7 @@
 #include "QualityControl/ObjectMetadataKeys.h"
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/RepoPathUtils.h"
+#include "QualityControl/ActivityHelpers.h"
 #include <TDatime.h>
 #include <TH1.h>
 #include <TCanvas.h>
