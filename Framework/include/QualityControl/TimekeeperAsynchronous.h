@@ -33,9 +33,9 @@ class TimekeeperAsynchronous : public Timekeeper
   void reset() override;
 
  protected:
-  validity_time_t activityBoundarySelectionStrategy(validity_time_t ecsTimestamp,
-                                                    validity_time_t configTimestamp,
-                                                    validity_time_t currentTimestamp) override;
+  validity_time_t activityBoundarySelectionStrategy(validity_time_t ecsTimestamp, validity_time_t configTimestamp,
+                                                    validity_time_t currentTimestamp,
+                                                    std::function<validity_time_t(void)> ccdbTimestampAccessor) override;
 
  private:
   validity_time_t mWindowLengthMs = 0;

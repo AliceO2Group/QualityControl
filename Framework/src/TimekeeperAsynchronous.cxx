@@ -89,22 +89,30 @@ void TimekeeperAsynchronous::reset()
   mCurrentTimeframeIdRange = gInvalidTimeframeIdRange;
 }
 
-validity_time_t
-  TimekeeperAsynchronous::activityBoundarySelectionStrategy(validity_time_t ecsTimestamp, validity_time_t configTimestamp,
-                                                            validity_time_t currentTimestamp)
+template <typename T>
+bool not_on_limit(T value)
 {
-  auto notOnLimit = [](validity_time_t value) {
-    return value != std::numeric_limits<validity_time_t>::min() && value != std::numeric_limits<validity_time_t>::max();
-  };
+  return value != std::numeric_limits<T>::min() && value != std::numeric_limits<T>::max();
+}
+
+validity_time_t
+  TimekeeperAsynchronous::activityBoundarySelectionStrategy(validity_time_t ecsTimestamp,
+                                                            validity_time_t configTimestamp,
+                                                            validity_time_t currentTimestamp,
+                                                            std::function<validity_time_t(void)> ccdbTimestampAccessor)
+{
   validity_time_t selected = 0;
-  if (notOnLimit(ecsTimestamp)) {
+  auto ccdbTimestamp = ccdbTimestampAccessor == nullptr ? std::numeric_limits<validity_time_t>::min() : ccdbTimestampAccessor();
+  if (not_on_limit(ccdbTimestamp)) {
+    selected = ccdbTimestamp;
+  } else if (not_on_limit(ecsTimestamp)) {
     selected = ecsTimestamp;
-  } else if (notOnLimit(configTimestamp)) {
+  } else if (not_on_limit(configTimestamp)) {
     selected = configTimestamp;
   } else {
     // an exception could be thrown here once the values above are set correctly in production
   }
-  ILOG(Info, Devel) << "Received the following activity boundary propositions: " << ecsTimestamp
+  ILOG(Info, Devel) << "Received the following activity boundary propositions: " << ccdbTimestamp << ", " << ecsTimestamp
                     << ", " << configTimestamp << ", " << currentTimestamp << ". Selected: " << selected << ENDM;
   return selected;
 }
