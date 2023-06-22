@@ -57,6 +57,14 @@ class ITSTrackTask : public TaskInterface
   void formatAxes(TH1* h, const char* xTitle, const char* yTitle, float xOffset = 1., float yOffset = 1.);
   void addObject(TObject* aObject);
   void createAllHistos();
+  template <class T>
+  void formatAxes(T* obj, const char* xTitle, const char* yTitle, float xOffset, float yOffset)
+  {
+    obj->GetXaxis()->SetTitle(xTitle);
+    obj->GetYaxis()->SetTitle(yTitle);
+    obj->GetXaxis()->SetTitleOffset(xOffset);
+    obj->GetYaxis()->SetTitleOffset(yOffset);
+  }
 
   static constexpr int NLayer = 7;
   static constexpr int NLayerIB = 3;
@@ -85,7 +93,7 @@ class ITSTrackTask : public TaskInterface
   std::unique_ptr<TH2DRatio> hHitFirstLayerPhi6cls;
   std::unique_ptr<TH2DRatio> hHitFirstLayerPhi7cls;
   TH2D* hClusterVsBunchCrossing;
-  std::unique_ptr<TH2DRatio> hNClusterVsChipITS;
+  TH2D* hNClusterVsChipITS;
 
   float mVertexXYsize = 0.5;
   float mVertexZsize = 15.;
