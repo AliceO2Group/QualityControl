@@ -32,6 +32,7 @@
 #include <Framework/EndOfStreamContext.h>
 #include <Framework/TimingInfo.h>
 #include <Framework/DataTakingContext.h>
+#include <Framework/DefaultsHelpers.h>
 #include <CommonUtils/ConfigurableParam.h>
 #include <DetectorsBase/GRPGeomHelper.h>
 
@@ -164,12 +165,21 @@ void TaskRunner::init(InitContext& iCtx)
   mObjectsManager = std::make_shared<ObjectsManager>(mTaskConfig.taskName, mTaskConfig.className, mTaskConfig.detectorName, mTaskConfig.consulUrl, mTaskConfig.parallelTaskID);
 
   // setup timekeeping
-  // fixme: use DataTakingContext.deployment once we can get it during initialization
-  // fixme: use DataTakingContext.nOrbitsPerTF once we can get it during initialization
-  if (mTaskConfig.fallbackActivity.mProvenance == "qc") {
-    mTimekeeper = std::make_shared<TimekeeperSynchronous>();
-  } else {
-    mTimekeeper = std::make_shared<TimekeeperAsynchronous>();
+  switch (DefaultsHelpers::deploymentMode()) {
+    case DeploymentMode::Grid: {
+      ILOG(Info, Devel) << "Detected async deployment, object validity will be based on incoming data and available SOR/EOR times" << ENDM;
+      mTimekeeper = std::make_shared<TimekeeperAsynchronous>();
+      break;
+    }
+    case DeploymentMode::Local:
+    case DeploymentMode::OnlineECS:
+    case DeploymentMode::OnlineDDS:
+    case DeploymentMode::OnlineAUX:
+    case DeploymentMode::FST:
+    default: {
+      ILOG(Info, Devel) << "Detected sync deployment, object validity will be based primarily on current time" << ENDM;
+      mTimekeeper = std::make_shared<TimekeeperSynchronous>();
+    }
   }
 
   // setup user's task
