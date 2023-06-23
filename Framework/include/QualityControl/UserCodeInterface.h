@@ -10,7 +10,7 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   CommonInterface.h
+/// \file   UserCodeInterface.h
 /// \author Barthelemy von Haller
 ///
 
@@ -21,7 +21,7 @@
 #include <unordered_map>
 #include <map>
 #include <Rtypes.h>
-#include <CCDB/BasicCcdbManager.h>
+#include <CCDB/BasicCCDBManager.h>
 
 #include "QualityControl/CustomParameters.h"
 #include "QualityControl/QcInfoLogger.h"
