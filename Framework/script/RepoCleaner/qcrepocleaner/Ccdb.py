@@ -198,8 +198,8 @@ class Ccdb:
             r.raise_for_status()
             self.counter_validity_updated += 1
         except requests.exceptions.RequestException as e:  
-            print(e)
-            sys.exit(1)  # really ?
+            logging.error(f"Exception in updateValidity: {traceback.format_exc()}")
+
 
     def putVersion(self, version: ObjectVersion, data):
         '''
