@@ -23,6 +23,7 @@
 #include <TString.h>
 #include <THnSparse.h>
 #include <string>
+#include "Common/TH2Ratio.h"
 
 #include <DataFormatsITSMFT/TopologyDictionary.h>
 #include <ITSBase/GeometryTGeo.h>
@@ -32,6 +33,7 @@ class TH1F;
 class TH2F;
 
 using namespace o2::quality_control::core;
+using namespace o2::quality_control_modules::common;
 
 namespace o2::quality_control_modules::its
 {
@@ -59,7 +61,14 @@ class ITSClusterTask : public TaskInterface
 
  private:
   void publishHistos();
-  void formatAxes(TH1* h, const char* xTitle, const char* yTitle, float xOffset = 1., float yOffset = 1.);
+  template <class T>
+  void formatAxes(T* obj, const char* xTitle, const char* yTitle, float xOffset, float yOffset)
+  {
+    obj->GetXaxis()->SetTitle(xTitle);
+    obj->GetYaxis()->SetTitle(yTitle);
+    obj->GetXaxis()->SetTitleOffset(xOffset);
+    obj->GetYaxis()->SetTitleOffset(yOffset);
+  }
   void addObject(TObject* aObject);
   void getJsonParameters();
   void createAllHistos();
@@ -77,8 +86,8 @@ class ITSClusterTask : public TaskInterface
   TH1F* hClusterTopologySummaryIB[NLayer][48][9] = { { { nullptr } } };
   TH1F* hGroupedClusterSizeSummaryIB[NLayer][48][9] = { { { nullptr } } };
 
-  TH2F* hAverageClusterOccupancySummaryIB[NLayer] = { nullptr };
-  TH2F* hAverageClusterSizeSummaryIB[NLayer] = { nullptr };
+  std::shared_ptr<TH2FRatio> hAverageClusterOccupancySummaryIB[NLayer];
+  std::shared_ptr<TH2FRatio> hAverageClusterSizeSummaryIB[NLayer];
 
   int mClusterOccupancyIB[NLayer][48][9] = { { { 0 } } };
 
@@ -87,8 +96,8 @@ class ITSClusterTask : public TaskInterface
   TH1F* hClusterSizeSummaryOB[NLayer][48] = { { nullptr } };
   TH1F* hClusterTopologySummaryOB[NLayer][48] = { { nullptr } };
 
-  TH2F* hAverageClusterOccupancySummaryOB[NLayer] = { nullptr };
-  TH2F* hAverageClusterSizeSummaryOB[NLayer] = { nullptr };
+  std::shared_ptr<TH2FRatio> hAverageClusterOccupancySummaryOB[NLayer];
+  std::shared_ptr<TH2FRatio> hAverageClusterSizeSummaryOB[NLayer];
 
   int mClusterOccupancyOB[NLayer][48][28] = { { { 0 } } };
 
@@ -102,11 +111,12 @@ class ITSClusterTask : public TaskInterface
   TH2F* mGeneralOccupancy = nullptr;
 
   // Fine checks
-  TH2F* hAverageClusterOccupancySummaryFine[NLayer] = { nullptr };
-  TH2F* hAverageClusterSizeSummaryFine[NLayer] = { nullptr };
 
-  TH2F* hAverageClusterOccupancySummaryZPhi[NLayer] = { nullptr };
-  TH2F* hAverageClusterSizeSummaryZPhi[NLayer] = { nullptr };
+  std::shared_ptr<TH2FRatio> hAverageClusterOccupancySummaryFine[NLayer];
+  std::shared_ptr<TH2FRatio> hAverageClusterSizeSummaryFine[NLayer];
+
+  std::shared_ptr<TH2FRatio> hAverageClusterOccupancySummaryZPhi[NLayer];
+  std::shared_ptr<TH2FRatio> hAverageClusterSizeSummaryZPhi[NLayer];
 
   int mClusterSize[NLayer][48][28] = { { { 0 } } }; //[#layers][max staves][max lanes / chips]
   int nClusters[NLayer][48][28] = { { { 0 } } };
