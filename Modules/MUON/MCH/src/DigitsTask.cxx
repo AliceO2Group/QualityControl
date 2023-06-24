@@ -28,6 +28,7 @@
 #include "MCHMappingInterface/Segmentation.h"
 #include "MCHRawDecoder/DataDecoder.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "DetectorsBase/GRPGeomHelper.h"
 #include <Framework/InputRecord.h>
 #include <CommonConstants/LHCConstants.h>
 #include <DetectorsRaw/HBFUtils.h>
@@ -127,6 +128,8 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   bool hasOrbits = checkInput(ctx, "orbits");
 
+  mNOrbitsPerTF = o2::base::GRPGeomHelper::instance().getNHBFPerTF();
+
   if (hasOrbits) {
     // if (ctx.inputs().isValid("orbits")) {
     auto orbits = ctx.inputs().get<gsl::span<uint64_t>>("orbits");
@@ -174,7 +177,7 @@ void DigitsTask::addDefaultOrbitsInTF()
 {
   for (int fee = 0; fee < FecId::sFeeNum; fee++) {
     for (int li = 0; li < FecId::sLinkNum; li++) {
-      mNOrbits[fee][li] += o2::raw::HBFUtils::Instance().getNOrbitsPerTF();
+      mNOrbits[fee][li] += mNOrbitsPerTF;
     }
   }
 }
