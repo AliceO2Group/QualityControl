@@ -93,6 +93,7 @@ class DigitsTask /*final*/ : public TaskInterface // todo add back the "final" w
 
   uint32_t mNOrbits[FecId::sFeeNum][FecId::sLinkNum];
   uint32_t mLastOrbitSeen[FecId::sFeeNum][FecId::sLinkNum];
+  int mNOrbitsPerTF{ -1 };
 
   // 2D Histograms, using Elec view (where x and y uniquely identify each pad based on its Elec info (fee, link, de)
   std::unique_ptr<MergeableTH2Ratio> mHistogramOccupancyElec;       // Occupancy histogram (Elec view)
