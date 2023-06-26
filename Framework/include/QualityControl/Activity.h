@@ -52,7 +52,7 @@ class Activity
       mValidity(validity),
       mBeamType(beamType),
       mPartitionName(partitionName),
-      mFillNumber(fillNumber){}
+      mFillNumber(fillNumber) {}
 
   /// Copy constructor
   Activity(const Activity& other) = default;
@@ -83,7 +83,7 @@ class Activity
   ValidityInterval mValidity{ gFullValidityInterval };
   std::string mBeamType{};
   std::string mPartitionName{};
-  int mFillNumber{0};
+  int mFillNumber{ 0 };
 
   ClassDef(Activity, 5);
 };

@@ -74,8 +74,8 @@ inline bool hasChecks(std::string configSource)
   return config->getRecursive("qc").count("checks") > 0;
 }
 
-template<typename T>
-inline T computeActivityField(framework::ServiceRegistryRef services, const std::string & name, T fallbackNumber = 0)
+template <typename T>
+inline T computeActivityField(framework::ServiceRegistryRef services, const std::string& name, T fallbackNumber = 0)
 {
   int result = 0;
 
@@ -108,11 +108,10 @@ inline Activity computeActivity(framework::ServiceRegistryRef services, const Ac
     fallbackActivity.mPeriodName,
     fallbackActivity.mPassName,
     fallbackActivity.mProvenance,
-    {run_start_time_ms, run_stop_time_ms},
+    { run_start_time_ms, run_stop_time_ms },
     beam_type,
     partitionName,
-    fillNumber
-  );
+    fillNumber);
 
   return activity;
 }
