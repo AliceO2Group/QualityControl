@@ -518,11 +518,9 @@ void CheckRunner::endOfStream(framework::EndOfStreamContext& eosContext)
 void CheckRunner::start(ServiceRegistryRef services)
 {
   mActivity = std::make_shared<Activity>(computeActivity(services, mConfig.fallbackActivity));
-  string partitionName = computePartitionName(services);
   QcInfoLogger::setRun(mActivity->mId);
-  QcInfoLogger::setPartition(partitionName);
+  QcInfoLogger::setPartition(mActivity->mPartitionName);
   ILOG(Info, Support) << "Starting run " << mActivity->mId << ":" << ENDM;
-  ILOG(Debug, Devel) << "   period: " << mActivity->mPeriodName << " / pass type: " << mActivity->mPassName << " / provenance: " << mActivity->mProvenance << ENDM;
   mTimerTotalDurationActivity.reset();
   mCollector->setRunNumber(mActivity->mId);
   mReceivedEOS = false;

@@ -31,6 +31,8 @@ namespace o2::quality_control::core
 /// \author   Barthelemy von Haller
 class Activity
 {
+  // TODO make it a struct ?
+
  public:
   Activity() = default;
   Activity(int id,
@@ -39,14 +41,18 @@ class Activity
            const std::string& passName = "",
            const std::string& provenance = "qc",
            ValidityInterval validity = gFullValidityInterval,
-           const std::string& beamType = "")
+           const std::string& beamType = 0,
+           const std::string& partitionName = "",
+           int fillNumber = 0)
     : mId(id),
       mType(type),
       mPeriodName(periodName),
       mPassName(passName),
       mProvenance(provenance),
       mValidity(validity),
-      mBeamType(beamType) {}
+      mBeamType(beamType),
+      mPartitionName(partitionName),
+      mFillNumber(fillNumber){}
 
   /// Copy constructor
   Activity(const Activity& other) = default;
@@ -76,8 +82,10 @@ class Activity
   std::string mProvenance{ "qc" };
   ValidityInterval mValidity{ gFullValidityInterval };
   std::string mBeamType{};
+  std::string mPartitionName{};
+  int mFillNumber{0};
 
-  ClassDef(Activity, 4);
+  ClassDef(Activity, 5);
 };
 
 } // namespace o2::quality_control::core
