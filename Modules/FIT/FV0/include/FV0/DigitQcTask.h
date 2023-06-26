@@ -173,6 +173,11 @@ class DigitQcTask final : public TaskInterface
   std::map<unsigned int, TH2F*> mMapHistAmpVsTime;
   std::unique_ptr<TH2F> mHistBCvsTrg;
   std::unique_ptr<TH2F> mHistBCvsFEEmodules;
+  std::unique_ptr<TH2F> mHistBcVsFeeForOrATrg;
+  std::unique_ptr<TH2F> mHistBcVsFeeForOrAOutTrg;
+  std::unique_ptr<TH2F> mHistBcVsFeeForNChanTrg;
+  std::unique_ptr<TH2F> mHistBcVsFeeForChargeTrg;
+  std::unique_ptr<TH2F> mHistBcVsFeeForOrAInTrg;
   std::unique_ptr<TH2F> mHistOrbitVsTrg;
   std::unique_ptr<TH2F> mHistOrbitVsFEEmodules;
   std::unique_ptr<TH2F> mHistPmTcmNchA;

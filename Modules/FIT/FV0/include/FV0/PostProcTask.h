@@ -92,6 +92,11 @@ class PostProcTask final : public quality_control::postprocessing::PostProcessin
   std::unique_ptr<TH2F> mHistBcPatternFee;
   std::unique_ptr<TH2F> mHistBcTrgOutOfBunchColl;
   std::unique_ptr<TH2F> mHistBcFeeOutOfBunchColl;
+  std::unique_ptr<TH2F> mHistBcFeeOutOfBunchCollForOrATrg;
+  std::unique_ptr<TH2F> mHistBcFeeOutOfBunchCollForOrAOutTrg;
+  std::unique_ptr<TH2F> mHistBcFeeOutOfBunchCollForNChanTrg;
+  std::unique_ptr<TH2F> mHistBcFeeOutOfBunchCollForChargeTrg;
+  std::unique_ptr<TH2F> mHistBcFeeOutOfBunchCollForOrAInTrg;
 
   uint8_t mTCMhash;
   std::array<uint8_t, sNCHANNELS_FV0_PLUSREF> mChID2PMhash; // map chID->hashed PM value
