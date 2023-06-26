@@ -88,6 +88,9 @@ std::map<std::string, std::string> asDatabaseMetadata(const core::Activity&, boo
 core::Activity asActivity(const std::map<std::string, std::string>& metadata, const std::string& provenance = "qc");
 core::Activity asActivity(const boost::property_tree::ptree&, const std::string& provenance = "qc");
 
+std::function<validity_time_t(void)> getCcdbSorTimeAccessor(uint64_t runNumber);
+std::function<validity_time_t(void)> getCcdbEorTimeAccessor(uint64_t runNumber);
+
 namespace implementation
 {
 template <typename Iter, typename Accessor>

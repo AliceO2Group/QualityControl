@@ -46,6 +46,7 @@
 #include "QualityControl/Bookkeeping.h"
 #include "QualityControl/TimekeeperSynchronous.h"
 #include "QualityControl/TimekeeperAsynchronous.h"
+#include "QualityControl/ActivityHelpers.h"
 
 #include <string>
 #include <TFile.h>
@@ -462,9 +463,9 @@ void TaskRunner::startOfActivity()
   mObjectsManager->setActivity(activity);
 
   auto now = getCurrentTimestamp();
-  mTimekeeper->setStartOfActivity(activity.mValidity.getMin(), mTaskConfig.fallbackActivity.mValidity.getMin(), now);
+  mTimekeeper->setStartOfActivity(activity.mValidity.getMin(), mTaskConfig.fallbackActivity.mValidity.getMin(), now, activity_helpers::getCcdbSorTimeAccessor(mRunNumber));
   mTimekeeper->updateByCurrentTimestamp(mTimekeeper->getActivityDuration().getMin());
-  mTimekeeper->setEndOfActivity(activity.mValidity.getMax(), mTaskConfig.fallbackActivity.mValidity.getMax(), now);
+  mTimekeeper->setEndOfActivity(activity.mValidity.getMax(), mTaskConfig.fallbackActivity.mValidity.getMax(), now, activity_helpers::getCcdbEorTimeAccessor(mRunNumber));
 
   mCollector->setRunNumber(mRunNumber);
   mTask->startOfActivity(activity);
@@ -477,7 +478,7 @@ void TaskRunner::endOfActivity()
 
   auto now = getCurrentTimestamp();
   mTimekeeper->updateByCurrentTimestamp(now);
-  mTimekeeper->setEndOfActivity(0, mTaskConfig.fallbackActivity.mValidity.getMax(), now); // TODO: get end of run from ECS/BK if possible
+  mTimekeeper->setEndOfActivity(0, mTaskConfig.fallbackActivity.mValidity.getMax(), now, activity_helpers::getCcdbEorTimeAccessor(mRunNumber)); // TODO: get end of run from ECS/BK if possible
 
   mTask->endOfActivity(mObjectsManager->getActivity());
   mObjectsManager->removeAllFromServiceDiscovery();

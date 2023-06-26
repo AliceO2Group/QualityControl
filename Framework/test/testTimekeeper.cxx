@@ -17,7 +17,9 @@
 #include "QualityControl/Timekeeper.h"
 #include "QualityControl/TimekeeperSynchronous.h"
 #include "QualityControl/TimekeeperAsynchronous.h"
+#include "QualityControl/ActivityHelpers.h"
 #include <Framework/TimingInfo.h>
+#include <CommonUtils/ConfigurableParam.h>
 
 #include <catch_amalgamated.hpp>
 
@@ -289,7 +291,15 @@ TEST_CASE("timekeeper_asynchronous")
   {
     auto tk = std::make_shared<TimekeeperAsynchronous>();
 
-    // ECS first
+    o2::conf::ConfigurableParam::updateFromString("NameConf.mCCDBServer=http://ccdb-test.cern.ch:8080");
+
+    // CCDB RCT first
+    tk->setStartOfActivity(1, 2, 3, activity_helpers::getCcdbSorTimeAccessor(300000));
+    tk->setEndOfActivity(4, 5, 6, activity_helpers::getCcdbEorTimeAccessor(300000));
+    CHECK(tk->getActivityDuration().getMin() > 100);
+    CHECK(tk->getActivityDuration().getMax() > 100);
+
+    // ECS second
     tk->setStartOfActivity(1, 2, 3);
     tk->setEndOfActivity(4, 5, 6);
     CHECK(tk->getActivityDuration().getMin() == 1);

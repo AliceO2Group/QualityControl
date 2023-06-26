@@ -72,17 +72,22 @@ void TimekeeperSynchronous::reset()
   mCurrentTimeframeIdRange = gInvalidTimeframeIdRange;
 }
 
-validity_time_t
-  TimekeeperSynchronous::activityBoundarySelectionStrategy(validity_time_t ecsTimestamp, validity_time_t configTimestamp,
-                                                           validity_time_t currentTimestamp)
+template <typename T>
+bool not_on_limit(T value)
 {
-  auto notOnLimit = [](validity_time_t value) {
-    return value != std::numeric_limits<validity_time_t>::min() && value != std::numeric_limits<validity_time_t>::max();
-  };
+  return value != std::numeric_limits<T>::min() && value != std::numeric_limits<T>::max();
+}
+
+validity_time_t
+  TimekeeperSynchronous::activityBoundarySelectionStrategy(validity_time_t ecsTimestamp,
+                                                           validity_time_t configTimestamp,
+                                                           validity_time_t currentTimestamp,
+                                                           std::function<validity_time_t(void)>)
+{
   validity_time_t selected = 0;
-  if (notOnLimit(ecsTimestamp)) {
+  if (not_on_limit(ecsTimestamp)) {
     selected = ecsTimestamp;
-  } else if (notOnLimit(currentTimestamp)) {
+  } else if (not_on_limit(currentTimestamp)) {
     selected = currentTimestamp;
   } else {
     selected = configTimestamp;
