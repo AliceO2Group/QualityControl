@@ -102,7 +102,7 @@ inline Activity computeActivity(framework::ServiceRegistryRef services, const Ac
   auto fillNumber = computeActivityField<int>(services, "fill_info_fill_number", fallbackActivity.mFillNumber);
   auto beam_type = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("beam_type", fallbackActivity.mBeamType);
 
-  Activity activity( // cannot use make_shared due to the number of arguments
+  Activity activity( 
     runNumber,
     runType,
     fallbackActivity.mPeriodName,
