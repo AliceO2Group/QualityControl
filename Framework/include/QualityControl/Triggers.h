@@ -66,8 +66,8 @@ struct Trigger {
 
   TriggerType triggerType;
   bool last;
-  core::Activity activity;
-  uint64_t timestamp;
+  core::Activity activity; // if tracking an object, it contains also its validity start and end
+  uint64_t timestamp;      // if tracking an object, it is the validity start (validFrom)
   std::string config{};
 };
 

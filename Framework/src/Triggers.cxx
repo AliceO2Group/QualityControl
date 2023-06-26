@@ -126,8 +126,10 @@ TriggerFcn Periodic(double seconds, const Activity& activity, std::string config
 {
   AliceO2::Common::Timer timer;
   timer.reset(static_cast<int>(seconds * 1000000));
+  auto resultActivity = activity;
+  resultActivity.mValidity = gInvalidValidityInterval;
 
-  return [timer, activity, config]() mutable -> Trigger {
+  return [timer, resultActivity, config]() mutable -> Trigger {
     if (timer.isTimeout()) {
       // We calculate the exact time when timer has passed
       uint64_t timestamp = Trigger::msSinceEpoch() + static_cast<int>(timer.getRemainingTime() * 1000);
@@ -136,9 +138,10 @@ TriggerFcn Periodic(double seconds, const Activity& activity, std::string config
       while (timer.isTimeout()) {
         timer.increment();
       }
-      return { TriggerType::Periodic, false, activity, timestamp, config };
+      resultActivity.mValidity.update(timestamp);
+      return { TriggerType::Periodic, false, resultActivity, timestamp, config };
     } else {
-      return { TriggerType::No, false, activity, Trigger::msSinceEpoch(), config };
+      return { TriggerType::No, false, resultActivity, Trigger::msSinceEpoch(), config };
     }
   };
 }
@@ -149,6 +152,7 @@ TriggerFcn NewObject(const std::string& databaseUrl, const std::string& database
   constexpr auto timestampKey = metadata_keys::validFrom;
   auto fullObjectPath = (databaseType == "qcdb" ? activity.mProvenance + "/" : "") + objectPath;
   auto metadata = databaseType == "qcdb" ? activity_helpers::asDatabaseMetadata(activity, false) : std::map<std::string, std::string>();
+  auto objectActivity = activity;
 
   ILOG(Debug, Support) << "Initializing newObject trigger for the object '" << fullObjectPath << "' and Activity '" << activity << "'" << ENDM;
   // We support only CCDB here.
@@ -156,11 +160,11 @@ TriggerFcn NewObject(const std::string& databaseUrl, const std::string& database
   db->connect(databaseUrl, "", "", "");
 
   // Returns "Valid-From" of an object if there is a new one, otherwise 0.
-  auto newObjectValidityStart = [db, fullObjectPath, metadata, databaseUrl, activity, lastModified = validity_time_t{ 0 }]() mutable -> validity_time_t {
+  auto newObjectValidity = [db, fullObjectPath, metadata, databaseUrl, activity, lastModified = validity_time_t{ 0 }]() mutable -> ValidityInterval {
     const auto listing = db->getListingAsPtree(fullObjectPath, metadata, true);
     if (listing.count("objects") == 0) {
       ILOG(Warning, Support) << "Could not get a valid listing from db '" << databaseUrl << "' for object '" << fullObjectPath << "'" << ENDM;
-      return 0;
+      return gInvalidValidityInterval;
     }
     const auto& objects = listing.get_child("objects");
     if (objects.empty()) {
@@ -168,7 +172,7 @@ TriggerFcn NewObject(const std::string& databaseUrl, const std::string& database
       // It should not happen often though, so having a warning makes sense.
       ILOG(Warning, Support) << "Could not find the file '" << fullObjectPath << "' in the db '"
                              << databaseUrl << "' for given Activity settings (" << activity << "). Zeroes and empty strings are treated as wildcards." << ENDM;
-      return 0;
+      return gInvalidValidityInterval;
     } else if (objects.size() > 1) {
       ILOG(Warning, Support) << "Expected just one metadata entry for object '" << fullObjectPath << "'. Trying to continue by using the first." << ENDM;
     }
@@ -177,18 +181,20 @@ TriggerFcn NewObject(const std::string& databaseUrl, const std::string& database
     validity_time_t newLastModified = object.get<uint64_t>(metadata_keys::lastModified, 0);
     if (newLastModified > lastModified) {
       lastModified = newLastModified;
-      return object.get<uint64_t>(metadata_keys::validFrom, 0);
+      return { object.get<uint64_t>(metadata_keys::validFrom, 0), object.get<uint64_t>(metadata_keys::validUntil) };
     }
-    return 0;
+    return gInvalidValidityInterval;
   };
   // we execute it once before in order to know about the latest existing object.
-  newObjectValidityStart();
+  newObjectValidity();
 
-  return [activity, config, newObjectValidityStart]() mutable -> Trigger {
-    if (auto validFrom = newObjectValidityStart()) {
-      return { TriggerType::NewObject, false, activity, validFrom, config };
+  return [objectActivity, config, newObjectValidity]() mutable -> Trigger {
+    if (auto validity = newObjectValidity(); validity.isValid()) {
+      objectActivity.mValidity = validity;
+      return { TriggerType::NewObject, false, objectActivity, validity.getMax(), config };
     }
-    return { TriggerType::No, false, activity, Trigger::msSinceEpoch(), config };
+    objectActivity.mValidity = gInvalidValidityInterval;
+    return { TriggerType::No, false, objectActivity, Trigger::msSinceEpoch(), config };
   };
 }
 
