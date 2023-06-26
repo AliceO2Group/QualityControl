@@ -52,13 +52,16 @@ std::map<std::string, Quality> TPCAggregator::aggregate(QualityObjectsMapType& q
       current.addReason(reason.first, reason.second);
     }
 
-    // AggregatorMetaData[qo->getQuality().getName()] += fmt::format("{}\n", qo->getName());
     std::string qoTitle = qo->getName();
     std::string qoMetaData = qo->getQuality().getMetadata(qo->getQuality().getName(), "");
     std::string qoMetaDataComment = qo->getQuality().getMetadata("Comment", "");
     std::string insertTitle = "(" + qoTitle + ") \n";
 
-    /*if(qoMetaData != ""){
+   ILOG(Error, Support) << qoTitle << ENDM;
+   ILOG(Error, Support) << qoMetaData << ENDM;
+   ILOG(Error, Support) << qoMetaDataComment << ENDM;
+
+    /* if(qoMetaData != ""){
       std::string delimiter = "\n";
       size_t pos = 0;
       while ((pos = qoMetaData.find("\n", pos)) != std::string::npos) {
@@ -74,7 +77,7 @@ std::map<std::string, Quality> TPCAggregator::aggregate(QualityObjectsMapType& q
         qoMetaDataComment.replace(pos,delimiter.size(),insertTitle);
         pos += insertTitle.size();
       }
-    }*/
+    }*/ 
 
     AggregatorMetaData[qo->getQuality().getName()] += qoMetaData;
     AggregatorMetaData["Comment"] += qoMetaDataComment;
@@ -85,11 +88,17 @@ std::map<std::string, Quality> TPCAggregator::aggregate(QualityObjectsMapType& q
   }
   ILOG(Info, Devel) << "Aggregated Quality: " << current << ENDM;
 
-  current.addMetadata(Quality::Bad.getName(), AggregatorMetaData[Quality::Bad.getName()]);
-  current.addMetadata(Quality::Medium.getName(), AggregatorMetaData[Quality::Medium.getName()]);
-  current.addMetadata(Quality::Good.getName(), AggregatorMetaData[Quality::Good.getName()]);
-  current.addMetadata(Quality::Null.getName(), AggregatorMetaData[Quality::Null.getName()]);
-  current.addMetadata("Comment", AggregatorMetaData["Comment"]);
+  //current.addMetadata(Quality::Bad.getName(), AggregatorMetaData[Quality::Bad.getName()]);
+  //current.addMetadata(Quality::Medium.getName(), AggregatorMetaData[Quality::Medium.getName()]);
+  //current.addMetadata(Quality::Good.getName(), AggregatorMetaData[Quality::Good.getName()]);
+  //current.addMetadata(Quality::Null.getName(), AggregatorMetaData[Quality::Null.getName()]);
+  //current.addMetadata("Comment", AggregatorMetaData["Comment"]);
+
+  current.addMetadata(Quality::Bad.getName(), "TestBAD");
+  current.addMetadata(Quality::Medium.getName(), "TestMEDIUM");
+  current.addMetadata(Quality::Good.getName(), "TestGOOD");
+  current.addMetadata(Quality::Null.getName(), "TestNULL");
+  current.addMetadata("Comment","TestCOMMENT");
 
   return { { mName, current } };
 }

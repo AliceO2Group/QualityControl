@@ -23,7 +23,7 @@
     "aggregators": {
       "TPCTestAggregator1": {
         "active": "true",
-        "className": "o2::quality_control_modules::tpc::TPCAggregator",
+        "className": "o2::quality_control_modules::common::WorstOfAllAggregator",
         "moduleName": "QcTPC",
         "policy": "OnAll",
         "detectorName": "TPC",
