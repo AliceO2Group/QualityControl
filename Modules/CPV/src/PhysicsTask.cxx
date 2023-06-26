@@ -241,7 +241,6 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
 
   // 3. Access CCDB. If it is enough to retrieve it once, do it in initialize().
-  // Remember to delete the object when the pointer goes out of scope or it is no longer needed.
 
   // !!!todo
   // we need somehow to extract timestamp from data when there are no ccdb dpl fetcher inputs available
@@ -283,9 +282,6 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
         }
         mIntensiveHist2D[H2DGainsM2 + iMod]->setCycleNumber(mCycleNumber);
       }
-      if (!hasGains) {
-        delete gains; // delete object only if is retrieved from CCDB directly. DPL fetcher owns
-      }
     } else {
       LOG(info) << "failed to retrieve CPV/Calib/Gains";
     }
@@ -311,9 +307,6 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
           }
         }
         mIntensiveHist2D[H2DBadChannelMapM2 + iMod]->setCycleNumber(mCycleNumber);
-      }
-      if (!hasBadChannelMap) {
-        delete bcm; // delete object only if is retrieved from CCDB directly. DPL fetcher owns
       }
     } else {
       LOG(info) << "failed to retrieve CPV/Calib/BadChannelMap";
@@ -342,9 +335,6 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
         }
         mIntensiveHist2D[H2DPedestalValueM2 + iMod]->setCycleNumber(mCycleNumber);
         mIntensiveHist2D[H2DPedestalSigmaM2 + iMod]->setCycleNumber(mCycleNumber);
-      }
-      if (!hasPedestals) {
-        delete peds; // delete object only if is retrieved from CCDB directly. DPL fetcher owns
       }
     } else {
       LOG(info) << "failed to retrieve CPV/Calib/Pedestals";
