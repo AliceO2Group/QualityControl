@@ -52,6 +52,9 @@ class UserCodeInterface
   const std::string& getName() const;
   void setName(const std::string& name);
 
+  /**
+   * Get an object from the CCDB. The object is owned by the CCDBManager, don't delete it !
+   */
   template <typename T>
   T* retrieveConditionAny(std::string const& path, std::map<std::string, std::string> const& metadata = {}, long timestamp = -1);
 
