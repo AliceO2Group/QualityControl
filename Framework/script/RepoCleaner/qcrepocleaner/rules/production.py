@@ -172,12 +172,6 @@ def first_trimming(ccdb, delay_first_trimming, period_btw_versions_first, run_ve
             # if it is the first or if it is "far enough" from the previous one
             if last_preserved is None or \
                     last_preserved.validFromAsDt < v.validFromAsDt - timedelta(minutes=period_btw_versions_first):
-                if last_preserved is not None:
-                    # first extend validity of the previous preserved and set flag
-                    if last_preserved.validTo != int(v.validFrom) - 1:  # only update it if it is needed
-                        logger.debug(f"      Extension of {last_preserved}")
-                        ccdb.updateValidity(last_preserved, last_preserved.validFrom, str(int(v.validFrom) - 1), metadata)
-                        update_list.append(last_preserved)
                 last_preserved = v
                 preservation_list.append(v)
             else:  # too close to the previous one, delete
@@ -204,10 +198,6 @@ def final_trimming(ccdb, period_btw_versions_final, run_versions, preservation_l
         if last_preserved is None \
                 or last_preserved.validFromAsDt < v.validFromAsDt - timedelta(minutes=period_btw_versions_final) \
                 or v == run_versions[-1]:  # v is last element, which we must preserve
-            if last_preserved is not None:  # first extend validity of the previous preserved and set flag
-                ccdb.updateValidity(last_preserved, last_preserved.validFrom, str(int(v.validFrom) - 1), metadata)
-                update_list.append(last_preserved)
-                logger.debug(f"      Extension of {last_preserved}")
             if v == run_versions[-1]:  # last element, won't be extended but we update the metadata
                 ccdb.updateValidity(v, v.validFrom, v.validTo, metadata)
                 update_list.append(v)

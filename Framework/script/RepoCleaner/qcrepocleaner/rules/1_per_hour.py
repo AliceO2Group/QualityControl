@@ -15,8 +15,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
     Process this deletion rule on the object. We use the CCDB passed by argument.
     Objects who have been created recently are spared (delay is expressed in minutes).
     This specific policy, 1_per_hour, operates like this : take the first record, 
-    delete everything for the next hour, find the next one, extend validity of the 
-    previous record to match the next one, loop.
+    delete everything for the next hour, find the next one and loop.
 
     :param ccdb: the ccdb in which objects are cleaned up.
     :param object_path: path to the object, or pattern, to which a rule will apply.
@@ -36,12 +35,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
     deletion_list: List[ObjectVersion] = []
     update_list: List[ObjectVersion] = []
     for v in versions:
-        if last_preserved == None or last_preserved.validFromAsDt < v.validFromAsDt - timedelta(hours=1):
-            # first extend validity of the previous preserved (should we take into account the run ?)
-            if last_preserved != None:
-                if last_preserved.validTo != int(v.validFrom) - 1:  # only update it if it is needed
-                    ccdb.updateValidity(last_preserved, last_preserved.validFrom, str(int(v.validFrom) - 1))
-                    update_list.append(last_preserved)
+        if last_preserved is None or last_preserved.validFromAsDt < v.validFromAsDt - timedelta(hours=1):
             last_preserved = v
             preservation_list.append(last_preserved)
         else:
