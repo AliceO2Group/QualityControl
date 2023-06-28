@@ -57,27 +57,8 @@ std::map<std::string, Quality> TPCAggregator::aggregate(QualityObjectsMapType& q
     std::string qoMetaDataComment = qo->getQuality().getMetadata("Comment", "");
     std::string insertTitle = "(" + qoTitle + ") \n";
 
-   ILOG(Error, Support) << qoTitle << ENDM;
-   ILOG(Error, Support) << qoMetaData << ENDM;
-   ILOG(Error, Support) << qoMetaDataComment << ENDM;
-
-    /* if(qoMetaData != ""){
-      std::string delimiter = "\n";
-      size_t pos = 0;
-      while ((pos = qoMetaData.find("\n", pos)) != std::string::npos) {
-        qoMetaData.replace(pos,delimiter.size(),insertTitle);
-        pos += insertTitle.size();
-      }
-    }
-
-    if(qoMetaDataComment != ""){
-      std::string delimiter = "\n";
-      size_t pos = 0;
-      while ((pos = qoMetaDataComment.find("\n", pos)) != std::string::npos) {
-        qoMetaDataComment.replace(pos,delimiter.size(),insertTitle);
-        pos += insertTitle.size();
-      }
-    }*/ 
+    insertQOName(qoMetaData, insertTitle);
+    insertQOName(qoMetaDataComment, insertTitle);
 
     AggregatorMetaData[qo->getQuality().getName()] += qoMetaData;
     AggregatorMetaData["Comment"] += qoMetaDataComment;
@@ -88,19 +69,33 @@ std::map<std::string, Quality> TPCAggregator::aggregate(QualityObjectsMapType& q
   }
   ILOG(Info, Devel) << "Aggregated Quality: " << current << ENDM;
 
-  //current.addMetadata(Quality::Bad.getName(), AggregatorMetaData[Quality::Bad.getName()]);
-  //current.addMetadata(Quality::Medium.getName(), AggregatorMetaData[Quality::Medium.getName()]);
-  //current.addMetadata(Quality::Good.getName(), AggregatorMetaData[Quality::Good.getName()]);
-  //current.addMetadata(Quality::Null.getName(), AggregatorMetaData[Quality::Null.getName()]);
-  //current.addMetadata("Comment", AggregatorMetaData["Comment"]);
-
-  current.addMetadata(Quality::Bad.getName(), "TestBAD");
-  current.addMetadata(Quality::Medium.getName(), "TestMEDIUM");
-  current.addMetadata(Quality::Good.getName(), "TestGOOD");
-  current.addMetadata(Quality::Null.getName(), "TestNULL");
-  current.addMetadata("Comment","TestCOMMENT");
+  current.addMetadata(Quality::Bad.getName(), AggregatorMetaData[Quality::Bad.getName()]);
+  current.addMetadata(Quality::Medium.getName(), AggregatorMetaData[Quality::Medium.getName()]);
+  current.addMetadata(Quality::Good.getName(), AggregatorMetaData[Quality::Good.getName()]);
+  current.addMetadata(Quality::Null.getName(), AggregatorMetaData[Quality::Null.getName()]);
+  current.addMetadata("Comment", AggregatorMetaData["Comment"]);
 
   return { { mName, current } };
+}
+
+void TPCAggregator::insertQOName(std::string& metaData, std::string& insertTitle)
+{
+
+  std::string delimiter = "\n";
+  size_t pos = 0;
+
+  if (metaData != "") {
+    if (metaData.find(delimiter) != std::string::npos) {
+      while ((pos = metaData.find("\n", pos)) != std::string::npos) {
+        metaData.replace(pos, delimiter.size(), insertTitle);
+        pos += insertTitle.size();
+      }
+    } else {
+      metaData += " " + insertTitle;
+    }
+  }
+
+  return;
 }
 
 } // namespace o2::quality_control_modules::tpc

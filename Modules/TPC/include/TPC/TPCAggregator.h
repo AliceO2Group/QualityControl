@@ -36,6 +36,9 @@ class TPCAggregator : public o2::quality_control::checker::AggregatorInterface
     aggregate(o2::quality_control::core::QualityObjectsMapType& qoMap) override;
 
   ClassDefOverride(TPCAggregator, 1);
+
+ private:
+  void insertQOName(std::string& MetaData, std::string& insertTitle);
 };
 
 } // namespace o2::quality_control_modules::tpc

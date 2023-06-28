@@ -171,36 +171,10 @@ void QualityObserver::generatePanel()
       ((TText*)pt->GetListOfLines()->Last())->SetTextAlign(12);
 
       if (mViewDetails && mQualityDetails[mQualities[config.groupTitle].at(i).data()]) {
-
-        generateText(pt, true, mReasons[config.groupTitle].at(i));   // print reasons
-        generateText(pt, false, mComments[config.groupTitle].at(i)); // print comments
-        std::cout << "5" << std::endl;
-        std::cout << "6" << std::endl;
-
-        /* if (mReasons[config.groupTitle].at(i) != "") {
-          std::string delimiter = "\n";
-
-          if (mReasons[config.groupTitle].at(i).find(delimiter) != std::string::npos) {
-            size_t pos = 0;
-            std::string subText;
-            while ((pos = mReasons[config.groupTitle].at(i).find(delimiter)) != std::string::npos) {
-              subText = mReasons[config.groupTitle].at(i).substr(0, pos);
-              pt->AddText(Form("#color[%d]{#rightarrow Reason: %s}", kGray + 2, subText.data()));
-              ((TText*)pt->GetListOfLines()->Last())->SetTextAlign(12);
-              mReasons[config.groupTitle].at(i).erase(0, pos + delimiter.length());
-            }
-          } else {
-            pt->AddText(Form("#color[%d]{#rightarrow Reason: %s}", kGray + 2, mReasons[config.groupTitle].at(i).data()));
-            ((TText*)pt->GetListOfLines()->Last())->SetTextAlign(12);
-          }
-        }
-        if (mComments[config.groupTitle].at(i) != "") {
-          pt->AddText(Form("#color[%d]{#rightarrow Comment: %s}", kGray + 2, mComments[config.groupTitle].at(i).data()));
-          ((TText*)pt->GetListOfLines()->Last())->SetTextAlign(12);
-        }*/
+        generateText(pt, true, mReasons[config.groupTitle].at(i)); // print reasons
       }
       if (mViewDetails && mQualityDetails["Comment"]) {
-        // generateText(pt, false, mComments[config.groupTitle].at(i)); //print comments
+        generateText(pt, false, mComments[config.groupTitle].at(i)); // print comments //GANESHA ask berkin if this if should be there
       }
     }
 
@@ -218,9 +192,6 @@ void QualityObserver::generatePanel()
 
 void QualityObserver::generateText(TPaveText* pt, bool isReason, std::string qoMetaText)
 {
-
-  ILOG(Warning, Support) << "Entering generateText" << ENDM;
-
   std::string infoType = "Reason";
   if (!isReason) {
     infoType = "Comment";
@@ -236,34 +207,26 @@ void QualityObserver::generateText(TPaveText* pt, bool isReason, std::string qoM
         qoMetaText.erase(0, pos + delimiter.length());
 
         breakText(pt, infoType, subText); // break up reason/comment for better visualisation on qcg
-        // pt->AddText(Form("#color[%d]{#rightarrow %s: %s}", kGray + 2, infoType.data(), subText.data()));
-        //((TText*)pt->GetListOfLines()->Last())->SetTextAlign(12);
       }
     } else {
       breakText(pt, infoType, qoMetaText);
-      // pt->AddText(Form("#color[%d]{#rightarrow %s: %s}", kGray + 2, infoType.data(), qoMetaText.data()));
-      //((TText*)pt->GetListOfLines()->Last())->SetTextAlign(12);
     }
   } // if (qoMetaText != "")
-  ILOG(Warning, Support) << "Exiting generateText" << ENDM;
 }
 
 void QualityObserver::breakText(TPaveText* pt, std::string infoType, std::string textUnbroken)
 {
-  ILOG(Warning, Support) << "   Entering breakText" << ENDM;
   const size_t maxStringLength = 40; // GANESHA this has to be configurable
   std::string subLine = "";
   std::string subLineDelimiter = " ";
   size_t subpos = 0;
 
   if (textUnbroken.length() < maxStringLength) {
-    ILOG(Warning, Support) << "   Here 0" << ENDM;
     pt->AddText(Form("#color[%d]{#rightarrow %s: %s}", kGray + 2, infoType.data(), textUnbroken.data()));
     ((TText*)pt->GetListOfLines()->Last())->SetTextAlign(12);
-    ILOG(Warning, Support) << "   Leaving breakText" << ENDM;
     return;
   }
-  ILOG(Warning, Support) << "   Here 1" << ENDM;
+
   if (textUnbroken.find(subLineDelimiter) != std::string::npos) {
     bool firstOccurance = true;
     int colorInfoType = kGray + 2;
@@ -315,11 +278,8 @@ void QualityObserver::breakText(TPaveText* pt, std::string infoType, std::string
     }
 
   } else { // string longer than maxStringLength but does not contain subLineDelimiter
-    ILOG(Warning, Support) << "   Here 4" << ENDM;
     pt->AddText(Form("#color[%d]{#rightarrow %s: %s}", kGray + 2, infoType.data(), textUnbroken.data()));
     ((TText*)pt->GetListOfLines()->Last())->SetTextAlign(12);
-    ILOG(Warning, Support) << "   Leaving breakText" << ENDM;
     return;
   }
-  ILOG(Warning, Support) << "   Leaving breakText" << ENDM;
 }
