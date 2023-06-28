@@ -379,7 +379,7 @@ void CheckRunner::store(QualityObjectsType& qualityObjects, long validFrom)
   try {
     for (auto& qo : qualityObjects) {
       qo->setActivity(*mActivity);
-      qo->getActivity().mValidity.setMin(validFrom);
+      qo->getActivity().mValidity.set(validFrom, 0);
       mDatabase->storeQO(qo);
       mTotalNumberQOStored++;
       mNumberQOStored++;
@@ -395,7 +395,7 @@ void CheckRunner::store(std::vector<std::shared_ptr<MonitorObject>>& monitorObje
   try {
     for (auto& mo : monitorObjects) {
       mo->setActivity(*mActivity);
-      mo->getActivity().mValidity.setMin(validFrom);
+      mo->getActivity().mValidity.set(validFrom, 0);
       mDatabase->storeMO(mo);
       mTotalNumberMOStored++;
       mNumberMOStored++;
