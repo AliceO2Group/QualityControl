@@ -126,6 +126,7 @@ void ITSClusterTask::startOfCycle()
 
 void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
+
   if (ctx.services().get<o2::framework::TimingInfo>().globalRunNumberChanged) {
     mGeom = o2::its::GeometryTGeo::Instance();
     mGeom->fillMatrixCache(o2::math_utils::bit2Mask(o2::math_utils::TransformType::L2G));
@@ -310,10 +311,12 @@ void ITSClusterTask::endOfCycle()
 {
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
   for (int iLayer = 0; iLayer < NLayer; iLayer++) {
-    hAverageClusterSizeSummaryZPhi[iLayer]->update();
-    hAverageClusterOccupancySummaryZPhi[iLayer]->update();
-    hAverageClusterOccupancySummaryFine[iLayer]->update();
-    hAverageClusterSizeSummaryFine[iLayer]->update();
+    if (mDoPublishDetailedSummary == 1) {
+      hAverageClusterSizeSummaryZPhi[iLayer]->update();
+      hAverageClusterOccupancySummaryZPhi[iLayer]->update();
+      hAverageClusterOccupancySummaryFine[iLayer]->update();
+      hAverageClusterSizeSummaryFine[iLayer]->update();
+    }
     if (iLayer < NLayerIB) {
       hAverageClusterOccupancySummaryIB[iLayer]->update();
       hAverageClusterSizeSummaryIB[iLayer]->update();
@@ -368,6 +371,9 @@ void ITSClusterTask::reset()
       addLines();
     }
   }
+
+  std::fill(&mClusterSize[0][0][0], &mClusterSize[0][0][0] + 7 * 48 * 28, 0);
+  std::fill(&nClusters[0][0][0], &nClusters[0][0][0] + 7 * 48 * 28, 0);
 }
 
 void ITSClusterTask::createAllHistos()
@@ -582,14 +588,6 @@ void ITSClusterTask::addObject(TObject* aObject)
   } else
     mPublishedObjects.push_back(aObject);
 }
-/*
-void ITSClusterTask::formatAxes(TH1* h, const char* xTitle, const char* yTitle, float xOffset, float yOffset)
-{
-  h->GetXaxis()->SetTitle(xTitle);
-  h->GetYaxis()->SetTitle(yTitle);
-  h->GetXaxis()->SetTitleOffset(xOffset);
-  h->GetYaxis()->SetTitleOffset(yOffset);
-}*/
 
 void ITSClusterTask::publishHistos()
 {
