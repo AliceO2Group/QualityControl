@@ -19,6 +19,8 @@
 #include "QualityControl/Activity.h"
 #include "BookkeepingApi/BkpProtoClientFactory.h"
 #include "BookkeepingApi/BkpProtoClient.h"
+#include <iostream>
+#include <unistd.h>
 
 using namespace o2::bkp::api::proto;
 
@@ -75,5 +77,22 @@ void Bookkeeping::populateActivity(Activity& activity, size_t runNumber)
   } catch (std::runtime_error& error) {
     ILOG(Warning, Support) << "Error retrieving run info from Bookkeeping: " << error.what() << ENDM;
   }
+}
+
+std::string getHostName() {
+  char hostname[256];
+  if (gethostname(hostname, sizeof(hostname)) == 0) {
+    return {hostname};
+  } else {
+    return "";
+  }
+}
+
+void Bookkeeping::registerProcess(int runNumber, const std::string& name, const std::string& detector, bookkeeping::DplProcessType type, const std::string& args)
+{
+  if (!mInitialized) {
+    return;
+  }
+  mClient->dplProcessExecution()->registerProcessExecution(runNumber, type, getHostName(), name, args, detector);
 }
 } // namespace o2::quality_control::core
