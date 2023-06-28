@@ -74,7 +74,7 @@ inline bool hasChecks(std::string configSource)
   return config->getRecursive("qc").count("checks") > 0;
 }
 
-template <typename T>
+template <typename T> // TODO we should probably limit T to numbers somehow
 inline T computeActivityField(framework::ServiceRegistryRef services, const std::string& name, T fallbackNumber = 0)
 {
   int result = 0;
@@ -95,12 +95,12 @@ inline Activity computeActivity(framework::ServiceRegistryRef services, const Ac
 {
   auto runNumber = computeActivityField<int>(services, "runNumber", fallbackActivity.mId);
   auto runType = computeActivityField<int>(services, "runType", fallbackActivity.mType);
-  auto run_start_time_ms = computeActivityField<unsigned long>(services, "run_start_time_ms", fallbackActivity.mValidity.getMin());
-  auto run_stop_time_ms = computeActivityField<unsigned long>(services, "run_stop_time_ms", fallbackActivity.mValidity.getMax());
+  auto run_start_time_ms = computeActivityField<unsigned long>(services, "runStartTimeMs", fallbackActivity.mValidity.getMin());
+  auto run_stop_time_ms = computeActivityField<unsigned long>(services, "runEndTimeMs", fallbackActivity.mValidity.getMax());
   auto partitionName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("environment_id", fallbackActivity.mPartitionName);
-  auto periodName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("periodName", "unspecified");
-  auto fillNumber = computeActivityField<int>(services, "fill_info_fill_number", fallbackActivity.mFillNumber);
-  auto beam_type = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("beam_type", fallbackActivity.mBeamType);
+  auto periodName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("lhcPeriod", "unspecified");
+  auto fillNumber = computeActivityField<int>(services, "fillInfoFillNumber", fallbackActivity.mFillNumber);
+  auto beam_type = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("fillInfoBeamType", fallbackActivity.mBeamType);
 
   Activity activity( 
     runNumber,
