@@ -33,7 +33,7 @@
 #include <Framework/DataSpecUtils.h>
 #include <Framework/ExternalFairMQDeviceProxy.h>
 #include <Framework/DataDescriptorQueryBuilder.h>
-#include <Framework/O2ControlLabels.h>
+#include <Framework/O2ControlParameters.h>
 #include <Mergers/MergerInfrastructureBuilder.h>
 #include <Mergers/MergerBuilder.h>
 #include <DataSampling/DataSampling.h>
@@ -55,7 +55,8 @@ using SubSpec = o2::header::DataHeader::SubSpecificationType;
 namespace o2::quality_control::core
 {
 
-uint16_t defaultPolicyPort = 42349;
+constexpr uint16_t defaultPolicyPort = 42349;
+constexpr size_t proxyMemoryKillThresholdMB = 5000;
 
 struct DataSamplingPolicySpec {
   DataSamplingPolicySpec(std::string name, std::string control, std::string remoteMachine = "")
@@ -386,6 +387,9 @@ void InfrastructureGenerator::generateDataSamplingPolicyLocalProxyBind(framework
       channelConfig.c_str(),
       channelSelector));
   workflow.back().labels.emplace_back(control == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
+  if (getenv("O2_QC_KILL_PROXIES") != nullptr) {
+    workflow.back().metadata.push_back({ ecs::privateMemoryKillThresholdMB, proxyMemoryKillThresholdMB });
+  }
 }
 
 void InfrastructureGenerator::generateDataSamplingPolicyRemoteProxyConnect(framework::WorkflowSpec& workflow,
@@ -410,6 +414,9 @@ void InfrastructureGenerator::generateDataSamplingPolicyRemoteProxyConnect(frame
   // if not in RUNNING, we should drop all the incoming messages, we set the corresponding proxy option.
   enableDraining(proxy.options);
   workflow.emplace_back(std::move(proxy));
+  if (getenv("O2_QC_KILL_PROXIES") != nullptr) {
+    workflow.back().metadata.push_back({ ecs::privateMemoryKillThresholdMB, proxyMemoryKillThresholdMB });
+  }
 }
 
 void InfrastructureGenerator::generateDataSamplingPolicyLocalProxyConnect(framework::WorkflowSpec& workflow,
@@ -434,6 +441,9 @@ void InfrastructureGenerator::generateDataSamplingPolicyLocalProxyConnect(framew
       channelConfig.c_str(),
       channelSelector));
   workflow.back().labels.emplace_back(control == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
+  if (getenv("O2_QC_KILL_PROXIES") != nullptr) {
+    workflow.back().metadata.push_back({ ecs::privateMemoryKillThresholdMB, proxyMemoryKillThresholdMB });
+  }
 }
 
 void InfrastructureGenerator::generateDataSamplingPolicyRemoteProxyBind(framework::WorkflowSpec& workflow,
@@ -455,6 +465,9 @@ void InfrastructureGenerator::generateDataSamplingPolicyRemoteProxyBind(framewor
   proxy.labels.emplace_back(control == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
   // if not in RUNNING, we should drop all the incoming messages, we set the corresponding proxy option.
   enableDraining(proxy.options);
+  if (getenv("O2_QC_KILL_PROXIES") != nullptr) {
+    proxy.metadata.push_back({ ecs::privateMemoryKillThresholdMB, proxyMemoryKillThresholdMB });
+  }
   workflow.emplace_back(std::move(proxy));
 }
 
@@ -475,6 +488,9 @@ void InfrastructureGenerator::generateLocalTaskLocalProxy(framework::WorkflowSpe
       { proxyInput },
       channelConfig.c_str()));
   workflow.back().labels.emplace_back(taskSpec.localControl == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
+  if (getenv("O2_QC_KILL_PROXIES") != nullptr) {
+    workflow.back().metadata.push_back({ ecs::privateMemoryKillThresholdMB, proxyMemoryKillThresholdMB });
+  }
 }
 
 void InfrastructureGenerator::generateLocalTaskRemoteProxy(framework::WorkflowSpec& workflow, const TaskSpec& taskSpec, size_t numberOfLocalMachines)
@@ -501,6 +517,9 @@ void InfrastructureGenerator::generateLocalTaskRemoteProxy(framework::WorkflowSp
   proxy.labels.emplace_back(taskSpec.localControl == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
   // if not in RUNNING, we should drop all the incoming messages, we set the corresponding proxy option.
   enableDraining(proxy.options);
+  if (getenv("O2_QC_KILL_PROXIES") != nullptr) {
+    proxy.metadata.push_back({ ecs::privateMemoryKillThresholdMB, proxyMemoryKillThresholdMB });
+  }
   workflow.emplace_back(std::move(proxy));
 }
 void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow, const std::string& taskName,
