@@ -529,6 +529,11 @@ void CheckRunner::start(ServiceRegistryRef services)
   for (auto& [checkName, check] : mChecks) {
     check.setActivity(mActivity);
   }
+
+  // register ourselves to the BK
+  if (gSystem->Getenv("O2_QC_REGISTER_IN_BK")) { // until we are sure it works, we have to turn it on
+    Bookkeeping::getInstance().registerProcess(mActivity->mId, mDeviceName, mDetectorName, bookkeeping::DPL_PROCESS_TYPE_QC_CHECKER, "");
+  }
 }
 
 void CheckRunner::stop()
