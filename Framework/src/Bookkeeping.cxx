@@ -79,10 +79,11 @@ void Bookkeeping::populateActivity(Activity& activity, size_t runNumber)
   }
 }
 
-std::string getHostName() {
+std::string getHostName()
+{
   char hostname[256];
   if (gethostname(hostname, sizeof(hostname)) == 0) {
-    return {hostname};
+    return { hostname };
   } else {
     return "";
   }
