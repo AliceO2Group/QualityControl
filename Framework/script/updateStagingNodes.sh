@@ -1,5 +1,9 @@
 # This script updates the qc nodes references in the config files and replace them with the staging qc nodes.
 
+# Usage: ./updateStagingNodes.sh  # run but do not upload. See what changes are done in the local backup folder. 
+# Usage: ./updateStagingNodes.sh -x # debug mode
+# Usage: ./updateStagingNodes.sh -u # upload changes
+
 updateFiles()
 {
   # Replaces first argument by second argument in all the files in the current directory.
