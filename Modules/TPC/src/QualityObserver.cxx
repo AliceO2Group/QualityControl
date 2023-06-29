@@ -34,7 +34,7 @@ void QualityObserver::configure(const boost::property_tree::ptree& config)
   auto& id = getID();
   mObserverName = config.get<std::string>("qc.postprocessing." + id + ".qualityObserverName");
   mViewDetails = config.get<bool>("qc.postprocessing." + id + ".observeDetails", true);
-  mQualityDetailChoice = config.get<std::string>("qc.postprocessing." + id + ".qualityDetailChoice", "Null, Good, Medium, Bad, Comment");
+  mQualityDetailChoice = config.get<std::string>("qc.postprocessing." + id + ".qualityDetailChoice", "Null, Good, Medium, Bad");
   mLineLength = config.get<size_t>("qc.postprocessing." + id + ".lineLength", 70);
 
   for (const auto& dataSourceConfig : config.get_child("qc.postprocessing." + id + ".qualityObserverConfig")) {
