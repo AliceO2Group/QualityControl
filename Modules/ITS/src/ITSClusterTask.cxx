@@ -98,10 +98,10 @@ void ITSClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   setZBinningOB();
 
   createAllHistos();
+  std::cout << " !!!!!!!!!!!!!!!!!!!!!!! creating new object! " << std::endl;
+  mGeneralOccupancy = std::make_unique<TH2FRatio>("General/General_Occupancy", "General Cluster Occupancy (max n_clusters/event/chip)", 24, -12, 12, 14, 0, 14, true);
 
-  mGeneralOccupancy = new TH2F("General/General_Occupancy", "General Cluster Occupancy (max n_clusters/event/chip)", 24, -12, 12, 14, 0, 14);
-
-  addObject(mGeneralOccupancy);
+  addObject(mGeneralOccupancy.get());
   mGeneralOccupancy->SetStats(0);
   mGeneralOccupancy->SetBit(TH1::kIsAverage);
   for (int iy = 1; iy <= mGeneralOccupancy->GetNbinsY(); iy++) {
@@ -110,6 +110,8 @@ void ITSClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   mGeneralOccupancy->GetXaxis()->SetLabelOffset(999);
   mGeneralOccupancy->GetXaxis()->SetLabelSize(0);
   mGeneralOccupancy->GetZaxis()->SetTitle("Max Avg Cluster occ (clusters/event/chip)");
+
+  std::cout << "!!!!!!!!!!!!!!! DONE " << std::endl;
   publishHistos();
 }
 
@@ -146,7 +148,7 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
   std::chrono::time_point<std::chrono::high_resolution_clock> end;
   int difference;
   start = std::chrono::high_resolution_clock::now();
-
+  std::cout << "!!!!!!!!!!!!!!!!!!!!!! start doing monitor" << std::endl;
   ILOG(Debug, Devel) << "START DOING QC General" << ENDM;
   auto clusArr = ctx.inputs().get<gsl::span<o2::itsmft::CompClusterExt>>("compclus");
   auto clusRofArr = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("clustersrof");
@@ -267,8 +269,9 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
           hAverageClusterOccupancySummaryIB[iLayer]->getDen()->SetBinContent(1, 1, mNRofs);
           int ybin = iStave < (mNStaves[iLayer] / 2) ? 7 + iLayer + 1 : 7 - iLayer;
           int xbin = 12 - mNStaves[iLayer] / 4 + 1 + (iStave % (mNStaves[iLayer] / 2));
-          mGeneralOccupancy->SetBinContent(xbin, ybin, (float)(*(std::max_element(mClusterOccupancyIB[iLayer][iStave], mClusterOccupancyIB[iLayer][iStave] + mNChipsPerHic[iLayer]))) / (float)(mNRofs));
-          mGeneralOccupancy->SetBinError(xbin, ybin, 1e-15);
+          std::cout << "Filling in IB: " << std::endl;
+          mGeneralOccupancy->getNum()->SetBinContent(xbin, ybin, (float)(*(std::max_element(mClusterOccupancyIB[iLayer][iStave], mClusterOccupancyIB[iLayer][iStave] + mNChipsPerHic[iLayer]))));
+          std::cout << "DONE " << std::endl;
         } else {
 
           for (int iLane = 0; iLane < mNLanePerHic[iLayer] * mNHicPerStave[iLayer]; iLane++) {
@@ -279,10 +282,12 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
           hAverageClusterOccupancySummaryOB[iLayer]->getDen()->SetBinContent(1, 1, mNRofs);
           int ybin = iStave < (mNStaves[iLayer] / 2) ? 7 + iLayer + 1 : 7 - iLayer;
           int xbin = 12 - mNStaves[iLayer] / 4 + 1 + (iStave % (mNStaves[iLayer] / 2));
-          mGeneralOccupancy->SetBinContent(xbin, ybin, (float)(*(std::max_element(mClusterOccupancyOB[iLayer][iStave], mClusterOccupancyOB[iLayer][iStave] + mNHicPerStave[iLayer] * mNLanePerHic[iLayer]))) / (float)(mNRofs) / (mNChipsPerHic[iLayer] / mNLanePerHic[iLayer]));
-          mGeneralOccupancy->SetBinError(xbin, ybin, 1e-15);
+          std::cout << "Filling in OB " << std::endl;
+          mGeneralOccupancy->getNum()->SetBinContent(xbin, ybin, (float)(*(std::max_element(mClusterOccupancyOB[iLayer][iStave], mClusterOccupancyOB[iLayer][iStave] + mNHicPerStave[iLayer] * mNLanePerHic[iLayer]))) / (mNChipsPerHic[iLayer] / mNLanePerHic[iLayer]));
+          std::cout << "Dome " << std::endl;
         }
       }
+      mGeneralOccupancy->getDen()->SetBinContent(1, 1, (float)(mNRofs));
       if (mDoPublishDetailedSummary == 1) {
 
         for (int ix = 1; ix <= hAverageClusterSizeSummaryZPhi[iLayer]->GetNbinsX(); ix++)
@@ -309,22 +314,34 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void ITSClusterTask::endOfCycle()
 {
+  std::cout << "!!!!!!!!!!!! start doing update!!!! " << std::endl;
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
   for (int iLayer = 0; iLayer < NLayer; iLayer++) {
+    std::cout << "1, layer is " << iLayer << std::endl;
     if (mDoPublishDetailedSummary == 1) {
       hAverageClusterSizeSummaryZPhi[iLayer]->update();
       hAverageClusterOccupancySummaryZPhi[iLayer]->update();
       hAverageClusterOccupancySummaryFine[iLayer]->update();
       hAverageClusterSizeSummaryFine[iLayer]->update();
     }
+    std::cout << "2" << std::endl;
     if (iLayer < NLayerIB) {
+      std::cout << "2.1" << std::endl;
       hAverageClusterOccupancySummaryIB[iLayer]->update();
       hAverageClusterSizeSummaryIB[iLayer]->update();
     } else {
+      std::cout << "2.2" << std::endl;
       hAverageClusterOccupancySummaryOB[iLayer]->update();
+      std::cout << "2.3" << std::endl;
       hAverageClusterSizeSummaryOB[iLayer]->update();
+      std::cout << "2.4" << std::endl;
     }
+    std::cout << "3" << std::endl;
   }
+  std::cout << "4" << std::endl;
+  mGeneralOccupancy->update();
+
+  std::cout << "DONE!!!!!!!!!!!!" << std::endl;
 }
 
 void ITSClusterTask::endOfActivity(const Activity& /*activity*/)
@@ -371,14 +388,17 @@ void ITSClusterTask::reset()
       addLines();
     }
   }
-
+  std::cout << "!!!!!!!!!!!!!!1 in reset! " << std::endl;
   std::fill(&mClusterSize[0][0][0], &mClusterSize[0][0][0] + 7 * 48 * 28, 0);
   std::fill(&nClusters[0][0][0], &nClusters[0][0][0] + 7 * 48 * 28, 0);
+  std::fill(&mClusterOccupancyIB[0][0][0], &mClusterOccupancyIB[0][0][0] + 7 * 48 * 28, 0);
+  std::fill(&mClusterOccupancyOB[0][0][0], &mClusterOccupancyOB[0][0][0] + 7 * 48 * 28, 0);
+  std::cout << "!!!!!!!!!!!!!!!!!!!! reset of arrays was done " << std::endl;
 }
 
 void ITSClusterTask::createAllHistos()
 {
-
+  std::cout << "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ creating histograms" << std::endl;
   hClusterVsBunchCrossing = new TH2F("BunchCrossingIDvsClusters", "BunchCrossingIDvsClusters", nBCbins, 0, 4095, 100, 0, 1000);
   hClusterVsBunchCrossing->SetTitle("#clusters vs BC id for clusters with npix > 2");
   addObject(hClusterVsBunchCrossing);
@@ -425,7 +445,7 @@ void ITSClusterTask::createAllHistos()
     }
 
     if (iLayer < NLayerIB) {
-
+      std::cout << "IB with " << iLayer << std::endl;
       hAverageClusterOccupancySummaryIB[iLayer] = std::make_shared<TH2FRatio>(Form("Layer%d/ClusterOccupation", iLayer), Form("Layer%dClusterOccupancy", iLayer), mNChipsPerHic[iLayer], 0, mNChipsPerHic[iLayer], mNStaves[iLayer], 0, mNStaves[iLayer], true);
       hAverageClusterOccupancySummaryIB[iLayer]->SetTitle(Form("Cluster Occupancy on Layer %d", iLayer));
       addObject(hAverageClusterOccupancySummaryIB[iLayer].get());
@@ -443,7 +463,7 @@ void ITSClusterTask::createAllHistos()
       hAverageClusterSizeSummaryIB[iLayer]->SetBit(TH1::kIsAverage);
       hAverageClusterSizeSummaryIB[iLayer]->GetYaxis()->SetLabelSize(0.02);
       hAverageClusterSizeSummaryIB[iLayer]->GetXaxis()->SetLabelSize(0.02);
-
+      std::cout << "DOME " << std::endl;
       // Fine check
       if (mDoPublishDetailedSummary == 1) {
         hAverageClusterOccupancySummaryFine[iLayer] = std::make_shared<TH2FRatio>(Form("Layer%d/ClusterOccupancyFine", iLayer), Form("Cluster occupancy on Layer %d", iLayer), mNChipsPerHic[iLayer] * mNHicPerStave[iLayer] * nZBinsIB, -0.5, (mNChipsPerHic[iLayer] * mNHicPerStave[iLayer] * nZBinsIB) - 0.5, mNStaves[iLayer] * nRphiBinsIB, -0.5, mNStaves[iLayer] * nRphiBinsIB - 0.5, true);
@@ -487,7 +507,7 @@ void ITSClusterTask::createAllHistos()
         }
       }
     } else {
-
+      std::cout << "OB with " << iLayer << std::endl;
       hAverageClusterOccupancySummaryOB[iLayer] = std::make_shared<TH2FRatio>(Form("Layer%d/ClusterOccupation", iLayer), Form("Layer%dClusterOccupancy", iLayer), mNLanePerHic[iLayer] * mNHicPerStave[iLayer], 0, mNLanePerHic[iLayer] * mNHicPerStave[iLayer], mNStaves[iLayer], 0, mNStaves[iLayer], true);
       hAverageClusterOccupancySummaryOB[iLayer]->SetTitle(Form("Cluster Occupancy on Layer %d", iLayer));
       addObject(hAverageClusterOccupancySummaryOB[iLayer].get());

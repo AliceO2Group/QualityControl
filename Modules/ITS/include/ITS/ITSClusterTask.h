@@ -108,7 +108,7 @@ class ITSClusterTask : public TaskInterface
 
   // General
   TH2F* hClusterVsBunchCrossing = nullptr;
-  TH2F* mGeneralOccupancy = nullptr;
+  std::unique_ptr<TH2FRatio> mGeneralOccupancy = nullptr;
 
   // Fine checks
 
