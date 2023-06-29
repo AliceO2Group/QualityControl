@@ -55,7 +55,7 @@ std::map<std::string, Quality> TPCAggregator::aggregate(QualityObjectsMapType& q
     std::string qoTitle = qo->getName();
     std::string qoMetaData = qo->getQuality().getMetadata(qo->getQuality().getName(), "");
     std::string qoMetaDataComment = qo->getQuality().getMetadata("Comment", "");
-    std::string insertTitle = "(" + qoTitle + ") \n";
+    std::string insertTitle = qoTitle + ": ";
 
     insertQOName(qoMetaData, insertTitle);
     insertQOName(qoMetaDataComment, insertTitle);
@@ -87,11 +87,19 @@ void TPCAggregator::insertQOName(std::string& metaData, std::string& insertTitle
   if (metaData != "") {
     if (metaData.find(delimiter) != std::string::npos) {
       while ((pos = metaData.find("\n", pos)) != std::string::npos) {
-        metaData.replace(pos, delimiter.size(), insertTitle);
-        pos += insertTitle.size();
+        // metaData.replace(pos, delimiter.size(), insertTitle);
+        metaData.insert(pos + delimiter.size(), insertTitle);
+        pos += insertTitle.size() + delimiter.size();
       }
-    } else {
-      metaData += " " + insertTitle;
+
+      metaData.erase(metaData.length() - insertTitle.size());
+    } // else {
+    // metaData = " " + insertTitle;
+    metaData = insertTitle + metaData;
+    // }
+
+    if (metaData.substr(metaData.length() - delimiter.size(), delimiter.size()) != "\n") {
+      metaData += " \n";
     }
   }
 

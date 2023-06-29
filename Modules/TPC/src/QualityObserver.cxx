@@ -34,7 +34,8 @@ void QualityObserver::configure(const boost::property_tree::ptree& config)
   auto& id = getID();
   mObserverName = config.get<std::string>("qc.postprocessing." + id + ".qualityObserverName");
   mViewDetails = config.get<bool>("qc.postprocessing." + id + ".observeDetails", true);
-  mQualityDetailChoice = config.get<std::string>("qc.postprocessing." + id + ".qualityDetailChoice", "Null, Good, Medium, Bad");
+  mQualityDetailChoice = config.get<std::string>("qc.postprocessing." + id + ".qualityDetailChoice", "Null, Good, Medium, Bad, Comment");
+  mLineLength = config.get<size_t>("qc.postprocessing." + id + ".lineLength", 70);
 
   for (const auto& dataSourceConfig : config.get_child("qc.postprocessing." + id + ".qualityObserverConfig")) {
     Config dataConfig;
@@ -83,7 +84,6 @@ void QualityObserver::initialize(Trigger, framework::ServiceRegistryRef)
   mQualityDetails[Quality::Medium.getName()] = false;
   mQualityDetails[Quality::Good.getName()] = false;
   mQualityDetails[Quality::Null.getName()] = false;
-  mQualityDetails["Comment"] = false;
 
   if (size_t finder = mQualityDetailChoice.find("Bad"); finder != std::string::npos) {
     mQualityDetails[Quality::Bad.getName()] = true;
@@ -96,9 +96,6 @@ void QualityObserver::initialize(Trigger, framework::ServiceRegistryRef)
   }
   if (size_t finder = mQualityDetailChoice.find("Null"); finder != std::string::npos) {
     mQualityDetails[Quality::Null.getName()] = true;
-  }
-  if (size_t finder = mQualityDetailChoice.find("Comment"); finder != std::string::npos) {
-    mQualityDetails["Comment"] = true;
   }
 }
 
@@ -161,24 +158,19 @@ void QualityObserver::generatePanel()
   pt->SetBorderSize(1);
 
   for (const auto& config : mConfig) {
-
     pt->AddText(""); // Emtpy line needed. AddLine() places the line to the first entry of the for loop. Check late
     TText* GroupText = pt->AddText(config.groupTitle.data());
     ((TText*)pt->GetListOfLines()->Last())->SetTextAlign(22);
     for (int i = 0; i < config.qoTitle.size(); i++) {
       pt->AddText(Form("%s = #color[%d]{%s}", config.qoTitle.at(i).data(), mColors[mQualities[config.groupTitle].at(i).data()], mQualities[config.groupTitle].at(i).data()));
-      // To-Check: SetTextAlign does currently not work in QCG
       ((TText*)pt->GetListOfLines()->Last())->SetTextAlign(12);
 
       if (mViewDetails && mQualityDetails[mQualities[config.groupTitle].at(i).data()]) {
-        generateText(pt, true, mReasons[config.groupTitle].at(i)); // print reasons
-      }
-      if (mViewDetails && mQualityDetails["Comment"]) {
-        generateText(pt, false, mComments[config.groupTitle].at(i)); // print comments //GANESHA ask berkin if this if should be there
+        generateText(pt, true, mReasons[config.groupTitle].at(i));   // print reasons
+        generateText(pt, false, mComments[config.groupTitle].at(i)); // print comments
       }
     }
 
-    // To-Check: AddLine broken for qcg. Does not simply append line
     pt->AddLine();
     ((TLine*)pt->GetListOfLines()->Last())->SetLineWidth(1);
     ((TLine*)pt->GetListOfLines()->Last())->SetLineStyle(9);
@@ -205,7 +197,6 @@ void QualityObserver::generateText(TPaveText* pt, bool isReason, std::string qoM
       while ((pos = qoMetaText.find(delimiter)) != std::string::npos) { // cut string into the different reasons/comments
         subText = qoMetaText.substr(0, pos);
         qoMetaText.erase(0, pos + delimiter.length());
-
         breakText(pt, infoType, subText); // break up reason/comment for better visualisation on qcg
       }
     } else {
@@ -216,12 +207,11 @@ void QualityObserver::generateText(TPaveText* pt, bool isReason, std::string qoM
 
 void QualityObserver::breakText(TPaveText* pt, std::string infoType, std::string textUnbroken)
 {
-  const size_t maxStringLength = 40; // GANESHA this has to be configurable
   std::string subLine = "";
   std::string subLineDelimiter = " ";
   size_t subpos = 0;
 
-  if (textUnbroken.length() < maxStringLength) {
+  if (textUnbroken.length() < mLineLength) {
     pt->AddText(Form("#color[%d]{#rightarrow %s: %s}", kGray + 2, infoType.data(), textUnbroken.data()));
     ((TText*)pt->GetListOfLines()->Last())->SetTextAlign(12);
     return;
@@ -237,7 +227,7 @@ void QualityObserver::breakText(TPaveText* pt, std::string infoType, std::string
       if (subLine == "") {
         subLine += textFragmant + " ";
         textUnbroken.erase(0, subpos + subLineDelimiter.length());
-        if (subLine.length() > maxStringLength) {
+        if (subLine.length() > mLineLength) {
           pt->AddText(Form("#color[%d]{#rightarrow %s:} #color[%d]{%s}", colorInfoType, infoType.data(), kGray + 2, subLine.data()));
           ((TText*)pt->GetListOfLines()->Last())->SetTextAlign(12);
 
@@ -248,7 +238,7 @@ void QualityObserver::breakText(TPaveText* pt, std::string infoType, std::string
           subLine = "";
         }
       } else {
-        if (subLine.length() + textFragmant.length() + 1 <= maxStringLength) {
+        if (subLine.length() + textFragmant.length() + 1 <= mLineLength) {
           subLine += textFragmant + " ";
           textUnbroken.erase(0, subpos + subLineDelimiter.length());
         } else {
@@ -277,7 +267,7 @@ void QualityObserver::breakText(TPaveText* pt, std::string infoType, std::string
       ((TText*)pt->GetListOfLines()->Last())->SetTextAlign(12);
     }
 
-  } else { // string longer than maxStringLength but does not contain subLineDelimiter
+  } else { // string longer than mLineLength but does not contain subLineDelimiter
     pt->AddText(Form("#color[%d]{#rightarrow %s: %s}", kGray + 2, infoType.data(), textUnbroken.data()));
     ((TText*)pt->GetListOfLines()->Last())->SetTextAlign(12);
     return;
