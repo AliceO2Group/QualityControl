@@ -78,7 +78,7 @@ class TestTask : public TaskInterface
     test = 1;
   }
 
-  void startOfActivity(Activity& /*activity*/) override
+  void startOfActivity(const Activity& /*activity*/) override
   {
     ILOG(Info, Support) << "startOfActivity" << ENDM;
     test = 2;
@@ -102,7 +102,7 @@ class TestTask : public TaskInterface
     test = 5;
   }
 
-  void endOfActivity(Activity& /*activity*/) override
+  void endOfActivity(const Activity& /*activity*/) override
   {
     ILOG(Info, Support) << "endOfActivity" << ENDM;
     test = 6;
@@ -202,7 +202,6 @@ TEST_CASE("retrieveCondition")
   auto* objectsManager = new ObjectsManager(taskConfig.taskName, taskConfig.className, taskConfig.detectorName, taskConfig.consulUrl, 0, true);
   test::TestTask testTask(objectsManager);
   testTask.setCcdbUrl("ccdb-test.cern.ch:8080");
-  testTask.loadCcdb();
   o2::emcal::BadChannelMap* bcm = testTask.testRetrieveCondition();
   CHECK(bcm->getChannelStatus(1) == o2::emcal::BadChannelMap::MaskType_t::GOOD_CELL);
   CHECK(bcm->getChannelStatus(3) == o2::emcal::BadChannelMap::MaskType_t::DEAD_CELL);

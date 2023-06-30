@@ -65,7 +65,7 @@ void ExampleTask::publishHisto(int i)
   getObjectsManager()->startPublishing(mHistos[i]);
 }
 
-void ExampleTask::startOfActivity(Activity& activity)
+void ExampleTask::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity : " << activity.mId << ENDM;
   for (auto& mHisto : mHistos) {
@@ -108,7 +108,7 @@ void ExampleTask::endOfCycle()
   }
 }
 
-void ExampleTask::endOfActivity(Activity& /*activity*/)
+void ExampleTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

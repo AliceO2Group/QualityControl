@@ -62,7 +62,7 @@ void ZDCRecDataTask::initialize(o2::framework::InitContext& /*ctx*/)
   reset();
 }
 
-void ZDCRecDataTask::startOfActivity(Activity& activity)
+void ZDCRecDataTask::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
 }
@@ -87,7 +87,7 @@ void ZDCRecDataTask::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void ZDCRecDataTask::endOfActivity(Activity& /*activity*/)
+void ZDCRecDataTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

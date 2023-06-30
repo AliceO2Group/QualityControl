@@ -535,7 +535,7 @@ If the detector is ready and connected to the CRU(s), one can of course start th
 
 The run attributes, such as the run number, are provided to the modules through the object `activity`:
 ```c++
-void ExampleTask::startOfActivity(Activity& activity)
+void ExampleTask::startOfActivity(const Activity& activity)
 {
   ILOG(Info, Support) << "Run number : " << activity.mId << ENDM;
 ```

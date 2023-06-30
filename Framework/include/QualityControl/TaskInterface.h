@@ -74,11 +74,11 @@ class TaskInterface : public UserCodeInterface
 
   // Definition of the methods for the template method pattern
   virtual void initialize(o2::framework::InitContext& ctx) = 0;
-  virtual void startOfActivity(Activity& activity) = 0;
+  virtual void startOfActivity(const Activity& activity) = 0;
   virtual void startOfCycle() = 0;
   virtual void monitorData(o2::framework::ProcessingContext& ctx) = 0;
   virtual void endOfCycle() = 0;
-  virtual void endOfActivity(Activity& activity) = 0;
+  virtual void endOfActivity(const Activity& activity) = 0;
   virtual void reset() = 0;
 
   /// \brief Called each time mCustomParameters is updated.

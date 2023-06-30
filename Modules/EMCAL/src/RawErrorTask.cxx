@@ -182,7 +182,7 @@ void RawErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
   mMapper = std::make_unique<o2::emcal::MappingHandler>();
 }
 
-void RawErrorTask::startOfActivity(Activity& activity)
+void RawErrorTask::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
   reset();
@@ -289,7 +289,7 @@ void RawErrorTask::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void RawErrorTask::endOfActivity(Activity& /*activity*/)
+void RawErrorTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

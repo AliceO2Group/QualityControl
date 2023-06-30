@@ -64,7 +64,7 @@ void PID::initialize(o2::framework::InitContext& /*ctx*/)
   }
 }
 
-void PID::startOfActivity(Activity& /*activity*/)
+void PID::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "startOfActivity" << ENDM;
   mQCPID.resetHistograms();
@@ -91,7 +91,7 @@ void PID::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void PID::endOfActivity(Activity& /*activity*/)
+void PID::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

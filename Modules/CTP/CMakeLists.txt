@@ -10,7 +10,7 @@ target_include_directories(
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-target_link_libraries(O2QcCTP PUBLIC O2QualityControl O2::DataFormatsCTP)
+target_link_libraries(O2QcCTP PUBLIC O2QualityControl O2::DataFormatsCTP O2::CTPReconstruction)
 
 install(TARGETS O2QcCTP
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

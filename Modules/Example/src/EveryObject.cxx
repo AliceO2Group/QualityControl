@@ -86,7 +86,7 @@ void EveryObject::initialize(o2::framework::InitContext& /*ctx*/)
   }
 }
 
-void EveryObject::startOfActivity(Activity& activity)
+void EveryObject::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
 }
@@ -132,7 +132,7 @@ void EveryObject::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void EveryObject::endOfActivity(Activity& /*activity*/)
+void EveryObject::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

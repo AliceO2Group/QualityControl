@@ -104,7 +104,7 @@ void ITSDecodingErrorTask::setPlotsFormat()
   }
 }
 
-void ITSDecodingErrorTask::startOfActivity(Activity& activity)
+void ITSDecodingErrorTask::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity : " << activity.mId << ENDM;
 }
@@ -136,6 +136,7 @@ void ITSDecodingErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
       mLinkErrorVsFeeid->SetBinContent(ifee + 1, ierror + 1, le.errorCounts[ierror]);
     }
   }
+
   for (const auto& de : decErrors) {
     int istave = (int)(de.getFEEID() & 0x00ff);
     int ilink = (int)((de.getFEEID() & 0x0f00) >> 8);
@@ -173,7 +174,7 @@ void ITSDecodingErrorTask::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void ITSDecodingErrorTask::endOfActivity(Activity& /*activity*/)
+void ITSDecodingErrorTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

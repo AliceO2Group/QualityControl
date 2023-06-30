@@ -43,11 +43,11 @@ class TrackletsTask final : public TaskInterface
 
   // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& ctx) override;
-  void startOfActivity(Activity& activity) override;
+  void startOfActivity(const Activity& activity) override;
   void startOfCycle() override;
   void monitorData(o2::framework::ProcessingContext& ctx) override;
   void endOfCycle() override;
-  void endOfActivity(Activity& activity) override;
+  void endOfActivity(const Activity& activity) override;
   void reset() override;
   void buildHistograms();
   void retrieveCCDBSettings();
@@ -71,7 +71,7 @@ class TrackletsTask final : public TaskInterface
   TH1F* mTrackletPosition = nullptr;
   TH1F* mTrackletPositionRaw = nullptr;
   TH1F* mTrackletsPerEvent = nullptr;
-  TH2F* mTrackletsPerEvent2D = nullptr;
+  TH2F* mTrackletsPerHC2D = nullptr;
   std::array<TH2F*, 18> moHCMCMn;
   TH1F* mTrackletSlopen = nullptr;
   TH1F* mTrackletSlopeRawn = nullptr;

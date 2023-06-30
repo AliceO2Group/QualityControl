@@ -52,7 +52,7 @@ void JunkDetection::initialize(o2::framework::InitContext&)
   }
 }
 
-void JunkDetection::startOfActivity(Activity&)
+void JunkDetection::startOfActivity(const Activity&)
 {
   ILOG(Debug, Devel) << "startOfActivity" << ENDM;
 
@@ -86,7 +86,7 @@ void JunkDetection::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void JunkDetection::endOfActivity(Activity&)
+void JunkDetection::endOfActivity(const Activity&)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 

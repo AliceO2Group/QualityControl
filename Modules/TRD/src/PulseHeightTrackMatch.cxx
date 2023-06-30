@@ -135,7 +135,7 @@ void PulseHeightTrackMatch::initialize(o2::framework::InitContext& /*ctx*/)
   buildHistograms();
 }
 
-void PulseHeightTrackMatch::startOfActivity(Activity& /*activity*/)
+void PulseHeightTrackMatch::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "startOfActivity" << ENDM;
 } // set stats/stacs
@@ -266,7 +266,7 @@ void PulseHeightTrackMatch::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void PulseHeightTrackMatch::endOfActivity(Activity& /*activity*/)
+void PulseHeightTrackMatch::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

@@ -29,6 +29,8 @@
 #include <TH2.h>
 #include <TCanvas.h>
 #include <TGraph.h>
+#include <regex>
+#include <array>
 
 class TH1F;
 class TCanvas;
@@ -87,9 +89,20 @@ class PostProcTask final : public quality_control::postprocessing::PostProcessin
   // if storage size matters it can be replaced with TH1
   // and TH2 can be created based on it on the fly, but only TH1 would be stored
   std::unique_ptr<TH2F> mHistBcPattern;
+  std::unique_ptr<TH2F> mHistBcPatternFee;
   std::unique_ptr<TH2F> mHistBcTrgOutOfBunchColl;
+  std::unique_ptr<TH2F> mHistBcFeeOutOfBunchColl;
+  std::unique_ptr<TH2F> mHistBcFeeOutOfBunchCollForOrATrg;
+  std::unique_ptr<TH2F> mHistBcFeeOutOfBunchCollForOrAOutTrg;
+  std::unique_ptr<TH2F> mHistBcFeeOutOfBunchCollForNChanTrg;
+  std::unique_ptr<TH2F> mHistBcFeeOutOfBunchCollForChargeTrg;
+  std::unique_ptr<TH2F> mHistBcFeeOutOfBunchCollForOrAInTrg;
 
+  uint8_t mTCMhash;
+  std::array<uint8_t, sNCHANNELS_FV0_PLUSREF> mChID2PMhash; // map chID->hashed PM value
+  std::map<uint8_t, bool> mMapPMhash2isInner;
   std::map<unsigned int, TH1D*> mMapTrgHistBC;
+  std::map<std::string, uint8_t> mMapFEE2hash;
 };
 
 } // namespace o2::quality_control_modules::fv0

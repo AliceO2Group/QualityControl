@@ -87,7 +87,7 @@ void Clusters::initialize(InitContext& /*ctx*/)
   }
 }
 
-void Clusters::startOfActivity(Activity& /*activity*/)
+void Clusters::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "startOfActivity" << ENDM;
 }
@@ -158,7 +158,7 @@ void Clusters::endOfCycle()
   }
 }
 
-void Clusters::endOfActivity(Activity& /*activity*/)
+void Clusters::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

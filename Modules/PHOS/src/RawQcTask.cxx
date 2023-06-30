@@ -191,7 +191,7 @@ void RawQcTask::InitHistograms()
   }
 }
 
-void RawQcTask::startOfActivity(Activity& /*activity*/)
+void RawQcTask::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "startOfActivity" << ENDM;
   reset();
@@ -257,9 +257,7 @@ void RawQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   if (mInitBadMap) {
     mInitBadMap = false;
     ILOG(Info, Support) << "Getting bad map" << ENDM;
-    loadCcdb();
-    std::map<std::string, std::string> metadata;
-    mBadMap = retrieveConditionAny<o2::phos::BadChannelsMap>("PHS/Calib/BadMap", metadata);
+    mBadMap = retrieveConditionAny<o2::phos::BadChannelsMap>("PHS/Calib/BadMap");
     if (!mBadMap) {
       ILOG(Error, Support) << "Can not get bad map" << ENDM;
       mHist1D[kBadMapSummary]->Reset();
@@ -409,7 +407,7 @@ void RawQcTask::endOfCycle()
   }
 }
 
-void RawQcTask::endOfActivity(Activity& /*activity*/)
+void RawQcTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Info, Support) << "endOfActivity" << ENDM;
   endOfCycle();

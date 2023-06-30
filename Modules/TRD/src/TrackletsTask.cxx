@@ -148,28 +148,56 @@ void TrackletsTask::buildHistograms()
   getObjectsManager()->startPublishing(mTrackletPositionRaw);
   mTrackletsPerEvent = new TH1F("trackletsperevent", "Number of Tracklets per event;Tracklets in Event;Counts", 25000, 0, 25000);
   getObjectsManager()->startPublishing(mTrackletsPerEvent);
-  mTrackletsPerEvent2D = new TH2F("trackletsperevent2d", "Tracklets distribution in half-chambers;Sector_Side;Stack_Side;Number of tracklets per half-chamber", 36, 0, 36, 30, 0, 30);
-  getObjectsManager()->startPublishing(mTrackletsPerEvent2D);
-  getObjectsManager()->setDefaultDrawOptions("trackletsperevent2d", "COLZ");
-  getObjectsManager()->setDisplayHint(mTrackletsPerEvent2D->GetName(), "logz");
-  mTrackletsPerEvent2D->GetXaxis()->SetTitle("Sector_Side");
-  mTrackletsPerEvent2D->GetXaxis()->CenterTitle(kTRUE);
-  mTrackletsPerEvent2D->GetYaxis()->SetTitle("Stack_Layer");
-  mTrackletsPerEvent2D->GetYaxis()->CenterTitle(kTRUE);
+  mTrackletsPerHC2D = new TH2F("trackletsperHC2D", "Tracklets distribution in half-chambers;Sector_Side;Stack_Side", 36, 0, 36, 30, 0, 30);
+  mTrackletsPerHC2D->SetStats(0);
+  mTrackletsPerHC2D->GetXaxis()->SetTitle("Sector_Side");
+  mTrackletsPerHC2D->GetXaxis()->CenterTitle(kTRUE);
+  mTrackletsPerHC2D->GetYaxis()->SetTitle("Stack_Layer");
+  mTrackletsPerHC2D->GetYaxis()->CenterTitle(kTRUE);
   for (int s = 0; s < o2::trd::constants::NSTACK; ++s) {
     for (int l = 0; l < o2::trd::constants::NLAYER; ++l) {
       std::string label = fmt::format("{0}_{1}", s, l);
       int pos = s * o2::trd::constants::NLAYER + l + 1;
-      mTrackletsPerEvent2D->GetYaxis()->SetBinLabel(pos, label.c_str());
+      mTrackletsPerHC2D->GetYaxis()->SetBinLabel(pos, label.c_str());
     }
   }
   for (int sm = 0; sm < o2::trd::constants::NSECTOR; ++sm) {
     for (int side = 0; side < 2; ++side) {
       std::string label = fmt::format("{0}_{1}", sm, side == 0 ? "A" : "B");
       int pos = sm * 2 + side + 1;
-      mTrackletsPerEvent2D->GetXaxis()->SetBinLabel(pos, label.c_str());
+      mTrackletsPerHC2D->GetXaxis()->SetBinLabel(pos, label.c_str());
     }
   }
+
+  // Mask known inactive halfchambers in the active chamber map
+  TLine* line[6];
+  std::pair<int, int> x, y;
+  for (int iHC = 0; iHC < o2::trd::constants::NCHAMBER * 2; ++iHC) {
+    if (mChamberStatus != nullptr) {
+      if (mChamberStatus->isMasked(iHC)) {
+        int stackLayer = o2::trd::HelperMethods::getStack(iHC / 2) * o2::trd::constants::NLAYER + o2::trd::HelperMethods::getLayer(iHC / 2);
+        int sectorSide = (iHC / o2::trd::constants::NHCPERSEC) * 2 + (iHC % 2);
+        x.first = sectorSide;
+        x.second = sectorSide + 1;
+        y.first = stackLayer;
+        y.second = stackLayer + 1;
+
+        line[0] = new TLine(x.first, y.first, x.second, y.second);
+        line[1] = new TLine(x.second, y.first, x.first, y.second);
+        line[2] = new TLine(x.first, y.first, x.second, y.first);
+        line[3] = new TLine(x.first, y.second, x.second, y.second);
+        line[4] = new TLine(x.first, y.first, x.first, y.second);
+        line[5] = new TLine(x.second, y.first, x.second, y.second);
+        for (int i = 0; i < 6; ++i) {
+          line[i]->SetLineColor(kBlack);
+          mTrackletsPerHC2D->GetListOfFunctions()->Add(line[i]);
+        }
+      }
+    }
+  }
+  getObjectsManager()->startPublishing(mTrackletsPerHC2D);
+  getObjectsManager()->setDefaultDrawOptions("trackletsperHC2D", "COLZ");
+  getObjectsManager()->setDisplayHint(mTrackletsPerHC2D->GetName(), "logz");
 
   for (Int_t sm = 0; sm < o2::trd::constants::NSECTOR; ++sm) {
     std::string label = fmt::format("TrackletHCMCMnoise_{0}", sm);
@@ -368,7 +396,7 @@ void TrackletsTask::initialize(o2::framework::InitContext& /*ctx*/)
   buildHistograms();
 }
 
-void TrackletsTask::startOfActivity(Activity& activity)
+void TrackletsTask::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
   for (Int_t sm = 0; sm < o2::trd::constants::NSECTOR; ++sm) {
@@ -413,7 +441,7 @@ void TrackletsTask::monitorData(o2::framework::ProcessingContext& ctx)
           int hcid = tracklets[currenttracklet].getHCID();
           int stackLayer = o2::trd::HelperMethods::getStack(hcid / 2) * o2::trd::constants::NLAYER + o2::trd::HelperMethods::getLayer(hcid / 2);
           int sectorSide = (hcid / o2::trd::constants::NHCPERSEC) * 2 + (hcid % 2);
-          mTrackletsPerEvent2D->Fill(sectorSide, stackLayer);
+          mTrackletsPerHC2D->Fill(sectorSide, stackLayer);
           // 8 rob x 16 mcm each per chamber
           //  5 stack(y), 6 layers(x)
           //  y=stack_rob, x=layer_mcm
@@ -469,7 +497,7 @@ void TrackletsTask::endOfCycle()
   mTrackletsPerTimeFrameCycled->Reset();
 }
 
-void TrackletsTask::endOfActivity(Activity& /*activity*/)
+void TrackletsTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
@@ -488,7 +516,7 @@ void TrackletsTask::reset()
   mTrackletPosition->Reset();
   mTrackletPositionRaw->Reset();
   mTrackletsPerEvent->Reset();
-  mTrackletsPerEvent2D->Reset();
+  mTrackletsPerHC2D->Reset();
   for (auto h : moHCMCMn) {
     h->Reset();
   }

@@ -83,7 +83,7 @@ void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 }
 
-void ITSTrackTask::startOfActivity(Activity& /*activity*/)
+void ITSTrackTask::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "startOfActivity" << ENDM;
 }
@@ -327,7 +327,7 @@ void ITSTrackTask::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void ITSTrackTask::endOfActivity(Activity& /*activity*/)
+void ITSTrackTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

@@ -314,7 +314,7 @@ void ClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 }
 
-void ClusterTask::startOfActivity(Activity& activity)
+void ClusterTask::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
   resetHistograms();
@@ -403,7 +403,7 @@ void ClusterTask::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void ClusterTask::endOfActivity(Activity& /*activity*/)
+void ClusterTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

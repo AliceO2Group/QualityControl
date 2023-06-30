@@ -19,7 +19,6 @@
 #include "ITS/ITSClusterTask.h"
 
 #include <sstream>
-#include <TCanvas.h>
 #include <DataFormatsParameters/GRPObject.h>
 #include <ITSMFTReconstruction/DigitPixelReader.h>
 #include <DataFormatsITSMFT/ROFRecord.h>
@@ -54,6 +53,7 @@ ITSClusterTask::ITSClusterTask() : TaskInterface() {}
 ITSClusterTask::~ITSClusterTask()
 {
   delete hClusterVsBunchCrossing;
+  delete hEmptyLaneFractionGlobal;
   for (int iLayer = 0; iLayer < NLayer; iLayer++) {
 
     if (!mEnableLayers[iLayer])
@@ -125,7 +125,7 @@ void ITSClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   publishHistos();
 }
 
-void ITSClusterTask::startOfActivity(Activity& /*activity*/)
+void ITSClusterTask::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "startOfActivity" << ENDM;
   reset();
@@ -221,7 +221,6 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
         nClustersForBunchCrossing++;
 
       if (lay < NLayerIB) {
-
         mClusterOccupancyIB[lay][sta][chip]++;
 
         mClusterSize[lay][sta][chip] += npix;
@@ -236,7 +235,6 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
           hGroupedClusterSizeLayerSummary[lay]->Fill(npix);
         }
       } else {
-
         mClusterOccupancyOB[lay][sta][lane]++;
 
         mClusterSize[lay][sta][lane] += npix;
@@ -275,11 +273,14 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 
       if (!mEnableLayers[iLayer])
         continue;
-
       for (int iStave = 0; iStave < mNStaves[iLayer]; iStave++) {
 
         if (iLayer < NLayerIB) {
           for (int iChip = 0; iChip < mNChipsPerHic[iLayer]; iChip++) {
+            if (!mClusterOccupancyIB[iLayer][iStave][iChip]) {
+              mNLaneEmpty[0]++;
+              mNLaneEmpty[3]++;
+            }
             hAverageClusterOccupancySummaryIB[iLayer]->SetBinContent(iChip + 1, iStave + 1, 1. * mClusterOccupancyIB[iLayer][iStave][iChip] / mNRofs);
             hAverageClusterOccupancySummaryIB[iLayer]->SetBinError(iChip + 1, iStave + 1, 1e-15);
             hAverageClusterSizeSummaryIB[iLayer]->SetBinContent(iChip + 1, iStave + 1, nClusters[iLayer][iStave][iChip] != 0 ? (double)mClusterSize[iLayer][iStave][iChip] / nClusters[iLayer][iStave][iChip] : 0.);
@@ -292,6 +293,17 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
         } else {
 
           for (int iLane = 0; iLane < mNLanePerHic[iLayer] * mNHicPerStave[iLayer]; iLane++) {
+            if (iLayer < 5) {
+              if (!mClusterOccupancyOB[iLayer][iStave][iLane]) {
+                mNLaneEmpty[1]++;
+                mNLaneEmpty[3]++;
+              }
+            } else {
+              if (!mClusterOccupancyOB[iLayer][iStave][iLane]) {
+                mNLaneEmpty[2]++;
+                mNLaneEmpty[3]++;
+              }
+            }
             hAverageClusterOccupancySummaryOB[iLayer]->SetBinContent(iLane + 1, iStave + 1, 1. * mClusterOccupancyOB[iLayer][iStave][iLane] / mNRofs / (mNChipsPerHic[iLayer] / mNLanePerHic[iLayer])); // 14 To have occupation per chip -> 7 because we're considering lanes
             hAverageClusterOccupancySummaryOB[iLayer]->SetBinError(iLane + 1, iStave + 1, 1e-15);                                                                                                       // 14 To have occupation per chip
             hAverageClusterSizeSummaryOB[iLayer]->SetBinContent(iLane + 1, iStave + 1, nClusters[iLayer][iStave][iLane] != 0 ? (double)mClusterSize[iLayer][iStave][iLane] / nClusters[iLayer][iStave][iLane] : 0.);
@@ -325,6 +337,9 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
         }
       }
     }
+    for (int iflag = 0; iflag < NFlags; iflag++) {
+      hEmptyLaneFractionGlobal->SetBinContent(iflag + 1, 1. * mNLaneEmpty[iflag] / mNLanes[iflag]);
+    }
   }
 
   end = std::chrono::high_resolution_clock::now();
@@ -337,7 +352,7 @@ void ITSClusterTask::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void ITSClusterTask::endOfActivity(Activity& /*activity*/)
+void ITSClusterTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
@@ -346,6 +361,7 @@ void ITSClusterTask::reset()
 {
   ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   hClusterVsBunchCrossing->Reset();
+  hEmptyLaneFractionGlobal->Reset();
   mGeneralOccupancy->Reset();
 
   for (int iLayer = 0; iLayer < NLayer; iLayer++) {
@@ -391,6 +407,18 @@ void ITSClusterTask::createAllHistos()
   addObject(hClusterVsBunchCrossing);
   formatAxes(hClusterVsBunchCrossing, "Bunch Crossing ID", "Number of clusters with npix > 2 in ROF", 1, 1.10);
   hClusterVsBunchCrossing->SetStats(0);
+
+  hEmptyLaneFractionGlobal = new TH1D("EmptyLaneFractionGlobal", "Empty Lane Fraction Global", 4, 0, 4);
+  hEmptyLaneFractionGlobal->SetTitle("Empty Lane /All Lane ");
+  addObject(hEmptyLaneFractionGlobal);
+  formatAxes(hEmptyLaneFractionGlobal, "", "Fraction of empty lane");
+  for (int i = 0; i < NFlags; i++) {
+    hEmptyLaneFractionGlobal->GetXaxis()->SetBinLabel(i + 1, mLaneStatusFlag[i].c_str());
+  }
+  hEmptyLaneFractionGlobal->GetXaxis()->CenterLabels();
+  hEmptyLaneFractionGlobal->SetMaximum(1);
+  hEmptyLaneFractionGlobal->SetMinimum(0);
+  hEmptyLaneFractionGlobal->SetStats(0);
 
   for (int iLayer = 0; iLayer < NLayer; iLayer++) {
     if (!mEnableLayers[iLayer])

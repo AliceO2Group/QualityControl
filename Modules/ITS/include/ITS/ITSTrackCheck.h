@@ -60,6 +60,7 @@ class ITSTrackCheck : public o2::quality_control::checker::CheckInterface
   }
 
  private:
+  float mEtaRatio = 0.1, mPhiRatio = 0.1;
   std::shared_ptr<TLatex> tInfo;
   std::shared_ptr<TLatex> tMessage[10];
   ClassDefOverride(ITSTrackCheck, 2);

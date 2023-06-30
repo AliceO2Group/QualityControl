@@ -28,6 +28,7 @@
 #include "MCHMappingInterface/Segmentation.h"
 #include "MCHRawDecoder/DataDecoder.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "DetectorsBase/GRPGeomHelper.h"
 #include <Framework/InputRecord.h>
 #include <CommonConstants/LHCConstants.h>
 #include <DetectorsRaw/HBFUtils.h>
@@ -101,7 +102,7 @@ void DigitsTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 }
 
-void DigitsTask::startOfActivity(Activity& /*activity*/)
+void DigitsTask::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 }
@@ -126,6 +127,8 @@ static bool checkInput(o2::framework::ProcessingContext& ctx, std::string bindin
 void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   bool hasOrbits = checkInput(ctx, "orbits");
+
+  mNOrbitsPerTF = o2::base::GRPGeomHelper::instance().getNHBFPerTF();
 
   if (hasOrbits) {
     // if (ctx.inputs().isValid("orbits")) {
@@ -174,7 +177,7 @@ void DigitsTask::addDefaultOrbitsInTF()
 {
   for (int fee = 0; fee < FecId::sFeeNum; fee++) {
     for (int li = 0; li < FecId::sLinkNum; li++) {
-      mNOrbits[fee][li] += o2::raw::HBFUtils::Instance().getNOrbitsPerTF();
+      mNOrbits[fee][li] += mNOrbitsPerTF;
     }
   }
 }
@@ -312,7 +315,7 @@ void DigitsTask::endOfCycle()
   nCycles += 1;
 }
 
-void DigitsTask::endOfActivity(Activity& /*activity*/)
+void DigitsTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 }

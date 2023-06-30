@@ -102,7 +102,7 @@ void ITSTPCMatchingTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 }
 
-void ITSTPCMatchingTask::startOfActivity(Activity& activity)
+void ITSTPCMatchingTask::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
   mMatchITSTPCQC.reset();
@@ -124,7 +124,7 @@ void ITSTPCMatchingTask::endOfCycle()
   mMatchITSTPCQC.finalize();
 }
 
-void ITSTPCMatchingTask::endOfActivity(Activity& /*activity*/)
+void ITSTPCMatchingTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

@@ -95,7 +95,7 @@ void DaqTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 }
 
-void DaqTask::startOfActivity(Activity& activity)
+void DaqTask::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity: " << activity.mId << ENDM;
   reset();
@@ -128,7 +128,7 @@ void DaqTask::endOfCycle()
   }
 }
 
-void DaqTask::endOfActivity(Activity& /*activity*/)
+void DaqTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 

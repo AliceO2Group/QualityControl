@@ -149,7 +149,7 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mDigitsMaxSM);
 }
 
-void DigitsQcTask::startOfActivity(Activity& /*activity*/)
+void DigitsQcTask::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "startOfActivity" << ENDM;
   reset();
@@ -159,13 +159,12 @@ void DigitsQcTask::startOfCycle()
 {
   mTimeFramesPerCycles = 0;
   ILOG(Debug, Support) << "startOfCycle" << ENDM;
-  std::map<std::string, std::string> metadata;
-  mBadChannelMap = retrieveConditionAny<o2::emcal::BadChannelMap>("EMC/Calib/BadChannels", metadata);
+  mBadChannelMap = retrieveConditionAny<o2::emcal::BadChannelMap>("EMC/Calib/BadChannels");
   //it was EMC/BadChannelMap
   if (!mBadChannelMap)
     ILOG(Info, Support) << "No Bad Channel Map object " << ENDM;
 
-  mTimeCalib = retrieveConditionAny<o2::emcal::TimeCalibrationParams>("EMC/Calib/Time", metadata);
+  mTimeCalib = retrieveConditionAny<o2::emcal::TimeCalibrationParams>("EMC/Calib/Time");
   //"EMC/TimeCalibrationParams
   if (!mTimeCalib)
     ILOG(Info, Support) << " No Time Calib object " << ENDM;
@@ -292,7 +291,7 @@ void DigitsQcTask::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void DigitsQcTask::endOfActivity(Activity& /*activity*/)
+void DigitsQcTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }

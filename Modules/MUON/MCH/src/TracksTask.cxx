@@ -143,7 +143,7 @@ int TracksTask::dsbinx(int deid, int dsid) const
   return computeDsBinX(feeId, linkId, eLinkId);
 }
 
-void TracksTask::startOfActivity(Activity& activity)
+void TracksTask::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity : " << activity.mId << ENDM;
 }
@@ -335,7 +335,7 @@ void TracksTask::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void TracksTask::endOfActivity(Activity& /*activity*/)
+void TracksTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
