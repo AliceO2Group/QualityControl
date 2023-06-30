@@ -91,6 +91,9 @@ core::Activity asActivity(const boost::property_tree::ptree&, const std::string&
 std::function<validity_time_t(void)> getCcdbSorTimeAccessor(uint64_t runNumber);
 std::function<validity_time_t(void)> getCcdbEorTimeAccessor(uint64_t runNumber);
 
+/// \brief checks if the provided validity uses old rules, where start is creation time, end is 10 years in the future.
+bool isLegacyValidity(ValidityInterval);
+
 namespace implementation
 {
 template <typename Iter, typename Accessor>
