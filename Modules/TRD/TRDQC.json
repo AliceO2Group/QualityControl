@@ -127,7 +127,7 @@
           "query": "digits:TRD/DIGITS;tracklets:TRD/TRACKLETS;triggers:TRD/TRKTRGRD;tracks:TRD/MATCH_ITSTPC;trigrectrk:TRD/TRGREC_ITSTPC"
         },
         "taskParameters": {
-          "pileupCut": "0.7",
+          "pileupCut": "1.5",
           "peakregionstart": "7.0",
           "peakregionend": "20.0",
           "pulseheightpeaklower": "1.0",
