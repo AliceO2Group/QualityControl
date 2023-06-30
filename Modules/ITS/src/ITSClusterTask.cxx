@@ -405,7 +405,7 @@ void ITSClusterTask::createAllHistos()
   hEmptyLaneFractionGlobal = new TH1D("EmptyLaneFractionGlobal", "Empty Lane Fraction Global", 4, 0, 4);
   hEmptyLaneFractionGlobal->SetTitle("Empty Lane /All Lane ");
   addObject(hEmptyLaneFractionGlobal);
-  formatAxes(hEmptyLaneFractionGlobal, "", "Fraction of empty lane");
+  formatAxes(hEmptyLaneFractionGlobal, "", "Fraction of empty lane", 1, 1.10);
   for (int i = 0; i < NFlags; i++) {
     hEmptyLaneFractionGlobal->GetXaxis()->SetBinLabel(i + 1, mLaneStatusFlag[i].c_str());
   }
