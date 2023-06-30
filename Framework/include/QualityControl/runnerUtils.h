@@ -102,7 +102,7 @@ inline Activity computeActivity(framework::ServiceRegistryRef services, const Ac
   auto fillNumber = computeActivityField<int>(services, "fillInfoFillNumber", fallbackActivity.mFillNumber);
   auto beam_type = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("fillInfoBeamType", fallbackActivity.mBeamType);
 
-  Activity activity( 
+  Activity activity(
     runNumber,
     runType,
     fallbackActivity.mPeriodName,
