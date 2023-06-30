@@ -15,7 +15,6 @@
 ///
 
 #include "QualityControl/Activity.h"
-#include "QualityControl/ActivityHelpers.h"
 #include <catch_amalgamated.hpp>
 
 using namespace o2::quality_control::core;
@@ -75,41 +74,5 @@ TEST_CASE("test_same")
     CHECK(!activity.same({ 300000, 1, "LHC22b", "spass", "qc", { 1, 10 } }));
     CHECK(!activity.same({ 300000, 1, "LHC22a", "apass", "qc", { 1, 10 } }));
     CHECK(!activity.same({ 300000, 1, "LHC22a", "spass", "qc_mc", { 1, 10 } }));
-  }
-}
-
-TEST_CASE("test_minimalMatchingActivity")
-{
-  {
-    // providing a map accessor + everything being the same except the validity
-    std::map<int, Activity> m{
-      { 1, { 300000, 1, "LHC22a", "spass", "qc", { 1, 10 }, "pp" } },
-      { 2, { 300000, 1, "LHC22a", "spass", "qc", { 10, 20 }, "pp" } },
-      { 4, { 300000, 1, "LHC22a", "spass", "qc", { 20, 30 }, "pp" } },
-      { 3, { 300000, 1, "LHC22a", "spass", "qc", { 30, 40 }, "pp" } }
-    };
-    auto result = activity_helpers::strictestMatchingActivity(m.begin(), m.end(), [](const auto& item) { return item.second; });
-    Activity expectation{ 300000, 1, "LHC22a", "spass", "qc", { 1, 40 }, "pp" };
-    CHECK(result == expectation);
-  }
-  {
-    // providing a vector (default accessor) + different run numbers and validities
-    std::vector<Activity> m{
-      { 300000, 1, "LHC22a", "spass", "qc", { 1, 10 }, "pp" },
-      { 300001, 1, "LHC22a", "spass", "qc", { 20, 30 }, "pp" }
-    };
-    auto result = activity_helpers::strictestMatchingActivity(m.begin(), m.end());
-    Activity expectation{ 0, 1, "LHC22a", "spass", "qc", { 1, 30 }, "pp" };
-    CHECK(result == expectation);
-  }
-  {
-    // providing a vector (custom accessor) + different everything
-    std::vector<Activity> m{
-      { 300000, 1, "LHC22a", "spass", "qc", { 1, 10 }, "pp" },
-      { 300001, 2, "LHC22b", "apass2", "qc_mc", { 20, 30 }, "PbPb" }
-    };
-    auto result = activity_helpers::strictestMatchingActivity(m.begin(), m.end(), [](const auto& a) { return a; });
-    Activity expectation{ 0, 0, "", "", "qc", { 1, 30 }, "" };
-    CHECK(result == expectation);
   }
 }

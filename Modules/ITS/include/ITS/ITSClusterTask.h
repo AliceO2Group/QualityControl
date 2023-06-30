@@ -29,6 +29,9 @@
 #include <ITSBase/GeometryTGeo.h>
 #include <Framework/TimingInfo.h>
 
+#include <TLine.h>
+#include <TLatex.h>
+
 class TH1F;
 class TH2F;
 
@@ -100,6 +103,7 @@ class ITSClusterTask : public TaskInterface
   std::shared_ptr<TH2FRatio> hAverageClusterSizeSummaryOB[NLayer];
 
   int mClusterOccupancyOB[NLayer][48][28] = { { { 0 } } };
+  int mNLaneEmpty[4] = { 0 }; // IB, ML, OL, TOTAL empty lane
 
   // Layer synnary
   TH1F* hClusterSizeLayerSummary[NLayer] = { nullptr };
@@ -118,6 +122,8 @@ class ITSClusterTask : public TaskInterface
   std::shared_ptr<TH2FRatio> hAverageClusterOccupancySummaryZPhi[NLayer];
   std::shared_ptr<TH2FRatio> hAverageClusterSizeSummaryZPhi[NLayer];
 
+  TH1D* hEmptyLaneFractionGlobal;
+
   int mClusterSize[NLayer][48][28] = { { { 0 } } }; //[#layers][max staves][max lanes / chips]
   int nClusters[NLayer][48][28] = { { { 0 } } };
 
@@ -131,14 +137,17 @@ class ITSClusterTask : public TaskInterface
   int nRphiBinsIB = 1;
   int nRphiBinsOB = 1;
   int nZBinsOB = 1;
+  static constexpr int NFlags = 4;
 
   const int mOccUpdateFrequency = 100000;
+  const int mNLanes[4] = { 432, 864, 2520, 3816 }; // IB, ML, OL, TOTAL lane
   int mDoPublish1DSummary = 0;
   int mNThreads = 1;
   int mNRofs = 0;
   int nBCbins = 103;
   long int mTimestamp = -1;
   TString xLabel;
+  std::string mLaneStatusFlag[NFlags] = { "IB", "ML", "OL", "Total" };
   int mDoPublishDetailedSummary = 0;
 
   const int mNStaves[NLayer] = { 12, 16, 20, 24, 30, 42, 48 };

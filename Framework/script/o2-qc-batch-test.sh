@@ -54,6 +54,7 @@ fi
 
 delete_data
 
+export O2_DPL_DEPLOYMENT_MODE=Grid
 # Run the Tasks 3 times, including twice with the same file.
 o2-qc-run-producer --message-amount 100 --message-rate 100 | o2-qc --config json:/${JSON_DIR}/batch-test.json --local-batch /tmp/batch_test_mergedA${UNIQUE_ID}.root --run
 o2-qc-run-producer --message-amount 100 --message-rate 100 | o2-qc --config json:/${JSON_DIR}/batch-test.json --local-batch /tmp/batch_test_mergedA${UNIQUE_ID}.root --run

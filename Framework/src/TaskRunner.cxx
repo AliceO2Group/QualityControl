@@ -32,6 +32,7 @@
 #include <Framework/EndOfStreamContext.h>
 #include <Framework/TimingInfo.h>
 #include <Framework/DataTakingContext.h>
+#include <Framework/DefaultsHelpers.h>
 #include <CommonUtils/ConfigurableParam.h>
 #include <DetectorsBase/GRPGeomHelper.h>
 
@@ -45,6 +46,7 @@
 #include "QualityControl/Bookkeeping.h"
 #include "QualityControl/TimekeeperSynchronous.h"
 #include "QualityControl/TimekeeperAsynchronous.h"
+#include "QualityControl/ActivityHelpers.h"
 
 #include <string>
 #include <TFile.h>
@@ -164,12 +166,21 @@ void TaskRunner::init(InitContext& iCtx)
   mObjectsManager = std::make_shared<ObjectsManager>(mTaskConfig.taskName, mTaskConfig.className, mTaskConfig.detectorName, mTaskConfig.consulUrl, mTaskConfig.parallelTaskID);
 
   // setup timekeeping
-  // fixme: use DataTakingContext.deployment once we can get it during initialization
-  // fixme: use DataTakingContext.nOrbitsPerTF once we can get it during initialization
-  if (mTaskConfig.fallbackActivity.mProvenance == "qc") {
-    mTimekeeper = std::make_shared<TimekeeperSynchronous>(32);
-  } else {
-    mTimekeeper = std::make_shared<TimekeeperAsynchronous>(32);
+  switch (DefaultsHelpers::deploymentMode()) {
+    case DeploymentMode::Grid: {
+      ILOG(Info, Devel) << "Detected async deployment, object validity will be based on incoming data and available SOR/EOR times" << ENDM;
+      mTimekeeper = std::make_shared<TimekeeperAsynchronous>();
+      break;
+    }
+    case DeploymentMode::Local:
+    case DeploymentMode::OnlineECS:
+    case DeploymentMode::OnlineDDS:
+    case DeploymentMode::OnlineAUX:
+    case DeploymentMode::FST:
+    default: {
+      ILOG(Info, Devel) << "Detected sync deployment, object validity will be based primarily on current time" << ENDM;
+      mTimekeeper = std::make_shared<TimekeeperSynchronous>();
+    }
   }
 
   // setup user's task
@@ -187,7 +198,6 @@ void TaskRunner::init(InitContext& iCtx)
   }
 
   // init user's task
-  mTask->setCcdbUrl(mTaskConfig.conditionUrl);
   mTask->initialize(iCtx);
 
   mNoMoreCycles = false;
@@ -213,7 +223,7 @@ void TaskRunner::run(ProcessingContext& pCtx)
   auto [dataReady, timerReady] = validateInputs(pCtx.inputs());
 
   if (dataReady) {
-    mTimekeeper->updateByTimeFrameID(pCtx.services().get<TimingInfo>().tfCounter);
+    mTimekeeper->updateByTimeFrameID(pCtx.services().get<TimingInfo>().tfCounter, pCtx.services().get<DataTakingContext>().nOrbitsPerTF);
     mTask->monitorData(pCtx);
     updateMonitoringStats(pCtx);
   }
@@ -452,9 +462,9 @@ void TaskRunner::startOfActivity()
   mObjectsManager->setActivity(activity);
 
   auto now = getCurrentTimestamp();
-  mTimekeeper->setStartOfActivity(activity.mValidity.getMin(), mTaskConfig.fallbackActivity.mValidity.getMin(), now);
+  mTimekeeper->setStartOfActivity(activity.mValidity.getMin(), mTaskConfig.fallbackActivity.mValidity.getMin(), now, activity_helpers::getCcdbSorTimeAccessor(mRunNumber));
   mTimekeeper->updateByCurrentTimestamp(mTimekeeper->getActivityDuration().getMin());
-  mTimekeeper->setEndOfActivity(activity.mValidity.getMax(), mTaskConfig.fallbackActivity.mValidity.getMax(), now);
+  mTimekeeper->setEndOfActivity(activity.mValidity.getMax(), mTaskConfig.fallbackActivity.mValidity.getMax(), now, activity_helpers::getCcdbEorTimeAccessor(mRunNumber));
 
   mCollector->setRunNumber(mRunNumber);
   mTask->startOfActivity(activity);
@@ -467,7 +477,7 @@ void TaskRunner::endOfActivity()
 
   auto now = getCurrentTimestamp();
   mTimekeeper->updateByCurrentTimestamp(now);
-  mTimekeeper->setEndOfActivity(0, mTaskConfig.fallbackActivity.mValidity.getMax(), now); // TODO: get end of run from ECS/BK if possible
+  mTimekeeper->setEndOfActivity(0, mTaskConfig.fallbackActivity.mValidity.getMax(), now, activity_helpers::getCcdbEorTimeAccessor(mRunNumber)); // TODO: get end of run from ECS/BK if possible
 
   mTask->endOfActivity(mObjectsManager->getActivity());
   mObjectsManager->removeAllFromServiceDiscovery();

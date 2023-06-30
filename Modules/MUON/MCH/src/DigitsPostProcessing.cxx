@@ -47,8 +47,10 @@ void DigitsPostProcessing::configure(const boost::property_tree::ptree& config)
   mCcdbObjects.emplace(orbitsSourceName(), CcdbObjectHelper());
   mCcdbObjects.emplace(orbitsSignalSourceName(), CcdbObjectHelper());
 
-  mCcdbObjectsRef.emplace(rateSourceName(), CcdbObjectHelper());
-  mCcdbObjectsRef.emplace(rateSignalSourceName(), CcdbObjectHelper());
+  if (mRefTimeStamp > 0) {
+    mCcdbObjectsRef.emplace(rateSourceName(), CcdbObjectHelper());
+    mCcdbObjectsRef.emplace(rateSignalSourceName(), CcdbObjectHelper());
+  }
 
   for (auto source : mchConfig.dataSources) {
     std::string sourceType, sourceName;

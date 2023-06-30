@@ -213,7 +213,7 @@ QualityObjectsType AggregatorRunner::aggregate()
 
     if (updatePolicyManager.isReady(aggregatorName)) {
       ILOG(Info, Devel) << "   Quality Objects for the aggregator '" << aggregatorName << "' are  ready, aggregating" << ENDM;
-      auto newQOs = aggregator->aggregate(mQualityObjects); // we give the whole list
+      auto newQOs = aggregator->aggregate(mQualityObjects, mActivity); // we give the whole list
       mTotalNumberObjectsProduced += newQOs.size();
       mTotalNumberAggregatorExecuted++;
       // we consider the output of the aggregators the same way we do the output of a check
@@ -238,7 +238,6 @@ void AggregatorRunner::store(QualityObjectsType& qualityObjects)
   ILOG(Info, Devel) << "Storing " << qualityObjects.size() << " QualityObjects" << ENDM;
   try {
     for (auto& qo : qualityObjects) {
-      qo->setActivity(mActivity);
       mDatabase->storeQO(qo);
     }
   } catch (boost::exception& e) {

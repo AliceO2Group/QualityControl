@@ -19,6 +19,37 @@
       "conditionDB": {
         "url": "ccdb-test.cern.ch:8080"
       }
+    },    
+    "aggregators": {
+      "TPCTestAggregator1": {
+        "active": "true",
+        "className": "o2::quality_control_modules::tpc::TPCAggregator",
+        "moduleName": "QcTPC",
+        "policy": "OnAny",
+        "detectorName": "TPC",
+        "dataSource": [{
+          "type": "Check",
+          "name": "CheckOfTrack_Trending",
+            "QOs" : ["Tracks_Trending/hEta_StatMean_Trend", "Tracks_Trending/hNClustersAfterCuts_StatMean_Trend" ]
+        }]
+      }, 
+      "TPCTestAggregator2": {
+        "active": "true",
+        "className": "o2::quality_control_modules::tpc::TPCAggregator",
+        "moduleName": "QcTPC",
+        "policy": "OnAny",
+        "detectorName": "TPC",
+        "dataSource": [{
+          "type": "Aggregator",
+          "name": "TPCTestAggregator1",
+            "QOs" : ["TPCTestAggregator1" ]
+        },
+        {
+          "type": "Check",
+          "name": "CheckOfTrack_Trending",
+            "QOs" : ["Tracks_Trending/hNClustersBeforeCuts_StatMean_Trend" ]
+        }]
+      }
     },
     "checks" : {
       "CheckOfPID_Trending" : {
@@ -60,12 +91,12 @@
         "dataSource" : [ {
           "type" : "PostProcessing",
           "name" : "Tracks_Trending",
-          "MOs" : [ "hEta_StatMean_Trend" ]
+          "MOs" : [ "hEta_StatMean_Trend", "hNClustersAfterCuts_StatMean_Trend", "hNClustersBeforeCuts_StatMean_Trend" ]
         } ],
 
         "stopTrigger_comment": [ "Parameters are needed to choose if check should be performed only as last point comparison to average or average comparison to expected value." ],
         "checkParameters": {
-          "CheckChoice" : "Zero, Mean",
+          "CheckChoice" : "Range",
           "SliceTrending" : "false",
           "expectedPhysicsValue" : "0.1",
           "EPV_comment" : "This value is used for the Expected Physics Value and the Range Check",
@@ -124,13 +155,40 @@
         "detectorName": "TPC",
         "qualityObserverName": "TestQualityCheckerTrending",
         "observeDetails": "true", 
-        "qualityDetailChoice": "Null, Good, Medium, Bad",
+        "qualityDetailChoice": "Null, Good, Medium, Bad, Comment",
         "qualityObserverConfig": [
           {
             "groupTitle": "Tracks Trending",
             "path": "TPC/QO/",
             "inputObjects": [ "CheckOfTrack_Trending/Tracks_Trending/hEta_StatMean_Trend", "CheckOfTrack_Trending_Slice/Tracks_Trending_Slice/hEta_StatMean_Trend" ],
             "inputObjectTitles": [ "Eta, Mean Trend, Framework Trend",  "Eta, Mean Trend, Slice Trend" ]
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "10 seconds"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      },
+      "TestTPCAggregatorObserver": {
+        "active": "true",
+        "className": "o2::quality_control_modules::tpc::QualityObserver",
+        "moduleName": "QcTPC",
+        "detectorName": "TPC",
+        "qualityObserverName": "TestQualityCheckerTrending",
+        "observeDetails": "true", 
+        "qualityDetailChoice": "Null, Good, Medium, Bad",
+        "lineLength": "70",
+        "qualityObserverConfig": [
+          {
+            "groupTitle": "Tracks Trending",
+            "path": "TPC/QO/",
+            "inputObjects": [ "CheckOfTrack_Trending/Tracks_Trending/hEta_StatMean_Trend", "CheckOfTrack_Trending/Tracks_Trending/hNClustersAfterCuts_StatMean_Trend", "CheckOfTrack_Trending/Tracks_Trending/hNClustersBeforeCuts_StatMean_Trend", "TPCTestAggregator1/TPCTestAggregator1", "TPCTestAggregator2/TPCTestAggregator2" ],
+            "inputObjectTitles": [ "Eta",  "NClusters after", "NClusters before", "Aggregated 1", "Aggregated 2" ]
           }
         ],
         "initTrigger": [

@@ -115,11 +115,12 @@ class TestbeamRawTask final : public TaskInterface
   TH1* mNumLinksTF = nullptr;     ///< Number of links per timeframe
   TH1* mNumHBFPerCRU = nullptr;   ///< Number of HBFs per CRU
   TH2* mCRUcounter = nullptr;     ///< CRU counter
+  TH1* mPayloadSizeTF = nullptr;  ///< Payload size per timeframe
 
   /////////////////////////////////////////////////////////////////////////////////////
   /// Pad histograms
   /////////////////////////////////////////////////////////////////////////////////////
-  TH1* mPayloadSizePadsGBT;                                                             ///< Payload size GBT words of pad data
+  TH1* mPayloadSizePadsGBT = nullptr;                                                   ///< Payload size GBT words of pad data
   std::array<TH2*, PAD_ASICS> mPadASICChannelADC;                                       ///< ADC per channel for each ASIC
   std::array<TH2*, PAD_ASICS> mPadASICChannelTOA;                                       ///< TOA per channel for each ASIC
   std::array<TH2*, PAD_ASICS> mPadASICChannelTOT;                                       ///< TOT per channel for each ASIC
@@ -151,6 +152,7 @@ class TestbeamRawTask final : public TaskInterface
   /////////////////////////////////////////////////////////////////////////////////////
   /// Pixel histograms
   /////////////////////////////////////////////////////////////////////////////////////
+  TH1* mPayloadSizePixelsGBT = nullptr;                    ///< Payload size pixel data in GBT word
   TH1* mLinksWithPayloadPixel = nullptr;                   ///< HBF with payload per link
   TH2* mTriggersFeePixel = nullptr;                        ///< Nunber of triggers per HBF and FEE ID
   TProfile2D* mAverageHitsChipPixel = nullptr;             ///< Average number of hits / chip

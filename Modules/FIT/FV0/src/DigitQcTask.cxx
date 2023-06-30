@@ -122,13 +122,26 @@ int DigitQcTask::getNumericalParameter(std::string paramName, int defaultVal)
   }
 }
 
-bool DigitQcTask::chIsVertexEvent(const o2::fv0::ChannelData chd)
+bool DigitQcTask::chIsVertexEvent(const o2::fv0::ChannelData chd, bool simpleCheck) const
 {
-  return (chd.getFlag(o2::fv0::ChannelData::kIsCFDinADCgate) &&
-          !(chd.getFlag(o2::fv0::ChannelData::kIsTimeInfoNOTvalid) || chd.getFlag(o2::fv0::ChannelData::kIsTimeInfoLate) || chd.getFlag(o2::fv0::ChannelData::kIsTimeInfoLost)) &&
-          std::abs(static_cast<Int_t>(chd.CFDTime)) < mTrgOrGate &&
-          static_cast<Int_t>(chd.QTCAmpl) > mTrgChargeLevelLow &&
-          static_cast<Int_t>(chd.QTCAmpl) < mTrgChargeLevelHigh);
+  if (simpleCheck) {
+    return chd.getFlag(o2::fv0::ChannelData::kIsEventInTVDC);
+  } else {
+    return (chd.getFlag(o2::fv0::ChannelData::kIsCFDinADCgate) &&
+            !(chd.getFlag(o2::fv0::ChannelData::kIsTimeInfoNOTvalid) || chd.getFlag(o2::fv0::ChannelData::kIsTimeInfoLate) || chd.getFlag(o2::fv0::ChannelData::kIsTimeInfoLost)) &&
+            std::abs(static_cast<Int_t>(chd.CFDTime)) < mTrgOrGate &&
+            static_cast<Int_t>(chd.QTCAmpl) > mTrgChargeLevelLow &&
+            static_cast<Int_t>(chd.QTCAmpl) < mTrgChargeLevelHigh);
+  }
+}
+
+int DigitQcTask::fpgaDivision(int numerator, int denominator)
+{
+  // content of the ROM
+  int rom7x17[] = { 16383, 8192, 5461, 4096, 3277, 2731, 2341, 2048, 1820, 1638, 1489, 1365, 1260, 1170, 1092, 1024, 964, 910, 862, 819, 780, 745, 712, 683, 655, 630, 607, 585, 565, 546, 529, 512, 496, 482, 468, 455, 443, 431, 420, 410, 400, 390, 381, 372, 364, 356, 349, 341, 334, 328, 321, 315, 309, 303, 298, 293, 287, 282, 278, 273, 269, 264, 260, 256, 252, 248, 245, 241, 237, 234, 231, 228, 224, 221, 218, 216, 213, 210, 207, 205, 202, 200, 197, 195, 193, 191, 188, 186, 184, 182, 180, 178, 176, 174, 172, 171, 169, 167, 165, 164, 162, 161, 159, 158, 156, 155, 153, 152, 150, 149, 148, 146, 145, 144, 142, 141, 140, 139, 138, 137, 135, 134, 133, 132, 131, 130, 129 };
+
+  // return result of the operation (numerator / denominator)
+  return denominator ? (numerator * rom7x17[denominator - 1]) >> 14 : 0;
 }
 
 void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -242,6 +255,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
       int chID = std::stoi(strChID);
       if (chID < sNCHANNELS_FV0_PLUSREF) {
         mChID2PMhash[chID] = mapFEE2hash[moduleName];
+        mMapPMhash2isInner.insert({ mapFEE2hash[moduleName], chID < sNCHANNELS_FV0_INNER });
       } else {
         LOG(error) << "Incorrect LUT entry: chID " << strChID << " | " << moduleName;
       }
@@ -251,18 +265,21 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
       mTCMhash = mapFEE2hash[moduleName];
     }
   }
-  // hardcoded as this info is not stored in the LUT
-  mMapPMhash2isInner.insert({ mapFEE2hash["PMA0"], true });
-  mMapPMhash2isInner.insert({ mapFEE2hash["PMA1"], true });
-  mMapPMhash2isInner.insert({ mapFEE2hash["PMA2"], true });
-  mMapPMhash2isInner.insert({ mapFEE2hash["PMA3"], false });
-  mMapPMhash2isInner.insert({ mapFEE2hash["PMA4"], false });
-  mMapPMhash2isInner.insert({ mapFEE2hash["PMA5"], false });
 
   mHistBCvsFEEmodules = std::make_unique<TH2F>("BCvsFEEmodules", "BC vs FEE module;BC;FEE", sBCperOrbit, 0, sBCperOrbit, mapFEE2hash.size(), 0, mapFEE2hash.size());
+  mHistBcVsFeeForOrATrg = std::make_unique<TH2F>("BCvsFEEmodulesForOrATrg", "BC vs FEE module for OrA trigger;BC;FEE", sBCperOrbit, 0, sBCperOrbit, mapFEE2hash.size(), 0, mapFEE2hash.size());
+  mHistBcVsFeeForOrAOutTrg = std::make_unique<TH2F>("BCvsFEEmodulesForOrAOutTrg", "BC vs FEE module for OrAOut trigger;BC;FEE", sBCperOrbit, 0, sBCperOrbit, mapFEE2hash.size(), 0, mapFEE2hash.size());
+  mHistBcVsFeeForNChanTrg = std::make_unique<TH2F>("BCvsFEEmodulesForNChanTrg", "BC vs FEE module for NChan trigger;BC;FEE", sBCperOrbit, 0, sBCperOrbit, mapFEE2hash.size(), 0, mapFEE2hash.size());
+  mHistBcVsFeeForChargeTrg = std::make_unique<TH2F>("BCvsFEEmodulesForChargeTrg", "BC vs FEE module for Charge trigger;BC;FEE", sBCperOrbit, 0, sBCperOrbit, mapFEE2hash.size(), 0, mapFEE2hash.size());
+  mHistBcVsFeeForOrAInTrg = std::make_unique<TH2F>("BCvsFEEmodulesForOrAInTrg", "BC vs FEE module for OrAIn trigger;BC;FEE", sBCperOrbit, 0, sBCperOrbit, mapFEE2hash.size(), 0, mapFEE2hash.size());
   mHistOrbitVsFEEmodules = std::make_unique<TH2F>("OrbitVsFEEmodules", "Orbit vs FEE module;Orbit;FEE", sOrbitsPerTF, 0, sOrbitsPerTF, mapFEE2hash.size(), 0, mapFEE2hash.size());
   for (const auto& entry : mapFEE2hash) {
     mHistBCvsFEEmodules->GetYaxis()->SetBinLabel(entry.second + 1, entry.first.c_str());
+    mHistBcVsFeeForOrATrg->GetYaxis()->SetBinLabel(entry.second + 1, entry.first.c_str());
+    mHistBcVsFeeForOrAOutTrg->GetYaxis()->SetBinLabel(entry.second + 1, entry.first.c_str());
+    mHistBcVsFeeForNChanTrg->GetYaxis()->SetBinLabel(entry.second + 1, entry.first.c_str());
+    mHistBcVsFeeForChargeTrg->GetYaxis()->SetBinLabel(entry.second + 1, entry.first.c_str());
+    mHistBcVsFeeForOrAInTrg->GetYaxis()->SetBinLabel(entry.second + 1, entry.first.c_str());
     mHistOrbitVsFEEmodules->GetYaxis()->SetBinLabel(entry.second + 1, entry.first.c_str());
   }
   // mHistTimeSum2Diff = std::make_unique<TH2F>("timeSumVsDiff", "time A/C side: sum VS diff;(TOC-TOA)/2 [ns];(TOA+TOC)/2 [ns]", 400, -52.08, 52.08, 400, -52.08, 52.08); // range of 52.08 ns = 4000*13.02ps = 4000 channels
@@ -351,6 +368,16 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->setDefaultDrawOptions(mHistAmp2Ch.get(), "COLZ");
   getObjectsManager()->startPublishing(mHistBCvsFEEmodules.get());
   getObjectsManager()->setDefaultDrawOptions(mHistBCvsFEEmodules.get(), "COLZ");
+  getObjectsManager()->startPublishing(mHistBcVsFeeForOrATrg.get());
+  getObjectsManager()->setDefaultDrawOptions(mHistBcVsFeeForOrATrg.get(), "COLZ");
+  getObjectsManager()->startPublishing(mHistBcVsFeeForOrAOutTrg.get());
+  getObjectsManager()->setDefaultDrawOptions(mHistBcVsFeeForOrAOutTrg.get(), "COLZ");
+  getObjectsManager()->startPublishing(mHistBcVsFeeForNChanTrg.get());
+  getObjectsManager()->setDefaultDrawOptions(mHistBcVsFeeForNChanTrg.get(), "COLZ");
+  getObjectsManager()->startPublishing(mHistBcVsFeeForChargeTrg.get());
+  getObjectsManager()->setDefaultDrawOptions(mHistBcVsFeeForChargeTrg.get(), "COLZ");
+  getObjectsManager()->startPublishing(mHistBcVsFeeForOrAInTrg.get());
+  getObjectsManager()->setDefaultDrawOptions(mHistBcVsFeeForOrAInTrg.get(), "COLZ");
   getObjectsManager()->startPublishing(mHistOrbitVsTrg.get());
   getObjectsManager()->setDefaultDrawOptions(mHistOrbitVsTrg.get(), "COLZ");
   getObjectsManager()->startPublishing(mHistOrbitVsFEEmodules.get());
@@ -395,6 +422,11 @@ void DigitQcTask::startOfActivity(const Activity& activity)
   mHistNumCFD->Reset();
   // mHistTimeSum2Diff->Reset();
   mHistBCvsFEEmodules->Reset();
+  mHistBcVsFeeForOrATrg->Reset();
+  mHistBcVsFeeForOrAOutTrg->Reset();
+  mHistBcVsFeeForNChanTrg->Reset();
+  mHistBcVsFeeForChargeTrg->Reset();
+  mHistBcVsFeeForOrAInTrg->Reset();
   mHistOrbitVsTrg->Reset();
   mHistOrbitVsFEEmodules->Reset();
   mHistTriggersCorrelation->Reset();
@@ -519,7 +551,7 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
         continue;
       }
 
-      if (chIsVertexEvent(chData)) {
+      if (chIsVertexEvent(chData, true)) {
         pmSumTime += chData.CFDTime;
         if (chData.ChId < sNCHANNELS_FV0_INNER) {
           pmNChanIn++;
@@ -530,33 +562,33 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       if (chData.getFlag(o2::fv0::ChannelData::kIsCFDinADCgate)) {
         mapPMhash2sumAmpl[mChID2PMhash[static_cast<uint8_t>(chData.ChId)]] += static_cast<Int_t>(chData.QTCAmpl);
       }
-    }
+    } // channel data loop
 
     for (const auto& entry : mapPMhash2sumAmpl) {
       if (mMapPMhash2isInner[entry.first])
-        pmSumAmplIn += std::lround(static_cast<int>(entry.second / 8.));
+        pmSumAmplIn += static_cast<int>(entry.second >> 3);
       else
-        pmSumAmplOut += std::lround(static_cast<int>(entry.second / 8.));
+        pmSumAmplOut += static_cast<int>(entry.second >> 3);
     }
 
     auto pmNChan = pmNChanIn + pmNChanOut;
     auto pmSumAmpl = pmSumAmplIn + pmSumAmplOut;
     if (isTCM) {
-      if (pmNChan > 1) {
-        pmAverTime = std::floor((float)pmSumTime / pmNChan);
-      } else if (pmNChan == 1) {
-        pmAverTime = pmSumTime;
-      } else {
-        pmAverTime = 0;
-      }
-    } else
+      pmAverTime = fpgaDivision(pmSumTime, pmNChan);
+    } else {
       pmAverTime = o2::fit::Triggers::DEFAULT_TIME;
+    }
 
     if (isTCM) {
       setFEEmodules.insert(mTCMhash);
     }
     for (const auto& feeHash : setFEEmodules) {
       mHistBCvsFEEmodules->Fill(static_cast<double>(digit.getIntRecord().bc), static_cast<double>(feeHash));
+      mHistBcVsFeeForOrATrg->Fill(static_cast<double>(digit.getIntRecord().bc), digit.mTriggers.getOrA());
+      mHistBcVsFeeForOrAOutTrg->Fill(static_cast<double>(digit.getIntRecord().bc), digit.mTriggers.getOrAOut());
+      mHistBcVsFeeForNChanTrg->Fill(static_cast<double>(digit.getIntRecord().bc), digit.mTriggers.getTrgNChan());
+      mHistBcVsFeeForChargeTrg->Fill(static_cast<double>(digit.getIntRecord().bc), digit.mTriggers.getTrgCharge());
+      mHistBcVsFeeForOrAInTrg->Fill(static_cast<double>(digit.getIntRecord().bc), digit.mTriggers.getOrAIn());
       mHistOrbitVsFEEmodules->Fill(static_cast<double>(digit.getIntRecord().orbit % sOrbitsPerTF), static_cast<double>(feeHash));
     }
 
@@ -636,7 +668,7 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
       // end of triggers re-computation
     }
-  }
+  } // digit loop
 }
 
 void DigitQcTask::endOfCycle()
@@ -706,6 +738,11 @@ void DigitQcTask::reset()
   mHistCycleDurationRange->Reset();
   mHistBCvsTrg->Reset();
   mHistBCvsFEEmodules->Reset();
+  mHistBcVsFeeForOrATrg->Reset();
+  mHistBcVsFeeForOrAOutTrg->Reset();
+  mHistBcVsFeeForNChanTrg->Reset();
+  mHistBcVsFeeForChargeTrg->Reset();
+  mHistBcVsFeeForOrAInTrg->Reset();
   mHistOrbitVsTrg->Reset();
   mHistOrbitVsFEEmodules->Reset();
   mHistPmTcmNchA->Reset();

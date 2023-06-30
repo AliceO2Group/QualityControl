@@ -27,6 +27,8 @@ def parseArgs():
                         required=True)
     parser.add_argument('--one-by-one', action='store_true', help='Ask confirmation for each deletion')
     parser.add_argument('--print-list', action='store_true', help='Only print the list of objects that would be deleted')
+    parser.add_argument('--from', dest='from_ts', action='store', help='From this timestamp.', default='0')
+    parser.add_argument('--to', dest='to_ts', action='store', help='To this timestamp.', default='1970066422947')
     args = parser.parse_args()
     dryable.set(args.dry_run)
     logging.info(args)
@@ -36,14 +38,14 @@ def parseArgs():
 def run(args):
     ccdb = Ccdb(args.url)
 
-    file = open(args.runs_file)
+    file = open(args.runs_file, encoding='utf-8-sig')
     csvreader = csv.DictReader(file)
     list_runs = []
     for row in csvreader:
         list_runs.append(row["runNumber"])
     logging.debug(f"List of runs in CSV: {list_runs}")
 
-    versions = ccdb.getVersionsList(args.path + "/.*")
+    versions = ccdb.getVersionsList(args.path + "/.*", args.from_ts, args.to_ts)
     nb_deleted = 0
     for v in versions:
         logging.debug(f"Processing {v}")

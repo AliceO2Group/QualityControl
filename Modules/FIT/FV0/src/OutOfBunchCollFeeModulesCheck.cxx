@@ -28,6 +28,7 @@
 #include <TList.h>
 
 #include <map>
+#include <algorithm>
 #include <DataFormatsQualityControl/FlagReasons.h>
 
 using namespace std;
@@ -66,7 +67,7 @@ Quality OutOfBunchCollFeeModulesCheck::check(std::map<std::string, std::shared_p
 
   for (auto& [moName, mo] : *moMap) {
     (void)moName;
-    if (mo->getName() == "OutOfBunchColl_BCvsFeeModules") {
+    if (mo->getName().find("OutOfBunchColl_BCvsFeeModules") != std::string::npos) {
       auto* histogram = dynamic_cast<TH2*>(mo->getObject());
 
       if (!histogram) {
@@ -127,7 +128,7 @@ std::string OutOfBunchCollFeeModulesCheck::getAcceptedType() { return "TH2"; }
 
 void OutOfBunchCollFeeModulesCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  if (mo->getName() == "OutOfBunchColl_BCvsFeeModules") {
+  if (mo->getName().find("OutOfBunchColl_BCvsFeeModules") != std::string::npos) {
     auto* histogram = dynamic_cast<TH2*>(mo->getObject());
 
     if (!histogram) {
