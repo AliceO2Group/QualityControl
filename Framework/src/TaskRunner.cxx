@@ -198,7 +198,6 @@ void TaskRunner::init(InitContext& iCtx)
   }
 
   // init user's task
-  mTask->setCcdbUrl(mTaskConfig.conditionUrl);
   mTask->initialize(iCtx);
 
   mNoMoreCycles = false;
