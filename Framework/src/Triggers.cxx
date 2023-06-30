@@ -191,7 +191,8 @@ TriggerFcn NewObject(const std::string& databaseUrl, const std::string& database
   return [objectActivity, config, newObjectValidity]() mutable -> Trigger {
     if (auto validity = newObjectValidity(); validity.isValid()) {
       objectActivity.mValidity = validity;
-      return { TriggerType::NewObject, false, objectActivity, validity.getMax(), config };
+      auto timestamp = activity_helpers::isLegacyValidity(validity) ? validity.getMin() : (validity.getMax() - 1);
+      return { TriggerType::NewObject, false, objectActivity, timestamp, config };
     }
     objectActivity.mValidity = gInvalidValidityInterval;
     return { TriggerType::No, false, objectActivity, Trigger::msSinceEpoch(), config };
