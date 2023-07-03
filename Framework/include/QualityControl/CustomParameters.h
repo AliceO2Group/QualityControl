@@ -17,6 +17,8 @@
 #ifndef QC_CUSTOM_PARAMETERS_H
 #define QC_CUSTOM_PARAMETERS_H
 
+#include "QualityControl/Activity.h"
+
 #include <string>
 #include <unordered_map>
 #include <optional>
@@ -83,6 +85,14 @@ class CustomParameters
    * @return an optional with the value for the given key, runType and beamType or empty if not found.
    */
   std::optional<std::string> atOptional(const std::string& key, const std::string& runType = "default", const std::string& beamType = "default") const;
+
+  /**
+   * Return the optional value for the given key in the specified activity.
+   * @param key
+   * @param activity
+   * @return an optional with the value for the given key and for the given activity.
+   */
+  std::optional<std::string> atOptional(const std::string& key, const Activity& activity) const;
 
   /**
    * Return the value for the given key, runType and beamType (the two latter optional). If it does not exist, returns the default value if provided or an empty string.
