@@ -105,7 +105,7 @@ inline Activity computeActivity(framework::ServiceRegistryRef services, const Ac
   Activity activity(
     runNumber,
     runType,
-    fallbackActivity.mPeriodName,
+    periodName,
     fallbackActivity.mPassName,
     fallbackActivity.mProvenance,
     { run_start_time_ms, run_stop_time_ms },
