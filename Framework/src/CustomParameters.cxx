@@ -72,7 +72,7 @@ std::optional<std::string> CustomParameters::atOptional(const std::string& key, 
   const int runType = activity.mType; // get the type for this run
   // convert it to a string (via a string_view as this is what we get from O2)
   const std::string_view runTypeStringView = o2::parameters::GRPECS::RunTypeNames[runType];
-  const std::string runTypeString = { runTypeStringView.begin(), runTypeStringView.end() };
+  const std::string runTypeString{ runTypeStringView };
   // get the param
   return atOptional(key, runTypeString, activity.mBeamType);
 }
