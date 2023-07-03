@@ -10,7 +10,7 @@
 // or submit itself to any jurisdiction.
 
 #include "QualityControl/CustomParameters.h"
-
+#include "DataFormatsParameters/ECSDataAdapters.h"
 #include <iostream>
 
 namespace o2::quality_control::core
@@ -64,6 +64,17 @@ std::optional<std::string> CustomParameters::atOptional(const std::string& key, 
   } catch (const std::out_of_range& exc) {
     return {};
   }
+}
+
+std::optional<std::string> CustomParameters::atOptional(const std::string& key, const Activity& activity) const
+{
+  // Get the proper parameter for the given activity
+  const int runType = activity.mType; // get the type for this run
+  // convert it to a string (via a string_view as this is what we get from O2)
+  const std::string_view runTypeStringView = o2::parameters::GRPECS::RunTypeNames[runType];
+  const std::string runTypeString = { runTypeStringView.begin(), runTypeStringView.end() };
+  // get the param
+  return atOptional("myOwnKey", runTypeString, activity.mBeamType);
 }
 
 std::string CustomParameters::atOrDefaultValue(const std::string& key, std::string defaultValue, const std::string& runType, const std::string& beamType)
