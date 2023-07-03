@@ -10,7 +10,7 @@
 // or submit itself to any jurisdiction.
 
 #include "QualityControl/CustomParameters.h"
-#include "DataFormatsParameters/ECSDataAdapters.h"
+#include <DataFormatsParameters/ECSDataAdapters.h>
 #include <iostream>
 
 namespace o2::quality_control::core
