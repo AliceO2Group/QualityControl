@@ -87,7 +87,7 @@ inline T computeActivityField(framework::ServiceRegistryRef services, const std:
     ILOG(Debug, Devel) << "   " << name << " not found in options or is not a number, using the fallback." << ENDM;
   }
   result = result > 0 /* found it in service */ ? result : fallbackNumber;
-  ILOG(Info, Devel) << name << " returned by computeRunNumber (default) : " << result << ENDM;
+  ILOG(Info, Devel) << name << " returned by computeActivityField (default) : " << result << ENDM;
   return result;
 }
 

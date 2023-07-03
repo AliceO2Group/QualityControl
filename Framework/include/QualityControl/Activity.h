@@ -18,7 +18,6 @@
 #define QC_CORE_ACTIVITY_H
 
 #include <string>
-#include <iosfwd>
 #include "QualityControl/ValidityInterval.h"
 
 #include "Rtypes.h"
@@ -26,13 +25,10 @@
 namespace o2::quality_control::core
 {
 
-/// \brief Dummy class that should be removed when there is the official one.
-/// This corresponds to a Run 1/2 "run".
+/// \brief Class that represents a Run 3 activity such as a run.
 /// \author   Barthelemy von Haller
 class Activity
 {
-  // TODO make it a struct ?
-
  public:
   Activity() = default;
   Activity(int id,
