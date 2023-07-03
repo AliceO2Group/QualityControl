@@ -25,6 +25,7 @@
 #include "QualityControl/runnerUtils.h"
 #include "QualityControl/ConfigParamGlo.h"
 #include "QualityControl/MonitorObjectCollection.h"
+#include "QualityControl/Bookkeeping.h"
 
 #include <utility>
 #include <Framework/DataAllocator.h>
@@ -90,6 +91,7 @@ void PostProcessingRunner::init(const PostProcessingRunnerConfig& runnerConfig, 
   if (mPublicationCallback == nullptr) {
     mPublicationCallback = publishToRepository(*mDatabase);
   }
+  Bookkeeping::getInstance().init(runnerConfig.bookkeepingUrl);
 
   // setup user's task
   ILOG(Debug, Devel) << "Creating a user task '" << mTaskConfig.taskName << "'" << ENDM;
@@ -267,6 +269,7 @@ PostProcessingRunnerConfig PostProcessingRunner::extractConfig(const CommonSpec&
     ppTaskSpec.detectorName,
     commonSpec.database,
     commonSpec.consulUrl,
+    commonSpec.bookkeepingUrl,
     commonSpec.infologgerDiscardParameters,
     commonSpec.postprocessingPeriod,
     "",
