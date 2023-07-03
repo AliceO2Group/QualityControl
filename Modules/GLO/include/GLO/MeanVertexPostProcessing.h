@@ -33,6 +33,8 @@ class TrendGraph : public TCanvas
  public:
   TrendGraph(std::string name, std::string title, std::string label, float rangeMin, float rangeMax);
 
+  ~TrendGraph() override {}
+
   void update(uint64_t time, float val);
 
  private:
