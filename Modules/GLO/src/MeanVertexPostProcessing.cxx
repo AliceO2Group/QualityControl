@@ -90,6 +90,14 @@ void TrendGraph::update(uint64_t time, float val)
 
 //_________________________________________________________________________________________
 
+MeanVertexPostProcessing::~MeanVertexPostProcessing()
+{
+  delete mX;
+  delete mY;
+  delete mZ;
+  delete mStartValidity;
+}
+
 void MeanVertexPostProcessing::configure(const boost::property_tree::ptree& config)
 {
   if (const auto& customConfigs = config.get_child_optional("qc.postprocessing." + getID() + ".customization"); customConfigs.has_value()) {
@@ -116,6 +124,9 @@ void MeanVertexPostProcessing::configure(const boost::property_tree::ptree& conf
       if (const auto& customNames = customConfig.second.get_child_optional("RangeSigmaZ"); customNames.has_value()) {
         mRangeSigmaZ = customConfig.second.get<float>("RangeSigmaZ");
       }
+      if (const auto& customNames = customConfig.second.get_child_optional("ResetHistos"); customNames.has_value()) {
+        mResetHistos = customConfig.second.get<bool>("ResetHistos");
+      }
     }
   }
   ILOG(Info, Support) << "MeanVertexCalib post-processing: CCDB url will be set to: " << mCcdbUrl << ENDM;
@@ -124,6 +135,16 @@ void MeanVertexPostProcessing::configure(const boost::property_tree::ptree& conf
 
 void MeanVertexPostProcessing::initialize(Trigger, framework::ServiceRegistryRef)
 {
+  // QcInfoLogger::setDetector("GLO");
+  mX = new TH1F("mMeanVtxX", "Mean Vertex X", 20, -100, 100);
+  mY = new TH1F("mMeanVtxY", "Mean Vertex Y", 20, -100, 100);
+  mZ = new TH1F("mMeanVtxZ", "Mean Vertex Z", 20, -100, 100);
+  const long currentTime = o2::ccdb::getCurrentTimestamp();
+  mStartValidity = new TH1F("mStartValidity", "Start Validity of Mean Vertex object", 600, currentTime - 1000 * 600, currentTime - 1000 + 60 * 1000 * 10 * 600); // 10 hours, with bins of 1 minutes, starting 10 minutes in the past
+  getObjectsManager()->startPublishing(mX);
+  getObjectsManager()->startPublishing(mY);
+  getObjectsManager()->startPublishing(mZ);
+  getObjectsManager()->startPublishing(mStartValidity);
   mGraphX = std::make_unique<TrendGraph>("MeanVtxXTrending", "Mean Vertex X", "cm", -mRangeX, mRangeX);
   mGraphY = std::make_unique<TrendGraph>("MeanVtxYTrending", "Mean Vertex Y", "cm", -mRangeY, mRangeY);
   mGraphZ = std::make_unique<TrendGraph>("MeanVtxZTrending", "Mean Vertex Z", "cm", -mRangeZ, mRangeZ);
@@ -153,6 +174,13 @@ void MeanVertexPostProcessing::update(Trigger t, framework::ServiceRegistryRef)
     return;
   }
 
+  if (mResetHistos) {
+    mX->Reset();
+    mY->Reset();
+    mZ->Reset();
+    mStartValidity->Reset();
+  }
+
   // get values
   auto x = meanVtx->getX();
   auto y = meanVtx->getY();
@@ -166,6 +194,10 @@ void MeanVertexPostProcessing::update(Trigger t, framework::ServiceRegistryRef)
   const auto validFrom = headers.find("Valid-From");
   long startVal = std::stol(validFrom->second);
   ILOG(Info, Support) << "MeanVertexCalib post-processing: startValidity = " << startVal << " X = " << x << " Y = " << y << " Z = " << z << ENDM;
+  mX->Fill(x);
+  mY->Fill(y);
+  mZ->Fill(z);
+  mStartValidity->Fill(startVal);
 
   // ROOT expects time in seconds
   startVal /= 1000;
@@ -181,6 +213,10 @@ void MeanVertexPostProcessing::update(Trigger t, framework::ServiceRegistryRef)
 void MeanVertexPostProcessing::finalize(Trigger, framework::ServiceRegistryRef)
 {
   // Only if you don't want it to be published after finalisation.
+  getObjectsManager()->stopPublishing(mX);
+  getObjectsManager()->stopPublishing(mY);
+  getObjectsManager()->stopPublishing(mZ);
+  getObjectsManager()->stopPublishing(mStartValidity);
   getObjectsManager()->stopPublishing(mGraphX.get());
   getObjectsManager()->stopPublishing(mGraphY.get());
   getObjectsManager()->stopPublishing(mGraphZ.get());
