@@ -75,30 +75,28 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
   getObjectsManager()->startPublishing(mMeanMultiHits.get());
 
-  for (int ich = 0; ich < 5; ++ich) {
-    std::string name = "LocalBoardsMap";
-    std::string title = "Local boards Occupancy Map";
-    if (ich < 4) {
-      name += chId[ich];
-      title += "MT" + chId[ich];
-    }
+  mLocalBoardsMap = mDigitsHelper.makeBoardMapHistos("LocalBoardsMap", "Local boards Occupancy Map");
 
-    mLocalBoardsMap[ich] = std::make_unique<TH2F>(mDigitsHelper.makeBoardMapHisto(name, title));
+  for (int ich = 0; ich < 4; ++ich) {
     getObjectsManager()->startPublishing(mLocalBoardsMap[ich].get());
     getObjectsManager()->setDefaultDrawOptions(mLocalBoardsMap[ich].get(), "COLZ");
   }
 
+  mLocalBoardsMapTot = std::make_unique<TH2F>(mDigitsHelper.makeBoardMapHisto("LocalBoardsMap", "Local boards Occupancy Map"));
+  getObjectsManager()->startPublishing(mLocalBoardsMapTot.get());
+  getObjectsManager()->setDefaultDrawOptions(mLocalBoardsMapTot.get(), "COLZ");
+
   mHits = std::make_unique<TH1F>(mDigitsHelper.makeStripHisto("Hits", "Fired strips"));
   getObjectsManager()->startPublishing(mHits.get());
 
+  mBendHitsMap = mDigitsHelper.makeStripMapHistos("BendHitsMap", "Bending Hits Map", 0);
   for (int ich = 0; ich < 4; ++ich) {
-    mBendHitsMap[ich] = std::make_unique<TH2F>(mDigitsHelper.makeStripMapHisto(fmt::format("BendHitsMap{}", chId[ich]), fmt::format("Bending Hits Map MT{}", chId[ich]), 0));
     getObjectsManager()->startPublishing(mBendHitsMap[ich].get());
     getObjectsManager()->setDefaultDrawOptions(mBendHitsMap[ich].get(), "COLZ");
   }
 
+  mNBendHitsMap = mDigitsHelper.makeStripMapHistos("NBendHitsMap", "Non-Bending Hits Map", 1);
   for (int ich = 0; ich < 4; ++ich) {
-    mNBendHitsMap[ich] = std::make_unique<TH2F>(mDigitsHelper.makeStripMapHisto(fmt::format("NBendHitsMap{}", chId[ich]), fmt::format("Non-Bending Hits Map MT{}", chId[ich]), 1));
     getObjectsManager()->startPublishing(mNBendHitsMap[ich].get());
     getObjectsManager()->setDefaultDrawOptions(mNBendHitsMap[ich].get(), "COLZ");
   }
@@ -143,8 +141,7 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
     unsigned long int sizeTot = 0;
     for (int ich = 0; ich < 4; ++ich) {
-      sizeTot += evtSizeB[ich];
-      sizeTot += evtSizeNB[ich];
+      sizeTot += evtSizeB[ich] + evtSizeNB[ich];
       mMultHitB[ich]->Fill(evtSizeB[ich]);
       mMultHitB[4]->Fill(evtSizeB[ich]);
       mMultHitNB[ich]->Fill(evtSizeNB[ich]);
@@ -172,7 +169,12 @@ void DigitsQcTask::endOfCycle()
   resetDisplayHistos();
 
   // Then fill from the strip histogram
-  mDigitsHelper.fillMapHistos(mHits.get(), mBendHitsMap, mNBendHitsMap, mLocalBoardsMap);
+  mDigitsHelper.fillStripMapHistos(mHits.get(), mBendHitsMap, mNBendHitsMap);
+  mDigitsHelper.fillBoardMapHistosFromStrips(mHits.get(), mLocalBoardsMap, mLocalBoardsMap);
+
+  for (auto& histo : mLocalBoardsMap) {
+    mLocalBoardsMapTot->Add(histo.get());
+  }
 }
 
 void DigitsQcTask::endOfActivity(const Activity& /*activity*/)
@@ -191,6 +193,7 @@ void DigitsQcTask::resetDisplayHistos()
   for (auto& histo : mLocalBoardsMap) {
     histo->Reset();
   }
+  mLocalBoardsMapTot->Reset();
 }
 
 void DigitsQcTask::reset()

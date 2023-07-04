@@ -58,17 +58,18 @@ void CalibQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mNoise = std::make_unique<TH1F>(mDigitsHelper.makeStripHisto("NoiseStrips", "Noise strips"));
   getObjectsManager()->startPublishing(mNoise.get());
 
-  for (int ich = 0; ich < 4; ++ich) {
-    mBendNoiseMap[ich] = std::make_unique<TH2F>(mDigitsHelper.makeStripMapHisto(fmt::format("BendNoiseMap{}", chId[ich]), fmt::format("Bending Noise Map MT{}", chId[ich]), 0));
-    getObjectsManager()->startPublishing(mBendNoiseMap[ich].get());
+  mBendNoiseMap = mDigitsHelper.makeStripMapHistos("BendNoiseMap", "Bending Noise Map", 0);
+  for (auto& histo : mBendNoiseMap) {
+    getObjectsManager()->startPublishing(histo.get());
+    getObjectsManager()->setDefaultDrawOptions(histo.get(), "COLZ");
   }
 
-  for (int ich = 0; ich < 4; ++ich) {
-    mNBendNoiseMap[ich] = std::make_unique<TH2F>(mDigitsHelper.makeStripMapHisto(fmt::format("NBendNoiseMap{}", chId[ich]), fmt::format("Non-Bending Noise Map MT{}", chId[ich]), 1));
-    getObjectsManager()->startPublishing(mNBendNoiseMap[ich].get());
+  mNBendNoiseMap = mDigitsHelper.makeStripMapHistos("NBendNoiseMap", "Non-Bending Noise Map", 1);
+  for (auto& histo : mNBendNoiseMap) {
+    getObjectsManager()->startPublishing(histo.get());
+    getObjectsManager()->setDefaultDrawOptions(histo.get(), "COLZ");
   }
 
-  // Dead strips Histograms ::
   for (int ich = 0; ich < 4; ++ich) {
     mMultDeadB[ich] = std::make_unique<TH1F>(fmt::format("MultDeadMT{}B", chId[ich]).c_str(), fmt::format("Multiplicity Dead strips - MT{} bending plane", chId[ich]).c_str(), 300, 0, 300);
     getObjectsManager()->startPublishing(mMultDeadB[ich].get());
@@ -79,14 +80,16 @@ void CalibQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mDead = std::make_unique<TH1F>(mDigitsHelper.makeStripHisto("DeadStrips", "Dead strips"));
   getObjectsManager()->startPublishing(mDead.get());
 
-  for (int ich = 0; ich < 4; ++ich) {
-    mBendDeadMap[ich] = std::make_unique<TH2F>(mDigitsHelper.makeStripMapHisto(fmt::format("BendDeadMap{}", chId[ich]), fmt::format("Bending Dead Map MT{}", chId[ich]), 0));
-    getObjectsManager()->startPublishing(mBendDeadMap[ich].get());
+  mBendDeadMap = mDigitsHelper.makeStripMapHistos("BendDeadMap", "Bending Dead Map", 0);
+  for (auto& histo : mBendDeadMap) {
+    getObjectsManager()->startPublishing(histo.get());
+    getObjectsManager()->setDefaultDrawOptions(histo.get(), "COLZ");
   }
 
-  for (int ich = 0; ich < 4; ++ich) {
-    mNBendDeadMap[ich] = std::make_unique<TH2F>(mDigitsHelper.makeStripMapHisto(fmt::format("NBendDeadMap{}", chId[ich]), fmt::format("Non-Bending Dead Map MT{}", chId[ich]), 1));
-    getObjectsManager()->startPublishing(mNBendDeadMap[ich].get());
+  mNBendDeadMap = mDigitsHelper.makeStripMapHistos("NBendDeadMap", "Non-Bending Dead Map", 1);
+  for (auto& histo : mNBendDeadMap) {
+    getObjectsManager()->startPublishing(histo.get());
+    getObjectsManager()->setDefaultDrawOptions(histo.get(), "COLZ");
   }
 }
 
@@ -153,8 +156,8 @@ void CalibQcTask::endOfCycle()
   resetDisplayHistos();
 
   // Then fill from the strip histogram
-  mDigitsHelper.fillMapHistos(mNoise.get(), mBendNoiseMap, mNBendNoiseMap);
-  mDigitsHelper.fillMapHistos(mDead.get(), mBendDeadMap, mNBendDeadMap);
+  mDigitsHelper.fillStripMapHistos(mNoise.get(), mBendNoiseMap, mNBendNoiseMap);
+  mDigitsHelper.fillStripMapHistos(mDead.get(), mBendDeadMap, mNBendDeadMap);
 }
 
 void CalibQcTask::endOfActivity(const Activity& /*activity*/)

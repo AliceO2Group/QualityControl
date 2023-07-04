@@ -73,7 +73,9 @@ class DigitsQcTask final : public TaskInterface
   std::array<std::unique_ptr<TH1F>, 5> mMultHitNB{};
   std::unique_ptr<TH1F> mMeanMultiHits;
 
-  std::array<std::unique_ptr<TH2F>, 5> mLocalBoardsMap{};
+  std::array<std::unique_ptr<TH2F>, 4> mLocalBoardsMap{};
+  std::unique_ptr<TH2F> mLocalBoardsMapTot;
+
   std::unique_ptr<TH1F> mHits;
 
   std::array<std::unique_ptr<TH2F>, 4> mBendHitsMap{};
