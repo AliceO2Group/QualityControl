@@ -46,7 +46,7 @@ ServiceDiscovery::ServiceDiscovery(const std::string& url, const std::string& na
 #endif
     runHealthServer();
   });
-  if(!_register("")) {
+  if (!_register("")) {
     ILOG(Error, Support) << "Could not register to ServiceDiscovery." << ENDM;
   }
 }
@@ -96,7 +96,7 @@ bool ServiceDiscovery::_register(const std::string& objects)
   check.put("Name", "Health check " + mId);
   check.put("Interval", "5s");
   check.put("DeregisterCriticalServiceAfter", "1m");
-  check.put("TCP", mHealthUrl+":"+std::to_string(mHealthPort));
+  check.put("TCP", mHealthUrl + ":" + std::to_string(mHealthPort));
   checks.push_back(std::make_pair("", check));
 
   pt.put("Name", mName);
@@ -136,19 +136,18 @@ void ServiceDiscovery::runHealthServer()
   std::mt19937 gen(rd()); // seed the generator
   size_t rangeLength = HealthPortRangeEnd - HealthPortRangeStart + 1;
   std::uniform_int_distribution<> distr(0, rangeLength - 1); // define the inclusive range
-  size_t index = distr(gen); // get a random index in the range
-  size_t cycle = 0;                                // count how many ports we tried
-  while(cycle < rangeLength) { // until we exhaust the range or we find a free port
+  size_t index = distr(gen);                                 // get a random index in the range
+  size_t cycle = 0;                                          // count how many ports we tried
+  while (cycle < rangeLength) {                              // until we exhaust the range or we find a free port
     try {
-      index = (index + 1) % rangeLength;             // pick the next index
+      index = (index + 1) % rangeLength; // pick the next index
       port = HealthPortRangeStart + index;
       ILOG(Debug, Trace) << "ServiceDiscovery test port: " << port << ENDM;
       cycle++;
 
       tcp::endpoint endpoint(tcp::v4(), port);
       acceptor = new tcp::acceptor(io_service, endpoint);
-    }
-    catch (boost::system::system_error& e) {
+    } catch (boost::system::system_error& e) {
       ILOG(Debug, Trace) << "ServiceDiscovery::runHealthServer - cound not bind to " << port << ENDM;
       continue; // try the next one
     }
@@ -164,7 +163,7 @@ void ServiceDiscovery::runHealthServer()
   }
 
   // run the thread
-  try{
+  try {
     boost::asio::deadline_timer timer(io_service);
     while (mThreadRunning) {
       io_service.reset();
