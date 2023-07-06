@@ -20,6 +20,7 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/ActivityHelpers.h"
 #include "TPC/TrendingTaskTPC.h"
 #include "QualityControl/RepoPathUtils.h"
 
@@ -149,7 +150,9 @@ void TrendingTaskTPC::finalize(Trigger t, framework::ServiceRegistryRef)
 void TrendingTaskTPC::trendValues(const Trigger& t,
                                   repository::DatabaseInterface& qcdb)
 {
-  mTime = t.timestamp / 1000; // ROOT expects seconds since epoch.
+  mTime = activity_helpers::isLegacyValidity(t.activity.mValidity)
+            ? t.timestamp / 1000
+            : t.activity.mValidity.getMax() / 1000; // ROOT expects seconds since epoch.
   mMetaData.runNumber = t.activity.mId;
 
   for (auto& dataSource : mConfig.dataSources) {
