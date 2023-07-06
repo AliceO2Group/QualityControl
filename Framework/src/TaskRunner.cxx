@@ -223,7 +223,7 @@ void TaskRunner::run(ProcessingContext& pCtx)
   auto [dataReady, timerReady] = validateInputs(pCtx.inputs());
 
   if (dataReady) {
-    mTimekeeper->updateByTimeFrameID(pCtx.services().get<TimingInfo>().tfCounter, pCtx.services().get<DataTakingContext>().nOrbitsPerTF);
+    mTimekeeper->updateByTimeFrameID(pCtx.services().get<TimingInfo>().tfCounter, 32);
     mTask->monitorData(pCtx);
     updateMonitoringStats(pCtx);
   }
