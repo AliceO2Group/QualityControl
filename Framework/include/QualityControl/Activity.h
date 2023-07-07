@@ -37,7 +37,7 @@ class Activity
            const std::string& passName = "",
            const std::string& provenance = "qc",
            ValidityInterval validity = gFullValidityInterval,
-           const std::string& beamType = 0,
+           const std::string& beamType = "",
            const std::string& partitionName = "",
            int fillNumber = 0)
     : mId(id),
