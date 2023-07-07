@@ -76,7 +76,6 @@ class DigitsQcTask final : public TaskInterface
   std::array<std::unique_ptr<TH2F>, 4> mNBendHitsMap{};
 
   std::unique_ptr<TH1F> mDigitBCCounts{ nullptr };
-
 };
 
 } // namespace o2::quality_control_modules::mid
