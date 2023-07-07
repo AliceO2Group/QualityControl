@@ -23,6 +23,7 @@
 #include "QualityControl/ObjectMetadataKeys.h"
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/RepoPathUtils.h"
+#include "QualityControl/ActivityHelpers.h"
 #include <TDatime.h>
 #include <TH1.h>
 #include <TCanvas.h>
@@ -71,9 +72,8 @@ void MIDTrending::update(Trigger t, framework::ServiceRegistryRef services)
 
 void MIDTrending::finalize(Trigger, framework::ServiceRegistryRef services)
 {
-
   auto& qcdb = services.get<repository::DatabaseInterface>();
-  auto mo = std::make_shared<core::MonitorObject>(mTrend.get(), getName(), "o2::quality_control_modules::trd::MIDTrending", mConfig.detectorName);
+  auto mo = std::make_shared<core::MonitorObject>(mTrend.get(), getName(), "o2::quality_control_modules::mid::MIDTrending", mConfig.detectorName);
   mo->setIsOwner(false);
   qcdb.storeMO(mo);
   generatePlots(qcdb);
@@ -81,7 +81,9 @@ void MIDTrending::finalize(Trigger, framework::ServiceRegistryRef services)
 
 void MIDTrending::trendValues(const Trigger& t, repository::DatabaseInterface& qcdb)
 {
-  mTime = TDatime().Convert(); // ROOT expects seconds since epoch.
+  mTime = activity_helpers::isLegacyValidity(t.activity.mValidity)
+            ? t.timestamp / 1000
+            : t.activity.mValidity.getMax() / 1000; // ROOT expects seconds since epoch.
   mMetaData.runNumber = t.activity.mId;
   int count = 0;
 
@@ -99,7 +101,7 @@ void MIDTrending::trendValues(const Trigger& t, repository::DatabaseInterface& q
         std::map<std::string, std::string> entryMetadata = mo->getMetadataMap();  // full list of metadata as a map
         mMetaData.runNumber = std::stoi(entryMetadata[metadata_keys::runNumber]); // get and set run number
         ntreeentries = (Int_t)mTrend->GetEntries() + 1;
-        runlist.push_back(std::to_string(mMetaData.runNumber));
+        mRunList.push_back(std::to_string(mMetaData.runNumber));
       }
       TObject* obj = mo ? mo->getObject() : nullptr;
       if (obj) {
@@ -155,8 +157,8 @@ void MIDTrending::generatePlots(repository::DatabaseInterface& qcdb)
       else if (plot.varexp.find(":runNumber") != std::string::npos) {
         histo->GetXaxis()->SetNdivisions(505);
 
-        for (int ir = 0; ir < (int)runlist.size(); ir++)
-          histo->GetXaxis()->SetBinLabel(ir + 1, runlist[ir].c_str());
+        for (int ir = 0; ir < (int)mRunList.size(); ir++)
+          histo->GetXaxis()->SetBinLabel(ir + 1, mRunList[ir].c_str());
       }
 
       histo->BufferEmpty();
@@ -167,10 +169,10 @@ void MIDTrending::generatePlots(repository::DatabaseInterface& qcdb)
 
     mPlots[plot.name] = mCanvasMID[mPlot].get();
 
-    auto mo_trd = std::make_shared<MonitorObject>(mCanvasMID[mPlot].get(), mConfig.taskName, "o2::quality_control_modules::trd::MIDTrending", mConfig.detectorName);
+    auto mo_mid = std::make_shared<MonitorObject>(mCanvasMID[mPlot].get(), mConfig.taskName, "o2::quality_control_modules::mid::MIDTrending", mConfig.detectorName);
 
-    mo_trd->setIsOwner(false);
-    qcdb.storeMO(mo_trd);
+    mo_mid->setIsOwner(false);
+    qcdb.storeMO(mo_mid);
 
     ++mPlot;
   }

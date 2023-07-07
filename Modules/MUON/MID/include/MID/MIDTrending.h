@@ -56,7 +56,7 @@ class MIDTrending : public PostProcessingInterface
   TrendingTaskConfigMID mConfig;
   Int_t ntreeentries = 0;
   UInt_t mTime;
-  std::vector<std::string> runlist;
+  std::vector<std::string> mRunList;
   std::unique_ptr<TTree> mTrend;
   std::map<std::string, TObject*> mPlots;
   std::unordered_map<std::string, std::unique_ptr<Reductor>> mReductors;
