@@ -273,7 +273,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistTimeSum2Diff->GetYaxis()->SetRangeUser(-5, 5);
   mHistNumADC = std::make_unique<TH1F>("HistNumADC", "HistNumADC", sNCHANNELS_PM, 0, sNCHANNELS_PM);
   mHistNumCFD = std::make_unique<TH1F>("HistNumCFD", "HistNumCFD", sNCHANNELS_PM, 0, sNCHANNELS_PM);
-  mHistCFDEff = std::make_unique<TH1F>("CFD_efficiency", "CFD efficiency;ChannelID;efficiency", sNCHANNELS_PM, 0, sNCHANNELS_PM);
+  mHistCFDEff = std::make_unique<TH1F>("CFD_efficiency", "Fraction of events with CFD in ADC gate vs ChannelID;ChannelID;Event fraction with CFD in ADC gate", sNCHANNELS_PM, 0, sNCHANNELS_PM);
   mHistNchA = std::make_unique<TH1F>("NumChannelsA", "Number of channels(TCM), side A;Nch", sNCHANNELS_PM, 0, sNCHANNELS_PM);
   mHistNchC = std::make_unique<TH1F>("NumChannelsC", "Number of channels(TCM), side C;Nch", sNCHANNELS_PM, 0, sNCHANNELS_PM);
   mHistSumAmpA = std::make_unique<TH1F>("SumAmpA", "Sum of amplitudes(TCM), side A;", 1e4, 0, 1e4);
@@ -619,8 +619,8 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     // triggers re-computation
     mMapTrgSoftware[o2::ft0::Triggers::bitA] = pmNChanA > 0;
     mMapTrgSoftware[o2::ft0::Triggers::bitC] = pmNChanC > 0;
-
-    if (mTrgThresholdTimeLow < vtxPos && vtxPos < mTrgThresholdTimeHigh && pmNChanA > 0 && pmNChanC > 0)
+    const int meanTimeDiff = divHW_TCM(pmSumTimeC, pmNChanC) - divHW_TCM(pmSumTimeA, pmNChanA);
+    if (mTrgThresholdTimeLow < meanTimeDiff && meanTimeDiff < mTrgThresholdTimeHigh && pmNChanA > 0 && pmNChanC > 0)
       mMapTrgSoftware[o2::ft0::Triggers::bitVertex] = true;
 
     // Central/SemiCentral logic
