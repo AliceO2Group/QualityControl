@@ -434,6 +434,7 @@ void DigitQcTask::startOfActivity(Activity& activity)
   mHistPmTcmAverageTimeC->Reset();
   mHistTriggersSw->Reset();
   mHistTriggersSoftwareVsTCM->Reset();
+  mHistChIDperBC->Reset();
   for (auto& entry : mMapHistAmp1D) {
     entry.second->Reset();
   }
@@ -786,6 +787,7 @@ void DigitQcTask::reset()
   mHistPmTcmAverageTimeC->Reset();
   mHistTriggersSw->Reset();
   mHistTriggersSoftwareVsTCM->Reset();
+  mHistChIDperBC->Reset();
   for (auto& entry : mMapHistAmp1D) {
     entry.second->Reset();
   }
