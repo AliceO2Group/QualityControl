@@ -80,14 +80,16 @@ inline T computeActivityField(framework::ServiceRegistryRef services, const std:
   int result = 0;
 
   try {
-    auto temp = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>(name, "unspecified");
+    auto temp = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>(name);
     ILOG(Debug, Devel) << "Got this property " << name << " from RawDeviceService: '" << temp << "'" << ENDM;
     result = boost::lexical_cast<T>(temp);
   } catch (std::invalid_argument& ia) {
-    ILOG(Debug, Devel) << "   " << name << " not found in options or is not a number, using the fallback." << ENDM;
+    ILOG(Debug, Devel) << "   " << name << " is not a number, using the fallback." << ENDM;
+  } catch (fair::mq::PropertyNotFoundError& err) {
+    ILOG(Debug, Devel) << "   " << name << " not found in options, using the fallback." << ENDM;
   }
   result = result > 0 /* found it in service */ ? result : fallbackNumber;
-  ILOG(Info, Devel) << name << " returned by computeActivityField (default) : " << result << ENDM;
+  ILOG(Debug, Devel) << name << " returned by computeActivityField (default) : " << result << ENDM;
   return result;
 }
 
