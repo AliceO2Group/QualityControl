@@ -410,10 +410,9 @@ void AggregatorRunner::start(ServiceRegistryRef services)
 {
   mActivity = computeActivity(services, mRunnerConfig.fallbackActivity);
   mTimerTotalDurationActivity.reset();
-  string partitionName = computePartitionName(services);
   QcInfoLogger::setRun(mActivity.mId);
-  QcInfoLogger::setPartition(partitionName);
-  ILOG(Info, Support) << "Starting run " << mActivity.mId << "> period: " << mActivity.mPeriodName << " / pass type: " << mActivity.mPassName << " / provenance: " << mActivity.mProvenance << ENDM;
+  QcInfoLogger::setPartition(mActivity.mPartitionName);
+  ILOG(Info, Support) << "Starting run " << mActivity.mId << ENDM;
 }
 
 void AggregatorRunner::stop()
