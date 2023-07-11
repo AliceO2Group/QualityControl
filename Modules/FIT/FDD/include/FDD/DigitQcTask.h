@@ -110,7 +110,8 @@ class DigitQcTask final : public TaskInterface
   void rebinFromConfig();
   unsigned int getModeParameter(std::string, unsigned int, std::map<unsigned int, std::string>);
   int getNumericalParameter(std::string, int);
-  bool chIsVertexEvent(const o2::fdd::ChannelData);
+  bool chIsVertexEvent(const o2::fdd::ChannelData, bool simpleCheck = false);
+  static int fpgaDivision(int numerator, int denominator);
 
   TList* mListHistGarbage;
   std::set<unsigned int> mSetAllowedChIDs;
@@ -123,6 +124,9 @@ class DigitQcTask final : public TaskInterface
   std::map<o2::fdd::ChannelData::EEventDataBit, std::string> mMapChTrgNames;
   std::unique_ptr<TH1F> mHistNumADC;
   std::unique_ptr<TH1F> mHistNumCFD;
+  std::map<int, bool> layerCoincidence; //8 coincidence signal 0-3 --> C side; 4-7 --> A side
+  std::array<int, 16> ChVertexArray;
+
 
   std::map<int, bool> mMapTrgSoftware;
   enum TrgModeSide { kAplusC,
