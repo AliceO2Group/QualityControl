@@ -81,17 +81,17 @@ inline T computeActivityField(framework::ServiceRegistryRef services, const std:
 
   try {
     auto temp = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>(name);
-    ILOG(Debug, Devel) << "Got this property " << name << " from RawDeviceService: '" << temp << "'" << ENDM;
+    ILOG(Info, Devel) << "Got this property " << name << " from RawDeviceService: '" << temp << "'" << ENDM;
     result = boost::lexical_cast<T>(temp);
   } catch (std::invalid_argument& ia) {
-    ILOG(Debug, Devel) << "   " << name << " is not a number, using the fallback." << ENDM;
+    ILOG(Info, Devel) << "   " << name << " is not a number, using the fallback." << ENDM;
   } catch (fair::mq::PropertyNotFoundError& err) {
-    ILOG(Debug, Devel) << "   " << name << " not found in options, using the fallback." << ENDM;
+    ILOG(Info, Devel) << "   " << name << " not found in options, using the fallback." << ENDM;
   } catch (boost::bad_lexical_cast& err) {
-    ILOG(Debug, Devel) << "   " << name << " could not be cast to a number (" << err.what() << "), using the fallback." << ENDM;
+    ILOG(Info, Devel) << "   " << name << " could not be cast to a number (" << err.what() << "), using the fallback." << ENDM;
   }
   result = result > 0 /* found it in service */ ? result : fallbackNumber;
-  ILOG(Debug, Devel) << name << " returned by computeActivityField (default) : " << result << ENDM;
+  ILOG(Info, Devel) << name << " returned by computeActivityField (default) : " << result << ENDM;
   return result;
 }
 
