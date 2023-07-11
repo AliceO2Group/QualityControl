@@ -882,7 +882,7 @@ void DigitQcTask::endOfCycle()
     double intNumerator = mHistAmp2Ch->ProjectionY("yNum", iPM + 1, iPM + 1)->Integral(mBinMinADCSaturationCheck, mBinMaxADCSaturationCheck);
     double intDenominator = mHistAmp2Ch->ProjectionY("yDen", iPM + 1, iPM + 1)->Integral(mBinMinADCSaturationCheck, mHistAmp2Ch->GetNbinsY());
     if (intDenominator)
-      mHistSaturationFraction->SetBinContent(iPM, intNumerator / intDenominator);
+      mHistSaturationFraction->SetBinContent(iPM + 1, intNumerator / intDenominator);
   }
 
   for (int channel = 0; channel <= sNCHANNELS_PM; channel++) {
