@@ -1,0 +1,451 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "#host": "ccdb-test.cern.ch:8080",
+        "host": "http://localhost:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": ""
+      },
+      "conditionDB": {
+        "url": "alice-ccdb.cern.ch"
+      },
+      "bookkeeping": {
+        "url": ""
+      }
+    },
+    "checks": {
+      "OutOfBunchCollCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::fv0::OutOfBunchCollCheck",
+        "moduleName": "QcFV0",
+        "policy": "OnAny",
+        "detectorName": "FV0",
+        "dataSource": [
+          {
+            "type": "PostProcessing",
+            "name": "PostProcTask",
+            "MOs": [
+              "OutOfBunchColl_BCvsTrg"
+            ]
+          }
+        ],
+        "checkParameters": {
+          "thresholdWarning": "0.1",
+          "thresholdError": "0.15",
+          "binPos": "2"
+        }
+      },
+      "OutOfBunchCollCheckFee": {
+        "active": "true",
+        "className": "o2::quality_control_modules::fv0::OutOfBunchCollFeeModulesCheck",
+        "moduleName": "QcFV0",
+        "policy": "OnAny",
+        "detectorName": "FV0",
+        "dataSource": [
+          {
+            "type": "PostProcessing",
+            "name": "PostProcTask",
+            "MOs": [
+              "OutOfBunchColl_BCvsFeeModules"
+            ]
+          }
+        ],
+        "checkParameters": {
+          "TODO": "TODO"
+        }
+      },
+      "OutOfBunchCollCheckFeeCharge": {
+        "active": "true",
+        "className": "o2::quality_control_modules::fv0::OutOfBunchCollFeeModulesCheck",
+        "moduleName": "QcFV0",
+        "policy": "OnAny",
+        "detectorName": "FV0",
+        "dataSource": [
+          {
+            "type": "PostProcessing",
+            "name": "PostProcTask",
+            "MOs": [
+              "OutOfBunchColl_BCvsFeeModulesForChargeTrg"
+            ]
+          }
+        ],
+        "checkParameters": {
+          "TODO": "TODO"
+        }
+      },
+      "OutOfBunchCollCheckFeeNChannel": {
+        "active": "true",
+        "className": "o2::quality_control_modules::fv0::OutOfBunchCollFeeModulesCheck",
+        "moduleName": "QcFV0",
+        "policy": "OnAny",
+        "detectorName": "FV0",
+        "dataSource": [
+          {
+            "type": "PostProcessing",
+            "name": "PostProcTask",
+            "MOs": [
+              "OutOfBunchColl_BCvsFeeModulesForNChanTrg"
+            ]
+          }
+        ],
+        "checkParameters": {
+          "TODO": "TODO"
+        }
+      },
+      "OutOfBunchCollCheckFeeOrA": {
+        "active": "true",
+        "className": "o2::quality_control_modules::fv0::OutOfBunchCollFeeModulesCheck",
+        "moduleName": "QcFV0",
+        "policy": "OnAny",
+        "detectorName": "FV0",
+        "dataSource": [
+          {
+            "type": "PostProcessing",
+            "name": "PostProcTask",
+            "MOs": [
+              "OutOfBunchColl_BCvsFeeModulesForOrATrg"
+            ]
+          }
+        ],
+        "checkParameters": {
+          "TODO": "TODO"
+        }
+      },
+      "OutOfBunchCollCheckFeeOrAIn": {
+        "active": "true",
+        "className": "o2::quality_control_modules::fv0::OutOfBunchCollFeeModulesCheck",
+        "moduleName": "QcFV0",
+        "policy": "OnAny",
+        "detectorName": "FV0",
+        "dataSource": [
+          {
+            "type": "PostProcessing",
+            "name": "PostProcTask",
+            "MOs": [
+              "OutOfBunchColl_BCvsFeeModulesForOrAInTrg"
+            ]
+          }
+        ],
+        "checkParameters": {
+          "TODO": "TODO"
+        }
+      },
+      "OutOfBunchCollCheckFeeOrAOut": {
+        "active": "true",
+        "className": "o2::quality_control_modules::fv0::OutOfBunchCollFeeModulesCheck",
+        "moduleName": "QcFV0",
+        "policy": "OnAny",
+        "detectorName": "FV0",
+        "dataSource": [
+          {
+            "type": "PostProcessing",
+            "name": "PostProcTask",
+            "MOs": [
+              "OutOfBunchColl_BCvsFeeModulesForOrAOutTrg"
+            ]
+          }
+        ],
+        "checkParameters": {
+          "TODO": "TODO"
+        }
+      }
+    },
+    "postprocessing": {
+      "PostProcTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::fv0::PostProcTask",
+        "moduleName": "QcFV0",
+        "detectorName": "FV0",
+        "custom": {
+          "numOrbitsInTF": "32",
+          "cycleDurationMoName": "CycleDurationNTF",
+          "timestampSourceLhcIf": "metadata"
+        },
+        "initTrigger": [
+          "newobject:qcdb:FV0/MO/DigitQcTask/TriggersCorrelation",
+          "newobject:qcdb:FV0/MO/DigitQcTask/BCvsFEEmodules"
+        ],
+        "updateTrigger": [
+          "newobject:qcdb:FV0/MO/DigitQcTask/TriggersCorrelation",
+          "newobject:qcdb:FV0/MO/DigitQcTask/BCvsFEEmodules"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      },
+      "TrendingTask": {
+        "active": "true",
+        "className": "o2::quality_control::postprocessing::TrendingTask",
+        "moduleName": "QcFV0",
+        "detectorName": "FV0",
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "FV0/MO/DigitQcTask",
+            "names": [
+              "CycleDuration",
+              "CycleDurationNTF",
+              "SumAmpA",
+              "Amp_channel0",
+              "Time_channel0",
+              "Amp_channel1",
+              "Time_channel1",
+              "Amp_channel2",
+              "Time_channel2",
+              "Amp_channel3",
+              "Time_channel3",
+              "Amp_channel4",
+              "Time_channel4",
+              "Amp_channel5",
+              "Time_channel5",
+              "Amp_channel6",
+              "Time_channel6",
+              "Amp_channel7",
+              "Time_channel7",
+              "Amp_channel8",
+              "Time_channel8",
+              "Amp_channel9",
+              "Time_channel9",
+              "Amp_channel10",
+              "Time_channel10",
+              "Amp_channel11",
+              "Time_channel11"
+            ],
+            "reductorName": "o2::quality_control_modules::common::TH1Reductor",
+            "moduleName": "QcCommon"
+          }
+        ],
+        "plots": [
+          {
+            "name": "trend_cycle_duration",
+            "title": "cycle duration [ns]",
+            "varexp": "CycleDuration.entries:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "trend_cycle_duration_ntf",
+            "title": "cycle duration [TimeFrames]",
+            "varexp": "CycleDurationNTF.entries:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "cycle_duration_corr",
+            "title": "cycle duration: ns/TF;time;cycle duration [ns/TimeFrames]",
+            "varexp": "CycleDuration.entries/CycleDurationNTF.entries:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "cycle_duration_ntf_corr",
+            "title": "TF duration [ns];#TF;TF duration [ns]",
+            "varexp": "CycleDuration.entries/CycleDurationNTF.entries:CycleDurationNTF.entries",
+            "selection": "",
+            "option": "colz"
+          },
+          {
+            "name": "trend_mean_sumAmpA",
+            "title": "Mean trend of the sum of amplitudes (TCM)",
+            "varexp": "SumAmpA.mean:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "trend_stddev_sumAmpA",
+            "title": "Stddev trend of the sum of amplitudes (TCM)",
+            "varexp": "SumAmpA.stddev:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "trend_mean_amp0",
+            "title": "Mean trend of the amplitude, channel0",
+            "varexp": "Amp_channel0.mean:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "trend_mean_amp1",
+            "title": "Mean trend of the amplitude, channel1",
+            "varexp": "Amp_channel1.mean:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "trend_mean_amp2",
+            "title": "Mean trend of the amplitude, channel2",
+            "varexp": "Amp_channel2.mean:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "trend_mean_amp3",
+            "title": "Mean trend of the amplitude, channel3",
+            "varexp": "Amp_channel3.mean:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "trend_mean_amp4",
+            "title": "Mean trend of the amplitude, channel4",
+            "varexp": "Amp_channel4.mean:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "trend_mean_amp5",
+            "title": "Mean trend of the amplitude, channel5",
+            "varexp": "Amp_channel5.mean:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "trend_mean_amp6",
+            "title": "Mean trend of the amplitude, channel6",
+            "varexp": "Amp_channel6.mean:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "trend_mean_amp7",
+            "title": "Mean trend of the amplitude, channel7",
+            "varexp": "Amp_channel7.mean:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "trend_mean_amp8",
+            "title": "Mean trend of the amplitude, channel8",
+            "varexp": "Amp_channel8.mean:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "trend_mean_amp9",
+            "title": "Mean trend of the amplitude, channel9",
+            "varexp": "Amp_channel9.mean:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "trend_mean_amp10",
+            "title": "Mean trend of the amplitude, channel10",
+            "varexp": "Amp_channel10.mean:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "trend_mean_amp11",
+            "title": "Mean trend of the amplitude, channel11",
+            "varexp": "Amp_channel11.mean:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "trend_mean_time0",
+            "title": "Mean trend of the time, channel0",
+            "varexp": "Time_channel0.mean:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "trend_mean_time1",
+            "title": "Mean trend of the time, channel1",
+            "varexp": "Time_channel1.mean:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "trend_mean_time2",
+            "title": "Mean trend of the time, channel2",
+            "varexp": "Time_channel2.mean:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "trend_mean_time3",
+            "title": "Mean trend of the time, channel3",
+            "varexp": "Time_channel3.mean:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "trend_mean_time4",
+            "title": "Mean trend of the time, channel4",
+            "varexp": "Time_channel4.mean:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "trend_mean_time5",
+            "title": "Mean trend of the time, channel5",
+            "varexp": "Time_channel5.mean:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "trend_mean_time6",
+            "title": "Mean trend of the time, channel6",
+            "varexp": "Time_channel6.mean:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "trend_mean_time7",
+            "title": "Mean trend of the time, channel7",
+            "varexp": "Time_channel7.mean:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "trend_mean_time8",
+            "title": "Mean trend of the time, channel8",
+            "varexp": "Time_channel8.mean:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "trend_mean_time9",
+            "title": "Mean trend of the time, channel9",
+            "varexp": "Time_channel9.mean:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "trend_mean_time10",
+            "title": "Mean trend of the time, channel10",
+            "varexp": "Time_channel10.mean:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "trend_mean_time11",
+            "title": "Mean trend of the time, channel11",
+            "varexp": "Time_channel11.mean:time",
+            "selection": "",
+            "option": "*L"
+          }
+        ],
+        "initTrigger": [
+          "newobject:qcdb:FV0/MO/DigitQcTask/TriggersCorrelation"
+        ],
+        "updateTrigger": [
+          "newobject:qcdb:FV0/MO/DigitQcTask/TriggersCorrelation"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      }
+    }
+  }
+}

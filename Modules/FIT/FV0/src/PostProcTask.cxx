@@ -205,7 +205,7 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
     }
   }
 
-  mHistBcPatternFee = std::make_unique<TH2F>("bcPatternForFeeModules", "BC pattern", sBCperOrbit, 0, sBCperOrbit, 13, 0, 13);
+  mHistBcPatternFee = std::make_unique<TH2F>("bcPatternForFeeModules", "BC pattern", sBCperOrbit, 0, sBCperOrbit, mMapFEE2hash.size(), 0, mMapFEE2hash.size());
   mHistBcFeeOutOfBunchColl = std::make_unique<TH2F>("OutOfBunchColl_BCvsFeeModules", "BC vs FEE Modules for out-of-bunch collisions;BC;FEE Modules", sBCperOrbit, 0, sBCperOrbit, mMapFEE2hash.size(), 0, mMapFEE2hash.size());
   mHistBcFeeOutOfBunchCollForOrATrg = std::make_unique<TH2F>("OutOfBunchColl_BCvsFeeModulesForOrATrg", "BC vs FEE Modules for out-of-bunch collisions for OrA trg;BC;FEE Modules", sBCperOrbit, 0, sBCperOrbit, mMapFEE2hash.size(), 0, mMapFEE2hash.size());
   mHistBcFeeOutOfBunchCollForOrAOutTrg = std::make_unique<TH2F>("OutOfBunchColl_BCvsFeeModulesForOrAOutTrg", "BC vs FEE Modules for out-of-bunch collisions for OrAOut trg;BC;FEE Modules", sBCperOrbit, 0, sBCperOrbit, mMapFEE2hash.size(), 0, mMapFEE2hash.size());
