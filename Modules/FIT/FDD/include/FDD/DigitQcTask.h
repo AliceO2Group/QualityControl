@@ -128,7 +128,6 @@ class DigitQcTask final : public TaskInterface
   std::unique_ptr<TH1F> mHistNumCFD;
   std::array<int, 16> ChVertexArray;
 
-
   std::map<int, bool> mMapTrgSoftware;
   enum TrgModeSide { kAplusC,
                      kAandC,
