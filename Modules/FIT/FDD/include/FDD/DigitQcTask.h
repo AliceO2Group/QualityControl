@@ -126,7 +126,6 @@ class DigitQcTask final : public TaskInterface
   std::map<o2::fdd::ChannelData::EEventDataBit, std::string> mMapChTrgNames;
   std::unique_ptr<TH1F> mHistNumADC;
   std::unique_ptr<TH1F> mHistNumCFD;
-  std::map<int, bool> layerCoincidence; //8 coincidence signal 0-3 --> C side; 4-7 --> A side
   std::array<int, 16> ChVertexArray;
 
 

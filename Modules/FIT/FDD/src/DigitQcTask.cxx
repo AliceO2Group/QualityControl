@@ -670,7 +670,7 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
       /// now check the coincidence for the vertex trigger
       for (int i = 0; i < 4; ++i) {
-        if(ChVertexArray[i]== 1 &&  ChVertexArray[i+4]== 1)
+        if(ChVertexArray[i] == 1 &&  ChVertexArray[i + 4] == 1)
           pmNCoincidenceChanC++;
         if (ChVertexArray[i + cSideChOffSet] == 1 && ChVertexArray[i + 4 + cSideChOffSet] == 1)
           pmNCoincidenceChanA++;
