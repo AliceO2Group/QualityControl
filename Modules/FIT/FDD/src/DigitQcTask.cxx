@@ -133,8 +133,7 @@ bool DigitQcTask::chIsVertexEvent(const o2::fdd::ChannelData chd, bool simpleChe
     return (chd.getFlag(o2::fdd::ChannelData::kIsCFDinADCgate) &&
             !(chd.getFlag(o2::fdd::ChannelData::kIsTimeInfoNOTvalid) || chd.getFlag(o2::fdd::ChannelData::kIsTimeInfoLate) ||
               chd.getFlag(o2::fdd::ChannelData::kIsTimeInfoLost) || chd.getFlag(o2::fdd::ChannelData::kIsDoubleEvent) || chd.getFlag(o2::fdd::ChannelData::kIsAmpHigh)) &&
-            std::abs(static_cast<Int_t>(chd.mTime)) < mTrgOrGate &&
-            static_cast<Int_t>(chd.mChargeADC) > mTrgChargeLevelLow &&
+            std::abs(static_cast<Int_t>(chd.mTime)) < mTrgOrGate && static_cast<Int_t>(chd.mChargeADC) > mTrgChargeLevelLow &&
             static_cast<Int_t>(chd.mChargeADC) < mTrgChargeLevelHigh);
   }
 }
@@ -180,6 +179,11 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
                                           TrgModeThresholdVar::kAmpl,
                                           { { TrgModeThresholdVar::kAmpl, "Ampl" },
                                             { TrgModeThresholdVar::kNchannels, "Nchannels" } });
+
+  mTrgModeFDD = getModeParameter("trgModeFDD",
+                                 TrgModeFDD::kCoincidence,
+                                 { { TrgModeFDD::kNormal, "normal" },
+                                   { TrgModeFDD::kCoincidence, "coincidence" } });
   mTrgModeSide = getModeParameter("trgModeSide",
                                   TrgModeSide::kAplusC,
                                   { { TrgModeSide::kAplusC, "A+C" },
@@ -560,6 +564,7 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     Int_t pmSumTimeC = 0;
     Int_t pmAverTimeA = 0;
     Int_t pmAverTimeC = 0;
+    Int_t vtxPos = -999;
     // Initialize array elements to zero using std::fill
     std::fill(ChVertexArray.begin(), ChVertexArray.end(), 0);
 
@@ -653,20 +658,21 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
         if (!mMapPMhash2isAside[mChID2PMhash[static_cast<uint8_t>(chData.mPMNumber)]]) {
           pmSumTimeC += chData.mTime;
           pmNChanC++;
-          ChVertexArray[chData.mPMNumber]=1;
+          if ((int)chData.mPMNumber < sNCHANNELS_Physics)
+            ChVertexArray[chData.mPMNumber] = 1;
         } else if (mMapPMhash2isAside[mChID2PMhash[static_cast<uint8_t>(chData.mPMNumber)]]) {
           pmSumTimeA += chData.mTime;
           pmNChanA++;
-          ChVertexArray[chData.mPMNumber]=1;
+          if ((int)chData.mPMNumber < sNCHANNELS_Physics)
+            ChVertexArray[chData.mPMNumber] = 1;
         }
       }
 
-      //now check the coincidence vertex trigger
-
+      /// now check the coincidence for the vertex trigger
       for (int i = 0; i < 4; ++i) {
         if(ChVertexArray[i]== 1 &&  ChVertexArray[i+4]== 1)
           pmNCoincidenceChanC++;
-        if(ChVertexArray[i+8]== 1 &&  ChVertexArray[i+4+8]== 1)
+        if (ChVertexArray[i + cSideChOffSet] == 1 && ChVertexArray[i + 4 + cSideChOffSet] == 1)
           pmNCoincidenceChanA++;
       }
 
@@ -677,13 +683,10 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
     for (const auto& entry : mapPMhash2sumAmpl) {
       if (mMapPMhash2isAside[entry.first])
-        // pmSumAmplA += std::lround(static_cast<int>(entry.second / 8.));
         pmSumAmplA += static_cast<int>(entry.second >> 3);
       else
-        // pmSumAmplC += std::lround(static_cast<int>(entry.second / 8.));
         pmSumAmplC += static_cast<int>(entry.second >> 3);
     }
-
     auto pmNChan = pmNChanA + pmNChanC;
     auto pmSumAmpl = pmSumAmplA + pmSumAmplC;
     if (isTCM) {
@@ -707,8 +710,11 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       pmAverTimeA = o2::fit::Triggers::DEFAULT_TIME;
       pmAverTimeC = o2::fit::Triggers::DEFAULT_TIME;
     }
-    //auto vtxPos = (pmNChanA && pmNChanC) ? (pmAverTimeC - pmAverTimeA) / 2 : 0;
-    auto vtxPos = (pmNCoincidenceChanA && pmNCoincidenceChanC) ? (pmAverTimeC - pmAverTimeA) / 2 : 0;
+
+    if (mTrgModeFDD == TrgModeFDD::kNormal)
+      vtxPos = (pmNChanA && pmNChanC) ? (pmAverTimeC - pmAverTimeA) / 2 : 0;
+    else if (mTrgModeFDD == TrgModeFDD::kCoincidence)
+      vtxPos = (pmNCoincidenceChanA && pmNCoincidenceChanC) ? (pmAverTimeC - pmAverTimeA) / 2 : 0;
 
     /// PM charge is scaled by 8 to compare with TCM charge
     // mPMChargeTotalAside = std::lround(static_cast<int>(mPMChargeTotalAside / 8));
@@ -754,14 +760,20 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
 
     // triggers re-computation
-   // mMapTrgSoftware[o2::fdd::Triggers::bitA] = pmNChanA > 0;
-    //mMapTrgSoftware[o2::fdd::Triggers::bitC] = pmNChanC > 0;
-
-    mMapTrgSoftware[o2::fdd::Triggers::bitA] = pmNCoincidenceChanA > 0;
-    mMapTrgSoftware[o2::fdd::Triggers::bitC] = pmNCoincidenceChanC > 0;
-
-    if (mTrgThresholdTimeLow < vtxPos && vtxPos < mTrgThresholdTimeHigh && pmNCoincidenceChanA > 0 && pmNCoincidenceChanC > 0)
-      mMapTrgSoftware[o2::fdd::Triggers::bitVertex] = true;
+    switch (mTrgModeFDD) {
+      case TrgModeFDD::kNormal:
+        mMapTrgSoftware[o2::fdd::Triggers::bitA] = pmNChanA > 0;
+        mMapTrgSoftware[o2::fdd::Triggers::bitC] = pmNChanC > 0;
+        if (mTrgThresholdTimeLow < vtxPos && vtxPos < mTrgThresholdTimeHigh && pmNChanA > 0 && pmNChanC > 0)
+          mMapTrgSoftware[o2::fdd::Triggers::bitVertex] = true;
+        break;
+      case TrgModeFDD::kCoincidence:
+        mMapTrgSoftware[o2::fdd::Triggers::bitA] = pmNCoincidenceChanA > 0;
+        mMapTrgSoftware[o2::fdd::Triggers::bitC] = pmNCoincidenceChanC > 0;
+        if (mTrgThresholdTimeLow < vtxPos && vtxPos < mTrgThresholdTimeHigh && pmNCoincidenceChanA > 0 && pmNCoincidenceChanC > 0)
+          mMapTrgSoftware[o2::fdd::Triggers::bitVertex] = true;
+        break;
+    }
 
     // Central/SemiCentral logic
     switch (mTrgModeSide) {
@@ -781,10 +793,9 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
       case TrgModeSide::kAandC:
         if (mTrgModeThresholdVar == TrgModeThresholdVar::kAmpl) {
-          if (pmSumAmplA >= 2 * mTrgThresholdCenA && pmSumAmplC >= 2 * mTrgThresholdCenC)
+          if (pmSumAmplA > 2 * mTrgThresholdCenA && pmSumAmplC > 2 * mTrgThresholdCenC)
             mMapTrgSoftware[o2::fdd::Triggers::bitCen] = true;
-          else if (pmSumAmplA >= 2 * mTrgThresholdSCenA && pmSumAmplC >= 2 * mTrgThresholdSCenC  && !mMapTrgSoftware[o2::fdd::Triggers::bitCen])
-          { std::cout<<mMapTrgSoftware[o2::fdd::Triggers::bitCen]<<std::endl;
+          else if (pmSumAmplA > 2 * mTrgThresholdSCenA && pmSumAmplC > 2 * mTrgThresholdSCenC && !mMapTrgSoftware[o2::fdd::Triggers::bitCen]) {
             mMapTrgSoftware[o2::fdd::Triggers::bitSCen] = true;
           }
         } else if (mTrgModeThresholdVar == TrgModeThresholdVar::kNchannels) {
@@ -829,9 +840,10 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
         mHistTriggersSw->Fill(entry.first);
       bool isTCMFired = digit.mTriggers.getTriggersignals() & (1 << entry.first);
       bool isSwFired = entry.second;
-      if (!isTCMFired && isSwFired)
+      if (!isTCMFired && isSwFired) {
         mHistTriggersSoftwareVsTCM->Fill(entry.first, TrgComparisonResult::kSWonly);
-      else if (isTCMFired && !isSwFired)
+
+      } else if (isTCMFired && !isSwFired)
         mHistTriggersSoftwareVsTCM->Fill(entry.first, TrgComparisonResult::kTCMonly);
       else if (!isTCMFired && !isSwFired)
         mHistTriggersSoftwareVsTCM->Fill(entry.first, TrgComparisonResult::kNone);

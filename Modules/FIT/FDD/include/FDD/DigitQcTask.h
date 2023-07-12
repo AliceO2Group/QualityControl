@@ -66,11 +66,13 @@ class DigitQcTask final : public TaskInterface
   void endOfActivity(const Activity& activity) override;
   void reset() override;
   constexpr static std::size_t sNCHANNELS_PM = 20;
+  constexpr static std::size_t sNCHANNELS_Physics = 16;
   constexpr static std::size_t sNCHANNELS_A = 8;
   constexpr static std::size_t sNCHANNELS_C = 8;
   constexpr static std::size_t sOrbitsPerTF = 256;
   constexpr static std::size_t sBCperOrbit = o2::constants::lhc::LHCMaxBunches;
   constexpr static float sCFDChannel2NS = o2::fdd::timePerTDC; // CFD channel width in ns
+  constexpr static int cSideChOffSet = 8;
 
  private:
   // three ways of computing cycle duration:
@@ -134,6 +136,9 @@ class DigitQcTask final : public TaskInterface
                      kA,
                      kC
   };
+  enum TrgModeFDD { kNormal,
+                    kCoincidence
+  };
   enum TrgModeThresholdVar { kAmpl,
                              kNchannels
   };
@@ -145,6 +150,7 @@ class DigitQcTask final : public TaskInterface
   // trigger parameters:
   // - modes
   unsigned int mTrgModeThresholdVar;
+  unsigned int mTrgModeFDD;
   unsigned int mTrgModeSide;
   // - time window for vertex trigger
   int mTrgThresholdTimeLow;
