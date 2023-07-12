@@ -413,7 +413,7 @@ void AggregatorRunner::start(ServiceRegistryRef services)
   QcInfoLogger::setRun(mActivity.mId);
   QcInfoLogger::setPartition(mActivity.mPartitionName);
   ILOG(Info, Support) << "Starting run " << mActivity.mId << ENDM;
-  
+
   // register ourselves to the BK
   if (gSystem->Getenv("O2_QC_REGISTER_IN_BK")) { // until we are sure it works, we have to turn it on
     Bookkeeping::getInstance().registerProcess(mActivity.mId, mDeviceName, AggregatorRunner::getDetectorName(mAggregators), bookkeeping::DPL_PROCESS_TYPE_QC_AGGREGATOR, "");
