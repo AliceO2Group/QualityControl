@@ -690,20 +690,6 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     auto pmNChan = pmNChanA + pmNChanC;
     auto pmSumAmpl = pmSumAmplA + pmSumAmplC;
     if (isTCM) {
-      // if (pmNChanA > 1) {
-      //   pmAverTimeA = std::floor((float)pmSumTimeA / pmNChanA);
-      // } else if (pmNChanA == 1) {
-      //   pmAverTimeA = pmSumTimeA;
-      // } else {
-      //   pmAverTimeA = 0;
-      // }
-      // if (pmNChanC > 1) {
-      //   pmAverTimeC = std::floor((float)pmSumTimeC / pmNChanC);
-      // } else if (pmNChanC == 1) {
-      //   pmAverTimeC = pmSumTimeC;
-      // } else {
-      //   pmAverTimeC = 0;
-      // }
       pmAverTimeA = fpgaDivision(pmSumTimeA, pmNChanA);
       pmAverTimeC = fpgaDivision(pmSumTimeC, pmNChanC);
     } else {
