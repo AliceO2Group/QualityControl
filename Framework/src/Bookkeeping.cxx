@@ -19,7 +19,6 @@
 #include "QualityControl/Activity.h"
 #include "BookkeepingApi/BkpProtoClientFactory.h"
 #include "BookkeepingApi/BkpProtoClient.h"
-#include <iostream>
 #include <unistd.h>
 
 using namespace o2::bkp::api::proto;
