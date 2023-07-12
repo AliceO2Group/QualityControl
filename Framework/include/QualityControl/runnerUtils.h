@@ -74,87 +74,48 @@ inline bool hasChecks(std::string configSource)
   return config->getRecursive("qc").count("checks") > 0;
 }
 
-inline int computeRunNumber(framework::ServiceRegistryRef services, int fallbackRunNumber = 0)
-{ // Determine run number
-  int run = 0;
+template <typename T> // TODO we should probably limit T to numbers somehow
+inline T computeActivityField(framework::ServiceRegistryRef services, const std::string& name, T fallbackNumber = 0)
+{
+  int result = 0;
 
   try {
-    auto temp = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("runNumber", "unspecified");
-    ILOG(Debug, Devel) << "Got this property runNumber from RawDeviceService: '" << temp << "'" << ENDM;
-    run = stoi(temp);
-    ILOG(Debug, Devel) << "   Run number found in options: " << run << ENDM;
+    auto temp = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>(name);
+    ILOG(Info, Devel) << "Got this property " << name << " from RawDeviceService: '" << temp << "'" << ENDM;
+    result = boost::lexical_cast<T>(temp);
   } catch (std::invalid_argument& ia) {
-    ILOG(Debug, Devel) << "   Run number not found in options or is not a number, using the one from the config file or 0 as a last resort."
-                       << ENDM;
+    ILOG(Info, Devel) << "   " << name << " is not a number, using the fallback." << ENDM;
+  } catch (fair::mq::PropertyNotFoundError& err) {
+    ILOG(Info, Devel) << "   " << name << " not found in options, using the fallback." << ENDM;
+  } catch (boost::bad_lexical_cast& err) {
+    ILOG(Info, Devel) << "   " << name << " could not be cast to a number (" << err.what() << "), using the fallback." << ENDM;
   }
-  run = run > 0 /* found it in service */ ? run : fallbackRunNumber;
-  ILOG(Info, Devel) << "Run number returned by computeRunNumber (default) : " << run << ENDM;
-  return run;
-}
-
-inline int computeRunType(framework::ServiceRegistryRef services, int fallbackRunType = 0)
-{ // Determine runType number
-
-  int runType = 0;
-  try {
-    auto temp = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("runType", "unspecified");
-    ILOG(Debug, Devel) << "Got this property runType from RawDeviceService: '" << temp << "'" << ENDM;
-    runType = stoi(temp);
-    ILOG(Debug, Devel) << "   Run type found in options: " << runType << ENDM;
-  } catch (std::invalid_argument& ia) {
-    ILOG(Debug, Devel) << "   Run type not found in options or is not a number, using the one from the config file or 0 as a last resort."
-                       << ENDM;
-  }
-  runType = runType > 0 /* found it in service */ ? runType : fallbackRunType;
-  ILOG(Info, Devel) << "Run type returned by computeRunType (default) : " << runType << ENDM;
-  return runType;
-}
-
-inline std::string computePartitionName(framework::ServiceRegistryRef services, const std::string& fallbackPartitionName = "")
-{
-  std::string partitionName;
-  partitionName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("environment_id", "unspecified");
-  ILOG(Debug, Devel) << "Got this property partitionName from RawDeviceService: '" << partitionName << "'" << ENDM;
-  partitionName = partitionName != "unspecified" /* found it in service */ ? partitionName : fallbackPartitionName;
-  ILOG(Info, Devel) << "Partition Name returned by computePartitionName : " << partitionName << ENDM;
-  return partitionName;
-}
-
-inline std::string computePeriodName(framework::ServiceRegistryRef services, const std::string& fallbackPeriodName = "")
-{ // Determine period
-  std::string periodName;
-  periodName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("periodName", "unspecified");
-  ILOG(Debug, Devel) << "Got this property periodName from RawDeviceService: '" << periodName << "'" << ENDM;
-  periodName = periodName != "unspecified" /* found it in service */ ? periodName : fallbackPeriodName;
-  ILOG(Info, Devel) << "Period Name returned by computePeriodName : " << periodName << ENDM;
-  return periodName;
-}
-
-inline std::string computePassName(const std::string& fallbackPassName = "")
-{
-  ILOG(Debug, Devel) << "Pass Name returned by computePassName : " << fallbackPassName << ENDM;
-  return fallbackPassName;
-}
-
-inline std::string computeProvenance(const std::string& fallbackProvenance = "")
-{
-  ILOG(Debug, Devel) << "Provenance returned by computeProvenance : " << fallbackProvenance << ENDM;
-  return fallbackProvenance;
+  result = result > 0 /* found it in service */ ? result : fallbackNumber;
+  ILOG(Info, Devel) << name << " returned by computeActivityField (default) : " << result << ENDM;
+  return result;
 }
 
 inline Activity computeActivity(framework::ServiceRegistryRef services, const Activity& fallbackActivity)
 {
-  int runNumber = computeRunNumber(services, fallbackActivity.mId);
-  Activity activity{
+  auto runNumber = computeActivityField<int>(services, "runNumber", fallbackActivity.mId);
+  auto runType = computeActivityField<int>(services, "runType", fallbackActivity.mType);
+  auto run_start_time_ms = computeActivityField<unsigned long>(services, "runStartTimeMs", fallbackActivity.mValidity.getMin());
+  auto run_stop_time_ms = computeActivityField<unsigned long>(services, "runEndTimeMs", fallbackActivity.mValidity.getMax());
+  auto partitionName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("environment_id", fallbackActivity.mPartitionName);
+  auto periodName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("lhcPeriod", "unspecified");
+  auto fillNumber = computeActivityField<int>(services, "fillInfoFillNumber", fallbackActivity.mFillNumber);
+  auto beam_type = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("fillInfoBeamType", fallbackActivity.mBeamType);
+
+  Activity activity(
     runNumber,
-    computeRunType(services, fallbackActivity.mType),
-    computePeriodName(services, fallbackActivity.mPeriodName),
-    computePassName(fallbackActivity.mPassName),
-    computeProvenance(fallbackActivity.mProvenance),
-    fallbackActivity.mValidity
-  };
-  // if available we overwrite with the info from logbook.
-  Bookkeeping::getInstance().populateActivity(activity, runNumber);
+    runType,
+    periodName,
+    fallbackActivity.mPassName,
+    fallbackActivity.mProvenance,
+    { run_start_time_ms, run_stop_time_ms },
+    beam_type,
+    partitionName,
+    fillNumber);
 
   return activity;
 }
