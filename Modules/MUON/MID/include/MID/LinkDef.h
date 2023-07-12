@@ -17,5 +17,7 @@
 #pragma link C++ class o2::quality_control_modules::mid::CalibMQcCheck + ;
 #pragma link C++ class o2::quality_control_modules::mid::DigitsHelper + ;
 #pragma link C++ class o2::quality_control_modules::mid::HistoHelper + ;
+#pragma link C++ class o2::quality_control::postprocessing::TrendingTaskConfigMID + ;
+#pragma link C++ class o2::quality_control::postprocessing::MIDTrending + ;
 
 #endif

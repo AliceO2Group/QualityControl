@@ -119,6 +119,7 @@ void CcdbDatabase::connect(const std::unordered_map<std::string, std::string>& c
 void CcdbDatabase::init()
 {
   ccdbApi->init(mUrl);
+  ccdbApi->setCurlRetriesParameters(5);
   loadDeprecatedStreamerInfos();
 }
 

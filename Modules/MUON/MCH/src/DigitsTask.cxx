@@ -204,13 +204,12 @@ void DigitsTask::plotDigit(const o2::mch::Digit& digit)
   // Occupancy plots
   //--------------------------------------------------------------------------
 
-  // xbin and ybin uniquely identify each physical pad
-  int xbin = getDsIndex(DsDetId{ deId, dsId });
-  int ybin = channel + 1;
+  // fecId and channel uniquely identify each physical pad
+  int fecId = getDsIndex(DsDetId{ deId, dsId });
 
-  mHistogramOccupancyElec->getNum()->Fill(xbin - 0.5, ybin - 0.5);
+  mHistogramOccupancyElec->getNum()->Fill(fecId, channel);
   if (isSignal) {
-    mHistogramSignalOccupancyElec->getNum()->Fill(xbin - 0.5, ybin - 0.5);
+    mHistogramSignalOccupancyElec->getNum()->Fill(fecId, channel);
   }
 
   //--------------------------------------------------------------------------
@@ -234,10 +233,10 @@ void DigitsTask::plotDigit(const o2::mch::Digit& digit)
     orbit = digit.getTime() / static_cast<int32_t>(o2::constants::lhc::LHCMaxBunches);
     bc = digit.getTime() % static_cast<int32_t>(o2::constants::lhc::LHCMaxBunches);
   }
-  mHistogramDigitsOrbitElec->Fill(xbin - 0.5, orbit);
-  mHistogramDigitsBcInOrbit->Fill(xbin - 0.5, bc);
+  mHistogramDigitsOrbitElec->Fill(fecId, orbit);
+  mHistogramDigitsBcInOrbit->Fill(fecId, bc);
   if (isSignal) {
-    mHistogramDigitsSignalOrbitElec->Fill(xbin - 0.5, orbit);
+    mHistogramDigitsSignalOrbitElec->Fill(fecId, orbit);
   }
 }
 
@@ -273,7 +272,7 @@ void DigitsTask::updateOrbits()
         auto deId = dsDetId->deId();
         auto dsId = dsDetId->dsId();
 
-        int xbin = getDsIndex(DsDetId{ deId, dsId });
+        int xbin = getDsIndex(DsDetId{ deId, dsId }) + 1;
 
         // loop on DS channels and check if it is associated to a readout pad
         for (int channel = 0; channel < 64; channel++) {

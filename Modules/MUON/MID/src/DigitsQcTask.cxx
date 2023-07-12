@@ -136,9 +136,9 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       sizeTot += evtSizeB[ich];
       sizeTot += evtSizeNB[ich];
       mMultHitB[ich]->Fill(evtSizeB[ich]);
-      mMultHitB[4]->Fill(evtSizeB[4]);
+      mMultHitB[4]->Fill(evtSizeB[ich]);
       mMultHitNB[ich]->Fill(evtSizeNB[ich]);
-      mMultHitNB[4]->Fill(evtSizeNB[4]);
+      mMultHitNB[4]->Fill(evtSizeNB[ich]);
     }
 
     if (!isFirst) {

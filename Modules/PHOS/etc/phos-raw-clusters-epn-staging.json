@@ -3,7 +3,7 @@
     "config": {
       "database": {
         "implementation": "CCDB",
-        "host": "ali-qcdb.cern.ch:8083",
+        "host": "alio2-cr1-hv-mvs00:8083",
         "username": "not_applicable",
         "password": "not_applicable",
         "name": "not_applicable"
@@ -12,13 +12,13 @@
         "url": "influxdb-unix:///tmp/telegraf.sock"
       },
       "consul": {
-        "url": "http://localhost:8500"
+        "url": "http://alio2-cr1-hv-mvs00:8500"
       },
       "conditionDB": {
         "url": "o2-ccdb.internal"
       },
       "bookkeeping": {
-        "url": "ali-bookkeeping:4001"
+        "url": ""
       }
     },
     "tasks": {
@@ -40,7 +40,7 @@
         "localMachines": [
           "localhost"
         ],
-        "remoteMachine": "alio2-cr1-qme06.cern.ch",
+        "remoteMachine": "alio2-cr1-qc04.cern.ch",
         "remotePort": "47757",
         "mergingMode": "delta",
         "localControl": "odc"
@@ -63,7 +63,7 @@
         "localMachines": [
           "localhost"
         ],
-        "remoteMachine": "alio2-cr1-qme06.cern.ch",
+        "remoteMachine": "alio2-cr1-qc04.cern.ch",
         "remotePort": "47758",
         "mergingMode": "delta",
         "localControl": "odc"
@@ -147,17 +147,7 @@
           "mToleratedBadChannelsM1": "1",
           "mToleratedBadChannelsM2": "1",
           "mToleratedBadChannelsM3": "1",
-          "mToleratedBadChannelsM4": "1",
-          "mToleratedBadChannels are used for": "BadMapSummary check",
-          "which is not currently on the MOs list": "",
-          "mToleratedDeviatedBranchesM1": "0",
-          "mToleratedDeviatedBranchesM2": "0",
-          "mToleratedDeviatedBranchesM3": "0",
-          "mToleratedDeviatedBranchesM4": "0",
-          "mBranchOccupancyDeviationAllowedM1": "1.5",
-          "mBranchOccupancyDeviationAllowedM2": "1.5",
-          "mBranchOccupancyDeviationAllowedM3": "1.5",
-          "mBranchOccupancyDeviationAllowedM4": "1.5"
+          "mToleratedBadChannelsM4": "1"
         },
         "dataSource": [
           {
@@ -179,22 +169,8 @@
         "policy": "OnAny",
         "detectorName": "PHS",
         "checkParameters": {
-          "mMinCluEnergyMean1": "1.5",
-          "mMinCluEnergyMean2": "1.5",
-          "mMinCluEnergyMean3": "1.5",
-          "mMinCluEnergyMean4": "1.5",
-          "mMaxCluEnergyMean1": "2.0",
-          "mMaxCluEnergyMean2": "2.0",
-          "mMaxCluEnergyMean3": "2.0",
-          "mMaxCluEnergyMean4": "2.0",
-          "mCluEnergyRangeL1": "1.",
-          "mCluEnergyRangeL2": "1.",
-          "mCluEnergyRangeL3": "1.",
-          "mCluEnergyRangeL4": "1.",
-          "mCluEnergyRangeR1": "10.",
-          "mCluEnergyRangeR2": "10.",
-          "mCluEnergyRangeR3": "10.",
-          "mCluEnergyRangeR4": "10."
+          "mMaxCluEnergyMean2": "1.0",
+          "mMinCluEnergyMean1": "9.0"
         },
         "dataSource": [
           {
@@ -313,7 +289,7 @@
                 "messageBad": "Inform PHS on-call",
                 "messageMedium": "Inform PHS on-call",
                 "messageGood": "All checks are OK",
-                "messageNull": "There are empty histograms!!!"
+                "messageNull": "Not enough stat"
               }
             ]
           },
@@ -349,7 +325,7 @@
                 "messageBad": "Inform PHS on-call",
                 "messageMedium": "Inform PHS on-call",
                 "messageGood": "",
-                "messageNull": "Cluster spectrum histograms are empty! Inform the on-call"
+                "messageNull": "Not enough stat"
               },
               {
                 "name": "ErrorsCheck",

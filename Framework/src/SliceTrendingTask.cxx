@@ -22,6 +22,7 @@
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/RepoPathUtils.h"
+#include "QualityControl/ActivityHelpers.h"
 
 #include <string>
 #include <TGraphErrors.h>
@@ -124,9 +125,10 @@ void SliceTrendingTask::finalize(Trigger t, framework::ServiceRegistryRef)
 void SliceTrendingTask::trendValues(const Trigger& t,
                                     repository::DatabaseInterface& qcdb)
 {
-  mTime = t.timestamp / 1000; // ROOT expects seconds since epoch.
+  mTime = activity_helpers::isLegacyValidity(t.activity.mValidity)
+            ? t.timestamp / 1000
+            : t.activity.mValidity.getMax() / 1000; // ROOT expects seconds since epoch.
   mMetaData.runNumber = t.activity.mId;
-
   for (auto& dataSource : mConfig.dataSources) {
     mNumberPads[dataSource.name] = 0;
     mSources[dataSource.name]->clear();

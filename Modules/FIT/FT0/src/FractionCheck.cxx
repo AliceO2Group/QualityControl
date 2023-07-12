@@ -50,8 +50,7 @@ void FractionCheck::configure()
     const std::string ccdbUrl = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "ccdbUrl", "o2-ccdb.internal");
     setCcdbUrl(ccdbUrl);
     const std::string mPathDeadChannelMap = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "pathDeadChannelMap", "FT0/Calib/DeadChannelMap");
-    std::map<std::string, std::string> metadata;
-    mDeadChannelMap = retrieveConditionAny<o2::fit::DeadChannelMap>(mPathDeadChannelMap, metadata, (long)-1);
+    mDeadChannelMap = retrieveConditionAny<o2::fit::DeadChannelMap>(mPathDeadChannelMap);
     for (unsigned chId = 0; chId < mDeadChannelMap->map.size(); chId++) {
       if (!mDeadChannelMap->isChannelAlive(chId)) {
         mIgnoreBins.insert(chId);

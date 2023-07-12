@@ -165,13 +165,8 @@ void PostProcessingRunner::runOverTimestamps(const std::vector<uint64_t>& timest
 void PostProcessingRunner::start(framework::ServiceRegistryRef dplServices)
 {
   if (dplServices.active<framework::RawDeviceService>()) {
-    mTaskConfig.activity.mId = computeRunNumber(dplServices, mTaskConfig.activity.mId);
-    mTaskConfig.activity.mType = computeRunType(dplServices, mTaskConfig.activity.mType);
-    mTaskConfig.activity.mPeriodName = computePeriodName(dplServices, mTaskConfig.activity.mPeriodName);
-    mTaskConfig.activity.mPassName = computePassName(mTaskConfig.activity.mPassName);
-    mTaskConfig.activity.mProvenance = computeProvenance(mTaskConfig.activity.mProvenance);
-    auto partitionName = computePartitionName(dplServices);
-    QcInfoLogger::setPartition(partitionName);
+    mTaskConfig.activity = computeActivity(dplServices, mTaskConfig.activity);
+    QcInfoLogger::setPartition(mTaskConfig.activity.mPartitionName);
   }
   QcInfoLogger::setRun(mTaskConfig.activity.mId);
 

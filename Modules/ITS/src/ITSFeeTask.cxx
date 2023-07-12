@@ -372,7 +372,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
       mRDHSummary->Fill(ifee, 2); // error
     if (summaryLaneStatus & (1 << 3))
       mRDHSummary->Fill(ifee, 3); // fault
-    if (summaryLaneStatus & (1 << 27)) {
+    if (summaryLaneStatus & (1 << 26)) {
       mRDHSummary->Fill(ifee, 4); // clock evt
       clockEvt = true;
     }

@@ -11,11 +11,11 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file TRDTrending.cxx
-/// \author      based on Piotr Konopka
+/// \file MIDTrending.cxx
+/// \author Valerie Ramillien     based on Piotr Konopka
 ///
 
-#include "TRD/TRDTrending.h"
+#include "MID/MIDTrending.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/DatabaseInterface.h"
 #include "QualityControl/MonitorObject.h"
@@ -39,12 +39,12 @@ using namespace o2::quality_control::core;
 using namespace o2::quality_control::repository;
 using namespace o2::quality_control::postprocessing;
 
-void TRDTrending::configure(const boost::property_tree::ptree& config)
+void MIDTrending::configure(const boost::property_tree::ptree& config)
 {
-  mConfig = TrendingTaskConfigTRD(getID(), config);
+  mConfig = TrendingTaskConfigMID(getID(), config);
 }
 
-void TRDTrending::initialize(Trigger, framework::ServiceRegistryRef services)
+void MIDTrending::initialize(Trigger, framework::ServiceRegistryRef services)
 {
   // Preparing data structure of TTree
   mTrend = std::make_unique<TTree>();
@@ -63,26 +63,27 @@ void TRDTrending::initialize(Trigger, framework::ServiceRegistryRef services)
 }
 
 // todo: see if OptimizeBaskets() indeed helps after some time
-void TRDTrending::update(Trigger t, framework::ServiceRegistryRef services)
+void MIDTrending::update(Trigger t, framework::ServiceRegistryRef services)
 {
   auto& qcdb = services.get<repository::DatabaseInterface>();
   trendValues(t, qcdb);
   generatePlots(qcdb);
 }
 
-void TRDTrending::finalize(Trigger, framework::ServiceRegistryRef services)
+void MIDTrending::finalize(Trigger, framework::ServiceRegistryRef services)
 {
-
   auto& qcdb = services.get<repository::DatabaseInterface>();
-  auto mo = std::make_shared<core::MonitorObject>(mTrend.get(), getName(), "o2::quality_control_modules::trd::TRDTrending", mConfig.detectorName);
+  auto mo = std::make_shared<core::MonitorObject>(mTrend.get(), getName(), "o2::quality_control_modules::mid::MIDTrending", mConfig.detectorName);
   mo->setIsOwner(false);
   qcdb.storeMO(mo);
   generatePlots(qcdb);
 }
 
-void TRDTrending::trendValues(const Trigger& t, repository::DatabaseInterface& qcdb)
+void MIDTrending::trendValues(const Trigger& t, repository::DatabaseInterface& qcdb)
 {
-  mTime = TDatime().Convert(); // ROOT expects seconds since epoch.
+  mTime = activity_helpers::isLegacyValidity(t.activity.mValidity)
+            ? t.timestamp / 1000
+            : t.activity.mValidity.getMax() / 1000; // ROOT expects seconds since epoch.
   mMetaData.runNumber = t.activity.mId;
   int count = 0;
 
@@ -100,7 +101,7 @@ void TRDTrending::trendValues(const Trigger& t, repository::DatabaseInterface& q
         std::map<std::string, std::string> entryMetadata = mo->getMetadataMap();  // full list of metadata as a map
         mMetaData.runNumber = std::stoi(entryMetadata[metadata_keys::runNumber]); // get and set run number
         ntreeentries = (Int_t)mTrend->GetEntries() + 1;
-        runlist.push_back(std::to_string(mMetaData.runNumber));
+        mRunList.push_back(std::to_string(mMetaData.runNumber));
       }
       TObject* obj = mo ? mo->getObject() : nullptr;
       if (obj) {
@@ -115,7 +116,7 @@ void TRDTrending::trendValues(const Trigger& t, repository::DatabaseInterface& q
   mTrend->Fill();
 }
 
-void TRDTrending::generatePlots(repository::DatabaseInterface& qcdb)
+void MIDTrending::generatePlots(repository::DatabaseInterface& qcdb)
 {
   if (mTrend->GetEntries() < 1) {
     ILOG(Info, Support) << "No entries in the trend so far, won't generate any plots." << ENDM;
@@ -124,19 +125,24 @@ void TRDTrending::generatePlots(repository::DatabaseInterface& qcdb)
 
   ILOG(Info, Support) << "Generating " << mConfig.plots.size() << " plots." << ENDM;
 
-  std::vector<std::unique_ptr<TCanvas>> mCanvasTRD;
+  std::vector<std::unique_ptr<TCanvas>> mCanvasMID;
   int mPlot = 0;
+
   for (const auto& plot : mConfig.plots) {
 
-    mCanvasTRD.push_back(std::make_unique<TCanvas>(plot.name.c_str(), plot.title.c_str()));
-    mCanvasTRD[mPlot].get()->cd();
+    // TEST VR
+    // if (plot.varexp.find("binContent") == std::string::npos)
+    //  continue;
+
+    mCanvasMID.push_back(std::make_unique<TCanvas>(plot.name.c_str(), plot.title.c_str()));
+    mCanvasMID[mPlot].get()->cd();
 
     mTrend->Draw(plot.varexp.c_str(), plot.selection.c_str(), plot.option.c_str());
 
-    if (auto histo = dynamic_cast<TH1*>(mCanvasTRD[mPlot].get()->GetPrimitive("htemp"))) {
+    if (auto histo = dynamic_cast<TH1*>(mCanvasMID[mPlot].get()->GetPrimitive("htemp"))) {
 
       histo->SetTitle(plot.title.c_str());
-      mCanvasTRD[mPlot]->Update();
+      mCanvasMID[mPlot]->Update();
       if (plot.varexp.find(":time") != std::string::npos) {
         histo->GetXaxis()->SetTimeDisplay(1);
 
@@ -151,8 +157,8 @@ void TRDTrending::generatePlots(repository::DatabaseInterface& qcdb)
       else if (plot.varexp.find(":runNumber") != std::string::npos) {
         histo->GetXaxis()->SetNdivisions(505);
 
-        for (int ir = 0; ir < (int)runlist.size(); ir++)
-          histo->GetXaxis()->SetBinLabel(ir + 1, runlist[ir].c_str());
+        for (int ir = 0; ir < (int)mRunList.size(); ir++)
+          histo->GetXaxis()->SetBinLabel(ir + 1, mRunList[ir].c_str());
       }
 
       histo->BufferEmpty();
@@ -161,12 +167,12 @@ void TRDTrending::generatePlots(repository::DatabaseInterface& qcdb)
       ILOG(Error, Devel) << "Could not get the processing histogram of the plot '" << plot.name << "'." << ENDM;
     }
 
-    mPlots[plot.name] = mCanvasTRD[mPlot].get();
+    mPlots[plot.name] = mCanvasMID[mPlot].get();
 
-    auto mo_trd = std::make_shared<MonitorObject>(mCanvasTRD[mPlot].get(), mConfig.taskName, "o2::quality_control_modules::trd::TRDTrending", mConfig.detectorName);
+    auto mo_mid = std::make_shared<MonitorObject>(mCanvasMID[mPlot].get(), mConfig.taskName, "o2::quality_control_modules::mid::MIDTrending", mConfig.detectorName);
 
-    mo_trd->setIsOwner(false);
-    qcdb.storeMO(mo_trd);
+    mo_mid->setIsOwner(false);
+    qcdb.storeMO(mo_mid);
 
     ++mPlot;
   }

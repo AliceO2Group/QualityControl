@@ -102,7 +102,14 @@ std::function<validity_time_t(void)> getCcdbSorTimeAccessor(uint64_t runNumber)
 
 std::function<validity_time_t(void)> getCcdbEorTimeAccessor(uint64_t runNumber)
 {
-  return [runNumber]() { return static_cast<validity_time_t>(ccdb::BasicCCDBManager::instance().getRunDuration(runNumber, false).second); };
+  return [runNumber]() {
+    return static_cast<validity_time_t>(ccdb::BasicCCDBManager::instance().getRunDuration(runNumber, false).second);
+  };
+}
+
+bool isLegacyValidity(ValidityInterval validity)
+{
+  return validity.isValid() && validity.delta() > 9ull * 365 * 24 * 60 * 60 * 1000ull;
 }
 
 } // namespace o2::quality_control::core::activity_helpers

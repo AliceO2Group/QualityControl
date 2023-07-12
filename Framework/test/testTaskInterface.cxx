@@ -202,7 +202,6 @@ TEST_CASE("retrieveCondition")
   auto* objectsManager = new ObjectsManager(taskConfig.taskName, taskConfig.className, taskConfig.detectorName, taskConfig.consulUrl, 0, true);
   test::TestTask testTask(objectsManager);
   testTask.setCcdbUrl("ccdb-test.cern.ch:8080");
-  testTask.loadCcdb();
   o2::emcal::BadChannelMap* bcm = testTask.testRetrieveCondition();
   CHECK(bcm->getChannelStatus(1) == o2::emcal::BadChannelMap::MaskType_t::GOOD_CELL);
   CHECK(bcm->getChannelStatus(3) == o2::emcal::BadChannelMap::MaskType_t::DEAD_CELL);
