@@ -1,64 +1,117 @@
 {
-    "qc": {
-      "config": {
-        "database": {
-          "implementation": "CCDB",
-          "host": "http://localhost:8083",
-          "username": "not_applicable",
-          "password": "not_applicable",
-          "name": "not_applicable"
-        },
-        "Activity": {
-          "number": "42",
-          "type": "2"
-        },
-        "monitoring": {
-          "url": "infologger:///debug?METRIC"
-        },
-        "consul": {
-          "url": "http://localhost:8500"
-        },
-        "conditionDB": {
-          "url": "http://localhost:8083"
-        }
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "#host": "ccdb-test.cern.ch:8080",
+        "host": "http://localhost:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
       },
-      "tasks": {
-        "DigitQcTask": {
-          "active": "true",
-          "className": "o2::quality_control_modules::fv0::DigitQcTask",
-          "moduleName": "QcFV0",
-          "detectorName": "FV0",
-          "cycleDurationSeconds": "60",
-          "maxNumberCycles": "-1",
-          "dataSource": {
-              "type": "direct",
-              "query": "digits:FV0/DIGITSBC/0;channels:FV0/DIGITSCH/0"
-            },
-          "taskParameters": {
-            "ChannelIDs": "1,2,3,4,5,6,7,8,9,10"
-          },
-          "location": "local",
-          "localMachines": [
-            "localhost"
-          ],
-          "remoteMachine": "localhost",
-          "remotePort": "30132",
-          "mergingMode": "entire"
-        }
+      "monitoring": {
+        "url": "infologger:///debug?qc"
       },
-      "checks": {
-        "DummyAnalysisCheck": {
-          "active": "true",
-          "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
-          "moduleName": "QcSkeleton",
-          "policy": "OnAny",
-          "detectorName": "FV0",
-          "dataSource": [{
+      "consul": {
+        "url": ""
+      },
+      "conditionDB": {
+        "url": "alice-ccdb.cern.ch"
+      },
+      "bookkeeping": {
+        "url": ""
+      }
+    },
+    "tasks": {
+      "DigitQcTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::fv0::DigitQcTask",
+        "moduleName": "QcFV0",
+        "detectorName": "FV0",
+        "cycleDurationSeconds": "300",
+        "maxNumberCycles": "-1",
+        "resetAfterCycles": "1",
+        "dataSource": {
+          "type": "direct",
+          "query": "digits:FV0/DIGITSBC/0;channels:FV0/DIGITSCH/0"
+        },
+        "taskParameters": {
+          "ChannelIDs": "0,1,2,3,4,5,6,7,8,9,10,11",
+          "ChannelIDsAmpVsTime": "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48",
+          "trgModeInnerOuterThresholdVar": "Ampl",
+          "trgThresholdNChannels": "2",
+          "trgThresholdCharge": "8",
+          "trgThresholdChargeInner": "4",
+          "trgThresholdChargeOuter": "4",
+          "trgChargeLevelLow": "10",
+          "trgChargeLevelHigh": "4095",
+          "minGateTimeForRatioHistogram": "-192",
+          "maxGateTimeForRatioHistogram": "192"
+        }
+      }
+    },
+    "checks": {
+      "CFDinTimeGateCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::fv0::GenericCheck",
+        "moduleName": "QcFV0",
+        "policy": "OnAny",
+        "detectorName": "FV0",
+        "dataSource": [
+          {
             "type": "Task",
             "name": "DigitQcTask",
-            "MOs": ["example"]
-          }]
+            "MOs": [
+              "EventsInGateTime"
+            ]
+          }
+        ],
+        "checkParameters": {
+          "thresholdWarningMinThresholdY": "0.8",
+          "thresholdErrorMinThresholdY": "0.6",
+          "ccdbUrl": "alice-ccdb.cern.ch"
+        }
+      },
+      "TrgValidationCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::fv0::TriggersSwVsTcmCheck",
+        "moduleName": "QcFV0",
+        "policy": "OnAny",
+        "detectorName": "FV0",
+        "dataSource": [
+          {
+            "type": "Task",
+            "name": "DigitQcTask",
+            "MOs": [
+              "TriggersSoftwareVsTCM"
+            ]
+          }
+        ],
+        "checkParameters": {
+            "ccdbUrl": "alice-ccdb.cern.ch"
+        }
+      },
+      "CFDinADCgateCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::fv0::CFDEffCheck",
+        "moduleName": "QcFV0",
+        "policy": "OnAny",
+        "detectorName": "FV0",
+        "dataSource": [
+          {
+            "type": "Task",
+            "name": "DigitQcTask",
+            "MOs": [
+              "CFD_efficiency"
+            ]
+          }
+        ],
+        "checkParameters": {
+          "thresholdWarning": "0.8",
+          "thresholdError": "0.6",
+          "ccdbUrl": "alice-ccdb.cern.ch"
         }
       }
     }
+  }
 }

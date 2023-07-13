@@ -584,11 +584,16 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
     for (const auto& feeHash : setFEEmodules) {
       mHistBCvsFEEmodules->Fill(static_cast<double>(digit.getIntRecord().bc), static_cast<double>(feeHash));
-      mHistBcVsFeeForOrATrg->Fill(static_cast<double>(digit.getIntRecord().bc), digit.mTriggers.getOrA());
-      mHistBcVsFeeForOrAOutTrg->Fill(static_cast<double>(digit.getIntRecord().bc), digit.mTriggers.getOrAOut());
-      mHistBcVsFeeForNChanTrg->Fill(static_cast<double>(digit.getIntRecord().bc), digit.mTriggers.getTrgNChan());
-      mHistBcVsFeeForChargeTrg->Fill(static_cast<double>(digit.getIntRecord().bc), digit.mTriggers.getTrgCharge());
-      mHistBcVsFeeForOrAInTrg->Fill(static_cast<double>(digit.getIntRecord().bc), digit.mTriggers.getOrAIn());
+      if (digit.mTriggers.getOrA())
+        mHistBcVsFeeForOrATrg->Fill(static_cast<double>(digit.getIntRecord().bc), static_cast<double>(feeHash));
+      if (digit.mTriggers.getOrAOut())
+        mHistBcVsFeeForOrAOutTrg->Fill(static_cast<double>(digit.getIntRecord().bc), static_cast<double>(feeHash));
+      if (digit.mTriggers.getTrgNChan())
+        mHistBcVsFeeForNChanTrg->Fill(static_cast<double>(digit.getIntRecord().bc), static_cast<double>(feeHash));
+      if (digit.mTriggers.getTrgCharge())
+        mHistBcVsFeeForChargeTrg->Fill(static_cast<double>(digit.getIntRecord().bc), static_cast<double>(feeHash));
+      if (digit.mTriggers.getOrAIn())
+        mHistBcVsFeeForOrAInTrg->Fill(static_cast<double>(digit.getIntRecord().bc), static_cast<double>(feeHash));
       mHistOrbitVsFEEmodules->Fill(static_cast<double>(digit.getIntRecord().orbit % sOrbitsPerTF), static_cast<double>(feeHash));
     }
 
