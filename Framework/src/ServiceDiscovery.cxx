@@ -25,27 +25,29 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/io_service.hpp>
+#include <iostream>
+#include <boost/system/error_code.hpp>
+#include <boost/system/system_error.hpp>
 
 using boost::asio::ip::tcp;
-
+using namespace boost::system;
 namespace o2::quality_control::core
 {
 
 ServiceDiscovery::ServiceDiscovery(const std::string& url, const std::string& name, const std::string& id, const std::string& healthEndUrl)
   : curlHandle(initCurl(), &ServiceDiscovery::deleteCurl), mConsulUrl(url), mName(name), mId(id), mHealthUrl(healthEndUrl)
 {
-  // parameter check
-  if (mHealthUrl.find(':') == std::string::npos) {
-    mHealthUrl = GetDefaultUrl();
-  }
-  if (_register("")) {
-    mHealthThread = std::thread([=] {
+  mHealthUrl = mHealthUrl.empty() ? boost::asio::ip::host_name() : mHealthUrl;
+
+  mHealthThread = std::thread([=] {
 #ifdef __linux__
-      std::string threadName = "QC/SrvcDiscov";
-      pthread_setname_np(pthread_self(), threadName.c_str());
+    std::string threadName = "QC/SrvcDiscov";
+    pthread_setname_np(pthread_self(), threadName.c_str());
 #endif
-      runHealthServer(std::stoi(mHealthUrl.substr(mHealthUrl.find(":") + 1)));
-    });
+    runHealthServer();
+  });
+  if (!_register("")) {
+    ILOG(Error, Support) << "Could not register to ServiceDiscovery." << ENDM;
   }
 }
 
@@ -94,7 +96,7 @@ bool ServiceDiscovery::_register(const std::string& objects)
   check.put("Name", "Health check " + mId);
   check.put("Interval", "5s");
   check.put("DeregisterCriticalServiceAfter", "1m");
-  check.put("TCP", mHealthUrl);
+  check.put("TCP", mHealthUrl + ":" + std::to_string(mHealthPort));
   checks.push_back(std::make_pair("", check));
 
   pt.put("Name", mName);
@@ -114,7 +116,7 @@ void ServiceDiscovery::deregister()
   ILOG(Debug, Devel) << "Deregistration from ServiceDiscovery" << ENDM;
 }
 
-void ServiceDiscovery::runHealthServer(unsigned int port)
+void ServiceDiscovery::runHealthServer()
 {
   using boost::asio::ip::tcp;
   mThreadRunning = true;
@@ -126,14 +128,47 @@ void ServiceDiscovery::runHealthServer(unsigned int port)
   context.setField(infoContext::FieldName::System, "QC");
   threadInfoLogger.setContext(context);
 
+  // Find a free port and create the endpoint and the acceptor
+  boost::asio::io_service io_service;
+  tcp::acceptor* acceptor = nullptr;
+  size_t port = 0;
+  std::random_device rd;  // obtain a random number from hardware
+  std::mt19937 gen(rd()); // seed the generator
+  size_t rangeLength = HealthPortRangeEnd - HealthPortRangeStart + 1;
+  std::uniform_int_distribution<> distr(0, rangeLength - 1); // define the inclusive range
+  size_t index = distr(gen);                                 // get a random index in the range
+  size_t cycle = 0;                                          // count how many ports we tried
+  while (cycle < rangeLength) {                              // until we exhaust the range or we find a free port
+    try {
+      index = (index + 1) % rangeLength; // pick the next index
+      port = HealthPortRangeStart + index;
+      ILOG(Debug, Trace) << "ServiceDiscovery test port: " << port << ENDM;
+      cycle++;
+
+      tcp::endpoint endpoint(tcp::v4(), port);
+      acceptor = new tcp::acceptor(io_service, endpoint);
+    } catch (boost::system::system_error& e) {
+      ILOG(Debug, Trace) << "ServiceDiscovery::runHealthServer - cound not bind to " << port << ENDM;
+      continue; // try the next one
+    }
+    // if we reach this point it means that we could bind
+    mHealthPort = port;
+    ILOG(Debug, Devel) << "ServiceDiscovery selected port: " << mHealthPort << ENDM;
+    break;
+  }
+
+  if (cycle == rangeLength) {
+    ILOG(Error, Support) << "Could not find a free port for the ServiceDiscovery, aborting the ServiceDiscovery health check" << ENDM;
+    return;
+  }
+
+  // run the thread
   try {
-    boost::asio::io_service io_service;
-    tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), port));
     boost::asio::deadline_timer timer(io_service);
     while (mThreadRunning) {
       io_service.reset();
       timer.expires_from_now(boost::posix_time::seconds(1));
-      acceptor.async_accept([this](boost::system::error_code ec, tcp::socket socket) {
+      acceptor->async_accept([this](boost::system::error_code ec, tcp::socket socket) {
       });
       timer.async_wait([&](boost::system::error_code ec) {
         io_service.stop();
@@ -174,49 +209,6 @@ bool ServiceDiscovery::send(const std::string& path, std::string&& post)
     return false;
   }
   return true;
-}
-
-// https://stackoverflow.com/questions/33358321/using-c-and-boost-or-not-to-check-if-a-specific-port-is-being-used
-bool ServiceDiscovery::PortInUse(unsigned short port)
-{
-  boost::asio::io_service svc;
-  tcp::acceptor a(svc);
-
-  boost::system::error_code ec;
-  a.open(tcp::v4(), ec) || a.bind({ tcp::v4(), port }, ec);
-
-  return ec == boost::asio::error::address_in_use;
-}
-
-size_t ServiceDiscovery::GetHealthPort()
-{
-  // inspired by https://stackoverflow.com/questions/7560114/random-number-c-in-some-range/7560151
-  size_t port;
-  std::random_device rd;  // obtain a random number from hardware
-  std::mt19937 gen(rd()); // seed the generator
-  size_t rangeLength = HealthPortRangeEnd - HealthPortRangeStart + 1;
-  std::uniform_int_distribution<> distr(0, rangeLength - 1); // define the inclusive range
-
-  size_t index = distr(gen); // get a random index in the range
-  port = HealthPortRangeStart + index;
-  size_t cycle = 1;                                // count how many ports we tried
-  while (cycle < rangeLength && PortInUse(port)) { // if the port is in use and we did not go through the whole range
-    index = (index + 1) % rangeLength;             // pick the next index
-    port = HealthPortRangeStart + index;
-    cycle++;
-  }
-  if (cycle == rangeLength) {
-    ILOG(Error, Support) << "Could not find a free port for the ServiceDiscovery" << ENDM;
-    // we keep the last port but all calls will fail.
-  } else {
-    ILOG(Debug, Devel) << "ServiceDiscovery selected port: " << port << ENDM;
-  }
-  return port;
-}
-
-std::string ServiceDiscovery::GetDefaultUrl(size_t port) ///< Provides default health check URL
-{
-  return boost::asio::ip::host_name() + ":" + std::to_string(port);
 }
 
 } // namespace o2::quality_control::core
