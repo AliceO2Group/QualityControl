@@ -25,11 +25,13 @@
 #include "QualityControl/runnerUtils.h"
 #include "QualityControl/ConfigParamGlo.h"
 #include "QualityControl/MonitorObjectCollection.h"
+#include "QualityControl/Bookkeeping.h"
 
 #include <utility>
 #include <Framework/DataAllocator.h>
 #include <Framework/DataTakingContext.h>
 #include <CommonUtils/ConfigurableParam.h>
+#include <TSystem.h>
 
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::repository;
@@ -89,6 +91,7 @@ void PostProcessingRunner::init(const PostProcessingRunnerConfig& runnerConfig, 
   if (mPublicationCallback == nullptr) {
     mPublicationCallback = publishToRepository(*mDatabase);
   }
+  Bookkeeping::getInstance().init(runnerConfig.bookkeepingUrl);
 
   // setup user's task
   ILOG(Debug, Devel) << "Creating a user task '" << mTaskConfig.taskName << "'" << ENDM;
@@ -166,6 +169,11 @@ void PostProcessingRunner::start(framework::ServiceRegistryRef dplServices)
     QcInfoLogger::setPartition(mTaskConfig.activity.mPartitionName);
   }
   QcInfoLogger::setRun(mTaskConfig.activity.mId);
+
+  // register ourselves to the BK
+  if (gSystem->Getenv("O2_QC_REGISTER_IN_BK")) { // until we are sure it works, we have to turn it on
+    Bookkeeping::getInstance().registerProcess(mTaskConfig.activity.mId, mRunnerConfig.taskName, mRunnerConfig.detectorName, bookkeeping::DPL_PROCESS_TYPE_QC_POSTPROCESSING, "");
+  }
 
   if (mTaskState == TaskState::Created || mTaskState == TaskState::Finished) {
     mInitTriggers = trigger_helpers::createTriggers(mTaskConfig.initTriggers, mTaskConfig);
@@ -256,6 +264,7 @@ PostProcessingRunnerConfig PostProcessingRunner::extractConfig(const CommonSpec&
     ppTaskSpec.detectorName,
     commonSpec.database,
     commonSpec.consulUrl,
+    commonSpec.bookkeepingUrl,
     commonSpec.infologgerDiscardParameters,
     commonSpec.postprocessingPeriod,
     "",
