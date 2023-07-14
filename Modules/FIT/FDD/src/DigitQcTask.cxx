@@ -654,7 +654,7 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
       setFEEmodules.insert(mChID2PMhash[chData.mPMNumber]);
 
-      if (chIsVertexEvent(chData, false)) {
+      if (chIsVertexEvent(chData, true)) {
         if (!mMapPMhash2isAside[mChID2PMhash[static_cast<uint8_t>(chData.mPMNumber)]]) {
           pmSumTimeC += chData.mTime;
           pmNChanC++;
