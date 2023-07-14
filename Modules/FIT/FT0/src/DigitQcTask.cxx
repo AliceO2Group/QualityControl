@@ -553,9 +553,9 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
     for (const auto& entry : mapPMhash2sumAmpl) {
       if (mMapPMhash2isAside[entry.first])
-        pmSumAmplA += std::lround(static_cast<int>(entry.second / 8.));
+        pmSumAmplA += (entry.second >> 3);
       else
-        pmSumAmplC += std::lround(static_cast<int>(entry.second / 8.));
+        pmSumAmplC += (entry.second >> 3);
     }
 
     auto pmNChan = pmNChanA + pmNChanC;
