@@ -38,6 +38,7 @@ class Bookkeeping
 
   void init(const std::string& url);
   void populateActivity(Activity& activity, size_t runNumber);
+  void registerProcess(int runNumber, const std::string& name, const std::string& detector, bookkeeping::DplProcessType type, const std::string& args);
 
  private:
   Bookkeeping() = default;

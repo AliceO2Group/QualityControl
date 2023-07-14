@@ -3,7 +3,7 @@
     "config": {
       "database": {
         "implementation": "CCDB",
-        "host": "ali-qcdb.cern.ch:8083",
+        "host": "alio2-cr1-hv-mvs00:8083",
         "username": "not_applicable",
         "password": "not_applicable",
         "name": "not_applicable"
@@ -12,13 +12,13 @@
         "url": "influxdb-unix:///tmp/telegraf.sock"
       },
       "consul": {
-        "url": "http://localhost:8500"
+        "url": "http://alio2-cr1-hv-mvs00:8500"
       },
       "conditionDB": {
         "url": "o2-ccdb.internal"
       },
       "bookkeeping": {
-        "url": "ali-bookkeeping:4001"
+        "url": ""
       }
     },
     "tasks": {
@@ -34,14 +34,14 @@
           "query": "digits:CPV/DIGITS/0;dtrigrec:CPV/DIGITTRIGREC/0;clusters:CPV/CLUSTERS/0;ctrigrec:CPV/CLUSTERTRIGRECS/0;calibdigits:CPV/CALIBDIGITS/0;rawerrors:CPV/RAWHWERRORS/0;peds:CPV/CPV_Pedestals;badmap:CPV/CPV_BadMap;gains:CPV/CPV_Gains"
         },
         "taskParameters": {
-          "ccdbCheckInterval": "10",
+          "ccdbCheckInterval": "1000",
           "isAsyncMode": "0"
         },
         "location": "local",
         "localMachines": [
           "localhost"
         ],
-        "remoteMachine": "alio2-cr1-qme07.cern.ch",
+        "remoteMachine": "alio2-cr1-qc04.cern.ch",
         "remotePort": "47768",
         "mergingMode": "delta",
         "localControl": "odc"
@@ -119,10 +119,10 @@
           "mMinEventsToCheckDigitMap4": "10000",
           "mNCold3GassiplexAllowed2": "30",
           "mNCold3GassiplexAllowed3": "10",
-          "mNCold3GassiplexAllowed4": "50",
+          "mNCold3GassiplexAllowed4": "17",
           "mNHot3GassiplexAllowed2": "10",
           "mNHot3GassiplexAllowed3": "10",
-          "mNHot3GassiplexAllowed4": "20",
+          "mNHot3GassiplexAllowed4": "14",
           "mHot3GassiplexCriterium2": "2.5",
           "mHot3GassiplexCriterium3": "2.5",
           "mHot3GassiplexCriterium4": "2.5",
@@ -181,10 +181,10 @@
           "mMaxCluEnergyMean4": "400",
           "mMinClusterSize2": "1.5",
           "mMinClusterSize3": "1.7",
-          "mMinClusterSize4": "1.5",
-          "mMaxClusterSize2": "10.",
-          "mMaxClusterSize3": "10.",
-          "mMaxClusterSize4": "10."
+          "mMinClusterSize4": "1.7",
+          "mMaxClusterSize2": "2.5",
+          "mMaxClusterSize3": "2.5",
+          "mMaxClusterSize4": "2.5"
         }
       },
       "CalibDigitsCheck": {
@@ -211,9 +211,9 @@
           "mAmplitudeRangeR2": "1000",
           "mAmplitudeRangeR3": "1000",
           "mAmplitudeRangeR4": "1000",
-          "mMinEventsToCheckAmplitude2": "1000",
-          "mMinEventsToCheckAmplitude3": "1000",
-          "mMinEventsToCheckAmplitude4": "1000",
+          "mMinEventsToCheckAmplitude2": "10000",
+          "mMinEventsToCheckAmplitude3": "10000",
+          "mMinEventsToCheckAmplitude4": "10000",
           "mMinAmplitudeMean2": "50",
           "mMinAmplitudeMean3": "50",
           "mMinAmplitudeMean4": "50",
@@ -253,7 +253,7 @@
         "resumeTrend": "false",
         "producePlotsOnUpdate": "true",
         "initTrigger": [
-          "once"
+          "newobject:qcdb:CPV/MO/PhysicsOnEPNs/NDigitsInEventM2M3M4"
         ],
         "updateTrigger": [
           "newobject:qcdb:CPV/MO/PhysicsOnEPNs/NDigitsInEventM2M3M4"

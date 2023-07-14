@@ -19,10 +19,8 @@
 
 #include "QualityControl/QcInfoLogger.h"
 #include "Skeleton/SkeletonTask.h"
-#include <Framework/InputRecord.h>
 #include <Framework/InputRecordWalker.h>
 #include <Framework/DataRefUtils.h>
-#include "DataFormatsParameters/ECSDataAdapters.h"
 
 namespace o2::quality_control_modules::skeleton
 {
@@ -64,14 +62,14 @@ void SkeletonTask::startOfActivity(const Activity& activity)
   ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
   mHistogram->Reset();
 
-  // Get the proper parameter for the given activity
-  int runType = activity.mType; // get the type for this run
-  // convert it to a string (via a string_view as this is what we get from O2)
-  string_view runTypeStringView = o2::parameters::GRPECS::RunTypeNames[runType];
-  string runTypeString = { runTypeStringView.begin(), runTypeStringView.end() };
-  // get the param
-  if (auto param = mCustomParameters.atOptional("myOwnKey", runTypeString)) {
-    ILOG(Debug, Devel) << "Custom parameter - myOwnKey: " << param.value() << ENDM;
+  // Example: retrieve custom parameters
+  std::string parameter;
+  // first we try for the current activity. It returns an optional.
+  if (auto param = mCustomParameters.atOptional("myOwnKey", activity)) {
+    parameter = param.value(); // we got a value
+  } else {
+    // we did not get a value. We ask for the "default" runtype and beamtype and we specify a default return value.
+    parameter = mCustomParameters.atOrDefaultValue("myOwnKey", "some default");
   }
 }
 

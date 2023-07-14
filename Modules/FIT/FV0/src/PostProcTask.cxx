@@ -86,7 +86,7 @@ void PostProcTask::configure(const boost::property_tree::ptree& config)
   node = config.get_child_optional(Form("%s.custom.timestampSourceLhcIf", configPath));
   if (node) {
     mTimestampSourceLhcIf = node.get_ptr()->get_child("").get_value<std::string>();
-    if (mTimestampSourceLhcIf == "last" || mTimestampSourceLhcIf == "trigger" || mTimestampSourceLhcIf == "metadata") {
+    if (mTimestampSourceLhcIf == "last" || mTimestampSourceLhcIf == "trigger" || mTimestampSourceLhcIf == "metadata" || mTimestampSourceLhcIf == "validUntil") {
       ILOG(Debug, Support) << "configure() : using timestampSourceLhcIf = \"" << mTimestampSourceLhcIf << "\"" << ENDM;
     } else {
       auto prev = mTimestampSourceLhcIf;
@@ -205,7 +205,7 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
     }
   }
 
-  mHistBcPatternFee = std::make_unique<TH2F>("bcPatternForFeeModules", "BC pattern", sBCperOrbit, 0, sBCperOrbit, 13, 0, 13);
+  mHistBcPatternFee = std::make_unique<TH2F>("bcPatternForFeeModules", "BC pattern", sBCperOrbit, 0, sBCperOrbit, mMapFEE2hash.size(), 0, mMapFEE2hash.size());
   mHistBcFeeOutOfBunchColl = std::make_unique<TH2F>("OutOfBunchColl_BCvsFeeModules", "BC vs FEE Modules for out-of-bunch collisions;BC;FEE Modules", sBCperOrbit, 0, sBCperOrbit, mMapFEE2hash.size(), 0, mMapFEE2hash.size());
   mHistBcFeeOutOfBunchCollForOrATrg = std::make_unique<TH2F>("OutOfBunchColl_BCvsFeeModulesForOrATrg", "BC vs FEE Modules for out-of-bunch collisions for OrA trg;BC;FEE Modules", sBCperOrbit, 0, sBCperOrbit, mMapFEE2hash.size(), 0, mMapFEE2hash.size());
   mHistBcFeeOutOfBunchCollForOrAOutTrg = std::make_unique<TH2F>("OutOfBunchColl_BCvsFeeModulesForOrAOutTrg", "BC vs FEE Modules for out-of-bunch collisions for OrAOut trg;BC;FEE Modules", sBCperOrbit, 0, sBCperOrbit, mMapFEE2hash.size(), 0, mMapFEE2hash.size());
@@ -428,6 +428,8 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
     ts = -1;
   } else if (mTimestampSourceLhcIf == "trigger") {
     ts = t.timestamp;
+  } else if (mTimestampSourceLhcIf == "validUntil") {
+    ts = t.activity.mValidity.getMax();
   } else if (mTimestampSourceLhcIf == "metadata") {
     for (auto metainfo : moBCvsTriggers->getMetadataMap()) {
       if (metainfo.first == "TFcreationTime")
