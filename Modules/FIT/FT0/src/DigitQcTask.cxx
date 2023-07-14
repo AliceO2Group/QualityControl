@@ -630,7 +630,7 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
         if (mTrgModeThresholdVar == TrgModeThresholdVar::kAmpl) {
           if (pmSumAmplA + pmSumAmplC > 2 * mTrgThresholdCenA)
             mMapTrgSoftware[o2::ft0::Triggers::bitCen] = true;
-          else if (pmSumAmplA + pmSumAmplC > 2 * mTrgThresholdSCenA && !mMapTrgSoftware[o2::ft0::Triggers::bitCen])
+          else if (pmSumAmplA + pmSumAmplC > 2 * mTrgThresholdSCenA)
             mMapTrgSoftware[o2::ft0::Triggers::bitSCen] = true;
         } else if (mTrgModeThresholdVar == TrgModeThresholdVar::kNchannels) {
           if (pmNChanA + pmNChanC >= mTrgThresholdCenA)
