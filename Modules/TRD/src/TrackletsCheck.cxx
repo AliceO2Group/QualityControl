@@ -68,8 +68,8 @@ void TrackletsCheck::retrieveCCDBSettings()
 
 void TrackletsCheck::configure()
 {
-  //get ccdb values
-  //fill mask spectra
+  // get ccdb values
+  // fill mask spectra
   retrieveCCDBSettings();
 }
 
@@ -111,8 +111,6 @@ Quality TrackletsCheck::check(std::map<std::string, std::shared_ptr<MonitorObjec
 }
 
 std::string TrackletsCheck::getAcceptedType() { return "TH1"; }
-
-
 
 void TrackletsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
