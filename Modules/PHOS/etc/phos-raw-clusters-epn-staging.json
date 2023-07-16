@@ -1,0 +1,385 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "alio2-cr1-hv-mvs00:8083",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "monitoring": {
+        "url": "influxdb-unix:///tmp/telegraf.sock"
+      },
+      "consul": {
+        "url": "http://alio2-cr1-hv-mvs00:8500"
+      },
+      "conditionDB": {
+        "url": "o2-ccdb.internal"
+      },
+      "bookkeeping": {
+        "url": ""
+      }
+    },
+    "tasks": {
+      "RawTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::phos::RawQcTask",
+        "moduleName": "QcPHOS",
+        "detectorName": "PHS",
+        "cycleDurationSeconds": "30",
+        "maxNumberCycles": "-1",
+        "dataSource": {
+          "type": "direct",
+          "query": "rawerr:PHS/RAWHWERRORS;cells:PHS/CELLS/0;cellstr:PHS/CELLTRIGREC/0"
+        },
+        "taskParameters": {
+          "physics": "on"
+        },
+        "location": "local",
+        "localMachines": [
+          "localhost"
+        ],
+        "remoteMachine": "alio2-cr1-qc04.cern.ch",
+        "remotePort": "47757",
+        "mergingMode": "delta",
+        "localControl": "odc"
+      },
+      "ClusterTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::phos::ClusterQcTask",
+        "moduleName": "QcPHOS",
+        "detectorName": "PHS",
+        "cycleDurationSeconds": "30",
+        "maxNumberCycles": "-1",
+        "dataSource": {
+          "type": "direct",
+          "query": "clusters:PHS/CLUSTERS;clustertr:PHS/CLUSTERTRIGREC"
+        },
+        "taskParameters": {
+          "": ""
+        },
+        "location": "local",
+        "localMachines": [
+          "localhost"
+        ],
+        "remoteMachine": "alio2-cr1-qc04.cern.ch",
+        "remotePort": "47758",
+        "mergingMode": "delta",
+        "localControl": "odc"
+      }
+    },
+    "checks": {
+      "CellsIncrease": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::IncreasingEntries",
+        "moduleName": "QcCommon",
+        "policy": "OnAny",
+        "detectorName": "PHS",
+        "checkParameters": {
+          "mustIncrease": "true"
+        },
+        "dataSource": [
+          {
+            "type": "Task",
+            "name": "RawTask",
+            "MOs": [
+              "CellHGOccupancyM1",
+              "CellHGOccupancyM2",
+              "CellHGOccupancyM3",
+              "CellHGOccupancyM4"
+            ]
+          }
+        ]
+      },
+      "ClustersIncrease": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::IncreasingEntries",
+        "moduleName": "QcCommon",
+        "policy": "OnAny",
+        "detectorName": "PHS",
+        "checkParameters": {
+          "mustIncrease": "true"
+        },
+        "dataSource": [
+          {
+            "type": "Task",
+            "name": "ClusterTask",
+            "MOs": [
+              "SpectrumM1",
+              "SpectrumM2",
+              "SpectrumM3",
+              "SpectrumM4"
+            ]
+          }
+        ]
+      },
+      "ErrorsCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::phos::RawCheck",
+        "moduleName": "QcPHOS",
+        "policy": "OnAny",
+        "detectorName": "PHS",
+        "checkParameters": {
+          "mErrorOccuranceThreshold0": "0.1",
+          "mErrorOccuranceThreshold1": "0.1",
+          "mErrorOccuranceThreshold2": "0.1",
+          "mErrorOccuranceThreshold3": "0.1",
+          "mErrorOccuranceThreshold4": "0.1"
+        },
+        "dataSource": [
+          {
+            "type": "Task",
+            "name": "RawTask",
+            "MOs": [
+              "ErrorTypeOccurance"
+            ]
+          }
+        ]
+      },
+      "CellsCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::phos::RawCheck",
+        "moduleName": "QcPHOS",
+        "policy": "OnAny",
+        "detectorName": "PHS",
+        "checkParameters": {
+          "mToleratedBadChannelsM1": "1",
+          "mToleratedBadChannelsM2": "1",
+          "mToleratedBadChannelsM3": "1",
+          "mToleratedBadChannelsM4": "1"
+        },
+        "dataSource": [
+          {
+            "type": "Task",
+            "name": "RawTask",
+            "MOs": [
+              "CellHGOccupancyM1",
+              "CellHGOccupancyM2",
+              "CellHGOccupancyM3",
+              "CellHGOccupancyM4"
+            ]
+          }
+        ]
+      },
+      "ClustersCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::phos::ClusterCheck",
+        "moduleName": "QcPHOS",
+        "policy": "OnAny",
+        "detectorName": "PHS",
+        "checkParameters": {
+          "mMaxCluEnergyMean2": "1.0",
+          "mMinCluEnergyMean1": "9.0"
+        },
+        "dataSource": [
+          {
+            "type": "Task",
+            "name": "ClusterTask",
+            "MOs": [
+              "SpectrumM1",
+              "SpectrumM2",
+              "SpectrumM3",
+              "SpectrumM4"
+            ]
+          }
+        ]
+      }
+    },
+    "postprocessing": {
+      "PhysicsTrending": {
+        "active": "true",
+        "className": "o2::quality_control::postprocessing::SliceTrendingTask",
+        "moduleName": "QualityControl",
+        "detectorName": "PHS",
+        "resumeTrend": "false",
+        "producePlotsOnUpdate": "true",
+        "initTrigger": [
+          "once"
+        ],
+        "updateTrigger": [
+          "newobject:qcdb:PHS/MO/ClusterTask/SpectrumM1"
+        ],
+        "stopTrigger": [
+          "usercontrol"
+        ],
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "PHS/MO/ClusterTask",
+            "names": [
+              "SpectrumM1",
+              "SpectrumM2",
+              "SpectrumM3",
+              "SpectrumM4"
+            ],
+            "reductorName": "o2::quality_control_modules::common::TH1SliceReductor",
+            "axisDivision": [
+              [
+                "1.",
+                "10."
+              ]
+            ],
+            "moduleName": "QcCommon"
+          }
+        ],
+        "plots": [
+          {
+            "name": "mean_of_cluEnergyM1",
+            "title": "Trend of mean energy of >1GeV clusters",
+            "varexp": "SpectrumM1.meanX:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "errMeanX:0.",
+            "graphAxisLabel": "Mean energy:time",
+            "graphYRange": "0:10"
+          },
+          {
+            "name": "mean_of_cluEnergyM2",
+            "title": "Trend of mean energy of >1GeV clusters",
+            "varexp": "SpectrumM2.meanX:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "errMeanX:0.",
+            "graphAxisLabel": "Mean energy:time",
+            "graphYRange": "0:10"
+          },
+          {
+            "name": "mean_of_cluEnergyM3",
+            "title": "Trend of mean energy of >1GeV clusters",
+            "varexp": "SpectrumM3.meanX:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "errMeanX:0.",
+            "graphAxisLabel": "Mean energy:time",
+            "graphYRange": "0:10"
+          },
+          {
+            "name": "mean_of_cluEnergyM4",
+            "title": "Trend of mean energy of >1GeV clusters",
+            "varexp": "SpectrumM4.meanX:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "errMeanX:0.",
+            "graphAxisLabel": "Mean energy:time",
+            "graphYRange": "0:10"
+          }
+        ]
+      },
+      "QualityTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::QualityTask",
+        "moduleName": "QcCommon",
+        "detectorName": "PHS",
+        "qualityGroups": [
+          {
+            "name": "global",
+            "title": "GLOBAL PHS QUALITY",
+            "path": "PHS/QO/GlobalQuality",
+            "ignoreQualitiesDetails": [
+              "Null",
+              "Good",
+              "Medium",
+              "Bad"
+            ],
+            "inputObjects": [
+              {
+                "name": "GlobalQuality",
+                "title": "Global PHS Quality",
+                "messageBad": "Inform PHS on-call",
+                "messageMedium": "Inform PHS on-call",
+                "messageGood": "All checks are OK",
+                "messageNull": "Not enough stat"
+              }
+            ]
+          },
+          {
+            "name": "details",
+            "title": "PHS DETAILS",
+            "path": "PHS/QO",
+            "ignoreQualitiesDetails": [],
+            "inputObjects": [
+              {
+                "name": "CellsIncrease",
+                "title": "Number of cells increases",
+                "messageBad": "Entries are not increasing in last cycle",
+                "messageNull": ""
+              },
+              {
+                "name": "ClustersIncrease",
+                "title": "Number of clusters increases",
+                "messageBad": "Entries are not increasing in last cycle",
+                "messageNull": ""
+              },
+              {
+                "name": "CellsCheck",
+                "title": "Cells check",
+                "messageBad": "Inform PHS on-call",
+                "messageMedium": "Inform PHS on-call",
+                "messageGood": "",
+                "messageNull": ""
+              },
+              {
+                "name": "ClustersCheck",
+                "title": "Clusters check",
+                "messageBad": "Inform PHS on-call",
+                "messageMedium": "Inform PHS on-call",
+                "messageGood": "",
+                "messageNull": "Not enough stat"
+              },
+              {
+                "name": "ErrorsCheck",
+                "title": "Errors check",
+                "messageBad": "Inform PHS on-call",
+                "messageMedium": "Inform PHS on-call",
+                "messageGood": "",
+                "messageNull": ""
+              }
+            ]
+          }
+        ],
+        "initTrigger": [
+          "once"
+        ],
+        "updateTrigger": [
+          "newobject:qcdb:PHS/QO/GlobalQuality/GlobalQuality"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      }
+    },
+    "aggregators": {
+      "GlobalQuality": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::WorstOfAllAggregator",
+        "moduleName": "QcCommon",
+        "policy": "OnAll",
+        "detectorName": "PHS",
+        "dataSource": [
+          {
+            "type": "Check",
+            "name": "CellsIncrease"
+          },
+          {
+            "type": "Check",
+            "name": "ClustersIncrease"
+          },
+          {
+            "type": "Check",
+            "name": "CellsCheck"
+          },
+          {
+            "type": "Check",
+            "name": "ClustersCheck"
+          },
+          {
+            "type": "Check",
+            "name": "ErrorsCheck"
+          }
+        ]
+      }
+    }
+  },
+  "dataSamplingPolicies": []
+}

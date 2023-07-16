@@ -55,6 +55,7 @@ class Ccdb:
     counter_deleted: int = 0
     counter_validity_updated: int = 0
     counter_preserved: int = 0
+    set_adjustable_eov: bool = False  # if True, set the metadata adjustableEOV before change validity
 
     def __init__(self, url):
         logger.info(f"Instantiate CCDB at {url}")
@@ -188,14 +189,17 @@ class Ccdb:
             logger.debug(f"{metadata}")
             for key in metadata:
                 full_path += key + "=" + metadata[key] + "&"
+        if self.set_adjustable_eov:
+            logger.debug(f"As the parameter force is set, we add metadata adjustableEOV")
+            full_path += "adjustableEOV=1&"
         try:
             headers = {'Connection': 'close'}
             r = requests.put(full_path, headers=headers)
             r.raise_for_status()
             self.counter_validity_updated += 1
         except requests.exceptions.RequestException as e:  
-            print(e)
-            sys.exit(1)  # really ?
+            logging.error(f"Exception in updateValidity: {traceback.format_exc()}")
+
 
     def putVersion(self, version: ObjectVersion, data):
         '''

@@ -374,7 +374,7 @@ void InfrastructureGenerator::generateDataSamplingPolicyLocalProxyBind(framework
   std::string proxyName = policyName + "-proxy";
   std::string channelName = policyName + "-" + localMachine;
   std::string channelConfig = "name=" + channelName + ",type=pub,method=bind,address=tcp://*:" + localPort +
-                              ",rateLogging=60,transport=zeromq,sndBufSize=4";
+                              ",rateLogging=60,transport=zeromq,sndBufSize=4,autoBind=false";
   auto channelSelector = [channelName](InputSpec const&, const std::unordered_map<std::string, std::vector<fair::mq::Channel>>&) {
     return channelName;
   };
@@ -445,7 +445,7 @@ void InfrastructureGenerator::generateDataSamplingPolicyRemoteProxyBind(framewor
   const std::string& channelName = policyName;
   const std::string& proxyName = channelName; // channel name has to match proxy name
 
-  std::string channelConfig = "name=" + channelName + ",type=sub,method=bind,address=tcp://*:" + remotePort + ",rateLogging=60,transport=zeromq,rcvBufSize=1";
+  std::string channelConfig = "name=" + channelName + ",type=sub,method=bind,address=tcp://*:" + remotePort + ",rateLogging=60,transport=zeromq,rcvBufSize=1,autoBind=false";
 
   auto proxy = specifyExternalFairMQDeviceProxy(
     proxyName.c_str(),
@@ -491,7 +491,7 @@ void InfrastructureGenerator::generateLocalTaskRemoteProxy(framework::WorkflowSp
   }
 
   std::string channelConfig = "name=" + channelName + ",type=sub,method=bind,address=tcp://*:" + remotePort +
-                              ",rateLogging=60,transport=zeromq,rcvBufSize=1";
+                              ",rateLogging=60,transport=zeromq,rcvBufSize=1,autoBind=false";
 
   auto proxy = specifyExternalFairMQDeviceProxy(
     proxyName.c_str(),

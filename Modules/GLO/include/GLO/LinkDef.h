@@ -7,5 +7,5 @@
 #pragma link C++ class o2::quality_control_modules::glo::ITSTPCMatchingTask + ;
 #pragma link C++ class o2::quality_control_modules::glo::DataCompressionQcTask + ;
 
-#pragma link C++ class o2::quality_control_modules::glo::MeanVertexPostProcessing+;
+#pragma link C++ class o2::quality_control_modules::glo::MeanVertexPostProcessing + ;
 #endif

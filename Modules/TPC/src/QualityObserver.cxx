@@ -20,7 +20,6 @@
 #include "QualityControl/QualityObject.h"
 #include <TPC/QualityObserver.h>
 #include <boost/property_tree/ptree.hpp>
-#include <TPaveText.h>
 #include <TLine.h>
 #include <TText.h>
 #include <TCanvas.h>
@@ -36,6 +35,7 @@ void QualityObserver::configure(const boost::property_tree::ptree& config)
   mObserverName = config.get<std::string>("qc.postprocessing." + id + ".qualityObserverName");
   mViewDetails = config.get<bool>("qc.postprocessing." + id + ".observeDetails", true);
   mQualityDetailChoice = config.get<std::string>("qc.postprocessing." + id + ".qualityDetailChoice", "Null, Good, Medium, Bad");
+  mLineLength = config.get<size_t>("qc.postprocessing." + id + ".lineLength", 70);
 
   for (const auto& dataSourceConfig : config.get_child("qc.postprocessing." + id + ".qualityObserverConfig")) {
     Config dataConfig;
@@ -158,43 +158,21 @@ void QualityObserver::generatePanel()
   pt->SetBorderSize(1);
 
   for (const auto& config : mConfig) {
-
     pt->AddText(""); // Emtpy line needed. AddLine() places the line to the first entry of the for loop. Check late
     TText* GroupText = pt->AddText(config.groupTitle.data());
     ((TText*)pt->GetListOfLines()->Last())->SetTextAlign(22);
     for (int i = 0; i < config.qoTitle.size(); i++) {
       pt->AddText(Form("%s = #color[%d]{%s}", config.qoTitle.at(i).data(), mColors[mQualities[config.groupTitle].at(i).data()], mQualities[config.groupTitle].at(i).data()));
-      // To-Check: SetTextAlign does currently not work in QCG
       ((TText*)pt->GetListOfLines()->Last())->SetTextAlign(12);
 
       if (mViewDetails && mQualityDetails[mQualities[config.groupTitle].at(i).data()]) {
-        if (mReasons[config.groupTitle].at(i) != "") {
-          std::string delimiter = "\n";
-
-          if (mReasons[config.groupTitle].at(i).find(delimiter) != std::string::npos) {
-            size_t pos = 0;
-            std::string subText;
-            while ((pos = mReasons[config.groupTitle].at(i).find(delimiter)) != std::string::npos) {
-              subText = mReasons[config.groupTitle].at(i).substr(0, pos);
-              pt->AddText(Form("#color[%d]{#rightarrow Reason: %s}", kGray + 2, subText.data()));
-              ((TText*)pt->GetListOfLines()->Last())->SetTextAlign(12);
-              mReasons[config.groupTitle].at(i).erase(0, pos + delimiter.length());
-            }
-          } else {
-            pt->AddText(Form("#color[%d]{#rightarrow Reason: %s}", kGray + 2, mReasons[config.groupTitle].at(i).data()));
-            ((TText*)pt->GetListOfLines()->Last())->SetTextAlign(12);
-          }
-        }
-        if (mComments[config.groupTitle].at(i) != "") {
-          pt->AddText(Form("#color[%d]{#rightarrow Comment: %s}", kGray + 2, mComments[config.groupTitle].at(i).data()));
-          ((TText*)pt->GetListOfLines()->Last())->SetTextAlign(12);
-        }
+        generateText(pt, true, mReasons[config.groupTitle].at(i));   // print reasons
+        generateText(pt, false, mComments[config.groupTitle].at(i)); // print comments
       }
     }
 
-    // To-Check: AddLine broken for qcg. Does not simply append line
     pt->AddLine();
-    ((TLine*)pt->GetListOfLines()->Last())->SetLineWidth(3);
+    ((TLine*)pt->GetListOfLines()->Last())->SetLineWidth(1);
     ((TLine*)pt->GetListOfLines()->Last())->SetLineStyle(9);
   }
 
@@ -203,3 +181,95 @@ void QualityObserver::generatePanel()
   getObjectsManager()->startPublishing(c);
 
 } // void QualityObserver::generatePanel()
+
+void QualityObserver::generateText(TPaveText* pt, bool isReason, std::string qoMetaText)
+{
+  std::string infoType = "Reason";
+  if (!isReason) {
+    infoType = "Comment";
+  }
+  if (qoMetaText != "") {
+    std::string delimiter = "\n";
+
+    if (qoMetaText.find(delimiter) != std::string::npos) {
+      size_t pos = 0;
+      std::string subText;
+      while ((pos = qoMetaText.find(delimiter)) != std::string::npos) { // cut string into the different reasons/comments
+        subText = qoMetaText.substr(0, pos);
+        qoMetaText.erase(0, pos + delimiter.length());
+        breakText(pt, infoType, subText); // break up reason/comment for better visualisation on qcg
+      }
+    } else {
+      breakText(pt, infoType, qoMetaText);
+    }
+  } // if (qoMetaText != "")
+}
+
+void QualityObserver::breakText(TPaveText* pt, std::string infoType, std::string textUnbroken)
+{
+  std::string subLine = "";
+  std::string subLineDelimiter = " ";
+  size_t subpos = 0;
+
+  if (textUnbroken.length() < mLineLength) {
+    pt->AddText(Form("#color[%d]{#rightarrow %s: %s}", kGray + 2, infoType.data(), textUnbroken.data()));
+    ((TText*)pt->GetListOfLines()->Last())->SetTextAlign(12);
+    return;
+  }
+
+  if (textUnbroken.find(subLineDelimiter) != std::string::npos) {
+    bool firstOccurance = true;
+    int colorInfoType = kGray + 2;
+
+    while ((subpos = textUnbroken.find(subLineDelimiter)) != std::string::npos) {
+      std::string textFragmant = textUnbroken.substr(0, subpos);
+
+      if (subLine == "") {
+        subLine += textFragmant + " ";
+        textUnbroken.erase(0, subpos + subLineDelimiter.length());
+        if (subLine.length() > mLineLength) {
+          pt->AddText(Form("#color[%d]{#rightarrow %s:} #color[%d]{%s}", colorInfoType, infoType.data(), kGray + 2, subLine.data()));
+          ((TText*)pt->GetListOfLines()->Last())->SetTextAlign(12);
+
+          if (firstOccurance) {
+            colorInfoType = kWhite;
+            firstOccurance = false;
+          }
+          subLine = "";
+        }
+      } else {
+        if (subLine.length() + textFragmant.length() + 1 <= mLineLength) {
+          subLine += textFragmant + " ";
+          textUnbroken.erase(0, subpos + subLineDelimiter.length());
+        } else {
+          pt->AddText(Form("#color[%d]{#rightarrow %s:} #color[%d]{%s}", colorInfoType, infoType.data(), kGray + 2, subLine.data()));
+          ((TText*)pt->GetListOfLines()->Last())->SetTextAlign(12);
+
+          if (firstOccurance) {
+            colorInfoType = kWhite;
+            firstOccurance = false;
+          }
+          subLine = "";
+        }
+      }
+    } // while ((subpos = textUnbroken.find(subLineDelimiter)) != std::string::npos)
+
+    if (subLine.length() > 0) {
+      pt->AddText(Form("#color[%d]{#rightarrow %s:} #color[%d]{%s}", colorInfoType, infoType.data(), kGray + 2, subLine.data()));
+      ((TText*)pt->GetListOfLines()->Last())->SetTextAlign(12);
+      if (firstOccurance) {
+        colorInfoType = kWhite;
+        firstOccurance = false;
+      }
+    }
+    if (textUnbroken.length() > 0) {
+      pt->AddText(Form("#color[%d]{#rightarrow %s:} #color[%d]{%s}", colorInfoType, infoType.data(), kGray + 2, textUnbroken.data()));
+      ((TText*)pt->GetListOfLines()->Last())->SetTextAlign(12);
+    }
+
+  } else { // string longer than mLineLength but does not contain subLineDelimiter
+    pt->AddText(Form("#color[%d]{#rightarrow %s: %s}", kGray + 2, infoType.data(), textUnbroken.data()));
+    ((TText*)pt->GetListOfLines()->Last())->SetTextAlign(12);
+    return;
+  }
+}

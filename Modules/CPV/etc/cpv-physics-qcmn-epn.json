@@ -31,11 +31,11 @@
         "maxNumberCycles": "-1",
         "dataSource": {
           "type": "direct",
-          "query": "digits:CPV/DIGITS/0;dtrigrec:CPV/DIGITTRIGREC/0;clusters:CPV/CLUSTERS/0;ctrigrec:CPV/CLUSTERTRIGRECS/0;calibdigits:CPV/CALIBDIGITS/0;rawerrors:CPV/RAWHWERRORS/0;peds:CPV/CPV_Pedestals;badmap:CPV/CPV_BadMap;gains:CPV/CPV_Gains",
-          "#query": "digits:CPV/DIGITS/0;dtrigrec:CPV/DIGITTRIGREC/0;clusters:CPV/CLUSTERS/0;ctrigrec:CPV/CLUSTERTRIGRECS/0;calibdigits:CPV/CALIBDIGITS/0"
+          "query": "digits:CPV/DIGITS/0;dtrigrec:CPV/DIGITTRIGREC/0;clusters:CPV/CLUSTERS/0;ctrigrec:CPV/CLUSTERTRIGRECS/0;calibdigits:CPV/CALIBDIGITS/0;rawerrors:CPV/RAWHWERRORS/0;peds:CPV/CPV_Pedestals;badmap:CPV/CPV_BadMap;gains:CPV/CPV_Gains"
         },
         "taskParameters": {
-          "": ""
+          "ccdbCheckInterval": "10",
+          "isAsyncMode": "0"
         },
         "location": "local",
         "localMachines": [
@@ -44,12 +44,11 @@
         "remoteMachine": "alio2-cr1-qme07.cern.ch",
         "remotePort": "47768",
         "mergingMode": "delta",
-        "localControl": "odc",
-        "": ""
+        "localControl": "odc"
       }
     },
     "checks": {
-      "IncreasingEntriesClusterCheck": {
+      "ClustersIncrease": {
         "active": "true",
         "className": "o2::quality_control_modules::common::IncreasingEntries",
         "moduleName": "QcCommon",
@@ -70,7 +69,7 @@
           }
         ]
       },
-      "IncreasingEntriesDigitCheck": {
+      "DigitsIncrease": {
         "active": "true",
         "className": "o2::quality_control_modules::common::IncreasingEntries",
         "moduleName": "QcCommon",
@@ -102,9 +101,15 @@
             "type": "Task",
             "name": "PhysicsOnEPNs",
             "MOs": [
+              "DigitsInEventM2",
+              "DigitsInEventM3",
+              "DigitsInEventM4",
               "DigitMapM2",
               "DigitMapM3",
-              "DigitMapM4"
+              "DigitMapM4",
+              "DigitOccuranceM2",
+              "DigitOccuranceM3",
+              "DigitOccuranceM4"
             ]
           }
         ],
@@ -112,27 +117,33 @@
           "mMinEventsToCheckDigitMap2": "10000",
           "mMinEventsToCheckDigitMap3": "10000",
           "mMinEventsToCheckDigitMap4": "10000",
-          "mStripPopulationDeviationAllowed2": "1.5",
-          "mStripPopulationDeviationAllowed3": "1.5",
-          "mStripPopulationDeviationAllowed4": "1.5",
-          "mNBadStripsPerQuarterAllowed2": "10",
-          "mNBadStripsPerQuarterAllowed3": "10",
-          "mNBadStripsPerQuarterAllowed4": "10",
           "mNCold3GassiplexAllowed2": "30",
           "mNCold3GassiplexAllowed3": "10",
-          "mNCold3GassiplexAllowed4": "17",
+          "mNCold3GassiplexAllowed4": "50",
           "mNHot3GassiplexAllowed2": "10",
           "mNHot3GassiplexAllowed3": "10",
-          "mNHot3GassiplexAllowed4": "14",
+          "mNHot3GassiplexAllowed4": "20",
           "mHot3GassiplexCriterium2": "2.5",
           "mHot3GassiplexCriterium3": "2.5",
           "mHot3GassiplexCriterium4": "2.5",
           "mCold3GassiplexCriterium2": "0.3",
           "mCold3GassiplexCriterium3": "0.3",
-          "mCold3GassiplexCriterium4": "0.3"
+          "mCold3GassiplexCriterium4": "0.3",
+          "mMinDigitsPerEvent2": "50",
+          "mMinDigitsPerEvent3": "50",
+          "mMinDigitsPerEvent4": "50",
+          "mMaxDigitsPerEvent2": "100",
+          "mMaxDigitsPerEvent3": "100",
+          "mMaxDigitsPerEvent4": "100",
+          "mHot3GassiplexOccurance2": "0.05",
+          "mHot3GassiplexOccurance3": "0.05",
+          "mHot3GassiplexOccurance4": "0.05",
+          "mCold3GassiplexOccurance2": "0.000001",
+          "mCold3GassiplexOccurance3": "0.000001",
+          "mCold3GassiplexOccurance4": "0.000001"
         }
       },
-      "ClusterSizeCheck": {
+      "ClustersCheck": {
         "active": "true",
         "className": "o2::quality_control_modules::cpv::PhysicsCheck",
         "moduleName": "QcCPV",
@@ -145,17 +156,35 @@
             "MOs": [
               "NDigitsInClusterM2",
               "NDigitsInClusterM3",
-              "NDigitsInClusterM4"
+              "NDigitsInClusterM4",
+              "ClusterTotEnergyM2",
+              "ClusterTotEnergyM3",
+              "ClusterTotEnergyM4"
             ]
           }
         ],
         "checkParameters": {
-          "mMinClusterSize2": "1.7",
+          "mMinEventsToCheckClusters2": "10000",
+          "mMinEventsToCheckClusters3": "10000",
+          "mMinEventsToCheckClusters4": "10000",
+          "mCluEnergyRangeL2": "100",
+          "mCluEnergyRangeL3": "100",
+          "mCluEnergyRangeL4": "100",
+          "mCluEnergyRangeR2": "2000",
+          "mCluEnergyRangeR3": "2000",
+          "mCluEnergyRangeR4": "2000",
+          "mMinCluEnergyMean2": "50",
+          "mMinCluEnergyMean3": "50",
+          "mMinCluEnergyMean4": "50",
+          "mMaxCluEnergyMean2": "400",
+          "mMaxCluEnergyMean3": "400",
+          "mMaxCluEnergyMean4": "400",
+          "mMinClusterSize2": "1.5",
           "mMinClusterSize3": "1.7",
-          "mMinClusterSize4": "1.7",
-          "mMaxClusterSize2": "10",
-          "mMaxClusterSize3": "10",
-          "mMaxClusterSize4": "10"
+          "mMinClusterSize4": "1.5",
+          "mMaxClusterSize2": "10.",
+          "mMaxClusterSize3": "10.",
+          "mMaxClusterSize4": "10."
         }
       },
       "CalibDigitsCheck": {
@@ -176,21 +205,40 @@
           }
         ],
         "checkParameters": {
-          "mAmplitudeRangeL2": "100",
-          "mAmplitudeRangeL3": "100",
-          "mAmplitudeRangeL4": "100",
+          "mAmplitudeRangeL2": "10",
+          "mAmplitudeRangeL3": "10",
+          "mAmplitudeRangeL4": "10",
           "mAmplitudeRangeR2": "1000",
           "mAmplitudeRangeR3": "1000",
           "mAmplitudeRangeR4": "1000",
-          "mMinEventsToFit2": "10000",
-          "mMinEventsToFit3": "10000",
-          "mMinEventsToFit4": "10000",
-          "mMinAmplification2": "10",
-          "mMinAmplification3": "10",
-          "mMinAmplification4": "10",
-          "mMaxAmplification2": "700",
-          "mMaxAmplification3": "700",
-          "mMaxAmplification4": "700"
+          "mMinEventsToCheckAmplitude2": "1000",
+          "mMinEventsToCheckAmplitude3": "1000",
+          "mMinEventsToCheckAmplitude4": "1000",
+          "mMinAmplitudeMean2": "50",
+          "mMinAmplitudeMean3": "50",
+          "mMinAmplitudeMean4": "50",
+          "mMaxAmplitudeMean2": "400",
+          "mMaxAmplitudeMean3": "400",
+          "mMaxAmplitudeMean4": "400"
+        }
+      },
+      "ErrorsCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::cpv::PhysicsCheck",
+        "moduleName": "QcCPV",
+        "policy": "OnAny",
+        "detectorName": "CPV",
+        "dataSource": [
+          {
+            "type": "Task",
+            "name": "PhysicsOnEPNs",
+            "MOs": [
+              "ErrorTypeOccurance"
+            ]
+          }
+        ],
+        "checkParameters": {
+          "mErrorOccuranceThreshold18": "0.1"
         }
       }
     },
@@ -200,7 +248,7 @@
         "#taskName": "PhysicsOnEPNs",
         "": "use the taskName in order to post output to CPV/MO/TaskName",
         "className": "o2::quality_control::postprocessing::TrendingTask",
-        "moduleName": "QualityControl",
+        "moduleName": "QcCommon",
         "detectorName": "CPV",
         "resumeTrend": "false",
         "producePlotsOnUpdate": "true",
@@ -369,7 +417,7 @@
       "QualityTask": {
         "active": "true",
         "className": "o2::quality_control_modules::common::QualityTask",
-        "moduleName": "QualityControl",
+        "moduleName": "QcCommon",
         "detectorName": "CPV",
         "qualityGroups": [
           {
@@ -400,13 +448,13 @@
             "ignoreQualitiesDetails": [],
             "inputObjects": [
               {
-                "name": "IncreasingEntriesDigitCheck",
+                "name": "DigitsIncrease",
                 "title": "Number of digits increases",
                 "messageBad": "Entries are not increasing in last cycle",
                 "messageNull": ""
               },
               {
-                "name": "IncreasingEntriesClusterCheck",
+                "name": "ClustersIncrease",
                 "title": "Number of clusters increases",
                 "messageBad": "Entries are not increasing in last cycle",
                 "messageNull": ""
@@ -415,17 +463,38 @@
                 "name": "DigitsCheck",
                 "title": "Digit occupancy check",
                 "messageBad": "Inform CPV on-call",
-                "messageGood": "",
+                "messageGood": "Ok",
+                "messageNull": ""
+              },
+              {
+                "name": "ClustersCheck",
+                "title": "Cluster size check",
+                "messageBad": "Inform CPV on-call",
+                "messageMedium": "Inform CPV on-call",
+                "messageNull": ""
+              },
+              {
+                "name": "CalibDigitsCheck",
+                "title": "CalibDigit amplitude check",
+                "messageBad": "Inform CPV on-call",
+                "messageMedium": "Inform CPV on-call",
+                "messageNull": ""
+              },
+              {
+                "name": "ErrorsCheck",
+                "title": "Errors presence check",
+                "messageBad": "Inform CPV on-call",
+                "messageMedium": "Inform CPV on-call",
                 "messageNull": ""
               }
             ]
           }
         ],
         "initTrigger": [
-          "userorcontrol"
+          "once"
         ],
         "updateTrigger": [
-          "60 seconds"
+          "newobject:qcdb:CPV/QO/GlobalQuality/GlobalQuality"
         ],
         "stopTrigger": [
           "userorcontrol"
@@ -436,21 +505,33 @@
       "GlobalQuality": {
         "active": "true",
         "className": "o2::quality_control_modules::common::WorstOfAllAggregator",
-        "moduleName": "QualityControl",
-        "policy": "OnAny",
+        "moduleName": "QcCommon",
+        "policy": "OnAll",
         "detectorName": "CPV",
         "dataSource": [
           {
             "type": "Check",
-            "name": "IncreasingEntriesDigitCheck"
+            "name": "DigitsIncrease"
           },
           {
             "type": "Check",
-            "name": "IncreasingEntriesClusterCheck"
+            "name": "ClustersIncrease"
           },
           {
             "type": "Check",
             "name": "DigitsCheck"
+          },
+          {
+            "type": "Check",
+            "name": "ClustersCheck"
+          },
+          {
+            "type": "Check",
+            "name": "CalibDigitsCheck"
+          },
+          {
+            "type": "Check",
+            "name": "ErrorsCheck"
           }
         ]
       }

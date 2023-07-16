@@ -21,12 +21,8 @@
 namespace o2::quality_control::core
 {
 
-Timekeeper::Timekeeper(uint64_t nOrbitsPerTF)
-  : mNOrbitsPerTF(nOrbitsPerTF)
+Timekeeper::Timekeeper()
 {
-  if (nOrbitsPerTF == 0) {
-    ILOG(Warning, Support) << "nOrbitsPerTF was set to 0, object validity may be incorrectly marked" << ENDM;
-  }
 }
 
 void Timekeeper::setActivityDuration(ValidityInterval validity)
@@ -50,15 +46,15 @@ TimeframeIdRange Timekeeper::getTimerangeIdRange() const
 }
 
 void Timekeeper::setStartOfActivity(validity_time_t ecsTimestamp, validity_time_t configTimestamp,
-                                    validity_time_t currentTimestamp)
+                                    validity_time_t currentTimestamp, std::function<validity_time_t(void)> ccdbTimestampAccessor)
 {
-  mActivityDuration.setMin(activityBoundarySelectionStrategy(ecsTimestamp, configTimestamp, currentTimestamp));
+  mActivityDuration.setMin(activityBoundarySelectionStrategy(ecsTimestamp, configTimestamp, currentTimestamp, ccdbTimestampAccessor));
 }
 
 void Timekeeper::setEndOfActivity(validity_time_t ecsTimestamp, validity_time_t configTimestamp,
-                                  validity_time_t currentTimestamp)
+                                  validity_time_t currentTimestamp, std::function<validity_time_t(void)> ccdbTimestampAccessor)
 {
-  mActivityDuration.setMax(activityBoundarySelectionStrategy(ecsTimestamp, configTimestamp, currentTimestamp));
+  mActivityDuration.setMax(activityBoundarySelectionStrategy(ecsTimestamp, configTimestamp, currentTimestamp, ccdbTimestampAccessor));
 }
 
 ValidityInterval Timekeeper::getActivityDuration() const

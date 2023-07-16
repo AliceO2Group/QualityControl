@@ -21,6 +21,7 @@
 #include "QualityControl/Reductor.h"
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/RepoPathUtils.h"
+#include "QualityControl/ActivityHelpers.h"
 
 #include <TH1.h>
 #include <TH2F.h>
@@ -142,7 +143,9 @@ void TrendingTask::finalize(Trigger, framework::ServiceRegistryRef)
 
 void TrendingTask::trendValues(const Trigger& t, repository::DatabaseInterface& qcdb)
 {
-  mTime = t.timestamp / 1000; // ROOT expects seconds since epoch.
+  mTime = activity_helpers::isLegacyValidity(t.activity.mValidity)
+            ? t.timestamp / 1000
+            : t.activity.mValidity.getMax() / 1000; // ROOT expects seconds since epoch.
   mMetaData.runNumber = t.activity.mId;
 
   for (auto& dataSource : mConfig.dataSources) {
@@ -199,6 +202,11 @@ void TrendingTask::setUserYAxisRange(TH1* hist, const std::string& graphYAxisRan
 
 void TrendingTask::generatePlots()
 {
+  if (mTrend == nullptr) {
+    ILOG(Info, Support) << "The trend object is not there, won't generate any plots." << ENDM;
+    return;
+  }
+
   if (mTrend->GetEntries() < 1) {
     ILOG(Info, Support) << "No entries in the trend so far, won't generate any plots." << ENDM;
     return;

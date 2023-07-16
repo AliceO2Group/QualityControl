@@ -48,7 +48,8 @@ Advanced topics
    * [Enable the repo cleaner](#enable-the-repo-cleaner)
 * [Configuration](#configuration-1)
    * [Merging multiple configuration files into one](#merging-multiple-configuration-files-into-one)
-   * [Definition and access of task-specific configuration](#definition-and-access-of-task-specific-configuration)
+   * [Definition and access of user-specific configuration](#definition-and-access-of-user-specific-configuration)
+   * [Definition of new arguments](#definition-of-new-arguments)
    * [Configuration files details](#configuration-files-details)
       * [Global configuration structure](#global-configuration-structure)
       * [Common configuration](#common-configuration)
@@ -995,7 +996,7 @@ The following tasks will be merged correctly:
 ```
 The same approach can be applied to other actors in the QC framework, like Checks (`checkName`), Aggregators(`aggregatorName`), External Tasks (`taskName`) and Postprocessing Tasks (`taskName`).
 
-## Definition and access of task-specific configuration
+## Definition and access of user-specific configuration
 
 A task can access custom parameters declared in the configuration file at `qc.tasks.<task_id>.extendedTaskParameters` or `qc.tasks.<task_id>.taskParameters`. They are stored inside an object of type `CustomParameters` named `mCustomParameters`, which is a protected member of `TaskInterface`.
 
@@ -1026,10 +1027,10 @@ The new syntax is
               "myOwnKey1": "myOwnValue1b",
               "myOwnKey2": "myOwnValue2b"
             },
-            "pp": {
+            "PROTON-PROTON": {
               "myOwnKey1": "myOwnValue1c"
             },
-            "PbPb": {
+            "Pb-Pb": {
               "myOwnKey1": "myOwnValue1d"
             }
           },
@@ -1043,7 +1044,21 @@ It allows to have variations of the parameters depending on the run and beam typ
 to ignore the run or the beam type. 
 The beam type is one of the following: `PROTON-PROTON`, `Pb-Pb`, `Pb-PROTON`
 
-The values can be accessed this way: 
+The values can be accessed in various ways.
+
+### Access optional values with or without activity
+
+```c++
+// returns an Optional<string> if it finds the key `myOwnKey` for the runType and beamType of the provided activity. 
+auto param = mCustomParameters.atOptional("myOwnKey", activity); // activity is "PHYSICS", "Pb-Pb" , returns "myOwnValue1d"
+// same but passing directly the run and beam types
+auto param = mCustomParameters.atOptional("myOwnKey", "PHYSICS", "Pb-Pb"); // returns "myOwnValue1d"
+// or with only the run type
+auto param = mCustomParameters.atOptional("myOwnKey", "PHYSICS"); // returns "myOwnValue1b"
+```
+
+### Access values directly specifying the run and beam type
+
 ```c++
 mCustomParameters["myOwnKey"]; // considering that run and beam type are `default` --> returns `myOwnValue`
 mCustomParameters.at("myOwnKey"); // returns `myOwnValue`
@@ -1054,11 +1069,17 @@ mCustomParameters.at("myOwnKey1", "PHYSICS", "PROTON-PROTON"); // returns `myOwn
 mCustomParameters.at("myOwnKey1", "PHYSICS", "Pb-Pb"); // returns `myOwnValue1d`
 mCustomParameters.at("myOwnKey2", "COSMICS"); // returns `myOwnValue2e`
 ```
+
+### Access values and return default if not found
+
 The correct way of accessing a parameter and to default to a value if it is not there, is the following:
 ```c++
   std::string param = mCustomParameters.atOrDefaultValue("myOwnKey1", "physics", "pp", "1");
   int casted = std::stoi(param);
 ```
+
+### Find a value 
+
 Finally the way to search for a value and only act if it is there is the following: 
 ```c++
   if (auto param2 = mCustomParameters.find("myOwnKey1", "physics", "pp"); param2 != cp.end()) {
@@ -1066,10 +1087,7 @@ Finally the way to search for a value and only act if it is there is the followi
   }
 ```
 
-
-A task can access custom parameters declared in the configuration file at `qc.tasks.<task_id>.taskParameters`. They are stored inside a key-value map named mCustomParameters, which is a protected member of `TaskInterface`.
-
-
+## Definition of new arguments
 
 One can also tell the DPL driver to accept new arguments. This is done using the `customize` method at the top of your workflow definition (usually called "runXXX" in the QC).
 

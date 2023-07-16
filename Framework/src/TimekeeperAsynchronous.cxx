@@ -22,8 +22,8 @@
 namespace o2::quality_control::core
 {
 
-TimekeeperAsynchronous::TimekeeperAsynchronous(uint64_t nOrbitsPerTF, validity_time_t windowLengthMs)
-  : Timekeeper(nOrbitsPerTF), mWindowLengthMs(windowLengthMs)
+TimekeeperAsynchronous::TimekeeperAsynchronous(validity_time_t windowLengthMs)
+  : Timekeeper(), mWindowLengthMs(windowLengthMs)
 {
 }
 
@@ -32,7 +32,7 @@ void TimekeeperAsynchronous::updateByCurrentTimestamp(validity_time_t timestampM
   // async QC should ignore current timestamp
 }
 
-void TimekeeperAsynchronous::updateByTimeFrameID(uint32_t tfid)
+void TimekeeperAsynchronous::updateByTimeFrameID(uint32_t tfid, uint64_t nOrbitsPerTF)
 {
   // fixme: We might want to use this once we know how to get orbitResetTime:
   //  std::ceil((timingInfo.firstTForbit * o2::constants::lhc::LHCOrbitNS / 1000 + orbitResetTime) / 1000);
@@ -42,9 +42,17 @@ void TimekeeperAsynchronous::updateByTimeFrameID(uint32_t tfid)
       << "trying to update the validity range with TF ID without having set the activity duration, returning" << ENDM;
     return;
   }
-  auto tfLengthMs = constants::lhc::LHCOrbitNS / 1000000 * mNOrbitsPerTF;
-  auto tfStart = static_cast<validity_time_t>(mActivityDuration.getMin() + tfLengthMs * tfid);
-  auto tfEnd = static_cast<validity_time_t>(mActivityDuration.getMin() + tfLengthMs * (tfid + 1) - 1); // todo ints!
+  if (tfid == 0) {
+    if (!mWarnedAboutTfIdZero) {
+      ILOG(Warning, Devel) << "Seen TFID equal to 0, which is not expected. Will not update TF-based validity, will not warn further." << ENDM;
+      mWarnedAboutTfIdZero = true;
+    }
+    return;
+  }
+
+  auto tfDurationMs = constants::lhc::LHCOrbitNS / 1000000 * nOrbitsPerTF;
+  auto tfStart = static_cast<validity_time_t>(mActivityDuration.getMin() + tfDurationMs * (tfid - 1));
+  auto tfEnd = static_cast<validity_time_t>(mActivityDuration.getMin() + tfDurationMs * tfid - 1);
   mCurrentSampleTimespan.update(tfStart);
   mCurrentSampleTimespan.update(tfEnd);
 
@@ -81,22 +89,30 @@ void TimekeeperAsynchronous::reset()
   mCurrentTimeframeIdRange = gInvalidTimeframeIdRange;
 }
 
-validity_time_t
-  TimekeeperAsynchronous::activityBoundarySelectionStrategy(validity_time_t ecsTimestamp, validity_time_t configTimestamp,
-                                                            validity_time_t currentTimestamp)
+template <typename T>
+bool not_on_limit(T value)
 {
-  auto notOnLimit = [](validity_time_t value) {
-    return value != std::numeric_limits<validity_time_t>::min() && value != std::numeric_limits<validity_time_t>::max();
-  };
+  return value != std::numeric_limits<T>::min() && value != std::numeric_limits<T>::max();
+}
+
+validity_time_t
+  TimekeeperAsynchronous::activityBoundarySelectionStrategy(validity_time_t ecsTimestamp,
+                                                            validity_time_t configTimestamp,
+                                                            validity_time_t currentTimestamp,
+                                                            std::function<validity_time_t(void)> ccdbTimestampAccessor)
+{
   validity_time_t selected = 0;
-  if (notOnLimit(ecsTimestamp)) {
+  auto ccdbTimestamp = ccdbTimestampAccessor == nullptr ? std::numeric_limits<validity_time_t>::min() : ccdbTimestampAccessor();
+  if (not_on_limit(ccdbTimestamp)) {
+    selected = ccdbTimestamp;
+  } else if (not_on_limit(ecsTimestamp)) {
     selected = ecsTimestamp;
-  } else if (notOnLimit(configTimestamp)) {
+  } else if (not_on_limit(configTimestamp)) {
     selected = configTimestamp;
   } else {
     // an exception could be thrown here once the values above are set correctly in production
   }
-  ILOG(Info, Devel) << "Received the following activity boundary propositions: " << ecsTimestamp
+  ILOG(Info, Devel) << "Received the following activity boundary propositions: " << ccdbTimestamp << ", " << ecsTimestamp
                     << ", " << configTimestamp << ", " << currentTimestamp << ". Selected: " << selected << ENDM;
   return selected;
 }

@@ -136,6 +136,30 @@ BOOST_AUTO_TEST_CASE(test_at_optional)
   BOOST_CHECK_EQUAL(cp.atOptional("abc").value_or("bla"), "bla");
 }
 
+BOOST_AUTO_TEST_CASE(test_at_optional_activity)
+{
+  Activity activity;
+  activity.mBeamType = "PROTON-PROTON";
+  activity.mType = 1;
+
+  CustomParameters cp;
+  cp.set("aaa", "AAA");
+  cp.set("bbb", "BBB");
+  cp.set("aaa", "asdf", "PHYSICS");
+  cp.set("aaa", "CCC", "PHYSICS", "PROTON-PROTON");
+  cp.set("aaa", "DDD", "PHYSICS", "Pb-Pb");
+  cp.set("aaa", "AAA", "TECHNICAL", "PROTON-PROTON");
+
+  BOOST_CHECK_EQUAL(cp.atOptional("aaa", activity).value(), "CCC");
+  BOOST_CHECK_EQUAL(cp.atOptional("abc", activity).has_value(), false);
+  BOOST_CHECK_EQUAL(cp.atOptional("abc", activity).value_or("bla"), "bla");
+
+  Activity activity2;
+  activity.mBeamType = "Pb-Pb";
+  activity.mType = 1;
+  BOOST_CHECK_EQUAL(cp.atOptional("aaa", activity).value(), "DDD");
+}
+
 BOOST_AUTO_TEST_CASE(test_cp_new_access_pattern)
 {
   CustomParameters cp;

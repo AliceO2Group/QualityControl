@@ -25,11 +25,13 @@
 #include "QualityControl/runnerUtils.h"
 #include "QualityControl/ConfigParamGlo.h"
 #include "QualityControl/MonitorObjectCollection.h"
+#include "QualityControl/Bookkeeping.h"
 
 #include <utility>
 #include <Framework/DataAllocator.h>
 #include <Framework/DataTakingContext.h>
 #include <CommonUtils/ConfigurableParam.h>
+#include <TSystem.h>
 
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::repository;
@@ -89,6 +91,7 @@ void PostProcessingRunner::init(const PostProcessingRunnerConfig& runnerConfig, 
   if (mPublicationCallback == nullptr) {
     mPublicationCallback = publishToRepository(*mDatabase);
   }
+  Bookkeeping::getInstance().init(runnerConfig.bookkeepingUrl);
 
   // setup user's task
   ILOG(Debug, Devel) << "Creating a user task '" << mTaskConfig.taskName << "'" << ENDM;
@@ -162,15 +165,15 @@ void PostProcessingRunner::runOverTimestamps(const std::vector<uint64_t>& timest
 void PostProcessingRunner::start(framework::ServiceRegistryRef dplServices)
 {
   if (dplServices.active<framework::RawDeviceService>()) {
-    mTaskConfig.activity.mId = computeRunNumber(dplServices, mTaskConfig.activity.mId);
-    mTaskConfig.activity.mType = computeRunType(dplServices, mTaskConfig.activity.mType);
-    mTaskConfig.activity.mPeriodName = computePeriodName(dplServices, mTaskConfig.activity.mPeriodName);
-    mTaskConfig.activity.mPassName = computePassName(mTaskConfig.activity.mPassName);
-    mTaskConfig.activity.mProvenance = computeProvenance(mTaskConfig.activity.mProvenance);
-    auto partitionName = computePartitionName(dplServices);
-    QcInfoLogger::setPartition(partitionName);
+    mTaskConfig.activity = computeActivity(dplServices, mTaskConfig.activity);
+    QcInfoLogger::setPartition(mTaskConfig.activity.mPartitionName);
   }
   QcInfoLogger::setRun(mTaskConfig.activity.mId);
+
+  // register ourselves to the BK
+  if (gSystem->Getenv("O2_QC_REGISTER_IN_BK")) { // until we are sure it works, we have to turn it on
+    Bookkeeping::getInstance().registerProcess(mTaskConfig.activity.mId, mRunnerConfig.taskName, mRunnerConfig.detectorName, bookkeeping::DPL_PROCESS_TYPE_QC_POSTPROCESSING, "");
+  }
 
   if (mTaskState == TaskState::Created || mTaskState == TaskState::Finished) {
     mInitTriggers = trigger_helpers::createTriggers(mTaskConfig.initTriggers, mTaskConfig);
@@ -237,6 +240,10 @@ void PostProcessingRunner::doUpdate(const Trigger& trigger)
 
 void PostProcessingRunner::doFinalize(const Trigger& trigger)
 {
+  if (mTaskState != TaskState::Running) {
+    ILOG(Warning, Support) << "Attempt at finalizing the user task although it was not initialized. Skipping the finalization." << ENDM;
+    return;
+  }
   ILOG(Info, Support) << "Finalizing the user task due to trigger '" << trigger << "'" << ENDM;
   mTask->finalize(trigger, mServices);
   mObjectManager->setValidity(ValidityInterval{ trigger.timestamp, trigger.timestamp + objectValidity });
@@ -257,6 +264,7 @@ PostProcessingRunnerConfig PostProcessingRunner::extractConfig(const CommonSpec&
     ppTaskSpec.detectorName,
     commonSpec.database,
     commonSpec.consulUrl,
+    commonSpec.bookkeepingUrl,
     commonSpec.infologgerDiscardParameters,
     commonSpec.postprocessingPeriod,
     "",

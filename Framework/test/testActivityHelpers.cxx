@@ -139,3 +139,76 @@ TEST_CASE("activity_helpers_asActivityPtree")
     CHECK(activity.mProvenance == "test_provenance");
   }
 }
+
+TEST_CASE("test_strictestMatchingActivity")
+{
+  {
+    // providing a map accessor + everything being the same except the validity
+    std::map<int, Activity> m{
+      { 1, { 300000, 1, "LHC22a", "spass", "qc", { 1, 10 }, "pp" } },
+      { 2, { 300000, 1, "LHC22a", "spass", "qc", { 10, 20 }, "pp" } },
+      { 4, { 300000, 1, "LHC22a", "spass", "qc", { 20, 30 }, "pp" } },
+      { 3, { 300000, 1, "LHC22a", "spass", "qc", { 30, 40 }, "pp" } }
+    };
+    auto result = activity_helpers::strictestMatchingActivity(m.begin(), m.end(), [](const auto& item) { return item.second; });
+    Activity expectation{ 300000, 1, "LHC22a", "spass", "qc", { 1, 40 }, "pp" };
+    CHECK(result == expectation);
+  }
+  {
+    // providing a vector (default accessor) + different run numbers and validities
+    std::vector<Activity> m{
+      { 300000, 1, "LHC22a", "spass", "qc", { 1, 10 }, "pp" },
+      { 300001, 1, "LHC22a", "spass", "qc", { 20, 30 }, "pp" }
+    };
+    auto result = activity_helpers::strictestMatchingActivity(m.begin(), m.end());
+    Activity expectation{ 0, 1, "LHC22a", "spass", "qc", { 1, 30 }, "pp" };
+    CHECK(result == expectation);
+  }
+  {
+    // providing a vector (custom accessor) + different everything
+    std::vector<Activity> m{
+      { 300000, 1, "LHC22a", "spass", "qc", { 1, 10 }, "pp" },
+      { 300001, 2, "LHC22b", "apass2", "qc_mc", { 20, 30 }, "PbPb" }
+    };
+    auto result = activity_helpers::strictestMatchingActivity(m.begin(), m.end(), [](const auto& a) { return a; });
+    Activity expectation{ 0, 0, "", "", "qc", { 1, 30 }, "" };
+    CHECK(result == expectation);
+  }
+}
+
+TEST_CASE("test_overlappingActivity")
+{
+  // it's like strictestMatchingActivity, but validity is a union
+  {
+    // providing a map accessor + everything being the same except the validity
+    std::map<int, Activity> m{
+      { 1, { 300000, 1, "LHC22a", "spass", "qc", { 1, 40 }, "pp" } },
+      { 2, { 300000, 1, "LHC22a", "spass", "qc", { 10, 20 }, "pp" } },
+      { 4, { 300000, 1, "LHC22a", "spass", "qc", { 15, 30 }, "pp" } },
+      { 3, { 300000, 1, "LHC22a", "spass", "qc", { 17, 40 }, "pp" } }
+    };
+    auto result = activity_helpers::overlappingActivity(m.begin(), m.end(), [](const auto& item) { return item.second; });
+    Activity expectation{ 300000, 1, "LHC22a", "spass", "qc", { 17, 20 }, "pp" };
+    CHECK(result == expectation);
+  }
+  {
+    // providing a vector (default accessor) + different run numbers and validities
+    std::vector<Activity> m{
+      { 300000, 1, "LHC22a", "spass", "qc", { 1, 10 }, "pp" },
+      { 300001, 1, "LHC22a", "spass", "qc", { 10, 30 }, "pp" }
+    };
+    auto result = activity_helpers::overlappingActivity(m.begin(), m.end());
+    Activity expectation{ 0, 1, "LHC22a", "spass", "qc", { 10, 10 }, "pp" };
+    CHECK(result == expectation);
+  }
+  {
+    // providing a vector (custom accessor) + different everything
+    std::vector<Activity> m{
+      { 300000, 1, "LHC22a", "spass", "qc", { 1, 10 }, "pp" },
+      { 300001, 2, "LHC22b", "apass2", "qc_mc", { 20, 30 }, "PbPb" }
+    };
+    auto result = activity_helpers::overlappingActivity(m.begin(), m.end(), [](const auto& a) { return a; });
+    Activity expectation{ 0, 0, "", "", "qc", { 20, 10 }, "" }; // invalid validity
+    CHECK(result == expectation);
+  }
+}

@@ -30,6 +30,7 @@
 #include "EMCALBase/Geometry.h"
 #include "EMCALCalib/CalibDB.h"
 #include "EMCALCalib/BadChannelMap.h"
+#include "EMCALCalib/GainCalibrationFactors.h"
 #include "EMCALCalib/TimeCalibrationParams.h"
 #include <Framework/ConcreteDataMatcher.h>
 #include <Framework/DataRefUtils.h>
@@ -111,6 +112,7 @@ void CellTask::initialize(o2::framework::InitContext& /*ctx*/)
   mTaskSettings.mHasAmpVsCellID = get_bool(getConfigValueLower("hasAmpVsCell")),
   mTaskSettings.mHasTimeVsCellID = get_bool(getConfigValueLower("hasTimeVsCell")),
   mTaskSettings.mHasHistosCalib = get_bool(getConfigValueLower("hasHistCalib"));
+  mTaskSettings.mCalibrateEnergy = get_bool(getConfigValue("calibrateEnergy"));
   if (hasConfigValue("thresholdTimePhys")) {
     mTaskSettings.mAmpThresholdTimePhys = get_double(getConfigValue("thresholdTimePhys"));
   }
@@ -123,6 +125,7 @@ void CellTask::initialize(o2::framework::InitContext& /*ctx*/)
   if (hasConfigValue("thresholdPHYS")) {
     mTaskSettings.mThresholdPHYS = get_double(getConfigValue("thresholdPHYS"));
   }
+  ILOG(Info, Support) << "Apply energy calibration: " << (mTaskSettings.mCalibrateEnergy ? "yes" : "no") << ENDM;
   ILOG(Info, Support) << "Amplitude cut time histograms (PhysTrigger) " << mTaskSettings.mAmpThresholdTimePhys << ENDM;
   ILOG(Info, Support) << "Amplitude cut time histograms (CalibTrigger) " << mTaskSettings.mAmpThresholdTimeCalib << ENDM;
   ILOG(Info, Support) << "Amplitude cut occupancy histograms (PhysTrigger) " << mTaskSettings.mThresholdPHYS << ENDM;
@@ -331,6 +334,13 @@ void CellTask::startOfCycle()
       ILOG(Info, Support) << " No Time Calib object " << ENDM;
     }
   }
+  if (mTaskSettings.mCalibrateEnergy) {
+    std::map<std::string, std::string> metadata;
+    mEnergyCalib = retrieveConditionAny<o2::emcal::GainCalibrationFactors>(o2::emcal::CalibDB::getCDBPathGainCalibrationParams(), metadata);
+    if (!mBadChannelMap) {
+      ILOG(Info, Support) << "No energy calibration object " << ENDM;
+    }
+  }
 }
 
 void CellTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -436,11 +446,12 @@ void CellTask::monitorData(o2::framework::ProcessingContext& ctx)
           // int index = cell.getHighGain() ? 0 : (cell.getLowGain() ? 1 : -1);
           // int index = cell.getHighGain() ? 0 : 1;
           auto timeoffset = mTimeCalib ? mTimeCalib->getTimeCalibParam(cell.getTower(), cell.getLowGain()) : 0.;
+          auto energycalib = mEnergyCalib ? mEnergyCalib->getGainCalibFactors(cell.getTower()) : 1.;
           bool goodcell = true;
           if (mBadChannelMap) {
             goodcell = mBadChannelMap->getChannelStatus(cell.getTower()) == MaskType_t::GOOD_CELL;
           }
-          histos.fillHistograms(cell, goodcell, timeoffset, bcphase);
+          histos.fillHistograms(cell, goodcell, timeoffset, energycalib, bcphase);
           if (isPhysTrigger) {
             auto [sm, mod, iphi, ieta] = mGeometry->GetCellIndex(cell.getTower());
             numCellsSM[sm]++;
@@ -731,6 +742,16 @@ void CellTask::CellHistograms::initForTrigger(const std::string trigger, const T
   mCellOccupancyThrBelow = histBuilder2D("cellOccupancyEMCwThrBelow", Form("Cell Occupancy EMCAL,DCAL with E<%.1f GeV/c", mCellThreshold), 96, -0.5, 95.5, 208, -0.5, 207.5, false);
   mCellOccupancyThrBelow->SetStats(false);
 
+  mAverageCellEnergy = histBuilder2D("averageCellEnergy", "Average cell energy", 96, -0.5, 95.5, 208, -0.5, 207.5, true);
+  mAverageCellEnergy->GetXaxis()->SetTitle("col");
+  mAverageCellEnergy->GetYaxis()->SetTitle("row");
+  mAverageCellEnergy->SetStats(false);
+
+  mAverageCellTime = histBuilder2D("averageCellTime", "Average cell time", 96, -0.5, 95.5, 208, -0.5, 207.5, true);
+  mAverageCellTime->GetXaxis()->SetTitle("col");
+  mAverageCellTime->GetYaxis()->SetTitle("row");
+  mAverageCellTime->SetStats(false);
+
   mIntegratedOccupancy = histBuilder2D("cellOccupancyInt", "Cell Occupancy Integrated", 96, -0.5, 95.5, 208, -0.5, 207.5, true);
   mIntegratedOccupancy->GetXaxis()->SetTitle("col");
   mIntegratedOccupancy->GetYaxis()->SetTitle("row");
@@ -765,7 +786,7 @@ void CellTask::CellHistograms::initForTrigger(const std::string trigger, const T
   }
 }
 
-void CellTask::CellHistograms::fillHistograms(const o2::emcal::Cell& cell, bool goodCell, double timecalib, int bcphase)
+void CellTask::CellHistograms::fillHistograms(const o2::emcal::Cell& cell, bool goodCell, double timecalib, double energycalib, int bcphase)
 {
   auto fillOptional1D = [](TH1* hist, double x, double weight = 1.) {
     if (hist) {
@@ -778,11 +799,13 @@ void CellTask::CellHistograms::fillHistograms(const o2::emcal::Cell& cell, bool 
     }
   };
 
-  fillOptional2D(mCellAmplitude, cell.getEnergy(), cell.getTower());
+  double energy = cell.getEnergy() * energycalib;
+
+  fillOptional2D(mCellAmplitude, energy, cell.getTower());
   // fillOptional2D(mCellAmplitude[index], cell.getEnergy(), cell.getTower());
 
   if (goodCell) {
-    fillOptional2D(mCellAmplitudeCalib, cell.getEnergy(), cell.getTower());
+    fillOptional2D(mCellAmplitudeCalib, energy, cell.getTower());
     fillOptional2D(mCellTimeCalib, cell.getTimeStamp() - timecalib, cell.getTower());
     // fillOptional2D(mCellAmplitudeCalib[index], cell.getEnergy(), cell.getTower());
     // fillOptional2D(mCellTimeCalib[index], cell.getTimeStamp() - timeoffset, cell.getTower());
@@ -802,11 +825,13 @@ void CellTask::CellHistograms::fillHistograms(const o2::emcal::Cell& cell, bool 
     }
     if (goodCell) {
       fillOptional2D(mCellOccupancyGood, col, row);
+      fillOptional2D(mAverageCellEnergy, col, row, energy);
+      fillOptional2D(mAverageCellTime, col, row, cell.getTimeStamp() - timecalib);
     } else {
       fillOptional2D(mCellOccupancyBad, col, row);
     }
 
-    fillOptional2D(mIntegratedOccupancy, col, row, cell.getEnergy());
+    fillOptional2D(mIntegratedOccupancy, col, row, energy);
 
   } catch (o2::emcal::InvalidCellIDException& e) {
     ILOG(Error, Support) << "Invalid cell ID: " << e.getCellID() << ENDM;
@@ -815,25 +840,25 @@ void CellTask::CellHistograms::fillHistograms(const o2::emcal::Cell& cell, bool 
   try {
     auto cellindices = mGeometry->GetCellIndex(cell.getTower());
     auto supermoduleID = std::get<0>(cellindices);
-    fillOptional2D(mCellAmpSupermodule, cell.getEnergy(), supermoduleID);
-    fillOptional2D(mCellAmplitudeTime, cell.getEnergy(), cell.getTimeStamp());
+    fillOptional2D(mCellAmpSupermodule, energy, supermoduleID);
+    fillOptional2D(mCellAmplitudeTime, energy, cell.getTimeStamp());
     if (cell.getEnergy() > mAmplitudeThresholdTime) {
       fillOptional2D(mCellTimeSupermodule, cell.getTimeStamp(), supermoduleID);
     }
     if (goodCell) {
-      fillOptional2D(mCellAmpSupermoduleCalib, cell.getEnergy(), supermoduleID);
-      if (cell.getEnergy() > mAmplitudeThresholdTime) {
+      fillOptional2D(mCellAmpSupermoduleCalib, energy, supermoduleID);
+      if (energy > mAmplitudeThresholdTime) {
         fillOptional2D(mCellTimeSupermoduleCalib, cell.getTimeStamp() - timecalib, supermoduleID);
-        fillOptional2D(mCellAmplitudeTimeCalib, cell.getEnergy(), cell.getTimeStamp() - timecalib);
+        fillOptional2D(mCellAmplitudeTimeCalib, energy, cell.getTimeStamp() - timecalib);
       }
     } else {
-      fillOptional2D(mCellAmpSupermoduleBad, cell.getEnergy(), supermoduleID);
+      fillOptional2D(mCellAmpSupermoduleBad, energy, supermoduleID);
     }
-    fillOptional1D(mCellAmplitude_tot, cell.getEnergy());
+    fillOptional1D(mCellAmplitude_tot, energy);
     if (goodCell) {
-      fillOptional1D(mCellAmplitudeCalib_tot, cell.getEnergy()); // EMCAL+DCAL Calib, shifter
+      fillOptional1D(mCellAmplitudeCalib_tot, energy); // EMCAL+DCAL Calib, shifter
     }
-    if (cell.getEnergy() > mAmplitudeThresholdTime) {
+    if (energy > mAmplitudeThresholdTime) {
       fillOptional1D(mCellTimeSupermodule_tot, cell.getTimeStamp()); // EMCAL+DCAL shifter
       if (goodCell) {
         fillOptional1D(mCellTimeSupermoduleCalib_tot, cell.getTimeStamp() - timecalib); // EMCAL+DCAL Calib shifter
@@ -842,23 +867,23 @@ void CellTask::CellHistograms::fillHistograms(const o2::emcal::Cell& cell, bool 
     // check Gain
     int index = cell.getHighGain() ? 0 : 1; //(0=highGain, 1 = lowGain)
     if (supermoduleID < 12) {               // EMCAL
-      if (cell.getEnergy() > mAmplitudeThresholdTime) {
+      if (energy > mAmplitudeThresholdTime) {
         fillOptional1D(mCellTimeSupermoduleEMCAL, cell.getTimeStamp());
         if (goodCell) {
           fillOptional1D(mCellTimeSupermoduleCalib_EMCAL, cell.getTimeStamp() - timecalib);
         }
         fillOptional1D(mCellTimeSupermoduleEMCAL_Gain[index], cell.getTimeStamp());
       }
-      fillOptional1D(mCellAmplitudeEMCAL, cell.getEnergy());
+      fillOptional1D(mCellAmplitudeEMCAL, energy);
       if (goodCell) {
-        fillOptional1D(mCellAmplitudeCalib_EMCAL, cell.getEnergy());
+        fillOptional1D(mCellAmplitudeCalib_EMCAL, energy);
       }
     } else {
-      fillOptional1D(mCellAmplitudeDCAL, cell.getEnergy());
+      fillOptional1D(mCellAmplitudeDCAL, energy);
       if (goodCell) {
-        fillOptional1D(mCellAmplitudeCalib_DCAL, cell.getEnergy());
+        fillOptional1D(mCellAmplitudeCalib_DCAL, energy);
       }
-      if (cell.getEnergy() > mAmplitudeThresholdTime) {
+      if (energy > mAmplitudeThresholdTime) {
         fillOptional1D(mCellTimeSupermoduleDCAL, cell.getTimeStamp());
         if (goodCell) {
           fillOptional1D(mCellTimeSupermoduleCalib_DCAL, cell.getTimeStamp() - timecalib);
@@ -867,7 +892,7 @@ void CellTask::CellHistograms::fillHistograms(const o2::emcal::Cell& cell, bool 
       }
     }
     // bc phase histograms
-    if (cell.getEnergy() > mAmplitudeThresholdTime) {
+    if (energy > mAmplitudeThresholdTime) {
       auto bchistos = mCellTimeBC[bcphase];
       auto histcontainer = bchistos;
       histcontainer->Fill(cell.getTimeStamp());
@@ -919,6 +944,8 @@ void CellTask::CellHistograms::startPublishing(o2::quality_control::core::Object
   publishOptional(mCellOccupancyGood);
   publishOptional(mCellOccupancyBad);
   publishOptional(mIntegratedOccupancy);
+  publishOptional(mAverageCellEnergy);
+  publishOptional(mAverageCellTime);
   publishOptional(mnumberEvents);
 
   for (auto histos : mCellTimeSupermoduleEMCAL_Gain) {
@@ -970,6 +997,8 @@ void CellTask::CellHistograms::reset()
   resetOptional(mCellOccupancyGood);
   resetOptional(mCellOccupancyBad);
   resetOptional(mIntegratedOccupancy);
+  resetOptional(mAverageCellEnergy);
+  resetOptional(mAverageCellTime);
   resetOptional(mnumberEvents);
 
   for (auto histos : mCellTimeSupermoduleEMCAL_Gain) {
@@ -1019,6 +1048,8 @@ void CellTask::CellHistograms::clean()
   cleanOptional(mCellOccupancyGood);
   cleanOptional(mCellOccupancyBad);
   cleanOptional(mIntegratedOccupancy);
+  cleanOptional(mAverageCellEnergy);
+  cleanOptional(mAverageCellTime);
   cleanOptional(mnumberEvents);
 
   for (auto histos : mCellTimeSupermoduleEMCAL_Gain) {

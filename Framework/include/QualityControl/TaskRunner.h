@@ -139,7 +139,7 @@ class TaskRunner : public framework::Task
   std::shared_ptr<TaskInterface> mTask;
   std::shared_ptr<ObjectsManager> mObjectsManager;
   std::shared_ptr<Timekeeper> mTimekeeper;
-  int mRunNumber;
+  Activity mActivity;
 
   void updateMonitoringStats(framework::ProcessingContext& pCtx);
 

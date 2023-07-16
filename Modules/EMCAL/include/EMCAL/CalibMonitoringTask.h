@@ -32,7 +32,8 @@ class TH2;
 namespace o2::emcal
 {
 class CalibDB;
-}
+class MappingHandler;
+} // namespace o2::emcal
 
 namespace o2::quality_control_modules::emcal
 {
@@ -71,19 +72,23 @@ class CalibMonitoringTask final : public quality_control::postprocessing::PostPr
 
   void reset();
 
- public:
-  std::vector<std::string> mCalibObjects;       ///< list of vectors of parm objects to be processed
-  TH1* mTimeCalibParamHisto = nullptr;          ///< Monitor Time Calib Param
-  TH2* mTimeCalibParamPosition = nullptr;       ///< Monitor time calib param as function of the position in EMCAL
-  TH2* mBadChannelMapHisto = nullptr;           ///< Monitor bad channel map
-  TH1* mMaskStatsEMCALHisto = nullptr;          ///< Monitor number of good, bad, dead cells in emcal only
-  TH1* mMaskStatsDCALHisto = nullptr;           ///< Monitor number of good, bad, dead cells in dcal only
-  TH1* mMaskStatsAllHisto = nullptr;            ///< Monitor number of good, bad, dead cells in emcal + dcal only
-  std::unique_ptr<o2::emcal::CalibDB> mCalibDB; ///< EMCAL calibration DB handler
-  o2::emcal::BadChannelMap* mBadChannelMap;     ///< EMCAL channel map
-  o2::emcal::TimeCalibrationParams* mTimeCalib; ///< EMCAL time calib
-
  private:
+  std::vector<std::string> mCalibObjects;             ///< list of vectors of parm objects to be processed
+  TH1* mTimeCalibParamHisto = nullptr;                ///< Monitor Time Calib Param
+  TH2* mTimeCalibParamPosition = nullptr;             ///< Monitor time calib param as function of the position in EMCAL
+  TH2* mBadChannelMapHisto = nullptr;                 ///< Monitor bad channel map
+  TH1* mMaskStatsEMCALHisto = nullptr;                ///< Monitor number of good, bad, dead cells in emcal only
+  TH1* mMaskStatsDCALHisto = nullptr;                 ///< Monitor number of good, bad, dead cells in dcal only
+  TH1* mMaskStatsAllHisto = nullptr;                  ///< Monitor number of good, bad, dead cells in emcal + dcal only
+  TH2* mMaskStatsSupermoduleHisto = nullptr;          ///< Monitor number of good, bad, and dead cells per supermodule
+  TH2* mNumberOfBadChannelsFEC = nullptr;             ///< Number of bad channels per FEC
+  TH2* mNumberOfDeadChannelsFEC = nullptr;            ///< Number of dead channels per FEC
+  TH2* mNumberOfNonGoodChannelsFEC = nullptr;         ///< Number of dead+bad channels per FEC
+  std::unique_ptr<o2::emcal::CalibDB> mCalibDB;       ///< EMCAL calibration DB handler
+  std::unique_ptr<o2::emcal::MappingHandler> mMapper; ///< EMCAL mapper
+  o2::emcal::BadChannelMap* mBadChannelMap;           ///< EMCAL channel map
+  o2::emcal::TimeCalibrationParams* mTimeCalib;       ///< EMCAL time calib
+
   //  std::vector<std::map<std::string, std::string>> mStoreMaps{};          ///< meta data to be stored with the output in the QCDB
 };
 

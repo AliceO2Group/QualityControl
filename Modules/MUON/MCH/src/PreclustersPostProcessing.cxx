@@ -38,13 +38,14 @@ void PreclustersPostProcessing::configure(const boost::property_tree::ptree& con
   mFullHistos = mchConfig.getParameter<bool>("FullHistos", false);
 
   mCcdbObjects.emplace(effSourceName(), CcdbObjectHelper());
-  mCcdbObjectsRef.emplace(effSourceName(), CcdbObjectHelper());
-
   mCcdbObjects.emplace(clusterChargeSourceName(), CcdbObjectHelper());
-  mCcdbObjectsRef.emplace(clusterChargeSourceName(), CcdbObjectHelper());
-
   mCcdbObjects.emplace(clusterSizeSourceName(), CcdbObjectHelper());
-  mCcdbObjectsRef.emplace(clusterSizeSourceName(), CcdbObjectHelper());
+
+  if (mRefTimeStamp > 0) {
+    mCcdbObjectsRef.emplace(effSourceName(), CcdbObjectHelper());
+    mCcdbObjectsRef.emplace(clusterChargeSourceName(), CcdbObjectHelper());
+    mCcdbObjectsRef.emplace(clusterSizeSourceName(), CcdbObjectHelper());
+  }
 
   for (auto source : mchConfig.dataSources) {
     std::string sourceType, sourceName;

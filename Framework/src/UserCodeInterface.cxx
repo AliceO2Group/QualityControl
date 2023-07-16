@@ -27,21 +27,9 @@ void UserCodeInterface::setCustomParameters(const CustomParameters& parameters)
   configure();
 }
 
-void UserCodeInterface::loadCcdb()
-{
-  if (!mCcdbApi) {
-    mCcdbApi = std::make_shared<CcdbApi>();
-  }
-
-  mCcdbApi->init(mCcdbUrl);
-  if (!mCcdbApi->isHostReachable()) {
-    ILOG(Warning, Support) << "CCDB at URL '" << mCcdbUrl << "' is not reachable." << ENDM;
-  }
-}
-
 void UserCodeInterface::setCcdbUrl(const std::string& url)
 {
-  mCcdbUrl = url;
+  o2::ccdb::BasicCCDBManager::instance().setURL(url);
 }
 
 const std::string& UserCodeInterface::getName() const { return mName; }

@@ -116,7 +116,7 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
       getObjectsManager()->startPublishing(pairHistBC.first->second);
     }
   }
-  mHistTimeInWindow = std::make_unique<TH1F>("TimeInWindowFraction", Form("Fraction of events in time window (%i , %i);ChID;Fraction", mLowTimeThreshold, mUpTimeThreshold), o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
+  mHistTimeInWindow = std::make_unique<TH1F>("TimeInWindowFraction", Form("Fraction of events with CFD in time gate(%i,%i) vs ChannelID;ChannelID;Event fraction with CFD in time gate", mLowTimeThreshold, mUpTimeThreshold), o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
   getObjectsManager()->startPublishing(mHistTimeInWindow.get());
 
   getObjectsManager()->startPublishing(mRateOrA.get());
@@ -289,6 +289,8 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
     ts = -1;
   } else if (mTimestampSourceLhcIf == "trigger") {
     ts = t.timestamp;
+  } else if (mTimestampSourceLhcIf == "validUntil") {
+    ts = t.activity.mValidity.getMax();
   } else if (mTimestampSourceLhcIf == "metadata") {
     for (auto metainfo : moBCvsTriggers->getMetadataMap()) {
       if (metainfo.first == "TFcreationTime")

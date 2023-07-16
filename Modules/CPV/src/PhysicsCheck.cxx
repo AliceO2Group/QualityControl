@@ -378,7 +378,7 @@ Quality PhysicsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
           if (result.isBetterThan(Quality::Medium)) {
             result.set(Quality::Medium);
           }
-          result.addReason(FlagReasonFactory::Unknown(), Form("too big mean size M%d", iMod + 2));
+          result.addReason(FlagReasonFactory::Unknown(), Form("too small mean size M%d", iMod + 2));
           msg->AddText(Form("Mean is too small: %f", meanClusterSize));
           msg->AddText(Form("Min allowed mean: %f", mMinClusterSize[iMod]));
           msg->SetFillColor(kRed);
@@ -502,7 +502,7 @@ Quality PhysicsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
           if (result.isBetterThan(Quality::Bad)) {
             result.set(Quality::Bad);
           }
-          result.addReason(FlagReasonFactory::Unknown(), Form("many hot cards M%d", iMod + 2));
+          result.addReason(FlagReasonFactory::Unknown(), Form("digit occurance: many hot cards M%d", iMod + 2));
           TPaveText* msg = new TPaveText(0.0, 0.0, 0.2, 0.1, "NDC");
           msg->SetName(Form("%s_msgHot3G", mo->GetName()));
           msg->Clear();
@@ -515,7 +515,7 @@ Quality PhysicsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
           if (result.isBetterThan(Quality::Bad)) {
             result.set(Quality::Bad);
           }
-          result.addReason(FlagReasonFactory::Unknown(), Form("many cold cards M%d", iMod + 2));
+          result.addReason(FlagReasonFactory::Unknown(), Form("digit occurance: many cold cards M%d", iMod + 2));
           TPaveText* msg = new TPaveText(0.0, 0.9, 0.2, 1.0, "NDC");
           msg->AddText(Form("cold 3G cards (%d/%d)", nCold3Gassiplexes, mNCold3GassiplexAllowed[iMod]));
           msg->SetFillColor(kRed);
@@ -612,6 +612,8 @@ Quality PhysicsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
         h->SetFillColor(kGreen);
         h->SetOption("hist");
         h->SetDrawOption("hist");
+        h->SetMarkerStyle(21);
+        h->SetLineWidth(2);
       }
     }
 

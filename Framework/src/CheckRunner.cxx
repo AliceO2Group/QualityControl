@@ -379,7 +379,7 @@ void CheckRunner::store(QualityObjectsType& qualityObjects, long validFrom)
   try {
     for (auto& qo : qualityObjects) {
       qo->setActivity(*mActivity);
-      qo->getActivity().mValidity.setMin(validFrom);
+      qo->getActivity().mValidity.set(validFrom, 0);
       mDatabase->storeQO(qo);
       mTotalNumberQOStored++;
       mNumberQOStored++;
@@ -395,7 +395,7 @@ void CheckRunner::store(std::vector<std::shared_ptr<MonitorObject>>& monitorObje
   try {
     for (auto& mo : monitorObjects) {
       mo->setActivity(*mActivity);
-      mo->getActivity().mValidity.setMin(validFrom);
+      mo->getActivity().mValidity.set(validFrom, 0);
       mDatabase->storeMO(mo);
       mTotalNumberMOStored++;
       mNumberMOStored++;
@@ -518,16 +518,19 @@ void CheckRunner::endOfStream(framework::EndOfStreamContext& eosContext)
 void CheckRunner::start(ServiceRegistryRef services)
 {
   mActivity = std::make_shared<Activity>(computeActivity(services, mConfig.fallbackActivity));
-  string partitionName = computePartitionName(services);
   QcInfoLogger::setRun(mActivity->mId);
-  QcInfoLogger::setPartition(partitionName);
+  QcInfoLogger::setPartition(mActivity->mPartitionName);
   ILOG(Info, Support) << "Starting run " << mActivity->mId << ":" << ENDM;
-  ILOG(Debug, Devel) << "   period: " << mActivity->mPeriodName << " / pass type: " << mActivity->mPassName << " / provenance: " << mActivity->mProvenance << ENDM;
   mTimerTotalDurationActivity.reset();
   mCollector->setRunNumber(mActivity->mId);
   mReceivedEOS = false;
   for (auto& [checkName, check] : mChecks) {
     check.setActivity(mActivity);
+  }
+
+  // register ourselves to the BK
+  if (gSystem->Getenv("O2_QC_REGISTER_IN_BK")) { // until we are sure it works, we have to turn it on
+    Bookkeeping::getInstance().registerProcess(mActivity->mId, mDeviceName, mDetectorName, bookkeeping::DPL_PROCESS_TYPE_QC_CHECKER, "");
   }
 }
 

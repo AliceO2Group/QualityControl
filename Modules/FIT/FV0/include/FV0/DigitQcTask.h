@@ -107,7 +107,8 @@ class DigitQcTask final : public TaskInterface
   void rebinFromConfig();
   unsigned int getModeParameter(std::string, unsigned int, std::map<unsigned int, std::string>);
   int getNumericalParameter(std::string, int);
-  bool chIsVertexEvent(const o2::fv0::ChannelData);
+  bool chIsVertexEvent(const o2::fv0::ChannelData, bool simpleCheck = false) const;
+  static int fpgaDivision(int numerator, int denominator);
 
   TList* mListHistGarbage;
   std::set<unsigned int> mSetAllowedChIDs;
@@ -172,6 +173,11 @@ class DigitQcTask final : public TaskInterface
   std::map<unsigned int, TH2F*> mMapHistAmpVsTime;
   std::unique_ptr<TH2F> mHistBCvsTrg;
   std::unique_ptr<TH2F> mHistBCvsFEEmodules;
+  std::unique_ptr<TH2F> mHistBcVsFeeForOrATrg;
+  std::unique_ptr<TH2F> mHistBcVsFeeForOrAOutTrg;
+  std::unique_ptr<TH2F> mHistBcVsFeeForNChanTrg;
+  std::unique_ptr<TH2F> mHistBcVsFeeForChargeTrg;
+  std::unique_ptr<TH2F> mHistBcVsFeeForOrAInTrg;
   std::unique_ptr<TH2F> mHistOrbitVsTrg;
   std::unique_ptr<TH2F> mHistOrbitVsFEEmodules;
   std::unique_ptr<TH2F> mHistPmTcmNchA;
