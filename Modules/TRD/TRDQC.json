@@ -124,7 +124,7 @@
         "dataSource_comment": "no comment",
         "dataSource": {
           "type": "direct",
-          "query": "digits:TRD/DIGITS;tracklets:TRD/TRACKLETS;triggers:TRD/TRKTRGRD;tracks:TRD/MATCH_ITSTPC;trigrectrk:TRD/TRGREC_ITSTPC"
+          "query": "phdata:TRD/PULSEHEIGHT"
         },
         "taskParameters": {
           "pileupCut": "0.7",

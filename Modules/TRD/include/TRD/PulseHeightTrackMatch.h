@@ -61,25 +61,13 @@ class PulseHeightTrackMatch final : public TaskInterface
 
  private:
   // limits
-  bool mSkipSharedDigits;
   double mPileupCut = 0.0;
-  unsigned int mPulseHeightThreshold;
   std::pair<float, float> mDriftRegion;
   std::pair<float, float> mPulseHeightPeakRegion;
   long int mTimestamp;
-  std::shared_ptr<TH1F> mParsingTimePerTF;
-  std::shared_ptr<TH1F> mTracksPerEvent;
-  std::shared_ptr<TH1F> mTrackletsPerMatchedTrack;
-  std::shared_ptr<TH1F> mDebugCounter;
-  std::shared_ptr<TH1F> mTriggerMatches;
-  std::shared_ptr<TH1F> mTriggerRecordsMatchesDigits;
+
   std::shared_ptr<TProfile> mPulseHeightpro = nullptr;
   std::shared_ptr<TProfile2D> mPulseHeightperchamber = nullptr;
-  // information pulled from ccdb
-  o2::trd::NoiseStatusMCM* mNoiseMap = nullptr;
-  o2::trd::HalfChamberStatusQC* mChamberStatus = nullptr;
-  std::string mChambersToIgnore;
-  std::bitset<o2::trd::constants::MAXCHAMBER> mChambersToIgnoreBP;
 };
 
 } // namespace o2::quality_control_modules::trd
