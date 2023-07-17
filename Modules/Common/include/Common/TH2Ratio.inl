@@ -160,11 +160,13 @@ void TH2Ratio<T>::Copy(TObject& obj) const
     return;
   }
 
-  getNum()->Copy(*(dest->getNum()));
-  getDen()->Copy(*(dest->getDen()));
   T::Copy(obj);
 
-  dest->update();
+  if (mHistoNum && dest->getNum() && mHistoDen && dest->getDen()) {
+    mHistoNum->Copy(*(dest->getNum()));
+    mHistoDen->Copy(*(dest->getDen()));
+    dest->update();
+  }
 }
 
 template<class T>
