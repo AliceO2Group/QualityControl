@@ -78,6 +78,8 @@ for ((nodeIndex = 0; nodeIndex < ${#HEAD_NODES[@]}; nodeIndex++)); do
     jq '(if .qc.tasks.MCHFRofs | has("remotePort") then .qc.tasks.MCHFRofs.remotePort = "29512" else . end)' $local_file > temp && mv temp $local_file
     jq '(if .qc.tasks.MergeMETOFwTRD | has("remotePort") then .qc.tasks.MergeMETOFwTRD.remotePort = "29753" else . end)' $local_file > temp && mv temp $local_file
     jq '(if .qc.tasks.ExpertPedestalsOnFLP | has("remotePort") then .qc.tasks.ExpertPedestalsOnFLP.remotePort = "29002" else . end)' $local_file > temp && mv temp $local_file
+    jq '(if .qc.tasks.MUONTracks | has("remotePort") then .qc.tasks.MUONTracks.remotePort = "29514" else . end)' $local_file > temp && mv temp $local_file
+    jq '(if .qc.tasks.MCHStdTracks | has("remotePort") then .qc.tasks.MCHStdTracks.remotePort = "29515" else . end)' $local_file > temp && mv temp $local_file
 
     # or simply modify :
     #new_content=$(sed 's/http:\/\/localhost:8084/o2-ccdb.internal/g' $local_file)
