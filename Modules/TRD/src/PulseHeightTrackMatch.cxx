@@ -123,11 +123,9 @@ void PulseHeightTrackMatch::monitorData(o2::framework::ProcessingContext& ctx)
   auto phDataArr = ctx.inputs().get<gsl::span<o2::trd::PHData>>("phdata");
 
   for (const auto& phData : phDataArr) {
-    for (int i = 0; i < 4; ++i) {
-      if (mTrackType[i] && phData.getType() == i) {
-        mPulseHeightpro->Fill(phData.getTimebin(), phData.getADC());
-        mPulseHeightperchamber->Fill(phData.getTimebin(), phData.getDetector(), phData.getADC());
-      }
+    if (mTrackType[phData.getType()]) {
+      mPulseHeightpro->Fill(phData.getTimebin(), phData.getADC());
+      mPulseHeightperchamber->Fill(phData.getTimebin(), phData.getDetector(), phData.getADC());
     }
   }
 }
