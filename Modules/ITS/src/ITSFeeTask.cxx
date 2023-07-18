@@ -114,20 +114,7 @@ void ITSFeeTask::createFeePlots()
   getObjectsManager()->startPublishing(mLaneStatusSummaryML); // mLaneStatusSummaryML
   mLaneStatusSummaryOL = new TH1D("LaneStatusSummary/LaneStatusSummaryOL", "Lane Status Summary OL", 3, 0, 3);
   getObjectsManager()->startPublishing(mLaneStatusSummaryOL); // mLaneStatusSummaryOL
-
-  mLaneStatusSummaryGlobal = new TH1D("LaneStatusSummary/LaneStatusSummaryGlobal", "Lane Status Summary Global", 4, 0, 4);
-  mLaneStatusSummaryGlobal->SetMaximum(1);
-  TLine* mLaneStatusSummaryLine = new TLine(0, 0.1, 4, 0.1);
-  mLaneStatusSummaryLine->SetLineStyle(9);
-  mLaneStatusSummaryLine->SetLineColor(kRed);
-
-  TLatex* mLaneStatusSummaryInfo = new TLatex(0.1, 0.11, Form("#bf{%s}", "Threshold value"));
-  mLaneStatusSummaryInfo->SetTextSize(0.05);
-  mLaneStatusSummaryInfo->SetTextFont(43);
-  mLaneStatusSummaryInfo->SetTextColor(kRed);
-
-  mLaneStatusSummaryGlobal->GetListOfFunctions()->Add(mLaneStatusSummaryLine);
-  mLaneStatusSummaryGlobal->GetListOfFunctions()->Add(mLaneStatusSummaryInfo);
+  mLaneStatusSummaryGlobal = new TH1D("LaneStatusSummary/LaneStatusSummaryGlobal", "Lane Status Summary Global", 3, 0, 3);
   getObjectsManager()->startPublishing(mLaneStatusSummaryGlobal); // mLaneStatusSummaryGlobal
 
   mFlag1Check = new TH2I("Flag1Check", "Flag 1 Check", NFees, 0, NFees, 3, 0, 3); // Row 1 : transmission_timeout, Row 2 : packet_overflow, Row 3 : lane_starts_violation
@@ -142,7 +129,7 @@ void ITSFeeTask::createFeePlots()
   mPayloadSize = new TH2F("PayloadSize", "Payload Size", NFees, 0, NFees, mNPayloadSizeBins, 0, 4.096e4);
   getObjectsManager()->startPublishing(mPayloadSize); // mPayloadSize
 
-  mRDHSummary = new TH2I("RDHSummary", "RDH Summary", NFees, 0, NFees, 7, 0, 7);
+  mRDHSummary = new TH2I("RDHSummary", "RDH Summary", NFees, 0, NFees, 8, 0, 8);
   getObjectsManager()->startPublishing(mRDHSummary);
 }
 
@@ -209,6 +196,7 @@ void ITSFeeTask::setPlotsFormat()
     mRDHSummary->GetYaxis()->SetBinLabel(5, "ClockEvent");
     mRDHSummary->GetYaxis()->SetBinLabel(6, "TimebaseEvent");
     mRDHSummary->GetYaxis()->SetBinLabel(7, "TimebaseUnsyncEvent");
+    mRDHSummary->GetYaxis()->SetBinLabel(8, "Trigger Ramp bit");
     drawLayerName(mRDHSummary);
   }
 
@@ -292,7 +280,6 @@ void ITSFeeTask::setPlotsFormat()
     for (int i = 0; i < NFlags; i++) {
       mLaneStatusSummaryGlobal->GetXaxis()->SetBinLabel(i + 1, mLaneStatusFlag[i].c_str());
     }
-    mLaneStatusSummaryGlobal->GetXaxis()->SetBinLabel(4, "TOTAL");
     mLaneStatusSummaryGlobal->GetXaxis()->CenterLabels();
     mLaneStatusSummaryGlobal->SetStats(0);
   }
@@ -316,7 +303,7 @@ void ITSFeeTask::setPlotsFormat()
   }
 }
 
-void ITSFeeTask::startOfActivity(const Activity& activity)
+void ITSFeeTask::startOfActivity(Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity : " << activity.mId << ENDM;
   mRunNumber = activity.mId;
@@ -372,7 +359,9 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
       mRDHSummary->Fill(ifee, 2); // error
     if (summaryLaneStatus & (1 << 3))
       mRDHSummary->Fill(ifee, 3); // fault
-    if (summaryLaneStatus & (1 << 26)) {
+    if (summaryLaneStatus & (1 << 4))
+      mRDHSummary->Fill(ifee, 7); // trigger ramp bit
+    if (summaryLaneStatus & (1 << 27)) {
       mRDHSummary->Fill(ifee, 4); // clock evt
       clockEvt = true;
     }
@@ -454,7 +443,6 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
   // Filling histograms: loop over mStatusFlagNumber[ilayer][istave][ilane][iflag]
   int counterSummary[4][3] = { { 0 } };
   int layerSummary[7][3] = { { 0 } };
-
   for (int iflag = 0; iflag < NFlags; iflag++) {
     for (int ilayer = 0; ilayer < NLayer; ilayer++) {
       for (int istave = 0; istave < NStaves[ilayer]; istave++) {
@@ -483,8 +471,6 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
     mLaneStatusSummaryML->SetBinContent(iflag + 1, 1. * counterSummary[2][iflag] / NLanesML);
     mLaneStatusSummaryOL->SetBinContent(iflag + 1, 1. * counterSummary[3][iflag] / NLanesOL);
   }
-
-  mLaneStatusSummaryGlobal->SetBinContent(4, 1. * (counterSummary[0][0] + counterSummary[0][1] + counterSummary[0][2]) / NLanesTotal);
 
   for (int i = 0; i < NFees; i++) {
     if (nStops[i]) {
@@ -542,7 +528,7 @@ void ITSFeeTask::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
-void ITSFeeTask::endOfActivity(const Activity& /*activity*/)
+void ITSFeeTask::endOfActivity(Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
@@ -564,7 +550,7 @@ void ITSFeeTask::resetLanePlotsAndCounters()
     mLaneStatusSummaryIB->Reset();
     mLaneStatusSummaryML->Reset();
     mLaneStatusSummaryOL->Reset();
-    mLaneStatusSummaryGlobal->Reset("ICES");
+    mLaneStatusSummaryGlobal->Reset();
     for (int i = 0; i < NFlags; i++) {
       mLaneStatus[i]->Reset("ICES");
       mLaneStatusOverview[i]->Reset("content");
