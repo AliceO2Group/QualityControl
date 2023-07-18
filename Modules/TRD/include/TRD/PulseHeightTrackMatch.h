@@ -60,12 +60,11 @@ class PulseHeightTrackMatch final : public TaskInterface
   void drawLinesOnPulseHeight(TProfile* h);
 
  private:
-  // limits
-  double mPileupCut = 0.0;
+  // json configurable parameters
   std::pair<float, float> mDriftRegion;
   std::pair<float, float> mPulseHeightPeakRegion;
+  std::bitset<4> mTrackType = 0xf; // bitset to select one or a combination of track types 0: ITSTPCTRD, 1: TPCTRD, 2: TRACKLET, 3: OTHERS. Default is 0xf: all tracks
   long int mTimestamp;
-
   std::shared_ptr<TProfile> mPulseHeightpro = nullptr;
   std::shared_ptr<TProfile2D> mPulseHeightperchamber = nullptr;
 };

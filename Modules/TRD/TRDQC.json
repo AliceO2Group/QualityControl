@@ -127,7 +127,7 @@
           "query": "phdata:TRD/PULSEHEIGHT"
         },
         "taskParameters": {
-          "pileupCut": "0.7",
+          "trackType": "0xf",
           "peakregionstart": "7.0",
           "peakregionend": "20.0",
           "pulseheightpeaklower": "1.0",

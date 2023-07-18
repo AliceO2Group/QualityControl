@@ -91,12 +91,17 @@ void PulseHeightTrackMatch::initialize(o2::framework::InitContext& /*ctx*/)
     mPulseHeightPeakRegion.second = 5.0;
     ILOG(Debug, Devel) << "configure() : using default pulseheightupper = " << mPulseHeightPeakRegion.second << ENDM;
   }
-  if (auto param = mCustomParameters.find("pileupCut"); param != mCustomParameters.end()) {
-    mPileupCut = std::stof(param->second);
-    ILOG(Debug, Devel) << "configure() : using pileupcut	= " << mPileupCut << ENDM;
+  if (auto param = mCustomParameters.find("trackType"); param != mCustomParameters.end()) {
+    mTrackType = std::stof(param->second);
+    if (mTrackType == 0x1) {
+      ILOG(Debug, Devel) << "configure() : using trackType	= " << mTrackType << " ITS-TPC-TRD tracks" << ENDM;
+    }
+    if (mTrackType == 0x2) {
+      ILOG(Debug, Devel) << "configure() : using trackType	= " << mTrackType << " TPC-TRD tracks" << ENDM;
+    }
   } else {
-    mPileupCut = 0.7;
-    ILOG(Debug, Devel) << "configure() : using default pileupcut = " << mPileupCut << ENDM;
+    mTrackType = 0xf;
+    ILOG(Debug, Devel) << "configure() : using default trackType = " << mTrackType << " all the tracks" << ENDM;
   }
 
   retrieveCCDBSettings();
@@ -118,10 +123,11 @@ void PulseHeightTrackMatch::monitorData(o2::framework::ProcessingContext& ctx)
   auto phDataArr = ctx.inputs().get<gsl::span<o2::trd::PHData>>("phdata");
 
   for (const auto& phData : phDataArr) {
-    // fill for ITS,TPC,TRD tracks
-    if (phData.getType() == 0) {
-      mPulseHeightpro->Fill(phData.getTimebin(), phData.getADC());
-      mPulseHeightperchamber->Fill(phData.getTimebin(), phData.getDetector(), phData.getADC());
+    for (int i = 0; i < 4; ++i) {
+      if (mTrackType[i] && phData.getType() == i) {
+        mPulseHeightpro->Fill(phData.getTimebin(), phData.getADC());
+        mPulseHeightperchamber->Fill(phData.getTimebin(), phData.getDetector(), phData.getADC());
+      }
     }
   }
 }
