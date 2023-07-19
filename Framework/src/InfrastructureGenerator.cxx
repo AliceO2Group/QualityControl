@@ -56,7 +56,7 @@ namespace o2::quality_control::core
 {
 
 constexpr uint16_t defaultPolicyPort = 42349;
-constexpr size_t proxyMemoryKillThresholdMB = 5000;
+constexpr auto proxyMemoryKillThresholdMB = "5000";
 
 struct DataSamplingPolicySpec {
   DataSamplingPolicySpec(std::string name, std::string control, std::string remoteMachine = "")
@@ -388,7 +388,7 @@ void InfrastructureGenerator::generateDataSamplingPolicyLocalProxyBind(framework
       channelSelector));
   workflow.back().labels.emplace_back(control == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
   if (getenv("O2_QC_KILL_PROXIES") != nullptr) {
-    workflow.back().metadata.push_back({ ecs::privateMemoryKillThresholdMB, proxyMemoryKillThresholdMB });
+    workflow.back().metadata.push_back(DataProcessorMetadata{ ecs::privateMemoryKillThresholdMB, proxyMemoryKillThresholdMB });
   }
 }
 
@@ -415,7 +415,7 @@ void InfrastructureGenerator::generateDataSamplingPolicyRemoteProxyConnect(frame
   enableDraining(proxy.options);
   workflow.emplace_back(std::move(proxy));
   if (getenv("O2_QC_KILL_PROXIES") != nullptr) {
-    workflow.back().metadata.push_back({ ecs::privateMemoryKillThresholdMB, proxyMemoryKillThresholdMB });
+    workflow.back().metadata.push_back(DataProcessorMetadata{ ecs::privateMemoryKillThresholdMB, proxyMemoryKillThresholdMB });
   }
 }
 
@@ -442,7 +442,7 @@ void InfrastructureGenerator::generateDataSamplingPolicyLocalProxyConnect(framew
       channelSelector));
   workflow.back().labels.emplace_back(control == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
   if (getenv("O2_QC_KILL_PROXIES") != nullptr) {
-    workflow.back().metadata.push_back({ ecs::privateMemoryKillThresholdMB, proxyMemoryKillThresholdMB });
+    workflow.back().metadata.push_back(DataProcessorMetadata{ ecs::privateMemoryKillThresholdMB, proxyMemoryKillThresholdMB });
   }
 }
 
@@ -466,7 +466,7 @@ void InfrastructureGenerator::generateDataSamplingPolicyRemoteProxyBind(framewor
   // if not in RUNNING, we should drop all the incoming messages, we set the corresponding proxy option.
   enableDraining(proxy.options);
   if (getenv("O2_QC_KILL_PROXIES") != nullptr) {
-    proxy.metadata.push_back({ ecs::privateMemoryKillThresholdMB, proxyMemoryKillThresholdMB });
+    proxy.metadata.push_back(DataProcessorMetadata{ ecs::privateMemoryKillThresholdMB, proxyMemoryKillThresholdMB });
   }
   workflow.emplace_back(std::move(proxy));
 }
@@ -489,7 +489,7 @@ void InfrastructureGenerator::generateLocalTaskLocalProxy(framework::WorkflowSpe
       channelConfig.c_str()));
   workflow.back().labels.emplace_back(taskSpec.localControl == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
   if (getenv("O2_QC_KILL_PROXIES") != nullptr) {
-    workflow.back().metadata.push_back({ ecs::privateMemoryKillThresholdMB, proxyMemoryKillThresholdMB });
+    workflow.back().metadata.push_back(DataProcessorMetadata{ ecs::privateMemoryKillThresholdMB, proxyMemoryKillThresholdMB });
   }
 }
 
@@ -518,7 +518,7 @@ void InfrastructureGenerator::generateLocalTaskRemoteProxy(framework::WorkflowSp
   // if not in RUNNING, we should drop all the incoming messages, we set the corresponding proxy option.
   enableDraining(proxy.options);
   if (getenv("O2_QC_KILL_PROXIES") != nullptr) {
-    proxy.metadata.push_back({ ecs::privateMemoryKillThresholdMB, proxyMemoryKillThresholdMB });
+    proxy.metadata.push_back(DataProcessorMetadata{ ecs::privateMemoryKillThresholdMB, proxyMemoryKillThresholdMB });
   }
   workflow.emplace_back(std::move(proxy));
 }
