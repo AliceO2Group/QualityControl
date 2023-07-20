@@ -142,7 +142,7 @@ void ITSFeeTask::createFeePlots()
   mPayloadSize = new TH2F("PayloadSize", "Payload Size", NFees, 0, NFees, mNPayloadSizeBins, 0, 4.096e4);
   getObjectsManager()->startPublishing(mPayloadSize); // mPayloadSize
 
-  mRDHSummary = new TH2I("RDHSummary", "RDH Summary", NFees, 0, NFees, 7, 0, 7);
+  mRDHSummary = new TH2I("RDHSummary", "RDH Summary", NFees, 0, NFees, 8, 0, 8);
   getObjectsManager()->startPublishing(mRDHSummary);
 }
 
@@ -209,6 +209,7 @@ void ITSFeeTask::setPlotsFormat()
     mRDHSummary->GetYaxis()->SetBinLabel(5, "ClockEvent");
     mRDHSummary->GetYaxis()->SetBinLabel(6, "TimebaseEvent");
     mRDHSummary->GetYaxis()->SetBinLabel(7, "TimebaseUnsyncEvent");
+    mRDHSummary->GetYaxis()->SetBinLabel(8, "Trigger ramp bit");
     drawLayerName(mRDHSummary);
   }
 
@@ -372,6 +373,8 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
       mRDHSummary->Fill(ifee, 2); // error
     if (summaryLaneStatus & (1 << 3))
       mRDHSummary->Fill(ifee, 3); // fault
+    if (summaryLaneStatus & (1 << 4))
+      mRDHSummary->Fill(ifee, 7); // trigger ramp bit
     if (summaryLaneStatus & (1 << 26)) {
       mRDHSummary->Fill(ifee, 4); // clock evt
       clockEvt = true;
