@@ -124,7 +124,7 @@
         "dataSource_comment": "no comment",
         "dataSource": {
           "type": "direct",
-          "query": "phdata:TRD/PULSEHEIGHT"
+          "query": "phValues:TRD/PULSEHEIGHT"
         },
         "taskParameters": {
           "trackType": "0xf",
