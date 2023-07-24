@@ -120,7 +120,7 @@ void PulseHeightTrackMatch::startOfCycle()
 
 void PulseHeightTrackMatch::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  auto phDataArr = ctx.inputs().get<gsl::span<o2::trd::PHData>>("tracks");
+  auto phDataArr = ctx.inputs().get<gsl::span<o2::trd::PHData>>("phValues");
 
   for (const auto& phData : phDataArr) {
     if (mTrackType[phData.getType()]) {
