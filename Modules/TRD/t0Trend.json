@@ -1,0 +1,96 @@
+{
+    "qc": {
+      "config": {
+        "database": {
+          "implementation": "CCDB",
+          "host": "ccdb-test.cern.ch:8080",
+          "username": "not_applicable",
+          "password": "not_applicable",
+          "name": "not_applicable"
+        },
+        "Activity": {
+          "number": "42",
+          "type": "2"
+        },
+        "monitoring": {
+          "url": "infologger:///debug?qc"
+        },
+        "consul": {
+          "url": ""
+        },
+        "conditionDB": {
+          "url": "ccdb-test.cern.ch:8080"
+        },
+        "postprocessing": {
+          "periodSeconds": "60"
+        }
+      },
+      "tasks": {
+        "PulseHeight": {
+          "active": "true",
+          "className": "o2::quality_control_modules::trd::PulseHeight",
+          "moduleName": "QcTRD",
+          "detectorName": "TRD",
+          "cycleDurationSeconds": "60",
+          "maxNumberCycles": "-1",
+          "dataSource": {
+            "type": "direct",
+            "query": "tracklets:TRD/TRACKLETS;digits:TRD/DIGITS;triggers:TRD/TRKTRGRD" ,"":"digits:TRD/DIGITS;tracklets:TRD/TRACKLETS;triggers:TRD/TRKTRGRD;rawstats:TRD/RAWSTATS"
+          },
+          "taskParameters": {
+            "peakregionstart": "7.0",
+            "peakregionend": "20.0",
+            "pulseheightpeaklower": "1.0",
+            "pulseheightpeakupper": "5.0"
+          },
+          "location": "remote",
+          "saveObjectsToFile": "qc_pulse_hight_task.root"
+        }
+      },
+      "postprocessing": {
+        "t0Trend": {
+          "active": "true",
+          "className": "o2::quality_control::postprocessing::TrendingTask",
+          "moduleName": "QualityControl",
+          "detectorName": "TRD",
+          "producePlotsOnUpdate": "true",
+          "dataSources": [
+            {
+              "type": "repository",
+              "path": "TRD/MO/PulseHeight",
+              "names": [ "mPulseHeight" ],
+              "reductorName": "o2::quality_control_modules::trd::TRDReductor",
+              "moduleName": "QcTRD"
+            }
+          ],
+          "plots": [
+            {
+              "name": "t0peak_Trend",
+              "title": "Trend of Position of t0 Peak",
+              "varexp": "mPulseHeight.t0peak:time",
+              "selection": "",
+              "option": "*L",
+              "graphAxisLabel": "t0peak position:time"
+            },
+            {
+              "name":"t0Fit_chi2/NDF",
+              "title":"Trend of t0peak's chi2/ndf",
+              "varexp":"mPulseHeight.chi2byNDF:time",
+              "selection":"",
+              "option": "*L",
+              "graphAxisLabel": "chi2/NDF trend:time"
+            }
+          ],
+          "initTrigger": [
+            "60sec","SOR","userorcontrol"
+          ],
+          "updateTrigger": [
+            "60sec"
+          ],
+          "stopTrigger": [
+            "EOR","userorcontrol"
+          ]
+        }
+      }
+    }
+  }
