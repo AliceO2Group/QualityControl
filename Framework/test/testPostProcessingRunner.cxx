@@ -16,10 +16,12 @@
 
 #include "getTestDataDirectory.h"
 #include "QualityControl/PostProcessingRunner.h"
+#include "QualityControl/WorkflowType.h"
 #include <Configuration/ConfigurationFactory.h>
 #include <catch_amalgamated.hpp>
 
 using namespace o2::quality_control::postprocessing;
+using namespace o2::quality_control::core;
 using namespace o2::configuration;
 
 TEST_CASE("test_configurationfactory")
@@ -30,6 +32,6 @@ TEST_CASE("test_configurationfactory")
   PostProcessingRunner runner("SkeletonPostProcessing");
 
   // todo: this initializes database. should we have an option not to do it, so we don't fail test randomly?
-  CHECK_NOTHROW(runner.init(config->getRecursive()));
+  CHECK_NOTHROW(runner.init(config->getRecursive(), WorkflowType::Standalone));
   CHECK_NOTHROW(runner.run());
 }

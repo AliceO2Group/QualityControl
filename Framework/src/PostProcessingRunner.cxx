@@ -51,9 +51,9 @@ void PostProcessingRunner::setPublicationCallback(MOCPublicationCallback callbac
   mPublicationCallback = std::move(callback);
 }
 
-void PostProcessingRunner::init(const boost::property_tree::ptree& config)
+void PostProcessingRunner::init(const boost::property_tree::ptree& config, core::WorkflowType workflowType)
 {
-  auto specs = InfrastructureSpecReader::readInfrastructureSpec(config);
+  auto specs = InfrastructureSpecReader::readInfrastructureSpec(config, workflowType);
   auto ppTaskSpec = std::find_if(specs.postProcessingTasks.begin(),
                                  specs.postProcessingTasks.end(),
                                  [id = mID](const auto& spec) {

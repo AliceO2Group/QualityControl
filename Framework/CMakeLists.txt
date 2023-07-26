@@ -91,7 +91,8 @@ add_library(O2QualityControl
   src/runnerUtils.cxx
   src/Timekeeper.cxx
   src/TimekeeperSynchronous.cxx
-  src/TimekeeperAsynchronous.cxx)
+  src/TimekeeperAsynchronous.cxx
+  src/WorkflowType.cxx)
 
 
 target_include_directories(
@@ -238,6 +239,7 @@ add_executable(o2-qc-test-core
                test/testTimekeeper.cxx
                test/testTriggerHelpers.cxx
                test/testVersion.cxx
+               test/testMonitorObjectCollection.cxx
                )
 set_property(TARGET o2-qc-test-core
              PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)

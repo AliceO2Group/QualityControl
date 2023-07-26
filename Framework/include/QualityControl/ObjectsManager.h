@@ -188,6 +188,9 @@ class ObjectsManager
   const Activity& getActivity() const;
   void setActivity(const Activity& activity);
 
+  void setMovingWindowsList(const std::vector<std::string>&);
+  const std::vector<std::string>& getMovingWindowsList() const;
+
  private:
   std::unique_ptr<MonitorObjectCollection> mMonitorObjects;
   std::string mTaskName;
@@ -196,6 +199,7 @@ class ObjectsManager
   std::unique_ptr<ServiceDiscovery> mServiceDiscovery;
   bool mUpdateServiceDiscovery;
   Activity mActivity;
+  std::vector<std::string> mMovingWindowsList;
 };
 
 } // namespace o2::quality_control::core

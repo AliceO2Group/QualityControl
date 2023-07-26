@@ -35,7 +35,7 @@ namespace o2::quality_control::core
 namespace InfrastructureSpecReader
 {
 /// \brief Reads the full QC configuration structure.
-InfrastructureSpec readInfrastructureSpec(const boost::property_tree::ptree& wholeTree);
+InfrastructureSpec readInfrastructureSpec(const boost::property_tree::ptree& wholeTree, WorkflowType workflowType);
 
 template <typename T>
 T readSpecEntry(const std::string& entryID, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);

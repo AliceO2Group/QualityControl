@@ -179,4 +179,14 @@ void MonitorObject::setTaskClass(const string& taskClass)
   MonitorObject::mTaskClass = taskClass;
 }
 
+void MonitorObject::setCreateMovingWindow(bool flag)
+{
+  mCreateMovingWindow = flag;
+}
+
+bool MonitorObject::getCreateMovingWindow() const
+{
+  return mCreateMovingWindow;
+}
+
 } // namespace o2::quality_control::core

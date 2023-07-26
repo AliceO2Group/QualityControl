@@ -40,6 +40,7 @@
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/ConfigParamGlo.h"
 #include "QualityControl/Bookkeeping.h"
+#include "QualityControl/WorkflowType.h"
 
 using namespace AliceO2::Common;
 using namespace AliceO2::InfoLogger;
@@ -88,7 +89,7 @@ void AggregatorRunner::refreshConfig(InitContext& iCtx)
       }
 
       // read the config, prepare spec
-      auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(updatedTree);
+      auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(updatedTree, workflow_type_helpers::getWorkflowType(iCtx.options()));
 
       // replace the runner config
       mRunnerConfig = AggregatorRunnerFactory::extractRunnerConfig(infrastructureSpec.common);

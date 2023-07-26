@@ -68,6 +68,26 @@ class InfrastructureGenerator
   /// \param configurationTree - full QC config ptree
   static void generateStandaloneInfrastructure(framework::WorkflowSpec& workflow, const boost::property_tree::ptree& configurationTree);
 
+  /// \brief Generates a full QC chain infrastructure.
+  ///
+  /// Generates a full QC infrastructure from a configuration file. This function is aimed to use for standalone setups
+  /// and local development. It will create both local and remote QC tasks, and CheckRunners running associated Checks,
+  /// as well as Mergers between local QC tasks and Checks.
+  ///
+  /// \param configurationTree - full path to configuration file, preceded with the backend (e.g. "json://")
+  /// \return generated standalone QC workflow
+  static framework::WorkflowSpec generateFullChainInfrastructure(const boost::property_tree::ptree& configurationTree);
+
+  /// \brief Generates a full QC chain infrastructure.
+  ///
+  /// Generates a full QC infrastructure from a configuration file. This function is aimed to use for standalone setups
+  /// and local development. It will create both local and remote QC tasks, and CheckRunners running associated Checks,
+  /// as well as Mergers between local QC tasks and Checks.
+  ///
+  /// \param workflow - existing workflow where QC infrastructure should be placed
+  /// \param configurationTree - full QC config ptree
+  static void generateFullChainInfrastructure(framework::WorkflowSpec& workflow, const boost::property_tree::ptree& configurationTree);
+
   /// \brief Generates the local part of the QC infrastructure for a specified host.
   ///
   /// Generates the local part of the QC infrastructure for a specified host - taskRunners which are declared in the
@@ -190,15 +210,12 @@ class InfrastructureGenerator
   static void generateLocalTaskRemoteProxy(framework::WorkflowSpec& workflow,
                                            const TaskSpec& taskSpec,
                                            size_t numberOfLocalMachines);
-  static void generateMergers(framework::WorkflowSpec& workflow,
-                              const std::string& taskName,
+  static void generateMergers(framework::WorkflowSpec& workflow, const std::string& taskName,
                               size_t numberOfLocalMachines,
                               std::vector<std::pair<size_t, size_t>> cycleDurationSeconds,
-                              const std::string& mergingMode,
-                              size_t resetAfterCycles,
-                              std::string monitoringUrl,
-                              const std::string& detectorName,
-                              std::vector<size_t> mergersPerLayer);
+                              const std::string& mergingMode, size_t resetAfterCycles,
+                              std::string monitoringUrl, const std::string& detectorName,
+                              std::vector<size_t> mergersPerLayer, bool enableMovingWindows);
   static void generateCheckRunners(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec);
   static void generateAggregator(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec);
   static void generatePostProcessing(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec);
@@ -216,6 +233,16 @@ inline framework::WorkflowSpec generateStandaloneInfrastructure(const boost::pro
 inline void generateStandaloneInfrastructure(framework::WorkflowSpec& workflow, const boost::property_tree::ptree& configurationTree)
 {
   core::InfrastructureGenerator::generateStandaloneInfrastructure(workflow, configurationTree);
+}
+
+inline framework::WorkflowSpec generateFullChainInfrastructure(const boost::property_tree::ptree& configurationTree)
+{
+  return core::InfrastructureGenerator::generateFullChainInfrastructure(configurationTree);
+}
+
+inline void generateFullChainInfrastructure(framework::WorkflowSpec& workflow, const boost::property_tree::ptree& configurationTree)
+{
+  core::InfrastructureGenerator::generateFullChainInfrastructure(workflow, configurationTree);
 }
 
 inline framework::WorkflowSpec generateLocalInfrastructure(const boost::property_tree::ptree& configurationTree, std::string host)

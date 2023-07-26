@@ -63,6 +63,7 @@ struct TaskRunnerConfig {
   Activity fallbackActivity;
   std::shared_ptr<o2::base::GRPGeomRequest> grpGeomRequest;
   std::shared_ptr<o2::globaltracking::DataRequest> globalTrackingDataRequest;
+  std::vector<std::string> movingWindows;
 };
 
 } // namespace o2::quality_control::core

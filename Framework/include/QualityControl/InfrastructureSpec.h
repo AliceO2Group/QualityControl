@@ -16,6 +16,7 @@
 /// \author Piotr Konopka
 ///
 
+#include "QualityControl/WorkflowType.h"
 #include "QualityControl/CommonSpec.h"
 #include "QualityControl/TaskSpec.h"
 #include "QualityControl/CheckSpec.h"
@@ -29,6 +30,7 @@ namespace o2::quality_control::core
 {
 
 struct InfrastructureSpec {
+  WorkflowType workflowType = WorkflowType::Standalone;
   CommonSpec common;
   std::vector<TaskSpec> tasks;
   std::vector<checker::CheckSpec> checks;

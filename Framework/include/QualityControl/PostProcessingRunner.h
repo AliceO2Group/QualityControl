@@ -26,6 +26,7 @@
 #include "QualityControl/PostProcessingRunnerConfig.h"
 #include "QualityControl/Triggers.h"
 #include "QualityControl/DatabaseInterface.h"
+#include "WorkflowType.h"
 
 namespace o2::framework
 {
@@ -64,7 +65,7 @@ class PostProcessingRunner
   ~PostProcessingRunner() = default;
 
   /// \brief Initialization. Creates configuration structures out of the ptree. Throws on errors.
-  void init(const boost::property_tree::ptree& config);
+  void init(const boost::property_tree::ptree& config, o2::quality_control::core::WorkflowType workflowType);
   /// \brief Initialization. Throws on errors.
   void init(const PostProcessingRunnerConfig& runnerConfig, const PostProcessingConfig& taskConfig);
   /// \brief One iteration over the event loop. Throws on errors. Returns false when it can gracefully exit.
