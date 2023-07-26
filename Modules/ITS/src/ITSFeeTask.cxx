@@ -52,6 +52,7 @@ ITSFeeTask::~ITSFeeTask()
   delete mLaneStatusSummaryOL;
   delete mLaneStatusSummaryGlobal;
   delete mRDHSummary;
+  delete mRDHSummaryCumulative;
   for (int i = 0; i < NFlags; i++) {
     delete mLaneStatus[i];
     delete mLaneStatusCumulative[i];
@@ -144,6 +145,9 @@ void ITSFeeTask::createFeePlots()
 
   mRDHSummary = new TH2I("RDHSummary", "RDH Summary", NFees, 0, NFees, 8, 0, 8);
   getObjectsManager()->startPublishing(mRDHSummary);
+
+  mRDHSummaryCumulative = new TH2I("RDHSummaryCumulative", "RDH Summary since SOX", NFees, 0, NFees, 8, 0, 8);
+  getObjectsManager()->startPublishing(mRDHSummaryCumulative);
 }
 
 void ITSFeeTask::setAxisTitle(TH1* object, const char* xTitle, const char* yTitle)
@@ -211,6 +215,20 @@ void ITSFeeTask::setPlotsFormat()
     mRDHSummary->GetYaxis()->SetBinLabel(7, "TimebaseUnsyncEvent");
     mRDHSummary->GetYaxis()->SetBinLabel(8, "Trigger ramp bit");
     drawLayerName(mRDHSummary);
+  }
+
+  if (mRDHSummaryCumulative) {
+    setAxisTitle(mRDHSummaryCumulative, "FEEId", "");
+    mRDHSummaryCumulative->SetStats(0);
+    mRDHSummaryCumulative->GetYaxis()->SetBinLabel(1, "Missing data");
+    mRDHSummaryCumulative->GetYaxis()->SetBinLabel(2, "Warning");
+    mRDHSummaryCumulative->GetYaxis()->SetBinLabel(3, "Error");
+    mRDHSummaryCumulative->GetYaxis()->SetBinLabel(4, "Fault");
+    mRDHSummaryCumulative->GetYaxis()->SetBinLabel(5, "ClockEvent");
+    mRDHSummaryCumulative->GetYaxis()->SetBinLabel(6, "TimebaseEvent");
+    mRDHSummaryCumulative->GetYaxis()->SetBinLabel(7, "TimebaseUnsyncEvent");
+    mRDHSummaryCumulative->GetYaxis()->SetBinLabel(8, "Trigger ramp bit");
+    drawLayerName(mRDHSummaryCumulative);
   }
 
   for (int i = 0; i < NFlags; i++) {
@@ -365,24 +383,39 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
     //  get detector field
     uint32_t summaryLaneStatus = o2::raw::RDHUtils::getDetectorField(rdh);
     // fill statusVsFeeId if set
-    if (summaryLaneStatus & (1 << 0))
+    if (summaryLaneStatus & (1 << 0)) {
       mRDHSummary->Fill(ifee, 0); // missing data
-    if (summaryLaneStatus & (1 << 1))
+      mRDHSummaryCumulative->Fill(ifee, 0);
+    }
+    if (summaryLaneStatus & (1 << 1)) {
       mRDHSummary->Fill(ifee, 1); // warning
-    if (summaryLaneStatus & (1 << 2))
+      mRDHSummaryCumulative->Fill(ifee, 1);
+    }
+    if (summaryLaneStatus & (1 << 2)) {
       mRDHSummary->Fill(ifee, 2); // error
-    if (summaryLaneStatus & (1 << 3))
+      mRDHSummaryCumulative->Fill(ifee, 2);
+    }
+    if (summaryLaneStatus & (1 << 3)) {
       mRDHSummary->Fill(ifee, 3); // fault
-    if (summaryLaneStatus & (1 << 4))
+      mRDHSummaryCumulative->Fill(ifee, 3);
+    }
+    if (summaryLaneStatus & (1 << 4)) {
       mRDHSummary->Fill(ifee, 7); // trigger ramp bit
+      mRDHSummaryCumulative->Fill(ifee, 7);
+    }
     if (summaryLaneStatus & (1 << 26)) {
       mRDHSummary->Fill(ifee, 4); // clock evt
+      mRDHSummaryCumulative->Fill(ifee, 4);
       clockEvt = true;
     }
-    if (summaryLaneStatus & (1 << 25))
+    if (summaryLaneStatus & (1 << 25)) {
       mRDHSummary->Fill(ifee, 5); // Timebase evt
-    if (summaryLaneStatus & (1 << 24))
-      mRDHSummary->Fill(ifee, 6);                              // Timebase Unsync evt
+      mRDHSummaryCumulative->Fill(ifee, 5);
+    }
+    if (summaryLaneStatus & (1 << 24)) {
+      mRDHSummary->Fill(ifee, 6);
+      mRDHSummaryCumulative->Fill(ifee, 6); // Timebase Unsync evt
+    }
     if ((int)(o2::raw::RDHUtils::getStop(rdh)) && it.size()) { // looking into the DDW0 from the closing packet
       const GBTDiagnosticWord* ddw;
       try {
