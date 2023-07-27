@@ -45,23 +45,38 @@ class ZDCRawDataCheck : public o2::quality_control::checker::CheckInterface
     float maxW;
     float minE;
     float maxE;
-    std::string typech;
+    std::string param;
   };
 
+  struct sHistoCheck {
+    std::string nameHisto;
+    std::string typecheck;
+    std::string typeHisto;
+    std::string paramPosMsgX;
+    std::string paramPosMsgY;
+    float posMsgX;
+    float posMsgY;
+    int numW = 0;
+    int numE = 0;
+    int quality = 0; // 1 Good 2 warning 3 bad
+    std::string stringW = "List channels Warning Quality: ";
+    std::string stringE = "List channels Bad Quality: ";
+    std::vector<sCheck> paramch;
+  };
   void init();
   void setChName(std::string channel);
-  void setChCheck(int i);
+  void setChCheck(std::string histoName, std::string typeHisto, std::string typeCheck, std::string paramPosMsgX, std::string paramPosMsgY);
   std::vector<std::string> tokenLine(std::string Line, std::string Delimiter);
-  void dumpVecParam(int numBinHisto, int num_ch);
+  void dumpVecParam(int id_histo, int numBinHisto, int num_ch);
+  std::string getCurrentDataTime();
+  void dumpStruct();
 
  private:
-  std::vector<sCheck> mVectParam;
-  int mNumW = 0;
-  int mNumE = 0;
-  float mPosMsgX;
-  float mPosMsgY;
-  std::string mStringW = " ";
-  std::string mStringE = "List channel Bad Quality: ";
+  std::vector<sHistoCheck> mVectHistoCheck;
+  std::vector<std::string> mVectch;
+
+  // std::string mStringW = "List channels Warning Quality: ";
+  // std::string mStringE = "List channels Bad Quality: ";
 };
 
 } // namespace o2::quality_control_modules::zdc

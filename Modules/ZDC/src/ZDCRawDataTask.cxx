@@ -74,7 +74,7 @@ void ZDCRawDataTask::initialize(o2::framework::InitContext& /*ctx*/)
   init();
 }
 
-void ZDCRawDataTask::startOfActivity(const Activity& activity)
+void ZDCRawDataTask::startOfActivity(Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity" << activity.mId << ENDM;
   // reset for all object
@@ -85,6 +85,7 @@ void ZDCRawDataTask::startOfCycle()
 {
   ILOG(Debug, Devel) << "startOfCycle" << ENDM;
   fNumCycle++;
+  fNumCycleErr++;
 }
 
 void ZDCRawDataTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -140,10 +141,9 @@ void ZDCRawDataTask::monitorData(o2::framework::ProcessingContext& ctx)
 void ZDCRawDataTask::endOfCycle()
 {
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
-  // dumpHistoStructure();
 }
 
-void ZDCRawDataTask::endOfActivity(const Activity& /*activity*/)
+void ZDCRawDataTask::endOfActivity(Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
@@ -488,6 +488,21 @@ void ZDCRawDataTask::initHisto()
   }
   addNewHisto("SUMMARYRATE", "hrateSummary", "Rate Summary (KHz)", "NONE", "LBC");
 
+  if (auto param = mCustomParameters.find("SUMMARY_ERROR"); param != mCustomParameters.end()) {
+    ILOG(Debug, Devel) << "Custom parameter - SUMMARY_ERROR: " << param->second << ENDM;
+    tokenString = tokenLine(param->second, ";");
+    setBinHisto1D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()));
+  } else {
+    setBinHisto2D(26, -0.5, 25.5, 3, -0.5, 2.5);
+  }
+  addNewHisto("SUMMARY_ERROR", "herrorSummary", "Raw Data Error (Instantaneous)", "NONE", "ALL");
+  if (auto param = mCustomParameters.find("ERROR_NUM_CYCLE"); param != mCustomParameters.end()) {
+    ILOG(Debug, Devel) << "Custom parameter ERROR_NUM_CYCLE: " << param->second << ENDM;
+    tokenString = tokenLine(param->second, ";");
+    fErrorCycle = atoi(param->second.c_str());
+  } else {
+    fErrorCycle = 1;
+  }
   if (auto param = mCustomParameters.find("SUMMARY_ALIGN"); param != mCustomParameters.end()) {
     ILOG(Debug, Devel) << "Custom parameter - SUMMARY_ALIGN: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
@@ -495,8 +510,8 @@ void ZDCRawDataTask::initHisto()
   } else {
     setBinHisto2D(26, 0.5, 26.5, 12, -0.5, 11.5);
   }
-  addNewHisto("SUMMARY_ALIGN", "hAlignPlot", "Alignment Plot", "NONE", "A0oT0");
-  addNewHisto("SUMMARY_ALIGN_SHIFT", "hAlignPlotShift", "Alignment Plot", "NONE", "A0oT0");
+  addNewHisto("SUMMARY_ALIGN", "hAlignPlot", "Alignment Plot (History)", "NONE", "A0oT0");
+  addNewHisto("SUMMARY_ALIGN_SHIFT", "hAlignPlotShift", "Alignment Plot (Instantaneous)", "NONE", "A0oT0");
 
   if (auto param = mCustomParameters.find("ALIGN_NUM_CYCLE"); param != mCustomParameters.end()) {
     ILOG(Debug, Devel) << "Custom parameter -ALIGN_CYCLE: " << param->second << ENDM;
@@ -523,7 +538,6 @@ void ZDCRawDataTask::init()
   mCh.f.fixed_0 = o2::zdc::Id_wn;
   mCh.f.fixed_1 = o2::zdc::Id_wn;
   mCh.f.fixed_2 = o2::zdc::Id_wn;
-  // dumpHistoStructure();
 }
 
 inline int ZDCRawDataTask::getHPos(uint32_t board, uint32_t ch, int matrix[o2::zdc::NModules][o2::zdc::NChPerModule])
@@ -580,6 +594,7 @@ int ZDCRawDataTask::processWord(const uint32_t* word)
 
 int ZDCRawDataTask::process(const o2::zdc::EventChData& ch)
 {
+  int flag_reset = 0;
   static constexpr int last_bc = o2::constants::lhc::LHCMaxBunches - 1;
   union {
     uint16_t uns;
@@ -724,8 +739,15 @@ int ZDCRawDataTask::process(const o2::zdc::EventChData& ch)
     }
   }
   // Bunch
+  if (fNumCycleErr == fErrorCycle) {
+    fSummaryError->Reset();
+    fNumCycleErr = 0;
+  }
   if ((fOverBc) && f.bc >= o2::constants::lhc::LHCMaxBunches) {
     fOverBc->Fill(itb);
+    if (fSummaryError) {
+      fSummaryError->Fill(fMatrixAlign[f.board][f.ch].bin - 1, 2);
+    }
   }
   if (f.Alice_0 || f.Auto_0) {
     double bc_d = uint32_t(f.bc / 100);
@@ -752,12 +774,18 @@ int ZDCRawDataTask::process(const o2::zdc::EventChData& ch)
       fMatrixHistoBaseline[f.board][f.ch].at(i).histo->Fill(word16.sig / 12.);
     }
 
-    // Fill Counts
-
+    // Fill Data Loss
     if (fDataLoss && (f.dLoss)) {
       fDataLoss->Fill(f.board, f.ch);
+      if (fSummaryError) {
+        fSummaryError->Fill(fMatrixAlign[f.board][f.ch].bin - 1, 1);
+      }
     }
 
+    // Fill Bit Error
+    if (fSummaryError && (f.error)) {
+      fSummaryError->Fill(fMatrixAlign[f.board][f.ch].bin - 1, 0);
+    }
     for (int i = 0; i < (int)fMatrixHistoCounts[f.board][f.ch].size(); i++) {
       fMatrixHistoCounts[f.board][f.ch].at(i).histo->Fill(f.hits & 0xfff);
     }
@@ -1102,7 +1130,7 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
       }
     }
 
-    if ((type.compare("SUMMARYBASELINE") == 0) || (type.compare("SUMMARYRATE") == 0) || (type.compare("SUMMARY_ALIGN") == 0) || (type.compare("SUMMARY_ALIGN_SHIFT") == 0)) {
+    if ((type.compare("SUMMARYBASELINE") == 0) || (type.compare("SUMMARYRATE") == 0) || (type.compare("SUMMARY_ALIGN") == 0) || (type.compare("SUMMARY_ALIGN_SHIFT") == 0) || (type.compare("SUMMARY_ERROR") == 0)) {
       if (type.compare("SUMMARYBASELINE") == 0) {
         fSummaryPedestal = new TH1F(hname, htit, fNumBinX, fMinBinX, fMaxBinX);
         fSummaryPedestal->GetXaxis()->LabelsOption("v");
@@ -1123,6 +1151,11 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
         fSummaryAlignShift->GetXaxis()->LabelsOption("v");
         fSummaryAlignShift->SetStats(0);
       }
+      if (type.compare("SUMMARY_ERROR") == 0) {
+        fSummaryError = new TH2D(hname, htit, fNumBinX, fMinBinX, fMaxBinX, fNumBinY, fMinBinY, fMaxBinY);
+        fSummaryError->GetXaxis()->LabelsOption("v");
+        fSummaryError->SetStats(0);
+      }
       int i = 0;
       for (uint32_t imod = 0; imod < o2::zdc::NModules; imod++) {
         for (uint32_t ich = 0; ich < o2::zdc::NChPerModule; ich++) {
@@ -1136,6 +1169,9 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
             }
             if (type.compare("SUMMARYRATE") == 0) {
               fSummaryRate->GetXaxis()->SetBinLabel(i, TString::Format("%s", getNameChannel(imod, ich).c_str()));
+            }
+            if (type.compare("SUMMARY_ERROR") == 0) {
+              fSummaryError->GetXaxis()->SetBinLabel(fMatrixAlign[imod][ich].bin, TString::Format("%s", fMatrixAlign[imod][ich].name_ch.c_str()));
             }
             if (type.compare("SUMMARY_ALIGN") == 0) {
               fSummaryAlign->GetXaxis()->SetBinLabel(fMatrixAlign[imod][ich].bin, TString::Format("%s", fMatrixAlign[imod][ich].name_ch.c_str()));
@@ -1159,6 +1195,12 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
       if (type.compare("SUMMARY_ALIGN_SHIFT") == 0) {
         getObjectsManager()->startPublishing(fSummaryAlignShift);
       }
+      if (type.compare("SUMMARY_ERROR") == 0) {
+        fSummaryError->GetYaxis()->SetBinLabel(1, TString::Format("Bit Error"));
+        fSummaryError->GetYaxis()->SetBinLabel(2, TString::Format("Data Loss"));
+        fSummaryError->GetYaxis()->SetBinLabel(3, TString::Format("Data Corrupted"));
+        getObjectsManager()->startPublishing(fSummaryError);
+      }
       try {
         if (type.compare("SUMMARYBASELINE") == 0) {
           getObjectsManager()->addMetadata(fSummaryPedestal->GetName(), fSummaryPedestal->GetName(), "34");
@@ -1172,6 +1214,9 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
         if (type.compare("SUMMARY_ALIGN_SHIFT") == 0) {
           getObjectsManager()->addMetadata(fSummaryAlign->GetName(), fSummaryAlignShift->GetName(), "34");
         }
+        if (type.compare("SUMMARY_ERROR") == 0) {
+          getObjectsManager()->addMetadata(fSummaryError->GetName(), fSummaryError->GetName(), "34");
+        }
         return true;
       } catch (...) {
         if (type.compare("SUMMARYBASELINE") == 0) {
@@ -1179,6 +1224,9 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
         }
         if (type.compare("SUMMARYRATE") == 0) {
           ILOG(Warning, Support) << "Metadata could not be added to " << fSummaryRate->GetName() << ENDM;
+        }
+        if (type.compare("SUMMARY_ERROR") == 0) {
+          ILOG(Warning, Support) << "Metadata could not be added to " << fSummaryError->GetName() << ENDM;
         }
         if (type.compare("SUMMARY_ALIGN") == 0) {
           ILOG(Warning, Support) << "Metadata could not be added to " << fSummaryAlign->GetName() << ENDM;
@@ -1602,6 +1650,8 @@ void ZDCRawDataTask::dumpHistoStructure()
     dumpFile << "\n";
     dumpFile << "\nAlign Param Num Cycle: " << fAlignCycle << "\n";
     dumpFile << "\nAlign Param Num entries: " << fAlignNumEntries << "\n";
+    dumpFile << "\nAlign Param Num Cycle Errors: " << fNumCycleErr << "\n";
+    dumpFile << "\nAlign Param Num cycle errors reset: " << fErrorCycle << "\n";
   }
   dumpFile.close();
 }
