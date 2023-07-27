@@ -124,10 +124,10 @@
         "dataSource_comment": "no comment",
         "dataSource": {
           "type": "direct",
-          "query": "digits:TRD/DIGITS;tracklets:TRD/TRACKLETS;triggers:TRD/TRKTRGRD;tracks:TRD/MATCH_ITSTPC;trigrectrk:TRD/TRGREC_ITSTPC"
+          "query": "phValues:TRD/PULSEHEIGHT"
         },
         "taskParameters": {
-          "pileupCut": "0.7",
+          "trackType": "0xf",
           "peakregionstart": "7.0",
           "peakregionend": "20.0",
           "pulseheightpeaklower": "1.0",
