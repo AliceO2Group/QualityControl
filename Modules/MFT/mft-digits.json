@@ -60,27 +60,7 @@
         "dataSource" : [ {
           "type" : "Task",
           "name" : "Digits",
-            "MOs"  : ["ChipOccupancyMaps/Half_0/Disk_0/Face_1/mDigitChipOccupancyMap",
-            "ChipOccupancyMaps/Half_0/Disk_0/Face_0/mDigitChipOccupancyMap",
-            "ChipOccupancyMaps/Half_0/Disk_1/Face_1/mDigitChipOccupancyMap",
-            "ChipOccupancyMaps/Half_0/Disk_1/Face_0/mDigitChipOccupancyMap",
-            "ChipOccupancyMaps/Half_0/Disk_2/Face_1/mDigitChipOccupancyMap",
-            "ChipOccupancyMaps/Half_0/Disk_2/Face_0/mDigitChipOccupancyMap",
-            "ChipOccupancyMaps/Half_0/Disk_3/Face_1/mDigitChipOccupancyMap",
-            "ChipOccupancyMaps/Half_0/Disk_3/Face_0/mDigitChipOccupancyMap",
-            "ChipOccupancyMaps/Half_0/Disk_4/Face_1/mDigitChipOccupancyMap",
-            "ChipOccupancyMaps/Half_0/Disk_4/Face_0/mDigitChipOccupancyMap",
-            "ChipOccupancyMaps/Half_1/Disk_0/Face_1/mDigitChipOccupancyMap",
-            "ChipOccupancyMaps/Half_1/Disk_0/Face_0/mDigitChipOccupancyMap",
-            "ChipOccupancyMaps/Half_1/Disk_1/Face_1/mDigitChipOccupancyMap",
-            "ChipOccupancyMaps/Half_1/Disk_1/Face_0/mDigitChipOccupancyMap",
-            "ChipOccupancyMaps/Half_1/Disk_2/Face_1/mDigitChipOccupancyMap",
-            "ChipOccupancyMaps/Half_1/Disk_2/Face_0/mDigitChipOccupancyMap",
-            "ChipOccupancyMaps/Half_1/Disk_3/Face_1/mDigitChipOccupancyMap",
-            "ChipOccupancyMaps/Half_1/Disk_3/Face_0/mDigitChipOccupancyMap",
-            "ChipOccupancyMaps/Half_1/Disk_4/Face_1/mDigitChipOccupancyMap",
-            "ChipOccupancyMaps/Half_1/Disk_4/Face_0/mDigitChipOccupancyMap",
-            "mDigitChipOccupancy","mDigitOccupancySummary","mDigitChipStdDev"]
+            "MOs"  : ["mDigitChipOccupancy","mDigitOccupancySummary","mDigitChipStdDev"]
         } ]
       }
     }

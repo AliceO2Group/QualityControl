@@ -96,6 +96,7 @@ class QcMFTDigitTask final : public TaskInterface
   std::unique_ptr<TH2F> mDigitDoubleColumnSensorIndices = nullptr;
 
   std::unique_ptr<TH1F> mDigitsROFSize = nullptr;
+  std::unique_ptr<TH1F> mNOfDigitsTime = nullptr;
   std::unique_ptr<TH1F> mDigitsBC = nullptr;
 
   std::vector<std::unique_ptr<TH2F>> mDigitChipOccupancyMap;
