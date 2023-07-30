@@ -54,6 +54,10 @@ void QcMFTDigitCheck::configure()
     ILOG(Info, Support) << "Custom parameter - ZoneThresholdBad: " << param->second << ENDM;
     mZoneThresholdBad = stoi(param->second);
   }
+  if (auto param = mCustomParameters.find("DeadMapCcdbAddress"); param != mCustomParameters.end()) {
+    ILOG(Info, Support) << "Custom parameter - DeadMapCcdbAddress: " << param->second << ENDM;
+    mDeadMapCcdbAddress = param->second;
+  }
 
   // no call to beautifier yet
   mFirstCall = true;
@@ -118,7 +122,7 @@ std::string QcMFTDigitCheck::getAcceptedType() { return "TH1"; }
 void QcMFTDigitCheck::readMaskedChips()
 {
   o2::ccdb::CcdbApi api;
-  api.init("alice-ccdb.cern.ch");
+  api.init(mDeadMapCcdbAddress.data());
   long timestamp = -1;
   map<string, string> headers;
   map<std::string, std::string> filter;

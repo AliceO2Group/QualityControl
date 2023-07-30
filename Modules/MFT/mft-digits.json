@@ -55,7 +55,8 @@
         "policy" : "OnEachSeparately",
         "checkParameters" : {
           "ZoneThresholdMedium" : "2",
-          "ZoneThresholdBad" : "5"
+          "ZoneThresholdBad" : "5",
+          "DeadMapCcdbAddress" : "alice-ccdb.cern.ch"
         },
         "dataSource" : [ {
           "type" : "Task",
