@@ -234,8 +234,9 @@ void ZDCRecDataTask::initHisto()
     ILOG(Debug, Devel) << "Custom parameter - ADC: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto1D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()));
-  } else
+  } else {
     setBinHisto1D(1051, -202.5, 4002.5);
+  }
   addNewHisto("ADC1D", "h_ADC_ZNA_TC", "ADC ZNA TC (Gev)", "ADC", "ZNAC", "", "", 1);
   addNewHisto("ADC1D", "h_ADC_ZNA_T1", "ADC ZNA T1 (Gev)", "ADC", "ZNA1", "", "", 2);
   addNewHisto("ADC1D", "h_ADC_ZNA_T2", "ADC ZNA T2 (Gev)", "ADC", "ZNA2", "", "", 3);
@@ -271,8 +272,9 @@ void ZDCRecDataTask::initHisto()
     ILOG(Debug, Devel) << "Custom parameter - ADCH: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto1D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()));
-  } else
+  } else {
     setBinHisto1D(1051, -202.5, 4002.5);
+  }
   addNewHisto("ADC1D", "h_ADC_ZNA_TC_H", "ADC ZNA TC (Gev) ZOOM", "ADC", "ZNAC", "", "", 0);
   addNewHisto("ADC1D", "h_ADC_ZNA_SUM_H", "ADC ZNA SUM (Gev) ZOOM", "ADC", "ZNAS", "", "", 0);
   addNewHisto("ADC1D", "h_ADC_ZPA_TC_H", "ADC ZPA TC (Gev) ZOOM", "ADC", "ZPAC", "", "", 0);
@@ -286,8 +288,9 @@ void ZDCRecDataTask::initHisto()
     ILOG(Debug, Devel) << "Custom parameter - TDCT: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto1D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()));
-  } else
+  } else {
     setBinHisto1D(2500, -5.5, 245.5);
+  }
   addNewHisto("TDC1D", "h_TDC_ZNA_TC_V", "TDC Time (ns) ZNA TC", "TDCV", "ZNAC", "", "", 1);
   addNewHisto("TDC1D", "h_TDC_ZNA_SUM_V", "TDC Time (ns) ZNA SUM", "TDCV", "ZNAS", "", "", 2);
   addNewHisto("TDC1D", "h_TDC_ZPA_TC_V", "TDC Time (ns) ZPA TC", "TDCV", "ZPAC", "", "", 3);
@@ -303,8 +306,9 @@ void ZDCRecDataTask::initHisto()
     ILOG(Debug, Devel) << "Custom parameter - TDCA: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto1D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()));
-  } else
+  } else {
     setBinHisto1D(2000, -0.5, 3999.5);
+  }
   addNewHisto("TDC1D", "h_TDC_ZNA_TC_A", "TDC Amplitude ZNA TC", "TDCA", "ZNAC", "", "", 0);
   addNewHisto("TDC1D", "h_TDC_ZNA_SUM_A", "TDC Amplitude ZNA SUM", "TDCA", "ZNAS", "", "", 0);
   addNewHisto("TDC1D", "h_TDC_ZPA_TC_A", "TDC Amplitude ZPA TC", "TDCA", "ZPAC", "", "", 0);
@@ -315,21 +319,39 @@ void ZDCRecDataTask::initHisto()
   addNewHisto("TDC1D", "h_TDC_ZPC_SUM_A", "TDC Amplitude ZPC SUM", "TDCA", "ZPCS", "", "", 0);
   addNewHisto("TDC1D", "h_TDC_ZEM1_A", "TDC Amplitude ZEM1", "TDCA", "ZEM1", "", "", 0);
   addNewHisto("TDC1D", "h_TDC_ZEM2_A", "TDC Amplitude ZEM2", "TDCA", "ZEM2", "", "", 0);
+  // TDC_A ZOOM
+  if (auto param = mCustomParameters.find("ADCH"); param != mCustomParameters.end()) {
+    ILOG(Debug, Devel) << "Custom parameter - TDCAH: " << param->second << ENDM;
+    tokenString = tokenLine(param->second, ";");
+    setBinHisto1D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()));
+  } else {
+    setBinHisto1D(1051, -202.5, 4002.5);
+  }
+  addNewHisto("TDC1D", "h_TDC_ZNA_TC_A_H", "TDC Amplitude ZNA TC  ZOOM", "TDCA", "ZNAC", "", "", 0);
+  addNewHisto("TDC1D", "h_TDC_ZNA_SUM_A_H", "TDC Amplitude ZNA SUM  ZOOM", "TDCA", "ZNAS", "", "", 0);
+  addNewHisto("TDC1D", "h_TDC_ZPA_TC_A_H", "TDC Amplitude ZPA TC  ZOOM", "TDCA", "ZPAC", "", "", 0);
+  addNewHisto("TDC1D", "h_TDC_ZPA_SUM_A_H", "TDC Amplitude ZPA SUM  ZOOM", "TDCA", "ZPAS", "", "", 0);
+  addNewHisto("TDC1D", "h_TDC_ZNC_TC_A_H", "TDC Amplitude ZNC TC  ZOOM", "TDCA", "ZNCC", "", "", 0);
+  addNewHisto("TDC1D", "h_TDC_ZNC_SUM_A_H", "TDC Amplitude ZNC SUM  ZOOM", "TDCA", "ZNCS", "", "", 0);
+  addNewHisto("TDC1D", "h_TDC_ZPC_TC_A_H", "TDC Amplitude ZPC TC  ZOOM", "TDCA", "ZPCC", "", "", 0);
+  addNewHisto("TDC1D", "h_TDC_ZPC_SUM_A_H", "TDC Amplitude ZPC SUM  ZOOM", "TDCA", "ZPCS", "", "", 0);
   // Centroid ZPA
   if (auto param = mCustomParameters.find("CENTR_ZPA"); param != mCustomParameters.end()) {
     ILOG(Debug, Devel) << "Custom parameter - CENTR_ZPA: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto1D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()));
-  } else
+  } else {
     setBinHisto1D(2240, 0, 22.4);
+  }
   addNewHisto("CENTR_ZPA", "h_CENTR_ZPA", "ZPA Centroid (cm)", "ADC", "CXZPA", "", "", 0);
   // Centroid ZPA
   if (auto param = mCustomParameters.find("CENTR_ZPC"); param != mCustomParameters.end()) {
     ILOG(Debug, Devel) << "Custom parameter - CENTR_ZPC: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto1D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()));
-  } else
+  } else {
     setBinHisto1D(2240, -22.4, 0);
+  }
   addNewHisto("CENTR_ZPC", "h_CENTR_ZPC", "ZPC Centroid (cm)", "ADC", "CXZPC", "", "", 0);
 
   // 2D Histos
@@ -338,19 +360,30 @@ void ZDCRecDataTask::initHisto()
     ILOG(Debug, Devel) << "Custom parameter - ADCSUMvsTC: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
-  } else
+  } else {
     setBinHisto2D(1051, -202.5, 4002.5, 1051, -202.5, 4002.5);
+  }
   addNewHisto("ADCSUMvsTC", "h_ADC_ZNAS_ZNAC", "ADC (Gev) ZNA SUM vs ADC (Gev) ZNA TC", "ADC", "ZNAC", "ADC", "ZNAS", 0);
   addNewHisto("ADCSUMvsTC", "h_ADC_ZPAS_ZPAC", "ADC (Gev) ZPA SUM vs ADC (Gev) ZPA TC", "ADC", "ZPAC", "ADC", "ZPAS", 0);
   addNewHisto("ADCSUMvsTC", "h_ADC_ZNCS_ZNCC", "ADC (Gev) ZNC SUM vs ADC (Gev) ZNC TC", "ADC", "ZNCC", "ADC", "ZNCS", 0);
   addNewHisto("ADCSUMvsTC", "h_ADC_ZPCS_ZPCC", "ADC (Gev) ZPC SUM vs ADC (Gev) ZPC TC", "ADC", "ZPCC", "ADC", "ZPCS", 0);
 
+  addNewHisto("ADCSUMvsTC", "h_ADC_ZNAC_ZPAC", "ADC (Gev) ZNA TC vs ADC (Gev) ZPA TC", "ADC", "ZPAC", "ADC", "ZNAC", 0);
+  addNewHisto("ADCSUMvsTC", "h_ADC_ZNCC_ZPCC", "ADC (Gev) ZNC TC vs ADC (Gev) ZPC TC", "ADC", "ZPCC", "ADC", "ZNCC", 0);
+
+  addNewHisto("ADCSUMvsTC", "h_ADC_ZEM1_ZEM2", "ADC (Gev) ZEM1 vs ADC (Gev) ZEM2", "ADC", "ZEM2", "ADC", "ZEM1", 0);
+  addNewHisto("ADCSUMvsTC", "h_ADC_ZNA_ZEM1", "ADC (Gev) ZNA TC vs ADC (Gev) ZEM1", "ADC", "ZEM1", "ADC", "ZNAC", 0);
+  addNewHisto("ADCSUMvsTC", "h_ADC_ZNA_ZEM2", "ADC (Gev) ZNA TC vs ADC (Gev) ZEM2", "ADC", "ZEM2", "ADC", "ZNAC", 0);
+  addNewHisto("ADCSUMvsTC", "h_ADC_ZNC_ZEM1", "ADC (Gev) ZNC TC vs ADC (Gev) ZEM1", "ADC", "ZEM1", "ADC", "ZNCC", 0);
+  addNewHisto("ADCSUMvsTC", "h_ADC_ZNC_ZEM2", "ADC (Gev) ZNC TC vs ADC (Gev) ZEM2", "ADC", "ZEM2", "ADC", "ZNCC", 0);
+
   if (auto param = mCustomParameters.find("ADCvsTDCT"); param != mCustomParameters.end()) {
     ILOG(Debug, Devel) << "Custom parameter - ADCvsTDCT: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
-  } else
+  } else {
     setBinHisto2D(250, -5.5, 24.5, 1051, -202.5, 4002.5);
+  }
   addNewHisto("ADCvsTDC", "h_ADC_TDC_ZNAC", "ADC (Gev) ZNA TC vs TDC Time (ns)  ZNA TC", "TDCV", "ZNAC", "ADC", "ZNAC", 0);
   addNewHisto("ADCvsTDC", "h_ADC_TDC_ZNAS", "ADC (Gev) ZNA SUM vs TDC Time (ns) ZNA SUM", "TDCV", "ZNAS", "ADC", "ZNAS", 0);
   addNewHisto("ADCvsTDC", "h_ADC_TDC_ZPAC", "ADC (Gev) ZPA TC vs TDC Time (ns) ZPA TC", "TDCV", "ZPAC", "ADC", "ZPAC", 0);
@@ -366,16 +399,18 @@ void ZDCRecDataTask::initHisto()
     ILOG(Debug, Devel) << "Custom parameter - TDCDIFF: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
-  } else
+  } else {
     setBinHisto2D(100, -10.5, 10.5, 100, -10.5, 10.5);
+  }
   addNewHisto("TDC-DIFF", "h_TDC_ZNC_DIFF_ZNA_ZNC_SUM_ZNA_V", "TDC Time (ns) TDC ZNC + ZNA vs ZNC - ZNA", "TDCV", "ZNC-ZNA", "TDCV", "ZNC+ZNA", 0);
 
   if (auto param = mCustomParameters.find("TDCAvsTDCT"); param != mCustomParameters.end()) {
     ILOG(Debug, Devel) << "Custom parameter - TDCAvsTDCT: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
-  } else
+  } else {
     setBinHisto2D(250, -5.5, 24.5, 2000, -0.5, 3999.5);
+  }
   addNewHisto("TDC_T_A", "h_TDC_ZNAC_V_A", "ZNA TC TDC amplitude vs time (ns)", "TDCV", "ZNAC", "TDCA", "ZNAC", 0);
   addNewHisto("TDC_T_A", "h_TDC_ZPAC_V_A", "ZPA TC TDC amplitude vs time (ns)", "TDCV", "ZPAC", "TDCA", "ZPAC", 0);
   addNewHisto("TDC_T_A", "h_TDC_ZNCC_V_A", "ZNC TC TDC amplitude vs time (ns)", "TDCV", "ZNCC", "TDCA", "ZNCC", 0);
@@ -386,6 +421,26 @@ void ZDCRecDataTask::initHisto()
   addNewHisto("TDC_T_A", "h_TDC_ZPCS_V_A", "ZPC SUM TDC amplitude vs time (ns)", "TDCV", "ZPCS", "TDCA", "ZPCS", 0);
   addNewHisto("TDC_T_A", "h_TDC_ZEM1_V_A", "ZEM1 TDC amplitude vs time (ns)", "TDCV", "ZEM1", "TDCA", "ZEM1", 0);
   addNewHisto("TDC_T_A", "h_TDC_ZEM2_V_A", "ZEM2 TDC amplitude vs time (ns)", "TDCV", "ZEM2", "TDCA", "ZEM2", 0);
+  if (auto param = mCustomParameters.find("TDCAvsTDCA"); param != mCustomParameters.end()) {
+    ILOG(Debug, Devel) << "Custom parameter - TDCAvsTDCA: " << param->second << ENDM;
+    tokenString = tokenLine(param->second, ";");
+    setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
+  } else {
+    setBinHisto2D(1000, -0.5, 3999.5, 1000, -0.5, 3999.5);
+  }
+  addNewHisto("TDC_A_A", "h_TDC_ZNA_ZPA", "ZNA TDC amplitude vs ZPA TDC amplitude", "TDCA", "ZPAC", "TDCA", "ZNAC", 0);
+  addNewHisto("TDC_A_A", "h_TDC_ZNC_ZPC", "ZNC TDC amplitude vs ZPC TDC amplitude", "TDCA", "ZPCC", "TDCA", "ZNCC", 0);
+
+  addNewHisto("TDC_A_A", "h_TDC_ZEM1_ZEM2", "ZEM1 TDC amplitude vs ZEM2 TDC amplitude", "TDCA", "ZEM2", "TDCA", "ZEM1", 0);
+  addNewHisto("TDC_A_A", "h_TDC_ZNA_ZEM1", "ZNA TDC amplitude vs ZEM1 TDC amplitude", "TDCA", "ZEM1", "TDCA", "ZNAC", 0);
+  addNewHisto("TDC_A_A", "h_TDC_ZNA_ZEM2", "ZNA TDC amplitude vs ZEM2 TDC amplitude", "TDCA", "ZEM2", "TDCA", "ZNAC", 0);
+  addNewHisto("TDC_A_A", "h_TDC_ZNC_ZEM1", "ZNC TDC amplitude vs ZEM1 TDC amplitude", "TDCA", "ZEM1", "TDCA", "ZNCC", 0);
+  addNewHisto("TDC_A_A", "h_TDC_ZNC_ZEM2", "ZNC TDC amplitude vs ZEM2 TDC amplitude", "TDCA", "ZEM2", "TDCA", "ZNCC", 0);
+
+  addNewHisto("TDC_A_A", "h_TDC_ZNAS_ZNAC", "TDC amplitude ZNA SUM vs TDC amplitude ZNA TC", "TDCA", "ZNAC", "TDCA", "ZNAS", 0);
+  addNewHisto("TDC_A_A", "h_TDC_ZPAS_ZPAC", "TDC amplitude ZPA SUM vs TDC amplitude ZPA TC", "TDCA", "ZPAC", "TDCA", "ZPAS", 0);
+  addNewHisto("TDC_A_A", "h_TDC_ZNCS_ZNCC", "TDC amplitude ZNC SUM vs TDC amplitude ZNC TC", "TDCA", "ZNCC", "TDCA", "ZNCS", 0);
+  addNewHisto("TDC_A_A", "h_TDC_ZPCS_ZPCC", "TDC amplitude ZPC SUM vs TDC amplitude ZPC TC", "TDCA", "ZPCC", "TDCA", "ZPCS", 0);
 
   // msg histo
   setBinHisto2D(o2::zdc::NChannels, -0.5, o2::zdc::NChannels - 0.5, o2::zdc::MsgEnd, -0.5, o2::zdc::MsgEnd - 0.5);
@@ -417,16 +472,18 @@ void ZDCRecDataTask::initHisto()
     ILOG(Debug, Devel) << "Custom parameter - CENTR_ZNA: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
-  } else
+  } else {
     setBinHisto2D(200, -2, 2, 200, -2, 2);
+  }
   addNewHisto("CENTR_ZNA", "h_CENTR_ZNA", "ZNA Centroid (cm)", "ADC", "CXZNA", "ADC", "CYZNA", 0);
   // Centroid ZNC
   if (auto param = mCustomParameters.find("CENTR_ZNC"); param != mCustomParameters.end()) {
     ILOG(Debug, Devel) << "Custom parameter - CENTR_ZNC: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
     setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
-  } else
+  } else {
     setBinHisto2D(200, -2, 2, 200, -2, 2);
+  }
   addNewHisto("CENTR_ZNC", "h_CENTR_ZNC", "ZNC Centroid (cm)", "ADC", "CXZNC", "ADC", "CYZNC", 0);
 }
 
@@ -457,8 +514,9 @@ bool ZDCRecDataTask::add1DHisto(std::string typeH, std::string name, std::string
       ILOG(Warning, Support) << "Metadata could not be added to " << mHisto1D.at(ih).histo->GetName() << ENDM;
       return false;
     }
-  } else
+  } else {
     return false;
+  }
 }
 
 bool ZDCRecDataTask::add2DHisto(std::string typeH, std::string name, std::string title, std::string typeCh1, std::string ch1, std::string typeCh2, std::string ch2)
@@ -502,17 +560,20 @@ bool ZDCRecDataTask::addNewHisto(std::string typeH, std::string name, std::strin
 
     // ADC 1D (ENERGY) OR TDC 1D
     if (typeH.compare("ADC1D") == 0 || typeH.compare("TDC1D") == 0 || typeH.compare("CENTR_ZPA") == 0 || typeH.compare("CENTR_ZPC") == 0 || typeH.compare("SUMMARY_TDC") == 0 || typeH.compare("SUMMARY_ADC") == 0) {
-      if (add1DHisto(typeH, name, title, typeCh1, ch1, bin))
+      if (add1DHisto(typeH, name, title, typeCh1, ch1, bin)) {
         return true;
-      else
+      } else {
         return false;
-    } else if (typeH.compare("ADCSUMvsTC") == 0 || typeH.compare("ADCvsTDC") == 0 || typeH.compare("TDC-DIFF") == 0 || typeH.compare("TDC_T_A") == 0 || typeH.compare("MSG_REC") == 0 || typeH.compare("CENTR_ZNA") == 0 || typeH.compare("CENTR_ZNC") == 0) {
-      if (add2DHisto(typeH, name, title, typeCh1, ch1, typeCh2, ch2))
+      }
+    } else if (typeH.compare("ADCSUMvsTC") == 0 || typeH.compare("ADCvsTDC") == 0 || typeH.compare("TDC-DIFF") == 0 || typeH.compare("TDC_T_A") == 0 || typeH.compare("TDC_A_A") == 0 || typeH.compare("MSG_REC") == 0 || typeH.compare("CENTR_ZNA") == 0 || typeH.compare("CENTR_ZNC") == 0) {
+      if (add2DHisto(typeH, name, title, typeCh1, ch1, typeCh2, ch2)) {
         return true;
-      else
+      } else {
         return false;
-    } else
+      }
+    } else {
       return false;
+    }
   } else {
     reset();
     return true;
@@ -535,6 +596,7 @@ int ZDCRecDataTask::process(const gsl::span<const o2::zdc::BCRecData>& RecBC,
       if (mHisto1D.at(i).typeh.compare("ADC1D") == 0 && mHisto1D.at(i).typech.compare("ADC") == 0) {
         mHisto1D.at(i).histo->Fill(getADCRecValue(mHisto1D.at(i).typech, mHisto1D.at(i).ch));
         mHisto1D.at(mIdhADC).histo->SetBinContent(mHisto1D.at(i).bin, mHisto1D.at(i).histo->GetMean());
+        mHisto1D.at(mIdhADC).histo->SetBinError(mHisto1D.at(i).bin, mHisto1D.at(i).histo->GetMeanError());
       }
 
       // Fill TDC 1D
@@ -543,26 +605,31 @@ int ZDCRecDataTask::process(const gsl::span<const o2::zdc::BCRecData>& RecBC,
         auto nhitv = mEv.NtdcV(tdcid);
         if (mEv.NtdcA(tdcid) == nhitv && nhitv > 0) {
           for (int ihit = 0; ihit < nhitv; ihit++) {
-            if (mHisto1D.at(i).typech.compare("TDCV") == 0)
+            if (mHisto1D.at(i).typech.compare("TDCV") == 0) {
               mHisto1D.at(i).histo->Fill(mEv.tdcV(tdcid, ihit));
-            if (mHisto1D.at(i).typech.compare("TDCA") == 0)
+            }
+            if (mHisto1D.at(i).typech.compare("TDCA") == 0) {
               mHisto1D.at(i).histo->Fill(mEv.tdcA(tdcid, ihit));
+            }
           }
           mHisto1D.at(mIdhTDC).histo->SetBinContent(mHisto1D.at(i).bin, mHisto1D.at(i).histo->GetMean());
+          mHisto1D.at(mIdhTDC).histo->SetBinError(mHisto1D.at(i).bin, mHisto1D.at(i).histo->GetMeanError());
         }
       }
       // Fill CENTROID ZP
-      if (mHisto1D.at(i).typeh.compare("CENTR_ZPA") == 0 && mHisto1D.at(i).typech.compare("ADC") == 0)
+      if (mHisto1D.at(i).typeh.compare("CENTR_ZPA") == 0 && mHisto1D.at(i).typech.compare("ADC") == 0) {
         mHisto1D.at(i).histo->Fill(mEv.xZPA());
-      if (mHisto1D.at(i).typeh.compare("CENTR_ZPC") == 0 && mHisto1D.at(i).typech.compare("ADC") == 0)
+      }
+      if (mHisto1D.at(i).typeh.compare("CENTR_ZPC") == 0 && mHisto1D.at(i).typech.compare("ADC") == 0) {
         mHisto1D.at(i).histo->Fill(mEv.xZPC());
+      }
     } // for histo 1D
 
     // Histo 2D
     for (int i = 0; i < (int)mHisto2D.size(); i++) {
-      if (mHisto2D.at(i).typeh.compare("ADCSUMvsTC") == 0 && mHisto2D.at(i).typech1.compare("ADC") == 0 && mHisto2D.at(i).typech2.compare("ADC") == 0)
+      if (mHisto2D.at(i).typeh.compare("ADCSUMvsTC") == 0 && mHisto2D.at(i).typech1.compare("ADC") == 0 && mHisto2D.at(i).typech2.compare("ADC") == 0) {
         mHisto2D.at(i).histo->Fill((Double_t)getADCRecValue(mHisto2D.at(i).typech1, mHisto2D.at(i).ch1), getADCRecValue(mHisto2D.at(i).typech2, mHisto2D.at(i).ch2));
-
+      }
       if (mHisto2D.at(i).typeh.compare("ADCvsTDC") == 0 && mHisto2D.at(i).typech1.compare("TDCV") == 0 && mHisto2D.at(i).typech2.compare("ADC") == 0) {
         int tdcid = getIdTDCch(mHisto2D.at(i).typech1, mHisto2D.at(i).ch1);
         auto nhit = mEv.NtdcV(tdcid);
@@ -590,12 +657,21 @@ int ZDCRecDataTask::process(const gsl::span<const o2::zdc::BCRecData>& RecBC,
           }
         }
       }
+      if (mHisto2D.at(i).typeh.compare("TDC_A_A") == 0 && mHisto2D.at(i).typech1.compare("TDCA") == 0 && mHisto2D.at(i).typech2.compare("TDCA") == 0) {
+        int tdcid1 = getIdTDCch(mHisto2D.at(i).typech1, mHisto2D.at(i).ch1);
+        auto nhitv1 = mEv.NtdcV(tdcid1);
+        int tdcid2 = getIdTDCch(mHisto2D.at(i).typech2, mHisto2D.at(i).ch2);
+        auto nhitv2 = mEv.NtdcV(tdcid2);
+        if ((mEv.NtdcA(tdcid1) == nhitv1 && nhitv1 > 0) && (mEv.NtdcA(tdcid2) == nhitv1 && nhitv2 > 0)) {
+          mHisto2D.at(i).histo->Fill(mEv.tdcA(tdcid1, 0), mEv.tdcA(tdcid2, 0));
+        }
+      }
+
       if (mEv.getNInfo() > 0 && mHisto2D.at(i).typech1.compare("INFO") == 0) {
         auto& decodedInfo = mEv.getDecodedInfo();
         for (uint16_t info : decodedInfo) {
           uint8_t ch = (info >> 10) & 0x1f;
           uint16_t code = info & 0x03ff;
-          ;
           mHisto2D.at(i).histo->Fill(ch, code);
         }
       }
@@ -614,87 +690,119 @@ int ZDCRecDataTask::process(const gsl::span<const o2::zdc::BCRecData>& RecBC,
 
 float ZDCRecDataTask::getADCRecValue(std::string typech, std::string ch)
 {
-  if (typech.compare("ADC") == 0 && ch.compare("ZNAC") == 0)
+  if (typech.compare("ADC") == 0 && ch.compare("ZNAC") == 0) {
     return mEv.EZNAC();
-  if (typech.compare("ADC") == 0 && ch.compare("ZNA1") == 0)
+  }
+  if (typech.compare("ADC") == 0 && ch.compare("ZNA1") == 0) {
     return mEv.EZNA1();
-  if (typech.compare("ADC") == 0 && ch.compare("ZNA2") == 0)
+  }
+  if (typech.compare("ADC") == 0 && ch.compare("ZNA2") == 0) {
     return mEv.EZNA2();
-  if (typech.compare("ADC") == 0 && ch.compare("ZNA3") == 0)
+  }
+  if (typech.compare("ADC") == 0 && ch.compare("ZNA3") == 0) {
     return mEv.EZNA3();
-  if (typech.compare("ADC") == 0 && ch.compare("ZNA4") == 0)
+  }
+  if (typech.compare("ADC") == 0 && ch.compare("ZNA4") == 0) {
     return mEv.EZNA4();
-  if (typech.compare("ADC") == 0 && ch.compare("ZNAS") == 0)
+  }
+  if (typech.compare("ADC") == 0 && ch.compare("ZNAS") == 0) {
     return mEv.EZNASum();
-
-  if (typech.compare("ADC") == 0 && ch.compare("ZPAC") == 0)
+  }
+  if (typech.compare("ADC") == 0 && ch.compare("ZPAC") == 0) {
     return mEv.EZPAC();
-  if (typech.compare("ADC") == 0 && ch.compare("ZPA1") == 0)
+  }
+  if (typech.compare("ADC") == 0 && ch.compare("ZPA1") == 0) {
     return mEv.EZPA1();
-  if (typech.compare("ADC") == 0 && ch.compare("ZPA2") == 0)
+  }
+  if (typech.compare("ADC") == 0 && ch.compare("ZPA2") == 0) {
     return mEv.EZPA2();
-  if (typech.compare("ADC") == 0 && ch.compare("ZPA3") == 0)
+  }
+  if (typech.compare("ADC") == 0 && ch.compare("ZPA3") == 0) {
     return mEv.EZPA3();
-  if (typech.compare("ADC") == 0 && ch.compare("ZPA4") == 0)
+  }
+  if (typech.compare("ADC") == 0 && ch.compare("ZPA4") == 0) {
     return mEv.EZPA4();
-  if (typech.compare("ADC") == 0 && ch.compare("ZPAS") == 0)
+  }
+  if (typech.compare("ADC") == 0 && ch.compare("ZPAS") == 0) {
     return mEv.EZPASum();
-
-  if (typech.compare("ADC") == 0 && ch.compare("ZNCC") == 0)
+  }
+  if (typech.compare("ADC") == 0 && ch.compare("ZNCC") == 0) {
     return mEv.EZNCC();
-  if (typech.compare("ADC") == 0 && ch.compare("ZNC1") == 0)
+  }
+  if (typech.compare("ADC") == 0 && ch.compare("ZNC1") == 0) {
     return mEv.EZNC1();
-  if (typech.compare("ADC") == 0 && ch.compare("ZNC2") == 0)
+  }
+  if (typech.compare("ADC") == 0 && ch.compare("ZNC2") == 0) {
     return mEv.EZNC2();
-  if (typech.compare("ADC") == 0 && ch.compare("ZNC3") == 0)
+  }
+  if (typech.compare("ADC") == 0 && ch.compare("ZNC3") == 0) {
     return mEv.EZNC3();
-  if (typech.compare("ADC") == 0 && ch.compare("ZNC4") == 0)
+  }
+  if (typech.compare("ADC") == 0 && ch.compare("ZNC4") == 0) {
     return mEv.EZNC4();
-  if (typech.compare("ADC") == 0 && ch.compare("ZNCS") == 0)
+  }
+  if (typech.compare("ADC") == 0 && ch.compare("ZNCS") == 0) {
     return mEv.EZNCSum();
-
-  if (typech.compare("ADC") == 0 && ch.compare("ZPCC") == 0)
+  }
+  if (typech.compare("ADC") == 0 && ch.compare("ZPCC") == 0) {
     return mEv.EZPCC();
-  if (typech.compare("ADC") == 0 && ch.compare("ZPC1") == 0)
+  }
+  if (typech.compare("ADC") == 0 && ch.compare("ZPC1") == 0) {
     return mEv.EZPC1();
-  if (typech.compare("ADC") == 0 && ch.compare("ZPC2") == 0)
+  }
+  if (typech.compare("ADC") == 0 && ch.compare("ZPC2") == 0) {
     return mEv.EZPC2();
-  if (typech.compare("ADC") == 0 && ch.compare("ZPC3") == 0)
+  }
+  if (typech.compare("ADC") == 0 && ch.compare("ZPC3") == 0) {
     return mEv.EZPC3();
-  if (typech.compare("ADC") == 0 && ch.compare("ZPC4") == 0)
+  }
+  if (typech.compare("ADC") == 0 && ch.compare("ZPC4") == 0) {
     return mEv.EZPC4();
-  if (typech.compare("ADC") == 0 && ch.compare("ZPCS") == 0)
+  }
+  if (typech.compare("ADC") == 0 && ch.compare("ZPCS") == 0) {
     return mEv.EZPCSum();
-
-  if (typech.compare("ADC") == 0 && ch.compare("ZEM1") == 0)
+  }
+  if (typech.compare("ADC") == 0 && ch.compare("ZEM1") == 0) {
     return mEv.EZEM1();
-  if (typech.compare("ADC") == 0 && ch.compare("ZEM2") == 0)
+  }
+  if (typech.compare("ADC") == 0 && ch.compare("ZEM2") == 0) {
     return mEv.EZEM2();
+  }
   return 0.00;
 }
 
 int ZDCRecDataTask::getIdTDCch(std::string typech, std::string ch)
 {
-  if ((typech.compare("TDCV") == 0 || typech.compare("TDCA") == 0) && ch.compare("ZNAC") == 0)
+  if ((typech.compare("TDCV") == 0 || typech.compare("TDCA") == 0) && ch.compare("ZNAC") == 0) {
     return o2::zdc::TDCZNAC;
-  if ((typech.compare("TDCV") == 0 || typech.compare("TDCA") == 0) && ch.compare("ZNAS") == 0)
+  }
+  if ((typech.compare("TDCV") == 0 || typech.compare("TDCA") == 0) && ch.compare("ZNAS") == 0) {
     return o2::zdc::TDCZNAS;
-  if ((typech.compare("TDCV") == 0 || typech.compare("TDCA") == 0) && ch.compare("ZPAC") == 0)
+  }
+  if ((typech.compare("TDCV") == 0 || typech.compare("TDCA") == 0) && ch.compare("ZPAC") == 0) {
     return o2::zdc::TDCZPAC;
-  if ((typech.compare("TDCV") == 0 || typech.compare("TDCA") == 0) && ch.compare("ZPAS") == 0)
+  }
+  if ((typech.compare("TDCV") == 0 || typech.compare("TDCA") == 0) && ch.compare("ZPAS") == 0) {
     return o2::zdc::TDCZPAS;
-  if ((typech.compare("TDCV") == 0 || typech.compare("TDCA") == 0) && ch.compare("ZNCC") == 0)
+  }
+  if ((typech.compare("TDCV") == 0 || typech.compare("TDCA") == 0) && ch.compare("ZNCC") == 0) {
     return o2::zdc::TDCZNCC;
-  if ((typech.compare("TDCV") == 0 || typech.compare("TDCA") == 0) && ch.compare("ZNCS") == 0)
+  }
+  if ((typech.compare("TDCV") == 0 || typech.compare("TDCA") == 0) && ch.compare("ZNCS") == 0) {
     return o2::zdc::TDCZNCS;
-  if ((typech.compare("TDCV") == 0 || typech.compare("TDCA") == 0) && ch.compare("ZPCC") == 0)
+  }
+  if ((typech.compare("TDCV") == 0 || typech.compare("TDCA") == 0) && ch.compare("ZPCC") == 0) {
     return o2::zdc::TDCZPCC;
-  if ((typech.compare("TDCV") == 0 || typech.compare("TDCA") == 0) && ch.compare("ZPCS") == 0)
+  }
+  if ((typech.compare("TDCV") == 0 || typech.compare("TDCA") == 0) && ch.compare("ZPCS") == 0) {
     return o2::zdc::TDCZPCS;
-  if ((typech.compare("TDCV") == 0 || typech.compare("TDCA") == 0) && ch.compare("ZEM1") == 0)
+  }
+  if ((typech.compare("TDCV") == 0 || typech.compare("TDCA") == 0) && ch.compare("ZEM1") == 0) {
     return o2::zdc::TDCZEM1;
-  if ((typech.compare("TDCV") == 0 || typech.compare("TDCA") == 0) && ch.compare("ZEM2") == 0)
+  }
+  if ((typech.compare("TDCV") == 0 || typech.compare("TDCA") == 0) && ch.compare("ZEM2") == 0) {
     return o2::zdc::TDCZEM2;
+  }
   return 0;
 }
 

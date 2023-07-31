@@ -31,6 +31,10 @@
 
 #include <DataFormatsQualityControl/FlagReasons.h>
 
+#include <chrono>  // chrono::system_clock
+#include <ctime>   // localtime
+#include <sstream> // stringstream
+#include <iomanip> // put_time
 #include <string>
 using namespace std;
 using namespace o2::quality_control;
@@ -54,8 +58,9 @@ Quality ZDCRecDataCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
     if (mo->getName() == "h_summmary_ADC") {
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
       // dumpVecParam((int)h->GetNbinsX(),(int)mVectParamADC.size());
-      if ((int)h->GetNbinsX() != (int)mVectParamADC.size())
+      if ((int)h->GetNbinsX() != (int)mVectParamADC.size()) {
         return Quality::Null;
+      }
       for (int i = 0; i < h->GetNbinsX(); i++) {
         ib = i + 1;
         if ((((float)h->GetBinContent(ib) < (float)mVectParamADC.at(i).minW && (float)h->GetBinContent(ib) >= (float)mVectParamADC.at(i).minE)) || ((float)h->GetBinContent(ib) > (float)mVectParamADC.at(i).maxW && (float)h->GetBinContent(ib) < (float)mVectParamADC.at(i).maxE)) {
@@ -86,8 +91,9 @@ Quality ZDCRecDataCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
     if (mo->getName() == "h_summmary_TDC") {
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
       // dumpVecParam((int)h->GetNbinsX(),(int)mVectParamTDC.size());
-      if ((int)h->GetNbinsX() != (int)mVectParamTDC.size())
+      if ((int)h->GetNbinsX() != (int)mVectParamTDC.size()) {
         return Quality::Null;
+      }
       for (int i = 0; i < h->GetNbinsX(); i++) {
         ib = i + 1;
         if ((((float)h->GetBinContent(ib) < (float)mVectParamTDC.at(i).minW && (float)h->GetBinContent(ib) >= (float)mVectParamTDC.at(i).minE)) || ((float)h->GetBinContent(ib) > (float)mVectParamTDC.at(i).maxW && (float)h->GetBinContent(ib) < (float)mVectParamTDC.at(i).maxE)) {
@@ -115,21 +121,24 @@ Quality ZDCRecDataCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
         result = Quality::Good;
       } else if (mQADC == 3 || mQTDC == 3) {
         result = Quality::Bad;
-        if (mQADC == 3)
+        if (mQADC == 3) {
           result.addReason(FlagReasonFactory::Unknown(),
                            "Task quality is bad because in ADC Summary " + std::to_string(mNumWADC) + " channels:" + mStringEADC + "have a value in the bad range");
-        if (mQTDC == 3)
+        }
+        if (mQTDC == 3) {
           result.addReason(FlagReasonFactory::Unknown(),
                            "It is bad because in TDC Summary" + std::to_string(mNumWTDC) + " channels:" + mStringWTDC + "have a value in the bad range");
+        }
       } else {
         result = Quality::Medium;
-        if (mQADC == 2)
+        if (mQADC == 2) {
           result.addReason(FlagReasonFactory::Unknown(),
                            "It is medium because in ADC Summary " + std::to_string(mNumWADC) + " channels:" + mStringWADC + "have a value in the medium range");
-
-        if (mQTDC == 2)
+        }
+        if (mQTDC == 2) {
           result.addReason(FlagReasonFactory::Unknown(),
                            "It is medium because in TDC Summary " + std::to_string(mNumWTDC) + " channels:" + mStringWTDC + "have a value in the medium range");
+        }
       }
     }
   }
@@ -142,23 +151,23 @@ void ZDCRecDataCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
 {
   if (mo->getName() == "h_summmary_ADC") {
     if (mQADC == 1) {
-      setQualityInfo(mo, kGreen, "ADC OK");
+      setQualityInfo(mo, kGreen, getCurrentDataTime() + "ADC OK");
     } else if (mQADC == 3) {
-      std::string errorSt = "Error ADC value in the channels: " + mStringEADC + "is not correct. Call the expert";
+      std::string errorSt = getCurrentDataTime() + "Error ADC value in the channels: " + mStringEADC + "is not correct. Call the expert";
       setQualityInfo(mo, kRed, errorSt);
     } else if (mQADC == 2) {
-      std::string errorSt = "Warning ADC value in the channels: " + mStringWADC + "is not correct. Send mail to the expert";
+      std::string errorSt = getCurrentDataTime() + "Warning ADC value in the channels: " + mStringWADC + "is not correct. Send mail to the expert";
       setQualityInfo(mo, kOrange, errorSt);
     }
   }
   if (mo->getName() == "h_summmary_TDC") {
     if (mQTDC == 1) {
-      setQualityInfo(mo, kGreen, "TDC OK");
+      setQualityInfo(mo, kGreen, getCurrentDataTime() + "TDC OK");
     } else if (mQTDC == 3) {
-      std::string errorSt = "Error TDC value in the channels: " + mStringETDC + "is not correct. Call the expert";
+      std::string errorSt = getCurrentDataTime() + "Error TDC value in the channels: " + mStringETDC + "is not correct. Call the expert";
       setQualityInfo(mo, kRed, errorSt);
     } else if (mQTDC == 2) {
-      std::string errorSt = "Warning TDC value in the channels: " + mStringWTDC + "is not correct. Send mail to the expert";
+      std::string errorSt = getCurrentDataTime() + "Warning TDC value in the channels: " + mStringWTDC + "is not correct. Send mail to the expert";
       setQualityInfo(mo, kOrange, errorSt);
     }
   }
@@ -247,10 +256,12 @@ void ZDCRecDataCheck::setChName(std::string channel, std::string type)
 {
   sCheck chCheck;
   chCheck.ch = channel;
-  if (type.compare("ADC") == 0)
+  if (type.compare("ADC") == 0) {
     mVectParamADC.push_back(chCheck);
-  if (type.compare("TDC") == 0)
+  }
+  if (type.compare("TDC") == 0) {
     mVectParamTDC.push_back(chCheck);
+  }
 }
 
 void ZDCRecDataCheck::setChCheck(int index, std::string type)
@@ -291,6 +302,16 @@ std::vector<std::string> ZDCRecDataCheck::tokenLine(std::string Line, std::strin
   }
   stringToken.push_back(Line);
   return stringToken;
+}
+
+std::string ZDCRecDataCheck::getCurrentDataTime()
+{
+  auto now = std::chrono::system_clock::now();
+  auto in_time_t = std::chrono::system_clock::to_time_t(now);
+
+  std::stringstream ss;
+  ss << std::put_time(std::localtime(&in_time_t), "%d-%m-%Y %X");
+  return ss.str();
 }
 
 void ZDCRecDataCheck::dumpVecParam(int numBinHisto, int num_ch)

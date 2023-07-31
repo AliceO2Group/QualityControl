@@ -38,7 +38,7 @@ o2::quality_control_modules::mid::ClustQcTask,29602
 o2::quality_control_modules::mid::DigitsQcTask,29603
 o2::quality_control_modules::mid::RawQcTask,29604
 o2::quality_control_modules::mid::TracksQcTask,29605
-o2::quality_control_modules::muon::TracksTask,29512
+o2::quality_control_modules::muon::TracksTask,29513
 o2::quality_control_modules::muonchambers::ClustersTask,29500
 o2::quality_control_modules::muonchambers::DecodingErrorsTask,29501
 o2::quality_control_modules::muonchambers::DecodingTask,29502
