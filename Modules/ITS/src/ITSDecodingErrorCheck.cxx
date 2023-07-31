@@ -30,14 +30,30 @@ namespace o2::quality_control_modules::its
 
 Quality ITSDecodingErrorCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
+  // set timer
+  std::chrono::time_point<std::chrono::high_resolution_clock> start;
+  std::chrono::time_point<std::chrono::high_resolution_clock> end;
+  int TIME;
+  start = std::chrono::high_resolution_clock::now();
   std::vector<int> vDecErrorLimits = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "DecLinkErrorLimits", ""));
   if (vDecErrorLimits.size() != o2::itsmft::GBTLinkDecodingStat::NErrorsDefined) {
     LOG(error) << "Incorrect vector with DecodingError limits, check .json" << ENDM;
     doFlatCheck = true;
   }
+  std::vector<int> vDecErrorLimitsRatio = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "DecLinkErrorLimitsRatio", ""));
+  if (vDecErrorLimitsRatio.size() != o2::itsmft::GBTLinkDecodingStat::NErrorsDefined) {
+    LOG(error) << "Incorrect vector with DecodingError limits Ratio, check .json" << ENDM;
+    doFlatCheck = true;
+  }
+  std::vector<int> vDecErrorType = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "DecLinkErrorType", ""));
+  if (vDecErrorType.size() != o2::itsmft::GBTLinkDecodingStat::NErrorsDefined) {
+    LOG(error) << "Incorrect vector with DecodingError Type, check .json" << ENDM;
+    doFlatCheck = true;
+  }
 
   Quality result = Quality::Null;
-
+  end = std::chrono::high_resolution_clock::now();
+  TIME = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
   for (auto& [moName, mo] : *moMap) {
     (void)moName;
     if (mo->getName() == "General/ChipErrorPlots") {
@@ -60,15 +76,30 @@ Quality ITSDecodingErrorCheck::check(std::map<std::string, std::shared_ptr<Monit
 
           if (vDecErrorLimits[iBin - 1] < 0)
             continue; // skipping bin
-          if (vDecErrorLimits[iBin - 1] <= h->GetBinContent(iBin)) {
-            vListErrorIdBad.push_back(iBin - 1);
-            result.set(Quality::Bad);
-            result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("BAD: ID = %d, %s", iBin - 1, std::string(statistics.ErrNames[iBin - 1]).c_str()));
-          } else if (vDecErrorLimits[iBin - 1] / 2 < h->GetBinContent(iBin)) {
-            vListErrorIdMedium.push_back(iBin - 1);
-            if (result != Quality::Bad) {
-              result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("Medium: ID = %d, %s", iBin - 1, std::string(statistics.ErrNames[iBin - 1]).c_str()));
-              result.set(Quality::Medium);
+
+          if (vDecErrorType[iBin - 1] == 1) {
+            if (vDecErrorLimitsRatio[iBin - 1] <= h->GetBinContent(iBin) / TIME) {
+              vListErrorIdBad.push_back(iBin - 1);
+              result.set(Quality::Bad);
+              result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("BAD: ID = %d, %s", iBin - 1, std::string(statistics.ErrNames[iBin - 1]).c_str()));
+            } else if (vDecErrorLimitsRatio[iBin - 1] / 2 < h->GetBinContent(iBin) / TIME) {
+              vListErrorIdMedium.push_back(iBin - 1);
+              if (result != Quality::Bad) {
+                result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("Medium: ID = %d, %s", iBin - 1, std::string(statistics.ErrNames[iBin - 1]).c_str()));
+                result.set(Quality::Medium);
+              }
+            }
+          } else { // normal check, as we have in the code now
+            if (vDecErrorLimits[iBin - 1] <= h->GetBinContent(iBin)) {
+              vListErrorIdBad.push_back(iBin - 1);
+              result.set(Quality::Bad);
+              result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("BAD: ID = %d, %s", iBin - 1, std::string(statistics.ErrNames[iBin - 1]).c_str()));
+            } else if (vDecErrorLimits[iBin - 1] / 2 < h->GetBinContent(iBin)) {
+              vListErrorIdMedium.push_back(iBin - 1);
+              if (result != Quality::Bad) {
+                result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("Medium: ID = %d, %s", iBin - 1, std::string(statistics.ErrNames[iBin - 1]).c_str()));
+                result.set(Quality::Medium);
+              }
             }
           }
         }
