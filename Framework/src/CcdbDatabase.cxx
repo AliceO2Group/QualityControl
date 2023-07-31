@@ -239,12 +239,12 @@ void CcdbDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::Moni
   auto from = static_cast<long>(validity.getMin());
   auto to = static_cast<long>(validity.getMax());
 
-  if (from == -1 || from == 0 || validity.getMin() == gInvalidValidityInterval.getMin() || validity.getMin() == gFullValidityInterval.getMin()) {
-    from = getCurrentTimestamp();
-  }
-  if (to == -1 || to == 0 || validity.getMax() == gInvalidValidityInterval.getMax() || validity.getMax() == gFullValidityInterval.getMax()) {
-    to = from + 1000l * 60 * 60 * 24 * 365 * 10; // ~10 years since the start of validity
-  }
+  //  if (from == -1 || from == 0 || validity.getMin() == gInvalidValidityInterval.getMin() || validity.getMin() == gFullValidityInterval.getMin()) {
+  from = getCurrentTimestamp();
+  //  }
+  //  if (to == -1 || to == 0 || validity.getMax() == gInvalidValidityInterval.getMax() || validity.getMax() == gFullValidityInterval.getMax()) {
+  to = from + 1000l * 60 * 60 * 24 * 365 * 10; // ~10 years since the start of validity
+                                               //  }
 
   if (from >= to) {
     ILOG(Error, Support) << "The start validity of '" << mo->GetName() << "' is not earlier than the end (" << from << ", " << to << "). The object will not be stored" << ENDM;
@@ -281,12 +281,12 @@ void CcdbDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::Qual
   auto from = static_cast<long>(validity.getMin());
   auto to = static_cast<long>(validity.getMax());
 
-  if (from == -1 || from == 0 || validity.getMin() == gInvalidValidityInterval.getMin() || validity.getMin() == gFullValidityInterval.getMin()) {
-    from = getCurrentTimestamp();
-  }
-  if (to == -1 || to == 0 || validity.getMax() == gInvalidValidityInterval.getMax() || validity.getMax() == gFullValidityInterval.getMax()) {
-    to = from + 1000l * 60 * 60 * 24 * 365 * 10; // ~10 years since the start of validity
-  }
+  //  if (from == -1 || from == 0 || validity.getMin() == gInvalidValidityInterval.getMin() || validity.getMin() == gFullValidityInterval.getMin()) {
+  from = getCurrentTimestamp();
+  //  }
+  //  if (to == -1 || to == 0 || validity.getMax() == gInvalidValidityInterval.getMax() || validity.getMax() == gFullValidityInterval.getMax()) {
+  to = from + 1000l * 60 * 60 * 24 * 365 * 10; // ~10 years since the start of validity
+                                               //  }
   if (from >= to) {
     ILOG(Error, Support) << "The start validity of '" << qo->GetName() << "' is not earlier than the end (" << from << ", " << to << "). The object will not be stored" << ENDM;
     return;

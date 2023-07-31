@@ -240,27 +240,14 @@ void CheckRunner::init(framework::InitContext& iCtx)
   }
 }
 
-long getCurrentTimestamp()
-{
-  auto now = std::chrono::system_clock::now();
-  auto now_ms = std::chrono::time_point_cast<std::chrono::milliseconds>(now);
-  auto epoch = now_ms.time_since_epoch();
-  auto value = std::chrono::duration_cast<std::chrono::milliseconds>(epoch);
-  return value.count();
-}
-
 void CheckRunner::run(framework::ProcessingContext& ctx)
 {
   prepareCacheData(ctx.inputs());
 
   auto qualityObjects = check();
 
-  // we want all objects that we are going to store to have the same validFrom values.
-  // ideally it should be SOR or the moving window start, but before GUI allows for this,
-  // we have to put the current timestamp.
-  auto now = getCurrentTimestamp();
-  store(qualityObjects, now);
-  store(mMonitorObjectStoreVector, now);
+  store(qualityObjects);
+  store(mMonitorObjectStoreVector);
 
   send(qualityObjects, ctx.outputs());
 
@@ -373,32 +360,37 @@ QualityObjectsType CheckRunner::check()
   return allQOs;
 }
 
-void CheckRunner::store(QualityObjectsType& qualityObjects, long validFrom)
+void CheckRunner::store(QualityObjectsType& qualityObjects)
 {
   ILOG(Debug, Devel) << "Storing " << qualityObjects.size() << " QualityObjects" << ENDM;
   try {
     for (auto& qo : qualityObjects) {
-      qo->setActivity(*mActivity);
-      qo->getActivity().mValidity.set(validFrom, 0);
       mDatabase->storeQO(qo);
       mTotalNumberQOStored++;
       mNumberQOStored++;
+    }
+
+    if (!qualityObjects.empty()) {
+      auto& qo = qualityObjects.at(0);
+      ILOG(Info, Devel) << "New validity of QO '" << qo->GetName() << "' would be (" << qo->getValidity().getMin() << ", " << qo->getValidity().getMax() << ")" << ENDM;
     }
   } catch (boost::exception& e) {
     ILOG(Info, Support) << "Unable to " << diagnostic_information(e) << ENDM;
   }
 }
 
-void CheckRunner::store(std::vector<std::shared_ptr<MonitorObject>>& monitorObjects, long validFrom)
+void CheckRunner::store(std::vector<std::shared_ptr<MonitorObject>>& monitorObjects)
 {
   ILOG(Debug, Devel) << "Storing " << monitorObjects.size() << " MonitorObjects" << ENDM;
   try {
     for (auto& mo : monitorObjects) {
-      mo->setActivity(*mActivity);
-      mo->getActivity().mValidity.set(validFrom, 0);
       mDatabase->storeMO(mo);
       mTotalNumberMOStored++;
       mNumberMOStored++;
+    }
+    if (!monitorObjects.empty()) {
+      auto& mo = monitorObjects.at(0);
+      ILOG(Info, Devel) << "New validity of MO '" << mo->GetName() << "' would be (" << mo->getValidity().getMin() << ", " << mo->getValidity().getMax() << ")" << ENDM;
     }
   } catch (boost::exception& e) {
     ILOG(Info, Support) << "Unable to " << diagnostic_information(e) << ENDM;
