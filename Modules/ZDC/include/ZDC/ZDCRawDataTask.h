@@ -153,6 +153,7 @@ class ZDCRawDataTask final : public TaskInterface
   TH1* fSummaryRate;
   TH2* fSummaryAlign;
   TH2* fSummaryAlignShift;
+  TH2* fSummaryError;
   TH1* fOverBc;
 
   std::vector<std::string> fNameHisto;
@@ -167,8 +168,11 @@ class ZDCRawDataTask final : public TaskInterface
   double fMinBinY = 0;
   double fMaxBinY = 0;
   int fNumCycle = 0;
+  int fNumCycleErr = 0;
   int fAlignCycle = 1;
+  int fErrorCycle = 1;
   int fAlignNumEntries = 2000;
+
   sAlignment fMatrixAlign[o2::zdc::NModules][o2::zdc::NChPerModule];
 };
 
