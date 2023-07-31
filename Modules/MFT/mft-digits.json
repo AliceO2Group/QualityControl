@@ -19,7 +19,7 @@
         "url" : ""
       },
       "conditionDB" : {
-        "url" : "ccdb-test.cern.ch:8080"
+        "url" : "alice-ccdb.cern.ch"
       }
     },
     "tasks" : {

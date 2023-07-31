@@ -37,6 +37,7 @@
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "MFT/QcMFTUtilTables.h"
+#include "QualityControl/UserCodeInterface.h"
 
 using namespace std;
 
@@ -119,14 +120,15 @@ Quality QcMFTDigitCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
 
 std::string QcMFTDigitCheck::getAcceptedType() { return "TH1"; }
 
-void QcMFTDigitCheck::readMaskedChips()
+void QcMFTDigitCheck::readMaskedChips(std::shared_ptr<MonitorObject> mo)
 {
-  o2::ccdb::CcdbApi api;
-  api.init(mDeadMapCcdbAddress.data());
+  // o2::ccdb::CcdbApi api;
+  // api.init(mDeadMapCcdbAddress.data());
   long timestamp = -1;
   map<string, string> headers;
   map<std::string, std::string> filter;
-  auto calib = api.retrieveFromTFileAny<o2::itsmft::NoiseMap>("MFT/Calib/DeadMap/", filter, timestamp, &headers);
+  // auto calib = api.retrieveFromTFileAny<o2::itsmft::NoiseMap>("MFT/Calib/DeadMap/", filter, timestamp, &headers);
+  auto calib = UserCodeInterface::retrieveConditionAny<o2::itsmft::NoiseMap>("MFT/Calib/DeadMap/", filter, timestamp);
   for (int i = 0; i < calib->size(); i++) {
     if (calib->isFullChipMasked(i)) {
       mMaskedChips.push_back(i);
