@@ -44,7 +44,6 @@ class QcMFTDigitCheck : public o2::quality_control::checker::CheckInterface
  private:
   int mZoneThresholdMedium;
   int mZoneThresholdBad;
-  std::string mDeadMapCcdbAddress;
 
   // masked chips part
   bool mFirstCall;

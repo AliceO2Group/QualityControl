@@ -28,7 +28,6 @@
 #include <TPaveText.h>
 // O2
 #include <DataFormatsITSMFT/NoiseMap.h>
-#include "CCDB/CcdbApi.h"
 #include <ITSMFTReconstruction/ChipMappingMFT.h>
 
 // Quality Control
@@ -54,10 +53,6 @@ void QcMFTDigitCheck::configure()
   if (auto param = mCustomParameters.find("ZoneThresholdBad"); param != mCustomParameters.end()) {
     ILOG(Info, Support) << "Custom parameter - ZoneThresholdBad: " << param->second << ENDM;
     mZoneThresholdBad = stoi(param->second);
-  }
-  if (auto param = mCustomParameters.find("DeadMapCcdbAddress"); param != mCustomParameters.end()) {
-    ILOG(Info, Support) << "Custom parameter - DeadMapCcdbAddress: " << param->second << ENDM;
-    mDeadMapCcdbAddress = param->second;
   }
 
   // no call to beautifier yet
@@ -122,12 +117,9 @@ std::string QcMFTDigitCheck::getAcceptedType() { return "TH1"; }
 
 void QcMFTDigitCheck::readMaskedChips(std::shared_ptr<MonitorObject> mo)
 {
-  // o2::ccdb::CcdbApi api;
-  // api.init(mDeadMapCcdbAddress.data());
-  long timestamp = -1;
+  long timestamp = mo->getValidity().getMin();
   map<string, string> headers;
   map<std::string, std::string> filter;
-  // auto calib = api.retrieveFromTFileAny<o2::itsmft::NoiseMap>("MFT/Calib/DeadMap/", filter, timestamp, &headers);
   auto calib = UserCodeInterface::retrieveConditionAny<o2::itsmft::NoiseMap>("MFT/Calib/DeadMap/", filter, timestamp);
   for (int i = 0; i < calib->size(); i++) {
     if (calib->isFullChipMasked(i)) {
@@ -169,7 +161,7 @@ void QcMFTDigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
   // set up masking of dead chips once
   if (mFirstCall) {
     mFirstCall = false;
-    readMaskedChips();
+    readMaskedChips(mo);
     getChipMapData();
     createMaskedChipsNames();
   }
