@@ -311,6 +311,7 @@ void CheckRunner::prepareCacheData(framework::InputRecord& inputRecord)
           ILOG(Debug, Devel) << "    Creating an ad hoc MO." << ENDM;
           header::DataOrigin origin = DataSpecUtils::asConcreteOrigin(input);
           mo = std::make_shared<MonitorObject>(tObject, input.binding, "CheckRunner", origin.str);
+          mo->setActivity(*mActivity);
         }
 
         if (mo) {
