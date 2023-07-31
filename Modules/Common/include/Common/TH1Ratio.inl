@@ -20,17 +20,37 @@ namespace o2::quality_control_modules::common
 {
 
 template<class T>
+TH1Ratio<T>::TH1Ratio()
+  : T(),
+    o2::mergers::MergeInterface(),
+    mUniformScaling(true)
+{
+  {
+    TDirectory::TContext ctx(nullptr);
+    mHistoNum = new T("num", "num", 10, 0, 10);
+    mHistoDen = new T("den", "den", 1, -1, 1);
+  }
+
+  init();
+}
+
+template<class T>
 TH1Ratio<T>::TH1Ratio(TH1Ratio const& copymerge)
-  : T(copymerge.GetName(), copymerge.GetTitle(),
-         copymerge.getNum()->GetXaxis()->GetNbins(), copymerge.getNum()->GetXaxis()->GetXmin(), copymerge.getNum()->GetXaxis()->GetXmax()),
+  : T(),
     o2::mergers::MergeInterface(),
     mUniformScaling(copymerge.hasUniformScaling())
 {
-  Bool_t bStatus = TH1::AddDirectoryStatus();
-  TH1::AddDirectory(kFALSE);
-  mHistoNum = (T*)copymerge.getNum()->Clone();
-  mHistoDen = (T*)copymerge.getDen()->Clone();
-  TH1::AddDirectory(bStatus);
+  // do not add cloned histograms to gDirectory
+  {
+    TString name_num = T::GetName() + TString("_num");
+    TString name_den = T::GetName() + TString("_den");
+    TString title_num = T::GetTitle() + TString(" num");
+    TString title_den = T::GetTitle() + TString(" den");
+    TDirectory::TContext ctx(nullptr);
+    mHistoNum = new T(name_num, title_num, 10, 0, 10);
+    mHistoDen = new T(name_den, title_den, 1, -1, 1);
+  }
+  copymerge.Copy(*this);
 
   init();
 }
@@ -41,15 +61,20 @@ TH1Ratio<T>::TH1Ratio(const char* name, const char* title, int nbinsx, double xm
     o2::mergers::MergeInterface(),
     mUniformScaling(uniformScaling)
 {
-  Bool_t bStatus = TH1::AddDirectoryStatus();
-  TH1::AddDirectory(kFALSE);
-  mHistoNum = new T("num", "num", nbinsx, xmin, xmax);
-  if (mUniformScaling) {
-    mHistoDen = new T("den", "den", 1, -1, 1);
-  } else {
-    mHistoDen = new T("den", "den", nbinsx, xmin, xmax);
+  // do not add cloned histograms to gDirectory
+  {
+    TString name_num = T::GetName() + TString("_num");
+    TString name_den = T::GetName() + TString("_den");
+    TString title_num = T::GetTitle() + TString(" num");
+    TString title_den = T::GetTitle() + TString(" den");
+    TDirectory::TContext ctx(nullptr);
+    mHistoNum = new T(name_num, title_num, nbinsx, xmin, xmax);
+    if (mUniformScaling) {
+      mHistoDen = new T(name_den, title_den, 1, -1, 1);
+    } else {
+      mHistoDen = new T(name_den, title_den, nbinsx, xmin, xmax);
+    }
   }
-  TH1::AddDirectory(bStatus);
 
   init();
 }
@@ -60,15 +85,20 @@ TH1Ratio<T>::TH1Ratio(const char* name, const char* title, bool uniformScaling)
     o2::mergers::MergeInterface(),
     mUniformScaling(uniformScaling)
 {
-  Bool_t bStatus = TH1::AddDirectoryStatus();
-  TH1::AddDirectory(kFALSE);
-  mHistoNum = new T("num", "num", 10, 0, 10);
-  if (mUniformScaling) {
-    mHistoDen = new T("den", "den", 1, -1, 1);
-  } else {
-    mHistoDen = new T("den", "den", 10, 0, 10);
+  // do not add cloned histograms to gDirectory
+  {
+    TString name_num = T::GetName() + TString("_num");
+    TString name_den = T::GetName() + TString("_den");
+    TString title_num = T::GetTitle() + TString(" num");
+    TString title_den = T::GetTitle() + TString(" den");
+    TDirectory::TContext ctx(nullptr);
+    mHistoNum = new T(name_num, title_num, 10, 0, 10);
+    if (mUniformScaling) {
+      mHistoDen = new T(name_den, title_den, 1, -1, 1);
+    } else {
+      mHistoDen = new T(name_den, title_den, 10, 0, 10);
+    }
   }
-  TH1::AddDirectory(bStatus);
 
   init();
 }
@@ -94,8 +124,6 @@ void TH1Ratio<T>::init()
   mHistoNum->Sumw2();
   mHistoDen->Sumw2();
   T::Sumw2();
-
-  update();
 }
 
 template<class T>
@@ -121,8 +149,6 @@ void TH1Ratio<T>::update()
   const char* title = this->GetTitle();
 
   T::Reset();
-
-  T::SetNameTitle(name, title);
   T::GetXaxis()->Set(mHistoNum->GetXaxis()->GetNbins(), mHistoNum->GetXaxis()->GetXmin(), mHistoNum->GetXaxis()->GetXmax());
   T::SetBinsLength();
 
@@ -152,12 +178,38 @@ void TH1Ratio<T>::Reset(Option_t* option)
 }
 
 template<class T>
+void TH1Ratio<T>::SetName(const char* name)
+{
+  T::SetName(name);
+
+  //setting the names (appending the correct ending)
+  TString name_num = name + TString("_num");
+  TString name_den = name + TString("_den");
+  mHistoNum->SetName(name_num);
+  mHistoDen->SetName(name_den);
+}
+
+template<class T>
+void TH1Ratio<T>::SetTitle(const char* title)
+{
+  T::SetTitle(title);
+
+  //setting the titles (appending the correct ending)
+  TString title_num = title + TString("_num");
+  TString title_den = title + TString("_den");
+  mHistoNum->SetTitle(title_num);
+  mHistoDen->SetTitle(title_den);
+}
+
+template<class T>
 void TH1Ratio<T>::Copy(TObject& obj) const
 {
   auto dest = dynamic_cast<TH1Ratio*>(&obj);
   if (!dest) {
     return;
   }
+
+  dest->setHasUniformScaling(hasUniformScaling());
 
   T::Copy(obj);
 

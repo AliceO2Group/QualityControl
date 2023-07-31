@@ -20,6 +20,7 @@
 #include "Mergers/MergeInterface.h"
 #include <TH1F.h>
 #include <TH1D.h>
+#include <TDirectory.h>
 
 namespace o2::quality_control_modules::common
 {
@@ -28,7 +29,7 @@ template <class T>
 class TH1Ratio : public T, public o2::mergers::MergeInterface
 {
  public:
-  TH1Ratio() = default;
+  TH1Ratio();
   TH1Ratio(TH1Ratio const& copymerge);
   TH1Ratio(const char* name, const char* title, int nbinsx, double xmin, double xmax, bool uniformScaling = false);
   TH1Ratio(const char* name, const char* title, bool uniformScaling = false);
@@ -49,6 +50,11 @@ class TH1Ratio : public T, public o2::mergers::MergeInterface
     return mHistoDen;
   }
 
+  void setHasUniformScaling(bool flag)
+  {
+    mUniformScaling = flag;
+  }
+
   bool hasUniformScaling() const
   {
     return mUniformScaling;
@@ -58,6 +64,8 @@ class TH1Ratio : public T, public o2::mergers::MergeInterface
 
   // functions inherited from TH1x
   void Reset(Option_t* option = "") override;
+  void SetName(const char* name) override;
+  void SetTitle(const char* title) override;
   void Copy(TObject& obj) const override;
   Bool_t Add(const TH1* h1, const TH1* h2, Double_t c1 = 1, Double_t c2 = 1) override;
   Bool_t Add(const TH1* h1, Double_t c1 = 1) override;
