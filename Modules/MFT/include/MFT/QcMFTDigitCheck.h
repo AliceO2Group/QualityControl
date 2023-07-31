@@ -45,6 +45,27 @@ class QcMFTDigitCheck : public o2::quality_control::checker::CheckInterface
   int mZoneThresholdMedium;
   int mZoneThresholdBad;
 
+  // masked chips part
+  bool mFirstCall;
+  std::vector<int> mMaskedChips;
+  std::vector<string> mChipMapName;
+
+  void readMaskedChips(std::shared_ptr<MonitorObject> mo);
+  void createMaskedChipsNames();
+
+  // to form the name of the masked chips histograms
+  int mHalf[936] = { 0 };
+  int mDisk[936] = { 0 };
+  int mFace[936] = { 0 };
+  int mZone[936] = { 0 };
+  int mSensor[936] = { 0 };
+  int mTransID[936] = { 0 };
+  int mLayer[936] = { 0 };
+  int mLadder[936] = { 0 };
+  float mX[936] = { 0 };
+  float mY[936] = { 0 };
+  void getChipMapData();
+
   ClassDefOverride(QcMFTDigitCheck, 2);
 };
 
