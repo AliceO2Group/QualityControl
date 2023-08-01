@@ -31,10 +31,10 @@ namespace o2::quality_control_modules::its
 Quality ITSDecodingErrorCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
   // set timer
-  std::chrono::time_point<std::chrono::high_resolution_clock> start;
-  std::chrono::time_point<std::chrono::high_resolution_clock> end;
-  int TIME;
-  start = std::chrono::high_resolution_clock::now();
+  if (mTFCount == 0) {
+    start = std::chrono::high_resolution_clock::now();
+    mTFCount++;
+  }
   std::vector<int> vDecErrorLimits = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "DecLinkErrorLimits", ""));
   if (vDecErrorLimits.size() != o2::itsmft::GBTLinkDecodingStat::NErrorsDefined) {
     LOG(error) << "Incorrect vector with DecodingError limits, check .json" << ENDM;
@@ -52,8 +52,6 @@ Quality ITSDecodingErrorCheck::check(std::map<std::string, std::shared_ptr<Monit
   }
 
   Quality result = Quality::Null;
-  end = std::chrono::high_resolution_clock::now();
-  TIME = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
   for (auto& [moName, mo] : *moMap) {
     (void)moName;
     if (mo->getName() == "General/ChipErrorPlots") {
@@ -77,7 +75,7 @@ Quality ITSDecodingErrorCheck::check(std::map<std::string, std::shared_ptr<Monit
           if (vDecErrorLimits[iBin - 1] < 0)
             continue; // skipping bin
 
-          if (vDecErrorType[iBin - 1] == 1) {
+          if (vDecErrorType[iBin - 1] == 1 && TIME != 0) {
             if (vDecErrorLimitsRatio[iBin - 1] <= h->GetBinContent(iBin) / TIME) {
               vListErrorIdBad.push_back(iBin - 1);
               result.set(Quality::Bad);
@@ -106,6 +104,8 @@ Quality ITSDecodingErrorCheck::check(std::map<std::string, std::shared_ptr<Monit
       }
     }
   }
+  end = std::chrono::high_resolution_clock::now();
+  TIME = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
   return result;
 }
 

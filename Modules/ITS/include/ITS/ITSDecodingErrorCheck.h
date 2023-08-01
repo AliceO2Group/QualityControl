@@ -41,7 +41,8 @@ class ITSDecodingErrorCheck : public o2::quality_control::checker::CheckInterfac
   // Override interface
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
-  std::vector<int> vDecErrorLimits, vDecErrorLimitsRatio, vDecErrorType, vListErrorIdBad, vListErrorIdMedium;
+  std::vector<int> vDecErrorLimits, vDecErrorType, vListErrorIdBad, vListErrorIdMedium;
+  std::vector<float> vDecErrorLimitsRatio;
   bool doFlatCheck = false;
   o2::itsmft::GBTLinkDecodingStat statistics;
 
@@ -66,6 +67,11 @@ class ITSDecodingErrorCheck : public o2::quality_control::checker::CheckInterfac
   }
 
  private:
+  int mTFCount = 0;
+  // set timer
+  std::chrono::time_point<std::chrono::high_resolution_clock> start;
+  std::chrono::time_point<std::chrono::high_resolution_clock> end;
+  int TIME = 1;
   ClassDefOverride(ITSDecodingErrorCheck, 1);
 
   std::shared_ptr<TLatex> tInfo;
