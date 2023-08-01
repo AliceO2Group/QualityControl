@@ -41,8 +41,7 @@ class ITSDecodingErrorCheck : public o2::quality_control::checker::CheckInterfac
   // Override interface
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
-  std::vector<int> vDecErrorLimits, vDecErrorType, vListErrorIdBad, vListErrorIdMedium;
-  std::vector<float> vDecErrorLimitsRatio;
+  std::vector<int> vListErrorIdBad, vListErrorIdMedium;
   bool doFlatCheck = false;
   o2::itsmft::GBTLinkDecodingStat statistics;
 
@@ -59,6 +58,8 @@ class ITSDecodingErrorCheck : public o2::quality_control::checker::CheckInterfac
 
       if constexpr (std::is_same_v<T, int>) {
         result.push_back(std::stoi(token));
+      } else if constexpr (std::is_same_v<T, float>) {
+        result.push_back(std::stof(token));
       } else if constexpr (std::is_same_v<T, std::string>) {
         result.push_back(token);
       }
