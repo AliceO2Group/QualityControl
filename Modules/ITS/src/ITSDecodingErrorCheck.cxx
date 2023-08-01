@@ -31,9 +31,12 @@ namespace o2::quality_control_modules::its
 Quality ITSDecodingErrorCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
   // set timer
-  if (mTFCount == 0) {
+  if (nCycle == 0) {
     start = std::chrono::high_resolution_clock::now();
-    mTFCount++;
+    nCycle++;
+  } else {
+    end = std::chrono::high_resolution_clock::now();
+    TIME = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
   }
   std::vector<int> vDecErrorLimits = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "DecLinkErrorLimits", ""));
   if (vDecErrorLimits.size() != o2::itsmft::GBTLinkDecodingStat::NErrorsDefined) {
@@ -75,37 +78,35 @@ Quality ITSDecodingErrorCheck::check(std::map<std::string, std::shared_ptr<Monit
           if (vDecErrorLimits[iBin - 1] < 0)
             continue; // skipping bin
 
-          if (vDecErrorType[iBin - 1] == 1 && TIME != 0) {
-            if (vDecErrorLimitsRatio[iBin - 1] <= h->GetBinContent(iBin) / TIME) {
+	  if (vDecErrorType[iBin - 1] == 1 && TIME != 0){
+            if (vDecErrorLimitsRatio[iBin - 1] <= h->GetBinContent(iBin)/TIME) {
               vListErrorIdBad.push_back(iBin - 1);
               result.set(Quality::Bad);
               result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("BAD: ID = %d, %s", iBin - 1, std::string(statistics.ErrNames[iBin - 1]).c_str()));
-            } else if (vDecErrorLimitsRatio[iBin - 1] / 2 < h->GetBinContent(iBin) / TIME) {
+	    } else if (vDecErrorLimitsRatio[iBin - 1] / 2 < h->GetBinContent(iBin)/TIME) {
               vListErrorIdMedium.push_back(iBin - 1);
               if (result != Quality::Bad) {
                 result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("Medium: ID = %d, %s", iBin - 1, std::string(statistics.ErrNames[iBin - 1]).c_str()));
                 result.set(Quality::Medium);
               }
             }
-          } else { // normal check, as we have in the code now
+          } else {  //normal check, as we have in the code now 
             if (vDecErrorLimits[iBin - 1] <= h->GetBinContent(iBin)) {
               vListErrorIdBad.push_back(iBin - 1);
               result.set(Quality::Bad);
               result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("BAD: ID = %d, %s", iBin - 1, std::string(statistics.ErrNames[iBin - 1]).c_str()));
-            } else if (vDecErrorLimits[iBin - 1] / 2 < h->GetBinContent(iBin)) {
+	    } else if (vDecErrorLimits[iBin - 1] / 2 < h->GetBinContent(iBin)) {
               vListErrorIdMedium.push_back(iBin - 1);
               if (result != Quality::Bad) {
                 result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("Medium: ID = %d, %s", iBin - 1, std::string(statistics.ErrNames[iBin - 1]).c_str()));
                 result.set(Quality::Medium);
               }
             }
-          }
+          }             
         }
       }
     }
   }
-  end = std::chrono::high_resolution_clock::now();
-  TIME = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
   return result;
 }
 

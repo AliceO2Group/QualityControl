@@ -67,7 +67,7 @@ class ITSDecodingErrorCheck : public o2::quality_control::checker::CheckInterfac
   }
 
  private:
-  int mTFCount = 0;
+  int nCycle = 0;
   // set timer
   std::chrono::time_point<std::chrono::high_resolution_clock> start;
   std::chrono::time_point<std::chrono::high_resolution_clock> end;
