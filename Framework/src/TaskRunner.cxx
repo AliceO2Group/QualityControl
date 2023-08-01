@@ -510,7 +510,7 @@ void TaskRunner::finishCycle(DataAllocator& outputs)
 
   // this stays until we move to using mTimekeeper.
   auto nowMs = getCurrentTimestamp();
-  mObjectsManager->setValidity(ValidityInterval{ nowMs, nowMs + 1000l * 60 * 60 * 24 * 365 * 10 });
+  mObjectsManager->setValidity(mTimekeeper->getValidity());
   mNumberObjectsPublishedInCycle += publish(outputs);
   mTotalNumberObjectsPublished += mNumberObjectsPublishedInCycle;
   saveToFile();
