@@ -18,13 +18,11 @@
 #define QUALITYCONTROL_USERCODEINTERFACE_H
 
 #include <string>
-#include <unordered_map>
 #include <map>
 #include <Rtypes.h>
 #include <CCDB/BasicCCDBManager.h>
 
 #include "QualityControl/CustomParameters.h"
-#include "QualityControl/QcInfoLogger.h"
 
 namespace o2::quality_control::core
 {
