@@ -91,7 +91,8 @@ add_library(O2QualityControl
   src/runnerUtils.cxx
   src/Timekeeper.cxx
   src/TimekeeperSynchronous.cxx
-  src/TimekeeperAsynchronous.cxx)
+  src/TimekeeperAsynchronous.cxx
+  src/TimekeeperFactory.cxx)
 
 
 target_include_directories(
