@@ -19,13 +19,17 @@
 
 #include <string>
 #include <vector>
-#include <Common/Exceptions.h>
-#include "QualityControl/MonitorObject.h"
-#include "QualityControl/QualityObject.h"
-#include <DataFormatsQualityControl/TimeRangeFlagCollection.h>
+
+namespace o2::quality_control
+{
+class TimeRangeFlagCollection;
+}
 
 namespace o2::quality_control::core
 {
+class QualityObject;
+class MonitorObject;
+
 class RepoPathUtils
 {
  public:
@@ -43,11 +47,7 @@ class RepoPathUtils
                                const std::string& taskName,
                                const std::string& moName,
                                const std::string& provenance = "qc",
-                               bool includeProvenance = true)
-  {
-    std::string path = (includeProvenance ? provenance + "/" : "") + detectorCode + "/MO/" + taskName + (moName.empty() ? "" : ("/" + moName));
-    return path;
-  }
+                               bool includeProvenance = true);
 
   /**
    * Compute and return the path to the MonitorObject.
@@ -56,11 +56,7 @@ class RepoPathUtils
    * @param includeProvenance
    * @return the path to the MonitorObject
    */
-  static std::string getMoPath(const MonitorObject* mo, bool includeProvenance = true)
-  {
-    return getMoPath(mo->getDetectorName(), mo->getTaskName(), mo->getName(), mo->getActivity().mProvenance, includeProvenance);
-  }
-
+  static std::string getMoPath(const MonitorObject* mo, bool includeProvenance = true);
   /**
    * Compute and return the path to the QualityObject.
    * Current algorithm does <provenance(qc)>/<detectorCode>/QO/<checkName>[/<moName>].
@@ -78,17 +74,7 @@ class RepoPathUtils
                                const std::string& policyName = "",
                                const std::vector<std::string>& monitorObjectsNames = std::vector<std::string>(),
                                const std::string& provenance = "qc",
-                               bool includeProvenance = true)
-  {
-    std::string path = (includeProvenance ? provenance + "/" : "") + detectorCode + "/QO/" + checkName;
-    if (policyName == "OnEachSeparately") {
-      if (monitorObjectsNames.empty()) {
-        BOOST_THROW_EXCEPTION(AliceO2::Common::FatalException() << AliceO2::Common::errinfo_details("getQoPath: The vector of monitorObjectsNames is empty."));
-      }
-      path += "/" + monitorObjectsNames[0];
-    }
-    return path;
-  }
+                               bool includeProvenance = true);
 
   /**
    * Compute and return the path to the QualityObject.
@@ -97,15 +83,8 @@ class RepoPathUtils
    * @param qo
    * @return the path to the QualityObject
    */
-  static std::string getQoPath(const QualityObject* qo, bool includeProvenance = true)
-  {
-    return getQoPath(qo->getDetectorName(),
-                     qo->getCheckName(),
-                     qo->getPolicyName(),
-                     qo->getMonitorObjectsNames(),
-                     qo->getActivity().mProvenance,
-                     includeProvenance);
-  }
+  static std::string getQoPath(const QualityObject* qo, bool includeProvenance = true);
+
   /**
    * Compute and return the path to the TRFCollection.
    * Current algorithm does <provenance(qc)>/<detectorCode>/TRFC/<trfcName>
@@ -116,27 +95,17 @@ class RepoPathUtils
    */
   static std::string getTrfcPath(const std::string& detectorCode,
                                  const std::string& trfcName,
-                                 const std::string& provenance = "qc")
-  {
-    return provenance + "/" + detectorCode + "/TRFC/" + trfcName;
-  }
-
+                                 const std::string& provenance = "qc");
   /**
    * Compute and return the path to the TRFCollection.
    * Current algorithm does <provenance(qc)>/<detectorCode>/TRFC/<trfcName>
    * @param trfc
    * @return the path to the TRFCollection
    */
-  static std::string getTrfcPath(const TimeRangeFlagCollection* trfc)
-  {
-    return getTrfcPath(trfc->getDetector(), trfc->getName(), trfc->getProvenance());
-  }
+  static std::string getTrfcPath(const TimeRangeFlagCollection* trfc);
 
   static constexpr auto allowedProvenancesMessage = R"(Allowed provenances are "qc" (real data processed synchronously), "qc_async" (real data processed asynchronously) and "qc_mc" (simulated data).)";
-  static bool isProvenanceAllowed(const std::string& provenance)
-  {
-    return provenance == "qc" || provenance == "qc_async" || provenance == "qc_mc";
-  }
+  static bool isProvenanceAllowed(const std::string& provenance);
 };
 } // namespace o2::quality_control::core
 

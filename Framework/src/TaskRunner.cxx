@@ -33,6 +33,7 @@
 #include <Framework/TimingInfo.h>
 #include <Framework/DataTakingContext.h>
 #include <Framework/DefaultsHelpers.h>
+#include <Framework/ConfigParamRegistry.h>
 #include <CommonUtils/ConfigurableParam.h>
 #include <DetectorsBase/GRPGeomHelper.h>
 
