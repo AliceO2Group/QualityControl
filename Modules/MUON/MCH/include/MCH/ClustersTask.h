@@ -14,22 +14,19 @@
 
 #include "QualityControl/TaskInterface.h"
 #include <MCHRawElecMap/Mapper.h>
-#include <TH1F.h>
-#include <TProfile.h>
 #include <gsl/span>
 #include <memory>
 #include "MCHGeometryTransformer/Transformations.h"
 #include "MUONCommon/HistPlotter.h"
+#include <TProfile.h>
+#include <TH1F.h>
 
 namespace o2::mch
 {
 class Cluster;
-class TrackMCH;
 } // namespace o2::mch
 
 using namespace o2::quality_control::core;
-
-class TH1F;
 
 namespace o2::quality_control_modules::muonchambers
 {

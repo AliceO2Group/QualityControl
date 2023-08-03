@@ -28,20 +28,7 @@
 #include "MCH/HeartBeatPacketsPlotter.h"
 #include "MCH/FECSyncStatusPlotter.h"
 
-#include "MCHRawCommon/DataFormats.h"
-#include "MCHRawElecMap/Mapper.h"
-
 #include <memory>
-#include <unordered_map>
-#include <TCanvas.h>
-
-class TH1F;
-class TProfile;
-
-namespace o2::quality_control::core
-{
-class Activity;
-}
 
 namespace o2::quality_control::repository
 {

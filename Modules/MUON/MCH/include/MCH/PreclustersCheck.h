@@ -18,11 +18,14 @@
 
 #include "MCH/Helpers.h"
 #include "QualityControl/CheckInterface.h"
-#include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
-#include "MCHRawCommon/DataFormats.h"
 #include "MCHRawElecMap/Mapper.h"
 #include <string>
+
+namespace o2::quality_control::core
+{
+class MonitorObject;
+}
 
 namespace o2::quality_control_modules::muonchambers
 {

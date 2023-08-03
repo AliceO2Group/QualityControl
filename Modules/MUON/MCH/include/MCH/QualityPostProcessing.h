@@ -24,16 +24,6 @@
 #include "MCH/PostProcessingConfigMCH.h"
 #include <TH1F.h>
 
-namespace o2::quality_control::core
-{
-class Activity;
-}
-
-namespace o2::quality_control::repository
-{
-class DatabaseInterface;
-}
-
 using namespace o2::quality_control::postprocessing;
 
 namespace o2::quality_control_modules::muonchambers

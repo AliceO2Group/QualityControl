@@ -17,10 +17,7 @@
 ///
 
 #include "MCH/QualityPostProcessing.h"
-#include "QualityControl/QcInfoLogger.h"
-#include "QualityControl/MonitorObject.h"
 #include "QualityControl/DatabaseInterface.h"
-#include <TDatime.h>
 #include <TPaveText.h>
 
 using namespace o2::quality_control;
