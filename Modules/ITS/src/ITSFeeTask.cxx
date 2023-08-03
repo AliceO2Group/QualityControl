@@ -406,7 +406,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
       mRDHSummaryCumulative->Fill(ifee, 7);
     }
     if (summaryLaneStatus & (1 << 5)) {
-      mRDHSummary->Fill(ifee, 7); // lane recovery bit
+      mRDHSummary->Fill(ifee, 8); // lane recovery bit
       mRDHSummaryCumulative->Fill(ifee, 8);
     }
     if (summaryLaneStatus & (1 << 26)) {
