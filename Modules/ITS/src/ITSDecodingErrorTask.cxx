@@ -16,6 +16,7 @@
 
 #include "ITS/ITSDecodingErrorTask.h"
 #include "ITSMFTReconstruction/DecodingStat.h"
+#include "QualityControl/QcInfoLogger.h"
 #include <Framework/InputRecord.h>
 
 using namespace o2::framework;

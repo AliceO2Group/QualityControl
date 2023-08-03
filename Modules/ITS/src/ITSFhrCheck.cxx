@@ -18,6 +18,7 @@
 #include "ITS/ITSFhrCheck.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
+#include "QualityControl/QcInfoLogger.h"
 
 #include <fairlogger/Logger.h>
 #include <TH1.h>

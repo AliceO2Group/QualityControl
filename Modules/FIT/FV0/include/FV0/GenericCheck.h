@@ -18,6 +18,7 @@
 #define QC_MODULE_FV0_FV0GENERICCHECK_H
 
 #include "QualityControl/CheckInterface.h"
+#include "QualityControl/QcInfoLogger.h"
 #include "FV0Base/Constants.h"
 #include "DataFormatsFIT/DeadChannelMap.h"
 #include <DataFormatsQualityControl/FlagReasons.h>

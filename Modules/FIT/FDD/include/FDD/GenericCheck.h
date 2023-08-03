@@ -18,6 +18,7 @@
 #define QC_MODULE_FDD_FDDGENERICCHECK_H
 
 #include "QualityControl/CheckInterface.h"
+#include "QualityControl/QcInfoLogger.h"
 #include <DataFormatsQualityControl/FlagReasons.h>
 #include "DataFormatsFIT/DeadChannelMap.h"
 #include <DataFormatsQualityControl/FlagReasons.h>
