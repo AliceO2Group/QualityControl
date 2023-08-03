@@ -30,8 +30,6 @@ class TimeRangeFlagCollection;
 
 namespace o2::quality_control::core
 {
-class QualityObject;
-class MonitorObject;
 
 class RepoPathUtils
 {

@@ -15,7 +15,6 @@
 /// \author Barthelemy von Haller
 ///
 
-#include <unordered_map>
 #include "QualityControl/CcdbDatabase.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/Version.h"
@@ -27,7 +26,6 @@
 #include <boost/test/unit_test.hpp>
 #include <TH1F.h>
 #include "QualityControl/RepoPathUtils.h"
-#include "QualityControl/testUtils.h"
 #include "QualityControl/ObjectMetadataKeys.h"
 #include <DataFormatsQualityControl/TimeRangeFlagCollection.h>
 #include <TROOT.h>

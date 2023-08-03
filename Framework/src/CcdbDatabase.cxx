@@ -35,7 +35,6 @@
 #include <TROOT.h>
 #include <TKey.h>
 #include <TStreamerInfo.h>
-#include <TSystem.h>
 // std
 #include <chrono>
 #include <sstream>

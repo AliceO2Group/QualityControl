@@ -28,14 +28,13 @@
 #include <TGraphErrors.h>
 #include <TTreeReader.h>
 #include <TTreeReaderValue.h>
-#include <TTreeReaderArray.h>
-#include <fmt/format.h>
+#include <fmt/core.h>
 #include <TAxis.h>
 #include <TH2F.h>
 #include <TStyle.h>
 #include <TMultiGraph.h>
-#include <TIterator.h>
 #include <TLegend.h>
+#include <TCanvas.h>
 
 using namespace o2::quality_control;
 using namespace o2::quality_control::core;
