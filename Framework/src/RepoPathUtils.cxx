@@ -10,10 +10,7 @@
 // or submit itself to any jurisdiction.
 
 #include "QualityControl/RepoPathUtils.h"
-#include "QualityControl/MonitorObject.h"
-#include "QualityControl/QualityObject.h"
 #include <DataFormatsQualityControl/TimeRangeFlagCollection.h>
-#include <Common/Exceptions.h>
 
 namespace o2::quality_control::core
 {

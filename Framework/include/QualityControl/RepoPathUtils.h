@@ -19,6 +19,9 @@
 
 #include <string>
 #include <vector>
+#include "QualityControl/MonitorObject.h"
+#include "QualityControl/QualityObject.h"
+#include <Common/Exceptions.h>
 
 namespace o2::quality_control
 {
