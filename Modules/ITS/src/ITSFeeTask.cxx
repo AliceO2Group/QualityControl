@@ -143,10 +143,10 @@ void ITSFeeTask::createFeePlots()
   mPayloadSize = new TH2F("PayloadSize", "Payload Size", NFees, 0, NFees, mNPayloadSizeBins, 0, 4.096e4);
   getObjectsManager()->startPublishing(mPayloadSize); // mPayloadSize
 
-  mRDHSummary = new TH2I("RDHSummary", "RDH Summary", NFees, 0, NFees, 8, 0, 8);
+  mRDHSummary = new TH2I("RDHSummary", "RDH Summary", NFees, 0, NFees, 9, 0, 9);
   getObjectsManager()->startPublishing(mRDHSummary);
 
-  mRDHSummaryCumulative = new TH2I("RDHSummaryCumulative", "RDH Summary since SOX", NFees, 0, NFees, 8, 0, 8);
+  mRDHSummaryCumulative = new TH2I("RDHSummaryCumulative", "RDH Summary since SOX", NFees, 0, NFees, 9, 0, 9);
   getObjectsManager()->startPublishing(mRDHSummaryCumulative);
 }
 
@@ -214,6 +214,7 @@ void ITSFeeTask::setPlotsFormat()
     mRDHSummary->GetYaxis()->SetBinLabel(6, "TimebaseEvent");
     mRDHSummary->GetYaxis()->SetBinLabel(7, "TimebaseUnsyncEvent");
     mRDHSummary->GetYaxis()->SetBinLabel(8, "Trigger ramp bit");
+    mRDHSummary->GetYaxis()->SetBinLabel(9, "Recovery bit");
     drawLayerName(mRDHSummary);
   }
 
@@ -228,6 +229,7 @@ void ITSFeeTask::setPlotsFormat()
     mRDHSummaryCumulative->GetYaxis()->SetBinLabel(6, "TimebaseEvent");
     mRDHSummaryCumulative->GetYaxis()->SetBinLabel(7, "TimebaseUnsyncEvent");
     mRDHSummaryCumulative->GetYaxis()->SetBinLabel(8, "Trigger ramp bit");
+    mRDHSummaryCumulative->GetYaxis()->SetBinLabel(9, "Recovery bit");
     drawLayerName(mRDHSummaryCumulative);
   }
 
@@ -402,6 +404,10 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (summaryLaneStatus & (1 << 4)) {
       mRDHSummary->Fill(ifee, 7); // trigger ramp bit
       mRDHSummaryCumulative->Fill(ifee, 7);
+    }
+    if (summaryLaneStatus & (1 << 5)) {
+      mRDHSummary->Fill(ifee, 7); // lane recovery bit
+      mRDHSummaryCumulative->Fill(ifee, 8);
     }
     if (summaryLaneStatus & (1 << 26)) {
       mRDHSummary->Fill(ifee, 4); // clock evt
