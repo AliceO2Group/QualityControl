@@ -47,7 +47,11 @@ class RepoPathUtils
                                const std::string& taskName,
                                const std::string& moName,
                                const std::string& provenance = "qc",
-                               bool includeProvenance = true);
+                               bool includeProvenance = true)
+  {
+    std::string path = (includeProvenance ? provenance + "/" : "") + detectorCode + "/MO/" + taskName + (moName.empty() ? "" : ("/" + moName));
+    return path;
+  }
 
   /**
    * Compute and return the path to the MonitorObject.
@@ -56,7 +60,10 @@ class RepoPathUtils
    * @param includeProvenance
    * @return the path to the MonitorObject
    */
-  static std::string getMoPath(const MonitorObject* mo, bool includeProvenance = true);
+  static std::string getMoPath(const MonitorObject* mo, bool includeProvenance = true)
+  {
+    return getMoPath(mo->getDetectorName(), mo->getTaskName(), mo->getName(), mo->getActivity().mProvenance, includeProvenance);
+  }
   /**
    * Compute and return the path to the QualityObject.
    * Current algorithm does <provenance(qc)>/<detectorCode>/QO/<checkName>[/<moName>].
@@ -74,7 +81,17 @@ class RepoPathUtils
                                const std::string& policyName = "",
                                const std::vector<std::string>& monitorObjectsNames = std::vector<std::string>(),
                                const std::string& provenance = "qc",
-                               bool includeProvenance = true);
+                               bool includeProvenance = true)
+  {
+    std::string path = (includeProvenance ? provenance + "/" : "") + detectorCode + "/QO/" + checkName;
+    if (policyName == "OnEachSeparately") {
+      if (monitorObjectsNames.empty()) {
+        BOOST_THROW_EXCEPTION(AliceO2::Common::FatalException() << AliceO2::Common::errinfo_details("getQoPath: The vector of monitorObjectsNames is empty."));
+      }
+      path += "/" + monitorObjectsNames[0];
+    }
+    return path;
+  }
 
   /**
    * Compute and return the path to the QualityObject.
@@ -83,7 +100,15 @@ class RepoPathUtils
    * @param qo
    * @return the path to the QualityObject
    */
-  static std::string getQoPath(const QualityObject* qo, bool includeProvenance = true);
+  static std::string getQoPath(const QualityObject* qo, bool includeProvenance = true)
+  {
+    return getQoPath(qo->getDetectorName(),
+                     qo->getCheckName(),
+                     qo->getPolicyName(),
+                     qo->getMonitorObjectsNames(),
+                     qo->getActivity().mProvenance,
+                     includeProvenance);
+  }
 
   /**
    * Compute and return the path to the TRFCollection.
