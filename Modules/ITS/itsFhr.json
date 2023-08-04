@@ -52,7 +52,7 @@
                     "DoHitmapFilter": "1",
                     "PhysicalOccupancyIB": "1.7e-3",
                     "PhysicalOccupancyOB": "4.3e-5",
-                    "IgnoreRampUpData": "false"
+                    "IgnoreRampUpData": "true"
                 },
 	        "grpGeomRequest" : {
                     "geomRequest": "Aligned",
