@@ -109,6 +109,7 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
   setPlotsFormat();
   mDecoder = new o2::itsmft::RawPixelDecoder<o2::itsmft::ChipMappingITS>();
   mDecoder->init();
+  mDecoder->setSkipRampUpData(mIgnoreRampUpData);
   mDecoder->setNThreads(mNThreads);
   mDecoder->setUserDataOrigin(header::DataOrigin("DS")); // set user data origin in dpl
   mDecoder->setUserDataDescription(header::DataDescription("RAWDATA0"));
@@ -722,6 +723,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void ITSFhrTask::getParameters()
 {
+  mIgnoreRampUpData = o2::quality_control_modules::common::getFromConfig<bool>(mCustomParameters, "IgnoreRampUpData", mIgnoreRampUpData);
   mNThreads = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "decoderThreads", mNThreads);
   mLayer = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "Layer", mLayer);
   mHitCutForCheck = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "HitNumberCut", mHitCutForCheck);
