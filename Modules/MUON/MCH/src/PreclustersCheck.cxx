@@ -18,6 +18,7 @@
 #include "MCHMappingInterface/Segmentation.h"
 #include "MCHMappingSegContour/CathodeSegmentationContours.h"
 #include "MUONCommon/MergeableTH2Ratio.h"
+#include "QualityControl/QcInfoLogger.h"
 
 // ROOT
 #include <fairlogger/Logger.h>

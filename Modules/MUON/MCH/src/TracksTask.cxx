@@ -11,7 +11,8 @@
 
 #include "MCH/TracksTask.h"
 
-#include "CommonConstants/LHCConstants.h"
+#include "QualityControl/QcInfoLogger.h"
+#include <CommonConstants/LHCConstants.h>
 #include <DataFormatsMCH/Cluster.h>
 #include <DataFormatsMCH/ROFRecord.h>
 #include <DataFormatsMCH/TrackMCH.h>

@@ -21,7 +21,6 @@
 
 #include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/SliceReductor.h"
-#include "QualityControl/SliceInfoTrending.h"
 #include "QualityControl/SliceTrendingTaskConfig.h"
 
 #include <memory>
@@ -29,8 +28,10 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include <TCanvas.h>
 #include <TTree.h>
+
+class TCanvas;
+class TObject;
 
 namespace o2::quality_control::repository
 {

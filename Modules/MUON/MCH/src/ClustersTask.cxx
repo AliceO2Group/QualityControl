@@ -22,6 +22,7 @@
 #include <MCHMappingInterface/Segmentation.h>
 #include <TH1F.h>
 #include <gsl/span>
+#include "QualityControl/QcInfoLogger.h"
 
 namespace
 {

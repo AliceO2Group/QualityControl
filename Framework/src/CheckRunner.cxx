@@ -21,6 +21,7 @@
 // O2
 #include <Common/Exceptions.h>
 #include <Framework/DataSpecUtils.h>
+#include <Framework/ConfigParamRegistry.h>
 #include <Monitoring/MonitoringFactory.h>
 #include <Monitoring/Monitoring.h>
 #include <CommonUtils/ConfigurableParam.h>
@@ -42,7 +43,6 @@ using namespace std::chrono;
 using namespace AliceO2::Common;
 using namespace AliceO2::InfoLogger;
 using namespace o2::framework;
-using namespace o2::configuration;
 using namespace o2::monitoring;
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::repository;

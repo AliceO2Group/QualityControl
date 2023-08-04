@@ -15,6 +15,8 @@
 ///
 
 #include "QualityControl/RepoPathUtils.h"
+#include "QualityControl/MonitorObject.h"
+#include "QualityControl/QualityObject.h"
 #include "QualityControl/testUtils.h"
 #include <TH1F.h>
 

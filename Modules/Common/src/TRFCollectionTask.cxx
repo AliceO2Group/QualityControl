@@ -22,10 +22,6 @@
 #include "QualityControl/QualitiesToTRFCollectionConverter.h"
 
 #include <DataFormatsQualityControl/TimeRangeFlagCollection.h>
-#include <DataFormatsQualityControl/TimeRangeFlag.h>
-#include <DataFormatsQualityControl/FlagReasons.h>
-
-#include <optional>
 
 using namespace o2::quality_control::postprocessing;
 using namespace o2::quality_control::core;

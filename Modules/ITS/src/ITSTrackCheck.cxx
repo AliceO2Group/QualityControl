@@ -17,6 +17,7 @@
 #include "ITS/ITSTrackCheck.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
+#include "QualityControl/QcInfoLogger.h"
 #include <TPaveText.h>
 #include <TList.h>
 #include <TH1.h>
