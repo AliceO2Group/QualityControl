@@ -32,10 +32,16 @@ class TimekeeperAsynchronous : public Timekeeper
   void updateByTimeFrameID(uint32_t tfID) override;
   void reset() override;
 
+  bool shouldFinishCycle(const o2::framework::TimingInfo& timingInfo) override;
+
  protected:
   validity_time_t activityBoundarySelectionStrategy(validity_time_t ecsTimestamp, validity_time_t configTimestamp,
                                                     validity_time_t currentTimestamp,
                                                     std::function<validity_time_t(void)> ccdbTimestampAccessor) override;
+
+ private:
+  /// \brief computes validity interval of the provided timeframe ID
+  ValidityInterval computeTimestampFromTimeframeID(uint32_t tfID);
 
  private:
   validity_time_t mWindowLengthMs = 0;

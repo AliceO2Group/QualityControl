@@ -17,6 +17,7 @@
 #include "QualityControl/RootFileSource.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/MonitorObjectCollection.h"
+#include "QualityControl/RootFileStorage.h"
 
 #include <Framework/ControlService.h>
 #include <Framework/DeviceSpec.h>
@@ -32,79 +33,90 @@ RootFileSource::RootFileSource(std::string filePath)
 {
 }
 
-void RootFileSource::init(framework::InitContext&)
+void RootFileSource::init(framework::InitContext& ctx)
 {
+  auto const& deviceSpec = ctx.services().get<DeviceSpec const>();
+  mAllowedOutputs.clear();
+  mAllowedOutputs.reserve(deviceSpec.outputs.size());
+  for (const auto& outputRoute : deviceSpec.outputs) {
+    mAllowedOutputs.push_back(outputRoute.matcher.binding);
+  }
+
+  mRootFileManager = std::make_shared<RootFileStorage>(mFilePath, RootFileStorage::ReadMode::Read);
+  if (mRootFileManager == nullptr) {
+    ILOG(Fatal, Ops) << "Could not open file '" << mFilePath << "'" << ENDM;
+    ctx.services().get<ControlService>().endOfStream();
+    ctx.services().get<ControlService>().readyToQuit(false);
+    return;
+  }
+  ILOG(Info) << "Input file '" << mFilePath << "' successfully open." << ENDM;
+
+  auto fileStructure = mRootFileManager->readStructure(false);
+
+  mIntegralMocWalker = std::make_shared<IntegralMocWalker>(fileStructure);
+  mMovingWindowMocWalker = std::make_shared<MovingWindowMocWalker>(fileStructure);
 }
 
 void RootFileSource::run(framework::ProcessingContext& ctx)
 {
-  auto const& deviceSpec = ctx.services().get<DeviceSpec const>();
-  std::vector<framework::OutputLabel> allowedOutputs;
-  for (const auto& outputRoute : deviceSpec.outputs) {
-    allowedOutputs.push_back(outputRoute.matcher.binding);
-  }
+  if (mIntegralMocWalker->hasNextPath()) {
+    const auto& path = mIntegralMocWalker->nextPath();
+    auto moc = mRootFileManager->readMonitorObjectCollection(path);
+    auto binding = outputBinding(moc->getDetector(), moc->getTaskName(), false);
 
-  auto* file = new TFile(mFilePath.c_str(), "READ");
-  if (file->IsZombie()) {
-    throw std::runtime_error("File '" + mFilePath + "' is zombie.");
-  }
-  if (!file->IsOpen()) {
-    throw std::runtime_error("Failed to open the file: " + mFilePath);
-  }
-  ILOG(Info) << "Input file '" << mFilePath << "' successfully open." << ENDM;
-
-  TIter nextDetector(file->GetListOfKeys());
-  TKey* detectorKey;
-  while ((detectorKey = (TKey*)nextDetector())) {
-    ILOG(Debug, Devel) << "Going to directory '" << detectorKey->GetName() << "'" << ENDM;
-    auto detDir = file->GetDirectory(detectorKey->GetName());
-    if (detDir == nullptr) {
-      ILOG(Error) << "Could not get directory '" << detectorKey->GetName() << "', skipping." << ENDM;
-      continue;
-    }
-
-    TIter nextMOC(detDir->GetListOfKeys());
-    TKey* mocKey;
-    while ((mocKey = (TKey*)nextMOC())) {
-      auto storedTObj = detDir->Get(mocKey->GetName());
-      if (storedTObj != nullptr) {
-        auto storedMOC = dynamic_cast<MonitorObjectCollection*>(storedTObj);
-        if (storedMOC == nullptr) {
-          ILOG(Error) << "Could not cast the stored object to MonitorObjectCollection, skipping." << ENDM;
-          delete storedTObj;
-          continue;
-        }
-
-        auto binding = outputBinding(detectorKey->GetName(), storedMOC->GetName());
-        if (std::find_if(allowedOutputs.begin(), allowedOutputs.end(),
-                         [binding](const auto& other) { return other.value == binding.value; }) == allowedOutputs.end()) {
-          ILOG(Error) << "The MonitorObjectCollection '" << binding.value << "' is not among declared output bindings: ";
-          for (const auto& output : allowedOutputs) {
-            ILOG(Error) << output.value << " ";
-          }
-          ILOG(Error) << ", skipping." << ENDM;
-          continue;
-        }
-
-        // snapshot does a shallow copy, so we cannot let it delete elements in MOC when it deletes the MOC
-        storedMOC->SetOwner(false);
-        ctx.outputs().snapshot(OutputRef{ binding.value, 0 }, *storedMOC);
-        storedMOC->postDeserialization();
-        ILOG(Info) << "Read and published object '" << storedMOC->GetName() << "'" << ENDM;
+    if (std::find_if(mAllowedOutputs.begin(), mAllowedOutputs.end(),
+                     [binding](const auto& other) { return other.value == binding.value; }) == mAllowedOutputs.end()) {
+      ILOG(Error) << "The MonitorObjectCollection '" << binding.value << "' is not among declared output bindings: ";
+      for (const auto& output : mAllowedOutputs) {
+        ILOG(Error) << output.value << " ";
       }
-      delete storedTObj;
+      ILOG(Error) << ", skipping." << ENDM;
+      return;
     }
+    // snapshot does a shallow copy, so we cannot let it delete elements in MOC when it deletes the MOC
+    moc->SetOwner(false);
+    ctx.outputs().snapshot(OutputRef{ binding.value, 0 }, *moc);
+    moc->postDeserialization();
+    ILOG(Info) << "Read and published object '" << path << "'" << ENDM;
+    delete moc;
+
+    return;
   }
-  file->Close();
-  delete file;
+
+  if (mMovingWindowMocWalker->hasNextPath()) {
+    const auto& path = mMovingWindowMocWalker->nextPath();
+    auto moc = mRootFileManager->readMonitorObjectCollection(path);
+    auto binding = outputBinding(moc->getDetector(), moc->getTaskName(), true);
+
+    if (std::find_if(mAllowedOutputs.begin(), mAllowedOutputs.end(),
+                     [binding](const auto& other) { return other.value == binding.value; }) == mAllowedOutputs.end()) {
+      ILOG(Error) << "The MonitorObjectCollection '" << binding.value << "' is not among declared output bindings: ";
+      for (const auto& output : mAllowedOutputs) {
+        ILOG(Error) << output.value << " ";
+      }
+      ILOG(Error) << ", skipping." << ENDM;
+      return;
+    }
+    // snapshot does a shallow copy, so we cannot let it delete elements in MOC when it deletes the MOC
+    moc->SetOwner(false);
+    ctx.outputs().snapshot(OutputRef{ binding.value, 0 }, *moc);
+    moc->postDeserialization();
+    ILOG(Info) << "Read and published object '" << path << "'" << ENDM;
+    delete moc;
+
+    return;
+  }
+
+  mRootFileManager.reset();
 
   ctx.services().get<ControlService>().endOfStream();
   ctx.services().get<ControlService>().readyToQuit(QuitRequest::Me);
 }
 
-framework::OutputLabel RootFileSource::outputBinding(const std::string& detectorCode, const std::string& taskName)
+framework::OutputLabel
+  RootFileSource::outputBinding(const std::string& detectorCode, const std::string& taskName, bool movingWindow)
 {
-  return { detectorCode + "-" + taskName };
+  return movingWindow ? framework::OutputLabel{ detectorCode + "-MW-" + taskName } : framework::OutputLabel{ detectorCode + "-" + taskName };
 }
 
 } // namespace o2::quality_control::core

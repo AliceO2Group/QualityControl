@@ -32,6 +32,7 @@ class TimekeeperSynchronous : public Timekeeper
   void updateByTimeFrameID(uint32_t tfID) override;
 
   void reset() override;
+  bool shouldFinishCycle(const o2::framework::TimingInfo& timingInfo) override;
 
  protected:
   validity_time_t activityBoundarySelectionStrategy(validity_time_t ecsTimestamp, validity_time_t configTimestamp,

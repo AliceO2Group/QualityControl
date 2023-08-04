@@ -359,14 +359,14 @@ TEST_CASE("qc_infrastructure_remote_batch_test")
   auto configTree = configInterface->getRecursive();
   auto workflow = InfrastructureGenerator::generateRemoteBatchInfrastructure(configTree, "file.root");
 
-  REQUIRE(workflow.size() == 8);
+  REQUIRE(workflow.size() == 9);
 
   auto fileReader = std::find_if(
     workflow.begin(), workflow.end(),
     [](const DataProcessorSpec& d) {
       return d.name == "qc-root-file-source" &&
              d.inputs.size() == 0 &&
-             d.outputs.size() == 4;
+             d.outputs.size() == 5;
     });
   CHECK(fileReader != workflow.end());
 
@@ -376,7 +376,7 @@ TEST_CASE("qc_infrastructure_remote_batch_test")
       return d.name.find("qc-check") != std::string::npos &&
              d.inputs.size() == 1;
     });
-  REQUIRE(checkRunnerCount == 5);
+  REQUIRE(checkRunnerCount == 6);
 
   auto postprocessingTask = std::find_if(
     workflow.begin(), workflow.end(),

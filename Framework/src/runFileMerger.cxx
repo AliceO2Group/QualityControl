@@ -16,7 +16,6 @@
 /// \brief This is an executable which reads MonitorObjectCollections from files and creates a file with the merged result.
 
 #include "QualityControl/QcInfoLogger.h"
-#include "QualityControl/MonitorObject.h"
 #include "QualityControl/MonitorObjectCollection.h"
 
 #include <string>
@@ -40,6 +39,7 @@ struct overloaded : Ts... {
 template <class... Ts>
 overloaded(Ts...) -> overloaded<Ts...>;
 
+// TODO: this structures and Nodes in RootFileStorage could be merged as a refactoring effort
 struct Node {
   std::string pathTo{};
   std::string name{};

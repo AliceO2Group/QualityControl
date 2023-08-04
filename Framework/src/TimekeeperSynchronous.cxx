@@ -18,6 +18,7 @@
 #include "QualityControl/QcInfoLogger.h"
 
 #include <CommonConstants/LHCConstants.h>
+#include <Framework/TimingInfo.h>
 
 namespace o2::quality_control::core
 {
@@ -96,6 +97,11 @@ validity_time_t
   ILOG(Info, Devel) << "Received the following activity boundary propositions: " << ecsTimestamp
                     << ", " << configTimestamp << ", " << currentTimestamp << ". Selected: " << selected << ENDM;
   return selected;
+}
+
+bool TimekeeperSynchronous::shouldFinishCycle(const framework::TimingInfo& timingInfo)
+{
+  return timingInfo.isTimer();
 }
 
 } // namespace o2::quality_control::core

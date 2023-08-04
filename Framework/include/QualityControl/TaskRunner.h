@@ -122,7 +122,7 @@ class TaskRunner : public framework::Task
   /// \brief Callback for CallbackService::Id::Reset (DPL) a.k.a. RESET DEVICE transition (FairMQ)
   void reset();
 
-  static std::tuple<bool /*data ready*/, bool /*timer ready*/> validateInputs(const framework::InputRecord&);
+  static bool dataReady(const framework::InputRecord& inputs);
   void refreshConfig(framework::InitContext& iCtx);
   void initInfologger(framework::InitContext& iCtx);
   void printTaskConfig() const;

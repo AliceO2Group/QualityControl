@@ -135,6 +135,7 @@ TEST_CASE("monitor_object_collection_clone_mw")
   MonitorObject* moTH1I = new MonitorObject(objTH1I, "histo 1d", "class", "DET");
   moTH1I->setIsOwner(false);
   moTH1I->setCreateMovingWindow(true);
+  moTH1I->setValidity({ 10, 432 });
   moc->Add(moTH1I);
 
   TH2I* objTH2I = new TH2I("histo 2d", "histo 2d", bins, min, max, bins, min, max);
@@ -143,7 +144,6 @@ TEST_CASE("monitor_object_collection_clone_mw")
   moc->Add(moTH2I);
 
   auto mwMergeInterface = moc->cloneMovingWindow();
-  delete moc;
 
   REQUIRE(mwMergeInterface != nullptr);
   auto mwMOC = dynamic_cast<MonitorObjectCollection*>(mwMergeInterface);
@@ -158,7 +158,16 @@ TEST_CASE("monitor_object_collection_clone_mw")
   REQUIRE(mwTH1I != nullptr);
   CHECK(mwTH1I->GetBinContent(mwTH1I->FindBin(5)) == 1);
 
+  moTH1I->setValidity(gInvalidValidityInterval);
+  auto mwMergeInterface2 = moc->cloneMovingWindow();
+  REQUIRE(mwMergeInterface2 != nullptr);
+  auto mwMOC2 = dynamic_cast<MonitorObjectCollection*>(mwMergeInterface2);
+  REQUIRE(mwMOC2 != nullptr);
+  REQUIRE(mwMOC2->GetEntries() == 0);
+
+  delete moc;
   delete mwMOC;
+  delete mwMOC2;
 }
 
 } // namespace o2::quality_control::core

@@ -32,12 +32,13 @@
         "className": "o2::quality_control_modules::skeleton::SkeletonTask",
         "moduleName": "QcSkeleton",
         "detectorName": "TST",
-        "cycleDurationSeconds": "5",
+        "cycleDurationSeconds": "100",
         "maxNumberCycles": "-1",
         "dataSource": {
           "type": "dataSamplingPolicy",
           "name": "tst-raw"
-        }
+        },
+        "movingWindows" : [ "example" ]
       }
     },
     "checks": {
@@ -45,13 +46,19 @@
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
         "moduleName": "QcSkeleton",
-        "policy": "OnAny",
+        "policy": "OnAll",
         "detectorName": "TST",
         "dataSource": [{
           "type": "Task",
           "name": "BatchTestTask@UNIQUE_ID@",
           "MOs": ["example"]
-        }]
+        },
+        {
+          "type": "TaskMovingWindow",
+          "name": "BatchTestTask@UNIQUE_ID@",
+          "MOs": ["example"]
+        }
+        ]
       }
     }
   },

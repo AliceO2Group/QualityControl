@@ -110,11 +110,22 @@ const std::string& MonitorObjectCollection::getDetector() const
   return mDetector;
 }
 
+void MonitorObjectCollection::setTaskName(const std::string& taskName)
+{
+  mTaskName = taskName;
+}
+
+const std::string& MonitorObjectCollection::getTaskName() const
+{
+  return mTaskName;
+}
+
 MergeInterface* MonitorObjectCollection::cloneMovingWindow() const
 {
   auto mw = new MonitorObjectCollection();
   mw->SetOwner(true);
   mw->setDetector(this->getDetector());
+  mw->setTaskName(this->getTaskName());
   auto mwName = std::string(this->GetName()) + "/mw";
   mw->SetName(mwName.c_str());
 
@@ -127,6 +138,10 @@ MergeInterface* MonitorObjectCollection::cloneMovingWindow() const
       continue;
     }
     if (!mo->getCreateMovingWindow()) {
+      continue;
+    }
+    if (mo->getValidity().isInvalid()) {
+      ILOG(Warning) << "MonitorObject '" << mo->getName() << "' validity is invalid, will not create a moving window" << ENDM;
       continue;
     }
     auto clonedMO = dynamic_cast<MonitorObject*>(mo->Clone());

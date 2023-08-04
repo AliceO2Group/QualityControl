@@ -19,9 +19,15 @@
 
 #include <Framework/Task.h>
 #include <string>
+#include <vector>
+#include <memory>
 
 namespace o2::quality_control::core
 {
+
+class RootFileStorage;
+class IntegralMocWalker;
+class MovingWindowMocWalker;
 
 /// \brief A Data Processor which reads MonitorObjectCollections from a specified file
 class RootFileSource : public framework::Task
@@ -33,10 +39,15 @@ class RootFileSource : public framework::Task
   void init(framework::InitContext& ictx) override;
   void run(framework::ProcessingContext& pctx) override;
 
-  static framework::OutputLabel outputBinding(const std::string& detectorCode, const std::string& taskName);
+  static framework::OutputLabel outputBinding(const std::string& detectorCode, const std::string& taskName, bool movingWindow = false);
 
  private:
   std::string mFilePath;
+  std::vector<framework::OutputLabel> mAllowedOutputs;
+
+  std::shared_ptr<RootFileStorage> mRootFileManager = nullptr;
+  std::shared_ptr<IntegralMocWalker> mIntegralMocWalker = nullptr;
+  std::shared_ptr<MovingWindowMocWalker> mMovingWindowMocWalker = nullptr;
 };
 
 } // namespace o2::quality_control::core
