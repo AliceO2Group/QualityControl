@@ -41,7 +41,7 @@ bool hasChecks(const std::string& configSource);
 template <typename T> // TODO we should probably limit T to numbers somehow
 T computeActivityField(framework::ServiceRegistryRef services, const std::string& name, T fallbackNumber = 0)
 {
-  int result = 0;
+  T result = 0;
 
   try {
     auto temp = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>(name);
