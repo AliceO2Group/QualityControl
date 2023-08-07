@@ -32,7 +32,7 @@ void TimekeeperSynchronous::updateByCurrentTimestamp(validity_time_t timestampMs
   mActivityDuration.update(timestampMs);
 }
 
-void TimekeeperSynchronous::updateByTimeFrameID(uint32_t tfid, uint64_t nOrbitsPerTF)
+void TimekeeperSynchronous::updateByTimeFrameID(uint32_t tfid)
 {
   if (tfid == 0) {
     if (!mWarnedAboutTfIdZero) {
@@ -56,6 +56,7 @@ void TimekeeperSynchronous::updateByTimeFrameID(uint32_t tfid, uint64_t nOrbitsP
   // fixme: We might want to use this once we know how to get orbitResetTime:
   //  std::ceil((timingInfo.firstTForbit * o2::constants::lhc::LHCOrbitNS / 1000 + orbitResetTime) / 1000);
   //  Until then, we use a less precise method:
+  constexpr uint64_t nOrbitsPerTF = 32; // naively assuming it's 32 for any new data. anyway, it is not crucial for sync QC
   auto tfDuration = constants::lhc::LHCOrbitNS / 1000000 * nOrbitsPerTF;
   auto tfStart = mActivityDuration.getMin() + tfDuration * (tfid - 1);
   auto tfEnd = tfStart + tfDuration - 1;

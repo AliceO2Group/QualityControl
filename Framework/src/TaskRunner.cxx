@@ -45,8 +45,7 @@
 #include "QualityControl/ConfigParamGlo.h"
 #include "QualityControl/ObjectsManager.h"
 #include "QualityControl/Bookkeeping.h"
-#include "QualityControl/TimekeeperSynchronous.h"
-#include "QualityControl/TimekeeperAsynchronous.h"
+#include "QualityControl/TimekeeperFactory.h"
 #include "QualityControl/ActivityHelpers.h"
 
 #include <string>
@@ -167,22 +166,8 @@ void TaskRunner::init(InitContext& iCtx)
 
   // setup timekeeping
   mDeploymentMode = DefaultsHelpers::deploymentMode();
-  switch (mDeploymentMode) {
-    case DeploymentMode::Grid: {
-      ILOG(Info, Devel) << "Detected async deployment, object validity will be based on incoming data and available SOR/EOR times" << ENDM;
-      mTimekeeper = std::make_shared<TimekeeperAsynchronous>();
-      break;
-    }
-    case DeploymentMode::Local:
-    case DeploymentMode::OnlineECS:
-    case DeploymentMode::OnlineDDS:
-    case DeploymentMode::OnlineAUX:
-    case DeploymentMode::FST:
-    default: {
-      ILOG(Info, Devel) << "Detected sync deployment, object validity will be based primarily on current time" << ENDM;
-      mTimekeeper = std::make_shared<TimekeeperSynchronous>();
-    }
-  }
+  mTimekeeper = TimekeeperFactory::create(mDeploymentMode);
+  mTimekeeper->setCCDBOrbitsPerTFAccessor([]() { return o2::base::GRPGeomHelper::getNHBFPerTF(); });
 
   // setup user's task
   mTask.reset(TaskFactory::create(mTaskConfig, mObjectsManager));
@@ -224,7 +209,7 @@ void TaskRunner::run(ProcessingContext& pCtx)
   auto [dataReady, timerReady] = validateInputs(pCtx.inputs());
 
   if (dataReady) {
-    mTimekeeper->updateByTimeFrameID(pCtx.services().get<TimingInfo>().tfCounter, 32);
+    mTimekeeper->updateByTimeFrameID(pCtx.services().get<TimingInfo>().tfCounter);
     mTask->monitorData(pCtx);
     updateMonitoringStats(pCtx);
   }

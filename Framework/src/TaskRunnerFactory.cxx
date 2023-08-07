@@ -20,6 +20,7 @@
 #include "QualityControl/TaskRunnerConfig.h"
 #include "QualityControl/TaskSpec.h"
 #include "QualityControl/InfrastructureSpecReader.h"
+#include "QualityControl/TimekeeperFactory.h"
 #include "QualityControl/QcInfoLogger.h"
 
 #include <Framework/DeviceSpec.h>
@@ -27,6 +28,7 @@
 #include <Headers/DataHeader.h>
 #include <Framework/O2ControlLabels.h>
 #include <Framework/DataProcessorLabel.h>
+#include <Framework/DefaultsHelpers.h>
 #include <DetectorsBase/GRPGeomHelper.h>
 #include <DataFormatsGlobalTracking/RecoContainer.h>
 #include <ReconstructionDataFormats/GlobalTrackID.h>
@@ -85,7 +87,8 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
     { "Ideal", o2::base::GRPGeomRequest::GeomRequest::Ideal },
     { "Alignments", o2::base::GRPGeomRequest::GeomRequest::Alignments }
   };
-  const auto& grp = taskSpec.grpGeomRequestSpec;
+  auto grp = taskSpec.grpGeomRequestSpec;
+  grp.askGRPECS |= TimekeeperFactory::needsGRPECS(DefaultsHelpers::deploymentMode());
   auto grpGeomRequest = grp.anyRequestEnabled()                                                               //
                           ? std::make_shared<o2::base::GRPGeomRequest>(                                       //
                               grp.askTime, grp.askGRPECS, grp.askGRPLHCIF, grp.askGRPMagField, grp.askMatLUT, //

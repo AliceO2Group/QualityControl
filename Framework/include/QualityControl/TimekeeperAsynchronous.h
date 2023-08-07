@@ -29,7 +29,7 @@ class TimekeeperAsynchronous : public Timekeeper
   ~TimekeeperAsynchronous() = default;
 
   void updateByCurrentTimestamp(validity_time_t timestampMs) override;
-  void updateByTimeFrameID(uint32_t tfID, uint64_t nOrbitsPerTF) override;
+  void updateByTimeFrameID(uint32_t tfID) override;
   void reset() override;
 
  protected:
@@ -39,6 +39,7 @@ class TimekeeperAsynchronous : public Timekeeper
 
  private:
   validity_time_t mWindowLengthMs = 0;
+  uint64_t mOrbitsPerTF = 0;
   bool mWarnedAboutTfIdZero = false;
 };
 
