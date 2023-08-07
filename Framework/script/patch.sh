@@ -39,12 +39,12 @@ cd /tmp
 echo "cloning in /tmp/QualityControl if not already there"
 if [[ ! -d "/tmp/QualityControl" ]];
 then
-  git clone https://github.com/AliceO2Group/QualityControl.git
+  git clone git@github.com:AliceO2Group/QualityControl.git
 fi
 cd QualityControl
 read -p "Github user ? " user
 git remote rename origin upstream
-git remote add origin https://github.com/user/QualityControl.git
+git remote add origin git@github.com:user/QualityControl.git
 
 
 echo "branch"
