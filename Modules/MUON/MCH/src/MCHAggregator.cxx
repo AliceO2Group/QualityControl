@@ -15,7 +15,6 @@
 ///
 
 #include "MCH/MCHAggregator.h"
-#include "QualityControl/QcInfoLogger.h"
 
 using namespace std;
 using namespace o2::quality_control::core;

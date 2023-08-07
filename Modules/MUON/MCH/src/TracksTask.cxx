@@ -17,14 +17,13 @@
 #include <DataFormatsMCH/ROFRecord.h>
 #include <DataFormatsMCH/TrackMCH.h>
 #include <DetectorsBase/GeometryManager.h>
-#include <Framework/DataRefUtils.h>
 #include <Framework/InputRecord.h>
 #include <MCHMappingInterface/Segmentation.h>
 #include <MCHTracking/TrackExtrap.h>
 #include <MCHTracking/TrackParam.h>
-#include <Math/Vector4Dfwd.h>
-#include <TH1F.h>
 #include <Math/Vector4D.h>
+#include <TH1F.h>
+#include <TProfile.h>
 #include <TMath.h>
 #include <gsl/span>
 
