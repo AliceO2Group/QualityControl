@@ -6,6 +6,7 @@ add_library(O2QcITS
             src/TrendingTaskITSThr.cxx
             src/TrendingTaskITSFhr.cxx
 	          src/TrendingTaskITSFEE.cxx
+	    src/TrendingTaskITSError.cxx
             src/TrendingTaskITSCluster.cxx
             src/TrendingTaskITSTracks.cxx
             src/TrendingTaskConfigITS.cxx
@@ -61,7 +62,8 @@ add_root_dictionary(O2QcITS
                             include/ITS/TrendingTaskITSThr.h
                             include/ITS/TrendingTaskITSFhr.h
 			    include/ITS/TrendingTaskITSFEE.h
-                            include/ITS/TrendingTaskITSCluster.h
+                            include/ITS/TrendingTaskITSError.h
+			    include/ITS/TrendingTaskITSCluster.h
                             include/ITS/TrendingTaskITSTracks.h
                             include/ITS/TH2XlineReductor.h
 			    include/ITS/ReductorBinContent.h
@@ -130,6 +132,7 @@ install(FILES
         itsQCTrendingThr.json
         itsQCTrendingFhr.json
 	itsQCTrendingFEE.json
+        itsQCTrendingError.json
         itsQCTrendingCluster.json
         itsQCTrendingTracks.json
         itsFhr.json
