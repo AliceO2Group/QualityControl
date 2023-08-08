@@ -25,7 +25,7 @@ namespace o2::quality_control::core
 class TimekeeperAsynchronous : public Timekeeper
 {
  public:
-  explicit TimekeeperAsynchronous(uint64_t nOrbitsPerTF, validity_time_t windowLengthMs = 0);
+  explicit TimekeeperAsynchronous(validity_time_t windowLengthMs = 0);
   ~TimekeeperAsynchronous() = default;
 
   void updateByCurrentTimestamp(validity_time_t timestampMs) override;
@@ -33,12 +33,14 @@ class TimekeeperAsynchronous : public Timekeeper
   void reset() override;
 
  protected:
-  validity_time_t activityBoundarySelectionStrategy(validity_time_t ecsTimestamp,
-                                                    validity_time_t configTimestamp,
-                                                    validity_time_t currentTimestamp) override;
+  validity_time_t activityBoundarySelectionStrategy(validity_time_t ecsTimestamp, validity_time_t configTimestamp,
+                                                    validity_time_t currentTimestamp,
+                                                    std::function<validity_time_t(void)> ccdbTimestampAccessor) override;
 
  private:
   validity_time_t mWindowLengthMs = 0;
+  uint64_t mOrbitsPerTF = 0;
+  bool mWarnedAboutTfIdZero = false;
 };
 
 } // namespace o2::quality_control::core

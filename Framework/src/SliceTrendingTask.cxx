@@ -22,19 +22,19 @@
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/RepoPathUtils.h"
+#include "QualityControl/ActivityHelpers.h"
 
 #include <string>
 #include <TGraphErrors.h>
 #include <TTreeReader.h>
 #include <TTreeReaderValue.h>
-#include <TTreeReaderArray.h>
-#include <fmt/format.h>
+#include <fmt/core.h>
 #include <TAxis.h>
 #include <TH2F.h>
 #include <TStyle.h>
 #include <TMultiGraph.h>
-#include <TIterator.h>
 #include <TLegend.h>
+#include <TCanvas.h>
 
 using namespace o2::quality_control;
 using namespace o2::quality_control::core;
@@ -124,9 +124,10 @@ void SliceTrendingTask::finalize(Trigger t, framework::ServiceRegistryRef)
 void SliceTrendingTask::trendValues(const Trigger& t,
                                     repository::DatabaseInterface& qcdb)
 {
-  mTime = t.timestamp / 1000; // ROOT expects seconds since epoch.
+  mTime = activity_helpers::isLegacyValidity(t.activity.mValidity)
+            ? t.timestamp / 1000
+            : t.activity.mValidity.getMax() / 1000; // ROOT expects seconds since epoch.
   mMetaData.runNumber = t.activity.mId;
-
   for (auto& dataSource : mConfig.dataSources) {
     mNumberPads[dataSource.name] = 0;
     mSources[dataSource.name]->clear();

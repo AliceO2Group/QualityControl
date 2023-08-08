@@ -23,6 +23,7 @@ target_sources(O2QcTPC PRIVATE src/PID.cxx
                              src/QualityReductorTPC.cxx
                              src/DCSPTemperature.cxx
                              src/IDCs.cxx
+                             src/IDCsVsSACs.cxx
                              src/QualityObserver.cxx
                              src/RatioGeneratorTPC.cxx
                              src/CheckOfSlices.cxx
@@ -31,7 +32,8 @@ target_sources(O2QcTPC PRIVATE src/PID.cxx
                              src/CheckOfPads.cxx
                              src/CalPadClusterReductor.cxx
                              src/IDCScaleReductor.cxx
-                             src/SACs.cxx)
+                             src/SACs.cxx
+                             src/TPCAggregator.cxx)
 
 target_include_directories(
   O2QcTPC
@@ -74,6 +76,7 @@ add_root_dictionary(O2QcTPC
                             include/TPC/QualityReductorTPC.h
                             include/TPC/DCSPTemperature.h
                             include/TPC/IDCs.h
+                            include/TPC/IDCsVsSACs.h
                             include/TPC/QualityObserver.h
                             include/TPC/RatioGeneratorTPC.h
                             include/TPC/CheckOfSlices.h
@@ -83,6 +86,7 @@ add_root_dictionary(O2QcTPC
                             include/TPC/CalPadClusterReductor.h
                             include/TPC/IDCScaleReductor.h
                             include/TPC/SACs.h
+                            include/TPC/TPCAggregator.h
                     LINKDEF include/TPC/LinkDef.h)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/TPC
@@ -152,6 +156,7 @@ install(FILES run/tpcQCPID_sampled.json
               run/tpcQCTrending_canvas.json
               run/tpcQCDCSPTemperature.json
               run/tpcQCIDCs.json
+              run/tpcQCIDCsVsSACs.json
               run/tpcQCQualityObserver.json
               run/tpcQCRatio_generator.json
               run/tpcQCCheckSlices.json

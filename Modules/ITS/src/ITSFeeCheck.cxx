@@ -19,6 +19,7 @@
 #include "ITS/ITSFeeCheck.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
+#include "QualityControl/QcInfoLogger.h"
 
 #include <fairlogger/Logger.h>
 #include <TList.h>
@@ -174,7 +175,8 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
       result.addMetadata("CheckTechnicals", "good");
       result.addMetadata("CheckTechnicalsFeeid", "good");
       std::vector<int> skipfeeid = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "skipfeeids", skipfeeids));
-      if (h->Integral(1, 432, h->GetYaxis()->FindBin(1000), h->GetYaxis()->FindBin(20000)) > 0) {
+      minPayloadSize = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "minPayloadSize", minPayloadSize);
+      if (h->Integral(1, 432, h->GetYaxis()->FindBin(minPayloadSize), h->GetYaxis()->GetLast()) > 0) {
         result.set(Quality::Bad);
         result.updateMetadata("CheckTechnicals", "bad");
       }

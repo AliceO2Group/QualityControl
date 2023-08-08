@@ -37,9 +37,8 @@ class ServiceDiscovery
   /// \param url 		Consul URL
   /// \param name		Service name
   /// \param id 		Unique instance ID
-  /// \param healthEndpoint	Local endpoint that is then used for health checks
-  ///				(default value it set to  <hostname>:7777)
-  ServiceDiscovery(const std::string& url, const std::string& name, const std::string& id, const std::string& healthEndUrl = GetDefaultUrl());
+  /// \param healthEndUrl	Local endpoint that is then used for health checks
+  ServiceDiscovery(const std::string& url, const std::string& name, const std::string& id, const std::string& healthEndUrl = "");
 
   /// Stops the health thread and deregisteres from Consul health checks
   ~ServiceDiscovery();
@@ -50,17 +49,6 @@ class ServiceDiscovery
 
   /// Deregisters service
   void deregister();
-
-  static bool PortInUse(unsigned short port);
-
-  static inline std::string GetDefaultUrl() ///< Provides default health check URL
-  {
-    return GetDefaultUrl(GetHealthPort());
-  }
-
-  /// Find a free port in the range [HealthPortRangeEnd;HealthPortRangeStart] if any available.
-  static size_t GetHealthPort();
-  static std::string GetDefaultUrl(size_t port); ///< Provides default health check URL
 
   static constexpr size_t HealthPortRangeStart = 47800; ///< Health check port range start
   static constexpr size_t HealthPortRangeEnd = 47899;   ///< Health check port range end
@@ -75,7 +63,8 @@ class ServiceDiscovery
   const std::string mConsulUrl;     ///< Consul URL
   const std::string mName;          ///< Instance (service) Name
   const std::string mId;            ///< Instance (service) ID
-  std::string mHealthUrl;           ///< hostname and port of health check endpoint
+  std::string mHealthUrl;           ///< hostname of health check endpoint
+  size_t mHealthPort;               ///< Port of the health check endpoint
   std::thread mHealthThread;        ///< Health check thread
   std::atomic<bool> mThreadRunning; ///< Health check thread running flag
 
@@ -85,8 +74,8 @@ class ServiceDiscovery
   /// Sends PUT request
   bool send(const std::string& path, std::string&& request);
 
-  /// Health check thread loop
-  void runHealthServer(unsigned int port);
+  /// Health check thread loop + port computation
+  void runHealthServer();
 };
 
 } // namespace o2::quality_control::core

@@ -82,8 +82,7 @@ void CFDEffCheck::configure()
 
     // WARNING: always uses last available dead channel map
     //          supply deadChannelMap by hand when running offline
-    std::map<std::string, std::string> metadata;
-    mDeadChannelMap = retrieveConditionAny<o2::fit::DeadChannelMap>(mPathDeadChannelMap, metadata, (long)-1);
+    mDeadChannelMap = retrieveConditionAny<o2::fit::DeadChannelMap>(mPathDeadChannelMap);
     if (!mDeadChannelMap || !mDeadChannelMap->map.size()) {
       ILOG(Error, Support) << "object \"" << mPathDeadChannelMap << "\" NOT retrieved (or empty). All channels assumed to be alive!" << ENDM;
       mDeadChannelMap = new o2::fit::DeadChannelMap();

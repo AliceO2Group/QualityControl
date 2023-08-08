@@ -18,6 +18,7 @@
 #define QUALITYCONTROL_TIMEKEEPER_H
 
 #include "QualityControl/ValidityInterval.h"
+#include <functional>
 
 namespace o2::framework
 {
@@ -37,15 +38,20 @@ const static TimeframeIdRange gInvalidTimeframeIdRange{
 class Timekeeper
 {
  public:
-  explicit Timekeeper(uint64_t nOrbitsPerTF);
+  Timekeeper();
   virtual ~Timekeeper() = default;
 
   /// \brief sets activity (run) duration
   void setActivityDuration(ValidityInterval);
   /// \brief sets start of activity (run), but prioritises the source of information according to the class implementation
-  void setStartOfActivity(validity_time_t ecsTimestamp = 0, validity_time_t configTimestamp = 0, validity_time_t currentTimestamp = 0);
+  void setStartOfActivity(validity_time_t ecsTimestamp = 0, validity_time_t configTimestamp = 0,
+                          validity_time_t currentTimestamp = 0, std::function<validity_time_t(void)> ccdbTimestampAccessor = nullptr);
   /// \brief sets end of activity (run), but prioritises the source of information according to the class implementation
-  void setEndOfActivity(validity_time_t ecsTimestamp = 0, validity_time_t configTimestamp = 0, validity_time_t currentTimestamp = 0);
+  void setEndOfActivity(validity_time_t ecsTimestamp = 0, validity_time_t configTimestamp = 0, validity_time_t currentTimestamp = 0,
+                        std::function<validity_time_t(void)> ccdbTimestampAccessor = nullptr);
+
+  /// \brief asdf
+  void setCCDBOrbitsPerTFAccessor(std::function<int(void)>);
 
   /// \brief updates the validity based on the provided timestamp (ms since epoch)
   virtual void updateByCurrentTimestamp(validity_time_t timestampMs) = 0;
@@ -61,18 +67,24 @@ class Timekeeper
   ValidityInterval getActivityDuration() const;
 
  protected:
+  std::function<int(void)> getCCDBOrbitsPerTFAccessor(void);
   /// \brief defines how a class implementation chooses the activity (run) boundaries
-  virtual validity_time_t activityBoundarySelectionStrategy(validity_time_t ecsTimestamp,
-                                                            validity_time_t configTimestamp,
-                                                            validity_time_t currentTimestamp) = 0;
+  // by using an accessor to ccdb, we do not call if we are not interested
+  virtual validity_time_t
+    activityBoundarySelectionStrategy(validity_time_t ecsTimestamp,
+                                      validity_time_t configTimestamp,
+                                      validity_time_t currentTimestamp,
+                                      std::function<validity_time_t(void)> ccdbTimestampAccessor) = 0;
 
  protected:
+  // children should set these members according to the updates they receive
   ValidityInterval mActivityDuration = gInvalidValidityInterval;        // from O2StartTime to O2EndTime or current timestamp
   ValidityInterval mCurrentValidityTimespan = gInvalidValidityInterval; // since the last reset time until `update()` call
   ValidityInterval mCurrentSampleTimespan = gInvalidValidityInterval;   // since the last reset
   TimeframeIdRange mCurrentTimeframeIdRange = gInvalidTimeframeIdRange; // since the last reset
 
-  uint64_t mNOrbitsPerTF = 0;
+ private:
+  std::function<uint64_t()> mCCDBOrbitsPerTFAccessor = nullptr;
 };
 
 } // namespace o2::quality_control::core

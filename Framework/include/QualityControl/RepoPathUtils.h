@@ -19,13 +19,18 @@
 
 #include <string>
 #include <vector>
-#include <Common/Exceptions.h>
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/QualityObject.h"
-#include <DataFormatsQualityControl/TimeRangeFlagCollection.h>
+#include <Common/Exceptions.h>
+
+namespace o2::quality_control
+{
+class TimeRangeFlagCollection;
+}
 
 namespace o2::quality_control::core
 {
+
 class RepoPathUtils
 {
  public:
@@ -60,7 +65,6 @@ class RepoPathUtils
   {
     return getMoPath(mo->getDetectorName(), mo->getTaskName(), mo->getName(), mo->getActivity().mProvenance, includeProvenance);
   }
-
   /**
    * Compute and return the path to the QualityObject.
    * Current algorithm does <provenance(qc)>/<detectorCode>/QO/<checkName>[/<moName>].
@@ -106,6 +110,7 @@ class RepoPathUtils
                      qo->getActivity().mProvenance,
                      includeProvenance);
   }
+
   /**
    * Compute and return the path to the TRFCollection.
    * Current algorithm does <provenance(qc)>/<detectorCode>/TRFC/<trfcName>
@@ -116,27 +121,17 @@ class RepoPathUtils
    */
   static std::string getTrfcPath(const std::string& detectorCode,
                                  const std::string& trfcName,
-                                 const std::string& provenance = "qc")
-  {
-    return provenance + "/" + detectorCode + "/TRFC/" + trfcName;
-  }
-
+                                 const std::string& provenance = "qc");
   /**
    * Compute and return the path to the TRFCollection.
    * Current algorithm does <provenance(qc)>/<detectorCode>/TRFC/<trfcName>
    * @param trfc
    * @return the path to the TRFCollection
    */
-  static std::string getTrfcPath(const TimeRangeFlagCollection* trfc)
-  {
-    return getTrfcPath(trfc->getDetector(), trfc->getName(), trfc->getProvenance());
-  }
+  static std::string getTrfcPath(const TimeRangeFlagCollection* trfc);
 
   static constexpr auto allowedProvenancesMessage = R"(Allowed provenances are "qc" (real data processed synchronously), "qc_async" (real data processed asynchronously) and "qc_mc" (simulated data).)";
-  static bool isProvenanceAllowed(const std::string& provenance)
-  {
-    return provenance == "qc" || provenance == "qc_async" || provenance == "qc_mc";
-  }
+  static bool isProvenanceAllowed(const std::string& provenance);
 };
 } // namespace o2::quality_control::core
 

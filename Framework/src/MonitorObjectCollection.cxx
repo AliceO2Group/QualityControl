@@ -47,12 +47,13 @@ void MonitorObjectCollection::merge(mergers::MergeInterface* const other)
         throw std::runtime_error("The target object or the other object could not be casted to MonitorObject.");
       }
       if (!reportedMismatchingRunNumbers && targetMO->getActivity().mId != otherMO->getActivity().mId) {
-        ILOG(Error, Support) << "The run number of the input object '" << otherMO->GetName() << "' ("
-                             << otherMO->getActivity().mId << ") "
-                             << "does not match the run number of the target object '"
-                             << targetMO->GetName() << "' (" << targetMO->getActivity().mId
-                             << "). Trying to continue, but this should be understood. Will not report more mismatches in this collection."
-                             << ENDM;
+        ILOG(Error, Ops) << "The run number of the input object '" << otherMO->GetName() << "' ("
+                         << otherMO->getActivity().mId << ") "
+                         << "does not match the run number of the target object '"
+                         << targetMO->GetName() << "' (" << targetMO->getActivity().mId
+                         << "). Trying to continue, but THIS SHOULD BE IMMEDIATELY ADDRESSED IN PRODUCTION. "
+                         << "QC objects from other setups are reaching this one. Will not report more mismatches in this collection."
+                         << ENDM;
         reportedMismatchingRunNumbers = true;
       }
       // That might be another collection or a concrete object to be merged, we walk on the collection recursively.

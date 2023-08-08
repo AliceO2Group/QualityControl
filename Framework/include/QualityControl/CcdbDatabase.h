@@ -19,7 +19,7 @@
 
 #include "QualityControl/DatabaseInterface.h"
 #include <Common/Timer.h>
-#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/ptree_fwd.hpp>
 #include <memory>
 #include <string>
 

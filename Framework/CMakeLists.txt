@@ -55,6 +55,8 @@ add_library(O2QualityControl
   src/TaskInterface.cxx
   src/UserCodeInterface.cxx
   src/RepositoryBenchmark.cxx
+  src/RepoPathUtils.cxx
+  src/stringUtils.cxx
   src/InfrastructureGenerator.cxx
   src/InfrastructureSpecReader.cxx
   src/Check.cxx
@@ -91,7 +93,8 @@ add_library(O2QualityControl
   src/runnerUtils.cxx
   src/Timekeeper.cxx
   src/TimekeeperSynchronous.cxx
-  src/TimekeeperAsynchronous.cxx)
+  src/TimekeeperAsynchronous.cxx
+  src/TimekeeperFactory.cxx)
 
 
 target_include_directories(

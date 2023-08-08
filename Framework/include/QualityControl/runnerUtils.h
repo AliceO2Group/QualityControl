@@ -18,21 +18,11 @@
 #define QUALITYCONTROL_RUNNERUTILS_H
 
 #include <string>
-#include <Configuration/ConfigurationFactory.h>
-#include <Common/Exceptions.h>
+#include <Framework/ServiceRegistryRef.h>
 #include <Framework/RawDeviceService.h>
-#include <Framework/DeviceSpec.h>
 #include <fairmq/Device.h>
-#include <Framework/ConfigParamRegistry.h>
-#include <QualityControl/QcInfoLogger.h>
-#include <boost/property_tree/json_parser.hpp>
-#include <CommonUtils/StringUtils.h>
+#include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/Activity.h"
-#include <regex>
-#include "QualityControl/Bookkeeping.h"
-
-// TODO: most of these could be moved to a source file with minimal performance impact
-//  and noticable compilation time improvement (we bring boost, regex, FairMQ headers to 10 other source files)
 
 namespace o2::quality_control::core
 {
@@ -44,156 +34,38 @@ namespace o2::quality_control::core
  * @param config
  * @return The name of the first task in the config file.
  */
-inline std::string getFirstTaskName(std::string configurationSource)
+std::string getFirstTaskName(const std::string& configurationSource);
+std::string getFirstCheckName(const std::string& configurationSource);
+bool hasChecks(const std::string& configSource);
+
+template <typename T> // TODO we should probably limit T to numbers somehow
+T computeActivityField(framework::ServiceRegistryRef services, const std::string& name, T fallbackNumber = 0)
 {
-  auto config = o2::configuration::ConfigurationFactory::getConfiguration(configurationSource);
-
-  for (const auto& task : config->getRecursive("qc.tasks")) {
-    return task.first; // task name;
-  }
-
-  throw;
-}
-
-inline std::string getFirstCheckName(std::string configurationSource)
-{
-  auto config = o2::configuration::ConfigurationFactory::getConfiguration(configurationSource);
-
-  if (config->getRecursive("qc").count("checks")) {
-    for (const auto& check : config->getRecursive("qc.checks")) {
-      return check.first; // check name;
-    }
-  }
-
-  BOOST_THROW_EXCEPTION(AliceO2::Common::ObjectNotFoundError() << AliceO2::Common::errinfo_details("No checks defined"));
-}
-
-inline bool hasChecks(std::string configSource)
-{
-  auto config = o2::configuration::ConfigurationFactory::getConfiguration(configSource);
-  return config->getRecursive("qc").count("checks") > 0;
-}
-
-inline int computeRunNumber(framework::ServiceRegistryRef services, int fallbackRunNumber = 0)
-{ // Determine run number
-  int run = 0;
+  T result = 0;
 
   try {
-    auto temp = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("runNumber", "unspecified");
-    ILOG(Debug, Devel) << "Got this property runNumber from RawDeviceService: '" << temp << "'" << ENDM;
-    run = stoi(temp);
-    ILOG(Debug, Devel) << "   Run number found in options: " << run << ENDM;
+    auto temp = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>(name);
+    ILOG(Info, Devel) << "Got this property " << name << " from RawDeviceService: '" << temp << "'" << ENDM;
+    result = boost::lexical_cast<T>(temp);
   } catch (std::invalid_argument& ia) {
-    ILOG(Debug, Devel) << "   Run number not found in options or is not a number, using the one from the config file or 0 as a last resort."
-                       << ENDM;
+    ILOG(Info, Devel) << "   " << name << " is not a number, using the fallback." << ENDM;
+  } catch (fair::mq::PropertyNotFoundError& err) {
+    ILOG(Info, Devel) << "   " << name << " not found in options, using the fallback." << ENDM;
+  } catch (boost::bad_lexical_cast& err) {
+    ILOG(Info, Devel) << "   " << name << " could not be cast to a number (" << err.what() << "), using the fallback." << ENDM;
   }
-  run = run > 0 /* found it in service */ ? run : fallbackRunNumber;
-  ILOG(Info, Devel) << "Run number returned by computeRunNumber (default) : " << run << ENDM;
-  return run;
+  result = result > 0 /* found it in service */ ? result : fallbackNumber;
+  ILOG(Info, Devel) << name << " returned by computeActivityField (default) : " << result << ENDM;
+  return result;
 }
 
-inline int computeRunType(framework::ServiceRegistryRef services, int fallbackRunType = 0)
-{ // Determine runType number
+Activity computeActivity(framework::ServiceRegistryRef services, const Activity& fallbackActivity);
 
-  int runType = 0;
-  try {
-    auto temp = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("runType", "unspecified");
-    ILOG(Debug, Devel) << "Got this property runType from RawDeviceService: '" << temp << "'" << ENDM;
-    runType = stoi(temp);
-    ILOG(Debug, Devel) << "   Run type found in options: " << runType << ENDM;
-  } catch (std::invalid_argument& ia) {
-    ILOG(Debug, Devel) << "   Run type not found in options or is not a number, using the one from the config file or 0 as a last resort."
-                       << ENDM;
-  }
-  runType = runType > 0 /* found it in service */ ? runType : fallbackRunType;
-  ILOG(Info, Devel) << "Run type returned by computeRunType (default) : " << runType << ENDM;
-  return runType;
-}
+std::string indentTree(int level);
+void printTree(const boost::property_tree::ptree& pt, int level = 0);
 
-inline std::string computePartitionName(framework::ServiceRegistryRef services, const std::string& fallbackPartitionName = "")
-{
-  std::string partitionName;
-  partitionName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("environment_id", "unspecified");
-  ILOG(Debug, Devel) << "Got this property partitionName from RawDeviceService: '" << partitionName << "'" << ENDM;
-  partitionName = partitionName != "unspecified" /* found it in service */ ? partitionName : fallbackPartitionName;
-  ILOG(Info, Devel) << "Partition Name returned by computePartitionName : " << partitionName << ENDM;
-  return partitionName;
-}
-
-inline std::string computePeriodName(framework::ServiceRegistryRef services, const std::string& fallbackPeriodName = "")
-{ // Determine period
-  std::string periodName;
-  periodName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("periodName", "unspecified");
-  ILOG(Debug, Devel) << "Got this property periodName from RawDeviceService: '" << periodName << "'" << ENDM;
-  periodName = periodName != "unspecified" /* found it in service */ ? periodName : fallbackPeriodName;
-  ILOG(Info, Devel) << "Period Name returned by computePeriodName : " << periodName << ENDM;
-  return periodName;
-}
-
-inline std::string computePassName(const std::string& fallbackPassName = "")
-{
-  ILOG(Debug, Devel) << "Pass Name returned by computePassName : " << fallbackPassName << ENDM;
-  return fallbackPassName;
-}
-
-inline std::string computeProvenance(const std::string& fallbackProvenance = "")
-{
-  ILOG(Debug, Devel) << "Provenance returned by computeProvenance : " << fallbackProvenance << ENDM;
-  return fallbackProvenance;
-}
-
-inline Activity computeActivity(framework::ServiceRegistryRef services, const Activity& fallbackActivity)
-{
-  int runNumber = computeRunNumber(services, fallbackActivity.mId);
-  Activity activity{
-    runNumber,
-    computeRunType(services, fallbackActivity.mType),
-    computePeriodName(services, fallbackActivity.mPeriodName),
-    computePassName(fallbackActivity.mPassName),
-    computeProvenance(fallbackActivity.mProvenance),
-    fallbackActivity.mValidity
-  };
-  // if available we overwrite with the info from logbook.
-  Bookkeeping::getInstance().populateActivity(activity, runNumber);
-
-  return activity;
-}
-
-inline std::string indentTree(int level)
-{
-  return std::string(level * 2, ' ');
-}
-
-inline void printTree(const boost::property_tree::ptree& pt, int level = 0)
-{
-  std::stringstream ss;
-  boost::property_tree::json_parser::write_json(ss, pt);
-  for (std::string line; std::getline(ss, line, '\n');)
-    ILOG(Debug, Trace) << line << ENDM;
-}
-
-inline std::vector<std::pair<std::string, std::string>> parseOverrideValues(const std::string& input)
-{
-  std::vector<std::pair<std::string, std::string>> keyValuePairs;
-  for (const auto& keyValueToken : utils::Str::tokenize(input, ';', true)) {
-    auto keyValue = utils::Str::tokenize(keyValueToken, '=', true);
-    if (keyValue.size() == 1) {
-      keyValuePairs.emplace_back(keyValue[0], "");
-    } else if (keyValue.size() == 2) {
-      keyValuePairs.emplace_back(keyValue[0], keyValue[1]);
-    } else {
-      throw std::runtime_error("Token '" + keyValueToken + "' in the --override-values argument is malformed, use key=value.");
-    }
-  }
-  return keyValuePairs;
-}
-
-inline void overrideValues(boost::property_tree::ptree& tree, std::vector<std::pair<std::string, std::string>> keyValues)
-{
-  for (const auto& [key, value] : keyValues) {
-    tree.put(key, value);
-  }
-}
+std::vector<std::pair<std::string, std::string>> parseOverrideValues(const std::string& input);
+void overrideValues(boost::property_tree::ptree& tree, const std::vector<std::pair<std::string, std::string>>& keyValues);
 
 /**
  * template the param infologgerDiscardFile (_ID_->[device-id])
@@ -201,16 +73,7 @@ inline void overrideValues(boost::property_tree::ptree& tree, std::vector<std::p
  * @param iCtx
  * @return
  */
-inline std::string templateILDiscardFile(std::string& originalFile, framework::InitContext& iCtx)
-{
-  try {
-    auto& deviceSpec = iCtx.services().get<o2::framework::DeviceSpec const>();
-    return std::regex_replace(originalFile, std::regex("_ID_"), deviceSpec.id);
-  } catch (...) {
-    ILOG(Error, Devel) << "exception caught and swallowed in templateILDiscardFile : " << boost::current_exception_diagnostic_information() << ENDM;
-  }
-  return originalFile;
-}
+std::string templateILDiscardFile(std::string& originalFile, framework::InitContext& iCtx);
 
 uint64_t getCurrentTimestamp();
 

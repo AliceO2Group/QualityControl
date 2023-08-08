@@ -23,6 +23,7 @@
 #include <Framework/Task.h>
 #include <Framework/DataProcessorSpec.h>
 #include <Framework/CompletionPolicy.h>
+#include <Framework/DataTakingContext.h>
 #include <Headers/DataHeader.h>
 // QC
 #include "QualityControl/TaskRunnerConfig.h"
@@ -139,13 +140,14 @@ class TaskRunner : public framework::Task
   std::shared_ptr<TaskInterface> mTask;
   std::shared_ptr<ObjectsManager> mObjectsManager;
   std::shared_ptr<Timekeeper> mTimekeeper;
-  int mRunNumber;
+  Activity mActivity;
 
   void updateMonitoringStats(framework::ProcessingContext& pCtx);
 
   bool mCycleOn = false;
   bool mNoMoreCycles = false;
   int mCycleNumber = 0;
+  framework::DeploymentMode mDeploymentMode = framework::DeploymentMode::Local;
 
   // stats
   int mNumberMessagesReceivedInCycle = 0;

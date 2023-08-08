@@ -10,7 +10,7 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   CommonInterface.h
+/// \file   UserCodeInterface.h
 /// \author Barthelemy von Haller
 ///
 
@@ -18,13 +18,11 @@
 #define QUALITYCONTROL_USERCODEINTERFACE_H
 
 #include <string>
-#include <unordered_map>
 #include <map>
 #include <Rtypes.h>
-#include <CCDB/CcdbApi.h>
+#include <CCDB/BasicCCDBManager.h>
 
 #include "QualityControl/CustomParameters.h"
-#include "QualityControl/QcInfoLogger.h"
 
 namespace o2::quality_control::core
 {
@@ -48,35 +46,29 @@ class UserCodeInterface
   /// It is called each time mCustomParameters is updated, including the first time it is read.
   virtual void configure() = 0;
 
-  void loadCcdb();
   void setCcdbUrl(const std::string& url);
   const std::string& getName() const;
   void setName(const std::string& name);
 
+  /**
+   * Get an object from the CCDB. The object is owned by the CCDBManager, don't delete it !
+   */
   template <typename T>
-  T* retrieveConditionAny(std::string const& path, std::map<std::string, std::string> const& metadata = {},
-                          long timestamp = -1);
+  T* retrieveConditionAny(std::string const& path, std::map<std::string, std::string> const& metadata = {}, long timestamp = -1);
 
  protected:
   CustomParameters mCustomParameters;
   std::string mName;
 
- private:
-  std::shared_ptr<o2::ccdb::CcdbApi> mCcdbApi;
-  std::string mCcdbUrl; // we need to keep the url in addition to the ccdbapi because we don't initialize the latter before the first call
-
-  ClassDef(UserCodeInterface, 2)
+  ClassDef(UserCodeInterface, 3)
 };
 
 template <typename T>
-T* UserCodeInterface::retrieveConditionAny(std::string const& path, std::map<std::string, std::string> const& metadata,
-                                           long timestamp)
+T* UserCodeInterface::retrieveConditionAny(std::string const& path, std::map<std::string, std::string> const& metadata, long timestamp)
 {
-  if (!mCcdbApi) {
-    loadCcdb();
-  }
-
-  return mCcdbApi->retrieveFromTFileAny<T>(path, metadata, timestamp);
+  auto& mgr = o2::ccdb::BasicCCDBManager::instance();
+  o2::ccdb::BasicCCDBManager::instance().setTimestamp(timestamp);
+  return mgr.getSpecific<T>(path, mgr.getTimestamp(), metadata);
 }
 
 } // namespace o2::quality_control::core

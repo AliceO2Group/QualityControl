@@ -23,7 +23,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
     Extra parameters:
       - migrate_to_EOS: Migrate the object to EOS. (default: false)
       - interval_between_versions: Period in minutes between the versions we will keep. (default: 90)
-      - period_pass: Keep 1 version for a combination of run+pass+period if true.
+      - period_pass: Keep 1 version for a combination of run+pass+period if true. (default: false)
 
     It is implemented like this :
         Map of buckets: run[+pass+period] -> list of versions
@@ -58,7 +58,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
     # config parameters
     period_pass = (extra_params.get("period_pass", False) is True)
     logger.debug(f"period_pass : {period_pass}")
-    interval_between_versions = int(extra_params.get("interval_between_versions", 30))
+    interval_between_versions = int(extra_params.get("interval_between_versions", 90))
     logger.debug(f"interval_between_versions : {interval_between_versions}")
     migrate_to_EOS = (extra_params.get("migrate_to_EOS", False) is True)
     logger.debug(f"migrate_to_EOS : {migrate_to_EOS}")

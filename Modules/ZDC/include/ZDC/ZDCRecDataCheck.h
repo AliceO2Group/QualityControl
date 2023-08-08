@@ -55,6 +55,7 @@ class ZDCRecDataCheck : public o2::quality_control::checker::CheckInterface
   std::vector<std::string> tokenLine(std::string Line, std::string Delimiter);
   void dumpVecParam(int numBinHisto, int num_ch);
   void setQualityInfo(std::shared_ptr<MonitorObject> mo, int color, std::string text);
+  std::string getCurrentDataTime();
 
  private:
   std::vector<sCheck> mVectParamADC;

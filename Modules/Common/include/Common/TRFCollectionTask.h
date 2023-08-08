@@ -19,11 +19,14 @@
 
 #include "QualityControl/PostProcessingInterface.h"
 #include "Common/TRFCollectionTaskConfig.h"
-#include <DataFormatsQualityControl/TimeRangeFlagCollection.h>
 
 namespace o2::quality_control::repository
 {
 class DatabaseInterface;
+}
+namespace o2::quality_control
+{
+class TimeRangeFlagCollection;
 }
 
 namespace o2::quality_control_modules::common

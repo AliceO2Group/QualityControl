@@ -13,6 +13,7 @@
 
 #include "MUONCommon/Helpers.h"
 #include "QualityControl/ObjectsManager.h"
+#include "QualityControl/QcInfoLogger.h"
 #include <Framework/DataRefUtils.h>
 #include <Framework/InputRecord.h>
 #include <gsl/span>

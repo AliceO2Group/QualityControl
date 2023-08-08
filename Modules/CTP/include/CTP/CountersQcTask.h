@@ -19,6 +19,7 @@
 
 #include "QualityControl/TaskInterface.h"
 #include "DataFormatsCTP/Configuration.h"
+#include "DataFormatsCTP/RunManager.h"
 #include "TH1.h"
 
 class TH1F;

@@ -25,11 +25,14 @@
 #include <Framework/TimingInfo.h>
 #include <TTree.h>
 #include <TLine.h>
+#include "Common/TH1Ratio.h"
+#include "Common/TH2Ratio.h"
 
 class TH1D;
 class TH2D;
 
 using namespace o2::quality_control::core;
+using namespace o2::quality_control_modules::common;
 
 namespace o2::quality_control_modules::its
 {
@@ -54,6 +57,14 @@ class ITSTrackTask : public TaskInterface
   void formatAxes(TH1* h, const char* xTitle, const char* yTitle, float xOffset = 1., float yOffset = 1.);
   void addObject(TObject* aObject);
   void createAllHistos();
+  template <class T>
+  void formatAxes(T* obj, const char* xTitle, const char* yTitle, float xOffset, float yOffset)
+  {
+    obj->GetXaxis()->SetTitle(xTitle);
+    obj->GetYaxis()->SetTitle(yTitle);
+    obj->GetXaxis()->SetTitleOffset(xOffset);
+    obj->GetYaxis()->SetTitleOffset(yOffset);
+  }
 
   static constexpr int NLayer = 7;
   static constexpr int NLayerIB = 3;
@@ -63,10 +74,10 @@ class ITSTrackTask : public TaskInterface
   std::vector<TObject*> mPublishedObjects;
   TH1D* hNClusters;
   TH1D* hNClustersReset;
-  TH1D* hTrackEta;
-  TH1D* hTrackPhi;
+  std::unique_ptr<TH1DRatio> hTrackEta;
+  std::unique_ptr<TH1DRatio> hTrackPhi;
   TH1D* hVerticesRof;
-  TH2D* hAngularDistribution;
+  std::unique_ptr<TH2DRatio> hAngularDistribution;
   TH2D* hVertexCoordinates;
   TH2D* hVertexRvsZ;
   TH1D* hVertexZ;
@@ -74,13 +85,13 @@ class ITSTrackTask : public TaskInterface
   TH1D* hAssociatedClusterFraction;
   TH1D* hNtracks;
   TH1D* hNtracksReset;
-  TH2D* hNClustersPerTrackEta;
-  TH2D* hNClustersPerTrackPhi;
-  TH2D* hHitFirstLayerPhiAll;
-  TH2D* hHitFirstLayerPhi4cls;
-  TH2D* hHitFirstLayerPhi5cls;
-  TH2D* hHitFirstLayerPhi6cls;
-  TH2D* hHitFirstLayerPhi7cls;
+  std::unique_ptr<TH2DRatio> hNClustersPerTrackEta;
+  std::unique_ptr<TH2DRatio> hNClustersPerTrackPhi;
+  std::unique_ptr<TH2DRatio> hHitFirstLayerPhiAll;
+  std::unique_ptr<TH2DRatio> hHitFirstLayerPhi4cls;
+  std::unique_ptr<TH2DRatio> hHitFirstLayerPhi5cls;
+  std::unique_ptr<TH2DRatio> hHitFirstLayerPhi6cls;
+  std::unique_ptr<TH2DRatio> hHitFirstLayerPhi7cls;
   TH2D* hClusterVsBunchCrossing;
   TH2D* hNClusterVsChipITS;
   // Histograms for inv mass k0s, lambda

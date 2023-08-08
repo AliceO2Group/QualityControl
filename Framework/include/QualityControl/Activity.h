@@ -18,7 +18,6 @@
 #define QC_CORE_ACTIVITY_H
 
 #include <string>
-#include <iosfwd>
 #include "QualityControl/ValidityInterval.h"
 
 #include "Rtypes.h"
@@ -26,8 +25,7 @@
 namespace o2::quality_control::core
 {
 
-/// \brief Dummy class that should be removed when there is the official one.
-/// This corresponds to a Run 1/2 "run".
+/// \brief Class that represents a Run 3 activity such as a run.
 /// \author   Barthelemy von Haller
 class Activity
 {
@@ -39,14 +37,18 @@ class Activity
            const std::string& passName = "",
            const std::string& provenance = "qc",
            ValidityInterval validity = gFullValidityInterval,
-           const std::string& beamType = "")
+           const std::string& beamType = "",
+           const std::string& partitionName = "",
+           int fillNumber = 0)
     : mId(id),
       mType(type),
       mPeriodName(periodName),
       mPassName(passName),
       mProvenance(provenance),
       mValidity(validity),
-      mBeamType(beamType) {}
+      mBeamType(beamType),
+      mPartitionName(partitionName),
+      mFillNumber(fillNumber) {}
 
   /// Copy constructor
   Activity(const Activity& other) = default;
@@ -76,8 +78,10 @@ class Activity
   std::string mProvenance{ "qc" };
   ValidityInterval mValidity{ gFullValidityInterval };
   std::string mBeamType{};
+  std::string mPartitionName{};
+  int mFillNumber{ 0 };
 
-  ClassDef(Activity, 4);
+  ClassDef(Activity, 5);
 };
 
 } // namespace o2::quality_control::core

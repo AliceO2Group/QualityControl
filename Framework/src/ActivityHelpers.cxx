@@ -15,7 +15,9 @@
 ///
 
 #include "QualityControl/ActivityHelpers.h"
+
 #include <boost/property_tree/ptree.hpp>
+#include <CCDB/BasicCCDBManager.h>
 #include "QualityControl/ObjectMetadataKeys.h"
 
 using namespace o2::quality_control::repository;
@@ -91,6 +93,23 @@ core::Activity asActivity(const boost::property_tree::ptree& tree, const std::st
   }
   activity.mProvenance = provenance;
   return activity;
+}
+
+std::function<validity_time_t(void)> getCcdbSorTimeAccessor(uint64_t runNumber)
+{
+  return [runNumber]() { return static_cast<validity_time_t>(ccdb::BasicCCDBManager::instance().getRunDuration(runNumber, false).first); };
+}
+
+std::function<validity_time_t(void)> getCcdbEorTimeAccessor(uint64_t runNumber)
+{
+  return [runNumber]() {
+    return static_cast<validity_time_t>(ccdb::BasicCCDBManager::instance().getRunDuration(runNumber, false).second);
+  };
+}
+
+bool isLegacyValidity(ValidityInterval validity)
+{
+  return validity.isValid() && validity.delta() > 9ull * 365 * 24 * 60 * 60 * 1000ull;
 }
 
 } // namespace o2::quality_control::core::activity_helpers

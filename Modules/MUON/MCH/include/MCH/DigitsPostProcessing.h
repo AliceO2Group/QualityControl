@@ -20,18 +20,11 @@
 #define QC_MODULE_MCH_PP_DIGITS_H
 
 #include "QualityControl/PostProcessingInterface.h"
-#include "MCH/TH2ElecMapReductor.h"
 #include "MUONCommon/MergeableTH2Ratio.h"
 #include "MCH/HistoOnCycle.h"
 #include "MCH/RatesPlotter.h"
 #include "MCH/RatesTrendsPlotter.h"
 #include "MCH/OrbitsPlotter.h"
-#include <TCanvas.h>
-
-namespace o2::quality_control::core
-{
-class Activity;
-}
 
 namespace o2::quality_control::repository
 {

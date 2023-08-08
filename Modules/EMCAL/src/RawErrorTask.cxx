@@ -79,8 +79,20 @@ void RawErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
   };
   mExcludeGainErrorsFromOverview = get_bool(getConfigValueLower("excludeGainErrorFromSummary"));
 
+  // Set DDL indices
+  // SRU: 0-39
+  // STU: 44-45
+  static constexpr int NDDL_ALL = 46, NDDL_FEE = 40;
+  // FEC IDs: 0-39
+  static constexpr int NFEC = 40;
+
+  /*********
+   * Most reconstruction errors are specific to ALTRO decoding (i.e. ALTRO decoding errors, geometry, raw fit, ...). Consequently their range can be restricted to the
+   * DDL range of FEE DDLs. Some reconstruction errors like page decoding errors and link errors are so general that they can also affect the STU data (in case i.e. the
+   * entire page is corrupted). Consequently the range has to be enlarged to cover also the STU DDLs.
+   */
   constexpr float binshift = -0.5; // shift bin centers of error codes in order to avoid edge effects
-  mErrorTypeAll = new TH2F("RawDataErrors", "Raw data errors", 40, 0, 40, o2::emcal::ErrorTypeFEE::getNumberOfErrorTypes(), binshift, o2::emcal::ErrorTypeFEE::getNumberOfErrorTypes() + binshift);
+  mErrorTypeAll = new TH2F("RawDataErrors", "Raw data errors", NDDL_ALL, 0, NDDL_ALL, o2::emcal::ErrorTypeFEE::getNumberOfErrorTypes(), binshift, o2::emcal::ErrorTypeFEE::getNumberOfErrorTypes() + binshift);
   mErrorTypeAll->GetXaxis()->SetTitle("Link");
   mErrorTypeAll->GetYaxis()->SetTitle("Error type");
   for (int ierror = 0; ierror < o2::emcal::ErrorTypeFEE::getNumberOfErrorTypes(); ierror++) {
@@ -89,7 +101,7 @@ void RawErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
   mErrorTypeAll->SetStats(0);
   getObjectsManager()->startPublishing(mErrorTypeAll);
 
-  mErrorTypeAltro = new TH2F("MajorAltroErrors", "Major ALTRO decoding errors", 40, 0, 40, o2::emcal::AltroDecoderError::getNumberOfErrorTypes(), binshift, o2::emcal::AltroDecoderError::getNumberOfErrorTypes() + binshift);
+  mErrorTypeAltro = new TH2F("MajorAltroErrors", "Major ALTRO decoding errors", NDDL_FEE, 0, NDDL_FEE, o2::emcal::AltroDecoderError::getNumberOfErrorTypes(), binshift, o2::emcal::AltroDecoderError::getNumberOfErrorTypes() + binshift);
   mErrorTypeAltro->GetXaxis()->SetTitle("Link");
   mErrorTypeAltro->GetYaxis()->SetTitle("Error Type");
   for (auto ierror = 0; ierror < o2::emcal::AltroDecoderError::getNumberOfErrorTypes(); ierror++) {
@@ -98,7 +110,7 @@ void RawErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
   mErrorTypeAltro->SetStats(0);
   getObjectsManager()->startPublishing(mErrorTypeAltro);
 
-  mErrorTypePage = new TH2F("PageErrors", "DMA page decoding errors", 40, 0, 40, o2::emcal::RawDecodingError::getNumberOfErrorTypes(), binshift, o2::emcal::RawDecodingError::getNumberOfErrorTypes() + binshift);
+  mErrorTypePage = new TH2F("PageErrors", "DMA page decoding errors", NDDL_ALL, 0, NDDL_ALL, o2::emcal::RawDecodingError::getNumberOfErrorTypes(), binshift, o2::emcal::RawDecodingError::getNumberOfErrorTypes() + binshift);
   mErrorTypePage->GetXaxis()->SetTitle("Link");
   mErrorTypePage->GetYaxis()->SetTitle("Page Error Type");
   for (int ierror = 0; ierror < o2::emcal::RawDecodingError::getNumberOfErrorTypes(); ierror++) {
@@ -107,7 +119,7 @@ void RawErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
   mErrorTypePage->SetStats(0);
   getObjectsManager()->startPublishing(mErrorTypePage);
 
-  mErrorTypeMinAltro = new TH2F("MinorAltroError", "Minor ALTRO decoding error", 40, 0, 40, o2::emcal::MinorAltroDecodingError::getNumberOfErrorTypes(), binshift, o2::emcal::MinorAltroDecodingError::getNumberOfErrorTypes() + binshift);
+  mErrorTypeMinAltro = new TH2F("MinorAltroError", "Minor ALTRO decoding error", NDDL_FEE, 0, NDDL_FEE, o2::emcal::MinorAltroDecodingError::getNumberOfErrorTypes(), binshift, o2::emcal::MinorAltroDecodingError::getNumberOfErrorTypes() + binshift);
   mErrorTypeMinAltro->GetXaxis()->SetTitle("Link");
   mErrorTypeMinAltro->GetYaxis()->SetTitle("MinorAltro Error Type");
   for (int ierror = 0; ierror < o2::emcal::MinorAltroDecodingError::getNumberOfErrorTypes(); ierror++) {
@@ -116,7 +128,7 @@ void RawErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
   mErrorTypeMinAltro->SetStats(0);
   getObjectsManager()->startPublishing(mErrorTypeMinAltro);
 
-  mErrorTypeFit = new TH2F("RawFitError", "Error in raw fitting ", 40, 0, 40, o2::emcal::CaloRawFitter::getNumberOfErrorTypes(), binshift, o2::emcal::CaloRawFitter::getNumberOfErrorTypes() + binshift);
+  mErrorTypeFit = new TH2F("RawFitError", "Error in raw fitting ", NDDL_FEE, 0, NDDL_FEE, o2::emcal::CaloRawFitter::getNumberOfErrorTypes(), binshift, o2::emcal::CaloRawFitter::getNumberOfErrorTypes() + binshift);
   mErrorTypeFit->GetXaxis()->SetTitle("Link");
   mErrorTypeFit->GetYaxis()->SetTitle("Fit Error Type");
   for (int ierror = 0; ierror < o2::emcal::CaloRawFitter::getNumberOfErrorTypes(); ierror++) {
@@ -125,7 +137,7 @@ void RawErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
   mErrorTypeFit->SetStats(0);
   getObjectsManager()->startPublishing(mErrorTypeFit);
 
-  mErrorTypeGeometry = new TH2F("GeometryError", "Geometry error", 40, 0, 40, o2::emcal::reconstructionerrors::getNumberOfGeometryErrorCodes(), binshift, o2::emcal::reconstructionerrors::getNumberOfGeometryErrorCodes() + binshift);
+  mErrorTypeGeometry = new TH2F("GeometryError", "Geometry error", NDDL_FEE, 0, NDDL_FEE, o2::emcal::reconstructionerrors::getNumberOfGeometryErrorCodes(), binshift, o2::emcal::reconstructionerrors::getNumberOfGeometryErrorCodes() + binshift);
   mErrorTypeGeometry->GetXaxis()->SetTitle("Link");
   mErrorTypeGeometry->GetYaxis()->SetTitle("Geometry Error Type");
   for (int ierror = 0; ierror < o2::emcal::reconstructionerrors::getNumberOfGeometryErrorCodes(); ierror++) {
@@ -134,7 +146,7 @@ void RawErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
   mErrorTypeGeometry->SetStats(0);
   getObjectsManager()->startPublishing(mErrorTypeGeometry);
 
-  mErrorTypeGain = new TH2F("GainTypeError", "Gain type error", 40, 0, 40, o2::emcal::reconstructionerrors::getNumberOfGainErrorCodes(), binshift, o2::emcal::reconstructionerrors::getNumberOfGainErrorCodes() + binshift);
+  mErrorTypeGain = new TH2F("GainTypeError", "Gain type error", NDDL_FEE, 0, NDDL_FEE, o2::emcal::reconstructionerrors::getNumberOfGainErrorCodes(), binshift, o2::emcal::reconstructionerrors::getNumberOfGainErrorCodes() + binshift);
   mErrorTypeGain->GetXaxis()->SetTitle("Link");
   mErrorTypeGain->GetYaxis()->SetTitle("Gain Error Type");
   for (int ierror = 0; ierror < o2::emcal::reconstructionerrors::getNumberOfGainErrorCodes(); ierror++) {
@@ -143,19 +155,19 @@ void RawErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
   mErrorTypeGain->SetStats(0);
   getObjectsManager()->startPublishing(mErrorTypeGain);
 
-  mErrorGainLow = new TH2F("NoHGPerDDL", "High Gain bunch missing", 40, 0, 40, 40, 0, 40);
+  mErrorGainLow = new TH2F("NoHGPerDDL", "High Gain bunch missing", NFEC, 0, NFEC, NDDL_FEE, 0, NDDL_FEE);
   mErrorGainLow->GetYaxis()->SetTitle("fecID");
   mErrorGainLow->GetXaxis()->SetTitle("Link");
   mErrorGainLow->SetStats(0);
   getObjectsManager()->startPublishing(mErrorGainLow);
 
-  mErrorGainHigh = new TH2F("NoLGPerDDL", "Low Gain bunch missing for saturated High Gain", 40, 0, 40, 40, 0, 40);
+  mErrorGainHigh = new TH2F("NoLGPerDDL", "Low Gain bunch missing for saturated High Gain", NFEC, 0, NFEC, NDDL_FEE, 0, NDDL_FEE);
   mErrorGainHigh->GetYaxis()->SetTitle("fecID");
   mErrorGainHigh->GetXaxis()->SetTitle("Link");
   mErrorGainHigh->SetStats(0);
   getObjectsManager()->startPublishing(mErrorGainHigh);
 
-  mFecIdMinorAltroError = new TH2F("FecIDMinorAltroError", "FecID Minor Altro Error", 40, 0, 40, 40, 0, 40);
+  mFecIdMinorAltroError = new TH2F("FecIDMinorAltroError", "FecID Minor Altro Error", NFEC, 0, NFEC, NDDL_FEE, 0, NDDL_FEE);
   mFecIdMinorAltroError->GetYaxis()->SetTitle("fecID");
   mFecIdMinorAltroError->GetXaxis()->SetTitle("Link");
   mFecIdMinorAltroError->SetStats(0);
@@ -173,7 +185,7 @@ void RawErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
   mChannelGainHigh->SetStats(0);
   getObjectsManager()->startPublishing(mChannelGainHigh);
 
-  mErrorTypeUnknown = new TH1F("UnknownErrorType", "Unknown error types", 40, 0., 40);
+  mErrorTypeUnknown = new TH1F("UnknownErrorType", "Unknown error types", NDDL_ALL, 0., NDDL_ALL);
   mErrorTypeUnknown->GetXaxis()->SetTitle("Link");
   mErrorTypeUnknown->GetYaxis()->SetTitle("Number of errors");
   getObjectsManager()->startPublishing(mErrorTypeUnknown);

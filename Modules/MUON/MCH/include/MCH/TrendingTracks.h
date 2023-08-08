@@ -24,14 +24,10 @@
 
 #include "MCH/PostProcessingConfigMCH.h"
 
-#include "MCHRawCommon/DataFormats.h"
-#include "MCHRawElecMap/Mapper.h"
-
 #include <memory>
 #include <unordered_map>
 #include <TTree.h>
 
-class TH1F;
 class TProfile;
 
 namespace o2::quality_control::repository

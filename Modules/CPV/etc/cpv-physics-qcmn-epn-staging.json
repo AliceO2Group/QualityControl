@@ -1,0 +1,541 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "alio2-cr1-hv-mvs00:8083",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "monitoring": {
+        "url": "influxdb-unix:///tmp/telegraf.sock"
+      },
+      "consul": {
+        "url": "http://alio2-cr1-hv-mvs00:8500"
+      },
+      "conditionDB": {
+        "url": "o2-ccdb.internal"
+      },
+      "bookkeeping": {
+        "url": ""
+      }
+    },
+    "tasks": {
+      "PhysicsOnEPNs": {
+        "active": "true",
+        "className": "o2::quality_control_modules::cpv::PhysicsTask",
+        "moduleName": "QcCPV",
+        "detectorName": "CPV",
+        "cycleDurationSeconds": "30",
+        "maxNumberCycles": "-1",
+        "dataSource": {
+          "type": "direct",
+          "query": "digits:CPV/DIGITS/0;dtrigrec:CPV/DIGITTRIGREC/0;clusters:CPV/CLUSTERS/0;ctrigrec:CPV/CLUSTERTRIGRECS/0;calibdigits:CPV/CALIBDIGITS/0;rawerrors:CPV/RAWHWERRORS/0;peds:CPV/CPV_Pedestals;badmap:CPV/CPV_BadMap;gains:CPV/CPV_Gains"
+        },
+        "taskParameters": {
+          "ccdbCheckInterval": "1000",
+          "isAsyncMode": "0"
+        },
+        "location": "local",
+        "localMachines": [
+          "localhost"
+        ],
+        "remoteMachine": "alio2-cr1-qc04.cern.ch",
+        "remotePort": "47768",
+        "mergingMode": "delta",
+        "localControl": "odc"
+      }
+    },
+    "checks": {
+      "ClustersIncrease": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::IncreasingEntries",
+        "moduleName": "QcCommon",
+        "policy": "OnAny",
+        "detectorName": "CPV",
+        "checkParameters": {
+          "mustIncrease": "true"
+        },
+        "dataSource": [
+          {
+            "type": "Task",
+            "name": "PhysicsOnEPNs",
+            "MOs": [
+              "ClusterMapM2",
+              "ClusterMapM3",
+              "ClusterMapM4"
+            ]
+          }
+        ]
+      },
+      "DigitsIncrease": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::IncreasingEntries",
+        "moduleName": "QcCommon",
+        "policy": "OnAny",
+        "detectorName": "CPV",
+        "checkParameters": {
+          "mustIncrease": "true"
+        },
+        "dataSource": [
+          {
+            "type": "Task",
+            "name": "PhysicsOnEPNs",
+            "MOs": [
+              "DigitMapM2",
+              "DigitMapM3",
+              "DigitMapM4"
+            ]
+          }
+        ]
+      },
+      "DigitsCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::cpv::PhysicsCheck",
+        "moduleName": "QcCPV",
+        "policy": "OnAny",
+        "detectorName": "CPV",
+        "dataSource": [
+          {
+            "type": "Task",
+            "name": "PhysicsOnEPNs",
+            "MOs": [
+              "DigitsInEventM2",
+              "DigitsInEventM3",
+              "DigitsInEventM4",
+              "DigitMapM2",
+              "DigitMapM3",
+              "DigitMapM4",
+              "DigitOccuranceM2",
+              "DigitOccuranceM3",
+              "DigitOccuranceM4"
+            ]
+          }
+        ],
+        "checkParameters": {
+          "mMinEventsToCheckDigitMap2": "10000",
+          "mMinEventsToCheckDigitMap3": "10000",
+          "mMinEventsToCheckDigitMap4": "10000",
+          "mNCold3GassiplexAllowed2": "30",
+          "mNCold3GassiplexAllowed3": "10",
+          "mNCold3GassiplexAllowed4": "17",
+          "mNHot3GassiplexAllowed2": "10",
+          "mNHot3GassiplexAllowed3": "10",
+          "mNHot3GassiplexAllowed4": "14",
+          "mHot3GassiplexCriterium2": "2.5",
+          "mHot3GassiplexCriterium3": "2.5",
+          "mHot3GassiplexCriterium4": "2.5",
+          "mCold3GassiplexCriterium2": "0.3",
+          "mCold3GassiplexCriterium3": "0.3",
+          "mCold3GassiplexCriterium4": "0.3",
+          "mMinDigitsPerEvent2": "50",
+          "mMinDigitsPerEvent3": "50",
+          "mMinDigitsPerEvent4": "50",
+          "mMaxDigitsPerEvent2": "100",
+          "mMaxDigitsPerEvent3": "100",
+          "mMaxDigitsPerEvent4": "100",
+          "mHot3GassiplexOccurance2": "0.05",
+          "mHot3GassiplexOccurance3": "0.05",
+          "mHot3GassiplexOccurance4": "0.05",
+          "mCold3GassiplexOccurance2": "0.000001",
+          "mCold3GassiplexOccurance3": "0.000001",
+          "mCold3GassiplexOccurance4": "0.000001"
+        }
+      },
+      "ClustersCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::cpv::PhysicsCheck",
+        "moduleName": "QcCPV",
+        "policy": "OnAny",
+        "detectorName": "CPV",
+        "dataSource": [
+          {
+            "type": "Task",
+            "name": "PhysicsOnEPNs",
+            "MOs": [
+              "NDigitsInClusterM2",
+              "NDigitsInClusterM3",
+              "NDigitsInClusterM4",
+              "ClusterTotEnergyM2",
+              "ClusterTotEnergyM3",
+              "ClusterTotEnergyM4"
+            ]
+          }
+        ],
+        "checkParameters": {
+          "mMinEventsToCheckClusters2": "10000",
+          "mMinEventsToCheckClusters3": "10000",
+          "mMinEventsToCheckClusters4": "10000",
+          "mCluEnergyRangeL2": "100",
+          "mCluEnergyRangeL3": "100",
+          "mCluEnergyRangeL4": "100",
+          "mCluEnergyRangeR2": "2000",
+          "mCluEnergyRangeR3": "2000",
+          "mCluEnergyRangeR4": "2000",
+          "mMinCluEnergyMean2": "50",
+          "mMinCluEnergyMean3": "50",
+          "mMinCluEnergyMean4": "50",
+          "mMaxCluEnergyMean2": "400",
+          "mMaxCluEnergyMean3": "400",
+          "mMaxCluEnergyMean4": "400",
+          "mMinClusterSize2": "1.5",
+          "mMinClusterSize3": "1.7",
+          "mMinClusterSize4": "1.7",
+          "mMaxClusterSize2": "2.5",
+          "mMaxClusterSize3": "2.5",
+          "mMaxClusterSize4": "2.5"
+        }
+      },
+      "CalibDigitsCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::cpv::PhysicsCheck",
+        "moduleName": "QcCPV",
+        "policy": "OnAny",
+        "detectorName": "CPV",
+        "dataSource": [
+          {
+            "type": "Task",
+            "name": "PhysicsOnEPNs",
+            "MOs": [
+              "CalibDigitEnergyM2",
+              "CalibDigitEnergyM3",
+              "CalibDigitEnergyM4"
+            ]
+          }
+        ],
+        "checkParameters": {
+          "mAmplitudeRangeL2": "10",
+          "mAmplitudeRangeL3": "10",
+          "mAmplitudeRangeL4": "10",
+          "mAmplitudeRangeR2": "1000",
+          "mAmplitudeRangeR3": "1000",
+          "mAmplitudeRangeR4": "1000",
+          "mMinEventsToCheckAmplitude2": "10000",
+          "mMinEventsToCheckAmplitude3": "10000",
+          "mMinEventsToCheckAmplitude4": "10000",
+          "mMinAmplitudeMean2": "50",
+          "mMinAmplitudeMean3": "50",
+          "mMinAmplitudeMean4": "50",
+          "mMaxAmplitudeMean2": "400",
+          "mMaxAmplitudeMean3": "400",
+          "mMaxAmplitudeMean4": "400"
+        }
+      },
+      "ErrorsCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::cpv::PhysicsCheck",
+        "moduleName": "QcCPV",
+        "policy": "OnAny",
+        "detectorName": "CPV",
+        "dataSource": [
+          {
+            "type": "Task",
+            "name": "PhysicsOnEPNs",
+            "MOs": [
+              "ErrorTypeOccurance"
+            ]
+          }
+        ],
+        "checkParameters": {
+          "mErrorOccuranceThreshold18": "0.1"
+        }
+      }
+    },
+    "postprocessing": {
+      "PhysicsTrending": {
+        "active": "true",
+        "#taskName": "PhysicsOnEPNs",
+        "": "use the taskName in order to post output to CPV/MO/TaskName",
+        "className": "o2::quality_control::postprocessing::TrendingTask",
+        "moduleName": "QcCommon",
+        "detectorName": "CPV",
+        "resumeTrend": "false",
+        "producePlotsOnUpdate": "true",
+        "initTrigger": [
+          "newobject:qcdb:CPV/MO/PhysicsOnEPNs/NDigitsInEventM2M3M4"
+        ],
+        "updateTrigger": [
+          "newobject:qcdb:CPV/MO/PhysicsOnEPNs/NDigitsInEventM2M3M4"
+        ],
+        "stopTrigger": [
+          "usercontrol"
+        ],
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "CPV/MO/PhysicsOnEPNs",
+            "names": [
+              "NDigitsInEventM2M3M4",
+              "NClustersInEventM2M3M4",
+              "ClusterTotEnergyM2",
+              "ClusterTotEnergyM3",
+              "ClusterTotEnergyM4",
+              "CalibDigitEnergyM2",
+              "CalibDigitEnergyM3",
+              "CalibDigitEnergyM4",
+              "DigitEnergyM2",
+              "DigitEnergyM3",
+              "DigitEnergyM4",
+              "NDigitsInClusterM2",
+              "NDigitsInClusterM3",
+              "NDigitsInClusterM4"
+            ],
+            "reductorName": "o2::quality_control_modules::common::TH1Reductor",
+            "moduleName": "QcCommon"
+          }
+        ],
+        "plots": [
+          {
+            "name": "mean_of_n_digits",
+            "title": "Trend of mean number of digits per event",
+            "varexp": "NDigitsInEventM2M3M4.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphAxisLabel": "Mean number of digits:time",
+            "graphYRange": "0:300"
+          },
+          {
+            "name": "mean_of_n_clusters",
+            "title": "Trend of mean number of clusters per event",
+            "varexp": "NClustersInEventM2M3M4.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphAxisLabel": "Mean number of clusters:time",
+            "graphYRange": "0:50"
+          },
+          {
+            "name": "mean_of_cluEnergyM2",
+            "title": "Trend of mean cluster energy M2",
+            "varexp": "ClusterTotEnergyM2.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphAxisLabel": "Mean cluster energy:time",
+            "graphYRange": "0:150"
+          },
+          {
+            "name": "mean_of_cluEnergyM3",
+            "title": "Trend of mean cluster energy M3",
+            "varexp": "ClusterTotEnergyM3.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphAxisLabel": "Mean cluster energy:time",
+            "graphYRange": "0:150"
+          },
+          {
+            "name": "mean_of_cluEnergyM4",
+            "title": "Trend of mean cluster energy M4",
+            "varexp": "ClusterTotEnergyM4.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphAxisLabel": "Mean cluster energy:time",
+            "graphYRange": "0:150"
+          },
+          {
+            "name": "mean_of_calibDigEnergyM2",
+            "title": "Trend of mean calib digit energy M2",
+            "varexp": "CalibDigitEnergyM2.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphAxisLabel": "Mean digit energy:time",
+            "graphYRange": "0:300"
+          },
+          {
+            "name": "mean_of_calibDigEnergyM3",
+            "title": "Trend of mean calib digit energy M3",
+            "varexp": "CalibDigitEnergyM3.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphAxisLabel": "Mean digit energy:time",
+            "graphYRange": "0:300"
+          },
+          {
+            "name": "mean_of_calibDigEnergyM4",
+            "title": "Trend of mean calib digit energy M4",
+            "varexp": "CalibDigitEnergyM4.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphAxisLabel": "Mean digit energy:time",
+            "graphYRange": "0:300"
+          },
+          {
+            "name": "mean_of_digEnergyM2",
+            "title": "Trend of mean digit energy M2",
+            "varexp": "DigitEnergyM2.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphAxisLabel": "Mean digit energy:time",
+            "graphYRange": "0:100"
+          },
+          {
+            "name": "mean_of_digEnergyM3",
+            "title": "Trend of mean digit energy M3",
+            "varexp": "DigitEnergyM3.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphAxisLabel": "Mean digit energy:time",
+            "graphYRange": "0:100"
+          },
+          {
+            "name": "mean_of_digEnergyM4",
+            "title": "Trend of mean digit energy M4",
+            "varexp": "DigitEnergyM4.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphAxisLabel": "Mean digit energy:time",
+            "graphYRange": "0:100"
+          },
+          {
+            "name": "mean_of_cluSizeM2",
+            "title": "Trend of mean cluster size M2",
+            "varexp": "NDigitsInClusterM2.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphAxisLabel": "Mean cluster size:time",
+            "graphYRange": "0:10"
+          },
+          {
+            "name": "mean_of_cluSizeM3",
+            "title": "Trend of mean cluster size M3",
+            "varexp": "NDigitsInClusterM3.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphAxisLabel": "Mean cluster size:time",
+            "graphYRange": "0:10"
+          },
+          {
+            "name": "mean_of_cluSizeM4",
+            "title": "Trend of mean cluster size M4",
+            "varexp": "NDigitsInClusterM4.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphAxisLabel": "Mean cluster size:time",
+            "graphYRange": "0:10"
+          }
+        ]
+      },
+      "QualityTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::QualityTask",
+        "moduleName": "QcCommon",
+        "detectorName": "CPV",
+        "qualityGroups": [
+          {
+            "name": "global",
+            "title": "GLOBAL CPV QUALITY",
+            "path": "CPV/QO/GlobalQuality",
+            "ignoreQualitiesDetails": [
+              "Null",
+              "Good",
+              "Medium",
+              "Bad"
+            ],
+            "inputObjects": [
+              {
+                "name": "GlobalQuality",
+                "title": "Global CPV Quality",
+                "messageBad": "Inform CPV on-call",
+                "messageMedium": "Not enough statistics in some histograms",
+                "messageGood": "All checks are OK",
+                "messageNull": "Some histograms are empty!!!"
+              }
+            ]
+          },
+          {
+            "name": "details",
+            "title": "CPV DETAILS",
+            "path": "CPV/QO",
+            "ignoreQualitiesDetails": [],
+            "inputObjects": [
+              {
+                "name": "DigitsIncrease",
+                "title": "Number of digits increases",
+                "messageBad": "Entries are not increasing in last cycle",
+                "messageNull": ""
+              },
+              {
+                "name": "ClustersIncrease",
+                "title": "Number of clusters increases",
+                "messageBad": "Entries are not increasing in last cycle",
+                "messageNull": ""
+              },
+              {
+                "name": "DigitsCheck",
+                "title": "Digit occupancy check",
+                "messageBad": "Inform CPV on-call",
+                "messageGood": "Ok",
+                "messageNull": ""
+              },
+              {
+                "name": "ClustersCheck",
+                "title": "Cluster size check",
+                "messageBad": "Inform CPV on-call",
+                "messageMedium": "Inform CPV on-call",
+                "messageNull": ""
+              },
+              {
+                "name": "CalibDigitsCheck",
+                "title": "CalibDigit amplitude check",
+                "messageBad": "Inform CPV on-call",
+                "messageMedium": "Inform CPV on-call",
+                "messageNull": ""
+              },
+              {
+                "name": "ErrorsCheck",
+                "title": "Errors presence check",
+                "messageBad": "Inform CPV on-call",
+                "messageMedium": "Inform CPV on-call",
+                "messageNull": ""
+              }
+            ]
+          }
+        ],
+        "initTrigger": [
+          "once"
+        ],
+        "updateTrigger": [
+          "newobject:qcdb:CPV/QO/GlobalQuality/GlobalQuality"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      }
+    },
+    "aggregators": {
+      "GlobalQuality": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::WorstOfAllAggregator",
+        "moduleName": "QcCommon",
+        "policy": "OnAll",
+        "detectorName": "CPV",
+        "dataSource": [
+          {
+            "type": "Check",
+            "name": "DigitsIncrease"
+          },
+          {
+            "type": "Check",
+            "name": "ClustersIncrease"
+          },
+          {
+            "type": "Check",
+            "name": "DigitsCheck"
+          },
+          {
+            "type": "Check",
+            "name": "ClustersCheck"
+          },
+          {
+            "type": "Check",
+            "name": "CalibDigitsCheck"
+          },
+          {
+            "type": "Check",
+            "name": "ErrorsCheck"
+          }
+        ]
+      }
+    }
+  },
+  "dataSamplingPolicies": []
+}

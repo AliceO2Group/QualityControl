@@ -27,6 +27,7 @@
 #include "MCHMappingInterface/CathodeSegmentation.h"
 // #include "MCHMappingSegContour/CathodeSegmentationContours.h"
 #include <Framework/InputRecord.h>
+#include "QualityControl/QcInfoLogger.h"
 
 using namespace std;
 using namespace o2::mch;
