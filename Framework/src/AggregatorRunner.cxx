@@ -240,10 +240,6 @@ void AggregatorRunner::store(QualityObjectsType& qualityObjects)
     for (auto& qo : qualityObjects) {
       mDatabase->storeQO(qo);
     }
-    if (!qualityObjects.empty()) {
-      auto& qo = qualityObjects.at(0);
-      ILOG(Info, Devel) << "Validity of QO '" << qo->GetName() << "' is (" << qo->getValidity().getMin() << ", " << qo->getValidity().getMax() << ")" << ENDM;
-    }
   } catch (boost::exception& e) {
     ILOG(Info, Devel) << "Unable to " << diagnostic_information(e) << ENDM;
   }
