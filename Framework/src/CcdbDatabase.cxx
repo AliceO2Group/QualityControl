@@ -287,7 +287,6 @@ void CcdbDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::Qual
   if (to == -1 || to == 0 || validity.getMax() == gInvalidValidityInterval.getMax() || validity.getMax() == gFullValidityInterval.getMax()) {
     to = from + 1000l * 60 * 60 * 24 * 365 * 10; // ~10 years since the start of validity
   }
-
   if (from >= to) {
     ILOG(Error, Support) << "The start validity of '" << qo->GetName() << "' is not earlier than the end (" << from << ", " << to << "). The object will not be stored" << ENDM;
     return;
