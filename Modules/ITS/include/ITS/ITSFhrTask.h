@@ -149,7 +149,7 @@ class ITSFhrTask final : public TaskInterface
   TH2D* mChipStaveOccupancy;
   TH2I* mChipStaveEventHitCheck;
   TH1D* mOccupancyPlot;
-
+  bool mIgnoreRampUpData = true;
   // Geometry decoder
   o2::its::GeometryTGeo* mGeom;
 };
