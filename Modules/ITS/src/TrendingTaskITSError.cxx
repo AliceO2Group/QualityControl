@@ -46,7 +46,7 @@ using namespace o2::quality_control::repository;
 using namespace o2::quality_control_modules::its;
 
 void TrendingTaskITSError::configure(std::string name,
-                                   const boost::property_tree::ptree& config)
+                                     const boost::property_tree::ptree& config)
 {
   mConfig = TrendingTaskConfigITS(name, config);
 }
@@ -62,7 +62,7 @@ void TrendingTaskITSError::initialize(Trigger, framework::ServiceRegistryRef)
 
   for (const auto& source : mConfig.dataSources) {
     std::unique_ptr<ReductorBinContent> reductor(root_class_factory::create<ReductorBinContent>(source.moduleName, source.reductorName));
-    reductor->setParams(22,0);
+    reductor->setParams(22, 0);
     mTrend->Branch(source.name.c_str(), reductor->getBranchAddress(), reductor->getBranchLeafList());
     mReductors[source.name] = std::move(reductor);
   }
@@ -237,7 +237,7 @@ void TrendingTaskITSError::SetGraphName(TMultiGraph* graph, const std::string& n
 }
 
 void TrendingTaskITSError::SetGraphAxes(TMultiGraph* graph, const std::string& xtitle,
-                                      const std::string& ytitle, bool isTime)
+                                        const std::string& ytitle, bool isTime)
 {
   graph->GetXaxis()->SetTitle(xtitle.c_str());
   graph->GetXaxis()->SetTitleSize(0.045);
@@ -257,7 +257,7 @@ void TrendingTaskITSError::SetGraphAxes(TMultiGraph* graph, const std::string& x
 }
 
 void TrendingTaskITSError::SetHistoAxes(TH1* hist, const std::vector<std::string>& runlist,
-                                      const double& Ymin, const double& Ymax)
+                                        const double& Ymin, const double& Ymax)
 {
   hist->SetStats(0);
   hist->GetXaxis()->SetTitleSize(0.045);

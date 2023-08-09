@@ -94,11 +94,11 @@ class TrendingTaskITSError : public PostProcessingInterface
   std::unordered_map<std::string, std::unique_ptr<Reductor>> mReductors;
 
   const int colors[30] = { 1, 46, kAzure + 3, 807, 797, 827, 417, 841, 868, 867, 860, 602, 921, 874, 600, 820, 400, 840, 920, 616, 632, 432, 880, 416, 29, 900, kMagenta - 9, kOrange + 4, kGreen - 5, kPink - 9 };
-  const int markers[30] = {8, 20, 21, 22, 23, 25, 26, 27, 29, 30, 32, 33, 34, 39, 41, 43, 45, 47, 48, 49, 105, 107, 112, 114, 116, 117, 118, 119, 120, 121 };
+  const int markers[30] = { 8, 20, 21, 22, 23, 25, 26, 27, 29, 30, 32, 33, 34, 39, 41, 43, 45, 47, 48, 49, 105, 107, 112, 114, 116, 117, 118, 119, 120, 121 };
 
   static constexpr int nFlags = 22;
 
-  const std::string trend_titles[nFlags] = { "NoRDHAtStart", "PageNotStopped", "StopPageNotEmpty", "PageCounterDiscontinuity","RDHvsGBTHPageCnt","MissingGBTTrigger", "MissingGBTHeader", "MissingGBTTrailer", "NonZeroPageAfterStop", "DataForStoppedLane", "NoDataForActiveLane", "IBChipLaneMismatch", "CableDataHeadWrong", "InvalidActiveLanes", "PacketCounterJump", "PacketDoneMissing", "MissingDiagnosticWord", "GBTWordNotRecognized","WrongeCableID", "WrongAlignmentWord", "MissingROF", "OldROF"};
+  const std::string trend_titles[nFlags] = { "NoRDHAtStart", "PageNotStopped", "StopPageNotEmpty", "PageCounterDiscontinuity", "RDHvsGBTHPageCnt", "MissingGBTTrigger", "MissingGBTHeader", "MissingGBTTrailer", "NonZeroPageAfterStop", "DataForStoppedLane", "NoDataForActiveLane", "IBChipLaneMismatch", "CableDataHeadWrong", "InvalidActiveLanes", "PacketCounterJump", "PacketDoneMissing", "MissingDiagnosticWord", "GBTWordNotRecognized", "WrongeCableID", "WrongAlignmentWord", "MissingROF", "OldROF" };
 };
 } // namespace o2::quality_control::postprocessing
 #endif // QUALITYCONTROL_TRENDINGTASKITSError_H

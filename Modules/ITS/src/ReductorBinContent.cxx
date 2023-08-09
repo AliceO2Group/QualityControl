@@ -35,10 +35,9 @@ const char* ReductorBinContent::getBranchLeafList()
   return Form("binContent[%i]/D:integral[%i]", nFlags, nTriggers);
 }
 
-
 void ReductorBinContent::update(TObject* obj)
 {
- // initialize arrays
+  // initialize arrays
   for (int j = 0; j < 100; j++) {
     mStats.binContent[j] = -1.0;
   }
@@ -66,7 +65,7 @@ void ReductorBinContent::update(TObject* obj)
     int numberOfBinsY = histo->GetYaxis()->GetNbins();
 
     for (int j = 1; j <= numberOfBinsY; j++) {
-      std::cout<< "at bin : "<< j << " filled by : "<<  histo->Integral(1, numberOfBinsX, j, j) << std::endl;
+      std::cout << "at bin : " << j << " filled by : " << histo->Integral(1, numberOfBinsX, j, j) << std::endl;
       mStats.integral[j - 1] = histo->Integral(1, numberOfBinsX, j, j); // Summation over all Fee IDs for a given trigger
     }
     delete histo;
