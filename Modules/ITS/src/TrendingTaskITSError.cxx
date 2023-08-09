@@ -60,9 +60,10 @@ void TrendingTaskITSError::initialize(Trigger, framework::ServiceRegistryRef)
   mTrend->Branch("Time", &mTime);
   mTrend->Branch("Entries", &nEntries);
 
+  const int plots = 22;
   for (const auto& source : mConfig.dataSources) {
     std::unique_ptr<ReductorBinContent> reductor(root_class_factory::create<ReductorBinContent>(source.moduleName, source.reductorName));
-    reductor->setParams(22, 0);
+    reductor->setParams(plots, 0);
     mTrend->Branch(source.name.c_str(), reductor->getBranchAddress(), reductor->getBranchLeafList());
     mReductors[source.name] = std::move(reductor);
   }
