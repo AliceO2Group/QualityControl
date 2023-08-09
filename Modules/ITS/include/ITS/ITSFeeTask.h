@@ -47,7 +47,7 @@ namespace o2::quality_control_modules::its
 /// \brief ITS FEE task aiming at 100% online data integrity checking
 class ITSFeeTask final : public TaskInterface
 {
-  struct GBTDiagnosticWord { // GBT diagnostic word
+  struct GBTDiagnosticWord { // DDW GBT word
     union {
       uint64_t word0 = 0x0;
       struct {
@@ -66,7 +66,7 @@ class ITSFeeTask final : public TaskInterface
     } indexWord;
   };
 
-  struct GBTITSHeaderWord { // IHW
+  struct GBTITSHeaderWord { // IHW GBT word
     union {
       uint64_t word0 = 0x0;
       struct {
@@ -100,7 +100,7 @@ class ITSFeeTask final : public TaskInterface
 
  private:
 
-  std::vector<std::pair<int,TString>> RDHDetField{
+  std::vector<std::pair<int,TString>> mRDHDetField{   // <bit in DetField, description>
       std::make_pair(0,"Missing data"),
       std::make_pair(1,"Warning"),
       std::make_pair(2,"Error"),
@@ -111,6 +111,25 @@ class ITSFeeTask final : public TaskInterface
       std::make_pair(25,"TimebaseEvt"),
       std::make_pair(26,"ClockEvt")
 	};
+
+
+  std::vector<std::pair<int,TString>> mTriggerType{ // <bit in RDH, description>
+      std::make_pair(0,"ORBIT"),
+      std::make_pair(1,"HB"),
+      std::make_pair(2,"HBr"),
+      std::make_pair(3,"HC"),
+      std::make_pair(4,"PHYSICS"),
+      std::make_pair(5,"PP"),
+      std::make_pair(6,"CAL"),
+      std::make_pair(7,"SOT"),
+	std::make_pair(8,"EOT"),
+	std::make_pair(9,"SOC"),
+	std::make_pair(10,"EOC"),
+	std::make_pair(11,"TF"),
+	std::make_pair(12,"INT")
+	};
+
+  
 		    
 
 
@@ -128,7 +147,6 @@ class ITSFeeTask final : public TaskInterface
   static constexpr int NLanesMax = 28;
   static constexpr int NFees = 48 * 3 + 144 * 2;
   static constexpr int NFlags = 3;
-  static constexpr int NTrigger = 13;
   const int StaveBoundary[NLayer + 1] = { 0, 12, 28, 48, 72, 102, 144, 192 };
   const int NLanePerStaveLayer[NLayer] = { 9, 9, 9, 16, 16, 28, 28 };
   const int LayerBoundaryFEE[NLayer - 1] = { 35, 83, 143, 191, 251, 335 };
@@ -144,7 +162,6 @@ class ITSFeeTask final : public TaskInterface
   const int indexFeeLow[NLayer] = { 0, 3, 6, 3, 17, 0, 14 };
   const int indexFeeUp[NLayer] = { 3, 6, 9, 11, 25, 14, 28 };
   int mTimeFrameId = 0;
-  TString mTriggerType[NTrigger] = { "ORBIT", "HB", "HBr", "HC", "PHYSICS", "PP", "CAL", "SOT", "EOT", "SOC", "EOC", "TF", "INT" };
   std::string mLaneStatusFlag[NFlags] = { "WARNING", "ERROR", "FAULT" }; // b00 OK, b01 WARNING, b10 ERROR, b11 FAULT
 
   int mStatusFlagNumber[7][48][28][3] = { { { 0 } } }; //[iLayer][iStave][iLane][iLaneStatusFlag]
@@ -169,7 +186,7 @@ class ITSFeeTask final : public TaskInterface
   TH2I* mTrailerCount;
   TH2I* mActiveLanes;
   TH2I* mLaneStatusCumulative[NFlags];
-  TH2Poly* mLaneStatusOverview[NFlags] = { 0x0 };
+  TH2Poly* mLaneStatusOverview[2] = { 0x0 }; // Warning and Error/Fatal
   TH1I* mLaneStatusSummary[NLayer];
   TH1D* mLaneStatusSummaryIB;
   TH1D* mLaneStatusSummaryML;

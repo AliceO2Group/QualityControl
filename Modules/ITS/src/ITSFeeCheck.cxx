@@ -194,6 +194,18 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
         result.updateMetadata("CheckTechnicalsFeeid", "bad");
       }
     }
+
+    if (mo->getName() == "TrailerCount"){
+      auto *h = dynamic_cast<TH2I*>(mo->getObject());
+      result.set(Quality::Good);
+      result.addMetadata("CheckROFRate", "good");
+      expectedROFperOrbit = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "expectedROFperOrbit", expectedROFperOrbit);
+      if (h->Integral(1,432, 1, h->GetYaxis()->FindBin(expectedROFperOrbit)-1) > 0  || h->Integral(1, 432, h->GetYaxis()->FindBin(expectedROFperOrbit)+1, h->GetYaxis()->GetLast()) > 0) {
+	result.set(Quality::Bad);
+	result.updateMetadata("expectedROFperOrbit","bad");
+	result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), "ITS seems to be misconfigured");
+      }    
+    }
   } // end loop on MOs
   return result;
 } // end check
@@ -424,6 +436,32 @@ void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
     if (ShifterInfoText[mo->getName()] != "")
       h->GetListOfFunctions()->Add(tShifterInfo->Clone());
   }
+
+  if (mo->getName() == "TrailerCount") {
+    auto* h = dynamic_cast<TH2I*>(mo->getObject());
+    if (checkResult == Quality::Good) {
+      status = "Quality::GOOD";
+      textColor = kGreen;
+    } else {
+      status = "Quality::Bad (call expert)";
+      textColor = kRed; 
+      tInfoPL[1] = std::make_shared<TLatex>(0.3, 0.55, "MISCONFIGURATION. CALL EXPERTS.");
+      tInfoPL[1]->SetNDC();
+      tInfoPL[1]->SetTextFont(43);
+      tInfoPL[1]->SetTextSize(0.04);
+      tInfoPL[1]->SetTextColor(kRed);
+      h->GetListOfFunctions()->Add(tInfoPL[1]->Clone());    
+  }
+tInfo = std::make_shared<TLatex>(0.05, 0.95, Form("#bf{%s}", status.Data()));
+    tInfo->SetTextColor(textColor);
+    tInfo->SetTextSize(0.06);
+    tInfo->SetTextFont(43);
+    tInfo->SetNDC();
+    h->GetListOfFunctions()->Add(tInfo->Clone());
+    if (ShifterInfoText[mo->getName()] != "")
+      h->GetListOfFunctions()->Add(tShifterInfo->Clone());
+  }
+
 }
 
 bool ITSFeeCheck::checkReason(Quality checkResult, TString text)

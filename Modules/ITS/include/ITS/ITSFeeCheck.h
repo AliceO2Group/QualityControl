@@ -95,6 +95,7 @@ class ITSFeeCheck : public o2::quality_control::checker::CheckInterface
   int maxbadlanesML = 4;
   int maxbadlanesOL = 7;
   double maxfractionbadlanes = 0.1;
+  int expectedROFperOrbit = 18;
 };
 
 } // namespace o2::quality_control_modules::its
