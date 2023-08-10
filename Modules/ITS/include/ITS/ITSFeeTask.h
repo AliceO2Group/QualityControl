@@ -70,16 +70,16 @@ class ITSFeeTask final : public TaskInterface
     union {
       uint64_t word0 = 0x0;
       struct {
-	uint32_t activeLanes : 28;  // bit mask
-	uint64_t reserved : 36;  // nothing
+        uint32_t activeLanes : 28; // bit mask
+        uint64_t reserved : 36;    // nothing
       } laneBits;
     } IHWcontent;
     union {
       uint64_t word1 = 0x0;
       struct {
-	uint8_t reserved : 8; // nothing
-	uint8_t id : 8;
-	uint64_t padding: 48;
+        uint8_t reserved : 8; // nothing
+        uint8_t id : 8;
+        uint64_t padding : 48;
       } indexBits;
     } indexWord;
   };
@@ -99,39 +99,33 @@ class ITSFeeTask final : public TaskInterface
   void reset() override;
 
  private:
+  std::vector<std::pair<int, TString>> mRDHDetField{ // <bit in DetField, description>
+                                                     std::make_pair(0, "Missing data"),
+                                                     std::make_pair(1, "Warning"),
+                                                     std::make_pair(2, "Error"),
+                                                     std::make_pair(3, "Fault"),
+                                                     std::make_pair(4, "TriggerRamp"),
+                                                     std::make_pair(5, "Recovery"),
+                                                     std::make_pair(24, "TimebaseUnsyncEvt"),
+                                                     std::make_pair(25, "TimebaseEvt"),
+                                                     std::make_pair(26, "ClockEvt")
+  };
 
-  std::vector<std::pair<int,TString>> mRDHDetField{   // <bit in DetField, description>
-      std::make_pair(0,"Missing data"),
-      std::make_pair(1,"Warning"),
-      std::make_pair(2,"Error"),
-      std::make_pair(3,"Fault"),
-      std::make_pair(4,"TriggerRamp"),
-      std::make_pair(5,"Recovery"),
-      std::make_pair(24,"TimebaseUnsyncEvt"),
-      std::make_pair(25,"TimebaseEvt"),
-      std::make_pair(26,"ClockEvt")
-	};
-
-
-  std::vector<std::pair<int,TString>> mTriggerType{ // <bit in RDH, description>
-      std::make_pair(0,"ORBIT"),
-      std::make_pair(1,"HB"),
-      std::make_pair(2,"HBr"),
-      std::make_pair(3,"HC"),
-      std::make_pair(4,"PHYSICS"),
-      std::make_pair(5,"PP"),
-      std::make_pair(6,"CAL"),
-      std::make_pair(7,"SOT"),
-	std::make_pair(8,"EOT"),
-	std::make_pair(9,"SOC"),
-	std::make_pair(10,"EOC"),
-	std::make_pair(11,"TF"),
-	std::make_pair(12,"INT")
-	};
-
-  
-		    
-
+  std::vector<std::pair<int, TString>> mTriggerType{ // <bit in RDH, description>
+                                                     std::make_pair(0, "ORBIT"),
+                                                     std::make_pair(1, "HB"),
+                                                     std::make_pair(2, "HBr"),
+                                                     std::make_pair(3, "HC"),
+                                                     std::make_pair(4, "PHYSICS"),
+                                                     std::make_pair(5, "PP"),
+                                                     std::make_pair(6, "CAL"),
+                                                     std::make_pair(7, "SOT"),
+                                                     std::make_pair(8, "EOT"),
+                                                     std::make_pair(9, "SOC"),
+                                                     std::make_pair(10, "EOC"),
+                                                     std::make_pair(11, "TF"),
+                                                     std::make_pair(12, "INT")
+  };
 
   void getParameters(); // get Task parameters from json file
   void setAxisTitle(TH1* object, const char* xTitle, const char* yTitle);
@@ -167,7 +161,7 @@ class ITSFeeTask final : public TaskInterface
   int mStatusFlagNumber[7][48][28][3] = { { { 0 } } }; //[iLayer][iStave][iLane][iLaneStatusFlag]
   int mStatusSummaryLayerNumber[7][3] = { { 0 } };     //[iLayer][iflag]
   int mStatusSummaryNumber[4][3] = { { 0 } };          //[summary][iflag] ---> Global, IB, ML, OL
- 
+
   // parameters taken from the .json
   int mNPayloadSizeBins = 4096;
   bool mResetLaneStatus = false;
@@ -178,7 +172,7 @@ class ITSFeeTask final : public TaskInterface
   TH2I* mTriggerVsFeeId;
   TH1I* mTrigger;
   TH2I* mLaneInfo;
-  TH2I* mFlag1Check; // include transmission_timeout, packet_overflow, lane_starts_violation
+  TH2I* mFlag1Check;    // include transmission_timeout, packet_overflow, lane_starts_violation
   TH2I* mDecodingCheck; // summary of errors during custom decoding of specific bytes (see plot description)
   TH2I* mRDHSummary;
   TH2I* mRDHSummaryCumulative; // RDH plot which does NOT reset at every QC cycle
@@ -193,6 +187,7 @@ class ITSFeeTask final : public TaskInterface
   TH1D* mLaneStatusSummaryOL;
   TH1D* mLaneStatusSummaryGlobal;
   TH1I* mProcessingTime;
+  TH1D* mProcessingTime2;
   TH2F* mPayloadSize; // average payload size vs linkID
   // TH1D* mInfoCanvas;//TODO: default, not implemented yet
   std::string mRunNumberPath;
