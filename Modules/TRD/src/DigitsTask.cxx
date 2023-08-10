@@ -517,7 +517,6 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
 
       if (digitv.size() == 0)
         continue;
-      auto tracklets = ctx.inputs().get<gsl::span<o2::trd::Tracklet64>>("tracklets"); // still deciding if we will ever need the tracklets here.
       auto triggerrecords = ctx.inputs().get<gsl::span<o2::trd::TriggerRecord>>("triggers");
       // create a vector indexing into the digits in question
       std::vector<unsigned int> digitsIndex(digitv.size());

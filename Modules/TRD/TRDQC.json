@@ -83,7 +83,7 @@
         "dataSource_comment": "no comment",
         "dataSource": {
           "type": "direct",
-          "query": "digits:TRD/DIGITS;tracklets:TRD/TRACKLETS;triggers:TRD/TRKTRGRD"
+          "query": "tracklets:TRD/TRACKLETS;triggers:TRD/TRKTRGRD"
         },
         "taskParameters": {
           "peakregionstart": "7.0",

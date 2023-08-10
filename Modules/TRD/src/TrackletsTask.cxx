@@ -414,20 +414,14 @@ void TrackletsTask::monitorData(o2::framework::ProcessingContext& ctx)
   for (auto&& input : ctx.inputs()) {
     if (input.header != nullptr && input.payload != nullptr) {
 
-      auto digits = ctx.inputs().get<gsl::span<o2::trd::Digit>>("digits");
       auto tracklets = ctx.inputs().get<gsl::span<o2::trd::Tracklet64>>("tracklets");
       auto triggerrecords = ctx.inputs().get<gsl::span<o2::trd::TriggerRecord>>("triggers");
-      // std::cout << "Tracklets per time frame: " << tracklets.size();
       mTrackletsPerTimeFrame->Fill(tracklets.size());
       mTrackletsPerTimeFrameCycled->Fill(tracklets.size());
       mTriggersPerTimeFrame->Fill(triggerrecords.size());
       for (auto& trigger : triggerrecords) {
         mTrackletsPerEvent->Fill(trigger.getNumberOfTracklets());
-        if (trigger.getNumberOfTracklets() == 0) {
-          continue; // bail if we have no digits in this trigger
-        }
-        // now sort digits to det,row,pad
-        for (int currenttracklet = trigger.getFirstTracklet(); currenttracklet < trigger.getFirstTracklet() + trigger.getNumberOfTracklets() - 1; ++currenttracklet) {
+        for (int currenttracklet = trigger.getFirstTracklet(); currenttracklet < trigger.getFirstTracklet() + trigger.getNumberOfTracklets(); ++currenttracklet) {
           int detector = tracklets[currenttracklet].getDetector();
           int sm = detector / 30;
           int detLoc = detector % 30;
