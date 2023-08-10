@@ -22,7 +22,7 @@ class TestProduction(unittest.TestCase):
 
     def setUp(self):
         self.ccdb = Ccdb('http://137.138.47.222:8080')
-        self.extra = {"interval_between_versions": "90", "migrate_to_EOS": False}
+        self.extra = {"interval_between_versions": "90", "migrate_to_EOS": False, "delete_first_last": True}
         self.path = "qc/TST/MO/repo/test"
 
     def test_1_finished_run(self):
@@ -37,13 +37,18 @@ class TestProduction(unittest.TestCase):
         # Prepare data
         test_path = self.path + "/test_1_finished_run"
         self.prepare_data(test_path, [150], [22*60], 123)
+        objectsBefore = self.ccdb.getVersionsList(test_path)
 
         stats = multiple_per_run.process(self.ccdb, test_path, delay=60*24, from_timestamp=1,
                                        to_timestamp=self.in_ten_years, extra_params=self.extra)
+        objectsAfter = self.ccdb.getVersionsList(test_path)
 
         self.assertEqual(stats["deleted"], 147)
         self.assertEqual(stats["preserved"], 3)
         self.assertEqual(stats["updated"], 0)
+
+        self.assertEqual(objectsAfter[0].validFrom, objectsBefore[1].validFrom)
+        self.assertEqual(objectsAfter[2].validFrom, objectsBefore[-2].validFrom)
 
     def test_2_runs(self):
         """
