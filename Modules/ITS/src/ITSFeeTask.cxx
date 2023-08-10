@@ -533,7 +533,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
       // fill trailer count histo and reset counters
       if (mEnablePayloadParse) {
-        if (!RampOngoing)
+        if (!RampOngoing && !clockEvt)
           mTrailerCount->Fill(ifee, TDTcounter[ifee] < 21 ? TDTcounter[ifee] : -1);
         TDTcounter[ifee] = 0;
       }
