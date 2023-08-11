@@ -65,7 +65,6 @@ void ReductorBinContent::update(TObject* obj)
     int numberOfBinsY = histo->GetYaxis()->GetNbins();
 
     for (int j = 1; j <= numberOfBinsY; j++) {
-      std::cout << "at bin : " << j << " filled by : " << histo->Integral(1, numberOfBinsX, j, j) << std::endl;
       mStats.integral[j - 1] = histo->Integral(1, numberOfBinsX, j, j); // Summation over all Fee IDs for a given trigger
     }
     delete histo;
