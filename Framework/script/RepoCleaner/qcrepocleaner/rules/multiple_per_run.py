@@ -97,30 +97,29 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
             logger.debug(f"     not in the allowed period, skip this bucket")
             preservation_list.extend(run_versions)
         else:
-            logger.debug(f"     not in the grace period")
+            logger.debug(f"    not in the grace period")
 
             if delete_first_last:
                 logger.debug(f"    delete_first_last is set")
-            # Sort the versions by createdAt
-            run_versions.sort(key=lambda x: x.createdAt)
-            # Get flag cleaner_2nd from first object (if there)
-            cleaner_2nd = "cleaner_2nd" in run_versions[0].metadata
-            if cleaner_2nd:
-                logger.debug(f"        first version has flag cleaner_2nd, we continue to next bucket")
-                preservation_list.extend(run_versions)
-                continue   # we do not want to reprocess the same run twice
-            # flag second with `cleaner_2nd`
-            ccdb.updateValidity(run_versions[1], run_versions[1].validFrom, run_versions[1].validTo, {'cleaner_2nd': 'true'})
-            # delete first and last versions in the bucket
-            logger.debug(f"        delete the first and last versions")
-            logger.debug(f"        delete last: {run_versions[-1]}")
-            deletion_list.append(run_versions[-1])
-            ccdb.deleteVersion(run_versions[-1])
-            del run_versions[-1]
-            logger.debug(f"        delete first: {run_versions[0]}")
-            deletion_list.append(run_versions[0])
-            ccdb.deleteVersion(run_versions[0])
-            del run_versions[0]
+                run_versions.sort(key=lambda x: x.createdAt)
+                # Get flag cleaner_2nd from first object (if there)
+                cleaner_2nd = "cleaner_2nd" in run_versions[0].metadata
+                if cleaner_2nd or len(run_versions) < 4:
+                    logger.debug(f"        first version has flag cleaner_2nd or there are less than 4 version, "
+                                 f"we continue to next bucket")
+                    preservation_list.extend(run_versions)
+                    continue
+                # flag second with `cleaner_2nd`
+                ccdb.updateValidity(run_versions[1], run_versions[1].validFrom, run_versions[1].validTo,
+                                    {'cleaner_2nd': 'true'})
+                # delete first and last versions in the bucket
+                logger.debug(f"        delete the first and last versions")
+                deletion_list.append(run_versions[-1])
+                ccdb.deleteVersion(run_versions[-1])
+                del run_versions[-1]
+                deletion_list.append(run_versions[0])
+                ccdb.deleteVersion(run_versions[0])
+                del run_versions[0]
 
             last_preserved: ObjectVersion = None
             for v in run_versions:
