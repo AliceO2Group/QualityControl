@@ -321,7 +321,31 @@
                                        "",
                                        "option" :
                                        "PL"
+                                     },
+                                     {
+                                       "names" : [
+                                           "# Error ID 22"],
+                                       "title" : [
+                                           "Number of errors with ID = 22"],
+                                       "varexp" : [
+                                           "LinkErrorPlots.binContent[22]"],
+                                       "selection" :
+                                       "",
+                                       "option" :
+                                       "PL"
+                                     },{
+                                       "names" : [
+                                           "# Error ID 23"],
+                                       "title" : [
+                                           "Number of errors with ID = 23"],
+                                       "varexp" : [
+                                           "LinkErrorPlots.binContent[23]"],
+                                       "selection" :
+                                       "",
+                                       "option" :
+                                       "PL"
                                      }
+
                                    ],
                                    "initTrigger" : ["userorcontrol"],
                                                    "updateTrigger" : ["10 seconds"],

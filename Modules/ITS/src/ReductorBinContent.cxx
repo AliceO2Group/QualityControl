@@ -52,7 +52,6 @@ void ReductorBinContent::update(TObject* obj)
   if (histoClass.find("TH1") != std::string::npos) {
     TH1* histo = (TH1*)obj->Clone("LaneStatusSummary_Flags");
     int numberOfBins = histo->GetXaxis()->GetNbins();
-
     for (int j = 1; j <= numberOfBins; j++) {
       mStats.binContent[j - 1] = histo->GetBinContent(j);
     }
