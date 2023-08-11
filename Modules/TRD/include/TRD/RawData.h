@@ -56,7 +56,6 @@ class RawData final : public TaskInterface
   TH1F* mDataAcceptance = nullptr;
   TH2F* mDataVolumePerHalfChamber = nullptr;
   TH2F* mDataVolumePerSector = nullptr;
-  TH2F* mDataVolumePerHalfSectorCru = nullptr;
   TH1F* mTimeFrameTime = nullptr;
   TH1F* mTrackletParsingTime = nullptr;
   TH1F* mDigitParsingTime = nullptr;
