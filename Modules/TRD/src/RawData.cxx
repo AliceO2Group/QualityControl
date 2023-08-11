@@ -79,21 +79,17 @@ void RawData::buildHistograms()
   getObjectsManager()->startPublishing(mParsingErrors);
   getObjectsManager()->setDisplayHint(mParsingErrors->GetName(), "logz");
 
-  mDataVolumePerHalfChamber = new TH2F("datavolumeperhalfchamber", "Event size per half chamber, from parsing;Half Chamber ID;Data Volume [kB/event]", 1080, 0, 1080, 1000, 0, 1000);
+  mDataVolumePerHalfChamber = new TH2F("datavolumeperhalfchamber", "Data sizes from HalfCRU header;Data Volume [kB/TF]", 1080, -0.5, 1079.5, 1000, 0, 100);
   getObjectsManager()->startPublishing(mDataVolumePerHalfChamber);
   getObjectsManager()->setDefaultDrawOptions("datavolumeperhalfchamber", "COLZ");
   getObjectsManager()->setDisplayHint(mDataVolumePerHalfChamber->GetName(), "logz");
 
-  mDataVolumePerSector = new TH2F("datavolumepersector", "Event size per sector, from parsing;Sector;Data Volume [kB/event]", 18, 0, 18, 1000, 0, 1000);
+  mDataVolumePerSector = new TH2F("datavolumepersector", "Data sizes from HalfCRU header;Sector;Data Volume [kB/TF]", 18, -0.5, 17.5, 1000, 0, 100);
   mDataVolumePerSector->SetStats(0);
   getObjectsManager()->startPublishing(mDataVolumePerSector);
   getObjectsManager()->setDefaultDrawOptions("datavolumepersector", "COLZ");
   getObjectsManager()->setDisplayHint(mDataVolumePerSector->GetName(), "logz");
 
-  mDataVolumePerHalfSectorCru = new TH2F("datavolumeperhalfsectorcru", "Event size per half chamber, from cru header; Half Chamber ID; Data Volume as per CRU [kB/event]", 1080, 0, 1080, 1000, 0, 1000);
-  getObjectsManager()->startPublishing(mDataVolumePerHalfSectorCru);
-  getObjectsManager()->setDefaultDrawOptions("datavolumeperhalfsectorcru", "COLZ");
-  getObjectsManager()->setDisplayHint(mDataVolumePerHalfSectorCru->GetName(), "logz");
   for (int count = 0; count < o2::trd::TRDLastParsingError; ++count) {
     std::string label = fmt::format("parsingerrors_{0}", count);
     std::string title = ParsingErrorsString.at(count);
@@ -189,114 +185,83 @@ void RawData::startOfCycle()
 void RawData::monitorData(o2::framework::ProcessingContext& ctx)
 {
 
-  auto rawdatastats = ctx.inputs().get<o2::trd::TRDDataCountersPerTimeFrame>("rawstats");
-  auto digits = ctx.inputs().get<gsl::span<o2::trd::Digit>>("digits");
-  auto tracklets = ctx.inputs().get<gsl::span<o2::trd::Tracklet64>>("tracklets");
-  auto triggerrecords = ctx.inputs().get<gsl::span<o2::trd::TriggerRecord>>("triggers");
-
-  // RAWSTATS is the RawDataStats class which is essentially histograms.
-  // loop through all the bits and pieces and fill the histograms
-
-  std::array<uint16_t, MAXCHAMBER * 2> eventsize{};
-  // triggerrecords is a span of our triggers in the respective time frame
-
+  auto rawdatastats = ctx.inputs().get<o2::trd::TRDDataCountersPerTimeFrame*>("rawstats");
+  /*
   mStats->AddBinContent(1, 1);                     // count number of TFs seen
-  mStats->AddBinContent(2, triggerrecords.size()); // count total number of triggers seen
-  mStats->AddBinContent(4, tracklets.size());      // count total number of tracklets seen
-  mStats->AddBinContent(5, digits.size());         // count total number of digits seen
-
-  for (auto& trigger : triggerrecords) {
-    if (trigger.getNumberOfDigits() > 0) {
-      mStats->AddBinContent(3, 1); // count total number of calibration triggers seen
-    }
-    uint64_t digitend = trigger.getFirstDigit() + trigger.getNumberOfDigits();
-    uint64_t trackletend = trigger.getFirstTracklet() + trigger.getNumberOfTracklets();
-    int lastmcm = -1;
-    for (int tracklet = trigger.getFirstTracklet(); tracklet < trackletend; ++tracklet) {
-      if (lastmcm < 0) {
-        lastmcm = tracklets[tracklet].getMCM();
-      }
-      eventsize[tracklets[tracklet].getHCID()]++;
-      if (lastmcm != tracklets[tracklet].getMCM()) {
-        eventsize[tracklets[tracklet].getHCID()]++; // include the mcmheader in the data volume calculation
-        lastmcm = tracklets[tracklet].getMCM();
-      }
-    }
-    for (int digit = trigger.getFirstDigit(); digit < digitend; ++digit) {
-      eventsize[digits[digit].getHCId()] += 12;
-    }
-  }
-  // data per event per link.
+  mStats->AddBinContent(2, rawdatastats->mNTriggersTotal); // count total number of triggers seen
+  mStats->AddBinContent(3, rawdatastats->mNTriggersCalib); // count total number of calibration triggers seen
+  mStats->AddBinContent(4, rawdatastats->mTrackletsFound); // count total number of tracklets seen
+  mStats->AddBinContent(5, rawdatastats->mDigitsFound);    // count total number of digits seen
+  */
+  // data per TF per link.
   for (int hcid = 0; hcid < 1080; ++hcid) {
-    if (eventsize[hcid] > 0) {
+    if (rawdatastats->mLinkWords[hcid] > 0) {
       int sec = hcid / 60;
-      mDataVolumePerHalfChamber->Fill(hcid, eventsize[hcid] / 256.f); // eventsize is given in unit of 32 bits
-      mDataVolumePerSector->Fill(sec, eventsize[hcid] / 256.f);       // eventsize is given in unit of 32 bits
+      mDataVolumePerHalfChamber->Fill(hcid, rawdatastats->mLinkWords[hcid] / 32.f); // one link word is 32 bytes, we want to display in units of kB per TF
+      mDataVolumePerSector->Fill(sec, rawdatastats->mLinkWords[hcid] / 32.f);
     }
   }
 
   // parsing errors
   for (int error = 0; error < TRDLastParsingError; ++error) {
-    mParsingErrors->AddBinContent(error + 1, rawdatastats.mParsingErrors[error]);
-    ILOG(Debug, Devel) << "Increment parsing errors 1d at : " << rawdatastats.mParsingErrors[error] << " for error:" << error << ENDM;
-    for (int hcid = 0; hcid < MAXHALFCHAMBER; ++hcid) {
-      int stackLayer = HelperMethods::getStack(hcid / 2) * NLAYER + HelperMethods::getLayer(hcid / 2);
-      int sectorSide = (hcid / NHCPERSEC) * 2 + (hcid % 2);
-      int errOffset = hcid * TRDLastParsingError + error;
-      if (rawdatastats.mParsingErrorsByLink[errOffset] > 0) {
-        mParsingErrors2d[error]->SetBinContent(sectorSide + 1, stackLayer + 1, mParsingErrors2d[error]->GetBinContent(sectorSide + 1, stackLayer + 1) + rawdatastats.mParsingErrorsByLink[errOffset]);
-      }
-    }
+    mParsingErrors->AddBinContent(error + 1, rawdatastats->mParsingErrors[error]);
   }
+  /* TODO uncomment when changes available in O2 and add plot for links without any errors
+  for (auto e : rawdatastats->mParsingErrorsLink) {
+    int hcid = e / TRDLastParsingError;
+    int errorIdx = e % TRDLastParsingError;
+    int stackLayer = HelperMethods::getStack(hcid / 2) * NLAYER + HelperMethods::getLayer(hcid / 2);
+    int sectorSide = (hcid / NHCPERSEC) * 2 + (hcid % 2);
+    mParsingErrors2d[errorIdx]->Fill(sectorSide, stackLayer);
+  }
+  */
+
   // link statistics
   for (int hcid = 0; hcid < MAXHALFCHAMBER; ++hcid) {
     int stackLayer = HelperMethods::getStack(hcid / 2) * NLAYER + HelperMethods::getLayer(hcid / 2);
     int sectorSide = (hcid / NHCPERSEC) * 2 + (hcid % 2);
-    if (rawdatastats.mLinkErrorFlag[hcid] == 0) { //"Count of Link had no errors during tf",
+    if (rawdatastats->mLinkErrorFlag[hcid] == 0) { //"Count of Link had no errors during tf",
       mLinkErrors[0]->Fill((double)sectorSide, (double)stackLayer);
     }
-    if (rawdatastats.mLinkErrorFlag[hcid] & 0x1) { //"Count of # times Linkerrors 0x1 seen per tf",
-      mLinkErrors[1]->Fill((double)sectorSide, (double)stackLayer, rawdatastats.mLinkErrorFlag[hcid]);
+    if (rawdatastats->mLinkErrorFlag[hcid] & 0x1) { //"Count of # times Linkerrors 0x1 seen per tf",
+      mLinkErrors[1]->Fill((double)sectorSide, (double)stackLayer, rawdatastats->mLinkErrorFlag[hcid]);
     }
-    if (rawdatastats.mLinkErrorFlag[hcid] & 0x2) { //"Count of # time Linkerrors 0x2 seen per tf",
-      mLinkErrors[2]->Fill((double)sectorSide, (double)stackLayer, rawdatastats.mLinkErrorFlag[hcid]);
+    if (rawdatastats->mLinkErrorFlag[hcid] & 0x2) { //"Count of # time Linkerrors 0x2 seen per tf",
+      mLinkErrors[2]->Fill((double)sectorSide, (double)stackLayer, rawdatastats->mLinkErrorFlag[hcid]);
     }
-    if (rawdatastats.mLinkErrorFlag[hcid] != 0) { //"Count of any Linkerror seen during tf",
-      mLinkErrors[3]->Fill((double)sectorSide, (double)stackLayer, rawdatastats.mLinkErrorFlag[hcid]);
+    if (rawdatastats->mLinkErrorFlag[hcid] != 0) { //"Count of any Linkerror seen during tf",
+      mLinkErrors[3]->Fill((double)sectorSide, (double)stackLayer, rawdatastats->mLinkErrorFlag[hcid]);
     }
-    if (rawdatastats.mLinkWordsRejected[hcid] + rawdatastats.mLinkWordsRead[hcid] == 0) {
+    if (rawdatastats->mLinkWordsRejected[hcid] + rawdatastats->mLinkWordsRead[hcid] == 0) {
       mLinkErrors[4]->Fill((double)sectorSide, (double)stackLayer);
     }
-    if (rawdatastats.mLinkWordsRead[hcid] > 0) { //"Link was seen with data during a tf",
-      mLinkErrors[5]->Fill((double)sectorSide, (double)stackLayer, rawdatastats.mLinkWordsRead[hcid]);
+    if (rawdatastats->mLinkWordsRead[hcid] > 0) { //"Link was seen with data during a tf",
+      mLinkErrors[5]->Fill((double)sectorSide, (double)stackLayer, rawdatastats->mLinkWordsRead[hcid]);
     }
-    if (rawdatastats.mLinkWordsRejected[hcid] > 0) { //"Links seen with corrupted data during tf"
+    if (rawdatastats->mLinkWordsRejected[hcid] > 0) { //"Links seen with corrupted data during tf"
       mLinkErrors[6]->Fill((double)sectorSide, (double)stackLayer);
     }
-    if (rawdatastats.mLinkWordsRejected[hcid] < 20) { //"Links seen with out corrupted data during tf", "",
+    if (rawdatastats->mLinkWordsRejected[hcid] == 0) { //"Links seen with out corrupted data during tf", "",
       mLinkErrors[7]->Fill((double)sectorSide, (double)stackLayer);
     }
-    if (rawdatastats.mLinkWords[hcid] > 0) {
-      mDataVolumePerHalfSectorCru->Fill(hcid, rawdatastats.mLinkWords[hcid] / 32.f); // each word is 256 bits
+    if (rawdatastats->mLinkWordsRead[hcid] != 0) {
+      ILOG(Debug, Devel) << "Accepted Data volume on link: " << rawdatastats->mLinkWordsRead[hcid] << ENDM;
+      mLinkErrors[8]->Fill((double)sectorSide, (double)stackLayer, rawdatastats->mLinkWordsRead[hcid]);
+      mDataAcceptance->AddBinContent(1, (4.f * rawdatastats->mLinkWordsRead[hcid]) / (1024.f * 1024.f)); // each word is 32 bits
     }
-    if (rawdatastats.mLinkWordsRead[hcid] != 0) {
-      ILOG(Debug, Devel) << "Accepted Data volume on link: " << rawdatastats.mLinkWordsRead[hcid] << ENDM;
-      mLinkErrors[8]->Fill((double)sectorSide, (double)stackLayer, rawdatastats.mLinkWordsRead[hcid]);
-      mDataAcceptance->AddBinContent(1, (4.f * rawdatastats.mLinkWordsRead[hcid]) / (1024.f * 1024.f)); // each word is 32 bits
-    }
-    if (rawdatastats.mLinkWordsRejected[hcid] != 0) {
-      ILOG(Debug, Devel) << "Rejected Data volume on link: " << rawdatastats.mLinkWordsRejected[hcid] << ENDM;
-      mLinkErrors[9]->Fill((double)sectorSide, (double)stackLayer, rawdatastats.mLinkWordsRejected[hcid]);
-      mDataAcceptance->AddBinContent(2, (4.f * rawdatastats.mLinkWordsRejected[hcid]) / (1024.f * 1024.f)); // each word is 32 bits
+    if (rawdatastats->mLinkWordsRejected[hcid] != 0) {
+      ILOG(Debug, Devel) << "Rejected Data volume on link: " << rawdatastats->mLinkWordsRejected[hcid] << ENDM;
+      mLinkErrors[9]->Fill((double)sectorSide, (double)stackLayer, rawdatastats->mLinkWordsRejected[hcid]);
+      mDataAcceptance->AddBinContent(2, (4.f * rawdatastats->mLinkWordsRejected[hcid]) / (1024.f * 1024.f)); // each word is 32 bits
     }
   }
   // time graphs
-  mTimeFrameTime->Fill(rawdatastats.mTimeTaken);
-  mDigitParsingTime->Fill(rawdatastats.mTimeTakenForDigits);
-  mTrackletParsingTime->Fill(rawdatastats.mTimeTakenForTracklets);
+  mTimeFrameTime->Fill(rawdatastats->mTimeTaken);
+  mDigitParsingTime->Fill(rawdatastats->mTimeTakenForDigits);
+  mTrackletParsingTime->Fill(rawdatastats->mTimeTakenForTracklets);
 
-  for (int i = 0; i < rawdatastats.mDataFormatRead.size(); ++i) {
-    mDataVersionsMajor->Fill(i, rawdatastats.mDataFormatRead[i]);
+  for (int i = 0; i < rawdatastats->mDataFormatRead.size(); ++i) {
+    mDataVersionsMajor->Fill(i, rawdatastats->mDataFormatRead[i]);
   }
 }
 
@@ -336,7 +301,6 @@ void RawData::resetHistograms()
   mParsingErrors->Reset();
   mDataVolumePerHalfChamber->Reset();
   mDataVolumePerSector->Reset();
-  mDataVolumePerHalfSectorCru->Reset();
 }
 
 } // namespace o2::quality_control_modules::trd
