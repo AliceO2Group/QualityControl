@@ -101,7 +101,7 @@ class ITSTrackTask : public TaskInterface
 
   float mPiInvMass = 0.14;
   float mProtonInvMass = 0.938;
-  Int_t mInvMasses = 1; // switch for the V0 invariant mass computation, 1 (default) - on, 0 - off
+  Int_t mInvMasses = 0; // switch for the V0 invariant mass computation, 1 (default) - on, 0 - off
 
   float mVertexXYsize = 0.5;
   float mVertexZsize = 15.;
