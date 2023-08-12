@@ -25,6 +25,8 @@ TH1Ratio<T>::TH1Ratio()
     o2::mergers::MergeInterface(),
     mUniformScaling(true)
 {
+  // do not add created histograms to gDirectory
+  // see https://root.cern.ch/doc/master/TEfficiency_8cxx.html
   {
     TDirectory::TContext ctx(nullptr);
     mHistoNum = new T("num", "num", 10, 0, 10);
@@ -41,14 +43,15 @@ TH1Ratio<T>::TH1Ratio(TH1Ratio const& copymerge)
     mUniformScaling(copymerge.hasUniformScaling())
 {
   // do not add cloned histograms to gDirectory
+  // see https://root.cern.ch/doc/master/TEfficiency_8cxx.html
   {
-    TString name_num = T::GetName() + TString("_num");
-    TString name_den = T::GetName() + TString("_den");
-    TString title_num = T::GetTitle() + TString(" num");
-    TString title_den = T::GetTitle() + TString(" den");
+    TString nameNum = T::GetName() + TString("_num");
+    TString nameDen = T::GetName() + TString("_den");
+    TString titleNum = T::GetTitle() + TString(" num");
+    TString titleDen = T::GetTitle() + TString(" den");
     TDirectory::TContext ctx(nullptr);
-    mHistoNum = new T(name_num, title_num, 10, 0, 10);
-    mHistoDen = new T(name_den, title_den, 1, -1, 1);
+    mHistoNum = new T(nameNum, titleNum, 10, 0, 10);
+    mHistoDen = new T(nameDen, titleDen, 1, -1, 1);
   }
   copymerge.Copy(*this);
 
@@ -61,18 +64,19 @@ TH1Ratio<T>::TH1Ratio(const char* name, const char* title, int nbinsx, double xm
     o2::mergers::MergeInterface(),
     mUniformScaling(uniformScaling)
 {
-  // do not add cloned histograms to gDirectory
+  // do not add created histograms to gDirectory
+  // see https://root.cern.ch/doc/master/TEfficiency_8cxx.html
   {
-    TString name_num = T::GetName() + TString("_num");
-    TString name_den = T::GetName() + TString("_den");
-    TString title_num = T::GetTitle() + TString(" num");
-    TString title_den = T::GetTitle() + TString(" den");
+    TString nameNum = T::GetName() + TString("_num");
+    TString nameDen = T::GetName() + TString("_den");
+    TString titleNum = T::GetTitle() + TString(" num");
+    TString titleDen = T::GetTitle() + TString(" den");
     TDirectory::TContext ctx(nullptr);
-    mHistoNum = new T(name_num, title_num, nbinsx, xmin, xmax);
+    mHistoNum = new T(nameNum, titleNum, nbinsx, xmin, xmax);
     if (mUniformScaling) {
-      mHistoDen = new T(name_den, title_den, 1, -1, 1);
+      mHistoDen = new T(nameDen, titleDen, 1, -1, 1);
     } else {
-      mHistoDen = new T(name_den, title_den, nbinsx, xmin, xmax);
+      mHistoDen = new T(nameDen, titleDen, nbinsx, xmin, xmax);
     }
   }
 
@@ -85,18 +89,19 @@ TH1Ratio<T>::TH1Ratio(const char* name, const char* title, bool uniformScaling)
     o2::mergers::MergeInterface(),
     mUniformScaling(uniformScaling)
 {
-  // do not add cloned histograms to gDirectory
+  // do not add created histograms to gDirectory
+  // see https://root.cern.ch/doc/master/TEfficiency_8cxx.html
   {
-    TString name_num = T::GetName() + TString("_num");
-    TString name_den = T::GetName() + TString("_den");
-    TString title_num = T::GetTitle() + TString(" num");
-    TString title_den = T::GetTitle() + TString(" den");
+    TString nameNum = T::GetName() + TString("_num");
+    TString nameDen = T::GetName() + TString("_den");
+    TString titleNum = T::GetTitle() + TString(" num");
+    TString titleDen = T::GetTitle() + TString(" den");
     TDirectory::TContext ctx(nullptr);
-    mHistoNum = new T(name_num, title_num, 10, 0, 10);
+    mHistoNum = new T(nameNum, titleNum, 10, 0, 10);
     if (mUniformScaling) {
-      mHistoDen = new T(name_den, title_den, 1, -1, 1);
+      mHistoDen = new T(nameDen, titleDen, 1, -1, 1);
     } else {
-      mHistoDen = new T(name_den, title_den, 10, 0, 10);
+      mHistoDen = new T(nameDen, titleDen, 10, 0, 10);
     }
   }
 
@@ -183,10 +188,10 @@ void TH1Ratio<T>::SetName(const char* name)
   T::SetName(name);
 
   //setting the names (appending the correct ending)
-  TString name_num = name + TString("_num");
-  TString name_den = name + TString("_den");
-  mHistoNum->SetName(name_num);
-  mHistoDen->SetName(name_den);
+  TString nameNum = name + TString("_num");
+  TString nameDen = name + TString("_den");
+  mHistoNum->SetName(nameNum);
+  mHistoDen->SetName(nameDen);
 }
 
 template<class T>
@@ -195,10 +200,10 @@ void TH1Ratio<T>::SetTitle(const char* title)
   T::SetTitle(title);
 
   //setting the titles (appending the correct ending)
-  TString title_num = title + TString("_num");
-  TString title_den = title + TString("_den");
-  mHistoNum->SetTitle(title_num);
-  mHistoDen->SetTitle(title_den);
+  TString titleNum = title + TString("_num");
+  TString titleDen = title + TString("_den");
+  mHistoNum->SetTitle(titleNum);
+  mHistoDen->SetTitle(titleDen);
 }
 
 template<class T>
