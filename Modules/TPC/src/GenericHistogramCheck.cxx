@@ -254,6 +254,7 @@ void GenericHistogramCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality 
     auto h1 = dynamic_cast<TH1F*>((mo->getObject()));
     if (!h1) {
       ILOG(Warning, Support) << "h1 not found in D= 1" << ENDM;
+      return;
     }
     TLine* lineX = new TLine(mMeanX, h1->GetMinimum() * 1.1, mMeanX, h1->GetMaximum() * 1.1);
     TLine* lineXEV = new TLine(mExpectedValueX, h1->GetMinimum() * 1.1, mExpectedValueX, h1->GetMaximum() * 1.1);
