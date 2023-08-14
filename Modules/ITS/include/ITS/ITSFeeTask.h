@@ -47,7 +47,7 @@ namespace o2::quality_control_modules::its
 /// \brief ITS FEE task aiming at 100% online data integrity checking
 class ITSFeeTask final : public TaskInterface
 {
-  struct GBTDiagnosticWord { // GBT diagnostic word
+  struct GBTDiagnosticWord { // DDW GBT word
     union {
       uint64_t word0 = 0x0;
       struct {
@@ -60,6 +60,24 @@ class ITSFeeTask final : public TaskInterface
       struct {
         uint8_t flag1 : 4;
         uint8_t index : 4;
+        uint8_t id : 8;
+        uint64_t padding : 48;
+      } indexBits;
+    } indexWord;
+  };
+
+  struct GBTITSHeaderWord { // IHW GBT word
+    union {
+      uint64_t word0 = 0x0;
+      struct {
+        uint32_t activeLanes : 28; // bit mask
+        uint64_t reserved : 36;    // nothing
+      } laneBits;
+    } IHWcontent;
+    union {
+      uint64_t word1 = 0x0;
+      struct {
+        uint8_t reserved : 8; // nothing
         uint8_t id : 8;
         uint64_t padding : 48;
       } indexBits;
@@ -81,6 +99,34 @@ class ITSFeeTask final : public TaskInterface
   void reset() override;
 
  private:
+  std::vector<std::pair<int, TString>> mRDHDetField{ // <bit in DetField, description>
+                                                     std::make_pair(0, "Missing data"),
+                                                     std::make_pair(1, "Warning"),
+                                                     std::make_pair(2, "Error"),
+                                                     std::make_pair(3, "Fault"),
+                                                     std::make_pair(4, "TriggerRamp"),
+                                                     std::make_pair(5, "Recovery"),
+                                                     std::make_pair(24, "TimebaseUnsyncEvt"),
+                                                     std::make_pair(25, "TimebaseEvt"),
+                                                     std::make_pair(26, "ClockEvt")
+  };
+
+  std::vector<std::pair<int, TString>> mTriggerType{ // <bit in RDH, description>
+                                                     std::make_pair(0, "ORBIT"),
+                                                     std::make_pair(1, "HB"),
+                                                     std::make_pair(2, "HBr"),
+                                                     std::make_pair(3, "HC"),
+                                                     std::make_pair(4, "PHYSICS"),
+                                                     std::make_pair(5, "PP"),
+                                                     std::make_pair(6, "CAL"),
+                                                     std::make_pair(7, "SOT"),
+                                                     std::make_pair(8, "EOT"),
+                                                     std::make_pair(9, "SOC"),
+                                                     std::make_pair(10, "EOC"),
+                                                     std::make_pair(11, "TF"),
+                                                     std::make_pair(12, "INT")
+  };
+
   void getParameters(); // get Task parameters from json file
   void setAxisTitle(TH1* object, const char* xTitle, const char* yTitle);
   void createFeePlots();
@@ -95,7 +141,6 @@ class ITSFeeTask final : public TaskInterface
   static constexpr int NLanesMax = 28;
   static constexpr int NFees = 48 * 3 + 144 * 2;
   static constexpr int NFlags = 3;
-  static constexpr int NTrigger = 13;
   const int StaveBoundary[NLayer + 1] = { 0, 12, 28, 48, 72, 102, 144, 192 };
   const int NLanePerStaveLayer[NLayer] = { 9, 9, 9, 16, 16, 28, 28 };
   const int LayerBoundaryFEE[NLayer - 1] = { 35, 83, 143, 191, 251, 335 };
@@ -111,7 +156,6 @@ class ITSFeeTask final : public TaskInterface
   const int indexFeeLow[NLayer] = { 0, 3, 6, 3, 17, 0, 14 };
   const int indexFeeUp[NLayer] = { 3, 6, 9, 11, 25, 14, 28 };
   int mTimeFrameId = 0;
-  TString mTriggerType[NTrigger] = { "ORBIT", "HB", "HBr", "HC", "PHYSICS", "PP", "CAL", "SOT", "EOT", "SOC", "EOC", "TF", "INT" };
   std::string mLaneStatusFlag[NFlags] = { "WARNING", "ERROR", "FAULT" }; // b00 OK, b01 WARNING, b10 ERROR, b11 FAULT
 
   int mStatusFlagNumber[7][48][28][3] = { { { 0 } } }; //[iLayer][iStave][iLane][iLaneStatusFlag]
@@ -122,25 +166,28 @@ class ITSFeeTask final : public TaskInterface
   int mNPayloadSizeBins = 4096;
   bool mResetLaneStatus = false;
   bool mResetPayload = false;
+  bool mEnablePayloadParse = true;
 
   TH1I* mTFInfo; // count vs TF ID
   TH2I* mTriggerVsFeeId;
   TH1I* mTrigger;
   TH2I* mLaneInfo;
-  TH2I* mFlag1Check; // include transmission_timeout, packet_overflow, lane_starts_violation
-  TH2I* mIndexCheck; // should be zero
-  TH2I* mIdCheck;    // should be 0x : e4
+  TH2I* mFlag1Check;    // include transmission_timeout, packet_overflow, lane_starts_violation
+  TH2I* mDecodingCheck; // summary of errors during custom decoding of specific bytes (see plot description)
   TH2I* mRDHSummary;
   TH2I* mRDHSummaryCumulative; // RDH plot which does NOT reset at every QC cycle
   TH2I* mLaneStatus[NFlags];   // 4 flags for each lane. 3/8/14 lane for each link. 3/2/2 link for each RU. TODO: remove the OK flag in these 4 flag plots, OK flag plot just used to debug.
+  TH2I* mTrailerCount;
+  TH2I* mActiveLanes;
   TH2I* mLaneStatusCumulative[NFlags];
-  TH2Poly* mLaneStatusOverview[NFlags] = { 0x0 };
+  TH2Poly* mLaneStatusOverview[2] = { 0x0 }; // Warning and Error/Fatal
   TH1I* mLaneStatusSummary[NLayer];
   TH1D* mLaneStatusSummaryIB;
   TH1D* mLaneStatusSummaryML;
   TH1D* mLaneStatusSummaryOL;
   TH1D* mLaneStatusSummaryGlobal;
   TH1I* mProcessingTime;
+  TH1D* mProcessingTime2;
   TH2F* mPayloadSize; // average payload size vs linkID
   // TH1D* mInfoCanvas;//TODO: default, not implemented yet
   std::string mRunNumberPath;
