@@ -276,6 +276,7 @@ void GenericHistogramCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality 
     auto h2 = dynamic_cast<TH2F*>((mo->getObject()));
     if (!h2) {
       ILOG(Warning, Support) << "h2 not found in D= 2" << ENDM;
+      return;
     }
     xText = h2->GetXaxis()->GetXmin() + std::abs(h2->GetXaxis()->GetXmax() - h2->GetXaxis()->GetXmin()) * 0.01;
     yText = h2->GetYaxis()->GetXmax() * 0.9;
