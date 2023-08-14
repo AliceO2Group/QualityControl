@@ -18,6 +18,8 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "Common/Utils.h"
+
 // ROOT
 #include <TCanvas.h>
 #include <TH1.h>
@@ -30,20 +32,27 @@ using namespace o2::quality_control;
 
 namespace o2::quality_control_modules::tpc
 {
-Quality CheckQuality(double Mean, double Comparison, double Offset, double nMed, double nBad)
+Quality CheckQuality(double Mean, double Comparison, double Offset, double nMed, double nBad, std::string& message)
 {
+  message = "";
   Quality result = Quality::Null;
-  if (std::abs(Mean - Comparison) < nMed * Offset) {
+  double deviation = std::abs(Mean - Comparison);
+
+  if (deviation < nMed * Offset) {
     result = Quality::Good;
-  } else if (std::abs(Mean - Comparison) > nBad * Offset) {
+  } else if (deviation > nBad * Offset) {
     result = Quality::Bad;
   } else {
     result = Quality::Medium;
   }
+  message = "Deviation to expected Value: " + std::to_string(deviation);
+
   return result;
 }
 void GenericHistogramCheck::configure()
 {
+  mMetadataComment = common::getFromConfig<std::string>(mCustomParameters, "MetadataComment", "");
+
   // ILOG(Warning, Support) << "Config started....?" << ENDM;
   if (const auto param = mCustomParameters.find("checks"); param != mCustomParameters.end()) {
     const std::string checkString = param->second.c_str();
@@ -111,16 +120,25 @@ void GenericHistogramCheck::configure()
 }
 Quality GenericHistogramCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
+  std::vector<Quality> mosQuality;
+
+  std::vector<std::string> checkMessage;
+  std::string message;
+
   Quality result = Quality::Null;
   for (auto const& moObj : *moMap) {
     auto mo = moObj.second;
     if (!mo) {
       continue;
       ILOG(Error, Support) << "No MO found" << ENDM;
+      message = "No MO found!";
+      checkMessage.push_back(message);
     }
     auto h = dynamic_cast<TH1*>(mo->getObject());
     if (!h) {
       ILOG(Fatal, Support) << "No Histogram found!" << ENDM;
+      message = "No Histogram found!";
+      checkMessage.push_back(message);
     }
 
     mHistDimension = h->GetDimension();
@@ -152,24 +170,32 @@ Quality GenericHistogramCheck::check(std::map<std::string, std::shared_ptr<Monit
 
     if (mCheckXAxis) {
       if (mCheckRange) {
-        resultRangeX = CheckQuality(mMeanX, mExpectedValueX, mRangeX, 1, 2);
+        resultRangeX = CheckQuality(mMeanX, mExpectedValueX, mRangeX, 1, 2, message);
+        checkMessage.push_back("RangeCheck: " + message);
+        mosQuality.push_back(resultRangeX);
       }
       if (mCheckStdDev) {
-        resultStdDevX = CheckQuality(mMeanX, mExpectedValueX, mStdevX, 3, 6);
+        resultStdDevX = CheckQuality(mMeanX, mExpectedValueX, mStdevX, 3, 6, message);
+        checkMessage.push_back("StdDevCheck: " + message);
+        mosQuality.push_back(resultStdDevX);
       }
     }
     if (mCheckYAxis) {
       if (mHistDimension == 2) {
         if (mCheckRange) {
-          resultRangeY = CheckQuality(mMeanY, mExpectedValueY, mRangeY, 1, 2);
+          resultRangeY = CheckQuality(mMeanY, mExpectedValueY, mRangeY, 1, 2, message);
+          checkMessage.push_back("RangeCheck: " + message);
+          mosQuality.push_back(resultRangeY);
         }
 
         if (mCheckStdDev) {
-          resultStdDevY = CheckQuality(mMeanX, mExpectedValueX, mStdevY, 3, 6);
+          resultStdDevY = CheckQuality(mMeanX, mExpectedValueX, mStdevY, 3, 6, message);
+          checkMessage.push_back("StdDevCheck: " + message);
+          mosQuality.push_back(resultStdDevY);
         }
       }
     }
-    // find the worst quality that is NOT 10 ("Null")
+    // find the worst quality that is NOT ("Null")
     std::vector<Quality> quals = { resultRangeX, resultRangeY, resultStdDevX, resultStdDevY };
     std::sort(quals.begin(), quals.end(), [](Quality a, Quality b) { return a.isWorseThan(b); });
     auto result_iter = std::lower_bound(quals.begin(), quals.end(), Quality::Bad, [](Quality a, Quality b) { return a.isWorseThan(b); });
@@ -180,6 +206,33 @@ Quality GenericHistogramCheck::check(std::map<std::string, std::shared_ptr<Monit
     }
 
   } // for Mo map
+
+  // For writing to metadata and drawing later
+  mBadString = "";
+  mMediumString = "";
+  mGoodString = "";
+  mNullString = "";
+
+  // Aggregation of quality strings used for MO
+  for (int qualityindex = 0; qualityindex < mosQuality.size(); qualityindex++) {
+    Quality q = mosQuality.at(qualityindex);
+    if (q == Quality::Bad) {
+      mBadString = mBadString + checkMessage.at(qualityindex) + "\n";
+    } else if (q == Quality::Medium) {
+      mMediumString = mMediumString + checkMessage.at(qualityindex) + "\n";
+    } else if (q == Quality::Good) {
+      mGoodString = mGoodString + checkMessage.at(qualityindex) + "\n";
+    } else {
+      mNullString = mNullString + checkMessage.at(qualityindex) + "\n";
+    }
+  }
+  mosQuality.clear();
+
+  result.addMetadata(Quality::Bad.getName(), mBadString);
+  result.addMetadata(Quality::Medium.getName(), mMediumString);
+  result.addMetadata(Quality::Good.getName(), mGoodString);
+  result.addMetadata(Quality::Null.getName(), mNullString);
+  result.addMetadata("Comment", mMetadataComment);
 
   return result;
 }
@@ -195,36 +248,43 @@ void GenericHistogramCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality 
   double xText = 0;
   double yText = 0;
   double yText2 = 0;
-  auto h = dynamic_cast<TH1D*>((mo->getObject()));
+
   if (mHistDimension == 1) {
-    TLine* lineX = new TLine(mMeanX, h->GetMinimum() * 1.1, mMeanX, h->GetMaximum() * 1.1);
-    TLine* lineXEV = new TLine(mExpectedValueX, h->GetMinimum() * 1.1, mExpectedValueX, h->GetMaximum() * 1.1);
+
+    auto h1 = dynamic_cast<TH1F*>((mo->getObject()));
+    if (!h1) {
+      ILOG(Warning, Support) << "h1 not found in D= 1" << ENDM;
+    }
+    TLine* lineX = new TLine(mMeanX, h1->GetMinimum() * 1.1, mMeanX, h1->GetMaximum() * 1.1);
+    TLine* lineXEV = new TLine(mExpectedValueX, h1->GetMinimum() * 1.1, mExpectedValueX, h1->GetMaximum() * 1.1);
     lineX->SetLineWidth(3);
     lineX->SetLineColor(kRed);
     lineXEV->SetLineWidth(3);
     lineXEV->SetLineStyle(kDashed);
 
-    h->GetListOfFunctions()->Add(lineX);
-    h->GetListOfFunctions()->Add(lineXEV);
-    h->GetListOfFunctions()->Add(msg);
+    h1->GetListOfFunctions()->Add(lineX);
+    h1->GetListOfFunctions()->Add(lineXEV);
+
+    h1->SetLineColor(kBlack);
+
     msg->SetName(Form("%s_msg", mo->GetName()));
-    h->SetLineColor(kBlack);
+
+    h1->GetListOfFunctions()->Add(msg);
   }
   if (mHistDimension == 2) {
 
-    // auto* h = (TH2F*)(mo->getObject());
-    xText = h->GetXaxis()->GetXmin() + std::abs(h->GetXaxis()->GetXmax() - h->GetXaxis()->GetXmin()) * 0.01;
-    yText = h->GetYaxis()->GetXmax() * 0.9;
-    // if we need a second line, move it 5% down
-    yText2 = h->GetYaxis()->GetXmax() * 0.9 - std::abs(h->GetYaxis()->GetXmax() - h->GetYaxis()->GetXmin()) * 0.05;
-    if (!h) {
-
-      ILOG(Warning, Support) << "h not found in D= 2" << ENDM;
+    auto h2 = dynamic_cast<TH2F*>((mo->getObject()));
+    if (!h2) {
+      ILOG(Warning, Support) << "h2 not found in D= 2" << ENDM;
     }
-    TLine* lineX = new TLine(mMeanX, h->GetYaxis()->GetXmin(), mMeanX, h->GetYaxis()->GetXmax());
-    TLine* lineY = new TLine(h->GetXaxis()->GetXmin(), mMeanY, h->GetXaxis()->GetXmax(), mMeanY);
-    TLine* lineXEV = new TLine(mExpectedValueX, h->GetYaxis()->GetXmin(), mExpectedValueX, h->GetYaxis()->GetXmax());
-    TLine* lineYEV = new TLine(h->GetXaxis()->GetXmin(), mExpectedValueY, h->GetXaxis()->GetXmax(), mExpectedValueY);
+    xText = h2->GetXaxis()->GetXmin() + std::abs(h2->GetXaxis()->GetXmax() - h2->GetXaxis()->GetXmin()) * 0.01;
+    yText = h2->GetYaxis()->GetXmax() * 0.9;
+    yText2 = h2->GetYaxis()->GetXmax() * 0.9 - std::abs(h2->GetYaxis()->GetXmax() - h2->GetYaxis()->GetXmin()) * 0.05;
+
+    TLine* lineX = new TLine(mMeanX, h2->GetYaxis()->GetXmin(), mMeanX, h2->GetYaxis()->GetXmax());
+    TLine* lineY = new TLine(h2->GetXaxis()->GetXmin(), mMeanY, h2->GetXaxis()->GetXmax(), mMeanY);
+    TLine* lineXEV = new TLine(mExpectedValueX, h2->GetYaxis()->GetXmin(), mExpectedValueX, h2->GetYaxis()->GetXmax());
+    TLine* lineYEV = new TLine(h2->GetXaxis()->GetXmin(), mExpectedValueY, h2->GetXaxis()->GetXmax(), mExpectedValueY);
 
     lineY->SetLineWidth(3);
     lineY->SetLineColor(kOrange);
@@ -237,36 +297,35 @@ void GenericHistogramCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality 
     lineXEV->SetLineColor(kRed);
     lineXEV->SetLineStyle(kDashed);
 
-    h->GetListOfFunctions()->Add(lineX);
-    h->GetListOfFunctions()->Add(lineY);
-    h->GetListOfFunctions()->Add(lineXEV);
-    h->GetListOfFunctions()->Add(lineYEV);
-    h->GetListOfFunctions()->Add(msg);
-    h->GetListOfFunctions()->Add(txt);
-    h->GetListOfFunctions()->Add(txt2);
+    h2->GetListOfFunctions()->Add(lineX);
+    h2->GetListOfFunctions()->Add(lineY);
+    h2->GetListOfFunctions()->Add(lineXEV);
+    h2->GetListOfFunctions()->Add(lineYEV);
+    h2->GetListOfFunctions()->Add(txt);
+    h2->GetListOfFunctions()->Add(txt2);
+
+    h2->SetLineColor(kBlack);
 
     msg->SetName(Form("%s_msg", mo->GetName()));
-    h->SetLineColor(kBlack);
-  }
 
-  // make generic text for the 2D
-  if (mCheckXAxis && mHistDimension == 2) {
-    if (mCheckYAxis) {
+    h2->GetListOfFunctions()->Add(msg);
 
-      txt->SetText(xText, yText, fmt::format("MeanX: {:.3}, ExpectedX: {:.3}", mMeanX, mExpectedValueX).data());
-      txt2->SetText(xText, yText2, fmt::format("MeanY: {:.3}, ExpectedY: {:.3}", mMeanY, mExpectedValueY).data());
+    // make generic text for the 2D
+    if (mCheckXAxis && mHistDimension == 2) {
+      if (mCheckYAxis) {
+        txt->SetText(xText, yText, fmt::format("MeanX: {:.3}, ExpectedX: {:.3}", mMeanX, mExpectedValueX).data());
+        txt2->SetText(xText, yText2, fmt::format("MeanY: {:.3}, ExpectedY: {:.3}", mMeanY, mExpectedValueY).data());
+      } else {
+        txt->SetText(xText, yText, fmt::format("MeanX: {:.3}, ExpectedX: {:.3}", mMeanX, mExpectedValueX).data());
+      }
     } else {
-      txt->SetText(xText, yText, fmt::format("MeanX: {:.3}, ExpectedX: {:.3}", mMeanX, mExpectedValueX).data());
+      txt->SetText(xText, yText, fmt::format("MeanY: {:.3}, ExpectedY: {:.3}", mMeanY, mExpectedValueY).data());
     }
-  } else {
-    txt->SetText(xText, yText, fmt::format("MeanY: {:.3}, ExpectedY: {:.3}", mMeanY, mExpectedValueY).data());
   }
-
-  ///
-
   if (checkResult == Quality::Good) {
     msg->Clear();
     msg->AddText("Quality::Good");
+    msg->AddText(checkResult.getMetadata(Quality::Good.getName(), "").c_str());
     msg->SetFillColor(kGreen);
 
     txt->SetTextColor(kGreen);
@@ -275,6 +334,8 @@ void GenericHistogramCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality 
 
     msg->Clear();
     msg->AddText("Quality::Bad");
+    msg->AddText(checkResult.getMetadata(Quality::Bad.getName(), "").c_str());
+
     msg->SetFillColor(kRed);
 
     txt->SetTextColor(kRed);
@@ -283,6 +344,7 @@ void GenericHistogramCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality 
 
     msg->Clear();
     msg->AddText("Quality::Medium");
+    msg->AddText(checkResult.getMetadata(Quality::Medium.getName(), "").c_str());
     msg->SetFillColor(kOrange);
 
     txt->SetTextColor(kOrange);
@@ -290,13 +352,14 @@ void GenericHistogramCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality 
   }
   if (checkResult == Quality::Null) {
     msg->AddText("No Check was performed.");
+    msg->AddText(checkResult.getMetadata(Quality::Null.getName(), "").c_str());
   } else {
     msg->AddText(fmt::format("X-Mean: {:.3}, Expected: {:.3}", mMeanX, mExpectedValueX).data());
+    msg->AddText(checkResult.getMetadata("Comment", "").c_str());
     if (mHistDimension == 2) {
       msg->AddText(fmt::format("Y-Mean: {:.3}, Expected: {:.3}", mMeanY, mExpectedValueY).data());
     }
   }
-  // msg->Draw("same");
 }
 
 } // namespace o2::quality_control_modules::tpc
