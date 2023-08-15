@@ -128,10 +128,10 @@
         },
         "taskParameters": {
           "trackType": "0xf",
-          "peakregionstart": "7.0",
-          "peakregionend": "20.0",
-          "pulseheightpeaklower": "1.0",
-          "pulseheightpeakupper": "5.0"
+          "driftRegionStart": "7.0",
+          "driftRegionEnd": "20.0",
+          "peakRegionStart": "1.0",
+          "peakRegionEnd": "5.0"
         },
         "location": "remote",
         "saveObjectsToFile": "qcpulseheightitstpc.root"

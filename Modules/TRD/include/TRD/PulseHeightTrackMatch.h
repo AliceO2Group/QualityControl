@@ -37,8 +37,6 @@ using namespace o2::quality_control::core;
 namespace o2::quality_control_modules::trd
 {
 
-/// \brief Example Quality Control DPL Task
-/// \author My Name
 class PulseHeightTrackMatch final : public TaskInterface
 {
  public:
@@ -56,7 +54,6 @@ class PulseHeightTrackMatch final : public TaskInterface
   void endOfActivity(const Activity& activity) override;
   void reset() override;
   void buildHistograms();
-  void retrieveCCDBSettings();
   void drawLinesOnPulseHeight(TProfile* h);
 
  private:
