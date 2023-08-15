@@ -32,6 +32,8 @@
 #include "Common/TH1Ratio.h"
 #include "Common/TH2Ratio.h"
 
+#include "DCAFitter/DCAFitterN.h"
+
 using namespace o2::itsmft;
 using namespace o2::its;
 
@@ -68,6 +70,7 @@ void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
   mDoTTree = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "doTTree", mDoTTree);
   nBCbins = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "nBCbins", nBCbins);
   mDoNorm = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "doNorm", mDoNorm);
+  mInvMasses = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "InvMasses", mInvMasses);
 
   createAllHistos();
   publishHistos();
@@ -177,6 +180,22 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
     hVerticesRof->Fill(nvtxROF);
   }
 
+  // DCAFitter2 class initialization  for the v0 part
+  using Vec3D = ROOT::Math::SVector<double, 3>; // this is a type of the fitted vertex
+  o2::vertexing::DCAFitter2 ft;
+  ft.setBz(5.0);
+  ft.setPropagateToPCA(true);
+  ft.setMaxR(30);
+  ft.setMaxDZIni(0.1);
+  ft.setMaxDXYIni(0.1);
+  ft.setMinParamChange(1e-3);
+  ft.setMinRelChi2Change(0.9);
+  ft.setMaxChi2(10);
+  // prepare variables for v0
+  float vx = 0, vy = 0, vz = 0;
+  float dca[2]{ 0., 0. };
+  float bz = 5.0;
+
   // loop on tracks per ROF
   for (int iROF = 0; iROF < trackRofArr.size(); iROF++) {
 
@@ -233,6 +252,91 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
 
         double clusterSizeWithCorrection = (double)clSize[index] * (std::cos(std::atan(out.getTgl())));
         hNClusterVsChipITS->Fill(ChipID + 1, clusterSizeWithCorrection);
+      }
+
+      // Find V0s
+      if (mInvMasses == 1) {
+        if (track.getSign() < 0) // choose only positive tracks
+          continue;
+        track.getImpactParams(vx, vy, vz, bz, dca);
+        if ((track.getNumberOfClusters() < 6) || (abs(track.getTgl()) > 1.5) || (abs(dca[0]) < 0.06)) // conditions for the track acceptance
+          continue;
+
+        for (int intrack = start; intrack < end; intrack++) { // goes through the tracks one more time
+          auto& ntrack = trackArr[intrack];
+          if (ntrack.getSign() > 0) // choose only negative tracks
+            continue;
+          ntrack.getImpactParams(vx, vy, vz, bz, dca);
+          if ((ntrack.getNumberOfClusters() < 6) || (abs(ntrack.getTgl()) > 1.5) || (abs(dca[0]) < 0.06)) // conditions for the track acceptance
+            continue;
+
+          int nc = 0;
+          try {
+            nc = ft.process(track, ntrack);
+          } catch (...) {
+            continue;
+          }
+          if (nc == 0)
+            continue;
+
+          int ibest = 0;
+          float bestChi2 = 1e7;
+          for (int i = 0; i < nc; i++) {
+            auto chi2 = ft.getChi2AtPCACandidate(i);
+            if (chi2 > bestChi2)
+              continue;
+            bestChi2 = chi2;
+            ibest = i;
+          }
+          // conditions for v0
+          auto vtx = ft.getPCACandidate(ibest);
+          auto x = vtx[0] + 0.02985;
+          auto y = vtx[1] + 0.01949;
+          auto r = sqrt(x * x + y * y);
+          if ((r < 0.5) || (r > 3.5))
+            continue;
+
+          const auto& t0 = ft.getTrack(0, ibest); // Positive daughter track
+          const auto& t1 = ft.getTrack(1, ibest); // Negative daughter track
+
+          auto r0 = t0.getXYZGlo();
+          auto r1 = t1.getXYZGlo();
+          auto dx = r0.X() - r1.X();
+          auto dy = r0.Y() - r1.Y();
+          auto dz = r0.Z() - r1.Z();
+          auto d = sqrt(dx * dx + dy * dy + dz * dz);
+          if (d > 0.02)
+            continue;
+          std::array<float, 3> p0; // Positive daughter momentum
+          t0.getPxPyPzGlo(p0);
+          std::array<float, 3> p1; // Negative daughter momentum
+          t1.getPxPyPzGlo(p1);
+          std::array<float, 3> v0p; // V0 particle momentum
+          v0p = { p0[0] + p1[0], p0[1] + p1[1], p0[2] + p1[2] };
+
+          // Strangness inv mass calculation
+          auto pV0 = sqrt(v0p[0] * v0p[0] + v0p[1] * v0p[1] + v0p[2] * v0p[2]); // Particle momentum
+          auto p2DaughterPos = p0[0] * p0[0] + p0[1] * p0[1] + p0[2] * p0[2];   // Positive daughter momentum
+          auto p2DaughterNeg = p1[0] * p1[0] + p1[1] * p1[1] + p1[2] * p1[2];   // Negative daughter momentum
+                                                                                // K0s
+          auto enDaughterPos = sqrt(mPiInvMass * mPiInvMass + p2DaughterPos);   // Positive daughter energy
+          auto enDaughterNeg = sqrt(mPiInvMass * mPiInvMass + p2DaughterNeg);   // Negative daughter energy
+          auto enV0 = enDaughterPos + enDaughterNeg;
+          auto K0sInvMass = sqrt(enV0 * enV0 - pV0 * pV0);
+          hInvMassK0s->Fill(K0sInvMass);
+          // Lambda
+          enDaughterPos = sqrt(mProtonInvMass * mProtonInvMass + p2DaughterPos); // Positive daughter energy
+          enDaughterNeg = sqrt(mPiInvMass * mPiInvMass + p2DaughterNeg);         // Negative daughter energy
+          enV0 = enDaughterPos + enDaughterNeg;
+          auto LambdaInvMass = sqrt(enV0 * enV0 - pV0 * pV0);
+          hInvMassLambda->Fill(LambdaInvMass);
+          // LambdaBar
+          enDaughterPos = sqrt(mPiInvMass * mPiInvMass + p2DaughterPos);         // Positive daughter energy
+          enDaughterNeg = sqrt(mProtonInvMass * mProtonInvMass + p2DaughterNeg); // Negative daughter energy
+          enV0 = enDaughterPos + enDaughterNeg;
+          auto LambdaBarInvMass = sqrt(enV0 * enV0 - pV0 * pV0);
+          hInvMassLambdaBar->Fill(LambdaBarInvMass);
+        }
       }
     }
 
@@ -336,6 +440,10 @@ void ITSTrackTask::reset()
   hHitFirstLayerPhi7cls->Reset();
   hClusterVsBunchCrossing->Reset();
   hNClusterVsChipITS->Reset();
+
+  hInvMassK0s->Reset();
+  hInvMassLambda->Reset();
+  hInvMassLambdaBar->Reset();
 }
 
 void ITSTrackTask::createAllHistos()
@@ -532,6 +640,25 @@ void ITSTrackTask::createAllHistos()
     auto line = new TLine(ChipBoundary[l], 0, ChipBoundary[l], 15);
     hNClusterVsChipITS->GetListOfFunctions()->Add(line);
   }
+
+  // Invariant mass K0s, Lambda, LambdaBar
+  hInvMassK0s = new TH1D("hInvMassK0s", "K0s invariant mass", 80, 0.0, 1.0);
+  hInvMassK0s->SetTitle(Form("Invariant mass of K0s"));
+  addObject(hInvMassK0s);
+  formatAxes(hInvMassK0s, "m_{inv} (Gev/c)", "Counts", 1, 1.10);
+  hInvMassK0s->SetStats(0);
+
+  hInvMassLambda = new TH1D("hInvMassLambda", "Lambda invariant mass", 80, 1.0, 2.0);
+  hInvMassLambda->SetTitle(Form("Invariant mass of Lambda"));
+  addObject(hInvMassLambda);
+  formatAxes(hInvMassLambda, "m_{inv} (Gev/c)", "Counts", 1, 1.10);
+  hInvMassLambda->SetStats(0);
+
+  hInvMassLambdaBar = new TH1D("hInvMassLambdaBar", "LambdaBar invariant mass", 80, 1.0, 2.0);
+  hInvMassLambdaBar->SetTitle(Form("Invariant mass of LambdaBar"));
+  addObject(hInvMassLambdaBar);
+  formatAxes(hInvMassLambdaBar, "m_{inv} (Gev/c)", "Counts", 1, 1.10);
+  hInvMassLambdaBar->SetStats(0);
 }
 
 void ITSTrackTask::addObject(TObject* aObject)
