@@ -113,6 +113,20 @@ class ClusterTask final : public TaskInterface
     void print(std::ostream& stream) const;
   };
 
+  /// \struct TaskParams
+  /// \brief Other task parameters
+  struct TaskParams {
+    bool mInternalClusterizer = false;   ///< Use run internal clusterizer, do not subscribe to external cluster collection
+    bool mCalibrate = false;             ///< Perform recalibration
+    bool mFillInvMassMeson = false;      ///< Fill invariant mass of meson candidates
+    bool mFillControlHistograms = false; ///< Fill control histograms at cell level
+    int mMultiplicityRange = 200;        ///< Range for multiplicity histograms
+
+    /// \brief Print task parameters to output stream
+    /// \param stream Stream used for printing
+    void print(std::ostream& stream) const;
+  };
+
   /// \brief Constructor
   ClusterTask() = default;
   /// \brief Destructor
@@ -201,6 +215,9 @@ class ClusterTask final : public TaskInterface
   /// \brief Configure meson selection (cluster and pair cuts) for meson candidate histograms
   void configureMesonSelection();
 
+  /// \brief Configure task parameters
+  void configureTaskParameters();
+
   /// \brief Check for config value in taskParameter list
   /// \param key Key to check
   /// \return true if the key is found in the taskParameters, false otherwise
@@ -238,6 +255,7 @@ class ClusterTask final : public TaskInterface
   std::unique_ptr<o2::emcal::EventHandler<o2::emcal::Cell>> mEventHandler;     ///< Event handler for event loop
   std::unique_ptr<o2::emcal::ClusterFactory<o2::emcal::Cell>> mClusterFactory; ///< Cluster factory for cluster kinematics
   std::unique_ptr<o2::emcal::Clusterizer<o2::emcal::Cell>> mClusterizer;       ///< Internal clusterizer
+  TaskParams mTaskParameters;                                                  ///< Task parameters (i.e. histogram ranges)
   ClusterizerParams mClusterizerSettings;                                      ///< Settings for internal clusterizer
   InputBindings mTaskInputBindings;                                            ///< Bindings for input containers
   MesonClusterSelection mMesonClusterCuts;                                     ///< Cuts used in the meson selection
@@ -249,11 +267,6 @@ class ClusterTask final : public TaskInterface
   o2::emcal::BadChannelMap* mBadChannelMap = nullptr;        ///< EMCAL channel map
   o2::emcal::TimeCalibrationParams* mTimeCalib = nullptr;    ///< EMCAL time calib
   o2::emcal::GainCalibrationFactors* mEnergyCalib = nullptr; ///< EMCAL energy calib factors
-
-  bool mInternalClusterizer = false;   ///< Use run internal clusterizer, do not subscribe to external cluster collection
-  bool mCalibrate = false;             ///< Perform recalibration
-  bool mFillInvMassMeson = false;      ///< Fill invariant mass of meson candidates
-  bool mFillControlHistograms = false; ///< Fill control histograms at cell level
 
   ///////////////////////////////////////////////////////////////////////////////
   /// Control histograms input cells                                          ///
@@ -330,6 +343,12 @@ std::ostream& operator<<(std::ostream& stream, const ClusterTask::MesonClusterSe
 /// \param cuts Meson candidate cuts to be printed
 /// \return Stream after printing the cuts
 std::ostream& operator<<(std::ostream& stream, const ClusterTask::MesonSelection& cuts);
+
+/// \brief Output stream operator for task parameters in the ClusterTask
+/// \param stream Stream used for printing the task parameter object
+/// \param cuts Task parameters to be printed
+/// \return Stream after printing the parameters
+std::ostream& operator<<(std::ostream& stream, const ClusterTask::TaskParams& params);
 
 } // namespace o2::quality_control_modules::emcal
 

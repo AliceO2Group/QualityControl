@@ -65,11 +65,18 @@ class CellTask final : public TaskInterface
     bool mHasTimeVsCellID;
     bool mHasHistosCalib;
     bool mCalibrateEnergy;
+    bool mIsHighMultiplicity;
 
     double mAmpThresholdTimePhys = 0.15;
     double mAmpThresholdTimeCalib = 0.3;
     double mThresholdPHYS = 0.2;
     double mThresholdCAL = 0.5;
+
+    int mMultiplicityRange = 0;
+    int mMultiplicityRangeDetector = 0;
+    int mMultiplicityRangeThreshold = 0;
+    int mMultiplicityRangeSM = 0;
+    int mMultiplicityRangeSMThreshold = 0;
   };
   struct CellHistograms {
     o2::emcal::Geometry* mGeometry;
@@ -169,6 +176,9 @@ class CellTask final : public TaskInterface
       return mSubevents.size();
     };
   };
+  void parseMultiplicityRanges();
+  void initDefaultMultiplicityRanges();
+
   std::vector<CombinedEvent> buildCombinedEvents(const std::unordered_map<header::DataHeader::SubSpecificationType, gsl::span<const o2::emcal::TriggerRecord>>& triggerrecords) const;
   TaskSettings mTaskSettings;                                ///< Settings of the task steered via task parameters
   Bool_t mIgnoreTriggerTypes = false;                        ///< Do not differenciate between trigger types, treat all triggers as phys. triggers
