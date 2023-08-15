@@ -32,13 +32,20 @@ class ReductorBinContent : public quality_control::postprocessing::Reductor
   const char* getBranchLeafList() override;
   void update(TObject* obj) override;
 
+  void setParams(Int_t Flags, Int_t Triggers)
+  {
+    nFlags = Flags;
+    nTriggers = Triggers;
+  }
+
  private:
-  static constexpr int nFlags = 3;
-  static constexpr int nTriggers = 13;
+  int nFlags = 3;
+  int nTriggers = 13;
 
   struct mystat {
-    Double_t binContent[nFlags];  // Bin content in a specified slice
-    Double_t integral[nTriggers]; // Integral over all Fee ID
+    // std::vector<Double_t> binContent;  // Bin content in a specified slice
+    Double_t binContent[100];
+    Double_t integral[100]; // Integral over all Fee I
   };
 
   mystat mStats;
