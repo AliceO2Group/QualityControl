@@ -59,11 +59,11 @@ class RawData final : public TaskInterface
   TH1F* mTimeFrameTime = nullptr;
   TH1F* mTrackletParsingTime = nullptr;
   TH1F* mDigitParsingTime = nullptr;
-  TH1F* mDataVersions = nullptr;
   TH1F* mDataVersionsMajor = nullptr;
   TH1F* mParsingErrors = nullptr;
   std::array<TH2F*, 10> mLinkErrors;
   std::array<TH2F*, o2::trd::ParsingErrors::TRDLastParsingError> mParsingErrors2d;
+  bool mCheckDigitHCHeaderVersion = false;
 };
 
 } // namespace o2::quality_control_modules::trd
