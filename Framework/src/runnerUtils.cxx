@@ -68,7 +68,11 @@ Activity computeActivity(framework::ServiceRegistryRef services, const Activity&
   auto run_start_time_ms = computeActivityField<unsigned long>(services, "runStartTimeMs", fallbackActivity.mValidity.getMin());
   auto run_stop_time_ms = computeActivityField<unsigned long>(services, "runEndTimeMs", fallbackActivity.mValidity.getMax());
   auto partitionName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("environment_id", fallbackActivity.mPartitionName);
-  auto periodName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("lhcPeriod", fallbackActivity.mPeriodName);
+  auto periodName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("lhcPeriod", "");
+  if (periodName.empty()) {
+    // this how one has to get it on EPNs.
+    periodName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("lhc_period", fallbackActivity.mPeriodName);
+  }
   auto fillNumber = computeActivityField<int>(services, "fillInfoFillNumber", fallbackActivity.mFillNumber);
   auto beam_type = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("fillInfoBeamType", fallbackActivity.mBeamType);
 
