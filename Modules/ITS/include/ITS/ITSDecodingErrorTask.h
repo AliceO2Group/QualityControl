@@ -18,6 +18,7 @@
 #define QC_MODULE_ITS_ITSDECODINGERRORTASK_H
 
 #include "QualityControl/TaskInterface.h"
+#include "Common/TH1Ratio.h"
 
 #include <TH1.h>
 #include <TH2.h>
@@ -26,6 +27,7 @@ class TH2D;
 class TH1D;
 
 using namespace o2::quality_control::core;
+using namespace o2::quality_control_modules::common;
 
 namespace o2::quality_control_modules::its
 {
@@ -49,6 +51,7 @@ class ITSDecodingErrorTask final : public TaskInterface
 
  private:
   int mTFCount = 0;
+  float mBusyViolationLimit = 0.75;
   void getParameters(); // get Task parameters from json file
   void setAxisTitle(TH1* object, const char* xTitle, const char* yTitle);
   void createDecodingPlots();
@@ -57,10 +60,13 @@ class ITSDecodingErrorTask final : public TaskInterface
   void resetGeneralPlots();
   static constexpr int NLayer = 7;
   static constexpr int NLayerIB = 3;
+  const int nChipsPerLayer[NLayer] = { 108, 144, 180, 2688, 3360, 8232, 9408 };
   const int StaveBoundary[NLayer + 1] = { 0, 12, 28, 48, 72, 102, 144, 192 };
   const int ChipBoundary[NLayer + 1] = { 0, 108, 252, 432, 3120, 6480, 14712, 24120 };
   static constexpr int NFees = 48 * 3 + 144 * 2;
-
+  TString LayerBinLabels[11] = { "L0", "L1", "L2", "L3B", "L3T", "L4B", "L4T", "L5B", "L5T", "L6B", "L6T" };
+  std::unique_ptr<TH1FRatio> hBusyFraction;
+  TH1D* hAlwaysBusy;
   TH1D* mChipErrorPlots;
   TH1D* mLinkErrorPlots;
   TH2D* mChipErrorVsChipid[7]; // chip ErrorVsChipid
