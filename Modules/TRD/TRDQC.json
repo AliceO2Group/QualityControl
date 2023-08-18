@@ -44,12 +44,6 @@
           "type": "direct",
           "query": "digits:TRD/DIGITS;tracklets:TRD/TRACKLETS;triggers:TRD/TRKTRGRD;rawstats:TRD/RAWSTATS"
         },
-        "taskParameters": {
-          "peakregionstart": "7.0",
-          "peakregionend": "20.0",
-          "pulseheightpeaklower": "1.0",
-          "pulseheightpeakupper": "5.0"
-        },
         "location": "remote",
         "saveObjectsToFile": "qcrootobjects.root"
       },
@@ -65,10 +59,13 @@
           "query": "digits:TRD/DIGITS;tracklets:TRD/TRACKLETS;triggers:TRD/TRKTRGRD"
         },
         "taskParameters": {
-          "peakregionstart": "7.0",
-          "peakregionend": "20.0",
-          "pulseheightpeaklower": "1.0",
-          "pulseheightpeakupper": "5.0"
+          "driftRegionStart": "7.0",
+          "driftRegionEnd": "20.0",
+          "peakRegionStart": "1.0",
+          "peakRegionEnd": "5.0",
+          "phThreshold": "400.0",
+          "ignoreChambers": "16_3_0",
+          "ignoreLabels": "false"
         },
         "location": "remote",
         "saveObjectsToFile": "digitrootobjects.root"
@@ -86,33 +83,10 @@
           "query": "tracklets:TRD/TRACKLETS;triggers:TRD/TRKTRGRD"
         },
         "taskParameters": {
-          "peakregionstart": "7.0",
-          "peakregionend": "20.0",
-          "pulseheightpeaklower": "1.0",
-          "pulseheightpeakupper": "5.0"
+          "ignoreLabels": "false"
         },
         "location": "remote",
         "saveObjectsToFile": "trackletobjects.root"
-      },
-      "PulseHeight": {
-        "active": "true",
-        "className": "o2::quality_control_modules::trd::PulseHeight",
-        "moduleName": "QcTRD",
-        "detectorName": "TRD",
-        "cycleDurationSeconds": "60",
-        "maxNumberCycles": "-1",
-        "dataSource": {
-          "type": "direct",
-          "query": "digits:TRD/DIGITS;tracklets:TRD/TRACKLETS;triggers:TRD/TRKTRGRD;rawstats:TRD/RAWSTATS"
-        },
-        "taskParameters": {
-          "peakregionstart": "7.0",
-          "peakregionend": "20.0",
-          "pulseheightpeaklower": "1.0",
-          "pulseheightpeakupper": "5.0"
-        },
-        "location": "remote",
-        "saveObjectsToFile": "qcpulseheight.root"
       },
       "PulseHeightTrackMatch": {
         "active": "true",

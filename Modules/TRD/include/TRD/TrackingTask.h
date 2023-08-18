@@ -44,7 +44,6 @@ class TrackingTask final : public TaskInterface
   TrackingTask() = default;
   ~TrackingTask() = default;
 
-  void retrieveCCDBSettings();
   void initialize(o2::framework::InitContext& ctx) override;
   void startOfActivity(const Activity& activity) override;
   void startOfCycle() override;

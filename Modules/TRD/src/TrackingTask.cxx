@@ -38,17 +38,6 @@ namespace o2::quality_control_modules::trd
 {
 using GTrackID = o2::dataformats::GlobalTrackID;
 
-void TrackingTask::retrieveCCDBSettings()
-{
-  if (auto param = mCustomParameters.find("ccdbtimestamp"); param != mCustomParameters.end()) {
-    mTimestamp = std::stol(mCustomParameters["ccdbtimestamp"]);
-    ILOG(Debug, Devel) << "configure() : using ccdbtimestamp = " << mTimestamp << ENDM;
-  } else {
-    mTimestamp = o2::ccdb::getCurrentTimestamp();
-    ILOG(Debug, Devel) << "configure() : using default timestam of now = " << mTimestamp << ENDM;
-  }
-}
-
 void TrackingTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Debug, Devel) << "initialize TRD TrackingTask" << ENDM;
@@ -58,7 +47,6 @@ void TrackingTask::initialize(o2::framework::InitContext& /*ctx*/)
     mPtMin = std::stof(param->second);
   }
 
-  retrieveCCDBSettings();
   buildHistograms();
 }
 
