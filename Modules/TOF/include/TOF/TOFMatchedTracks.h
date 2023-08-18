@@ -91,6 +91,19 @@ class TOFMatchedTracks final : public TaskInterface
   gsl::span<const o2::trd::TrackTRD> mITSTPCTRDTracks;
   gsl::span<const o2::dataformats::MatchInfoTOF> mITSTPCTRDTOFMatches;
 
+  void fillDenominatorForExperts(float eta, float phi);
+  void fillNumeratorForExperts(float eta, float phi, int channel, int nhit, float dx, float dz, float chi2);
+  float mThresholdPtForExperts = 2.0;
+  static constexpr Float_t ETAFROMSTRIP[91] = { 0.852408, 0.833555, 0.814697, 0.795648, 0.777002, 0.758214, 0.739368, 0.720569, 0.701740, 0.682949, 0.664247, 0.645404, 0.626585, 0.607850, 0.589007, 0.570191, 0.551303, 0.532452, 0.514311, 0.493487, 0.474700, 0.455910, 0.437032, 0.418148, 0.399490, 0.380784, 0.362024, 0.343193, 0.324490, 0.305825, 0.286971, 0.268118, 0.249384, 0.230666, 0.211854, 0.193103, 0.174354, 0.155913, 0.131256, 0.113258, 0.096227, 0.077911, 0.059520, 0.041240, 0.022849, 0.004604, -0.013771, -0.032039, -0.050439, -0.068710, -0.087143, -0.104045, -0.122299, -0.146704, -0.165218, -0.184033, -0.202654, -0.221536, -0.240324, -0.258915, -0.277828, -0.296733, -0.315451, -0.334002, -0.352892, -0.371696, -0.390449, -0.408962, -0.427876, -0.446766, -0.465565, -0.484362, -0.505619, -0.523295, -0.542173, -0.561072, -0.579892, -0.598741, -0.617481, -0.636304, -0.655142, -0.673841, -0.692634, -0.711465, -0.730266, -0.749117, -0.767894, -0.786554, -0.805589, -0.824465, -0.843304 };
+
+  TH1F* mHistoExpTrackedStrip = nullptr;
+  TH1F* mHistoExpMatchedStrip = nullptr;
+  TH1F* mHistoExpMatchedStripFromCh = nullptr;
+  TH2F* mHistoExpMatchedStripFromChDx = nullptr;
+  TH2F* mHistoExpMatchedStripFromChDz = nullptr;
+  TH2F* mHistoExpMatchedStripFromChR = nullptr;
+  TH2F* mHistoExpMatchedNhit = nullptr;
+
   bool mUseMC = false;
   bool mVerbose = false;
   TH1F* mInTracksPt[matchType::SIZE] = {};

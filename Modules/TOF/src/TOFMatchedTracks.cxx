@@ -105,6 +105,14 @@ void TOFMatchedTracks::initialize(o2::framework::InitContext& /*ctx*/)
     ILOG(Debug, Devel) << "Custom parameter - minDCACutY (for track selection): " << param->second << ENDM;
     setMinDCAtoBeamPipeYCut(atof(param->second.c_str()));
   }
+  if (auto param = mCustomParameters.find("minPtExpert"); param != mCustomParameters.end()) {
+    ILOG(Debug, Devel) << "Custom parameter - minPtExpert (for filling extra histos): " << param->second << ENDM;
+    mThresholdPtForExperts = atof(param->second.c_str());
+    if (mThresholdPtForExperts < 1.0) {
+      ILOG(Debug, Devel) << "!!!             - minPtExpert too low... forced to 1 GeV/c " << ENDM;
+      mThresholdPtForExperts = 1.0;
+    }
+  }
 
   // for track type selection
   if (auto param = mCustomParameters.find("GID"); param != mCustomParameters.end()) {
@@ -250,6 +258,23 @@ void TOFMatchedTracks::initialize(o2::framework::InitContext& /*ctx*/)
     getObjectsManager()->startPublishing(mTOFChi2[matchType::ITSTPC_ITSTPCTRD]);
     getObjectsManager()->startPublishing(mTOFChi2Pt[matchType::ITSTPC_ITSTPCTRD]);
   }
+
+  mHistoExpTrackedStrip = new TH1F("mHistoExpTrackedStrip", "Tracked vs Strips from (eta,phi);strip; entries", 91 * 18, 0, 91 * 18);
+  getObjectsManager()->startPublishing(mHistoExpTrackedStrip);
+  mHistoExpMatchedStrip = new TH1F("mHistoExpMatchedStrip", "Matched vs Strips from (eta,phi);strip; entries", 91 * 18, 0, 91 * 18);
+  getObjectsManager()->startPublishing(mHistoExpMatchedStrip);
+  mHistoExpMatchedStripFromCh = new TH1F("mHistoExpMatchedStripFromCh", "Matched vs Strips from channel;strip; entries", 91 * 18, 0, 91 * 18);
+  getObjectsManager()->startPublishing(mHistoExpMatchedStripFromCh);
+
+  mHistoExpMatchedStripFromChDx = new TH2F("mHistoExpMatchedStripFromChDx", "Matched vs Strips from channel;strip; #DeltaX (cm)", 91 * 18, 0, 91 * 18, 100, -10, 10);
+  getObjectsManager()->startPublishing(mHistoExpMatchedStripFromChDx);
+  mHistoExpMatchedStripFromChDz = new TH2F("mHistoExpMatchedStripFromChDz", "Matched vs Strips from channel;strip; #DeltaZ (cm)", 91 * 18, 0, 91 * 18, 100, -10, 10);
+  getObjectsManager()->startPublishing(mHistoExpMatchedStripFromChDz);
+  mHistoExpMatchedStripFromChR = new TH2F("mHistoExpMatchedStripFromChR", "Matched vs Strips from channel;strip; Residual (cm)", 91 * 18, 0, 91 * 18, 100, 0, 10);
+  getObjectsManager()->startPublishing(mHistoExpMatchedStripFromChR);
+
+  mHistoExpMatchedNhit = new TH2F("mHistoExpMatchedNhit", "N hits in TOF cluster, per strip from channel; strip; n_{hit}", 91 * 18, 0, 91 * 18, 6, 0, 6);
+  getObjectsManager()->startPublishing(mHistoExpMatchedNhit);
 }
 
 void TOFMatchedTracks::startOfActivity(const Activity& activity)
@@ -366,6 +391,16 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
         if (isec >= 0 && isec < 18) {
           mDTimeTrk[isec]->Fill(trkTPC.getEta(), deltaTrackTimeInBC);
         }
+        if (trkTPC.getPt() > mThresholdPtForExperts) {
+          std::array<float, 3> globalPos;
+          trk.getParamOut().getXYZGlo(globalPos);
+
+          float eta = trk.getEta();
+          float phi = trk.getPhi();
+          phi = TMath::ATan2(globalPos[1], globalPos[0]);
+
+          fillNumeratorForExperts(eta, phi, tofCl.getMainContributingChannel(), tofCl.getNumOfContributingChannels(), matchTOF.getDXatTOF(), matchTOF.getDZatTOF(), matchTOF.getChi2());
+        }
       }
 
       mMatchedTracksEta[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getEta());
@@ -469,6 +504,17 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
         if (isec >= 0 && isec < 18) {
           mDTimeTrkTRD[isec]->Fill(trkTPC.getEta(), deltaTrackTimeInBC);
         }
+
+        if (trkTPC.getPt() > mThresholdPtForExperts) {
+          std::array<float, 3> globalPos;
+          trk.getOuterParam().getXYZGlo(globalPos);
+
+          float eta = trk.getEta();
+          float phi = trk.getPhi();
+          phi = TMath::ATan2(globalPos[1], globalPos[0]);
+
+          fillNumeratorForExperts(eta, phi, tofCl.getMainContributingChannel(), tofCl.getNumOfContributingChannels(), matchTOF.getDXatTOF(), matchTOF.getDZatTOF(), matchTOF.getChi2());
+        }
       }
 
       if (mUseMC) {
@@ -524,6 +570,16 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
       this->mInTracksPt[matchType::ITSTPC_ITSTPCTRD]->Fill(tpcTrack.getPt());
       this->mInTracksEta[matchType::ITSTPC_ITSTPCTRD]->Fill(tpcTrack.getEta());
       this->mInTracks2DPtEta[matchType::ITSTPC_ITSTPCTRD]->Fill(tpcTrack.getPt(), tpcTrack.getEta());
+
+      if (tpcTrack.getPt() > mThresholdPtForExperts) {
+        std::array<float, 3> globalPos;
+        trk.getParamOut().getXYZGlo(globalPos);
+
+        float phi = trk.getPhi();
+        phi = TMath::ATan2(globalPos[1], globalPos[0]);
+
+        fillDenominatorForExperts(trk.getEta(), phi);
+      }
     }
     // In case of ITS-TPC-TRD-TOF, TPC-TRD, ITS-TPC-TRD-TOF, TPC-TRD-TOF, it is always a TRD track
     if constexpr (isTRDTrack<decltype(trk)>()) {
@@ -539,6 +595,16 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
         this->mInTracksPt[matchType::ITSTPC_ITSTPCTRD]->Fill(tpcTrack.getPt());
         this->mInTracksEta[matchType::ITSTPC_ITSTPCTRD]->Fill(tpcTrack.getEta());
         this->mInTracks2DPtEta[matchType::ITSTPC_ITSTPCTRD]->Fill(tpcTrack.getPt(), tpcTrack.getEta());
+
+        if (tpcTrack.getPt() > mThresholdPtForExperts) {
+          std::array<float, 3> globalPos;
+          trk.getOuterParam().getXYZGlo(globalPos);
+
+          float phi = trk.getPhi();
+          phi = TMath::ATan2(globalPos[1], globalPos[0]);
+
+          fillDenominatorForExperts(trk.getEta(), phi);
+        }
       } else {
         const auto& tpcTrack = mTPCTracks[trk.getRefGlobalTrackId()];
         if (!selectTrack(tpcTrack)) {
@@ -588,6 +654,51 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
       }
     }
   }
+}
+
+void TOFMatchedTracks::fillDenominatorForExperts(float eta, float phi)
+{
+  int stripFromTrack = 90;
+  while (ETAFROMSTRIP[stripFromTrack] < eta && stripFromTrack > 0) {
+    stripFromTrack--;
+  }
+
+  int iSect = o2::math_utils::angle2Sector(phi);
+  stripFromTrack += iSect * 91;
+
+  // fill histo with residualts (x,z) vs strip extrapolated from track
+  mHistoExpTrackedStrip->Fill(stripFromTrack);
+}
+
+void TOFMatchedTracks::fillNumeratorForExperts(float eta, float phi, int channel, int nhit, float dx, float dz, float chi2)
+{
+  int stripFromTrack = 90;
+  while (ETAFROMSTRIP[stripFromTrack] < eta && stripFromTrack > 0) {
+    stripFromTrack--;
+  }
+
+  // ILOG(Info, Devel) << "eta = " << eta << ", strip = " << stripFromTrack<<  ENDM;
+
+  int iSect = o2::math_utils::angle2Sector(phi);
+  stripFromTrack += iSect * 91;
+
+  int det[5];
+  o2::tof::Geo::getVolumeIndices(channel, det);
+  int strip = channel / 96;
+
+  // fill histo with residualts (x,z) vs strip extrapolated from track and vs strip from matching
+
+  // ILOG(Info, Devel) << "phi = " << phi << ENDM;
+  // ILOG(Info, Devel) << "strip from eta,phi = " << stripFromTrack % 91 << ", sector = " << iSect << ENDM;
+  // ILOG(Info, Devel) << "strip from channel = " << strip % 91 << ", sector = " << strip / 91 <<  ENDM;
+
+  mHistoExpMatchedNhit->Fill(strip, nhit);
+  mHistoExpMatchedStrip->Fill(stripFromTrack);
+  mHistoExpMatchedStripFromCh->Fill(strip);
+
+  mHistoExpMatchedStripFromChDx->Fill(strip, dx);
+  mHistoExpMatchedStripFromChDz->Fill(strip, dz);
+  mHistoExpMatchedStripFromChR->Fill(strip, chi2);
 }
 
 void TOFMatchedTracks::endOfCycle()
@@ -755,6 +866,14 @@ void TOFMatchedTracks::reset()
     mDTimeTrkTPC[isec]->Reset();
     mDTimeTrkTRD[isec]->Reset();
   }
+
+  mHistoExpTrackedStrip->Reset();
+  mHistoExpMatchedStrip->Reset();
+  mHistoExpMatchedStripFromCh->Reset();
+  mHistoExpMatchedStripFromChDx->Reset();
+  mHistoExpMatchedStripFromChDz->Reset();
+  mHistoExpMatchedStripFromChR->Reset();
+  mHistoExpMatchedNhit->Reset();
 }
 
 //__________________________________________________________
