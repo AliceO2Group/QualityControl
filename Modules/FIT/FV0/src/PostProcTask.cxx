@@ -374,32 +374,6 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
     */
   }
 
-  /*
-    auto mo3 = mDatabase->retrieveMO(mPathDigitQcTask, "AmpPerChannel", t.timestamp, t.activity);
-    auto hAmpPerChannel = mo3 ? dynamic_cast<TH2F*>(mo3->getObject()) : nullptr;
-    if (!hAmpPerChannel) {
-      ILOG(Error) << "MO \"AmpPerChannel\" NOT retrieved!!!"
-                  << ENDM;
-    }
-    auto mo4 = mDatabase->retrieveMO(mPathDigitQcTask, "TimePerChannel", t.timestamp, t.activity);
-    auto hTimePerChannel = mo4 ? dynamic_cast<TH2F*>(mo4->getObject()) : nullptr;
-    if (!hTimePerChannel) {
-      ILOG(Error) << "MO \"TimePerChannel\" NOT retrieved!!!"
-                  << ENDM;
-    } else {
-      auto projLower = hTimePerChannel->ProjectionX("projLower", 0, hTimePerChannel->GetYaxis()->FindBin(-190.));
-      auto projUpper = hTimePerChannel->ProjectionX("projUpper", hTimePerChannel->GetYaxis()->FindBin(190.), -1);
-      auto projInWindow = hTimePerChannel->ProjectionX("projInWindow", hTimePerChannel->GetYaxis()->FindBin(-190.), hTimePerChannel->GetYaxis()->FindBin(190.));
-      auto projFull = hTimePerChannel->ProjectionX("projFull");
-      mHistTimeUpperFraction->Divide(projUpper, projFull);
-      mHistTimeLowerFraction->Divide(projLower, projFull);
-      mHistTimeInWindow->Divide(projInWindow, projFull);
-      delete projLower;
-      delete projUpper;
-      delete projInWindow;
-      delete projFull;
-    }
-  */
   auto mo3 = mDatabase->retrieveMO(mPathDigitQcTask, "AmpPerChannel", t.timestamp, t.activity);
   auto hAmpPerChannel = mo3 ? dynamic_cast<TH2F*>(mo3->getObject()) : nullptr;
   if (!hAmpPerChannel) {
