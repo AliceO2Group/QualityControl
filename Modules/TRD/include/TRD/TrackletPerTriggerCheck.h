@@ -11,7 +11,7 @@
 
 ///
 /// \file   TrackletPerTriggerCheck.h
-/// \author My Name
+/// \author Deependra Sharma
 ///
 
 #ifndef QC_MODULE_TRD_TRDTRACKLETPERTRIGGERCHECK_H
@@ -38,7 +38,8 @@ class TrackletPerTriggerCheck : public o2::quality_control::checker::CheckInterf
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
   long int mTimeStamp;
-  std::pair<float,float> DesiredMeanRegion;
+  std::pair<float, float> DesiredMeanRegion;
+  long int StatThreshold;
 
   ClassDefOverride(TrackletPerTriggerCheck, 2);
 };

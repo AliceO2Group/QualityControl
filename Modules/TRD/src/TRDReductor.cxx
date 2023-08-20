@@ -11,6 +11,7 @@
 
 ///
 /// \file   TRDReductor.cxx
+/// \author Deependra Sharma
 ///
 
 #include <TH1.h>
