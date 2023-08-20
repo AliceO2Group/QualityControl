@@ -20,6 +20,10 @@
 #include "DataFormatsParameters/GRPLHCIFData.h"
 #include "DataFormatsFV0/LookUpTable.h"
 
+#include "FITCommon/HelperHist.h"
+#include "FITCommon/HelperCommon.h"
+#include "FITCommon/HelperFIT.h"
+
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TCanvas.h>
@@ -30,6 +34,7 @@
 #include <map>
 
 using namespace o2::quality_control::postprocessing;
+using namespace o2::quality_control_modules::fit;
 
 namespace o2::quality_control_modules::fv0
 {
@@ -45,6 +50,7 @@ void PostProcTask::configure(const boost::property_tree::ptree& config)
   mCcdbUrl = config.get_child("qc.config.conditionDB.url").get_value<std::string>();
 
   const char* configPath = Form("qc.postprocessing.%s", getID().c_str());
+  const char* configCustom = Form("%s.custom", configPath);
   ILOG(Info, Support) << "configPath = " << configPath << ENDM;
 
   auto node = config.get_child_optional(Form("%s.custom.pathGrpLhcIf", configPath));
@@ -99,6 +105,9 @@ void PostProcTask::configure(const boost::property_tree::ptree& config)
     mTimestampSourceLhcIf = "trigger";
     ILOG(Debug, Support) << "configure() : using default timestampSourceLhcIf = \"" << mTimestampSourceLhcIf << "\"" << ENDM;
   }
+
+  mLowTimeThreshold = helper::getConfigFromPropertyTree<int>(config, Form("%s.lowTimeThreshold", configCustom), -192);
+  mUpTimeThreshold = helper::getConfigFromPropertyTree<int>(config, Form("%s.upTimeThreshold", configCustom), 192);
 }
 
 void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
@@ -112,8 +121,8 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
   mRateTrgCharge = std::make_unique<TGraph>(0);
   mRateTrgNchan = std::make_unique<TGraph>(0);
   // mRatesCanv = std::make_unique<TCanvas>("cRates", "trigger rates");
-  mAmpl = new TProfile("MeanAmplPerChannel", "mean ampl per channel;Channel;Ampl #mu #pm #sigma", sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF);
-  mTime = new TProfile("MeanTimePerChannel", "mean time per channel;Channel;Time #mu #pm #sigma", sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF);
+  mAmpl = new TProfile("MeanAmplPerChannel", "mean ampl per channel;Channel;Ampl #mu #pm #sigma", sNCHANNELS_PM, 0, sNCHANNELS_PM);
+  mTime = new TProfile("MeanTimePerChannel", "mean time per channel;Channel;Time #mu #pm #sigma", sNCHANNELS_PM, 0, sNCHANNELS_PM);
 
   mRateOrA->SetNameTitle("rateOrA", "trg rate: OrA;cycle;rate [kHz]");
   mRateOrAout->SetNameTitle("rateOrAout", "trg rate: OrAout;cycle;rate [kHz]");
@@ -146,7 +155,7 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
   mMapChTrgNames.insert({ o2::fv0::ChannelData::kIsEventInTVDC, "IsEventInTVDC" });
   mMapChTrgNames.insert({ o2::fv0::ChannelData::kIsTimeInfoLost, "IsTimeInfoLost" });
 
-  mHistChDataNegBits = std::make_unique<TH2F>("ChannelDataNegBits", "ChannelData negative bits per ChannelID;Channel;Negative bit", sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF, mMapChTrgNames.size(), 0, mMapChTrgNames.size());
+  mHistChDataNegBits = std::make_unique<TH2F>("ChannelDataNegBits", "ChannelData negative bits per ChannelID;Channel;Negative bit", sNCHANNELS_PM, 0, sNCHANNELS_PM, mMapChTrgNames.size(), 0, mMapChTrgNames.size());
   for (const auto& entry : mMapChTrgNames) {
     std::string stBitName = "! " + entry.second;
     mHistChDataNegBits->GetYaxis()->SetBinLabel(entry.first + 1, stBitName.c_str());
@@ -193,7 +202,7 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
     }
     if (std::regex_match(strChID, std::regex("[[\\d]{1,3}"))) {
       int chID = std::stoi(strChID);
-      if (chID < sNCHANNELS_FV0_PLUSREF) {
+      if (chID < sNCHANNELS_PM) {
         mChID2PMhash[chID] = mMapFEE2hash[moduleName];
       } else {
         ILOG(Error, Support) << "Incorrect LUT entry: chID " << strChID << " | " << moduleName << ENDM;
@@ -245,15 +254,6 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
   getObjectsManager()->startPublishing(mHistBcFeeOutOfBunchCollForOrAInTrg.get());
   getObjectsManager()->setDefaultDrawOptions(mHistBcFeeOutOfBunchCollForOrAInTrg.get(), "COLZ");
 
-  mHistTimeUpperFraction = std::make_unique<TH1F>("TimeUpperFraction", "Fraction of events under time window(-+190 channels);ChID;Fraction", sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF);
-  getObjectsManager()->startPublishing(mHistTimeUpperFraction.get());
-
-  mHistTimeLowerFraction = std::make_unique<TH1F>("TimeLowerFraction", "Fraction of events below time window(-+190 channels);ChID;Fraction", sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF);
-  getObjectsManager()->startPublishing(mHistTimeLowerFraction.get());
-
-  mHistTimeInWindow = std::make_unique<TH1F>("TimeInWindowFraction", "Fraction of events within time window(-+190 channels);ChID;Fraction", sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF);
-  getObjectsManager()->startPublishing(mHistTimeInWindow.get());
-
   getObjectsManager()->startPublishing(mRateOrA.get());
   getObjectsManager()->startPublishing(mRateOrAout.get());
   getObjectsManager()->startPublishing(mRateOrAin.get());
@@ -269,6 +269,11 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
       obj->SetTitle((string("FV0 ") + obj->GetTitle()).c_str());
     }
   }
+
+  mMapBasicTrgBits = HelperTrgFIT::sMapBasicTrgBitsFV0;
+  mHistTrgValidation = helper::registerHist<TH1F>(getObjectsManager(), "", "TrgValidation", "FV0 SW + HW only to validated triggers fraction", mMapBasicTrgBits);
+  mHistTimeInWindow = helper::registerHist<TH1F>(getObjectsManager(), "", "TimeInWindowFraction", Form("FV0 Fraction of events with CFD in time gate(%i,%i) vs ChannelID;ChannelID;Event fraction with CFD in time gate", mLowTimeThreshold, mUpTimeThreshold), sNCHANNELS_PM, 0, sNCHANNELS_PM);
+  mHistCFDEff = helper::registerHist<TH1F>(getObjectsManager(), "", "CFD_efficiency", "FV0 Fraction of events with CFD in ADC gate vs ChannelID;ChannelID;Event fraction with CFD in ADC gate;", sNCHANNELS_PM, 0, sNCHANNELS_PM);
 }
 
 void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
@@ -369,11 +374,41 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
     */
   }
 
+  /*
+    auto mo3 = mDatabase->retrieveMO(mPathDigitQcTask, "AmpPerChannel", t.timestamp, t.activity);
+    auto hAmpPerChannel = mo3 ? dynamic_cast<TH2F*>(mo3->getObject()) : nullptr;
+    if (!hAmpPerChannel) {
+      ILOG(Error) << "MO \"AmpPerChannel\" NOT retrieved!!!"
+                  << ENDM;
+    }
+    auto mo4 = mDatabase->retrieveMO(mPathDigitQcTask, "TimePerChannel", t.timestamp, t.activity);
+    auto hTimePerChannel = mo4 ? dynamic_cast<TH2F*>(mo4->getObject()) : nullptr;
+    if (!hTimePerChannel) {
+      ILOG(Error) << "MO \"TimePerChannel\" NOT retrieved!!!"
+                  << ENDM;
+    } else {
+      auto projLower = hTimePerChannel->ProjectionX("projLower", 0, hTimePerChannel->GetYaxis()->FindBin(-190.));
+      auto projUpper = hTimePerChannel->ProjectionX("projUpper", hTimePerChannel->GetYaxis()->FindBin(190.), -1);
+      auto projInWindow = hTimePerChannel->ProjectionX("projInWindow", hTimePerChannel->GetYaxis()->FindBin(-190.), hTimePerChannel->GetYaxis()->FindBin(190.));
+      auto projFull = hTimePerChannel->ProjectionX("projFull");
+      mHistTimeUpperFraction->Divide(projUpper, projFull);
+      mHistTimeLowerFraction->Divide(projLower, projFull);
+      mHistTimeInWindow->Divide(projInWindow, projFull);
+      delete projLower;
+      delete projUpper;
+      delete projInWindow;
+      delete projFull;
+    }
+  */
   auto mo3 = mDatabase->retrieveMO(mPathDigitQcTask, "AmpPerChannel", t.timestamp, t.activity);
   auto hAmpPerChannel = mo3 ? dynamic_cast<TH2F*>(mo3->getObject()) : nullptr;
   if (!hAmpPerChannel) {
     ILOG(Error) << "MO \"AmpPerChannel\" NOT retrieved!!!"
                 << ENDM;
+  } else {
+    std::unique_ptr<TH1D> projNom(hAmpPerChannel->ProjectionX("projNom", hAmpPerChannel->GetYaxis()->FindBin(1.0), -1));
+    std::unique_ptr<TH1D> projDen(hAmpPerChannel->ProjectionX("projDen"));
+    mHistCFDEff->Divide(projNom.get(), projDen.get());
   }
   auto mo4 = mDatabase->retrieveMO(mPathDigitQcTask, "TimePerChannel", t.timestamp, t.activity);
   auto hTimePerChannel = mo4 ? dynamic_cast<TH2F*>(mo4->getObject()) : nullptr;
@@ -381,17 +416,9 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
     ILOG(Error) << "MO \"TimePerChannel\" NOT retrieved!!!"
                 << ENDM;
   } else {
-    auto projLower = hTimePerChannel->ProjectionX("projLower", 0, hTimePerChannel->GetYaxis()->FindBin(-190.));
-    auto projUpper = hTimePerChannel->ProjectionX("projUpper", hTimePerChannel->GetYaxis()->FindBin(190.), -1);
-    auto projInWindow = hTimePerChannel->ProjectionX("projInWindow", hTimePerChannel->GetYaxis()->FindBin(-190.), hTimePerChannel->GetYaxis()->FindBin(190.));
-    auto projFull = hTimePerChannel->ProjectionX("projFull");
-    mHistTimeUpperFraction->Divide(projUpper, projFull);
-    mHistTimeLowerFraction->Divide(projLower, projFull);
-    mHistTimeInWindow->Divide(projInWindow, projFull);
-    delete projLower;
-    delete projUpper;
-    delete projInWindow;
-    delete projFull;
+    std::unique_ptr<TH1D> projInWindow(hTimePerChannel->ProjectionX("projInWindow", hTimePerChannel->GetYaxis()->FindBin(mLowTimeThreshold), hTimePerChannel->GetYaxis()->FindBin(mUpTimeThreshold)));
+    std::unique_ptr<TH1D> projFull(hTimePerChannel->ProjectionX("projFull"));
+    mHistTimeInWindow->Divide(projInWindow.get(), projFull.get());
   }
 
   if (hAmpPerChannel && hTimePerChannel) {
@@ -672,6 +699,16 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
     const std::string metadataValue = std::to_string(hBcVsTrg->Integral(1, sBCperOrbit, iBin, iBin));
     getObjectsManager()->getMonitorObject(mHistBcTrgOutOfBunchColl->GetName())->addOrUpdateMetadata(metadataKey, metadataValue);
     ILOG(Info, Support) << metadataKey << ":" << metadataValue << ENDM;
+  }
+
+  auto moTriggersSoftwareVsTCM = mDatabase->retrieveMO(mPathDigitQcTask, "TriggersSoftwareVsTCM", t.timestamp, t.activity);
+  auto hTriggersSoftwareVsTCM = moTriggersSoftwareVsTCM ? dynamic_cast<TH2F*>(moTriggersSoftwareVsTCM->getObject()) : nullptr;
+  if (hTriggersSoftwareVsTCM != nullptr) {
+    std::unique_ptr<TH1D> projOnlyHWorSW(hTriggersSoftwareVsTCM->ProjectionX("projOnlyHWorSW", 1, 2));
+    std::unique_ptr<TH1D> projValidatedSWandHW(hTriggersSoftwareVsTCM->ProjectionX("projValidatedSWandHW", 4, 4));
+    projOnlyHWorSW->LabelsDeflate();
+    projValidatedSWandHW->LabelsDeflate();
+    mHistTrgValidation->Divide(projOnlyHWorSW.get(), projValidatedSWandHW.get());
   }
 }
 

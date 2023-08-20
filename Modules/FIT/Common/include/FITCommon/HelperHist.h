@@ -18,17 +18,23 @@
 #define QC_MODULE_FIT_FITHELPERHIST_H
 
 #include <map>
+#include <vector>
 #include <string>
 #include <tuple>
 #include <utility>
 #include <memory>
 #include <type_traits>
+#include <regex>
+#include <set>
 
 #include <boost/property_tree/ptree.hpp>
 
+#include "TH1D.h"
 #include "TAxis.h"
 
 #include "QualityControl/QcInfoLogger.h"
+
+#include <FITCommon/HelperCommon.h>
 namespace o2::quality_control_modules::fit
 {
 
@@ -119,88 +125,72 @@ inline auto registerHist(ManagerType manager, const std::string& defaultDrawOpti
   return std::move(ptrHist);
 }
 
-template <typename ValueType>
-inline ValueType getConfigFromPropertyTree(const boost::property_tree::ptree& config, const char* fieldName, ValueType value = {})
+template <typename HistSrcType>
+auto makeProj(const HistSrcType* histSrc,
+              const std::string& name,
+              const std::string& title,
+              const std::pair<double, double>& rangeProj,
+              int axis = 0 /*axis along which to do projection: 0 - xAxis; 1 - yAxis*/
+              ) -> TH1D*
 {
-  const auto& node = config.get_child_optional(fieldName);
-  if (node) {
-    value = node.get_ptr()->get_child("").get_value<ValueType>();
-    ILOG(Debug, Support) << fieldName << ": " << value << "\"" << ENDM;
-  } else {
-    ILOG(Debug, Support) << "Default " << fieldName << ": " << value << ENDM;
+  if (axis != 0 || axis != 1) {
+    return nullptr;
   }
-  return value;
+  const TAxis* axisObj = axis == 0 ? histSrc->GetXaxis() : histSrc->GetYaxis();
+  const auto binMin = axisObj->FindFixBin(rangeProj.first);
+  const auto binMax = axisObj->FindFixBin(rangeProj.second);
+  TH1D* histProj = ((TH1D*)(axis == 0 ? histSrc->ProjectionX(name.c_str(), binMin, binMax) : histSrc->ProjectionX(name.c_str(), binMin, binMax)));
+  histProj->LabelsDeflate();
+  histProj->SetTitle(title.c_str());
+  return histProj;
 }
 
-// first entry - start BC, second - number of BCs in row
-template <typename BitSetBC>
-inline std::vector<std::pair<int, int>> getMapBCtrains(const BitSetBC& bitsetBC)
+template <typename HistSrcType, typename SetBinsType>
+auto makePartialProj(const HistSrcType* histSrc,
+                     const std::string& name,
+                     const std::string& title,
+                     const SetBinsType& setBinsToProj, // bins to participate in projection
+                     const std::pair<double, double>& rangeProj,
+                     int axis = 0 // axis along which to do projection: 0 - xAxis; 1 - yAxis
+                     ) -> TH1D*
 {
-  std::vector<std::pair<int, int>> vecTrains{};
-  int nBCs{ 0 };
-  int firstBC{ -1 };
-  for (int iBC = 0; iBC < bitsetBC.size(); iBC++) {
-    if (bitsetBC.test(iBC)) {
-      // BC in train
-      nBCs++;
-      if (firstBC == -1) {
-        // first BC in train
-        firstBC = iBC;
+  if (axis != 0 || axis != 1) {
+    return nullptr;
+  }
+  auto histTmp = std::unique_ptr<HistSrcType>((HistSrcType*)histSrc->Clone("histTmp"));
+  for (int iBinX = 0; iBinX < histSrc->GetXaxis()->GetNbins() + 2; iBinX++) {
+    for (int iBinY = 0; iBinY < histSrc->GetYaxis()->GetNbins() + 2; iBinY++) {
+      bool isBinOutOfSet = false;
+      if constexpr (std::is_same_v<std::decay_t<SetBinsType>, std::set<std::pair<int, int>>>) {
+        isBinOutOfSet = (setBinsToProj.find(axis == 0 ? iBinX : iBinY) == setBinsToProj.end());
+      } else if constexpr (std::is_same_v<std::decay_t<SetBinsType>, std::set<std::pair<int, int>>>) {
+        isBinOutOfSet = (setBinsToProj.find({ iBinX, iBinY }) == setBinsToProj.end());
+      } else {
+        // assertion, shouldn't be compiled
       }
-    } else if (nBCs > 0) {
-      // Next after end of train BC
-      vecTrains.push_back({ firstBC, nBCs });
-      firstBC = -1;
-      nBCs = 0;
+      if (isBinOutOfSet) {
+        histTmp->SetBinContent(iBinX, iBinY, 0);
+      }
     }
   }
-  if (nBCs > 0) { // last iteration
-    vecTrains.push_back({ firstBC, nBCs });
-  }
-  return vecTrains;
+  return makeProj(histTmp.get(), name, title, rangeProj, axis);
 }
 
-inline std::map<unsigned int, std::string> multiplyMaps(const std::vector<std::tuple<std::string, std::map<unsigned int, std::string>, std::string>>& vecPreffixMapSuffix, bool useMapSizeAsMultFactor = true)
+template <typename HistType, typename HistSrcType, typename... ArgsNom, typename... ArgsDen>
+inline auto getRatioHistFrom2D(const HistSrcType* hist,
+                               const std::string& name,
+                               const std::string& title,
+                               std::function<HistType*(const HistSrcType*, ArgsNom...)> funcNom,
+                               const std::tuple<ArgsNom...>& argsNom,
+                               std::function<HistType*(const HistSrcType*, ArgsDen...)> funcDen,
+                               const std::tuple<ArgsDen...>& argsDen) -> HistType*
 {
-
-  auto multiplyPairMaps = [](bool useMapSizeAsMultFactor, const std::tuple<std::string, std::map<unsigned int, std::string>, std::string>& firstPreffixMapSuffix,
-                             const std::tuple<std::string, std::map<unsigned int, std::string>, std::string>& secondPreffixMapSuffix = {}) -> std::map<unsigned int, std::string> {
-    std::map<unsigned int, std::string> mapResult{};
-    const auto& firstPreffix = std::get<0>(firstPreffixMapSuffix);
-    const auto& firstSuffix = std::get<2>(firstPreffixMapSuffix);
-    const auto& firstMap = std::get<1>(firstPreffixMapSuffix);
-
-    const auto& secondPreffix = std::get<0>(secondPreffixMapSuffix);
-    const auto& secondSuffix = std::get<2>(secondPreffixMapSuffix);
-    const auto& secondMap = std::get<1>(secondPreffixMapSuffix);
-
-    const unsigned int lastPosSecondMap = secondMap.size() > 0 ? (--secondMap.end())->first : 0;
-    const unsigned int multFactor = (useMapSizeAsMultFactor && secondMap.size() > 0) ? secondMap.size() : lastPosSecondMap + 1;
-
-    for (const auto& entryFirst : firstMap) {
-      const std::string newEntrySecond_preffix = firstPreffix + entryFirst.second + firstSuffix;
-      const unsigned int startIndex = entryFirst.first * multFactor;
-      for (const auto& entrySecond : secondMap) {
-        const std::string newEntrySecond = newEntrySecond_preffix + secondPreffix + entrySecond.second + secondSuffix;
-        const unsigned int newEntryFirst = startIndex + entrySecond.first;
-        mapResult.insert({ newEntryFirst, newEntrySecond });
-      }
-      if (secondMap.size() == 0) {
-        // Only add preffix and suffix
-        mapResult.insert({ startIndex, newEntrySecond_preffix });
-      }
-    }
-    return mapResult;
-  };
-  std::map<unsigned int, std::string> mapResult{};
-  if (vecPreffixMapSuffix.size() > 0) {
-    mapResult = multiplyPairMaps(useMapSizeAsMultFactor, vecPreffixMapSuffix[0]);
-    for (int iEntry = 1; iEntry < vecPreffixMapSuffix.size(); iEntry++) {
-      const std::string s1{ "" }, s2{ "" };
-      mapResult = multiplyPairMaps(useMapSizeAsMultFactor, std::tie(s1, mapResult, s2), vecPreffixMapSuffix[iEntry]);
-    }
-  }
-  return mapResult;
+  std::unique_ptr<HistType> histNom(funcWithArgsAsTuple(funcNom, std::tuple_cat(std::tuple(hist), argsNom)));
+  std::unique_ptr<HistType> histDen(funcWithArgsAsTuple(funcDen, std::tuple_cat(std::tuple(hist), argsDen)));
+  std::unique_ptr<HistType> histResult((HistType*)histNom->Clone(name.c_str()));
+  histResult->SetTitle(title.c_str());
+  histResult->Divide(histDen);
+  return std::move(histResult);
 }
 
 } // namespace helper

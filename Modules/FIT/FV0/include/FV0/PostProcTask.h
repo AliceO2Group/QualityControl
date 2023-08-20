@@ -53,7 +53,7 @@ class PostProcTask final : public quality_control::postprocessing::PostProcessin
   void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
 
   constexpr static std::size_t sBCperOrbit = o2::constants::lhc::LHCMaxBunches;
-  constexpr static std::size_t sNCHANNELS_FV0_PLUSREF = o2::fv0::Constants::nFv0ChannelsPlusRef;
+  constexpr static std::size_t sNCHANNELS_PM = o2::fv0::Constants::nFv0ChannelsPlusRef;
 
  private:
   std::string mPathGrpLhcIf;
@@ -66,6 +66,7 @@ class PostProcTask final : public quality_control::postprocessing::PostProcessin
 
   std::map<o2::fv0::ChannelData::EEventDataBit, std::string> mMapChTrgNames;
   std::map<int, std::string> mMapDigitTrgNames;
+  std::map<unsigned int, std::string> mMapBasicTrgBits;
 
   o2::quality_control::repository::DatabaseInterface* mDatabase = nullptr;
   o2::ccdb::CcdbApi mCcdbApi;
@@ -78,9 +79,9 @@ class PostProcTask final : public quality_control::postprocessing::PostProcessin
   std::unique_ptr<TH2F> mHistChDataNegBits;
   std::unique_ptr<TH1F> mHistTriggers;
 
-  std::unique_ptr<TH1F> mHistTimeUpperFraction;
-  std::unique_ptr<TH1F> mHistTimeLowerFraction;
   std::unique_ptr<TH1F> mHistTimeInWindow;
+  std::unique_ptr<TH1F> mHistCFDEff;
+  std::unique_ptr<TH1F> mHistTrgValidation;
 
   std::unique_ptr<TCanvas> mRatesCanv;
   TProfile* mAmpl = nullptr;
@@ -99,10 +100,13 @@ class PostProcTask final : public quality_control::postprocessing::PostProcessin
   std::unique_ptr<TH2F> mHistBcFeeOutOfBunchCollForOrAInTrg;
 
   uint8_t mTCMhash;
-  std::array<uint8_t, sNCHANNELS_FV0_PLUSREF> mChID2PMhash; // map chID->hashed PM value
+  std::array<uint8_t, sNCHANNELS_PM> mChID2PMhash; // map chID->hashed PM value
   std::map<uint8_t, bool> mMapPMhash2isInner;
   std::map<unsigned int, TH1D*> mMapTrgHistBC;
   std::map<std::string, uint8_t> mMapFEE2hash;
+
+  int mLowTimeThreshold{ -192 };
+  int mUpTimeThreshold{ 192 };
 };
 
 } // namespace o2::quality_control_modules::fv0

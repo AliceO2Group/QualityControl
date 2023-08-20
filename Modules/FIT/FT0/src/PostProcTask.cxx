@@ -30,6 +30,7 @@
 
 #include "FITCommon/HelperHist.h"
 #include "FITCommon/HelperFIT.h"
+#include "FITCommon/HelperCommon.h"
 
 #include <iostream>
 
@@ -102,7 +103,7 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
   mMapChTrgNames = helperFIT.mMapPMbits;
   mMapDigitTrgNames = HelperTrgFIT::sMapTrgBits;
   mMapBasicTrgBits = HelperTrgFIT::sMapBasicTrgBitsFT0;
-  mHistChDataNegBits = helper::registerHist<TH2F>(getObjectsManager(), "COLZ", "ChannelDataNegBits", "ChannelData negative bits per ChannelID;Channel;Negative bit", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM, mMapChTrgNames);
+  mHistChDataNegBits = helper::registerHist<TH2F>(getObjectsManager(), "COLZ", "ChannelDataNegBits", "ChannelData negative bits per ChannelID;Channel;Negative bit", sNCHANNELS_PM, 0, sNCHANNELS_PM, mMapChTrgNames);
   mHistTriggers = helper::registerHist<TH1F>(getObjectsManager(), "", "Triggers", "FT0 Triggers from TCM", mMapDigitTrgNames);
   mHistBcTrgOutOfBunchColl = helper::registerHist<TH2F>(getObjectsManager(), "COLZ", "OutOfBunchColl_BCvsTrg", "FT0 BC vs Triggers for out-of-bunch collisions;BC;Triggers", sBCperOrbit, 0, sBCperOrbit, mMapDigitTrgNames);
   mHistBcPattern = helper::registerHist<TH2F>(getObjectsManager(), "COLZ", "bcPattern", "BC pattern", sBCperOrbit, 0, sBCperOrbit, mMapDigitTrgNames);
@@ -116,7 +117,9 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
       getObjectsManager()->startPublishing(pairHistBC.first->second);
     }
   }
-  mHistTimeInWindow = std::make_unique<TH1F>("TimeInWindowFraction", Form("Fraction of events with CFD in time gate(%i,%i) vs ChannelID;ChannelID;Event fraction with CFD in time gate", mLowTimeThreshold, mUpTimeThreshold), o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
+  mHistTimeInWindow = std::make_unique<TH1F>("TimeInWindowFraction", Form("Fraction of events with CFD in time gate(%i,%i) vs ChannelID;ChannelID;Event fraction with CFD in time gate", mLowTimeThreshold, mUpTimeThreshold), sNCHANNELS_PM, 0, sNCHANNELS_PM);
+  mHistCFDEff = helper::registerHist<TH1F>(getObjectsManager(), "", "CFD_efficiency", "FT0 Fraction of events with CFD in ADC gate vs ChannelID;ChannelID;Event fraction with CFD in ADC gate;", sNCHANNELS_PM, 0, sNCHANNELS_PM);
+
   getObjectsManager()->startPublishing(mHistTimeInWindow.get());
 
   getObjectsManager()->startPublishing(mRateOrA.get());
@@ -136,7 +139,7 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
     }
   */
 
-  mHistChannelID_outOfBC = helper::registerHist<TH1F>(getObjectsManager(), "", "ChannelID_outOfBC", "FT0 ChannelID, out of bunch", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
+  mHistChannelID_outOfBC = helper::registerHist<TH1F>(getObjectsManager(), "", "ChannelID_outOfBC", "FT0 ChannelID, out of bunch", sNCHANNELS_PM, 0, sNCHANNELS_PM);
   mHistTrgValidation = helper::registerHist<TH1F>(getObjectsManager(), "", "TrgValidation", "FT0 SW + HW only to validated triggers fraction", mMapBasicTrgBits);
 }
 
@@ -243,6 +246,10 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
   if (!hAmpPerChannel) {
     ILOG(Error) << "MO \"AmpPerChannel\" NOT retrieved!!!"
                 << ENDM;
+  } else {
+    std::unique_ptr<TH1D> projNom(hAmpPerChannel->ProjectionX("projNom", hAmpPerChannel->GetYaxis()->FindBin(1.0), -1));
+    std::unique_ptr<TH1D> projDen(hAmpPerChannel->ProjectionX("projDen"));
+    mHistCFDEff->Divide(projNom.get(), projDen.get());
   }
   auto mo4 = mDatabase->retrieveMO(mPathDigitQcTask, "TimePerChannel", t.timestamp, t.activity);
   auto hTimePerChannel = mo4 ? dynamic_cast<TH2F*>(mo4->getObject()) : nullptr;

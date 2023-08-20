@@ -5,12 +5,15 @@ set(MODULE_NAME "O2QcFITCommon")
 set(SRCS
   src/HelperFIT.cxx
   src/HelperHist.cxx
+  src/HelperLUT.cxx
   src/DigitSync.cxx
 )
 
 set(HEADERS
+  include/FITCommon/HelperCommon.h
   include/FITCommon/HelperFIT.h
   include/FITCommon/HelperHist.h
+  include/FITCommon/HelperLUT.h
   include/FITCommon/DigitSync.h
 )
 
@@ -24,7 +27,15 @@ target_include_directories(
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_link_libraries(${MODULE_NAME} PUBLIC O2QualityControl ROOT::Core ROOT::Hist O2::CommonDataFormat O2::DataFormatsFIT O2QcCommon)
+target_link_libraries(${MODULE_NAME} PUBLIC O2QualityControl
+                                            ROOT::Core
+                                            ROOT::Hist
+                                            O2::CommonDataFormat
+                                            O2::DataFormatsFIT
+                                            O2QcCommon
+                                            O2::DataFormatsFDD
+                                            O2::DataFormatsFT0
+                                            O2::DataFormatsFV0)
 
 set(CMAKE_REQUIRED_INCLUDES ${O2_INCLUDE_DIRS} ${ROOT_INCLUDE_DIRS})
 

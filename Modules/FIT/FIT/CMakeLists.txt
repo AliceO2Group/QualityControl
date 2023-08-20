@@ -3,6 +3,8 @@ set(MODULE_NAME "O2QcFIT")
 
 add_library(${MODULE_NAME})
 
+target_sources(${MODULE_NAME} PRIVATE src/LevelCheck.cxx)
+target_sources(${MODULE_NAME} PRIVATE src/RawDataMetricTask.cxx)
 target_sources(${MODULE_NAME} PRIVATE src/RecoFITQcTask.cxx)
 
 target_include_directories(
@@ -25,7 +27,9 @@ install(TARGETS ${MODULE_NAME}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 add_root_dictionary(${MODULE_NAME}
-  HEADERS include/FIT/RecoFITQcTask.h
+  HEADERS include/FIT/LevelCheck.h
+          include/FIT/RawDataMetricTask.h
+          include/FIT/RecoFITQcTask.h
   LINKDEF include/FIT/LinkDef.h)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/FIT
