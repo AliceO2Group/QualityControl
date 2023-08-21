@@ -236,9 +236,13 @@ QualityObjectsType AggregatorRunner::aggregate()
 void AggregatorRunner::store(QualityObjectsType& qualityObjects)
 {
   ILOG(Info, Devel) << "Storing " << qualityObjects.size() << " QualityObjects" << ENDM;
+  auto validFrom = getCurrentTimestamp();
   try {
     for (auto& qo : qualityObjects) {
+      auto tmpValidity = qo->getValidity();
+      qo->setValidity(ValidityInterval{ static_cast<unsigned long>(validFrom), validFrom + 10ull * 365 * 24 * 60 * 60 * 1000 });
       mDatabase->storeQO(qo);
+      qo->setValidity(tmpValidity);
     }
     if (!qualityObjects.empty()) {
       auto& qo = qualityObjects.at(0);
