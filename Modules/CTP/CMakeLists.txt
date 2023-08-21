@@ -28,7 +28,7 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/CTP
 
 # ---- Test(s) ----
 
-set(TEST_SRCS test/testQcCTP.cxx)
+#set(TEST_SRCS test/testQcCTP.cxx) # uncomment to reenable the test which was empty
 
 foreach(test ${TEST_SRCS})
   get_filename_component(test_name ${test} NAME)

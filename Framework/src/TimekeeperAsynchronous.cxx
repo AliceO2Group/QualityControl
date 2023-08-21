@@ -32,7 +32,7 @@ void TimekeeperAsynchronous::updateByCurrentTimestamp(validity_time_t timestampM
   // async QC should ignore current timestamp
 }
 
-void TimekeeperAsynchronous::updateByTimeFrameID(uint32_t tfid, uint64_t nOrbitsPerTF)
+void TimekeeperAsynchronous::updateByTimeFrameID(uint32_t tfid)
 {
   // fixme: We might want to use this once we know how to get orbitResetTime:
   //  std::ceil((timingInfo.firstTForbit * o2::constants::lhc::LHCOrbitNS / 1000 + orbitResetTime) / 1000);
@@ -50,7 +50,18 @@ void TimekeeperAsynchronous::updateByTimeFrameID(uint32_t tfid, uint64_t nOrbits
     return;
   }
 
-  auto tfDurationMs = constants::lhc::LHCOrbitNS / 1000000 * nOrbitsPerTF;
+  if (mOrbitsPerTF == 0) {
+    if (auto accessor = getCCDBOrbitsPerTFAccessor()) {
+      mOrbitsPerTF = accessor();
+    } else {
+      ILOG(Error, Ops) << "CCDB OrbitsPerTF accessor is not available" << ENDM;
+    }
+    if (mOrbitsPerTF == 0) {
+      ILOG(Error, Ops) << "nHBFperTF from CCDB GRP is 0, object validity will be incorrect" << ENDM;
+    }
+  }
+
+  auto tfDurationMs = constants::lhc::LHCOrbitNS / 1000000 * mOrbitsPerTF;
   auto tfStart = static_cast<validity_time_t>(mActivityDuration.getMin() + tfDurationMs * (tfid - 1));
   auto tfEnd = static_cast<validity_time_t>(mActivityDuration.getMin() + tfDurationMs * tfid - 1);
   mCurrentSampleTimespan.update(tfStart);

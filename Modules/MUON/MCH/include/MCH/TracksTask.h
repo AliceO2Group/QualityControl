@@ -14,8 +14,6 @@
 
 #include "QualityControl/TaskInterface.h"
 #include <MCHRawElecMap/Mapper.h>
-#include <TH1F.h>
-#include <TProfile.h>
 #include <gsl/span>
 #include <memory>
 #include "MCHGeometryTransformer/Transformations.h"
@@ -29,6 +27,7 @@ class TrackMCH;
 using namespace o2::quality_control::core;
 
 class TH1F;
+class TProfile;
 
 namespace o2::quality_control_modules::muonchambers
 {

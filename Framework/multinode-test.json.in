@@ -25,6 +25,7 @@
     "tasks": {
       "MultiNodeLocalTest@UNIQUE_PORT_1@": {
         "active": "true",
+        "taskName": "MNLTest@UNIQUE_PORT_1@",
         "className": "o2::quality_control_modules::skeleton::SkeletonTask",
         "moduleName": "QcSkeleton",
         "detectorName": "TST",
@@ -46,6 +47,7 @@
       },
       "MultiNodeRemoteTest@UNIQUE_PORT_2@": {
         "active": "true",
+        "taskName": "MNRTest@UNIQUE_PORT_2@",
         "className": "o2::quality_control_modules::skeleton::SkeletonTask",
         "moduleName": "QcSkeleton",
         "detectorName": "TST",

@@ -56,7 +56,6 @@ class RawData final : public TaskInterface
   TH1F* mDataAcceptance = nullptr;
   TH2F* mDataVolumePerHalfChamber = nullptr;
   TH2F* mDataVolumePerSector = nullptr;
-  TH2F* mDataVolumePerHalfSectorCru = nullptr;
   TH1F* mTimeFrameTime = nullptr;
   TH1F* mTrackletParsingTime = nullptr;
   TH1F* mDigitParsingTime = nullptr;
@@ -65,7 +64,6 @@ class RawData final : public TaskInterface
   TH1F* mParsingErrors = nullptr;
   std::array<TH2F*, 10> mLinkErrors;
   std::array<TH2F*, o2::trd::ParsingErrors::TRDLastParsingError> mParsingErrors2d;
-
 };
 
 } // namespace o2::quality_control_modules::trd

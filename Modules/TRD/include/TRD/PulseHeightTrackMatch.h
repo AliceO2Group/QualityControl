@@ -60,26 +60,13 @@ class PulseHeightTrackMatch final : public TaskInterface
   void drawLinesOnPulseHeight(TProfile* h);
 
  private:
-  // limits
-  bool mSkipSharedDigits;
-  double mPileupCut = 0.0;
-  unsigned int mPulseHeightThreshold;
+  // json configurable parameters
   std::pair<float, float> mDriftRegion;
   std::pair<float, float> mPulseHeightPeakRegion;
+  std::bitset<4> mTrackType = 0xf; // bitset to select one or a combination of track types 0: ITSTPCTRD, 1: TPCTRD, 2: TRACKLET, 3: OTHERS. Default is 0xf: all tracks
   long int mTimestamp;
-  std::shared_ptr<TH1F> mParsingTimePerTF;
-  std::shared_ptr<TH1F> mTracksPerEvent;
-  std::shared_ptr<TH1F> mTrackletsPerMatchedTrack;
-  std::shared_ptr<TH1F> mDebugCounter;
-  std::shared_ptr<TH1F> mTriggerMatches;
-  std::shared_ptr<TH1F> mTriggerRecordsMatchesDigits;
   std::shared_ptr<TProfile> mPulseHeightpro = nullptr;
   std::shared_ptr<TProfile2D> mPulseHeightperchamber = nullptr;
-  // information pulled from ccdb
-  o2::trd::NoiseStatusMCM* mNoiseMap = nullptr;
-  o2::trd::HalfChamberStatusQC* mChamberStatus = nullptr;
-  std::string mChambersToIgnore;
-  std::bitset<o2::trd::constants::MAXCHAMBER> mChambersToIgnoreBP;
 };
 
 } // namespace o2::quality_control_modules::trd

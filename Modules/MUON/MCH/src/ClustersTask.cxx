@@ -13,15 +13,16 @@
 
 #include "MCHGlobalMapping/DsIndex.h"
 #include "MUONCommon/HistPlotter.h"
-#include <DataFormatsMCH/Cluster.h>
 #include <DataFormatsMCH/ROFRecord.h>
+#include <DataFormatsMCH/Cluster.h>
 #include <DataFormatsMCH/TrackMCH.h>
 #include <DetectorsBase/GeometryManager.h>
-#include <Framework/DataRefUtils.h>
 #include <Framework/InputRecord.h>
 #include <MCHMappingInterface/Segmentation.h>
 #include <TH1F.h>
+#include <TProfile.h>
 #include <gsl/span>
+#include "QualityControl/QcInfoLogger.h"
 
 namespace
 {

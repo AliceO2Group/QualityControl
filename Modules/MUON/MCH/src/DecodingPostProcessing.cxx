@@ -18,25 +18,13 @@
 
 #include "MCH/DecodingPostProcessing.h"
 #include "MUONCommon/MergeableTH2Ratio.h"
-#include "MCH/TH2ElecMapReductor.h"
 #include "MCH/PostProcessingConfigMCH.h"
-#include "MCHMappingInterface/Segmentation.h"
-#include "MCHMappingSegContour/CathodeSegmentationContours.h"
+#include <MCHMappingInterface/Segmentation.h>
 #include "QualityControl/QcInfoLogger.h"
-#include "QualityControl/MonitorObject.h"
-#include "QualityControl/Reductor.h"
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/DatabaseInterface.h"
-#include <boost/property_tree/ptree.hpp>
-#include <TH1.h>
-#include <TMath.h>
 #include <TH2.h>
-#include <TCanvas.h>
-#include <TPaveText.h>
 #include <TDatime.h>
-#include <TGraphErrors.h>
-#include <TProfile.h>
-#include <TPoint.h>
 
 using namespace o2::quality_control;
 using namespace o2::quality_control::core;

@@ -1,0 +1,159 @@
+{
+    "qc": {
+      "config": {
+        "database": {
+          "implementation": "CCDB",
+          "host": "ccdb-test.cern.ch:8080",
+          "username": "not_applicable",
+          "password": "not_applicable",
+          "name": "not_applicable",
+          "maxObjectSize": "2097152",       "": "[Bytes, default=2MB] Maximum size allowed, larger objects are rejected."
+        },
+        "Activity": {
+          "number": "42",
+          "type": "2",
+          "periodName": "",           "": "Period name - e.g. LHC22c, LHC22c1b_test",
+          "passName": "",             "": "Pass type - e.g. spass, cpass1",
+          "provenance": "qc",         "": "Provenance - qc or qc_mc depending whether it is normal data or monte carlo data"
+        },
+        "monitoring": {
+          "url": "infologger:///debug?qc"
+        },
+        "consul": {
+          "url": ""
+        },
+        "conditionDB": {
+          "url": "ccdb-test.cern.ch:8080"
+        },
+        "infologger": {                     "": "Configuration of the Infologger (optional).",
+          "filterDiscardDebug": "false",    "": "Set to true to discard debug and trace messages (default: false)",
+          "filterDiscardLevel": "11",       "": "Message at this level or above are discarded (default: 21 - Trace)",
+          "filterDiscardFile": "/tmp/_ID_.txt", "": ["If set, the messages discarded because of filterDiscardLevel",
+            "will go to this file (default: <none>); The keyword _ID_ is replaced by the device id. Discarded Debug ",
+            "messages won't go there."]
+        },
+        "bookkeeping": {
+          "url": ""
+        },
+        "postprocessing": {
+          "periodSeconds": "60"
+        }
+      },
+      "tasks": {
+        "PulseHeight": {
+          "active": "true",
+          "className": "o2::quality_control_modules::trd::PulseHeight",
+          "moduleName": "QcTRD",
+          "detectorName": "TRD",
+          "cycleDurationSeconds": "60",
+          "maxNumberCycles": "-1",
+          "dataSource": {
+            "type": "direct",
+            "query": "tracklets:TRD/TRACKLETS;digits:TRD/DIGITS;triggers:TRD/TRKTRGRD" ,"":"digits:TRD/DIGITS;tracklets:TRD/TRACKLETS;triggers:TRD/TRKTRGRD;rawstats:TRD/RAWSTATS"
+          },
+          "taskParameters": {
+            "peakregionstart": "7.0",
+            "peakregionend": "20.0",
+            "pulseheightpeaklower": "1.0",
+            "pulseheightpeakupper": "5.0"
+          },
+          "location": "remote",
+          "saveObjectsToFile": "qc_pulse_hight_task.root"
+        }
+      },
+      "checks": {
+        "PulsePositionCheck": {
+          "active": "true",
+          "className": "o2::quality_control_modules::trd::PulsePositionCheck",
+          "moduleName": "QcTRD",
+          "policy": "OnAny",
+          "detectorName": "TRD",
+          "dataSource": [{
+            "type": "Task",
+            "name": "PulseHeight",
+            "MOs": [ "mPulseHeight" ]
+          }],
+            "stopTrigger_comment":[],
+            "checkParameters":{
+              "FitParameter0":"100000.0",
+              "FitParameter1":"100000.0",
+              "FitParameter2":"1.48",
+              "FitParameter3":"1.09",
+              "Chi2byNDF_threshold":"0.22",
+              "DefinedFunctionRangeL":"0.0",
+              "DefinedFunctionRangeU":"6.0",
+              "FitRangeL":"0.0",
+              "FitRangeU":"4.0"
+            }
+        }
+      },
+      "aggregators": {
+        "TRDQuality": {
+          "active": "true",
+          "className": "o2::quality_control_modules::common::WorstOfAllAggregator",
+          "moduleName": "QualityControl",
+          "policy": "OnAll",
+          "detectorName": "TRD",
+          "dataSource": [
+            {
+              "type": "Check",
+              "name": "PulsePositionCheck"
+            }
+          ]
+        }
+      },
+      "postprocessing":{
+        "Quality": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::QualityTask",
+        "moduleName": "QualityControl",
+        "detectorName": "TRD",
+        "qualityGroups": [
+          {
+            "name" : "global",
+            "title" : "GLOBAL TRD QUALITY",
+            "path": "TRD/QO",
+            "ignoreQualitiesDetails" : ["Null", "Good", "Medium", "Bad"],
+            "inputObjects": [
+              {
+                "name" : "TRDQuality/TRDQuality",
+                "title" : "TRD Quality",
+                "messageBad" : "Inform TRD on-call immediately",
+                "messageMedium": "Add bookkeeping entry",
+                "messageGood": "All checks are OK",
+                "messageNull": "Some histograms are empty!!!"
+              }
+            ]
+          },
+          {
+            "name" : "PulsePositionQuality",
+            "title" : "TRD Pulse Position Quality",
+            "path": "TRD/QO",
+            "ignoreQualitiesDetails" : [],
+            "inputObjects": [
+              {
+                "name" : "PulsePositionCheck",
+                "title" : "Peak Position Quality",
+                "messageBad" : "Inform TRD on-call immediately",
+                "messageMedium": "Add bookkeeping entry",
+                "messageGood": "PulsePosition check is OK",
+                "messageNull": "Some histograms are empty!!!"
+              }
+            ]
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol","60sec","SOR"
+        ],
+        "updateTrigger": [
+          "60 seconds"
+        ],
+        "stopTrigger": [
+          "userorcontrol","EOR"
+        ]
+      }
+      }
+    }
+  }
+  
+  

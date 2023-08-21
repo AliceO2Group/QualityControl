@@ -33,6 +33,7 @@
 #include <Framework/TimingInfo.h>
 #include <Framework/DataTakingContext.h>
 #include <Framework/DefaultsHelpers.h>
+#include <Framework/ConfigParamRegistry.h>
 #include <CommonUtils/ConfigurableParam.h>
 #include <DetectorsBase/GRPGeomHelper.h>
 
@@ -44,8 +45,7 @@
 #include "QualityControl/ConfigParamGlo.h"
 #include "QualityControl/ObjectsManager.h"
 #include "QualityControl/Bookkeeping.h"
-#include "QualityControl/TimekeeperSynchronous.h"
-#include "QualityControl/TimekeeperAsynchronous.h"
+#include "QualityControl/TimekeeperFactory.h"
 #include "QualityControl/ActivityHelpers.h"
 #include "QualityControl/WorkflowType.h"
 
@@ -167,22 +167,9 @@ void TaskRunner::init(InitContext& iCtx)
   mObjectsManager->setMovingWindowsList(mTaskConfig.movingWindows);
 
   // setup timekeeping
-  switch (DefaultsHelpers::deploymentMode()) {
-    case DeploymentMode::Grid: {
-      ILOG(Info, Devel) << "Detected async deployment, object validity will be based on incoming data and available SOR/EOR times" << ENDM;
-      mTimekeeper = std::make_shared<TimekeeperAsynchronous>();
-      break;
-    }
-    case DeploymentMode::Local:
-    case DeploymentMode::OnlineECS:
-    case DeploymentMode::OnlineDDS:
-    case DeploymentMode::OnlineAUX:
-    case DeploymentMode::FST:
-    default: {
-      ILOG(Info, Devel) << "Detected sync deployment, object validity will be based primarily on current time" << ENDM;
-      mTimekeeper = std::make_shared<TimekeeperSynchronous>();
-    }
-  }
+  mDeploymentMode = DefaultsHelpers::deploymentMode();
+  mTimekeeper = TimekeeperFactory::create(mDeploymentMode);
+  mTimekeeper->setCCDBOrbitsPerTFAccessor([]() { return o2::base::GRPGeomHelper::getNHBFPerTF(); });
 
   // setup user's task
   mTask.reset(TaskFactory::create(mTaskConfig, mObjectsManager));
@@ -224,7 +211,7 @@ void TaskRunner::run(ProcessingContext& pCtx)
   auto [dataReady, timerReady] = validateInputs(pCtx.inputs());
 
   if (dataReady) {
-    mTimekeeper->updateByTimeFrameID(pCtx.services().get<TimingInfo>().tfCounter, 32);
+    mTimekeeper->updateByTimeFrameID(pCtx.services().get<TimingInfo>().tfCounter);
     mTask->monitorData(pCtx);
     updateMonitoringStats(pCtx);
   }
@@ -501,15 +488,17 @@ void TaskRunner::startCycle()
 void TaskRunner::finishCycle(DataAllocator& outputs)
 {
   ILOG(Debug, Support) << "Finish cycle " << mCycleNumber << ENDM;
-  ILOG(Info, Devel) << "According to new validity rules, the objects validity is "
-                    << "(" << mTimekeeper->getValidity().getMin() << ", " << mTimekeeper->getValidity().getMax() << "), "
-                    << "(" << mTimekeeper->getSampleTimespan().getMin() << ", " << mTimekeeper->getSampleTimespan().getMax() << "), "
-                    << "(" << mTimekeeper->getTimerangeIdRange().getMin() << ", " << mTimekeeper->getTimerangeIdRange().getMax() << ")" << ENDM;
+  // in the async context we print only info/ops logs, it's easier to temporarily elevate this log
+  ((mDeploymentMode == DeploymentMode::Grid) ? ILOG(Info, Ops) : ILOG(Info, Devel)) //
+    << "According to new validity rules, the objects validity is "
+    << "(" << mTimekeeper->getValidity().getMin() << ", " << mTimekeeper->getValidity().getMax() << "), "
+    << "(" << mTimekeeper->getSampleTimespan().getMin() << ", " << mTimekeeper->getSampleTimespan().getMax() << "), "
+    << "(" << mTimekeeper->getTimerangeIdRange().getMin() << ", " << mTimekeeper->getTimerangeIdRange().getMax() << ")" << ENDM;
   mTask->endOfCycle();
 
   // this stays until we move to using mTimekeeper.
   auto nowMs = getCurrentTimestamp();
-  mObjectsManager->setValidity(ValidityInterval{ nowMs, nowMs + 1000l * 60 * 60 * 24 * 365 * 10 });
+  mObjectsManager->setValidity(mTimekeeper->getValidity());
   mNumberObjectsPublishedInCycle += publish(outputs);
   mTotalNumberObjectsPublished += mNumberObjectsPublishedInCycle;
   saveToFile();

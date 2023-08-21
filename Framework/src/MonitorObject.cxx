@@ -17,8 +17,6 @@
 #include "QualityControl/MonitorObject.h"
 
 #include <iostream>
-#include <utility>
-#include <Common/Exceptions.h>
 #include "QualityControl/RepoPathUtils.h"
 
 ClassImp(o2::quality_control::core::MonitorObject)

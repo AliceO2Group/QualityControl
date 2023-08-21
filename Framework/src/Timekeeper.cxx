@@ -62,4 +62,14 @@ ValidityInterval Timekeeper::getActivityDuration() const
   return mActivityDuration;
 }
 
+void Timekeeper::setCCDBOrbitsPerTFAccessor(std::function<int(void)> accessor)
+{
+  mCCDBOrbitsPerTFAccessor = std::move(accessor);
+}
+
+std::function<int(void)> Timekeeper::getCCDBOrbitsPerTFAccessor(void)
+{
+  return mCCDBOrbitsPerTFAccessor;
+}
+
 } // namespace o2::quality_control::core

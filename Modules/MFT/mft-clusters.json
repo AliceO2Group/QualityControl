@@ -61,7 +61,28 @@
         "dataSource" : [ {
           "type" : "Task",
           "name" : "Clusters",
-          "MOs" : ["mClusterOccupancy","mClusterPatternIndex","mClusterSizeSummary", "mGroupedClusterSizeSummary", "mClusterOccupancySummary"]
+          "MOs" : ["mClusterOccupancy","mClusterPatternIndex","mClusterSizeSummary", "mGroupedClusterSizeSummary", "mClusterOccupancySummary",
+              "ChipOccupancyMaps/Half_0/Disk_0/Face_1/mClusterChipOccupancyMap",
+              "ChipOccupancyMaps/Half_0/Disk_0/Face_0/mClusterChipOccupancyMap",
+              "ChipOccupancyMaps/Half_0/Disk_1/Face_1/mClusterChipOccupancyMap",
+              "ChipOccupancyMaps/Half_0/Disk_1/Face_0/mClusterChipOccupancyMap",
+              "ChipOccupancyMaps/Half_0/Disk_2/Face_1/mClusterChipOccupancyMap",
+              "ChipOccupancyMaps/Half_0/Disk_2/Face_0/mClusterChipOccupancyMap",
+              "ChipOccupancyMaps/Half_0/Disk_3/Face_1/mClusterChipOccupancyMap",
+              "ChipOccupancyMaps/Half_0/Disk_3/Face_0/mClusterChipOccupancyMap",
+              "ChipOccupancyMaps/Half_0/Disk_4/Face_1/mClusterChipOccupancyMap",
+              "ChipOccupancyMaps/Half_0/Disk_4/Face_0/mClusterChipOccupancyMap",
+              "ChipOccupancyMaps/Half_1/Disk_0/Face_1/mClusterChipOccupancyMap",
+              "ChipOccupancyMaps/Half_1/Disk_0/Face_0/mClusterChipOccupancyMap",
+              "ChipOccupancyMaps/Half_1/Disk_1/Face_1/mClusterChipOccupancyMap",
+              "ChipOccupancyMaps/Half_1/Disk_1/Face_0/mClusterChipOccupancyMap",
+              "ChipOccupancyMaps/Half_1/Disk_2/Face_1/mClusterChipOccupancyMap",
+              "ChipOccupancyMaps/Half_1/Disk_2/Face_0/mClusterChipOccupancyMap",
+              "ChipOccupancyMaps/Half_1/Disk_3/Face_1/mClusterChipOccupancyMap",
+              "ChipOccupancyMaps/Half_1/Disk_3/Face_0/mClusterChipOccupancyMap",
+              "ChipOccupancyMaps/Half_1/Disk_4/Face_1/mClusterChipOccupancyMap",
+              "ChipOccupancyMaps/Half_1/Disk_4/Face_0/mClusterChipOccupancyMap"
+          ]
         } ],
         "checkParameters" : {
           "ZoneThresholdMedium" : "2",

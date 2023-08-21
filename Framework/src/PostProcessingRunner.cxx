@@ -169,6 +169,7 @@ void PostProcessingRunner::start(framework::ServiceRegistryRef dplServices)
     QcInfoLogger::setPartition(mTaskConfig.activity.mPartitionName);
   }
   QcInfoLogger::setRun(mTaskConfig.activity.mId);
+  mObjectManager->setActivity(mTaskConfig.activity);
 
   // register ourselves to the BK
   if (gSystem->Getenv("O2_QC_REGISTER_IN_BK")) { // until we are sure it works, we have to turn it on

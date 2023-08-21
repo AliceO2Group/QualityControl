@@ -22,7 +22,6 @@
 #include "QualityControl/PostProcessingInterface.h"
 
 #include "MCH/Helpers.h"
-#include "MCH/PostProcessingConfigMCH.h"
 #include "MUONCommon/MergeableTH2Ratio.h"
 #include "MCH/HistoOnCycle.h"
 #include "MCH/EfficiencyPlotter.h"
@@ -31,11 +30,6 @@
 #include "MCH/ClusterSizeTrendsPlotter.h"
 #include "MCH/ClusterChargePlotter.h"
 #include "MCH/ClusterChargeTrendsPlotter.h"
-
-namespace o2::quality_control::core
-{
-class Activity;
-}
 
 namespace o2::quality_control::repository
 {

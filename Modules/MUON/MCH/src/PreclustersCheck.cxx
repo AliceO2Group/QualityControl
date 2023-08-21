@@ -15,24 +15,21 @@
 
 #include "MCH/PreclustersCheck.h"
 #include "MCH/Helpers.h"
-#include "MCHMappingInterface/Segmentation.h"
-#include "MCHMappingSegContour/CathodeSegmentationContours.h"
-#include "MUONCommon/MergeableTH2Ratio.h"
+#include <MCHConstants/DetectionElements.h>
+#include <MCHRawElecMap/Mapper.h>
+#include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/MonitorObject.h"
 
 // ROOT
-#include <fairlogger/Logger.h>
 #include <TCanvas.h>
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TList.h>
 #include <TLine.h>
-#include <TMath.h>
-#include <iostream>
 #include <fstream>
 #include <string>
 
 using namespace std;
-using namespace o2::quality_control_modules::muon;
 
 namespace o2::quality_control_modules::muonchambers
 {

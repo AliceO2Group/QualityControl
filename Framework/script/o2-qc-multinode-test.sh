@@ -44,10 +44,10 @@ function check_if_port_in_use() {
 }
 
 function delete_data() {
-  curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/MO/MultiNodeLocalTest${UNIQUE_PORT_1}*
-  curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/MO/MultiNodeRemoteTest${UNIQUE_PORT_2}*
-  curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/QO/MultiNodeLocalTest
-  curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/QO/MultiNodeRemoteTest
+  curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/MO/MNLTest${UNIQUE_PORT_1}*
+  curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/MO/MNRTest${UNIQUE_PORT_2}*
+  curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/QO/MNLTest
+  curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/QO/MNRTest
 
   cd /tmp
   # mv in /tmp is guaranteed to be atomic
@@ -80,16 +80,16 @@ else
 fi
 
 # store data
-o2-qc-run-producer --producers 2 --message-amount 15  --message-rate 1 -b | timeout -s INT 40s o2-qc --config json://${JSON_DIR}/multinode-test.json -b --local --host localhost --run &
+timeout -s INT 40s o2-qc --config json://${JSON_DIR}/multinode-test.json -b --remote --run &
+o2-qc-run-producer --producers 2 --message-amount 20  --message-rate 1 -b | timeout -s INT 35s o2-qc --config json://${JSON_DIR}/multinode-test.json -b --local --host localhost --run &
 
-timeout -s INT 35s o2-qc --config json://${JSON_DIR}/multinode-test.json -b --remote --run
 
 # wait until the local QC quits before moving forward.
 wait
 
 # check MonitorObject
 # first the return code must be 200
-code=$(curl -L ccdb-test.cern.ch:8080/qc/TST/MO/MultiNodeLocalTest${UNIQUE_PORT_1}/example/`date +%s`999 --write-out %{http_code} --silent --output /tmp/${UNIQUE_TEST_NAME}/multinode_test_obj${UNIQUE_PORT_1}.root)
+code=$(curl -L ccdb-test.cern.ch:8080/qc/TST/MO/MNLTest${UNIQUE_PORT_1}/example/`date +%s`999 --write-out %{http_code} --silent --output /tmp/${UNIQUE_TEST_NAME}/multinode_test_obj${UNIQUE_PORT_1}.root)
 if (( $code != 200 )); then
   echo "Error, monitor object of the local QC Task could not be found."
   delete_data
@@ -113,7 +113,7 @@ fi
 
 # check MonitorObject
 # first the return code must be 200
-code=$(curl -L ccdb-test.cern.ch:8080/qc/TST/MO/MultiNodeRemoteTest${UNIQUE_PORT_2}/example/`date +%s`999 --write-out %{http_code} --silent --output /tmp/${UNIQUE_TEST_NAME}/multinode_test_obj${UNIQUE_PORT_2}.root)
+code=$(curl -L ccdb-test.cern.ch:8080/qc/TST/MO/MNRTest${UNIQUE_PORT_2}/example/`date +%s`999 --write-out %{http_code} --silent --output /tmp/${UNIQUE_TEST_NAME}/multinode_test_obj${UNIQUE_PORT_2}.root)
 if (( $code != 200 )); then
   echo "Error, monitor object of the remote QC Task could not be found."
   delete_data

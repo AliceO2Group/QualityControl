@@ -42,7 +42,12 @@ std::map<std::string, Quality> TPCAggregator::aggregate(QualityObjectsMapType& q
   AggregatorMetaData[Quality::Bad.getName()] = "";
   AggregatorMetaData[Quality::Medium.getName()] = "";
   AggregatorMetaData[Quality::Good.getName()] = "";
-  AggregatorMetaData["Comment"] = "";
+
+  std::unordered_map<std::string, std::string> AggregatorComment;
+  AggregatorComment[Quality::Null.getName()] = "";
+  AggregatorComment[Quality::Bad.getName()] = "";
+  AggregatorComment[Quality::Medium.getName()] = "";
+  AggregatorComment[Quality::Good.getName()] = "";
 
   // we return the worse quality of all the objects we receive, but we preserve all FlagReasons
   Quality current = Quality::Good;
@@ -61,7 +66,7 @@ std::map<std::string, Quality> TPCAggregator::aggregate(QualityObjectsMapType& q
     insertQOName(qoMetaDataComment, insertTitle);
 
     AggregatorMetaData[qo->getQuality().getName()] += qoMetaData;
-    AggregatorMetaData["Comment"] += qoMetaDataComment;
+    AggregatorComment[qo->getQuality().getName()] += qoMetaDataComment;
 
     if (qo->getQuality().isWorseThan(current)) {
       current.set(qo->getQuality());
@@ -73,7 +78,7 @@ std::map<std::string, Quality> TPCAggregator::aggregate(QualityObjectsMapType& q
   current.addMetadata(Quality::Medium.getName(), AggregatorMetaData[Quality::Medium.getName()]);
   current.addMetadata(Quality::Good.getName(), AggregatorMetaData[Quality::Good.getName()]);
   current.addMetadata(Quality::Null.getName(), AggregatorMetaData[Quality::Null.getName()]);
-  current.addMetadata("Comment", AggregatorMetaData["Comment"]);
+  current.addMetadata("Comment", AggregatorComment[current.getName()]);
 
   return { { mName, current } };
 }

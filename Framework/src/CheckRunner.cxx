@@ -21,6 +21,7 @@
 // O2
 #include <Common/Exceptions.h>
 #include <Framework/DataSpecUtils.h>
+#include <Framework/ConfigParamRegistry.h>
 #include <Monitoring/MonitoringFactory.h>
 #include <Monitoring/Monitoring.h>
 #include <CommonUtils/ConfigurableParam.h>
@@ -43,7 +44,6 @@ using namespace std::chrono;
 using namespace AliceO2::Common;
 using namespace AliceO2::InfoLogger;
 using namespace o2::framework;
-using namespace o2::configuration;
 using namespace o2::monitoring;
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::repository;
@@ -312,6 +312,7 @@ void CheckRunner::prepareCacheData(framework::InputRecord& inputRecord)
           ILOG(Debug, Devel) << "    Creating an ad hoc MO." << ENDM;
           header::DataOrigin origin = DataSpecUtils::asConcreteOrigin(input);
           mo = std::make_shared<MonitorObject>(tObject, input.binding, "CheckRunner", origin.str);
+          mo->setActivity(*mActivity);
         }
 
         if (mo) {
@@ -379,11 +380,17 @@ void CheckRunner::store(QualityObjectsType& qualityObjects, long validFrom)
   ILOG(Debug, Devel) << "Storing " << qualityObjects.size() << " QualityObjects" << ENDM;
   try {
     for (auto& qo : qualityObjects) {
-      qo->setActivity(*mActivity);
-      qo->getActivity().mValidity.set(validFrom, 0);
+      auto tmpValidity = qo->getValidity();
+      qo->setValidity(ValidityInterval{ static_cast<unsigned long>(validFrom), validFrom + 10ull * 365 * 24 * 60 * 60 * 1000 });
       mDatabase->storeQO(qo);
+      qo->setValidity(tmpValidity);
       mTotalNumberQOStored++;
       mNumberQOStored++;
+    }
+
+    if (!qualityObjects.empty()) {
+      auto& qo = qualityObjects.at(0);
+      ILOG(Info, Devel) << "New validity of QO '" << qo->GetName() << "' would be (" << qo->getValidity().getMin() << ", " << qo->getValidity().getMax() << ")" << ENDM;
     }
   } catch (boost::exception& e) {
     ILOG(Info, Support) << "Unable to " << diagnostic_information(e) << ENDM;
@@ -395,11 +402,16 @@ void CheckRunner::store(std::vector<std::shared_ptr<MonitorObject>>& monitorObje
   ILOG(Debug, Devel) << "Storing " << monitorObjects.size() << " MonitorObjects" << ENDM;
   try {
     for (auto& mo : monitorObjects) {
-      mo->setActivity(*mActivity);
-      mo->getActivity().mValidity.set(validFrom, 0);
+      auto tmpValidity = mo->getValidity();
+      mo->setValidity(ValidityInterval{ static_cast<unsigned long>(validFrom), validFrom + 10ull * 365 * 24 * 60 * 60 * 1000 });
       mDatabase->storeMO(mo);
+      mo->setValidity(tmpValidity);
       mTotalNumberMOStored++;
       mNumberMOStored++;
+    }
+    if (!monitorObjects.empty()) {
+      auto& mo = monitorObjects.at(0);
+      ILOG(Info, Devel) << "New validity of MO '" << mo->GetName() << "' would be (" << mo->getValidity().getMin() << ", " << mo->getValidity().getMax() << ")" << ENDM;
     }
   } catch (boost::exception& e) {
     ILOG(Info, Support) << "Unable to " << diagnostic_information(e) << ENDM;

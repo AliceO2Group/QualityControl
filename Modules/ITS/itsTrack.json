@@ -44,7 +44,8 @@
           "doTTree": "0",
           "nBCbins": "103",
           "dicttimestamp" : "0",
-          "doNorm" : "1"
+          "doNorm" : "1",
+          "InvMasses" : "0"
         }
 
       }

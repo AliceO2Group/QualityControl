@@ -15,18 +15,14 @@
 ///
 
 #include "MCHMappingInterface/Segmentation.h"
-#include "MCHMappingSegContour/CathodeSegmentationContours.h"
 #include "MCH/DecodingCheck.h"
-#include "MCH/GlobalHistogram.h"
+#include "MCH/Helpers.h"
 
 // ROOT
-#include <fairlogger/Logger.h>
 #include <TH1.h>
 #include <TH2.h>
 #include <TList.h>
-#include <TMath.h>
 #include <TLine.h>
-#include <iostream>
 #include <fstream>
 #include <string>
 

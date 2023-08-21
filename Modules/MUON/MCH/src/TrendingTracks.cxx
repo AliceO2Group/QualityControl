@@ -18,21 +18,15 @@
 
 #include "MCH/TrendingTracks.h"
 #include "MUONCommon/MergeableTH2Ratio.h"
-#include "MCHMappingInterface/Segmentation.h"
-#include "MCHMappingSegContour/CathodeSegmentationContours.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/DatabaseInterface.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Reductor.h"
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/ActivityHelpers.h"
-#include <boost/property_tree/ptree.hpp>
 #include <TH1.h>
-#include <TMath.h>
-#include <TH2.h>
 #include <TCanvas.h>
 #include <TPaveText.h>
-#include <TDatime.h>
 #include <TGraphErrors.h>
 #include <TProfile.h>
 #include <TPoint.h>

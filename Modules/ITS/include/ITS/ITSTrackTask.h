@@ -94,6 +94,14 @@ class ITSTrackTask : public TaskInterface
   std::unique_ptr<TH2DRatio> hHitFirstLayerPhi7cls;
   TH2D* hClusterVsBunchCrossing;
   TH2D* hNClusterVsChipITS;
+  // Histograms for inv mass k0s, lambda
+  TH1D* hInvMassK0s;
+  TH1D* hInvMassLambda;
+  TH1D* hInvMassLambdaBar;
+
+  float mPiInvMass = 0.14;
+  float mProtonInvMass = 0.938;
+  Int_t mInvMasses = 0; // switch for the V0 invariant mass computation, 1 (default) - on, 0 - off
 
   float mVertexXYsize = 0.5;
   float mVertexZsize = 15.;

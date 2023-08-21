@@ -17,6 +17,7 @@
 ///
 
 #include "MCH/PreclustersPostProcessing.h"
+#include "MCH/PostProcessingConfigMCH.h"
 #include "QualityControl/QcInfoLogger.h"
 #include <TDatime.h>
 

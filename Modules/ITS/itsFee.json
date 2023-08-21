@@ -36,6 +36,7 @@
                 },
                 "location": "local",
                 "taskParameters": {
+		    "EnablePayloadParsing": "1",
                     "NPayloadSizeBins": "4096",
                     "ResetLaneStatus": "1",
                     "ResetPayload": "0"
@@ -56,6 +57,7 @@
                   "maxbadlanesML": "4",
                   "maxbadlanesOL": "7",
                   "maxfractionbadlanes": "0.1",
+		  "expectedROFperOrbit": "18",
                   "plotWithTextMessage": "",
                   "textMessage": "" 
                 },
@@ -67,13 +69,13 @@
                             "LaneStatus/laneStatusFlagFAULT",
                             "LaneStatus/laneStatusFlagERROR",
                             "LaneStatus/laneStatusFlagWARNING",
-                            "LaneStatus/laneStatusOverviewFlagFAULT",
                             "LaneStatus/laneStatusOverviewFlagERROR",
                             "LaneStatus/laneStatusOverviewFlagWARNING",
                             "LaneStatusSummary/LaneStatusSummaryGlobal",
                             "RDHSummary",
                             "TriggerVsFeeid",
-                            "PayloadSize"
+                            "PayloadSize",
+			    "TrailerCount"
                         ]
                     }
                 ]
