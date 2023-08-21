@@ -164,7 +164,7 @@
                   "title" : "Check on Mean of Tracklet per Event",
                   "messageBad" : "Inform TRD on-call immediately",
                   "messageMedium": "Add bookkeeping entry",
-                  "messageGood": "PulsePosition check is OK",
+                  "messageGood": "TrackletPerTriggerCheck check is OK",
                   "messageNull": "Some histograms are empty!!!"
                 }
               ]

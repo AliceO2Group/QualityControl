@@ -67,7 +67,7 @@ void TrackletPerTriggerCheck::configure()
     StatThreshold = stod(param->second);
     ILOG(Debug, Support) << "configure() : using json StatThreshold" << StatThreshold << ENDM;
   } else {
-    StatThreshold = 0;
+    StatThreshold = 1000;
     ILOG(Debug, Support) << "configure() : using default StatThreshold" << StatThreshold << ENDM;
   }
 }
@@ -98,7 +98,7 @@ Quality TrackletPerTriggerCheck::check(std::map<std::string, std::shared_ptr<Mon
       } else if (Entries > 0) {
         msg1->AddText(TString::Format("Hist Can be ignored. Stat is low. Entries: %d < Threshold: %d", Entries, StatThreshold));
         // msg1->SetTextColor(kYellow);
-      } else if (Entries = 0) {
+      } else if (Entries == 0) {
         msg1->AddText(TString::Format("Hist is empty. Entries: %d < Threshold: %d", Entries, StatThreshold));
         msg1->SetTextColor(kRed);
       }
