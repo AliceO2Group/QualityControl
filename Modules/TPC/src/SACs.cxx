@@ -122,6 +122,12 @@ void SACs::configure(const boost::property_tree::ptree& config)
     mDoLatest = false;
     ILOG(Warning, Support) << "Option 'doLatest' is missing. Using default value 'false'." << ENDM;
   }
+
+  mRejectOutliersSACZeroScale = config.get<bool>("qc.postprocessing." + id + ".rejectOutliersSACZeroScale", true);
+  if (!mRejectOutliersSACZeroScale) {
+    ILOG(Warning, Support) << "No rejection for outliers in SAC Zero Scale!" << ENDM;
+  }
+  mSACZeroMaxDeviation = config.get<float>("qc.postprocessing." + id + ".maxDeviationOutlierSACZero", 3.); // GANESHA which default value?
 }
 
 void SACs::initialize(Trigger, framework::ServiceRegistryRef)
@@ -133,13 +139,15 @@ void SACs::initialize(Trigger, framework::ServiceRegistryRef)
   mSACOneSides = std::make_unique<TCanvas>("c_sides_SACOne");
   mFourierCoeffsA = std::make_unique<TCanvas>("c_FourierCoefficients_1D_ASide");
   mFourierCoeffsC = std::make_unique<TCanvas>("c_FourierCoefficients_1D_CSide");
-  mSACZeroScale = std::make_unique<TCanvas>("c_sides_SACZero_scale");
+  mSACZeroSidesScaled = std::make_unique<TCanvas>("c_sides_SACZero_Scaled");
+  mSACZeroScale = std::make_unique<TCanvas>("c_sides_SACZero_ScaleFactor");
 
   getObjectsManager()->startPublishing(mSACZeroSides.get());
   getObjectsManager()->startPublishing(mSACDeltaSides.get());
   getObjectsManager()->startPublishing(mSACOneSides.get());
   getObjectsManager()->startPublishing(mFourierCoeffsA.get());
   getObjectsManager()->startPublishing(mFourierCoeffsC.get());
+  getObjectsManager()->startPublishing(mSACZeroSidesScaled.get());
   getObjectsManager()->startPublishing(mSACZeroScale.get());
 }
 
@@ -150,16 +158,15 @@ void SACs::update(Trigger, framework::ServiceRegistryRef)
   mSACOneSides.get()->Clear();
   mFourierCoeffsA.get()->Clear();
   mFourierCoeffsC.get()->Clear();
+  mSACZeroSidesScaled.get()->Clear();
   mSACZeroScale.get()->Clear();
 
   o2::tpc::SACZero* sacZero = nullptr;
   o2::tpc::SACDelta<unsigned char>* sacDelta = nullptr;
   o2::tpc::SACOne* sacOne = nullptr;
   o2::tpc::FourierCoeffSAC* sacFFT = nullptr;
-  ILOG(Warning, Support) << "Here 1" << ENDM;
 
   if (mDoLatest) {
-    ILOG(Warning, Support) << "Here 2" << ENDM;
     std::vector<long> availableTimestampsSACZero = getDataTimestamps(mCdbApi, CDBTypeMap.at(CDBType::CalSAC0), 1, mTimestamps["SACZero"]);
     std::vector<long> availableTimestampsSACDelta = getDataTimestamps(mCdbApi, CDBTypeMap.at(CDBType::CalSACDelta), 1, mTimestamps["SACDelta"]);
     std::vector<long> availableTimestampsSACOne = getDataTimestamps(mCdbApi, CDBTypeMap.at(CDBType::CalSAC1), 1, mTimestamps["SACOne"]);
@@ -183,9 +190,11 @@ void SACs::update(Trigger, framework::ServiceRegistryRef)
 
   if (sacZero) {
     mSACs.setSACZero(sacZero);
-    mSACs.drawSACTypeSides(o2::tpc::SACType::IDCZero, 0, mRanges["SACZero"].at(1), mRanges["SACZero"].at(2), mSACZeroSides.get());
-    mSACs.drawIDCZeroScale(mSACZeroScale.get());
-    //GANESHA add here the scale stuff 
+    mSACs.drawSACTypeSides(o2::tpc::SACType::IDCZero, 0, mRanges["SACZero"].at(1), mRanges["SACZero"].at(2), mSACZeroSides.get()); // draw unscaled
+    mSACs.setSACZeroMaxDeviation(mSACZeroMaxDeviation);
+    mSACs.setSACZeroScale(mRejectOutliersSACZeroScale);
+    mSACs.drawSACZeroScale(mSACZeroScale.get());
+    mSACs.drawSACTypeSides(o2::tpc::SACType::IDCZero, 0, mRanges["SACZeroScaled"].at(1), mRanges["SACZeroScaled"].at(2), mSACZeroSidesScaled.get()); // draw scaled
   }
   if (sacDelta) {
     mSACs.setSACDelta(sacDelta);
@@ -221,6 +230,7 @@ void SACs::finalize(Trigger, framework::ServiceRegistryRef)
   getObjectsManager()->stopPublishing(mSACDeltaSides.get());
   getObjectsManager()->stopPublishing(mFourierCoeffsA.get());
   getObjectsManager()->stopPublishing(mFourierCoeffsC.get());
+  getObjectsManager()->stopPublishing(mSACZeroSidesScaled.get());
   getObjectsManager()->stopPublishing(mSACZeroScale.get());
 }
 
