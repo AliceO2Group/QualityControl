@@ -36,4 +36,5 @@
 #pragma link C++ class o2::quality_control_modules::emcal::SupermoduleProjectionReductorY + ;
 
 #pragma link C++ class o2::quality_control_modules::emcal::SubdetectorProjectionReductor + ;
+#pragma link C++ class o2::quality_control_modules::emcal::BCTask+;
 #endif
