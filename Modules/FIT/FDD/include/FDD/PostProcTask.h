@@ -64,7 +64,7 @@ class PostProcTask final : public quality_control::postprocessing::PostProcessin
 
   std::map<o2::fdd::ChannelData::EEventDataBit, std::string> mMapChTrgNames;
   std::map<int, std::string> mMapDigitTrgNames;
-
+  std::map<unsigned int, std::string> mMapBasicTrgBits;
   o2::quality_control::repository::DatabaseInterface* mDatabase = nullptr;
   o2::ccdb::CcdbApi mCcdbApi;
 
@@ -76,9 +76,10 @@ class PostProcTask final : public quality_control::postprocessing::PostProcessin
   std::unique_ptr<TH2F> mHistChDataNegBits;
   std::unique_ptr<TH1F> mHistTriggers;
 
-  std::unique_ptr<TH1F> mHistTimeUpperFraction;
-  std::unique_ptr<TH1F> mHistTimeLowerFraction;
   std::unique_ptr<TH1F> mHistTimeInWindow;
+  std::unique_ptr<TH1F> mHistCFDEff;
+  std::unique_ptr<TH1F> mHistTrgValidation;
+  std::unique_ptr<TH1F> mHistAmpSaturation;
 
   std::unique_ptr<TCanvas> mRatesCanv;
   TProfile* mAmpl = nullptr;
@@ -90,6 +91,11 @@ class PostProcTask final : public quality_control::postprocessing::PostProcessin
   std::unique_ptr<TH2F> mHistBcTrgOutOfBunchColl;
 
   std::map<unsigned int, TH1D*> mMapTrgHistBC;
+
+  int mLowTimeThreshold{ -192 };
+  int mUpTimeThreshold{ 192 };
+  double mLowAmpSat;
+  double mUpAmpSat;
 };
 
 } // namespace o2::quality_control_modules::fdd

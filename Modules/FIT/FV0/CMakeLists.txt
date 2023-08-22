@@ -22,7 +22,8 @@ target_link_libraries(O2QcFV0 PUBLIC O2QualityControl
                                      O2::DataFormatsFV0
                                      O2::FV0Base
                                      O2::DataFormatsParameters
-                                     O2QcCommon)
+                                     O2QcCommon
+                                     O2QcFITCommon)
 
 install(TARGETS O2QcFV0
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

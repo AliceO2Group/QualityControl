@@ -82,26 +82,6 @@ class DigitQcTask final : public TaskInterface
 
   long mTFcreationTime = 0;
 
-  template <typename Param_t,
-            typename = typename std::enable_if<std::is_floating_point<Param_t>::value ||
-                                               std::is_same<std::string, Param_t>::value || (std::is_integral<Param_t>::value && !std::is_same<bool, Param_t>::value)>::type>
-  auto parseParameters(const std::string& param, const std::string& del)
-  {
-    std::regex reg(del);
-    std::sregex_token_iterator first{ param.begin(), param.end(), reg, -1 }, last;
-    std::vector<Param_t> vecResult;
-    for (auto it = first; it != last; it++) {
-      if constexpr (std::is_integral<Param_t>::value && !std::is_same<bool, Param_t>::value) {
-        vecResult.push_back(std::stoi(*it));
-      } else if constexpr (std::is_floating_point<Param_t>::value) {
-        vecResult.push_back(std::stod(*it));
-      } else if constexpr (std::is_same<std::string, Param_t>::value) {
-        vecResult.push_back(*it);
-      }
-    }
-    return vecResult;
-  }
-
   void rebinFromConfig();
   unsigned int getModeParameter(std::string, unsigned int, std::map<unsigned int, std::string>);
   int getNumericalParameter(std::string, int);
