@@ -148,7 +148,8 @@ CheckRunner::CheckRunner(CheckRunnerConfig checkRunnerConfig, const std::vector<
 }
 
 CheckRunner::CheckRunner(CheckRunnerConfig checkRunnerConfig, InputSpec input)
-  : mDeviceName(createSinkCheckRunnerName(input)),
+  : mDetectorName(checkRunnerConfig.sinkDetectorName),
+    mDeviceName(createSinkCheckRunnerName(input)),
     mConfig(std::move(checkRunnerConfig)),
     mInputs{ input },
     mOutputs{},

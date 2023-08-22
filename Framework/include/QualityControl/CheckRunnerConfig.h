@@ -33,6 +33,7 @@ struct CheckRunnerConfig {
   core::DiscardFileParameters infologgerDiscardParameters;
   core::Activity fallbackActivity;
   framework::Options options{};
+  std::string sinkDetectorName = "ABC"; // ignore it if the runner is not an auto-generated sink-checker
 };
 
 } // namespace o2::quality_control::checker

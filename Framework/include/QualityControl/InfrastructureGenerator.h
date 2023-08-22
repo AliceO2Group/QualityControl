@@ -202,6 +202,11 @@ class InfrastructureGenerator
   static void generateCheckRunners(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec);
   static void generateAggregator(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec);
   static void generatePostProcessing(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec);
+
+  /**
+   * Compute the task name to which a sink-check is connected, and extract its detector name
+   */
+  static std::string getSinkDetectorFromTask(const std::string& inputName, const std::vector<TaskSpec>& tasks);
 };
 
 } // namespace core

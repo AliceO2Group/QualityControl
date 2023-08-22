@@ -557,6 +557,25 @@ void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow,
   mergersBuilder.generateInfrastructure(workflow);
 }
 
+std::string InfrastructureGenerator::getSinkDetectorFromTask(const std::string& inputName, const std::vector<TaskSpec>& tasks)
+{
+  string sinkTaskName = "";
+
+  size_t firstUnderscore = inputName.find('_');
+  size_t secondUnderscore = inputName.find('_', firstUnderscore + 1);
+  if (firstUnderscore != std::string::npos && secondUnderscore != std::string::npos) {
+    sinkTaskName = inputName.substr(firstUnderscore + 1, secondUnderscore - firstUnderscore - 1);
+  }
+
+  // lookup detector for that task
+  auto it = std::find_if(tasks.begin(), tasks.end(),
+                         [sinkTaskName](const TaskSpec& taskSpec) {
+                           return taskSpec.taskName == sinkTaskName;
+                         }
+  );
+  return (it != tasks.end()) ? (*it).detectorName : "";
+}
+
 void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec)
 {
   // todo have a look if this complex procedure can be simplified.
@@ -650,6 +669,10 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
     for (const auto& input : storeVectorMap[inputNames])
       ILOG(Debug, Devel) << input << " ";
     ILOG(Debug, Devel) << ENDM;
+
+    if(checkConfigs.empty()) { // we are creating a sink checkRunner
+      checkRunnerConfig.sinkDetectorName = getSinkDetectorFromTask(inputNames[0], infrastructureSpec.tasks);
+    }
 
     DataProcessorSpec spec = checkConfigs.empty()
                                ? CheckRunnerFactory::createSinkDevice(checkRunnerConfig, tasksOutputMap.find(inputNames[0])->second)
