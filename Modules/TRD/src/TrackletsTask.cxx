@@ -19,6 +19,7 @@
 #include <TH2.h>
 #include <THashList.h>
 #include <TLine.h>
+#include <TMath.h>
 #include <sstream>
 #include <string>
 
@@ -136,6 +137,14 @@ void TrackletsTask::buildHistograms()
     getObjectsManager()->setDefaultDrawOptions(moHCMCM[sm]->GetName(), "COLZ");
     drawLinesMCM(moHCMCM[sm]);
   }
+  constexpr int nLogBins = 100;
+  float xBins[nLogBins + 1];
+  float xBinLogMin = 0.f;
+  float xBinLogMax = 8.f;
+  float logBinWidth = (xBinLogMax - xBinLogMin) / nLogBins;
+  for (int iBin = 0; iBin <= nLogBins; ++iBin) {
+    xBins[iBin] = TMath::Power(10, xBinLogMin + iBin * logBinWidth);
+  }
   mTrackletSlope = new TH1F("trackletslope", "uncalibrated Slope of tracklets;Slope;Counts", 1024, -6.0, 6.0); // slope is 8 bits in the tracklet
   getObjectsManager()->startPublishing(mTrackletSlope);
   mTrackletSlopeRaw = new TH1F("trackletsloperaw", "Raw Slope of tracklets;Slope;Counts", 256, 0, 256); // slope is 8 bits in the tracklet
@@ -146,8 +155,9 @@ void TrackletsTask::buildHistograms()
   getObjectsManager()->startPublishing(mTrackletPosition);
   mTrackletPositionRaw = new TH1F("trackletposraw", "Raw Position of Tracklets;Position;Counts", 2048, 0, 2048);
   getObjectsManager()->startPublishing(mTrackletPositionRaw);
-  mTrackletsPerEvent = new TH1F("trackletsperevent", "Number of Tracklets per event;Tracklets in Event;Counts", 25000, 0, 25000);
+  mTrackletsPerEvent = new TH1F("trackletsperevent", "Number of Tracklets per event;Tracklets in Event;Counts", nLogBins, xBins);
   getObjectsManager()->startPublishing(mTrackletsPerEvent);
+  getObjectsManager()->setDefaultDrawOptions(mTrackletsPerEvent->GetName(), "logx");
   mTrackletsPerHC2D = new TH2F("trackletsperHC2D", "Tracklets distribution in half-chambers;Sector_Side;Stack_Side", 36, 0, 36, 30, 0, 30);
   mTrackletsPerHC2D->SetStats(0);
   mTrackletsPerHC2D->GetXaxis()->SetTitle("Sector_Side");
@@ -242,13 +252,11 @@ void TrackletsTask::buildHistograms()
   getObjectsManager()->startPublishing(mTrackletPositionn);
   mTrackletPositionRawn = new TH1F("trackletposrawnoise", "Raw Position of Tracklets noise in;Position;Counts", 2048, 0, 2048);
   getObjectsManager()->startPublishing(mTrackletPositionRawn);
-  mTrackletsPerEventn = new TH1F("trackletspereventn", "Number of Tracklets per event noise in;Tracklets in Events;Counts", 25000, 0, 25000);
-  getObjectsManager()->startPublishing(mTrackletsPerEventn);
-  mTrackletsPerTimeFrame = new TH1F("trackletspertimeframe", "Number of Tracklets per timeframe;Tracklets in TimeFrame;Counts", 25000, 0, 500000);
+  mTrackletsPerTimeFrame = new TH1F("trackletspertimeframe", "Number of Tracklets per timeframe;Tracklets in TimeFrame;Counts", nLogBins, xBins);
   getObjectsManager()->startPublishing(mTrackletsPerTimeFrame);
-  mTrackletsPerTimeFrameCycled = new TH1F("trackletspertimeframecycled", "Number of Tracklets per timeframe, this cycle;Tracklets in TimeFrame;Counts", 25000, 0, 500000);
-  getObjectsManager()->startPublishing(mTrackletsPerTimeFrameCycled);
-  mTriggersPerTimeFrame = new TH1F("triggerspertimeframe", "Number of Triggers per timeframe;Triggers in TimeFrame;Counts", 10000, 0, 10000);
+  getObjectsManager()->setDefaultDrawOptions(mTrackletsPerTimeFrame->GetName(), "logx");
+  // getObjectsManager()->setDisplayHint(mTrackletsPerTimeFrame->GetName(), "gStyle->SetOptStat(11111)"); // FIXME: how to show number of underflow bin entries by default?
+  mTriggersPerTimeFrame = new TH1F("triggerspertimeframe", "Number of Triggers per timeframe;Triggers in TimeFrame;Counts", 1000, 0, 1000);
   getObjectsManager()->startPublishing(mTriggersPerTimeFrame);
 
   buildTrackletLayers();
@@ -417,7 +425,6 @@ void TrackletsTask::monitorData(o2::framework::ProcessingContext& ctx)
       auto tracklets = ctx.inputs().get<gsl::span<o2::trd::Tracklet64>>("tracklets");
       auto triggerrecords = ctx.inputs().get<gsl::span<o2::trd::TriggerRecord>>("triggers");
       mTrackletsPerTimeFrame->Fill(tracklets.size());
-      mTrackletsPerTimeFrameCycled->Fill(tracklets.size());
       mTriggersPerTimeFrame->Fill(triggerrecords.size());
       for (auto& trigger : triggerrecords) {
         mTrackletsPerEvent->Fill(trigger.getNumberOfTracklets());
@@ -487,8 +494,6 @@ void TrackletsTask::endOfCycle()
   for (auto& hist : moHCMCM) {
     hist->SetMaximum(max);
   }
-  // reset the TrackletPerTimeCycled
-  mTrackletsPerTimeFrameCycled->Reset();
 }
 
 void TrackletsTask::endOfActivity(const Activity& /*activity*/)
@@ -519,9 +524,7 @@ void TrackletsTask::reset()
   mTrackletHCIDn->Reset();
   mTrackletPositionn->Reset();
   mTrackletPositionRawn->Reset();
-  mTrackletsPerEventn->Reset();
   mTrackletsPerTimeFrame->Reset();
-  mTrackletsPerTimeFrameCycled->Reset();
   for (auto h : mLayers) {
     h->Reset();
   }
