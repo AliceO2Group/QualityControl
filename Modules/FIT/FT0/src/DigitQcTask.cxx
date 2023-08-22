@@ -26,6 +26,7 @@
 #include "Common/Utils.h"
 
 #include "FITCommon/HelperHist.h"
+#include "FITCommon/HelperCommon.h"
 #include "FITCommon/HelperFIT.h"
 
 namespace o2::quality_control_modules::ft0
@@ -289,7 +290,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   if (auto param = mCustomParameters.find("ChannelIDs"); param != mCustomParameters.end()) {
     const auto chIDs = param->second;
     const std::string del = ",";
-    vecChannelIDs = parseParameters<unsigned int>(chIDs, del);
+    vecChannelIDs = helper::parseParameters<unsigned int>(chIDs, del);
   }
   for (const auto& entry : vecChannelIDs) {
     mSetAllowedChIDs.insert(entry);
@@ -298,7 +299,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   if (auto param = mCustomParameters.find("ChannelIDsAmpVsTime"); param != mCustomParameters.end()) {
     const auto chIDs = param->second;
     const std::string del = ",";
-    vecChannelIDsAmpVsTime = parseParameters<unsigned int>(chIDs, del);
+    vecChannelIDsAmpVsTime = helper::parseParameters<unsigned int>(chIDs, del);
   }
   for (const auto& entry : vecChannelIDsAmpVsTime) {
     mSetAllowedChIDsAmpVsTime.insert(entry);
