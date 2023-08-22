@@ -17,6 +17,7 @@
 #include "TCanvas.h"
 #include "TH1F.h"
 #include "TH2F.h"
+#include "TMath.h"
 
 #include "QualityControl/QcInfoLogger.h"
 #include "TRD/RawData.h"
@@ -54,7 +55,7 @@ void RawData::buildHistograms()
 
   mStats = new TH1F("stats", "Data reader statistics;;counts", 5, 0, 5);
   getObjectsManager()->startPublishing(mStats);
-  getObjectsManager()->setDisplayHint("stats", "logz");
+  getObjectsManager()->setDefaultDrawOptions(mStats->GetName(), "logy");
   mStats->GetXaxis()->SetBinLabel(1, "nTF");
   mStats->GetXaxis()->SetBinLabel(2, "nTrig");
   mStats->GetXaxis()->SetBinLabel(3, "nCalTrig");
@@ -65,21 +66,30 @@ void RawData::buildHistograms()
   getObjectsManager()->startPublishing(mDataAcceptance);
   mDataAcceptance->GetXaxis()->SetBinLabel(1, "Accepted");
   mDataAcceptance->GetXaxis()->SetBinLabel(2, "Rejected");
-  mTimeFrameTime = new TH1F("timeframetime", "Time taken per time frame;Time taken [ms];Counts", 10000, 0, 10000);
+  constexpr int nLogBins = 100;
+  float xBins[nLogBins + 1];
+  float xBinLogMin = 1.f;
+  float xBinLogMax = 6.f;
+  float logBinWidth = (xBinLogMax - xBinLogMin) / nLogBins;
+  for (int iBin = 0; iBin <= nLogBins; ++iBin) {
+    xBins[iBin] = TMath::Power(10, xBinLogMin + iBin * logBinWidth);
+  }
+  mTimeFrameTime = new TH1F("timeframetime", "Time taken per time frame;Time taken [us];Counts", nLogBins, xBins);
   getObjectsManager()->startPublishing(mTimeFrameTime);
-  mTrackletParsingTime = new TH1F("tracklettime", "Time taken per tracklet block;Time taken [ms];Counts", 1000, 0, 1000);
+  getObjectsManager()->setDefaultDrawOptions(mTimeFrameTime->GetName(), "logx");
+  mTrackletParsingTime = new TH1F("tracklettime", "Time taken per tracklet block;Time taken [us];Counts", nLogBins, xBins);
   getObjectsManager()->startPublishing(mTrackletParsingTime);
-  mDigitParsingTime = new TH1F("digittime", "Time taken per digit block;Time taken [ms];Counts", 1000, 0, 1000);
+  getObjectsManager()->setDefaultDrawOptions(mTrackletParsingTime->GetName(), "logx");
+  mDigitParsingTime = new TH1F("digittime", "Time taken per digit block;Time taken [us];Counts", nLogBins, xBins);
   getObjectsManager()->startPublishing(mDigitParsingTime);
-  mDataVersions = new TH1F("dataversions", "Data versions major.minor seen in data (half chamber header required);Version major.minor;Counts", 65000, 0, 65000);
-  getObjectsManager()->startPublishing(mDataVersions);
-  mDataVersionsMajor = new TH1F("dataversionsmajor", "Data versions major seen in the data (half chamber header required);Version;Counts", 256, 0, 256);
+  getObjectsManager()->setDefaultDrawOptions(mDigitParsingTime->GetName(), "logx");
+  mDataVersionsMajor = new TH1F("dataversionsmajor", "Data versions major seen in the data (half chamber header required);Version;Counts", 256, -0.5, 255.5);
   getObjectsManager()->startPublishing(mDataVersionsMajor);
   mParsingErrors = new TH1F("parseerrors", "Parsing Errors seen in data;;Counts", TRDLastParsingError, 0, TRDLastParsingError);
   getObjectsManager()->startPublishing(mParsingErrors);
-  getObjectsManager()->setDisplayHint(mParsingErrors->GetName(), "logz");
+  getObjectsManager()->setDefaultDrawOptions(mParsingErrors->GetName(), "logy");
 
-  mDataVolumePerHalfChamber = new TH2F("datavolumeperhalfchamber", "Data sizes from HalfCRU header;Data Volume [kB/TF]", 1080, -0.5, 1079.5, 1000, 0, 100);
+  mDataVolumePerHalfChamber = new TH2F("datavolumeperhalfchamber", "Data sizes from HalfCRU header;Half Chamber ID;Data Volume [kB/TF]", 1080, -0.5, 1079.5, 1000, 0, 100);
   getObjectsManager()->startPublishing(mDataVolumePerHalfChamber);
   getObjectsManager()->setDefaultDrawOptions("datavolumeperhalfchamber", "COLZ");
   getObjectsManager()->setDisplayHint(mDataVolumePerHalfChamber->GetName(), "logz");
@@ -163,7 +173,10 @@ void RawData::buildHistograms()
 void RawData::initialize(o2::framework::InitContext& /*ctx*/)
 {
 
-  ILOG(Debug, Devel) << "initialize TRD RawData QC " << ENDM;
+  ILOG(Debug, Devel) << "initialize TRD RawData QC" << ENDM;
+  if (auto param = mCustomParameters.find("fillHeaderVersionHist"); param != mCustomParameters.end()) {
+    mCheckDigitHCHeaderVersion = std::stoi(param->second);
+  }
 
   buildHistograms();
   ILOG(Info, Support) << "TRD RawData QC histograms built" << ENDM;
@@ -186,17 +199,16 @@ void RawData::monitorData(o2::framework::ProcessingContext& ctx)
 {
 
   auto rawdatastats = ctx.inputs().get<o2::trd::TRDDataCountersPerTimeFrame*>("rawstats");
-  /*
   mStats->AddBinContent(1, 1);                     // count number of TFs seen
   mStats->AddBinContent(2, rawdatastats->mNTriggersTotal); // count total number of triggers seen
   mStats->AddBinContent(3, rawdatastats->mNTriggersCalib); // count total number of calibration triggers seen
   mStats->AddBinContent(4, rawdatastats->mTrackletsFound); // count total number of tracklets seen
   mStats->AddBinContent(5, rawdatastats->mDigitsFound);    // count total number of digits seen
-  */
+
   // data per TF per link.
-  for (int hcid = 0; hcid < 1080; ++hcid) {
+  for (int hcid = 0; hcid < MAXHALFCHAMBER; ++hcid) {
     if (rawdatastats->mLinkWords[hcid] > 0) {
-      int sec = hcid / 60;
+      int sec = hcid / NHCPERSEC;
       mDataVolumePerHalfChamber->Fill(hcid, rawdatastats->mLinkWords[hcid] / 32.f); // one link word is 32 bytes, we want to display in units of kB per TF
       mDataVolumePerSector->Fill(sec, rawdatastats->mLinkWords[hcid] / 32.f);
     }
@@ -206,15 +218,20 @@ void RawData::monitorData(o2::framework::ProcessingContext& ctx)
   for (int error = 0; error < TRDLastParsingError; ++error) {
     mParsingErrors->AddBinContent(error + 1, rawdatastats->mParsingErrors[error]);
   }
-  /* TODO uncomment when changes available in O2 and add plot for links without any errors
-  for (auto e : rawdatastats->mParsingErrorsLink) {
+  for (auto e : rawdatastats->mParsingErrorsByLink) {
     int hcid = e / TRDLastParsingError;
     int errorIdx = e % TRDLastParsingError;
     int stackLayer = HelperMethods::getStack(hcid / 2) * NLAYER + HelperMethods::getLayer(hcid / 2);
     int sectorSide = (hcid / NHCPERSEC) * 2 + (hcid % 2);
     mParsingErrors2d[errorIdx]->Fill(sectorSide, stackLayer);
   }
-  */
+  for (int hcid = 0; hcid < MAXHALFCHAMBER; ++hcid) {
+    if (rawdatastats->mParsingOK[hcid] > 0) {
+      int stackLayer = HelperMethods::getStack(hcid / 2) * NLAYER + HelperMethods::getLayer(hcid / 2);
+      int sectorSide = (hcid / NHCPERSEC) * 2 + (hcid % 2);
+      mParsingErrors2d[0]->SetBinContent(sectorSide + 1, stackLayer + 1, mParsingErrors2d[0]->GetBinContent(sectorSide + 1, stackLayer + 1) + rawdatastats->mParsingOK[hcid]);
+    }
+  }
 
   // link statistics
   for (int hcid = 0; hcid < MAXHALFCHAMBER; ++hcid) {
@@ -260,8 +277,10 @@ void RawData::monitorData(o2::framework::ProcessingContext& ctx)
   mDigitParsingTime->Fill(rawdatastats->mTimeTakenForDigits);
   mTrackletParsingTime->Fill(rawdatastats->mTimeTakenForTracklets);
 
-  for (int i = 0; i < rawdatastats->mDataFormatRead.size(); ++i) {
-    mDataVersionsMajor->Fill(i, rawdatastats->mDataFormatRead[i]);
+  if (mCheckDigitHCHeaderVersion) {
+    for (int i = 0; i < rawdatastats->mDataFormatRead.size(); ++i) {
+      mDataVersionsMajor->Fill(i, rawdatastats->mDataFormatRead[i]);
+    }
   }
 }
 
@@ -296,7 +315,6 @@ void RawData::resetHistograms()
   mTimeFrameTime->Reset();
   mTrackletParsingTime->Reset();
   mDigitParsingTime->Reset();
-  mDataVersions->Reset();
   mDataVersionsMajor->Reset();
   mParsingErrors->Reset();
   mDataVolumePerHalfChamber->Reset();

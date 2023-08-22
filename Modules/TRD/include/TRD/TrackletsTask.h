@@ -78,7 +78,6 @@ class TrackletsTask final : public TaskInterface
   TH1F* mTrackletHCIDn = nullptr;
   TH1F* mTrackletPositionn = nullptr;
   TH1F* mTrackletPositionRawn = nullptr;
-  TH1F* mTrackletsPerEventn = nullptr;
   TH1F* mTrackletsPerTimeFrame = nullptr;
   TH1F* mTriggersPerTimeFrame = nullptr;
   TH1F* mTrackletsPerTimeFrameCycled = nullptr;
