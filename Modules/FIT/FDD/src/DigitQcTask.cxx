@@ -247,14 +247,14 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistPmTcmAverageTimeC = std::make_unique<TH2F>("PmTcmAverageTimeC", "Comparison of average time C from PM and TCM;Average time(TCM), side C;PM - TCM", 410, -2050, 2050, 820, -410 - 0.5, 410 - 0.5);
   mHistTriggersSw = std::make_unique<TH1F>("TriggersSoftware", "Triggers from software", mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
 
-  const auto mapBasicTrgBits = HelperTrgFIT::sMapBasicTrgBitsFV0;
+  const auto mapBasicTrgBits = HelperTrgFIT::sMapBasicTrgBitsFDD;
   const std::map<unsigned int, std::string> mapTrgValidationStatus = {
     { TrgComparisonResult::kSWonly, "Sw only" },
     { TrgComparisonResult::kTCMonly, "TCM only" },
     { TrgComparisonResult::kNone, "neither TCM nor Sw" },
     { TrgComparisonResult::kBoth, "both TCM and Sw" }
   };
-  mHistTriggersSoftwareVsTCM = helper::registerHist<TH2F>(getObjectsManager(), "COLZ", "TriggersSoftwareVsTCM", "Comparison of triggers from software and TCM;;Trigger name", mapBasicTrgBits, mapTrgValidationStatus);
+  mHistTriggersSoftwareVsTCM = o2::quality_control_modules::fit::helper::registerHist<TH2F>(getObjectsManager(), "COLZ", "TriggersSoftwareVsTCM", "Comparison of triggers from software and TCM;;Trigger name", mapBasicTrgBits, mapTrgValidationStatus);
 
   for (const auto& entry : mMapDigitTrgNames) {
     mHistOrbitVsTrg->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
