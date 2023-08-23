@@ -127,7 +127,7 @@ void SACs::configure(const boost::property_tree::ptree& config)
   if (!mRejectOutliersSACZeroScale) {
     ILOG(Warning, Support) << "No rejection for outliers in SAC Zero Scale!" << ENDM;
   }
-  mSACZeroMaxDeviation = config.get<float>("qc.postprocessing." + id + ".maxDeviationOutlierSACZero", 3.); // GANESHA which default value?
+  mSACZeroMaxDeviation = config.get<float>("qc.postprocessing." + id + ".maxDeviationOutlierSACZero", 3.);
 }
 
 void SACs::initialize(Trigger, framework::ServiceRegistryRef)
@@ -141,6 +141,7 @@ void SACs::initialize(Trigger, framework::ServiceRegistryRef)
   mFourierCoeffsC = std::make_unique<TCanvas>("c_FourierCoefficients_1D_CSide");
   mSACZeroSidesScaled = std::make_unique<TCanvas>("c_sides_SACZero_Scaled");
   mSACZeroScale = std::make_unique<TCanvas>("c_sides_SACZero_ScaleFactor");
+  mSACZeroOutliers = std::make_unique<TCanvas>("c_sides_SACZero_Outliers");
 
   getObjectsManager()->startPublishing(mSACZeroSides.get());
   getObjectsManager()->startPublishing(mSACDeltaSides.get());
@@ -149,6 +150,7 @@ void SACs::initialize(Trigger, framework::ServiceRegistryRef)
   getObjectsManager()->startPublishing(mFourierCoeffsC.get());
   getObjectsManager()->startPublishing(mSACZeroSidesScaled.get());
   getObjectsManager()->startPublishing(mSACZeroScale.get());
+  getObjectsManager()->startPublishing(mSACZeroOutliers.get());
 }
 
 void SACs::update(Trigger, framework::ServiceRegistryRef)
@@ -160,6 +162,7 @@ void SACs::update(Trigger, framework::ServiceRegistryRef)
   mFourierCoeffsC.get()->Clear();
   mSACZeroSidesScaled.get()->Clear();
   mSACZeroScale.get()->Clear();
+  mSACZeroOutliers.get()->Clear();
 
   o2::tpc::SACZero* sacZero = nullptr;
   o2::tpc::SACDelta<unsigned char>* sacDelta = nullptr;
@@ -177,15 +180,10 @@ void SACs::update(Trigger, framework::ServiceRegistryRef)
     sacOne = mCdbApi.retrieveFromTFileAny<SACOne>(CDBTypeMap.at(CDBType::CalSAC1), std::map<std::string, std::string>{}, availableTimestampsSACOne[0]);
     sacFFT = mCdbApi.retrieveFromTFileAny<FourierCoeffSAC>(CDBTypeMap.at(CDBType::CalSACFourier), std::map<std::string, std::string>{}, availableTimestampsSACFourierCoeffs[0]);
   } else {
-    ILOG(Warning, Support) << "Obtained nothing so far." << ENDM;
     sacZero = mCdbApi.retrieveFromTFileAny<SACZero>(CDBTypeMap.at(CDBType::CalSAC0), std::map<std::string, std::string>{}, mTimestamps["SACZero"]);
-    ILOG(Warning, Support) << "Obtained SACZero." << ENDM;
     sacDelta = mCdbApi.retrieveFromTFileAny<SACDelta<unsigned char>>(CDBTypeMap.at(CDBType::CalSACDelta), std::map<std::string, std::string>{}, mTimestamps["SACDelta"]);
-    ILOG(Warning, Support) << "Obtained SACDelta." << ENDM;
     sacOne = mCdbApi.retrieveFromTFileAny<SACOne>(CDBTypeMap.at(CDBType::CalSAC1), std::map<std::string, std::string>{}, mTimestamps["SACOne"]);
-    ILOG(Warning, Support) << "Obtained SACOne." << ENDM;
     sacFFT = mCdbApi.retrieveFromTFileAny<FourierCoeffSAC>(CDBTypeMap.at(CDBType::CalSACFourier), std::map<std::string, std::string>{}, mTimestamps["SACFourierCoeffs"]);
-    ILOG(Warning, Support) << "Obtained SACFourierCoeffs." << ENDM;
   }
 
   if (sacZero) {
@@ -195,6 +193,7 @@ void SACs::update(Trigger, framework::ServiceRegistryRef)
     mSACs.setSACZeroScale(mRejectOutliersSACZeroScale);
     mSACs.drawSACZeroScale(mSACZeroScale.get());
     mSACs.drawSACTypeSides(o2::tpc::SACType::IDCZero, 0, mRanges["SACZeroScaled"].at(1), mRanges["SACZeroScaled"].at(2), mSACZeroSidesScaled.get()); // draw scaled
+    mSACs.drawSACTypeSides(o2::tpc::SACType::IDCOutlier, 0, -2, 2, mSACZeroOutliers.get()); // draw SACZero outlier map
   }
   if (sacDelta) {
     mSACs.setSACDelta(sacDelta);
@@ -232,6 +231,7 @@ void SACs::finalize(Trigger, framework::ServiceRegistryRef)
   getObjectsManager()->stopPublishing(mFourierCoeffsC.get());
   getObjectsManager()->stopPublishing(mSACZeroSidesScaled.get());
   getObjectsManager()->stopPublishing(mSACZeroScale.get());
+  getObjectsManager()->stopPublishing(mSACZeroOutliers.get());
 }
 
 } // namespace o2::quality_control_modules::tpc

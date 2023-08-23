@@ -77,6 +77,7 @@ class SACs : public quality_control::postprocessing::PostProcessingInterface
   std::unique_ptr<TCanvas> mFourierCoeffsC;
   std::unique_ptr<TCanvas> mSACZeroSidesScaled;
   std::unique_ptr<TCanvas> mSACZeroScale;
+  std::unique_ptr<TCanvas> mSACZeroOutliers;
 
   std::unordered_map<std::string, long> mTimestamps;             ///< timestamps to look for specific data in the CCDB
   std::vector<std::map<std::string, std::string>> mLookupMaps{}; ///< meta data to look for data in the CCDB
