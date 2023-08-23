@@ -425,7 +425,6 @@ install(
 # ---- Install config files and scripts ----
 
 install(FILES example-default.json
-              alfa.json
               basic.json
               basic-aggregator.json
               basic-external-histo.json
