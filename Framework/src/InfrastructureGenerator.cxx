@@ -571,8 +571,7 @@ std::string InfrastructureGenerator::getSinkDetectorFromTask(const std::string& 
   auto it = std::find_if(tasks.begin(), tasks.end(),
                          [sinkTaskName](const TaskSpec& taskSpec) {
                            return taskSpec.taskName == sinkTaskName;
-                         }
-  );
+                         });
   return (it != tasks.end()) ? (*it).detectorName : "";
 }
 
@@ -670,7 +669,7 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
       ILOG(Debug, Devel) << input << " ";
     ILOG(Debug, Devel) << ENDM;
 
-    if(checkConfigs.empty()) { // we are creating a sink checkRunner
+    if (checkConfigs.empty()) { // we are creating a sink checkRunner
       checkRunnerConfig.sinkDetectorName = getSinkDetectorFromTask(inputNames[0], infrastructureSpec.tasks);
     }
 
