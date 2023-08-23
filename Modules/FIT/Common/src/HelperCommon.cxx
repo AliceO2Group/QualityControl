@@ -20,7 +20,7 @@ namespace o2::quality_control_modules::fit
 namespace helper
 {
 
-std::map<unsigned int, std::string> multiplyMaps(const std::vector<std::tuple<std::string, std::map<unsigned int, std::string>, std::string>>& vecPreffixMapSuffix, bool useMapSizeAsMultFactor = true)
+std::map<unsigned int, std::string> multiplyMaps(const std::vector<std::tuple<std::string, std::map<unsigned int, std::string>, std::string>>& vecPreffixMapSuffix, bool useMapSizeAsMultFactor)
 {
 
   auto multiplyPairMaps = [](bool useMapSizeAsMultFactor, const std::tuple<std::string, std::map<unsigned int, std::string>, std::string>& firstPreffixMapSuffix,
