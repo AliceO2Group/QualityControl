@@ -34,7 +34,7 @@
 
 namespace o2::quality_control_modules::fdd
 {
-
+using namespace o2::quality_control_modules::fit;
 DigitQcTask::~DigitQcTask()
 {
   delete mListHistGarbage;

@@ -31,7 +31,7 @@
 
 namespace o2::quality_control_modules::fv0
 {
-
+using namespace o2::quality_control_modules::fit;
 DigitQcTask::~DigitQcTask()
 {
   delete mListHistGarbage;
@@ -152,7 +152,6 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Debug, Devel) << "initialize DigitQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
   mStateLastIR2Ch = {};
-
 
   mMapChTrgNames.insert({ o2::fv0::ChannelData::kNumberADC, "NumberADC" });
   mMapChTrgNames.insert({ o2::fv0::ChannelData::kIsDoubleEvent, "IsDoubleEvent" });
