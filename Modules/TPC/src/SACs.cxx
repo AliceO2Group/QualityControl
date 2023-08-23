@@ -193,7 +193,7 @@ void SACs::update(Trigger, framework::ServiceRegistryRef)
     mSACs.setSACZeroScale(mRejectOutliersSACZeroScale);
     mSACs.drawSACZeroScale(mSACZeroScale.get());
     mSACs.drawSACTypeSides(o2::tpc::SACType::IDCZero, 0, mRanges["SACZeroScaled"].at(1), mRanges["SACZeroScaled"].at(2), mSACZeroSidesScaled.get()); // draw scaled
-    mSACs.drawSACTypeSides(o2::tpc::SACType::IDCOutlier, 0, -2, 2, mSACZeroOutliers.get()); // draw SACZero outlier map
+    mSACs.drawSACTypeSides(o2::tpc::SACType::IDCOutlier, 0, -2, 2, mSACZeroOutliers.get());                                                          // draw SACZero outlier map
   }
   if (sacDelta) {
     mSACs.setSACDelta(sacDelta);
