@@ -173,6 +173,7 @@ void PostProcessingRunner::start(framework::ServiceRegistryRef dplServices)
 
   // register ourselves to the BK
   if (gSystem->Getenv("O2_QC_REGISTER_IN_BK")) { // until we are sure it works, we have to turn it on
+    ILOG(Debug, Devel) << "Registering pp task to BookKeeping" << ENDM;
     Bookkeeping::getInstance().registerProcess(mTaskConfig.activity.mId, mRunnerConfig.taskName, mRunnerConfig.detectorName, bookkeeping::DPL_PROCESS_TYPE_QC_POSTPROCESSING, "");
   }
 
