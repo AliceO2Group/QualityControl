@@ -43,6 +43,8 @@ constexpr auto runNumber = "RunNumber";
 constexpr auto passName = "PassName";
 constexpr auto periodName = "PeriodName";
 constexpr auto beamType = "BeamType";
+constexpr auto fillNumber = "FillNumber";
+constexpr auto partitionName = "PartitionName";
 
 } // namespace o2::quality_control::repository::metadata_keys
 

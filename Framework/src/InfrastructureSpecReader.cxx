@@ -64,6 +64,9 @@ CommonSpec InfrastructureSpecReader::readSpecEntry<CommonSpec>(const std::string
   spec.activityProvenance = commonTree.get<std::string>("Activity.provenance", spec.activityProvenance);
   spec.activityStart = commonTree.get<uint64_t>("Activity.start", spec.activityStart);
   spec.activityEnd = commonTree.get<uint64_t>("Activity.end", spec.activityEnd);
+  spec.activityBeamType = commonTree.get<std::string>("Activity.beamType", spec.activityBeamType);
+  spec.activityPartitionName = commonTree.get<std::string>("Activity.partitionName", spec.activityPartitionName);
+  spec.activityFillNumber = commonTree.get<int>("Activity.fillNumber", spec.activityFillNumber);
   spec.monitoringUrl = commonTree.get<std::string>("monitoring.url", spec.monitoringUrl);
   spec.consulUrl = commonTree.get<std::string>("consul.url", spec.consulUrl);
   spec.conditionDBUrl = commonTree.get<std::string>("conditionDB.url", spec.conditionDBUrl);
