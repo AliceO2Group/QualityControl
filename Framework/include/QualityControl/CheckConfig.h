@@ -41,6 +41,7 @@ struct CheckConfig {
   bool allowBeautify = false;
   framework::Inputs inputSpecs{};
   framework::OutputSpec qoSpec{ "XXX", "INVALID" };
+  std::string conditionUrl{};
 };
 
 } // namespace o2::quality_control::checker

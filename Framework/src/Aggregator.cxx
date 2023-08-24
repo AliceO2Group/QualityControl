@@ -22,6 +22,7 @@
 #include "QualityControl/ActivityHelpers.h"
 #include "QualityControl/Activity.h"
 #include <Common/Exceptions.h>
+#include "QualityControl/CommonSpec.h"
 
 #include <utility>
 
@@ -46,6 +47,7 @@ void Aggregator::init()
       root_class_factory::create<AggregatorInterface>(mAggregatorConfig.moduleName, mAggregatorConfig.className);
     mAggregatorInterface->setName(mAggregatorConfig.name);
     mAggregatorInterface->setCustomParameters(mAggregatorConfig.customParameters);
+    mAggregatorInterface->setCcdbUrl(mAggregatorConfig.conditionUrl);
     mAggregatorInterface->configure();
   } catch (...) {
     std::string diagnostic = boost::current_exception_diagnostic_information();
@@ -170,7 +172,7 @@ std::vector<AggregatorSource> Aggregator::getSources(core::DataSourceType type)
   return matches;
 }
 
-AggregatorConfig Aggregator::extractConfig(const core::CommonSpec&, const AggregatorSpec& aggregatorSpec)
+AggregatorConfig Aggregator::extractConfig(const core::CommonSpec& commonSpec, const AggregatorSpec& aggregatorSpec)
 {
   framework::Inputs inputs;
   std::vector<std::string> objectNames;
@@ -217,7 +219,8 @@ AggregatorConfig Aggregator::extractConfig(const core::CommonSpec&, const Aggreg
     std::move(objectNames),
     checkAllObjects,
     std::move(inputs),
-    sources
+    sources,
+    commonSpec.conditionDBUrl
   };
 }
 
