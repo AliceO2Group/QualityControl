@@ -25,6 +25,7 @@
 #include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/PostProcessingRunnerConfig.h"
 #include "QualityControl/Triggers.h"
+#include "QualityControl/Activity.h"
 #include "QualityControl/DatabaseInterface.h"
 
 namespace o2::framework
@@ -113,6 +114,7 @@ class PostProcessingRunner
   std::function<void(const o2::quality_control::core::MonitorObjectCollection*)> mPublicationCallback = nullptr;
 
   std::string mID{};
+  core::Activity mActivity;
   PostProcessingConfig mTaskConfig;
   PostProcessingRunnerConfig mRunnerConfig;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;

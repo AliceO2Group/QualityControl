@@ -244,9 +244,13 @@ void CcdbDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::Moni
   if (to == -1 || to == 0 || validity.getMax() == gInvalidValidityInterval.getMax() || validity.getMax() == gFullValidityInterval.getMax()) {
     to = from + 1000l * 60 * 60 * 24 * 365 * 10; // ~10 years since the start of validity
   }
+  if (from == to) {
+    ILOG(Warning, Support) << "The validity start of '" << mo->GetName() << "' is equal to validity end (" << from << ", " << to << "). The validity end will be extended by 1ms to allow for storage." << ENDM;
+    to += 1;
+  }
 
-  if (from >= to) {
-    ILOG(Error, Support) << "The start validity of '" << mo->GetName() << "' is not earlier than the end (" << from << ", " << to << "). The object will not be stored" << ENDM;
+  if (from > to) {
+    ILOG(Error, Support) << "The validity start of '" << mo->GetName() << "' later than the end (" << from << ", " << to << "). The object will not be stored" << ENDM;
     return;
   }
 
@@ -287,8 +291,13 @@ void CcdbDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::Qual
     to = from + 1000l * 60 * 60 * 24 * 365 * 10; // ~10 years since the start of validity
   }
 
-  if (from >= to) {
-    ILOG(Error, Support) << "The start validity of '" << qo->GetName() << "' is not earlier than the end (" << from << ", " << to << "). The object will not be stored" << ENDM;
+  if (from == to) {
+    ILOG(Warning, Support) << "The validity start of '" << qo->GetName() << "' is equal to validity end (" << from << ", " << to << "). The validity end will be extended by 1ms to allow for storage." << ENDM;
+    to += 1;
+  }
+
+  if (from > to) {
+    ILOG(Error, Support) << "The validity start of '" << qo->GetName() << "' later than the end (" << from << ", " << to << "). The object will not be stored" << ENDM;
     return;
   }
 
