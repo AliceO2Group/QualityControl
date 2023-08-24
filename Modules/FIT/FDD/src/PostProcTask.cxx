@@ -211,7 +211,7 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
   mHistTrgValidation = helper::registerHist<TH1F>(getObjectsManager(), "", "TrgValidation", "FDD SW + HW only to validated triggers fraction", mMapBasicTrgBits);
   mHistTimeInWindow = helper::registerHist<TH1F>(getObjectsManager(), "", "TimeInWindowFraction", Form("FDD Fraction of events with CFD in time gate(%i,%i) vs ChannelID;ChannelID;Event fraction with CFD in time gate", mLowTimeThreshold, mUpTimeThreshold), sNCHANNELS_PM, 0, sNCHANNELS_PM);
   mHistCFDEff = helper::registerHist<TH1F>(getObjectsManager(), "", "CFD_efficiency", "FDD Fraction of events with CFD in ADC gate vs ChannelID;ChannelID;Event fraction with CFD in ADC gate;", sNCHANNELS_PM, 0, sNCHANNELS_PM);
-  mHistAmpSaturation = helper::registerHist<TH1F>(getObjectsManager(), "", "AmpSaturation", Form("FDD Fraction of charge in [%d, %d] ADC;ChannelID;Fraction", mLowAmpSat, mUpAmpSat), sNCHANNELS_PM, 0, sNCHANNELS_PM);
+  mHistAmpSaturation = helper::registerHist<TH1F>(getObjectsManager(), "", "AmpSaturation", Form("FDD Fraction of charge in [%d, %d] ADC;ChannelID;Fraction", static_cast<int>(mLowAmpSat), static_cast<int>(mUpAmpSat)), sNCHANNELS_PM, 0, sNCHANNELS_PM);
 }
 
 void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
