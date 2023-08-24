@@ -15,6 +15,7 @@
 /// \author Guillermo Contreras
 /// \author Diana Maria Krupova
 /// \author Katarina Krizkova Gajdosova
+/// \author David Grund
 
 // ROOT
 #include <TH1.h>
@@ -30,6 +31,9 @@
 // Quality Control
 #include "QualityControl/QcInfoLogger.h"
 #include "MFT/QcMFTTrackTask.h"
+#include "Common/TH1Ratio.h"
+#include "Common/TH2Ratio.h"
+#include "DetectorsBase/GRPGeomHelper.h"
 
 namespace o2::quality_control_modules::mft
 {
@@ -77,91 +81,91 @@ void QcMFTTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   double maxTracksPerTF = 5000;
 
-  mNumberOfTracksPerTF = std::make_unique<TH1F>("mMFTTracksPerTF",
-                                                "Number of tracks per TimeFrame; Number of tracks per TF", maxTracksPerTF, -0.5, maxTracksPerTF - 0.5);
+  mNumberOfTracksPerTF = std::make_unique<TH1FRatio>("mMFTTracksPerTF",
+                                                     "Number of tracks per TimeFrame; Number of tracks per TF; # entries per orbit", maxTracksPerTF, -0.5, maxTracksPerTF - 0.5, true);
   getObjectsManager()->startPublishing(mNumberOfTracksPerTF.get());
 
-  mTrackNumberOfClusters = std::make_unique<TH1F>("mMFTTrackNumberOfClusters",
-                                                  "Number Of Clusters Per Track; # clusters; # entries", 10, 0.5, 10.5);
+  mTrackNumberOfClusters = std::make_unique<TH1FRatio>("mMFTTrackNumberOfClusters",
+                                                       "Number Of Clusters Per Track; # clusters; # entries per orbit", 10, 0.5, 10.5, true);
   getObjectsManager()->startPublishing(mTrackNumberOfClusters.get());
 
-  mCATrackNumberOfClusters = std::make_unique<TH1F>("CA/mMFTCATrackNumberOfClusters",
-                                                    "Number Of Clusters Per CA Track; # clusters; # tracks", 10, 0.5, 10.5);
+  mCATrackNumberOfClusters = std::make_unique<TH1FRatio>("CA/mMFTCATrackNumberOfClusters",
+                                                         "Number Of Clusters Per CA Track; # clusters; # entries per orbit", 10, 0.5, 10.5, true);
   getObjectsManager()->startPublishing(mCATrackNumberOfClusters.get());
 
-  mLTFTrackNumberOfClusters = std::make_unique<TH1F>("LTF/mMFTLTFTrackNumberOfClusters",
-                                                     "Number Of Clusters Per LTF Track; # clusters; # entries", 10, 0.5, 10.5);
+  mLTFTrackNumberOfClusters = std::make_unique<TH1FRatio>("LTF/mMFTLTFTrackNumberOfClusters",
+                                                          "Number Of Clusters Per LTF Track; # clusters; # entries per orbit", 10, 0.5, 10.5, true);
   getObjectsManager()->startPublishing(mLTFTrackNumberOfClusters.get());
 
-  mTrackInvQPt = std::make_unique<TH1F>("mMFTTrackInvQPt", "Track q/p_{T}; q/p_{T} [1/GeV]; # entries", 250, -10, 10);
+  mTrackInvQPt = std::make_unique<TH1FRatio>("mMFTTrackInvQPt", "Track q/p_{T}; q/p_{T} [1/GeV]; # entries per orbit", 250, -10, 10, true);
   getObjectsManager()->startPublishing(mTrackInvQPt.get());
 
-  mTrackChi2 = std::make_unique<TH1F>("mMFTTrackChi2", "Track #chi^{2}/NDF; #chi^{2}/NDF; # entries", 210, -0.5, 20.5);
+  mTrackChi2 = std::make_unique<TH1FRatio>("mMFTTrackChi2", "Track #chi^{2}/NDF; #chi^{2}/NDF; # entries per orbit", 210, -0.5, 20.5, true);
   getObjectsManager()->startPublishing(mTrackChi2.get());
 
-  mTrackCharge = std::make_unique<TH1F>("mMFTTrackCharge", "Track Charge; q; # entries", 3, -1.5, 1.5);
+  mTrackCharge = std::make_unique<TH1FRatio>("mMFTTrackCharge", "Track Charge; q; # entries per orbit", 3, -1.5, 1.5, true);
   getObjectsManager()->startPublishing(mTrackCharge.get());
 
-  mTrackPhi = std::make_unique<TH1F>("mMFTTrackPhi", "Track #phi; #phi; # entries", 100, -3.2, 3.2);
+  mTrackPhi = std::make_unique<TH1FRatio>("mMFTTrackPhi", "Track #phi; #phi; # entries per orbit", 100, -3.2, 3.2, true);
   getObjectsManager()->startPublishing(mTrackPhi.get());
 
-  mPositiveTrackPhi = std::make_unique<TH1F>("mMFTPositiveTrackPhi", "Positive Track #phi; #phi; # entries", 100, -3.2, 3.2);
+  mPositiveTrackPhi = std::make_unique<TH1FRatio>("mMFTPositiveTrackPhi", "Positive Track #phi; #phi; # entries per orbit", 100, -3.2, 3.2, true);
   getObjectsManager()->startPublishing(mPositiveTrackPhi.get());
 
-  mNegativeTrackPhi = std::make_unique<TH1F>("mMFTNegativeTrackPhi", "Negative Track #phi; #phi; # entries", 100, -3.2, 3.2);
+  mNegativeTrackPhi = std::make_unique<TH1FRatio>("mMFTNegativeTrackPhi", "Negative Track #phi; #phi; # entries per orbit", 100, -3.2, 3.2, true);
   getObjectsManager()->startPublishing(mNegativeTrackPhi.get());
 
-  mTrackEta = std::make_unique<TH1F>("mMFTTrackEta", "Track #eta; #eta; # entries", 50, -4, -2);
+  mTrackEta = std::make_unique<TH1FRatio>("mMFTTrackEta", "Track #eta; #eta; # entries per orbit", 50, -4, -2, true);
   getObjectsManager()->startPublishing(mTrackEta.get());
 
   for (auto minNClusters : sMinNClustersList) {
     auto nHisto = minNClusters - sMinNClustersList[0];
-    mTrackEtaNCls[nHisto] = std::make_unique<TH1F>(Form("mMFTTrackEta_%d_MinClusters", minNClusters), Form("Track #eta (NCls >= %d); #eta; # entries", minNClusters), 50, -4, -2);
+    mTrackEtaNCls[nHisto] = std::make_unique<TH1FRatio>(Form("mMFTTrackEta_%d_MinClusters", minNClusters), Form("Track #eta (NCls >= %d); #eta; # entries per orbit", minNClusters), 50, -4, -2, true);
     getObjectsManager()->startPublishing(mTrackEtaNCls[nHisto].get());
 
-    mTrackPhiNCls[nHisto] = std::make_unique<TH1F>(Form("mMFTTrackPhi_%d_MinClusters", minNClusters), Form("Track #phi (NCls >= %d); #phi; # entries", minNClusters), 100, -3.2, 3.2);
+    mTrackPhiNCls[nHisto] = std::make_unique<TH1FRatio>(Form("mMFTTrackPhi_%d_MinClusters", minNClusters), Form("Track #phi (NCls >= %d); #phi; # entries per orbit", minNClusters), 100, -3.2, 3.2, true);
     getObjectsManager()->startPublishing(mTrackPhiNCls[nHisto].get());
 
-    mTrackXYNCls[nHisto] = std::make_unique<TH2F>(Form("mMFTTrackXY_%d_MinClusters", minNClusters), Form("Track Position (NCls >= %d); x; y", minNClusters), 320, -16, 16, 320, -16, 16);
+    mTrackXYNCls[nHisto] = std::make_unique<TH2FRatio>(Form("mMFTTrackXY_%d_MinClusters", minNClusters), Form("Track Position (NCls >= %d); x; y", minNClusters), 320, -16, 16, 320, -16, 16, true);
     getObjectsManager()->startPublishing(mTrackXYNCls[nHisto].get());
     getObjectsManager()->setDisplayHint(mTrackXYNCls[nHisto].get(), "logz colz");
 
-    mTrackEtaPhiNCls[nHisto] = std::make_unique<TH2F>(Form("mMFTTrackEtaPhi_%d_MinClusters", minNClusters), Form("Track #eta , #phi (NCls >= %d); #eta; #phi", minNClusters), 50, -4, -2, 100, -3.2, 3.2);
+    mTrackEtaPhiNCls[nHisto] = std::make_unique<TH2FRatio>(Form("mMFTTrackEtaPhi_%d_MinClusters", minNClusters), Form("Track #eta , #phi (NCls >= %d); #eta; #phi", minNClusters), 50, -4, -2, 100, -3.2, 3.2, true);
     getObjectsManager()->startPublishing(mTrackEtaPhiNCls[nHisto].get());
     getObjectsManager()->setDisplayHint(mTrackEtaPhiNCls[nHisto].get(), "colz");
   }
 
-  mCATrackEta = std::make_unique<TH1F>("CA/mMFTCATrackEta", "CA Track #eta; #eta; # entries", 50, -4, -2);
+  mCATrackEta = std::make_unique<TH1FRatio>("CA/mMFTCATrackEta", "CA Track #eta; #eta; # entries per orbit", 50, -4, -2, true);
   getObjectsManager()->startPublishing(mCATrackEta.get());
 
-  mLTFTrackEta = std::make_unique<TH1F>("LTF/mMFTLTFTrackEta", "LTF Track #eta; #eta; # entries", 50, -4, -2);
+  mLTFTrackEta = std::make_unique<TH1FRatio>("LTF/mMFTLTFTrackEta", "LTF Track #eta; #eta; # entries per orbit", 50, -4, -2, true);
   getObjectsManager()->startPublishing(mLTFTrackEta.get());
 
-  mCATrackPt = std::make_unique<TH1F>("CA/mMFTCATrackPt", "CA Track p_{T}; p_{T} (GeV/c); # entries", 300, 0, 30);
+  mCATrackPt = std::make_unique<TH1FRatio>("CA/mMFTCATrackPt", "CA Track p_{T}; p_{T} (GeV/c); # entries per orbit", 300, 0, 30, true);
   getObjectsManager()->startPublishing(mCATrackPt.get());
   getObjectsManager()->setDisplayHint(mCATrackPt.get(), "logy");
 
-  mLTFTrackPt = std::make_unique<TH1F>("LTF/mMFTLTFTrackPt", "LTF Track p_{T}; p_{T} (GeV/c); # entries", 300, 0, 30);
+  mLTFTrackPt = std::make_unique<TH1FRatio>("LTF/mMFTLTFTrackPt", "LTF Track p_{T}; p_{T} (GeV/c); # entries per orbit", 300, 0, 30, true);
   getObjectsManager()->startPublishing(mLTFTrackPt.get());
   getObjectsManager()->setDisplayHint(mLTFTrackPt.get(), "logy");
 
-  mTrackTanl = std::make_unique<TH1F>("mMFTTrackTanl", "Track tan #lambda; tan #lambda; # entries", 100, -25, 0);
+  mTrackTanl = std::make_unique<TH1FRatio>("mMFTTrackTanl", "Track tan #lambda; tan #lambda; # entries per orbit", 100, -25, 0, true);
   getObjectsManager()->startPublishing(mTrackTanl.get());
 
-  mTrackROFNEntries = std::make_unique<TH1F>("mMFTTrackROFSize", "Distribution of the #tracks per ROF; # tracks per ROF; # entries", MaxTrackROFSize, 0, MaxTrackROFSize);
+  mTrackROFNEntries = std::make_unique<TH1FRatio>("mMFTTrackROFSize", "Distribution of the #tracks per ROF; # tracks per ROF; # entries per orbit", MaxTrackROFSize, 0, MaxTrackROFSize, true);
   getObjectsManager()->startPublishing(mTrackROFNEntries.get());
 
-  mTracksBC = std::make_unique<TH1F>("mMFTTracksBC", "Tracks per BC; BCid; # entries", o2::constants::lhc::LHCMaxBunches, 0, o2::constants::lhc::LHCMaxBunches);
+  mTracksBC = std::make_unique<TH1FRatio>("mMFTTracksBC", "Tracks per BC; BCid; # entries per orbit", o2::constants::lhc::LHCMaxBunches, 0, o2::constants::lhc::LHCMaxBunches, true);
   mTracksBC->SetMinimum(0.1);
   getObjectsManager()->startPublishing(mTracksBC.get());
   getObjectsManager()->setDisplayHint(mTracksBC.get(), "hist");
 
-  mAssociatedClusterFraction = std::make_unique<TH1F>("mAssociatedClusterFraction", "Fraction of clusters in tracks; Clusters in tracks / All clusters; # entries", 100, 0, 1);
+  mAssociatedClusterFraction = std::make_unique<TH1FRatio>("mAssociatedClusterFraction", "Fraction of clusters in tracks; Clusters in tracks / All clusters; # entries per orbit", 100, 0, 1, true);
   getObjectsManager()->startPublishing(mAssociatedClusterFraction.get());
   getObjectsManager()->setDisplayHint(mAssociatedClusterFraction.get(), "hist logy");
 
-  mClusterRatioVsBunchCrossing = std::make_unique<TH2F>("mClusterRatioVsBunchCrossing", "Bunch Crossing ID vs Cluster Ratio;BC ID;Fraction of clusters in tracks",
-                                                        o2::constants::lhc::LHCMaxBunches, 0, o2::constants::lhc::LHCMaxBunches, 100, 0, 1);
+  mClusterRatioVsBunchCrossing = std::make_unique<TH2FRatio>("mClusterRatioVsBunchCrossing", "Bunch Crossing ID vs Cluster Ratio;BC ID;Fraction of clusters in tracks",
+                                                             o2::constants::lhc::LHCMaxBunches, 0, o2::constants::lhc::LHCMaxBunches, 100, 0, 1, true);
   getObjectsManager()->startPublishing(mClusterRatioVsBunchCrossing.get());
   getObjectsManager()->setDisplayHint(mClusterRatioVsBunchCrossing.get(), "colz logz");
 }
@@ -181,6 +185,8 @@ void QcMFTTrackTask::startOfCycle()
 
 void QcMFTTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
+  auto mNOrbitsPerTF = o2::base::GRPGeomHelper::instance().getNHBFPerTF();
+
   // get the tracks
   const auto tracks = ctx.inputs().get<gsl::span<o2::mft::TrackMFT>>("tracks");
   const auto tracksrofs = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("tracksrofs");
@@ -188,13 +194,13 @@ void QcMFTTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   // fill the tracks histogram
 
-  mNumberOfTracksPerTF->Fill(tracks.size());
+  mNumberOfTracksPerTF->getNum()->Fill(tracks.size());
 
   for (int iROF = 0; iROF < tracksrofs.size(); iROF++) {
     int nClusterCountTrack = 0;
     int nTracks = tracksrofs[iROF].getNEntries();
 
-    mTrackROFNEntries->Fill(nTracks);
+    mTrackROFNEntries->getNum()->Fill(nTracks);
 
     int start = tracksrofs[iROF].getFirstEntry();
     int end = start + tracksrofs[iROF].getNEntries();
@@ -209,54 +215,111 @@ void QcMFTTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
     float clusterRatio = nTotalClusters > 0 ? (float)nClusterCountTrack / (float)nTotalClusters : -1;
 
     const auto bcData = tracksrofs[iROF].getBCData();
-    mTracksBC->Fill(bcData.bc, nTracks);
-    mAssociatedClusterFraction->Fill(clusterRatio);
-    mClusterRatioVsBunchCrossing->Fill(bcData.bc, clusterRatio);
+    mTracksBC->getNum()->Fill(bcData.bc, nTracks);
+    mAssociatedClusterFraction->getNum()->Fill(clusterRatio);
+    mClusterRatioVsBunchCrossing->getNum()->Fill(bcData.bc, clusterRatio);
   }
 
   for (auto& oneTrack : tracks) {
-    mTrackNumberOfClusters->Fill(oneTrack.getNumberOfPoints());
-    mTrackChi2->Fill(oneTrack.getChi2OverNDF());
-    mTrackCharge->Fill(oneTrack.getCharge());
-    mTrackPhi->Fill(oneTrack.getPhi());
-    mTrackEta->Fill(oneTrack.getEta());
-    mTrackTanl->Fill(oneTrack.getTanl());
+    mTrackNumberOfClusters->getNum()->Fill(oneTrack.getNumberOfPoints());
+    mTrackChi2->getNum()->Fill(oneTrack.getChi2OverNDF());
+    mTrackCharge->getNum()->Fill(oneTrack.getCharge());
+    mTrackPhi->getNum()->Fill(oneTrack.getPhi());
+    mTrackEta->getNum()->Fill(oneTrack.getEta());
+    mTrackTanl->getNum()->Fill(oneTrack.getTanl());
 
     for (auto minNClusters : sMinNClustersList) {
       if (oneTrack.getNumberOfPoints() >= minNClusters) {
-        mTrackEtaNCls[minNClusters - sMinNClustersList[0]]->Fill(oneTrack.getEta());
-        mTrackPhiNCls[minNClusters - sMinNClustersList[0]]->Fill(oneTrack.getPhi());
-        mTrackXYNCls[minNClusters - sMinNClustersList[0]]->Fill(oneTrack.getX(), oneTrack.getY());
-        mTrackEtaPhiNCls[minNClusters - sMinNClustersList[0]]->Fill(oneTrack.getEta(), oneTrack.getPhi());
+        mTrackEtaNCls[minNClusters - sMinNClustersList[0]]->getNum()->Fill(oneTrack.getEta());
+        mTrackPhiNCls[minNClusters - sMinNClustersList[0]]->getNum()->Fill(oneTrack.getPhi());
+        mTrackXYNCls[minNClusters - sMinNClustersList[0]]->getNum()->Fill(oneTrack.getX(), oneTrack.getY());
+        mTrackEtaPhiNCls[minNClusters - sMinNClustersList[0]]->getNum()->Fill(oneTrack.getEta(), oneTrack.getPhi());
       }
     }
 
     if (oneTrack.getCharge() == +1) {
-      mPositiveTrackPhi->Fill(oneTrack.getPhi());
-      mTrackInvQPt->Fill(1 / oneTrack.getPt());
+      mPositiveTrackPhi->getNum()->Fill(oneTrack.getPhi());
+      mTrackInvQPt->getNum()->Fill(1 / oneTrack.getPt());
     }
 
     if (oneTrack.getCharge() == -1) {
-      mNegativeTrackPhi->Fill(oneTrack.getPhi());
-      mTrackInvQPt->Fill(-1 / oneTrack.getPt());
+      mNegativeTrackPhi->getNum()->Fill(oneTrack.getPhi());
+      mTrackInvQPt->getNum()->Fill(-1 / oneTrack.getPt());
     }
 
     if (oneTrack.isCA()) {
-      mCATrackNumberOfClusters->Fill(oneTrack.getNumberOfPoints());
-      mCATrackEta->Fill(oneTrack.getEta());
-      mCATrackPt->Fill(oneTrack.getPt());
+      mCATrackNumberOfClusters->getNum()->Fill(oneTrack.getNumberOfPoints());
+      mCATrackEta->getNum()->Fill(oneTrack.getEta());
+      mCATrackPt->getNum()->Fill(oneTrack.getPt());
     }
     if (oneTrack.isLTF()) {
-      mLTFTrackNumberOfClusters->Fill(oneTrack.getNumberOfPoints());
-      mLTFTrackEta->Fill(oneTrack.getEta());
-      mLTFTrackPt->Fill(oneTrack.getPt());
+      mLTFTrackNumberOfClusters->getNum()->Fill(oneTrack.getNumberOfPoints());
+      mLTFTrackEta->getNum()->Fill(oneTrack.getEta());
+      mLTFTrackPt->getNum()->Fill(oneTrack.getPt());
     }
   }
+
+  // fill the denominators
+  mNumberOfTracksPerTF->getDen()->SetBinContent(1, mNumberOfTracksPerTF->getDen()->GetBinContent(1) + mNOrbitsPerTF);
+  mTrackNumberOfClusters->getDen()->SetBinContent(1, mTrackNumberOfClusters->getDen()->GetBinContent(1) + mNOrbitsPerTF);
+  mCATrackNumberOfClusters->getDen()->SetBinContent(1, mCATrackNumberOfClusters->getDen()->GetBinContent(1) + mNOrbitsPerTF);
+  mLTFTrackNumberOfClusters->getDen()->SetBinContent(1, mLTFTrackNumberOfClusters->getDen()->GetBinContent(1) + mNOrbitsPerTF);
+  mTrackInvQPt->getDen()->SetBinContent(1, mTrackInvQPt->getDen()->GetBinContent(1) + mNOrbitsPerTF);
+  mTrackChi2->getDen()->SetBinContent(1, mTrackChi2->getDen()->GetBinContent(1) + mNOrbitsPerTF);
+  mTrackCharge->getDen()->SetBinContent(1, mTrackCharge->getDen()->GetBinContent(1) + mNOrbitsPerTF);
+  mTrackPhi->getDen()->SetBinContent(1, mTrackPhi->getDen()->GetBinContent(1) + mNOrbitsPerTF);
+  mPositiveTrackPhi->getDen()->SetBinContent(1, mPositiveTrackPhi->getDen()->GetBinContent(1) + mNOrbitsPerTF);
+  mNegativeTrackPhi->getDen()->SetBinContent(1, mNegativeTrackPhi->getDen()->GetBinContent(1) + mNOrbitsPerTF);
+  mTrackEta->getDen()->SetBinContent(1, mTrackEta->getDen()->GetBinContent(1) + mNOrbitsPerTF);
+  for (auto minNClusters : sMinNClustersList) {
+    auto nHisto = minNClusters - sMinNClustersList[0];
+    mTrackEtaNCls[nHisto]->getDen()->SetBinContent(1, mTrackEtaNCls[nHisto]->getDen()->GetBinContent(1) + mNOrbitsPerTF);
+    mTrackPhiNCls[nHisto]->getDen()->SetBinContent(1, mTrackPhiNCls[nHisto]->getDen()->GetBinContent(1) + mNOrbitsPerTF);
+    mTrackXYNCls[nHisto]->getDen()->SetBinContent(1, 1, mTrackXYNCls[nHisto]->getDen()->GetBinContent(1, 1) + mNOrbitsPerTF);
+    mTrackEtaPhiNCls[nHisto]->getDen()->SetBinContent(1, 1, mTrackEtaPhiNCls[nHisto]->getDen()->GetBinContent(1, 1) + mNOrbitsPerTF);
+  }
+  mCATrackEta->getDen()->SetBinContent(1, mCATrackEta->getDen()->GetBinContent(1) + mNOrbitsPerTF);
+  mLTFTrackEta->getDen()->SetBinContent(1, mLTFTrackEta->getDen()->GetBinContent(1) + mNOrbitsPerTF);
+  mCATrackPt->getDen()->SetBinContent(1, mCATrackPt->getDen()->GetBinContent(1) + mNOrbitsPerTF);
+  mLTFTrackPt->getDen()->SetBinContent(1, mLTFTrackPt->getDen()->GetBinContent(1) + mNOrbitsPerTF);
+  mTrackTanl->getDen()->SetBinContent(1, mTrackTanl->getDen()->GetBinContent(1) + mNOrbitsPerTF);
+  mTrackROFNEntries->getDen()->SetBinContent(1, mTrackROFNEntries->getDen()->GetBinContent(1) + mNOrbitsPerTF);
+  mTracksBC->getDen()->SetBinContent(1, mTracksBC->getDen()->GetBinContent(1) + mNOrbitsPerTF);
+  mAssociatedClusterFraction->getDen()->SetBinContent(1, mAssociatedClusterFraction->getDen()->GetBinContent(1) + mNOrbitsPerTF);
+  mClusterRatioVsBunchCrossing->getDen()->SetBinContent(1, 1, mClusterRatioVsBunchCrossing->getDen()->GetBinContent(1, 1) + mNOrbitsPerTF);
 }
 
 void QcMFTTrackTask::endOfCycle()
 {
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
+
+  mNumberOfTracksPerTF->update();
+  mTrackNumberOfClusters->update();
+  mCATrackNumberOfClusters->update();
+  mLTFTrackNumberOfClusters->update();
+  mTrackInvQPt->update();
+  mTrackChi2->update();
+  mTrackCharge->update();
+  mTrackPhi->update();
+  mPositiveTrackPhi->update();
+  mNegativeTrackPhi->update();
+  mTrackEta->update();
+  for (auto minNClusters : sMinNClustersList) {
+    auto nHisto = minNClusters - sMinNClustersList[0];
+    mTrackEtaNCls[nHisto]->update();
+    mTrackPhiNCls[nHisto]->update();
+    mTrackXYNCls[nHisto]->update();
+    mTrackEtaPhiNCls[nHisto]->update();
+  }
+  mCATrackEta->update();
+  mLTFTrackEta->update();
+  mCATrackPt->update();
+  mLTFTrackPt->update();
+  mTrackTanl->update();
+  mTrackROFNEntries->update();
+  mTracksBC->update();
+  mAssociatedClusterFraction->update();
+  mClusterRatioVsBunchCrossing->update();
 }
 
 void QcMFTTrackTask::endOfActivity(const Activity& /*activity*/)
