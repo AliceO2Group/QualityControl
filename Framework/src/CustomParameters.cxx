@@ -86,6 +86,20 @@ std::string CustomParameters::atOrDefaultValue(const std::string& key, std::stri
   }
 }
 
+std::string CustomParameters::atOrDefaultValue(const std::string& key, std::string defaultValue, const Activity& activity) const
+{
+  try {
+    // Get the proper parameter for the given activity
+    const int runType = activity.mType; // get the type for this run as an int
+    // convert it to a string (via a string_view as this is what we get from O2)
+    const std::string_view runTypeStringView = o2::parameters::GRPECS::RunTypeNames[runType];
+    const std::string runTypeString{ runTypeStringView };
+    return mCustomParameters.at(runTypeString).at(activity.mBeamType).at(key);
+  } catch (const std::out_of_range& exc) {
+    return defaultValue;
+  }
+}
+
 int CustomParameters::count(const std::string& key, const std::string& runType, const std::string& beamType) const
 {
   try {
