@@ -36,10 +36,12 @@
                 },
                 "location": "local",
                 "taskParameters": {
-		    "EnablePayloadParsing": "1",
                     "NPayloadSizeBins": "4096",
                     "ResetLaneStatus": "1",
-                    "ResetPayload": "0"
+                    "ResetPayload": "0",
+		    "EnableIHWReading": "1",
+		    "PayloadParsingEvery_n_HBFperTF": "0",
+		    "PayloadParsingEvery_n_TF": "1"
                 }
             }
         },
