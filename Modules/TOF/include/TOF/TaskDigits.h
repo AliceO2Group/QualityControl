@@ -119,6 +119,7 @@ class TaskDigits final : public TaskInterface
   std::shared_ptr<TH2F> mHistoTimeVsBCID = nullptr;          /// TOF time vs BCID
   std::shared_ptr<TProfile2D> mHistoOrbitVsCrate = nullptr;  /// Orbits per crate
   std::shared_ptr<TH1I> mHistoROWSize = nullptr;             /// Readout window size
+  std::shared_ptr<TProfile> mHistoDecodingCrate[72][10];     /// mult vs TRM
   std::shared_ptr<TH2I> mHistoDecodingErrors = nullptr;      /// Decoding error monitoring
   std::shared_ptr<TH1S> mHistoOrphanPerChannel = nullptr;    /// Orphans per channel
   std::shared_ptr<TH2S> mHistoNoisyChannels = nullptr;       /// Channel flagged as noise (divided per flagged rate class)

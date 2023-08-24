@@ -219,6 +219,14 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
 
   // mTimeVsCttmBit = std::make_shared<TH2F>("TimeVsCttmBit", "TOF raw time vs trg channel; trg channel; raw time (ns)", 1728, 0., 1728., mBinsTime, mRangeMinTime, mRangeMaxTime);
   // getObjectsManager()->startPublishing(mTimeVsCttmBit.get());
+
+  // Decoding Error Checkers
+  for (int i = 0; i < 72; i++) {
+    for (int j = 0; j < 10; j++) {
+      mHistoDecodingCrate[i][j] = std::make_shared<TProfile>(Form("Crate_%02d/DecodingTRM_%02i", i, j + 3), Form("Mult per Decoding errror crate %d trm %d;bit error;hit multiplicity", i, j + 3), 29, 0, 29);
+      getObjectsManager()->startPublishing(mHistoDecodingCrate[i][j].get());
+    }
+  }
 }
 
 void TaskDigits::startOfActivity(const Activity& /*activity*/)
@@ -275,6 +283,8 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
   int currentDiagnostics = 0;
   // Loop on readout windows
   for (const auto& row : rows) {
+    const auto& digits_in_row = row.getBunchChannelData(digits); // Digits inside a readout window
+
     for (unsigned int crate = 0; crate < RawDataDecoder::ncrates; crate++) { // Loop on all crates
       mHistoOrbitVsCrate->Fill(crate, currentReadoutWindow / 3.0, !row.isEmptyCrate(crate));
       //
@@ -286,6 +296,27 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
       mHistoEventCounter->Fill(row.mEventCounter % mRangeMaxEventCounter, crate);
 
       // check patterns
+      int trmMult[72][10] = { 0 }; // multiplicity in TRM and ROW
+      for (auto const& digit : digits_in_row) {
+        if (digit.getChannel() < 0) {
+          LOG(error) << "No valid channel";
+          continue;
+        }
+        int ech = o2::tof::Geo::getECHFromCH(digit.getChannel());
+        int crate = o2::tof::Geo::getCrateFromECH(ech);
+        int trm = o2::tof::Geo::getTRMFromECH(ech) - 3;
+        trmMult[crate][trm]++;
+      }
+
+      for (int crate = 0; crate < 72; crate++) {
+        if (row.isEmptyCrate(crate)) { // Only for active crates
+          continue;
+        }
+        for (int trm = 0; trm < 10; trm++) {
+          mHistoDecodingCrate[crate][trm]->Fill(0., trmMult[crate][trm]);
+        }
+      }
+
       if (mFlagEnableDiagnostic) {
         // Get TOF Diagnostic words
         const auto& diagnostics = ctx.inputs().get<std::vector<uint8_t>>("patterns");
@@ -305,6 +336,8 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
             // fill error
             mHistoDecodingErrors->Fill(crate, slot);
             lastslot = slot;
+          } else { // fill TRM mult for the current  bit error for this TRM
+            mHistoDecodingCrate[crate][slot - 3]->Fill(el, trmMult[crate][slot - 3]);
           }
         }
         currentDiagnostics += nDia;
@@ -312,7 +345,6 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
     }
     currentReadoutWindow++;
 
-    const auto& digits_in_row = row.getBunchChannelData(digits); // Digits inside a readout window
     // Loop on digits
     for (auto const& digit : digits_in_row) {
       if (digit.getChannel() < 0) {
@@ -493,6 +525,11 @@ void TaskDigits::reset()
   mHistoTimeVsBCID->Reset();
   mHistoOrbitVsCrate->Reset();
   mHistoROWSize->Reset();
+  for (int i = 0; i < 72; i++) {
+    for (int j = 0; j < 10; j++) {
+      mHistoDecodingCrate[i][j]->Reset();
+    }
+  }
   if (mFlagEnableDiagnostic) {
     mHistoDecodingErrors->Reset();
   }
