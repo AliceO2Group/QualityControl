@@ -44,7 +44,7 @@ using namespace AliceO2::Common;
 CheckConfig getCheckConfig(const std::string& configFilePath, const std::string& checkName)
 {
   auto config = ConfigurationFactory::getConfiguration(configFilePath);
-  auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(config->getRecursive());
+  auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(config->getRecursive(), WorkflowType::Standalone);
 
   auto checkSpec = std::find_if(infrastructureSpec.checks.begin(), infrastructureSpec.checks.end(),
                                 [&checkName](const auto& checkSpec) {

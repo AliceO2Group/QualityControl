@@ -38,7 +38,7 @@ using namespace o2::quality_control::core;
 std::pair<AggregatorRunnerConfig, std::vector<AggregatorConfig>> getAggregatorConfigs(const std::string& configFilePath)
 {
   auto config = ConfigurationFactory::getConfiguration(configFilePath);
-  auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(config->getRecursive());
+  auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(config->getRecursive(), WorkflowType::Standalone);
   std::vector<AggregatorConfig> aggregatorConfigs;
   for (const auto& aggregatorSpec : infrastructureSpec.aggregators) {
     if (aggregatorSpec.active) {

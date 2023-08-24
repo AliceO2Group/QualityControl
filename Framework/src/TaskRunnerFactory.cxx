@@ -159,7 +159,8 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
     globalConfig.infologgerDiscardParameters,
     fallbackActivity,
     grpGeomRequest,
-    globalTrackingDataRequest
+    globalTrackingDataRequest,
+    taskSpec.movingWindows
   };
 }
 

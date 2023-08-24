@@ -36,6 +36,7 @@
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/ConfigParamGlo.h"
 #include "QualityControl/Bookkeeping.h"
+#include "QualityControl/WorkflowType.h"
 
 #include <TSystem.h>
 
@@ -183,7 +184,7 @@ void CheckRunner::refreshConfig(InitContext& iCtx)
       }
 
       // prepare the information we need
-      auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(updatedTree);
+      auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(updatedTree, workflow_type_helpers::getWorkflowType(iCtx.options()));
 
       // Use the config to reconfigure the check runner.
       // The configs for the checks we find in the config and in our map are updated.

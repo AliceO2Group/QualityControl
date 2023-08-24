@@ -94,7 +94,7 @@ TEST_CASE("qc_factory_remote_test")
   // the infrastructure should consist of two proxies, mergers and checkers for 'skeletonTask' and 'recoTask'
   // (their taskRunner are declared to be local) and also taskRunner and checker for the 'abcTask' and 'xyzTask'.
   // Post processing adds one process for the task and one for checks.
-  REQUIRE(workflow.size() == 14);
+  REQUIRE(workflow.size() == 15);
 
   auto tcpclustProxy = std::find_if(
     workflow.begin(), workflow.end(),
@@ -128,7 +128,7 @@ TEST_CASE("qc_factory_remote_test")
     [](const DataProcessorSpec& d) {
       return d.name.find("TST-MERGER-skeletonTask") != std::string::npos &&
              d.inputs.size() == 3 &&
-             d.outputs.size() == 1 && DataSpecUtils::getOptionalSubSpec(d.outputs[0]).value_or(-1) == 0;
+             d.outputs.size() == 2 && DataSpecUtils::getOptionalSubSpec(d.outputs[0]).value_or(-1) == 0;
     });
   CHECK(mergerSkeletonTask != workflow.end());
 
@@ -173,7 +173,7 @@ TEST_CASE("qc_factory_remote_test")
       return d.name.find("qc-check") != std::string::npos &&
              d.inputs.size() == 1;
     });
-  REQUIRE(checkRunnerCount == 5);
+  REQUIRE(checkRunnerCount == 6);
 
   auto postprocessingTask = std::find_if(
     workflow.begin(), workflow.end(),

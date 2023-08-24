@@ -105,7 +105,7 @@ class TaskRunner : public framework::Task
   /// \brief ID string for all TaskRunner devices
   static std::string createTaskRunnerIdString();
   /// \brief Unified DataOrigin for Quality Control tasks
-  static header::DataOrigin createTaskDataOrigin(const std::string& detectorCode);
+  static header::DataOrigin createTaskDataOrigin(const std::string& detectorCode, bool movingWindows = false);
   /// \brief Unified DataDescription naming scheme for all tasks
   static header::DataDescription createTaskDataDescription(const std::string& taskName);
   /// \brief Unified DataDescription naming scheme for all timers

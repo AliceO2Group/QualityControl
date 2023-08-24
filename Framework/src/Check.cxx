@@ -209,7 +209,7 @@ CheckConfig Check::extractConfig(const CommonSpec&, const CheckSpec& checkSpec)
   UpdatePolicyType updatePolicy = checkSpec.updatePolicy;
   bool checkAllObjects = false;
   for (const auto& dataSource : checkSpec.dataSources) {
-    if (!dataSource.isOneOf(DataSourceType::Task, DataSourceType::ExternalTask, DataSourceType::PostProcessingTask)) {
+    if (!dataSource.isOneOf(DataSourceType::Task, DataSourceType::TaskMovingWindow, DataSourceType::ExternalTask, DataSourceType::PostProcessingTask)) {
       throw std::runtime_error(
         "Unsupported dataSource '" + dataSource.name + "' for a Check '" + checkSpec.checkName + "'");
     }
