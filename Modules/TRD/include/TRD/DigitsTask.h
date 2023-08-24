@@ -65,7 +65,6 @@ class DigitsTask final : public TaskInterface
 
  private:
   // limits
-  bool mSkipSharedDigits;
   bool mLayerLabelsIgnore = false;
   unsigned int mPulseHeightThreshold;
   std::pair<float, float> mDriftRegion;

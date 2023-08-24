@@ -381,25 +381,11 @@ void TrackletsTask::drawHashedOnHistsPerLayer(int iLayer)
 void TrackletsTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Debug, Devel) << "initialize TrackletsTask" << ENDM;
-  if (auto param = mCustomParameters.find("markerstyle"); param != mCustomParameters.end()) {
-    mMarkerStyle = stof(param->second);
-    ILOG(Debug, Support) << "configure() : using marketstyle : = " << mMarkerStyle << ENDM;
-  } else {
-    mMarkerStyle = 3; // a plus sign
-    ILOG(Debug, Support) << "configure() : using default dritfregionstart = " << mMarkerStyle << ENDM;
-  }
-  if (auto param = mCustomParameters.find("markersize"); param != mCustomParameters.end()) {
-    mMarkerSize = stof(param->second);
-    ILOG(Debug, Support) << "configure() : using markersize : = " << mMarkerSize << ENDM;
-  } else {
-    mMarkerSize = 3; // a plus sign
-    ILOG(Debug, Support) << "configure() : using default markersize = " << mMarkerSize << ENDM;
-  }
-  if (auto param = mCustomParameters.find("ignorelayerlabels"); param != mCustomParameters.end()) {
+
+  if (auto param = mCustomParameters.find("ignoreLabels"); param != mCustomParameters.end()) {
     mLayerLabelsIgnore = stoi(param->second);
     ILOG(Debug, Support) << "configure() : ignoring labels on layer plots = " << mLayerLabelsIgnore << ENDM;
   }
-
   retrieveCCDBSettings();
   buildHistograms();
 }

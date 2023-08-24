@@ -12,13 +12,15 @@
 ///
 /// \file   PulseHeightTrackMatch.cxx
 /// \author Vikash Sumberia
-///
+/// \author Salman Malik
 
+// ROOT includes
 #include <TLine.h>
 #include <TH2F.h>
 #include <TProfile.h>
 #include <TProfile2D.h>
 
+// O2 includes
 #include "DataFormatsTRD/TrackTRD.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "TRD/PulseHeightTrackMatch.h"
@@ -28,21 +30,11 @@
 #include "DataFormatsGlobalTracking/RecoContainer.h"
 #include <Framework/InputRecord.h>
 #include "CCDB/BasicCCDBManager.h"
+
 namespace o2::quality_control_modules::trd
 {
 PulseHeightTrackMatch::~PulseHeightTrackMatch()
 {
-}
-
-void PulseHeightTrackMatch::retrieveCCDBSettings()
-{
-  if (auto param = mCustomParameters.find("ccdbtimestamp"); param != mCustomParameters.end()) {
-    mTimestamp = std::stol(mCustomParameters["ccdbtimestamp"]);
-    ILOG(Debug, Support) << "configure() : using ccdbtimestamp = " << mTimestamp << ENDM;
-  } else {
-    mTimestamp = o2::ccdb::getCurrentTimestamp();
-    ILOG(Debug, Support) << "configure() : using default timestam of now = " << mTimestamp << ENDM;
-  }
 }
 
 void PulseHeightTrackMatch::buildHistograms()
@@ -63,33 +55,33 @@ void PulseHeightTrackMatch::initialize(o2::framework::InitContext& /*ctx*/)
   ILOG(Debug, Devel) << "initialize TRDPulseHeightQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // values configurable from json
-  if (auto param = mCustomParameters.find("driftregionstart"); param != mCustomParameters.end()) {
+  if (auto param = mCustomParameters.find("driftRegionStart"); param != mCustomParameters.end()) {
     mDriftRegion.first = stof(param->second);
-    ILOG(Debug, Devel) << "configure() : using peakregionstart = " << mDriftRegion.first << ENDM;
+    ILOG(Debug, Devel) << "configure() : using driftRegionStart = " << mDriftRegion.first << ENDM;
   } else {
     mDriftRegion.first = 7.0;
-    ILOG(Debug, Devel) << "configure() : using default dritfregionstart = " << mDriftRegion.first << ENDM;
+    ILOG(Debug, Devel) << "configure() : using default driftRegionStart = " << mDriftRegion.first << ENDM;
   }
-  if (auto param = mCustomParameters.find("driftregionend"); param != mCustomParameters.end()) {
+  if (auto param = mCustomParameters.find("driftRegionEnd"); param != mCustomParameters.end()) {
     mDriftRegion.second = stof(param->second);
-    ILOG(Debug, Devel) << "configure() : using peakregionstart = " << mDriftRegion.second << ENDM;
+    ILOG(Debug, Devel) << "configure() : using driftRegionEnd = " << mDriftRegion.second << ENDM;
   } else {
     mDriftRegion.second = 20.0;
-    ILOG(Debug, Devel) << "configure() : using default dritfregionstart = " << mDriftRegion.second << ENDM;
+    ILOG(Debug, Devel) << "configure() : using default driftRegionEnd = " << mDriftRegion.second << ENDM;
   }
-  if (auto param = mCustomParameters.find("pulseheightpeaklower"); param != mCustomParameters.end()) {
+  if (auto param = mCustomParameters.find("peakRegionStart"); param != mCustomParameters.end()) {
     mPulseHeightPeakRegion.first = stof(param->second);
-    ILOG(Debug, Devel) << "configure() : using pulsehheightlower	= " << mPulseHeightPeakRegion.first << ENDM;
+    ILOG(Debug, Devel) << "configure() : using peakRegionStart	= " << mPulseHeightPeakRegion.first << ENDM;
   } else {
-    mPulseHeightPeakRegion.first = 0.0;
-    ILOG(Debug, Devel) << "configure() : using default pulseheightlower = " << mPulseHeightPeakRegion.first << ENDM;
+    mPulseHeightPeakRegion.first = 1.0;
+    ILOG(Debug, Devel) << "configure() : using default peakRegionStart = " << mPulseHeightPeakRegion.first << ENDM;
   }
-  if (auto param = mCustomParameters.find("pulseheightpeakupper"); param != mCustomParameters.end()) {
+  if (auto param = mCustomParameters.find("peakRegionEnd"); param != mCustomParameters.end()) {
     mPulseHeightPeakRegion.second = stof(param->second);
-    ILOG(Debug, Devel) << "configure() : using pulsehheightupper	= " << mPulseHeightPeakRegion.second << ENDM;
+    ILOG(Debug, Devel) << "configure() : using peakRegionEnd	= " << mPulseHeightPeakRegion.second << ENDM;
   } else {
     mPulseHeightPeakRegion.second = 5.0;
-    ILOG(Debug, Devel) << "configure() : using default pulseheightupper = " << mPulseHeightPeakRegion.second << ENDM;
+    ILOG(Debug, Devel) << "configure() : using default peakRegionEnd = " << mPulseHeightPeakRegion.second << ENDM;
   }
   if (auto param = mCustomParameters.find("trackType"); param != mCustomParameters.end()) {
     mTrackType = std::stof(param->second);
@@ -104,7 +96,6 @@ void PulseHeightTrackMatch::initialize(o2::framework::InitContext& /*ctx*/)
     ILOG(Debug, Devel) << "configure() : using default trackType = " << mTrackType << " all the tracks" << ENDM;
   }
 
-  retrieveCCDBSettings();
   buildHistograms();
 }
 

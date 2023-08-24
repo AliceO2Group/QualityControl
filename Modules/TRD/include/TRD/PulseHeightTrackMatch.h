@@ -37,8 +37,6 @@ using namespace o2::quality_control::core;
 namespace o2::quality_control_modules::trd
 {
 
-/// \brief Example Quality Control DPL Task
-/// \author My Name
 class PulseHeightTrackMatch final : public TaskInterface
 {
  public:
@@ -56,7 +54,6 @@ class PulseHeightTrackMatch final : public TaskInterface
   void endOfActivity(const Activity& activity) override;
   void reset() override;
   void buildHistograms();
-  void retrieveCCDBSettings();
   void drawLinesOnPulseHeight(TProfile* h);
 
  private:
@@ -64,7 +61,6 @@ class PulseHeightTrackMatch final : public TaskInterface
   std::pair<float, float> mDriftRegion;
   std::pair<float, float> mPulseHeightPeakRegion;
   std::bitset<4> mTrackType = 0xf; // bitset to select one or a combination of track types 0: ITSTPCTRD, 1: TPCTRD, 2: TRACKLET, 3: OTHERS. Default is 0xf: all tracks
-  long int mTimestamp;
   std::shared_ptr<TProfile> mPulseHeightpro = nullptr;
   std::shared_ptr<TProfile2D> mPulseHeightperchamber = nullptr;
 };

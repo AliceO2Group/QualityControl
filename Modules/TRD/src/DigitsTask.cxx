@@ -409,56 +409,49 @@ void DigitsTask::initialize(o2::framework::InitContext& /*ctx*/)
   ILOG(Debug, Devel) << "initialize TRDDigitQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
-  if (auto param = mCustomParameters.find("driftregionstart"); param != mCustomParameters.end()) {
+  if (auto param = mCustomParameters.find("driftRegionStart"); param != mCustomParameters.end()) {
     mDriftRegion.first = stof(param->second);
-    ILOG(Debug, Support) << "configure() : using peakregionstart = " << mDriftRegion.first << ENDM;
+    ILOG(Debug, Support) << "configure() : using driftRegionStart = " << mDriftRegion.first << ENDM;
   } else {
     mDriftRegion.first = 7.0;
-    ILOG(Debug, Support) << "configure() : using default dritfregionstart = " << mDriftRegion.first << ENDM;
+    ILOG(Debug, Support) << "configure() : using default driftRegionStart = " << mDriftRegion.first << ENDM;
   }
-  if (auto param = mCustomParameters.find("driftregionend"); param != mCustomParameters.end()) {
+  if (auto param = mCustomParameters.find("driftRegionEnd"); param != mCustomParameters.end()) {
     mDriftRegion.second = stof(param->second);
-    ILOG(Debug, Support) << "configure() : using peakregionstart = " << mDriftRegion.second << ENDM;
+    ILOG(Debug, Support) << "configure() : using driftRegionEnd = " << mDriftRegion.second << ENDM;
   } else {
     mDriftRegion.second = 20.0;
-    ILOG(Debug, Support) << "configure() : using default dritfregionstart = " << mDriftRegion.second << ENDM;
+    ILOG(Debug, Support) << "configure() : using default driftRegionEnd = " << mDriftRegion.second << ENDM;
   }
-  if (auto param = mCustomParameters.find("pulseheightpeaklower"); param != mCustomParameters.end()) {
+  if (auto param = mCustomParameters.find("peakRegionStart"); param != mCustomParameters.end()) {
     mPulseHeightPeakRegion.first = stof(param->second);
-    ILOG(Debug, Support) << "configure() : using pulsehheightlower	= " << mPulseHeightPeakRegion.first << ENDM;
+    ILOG(Debug, Support) << "configure() : using peakRegionStart	= " << mPulseHeightPeakRegion.first << ENDM;
   } else {
     mPulseHeightPeakRegion.first = 0.0;
-    ILOG(Debug, Support) << "configure() : using default pulseheightlower = " << mPulseHeightPeakRegion.first << ENDM;
+    ILOG(Debug, Support) << "configure() : using default peakRegionStart = " << mPulseHeightPeakRegion.first << ENDM;
   }
-  if (auto param = mCustomParameters.find("pulseheightpeakupper"); param != mCustomParameters.end()) {
+  if (auto param = mCustomParameters.find("peakRegionEnd"); param != mCustomParameters.end()) {
     mPulseHeightPeakRegion.second = stof(param->second);
-    ILOG(Debug, Support) << "configure() : using pulsehheightupper	= " << mPulseHeightPeakRegion.second << ENDM;
+    ILOG(Debug, Support) << "configure() : using peakRegionEnd	= " << mPulseHeightPeakRegion.second << ENDM;
   } else {
     mPulseHeightPeakRegion.second = 5.0;
-    ILOG(Debug, Support) << "configure() : using default pulseheightupper = " << mPulseHeightPeakRegion.second << ENDM;
+    ILOG(Debug, Support) << "configure() : using default peakRegionEnd = " << mPulseHeightPeakRegion.second << ENDM;
   }
-  if (auto param = mCustomParameters.find("skippedshareddigits"); param != mCustomParameters.end()) {
-    mSkipSharedDigits = stod(param->second);
-    ILOG(Debug, Support) << "configure() : using skip shared digits 	= " << mSkipSharedDigits << ENDM;
-  } else {
-    mSkipSharedDigits = false;
-    ILOG(Debug, Support) << "configure() : using default skip shared digits = " << mSkipSharedDigits << ENDM;
-  }
-  if (auto param = mCustomParameters.find("pulseheightthreshold"); param != mCustomParameters.end()) {
+  if (auto param = mCustomParameters.find("phThreshold"); param != mCustomParameters.end()) {
     mPulseHeightThreshold = stod(param->second);
-    ILOG(Debug, Support) << "configure() : using skip shared digits 	= " << mPulseHeightThreshold << ENDM;
+    ILOG(Debug, Support) << "configure() : using phThreshold 	= " << mPulseHeightThreshold << ENDM;
   } else {
     mPulseHeightThreshold = 400;
-    ILOG(Debug, Support) << "configure() : using default skip shared digits = " << mPulseHeightThreshold << ENDM;
+    ILOG(Debug, Support) << "configure() : using phThreshold = " << mPulseHeightThreshold << ENDM;
   }
-  if (auto param = mCustomParameters.find("chamberstoignore"); param != mCustomParameters.end()) {
+  if (auto param = mCustomParameters.find("ignoreChambers"); param != mCustomParameters.end()) {
     mChambersToIgnore = param->second;
-    ILOG(Debug, Support) << "configure() : chamberstoignore = " << mChambersToIgnore << ENDM;
+    ILOG(Debug, Support) << "configure() : ignoreChambers = " << mChambersToIgnore << ENDM;
   } else {
     mChambersToIgnore = "16_3_0";
     ILOG(Debug, Support) << "configure() : chambers to ignore for pulseheight calculations = " << mChambersToIgnore << ENDM;
   }
-  if (auto param = mCustomParameters.find("ignorelayerlabels"); param != mCustomParameters.end()) {
+  if (auto param = mCustomParameters.find("ignoreLabels"); param != mCustomParameters.end()) {
     mLayerLabelsIgnore = stoi(param->second);
     ILOG(Debug, Support) << "configure() : ignoring labels on layer plots = " << mLayerLabelsIgnore << ENDM;
   }
@@ -580,7 +573,6 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
           if (stack >= 2)
             stackoffset -= 4; // account for stack 2 having 4 less.
           // for now the if statement is commented as there is a problem finding isShareDigit, will come back to that.
-          /// if (!digits[digitsIndex[currentdigit]].isSharedDigit() && !mSkipSharedDigits.second) {
           int rowGlb = stack < 3 ? digits[digitsIndex[currentdigit]].getPadRow() + stack * 16 : digits[digitsIndex[currentdigit]].getPadRow() + 44 + (stack - 3) * 16; // pad row within whole sector
           int colGlb = digits[digitsIndex[currentdigit]].getPadCol() + sm * 144;                                                                                       // pad column number from 0 to NSectors * 144
           mLayers[layer]->Fill(rowGlb, colGlb);
