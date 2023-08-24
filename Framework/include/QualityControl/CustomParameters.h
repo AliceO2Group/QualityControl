@@ -105,6 +105,8 @@ class CustomParameters
    */
   std::string atOrDefaultValue(const std::string& key, std::string defaultValue = "", const std::string& runType = "default", const std::string& beamType = "default");
 
+  std::string atOrDefaultValue(const std::string& key, std::string defaultValue, const Activity& activity) const;
+
   /**
    * Returns the number of items found for the provided key, beamType and runType. It can only be either 0 or 1.
    * @param key
