@@ -1177,7 +1177,10 @@ should not be present in real configuration files.
         "passName": "",                   "": "Pass type - e.g. spass, cpass1",
         "provenance": "qc",               "": "Provenance - qc or qc_mc depending whether it is normal data or monte carlo data",
         "start" : "0",                    "": "Activity start time in ms since epoch. One can use it as a filter in post-processing",
-        "end" : "1234",                   "": "Activity end time in ms since epoch. One can use it as a filter in post-processing"
+        "end" : "1234",                   "": "Activity end time in ms since epoch. One can use it as a filter in post-processing", 
+        "beamType" : "PROTON-PROTON",     "": "Beam type: `PROTON-PROTON`, `Pb-Pb`, `Pb-PROTON` ", 
+        "partitionName" : "",             "": "Partition name", 
+        "fillNumber" : "123",             "": "Fill Number"
       },
       "monitoring": {                     "": "Configuration of the Monitoring library.",
         "url": "infologger:///debug?qc",  "": ["URI to the Monitoring backend. Refer to the link below for more info:",
