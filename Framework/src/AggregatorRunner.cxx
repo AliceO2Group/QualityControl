@@ -424,7 +424,12 @@ void AggregatorRunner::start(ServiceRegistryRef services)
 
   // register ourselves to the BK
   if (gSystem->Getenv("O2_QC_REGISTER_IN_BK")) { // until we are sure it works, we have to turn it on
-    Bookkeeping::getInstance().registerProcess(mActivity.mId, mDeviceName, AggregatorRunner::getDetectorName(mAggregators), bookkeeping::DPL_PROCESS_TYPE_QC_AGGREGATOR, "");
+    ILOG(Debug, Devel) << "Registering aggregator to BookKeeping" << ENDM;
+    try {
+      Bookkeeping::getInstance().registerProcess(mActivity.mId, mDeviceName, AggregatorRunner::getDetectorName(mAggregators), bookkeeping::DPL_PROCESS_TYPE_QC_AGGREGATOR, "");
+    } catch (std::runtime_error& error) {
+      ILOG(Warning, Devel) << "Failed registration to the BookKeeping: " << error.what() << ENDM;
+    }
   }
 }
 
