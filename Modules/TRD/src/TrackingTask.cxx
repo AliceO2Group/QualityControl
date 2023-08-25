@@ -221,10 +221,10 @@ void TrackingTask::buildHistograms()
 
   for (int i = 0; i < NLAYER; ++i) {
     for (int j = 0; j < 2; ++j) {
-      mTracksEtaPhiPerLayer[j][i] = new TH2D(Form("EtaPhi%sTrackPerLayer/layer%i", chrg[j].Data(), i), Form("EtaPhi for %s tracks in layer %i", chrg[j].Data(), i), 100, -0.856, 0.856, 180, 0, TMath::TwoPi());
-      axisConfig(mTracksEtaPhiPerLayer[j][i], "#eta", "#phi", "Counts", 0, 1.0, 1.1);
-      drawLayers(mTracksEtaPhiPerLayer[j][i]);
-      publishObject(mTracksEtaPhiPerLayer[j][i], "colz", "");
+      mTracksEtaPhiPerLayer[i][j] = new TH2D(Form("EtaPhi%sTrackPerLayer/layer%i", chrg[j].Data(), i), Form("EtaPhi for %s tracks in layer %i", chrg[j].Data(), i), 100, -0.856, 0.856, 180, 0, TMath::TwoPi());
+      axisConfig(mTracksEtaPhiPerLayer[i][j], "#eta", "#phi", "Counts", 0, 1.0, 1.1);
+      drawLayers(mTracksEtaPhiPerLayer[i][j]);
+      publishObject(mTracksEtaPhiPerLayer[i][j], "colz", "");
     }
     mDeltaYinEtaPerLayer[i] = new TH2D(Form("YResinEtaPerLayer/layer%i", i), Form("YResiduals in eta for layer %i", i), 100, -0.856, 0.856, 100, -10, 10);
     axisConfig(mDeltaYinEtaPerLayer[i], "#eta", "track Y - tracklet Y (cm)", "Counts", 0, 1.0, 1.1);
