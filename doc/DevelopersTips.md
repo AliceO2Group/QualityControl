@@ -401,7 +401,7 @@ On the QCDB, become `postgres` and launch `psql`.
 
 To get the number of objects in a given run :
 ```
-select count(distinct pathid) from ccdb where ccdb.metadata -> '1048595860' = '529439';
+select count(distinct pathid) from ccdb where ccdb.metadata -> '1048595860' = '539908';
 ```
 
 (1048595860 is the metadata id for RunNumber obtained with `select metadataid from ccdb_metadata where metadatakey = 'RunNumber';`)
@@ -411,9 +411,21 @@ Metadata:
 - RunNumber=1048595860
 - qc_detector_name=1337188343
 
-query to see for a given run the number of objects per detector:
+query to see for one or several given runs the number of objects per path:
 ```
-select ccdb.metadata -> '1337188343' as detector, count(distinct path), SUM(COUNT(distinct path)) from ccdb, ccdb_paths where ccdb_paths.pathid = ccdb.pathid AND ccdb.metadata -> '1048595860' = '529439' group by detector;
+select substring(path from '^qc\/\w*\/MO\/\w*\/') as task, count(distinct path) from ccdb, ccdb_paths where ccdb_paths.pathid = ccdb.pathid AND ccdb.metadata -> '1048595860' in  ('539908') group by task;
+```
+
+query all the versions for a run:
+```
+select path, createtime from ccdb, ccdb_paths where ccdb.metadata -> '1048595860' = '541344' and ccdb_paths.pathid = ccdb.pathid order by path;
+```
+For a given detector add condition: `and ccdb_paths.path like 'qc/MCH%'`
+
+Query the path that were edited during a run for a detector: 
+
+```sql
+select path from ccdb, ccdb_paths where ccdb_paths.pathid = ccdb.pathid AND ccdb.metadata -> '1048595860' in  ('539908') and ccdb_paths.path like 'qc_async/MCH%';
 ```
 
 ### Merge and upload QC results for all subjobs of a grid job
