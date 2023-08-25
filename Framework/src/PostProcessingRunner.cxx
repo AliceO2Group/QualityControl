@@ -169,6 +169,7 @@ void PostProcessingRunner::start(framework::ServiceRegistryRef dplServices)
     mTaskConfig.activity = computeActivity(dplServices, mTaskConfig.activity);
     QcInfoLogger::setPartition(mTaskConfig.activity.mPartitionName);
   }
+  mActivity = mTaskConfig.activity;
   mActivity.mValidity = gInvalidValidityInterval;
   QcInfoLogger::setRun(mTaskConfig.activity.mId);
   mObjectManager->setActivity(mActivity);
