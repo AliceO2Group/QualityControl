@@ -24,7 +24,10 @@
 #include <TH1.h>
 // O2 includes
 #include "DataFormatsTRD/TrackTRD.h"
+#include "DataFormatsTRD/TrackTriggerRecord.h"
 #include "DataFormatsTRD/Constants.h"
+#include "ReconstructionDataFormats/GlobalTrackID.h"
+#include "DataFormatsGlobalTracking/RecoContainer.h"
 #include <Framework/TimingInfo.h>
 // QC includes
 #include "QualityControl/TaskInterface.h"
@@ -57,12 +60,21 @@ class TrackingTask final : public TaskInterface
   void axisConfig(TH1* h, const char* xTitle, const char* yTitle, const char* zTitle, bool stat, float xOffset = 1., float yOffset = 1.);
   void publishObject(TObject* aObject, const char* drawOpt = "", const char* dispayOpt = "");
   void drawLayers(TH2* hist);
-  long int mTimestamp;
-
+  bool mDetailedTrackQC = false;                                 // flag whether or not to expect o2::trd::TrackQC input
+  std::shared_ptr<o2::globaltracking::DataRequest> mDataRequest; // specify which input to use
+  o2::globaltracking::RecoContainer mRecoCont;                   // helper to acess input from reconstruction
+  o2::dataformats::GlobalTrackID::mask_t mSrcSelected;           // the selected track sources from allowed ITS-TPC-TRD and TPC-TRD
+  // the input data spans
+  gsl::span<const o2::trd::TrackTRD> mITSTPCTRDTracks;
+  gsl::span<const o2::trd::TrackTriggerRecord> mTrigITSTPCTRD;
+  gsl::span<const o2::trd::TrackTRD> mTPCTRDTracks;
+  gsl::span<const o2::trd::TrackTriggerRecord> mTrigTPCTRD;
+  //
   float mPtMin = 0.0;                                                                 // minimum pT of tracks
   TString chrg[2] = { "Pos", "Neg" };                                                 // charge of tracks
   TH1D* mNtracks = nullptr;                                                           // number of ITS-TPC-TRD tracks per event
   TH1D* mNtracklets = nullptr;                                                        // number of TRD tracklets per track
+  TH2D* mTrackEtaPhi = nullptr;                                                       // eta-phi distribution of ITS-TPC-TRD tracks
   TH1D* mTrackEta = nullptr;                                                          // eta of ITS-TPC-TRD tracks
   TH1D* mTrackPhi = nullptr;                                                          // phi of ITS-TPC-TRD tracks
   TH1D* mTrackPt = nullptr;                                                           // pt of ITS-TPC-TRD tracks
