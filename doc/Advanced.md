@@ -1129,6 +1129,10 @@ In a task, the `activity` is provided in `startOfActivity`.
 
 In a Check, it is returned by `getActivity()`.
 
+In an Aggregator, it is returned by `getActivity()`.
+
+In a postprocessing task, it is available in the objects manager: `getObjectsManager()->getActivity()`
+
 ## Definition of new arguments
 
 One can also tell the DPL driver to accept new arguments. This is done using the `customize` method at the top of your workflow definition (usually called "runXXX" in the QC).
@@ -1236,7 +1240,7 @@ should not be present in real configuration files.
         "url": "ccdb-test.cern.ch:8080",  "": "URL of a CCDB"
       },
       "infologger": {                     "": "Configuration of the Infologger (optional).",
-        "filterDiscardDebug": "false",    "": "Set to 1 to discard debug and trace messages (default: false)",
+        "filterDiscardDebug": "false",    "": "Set to§ 1 to discard debug and trace messages (default: false)",
         "filterDiscardLevel": "2",        "": "Message at this level or above are discarded (default: 21 - Trace)",
         "filterDiscardFile": "",          "": ["If set, the discarded messages will go to this file (default: <none>)",
                                               "The keyword _ID_, if used, is replaced by the device ID.",
