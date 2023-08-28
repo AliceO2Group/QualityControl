@@ -24,6 +24,7 @@
 #include <string>
 
 #include "QualityControl/QcInfoLogger.h"
+#include "Common/Utils.h"
 #include "TRD/TrackletsTask.h"
 #include "TRDQC/StatusHelper.h"
 #include <Framework/InputRecord.h>
@@ -35,6 +36,8 @@
 #include "DataFormatsTRD/NoiseCalibration.h"
 #include "DataFormatsTRD/TriggerRecord.h"
 #include "CCDB/BasicCCDBManager.h"
+
+using namespace o2::quality_control_modules::common;
 
 namespace o2::quality_control_modules::trd
 {
@@ -295,29 +298,16 @@ void TrackletsTask::drawHashOnLayers(int layer, int hcid, int rowstart, int rowe
 void TrackletsTask::buildTrackletLayers()
 {
   for (int iLayer = 0; iLayer < 6; ++iLayer) {
-    mLayers[iLayer] = new TH2F(Form("TrackletsPerLayer/layer%i", iLayer), Form("Tracklet count per mcm in layer %i;Stack;Sector", iLayer), 76, -0.5, 75.5, 144, -0.5, 143.5);
+    mLayers[iLayer] = new TH2F(Form("TrackletsPerLayer/layer%i", iLayer), Form("Tracklet count per mcm in layer %i;glb pad row;glb MCM col", iLayer), 76, -0.5, 75.5, 144, -0.5, 143.5);
     auto xax = mLayers[iLayer]->GetXaxis();
     auto yax = mLayers[iLayer]->GetYaxis();
     if (!mLayerLabelsIgnore) {
-      xax->SetNdivisions(5);
-      xax->SetBinLabel(8, "0");
-      xax->SetBinLabel(24, "1");
-      xax->SetBinLabel(38, "2");
-      xax->SetBinLabel(52, "3");
-      xax->SetBinLabel(68, "4");
-      xax->SetTicks("");
       xax->SetTickSize(0.0);
       xax->SetLabelSize(0.045);
       xax->SetLabelOffset(0.005);
       xax->SetTitleOffset(0.95);
       xax->CenterTitle(true);
-      yax->SetNdivisions(18);
-      for (int iSec = 0; iSec < 18; ++iSec) {
-        auto lbl = std::to_string(iSec);
-        yax->SetBinLabel(iSec * 8 + 4, lbl.c_str());
-      }
-      yax->SetTicks("");
-      yax->SetTickSize(0.0);
+      yax->SetNdivisions(-18);
       yax->SetLabelSize(0.045);
       yax->SetLabelOffset(0.001);
       yax->SetTitleOffset(0.40);
@@ -381,11 +371,7 @@ void TrackletsTask::drawHashedOnHistsPerLayer(int iLayer)
 void TrackletsTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Debug, Devel) << "initialize TrackletsTask" << ENDM;
-
-  if (auto param = mCustomParameters.find("ignoreLabels"); param != mCustomParameters.end()) {
-    mLayerLabelsIgnore = stoi(param->second);
-    ILOG(Debug, Support) << "configure() : ignoring labels on layer plots = " << mLayerLabelsIgnore << ENDM;
-  }
+  mLayerLabelsIgnore = getFromConfig<bool>(mCustomParameters, "ignoreLabels", true);
   retrieveCCDBSettings();
   buildHistograms();
 }

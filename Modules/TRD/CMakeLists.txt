@@ -11,7 +11,7 @@ target_include_directories(
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-target_link_libraries(O2QcTRD PUBLIC O2QualityControl)
+target_link_libraries(O2QcTRD PUBLIC O2QualityControl O2QcCommon)
 
 install(TARGETS O2QcTRD
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
