@@ -224,4 +224,13 @@ AggregatorConfig Aggregator::extractConfig(const core::CommonSpec& commonSpec, c
   };
 }
 
+void Aggregator::setActivity(std::shared_ptr<core::Activity> activity)
+{
+  if (mAggregatorInterface) {
+    mAggregatorInterface->setActivity(std::move(activity));
+  } else {
+    throw std::runtime_error("Trying to set Activity on an empty AggregatorInterface '" + mAggregatorConfig.name + "'");
+  }
+}
+
 } // namespace o2::quality_control::checker
