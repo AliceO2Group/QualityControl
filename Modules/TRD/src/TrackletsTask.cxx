@@ -125,9 +125,6 @@ void TrackletsTask::retrieveCCDBSettings()
   if (mChamberStatus == nullptr) {
     ILOG(Info, Support) << "mChamberStatus is null, no chamber status to display" << ENDM;
   }
-  // j  else{
-  //    drawHashedOnHistsPerLayer();
-  //   }
 }
 
 void TrackletsTask::buildHistograms()
@@ -322,24 +319,6 @@ void TrackletsTask::buildTrackletLayers()
     getObjectsManager()->startPublishing(mLayers[iLayer]);
     getObjectsManager()->setDefaultDrawOptions(mLayers[iLayer]->GetName(), "COLZ");
     getObjectsManager()->setDisplayHint(mLayers[iLayer], "logz");
-    // check axises :
-
-    /*    std::cout << "Test Tracklet Xlabels for layer : " << iLayer << std::endl;
-        auto binsizex=xax->GetNbins();
-        auto labelsx=xax->GetLabels();
-        auto labelssizex=labelsx->GetSize();
-        std::cout << "binsize:" << binsizex << "  labelsize:" << labelssizex << std::endl;
-        if(binsizex!= labelssizex){
-          std::cout << "binsize != labsize ?= " << binsizex << "!=" << labelssizex << std::endl;
-        }
-        std::cout << "Test Tracklet Ylabels for layer : " << iLayer << std::endl;
-        auto binsizey=yax->GetNbins();
-        auto labelsy=yax->GetLabels();
-        auto labelssizey=labelsy->GetSize();
-        std::cout << "binsize:" << binsizey << "  labelsize:" << labelssizey << std::endl;
-        if(binsizey!= labelssizey){
-          std::cout << "binsize != labsize ?= " << binsizey << "!=" << labelssizey << std::endl;
-        }  */
   }
 }
 
