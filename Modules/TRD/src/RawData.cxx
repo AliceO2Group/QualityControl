@@ -199,7 +199,7 @@ void RawData::monitorData(o2::framework::ProcessingContext& ctx)
 {
 
   auto rawdatastats = ctx.inputs().get<o2::trd::TRDDataCountersPerTimeFrame*>("rawstats");
-  mStats->AddBinContent(1, 1);                     // count number of TFs seen
+  mStats->AddBinContent(1, 1);                             // count number of TFs seen
   mStats->AddBinContent(2, rawdatastats->mNTriggersTotal); // count total number of triggers seen
   mStats->AddBinContent(3, rawdatastats->mNTriggersCalib); // count total number of calibration triggers seen
   mStats->AddBinContent(4, rawdatastats->mTrackletsFound); // count total number of tracklets seen
