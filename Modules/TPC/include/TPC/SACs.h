@@ -75,11 +75,17 @@ class SACs : public quality_control::postprocessing::PostProcessingInterface
   std::unique_ptr<TCanvas> mSACDeltaSides;
   std::unique_ptr<TCanvas> mFourierCoeffsA;
   std::unique_ptr<TCanvas> mFourierCoeffsC;
+  std::unique_ptr<TCanvas> mSACZeroSidesScaled;
+  std::unique_ptr<TCanvas> mSACZeroScale;
+  std::unique_ptr<TCanvas> mSACZeroOutliers;
 
   std::unordered_map<std::string, long> mTimestamps;             ///< timestamps to look for specific data in the CCDB
   std::vector<std::map<std::string, std::string>> mLookupMaps{}; ///< meta data to look for data in the CCDB
   std::vector<std::map<std::string, std::string>> mStoreMaps{};  ///< meta data to be stored with the output in the QCDB
   std::unordered_map<std::string, std::vector<float>> mRanges;   ///< histogram ranges configurable via config file
+
+  bool mRejectOutliersSACZeroScale;
+  float mSACZeroMaxDeviation;
 };
 
 } // namespace o2::quality_control_modules::tpc

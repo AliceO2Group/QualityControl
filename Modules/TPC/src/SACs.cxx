@@ -122,6 +122,12 @@ void SACs::configure(const boost::property_tree::ptree& config)
     mDoLatest = false;
     ILOG(Warning, Support) << "Option 'doLatest' is missing. Using default value 'false'." << ENDM;
   }
+
+  mRejectOutliersSACZeroScale = config.get<bool>("qc.postprocessing." + id + ".rejectOutliersSACZeroScale", true);
+  if (!mRejectOutliersSACZeroScale) {
+    ILOG(Warning, Support) << "No rejection for outliers in SAC Zero Scale!" << ENDM;
+  }
+  mSACZeroMaxDeviation = config.get<float>("qc.postprocessing." + id + ".maxDeviationOutlierSACZero", 3.);
 }
 
 void SACs::initialize(Trigger, framework::ServiceRegistryRef)
@@ -133,12 +139,18 @@ void SACs::initialize(Trigger, framework::ServiceRegistryRef)
   mSACOneSides = std::make_unique<TCanvas>("c_sides_SACOne");
   mFourierCoeffsA = std::make_unique<TCanvas>("c_FourierCoefficients_1D_ASide");
   mFourierCoeffsC = std::make_unique<TCanvas>("c_FourierCoefficients_1D_CSide");
+  mSACZeroSidesScaled = std::make_unique<TCanvas>("c_sides_SACZero_Scaled");
+  mSACZeroScale = std::make_unique<TCanvas>("c_sides_SACZero_ScaleFactor");
+  mSACZeroOutliers = std::make_unique<TCanvas>("c_sides_SACZero_Outliers");
 
   getObjectsManager()->startPublishing(mSACZeroSides.get());
   getObjectsManager()->startPublishing(mSACDeltaSides.get());
   getObjectsManager()->startPublishing(mSACOneSides.get());
   getObjectsManager()->startPublishing(mFourierCoeffsA.get());
   getObjectsManager()->startPublishing(mFourierCoeffsC.get());
+  getObjectsManager()->startPublishing(mSACZeroSidesScaled.get());
+  getObjectsManager()->startPublishing(mSACZeroScale.get());
+  getObjectsManager()->startPublishing(mSACZeroOutliers.get());
 }
 
 void SACs::update(Trigger, framework::ServiceRegistryRef)
@@ -148,6 +160,9 @@ void SACs::update(Trigger, framework::ServiceRegistryRef)
   mSACOneSides.get()->Clear();
   mFourierCoeffsA.get()->Clear();
   mFourierCoeffsC.get()->Clear();
+  mSACZeroSidesScaled.get()->Clear();
+  mSACZeroScale.get()->Clear();
+  mSACZeroOutliers.get()->Clear();
 
   o2::tpc::SACZero* sacZero = nullptr;
   o2::tpc::SACDelta<unsigned char>* sacDelta = nullptr;
@@ -173,7 +188,12 @@ void SACs::update(Trigger, framework::ServiceRegistryRef)
 
   if (sacZero) {
     mSACs.setSACZero(sacZero);
-    mSACs.drawSACTypeSides(o2::tpc::SACType::IDCZero, 0, mRanges["SACZero"].at(1), mRanges["SACZero"].at(2), mSACZeroSides.get());
+    mSACs.drawSACTypeSides(o2::tpc::SACType::IDCZero, 0, mRanges["SACZero"].at(1), mRanges["SACZero"].at(2), mSACZeroSides.get()); // draw unscaled
+    mSACs.setSACZeroMaxDeviation(mSACZeroMaxDeviation);
+    mSACs.setSACZeroScale(mRejectOutliersSACZeroScale);
+    mSACs.drawSACZeroScale(mSACZeroScale.get());
+    mSACs.drawSACTypeSides(o2::tpc::SACType::IDCZero, 0, mRanges["SACZeroScaled"].at(1), mRanges["SACZeroScaled"].at(2), mSACZeroSidesScaled.get()); // draw scaled
+    mSACs.drawSACTypeSides(o2::tpc::SACType::IDCOutlier, 0, -2, 2, mSACZeroOutliers.get());                                                          // draw SACZero outlier map
   }
   if (sacDelta) {
     mSACs.setSACDelta(sacDelta);
@@ -209,6 +229,9 @@ void SACs::finalize(Trigger, framework::ServiceRegistryRef)
   getObjectsManager()->stopPublishing(mSACDeltaSides.get());
   getObjectsManager()->stopPublishing(mFourierCoeffsA.get());
   getObjectsManager()->stopPublishing(mFourierCoeffsC.get());
+  getObjectsManager()->stopPublishing(mSACZeroSidesScaled.get());
+  getObjectsManager()->stopPublishing(mSACZeroScale.get());
+  getObjectsManager()->stopPublishing(mSACZeroOutliers.get());
 }
 
 } // namespace o2::quality_control_modules::tpc
