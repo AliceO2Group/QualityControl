@@ -34,7 +34,7 @@
     },
     "tasks": {
       "RawDataTask": {
-        "active": "false",
+        "active": "true",
         "className": "o2::quality_control_modules::trd::RawData",
         "moduleName": "QcTRD",
         "detectorName": "TRD",
@@ -54,7 +54,7 @@
         "saveObjectsToFile": "qcrootobjects.root"
       },
       "DigitTask": {
-        "active": "false",
+        "active": "true",
         "className": "o2::quality_control_modules::trd::DigitsTask",
         "moduleName": "QcTRD",
         "detectorName": "TRD",
@@ -65,10 +65,13 @@
           "query": "digits:TRD/DIGITS;tracklets:TRD/TRACKLETS;triggers:TRD/TRKTRGRD"
         },
         "taskParameters": {
-          "peakregionstart": "7.0",
-          "peakregionend": "20.0",
-          "pulseheightpeaklower": "1.0",
-          "pulseheightpeakupper": "5.0"
+          "driftRegionStart": "7.0",
+          "driftRegionEnd": "20.0",
+          "peakRegionStart": "1.0",
+          "peakRegionEnd": "5.0",
+          "phThreshold": "400.0",
+          "ignoreChambers": "16_3_0",
+          "ignoreLabels": "false"
         },
         "location": "remote",
         "saveObjectsToFile": "digitrootobjects.root"
@@ -86,10 +89,7 @@
           "query": "tracklets:TRD/TRACKLETS;triggers:TRD/TRKTRGRD"
         },
         "taskParameters": {
-          "peakregionstart": "7.0",
-          "peakregionend": "20.0",
-          "pulseheightpeaklower": "1.0",
-          "pulseheightpeakupper": "5.0"
+          "ignoreLabels": "false"
         },
         "location": "remote",
         "saveObjectsToFile": "trackletobjects.root"
@@ -115,7 +115,7 @@
         "saveObjectsToFile": "qcpulseheight.root"
       },
       "PulseHeightTrackMatch": {
-        "active": "false",
+        "active": "true",
         "className": "o2::quality_control_modules::trd::PulseHeightTrackMatch",
         "moduleName": "QcTRD",
         "detectorName": "TRD",
@@ -128,16 +128,16 @@
         },
         "taskParameters": {
           "trackType": "0xf",
-          "peakregionstart": "7.0",
-          "peakregionend": "20.0",
-          "pulseheightpeaklower": "1.0",
-          "pulseheightpeakupper": "5.0"
+          "driftRegionStart": "7.0",
+          "driftRegionEnd": "20.0",
+          "peakRegionStart": "1.0",
+          "peakRegionEnd": "5.0"
         },
         "location": "remote",
         "saveObjectsToFile": "qcpulseheightitstpc.root"
       },
       "TrackingTask": {
-        "active": "false",
+        "active": "true",
         "className": "o2::quality_control_modules::trd::TrackingTask",
         "moduleName": "QcTRD",
         "detectorName": "TRD",
