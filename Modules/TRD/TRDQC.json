@@ -44,12 +44,6 @@
           "type": "direct",
           "query": "digits:TRD/DIGITS;tracklets:TRD/TRACKLETS;triggers:TRD/TRKTRGRD;rawstats:TRD/RAWSTATS"
         },
-        "taskParameters": {
-          "peakregionstart": "7.0",
-          "peakregionend": "20.0",
-          "pulseheightpeaklower": "1.0",
-          "pulseheightpeakupper": "5.0"
-        },
         "location": "remote",
         "saveObjectsToFile": "qcrootobjects.root"
       },
@@ -93,26 +87,6 @@
         },
         "location": "remote",
         "saveObjectsToFile": "trackletobjects.root"
-      },
-      "PulseHeight": {
-        "active": "false",
-        "className": "o2::quality_control_modules::trd::PulseHeight",
-        "moduleName": "QcTRD",
-        "detectorName": "TRD",
-        "cycleDurationSeconds": "60",
-        "maxNumberCycles": "-1",
-        "dataSource": {
-          "type": "direct",
-          "query": "digits:TRD/DIGITS;tracklets:TRD/TRACKLETS;triggers:TRD/TRKTRGRD;rawstats:TRD/RAWSTATS"
-        },
-        "taskParameters": {
-          "peakregionstart": "7.0",
-          "peakregionend": "20.0",
-          "pulseheightpeaklower": "1.0",
-          "pulseheightpeakupper": "5.0"
-        },
-        "location": "remote",
-        "saveObjectsToFile": "qcpulseheight.root"
       },
       "PulseHeightTrackMatch": {
         "active": "true",
