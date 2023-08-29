@@ -34,6 +34,9 @@ For both synch and asynch productions we urgently need
 | PulseHeightTrackMatch  | PHTrackMatch  | enabled, if ITSTPCTRD matching  | enabled, if ITSTPCTRD matching  |
 | TrackingTask  |  Tracking | enabled, if ITSTPCTRD matching  | enabled, if ITSTPCTRD matching  |
 
+
+In case new tasks are added please make sure that it uses a unique port number. The port range assigned to TRD can be found in <https://alice-flp.docs.cern.ch/Developers/KB/port_assignment/#subsystem-port-ranges-for-remote-connections-from-epns>. It goes from 29850 to 29899.
+
 ### Checks
 
 TODO
