@@ -20,7 +20,7 @@ target_include_directories(
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-target_link_libraries(O2QcMFT PUBLIC O2QualityControl O2::DataFormatsITSMFT O2::ITSMFTReconstruction O2::MFTTracking O2::MFTBase O2::ITSMFTBase O2::DetectorsBase)
+target_link_libraries(O2QcMFT PUBLIC O2QualityControl O2::DataFormatsITSMFT O2::ITSMFTReconstruction O2::MFTTracking O2::MFTBase O2::ITSMFTBase O2::DetectorsBase O2QcCommon)
 
 install(TARGETS O2QcMFT
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

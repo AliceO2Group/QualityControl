@@ -15,6 +15,7 @@
 /// \author Guillermo Contreras
 /// \author Diana Maria Krupova
 /// \author Katarina Krizkova Gajdosova
+/// \author David Grund
 
 #ifndef QC_MFT_TRACK_TASK_H
 #define QC_MFT_TRACK_TASK_H
@@ -24,10 +25,13 @@
 #include <TH2.h>
 // Quality Control
 #include "QualityControl/TaskInterface.h"
+#include "Common/TH1Ratio.h"
+#include "Common/TH2Ratio.h"
 // O2
 #include "CommonConstants/LHCConstants.h"
 
 using namespace o2::quality_control::core;
+using namespace o2::quality_control_modules::common;
 using namespace std;
 
 namespace o2::quality_control_modules::mft
@@ -53,30 +57,30 @@ class QcMFTTrackTask /*final*/ : public TaskInterface // todo add back the "fina
   void reset() override;
 
  private:
-  std::unique_ptr<TH1F> mNumberOfTracksPerTF = nullptr;
-  std::unique_ptr<TH1F> mTrackNumberOfClusters = nullptr;
-  std::unique_ptr<TH1F> mCATrackNumberOfClusters = nullptr;
-  std::unique_ptr<TH1F> mLTFTrackNumberOfClusters = nullptr;
-  std::unique_ptr<TH1F> mTrackInvQPt = nullptr;
-  std::unique_ptr<TH1F> mTrackChi2 = nullptr;
-  std::unique_ptr<TH1F> mTrackCharge = nullptr;
-  std::unique_ptr<TH1F> mTrackPhi = nullptr;
-  std::unique_ptr<TH1F> mPositiveTrackPhi = nullptr;
-  std::unique_ptr<TH1F> mNegativeTrackPhi = nullptr;
-  std::unique_ptr<TH1F> mTrackEta = nullptr;
-  std::array<unique_ptr<TH1F>, 7> mTrackEtaNCls = { nullptr };
-  std::array<unique_ptr<TH1F>, 7> mTrackPhiNCls = { nullptr };
-  std::array<unique_ptr<TH2F>, 7> mTrackXYNCls = { nullptr };
-  std::array<unique_ptr<TH2F>, 7> mTrackEtaPhiNCls = { nullptr };
-  std::unique_ptr<TH1F> mCATrackEta = nullptr;
-  std::unique_ptr<TH1F> mLTFTrackEta = nullptr;
-  std::unique_ptr<TH1F> mCATrackPt = nullptr;
-  std::unique_ptr<TH1F> mLTFTrackPt = nullptr;
-  std::unique_ptr<TH1F> mTrackTanl = nullptr;
-  std::unique_ptr<TH1F> mTrackROFNEntries = nullptr;
-  std::unique_ptr<TH1F> mTracksBC = nullptr;
-  std::unique_ptr<TH1F> mAssociatedClusterFraction = nullptr;
-  std::unique_ptr<TH2F> mClusterRatioVsBunchCrossing = nullptr;
+  std::unique_ptr<TH1FRatio> mNumberOfTracksPerTF = nullptr;
+  std::unique_ptr<TH1FRatio> mTrackNumberOfClusters = nullptr;
+  std::unique_ptr<TH1FRatio> mCATrackNumberOfClusters = nullptr;
+  std::unique_ptr<TH1FRatio> mLTFTrackNumberOfClusters = nullptr;
+  std::unique_ptr<TH1FRatio> mTrackInvQPt = nullptr;
+  std::unique_ptr<TH1FRatio> mTrackChi2 = nullptr;
+  std::unique_ptr<TH1FRatio> mTrackCharge = nullptr;
+  std::unique_ptr<TH1FRatio> mTrackPhi = nullptr;
+  std::unique_ptr<TH1FRatio> mPositiveTrackPhi = nullptr;
+  std::unique_ptr<TH1FRatio> mNegativeTrackPhi = nullptr;
+  std::unique_ptr<TH1FRatio> mTrackEta = nullptr;
+  std::array<unique_ptr<TH1FRatio>, 7> mTrackEtaNCls = { nullptr };
+  std::array<unique_ptr<TH1FRatio>, 7> mTrackPhiNCls = { nullptr };
+  std::array<unique_ptr<TH2FRatio>, 7> mTrackXYNCls = { nullptr };
+  std::array<unique_ptr<TH2FRatio>, 7> mTrackEtaPhiNCls = { nullptr };
+  std::unique_ptr<TH1FRatio> mCATrackEta = nullptr;
+  std::unique_ptr<TH1FRatio> mLTFTrackEta = nullptr;
+  std::unique_ptr<TH1FRatio> mCATrackPt = nullptr;
+  std::unique_ptr<TH1FRatio> mLTFTrackPt = nullptr;
+  std::unique_ptr<TH1FRatio> mTrackTanl = nullptr;
+  std::unique_ptr<TH1FRatio> mTrackROFNEntries = nullptr;
+  std::unique_ptr<TH1FRatio> mTracksBC = nullptr;
+  std::unique_ptr<TH1FRatio> mAssociatedClusterFraction = nullptr;
+  std::unique_ptr<TH2FRatio> mClusterRatioVsBunchCrossing = nullptr;
 
   static constexpr array<short, 7> sMinNClustersList = { 4, 5, 6, 7, 8, 9, 10 };
 };
