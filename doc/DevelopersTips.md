@@ -360,7 +360,18 @@ The config files on EPNs are merged to build a humongous config file used for th
 The common part is stored here: https://github.com/AliceO2Group/O2DPG/blob/master/DATA/production/qc-sync/qc-global-epn.json
 The config file to use for each detector are defined [here](https://github.com/AliceO2Group/O2DPG/blob/master/DATA/production/qc-workflow.sh)
 
-To use a different common part file, one can copy the `qc-global-epn.json` to some path on the EPNs (from the gateway, in your home as it is shared) and change in that json what we need for the tests. Then you can add to `pdp_extra_env_vars` the variable (they are space separated) : `QC_JSON_GLOBAL=/path/to/your/qc-global-epn.json` and that will be used
+To use a different common part file, one can copy the `qc-global-epn.json` to some path on the EPNs (from the gateway, in your home as it is shared) and change in that json what we need for the tests. Then you can add to `pdp_extra_env_vars` the variable (they are space separated) : `QC_JSON_GLOBAL=/path/to/your/qc-global-epn.json` and that will be used. 
+
+If you want not only to change the header (cf above) but the whole file, change these variables: 
+1. `QC_JSON_FROM_OUTSIDE=1`
+2. `GEN_TOPO_QC_JSON_FILE=/path/to/file.json`
+
+### How to set an environment variable on the EPNs
+
+In ECS, in the EPN panel, go to `Extra ENV variables`. 
+
+1. Add a space and then your variable. E.g. `O2_QC_REGISTER_IN_BK=1 `
+2. Add this variable name to another variable: `GEN_TOPO_ENV_AT_RUNTIME=O2_QC_REGISTER_IN_BK` . If `GEN_TOPO_ENV_AT_RUNTIME` is already there, just add it to it with a comma: `GEN_TOPO_ENV_AT_RUNTIME=DPL_PIPELINE_LENGTH,VAR_NAME_YOU_WANT_TO_SET VAR_NAME_YOU_WANT_TO_SET=1234 DPL_PIPELINE_LENGTH=555`
 
 ## run locally multi-node
 Terminal 1
@@ -402,6 +413,7 @@ On the QCDB, become `postgres` and launch `psql`.
 To get the number of objects in a given run :
 ```
 select count(distinct pathid) from ccdb where ccdb.metadata -> '1048595860' = '539908';
+select count(distinct pathid) from ccdb, ccdb_paths where ccdb.metadata -> '1048595860' = '529439' and ccdb_paths.pathid = ccdb.pathid and ccdb_paths.path like 'qc/%;
 ```
 
 (1048595860 is the metadata id for RunNumber obtained with `select metadataid from ccdb_metadata where metadatakey = 'RunNumber';`)
@@ -422,10 +434,46 @@ select path, createtime from ccdb, ccdb_paths where ccdb.metadata -> '1048595860
 ```
 For a given detector add condition: `and ccdb_paths.path like 'qc/MCH%'`
 
-Query the path that were edited during a run for a detector: 
+Query the paths that were edited during a run for a detector: 
 
 ```sql
-select path from ccdb, ccdb_paths where ccdb_paths.pathid = ccdb.pathid AND ccdb.metadata -> '1048595860' in  ('539908') and ccdb_paths.path like 'qc_async/MCH%';
+select path from ccdb, ccdb_paths where ccdb_paths.pathid = ccdb.pathid AND ccdb.metadata -> '1048595860' in ('539908') and ccdb_paths.path like 'qc/MCH%';
+```
+
+Number of objects in a path
+```sql
+select count(distinct ccdb_paths.pathid) from ccdb, ccdb_paths where ccdb_paths.pathid = ccdb.pathid AND ccdb_paths.path like 'qc/%';
+```
+
+Number of versions: check the web interface of the qcdb. 
+
+List the tasks and the number of objects for each (in a number of runs)
+```sql
+select substring(path from '^qc\/\w*\/MO\/\w*\/') as task, count(distinct path) from ccdb, ccdb_paths where ccdb_paths.pathid = ccdb.pathid AND ccdb.metadata -> '1048595860' in  ('539908') group by task;
+```
+
+List the detectors and the number of objects for each (in a list of runs)
+```sql
+select substring(path from '^qc\/\w*\/MO\/') as task, count(distinct path) from ccdb, ccdb_paths where ccdb_paths.pathid = ccdb.pathid AND ccdb.metadata -> '1048595860' in  ('541814','541620','541616','541600','541599','541598','541597','541595','541486','541485','541468','541466','540894','540893','540888','540887','540884','540882','540881','540879','540855','540854','540852','540851','540848','540847','540846','540834','540831','540825','540824','540781','540778','540766','540721','540711','540646','540644','540643','540602') group by task;
+```
+
+List the detectors and the number of versions
+```sql
+select substring(path from '^qc\/\w*\/') as task, count( path) from ccdb, ccdb_paths where ccdb_paths.pathid = ccdb.pathid AND ccdb.metadata -> '1048595860' in  ('541814','541620','541616','541600','541599','541598','541597','541595','541486','541485','541468','541466','540894','540893','540888','540887','540884','540882','540881','540879','540855','540854','540852','540851','540848','540847','540846','540834','540831','540825','540824','540781','540778','540766','540721','540711','540646','540644','540643','540602') group by task;
+```
+
+List average number of version per run per detector ? 
+
+```sql
+SELECT task,
+       path_count/40 as average_path_count
+FROM (SELECT substring(ccdb_paths.path from '^qc\/\w*\/') as task,
+             count(ccdb.pathid) as path_count
+      FROM ccdb
+              JOIN ccdb_paths ON ccdb_paths.pathid = ccdb.pathid
+      WHERE ccdb.metadata -> '1048595860' in ('541814','541620','541616','541600','541599','541598','541597','541595','541486','541485','541468','541466','540894','540893','540888','540887','540884','540882','540881','540879','540855','540854','540852','540851','540848','540847','540846','540834','540831','540825','540824','540781','540778','540766','540721','540711','540646','540644','540643','540602')
+      GROUP BY task
+     ) subquery ;
 ```
 
 ### Merge and upload QC results for all subjobs of a grid job

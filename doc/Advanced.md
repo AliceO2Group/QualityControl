@@ -1107,8 +1107,11 @@ mCustomParameters.at("myOwnKey2", "COSMICS"); // returns `myOwnValue2e`
 
 The correct way of accessing a parameter and to default to a value if it is not there, is the following:
 ```c++
-  std::string param = mCustomParameters.atOrDefaultValue("myOwnKey1", "physics", "pp", "1");
+  std::string param = mCustomParameters.atOrDefaultValue("myOwnKey1", "1" /*default value*/, "physics", "pp");
   int casted = std::stoi(param);
+
+  // alternatively
+  std::string param = mCustomParameters.atOrDefaultValue("myOwnKey1", "1" /*default value*/, activity); // see below how to get the activity
 ```
 
 ### Find a value 
@@ -1119,6 +1122,12 @@ Finally the way to search for a value and only act if it is there is the followi
     int casted = std::stoi(param);
   }
 ```
+
+### Retrieve the activity in the modules
+
+In a task, the `activity` is provided in `startOfActivity`.
+
+In a Check, it is returned by `getActivity()`.
 
 ## Definition of new arguments
 
