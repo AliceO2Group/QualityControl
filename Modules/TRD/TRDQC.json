@@ -128,6 +128,131 @@
         "saveObjectsToFile": "trackingqcobject.root"
       }
     },
+    "checks": {
+      "TrackletPerTriggerCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::trd::TrackletPerTriggerCheck",
+        "moduleName": "QcTRD",
+        "policy": "OnAny",
+        "detectorName": "TRD",
+        "dataSource": [{
+          "type": "Task",
+          "name": "TrackletsTask",
+          "MOs": [ "trackletsperevent" ]
+        }],
+        "checkParameters":{
+          "Lowerthreshold":"500.0",
+          "Upperthreshold":"520.0",
+          "StatThreshold": "1"
+        }
+      }
+    },
+    "aggregators": {
+      "TRDQuality": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::WorstOfAllAggregator",
+        "moduleName": "QualityControl",
+        "policy": "OnAll",
+        "detectorName": "TRD",
+        "dataSource": [
+          {
+            "type": "Check",
+            "name": "TrackletPerTriggerCheck"
+          }
+        ]
+      }
+    },
+    "postprocessing": {
+      "TRDTrending": {
+        "active": "true",
+        "className": "o2::quality_control::postprocessing::TRDTrending",
+        "moduleName": "QualityControl",
+        "detectorName": "TRD",
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "TRD/MO/TrackletsTask/",		       
+            "names": [ "trackletspertimeframe","trackletsperevent" ],
+            "reductorName": "o2::quality_control_modules::common::TH1Reductor",
+            "moduleName": "QcTRD"
+          }
+        ],
+        "plots": [
+          {
+            "names": ["mean_distribution_trackletpertimeframe","mean_distribution_trackletperevent"],
+            "title": ["mean distribution of tracklet per timeframe","mean distribution of tracklet per event"],
+            "varexp": ["trackletspertimeframe.mean","trackletsperevent.mean"],
+            "selection": "",
+            "option": ""
+          },
+          {
+            "names": ["mean_trend_trackletspertimeframe", "mean_trend_trackletperevent"],
+            "title": ["Mean trend of the Tracklet per time frame","Mean trend of tracklet per event"],
+            "varexp": ["trackletspertimeframe.mean:time","trackletsperevent.mean:time"],
+            "selection": "",
+            "option": "PL"
+          }
+        ],
+        "initTrigger": [
+          "usercontrol"
+        ],
+        "updateTrigger": [
+            "10 seconds"
+        ],
+        "stopTrigger": [
+          "usercontrol"
+        ]
+      },
+      "Quality": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::QualityTask",
+        "moduleName": "QualityControl",
+        "detectorName": "TRD",
+        "qualityGroups": [
+          {
+            "name" : "global",
+            "title" : "GLOBAL TRD QUALITY",
+            "path": "TRD/QO",
+            "ignoreQualitiesDetails" : ["Null", "Good", "Medium", "Bad"],
+            "inputObjects": [
+              {
+                "name" : "TRDQuality/TRDQuality",
+                "title" : "TRD Quality",
+                "messageBad" : "Inform TRD on-call immediately",
+                "messageMedium": "Add bookkeeping entry",
+                "messageGood": "All checks are OK",
+                "messageNull": "Some histograms are empty!!!"
+              }
+            ]
+          },
+          {
+            "name" : "TrackletQuality",
+            "title" : "TRD Tracklet Quality",
+            "path": "TRD/QO",
+            "ignoreQualitiesDetails" : [],
+            "inputObjects": [
+              {
+                "name" : "TrackletPerTriggerCheck",
+                "title" : "Check on Mean of Tracklet per Event",
+                "messageBad" : "Inform TRD on-call immediately",
+                "messageMedium": "Add bookkeeping entry",
+                "messageGood": "TrackletPerTriggerCheck check is OK",
+                "messageNull": "Some histograms are empty!!!"
+              }
+            ]
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol","60sec","SOR"
+        ],
+        "updateTrigger": [
+          "60 seconds"
+        ],
+        "stopTrigger": [
+          "userorcontrol","EOR"
+        ]
+      }
+    },
     "dataSamplingPolicies": []
   }
 }
