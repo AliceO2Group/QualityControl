@@ -45,6 +45,7 @@ BCTask::~BCTask()
 
 void BCTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
+  parseTriggerSelection();
   constexpr unsigned int LHC_MAX_BC = o2::constants::lhc::LHCMaxBunches;
   mBCReadout = new TH1F("BCEMCALReadout", "BC distribution EMCAL readout", LHC_MAX_BC, -0.5, LHC_MAX_BC - 0.5);
   getObjectsManager()->startPublishing(mBCReadout);
@@ -93,20 +94,24 @@ void BCTask::monitorData(o2::framework::ProcessingContext& ctx)
       auto bc = ctpdigit.intRecord.bc;
       uint64_t classMaskCTP = ctpdigit.CTPClassMask.to_ulong();
       bool emcalANY = false;
-      if (classMaskCTP & mTriggerClassIndices[EMCMinBias]) {
-        mBCMinBias->Fill(bc);
-        emcalANY = true;
-      }
-      if (classMaskCTP & mTriggerClassIndices[EMCL0]) {
-        mBCL0EMCAL->Fill(bc);
-        emcalANY = true;
-      }
-      if (classMaskCTP & mTriggerClassIndices[DMCL0]) {
-        mBCL0DCAL->Fill(bc);
-        emcalANY = true;
+      for (auto clsMaskEMC : mAllEMCALClasses) {
+        if (classMaskCTP & clsMaskEMC) {
+          emcalANY = true;
+          break;
+        }
       }
       if (emcalANY) {
         mBCEMCAny->Fill(bc);
+      }
+      // Distinguish between a couple of triggers
+      if (classMaskCTP & mTriggerClassIndices[EMCMinBias]) {
+        mBCMinBias->Fill(bc);
+      }
+      if (classMaskCTP & mTriggerClassIndices[EMCL0]) {
+        mBCL0EMCAL->Fill(bc);
+      }
+      if (classMaskCTP & mTriggerClassIndices[DMCL0]) {
+        mBCL0DCAL->Fill(bc);
       }
     }
   }
@@ -133,6 +138,30 @@ void BCTask::reset()
   mBCL0DCAL->Reset();
 }
 
+void BCTask::parseTriggerSelection()
+{
+  // Default trigger alias
+  if (auto param = mCustomParameters.find("AliasMB"); param != mCustomParameters.end()) {
+    mTriggerAliases["MB"] = param->second;
+  } else {
+    mTriggerAliases["MB"] = "C0TVX";
+  }
+  if (auto param = mCustomParameters.find("Alias0EMC"); param != mCustomParameters.end()) {
+    mTriggerAliases["0EMC"] = param->second;
+  } else {
+    mTriggerAliases["0EMC"] = "CTVXEMC";
+  }
+  if (auto param = mCustomParameters.find("Alias0DMC"); param != mCustomParameters.end()) {
+    mTriggerAliases["0DMC"] = param->second;
+  } else {
+    mTriggerAliases["0DMC"] = "CTVXDMC";
+  }
+
+  if (auto param = mCustomParameters.find("BeamMode"); param != mCustomParameters.end()) {
+    mBeamMode = getBeamPresenceMode(param->second);
+  }
+}
+
 bool BCTask::hasClassMasksLoaded() const
 {
   bool result = false;
@@ -144,6 +173,51 @@ bool BCTask::hasClassMasksLoaded() const
     }
   }
   return result;
+}
+
+std::string BCTask::getBeamPresenceModeToken(BeamPresenceMode_t beammode) const
+{
+  std::string token;
+  switch (beammode) {
+    case BeamPresenceMode_t::BOTH:
+      token = "B";
+      break;
+    case BeamPresenceMode_t::ASIDE:
+      token = "A";
+      break;
+    case BeamPresenceMode_t::CSIDE:
+      token = "C";
+      break;
+    case BeamPresenceMode_t::EMPTY:
+      token = "E";
+      break;
+    case BeamPresenceMode_t::NONE:
+      token = "NONE";
+      break;
+    default:
+      break;
+  }
+  return token;
+}
+
+BCTask::BeamPresenceMode_t BCTask::getBeamPresenceMode(const std::string_view beamname) const
+{
+  if (beamname == "ASIDE") {
+    return BeamPresenceMode_t::ASIDE;
+  }
+  if (beamname == "CSIDE") {
+    return BeamPresenceMode_t::CSIDE;
+  }
+  if (beamname == "BOTH") {
+    return BeamPresenceMode_t::BOTH;
+  }
+  if (beamname == "EMPTY") {
+    return BeamPresenceMode_t::EMPTY;
+  }
+  if (beamname == "NONE") {
+    return BeamPresenceMode_t::NONE;
+  }
+  return BeamPresenceMode_t::ANY;
 }
 
 bool BCTask::loadTriggerClasses(uint64_t timestamp)
@@ -158,31 +232,36 @@ bool BCTask::loadTriggerClasses(uint64_t timestamp)
 
     return tokens;
   };
+  mAllEMCALClasses.clear();
   std::map<std::string, std::string> metadata;
   metadata["runNumber"] = std::to_string(mCurrentRun);
   auto ctpconfig = this->retrieveConditionAny<o2::ctp::CTPConfiguration>("CTP/Config/Config", metadata, timestamp);
   if (ctpconfig) {
     for (auto& cls : ctpconfig->getCTPClasses()) {
       auto trgclsname = boost::algorithm::to_upper_copy(cls.name);
-      if (trgclsname.find("-EMC") == std::string::npos) {
+      auto tokens = tokenize(trgclsname, '-');
+      auto triggercluster = tokens[3];
+      if (triggercluster.find("EMC") == std::string::npos) {
         // Not an EMCAL trigger class
         continue;
       }
-      auto tokens = tokenize(trgclsname, '-');
-      if (tokens[1] != "B") {
-        // Not bucket in both beams
-        continue;
+      if (mBeamMode != BeamPresenceMode_t::ANY) {
+        if (tokens[1] != getBeamPresenceModeToken(mBeamMode)) {
+          // beam mode not matching
+          continue;
+        }
       }
-      LOG(debug) << "Found trigger class: " << trgclsname;
-      if (tokens[0] == "C0TVX") {
+      ILOG(Info, Support) << "EMCAL trigger cluster: Found trigger class: " << trgclsname << ENDM;
+      mAllEMCALClasses.insert(cls.classMask);
+      if (tokens[0] == mTriggerAliases.find("MB")->second) {
         mTriggerClassIndices[EMCMinBias] = cls.classMask;
         ILOG(Info, Support) << "Trigger class index EMC min bias: " << mTriggerClassIndices[EMCMinBias] << " (Class name: " << cls.name << ")" << ENDM;
       }
-      if (tokens[0] == "CTVXEMC") {
+      if (tokens[0] == mTriggerAliases.find("0EMC")->second) {
         mTriggerClassIndices[EMCL0] = cls.classMask;
         ILOG(Info, Support) << "Trigger class index EMC L0:       " << mTriggerClassIndices[EMCL0] << " (Class name: " << cls.name << ")" << ENDM;
       }
-      if (tokens[0] == "CTVXDMC") {
+      if (tokens[0] == mTriggerAliases.find("0DMC")->second) {
         mTriggerClassIndices[DMCL0] = cls.classMask;
         ILOG(Info, Support) << "Trigger class index DMC L0:       " << mTriggerClassIndices[DMCL0] << " (Class name: " << cls.name << ")" << ENDM;
       }

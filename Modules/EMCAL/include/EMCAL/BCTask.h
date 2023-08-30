@@ -19,6 +19,10 @@
 
 #include "QualityControl/TaskInterface.h"
 
+#include <array>
+#include <set>
+#include <unordered_map>
+
 class TH1F;
 
 using namespace o2::quality_control::core;
@@ -71,15 +75,41 @@ class BCTask final : public TaskInterface
   /// trigger which is guaranteed in all runs with EMCAL readout)
   bool hasClassMasksLoaded() const;
 
+  /// \brief Parse trigger selection from the task parameters
+  void parseTriggerSelection();
+
  private:
+  /// \brief Beam presence mode
+  enum class BeamPresenceMode_t {
+    ASIDE, ///< Beam only in A-side
+    BOTH,  ///< Beam in both sides
+    CSIDE, ///< Beam only in C-side
+    EMPTY, ///< No beam in either of the side
+    NONE,  ///< No beam in LHC
+    ANY    ///< Any of the configurations
+  };
+
+  /// \brief Get token of the beam presence mode
+  /// \param beammode Beam mode
+  /// \return Beam mode token (empty if ANY or unknown)
+  std::string getBeamPresenceModeToken(BeamPresenceMode_t beammode) const;
+
+  /// \brief Get the beam mode
+  /// \param beamname Name of the beam mode
+  /// \return Beam mode (ANY if unknown)
+  BeamPresenceMode_t getBeamPresenceMode(const std::string_view beamname) const;
+
   TH1F* mBCReadout = nullptr; ///< BC distribution from EMCAL readout
   TH1F* mBCEMCAny = nullptr;  ///< BC distribution from CTP, any trigger
   TH1F* mBCMinBias = nullptr; ///< BC distribution from CTP, EMCAL min. bias trigger
   TH1F* mBCL0EMCAL = nullptr; ///< BC distribution from CTP, EMCAL L0 trigger
   TH1F* mBCL0DCAL = nullptr;  ///< BC distribution from CTP, DCAL trigger
 
-  uint32_t mCurrentRun = -1;                                  ///< Current run
-  std::array<uint64_t, NTriggerClasses> mTriggerClassIndices; ///< Trigger class mask from for different EMCAL triggers from CTP configuration
+  uint32_t mCurrentRun = -1;                                    ///< Current run
+  std::array<uint64_t, NTriggerClasses> mTriggerClassIndices;   ///< Trigger class mask from for different EMCAL triggers from CTP configuration
+  std::set<uint64_t> mAllEMCALClasses;                          ///< All trigger classes firing the EMCAL trigger cluster
+  std::unordered_map<std::string, std::string> mTriggerAliases; ///< Trigger aliases
+  BeamPresenceMode_t mBeamMode = BeamPresenceMode_t::BOTH;      ///< Beam mode
 };
 
 } // namespace o2::quality_control_modules::emcal
