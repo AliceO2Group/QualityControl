@@ -142,7 +142,7 @@ void ZDCRecDataPostProcessing::configure(const boost::property_tree::ptree& conf
     mMOsADC.emplace(binLabelsADC.size(), MOHelper(source.path, moName));
   }
 
-  mSummaryADCHisto = std::make_unique<TH1F>("h_summmary_ADC", "Summary ADC", binLabelsADC.size(), 0, binLabelsADC.size());
+  mSummaryADCHisto = std::make_unique<TH1F>("h_summary_ADC", "Summary ADC", binLabelsADC.size(), 0, binLabelsADC.size());
   for (size_t bin = 0; bin < binLabelsADC.size(); bin++) {
     mSummaryADCHisto->GetXaxis()->SetBinLabel(bin + 1, binLabelsADC[bin].c_str());
   }
@@ -161,7 +161,7 @@ void ZDCRecDataPostProcessing::configure(const boost::property_tree::ptree& conf
     mMOsTDC.emplace(binLabelsTDC.size(), MOHelper(source.path, moName));
   }
 
-  mSummaryTDCHisto = std::make_unique<TH1F>("h_summmary_TDC", "Summary TDC", binLabelsTDC.size(), 0, binLabelsTDC.size());
+  mSummaryTDCHisto = std::make_unique<TH1F>("h_summary_TDC", "Summary TDC", binLabelsTDC.size(), 0, binLabelsTDC.size());
   for (size_t bin = 0; bin < binLabelsTDC.size(); bin++) {
     mSummaryTDCHisto->GetXaxis()->SetBinLabel(bin + 1, binLabelsTDC[bin].c_str());
   }
