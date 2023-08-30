@@ -413,6 +413,7 @@ On the QCDB, become `postgres` and launch `psql`.
 
 To get the number of objects in a given run :
 ```
+select count(distinct pathid) from ccdb where ccdb.metadata -> '1048595860' = '539908';
 select count(distinct pathid) from ccdb, ccdb_paths where ccdb.metadata -> '1048595860' = '529439' and ccdb_paths.pathid = ccdb.pathid and ccdb_paths.path like 'qc/%;
 ```
 
