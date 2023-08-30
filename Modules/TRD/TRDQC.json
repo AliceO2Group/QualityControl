@@ -9,7 +9,7 @@
         "name": "not_applicable"
       },
       "Activity": {
-        "number": "505618",
+        "number": "123456",
         "type": "2",
         "periodName": "",
         "passName": "",
@@ -25,15 +25,12 @@
         "url": "ccdb-test.cern.ch:8080"
       },
       "infologger": {
-        "": "Configuration of the Infologger (optional).",
         "filterDiscardDebug": "false",
-        "": "Set to 1 to discard debug and trace messages (default: false)",
-        "filterDiscardLevel": "2",
-        "": "Message at this level or above are discarded (default: 21 - Trace)"
+        "filterDiscardLevel": "11",
       }
     },
     "tasks": {
-      "RawDataTask": {
+      "RawData": {
         "active": "true",
         "className": "o2::quality_control_modules::trd::RawData",
         "moduleName": "QcTRD",
@@ -42,12 +39,12 @@
         "maxNumberCycles": "-1",
         "dataSource": {
           "type": "direct",
-          "query": "digits:TRD/DIGITS;tracklets:TRD/TRACKLETS;triggers:TRD/TRKTRGRD;rawstats:TRD/RAWSTATS"
+          "query": "rawstats:TRD/RAWSTATS"
         },
-        "location": "remote",
-        "saveObjectsToFile": "qcrootobjects.root"
+        "location": "local",
+        "saveObjectsToFile": "QC_TRD.root"
       },
-      "DigitTask": {
+      "Digits": {
         "active": "true",
         "className": "o2::quality_control_modules::trd::DigitsTask",
         "moduleName": "QcTRD",
@@ -56,21 +53,12 @@
         "maxNumberCycles": "-1",
         "dataSource": {
           "type": "direct",
-          "query": "digits:TRD/DIGITS;tracklets:TRD/TRACKLETS;triggers:TRD/TRKTRGRD"
+          "query": "digits:TRD/DIGITS;triggers:TRD/TRKTRGRD"
         },
-        "taskParameters": {
-          "driftRegionStart": "7.0",
-          "driftRegionEnd": "20.0",
-          "peakRegionStart": "1.0",
-          "peakRegionEnd": "5.0",
-          "phThreshold": "400.0",
-          "ignoreChambers": "16_3_0",
-          "ignoreLabels": "false"
-        },
-        "location": "remote",
-        "saveObjectsToFile": "digitrootobjects.root"
+        "location": "local",
+        "saveObjectsToFile": "QC_TRD.root"
       },
-      "TrackletsTask": {
+      "Tracklets": {
         "active": "true",
         "className": "o2::quality_control_modules::trd::TrackletsTask",
         "moduleName": "QcTRD",
@@ -82,13 +70,10 @@
           "type": "direct",
           "query": "tracklets:TRD/TRACKLETS;triggers:TRD/TRKTRGRD"
         },
-        "taskParameters": {
-          "ignoreLabels": "false"
-        },
-        "location": "remote",
-        "saveObjectsToFile": "trackletobjects.root"
+        "location": "local",
+        "saveObjectsToFile": "QC_TRD.root"
       },
-      "PulseHeightTrackMatch": {
+      "PHTrackMatch": {
         "active": "true",
         "className": "o2::quality_control_modules::trd::PulseHeightTrackMatch",
         "moduleName": "QcTRD",
@@ -107,10 +92,10 @@
           "peakRegionStart": "1.0",
           "peakRegionEnd": "5.0"
         },
-        "location": "remote",
-        "saveObjectsToFile": "qcpulseheightitstpc.root"
+        "location": "local",
+        "saveObjectsToFile": "QC_TRD.root"
       },
-      "TrackingTask": {
+      "Tracking": {
         "active": "true",
         "className": "o2::quality_control_modules::trd::TrackingTask",
         "moduleName": "QcTRD",
@@ -122,10 +107,11 @@
           "query": "tracksqc:TRD/TRACKINGQC;tracksTRD:TRD/MATCH_ITSTPC;trigrectrk:TRD/TRGREC_ITSTPC"
         },
         "taskParameters": {
-          "pTminvalue": "0.0"
+          "detailedQC": "true",
+          "trackSources": "ITS-TPC-TRD"
         },
-        "location": "remote",
-        "saveObjectsToFile": "trackingqcobject.root"
+        "location": "local",
+        "saveObjectsToFile": "QC_TRD.root"
       }
     },
     "checks": {
