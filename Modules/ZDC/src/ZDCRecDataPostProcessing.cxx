@@ -12,8 +12,8 @@
 ///
 /// \file    ZDCRecDataPostProcessing.cxx
 /// \author  Andrea Ferrero andrea.ferrero@cern.ch
-/// \brief   Post-processing of the MCH pre-clusters
-/// \since   21/06/2022
+/// \brief   Post-processing of the ZDC ADC and TDC plots
+/// \since   30/08/2023
 ///
 
 #include "ZDC/ZDCRecDataPostProcessing.h"
@@ -57,7 +57,7 @@ static long getMoTimeStamp(std::shared_ptr<o2::quality_control::core::MonitorObj
 static bool checkMoTimeStamp(std::shared_ptr<o2::quality_control::core::MonitorObject> mo, uint64_t& timeStampOld)
 {
   auto timeStamp = getMoTimeStamp(mo);
-  bool result = (timeStamp != timeStampOld) ? true : false;
+  bool result = timeStamp != timeStampOld;
   timeStampOld = timeStamp;
   return result;
 }

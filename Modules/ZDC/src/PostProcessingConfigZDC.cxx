@@ -12,8 +12,8 @@
 ///
 /// \file    PostProcessingConfigZDC.cxx
 /// \author  Andrea Ferrero andrea.ferrero@cern.ch
-/// \brief   File for the configuration of MCH post-processing tasks
-/// \since   05/10/2021
+/// \brief   File for the configuration of ZDC post-processing tasks
+/// \since   30/08/2023
 ///
 
 #include "ZDC/PostProcessingConfigZDC.h"

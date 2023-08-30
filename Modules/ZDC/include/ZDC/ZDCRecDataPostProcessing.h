@@ -12,8 +12,8 @@
 ///
 /// \file    ZDCRecDataPostProcessing.h
 /// \author  Andrea Ferrero andrea.ferrero@cern.ch
-/// \brief   Post-processing of the MCH pre-clusters
-/// \since   21/06/2022
+/// \brief   Post-processing of the ZDC ADC and TDC plots
+/// \since   30/08/2023
 ///
 
 #ifndef QC_MODULE_ZDC_ZDCZDCRECDATAPP_H
@@ -22,6 +22,8 @@
 #include "QualityControl/PostProcessingInterface.h"
 
 #include <TH1F.h>
+#include <memory>
+#include <string>
 
 namespace o2::quality_control::repository
 {
@@ -65,7 +67,7 @@ struct MOHelper {
   uint64_t mTimeStamp{ 0 };
 };
 
-/// \brief  A post-processing task which processes the ADc and TDC plots from ZDC
+/// \brief  A post-processing task which processes the ADC and TDC plots from ZDC
 class ZDCRecDataPostProcessing : public PostProcessingInterface
 {
  public:

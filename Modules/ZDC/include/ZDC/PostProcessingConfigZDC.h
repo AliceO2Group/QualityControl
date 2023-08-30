@@ -12,8 +12,8 @@
 ///
 /// \file    PostProcessingConfigZDC.h
 /// \author  Andrea Ferrero andrea.ferrero@cern.ch
-/// \brief   Header file for the configuration of MCH post-processing tasks
-/// \since   16/06/2022
+/// \brief   Header file for the configuration of ZDC post-processing tasks
+/// \since   30/08/2023
 ///
 
 #ifndef QC_MODULE_ZDC_PPCONFIG_H
