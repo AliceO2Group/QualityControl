@@ -54,6 +54,18 @@ class GenericHistogramCheck : public o2::quality_control::checker::CheckInterfac
   float mRangeX;
   float mExpectedValueY;
   float mRangeY;
+
+  std::string mBadString = "";
+  std::string mMediumString = "";
+  std::string mGoodString = "";
+  std::string mNullString = "";
+
+  std::string mBadStringMeta = "";
+  std::string mMediumStringMeta = "";
+  std::string mGoodStringMeta = "";
+  std::string mNullStringMeta = "";
+
+  std::string mMetadataComment = "";
 };
 
 } // namespace o2::quality_control_modules::tpc

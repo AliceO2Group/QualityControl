@@ -47,26 +47,42 @@
         "moduleName": "QcTPC",
         "policy": "OnEachSeparately",
         "detectorName": "TPC",
-        "dataSource": [{
-          "type": "Task",
-          "name": "Tracks",
-          "Noneed" : ["a"],
-          "MOs": ["h2DEtaPhiBeforeCuts","hEtaRatio_copy_copy","hNClustersBeforeCuts","hPhiAside","hEtaBeforeCuts","h2DNClustersPtBeforeCuts","h2DQOverPtPhiCside","h2DQOverPtPhiAside","h2DNClustersPt","h2DNClustersPhiCside","h2DNClustersEtaBeforeCuts","hPtBeforeCuts"]
-        }],
+        "dataSource": [
+          {
+            "type": "Task",
+            "name": "Tracks",
+            "Noneed": ["a"],
+            "MOs": [
+              "h2DEtaPhiBeforeCuts",
+              "hEtaRatio_copy_copy",
+              "hNClustersBeforeCuts",
+              "hPhiAside",
+              "hEtaBeforeCuts",
+              "h2DNClustersPtBeforeCuts",
+              "h2DQOverPtPhiCside",
+              "h2DQOverPtPhiAside",
+              "h2DNClustersPt",
+              "h2DNClustersPhiCside",
+              "h2DNClustersEtaBeforeCuts",
+              "hPtBeforeCuts"
+            ]
+          }
+        ],
 
-        "stopTrigger_comment": [ "Parameters are needed to choose if check should be performed only as last point comparison to average or average comparison to expected value." ],
+        "stopTrigger_comment": [
+          "Parameters are needed to choose if check should be performed only as last point comparison to average or average comparison to expected value."
+        ],
         "checkParameters": {
-          "ExpectedValueX":"3.14",
-          "RangeX" : "0.006",
-          "ExpectedValueY":"0",
-          "RangeY" : "0.006",
-          "checks" : "StdDev, Range",
-          "axis" : "X,Y"
+          "ExpectedValueX": "3.14",
+          "RangeX": "0.006",
+          "ExpectedValueY": "0",
+          "RangeY": "0.006",
+          "checks": "StdDev, Range",
+          "axis": "X,Y",
+          "MetadataComment": "TestComment"
         }
       }
     }
   },
-  "dataSamplingPolicies": [
-
-  ]
+  "dataSamplingPolicies": []
 }
