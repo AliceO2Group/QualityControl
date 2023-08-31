@@ -29,6 +29,7 @@
 #include "TPaveText.h"
 #include "TH1D.h"
 #include "TH2D.h"
+#include <boost/property_tree/ptree.hpp>
 
 using namespace o2::quality_control::postprocessing;
 using namespace o2::quality_control::core;
