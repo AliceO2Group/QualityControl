@@ -129,7 +129,7 @@
         "checkParameters":{
           "Lowerthreshold":"500.0",
           "Upperthreshold":"520.0",
-          "StatThreshold": "1"
+          "StatThreshold": "1000"
         }
       }
     },
