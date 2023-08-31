@@ -20,11 +20,11 @@
 #include "QualityControl/QcInfoLogger.h"
 // ROOT
 #include <TH1.h>
-#include "TString.h"
-#include "TPaveText.h"
+#include <TString.h>
+#include <TPaveText.h>
 
 #include <DataFormatsQualityControl/FlagReasons.h>
-#include "CCDB/BasicCCDBManager.h"
+#include <CCDB/BasicCCDBManager.h>
 
 using namespace std;
 using namespace o2::quality_control;
@@ -48,27 +48,27 @@ void TrackletPerTriggerCheck::configure()
   ILOG(Debug, Devel) << "initialize TrackletPertriggerCheck" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   if (auto param = mCustomParameters.find("Lowerthreshold"); param != mCustomParameters.end()) {
-    DesiredMeanRegion.first = stof(param->second);
-    ILOG(Debug, Support) << "configure() : using json Lowerthreshold" << DesiredMeanRegion.first << ENDM;
+    mDesiredMeanRegion.first = stof(param->second);
+    ILOG(Debug, Support) << "configure() : using json Lowerthreshold" << mDesiredMeanRegion.first << ENDM;
   } else {
-    DesiredMeanRegion.first = 500.0;
-    ILOG(Debug, Support) << "configure() : using default Lowerthreshold" << DesiredMeanRegion.first << ENDM;
+    mDesiredMeanRegion.first = 500.0;
+    ILOG(Debug, Support) << "configure() : using default Lowerthreshold" << mDesiredMeanRegion.first << ENDM;
   }
 
   if (auto param = mCustomParameters.find("Upperthreshold"); param != mCustomParameters.end()) {
-    DesiredMeanRegion.second = stof(param->second);
-    ILOG(Debug, Support) << "configure() : using json Upperthreshold" << DesiredMeanRegion.second << ENDM;
+    mDesiredMeanRegion.second = stof(param->second);
+    ILOG(Debug, Support) << "configure() : using json Upperthreshold" << mDesiredMeanRegion.second << ENDM;
   } else {
-    DesiredMeanRegion.second = 520.0;
-    ILOG(Debug, Support) << "configure() : using default Upperthreshold" << DesiredMeanRegion.second << ENDM;
+    mDesiredMeanRegion.second = 520.0;
+    ILOG(Debug, Support) << "configure() : using default Upperthreshold" << mDesiredMeanRegion.second << ENDM;
   }
 
   if (auto param = mCustomParameters.find("StatThreshold"); param != mCustomParameters.end()) {
-    StatThreshold = stod(param->second);
-    ILOG(Debug, Support) << "configure() : using json StatThreshold" << StatThreshold << ENDM;
+    mStatThreshold = stod(param->second);
+    ILOG(Debug, Support) << "configure() : using json mStatThreshold" << mStatThreshold << ENDM;
   } else {
-    StatThreshold = 1000;
-    ILOG(Debug, Support) << "configure() : using default StatThreshold" << StatThreshold << ENDM;
+    mStatThreshold = 1000;
+    ILOG(Debug, Support) << "configure() : using default mStatThreshold" << mStatThreshold << ENDM;
   }
 }
 
@@ -76,43 +76,38 @@ Quality TrackletPerTriggerCheck::check(std::map<std::string, std::shared_ptr<Mon
 {
   Quality result = Quality::Null;
 
-  // you can get details about the activity via the object mActivity:
-  ILOG(Debug, Devel) << "Run " << getActivity()->mId << ", type: " << getActivity()->mType << ", beam: " << getActivity()->mBeamType << ENDM;
-  // and you can get your custom parameters:
-  ILOG(Debug, Devel) << "custom param physics.pp.myOwnKey1 : " << mCustomParameters.atOrDefaultValue("myOwnKey1", "physics", "pp", "default_value") << ENDM;
-
   for (auto& [moName, mo] : *moMap) {
-
     (void)moName;
     if (mo->getName() == "trackletsperevent") {
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
-
+      if (h == nullptr) {
+        // ILOG(Debug, Support) << "Requested Histogram type does not match with the Histogram in source" << ENDM;
+        continue;
+      }
       // writing text over hist
       TPaveText* msg1 = new TPaveText(0.3, 0.7, 0.7, 0.9, "NDC"); // check option "br","NDC"
       h->GetListOfFunctions()->Add(msg1);
       msg1->SetTextSize(10);
       int Entries = h->GetEntries();
-      if (Entries > StatThreshold) {
-        msg1->AddText(TString::Format("Hist Can't be ignored. Stat is enough. Entries: %d > Threshold: %ld", Entries, StatThreshold));
+      if (Entries > mStatThreshold) {
+        msg1->AddText(TString::Format("Hist Can't be ignored. Stat is enough. Entries: %d > Threshold: %ld", Entries, mStatThreshold));
         // msg1->SetTextColor(kGreen);
       } else if (Entries > 0) {
-        msg1->AddText(TString::Format("Hist Can be ignored. Stat is low. Entries: %d < Threshold: %ld", Entries, StatThreshold));
+        msg1->AddText(TString::Format("Hist Can be ignored. Stat is low. Entries: %d < Threshold: %ld", Entries, mStatThreshold));
         // msg1->SetTextColor(kYellow);
       } else if (Entries == 0) {
-        msg1->AddText(TString::Format("Hist is empty. Entries: %d < Threshold: %ld", Entries, StatThreshold));
+        msg1->AddText(TString::Format("Hist is empty. Entries: %d < Threshold: %ld", Entries, mStatThreshold));
         msg1->SetTextColor(kRed);
       }
 
       // applying check
       float MeanTracletPertrigger = h->GetMean();
-      if (MeanTracletPertrigger > DesiredMeanRegion.second && MeanTracletPertrigger < DesiredMeanRegion.first) {
+      if (MeanTracletPertrigger > mDesiredMeanRegion.second && MeanTracletPertrigger < mDesiredMeanRegion.first) {
         result = Quality::Good;
       } else {
         result = Quality::Bad;
         result.addReason(FlagReasonFactory::Unknown(), "MeanTracletPertrigger is not in bound region");
       }
-
-      result.addMetadata("mykey", "myvalue");
     }
   }
   return result;
@@ -124,7 +119,10 @@ void TrackletPerTriggerCheck::beautify(std::shared_ptr<MonitorObject> mo, Qualit
 {
   if (mo->getName() == "trackletsperevent") {
     auto* h = dynamic_cast<TH1F*>(mo->getObject());
-
+    if (h == nullptr) {
+      // ILOG(Debug, Support) << "Requested Histogram type does not match with the Histogram in source" << ENDM;
+      return;
+    }
     if (checkResult == Quality::Good) {
       h->SetFillColor(kGreen);
     } else if (checkResult == Quality::Bad) {

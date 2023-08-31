@@ -1,7 +1,9 @@
 # Release notes
 
-Current 
-- 
+1.6 
+- add option to set adjustableEOV when updating validity
+- [QC-986] Do not touch the validity any more in rules 1_per_hour and production
+- Add the possibility to Limit the script o2-qc-repo-delete-not-in-runs to a time period
 
 1.5
 - Add the binary `o2-qc-repo-delete-not-in-runs` to the install list. 

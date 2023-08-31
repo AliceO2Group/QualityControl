@@ -112,4 +112,9 @@ bool isLegacyValidity(ValidityInterval validity)
   return validity.isValid() && validity.delta() > 9ull * 365 * 24 * 60 * 60 * 1000ull;
 }
 
+bool onNumericLimit(validity_time_t value)
+{
+  return value == std::numeric_limits<validity_time_t>::min() || value == std::numeric_limits<validity_time_t>::max();
+}
+
 } // namespace o2::quality_control::core::activity_helpers

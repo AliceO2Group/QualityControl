@@ -447,10 +447,10 @@ void ZDCRecDataTask::initHisto()
   addNewHisto("MSG_REC", "h_msg", "Reconstruction messages", "INFO", "CH", "INFO", "MSG", 0);
   int idh_msg = (int)mHisto2D.size() - 1;
   setBinHisto1D(10, -0.5, 9.5);
-  addNewHisto("SUMMARY_TDC", "h_summmary_TDC", "Summary TDC", "TDCV", "", "", "", 0);
+  addNewHisto("SUMMARY_TDC", "h_summary_TDC", "Summary TDC", "TDCV", "", "", "", 0);
   mIdhTDC = (int)mHisto1D.size() - 1;
   setBinHisto1D(26, -0.5, 25.5);
-  addNewHisto("SUMMARY_ADC", "h_summmary_ADC", "Summary ADC", "ADC", "", "", "", 0);
+  addNewHisto("SUMMARY_ADC", "h_summary_ADC", "Summary ADC", "ADC", "", "", "", 0);
   mIdhADC = (int)mHisto1D.size() - 1;
   for (int ibx = 1; ibx <= o2::zdc::NChannels; ibx++) {
     mHisto2D.at(idh_msg).histo->GetXaxis()->SetBinLabel(ibx, o2::zdc::ChannelNames[ibx - 1].data());

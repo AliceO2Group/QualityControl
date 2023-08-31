@@ -26,6 +26,7 @@
 #include "QualityControl/ConfigParamGlo.h"
 #include "QualityControl/MonitorObjectCollection.h"
 #include "QualityControl/Bookkeeping.h"
+#include "QualityControl/ActivityHelpers.h"
 
 #include <utility>
 #include <Framework/DataAllocator.h>
@@ -227,16 +228,27 @@ void PostProcessingRunner::reset()
   mStopTriggers.clear();
 }
 
+void PostProcessingRunner::updateValidity(const Trigger& trigger)
+{
+  if (getenv("O2_QC_OLD_VALIDITY")) {
+    mObjectManager->setValidity(ValidityInterval{ trigger.timestamp, trigger.timestamp + objectValidity });
+  } else if (trigger.activity.mValidity.isValid() && trigger.activity.mValidity != gFullValidityInterval) {
+    if (!core::activity_helpers::onNumericLimit(trigger.activity.mValidity.getMin())) {
+      mActivity.mValidity.update(trigger.activity.mValidity.getMin());
+    }
+    if (!core::activity_helpers::onNumericLimit(trigger.activity.mValidity.getMax())) {
+      mActivity.mValidity.update(trigger.activity.mValidity.getMax());
+    }
+    mObjectManager->setValidity(mActivity.mValidity);
+  }
+}
+
 void PostProcessingRunner::doInitialize(const Trigger& trigger)
 {
   ILOG(Info, Support) << "Initializing the user task due to trigger '" << trigger << "'" << ENDM;
 
   mTask->initialize(trigger, mServices);
-  if (!getenv("O2_QC_OLD_VALIDITY") && trigger.activity.mValidity.isValid() && trigger.activity.mValidity != gFullValidityInterval) {
-    mActivity.mValidity.update(trigger.activity.mValidity.getMin());
-    mActivity.mValidity.update(trigger.activity.mValidity.getMax());
-    mObjectManager->setValidity(mActivity.mValidity);
-  }
+  updateValidity(trigger);
   mTaskState = TaskState::Running;
 
   // We create the triggers just after task init (and not any sooner), so the timer triggers work as expected.
@@ -248,13 +260,7 @@ void PostProcessingRunner::doUpdate(const Trigger& trigger)
 {
   ILOG(Info, Support) << "Updating the user task due to trigger '" << trigger << "'" << ENDM;
   mTask->update(trigger, mServices);
-  if (getenv("O2_QC_OLD_VALIDITY")) {
-    mObjectManager->setValidity(ValidityInterval{ trigger.timestamp, trigger.timestamp + objectValidity });
-  } else if (trigger.activity.mValidity.isValid() && trigger.activity.mValidity != gFullValidityInterval) {
-    mActivity.mValidity.update(trigger.activity.mValidity.getMin());
-    mActivity.mValidity.update(trigger.activity.mValidity.getMax());
-    mObjectManager->setValidity(mActivity.mValidity);
-  }
+  updateValidity(trigger);
 
   mPublicationCallback(mObjectManager->getNonOwningArray());
 }
@@ -267,13 +273,7 @@ void PostProcessingRunner::doFinalize(const Trigger& trigger)
   }
   ILOG(Info, Support) << "Finalizing the user task due to trigger '" << trigger << "'" << ENDM;
   mTask->finalize(trigger, mServices);
-  if (getenv("O2_QC_OLD_VALIDITY")) {
-    mObjectManager->setValidity(ValidityInterval{ trigger.timestamp, trigger.timestamp + objectValidity });
-  } else if (trigger.activity.mValidity.isValid() && trigger.activity.mValidity != gFullValidityInterval) {
-    mActivity.mValidity.update(trigger.activity.mValidity.getMin());
-    mActivity.mValidity.update(trigger.activity.mValidity.getMax());
-    mObjectManager->setValidity(mActivity.mValidity);
-  }
+  updateValidity(trigger);
 
   mPublicationCallback(mObjectManager->getNonOwningArray());
   mTaskState = TaskState::Finished;

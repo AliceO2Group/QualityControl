@@ -1,43 +1,59 @@
+# Quality Control for the TRD
 
-Quality Control for the TRD
-===========================
 
-This README should evolve into documentation on how to run, interpret and
-contribute to the QC for the TRD.
+The QC code covers Tasks, Checks, Aggregators and Trending.
+The configuration is done via json files. For running online at P2 we are using a single json file only:
 
-Current Status
-==============
+    consul://o2/components/qc/ANY/any/trd-full-qcmn
 
-At the point of writing (Feb 2021) a single QC task is available that reads
-digits and produces and ADC histogram. The task can be run offline and pushes
-the histogram into the QC database at CERN.
+For tests, both on staging and in production we can use another json file which we can select both for the QC merger node and for the EPN nodes:
 
-Quickstart
-==========
+    consul://o2/components/qc/ANY/any/trd-full-qcmn-test
 
-In order to run a TRD QC task, you will need to build the [O2] and
-[QualityControl] packages. The GitHub landing pages have good instructions,
-and I will not repeat them here.
+For asynchronous production we are currently running basically the same thing as in synchronous, only without data sampling.
 
-[O2]: https://github.com/AliceO2Group/AliceO2/
-[QualityControl]: https://github.com/AliceO2Group/QualityControl
+For both synch and asynch productions we urgently need
 
-You will need a `trddigits.root` file. You can either generate one with
-`o2-sim`, followed by running the digitizer:
-```
-o2-sim -n ${NEVENTS}
-o2-sim-digitizer-workflow --onlyDet TRD
-```
-Jorge has written a [simulation cheat-sheet] in the O2 repository with some
-more hints on running the simulation. Alternatively, it is possible to convert
-a run 2 raw file to run 3 `trddigits.root` format.
+- tracking efficiency as function of pT and eta-phi
+- trending of calibration parameters (gain, vDrift, ExB, t0)
+- trending of basic observables, such as triggers per TF, tracklet and digit count per trigger, ...
+- checks for the available plots, especially the ones foreseen for the shifters layout
+- the chamber status from DCS in order to properly mask half chambers which are not expected to send data
+- certainly others I cannot think of at the moment...
 
-[simulation cheat-sheet]: https://github.com/AliceO2Group/AliceO2/tree/dev/Detectors/TRD/simulation
 
-We need a DPL device to provide digits to the task, and `o2-trd-trap-sim` does
-the trick. A dedicated digit reader was discussed and should be trivial to
-implement, but is not available as of now. The actual QC needs to be run with
-a configuration file, which is available in QC repository.
-```
-o2-trd-trap-sim | o2-qc --config json://${QC_DIR}/Modules/TRD/DigitsTask.json
-```
+## Current Status
+
+### Tasks
+
+| class name | task name  | synch reco  | asynch reco  |
+|---|---|---|---|
+| RawDataTask  | RawData  | enabled  |  disabled |
+| DigitsTask  |  Digits | enabled  | enabled  |
+| TrackletsTask  |  Tracklets | enabled  | enabled |
+| PulseHeightTrackMatch  | PHTrackMatch  | enabled, if ITSTPCTRD matching  | enabled, if ITSTPCTRD matching  |
+| TrackingTask  |  Tracking | enabled, if ITSTPCTRD matching  | enabled, if ITSTPCTRD matching  |
+
+
+In case new tasks are added please make sure that it uses a unique port number. The port range assigned to TRD can be found in <https://alice-flp.docs.cern.ch/Developers/KB/port_assignment/#subsystem-port-ranges-for-remote-connections-from-epns>. It goes from 29850 to 29899.
+
+### Checks
+
+TODO
+
+### Aggregators
+
+TODO
+
+### Trending
+
+TODO
+
+
+## Quickstart
+
+For local tests you can append the `o2-qc` binary to any workflow in O2 with the following parameters:
+
+    o2-qc --config json://$HOME/alice/QualityControl/Modules/TRD/TRDQC.json
+
+Adjust the TRDQC.json file according to your needs, e.g. add additional checks, disable some tasks depending on the inputs you have available etc.

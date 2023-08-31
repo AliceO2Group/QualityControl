@@ -93,6 +93,7 @@ class PostProcessingRunner
   static PostProcessingRunnerConfig extractConfig(const core::CommonSpec& commonSpec, const PostProcessingTaskSpec& ppTaskSpec);
 
  private:
+  void updateValidity(const Trigger& trigger);
   void doInitialize(const Trigger& trigger);
   void doUpdate(const Trigger& trigger);
   void doFinalize(const Trigger& trigger);

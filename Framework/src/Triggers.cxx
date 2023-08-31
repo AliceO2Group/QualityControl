@@ -83,12 +83,14 @@ TriggerFcn StartOfRun(const Activity&)
 
 TriggerFcn Once(const Activity& activity)
 {
-  return [hasTriggered = false, activity]() mutable -> Trigger {
+  Activity returnedActivity = activity;
+  returnedActivity.mValidity = gInvalidValidityInterval;
+  return [hasTriggered = false, returnedActivity]() mutable -> Trigger {
     if (hasTriggered) {
-      return { TriggerType::No, true, activity, Trigger::msSinceEpoch(), "once" };
+      return { TriggerType::No, true, returnedActivity, Trigger::msSinceEpoch(), "once" };
     } else {
       hasTriggered = true;
-      return { TriggerType::Once, true, activity, Trigger::msSinceEpoch(), "once" };
+      return { TriggerType::Once, true, returnedActivity, Trigger::msSinceEpoch(), "once" };
     }
   };
 }
