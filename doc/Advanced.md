@@ -1129,6 +1129,10 @@ In a task, the `activity` is provided in `startOfActivity`.
 
 In a Check, it is returned by `getActivity()`.
 
+In an Aggregator, it is returned by `getActivity()`.
+
+In a postprocessing task, it is available in the objects manager: `getObjectsManager()->getActivity()`
+
 ## Definition of new arguments
 
 One can also tell the DPL driver to accept new arguments. This is done using the `customize` method at the top of your workflow definition (usually called "runXXX" in the QC).
