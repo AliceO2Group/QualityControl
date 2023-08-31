@@ -426,7 +426,7 @@ void AggregatorRunner::start(ServiceRegistryRef services)
   QcInfoLogger::setRun(mActivity->mId);
   QcInfoLogger::setPartition(mActivity->mPartitionName);
   ILOG(Info, Support) << "Starting run " << mActivity->mId << ENDM;
-  for (auto&  aggregator : mAggregators) {
+  for (auto& aggregator : mAggregators) {
     aggregator->setActivity(mActivity);
   }
 
