@@ -1239,10 +1239,10 @@ should not be present in real configuration files.
         "filterDiscardDebug": "false",    "": "Set to 1 to discard debug and trace messages (default: false)",
         "filterDiscardLevel": "2",        "": "Message at this level or above are discarded (default: 21 - Trace)",
         "filterDiscardFile": "",          "": ["If set, the discarded messages will go to this file (default: <none>)",
-                                              "The keyword _ID_, if used, is replaced by the device ID.",
-                                              "Discarded Debug messages don't go there."],
+                                              "The keyword _ID_, if used, is replaced by the device ID."],
         "filterRotateMaxBytes": "",       "": "Maximum size of the discard file.", 
-        "filterRotateMaxFiles": "",       "": "Maximum number of discard files."
+        "filterRotateMaxFiles": "",       "": "Maximum number of discard files.",
+        "debugInDiscardFile": "false",    "": "If true, the debug discarded messages go to the file (default: false)."
       },
       "bookkeeping": {                    "": "Configuration of the bookkeeping (optional)",
         "url": "localhost:4001",          "": "Url of the bookkeeping API (port is usually different from web interface)"
