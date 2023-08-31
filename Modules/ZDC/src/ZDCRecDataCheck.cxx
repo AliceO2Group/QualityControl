@@ -14,9 +14,9 @@
 /// \author Carlo Puggioni
 ///
 /*
- * The task checks the two histograms: h_summmary_ADC and h_summmary_TDC .
- * - h_summmary_ADC: Each bin contains the average value of an ADC channel. Checking this histogram verifies that all ADC channels have a value within a threshold defined in the json file.
- * - h_summmary_TDC: Each bin contains the average value of an TDC channel. Checking this histogram verifies that all TDC channels have a value within a threshold defined in the json file.
+ * The task checks the two histograms: h_summary_ADC and h_summary_TDC .
+ * - h_summary_ADC: Each bin contains the average value of an ADC channel. Checking this histogram verifies that all ADC channels have a value within a threshold defined in the json file.
+ * - h_summary_TDC: Each bin contains the average value of an TDC channel. Checking this histogram verifies that all TDC channels have a value within a threshold defined in the json file.
  */
 
 #include "ZDC/ZDCRecDataCheck.h"
@@ -88,7 +88,7 @@ Quality ZDCRecDataCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
     mNumWTDC = 0;
     mStringWTDC = "";
     mStringETDC = "";
-    if (mo->getName() == "h_summmary_TDC") {
+    if (mo->getName() == "h_summary_TDC") {
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
       // dumpVecParam((int)h->GetNbinsX(),(int)mVectParamTDC.size());
       if ((int)h->GetNbinsX() != (int)mVectParamTDC.size()) {
@@ -149,7 +149,7 @@ std::string ZDCRecDataCheck::getAcceptedType() { return "TH1"; }
 
 void ZDCRecDataCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  if (mo->getName() == "h_summmary_ADC") {
+  if (mo->getName() == "h_summary_ADC") {
     if (mQADC == 1) {
       setQualityInfo(mo, kGreen, getCurrentDataTime() + "ADC OK");
     } else if (mQADC == 3) {
@@ -160,7 +160,7 @@ void ZDCRecDataCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
       setQualityInfo(mo, kOrange, errorSt);
     }
   }
-  if (mo->getName() == "h_summmary_TDC") {
+  if (mo->getName() == "h_summary_TDC") {
     if (mQTDC == 1) {
       setQualityInfo(mo, kGreen, getCurrentDataTime() + "TDC OK");
     } else if (mQTDC == 3) {

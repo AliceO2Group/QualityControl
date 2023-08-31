@@ -54,13 +54,84 @@
         "saveObjectsToFile": "QcZDCRecData.root",      "": "For debugging, path to the file where to save. If empty it won't save."
       }
     },
+    "postprocessing": {
+      "RecPP": {
+        "active": "true",
+        "className": "o2::quality_control_modules::zdc::ZDCRecDataPostProcessing",
+        "moduleName": "QcZDC",
+        "detectorName": "ZDC",
+        "customization": [
+        ],
+        "dataSourcesADC": [
+          {
+            "type": "repository",
+            "path": "ZDC/MO/QcZDCRecTask",
+            "names": [
+              "ZNAC:h_ADC_ZNA_TC",
+              "ZNA1:h_ADC_ZNA_T1",
+              "ZNA2:h_ADC_ZNA_T2",
+              "ZNA3:h_ADC_ZNA_T3",
+              "ZNA4:h_ADC_ZNA_T4",
+              "ZNAS:h_ADC_ZNA_SUM",
+              "ZPAC:h_ADC_ZPA_TC",
+              "ZPA1:h_ADC_ZPA_T1",
+              "ZPA2:h_ADC_ZPA_T2",
+              "ZPA3:h_ADC_ZPA_T3",
+              "ZPA4:h_ADC_ZPA_T4",
+              "ZPAS:h_ADC_ZPA_SUM",
+              "ZEM1:h_ADC_ZEM1",
+              "ZEM2:h_ADC_ZEM2",
+              "ZNCC:h_ADC_ZNC_TC",
+              "ZNC1:h_ADC_ZNC_T1",
+              "ZNC2:h_ADC_ZNC_T2",
+              "ZNC3:h_ADC_ZNC_T3",
+              "ZNC4:h_ADC_ZNC_T4",
+              "ZNCS:h_ADC_ZNC_SUM",
+              "ZPCC:h_ADC_ZPC_TC",
+              "ZPC1:h_ADC_ZPC_T1",
+              "ZPC2:h_ADC_ZPC_T2",
+              "ZPC3:h_ADC_ZPC_T3",
+              "ZPC4:h_ADC_ZPC_T4",
+              "ZPCS:h_ADC_ZPC_SUM"
+            ]
+          }
+        ],
+        "dataSourcesTDC": [
+          {
+            "type": "repository",
+            "path": "ZDC/MO/QcZDCRecTask",
+            "names": [
+              "ZNAC:h_TDC_ZNA_TC_V",
+              "ZNAS:h_TDC_ZNA_SUM_V",
+              "ZPAC:h_TDC_ZPA_TC_V",
+              "ZPAS:h_TDC_ZPA_SUM_V",
+              "ZEM1:h_TDC_ZEM1_V",
+              "ZEM2:h_TDC_ZEM2_V",
+              "ZNCC:h_TDC_ZNC_TC_V",
+              "ZNCS:h_TDC_ZNC_SUM_V",
+              "ZPCC:h_TDC_ZPC_TC_V",
+              "ZPCS:h_TDC_ZPC_SUM_V"
+            ]
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "newobject:qcdb:ZDC/MO/QcZDCRecTask/h_ADC_ZNA_TC"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      }
+    },
     "checks": {
-          "QcZDCRecCheck": {
+          "RecCheck": {
             "active": "true",
             "className": "o2::quality_control_modules::zdc::ZDCRecDataCheck",
             "moduleName": "QcZDC",
             "detectorName" : "ZDC",
-            "policy": "OnAny",
+            "policy": "OnAll",
              "checkParameters" : {
               "ADC_ZNAC" : "461.2;10;20",
               "ADC_ZNA1" : "115.6;10;20",
@@ -104,12 +175,12 @@
               "TDC_POS_MSG_Y": "0.92"
             },
             "dataSource": [{
-              "type": "Task",
-              "name": "QcZDCRecTask",
-              "MOs": ["h_summmary_ADC" , "h_summmary_TDC"]
+              "type": "PostProcessing",
+              "name": "RecPP",
+              "MOs": ["h_summary_ADC" , "h_summary_TDC"]
             }]
           }
-      }
+    }
   },
   "dataSamplingPolicies": [
     {
