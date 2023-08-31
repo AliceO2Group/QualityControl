@@ -90,13 +90,13 @@ Quality TrackletPerTriggerCheck::check(std::map<std::string, std::shared_ptr<Mon
       msg1->SetTextSize(10);
       int Entries = h->GetEntries();
       if (Entries > mStatThreshold) {
-        msg1->AddText(TString::Format("Hist Can't be ignored. Stat is enough. Entries: %d > Threshold: %d", Entries, mStatThreshold));
+        msg1->AddText(TString::Format("Hist Can't be ignored. Stat is enough. Entries: %d > Threshold: %ld", Entries, mStatThreshold));
         // msg1->SetTextColor(kGreen);
       } else if (Entries > 0) {
-        msg1->AddText(TString::Format("Hist Can be ignored. Stat is low. Entries: %d < Threshold: %d", Entries, mStatThreshold));
+        msg1->AddText(TString::Format("Hist Can be ignored. Stat is low. Entries: %d < Threshold: %ld", Entries, mStatThreshold));
         // msg1->SetTextColor(kYellow);
       } else if (Entries == 0) {
-        msg1->AddText(TString::Format("Hist is empty. Entries: %d < Threshold: %d", Entries, mStatThreshold));
+        msg1->AddText(TString::Format("Hist is empty. Entries: %d < Threshold: %ld", Entries, mStatThreshold));
         msg1->SetTextColor(kRed);
       }
 
