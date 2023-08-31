@@ -47,7 +47,7 @@ class AggregatorInterface : public o2::quality_control::core::UserCodeInterface
   void setActivity(std::shared_ptr<core::Activity> activity) { mActivity = activity; }
   std::shared_ptr<const core::Activity> getActivity() const { return mActivity; }
 
- protected:
+ private:
   std::shared_ptr<core::Activity> mActivity; // TODO should probably go to UserCodeInterface
 
   ClassDef(AggregatorInterface, 3)
