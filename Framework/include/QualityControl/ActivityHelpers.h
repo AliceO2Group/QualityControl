@@ -94,6 +94,8 @@ std::function<validity_time_t(void)> getCcdbEorTimeAccessor(uint64_t runNumber);
 /// \brief checks if the provided validity uses old rules, where start is creation time, end is 10 years in the future.
 bool isLegacyValidity(ValidityInterval);
 
+bool onNumericLimit(validity_time_t timestamp);
+
 namespace implementation
 {
 template <typename Iter, typename Accessor>
