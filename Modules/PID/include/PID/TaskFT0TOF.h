@@ -31,6 +31,7 @@
 #include "DataFormatsFT0/RecPoints.h"
 
 class TH1F;
+class TH1D;
 class TH1I;
 class TH2F;
 class TProfile;
