@@ -21,6 +21,7 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/Reductor.h"
 #include "QualityControl/ObjectMetadataKeys.h"
+#include "QualityControl/ActivityHelpers.h"
 #include "ITS/TH2XlineReductor.h"
 #include <TCanvas.h>
 #include <TH1.h>
@@ -99,11 +100,26 @@ void TrendingTaskITSFhr::trendValues(const Trigger& t, repository::DatabaseInter
   int count = 0;
   for (auto& dataSource : mConfig.dataSources) {
 
-    // todo: make it agnostic to MOs, QOs or other objects. Let the reductor
-    // cast to whatever it needs.
+    // The FHR Task generates objects specific to particular detector layers.
+    // Since detector layers are assigned to different subsets of FLPs, the merged objects
+    // do not have common validity, as FLPs do not have QC cycles ideally in sync.
+    // Thus we have look for the objects a bit behind and forward from the trigger timestamp as well.
+    auto timestamp = t.timestamp;
+    const auto objFullPath = t.activity.mProvenance + "/" + dataSource.path;
+    const auto filterMetadata = activity_helpers::asDatabaseMetadata(t.activity, false);
+    const auto objectValidity = qcdb.getLatestObjectValidity(objFullPath, filterMetadata);
+    const auto maxShiftMs = mConfig.maxObjectTimeShiftMs;
+    if (objectValidity.isValid() && t.timestamp >= objectValidity.getMin() - maxShiftMs && t.timestamp <= objectValidity.getMax() + maxShiftMs) {
+      timestamp = objectValidity.getMax() - 1;
+    } else {
+      ILOG(Warning, Devel) << "Could not find an object '" << objFullPath << "' in the proximity of timestamp "
+                           << t.timestamp << " with max shift of " << mConfig.maxObjectTimeShiftMs << "ms" << ENDM;
+      continue;
+    }
+
     if (dataSource.type == "repository") {
       // auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name);
-      auto mo = qcdb.retrieveMO(dataSource.path, "", t.timestamp, t.activity);
+      auto mo = qcdb.retrieveMO(dataSource.path, "", timestamp, t.activity);
       if (mo == nullptr)
         continue;
       if (!count) {
@@ -117,7 +133,7 @@ void TrendingTaskITSFhr::trendValues(const Trigger& t, repository::DatabaseInter
         mReductors[dataSource.name]->update(obj);
       }
     } else if (dataSource.type == "repository-quality") {
-      auto qo = qcdb.retrieveQO(dataSource.path + "/" + dataSource.name);
+      auto qo = qcdb.retrieveQO(dataSource.path + "/" + dataSource.name, timestamp);
       if (qo) {
         mReductors[dataSource.name]->update(qo.get());
       }

@@ -86,6 +86,7 @@ TrendingTaskConfigITS::TrendingTaskConfigITS(
         id + ".dataSources'");
     }
   }
+  maxObjectTimeShiftMs = config.get<uint64_t>("qc.postprocessing." + id + ".maxObjectTimeShiftMs", 0);
 }
 
 } // namespace o2::quality_control::postprocessing

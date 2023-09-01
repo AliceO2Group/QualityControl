@@ -596,6 +596,24 @@ boost::property_tree::ptree CcdbDatabase::getListingAsPtree(const std::string& p
   return listingAsTree;
 }
 
+core::ValidityInterval CcdbDatabase::getLatestObjectValidity(const std::string& path, const std::map<std::string, std::string>& metadata)
+{
+  auto listing = getListingAsPtree(path, metadata, true);
+  if (listing.count("objects") == 0) {
+    ILOG(Warning, Support) << "Could not get a valid listing from db '" << mUrl << "' for latestObjectMetadata '" << path << "'" << ENDM;
+    return gInvalidValidityInterval;
+  }
+  const auto& objects = listing.get_child("objects");
+  if (objects.empty()) {
+    return gInvalidValidityInterval;
+  } else if (objects.size() > 1) {
+    ILOG(Warning, Support) << "Expected just one metadata entry for object '" << path << "'. Trying to continue by using the first." << ENDM;
+  }
+  const auto& latestObjectMetadata = objects.front().second;
+
+  return { latestObjectMetadata.get<uint64_t>(metadata_keys::validFrom), latestObjectMetadata.get<uint64_t>(metadata_keys::validUntil) };
+}
+
 std::vector<uint64_t> CcdbDatabase::getTimestampsForObject(const std::string& path)
 {
   const auto& objects = getListingAsPtree(path).get_child("objects");
