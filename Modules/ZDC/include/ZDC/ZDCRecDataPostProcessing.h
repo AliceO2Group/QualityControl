@@ -94,6 +94,8 @@ class ZDCRecDataPostProcessing : public PostProcessingInterface
   std::map<size_t, MOHelper> mMOsTDC;
 
   // Hit rate histograms ===============================================
+  std::vector<std::string> mBinLabelsADC;
+  std::vector<std::string> mBinLabelsTDC;
   std::unique_ptr<TH1F> mSummaryADCHisto;
   std::unique_ptr<TH1F> mSummaryTDCHisto;
 };
