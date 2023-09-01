@@ -158,7 +158,7 @@ void ClusterVisualizer::update(Trigger t, framework::ServiceRegistryRef)
 
   auto clusterData = mCdbApi.retrieveFromTFileAny<ClustersData>(mPath,
                                                                 mLookupMaps.size() > 1 ? mLookupMaps.at(calDetIter) : mLookupMaps.at(0),
-                                                                mTimestamps.size() > 0 ? mTimestamps.at(calDetIter) : -1);
+                                                                mTimestamps.size() > 0 ? mTimestamps.at(calDetIter) : t.timestamp);
 
   auto& clusters = clusterData->getClusters();
 
