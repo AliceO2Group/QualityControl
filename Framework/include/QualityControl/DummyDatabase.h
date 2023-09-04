@@ -58,6 +58,8 @@ class DummyDatabase : public DatabaseInterface
   void truncate(std::string taskName, std::string objectName) override;
   void setMaxObjectSize(size_t maxObjectSize) override;
 
+  core::ValidityInterval getLatestObjectValidity(const std::string& path, const std::map<std::string, std::string>& metadata = {}) override;
+
  private:
 };
 

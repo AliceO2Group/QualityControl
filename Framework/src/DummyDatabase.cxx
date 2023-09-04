@@ -96,4 +96,9 @@ void DummyDatabase::setMaxObjectSize(size_t maxObjectSize)
 {
 }
 
+core::ValidityInterval DummyDatabase::getLatestObjectValidity(const std::string& path, const std::map<std::string, std::string>& metadata)
+{
+  return gInvalidValidityInterval;
+}
+
 } // namespace o2::quality_control::repository

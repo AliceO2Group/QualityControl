@@ -112,6 +112,14 @@ class CcdbDatabase : public DatabaseInterface
   boost::property_tree::ptree getListingAsPtree(const std::string& path, const std::map<std::string, std::string>& metadata = {}, bool latestOnly = false);
 
   /**
+   * Return validity of the latest matching object
+   * @param path the folder we want to list the children of.
+   * @param metadata metadata to filter queried objects.
+   * @return validity of the latest matching object
+   */
+  core::ValidityInterval getLatestObjectValidity(const std::string& path, const std::map<std::string, std::string>& metadata) override;
+
+  /**
    * \brief Returns a vector of all 'valid from' timestamps for an object.
    * \path Path on an object.
    * \return A vector of all 'valid from' timestamps for an object in non-descending order.
