@@ -42,7 +42,7 @@ struct CommonSpec {
   std::string consulUrl;
   std::string conditionDBUrl = "http://ccdb-test.cern.ch:8080";
   DiscardFileParameters infologgerDiscardParameters;
-  double postprocessingPeriod = 10.0;
+  double postprocessingPeriod = 30.0;
   std::string bookkeepingUrl;
 };
 
