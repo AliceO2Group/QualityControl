@@ -130,7 +130,6 @@ void ZDCRecDataPostProcessing::configure(const boost::property_tree::ptree& conf
   PostProcessingConfigZDC zdcConfig(getID(), config);
 
   // ADC summary plot
-  std::vector<std::string> binLabelsADC;
   for (auto source : zdcConfig.dataSourcesADC) {
     std::string histName, moName;
     splitDataSourceName(source.name, histName, moName);
@@ -138,18 +137,11 @@ void ZDCRecDataPostProcessing::configure(const boost::property_tree::ptree& conf
       continue;
     }
 
-    binLabelsADC.emplace_back(histName);
-    mMOsADC.emplace(binLabelsADC.size(), MOHelper(source.path, moName));
+    mBinLabelsADC.emplace_back(histName);
+    mMOsADC.emplace(mBinLabelsADC.size(), MOHelper(source.path, moName));
   }
-
-  mSummaryADCHisto = std::make_unique<TH1F>("h_summary_ADC", "Summary ADC", binLabelsADC.size(), 0, binLabelsADC.size());
-  for (size_t bin = 0; bin < binLabelsADC.size(); bin++) {
-    mSummaryADCHisto->GetXaxis()->SetBinLabel(bin + 1, binLabelsADC[bin].c_str());
-  }
-  publishHisto(mSummaryADCHisto.get(), false, "E", "");
 
   // TDC summary plot
-  std::vector<std::string> binLabelsTDC;
   for (auto source : zdcConfig.dataSourcesTDC) {
     std::string histName, moName;
     splitDataSourceName(source.name, histName, moName);
@@ -157,27 +149,31 @@ void ZDCRecDataPostProcessing::configure(const boost::property_tree::ptree& conf
       continue;
     }
 
-    binLabelsTDC.emplace_back(histName);
-    mMOsTDC.emplace(binLabelsTDC.size(), MOHelper(source.path, moName));
+    mBinLabelsTDC.emplace_back(histName);
+    mMOsTDC.emplace(mBinLabelsTDC.size(), MOHelper(source.path, moName));
   }
-
-  mSummaryTDCHisto = std::make_unique<TH1F>("h_summary_TDC", "Summary TDC", binLabelsTDC.size(), 0, binLabelsTDC.size());
-  for (size_t bin = 0; bin < binLabelsTDC.size(); bin++) {
-    mSummaryTDCHisto->GetXaxis()->SetBinLabel(bin + 1, binLabelsTDC[bin].c_str());
-  }
-  publishHisto(mSummaryTDCHisto.get(), false, "E", "");
 }
 
 //_________________________________________________________________________________________
 
 void ZDCRecDataPostProcessing::createSummaryADCHistos(Trigger t, repository::DatabaseInterface* qcdb)
 {
+  mSummaryADCHisto = std::make_unique<TH1F>("h_summary_ADC", "Summary ADC", mBinLabelsADC.size(), 0, mBinLabelsADC.size());
+  for (size_t bin = 0; bin < mBinLabelsADC.size(); bin++) {
+    mSummaryADCHisto->GetXaxis()->SetBinLabel(bin + 1, mBinLabelsADC[bin].c_str());
+  }
+  publishHisto(mSummaryADCHisto.get(), false, "E", "");
 }
 
 //_________________________________________________________________________________________
 
 void ZDCRecDataPostProcessing::createSummaryTDCHistos(Trigger t, repository::DatabaseInterface* qcdb)
 {
+  mSummaryTDCHisto = std::make_unique<TH1F>("h_summary_TDC", "Summary TDC", mBinLabelsTDC.size(), 0, mBinLabelsTDC.size());
+  for (size_t bin = 0; bin < mBinLabelsTDC.size(); bin++) {
+    mSummaryTDCHisto->GetXaxis()->SetBinLabel(bin + 1, mBinLabelsTDC[bin].c_str());
+  }
+  publishHisto(mSummaryTDCHisto.get(), false, "E", "");
 }
 
 //_________________________________________________________________________________________
@@ -187,7 +183,7 @@ void ZDCRecDataPostProcessing::initialize(Trigger t, framework::ServiceRegistryR
   auto& qcdb = services.get<repository::DatabaseInterface>();
 
   createSummaryADCHistos(t, &qcdb);
-  createSummaryADCHistos(t, &qcdb);
+  createSummaryTDCHistos(t, &qcdb);
 }
 
 //_________________________________________________________________________________________
