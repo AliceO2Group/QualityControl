@@ -25,6 +25,7 @@
 
 // root includes
 #include "TCanvas.h"
+#include <boost/property_tree/ptree.hpp>
 
 using namespace o2::quality_control::postprocessing;
 

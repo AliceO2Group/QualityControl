@@ -30,6 +30,7 @@
 #include <TH2F.h>
 #include <TCanvas.h>
 #include <TPaveText.h>
+#include <boost/property_tree/ptree.hpp>
 
 using namespace o2::quality_control::postprocessing;
 

@@ -36,6 +36,8 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <boost/property_tree/ptree.hpp>
+
 using namespace o2::quality_control;
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::repository;

@@ -30,6 +30,7 @@
 #include "TPaveText.h"
 
 #include <fmt/format.h>
+#include <boost/property_tree/ptree.hpp>
 #include <algorithm>
 
 using namespace o2::quality_control::postprocessing;
