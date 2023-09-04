@@ -221,11 +221,9 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   // getObjectsManager()->startPublishing(mTimeVsCttmBit.get());
 
   // Decoding Error Checkers
-  for (int i = 0; i < 72; i++) {
-    for (int j = 0; j < 10; j++) {
-      mHistoDecodingCrate[i][j] = std::make_shared<TProfile>(Form("Crate_%02d/DecodingTRM_%02i", i, j + 3), Form("Mult per Decoding errror crate %d trm %d;bit error;hit multiplicity", i, j + 3), 29, 0, 29);
-      getObjectsManager()->startPublishing(mHistoDecodingCrate[i][j].get());
-    }
+  for (int j = 0; j < 10; j++) {
+    mHistoDecodingCrate[j] = std::make_shared<TProfile2D>(Form("DecodingTRM_%02i", j + 3), Form("Mult per Decoding error trm %d;bit error;Crate;hit multiplicity", j + 3), 29, 0, 29, 72, 0, 72);
+    getObjectsManager()->startPublishing(mHistoDecodingCrate[j].get());
   }
 }
 
@@ -313,7 +311,7 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
           continue;
         }
         for (int trm = 0; trm < 10; trm++) {
-          mHistoDecodingCrate[crate][trm]->Fill(0., trmMult[crate][trm]);
+          mHistoDecodingCrate[trm]->Fill(0., crate, trmMult[crate][trm]);
         }
       }
 
@@ -337,7 +335,7 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
             mHistoDecodingErrors->Fill(crate, slot);
             lastslot = slot;
           } else { // fill TRM mult for the current  bit error for this TRM
-            mHistoDecodingCrate[crate][slot - 3]->Fill(el, trmMult[crate][slot - 3]);
+            mHistoDecodingCrate[slot - 3]->Fill(el, crate, trmMult[crate][slot - 3]);
           }
         }
         currentDiagnostics += nDia;
@@ -525,10 +523,8 @@ void TaskDigits::reset()
   mHistoTimeVsBCID->Reset();
   mHistoOrbitVsCrate->Reset();
   mHistoROWSize->Reset();
-  for (int i = 0; i < 72; i++) {
-    for (int j = 0; j < 10; j++) {
-      mHistoDecodingCrate[i][j]->Reset();
-    }
+  for (int j = 0; j < 10; j++) {
+    mHistoDecodingCrate[j]->Reset();
   }
   if (mFlagEnableDiagnostic) {
     mHistoDecodingErrors->Reset();
