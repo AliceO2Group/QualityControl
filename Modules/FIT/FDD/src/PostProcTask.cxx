@@ -172,6 +172,7 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
   mHistTriggers = std::make_unique<TH1F>("Triggers", "Triggers from TCM", mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
   mHistBcPattern = std::make_unique<TH2F>("bcPattern", "BC pattern", sBCperOrbit, 0, sBCperOrbit, mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
   mHistBcTrgOutOfBunchColl = std::make_unique<TH2F>("OutOfBunchColl_BCvsTrg", "BC vs Triggers for out-of-bunch collisions;BC;Triggers", sBCperOrbit, 0, sBCperOrbit, mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
+
   for (const auto& entry : mMapDigitTrgNames) {
     mHistTriggers->GetXaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
     mHistBcPattern->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
@@ -185,6 +186,48 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
       getObjectsManager()->startPublishing(pairHistBC.first->second);
     }
   }
+
+
+  const auto& lut = o2::fdd::SingleLUT::Instance().getVecMetadataFEE();
+  auto lutSorted = lut;
+  std::sort(lutSorted.begin(), lutSorted.end(), [](const auto& first, const auto& second) { return first.mModuleName < second.mModuleName; });
+  uint8_t binPos{ 0 };
+  for (const auto& lutEntry : lutSorted) {
+    const auto& moduleName = lutEntry.mModuleName;
+    const auto& moduleType = lutEntry.mModuleType;
+    const auto& strChID = lutEntry.mChannelID;
+    const auto& pairIt = mMapFEE2hash.insert({ moduleName, binPos });
+    if (pairIt.second) {
+      binPos++;
+    }
+    if (std::regex_match(strChID, std::regex("[[\\d]{1,3}"))) {
+      int chID = std::stoi(strChID);
+      if (chID < sNCHANNELS_PM) {
+        mChID2PMhash[chID] = mMapFEE2hash[moduleName];
+      } else {
+        ILOG(Error, Support) << "Incorrect LUT entry: chID " << strChID << " | " << moduleName << ENDM;
+      }
+    } else if (moduleType != "TCM") {
+      ILOG(Error, Support) << "Non-TCM module w/o numerical chID: chID " << strChID << " | " << moduleName << ENDM;
+    } else if (moduleType == "TCM") {
+      uint8_t mTCMhash = mMapFEE2hash[moduleName];
+    }
+  }
+  mHistBcFeeOutOfBunchCollForVtxTrg = std::make_unique<TH2F>("OutOfBunchColl_BCvsFeeModulesForVtxTrg", "BC vs FEE Modules for out-of-bunch collisions for Vertex trg;BC;FEE Modules", sBCperOrbit, 0, sBCperOrbit, mMapFEE2hash.size(), 0, mMapFEE2hash.size());
+  mHistBcPatternFee = std::make_unique<TH2F>("bcPatternForFeeModules", "BC pattern", sBCperOrbit, 0, sBCperOrbit, mMapFEE2hash.size(), 0, mMapFEE2hash.size());
+  for (const auto& entry : mMapFEE2hash) {
+    // ILOG(Warning, Support) << "============= mMapFEE2hash.second + 1: " << entry.second + 1
+    //                        << " mMapFEE2hash.first.c_str(): " << entry.first.c_str() << ENDM;
+
+    mHistBcPatternFee->GetYaxis()->SetBinLabel(entry.second + 1, entry.first.c_str());
+    mHistBcFeeOutOfBunchCollForVtxTrg->GetYaxis()->SetBinLabel(entry.second + 1, entry.first.c_str());
+  }
+
+  getObjectsManager()->startPublishing(mHistBcFeeOutOfBunchCollForVtxTrg.get());
+  getObjectsManager()->setDefaultDrawOptions(mHistBcFeeOutOfBunchCollForVtxTrg.get(), "COLZ");
+  getObjectsManager()->startPublishing(mHistBcPatternFee.get());
+  getObjectsManager()->setDefaultDrawOptions(mHistBcPatternFee.get(), "COLZ");
+
   getObjectsManager()->startPublishing(mHistTriggers.get());
   getObjectsManager()->startPublishing(mHistBcPattern.get());
   getObjectsManager()->setDefaultDrawOptions(mHistBcPattern.get(), "COLZ");
@@ -416,6 +459,14 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
     }
   }
 
+  // Create histogram with bc pattern for FEE modules
+  mHistBcPatternFee->Reset();
+  for (int i = 0; i < sBCperOrbit ; i++) {
+    for (int j = 0; j < mMapFEE2hash.size() ; j++) {
+      mHistBcPatternFee->SetBinContent(i + 1, j + 1, bcPattern.testBC(i));
+    }
+  }
+
   mHistBcTrgOutOfBunchColl->Reset();
   float vmax = hBcVsTrg->GetBinContent(hBcVsTrg->GetMaximumBin());
   mHistBcTrgOutOfBunchColl->Add(hBcVsTrg, mHistBcPattern.get(), 1, -1 * vmax);
@@ -443,6 +494,36 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
     projValidatedSWandHW->LabelsDeflate();
     mHistTrgValidation->Divide(projOnlyHWorSW.get(), projValidatedSWandHW.get());
   }
+/*
+  // Download histogram BCvsFEEmodulesForVtxTrg from database
+  auto moBcVsFeeModulesForVtxTrg = mDatabase->retrieveMO(mPathDigitQcTask, "BCvsFEEmodulesForVtxTrg", t.timestamp, t.activity);
+  auto hBcVsFeeModulesForVtxTrg = moBcVsFeeModulesForVtxTrg ? dynamic_cast<TH2F*>(moBcVsFeeModulesForVtxTrg->getObject()) : nullptr;
+
+  if (!hBcVsFeeModulesForVtxTrg) {
+    ILOG(Error, Support) << "MO \"BCvsFEEmodulesForVtxTrg\" NOT retrieved!!!" << ENDM;
+    return;
+  } else {
+
+    mHistBcFeeOutOfBunchCollForVtxTrg->Reset();
+    float vmax = hBcVsFeeModulesForVtxTrg->GetBinContent(hBcVsFeeModulesForVtxTrg->GetMaximumBin());
+    mHistBcFeeOutOfBunchCollForVtxTrg->Add(hBcVsFeeModulesForVtxTrg, mHistBcPatternFee.get(), 1, -1 * vmax);
+
+    for (int i = 0; i < sBCperOrbit; i++) {
+      for (int j = 0; j < mMapFEE2hash.size() ; j++) {
+        if (mHistBcFeeOutOfBunchCollForVtxTrg->GetBinContent(i + 1, j + 1) < 0) {
+          mHistBcFeeOutOfBunchCollForVtxTrg->SetBinContent(i + 1, j + 1, 0);
+        }
+      }
+    }
+
+    // Add metadata to histogram OutOfBunchColl_BCvsFeeModulesForOrATrg
+    mHistBcFeeOutOfBunchCollForVtxTrg->SetEntries(mHistBcFeeOutOfBunchCollForVtxTrg->Integral(1, sBCperOrbit, 1, mMapFEE2hash.size()));
+    for (int iBin = 1; iBin <= mMapFEE2hash.size(); iBin++) {
+      const std::string metadataKey = std::to_string(iBin);
+      const std::string metadataValue = std::to_string(hBcVsFeeModulesForVtxTrg->Integral(1, sBCperOrbit, iBin, iBin));
+      getObjectsManager()->getMonitorObject(mHistBcFeeOutOfBunchCollForVtxTrg->GetName())->addOrUpdateMetadata(metadataKey, metadataValue);
+    }
+  }*/
 }
 
 void PostProcTask::finalize(Trigger t, framework::ServiceRegistryRef)
