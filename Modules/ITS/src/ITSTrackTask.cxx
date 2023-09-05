@@ -642,19 +642,19 @@ void ITSTrackTask::createAllHistos()
   }
 
   // Invariant mass K0s, Lambda, LambdaBar
-  hInvMassK0s = new TH1D("hInvMassK0s", "K0s invariant mass", 80, 0.0, 1.0);
+  hInvMassK0s = new TH1D("hInvMassK0s", "K0s invariant mass", 160, 0.0, 1.0);
   hInvMassK0s->SetTitle(Form("Invariant mass of K0s"));
   addObject(hInvMassK0s);
   formatAxes(hInvMassK0s, "m_{inv} (Gev/c)", "Counts", 1, 1.10);
   hInvMassK0s->SetStats(0);
 
-  hInvMassLambda = new TH1D("hInvMassLambda", "Lambda invariant mass", 80, 1.0, 2.0);
+  hInvMassLambda = new TH1D("hInvMassLambda", "Lambda invariant mass", 400, 1.0, 2.0);
   hInvMassLambda->SetTitle(Form("Invariant mass of Lambda"));
   addObject(hInvMassLambda);
   formatAxes(hInvMassLambda, "m_{inv} (Gev/c)", "Counts", 1, 1.10);
   hInvMassLambda->SetStats(0);
 
-  hInvMassLambdaBar = new TH1D("hInvMassLambdaBar", "LambdaBar invariant mass", 80, 1.0, 2.0);
+  hInvMassLambdaBar = new TH1D("hInvMassLambdaBar", "LambdaBar invariant mass", 400, 1.0, 2.0);
   hInvMassLambdaBar->SetTitle(Form("Invariant mass of LambdaBar"));
   addObject(hInvMassLambdaBar);
   formatAxes(hInvMassLambdaBar, "m_{inv} (Gev/c)", "Counts", 1, 1.10);
