@@ -65,7 +65,7 @@ o2-qc --config json:/${JSON_DIR}/batch-test.json --remote-batch /tmp/batch_test_
 
 # check MonitorObject
 # first the return code must be 200
-code=$(curl -L ccdb-test.cern.ch:8080/qc/TST/MO/BatchTestTask${UNIQUE_ID}/example/`date +%s`999 --write-out %{http_code} --silent --output /tmp/batch_test_obj${UNIQUE_ID}.root)
+code=$(curl -L ccdb-test.cern.ch:8080/qc/TST/MO/BatchTestTask${UNIQUE_ID}/example/8000000/PeriodName=LHC9000x/PassName=apass500 --write-out %{http_code} --silent --output /tmp/batch_test_obj${UNIQUE_ID}.root)
 if (( $code != 200 )); then
   echo "Error, monitor object of the QC Task could not be found."
   delete_data
@@ -89,7 +89,7 @@ fi
 
 # check QualityObject
 # first the return code must be 200
-code=$(curl -L ccdb-test.cern.ch:8080/qc/TST/QO/BatchTestCheck${UNIQUE_ID}/`date +%s`999 --write-out %{http_code} --silent --output /tmp/batch_test_check${UNIQUE_ID}.root)
+code=$(curl -L ccdb-test.cern.ch:8080/qc/TST/QO/BatchTestCheck${UNIQUE_ID}/8000000/PeriodName=LHC9000x/PassName=apass500 --write-out %{http_code} --silent --output /tmp/batch_test_check${UNIQUE_ID}.root)
 if (( $code != 200 )); then
   echo "Error, quality object of the QC Task could not be found."
   delete_data

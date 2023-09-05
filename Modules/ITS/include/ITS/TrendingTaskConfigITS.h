@@ -50,6 +50,8 @@ struct TrendingTaskConfigITS : PostProcessingConfig {
 
   std::vector<Plot> plots;
   std::vector<DataSource> dataSources;
+
+  uint64_t maxObjectTimeShiftMs = 0;
 };
 
 } // namespace o2::quality_control::postprocessing

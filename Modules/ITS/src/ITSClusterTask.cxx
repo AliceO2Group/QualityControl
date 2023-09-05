@@ -352,7 +352,7 @@ void ITSClusterTask::reset()
 {
   ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   hClusterVsBunchCrossing->Reset();
-  hEmptyLaneFractionGlobal->Reset();
+  hEmptyLaneFractionGlobal->Reset("ICES");
   mGeneralOccupancy->Reset();
   for (int iLayer = 0; iLayer < NLayer; iLayer++) {
     if (!mEnableLayers[iLayer])

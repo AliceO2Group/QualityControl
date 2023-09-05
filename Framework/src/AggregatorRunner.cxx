@@ -40,6 +40,7 @@
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/ConfigParamGlo.h"
 #include "QualityControl/Bookkeeping.h"
+#include "QualityControl/WorkflowType.h"
 
 using namespace AliceO2::Common;
 using namespace AliceO2::InfoLogger;
@@ -88,7 +89,7 @@ void AggregatorRunner::refreshConfig(InitContext& iCtx)
       }
 
       // read the config, prepare spec
-      auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(updatedTree);
+      auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(updatedTree, workflow_type_helpers::getWorkflowType(iCtx.options()));
 
       // replace the runner config
       mRunnerConfig = AggregatorRunnerFactory::extractRunnerConfig(infrastructureSpec.common);
@@ -213,7 +214,7 @@ QualityObjectsType AggregatorRunner::aggregate()
 
     if (updatePolicyManager.isReady(aggregatorName)) {
       ILOG(Info, Devel) << "   Quality Objects for the aggregator '" << aggregatorName << "' are  ready, aggregating" << ENDM;
-      auto newQOs = aggregator->aggregate(mQualityObjects, mActivity); // we give the whole list
+      auto newQOs = aggregator->aggregate(mQualityObjects, *mActivity); // we give the whole list
       mTotalNumberObjectsProduced += newQOs.size();
       mTotalNumberAggregatorExecuted++;
       // we consider the output of the aggregators the same way we do the output of a check
@@ -239,10 +240,14 @@ void AggregatorRunner::store(QualityObjectsType& qualityObjects)
   auto validFrom = getCurrentTimestamp();
   try {
     for (auto& qo : qualityObjects) {
-      auto tmpValidity = qo->getValidity();
-      qo->setValidity(ValidityInterval{ static_cast<unsigned long>(validFrom), validFrom + 10ull * 365 * 24 * 60 * 60 * 1000 });
-      mDatabase->storeQO(qo);
-      qo->setValidity(tmpValidity);
+      if (getenv("O2_QC_OLD_VALIDITY")) {
+        auto tmpValidity = qo->getValidity();
+        qo->setValidity(ValidityInterval{ static_cast<unsigned long>(validFrom), validFrom + 10ull * 365 * 24 * 60 * 60 * 1000 });
+        mDatabase->storeQO(qo);
+        qo->setValidity(tmpValidity);
+      } else {
+        mDatabase->storeQO(qo);
+      }
     }
     if (!qualityObjects.empty()) {
       auto& qo = qualityObjects.at(0);
@@ -416,21 +421,29 @@ void AggregatorRunner::sendPeriodicMonitoring()
 
 void AggregatorRunner::start(ServiceRegistryRef services)
 {
-  mActivity = computeActivity(services, mRunnerConfig.fallbackActivity);
+  mActivity = std::make_shared<Activity>(computeActivity(services, mRunnerConfig.fallbackActivity));
   mTimerTotalDurationActivity.reset();
-  QcInfoLogger::setRun(mActivity.mId);
-  QcInfoLogger::setPartition(mActivity.mPartitionName);
-  ILOG(Info, Support) << "Starting run " << mActivity.mId << ENDM;
+  QcInfoLogger::setRun(mActivity->mId);
+  QcInfoLogger::setPartition(mActivity->mPartitionName);
+  ILOG(Info, Support) << "Starting run " << mActivity->mId << ENDM;
+  for (auto& aggregator : mAggregators) {
+    aggregator->setActivity(mActivity);
+  }
 
   // register ourselves to the BK
   if (gSystem->Getenv("O2_QC_REGISTER_IN_BK")) { // until we are sure it works, we have to turn it on
-    Bookkeeping::getInstance().registerProcess(mActivity.mId, mDeviceName, AggregatorRunner::getDetectorName(mAggregators), bookkeeping::DPL_PROCESS_TYPE_QC_AGGREGATOR, "");
+    ILOG(Debug, Devel) << "Registering aggregator to BookKeeping" << ENDM;
+    try {
+      Bookkeeping::getInstance().registerProcess(mActivity->mId, mDeviceName, AggregatorRunner::getDetectorName(mAggregators), bookkeeping::DPL_PROCESS_TYPE_QC_AGGREGATOR, "");
+    } catch (std::runtime_error& error) {
+      ILOG(Warning, Devel) << "Failed registration to the BookKeeping: " << error.what() << ENDM;
+    }
   }
 }
 
 void AggregatorRunner::stop()
 {
-  ILOG(Info, Support) << "Stopping run " << mActivity.mId << ENDM;
+  ILOG(Info, Support) << "Stopping run " << mActivity->mId << ENDM;
 }
 
 void AggregatorRunner::reset()
@@ -439,7 +452,7 @@ void AggregatorRunner::reset()
 
   try {
     mCollector.reset();
-    mActivity = Activity();
+    mActivity = make_shared<Activity>();
   } catch (...) {
     // we catch here because we don't know where it will go in DPL's CallbackService
     ILOG(Error, Support) << "Error caught in reset() : "

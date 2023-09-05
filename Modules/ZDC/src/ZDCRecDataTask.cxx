@@ -447,10 +447,10 @@ void ZDCRecDataTask::initHisto()
   addNewHisto("MSG_REC", "h_msg", "Reconstruction messages", "INFO", "CH", "INFO", "MSG", 0);
   int idh_msg = (int)mHisto2D.size() - 1;
   setBinHisto1D(10, -0.5, 9.5);
-  addNewHisto("SUMMARY_TDC", "h_summmary_TDC", "Summary TDC", "TDCV", "", "", "", 0);
+  addNewHisto("SUMMARY_TDC", "h_summary_TDC", "Summary TDC", "TDCV", "", "", "", 0);
   mIdhTDC = (int)mHisto1D.size() - 1;
   setBinHisto1D(26, -0.5, 25.5);
-  addNewHisto("SUMMARY_ADC", "h_summmary_ADC", "Summary ADC", "ADC", "", "", "", 0);
+  addNewHisto("SUMMARY_ADC", "h_summary_ADC", "Summary ADC", "ADC", "", "", "", 0);
   mIdhADC = (int)mHisto1D.size() - 1;
   for (int ibx = 1; ibx <= o2::zdc::NChannels; ibx++) {
     mHisto2D.at(idh_msg).histo->GetXaxis()->SetBinLabel(ibx, o2::zdc::ChannelNames[ibx - 1].data());
@@ -591,12 +591,12 @@ int ZDCRecDataTask::process(const gsl::span<const o2::zdc::BCRecData>& RecBC,
   mEv.init(RecBC, Energy, TDCData, Info);
   while (mEv.next()) {
     // Histo 1D
+    mHisto1D.at(mIdhADC).histo->Reset();
+    mHisto1D.at(mIdhTDC).histo->Reset();
     for (int i = 0; i < (int)mHisto1D.size(); i++) {
       // Fill ADC 1D
       if (mHisto1D.at(i).typeh.compare("ADC1D") == 0 && mHisto1D.at(i).typech.compare("ADC") == 0) {
         mHisto1D.at(i).histo->Fill(getADCRecValue(mHisto1D.at(i).typech, mHisto1D.at(i).ch));
-        mHisto1D.at(mIdhADC).histo->SetBinContent(mHisto1D.at(i).bin, mHisto1D.at(i).histo->GetMean());
-        mHisto1D.at(mIdhADC).histo->SetBinError(mHisto1D.at(i).bin, mHisto1D.at(i).histo->GetMeanError());
       }
 
       // Fill TDC 1D
@@ -612,8 +612,6 @@ int ZDCRecDataTask::process(const gsl::span<const o2::zdc::BCRecData>& RecBC,
               mHisto1D.at(i).histo->Fill(mEv.tdcA(tdcid, ihit));
             }
           }
-          mHisto1D.at(mIdhTDC).histo->SetBinContent(mHisto1D.at(i).bin, mHisto1D.at(i).histo->GetMean());
-          mHisto1D.at(mIdhTDC).histo->SetBinError(mHisto1D.at(i).bin, mHisto1D.at(i).histo->GetMeanError());
         }
       }
       // Fill CENTROID ZP
@@ -622,6 +620,15 @@ int ZDCRecDataTask::process(const gsl::span<const o2::zdc::BCRecData>& RecBC,
       }
       if (mHisto1D.at(i).typeh.compare("CENTR_ZPC") == 0 && mHisto1D.at(i).typech.compare("ADC") == 0) {
         mHisto1D.at(i).histo->Fill(mEv.xZPC());
+      }
+      // Fill SUMMARY
+      if (mHisto1D.at(mIdhADC).typeh.compare("SUMMARY_ADC") == 0 && mHisto1D.at(i).typeh.compare("ADC1D") == 0 && mHisto1D.at(i).typech.compare("ADC") == 0 && i != mIdhADC) {
+        mHisto1D.at(mIdhADC).histo->SetBinContent(mHisto1D.at(i).bin, mHisto1D.at(i).histo->GetMean());
+        mHisto1D.at(mIdhADC).histo->SetBinError(mHisto1D.at(i).bin, mHisto1D.at(i).histo->GetMeanError());
+      }
+      if (mHisto1D.at(mIdhTDC).typeh.compare("SUMMARY_TDC") == 0 && mHisto1D.at(i).typeh.compare("TDC1D") == 0 && mHisto1D.at(i).typech.compare("TDCV") == 0 && i != mIdhTDC) {
+        mHisto1D.at(mIdhTDC).histo->SetBinContent(mHisto1D.at(i).bin, mHisto1D.at(i).histo->GetMean());
+        mHisto1D.at(mIdhTDC).histo->SetBinError(mHisto1D.at(i).bin, mHisto1D.at(i).histo->GetMeanError());
       }
     } // for histo 1D
 

@@ -19,6 +19,7 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/runnerUtils.h"
 #include "Framework/ServiceRegistryRef.h"
+#include "QualityControl/WorkflowType.h"
 
 #include <Common/Timer.h>
 #include <boost/program_options.hpp>
@@ -76,7 +77,7 @@ int main(int argc, const char* argv[])
     int periodUs = static_cast<int>(1000000 * configTree.get<double>("qc.config.postprocessing.periodSeconds", 10.0));
 
     PostProcessingRunner runner(taskID);
-    runner.init(configTree);
+    runner.init(configTree, WorkflowType::Standalone);
 
     if (vm.count("timestamps")) {
       // running the PP task on a set of timestamps

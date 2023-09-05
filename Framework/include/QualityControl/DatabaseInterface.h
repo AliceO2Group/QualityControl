@@ -205,6 +205,14 @@ class DatabaseInterface
   virtual void truncate(std::string taskName, std::string objectName) = 0;
 
   virtual void setMaxObjectSize(size_t maxObjectSize) = 0;
+
+  /**
+   * Return validity of the latest matching object
+   * @param path the folder we want to list the children of.
+   * @param metadata metadata to filter queried objects.
+   * @return validity of the latest matching object
+   */
+  virtual core::ValidityInterval getLatestObjectValidity(const std::string& path, const std::map<std::string, std::string>& metadata = {}) = 0;
 };
 
 } // namespace o2::quality_control::repository

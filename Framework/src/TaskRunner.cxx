@@ -47,6 +47,7 @@
 #include "QualityControl/Bookkeeping.h"
 #include "QualityControl/TimekeeperFactory.h"
 #include "QualityControl/ActivityHelpers.h"
+#include "QualityControl/WorkflowType.h"
 
 #include <string>
 #include <TFile.h>
@@ -93,7 +94,7 @@ void TaskRunner::refreshConfig(InitContext& iCtx)
       }
 
       // prepare the information we need
-      auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(updatedTree);
+      auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(updatedTree, workflow_type_helpers::getWorkflowType(iCtx.options()));
       // find the correct taskSpec
       auto taskSpecIter = find_if(infrastructureSpec.tasks.begin(),
                                   infrastructureSpec.tasks.end(),
@@ -163,6 +164,7 @@ void TaskRunner::init(InitContext& iCtx)
 
   // setup publisher
   mObjectsManager = std::make_shared<ObjectsManager>(mTaskConfig.taskName, mTaskConfig.className, mTaskConfig.detectorName, mTaskConfig.consulUrl, mTaskConfig.parallelTaskID);
+  mObjectsManager->setMovingWindowsList(mTaskConfig.movingWindows);
 
   // setup timekeeping
   mDeploymentMode = DefaultsHelpers::deploymentMode();
@@ -281,11 +283,11 @@ std::string TaskRunner::createTaskRunnerIdString()
   return { "qc-task" };
 }
 
-header::DataOrigin TaskRunner::createTaskDataOrigin(const std::string& detectorCode)
+header::DataOrigin TaskRunner::createTaskDataOrigin(const std::string& detectorCode, bool movingWindows)
 {
   // We need a unique Data Origin, so we can have QC Tasks with the same names for different detectors.
   // However, to avoid colliding with data marked as e.g. TPC/CLUSTERS, we add 'Q' to the data origin, so it is Q<det>.
-  std::string originStr = "Q";
+  std::string originStr = movingWindows ? "W" : "Q";
   if (detectorCode.empty()) {
     ILOG(Warning, Support) << "empty detector code for a task data origin, trying to survive with: DET" << ENDM;
     originStr += "DET";
@@ -453,7 +455,12 @@ void TaskRunner::startOfActivity()
 
   // register ourselves to the BK
   if (gSystem->Getenv("O2_QC_REGISTER_IN_BK")) { // until we are sure it works, we have to turn it on
-    Bookkeeping::getInstance().registerProcess(mActivity.mId, mTaskConfig.taskName, mTaskConfig.detectorName, bookkeeping::DPL_PROCESS_TYPE_QC_TASK, "");
+    ILOG(Debug, Devel) << "Registering taskRunner to BookKeeping" << ENDM;
+    try {
+      Bookkeeping::getInstance().registerProcess(mActivity.mId, mTaskConfig.taskName, mTaskConfig.detectorName, bookkeeping::DPL_PROCESS_TYPE_QC_TASK, "");
+    } catch (std::runtime_error& error) {
+      ILOG(Warning, Devel) << "Failed registration to the BookKeeping: " << error.what() << ENDM;
+    }
   }
 }
 

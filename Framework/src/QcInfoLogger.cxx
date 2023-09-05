@@ -78,10 +78,10 @@ void QcInfoLogger::init(const std::string& facility,
   ILOG_INST.filterDiscardDebug(discardFileParameters.debug);
   ILOG_INST.filterDiscardLevel(discardFileParameters.fromLevel);
   if (!discardFileParameters.discardFile.empty()) {
-    ILOG_INST.filterDiscardSetFile(discardFileParameters.discardFile.c_str(), discardFileParameters.rotateMaxBytes, discardFileParameters.rotateMaxFiles, 0, true /*Do not store Debug messages in file*/);
+    ILOG_INST.filterDiscardSetFile(discardFileParameters.discardFile.c_str(), discardFileParameters.rotateMaxBytes, discardFileParameters.rotateMaxFiles, 0, discardFileParameters.debugInDiscardFile /*Do not store Debug messages in file*/);
   }
   ILOG(Debug, Support) << "QC infologger initialized : " << discardFileParameters.debug << " ; " << discardFileParameters.fromLevel << ENDM;
-  ILOG(Debug, Devel) << "   Discard debug ? " << discardFileParameters.debug << " / Discard from level ? " << discardFileParameters.fromLevel << " / Discard to file ? " << (!discardFileParameters.discardFile.empty() ? discardFileParameters.discardFile : "No") << " / Discard max bytes and files ? " << discardFileParameters.rotateMaxBytes << " = " << discardFileParameters.rotateMaxFiles << ENDM;
+  ILOG(Debug, Devel) << "   Discard debug ? " << discardFileParameters.debug << " / Discard from level ? " << discardFileParameters.fromLevel << " / Discard to file ? " << (!discardFileParameters.discardFile.empty() ? discardFileParameters.discardFile : "No") << " / Discard max bytes and files ? " << discardFileParameters.rotateMaxBytes << " = " << discardFileParameters.rotateMaxFiles << " / Put discarded debug messages in file ? " << discardFileParameters.debugInDiscardFile << ENDM;
 
   setFacility(facility);
   setRun(run);
@@ -102,6 +102,8 @@ void QcInfoLogger::init(const std::string& facility,
   discardFileParameters.discardFile = config.get<std::string>("qc.config.infologger.filterDiscardFile", "");
   discardFileParameters.rotateMaxBytes = config.get<u_long>("infologger.filterRotateMaxBytes", 0);
   discardFileParameters.rotateMaxFiles = config.get<u_int>("infologger.filterRotateMaxFiles", 0);
+  std::string debugInDiscardFile = config.get<std::string>("qc.config.infologger.debugInDiscardFile", "false");
+  discardFileParameters.debugInDiscardFile = debugInDiscardFile == "true";
   init(facility, discardFileParameters, dplInfoLogger, dplContext, run, partitionName);
 }
 

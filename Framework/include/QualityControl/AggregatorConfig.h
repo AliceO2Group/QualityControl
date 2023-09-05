@@ -41,6 +41,7 @@ struct AggregatorConfig {
   bool allObjects = false;
   framework::Inputs inputSpecs{};
   std::vector<AggregatorSource> sources;
+  std::string conditionUrl{};
 };
 
 } // namespace o2::quality_control::checker

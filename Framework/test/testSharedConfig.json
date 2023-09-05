@@ -32,6 +32,7 @@
           "parameter1": "100001",
           "parameter2": "qu'est-ce que c'est que ce truc la"
         },
+        "movingWindows": [ "example" ],
         "location": "local",
         "localMachines": [
           "o2flp1",

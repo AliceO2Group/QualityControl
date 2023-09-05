@@ -28,6 +28,7 @@ enum class DataSourceType {
   DataSamplingPolicy,
   Direct,
   Task,
+  TaskMovingWindow,
   Check,
   Aggregator,
   PostProcessingTask,

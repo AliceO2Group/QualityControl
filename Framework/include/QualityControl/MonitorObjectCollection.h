@@ -37,6 +37,8 @@ class MonitorObjectCollection : public TObjArray, public mergers::MergeInterface
   void setDetector(const std::string&);
   const std::string& getDetector() const;
 
+  MergeInterface* cloneMovingWindow() const override;
+
  private:
   std::string mDetector = "TST";
 

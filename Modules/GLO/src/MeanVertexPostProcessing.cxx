@@ -21,6 +21,7 @@
 #include "QualityControl/QcInfoLogger.h"
 
 #include <TMath.h>
+#include <boost/property_tree/ptree.hpp>
 
 using namespace o2::quality_control::postprocessing;
 

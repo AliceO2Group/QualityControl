@@ -1,3 +1,13 @@
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
+//
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
 
 #include <TCanvas.h>
 #include <TH1.h>
@@ -7,16 +17,14 @@
 #include <TH2F.h>
 #include <TProfile.h>
 #include <TProfile2D.h>
-#include <TStopwatch.h>
-#include <THashList.h>
 
 #include "DataFormatsTRD/Constants.h"
 #include "DataFormatsTRD/Digit.h"
-#include "DataFormatsTRD/Tracklet64.h"
 #include "DataFormatsTRD/TriggerRecord.h"
 #include "QualityControl/ObjectsManager.h"
 #include "QualityControl/TaskInterface.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "Common/Utils.h"
 #include "TRD/DigitsTask.h"
 #include <Framework/InputRecord.h>
 #include <Framework/InputRecordWalker.h>
@@ -25,6 +33,9 @@
 #include <tuple>
 
 #include "CCDB/BasicCCDBManager.h"
+
+using namespace o2::quality_control_modules::common;
+
 namespace o2::quality_control_modules::trd
 {
 DigitsTask::~DigitsTask()
@@ -366,29 +377,15 @@ void DigitsTask::buildHistograms()
   }
 
   for (int iLayer = 0; iLayer < 6; ++iLayer) {
-    mLayers.push_back(new TH2F(Form("DigitsPerLayer/layer%i", iLayer), Form("Digit count per pad in layer %i;stack;sector", iLayer), 76, -0.5, 75.5, 2592, -0.5, 2591.5));
+    mLayers.push_back(new TH2F(Form("DigitsPerLayer/layer%i", iLayer), Form("Digit count per pad in layer %i;glb pad row;glb pad col", iLayer), 76, -0.5, 75.5, 2592, -0.5, 2591.5));
     auto xax = mLayers.back()->GetXaxis();
     auto yax = mLayers[iLayer]->GetYaxis();
     if (!mLayerLabelsIgnore) {
-      xax->SetNdivisions(5);
-      xax->SetBinLabel(8, "0");
-      xax->SetBinLabel(24, "1");
-      xax->SetBinLabel(38, "2");
-      xax->SetBinLabel(52, "3");
-      xax->SetBinLabel(68, "4");
-      xax->SetTicks("");
-      xax->SetTickSize(0.0);
       xax->SetLabelSize(0.045);
       xax->SetLabelOffset(0.005);
       xax->SetTitleOffset(0.95);
       xax->CenterTitle(true);
-      yax->SetNdivisions(18);
-      for (int iSec = 0; iSec < 18; ++iSec) {
-        auto lbl = std::to_string(iSec);
-        yax->SetBinLabel(iSec * 144 + 72, lbl.c_str());
-      }
-      yax->SetTicks("");
-      yax->SetTickSize(0.0);
+      yax->SetNdivisions(-18);
       yax->SetLabelSize(0.045);
       yax->SetLabelOffset(0.001);
       yax->SetTitleOffset(0.40);
@@ -409,59 +406,14 @@ void DigitsTask::initialize(o2::framework::InitContext& /*ctx*/)
   ILOG(Debug, Devel) << "initialize TRDDigitQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
-  if (auto param = mCustomParameters.find("driftregionstart"); param != mCustomParameters.end()) {
-    mDriftRegion.first = stof(param->second);
-    ILOG(Debug, Support) << "configure() : using peakregionstart = " << mDriftRegion.first << ENDM;
-  } else {
-    mDriftRegion.first = 7.0;
-    ILOG(Debug, Support) << "configure() : using default dritfregionstart = " << mDriftRegion.first << ENDM;
-  }
-  if (auto param = mCustomParameters.find("driftregionend"); param != mCustomParameters.end()) {
-    mDriftRegion.second = stof(param->second);
-    ILOG(Debug, Support) << "configure() : using peakregionstart = " << mDriftRegion.second << ENDM;
-  } else {
-    mDriftRegion.second = 20.0;
-    ILOG(Debug, Support) << "configure() : using default dritfregionstart = " << mDriftRegion.second << ENDM;
-  }
-  if (auto param = mCustomParameters.find("pulseheightpeaklower"); param != mCustomParameters.end()) {
-    mPulseHeightPeakRegion.first = stof(param->second);
-    ILOG(Debug, Support) << "configure() : using pulsehheightlower	= " << mPulseHeightPeakRegion.first << ENDM;
-  } else {
-    mPulseHeightPeakRegion.first = 0.0;
-    ILOG(Debug, Support) << "configure() : using default pulseheightlower = " << mPulseHeightPeakRegion.first << ENDM;
-  }
-  if (auto param = mCustomParameters.find("pulseheightpeakupper"); param != mCustomParameters.end()) {
-    mPulseHeightPeakRegion.second = stof(param->second);
-    ILOG(Debug, Support) << "configure() : using pulsehheightupper	= " << mPulseHeightPeakRegion.second << ENDM;
-  } else {
-    mPulseHeightPeakRegion.second = 5.0;
-    ILOG(Debug, Support) << "configure() : using default pulseheightupper = " << mPulseHeightPeakRegion.second << ENDM;
-  }
-  if (auto param = mCustomParameters.find("skippedshareddigits"); param != mCustomParameters.end()) {
-    mSkipSharedDigits = stod(param->second);
-    ILOG(Debug, Support) << "configure() : using skip shared digits 	= " << mSkipSharedDigits << ENDM;
-  } else {
-    mSkipSharedDigits = false;
-    ILOG(Debug, Support) << "configure() : using default skip shared digits = " << mSkipSharedDigits << ENDM;
-  }
-  if (auto param = mCustomParameters.find("pulseheightthreshold"); param != mCustomParameters.end()) {
-    mPulseHeightThreshold = stod(param->second);
-    ILOG(Debug, Support) << "configure() : using skip shared digits 	= " << mPulseHeightThreshold << ENDM;
-  } else {
-    mPulseHeightThreshold = 400;
-    ILOG(Debug, Support) << "configure() : using default skip shared digits = " << mPulseHeightThreshold << ENDM;
-  }
-  if (auto param = mCustomParameters.find("chamberstoignore"); param != mCustomParameters.end()) {
-    mChambersToIgnore = param->second;
-    ILOG(Debug, Support) << "configure() : chamberstoignore = " << mChambersToIgnore << ENDM;
-  } else {
-    mChambersToIgnore = "16_3_0";
-    ILOG(Debug, Support) << "configure() : chambers to ignore for pulseheight calculations = " << mChambersToIgnore << ENDM;
-  }
-  if (auto param = mCustomParameters.find("ignorelayerlabels"); param != mCustomParameters.end()) {
-    mLayerLabelsIgnore = stoi(param->second);
-    ILOG(Debug, Support) << "configure() : ignoring labels on layer plots = " << mLayerLabelsIgnore << ENDM;
-  }
+  mDriftRegion.first = getFromConfig<float>(mCustomParameters, "driftRegionStart", 7.f);
+  mDriftRegion.second = getFromConfig<float>(mCustomParameters, "driftRegionEnd", 20.f);
+  mPulseHeightPeakRegion.first = getFromConfig<float>(mCustomParameters, "peakRegionStart", 0.f);
+  mPulseHeightPeakRegion.second = getFromConfig<float>(mCustomParameters, "peakRegionEnd", 5.f);
+  mPulseHeightThreshold = getFromConfig<unsigned int>(mCustomParameters, "phThreshold", 400u);
+  mChambersToIgnore = getFromConfig<string>(mCustomParameters, "ignoreChambers", "16_3_0");
+  mLayerLabelsIgnore = getFromConfig<bool>(mCustomParameters, "ignoreLabels", true);
+
   buildChamberIgnoreBP();
 
   retrieveCCDBSettings();
@@ -543,12 +495,6 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
         } else {
           mDigitsPerEvent->Fill(trigger.getNumberOfDigits());
         }
-        int trackletnumfix = trigger.getNumberOfTracklets();
-        int digitnumfix = trigger.getNumberOfDigits();
-        if (trigger.getNumberOfTracklets() > 2499)
-          trackletnumfix = 2499;
-        if (trigger.getNumberOfDigits() > 24999)
-          trackletnumfix = 24999;
         mDigitsSizevsTrackletSize->Fill(trigger.getNumberOfTracklets(), trigger.getNumberOfDigits());
         int tbmax = 0;
         int tbhi = 0;
@@ -560,15 +506,7 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
         int channel = 0;
 
         for (int currentdigit = trigger.getFirstDigit() + 1; currentdigit < trigger.getFirstDigit() + trigger.getNumberOfDigits() - 1; ++currentdigit) { // -1 and +1 as we are looking for consecutive digits pre and post the current one indexed.
-          if (digits[digitsIndex[currentdigit]].getChannel() > 21)
-            continue;
           int detector = digits[digitsIndex[currentdigit]].getDetector();
-          if (detector < 0 || detector >= 540) {
-            // for some reason online the sm value causes an error below and digittrask crashes.
-            // the only possibility is detector number is invalid
-            ILOG(Info, Support) << "Bad detector number from digit : " << detector << " for digit index of " << digitsIndex[currentdigit] << ENDM;
-            continue;
-          }
           int sm = detector / 30;
           int detLoc = detector % 30;
           int layer = detector % 6;
@@ -580,7 +518,6 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
           if (stack >= 2)
             stackoffset -= 4; // account for stack 2 having 4 less.
           // for now the if statement is commented as there is a problem finding isShareDigit, will come back to that.
-          /// if (!digits[digitsIndex[currentdigit]].isSharedDigit() && !mSkipSharedDigits.second) {
           int rowGlb = stack < 3 ? digits[digitsIndex[currentdigit]].getPadRow() + stack * 16 : digits[digitsIndex[currentdigit]].getPadRow() + 44 + (stack - 3) * 16; // pad row within whole sector
           int colGlb = digits[digitsIndex[currentdigit]].getPadCol() + sm * 144;                                                                                       // pad column number from 0 to NSectors * 144
           mLayers[layer]->Fill(rowGlb, colGlb);

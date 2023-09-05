@@ -41,6 +41,16 @@
           "MaxDuration" : "60000",
           "TimeBinSize" : "0.1"
         },
+        "grpGeomRequest" : {
+            "geomRequest": "Aligned",
+            "askGRPECS": "true",
+            "askGRPLHCIF": "false",
+            "askGRPMagField": "false",
+            "askMatLUT": "false",
+            "askTime": "false",
+            "askOnceAllButField": "false",
+            "needPropagatorD": "false"
+        },
         "location" : "remote"
       }
     },

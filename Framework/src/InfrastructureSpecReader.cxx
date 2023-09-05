@@ -31,9 +31,10 @@ using namespace o2::quality_control::checker;
 namespace o2::quality_control::core
 {
 
-InfrastructureSpec InfrastructureSpecReader::readInfrastructureSpec(const boost::property_tree::ptree& wholeTree)
+InfrastructureSpec InfrastructureSpecReader::readInfrastructureSpec(const boost::property_tree::ptree& wholeTree, WorkflowType workflowType)
 {
   InfrastructureSpec spec;
+  spec.workflowType = workflowType;
   const auto& qcTree = wholeTree.get_child("qc");
   if (qcTree.find("config") != qcTree.not_found()) {
     spec.common = readSpecEntry<CommonSpec>("", qcTree.get_child("config"), wholeTree);
@@ -64,6 +65,9 @@ CommonSpec InfrastructureSpecReader::readSpecEntry<CommonSpec>(const std::string
   spec.activityProvenance = commonTree.get<std::string>("Activity.provenance", spec.activityProvenance);
   spec.activityStart = commonTree.get<uint64_t>("Activity.start", spec.activityStart);
   spec.activityEnd = commonTree.get<uint64_t>("Activity.end", spec.activityEnd);
+  spec.activityBeamType = commonTree.get<std::string>("Activity.beamType", spec.activityBeamType);
+  spec.activityPartitionName = commonTree.get<std::string>("Activity.partitionName", spec.activityPartitionName);
+  spec.activityFillNumber = commonTree.get<int>("Activity.fillNumber", spec.activityFillNumber);
   spec.monitoringUrl = commonTree.get<std::string>("monitoring.url", spec.monitoringUrl);
   spec.consulUrl = commonTree.get<std::string>("consul.url", spec.consulUrl);
   spec.conditionDBUrl = commonTree.get<std::string>("conditionDB.url", spec.conditionDBUrl);
@@ -72,7 +76,8 @@ CommonSpec InfrastructureSpecReader::readSpecEntry<CommonSpec>(const std::string
     commonTree.get<int>("infologger.filterDiscardLevel", spec.infologgerDiscardParameters.fromLevel),
     commonTree.get<std::string>("infologger.filterDiscardFile", spec.infologgerDiscardParameters.discardFile),
     commonTree.get<u_long>("infologger.filterRotateMaxBytes", spec.infologgerDiscardParameters.rotateMaxBytes),
-    commonTree.get<u_int>("infologger.filterRotateMaxFiles", spec.infologgerDiscardParameters.rotateMaxFiles)
+    commonTree.get<u_int>("infologger.filterRotateMaxFiles", spec.infologgerDiscardParameters.rotateMaxFiles),
+    commonTree.get<bool>("infologger.debugInDiscardFile", spec.infologgerDiscardParameters.debugInDiscardFile)
   };
   spec.postprocessingPeriod = commonTree.get<double>("postprocessing.periodSeconds", spec.postprocessingPeriod);
   spec.bookkeepingUrl = commonTree.get<std::string>("bookkeeping.url", spec.bookkeepingUrl);
@@ -165,6 +170,13 @@ TaskSpec InfrastructureSpecReader::readSpecEntry<TaskSpec>(const std::string& ta
     ts.globalTrackingDataRequest = readSpecEntry<GlobalTrackingDataRequestSpec>(ts.taskName, taskTree.get_child("globalTrackingDataRequest"), wholeTree);
   }
 
+  if (taskTree.count("movingWindows") > 0) {
+    ts.movingWindows.clear();
+    for (const auto& [key, value] : taskTree.get_child("movingWindows")) {
+      ts.movingWindows.emplace_back(value.get_value<std::string>());
+    }
+  }
+
   return ts;
 }
 
@@ -178,6 +190,7 @@ DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(const std
     { "dataSamplingPolicy", DataSourceType::DataSamplingPolicy },
     { "direct", DataSourceType::Direct },
     { "Task", DataSourceType::Task },
+    { "TaskMovingWindow", DataSourceType::TaskMovingWindow },
     { "Check", DataSourceType::Check },
     { "Aggregator", DataSourceType::Aggregator },
     { "PostProcessing", DataSourceType::PostProcessingTask },
@@ -208,6 +221,21 @@ DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(const std
       auto detectorName = wholeTree.get<std::string>("qc.tasks." + dss.id + ".detectorName");
 
       dss.inputs = { { dss.name, TaskRunner::createTaskDataOrigin(detectorName), TaskRunner::createTaskDataDescription(dss.name), 0, Lifetime::Sporadic } };
+      if (dataSourceTree.count("MOs") > 0) {
+        for (const auto& moName : dataSourceTree.get_child("MOs")) {
+          dss.subInputs.push_back(moName.second.get_value<std::string>());
+        }
+      }
+      break;
+    }
+    case DataSourceType::TaskMovingWindow: {
+      dss.id = dataSourceTree.get<std::string>("name");
+      // this allows us to have tasks with the same name for different detectors
+      std::string taskName = wholeTree.get<std::string>("qc.tasks." + dss.id + ".taskName", dss.id);
+      dss.name = taskName + "/mw";
+      auto detectorName = wholeTree.get<std::string>("qc.tasks." + dss.id + ".detectorName");
+
+      dss.inputs = { { dss.name, TaskRunner::createTaskDataOrigin(detectorName, true), TaskRunner::createTaskDataDescription(taskName), 0, Lifetime::Sporadic } };
       if (dataSourceTree.count("MOs") > 0) {
         for (const auto& moName : dataSourceTree.get_child("MOs")) {
           dss.subInputs.push_back(moName.second.get_value<std::string>());

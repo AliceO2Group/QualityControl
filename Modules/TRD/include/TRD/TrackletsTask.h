@@ -83,9 +83,6 @@ class TrackletsTask final : public TaskInterface
   TH1F* mTrackletsPerTimeFrameCycled = nullptr;
   std::array<TH2F*, 6> mLayers;
 
-  int mMarkerSize;
-  int mMarkerStyle;
-
   // data to pull from CCDB
   o2::trd::NoiseStatusMCM* mNoiseMap = nullptr;
   o2::trd::HalfChamberStatusQC* mChamberStatus = nullptr;

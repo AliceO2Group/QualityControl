@@ -94,8 +94,8 @@ add_library(O2QualityControl
   src/Timekeeper.cxx
   src/TimekeeperSynchronous.cxx
   src/TimekeeperAsynchronous.cxx
+  src/WorkflowType.cxx
   src/TimekeeperFactory.cxx)
-
 
 target_include_directories(
   O2QualityControl
@@ -241,6 +241,7 @@ add_executable(o2-qc-test-core
                test/testTimekeeper.cxx
                test/testTriggerHelpers.cxx
                test/testVersion.cxx
+               test/testMonitorObjectCollection.cxx
                )
 set_property(TARGET o2-qc-test-core
              PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
@@ -425,7 +426,6 @@ install(
 # ---- Install config files and scripts ----
 
 install(FILES example-default.json
-              alfa.json
               basic.json
               basic-aggregator.json
               basic-external-histo.json

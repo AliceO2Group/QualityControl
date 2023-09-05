@@ -95,6 +95,9 @@ class MonitorObject : public TObject
   void updateValidity(validity_time_t value);
   ValidityInterval getValidity() const;
 
+  void setCreateMovingWindow(bool);
+  bool getCreateMovingWindow() const;
+
   /// \brief Add key value pair that will end up in the database as metadata of the object
   /// Add a metadata (key value pair) to the MonitorObject. It will be stored in the database as metadata.
   /// If the key already exists the value will NOT be updated.
@@ -135,8 +138,10 @@ class MonitorObject : public TObject
   // object.
   // TODO : maybe we should always be the owner ?
   bool mIsOwner;
+  // tells Merger to create an object with data from the last cycle only on the side of the complete object
+  bool mCreateMovingWindow = false;
 
-  ClassDefOverride(MonitorObject, 11);
+  ClassDefOverride(MonitorObject, 12);
 };
 
 } // namespace o2::quality_control::core

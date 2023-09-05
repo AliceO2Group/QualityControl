@@ -194,6 +194,10 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_timestamps, *utf::depends_on("ccdb_store"))
   std::shared_ptr<QualityObject> qo = f.backend->retrieveQO(f.getQoPath("short", "", false), 15000);
   BOOST_REQUIRE_NE(qo, nullptr);
   BOOST_CHECK_EQUAL(qo->getName(), f.taskName + "/short");
+
+  auto qoValidity = f.backend->getLatestObjectValidity(f.getQoPath("short", "qc", true), {});
+  ValidityInterval expectedValidity{ 10000, 20000 };
+  BOOST_CHECK(qoValidity == expectedValidity);
 }
 
 BOOST_AUTO_TEST_CASE(ccdb_retrieve_inexisting_mo)

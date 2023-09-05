@@ -30,6 +30,7 @@
 
 #include <fmt/format.h>
 #include <boost/optional/optional.hpp>
+#include <boost/property_tree/ptree.hpp>
 
 using namespace o2::quality_control::postprocessing;
 using namespace o2::tpc;

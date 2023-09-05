@@ -28,6 +28,7 @@ struct DiscardFileParameters {
   std::string discardFile;
   unsigned long rotateMaxBytes = 0;
   unsigned int rotateMaxFiles = 0;
+  bool debugInDiscardFile = false;
 };
 
 } // namespace o2::quality_control::core

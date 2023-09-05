@@ -19,6 +19,7 @@
 #include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "Framework/ServiceRegistry.h"
+#include "QualityControl/WorkflowType.h"
 
 #include <OccInstance.h>
 #include <RuntimeControlledObject.h>
@@ -52,7 +53,7 @@ class PostProcessingOCCStateMachine : public RuntimeControlledObject
     bool success = true;
     try {
       auto config = properties.count(qcConfigurationKey) > 0 ? properties.get_child(qcConfigurationKey) : properties;
-      mRunner->init(config);
+      mRunner->init(config, WorkflowType::Standalone);
     } catch (const boost::exception& ex) {
       ILOG(Error, Support) << "Exception caught: " << boost::current_exception_diagnostic_information(true) << ENDM;
       success = false;

@@ -35,11 +35,14 @@ struct CommonSpec {
   std::string activityProvenance = "qc";
   uint64_t activityStart = 0;
   uint64_t activityEnd = -1;
+  std::string activityBeamType;
+  std::string activityPartitionName;
+  int activityFillNumber = 0;
   std::string monitoringUrl = "infologger:///debug?qc";
   std::string consulUrl;
   std::string conditionDBUrl = "http://ccdb-test.cern.ch:8080";
   DiscardFileParameters infologgerDiscardParameters;
-  double postprocessingPeriod = 10.0;
+  double postprocessingPeriod = 30.0;
   std::string bookkeepingUrl;
 };
 

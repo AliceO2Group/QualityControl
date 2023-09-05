@@ -63,6 +63,7 @@ void Check::init()
     mCheckInterface = root_class_factory::create<CheckInterface>(mCheckConfig.moduleName, mCheckConfig.className);
     mCheckInterface->setName(mCheckConfig.name);
     mCheckInterface->setCustomParameters(mCheckConfig.customParameters);
+    mCheckInterface->setCcdbUrl(mCheckConfig.conditionUrl);
   } catch (...) {
     std::string diagnostic = boost::current_exception_diagnostic_information();
     ILOG(Fatal, Ops) << "Unexpected exception, diagnostic information follows: "
@@ -202,14 +203,14 @@ bool Check::getAllObjectsOption() const
   return mCheckConfig.allObjects;
 }
 
-CheckConfig Check::extractConfig(const CommonSpec&, const CheckSpec& checkSpec)
+CheckConfig Check::extractConfig(const CommonSpec& commonSpec, const CheckSpec& checkSpec)
 {
   framework::Inputs inputs;
   std::vector<std::string> objectNames;
   UpdatePolicyType updatePolicy = checkSpec.updatePolicy;
   bool checkAllObjects = false;
   for (const auto& dataSource : checkSpec.dataSources) {
-    if (!dataSource.isOneOf(DataSourceType::Task, DataSourceType::ExternalTask, DataSourceType::PostProcessingTask)) {
+    if (!dataSource.isOneOf(DataSourceType::Task, DataSourceType::TaskMovingWindow, DataSourceType::ExternalTask, DataSourceType::PostProcessingTask)) {
       throw std::runtime_error(
         "Unsupported dataSource '" + dataSource.name + "' for a Check '" + checkSpec.checkName + "'");
     }
@@ -252,7 +253,8 @@ CheckConfig Check::extractConfig(const CommonSpec&, const CheckSpec& checkSpec)
     checkAllObjects,
     allowBeautify,
     std::move(inputs),
-    createOutputSpec(checkSpec.checkName)
+    createOutputSpec(checkSpec.checkName),
+    commonSpec.conditionDBUrl
   };
 }
 

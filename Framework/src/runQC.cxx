@@ -36,6 +36,7 @@
 #include "QualityControl/InfrastructureGenerator.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/ConfigParamGlo.h"
+#include "QualityControl/WorkflowType.h"
 
 using namespace o2;
 using namespace o2::framework;
@@ -60,6 +61,8 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
                                                         " will be used" } });
   workflowOptions.push_back(
     ConfigParamSpec{ "remote", VariantType::Bool, false, { "Runs only the remote part of the QC workflow." } });
+  workflowOptions.push_back(
+    ConfigParamSpec{ "full-chain", VariantType::Bool, false, { "Runs the full QC chain except proxies." } });
   workflowOptions.push_back(
     ConfigParamSpec{ "no-data-sampling", VariantType::Bool, false, { "Do not add Data Sampling infrastructure." } });
 
@@ -92,6 +95,7 @@ void customize(std::vector<ChannelConfigurationPolicy>& policies)
 #include <Framework/runDataProcessing.h>
 
 using namespace std::chrono;
+using WorkflowType = o2::quality_control::core::WorkflowType;
 
 bool validateArguments(const ConfigContext& config)
 {
@@ -108,6 +112,7 @@ bool validateArguments(const ConfigContext& config)
   size_t exclusiveOptions = 0;
   exclusiveOptions += config.options().get<bool>("local");
   exclusiveOptions += config.options().get<bool>("remote");
+  exclusiveOptions += config.options().get<bool>("full-chain");
   exclusiveOptions += !config.options().get<std::string>("local-batch").empty();
   exclusiveOptions += !config.options().get<std::string>("remote-batch").empty();
   if (exclusiveOptions > 1) {
@@ -118,28 +123,6 @@ bool validateArguments(const ConfigContext& config)
   return true;
 }
 
-enum class WorkflowType {
-  Standalone,
-  Local,
-  Remote,
-  LocalBatch,
-  RemoteBatch
-};
-
-WorkflowType getWorkflowType(const ConfigContext& config)
-{
-  if (config.options().get<bool>("local")) {
-    return WorkflowType::Local;
-  } else if (config.options().get<bool>("remote")) {
-    return WorkflowType::Remote;
-  } else if (!config.options().get<std::string>("local-batch").empty()) {
-    return WorkflowType::LocalBatch;
-  } else if (!config.options().get<std::string>("remote-batch").empty()) {
-    return WorkflowType::RemoteBatch;
-  } else {
-    return WorkflowType::Standalone;
-  }
-}
 WorkflowSpec defineDataProcessing(const ConfigContext& config)
 {
   WorkflowSpec specs;
@@ -155,8 +138,9 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
     // - local - QC tasks which are on the same machines as the main processing. We also put Data Sampling there.
     // - remote - QC tasks, mergers and checkers that reside on QC servers
     //
-    // The user can specify to create either one of these parts by selecting corresponding option,
-    // or both of them, which is the default option (no flags needed).
+    // The user can specify to create either one of these parts by selecting corresponding option.
+    // No flags will effect in generating the minimal complete workflow (data sampling, tasks, checks, aggregators, pp)
+    // Using '--full-chain' will cause in generating a complete workflow with merger between local tasks and checks.
     //
     // For file-based processing, there are also:
     // - local-batch - QC tasks are run, the results are stored in the specified file. If the file exists,
@@ -187,7 +171,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
     auto keyValuesToOverride = quality_control::core::parseOverrideValues(config.options().get<std::string>("override-values"));
     quality_control::core::overrideValues(configTree, keyValuesToOverride);
 
-    auto workflowType = getWorkflowType(config);
+    auto workflowType = quality_control::core::workflow_type_helpers::getWorkflowType(config.options());
     switch (workflowType) {
       case WorkflowType::Standalone: {
         ILOG(Debug, Devel) << "Creating a standalone QC workflow." << ENDM;
@@ -221,8 +205,17 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
       case WorkflowType::Remote: {
         ILOG(Debug, Devel) << "Creating a remote QC workflow." << ENDM;
 
-        // Generation of the remote QC topology (task for QC servers, input proxies, mergers and all check runners)
+        // Generation of the remote QC topology (task for QC servers, input proxies, mergers, all check runners, postprocessing)
         quality_control::generateRemoteInfrastructure(specs, configTree);
+        break;
+      }
+      case WorkflowType::FullChain: {
+        ILOG(Debug, Devel) << "Creating a full QC chain workflow." << ENDM;
+        if (!config.options().get<bool>("no-data-sampling") && configTree.count("dataSamplingPolicies") > 0) {
+          DataSampling::GenerateInfrastructure(specs, configTree.get_child("dataSamplingPolicies"));
+        }
+        // Generates a full QC chain (data sampling, tasks, mergers, checks, aggregators, postprocessing)
+        quality_control::generateFullChainInfrastructure(specs, configTree);
         break;
       }
       case WorkflowType::LocalBatch: {

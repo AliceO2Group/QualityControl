@@ -43,7 +43,7 @@ using namespace o2::configuration;
 TaskRunnerConfig getTaskConfig(const std::string& configFilePath, const std::string& taskName, size_t id)
 {
   auto config = ConfigurationFactory::getConfiguration(configFilePath);
-  auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(config->getRecursive());
+  auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(config->getRecursive(), WorkflowType::Standalone);
 
   auto taskSpec = std::find_if(infrastructureSpec.tasks.begin(), infrastructureSpec.tasks.end(), [&taskName](const auto& taskSpec) {
     return taskSpec.taskName == taskName;

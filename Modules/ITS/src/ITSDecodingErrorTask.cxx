@@ -18,6 +18,8 @@
 #include "ITSMFTReconstruction/DecodingStat.h"
 #include "QualityControl/QcInfoLogger.h"
 #include <Framework/InputRecord.h>
+#include "Common/TH1Ratio.h"
+#include "Common/Utils.h"
 
 using namespace o2::framework;
 using namespace o2::itsmft;
@@ -37,7 +39,7 @@ ITSDecodingErrorTask::~ITSDecodingErrorTask()
   delete mChipErrorPlots;
   delete mLinkErrorVsFeeid;
   delete mChipErrorVsFeeid;
-  for (int ilayer = 0; ilayer < 7; ilayer++) {
+  for (int ilayer = 0; ilayer < NLayer; ilayer++) {
     delete mChipErrorVsChipid[ilayer];
   }
 }
@@ -76,6 +78,19 @@ void ITSDecodingErrorTask::createDecodingPlots()
   mChipErrorPlots->SetStats(0);
   mChipErrorPlots->SetFillColor(kRed);
   getObjectsManager()->startPublishing(mChipErrorPlots); // mChipErrorPlots
+
+  hAlwaysBusy = new TH1D("AlwaysBusyChips", "Number of Chips always in BUSY state", 11, 0, 11);
+  setAxisTitle(hAlwaysBusy, "Layer", "Counts");
+  getObjectsManager()->startPublishing(hAlwaysBusy);
+
+  hBusyFraction = std::make_unique<TH1FRatio>("FractionOfBusyChips", "Fraction of chips in BUSY, excluding permanent", 11, 0, 11, false);
+  setAxisTitle(hBusyFraction.get(), "Layer", "BusyViolations / TF / NChips");
+  getObjectsManager()->startPublishing(hBusyFraction.get());
+
+  for (int iBin = 1; iBin <= 11; iBin++) {
+    hAlwaysBusy->GetXaxis()->SetBinLabel(iBin, LayerBinLabels[iBin - 1]);
+    hBusyFraction->GetXaxis()->SetBinLabel(iBin, LayerBinLabels[iBin - 1]);
+  }
 }
 
 void ITSDecodingErrorTask::setAxisTitle(TH1* object, const char* xTitle, const char* yTitle)
@@ -149,8 +164,8 @@ void ITSDecodingErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
         if (de.getChipID() == -1) {
           continue;
         }
-        mChipErrorVsFeeid->Fill(ifee + 1, ierror + 1);
-        mChipErrorVsChipid[ilayer]->Fill(ichip + 1, ierror + 1);
+        mChipErrorVsFeeid->Fill(ifee, ierror + 1);
+        mChipErrorVsChipid[ilayer]->Fill(ichip, ierror + 1);
       }
     }
   }
@@ -162,17 +177,42 @@ void ITSDecodingErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
     int feeChipError = mChipErrorVsFeeid->Integral(1, mChipErrorVsFeeid->GetXaxis()->GetNbins(), ierror + 1, ierror + 1);
     mChipErrorPlots->SetBinContent(ierror + 1, feeChipError);
   }
-
+  mTFCount++;
   end = std::chrono::high_resolution_clock::now();
 }
 
 void ITSDecodingErrorTask::getParameters()
 {
+  mBusyViolationLimit = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "mBusyViolationLimit", mBusyViolationLimit);
 }
 
 void ITSDecodingErrorTask::endOfCycle()
 {
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
+  hBusyFraction->Reset();
+  hAlwaysBusy->Reset();
+
+  int binIterator = 0;
+
+  for (int iLayer = 0; iLayer < NLayer; iLayer++) {
+    for (int iChip = 1; iChip <= nChipsPerLayer[iLayer]; iChip++) {
+
+      if (iLayer > 2 && iChip == nChipsPerLayer[iLayer] / 2)
+        binIterator++; // to account for bot/top barrel
+
+      int nBusyViolations = mChipErrorVsChipid[iLayer]->GetBinContent(iChip, 1);
+      if (1. * nBusyViolations / mTFCount > mBusyViolationLimit) {
+        hAlwaysBusy->Fill(binIterator);
+        continue;
+      }
+      if (nBusyViolations > 0) {
+        hBusyFraction->getNum()->Fill(binIterator, nBusyViolations);
+      }
+    }
+    hBusyFraction->getDen()->SetBinContent(binIterator + 1, mTFCount * nChipsPerLayer[iLayer]);
+    binIterator++;
+  }
+  hBusyFraction->update();
 }
 
 void ITSDecodingErrorTask::endOfActivity(const Activity& /*activity*/)
@@ -182,6 +222,7 @@ void ITSDecodingErrorTask::endOfActivity(const Activity& /*activity*/)
 
 void ITSDecodingErrorTask::resetGeneralPlots()
 {
+  mTFCount++;
   mLinkErrorVsFeeid->Reset();
   mChipErrorVsFeeid->Reset();
   mLinkErrorPlots->Reset();
@@ -189,6 +230,9 @@ void ITSDecodingErrorTask::resetGeneralPlots()
   for (int ilayer = 0; ilayer < 7; ilayer++) {
     mChipErrorVsChipid[ilayer]->Reset();
   }
+  mTFCount = 0;
+  hBusyFraction->Reset();
+  hAlwaysBusy->Reset();
 }
 
 void ITSDecodingErrorTask::reset()

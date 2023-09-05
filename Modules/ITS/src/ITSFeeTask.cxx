@@ -416,54 +416,55 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
     }
 
-    // Operations at any page:
-    //   - decoding identifier of each payload work and increasing counter of TDTs
-    if (mEnablePayloadParse) { // feature under commissioning: can be disabled on the fly
-      int dataformat = (int)o2::raw::RDHUtils::getDataFormat(rdh);
-      if (dataformat != 0 && dataformat != 2) {
-        mDecodingCheck->Fill(ifee, 0);
-      }
-      auto const* payload = it.data();
-      size_t payloadSize = it.size();
-      int PayloadPerGBTW = (dataformat < 2) ? 16 : 10;
-      const uint8_t* gbtw_id;
-      const uint8_t* gbtw_b1;
+    // Operations at any page inside the enabled orbit:
+    //   - decoding identifier of each payload word and increasing counter of TDTs
+    if (mPayloadParseEvery_n_HBF_per_TF > 0) {
+      if ((nStops[ifee] % mPayloadParseEvery_n_HBF_per_TF == 0) && (mTimeFrameId % mPayloadParseEvery_n_TF == 0)) {
+        int dataformat = (int)o2::raw::RDHUtils::getDataFormat(rdh);
+        if (dataformat != 0 && dataformat != 2) {
+          mDecodingCheck->Fill(ifee, 0);
+        }
+        auto const* payload = it.data();
+        size_t payloadSize = it.size();
+        int PayloadPerGBTW = (dataformat < 2) ? 16 : 10;
+        const uint16_t* gbtw_bb; // identifier and byte before
 
-      for (int32_t ip = PayloadPerGBTW; ip <= payloadSize; ip += PayloadPerGBTW) {
-        gbtw_b1 = (const uint8_t*)&payload[ip - 2];
-        gbtw_id = (const uint8_t*)&payload[ip - 1];
-        bool condition = ((*gbtw_id & 0xff) == 0xf0) && ((*gbtw_b1 & 0x1) == 0x1); // checking that it is TDT with packet_done
-        if (condition)
-          TDTcounter[ifee]++;
+        for (int32_t ip = PayloadPerGBTW; ip <= payloadSize; ip += PayloadPerGBTW) {
+          gbtw_bb = (const uint16_t*)&payload[ip - 2];
+          if ((*gbtw_bb & 0xffff) == 0xf001) // checking that it is a TDT (0xf0) with packet_done (0x01)
+            TDTcounter[ifee]++;
+        }
       }
     }
 
     // Operations at the first page of each orbit
     //  - decoding ITS header work and fill histogram with number of active lanes
-    if ((int)(o2::raw::RDHUtils::getPageCounter(rdh)) == 0) {
-      const GBTITSHeaderWord* ihw;
-      try {
-        ihw = reinterpret_cast<const GBTITSHeaderWord*>(it.data());
-      } catch (const std::runtime_error& error) {
-        LOG(error) << "Error during reading its header data: " << error.what();
-        return;
+    if (mEnableIHWReading) {
+      if ((int)(o2::raw::RDHUtils::getPageCounter(rdh)) == 0) {
+        const GBTITSHeaderWord* ihw;
+        try {
+          ihw = reinterpret_cast<const GBTITSHeaderWord*>(it.data());
+        } catch (const std::runtime_error& error) {
+          LOG(error) << "Error during reading its header data: " << error.what();
+          return;
+        }
+
+        uint8_t ihwID = ihw->indexWord.indexBits.id;
+
+        if (ihwID != 0xe0) {
+          mDecodingCheck->Fill(ifee, 3);
+        }
+
+        uint32_t activelaneMask = ihw->IHWcontent.laneBits.activeLanes;
+
+        int nactivelanes = 0;
+        for (int i = 0; i < NLanesMax; i++) {
+          nactivelanes += ((activelaneMask >> i) & 0x1);
+        }
+
+        // if (!RecoveryOngoing) use it if we want a cleaner situation for the checker
+        mActiveLanes->Fill(ifee, nactivelanes);
       }
-
-      uint8_t ihwID = ihw->indexWord.indexBits.id;
-
-      if (ihwID != 0xe0) {
-        mDecodingCheck->Fill(ifee, 3);
-      }
-
-      uint32_t activelaneMask = ihw->IHWcontent.laneBits.activeLanes;
-
-      int nactivelanes = 0;
-      for (int i = 0; i < NLanesMax; i++) {
-        nactivelanes += ((activelaneMask >> i) & 0x1);
-      }
-
-      // if (!RecoveryOngoing) use it if we want a cleaner situation for the checker
-      mActiveLanes->Fill(ifee, nactivelanes);
     }
 
     // Operations at last page of each orbit:
@@ -524,18 +525,20 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
     //  - read triggers in RDH and fill histogram
     //  - fill histogram with packet_done TDTs counted so far and reset counter
     if ((int)(o2::raw::RDHUtils::getStop(rdh))) {
+      // fill trailer count histo and reset counters
+      if (mPayloadParseEvery_n_HBF_per_TF > 0) {
+        if ((nStops[ifee] % mPayloadParseEvery_n_HBF_per_TF == 0) && (mTimeFrameId % mPayloadParseEvery_n_TF == 0)) {
+          if (!RampOngoing && !clockEvt)
+            mTrailerCount->Fill(ifee, TDTcounter[ifee] < 21 ? TDTcounter[ifee] : -1);
+          TDTcounter[ifee] = 0;
+        }
+      }
       nStops[ifee]++;
       for (int i = 0; i < mTriggerType.size(); i++) {
         if (((o2::raw::RDHUtils::getTriggerType(rdh)) >> mTriggerType.at(i).first & 1) == 1) {
           mTrigger->Fill(i + 1);
           mTriggerVsFeeId->Fill(ifee, i + 1);
         }
-      }
-      // fill trailer count histo and reset counters
-      if (mEnablePayloadParse) {
-        if (!RampOngoing && !clockEvt)
-          mTrailerCount->Fill(ifee, TDTcounter[ifee] < 21 ? TDTcounter[ifee] : -1);
-        TDTcounter[ifee] = 0;
       }
     }
   }
@@ -604,7 +607,9 @@ void ITSFeeTask::getParameters()
   mNPayloadSizeBins = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "NPayloadSizeBins", mNPayloadSizeBins);
   mResetLaneStatus = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "ResetLaneStatus", mResetLaneStatus);
   mResetPayload = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "ResetPayload", mResetPayload);
-  mEnablePayloadParse = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "EnablePayloadParsing", mEnablePayloadParse);
+  mPayloadParseEvery_n_HBF_per_TF = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "PayloadParsingEvery_n_HBFperTF", mPayloadParseEvery_n_HBF_per_TF);
+  mPayloadParseEvery_n_TF = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "PayloadParsingEvery_n_TF", mPayloadParseEvery_n_TF);
+  mEnableIHWReading = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "EnableIHWReading", mEnableIHWReading);
 }
 
 void ITSFeeTask::getStavePoint(int layer, int stave, double* px, double* py)

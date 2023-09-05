@@ -36,6 +36,7 @@
                 },
                 "location": "local",
                 "taskParameters": {
+                    "mBusyViolationLimit": "0.75"
                 }
             }
     },

@@ -88,10 +88,10 @@ validity_time_t
   validity_time_t selected = 0;
   if (not_on_limit(ecsTimestamp)) {
     selected = ecsTimestamp;
-  } else if (not_on_limit(currentTimestamp)) {
-    selected = currentTimestamp;
-  } else {
+  } else if (not_on_limit(configTimestamp)) {
     selected = configTimestamp;
+  } else {
+    selected = currentTimestamp;
   }
   ILOG(Info, Devel) << "Received the following activity boundary propositions: " << ecsTimestamp
                     << ", " << configTimestamp << ", " << currentTimestamp << ". Selected: " << selected << ENDM;

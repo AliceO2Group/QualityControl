@@ -25,7 +25,9 @@
 #include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/PostProcessingRunnerConfig.h"
 #include "QualityControl/Triggers.h"
+#include "QualityControl/Activity.h"
 #include "QualityControl/DatabaseInterface.h"
+#include "WorkflowType.h"
 
 namespace o2::framework
 {
@@ -64,7 +66,7 @@ class PostProcessingRunner
   ~PostProcessingRunner() = default;
 
   /// \brief Initialization. Creates configuration structures out of the ptree. Throws on errors.
-  void init(const boost::property_tree::ptree& config);
+  void init(const boost::property_tree::ptree& config, o2::quality_control::core::WorkflowType workflowType);
   /// \brief Initialization. Throws on errors.
   void init(const PostProcessingRunnerConfig& runnerConfig, const PostProcessingConfig& taskConfig);
   /// \brief One iteration over the event loop. Throws on errors. Returns false when it can gracefully exit.
@@ -91,6 +93,7 @@ class PostProcessingRunner
   static PostProcessingRunnerConfig extractConfig(const core::CommonSpec& commonSpec, const PostProcessingTaskSpec& ppTaskSpec);
 
  private:
+  void updateValidity(const Trigger& trigger);
   void doInitialize(const Trigger& trigger);
   void doUpdate(const Trigger& trigger);
   void doFinalize(const Trigger& trigger);
@@ -113,6 +116,7 @@ class PostProcessingRunner
   std::function<void(const o2::quality_control::core::MonitorObjectCollection*)> mPublicationCallback = nullptr;
 
   std::string mID{};
+  core::Activity mActivity;
   PostProcessingConfig mTaskConfig;
   PostProcessingRunnerConfig mRunnerConfig;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;

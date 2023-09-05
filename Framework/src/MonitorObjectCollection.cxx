@@ -17,7 +17,6 @@
 #include "QualityControl/MonitorObjectCollection.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/QcInfoLogger.h"
-#include "QualityControl/ActivityHelpers.h"
 
 #include <Mergers/MergerAlgorithm.h>
 
@@ -103,6 +102,35 @@ void MonitorObjectCollection::setDetector(const std::string& detector)
 const std::string& MonitorObjectCollection::getDetector() const
 {
   return mDetector;
+}
+
+MergeInterface* MonitorObjectCollection::cloneMovingWindow() const
+{
+  auto mw = new MonitorObjectCollection();
+  mw->SetOwner(true);
+  mw->setDetector(this->getDetector());
+  auto mwName = std::string(this->GetName()) + "/mw";
+  mw->SetName(mwName.c_str());
+
+  auto it = this->MakeIterator();
+  while (auto obj = it->Next()) {
+    auto mo = dynamic_cast<MonitorObject*>(obj);
+    if (mo == nullptr) {
+      ILOG(Warning) << "Could not cast an object of type '" << obj->ClassName()
+                    << "' in MonitorObjectCollection to MonitorObject, skipping." << ENDM;
+      continue;
+    }
+    if (!mo->getCreateMovingWindow()) {
+      continue;
+    }
+    auto clonedMO = dynamic_cast<MonitorObject*>(mo->Clone());
+    clonedMO->setTaskName(clonedMO->getTaskName() + "/mw");
+    clonedMO->setIsOwner(true);
+    mw->Add(clonedMO);
+  }
+  delete it;
+
+  return mw;
 }
 
 } // namespace o2::quality_control::core

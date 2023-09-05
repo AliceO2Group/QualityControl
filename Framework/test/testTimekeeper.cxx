@@ -157,23 +157,23 @@ TEST_CASE("timekeeper_synchronous")
     CHECK(tk->getActivityDuration().getMin() == 1);
     CHECK(tk->getActivityDuration().getMax() == 4);
 
-    // current timestamp second
+    // config second
     tk->setStartOfActivity(0, 2, 3);
     tk->setEndOfActivity(0, 5, 6);
-    CHECK(tk->getActivityDuration().getMin() == 3);
-    CHECK(tk->getActivityDuration().getMax() == 6);
-    tk->setStartOfActivity(-1, 2, 3);
-    tk->setEndOfActivity(-1, 5, 6);
-    CHECK(tk->getActivityDuration().getMin() == 3);
-    CHECK(tk->getActivityDuration().getMax() == 6);
-
-    // config as the last resort
-    tk->setStartOfActivity(0, 2, 0);
-    tk->setEndOfActivity(0, 5, 0);
     CHECK(tk->getActivityDuration().getMin() == 2);
     CHECK(tk->getActivityDuration().getMax() == 5);
-    tk->setStartOfActivity(-1, 2, 0);
-    tk->setEndOfActivity(-1, 5, 0);
+    tk->setStartOfActivity(-1, 2, 3);
+    tk->setEndOfActivity(-1, 5, 6);
+    CHECK(tk->getActivityDuration().getMin() == 2);
+    CHECK(tk->getActivityDuration().getMax() == 5);
+
+    // current timestamp as the last resort
+    tk->setStartOfActivity(0, 0, 2);
+    tk->setEndOfActivity(0, 0, 5);
+    CHECK(tk->getActivityDuration().getMin() == 2);
+    CHECK(tk->getActivityDuration().getMax() == 5);
+    tk->setStartOfActivity(-1, -1, 2);
+    tk->setEndOfActivity(-1, -1, 5);
     CHECK(tk->getActivityDuration().getMin() == 2);
     CHECK(tk->getActivityDuration().getMax() == 5);
   }

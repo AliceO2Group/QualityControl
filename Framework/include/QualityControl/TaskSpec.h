@@ -74,6 +74,7 @@ struct TaskSpec {
   std::vector<size_t> mergersPerLayer{ 1 };
   GRPGeomRequestSpec grpGeomRequestSpec;
   GlobalTrackingDataRequestSpec globalTrackingDataRequest;
+  std::vector<std::string> movingWindows;
 };
 
 } // namespace o2::quality_control::core

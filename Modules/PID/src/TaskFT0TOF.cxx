@@ -189,7 +189,7 @@ void TaskFT0TOF::initialize(o2::framework::InitContext& /*ctx*/)
   mHistDeltaEvTimeTOFVsFT0ACSameBC = new TH1F("DeltaEvTimeTOFVsFT0ACSameBC", ";t_{0}^{TOF} - t_{0}^{FT0AC} (ps)", 200, -2000., +2000);
   mHistDeltaEvTimeTOFVsFT0ASameBC = new TH1F("DeltaEvTimeTOFVsFT0ASameBC", ";t_{0}^{TOF} - t_{0}^{FT0A} (ps)", 200, -2000., +2000);
   mHistDeltaEvTimeTOFVsFT0CSameBC = new TH1F("DeltaEvTimeTOFVsFT0CSameBC", ";t_{0}^{TOF} - t_{0}^{FT0C} (ps)", 200, -2000., +2000);
-  mHistDeltaBCTOFFT0 = new TH1I("DeltaBCTOFFT0", "#Delta BC (TOF-FT0 evt time);#Delta BC", 16, -8, +8);
+  mHistDeltaBCTOFFT0 = new TH1D("DeltaBCTOFFT0", "#Delta BC (TOF-FT0 evt time);#Delta BC", 16, -8, +8);
   mHistMismatchVsEta = new TH2F("mHistMismatchVsEta", ";#eta;t_{TOF}-t_{0}^{FT0AC}-L_{ch}/c", 21, -1., +1., 6500, -30000, +100000);
   mProfLoverCvsEta = new TProfile("LoverCvsEta", ";#eta;L_{ch}/c", 21, -1., +1.);
 

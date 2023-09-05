@@ -23,6 +23,7 @@
 #include <TObjArray.h>
 
 #include <utility>
+#include <algorithm>
 
 using namespace o2::quality_control::core;
 using namespace AliceO2::Common;
@@ -66,6 +67,7 @@ void ObjectsManager::startPublishing(TObject* object)
   auto* newObject = new MonitorObject(object, mTaskName, mTaskClass, mDetectorName);
   newObject->setIsOwner(false);
   newObject->setActivity(mActivity);
+  newObject->setCreateMovingWindow(std::find(mMovingWindowsList.begin(), mMovingWindowsList.end(), object->GetName()) != mMovingWindowsList.end());
   mMonitorObjects->Add(newObject);
   mUpdateServiceDiscovery = true;
 }
@@ -221,6 +223,16 @@ void ObjectsManager::setActivity(const Activity& activity)
     auto* mo = dynamic_cast<MonitorObject*>(tobj);
     mo->setActivity(activity);
   }
+}
+
+void ObjectsManager::setMovingWindowsList(const vector<std::string>& movingWindows)
+{
+  mMovingWindowsList = movingWindows;
+}
+
+const std::vector<std::string>& ObjectsManager::getMovingWindowsList() const
+{
+  return mMovingWindowsList;
 }
 
 } // namespace o2::quality_control::core

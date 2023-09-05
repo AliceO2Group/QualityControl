@@ -129,7 +129,10 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
     globalConfig.activityPeriodName,
     globalConfig.activityPassName,
     globalConfig.activityProvenance,
-    { globalConfig.activityStart, globalConfig.activityEnd }
+    { globalConfig.activityStart, globalConfig.activityEnd },
+    globalConfig.activityBeamType,
+    globalConfig.activityPartitionName,
+    globalConfig.activityFillNumber
   };
 
   o2::globaltracking::RecoContainer rd;
@@ -156,7 +159,8 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
     globalConfig.infologgerDiscardParameters,
     fallbackActivity,
     grpGeomRequest,
-    globalTrackingDataRequest
+    globalTrackingDataRequest,
+    taskSpec.movingWindows
   };
 }
 
