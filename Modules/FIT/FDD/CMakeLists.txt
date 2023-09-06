@@ -11,6 +11,7 @@ target_sources(O2QcFDD PRIVATE
                                src/CFDEffCheck.cxx
                                src/OutOfBunchCollCheck.cxx
                                src/TriggersSwVsTcmCheck.cxx
+                               src/OutOfBunchCollFeeModulesCheck.cxx
                                )
 
 target_include_directories(
@@ -37,6 +38,7 @@ add_root_dictionary(O2QcFDD
           include/FDD/CFDEffCheck.h
           include/FDD/OutOfBunchCollCheck.h
           include/FDD/TriggersSwVsTcmCheck.h
+          include/FDD/OutOfBunchCollFeeModulesCheck.h
   LINKDEF include/FDD/LinkDef.h)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/FDD

@@ -21,6 +21,7 @@
 #include "QualityControl/DatabaseInterface.h"
 #include "CCDB/CcdbApi.h"
 #include "CommonConstants/LHCConstants.h"
+#include "DataFormatsFDD/LookUpTable.h"
 
 #include "FDDBase/Constants.h"
 #include "DataFormatsFDD/ChannelData.h"
@@ -88,10 +89,13 @@ class PostProcTask final : public quality_control::postprocessing::PostProcessin
   // if storage size matters it can be replaced with TH1
   // and TH2 can be created based on it on the fly, but only TH1 would be stored
   std::unique_ptr<TH2F> mHistBcPattern;
+  std::unique_ptr<TH2F> mHistBcPatternFee;
   std::unique_ptr<TH2F> mHistBcTrgOutOfBunchColl;
-
+  std::unique_ptr<TH2F> mHistBcFeeOutOfBunchCollForVtxTrg;
   std::map<unsigned int, TH1D*> mMapTrgHistBC;
 
+  std::array<uint8_t, sNCHANNELS_PM> mChID2PMhash; // map chID->hashed PM value
+  std::map<std::string, uint8_t> mMapFEE2hash;
   int mLowTimeThreshold{ -192 };
   int mUpTimeThreshold{ 192 };
   double mLowAmpSat;

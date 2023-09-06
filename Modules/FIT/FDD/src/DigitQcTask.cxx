@@ -28,13 +28,8 @@
 #include "DataFormatsFDD/ChannelData.h"
 #include "DataFormatsFDD/Digit.h"
 
-#include "FITCommon/HelperHist.h"
-#include "FITCommon/HelperCommon.h"
-#include "FITCommon/HelperFIT.h"
-
 namespace o2::quality_control_modules::fdd
 {
-using namespace o2::quality_control_modules::fit;
 DigitQcTask::~DigitQcTask()
 {
   delete mListHistGarbage;
@@ -246,24 +241,23 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistPmTcmSumAmpC = std::make_unique<TH2F>("PmTcmSumAmpC", "Comparison of sum of amplitudes C from PM and TCM;Sum of amplitudes(TCM), side C;PM - TCM", 2e2, 0, 1e3, 2e3, -1e3 - 0.5, 1e3 - 0.5);
   mHistPmTcmAverageTimeC = std::make_unique<TH2F>("PmTcmAverageTimeC", "Comparison of average time C from PM and TCM;Average time(TCM), side C;PM - TCM", 410, -2050, 2050, 820, -410 - 0.5, 410 - 0.5);
   mHistTriggersSw = std::make_unique<TH1F>("TriggersSoftware", "Triggers from software", mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
-
-  const auto mapBasicTrgBits = HelperTrgFIT::sMapBasicTrgBitsFDD;
-  const std::map<unsigned int, std::string> mapTrgValidationStatus = {
-    { TrgComparisonResult::kSWonly, "Sw only" },
-    { TrgComparisonResult::kTCMonly, "TCM only" },
-    { TrgComparisonResult::kNone, "neither TCM nor Sw" },
-    { TrgComparisonResult::kBoth, "both TCM and Sw" }
-  };
-  mHistTriggersSoftwareVsTCM = o2::quality_control_modules::fit::helper::registerHist<TH2F>(getObjectsManager(), "COLZ", "TriggersSoftwareVsTCM", "Comparison of triggers from software and TCM;;Trigger name", mapBasicTrgBits, mapTrgValidationStatus);
-
+  mHistTriggersSoftwareVsTCM = std::make_unique<TH2F>("TriggersSoftwareVsTCM", "Comparison of triggers from software and TCM;;Trigger name", mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size(), 4, 0, 4);
+  mHistTriggersSoftwareVsTCM->SetOption("colz");
+  mHistTriggersSoftwareVsTCM->SetStats(0);
   for (const auto& entry : mMapDigitTrgNames) {
     mHistOrbitVsTrg->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
     mHistTriggersCorrelation->GetXaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
     mHistTriggersCorrelation->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
     mHistBCvsTrg->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
     mHistTriggersSw->GetXaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
+    mHistTriggersSoftwareVsTCM->GetXaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
   }
   mHistTriggersSw->GetXaxis()->SetRange(1, 5);
+  mHistTriggersSoftwareVsTCM->GetXaxis()->SetRange(1, 5);
+  mHistTriggersSoftwareVsTCM->GetYaxis()->SetBinLabel(TrgComparisonResult::kSWonly + 1, "Sw only");
+  mHistTriggersSoftwareVsTCM->GetYaxis()->SetBinLabel(TrgComparisonResult::kTCMonly + 1, "TCM only");
+  mHistTriggersSoftwareVsTCM->GetYaxis()->SetBinLabel(TrgComparisonResult::kNone + 1, "neither TCM nor Sw");
+  mHistTriggersSoftwareVsTCM->GetYaxis()->SetBinLabel(TrgComparisonResult::kBoth + 1, "both TCM and Sw");
 
   mListHistGarbage = new TList();
   mListHistGarbage->SetOwner(kTRUE);
@@ -305,9 +299,11 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   mHistBCvsFEEmodules = std::make_unique<TH2F>("BCvsFEEmodules", "BC vs FEE module;BC;FEE", sBCperOrbit, 0, sBCperOrbit, mapFEE2hash.size(), 0, mapFEE2hash.size());
   mHistOrbitVsFEEmodules = std::make_unique<TH2F>("OrbitVsFEEmodules", "Orbit vs FEE module;Orbit;FEE", sOrbitsPerTF, 0, sOrbitsPerTF, mapFEE2hash.size(), 0, mapFEE2hash.size());
+  mHistBcVsFeeForVtxTrg = std::make_unique<TH2F>("BCvsFEEmodulesForVtxTrg", "BC vs FEE module for Vertex trigger;BC;FEE", sBCperOrbit, 0, sBCperOrbit, mapFEE2hash.size(), 0, mapFEE2hash.size());
   for (const auto& entry : mapFEE2hash) {
     mHistBCvsFEEmodules->GetYaxis()->SetBinLabel(entry.second + 1, entry.first.c_str());
     mHistOrbitVsFEEmodules->GetYaxis()->SetBinLabel(entry.second + 1, entry.first.c_str());
+    mHistBcVsFeeForVtxTrg->GetYaxis()->SetBinLabel(entry.second + 1, entry.first.c_str());
   }
   /// ak1
   mHistTimeSum2Diff = std::make_unique<TH2F>("timeSumVsDiff", "time A/C side: sum VS diff;(TOC-TOA)/2 [ns];(TOA+TOC)/2 [ns]", 2000, -52.08, 52.08, 2000, -52.08, 52.08); // range of 52.08 ns = 4000*13.02ps = 4000 channels
@@ -408,6 +404,8 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->setDefaultDrawOptions(mHistAmp2Ch.get(), "COLZ");
   getObjectsManager()->startPublishing(mHistBCvsFEEmodules.get());
   getObjectsManager()->setDefaultDrawOptions(mHistBCvsFEEmodules.get(), "COLZ");
+  getObjectsManager()->startPublishing(mHistBcVsFeeForVtxTrg.get());
+  getObjectsManager()->setDefaultDrawOptions(mHistBcVsFeeForVtxTrg.get(), "COLZ");
   getObjectsManager()->startPublishing(mHistOrbitVsTrg.get());
   getObjectsManager()->setDefaultDrawOptions(mHistOrbitVsTrg.get(), "COLZ");
   getObjectsManager()->startPublishing(mHistOrbitVsFEEmodules.get());
@@ -436,6 +434,8 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->setDefaultDrawOptions(mHistPmTcmAverageTimeC.get(), "COLZ");
   getObjectsManager()->startPublishing(mHistTriggersCorrelation.get());
   getObjectsManager()->setDefaultDrawOptions(mHistTriggersCorrelation.get(), "COLZ");
+  getObjectsManager()->startPublishing(mHistTriggersSoftwareVsTCM.get());
+  getObjectsManager()->setDefaultDrawOptions(mHistTriggersSoftwareVsTCM.get(), "COLZ");
 
   for (int i = 0; i < getObjectsManager()->getNumberPublishedObjects(); i++) {
     TH1* obj = dynamic_cast<TH1*>(getObjectsManager()->getMonitorObject(i)->getObject());
@@ -458,6 +458,7 @@ void DigitQcTask::startOfActivity(const Activity& activity)
   mHistNumCFD->Reset();
   mHistTimeSum2Diff->Reset();
   mHistBCvsFEEmodules->Reset();
+  mHistBcVsFeeForVtxTrg->Reset();
   mHistOrbitVsTrg->Reset();
   mHistOrbitVsFEEmodules->Reset();
   mHistTriggersCorrelation->Reset();
@@ -718,6 +719,8 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     for (const auto& feeHash : setFEEmodules) {
       mHistBCvsFEEmodules->Fill(static_cast<double>(digit.getIntRecord().bc), static_cast<double>(feeHash));
       mHistOrbitVsFEEmodules->Fill(static_cast<double>(digit.getIntRecord().orbit % sOrbitsPerTF), static_cast<double>(feeHash));
+      if (digit.mTriggers.getVertex())
+        mHistBcVsFeeForVtxTrg->Fill(static_cast<double>(digit.getIntRecord().bc), static_cast<double>(feeHash));
     }
 
     if (isTCM && digit.mTriggers.getDataIsValid() && !digit.mTriggers.getOutputsAreBlocked()) {
@@ -946,6 +949,7 @@ void DigitQcTask::reset()
   mHistCycleDurationRange->Reset();
   mHistBCvsTrg->Reset();
   mHistBCvsFEEmodules->Reset();
+  mHistBcVsFeeForVtxTrg->Reset();
   mHistOrbitVsTrg->Reset();
   mHistOrbitVsFEEmodules->Reset();
   mHistPmTcmNchA->Reset();
