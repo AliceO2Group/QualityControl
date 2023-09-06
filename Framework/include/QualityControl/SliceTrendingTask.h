@@ -32,6 +32,7 @@
 
 class TCanvas;
 class TObject;
+class TLegend;
 
 namespace o2::quality_control::repository
 {
@@ -81,6 +82,7 @@ class SliceTrendingTask : public PostProcessingInterface
 
   template <typename T>
   void beautifyGraph(T& graph, const SliceTrendingTaskConfig::Plot& plotconfig, TCanvas* canv); // beautify function for TGraphs and TMultiGraphs
+  void beautifyLegend(TLegend* geg, const SliceTrendingTaskConfig::Plot& plotconfig, TCanvas* canv);
 
   SliceTrendingTaskConfig mConfig;
   MetaData mMetaData;

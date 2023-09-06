@@ -199,6 +199,7 @@ void SliceTrendingTask::generatePlots()
           c->cd(1)->SetRightMargin(0.01);
           c->cd(2)->SetLeftMargin(0.01);
           c->cd(2)->SetRightMargin(0.01);
+          beautifyLegend(legend, plot, c);
         } else {
           ILOG(Error, Support) << "No legend in multigraph-time" << ENDM;
           c->cd(1);
@@ -542,4 +543,26 @@ void SliceTrendingTask::beautifyGraph(T& graph, const SliceTrendingTaskConfig::P
   } else if (plotconfig.varexp.find(":meta.runNumber") != std::string::npos || plotconfig.varexp.find(":run") != std::string::npos || plotconfig.varexp.find(":multigraphrun") != std::string::npos) {
     graph->GetXaxis()->SetNoExponent(true);
   }
+}
+
+void SliceTrendingTask::beautifyLegend(TLegend* leg, const SliceTrendingTaskConfig::Plot& plotconfig, TCanvas* canv)
+{
+  int ncolums = 2;
+  try {
+    ncolums = std::stoi(plotconfig.legendNColums);
+  } catch (...) {
+    LOG(error) << "key legNColums must be integer" << ENDM;
+  }
+  leg->SetNColumns(ncolums);
+
+  double textsize = 2.0;
+  try {
+    textsize = std::stod(plotconfig.legendTextSize);
+  } catch (...) {
+    LOG(error) << "key legendTextSize must be double" << ENDM;
+  }
+  leg->SetTextSize(textsize);
+
+  canv->Update();
+  canv->Modified();
 }

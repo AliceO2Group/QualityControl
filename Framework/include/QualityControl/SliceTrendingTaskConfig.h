@@ -49,6 +49,8 @@ struct SliceTrendingTaskConfig : PostProcessingConfig {
     std::string graphYRange;
     std::string graphXRange;
     std::string graphAxisLabel;
+    std::string legendNColums;
+    std::string legendTextSize;
   };
 
   struct DataSource {
