@@ -9,7 +9,6 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
-
 #include "FDD/OutOfBunchCollFeeModulesCheck.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"

@@ -187,7 +187,6 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
     }
   }
 
-
   const auto& lut = o2::fdd::SingleLUT::Instance().getVecMetadataFEE();
   auto lutSorted = lut;
   std::sort(lutSorted.begin(), lutSorted.end(), [](const auto& first, const auto& second) { return first.mModuleName < second.mModuleName; });
@@ -461,8 +460,8 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
 
   // Create histogram with bc pattern for FEE modules
   mHistBcPatternFee->Reset();
-  for (int i = 0; i < sBCperOrbit ; i++) {
-    for (int j = 0; j < mMapFEE2hash.size() ; j++) {
+  for (int i = 0; i < sBCperOrbit; i++) {
+    for (int j = 0; j < mMapFEE2hash.size(); j++) {
       mHistBcPatternFee->SetBinContent(i + 1, j + 1, bcPattern.testBC(i));
     }
   }
@@ -494,36 +493,36 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
     projValidatedSWandHW->LabelsDeflate();
     mHistTrgValidation->Divide(projOnlyHWorSW.get(), projValidatedSWandHW.get());
   }
-/*
-  // Download histogram BCvsFEEmodulesForVtxTrg from database
-  auto moBcVsFeeModulesForVtxTrg = mDatabase->retrieveMO(mPathDigitQcTask, "BCvsFEEmodulesForVtxTrg", t.timestamp, t.activity);
-  auto hBcVsFeeModulesForVtxTrg = moBcVsFeeModulesForVtxTrg ? dynamic_cast<TH2F*>(moBcVsFeeModulesForVtxTrg->getObject()) : nullptr;
+  /*
+    // Download histogram BCvsFEEmodulesForVtxTrg from database
+    auto moBcVsFeeModulesForVtxTrg = mDatabase->retrieveMO(mPathDigitQcTask, "BCvsFEEmodulesForVtxTrg", t.timestamp, t.activity);
+    auto hBcVsFeeModulesForVtxTrg = moBcVsFeeModulesForVtxTrg ? dynamic_cast<TH2F*>(moBcVsFeeModulesForVtxTrg->getObject()) : nullptr;
 
-  if (!hBcVsFeeModulesForVtxTrg) {
-    ILOG(Error, Support) << "MO \"BCvsFEEmodulesForVtxTrg\" NOT retrieved!!!" << ENDM;
-    return;
-  } else {
+    if (!hBcVsFeeModulesForVtxTrg) {
+      ILOG(Error, Support) << "MO \"BCvsFEEmodulesForVtxTrg\" NOT retrieved!!!" << ENDM;
+      return;
+    } else {
 
-    mHistBcFeeOutOfBunchCollForVtxTrg->Reset();
-    float vmax = hBcVsFeeModulesForVtxTrg->GetBinContent(hBcVsFeeModulesForVtxTrg->GetMaximumBin());
-    mHistBcFeeOutOfBunchCollForVtxTrg->Add(hBcVsFeeModulesForVtxTrg, mHistBcPatternFee.get(), 1, -1 * vmax);
+      mHistBcFeeOutOfBunchCollForVtxTrg->Reset();
+      float vmax = hBcVsFeeModulesForVtxTrg->GetBinContent(hBcVsFeeModulesForVtxTrg->GetMaximumBin());
+      mHistBcFeeOutOfBunchCollForVtxTrg->Add(hBcVsFeeModulesForVtxTrg, mHistBcPatternFee.get(), 1, -1 * vmax);
 
-    for (int i = 0; i < sBCperOrbit; i++) {
-      for (int j = 0; j < mMapFEE2hash.size() ; j++) {
-        if (mHistBcFeeOutOfBunchCollForVtxTrg->GetBinContent(i + 1, j + 1) < 0) {
-          mHistBcFeeOutOfBunchCollForVtxTrg->SetBinContent(i + 1, j + 1, 0);
+      for (int i = 0; i < sBCperOrbit; i++) {
+        for (int j = 0; j < mMapFEE2hash.size() ; j++) {
+          if (mHistBcFeeOutOfBunchCollForVtxTrg->GetBinContent(i + 1, j + 1) < 0) {
+            mHistBcFeeOutOfBunchCollForVtxTrg->SetBinContent(i + 1, j + 1, 0);
+          }
         }
       }
-    }
 
-    // Add metadata to histogram OutOfBunchColl_BCvsFeeModulesForOrATrg
-    mHistBcFeeOutOfBunchCollForVtxTrg->SetEntries(mHistBcFeeOutOfBunchCollForVtxTrg->Integral(1, sBCperOrbit, 1, mMapFEE2hash.size()));
-    for (int iBin = 1; iBin <= mMapFEE2hash.size(); iBin++) {
-      const std::string metadataKey = std::to_string(iBin);
-      const std::string metadataValue = std::to_string(hBcVsFeeModulesForVtxTrg->Integral(1, sBCperOrbit, iBin, iBin));
-      getObjectsManager()->getMonitorObject(mHistBcFeeOutOfBunchCollForVtxTrg->GetName())->addOrUpdateMetadata(metadataKey, metadataValue);
-    }
-  }*/
+      // Add metadata to histogram OutOfBunchColl_BCvsFeeModulesForOrATrg
+      mHistBcFeeOutOfBunchCollForVtxTrg->SetEntries(mHistBcFeeOutOfBunchCollForVtxTrg->Integral(1, sBCperOrbit, 1, mMapFEE2hash.size()));
+      for (int iBin = 1; iBin <= mMapFEE2hash.size(); iBin++) {
+        const std::string metadataKey = std::to_string(iBin);
+        const std::string metadataValue = std::to_string(hBcVsFeeModulesForVtxTrg->Integral(1, sBCperOrbit, iBin, iBin));
+        getObjectsManager()->getMonitorObject(mHistBcFeeOutOfBunchCollForVtxTrg->GetName())->addOrUpdateMetadata(metadataKey, metadataValue);
+      }
+    }*/
 }
 
 void PostProcTask::finalize(Trigger t, framework::ServiceRegistryRef)

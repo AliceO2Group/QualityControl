@@ -9,7 +9,6 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
-
 #ifndef QC_MODULE_FDD_OUTOFBUNCHCOLLFEEMODULESCHECK_H
 #define QC_MODULE_FDD_OUTOFBUNCHCOLLFEEMODULESCHECK_H
 
