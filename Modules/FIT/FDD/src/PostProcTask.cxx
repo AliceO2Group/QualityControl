@@ -502,7 +502,7 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
     float vmax = hBcVsFeeModulesForVtxTrg->GetBinContent(hBcVsFeeModulesForVtxTrg->GetMaximumBin());
     mHistBcFeeOutOfBunchCollForVtxTrg->Add(hBcVsFeeModulesForVtxTrg, mHistBcPatternFee.get(), 1, -1 * vmax);
     for (int i = 0; i < sBCperOrbit; i++) {
-      for (int j = 0; j < mMapFEE2hash.size() ; j++) {
+      for (int j = 0; j < mMapFEE2hash.size(); j++) {
         if (mHistBcFeeOutOfBunchCollForVtxTrg->GetBinContent(i + 1, j + 1) < 0) {
           mHistBcFeeOutOfBunchCollForVtxTrg->SetBinContent(i + 1, j + 1, 0);
         }
