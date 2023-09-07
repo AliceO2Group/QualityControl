@@ -113,6 +113,7 @@ void TH2SliceReductor::update(TObject* obj, std::vector<SliceInfo>& reducedSourc
           binXLow = 1;
           binXUp = histo->GetNbinsX();
         }
+        auto thisRangeX = thisRange; // Backup x-title Needed to have proper y titles for each slice when looping over y slices
 
         for (int jY = 0; jY < numberSlicesY; jY++) {
           float sliceLabelY = 0.;
@@ -120,9 +121,9 @@ void TH2SliceReductor::update(TObject* obj, std::vector<SliceInfo>& reducedSourc
           if (useSlicingY) {
             getBinSlices(histo->GetYaxis(), axis[1][jY], axis[1][jY + 1], binYLow, binYUp, sliceLabelY);
             histo->GetYaxis()->SetRange(binYLow, binYUp);
-            thisRange += fmt::format(" and RangeY: [{0:.1f}, {1:.1f}]", axis[1][jY], axis[1][jY + 1]);
+            thisRange = thisRangeX + fmt::format(" and RangeY: [{0:.1f}, {1:.1f}]", axis[1][jY], axis[1][jY + 1]);
           } else {
-            thisRange += fmt::format(" and RangeY (default): [{0:.1f}, {1:.1f}]", histo->GetYaxis()->GetXmin(), histo->GetYaxis()->GetXmax());
+            thisRange += thisRangeX + fmt::format(" and RangeY (default): [{0:.1f}, {1:.1f}]", histo->GetYaxis()->GetXmin(), histo->GetYaxis()->GetXmax());
             sliceLabelY = (histo->GetYaxis()->GetXmin() + histo->GetYaxis()->GetXmax()) / 2.;
             binYLow = 1;
             binYUp = histo->GetNbinsY();
