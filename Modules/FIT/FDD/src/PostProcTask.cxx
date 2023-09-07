@@ -493,7 +493,7 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
     projValidatedSWandHW->LabelsDeflate();
     mHistTrgValidation->Divide(projOnlyHWorSW.get(), projValidatedSWandHW.get());
   }
-  /*
+  
     // Download histogram BCvsFEEmodulesForVtxTrg from database
     auto moBcVsFeeModulesForVtxTrg = mDatabase->retrieveMO(mPathDigitQcTask, "BCvsFEEmodulesForVtxTrg", t.timestamp, t.activity);
     auto hBcVsFeeModulesForVtxTrg = moBcVsFeeModulesForVtxTrg ? dynamic_cast<TH2F*>(moBcVsFeeModulesForVtxTrg->getObject()) : nullptr;
@@ -522,7 +522,7 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
         const std::string metadataValue = std::to_string(hBcVsFeeModulesForVtxTrg->Integral(1, sBCperOrbit, iBin, iBin));
         getObjectsManager()->getMonitorObject(mHistBcFeeOutOfBunchCollForVtxTrg->GetName())->addOrUpdateMetadata(metadataKey, metadataValue);
       }
-    }*/
+    }
 }
 
 void PostProcTask::finalize(Trigger t, framework::ServiceRegistryRef)
