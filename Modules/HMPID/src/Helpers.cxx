@@ -160,5 +160,4 @@ Quality QualityCheckerHV::getQualityHV()
 
 //_________________________________________________________________________________________
 
-
 } // namespace o2::quality_control_modules::hmpid

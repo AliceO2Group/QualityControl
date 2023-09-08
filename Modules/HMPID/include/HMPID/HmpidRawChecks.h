@@ -14,7 +14,7 @@
 /// \author Nicola Nicassio
 ///
 
-#ifndef QC_MODULE_HMPID_RAWCHECK_H 
+#ifndef QC_MODULE_HMPID_RAWCHECK_H
 #define QC_MODULE_HMPID_RAWCHECK_H
 
 #include "HMPID/Helpers.h"
@@ -47,10 +47,9 @@ class HmpidRawChecks : public o2::quality_control::checker::CheckInterface
   void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
-  //std::string getAcceptedType() override;
+  // std::string getAcceptedType() override;
 
  private:
-
   std::array<Quality, 14> check_hHmpBigMap(TProfile2D* h); // <-- Dimensione da chiarire
   std::array<Quality, 42> check_hHmpHvSectorQ(TH2F* h);
   std::array<Quality, 14> check_hHmpPadOccPrf(TProfile* h);
@@ -75,17 +74,16 @@ class HmpidRawChecks : public o2::quality_control::checker::CheckInterface
   double mMinBusyTime{ 0.2 };
   double mMaxBusyTime{ 0.9 };
 
-  double mMinHVTotalEntriesToCheckQuality{1000};
-  double mFractionXBinsHVSingleModuleEntriesToLabelGoodBadQuality{0.005};
+  double mMinHVTotalEntriesToCheckQuality{ 1000 };
+  double mFractionXBinsHVSingleModuleEntriesToLabelGoodBadQuality{ 0.005 };
 
   // Checker identifiers
-  
+
   double mMaxBadDDLForMedium{ 1 };
   double mMaxBadDDLForBad{ 3 };
 
   double mMaxBadHVForMedium{ 7 };
   double mMaxBadHVForBad{ 10 };
-
 
   std::vector<std::string> mErrorMessages;
   std::vector<Color_t> mErrorMessagesColor;

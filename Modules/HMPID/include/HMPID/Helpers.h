@@ -34,44 +34,41 @@ using namespace o2::quality_control::core;
 namespace o2::quality_control_modules::hmpid
 {
 
-    constexpr int getNumDDL() { return 14; }
+constexpr int getNumDDL() { return 14; }
 
-    constexpr int getNumHV() { return 42; }
+constexpr int getNumHV() { return 42; }
 
-    bool matchHistName(std::string hist, std::string name);
+bool matchHistName(std::string hist, std::string name);
 
-    //_________________________________________________________________________________________
+//_________________________________________________________________________________________
 
-    // check plots vs DDL
-    struct QualityCheckerDDL
-    {
-        QualityCheckerDDL();
+// check plots vs DDL
+struct QualityCheckerDDL {
+  QualityCheckerDDL();
 
-        void resetDDL();
-        void addCheckResultDDL(gsl::span<o2::quality_control::core::Quality> result);
-        o2::quality_control::core::Quality getQualityDDL();
-        std::array<o2::quality_control::core::Quality, getNumDDL()> mQualityDDL;
-        int mMaxBadDDLForMedium;
-        int mMaxBadDDLForBad;
-    };
+  void resetDDL();
+  void addCheckResultDDL(gsl::span<o2::quality_control::core::Quality> result);
+  o2::quality_control::core::Quality getQualityDDL();
+  std::array<o2::quality_control::core::Quality, getNumDDL()> mQualityDDL;
+  int mMaxBadDDLForMedium;
+  int mMaxBadDDLForBad;
+};
 
-    //_________________________________________________________________________________________
+//_________________________________________________________________________________________
 
-    // check plots vs HV
-    struct QualityCheckerHV
-    {
-        QualityCheckerHV();
+// check plots vs HV
+struct QualityCheckerHV {
+  QualityCheckerHV();
 
-        void resetHV();
-        void addCheckResultHV(gsl::span<o2::quality_control::core::Quality> result);
-        o2::quality_control::core::Quality getQualityHV();
-        std::array<o2::quality_control::core::Quality, getNumHV()> mQualityHV;
-        int mMaxBadHVForMedium;
-        int mMaxBadHVForBad;
-    };
+  void resetHV();
+  void addCheckResultHV(gsl::span<o2::quality_control::core::Quality> result);
+  o2::quality_control::core::Quality getQualityHV();
+  std::array<o2::quality_control::core::Quality, getNumHV()> mQualityHV;
+  int mMaxBadHVForMedium;
+  int mMaxBadHVForBad;
+};
 
-    //_________________________________________________________________________________________
-
+//_________________________________________________________________________________________
 
 } // namespace o2::quality_control_modules::hmpid
 

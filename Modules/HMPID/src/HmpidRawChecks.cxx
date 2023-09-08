@@ -36,7 +36,7 @@ using namespace std;
 
 namespace o2::quality_control_modules::hmpid
 {
-void HmpidRawChecks::configure() 
+void HmpidRawChecks::configure()
 {
 
   // Histo names
@@ -98,14 +98,12 @@ void HmpidRawChecks::configure()
   if (auto param = mCustomParameters.find("mMaxBadHVForBad"); param != mCustomParameters.end()) {
     mMaxBadHVForBad = std::stoi(param->second);
   }
-
-
 }
 
 template <typename Lambda>
 std::array<Quality, 14> checkPlot(TProfile* h, Lambda check)
 {
-  std::array<Quality, 14> result;       // size == number of links
+  std::array<Quality, 14> result; // size == number of links
   std::fill(result.begin(), result.end(), Quality::Null);
   for (int eqId = 0; eqId < 14; eqId++) // <-- Entries in histogram are already decoded in eqId
   {
@@ -140,18 +138,16 @@ std::array<Quality, 14> HmpidRawChecks::check_hEventSize(TProfile* h)
 }
 
 template <typename Lambda>
-std::array<Quality, 42> checkPlotHV(TH2F* h, Lambda check,double mMinHVTotalEntriesToCheckQuality)
+std::array<Quality, 42> checkPlotHV(TH2F* h, Lambda check, double mMinHVTotalEntriesToCheckQuality)
 {
-  std::array<Quality, 42> result;       // size == number of HV sectors
+  std::array<Quality, 42> result; // size == number of HV sectors
   std::fill(result.begin(), result.end(), Quality::Null);
   for (int HVId = 0; HVId < 42; HVId++) // <-- Entries in histogram are already decoded in eqId
   {
     int binY = HVId + 1;
     double val = 0;
-    for (int binX = 1; binX <= h->GetNbinsX(); binX++)
-    {
-      if (h->GetBinContent(binX,binY) != 0)
-      {
+    for (int binX = 1; binX <= h->GetNbinsX(); binX++) {
+      if (h->GetBinContent(binX, binY) != 0) {
         val++;
       }
     }
@@ -166,9 +162,10 @@ std::array<Quality, 42> checkPlotHV(TH2F* h, Lambda check,double mMinHVTotalEntr
   return result;
 }
 
-std::array<Quality, 42> HmpidRawChecks::check_hHmpHvSectorQ(TH2F *h) // <-- non 14 per 2D
+std::array<Quality, 42> HmpidRawChecks::check_hHmpHvSectorQ(TH2F* h) // <-- non 14 per 2D
 {
-  return checkPlotHV(h, [&](double val) -> bool { return (val >= mFractionXBinsHVSingleModuleEntriesToLabelGoodBadQuality * h->GetNbinsX()); }, mMinHVTotalEntriesToCheckQuality);
+  return checkPlotHV(
+    h, [&](double val) -> bool { return (val >= mFractionXBinsHVSingleModuleEntriesToLabelGoodBadQuality * h->GetNbinsX()); }, mMinHVTotalEntriesToCheckQuality);
 }
 
 /*
@@ -236,7 +233,7 @@ Quality HmpidRawChecks::check(std::map<std::string, std::shared_ptr<MonitorObjec
   qualityCheckerEventSize.mMaxBadDDLForBad = mMaxBadDDLForBad;
 
   mQualityHvSectorQ = Quality::Null;
-  //std::array<Quality, 42> qualityHvSectorQ; // <-- Moved in header to beautify
+  // std::array<Quality, 42> qualityHvSectorQ; // <-- Moved in header to beautify
   QualityCheckerHV qualityCheckerHvSectorQ;
   qualityCheckerHvSectorQ.resetHV();
   qualityCheckerHvSectorQ.mMaxBadHVForMedium = mMaxBadHVForMedium;
@@ -274,11 +271,9 @@ Quality HmpidRawChecks::check(std::map<std::string, std::shared_ptr<MonitorObjec
       }
     }
 
-    if (matchHistName(mo->getName(), m_hHmpHvSectorQ_HistName))
-    {
-      TH2F *h = getHisto<TH2F>(mo);
-      if (h && h->GetEntries() > 0)
-      {
+    if (matchHistName(mo->getName(), m_hHmpHvSectorQ_HistName)) {
+      TH2F* h = getHisto<TH2F>(mo);
+      if (h && h->GetEntries() > 0) {
         auto q = check_hHmpHvSectorQ(h);
         qualityCheckerHvSectorQ.addCheckResultHV(q);
         qualityHvSectorQ = q;
@@ -290,7 +285,7 @@ Quality HmpidRawChecks::check(std::map<std::string, std::shared_ptr<MonitorObjec
         qualityHvSectorQ[24] = Quality::Null;
         qualityHvSectorQ[31] = Quality::Null;
         qualityHvSectorQ[34] = Quality::Null;
-      } 
+      }
     }
 
     /*
@@ -303,7 +298,6 @@ Quality HmpidRawChecks::check(std::map<std::string, std::shared_ptr<MonitorObjec
         qualityCheckerBigMap.addCheckResult(q);
       }
     }*/
-
   }
 
   // compute the aggregated quality
@@ -321,21 +315,16 @@ Quality HmpidRawChecks::check(std::map<std::string, std::shared_ptr<MonitorObjec
   qualityCheckerHvSectorQ.mQualityHV[31] = Quality::Null;
   qualityCheckerHvSectorQ.mQualityHV[34] = Quality::Null;
   mQualityHvSectorQ = qualityCheckerHvSectorQ.getQualityHV();
-  //mQualityBigMap = qualityCheckerBigMap.getQuality();
+  // mQualityBigMap = qualityCheckerBigMap.getQuality();
   mQualityBigMap = mQualityHvSectorQ; // <-- reasonable assumption
-  
+
   // Final quality result
   Quality result = Quality::Null;
-  if (mQualityOccupancy == Quality::Bad || mQualityBusyTime == Quality::Bad || mQualityEventSize == Quality::Bad ||  mQualityHvSectorQ == Quality::Bad)
-  {
+  if (mQualityOccupancy == Quality::Bad || mQualityBusyTime == Quality::Bad || mQualityEventSize == Quality::Bad || mQualityHvSectorQ == Quality::Bad) {
     result = Quality::Bad;
-  }
-  else if (mQualityOccupancy == Quality::Medium || mQualityBusyTime == Quality::Medium || mQualityEventSize == Quality::Medium ||  mQualityHvSectorQ == Quality::Medium)
-  {
+  } else if (mQualityOccupancy == Quality::Medium || mQualityBusyTime == Quality::Medium || mQualityEventSize == Quality::Medium || mQualityHvSectorQ == Quality::Medium) {
     result = Quality::Medium;
-  }
-  else if (mQualityOccupancy == Quality::Good || mQualityBusyTime == Quality::Good || mQualityEventSize == Quality::Good ||  mQualityHvSectorQ == Quality::Good)
-  {
+  } else if (mQualityOccupancy == Quality::Good || mQualityBusyTime == Quality::Good || mQualityEventSize == Quality::Good || mQualityHvSectorQ == Quality::Good) {
     result = Quality::Good;
   }
 
@@ -344,7 +333,7 @@ Quality HmpidRawChecks::check(std::map<std::string, std::shared_ptr<MonitorObjec
   mErrorMessagesColor.clear();
   if (result == Quality::Good) {
     mErrorMessages.emplace_back("Quality: GOOD");
-    mErrorMessagesColor.emplace_back(kGreen+2);
+    mErrorMessagesColor.emplace_back(kGreen + 2);
   } else if (result == Quality::Medium) {
     mErrorMessages.emplace_back("Quality: MEDIUM");
     mErrorMessagesColor.emplace_back(kOrange);
@@ -372,9 +361,9 @@ Quality HmpidRawChecks::check(std::map<std::string, std::shared_ptr<MonitorObjec
   } else if (mQualityOccupancy == Quality::Medium) {
     mErrorMessages.emplace_back("Occupancy: Too large/small for some DDLs");
     mErrorMessagesColor.emplace_back(kOrange);
-  }else if (mQualityOccupancy == Quality::Good) {
+  } else if (mQualityOccupancy == Quality::Good) {
     mErrorMessages.emplace_back("Occupancy: Good");
-    mErrorMessagesColor.emplace_back(kGreen+2);
+    mErrorMessagesColor.emplace_back(kGreen + 2);
   }
 
   if (mQualityEventSize == Quality::Null) {
@@ -388,7 +377,7 @@ Quality HmpidRawChecks::check(std::map<std::string, std::shared_ptr<MonitorObjec
     mErrorMessagesColor.emplace_back(kOrange);
   } else if (mQualityEventSize == Quality::Good) {
     mErrorMessages.emplace_back("Event size: Good");
-    mErrorMessagesColor.emplace_back(kGreen+2);
+    mErrorMessagesColor.emplace_back(kGreen + 2);
   }
 
   if (mQualityBusyTime == Quality::Null) {
@@ -402,7 +391,7 @@ Quality HmpidRawChecks::check(std::map<std::string, std::shared_ptr<MonitorObjec
     mErrorMessagesColor.emplace_back(kOrange);
   } else if (mQualityBusyTime == Quality::Good) {
     mErrorMessages.emplace_back("Busy time: Good");
-    mErrorMessagesColor.emplace_back(kGreen+2);
+    mErrorMessagesColor.emplace_back(kGreen + 2);
   }
 
   if (mQualityHvSectorQ == Quality::Null) {
@@ -416,7 +405,7 @@ Quality HmpidRawChecks::check(std::map<std::string, std::shared_ptr<MonitorObjec
     mErrorMessagesColor.emplace_back(kOrange);
   } else if (mQualityHvSectorQ == Quality::Good) {
     mErrorMessages.emplace_back("HV and Map: Good");
-    mErrorMessagesColor.emplace_back(kGreen+2);
+    mErrorMessagesColor.emplace_back(kGreen + 2);
   }
 
   /*
@@ -450,7 +439,6 @@ Quality HmpidRawChecks::check(std::map<std::string, std::shared_ptr<MonitorObjec
   return result;
 }
 
-
 void HmpidRawChecks::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
 
@@ -464,8 +452,7 @@ void HmpidRawChecks::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRe
     TPaveText* msg = new TPaveText(0.1, 0.1, 0.9, 0.9, "NDC");
     msg->SetTextSize(0.8);
     msg->SetTextFont(22);
-    for (std::size_t i = 0; i < mErrorMessages.size(); ++i)
-    {
+    for (std::size_t i = 0; i < mErrorMessages.size(); ++i) {
       msg->AddText(mErrorMessages[i].c_str());
       ((TText*)msg->GetListOfLines()->Last())->SetTextColor(mErrorMessagesColor[i]);
     }
@@ -643,7 +630,7 @@ void HmpidRawChecks::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRe
     float scaleMax{ 0 };
     scaleMin = 0; // mMinEventSize
     scaleMax = mMaxEventSize * 2.0;
-    h->SetMinimum(scaleMin); 
+    h->SetMinimum(scaleMin);
     h->SetMaximum(scaleMax);
 
     // draw horizontal limits
@@ -662,7 +649,7 @@ void HmpidRawChecks::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRe
     line_min->SetDrawOption("L");
     h->GetListOfFunctions()->Add(line_min);
 
-    if (mQualityEventSize == Quality::Good) {  // checkResult
+    if (mQualityEventSize == Quality::Good) { // checkResult
       h->SetFillColor(kGreen);
       TLegend* pave = new TLegend(0.65, 0.75, 0.85, 0.85);
       pave->AddEntry((TObject*)0, "Good", "");
@@ -675,7 +662,7 @@ void HmpidRawChecks::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRe
       pave->SetTextFont(22);
       pave->SetDrawOption("same");
       h->GetListOfFunctions()->Add(pave);
-    } else if (mQualityEventSize == Quality::Bad) {  // checkResult
+    } else if (mQualityEventSize == Quality::Bad) { // checkResult
       h->SetFillColor(kRed);
       TLegend* pave = new TLegend(0.65, 0.75, 0.85, 0.85);
       pave->AddEntry((TObject*)0, "Bad", "");
@@ -688,7 +675,7 @@ void HmpidRawChecks::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRe
       pave->SetTextFont(22);
       pave->SetDrawOption("same");
       h->GetListOfFunctions()->Add(pave);
-    } else if (mQualityEventSize == Quality::Medium) {  // checkResult
+    } else if (mQualityEventSize == Quality::Medium) { // checkResult
       h->SetFillColor(kOrange);
       TLegend* pave = new TLegend(0.65, 0.75, 0.85, 0.85);
       pave->AddEntry((TObject*)0, "Medium", "");
@@ -710,7 +697,7 @@ void HmpidRawChecks::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRe
     if (!h) {
       return;
     }
-    if (mQualityHvSectorQ == Quality::Good) {  // checkResult
+    if (mQualityHvSectorQ == Quality::Good) { // checkResult
       h->SetFillColor(kGreen);
       TLegend* pave = new TLegend(0.65, 0.75, 0.85, 0.85);
       pave->AddEntry((TObject*)0, "Good", "");
@@ -723,7 +710,7 @@ void HmpidRawChecks::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRe
       pave->SetTextFont(22);
       pave->SetDrawOption("same");
       h->GetListOfFunctions()->Add(pave);
-    } else if (mQualityHvSectorQ == Quality::Bad) {  // checkResult
+    } else if (mQualityHvSectorQ == Quality::Bad) { // checkResult
       h->SetFillColor(kRed);
       TLegend* pave = new TLegend(0.65, 0.75, 0.85, 0.85);
       pave->AddEntry((TObject*)0, "Bad", "");
@@ -736,7 +723,7 @@ void HmpidRawChecks::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRe
       pave->SetTextFont(22);
       pave->SetDrawOption("same");
       h->GetListOfFunctions()->Add(pave);
-    } else if (mQualityHvSectorQ == Quality::Medium) {  // checkResult
+    } else if (mQualityHvSectorQ == Quality::Medium) { // checkResult
       h->SetFillColor(kOrange);
       TLegend* pave = new TLegend(0.65, 0.75, 0.85, 0.85);
       pave->AddEntry((TObject*)0, "Medium", "");
@@ -757,7 +744,7 @@ void HmpidRawChecks::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRe
     if (!h) {
       return;
     }
-    if (mQualityBigMap == Quality::Good) {  // checkResult
+    if (mQualityBigMap == Quality::Good) { // checkResult
       h->SetFillColor(kGreen);
       TLegend* pave = new TLegend(0.65, 0.75, 0.85, 0.85);
       pave->AddEntry((TObject*)0, "Good", "");
@@ -770,7 +757,7 @@ void HmpidRawChecks::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRe
       pave->SetTextFont(22);
       pave->SetDrawOption("same");
       h->GetListOfFunctions()->Add(pave);
-    } else if (mQualityBigMap == Quality::Bad) {  // checkResult
+    } else if (mQualityBigMap == Quality::Bad) { // checkResult
       h->SetFillColor(kRed);
       TLegend* pave = new TLegend(0.65, 0.75, 0.85, 0.85);
       pave->AddEntry((TObject*)0, "Bad", "");
@@ -783,7 +770,7 @@ void HmpidRawChecks::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRe
       pave->SetTextFont(22);
       pave->SetDrawOption("same");
       h->GetListOfFunctions()->Add(pave);
-    } else if (mQualityBigMap == Quality::Medium) {  // checkResult
+    } else if (mQualityBigMap == Quality::Medium) { // checkResult
       h->SetFillColor(kOrange);
       TLegend* pave = new TLegend(0.65, 0.75, 0.85, 0.85);
       pave->AddEntry((TObject*)0, "Medium", "");
@@ -800,7 +787,7 @@ void HmpidRawChecks::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRe
   }
 
   // Check HV
-  if (mo->getName().find("hCheckHV") != std::string::npos){
+  if (mo->getName().find("hCheckHV") != std::string::npos) {
     TH2F* h = getHisto<TH2F>(mo);
     if (!h) {
       return;
@@ -810,51 +797,41 @@ void HmpidRawChecks::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRe
     TString report_null = "Null";
     int counter_bad = 0;
     int counter_all = 0;
-    for (int i_module = 0; i_module < 42; i_module++)
-    {
-      if (qualityHvSectorQ[i_module] == Quality::Good)
-      {
-        h->SetBinContent(i_module + 1, h->GetYaxis()->FindBin("Good"),1);
-        h->SetBinContent(i_module + 1, h->GetYaxis()->FindBin("Bad"),0);
-        h->SetBinContent(i_module + 1,h->GetYaxis()->FindBin("Null"),-0.001);
+    for (int i_module = 0; i_module < 42; i_module++) {
+      if (qualityHvSectorQ[i_module] == Quality::Good) {
+        h->SetBinContent(i_module + 1, h->GetYaxis()->FindBin("Good"), 1);
+        h->SetBinContent(i_module + 1, h->GetYaxis()->FindBin("Bad"), 0);
+        h->SetBinContent(i_module + 1, h->GetYaxis()->FindBin("Null"), -0.001);
         counter_all++;
-      }
-      else if (qualityHvSectorQ[i_module] == Quality::Bad)
-      {
-        h->SetBinContent(i_module + 1, h->GetYaxis()->FindBin("Good"),0);
-        h->SetBinContent(i_module + 1, h->GetYaxis()->FindBin("Bad"),2);
-        h->SetBinContent(i_module + 1, h->GetYaxis()->FindBin("Null"),-0.001);
+      } else if (qualityHvSectorQ[i_module] == Quality::Bad) {
+        h->SetBinContent(i_module + 1, h->GetYaxis()->FindBin("Good"), 0);
+        h->SetBinContent(i_module + 1, h->GetYaxis()->FindBin("Bad"), 2);
+        h->SetBinContent(i_module + 1, h->GetYaxis()->FindBin("Null"), -0.001);
         counter_all++;
         counter_bad++;
         report_warning += Form(" %d", i_module);
       }
     }
     TLegend* pave = new TLegend(0.13, 0.75, 0.87, 0.85);
-    if (counter_bad == 0 && counter_all > 0)
-    {
+    if (counter_bad == 0 && counter_all > 0) {
       pave->SetFillColor(kGreen);
       pave->AddEntry((TObject*)0, report_good, "");
-    }
-    else if (counter_bad > 0 && counter_all > 0)
-    {
+    } else if (counter_bad > 0 && counter_all > 0) {
       pave->SetFillColor(kOrange);
       pave->AddEntry((TObject*)0, report_warning, "");
-    }
-    else
-    {
+    } else {
       pave->SetFillColor(kWhite);
       pave->AddEntry((TObject*)0, report_null, "");
     }
     pave->SetLineWidth(3);
     pave->SetTextAlign(22);
-    //pave->SetFillColor(kRed);
+    // pave->SetFillColor(kRed);
     pave->SetBorderSize(1);
     pave->SetLineColor(kBlack);
     pave->SetTextSize(0.07);
     pave->SetTextFont(22);
     pave->SetDrawOption("same");
     h->GetListOfFunctions()->Add(pave);
-
   }
 
   /*
@@ -863,7 +840,7 @@ void HmpidRawChecks::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRe
     TProfile2D* h = getHisto<TProfile2D>(mo);
     if (!h) {
       return;
-    } 
+    }
     if (checkResult == Quality::Good) {
       h->SetFillColor(kGreen);
     } else if (checkResult == Quality::Bad) {
@@ -893,7 +870,6 @@ void HmpidRawChecks::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRe
     h->SetLineColor(kBlack);
   }
   */
-
 }
 
 } // namespace o2::quality_control_modules::hmpid
