@@ -290,9 +290,8 @@ void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
   }
 
-  if (NumCycles > 50) {
-    hPedestalMean->Reset();
-    hPedestalSigma->Reset();
+  if (NumCycles > 15) {
+    reset();
     NumCycles = 0;
   }
 }
