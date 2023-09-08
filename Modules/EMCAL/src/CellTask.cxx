@@ -79,6 +79,9 @@ CellTask::~CellTask()
   cleanOptional(mCells_ev_DCAL_Thres);
   cleanOptional(mFracGoodCellsEvent);
   cleanOptional(mFracGoodCellsSM);
+  cleanOptional(mTotalEnergy);
+  cleanOptional(mTotalEnergyCorr);
+  cleanOptional(mTotalEnergySM);
 }
 
 void CellTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -125,6 +128,9 @@ void CellTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
   if (hasConfigValue("thresholdPHYS")) {
     mTaskSettings.mThresholdPHYS = get_double(getConfigValue("thresholdPHYS"));
+  }
+  if (hasConfigValue("thresholdTotalEnergy")) {
+    mTaskSettings.mThresholdTotalEnergy = get_double(getConfigValue("thresholdTotalEnergy"));
   }
   ILOG(Info, Support) << "Apply energy calibration: " << (mTaskSettings.mCalibrateEnergy ? "yes" : "no") << ENDM;
   ILOG(Info, Support) << "Amplitude cut time histograms (PhysTrigger) " << mTaskSettings.mAmpThresholdTimePhys << ENDM;
@@ -313,6 +319,22 @@ void CellTask::initialize(o2::framework::InitContext& /*ctx*/)
     mFracGoodCellsSM->SetStats(false);
     getObjectsManager()->startPublishing(mFracGoodCellsSM);
   }
+
+  mTotalEnergy = new TH1D("totalEnergy", "Total energy / event", mTaskSettings.mTotalEnergyRange, 0., mTaskSettings.mTotalEnergyRange);
+  mTotalEnergy->GetXaxis()->SetTitle("E_{tot} (GeV)");
+  mTotalEnergy->GetYaxis()->SetTitle("Number of events");
+  mTotalEnergy->SetStats(false);
+  getObjectsManager()->startPublishing(mTotalEnergy);
+
+  mTotalEnergyCorr = new TH2D("totalEnergyCorr", "Total energy EMCAL vs. DCAL / event", mTaskSettings.mTotalEnergyRangeDetector, 0., mTaskSettings.mTotalEnergyRangeDetector, mTaskSettings.mTotalEnergyRangeDetector, 0., mTaskSettings.mTotalEnergyRangeDetector);
+  mTotalEnergyCorr->GetXaxis()->SetTitle("EMCAL E_{tot} (GeV)");
+  mTotalEnergyCorr->GetYaxis()->SetTitle("DCAL E_{tot} (GeV)");
+  getObjectsManager()->startPublishing(mTotalEnergyCorr);
+
+  mTotalEnergySM = new TH2D("totalEnergySupermodule", "Total energy in supermodule / event", mTaskSettings.mTotalEnergyRangeSM, 0., mTaskSettings.mTotalEnergyRangeSM, 20, -0.5, 19.5);
+  mTotalEnergySM->GetXaxis()->SetTitle("E_{tot} (GeV)");
+  mTotalEnergySM->GetYaxis()->SetTitle("SupermoduleID");
+  getObjectsManager()->startPublishing(mTotalEnergySM);
 }
 
 void CellTask::startOfActivity(const Activity& /*activity*/)
@@ -395,6 +417,7 @@ void CellTask::monitorData(o2::framework::ProcessingContext& ctx)
   std::array<int, 20> numCellsSM_Thres;
   std::array<int, 20> numCellsGood;
   std::array<int, 20> numCellsBad;
+  std::array<double, 20> totalEnergies;
   std::fill(numCellsSM.begin(), numCellsSM.end(), 0);
   std::fill(numCellsSM_Thres.begin(), numCellsSM_Thres.end(), 0);
   for (auto trg : combinedEvents) {
@@ -434,6 +457,7 @@ void CellTask::monitorData(o2::framework::ProcessingContext& ctx)
     std::fill(numCellsSM_Thres.begin(), numCellsSM_Thres.end(), 0);
     std::fill(numCellsGood.begin(), numCellsGood.end(), 0);
     std::fill(numCellsBad.begin(), numCellsBad.end(), 0);
+    std::fill(totalEnergies.begin(), totalEnergies.end(), 0.);
 
     // iterate over subevents
     for (auto& subev : trg.mSubevents) {
@@ -465,6 +489,10 @@ void CellTask::monitorData(o2::framework::ProcessingContext& ctx)
             }
             if (goodcell) {
               numCellsGood[sm]++;
+              auto cellenergy = cell.getAmplitude() * energycalib;
+              if (cellenergy > mTaskSettings.mThresholdTotalEnergy) {
+                totalEnergies[sm] += cellenergy;
+              }
             } else {
               numCellsBad[sm]++;
             }
@@ -535,6 +563,19 @@ void CellTask::monitorData(o2::framework::ProcessingContext& ctx)
           mFracGoodCellsEvent->Fill(2., static_cast<double>(nGoodDCAL) / static_cast<double>(nGoodDCAL + nBadDCAL));
         }
       }
+
+      double totalEnergySum = 0., totalEnergyEMCAL = 0., totalEnergyDCAL = 0.;
+      for (std::size_t ism = 0; ism < 20; ism++) {
+        mTotalEnergySM->Fill(totalEnergies[ism], ism);
+        totalEnergySum += totalEnergies[ism];
+        if (ism < 12) {
+          totalEnergyEMCAL += totalEnergies[ism];
+        } else {
+          totalEnergyDCAL += totalEnergies[ism];
+        }
+      }
+      mTotalEnergy->Fill(totalEnergySum);
+      mTotalEnergyCorr->Fill(totalEnergyEMCAL, totalEnergyDCAL);
     }
 
     eventcounter++;
@@ -595,6 +636,9 @@ void CellTask::reset()
   resetOptional(mCells_ev_DCAL_Thres);
   resetOptional(mFracGoodCellsEvent);
   resetOptional(mFracGoodCellsSM);
+  resetOptional(mTotalEnergy);
+  resetOptional(mTotalEnergyCorr);
+  resetOptional(mTotalEnergySM);
 }
 
 void CellTask::initDefaultMultiplicityRanges()
@@ -614,6 +658,15 @@ void CellTask::initDefaultMultiplicityRanges()
   if (!mTaskSettings.mMultiplicityRangeSMThreshold) {
     mTaskSettings.mMultiplicityRangeSMThreshold = mTaskSettings.mIsHighMultiplicity ? 500 : 20;
   }
+  if (std::abs(mTaskSettings.mTotalEnergyRange) < 1e-5) {
+    mTaskSettings.mTotalEnergyRange = mTaskSettings.mIsHighMultiplicity ? 4000 : 200;
+  }
+  if (std::abs(mTaskSettings.mTotalEnergyRangeDetector) < 1e-5) {
+    mTaskSettings.mTotalEnergyRangeDetector = mTaskSettings.mIsHighMultiplicity ? 4000 : 200;
+  }
+  if (std::abs(mTaskSettings.mTotalEnergyRangeSM) < 1e-5) {
+    mTaskSettings.mTotalEnergyRangeSM = mTaskSettings.mIsHighMultiplicity ? 500 : 50;
+  }
 }
 
 void CellTask::parseMultiplicityRanges()
@@ -632,6 +685,15 @@ void CellTask::parseMultiplicityRanges()
   }
   if (hasConfigValue("MultiplicityRangeSMThreshold")) {
     mTaskSettings.mMultiplicityRangeSMThreshold = std::stoi(getConfigValue("MultiplicityRangeSMThreshold"));
+  }
+  if (hasConfigValue("TotalEnergyRange")) {
+    mTaskSettings.mTotalEnergyRange = std::stod(getConfigValue("TotalEnergyRange"));
+  }
+  if (hasConfigValue("TotalEnergyRangeDetector")) {
+    mTaskSettings.mTotalEnergyRangeDetector = std::stod(getConfigValue("TotalEnergyRangeDetector"));
+  }
+  if (hasConfigValue("TotalEnergyRangeSM")) {
+    mTaskSettings.mTotalEnergyRangeSM = std::stod(getConfigValue("TotalEnergyRangeSM"));
   }
 }
 
