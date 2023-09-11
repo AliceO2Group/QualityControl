@@ -33,7 +33,7 @@ void* LtrCalibReductor::getBranchAddress()
 const char* LtrCalibReductor::getBranchLeafList()
 {
   // return "processedTFs/g:dvCorrectionA/F:dvCorrectionC:dvOffsetA:dvOffsetC:nTracksA/s:nTracksC";
-  return "processedTFs/D:dvCorrectionA:dvCorrectionC:dvCorrection:dvOffsetA:dvOffsetC:nTracksA:nTracksC:dvAbsolute";
+  return "processedTFs/D:dvCorrectionA:dvCorrectionC:dvCorrection:dvOffsetA:dvOffsetC:t0A:t0C:nTracksA:nTracksC:dvAbsolute";
 }
 
 void LtrCalibReductor::update(TObject* obj)
@@ -50,6 +50,8 @@ void LtrCalibReductor::update(TObject* obj)
         mLtrCalib.dvCorrection = getValue((TText*)blocText->GetLineWith("dvCorrection:"));
         mLtrCalib.dvOffsetA = getValue((TText*)blocText->GetLineWith("dvOffsetA:"));
         mLtrCalib.dvOffsetC = getValue((TText*)blocText->GetLineWith("dvOffsetC:"));
+        mLtrCalib.t0A = getValue((TText*)blocText->GetLineWith("t0A:"));
+        mLtrCalib.t0C = getValue((TText*)blocText->GetLineWith("t0C:"));
         mLtrCalib.nTracksA = getValue((TText*)blocText->GetLineWith("nTracksA:"));
         mLtrCalib.nTracksC = getValue((TText*)blocText->GetLineWith("nTracksC:"));
         mLtrCalib.dvAbsolute = getValue((TText*)blocText->GetLineWith("dvAbsolute:"));

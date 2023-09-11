@@ -71,17 +71,17 @@
             "graphErrors": ""
           },
           {
-            "name": "dvOffsetA_Trend",
-            "title": "Trend of the drift velocity offset (A side)",
-            "varexp": "Calib_Values.dvOffsetA:time",
+            "name": "t0A_Trend",
+            "title": "Trend of the laser trigger t0 offset (A side)",
+            "varexp": "Calib_Values.t0A:time",
             "selection": "",
             "option": "*L",
             "graphErrors": ""
           },
           {
-            "name": "dvOffsetC_Trend",
-            "title": "Trend of the drift velocity offset (C side)",
-            "varexp": "Calib_Values.dvOffsetC:time",
+            "name": "t0C_Trend",
+            "title": "Trend of the laser trigger t0 offset (C side)",
+            "varexp": "Calib_Values.t0C:time",
             "selection": "",
             "option": "*L",
             "graphErrors": ""
