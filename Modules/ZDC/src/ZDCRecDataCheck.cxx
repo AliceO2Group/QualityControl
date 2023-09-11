@@ -127,7 +127,7 @@ Quality ZDCRecDataCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
         }
         if (mQTDC == 3) {
           result.addReason(FlagReasonFactory::Unknown(),
-                           "It is bad because in TDC Summary" + std::to_string(mNumWTDC) + " channels:" + mStringWTDC + "have a value in the bad range");
+                           "It is bad because in TDC Summary" + std::to_string(mNumWTDC) + " channels:" + mStringETDC + "have a value in the bad range");
         }
       } else {
         result = Quality::Medium;
