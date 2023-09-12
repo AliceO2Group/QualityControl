@@ -545,7 +545,7 @@ void TestbeamRawTask::monitorData(o2::framework::ProcessingContext& ctx)
           auto payloadsize = o2::raw::RDHUtils::getMemorySize(rdh) - o2::raw::RDHUtils::getHeaderSize(rdh);
           auto fee = static_cast<int>(o2::raw::RDHUtils::getFEEID(rdh));
           ILOG(Debug, Support) << "Next RDH: " << ENDM;
-          stringstream ss;
+          std::stringstream ss;
           ss << "Found fee                   0x" << std::hex << fee << std::dec << " (System " << (fee == 0xcafe ? "Pads" : "Pixels") << ")";
           ILOG(Debug, Support) << ss.str() << ENDM;
           ILOG(Debug, Support) << "Found trigger BC:           " << o2::raw::RDHUtils::getTriggerBC(rdh) << ENDM;
@@ -594,7 +594,7 @@ void TestbeamRawTask::monitorData(o2::framework::ProcessingContext& ctx)
           } else {
             ILOG(Debug, Support) << "New HBF or Timeframe" << ENDM;
             currentfee = o2::raw::RDHUtils::getFEEID(rdh);
-            stringstream ss;
+            std::stringstream ss;
             ss << "Using FEE ID: 0x" << std::hex << currentfee << std::dec;
             ILOG(Debug, Support) << ss.str() << ENDM;
           }
@@ -650,7 +650,7 @@ void TestbeamRawTask::processPadEvent(gsl::span<const o2::focal::PadGBTWord> pad
   std::array<double, PAD_ASICS> kADCsum = { 0 };
   double cmn = 0;
 std:
-  array<double, 66> kADCForCMN = { 0 };
+  std::array<double, 66> kADCForCMN = { 0 };
   for (int iasic = 0; iasic < PAD_ASICS; iasic++) {
     const auto& asic = eventdata[iasic].getASIC();
     ILOG(Debug, Support) << "ASIC " << iasic << ", Header 0: " << asic.getFirstHeader() << ENDM;
