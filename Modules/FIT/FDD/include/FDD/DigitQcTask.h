@@ -206,7 +206,7 @@ class DigitQcTask final : public TaskInterface
   std::unique_ptr<TH2F> mHistPmTcmAverageTimeC;
   std::unique_ptr<TH1F> mHistTriggersSw;
   std::unique_ptr<TH2F> mHistTriggersSoftwareVsTCM;
-
+  std::unique_ptr<TH2F> mHistBcVsFeeForVtxTrg;
   // Hashed maps
   static const size_t mapSize = 256;
   const std::array<std::vector<double>, mapSize> mHashedBitBinPos;                        // map with bit position for 1 byte trg signal, for 1 Dim hists;
