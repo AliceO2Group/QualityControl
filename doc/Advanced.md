@@ -1279,8 +1279,14 @@ the "tasks" path.
         "moduleName": "QcSkeleton",         "": "Library name. It can be found in CMakeLists of the detector module.",
         "detectorName": "TST",              "": "3-letter code of the detector.",
         "cycleDurationSeconds": "10",       "": "Cycle duration (how often objects are published), 10 seconds minimum.",
-                                            "": "The first cycle will be randomly shorter",
+                                            "": "The first cycle will be randomly shorter. ",
+        "": "Alternatively, one can specify different cycle durations for different periods. The last item in cycleDurations will be used for the rest of the duration whatever the period. The first cycle will be randomly shorter.",
+        "cycleDurations": [
+          {"cycleDurationSeconds": 10, "validitySeconds": 35},
+          {"cycleDurationSeconds": 12, "validitySeconds": 1}
+        ],
         "maxNumberCycles": "-1",            "": "Number of cycles to perform. Use -1 for infinite.",
+        "disableLastCycle": "true",         "": "Last cycle, upon EndOfStream, is not published. (default: false)",
         "dataSource": {                     "": "Data source of the QC Task.",
           "type": "dataSamplingPolicy",     "": "Type of the data source, \"dataSamplingPolicy\" or \"direct\".",
           "name": "tst-raw",                "": "Name of Data Sampling Policy. Only for \"dataSamplingPolicy\" source.",

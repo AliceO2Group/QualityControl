@@ -160,7 +160,8 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
     fallbackActivity,
     grpGeomRequest,
     globalTrackingDataRequest,
-    taskSpec.movingWindows
+    taskSpec.movingWindows,
+    taskSpec.disableLastCycle
   };
 }
 

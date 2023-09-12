@@ -99,6 +99,7 @@ TaskSpec InfrastructureSpecReader::readSpecEntry<TaskSpec>(const std::string& ta
   ts.className = taskTree.get<std::string>("className");
   ts.moduleName = taskTree.get<std::string>("moduleName");
   ts.detectorName = taskTree.get<std::string>("detectorName");
+  ts.disableLastCycle = taskTree.get<bool>("disableLastCycle", false);
   ts.cycleDurationSeconds = taskTree.get<int>("cycleDurationSeconds", -1);
   if (taskTree.count("cycleDurations") > 0) {
     for (const auto& cycleConfig : taskTree.get_child("cycleDurations")) {
