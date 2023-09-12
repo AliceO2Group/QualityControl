@@ -305,9 +305,11 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   mHistBCvsFEEmodules = std::make_unique<TH2F>("BCvsFEEmodules", "BC vs FEE module;BC;FEE", sBCperOrbit, 0, sBCperOrbit, mapFEE2hash.size(), 0, mapFEE2hash.size());
   mHistOrbitVsFEEmodules = std::make_unique<TH2F>("OrbitVsFEEmodules", "Orbit vs FEE module;Orbit;FEE", sOrbitsPerTF, 0, sOrbitsPerTF, mapFEE2hash.size(), 0, mapFEE2hash.size());
+  mHistBcVsFeeForVtxTrg = std::make_unique<TH2F>("BCvsFEEmodulesForVtxTrg", "BC vs FEE module for Vertex trigger;BC;FEE", sBCperOrbit, 0, sBCperOrbit, mapFEE2hash.size(), 0, mapFEE2hash.size());
   for (const auto& entry : mapFEE2hash) {
     mHistBCvsFEEmodules->GetYaxis()->SetBinLabel(entry.second + 1, entry.first.c_str());
     mHistOrbitVsFEEmodules->GetYaxis()->SetBinLabel(entry.second + 1, entry.first.c_str());
+    mHistBcVsFeeForVtxTrg->GetYaxis()->SetBinLabel(entry.second + 1, entry.first.c_str());
   }
   /// ak1
   mHistTimeSum2Diff = std::make_unique<TH2F>("timeSumVsDiff", "time A/C side: sum VS diff;(TOC-TOA)/2 [ns];(TOA+TOC)/2 [ns]", 2000, -52.08, 52.08, 2000, -52.08, 52.08); // range of 52.08 ns = 4000*13.02ps = 4000 channels
@@ -408,6 +410,8 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->setDefaultDrawOptions(mHistAmp2Ch.get(), "COLZ");
   getObjectsManager()->startPublishing(mHistBCvsFEEmodules.get());
   getObjectsManager()->setDefaultDrawOptions(mHistBCvsFEEmodules.get(), "COLZ");
+  getObjectsManager()->startPublishing(mHistBcVsFeeForVtxTrg.get());
+  getObjectsManager()->setDefaultDrawOptions(mHistBcVsFeeForVtxTrg.get(), "COLZ");
   getObjectsManager()->startPublishing(mHistOrbitVsTrg.get());
   getObjectsManager()->setDefaultDrawOptions(mHistOrbitVsTrg.get(), "COLZ");
   getObjectsManager()->startPublishing(mHistOrbitVsFEEmodules.get());
@@ -460,6 +464,7 @@ void DigitQcTask::startOfActivity(const Activity& activity)
   mHistBCvsFEEmodules->Reset();
   mHistOrbitVsTrg->Reset();
   mHistOrbitVsFEEmodules->Reset();
+  mHistBcVsFeeForVtxTrg->Reset();
   mHistTriggersCorrelation->Reset();
   mHistCycleDuration->Reset();
   mHistCycleDurationNTF->Reset();
@@ -718,6 +723,8 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     for (const auto& feeHash : setFEEmodules) {
       mHistBCvsFEEmodules->Fill(static_cast<double>(digit.getIntRecord().bc), static_cast<double>(feeHash));
       mHistOrbitVsFEEmodules->Fill(static_cast<double>(digit.getIntRecord().orbit % sOrbitsPerTF), static_cast<double>(feeHash));
+      if (digit.mTriggers.getVertex())
+        mHistBcVsFeeForVtxTrg->Fill(static_cast<double>(digit.getIntRecord().bc), static_cast<double>(feeHash));
     }
 
     if (isTCM && digit.mTriggers.getDataIsValid() && !digit.mTriggers.getOutputsAreBlocked()) {
@@ -946,6 +953,7 @@ void DigitQcTask::reset()
   mHistCycleDurationRange->Reset();
   mHistBCvsTrg->Reset();
   mHistBCvsFEEmodules->Reset();
+  mHistBcVsFeeForVtxTrg->Reset();
   mHistOrbitVsTrg->Reset();
   mHistOrbitVsFEEmodules->Reset();
   mHistPmTcmNchA->Reset();
