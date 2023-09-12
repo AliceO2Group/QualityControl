@@ -649,7 +649,6 @@ void TestbeamRawTask::processPadEvent(gsl::span<const o2::focal::PadGBTWord> pad
   std::array<double, PAD_ASICS> kTOTsum = { 0 };
   std::array<double, PAD_ASICS> kADCsum = { 0 };
   double cmn = 0;
-std:
   std::array<double, 66> kADCForCMN = { 0 };
   for (int iasic = 0; iasic < PAD_ASICS; iasic++) {
     const auto& asic = eventdata[iasic].getASIC();
