@@ -75,6 +75,7 @@ struct TaskSpec {
   GRPGeomRequestSpec grpGeomRequestSpec;
   GlobalTrackingDataRequestSpec globalTrackingDataRequest;
   std::vector<std::string> movingWindows;
+  bool disableLastCycle = false;
 };
 
 } // namespace o2::quality_control::core
