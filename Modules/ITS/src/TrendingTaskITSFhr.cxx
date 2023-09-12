@@ -238,15 +238,17 @@ void TrendingTaskITSFhr::storePlots(repository::DatabaseInterface& qcdb)
 
         int npoints = (int)runlist.size();
         TH1F* hfake = new TH1F("hfake", "hfake", npoints, 0.5, (double)npoints + 0.5);
-        if (ilay < 3) {
-          SetGraphNameAndAxes(hfake,
-                              Form("L%d - %s trends", ilay, trendtitlesIB[id].c_str()),
-                              isrun ? "run" : "time", ytitlesIB[id], ymin[id], ymaxIB[id], runlist);
-        } else {
-          SetGraphNameAndAxes(hfake,
-                              Form("L%d - %s trends", ilay, trendtitlesOB[id].c_str()),
-                              isrun ? "run" : "time", ytitlesOB[id], ymin[id], ymaxOB[id], runlist);
-        }
+
+        Double_t max, min;
+        max = gTrendsAll[ilay * NTRENDSFHR + id]->GetYaxis()->GetXmax();
+        if (id == 2)
+          min = -0.5;
+        else
+          min = gTrendsAll[ilay * NTRENDSFHR + id]->GetYaxis()->GetXmin();
+
+        SetGraphNameAndAxes(hfake,
+                            Form("L%d - %s trends", ilay, trendtitlesOB[id].c_str()),
+                            isrun ? "run" : "time", ytitlesOB[id], min, max, runlist);
 
         hfake->Draw();
         gTrendsAll[ilay * NTRENDSFHR + id]->Draw();
