@@ -238,7 +238,7 @@ void ITSFeeTask::setPlotsFormat()
     mTrailerCount->GetYaxis()->SetBinLabel(3, "11 kHz");
     mTrailerCount->GetYaxis()->SetBinLabel(6, "45 kHz");
     mTrailerCount->GetYaxis()->SetBinLabel(8, "67 kHz");
-    mTrailerCount->GetYaxis()->SetBinLabel(12, "101 kHz");
+    mTrailerCount->GetYaxis()->SetBinLabel(11, "101 kHz");
     mTrailerCount->GetYaxis()->SetBinLabel(15, "135 kHz");
     mTrailerCount->GetYaxis()->SetBinLabel(20, "202 kHz");
   }
