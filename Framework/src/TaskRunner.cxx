@@ -338,9 +338,9 @@ void TaskRunner::endOfStream(framework::EndOfStreamContext& eosContext)
     ILOG(Info, Trace) << "Updating timekeeper with a current timestamp upon receiving an EoS message" << ENDM;
     mTimekeeper->updateByCurrentTimestamp(getCurrentTimestamp());
     if(mTaskConfig.disableLastCycle) {
-      ILOG(Warning, Devel) << "Received an EndOfStream, but the last cycle is disabled" << ENDM;
+      ILOG(Info, Devel) << "Received an EndOfStream, but the last cycle is disabled" << ENDM;
     } else {
-      ILOG(Warning, Support) << "Received an EndOfStream, finishing the current cycle" << ENDM;
+      ILOG(Info, Devel) << "Received an EndOfStream, finishing the current cycle" << ENDM;
       finishCycle(eosContext.outputs());
     }
   }
