@@ -71,7 +71,7 @@ class TrackingTask final : public TaskInterface
   gsl::span<const o2::trd::TrackTriggerRecord> mTrigTPCTRD;
   //
   float mPtMin = 0.0;                                                                 // minimum pT of tracks
-  TString chrg[2] = { "Pos", "Neg" };                                                 // charge of tracks
+  TString mChargeLabel[3] = { "Pos", "Neg", "All" };                                  // charge of tracks
   TH1D* mNtracks = nullptr;                                                           // number of ITS-TPC-TRD tracks per event
   TH1D* mNtracklets = nullptr;                                                        // number of TRD tracklets per track
   TH2D* mTrackEtaPhi = nullptr;                                                       // eta-phi distribution of ITS-TPC-TRD tracks
@@ -85,7 +85,7 @@ class TrackingTask final : public TaskInterface
   TH2D* mDeltaZDet = nullptr;                                                         // residual in z direction vs. 540 detectors
   TH2D* mDeltaYvsSphi = nullptr;                                                      // residual in y direction vs. sin(phi) track seed
   TH2D* mTrackletDef = nullptr;                                                       // tracklet slope vs. tracklet position
-  std::array<TProfile2D*, 2> mTrackletsEtaPhi;                                        // eta vs. phi as function of tracklets
+  std::array<TProfile2D*, 3> mTrackletsEtaPhi;                                        // eta-phi distribution of average number of tracklets per track
   std::array<std::array<TH2D*, 2>, o2::trd::constants::NLAYER> mTracksEtaPhiPerLayer; // eta vs. phi of tracks per layer
   std::array<TH2D*, o2::trd::constants::NLAYER> mDeltaYinEtaPerLayer;                 // residual in y direction vs. eta per layer
   std::array<TH2D*, o2::trd::constants::NLAYER> mDeltaYinPhiPerLayer;                 // residual in y direction vs. phi per layer
