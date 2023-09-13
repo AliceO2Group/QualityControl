@@ -78,13 +78,7 @@ void LevelCheck::configure()
   // Automatic selection of bins to ignore
   // Dead channel map
   updateBinsToIgnoreWithDCM();
-  // Prepare list of bins to ignore as str
-  for (const auto& bin : mBinsToIgnore) {
-    mBinsToIgnoreAsStr += (mBinsToIgnoreAsStr.empty() ? "" : ",") + std::to_string(bin);
-  }
-  if (mBinsToIgnore.size() == 0) {
-    mBinsToIgnoreAsStr = "EMPTY";
-  }
+  mBinsToIgnoreAsStr = std::to_string(mBinsToIgnore.size());
 }
 
 Quality LevelCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
@@ -145,9 +139,7 @@ void LevelCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult
     h->GetListOfFunctions()->Add(msg);
     msg->SetName(Form("%s_msg", mo->GetName()));
     msg->Clear();
-    if (mBinsToIgnoreAsStr != "EMPTY") {
-      msg->AddText(("Ignore elements: " + mBinsToIgnoreAsStr).c_str());
-    }
+    msg->AddText(Form("N ignored elements: %s", mBinsToIgnoreAsStr.c_str()));
     msg->AddText(Form("N elements with warning (%s %.3f) = %d", mSignCheck.c_str(), mThreshWarning, mNumWarnings));
     msg->AddText(Form("N elements with error   (%s %.3f) = %d", mSignCheck.c_str(), mThreshError, mNumErrors));
     if (checkResult == Quality::Good) {
