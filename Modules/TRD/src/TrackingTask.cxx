@@ -109,6 +109,7 @@ void TrackingTask::monitorData(o2::framework::ProcessingContext& ctx)
         int charge = trackTRD.getCharge() > 0 ? 0 : 1;
         // eta-phi distribution of tracklets per layer
         mTrackletsEtaPhi[charge]->Fill(trackTRD.getOuterParam().getEta(), trackTRD.getOuterParam().getPhiPos(), trackTRD.getNtracklets());
+        mTrackletsEtaPhi[2]->Fill(trackTRD.getOuterParam().getEta(), trackTRD.getOuterParam().getPhiPos(), trackTRD.getNtracklets());
         for (int iLayer = 0; iLayer < NLAYER; iLayer++) {
           // skip layers with no tracklet
           if (trackTRD.getTrackletIndex(iLayer) < 0) {
@@ -214,7 +215,7 @@ void TrackingTask::buildHistograms()
   axisConfig(mTrackPhi, "#phi", "Counts", "", 1, 1.0, 1.1);
   publishObject(mTrackPhi);
 
-  mTrackEtaPhi = new TH2D("TrackEtaPhi", ";#eta;#phi;counts", 100, -1., 1., 180, 0, TMath::TwoPi());
+  mTrackEtaPhi = new TH2D("TrackEtaPhi", "Number of TRD matched tracks;track #eta;track #phi;counts", 100, -1., 1., 180, 0, TMath::TwoPi());
   publishObject(mTrackEtaPhi, "colz");
 
   mTrackPt = new TH1D("TrackPt", "p_{T} Distribution", 100, 0.0, 10.0);
@@ -253,7 +254,7 @@ void TrackingTask::buildHistograms()
 
   for (int i = 0; i < NLAYER; ++i) {
     for (int j = 0; j < 2; ++j) {
-      mTracksEtaPhiPerLayer[i][j] = new TH2D(Form("EtaPhi%sTrackPerLayer/layer%i", chrg[j].Data(), i), Form("EtaPhi for %s tracks in layer %i", chrg[j].Data(), i), 100, -0.856, 0.856, 180, 0, TMath::TwoPi());
+      mTracksEtaPhiPerLayer[i][j] = new TH2D(Form("EtaPhi%sTrackPerLayer/layer%i", mChargeLabel[j].Data(), i), Form("EtaPhi for %s tracks in layer %i", mChargeLabel[j].Data(), i), 100, -0.856, 0.856, 180, 0, TMath::TwoPi());
       axisConfig(mTracksEtaPhiPerLayer[i][j], "#eta", "#phi", "Counts", 0, 1.0, 1.1);
       drawLayers(mTracksEtaPhiPerLayer[i][j]);
       publishObject(mTracksEtaPhiPerLayer[i][j], "colz", "");
@@ -268,9 +269,9 @@ void TrackingTask::buildHistograms()
       publishObject(mDeltaYinPhiPerLayer[i], "colz", "logz");
     }
   }
-  for (int i = 0; i < 2; ++i) {
-    mTrackletsEtaPhi[i] = new TProfile2D(Form("EtaPhiTracklets/%sTracks", chrg[i].Data()), Form("EtaPhi for %s tracks (tracklets)", chrg[i].Data()), 100, -0.856, 0.856, 180, 0, TMath::TwoPi(), 0, 6);
-    axisConfig(mTrackletsEtaPhi[i], "#eta", "#phi", "av. # of tracklets per track", 0, 1.0, 1.1);
+  for (int i = 0; i < 3; ++i) {
+    mTrackletsEtaPhi[i] = new TProfile2D(Form("EtaPhiTracklets/%sTracks", mChargeLabel[i].Data()), Form("Av. # of tracklets for %s TRD tracks", mChargeLabel[i].Data()), 100, -0.856, 0.856, 180, 0, TMath::TwoPi(), 0, 6);
+    axisConfig(mTrackletsEtaPhi[i], "track #eta", "track #phi", "<N_{tracklets}>", 0, 1.0, 1.1);
     drawLayers(mTrackletsEtaPhi[i]);
     publishObject(mTrackletsEtaPhi[i], "colz", "");
   }
