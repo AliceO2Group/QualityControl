@@ -25,6 +25,11 @@
 
 class TH1F;
 
+namespace o2::ctp
+{
+class CTPConfiguration;
+}
+
 using namespace o2::quality_control::core;
 
 namespace o2::quality_control_modules::emcal
@@ -64,9 +69,8 @@ class BCTask final : public TaskInterface
 
  protected:
   /// \brief Load trigger configuration for current run and timestamp
-  /// \param timestamp Timestamp from ProcessingContext
-  /// \return True if classes were successfully loaded, false otherwise
-  bool loadTriggerClasses(uint64_t timestamp);
+  /// \param ctpconfig CTP configuration
+  void loadTriggerClasses(const o2::ctp::CTPConfiguration* ctpconfig);
 
   /// \brief Check if the class masks are initialized
   /// \return True if the class masks are initialized, false otherwise
