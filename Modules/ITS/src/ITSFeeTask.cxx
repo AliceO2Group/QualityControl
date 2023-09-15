@@ -431,7 +431,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
 
         for (int32_t ip = PayloadPerGBTW; ip <= payloadSize; ip += PayloadPerGBTW) {
           gbtw_bb = (const uint16_t*)&payload[ip - 2];
-          if ((*gbtw_bb & 0xffff) == 0xf001) // checking that it is a TDT (0xf0) with packet_done (0x01)
+          if ((*gbtw_bb & 0xff01) == 0xf001) // checking that it is a TDT (0xf0) with packet_done (0x<any>1)
             TDTcounter[ifee]++;
         }
       }
