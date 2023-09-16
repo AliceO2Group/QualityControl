@@ -133,10 +133,11 @@ void LaserAgingFT0Task::monitorData(o2::framework::ProcessingContext& ctx)
         mHistAmp2ADC0->Fill(static_cast<Double_t>(chData.ChId), static_cast<Double_t>(chData.QTCAmpl));
       if (mSetRefPMTChIDs.find(static_cast<unsigned int>(chData.ChId)) != mSetRefPMTChIDs.end()) {
         if (chData.QTCAmpl > costumAmplCut)
-          if (chData.getFlag(o2::ft0::ChannelData::kNumberADC))
+          if (chData.getFlag(o2::ft0::ChannelData::kNumberADC)) {
             mMapHistAmpVsBCADC1[chData.ChId]->Fill(chData.QTCAmpl, digit.getIntRecord().bc);
-          else
+          } else {
             mMapHistAmpVsBCADC0[chData.ChId]->Fill(chData.QTCAmpl, digit.getIntRecord().bc);
+          }
       }
     }
   }
