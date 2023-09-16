@@ -30,29 +30,29 @@ const char* TH1ReductorLaser::getBranchLeafList()
 }
 
 void TH1ReductorLaser::update(TObject* obj)
-{      
+{
   if (auto histo = dynamic_cast<TH2F*>(obj)) {
     int channel = -1;
     sscanf(histo->GetName(), "%*[^0-9]%d", &channel);
     std::cerr << histo << std::endl;
     if (channel < NChannel) {
       for (int ichannel = 0; ichannel < NChannel; ichannel++) {
-        const int bin = ichannel+1;
+        const int bin = ichannel + 1;
         TH1* bc_projection = histo->ProjectionY(Form("first peak in BC #%d", ichannel), bin, bin);
         mStats.mean[ichannel] = bc_projection->GetMean();
-        mStats.stddev[ichannel] =  bc_projection->GetStdDev();
+        mStats.stddev[ichannel] = bc_projection->GetStdDev();
       }
     } else {
-      TH1* bc_projection = histo->ProjectionY("bc_projection",0,-1);
+      TH1* bc_projection = histo->ProjectionY("bc_projection", 0, -1);
       int ibc = 0;
       int ibc_max = 0;
       float stdv = 0;
-      if (bc_projection->GetEntries() > 1000)
-      {
+      if (bc_projection->GetEntries() > 1000) {
         stdv = bc_projection->GetStdDev();
-        if(stdv< 0.5)stdv = 0.5;
-        ibc =  bc_projection->GetMean() - 2. * stdv;
-        ibc_max =  bc_projection->GetMean() + 2. * stdv;
+        if (stdv < 0.5)
+          stdv = 0.5;
+        ibc = bc_projection->GetMean() - 2. * stdv;
+        ibc_max = bc_projection->GetMean() + 2. * stdv;
       }
 
       TH1* slice_first_peak;
@@ -61,7 +61,7 @@ void TH1ReductorLaser::update(TObject* obj)
       mStats.stddev1 = 0.;
       mStats.validity1 = 0.;
       while (!gotFirstPeak && ibc < ibc_max) {
-        slice_first_peak = histo->ProjectionX(Form("first peak in BC #%d", ibc), ibc, ibc+1);
+        slice_first_peak = histo->ProjectionX(Form("first peak in BC #%d", ibc), ibc, ibc + 1);
         if (slice_first_peak->GetEntries() > 1000) {
           mStats.mean1 = slice_first_peak->GetMean();
           mStats.stddev1 = slice_first_peak->GetStdDev();
@@ -69,18 +69,17 @@ void TH1ReductorLaser::update(TObject* obj)
           gotFirstPeak = true;
           ibc += 2;
           break;
-        }
-        else
+        } else
           ibc++;
       }
-      
+
       TH1* slice_second_peak;
       bool gotSecondPeak = false;
       mStats.mean2 = 0.;
       mStats.stddev2 = 0.;
       mStats.validity2 = 0.;
       while (!gotSecondPeak && gotFirstPeak && ibc < ibc_max) {
-        slice_second_peak = histo->ProjectionX(Form("second peak in BC #%d", ibc), ibc, ibc+1);
+        slice_second_peak = histo->ProjectionX(Form("second peak in BC #%d", ibc), ibc, ibc + 1);
         if (slice_second_peak->GetEntries() > 1000) {
           mStats.mean2 = slice_second_peak->GetMean();
           mStats.stddev2 = slice_second_peak->GetStdDev();
@@ -90,7 +89,7 @@ void TH1ReductorLaser::update(TObject* obj)
         } else
           ibc++;
       }
-      
+
       if (!gotSecondPeak)
         ILOG(Warning) << "TH1ReductorLaser: one of the peaks of the reference PMT is missing!" << ENDM;
       if (!gotFirstPeak && !gotSecondPeak)
@@ -99,4 +98,4 @@ void TH1ReductorLaser::update(TObject* obj)
 }
 }
 } // namespace o2::quality_control_modules::ft0
-//ILOG(Warning)<<histo->GetName()<<" entries: "<< bc_projection->GetEntries()<<" channel: "<<channel<<" ibc: "<<ibc<<" ibc_max: "<<ibc_max<<ENDM;
+// ILOG(Warning)<<histo->GetName()<<" entries: "<< bc_projection->GetEntries()<<" channel: "<<channel<<" ibc: "<<ibc<<" ibc_max: "<<ibc_max<<ENDM;
