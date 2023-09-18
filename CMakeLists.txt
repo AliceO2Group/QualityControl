@@ -13,7 +13,7 @@ include(AddQCWorkflow)
 # ---- Project ----
 
 project(QualityControl
-        VERSION 1.117.2
+        VERSION 1.117.3
         DESCRIPTION "O2 Data Quality Control Framework"
         LANGUAGES C CXX)
 
