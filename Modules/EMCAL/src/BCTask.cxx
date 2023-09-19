@@ -19,6 +19,7 @@
 
 #include <boost/algorithm/string/case_conv.hpp>
 
+#include "CCDB/BasicCCDBManager.h"
 #include "CommonConstants/LHCConstants.h"
 #include "CommonConstants/Triggers.h"
 #include "DataFormatsCTP/Configuration.h"
@@ -235,6 +236,8 @@ bool BCTask::loadTriggerClasses(uint64_t timestamp)
   mAllEMCALClasses.clear();
   std::map<std::string, std::string> metadata;
   metadata["runNumber"] = std::to_string(mCurrentRun);
+  // temproary fix to make the task not crashing if the trigger configuration for the given run is not found (O2-4122)
+  o2::ccdb::BasicCCDBManager::instance().setFatalWhenNull(false);
   auto ctpconfig = this->retrieveConditionAny<o2::ctp::CTPConfiguration>("CTP/Config/Config", metadata, timestamp);
   if (ctpconfig) {
     for (auto& cls : ctpconfig->getCTPClasses()) {
