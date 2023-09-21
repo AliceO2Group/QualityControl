@@ -27,7 +27,7 @@
 #include <Framework/ConfigParamRegistry.h>
 #include <Framework/ConfigParamStore.h>
 #include <catch_amalgamated.hpp>
-#include<functional>
+#include <functional>
 
 using namespace o2::quality_control::checker;
 using namespace std;
@@ -98,14 +98,12 @@ Quality getQualityForCheck(QualityObjectsType qos, string checkName)
   }
 }
 
-
-
 TEST_CASE("test_aggregator_onAnyNonZero")
 {
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
   auto [aggregatorRunnerConfig, aggregatorConfigs] = getAggregatorConfigs(configFilePath);
   auto MyAggregatorBConfig = std::find_if(aggregatorConfigs.begin(), aggregatorConfigs.end(), [](const auto& cfg) { return cfg.name == "MyAggregatorB"; });
-  for(auto x : aggregatorConfigs) {
+  for (auto x : aggregatorConfigs) {
     cout << "- " << x.name << endl;
   }
   REQUIRE(MyAggregatorBConfig != aggregatorConfigs.end());
@@ -118,7 +116,7 @@ TEST_CASE("test_aggregator_onAnyNonZero")
   CHECK(getQualityForCheck(result, "MyAggregatorB/newQuality") == Quality::Good);
 
   qoMap["dataSizeCheck2/someNumbersTask/example"] = make_shared<QualityObject>(Quality::Bad, "dataSizeCheck2/someNumbersTask/example");
-   result = aggregator->aggregate(qoMap);
+  result = aggregator->aggregate(qoMap);
   CHECK(getQualityForCheck(result, "MyAggregatorB/newQuality") == Quality::Bad);
 }
 
