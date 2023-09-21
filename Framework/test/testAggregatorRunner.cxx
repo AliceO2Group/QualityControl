@@ -27,7 +27,6 @@
 #include <Framework/ConfigParamRegistry.h>
 #include <Framework/ConfigParamStore.h>
 #include <catch_amalgamated.hpp>
-#include <functional>
 
 using namespace o2::quality_control::checker;
 using namespace std;
@@ -50,9 +49,6 @@ std::pair<AggregatorRunnerConfig, std::vector<AggregatorConfig>> getAggregatorCo
 
   return { aggregatorRunnerConfig, aggregatorConfigs };
 }
-
-#include <iostream>
-using namespace std;
 
 TEST_CASE("test_aggregator_runner_static")
 {
