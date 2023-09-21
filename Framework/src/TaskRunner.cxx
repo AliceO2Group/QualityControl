@@ -238,6 +238,7 @@ void TaskRunner::finaliseCCDB(ConcreteDataMatcher& matcher, void* obj)
       ILOG(Warning, Devel) << "Could not update CCDB objects requested by GRPGeomHelper" << ENDM;
     }
   }
+  mTask->finaliseCCDB(matcher, obj);
 }
 
 CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framework::InputSpan const& inputs)
