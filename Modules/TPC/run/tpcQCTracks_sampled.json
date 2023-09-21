@@ -9,6 +9,7 @@
         "name": "not_applicable"
       },
       "Activity": {
+        "number": "592390"
       },
       "monitoring": {
         "url": "infologger:///debug?qc"
@@ -17,7 +18,7 @@
         "url": ""
       },
       "conditionDB": {
-        "url": "ccdb-test.cern.ch:8080"
+        "url": "alice-ccdb.cern.ch"
       }
     },
     "tasks": {
@@ -35,6 +36,16 @@
         },
         "taskParameters": {
           "cutAbsEta": "1.",  "cutMinNCluster": "60", "cutMindEdxTot": "20."
+        },
+	"grpGeomRequest" : {
+          "geomRequest": "None",
+          "askGRPECS": "false",
+          "askGRPLHCIF": "false",
+          "askGRPMagField": "true",
+          "askMatLUT": "true",
+          "askTime": "false",
+          "askOnceAllButField": "true",
+          "needPropagatorD":  "false"
         },
         "location": "remote"
       }
