@@ -282,11 +282,12 @@
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonAggregator",
         "moduleName": "QcSkeleton",
-        "policy": "OnAll",
+        "policy": "OnAnyNonZero",
         "detectorName": "TST",
         "dataSource": [{
-          "type": "Check",
-          "name": "dataSizeCheck1"
+          "type": "Check", "": "this one sends a single object",
+          "name": "checkAll",
+          "QOs": "", "": "with OnAnyNonZero we must provide a list of QOs, thus the empty string"
         }, {
           "type": "Check", "": "this one is using onEachSeparately and thus it sends under a full path",
           "name": "dataSizeCheck2",
