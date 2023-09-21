@@ -92,7 +92,7 @@ void UpdatePolicyManager::addPolicy(const std::string& actorName, UpdatePolicyTy
           for (const auto& objectName : mPoliciesByActor.at(actorName).inputObjects) {
             // QC-1033 - failure to use this policy with checks producing single QO
             std::string objectNameLocal = objectName;
-            if(objectNameLocal.back() == '/') {
+            if (objectNameLocal.back() == '/') {
               ILOG(Debug, Devel) << "OnAnyNonZero - remove the final slash" << ENDM;
               objectNameLocal.pop_back();
             }
@@ -107,7 +107,7 @@ void UpdatePolicyManager::addPolicy(const std::string& actorName, UpdatePolicyTy
 
         for (const auto& objectName : mPoliciesByActor.at(actorName).inputObjects) {
           std::string objectNameLocal = objectName;
-          if(objectNameLocal.back() == '/') {
+          if (objectNameLocal.back() == '/') {
             ILOG(Debug, Devel) << "OnAnyNonZero - remove the final slash" << ENDM;
             objectNameLocal.pop_back();
           }
