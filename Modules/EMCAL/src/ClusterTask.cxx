@@ -514,8 +514,12 @@ void ClusterTask::analyseTimeframe(const gsl::span<const o2::emcal::Cell>& cells
 
     } // cls loop
     if (isPhysicsTrigger && mTaskParameters.mFillInvMassMeson) {
-      buildAndAnalysePiOs(selclustersEMCAL, true);
-      buildAndAnalysePiOs(selclustersDCAL, false);
+      // Apply centrality selection (paticularly for heavy-ion)
+      // Selection based on cluster multiplicity
+      if (nClustersEventSelected >= mTaskParameters.mMesonMinClusterMultiplicity && nClustersEventSelected <= mTaskParameters.mMesonMaxClusterMultiplicity) {
+        buildAndAnalysePiOs(selclustersEMCAL, true);
+        buildAndAnalysePiOs(selclustersDCAL, false);
+      }
     }
     if (isPhysicsTrigger) {
       mHistNclustPerEvtSelected->Fill(nClustersEventSelected);
@@ -867,6 +871,12 @@ void ClusterTask::configureTaskParameters()
   if (hasConfigValue("MultiplicityRange")) {
     mTaskParameters.mMultiplicityRange = std::stoi(getConfigValueLower("MultiplicityRange"));
   }
+  if (hasConfigValue("mesonMinClusterMultiplicity")) {
+    mTaskParameters.mMesonMinClusterMultiplicity = std::stoi(getConfigValueLower("mesonMinClusterMultiplicity"));
+  }
+  if (hasConfigValue("mesonMaxClusterMultiplicity")) {
+    mTaskParameters.mMesonMaxClusterMultiplicity = std::stoi(getConfigValueLower("mesonMaxClusterMultiplicity"));
+  }
 
   ILOG(Info, Support) << mTaskParameters;
 }
@@ -1016,7 +1026,9 @@ void ClusterTask::TaskParams::print(std::ostream& stream) const
          << "Calibrate cells before clusterization:          " << (mCalibrate ? "yes" : "no") << "\n"
          << "Filling cell-level control histograms:          " << (mFillControlHistograms ? "yes" : "no") << "\n"
          << "Invariant mass histograms for Meson candidates: " << (mFillInvMassMeson ? "enabled" : "disabled") << "\n"
-         << "Max. range of multiplicity histograms:          " << mMultiplicityRange << "\n";
+         << "Max. range of multiplicity histograms:          " << mMultiplicityRange << "\n"
+         << "Min. cluster multiplicity for Meson candidates: " << mMesonMinClusterMultiplicity << "\n"
+         << "Max. cluster mutliplicity for Meson candidates: " << mMesonMaxClusterMultiplicity << "\n";
 }
 
 std::ostream& operator<<(std::ostream& stream, const ClusterTask::ClusterizerParams& params)
