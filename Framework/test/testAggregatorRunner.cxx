@@ -99,9 +99,6 @@ TEST_CASE("test_aggregator_onAnyNonZero")
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
   auto [aggregatorRunnerConfig, aggregatorConfigs] = getAggregatorConfigs(configFilePath);
   auto MyAggregatorBConfig = std::find_if(aggregatorConfigs.begin(), aggregatorConfigs.end(), [](const auto& cfg) { return cfg.name == "MyAggregatorB"; });
-  for (auto x : aggregatorConfigs) {
-    cout << "- " << x.name << endl;
-  }
   REQUIRE(MyAggregatorBConfig != aggregatorConfigs.end());
   auto aggregator = make_shared<Aggregator>(*MyAggregatorBConfig);
   aggregator->init();
