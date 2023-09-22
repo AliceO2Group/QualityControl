@@ -60,6 +60,12 @@ void ClusterQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {
     ILOG(Info, Support) << "Custom parameter - myOwnKey : " << param->second << ENDM;
   }
+  if (auto param = mCustomParameters.find("mPtMin"); param != mCustomParameters.end()) {
+    mPtMin = std::stof(param->second);
+  }
+  if (auto param = mCustomParameters.find("mOccCut"); param != mCustomParameters.end()) {
+    mOccCut = std::stof(param->second);
+  }
 
   // read alignment to calculate cluster global coordinates
   mGeom = o2::phos::Geometry::GetInstance("Run3");
