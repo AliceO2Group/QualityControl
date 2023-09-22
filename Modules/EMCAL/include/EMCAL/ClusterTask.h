@@ -18,6 +18,7 @@
 #define QC_MODULE_EMC_EMCCLUSTERTASK_H
 
 #include <array>
+#include <climits>
 #include <iosfwd>
 #include <unordered_map>
 #include <string>
@@ -116,11 +117,13 @@ class ClusterTask final : public TaskInterface
   /// \struct TaskParams
   /// \brief Other task parameters
   struct TaskParams {
-    bool mInternalClusterizer = false;   ///< Use run internal clusterizer, do not subscribe to external cluster collection
-    bool mCalibrate = false;             ///< Perform recalibration
-    bool mFillInvMassMeson = false;      ///< Fill invariant mass of meson candidates
-    bool mFillControlHistograms = false; ///< Fill control histograms at cell level
-    int mMultiplicityRange = 200;        ///< Range for multiplicity histograms
+    bool mInternalClusterizer = false;          ///< Use run internal clusterizer, do not subscribe to external cluster collection
+    bool mCalibrate = false;                    ///< Perform recalibration
+    bool mFillInvMassMeson = false;             ///< Fill invariant mass of meson candidates
+    bool mFillControlHistograms = false;        ///< Fill control histograms at cell level
+    int mMultiplicityRange = 200;               ///< Range for multiplicity histograms
+    int mMesonMinClusterMultiplicity = 0;       ///< Min. cluster multiplicty meson selection
+    int mMesonMaxClusterMultiplicity = INT_MAX; ///< Max. cluster multiplicity meson selection
 
     /// \brief Print task parameters to output stream
     /// \param stream Stream used for printing
