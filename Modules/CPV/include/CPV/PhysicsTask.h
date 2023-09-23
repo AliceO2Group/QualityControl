@@ -106,8 +106,10 @@ class PhysicsTask final : public TaskInterface
   void initHistograms();
   void resetHistograms();
 
-  static constexpr short kNHist1D = 29;
-  enum Histos1D { H1DInputPayloadSize,
+  static constexpr short kNHist1D = 31;
+  enum Histos1D { H1DBCsFromDigits,
+                  H1DBCsFromClusters,
+                  H1DInputPayloadSize,
                   H1DNInputs,
                   H1DNValidInputs,
                   H1DRawErrors,

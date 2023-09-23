@@ -57,8 +57,9 @@ class RawQcTask final : public TaskInterface
   void reset() override;
 
  protected:
-  static constexpr short kNhist1D = 27;
-  enum histos1D { kTotalDataVolume,
+  static constexpr short kNhist1D = 28;
+  enum histos1D { kBCs,
+                  kTotalDataVolume,
                   kMessageCounter,
                   kBadMapSummary,
                   kHGmeanSummaryM1,
