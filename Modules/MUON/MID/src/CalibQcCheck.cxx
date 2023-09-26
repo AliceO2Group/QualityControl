@@ -62,11 +62,11 @@ void CalibQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResu
   auto currentTime = mHistoHelper.getCurrentTime();
   mHistoHelper.updateTitle(dynamic_cast<TH2F*>(mo->getObject()), currentTime);
 
-  if (mo->getName().find("Mult") == std::string::npos) {
-    // Do nothing for Mult* objects
+  if (mo->getName().find("Map") != std::string::npos || mo->getName().find("Strips") != std::string::npos) {
+    // Normalize Map and Strips objects
     if (mo->getName().find("Noise") != std::string::npos) {
       // Scale histograms with noise info
-      auto histo = static_cast<TH2F*>(mo->getObject());
+      auto histo = static_cast<TH1*>(mo->getObject());
       mHistoHelper.normalizeHistoTokHz(histo);
       if (mo->getName().find("Map") != std::string::npos) {
         histo->SetMaximum(10.);
@@ -74,7 +74,7 @@ void CalibQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResu
     } else if (mo->getName().find("Dead") != std::string::npos) {
       if (mDeadRof > 0.) {
         // Scale histograms with dead channels info
-        auto histo = static_cast<TH2F*>(mo->getObject());
+        auto histo = static_cast<TH1*>(mo->getObject());
         histo->Scale(100. / mDeadRof);
         mHistoHelper.updateTitle(histo, " (%)");
       }
