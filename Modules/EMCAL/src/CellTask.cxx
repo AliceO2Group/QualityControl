@@ -490,8 +490,11 @@ void CellTask::monitorData(o2::framework::ProcessingContext& ctx)
             if (goodcell) {
               numCellsGood[sm]++;
               auto cellenergy = cell.getAmplitude() * energycalib;
+              auto celltime = cell.getTimeStamp() - timeoffset;
               if (cellenergy > mTaskSettings.mThresholdTotalEnergy) {
-                totalEnergies[sm] += cellenergy;
+                if (std::abs(celltime) < mTaskSettings.mMaxTimeTotalEnergy) {
+                  totalEnergies[sm] += cellenergy;
+                }
               }
             } else {
               numCellsBad[sm]++;
@@ -694,6 +697,9 @@ void CellTask::parseMultiplicityRanges()
   }
   if (hasConfigValue("TotalEnergyRangeSM")) {
     mTaskSettings.mTotalEnergyRangeSM = std::stod(getConfigValue("TotalEnergyRangeSM"));
+  }
+  if (hasConfigValue("TotalEnergyMaxCellTime")) {
+    mTaskSettings.mMaxTimeTotalEnergy = std::stod(getConfigValue("TotalEnergyMaxCellTime"));
   }
 }
 
