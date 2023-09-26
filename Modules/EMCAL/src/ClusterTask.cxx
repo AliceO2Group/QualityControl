@@ -556,6 +556,10 @@ void ClusterTask::buildAndAnalysePiOs(const gsl::span<const TLorentzVector> clus
   if (clustervectors.size() > 1) {
     for (int icl = 0; icl < clustervectors.size() - 1; icl++) {
       for (int jcl = icl + 1; jcl < clustervectors.size(); jcl++) {
+        auto emax = clustervectors[icl].E() > clustervectors[jcl].E() ? clustervectors[icl].E() : clustervectors[jcl].E();
+        if (emax < mTaskParameters.mMinELeadingMeson) {
+          continue;
+        }
         TLorentzVector pi0candidate = clustervectors[icl] + clustervectors[jcl];
         if (!mMesonCuts.isSelected(pi0candidate)) {
           continue;
@@ -839,6 +843,18 @@ void ClusterTask::configureMesonSelection()
   if (hasConfigValue("mesonClustersRejectExotics")) {
     mMesonClusterCuts.mRejectExotics = std::stoi(getConfigValue("mesonClustersRejectExotics"));
   }
+  if (hasConfigValue("mesonClusterMinM02")) {
+    mMesonClusterCuts.mMinM02 = std::stod(getConfigValueLower("mesonClusterMinM02"));
+  }
+  if (hasConfigValue("mesonClusterMaxM02")) {
+    mMesonClusterCuts.mMaxM02 = std::stod(getConfigValueLower("mesonClusterMaxM02"));
+  }
+  if (hasConfigValue("mesonClusterMinM20")) {
+    mMesonClusterCuts.mMinM20 = std::stod(getConfigValueLower("mesonClusterMinM20"));
+  }
+  if (hasConfigValue("mesonClusterMaxM20")) {
+    mMesonClusterCuts.mMaxM20 = std::stod(getConfigValueLower("mesonClusterMaxM20"));
+  }
   if (hasConfigValue("mesonMinPt")) {
     mMesonCuts.mMinPt = std::stod(getConfigValue("mesonMinPt"));
   }
@@ -876,6 +892,9 @@ void ClusterTask::configureTaskParameters()
   }
   if (hasConfigValue("mesonMaxClusterMultiplicity")) {
     mTaskParameters.mMesonMaxClusterMultiplicity = std::stoi(getConfigValueLower("mesonMaxClusterMultiplicity"));
+  }
+  if (hasConfigValue("mesonMinEClusterLeading")) {
+    mTaskParameters.mMinELeadingMeson = std::stod(getConfigValueLower("mesonMinEClusterLeading"));
   }
 
   ILOG(Info, Support) << mTaskParameters;
@@ -987,6 +1006,12 @@ bool ClusterTask::MesonClusterSelection::isSelected(const o2::emcal::AnalysisClu
   if (cluster.getNCells() < mMinNCell) {
     return false;
   }
+  if (cluster.getM02() < mMinM02 || cluster.getM02() > mMaxM02) {
+    return false;
+  }
+  if (cluster.getM20() < mMinM20 || cluster.getM20() > mMaxM20) {
+    return false;
+  }
   if (mRejectExotics && cluster.getIsExotic()) {
     return false;
   }
@@ -1000,6 +1025,10 @@ void ClusterTask::MesonClusterSelection::print(std::ostream& stream) const
          << "Min. energy:          " << mMinE << " GeV\n"
          << "Max. time:            " << mMaxTime << " ns\n"
          << "Min. number of cells: " << mMinNCell << "\n"
+         << "Min. M02:             " << mMinM02 << "\n"
+         << "Max. M02:             " << mMaxM02 << "\n"
+         << "Min. M20:             " << mMinM20 << "\n"
+         << "Max. M20:             " << mMaxM20 << "\n"
          << "Reject exotics:       " << (mRejectExotics ? "yes" : "no") << "\n";
 }
 
@@ -1028,7 +1057,8 @@ void ClusterTask::TaskParams::print(std::ostream& stream) const
          << "Invariant mass histograms for Meson candidates: " << (mFillInvMassMeson ? "enabled" : "disabled") << "\n"
          << "Max. range of multiplicity histograms:          " << mMultiplicityRange << "\n"
          << "Min. cluster multiplicity for Meson candidates: " << mMesonMinClusterMultiplicity << "\n"
-         << "Max. cluster mutliplicity for Meson candidates: " << mMesonMaxClusterMultiplicity << "\n";
+         << "Max. cluster mutliplicity for Meson candidates: " << mMesonMaxClusterMultiplicity << "\n"
+         << "Min. energy leading for Meson candidates:       " << mMinELeadingMeson << " GeV\n";
 }
 
 std::ostream& operator<<(std::ostream& stream, const ClusterTask::ClusterizerParams& params)
