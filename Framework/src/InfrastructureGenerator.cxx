@@ -144,7 +144,7 @@ framework::WorkflowSpec InfrastructureGenerator::generateFullChainInfrastructure
       bool enableMovingWindows = !taskSpec.movingWindows.empty();
       generateMergers(workflow, taskSpec.taskName, 1, cycleDurationsMultiplied,
                       taskSpec.mergingMode, resetAfterCycles, infrastructureSpec.common.monitoringUrl,
-                      taskSpec.detectorName, taskSpec.mergersPerLayer, enableMovingWindows);
+                      taskSpec.detectorName, taskSpec.mergersPerLayer, enableMovingWindows, taskSpec.critical);
     } else { // TaskLocationSpec::Remote
       auto taskConfig = TaskRunnerFactory::extractConfig(infrastructureSpec.common, taskSpec, 0, taskSpec.resetAfterCycles);
       workflow.emplace_back(TaskRunnerFactory::create(taskConfig));

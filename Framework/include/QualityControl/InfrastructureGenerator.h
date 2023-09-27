@@ -223,7 +223,9 @@ class InfrastructureGenerator
                               size_t resetAfterCycles,
                               std::string monitoringUrl,
                               const std::string& detectorName,
-                              std::vector<size_t> mergersPerLayer, bool enableMovingWindows, bool critical);
+                              std::vector<size_t> mergersPerLayer,
+                              bool enableMovingWindows,
+                              bool critical);
   static void generateCheckRunners(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec);
   static void generateAggregator(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec);
   static void generatePostProcessing(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec);
