@@ -22,6 +22,8 @@
 #include <Framework/InputRecord.h>
 #include <Framework/InputRecordWalker.h>
 
+using matchType = o2::globaltracking::MatchITSTPCQC::matchType;
+
 namespace o2::quality_control_modules::glo
 {
 
@@ -63,21 +65,61 @@ void ITSTPCMatchingTask::initialize(o2::framework::InitContext& /*ctx*/)
   mMatchITSTPCQC.initDataRequest();
   mMatchITSTPCQC.init();
 
-  // Pt
-  getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPt());
-  getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPtTPC());
-  getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatch());
-  // Phi
-  getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPhi());
-  getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPhiTPC());
-  getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatchPhi());
-  getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatchPhiVsPt());
-  // Eta
-  getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoEta());
-  getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoEtaTPC());
-  getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatchEta());
-  getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatchEtaVsPt());
+  for (int i = 0; i < matchType::SIZE; ++i) {
+    // Pt
+    getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPtNum(matchType(i)));
+    getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPtDen(matchType(i)));
+    getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatch(matchType(i)));
 
+    getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPtNumNoEta0(matchType(i)));
+    getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPtDenNoEta0(matchType(i)));
+    getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatchNoEta0(matchType(i)));
+
+    // Phi
+    getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPhiNum(matchType(i)));
+    getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPhiDen(matchType(i)));
+    getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatchPhi(matchType(i)));
+
+    getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPhiVsPtNum(matchType(i)));
+    getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPhiVsPtDen(matchType(i)));
+    getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatchPhiVsPt(matchType(i)));
+
+    // Eta
+    getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoEtaNum(matchType(i)));
+    getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoEtaDen(matchType(i)));
+    getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatchEta(matchType(i)));
+
+    getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoEtaVsPtNum(matchType(i)));
+    getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoEtaVsPtDen(matchType(i)));
+    getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatchEtaVsPt(matchType(i)));
+
+    // 1/Pt
+    getObjectsManager()->startPublishing(mMatchITSTPCQC.getHisto1OverPtNum(matchType(i)));
+    getObjectsManager()->startPublishing(mMatchITSTPCQC.getHisto1OverPtDen(matchType(i)));
+    getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatch1OverPt(matchType(i)));
+
+    if (mMatchITSTPCQC.getUseMC()) {
+      // Pt
+      getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPtPhysPrimNum(matchType(i)));
+      getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPtPhysPrimDen(matchType(i)));
+      getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatchPhysPrim(matchType(i)));
+
+      // Phi
+      getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPhiPhysPrimNum(matchType(i)));
+      getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPhiPhysPrimDen(matchType(i)));
+      getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatchPhiPhysPrim(matchType(i)));
+
+      // Eta
+      getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoEtaPhysPrimNum(matchType(i)));
+      getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoEtaPhysPrimDen(matchType(i)));
+      getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatchEtaPhysPrim(matchType(i)));
+
+      // 1/Pt
+      getObjectsManager()->startPublishing(mMatchITSTPCQC.getHisto1OverPtPhysPrimNum(matchType(i)));
+      getObjectsManager()->startPublishing(mMatchITSTPCQC.getHisto1OverPtPhysPrimDen(matchType(i)));
+      getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatchPhysPrim1OverPt(matchType(i)));
+    }
+  }
   // Residuals
   getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoResidualPt());
   getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoResidualPhi());
@@ -86,20 +128,8 @@ void ITSTPCMatchingTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoChi2Matching());
   getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoChi2Refit());
   getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoTimeResVsPt());
-  if (mMatchITSTPCQC.getUseMC()) {
-    // Pt
-    getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPtPhysPrim());
-    getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPtTPCPhysPrim());
-    getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatchPhysPrim());
-    // Phi
-    getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPhiPhysPrim());
-    getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPhiTPCPhysPrim());
-    getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatchPhiPhysPrim());
-    // Eta
-    getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoEtaPhysPrim());
-    getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoEtaTPCPhysPrim());
-    getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatchEtaPhysPrim());
-  }
+
+  getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoDCAr());
 }
 
 void ITSTPCMatchingTask::startOfActivity(const Activity& activity)
