@@ -155,10 +155,10 @@ std::array<Quality, getNumDE()> PreclustersCheck::checkMeanEfficienciesRatio(TH1
 
 Quality PreclustersCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
-  ILOG(Info, Devel) << "Entered PreclustersCheck::check" << ENDM;
-  ILOG(Info, Devel) << "   received a list of size : " << moMap->size() << ENDM;
+  ILOG(Debug, Devel) << "Entered PreclustersCheck::check" << ENDM;
+  ILOG(Debug, Devel) << "   received a list of size : " << moMap->size() << ENDM;
   for (const auto& item : *moMap) {
-    ILOG(Info, Devel) << "Object: " << item.second->getName() << ENDM;
+    ILOG(Debug, Devel) << "Object: " << item.second->getName() << ENDM;
   }
 
   mQualityChecker.reset();
