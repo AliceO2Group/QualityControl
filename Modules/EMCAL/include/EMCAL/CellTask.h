@@ -19,6 +19,7 @@
 
 #include "QualityControl/TaskInterface.h"
 #include <array>
+#include <climits>
 #include <unordered_map>
 #include <string_view>
 #include <gsl/span>
@@ -81,6 +82,7 @@ class CellTask final : public TaskInterface
     double mTotalEnergyRange = 0.;
     double mTotalEnergyRangeDetector = 0.;
     double mTotalEnergyRangeSM = 0.;
+    double mMaxTimeTotalEnergy = DBL_MAX;
   };
   struct CellHistograms {
     o2::emcal::Geometry* mGeometry;
