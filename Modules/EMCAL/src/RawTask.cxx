@@ -29,6 +29,7 @@
 #include "Headers/RAWDataHeader.h"
 #include "EMCALBase/Geometry.h"
 #include "EMCALReconstruction/AltroDecoder.h"
+#include "EMCALReconstruction/RawDecodingError.h"
 #include "EMCALReconstruction/RawReaderMemory.h"
 #include <Framework/ConcreteDataMatcher.h>
 #include <Framework/InputRecordWalker.h>
@@ -469,7 +470,14 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
         mNumberOfPages++;
         nPagesMessage++;
         mMessageCounter->Fill(2); // fill bin 3 with PageCounter
-        rawreader.next();
+        try {
+          rawreader.next();
+        } catch (RawDecodingError& e) {
+          // Skip page in case of page decoding errors
+          // For corrupted RDHs the determination of the next page
+          // will fail, leading to an infinity loop
+          break;
+        }
         auto rawSize = rawreader.getPayloadSize(); // payloadsize in byte;
 
         auto rdh = rawreader.getRawHeader();
