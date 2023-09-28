@@ -297,10 +297,10 @@ void AggregatorRunner::initAggregators()
       auto aggregator = make_shared<Aggregator>(aggregatorConfig);
       aggregator->init();
       mUpdatePolicyManager.addPolicy(aggregator->getName(),
-                                    aggregator->getUpdatePolicyType(),
-                                    aggregator->getObjectsNames(),
-                                    aggregator->getAllObjectsOption(),
-                                    false);
+                                     aggregator->getUpdatePolicyType(),
+                                     aggregator->getObjectsNames(),
+                                     aggregator->getAllObjectsOption(),
+                                     false);
       mAggregators.push_back(aggregator);
     } catch (...) {
       // catch the configuration exception and print it to avoid losing it

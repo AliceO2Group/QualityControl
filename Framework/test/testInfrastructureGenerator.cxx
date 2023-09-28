@@ -412,4 +412,3 @@ TEST_CASE("qc_infrastructure_remote_batch_test")
     });
   CHECK(aggregator != workflow.end());
 }
-
