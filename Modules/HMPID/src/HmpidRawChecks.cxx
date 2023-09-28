@@ -128,7 +128,6 @@ std::array<Quality, 42> HmpidRawChecks::check_hHmpHvSectorQ(TH2F* h) // <-- non 
     h, [&](double val) -> bool { return (val >= mFractionXBinsHVSingleModuleEntriesToLabelGoodBadQuality * h->GetNbinsX()); }, mMinHVTotalEntriesToCheckQuality);
 }
 
-
 template <typename T>
 static T* getHisto(TCanvas* c, std::string hname)
 {
@@ -445,7 +444,6 @@ void HmpidRawChecks::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRe
       h->GetListOfFunctions()->Add(pave);
     }
     h->SetLineColor(kBlack);
-
   }
 
   // Busy time
