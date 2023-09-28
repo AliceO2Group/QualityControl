@@ -46,9 +46,11 @@ HmpidTask::~HmpidTask()
   for (Int_t i = 0; i < numCham; ++i) {
     delete hModuleMap[i];
   }
-  delete fHmpBigMap_profile;
-  delete fHmpHvSectorQ;
-  delete fHmpPadOccPrf;
+  delete hHmpBigMap_profile;
+  delete hHmpHvSectorQ;
+  delete hHmpPadOccPrf;
+  delete CheckerMessages;
+  delete hCheckHV;
 }
 
 Int_t NumCycles = 0;
@@ -73,42 +75,41 @@ void HmpidTask::initialize(o2::framework::InitContext& /*ctx*/)
   // TProfiles
   hBusyTime = new TProfile("hBusyTime", "HMP Busy Time per DDL;DDL;Busy Time (#mus)", 14, 0.5, 14.5);
   hBusyTime->Sumw2();
-  hBusyTime->SetOption("P");
+  hBusyTime->SetOption("histE");
   hBusyTime->SetMinimum(0);
   hBusyTime->SetMarkerStyle(20);
   hBusyTime->SetMarkerColor(kBlack);
   hBusyTime->SetLineColor(kBlack);
+  hBusyTime->SetFillStyle(3004);
   for (Int_t iddl = 0; iddl < 14; iddl++)
     hBusyTime->GetXaxis()->SetBinLabel(iddl + 1, Form("%d", iddl + 1));
-  // hBusyTime->GetXaxis()->SetLabelSize(0.02);
   hBusyTime->SetStats(0);
   hBusyTime->GetXaxis()->SetLabelSize(0.025);
   hBusyTime->GetYaxis()->SetLabelSize(0.025);
 
   hEventSize = new TProfile("hEventSize", "HMP Event Size per DDL;DDL;Event Size (kB)", 14, 0.5, 14.5);
   hEventSize->Sumw2();
-  hEventSize->SetOption("P");
+  hEventSize->SetOption("E"); // hist
   hEventSize->SetMinimum(0);
   hEventSize->SetMarkerStyle(20);
   hEventSize->SetMarkerColor(kBlack);
   hEventSize->SetLineColor(kBlack);
+  hEventSize->SetFillStyle(3004);
   for (Int_t iddl = 0; iddl < 14; iddl++)
     hEventSize->GetXaxis()->SetBinLabel(iddl + 1, Form("%d", iddl + 1));
-  // hEventSize->GetXaxis()->SetLabelSize(0.02);
   hEventSize->SetStats(0);
   hEventSize->GetXaxis()->SetLabelSize(0.025);
   hEventSize->GetYaxis()->SetLabelSize(0.025);
 
   hEventNumber = new TProfile("hEventNumber", "HMP Event Number per DDL;DDL;Event Number", 14, 0.5, 14.5);
   hEventNumber->Sumw2();
-  hEventNumber->SetOption("P");
+  hEventNumber->SetOption("E"); // hist
   hEventNumber->SetMinimum(0);
   hEventNumber->SetMarkerStyle(20);
   hEventNumber->SetMarkerColor(kBlack);
   hEventNumber->SetLineColor(kBlack);
   for (Int_t iddl = 0; iddl < 14; iddl++)
     hEventNumber->GetXaxis()->SetBinLabel(iddl + 1, Form("%d", iddl + 1));
-  // hEventNumber->GetXaxis()->SetLabelSize(0.02);
   hEventNumber->SetStats(0);
   hEventNumber->GetXaxis()->SetLabelSize(0.025);
   hEventNumber->GetYaxis()->SetLabelSize(0.025);
@@ -124,88 +125,98 @@ void HmpidTask::initialize(o2::framework::InitContext& /*ctx*/)
     getObjectsManager()->setDisplayHint(hModuleMap[i], "colz");
   }
 
-  fHmpBigMap_profile = new TProfile2D("fHmpBigMap_profile", "HMP Sum Q Maps Ch: 0-6", 160, 0, 160, 1008, 0, 1008);
-  // fHmpBigMap_profile->SetMinimum(0);
-  fHmpBigMap_profile->SetOption("colz");
-  // fHmpBigMap_profile->GetXaxis()->SetLabelSize(0.02);
-  fHmpBigMap_profile->SetXTitle("Ch 0-6: pad X");
-  fHmpBigMap_profile->SetYTitle("Ch0, Ch1, Ch2, Ch3, Ch4, Ch5, Ch6 pad Y");
-  fHmpBigMap_profile->SetZTitle("Sum Q / Nevt");
-  fHmpBigMap_profile->SetMarkerStyle(20);
-  fHmpBigMap_profile->SetStats(0);
-  fHmpBigMap_profile->GetXaxis()->SetLabelSize(0.025);
-  fHmpBigMap_profile->GetYaxis()->SetLabelSize(0.025);
-  fHmpBigMap_profile->GetZaxis()->SetLabelSize(0.015);
-  fHmpBigMap_profile->GetXaxis()->SetTitleOffset(1.);
-  fHmpBigMap_profile->GetYaxis()->SetTitleOffset(1.4);
+  hHmpBigMap_profile = new TProfile2D("hHmpBigMap_profile", "HMP Sum Q Maps Ch: 0-6", 160, 0, 160, 1008, 0, 1008);
+  hHmpBigMap_profile->SetXTitle("Ch 0-6: pad X");
+  hHmpBigMap_profile->SetYTitle("Ch0, Ch1, Ch2, Ch3, Ch4, Ch5, Ch6 pad Y");
+  hHmpBigMap_profile->SetZTitle("Sum Q / Nevt");
+  hHmpBigMap_profile->SetMarkerStyle(20);
+  hHmpBigMap_profile->SetStats(0);
+  hHmpBigMap_profile->GetXaxis()->SetLabelSize(0.025);
+  hHmpBigMap_profile->GetYaxis()->SetLabelSize(0.025);
+  hHmpBigMap_profile->GetZaxis()->SetLabelSize(0.015);
+  hHmpBigMap_profile->GetXaxis()->SetTitleOffset(1.);
+  hHmpBigMap_profile->GetYaxis()->SetTitleOffset(1.4);
 
-  fHmpHvSectorQ = new TH2F("fHmpHvSectorQ", "HMP HV Sector vs Q", 410, 1, 4101, 42, 0, 42);
-  // fHmpHvSectorQ->SetMinimum(0);
-  fHmpHvSectorQ->SetOption("colz");
-  // fHmpHvSectorQ->GetXaxis()->SetLabelSize(0.02);
-  fHmpHvSectorQ->SetXTitle("Q (ADC)");
-  fHmpHvSectorQ->SetYTitle("HV Sector (Ch0-Sc0,Ch0-Sc1,...)");
-  fHmpHvSectorQ->SetZTitle("Entries*Q/Nevt");
-  fHmpHvSectorQ->SetMarkerStyle(20);
-  fHmpHvSectorQ->SetStats(0);
-  fHmpHvSectorQ->GetXaxis()->SetLabelSize(0.025);
-  fHmpHvSectorQ->GetYaxis()->SetLabelSize(0.025);
-  fHmpHvSectorQ->GetZaxis()->SetLabelSize(0.015);
-  fHmpHvSectorQ->GetXaxis()->SetTitleOffset(1.);
-  fHmpHvSectorQ->GetYaxis()->SetTitleOffset(1.4);
+  hHmpHvSectorQ = new TH2F("hHmpHvSectorQ", "HMP HV Sector vs Q", 410, 1, 4101, 42, 0, 42);
+  hHmpHvSectorQ->SetXTitle("Q (ADC)");
+  hHmpHvSectorQ->SetYTitle("HV Sector (Ch0-Sc0,Ch0-Sc1,...)");
+  hHmpHvSectorQ->SetZTitle("Entries*Q/Nevt");
+  hHmpHvSectorQ->SetMarkerStyle(20);
+  hHmpHvSectorQ->SetStats(0);
+  hHmpHvSectorQ->GetXaxis()->SetLabelSize(0.025);
+  hHmpHvSectorQ->GetYaxis()->SetLabelSize(0.025);
+  hHmpHvSectorQ->GetZaxis()->SetLabelSize(0.015);
+  hHmpHvSectorQ->GetXaxis()->SetTitleOffset(1.);
+  hHmpHvSectorQ->GetYaxis()->SetTitleOffset(1.4);
 
-  fHmpPadOccPrf = new TProfile("fHmpPadOccPrf", "HMP Average pad occupancy per DDL;DDL;Pad occupancy (%)", 14, 0.5, 14.5);
-  fHmpPadOccPrf->Sumw2();
-  fHmpPadOccPrf->SetOption("P");
-  fHmpPadOccPrf->SetMinimum(0);
-  fHmpPadOccPrf->SetMarkerStyle(20);
-  fHmpPadOccPrf->SetMarkerColor(kBlack);
-  fHmpPadOccPrf->SetLineColor(kBlack);
+  hHmpPadOccPrf = new TProfile("hHmpPadOccPrf", "HMP Average pad occupancy per DDL;DDL;Pad occupancy (%)", 14, 0.5, 14.5);
+  hHmpPadOccPrf->Sumw2();
+  hHmpPadOccPrf->SetOption("hist"); // E
+  hHmpPadOccPrf->SetMinimum(0);
+  hHmpPadOccPrf->SetMarkerStyle(20);
+  hHmpPadOccPrf->SetMarkerColor(kBlack);
+  hHmpPadOccPrf->SetLineColor(kBlack);
+  hHmpPadOccPrf->SetFillStyle(3004);
   for (Int_t iddl = 0; iddl < 14; iddl++)
-    fHmpPadOccPrf->GetXaxis()->SetBinLabel(iddl + 1, Form("%d", iddl + 1));
-  // fHmpPadOccPrf->GetXaxis()->SetLabelSize(0.02);
-  fHmpPadOccPrf->SetStats(0);
-  fHmpPadOccPrf->GetYaxis()->SetDecimals(1);
-  fHmpPadOccPrf->GetXaxis()->SetLabelSize(0.025);
-  fHmpPadOccPrf->GetYaxis()->SetLabelSize(0.025);
+    hHmpPadOccPrf->GetXaxis()->SetBinLabel(iddl + 1, Form("%d", iddl + 1));
+  // hHmpPadOccPrf->GetXaxis()->SetLabelSize(0.02);
+  hHmpPadOccPrf->SetStats(0);
+  hHmpPadOccPrf->GetYaxis()->SetDecimals(1);
+  hHmpPadOccPrf->GetXaxis()->SetLabelSize(0.025);
+  hHmpPadOccPrf->GetYaxis()->SetLabelSize(0.025);
 
   getObjectsManager()->startPublishing(hPedestalMean);
 
   getObjectsManager()->startPublishing(hPedestalSigma);
 
   getObjectsManager()->startPublishing(hBusyTime);
+  getObjectsManager()->setDefaultDrawOptions(hBusyTime, "E"); // hist E
+  getObjectsManager()->setDisplayHint(hBusyTime, "E");        // hist E
 
   getObjectsManager()->startPublishing(hEventSize);
+  getObjectsManager()->setDefaultDrawOptions(hEventSize, "E"); // hist E
+  getObjectsManager()->setDisplayHint(hEventSize, "E");        // hist E
 
   getObjectsManager()->startPublishing(hEventNumber);
 
-  getObjectsManager()->startPublishing(fHmpBigMap_profile);
-  getObjectsManager()->setDefaultDrawOptions(fHmpBigMap_profile, "colz");
-  getObjectsManager()->setDisplayHint(fHmpBigMap_profile, "colz");
+  getObjectsManager()->startPublishing(hHmpBigMap_profile);
+  getObjectsManager()->setDefaultDrawOptions(hHmpBigMap_profile, "colz");
+  getObjectsManager()->setDisplayHint(hHmpBigMap_profile, "colz");
 
-  getObjectsManager()->startPublishing(fHmpHvSectorQ);
-  getObjectsManager()->setDefaultDrawOptions(fHmpHvSectorQ, "colz");
-  getObjectsManager()->setDisplayHint(fHmpHvSectorQ, "colz");
+  getObjectsManager()->startPublishing(hHmpHvSectorQ);
+  getObjectsManager()->setDefaultDrawOptions(hHmpHvSectorQ, "colz");
+  getObjectsManager()->setDisplayHint(hHmpHvSectorQ, "colz");
 
-  getObjectsManager()->startPublishing(fHmpPadOccPrf);
+  getObjectsManager()->startPublishing(hHmpPadOccPrf);
+  getObjectsManager()->setDefaultDrawOptions(hHmpPadOccPrf, "E"); // hist E
+  getObjectsManager()->setDisplayHint(hHmpPadOccPrf, "E");        // hist E
+
+  // Error messages
+  CheckerMessages = new TCanvas("CheckerMessages");
+  getObjectsManager()->startPublishing(CheckerMessages);
+
+  // TH2 to check HV
+  hCheckHV = new TH2F("hCheckHV", "hCheckHV", 42, -0.5, 41.5, 4, 0, 4);
+  hCheckHV->SetXTitle("HV Sector (Ch0-Sc0,Ch0-Sc1,...)");
+  hCheckHV->SetYTitle("Quality");
+  hCheckHV->SetMarkerStyle(20);
+  hCheckHV->SetStats(0);
+  hCheckHV->GetXaxis()->SetLabelSize(0.025);
+  hCheckHV->GetYaxis()->SetLabelSize(0.025);
+  hCheckHV->GetXaxis()->SetTitleOffset(1.);
+  hCheckHV->GetYaxis()->SetTitleOffset(1.4);
+  hCheckHV->SetMinimum(0);
+  hCheckHV->SetMaximum(2);
+  getObjectsManager()->startPublishing(hCheckHV);
+  getObjectsManager()->setDefaultDrawOptions(hCheckHV, "col");
+  getObjectsManager()->setDisplayHint(hCheckHV, "col");
 }
 
 void HmpidTask::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "startOfActivity" << ENDM;
-  hPedestalMean->Reset();
-  hPedestalSigma->Reset();
-  hBusyTime->Reset();
-  hEventSize->Reset();
-  hEventNumber->Reset();
 
-  for (Int_t i = 0; i < numCham; ++i) {
-    hModuleMap[i]->Reset();
-  }
-
-  fHmpBigMap_profile->Reset();
-  fHmpHvSectorQ->Reset();
-  fHmpPadOccPrf->Reset();
+  HmpidTask::reset();
 
   mDecoder = new o2::hmpid::HmpidDecoder2(14);
   mDecoder->init();
@@ -215,11 +226,13 @@ void HmpidTask::startOfActivity(const Activity& /*activity*/)
 void HmpidTask::startOfCycle()
 {
   ILOG(Debug, Devel) << "startOfCycle" << ENDM;
+  cout << endl
+       << "Start of Cycle " << NumCycles << endl
+       << endl;
 }
 
 void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  NumCycles++;
   mDecoder->init();
   mDecoder->setVerbosity(2); // this is for Debug
                              //  static const Int_t numCham = 7;
@@ -248,7 +261,7 @@ void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
           hBusyTime->Fill(eqId + 1, mDecoder->getAverageBusyTime(eqId) * 1000000);
         }
         if (mDecoder->mTheEquipments[eq]->mNumberOfEvents > 0) {
-          fHmpPadOccPrf->Fill(eqId + 1, (100. * mDecoder->mTheEquipments[eq]->mTotalPads) / (11520. * mDecoder->mTheEquipments[eq]->mNumberOfEvents));
+          hHmpPadOccPrf->Fill(eqId + 1, (100. * mDecoder->mTheEquipments[eq]->mTotalPads) / (11520. * mDecoder->mTheEquipments[eq]->mNumberOfEvents));
         }
 
         hEventNumber->Fill(eqId + 1, mDecoder->mTheEquipments[eq]->mEventNumber);
@@ -266,9 +279,9 @@ void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
                 hPedestalSigma->Fill(sigma);
                 o2::hmpid::Digit::equipment2Absolute(eqId, column, dilogic, channel, &module, &x, &y);
                 hModuleMap[module]->Fill(x, y, mean);
-                fHmpBigMap_profile->Fill(x, module * 144 + y, mean);
+                hHmpBigMap_profile->Fill(x, module * 144 + y, mean);
                 if (mDecoder->mTheEquipments[eq]->mNumberOfEvents > 0) {
-                  fHmpHvSectorQ->Fill(mean, module * 6 + y / 24, mean / Float_t(mDecoder->mTheEquipments[eq]->mNumberOfEvents));
+                  hHmpHvSectorQ->Fill(mean, module * 6 + y / 24, mean / Float_t(mDecoder->mTheEquipments[eq]->mNumberOfEvents));
                 }
               }
             }
@@ -289,16 +302,16 @@ void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
       */
     }
   }
-
-  if (NumCycles > 15) {
-    reset();
-    NumCycles = 0;
-  }
 }
 
 void HmpidTask::endOfCycle()
 {
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
+  NumCycles++;
+  if (NumCycles > 15) {
+    HmpidTask::reset();
+    NumCycles = 0;
+  }
 }
 
 void HmpidTask::endOfActivity(const Activity& /*activity*/)
@@ -309,7 +322,6 @@ void HmpidTask::endOfActivity(const Activity& /*activity*/)
 void HmpidTask::reset()
 {
   // clean all the monitor objects here
-
   ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   hPedestalMean->Reset();
   hPedestalSigma->Reset();
@@ -318,9 +330,16 @@ void HmpidTask::reset()
   hEventNumber->Reset();
   for (Int_t i = 0; i < numCham; ++i) {
     hModuleMap[i]->Reset();
-    fHmpBigMap_profile->Reset();
-    fHmpHvSectorQ->Reset();
-    fHmpPadOccPrf->Reset();
+  }
+  hHmpBigMap_profile->Reset();
+  hHmpHvSectorQ->Reset();
+  hHmpPadOccPrf->Reset();
+  hCheckHV->Reset();
+  for (int i = 1; i <= hCheckHV->GetNbinsX(); i++) {
+    hCheckHV->SetBinContent(i, hCheckHV->GetYaxis()->FindBin("Null"), 0.001);
+    hCheckHV->SetBinContent(i, hCheckHV->GetYaxis()->FindBin("Good"), -0.001);
+    hCheckHV->SetBinContent(i, hCheckHV->GetYaxis()->FindBin("Bad"), -0.001);
+    hCheckHV->SetBinContent(i, hCheckHV->GetYaxis()->FindBin(""), -0.001);
   }
 }
 

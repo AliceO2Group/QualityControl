@@ -28,7 +28,8 @@
 #include <string>
 #include <TColor.h>
 
-using namespace o2::quality_control::core;
+// using namespace o2::quality_control::core;
+
 namespace o2::quality_control_modules::hmpid
 {
 
@@ -99,5 +100,5 @@ class HmpidRawChecks : public o2::quality_control::checker::CheckInterface
 };
 
 } // namespace o2::quality_control_modules::hmpid
-
+//} // namespace o2::quality_control::core
 #endif // QC_MODULE_HMPID_RAWCHECK_H

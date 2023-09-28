@@ -40,64 +40,26 @@ void HmpidRawChecks::configure()
 {
 
   // Histo names
-  if (auto param = mCustomParameters.find("m_hHmpBigMap_HistName"); param != mCustomParameters.end()) {
-    m_hHmpBigMap_HistName = param->second;
-  }
-  if (auto param = mCustomParameters.find("m_hHmpHvSectorQ_HistName"); param != mCustomParameters.end()) {
-    m_hHmpHvSectorQ_HistName = param->second;
-  }
-  if (auto param = mCustomParameters.find("m_hHmpPadOccPrf_HistName"); param != mCustomParameters.end()) {
-    m_hHmpPadOccPrf_HistName = param->second;
-  }
-  if (auto param = mCustomParameters.find("m_hBusyTime_HistName"); param != mCustomParameters.end()) {
-    m_hBusyTime_HistName = param->second;
-  }
-  if (auto param = mCustomParameters.find("m_hEventSize_HistName"); param != mCustomParameters.end()) {
-    m_hEventSize_HistName = param->second;
-  }
-  if (auto param = mCustomParameters.find("m_hCheckHV_HistName"); param != mCustomParameters.end()) {
-    m_hCheckHV_HistName = param->second;
-  }
+  m_hHmpBigMap_HistName = mCustomParameters.atOrDefaultValue("m_hHmpBigMap_HistName");
+  m_hHmpHvSectorQ_HistName = mCustomParameters.atOrDefaultValue("m_hHmpHvSectorQ_HistName");
+  m_hHmpPadOccPrf_HistName = mCustomParameters.atOrDefaultValue("m_hHmpPadOccPrf_HistName");
+  m_hBusyTime_HistName = mCustomParameters.atOrDefaultValue("m_hBusyTime_HistName");
+  m_hEventSize_HistName = mCustomParameters.atOrDefaultValue("m_hEventSize_HistName");
+  m_hCheckHV_HistName = mCustomParameters.atOrDefaultValue("m_hCheckHV_HistName");
 
   // Histo limits
-  if (auto param = mCustomParameters.find("mMinOccupancy"); param != mCustomParameters.end()) {
-    mMinOccupancy = std::stof(param->second);
-  }
-  if (auto param = mCustomParameters.find("mMaxOccupancy"); param != mCustomParameters.end()) {
-    mMaxOccupancy = std::stof(param->second);
-  }
-  if (auto param = mCustomParameters.find("mMinEventSize"); param != mCustomParameters.end()) {
-    mMinEventSize = std::stof(param->second);
-  }
-  if (auto param = mCustomParameters.find("mMaxEventSize"); param != mCustomParameters.end()) {
-    mMaxEventSize = std::stof(param->second);
-  }
-  if (auto param = mCustomParameters.find("mMinBusyTime"); param != mCustomParameters.end()) {
-    mMinBusyTime = std::stof(param->second);
-  }
-  if (auto param = mCustomParameters.find("mMaxBusyTime"); param != mCustomParameters.end()) {
-    mMaxBusyTime = std::stof(param->second);
-  }
-  if (auto param = mCustomParameters.find("mMinHVTotalEntriesToCheckQuality"); param != mCustomParameters.end()) {
-    mMinHVTotalEntriesToCheckQuality = std::stof(param->second);
-  }
-  if (auto param = mCustomParameters.find("mFractionXBinsHVSingleModuleEntriesToLabelGoodBadQuality"); param != mCustomParameters.end()) {
-    mFractionXBinsHVSingleModuleEntriesToLabelGoodBadQuality = std::stof(param->second);
-  }
-
-  if (auto param = mCustomParameters.find("mMaxBadDDLForMedium"); param != mCustomParameters.end()) {
-    mMaxBadDDLForMedium = std::stoi(param->second);
-  }
-  if (auto param = mCustomParameters.find("mMaxBadDDLForBad"); param != mCustomParameters.end()) {
-    mMaxBadDDLForBad = std::stoi(param->second);
-  }
-
-  if (auto param = mCustomParameters.find("mMaxBadHVForMedium"); param != mCustomParameters.end()) {
-    mMaxBadHVForMedium = std::stoi(param->second);
-  }
-  if (auto param = mCustomParameters.find("mMaxBadHVForBad"); param != mCustomParameters.end()) {
-    mMaxBadHVForBad = std::stoi(param->second);
-  }
+  mMinOccupancy = std::stof(mCustomParameters.atOrDefaultValue("mMinOccupancy"));
+  mMaxOccupancy = std::stof(mCustomParameters.atOrDefaultValue("mMaxOccupancy"));
+  mMinEventSize = std::stof(mCustomParameters.atOrDefaultValue("mMinEventSize"));
+  mMaxEventSize = std::stof(mCustomParameters.atOrDefaultValue("mMaxEventSize"));
+  mMinBusyTime = std::stof(mCustomParameters.atOrDefaultValue("mMinBusyTime"));
+  mMaxBusyTime = std::stof(mCustomParameters.atOrDefaultValue("mMaxBusyTime"));
+  mMinHVTotalEntriesToCheckQuality = std::stof(mCustomParameters.atOrDefaultValue("mMinHVTotalEntriesToCheckQuality"));
+  mFractionXBinsHVSingleModuleEntriesToLabelGoodBadQuality = std::stof(mCustomParameters.atOrDefaultValue("mFractionXBinsHVSingleModuleEntriesToLabelGoodBadQuality"));
+  mMaxBadDDLForMedium = std::stof(mCustomParameters.atOrDefaultValue("mMaxBadDDLForMedium"));
+  mMaxBadDDLForBad = std::stof(mCustomParameters.atOrDefaultValue("mMaxBadDDLForBad"));
+  mMaxBadHVForMedium = std::stof(mCustomParameters.atOrDefaultValue("mMaxBadHVForMedium"));
+  mMaxBadHVForBad = std::stof(mCustomParameters.atOrDefaultValue("mMaxBadHVForBad"));
 }
 
 template <typename Lambda>
@@ -119,8 +81,6 @@ std::array<Quality, 14> checkPlot(TProfile* h, Lambda check)
   }
   return result;
 }
-
-// PREVEDERE UNA checkPlot EQUIVALENTE PER PLOTS 2D !!!
 
 std::array<Quality, 14> HmpidRawChecks::check_hHmpPadOccPrf(TProfile* h)
 {
@@ -168,13 +128,6 @@ std::array<Quality, 42> HmpidRawChecks::check_hHmpHvSectorQ(TH2F* h) // <-- non 
     h, [&](double val) -> bool { return (val >= mFractionXBinsHVSingleModuleEntriesToLabelGoodBadQuality * h->GetNbinsX()); }, mMinHVTotalEntriesToCheckQuality);
 }
 
-/*
-std::array<Quality, 14> HmpidRawChecks::check_hHmpBigMap(TProfile2D *h) // <-- non 14 per 2D
-{
-  return checkPlot(h, [&](double val) -> bool
-                   { return (val >= mMinBusyTime && val <= mMaxBusyTime); });
-}
-*/
 
 template <typename T>
 static T* getHisto(TCanvas* c, std::string hname)
@@ -233,17 +186,12 @@ Quality HmpidRawChecks::check(std::map<std::string, std::shared_ptr<MonitorObjec
   qualityCheckerEventSize.mMaxBadDDLForBad = mMaxBadDDLForBad;
 
   mQualityHvSectorQ = Quality::Null;
-  // std::array<Quality, 42> qualityHvSectorQ; // <-- Moved in header to beautify
   QualityCheckerHV qualityCheckerHvSectorQ;
   qualityCheckerHvSectorQ.resetHV();
   qualityCheckerHvSectorQ.mMaxBadHVForMedium = mMaxBadHVForMedium;
   qualityCheckerHvSectorQ.mMaxBadHVForBad = mMaxBadHVForBad;
 
   mQualityBigMap = Quality::Null;
-  /*std::array<Quality, 14> qualityBigMap;
-  QualityChecker qualityCheckerBigMap;
-  qualityCheckerBigMap.mMaxBadDDLForMedium = mMaxBadDDLForMedium;
-  qualityCheckerBigMap.mMaxBadDDLForBad = mMaxBadDDLForBad;*/
 
   for (auto& [moName, mo] : *moMap) {
 
@@ -287,17 +235,6 @@ Quality HmpidRawChecks::check(std::map<std::string, std::shared_ptr<MonitorObjec
         qualityHvSectorQ[34] = Quality::Null;
       }
     }
-
-    /*
-    if (matchHistName(mo->getName(), m_hHmpBigMap_HistName))
-    {
-      Tprofile2D *h = getHisto<TProfile2D>(mo);
-      if (h && h->GetEntries() > 0)
-      {
-        auto q = check_hHmpBigMap(h); // <-- Sistemare controllo
-        qualityCheckerBigMap.addCheckResult(q);
-      }
-    }*/
   }
 
   // compute the aggregated quality
@@ -315,7 +252,6 @@ Quality HmpidRawChecks::check(std::map<std::string, std::shared_ptr<MonitorObjec
   qualityCheckerHvSectorQ.mQualityHV[31] = Quality::Null;
   qualityCheckerHvSectorQ.mQualityHV[34] = Quality::Null;
   mQualityHvSectorQ = qualityCheckerHvSectorQ.getQualityHV();
-  // mQualityBigMap = qualityCheckerBigMap.getQuality();
   mQualityBigMap = mQualityHvSectorQ; // <-- reasonable assumption
 
   // Final quality result
@@ -407,34 +343,6 @@ Quality HmpidRawChecks::check(std::map<std::string, std::shared_ptr<MonitorObjec
     mErrorMessages.emplace_back("HV and Map: Good");
     mErrorMessagesColor.emplace_back(kGreen + 2);
   }
-
-  /*
-  if (mQualityBigMap == Quality::Null)
-  {
-    mErrorMessages.emplace_back("Charge big map: Empty channels, plot not filled");
-  }
-  else if (mQualityBigMap == Quality::Bad)
-  {
-    mErrorMessages.emplace_back("Charge big map: Too many empty channels");
-  }
-  else if (mQualityBigMap == Quality::Medium)
-  {
-    mErrorMessages.emplace_back("Charge big map: Some channels are empty");
-  }
-
-  if (mQualityHvSectorQ == Quality::Null)
-  {
-    mErrorMessages.emplace_back("Charge HV sectors: Empty channels, plot not filled");
-  }
-  else if (mQualityHvSectorQ == Quality::Bad)
-  {
-    mErrorMessages.emplace_back("Charge HV sectors: Too many empty sectors");
-  }
-  else if (mQualityHvSectorQ == Quality::Medium)
-  {
-    mErrorMessages.emplace_back("Charge HV sectors: Some sectors are empty");
-  }
-  */
 
   return result;
 }
@@ -538,14 +446,6 @@ void HmpidRawChecks::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRe
     }
     h->SetLineColor(kBlack);
 
-    // Check elements in list
-    /*TIter next(h->GetListOfFunctions());
-    TObject* obj = nullptr;
-    while ((obj = next())) {
-      std::cout << std::endl
-                << obj->GetName() << std::endl
-                << std::endl;
-    }*/
   }
 
   // Busy time
@@ -833,43 +733,6 @@ void HmpidRawChecks::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRe
     pave->SetDrawOption("same");
     h->GetListOfFunctions()->Add(pave);
   }
-
-  /*
-  // Big map (ATTENZIONE: CHECK NON CORRETTO, SERVE DI PIU IN 2D)
-  if (mo->getName().find("hHmpBigMap") != std::string::npos) {
-    TProfile2D* h = getHisto<TProfile2D>(mo);
-    if (!h) {
-      return;
-    }
-    if (checkResult == Quality::Good) {
-      h->SetFillColor(kGreen);
-    } else if (checkResult == Quality::Bad) {
-      h->SetFillColor(kRed);
-    } else if (checkResult == Quality::Medium) {
-      h->SetFillColor(kOrange);
-    }
-    h->SetLineColor(kBlack);
-  }
-  */
-
-  /*
-  // HvSector Q (ATTENZIONE: CHECK NON CORRETTO, SERVE DI PIU IN 2D)
-  if (mo->getName().find("hHmpHvSectorQ") != std::string::npos) {
-    TH2F* h = getHisto<TH2F>(mo);
-    if (!h) {
-      return;
-    }
-
-    if (checkResult == Quality::Good) {
-      h->SetFillColor(kGreen);
-    } else if (checkResult == Quality::Bad) {
-      h->SetFillColor(kRed);
-    } else if (checkResult == Quality::Medium) {
-      h->SetFillColor(kOrange);
-    }
-    h->SetLineColor(kBlack);
-  }
-  */
 }
 
 } // namespace o2::quality_control_modules::hmpid
