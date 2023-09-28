@@ -60,6 +60,18 @@ void ClusterQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {
     ILOG(Info, Support) << "Custom parameter - myOwnKey : " << param->second << ENDM;
   }
+  if (auto param = mCustomParameters.find("mPtMin"); param != mCustomParameters.end()) {
+    mPtMin = std::stof(param->second);
+  }
+  if (auto param = mCustomParameters.find("mOccCut"); param != mCustomParameters.end()) {
+    mOccCut = std::stof(param->second);
+  }
+  if (auto param = mCustomParameters.find("mEnergyMinForInvMass"); param != mCustomParameters.end()) {
+    mEnergyMinForInvMass = std::stof(param->second);
+  }
+  if (auto param = mCustomParameters.find("mMultiplicityMinForInvMass"); param != mCustomParameters.end()) {
+    mMultiplicityMinForInvMass = std::stoi(param->second);
+  }
 
   // read alignment to calculate cluster global coordinates
   mGeom = o2::phos::Geometry::GetInstance("Run3");
@@ -68,6 +80,10 @@ void ClusterQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mBadMap.reset(new o2::phos::BadChannelsMap());
 
   // Prepare histograms
+  // BC histogram
+  mHist1D[kBCs] = new TH1F("BCsFromClusters", "BCs of cluster trigger records; BC; event count", 4000, 0, 4000);
+  getObjectsManager()->startPublishing(mHist1D[kBCs]);
+
   for (Int_t mod = 0; mod < 4; mod++) {
     if (!mHist2D[kOccupancyM1 + mod]) {
       mHist2D[kOccupancyM1 + mod] = new TH2F(Form("ClusterOccupancyM%d", mod + 1), Form("Cluster occupancy, mod %d", mod + 1), 64, 0., 64., 56, 0., 56.);
@@ -137,6 +153,7 @@ void ClusterQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   for (auto& tr : cluTR) {
 
+    mHist1D[kBCs]->Fill(tr.getBCData().bc);
     int firstCluInEvent = tr.getFirstEntry();
     int lastCluInEvent = firstCluInEvent + tr.getNumberOfObjects();
 
@@ -219,7 +236,7 @@ bool ClusterQcTask::checkCluster(const o2::phos::Cluster& clu)
     return false;
   }
 
-  return (clu.getEnergy() > 0.3 && clu.getMultiplicity() > 1);
+  return (clu.getEnergy() > mEnergyMinForInvMass && clu.getMultiplicity() >= mMultiplicityMinForInvMass);
 }
 
 } // namespace o2::quality_control_modules::phos

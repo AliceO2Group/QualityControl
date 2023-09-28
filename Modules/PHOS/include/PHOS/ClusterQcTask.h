@@ -56,8 +56,9 @@ class ClusterQcTask final : public TaskInterface
   bool checkCluster(const o2::phos::Cluster& c);
 
  private:
-  static constexpr short kNhist1D = 8;
-  enum histos1D { kSpectrumM1,
+  static constexpr short kNhist1D = 9;
+  enum histos1D { kBCs,
+                  kSpectrumM1,
                   kSpectrumM2,
                   kSpectrumM3,
                   kSpectrumM4,
@@ -79,6 +80,8 @@ class ClusterQcTask final : public TaskInterface
   };
   float mPtMin = 1.5;                                /// minimum pi0 pt to fill inv mass histo
   float mOccCut = 0.1;                               /// minimum energy to fill occupancy histo
+  float mEnergyMinForInvMass = 0.3;                  /// minimum energy to make 2gamma spectrum
+  int mMultiplicityMinForInvMass = 2;                /// minimum multiplicity to make 2gamma spectrum
   std::array<TH1F*, kNhist1D> mHist1D = { nullptr }; ///< Array of 1D histograms
   std::array<TH2F*, kNhist2D> mHist2D = { nullptr }; ///< Array of 2D histograms
   std::vector<TLorentzVector> mBuffer[4];            /// Keep photons per event per module

@@ -37,7 +37,15 @@ SliceTrendingTaskConfig::SliceTrendingTaskConfig(const std::string& id,
                       plotConfig.second.get<std::string>("graphErrors", ""),
                       plotConfig.second.get<std::string>("graphYRange", ""),
                       plotConfig.second.get<std::string>("graphXRange", ""),
-                      plotConfig.second.get<std::string>("graphAxisLabel", "") });
+                      plotConfig.second.get<std::string>("graphAxisLabel", ""),
+                      plotConfig.second.get<std::string>("legendNColums", "2"),
+                      plotConfig.second.get<std::string>("legendTextSize", "2.0"),
+                      plotConfig.second.get<std::string>("legendObservableX", ""),
+                      plotConfig.second.get<std::string>("legendObservableY", ""),
+                      plotConfig.second.get<std::string>("legendUnitX", ""),
+                      plotConfig.second.get<std::string>("legendUnitY", ""),
+                      plotConfig.second.get<std::string>("legendCentmodeX", "False"),
+                      plotConfig.second.get<std::string>("legendCentmodeY", "False") });
   }
 
   // Loop over all the data sources to trend.

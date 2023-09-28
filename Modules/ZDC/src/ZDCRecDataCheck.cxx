@@ -55,7 +55,7 @@ Quality ZDCRecDataCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
   int ib = 0;
   for (auto& [moName, mo] : *moMap) {
     (void)moName;
-    if (mo->getName() == "h_summmary_ADC") {
+    if (mo->getName() == "h_summary_ADC") {
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
       // dumpVecParam((int)h->GetNbinsX(),(int)mVectParamADC.size());
       if ((int)h->GetNbinsX() != (int)mVectParamADC.size()) {
@@ -127,7 +127,7 @@ Quality ZDCRecDataCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
         }
         if (mQTDC == 3) {
           result.addReason(FlagReasonFactory::Unknown(),
-                           "It is bad because in TDC Summary" + std::to_string(mNumWTDC) + " channels:" + mStringWTDC + "have a value in the bad range");
+                           "It is bad because in TDC Summary" + std::to_string(mNumWTDC) + " channels:" + mStringETDC + "have a value in the bad range");
         }
       } else {
         result = Quality::Medium;
@@ -190,6 +190,8 @@ void ZDCRecDataCheck::setQualityInfo(std::shared_ptr<MonitorObject> mo, int colo
 void ZDCRecDataCheck::init()
 {
   mVectParamADC.clear();
+  mVectParamTDC.clear();
+
   setChName("ADC_ZNAC", "ADC");
   setChName("ADC_ZNA1", "ADC");
   setChName("ADC_ZNA2", "ADC");

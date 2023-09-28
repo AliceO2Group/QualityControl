@@ -116,6 +116,9 @@ void RawQcTask::InitHistograms()
 {
 
   // First init general histograms for any mode
+  // BC histogram
+  mHist1D[kBCs] = new TH1F("BCsFromCells", "BCs of cell trigger records; BC; event count", 4000, 0, 4000);
+  getObjectsManager()->startPublishing(mHist1D[kBCs]);
 
   // Statistics histograms
   mHist2D[kErrorNumber] = new TH2F("NumberOfErrors", "Number of hardware errors", 32, 0, 32, 15, 0, 15.); // xaxis: FEE card number + 2 for TRU and global errors
@@ -298,6 +301,9 @@ void RawQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   auto cells = ctx.inputs().get<gsl::span<o2::phos::Cell>>("cells");
   auto cellsTR = ctx.inputs().get<gsl::span<o2::phos::TriggerRecord>>("cellstr");
   mFractions1D[kErrorTypeOccurance]->increaseEventCounter(cellsTR.size());
+  for (const auto& trigRecord : cellsTR) {
+    mHist1D[kBCs]->Fill(trigRecord.getBCData().bc);
+  }
 
   if (mMode == 0) { // Physics
     FillPhysicsHistograms(cells, cellsTR);

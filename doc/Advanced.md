@@ -894,9 +894,9 @@ cd QualityControl
 git checkout <release> # use the release included in the installed FLP suite
 mkdir build
 cd build
-mkdir ~/installdir
-cmake -DCMAKE_INSTALL_PREFIX=~/installdir ..
-make -j16 install 
+mkdir /tmp/installdir
+cmake -DCMAKE_INSTALL_PREFIX=/tmp/installdir -G Ninja -DCLANG_EXECUTABLE=/opt/o2/bin-safe/clang -DCMAKE_BUILD_TYPE=RelWithDebugInfo ..
+ninja -j16 install 
 ```
 
 ***Compilation on top of a local O2***
@@ -909,8 +909,8 @@ cd AliceO2
 git checkout <release> # use the release included in the installed FLP suite
 mkdir build
 cd build
-cmake -DCMAKE_INSTALL_PREFIX=~/installdir ..
-make -j8 install
+cmake -DCMAKE_INSTALL_PREFIX=/tmp/installdir -G Ninja -DCLANG_EXECUTABLE=/opt/o2/bin-safe/clang -DCMAKE_BUILD_TYPE=RelWithDebugInfo ..
+ninja -j8 install
 
 # QC
 git clone https://github.com/AliceO2Group/QualityControl.git
@@ -918,22 +918,22 @@ cd QualityControl
 git checkout <release> # use the release included in the installed FLP suite
 mkdir build
 cd build
-cmake -DCMAKE_INSTALL_PREFIX=~/installdir .. -DO2_ROOT=~/installdir
-make -j8 install
+cmake -DCMAKE_INSTALL_PREFIX=/tmp/installdir -G Ninja -DCLANG_EXECUTABLE=/opt/o2/bin-safe/clang -DCMAKE_BUILD_TYPE=RelWithDebugInfo -DO2_ROOT=/tmp/installdir ..
+ninja -j8 install
 ```
 
 ***Important step in case several nodes are involved***
 
-In case the workflows will span over several FLPs and/or QC machines, one should `scp` the `installdir` to the other machines in the right home directory. The user on the FLPs is `flp` and `qc` on the QC nodes.
+In case the workflows will span over several FLPs and/or QC machines, one should `scp` the `installdir` to the other machines in the same directory.
 
 **Use it in aliECS**
 
 In the aliECS gui, in the panel "Advanced Configuration", et an extra variable `extra_env_vars` and set it to 
 ```
-PATH=~/installdir/bin/:$PATH LD_LIBRARY_PATH=~/installdir/lib/:$LD_LIBRARY_PATH QUALITYCONTROL_ROOT=~/installdir/
+PATH=/tmp/installdir/bin/:$PATH; LD_LIBRARY_PATH=/tmp/installdir/lib/:/tmp/installdir/lib64/:$LD_LIBRARY_PATH; QUALITYCONTROL_ROOT=/tmp/installdir/; echo
 ```
 
-Replace ~/installdir (which is relative to user flp) with your own path. Make sure that the directory is anyway readable and traversable by user flp.
+Replace `/tmp/installdir` with your own path. Make sure that the directory is anyway readable and traversable by users `flp` and `qc`
 
 ## Switch detector in the workflow _readout-dataflow_
 
@@ -1279,8 +1279,14 @@ the "tasks" path.
         "moduleName": "QcSkeleton",         "": "Library name. It can be found in CMakeLists of the detector module.",
         "detectorName": "TST",              "": "3-letter code of the detector.",
         "cycleDurationSeconds": "10",       "": "Cycle duration (how often objects are published), 10 seconds minimum.",
-                                            "": "The first cycle will be randomly shorter",
+                                            "": "The first cycle will be randomly shorter. ",
+        "": "Alternatively, one can specify different cycle durations for different periods. The last item in cycleDurations will be used for the rest of the duration whatever the period. The first cycle will be randomly shorter.",
+        "cycleDurations": [
+          {"cycleDurationSeconds": 10, "validitySeconds": 35},
+          {"cycleDurationSeconds": 12, "validitySeconds": 1}
+        ],
         "maxNumberCycles": "-1",            "": "Number of cycles to perform. Use -1 for infinite.",
+        "disableLastCycle": "true",         "": "Last cycle, upon EndOfStream, is not published. (default: false)",
         "dataSource": {                     "": "Data source of the QC Task.",
           "type": "dataSamplingPolicy",     "": "Type of the data source, \"dataSamplingPolicy\" or \"direct\".",
           "name": "tst-raw",                "": "Name of Data Sampling Policy. Only for \"dataSamplingPolicy\" source.",

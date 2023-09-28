@@ -71,12 +71,12 @@ void ITSDecodingErrorTask::createDecodingPlots()
   mLinkErrorPlots = new TH1D("General/LinkErrorPlots", "GBTLink decoding Errors", o2::itsmft::GBTLinkDecodingStat::NErrorsDefined, 0.5, o2::itsmft::GBTLinkDecodingStat::NErrorsDefined + 0.5);
   mLinkErrorPlots->SetMinimum(0);
   mLinkErrorPlots->SetStats(0);
-  mLinkErrorPlots->SetFillColor(kRed);
+  mLinkErrorPlots->SetFillColor(kOrange);
   getObjectsManager()->startPublishing(mLinkErrorPlots); // mLinkErrorPlots
   mChipErrorPlots = new TH1D("General/ChipErrorPlots", "Chip Decoding Errors", o2::itsmft::ChipStat::NErrorsDefined, 0.5, o2::itsmft::ChipStat::NErrorsDefined + 0.5);
   mChipErrorPlots->SetMinimum(0);
   mChipErrorPlots->SetStats(0);
-  mChipErrorPlots->SetFillColor(kRed);
+  mChipErrorPlots->SetFillColor(kOrange);
   getObjectsManager()->startPublishing(mChipErrorPlots); // mChipErrorPlots
 
   hAlwaysBusy = new TH1D("AlwaysBusyChips", "Number of Chips always in BUSY state", 11, 0, 11);

@@ -423,6 +423,8 @@ Metadata:
 
 - RunNumber=1048595860
 - qc_detector_name=1337188343
+- qc_task_name=1411267816
+- qc_task_class=809471350
 
 query to see for one or several given runs the number of objects per path:
 ```
@@ -451,6 +453,11 @@ Number of versions: check the web interface of the qcdb.
 List the tasks and the number of objects for each (in a number of runs)
 ```sql
 select substring(path from '^qc\/\w*\/MO\/\w*\/') as task, count(distinct path) from ccdb, ccdb_paths where ccdb_paths.pathid = ccdb.pathid AND ccdb.metadata -> '1048595860' in  ('539908') group by task;
+```
+
+List the tasks of a certain class in a certain run
+```
+select substring(path from '^qc\/\w*\/MO\/\w*\/') as task from ccdb, ccdb_paths where ccdb_paths.pathid = ccdb.pathid AND ccdb.metadata -> '1048595860' in  ('539908') and ccdb.metadata -> '809471350' = 'o2::quality_control::postprocessing::SliceTrendingTask' group by task;
 ```
 
 List the detectors and the number of objects for each (in a list of runs)

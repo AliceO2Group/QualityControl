@@ -37,6 +37,11 @@ namespace o2::globaltracking
 struct DataRequest;
 }
 
+namespace o2::framework
+{
+struct ConcreteDataMatcher;
+}
+
 namespace o2::quality_control::core
 {
 
@@ -80,6 +85,8 @@ class TaskInterface : public UserCodeInterface
   virtual void endOfCycle() = 0;
   virtual void endOfActivity(const Activity& activity) = 0;
   virtual void reset() = 0;
+
+  virtual void finaliseCCDB(framework::ConcreteDataMatcher& matcher, void* obj);
 
   /// \brief Called each time mCustomParameters is updated.
   virtual void configure() override;

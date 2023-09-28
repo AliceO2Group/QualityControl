@@ -169,6 +169,7 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
     mHist1D[H1DNDigitsPerInput]->Fill(digits.size());
     unsigned short nDigPerEvent[3];
     for (const auto& trigRecord : digitsTR) {
+      mHist1D[H1DBCsFromDigits]->Fill(trigRecord.getBCData().bc);
       LOG(debug) << " monitorData() : digit trigger record #" << mNEventsTotal
                  << " contains " << trigRecord.getNumberOfObjects() << " objects.";
       mNEventsTotal++;
@@ -203,6 +204,7 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
     mHist1D[H1DNClustersPerInput]->Fill(clusters.size());
     unsigned short nCluPerEvent[3];
     for (const auto& trigRecord : clustersTR) {
+      mHist1D[H1DBCsFromClusters]->Fill(trigRecord.getBCData().bc);
       mHist1D[H1DClustersInEventM2M3M4]->Fill(trigRecord.getNumberOfObjects());
       memset(nCluPerEvent, 0, 3 * sizeof(short));
       if (trigRecord.getNumberOfObjects() > 0) {
@@ -374,6 +376,22 @@ void PhysicsTask::initHistograms()
 {
   ILOG(Info, Devel) << "initing histograms" << ENDM;
   // 1D Histos
+  if (!mHist1D[H1DBCsFromDigits]) {
+    mHist1D[H1DBCsFromDigits] =
+      new TH1F("BCsFromDigits", "BCs of digit trigger records", 4000, 0, 4000);
+    getObjectsManager()->startPublishing(mHist1D[H1DBCsFromDigits]);
+  } else {
+    mHist1D[H1DBCsFromDigits]->Reset();
+  }
+
+  if (!mHist1D[H1DBCsFromClusters]) {
+    mHist1D[H1DBCsFromClusters] =
+      new TH1F("BCsFromClusters", "BCs of cluster trigger records", 4000, 0, 4000);
+    getObjectsManager()->startPublishing(mHist1D[H1DBCsFromClusters]);
+  } else {
+    mHist1D[H1DBCsFromClusters]->Reset();
+  }
+
   if (!mHist1D[H1DInputPayloadSize]) {
     mHist1D[H1DInputPayloadSize] =
       new TH1F("InputPayloadSize", "Input Payload Size", 30000, 0, 30000000);

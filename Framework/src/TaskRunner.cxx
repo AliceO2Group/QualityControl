@@ -238,6 +238,7 @@ void TaskRunner::finaliseCCDB(ConcreteDataMatcher& matcher, void* obj)
       ILOG(Warning, Devel) << "Could not update CCDB objects requested by GRPGeomHelper" << ENDM;
     }
   }
+  mTask->finaliseCCDB(matcher, obj);
 }
 
 CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framework::InputSpan const& inputs)
@@ -337,8 +338,12 @@ void TaskRunner::endOfStream(framework::EndOfStreamContext& eosContext)
   } else {
     ILOG(Info, Trace) << "Updating timekeeper with a current timestamp upon receiving an EoS message" << ENDM;
     mTimekeeper->updateByCurrentTimestamp(getCurrentTimestamp());
-    ILOG(Info, Support) << "Received an EndOfStream, finishing the current cycle" << ENDM;
-    finishCycle(eosContext.outputs());
+    if (mTaskConfig.disableLastCycle) {
+      ILOG(Info, Devel) << "Received an EndOfStream, but the last cycle is disabled" << ENDM;
+    } else {
+      ILOG(Info, Devel) << "Received an EndOfStream, finishing the current cycle" << ENDM;
+      finishCycle(eosContext.outputs());
+    }
   }
   mNoMoreCycles = true;
 }

@@ -18,6 +18,7 @@
 #define QC_MODULE_EMC_EMCCLUSTERTASK_H
 
 #include <array>
+#include <climits>
 #include <iosfwd>
 #include <unordered_map>
 #include <string>
@@ -86,6 +87,10 @@ class ClusterTask final : public TaskInterface
     double mMinE = 0.5;         ///< Min. Cluster E
     double mMaxTime = 25.;      ///< Max cluster time relative to 0
     int mMinNCell = 2;          ///< Min. Number of cells in cluster
+    double mMinM02 = -DBL_MAX;  ///< Min. M02 (shower shape)
+    double mMaxM02 = DBL_MAX;   ///< Max. M02 (shower shape)
+    double mMinM20 = -DBL_MAX;  ///< Min. M20 (shower shape)
+    double mMaxM20 = DBL_MAX;   ///< Max. M20 (shower shape)
     bool mRejectExotics = true; ///< Reject exotic clusters
 
     /// \brief Select cluster based on cluster cuts
@@ -116,11 +121,14 @@ class ClusterTask final : public TaskInterface
   /// \struct TaskParams
   /// \brief Other task parameters
   struct TaskParams {
-    bool mInternalClusterizer = false;   ///< Use run internal clusterizer, do not subscribe to external cluster collection
-    bool mCalibrate = false;             ///< Perform recalibration
-    bool mFillInvMassMeson = false;      ///< Fill invariant mass of meson candidates
-    bool mFillControlHistograms = false; ///< Fill control histograms at cell level
-    int mMultiplicityRange = 200;        ///< Range for multiplicity histograms
+    bool mInternalClusterizer = false;          ///< Use run internal clusterizer, do not subscribe to external cluster collection
+    bool mCalibrate = false;                    ///< Perform recalibration
+    bool mFillInvMassMeson = false;             ///< Fill invariant mass of meson candidates
+    bool mFillControlHistograms = false;        ///< Fill control histograms at cell level
+    int mMultiplicityRange = 200;               ///< Range for multiplicity histograms
+    int mMesonMinClusterMultiplicity = 0;       ///< Min. cluster multiplicty meson selection
+    int mMesonMaxClusterMultiplicity = INT_MAX; ///< Max. cluster multiplicity meson selection
+    double mMinELeadingMeson = 0;               ///< Min. energy leading leg meson candidates
 
     /// \brief Print task parameters to output stream
     /// \param stream Stream used for printing

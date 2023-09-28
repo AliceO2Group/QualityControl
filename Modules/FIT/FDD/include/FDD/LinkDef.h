@@ -11,4 +11,5 @@
 #pragma link C++ class o2::quality_control_modules::fdd::CFDEffCheck + ;
 #pragma link C++ class o2::quality_control_modules::fdd::OutOfBunchCollCheck + ;
 #pragma link C++ class o2::quality_control_modules::fdd::TriggersSwVsTcmCheck + ;
+#pragma link C++ class o2::quality_control_modules::fdd::OutOfBunchCollFeeModulesCheck + ;
 #endif

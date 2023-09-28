@@ -64,6 +64,7 @@ struct TaskRunnerConfig {
   std::shared_ptr<o2::base::GRPGeomRequest> grpGeomRequest;
   std::shared_ptr<o2::globaltracking::DataRequest> globalTrackingDataRequest;
   std::vector<std::string> movingWindows;
+  bool disableLastCycle = false;
 };
 
 } // namespace o2::quality_control::core

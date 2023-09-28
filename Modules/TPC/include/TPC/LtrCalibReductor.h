@@ -44,6 +44,8 @@ class LtrCalibReductor : public quality_control::postprocessing::Reductor
     double dvCorrection;
     double dvOffsetA;
     double dvOffsetC;
+    double t0A;
+    double t0C;
     double nTracksA;
     double nTracksC;
     double dvAbsolute;

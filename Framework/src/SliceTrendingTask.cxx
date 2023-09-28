@@ -179,7 +179,8 @@ void SliceTrendingTask::generatePlots()
     c->SetName(plot.name.c_str());
     c->SetTitle(plot.title.c_str());
 
-    drawCanvasMO(c, plot.varexp, plot.name, plot.option, plot.graphErrors, mAxisDivision[varName]);
+    TitleSettings titlesettings{ plot.legendObservableX, plot.legendObservableY, plot.legendUnitX, plot.legendUnitY, plot.legendCentmodeX, plot.legendCentmodeY };
+    drawCanvasMO(c, plot.varexp, plot.name, plot.option, plot.graphErrors, mAxisDivision[varName], titlesettings);
 
     int NumberPlots = 1;
     if (plot.varexp.find(":time") != std::string::npos || plot.varexp.find(":run") != std::string::npos) { // we plot vs time, multiple plots on canvas possible
@@ -199,6 +200,7 @@ void SliceTrendingTask::generatePlots()
           c->cd(1)->SetRightMargin(0.01);
           c->cd(2)->SetLeftMargin(0.01);
           c->cd(2)->SetRightMargin(0.01);
+          beautifyLegend(legend, plot, c);
         } else {
           ILOG(Error, Support) << "No legend in multigraph-time" << ENDM;
           c->cd(1);
@@ -240,7 +242,7 @@ void SliceTrendingTask::generatePlots()
 } // void SliceTrendingTask::generatePlots()
 
 void SliceTrendingTask::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
-                                     const std::string& name, const std::string& opt, const std::string& err, const std::vector<std::vector<float>>& axis)
+                                     const std::string& name, const std::string& opt, const std::string& err, const std::vector<std::vector<float>>& axis, const TitleSettings& titlesettings)
 {
   // Determine the order of the plot (1 - histo, 2 - graph, ...)
   const size_t plotOrder = std::count(var.begin(), var.end(), ':') + 1;
@@ -350,7 +352,8 @@ void SliceTrendingTask::drawCanvasMO(TCanvas* thisCanvas, const std::string& var
       const std::string_view title = (dataRetrieveVector->at(p)).title;
       const auto posDivider = title.find("RangeX");
       if (posDivider != std::string_view::npos) {
-        gr->SetName(title.substr(posDivider, -1).data());
+        auto rawtitle = title.substr(posDivider, -1);
+        gr->SetName(beautifyTitle(rawtitle, titlesettings).data());
       } else {
         gr->SetName(title.data());
       }
@@ -542,4 +545,88 @@ void SliceTrendingTask::beautifyGraph(T& graph, const SliceTrendingTaskConfig::P
   } else if (plotconfig.varexp.find(":meta.runNumber") != std::string::npos || plotconfig.varexp.find(":run") != std::string::npos || plotconfig.varexp.find(":multigraphrun") != std::string::npos) {
     graph->GetXaxis()->SetNoExponent(true);
   }
+}
+
+void SliceTrendingTask::beautifyLegend(TLegend* leg, const SliceTrendingTaskConfig::Plot& plotconfig, TCanvas* canv)
+{
+  int ncolums = 2;
+  try {
+    ncolums = std::stoi(plotconfig.legendNColums);
+  } catch (...) {
+    ILOG(Error, Support) << "key legNColums must be integer" << ENDM;
+  }
+  leg->SetNColumns(ncolums);
+
+  double textsize = 2.0;
+  try {
+    textsize = std::stod(plotconfig.legendTextSize);
+  } catch (...) {
+    ILOG(Error, Support) << "key legendTextSize must be double" << ENDM;
+  }
+  leg->SetTextSize(textsize);
+
+  canv->Update();
+  canv->Modified();
+}
+
+std::string SliceTrendingTask::beautifyTitle(const std::string_view rawtitle, const TitleSettings& settings)
+{
+  auto rangehandler = [](const std::string_view rangestring, const std::string_view observable, const std::string_view unit, bool centmode) -> std::string {
+    auto valuestring = rangestring.substr(rangestring.find("["));
+    valuestring = valuestring.substr(1, valuestring.size() - 2);
+    std::stringstream parser(static_cast<std::string>(valuestring));
+    std::string tmp;
+    std::vector<double> values;
+    while (std::getline(parser, tmp, ',')) {
+      values.emplace_back(std::stod(tmp));
+    }
+    std::stringstream titlebuilder;
+    if (centmode) {
+      // centmode: only use observable and mean of the ranges (integer binning)
+      // usefull for indexed observable like hardware indices (modules, sectors, ...)
+      titlebuilder << observable << " " << (values[0] + values[1]) / 2;
+      if (unit.length()) {
+        titlebuilder << " " << unit;
+      }
+    } else {
+      // conventional range
+      titlebuilder << values[0];
+      if (unit.length()) {
+        titlebuilder << " " << unit;
+      }
+      titlebuilder << " <= " << observable << "< " << values[1];
+      if (unit.length()) {
+        titlebuilder << " " << unit;
+      }
+    }
+    return titlebuilder.str();
+  };
+
+  std::string beautified;
+  int indexrangeX = rawtitle.find("RangeX"),
+      indexrangeY = rawtitle.find("RangeY");
+  if (settings.observableX != "None" && indexrangeY != std::string::npos) {
+    auto rangestring = rawtitle.substr(indexrangeX);
+    rangestring = rangestring.substr(0, rangestring.find("]") + 1);
+    if (!settings.observableX.length()) {
+      beautified += rangestring.data();
+    } else {
+      bool centmode = settings.centmodeX == "True";
+      beautified += rangehandler(rangestring, settings.observableX, settings.unitX, centmode);
+    }
+  }
+  if (settings.observableY != "None" && indexrangeY != std::string::npos) {
+    if (beautified.length()) {
+      beautified += " and";
+    }
+    auto rangestring = rawtitle.substr(indexrangeY);
+    rangestring = rangestring.substr(0, rangestring.find("]") + 1);
+    if (!settings.observableY.length()) {
+      beautified += rangestring.data();
+    } else {
+      bool centmode = settings.centmodeY == "True";
+      beautified += " " + rangehandler(rangestring, settings.observableY, settings.unitY, centmode);
+    }
+  }
+  return beautified;
 }

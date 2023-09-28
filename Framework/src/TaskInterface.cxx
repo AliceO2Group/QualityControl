@@ -46,6 +46,10 @@ const o2::globaltracking::DataRequest* TaskInterface::getGlobalTrackingDataReque
   return mGlobalTrackingDataRequest.get();
 }
 
+void TaskInterface::finaliseCCDB(framework::ConcreteDataMatcher& matcher, void* obj)
+{
+}
+
 void TaskInterface::configure()
 {
   // noop, override it if you want.
