@@ -729,17 +729,29 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
   ILOG(Debug, Devel) << ENDM;
 }
 
+void InfrastructureGenerator::throwIfNameClash(const InfrastructureSpec& infrastructureSpec)
+{
+  std::vector<std::string> allNames;
+  allNames.reserve(infrastructureSpec.checks.size());
+  std::transform(infrastructureSpec.checks.begin(), infrastructureSpec.checks.end(), std::back_inserter(allNames),
+                 [](const auto& check) { return check.checkName; } );
+  for(const auto& aggregator : infrastructureSpec.aggregators) {
+    if(std::count(allNames.begin(), allNames.end(), aggregator.aggregatorName)) {
+      ILOG(Error, Ops) << "The aggregator \"" << aggregator.aggregatorName << "\" has the same name as one of the Check. This is forbidden." << ENDM;
+      throw std::runtime_error(string("aggregator has the same name as a check: ") + aggregator.aggregatorName);
+    }
+  }
+}
+
 void InfrastructureGenerator::generateAggregator(WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec)
 {
-  std::vector<framework::OutputSpec> checkRunnerOutputs;
-  for (const auto& checkSpec : infrastructureSpec.checks) {
-    checkRunnerOutputs.emplace_back(Check::createOutputSpec(checkSpec.checkName));
-  }
-
   if (infrastructureSpec.aggregators.empty()) {
     ILOG(Debug, Devel) << "No \"aggregators\" structure found in the config file. If no quality aggregation is expected, then it is completely fine." << ENDM;
     return;
   }
+
+  // Make sure we don't have duplicated names in the checks and aggregators
+  throwIfNameClash(infrastructureSpec);
 
   DataProcessorSpec spec = AggregatorRunnerFactory::create(infrastructureSpec.common, infrastructureSpec.aggregators);
   workflow.emplace_back(spec);

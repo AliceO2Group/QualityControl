@@ -22,6 +22,7 @@
 
 #include <Framework/DataSpecUtils.h>
 #include <Configuration/ConfigurationFactory.h>
+#include "QualityControl/InfrastructureSpecReader.h"
 
 using namespace o2::quality_control::core;
 using namespace o2::framework;
@@ -82,6 +83,21 @@ TEST_CASE("qc_factory_local_test")
 
     REQUIRE(workflow.size() == 0);
   }
+}
+
+TEST_CASE("throwIfNameClash")
+{
+  std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
+  auto configInterface = ConfigurationFactory::getConfiguration(configFilePath);
+  auto configTree = configInterface->getRecursive();
+  auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(configTree, WorkflowType::Standalone);
+  CHECK_NOTHROW(InfrastructureGenerator::throwIfNameClash(infrastructureSpec)); // should not throw
+
+  configFilePath = std::string("json://") + getTestDataDirectory() + "testThrowNameClash.json";
+  configInterface = ConfigurationFactory::getConfiguration(configFilePath);
+  configTree = configInterface->getRecursive();
+  infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(configTree, WorkflowType::Standalone);
+  CHECK_THROWS(InfrastructureGenerator::throwIfNameClash(infrastructureSpec)); // should throw
 }
 
 TEST_CASE("qc_factory_remote_test")
@@ -396,3 +412,4 @@ TEST_CASE("qc_infrastructure_remote_batch_test")
     });
   CHECK(aggregator != workflow.end());
 }
+

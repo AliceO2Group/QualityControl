@@ -56,7 +56,7 @@ const auto current_diagnostic = boost::current_exception_diagnostic_information;
 namespace o2::quality_control::checker
 {
 
-AggregatorRunner::AggregatorRunner(AggregatorRunnerConfig arc, const std::vector<AggregatorConfig>& acs) //, const o2::quality_control::core::InfrastructureSpec& infrastructureSpec)
+AggregatorRunner::AggregatorRunner(AggregatorRunnerConfig arc, const std::vector<AggregatorConfig>& acs)
   : mDeviceName(createAggregatorRunnerName()),
     mRunnerConfig(std::move(arc)),
     mAggregatorsConfig(acs),
@@ -186,19 +186,19 @@ void AggregatorRunner::run(framework::ProcessingContext& ctx)
   framework::InputRecord& inputs = ctx.inputs();
   for (auto const& ref : InputRecordWalker(inputs)) { // InputRecordWalker because the output of CheckRunner can be multi-part
     ILOG(Debug, Trace) << "AggregatorRunner received data" << ENDM;
-    shared_ptr<const QualityObject> qo = inputs.get<QualityObject*>(ref);
+    shared_ptr<const QualityObject> const qo = inputs.get<QualityObject*>(ref);
     if (qo != nullptr) {
       ILOG(Debug, Trace) << "   It is a qo: " << qo->getName() << ENDM;
       mQualityObjects[qo->getName()] = qo;
       mTotalNumberObjectsReceived++;
-      updatePolicyManager.updateObjectRevision(qo->getName());
+      mUpdatePolicyManager.updateObjectRevision(qo->getName());
     }
   }
 
   auto qualityObjects = aggregate();
   store(qualityObjects);
 
-  updatePolicyManager.updateGlobalRevision();
+  mUpdatePolicyManager.updateGlobalRevision();
 
   sendPeriodicMonitoring();
 }
@@ -212,7 +212,7 @@ QualityObjectsType AggregatorRunner::aggregate()
     string aggregatorName = aggregator->getName();
     ILOG(Info, Devel) << "Processing aggregator: " << aggregatorName << ENDM;
 
-    if (updatePolicyManager.isReady(aggregatorName)) {
+    if (mUpdatePolicyManager.isReady(aggregatorName)) {
       ILOG(Info, Devel) << "   Quality Objects for the aggregator '" << aggregatorName << "' are  ready, aggregating" << ENDM;
       auto newQOs = aggregator->aggregate(mQualityObjects, *mActivity); // we give the whole list
       mTotalNumberObjectsProduced += newQOs.size();
@@ -220,13 +220,13 @@ QualityObjectsType AggregatorRunner::aggregate()
       // we consider the output of the aggregators the same way we do the output of a check
       for (const auto& qo : newQOs) {
         mQualityObjects[qo->getName()] = qo;
-        updatePolicyManager.updateObjectRevision(qo->getName());
+        mUpdatePolicyManager.updateObjectRevision(qo->getName());
       }
 
       allQOs.insert(allQOs.end(), std::make_move_iterator(newQOs.begin()), std::make_move_iterator(newQOs.end()));
       newQOs.clear();
 
-      updatePolicyManager.updateActorRevision(aggregatorName); // Was aggregated, update latest revision
+      mUpdatePolicyManager.updateActorRevision(aggregatorName); // Was aggregated, update latest revision
     } else {
       ILOG(Info, Devel) << "   Quality Objects for the aggregator '" << aggregatorName << "' are not ready, ignoring" << ENDM;
     }
@@ -296,7 +296,7 @@ void AggregatorRunner::initAggregators()
     try {
       auto aggregator = make_shared<Aggregator>(aggregatorConfig);
       aggregator->init();
-      updatePolicyManager.addPolicy(aggregator->getName(),
+      mUpdatePolicyManager.addPolicy(aggregator->getName(),
                                     aggregator->getUpdatePolicyType(),
                                     aggregator->getObjectsNames(),
                                     aggregator->getAllObjectsOption(),
