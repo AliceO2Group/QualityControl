@@ -57,8 +57,14 @@ void MonitorObjectCollection::merge(mergers::MergeInterface* const other)
       }
       // That might be another collection or a concrete object to be merged, we walk on the collection recursively.
       algorithm::merge(targetMO->getObject(), otherMO->getObject());
-      targetMO->updateValidity(otherMO->getValidity().getMin());
-      targetMO->updateValidity(otherMO->getValidity().getMax());
+      if (otherMO->getValidity().isValid()) {
+        if (targetMO->getValidity().isInvalid()) {
+          targetMO->setValidity(otherMO->getValidity());
+        } else {
+          targetMO->updateValidity(otherMO->getValidity().getMin());
+          targetMO->updateValidity(otherMO->getValidity().getMax());
+        }
+      }
     } else {
       // A corresponding object in the target collection could not be found.
       // We prefer to clone instead of passing the pointer in order to simplify deleting the `other`.
