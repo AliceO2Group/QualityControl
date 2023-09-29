@@ -44,6 +44,7 @@ TEST_CASE("monitor_object_collection_merge")
   TH1I* targetTH1I = new TH1I("histo 1d", "histo 1d", bins, min, max);
   targetTH1I->Fill(5);
   MonitorObject* targetMoTH1I = new MonitorObject(targetTH1I, "histo 1d", "class", "DET");
+  targetMoTH1I->setActivity({ 300000, 1, "LHC32x", "apass2", "qc_async", gInvalidValidityInterval });
   targetMoTH1I->setIsOwner(true);
   target->Add(targetMoTH1I);
 
@@ -54,6 +55,7 @@ TEST_CASE("monitor_object_collection_merge")
   TH1I* otherTH1I = new TH1I("histo 1d", "histo 1d", bins, min, max);
   otherTH1I->Fill(5);
   MonitorObject* otherMoTH1I = new MonitorObject(otherTH1I, "histo 1d", "class", "DET");
+  otherMoTH1I->setActivity({ 300000, 1, "LHC32x", "apass2", "qc_async", { 43, 60 } });
   otherMoTH1I->setIsOwner(true);
   other->Add(otherMoTH1I);
 
@@ -62,7 +64,14 @@ TEST_CASE("monitor_object_collection_merge")
   MonitorObject* otherMoTH2I = new MonitorObject(otherTH2I, "histo 2d", "class", "DET");
   other->Add(otherMoTH2I);
 
-  // Merge
+  // Merge 1st time
+  CHECK_NOTHROW(algorithm::merge(target, other));
+
+  // Merge 2nd time to check stability and correct bevahiour with objects of wrong validity
+  otherMoTH1I->setValidity(gInvalidValidityInterval);
+  otherMoTH2I->setValidity(gInvalidValidityInterval);
+  otherTH1I->Reset();
+  otherTH2I->Reset();
   CHECK_NOTHROW(algorithm::merge(target, other));
 
   // Make sure that deleting the object present only in `other` doesn't delete it in the `target`
@@ -76,6 +85,7 @@ TEST_CASE("monitor_object_collection_merge")
   TH1I* resultTH1I = dynamic_cast<TH1I*>(resultMoTH1I->getObject());
   REQUIRE(resultTH1I != nullptr);
   CHECK(resultTH1I->GetBinContent(resultTH1I->FindBin(5)) == 2);
+  CHECK(resultMoTH1I->getValidity() == ValidityInterval{ 43, 60 });
 
   MonitorObject* resultMoTH2I = dynamic_cast<MonitorObject*>(target->FindObject("histo 2d"));
   REQUIRE(resultMoTH2I != nullptr);
