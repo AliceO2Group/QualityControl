@@ -140,6 +140,9 @@ void SliceTrendingTask::trendValues(const Trigger& t,
       if (obj) {
         mReductors[dataSource.name]->update(obj, *mSources[dataSource.name],
                                             dataSource.axisDivision, mNumberPads[dataSource.name]);
+      } else {
+        ILOG(Error, Support) << "Some objects could not be retrieved, will skip this trending cycle" << ENDM;
+        return;
       }
 
     } else {
