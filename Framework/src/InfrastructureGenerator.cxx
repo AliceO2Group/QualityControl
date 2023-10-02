@@ -737,7 +737,7 @@ void InfrastructureGenerator::throwIfNameClash(const InfrastructureSpec& infrast
                  [](const auto& check) { return check.checkName; } );
   for(const auto& aggregator : infrastructureSpec.aggregators) {
     if(std::count(allNames.begin(), allNames.end(), aggregator.aggregatorName)) {
-      ILOG(Error, Ops) << "The aggregator \"" << aggregator.aggregatorName << "\" has the same name as one of the Check. This is forbidden." << ENDM;
+      ILOG(Fatal, Ops) << "The aggregator \"" << aggregator.aggregatorName << "\" has the same name as one of the Check. This is forbidden." << ENDM;
       throw std::runtime_error(string("aggregator has the same name as a check: ") + aggregator.aggregatorName);
     }
   }
