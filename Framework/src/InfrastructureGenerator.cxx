@@ -729,16 +729,16 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
   ILOG(Debug, Devel) << ENDM;
 }
 
-void InfrastructureGenerator::throwIfNameClash(const InfrastructureSpec& infrastructureSpec)
+void InfrastructureGenerator::throwIfAggNamesClashCheckNames(const InfrastructureSpec& infrastructureSpec)
 {
   // TODO simplify with ranges when we'll start using c++20
-  std::vector<std::string> allNames;
-  allNames.reserve(infrastructureSpec.checks.size());
-  std::transform(infrastructureSpec.checks.begin(), infrastructureSpec.checks.end(), std::back_inserter(allNames),
-                 [](const auto& check) { return check.checkName; } );
-  for(const auto& aggregator : infrastructureSpec.aggregators) {
-    if(std::count(allNames.begin(), allNames.end(), aggregator.aggregatorName)) {
-      ILOG(Fatal, Ops) << "The aggregator \"" << aggregator.aggregatorName << "\" has the same name as one of the Check. This is forbidden." << ENDM;
+  std::vector<std::string> checksNames;
+  checksNames.reserve(infrastructureSpec.checks.size());
+  std::transform(infrastructureSpec.checks.begin(), infrastructureSpec.checks.end(), std::back_inserter(checksNames),
+                 [](const auto& check) { return check.checkName; });
+  for (const auto& aggregator : infrastructureSpec.aggregators) {
+    if (std::count(checksNames.begin(), checksNames.end(), aggregator.aggregatorName)) {
+      ILOG(Error, Ops) << "The aggregator \"" << aggregator.aggregatorName << "\" has the same name as one of the Check. This is forbidden." << ENDM;
       throw std::runtime_error(string("aggregator has the same name as a check: ") + aggregator.aggregatorName);
     }
   }
@@ -752,7 +752,7 @@ void InfrastructureGenerator::generateAggregator(WorkflowSpec& workflow, const I
   }
 
   // Make sure we don't have duplicated names in the checks and aggregators
-  throwIfNameClash(infrastructureSpec);
+  throwIfAggNamesClashCheckNames(infrastructureSpec);
 
   DataProcessorSpec spec = AggregatorRunnerFactory::create(infrastructureSpec.common, infrastructureSpec.aggregators);
   workflow.emplace_back(spec);

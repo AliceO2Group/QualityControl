@@ -18,8 +18,8 @@
         "cycleDurationSeconds": "10",
         "maxNumberCycles": "-1",
         "dataSource": {
-          "type": "dataSamplingPolicy",
-          "name": "tst-raw"
+          "type": "direct",
+          "query" : "raw:TST/RAWDATA/0"
         },
         "location": "remote"
       }
@@ -51,21 +51,5 @@
         }]
       }
     }
-  },
-  "dataSamplingPolicies": [
-    {
-      "id": "tst-raw",
-      "active": "true",
-      "machines": [],
-      "query": "random:TST/RAWDATA/0",
-      "samplingConditions": [
-        {
-          "condition": "random",
-          "fraction": "0.1",
-          "seed": "1234"
-        }
-      ],
-      "blocking": "false"
-    }
-  ]
+  }
 }
