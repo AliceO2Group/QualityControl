@@ -13,7 +13,7 @@
         "type": "2"
       },
       "monitoring": {
-	    "url": "infologger:///debug?qc"
+        "url": "infologger:///debug?qc"
       },
       "consul": {
         "url": ""
@@ -28,13 +28,49 @@
         "className": "o2::quality_control_modules::hmpid::HmpidTask",
         "moduleName": "QcHMPID",
         "detectorName": "HMP",
-        "cycleDurationSeconds": "10",
+        "cycleDurationSeconds": "60",
         "maxNumberCycles": "-1",
         "dataSource": {
           "type": "dataSamplingPolicy",
           "name": "readout"
         },
         "location": "remote"
+      }
+    },
+    "checks": {
+      "HmpidRawChecks": {
+        "active": "true",
+        "className": "o2::quality_control_modules::hmpid::HmpidRawChecks",
+        "moduleName": "QcHMPID",
+        "detectorName": "HMP",
+        "policy": "OnAll",
+        "checkParameters": {
+          "m_hHmpBigMap_HistName": "hHmpBigMap_profile",
+          "m_hHmpHvSectorQ_HistName": "hHmpHvSectorQ",
+          "m_hHmpPadOccPrf_HistName": "hHmpPadOccPrf",
+          "m_hBusyTime_HistName": "hBusyTime",
+          "m_hEventSize_HistName": "hEventSize",
+          "m_hCheckHV_HistName": "hCheckHV",
+          "mMinOccupancy": "0.001",
+          "mMaxOccupancy": "0.05",
+          "mMinEventSize": "5",
+          "mMaxEventSize": "100",
+          "mMinBusyTime": "5",
+          "mMaxBusyTime": "100",
+          "mMinHVTotalEntriesToCheckQuality": "5000",
+          "mFractionXBinsHVSingleModuleEntriesToLabelGoodBadQuality": "0.02",
+          "mMaxBadDDLForMedium": "2",
+          "mMaxBadDDLForBad": "4",
+          "mMaxBadHVForMedium": "7",
+          "mMaxBadHVForBad": "12"
+        },
+        "dataSource": [
+          {
+            "type": "Task",
+            "name": "daqTask",
+            "MOs": "all"
+          }
+        ]
       }
     }
   },
@@ -43,7 +79,7 @@
       "id": "readout",
       "active": "true",
       "machines": [],
-      "query" : "readout:ROUT/RAWDATA",
+      "query": "readout:ROUT/RAWDATA",
       "samplingConditions": [
         {
           "condition": "random",

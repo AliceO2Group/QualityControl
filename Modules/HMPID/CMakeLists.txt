@@ -4,7 +4,9 @@ add_library(O2QcHMPID)
 
 target_sources(O2QcHMPID PRIVATE src/HmpidTask.cxx
                                  src/HmpidTaskDigits.cxx
-                                 src/HmpidTaskClusters.cxx)
+                                 src/HmpidTaskClusters.cxx
+                                 src/HmpidRawChecks.cxx
+                                 src/Helpers.cxx)
 
 target_include_directories(
   O2QcHMPID
@@ -31,6 +33,8 @@ add_root_dictionary(O2QcHMPID
                     include/HMPID/HmpidTask.h
                     include/HMPID/HmpidTaskDigits.h
                     include/HMPID/HmpidTaskClusters.h
+                    include/HMPID/HmpidRawChecks.h
+                    include/HMPID/Helpers.h
                     LINKDEF include/HMPID/LinkDef.h)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/HMPID
