@@ -126,8 +126,8 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     evtSizeNB.fill(0);
     for (auto& col : eventDigits) {
       auto ich = o2::mid::detparams::getChamber(col.deId);
-      evtSizeB[ich] = mDigitsHelper.countDigits(col, 0);
-      evtSizeNB[ich] = mDigitsHelper.countDigits(col, 1);
+      evtSizeB[ich] += mDigitsHelper.countDigits(col, 0);
+      evtSizeNB[ich] += mDigitsHelper.countDigits(col, 1);
       mDigitsHelper.fillStripHisto(col, mHits.get());
     }
 
