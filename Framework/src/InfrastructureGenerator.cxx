@@ -731,6 +731,7 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
 
 void InfrastructureGenerator::throwIfNameClash(const InfrastructureSpec& infrastructureSpec)
 {
+  // TODO simplify with ranges when we'll start using c++20
   std::vector<std::string> allNames;
   allNames.reserve(infrastructureSpec.checks.size());
   std::transform(infrastructureSpec.checks.begin(), infrastructureSpec.checks.end(), std::back_inserter(allNames),
