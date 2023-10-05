@@ -73,7 +73,13 @@ void UpdatePolicyManager::addPolicy(const std::string& actorName, UpdatePolicyTy
        */
       isReadyFunction = [&, actorName]() {
         for (const auto& objectName : mPoliciesByActor.at(actorName).inputObjects) {
-          if (mObjectsRevision.count(objectName) == 0 || mObjectsRevision.at(objectName) <= mPoliciesByActor.at(actorName).revision) {
+          // QC-1033 - failure to use this policy with checks producing single QO
+          std::string objectNameLocal = objectName;
+          if (objectNameLocal.back() == '/') {
+            ILOG(Debug, Devel) << "OnAll - remove the final slash" << ENDM;
+            objectNameLocal.pop_back();
+          }
+          if (mObjectsRevision.count(objectNameLocal) == 0 || mObjectsRevision.at(objectNameLocal) <= mPoliciesByActor.at(actorName).revision) {
             return false;
           }
         }
@@ -90,7 +96,14 @@ void UpdatePolicyManager::addPolicy(const std::string& actorName, UpdatePolicyTy
         if (!mPoliciesByActor.at(actorName).policyHelperFlag) {
           // Check if all monitor objects are available
           for (const auto& objectName : mPoliciesByActor.at(actorName).inputObjects) {
-            if (!mObjectsRevision.count(objectName)) {
+            // QC-1033 - failure to use this policy with checks producing single QO
+            std::string objectNameLocal = objectName;
+            if (objectNameLocal.back() == '/') {
+              ILOG(Debug, Devel) << "OnAnyNonZero - remove the final slash" << ENDM;
+              objectNameLocal.pop_back();
+            }
+
+            if (!mObjectsRevision.count(objectNameLocal)) {
               return false;
             }
           }
@@ -99,7 +112,12 @@ void UpdatePolicyManager::addPolicy(const std::string& actorName, UpdatePolicyTy
         }
 
         for (const auto& objectName : mPoliciesByActor.at(actorName).inputObjects) {
-          if (mObjectsRevision[objectName] > mPoliciesByActor.at(actorName).revision) {
+          std::string objectNameLocal = objectName;
+          if (objectNameLocal.back() == '/') {
+            ILOG(Debug, Devel) << "OnAnyNonZero - remove the final slash" << ENDM;
+            objectNameLocal.pop_back();
+          }
+          if (mObjectsRevision[objectNameLocal] > mPoliciesByActor.at(actorName).revision) {
             return true;
           }
         }

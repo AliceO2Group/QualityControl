@@ -94,6 +94,25 @@ Quality getQualityForCheck(QualityObjectsType qos, string checkName)
   }
 }
 
+TEST_CASE("test_aggregator_onAnyNonZero")
+{
+  std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
+  auto [aggregatorRunnerConfig, aggregatorConfigs] = getAggregatorConfigs(configFilePath);
+  auto MyAggregatorBConfig = std::find_if(aggregatorConfigs.begin(), aggregatorConfigs.end(), [](const auto& cfg) { return cfg.name == "MyAggregatorB"; });
+  REQUIRE(MyAggregatorBConfig != aggregatorConfigs.end());
+  auto aggregator = make_shared<Aggregator>(*MyAggregatorBConfig);
+  aggregator->init();
+
+  QualityObjectsMapType qoMap;
+  qoMap["checkAll"] = make_shared<QualityObject>(Quality::Good, "checkAll");
+  QualityObjectsType result = aggregator->aggregate(qoMap);
+  CHECK(getQualityForCheck(result, "MyAggregatorB/newQuality") == Quality::Good);
+
+  qoMap["dataSizeCheck2/someNumbersTask/example"] = make_shared<QualityObject>(Quality::Bad, "dataSizeCheck2/someNumbersTask/example");
+  result = aggregator->aggregate(qoMap);
+  CHECK(getQualityForCheck(result, "MyAggregatorB/newQuality") == Quality::Bad);
+}
+
 TEST_CASE("test_aggregator_quality_filter")
 {
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
@@ -108,9 +127,9 @@ TEST_CASE("test_aggregator_quality_filter")
   QualityObjectsType result = aggregator->aggregate(qoMap);
   CHECK(getQualityForCheck(result, "MyAggregatorB/newQuality") == Quality::Good);
 
-  // Add dataSizeCheck1/q1=good and dataSizeCheck1/q2=medium -> return medium
+  // Add dataSizeCheck1/q1=good and checkall -> return medium
   qoMap["dataSizeCheck1/q1"] = make_shared<QualityObject>(Quality::Good, "dataSizeCheck1/q1");
-  qoMap["dataSizeCheck1/q2"] = make_shared<QualityObject>(Quality::Medium, "dataSizeCheck1/q2");
+  qoMap["checkAll/"] = make_shared<QualityObject>(Quality::Medium, "checkAll/");
   result = aggregator->aggregate(qoMap);
   CHECK(getQualityForCheck(result, "MyAggregatorB/newQuality") == Quality::Medium);
 
