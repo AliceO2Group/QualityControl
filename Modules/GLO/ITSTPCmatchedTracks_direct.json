@@ -38,7 +38,7 @@
         "dataSource" : {
           "type" : "direct",
           "query_comment" : "checking every matched track",
-          "query" : "trackITSTPC:GLO/TPCITS/0;trackITSTPCABREFS:GLO/TPCITSAB_REFS/0;trackITSTPCABCLID:GLO/TPCITSAB_CLID/0;trackTPC:TPC/TRACKS;trackTPCClRefs:TPC/CLUSREFS"
+          "query" : "trackITSTPC:GLO/TPCITS/0;trackITSTPCABREFS:GLO/TPCITSAB_REFS/0;trackITSTPCABCLID:GLO/TPCITSAB_CLID/0;trackTPC:TPC/TRACKS;trackTPCClRefs:TPC/CLUSREFS;trackITS:ITS/TRACKS/0;trackITSROF:ITS/ITSTrackROF/0;trackITSClIdx:ITS/TRACKCLSID/0;alpparITS:ITS/ALPIDEPARAM/0?lifetime=condition&ccdb-path=ITS/Config/AlpideParam"
         },
         "taskParameters" : {
           "GID" : "ITS-TPC,ITS",
