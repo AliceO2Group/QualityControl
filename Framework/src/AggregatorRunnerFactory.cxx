@@ -36,20 +36,20 @@ namespace o2::quality_control::checker
 DataProcessorSpec AggregatorRunnerFactory::create(const core::CommonSpec& commonSpec,
                                                   const std::vector<checker::AggregatorSpec>& aggregatorsSpec)
 {
-  AggregatorRunnerConfig aggRunnerConfig = AggregatorRunnerFactory::extractRunnerConfig(commonSpec);
-  std::vector<AggregatorConfig> aggConfigs = AggregatorRunnerFactory::extractAggregatorsConfig(commonSpec, aggregatorsSpec);
-  AggregatorRunner aggregator{ aggRunnerConfig, aggConfigs };
+  AggregatorRunnerConfig const aggRunnerConfig = AggregatorRunnerFactory::extractRunnerConfig(commonSpec);
+  std::vector<AggregatorConfig> const aggConfigs = AggregatorRunnerFactory::extractAggregatorsConfig(commonSpec, aggregatorsSpec);
+  AggregatorRunner aggregatorRunner{ aggRunnerConfig, aggConfigs };
 
   DataProcessorSpec newAggregatorRunner{
-    aggregator.getDeviceName(),
-    aggregator.getInputs(),
+    aggregatorRunner.getDeviceName(),
+    aggregatorRunner.getInputs(),
     Outputs{},
     AlgorithmSpec{},
     aggRunnerConfig.options
   };
   newAggregatorRunner.labels.emplace_back(o2::framework::ecs::qcReconfigurable);
   newAggregatorRunner.labels.emplace_back(AggregatorRunner::getLabel());
-  newAggregatorRunner.algorithm = adaptFromTask<AggregatorRunner>(std::move(aggregator));
+  newAggregatorRunner.algorithm = adaptFromTask<AggregatorRunner>(std::move(aggregatorRunner));
   return newAggregatorRunner;
 }
 

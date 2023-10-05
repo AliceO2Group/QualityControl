@@ -182,7 +182,7 @@ class AggregatorRunner : public framework::Task
   AggregatorRunnerConfig mRunnerConfig;
   std::vector<AggregatorConfig> mAggregatorsConfig;
   core::QualityObjectsMapType mQualityObjects; // where we cache the incoming quality objects and the output of the aggregators
-  UpdatePolicyManager updatePolicyManager;
+  UpdatePolicyManager mUpdatePolicyManager;
 
   // DPL
   o2::framework::Inputs mInputs;

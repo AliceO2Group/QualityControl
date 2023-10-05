@@ -29,7 +29,7 @@
 namespace o2::quality_control::checker
 {
 
-using UpdatePolicyFunctionType = std::function<bool()>;
+using IsReadyFunctionType = std::function<bool()>;
 typedef uint32_t RevisionType;
 
 /**
@@ -37,7 +37,7 @@ typedef uint32_t RevisionType;
  */
 struct UpdatePolicy {
   std::string actorName;
-  UpdatePolicyFunctionType isReady;
+  IsReadyFunctionType isReady;
   std::vector<std::string> inputObjects;
   bool allInputObjects;
   // TODO this line makes me think that lambdas are not enough because we actually need to store a state...

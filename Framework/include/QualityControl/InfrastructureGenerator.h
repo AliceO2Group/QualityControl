@@ -178,6 +178,12 @@ class InfrastructureGenerator
 
   static void printVersion();
 
+  /**
+   * If any aggregator has the same name as one of the checks, we throw a runtime_error.
+   * @param infrastructureSpec
+   */
+  static void throwIfAggNamesClashCheckNames(const InfrastructureSpec& infrastructureSpec);
+
  private:
   // Dedicated methods for creating each QC component to hide implementation details.
 

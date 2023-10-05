@@ -79,8 +79,8 @@ QualityObjectsMapType Aggregator::filter(QualityObjectsMapType& qoMap)
     // find the source for this qo
     shared_ptr<const QualityObject> local = qo;
     auto it = std::find_if(mAggregatorConfig.sources.begin(), mAggregatorConfig.sources.end(),
-                           [&local](const AggregatorSource source) {
-                             std::string token = local->getCheckName().substr(0, local->getCheckName().find("/"));
+                           [&local](const AggregatorSource& source) {
+                             const std::string token = local->getCheckName().substr(0, local->getCheckName().find('/'));
                              return token == source.name;
                            });
 

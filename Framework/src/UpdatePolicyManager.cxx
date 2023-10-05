@@ -65,13 +65,13 @@ void UpdatePolicyManager::updateObjectRevision(const std::string& objectName)
 
 void UpdatePolicyManager::addPolicy(const std::string& actorName, UpdatePolicyType policyType, std::vector<std::string> objectNames, bool allObjects, bool policyHelper)
 {
-  UpdatePolicyFunctionType policy;
+  IsReadyFunctionType isReadyFunction;
   switch (policyType) {
     case UpdatePolicyType::OnAll: {
       /**
        * Run check if all MOs are updated
        */
-      policy = [&, actorName]() {
+      isReadyFunction = [&, actorName]() {
         for (const auto& objectName : mPoliciesByActor.at(actorName).inputObjects) {
           if (mObjectsRevision.count(objectName) == 0 || mObjectsRevision.at(objectName) <= mPoliciesByActor.at(actorName).revision) {
             return false;
@@ -86,7 +86,7 @@ void UpdatePolicyManager::addPolicy(const std::string& actorName, UpdatePolicyTy
        * Return true if any declared MOs were updated
        * Guarantee that all declared MOs are available
        */
-      policy = [&, actorName]() {
+      isReadyFunction = [&, actorName]() {
         if (!mPoliciesByActor.at(actorName).policyHelperFlag) {
           // Check if all monitor objects are available
           for (const auto& objectName : mPoliciesByActor.at(actorName).inputObjects) {
@@ -112,7 +112,7 @@ void UpdatePolicyManager::addPolicy(const std::string& actorName, UpdatePolicyTy
         * Return true if any declared object were updated.
         * This is the same behaviour as OnAny.
         */
-      policy = [&, actorName]() {
+      isReadyFunction = [&, actorName]() {
         if (mPoliciesByActor.at(actorName).allInputObjects) {
           return true;
         }
@@ -130,10 +130,10 @@ void UpdatePolicyManager::addPolicy(const std::string& actorName, UpdatePolicyTy
       /**
        * Return true if any MOs were updated.
        * Inner policy - used for `"MOs": "all"`
-       * Might return true even if MO is not used in Check
+       * Might return true even if MO is not used in actor.
        */
 
-      policy = []() {
+      isReadyFunction = []() {
         // Expecting check of this policy only if any change
         return true;
       };
@@ -143,10 +143,9 @@ void UpdatePolicyManager::addPolicy(const std::string& actorName, UpdatePolicyTy
       /**
        * Default behaviour
        *
-       * Run check if any declared MOs are updated
-       * Does not guarantee to contain all declared MOs
+       * Return true if any MOs are updated
        */
-      policy = [&, actorName]() {
+      isReadyFunction = [&, actorName]() {
         for (const auto& objectName : mPoliciesByActor.at(actorName).inputObjects) {
           if (mObjectsRevision.count(objectName) && mObjectsRevision[objectName] > mPoliciesByActor.at(actorName).revision) {
             return true;
@@ -158,7 +157,7 @@ void UpdatePolicyManager::addPolicy(const std::string& actorName, UpdatePolicyTy
     }
   }
 
-  mPoliciesByActor[actorName] = { actorName, policy, std::move(objectNames), allObjects, policyHelper };
+  mPoliciesByActor[actorName] = { actorName, isReadyFunction, std::move(objectNames), allObjects, policyHelper };
 
   ILOG(Info, Devel) << "Added a policy : " << mPoliciesByActor[actorName] << ENDM;
 }
