@@ -6,4 +6,6 @@
 #pragma link C++ class o2::quality_control_modules::ctp::CTPRawDataReaderTask + ;
 
 #pragma link C++ class o2::quality_control_modules::ctp::CTPCountersTask+;
+#pragma link C++ class o2::quality_control_modules::ctp::RawDataReaderCheck+;
+
 #endif
