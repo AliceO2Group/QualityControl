@@ -27,6 +27,7 @@
 #include <TGraph.h>
 #include <TLegend.h>
 #include <TTree.h>
+#include <TH1.h>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -91,6 +92,7 @@ class TrendingTaskITSTracks : public PostProcessingInterface
   static constexpr int NTRENDSTRACKS = 9;
   const int col[2] = { 1, 4 };
   const int mkr[2] = { 21, 21 };
+  TH1D *hNTracksPrev, *hNClustersPrev;
 };
 
 } // namespace o2::quality_control::postprocessing

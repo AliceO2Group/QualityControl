@@ -52,6 +52,7 @@ void TrendingTaskITSError::configure(const boost::property_tree::ptree& config)
 
 void TrendingTaskITSError::initialize(Trigger, framework::ServiceRegistryRef)
 {
+  std::cout<<" at the biginning of initialize" << std::endl;
   // Preparing data structure of TTree
   mTrend = std::make_unique<TTree>();
   mTrend->SetName(PostProcessingInterface::getName().c_str());
@@ -61,10 +62,14 @@ void TrendingTaskITSError::initialize(Trigger, framework::ServiceRegistryRef)
 
   for (const auto& source : mConfig.dataSources) {
     std::unique_ptr<ReductorBinContent> reductor(root_class_factory::create<ReductorBinContent>(source.moduleName, source.reductorName));
-    reductor->setParams(o2::itsmft::GBTLinkDecodingStat::NErrorsDefined, 0);
+    std::cout<<" I am at the reducotr with source.name= " << source.name <<std::endl;
+    if (source.name == "ChipErrorPlots")  
+      reductor->setParams(o2::itsmft::ChipStat::NErrorsDefined);
+    else reductor->setParams(o2::itsmft::GBTLinkDecodingStat::NErrorsDefined);
     mTrend->Branch(source.name.c_str(), reductor->getBranchAddress(), reductor->getBranchLeafList());
     mReductors[source.name] = std::move(reductor);
   }
+  std::cout<<" at the end  of initialize" << std::endl;
 }
 
 // todo: see if OptimizeBaskets() indeed helps after some time
@@ -95,6 +100,7 @@ void TrendingTaskITSError::storeTrend(repository::DatabaseInterface& qcdb)
 
 void TrendingTaskITSError::trendValues(const Trigger& t, repository::DatabaseInterface& qcdb)
 {
+  std::cout<<" at the biginning of tremd values" << std::endl;
   // We use current date and time. This for planned processing (not history). We
   // still might need to use the objects
   // timestamps in the end, but this would become ambiguous if there is more
@@ -126,10 +132,13 @@ void TrendingTaskITSError::trendValues(const Trigger& t, repository::DatabaseInt
     count++;
   }
   mTrend->Fill();
+  std::cout<<" at the end of trend values" << std::endl;
+
 }
 
 void TrendingTaskITSError::storePlots(repository::DatabaseInterface& qcdb)
 {
+  std::cout<<" at the biginning of store plots" << std::endl;
   // ILOG(Info, Support) << "Generating and storing " << mConfig.plots.size() << " plots." << ENDM;
   int countplots = 0;
   int countITSpart = 0;
@@ -137,15 +146,23 @@ void TrendingTaskITSError::storePlots(repository::DatabaseInterface& qcdb)
   std::string name_Xaxis;
   long int numberOfEntries = mTrend->GetEntriesFast();
   // Define output graphs
-  TMultiGraph* multi_trend;
+ 
 
+  TString plots[2] = {"LinkErrorPlots", "ChipErrorPlots"};
+  for (TString plotName: plots){
+
+  TMultiGraph* multi_trend;
+  countplots=0;
   // Lane status summary plots
   for (const auto& plot : mConfig.plots) {
+
+     if (plot.varexp.find(plotName.Data()) == std::string::npos) continue;
+     std::cout<<"plot.varexp"<< plot.varexp << " counts " << countplots<<std::endl; 
 
     // Initialize MultiGraph and Legend
     if (countplots == 0) {
       multi_trend = new TMultiGraph();
-      SetGraphName(multi_trend, plot.name, "Trending plot of GTBLink decoding errors");
+      SetGraphName(multi_trend, plot.name, Form("Trending plot of %s",plotName.Data()));
 
       isRun = plot.selection.find("Entries") != std::string::npos ? true : false;
       name_Xaxis = plot.selection.c_str();
@@ -159,11 +176,15 @@ void TrendingTaskITSError::storePlots(repository::DatabaseInterface& qcdb)
     delete trend_plot;
     countplots++;
   }
-
+  std::cout<<" survived loop, time to store " << std::endl;
   SetGraphAxes(multi_trend, Form("%s", isRun ? "Run" : "Time"), "Number of errors", !isRun);
 
   // Canvas settings
-  std::string name = "GTBLinkDecodingErrorsSummary_Trends";
+  std::string name;
+  if (plotName == "LinkErrorPlots") name = "GTBLinkDecodingErrorsSummary_Trends";
+     else name = "ChipDecodingErrorsSummary_Trends";
+
+  std::cout<<"Will create canvas with name: " << name.c_str() << std::endl;
   TCanvas* canvas = new TCanvas(Form("%s", name.c_str()), Form("%s", name.c_str()));
   SetCanvasSettings(canvas);
 
@@ -180,7 +201,7 @@ void TrendingTaskITSError::storePlots(repository::DatabaseInterface& qcdb)
   multi_trend->Draw(Form("%s", hDummy ? "" : "a"));
 
   TLegend* legend = (TLegend*)canvas->BuildLegend(0.77, 0.12, 1, 1);
-  SetLegendStyle(legend, "GTBLinkDecodingErrorsSummary_legend", isRun);
+  SetLegendStyle(legend, Form("%s_legend",plotName.Data()), isRun);
   legend->Draw("SAME");
 
   // Upload plots
@@ -192,6 +213,10 @@ void TrendingTaskITSError::storePlots(repository::DatabaseInterface& qcdb)
   delete canvas;
   delete multi_trend; // All included plots are deleted automatically
   delete hDummy;
+  std::cout<<" survived store " << std::endl;
+}
+ std::cout<<" at the end of draw plots" << std::endl;
+ 
 }
 void TrendingTaskITSError::SetLegendStyle(TLegend* legend, const std::string& name, bool isRun)
 {

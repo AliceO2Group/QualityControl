@@ -32,42 +32,28 @@ void* ReductorBinContent::getBranchAddress()
 
 const char* ReductorBinContent::getBranchLeafList()
 {
-  return Form("binContent[%i]/D:integral[%i]", nFlags, nTriggers);
+  return Form("binContent[%i]/D", nBins);
 }
 
 void ReductorBinContent::update(TObject* obj)
 {
+
   // initialize arrays
   for (int j = 0; j < 100; j++) {
     mStats.binContent[j] = -1.0;
   }
 
-  for (int j = 0; j < 100; j++) {
-    mStats.integral[j] = -1.0;
-  }
-
-  // Access the histograms embedded in 'obj'.
+   // Access the histograms embedded in 'obj'.
   std::string histoClass = obj->IsA()->GetName();
 
   if (histoClass.find("TH1") != std::string::npos) {
-    TH1* histo = (TH1*)obj->Clone("LaneStatusSummary_Flags");
+    TH1* histo = (TH1*)obj->Clone("clone");
     int numberOfBins = histo->GetXaxis()->GetNbins();
     for (int j = 1; j <= numberOfBins; j++) {
       mStats.binContent[j - 1] = histo->GetBinContent(j);
     }
     delete histo;
-  } else if (histoClass.find("TH2") != std::string::npos) {
-
-    TH2* histo = (TH2*)obj->Clone("TriggerCount");
-
-    int numberOfBinsX = histo->GetXaxis()->GetNbins();
-    int numberOfBinsY = histo->GetYaxis()->GetNbins();
-
-    for (int j = 1; j <= numberOfBinsY; j++) {
-      mStats.integral[j - 1] = histo->Integral(1, numberOfBinsX, j, j); // Summation over all Fee IDs for a given trigger
-    }
-    delete histo;
-  } else {
+  }  else {
     ILOG(Error, Support) << "Error: 'histo' not found." << ENDM;
   }
 }

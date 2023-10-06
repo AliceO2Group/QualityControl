@@ -11,6 +11,7 @@
 #pragma link C++ class o2::quality_control::postprocessing::TrendingTaskITSTracks + ;
 #pragma link C++ class o2::quality_control_modules::its::TH2XlineReductor + ;
 #pragma link C++ class o2::quality_control_modules::its::ReductorBinContent + ;
+#pragma link C++ class o2::quality_control_modules::its::ReductorIntegralContent + ;
 #pragma link C++ class o2::quality_control_modules::its::ITSFhrTask + ;
 #pragma link C++ class o2::quality_control_modules::its::ITSFeeTask + ;
 #pragma link C++ class o2::quality_control_modules::its::ITSClusterTask + ;

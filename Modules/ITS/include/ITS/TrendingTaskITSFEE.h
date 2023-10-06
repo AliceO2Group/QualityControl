@@ -24,6 +24,7 @@
 #include <TAxis.h>
 #include <TColor.h>
 #include <TGraph.h>
+#include <TH2.h>
 #include <TMultiGraph.h>
 #include <TLegend.h>
 #include <TCanvas.h>
@@ -99,10 +100,15 @@ class TrendingTaskITSFEE : public PostProcessingInterface
   static constexpr int nFlags = 3;
   static constexpr int nITSparts = 4;
   static constexpr int nTriggers = 13;
+  static constexpr int nHBs = 9;
 
   const std::string mTriggerType[nTriggers] = { "ORBIT", "HB", "HBr", "HC", "PHYSICS", "PP", "CAL", "SOT", "EOT", "SOC", "EOC", "TF", "INT" };
+  const std::string mPayloadTitles[nHBs] = { "L0", "L1", "L2", "L3", "L4", "L5B", "L5T", "L6B", "L6T" };
   const std::string trend_titles[nFlags] = { "Warnings", "Errors", "Faults" };
   const std::string itsParts[nITSparts] = { "IB", "ML", "OL", "Global" };
+  TH2D *hPayloadPrev;
+  int mNPayloadSizeBins = 4096;
+  static constexpr int NFees = 48 * 3 + 144 * 2;
 };
 } // namespace o2::quality_control::postprocessing
 #endif // QUALITYCONTROL_TRENDINGTASKITSFEE_H
