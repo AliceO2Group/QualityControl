@@ -26,7 +26,7 @@
       },
       "infologger": {
         "filterDiscardDebug": "false",
-        "filterDiscardLevel": "11",
+        "filterDiscardLevel": "11"
       }
     },
     "tasks": {
@@ -229,10 +229,10 @@
           }
         ],
         "initTrigger": [
-          "userorcontrol","60sec","SOR"
+          "userorcontrol","SOR"
         ],
         "updateTrigger": [
-          "60 seconds"
+          "10 seconds"
         ],
         "stopTrigger": [
           "userorcontrol","EOR"

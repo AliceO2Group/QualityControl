@@ -37,9 +37,8 @@ class TrackletPerTriggerCheck : public o2::quality_control::checker::CheckInterf
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
-  long int mTimeStamp;
-  std::pair<float, float> mDesiredMeanRegion;
-  long int mStatThreshold;
+  float mThresholdMeanLow, mThresholdMeanHigh;
+  int mStatThreshold;
 
   ClassDefOverride(TrackletPerTriggerCheck, 2);
 };
