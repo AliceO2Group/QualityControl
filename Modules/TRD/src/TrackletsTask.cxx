@@ -158,6 +158,10 @@ void TrackletsTask::buildHistograms()
   mTrackletsPerEvent = new TH1F("trackletsperevent", "Number of Tracklets per event;Tracklets in Event;Counts", nLogBins, xBins);
   getObjectsManager()->startPublishing(mTrackletsPerEvent);
   getObjectsManager()->setDefaultDrawOptions(mTrackletsPerEvent->GetName(), "logx");
+  mTrackletsPerEventPP = new TH1F("trackletspereventPP", "Number of Tracklets per event;Tracklets in Event;Counts", 1000, 0, 5000);
+  getObjectsManager()->startPublishing(mTrackletsPerEventPP);
+  mTrackletsPerEventPbPb = new TH1F("trackletspereventPbPb", "Number of Tracklets per event;Tracklets in Event;Counts", 1000, 0, 100000);
+  getObjectsManager()->startPublishing(mTrackletsPerEventPbPb);
   mTrackletsPerHC2D = new TH2F("trackletsperHC2D", "Tracklets distribution in half-chambers;Sector_Side;Stack_Side", 36, 0, 36, 30, 0, 30);
   mTrackletsPerHC2D->SetStats(0);
   mTrackletsPerHC2D->GetXaxis()->SetTitle("Sector_Side");
@@ -379,6 +383,8 @@ void TrackletsTask::monitorData(o2::framework::ProcessingContext& ctx)
       mTriggersPerTimeFrame->Fill(triggerrecords.size());
       for (auto& trigger : triggerrecords) {
         mTrackletsPerEvent->Fill(trigger.getNumberOfTracklets());
+        mTrackletsPerEventPP->Fill(trigger.getNumberOfTracklets());
+        mTrackletsPerEventPbPb->Fill(trigger.getNumberOfTracklets());
         for (int currenttracklet = trigger.getFirstTracklet(); currenttracklet < trigger.getFirstTracklet() + trigger.getNumberOfTracklets(); ++currenttracklet) {
           int detector = tracklets[currenttracklet].getDetector();
           int sm = detector / 30;
@@ -466,6 +472,8 @@ void TrackletsTask::reset()
   mTrackletPosition->Reset();
   mTrackletPositionRaw->Reset();
   mTrackletsPerEvent->Reset();
+  mTrackletsPerEventPP->Reset();
+  mTrackletsPerEventPbPb->Reset();
   mTrackletsPerHC2D->Reset();
   for (auto h : moHCMCMn) {
     h->Reset();

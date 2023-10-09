@@ -17,6 +17,7 @@
 #include "TCanvas.h"
 #include "TH1F.h"
 #include "TH2F.h"
+#include "TProfile.h"
 #include "TMath.h"
 
 #include "QualityControl/QcInfoLogger.h"
@@ -89,16 +90,20 @@ void RawData::buildHistograms()
   getObjectsManager()->startPublishing(mParsingErrors);
   getObjectsManager()->setDefaultDrawOptions(mParsingErrors->GetName(), "logy");
 
-  mDataVolumePerHalfChamber = new TH2F("datavolumeperhalfchamber", "Data sizes from HalfCRU header;Half Chamber ID;Data Volume [kB/TF]", 1080, -0.5, 1079.5, 1000, 0, 100);
+  mDataVolumePerHalfChamber = new TH2F("datavolumeperhalfchamber", "Data sizes from HalfCRU header;Half Chamber ID;Data Volume [Bytes/TF]", 1080, -0.5, 1079.5, 1000, 0, 100);
   getObjectsManager()->startPublishing(mDataVolumePerHalfChamber);
   getObjectsManager()->setDefaultDrawOptions("datavolumeperhalfchamber", "COLZ");
   getObjectsManager()->setDisplayHint(mDataVolumePerHalfChamber->GetName(), "logz");
 
-  mDataVolumePerSector = new TH2F("datavolumepersector", "Data sizes from HalfCRU header;Sector;Data Volume [kB/TF]", 18, -0.5, 17.5, 1000, 0, 100);
+  mDataVolumePerSector = new TH2F("datavolumepersector", "Data sizes from HalfCRU header;Sector;Data Volume [Bytes/TF]", 18, -0.5, 17.5, 1000, 0, 4000);
   mDataVolumePerSector->SetStats(0);
   getObjectsManager()->startPublishing(mDataVolumePerSector);
   getObjectsManager()->setDefaultDrawOptions("datavolumepersector", "COLZ");
   getObjectsManager()->setDisplayHint(mDataVolumePerSector->GetName(), "logz");
+
+  mDataVolumePerSectorProf = new TProfile("datavolumepersectorProfile", "Data volume by sector;Sector;Data Volume [Bytes/TF]", 18, -0.5, 17.5);
+  mDataVolumePerSectorProf->Sumw2();
+  getObjectsManager()->startPublishing(mDataVolumePerSectorProf);
 
   for (int count = 0; count < o2::trd::TRDLastParsingError; ++count) {
     std::string label = fmt::format("parsingerrors_{0}", count);
@@ -206,12 +211,17 @@ void RawData::monitorData(o2::framework::ProcessingContext& ctx)
   mStats->AddBinContent(5, rawdatastats->mDigitsFound);    // count total number of digits seen
 
   // data per TF per link.
+  std::array<uint32_t, NSECTOR> dataSizePerSector{ 0U };
   for (int hcid = 0; hcid < MAXHALFCHAMBER; ++hcid) {
     if (rawdatastats->mLinkWords[hcid] > 0) {
       int sec = hcid / NHCPERSEC;
       mDataVolumePerHalfChamber->Fill(hcid, rawdatastats->mLinkWords[hcid] / 32.f); // one link word is 32 bytes, we want to display in units of kB per TF
-      mDataVolumePerSector->Fill(sec, rawdatastats->mLinkWords[hcid] / 32.f);
+      dataSizePerSector[sec] += rawdatastats->mLinkWords[hcid] / 32.f;
     }
+  }
+  for (int iSec = 0; iSec < NSECTOR; ++iSec) {
+    mDataVolumePerSector->Fill(iSec, dataSizePerSector[iSec]);
+    mDataVolumePerSectorProf->Fill(iSec, dataSizePerSector[iSec]);
   }
 
   // parsing errors
@@ -238,28 +248,28 @@ void RawData::monitorData(o2::framework::ProcessingContext& ctx)
     int stackLayer = HelperMethods::getStack(hcid / 2) * NLAYER + HelperMethods::getLayer(hcid / 2);
     int sectorSide = (hcid / NHCPERSEC) * 2 + (hcid % 2);
     if (rawdatastats->mLinkErrorFlag[hcid] == 0) { //"Count of Link had no errors during tf",
-      mLinkErrors[0]->Fill((double)sectorSide, (double)stackLayer);
+      mLinkErrors[0]->Fill(sectorSide, stackLayer);
     }
     if (rawdatastats->mLinkErrorFlag[hcid] & 0x1) { //"Count of # times Linkerrors 0x1 seen per tf",
-      mLinkErrors[1]->Fill((double)sectorSide, (double)stackLayer, rawdatastats->mLinkErrorFlag[hcid]);
+      mLinkErrors[1]->Fill(sectorSide, stackLayer);
     }
     if (rawdatastats->mLinkErrorFlag[hcid] & 0x2) { //"Count of # time Linkerrors 0x2 seen per tf",
-      mLinkErrors[2]->Fill((double)sectorSide, (double)stackLayer, rawdatastats->mLinkErrorFlag[hcid]);
+      mLinkErrors[2]->Fill(sectorSide, stackLayer);
     }
     if (rawdatastats->mLinkErrorFlag[hcid] != 0) { //"Count of any Linkerror seen during tf",
-      mLinkErrors[3]->Fill((double)sectorSide, (double)stackLayer, rawdatastats->mLinkErrorFlag[hcid]);
+      mLinkErrors[3]->Fill(sectorSide, stackLayer);
     }
     if (rawdatastats->mLinkWordsRejected[hcid] + rawdatastats->mLinkWordsRead[hcid] == 0) {
-      mLinkErrors[4]->Fill((double)sectorSide, (double)stackLayer);
+      mLinkErrors[4]->Fill(sectorSide, stackLayer);
     }
     if (rawdatastats->mLinkWordsRead[hcid] > 0) { //"Link was seen with data during a tf",
-      mLinkErrors[5]->Fill((double)sectorSide, (double)stackLayer, rawdatastats->mLinkWordsRead[hcid]);
+      mLinkErrors[5]->Fill(sectorSide, stackLayer);
     }
     if (rawdatastats->mLinkWordsRejected[hcid] > 0) { //"Links seen with corrupted data during tf"
-      mLinkErrors[6]->Fill((double)sectorSide, (double)stackLayer);
+      mLinkErrors[6]->Fill(sectorSide, stackLayer);
     }
-    if (rawdatastats->mLinkWordsRejected[hcid] == 0) { //"Links seen with out corrupted data during tf", "",
-      mLinkErrors[7]->Fill((double)sectorSide, (double)stackLayer);
+    if (rawdatastats->mLinkWordsRejected[hcid] == 0) { //"Links seen without corrupted data during tf"
+      mLinkErrors[7]->Fill(sectorSide, stackLayer);
     }
     if (rawdatastats->mLinkWordsRead[hcid] != 0) {
       ILOG(Debug, Devel) << "Accepted Data volume on link: " << rawdatastats->mLinkWordsRead[hcid] << ENDM;
@@ -319,6 +329,7 @@ void RawData::resetHistograms()
   mParsingErrors->Reset();
   mDataVolumePerHalfChamber->Reset();
   mDataVolumePerSector->Reset();
+  mDataVolumePerSectorProf->Reset();
 }
 
 } // namespace o2::quality_control_modules::trd

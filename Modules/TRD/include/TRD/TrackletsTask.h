@@ -71,6 +71,8 @@ class TrackletsTask final : public TaskInterface
   TH1F* mTrackletPosition = nullptr;
   TH1F* mTrackletPositionRaw = nullptr;
   TH1F* mTrackletsPerEvent = nullptr;
+  TH1F* mTrackletsPerEventPP = nullptr;
+  TH1F* mTrackletsPerEventPbPb = nullptr;
   TH2F* mTrackletsPerHC2D = nullptr;
   std::array<TH2F*, 18> moHCMCMn;
   TH1F* mTrackletSlopen = nullptr;
