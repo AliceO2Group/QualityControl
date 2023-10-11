@@ -126,19 +126,21 @@ Quality GenericHistogramCheck::check(std::map<std::string, std::shared_ptr<Monit
   std::string message;
 
   Quality result = Quality::Null;
+  result.addMetadata("Comment", mMetadataComment);
+
   for (auto const& moObj : *moMap) {
     auto mo = moObj.second;
     if (!mo) {
       continue;
       ILOG(Error, Support) << "No MO found" << ENDM;
-      message = "No MO found!";
-      checkMessage.push_back(message);
+      result.addMetadata(Quality::Null.getName(), "No MO found");
+      return result;
     }
     auto h = dynamic_cast<TH1*>(mo->getObject());
     if (!h) {
-      ILOG(Fatal, Support) << "No Histogram found!" << ENDM;
-      message = "No Histogram found!";
-      checkMessage.push_back(message);
+      ILOG(Error, Support) << "No Histogram found" << ENDM;
+      result.addMetadata(Quality::Null.getName(), "No Histogram found");
+      return result;
     }
 
     mHistDimension = h->GetDimension();
@@ -232,7 +234,6 @@ Quality GenericHistogramCheck::check(std::map<std::string, std::shared_ptr<Monit
   result.addMetadata(Quality::Medium.getName(), mMediumString);
   result.addMetadata(Quality::Good.getName(), mGoodString);
   result.addMetadata(Quality::Null.getName(), mNullString);
-  result.addMetadata("Comment", mMetadataComment);
 
   return result;
 }
