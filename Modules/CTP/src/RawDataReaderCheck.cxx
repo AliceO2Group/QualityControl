@@ -52,7 +52,7 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
   map<string, string> metadata; // can be empty
   auto mo = moMap->begin()->second;
   mTimestamp = mo->getValidity().getMin();
-  auto lhcifdata = UserCodeInterface::retrieveConditionAny<o2::parameters::GRPLHCIFData>("GLO/Config/GRPLHCIF",metadata,mTimestamp);
+  auto lhcifdata = UserCodeInterface::retrieveConditionAny<o2::parameters::GRPLHCIFData>("GLO/Config/GRPLHCIF", metadata, mTimestamp);
   auto bfilling = lhcifdata->getBunchFilling();
   std::vector<int> bcs = bfilling.getFilledBCs();
   o2::ctp::BCMask *bcmask;
