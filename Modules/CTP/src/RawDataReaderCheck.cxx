@@ -11,7 +11,7 @@
 
 ///
 /// \file   RawDataReaderCheck.cxx
-/// \author My Name
+/// \author Lucia Anna Tarasovicova
 ///
 
 #include "CTP/RawDataReaderCheck.h"
@@ -47,17 +47,12 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
   // and you can get your custom parameters:
   ILOG(Debug, Devel) << "custom param physics.pp.myOwnKey1 : " << mCustomParameters.atOrDefaultValue("myOwnKey1", "physics", "pp", "default_value") << ENDM;
 
-  int runNumber = getActivity()->mId;
+  mRunNumber = getActivity()->mId;
 
-  o2::ccdb::CcdbApi api;
-  api.init("http://alice-ccdb.cern.ch");
-  auto& ccdbMgr = o2::ccdb::BasicCCDBManager::instance();
-  auto soreor = ccdbMgr.getRunDuration(runNumber);
-  uint64_t timeStamp = (soreor.second - soreor.first) / 2 + soreor.first;
-  std::string srun = std::to_string(runNumber);
   map<string, string> metadata; // can be empty
-
-  auto lhcifdata = ccdbMgr.getSpecific<o2::parameters::GRPLHCIFData>("GLO/Config/GRPLHCIF", timeStamp, metadata);
+  auto mo = moMap->begin()->second;
+  mTimestamp = mo->getValidity().getMin();
+  auto lhcifdata = UserCodeInterface::retrieveConditionAny<o2::parameters::GRPLHCIFData>("GLO/Config/GRPLHCIF",metadata,mTimestamp);
   auto bfilling = lhcifdata->getBunchFilling();
   std::vector<int> bcs = bfilling.getFilledBCs();
   o2::ctp::BCMask *bcmask;
@@ -104,10 +99,6 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
       }
     }
   }
-  cout<< "Result check" << endl;
-  if (result == Quality::Good) cout << "green " <<endl;
-  if (result == Quality::Bad) cout << "red " <<endl;
-  if (result == Quality::Medium) cout << "orange " <<endl;
   return result;
 }
 

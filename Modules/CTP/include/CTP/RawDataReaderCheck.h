@@ -11,7 +11,7 @@
 
 ///
 /// \file   RawDataReaderCheck.h
-/// \author My Name
+/// \author Lucia Anna Tarasovicova
 ///
 
 #ifndef QC_MODULE_CTP_CTPRAWDATAREADERCHECK_H
@@ -22,8 +22,8 @@
 namespace o2::quality_control_modules::ctp
 {
 
-/// \brief  Example QC Check
-/// \author My Name
+/// \brief  This class is checking the expected BC filling scheme
+/// \author Lucia Anna Tarasovicova
 class RawDataReaderCheck : public o2::quality_control::checker::CheckInterface
 {
  public:
@@ -40,7 +40,7 @@ class RawDataReaderCheck : public o2::quality_control::checker::CheckInterface
 
   ClassDefOverride(RawDataReaderCheck, 2);
 
-private:
+ private:
   int getRunNumberFromMO(std::shared_ptr<MonitorObject> mo);
 
   int mRunNumber;

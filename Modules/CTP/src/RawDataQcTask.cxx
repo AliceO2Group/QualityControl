@@ -12,6 +12,7 @@
 ///
 /// \file   RawDataQcTask.cxx
 /// \author Marek Bombara
+/// \author Lucia Anna Tarasovicova
 ///
 
 #include <TCanvas.h>
@@ -83,7 +84,7 @@ void CTPRawDataReaderTask::monitorData(o2::framework::ProcessingContext& ctx)
   for (auto const digit : outputDigits) {
     uint16_t bcid = digit.intRecord.bc;
     // LOG(info) << "bcid = " << bcid;
-    if (digit.CTPInputMask[indexTvx-1]) {
+    if (digit.CTPInputMask[indexTvx - 1]) {
       mHistoBC->Fill(bcid);
     }
     if (digit.CTPInputMask.count()) {
