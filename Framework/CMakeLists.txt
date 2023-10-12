@@ -159,7 +159,8 @@ set(EXE_SRCS
   src/runUploadRootObjects.cxx
   src/runFileMerger.cxx
   src/runMetadataUpdater.cxx
-  src/runBookkeepingBenchmark.cxx)
+  src/runBookkeepingBenchmark.cxx
+  src/runConfigMerger.cxx)
 
 set(EXE_NAMES
   o2-qc-run-producer
@@ -177,7 +178,8 @@ set(EXE_NAMES
   o2-qc-upload-root-objects
   o2-qc-file-merger
   o2-qc-metadata-updater
-  o2-qc-bk-benchmark)
+  o2-qc-bk-benchmark
+  o2-qc-config-merger)
 
 # These were the original names before the convention changed. We will get rid
 # of them but for the time being we want to create symlinks to avoid confusion.
@@ -198,7 +200,8 @@ set(EXE_OLD_NAMES
   o2-qc-upload-root-objects
   o2-qc-file-merger
   o2-qc-metadata-updater
-  o2-qc-bk-benchmark)
+  o2-qc-bk-benchmark
+  o2-qc-config-merger)
 
 
 # As per https://stackoverflow.com/questions/35765106/symbolic-links-cmake
@@ -276,6 +279,7 @@ set(TEST_SRCS
     test/testQualitiesToTRFCollectionConverter.cxx
     test/testUserCodeInterface.cxx
     test/testCustomParameters.cxx
+    test/testPtreeUtils.cxx
   )
 
 set(TEST_ARGS
@@ -294,6 +298,7 @@ set(TEST_ARGS
     ""
     "-b --run"
     "-b --run"
+    ""
     ""
     ""
     ""

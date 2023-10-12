@@ -40,6 +40,14 @@ bool decodeBool(const std::string& value);
 /// @throw std::runtime_error the value is not a bool
 bool parseBoolParam(const CustomParameters& customParameters, const std::string& name, const std::string& runType = "default", const std::string& beamType = "default");
 
+/**
+ * Split a string using delim as delimiter.
+ * @param str
+ * @param delim
+ * @return
+ */
+std::vector<std::string> splitString(const std::string& str, char delim);
+
 } // namespace o2::quality_control::core
 
 #endif // QC_STRING_UTILS_H
