@@ -397,12 +397,13 @@ o2-qc-run-advanced --no-qc --no-debug-output | o2-qc --config json://${QUALITYCO
 * __className__ - Name and namespace of the class, which is part of the module specified above (like in tasks)
 * __policy__ - Policy for triggering the _check_ function defined in the class:
     * _OnAny_ (default) - Triggers if ANY of the listed quality objects changes.
+    * _OnAnyNonZero_ - Triggers if ANY of the declared monitor objects changes, but only after all listed objects have been received at least once. Please see the notes on the dataSource `QOs` below. 
     * _OnAll_ - Triggers if ALL the listed quality objects have changed.
-    * In case the list of QualityObject is empty for any of the data sources, the policy is simply ignored for all sources and the `check` will be triggered whenever a new QualityObject is received.
+    * In case the list of QualityObject is empty for any of the data sources, the policy is simply ignored for all sources and the `aggregator` will be triggered whenever a new QualityObject is received.
 * __dataSource__ - declaration of the `check` input
     * _type_ - _Check_ or _Aggregator_
     * _names_ - name of the Check or Aggregator
-    * _QOs_ - list of QualityObjects names or can be omitted to mean that all objects should be taken.
+    * _QOs_ - list of QualityObjects names or can be omitted to mean that all objects should be taken. In case of `OnAnyNonZero` one must list the objects and if the the check produces only 1 then it should list only an empty string. 
 
 ### Implementation
 

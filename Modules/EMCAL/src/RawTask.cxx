@@ -601,16 +601,23 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
           if (chType == CHTYP::LEDMON || chType == CHTYP::TRU)
             continue;
 
-          auto [row, col] = mGeometry->ShiftOnlineToOfflineCellIndexes(supermoduleID, rowOnline, colOnline);
-          // tower absolute ID
-          auto cellID = mGeometry->GetAbsCellIdFromCellIndexes(supermoduleID, row, col);
-          ;
-          if (cellID > 17664) {
+          int globRow(-1), globCol(-1);
+          try {
+            auto [row, col] = mGeometry->ShiftOnlineToOfflineCellIndexes(supermoduleID, rowOnline, colOnline);
+            // tower absolute ID
+            auto cellID = mGeometry->GetAbsCellIdFromCellIndexes(supermoduleID, row, col);
+            if (cellID > 17664) {
+              mErrorTypeAltro->Fill(feeID, 9);
+              continue;
+            }
+            // position in the EMCAL
+            auto [globRowTmp, globColTmp] = mGeometry->GlobalRowColFromIndex(cellID);
+            globRow = globRowTmp;
+            globCol = globColTmp;
+          } catch (o2::emcal::InvalidCellIDException& e) {
             mErrorTypeAltro->Fill(feeID, 9);
             continue;
           }
-          // position in the EMCAL
-          auto [globRow, globCol] = mGeometry->GlobalRowColFromIndex(cellID);
 
           fecIndex = chan.getFECIndex();
           branchIndex = chan.getBranchIndex();

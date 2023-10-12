@@ -457,7 +457,8 @@ set(TEST_FILES
   "testEmptyConfig.json"
   "testCheckWorkflow.json"
   "testTrendingTask.json"
-  "testWorkflow.json")
+  "testWorkflow.json"
+  "testThrowNameClash.json")
 set(TEST_FILES_PREFIXED ${TEST_FILES})
 list(TRANSFORM TEST_FILES_PREFIXED PREPEND ${CMAKE_BINARY_DIR}/tests/)
 

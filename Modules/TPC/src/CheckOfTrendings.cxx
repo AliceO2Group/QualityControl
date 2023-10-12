@@ -124,27 +124,39 @@ Quality CheckOfTrendings::check(std::map<std::string, std::shared_ptr<MonitorObj
   mPadMetaData[Quality::Good.getName()] = std::vector<std::string>();
 
   std::vector<TGraph*> graphs;
+  Quality totalQuality = Quality::Null;
+  totalQuality.addMetadata("Comment", mMetadataComment);
 
   auto mo = moMap->begin()->second;
   if (!mo) {
-    ILOG(Fatal, Support) << "Monitoring object not found" << ENDM;
+    ILOG(Error, Support) << "Monitoring object not found" << ENDM;
+    totalQuality.addMetadata(Quality::Null.getName(), "Monitoring object not found");
+    return totalQuality;
   }
   auto* canv = dynamic_cast<TCanvas*>(mo->getObject());
   if (!canv) {
-    ILOG(Fatal, Support) << "Canvas not found" << ENDM;
+    ILOG(Error, Support) << "Canvas not found" << ENDM;
+    totalQuality.addMetadata(Quality::Null.getName(), "Canvas not found");
+    return totalQuality;
   }
   getGraphs(canv, graphs);
 
   if (graphs.size() == 0) {
-    ILOG(Fatal, Support) << "Could not retrieve any TGraph for CheckOfTrendings" << ENDM;
+    ILOG(Error, Support) << "Could not retrieve any TGraph for CheckOfTrendings" << ENDM;
+    totalQuality.addMetadata(Quality::Null.getName(), "Could not retrieve any TGraph for CheckOfTrendings");
+    return totalQuality;
   }
   for (size_t iGraph = 0; iGraph < graphs.size(); iGraph++) {
     if (!graphs[iGraph]) { // if there is no TGraph, give an error and break
-      ILOG(Fatal, Support) << "TGraph number " << iGraph << " is NULL." << ENDM;
+      ILOG(Error, Support) << "TGraph number " << iGraph << " is NULL." << ENDM;
+      totalQuality.addMetadata(Quality::Null.getName(), "Could not retrieve all TGraphs");
+      return totalQuality;
     }
   }
   if (!mSliceTrend && graphs.size() > 1) {
-    ILOG(Fatal, Support) << "Multiple Graphs found even though this is not a slice trending" << ENDM;
+    ILOG(Error, Support) << "Multiple Graphs found even though this is not a slice trending" << ENDM;
+    totalQuality.addMetadata(Quality::Null.getName(), "Multiple Graphs found even though this is not a slice trending");
+    return totalQuality;
   }
 
   for (size_t iGraph = 0; iGraph < graphs.size(); iGraph++) {
@@ -329,7 +341,6 @@ Quality CheckOfTrendings::check(std::map<std::string, std::shared_ptr<MonitorObj
   std::string totalMediumString = "";
   std::string totalGoodString = "";
   std::string totalNullString = "";
-  Quality totalQuality = Quality::Null;
 
   if (mPadQualities.size() >= 1) {
     auto worst_Quality = std::max_element(mPadQualities.begin(), mPadQualities.end(),
@@ -351,7 +362,6 @@ Quality CheckOfTrendings::check(std::map<std::string, std::shared_ptr<MonitorObj
   totalQuality.addMetadata(Quality::Medium.getName(), totalMediumString);
   totalQuality.addMetadata(Quality::Good.getName(), totalGoodString);
   totalQuality.addMetadata(Quality::Null.getName(), totalNullString);
-  totalQuality.addMetadata("Comment", mMetadataComment);
 
   return totalQuality;
 }
@@ -362,22 +372,26 @@ void CheckOfTrendings::beautify(std::shared_ptr<MonitorObject> mo, Quality check
 {
   auto* canv = dynamic_cast<TCanvas*>(mo->getObject());
   if (!canv) {
-    ILOG(Fatal, Support) << "Canvas not found" << ENDM;
+    ILOG(Error, Support) << "Canvas not found (beautify function)" << ENDM;
+    return;
   }
 
   std::vector<TGraph*> graphs;
   getGraphs(canv, graphs);
 
   if (graphs.size() == 0) {
-    ILOG(Fatal, Support) << "Could not retrieve any TGraph for CheckOfTrendings" << ENDM;
+    ILOG(Error, Support) << "Could not retrieve any TGraph for CheckOfTrendings (beautify function)" << ENDM;
+    return;
   }
   for (size_t iGraph = 0; iGraph < graphs.size(); iGraph++) {
     if (!graphs[iGraph]) { // if there is no TGraph, give an error and break
-      ILOG(Fatal, Support) << "TGraph number " << iGraph << " is NULL." << ENDM;
+      ILOG(Error, Support) << "TGraph number " << iGraph << " is NULL. (beautify function)" << ENDM;
+      return;
     }
   }
   if (!mSliceTrend && graphs.size() > 1) {
-    ILOG(Fatal, Support) << "Multiple Graphs found even though this is not a slice trending" << ENDM;
+    ILOG(Error, Support) << "Multiple Graphs found even though this is not a slice trending (beautify function)" << ENDM;
+    return;
   }
 
   for (size_t iGraph = 0; iGraph < graphs.size(); iGraph++) {
