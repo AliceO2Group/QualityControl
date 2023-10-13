@@ -412,9 +412,9 @@ In the presented case, the Merger will publish one set of complete MOs per 10 mi
 
 ### Moving windows of selected plots only
 
-In setups which use Mergers in the delta mode,
- one can obtain objects spawning the last cycle alongside the ones covering the whole run.
-These are saved in a subdirectory `mw` and also can be requested by Checks.
+The following applies to synchronous setups which use Mergers in the delta mode and all asynchronous setups.
+One can obtain objects containing data from one cycle alongside the ones covering the whole run.
+These are saved in QCDB in the task subdirectory `mw` and also can be requested by Checks.
 To specify which objects should get a moving window variant, add a `"movingWindows"` list to the task configuration:
 ```json
    "MyTask": {
@@ -435,11 +435,16 @@ To request these objects in a Check, use `TaskMovingWindow` data source, as in t
         }]
       }
 ```
-It is possible to request both the integrated and last cycle plots by the same Check.
+It is possible to request both the integrated and single cycle plots by the same Check.
 
-To test it in a small setup, one can run `o2-qc` with `--full-chain` flag, which creates a complete workflow with a 
-Merger for local QC tasks, even though it runs just one instance of them.
- 
+To test it in a small setup, one can run `o2-qc` with `--full-chain` flag, which creates a complete workflow with a Merger for local QC tasks, even though it runs just one instance of them.
+
+In asynchronous QC, the moving window plots will appear in the intermediate QC file in the directory `mw` and will be uploaded to QCDB to `<task_name>/mw`.
+When testing, please make sure to let DPL know that it has to run in Grid mode, so that QC can compute object validity based on timestamps in the data:
+```
+export O2_DPL_DEPLOYMENT_MODE=Grid && o2-qc ...
+```
+
 ## Monitor cycles
 
 The QC tasks monitor and process data continuously during a so-called "monitor cycle". At the end of such a cycle they publish the QC objects that will then continue their way in the QC data flow. 
