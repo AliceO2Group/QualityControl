@@ -281,7 +281,7 @@ void RawDataDecoder::estimateNoise(std::shared_ptr<TH1F> hIndexEOIsNoise)
     const int crate_ = i % 2400;
     const int slot = crate_ / 240;
     const double time_window = mTDCWidth * (mTimeMax - mTimeMin);
-    const double time = mCounterTRM[crate][slot - 3].HowMany(0) * time_window;
+    const double time = mCounterTRM[crate][slot].HowMany(0) * time_window;
 
     // start measure time from 1 micro second
     if (time < 1.e-6) {
