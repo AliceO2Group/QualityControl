@@ -135,37 +135,74 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
     if (mo->getName() == "TriggerVsFeeid") {
       result.set(Quality::Good);
       auto* h = dynamic_cast<TH2I*>(mo->getObject());
-      int counttrgflags[NTrg] = { 0 };
-      int cutvalue[NTrg] = { 432, 432, 0, 0, 432, 0, 0, 0, 0, 432, 0, 432, 0 };
 
       std::vector<int> skipbins = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "skipbinstrg", skipbinstrg));
       std::vector<int> skipfeeid = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "skipfeeids", skipfeeids));
+      maxtfdifference = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "maxTFdifferenceAllowed", maxtfdifference);
+
       for (int itrg = 1; itrg <= h->GetNbinsY(); itrg++) {
         result.addMetadata(h->GetYaxis()->GetBinLabel(itrg), "good");
-        for (int ifee = 1; ifee <= h->GetNbinsX(); ifee++) {
-          if (h->GetBinContent(ifee, itrg) > 0) {
-            counttrgflags[itrg - 1]++;
-          }
-        }
       }
+
+      TString TrgAtLeastOne = "ORBIT HB PHYSICS TF";
+      TString TrgExactlyOne = "SOC";
+      // The others are requested to have no entries
+
+      int min_n_tf = INT_MAX, max_n_tf = 0;
 
       for (int itrg = 0; itrg < h->GetNbinsY(); itrg++) {
         if (std::find(skipbins.begin(), skipbins.end(), itrg + 1) != skipbins.end()) {
           continue;
         }
+
         bool badTrigger = false;
-        if ((itrg == 0 || itrg == 1 || itrg == 4 || itrg == 9 || itrg == 11) && counttrgflags[itrg] < cutvalue[itrg] - (int)skipfeeid.size()) {
-          result.updateMetadata(h->GetYaxis()->GetBinLabel(itrg + 1), "bad");
-          result.set(Quality::Bad);
-          badTrigger = true;
-        } else if ((itrg == 2 || itrg == 3 || itrg == 5 || itrg == 6 || itrg == 7 || itrg == 8 || itrg == 10 || itrg == 12) && counttrgflags[itrg] > cutvalue[itrg]) {
-          result.updateMetadata(h->GetYaxis()->GetBinLabel(itrg + 1), "bad");
-          result.set(Quality::Bad);
-          badTrigger = true;
+
+        TString trgname = (TString)(h->GetYaxis()->GetBinLabel(itrg + 1));
+
+        for (int ifee = 1; ifee <= h->GetNbinsX(); ifee++) {
+
+          if (std::find(skipfeeid.begin(), skipfeeid.end(), ifee) != skipfeeid.end())
+            continue;
+
+          int bincontent = (int)(h->GetBinContent(ifee, itrg + 1));
+
+          // checking trigger flags supposed to have at least one entry
+          if (TrgAtLeastOne.Contains(trgname)) {
+            if (bincontent < 1) {
+              badTrigger = true;
+              break;
+            }
+          }
+          // checking trigger flags supposed to have exactly one entry
+          else if (TrgExactlyOne.Contains(trgname)) {
+            if (h->GetBinContent(ifee, itrg + 1) != 1) {
+              badTrigger = true;
+              break;
+            }
+          }
+          // checking trigger flags supposed to have no entries
+          else {
+            if (h->GetBinContent(ifee, itrg + 1) > 0) {
+              badTrigger = true;
+              break;
+            }
+          }
+
+          if (trgname == "TF" && maxtfdifference > 0) {
+            min_n_tf = std::min(min_n_tf, bincontent);
+            max_n_tf = std::max(max_n_tf, bincontent);
+          }
         }
-        std::string extraText = (!strcmp(h->GetYaxis()->GetBinLabel(itrg + 1), "PHYSICS")) ? "(OK if it's COSMICS/SYNTHETIC)" : "";
-        if (badTrigger)
+
+        if (trgname == "TF" && maxtfdifference > 0 && (max_n_tf - min_n_tf > maxtfdifference))
+          badTrigger = true;
+
+        if (badTrigger) {
+          result.updateMetadata(h->GetYaxis()->GetBinLabel(itrg + 1), "bad");
+          result.set(Quality::Bad);
+          std::string extraText = (!strcmp(h->GetYaxis()->GetBinLabel(itrg + 1), "PHYSICS")) ? "(OK if it's COSMICS/SYNTHETIC)" : "";
           result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("BAD:Trigger flag %s of bad quality %s", h->GetYaxis()->GetBinLabel(itrg + 1), extraText.c_str()));
+        }
       }
     }
 

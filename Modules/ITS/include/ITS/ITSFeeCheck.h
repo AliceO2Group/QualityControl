@@ -90,6 +90,7 @@ class ITSFeeCheck : public o2::quality_control::checker::CheckInterface
 
   std::string skipbinstrg = "";
   std::string skipfeeids = "";
+  int maxtfdifference = -1;
   int minPayloadSize = 1400;
   int maxbadchipsIB = 2;
   int maxbadlanesML = 4;

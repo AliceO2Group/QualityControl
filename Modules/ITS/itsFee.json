@@ -55,9 +55,11 @@
                 "checkParameters": {
                   "skipbinstrg": "",
                   "skipfeeids": "",
-                  "maxbadchipsIB": "2",
+                  "maxTFdifferenceAllowed": "1000000000",
+		  "maxbadchipsIB": "2",
                   "maxbadlanesML": "4",
                   "maxbadlanesOL": "7",
+		  "minPayloadSize": "1400",
                   "maxfractionbadlanes": "0.1",
 		  "expectedROFperOrbit": "18",
                   "plotWithTextMessage": "",
