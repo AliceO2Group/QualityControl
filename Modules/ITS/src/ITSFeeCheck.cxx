@@ -175,14 +175,14 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
           }
           // checking trigger flags supposed to have exactly one entry
           else if (TrgExactlyOne.Contains(trgname)) {
-            if (h->GetBinContent(ifee, itrg + 1) != 1) {
+            if (bincontent != 1) {
               badTrigger = true;
               break;
             }
           }
           // checking trigger flags supposed to have no entries
           else {
-            if (h->GetBinContent(ifee, itrg + 1) > 0) {
+            if (bincontent > 0) {
               badTrigger = true;
               break;
             }
