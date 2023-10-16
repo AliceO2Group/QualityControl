@@ -55,7 +55,7 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
   auto lhcifdata = UserCodeInterface::retrieveConditionAny<o2::parameters::GRPLHCIFData>("GLO/Config/GRPLHCIF", metadata, mTimestamp);
   auto bfilling = lhcifdata->getBunchFilling();
   std::vector<int> bcs = bfilling.getFilledBCs();
-  o2::ctp::BCMask *bcmask;
+  o2::ctp::BCMask* bcmask;
   std::bitset<o2::constants::lhc::LHCMaxBunches> lhcBC_bitset = bcmask->BCmask;
   lhcBC_bitset.reset();
 
@@ -74,25 +74,25 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
       result = Quality::Good;
       result.addMetadata("BC_id", "good");
       for (int i = 0; i < o2::constants::lhc::LHCMaxBunches; i++) {
-        if(lhcBC_bitset[i]&&h->GetBinContent(i+1) < threshold) {
+        if (lhcBC_bitset[i] && h->GetBinContent(i + 1) < threshold) {
           result = Quality::Bad;
-          result.updateMetadata(Form("BC_id%d",i+1), "bad");
+          result.updateMetadata(Form("BC_id%d", i + 1), "bad");
           result.addReason(quality_control::FlagReasonFactory::Unknown(), "Bunch crossing is expected, but not measured");
           break;
         }
-        if(lhcBC_bitset[i]&&h->GetBinContent(i+1) == threshold ){
+        if (lhcBC_bitset[i] && h->GetBinContent(i + 1) == threshold) {
           result = Quality::Medium;
-          result.updateMetadata(Form("BC_id%d",i+1), "medium");
+          result.updateMetadata(Form("BC_id%d", i + 1), "medium");
           result.addReason(quality_control::FlagReasonFactory::Unknown(), "Bunch crossing is expected, at the threshold of background");
         }
-        if(!lhcBC_bitset[i]&&h->GetBinContent(i+1) == threshold){
+        if (!lhcBC_bitset[i] && h->GetBinContent(i + 1) == threshold) {
           result = Quality::Medium;
-          result.updateMetadata(Form("BC_id%d",i+1), "medium");
+          result.updateMetadata(Form("BC_id%d", i + 1), "medium");
           result.addReason(quality_control::FlagReasonFactory::Unknown(), "Bunch crossing not expected, at the threshold of background");
         }
-        if(!lhcBC_bitset[i]&&h->GetBinContent(i+1) > threshold) {
+        if (!lhcBC_bitset[i] && h->GetBinContent(i + 1) > threshold) {
           result = Quality::Bad;
-          result.updateMetadata(Form("BC_id%d",i+1), "bad");
+          result.updateMetadata(Form("BC_id%d", i + 1), "bad");
           result.addReason(quality_control::FlagReasonFactory::Unknown(), "Bunch crossing not expected, but measured");
           break;
         }
@@ -114,7 +114,7 @@ void RawDataReaderCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
       h->SetLineColor(kGreen);
     } else if (checkResult == Quality::Bad) {
       ILOG(Debug, Devel) << "Quality::Bad, setting to red" << ENDM;
-      msg = std::make_shared<TLatex>(0.15, 0.8, Form("Reason: %s",(std::get<1>(checkResult.getReasons()[0])).c_str() ));
+      msg = std::make_shared<TLatex>(0.15, 0.8, Form("Reason: %s", (std::get<1>(checkResult.getReasons()[0])).c_str()));
       msg->SetTextColor(kRed);
       msg->SetTextSize(0.06);
       msg->SetTextFont(43);
@@ -123,7 +123,7 @@ void RawDataReaderCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
       h->SetLineColor(kRed);
     } else if (checkResult == Quality::Medium) {
       ILOG(Debug, Devel) << "Quality::medium, setting to orange" << ENDM;
-      msg = std::make_shared<TLatex>(0.15, 0.8, Form("Reason: %s",(std::get<1>(checkResult.getReasons()[0])).c_str() ));
+      msg = std::make_shared<TLatex>(0.15, 0.8, Form("Reason: %s", (std::get<1>(checkResult.getReasons()[0])).c_str()));
       msg->SetTextColor(kOrange);
       msg->SetTextSize(0.06);
       msg->SetTextFont(43);
@@ -131,7 +131,6 @@ void RawDataReaderCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
       h->GetListOfFunctions()->Add(msg->Clone());
       h->SetLineColor(kOrange);
     }
-
   }
 }
 
