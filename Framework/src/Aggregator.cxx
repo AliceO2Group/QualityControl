@@ -117,11 +117,10 @@ QualityObjectsType Aggregator::aggregate(QualityObjectsMapType& qoMap, const Act
     // and get a validFrom timestamp which allows to access all the input QualityObjects as well.
     // Not sure if this is "correct", but I do not see a better solution at the moment...
     resultActivity = activity_helpers::overlappingActivity(
-      filtered.begin(),
-      filtered.end(),
-      [](const std::pair<std::string, std::shared_ptr<const QualityObject>>& item) -> const Activity& {
-        return item.second->getActivity();
-      });
+      filtered | std::views::transform(
+                   [](const std::pair<std::string, std::shared_ptr<const QualityObject>>& item) -> const Activity& {
+                     return item.second->getActivity();
+                   }));
     if (resultActivity.mValidity.isInvalid()) {
       ILOG(Warning, Support) << "Overlapping validity of inputs QOs to aggregator " << mAggregatorConfig.name << " is invalid (disjoint validities of input objects). Default activity will be used instead." << ENDM;
       resultActivity = defaultActivity;

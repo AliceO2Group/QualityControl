@@ -163,12 +163,9 @@ QualityObjectsType Check::check(std::map<std::string, std::shared_ptr<MonitorObj
       continue;
     }
     auto commonActivity = activity_helpers::strictestMatchingActivity(
-      moMapToCheck.begin(),
-      moMapToCheck.end(),
-      [](const std::pair<std::string, std::shared_ptr<MonitorObject>>& item) -> const Activity& {
+      moMapToCheck | std::views::transform([](const std::pair<std::string, std::shared_ptr<MonitorObject>>& item) {
         return item.second->getActivity();
-      });
-
+      }));
     ILOG(Debug, Devel) << "Check '" << mCheckConfig.name << "', quality '" << quality << "'" << ENDM;
     // todo: take metadata from somewhere
     qualityObjects.emplace_back(std::make_shared<QualityObject>(
