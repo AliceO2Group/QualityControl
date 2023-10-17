@@ -36,13 +36,11 @@ concept RangeOfActivities = requires(Range range) {
 namespace implementation
 {
 
-template <RangeOfActivities RangeType>
-Activity commonActivityFields(const RangeType& activities);
+Activity commonActivityFields(const RangeOfActivities auto& activities);
 }
 
 /// Produces the most constrained Activity which will match all the provided
-template <RangeOfActivities RangeType>
-Activity strictestMatchingActivity(const RangeType& activities)
+Activity strictestMatchingActivity(const RangeOfActivities auto& activities)
 {
   if (std::ranges::empty(activities)) {
     return {};
@@ -63,8 +61,7 @@ Activity strictestMatchingActivity(const RangeType& activities)
 
 /// Produces an Activity which matches all the provided, but the validity is a union.
 /// Be sure to check if the result validity is valid, it might not if the argument validities do not overlap
-template <RangeOfActivities RangeType>
-Activity overlappingActivity(const RangeType& activities)
+Activity overlappingActivity(const RangeOfActivities auto& activities)
 {
   if (std::ranges::empty(activities)) {
     return {};
@@ -106,8 +103,7 @@ void setMemberIfCommon(Activity& result, const RangeType& activities, FieldType 
   }
 }
 
-template <RangeOfActivities RangeType>
-Activity commonActivityFields(const RangeType& activities)
+Activity commonActivityFields(const RangeOfActivities auto& activities)
 {
   Activity result;
   setMemberIfCommon(result, activities, &Activity::mId);
