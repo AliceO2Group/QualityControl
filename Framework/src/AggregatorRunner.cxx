@@ -404,7 +404,7 @@ void AggregatorRunner::reorderAggregators()
     ILOG(Error, Ops) << msg << ENDM;
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details(msg));
   }
-  assert(results.size() != mAggregators.size());
+  assert(results.size() == mAggregators.size());
   mAggregators = results;
 }
 
