@@ -20,7 +20,6 @@
 #include <string>
 #include <map>
 #include <variant>
-#include <stack>
 #include <vector>
 
 class TFile;
@@ -35,16 +34,15 @@ class MonitorObjectCollection;
 class RootFileStorage
 {
  public:
-  struct MonitorObjectCollectionNode;
-  struct DirectoryNode {
-    std::string fullPath{};
-    std::string name{};
-    std::map<std::string, std::variant<DirectoryNode, MonitorObjectCollectionNode>> children = {};
-  };
   struct MonitorObjectCollectionNode {
     std::string fullPath{};
     std::string name{};
     MonitorObjectCollection* moc = nullptr;
+  };
+  struct DirectoryNode {
+    std::string fullPath{};
+    std::string name{};
+    std::map<std::string, std::variant<DirectoryNode, MonitorObjectCollectionNode>> children = {};
   };
 
   enum class ReadMode {
@@ -56,7 +54,6 @@ class RootFileStorage
   ~RootFileStorage();
 
   DirectoryNode readStructure(bool loadObjects = false) const;
-
   MonitorObjectCollection* readMonitorObjectCollection(const std::string& path) const;
 
   void storeIntegralMOC(MonitorObjectCollection* const moc);
@@ -76,7 +73,6 @@ class IntegralMocWalker
   explicit IntegralMocWalker(const RootFileStorage::DirectoryNode& rootNode);
 
   bool hasNextPath();
-
   std::string nextPath();
 
  private:
@@ -92,7 +88,6 @@ class MovingWindowMocWalker
   explicit MovingWindowMocWalker(const RootFileStorage::DirectoryNode& rootNode);
 
   bool hasNextPath() const;
-
   std::string nextPath();
 
  private:

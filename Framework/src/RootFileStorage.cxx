@@ -25,6 +25,7 @@
 #include <TIterator.h>
 #include <TDirectory.h>
 #include <filesystem>
+#include <stack>
 
 namespace o2::quality_control::core
 {
