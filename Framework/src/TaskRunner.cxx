@@ -168,8 +168,12 @@ void TaskRunner::init(InitContext& iCtx)
 
   // setup timekeeping
   mDeploymentMode = DefaultsHelpers::deploymentMode();
-  mTimekeeper = TimekeeperFactory::create(mDeploymentMode);
-  mTimekeeper->setCCDBOrbitsPerTFAccessor([]() { return o2::base::GRPGeomHelper::getNHBFPerTF(); });
+  mTimekeeper = TimekeeperFactory::create(mDeploymentMode, mTaskConfig.cycleDurations.back().first * 1000);
+  mTimekeeper->setCCDBOrbitsPerTFAccessor([]() {
+    // getNHBFPerTF() returns 128 if it does not know, which can be very misleading.
+    // instead we use 0, which will trigger another try when processing another timeslice.
+    return o2::base::GRPGeomHelper::instance().getGRPECS() != nullptr ? o2::base::GRPGeomHelper::getNHBFPerTF() : 0;
+  });
 
   // setup user's task
   mTask.reset(TaskFactory::create(mTaskConfig, mObjectsManager));
@@ -208,15 +212,7 @@ void TaskRunner::run(ProcessingContext& pCtx)
     GRPGeomHelper::instance().checkUpdates(pCtx);
   }
 
-  auto [dataReady, timerReady] = validateInputs(pCtx.inputs());
-
-  if (dataReady) {
-    mTimekeeper->updateByTimeFrameID(pCtx.services().get<TimingInfo>().tfCounter);
-    mTask->monitorData(pCtx);
-    updateMonitoringStats(pCtx);
-  }
-
-  if (timerReady) {
+  if (mTimekeeper->shouldFinishCycle(pCtx.services().get<TimingInfo>())) {
     mTimekeeper->updateByCurrentTimestamp(pCtx.services().get<TimingInfo>().timeslice / 1000);
     finishCycle(pCtx.outputs());
     if (mTaskConfig.resetAfterCycles > 0 && (mCycleNumber % mTaskConfig.resetAfterCycles == 0)) {
@@ -228,6 +224,12 @@ void TaskRunner::run(ProcessingContext& pCtx)
     } else {
       mNoMoreCycles = true;
     }
+  }
+
+  if (isDataReady(pCtx.inputs())) {
+    mTimekeeper->updateByTimeFrameID(pCtx.services().get<TimingInfo>().tfCounter);
+    mTask->monitorData(pCtx);
+    updateMonitoringStats(pCtx);
   }
 }
 
@@ -402,10 +404,9 @@ void TaskRunner::reset()
   }
 }
 
-std::tuple<bool /*data ready*/, bool /*timer ready*/> TaskRunner::validateInputs(const framework::InputRecord& inputs)
+bool TaskRunner::isDataReady(const framework::InputRecord& inputs)
 {
   size_t dataInputsPresent = 0;
-  bool timerReady = false;
 
   for (auto& input : inputs) {
     if (input.header != nullptr) {
@@ -413,16 +414,13 @@ std::tuple<bool /*data ready*/, bool /*timer ready*/> TaskRunner::validateInputs
       const auto* dataHeader = get<DataHeader*>(input.header);
       assert(dataHeader);
 
-      if (!strncmp(dataHeader->dataDescription.str, "TIMER", 5)) {
-        timerReady = true;
-      } else {
+      if (strncmp(dataHeader->dataDescription.str, "TIMER", 5)) {
         dataInputsPresent++;
       }
     }
   }
-  bool dataReady = dataInputsPresent == inputs.size() - 1;
 
-  return { dataReady, timerReady };
+  return dataInputsPresent == inputs.size() - 1;
 }
 
 void TaskRunner::printTaskConfig() const

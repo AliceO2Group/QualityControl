@@ -177,6 +177,14 @@ TEST_CASE("timekeeper_synchronous")
     CHECK(tk->getActivityDuration().getMin() == 2);
     CHECK(tk->getActivityDuration().getMax() == 5);
   }
+
+  SECTION("finish_cycle")
+  {
+    auto tk = std::make_shared<TimekeeperSynchronous>();
+    CHECK(tk->shouldFinishCycle(TimingInfo{ 1653500000000000 }));
+    CHECK(tk->shouldFinishCycle(TimingInfo{ 1653500010000000 }));
+    CHECK(!tk->shouldFinishCycle(TimingInfo{ 54000 }));
+  }
 }
 
 TEST_CASE("timekeeper_asynchronous")
@@ -235,11 +243,13 @@ TEST_CASE("timekeeper_asynchronous")
     tk->setCCDBOrbitsPerTFAccessor([]() { return 32; });
     tk->setActivityDuration(ValidityInterval{ 1653000000000, 1655000000000 });
 
+    CHECK(!tk->shouldFinishCycle(TimingInfo{ 3 })); // no, because validity is invalid and there is no moving window
     tk->updateByTimeFrameID(3);
     tk->updateByTimeFrameID(10);
     CHECK(tk->getValidity() == ValidityInterval{ 1653000000000, 1655000000000 });
     CHECK(tk->getSampleTimespan() == ValidityInterval{ 1653000000005, 1653000000027 });
     CHECK(tk->getTimerangeIdRange() == TimeframeIdRange{ 3, 10 });
+    CHECK(!tk->shouldFinishCycle(TimingInfo{ 4 })); // no, because validity is invalid and there is no moving window
 
     tk->reset();
     CHECK(tk->getValidity() == gInvalidValidityInterval);
@@ -260,9 +270,12 @@ TEST_CASE("timekeeper_asynchronous")
     auto tk = std::make_shared<TimekeeperAsynchronous>(30 * 1000);
     tk->setActivityDuration(ValidityInterval{ 1653000000000, 1653000095000 }); // 95 seconds: 0-30, 30-60, 60-95
     tk->setCCDBOrbitsPerTFAccessor([nOrbitPerTF]() { return nOrbitPerTF; });
+    CHECK(!tk->shouldFinishCycle(TimingInfo{ 3, 0, 3 })); // no, because validity is invalid
 
     // hitting only the 1st window
     tk->updateByTimeFrameID(1);
+    CHECK(!tk->shouldFinishCycle(TimingInfo{ 10, 0, 10 }));        // no, because TFID 10 is within the 1st window
+    CHECK(!tk->shouldFinishCycle(TimingInfo{ 1653500000000000 })); // no, because this is a timer input
     tk->updateByTimeFrameID(10);
     CHECK(tk->getValidity() == ValidityInterval{ 1653000000000, 1653000030000 });
     CHECK(tk->getSampleTimespan() == ValidityInterval{ 1653000000000, 1653000009999 });
@@ -271,6 +284,7 @@ TEST_CASE("timekeeper_asynchronous")
     // hitting the 1st and 2nd window
     tk->reset();
     tk->updateByTimeFrameID(1);
+    CHECK(tk->shouldFinishCycle(TimingInfo{ 55, 0, 55 })); // yes, because TFID 55 is not within the 1st window
     tk->updateByTimeFrameID(55);
     CHECK(tk->getValidity() == ValidityInterval{ 1653000000000, 1653000060000 });
     CHECK(tk->getSampleTimespan() == ValidityInterval{ 1653000000000, 1653000055001 });

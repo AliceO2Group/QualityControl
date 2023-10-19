@@ -95,7 +95,8 @@ add_library(O2QualityControl
   src/TimekeeperSynchronous.cxx
   src/TimekeeperAsynchronous.cxx
   src/WorkflowType.cxx
-  src/TimekeeperFactory.cxx)
+  src/TimekeeperFactory.cxx
+  src/RootFileStorage.cxx)
 
 target_include_directories(
   O2QualityControl
@@ -237,6 +238,7 @@ add_executable(o2-qc-test-core
                test/testPostProcessingRunner.cxx
                test/testQuality.cxx
                test/testQualityObject.cxx
+               test/testRootFileStorage.cxx
                test/testTaskInterface.cxx
                test/testTimekeeper.cxx
                test/testTriggerHelpers.cxx

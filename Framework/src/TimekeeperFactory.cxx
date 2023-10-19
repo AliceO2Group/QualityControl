@@ -24,12 +24,12 @@ using namespace o2::framework;
 namespace o2::quality_control::core
 {
 
-std::unique_ptr<Timekeeper> TimekeeperFactory::create(framework::DeploymentMode deploymentMode)
+std::unique_ptr<Timekeeper> TimekeeperFactory::create(framework::DeploymentMode deploymentMode, validity_time_t windowLengthMs)
 {
   switch (deploymentMode) {
     case DeploymentMode::Grid: {
       ILOG(Info, Devel) << "Detected async deployment, object validity will be based on incoming data and available SOR/EOR times" << ENDM;
-      return std::make_unique<TimekeeperAsynchronous>();
+      return std::make_unique<TimekeeperAsynchronous>(windowLengthMs);
       break;
     }
     case DeploymentMode::Local:

@@ -37,12 +37,16 @@ class MonitorObjectCollection : public TObjArray, public mergers::MergeInterface
   void setDetector(const std::string&);
   const std::string& getDetector() const;
 
+  void setTaskName(const std::string&);
+  const std::string& getTaskName() const;
+
   MergeInterface* cloneMovingWindow() const override;
 
  private:
   std::string mDetector = "TST";
+  std::string mTaskName = "Test";
 
-  ClassDefOverride(MonitorObjectCollection, 1);
+  ClassDefOverride(MonitorObjectCollection, 2);
 };
 
 } // namespace o2::quality_control::core

@@ -27,7 +27,7 @@ namespace o2::quality_control::core
 class TimekeeperFactory
 {
  public:
-  static std::unique_ptr<Timekeeper> create(framework::DeploymentMode);
+  static std::unique_ptr<Timekeeper> create(framework::DeploymentMode, validity_time_t windowLengthMs = 0);
   static bool needsGRPECS(framework::DeploymentMode);
 };
 

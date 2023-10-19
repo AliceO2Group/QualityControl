@@ -18,6 +18,7 @@
 #include "QualityControl/QcInfoLogger.h"
 
 #include <CommonConstants/LHCConstants.h>
+#include <Framework/TimingInfo.h>
 
 namespace o2::quality_control::core
 {
@@ -50,27 +51,14 @@ void TimekeeperAsynchronous::updateByTimeFrameID(uint32_t tfid)
     return;
   }
 
-  if (mOrbitsPerTF == 0) {
-    if (auto accessor = getCCDBOrbitsPerTFAccessor()) {
-      mOrbitsPerTF = accessor();
-    } else {
-      ILOG(Error, Ops) << "CCDB OrbitsPerTF accessor is not available" << ENDM;
-    }
-    if (mOrbitsPerTF == 0) {
-      ILOG(Error, Ops) << "nHBFperTF from CCDB GRP is 0, object validity will be incorrect" << ENDM;
-    }
-  }
-
-  auto tfDurationMs = constants::lhc::LHCOrbitNS / 1000000 * mOrbitsPerTF;
-  auto tfStart = static_cast<validity_time_t>(mActivityDuration.getMin() + tfDurationMs * (tfid - 1));
-  auto tfEnd = static_cast<validity_time_t>(mActivityDuration.getMin() + tfDurationMs * tfid - 1);
-  mCurrentSampleTimespan.update(tfStart);
-  mCurrentSampleTimespan.update(tfEnd);
+  auto tfValidity = computeTimestampFromTimeframeID(tfid);
+  mCurrentSampleTimespan.update(tfValidity.getMin());
+  mCurrentSampleTimespan.update(tfValidity.getMax());
 
   mCurrentTimeframeIdRange.update(tfid);
 
-  if (mActivityDuration.isOutside(tfStart)) {
-    ILOG(Warning, Support) << "Timestamp " << tfStart << " is outside of the assumed run duration ("
+  if (mActivityDuration.isOutside(tfValidity.getMin())) {
+    ILOG(Warning, Support) << "Timestamp " << tfValidity.getMin() << " is outside of the assumed run duration ("
                            << mActivityDuration.getMin() << ", " << mActivityDuration.getMax() << ")" << ENDM;
     return;
   }
@@ -78,7 +66,7 @@ void TimekeeperAsynchronous::updateByTimeFrameID(uint32_t tfid)
   if (mWindowLengthMs == 0) {
     mCurrentValidityTimespan = mActivityDuration;
   } else {
-    size_t subdivisionIdx = (tfStart - mActivityDuration.getMin()) / mWindowLengthMs;
+    size_t subdivisionIdx = (tfValidity.getMin() - mActivityDuration.getMin()) / mWindowLengthMs;
     size_t fullSubdivisions = mActivityDuration.delta() / mWindowLengthMs;
     if (subdivisionIdx < fullSubdivisions - 1) {
       mCurrentValidityTimespan.update(mActivityDuration.getMin() + subdivisionIdx * mWindowLengthMs);
@@ -126,6 +114,36 @@ validity_time_t
   ILOG(Info, Devel) << "Received the following activity boundary propositions: " << ccdbTimestamp << ", " << ecsTimestamp
                     << ", " << configTimestamp << ", " << currentTimestamp << ". Selected: " << selected << ENDM;
   return selected;
+}
+
+bool TimekeeperAsynchronous::shouldFinishCycle(const framework::TimingInfo& timingInfo)
+{
+  // we should start a new window whenever the new data falls outside of the current one.
+  // if the window covers the whole run, there is never a reason to finish before we receive an end of stream
+  return mCurrentValidityTimespan.isValid() &&
+         mWindowLengthMs != 0 &&
+         !timingInfo.isTimer() &&
+         mCurrentValidityTimespan.isOutside(computeTimestampFromTimeframeID(timingInfo.tfCounter).getMin());
+}
+
+ValidityInterval TimekeeperAsynchronous::computeTimestampFromTimeframeID(uint32_t tfid)
+{
+  if (mOrbitsPerTF == 0) {
+    if (auto accessor = getCCDBOrbitsPerTFAccessor()) {
+      mOrbitsPerTF = accessor();
+      ILOG(Info, Support) << "Got nOrbitsPerTF " << mOrbitsPerTF << " for TF " << tfid << ENDM;
+    } else {
+      ILOG(Error, Ops) << "CCDB OrbitsPerTF accessor is not available" << ENDM;
+    }
+    if (mOrbitsPerTF == 0) {
+      ILOG(Error, Ops) << "nHBFperTF from CCDB GRP is 0, object validity will be incorrect" << ENDM;
+    }
+  }
+
+  auto tfDurationMs = constants::lhc::LHCOrbitNS / 1000000 * mOrbitsPerTF;
+  auto tfStart = static_cast<validity_time_t>(mActivityDuration.getMin() + tfDurationMs * (tfid - 1));
+  auto tfEnd = static_cast<validity_time_t>(mActivityDuration.getMin() + tfDurationMs * tfid - 1);
+  return { tfStart, tfEnd };
 }
 
 } // namespace o2::quality_control::core

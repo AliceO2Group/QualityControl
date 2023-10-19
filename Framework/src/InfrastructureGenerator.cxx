@@ -387,6 +387,13 @@ framework::WorkflowSpec InfrastructureGenerator::generateRemoteBatchInfrastructu
       auto taskConfig = TaskRunnerFactory::extractConfig(infrastructureSpec.common, taskSpec, 0, 1);
       fileSourceOutputs.push_back(taskConfig.moSpec);
       fileSourceOutputs.back().binding = RootFileSource::outputBinding(taskSpec.detectorName, taskSpec.taskName);
+      // We create an OutputSpec for moving windows for this task only if they are expected.
+      if (!taskConfig.movingWindows.empty()) {
+        fileSourceOutputs.push_back(
+          { RootFileSource::outputBinding(taskSpec.detectorName, taskSpec.taskName, true),
+            TaskRunner::createTaskDataOrigin(taskSpec.detectorName, true),
+            TaskRunner::createTaskDataDescription(taskSpec.taskName), 0, Lifetime::Sporadic });
+      }
     }
   }
   if (!fileSourceOutputs.empty()) {
@@ -632,8 +639,10 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
     if (taskSpec.active) {
       InputSpec taskOutput{ taskSpec.taskName, TaskRunner::createTaskDataOrigin(taskSpec.detectorName), TaskRunner::createTaskDataDescription(taskSpec.taskName), Lifetime::Sporadic };
       tasksOutputMap.insert({ DataSpecUtils::label(taskOutput), taskOutput });
-      if (!taskSpec.movingWindows.empty() && taskSpec.location == TaskLocationSpec::Local &&
-          (infrastructureSpec.workflowType == WorkflowType::Remote || infrastructureSpec.workflowType == WorkflowType::FullChain)) {
+      bool movingWindowsEnabled = !taskSpec.movingWindows.empty();
+      bool synchronousRemote = taskSpec.location == TaskLocationSpec::Local && (infrastructureSpec.workflowType == WorkflowType::Remote || infrastructureSpec.workflowType == WorkflowType::FullChain);
+      bool asynchronousRemote = infrastructureSpec.workflowType == WorkflowType::RemoteBatch;
+      if (movingWindowsEnabled && (synchronousRemote || asynchronousRemote)) {
         InputSpec taskMovingWindowOutput{ taskSpec.taskName, TaskRunner::createTaskDataOrigin(taskSpec.detectorName, true), TaskRunner::createTaskDataDescription(taskSpec.taskName), Lifetime::Sporadic };
         tasksOutputMap.insert({ DataSpecUtils::label(taskMovingWindowOutput), taskMovingWindowOutput });
       }
