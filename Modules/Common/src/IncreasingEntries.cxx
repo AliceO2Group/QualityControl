@@ -42,18 +42,15 @@ void IncreasingEntries::configure()
   mBadCyclesLimit = option.has_value() ? stoi(option.value()) : 1;
   ILOG(Debug, Support) << "nbBadCyclesLimit: " << mBadCyclesLimit << ENDM;
 
+  mPaveText = make_shared<TPaveText>(1, 0.125, 0.6, 0, "NDC");
+  mPaveText->SetFillColor(kRed);
+  mPaveText->SetMargin(0);
   if (mMustIncrease) {
-    mPaveText = make_shared<TPaveText>(1, 0.125, 0.6, 0, "NDC");
     mPaveText->AddText("Number of Entries has *not* changed");
     mPaveText->AddText(string("in the past ") + mBadCyclesLimit + " cycle(s)");
-    mPaveText->SetFillColor(kRed);
-    mPaveText->SetMargin(0);
   } else {
-    mPaveText = make_shared<TPaveText>(1, 0.125, 0.6, 0, "NDC");
     mPaveText->AddText("Number of Entries has *changed*");
     mPaveText->AddText(string("in the past ") + mBadCyclesLimit + " cycle(s)");
-    mPaveText->SetFillColor(kRed);
-    mPaveText->SetMargin(0);
   }
 }
 
