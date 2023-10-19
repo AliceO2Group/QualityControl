@@ -88,11 +88,11 @@ RootFileStorage::DirectoryNode RootFileStorage::readStructureImpl(TDirectory* cu
       moc->postDeserialization();
       std::string mocPath = currentNode.fullPath + std::filesystem::path::preferred_separator + key->GetName();
       currentNode.children[moc->GetName()] = MonitorObjectCollectionNode{ mocPath, key->GetName(), moc };
-      ILOG(Info) << "Read object '" << moc->GetName() << "' in path '" << currentNode.fullPath << "'" << ENDM;
+      ILOG(Debug, Support) << "Read object '" << moc->GetName() << "' in path '" << currentNode.fullPath << "'" << ENDM;
     } else if (auto childDir = dynamic_cast<TDirectory*>(value)) {
       currentNode.children[key->GetName()] = readStructureImpl(childDir, loadObjects);
     } else {
-      ILOG(Warning, Devel) << "Could not cast the node to MonitorObjectCollection nor TDirectory, skipping." << ENDM;
+      ILOG(Warning, Support) << "Could not cast the node to MonitorObjectCollection nor TDirectory, skipping." << ENDM;
       delete value;
       continue;
     }
@@ -105,12 +105,12 @@ MonitorObjectCollection* RootFileStorage::readMonitorObjectCollection(const std:
 {
   auto storedTObj = mFile->Get(path.c_str());
   if (storedTObj == nullptr) {
-    ILOG(Error) << "Could not read file '" << path << "'" << ENDM;
+    ILOG(Error, Ops) << "Could not read object '" << path << "'" << ENDM;
     return nullptr;
   }
   auto storedMOC = dynamic_cast<MonitorObjectCollection*>(storedTObj);
   if (storedMOC == nullptr) {
-    ILOG(Error) << "Could not cast the stored object to MonitorObjectCollection" << ENDM;
+    ILOG(Error, Ops) << "Could not cast the stored object to MonitorObjectCollection" << ENDM;
     delete storedTObj;
   }
   return storedMOC;
@@ -120,7 +120,7 @@ RootFileStorage::~RootFileStorage()
 {
   if (mFile != nullptr) {
     if (mFile->IsOpen()) {
-      ILOG(Info) << "Closing file '" << mFile->GetName() << "'." << ENDM;
+      ILOG(Info, Support) << "Closing file '" << mFile->GetName() << "'." << ENDM;
       mFile->Write();
       mFile->Close();
     }
@@ -141,7 +141,7 @@ std::unique_ptr<TDirectory, void (*)(TDirectory*)> getOrCreateDirectory(TDirecto
 {
   auto dir = std::unique_ptr<TDirectory, void (*)(TDirectory*)>(parentDir->GetDirectory(dirName), deleteTDirectory);
   if (dir == nullptr) {
-    ILOG(Info, Devel) << "Creating a new directory '" << dirName << "'." << ENDM;
+    ILOG(Debug, Support) << "Creating a new directory '" << dirName << "'." << ENDM;
     dir = std::unique_ptr<TDirectory, void (*)(TDirectory*)>(parentDir->mkdir(dirName), deleteTDirectory);
   }
   return dir;
@@ -173,7 +173,7 @@ void RootFileStorage::storeIntegralMOC(MonitorObjectCollection* const moc)
 {
   const auto& mocStorageName = moc->getTaskName();
   if (mocStorageName.empty()) {
-    ILOG(Error, Support) << "taskName empty, skipping." << ENDM;
+    ILOG(Error, Support) << "taskName empty, not storing MOC '" << moc->GetName() << "' for detector '" << moc->getDetector() << "'" << ENDM;
     return;
   }
   moc->SetName(mocStorageName.c_str());
@@ -193,15 +193,16 @@ void RootFileStorage::storeIntegralMOC(MonitorObjectCollection* const moc)
   }
 
   // directory level: int/DET/TASK
-  ILOG(Info, Support) << "Checking for existing objects in the file." << ENDM;
+  ILOG(Debug, Support) << "Checking for existing objects in the file." << ENDM;
   int nbytes = 0;
   auto storedMOC = std::unique_ptr<MonitorObjectCollection>(detDir->Get<MonitorObjectCollection>(mocStorageName.c_str()));
   if (storedMOC != nullptr) {
     storedMOC->postDeserialization();
-    ILOG(Info, Support) << "Merging objects for task '" << detector << "/" << moc->GetName() << "' with the existing ones in the file." << ENDM;
+    ILOG(Info, Support) << "Merging objects for task '" << detector << "/" << moc->getTaskName() << "' with the existing ones in the file." << ENDM;
     storedMOC->merge(moc);
     nbytes = detDir->WriteObject(storedMOC.get(), storedMOC->GetName(), "Overwrite");
   } else {
+    ILOG(Info, Support) << "Storing objects for task '" << detector << "/" << moc->getTaskName() << "' in the file." << ENDM;
     nbytes = detDir->WriteObject(moc, moc->GetName(), "Overwrite");
   }
   ILOG(Info, Support) << "Integrated objects '" << moc->GetName() << "' have been stored in the file (" << nbytes << " bytes)." << ENDM;
@@ -248,10 +249,11 @@ void RootFileStorage::storeMovingWindowMOC(MonitorObjectCollection* const moc)
   auto storedMOC = std::unique_ptr<MonitorObjectCollection>(taskDir->Get<MonitorObjectCollection>(mocStorageName.c_str()));
   if (storedMOC != nullptr) {
     storedMOC->postDeserialization();
-    ILOG(Info, Support) << "Merging moving windows '" << moc->GetName() << "' with the existing one in the file." << ENDM;
+    ILOG(Info, Support) << "Merging moving windows '" << moc->GetName() << "' for task '" << moc->getDetector() << "/" << moc->getTaskName() << "' with the existing one in the file." << ENDM;
     storedMOC->merge(moc);
     nbytes = taskDir->WriteObject(storedMOC.get(), storedMOC->GetName(), "Overwrite");
   } else {
+    ILOG(Info, Support) << "Storing moving windows '" << moc->GetName() << "' for task '" << moc->getDetector() << "/" << moc->getTaskName() << "' in the file." << ENDM;
     nbytes = taskDir->WriteObject(moc, moc->GetName(), "Overwrite");
   }
   ILOG(Info, Support) << "Moving windows '" << moc->GetName() << "' for task '" << detector << "/" << moc->getTaskName() << "' has been stored in the file (" << nbytes << " bytes)." << ENDM;
