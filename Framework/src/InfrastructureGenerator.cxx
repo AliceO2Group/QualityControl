@@ -387,6 +387,7 @@ framework::WorkflowSpec InfrastructureGenerator::generateRemoteBatchInfrastructu
       auto taskConfig = TaskRunnerFactory::extractConfig(infrastructureSpec.common, taskSpec, 0, 1);
       fileSourceOutputs.push_back(taskConfig.moSpec);
       fileSourceOutputs.back().binding = RootFileSource::outputBinding(taskSpec.detectorName, taskSpec.taskName);
+      // We create an OutputSpec for moving windows for this task only if they are expected.
       if (!taskConfig.movingWindows.empty()) {
         fileSourceOutputs.push_back(
           { RootFileSource::outputBinding(taskSpec.detectorName, taskSpec.taskName, true),
