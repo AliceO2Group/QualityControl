@@ -226,7 +226,7 @@ void TaskRunner::run(ProcessingContext& pCtx)
     }
   }
 
-  if (dataReady(pCtx.inputs())) {
+  if (isDataReady(pCtx.inputs())) {
     mTimekeeper->updateByTimeFrameID(pCtx.services().get<TimingInfo>().tfCounter);
     mTask->monitorData(pCtx);
     updateMonitoringStats(pCtx);
@@ -404,7 +404,7 @@ void TaskRunner::reset()
   }
 }
 
-bool TaskRunner::dataReady(const framework::InputRecord& inputs)
+bool TaskRunner::isDataReady(const framework::InputRecord& inputs)
 {
   size_t dataInputsPresent = 0;
 
