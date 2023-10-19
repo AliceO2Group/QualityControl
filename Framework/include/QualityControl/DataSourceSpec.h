@@ -39,9 +39,9 @@ enum class DataSourceType {
 // this should allow us to represent all data sources which come from DPL (and maybe CCDB).
 struct DataSourceSpec {
   explicit DataSourceSpec(DataSourceType type = DataSourceType::Invalid);
-  // todo: use c++20 concepts when available
-  template <class... Args, class Enable = std::enable_if_t<(... && std::is_convertible_v<Args, DataSourceType>)>>
-  bool isOneOf(Args... dataSourceType) const
+
+  template <class... DataSourceType>
+  bool isOneOf(DataSourceType... dataSourceType) const
   {
     return (... || (dataSourceType == type));
   }

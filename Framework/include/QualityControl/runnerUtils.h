@@ -18,6 +18,7 @@
 #define QUALITYCONTROL_RUNNERUTILS_H
 
 #include <string>
+#include <concepts>
 #include <Framework/ServiceRegistryRef.h>
 #include <Framework/RawDeviceService.h>
 #include <fairmq/Device.h>
@@ -38,7 +39,8 @@ std::string getFirstTaskName(const std::string& configurationSource);
 std::string getFirstCheckName(const std::string& configurationSource);
 bool hasChecks(const std::string& configSource);
 
-template <typename T> // TODO we should probably limit T to numbers somehow
+template <typename T>
+  requires std::integral<T> || std::floating_point<T> // std::integral includes char and bool though...
 T computeActivityField(framework::ServiceRegistryRef services, const std::string& name, T fallbackNumber = 0)
 {
   T result = 0;
