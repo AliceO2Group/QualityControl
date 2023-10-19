@@ -34,23 +34,24 @@ namespace o2::quality_control_modules::common
 
 void IncreasingEntries::configure()
 {
-  try {
-    mMustIncrease = parseBoolParam(mCustomParameters, "default", "default", "mustIncrease");
-  } catch (AliceO2::Common::ObjectNotFoundError& exc) {
-    mMustIncrease = true; // if not there, default behaviour
-  }
+  auto option = mCustomParameters.atOptional("mustIncrease");
+  mMustIncrease = option.has_value() ? decodeBool(option.value()) : true;
   ILOG(Debug, Support) << "mustIncrease: " << mMustIncrease << ENDM;
+
+  option = mCustomParameters.atOptional("nbBadCyclesLimit");
+  mBadCyclesLimit = option.has_value() ? stoi(option.value()) : 1;
+  ILOG(Debug, Support) << "nbBadCyclesLimit: " << mBadCyclesLimit << ENDM;
 
   if (mMustIncrease) {
     mPaveText = make_shared<TPaveText>(1, 0.125, 0.6, 0, "NDC");
     mPaveText->AddText("Number of Entries has *not* changed");
-    mPaveText->AddText("in the past cycle");
+    mPaveText->AddText(string("in the past ") + mBadCyclesLimit + " cycle(s)");
     mPaveText->SetFillColor(kRed);
     mPaveText->SetMargin(0);
   } else {
     mPaveText = make_shared<TPaveText>(1, 0.125, 0.6, 0, "NDC");
     mPaveText->AddText("Number of Entries has *changed*");
-    mPaveText->AddText("in the past cycle");
+    mPaveText->AddText(string("in the past ") + mBadCyclesLimit + " cycle(s)");
     mPaveText->SetFillColor(kRed);
     mPaveText->SetMargin(0);
   }
@@ -68,19 +69,28 @@ Quality IncreasingEntries::check(std::map<std::string, std::shared_ptr<MonitorOb
       continue;
     }
 
-    double previousNumberEntries = mLastEntries.count(moName) > 0 ? mLastEntries.at(moName) : 0;
-    double currentNumberEntries = histo->GetEntries();
+    const double previousNumberEntries = mLastEntries.count(moName) > 0 ? mLastEntries.at(moName) : 0;
+    const double currentNumberEntries = histo->GetEntries();
+    size_t faultCount = mMoFaultCount.count(moName) > 0 ? mMoFaultCount.at(moName) : 0;
 
-    if (mMustIncrease && previousNumberEntries == currentNumberEntries) {
-      result = Quality::Bad;
-      result.addReason(FlagReasonFactory::NoDetectorData(), "Number of entries stopped increasing.");
-      mFaultyObjectsNames.push_back(mo->getName());
-    } else if (!mMustIncrease && previousNumberEntries != currentNumberEntries) {
-      result = Quality::Bad;
-      result.addReason(FlagReasonFactory::Unknown(), "Number of entries has increased.");
-      mFaultyObjectsNames.push_back(mo->getName());
+    if (mMustIncrease && previousNumberEntries == currentNumberEntries ||
+        !mMustIncrease && previousNumberEntries != currentNumberEntries) {
+      faultCount++;
+    } else {
+      faultCount = 0;
     }
 
+    if(faultCount >= mBadCyclesLimit) {
+      result = Quality::Bad;
+      mFaultyObjectsNames.push_back(mo->getName());
+      if(mMustIncrease) {
+        result.addReason(FlagReasonFactory::NoDetectorData(), "Number of entries stopped increasing.");
+      } else {
+        result.addReason(FlagReasonFactory::Unknown(), "Number of entries has increased.");
+      }
+    }
+
+    mMoFaultCount[moName] = faultCount;
     mLastEntries[moName] = currentNumberEntries;
   }
   return result;
