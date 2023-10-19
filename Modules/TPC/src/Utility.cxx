@@ -108,6 +108,7 @@ std::unique_ptr<o2::tpc::internal::getWorkflowTPCInput_ret> clusterHandler(o2::f
   }
 
   unsigned long recvMask = 0;
+  bool hasData = false;
   for (auto const& ref : o2::framework::InputRecordWalker(inputs, filter)) {
     auto const* sectorHeader = o2::framework::DataRefUtils::getHeader<o2::tpc::TPCSectorHeader*>(ref);
     if (sectorHeader == nullptr) {
@@ -122,8 +123,9 @@ std::unique_ptr<o2::tpc::internal::getWorkflowTPCInput_ret> clusterHandler(o2::f
     }
     recvMask |= (sectorHeader->sectorBits & tpcSectorMask);
     retVal->internal.inputrefs[sector].data = ref;
+    hasData = true;
   }
-  if (recvMask != tpcSectorMask) {
+  if (hasData && (recvMask != tpcSectorMask)) {
     throw std::runtime_error("Incomplete set of clusters/digits received");
   }
 
