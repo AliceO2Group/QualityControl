@@ -41,13 +41,35 @@ void ITSTPCMatchingTask::initialize(o2::framework::InitContext& /*ctx*/)
       mMatchITSTPCQC.setUseMC(true);
     }
   }
-  if (auto param = mCustomParameters.find("minPtCut"); param != mCustomParameters.end()) {
-    ILOG(Debug, Devel) << "Custom parameter - minPtCut (for track selection): " << param->second << ENDM;
-    mMatchITSTPCQC.setPtCut(atof(param->second.c_str()));
+
+  ///////////////////////////////   Track selections for MatchITSTPCQC   ////////////////////////////////
+  // ITS track
+  if (auto param = mCustomParameters.find("minPtITSCut"); param != mCustomParameters.end()) {
+    ILOG(Debug, Devel) << "Custom parameter - minPtITSCut (for track selection): " << param->second << ENDM;
+    mMatchITSTPCQC.setMinPtITSCut(atof(param->second.c_str()));
   }
-  if (auto param = mCustomParameters.find("EtaCut"); param != mCustomParameters.end()) {
-    ILOG(Debug, Devel) << "Custom parameter - EtaCut (for track selection): " << param->second << ENDM;
-    mMatchITSTPCQC.setEtaCut(atof(param->second.c_str()));
+  if (auto param = mCustomParameters.find("etaITSCut"); param != mCustomParameters.end()) {
+    ILOG(Debug, Devel) << "Custom parameter - etaITSCut (for track selection): " << param->second << ENDM;
+    mMatchITSTPCQC.setEtaITSCut(atof(param->second.c_str()));
+  }
+  if (auto param = mCustomParameters.find("minNITSClustersCut"); param != mCustomParameters.end()) {
+    ILOG(Debug, Devel) << "Custom parameter - minNITSClustersCut (for track selection): " << param->second << ENDM;
+    mMatchITSTPCQC.setMinNClustersITS(atoi(param->second.c_str()));
+  }
+  if (auto param = mCustomParameters.find("maxChi2PerClusterITS"); param != mCustomParameters.end()) {
+    ILOG(Debug, Devel) << "Custom parameter - maxChi2PerClusterITS (for track selection): " << param->second << ENDM;
+    mMatchITSTPCQC.setMaxChi2PerClusterITS(atoi(param->second.c_str()));
+  }
+  // TO DO: define an agreed way to implement the setter for ITS matching (min. # layers, which layers)
+  // [...] --> exploit the method TrackCuts::setRequireHitsInITSLayers(...)
+  // TPC track
+  if (auto param = mCustomParameters.find("minPtTPCCut"); param != mCustomParameters.end()) {
+    ILOG(Debug, Devel) << "Custom parameter - minPtTPCCut (for track selection): " << param->second << ENDM;
+    mMatchITSTPCQC.setMinPtTPCCut(atof(param->second.c_str()));
+  }
+  if (auto param = mCustomParameters.find("etaTPCCut"); param != mCustomParameters.end()) {
+    ILOG(Debug, Devel) << "Custom parameter - etaTPCCut (for track selection): " << param->second << ENDM;
+    mMatchITSTPCQC.setEtaTPCCut(atof(param->second.c_str()));
   }
   if (auto param = mCustomParameters.find("minNTPCClustersCut"); param != mCustomParameters.end()) {
     ILOG(Debug, Devel) << "Custom parameter - minNTPCClustersCut (for track selection): " << param->second << ENDM;
@@ -60,6 +82,19 @@ void ITSTPCMatchingTask::initialize(o2::framework::InitContext& /*ctx*/)
   if (auto param = mCustomParameters.find("minDCACutY"); param != mCustomParameters.end()) {
     ILOG(Debug, Devel) << "Custom parameter - minDCACutY (for track selection): " << param->second << ENDM;
     mMatchITSTPCQC.setMinDCAtoBeamPipeYCut(atof(param->second.c_str()));
+  }
+  // ITS-TPC kinematics
+  if (auto param = mCustomParameters.find("minPtCut"); param != mCustomParameters.end()) {
+    ILOG(Debug, Devel) << "Custom parameter - minPtCut (for track selection): " << param->second << ENDM;
+    mMatchITSTPCQC.setPtCut(atof(param->second.c_str()));
+  }
+  if (auto param = mCustomParameters.find("maxPtCut"); param != mCustomParameters.end()) {
+    ILOG(Debug, Devel) << "Custom parameter - maxPtCut (for track selection): " << param->second << ENDM;
+    mMatchITSTPCQC.setMaxPtCut(atof(param->second.c_str()));
+  }
+  if (auto param = mCustomParameters.find("etaCut"); param != mCustomParameters.end()) {
+    ILOG(Debug, Devel) << "Custom parameter - EtaCut (for track selection): " << param->second << ENDM;
+    mMatchITSTPCQC.setEtaCut(atof(param->second.c_str()));
   }
 
   mMatchITSTPCQC.initDataRequest();
