@@ -12,6 +12,7 @@
 ///
 /// \file   RawDataQcTask.cxx
 /// \author Marek Bombara
+/// \author Lucia Anna Tarasovicova
 ///
 
 #include <TCanvas.h>
@@ -23,8 +24,11 @@
 #include "Headers/RAWDataHeader.h"
 #include "DPLUtils/DPLRawParser.h"
 #include "DataFormatsCTP/Digits.h"
+#include "DataFormatsCTP/Configuration.h"
+#include "DataFormatsCTP/RunManager.h"
 #include <Framework/InputRecord.h>
 #include <Framework/InputRecordWalker.h>
+#include "Framework/TimingInfo.h"
 
 namespace o2::quality_control_modules::ctp
 {
@@ -70,16 +74,23 @@ void CTPRawDataReaderTask::monitorData(o2::framework::ProcessingContext& ctx)
   std::vector<o2::framework::InputSpec> filter;
   std::vector<o2::ctp::LumiInfo> lumiPointsHBF1;
   std::vector<o2::ctp::CTPDigit> outputDigits;
-  mDecoder.decodeRaw(ctx.inputs(), filter, outputDigits, lumiPointsHBF1);
+
+  o2::framework::InputRecord& inputs = ctx.inputs();
+  mDecoder.decodeRaw(inputs, filter, outputDigits, lumiPointsHBF1);
+
+  std::string nameInput = "MTVX";
+  auto indexTvx = o2::ctp::CTPInputsConfiguration::getInputIndexFromName(nameInput);
 
   for (auto const digit : outputDigits) {
     uint16_t bcid = digit.intRecord.bc;
     // LOG(info) << "bcid = " << bcid;
-    mHistoBC->Fill(bcid);
+    if (digit.CTPInputMask[indexTvx - 1]) {
+      mHistoBC->Fill(bcid);
+    }
     if (digit.CTPInputMask.count()) {
       for (int i = 0; i < o2::ctp::CTP_NINPUTS; i++) {
         if (digit.CTPInputMask[i]) {
-          // LOG(info) << "i of input = " << i;
+          // LOG(info) << "i of input = " << i;#
           mHistoInputs->Fill(i);
         }
       }
