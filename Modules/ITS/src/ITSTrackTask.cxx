@@ -56,6 +56,14 @@ ITSTrackTask::~ITSTrackTask() // make_shared objects will be delete automaticall
   delete hAssociatedClusterFraction;
   delete hNtracks;
   delete hNtracksReset;
+
+  for (int i = 0; i < 4; i++) {
+    delete hTrackLengthVsEta[i];
+    delete hTrackLengthVsPhi[i];
+    delete hTrackLengthVsPt[i];
+  }
+  delete hTrackPtVsEta;
+  delete hTrackPtVsPhi;
 }
 
 void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -221,6 +229,11 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
       vMap.emplace_back(track.getPattern());
       vEta.emplace_back(Eta);
       vPhi.emplace_back(out.getPhi());
+      hTrackLengthVsEta[7 - track.getNumberOfClusters()]->Fill(Eta);
+      hTrackLengthVsPhi[7 - track.getNumberOfClusters()]->Fill(out.getPhi());
+      hTrackLengthVsPt[7 - track.getNumberOfClusters()]->Fill(out.getPt());
+      hTrackPtVsEta->Fill(out.getPt(), Eta);
+      hTrackPtVsPhi->Fill(out.getPt(), out.getPhi());
 
       hNClustersPerTrackEta->getNum()->Fill(Eta, track.getNumberOfClusters());
       hNClustersPerTrackPhi->getNum()->Fill(out.getPhi(), track.getNumberOfClusters());
@@ -444,6 +457,14 @@ void ITSTrackTask::reset()
   hInvMassK0s->Reset();
   hInvMassLambda->Reset();
   hInvMassLambdaBar->Reset();
+
+  for (int i = 0; i < 4; i++) {
+    hTrackLengthVsEta[i]->Reset();
+    hTrackLengthVsPhi[i]->Reset();
+    hTrackLengthVsPt[i]->Reset();
+  }
+  hTrackPtVsEta->Reset();
+  hTrackPtVsPhi->Reset();
 }
 
 void ITSTrackTask::createAllHistos()
@@ -659,6 +680,33 @@ void ITSTrackTask::createAllHistos()
   addObject(hInvMassLambdaBar);
   formatAxes(hInvMassLambdaBar, "m_{inv} (Gev/c)", "Counts", 1, 1.10);
   hInvMassLambdaBar->SetStats(0);
+
+  for (int i = 0; i < 4; i++) {
+    hTrackLengthVsEta[i] = new TH1D(Form("hTrackLengthVsEta_%dclus", 4 + i), Form("Eta Distribution for Tracks with %d clusters", 4 + i), 40, -2.0, 2.0);
+    addObject(hTrackLengthVsEta[i]);
+    formatAxes(hTrackLengthVsEta[i], "#eta", "Counts", 1, 1.10);
+    hTrackLengthVsEta[i]->SetStats(0);
+
+    hTrackLengthVsPhi[i] = new TH1D(Form("hTrackLengthVsPhi_%dclus", 4 + i), Form("Phi Distribution for Tracks with %d clusters", 4 + i), 65, 0, TMath::TwoPi());
+    addObject(hTrackLengthVsPhi[i]);
+    formatAxes(hTrackLengthVsPhi[i], "#phi", "Counts", 1, 1.10);
+    hTrackLengthVsPhi[i]->SetStats(0);
+
+    hTrackLengthVsPt[i] = new TH1D(Form("hTrackLengthVsPt_%dclus", 4 + i), Form("#it{p}_{T} Distribution for Tracks with %d clusters", 4 + i), 200, 0, 100);
+    addObject(hTrackLengthVsPt[i]);
+    formatAxes(hTrackLengthVsPt[i], "#it{p}_{T} (GeV/#it{c})", "t{p}_{T} (GeV/#it{c})Counts", 1, 1.10);
+    hTrackLengthVsPt[i]->SetStats(0);
+  }
+
+  hTrackPtVsEta = new TH2D("hTrackPtVsEta", "Track #it{p}_{T} Vs #eta", 200, 0, 100, 40, -2.0, 2.0);
+  addObject(hTrackPtVsEta);
+  formatAxes(hTrackPtVsEta, "#it{p}_{T} (GeV/#it{c})", "#eta", 1, 1.10);
+  hTrackPtVsEta->SetStats(0);
+
+  hTrackPtVsPhi = new TH2D("hTrackPtVsPhi", "Track #it{p}_{T} Vs #phi", 200, 0, 100, 65, 0, TMath::TwoPi());
+  addObject(hTrackPtVsPhi);
+  formatAxes(hTrackPtVsPhi, "#it{p}_{T} (GeV/#it{c})", "#phi", 1, 1.10);
+  hTrackPtVsPhi->SetStats(0);
 }
 
 void ITSTrackTask::addObject(TObject* aObject)

@@ -98,7 +98,11 @@ class ITSTrackTask : public TaskInterface
   TH1D* hInvMassK0s;
   TH1D* hInvMassLambda;
   TH1D* hInvMassLambdaBar;
-
+  TH1D* hTrackLengthVsPt[4];
+  TH1D* hTrackLengthVsPhi[4];
+  TH1D* hTrackLengthVsEta[4];
+  TH2D* hTrackPtVsEta;
+  TH2D* hTrackPtVsPhi;
   float mPiInvMass = 0.14;
   float mProtonInvMass = 0.938;
   Int_t mInvMasses = 0; // switch for the V0 invariant mass computation, 1 (default) - on, 0 - off
