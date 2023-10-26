@@ -690,6 +690,7 @@ void ITSTrackTask::createAllHistos()
     hTrackLengthVsPhi[i] = new TH1D(Form("hTrackLengthVsPhi_%dclus", 4 + i), Form("Phi Distribution for Tracks with %d clusters", 4 + i), 65, 0, TMath::TwoPi());
     addObject(hTrackLengthVsPhi[i]);
     formatAxes(hTrackLengthVsPhi[i], "#phi", "Counts", 1, 1.10);
+    hTrackLengthVsPhi[i]->SetMinimum(0);
     hTrackLengthVsPhi[i]->SetStats(0);
 
     hTrackLengthVsPt[i] = new TH1D(Form("hTrackLengthVsPt_%dclus", 4 + i), Form("#it{p}_{T} Distribution for Tracks with %d clusters", 4 + i), 200, 0, 100);
