@@ -70,8 +70,8 @@ Quality IncreasingEntries::check(std::map<std::string, std::shared_ptr<MonitorOb
     const double currentNumberEntries = histo->GetEntries();
     size_t faultCount = mMoFaultCount.count(moName) > 0 ? mMoFaultCount.at(moName) : 0;
 
-    if (mMustIncrease && previousNumberEntries == currentNumberEntries ||
-        !mMustIncrease && previousNumberEntries != currentNumberEntries) {
+    if (mMustIncrease == (previousNumberEntries == currentNumberEntries)) {
+) {
       faultCount++;
     } else {
       faultCount = 0;
