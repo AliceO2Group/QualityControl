@@ -71,7 +71,6 @@ Quality IncreasingEntries::check(std::map<std::string, std::shared_ptr<MonitorOb
     size_t faultCount = mMoFaultCount.count(moName) > 0 ? mMoFaultCount.at(moName) : 0;
 
     if (mMustIncrease == (previousNumberEntries == currentNumberEntries)) {
-) {
       faultCount++;
     } else {
       faultCount = 0;
