@@ -38,9 +38,9 @@ void IncreasingEntries::configure()
   mMustIncrease = option.has_value() ? decodeBool(option.value()) : true;
   ILOG(Debug, Support) << "mustIncrease: " << mMustIncrease << ENDM;
 
-  option = mCustomParameters.atOptional("nbBadCyclesLimit");
+  option = mCustomParameters.atOptional("nBadCyclesLimit");
   mBadCyclesLimit = option.has_value() ? stoi(option.value()) : 1;
-  ILOG(Debug, Support) << "nbBadCyclesLimit: " << mBadCyclesLimit << ENDM;
+  ILOG(Debug, Support) << "nBadCyclesLimit: " << mBadCyclesLimit << ENDM;
 
   mPaveText = make_shared<TPaveText>(1, 0.125, 0.6, 0, "NDC");
   mPaveText->SetFillColor(kRed);
