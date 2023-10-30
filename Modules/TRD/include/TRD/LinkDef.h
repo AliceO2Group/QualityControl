@@ -17,5 +17,5 @@
 #pragma link C++ class o2::quality_control_modules::trd::TrackingTask + ;
 #pragma link C++ class o2::quality_control_modules::trd::PulsePositionCheck + ;
 #pragma link C++ class o2::quality_control_modules::trd::TRDReductor + ;
-#pragma link C++ class o2::quality_control_modules::trd::TrackletPerTriggerCheck + ;
+#pragma link C++ class o2::quality_control_modules::trd::TrackletCountCheck + ;
 #endif

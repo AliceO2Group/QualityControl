@@ -10,39 +10,43 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   TrackletPerTriggerCheck.h
-/// \author Deependra Sharma
+/// \file   TrackletCountCheck.h
+/// \author Deependra Sharma @IITB
 ///
 
-#ifndef QC_MODULE_TRD_TRDTRACKLETPERTRIGGERCHECK_H
-#define QC_MODULE_TRD_TRDTRACKLETPERTRIGGERCHECK_H
+#ifndef QC_MODULE_TRD_TRDTRACKLETCOUNTCHECK_H
+#define QC_MODULE_TRD_TRDTRACKLETCOUNTCHECK_H
 
+#include <TPaveText.h>
 #include "QualityControl/CheckInterface.h"
 
 namespace o2::quality_control_modules::trd
 {
-
-/// \brief  QC Check on TrackletPerTriggerCheck
-/// \author Deependra Sharma
-class TrackletPerTriggerCheck : public o2::quality_control::checker::CheckInterface
+class TrackletCountCheck : public o2::quality_control::checker::CheckInterface
 {
  public:
   /// Default constructor
-  TrackletPerTriggerCheck() = default;
+  TrackletCountCheck() = default;
   /// Destructor
-  ~TrackletPerTriggerCheck() override = default;
+  ~TrackletCountCheck() override = default;
 
   // Override interface
   void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
-  float mThresholdMeanLow, mThresholdMeanHigh;
-  int mStatThreshold;
+  float mThresholdMeanLowPerTrigger, mThresholdMeanHighPerTrigger, mThresholdMeanLowPerTimeFrame, mThresholdMeanHighPerTimeFrame;
+  int mStatThresholdPerTrigger;
+  Quality mResultPertrigger;
+  Quality mResultPerTimeFrame;
+  Quality mFinalResult;
 
-  ClassDefOverride(TrackletPerTriggerCheck, 2);
+  std::shared_ptr<TPaveText> msg1;
+  std::shared_ptr<TPaveText> msg2;
+
+  ClassDefOverride(TrackletCountCheck, 2);
 };
 
 } // namespace o2::quality_control_modules::trd
 
-#endif // QC_MODULE_TRD_TRDTRACKLETPERTRIGGERCHECK_H
+#endif // QC_MODULE_TRD_TRDTRACKLETCOUNTCHECK_H
