@@ -1486,12 +1486,12 @@ The behaviour of the check can be inverted by setting the customparameter "mustI
         }
 ```
 
-The number of cycles during which we tolerate increasing (or not respectively) the number of entries can be set with the custom parameter `nbBadCyclesLimit`:
+The number of cycles during which we tolerate increasing (or not respectively) the number of entries can be set with the custom parameter `nBadCyclesLimit`:
 ```
         "extendedCheckParameters": {
           "default": {
             "default": {
-              "nbBadCyclesLimit": "3",
+              "nBadCyclesLimit": "3",
             }
           }
         }
