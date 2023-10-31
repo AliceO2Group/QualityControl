@@ -1,6 +1,6 @@
 Rules:
   - object_path: qc/ITS/.*
-    delay: 240
+    delay: 1440
     policy: 1_per_run
     delete_when_no_run: True
   - object_path: qc/TST_KEEP/.*
