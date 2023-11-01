@@ -100,7 +100,7 @@ bool ServiceDiscovery::_register(const std::string& objects)
   // Wait until port is set by the thread
   {
     std::unique_lock<std::mutex> lk(mHealthPortMutex);
-    mHealthPortCV.wait(lk, [this]{return mHealthPortAssigned == true;});
+    mHealthPortCV.wait(lk, [this] { return mHealthPortAssigned == true; });
   }
   check.put("TCP", mHealthUrl + ":" + std::to_string(mHealthPort));
   checks.push_back(std::make_pair("", check));
