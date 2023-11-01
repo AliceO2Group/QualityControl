@@ -11,6 +11,7 @@ from qcrepocleaner import policies_utils
 
 logger = logging  # default logger
 
+
 def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_timestamp: int,
             extra_params: Dict[str, str]):
     '''
@@ -110,8 +111,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
                     preservation_list.extend(run_versions)
                     continue
                 # flag second with `cleaner_2nd`
-                ccdb.updateValidity(run_versions[1], run_versions[1].validFrom, run_versions[1].validTo,
-                                    {'cleaner_2nd': 'true'})
+                ccdb.updateMetadata(run_versions[1], {'cleaner_2nd': 'true'})
                 # delete first and last versions in the bucket
                 logger.debug(f"        delete the first and last versions")
                 deletion_list.append(run_versions[-1])
@@ -132,7 +132,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
                     logger.debug(f" --> preserve")
                     last_preserved = v
                     if migrate_to_EOS:
-                        ccdb.updateValidity(v, v.validFrom, v.validTo, metadata_for_preservation)
+                        ccdb.updateMetadata(v, metadata_for_preservation)
                     preservation_list.append(last_preserved)
                 else:  # in between period --> delete
                     logger.debug(f" --> delete")
