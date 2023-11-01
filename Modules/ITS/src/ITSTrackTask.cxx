@@ -572,7 +572,7 @@ void ITSTrackTask::createAllHistos()
   formatAxes(hNClustersPerTrackPhi.get(), "#phi", "# of Clusters per Track", 1, 1.10);
   hNClustersPerTrackPhi->SetStats(0);
 
-  hNClustersPerTrackPt = std::make_unique<TH2DRatio>("NClustersPerTrackPt", "NClustersPerTrackPt", 100, 0, 100, 15, -0.5, 14.5, true);
+  hNClustersPerTrackPt = std::make_unique<TH2DRatio>("NClustersPerTrackPt", "NClustersPerTrackPt", 150, 0, 15, 15, -0.5, 14.5, true);
   if (mDoNorm) {
     hNClustersPerTrackPt->SetBit(TH1::kIsAverage);
   }
@@ -681,12 +681,12 @@ void ITSTrackTask::createAllHistos()
   formatAxes(hInvMassLambdaBar, "m_{inv} (Gev/c)", "Counts", 1, 1.10);
   hInvMassLambdaBar->SetStats(0);
 
-  hTrackPtVsEta = new TH2D("hTrackPtVsEta", "Track #it{p}_{T} Vs #eta", 200, 0, 100, 40, -2.0, 2.0);
+  hTrackPtVsEta = new TH2D("hTrackPtVsEta", "Track #it{p}_{T} Vs #eta", 150, 0, 15, 40, -2.0, 2.0);
   addObject(hTrackPtVsEta);
   formatAxes(hTrackPtVsEta, "#it{p}_{T} (GeV/#it{c})", "#eta", 1, 1.10);
   hTrackPtVsEta->SetStats(0);
 
-  hTrackPtVsPhi = new TH2D("hTrackPtVsPhi", "Track #it{p}_{T} Vs #phi", 200, 0, 100, 65, 0, TMath::TwoPi());
+  hTrackPtVsPhi = new TH2D("hTrackPtVsPhi", "Track #it{p}_{T} Vs #phi", 150, 0, 15, 65, 0, TMath::TwoPi());
   addObject(hTrackPtVsPhi);
   formatAxes(hTrackPtVsPhi, "#it{p}_{T} (GeV/#it{c})", "#phi", 1, 1.10);
   hTrackPtVsPhi->SetStats(0);
