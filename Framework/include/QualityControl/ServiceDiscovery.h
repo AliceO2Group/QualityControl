@@ -65,6 +65,9 @@ class ServiceDiscovery
   const std::string mId;            ///< Instance (service) ID
   std::string mHealthUrl;           ///< hostname of health check endpoint
   size_t mHealthPort;               ///< Port of the health check endpoint
+  std::mutex mHealthPortMutex;      ///< Mutex for the port
+  std::condition_variable mHealthPortCV; ///< Condition varaible for the port
+  std::atomic<bool> mHealthPortAssigned; ///< Port of the health check is ready.
   std::thread mHealthThread;        ///< Health check thread
   std::atomic<bool> mThreadRunning; ///< Health check thread running flag
 
