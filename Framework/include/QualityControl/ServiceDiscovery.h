@@ -20,6 +20,7 @@
 #include <memory>
 #include <string>
 #include <thread>
+#include <mutex>
 
 typedef void CURL;
 
