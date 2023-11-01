@@ -24,7 +24,7 @@ namespace o2::quality_control_modules::common
 {
 
 /// \brief  Check if the number of Entries has increased or not
-/// If it does not increase, the quality is bad.
+/// If it does not increase over the past N cycles (N=1 by default), the quality is bad.
 /// The behaviour can be modified with the customParameter "mustIncrease". If set to "false",
 /// it will actually have a bad quality if the number of entries increases.
 class IncreasingEntries : public o2::quality_control::checker::CheckInterface
@@ -42,13 +42,23 @@ class IncreasingEntries : public o2::quality_control::checker::CheckInterface
   std::string getAcceptedType() override;
 
  private:
-  std::map<std::string, double> mLastEntries;
+  std::map<std::string, double> mLastEntries; // moName -> number of entries
+
+  // count the number of faults we have seen in a row for each object
+  std::map<std::string, size_t> mMoFaultCount; // moName -> number of faults in a row
+
+  // the pave text with the error message
   std::shared_ptr<TPaveText> mPaveText;
-  bool mMustIncrease = true;
+
   // store the faults to beautify them later
   std::vector<std::string> mFaultyObjectsNames;
 
-  ClassDefOverride(IncreasingEntries, 2);
+  // decides whether the number of entries must increase or it must remain the same
+  bool mMustIncrease = true;
+  // The number of cycles during which the number of entries did not move until we set the quality bad.
+  int mBadCyclesLimit = 1;
+
+  ClassDefOverride(IncreasingEntries, 3);
 };
 
 } // namespace o2::quality_control_modules::common

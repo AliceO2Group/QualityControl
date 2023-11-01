@@ -1478,7 +1478,7 @@ One can also enable publishing metrics related to CPU/memory usage. To do so, us
 
 ## Common check `IncreasingEntries`
 
-This check make sures that the number of entries has increased in the past cycle. If not it will display a pavetext 
+This check make sures that the number of entries has increased in the past cycle(s). If not, it will display a pavetext 
 on the plot and set the quality to bad. 
 
 If you use `SetBinContent` the number of entries does not increase creating a false positive. Please call `ResetStats()`
@@ -1490,6 +1490,18 @@ The behaviour of the check can be inverted by setting the customparameter "mustI
           "mustIncrease": "false"
         }
 ```
+
+The number of cycles during which we tolerate increasing (or not respectively) the number of entries can be set with the custom parameter `nBadCyclesLimit`:
+```
+        "extendedCheckParameters": {
+          "default": {
+            "default": {
+              "nBadCyclesLimit": "3",
+            }
+          }
+        }
+```
+In the example above, the quality goes to bad when there are 3 cycles in a row with no increase in the number of entries. 
 
 ## Update the shmem segment size of a detector
 
