@@ -76,10 +76,10 @@ Quality IncreasingEntries::check(std::map<std::string, std::shared_ptr<MonitorOb
       faultCount = 0;
     }
 
-    if(faultCount >= mBadCyclesLimit) {
+    if (faultCount >= mBadCyclesLimit) {
       result = Quality::Bad;
       mFaultyObjectsNames.push_back(mo->getName());
-      if(mMustIncrease) {
+      if (mMustIncrease) {
         result.addReason(FlagReasonFactory::NoDetectorData(), "Number of entries stopped increasing.");
       } else {
         result.addReason(FlagReasonFactory::Unknown(), "Number of entries has increased.");
