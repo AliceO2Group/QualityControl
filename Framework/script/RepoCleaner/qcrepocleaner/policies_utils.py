@@ -24,6 +24,7 @@ def get_run(v: ObjectVersion) -> str:
 def group_versions(ccdb, object_path, period_pass, versions_buckets_dict: DefaultDict[str, List[ObjectVersion]]):
     # Find all the runs and group the versions (by run or by a combination of multiple attributes)
     versions = ccdb.getVersionsList(object_path)
+    logger.debug(f"group_versions: found {len(versions)} versions")
     for v in versions:
         logger.debug(f"Assigning {v} to a bucket")
         run = get_run(v)

@@ -200,7 +200,24 @@ class Ccdb:
         except requests.exceptions.RequestException as e:  
             logging.error(f"Exception in updateValidity: {traceback.format_exc()}")
 
+    @dryable.Dryable()
+    def updateMetadata(self, version: ObjectVersion, metadata):
+        logger.debug(f"update metadata : {metadata}")
+        full_path = self.url + '/' + version.path + '/' + str(version.validFrom) + '/' + str(version.uuid) + '?'
+        if metadata is not None:
+            for key in metadata:
+                full_path += key + "=" + metadata[key] + "&"
+        if self.set_adjustable_eov:
+            logger.debug(f"As the parameter force is set, we add metadata adjustableEOV")
+            full_path += "adjustableEOV=1&"
+        try:
+            headers = {'Connection': 'close'}
+            r = requests.put(full_path, headers=headers)
+            r.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            logging.error(f"Exception in updateMetadata: {traceback.format_exc()}")
 
+    @dryable.Dryable()
     def putVersion(self, version: ObjectVersion, data):
         '''
         :param version: An ObjectVersion that describes the data to be uploaded.

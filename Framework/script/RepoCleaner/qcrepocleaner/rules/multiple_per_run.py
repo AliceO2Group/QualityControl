@@ -11,6 +11,7 @@ from qcrepocleaner import policies_utils
 
 logger = logging  # default logger
 
+
 def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_timestamp: int,
             extra_params: Dict[str, str]):
     '''
@@ -24,12 +25,22 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
       - migrate_to_EOS: Migrate the object to EOS. (default: false)
       - interval_between_versions: Period in minutes between the versions we will keep. (default: 90)
       - period_pass: Keep 1 version for a combination of run+pass+period if true. (default: false)
+      - delete_first_last: delete the first and last of the run[+pass+period] before actually applying the rule.
 
     It is implemented like this :
         Map of buckets: run[+pass+period] -> list of versions
         Go through all objects: Add the object to the corresponding key (run[+pass+period])
+        Sort the versions in the bucket
         Remove the empty run from the map (we ignore objects without a run)
         Go through the map: for each run (resp. run+pass+period)
+
+            if delete_first_last
+                Get flag cleaner_2nd from first object (if there)
+                if cleaner_2nd
+                    continue   # we do not want to reprocess the same run twice
+                flag second with `cleaner_2nd`
+                delete first and last versions in the bucket
+
             Get SOR (validity of first object)
             if SOR < now - delay
                 do
@@ -62,6 +73,8 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
     logger.debug(f"interval_between_versions : {interval_between_versions}")
     migrate_to_EOS = (extra_params.get("migrate_to_EOS", False) is True)
     logger.debug(f"migrate_to_EOS : {migrate_to_EOS}")
+    delete_first_last = (extra_params.get("delete_first_last", False) is True)
+    logger.debug(f"delete_first_last : {delete_first_last}")
 
     # Find all the runs and group the versions (by run or by a combination of multiple attributes)
     policies_utils.group_versions(ccdb, object_path, period_pass, versions_buckets_dict)
@@ -85,7 +98,28 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
             logger.debug(f"     not in the allowed period, skip this bucket")
             preservation_list.extend(run_versions)
         else:
-            logger.debug(f"     not in the grace period")
+            logger.debug(f"    not in the grace period")
+
+            if delete_first_last:
+                logger.debug(f"    delete_first_last is set")
+                run_versions.sort(key=lambda x: x.createdAt)
+                # Get flag cleaner_2nd from first object (if there)
+                cleaner_2nd = "cleaner_2nd" in run_versions[0].metadata
+                if cleaner_2nd or len(run_versions) < 4:
+                    logger.debug(f"        first version has flag cleaner_2nd or there are less than 4 version, "
+                                 f"we continue to next bucket")
+                    preservation_list.extend(run_versions)
+                    continue
+                # flag second with `cleaner_2nd`
+                ccdb.updateMetadata(run_versions[1], {'cleaner_2nd': 'true'})
+                # delete first and last versions in the bucket
+                logger.debug(f"        delete the first and last versions")
+                deletion_list.append(run_versions[-1])
+                ccdb.deleteVersion(run_versions[-1])
+                del run_versions[-1]
+                deletion_list.append(run_versions[0])
+                ccdb.deleteVersion(run_versions[0])
+                del run_versions[0]
 
             last_preserved: ObjectVersion = None
             for v in run_versions:
@@ -98,7 +132,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
                     logger.debug(f" --> preserve")
                     last_preserved = v
                     if migrate_to_EOS:
-                        ccdb.updateValidity(v, v.validFrom, v.validTo, metadata_for_preservation)
+                        ccdb.updateMetadata(v, metadata_for_preservation)
                     preservation_list.append(last_preserved)
                 else:  # in between period --> delete
                     logger.debug(f" --> delete")
