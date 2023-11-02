@@ -87,6 +87,7 @@ class ITSTrackTask : public TaskInterface
   TH1D* hNtracksReset;
   std::unique_ptr<TH2DRatio> hNClustersPerTrackEta;
   std::unique_ptr<TH2DRatio> hNClustersPerTrackPhi;
+  std::unique_ptr<TH2DRatio> hNClustersPerTrackPt;
   std::unique_ptr<TH2DRatio> hHitFirstLayerPhiAll;
   std::unique_ptr<TH2DRatio> hHitFirstLayerPhi4cls;
   std::unique_ptr<TH2DRatio> hHitFirstLayerPhi5cls;
@@ -98,7 +99,8 @@ class ITSTrackTask : public TaskInterface
   TH1D* hInvMassK0s;
   TH1D* hInvMassLambda;
   TH1D* hInvMassLambdaBar;
-
+  TH2D* hTrackPtVsEta;
+  TH2D* hTrackPtVsPhi;
   float mPiInvMass = 0.14;
   float mProtonInvMass = 0.938;
   Int_t mInvMasses = 0; // switch for the V0 invariant mass computation, 1 (default) - on, 0 - off
