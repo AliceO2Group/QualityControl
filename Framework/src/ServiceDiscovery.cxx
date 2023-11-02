@@ -38,6 +38,7 @@ ServiceDiscovery::ServiceDiscovery(const std::string& url, const std::string& na
   : curlHandle(initCurl(), &ServiceDiscovery::deleteCurl), mConsulUrl(url), mName(name), mId(id), mHealthUrl(healthEndUrl)
 {
   mHealthUrl = mHealthUrl.empty() ? boost::asio::ip::host_name() : mHealthUrl;
+  mHealthPortAssigned = false;
 
   mHealthThread = std::thread([=] {
 #ifdef __linux__
@@ -96,6 +97,11 @@ bool ServiceDiscovery::_register(const std::string& objects)
   check.put("Name", "Health check " + mId);
   check.put("Interval", "5s");
   check.put("DeregisterCriticalServiceAfter", "1m");
+  // Wait until port is set by the thread
+  {
+    std::unique_lock<std::mutex> lk(mHealthPortMutex);
+    mHealthPortCV.wait(lk, [this] { return mHealthPortAssigned == true; });
+  }
   check.put("TCP", mHealthUrl + ":" + std::to_string(mHealthPort));
   checks.push_back(std::make_pair("", check));
 
@@ -151,11 +157,17 @@ void ServiceDiscovery::runHealthServer()
       ILOG(Debug, Trace) << "ServiceDiscovery::runHealthServer - cound not bind to " << port << ENDM;
       continue; // try the next one
     }
-    // if we reach this point it means that we could bind
-    mHealthPort = port;
-    ILOG(Debug, Devel) << "ServiceDiscovery selected port: " << mHealthPort << ENDM;
     break;
   }
+
+  // assign the port and unblock the main thread (we got a port or we failed)
+  {
+    ILOG(Debug, Devel) << "ServiceDiscovery selected port: " << mHealthPort << ENDM;
+    std::lock_guard<std::mutex> lk(mHealthPortMutex);
+    mHealthPort = port;
+    mHealthPortAssigned = true;
+  }
+  mHealthPortCV.notify_one();
 
   if (cycle == rangeLength) {
     ILOG(Error, Support) << "Could not find a free port for the ServiceDiscovery, aborting the ServiceDiscovery health check" << ENDM;
