@@ -437,7 +437,8 @@ To request these objects in a Check, use `TaskMovingWindow` data source, as in t
 ```
 It is possible to request both the integrated and single cycle plots by the same Check.
 
-To test it in a small setup, one can run `o2-qc` with `--full-chain` flag, which creates a complete workflow with a Merger for local QC tasks, even though it runs just one instance of them.
+To test it in a small setup, one can run `o2-qc` with `--full-chain` flag, which creates a complete workflow with a Merger for **local** QC tasks, even though it runs just one instance of them.
+Please remember to use `"location" : "local"` in such case.
 
 In asynchronous QC, the moving window plots will appear in the intermediate QC file in the directory `mw` and will be uploaded to QCDB to `<task_name>/mw`.
 When testing, please make sure to let DPL know that it has to run in Grid mode, so that QC can compute object validity based on timestamps in the data:
