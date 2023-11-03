@@ -49,9 +49,11 @@
                              "type" :
                              "repository",
                              "paths" : [
+                                 "ITS/MO/ITSDECODING/General",
                                  "ITS/MO/ITSDECODING/General"],
                              "names" : [
-                                 "LinkErrorPlots"],
+                                 "LinkErrorPlots",
+                                 "ChipErrorPlots"],
                              "reductorName" :
                              "o2::quality_control_modules::its::ReductorBinContent",
                              "moduleName" :
@@ -344,11 +346,196 @@
                                        "",
                                        "option" :
                                        "PL"
+                                     },{
+                                       "names" : ["# Chip Error ID 0"],
+                                       "title" : ["Number of chip errors with ID = 0"],
+                                       "varexp" : ["ChipErrorPlots.binContent[0]"],
+                                       "selection" : "Time",
+                                       "option" :"PL"
+                                     },{
+                                       "names" : ["# Chip Error ID 1"],
+                                       "title" : ["Number of chip errors with ID = 1"],
+                                       "varexp" : ["ChipErrorPlots.binContent[1]"],
+                                       "selection" : "Time",
+                                       "option" :"PL"
+                                     },{
+                                       "names" : ["# Chip Error ID 2"],
+                                       "title" : ["Number of chip errors with ID = 2"],
+                                       "varexp" : ["ChipErrorPlots.binContent[2]"],
+                                       "selection" : "Time",
+                                       "option" :"PL"
+                                     },{
+                                       "names" : ["# Chip Error ID 3"],
+                                       "title" : ["Number of chip errors with ID = 3"],
+                                       "varexp" : ["ChipErrorPlots.binContent[3]"],
+                                       "selection" : "Time",
+                                       "option" :"PL"
+                                     },{
+                                       "names" : ["# Chip Error ID 4"],
+                                       "title" : ["Number of chip errors with ID = 4"],
+                                       "varexp" : ["ChipErrorPlots.binContent[4]"],
+                                       "selection" : "Time",
+                                       "option" :"PL"
+                                     },{
+                                       "names" : ["# Chip Error ID 5"],
+                                       "title" : ["Number of chip errors with ID = 5"],
+                                       "varexp" : ["ChipErrorPlots.binContent[5]"],
+                                       "selection" : "Time",
+                                       "option" :"PL"
+                                     },{
+                                       "names" : ["# Chip Error ID 6"],
+                                       "title" : ["Number of chip errors with ID = 6"],
+                                       "varexp" : ["ChipErrorPlots.binContent[6]"],
+                                       "selection" : "Time",
+                                       "option" :"PL"
+                                     },{
+                                       "names" : ["# Chip Error ID 7"],
+                                       "title" : ["Number of chip errors with ID = 7"],
+                                       "varexp" : ["ChipErrorPlots.binContent[7]"],
+                                       "selection" : "Time",
+                                       "option" :"PL"
+                                     },{
+                                       "names" : ["# Chip Error ID 8"],
+                                       "title" : ["Number of chip errors with ID = 8"],
+                                       "varexp" : ["ChipErrorPlots.binContent[8]"],
+                                       "selection" : "Time",
+                                       "option" :"PL"
+                                     },{
+                                       "names" : ["# Chip Error ID 9"],
+                                       "title" : ["Number of chip errors with ID = 9"],
+                                       "varexp" : ["ChipErrorPlots.binContent[9]"],
+                                       "selection" : "Time",
+                                       "option" :"PL"
+                                     },{
+                                       "names" : ["# Chip Error ID 10"],
+                                       "title" : ["Number of chip errors with ID = 10"],
+                                       "varexp" : ["ChipErrorPlots.binContent[10]"],
+                                       "selection" : "Time",
+                                       "option" :"PL"
+                                     },{
+                                       "names" : ["# Chip Error ID 11"],
+                                       "title" : ["Number of chip errors with ID = 11"],
+                                       "varexp" : ["ChipErrorPlots.binContent[11]"],
+                                       "selection" : "Time",
+                                       "option" :"PL"
+                                     },{
+                                       "names" : ["# Chip Error ID 12"],
+                                       "title" : ["Number of chip errors with ID = 12"],
+                                       "varexp" : ["ChipErrorPlots.binContent[12]"],
+                                       "selection" : "Time",
+                                       "option" :"PL"
+                                     },{
+                                       "names" : ["# Chip Error ID 13"],
+                                       "title" : ["Number of chip errors with ID = 13"],
+                                       "varexp" : ["ChipErrorPlots.binContent[13]"],
+                                       "selection" : "Time",
+                                       "option" :"PL"
+                                     },{
+                                       "names" : ["# Chip Error ID 14"],
+                                       "title" : ["Number of chip errors with ID = 14"],
+                                       "varexp" : ["ChipErrorPlots.binContent[14]"],
+                                       "selection" : "Time",
+                                       "option" :"PL"
+                                     },{
+                                       "names" : ["# Chip Error ID 15"],
+                                       "title" : ["Number of chip errors with ID = 15"],
+                                       "varexp" : ["ChipErrorPlots.binContent[15]"],
+                                       "selection" : "Time",
+                                       "option" :"PL"
+                                     },{
+                                       "names" : ["# Chip Error ID 16"],
+                                       "title" : ["Number of chip errors with ID = 16"],
+                                       "varexp" : ["ChipErrorPlots.binContent[16]"],
+                                       "selection" : "Time",
+                                       "option" :"PL"
+                                     },{
+                                       "names" : ["# Chip Error ID 17"],
+                                       "title" : ["Number of chip errors with ID = 17"],
+                                       "varexp" : ["ChipErrorPlots.binContent[17]"],
+                                       "selection" : "Time",
+                                       "option" :"PL"
+                                     },{
+                                       "names" : ["# Chip Error ID 18"],
+                                       "title" : ["Number of chip errors with ID = 18"],
+                                       "varexp" : ["ChipErrorPlots.binContent[18]"],
+                                       "selection" : "Time",
+                                       "option" :"PL"
+                                     },{
+                                       "names" : ["# Chip Error ID 19"],
+                                       "title" : ["Number of chip errors with ID = 19"],
+                                       "varexp" : ["ChipErrorPlots.binContent[19]"],
+                                       "selection" : "Time",
+                                       "option" :"PL"
+                                     },{
+                                       "names" : ["# Chip Error ID 20"],
+                                       "title" : ["Number of chip errors with ID = 20"],
+                                       "varexp" : ["ChipErrorPlots.binContent[20]"],
+                                       "selection" : "Time",
+                                       "option" :"PL"
+                                     },{
+                                       "names" : ["# Chip Error ID 21"],
+                                       "title" : ["Number of chip errors with ID = 21"],
+                                       "varexp" : ["ChipErrorPlots.binContent[21]"],
+                                       "selection" : "Time",
+                                       "option" :"PL"
+                                     },{
+                                       "names" : ["# Chip Error ID 22"],
+                                       "title" : ["Number of chip errors with ID = 22"],
+                                       "varexp" : ["ChipErrorPlots.binContent[22]"],
+                                       "selection" : "Time",
+                                       "option" :"PL"
+                                     },{
+                                       "names" : ["# Chip Error ID 23"],
+                                       "title" : ["Number of chip errors with ID = 23"],
+                                       "varexp" : ["ChipErrorPlots.binContent[23]"],
+                                       "selection" : "Time",
+                                       "option" :"PL"
+                                     },{
+                                       "names" : ["# Chip Error ID 24"],
+                                       "title" : ["Number of chip errors with ID = 24"],
+                                       "varexp" : ["ChipErrorPlots.binContent[24]"],
+                                       "selection" : "Time",
+                                       "option" :"PL"
+                                     },{
+                                       "names" : ["# Chip Error ID 25"],
+                                       "title" : ["Number of chip errors with ID = 25"],
+                                       "varexp" : ["ChipErrorPlots.binContent[25]"],
+                                       "selection" : "Time",
+                                       "option" :"PL"
+                                     },{
+                                       "names" : ["# Chip Error ID 26"],
+                                       "title" : ["Number of chip errors with ID = 26"],
+                                       "varexp" : ["ChipErrorPlots.binContent[26]"],
+                                       "selection" : "Time",
+                                       "option" :"PL"
+                                     },{
+                                       "names" : ["# Chip Error ID 27"],
+                                       "title" : ["Number of chip errors with ID = 27"],
+                                       "varexp" : ["ChipErrorPlots.binContent[27]"],
+                                       "selection" : "Time",
+                                       "option" :"PL"
+                                     },{
+                                       "names" : ["# Chip Error ID 28"],
+                                       "title" : ["Number of chip errors with ID = 28"],
+                                       "varexp" : ["ChipErrorPlots.binContent[28]"],
+                                       "selection" : "Time",
+                                       "option" :"PL"
+                                     },{
+                                       "names" : ["# Chip Error ID 29"],
+                                       "title" : ["Number of chip errors with ID = 29"],
+                                       "varexp" : ["ChipErrorPlots.binContent[29]"],
+                                       "selection" : "Time",
+                                       "option" :"PL"
+                                     },{
+                                       "names" : ["# Chip Error ID 30"],
+                                       "title" : ["Number of chip errors with ID = 30"],
+                                       "varexp" : ["ChipErrorPlots.binContent[30]"],
+                                       "selection" : "Time",
+                                       "option" :"PL"
                                      }
-
                                    ],
                                    "initTrigger" : ["userorcontrol"],
-                                                   "updateTrigger" : ["10 seconds"],
+                                                   "updateTrigger" : ["newobject:qcdb:ITS/MO/ITSDECODING/General/LinkErrorPlots"],
                                                                      "stopTrigger" : ["userorcontrol"]
       }
     }

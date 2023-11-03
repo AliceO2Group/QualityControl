@@ -31,13 +31,13 @@
         "dataSources": [
           {
             "type": "repository",
-            "paths": ["ITS/MO/ITSTrackTask/NClustersReset",
+            "paths": ["ITS/MO/ITSTrackTask/NClusters",
                       "ITS/MO/ITSTrackTask/EtaDistribution",
                       "ITS/MO/ITSTrackTask/PhiDistribution",
                       "ITS/MO/ITSTrackTask/VertexZ",
                       "ITS/MO/ITSTrackTask/NVertexContributors",
                       "ITS/MO/ITSTrackTask/AssociatedClusterFraction",
-                      "ITS/MO/ITSTrackTask/NtracksReset"
+                      "ITS/MO/ITSTrackTask/Ntracks"
                      ],
             "names": ["NClusters",
                       "EtaDistribution",
@@ -124,7 +124,7 @@
           "userorcontrol"
         ],
         "updateTrigger": [
-          "60 seconds"
+          "newobject:qcdb:ITS/MO/ITSTrackTask/EtaDistribution"
         ],
         "stopTrigger": [
           "userorcontrol"

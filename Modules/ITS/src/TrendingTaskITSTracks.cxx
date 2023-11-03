@@ -53,6 +53,9 @@ void TrendingTaskITSTracks::initialize(Trigger, framework::ServiceRegistryRef)
                    reductor->getBranchLeafList());
     mReductors[source.name] = std::move(reductor);
   }
+  hNTracksPrev = new TH1D("Ntracks", "Ntracks", 100, 0, 100);
+  hNClustersPrev = new TH1D("NClusters", "NClusters", 15, -0.5, 14.5);
+
 }
 
 // todo: see if OptimizeBaskets() indeed helps after some time
@@ -115,7 +118,26 @@ void TrendingTaskITSTracks::trendValues(const Trigger& t, repository::DatabaseIn
       }
       TObject* obj = mo ? mo->getObject() : nullptr;
       if (obj) {
-        mReductors[dataSource.name]->update(obj);
+
+       std::string name = obj->GetName();
+       std::cout<<" We are running reductor for object: " << name << std::endl;
+       if (name.find("Ntracks") != std::string::npos) {
+          TH1D* hDummy = (TH1D*)obj->Clone();
+          if ( hDummy->Integral() != hNTracksPrev->Integral()){
+             hDummy->Add(hNTracksPrev, -1);
+          }
+          mReductors[dataSource.name]->update(hDummy);
+          hNTracksPrev = (TH1D*)obj->Clone();
+        } else if (name.find("NCluster") != std::string::npos) {
+          TH1D* hDummy = (TH1D*)obj->Clone();
+          if ( hDummy->Integral() != hNClustersPrev->Integral()){
+             hDummy->Add(hNClustersPrev, -1);
+          }
+          mReductors[dataSource.name]->update(hDummy);
+          hNClustersPrev = (TH1D*)obj->Clone();
+        } else {
+          mReductors[dataSource.name]->update(obj);
+        }
       }
     } else if (dataSource.type == "repository-quality") {
       auto qo = qcdb.retrieveQO(dataSource.path + "/" + dataSource.name);

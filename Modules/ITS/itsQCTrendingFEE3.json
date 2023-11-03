@@ -47,7 +47,7 @@
                        "LaneStatusSummaryOL",
                        "LaneStatusSummaryGlobal"],
             "reductorName": "o2::quality_control_modules::common::TH1SliceReductor",
-            "axisDivision": [  ["1", "2", "3"] ], 
+            "axisDivision": [], 
             "moduleName": "QcCommon"
          }
 
@@ -57,29 +57,99 @@
             "names": [ "# of lanes in WARNING" ],
             "title": [ "IB - Trend of number of lanes in WARNING" ],
             "varexp": [ "LaneStatusSummaryIB.entries:time" ],
+            "graphXRange": "1:1",
             "selection": "",
             "option": "PL"
           },
-         
+          {
+             "names": [ "# of lanes in ERROR" ],
+             "title": [ "IB - Trend of number of lanes in ERROR" ],
+             "varexp": [ "LaneStatusSummaryIB.entries:time" ],
+             "graphXRange": "2:2",
+             "selection": "",
+             "option": "PL"
+          },
+          {
+             "names": [ "# of lanes in FAULT" ],
+             "title": [ "IB - Trend of number of lanes in FAULT" ],
+             "varexp": [ "LaneStatusSummaryIB.entries:time" ],
+             "graphXRange": "3:3",
+             "selection": "",
+             "option": "PL"
+          },
           {
             "names": [ "# of lanes in WARNING" ],
             "title": [ "ML - Trend of number of lanes in WARNING" ],
             "varexp": [ "LaneStatusSummaryML.entries:time" ],
+            "graphXRange": "1:1",
+            "selection": "Time",
             "option": "PL"
+          },
+          {
+             "names": [ "# of lanes in ERROR" ],
+             "title": [ "ML - Trend of number of lanes in ERROR" ],
+             "varexp": [ "LaneStatusSummaryML.entries:time" ],
+             "graphXRange": "2:2",
+             "selection": "",
+             "option": "PL"
+          },
+          {
+             "names": [ "# of lanes in FAULT" ],
+             "title": [ "ML - Trend of number of lanes in FAULT" ],
+             "varexp": [ "LaneStatusSummaryML.entries:time" ],
+             "selection": "",
+              "graphXRange": "3:3",
+             "option": "PL"
           },
           {
              "names": [ "# of lanes in WARNING" ],
              "title": [ "OL - Trend of number of lanes in WARNING" ],
              "varexp": [ "LaneStatusSummaryOL.entries:time" ],
+             "selection": "Time",
+              "graphXRange": "1:1",
              "option": "PL"
           },
-               {
+          {
+             "names": [ "# of lanes in ERROR" ],
+             "title": [ "OL - Trend of number of lanes in ERROR" ],
+             "varexp": [ "LaneStatusSummaryOL.entries:time" ],
+             "selection": "",
+              "graphXRange": "2:2",
+             "option": "PL"
+          },
+          {
+             "names": [ "# of lanes in FAULT" ],
+             "title": [ "OL - Trend of number of lanes in FAULT" ],
+             "varexp": [ "LaneStatusSummaryOL.entries:time" ],
+             "selection": "",
+              "graphXRange": "3:3",
+             "option": "PL"
+          },
+          {
              "names": [ "# of lanes in WARNING" ],
              "title": [ "Global - Trend of number of lanes in WARNING" ],
              "varexp": [ "LaneStatusSummaryGlobal.entries:time" ],
+             "selection": "Time",
+              "graphXRange": "1:1",
              "option": "PL"
           },
-         {
+          {
+             "names": [ "# of lanes in ERROR" ],
+             "title": [ "Global - Trend of number of lanes in ERROR" ],
+             "varexp": [ "LaneStatusSummaryGlobal.entries:time" ],
+             "graphXRange": "2:2",  
+             "selection": "",
+             "option": "PL"
+          },
+          {
+             "names": [ "# of lanes in FAULT" ],
+             "title": [ "Global - Trend of number of lanes in FAULT" ],
+             "varexp": [ "LaneStatusSummaryGlobal.entries:time" ],
+             "graphXRange": "3:3",
+             "selection": "",
+             "option": "PL"
+          },
+          {
              "names": [ "Trig. ORBIT" ],
              "title": [ "Trig. \"ORBIT\" count through all FEE" ],
              "varexp": [ "TriggerVsFeeid.integral[0]" ],

@@ -28,7 +28,7 @@
                 "className": "o2::quality_control_modules::its::ITSFeeTask",
                 "moduleName": "QcITS",
                 "detectorName": "ITS",
-                "cycleDurationSeconds": "30",
+                "cycleDurationSeconds": "120",
                 "maxNumberCycles": "-1",
                 "dataSource": {
                     "type": "direct",

@@ -64,13 +64,13 @@ void TrendingTaskITSFEE::initialize(Trigger, framework::ServiceRegistryRef)
     mTrend->Branch(source.name.c_str(), reductor->getBranchAddress(), reductor->getBranchLeafList());
     mReductors[source.name] = std::move(reductor);
   }
+  hPayloadPrev = new TH2D("PayloadSize", "Payload Size", NFees, 0, NFees, mNPayloadSizeBins, 0, 4.096e4);
 }
 
 // todo: see if OptimizeBaskets() indeed helps after some time
 void TrendingTaskITSFEE::update(Trigger t, framework::ServiceRegistryRef services)
 {
   auto& qcdb = services.get<repository::DatabaseInterface>();
-
   trendValues(t, qcdb);
   storePlots(qcdb);
   storeTrend(qcdb);
@@ -117,10 +117,21 @@ void TrendingTaskITSFEE::trendValues(const Trigger& t, repository::DatabaseInter
         nEntries = (Int_t)mTrend->GetEntriesFast() + 1;
       }
       TObject* obj = mo ? mo->getObject() : nullptr;
-      if (obj)
-        mReductors[dataSource.name]->update(obj);
-    } else {
-      ILOG(Debug, Devel) << "Unknown type of data source '" << dataSource.type << "'." << ENDM;
+      if (obj) {
+        std::string name = obj->GetName();
+        if (name.find("PayloadSize") != std::string::npos) {
+          TH2D* hDummy = (TH2D*)obj->Clone();
+          if ( hDummy->Integral() != hPayloadPrev->Integral()){
+             hDummy->Add(hPayloadPrev, -1);
+          }
+          mReductors[dataSource.name]->update(hDummy);
+          hPayloadPrev = (TH2D*)obj->Clone();
+        } else {
+          mReductors[dataSource.name]->update(obj);
+        }
+      } else {
+        ILOG(Debug, Devel) << "Unknown type of data source '" << dataSource.type << "'." << ENDM;
+      }
     }
     count++;
   }
@@ -208,10 +219,9 @@ void TrendingTaskITSFEE::storePlots(repository::DatabaseInterface& qcdb)
   //___________________________________________________________________________
   // Trigger Count trending plot
   countplots = 0;
-
   for (const auto& plot : mConfig.plots) {
 
-    if (plot.varexp.find("integral") == std::string::npos)
+    if (plot.varexp.find("TriggerVsFeeid") == std::string::npos)
       continue;
 
     // Initialize MultiGraph and Legend
@@ -259,6 +269,60 @@ void TrendingTaskITSFEE::storePlots(repository::DatabaseInterface& qcdb)
       mo->setIsOwner(false);
       qcdb.storeMO(mo);
 
+      delete legend;
+      delete canvas;
+      delete multi_trend; // All included plots are deleted automatically
+      delete hDummy;
+    }
+    countplots++;
+  } // end loop on plots
+
+  countplots = 0;
+  for (const auto& plot : mConfig.plots) {
+
+    if (plot.varexp.find("PayloadSize") == std::string::npos)
+      continue;
+    // Initialize MultiGraph and Legend
+    if (countplots == 0) {
+      multi_trend = new TMultiGraph();
+      SetGraphName(multi_trend, plot.name, "Delta of Total payload in one QC Cycle");
+      isRun = plot.selection.find("Entries") != std::string::npos ? true : false;
+      name_Xaxis = plot.selection.c_str();
+    }
+
+    // Retrieve data for trend plot
+    mTrend->Draw(Form("%s:%s", name_Xaxis.c_str(), plot.varexp.c_str()), "", "goff");
+    TGraph* trend_plot = new TGraph(numberOfEntries, mTrend->GetV1(), mTrend->GetV2());
+    SetGraphStyle(trend_plot, plot.name, mPayloadTitles[countplots], colors[countplots], markers[countplots]);
+    multi_trend->Add((TGraph*)trend_plot->Clone(), plot.option.c_str());
+    delete trend_plot;
+
+    if (countplots == nHBs-1) {
+      SetGraphAxes(multi_trend, Form("%s", isRun ? "Run" : "Time"), "Payload sum over all FEEs", !isRun);
+
+      // Canvas settings
+      TCanvas* canvas = new TCanvas("payload_trend", "payload_trend");
+      SetCanvasSettings(canvas);
+
+      // Plot as a function of run number requires a dummy TH1 histogram
+      TH1I* hDummy = nullptr;
+      if (isRun) {
+        hDummy = new TH1I("hDummy", Form("%s; %s; %s", multi_trend->GetTitle(), multi_trend->GetXaxis()->GetTitle(), multi_trend->GetYaxis()->GetTitle()), numberOfEntries, 0.5, numberOfEntries + 0.5);
+        SetHistoAxes(hDummy, runlist, multi_trend->GetYaxis()->GetXmin(), multi_trend->GetYaxis()->GetXmax());
+      }
+      // Draw plots
+      if (hDummy)
+        hDummy->Draw();
+      multi_trend->Draw(Form("%s", hDummy ? "" : "a"));
+
+      TLegend* legend = (TLegend*)canvas->BuildLegend(0.93, 0.15, 1.0, 0.9);
+      SetLegendStyle(legend, "payload_trend", isRun);
+      legend->Draw("SAME");
+
+      // Upload plots
+      auto mo = std::make_shared<MonitorObject>(canvas, mConfig.taskName, "o2::quality_control_modules::its::TrendingTaskITSFEE", mConfig.detectorName, mMetaData.runNumber);
+      mo->setIsOwner(false);
+      qcdb.storeMO(mo);
       delete legend;
       delete canvas;
       delete multi_trend; // All included plots are deleted automatically
