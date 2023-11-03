@@ -234,15 +234,6 @@ void RawQcTask::startOfCycle()
 
 void RawQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  // In this function you can access data inputs specified in the JSON config file, for example:
-  //   "query": "random:ITS/RAWDATA/0"
-  // which is correspondingly <binding>:<dataOrigin>/<dataDescription>/<subSpecification
-  // One can also access conditions from CCDB, via separate API (see point 3)
-
-  // Use Framework/DataRefUtils.h or Framework/InputRecord.h to access and unpack inputs (both are documented)
-  // One can find additional examples at:
-  // https://github.com/AliceO2Group/AliceO2/blob/dev/Framework/Core/README.md#using-inputs---the-inputrecord-api
-
   if (ctx.inputs().getPos("rawerr") >= 0) { // to be able to scan e.g. CTF data
     auto hwerrors = ctx.inputs().get<std::vector<o2::phos::RawReaderError>>("rawerr");
     for (auto e : hwerrors) {
