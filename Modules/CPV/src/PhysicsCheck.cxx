@@ -620,7 +620,7 @@ Quality PhysicsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
   } // moMap cycle
 
   return result;
-} // namespace o2::quality_control_modules::cpv
+}
 
 void PhysicsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
@@ -648,26 +648,6 @@ void PhysicsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResu
       return; // exit when object is processed
     }
   }
-}
-
-int PhysicsCheck::getRunNumberFromMO(std::shared_ptr<MonitorObject> mo)
-{
-  int runNumber{ 0 };
-  auto metaData = mo->getMetadataMap();
-  auto foundRN = metaData.find(metadata_keys::runNumber);
-  if (foundRN != metaData.end()) {
-    runNumber = std::stoi(foundRN->second);
-  }
-  if (runNumber == 0) {
-    runNumber = mo->getActivity().mId;
-  }
-  if (runNumber == 0) {
-    auto foundRNFT = metaData.find("RunNumberFromTask");
-    if (foundRNFT != metaData.end()) {
-      runNumber = std::stoi(foundRNFT->second);
-    }
-  }
-  return runNumber;
 }
 
 } // namespace o2::quality_control_modules::cpv
