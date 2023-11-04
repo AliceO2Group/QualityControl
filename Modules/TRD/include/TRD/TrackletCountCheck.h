@@ -41,8 +41,8 @@ class TrackletCountCheck : public o2::quality_control::checker::CheckInterface
   Quality mResultPerTimeFrame;
   Quality mFinalResult;
 
-  std::shared_ptr<TPaveText> msg1;
-  std::shared_ptr<TPaveText> msg2;
+  std::shared_ptr<TPaveText> mTrackletPerTriggerMessage;
+  std::shared_ptr<TPaveText> mTrackletPerTimeFrameMessage;
 
   ClassDefOverride(TrackletCountCheck, 2);
 };

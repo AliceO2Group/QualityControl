@@ -67,39 +67,44 @@ Quality TrackletCountCheck::check(std::map<std::string, std::shared_ptr<MonitorO
         continue;
       }
       // warning about statistics available
-      msg1 = std::make_shared<TPaveText>(0.3, 0.7, 0.7, 0.9, "NDC");
-      msg1->SetTextSize(10);
-      int Entries = h->GetEntries();
-      if (Entries > mStatThresholdPerTrigger) {
-        msg1->AddText(TString::Format("Hist Can't be ignored. Stat is enough. Entries: %d > Threshold: %d", Entries, mStatThresholdPerTrigger));
-        // msg1->SetTextColor(kGreen);
-      } else if (Entries > 0) {
-        msg1->AddText(TString::Format("Hist Can be ignored. Stat is low. Entries: %d < Threshold: %d", Entries, mStatThresholdPerTrigger));
-        // msg1->SetTextColor(kYellow);
-      } else if (Entries == 0) {
-        msg1->AddText(TString::Format("Hist is empty. Entries: %d < Threshold: %d", Entries, mStatThresholdPerTrigger));
-        msg1->SetTextColor(kRed);
+      mTrackletPerTriggerMessage.reset();
+      if (!mTrackletPerTriggerMessage) {
+        mTrackletPerTriggerMessage = std::make_shared<TPaveText>(0.3, 0.7, 0.7, 0.9, "NDC");
+      }
+      // mTrackletPerTriggerMessage = std::make_shared<TPaveText>(0.3, 0.7, 0.7, 0.9, "NDC");
+      // mTrackletPerTriggerMessage->DeleteText();
+      mTrackletPerTriggerMessage->SetTextSize(10);
+      int entriesInQcHist = h->GetEntries();
+      if (entriesInQcHist > mStatThresholdPerTrigger) {
+        mTrackletPerTriggerMessage->AddText(TString::Format("Hist Can't be ignored. Stat is enough. entriesInQcHist: %d > Threshold: %d", entriesInQcHist, mStatThresholdPerTrigger));
+        // mTrackletPerTriggerMessage->SetTextColor(kGreen);
+      } else if (entriesInQcHist > 0) {
+        mTrackletPerTriggerMessage->AddText(TString::Format("Hist Can be ignored. Stat is low. entriesInQcHist: %d < Threshold: %d", entriesInQcHist, mStatThresholdPerTrigger));
+        // mTrackletPerTriggerMessage->SetTextColor(kYellow);
+      } else if (entriesInQcHist == 0) {
+        mTrackletPerTriggerMessage->AddText(TString::Format("Hist is empty. entriesInQcHist: %d < Threshold: %d", entriesInQcHist, mStatThresholdPerTrigger));
+        mTrackletPerTriggerMessage->SetTextColor(kRed);
       }
 
       // Warning about triggers without any tracklets
-      int UnderFlowTrackletsPerTrigger = h->GetBinContent(0);
-      if (UnderFlowTrackletsPerTrigger > 0.) {
-        msg1->AddText(TString::Format("Number of Triggers without Tracklets: %d", UnderFlowTrackletsPerTrigger));
+      int underFlowTrackletPerTrigger = h->GetBinContent(0);
+      if (underFlowTrackletPerTrigger > 0.) {
+        mTrackletPerTriggerMessage->AddText(TString::Format("Number of Triggers without Tracklets: %d", underFlowTrackletPerTrigger));
       }
 
       // applying check
-      float MeanTrackletPertrigger = h->GetMean();
-      if (MeanTrackletPertrigger > mThresholdMeanLowPerTrigger && MeanTrackletPertrigger < mThresholdMeanHighPerTrigger) {
-        TText* Checkmsg = msg1->AddText(TString::Format("Mean Per Trigger: %f is found in bound region [%f, %f]", MeanTrackletPertrigger, mThresholdMeanLowPerTrigger, mThresholdMeanHighPerTrigger));
-        Checkmsg->SetTextColor(kGreen);
+      float meanTrackletPerTrigger = h->GetMean();
+      if (meanTrackletPerTrigger > mThresholdMeanLowPerTrigger && meanTrackletPerTrigger < mThresholdMeanHighPerTrigger) {
+        TText* checkMessagePerTriggerPtr = mTrackletPerTriggerMessage->AddText(TString::Format("Mean Per Trigger: %f is found in bound region [%f, %f]", meanTrackletPerTrigger, mThresholdMeanLowPerTrigger, mThresholdMeanHighPerTrigger));
+        checkMessagePerTriggerPtr->SetTextColor(kGreen);
         mResultPertrigger = Quality::Good;
       } else {
         mResultPertrigger = Quality::Bad;
-        TText* Checkmsg = msg1->AddText(TString::Format("Mean Per Trigger: %f is not found in bound region [%f, %f]", MeanTrackletPertrigger, mThresholdMeanLowPerTrigger, mThresholdMeanHighPerTrigger));
-        Checkmsg->SetTextColor(kRed);
-        mResultPertrigger.addReason(FlagReasonFactory::Unknown(), "MeanTrackletPertrigger is not in bound region");
+        TText* checkMessagePerTriggerPtr = mTrackletPerTriggerMessage->AddText(TString::Format("Mean Per Trigger: %f is not found in bound region [%f, %f]", meanTrackletPerTrigger, mThresholdMeanLowPerTrigger, mThresholdMeanHighPerTrigger));
+        checkMessagePerTriggerPtr->SetTextColor(kRed);
+        mResultPertrigger.addReason(FlagReasonFactory::Unknown(), "meanTrackletPerTrigger is not in bound region");
       }
-      h->GetListOfFunctions()->Add(msg1->Clone());
+      h->GetListOfFunctions()->Add(mTrackletPerTriggerMessage->Clone());
     }
     if (mo->getName() == "trackletspertimeframe") {
       auto* h2 = dynamic_cast<TH1F*>(mo->getObject());
@@ -107,28 +112,33 @@ Quality TrackletCountCheck::check(std::map<std::string, std::shared_ptr<MonitorO
         // ILOG(Debug, Support) << "Requested Histogram type does not match with the Histogram in source" << ENDM;
         continue;
       }
-      msg2 = std::make_shared<TPaveText>(0.3, 0.7, 0.7, 0.9, "NDC");
-      msg2->SetTextSize(10);
+      mTrackletPerTimeFrameMessage.reset();
+      if (!mTrackletPerTimeFrameMessage) {
+        mTrackletPerTimeFrameMessage = std::make_shared<TPaveText>(0.3, 0.7, 0.7, 0.9, "NDC");
+      }
+      // mTrackletPerTimeFrameMessage = std::make_shared<TPaveText>(0.3, 0.7, 0.7, 0.9, "NDC");
+      // mTrackletPerTimeFrameMessage->DeleteText();
+      mTrackletPerTimeFrameMessage->SetTextSize(10);
 
       // Warning about TimeFrame without any tracklets
-      int UnderFlowTrackletsPertrigger = h2->GetBinContent(0);
-      if (UnderFlowTrackletsPertrigger > 0.) {
-        msg2->AddText(TString::Format("Number of TimeFrames without Tracklets: %d", UnderFlowTrackletsPertrigger));
+      int underFlowTrackletPerTimeFrame = h2->GetBinContent(0);
+      if (underFlowTrackletPerTimeFrame > 0.) {
+        mTrackletPerTimeFrameMessage->AddText(TString::Format("Number of TimeFrames without Tracklets: %d", underFlowTrackletPerTimeFrame));
       }
 
       // applying check
-      float MeanTrackletPerTimeFrame = h2->GetMean();
-      if (MeanTrackletPerTimeFrame > mThresholdMeanLowPerTimeFrame && MeanTrackletPerTimeFrame < mThresholdMeanHighPerTimeFrame) {
-        TText* Checkmsg2 = msg2->AddText(TString::Format("Mean Per Timeframe: %f is found in bound region [%f, %f]", MeanTrackletPerTimeFrame, mThresholdMeanLowPerTimeFrame, mThresholdMeanHighPerTimeFrame));
-        Checkmsg2->SetTextColor(kGreen);
+      float meanTrackletPerTimeframe = h2->GetMean();
+      if (meanTrackletPerTimeframe > mThresholdMeanLowPerTimeFrame && meanTrackletPerTimeframe < mThresholdMeanHighPerTimeFrame) {
+        TText* checkMessagePerTimeframePtr = mTrackletPerTimeFrameMessage->AddText(TString::Format("Mean Per Timeframe: %f is found in bound region [%f, %f]", meanTrackletPerTimeframe, mThresholdMeanLowPerTimeFrame, mThresholdMeanHighPerTimeFrame));
+        checkMessagePerTimeframePtr->SetTextColor(kGreen);
         mResultPerTimeFrame = Quality::Good;
       } else {
         mResultPerTimeFrame = Quality::Bad;
-        TText* Checkmsg2 = msg2->AddText(TString::Format("Mean per Timeframe: %f is not found in bound region[%f, %f]", MeanTrackletPerTimeFrame, mThresholdMeanLowPerTimeFrame, mThresholdMeanHighPerTimeFrame));
-        Checkmsg2->SetTextColor(kRed);
-        mResultPerTimeFrame.addReason(FlagReasonFactory::Unknown(), "MeanTrackletPerTimeFrame is not in bound region");
+        TText* checkMessagePerTimeframePtr = mTrackletPerTimeFrameMessage->AddText(TString::Format("Mean per Timeframe: %f is not found in bound region[%f, %f]", meanTrackletPerTimeframe, mThresholdMeanLowPerTimeFrame, mThresholdMeanHighPerTimeFrame));
+        checkMessagePerTimeframePtr->SetTextColor(kRed);
+        mResultPerTimeFrame.addReason(FlagReasonFactory::Unknown(), "meanTrackletPerTimeframe is not in bound region");
       }
-      h2->GetListOfFunctions()->Add(msg2->Clone());
+      h2->GetListOfFunctions()->Add(mTrackletPerTimeFrameMessage->Clone());
     }
   }
   if (mResultPertrigger == Quality::Null && mResultPerTimeFrame == Quality::Null) {
