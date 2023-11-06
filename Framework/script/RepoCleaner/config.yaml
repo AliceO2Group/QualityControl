@@ -82,4 +82,4 @@ Rules:
 #    policy: 1_per_hour
 
 Ccdb:
-  Url: http://137.138.47.222:8080
+  Url: http://128.142.249.62:8080
