@@ -8,4 +8,5 @@
 #pragma link C++ class o2::quality_control_modules::hmpid::HmpidTaskClusters+;
 //#pragma link C++ class o2::quality_control_modules::hmpid::Helpers+;
 #pragma link C++ class o2::quality_control_modules::hmpid::HmpidRawChecks+;
+#pragma link C++ class o2::quality_control_modules::hmpid::HmpidTaskMatchInfo+;
 #endif

@@ -11,11 +11,12 @@
 
 ///
 /// \file   HmpidTaskClusters.h
-/// \author Annalisa Mastroserio
+/// \author Annalisa Mastroserio, Giacomo Volpe
 ///
 
 #ifndef QC_MODULE_HMPID_HMPIDTASKCLUSTERS_H
 #define QC_MODULE_HMPID_HMPIDTASKCLUSTERS_H
+
 #include <Framework/InputRecord.h>
 #include "QualityControl/TaskInterface.h"
 #include <TH1.h>
@@ -53,6 +54,7 @@ class HmpidTaskClusters : public TaskInterface
   TProfile* ThClusMult;
   TH1F* hClusMultEv;
   TH1F* hHMPIDchargeClus[7];
+  TH1F* hHMPIDchargeMipClus[7];
   TH2F* hHMPIDpositionClus[7];
 
   std::vector<TObject*> mPublishedObjects;

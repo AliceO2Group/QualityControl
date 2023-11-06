@@ -11,7 +11,7 @@
 
 ///
 /// \file   TaskClusters.cxx
-/// \author Annalisa Mastroserio
+/// \author Annalisa Mastroserio, Giacomo Volpe
 ///
 
 #include "QualityControl/QcInfoLogger.h"
@@ -43,6 +43,7 @@ HmpidTaskClusters::~HmpidTaskClusters()
   delete ThClusMult;
   for (Int_t iCh = 0; iCh < 7; iCh++) {
     delete hHMPIDchargeClus[iCh];
+    delete hHMPIDchargeMipClus[iCh];
     delete hHMPIDpositionClus[iCh];
   }
 }
@@ -61,7 +62,10 @@ void HmpidTaskClusters::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(ThClusMult);
   for (Int_t iCh = 0; iCh < 7; iCh++) {
     getObjectsManager()->startPublishing(hHMPIDchargeClus[iCh]);
+    getObjectsManager()->startPublishing(hHMPIDchargeMipClus[iCh]);
     getObjectsManager()->startPublishing(hHMPIDpositionClus[iCh]);
+    getObjectsManager()->setDefaultDrawOptions(hHMPIDpositionClus[iCh], "colz");
+    getObjectsManager()->setDisplayHint(hHMPIDpositionClus[iCh], "colz");
   }
 
   ILOG(Info, Support) << "START DOING QC HMPID Cluster" << ENDM;
@@ -106,6 +110,9 @@ void HmpidTaskClusters::monitorData(o2::framework::ProcessingContext& ctx)
 
       if (chamber <= 6 && chamber >= 0) {
         hHMPIDchargeClus[chamber]->Fill(clusters[j].q());
+        if (clusters[j].size() >= 3 && clusters[j].size() <= 7) {
+          hHMPIDchargeMipClus[chamber]->Fill(clusters[j].q());
+        }
         hHMPIDpositionClus[chamber]->Fill(clusters[j].x(), clusters[j].y());
       }
     } // cluster loop
@@ -130,17 +137,20 @@ void HmpidTaskClusters::BookHistograms()
 {
   hClusMultEv = new TH1F("ClusMultEve", "HMPID Cluster multiplicity per event", 500, 0, 500);
 
-  ThClusMult = new TProfile("ClusMult", "HMPID Cluster multiplicity per chamber;Chamber Id;# of clusters", 16, -1, 7, 0, 500);
+  ThClusMult = new TProfile("ClusMult", "HMPID Cluster multiplicity per chamber;Chamber Id;# of clusters/event", 7, 0., 7.);
   ThClusMult->Sumw2();
   ThClusMult->SetOption("P");
   ThClusMult->SetMinimum(0);
   ThClusMult->SetMarkerStyle(20);
   ThClusMult->SetMarkerColor(kBlack);
   ThClusMult->SetLineColor(kBlack);
+  ThClusMult->SetStats(0);
 
   for (Int_t iCh = 0; iCh < 7; iCh++) {
-    hHMPIDchargeClus[iCh] = new TH1F(Form("CluQ%i", iCh), Form("Cluster Q in HMPID Chamber %i ; Q (ADC)", iCh), 50, 0, 50);
-    hHMPIDpositionClus[iCh] = new TH2F(Form("ClusterPoistion%i", iCh), Form("Cluster Position in HMPID Chamber %i; X (cm); Y (cm)", iCh), 532, -1, 131, 500, -1, 124); // cmxcm
+    hHMPIDchargeClus[iCh] = new TH1F(Form("CluQ%i", iCh), Form("Cluster Charge in HMPID Chamber %i ; Entries/1 ADC; Q (ADC)", iCh), 2000, 0, 2000);
+    hHMPIDchargeMipClus[iCh] = new TH1F(Form("MipCluQ%i", iCh), Form("MIP Cluster Charge in HMPID Chamber %i;Entries/1 ADC;Q (ADC)", iCh), 2000, 200, 2200);
+    hHMPIDpositionClus[iCh] = new TH2F(Form("ClusterPoistion%i", iCh), Form("Cluster Position in HMPID Chamber %i; X (cm); Y (cm)", iCh), 133, 0, 133, 125, 0, 125); // cmxcm
+    hHMPIDpositionClus[iCh]->SetStats(0);
   }
   //
 }
@@ -154,6 +164,7 @@ void HmpidTaskClusters::reset()
 
   for (Int_t iCh = 0; iCh < 7; iCh++) {
     hHMPIDchargeClus[iCh]->Reset();
+    hHMPIDchargeMipClus[iCh]->Reset();
     hHMPIDpositionClus[iCh]->Reset();
   }
 }
