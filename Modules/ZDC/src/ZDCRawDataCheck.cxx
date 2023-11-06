@@ -104,7 +104,7 @@ Quality ZDCRawDataCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
             if (flag_ch_empty == 1) {
               mVectHistoCheck.at(ih).numE += 1;
               mVectHistoCheck.at(ih).stringE = mVectHistoCheck.at(ih).stringE + mVectHistoCheck.at(ih).paramch.at(x).ch + "(Empty) ";
-//              ILOG(Error, Support) << "Alignment error: Channel" << mVectHistoCheck.at(ih).paramch.at(x).ch << " is empty. Ignore if is the first cycle " << ENDM;
+              //              ILOG(Error, Support) << "Alignment error: Channel" << mVectHistoCheck.at(ih).paramch.at(x).ch << " is empty. Ignore if is the first cycle " << ENDM;
             }
             flag_ch_empty = 1;
           }
