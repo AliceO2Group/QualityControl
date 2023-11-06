@@ -45,7 +45,7 @@
          "machines":[
             
          ],
-         "query":"matchHMP:HMP/MATCHES/0",
+         "query":"matchHMP:HMP/MATCHES/0;clsHMP_GLO_MCTR:HMP/MCLABELS/0",
          "samplingConditions":[
             {
                "condition":"random",
