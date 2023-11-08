@@ -168,7 +168,7 @@ void initInfologger(framework::InitContext& iCtx, core::DiscardFileParameters in
                      infologgerDiscardParameters,
                      il,
                      ilContext);
-  if(!detectorName.empty()) {
+  if (!detectorName.empty()) {
     QcInfoLogger::setDetector(detectorName);
   }
 }
