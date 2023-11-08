@@ -109,7 +109,7 @@ class CheckRunner : public framework::Task
 
   static framework::DataProcessorLabel getCheckRunnerLabel() { return { "qc-check" }; }
   static std::string createCheckRunnerIdString() { return "qc-check"; };
-  static std::string createCheckRunnerName(const std::vector<CheckConfig>& checks);
+  static std::string createCheckRunnerName();
   static std::string createCheckRunnerFacility(std::string deviceName);
 
   /// \brief Compute the detector name to be used for this checkrunner.

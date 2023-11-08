@@ -69,49 +69,14 @@ std::size_t CheckRunner::hash(const std::string& inputString)
   return checksum;
 }
 
-std::string CheckRunner::createCheckRunnerName(const std::vector<CheckConfig>& checks)
+std::string CheckRunner::createCheckRunnerName()
 {
-  static const std::string alphanumeric =
-    "0123456789"
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    "abcdefghijklmnopqrstuvwxyz";
-  const int NAME_LEN = 4;
-  std::string name(CheckRunner::createCheckRunnerIdString() + "-" + getDetectorName(checks) + "-");
-
-  if (checks.size() == 1) {
-    // If single check, use the check name
-    name += checks[0].name;
-  } else {
-    std::string hash_string;
-    std::vector<std::string> names;
-    // Fill vector with check names
-    for (const auto& c : checks) {
-      names.push_back(c.name);
-    }
-    // Be sure that after configuration shuffle, the name will be the same
-    std::sort(names.begin(), names.end());
-
-    // Create a single string and hash it
-    for (auto& n : names) {
-      hash_string += n;
-    }
-    std::size_t num = hash(hash_string);
-
-    // Change numerical to alphanumeric hash representation
-    for (int i = 0; i < NAME_LEN; ++i) {
-      name += alphanumeric[num % alphanumeric.size()];
-      num = num / alphanumeric.size();
-    }
-  }
-  return name;
+  return CheckRunner::createCheckRunnerIdString();
 }
 
 std::string CheckRunner::createCheckRunnerFacility(std::string deviceName)
 {
-  // it starts with "check/" and is followed by the unique part of the device name truncated to a maximum of 32 characters.
-  string facilityName = "check/" + deviceName.substr(CheckRunner::createCheckRunnerIdString().length() + 1, string::npos);
-  facilityName = facilityName.substr(0, 32);
-  return facilityName;
+  return deviceName;
 }
 
 o2::framework::Outputs CheckRunner::collectOutputs(const std::vector<CheckConfig>& checkConfigs)
@@ -125,7 +90,7 @@ o2::framework::Outputs CheckRunner::collectOutputs(const std::vector<CheckConfig
 
 CheckRunner::CheckRunner(CheckRunnerConfig checkRunnerConfig, const std::vector<CheckConfig>& checkConfigs, o2::framework::Inputs inputs)
   : mDetectorName(getDetectorName(checkConfigs)),
-    mDeviceName(createCheckRunnerName(checkConfigs)),
+    mDeviceName(createCheckRunnerName()),
     mConfig(std::move(checkRunnerConfig)),
     mInputs{ inputs },
     mOutputs{ CheckRunner::collectOutputs(checkConfigs) },
