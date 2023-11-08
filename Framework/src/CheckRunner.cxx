@@ -135,8 +135,6 @@ CheckRunner::CheckRunner(CheckRunnerConfig checkRunnerConfig, const std::vector<
     mTotalNumberMOStored(0),
     mTotalQOSent(0)
 {
-  cout << "mDetectorName : " << mDetectorName << endl;
-  cout << "mDeviceName : " << mDeviceName << endl;
 }
 
 CheckRunner::~CheckRunner()
