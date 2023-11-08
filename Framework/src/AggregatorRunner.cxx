@@ -315,22 +315,7 @@ void AggregatorRunner::initAggregators()
 
 void AggregatorRunner::initInfoLogger(InitContext& iCtx)
 {
-  // TODO : the method should be merged with the other, similar, methods in *Runners
-
-  InfoLoggerContext* ilContext = nullptr;
-  AliceO2::InfoLogger::InfoLogger* il = nullptr;
-  try {
-    ilContext = &iCtx.services().get<AliceO2::InfoLogger::InfoLoggerContext>();
-    il = &iCtx.services().get<AliceO2::InfoLogger::InfoLogger>();
-  } catch (const RuntimeErrorRef& err) {
-    ILOG(Error) << "Could not find the DPL InfoLogger." << ENDM;
-  }
-
-  mRunnerConfig.infologgerDiscardParameters.discardFile = templateILDiscardFile(mRunnerConfig.infologgerDiscardParameters.discardFile, iCtx);
-  QcInfoLogger::init("aggregator",
-                     mRunnerConfig.infologgerDiscardParameters,
-                     il,
-                     ilContext);
+  core::initInfologger(iCtx, mRunnerConfig.infologgerDiscardParameters, "aggregator");
 }
 
 void AggregatorRunner::initLibraries()

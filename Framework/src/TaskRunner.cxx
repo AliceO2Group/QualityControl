@@ -119,23 +119,7 @@ void TaskRunner::refreshConfig(InitContext& iCtx)
 
 void TaskRunner::initInfologger(InitContext& iCtx)
 {
-  // TODO : the method should be merged with the other, similar, methods in *Runners
-
-  AliceO2::InfoLogger::InfoLoggerContext* ilContext = nullptr;
-  AliceO2::InfoLogger::InfoLogger* il = nullptr;
-  try {
-    ilContext = &iCtx.services().get<AliceO2::InfoLogger::InfoLoggerContext>();
-    il = &iCtx.services().get<AliceO2::InfoLogger::InfoLogger>();
-  } catch (const RuntimeErrorRef& err) {
-    ILOG(Error, Devel) << "Could not find the DPL InfoLogger" << ENDM;
-  }
-
-  mTaskConfig.infologgerDiscardParameters.discardFile = templateILDiscardFile(mTaskConfig.infologgerDiscardParameters.discardFile, iCtx);
-  QcInfoLogger::init("task/" + mTaskConfig.taskName,
-                     mTaskConfig.infologgerDiscardParameters,
-                     il,
-                     ilContext);
-  QcInfoLogger::setDetector(mTaskConfig.detectorName);
+  core::initInfologger(iCtx, mTaskConfig.infologgerDiscardParameters, "task/" + mTaskConfig.taskName, mTaskConfig.detectorName);
 }
 
 void TaskRunner::init(InitContext& iCtx)
