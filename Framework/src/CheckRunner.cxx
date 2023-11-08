@@ -114,13 +114,6 @@ std::string CheckRunner::createCheckRunnerFacility(std::string deviceName)
   return facilityName;
 }
 
-std::string CheckRunner::createSinkCheckRunnerName(InputSpec input)
-{
-  std::string name(CheckRunner::createCheckRunnerIdString() + "-sink-");
-  name += DataSpecUtils::label(input);
-  return name;
-}
-
 o2::framework::Outputs CheckRunner::collectOutputs(const std::vector<CheckConfig>& checkConfigs)
 {
   o2::framework::Outputs outputs;
@@ -131,7 +124,8 @@ o2::framework::Outputs CheckRunner::collectOutputs(const std::vector<CheckConfig
 }
 
 CheckRunner::CheckRunner(CheckRunnerConfig checkRunnerConfig, const std::vector<CheckConfig>& checkConfigs, o2::framework::Inputs inputs)
-  : mDeviceName(createSinkCheckRunnerName(inputs[0])),
+  : mDetectorName(getDetectorName(checkConfigs)),
+    mDeviceName(createCheckRunnerName(checkConfigs)),
     mConfig(std::move(checkRunnerConfig)),
     mInputs{ inputs },
     mOutputs{CheckRunner::collectOutputs(checkConfigs)},
@@ -141,6 +135,8 @@ CheckRunner::CheckRunner(CheckRunnerConfig checkRunnerConfig, const std::vector<
     mTotalNumberMOStored(0),
     mTotalQOSent(0)
 {
+  cout << "mDetectorName : " << mDetectorName << endl;
+  cout << "mDeviceName : " << mDeviceName << endl;
 }
 
 CheckRunner::~CheckRunner()
@@ -240,7 +236,7 @@ void CheckRunner::run(framework::ProcessingContext& ctx)
 
   auto now = getCurrentTimestamp();
   store(qualityObjects, now);
-  store(mMonitorObjectStoreVector, now);
+  store(mToBeStored, now);
 
   send(qualityObjects, ctx.outputs());
 
@@ -252,7 +248,7 @@ void CheckRunner::run(framework::ProcessingContext& ctx)
 
 void CheckRunner::prepareCacheData(framework::InputRecord& inputRecord)
 {
-  mMonitorObjectStoreVector.clear();
+  mToBeStored.clear();
 
   for (const auto& input : mInputs) {
     auto dataRef = inputRecord.get(input.binding.c_str());
@@ -282,7 +278,6 @@ void CheckRunner::prepareCacheData(framework::InputRecord& inputRecord)
 
       // for each item of the array, check whether it is a MonitorObject. If not, create one and encapsulate.
       // Then, store the MonitorObject in the various maps and vectors we will use later.
-      bool store = true;
       for (const auto tObject : *array) {
         std::shared_ptr<MonitorObject> mo{ dynamic_cast<MonitorObject*>(tObject) };
 
@@ -300,9 +295,8 @@ void CheckRunner::prepareCacheData(framework::InputRecord& inputRecord)
           updatePolicyManager.updateObjectRevision(mo->getFullName());
           mTotalNumberObjectsReceived++;
 
-          if (store) { // Monitor Object will be stored later, after possible beautification
-            mMonitorObjectStoreVector.push_back(mo);
-          }
+          // Monitor Object will be stored later, after possible beautification
+          mToBeStored.push_back(mo);
         }
       }
     }
@@ -571,7 +565,7 @@ void CheckRunner::reset()
   mTotalQOSent = 0;
 }
 
-std::string CheckRunner::getDetectorName(const std::vector<CheckConfig> checks)
+std::string CheckRunner::getDetectorName(const std::vector<CheckConfig>& checks)
 {
   std::string detectorName;
   for (auto& check : checks) {

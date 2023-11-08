@@ -34,7 +34,6 @@
 #include "QualityControl/CheckRunnerConfig.h"
 #include "QualityControl/Check.h"
 #include "QualityControl/MonitorObject.h"
-#include "QualityControl/QualityObject.h"
 #include "QualityControl/UpdatePolicyManager.h"
 
 namespace o2::quality_control::core
@@ -111,13 +110,12 @@ class CheckRunner : public framework::Task
   static framework::DataProcessorLabel getCheckRunnerLabel() { return { "qc-check" }; }
   static std::string createCheckRunnerIdString() { return "qc-check"; };
   static std::string createCheckRunnerName(const std::vector<CheckConfig>& checks);
-  static std::string createSinkCheckRunnerName(o2::framework::InputSpec input);
   static std::string createCheckRunnerFacility(std::string deviceName);
 
   /// \brief Compute the detector name to be used for this checkrunner.
   /// Compute the detector name to be used for this checkrunner.
   /// If all checks belong to the same detector we use it, otherwise we use "MANY"
-  static std::string getDetectorName(const std::vector<CheckConfig> checks);
+  static std::string getDetectorName(const std::vector<CheckConfig>& checks);
 
  private:
   /**
@@ -209,7 +207,7 @@ class CheckRunner : public framework::Task
   std::shared_ptr<Activity> mActivity; // shareable with the Checks
   CheckRunnerConfig mConfig;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
-  std::vector<std::shared_ptr<MonitorObject>> mMonitorObjectStoreVector;
+  std::vector<std::shared_ptr<MonitorObject>> mToBeStored;
   UpdatePolicyManager updatePolicyManager;
   bool mReceivedEOS = false;
 
