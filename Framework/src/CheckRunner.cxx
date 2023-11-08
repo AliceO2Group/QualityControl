@@ -128,7 +128,7 @@ CheckRunner::CheckRunner(CheckRunnerConfig checkRunnerConfig, const std::vector<
     mDeviceName(createCheckRunnerName(checkConfigs)),
     mConfig(std::move(checkRunnerConfig)),
     mInputs{ inputs },
-    mOutputs{CheckRunner::collectOutputs(checkConfigs)},
+    mOutputs{ CheckRunner::collectOutputs(checkConfigs) },
     mTotalNumberObjectsReceived(0),
     mTotalNumberCheckExecuted(0),
     mTotalNumberQOStored(0),

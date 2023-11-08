@@ -38,7 +38,7 @@ DataProcessorSpec CheckRunnerFactory::create(CheckRunnerConfig checkRunnerConfig
 
   // concatenate all inputs
   o2::framework::Inputs allInputs;
-  for(auto config : checkConfigs) {
+  for (auto config : checkConfigs) {
     allInputs.insert(allInputs.end(), config.inputSpecs.begin(), config.inputSpecs.end());
   }
 
