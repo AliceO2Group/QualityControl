@@ -79,7 +79,6 @@ namespace o2::quality_control::checker
 class CheckRunner : public framework::Task
 {
  public:
-  /// Constructor
   /**
    * \brief CheckRunner constructor
    *
@@ -88,20 +87,9 @@ class CheckRunner : public framework::Task
    * Group check assumes that the input of the checks is the same!
    *
    * @param checkRunnerConfig configuration of CheckRunner
-   * @param checkConfigs configuration of all Checks that should run in this data processor
-   */
-  CheckRunner(CheckRunnerConfig, const std::vector<CheckConfig>& checkConfigs);
-
-  /**
-   * \brief CheckRunner constructor
-   *
-   * Create a sink for the Input. It is expected to receive Monitor Object to store.
-   * It will not run any checks on a given input.
-   *
-   * @param checkRunnerConfig configuration of CheckRunner
    * @param input Monitor Object input spec.
    */
-  CheckRunner(CheckRunnerConfig, o2::framework::InputSpec input);
+  CheckRunner(CheckRunnerConfig checkRunnerConfig, const std::vector<CheckConfig>& checkConfigs, o2::framework::Inputs inputs);
 
   /// Destructor
   ~CheckRunner() override;
@@ -118,7 +106,6 @@ class CheckRunner : public framework::Task
   framework::Inputs getInputs() { return mInputs; };
   framework::Outputs getOutputs() { return mOutputs; };
 
-  void setTaskStoreSet(std::unordered_set<std::string> storeSet) { mInputStoreSet = storeSet; }
   std::string getDeviceName() { return mDeviceName; };
 
   static framework::DataProcessorLabel getCheckRunnerLabel() { return { "qc-check" }; }
@@ -222,7 +209,6 @@ class CheckRunner : public framework::Task
   std::shared_ptr<Activity> mActivity; // shareable with the Checks
   CheckRunnerConfig mConfig;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
-  std::unordered_set<std::string> mInputStoreSet;
   std::vector<std::shared_ptr<MonitorObject>> mMonitorObjectStoreVector;
   UpdatePolicyManager updatePolicyManager;
   bool mReceivedEOS = false;

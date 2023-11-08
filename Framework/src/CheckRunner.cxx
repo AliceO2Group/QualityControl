@@ -130,29 +130,11 @@ o2::framework::Outputs CheckRunner::collectOutputs(const std::vector<CheckConfig
   return outputs;
 }
 
-CheckRunner::CheckRunner(CheckRunnerConfig checkRunnerConfig, const std::vector<CheckConfig>& checkConfigs)
-  : mDetectorName(getDetectorName(checkConfigs)),
-    mDeviceName(createCheckRunnerName(checkConfigs)),
+CheckRunner::CheckRunner(CheckRunnerConfig checkRunnerConfig, const std::vector<CheckConfig>& checkConfigs, o2::framework::Inputs inputs)
+  : mDeviceName(createSinkCheckRunnerName(inputs[0])),
     mConfig(std::move(checkRunnerConfig)),
-    /* All checks have the same Input */
-    mInputs(checkConfigs.front().inputSpecs),
-    mOutputs(CheckRunner::collectOutputs(checkConfigs)),
-    mTotalNumberObjectsReceived(0),
-    mTotalNumberCheckExecuted(0),
-    mTotalNumberQOStored(0),
-    mTotalNumberMOStored(0),
-    mTotalQOSent(0)
-{
-  for (auto& checkConfig : checkConfigs) {
-    mChecks.emplace(checkConfig.name, checkConfig);
-  }
-}
-
-CheckRunner::CheckRunner(CheckRunnerConfig checkRunnerConfig, InputSpec input)
-  : mDeviceName(createSinkCheckRunnerName(input)),
-    mConfig(std::move(checkRunnerConfig)),
-    mInputs{ input },
-    mOutputs{},
+    mInputs{ inputs },
+    mOutputs{CheckRunner::collectOutputs(checkConfigs)},
     mTotalNumberObjectsReceived(0),
     mTotalNumberCheckExecuted(0),
     mTotalNumberQOStored(0),
@@ -300,7 +282,7 @@ void CheckRunner::prepareCacheData(framework::InputRecord& inputRecord)
 
       // for each item of the array, check whether it is a MonitorObject. If not, create one and encapsulate.
       // Then, store the MonitorObject in the various maps and vectors we will use later.
-      bool store = mInputStoreSet.count(DataSpecUtils::label(input)) > 0; // Check if this CheckRunner stores this input
+      bool store = true;
       for (const auto tObject : *array) {
         std::shared_ptr<MonitorObject> mo{ dynamic_cast<MonitorObject*>(tObject) };
 
