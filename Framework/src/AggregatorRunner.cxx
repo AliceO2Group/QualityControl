@@ -149,7 +149,7 @@ std::string AggregatorRunner::createAggregatorRunnerName()
 
 void AggregatorRunner::init(framework::InitContext& iCtx)
 {
-  initInfoLogger(iCtx);
+  core::initInfologger(iCtx, mRunnerConfig.infologgerDiscardParameters, "aggregator");
   refreshConfig(iCtx);
   QcInfoLogger::setDetector(AggregatorRunner::getDetectorName(mAggregators));
   Bookkeeping::getInstance().init(mRunnerConfig.bookkeepingUrl);
@@ -311,11 +311,6 @@ void AggregatorRunner::initAggregators()
   }
 
   reorderAggregators();
-}
-
-void AggregatorRunner::initInfoLogger(InitContext& iCtx)
-{
-  core::initInfologger(iCtx, mRunnerConfig.infologgerDiscardParameters, "aggregator");
 }
 
 void AggregatorRunner::initLibraries()

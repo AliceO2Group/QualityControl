@@ -212,7 +212,7 @@ void CheckRunner::refreshConfig(InitContext& iCtx)
 void CheckRunner::init(framework::InitContext& iCtx)
 {
   try {
-    initInfologger(iCtx);
+    core::initInfologger(iCtx, mConfig.infologgerDiscardParameters, createCheckRunnerFacility(mDeviceName));
     refreshConfig(iCtx);
     Bookkeeping::getInstance().init(mConfig.bookkeepingUrl);
     initDatabase();
@@ -495,11 +495,6 @@ void CheckRunner::initServiceDiscovery()
   }
   mServiceDiscovery = std::make_shared<ServiceDiscovery>(mConfig.consulUrl, mDeviceName, mDeviceName);
   ILOG(Info, Support) << "ServiceDiscovery initialized" << ENDM;
-}
-
-void CheckRunner::initInfologger(framework::InitContext& iCtx)
-{
-  core::initInfologger(iCtx, mConfig.infologgerDiscardParameters, createCheckRunnerFacility(mDeviceName));
 }
 
 void CheckRunner::initLibraries()

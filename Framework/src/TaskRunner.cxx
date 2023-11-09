@@ -117,14 +117,9 @@ void TaskRunner::refreshConfig(InitContext& iCtx)
   }
 }
 
-void TaskRunner::initInfologger(InitContext& iCtx)
-{
-  core::initInfologger(iCtx, mTaskConfig.infologgerDiscardParameters, "task/" + mTaskConfig.taskName, mTaskConfig.detectorName);
-}
-
 void TaskRunner::init(InitContext& iCtx)
 {
-  initInfologger(iCtx);
+  core::initInfologger(iCtx, mTaskConfig.infologgerDiscardParameters, "task/" + mTaskConfig.taskName, mTaskConfig.detectorName);
   ILOG(Info, Devel) << "Initializing TaskRunner" << ENDM;
 
   refreshConfig(iCtx);
