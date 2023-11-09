@@ -54,15 +54,17 @@ class PedestalsTask final : public TaskInterface
 
  private:
   template <typename T>
-  void publishObject(T* histo, std::string drawOption, bool statBox)
+  void publishObject(T* histo, std::string drawOption, bool statBox, bool doPublish = true)
   {
     histo->SetOption(drawOption.c_str());
     if (!statBox) {
       histo->SetStats(0);
     }
     mAllHistograms.push_back(histo);
-    getObjectsManager()->startPublishing(histo);
-    getObjectsManager()->setDefaultDrawOptions(histo, drawOption);
+    if (doPublish) {
+      getObjectsManager()->startPublishing(histo);
+      getObjectsManager()->setDefaultDrawOptions(histo, drawOption);
+    }
   }
 
   /// check if a given electronics channel is associated with a detector pad
@@ -86,6 +88,8 @@ class PedestalsTask final : public TaskInterface
   o2::mch::raw::Det2ElecMapper mDet2ElecMapper;
   o2::mch::raw::FeeLink2SolarMapper mFeeLink2SolarMapper;
   o2::mch::raw::Solar2FeeLinkMapper mSolar2FeeLinkMapper;
+
+  bool mFullHistos{ false };
 
   /// helper class that performs the actual computation of the pedestals from the input digits
   o2::mch::calibration::PedestalData mPedestalData;
