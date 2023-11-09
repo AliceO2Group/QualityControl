@@ -74,11 +74,6 @@ std::string CheckRunner::createCheckRunnerName()
   return CheckRunner::createCheckRunnerIdString();
 }
 
-std::string CheckRunner::createCheckRunnerFacility(std::string deviceName)
-{
-  return deviceName;
-}
-
 o2::framework::Outputs CheckRunner::collectOutputs(const std::vector<CheckConfig>& checkConfigs)
 {
   o2::framework::Outputs outputs;
@@ -100,6 +95,9 @@ CheckRunner::CheckRunner(CheckRunnerConfig checkRunnerConfig, const std::vector<
     mTotalNumberMOStored(0),
     mTotalQOSent(0)
 {
+  for (auto& checkConfig : checkConfigs) {
+    mChecks.emplace(checkConfig.name, checkConfig);
+  }
 }
 
 CheckRunner::~CheckRunner()
@@ -196,6 +194,7 @@ void CheckRunner::run(framework::ProcessingContext& ctx)
   prepareCacheData(ctx.inputs());
 
   auto qualityObjects = check();
+  cout << "run : " << qualityObjects.size() << endl;
 
   auto now = getCurrentTimestamp();
   store(qualityObjects, now);
@@ -290,7 +289,7 @@ void CheckRunner::sendPeriodicMonitoring()
 
 QualityObjectsType CheckRunner::check()
 {
-  ILOG(Debug, Devel) << "Trying " << mChecks.size() << " checks for " << mMonitorObjects.size() << " monitor objects"
+  ILOG(Debug, Devel) << "check(): Trying " << mChecks.size() << " checks for " << mMonitorObjects.size() << " monitor objects"
                      << ENDM;
 
   QualityObjectsType allQOs;
@@ -450,7 +449,7 @@ void CheckRunner::initInfologger(framework::InitContext& iCtx)
   }
 
   mConfig.infologgerDiscardParameters.discardFile = templateILDiscardFile(mConfig.infologgerDiscardParameters.discardFile, iCtx);
-  QcInfoLogger::init(createCheckRunnerFacility(mDeviceName),
+  QcInfoLogger::init(mDeviceName,
                      mConfig.infologgerDiscardParameters,
                      il,
                      ilContext);
