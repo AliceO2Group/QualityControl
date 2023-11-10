@@ -46,8 +46,8 @@ DataProcessorSpec CheckRunnerFactory::create(CheckRunnerConfig checkRunnerConfig
   // We can end up with duplicated inputs that will later lead to circular dependencies on the checkRunner device.
   o2::framework::Inputs allInputsNoDups;
   std::set<std::string> alreadySeen;
-  for(auto input: allInputs) {
-    if(alreadySeen.count(input.binding) == 0) {
+  for (auto input : allInputs) {
+    if (alreadySeen.count(input.binding) == 0) {
       allInputsNoDups.push_back(input);
     }
     alreadySeen.insert(input.binding);
