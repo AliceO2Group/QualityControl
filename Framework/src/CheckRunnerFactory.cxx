@@ -42,7 +42,17 @@ DataProcessorSpec CheckRunnerFactory::create(CheckRunnerConfig checkRunnerConfig
     allInputs.insert(allInputs.end(), config.inputSpecs.begin(), config.inputSpecs.end());
   }
 
-  CheckRunner qcCheckRunner{ std::move(checkRunnerConfig), checkConfigs, allInputs };
+  // We can end up with duplicated inputs that will later lead to circular dependencies on the checkRunner device.
+  o2::framework::Inputs allInputsNoDups;
+  std::set<std::string> alreadySeen;
+  for(auto input: allInputs) {
+    if(alreadySeen.count(input.binding) == 0) {
+      allInputsNoDups.push_back(input);
+    }
+    alreadySeen.insert(input.binding);
+  }
+
+  CheckRunner qcCheckRunner{ std::move(checkRunnerConfig), checkConfigs, allInputsNoDups };
 
   DataProcessorSpec newCheckRunner{ qcCheckRunner.getDeviceName(),
                                     qcCheckRunner.getInputs(),
