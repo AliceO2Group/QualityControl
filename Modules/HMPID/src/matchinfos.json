@@ -23,16 +23,16 @@
          }
       },
       "tasks":{
-         "TaskMatchInfos":{
+         "TaskMatches":{
             "active":"true",
-            "className":"o2::quality_control_modules::hmpid::HmpidTaskMatchInfo",
+            "className":"o2::quality_control_modules::hmpid::HmpidTaskMatches",
             "moduleName":"QcHMPID",
             "detectorName":"HMP",
             "cycleDurationSeconds":"10",
             "maxNumberCycles":"-1",
             "dataSource":{
                "type":"dataSamplingPolicy",
-               "name":"hmp-matchinfos"
+               "name":"hmp-matches"
             },
             "location":"remote"
          }
@@ -40,12 +40,12 @@
    },
    "dataSamplingPolicies":[
       {
-         "id":"hmp-matchinfos",
+         "id":"hmp-matches",
          "active":"true",
          "machines":[
             
          ],
-         "query":"matchHMP:HMP/MATCHES/0;clsHMP_GLO_MCTR:HMP/MCLABELS/0",
+         "query":"matchHMP:HMP/MATCHES/0;clsHMP_GLO_MCTR:HMP/MCLABELS/0;hmpidcluster:HMP/CLUSTERS/0;hmpidtriggers:HMP/INTRECORDS1/0",
          "samplingConditions":[
             {
                "condition":"random",

@@ -25,7 +25,7 @@
       "tasks":{
          "TaskClusters":{
             "active":"true",
-            "className":"o2::quality_control_modules::hmpid::HmpidTaskClusters",
+            "className":"o2::quality_control_modules::hmpid::HmpidTaskPippo",
             "moduleName":"QcHMPID",
             "detectorName":"HMP",
             "cycleDurationSeconds":"10",
