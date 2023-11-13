@@ -226,9 +226,6 @@ void HmpidTask::startOfActivity(const Activity& /*activity*/)
 void HmpidTask::startOfCycle()
 {
   ILOG(Debug, Devel) << "startOfCycle" << ENDM;
-  cout << endl
-       << "Start of Cycle " << NumCycles << endl
-       << endl;
 }
 
 void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
