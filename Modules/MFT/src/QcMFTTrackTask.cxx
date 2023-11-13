@@ -84,47 +84,60 @@ void QcMFTTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
   mNumberOfTracksPerTF = std::make_unique<TH1FRatio>("mMFTTracksPerTF",
                                                      "Number of tracks per TimeFrame; Number of tracks per TF; # entries per orbit", maxTracksPerTF, -0.5, maxTracksPerTF - 0.5, true);
   getObjectsManager()->startPublishing(mNumberOfTracksPerTF.get());
+  getObjectsManager()->setDisplayHint(mNumberOfTracksPerTF.get(), "hist");
 
   mTrackNumberOfClusters = std::make_unique<TH1FRatio>("mMFTTrackNumberOfClusters",
                                                        "Number Of Clusters Per Track; # clusters; # entries per orbit", 10, 0.5, 10.5, true);
   getObjectsManager()->startPublishing(mTrackNumberOfClusters.get());
+  getObjectsManager()->setDisplayHint(mTrackNumberOfClusters.get(), "hist");
 
   mCATrackNumberOfClusters = std::make_unique<TH1FRatio>("CA/mMFTCATrackNumberOfClusters",
                                                          "Number Of Clusters Per CA Track; # clusters; # entries per orbit", 10, 0.5, 10.5, true);
   getObjectsManager()->startPublishing(mCATrackNumberOfClusters.get());
+  getObjectsManager()->setDisplayHint(mCATrackNumberOfClusters.get(), "hist");
 
   mLTFTrackNumberOfClusters = std::make_unique<TH1FRatio>("LTF/mMFTLTFTrackNumberOfClusters",
                                                           "Number Of Clusters Per LTF Track; # clusters; # entries per orbit", 10, 0.5, 10.5, true);
   getObjectsManager()->startPublishing(mLTFTrackNumberOfClusters.get());
+  getObjectsManager()->setDisplayHint(mLTFTrackNumberOfClusters.get(), "hist");
 
   mTrackInvQPt = std::make_unique<TH1FRatio>("mMFTTrackInvQPt", "Track q/p_{T}; q/p_{T} [1/GeV]; # entries per orbit", 250, -10, 10, true);
   getObjectsManager()->startPublishing(mTrackInvQPt.get());
+  getObjectsManager()->setDisplayHint(mTrackInvQPt.get(), "hist");
 
   mTrackChi2 = std::make_unique<TH1FRatio>("mMFTTrackChi2", "Track #chi^{2}/NDF; #chi^{2}/NDF; # entries per orbit", 210, -0.5, 20.5, true);
   getObjectsManager()->startPublishing(mTrackChi2.get());
+  getObjectsManager()->setDisplayHint(mTrackChi2.get(), "hist");
 
   mTrackCharge = std::make_unique<TH1FRatio>("mMFTTrackCharge", "Track Charge; q; # entries per orbit", 3, -1.5, 1.5, true);
   getObjectsManager()->startPublishing(mTrackCharge.get());
+  getObjectsManager()->setDisplayHint(mTrackCharge.get(), "hist");
 
   mTrackPhi = std::make_unique<TH1FRatio>("mMFTTrackPhi", "Track #phi; #phi; # entries per orbit", 100, -3.2, 3.2, true);
   getObjectsManager()->startPublishing(mTrackPhi.get());
+  getObjectsManager()->setDisplayHint(mTrackPhi.get(), "hist");
 
   mPositiveTrackPhi = std::make_unique<TH1FRatio>("mMFTPositiveTrackPhi", "Positive Track #phi; #phi; # entries per orbit", 100, -3.2, 3.2, true);
   getObjectsManager()->startPublishing(mPositiveTrackPhi.get());
+  getObjectsManager()->setDisplayHint(mPositiveTrackPhi.get(), "hist");
 
   mNegativeTrackPhi = std::make_unique<TH1FRatio>("mMFTNegativeTrackPhi", "Negative Track #phi; #phi; # entries per orbit", 100, -3.2, 3.2, true);
   getObjectsManager()->startPublishing(mNegativeTrackPhi.get());
+  getObjectsManager()->setDisplayHint(mNegativeTrackPhi.get(), "hist");
 
   mTrackEta = std::make_unique<TH1FRatio>("mMFTTrackEta", "Track #eta; #eta; # entries per orbit", 50, -4, -2, true);
   getObjectsManager()->startPublishing(mTrackEta.get());
+  getObjectsManager()->setDisplayHint(mTrackEta.get(), "hist");
 
   for (auto minNClusters : sMinNClustersList) {
     auto nHisto = minNClusters - sMinNClustersList[0];
     mTrackEtaNCls[nHisto] = std::make_unique<TH1FRatio>(Form("mMFTTrackEta_%d_MinClusters", minNClusters), Form("Track #eta (NCls >= %d); #eta; # entries per orbit", minNClusters), 50, -4, -2, true);
     getObjectsManager()->startPublishing(mTrackEtaNCls[nHisto].get());
+    getObjectsManager()->setDisplayHint(mTrackEtaNCls[nHisto].get(), "hist");
 
     mTrackPhiNCls[nHisto] = std::make_unique<TH1FRatio>(Form("mMFTTrackPhi_%d_MinClusters", minNClusters), Form("Track #phi (NCls >= %d); #phi; # entries per orbit", minNClusters), 100, -3.2, 3.2, true);
     getObjectsManager()->startPublishing(mTrackPhiNCls[nHisto].get());
+    getObjectsManager()->setDisplayHint(mTrackPhiNCls[nHisto].get(), "hist");
 
     mTrackXYNCls[nHisto] = std::make_unique<TH2FRatio>(Form("mMFTTrackXY_%d_MinClusters", minNClusters), Form("Track Position (NCls >= %d); x; y", minNClusters), 320, -16, 16, 320, -16, 16, true);
     getObjectsManager()->startPublishing(mTrackXYNCls[nHisto].get());
@@ -137,23 +150,27 @@ void QcMFTTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   mCATrackEta = std::make_unique<TH1FRatio>("CA/mMFTCATrackEta", "CA Track #eta; #eta; # entries per orbit", 50, -4, -2, true);
   getObjectsManager()->startPublishing(mCATrackEta.get());
+  getObjectsManager()->setDisplayHint(mCATrackEta.get(), "hist");
 
   mLTFTrackEta = std::make_unique<TH1FRatio>("LTF/mMFTLTFTrackEta", "LTF Track #eta; #eta; # entries per orbit", 50, -4, -2, true);
   getObjectsManager()->startPublishing(mLTFTrackEta.get());
+  getObjectsManager()->setDisplayHint(mLTFTrackEta.get(), "hist");
 
   mCATrackPt = std::make_unique<TH1FRatio>("CA/mMFTCATrackPt", "CA Track p_{T}; p_{T} (GeV/c); # entries per orbit", 300, 0, 30, true);
   getObjectsManager()->startPublishing(mCATrackPt.get());
-  getObjectsManager()->setDisplayHint(mCATrackPt.get(), "logy");
+  getObjectsManager()->setDisplayHint(mCATrackPt.get(), "hist logy");
 
   mLTFTrackPt = std::make_unique<TH1FRatio>("LTF/mMFTLTFTrackPt", "LTF Track p_{T}; p_{T} (GeV/c); # entries per orbit", 300, 0, 30, true);
   getObjectsManager()->startPublishing(mLTFTrackPt.get());
-  getObjectsManager()->setDisplayHint(mLTFTrackPt.get(), "logy");
+  getObjectsManager()->setDisplayHint(mLTFTrackPt.get(), "hist logy");
 
   mTrackTanl = std::make_unique<TH1FRatio>("mMFTTrackTanl", "Track tan #lambda; tan #lambda; # entries per orbit", 100, -25, 0, true);
   getObjectsManager()->startPublishing(mTrackTanl.get());
+  getObjectsManager()->setDisplayHint(mTrackTanl.get(), "hist");
 
   mTrackROFNEntries = std::make_unique<TH1FRatio>("mMFTTrackROFSize", "Distribution of the #tracks per ROF; # tracks per ROF; # entries per orbit", MaxTrackROFSize, 0, MaxTrackROFSize, true);
   getObjectsManager()->startPublishing(mTrackROFNEntries.get());
+  getObjectsManager()->setDisplayHint(mTrackROFNEntries.get(), "hist");
 
   mTracksBC = std::make_unique<TH1FRatio>("mMFTTracksBC", "Tracks per BC; BCid; # entries per orbit", o2::constants::lhc::LHCMaxBunches, 0, o2::constants::lhc::LHCMaxBunches, true);
   mTracksBC->SetMinimum(0.1);

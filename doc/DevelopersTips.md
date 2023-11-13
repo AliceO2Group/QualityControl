@@ -443,31 +443,11 @@ Query the paths that were edited during a run for a detector:
 select path from ccdb, ccdb_paths where ccdb_paths.pathid = ccdb.pathid AND ccdb.metadata -> '1048595860' in ('539908') and ccdb_paths.path like 'qc/MCH%';
 ```
 
-Number of objects in a path
-```sql
-select count(distinct ccdb_paths.pathid) from ccdb, ccdb_paths where ccdb_paths.pathid = ccdb.pathid AND ccdb_paths.path like 'qc/%';
-```
-
 Number of versions: check the web interface of the qcdb. 
-
-List the tasks and the number of objects for each (in a number of runs)
-```sql
-select substring(path from '^qc\/\w*\/MO\/\w*\/') as task, count(distinct path) from ccdb, ccdb_paths where ccdb_paths.pathid = ccdb.pathid AND ccdb.metadata -> '1048595860' in  ('539908') group by task;
-```
 
 List the tasks of a certain class in a certain run
 ```
 select substring(path from '^qc\/\w*\/MO\/\w*\/') as task from ccdb, ccdb_paths where ccdb_paths.pathid = ccdb.pathid AND ccdb.metadata -> '1048595860' in  ('539908') and ccdb.metadata -> '809471350' = 'o2::quality_control::postprocessing::SliceTrendingTask' group by task;
-```
-
-List the detectors and the number of objects for each (in a list of runs)
-```sql
-select substring(path from '^qc\/\w*\/MO\/') as task, count(distinct path) from ccdb, ccdb_paths where ccdb_paths.pathid = ccdb.pathid AND ccdb.metadata -> '1048595860' in  ('541814','541620','541616','541600','541599','541598','541597','541595','541486','541485','541468','541466','540894','540893','540888','540887','540884','540882','540881','540879','540855','540854','540852','540851','540848','540847','540846','540834','540831','540825','540824','540781','540778','540766','540721','540711','540646','540644','540643','540602') group by task;
-```
-
-List the detectors and the number of versions
-```sql
-select substring(path from '^qc\/\w*\/') as task, count( path) from ccdb, ccdb_paths where ccdb_paths.pathid = ccdb.pathid AND ccdb.metadata -> '1048595860' in  ('541814','541620','541616','541600','541599','541598','541597','541595','541486','541485','541468','541466','540894','540893','540888','540887','540884','540882','540881','540879','540855','540854','540852','540851','540848','540847','540846','540834','540831','540825','540824','540781','540778','540766','540721','540711','540646','540644','540643','540602') group by task;
 ```
 
 List average number of version per run per detector ? 
@@ -482,6 +462,31 @@ FROM (SELECT substring(ccdb_paths.path from '^qc\/\w*\/') as task,
       WHERE ccdb.metadata -> '1048595860' in ('541814','541620','541616','541600','541599','541598','541597','541595','541486','541485','541468','541466','540894','540893','540888','540887','540884','540882','540881','540879','540855','540854','540852','540851','540848','540847','540846','540834','540831','540825','540824','540781','540778','540766','540721','540711','540646','540644','540643','540602')
       GROUP BY task
      ) subquery ;
+```
+
+#### for the review
+
+Get the total number of versions and size from QCDB.
+
+List the detectors and the number of objects for each (in a list of runs produced in BK), replace MO by QO for the number of quality objects
+```sql
+select substring(path from '^qc_async\/\w*\/MO\/') as task, count(distinct path) from ccdb, ccdb_paths where ccdb_paths.pathid = ccdb.pathid AND ccdb.metadata -> '1048595860' in  ('545367','545345','545312','545311','545289','545262','545249','545246','545223','545222','545210','545185','545184','545171','544991','544968','544963','544947','544917','544896','544886','544868','544813','544794','544742','544693','544583','544582','544551','544549','544518','544491','544476','544474','544454','544391','544389','543873','543872','543818','543734','543733','543732','543536','543515','543469','543467') group by task;
+```
+
+List the detectors and the number of versions (Qo+MO)
+```sql
+select substring(path from '^qc_async\/\w*\/') as task, count( path) from ccdb, ccdb_paths where ccdb_paths.pathid = ccdb.pathid AND ccdb.metadata -> '1048595860' in  ('545367','545345','545312','545311','545289','545262','545249','545246','545223','545222','545210','545185','545184','545171','544991','544968','544963','544947','544917','544896','544886','544868','544813','544794','544742','544693','544583','544582','544551','544549','544518','544491','544476','544474','544454','544391','544389','543873','543872','543818','543734','543733','543732','543536','543515','543469','543467') group by task;
+```
+
+List the tasks and the number of objects for each (in a number of runs)
+```sql
+select substring(path from '^qc_async\/\w*\/MO\/\w*\/') as task, count(distinct path) from ccdb, ccdb_paths where ccdb_paths.pathid = ccdb.pathid AND ccdb.metadata -> '1048595860' in  ('545367','545345','545312','545311','545289','545262','545249','545246','545223','545222','545210','545185','545184','545171','544991','544968','544963','544947','544917','544896','544886','544868','544813','544794','544742','544693','544583','544582','544551','544549','544518','544491','544476','544474','544454','544391','544389','543873','543872','543818','543734','543733','543732','543536','543515','543469','543467') group by task;
+```
+Replace the | with tab in a text editor and paste in Excel to then manipulate it to know the number of tasks per det.
+
+Total number of paths
+```sql
+select count(distinct ccdb_paths.pathid) from ccdb, ccdb_paths where ccdb_paths.pathid = ccdb.pathid AND ccdb_paths.path like 'qc/%';
 ```
 
 ### Merge and upload QC results for all subjobs of a grid job
