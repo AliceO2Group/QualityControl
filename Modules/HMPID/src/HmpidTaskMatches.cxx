@@ -145,7 +145,7 @@ void HmpidTaskMatches::BookHistograms()
   for (int iCh = 0; iCh < 7; iCh++) {
 
     mMatchInfoResidualsXTrackMIP[iCh] = new TH1F(Form("X Residuals chamber %i", iCh), Form("X Residuals chamber %i; X residuals (cm); Counts/1 cm", iCh), 100, -50., 50.);
-    mMatchInfoResidualsYTrackMIP[iCh] = new TH1F(Form("Y Residuals chamber %i", iCh), Form("Y Residuals chamber %i chamber %i; Y residuals (cm); Counts/1 cm", iCh), 100, -50., 50.);
+    mMatchInfoResidualsYTrackMIP[iCh] = new TH1F(Form("Y Residuals chamber %i", iCh), Form("Y Residuals chamber %i; Y residuals (cm); Counts/1 cm", iCh), 100, -50., 50.);
     mMatchInfoChargeClusterMIP[iCh] = new TH1F(Form("MIP Cluster Charge chamber %i", iCh), Form("MIP Cluster Charge chamber %i; ADC charge; Counts/1 ADC", iCh), 2000, 200., 2200.);
     mMatchInfoChargeClusterPhotons[iCh] = new TH1F(Form("Photo-electron Cluster Charge chamber %i", iCh), Form("Photo-electron cluster charge chmaber %i; ADC charge; Counts/1 ADC", iCh), 180, 20., 200.);
     mMatchInfoThetaCherenkovVsMom[iCh] = new TH2F(Form("ThetaCherenkov Vs Mom chamber %i", iCh), Form("ThetaCherenkov Vs Mom chamber %i; #it{p} (GeV/#it{c}); #theta_{Ckov} (rad);", iCh), 100, 0., 10., 1000, 0., 1.);
