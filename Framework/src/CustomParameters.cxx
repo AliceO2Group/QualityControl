@@ -57,7 +57,7 @@ const std::unordered_map<std::string, std::string>& CustomParameters::getAllDefa
 std::string CustomParameters::at(const std::string& key, const std::string& runType, const std::string& beamType) const
 {
   auto optionalResult = atOptional(key, runType, beamType); // just reuse the logic we developed in atOptional
-  if(!optionalResult.has_value()) {
+  if (!optionalResult.has_value()) {
     return mCustomParameters.at(runType).at(beamType).at(key); // we know we will get a out_of_range exception
   }
   return optionalResult.value();
@@ -66,10 +66,10 @@ std::string CustomParameters::at(const std::string& key, const std::string& runT
 std::optional<std::string> CustomParameters::atOptional(const std::string& key, const std::string& runType, const std::string& beamType) const
 {
   std::optional<std::string> result = {};
-  std::vector<std::string> runTypes = {runType, std::string("default")};
-  std::vector<std::string> beamTypes = {beamType, std::string("default")};
-  for(int rt = 0 ; rt < 2 ; rt++) {
-    for(int bt = 0 ; bt < 2 ; bt++) {
+  std::vector<std::string> runTypes = { runType, std::string("default") };
+  std::vector<std::string> beamTypes = { beamType, std::string("default") };
+  for (int rt = 0; rt < 2; rt++) {
+    for (int bt = 0; bt < 2; bt++) {
       try {
         result = mCustomParameters.at(runTypes[rt]).at(beamTypes[bt]).at(key);
         return result;
