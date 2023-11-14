@@ -71,7 +71,6 @@ std::optional<std::string> CustomParameters::atOptional(const std::string& key, 
   for(int rt = 0 ; rt < 2 ; rt++) {
     for(int bt = 0 ; bt < 2 ; bt++) {
       try {
-        std::cout << runTypes[rt] << " " << beamTypes[bt] << std::endl;
         result = mCustomParameters.at(runTypes[rt]).at(beamTypes[bt]).at(key);
         return result;
       } catch (const std::out_of_range& exc) {
