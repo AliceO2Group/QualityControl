@@ -69,16 +69,21 @@ class CustomParameters
 
   /**
    * Return the value for the given key, runType and beamType.
+   * If no key is found for the runType and the Beamtype, the fallback is to substitute with "default", first for beamType then for runType.
+   * An exception is raised only if the key could not be found in any combination of the provided run and beam types with "default".
    * @param key
    * @param runType
    * @param beamType
    * @return the value for the given key, runType and beamType.
-   * @throw std::out_of_range if no key-value pair corresponds to this key and to these beamType and runType
+   * @throw std::out_of_range if no key-value pair corresponds to this key and to these beamType and runType and that substitutions
+   * with "default" failed.
    */
   std::string at(const std::string& key, const std::string& runType = "default", const std::string& beamType = "default") const;
 
   /**
-   * Return the optional value for the given key, runType and beamType (the two latter optional).
+   * Return the optional value for the given key, runType and beamType.
+   * If no key is found for the runType and the Beamtype, the fallback is to substitute with "default", first for beamType then for runType.
+   * Empty is only returned if the key could not be found in any combination of the provided run and beam types with "default".
    * @param key
    * @param runType
    * @param beamType
@@ -87,8 +92,9 @@ class CustomParameters
   std::optional<std::string> atOptional(const std::string& key, const std::string& runType = "default", const std::string& beamType = "default") const;
 
   /**
-   * Return the optional value for the given key in the specified activity.
-   * @param key
+   * Return the optional value for the given key, runType and beamType.
+   * If no key is found for the runType and the Beamtype, the fallback is to substitute with "default", first for beamType then for runType.
+   * Empty is only returned if the key could not be found in any combination of the provided run and beam types with "default".   * @param key
    * @param activity
    * @return an optional with the value for the given key and for the given activity.
    */

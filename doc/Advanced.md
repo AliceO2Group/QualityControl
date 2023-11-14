@@ -1086,8 +1086,12 @@ The values can be accessed in various ways.
 
 ### Access optional values with or without activity
 
+The value for the key, runType and beamType is returned if found, or an empty value otherwise. 
+However, before returning an empty value we try to substitute the runType and the beamType with "default". 
+
 ```c++
-// returns an Optional<string> if it finds the key `myOwnKey` for the runType and beamType of the provided activity. 
+// returns an Optional<string> if it finds the key `myOwnKey` for the runType and beamType of the provided activity, 
+// or if it can find the key with the runType or beamType substituted with "default". 
 auto param = mCustomParameters.atOptional("myOwnKey", activity); // activity is "PHYSICS", "Pb-Pb" , returns "myOwnValue1d"
 // same but passing directly the run and beam types
 auto param = mCustomParameters.atOptional("myOwnKey", "PHYSICS", "Pb-Pb"); // returns "myOwnValue1d"
@@ -1096,6 +1100,9 @@ auto param = mCustomParameters.atOptional("myOwnKey", "PHYSICS"); // returns "my
 ```
 
 ### Access values directly specifying the run and beam type
+
+The value for the key, runType and beamType is returned if found, or an exception is thrown otherwise..
+However, before throwing we try to substitute the runType and the beamType with "default".
 
 ```c++
 mCustomParameters["myOwnKey"]; // considering that run and beam type are `default` --> returns `myOwnValue`

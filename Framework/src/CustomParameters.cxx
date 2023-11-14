@@ -12,6 +12,8 @@
 #include "QualityControl/CustomParameters.h"
 #include <DataFormatsParameters/ECSDataAdapters.h>
 #include <iostream>
+#include <string_view>
+#include <vector>
 
 namespace o2::quality_control::core
 {
@@ -54,16 +56,29 @@ const std::unordered_map<std::string, std::string>& CustomParameters::getAllDefa
 
 std::string CustomParameters::at(const std::string& key, const std::string& runType, const std::string& beamType) const
 {
-  return mCustomParameters.at(runType).at(beamType).at(key);
+  auto optionalResult = atOptional(key, runType, beamType); // just reuse the logic we developed in atOptional
+  if(!optionalResult.has_value()) {
+    return mCustomParameters.at(runType).at(beamType).at(key); // we know we will get a out_of_range exception
+  }
+  return optionalResult.value();
 }
 
 std::optional<std::string> CustomParameters::atOptional(const std::string& key, const std::string& runType, const std::string& beamType) const
 {
-  try {
-    return mCustomParameters.at(runType).at(beamType).at(key);
-  } catch (const std::out_of_range& exc) {
-    return {};
+  std::optional<std::string> result = {};
+  std::vector<std::string> runTypes = {runType, std::string("default")};
+  std::vector<std::string> beamTypes = {beamType, std::string("default")};
+  for(int rt = 0 ; rt < 2 ; rt++) {
+    for(int bt = 0 ; bt < 2 ; bt++) {
+      try {
+        std::cout << runTypes[rt] << " " << beamTypes[bt] << std::endl;
+        result = mCustomParameters.at(runTypes[rt]).at(beamTypes[bt]).at(key);
+        return result;
+      } catch (const std::out_of_range& exc) {
+      }
+    }
   }
+  return result;
 }
 
 std::optional<std::string> CustomParameters::atOptional(const std::string& key, const Activity& activity) const
