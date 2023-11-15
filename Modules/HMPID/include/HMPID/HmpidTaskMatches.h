@@ -24,11 +24,8 @@
 #include "ReconstructionDataFormats/MatchInfoHMP.h"
 #include "SimulationDataFormat/MCCompLabel.h"
 
-#include <TH1.h>
-#include <TProfile.h>
-#include <TH2.h>
-
 class TH1F;
+class TH2F;
 
 using namespace o2::quality_control::core;
 using GID = o2::dataformats::GlobalTrackID;
@@ -53,7 +50,6 @@ class HmpidTaskMatches : public TaskInterface
 
  private:
   void BookHistograms();
-  void getJsonParameters();
 
   std::shared_ptr<o2::globaltracking::DataRequest> mDataRequest;
   o2::globaltracking::RecoContainer mRecoCont;

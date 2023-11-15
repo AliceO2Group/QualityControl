@@ -33,10 +33,6 @@
 #include "DataFormatsHMP/Cluster.h"
 #include "ReconstructionDataFormats/MatchInfoHMP.h"
 
-#ifdef WITH_OPENMP
-#include <omp.h>
-#endif
-
 namespace o2::quality_control_modules::hmpid
 {
 
@@ -44,7 +40,6 @@ HmpidTaskMatches::HmpidTaskMatches() : TaskInterface() {}
 
 HmpidTaskMatches::~HmpidTaskMatches()
 {
-  ILOG(Info, Support) << "destructor called" << ENDM;
   for (int iCh = 0; iCh < 7; iCh++) {
     delete mMatchInfoResidualsXTrackMIP[iCh];
     delete mMatchInfoResidualsYTrackMIP[iCh];
@@ -57,16 +52,11 @@ HmpidTaskMatches::~HmpidTaskMatches()
 
 void HmpidTaskMatches::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Debug, Devel) << "initialize TaskMatches" << ENDM;
-
   mDataRequest = std::make_shared<o2::globaltracking::DataRequest>();
   mDataRequest->requestTracks(mSrc, false);
 
-  // getJsonParameters();
-
   BookHistograms();
 
-  // publish histograms (Q: why publishing in initalize?)
   for (int iCh = 0; iCh < 7; iCh++) {
 
     getObjectsManager()->startPublishing(mMatchInfoResidualsXTrackMIP[iCh]);
@@ -78,10 +68,6 @@ void HmpidTaskMatches::initialize(o2::framework::InitContext& /*ctx*/)
     getObjectsManager()->setDisplayHint(mMatchInfoClusterMIPMap[iCh], "colz");
     getObjectsManager()->startPublishing(mMatchInfoThetaCherenkovVsMom[iCh]);
   }
-
-  ILOG(Info, Support) << "START DOING QC HMPID Matches" << ENDM;
-
-  // here do the QC
 }
 
 void HmpidTaskMatches::startOfActivity(const Activity& /*activity*/)
@@ -97,8 +83,6 @@ void HmpidTaskMatches::startOfCycle()
 
 void HmpidTaskMatches::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  ILOG(Info, Support) << "monitorData" << ENDM;
-
   mRecoCont.collectData(ctx, *mDataRequest.get());
 
   // HMP
@@ -137,7 +121,6 @@ void HmpidTaskMatches::monitorData(o2::framework::ProcessingContext& ctx)
 
 void HmpidTaskMatches::endOfCycle()
 {
-
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
@@ -176,10 +159,4 @@ void HmpidTaskMatches::reset()
     mMatchInfoThetaCherenkovVsMom[iCh]->Reset();
   }
 }
-
-void HmpidTaskMatches::getJsonParameters()
-{
-  ILOG(Info, Support) << "GetJsonParams" << ENDM;
-}
-
 } // namespace o2::quality_control_modules::hmpid
