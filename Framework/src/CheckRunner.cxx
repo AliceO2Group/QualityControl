@@ -212,7 +212,7 @@ void CheckRunner::refreshConfig(InitContext& iCtx)
 void CheckRunner::init(framework::InitContext& iCtx)
 {
   try {
-    initInfologger(iCtx);
+    core::initInfologger(iCtx, mConfig.infologgerDiscardParameters, createCheckRunnerFacility(mDeviceName));
     refreshConfig(iCtx);
     Bookkeeping::getInstance().init(mConfig.bookkeepingUrl);
     initDatabase();
@@ -495,26 +495,6 @@ void CheckRunner::initServiceDiscovery()
   }
   mServiceDiscovery = std::make_shared<ServiceDiscovery>(mConfig.consulUrl, mDeviceName, mDeviceName);
   ILOG(Info, Support) << "ServiceDiscovery initialized" << ENDM;
-}
-
-void CheckRunner::initInfologger(framework::InitContext& iCtx)
-{
-  // TODO : the method should be merged with the other, similar, methods in *Runners
-
-  InfoLoggerContext* ilContext = nullptr;
-  AliceO2::InfoLogger::InfoLogger* il = nullptr;
-  try {
-    ilContext = &iCtx.services().get<AliceO2::InfoLogger::InfoLoggerContext>();
-    il = &iCtx.services().get<AliceO2::InfoLogger::InfoLogger>();
-  } catch (const RuntimeErrorRef& err) {
-    ILOG(Error) << "Could not find the DPL InfoLogger." << ENDM;
-  }
-
-  mConfig.infologgerDiscardParameters.discardFile = templateILDiscardFile(mConfig.infologgerDiscardParameters.discardFile, iCtx);
-  QcInfoLogger::init(createCheckRunnerFacility(mDeviceName),
-                     mConfig.infologgerDiscardParameters,
-                     il,
-                     ilContext);
 }
 
 void CheckRunner::initLibraries()

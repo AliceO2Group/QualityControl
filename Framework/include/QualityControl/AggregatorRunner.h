@@ -140,7 +140,6 @@ class AggregatorRunner : public framework::Task
    */
   void prepareInputs();
 
-  void initInfoLogger(framework::InitContext& iCtx);
   void initDatabase();
   void initMonitoring();
   void initServiceDiscovery();
