@@ -77,7 +77,6 @@ void HmpidTaskMatches::startOfActivity(const Activity& /*activity*/)
 
 void HmpidTaskMatches::startOfCycle()
 {
-
 }
 
 void HmpidTaskMatches::monitorData(o2::framework::ProcessingContext& ctx)
@@ -120,12 +119,10 @@ void HmpidTaskMatches::monitorData(o2::framework::ProcessingContext& ctx)
 
 void HmpidTaskMatches::endOfCycle()
 {
-
 }
 
 void HmpidTaskMatches::endOfActivity(const Activity& /*activity*/)
 {
-
 }
 
 void HmpidTaskMatches::BookHistograms()
