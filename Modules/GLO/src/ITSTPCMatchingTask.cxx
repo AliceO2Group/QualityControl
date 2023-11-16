@@ -42,7 +42,7 @@ void ITSTPCMatchingTask::initialize(o2::framework::InitContext& /*ctx*/)
     }
   }
 
-  ///////////////////////////////   Track selections for MatchITSTPCQC   ////////////////////////////////
+  ///////////////////////////////   Track selections for MatchITSTPCQC    ////////////////////////////////
   // ITS track
   if (auto param = mCustomParameters.find("minPtITSCut"); param != mCustomParameters.end()) {
     ILOG(Debug, Devel) << "Custom parameter - minPtITSCut (for track selection): " << param->second << ENDM;
