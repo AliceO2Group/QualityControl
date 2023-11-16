@@ -443,7 +443,7 @@ Please remember to use `"location" : "local"` in such case.
 In asynchronous QC, the moving window plots will appear in the intermediate QC file in the directory `mw` and will be uploaded to QCDB to `<task_name>/mw`.
 When testing, please make sure to let DPL know that it has to run in Grid mode, so that QC can compute object validity based on timestamps in the data:
 ```
-export O2_DPL_DEPLOYMENT_MODE=Grid && o2-qc ...
+export O2_DPL_DEPLOYMENT_MODE=Grid && o2-qc --local-batch QC.root ...
 ```
 
 ## Monitor cycles
