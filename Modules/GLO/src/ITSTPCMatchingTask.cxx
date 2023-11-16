@@ -42,6 +42,13 @@ void ITSTPCMatchingTask::initialize(o2::framework::InitContext& /*ctx*/)
     }
   }
 
+  if (auto param = mCustomParameters.find("useTrkPID"); param != mCustomParameters.end()) {
+    ILOG(Debug, Devel) << "Custom parameter - useTrkPID (= add plots for tracking PID): " << param->second << ENDM;
+    if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
+      mMatchITSTPCQC.setUseTrkPID(true);
+    }
+  }
+
   ///////////////////////////////   Track selections for MatchITSTPCQC    ////////////////////////////////
   // ITS track
   if (auto param = mCustomParameters.find("minPtITSCut"); param != mCustomParameters.end()) {
