@@ -24,8 +24,8 @@
 #include "QualityControl/TaskInterface.h"
 
 // root includes
-#include "TCanvas.h"
-#include "TH1.h"
+#include <TCanvas.h>
+#include <TH1.h>
 
 #include <unordered_map>
 
