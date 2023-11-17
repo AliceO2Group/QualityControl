@@ -313,7 +313,13 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
       if (digit.isSharedDigit()) {
         continue;
       }
+
       int detector = digit.getDetector();
+      if (detector >= MAXCHAMBER) {
+        // stupid fix to avoid crashes below on corrupted digits recorded in 2022
+        // observed e.g. in run 523308
+        continue;
+      }
       int sector = Helper::getSector(detector);
       int layer = Helper::getLayer(detector);
       int stack = Helper::getStack(detector);
