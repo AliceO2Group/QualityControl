@@ -11,7 +11,6 @@
 
 ///
 /// \file   TrackletsTask.h
-/// \author My Name
 ///
 
 #ifndef QC_MODULE_TRD_TRDTRACKLETSTASK_H
@@ -31,15 +30,11 @@ using namespace o2::quality_control::core;
 namespace o2::quality_control_modules::trd
 {
 
-/// \brief Example Quality Control DPL Task
-/// \author My Name
 class TrackletsTask final : public TaskInterface
 {
  public:
-  /// \brief Constructor
   TrackletsTask() = default;
-  /// Destructor
-  ~TrackletsTask() override;
+  ~TrackletsTask() override = default;
 
   // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& ctx) override;
@@ -50,7 +45,6 @@ class TrackletsTask final : public TaskInterface
   void endOfActivity(const Activity& activity) override;
   void reset() override;
   void buildHistograms();
-  void retrieveCCDBSettings();
   void drawLinesMCM(TH2F* histo);
   void drawTrdLayersGrid(TH2F* hist);
   void buildTrackletLayers();
@@ -58,36 +52,24 @@ class TrackletsTask final : public TaskInterface
   void drawHashOnLayers(int layer, int hcid, int rowstart, int rowend);
 
  private:
-  long int mTimestamp;
-  bool mLayerLabelsIgnore = false;
-  std::array<TH2F*, 18> moHCMCM;
-  std::array<TH1F*, 18> mTrackletQ0perSector;
-  std::array<TH1F*, 18> mTrackletQ1perSector;
-  std::array<TH1F*, 18> mTrackletQ2perSector;
+  // settings
+  bool mRemoveNoise{ false };
+  // histograms
   std::array<TH1F*, 3> mTrackletQ;
   TH1F* mTrackletSlope = nullptr;
-  TH1F* mTrackletSlopeRaw = nullptr;
   TH1F* mTrackletHCID = nullptr;
   TH1F* mTrackletPosition = nullptr;
-  TH1F* mTrackletPositionRaw = nullptr;
   TH1F* mTrackletsPerEvent = nullptr;
   TH1F* mTrackletsPerEventPP = nullptr;
   TH1F* mTrackletsPerEventPbPb = nullptr;
   TH2F* mTrackletsPerHC2D = nullptr;
-  std::array<TH2F*, 18> moHCMCMn;
-  TH1F* mTrackletSlopen = nullptr;
-  TH1F* mTrackletSlopeRawn = nullptr;
-  TH1F* mTrackletHCIDn = nullptr;
-  TH1F* mTrackletPositionn = nullptr;
-  TH1F* mTrackletPositionRawn = nullptr;
   TH1F* mTrackletsPerTimeFrame = nullptr;
   TH1F* mTriggersPerTimeFrame = nullptr;
-  TH1F* mTrackletsPerTimeFrameCycled = nullptr;
   std::array<TH2F*, 6> mLayers;
 
   // data to pull from CCDB
-  o2::trd::NoiseStatusMCM* mNoiseMap = nullptr;
-  o2::trd::HalfChamberStatusQC* mChamberStatus = nullptr;
+  const o2::trd::NoiseStatusMCM* mNoiseMap = nullptr;
+  const o2::trd::HalfChamberStatusQC* mChamberStatus = nullptr;
 };
 
 } // namespace o2::quality_control_modules::trd
