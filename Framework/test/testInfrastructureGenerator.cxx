@@ -367,7 +367,6 @@ TEST_CASE("qc_infrastructure_local_batch_test")
     CHECK(workflow[4].outputs.size() == 0);
   }
 }
-using namespace std;
 TEST_CASE("qc_infrastructure_remote_batch_test")
 {
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
