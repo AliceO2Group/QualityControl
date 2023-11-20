@@ -110,7 +110,7 @@ class Receiver : public framework::Task
   {
     Inputs inputs;
     for (auto& checkName : mNames) {
-      inputs.push_back({ checkName, "QC", Check::createCheckDataDescription(checkName) });
+      inputs.push_back({ checkName, "QC", Check::createCheckDataDescription(checkName), Lifetime::Sporadic });
     }
     return inputs;
   }
