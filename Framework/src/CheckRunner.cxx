@@ -194,7 +194,6 @@ void CheckRunner::run(framework::ProcessingContext& ctx)
   prepareCacheData(ctx.inputs());
 
   auto qualityObjects = check();
-  cout << "run : " << qualityObjects.size() << endl;
 
   auto now = getCurrentTimestamp();
   store(qualityObjects, now);
