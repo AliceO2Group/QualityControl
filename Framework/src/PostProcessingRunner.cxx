@@ -230,17 +230,13 @@ void PostProcessingRunner::reset()
 
 void PostProcessingRunner::updateValidity(const Trigger& trigger)
 {
-  if (getenv("O2_QC_OLD_VALIDITY")) {
-    mObjectManager->setValidity(ValidityInterval{ trigger.timestamp, trigger.timestamp + objectValidity });
-  } else if (trigger.activity.mValidity.isValid() && trigger.activity.mValidity != gFullValidityInterval) {
-    if (!core::activity_helpers::onNumericLimit(trigger.activity.mValidity.getMin())) {
-      mActivity.mValidity.update(trigger.activity.mValidity.getMin());
-    }
-    if (!core::activity_helpers::onNumericLimit(trigger.activity.mValidity.getMax())) {
-      mActivity.mValidity.update(trigger.activity.mValidity.getMax());
-    }
-    mObjectManager->setValidity(mActivity.mValidity);
+  if (!core::activity_helpers::onNumericLimit(trigger.activity.mValidity.getMin())) {
+    mActivity.mValidity.update(trigger.activity.mValidity.getMin());
   }
+  if (!core::activity_helpers::onNumericLimit(trigger.activity.mValidity.getMax())) {
+    mActivity.mValidity.update(trigger.activity.mValidity.getMax());
+  }
+  mObjectManager->setValidity(mActivity.mValidity);
 }
 
 void PostProcessingRunner::doInitialize(const Trigger& trigger)

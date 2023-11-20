@@ -377,21 +377,13 @@ void CheckRunner::store(QualityObjectsType& qualityObjects, long validFrom)
   ILOG(Debug, Devel) << "Storing " << qualityObjects.size() << " QualityObjects" << ENDM;
   try {
     for (auto& qo : qualityObjects) {
-      if (getenv("O2_QC_OLD_VALIDITY")) {
-        auto tmpValidity = qo->getValidity();
-        qo->setValidity(ValidityInterval{ static_cast<unsigned long>(validFrom), validFrom + 10ull * 365 * 24 * 60 * 60 * 1000 });
-        mDatabase->storeQO(qo);
-        qo->setValidity(tmpValidity);
-      } else {
-        mDatabase->storeQO(qo);
-      }
+      mDatabase->storeQO(qo);
       mTotalNumberQOStored++;
       mNumberQOStored++;
     }
-
     if (!qualityObjects.empty()) {
       auto& qo = qualityObjects.at(0);
-      ILOG(Info, Devel) << "New validity of QO '" << qo->GetName() << "' is (" << qo->getValidity().getMin() << ", " << qo->getValidity().getMax() << ")" << ENDM;
+      ILOG(Info, Devel) << "Validity of QO '" << qo->GetName() << "' is (" << qo->getValidity().getMin() << ", " << qo->getValidity().getMax() << ")" << ENDM;
     }
   } catch (boost::exception& e) {
     ILOG(Info, Support) << "Unable to " << diagnostic_information(e) << ENDM;
@@ -403,21 +395,14 @@ void CheckRunner::store(std::vector<std::shared_ptr<MonitorObject>>& monitorObje
   ILOG(Debug, Devel) << "Storing " << monitorObjects.size() << " MonitorObjects" << ENDM;
   try {
     for (auto& mo : monitorObjects) {
-      if (getenv("O2_QC_OLD_VALIDITY")) {
-        auto tmpValidity = mo->getValidity();
-        mo->setValidity(ValidityInterval{ static_cast<unsigned long>(validFrom), validFrom + 10ull * 365 * 24 * 60 * 60 * 1000 });
-        mDatabase->storeMO(mo);
-        mo->setValidity(tmpValidity);
-      } else {
-        mDatabase->storeMO(mo);
-      }
+      mDatabase->storeMO(mo);
 
       mTotalNumberMOStored++;
       mNumberMOStored++;
     }
     if (!monitorObjects.empty()) {
       auto& mo = monitorObjects.at(0);
-      ILOG(Info, Devel) << "New validity of MO '" << mo->GetName() << "' is (" << mo->getValidity().getMin() << ", " << mo->getValidity().getMax() << ")" << ENDM;
+      ILOG(Info, Devel) << "Validity of MO '" << mo->GetName() << "' is (" << mo->getValidity().getMin() << ", " << mo->getValidity().getMax() << ")" << ENDM;
     }
   } catch (boost::exception& e) {
     ILOG(Info, Support) << "Unable to " << diagnostic_information(e) << ENDM;

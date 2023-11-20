@@ -240,14 +240,7 @@ void AggregatorRunner::store(QualityObjectsType& qualityObjects)
   auto validFrom = getCurrentTimestamp();
   try {
     for (auto& qo : qualityObjects) {
-      if (getenv("O2_QC_OLD_VALIDITY")) {
-        auto tmpValidity = qo->getValidity();
-        qo->setValidity(ValidityInterval{ static_cast<unsigned long>(validFrom), validFrom + 10ull * 365 * 24 * 60 * 60 * 1000 });
-        mDatabase->storeQO(qo);
-        qo->setValidity(tmpValidity);
-      } else {
-        mDatabase->storeQO(qo);
-      }
+      mDatabase->storeQO(qo);
     }
     if (!qualityObjects.empty()) {
       auto& qo = qualityObjects.at(0);

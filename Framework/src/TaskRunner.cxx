@@ -477,7 +477,7 @@ void TaskRunner::finishCycle(DataAllocator& outputs)
   ILOG(Debug, Support) << "Finish cycle " << mCycleNumber << ENDM;
   // in the async context we print only info/ops logs, it's easier to temporarily elevate this log
   ((mDeploymentMode == DeploymentMode::Grid) ? ILOG(Info, Ops) : ILOG(Info, Devel)) //
-    << "According to new validity rules, the objects validity is "
+    << "The objects validity is "
     << "(" << mTimekeeper->getValidity().getMin() << ", " << mTimekeeper->getValidity().getMax() << "), "
     << "(" << mTimekeeper->getSampleTimespan().getMin() << ", " << mTimekeeper->getSampleTimespan().getMax() << "), "
     << "(" << mTimekeeper->getTimerangeIdRange().getMin() << ", " << mTimekeeper->getTimerangeIdRange().getMax() << ")" << ENDM;
