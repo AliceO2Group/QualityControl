@@ -158,8 +158,6 @@ void VertexingQcTask::startOfCycle()
 
 void VertexingQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-
-  // get the payload of a specific input, which is a char array. "random" is the binding specified in the config file.
   const auto pvertices = ctx.inputs().get<gsl::span<o2::dataformats::PrimaryVertex>>("pvtx");
   gsl::span<const o2::MCEventLabel> mcLbl;
   if (mUseMC) {
@@ -235,14 +233,6 @@ void VertexingQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       mVtxPullsZVsMult->Fill(mult, (vtMC[2] - pvertices[i].getZ()) / std::sqrt(pvertices[i].getSigmaZ2()));
     }
   }
-
-  // 3. Access CCDB. If it is enough to retrieve it once, do it in initialize().
-  // Remember to delete the object when the pointer goes out of scope or it is no longer needed.
-  //   TObject* condition = TaskInterface::retrieveCondition("QcTask/example"); // put a valid condition path here
-  //   if (condition) {
-  //     LOG(info) << "Retrieved " << condition->ClassName();
-  //     delete condition;
-  //   }
 }
 
 void VertexingQcTask::endOfCycle()
