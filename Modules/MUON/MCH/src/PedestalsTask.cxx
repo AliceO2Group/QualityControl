@@ -57,6 +57,13 @@ PedestalsTask::~PedestalsTask()
 void PedestalsTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Debug, Devel) << "initialize PedestalsTask" << ENDM;
+  // flag to enable extra disagnostics plots
+  mFullHistos = false;
+  if (auto param = mCustomParameters.find("FullHistos"); param != mCustomParameters.end()) {
+    if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
+      mFullHistos = true;
+    }
+  }
 
   mElec2DetMapper = o2::mch::raw::createElec2DetMapper<o2::mch::raw::ElectronicMapperGenerated>();
   mDet2ElecMapper = o2::mch::raw::createDet2ElecMapper<o2::mch::raw::ElectronicMapperGenerated>();
@@ -124,55 +131,54 @@ void PedestalsTask::initialize(o2::framework::InitContext& /*ctx*/)
       auto hNoiseDE = std::make_shared<TH1F>(TString::Format("%sNoise_Distr_DE%03d_b_%d", getHistoPath(de).c_str(), de, pi),
                                              TString::Format("Noise distribution (DE%03d B, %d)", de, pi), 1000, 0, 10);
       mHistogramNoiseDistributionDE[pi][0].insert(make_pair(de, hNoiseDE));
-      publishObject(hNoiseDE.get(), "hist", false);
+      publishObject(hNoiseDE.get(), "hist", false, mFullHistos);
 
       hNoiseDE = std::make_shared<TH1F>(TString::Format("%sNoise_Distr_DE%03d_nb_%d", getHistoPath(de).c_str(), de, pi),
                                         TString::Format("Noise distribution (DE%03d NB, %d)", de, pi), 1000, 0, 10);
       mHistogramNoiseDistributionDE[pi][1].insert(make_pair(de, hNoiseDE));
-      publishObject(hNoiseDE.get(), "hist", false);
+      publishObject(hNoiseDE.get(), "hist", false, mFullHistos);
     }
-
     {
       auto hStatXY = std::make_shared<DetectorHistogram>(TString::Format("%sStatistics_XY_B_%03d", getHistoPath(de).c_str(), de),
                                                          TString::Format("Statistics (DE%03d B)", de), de, 0);
       mHistogramStatXY[0].insert(make_pair(de, hStatXY));
-      publishObject(hStatXY->getHist(), "colz", false);
+      publishObject(hStatXY->getHist(), "colz", false, mFullHistos);
 
       auto hPedXY = std::make_shared<DetectorHistogram>(TString::Format("%sPedestals_XY_B_%03d", getHistoPath(de).c_str(), de),
                                                         TString::Format("Pedestals (DE%03d B)", de), de, 0);
       mHistogramPedestalsXY[0].insert(make_pair(de, hPedXY));
-      publishObject(hPedXY->getHist(), "colz", false);
+      publishObject(hPedXY->getHist(), "colz", false, mFullHistos);
 
       auto hNoiseXY = std::make_shared<DetectorHistogram>(TString::Format("%sNoise_XY_B_%03d", getHistoPath(de).c_str(), de),
                                                           TString::Format("Noise (DE%03d B)", de), de, 0);
       mHistogramNoiseXY[0].insert(make_pair(de, hNoiseXY));
-      publishObject(hNoiseXY->getHist(), "colz", false);
+      publishObject(hNoiseXY->getHist(), "colz", false, mFullHistos);
 
       auto hBadChannelsXY = std::make_shared<DetectorHistogram>(TString::Format("%sBadChannels_XY_B_%03d", getHistoPath(de).c_str(), de),
                                                                 TString::Format("Bad Channels (DE%03d B)", de), de, 0);
       mHistogramBadChannelsXY[0].insert(make_pair(de, hBadChannelsXY));
-      publishObject(hBadChannelsXY->getHist(), "colz", false);
+      publishObject(hBadChannelsXY->getHist(), "colz", false, mFullHistos);
     }
     {
       auto hStatXY = std::make_shared<DetectorHistogram>(TString::Format("%sStatistics_XY_NB_%03d", getHistoPath(de).c_str(), de),
                                                          TString::Format("Statistics (DE%03d NB)", de), de, 1);
       mHistogramStatXY[1].insert(make_pair(de, hStatXY));
-      publishObject(hStatXY->getHist(), "colz", false);
+      publishObject(hStatXY->getHist(), "colz", false, mFullHistos);
 
       auto hPedXY = std::make_shared<DetectorHistogram>(TString::Format("%sPedestals_XY_NB_%03d", getHistoPath(de).c_str(), de),
                                                         TString::Format("Pedestals (DE%03d NB)", de), de, 1);
       mHistogramPedestalsXY[1].insert(make_pair(de, hPedXY));
-      publishObject(hPedXY->getHist(), "colz", false);
+      publishObject(hPedXY->getHist(), "colz", false, mFullHistos);
 
       auto hNoiseXY = std::make_shared<DetectorHistogram>(TString::Format("%sNoise_XY_NB_%03d", getHistoPath(de).c_str(), de),
                                                           TString::Format("Noise (DE%03d NB)", de), de, 1);
       mHistogramNoiseXY[1].insert(make_pair(de, hNoiseXY));
-      publishObject(hNoiseXY->getHist(), "colz", false);
+      publishObject(hNoiseXY->getHist(), "colz", false, mFullHistos);
 
       auto hBadChannelsXY = std::make_shared<DetectorHistogram>(TString::Format("%sBadChannels_XY_NB_%03d", getHistoPath(de).c_str(), de),
                                                                 TString::Format("Bad Channels (DE%03d NB)", de), de, 1);
       mHistogramBadChannelsXY[1].insert(make_pair(de, hBadChannelsXY));
-      publishObject(hBadChannelsXY->getHist(), "colz", false);
+      publishObject(hBadChannelsXY->getHist(), "colz", false, mFullHistos);
     }
   }
 

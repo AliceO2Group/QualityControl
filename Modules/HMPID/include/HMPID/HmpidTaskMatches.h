@@ -10,33 +10,35 @@
 //
 
 ///
-/// \file   HmpidTaskClusters.h
-/// \author Annalisa Mastroserio, Giacomo Volpe
+/// \file   HmpidTaskMatches.h
+/// \author Nicola Nicassio, Giacomo Volpe
 ///
 
-#ifndef QC_MODULE_HMPID_HMPIDTASKCLUSTERS_H
-#define QC_MODULE_HMPID_HMPIDTASKCLUSTERS_H
+#ifndef QC_MODULE_HMPID_HMPIDTASKMATCHES_H
+#define QC_MODULE_HMPID_HMPIDTASKMATCHES_H
 
 #include <Framework/InputRecord.h>
 #include "QualityControl/TaskInterface.h"
-#include <TH1.h>
-#include <TProfile.h>
-#include <TH2.h>
-#include <THnSparse.h>
+
+#include "DataFormatsGlobalTracking/RecoContainer.h"
+#include "ReconstructionDataFormats/MatchInfoHMP.h"
+#include "SimulationDataFormat/MCCompLabel.h"
 
 class TH1F;
+class TH2F;
 
 using namespace o2::quality_control::core;
+using GID = o2::dataformats::GlobalTrackID;
 
 namespace o2::quality_control_modules::hmpid
 {
 
-class HmpidTaskClusters : public TaskInterface
+class HmpidTaskMatches : public TaskInterface
 {
 
  public:
-  HmpidTaskClusters();
-  ~HmpidTaskClusters() override;
+  HmpidTaskMatches();
+  ~HmpidTaskMatches() override;
 
   void initialize(o2::framework::InitContext& ctx) override;
   void startOfActivity(const Activity& activity) override;
@@ -48,14 +50,19 @@ class HmpidTaskClusters : public TaskInterface
 
  private:
   void BookHistograms();
-  void getJsonParameters();
 
-  // monitoring histos
-  TProfile* ThClusMult;
-  TH1F* hClusMultEv;
-  TH1F* hHMPIDchargeClus[7];
-  TH1F* hHMPIDchargeMipClus[7];
-  TH2F* hHMPIDpositionClus[7];
+  std::shared_ptr<o2::globaltracking::DataRequest> mDataRequest;
+  o2::globaltracking::RecoContainer mRecoCont;
+  GID::mask_t mSrc = GID::getSourcesMask("HMP");
+  // HMPID Maching Info
+  gsl::span<const o2::dataformats::MatchInfoHMP> mHMPMatches;
+
+  TH1F* mMatchInfoResidualsXTrackMIP[7];
+  TH1F* mMatchInfoResidualsYTrackMIP[7];
+  TH1F* mMatchInfoChargeClusterMIP[7];
+  TH1F* mMatchInfoChargeClusterPhotons[7];
+  TH2F* mMatchInfoClusterMIPMap[7];
+  TH2F* mMatchInfoThetaCherenkovVsMom[7];
 
   std::vector<TObject*> mPublishedObjects;
 };

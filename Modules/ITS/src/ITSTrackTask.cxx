@@ -56,6 +56,8 @@ ITSTrackTask::~ITSTrackTask() // make_shared objects will be delete automaticall
   delete hAssociatedClusterFraction;
   delete hNtracks;
   delete hNtracksReset;
+  delete hTrackPtVsEta;
+  delete hTrackPtVsPhi;
 }
 
 void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -221,9 +223,13 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
       vMap.emplace_back(track.getPattern());
       vEta.emplace_back(Eta);
       vPhi.emplace_back(out.getPhi());
+      hTrackPtVsEta->Fill(out.getPt(), Eta);
+      hTrackPtVsPhi->Fill(out.getPt(), out.getPhi());
 
       hNClustersPerTrackEta->getNum()->Fill(Eta, track.getNumberOfClusters());
       hNClustersPerTrackPhi->getNum()->Fill(out.getPhi(), track.getNumberOfClusters());
+      hNClustersPerTrackPt->getNum()->Fill(out.getPt(), track.getNumberOfClusters());
+
       for (int iLayer = 0; iLayer < NLayer; iLayer++) {
         if (track.getPattern() & (0x1 << iLayer)) { // check first layer (from inside) on which there is a hit
           hHitFirstLayerPhiAll->getNum()->Fill(out.getPhi(), iLayer);
@@ -369,6 +375,7 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
   hTrackPhi->getDen()->SetBinContent(1, normalization);
   hNClustersPerTrackEta->getDen()->SetBinContent(1, 1, normalization);
   hNClustersPerTrackPhi->getDen()->SetBinContent(1, 1, normalization);
+  hNClustersPerTrackPt->getDen()->SetBinContent(1, 1, normalization);
   hHitFirstLayerPhiAll->getDen()->SetBinContent(1, 1, normalization);
   hHitFirstLayerPhi4cls->getDen()->SetBinContent(1, 1, normalization);
   hHitFirstLayerPhi5cls->getDen()->SetBinContent(1, 1, normalization);
@@ -401,6 +408,7 @@ void ITSTrackTask::endOfCycle()
   hTrackPhi->update();
   hNClustersPerTrackEta->update();
   hNClustersPerTrackPhi->update();
+  hNClustersPerTrackPt->update();
   hHitFirstLayerPhiAll->update();
   hHitFirstLayerPhi4cls->update();
   hHitFirstLayerPhi5cls->update();
@@ -433,6 +441,7 @@ void ITSTrackTask::reset()
   hNtracks->Reset();
   hNClustersPerTrackEta->Reset();
   hNClustersPerTrackPhi->Reset();
+  hNClustersPerTrackPt->Reset();
   hHitFirstLayerPhiAll->Reset();
   hHitFirstLayerPhi4cls->Reset();
   hHitFirstLayerPhi5cls->Reset();
@@ -444,6 +453,9 @@ void ITSTrackTask::reset()
   hInvMassK0s->Reset();
   hInvMassLambda->Reset();
   hInvMassLambdaBar->Reset();
+
+  hTrackPtVsEta->Reset();
+  hTrackPtVsPhi->Reset();
 }
 
 void ITSTrackTask::createAllHistos()
@@ -551,7 +563,7 @@ void ITSTrackTask::createAllHistos()
   formatAxes(hNClustersPerTrackEta.get(), "#eta", "# of Clusters per Track", 1, 1.10);
   hNClustersPerTrackEta->SetStats(0);
 
-  hNClustersPerTrackPhi = std::make_unique<TH2DRatio>("NClustersPerTrackPhi", "NClustersPerTrackPhi", 65, -0.1, TMath::TwoPi(), 15, -0.5, 14.5, true);
+  hNClustersPerTrackPhi = std::make_unique<TH2DRatio>("NClustersPerTrackPhi", "NClustersPerTrackPhi", 65, 0, TMath::TwoPi(), 15, -0.5, 14.5, true);
   if (mDoNorm) {
     hNClustersPerTrackPhi->SetBit(TH1::kIsAverage);
   }
@@ -559,6 +571,15 @@ void ITSTrackTask::createAllHistos()
   addObject(hNClustersPerTrackPhi.get());
   formatAxes(hNClustersPerTrackPhi.get(), "#phi", "# of Clusters per Track", 1, 1.10);
   hNClustersPerTrackPhi->SetStats(0);
+
+  hNClustersPerTrackPt = std::make_unique<TH2DRatio>("NClustersPerTrackPt", "NClustersPerTrackPt", 150, 0, 15, 15, -0.5, 14.5, true);
+  if (mDoNorm) {
+    hNClustersPerTrackPt->SetBit(TH1::kIsAverage);
+  }
+  hNClustersPerTrackPt->SetTitle("#it{p_{T}} vs NClusters Per Track");
+  addObject(hNClustersPerTrackPt.get());
+  formatAxes(hNClustersPerTrackPt.get(), "#it{p_{T}} (GeV/c)", "# of Clusters per Track", 1, 1.10);
+  hNClustersPerTrackPt->SetStats(0);
 
   hHitFirstLayerPhiAll = std::make_unique<TH2DRatio>("HitFirstLayerAll", "HitFirstLayerPhiAll", 65, -0.1, TMath::TwoPi(), 4, -0.5, 3.5, true);
   if (mDoNorm) {
@@ -659,6 +680,16 @@ void ITSTrackTask::createAllHistos()
   addObject(hInvMassLambdaBar);
   formatAxes(hInvMassLambdaBar, "m_{inv} (Gev/c)", "Counts", 1, 1.10);
   hInvMassLambdaBar->SetStats(0);
+
+  hTrackPtVsEta = new TH2D("hTrackPtVsEta", "Track #it{p}_{T} Vs #eta", 150, 0, 15, 40, -2.0, 2.0);
+  addObject(hTrackPtVsEta);
+  formatAxes(hTrackPtVsEta, "#it{p}_{T} (GeV/#it{c})", "#eta", 1, 1.10);
+  hTrackPtVsEta->SetStats(0);
+
+  hTrackPtVsPhi = new TH2D("hTrackPtVsPhi", "Track #it{p}_{T} Vs #phi", 150, 0, 15, 65, 0, TMath::TwoPi());
+  addObject(hTrackPtVsPhi);
+  formatAxes(hTrackPtVsPhi, "#it{p}_{T} (GeV/#it{c})", "#phi", 1, 1.10);
+  hTrackPtVsPhi->SetStats(0);
 }
 
 void ITSTrackTask::addObject(TObject* aObject)

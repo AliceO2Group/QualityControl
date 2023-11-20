@@ -89,7 +89,7 @@ void QualityPostProcessing::update(Trigger t, framework::ServiceRegistryRef serv
         std::string Qstr = fmt::format("#color[{}]", kViolet - 6) + "{Null}";
         if (qo->getQuality() == Quality::Bad) {
           Q = 1;
-          Qstr = fmt::format("#color[{}]", kRed) + "{Bad}";
+          Qstr = fmt::format("#color[{}]", (int)kRed) + "{Bad}";
         }
         if (qo->getQuality() == Quality::Medium) {
           Q = 2;
@@ -135,9 +135,9 @@ void QualityPostProcessing::update(Trigger t, framework::ServiceRegistryRef serv
     mCheckerMessages.insert(mCheckerMessages.begin(), fmt::format("MCH Quality = #color[{}]", kOrange - 3) + "{Medium}");
   } else if (mchQuality == Quality::Bad) {
     if (!mMessageBad.empty()) {
-      mCheckerMessages.insert(mCheckerMessages.begin(), fmt::format("#color[{}]", kRed) + "{" + mMessageBad + "}");
+      mCheckerMessages.insert(mCheckerMessages.begin(), fmt::format("#color[{}]", (int)kRed) + "{" + mMessageBad + "}");
     }
-    mCheckerMessages.insert(mCheckerMessages.begin(), fmt::format("MCH Quality = #color[{}]", kRed) + "{Bad}");
+    mCheckerMessages.insert(mCheckerMessages.begin(), fmt::format("MCH Quality = #color[{}]", (int)kRed) + "{Bad}");
   } else if (mchQuality == Quality::Null) {
     if (!mMessageNull.empty()) {
       mCheckerMessages.insert(mCheckerMessages.begin(), fmt::format("#color[{}]", kViolet - 6) + "{" + mMessageNull + "}");
