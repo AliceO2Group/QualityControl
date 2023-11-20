@@ -349,7 +349,7 @@ framework::WorkflowSpec InfrastructureGenerator::generateLocalBatchInfrastructur
       auto taskConfig = TaskRunnerFactory::extractConfig(infrastructureSpec.common, taskSpec, 0, 1);
       workflow.emplace_back(TaskRunnerFactory::create(taskConfig));
 
-      fileSinkInputs.emplace_back(taskSpec.taskName, TaskRunner::createTaskDataOrigin(taskSpec.detectorName), TaskRunner::createTaskDataDescription(taskSpec.taskName));
+      fileSinkInputs.emplace_back(taskSpec.taskName, TaskRunner::createTaskDataOrigin(taskSpec.detectorName), TaskRunner::createTaskDataDescription(taskSpec.taskName), Lifetime::Sporadic);
     }
   }
 
