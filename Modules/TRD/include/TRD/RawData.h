@@ -11,7 +11,7 @@
 
 ///
 /// \file   RawData.h
-/// \author My Name
+/// \author Sean Murray
 ///
 
 #ifndef QC_MODULE_TRD_TRDRAWDATA_H
@@ -33,9 +33,7 @@ namespace o2::quality_control_modules::trd
 class RawData final : public TaskInterface
 {
  public:
-  /// \brief Constructor
   RawData() = default;
-  /// Destructor
   ~RawData() override;
 
   // Definition of the methods for the template method pattern
