@@ -182,3 +182,59 @@ BOOST_AUTO_TEST_CASE(test_cp_new_access_pattern)
     BOOST_CHECK_EQUAL(std::stoi(param2->second), 1);
   }
 }
+
+BOOST_AUTO_TEST_CASE(test_default_if_not_found_at_optional)
+{
+  CustomParameters cp;
+
+  // no default values are in the CP, we get an empty result
+  BOOST_CHECK_EQUAL(cp.atOptional("key", "PHYSICS", "proton-proton").has_value(), false);
+  BOOST_CHECK_EQUAL(cp.atOptional("key", "TECHNICAL", "proton-proton").has_value(), false);
+
+  // prepare the CP
+  cp.set("key", "valueDefaultDefault", "default", "default");
+  cp.set("key", "valuePhysicsDefault", "PHYSICS", "default");
+  cp.set("key", "valuePhysicsPbPb", "PHYSICS", "Pb-Pb");
+  cp.set("key", "valueCosmicsDefault", "COSMICS", "default");
+  cp.set("key", "valueCosmicsDefault", "default", "PROTON-PROTON");
+
+  // check the data
+  BOOST_CHECK_EQUAL(cp.atOptional("key").value(), "valueDefaultDefault");
+  BOOST_CHECK_EQUAL(cp.atOptional("key", "PHYSICS").value(), "valuePhysicsDefault");
+  BOOST_CHECK_EQUAL(cp.atOptional("key", "PHYSICS", "Pb-Pb").value(), "valuePhysicsPbPb");
+  BOOST_CHECK_EQUAL(cp.atOptional("key", "COSMICS", "default").value(), "valueCosmicsDefault");
+  BOOST_CHECK_EQUAL(cp.atOptional("key", "default", "PROTON-PROTON").value(), "valueCosmicsDefault");
+
+  // check when something is missing
+  BOOST_CHECK_EQUAL(cp.atOptional("key", "PHYSICS", "PROTON-PROTON").value(), "valuePhysicsDefault");   // key is not defined for pp
+  BOOST_CHECK_EQUAL(cp.atOptional("key", "TECHNICAL", "STRANGE").value(), "valueDefaultDefault");       // key is not defined for run nor beam
+  BOOST_CHECK_EQUAL(cp.atOptional("key", "TECHNICAL", "PROTON-PROTON").value(), "valueCosmicsDefault"); // key is not defined for technical
+}
+
+BOOST_AUTO_TEST_CASE(test_default_if_not_found_at)
+{
+  CustomParameters cp;
+
+  // no default values are in the CP, we get an empty result
+  BOOST_CHECK_THROW(cp.at("key", "PHYSICS", "proton-proton"), std::out_of_range);
+  BOOST_CHECK_THROW(cp.at("key", "TECHNICAL", "proton-proton"), std::out_of_range);
+
+  // prepare the CP
+  cp.set("key", "valueDefaultDefault", "default", "default");
+  cp.set("key", "valuePhysicsDefault", "PHYSICS", "default");
+  cp.set("key", "valuePhysicsPbPb", "PHYSICS", "Pb-Pb");
+  cp.set("key", "valueCosmicsDefault", "COSMICS", "default");
+  cp.set("key", "valueCosmicsDefault", "default", "PROTON-PROTON");
+
+  // check the data
+  BOOST_CHECK_EQUAL(cp.at("key"), "valueDefaultDefault");
+  BOOST_CHECK_EQUAL(cp.at("key", "PHYSICS"), "valuePhysicsDefault");
+  BOOST_CHECK_EQUAL(cp.at("key", "PHYSICS", "Pb-Pb"), "valuePhysicsPbPb");
+  BOOST_CHECK_EQUAL(cp.at("key", "COSMICS", "default"), "valueCosmicsDefault");
+  BOOST_CHECK_EQUAL(cp.at("key", "default", "PROTON-PROTON"), "valueCosmicsDefault");
+
+  // check when something is missing
+  BOOST_CHECK_EQUAL(cp.at("key", "PHYSICS", "PROTON-PROTON"), "valuePhysicsDefault");   // key is not defined for pp
+  BOOST_CHECK_EQUAL(cp.at("key", "TECHNICAL", "STRANGE"), "valueDefaultDefault");       // key is not defined for run nor beam
+  BOOST_CHECK_EQUAL(cp.at("key", "TECHNICAL", "PROTON-PROTON"), "valueCosmicsDefault"); // key is not defined for technical
+}
