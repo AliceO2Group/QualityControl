@@ -15,6 +15,9 @@
 /// \brief  Set of common utilities for Tasks and Checkers
 ///
 
+#ifndef QC_MODULE_TOF_UTILS_H
+#define QC_MODULE_TOF_UTILS_H
+
 namespace o2::quality_control_modules::tof::utils
 {
 
@@ -103,3 +106,5 @@ bool parseStrParameter(const ParameterType& parametersIn, const std::string& nam
 }
 
 } // namespace o2::quality_control_modules::tof::utils
+
+#endif

@@ -43,6 +43,7 @@ Quality CheckDiagnostics::check(std::map<std::string, std::shared_ptr<MonitorObj
       auto* h = dynamic_cast<TH2F*>(mo->getObject());
       if (h->GetEntries() == 0) {
         result = Quality::Medium;
+        mShifterMessages.AddMessage("No entries");
       }
     }
   }
@@ -59,14 +60,8 @@ void CheckDiagnostics::beautify(std::shared_ptr<MonitorObject> mo, Quality check
     if (!msg) {
       return;
     }
-    if (checkResult == Quality::Good) {
-      msg->AddText("OK!");
-    } else if (checkResult == Quality::Bad) {
+    if (checkResult == Quality::Bad) {
       msg->AddText("No TOF hits for all events.");
-      msg->AddText("Call TOF on-call.");
-    } else if (checkResult == Quality::Medium) {
-      msg->AddText("No entries. IF TOF IN RUN");
-      msg->AddText("email TOF on-call.");
     }
   } else
     ILOG(Error, Support) << "Did not get correct histo from " << mo->GetName() << ENDM;

@@ -37,7 +37,9 @@ void CheckHitMap::configure()
   utils::parseBooleanParameter(mCustomParameters, "EnableReferenceHitMap", mEnableReferenceHitMap);
   utils::parseStrParameter(mCustomParameters, "RefMapCcdbPath", mRefMapCcdbPath);
   utils::parseIntParameter(mCustomParameters, "RefMapTimestamp", mRefMapTimestamp);
+  mPhosModuleMessage.clearQualityMessages();
   mPhosModuleMessage.configureEnabledFlag(mCustomParameters);
+  mShifterMessages.mMessageWhenBad = "Call TOF on-call";
   mShifterMessages.configure(mCustomParameters);
 }
 
@@ -118,11 +120,6 @@ void CheckHitMap::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
     auto* h = static_cast<TH2F*>(mo->getObject());
     if (checkResult != Quality::Good) {
       auto msg = mShifterMessages.MakeMessagePad(h, checkResult);
-      if (checkResult == Quality::Bad) {
-        msg->AddText("Call TOF on-call.");
-      } else if (checkResult == Quality::Medium) {
-        msg->AddText("IF TOF IN RUN email TOF on-call.");
-      }
     }
     auto msgPhos = mPhosModuleMessage.MakeMessagePad(h, Quality::Good, "bl");
     if (!msgPhos) {
