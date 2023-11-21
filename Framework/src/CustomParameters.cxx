@@ -65,7 +65,7 @@ std::string CustomParameters::at(const std::string& key, const std::string& runT
 
 std::optional<std::string> CustomParameters::atOptional(const std::string& key, const std::string& runType, const std::string& beamType) const
 {
-  std::optional<std::string> result = {};
+  std::optional<std::string> result = std::nullopt;
   std::vector<std::string> runTypes = { runType, std::string("default") };
   std::vector<std::string> beamTypes = { beamType, std::string("default") };
   for (int rt = 0; rt < 2; rt++) {
