@@ -63,17 +63,28 @@ std::string CustomParameters::at(const std::string& key, const std::string& runT
   return optionalResult.value();
 }
 
+std::string CustomParameters::at(const std::string& key, const Activity& activity) const
+{
+  // Get the proper parameter for the given activity
+  const int runType = activity.mType; // get the type for this run
+  // convert it to a string (via a string_view as this is what we get from O2)
+  const std::string_view runTypeStringView = o2::parameters::GRPECS::RunTypeNames[runType];
+  const std::string runTypeString{ runTypeStringView };
+  // get the param
+  return at(key, runTypeString, activity.mBeamType);
+}
+
 std::optional<std::string> CustomParameters::atOptional(const std::string& key, const std::string& runType, const std::string& beamType) const
 {
   std::optional<std::string> result = std::nullopt;
-  std::vector<std::string> runTypes = { runType, std::string("default") };
-  std::vector<std::string> beamTypes = { beamType, std::string("default") };
-  for (int rt = 0; rt < 2; rt++) {
-    for (int bt = 0; bt < 2; bt++) {
+  const std::vector<std::string> runTypes = { runType, std::string("default") };
+  const std::vector<std::string> beamTypes = { beamType, std::string("default") };
+  for (const auto& rt : runTypes) {
+    for (const auto& bt : beamTypes) {
       try {
-        result = mCustomParameters.at(runTypes[rt]).at(beamTypes[bt]).at(key);
+        result = mCustomParameters.at(rt).at(bt).at(key);
         return result;
-      } catch (const std::out_of_range& exc) {
+      } catch (const std::out_of_range& exc) { // ignored on purpose
       }
     }
   }

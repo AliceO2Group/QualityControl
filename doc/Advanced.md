@@ -1043,7 +1043,7 @@ The simple, deprecated, syntax is
     "tasks": {
       "QcTask": {
         "taskParameters": {
-          "myOwnKey": "myOwnValue"
+          "myOwnKey1": "myOwnValue1"
         },
 ```
 It is accessed with : `mCustomParameters["myOwnKey"]`. 
@@ -1055,7 +1055,7 @@ The new syntax is
         "extendedTaskParameters": {
           "default": {
             "default": {
-              "myOwnKey": "myOwnValue",
+              "myOwnKey1": "myOwnValue1",
               "myOwnKey2": "myOwnValue2",
               "myOwnKey3": "myOwnValue3"
             }
