@@ -31,12 +31,13 @@ std::ostream& operator<<(std::ostream& out, const CustomParameters& customParame
 
 CustomParameters::CustomParameters()
 {
-  mCustomParameters["default"]["default"] = {};
+  mCustomParameters["null"]["null"] = {};
 }
 
 void CustomParameters::set(const std::string& key, const std::string& value, const std::string& runType, const std::string& beamType)
 {
   mCustomParameters[runType][beamType][key] = value;
+  std::cout << "mCustomParameters[runType][beamType][key] : " << mCustomParameters[runType][beamType][key] << std::endl;
 }
 
 const std::unordered_map<std::string, std::string>& CustomParameters::getAllForRunBeam(const std::string& runType, const std::string& beamType)
@@ -129,7 +130,7 @@ std::unordered_map<std::string, std::string>::const_iterator CustomParameters::f
 
 std::unordered_map<std::string, std::string>::const_iterator CustomParameters::end() const
 {
-  return mCustomParameters.at("default").at("default").end();
+  return mCustomParameters.at("null").at("null").end();
 }
 
 std::string CustomParameters::operator[](const std::string& key) const
