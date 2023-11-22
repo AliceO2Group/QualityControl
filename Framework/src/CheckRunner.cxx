@@ -151,7 +151,7 @@ void CheckRunner::refreshConfig(InitContext& iCtx)
 void CheckRunner::init(framework::InitContext& iCtx)
 {
   try {
-    core::initInfologger(iCtx, mConfig.infologgerDiscardParameters, createCheckRunnerFacility(mDeviceName));
+    core::initInfologger(iCtx, mConfig.infologgerDiscardParameters, mDeviceName);
     refreshConfig(iCtx);
     Bookkeeping::getInstance().init(mConfig.bookkeepingUrl);
     initDatabase();
