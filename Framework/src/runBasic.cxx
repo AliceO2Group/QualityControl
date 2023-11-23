@@ -121,7 +121,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
     DataProcessorSpec printer{
       "printer",
       Inputs{
-        { "checked-mo", "QC", Check::createCheckDataDescription(getFirstCheckName(qcConfigurationSource)), 0 } },
+        { "checked-mo", "QC", Check::createCheckDataDescription(getFirstCheckName(qcConfigurationSource)), 0, Lifetime::Sporadic } },
       Outputs{},
       adaptFromTask<o2::quality_control::example::ExampleQualityPrinterSpec>()
     };
@@ -130,7 +130,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
     DataProcessorSpec printer{
       "printer",
       Inputs{
-        { "checked-mo", "QC", TaskRunner::createTaskDataDescription(getFirstTaskName(qcConfigurationSource)), 0 } },
+        { "checked-mo", "QC", TaskRunner::createTaskDataDescription(getFirstTaskName(qcConfigurationSource)), 0, Lifetime::Sporadic } },
       Outputs{},
       adaptFromTask<o2::quality_control::example::ExamplePrinterSpec>()
     };
