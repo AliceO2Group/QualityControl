@@ -75,13 +75,7 @@ void BCTask::startOfCycle()
 
 void BCTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  bool hasCTPConfig = true;
-  if (!hasClassMasksLoaded()) {
-    if (!loadTriggerClasses(ctx.services().get<o2::framework::TimingInfo>().creation)) {
-      ILOG(Error, Support) << "No trigger classes loaded, processing CTP digits not possible" << ENDM;
-      hasCTPConfig = false;
-    }
-  }
+  auto ctpconfig = ctx.inputs().get<o2::ctp::CTPConfiguration*>("ctp-config");
   auto emctriggers = ctx.inputs().get<gsl::span<o2::emcal::TriggerRecord>>("emcal-triggers");
   for (const auto& emctrg : emctriggers) {
     if (emctrg.getTriggerBits() & o2::trigger::PhT) {
@@ -89,7 +83,7 @@ void BCTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
   }
 
-  if (hasCTPConfig) {
+  if (hasClassMasksLoaded()) {
     auto ctpdigits = ctx.inputs().get<gsl::span<o2::ctp::CTPDigit>>("ctp-digits");
     for (const auto& ctpdigit : ctpdigits) {
       auto bc = ctpdigit.intRecord.bc;
@@ -126,6 +120,17 @@ void BCTask::endOfCycle()
 void BCTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
+}
+
+void BCTask::finaliseCCDB(o2::framework::ConcreteDataMatcher& matcher, void* obj)
+{
+  if (matcher == o2::framework::ConcreteDataMatcher("CTP", "CONFIG", 0)) {
+    auto triggerconfig = reinterpret_cast<const o2::ctp::CTPConfiguration*>(obj);
+    if (triggerconfig) {
+      ILOG(Info, Support) << "Loading EMCAL trigger classes for new trigger configuration: " << ENDM;
+      loadTriggerClasses(triggerconfig);
+    }
+  }
 }
 
 void BCTask::reset()
@@ -221,7 +226,7 @@ BCTask::BeamPresenceMode_t BCTask::getBeamPresenceMode(const std::string_view be
   return BeamPresenceMode_t::ANY;
 }
 
-bool BCTask::loadTriggerClasses(uint64_t timestamp)
+void BCTask::loadTriggerClasses(const o2::ctp::CTPConfiguration* ctpconfig)
 {
   auto tokenize = [](const std::string_view trgclass, char delimiter) -> std::vector<std::string> {
     std::vector<std::string> tokens;
@@ -234,45 +239,35 @@ bool BCTask::loadTriggerClasses(uint64_t timestamp)
     return tokens;
   };
   mAllEMCALClasses.clear();
-  std::map<std::string, std::string> metadata;
-  metadata["runNumber"] = std::to_string(mCurrentRun);
-  // temproary fix to make the task not crashing if the trigger configuration for the given run is not found (O2-4122)
-  o2::ccdb::BasicCCDBManager::instance().setFatalWhenNull(false);
-  auto ctpconfig = this->retrieveConditionAny<o2::ctp::CTPConfiguration>("CTP/Config/Config", metadata, timestamp);
-  if (ctpconfig) {
-    for (auto& cls : ctpconfig->getCTPClasses()) {
-      auto trgclsname = boost::algorithm::to_upper_copy(cls.name);
-      auto tokens = tokenize(trgclsname, '-');
-      auto triggercluster = tokens[3];
-      if (triggercluster.find("EMC") == std::string::npos) {
-        // Not an EMCAL trigger class
+
+  for (auto& cls : ctpconfig->getCTPClasses()) {
+    auto trgclsname = boost::algorithm::to_upper_copy(cls.name);
+    auto tokens = tokenize(trgclsname, '-');
+    auto triggercluster = tokens[3];
+    if (triggercluster.find("EMC") == std::string::npos) {
+      // Not an EMCAL trigger class
+      continue;
+    }
+    if (mBeamMode != BeamPresenceMode_t::ANY) {
+      if (tokens[1] != getBeamPresenceModeToken(mBeamMode)) {
+        // beam mode not matching
         continue;
       }
-      if (mBeamMode != BeamPresenceMode_t::ANY) {
-        if (tokens[1] != getBeamPresenceModeToken(mBeamMode)) {
-          // beam mode not matching
-          continue;
-        }
-      }
-      ILOG(Info, Support) << "EMCAL trigger cluster: Found trigger class: " << trgclsname << ENDM;
-      mAllEMCALClasses.insert(cls.classMask);
-      if (tokens[0] == mTriggerAliases.find("MB")->second) {
-        mTriggerClassIndices[EMCMinBias] = cls.classMask;
-        ILOG(Info, Support) << "Trigger class index EMC min bias: " << mTriggerClassIndices[EMCMinBias] << " (Class name: " << cls.name << ")" << ENDM;
-      }
-      if (tokens[0] == mTriggerAliases.find("0EMC")->second) {
-        mTriggerClassIndices[EMCL0] = cls.classMask;
-        ILOG(Info, Support) << "Trigger class index EMC L0:       " << mTriggerClassIndices[EMCL0] << " (Class name: " << cls.name << ")" << ENDM;
-      }
-      if (tokens[0] == mTriggerAliases.find("0DMC")->second) {
-        mTriggerClassIndices[DMCL0] = cls.classMask;
-        ILOG(Info, Support) << "Trigger class index DMC L0:       " << mTriggerClassIndices[DMCL0] << " (Class name: " << cls.name << ")" << ENDM;
-      }
     }
-    return true;
-  } else {
-    ILOG(Error, Support) << "Failed loading CTP configuration for run " << mCurrentRun << ", timestamp " << timestamp << ENDM;
-    return false;
+    ILOG(Info, Support) << "EMCAL trigger cluster: Found trigger class: " << trgclsname << ENDM;
+    mAllEMCALClasses.insert(cls.classMask);
+    if (tokens[0] == mTriggerAliases.find("MB")->second) {
+      mTriggerClassIndices[EMCMinBias] = cls.classMask;
+      ILOG(Info, Support) << "Trigger class index EMC min bias: " << mTriggerClassIndices[EMCMinBias] << " (Class name: " << cls.name << ")" << ENDM;
+    }
+    if (tokens[0] == mTriggerAliases.find("0EMC")->second) {
+      mTriggerClassIndices[EMCL0] = cls.classMask;
+      ILOG(Info, Support) << "Trigger class index EMC L0:       " << mTriggerClassIndices[EMCL0] << " (Class name: " << cls.name << ")" << ENDM;
+    }
+    if (tokens[0] == mTriggerAliases.find("0DMC")->second) {
+      mTriggerClassIndices[DMCL0] = cls.classMask;
+      ILOG(Info, Support) << "Trigger class index DMC L0:       " << mTriggerClassIndices[DMCL0] << " (Class name: " << cls.name << ")" << ENDM;
+    }
   }
 }
 
