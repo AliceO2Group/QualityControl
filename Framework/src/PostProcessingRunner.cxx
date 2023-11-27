@@ -230,6 +230,9 @@ void PostProcessingRunner::reset()
 
 void PostProcessingRunner::updateValidity(const Trigger& trigger)
 {
+  if (!trigger.activity.mValidity.isValid() || trigger.activity.mValidity == gFullValidityInterval) {
+    return;
+  }
   if (!core::activity_helpers::onNumericLimit(trigger.activity.mValidity.getMin())) {
     mActivity.mValidity.update(trigger.activity.mValidity.getMin());
   }
