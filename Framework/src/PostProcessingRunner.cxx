@@ -230,7 +230,14 @@ void PostProcessingRunner::reset()
 
 void PostProcessingRunner::updateValidity(const Trigger& trigger)
 {
-  if (!trigger.activity.mValidity.isValid() || trigger.activity.mValidity == gFullValidityInterval) {
+  if (!trigger.activity.mValidity.isValid()) {
+    ILOG(Warning, Devel) << "Not updating objects validity, because the provided trigger validity is invalidity ("
+                         << trigger.activity.mValidity.getMin() << ", " << trigger.activity.mValidity.getMax() << ")" << ENDM;
+    return;
+  }
+  if (trigger.activity.mValidity == gFullValidityInterval) {
+    ILOG(Warning, Devel) << "Not updating objects validity, because the provided trigger validity covers the"
+                         << " maximum possible validity, which is unexpected" << ENDM;
     return;
   }
   if (!core::activity_helpers::onNumericLimit(trigger.activity.mValidity.getMin())) {
