@@ -42,7 +42,7 @@ void TrackingTask::initialize(o2::framework::InitContext& /*ctx*/)
   mPtMin = getFromConfig<float>(mCustomParameters, "pTminvalue", 0.f);
   mDetailedTrackQC = getFromConfig<bool>(mCustomParameters, "detailedQC");
   std::string trackSources = getFromConfig<string>(mCustomParameters, "trackSources", "all");
-  GID::mask_t allowedSources = GID::getSourcesMask("TPC-TRD,ITS-TPC-TRD");
+  GID::mask_t allowedSources = GID::getSourcesMask("ITS-TPC,TPC-TRD,ITS-TPC-TRD");
   mSrcSelected = allowedSources & GID::getSourcesMask(trackSources);
   mDataRequest = std::make_shared<o2::globaltracking::DataRequest>();
   mDataRequest->requestTracks(mSrcSelected, false);
@@ -76,6 +76,10 @@ void TrackingTask::monitorData(o2::framework::ProcessingContext& ctx)
     mTrigTPCTRD = mRecoCont.getTPCTRDTriggers();
     sources.push_back(GID::Source::TPCTRD);
   }
+  if (mSrcSelected[GID::Source::ITSTPC] == 1) {
+    mTPCITSTracks = mRecoCont.getTPCITSTracks();
+    sources.push_back(GID::Source::ITSTPC);
+  }
 
   const gsl::span<const TrackQC>* trackQcPtr = nullptr;
   using trkQcType = std::decay_t<decltype(ctx.inputs().get<gsl::span<o2::trd::TrackQC>>(""))>;
@@ -88,6 +92,19 @@ void TrackingTask::monitorData(o2::framework::ProcessingContext& ctx)
   for (auto src : sources) {
     const gsl::span<const TrackTriggerRecord>* trackTriggers = (src == GID::Source::ITSTPCTRD) ? &mTrigITSTPCTRD : &mTrigTPCTRD;
     const gsl::span<const TrackTRD>* tracks = (src == GID::Source::ITSTPCTRD) ? &mITSTPCTRDTracks : &mTPCTRDTracks;
+
+    if (src == GID::Source::ITSTPC) {
+      for (size_t itrk = 0; itrk < static_cast<int>(mTPCITSTracks.size()); ++itrk) {
+        const auto& track = mTPCITSTracks[itrk];
+        // filling track information
+        if (track.getPt() < mPtMin) {
+          continue;
+        }
+        mTrackPtTPCITS->Fill(track.getPt());
+        mTrackEtaTPCITS->Fill(track.getEta());
+        mTrackPhiTPCITS->Fill(track.getPhi());
+      }
+    }
     for (const auto& tracktrig : *trackTriggers) {
       int start = tracktrig.getFirstTrack();
       int end = start + tracktrig.getNumberOfTracks();
@@ -120,6 +137,10 @@ void TrackingTask::monitorData(o2::framework::ProcessingContext& ctx)
         } // end of loop over layers
       }   // end of loop over tracks
     }     // end of loop over track trigger records
+
+    setEfficiency(mEfficiencyPt, mTrackPt, mTrackPtTPCITS);
+    setEfficiency(mEfficiencyEta, mTrackEta, mTrackEtaTPCITS);
+    setEfficiency(mEfficiencyPhi, mTrackPhi, mTrackPhiTPCITS);
   }
 
   if (mDetailedTrackQC && trackQcPtr) {
@@ -153,6 +174,15 @@ void TrackingTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
 }
 
+void TrackingTask::setEfficiency(TEfficiency* eff, TH1* hNum, TH1* hDen)
+{
+  if (!eff || !hNum || !hDen) {
+    ILOG(Debug, Devel) << "Something went wrong when defining the efficiency " << eff->GetName() << " from " << hNum->GetName() << " and " << hDen->GetName() << ENDM;
+  }
+  eff->SetTotalHistogram(*hDen, "f");
+  eff->SetPassedHistogram(*hNum, "f");
+}
+
 void TrackingTask::endOfCycle()
 {
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
@@ -172,6 +202,9 @@ void TrackingTask::reset()
   mTrackPhi->Reset();
   mTrackEtaPhi->Reset();
   mTrackPt->Reset();
+  mTrackPtTPCITS->Reset();
+  mTrackEtaTPCITS->Reset();
+  mTrackPhiTPCITS->Reset();
   mTrackChi2->Reset();
   if (mDetailedTrackQC) {
     mDeltaY->Reset();
@@ -221,6 +254,27 @@ void TrackingTask::buildHistograms()
   mTrackPt = new TH1D("TrackPt", "p_{T} Distribution", 100, 0.0, 10.0);
   axisConfig(mTrackPt, "p_{T} (GeV)", "Counts", "", 1, 1.0, 1.1);
   publishObject(mTrackPt, "", "logx");
+
+  mTrackPtTPCITS = new TH1D("TrackPtTPCITS", "p_{T} Distribution for ITS-TPC tracks", 100, 0.0, 10.0);
+  axisConfig(mTrackPtTPCITS, "p_{T} (GeV)", "Counts", "", 1, 1.0, 1.1);
+  publishObject(mTrackPtTPCITS, "", "logx");
+
+  mTrackEtaTPCITS = new TH1D("TrackEtaTPCITS", "Eta Distribution for ITS-TPC tracks", 20, -1.0, 1.0);
+  axisConfig(mTrackEtaTPCITS, "#eta", "Counts", "", 1, 1.0, 1.1);
+  publishObject(mTrackEtaTPCITS);
+
+  mTrackPhiTPCITS = new TH1D("TrackPhiTPCITS", "Phi Distribution for ITS-TPC tracks", 60, 0, TMath::TwoPi());
+  axisConfig(mTrackPhiTPCITS, "#phi", "Counts", "", 1, 1.0, 1.1);
+  publishObject(mTrackPhiTPCITS);
+
+  mEfficiencyPt = new TEfficiency("EfficiencyPt", "Efficiency of matched tracks in p_{T}", 100, 0.0, 10.0);
+  publishObject(mEfficiencyPt);
+
+  mEfficiencyEta = new TEfficiency("EfficiencyEta", "Efficiency of matched tracks in #eta", 20, -1.0, 1.0);
+  publishObject(mEfficiencyEta);
+
+  mEfficiencyPhi = new TEfficiency("EfficiencyPhi", "Efficiency of matched tracks in #phi", 60, 0, TMath::TwoPi());
+  publishObject(mEfficiencyPhi);
 
   mTrackChi2 = new TH1D("TrackChi2", "Reduced Chi2Distribution", 100, 0.0, 10.0);
   axisConfig(mTrackChi2, "reduced #chi^{2}", "Counts", "", 1, 1.0, 1.1);

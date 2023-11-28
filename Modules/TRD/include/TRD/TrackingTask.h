@@ -22,6 +22,7 @@
 #include "TH2D.h"
 #include "TProfile2D.h"
 #include <TH1.h>
+#include <TEfficiency.h>
 // O2 includes
 #include "DataFormatsTRD/TrackTRD.h"
 #include "DataFormatsTRD/TrackTriggerRecord.h"
@@ -60,6 +61,7 @@ class TrackingTask final : public TaskInterface
   void axisConfig(TH1* h, const char* xTitle, const char* yTitle, const char* zTitle, bool stat, float xOffset = 1., float yOffset = 1.);
   void publishObject(TObject* aObject, const char* drawOpt = "", const char* dispayOpt = "");
   void drawLayers(TH2* hist);
+  void setEfficiency(TEfficiency* eff, TH1* hNum, TH1* hDen);
   bool mDetailedTrackQC = false;                                 // flag whether or not to expect o2::trd::TrackQC input
   std::shared_ptr<o2::globaltracking::DataRequest> mDataRequest; // specify which input to use
   o2::globaltracking::RecoContainer mRecoCont;                   // helper to acess input from reconstruction
@@ -69,6 +71,7 @@ class TrackingTask final : public TaskInterface
   gsl::span<const o2::trd::TrackTriggerRecord> mTrigITSTPCTRD;
   gsl::span<const o2::trd::TrackTRD> mTPCTRDTracks;
   gsl::span<const o2::trd::TrackTriggerRecord> mTrigTPCTRD;
+  gsl::span<const o2::dataformats::TrackTPCITS> mTPCITSTracks;
   //
   float mPtMin = 0.0;                                                                 // minimum pT of tracks
   TString mChargeLabel[3] = { "Pos", "Neg", "All" };                                  // charge of tracks
@@ -78,6 +81,9 @@ class TrackingTask final : public TaskInterface
   TH1D* mTrackEta = nullptr;                                                          // eta of ITS-TPC-TRD tracks
   TH1D* mTrackPhi = nullptr;                                                          // phi of ITS-TPC-TRD tracks
   TH1D* mTrackPt = nullptr;                                                           // pt of ITS-TPC-TRD tracks
+  TH1D* mTrackPtTPCITS = nullptr;                                                     // pt of ITS-TPC tracks
+  TH1D* mTrackEtaTPCITS = nullptr;                                                    // eta of ITS-TPC tracks
+  TH1D* mTrackPhiTPCITS = nullptr;                                                    // phi of ITS-TPC tracks
   TH1D* mTrackChi2 = nullptr;                                                         // reduced chi2 of ITS-TPC-TRD tracks
   TH1D* mDeltaY = nullptr;                                                            // residual in y direction (trackposiny - trackletposiny)
   TH1D* mDeltaZ = nullptr;                                                            // residual in z direction (trackposinz - trackletposinz)
@@ -89,6 +95,9 @@ class TrackingTask final : public TaskInterface
   std::array<std::array<TH2D*, 2>, o2::trd::constants::NLAYER> mTracksEtaPhiPerLayer; // eta vs. phi of tracks per layer
   std::array<TH2D*, o2::trd::constants::NLAYER> mDeltaYinEtaPerLayer;                 // residual in y direction vs. eta per layer
   std::array<TH2D*, o2::trd::constants::NLAYER> mDeltaYinPhiPerLayer;                 // residual in y direction vs. phi per layer
+  TEfficiency* mEfficiencyPt = nullptr;                                               // efficiency vs. pt
+  TEfficiency* mEfficiencyEta = nullptr;                                              // efficiency vs. eta
+  TEfficiency* mEfficiencyPhi = nullptr;                                              // efficiency vs. phi
 };
 
 } // namespace o2::quality_control_modules::trd
