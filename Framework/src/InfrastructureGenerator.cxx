@@ -549,6 +549,10 @@ void InfrastructureGenerator::generateLocalTaskLocalProxy(framework::WorkflowSpe
       { proxyInput },
       channelConfig.c_str()));
   workflow.back().labels.emplace_back(taskSpec.localControl == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
+  if(!taskSpec.critical) {
+    framework::DataProcessorLabel expendableLabel = { "expendable" };
+    workflow.back().labels.emplace_back(expendableLabel);
+  }
   if (getenv("O2_QC_KILL_PROXIES") != nullptr) {
     workflow.back().metadata.push_back(DataProcessorMetadata{ ecs::privateMemoryKillThresholdMB, proxyMemoryKillThresholdMB });
   }
@@ -576,6 +580,10 @@ void InfrastructureGenerator::generateLocalTaskRemoteProxy(framework::WorkflowSp
     channelConfig.c_str(),
     dplModelAdaptor());
   proxy.labels.emplace_back(taskSpec.localControl == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
+  if(!taskSpec.critical) {
+    framework::DataProcessorLabel expendableLabel = { "expendable" };
+    workflow.back().labels.emplace_back(expendableLabel);
+  }
   // if not in RUNNING, we should drop all the incoming messages, we set the corresponding proxy option.
   enableDraining(proxy.options);
   if (getenv("O2_QC_KILL_PROXIES") != nullptr) {
