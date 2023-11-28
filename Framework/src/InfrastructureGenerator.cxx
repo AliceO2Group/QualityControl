@@ -635,8 +635,10 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
 
   CheckConfigs checkConfigs; // all the checkConfigs
   for (const auto& checkSpec : infrastructureSpec.checks) {
-    auto checkConfig = Check::extractConfig(infrastructureSpec.common, checkSpec);
-    checkConfigs.push_back(checkConfig);
+    if (checkSpec.active) {
+      auto checkConfig = Check::extractConfig(infrastructureSpec.common, checkSpec);
+      checkConfigs.push_back(checkConfig);
+    }
   }
 
   auto checkRunnerConfig = CheckRunnerFactory::extractConfig(infrastructureSpec.common);
