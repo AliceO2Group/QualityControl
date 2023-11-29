@@ -23,14 +23,12 @@
 #include "ReconstructionDataFormats/PrimaryVertex.h"
 #include "ITStracking/IOUtils.h"
 #include <DataFormatsITSMFT/ClusterTopology.h>
-#include "CCDB/BasicCCDBManager.h"
-#include "CCDB/CCDBTimeStampUtils.h"
 #include "Common/Utils.h"
 
 #include <Framework/DataSpecUtils.h>
 #include "ITStracking/Constants.h"
-#include "Common/TH1Ratio.h"
-#include "Common/TH2Ratio.h"
+// #include "Common/TH1Ratio.h"
+// #include "Common/TH2Ratio.h"
 
 #include "DCAFitter/DCAFitterN.h"
 
@@ -110,9 +108,9 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
     mTimestamp = std::stol(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "dicttimestamp", "0"));
     long int ts = mTimestamp ? mTimestamp : ctx.services().get<o2::framework::TimingInfo>().creation;
     ILOG(Debug, Devel) << "Getting dictionary from ccdb - timestamp: " << ts << ENDM;
-    auto& mgr = o2::ccdb::BasicCCDBManager::instance();
-    mgr.setTimestamp(ts);
-    mDict = mgr.get<o2::itsmft::TopologyDictionary>("ITS/Calib/ClusterDictionary");
+
+    std::map<std::string, std::string> metadata;
+    mDict = TaskInterface::retrieveConditionAny<o2::itsmft::TopologyDictionary>("ITS/Calib/ClusterDictionary", metadata, ts);
     ILOG(Debug, Devel) << "Dictionary size: " << mDict->getSize() << ENDM;
   }
 

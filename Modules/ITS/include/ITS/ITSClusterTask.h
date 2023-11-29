@@ -18,22 +18,14 @@
 #define QC_MODULE_ITS_ITSCLUSTERTASK_H
 
 #include "QualityControl/TaskInterface.h"
-#include <TH1.h>
-#include <TH2.h>
-#include <TString.h>
-#include <THnSparse.h>
-#include <string>
 #include "Common/TH2Ratio.h"
 
 #include <DataFormatsITSMFT/TopologyDictionary.h>
 #include <ITSBase/GeometryTGeo.h>
 #include <Framework/TimingInfo.h>
 
-#include <TLine.h>
-#include <TLatex.h>
-
-class TH1F;
-class TH2F;
+class TH1;
+class TH2;
 
 using namespace o2::quality_control::core;
 using namespace o2::quality_control_modules::common;

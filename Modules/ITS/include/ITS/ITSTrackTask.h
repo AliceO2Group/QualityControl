@@ -18,18 +18,16 @@
 #define QC_MODULE_ITS_ITSTRACKTASK_H
 
 #include "QualityControl/TaskInterface.h"
-#include <TH1D.h>
-#include <TH2D.h>
 #include <DataFormatsITSMFT/TopologyDictionary.h>
 #include <ITSBase/GeometryTGeo.h>
 #include <Framework/TimingInfo.h>
-#include <TTree.h>
 #include <TLine.h>
+#include <TTree.h>
 #include "Common/TH1Ratio.h"
 #include "Common/TH2Ratio.h"
 
-class TH1D;
-class TH2D;
+class TH1;
+class TH2;
 
 using namespace o2::quality_control::core;
 using namespace o2::quality_control_modules::common;

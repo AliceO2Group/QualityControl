@@ -79,7 +79,8 @@ add_root_dictionary(O2QcITS
 			    include/ITS/ITSTrackSimTask.h 
                             include/ITS/ITSThresholdCalibrationCheck.h 
                             include/ITS/ITSDecodingErrorTask.h 
-                            include/ITS/ITSDecodingErrorCheck.h 
+                            include/ITS/ITSDecodingErrorCheck.h
+                            include/ITS/ITSHelpers.h 
                     LINKDEF include/ITS/LinkDef.h)
 
 # ---- Test(s) ----

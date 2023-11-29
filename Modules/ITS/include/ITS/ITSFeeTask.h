@@ -25,19 +25,13 @@
 #include "Headers/RDHAny.h"
 #include "DetectorsRaw/RDHUtils.h"
 
-#include <TH1.h>
-#include <TH2.h>
 #include <TH2Poly.h>
-#include "TMath.h"
+#include <TMath.h>
 #include <TLine.h>
-#include <TText.h>
 #include <TLatex.h>
-#include <TLine.h>
-#include <TLegend.h>
 
-class TH2I;
-class TH1I;
-class TH2F;
+class TH1;
+class TH2;
 
 using namespace o2::quality_control::core;
 

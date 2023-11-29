@@ -25,6 +25,7 @@
 #include <TFile.h>
 #include <TTree.h>
 // O2
+#include "QualityControl/QcInfoLogger.h"
 #include <Framework/CallbackService.h>
 #include <Framework/ControlService.h>
 #include <Framework/runDataProcessing.h>
@@ -44,13 +45,12 @@ class ITSClustersRootFileReader : public o2::framework::Task
  public:
   void init(framework::InitContext& ic)
   {
-    LOG(info) << "In ITSClustersRootFileReader::init ... entering ";
 
     // open input file
     auto filename = ic.options().get<std::string>("qc-its-clusters-root-file");
     mFile = std::make_unique<TFile>(filename.c_str(), "READ");
     if (!mFile->IsOpen()) {
-      LOG(error) << "ITSClustersRootFileReader::init. Cannot open file: " << filename.c_str();
+      ILOG(Error) << "ITSClustersRootFileReader::init. Cannot open file: " << filename.c_str();
       ic.services().get<ControlService>().endOfStream();
       ic.services().get<ControlService>().readyToQuit(QuitRequest::Me);
       return;
@@ -65,7 +65,7 @@ class ITSClustersRootFileReader : public o2::framework::Task
     // check entries
     mNumberOfEntries = mTree->GetEntries();
     if (mNumberOfEntries == 0) {
-      LOG(error) << "ITSClustersRootFileReader::init. No entries.";
+      ILOG(Error) << "ITSClustersRootFileReader::init. No entries.";
       ic.services().get<ControlService>().endOfStream();
       ic.services().get<ControlService>().readyToQuit(QuitRequest::Me);
       return;

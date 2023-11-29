@@ -19,14 +19,9 @@
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
 #include <TPaveText.h>
-#include <TList.h>
-#include <TH1.h>
-#include <TH2.h>
 #include <TText.h>
 #include "TMath.h"
 #include "TLatex.h"
-
-#include <iostream>
 #include "Common/Utils.h"
 
 namespace o2::quality_control_modules::its
@@ -44,6 +39,10 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
 
     if (iter->second->getName() == "NClusters") {
       auto* h = dynamic_cast<TH1D*>(iter->second->getObject());
+      if (h == nullptr) {
+        ILOG(Error, Support) << "could not cast NClusters to TH1D*" << ENDM;
+        continue;
+      }
       result.set(Quality::Good);
       result.addMetadata("CheckTracks4", "good");
       result.addMetadata("CheckTracks5", "good");
@@ -86,6 +85,10 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
 
     if (iter->second->getName() == "AngularDistribution") {
       auto* hAngular = dynamic_cast<TH2D*>(iter->second->getObject());
+      if (hAngular == nullptr) {
+        ILOG(Error, Support) << "could not cast AngularDistribution to TH2D*" << ENDM;
+        continue;
+      }
       result.set(Quality::Good);
       result.addMetadata("CheckAngEmpty", "good");
       result.addMetadata("CheckAsymmEta", "good");
@@ -113,6 +116,10 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
 
     if (iter->second->getName() == "VertexCoordinates") {
       auto* h = dynamic_cast<TH2D*>(iter->second->getObject());
+      if (h == nullptr) {
+        ILOG(Error, Support) << "could not cast VertexCoordinates to TH2D*" << ENDM;
+        continue;
+      }
       result.set(Quality::Good);
       result.addMetadata("CheckXYVertexEmpty", "good");
       result.addMetadata("CheckXVertexMean", "good");
@@ -143,6 +150,10 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
 
     if (iter->second->getName() == "VertexRvsZ") {
       auto* h = dynamic_cast<TH2D*>(iter->second->getObject());
+      if (h == nullptr) {
+        ILOG(Error, Support) << "could not cast VertexRvsZ to TH2D*" << ENDM;
+        continue;
+      }
       result.set(Quality::Good);
       result.addMetadata("CheckRZVertexZDisplacedBad", "good");
       TH1D* projectZ = h->ProjectionY();
@@ -154,6 +165,10 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
 
     if (iter->second->getName() == "VertexZ") {
       auto* h = dynamic_cast<TH1D*>(iter->second->getObject());
+      if (h == nullptr) {
+        ILOG(Error, Support) << "could not cast VertexZ to TH1D*" << ENDM;
+        continue;
+      }
       result.set(Quality::Good);
       result.addMetadata("CheckZVertexEmpty", "good");
       result.addMetadata("CheckZVertexMeanMed", "good");
@@ -206,6 +221,10 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
 
   if (mo->getName() == "NClusters") {
     auto* h = dynamic_cast<TH1D*>(mo->getObject());
+    if (h == nullptr) {
+      ILOG(Error, Support) << "could not cast NClusters to TH1D*" << ENDM;
+      return;
+    }
     if (checkResult == Quality::Good) {
       status = "Quality::GOOD";
       textColor = kGreen;
@@ -282,6 +301,10 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
 
   if (mo->getName() == "AngularDistribution") {
     auto* h = dynamic_cast<TH2D*>(mo->getObject());
+    if (h == nullptr) {
+      ILOG(Error, Support) << "could not cast AngularDistribution to TH2D*" << ENDM;
+      return;
+    }
     if (checkResult == Quality::Good) {
       status = "Quality::GOOD";
       textColor = kGreen;
@@ -327,6 +350,11 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
   if (mo->getName() == "VertexCoordinates") {
     Double_t positionX, positionY;
     auto* h = dynamic_cast<TH2D*>(mo->getObject());
+
+    if (h == nullptr) {
+      ILOG(Error, Support) << "could not cast TVertexCoordinates to TH2D*" << ENDM;
+      return;
+    }
     if (checkResult == Quality::Good) {
       status = "Quality::GOOD";
       textColor = kGreen;
@@ -396,6 +424,10 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
 
   if (mo->getName() == "VertexRvsZ") {
     auto* h = dynamic_cast<TH2D*>(mo->getObject());
+    if (h == nullptr) {
+      ILOG(Error, Support) << "could not cast VertexRvsZ to TH2D*" << ENDM;
+      return;
+    }
     if (checkResult == Quality::Good) {
       status = "Quality:GOOD";
       textColor = kGreen;
@@ -424,6 +456,10 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
 
   if (mo->getName() == "VertexZ") {
     auto* h = dynamic_cast<TH1D*>(mo->getObject());
+    if (h == nullptr) {
+      ILOG(Error, Support) << "could not cast VertexZ to TH1D*" << ENDM;
+      return;
+    }
     if (checkResult == Quality::Good) {
       status = "Quality:GOOD";
       textColor = kGreen;

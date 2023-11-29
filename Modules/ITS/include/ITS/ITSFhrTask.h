@@ -25,12 +25,10 @@
 #include <ITSMFTReconstruction/RawPixelDecoder.h>
 
 #include <TText.h>
-#include <TH1.h>
-#include <TH2.h>
 #include <THnSparse.h>
 #include <TH2Poly.h>
 
-class TH1F;
+class TH1;
 class TH2;
 
 using namespace o2::quality_control::core;

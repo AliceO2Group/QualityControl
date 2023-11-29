@@ -23,7 +23,6 @@
 
 #include <DPLUtils/RawParser.h>
 #include <DPLUtils/DPLRawParser.h>
-#include <iostream>
 
 using namespace o2::framework;
 using namespace o2::header;
@@ -375,7 +374,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
   try {
     auto it = parser.begin();
   } catch (const std::runtime_error& error) {
-    LOG(error) << "Error during parsing DPL data: " << error.what();
+    ILOG(Error) << "Error during parsing DPL data: " << error.what();
     return;
   }
 
@@ -445,7 +444,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
         try {
           ihw = reinterpret_cast<const GBTITSHeaderWord*>(it.data());
         } catch (const std::runtime_error& error) {
-          LOG(error) << "Error during reading its header data: " << error.what();
+          ILOG(Error) << "Error during reading its header data: " << error.what();
           return;
         }
 
@@ -474,7 +473,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
       try {
         ddw = reinterpret_cast<const GBTDiagnosticWord*>(it.data());
       } catch (const std::runtime_error& error) {
-        LOG(error) << "Error during reading late diagnostic data: " << error.what();
+        ILOG(Error) << "Error during reading late diagnostic data: " << error.what();
         return;
       }
 

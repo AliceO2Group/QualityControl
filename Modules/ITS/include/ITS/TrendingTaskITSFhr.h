@@ -27,10 +27,6 @@
 #include <TMultiGraph.h>
 #include <TLegend.h>
 #include <TTree.h>
-#include <memory>
-#include <string>
-#include <vector>
-#include <unordered_map>
 
 namespace o2::quality_control::repository
 {

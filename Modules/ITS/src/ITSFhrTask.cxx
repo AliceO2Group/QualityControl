@@ -21,8 +21,6 @@
 #include "QualityControl/QcInfoLogger.h"
 #include <DPLUtils/RawParser.h>
 #include <DPLUtils/DPLRawParser.h>
-#include "CCDB/BasicCCDBManager.h"
-#include "CCDB/CCDBTimeStampUtils.h"
 #include "Framework/TimingInfo.h"
 
 #include "Common/Utils.h"

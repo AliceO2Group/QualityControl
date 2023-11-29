@@ -53,7 +53,7 @@ class ITSTracksRootFileReader : public o2::framework::Task
 
     mFileTracks = std::make_unique<TFile>(filenameTracks.c_str(), "READ");
     if (!mFileTracks->IsOpen()) {
-      LOG(error) << "ITSTracksRootFileReader::init. Cannot open file: " << filenameTracks.c_str();
+      ILOG(Error) << "ITSTracksRootFileReader::init. Cannot open file: " << filenameTracks.c_str();
       ic.services().get<ControlService>().endOfStream();
       ic.services().get<ControlService>().readyToQuit(QuitRequest::Me);
       return;
@@ -72,7 +72,7 @@ class ITSTracksRootFileReader : public o2::framework::Task
 
     mFileClusters = std::make_unique<TFile>(filenameCluster.c_str(), "READ");
     if (!mFileClusters->IsOpen()) {
-      LOG(error) << "ITSTracksRootFileReader::init. Cannot open file: " << filenameCluster.c_str();
+      ILOG(Error) << "ITSTracksRootFileReader::init. Cannot open file: " << filenameCluster.c_str();
       ic.services().get<ControlService>().endOfStream();
       ic.services().get<ControlService>().readyToQuit(QuitRequest::Me);
       return;
@@ -89,7 +89,7 @@ class ITSTracksRootFileReader : public o2::framework::Task
     unsigned long mNumberOfEntriesCluster = mTreeClusters->GetEntries();
 
     if (mNumberOfEntriesTrack != mNumberOfEntriesCluster) {
-      LOG(error) << "ITSTracksRootFileReader::init. Mismatch of entries in loaded files.";
+      ILOG(Error) << "ITSTracksRootFileReader::init. Mismatch of entries in loaded files.";
       ic.services().get<ControlService>().endOfStream();
       ic.services().get<ControlService>().readyToQuit(QuitRequest::Me);
       return;
@@ -98,7 +98,7 @@ class ITSTracksRootFileReader : public o2::framework::Task
     // check entries
     mNumberOfEntries = mTreeTracks->GetEntries();
     if (mNumberOfEntries == 0) {
-      LOG(error) << "ITSTracksRootFileReader::init. No entries.";
+      ILOG(Error) << "ITSTracksRootFileReader::init. No entries.";
       ic.services().get<ControlService>().endOfStream();
       ic.services().get<ControlService>().readyToQuit(QuitRequest::Me);
       return;
