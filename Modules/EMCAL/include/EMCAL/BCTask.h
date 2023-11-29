@@ -104,11 +104,12 @@ class BCTask final : public TaskInterface
   /// \return Beam mode (ANY if unknown)
   BeamPresenceMode_t getBeamPresenceMode(const std::string_view beamname) const;
 
-  TH1F* mBCReadout = nullptr; ///< BC distribution from EMCAL readout
-  TH1F* mBCEMCAny = nullptr;  ///< BC distribution from CTP, any trigger
-  TH1F* mBCMinBias = nullptr; ///< BC distribution from CTP, EMCAL min. bias trigger
-  TH1F* mBCL0EMCAL = nullptr; ///< BC distribution from CTP, EMCAL L0 trigger
-  TH1F* mBCL0DCAL = nullptr;  ///< BC distribution from CTP, DCAL trigger
+  TH1F* mBCReadout = nullptr;    ///< BC distribution from EMCAL readout
+  TH1F* mBCIncomplete = nullptr; ///< BC distribution of incomplete-rejected triggers
+  TH1F* mBCEMCAny = nullptr;     ///< BC distribution from CTP, any trigger
+  TH1F* mBCMinBias = nullptr;    ///< BC distribution from CTP, EMCAL min. bias trigger
+  TH1F* mBCL0EMCAL = nullptr;    ///< BC distribution from CTP, EMCAL L0 trigger
+  TH1F* mBCL0DCAL = nullptr;     ///< BC distribution from CTP, DCAL trigger
 
   uint32_t mCurrentRun = -1;                                    ///< Current run
   std::array<uint64_t, NTriggerClasses> mTriggerClassIndices;   ///< Trigger class mask from for different EMCAL triggers from CTP configuration
