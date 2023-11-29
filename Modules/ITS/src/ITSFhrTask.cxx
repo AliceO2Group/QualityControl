@@ -309,7 +309,8 @@ void ITSFhrTask::createOccupancyPlots() // create general plots like error, trig
     double Maxtmp[nDim] = { (double)(nBins[0] * (nChipsPerHic[mLayer] / 2) * (nHicPerStave[mLayer] / 2)), (double)(nBins[1] * 2 * NSubStave[mLayer]) };
     for (int istave = 0; istave < NStaves[mLayer]; istave++) {
       mStaveHitmap[istave] = new THnSparseI(Form("Occupancy/Layer%d/Stave%d/Layer%dStave%dHITMAP", mLayer, istave, mLayer, istave), Form("Hits on Layer %d, Stave %d", mLayer, istave), nDim, nBinstmp, Min, Maxtmp);
-      getObjectsManager()->startPublishing(mStaveHitmap[istave]);
+      if (mCutTFForSparse > 0)
+        getObjectsManager()->startPublishing(mStaveHitmap[istave]);
     }
     mDeadChipPos = new TH2D(Form("Occupancy/Layer%d/Layer%dDeadChipPos", mLayer, mLayer), Form("DeadChipPos on Layer %d", mLayer), nHicPerStave[mLayer] * 7 * 0.5, -0.5 * mLength[mLayer], 0.5 * mLength[mLayer], NStaves[mLayer] * 4, -180, 180);
     mAliveChipPos = new TH2D(Form("Occupancy/Layer%d/Layer%dAliveChipPos", mLayer, mLayer), Form("AliveChipPos on Layer %d", mLayer), nHicPerStave[mLayer] * 7 * 0.5, -0.5 * mLength[mLayer], 0.5 * mLength[mLayer], NStaves[mLayer] * 4, -180, 180);
@@ -716,7 +717,6 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
   end = std::chrono::high_resolution_clock::now();
   difference = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
-  mAverageProcessTime += difference;
   mTFCount++;
 }
 
@@ -742,7 +742,6 @@ void ITSFhrTask::getParameters()
 
 void ITSFhrTask::endOfCycle()
 {
-  ILOG(Debug, Support) << "average process time == " << (double)mAverageProcessTime / mTFCount << ENDM;
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
@@ -759,8 +758,6 @@ void ITSFhrTask::resetGeneralPlots()
 
 void ITSFhrTask::resetOccupancyPlots()
 {
-  memset(mHitNumberOfChip, 0, sizeof(mHitNumberOfChip));
-  memset(mErrors, 0, sizeof(mErrors));
   mChipStaveOccupancy->Reset();
   mChipStaveEventHitCheck->Reset();
   mOccupancyPlot->Reset();

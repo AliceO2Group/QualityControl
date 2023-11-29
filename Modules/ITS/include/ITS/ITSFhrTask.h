@@ -59,7 +59,6 @@ class ITSFhrTask final : public TaskInterface
   void reset() override;
 
  private:
-  int mAverageProcessTime = 0;
   int mTFCount = 0;
   void setAxisTitle(TH1* object, const char* xTitle, const char* yTitle);
   void createGeneralPlots(); // create General Plots depend mLayer which define by json file
@@ -97,12 +96,8 @@ class ITSFhrTask final : public TaskInterface
   o2::itsmft::RawPixelDecoder<o2::itsmft::ChipMappingITS>* mDecoder;
   ChipPixelData* mChipDataBuffer = nullptr;
   std::vector<ChipPixelData> mChipsBuffer;
-  int mHitNumberOfChip[7][48][2][14][14] = { { { { { 0 } } } } }; // layer, stave, substave, hic, chip
 
-  int mNTrigger = 13;
-  unsigned int mErrors[19] = { 0 };
   static constexpr int NTrigger = 13;
-  int16_t partID = 0;
   int mLayer = 0;
   int mHitCutForCheck = 100; // Hit number cut for fired pixel check in a trigger
   int mGetTFFromBinding = 0;

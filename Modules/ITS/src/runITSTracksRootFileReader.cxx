@@ -46,14 +46,14 @@ class ITSTracksRootFileReader : public o2::framework::Task
  public:
   void init(framework::InitContext& ic)
   {
-    LOG(info) << "In ITSTracksRootFileReader::init ... entering ";
+    ILOG(Debug, Devel) << "In ITSTracksRootFileReader::init ... entering " << ENDM;
 
     // Tracks
     auto filenameTracks = ic.options().get<std::string>("qc-its-tracks-root-file");
 
     mFileTracks = std::make_unique<TFile>(filenameTracks.c_str(), "READ");
     if (!mFileTracks->IsOpen()) {
-      ILOG(Error) << "ITSTracksRootFileReader::init. Cannot open file: " << filenameTracks.c_str();
+      ILOG(Error, Support) << "ITSTracksRootFileReader::init. Cannot open file: " << filenameTracks.c_str() << ENDM;
       ic.services().get<ControlService>().endOfStream();
       ic.services().get<ControlService>().readyToQuit(QuitRequest::Me);
       return;
@@ -72,7 +72,7 @@ class ITSTracksRootFileReader : public o2::framework::Task
 
     mFileClusters = std::make_unique<TFile>(filenameCluster.c_str(), "READ");
     if (!mFileClusters->IsOpen()) {
-      ILOG(Error) << "ITSTracksRootFileReader::init. Cannot open file: " << filenameCluster.c_str();
+      ILOG(Error, Support) << "ITSTracksRootFileReader::init. Cannot open file: " << filenameCluster.c_str() << ENDM;
       ic.services().get<ControlService>().endOfStream();
       ic.services().get<ControlService>().readyToQuit(QuitRequest::Me);
       return;
@@ -89,7 +89,7 @@ class ITSTracksRootFileReader : public o2::framework::Task
     unsigned long mNumberOfEntriesCluster = mTreeClusters->GetEntries();
 
     if (mNumberOfEntriesTrack != mNumberOfEntriesCluster) {
-      ILOG(Error) << "ITSTracksRootFileReader::init. Mismatch of entries in loaded files.";
+      ILOG(Error, Support) << "ITSTracksRootFileReader::init. Mismatch of entries in loaded files." << ENDM;
       ic.services().get<ControlService>().endOfStream();
       ic.services().get<ControlService>().readyToQuit(QuitRequest::Me);
       return;
@@ -98,7 +98,7 @@ class ITSTracksRootFileReader : public o2::framework::Task
     // check entries
     mNumberOfEntries = mTreeTracks->GetEntries();
     if (mNumberOfEntries == 0) {
-      ILOG(Error) << "ITSTracksRootFileReader::init. No entries.";
+      ILOG(Error, Support) << "ITSTracksRootFileReader::init. No entries." << ENDM;
       ic.services().get<ControlService>().endOfStream();
       ic.services().get<ControlService>().readyToQuit(QuitRequest::Me);
       return;

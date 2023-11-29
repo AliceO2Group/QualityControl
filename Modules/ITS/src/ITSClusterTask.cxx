@@ -138,9 +138,7 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
   auto clusRofArr = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("clustersrof");
   auto clusPatternArr = ctx.inputs().get<gsl::span<unsigned char>>("patterns");
   auto pattIt = clusPatternArr.begin();
-  int dictSize = mDict->getSize();
 
-  int iPattern = 0;
   int ChipIDprev = -1;
 
 #ifdef WITH_OPENMP

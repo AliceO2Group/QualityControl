@@ -71,7 +71,6 @@ class ITSTrackTask : public TaskInterface
 
   std::vector<TObject*> mPublishedObjects;
   TH1D* hNClusters;
-  TH1D* hNClustersReset;
   std::unique_ptr<TH1DRatio> hTrackEta;
   std::unique_ptr<TH1DRatio> hTrackPhi;
   TH1D* hVerticesRof;
@@ -82,7 +81,6 @@ class ITSTrackTask : public TaskInterface
   TH1D* hVertexContributors;
   TH1D* hAssociatedClusterFraction;
   TH1D* hNtracks;
-  TH1D* hNtracksReset;
   std::unique_ptr<TH2DRatio> hNClustersPerTrackEta;
   std::unique_ptr<TH2DRatio> hNClustersPerTrackPhi;
   std::unique_ptr<TH2DRatio> hNClustersPerTrackPt;
@@ -111,18 +109,11 @@ class ITSTrackTask : public TaskInterface
   // mDoNorm: 0 = no normalization, 1 = normalization by nVertices, 2 = normalization by nRofs
   Int_t mDoNorm = 1;
   Int_t mNRofs = 0;
-  bool isNewCycle = true;
   int nBCbins = 103;
   long int mTimestamp = -1;
   int nVertices = 0;
   double mChipBins[2125]; // x bins for cos(lambda) plot
   double mCoslBins[25];   // y bins for cos(lambda) plot
-
-  TTree* tClusterMap;
-  //  Int_t mNtracksInROF;
-  std::vector<UInt_t> vMap;
-  std::vector<Float_t> vPhi;
-  std::vector<Float_t> vEta;
 
   o2::itsmft::TopologyDictionary* mDict;
 };

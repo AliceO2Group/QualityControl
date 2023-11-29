@@ -46,14 +46,12 @@ ITSTrackTask::ITSTrackTask() : TaskInterface()
 ITSTrackTask::~ITSTrackTask() // make_shared objects will be delete automatically
 {
   delete hNClusters;
-  delete hNClustersReset;
   delete hVertexCoordinates;
   delete hVertexRvsZ;
   delete hVertexZ;
   delete hVertexContributors;
   delete hAssociatedClusterFraction;
   delete hNtracks;
-  delete hNtracksReset;
   delete hTrackPtVsEta;
   delete hTrackPtVsPhi;
 }
@@ -67,7 +65,6 @@ void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
   mVertexZsize = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "vertexZsize", mVertexZsize);
   mVertexRsize = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "vertexRsize", mVertexRsize);
   mNtracksMAX = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "NtracksMAX", mNtracksMAX);
-  mDoTTree = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "doTTree", mDoTTree);
   nBCbins = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "nBCbins", nBCbins);
   mDoNorm = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "doNorm", mDoNorm);
   mInvMasses = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "InvMasses", mInvMasses);
@@ -90,19 +87,12 @@ void ITSTrackTask::startOfActivity(const Activity& /*activity*/)
 void ITSTrackTask::startOfCycle()
 {
   ILOG(Debug, Devel) << "startOfCycle" << ENDM;
-  isNewCycle = true;
 }
 
 void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
 
   ILOG(Debug, Devel) << "START DOING QC General" << ENDM;
-
-  if (isNewCycle) {
-    hNClustersReset->Reset();
-    hNtracksReset->Reset();
-    isNewCycle = false;
-  }
 
   if (mTimestamp == -1) { // get dict from ccdb
     mTimestamp = std::stol(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "dicttimestamp", "0"));
@@ -199,10 +189,6 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
   // loop on tracks per ROF
   for (int iROF = 0; iROF < trackRofArr.size(); iROF++) {
 
-    vMap.clear();
-    vEta.clear();
-    vPhi.clear();
-
     int nClusterCntTrack = 0;
     int nTracks = trackRofArr[iROF].getNEntries();
     int start = trackRofArr[iROF].getFirstEntry();
@@ -216,11 +202,7 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
       hTrackPhi->getNum()->Fill(out.getPhi());
       hAngularDistribution->getNum()->Fill(Eta, out.getPhi());
       hNClusters->Fill(track.getNumberOfClusters());
-      hNClustersReset->Fill(track.getNumberOfClusters());
 
-      vMap.emplace_back(track.getPattern());
-      vEta.emplace_back(Eta);
-      vPhi.emplace_back(out.getPhi());
       hTrackPtVsEta->Fill(out.getPt(), Eta);
       hTrackPtVsPhi->Fill(out.getPt(), out.getPhi());
 
@@ -349,13 +331,10 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
     float clusterRatio = nTotCls > 0 ? (float)nClusterCntTrack / (float)nTotCls : -1;
     hAssociatedClusterFraction->Fill(clusterRatio);
     hNtracks->Fill(nTracks);
-    hNtracksReset->Fill(nTracks);
 
     const auto bcdata = trackRofArr[iROF].getBCData();
     hClusterVsBunchCrossing->Fill(bcdata.bc, clusterRatio);
 
-    if (mDoTTree)
-      tClusterMap->Fill();
   } // end loop on ROFs
 
   mNRofs += trackRofArr.size();
@@ -458,13 +437,6 @@ void ITSTrackTask::reset()
 
 void ITSTrackTask::createAllHistos()
 {
-  tClusterMap = new TTree("ClusterMap", "Cluster Map");
-  tClusterMap->Branch("bitmap", &vMap);
-  tClusterMap->Branch("eta", &vEta);
-  tClusterMap->Branch("phi", &vPhi);
-  if (mDoTTree)
-    addObject(tClusterMap);
-
   hAngularDistribution = std::make_unique<TH2DRatio>("AngularDistribution", "AngularDistribution", 40, -2.0, 2.0, 60, 0, TMath::TwoPi(), true);
   if (mDoNorm) {
     hAngularDistribution->SetBit(TH1::kIsAverage);
@@ -479,12 +451,6 @@ void ITSTrackTask::createAllHistos()
   addObject(hNClusters);
   formatAxes(hNClusters, "Number of clusters per Track", "Counts", 1, 1.10);
   hNClusters->SetStats(0);
-
-  hNClustersReset = new TH1D("NClustersReset", "NClustersReset", 15, -0.5, 14.5);
-  hNClustersReset->SetTitle("hNClusters in one cycle");
-  addObject(hNClustersReset);
-  formatAxes(hNClustersReset, "Number of clusters per Track", "Counts", 1, 1.10);
-  hNClustersReset->SetStats(0);
 
   hTrackEta = std::make_unique<TH1DRatio>("EtaDistribution", "EtaDistribution", 40, -2.0, 2.0, true);
   if (mDoNorm) {
@@ -545,12 +511,6 @@ void ITSTrackTask::createAllHistos()
   addObject(hNtracks);
   formatAxes(hNtracks, "# tracks", "Counts", 1, 1.10);
   hNtracks->SetStats(0);
-
-  hNtracksReset = new TH1D("NtracksReset", "NtracksReset", (int)mNtracksMAX, 0, mNtracksMAX);
-  hNtracksReset->SetTitle("The number of tracks event by event for last QC cycle");
-  addObject(hNtracksReset);
-  formatAxes(hNtracksReset, "# tracks", "Counts", 1, 1.10);
-  hNtracksReset->SetStats(0);
 
   hNClustersPerTrackEta = std::make_unique<TH2DRatio>("NClustersPerTrackEta", "NClustersPerTrackEta", 400, -2.0, 2.0, 15, -0.5, 14.5, true);
   if (mDoNorm) {

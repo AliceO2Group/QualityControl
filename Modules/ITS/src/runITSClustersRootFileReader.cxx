@@ -50,7 +50,7 @@ class ITSClustersRootFileReader : public o2::framework::Task
     auto filename = ic.options().get<std::string>("qc-its-clusters-root-file");
     mFile = std::make_unique<TFile>(filename.c_str(), "READ");
     if (!mFile->IsOpen()) {
-      ILOG(Error) << "ITSClustersRootFileReader::init. Cannot open file: " << filename.c_str();
+      ILOG(Error, Support) << "ITSClustersRootFileReader::init. Cannot open file: " << filename.c_str() << ENDM;
       ic.services().get<ControlService>().endOfStream();
       ic.services().get<ControlService>().readyToQuit(QuitRequest::Me);
       return;
@@ -65,7 +65,7 @@ class ITSClustersRootFileReader : public o2::framework::Task
     // check entries
     mNumberOfEntries = mTree->GetEntries();
     if (mNumberOfEntries == 0) {
-      ILOG(Error) << "ITSClustersRootFileReader::init. No entries.";
+      ILOG(Error, Support) << "ITSClustersRootFileReader::init. No entries." << ENDM;
       ic.services().get<ControlService>().endOfStream();
       ic.services().get<ControlService>().readyToQuit(QuitRequest::Me);
       return;
@@ -77,7 +77,7 @@ class ITSClustersRootFileReader : public o2::framework::Task
 
     // Check if this is the last Entry
     if (mCurrentEntry == mNumberOfEntries) {
-      LOG(info) << " ITSClustersRootFileReader::run. End of file reached.";
+      ILOG(Info, Support) << " ITSClustersRootFileReader::run. End of file reached." << ENDM;
       pc.services().get<ControlService>().endOfStream();
       pc.services().get<ControlService>().readyToQuit(QuitRequest::Me);
       return;

@@ -167,7 +167,6 @@ class ITSFeeTask final : public TaskInterface
   TH1I* mTFInfo; // count vs TF ID
   TH2I* mTriggerVsFeeId;
   TH1I* mTrigger;
-  TH2I* mLaneInfo;
   TH2I* mFlag1Check;    // include transmission_timeout, packet_overflow, lane_starts_violation
   TH2I* mDecodingCheck; // summary of errors during custom decoding of specific bytes (see plot description)
   TH2I* mRDHSummary;
@@ -186,8 +185,6 @@ class ITSFeeTask final : public TaskInterface
   TH1D* mProcessingTime2;
   TH2F* mPayloadSize; // average payload size vs linkID
   // TH1D* mInfoCanvas;//TODO: default, not implemented yet
-  std::string mRunNumberPath;
-  std::string mRunNumber = "000000";
 };
 
 } // namespace o2::quality_control_modules::its
