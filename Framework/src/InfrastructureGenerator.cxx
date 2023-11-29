@@ -549,7 +549,7 @@ void InfrastructureGenerator::generateLocalTaskLocalProxy(framework::WorkflowSpe
       { proxyInput },
       channelConfig.c_str()));
   workflow.back().labels.emplace_back(taskSpec.localControl == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
-  if(!taskSpec.critical) {
+  if (!taskSpec.critical) {
     framework::DataProcessorLabel expendableLabel = { "expendable" };
     workflow.back().labels.emplace_back(expendableLabel);
   }
@@ -580,7 +580,7 @@ void InfrastructureGenerator::generateLocalTaskRemoteProxy(framework::WorkflowSp
     channelConfig.c_str(),
     dplModelAdaptor());
   proxy.labels.emplace_back(taskSpec.localControl == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
-  if(!taskSpec.critical) {
+  if (!taskSpec.critical) {
     framework::DataProcessorLabel expendableLabel = { "expendable" };
     workflow.back().labels.emplace_back(expendableLabel);
   }
@@ -622,7 +622,7 @@ void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow,
   mergerConfig.topologySize = { TopologySize::MergersPerLayer, mergersPerLayer };
   mergerConfig.monitoringUrl = std::move(monitoringUrl);
   mergerConfig.detectorName = detectorName;
-  mergerConfig.labels.push_back({"resilient"});
+  mergerConfig.labels.push_back({ "resilient" });
   mergerConfig.parallelismType = { (mergerConfig.inputObjectTimespan.value == InputObjectsTimespan::LastDifference) ? ParallelismType::RoundRobin : ParallelismType::SplitInputs };
   mergersBuilder.setConfig(mergerConfig);
 
