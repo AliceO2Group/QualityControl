@@ -21,6 +21,7 @@
 #include "GLO/ITSTPCMatchingTask.h"
 #include <Framework/InputRecord.h>
 #include <Framework/InputRecordWalker.h>
+#include <QualityControl/stringUtils.h>
 
 using matchType = o2::globaltracking::MatchITSTPCQC::matchType;
 
@@ -37,16 +38,12 @@ void ITSTPCMatchingTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   if (auto param = mCustomParameters.find("isMC"); param != mCustomParameters.end()) {
     ILOG(Debug, Devel) << "Custom parameter - isMC (= use of MC info): " << param->second << ENDM;
-    if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
-      mMatchITSTPCQC.setUseMC(true);
-    }
+    mMatchITSTPCQC.setUseMC(o2::quality_control::core::decodeBool(param->second));
   }
 
   if (auto param = mCustomParameters.find("useTrkPID"); param != mCustomParameters.end()) {
     ILOG(Debug, Devel) << "Custom parameter - useTrkPID (= add plots for tracking PID): " << param->second << ENDM;
-    if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
-      mMatchITSTPCQC.setUseTrkPID(true);
-    }
+    mMatchITSTPCQC.setUseTrkPID(o2::quality_control::core::decodeBool(param->second));
   }
 
   ///////////////////////////////   Track selections for MatchITSTPCQC    ////////////////////////////////
