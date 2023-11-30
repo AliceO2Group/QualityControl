@@ -21,6 +21,7 @@
 #include "GLO/ITSTPCMatchingTask.h"
 #include <Framework/InputRecord.h>
 #include <Framework/InputRecordWalker.h>
+#include <QualityControl/stringUtils.h>
 
 using matchType = o2::globaltracking::MatchITSTPCQC::matchType;
 
@@ -37,9 +38,12 @@ void ITSTPCMatchingTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   if (auto param = mCustomParameters.find("isMC"); param != mCustomParameters.end()) {
     ILOG(Debug, Devel) << "Custom parameter - isMC (= use of MC info): " << param->second << ENDM;
-    if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
-      mMatchITSTPCQC.setUseMC(true);
-    }
+    mMatchITSTPCQC.setUseMC(o2::quality_control::core::decodeBool(param->second));
+  }
+
+  if (auto param = mCustomParameters.find("useTrkPID"); param != mCustomParameters.end()) {
+    ILOG(Debug, Devel) << "Custom parameter - useTrkPID (= add plots for tracking PID): " << param->second << ENDM;
+    mMatchITSTPCQC.setUseTrkPID(o2::quality_control::core::decodeBool(param->second));
   }
 
   ///////////////////////////////   Track selections for MatchITSTPCQC    ////////////////////////////////
@@ -99,72 +103,7 @@ void ITSTPCMatchingTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   mMatchITSTPCQC.initDataRequest();
   mMatchITSTPCQC.init();
-
-  for (int i = 0; i < matchType::SIZE; ++i) {
-    // Pt
-    getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPtNum(matchType(i)));
-    getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPtDen(matchType(i)));
-    getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatch(matchType(i)));
-
-    getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPtNumNoEta0(matchType(i)));
-    getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPtDenNoEta0(matchType(i)));
-    getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatchNoEta0(matchType(i)));
-
-    // Phi
-    getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPhiNum(matchType(i)));
-    getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPhiDen(matchType(i)));
-    getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatchPhi(matchType(i)));
-
-    getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPhiVsPtNum(matchType(i)));
-    getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPhiVsPtDen(matchType(i)));
-    getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatchPhiVsPt(matchType(i)));
-
-    // Eta
-    getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoEtaNum(matchType(i)));
-    getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoEtaDen(matchType(i)));
-    getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatchEta(matchType(i)));
-
-    getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoEtaVsPtNum(matchType(i)));
-    getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoEtaVsPtDen(matchType(i)));
-    getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatchEtaVsPt(matchType(i)));
-
-    // 1/Pt
-    getObjectsManager()->startPublishing(mMatchITSTPCQC.getHisto1OverPtNum(matchType(i)));
-    getObjectsManager()->startPublishing(mMatchITSTPCQC.getHisto1OverPtDen(matchType(i)));
-    getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatch1OverPt(matchType(i)));
-
-    if (mMatchITSTPCQC.getUseMC()) {
-      // Pt
-      getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPtPhysPrimNum(matchType(i)));
-      getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPtPhysPrimDen(matchType(i)));
-      getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatchPhysPrim(matchType(i)));
-
-      // Phi
-      getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPhiPhysPrimNum(matchType(i)));
-      getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPhiPhysPrimDen(matchType(i)));
-      getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatchPhiPhysPrim(matchType(i)));
-
-      // Eta
-      getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoEtaPhysPrimNum(matchType(i)));
-      getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoEtaPhysPrimDen(matchType(i)));
-      getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatchEtaPhysPrim(matchType(i)));
-
-      // 1/Pt
-      getObjectsManager()->startPublishing(mMatchITSTPCQC.getHisto1OverPtPhysPrimNum(matchType(i)));
-      getObjectsManager()->startPublishing(mMatchITSTPCQC.getHisto1OverPtPhysPrimDen(matchType(i)));
-      getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatchPhysPrim1OverPt(matchType(i)));
-    }
-  }
-  // Residuals
-  getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoResidualPt());
-  getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoResidualPhi());
-  getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoResidualEta());
-
-  getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoChi2Matching());
-  getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoChi2Refit());
-  getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoTimeResVsPt());
-
-  getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoDCAr());
+  mMatchITSTPCQC.publishHistograms(getObjectsManager());
 }
 
 void ITSTPCMatchingTask::startOfActivity(const Activity& activity)
