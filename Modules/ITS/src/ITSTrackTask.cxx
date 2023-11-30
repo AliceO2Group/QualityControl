@@ -431,7 +431,7 @@ void ITSTrackTask::reset()
   hTrackEta->Reset();
   hVerticesRof->Reset();
   nVertices = 0;
-
+  mNRofs = 0;
   hVertexCoordinates->Reset();
   hVertexRvsZ->Reset();
   hVertexZ->Reset();

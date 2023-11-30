@@ -823,6 +823,9 @@ void ITSFhrTask::reset()
     }
   }
 
+  mTFCount = 0;
+  std::fill(&mChipStat[0][0], &mChipStat[0][0] + NStaves[mLayer] * nHicPerStave[mLayer] * nChipsPerHic[mLayer], 0);
+  std::fill(&mNoisyPixelNumber[0][0], &mNoisyPixelNumber[0][0] + 7 * 48, 0);
   ILOG(Debug, Devel) << "Reset" << ENDM;
 }
 
