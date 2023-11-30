@@ -143,6 +143,7 @@ class TaskRunner : public framework::Task
   Activity mActivity;
 
   void updateMonitoringStats(framework::ProcessingContext& pCtx);
+  void registerToBookkeeping();
 
   bool mCycleOn = false;
   bool mNoMoreCycles = false;

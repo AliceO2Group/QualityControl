@@ -172,10 +172,6 @@ QualityObjectsType Check::check(std::map<std::string, std::shared_ptr<MonitorObj
 
 void Check::beautify(std::map<std::string, std::shared_ptr<MonitorObject>>& moMap, const Quality& quality)
 {
-  if (!mCheckConfig.allowBeautify) {
-    return;
-  }
-
   for (auto const& item : moMap) {
     try {
       mCheckInterface->beautify(item.second /*mo*/, quality);
@@ -236,12 +232,6 @@ CheckConfig Check::extractConfig(const CommonSpec& commonSpec, const CheckSpec& 
     }
   }
 
-  bool allowBeautify = checkSpec.dataSources.size() <= 1;
-  if (!allowBeautify) {
-    // See QC-299 for details
-    ILOG(Warning, Devel) << "Beautification disabled because more than one source is used in this Check (" << checkSpec.checkName << ")" << ENDM;
-  }
-
   return {
     checkSpec.checkName,
     checkSpec.moduleName,
@@ -251,7 +241,6 @@ CheckConfig Check::extractConfig(const CommonSpec& commonSpec, const CheckSpec& 
     updatePolicy,
     std::move(objectNames),
     checkAllObjects,
-    allowBeautify,
     std::move(inputs),
     createOutputSpec(checkSpec.checkName),
     commonSpec.conditionDBUrl
