@@ -24,6 +24,7 @@
 #include "CommonConstants/Triggers.h"
 #include "DataFormatsCTP/Configuration.h"
 #include "DataFormatsCTP/Digits.h"
+#include "DataFormatsEMCAL/Constants.h"
 #include "DataFormatsEMCAL/TriggerRecord.h"
 
 #include "QualityControl/QcInfoLogger.h"
@@ -38,6 +39,7 @@ namespace o2::quality_control_modules::emcal
 BCTask::~BCTask()
 {
   delete mBCReadout;
+  delete mBCIncomplete;
   delete mBCEMCAny;
   delete mBCMinBias;
   delete mBCL0EMCAL;
@@ -50,6 +52,8 @@ void BCTask::initialize(o2::framework::InitContext& /*ctx*/)
   constexpr unsigned int LHC_MAX_BC = o2::constants::lhc::LHCMaxBunches;
   mBCReadout = new TH1F("BCEMCALReadout", "BC distribution EMCAL readout", LHC_MAX_BC, -0.5, LHC_MAX_BC - 0.5);
   getObjectsManager()->startPublishing(mBCReadout);
+  mBCIncomplete = new TH1F("BCIncomplete", "BC distribution EMCAL incomplete triggers", LHC_MAX_BC, -0.5, LHC_MAX_BC - 0.5);
+  getObjectsManager()->startPublishing(mBCIncomplete);
   mBCEMCAny = new TH1F("BCCTPEMCALAny", "BC distribution CTP EMCAL any triggered", LHC_MAX_BC, -0.5, LHC_MAX_BC - 0.5);
   getObjectsManager()->startPublishing(mBCEMCAny);
   mBCMinBias = new TH1F("BCCTPEMCALMinBias", "BC distribution CTP EMCAL min. bias triggered", LHC_MAX_BC, -0.5, LHC_MAX_BC - 0.5);
@@ -80,6 +84,9 @@ void BCTask::monitorData(o2::framework::ProcessingContext& ctx)
   for (const auto& emctrg : emctriggers) {
     if (emctrg.getTriggerBits() & o2::trigger::PhT) {
       mBCReadout->Fill(emctrg.getBCData().bc);
+      if (emctrg.getTriggerBits() & o2::emcal::triggerbits::Inc) {
+        mBCIncomplete->Fill(emctrg.getBCData().bc);
+      }
     }
   }
 
@@ -138,6 +145,7 @@ void BCTask::reset()
   // clean all the monitor objects here
   ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   mBCReadout->Reset();
+  mBCIncomplete->Reset();
   mBCEMCAny->Reset();
   mBCMinBias->Reset();
   mBCL0EMCAL->Reset();
