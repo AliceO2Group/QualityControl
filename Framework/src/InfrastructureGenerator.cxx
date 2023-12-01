@@ -605,9 +605,9 @@ void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow,
   mergersBuilder.setInfrastructureName(taskName);
   mergersBuilder.setInputSpecs(mergerInputs);
   mergersBuilder.setOutputSpec(
-    { { "main" }, TaskRunner::createTaskDataOrigin(detectorName, false), TaskRunner::createTaskDataDescription(taskName), 0 });
+    { { "main" }, TaskRunner::createTaskDataOrigin(detectorName, false), TaskRunner::createTaskDataDescription(taskName), 0, Lifetime::Sporadic });
   mergersBuilder.setOutputSpecMovingWindow(
-    { { "main_mw" }, TaskRunner::createTaskDataOrigin(detectorName, true), TaskRunner::createTaskDataDescription(taskName), 0 });
+    { { "main_mw" }, TaskRunner::createTaskDataOrigin(detectorName, true), TaskRunner::createTaskDataDescription(taskName), 0, Lifetime::Sporadic });
   MergerConfig mergerConfig;
   // if we are to change the mode to Full, disable reseting tasks after each cycle.
   mergerConfig.inputObjectTimespan = { (mergingMode.empty() || mergingMode == "delta") ? InputObjectsTimespan::LastDifference : InputObjectsTimespan::FullHistory };
