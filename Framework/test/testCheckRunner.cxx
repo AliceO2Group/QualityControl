@@ -24,6 +24,14 @@ using namespace std;
 using namespace o2::framework;
 using namespace o2::header;
 
+TEST_CASE("test_check_runner_static")
+{
+  // facility name
+  CHECK(CheckRunner::createCheckRunnerFacility(CheckRunner::createCheckRunnerIdString() + "-test") == "check/test");
+  CHECK(CheckRunner::createCheckRunnerFacility(CheckRunner::createCheckRunnerIdString() + "-abcdefghijklmnopqrstuvwxyz") == "check/abcdefghijklmnopqrstuvwxyz");
+  CHECK(CheckRunner::createCheckRunnerFacility(CheckRunner::createCheckRunnerIdString() + "-abcdefghijklmnopqrstuvwxyz123456789") == "check/abcdefghijklmnopqrstuvwxyz");
+}
+
 TEST_CASE("test_checkRunner_getDetector")
 {
   CheckConfig config;

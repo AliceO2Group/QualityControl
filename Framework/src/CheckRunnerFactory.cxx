@@ -26,34 +26,17 @@
 #include "QualityControl/CheckRunner.h"
 #include "QualityControl/CheckRunnerFactory.h"
 #include "QualityControl/CommonSpec.h"
-#include <set>
 
 namespace o2::quality_control::checker
 {
 
 using namespace o2::framework;
 
-DataProcessorSpec CheckRunnerFactory::create(CheckRunnerConfig checkRunnerConfig, const std::vector<CheckConfig>& checkConfigs)
+DataProcessorSpec CheckRunnerFactory::create(CheckRunnerConfig checkRunnerConfig, const std::vector<CheckConfig>& checkConfigs, std::vector<std::string> storeVector)
 {
   auto options = checkRunnerConfig.options;
-
-  // concatenate all inputs
-  o2::framework::Inputs allInputs;
-  for (auto config : checkConfigs) {
-    allInputs.insert(allInputs.end(), config.inputSpecs.begin(), config.inputSpecs.end());
-  }
-
-  // We can end up with duplicated inputs that will later lead to circular dependencies on the checkRunner device.
-  o2::framework::Inputs allInputsNoDups;
-  std::set<std::string> alreadySeen;
-  for (auto input : allInputs) {
-    if (alreadySeen.count(input.binding) == 0) {
-      allInputsNoDups.push_back(input);
-    }
-    alreadySeen.insert(input.binding);
-  }
-
-  CheckRunner qcCheckRunner{ std::move(checkRunnerConfig), checkConfigs, allInputsNoDups };
+  CheckRunner qcCheckRunner{ std::move(checkRunnerConfig), checkConfigs };
+  qcCheckRunner.setTaskStoreSet({ storeVector.begin(), storeVector.end() });
 
   DataProcessorSpec newCheckRunner{ qcCheckRunner.getDeviceName(),
                                     qcCheckRunner.getInputs(),
@@ -63,6 +46,22 @@ DataProcessorSpec CheckRunnerFactory::create(CheckRunnerConfig checkRunnerConfig
   newCheckRunner.labels.emplace_back(o2::framework::ecs::qcReconfigurable);
   newCheckRunner.labels.emplace_back(CheckRunner::getCheckRunnerLabel());
   newCheckRunner.algorithm = adaptFromTask<CheckRunner>(std::move(qcCheckRunner));
+  return newCheckRunner;
+}
+
+DataProcessorSpec CheckRunnerFactory::createSinkDevice(const CheckRunnerConfig& checkRunnerConfig, const o2::framework::InputSpec& input)
+{
+  CheckRunner qcCheckRunner{ checkRunnerConfig, input };
+  qcCheckRunner.setTaskStoreSet({ DataSpecUtils::label(input) });
+
+  DataProcessorSpec newCheckRunner{ qcCheckRunner.getDeviceName(),
+                                    qcCheckRunner.getInputs(),
+                                    Outputs{ qcCheckRunner.getOutputs() },
+                                    adaptFromTask<CheckRunner>(std::move(qcCheckRunner)),
+                                    checkRunnerConfig.options,
+                                    {},
+                                    { o2::framework::ecs::qcReconfigurable } };
+
   return newCheckRunner;
 }
 
