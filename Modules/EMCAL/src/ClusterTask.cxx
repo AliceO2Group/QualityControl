@@ -300,11 +300,11 @@ void ClusterTask::startOfCycle()
 {
   ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 
-  if (!o2::base::GeometryManager::isGeometryLoaded()) {
-    ILOG(Info, Support) << "Loading geometry" << ENDM;
-    TaskInterface::retrieveConditionAny<TObject>("GLO/Config/Geometry");
-    ILOG(Info, Support) << "Geometry loaded" << ENDM;
-  }
+  // if (!o2::base::GeometryManager::isGeometryLoaded()) {
+  //   ILOG(Info, Support) << "Loading geometry" << ENDM;
+  //   TaskInterface::retrieveConditionAny<TObject>("GLO/Config/Geometry");
+  //   ILOG(Info, Support) << "Geometry loaded" << ENDM;
+  // }
 
   // Loading EMCAL calibration objects
   if (mTaskParameters.mInternalClusterizer && mTaskParameters.mCalibrate) {
@@ -328,6 +328,14 @@ void ClusterTask::startOfCycle()
 
 void ClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
+  if (!o2::base::GeometryManager::isGeometryLoaded()) {
+    static bool displayGeometryError = true;
+    if (displayGeometryError) {
+      ILOG(Error, Support) << "Cluster QC needs access to the Geometry - please initialize the GRPGeomHelper in your task configuration" << ENDM;
+      displayGeometryError = false;
+    }
+    return;
+  }
   auto cell = ctx.inputs().get<gsl::span<o2::emcal::Cell>>(mTaskInputBindings.mCellBinding.data());
   auto cellTR = ctx.inputs().get<gsl::span<o2::emcal::TriggerRecord>>(mTaskInputBindings.mCellTriggerRecordBinding.data());
 
