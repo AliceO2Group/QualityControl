@@ -60,6 +60,7 @@ class Check
    * Expected to run in the init phase of the FairDevice
    */
   void init();
+  void reset();
 
   core::QualityObjectsType check(std::map<std::string, std::shared_ptr<o2::quality_control::core::MonitorObject>>& moMap);
 

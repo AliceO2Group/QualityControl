@@ -60,6 +60,8 @@ class CheckInterface : public UserCodeInterface
   ///                    parameter is to be used to pass the result of the check of the same class.
   virtual void beautify(std::shared_ptr<core::MonitorObject> mo, core::Quality checkResult) = 0;
 
+  virtual void reset(); // not fully abstract because we don't want to change all the existing subclasses
+
   /// \brief Returns the name of the class that can be treated by this check.
   ///
   /// The name of the class returned by this method will be checked against the MonitorObject's encapsulated

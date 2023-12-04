@@ -85,6 +85,11 @@ void Check::init()
   ILOG(Info, Devel) << ENDM;
 }
 
+void Check::reset()
+{
+  mCheckInterface->reset();
+}
+
 QualityObjectsType Check::check(std::map<std::string, std::shared_ptr<MonitorObject>>& moMap)
 {
   if (mCheckInterface == nullptr) {

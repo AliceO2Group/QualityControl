@@ -45,4 +45,9 @@ void CheckInterface::configure()
   // noop, override it if you want.
 }
 
+void CheckInterface::reset()
+{
+  // noop, override it if you want.
+}
+
 } // namespace o2::quality_control::checker

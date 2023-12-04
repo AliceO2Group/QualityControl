@@ -533,11 +533,12 @@ void CheckRunner::stop()
 
 void CheckRunner::reset()
 {
-  ILOG(Info, Devel) << "Reset" << ENDM;
-
   try {
     mCollector.reset();
     mActivity = make_shared<Activity>();
+    for (auto& [checkName, check] : mChecks) {
+      check.reset();
+    }
   } catch (...) {
     // we catch here because we don't know where it will go in DPL's CallbackService
     ILOG(Error, Support) << "Error caught in reset() : "
