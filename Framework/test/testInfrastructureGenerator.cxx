@@ -110,7 +110,7 @@ TEST_CASE("qc_factory_remote_test")
   // the infrastructure should consist of two proxies, mergers and checkers for 'skeletonTask' and 'recoTask'
   // (their taskRunner are declared to be local) and also taskRunner and checker for the 'abcTask' and 'xyzTask'.
   // Post processing adds one process for the task and one for checks.
-  REQUIRE(workflow.size() == 10);
+  REQUIRE(workflow.size() == 15);
 
   auto tcpclustProxy = std::find_if(
     workflow.begin(), workflow.end(),
@@ -187,9 +187,9 @@ TEST_CASE("qc_factory_remote_test")
     workflow.begin(), workflow.end(),
     [](const DataProcessorSpec& d) {
       return d.name.find("qc-check") != std::string::npos &&
-             d.inputs.size() == 4;
+             d.inputs.size() == 1;
     });
-  REQUIRE(checkRunnerCount == 1);
+  REQUIRE(checkRunnerCount == 6);
 
   auto postprocessingTask = std::find_if(
     workflow.begin(), workflow.end(),
@@ -217,8 +217,8 @@ TEST_CASE("qc_factory_standalone_test")
   auto configTree = configInterface->getRecursive();
   auto workflow = InfrastructureGenerator::generateStandaloneInfrastructure(configTree);
 
-  // the infrastructure should consist of 4 TaskRunners, 1 PostProcessingRunner, 1 CheckRunner, 1 AggregatorRunner
-  REQUIRE(workflow.size() == 7);
+  // the infrastructure should consist of 4 TaskRunners, 1 PostProcessingRunner, 5 CheckRunners (including one for PP), 1 AggregatorRunner
+  REQUIRE(workflow.size() == 11);
 
   auto taskRunnerSkeleton = std::find_if(
     workflow.begin(), workflow.end(),
@@ -260,9 +260,9 @@ TEST_CASE("qc_factory_standalone_test")
     workflow.begin(), workflow.end(),
     [](const DataProcessorSpec& d) {
       return d.name.find("qc-check") != std::string::npos &&
-             d.inputs.size() == 4;
+             d.inputs.size() == 1;
     });
-  REQUIRE(checkRunnerCount == 1);
+  REQUIRE(checkRunnerCount == 5);
 
   auto postprocessingTask = std::find_if(
     workflow.begin(), workflow.end(),
@@ -367,6 +367,7 @@ TEST_CASE("qc_infrastructure_local_batch_test")
     CHECK(workflow[4].outputs.size() == 0);
   }
 }
+
 TEST_CASE("qc_infrastructure_remote_batch_test")
 {
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
@@ -374,7 +375,7 @@ TEST_CASE("qc_infrastructure_remote_batch_test")
   auto configTree = configInterface->getRecursive();
   auto workflow = InfrastructureGenerator::generateRemoteBatchInfrastructure(configTree, "file.root");
 
-  REQUIRE(workflow.size() == 4);
+  REQUIRE(workflow.size() == 9);
 
   auto fileReader = std::find_if(
     workflow.begin(), workflow.end(),
@@ -389,9 +390,9 @@ TEST_CASE("qc_infrastructure_remote_batch_test")
     workflow.begin(), workflow.end(),
     [](const DataProcessorSpec& d) {
       return d.name.find("qc-check") != std::string::npos &&
-             d.inputs.size() == 4;
+             d.inputs.size() == 1;
     });
-  REQUIRE(checkRunnerCount == 1);
+  REQUIRE(checkRunnerCount == 6);
 
   auto postprocessingTask = std::find_if(
     workflow.begin(), workflow.end(),
