@@ -1,0 +1,45 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable",
+        "maxObjectSize": "2097152",       "": "[Bytes, default=2MB] Maximum size allowed, larger objects are rejected."
+      },
+      "Activity": {
+        "number": "42",
+        "type": "2",
+        "provenance": "qc",         "": "Provenance - qc or qc_mc depending whether it is normal data or monte carlo data"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      },
+      "infologger": {                     "": "Configuration of the Infologger (optional).",
+        "filterDiscardDebug": "false",    "": "Set to true to discard debug and trace messages (default: false)",
+        "filterDiscardLevel": "11",       "": "Message at this level or above are discarded (default: 21 - Trace)"
+      }
+    },
+    "tasks": {
+      "QcTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonTask",
+        "moduleName": "QcSkeleton",
+        "detectorName": "TST",
+        "cycleDuration": 10,
+        "dataSource": {
+          "type": "direct",
+          "query" : "tst-rawdata:TST/RAWDATA/0"
+        },
+        "location": "remote"
+      }
+    },
+    "checks": {
+    }
+  }
+}

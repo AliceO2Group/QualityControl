@@ -626,11 +626,6 @@ void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow,
 
 void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec)
 {
-  if (infrastructureSpec.checks.empty()) {
-    ILOG(Debug, Devel) << "No \"checks\" structure found in the config file. If no check is expected, then it is completely fine." << ENDM;
-    return;
-  }
-
   typedef std::vector<CheckConfig> CheckConfigs;
 
   CheckConfigs checkConfigs; // all the checkConfigs
@@ -641,7 +636,7 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
     }
   }
 
-  auto checkRunnerConfig = CheckRunnerFactory::extractConfig(infrastructureSpec.common);
+  const auto checkRunnerConfig = CheckRunnerFactory::extractConfig(infrastructureSpec.common);
   const DataProcessorSpec spec = CheckRunnerFactory::create(checkRunnerConfig, checkConfigs);
   workflow.emplace_back(spec);
 }

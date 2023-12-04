@@ -85,6 +85,17 @@ TEST_CASE("qc_factory_local_test")
   }
 }
 
+TEST_CASE("onlyTask")
+{
+  std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testOnlyTaskConfig.json";
+  std::cout << "configFilePath  " << configFilePath << std::endl;
+  const auto configInterface = ConfigurationFactory::getConfiguration(configFilePath);
+  const auto configTree = configInterface->getRecursive();
+  const auto workflow = InfrastructureGenerator::generateStandaloneInfrastructure(configTree);
+  // the infrastructure should consist of 1 TaskRunners, 1 CheckRunner
+  REQUIRE(workflow.size() == 2);
+}
+
 TEST_CASE("throwIfAggNamesClashCheckNames")
 {
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
