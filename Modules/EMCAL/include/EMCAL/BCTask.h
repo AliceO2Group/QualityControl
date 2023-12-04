@@ -73,13 +73,6 @@ class BCTask final : public TaskInterface
   /// \param ctpconfig CTP configuration
   void loadTriggerClasses(const o2::ctp::CTPConfiguration* ctpconfig);
 
-  /// \brief Check if the class masks are initialized
-  /// \return True if the class masks are initialized, false otherwise
-  ///
-  /// We expect at least one class mask to be non-0 (usually the min. bias
-  /// trigger which is guaranteed in all runs with EMCAL readout)
-  bool hasClassMasksLoaded() const;
-
   /// \brief Parse trigger selection from the task parameters
   void parseTriggerSelection();
 
@@ -111,11 +104,11 @@ class BCTask final : public TaskInterface
   TH1F* mBCL0EMCAL = nullptr;    ///< BC distribution from CTP, EMCAL L0 trigger
   TH1F* mBCL0DCAL = nullptr;     ///< BC distribution from CTP, DCAL trigger
 
-  uint32_t mCurrentRun = -1;                                    ///< Current run
-  std::array<uint64_t, NTriggerClasses> mTriggerClassIndices;   ///< Trigger class mask from for different EMCAL triggers from CTP configuration
-  std::set<uint64_t> mAllEMCALClasses;                          ///< All trigger classes firing the EMCAL trigger cluster
-  std::unordered_map<std::string, std::string> mTriggerAliases; ///< Trigger aliases
-  BeamPresenceMode_t mBeamMode = BeamPresenceMode_t::BOTH;      ///< Beam mode
+  uint32_t mCurrentRun = -1;                                                 ///< Current run
+  std::array<uint64_t, NTriggerClasses> mTriggerClassIndices;                ///< Trigger class mask from for different EMCAL triggers from CTP configuration
+  uint64_t mAllEMCALClasses = 0;                                             ///< All trigger classes firing the EMCAL trigger cluster
+  std::unordered_map<std::string, std::vector<std::string>> mTriggerAliases; ///< Trigger aliases
+  BeamPresenceMode_t mBeamMode = BeamPresenceMode_t::BOTH;                   ///< Beam mode
 };
 
 } // namespace o2::quality_control_modules::emcal
