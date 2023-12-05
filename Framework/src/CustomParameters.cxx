@@ -37,7 +37,6 @@ CustomParameters::CustomParameters()
 void CustomParameters::set(const std::string& key, const std::string& value, const std::string& runType, const std::string& beamType)
 {
   mCustomParameters[runType][beamType][key] = value;
-  std::cout << "mCustomParameters[runType][beamType][key] : " << mCustomParameters[runType][beamType][key] << std::endl;
 }
 
 const std::unordered_map<std::string, std::string>& CustomParameters::getAllForRunBeam(const std::string& runType, const std::string& beamType)
