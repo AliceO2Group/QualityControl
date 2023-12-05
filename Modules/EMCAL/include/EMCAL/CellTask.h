@@ -155,6 +155,7 @@ class CellTask final : public TaskInterface
   void endOfCycle() override;
   void endOfActivity(const Activity& activity) override;
   void reset() override;
+  void finaliseCCDB(o2::framework::ConcreteDataMatcher& matcher, void* obj) override;
 
   bool hasConfigValue(const std::string_view key);
   std::string getConfigValue(const std::string_view key);
@@ -187,16 +188,17 @@ class CellTask final : public TaskInterface
   };
   void parseMultiplicityRanges();
   void initDefaultMultiplicityRanges();
+  void loadCalibrationObjects(o2::framework::ProcessingContext& ctx);
 
   [[nodiscard]] std::vector<CombinedEvent> buildCombinedEvents(const std::unordered_map<header::DataHeader::SubSpecificationType, gsl::span<const o2::emcal::TriggerRecord>>& triggerrecords) const;
-  TaskSettings mTaskSettings;                                ///< Settings of the task steered via task parameters
-  Bool_t mIgnoreTriggerTypes = false;                        ///< Do not differenciate between trigger types, treat all triggers as phys. triggers
-  std::map<std::string, CellHistograms> mHistogramContainer; ///< Container with histograms per trigger class
-  o2::emcal::Geometry* mGeometry = nullptr;                  ///< EMCAL geometry
-  o2::emcal::BadChannelMap* mBadChannelMap = nullptr;        ///< EMCAL channel map
-  o2::emcal::TimeCalibrationParams* mTimeCalib = nullptr;    ///< EMCAL time calib
-  o2::emcal::GainCalibrationFactors* mEnergyCalib = nullptr; ///< EMCAL energy calibration
-  int mTimeFramesPerCycles = 0;                              ///< TF per cycles
+  TaskSettings mTaskSettings;                                      ///< Settings of the task steered via task parameters
+  Bool_t mIgnoreTriggerTypes = false;                              ///< Do not differenciate between trigger types, treat all triggers as phys. triggers
+  std::map<std::string, CellHistograms> mHistogramContainer;       ///< Container with histograms per trigger class
+  o2::emcal::Geometry* mGeometry = nullptr;                        ///< EMCAL geometry
+  const o2::emcal::BadChannelMap* mBadChannelMap = nullptr;        ///< EMCAL channel map
+  const o2::emcal::TimeCalibrationParams* mTimeCalib = nullptr;    ///< EMCAL time calib
+  const o2::emcal::GainCalibrationFactors* mEnergyCalib = nullptr; ///< EMCAL energy calibration
+  int mTimeFramesPerCycles = 0;                                    ///< TF per cycles
 
   TH1* mEvCounterTF = nullptr;      ///< Number of Events per timeframe
   TH1* mEvCounterTFPHYS = nullptr;  ///< Number of Events per timeframe per PHYS
