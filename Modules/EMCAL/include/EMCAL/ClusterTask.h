@@ -149,6 +149,7 @@ class ClusterTask final : public TaskInterface
   void endOfCycle() override;
   void endOfActivity(const Activity& activity) override;
   void reset() override { resetHistograms(); }
+  void finaliseCCDB(o2::framework::ConcreteDataMatcher& matcher, void* obj) override;
 
   /// \brief Get the eta/phi position of a cluster
   /// \return tuple with [eta, phi]
@@ -157,6 +158,10 @@ class ClusterTask final : public TaskInterface
  protected:
   /// \brief Reset all histograms
   void resetHistograms();
+
+  /// \brief trigger loading calibration objects from DPL CCDB backend
+  /// \param ctx Processing context
+  void loadCalibrationObjects(o2::framework::ProcessingContext& ctx);
 
   /// \brief Fill all histograms for a given timeframe
   ///
@@ -273,9 +278,9 @@ class ClusterTask final : public TaskInterface
   ///////////////////////////////////////////////////////////////////////////////
   /// Calibration objects (for recalibration in case of interal clusterizer)  ///
   ///////////////////////////////////////////////////////////////////////////////
-  o2::emcal::BadChannelMap* mBadChannelMap = nullptr;        ///< EMCAL channel map
-  o2::emcal::TimeCalibrationParams* mTimeCalib = nullptr;    ///< EMCAL time calib
-  o2::emcal::GainCalibrationFactors* mEnergyCalib = nullptr; ///< EMCAL energy calib factors
+  const o2::emcal::BadChannelMap* mBadChannelMap = nullptr;        ///< EMCAL channel map
+  const o2::emcal::TimeCalibrationParams* mTimeCalib = nullptr;    ///< EMCAL time calib
+  const o2::emcal::GainCalibrationFactors* mEnergyCalib = nullptr; ///< EMCAL energy calib factors
 
   ///////////////////////////////////////////////////////////////////////////////
   /// Control histograms input cells                                          ///
