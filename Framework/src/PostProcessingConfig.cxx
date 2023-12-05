@@ -51,8 +51,8 @@ PostProcessingConfig::PostProcessingConfig(const std::string& id, const boost::p
   for (const auto& stopTrigger : config.get_child("qc.postprocessing." + id + ".stopTrigger")) {
     stopTriggers.push_back(stopTrigger.second.get_value<std::string>());
   }
-  auto ppTree = config.get_child("qc.postprocessing."+id);
-  if(ppTree.count("extendedTaskParameters")) {
+  auto ppTree = config.get_child("qc.postprocessing." + id);
+  if (ppTree.count("extendedTaskParameters")) {
     for (const auto& [runtype, subTreeRunType] : ppTree.get_child("extendedTaskParameters")) {
       for (const auto& [beamtype, subTreeBeamType] : subTreeRunType) {
         for (const auto& [key, value] : subTreeBeamType) {

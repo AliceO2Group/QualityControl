@@ -74,7 +74,7 @@ class PostProcessingInterface
   void setName(const std::string& name);
   [[nodiscard]] const std::string& getName() const;
 
-protected:
+ protected:
   std::shared_ptr<core::ObjectsManager> getObjectsManager();
   core::CustomParameters mCustomParameters;
 
