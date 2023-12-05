@@ -287,31 +287,6 @@ void ClusterTask::startOfActivity(const Activity& activity)
 void ClusterTask::startOfCycle()
 {
   ILOG(Debug, Devel) << "startOfCycle" << ENDM;
-
-  // if (!o2::base::GeometryManager::isGeometryLoaded()) {
-  //   ILOG(Info, Support) << "Loading geometry" << ENDM;
-  //   TaskInterface::retrieveConditionAny<TObject>("GLO/Config/Geometry");
-  //   ILOG(Info, Support) << "Geometry loaded" << ENDM;
-  // }
-
-  // Loading EMCAL calibration objects
-  if (mTaskParameters.mInternalClusterizer && mTaskParameters.mCalibrate) {
-    std::map<std::string, std::string> metadata;
-    mBadChannelMap = retrieveConditionAny<o2::emcal::BadChannelMap>(o2::emcal::CalibDB::getCDBPathBadChannelMap(), metadata);
-    if (!mBadChannelMap) {
-      ILOG(Error, Support) << "No bad channel map - bad channel removal before recalibration will not be possible " << ENDM;
-    }
-
-    mTimeCalib = retrieveConditionAny<o2::emcal::TimeCalibrationParams>(o2::emcal::CalibDB::getCDBPathTimeCalibrationParams(), metadata);
-    if (!mTimeCalib) {
-      ILOG(Info, Support) << " No time calibration params - time recalibration before clusterization will not be possible " << ENDM;
-    }
-
-    mEnergyCalib = retrieveConditionAny<o2::emcal::GainCalibrationFactors>(o2::emcal::CalibDB::getCDBPathGainCalibrationParams(), metadata);
-    if (!mEnergyCalib) {
-      ILOG(Error, Support) << "No energy calibration params - energy recalibration before clusterization will not be possible" << ENDM;
-    }
-  }
 }
 
 void ClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -340,6 +315,7 @@ void ClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (mTaskParameters.mCalibrate) {
       // build recalibrated cell collection;
       ILOG(Debug, Support) << "Calibrate cells" << ENDM;
+      loadCalibrationObjects(ctx);
       getCalibratedCells(cell, cellTR, calibratedCells, calibratedTriggerRecords);
       inputcells = gsl::span<const o2::emcal::Cell>(calibratedCells);
       inputTriggerRecords = gsl::span<const o2::emcal::TriggerRecord>(calibratedTriggerRecords);
@@ -378,6 +354,37 @@ void ClusterTask::endOfCycle()
 void ClusterTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
+}
+
+void ClusterTask::finaliseCCDB(o2::framework::ConcreteDataMatcher& matcher, void* obj)
+{
+  if (matcher == o2::framework::ConcreteDataMatcher("EMC", "BADCHANNELMAP", 0)) {
+    mBadChannelMap = reinterpret_cast<const o2::emcal::BadChannelMap*>(obj);
+    if (mBadChannelMap) {
+      ILOG(Info, Support) << "Updated EMCAL bad channel map " << ENDM;
+    }
+  }
+  if (matcher == o2::framework::ConcreteDataMatcher("EMC", "TIMECALIBPARAM", 0)) {
+    mTimeCalib = reinterpret_cast<const o2::emcal::TimeCalibrationParams*>(obj);
+    if (mTimeCalib) {
+      ILOG(Info, Support) << "Updated EMCAL time calibration" << ENDM;
+    }
+  }
+  if (matcher == o2::framework::ConcreteDataMatcher("EMC", "GAINCALIBPARAM", 0)) {
+    mEnergyCalib = reinterpret_cast<const o2::emcal::GainCalibrationFactors*>(obj);
+    if (mEnergyCalib) {
+      ILOG(Info, Support) << "Update EMCAL gain calibration" << ENDM;
+    }
+  }
+}
+
+void ClusterTask::loadCalibrationObjects(o2::framework::ProcessingContext& ctx)
+{
+  if (mTaskParameters.mInternalClusterizer && mTaskParameters.mCalibrate) {
+    ctx.inputs().get<o2::emcal::BadChannelMap*>("badchannelmap");
+    ctx.inputs().get<o2::emcal::TimeCalibrationParams*>("timecalib");
+    ctx.inputs().get<o2::emcal::GainCalibrationFactors*>("energycalib");
+  }
 }
 
 //_____________________________  Fill function _____________________________
