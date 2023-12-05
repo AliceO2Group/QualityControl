@@ -347,27 +347,6 @@ void CellTask::startOfCycle()
 {
   mTimeFramesPerCycles = 0;
   ILOG(Debug, Support) << "startOfCycle" << ENDM;
-  if (mTaskSettings.mHasHistosCalib) {
-    std::map<std::string, std::string> metadata;
-    mBadChannelMap = retrieveConditionAny<o2::emcal::BadChannelMap>(o2::emcal::CalibDB::getCDBPathBadChannelMap(), metadata);
-    // it was EMC/BadChannelMap
-    if (!mBadChannelMap) {
-      ILOG(Info, Support) << "No Bad Channel Map object " << ENDM;
-    }
-
-    mTimeCalib = retrieveConditionAny<o2::emcal::TimeCalibrationParams>(o2::emcal::CalibDB::getCDBPathTimeCalibrationParams(), metadata);
-    //"EMC/TimeCalibrationParams
-    if (!mTimeCalib) {
-      ILOG(Info, Support) << " No Time Calib object " << ENDM;
-    }
-  }
-  if (mTaskSettings.mCalibrateEnergy) {
-    std::map<std::string, std::string> metadata;
-    mEnergyCalib = retrieveConditionAny<o2::emcal::GainCalibrationFactors>(o2::emcal::CalibDB::getCDBPathGainCalibrationParams(), metadata);
-    if (!mBadChannelMap) {
-      ILOG(Info, Support) << "No energy calibration object " << ENDM;
-    }
-  }
 }
 
 void CellTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -383,6 +362,8 @@ void CellTask::monitorData(o2::framework::ProcessingContext& ctx)
   // references and subspecifications
   std::unordered_map<header::DataHeader::SubSpecificationType, gsl::span<const o2::emcal::Cell>> cellSubEvents;
   std::unordered_map<header::DataHeader::SubSpecificationType, gsl::span<const o2::emcal::TriggerRecord>> triggerRecordSubevents;
+
+  loadCalibrationObjects(ctx);
 
   auto posCells = ctx.inputs().getPos("emcal-cells"),
        posTriggerRecords = ctx.inputs().getPos("emcal-triggerecords");
@@ -642,6 +623,39 @@ void CellTask::reset()
   resetOptional(mTotalEnergy);
   resetOptional(mTotalEnergyCorr);
   resetOptional(mTotalEnergySM);
+}
+
+void CellTask::finaliseCCDB(o2::framework::ConcreteDataMatcher& matcher, void* obj)
+{
+  if (matcher == o2::framework::ConcreteDataMatcher("EMC", "BADCHANNELMAP", 0)) {
+    mBadChannelMap = reinterpret_cast<const o2::emcal::BadChannelMap*>(obj);
+    if (mBadChannelMap) {
+      ILOG(Info, Support) << "Updated EMCAL bad channel map " << ENDM;
+    }
+  }
+  if (matcher == o2::framework::ConcreteDataMatcher("EMC", "TIMECALIBPARAM", 0)) {
+    mTimeCalib = reinterpret_cast<const o2::emcal::TimeCalibrationParams*>(obj);
+    if (mTimeCalib) {
+      ILOG(Info, Support) << "Updated EMCAL time calibration" << ENDM;
+    }
+  }
+  if (matcher == o2::framework::ConcreteDataMatcher("EMC", "GAINCALIBPARAM", 0)) {
+    mEnergyCalib = reinterpret_cast<const o2::emcal::GainCalibrationFactors*>(obj);
+    if (mEnergyCalib) {
+      ILOG(Info, Support) << "Update EMCAL gain calibration" << ENDM;
+    }
+  }
+}
+
+void CellTask::loadCalibrationObjects(o2::framework::ProcessingContext& ctx)
+{
+  if (mTaskSettings.mHasHistosCalib) {
+    ctx.inputs().get<o2::emcal::BadChannelMap*>("badchannelmap");
+    ctx.inputs().get<o2::emcal::TimeCalibrationParams*>("timecalib");
+  }
+  if (mTaskSettings.mCalibrateEnergy) {
+    ctx.inputs().get<o2::emcal::GainCalibrationFactors*>("energycalib");
+  }
 }
 
 void CellTask::initDefaultMultiplicityRanges()
