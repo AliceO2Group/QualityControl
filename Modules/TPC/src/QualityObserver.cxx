@@ -106,9 +106,13 @@ void QualityObserver::update(Trigger t, framework::ServiceRegistryRef services)
   generatePanel();
 }
 
-void QualityObserver::finalize(Trigger t, framework::ServiceRegistryRef)
+void QualityObserver::finalize(Trigger t, framework::ServiceRegistryRef services)
 {
-  generatePanel();
+  auto& qcdb = services.get<repository::DatabaseInterface>();
+  getQualities(t, qcdb);
+  if (mQualities.size() > 0 && mReasons.size() > 0 && mComments.size() > 0) {
+    generatePanel();
+  }
 }
 
 void QualityObserver::getQualities(const Trigger& t,
