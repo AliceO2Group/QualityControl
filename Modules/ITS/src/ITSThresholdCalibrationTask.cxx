@@ -18,7 +18,6 @@
 #include "ITS/ITSThresholdCalibrationTask.h"
 #include "TLine.h"
 #include "TLatex.h"
-// #include <Framework/DataSpecUtils.h>
 #include "Framework/InputRecordWalker.h"
 
 using namespace o2::itsmft;

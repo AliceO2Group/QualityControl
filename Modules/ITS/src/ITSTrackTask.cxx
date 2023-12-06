@@ -27,8 +27,6 @@
 
 #include <Framework/DataSpecUtils.h>
 #include "ITStracking/Constants.h"
-// #include "Common/TH1Ratio.h"
-// #include "Common/TH2Ratio.h"
 
 #include "DCAFitter/DCAFitterN.h"
 
