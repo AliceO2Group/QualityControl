@@ -575,8 +575,7 @@ int TaskRunner::publish(DataAllocator& outputs)
   outputs.snapshot(
     Output{ concreteOutput.origin,
             concreteOutput.description,
-            concreteOutput.subSpec,
-            mTaskConfig.moSpec.lifetime },
+            concreteOutput.subSpec },
     *array);
 
   mLastPublicationDuration = publicationDurationTimer.getTime();
