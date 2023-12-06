@@ -146,15 +146,15 @@ class ITSTracksRootFileReader : public o2::framework::Task
     std::copy(patterns.begin(), patterns.end(), std::back_inserter(*clusPatternArr));
 
     // Output vectors
-    pc.outputs().snapshot(Output{ "ITS", "ITSTrackROF", 0, Lifetime::Timeframe }, *trackRofArr);
-    pc.outputs().snapshot(Output{ "ITS", "TRACKS", 0, Lifetime::Timeframe }, *trackArr);
-    pc.outputs().snapshot(Output{ "ITS", "VERTICES", 0, Lifetime::Timeframe }, *vertexArr);
-    pc.outputs().snapshot(Output{ "ITS", "VERTICESROF", 0, Lifetime::Timeframe }, *vertexRofArr);
-    pc.outputs().snapshot(Output{ "ITS", "TRACKCLSID", 0, Lifetime::Timeframe }, *clusIdx);
+    pc.outputs().snapshot(Output{ "ITS", "ITSTrackROF", 0 }, *trackRofArr);
+    pc.outputs().snapshot(Output{ "ITS", "TRACKS", 0 }, *trackArr);
+    pc.outputs().snapshot(Output{ "ITS", "VERTICES", 0 }, *vertexArr);
+    pc.outputs().snapshot(Output{ "ITS", "VERTICESROF", 0 }, *vertexRofArr);
+    pc.outputs().snapshot(Output{ "ITS", "TRACKCLSID", 0 }, *clusIdx);
 
-    pc.outputs().snapshot(Output{ "ITS", "CLUSTERSROF", 0, Lifetime::Timeframe }, *clusRofArr);
-    pc.outputs().snapshot(Output{ "ITS", "COMPCLUSTERS", 0, Lifetime::Timeframe }, *clusArr);
-    pc.outputs().snapshot(Output{ "ITS", "PATTERNS", 0, Lifetime::Timeframe }, *clusPatternArr);
+    pc.outputs().snapshot(Output{ "ITS", "CLUSTERSROF", 0 }, *clusRofArr);
+    pc.outputs().snapshot(Output{ "ITS", "COMPCLUSTERS", 0 }, *clusArr);
+    pc.outputs().snapshot(Output{ "ITS", "PATTERNS", 0 }, *clusPatternArr);
 
     // move to a new entry in TTree
     ++mCurrentEntry;

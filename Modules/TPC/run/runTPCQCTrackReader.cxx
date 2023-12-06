@@ -83,24 +83,21 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
       (AlgorithmSpec::InitCallback)[inputFile, treeName, branchName](InitContext&){
 
         // root tree reader
-        //constexpr auto persistency = Lifetime::Transient;
-        constexpr auto persistency = Lifetime::Timeframe;
-
-  auto reader = std::make_shared<RootTreeReader>(treeName.data(),                      // tree name
-                                                 inputFile.data(),                     // input file name
-                                                 RootTreeReader::PublishingMode::Loop, // loop over
-                                                 Output{ "TPC", "TRACKS", 0, persistency },
-                                                 branchName.data() // name of the branch
-  );
+        auto reader = std::make_shared<RootTreeReader>(treeName.data(),                      // tree name
+                                                       inputFile.data(),                     // input file name
+                                                       RootTreeReader::PublishingMode::Loop, // loop over
+                                                       Output{ "TPC", "TRACKS", 0 },
+                                                       branchName.data() // name of the branch
+        );
 
   return (AlgorithmSpec::ProcessCallback)[reader](ProcessingContext & processingContext) mutable
   {
     //(++(*reader))(processingContext);
     if (reader->next()) {
       (*reader)(processingContext);
-      //LOG(info) << "Call producer AlgorithmSpec::ProcessCallback:  has data " << reader->getCount();
+      // LOG(info) << "Call producer AlgorithmSpec::ProcessCallback:  has data " << reader->getCount();
     } else {
-      //LOG(info) << "Call producer AlgorithmSpec::ProcessCallback:  no next data" << reader->getCount();
+      // LOG(info) << "Call producer AlgorithmSpec::ProcessCallback:  no next data" << reader->getCount();
     }
   };
 }

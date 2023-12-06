@@ -111,8 +111,8 @@ class MFTTracksRootFileReader : public o2::framework::Task
     std::copy(tracks.begin() + index, tracks.begin() + lastIndex, std::back_inserter(*tracksInROF));
 
     // fill in the message
-    pc.outputs().snapshot(Output{ "MFT", "TRACKS", 0, Lifetime::Timeframe }, *tracksInROF);
-    pc.outputs().snapshot(Output{ "MFT", "MFTTrackROF", 0, Lifetime::Timeframe }, *oneROFvec);
+    pc.outputs().snapshot(Output{ "MFT", "TRACKS", 0 }, *tracksInROF);
+    pc.outputs().snapshot(Output{ "MFT", "MFTTrackROF", 0 }, *oneROFvec);
 
     //  update the ROF counter
     mCurrentROF++;

@@ -420,7 +420,7 @@ void CheckRunner::send(QualityObjectsType& qualityObjects, framework::DataAlloca
     auto outputSpec = correspondingCheck.getOutputSpec();
     auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(outputSpec);
     allocator.snapshot(
-      framework::Output{ concreteOutput.origin, concreteOutput.description, concreteOutput.subSpec, outputSpec.lifetime }, *qo);
+      framework::Output{ concreteOutput.origin, concreteOutput.description, concreteOutput.subSpec }, *qo);
     mTotalQOSent++;
   }
 }
