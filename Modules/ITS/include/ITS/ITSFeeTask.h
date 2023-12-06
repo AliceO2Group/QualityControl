@@ -25,19 +25,13 @@
 #include "Headers/RDHAny.h"
 #include "DetectorsRaw/RDHUtils.h"
 
-#include <TH1.h>
-#include <TH2.h>
 #include <TH2Poly.h>
-#include "TMath.h"
+#include <TMath.h>
 #include <TLine.h>
-#include <TText.h>
 #include <TLatex.h>
-#include <TLine.h>
-#include <TLegend.h>
 
-class TH2I;
-class TH1I;
-class TH2F;
+class TH1;
+class TH2;
 
 using namespace o2::quality_control::core;
 
@@ -173,7 +167,6 @@ class ITSFeeTask final : public TaskInterface
   TH1I* mTFInfo; // count vs TF ID
   TH2I* mTriggerVsFeeId;
   TH1I* mTrigger;
-  TH2I* mLaneInfo;
   TH2I* mFlag1Check;    // include transmission_timeout, packet_overflow, lane_starts_violation
   TH2I* mDecodingCheck; // summary of errors during custom decoding of specific bytes (see plot description)
   TH2I* mRDHSummary;
@@ -192,8 +185,6 @@ class ITSFeeTask final : public TaskInterface
   TH1D* mProcessingTime2;
   TH2F* mPayloadSize; // average payload size vs linkID
   // TH1D* mInfoCanvas;//TODO: default, not implemented yet
-  std::string mRunNumberPath;
-  std::string mRunNumber = "000000";
 };
 
 } // namespace o2::quality_control_modules::its

@@ -21,12 +21,7 @@
 #include "QualityControl/QcInfoLogger.h"
 
 #include <fairlogger/Logger.h>
-#include <TList.h>
 #include <TH2.h>
-#include <string.h>
-#include <TLatex.h>
-#include <TLine.h>
-#include <iostream>
 #include "Common/Utils.h"
 
 namespace o2::quality_control_modules::its
@@ -43,6 +38,10 @@ Quality ITSClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
 
     if (iter->second->getName().find("AverageClusterSize") != std::string::npos) {
       auto* h = dynamic_cast<TH2F*>(iter->second->getObject());
+      if (h == nullptr) {
+        ILOG(Error, Support) << "could not cast AverageClusteSize to TH2F*" << ENDM;
+        continue;
+      }
       for (int ilayer = 0; ilayer < NLayer; ilayer++) {
         result.addMetadata(Form("Layer%d", ilayer), "good");
         if (iter->second->getName().find(Form("Layer%d", ilayer)) != std::string::npos && h->GetMaximum() > averageClusterSizeLimit[ilayer]) {
@@ -54,6 +53,10 @@ Quality ITSClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
 
     if (iter->second->getName().find("EmptyLaneFractionGlobal") != std::string::npos) {
       auto* h = dynamic_cast<TH1D*>(iter->second->getObject());
+      if (h == nullptr) {
+        ILOG(Error, Support) << "could not cast EmptyLaneFractionGlobal to TH1D*" << ENDM;
+        continue;
+      }
       result.addMetadata("EmptyLaneFractionGlobal", "good");
       MaxEmptyLaneFraction = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "MaxEmptyLaneFraction", MaxEmptyLaneFraction);
       if (h->GetBinContent(1) + h->GetBinContent(2) + h->GetBinContent(3) > MaxEmptyLaneFraction) {
@@ -65,6 +68,10 @@ Quality ITSClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
 
     if (iter->second->getName().find("General_Occupancy") != std::string::npos) {
       auto* hp = dynamic_cast<TH2F*>(iter->second->getObject());
+      if (hp == nullptr) {
+        ILOG(Error, Support) << "could not cast general occupancy to TH2F*" << ENDM;
+        continue;
+      }
       std::vector<int> skipxbins = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "skipxbinsoccupancy", ""));
       std::vector<int> skipybins = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "skipybinsoccupancy", ""));
       std::vector<std::pair<int, int>> xypairs;
@@ -151,6 +158,10 @@ void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
 
   if (mo->getName().find("AverageClusterSize") != std::string::npos) {
     auto* h = dynamic_cast<TH2F*>(mo->getObject());
+    if (h == nullptr) {
+      ILOG(Error, Support) << "could not cast AverageClusterSize to TH2F*" << ENDM;
+      return;
+    }
     std::string histoName = mo->getName();
     int iLayer = histoName[histoName.find("Layer") + 5] - 48; // Searching for position of "Layer" in the name of the file, then +5 is the NUMBER of the layer, -48 is conversion to int
 
@@ -178,6 +189,10 @@ void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
 
   if (mo->getName().find("EmptyLaneFractionGlobal") != std::string::npos) {
     auto* h = dynamic_cast<TH1D*>(mo->getObject());
+    if (h == nullptr) {
+      ILOG(Error, Support) << "could not cast EmptyLaneFractionGlobal to TH1D*" << ENDM;
+      return;
+    }
     if (checkResult == Quality::Good) {
       status = "Quality::GOOD";
       textColor = kGreen;
@@ -216,6 +231,10 @@ void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
   }
   if (mo->getName().find("General_Occupancy") != std::string::npos) {
     auto* h = dynamic_cast<TH2F*>(mo->getObject());
+    if (h == nullptr) {
+      ILOG(Error, Support) << "could not cast General_Occupancy to TH2F*" << ENDM;
+      return;
+    }
     if (checkResult == Quality::Good) {
       status = "Quality::GOOD";
       textColor = kGreen;

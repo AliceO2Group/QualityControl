@@ -16,14 +16,8 @@
 
 #include "QualityControl/QcInfoLogger.h"
 #include "ITS/ITSThresholdCalibrationTask.h"
-#include <DataFormatsITS/TrackITS.h>
-#include <DataFormatsITSMFT/ROFRecord.h>
-#include <Framework/InputRecord.h>
-#include "ReconstructionDataFormats/Vertex.h"
-#include "ReconstructionDataFormats/PrimaryVertex.h"
 #include "TLine.h"
 #include "TLatex.h"
-#include <Framework/DataSpecUtils.h>
 #include "Framework/InputRecordWalker.h"
 
 using namespace o2::itsmft;

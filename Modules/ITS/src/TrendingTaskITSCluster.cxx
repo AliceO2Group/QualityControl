@@ -24,8 +24,6 @@
 #include <TMultiGraph.h>
 #include <TH1.h>
 #include <TDatime.h>
-#include <map>
-#include <string>
 
 using namespace o2::quality_control;
 using namespace o2::quality_control::core;

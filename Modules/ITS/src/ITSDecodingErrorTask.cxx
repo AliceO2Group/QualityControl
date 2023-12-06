@@ -129,12 +129,6 @@ void ITSDecodingErrorTask::startOfCycle() { ILOG(Debug, Devel) << "startOfCycle"
 
 void ITSDecodingErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  // set timer
-  //
-  std::chrono::time_point<std::chrono::high_resolution_clock> start;
-  std::chrono::time_point<std::chrono::high_resolution_clock> end;
-  // int difference;
-  start = std::chrono::high_resolution_clock::now();
 
   auto linkErrors = ctx.inputs().get<gsl::span<o2::itsmft::GBTLinkDecodingStat>>("linkerrors");
   auto decErrors = ctx.inputs().get<gsl::span<o2::itsmft::ChipError>>("decerrors");
@@ -178,7 +172,6 @@ void ITSDecodingErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
     mChipErrorPlots->SetBinContent(ierror + 1, feeChipError);
   }
   mTFCount++;
-  end = std::chrono::high_resolution_clock::now();
 }
 
 void ITSDecodingErrorTask::getParameters()

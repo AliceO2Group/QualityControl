@@ -20,9 +20,8 @@
 #include "QualityControl/TaskInterface.h"
 #include <TH1D.h>
 #include <TH2D.h>
-#include <ITSBase/GeometryTGeo.h>
-#include <TTree.h>
 #include "ITSMFTReconstruction/ChipMappingITS.h"
+#include <ITSBase/GeometryTGeo.h>
 
 class TH1D;
 class TH2D;
