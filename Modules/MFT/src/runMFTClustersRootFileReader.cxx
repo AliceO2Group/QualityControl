@@ -115,9 +115,9 @@ class MFTClustersRootFileReader : public o2::framework::Task
     std::copy(patterns.begin(), patterns.end(), std::back_inserter(*clusPatternArr));
 
     // fill in the message
-    pc.outputs().snapshot(Output{ "MFT", "COMPCLUSTERS", 0, Lifetime::Timeframe }, *clustersInROF);
-    pc.outputs().snapshot(Output{ "MFT", "CLUSTERSROF", 0, Lifetime::Timeframe }, *oneROFvec);
-    pc.outputs().snapshot(Output{ "MFT", "PATTERNS", 0, Lifetime::Timeframe }, *clusPatternArr);
+    pc.outputs().snapshot(Output{ "MFT", "COMPCLUSTERS", 0 }, *clustersInROF);
+    pc.outputs().snapshot(Output{ "MFT", "CLUSTERSROF", 0 }, *oneROFvec);
+    pc.outputs().snapshot(Output{ "MFT", "PATTERNS", 0 }, *clusPatternArr);
 
     //  update the ROF counter
     mCurrentROF++;

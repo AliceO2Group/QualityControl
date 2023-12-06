@@ -113,8 +113,8 @@ class MFTDigitsHotPixelRootFileReader : public o2::framework::Task
     AddHotPixel(digitsInROF, 35, 200, 200, 165);
 
     // fill in the message
-    pc.outputs().snapshot(Output{ "MFT", "DIGITS", 0, Lifetime::Timeframe }, *digitsInROF);
-    pc.outputs().snapshot(Output{ "MFT", "DIGITSROF", 0, Lifetime::Timeframe }, *oneROFvec);
+    pc.outputs().snapshot(Output{ "MFT", "DIGITS", 0 }, *digitsInROF);
+    pc.outputs().snapshot(Output{ "MFT", "DIGITSROF", 0 }, *oneROFvec);
 
     // update the ROF counter
     mCurrentROF++;
