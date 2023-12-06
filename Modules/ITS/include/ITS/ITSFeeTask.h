@@ -128,7 +128,7 @@ class ITSFeeTask final : public TaskInterface
   void setPlotsFormat();
   void drawLayerName(TH2* histo2D);
   void resetGeneralPlots();
-  void resetLanePlotsAndCounters();
+  void resetLanePlotsAndCounters(bool isFullReset = false);
   static constexpr int NLayer = 7;
   const int NStaves[NLayer] = { 12, 16, 20, 24, 30, 42, 48 };
   static constexpr int NLayerIB = 3;

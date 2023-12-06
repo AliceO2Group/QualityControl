@@ -359,7 +359,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   DPLRawParser parser(ctx.inputs());
 
-  resetLanePlotsAndCounters(); // action taken depending on mResetLaneStatus and mResetPayload
+  resetLanePlotsAndCounters(false); // not full reset // action taken depending on mResetLaneStatus and mResetPayload
 
   // manual call of DPL data iterator to catch exceptoin:
   try {
@@ -648,9 +648,9 @@ void ITSFeeTask::resetGeneralPlots()
   mTrigger->Reset();
 }
 
-void ITSFeeTask::resetLanePlotsAndCounters()
+void ITSFeeTask::resetLanePlotsAndCounters(bool isFullReset)
 {
-  if (mResetLaneStatus) {
+  if (mResetLaneStatus || isFullReset) {
     mRDHSummary->Reset("ICES"); // option ICES is to not remove layer lines and labels
     mFlag1Check->Reset();
     mLaneStatusSummaryIB->Reset();
@@ -668,14 +668,26 @@ void ITSFeeTask::resetLanePlotsAndCounters()
 
     memset(mStatusFlagNumber, 0, sizeof(mStatusFlagNumber)); // reset counters
   }
-  if (mResetPayload) {
+  if (mResetPayload || isFullReset) {
     mPayloadSize->Reset("ICES");
   }
 }
 
 void ITSFeeTask::reset()
 {
+  // it is expected that this reset function will be executed only at the end of run
   resetGeneralPlots();
+  resetLanePlotsAndCounters(true); // full reset of all plots
+  mTimeFrameId = 0;
+  mDecodingCheck->Reset();
+  mRDHSummaryCumulative->Reset();
+  mTrailerCount->Reset();
+  mActiveLanes->Reset();
+  for (int i = 0; i < NFlags; i++) {
+    mLaneStatusCumulative[i]->Reset("ICES");
+  }
+  mProcessingTime->Reset();
+  mProcessingTime2->Reset();
   ILOG(Debug, Devel) << "Reset" << ENDM;
 }
 
