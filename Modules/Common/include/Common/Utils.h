@@ -37,8 +37,7 @@ T getFromConfig(const quality_control::core::CustomParameters& params, const std
   const auto itParam = params.find(name.data());
 
   if (itParam == last) {
-    LOGP(warning, "missing parameter {}", name.data());
-    LOGP(warning, "Please add '{}': '<value>' to the 'taskParameters'. Using default value {}.", name.data(), retVal);
+    LOGP(warning, "Missing parameter. Please add '{}': '<value>' to the 'taskParameters'. Using default value {}.", name.data(), retVal);
   } else {
     const auto& param = itParam->second;
     if constexpr (std::is_same<int, T>::value) {
