@@ -1,0 +1,46 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": ""
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      }
+    },
+    "tasks": {
+      "TrackClusters": {
+        "active": "true",
+        "className": "o2::quality_control_modules::tpc::TrackClusters",
+        "moduleName": "QcTPC",
+        "detectorName": "TPC",
+        "cycleDurationSeconds": "200",
+        "maxNumberCycles": "-1",
+        "dataSource": {
+          "type": "direct",
+          "query": "inputTracks:TPC/TRACKS/0;inputClusters:TPC/CLUSTERNATIVE/0;inputClusRefs:TPC/CLUSREFS/0"
+        },
+        "taskParameters": {
+          "cutAbsEta": "1.",  "cutMinNCluster": "60", "cutMindEdxTot": "20.",
+          "seed": "0", "samplingFraction": "1"
+        },
+        "location": "remote"
+      }
+    }
+  },
+  "dataSamplingPolicies": [
+
+  ]
+}
