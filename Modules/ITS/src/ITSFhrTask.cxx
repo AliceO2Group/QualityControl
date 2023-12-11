@@ -90,7 +90,6 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Debug, Devel) << "initialize ITSFhrTask" << ENDM;
   getParameters();
-
   mGeneralOccupancy = new TH2Poly();
   mGeneralOccupancy->SetTitle("General Occupancy;mm (IB 3x);mm (IB 3x)");
   mGeneralOccupancy->SetName("General/General_Occupancy");
@@ -786,7 +785,6 @@ void ITSFhrTask::reset()
 {
   resetGeneralPlots();
   resetOccupancyPlots();
-
   mGeneralOccupancy->Reset("content");
   mGeneralNoisyPixel->Reset("content");
   mDecoder->clearStat();
@@ -802,6 +800,7 @@ void ITSFhrTask::reset()
         mHitnumberLane[istave][ichip] = 0;
         mOccupancyLane[istave][ichip] = 0;
         mHitPixelID_InStave[istave][0][ichip].clear();
+        mChipStat[istave][ichip] = 0;
       }
     }
   } else {
@@ -818,13 +817,11 @@ void ITSFhrTask::reset()
         mOccupancyLane[istave][2 * ihic + 1] = 0;
         for (int ichip = 0; ichip < nChipsPerHic[mLayer]; ichip++) {
           mHitPixelID_InStave[istave][ihic][ichip].clear();
+          mChipStat[istave][ihic * nChipsPerHic[mLayer] + ichip] = 0;
         }
       }
     }
   }
-
-  mTFCount = 0;
-  std::fill(&mChipStat[0][0], &mChipStat[0][0] + NStaves[mLayer] * nHicPerStave[mLayer] * nChipsPerHic[mLayer], 0);
   std::fill(&mNoisyPixelNumber[0][0], &mNoisyPixelNumber[0][0] + 7 * 48, 0);
   ILOG(Debug, Devel) << "Reset" << ENDM;
 }
