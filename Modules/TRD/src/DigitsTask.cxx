@@ -306,7 +306,9 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
       continue;
     }
     mDigitsPerEvent->Fill(nDigits);
-    mDigitsSizevsTrackletSize->Fill(nDigits / trigger.getNumberOfTracklets());
+    if (trigger.getNumberOfTracklets() > 0) {
+      mDigitsSizevsTrackletSize->Fill(nDigits / trigger.getNumberOfTracklets());
+    }
 
     for (int iDigit = iDigitFirst; iDigit < iDigitLast; ++iDigit) {
       const auto& digit = digits[iDigit];

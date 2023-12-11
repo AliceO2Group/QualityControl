@@ -45,10 +45,10 @@ void TimekeeperAsynchronous::updateByTimeFrameID(uint32_t tfid)
   }
   if (tfid == 0) {
     if (!mWarnedAboutTfIdZero) {
-      ILOG(Warning, Devel) << "Seen TFID equal to 0, which is not expected. Will not update TF-based validity, will not warn further." << ENDM;
+      ILOG(Warning, Support) << "Seen TFID equal to 0, which is not expected in production data. Will use 1 instead, will not warn further." << ENDM;
       mWarnedAboutTfIdZero = true;
+      tfid = 1;
     }
-    return;
   }
 
   auto tfValidity = computeTimestampFromTimeframeID(tfid);

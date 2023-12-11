@@ -46,14 +46,14 @@ class ITSTracksRootFileReader : public o2::framework::Task
  public:
   void init(framework::InitContext& ic)
   {
-    LOG(info) << "In ITSTracksRootFileReader::init ... entering ";
+    ILOG(Debug, Devel) << "In ITSTracksRootFileReader::init ... entering " << ENDM;
 
     // Tracks
     auto filenameTracks = ic.options().get<std::string>("qc-its-tracks-root-file");
 
     mFileTracks = std::make_unique<TFile>(filenameTracks.c_str(), "READ");
     if (!mFileTracks->IsOpen()) {
-      LOG(error) << "ITSTracksRootFileReader::init. Cannot open file: " << filenameTracks.c_str();
+      ILOG(Error, Support) << "ITSTracksRootFileReader::init. Cannot open file: " << filenameTracks.c_str() << ENDM;
       ic.services().get<ControlService>().endOfStream();
       ic.services().get<ControlService>().readyToQuit(QuitRequest::Me);
       return;
@@ -72,7 +72,7 @@ class ITSTracksRootFileReader : public o2::framework::Task
 
     mFileClusters = std::make_unique<TFile>(filenameCluster.c_str(), "READ");
     if (!mFileClusters->IsOpen()) {
-      LOG(error) << "ITSTracksRootFileReader::init. Cannot open file: " << filenameCluster.c_str();
+      ILOG(Error, Support) << "ITSTracksRootFileReader::init. Cannot open file: " << filenameCluster.c_str() << ENDM;
       ic.services().get<ControlService>().endOfStream();
       ic.services().get<ControlService>().readyToQuit(QuitRequest::Me);
       return;
@@ -89,7 +89,7 @@ class ITSTracksRootFileReader : public o2::framework::Task
     unsigned long mNumberOfEntriesCluster = mTreeClusters->GetEntries();
 
     if (mNumberOfEntriesTrack != mNumberOfEntriesCluster) {
-      LOG(error) << "ITSTracksRootFileReader::init. Mismatch of entries in loaded files.";
+      ILOG(Error, Support) << "ITSTracksRootFileReader::init. Mismatch of entries in loaded files." << ENDM;
       ic.services().get<ControlService>().endOfStream();
       ic.services().get<ControlService>().readyToQuit(QuitRequest::Me);
       return;
@@ -98,7 +98,7 @@ class ITSTracksRootFileReader : public o2::framework::Task
     // check entries
     mNumberOfEntries = mTreeTracks->GetEntries();
     if (mNumberOfEntries == 0) {
-      LOG(error) << "ITSTracksRootFileReader::init. No entries.";
+      ILOG(Error, Support) << "ITSTracksRootFileReader::init. No entries." << ENDM;
       ic.services().get<ControlService>().endOfStream();
       ic.services().get<ControlService>().readyToQuit(QuitRequest::Me);
       return;
@@ -146,15 +146,15 @@ class ITSTracksRootFileReader : public o2::framework::Task
     std::copy(patterns.begin(), patterns.end(), std::back_inserter(*clusPatternArr));
 
     // Output vectors
-    pc.outputs().snapshot(Output{ "ITS", "ITSTrackROF", 0, Lifetime::Timeframe }, *trackRofArr);
-    pc.outputs().snapshot(Output{ "ITS", "TRACKS", 0, Lifetime::Timeframe }, *trackArr);
-    pc.outputs().snapshot(Output{ "ITS", "VERTICES", 0, Lifetime::Timeframe }, *vertexArr);
-    pc.outputs().snapshot(Output{ "ITS", "VERTICESROF", 0, Lifetime::Timeframe }, *vertexRofArr);
-    pc.outputs().snapshot(Output{ "ITS", "TRACKCLSID", 0, Lifetime::Timeframe }, *clusIdx);
+    pc.outputs().snapshot(Output{ "ITS", "ITSTrackROF", 0 }, *trackRofArr);
+    pc.outputs().snapshot(Output{ "ITS", "TRACKS", 0 }, *trackArr);
+    pc.outputs().snapshot(Output{ "ITS", "VERTICES", 0 }, *vertexArr);
+    pc.outputs().snapshot(Output{ "ITS", "VERTICESROF", 0 }, *vertexRofArr);
+    pc.outputs().snapshot(Output{ "ITS", "TRACKCLSID", 0 }, *clusIdx);
 
-    pc.outputs().snapshot(Output{ "ITS", "CLUSTERSROF", 0, Lifetime::Timeframe }, *clusRofArr);
-    pc.outputs().snapshot(Output{ "ITS", "COMPCLUSTERS", 0, Lifetime::Timeframe }, *clusArr);
-    pc.outputs().snapshot(Output{ "ITS", "PATTERNS", 0, Lifetime::Timeframe }, *clusPatternArr);
+    pc.outputs().snapshot(Output{ "ITS", "CLUSTERSROF", 0 }, *clusRofArr);
+    pc.outputs().snapshot(Output{ "ITS", "COMPCLUSTERS", 0 }, *clusArr);
+    pc.outputs().snapshot(Output{ "ITS", "PATTERNS", 0 }, *clusPatternArr);
 
     // move to a new entry in TTree
     ++mCurrentEntry;

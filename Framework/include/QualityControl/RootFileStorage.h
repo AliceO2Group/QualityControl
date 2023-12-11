@@ -17,6 +17,7 @@
 #ifndef QUALITYCONTROL_ROOTFILESTORAGE_H
 #define QUALITYCONTROL_ROOTFILESTORAGE_H
 
+#include <cstdint>
 #include <string>
 #include <map>
 #include <variant>

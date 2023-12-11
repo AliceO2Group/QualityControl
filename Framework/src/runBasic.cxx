@@ -119,20 +119,21 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
   // Finally the printer
   if (hasChecks(qcConfigurationSource)) {
     DataProcessorSpec printer{
-      "printer",
-      Inputs{
-        { "checked-mo", "QC", Check::createCheckDataDescription(getFirstCheckName(qcConfigurationSource)), 0 } },
-      Outputs{},
-      adaptFromTask<o2::quality_control::example::ExampleQualityPrinterSpec>()
+      .name = "printer",
+      .inputs = Inputs{
+        { "checked-mo", "QC", Check::createCheckDataDescription(getFirstCheckName(qcConfigurationSource)), 0, Lifetime::Sporadic } },
+      .algorithm = adaptFromTask<o2::quality_control::example::ExampleQualityPrinterSpec>(),
+      .labels = { { "resilient" } }
     };
     specs.push_back(printer);
   } else {
     DataProcessorSpec printer{
-      "printer",
-      Inputs{
-        { "checked-mo", "QC", TaskRunner::createTaskDataDescription(getFirstTaskName(qcConfigurationSource)), 0 } },
-      Outputs{},
-      adaptFromTask<o2::quality_control::example::ExamplePrinterSpec>()
+      .name = "printer",
+      .inputs = Inputs{
+        { "checked-mo", "QC", TaskRunner::createTaskDataDescription(getFirstTaskName(qcConfigurationSource)), 0, Lifetime::Sporadic } },
+      .algorithm = adaptFromTask<o2::quality_control::example::ExamplePrinterSpec>(),
+      .labels = { { "resilient" } }
+
     };
     specs.push_back(printer);
   }

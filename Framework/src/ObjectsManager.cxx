@@ -62,8 +62,8 @@ ObjectsManager::~ObjectsManager()
 void ObjectsManager::startPublishing(TObject* object)
 {
   if (mMonitorObjects->FindObject(object->GetName()) != nullptr) {
-    ILOG(Warning, Support) << "Object is already being published (" << object->GetName() << ")" << ENDM;
-    BOOST_THROW_EXCEPTION(DuplicateObjectError() << errinfo_object_name(object->GetName()));
+    ILOG(Warning, Support) << "Object is already being published (" << object->GetName() << "), will remove it and add the new one" << ENDM;
+    stopPublishing(object->GetName());
   }
   auto* newObject = new MonitorObject(object, mTaskName, mTaskClass, mDetectorName);
   newObject->setIsOwner(false);

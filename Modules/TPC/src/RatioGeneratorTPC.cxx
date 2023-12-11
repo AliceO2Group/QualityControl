@@ -62,14 +62,18 @@ void RatioGeneratorTPC::update(Trigger t, framework::ServiceRegistryRef services
   generatePlots();
 }
 
-void RatioGeneratorTPC::finalize(Trigger t, framework::ServiceRegistryRef)
+void RatioGeneratorTPC::finalize(Trigger t, framework::ServiceRegistryRef services)
 {
   for (const auto& source : mConfig) {
     if (mRatios.count(source.nameOutputObject)) {
       getObjectsManager()->stopPublishing(source.nameOutputObject);
     }
   }
-  generatePlots();
+  auto& qcdb = services.get<repository::DatabaseInterface>();
+  generateRatios(t, qcdb);
+  if (mRatios.size() > 0) {
+    generatePlots();
+  }
 }
 
 void RatioGeneratorTPC::generateRatios(const Trigger& t,
