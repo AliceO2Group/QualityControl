@@ -16,8 +16,6 @@
 
 #include "QualityControl/PostProcessingConfig.h"
 
-#include "QualityControl/runnerUtils.h"
-
 #include <boost/property_tree/ptree.hpp>
 
 namespace o2::quality_control::postprocessing
