@@ -12,6 +12,7 @@
 #include "QualityControl/CustomParameters.h"
 #include <DataFormatsParameters/ECSDataAdapters.h>
 #include <iostream>
+#include <boost/property_tree/ptree.hpp>
 
 namespace o2::quality_control::core
 {
@@ -143,6 +144,17 @@ std::string& CustomParameters::operator[](const std::string& key)
     set(key, "");
   }
   return mCustomParameters.at("default").at("default").at(key);
+}
+
+void CustomParameters::populateCustomParameters(const boost::property_tree::ptree& csTree)
+{
+  for (const auto& [runtype, subTreeRunType] : csTree) {
+    for (const auto& [beamtype, subTreeBeamType] : subTreeRunType) {
+      for (const auto& [key, value] : subTreeBeamType) {
+        set(key, value.get_value<std::string>(), runtype, beamtype);
+      }
+    }
+  }
 }
 
 } // namespace o2::quality_control::core

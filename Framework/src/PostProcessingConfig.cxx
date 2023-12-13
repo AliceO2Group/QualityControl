@@ -50,13 +50,7 @@ PostProcessingConfig::PostProcessingConfig(const std::string& id, const boost::p
   }
   auto ppTree = config.get_child("qc.postprocessing." + id);
   if (ppTree.count("extendedTaskParameters")) {
-    for (const auto& [runtype, subTreeRunType] : ppTree.get_child("extendedTaskParameters")) {
-      for (const auto& [beamtype, subTreeBeamType] : subTreeRunType) {
-        for (const auto& [key, value] : subTreeBeamType) {
-          customParameters.set(key, value.get_value<std::string>(), runtype, beamtype);
-        }
-      }
-    }
+    customParameters.populateCustomParameters(ppTree.get_child("extendedTaskParameters"));
   }
 }
 

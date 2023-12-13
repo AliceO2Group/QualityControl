@@ -21,6 +21,8 @@
 #define BOOST_TEST_DYN_LINK
 
 #include <boost/test/unit_test.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
 
 using namespace o2::quality_control::core;
 using namespace std;
@@ -181,4 +183,24 @@ BOOST_AUTO_TEST_CASE(test_cp_new_access_pattern)
   if (auto param2 = cp.find("ccc"); param2 != cp.end()) {
     BOOST_CHECK_EQUAL(std::stoi(param2->second), 1);
   }
+}
+
+BOOST_AUTO_TEST_CASE(test_load_from_ptree)
+{
+  boost::property_tree::ptree jsontree;
+  boost::property_tree::read_json("/Users/bvonhall/dev/alice/sw/osx_x86-64/QualityControl/single-checkrunner-local1/etc/basic.json", jsontree);
+
+  string v0 = jsontree.get<string>("qc.tasks.QcTask.extendedTaskParameters.default.default.myOwnKey");
+  cout << "v0: " << v0 << endl;
+
+  boost::property_tree::ptree params = jsontree.get_child("qc.tasks.QcTask.extendedTaskParameters");
+
+  CustomParameters cp;
+  cp.populateCustomParameters(params);
+
+  cout << cp << endl;
+
+  BOOST_CHECK_EQUAL(cp.at("myOwnKey"), "myOwnValue");
+  BOOST_CHECK_EQUAL(cp.at("myOwnKey1", "PHYSICS"), "myOwnValue1b");
+  BOOST_CHECK_EQUAL(cp.atOptional("asdf").has_value(), false);
 }
