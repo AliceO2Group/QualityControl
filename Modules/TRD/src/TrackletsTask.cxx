@@ -155,7 +155,8 @@ void TrackletsTask::buildHistograms()
   std::pair<int, int> x, y;
   for (int iHC = 0; iHC < NCHAMBER * 2; ++iHC) {
     if (mChamberStatus != nullptr) {
-      if (mChamberStatus->isMasked(iHC)) {
+      // if (mChamberStatus->isMasked(iHC)) {
+      if (isChamberMasked(iHC, mChamberStatus)) {
         int stackLayer = Helper::getStack(iHC / 2) * NLAYER + Helper::getLayer(iHC / 2);
         int sectorSide = (iHC / NHCPERSEC) * 2 + (iHC % 2);
         x.first = sectorSide;
@@ -193,7 +194,7 @@ void TrackletsTask::buildHistograms()
   mTriggersPerTimeFrame = new TH1F("triggerspertimeframe", "Number of Triggers per timeframe;Triggers in TimeFrame;Counts", 1000, 0, 1000);
   getObjectsManager()->startPublishing(mTriggersPerTimeFrame);
 
-  buildTrackletLayers();
+  //buildTrackletLayers();
 }
 
 void TrackletsTask::drawHashOnLayers(int layer, int hcid, int rowstart, int rowend)
@@ -252,7 +253,8 @@ void TrackletsTask::drawHashedOnHistsPerLayer(int iLayer)
           int hcid = (side == 0) ? det * 2 : det * 2 + 1;
           int rowstart = iStack < 3 ? iStack * 16 : 44 + (iStack - 3) * 16;                 // pad row within whole sector
           int rowend = iStack < 3 ? rowMax + iStack * 16 : rowMax + 44 + (iStack - 3) * 16; // pad row within whole sector
-          if (mChamberStatus->isMasked(hcid) && (!hciddone.test(hcid))) {
+          // if (mChamberStatus->isMasked(hcid) && (!hciddone.test(hcid))) {
+          if (isChamberMasked(hcid, mChamberStatus) && (!hciddone.test(hcid))) {
             drawHashOnLayers(iLayer, hcid, rowstart, rowend);
             hciddone.set(hcid);
           }
@@ -283,14 +285,22 @@ void TrackletsTask::startOfCycle()
 
 void TrackletsTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
+  buildTrackletLayers();
+
   // Load CCDB objects (needs to be done only once)
   if (!mNoiseMap) {
     auto ptr = ctx.inputs().get<o2::trd::NoiseStatusMCM*>("noiseMap");
     mNoiseMap = ptr.get();
   }
+
   if (!mChamberStatus) {
-    auto ptr = ctx.inputs().get<o2::trd::HalfChamberStatusQC*>("chamberStatus");
+    auto ptr = ctx.inputs().get<std::array<int, o2::trd::constants::MAXCHAMBER>*>("chamberStatus");
     mChamberStatus = ptr.get();
+    auto ChamberStatusArray = *mChamberStatus;
+    for (int i = 0; i < o2::trd::constants::MAXCHAMBER; i++) {
+      std::cout << "Chamber ID =  " << i << ",\tstatus =  " << ChamberStatusArray[i] << std::endl;
+    }
+
   }
 
   auto tracklets = ctx.inputs().get<gsl::span<o2::trd::Tracklet64>>("tracklets");

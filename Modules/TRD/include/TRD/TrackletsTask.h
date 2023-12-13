@@ -51,6 +51,14 @@ class TrackletsTask final : public TaskInterface
   void drawHashedOnHistsPerLayer(int layer); //, int hcid, int rowstart, int rowend);
   void drawHashOnLayers(int layer, int hcid, int rowstart, int rowend);
 
+  // Auxiliary functions
+  bool isChamberMasked(int chamberId, const std::array<int, o2::trd::constants::MAXCHAMBER>* ptrChamber) {
+    // List here the chamber status to be masked
+    int BadStatus[] = {1};
+    int ChamberStatus = (*ptrChamber)[chamberId];
+    return (std::find(std::begin(BadStatus), std::end(BadStatus), ChamberStatus) != std::end(BadStatus));
+  }
+
  private:
   // settings
   bool mRemoveNoise{ false };
@@ -69,7 +77,7 @@ class TrackletsTask final : public TaskInterface
 
   // data to pull from CCDB
   const o2::trd::NoiseStatusMCM* mNoiseMap = nullptr;
-  const o2::trd::HalfChamberStatusQC* mChamberStatus = nullptr;
+  const std::array<int, o2::trd::constants::MAXCHAMBER>* mChamberStatus = nullptr;
 };
 
 } // namespace o2::quality_control_modules::trd
