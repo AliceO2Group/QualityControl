@@ -48,15 +48,16 @@ class TrackletsTask final : public TaskInterface
   void drawLinesMCM(TH2F* histo);
   void drawTrdLayersGrid(TH2F* hist);
   void buildTrackletLayers();
-  void drawHashedOnHistsPerLayer(int layer); //, int hcid, int rowstart, int rowend);
+  //void drawHashedOnHistsPerLayer(int layer); //, int hcid, int rowstart, int rowend);
   void drawHashOnLayers(int layer, int hcid, int rowstart, int rowend);
+  void drawChamberStatus();
 
   // Auxiliary functions
-  bool isChamberMasked(int chamberId, const std::array<int, o2::trd::constants::MAXCHAMBER>* ptrChamber) {
+  bool isHalfChamberMasked(int hcId, const std::array<int, o2::trd::constants::MAXCHAMBER>* ptrChamber) {
     // List here the chamber status to be masked
     int BadStatus[] = {1};
-    int ChamberStatus = (*ptrChamber)[chamberId];
-    return (std::find(std::begin(BadStatus), std::end(BadStatus), ChamberStatus) != std::end(BadStatus));
+    int hcStatus = (*ptrChamber)[hcId / 2];
+    return (std::find(std::begin(BadStatus), std::end(BadStatus), hcStatus) != std::end(BadStatus));
   }
 
  private:

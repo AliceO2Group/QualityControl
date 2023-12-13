@@ -91,6 +91,7 @@ void TrackletsTask::drawTrdLayersGrid(TH2F* hist)
         break;
     }
   }
+
   for (int iSec = 1; iSec < 18; ++iSec) {
     float yPos = iSec * 8 - 0.5;
     line = new TLine(-0.5, yPos, 75.5, yPos);
@@ -142,6 +143,7 @@ void TrackletsTask::buildHistograms()
       mTrackletsPerHC2D->GetYaxis()->SetBinLabel(pos, label.c_str());
     }
   }
+
   for (int sm = 0; sm < NSECTOR; ++sm) {
     for (int side = 0; side < 2; ++side) {
       std::string label = fmt::format("{0}_{1}", sm, side == 0 ? "A" : "B");
@@ -150,33 +152,6 @@ void TrackletsTask::buildHistograms()
     }
   }
 
-  // Mask known inactive halfchambers in the active chamber map
-  TLine* line[6];
-  std::pair<int, int> x, y;
-  for (int iHC = 0; iHC < NCHAMBER * 2; ++iHC) {
-    if (mChamberStatus != nullptr) {
-      // if (mChamberStatus->isMasked(iHC)) {
-      if (isChamberMasked(iHC, mChamberStatus)) {
-        int stackLayer = Helper::getStack(iHC / 2) * NLAYER + Helper::getLayer(iHC / 2);
-        int sectorSide = (iHC / NHCPERSEC) * 2 + (iHC % 2);
-        x.first = sectorSide;
-        x.second = sectorSide + 1;
-        y.first = stackLayer;
-        y.second = stackLayer + 1;
-
-        line[0] = new TLine(x.first, y.first, x.second, y.second);
-        line[1] = new TLine(x.second, y.first, x.first, y.second);
-        line[2] = new TLine(x.first, y.first, x.second, y.first);
-        line[3] = new TLine(x.first, y.second, x.second, y.second);
-        line[4] = new TLine(x.first, y.first, x.first, y.second);
-        line[5] = new TLine(x.second, y.first, x.second, y.second);
-        for (int i = 0; i < 6; ++i) {
-          line[i]->SetLineColor(kBlack);
-          mTrackletsPerHC2D->GetListOfFunctions()->Add(line[i]);
-        }
-      }
-    }
-  }
   getObjectsManager()->startPublishing(mTrackletsPerHC2D);
   getObjectsManager()->setDefaultDrawOptions("trackletsperHC2D", "COLZ");
   getObjectsManager()->setDisplayHint(mTrackletsPerHC2D->GetName(), "logz");
@@ -194,7 +169,7 @@ void TrackletsTask::buildHistograms()
   mTriggersPerTimeFrame = new TH1F("triggerspertimeframe", "Number of Triggers per timeframe;Triggers in TimeFrame;Counts", 1000, 0, 1000);
   getObjectsManager()->startPublishing(mTriggersPerTimeFrame);
 
-  //buildTrackletLayers();
+  buildTrackletLayers();
 }
 
 void TrackletsTask::drawHashOnLayers(int layer, int hcid, int rowstart, int rowend)
@@ -202,7 +177,7 @@ void TrackletsTask::drawHashOnLayers(int layer, int hcid, int rowstart, int rowe
   // instead of using overlays, draw a simple box in red with a cross on it.
 
   std::pair<float, float> topright, bottomleft; // coordinates of box
-  TLine* boxlines[9];
+  TLine* boxlines[6];
   int det = hcid / 2;
   int side = hcid % 2;
   int sec = hcid / 60;
@@ -211,18 +186,15 @@ void TrackletsTask::drawHashOnLayers(int layer, int hcid, int rowstart, int rowe
   topright.first = rowend - 0.5;
   topright.second = (sec * 2 + side) * 4 + 4 - 0.5;
 
-  // LOG(info) << "Box for layer : " << layer << " hcid : " << hcid << ": " << bottomleft.first << ":" << bottomleft.second << " -- " << topright.first << ":" << topright.second;
-  boxlines[0] = new TLine(bottomleft.first, bottomleft.second, topright.first, bottomleft.second);                                                                                         // bottom
-  boxlines[1] = new TLine(bottomleft.first, topright.second, topright.first, topright.second);                                                                                             // top
-  boxlines[2] = new TLine(bottomleft.first, bottomleft.second, bottomleft.first, topright.second);                                                                                         // left
-  boxlines[3] = new TLine(topright.first, bottomleft.second, topright.first, topright.second);                                                                                             // right
-  boxlines[4] = new TLine(bottomleft.first, topright.second - (topright.second - bottomleft.second) / 2, topright.first, topright.second - (topright.second - bottomleft.second) / 2);     // horizontal middle
-  boxlines[5] = new TLine(topright.first, bottomleft.second, bottomleft.first, topright.second);                                                                                           // backslash
-  boxlines[6] = new TLine(bottomleft.first, bottomleft.second, topright.first, topright.second);                                                                                           // forwardslash
-  boxlines[7] = new TLine(bottomleft.first + (topright.first - bottomleft.first) / 2, bottomleft.second, bottomleft.first + (topright.first - bottomleft.first) / 2, topright.second);     // vertical middle
-  boxlines[8] = new TLine(bottomleft.first, bottomleft.second + (topright.second - bottomleft.second) / 2, topright.first, bottomleft.second + (topright.second - bottomleft.second) / 2); // bottom
-  for (int line = 0; line < 9; ++line) {
-    boxlines[line]->SetLineColor(kBlack);
+ boxlines[0] = new TLine(bottomleft.first, bottomleft.second, topright.first, bottomleft.second);                                                                                         // bottom
+ boxlines[1] = new TLine(bottomleft.first, topright.second, topright.first, topright.second);                                                                                             // top
+ boxlines[2] = new TLine(bottomleft.first, bottomleft.second, bottomleft.first, topright.second);                                                                                         // left
+ boxlines[3] = new TLine(topright.first, bottomleft.second, topright.first, topright.second);                                                                                             // right
+ boxlines[4] = new TLine(topright.first, bottomleft.second, bottomleft.first, topright.second);                                                                                           // backslash
+ boxlines[5] = new TLine(bottomleft.first, bottomleft.second, topright.first, topright.second);                                                                                           // forwardslash
+  for (int line = 0; line < 6; ++line) {
+    boxlines[line]->SetLineColor(kRed);
+    boxlines[line]->SetLineWidth(4);
     mLayers[layer]->GetListOfFunctions()->Add(boxlines[line]);
   }
 }
@@ -233,36 +205,9 @@ void TrackletsTask::buildTrackletLayers()
     mLayers[iLayer] = new TH2F(Form("TrackletsPerMCM_Layer%i", iLayer), Form("Tracklet count per MCM in layer %i;glb pad row;glb MCM col", iLayer), 76, -0.5, 75.5, 144, -0.5, 143.5);
     mLayers[iLayer]->SetStats(0);
     drawTrdLayersGrid(mLayers[iLayer]);
-    drawHashedOnHistsPerLayer(iLayer);
     getObjectsManager()->startPublishing(mLayers[iLayer]);
     getObjectsManager()->setDefaultDrawOptions(mLayers[iLayer]->GetName(), "COLZ");
     getObjectsManager()->setDisplayHint(mLayers[iLayer], "logz");
-  }
-}
-
-void TrackletsTask::drawHashedOnHistsPerLayer(int iLayer)
-{
-  std::bitset<1080> hciddone;
-  hciddone.reset();
-  if (mChamberStatus != nullptr) {
-    for (int iSec = 0; iSec < 18; ++iSec) {
-      for (int iStack = 0; iStack < 5; ++iStack) {
-        int rowMax = (iStack == 2) ? 12 : 16;
-        for (int side = 0; side < 2; ++side) {
-          int det = iSec * 30 + iStack * 6 + iLayer;
-          int hcid = (side == 0) ? det * 2 : det * 2 + 1;
-          int rowstart = iStack < 3 ? iStack * 16 : 44 + (iStack - 3) * 16;                 // pad row within whole sector
-          int rowend = iStack < 3 ? rowMax + iStack * 16 : rowMax + 44 + (iStack - 3) * 16; // pad row within whole sector
-          // if (mChamberStatus->isMasked(hcid) && (!hciddone.test(hcid))) {
-          if (isChamberMasked(hcid, mChamberStatus) && (!hciddone.test(hcid))) {
-            drawHashOnLayers(iLayer, hcid, rowstart, rowend);
-            hciddone.set(hcid);
-          }
-        }
-      }
-    }
-  } else {
-    ILOG(Info, Support) << " Failed to retrieve ChamberStatus, so it will be blank" << ENDM;
   }
 }
 
@@ -285,8 +230,6 @@ void TrackletsTask::startOfCycle()
 
 void TrackletsTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  buildTrackletLayers();
-
   // Load CCDB objects (needs to be done only once)
   if (!mNoiseMap) {
     auto ptr = ctx.inputs().get<o2::trd::NoiseStatusMCM*>("noiseMap");
@@ -302,7 +245,6 @@ void TrackletsTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
 
   }
-
   auto tracklets = ctx.inputs().get<gsl::span<o2::trd::Tracklet64>>("tracklets");
   auto triggerrecords = ctx.inputs().get<gsl::span<o2::trd::TriggerRecord>>("triggers");
   mTrackletsPerTimeFrame->Fill(tracklets.size());
@@ -335,6 +277,61 @@ void TrackletsTask::monitorData(o2::framework::ProcessingContext& ctx)
       mLayers[layer]->Fill(rowGlb, colGlb);
     }
   }
+  drawChamberStatus();
+}
+
+void TrackletsTask::drawChamberStatus()
+{
+  // LB: draw Xs on plots given the Chamber status after histograms are built
+  // Mask known inactive halfchambers in the active chamber map
+  if (mChamberStatus != nullptr) {
+    // LB: draw in mTrackletsPerHC2D
+    TLine* line[6];
+    std::pair<int, int> x, y;
+    for (int iHC = 0; iHC < NCHAMBER * 2; ++iHC) {
+      if (isHalfChamberMasked(iHC, mChamberStatus)) {
+        int stackLayer = Helper::getStack(iHC / 2) * NLAYER + Helper::getLayer(iHC / 2);
+        int sectorSide = (iHC / NHCPERSEC) * 2 + (iHC % 2);
+        x.first = sectorSide;
+        x.second = sectorSide + 1;
+        y.first = stackLayer;
+        y.second = stackLayer + 1;
+
+        line[0] = new TLine(x.first, y.first, x.second, y.second);
+        line[1] = new TLine(x.second, y.first, x.first, y.second);
+        line[2] = new TLine(x.first, y.first, x.second, y.first);
+        line[3] = new TLine(x.first, y.second, x.second, y.second);
+        line[4] = new TLine(x.first, y.first, x.first, y.second);
+        line[5] = new TLine(x.second, y.first, x.second, y.second);
+        for (int i = 0; i < 6; ++i) {
+          //line[i]->SetLineColor(kBlack);
+          line[i]->SetLineColor(kRed);
+          line[i]->SetLineWidth(4);
+          mTrackletsPerHC2D->GetListOfFunctions()->Add(line[i]);
+        }
+      }
+    }
+
+    // LB: draw in mLayers elements
+    for (int iLayer = 0; iLayer < NLAYER; ++iLayer) {
+      for (int iSec = 0; iSec < 18; ++iSec) {
+        for (int iStack = 0; iStack < 5; ++iStack) {
+          int rowMax = (iStack == 2) ? 12 : 16;
+          for (int side = 0; side < 2; ++side) {
+            int det = iSec * 30 + iStack * 6 + iLayer;
+            int hcid = (side == 0) ? det * 2 : det * 2 + 1;
+            int rowstart = iStack < 3 ? iStack * 16 : 44 + (iStack - 3) * 16;                 // pad row within whole sector
+            int rowend = iStack < 3 ? rowMax + iStack * 16 : rowMax + 44 + (iStack - 3) * 16; // pad row within whole sector
+            if (isHalfChamberMasked(hcid, mChamberStatus)) {
+              drawHashOnLayers(iLayer, hcid, rowstart, rowend);
+            }
+          }
+        }
+      }
+    }
+  } else {
+    ILOG(Info, Support) << "Failed to retrieve ChamberStatus, so it will not show on plots" << ENDM;
+  } 
 }
 
 void TrackletsTask::endOfCycle()
