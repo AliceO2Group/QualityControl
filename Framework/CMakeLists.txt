@@ -440,7 +440,6 @@ install(FILES example-default.json
               readout-no-sampling.json
               postprocessing.json
               streamerinfos.root
-              streamerinfos_v017.root
         DESTINATION etc)
 
 install(PROGRAMS script/o2-qc-functional-test.sh
