@@ -45,19 +45,16 @@ class TrackletsTask final : public TaskInterface
   void endOfActivity(const Activity& activity) override;
   void reset() override;
   void buildHistograms();
-  void drawLinesMCM(TH2F* histo);
   void drawTrdLayersGrid(TH2F* hist);
-  void buildTrackletLayers();
-  //void drawHashedOnHistsPerLayer(int layer); //, int hcid, int rowstart, int rowend);
   void drawHashOnLayers(int layer, int hcid, int rowstart, int rowend);
   void drawChamberStatus();
 
   // Auxiliary functions
   bool isHalfChamberMasked(int hcId, const std::array<int, o2::trd::constants::MAXCHAMBER>* ptrChamber) {
-    // List here the chamber status to be masked
-    int BadStatus[] = {1};
+    // List here the chamber status to not be masked, anything different returns true
+    int GoodStatus[] = {0, 3};
     int hcStatus = (*ptrChamber)[hcId / 2];
-    return (std::find(std::begin(BadStatus), std::end(BadStatus), hcStatus) != std::end(BadStatus));
+    return (std::find(std::begin(GoodStatus), std::end(GoodStatus), hcStatus) == std::end(GoodStatus));
   }
 
  private:
