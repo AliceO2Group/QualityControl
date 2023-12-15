@@ -195,7 +195,7 @@ InputSpec TaskRunnerFactory::createTimerInputSpec(const CommonSpec& globalConfig
 
 void TaskRunnerFactory::customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies)
 {
-  auto matcher = [label = TaskRunner::getTaskRunnerLabel()](framework::DeviceSpec const& device) {
+  auto matcher = [label = TaskRunner::getTaskRunnerLabel()](auto const& device) {
     return std::find(device.labels.begin(), device.labels.end(), label) != device.labels.end();
   };
   auto callback = TaskRunner::completionPolicyCallback;
