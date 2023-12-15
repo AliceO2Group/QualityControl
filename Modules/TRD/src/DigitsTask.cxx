@@ -41,143 +41,21 @@ using Helper = o2::trd::HelperMethods;
 namespace o2::quality_control_modules::trd
 {
 
-void DigitsTask::buildChamberIgnoreBP()
+void DigitsTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  mChambersToIgnoreBP.reset();
-  // Vector of string to save tokens
-  std::vector<std::string> tokens;
-  // stringstream class check1
-  std::stringstream check1(mChambersToIgnore);
-  std::string intermediate;
-  // Tokenizing w.r.t. space ','
-  while (getline(check1, intermediate, ',')) {
-    tokens.push_back(intermediate);
-  }
-  // Printing the token vector
-  for (auto& token : tokens) {
-    // token now holds something like 16_3_0
-    std::vector<std::string> parts;
-    std::stringstream indexcheck(token);
-    std::string tokenpart;
-    // Tokenizing w.r.t. space ','
-    while (getline(indexcheck, tokenpart, '_')) {
-      parts.push_back(tokenpart);
-    }
-    // now flip the bit related to the sector:stack:layer stored in parts.
-    int sector = std::stoi(parts[0]);
-    int stack = std::stoi(parts[1]);
-    int layer = std::stoi(parts[2]);
-    mChambersToIgnoreBP.set(Helper::getDetector(sector, stack, layer));
-  }
-}
+  ILOG(Debug, Devel) << "initialize TRDDigitQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
-void DigitsTask::drawTrdLayersGrid(TH2F* hist)
-{
-  TLine* line;
-  for (int i = 0; i < 5; ++i) {
-    switch (i) {
-      case 0:
-        line = new TLine(15.5, 0, 15.5, 2592);
-        hist->GetListOfFunctions()->Add(line);
-        line->SetLineStyle(kDashed);
-        line->SetLineColor(kBlack);
-        break;
-      case 1:
-        line = new TLine(31.5, 0, 31.5, 2592);
-        hist->GetListOfFunctions()->Add(line);
-        line->SetLineStyle(kDashed);
-        line->SetLineColor(kBlack);
-        break;
-      case 2:
-        line = new TLine(43.5, 0, 43.5, 2592);
-        hist->GetListOfFunctions()->Add(line);
-        line->SetLineStyle(kDashed);
-        line->SetLineColor(kBlack);
-        break;
-      case 3:
-        line = new TLine(59.5, 0, 59.5, 2592);
-        hist->GetListOfFunctions()->Add(line);
-        line->SetLineStyle(kDashed);
-        line->SetLineColor(kBlack);
-        break;
-    }
-  }
-  for (int iSec = 1; iSec < 18; ++iSec) {
-    float yPos = iSec * 144 - 0.5;
-    line = new TLine(0, yPos, 76, yPos);
-    line->SetLineStyle(kDashed);
-    line->SetLineColor(kBlack);
-    hist->GetListOfFunctions()->Add(line);
-  }
+  // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
+  mDoClusterize = getFromConfig<bool>(mCustomParameters, "doClusterize", false);
+  mPulseHeightPeakRegion.first = getFromConfig<float>(mCustomParameters, "peakRegionStart", 0.f);
+  mPulseHeightPeakRegion.second = getFromConfig<float>(mCustomParameters, "peakRegionEnd", 5.f);
+  mPulseHeightThreshold = getFromConfig<unsigned int>(mCustomParameters, "phThreshold", 400u);
+  mChambersToIgnore = getFromConfig<string>(mCustomParameters, "ignoreChambers", "16_3_0");
+  mClsCutoff = getFromConfig<int>(mCustomParameters, "clsCutoff", 1000);
+  mAdcBaseline = getFromConfig<int>(mCustomParameters, "adcBaseline", 10);
 
-  ILOG(Info, Support) << "Layer Grid redrawn in check for : " << hist->GetName() << ENDM;
-  ILOG(Info, Support) << "Layer Grid redrawn in hist has function count of :  " << hist->GetListOfFunctions()->GetSize() << ENDM;
-}
-
-void DigitsTask::drawLinesOnPulseHeight(TH1F* h)
-{
-  TLine* lmin = new TLine(mPulseHeightPeakRegion.first, 0, mPulseHeightPeakRegion.first, 1e9);
-  TLine* lmax = new TLine(mPulseHeightPeakRegion.second, 0, mPulseHeightPeakRegion.second, 1e9);
-  lmin->SetLineStyle(2);
-  lmax->SetLineStyle(2);
-  lmin->SetLineColor(kRed);
-  lmax->SetLineColor(kRed);
-  h->GetListOfFunctions()->Add(lmin);
-  h->GetListOfFunctions()->Add(lmax);
-}
-
-void DigitsTask::drawHashOnLayers(int layer, int hcid, int col, int rowstart, int rowend)
-{
-  // instead of using overlays, draw a simple box in red with a cross on it.
-  std::pair<float, float> topright, bottomleft; // coordinates of box
-  TLine* boxlines[8];
-  int det = hcid / 2;
-  int side = hcid % 2;
-  int sec = hcid / 60;
-  bottomleft.first = rowstart - 0.5;
-  bottomleft.second = (sec * 2 + side) * 72;
-  topright.first = rowend - 0.5;
-  topright.second = (sec * 2 + side) * 72 + 72;
-
-  // LOG(info) << "Box for layer : " << layer << " hcid : " << hcid << ": " << bottomleft.first << ":" << bottomleft.second << "(" << bottomleft.second/144 << ") -- " << topright.first << ":" << topright.second << "(" << topright.second/144 << ")";
-  boxlines[0] = new TLine(bottomleft.first, bottomleft.second, topright.first, bottomleft.second);                                                                                     // bottom
-  boxlines[1] = new TLine(bottomleft.first, topright.second, topright.first, topright.second);                                                                                         // top
-  boxlines[2] = new TLine(bottomleft.first, bottomleft.second, bottomleft.first, topright.second);                                                                                     // left
-  boxlines[3] = new TLine(topright.first, bottomleft.second, topright.first, topright.second);                                                                                         // right
-  boxlines[4] = new TLine(bottomleft.first, topright.second - (topright.second - bottomleft.second) / 2, topright.first, topright.second - (topright.second - bottomleft.second) / 2); // horizontal middle
-  boxlines[5] = new TLine(topright.first, bottomleft.second, bottomleft.first, topright.second);                                                                                       // backslash
-  boxlines[6] = new TLine(bottomleft.first, bottomleft.second, topright.first, topright.second);                                                                                       // forwardslash
-  boxlines[7] = new TLine(bottomleft.first + (topright.first - bottomleft.first) / 2, bottomleft.second, bottomleft.first + (topright.first - bottomleft.first) / 2, topright.second); // vertical middle
-  for (int line = 0; line < 8; ++line) {
-    boxlines[line]->SetLineColor(kBlack);
-    mLayers[layer]->GetListOfFunctions()->Add(boxlines[line]);
-  }
-}
-
-void DigitsTask::fillLinesOnHistsPerLayer(int iLayer)
-{
-  std::bitset<MAXHALFCHAMBER> hciddone;
-  hciddone.reset();
-  if (mChamberStatus == nullptr) {
-    // protect for if the chamber status is not pulled from the ccdb for what ever reason.
-    ILOG(Info, Support) << "No half chamber status object to be able to fill the mask" << ENDM;
-  } else {
-    for (int iSec = 0; iSec < 18; ++iSec) {
-      for (int iStack = 0; iStack < 5; ++iStack) {
-        int rowMax = (iStack == 2) ? 12 : 16;
-        for (int side = 0; side < 2; ++side) {
-          int det = iSec * 30 + iStack * 6 + iLayer;
-          int hcid = (side == 0) ? det * 2 : det * 2 + 1;
-          int rowstart = iStack < 3 ? iStack * 16 : 44 + (iStack - 3) * 16;                 // pad row within whole sector
-          int rowend = iStack < 3 ? rowMax + iStack * 16 : rowMax + 44 + (iStack - 3) * 16; // pad row within whole sector
-          if (mChamberStatus->isMasked(hcid) && (!hciddone.test(hcid))) {
-            drawHashOnLayers(iLayer, hcid, 0, rowstart, rowend);
-            hciddone.set(hcid); // to avoid mutliple instances of adding lines
-          }
-        }
-      }
-    }
-  }
+  buildChamberIgnoreBP();
+  buildHistograms();
 }
 
 void DigitsTask::buildHistograms()
@@ -247,41 +125,14 @@ void DigitsTask::buildHistograms()
   }
 
   for (int iLayer = 0; iLayer < NLAYER; ++iLayer) {
-    mLayers[iLayer].reset(new TH2F(Form("DigitsPerLayer_%i", iLayer), Form("Digit count per pad in layer %i;glb pad row;glb pad col", iLayer), 76, -0.5, 75.5, 2592, -0.5, 2591.5));
+    mLayers[iLayer].reset(new TH2F(Form("DigitsPerLayer_%i", iLayer), Form("Digit count per pad in layer %i;glb pad row;glb pad col", iLayer),
+			           76, -0.5, 75.5, 2592, -0.5, 2591.5));
     mLayers[iLayer]->SetStats(0);
     drawTrdLayersGrid(mLayers[iLayer].get());
-    fillLinesOnHistsPerLayer(iLayer);
     getObjectsManager()->startPublishing(mLayers[iLayer].get());
     getObjectsManager()->setDefaultDrawOptions(mLayers[iLayer]->GetName(), "COLZ");
     getObjectsManager()->setDisplayHint(mLayers[iLayer].get(), "logz");
   }
-}
-
-void DigitsTask::initialize(o2::framework::InitContext& /*ctx*/)
-{
-  ILOG(Debug, Devel) << "initialize TRDDigitQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
-
-  // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
-  mDoClusterize = getFromConfig<bool>(mCustomParameters, "doClusterize", false);
-  mPulseHeightPeakRegion.first = getFromConfig<float>(mCustomParameters, "peakRegionStart", 0.f);
-  mPulseHeightPeakRegion.second = getFromConfig<float>(mCustomParameters, "peakRegionEnd", 5.f);
-  mPulseHeightThreshold = getFromConfig<unsigned int>(mCustomParameters, "phThreshold", 400u);
-  mChambersToIgnore = getFromConfig<string>(mCustomParameters, "ignoreChambers", "16_3_0");
-  mClsCutoff = getFromConfig<int>(mCustomParameters, "clsCutoff", 1000);
-  mAdcBaseline = getFromConfig<int>(mCustomParameters, "adcBaseline", 10);
-
-  buildChamberIgnoreBP();
-  buildHistograms();
-}
-
-void DigitsTask::startOfActivity(const Activity& /*activity*/)
-{
-  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
-} // set stats/stacs
-
-void DigitsTask::startOfCycle()
-{
-  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -292,10 +143,17 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
     mNoiseMap = ptr.get();
   }
   if (!mChamberStatus) {
-    auto ptr = ctx.inputs().get<o2::trd::HalfChamberStatusQC*>("chamberStatus");
+    auto ptr = ctx.inputs().get<std::array<int, MAXCHAMBER>*>("chamberStatus");
     mChamberStatus = ptr.get();
   }
 
+  if (mChamberStatus != nullptr) {
+    drawChamberStatus();
+  } else {
+    ILOG(Info, Support) << "Failed to retrieve ChamberStatus, so it will not show on plots" << ENDM;
+  }
+
+  // fill histograms
   auto digits = ctx.inputs().get<gsl::span<o2::trd::Digit>>("digits");
   auto triggerrecords = ctx.inputs().get<gsl::span<o2::trd::TriggerRecord>>("triggers");
   for (auto& trigger : triggerrecords) {
@@ -417,6 +275,154 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
     }         // for loop over digits
   }           // loop over triggers
 }
+
+void DigitsTask::drawChamberStatus()
+{
+  // Mask known inactive halfchambers in the active chamber map with a X
+  // LB: draw in mLayers elements
+  for (int iLayer = 0; iLayer < NLAYER; ++iLayer) {
+    for (int iSec = 0; iSec < 18; ++iSec) {
+      for (int iStack = 0; iStack < 5; ++iStack) {
+        int rowMax = (iStack == 2) ? 12 : 16;
+        for (int side = 0; side < 2; ++side) {
+          int det = iSec * 30 + iStack * 6 + iLayer;
+          int hcid = (side == 0) ? det * 2 : det * 2 + 1;
+          int rowstart = iStack < 3 ? iStack * 16 : 44 + (iStack - 3) * 16;                 // pad row within whole sector
+          int rowend = iStack < 3 ? rowMax + iStack * 16 : rowMax + 44 + (iStack - 3) * 16; // pad row within whole sector
+          if (isHalfChamberMasked(hcid, mChamberStatus)) {
+            drawHashOnLayers(iLayer, hcid, rowstart, rowend);
+          }
+        }
+      }
+    }
+  }
+}
+
+void DigitsTask::drawTrdLayersGrid(TH2F* hist)
+{
+  TLine* line;
+  for (int i = 0; i < 5; ++i) {
+    switch (i) {
+      case 0:
+        line = new TLine(15.5, 0, 15.5, 2592);
+        hist->GetListOfFunctions()->Add(line);
+        line->SetLineStyle(kDashed);
+        line->SetLineColor(kBlack);
+        break;
+      case 1:
+        line = new TLine(31.5, 0, 31.5, 2592);
+        hist->GetListOfFunctions()->Add(line);
+        line->SetLineStyle(kDashed);
+        line->SetLineColor(kBlack);
+        break;
+      case 2:
+        line = new TLine(43.5, 0, 43.5, 2592);
+        hist->GetListOfFunctions()->Add(line);
+        line->SetLineStyle(kDashed);
+        line->SetLineColor(kBlack);
+        break;
+      case 3:
+        line = new TLine(59.5, 0, 59.5, 2592);
+        hist->GetListOfFunctions()->Add(line);
+        line->SetLineStyle(kDashed);
+        line->SetLineColor(kBlack);
+        break;
+    }
+  }
+  for (int iSec = 1; iSec < 18; ++iSec) {
+    float yPos = iSec * 144 - 0.5;
+    line = new TLine(0, yPos, 76, yPos);
+    line->SetLineStyle(kDashed);
+    line->SetLineColor(kBlack);
+    hist->GetListOfFunctions()->Add(line);
+  }
+
+  ILOG(Info, Support) << "Layer Grid redrawn in check for : " << hist->GetName() << ENDM;
+  ILOG(Info, Support) << "Layer Grid redrawn in hist has function count of :  " << hist->GetListOfFunctions()->GetSize() << ENDM;
+}
+
+void DigitsTask::drawLinesOnPulseHeight(TH1F* h)
+{
+  TLine* lmin = new TLine(mPulseHeightPeakRegion.first, 0, mPulseHeightPeakRegion.first, 1e9);
+  TLine* lmax = new TLine(mPulseHeightPeakRegion.second, 0, mPulseHeightPeakRegion.second, 1e9);
+  lmin->SetLineStyle(2);
+  lmax->SetLineStyle(2);
+  lmin->SetLineColor(kRed);
+  lmax->SetLineColor(kRed);
+  h->GetListOfFunctions()->Add(lmin);
+  h->GetListOfFunctions()->Add(lmax);
+}
+
+void DigitsTask::drawHashOnLayers(int layer, int hcid, int rowstart, int rowend)
+{
+  // instead of using overlays, draw a simple box in red with a cross on it.
+
+  std::pair<float, float> topright, bottomleft; // coordinates of box
+  TLine* boxlines[6];
+  int det = hcid / 2;
+  int side = hcid % 2;
+  int sec = hcid / 60;
+
+  bottomleft.first = rowstart - 0.5;
+  bottomleft.second = (sec * 2 + side) * 72;
+  topright.first = rowend - 0.5;
+  topright.second = (sec * 2 + side)  * 72 + 72;
+
+  boxlines[0] = new TLine(bottomleft.first, bottomleft.second, topright.first, bottomleft.second); // bottom
+  boxlines[1] = new TLine(bottomleft.first, topright.second, topright.first, topright.second);     // top
+  boxlines[2] = new TLine(bottomleft.first, bottomleft.second, bottomleft.first, topright.second); // left
+  boxlines[3] = new TLine(topright.first, bottomleft.second, topright.first, topright.second);     // right
+  boxlines[4] = new TLine(topright.first, bottomleft.second, bottomleft.first, topright.second);   // backslash
+  boxlines[5] = new TLine(bottomleft.first, bottomleft.second, topright.first, topright.second);   // forwardslash
+
+  for (int line = 0; line < 6; ++line) {
+    boxlines[line]->SetLineColor(kBlack);
+    boxlines[line]->SetLineWidth(3);
+    mLayers[layer]->GetListOfFunctions()->Add(boxlines[line]);
+  }
+}
+
+void DigitsTask::buildChamberIgnoreBP()
+{
+  mChambersToIgnoreBP.reset();
+  // Vector of string to save tokens
+  std::vector<std::string> tokens;
+  // stringstream class check1
+  std::stringstream check1(mChambersToIgnore);
+  std::string intermediate;
+  // Tokenizing w.r.t. space ','
+  while (getline(check1, intermediate, ',')) {
+    tokens.push_back(intermediate);
+  }
+  // Printing the token vector
+  for (auto& token : tokens) {
+    // token now holds something like 16_3_0
+    std::vector<std::string> parts;
+    std::stringstream indexcheck(token);
+    std::string tokenpart;
+    // Tokenizing w.r.t. space ','
+    while (getline(indexcheck, tokenpart, '_')) {
+      parts.push_back(tokenpart);
+    }
+    // now flip the bit related to the sector:stack:layer stored in parts.
+    int sector = std::stoi(parts[0]);
+    int stack = std::stoi(parts[1]);
+    int layer = std::stoi(parts[2]);
+    mChambersToIgnoreBP.set(Helper::getDetector(sector, stack, layer));
+  }
+}
+
+
+void DigitsTask::startOfActivity(const Activity& /*activity*/)
+{
+  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
+} // set stats/stacs
+
+void DigitsTask::startOfCycle()
+{
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
+}
+
 
 void DigitsTask::endOfCycle()
 {

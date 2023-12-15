@@ -47,11 +47,20 @@ class DigitsTask final : public TaskInterface
   void endOfActivity(const Activity& activity) override;
   void reset() override;
   void buildHistograms();
-  void drawTrdLayersGrid(TH2F* hist);
   void drawLinesOnPulseHeight(TH1F* h);
-  void fillLinesOnHistsPerLayer(int iLayer);
-  void drawHashOnLayers(int layer, int hcid, int col, int rowstart, int rowend);
+  void drawTrdLayersGrid(TH2F* hist);
+  void drawHashOnLayers(int layer, int hcid, int rowstart, int rowend);
+  void drawChamberStatus();
   void buildChamberIgnoreBP();
+  
+  // Auxiliary functions
+  // Duplicated from TrackletsTask.h
+  bool isHalfChamberMasked(int hcId, const std::array<int, o2::trd::constants::MAXCHAMBER>* ptrChamber) {
+    // List here the chamber status to not be masked, anything different returns true
+    int GoodStatus[] = {0, 3};  // Make sure to match the same array in TrackletsTask.h
+    int hcStatus = (*ptrChamber)[hcId / 2];
+    return (std::find(std::begin(GoodStatus), std::end(GoodStatus), hcStatus) == std::end(GoodStatus));
+  }
 
  private:
   // user settings
@@ -87,7 +96,7 @@ class DigitsTask final : public TaskInterface
 
   // CCDB objects
   const o2::trd::NoiseStatusMCM* mNoiseMap = nullptr;
-  const o2::trd::HalfChamberStatusQC* mChamberStatus = nullptr;
+  const std::array<int, o2::trd::constants::MAXCHAMBER>* mChamberStatus = nullptr;
 };
 
 } // namespace o2::quality_control_modules::trd
