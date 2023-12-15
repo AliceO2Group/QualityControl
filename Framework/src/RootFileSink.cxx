@@ -40,7 +40,7 @@ RootFileSink::RootFileSink(std::string filePath)
 
 void RootFileSink::customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies)
 {
-  auto matcher = [label = RootFileSink::getLabel()](framework::DeviceSpec const& device) {
+  auto matcher = [label = RootFileSink::getLabel()](auto const& device) {
     return std::find(device.labels.begin(), device.labels.end(), label) != device.labels.end();
   };
 
