@@ -119,7 +119,7 @@ void TrackletsTask::buildHistograms()
   // Build tracklet layers
   for (int iLayer = 0; iLayer < NLAYER; ++iLayer) {
     mLayers[iLayer] = new TH2F(Form("TrackletsPerMCM_Layer%i", iLayer), Form("Tracklet count per MCM in layer %i;glb pad row;glb MCM col", iLayer),
-		               76, -0.5, 75.5, 144, -0.5, 143.5);
+                               76, -0.5, 75.5, 144, -0.5, 143.5);
     mLayers[iLayer]->SetStats(0);
     drawTrdLayersGrid(mLayers[iLayer]);
     getObjectsManager()->startPublishing(mLayers[iLayer]);
@@ -140,7 +140,7 @@ void TrackletsTask::monitorData(o2::framework::ProcessingContext& ctx)
     auto ptr = ctx.inputs().get<std::array<int, MAXCHAMBER>*>("chamberStatus");
     mChamberStatus = ptr.get();
   }
-  
+
   if (mChamberStatus != nullptr) {
     drawChamberStatus();
   } else {
@@ -184,7 +184,6 @@ void TrackletsTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void TrackletsTask::drawChamberStatus()
 {
-  // Mask known inactive halfchambers in the active chamber map with a X
   // LB: draw in mTrackletsPerHC2D
   TLine* line[6];
   std::pair<int, int> x, y;
@@ -273,8 +272,7 @@ void TrackletsTask::drawTrdLayersGrid(TH2F* hist)
 
 void TrackletsTask::drawHashOnLayers(int layer, int hcid, int rowstart, int rowend)
 {
-  // instead of using overlays, draw a simple box in red with a cross on it.
-
+  // Draw a simple box in with a X on it
   std::pair<float, float> topright, bottomleft; // coordinates of box
   TLine* boxlines[6];
   int det = hcid / 2;
@@ -292,10 +290,10 @@ void TrackletsTask::drawHashOnLayers(int layer, int hcid, int rowstart, int rowe
   boxlines[3] = new TLine(topright.first, bottomleft.second, topright.first, topright.second);     // right
   boxlines[4] = new TLine(topright.first, bottomleft.second, bottomleft.first, topright.second);   // backslash
   boxlines[5] = new TLine(bottomleft.first, bottomleft.second, topright.first, topright.second);   // forwardslash
-  
+
   for (int line = 0; line < 6; ++line) {
-    boxlines[line]->SetLineColor(kRed);
-    boxlines[line]->SetLineWidth(4);
+    boxlines[line]->SetLineColor(kBlack);
+    boxlines[line]->SetLineWidth(3);
     mLayers[layer]->GetListOfFunctions()->Add(boxlines[line]);
   }
 }

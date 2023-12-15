@@ -126,7 +126,7 @@ void DigitsTask::buildHistograms()
 
   for (int iLayer = 0; iLayer < NLAYER; ++iLayer) {
     mLayers[iLayer].reset(new TH2F(Form("DigitsPerLayer_%i", iLayer), Form("Digit count per pad in layer %i;glb pad row;glb pad col", iLayer),
-			           76, -0.5, 75.5, 2592, -0.5, 2591.5));
+                                   76, -0.5, 75.5, 2592, -0.5, 2591.5));
     mLayers[iLayer]->SetStats(0);
     drawTrdLayersGrid(mLayers[iLayer].get());
     getObjectsManager()->startPublishing(mLayers[iLayer].get());
@@ -278,7 +278,6 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void DigitsTask::drawChamberStatus()
 {
-  // Mask known inactive halfchambers in the active chamber map with a X
   // LB: draw in mLayers elements
   for (int iLayer = 0; iLayer < NLAYER; ++iLayer) {
     for (int iSec = 0; iSec < 18; ++iSec) {
@@ -355,8 +354,7 @@ void DigitsTask::drawLinesOnPulseHeight(TH1F* h)
 
 void DigitsTask::drawHashOnLayers(int layer, int hcid, int rowstart, int rowend)
 {
-  // instead of using overlays, draw a simple box in red with a cross on it.
-
+  // Draw a simple box in with a X on it
   std::pair<float, float> topright, bottomleft; // coordinates of box
   TLine* boxlines[6];
   int det = hcid / 2;
@@ -366,7 +364,7 @@ void DigitsTask::drawHashOnLayers(int layer, int hcid, int rowstart, int rowend)
   bottomleft.first = rowstart - 0.5;
   bottomleft.second = (sec * 2 + side) * 72;
   topright.first = rowend - 0.5;
-  topright.second = (sec * 2 + side)  * 72 + 72;
+  topright.second = (sec * 2 + side) * 72 + 72;
 
   boxlines[0] = new TLine(bottomleft.first, bottomleft.second, topright.first, bottomleft.second); // bottom
   boxlines[1] = new TLine(bottomleft.first, topright.second, topright.first, topright.second);     // top
@@ -412,7 +410,6 @@ void DigitsTask::buildChamberIgnoreBP()
   }
 }
 
-
 void DigitsTask::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "startOfActivity" << ENDM;
@@ -422,7 +419,6 @@ void DigitsTask::startOfCycle()
 {
   ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
-
 
 void DigitsTask::endOfCycle()
 {

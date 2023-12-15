@@ -52,12 +52,13 @@ class DigitsTask final : public TaskInterface
   void drawHashOnLayers(int layer, int hcid, int rowstart, int rowend);
   void drawChamberStatus();
   void buildChamberIgnoreBP();
-  
+
   // Auxiliary functions
   // Duplicated from TrackletsTask.h
-  bool isHalfChamberMasked(int hcId, const std::array<int, o2::trd::constants::MAXCHAMBER>* ptrChamber) {
+  bool isHalfChamberMasked(int hcId, const std::array<int, o2::trd::constants::MAXCHAMBER>* ptrChamber)
+  {
     // List here the chamber status to not be masked, anything different returns true
-    int GoodStatus[] = {0, 3};  // Make sure to match the same array in TrackletsTask.h
+    int GoodStatus[] = { 0, 3 }; // Make sure to match the same array in TrackletsTask.h
     int hcStatus = (*ptrChamber)[hcId / 2];
     return (std::find(std::begin(GoodStatus), std::end(GoodStatus), hcStatus) == std::end(GoodStatus));
   }
