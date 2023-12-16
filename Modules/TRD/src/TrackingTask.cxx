@@ -116,7 +116,7 @@ void TrackingTask::monitorData(o2::framework::ProcessingContext& ctx)
             continue;
           }
           // eta-phi distribution per layer
-          mTracksEtaPhiPerLayer[charge][iLayer]->Fill(trackTRD.getOuterParam().getEta(), trackTRD.getOuterParam().getPhiPos());
+          mTracksEtaPhiPerLayer[iLayer][charge]->Fill(trackTRD.getOuterParam().getEta(), trackTRD.getOuterParam().getPhiPos());
         } // end of loop over layers
       }   // end of loop over tracks
     }     // end of loop over track trigger records
