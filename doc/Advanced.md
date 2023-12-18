@@ -532,9 +532,9 @@ They adopt the criticality of the task they are proxying.
 
 Mergers are `resilient`.
 
-### QC checkers
+### QC check runners
 
-Checkers are `resilient`.
+CheckRunners are `resilient`.
 
 ### QC aggregators
 
