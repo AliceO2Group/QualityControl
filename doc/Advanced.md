@@ -507,7 +507,7 @@ Once a custom class is implemented, one should let QCG know how to display it co
 ## Critical, resilient and non-critical tasks
 
 DPL devices can be marked as expendable, resilient or critical. Expendable tasks can die without affecting the run. 
-Resilient tasks can survive having one or all their inputs coming from an expendable task. 
+Resilient tasks can survive having one or all their inputs coming from an expendable task but they will stop the system if they themselves die. 
 Critical tasks (default) will stop the system if they die and will not accept input from expendable tasks. 
 
 In QC we use these `labels`. 
