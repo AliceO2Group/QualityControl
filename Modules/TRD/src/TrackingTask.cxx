@@ -203,7 +203,7 @@ void TrackingTask::buildHistograms()
   axisConfig(mNtracks, "# of tracks", "", "", 1, 1.0, 1.3);
   publishObject(mNtracks);
 
-  mNtracklets = new TH1D("Ntracklets", "Number of Tracklets per track", 8, 0.0, 8.0);
+  mNtracklets = new TH1D("Ntracklets", "Number of Tracklets per Track", 7, -0.5, 6.5);
   axisConfig(mNtracklets, "# of tracklets", "", "", 1, 1.0, 1.1);
   publishObject(mNtracklets);
 
