@@ -504,10 +504,13 @@ Feel free to consult the existing usage examples among other modules in the QC r
 
 Once a custom class is implemented, one should let QCG know how to display it correctly, which is explained in the subsection [Display a non-standard ROOT object in QCG](#display-a-non-standard-root-object-in-qcg).
 
-## Critical and non-critical tasks
+## Critical, resilient and non-critical tasks
 
-Some DPL devices can be marked as non-critical. It means that if they die the system will continue running. There is 
-obviously an impact as all the downstream devices won't get data. 
+DPL devices can be marked as expendable, resilient or critical. Expendable tasks can die without affecting the run. 
+Resilient tasks can survive having one or all their inputs coming from an expendable task. 
+Critical tasks (default) will stop the system if they die and will not accept input from expendable tasks. 
+
+In QC we use these `labels`. 
 
 ### QC tasks
 
@@ -518,15 +521,24 @@ In QC, one can mark a task as critical or non-critical:
         "active": "true",
         "critical": "false",     "": "if false the task is allowed to die without stopping the workflow, default: true",
 ```
-By default, they are critical. 
+By default they are `critical` meaning that their failure will stop the run. 
+If they are not critical, they will be `expendable` and will not stop the run if they die. 
+
+### Auto-generated proxies 
+
+They adopt the criticality of the task they are proxying. 
 
 ### QC mergers
 
-Mergers are critical or not based on the criticality of the task they are merging data for. 
+Mergers are `resilient`.
 
 ### QC checkers
 
-Checkers are non-critical. 
+Checkers are `resilient`.
+
+### QC aggregators
+
+Aggregators are `resilient`.
 
 ### QC post-processing tasks
 
@@ -537,7 +549,8 @@ Post-processing tasks can be marked as critical or non-critical:
         "active": "true",
         "critical": "false",     "": "if false the task is allowed to die without stopping the workflow, default: true",
 ```
-By default, they are critical.
+By default, they are critical meaning that their failure will stop the run.
+If they are not critical, they will be `expendable` and will not stop the run if they die.
 
 ## QC with DPL Analysis
 
