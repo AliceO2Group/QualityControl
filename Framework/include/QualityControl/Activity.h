@@ -72,7 +72,7 @@ class Activity
   virtual ~Activity() = default;
 
   int mId{ 0 };
-  std::string mType{"NONE"};
+  std::string mType{ "NONE" };
   std::string mPeriodName{};
   std::string mPassName{};
   std::string mProvenance{ "qc" };
