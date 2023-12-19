@@ -17,9 +17,11 @@
 #ifndef QUALITYCONTROL_RUNNERUTILS_H
 #define QUALITYCONTROL_RUNNERUTILS_H
 
+#include <boost/lexical_cast/bad_lexical_cast.hpp>
 #include <string>
 #include <Framework/ServiceRegistryRef.h>
 #include <Framework/RawDeviceService.h>
+#include <ProgOptions.h>
 #include <fairmq/Device.h>
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/Activity.h"
@@ -38,8 +40,8 @@ std::string getFirstTaskName(const std::string& configurationSource);
 std::string getFirstCheckName(const std::string& configurationSource);
 bool hasChecks(const std::string& configSource);
 
-template <typename T> // TODO we should probably limit T to numbers somehow
-T computeActivityField(framework::ServiceRegistryRef services, const std::string& name, T fallbackNumber = 0)
+template <typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type>
+T computeNumericalActivityField(framework::ServiceRegistryRef services, const std::string& name, T fallbackNumber = 0)
 {
   T result = 0;
 

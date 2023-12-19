@@ -44,7 +44,7 @@ TEST_CASE("monitor_object_collection_merge")
   TH1I* targetTH1I = new TH1I("histo 1d", "histo 1d", bins, min, max);
   targetTH1I->Fill(5);
   MonitorObject* targetMoTH1I = new MonitorObject(targetTH1I, "histo 1d", "class", "DET");
-  targetMoTH1I->setActivity({ 300000, 1, "LHC32x", "apass2", "qc_async", gInvalidValidityInterval });
+  targetMoTH1I->setActivity({ 300000, "PHYSICS", "LHC32x", "apass2", "qc_async", gInvalidValidityInterval });
   targetMoTH1I->setIsOwner(true);
   target->Add(targetMoTH1I);
 
@@ -55,7 +55,7 @@ TEST_CASE("monitor_object_collection_merge")
   TH1I* otherTH1I = new TH1I("histo 1d", "histo 1d", bins, min, max);
   otherTH1I->Fill(5);
   MonitorObject* otherMoTH1I = new MonitorObject(otherTH1I, "histo 1d", "class", "DET");
-  otherMoTH1I->setActivity({ 300000, 1, "LHC32x", "apass2", "qc_async", { 43, 60 } });
+  otherMoTH1I->setActivity({ 300000, "PHYSICS", "LHC32x", "apass2", "qc_async", { 43, 60 } });
   otherMoTH1I->setIsOwner(true);
   other->Add(otherMoTH1I);
 

@@ -42,7 +42,7 @@ MonitorObject::MonitorObject(TObject* object, const std::string& taskName, const
     mTaskName(taskName),
     mTaskClass(taskClass),
     mDetectorName(detectorName),
-    mActivity(runNumber, 0, periodName, passName, provenance, gInvalidValidityInterval),
+    mActivity(runNumber, "NONE", periodName, passName, provenance, gInvalidValidityInterval),
     mIsOwner(true)
 {
 }

@@ -59,7 +59,7 @@ CommonSpec InfrastructureSpecReader::readSpecEntry<CommonSpec>(const std::string
     spec.database.emplace(key, value.get_value<std::string>());
   }
   spec.activityNumber = commonTree.get<int>("Activity.number", spec.activityNumber);
-  spec.activityType = commonTree.get<int>("Activity.type", spec.activityType);
+  spec.activityType = commonTree.get<std::string>("Activity.type", spec.activityType);
   spec.activityPassName = commonTree.get<std::string>("Activity.passName", spec.activityPassName);
   spec.activityPeriodName = commonTree.get<std::string>("Activity.periodName", spec.activityPeriodName);
   spec.activityProvenance = commonTree.get<std::string>("Activity.provenance", spec.activityProvenance);
