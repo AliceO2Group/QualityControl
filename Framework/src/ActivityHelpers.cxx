@@ -29,7 +29,6 @@ std::map<std::string, std::string> asDatabaseMetadata(const core::Activity& acti
 {
   std::map<std::string, std::string> metadata;
   if (putDefault || activity.mType != "NONE") {
-    //  we could consider making Activity use std::optional to be clear about this
     metadata[metadata_keys::runType] = activity.mType;
   }
   if (putDefault || activity.mId != 0) {
