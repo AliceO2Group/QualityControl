@@ -226,11 +226,11 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_qo, *utf::depends_on("ccdb_store"))
 BOOST_AUTO_TEST_CASE(ccdb_provenance, *utf::depends_on("ccdb_store"))
 {
   test_fixture f;
-  std::shared_ptr<QualityObject> qo = f.backend->retrieveQO(RepoPathUtils::getQoPath("TST", f.taskName + "/provenance", "", {}, "", false), -1, { 0, 0, "", "", "qc_hello" });
+  std::shared_ptr<QualityObject> qo = f.backend->retrieveQO(RepoPathUtils::getQoPath("TST", f.taskName + "/provenance", "", {}, "", false), -1, { 0, "NONE", "", "", "qc_hello" });
   BOOST_REQUIRE_NE(qo, nullptr);
   BOOST_CHECK_EQUAL(qo->getActivity().mProvenance, "qc_hello");
 
-  std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO(f.getMoFolder("provenance"), "provenance", -1, { 0, 0, "", "", "qc_hello" });
+  std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO(f.getMoFolder("provenance"), "provenance", -1, { 0, "NONE", "", "", "qc_hello" });
   BOOST_REQUIRE_NE(mo, nullptr);
   BOOST_CHECK_EQUAL(mo->getActivity().mProvenance, "qc_hello");
 }

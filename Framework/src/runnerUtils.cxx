@@ -63,17 +63,17 @@ bool hasChecks(const std::string& configSource)
 
 Activity computeActivity(framework::ServiceRegistryRef services, const Activity& fallbackActivity)
 {
-  auto runNumber = computeActivityField<int>(services, "runNumber", fallbackActivity.mId);
-  auto runType = computeActivityField<int>(services, "runType", fallbackActivity.mType);
-  auto runStartTimeMs = computeActivityField<unsigned long>(services, "runStartTimeMs", fallbackActivity.mValidity.getMin());
-  auto runEndTimeMs = computeActivityField<unsigned long>(services, "runEndTimeMs", fallbackActivity.mValidity.getMax());
+  auto runNumber = computeNumericalActivityField<int>(services, "runNumber", fallbackActivity.mId);
+  auto runType = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("runType", fallbackActivity.mType);
+  auto runStartTimeMs = computeNumericalActivityField<unsigned long>(services, "runStartTimeMs", fallbackActivity.mValidity.getMin());
+  auto runEndTimeMs = computeNumericalActivityField<unsigned long>(services, "runEndTimeMs", fallbackActivity.mValidity.getMax());
   auto partitionName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("environment_id", fallbackActivity.mPartitionName);
   auto periodName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("lhcPeriod", "");
   if (periodName.empty()) {
     // this how one has to get it on EPNs.
     periodName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("lhc_period", fallbackActivity.mPeriodName);
   }
-  auto fillNumber = computeActivityField<int>(services, "fillInfoFillNumber", fallbackActivity.mFillNumber);
+  auto fillNumber = computeNumericalActivityField<int>(services, "fillInfoFillNumber", fallbackActivity.mFillNumber);
   auto beam_type = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("fillInfoBeamType", fallbackActivity.mBeamType);
 
   Activity activity(

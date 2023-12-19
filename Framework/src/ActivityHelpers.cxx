@@ -28,10 +28,9 @@ namespace o2::quality_control::core::activity_helpers
 std::map<std::string, std::string> asDatabaseMetadata(const core::Activity& activity, bool putDefault)
 {
   std::map<std::string, std::string> metadata;
-  if (putDefault || activity.mType != 0) {
-    // TODO should we really treat 0 as none?
+  if (putDefault || activity.mType != "NONE") {
     //  we could consider making Activity use std::optional to be clear about this
-    metadata[metadata_keys::runType] = std::to_string(activity.mType);
+    metadata[metadata_keys::runType] = activity.mType;
   }
   if (putDefault || activity.mId != 0) {
     metadata[metadata_keys::runNumber] = std::to_string(activity.mId);
@@ -49,7 +48,7 @@ core::Activity asActivity(const std::map<std::string, std::string>& metadata, co
 {
   core::Activity activity;
   if (auto runType = metadata.find(metadata_keys::runType); runType != metadata.end()) {
-    activity.mType = std::strtol(runType->second.c_str(), nullptr, 10);
+    activity.mType = runType->second;
   }
   if (auto runNumber = metadata.find(metadata_keys::runNumber); runNumber != metadata.end()) {
     activity.mId = std::strtol(runNumber->second.c_str(), nullptr, 10);
@@ -73,7 +72,7 @@ core::Activity asActivity(const std::map<std::string, std::string>& metadata, co
 core::Activity asActivity(const boost::property_tree::ptree& tree, const std::string& provenance)
 {
   core::Activity activity;
-  if (auto runType = tree.get_optional<int>(metadata_keys::runType); runType.has_value()) {
+  if (auto runType = tree.get_optional<std::string>(metadata_keys::runType); runType.has_value()) {
     activity.mType = runType.value();
   }
   if (auto runNumber = tree.get_optional<int>(metadata_keys::runNumber); runNumber.has_value()) {
