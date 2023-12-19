@@ -65,7 +65,7 @@ bool hasChecks(const std::string& configSource)
 bool is_number(const std::string& s)
 {
   return !s.empty() && std::find_if(s.begin(),
-      s.end(), [](unsigned char c) { return !std::isdigit(c); }) == s.end();
+                                    s.end(), [](unsigned char c) { return !std::isdigit(c); }) == s.end();
 }
 
 Activity computeActivity(framework::ServiceRegistryRef services, const Activity& fallbackActivity)
@@ -74,7 +74,7 @@ Activity computeActivity(framework::ServiceRegistryRef services, const Activity&
   std::string runType = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("runType", fallbackActivity.mType);
   // runType used to be an integer. If we find an integer in a config file, the risk is that it is translated directly to a string (2->"2").
   // We must rather translate the integer into the corresponding run type string if at all possible.
-  if(is_number(runType)) {
+  if (is_number(runType)) {
     try {
       runType = parameters::GRPECS::RunTypeNames.at(std::stoi(runType));
     } catch (std::out_of_range& exc) {
