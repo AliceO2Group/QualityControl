@@ -17,6 +17,8 @@
 #ifndef QUALITYCONTROL_POSTPROCESSINGCONFIG_H
 #define QUALITYCONTROL_POSTPROCESSINGCONFIG_H
 
+#include "QualityControl/CustomParameters.h"
+
 #include <vector>
 #include <string>
 #include <boost/property_tree/ptree_fwd.hpp>
@@ -45,6 +47,7 @@ struct PostProcessingConfig {
   std::string consulUrl;
   core::Activity activity;
   bool matchAnyRunNumber = false;
+  core::CustomParameters customParameters;
 };
 
 } // namespace o2::quality_control::postprocessing

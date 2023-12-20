@@ -323,7 +323,7 @@ endforeach()
 
 foreach(t testWorkflow testTaskRunner testCheckWorkflow
         testPostProcessingConfig testPostProcessingInterface
-        testCheck testTrendingTask)
+        testCheck testTrendingTask testCustomParameters)
   target_sources(${t} PRIVATE
                  ${CMAKE_BINARY_DIR}/getTestDataDirectory.cxx)
   target_include_directories(${t} PRIVATE ${CMAKE_SOURCE_DIR})

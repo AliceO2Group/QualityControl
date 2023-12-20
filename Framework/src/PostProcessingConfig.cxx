@@ -15,6 +15,7 @@
 ///
 
 #include "QualityControl/PostProcessingConfig.h"
+
 #include <boost/property_tree/ptree.hpp>
 
 namespace o2::quality_control::postprocessing
@@ -46,6 +47,10 @@ PostProcessingConfig::PostProcessingConfig(const std::string& id, const boost::p
   }
   for (const auto& stopTrigger : config.get_child("qc.postprocessing." + id + ".stopTrigger")) {
     stopTriggers.push_back(stopTrigger.second.get_value<std::string>());
+  }
+  auto ppTree = config.get_child("qc.postprocessing." + id);
+  if (ppTree.count("extendedTaskParameters")) {
+    customParameters.populateCustomParameters(ppTree.get_child("extendedTaskParameters"));
   }
 }
 

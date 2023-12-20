@@ -50,4 +50,9 @@ std::shared_ptr<core::ObjectsManager> PostProcessingInterface::getObjectsManager
   return mObjectsManager;
 }
 
+void PostProcessingInterface::setCustomParameters(const core::CustomParameters& parameters)
+{
+  mCustomParameters = parameters;
+}
+
 } // namespace o2::quality_control::postprocessing

@@ -27,7 +27,9 @@ namespace o2::quality_control::postprocessing
 // todo: consider having a common helper for each class which loads tasks like below (QC tasks, checks, pp)
 PostProcessingInterface* PostProcessingFactory::create(const PostProcessingConfig& config)
 {
-  return root_class_factory::create<PostProcessingInterface>(config.moduleName, config.className);
+  auto* result = root_class_factory::create<PostProcessingInterface>(config.moduleName, config.className);
+  result->setCustomParameters(config.customParameters);
+  return result;
 }
 
 } // namespace o2::quality_control::postprocessing
