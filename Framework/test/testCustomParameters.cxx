@@ -23,6 +23,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include "getTestDataDirectory.h"
 
 using namespace o2::quality_control::core;
 using namespace std;
@@ -188,12 +189,13 @@ BOOST_AUTO_TEST_CASE(test_cp_new_access_pattern)
 BOOST_AUTO_TEST_CASE(test_load_from_ptree)
 {
   boost::property_tree::ptree jsontree;
-  boost::property_tree::read_json("/Users/bvonhall/dev/alice/sw/osx_x86-64/QualityControl/single-checkrunner-local1/etc/basic.json", jsontree);
+  std::string configFilePath = std::string(getTestDataDirectory()) + "testWorkflow.json";
 
-  string v0 = jsontree.get<string>("qc.tasks.QcTask.extendedTaskParameters.default.default.myOwnKey");
-  cout << "v0: " << v0 << endl;
+  boost::property_tree::read_json(configFilePath, jsontree);
 
-  boost::property_tree::ptree params = jsontree.get_child("qc.tasks.QcTask.extendedTaskParameters");
+  string v0 = jsontree.get<string>("qc.tasks.skeletonTask.extendedTaskParameters.default.default.myOwnKey");
+
+  boost::property_tree::ptree params = jsontree.get_child("qc.tasks.skeletonTask.extendedTaskParameters");
 
   CustomParameters cp;
   cp.populateCustomParameters(params);
